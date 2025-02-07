@@ -144,6 +144,17 @@ Proof.
   wp_store.
   wp_pures.
   wp_load.
+  wp_pures.
+  destruct bool_decide eqn:Herr.
+  2:{ (* got an error; early return *)
+    wp_pures.
+    wp_load.
+    wp_pures.
+    iApply "HΦ".
+    rewrite bool_decide_eq_false in Herr.
+    rewrite decide_False //.
+  }
+  (* no error from Grant() call *)
 Admitted.
 
 End proof.

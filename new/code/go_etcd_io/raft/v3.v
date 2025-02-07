@@ -141,7 +141,7 @@ Definition RawNode__Bootstrap : val :=
     let: "$r1" := "$ret1" in
     do:  ("lastIndex" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #());;;
     (if: (![uint64T] "lastIndex") ≠ #(W64 0)
@@ -182,7 +182,7 @@ Definition RawNode__Bootstrap : val :=
       let: "$r1" := "$ret1" in
       do:  ("data" <-[sliceT] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then return: (![error] "err")
       else do:  #());;;
       let: "$r0" := (let: "$Type" := raftpb.EntryConfChange in
@@ -249,7 +249,7 @@ Definition newLogWithSize : val :=
     let: "$r1" := "$ret1" in
     do:  ("firstIndex" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -260,7 +260,7 @@ Definition newLogWithSize : val :=
     let: "$r1" := "$ret1" in
     do:  ("lastIndex" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -473,7 +473,7 @@ Definition raftLog__findConflictByTerm : val :=
       let: "$r1" := "$ret1" in
       do:  ("ourTerm" <-[uint64T] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then return: (![uint64T] "index", #(W64 0))
       else
         (if: (![uint64T] "ourTerm") ≤ (![uint64T] "term")
@@ -560,7 +560,7 @@ Definition raftLog__nextCommittedEnts : val :=
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := #"unexpected error when getting unapplied entries (%v)"%go in
       let: "$a1" := ((let: "$sl0" := (![error] "err") in
@@ -672,7 +672,7 @@ Definition raftLog__firstIndex : val :=
     let: "$r1" := "$ret1" in
     do:  ("index" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -700,7 +700,7 @@ Definition raftLog__lastIndex : val :=
     let: "$r1" := "$ret1" in
     do:  ("i" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -822,7 +822,7 @@ Definition raftLog__lastEntryID : val :=
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := #"unexpected error when getting the last term at %d: %v"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "index")) in
@@ -867,10 +867,10 @@ Definition raftLog__term : val :=
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") = #interface.nil
+    (if: interface.eq (![error] "err") #interface.nil
     then return: (![uint64T] "t", #interface.nil)
     else do:  #());;;
-    (if: ((![error] "err") = (![error] (globals.get #pkg_name' #"ErrCompacted"%go))) || ((![error] "err") = (![error] (globals.get #pkg_name' #"ErrUnavailable"%go)))
+    (if: (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrCompacted"%go))) || (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrUnavailable"%go)))
     then return: (#(W64 0), ![error] "err")
     else do:  #());;;
     do:  (let: "$a0" := (![error] "err") in
@@ -906,10 +906,10 @@ Definition raftLog__allEntries : val :=
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") = #interface.nil
+    (if: interface.eq (![error] "err") #interface.nil
     then return: (![sliceT] "ents")
     else do:  #());;;
-    (if: (![error] "err") = (![error] (globals.get #pkg_name' #"ErrCompacted"%go))
+    (if: interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrCompacted"%go))
     then return: ((method_call #pkg_name' #"raftLog'ptr" #"allEntries" (![ptrT] "l")) #())
     else do:  #());;;
     do:  (let: "$a0" := (![error] "err") in
@@ -946,7 +946,7 @@ Definition raftLog__matchTerm : val :=
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (#false)
     else do:  #());;;
     return: ((![uint64T] "t") = (![uint64T] (struct.field_ref entryID "term" "id")))).
@@ -1011,7 +1011,7 @@ Definition raftLog__scan : val :=
       let: "$r1" := "$ret1" in
       do:  ("ents" <-[sliceT] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then return: (![error] "err")
       else
         (if: (let: "$a0" := (![sliceT] "ents") in
@@ -1027,7 +1027,7 @@ Definition raftLog__scan : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "ents") in
       (![funcT] "v") "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then return: (![error] "err")
       else do:  #()));;;
       do:  ("lo" <-[uint64T] ((![uint64T] "lo") + (let: "$a0" := (![sliceT] "ents") in
@@ -1048,7 +1048,7 @@ Definition raftLog__slice : val :=
     let: "$a1" := (![uint64T] "hi") in
     (method_call #pkg_name' #"raftLog'ptr" #"mustCheckOutOfBounds" (![ptrT] "l")) "$a0" "$a1") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (#slice.nil, ![error] "err")
     else do:  #()));;;
     (if: (![uint64T] "lo") = (![uint64T] "hi")
@@ -1083,10 +1083,10 @@ Definition raftLog__slice : val :=
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") = (![error] (globals.get #pkg_name' #"ErrCompacted"%go))
+    (if: interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrCompacted"%go))
     then return: (#slice.nil, ![error] "err")
     else
-      (if: (![error] "err") = (![error] (globals.get #pkg_name' #"ErrUnavailable"%go))
+      (if: interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrUnavailable"%go))
       then
         do:  (let: "$a0" := #"entries[%d:%d) is unavailable from storage"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "lo")) in
@@ -1094,7 +1094,7 @@ Definition raftLog__slice : val :=
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
       else
-        (if: (![error] "err") ≠ #interface.nil
+        (if: (~ (interface.eq (![error] "err") #interface.nil))
         then
           do:  (let: "$a0" := (![error] "err") in
           Panic "$a0")
@@ -1172,10 +1172,10 @@ Definition raftLog__zeroTermOnOutOfBounds : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "err" := (ref_ty error "err") in
     let: "t" := (ref_ty uint64T "t") in
-    (if: (![error] "err") = #interface.nil
+    (if: interface.eq (![error] "err") #interface.nil
     then return: (![uint64T] "t")
     else do:  #());;;
-    (if: ((![error] "err") = (![error] (globals.get #pkg_name' #"ErrCompacted"%go))) || ((![error] "err") = (![error] (globals.get #pkg_name' #"ErrUnavailable"%go)))
+    (if: (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrCompacted"%go))) || (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrUnavailable"%go)))
     then return: (#(W64 0))
     else do:  #());;;
     do:  (let: "$a0" := #"unexpected error (%v)"%go in
@@ -1872,7 +1872,7 @@ Definition setupNode : val :=
     let: "$r1" := "$ret1" in
     do:  ("rn" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -1880,7 +1880,7 @@ Definition setupNode : val :=
     let: "$r0" := (let: "$a0" := (![sliceT] "peers") in
     (method_call #pkg_name' #"RawNode'ptr" #"Bootstrap" (![ptrT] "rn")) "$a0") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := #"error occurred during starting a new node: %v"%go in
       let: "$a1" := ((let: "$sl0" := (![error] "err") in
@@ -1929,7 +1929,7 @@ Definition RestartNode : val :=
     let: "$r1" := "$ret1" in
     do:  ("rn" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -2297,7 +2297,7 @@ Definition confChangeToMsg : val :=
     do:  ("typ" <-[raftpb.EntryType] "$r0");;;
     do:  ("data" <-[sliceT] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       return: (struct.make raftpb.Message [{
          "Type" ::= zero_val raftpb.MessageType;
@@ -2357,7 +2357,7 @@ Definition node__ProposeConfChange : val :=
     let: "$r1" := "$ret1" in
     do:  ("msg" <-[raftpb.Message] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #());;;
     return: (let: "$a0" := (![context.Context] "ctx") in
@@ -2434,7 +2434,7 @@ Definition node__stepWithWaitOption : val :=
         let: "err" := (ref_ty error (zero_val error)) in
         let: "$r0" := (Fst "$recvVal") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ #interface.nil
+        (if: (~ (interface.eq (![error] "err") #interface.nil))
         then return: (![error] "err")
         else do:  #())
         )); ("$recvChan1", (λ: "$recvVal",
@@ -2676,7 +2676,7 @@ Definition Config__validate : val :=
       return: (let: "$a0" := #"election tick must be greater than heartbeat tick"%go in
        (func_call #errors.pkg_name' #"New"%go) "$a0")
     else do:  #());;;
-    (if: (![Storage] (struct.field_ref Config "Storage" (![ptrT] "c"))) = #interface.nil
+    (if: interface.eq (![Storage] (struct.field_ref Config "Storage" (![ptrT] "c"))) #interface.nil
     then
       return: (let: "$a0" := #"storage cannot be nil"%go in
        (func_call #errors.pkg_name' #"New"%go) "$a0")
@@ -2706,7 +2706,7 @@ Definition Config__validate : val :=
         return: (let: "$a0" := #"max inflight bytes must be >= max message size"%go in
          (func_call #errors.pkg_name' #"New"%go) "$a0")
       else do:  #()));;;
-    (if: (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c"))) = #interface.nil
+    (if: interface.eq (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c"))) #interface.nil
     then
       let: "$r0" := ((func_call #pkg_name' #"getLogger"%go) #()) in
       do:  ((struct.field_ref Config "Logger" (![ptrT] "c")) <-[Logger] "$r0")
@@ -2725,7 +2725,7 @@ Definition newRaft : val :=
     (let: "err" := (ref_ty error (zero_val error)) in
     let: "$r0" := ((method_call #pkg_name' #"Config'ptr" #"validate" (![ptrT] "c")) #()) in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go ((interface.get "Error" (![error] "err")) #())) in
       Panic "$a0")
@@ -2746,7 +2746,7 @@ Definition newRaft : val :=
     do:  ("hs" <-[raftpb.HardState] "$r0");;;
     do:  ("cs" <-[raftpb.ConfState] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -2828,7 +2828,7 @@ Definition newRaft : val :=
     do:  ("cfg" <-[tracker.Config] "$r0");;;
     do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -3020,7 +3020,7 @@ Definition raft__maybeSendAppend : val :=
     let: "$r1" := "$ret1" in
     do:  ("prevTerm" <-[uint64T] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       return: (let: "$a0" := (![uint64T] "to") in
        let: "$a1" := (![ptrT] "pr") in
@@ -3041,7 +3041,7 @@ Definition raft__maybeSendAppend : val :=
     slice.len "$a0") = #(W64 0)) && (~ (![boolT] "sendIfEmpty"))
     then return: (#false)
     else do:  #());;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       return: (let: "$a0" := (![uint64T] "to") in
        let: "$a1" := (![ptrT] "pr") in
@@ -3103,9 +3103,9 @@ Definition raft__maybeSendSnapshot : val :=
     let: "$r1" := "$ret1" in
     do:  ("snapshot" <-[raftpb.Snapshot] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
-      (if: (![error] "err") = (![error] (globals.get #pkg_name' #"ErrSnapshotTemporarilyUnavailable"%go))
+      (if: interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrSnapshotTemporarilyUnavailable"%go))
       then
         do:  (let: "$a0" := #"%x failed to send snapshot to %x because snapshot is temporarily unavailable"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -3295,7 +3295,7 @@ Definition raft__appliedTo : val :=
       let: "$r1" := "$ret1" in
       do:  ("m" <-[raftpb.Message] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then
         do:  (let: "$a0" := (![error] "err") in
         Panic "$a0")
@@ -3304,7 +3304,7 @@ Definition raft__appliedTo : val :=
       let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
       (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then
         do:  (let: "$a0" := #"not initiating automatic transition out of joint configuration %s: %v"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make #tracker.pkg_name' #"Config" (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
@@ -3498,7 +3498,7 @@ Definition raft__tickElection : val :=
       }]) in
       (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then
         do:  (let: "$a0" := #"error occurred during election: %v"%go in
         let: "$a1" := ((let: "$sl0" := (![error] "err") in
@@ -3542,7 +3542,7 @@ Definition raft__tickHeartbeat : val :=
         }]) in
         (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ #interface.nil
+        (if: (~ (interface.eq (![error] "err") #interface.nil))
         then
           do:  (let: "$a0" := #"error occurred during checking sending heartbeat: %v"%go in
           let: "$a1" := ((let: "$sl0" := (![error] "err") in
@@ -3582,7 +3582,7 @@ Definition raft__tickHeartbeat : val :=
       }]) in
       (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then
         do:  (let: "$a0" := #"error occurred during checking sending heartbeat: %v"%go in
         let: "$a1" := ((let: "$sl0" := (![error] "err") in
@@ -3795,7 +3795,7 @@ Definition raft__hasUnappliedConfChanges : val :=
       ) in
     (method_call #pkg_name' #"raftLog'ptr" #"scan" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1" "$a2" "$a3") in
     do:  ("err" <-[error] "$r0");;;
-    (if: ((![error] "err") ≠ #interface.nil) && ((![error] "err") ≠ (![error] (globals.get #pkg_name' #"errBreak"%go)))
+    (if: (~ (interface.eq (![error] "err") #interface.nil)) && (~ (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"errBreak"%go))))
     then
       do:  (let: "$a0" := #"error scanning unapplied entries [%d, %d): %v"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "lo")) in
@@ -4277,7 +4277,7 @@ Definition raft__Step : val :=
             let: "$a1" := (![raftpb.Message] "m") in
             (![stepFunc] (struct.field_ref raft "step" (![ptrT] "r"))) "$a0" "$a1") in
             do:  ("err" <-[error] "$r0");;;
-            (if: (![error] "err") ≠ #interface.nil
+            (if: (~ (interface.eq (![error] "err") #interface.nil))
             then return: (![error] "err")
             else do:  #())))));;;
     return: (#interface.nil)).
@@ -4361,7 +4361,7 @@ Definition stepLeader : val :=
               let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Entry "Data" (![ptrT] "e"))) in
               (method_call #raftpb.pkg_name' #"ConfChange'ptr" #"Unmarshal" "ccc") "$a0") in
               do:  ("err" <-[error] "$r0");;;
-              (if: (![error] "err") ≠ #interface.nil
+              (if: (~ (interface.eq (![error] "err") #interface.nil))
               then
                 do:  (let: "$a0" := (![error] "err") in
                 Panic "$a0")
@@ -4376,7 +4376,7 @@ Definition stepLeader : val :=
                 let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Entry "Data" (![ptrT] "e"))) in
                 (method_call #raftpb.pkg_name' #"ConfChangeV2'ptr" #"Unmarshal" "ccc") "$a0") in
                 do:  ("err" <-[error] "$r0");;;
-                (if: (![error] "err") ≠ #interface.nil
+                (if: (~ (interface.eq (![error] "err") #interface.nil))
                 then
                   do:  (let: "$a0" := (![error] "err") in
                   Panic "$a0")
@@ -4384,7 +4384,7 @@ Definition stepLeader : val :=
                 let: "$r0" := (interface.make #raftpb.pkg_name' #"ConfChangeV2" (![raftpb.ConfChangeV2] "ccc")) in
                 do:  ("cc" <-[raftpb.ConfChangeI] "$r0")
               else do:  #()));;;
-            (if: (![raftpb.ConfChangeI] "cc") ≠ #interface.nil
+            (if: (~ (interface.eq (![raftpb.ConfChangeI] "cc") #interface.nil))
             then
               let: "alreadyPending" := (ref_ty boolT (zero_val boolT)) in
               let: "$r0" := ((![uint64T] (struct.field_ref raft "pendingConfIndex" (![ptrT] "r"))) > (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
@@ -5345,7 +5345,7 @@ Definition raft__restore : val :=
     do:  ("cfg" <-[tracker.Config] "$r0");;;
     do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go (let: "$a0" := #"unable to restore config %+v: %s"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #raftpb.pkg_name' #"ConfState" (![raftpb.ConfState] "cs")) in
@@ -5432,7 +5432,7 @@ Definition raft__applyConfChange : val :=
     do:  ("cfg" <-[tracker.Config] "$r0");;;
     do:  ("trk" <-[tracker.ProgressMap] "$r1");;;
     do:  ("err" <-[error] "$r2");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -5896,7 +5896,7 @@ Definition RawNode__ProposeConfChange : val :=
     let: "$r1" := "$ret1" in
     do:  ("m" <-[raftpb.Message] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #());;;
     return: (let: "$a0" := (![raftpb.Message] "m") in
@@ -7066,7 +7066,7 @@ Definition Status__String : val :=
     let: "$r1" := "$ret1" in
     do:  ("b" <-[sliceT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := #"unexpected error: %v"%go in
       let: "$a1" := ((let: "$sl0" := (![error] "err") in
@@ -7986,7 +7986,7 @@ Definition DescribeEntry : val :=
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Entry "Data" "e")) in
         (method_call #raftpb.pkg_name' #"ConfChange'ptr" #"Unmarshal" "cc") "$a0") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ #interface.nil
+        (if: (~ (interface.eq (![error] "err") #interface.nil))
         then
           let: "$r0" := ((interface.get "Error" (![error] "err")) #()) in
           do:  ("formatted" <-[stringT] "$r0")
@@ -8002,7 +8002,7 @@ Definition DescribeEntry : val :=
           let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Entry "Data" "e")) in
           (method_call #raftpb.pkg_name' #"ConfChangeV2'ptr" #"Unmarshal" "cc") "$a0") in
           do:  ("err" <-[error] "$r0");;;
-          (if: (![error] "err") ≠ #interface.nil
+          (if: (~ (interface.eq (![error] "err") #interface.nil))
           then
             let: "$r0" := ((interface.get "Error" (![error] "err")) #()) in
             do:  ("formatted" <-[stringT] "$r0")
@@ -8127,7 +8127,7 @@ Definition assertConfStatesEquivalent : val :=
     let: "$r0" := (let: "$a0" := (![raftpb.ConfState] "cs2") in
     (method_call #raftpb.pkg_name' #"ConfState" #"Equivalent" (![raftpb.ConfState] "cs1")) "$a0") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") = #interface.nil
+    (if: interface.eq (![error] "err") #interface.nil
     then return: (#())
     else do:  #());;;
     do:  (let: "$a0" := ((let: "$sl0" := (![error] "err") in

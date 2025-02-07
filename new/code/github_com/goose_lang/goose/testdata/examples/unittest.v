@@ -1016,7 +1016,7 @@ Definition testConversionInEq : val :=
     do:  ("c" <-[ptrT] "$r0");;;
     let: "$r0" := (interface.make #pkg_name' #"concreteFooer'ptr" (![ptrT] "c")) in
     do:  ("f" <-[Fooer] "$r0");;;
-    return: ((interface.make #pkg_name' #"concreteFooer'ptr" (![ptrT] "c")) = (![Fooer] "f"))).
+    return: (interface.eq (interface.make #pkg_name' #"concreteFooer'ptr" (![ptrT] "c")) (![Fooer] "f"))).
 
 (* go: interfaces.go:82:6 *)
 Definition takeMultiple : val :=

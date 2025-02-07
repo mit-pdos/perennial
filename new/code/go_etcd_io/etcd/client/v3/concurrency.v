@@ -141,7 +141,7 @@ Definition Election__Campaign : val :=
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #());;;
     let: "$r0" := (![stringT] "k") in
@@ -163,7 +163,7 @@ Definition Election__Campaign : val :=
         let: "$a1" := (![stringT] "val") in
         (method_call #pkg_name' #"Election'ptr" #"Proclaim" (![ptrT] "e")) "$a0" "$a1") in
         do:  ("err" <-[error] "$r0");;;
-        (if: (![error] "err") ≠ #interface.nil
+        (if: (~ (interface.eq (![error] "err") #interface.nil))
         then
           do:  (let: "$a0" := (![context.Context] "ctx") in
           (method_call #pkg_name' #"Election'ptr" #"Resign" (![ptrT] "e")) "$a0");;;
@@ -177,7 +177,7 @@ Definition Election__Campaign : val :=
     let: "$a3" := ((![int64T] (struct.field_ref Election "leaderRev" (![ptrT] "e"))) - #(W64 1)) in
     (func_call #pkg_name' #"waitDeletes"%go) "$a0" "$a1" "$a2" "$a3") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (chan.select [] [("$recvChan0", (λ: "$recvVal",
           do:  (let: "$a0" := ((method_call #clientv3.pkg_name' #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
@@ -235,7 +235,7 @@ Definition Election__Proclaim : val :=
     let: "$r1" := "$ret1" in
     do:  ("tresp" <-[ptrT] "$r0");;;
     do:  ("terr" <-[error] "$r1");;;
-    (if: (![error] "terr") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "terr") #interface.nil))
     then return: (![error] "terr")
     else do:  #());;;
     (if: (~ (![boolT] (struct.field_ref clientv3.TxnResponse "Succeeded" (![ptrT] "tresp"))))
@@ -282,7 +282,7 @@ Definition Election__Resign : val :=
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") = #interface.nil
+    (if: interface.eq (![error] "err") #interface.nil
     then
       let: "$r0" := (![ptrT] (struct.field_ref clientv3.TxnResponse "Header" (![ptrT] "resp"))) in
       do:  ((struct.field_ref Election "hdr" (![ptrT] "e")) <-[ptrT] "$r0")
@@ -313,7 +313,7 @@ Definition Election__Leader : val :=
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (#null, ![error] "err")
     else
       (if: (let: "$a0" := (![sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![ptrT] "resp"))) in
@@ -371,7 +371,7 @@ Definition Election__observe : val :=
       let: "$r1" := "$ret1" in
       do:  ("resp" <-[ptrT] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then return: (#())
       else do:  #());;;
       let: "kv" := (ref_ty ptrT (zero_val ptrT)) in
@@ -407,7 +407,7 @@ Definition Election__observe : val :=
           let: "$r1" := "$ret1" in
           do:  ("wr" <-[clientv3.WatchResponse] "$r0");;;
           do:  ("ok" <-[boolT] "$r1");;;
-          (if: (~ (![boolT] "ok")) || (((method_call #clientv3.pkg_name' #"WatchResponse'ptr" #"Err" "wr") #()) ≠ #interface.nil)
+          (if: (~ (![boolT] "ok")) || (~ (interface.eq ((method_call #clientv3.pkg_name' #"WatchResponse'ptr" #"Err" "wr") #()) #interface.nil))
           then
             do:  ((![context.CancelFunc] "cancel") #());;;
             return: (#())
@@ -562,13 +562,13 @@ Definition waitDelete : val :=
     (let: "err" := (ref_ty error (zero_val error)) in
     let: "$r0" := ((method_call #clientv3.pkg_name' #"WatchResponse'ptr" #"Err" "wr") #()) in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #()));;;
     (let: "err" := (ref_ty error (zero_val error)) in
     let: "$r0" := ((interface.get "Err" (![context.Context] "ctx")) #()) in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #()));;;
     return: (let: "$a0" := #"lost watcher waiting for delete"%go in
@@ -602,7 +602,7 @@ Definition waitDeletes : val :=
       let: "$r1" := "$ret1" in
       do:  ("resp" <-[ptrT] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then return: (![error] "err")
       else do:  #());;;
       (if: (let: "$a0" := (![sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![ptrT] "resp"))) in
@@ -618,7 +618,7 @@ Definition waitDeletes : val :=
       let: "$a3" := (![int64T] (struct.field_ref etcdserverpb.ResponseHeader "Revision" (![ptrT] (struct.field_ref clientv3.GetResponse "Header" (![ptrT] "resp"))))) in
       (func_call #pkg_name' #"waitDelete"%go) "$a0" "$a1" "$a2" "$a3") in
       do:  ("err" <-[error] "$r0");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then return: (![error] "err")
       else do:  #())))).
 
@@ -660,7 +660,7 @@ Definition Mutex__TryLock : val :=
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #());;;
     let: "ownerKey" := (ref_ty sliceT (zero_val sliceT)) in
@@ -685,7 +685,7 @@ Definition Mutex__TryLock : val :=
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #()));;;
     let: "$r0" := #" "%go in
@@ -710,7 +710,7 @@ Definition Mutex__Lock : val :=
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #());;;
     let: "ownerKey" := (ref_ty sliceT (zero_val sliceT)) in
@@ -733,7 +733,7 @@ Definition Mutex__Lock : val :=
     let: "$a3" := ((![int64T] (struct.field_ref Mutex "myRev" (![ptrT] "m"))) - #(W64 1)) in
     (func_call #pkg_name' #"waitDeletes"%go) "$a0" "$a1" "$a2" "$a3") in
     do:  ("werr" <-[error] "$r0");;;
-    (if: (![error] "werr") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "werr") #interface.nil))
     then
       do:  (let: "$a0" := ((method_call #clientv3.pkg_name' #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
       (method_call #pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] "m")) "$a0");;;
@@ -748,7 +748,7 @@ Definition Mutex__Lock : val :=
     let: "$r1" := "$ret1" in
     do:  ("gresp" <-[ptrT] "$r0");;;
     do:  ("werr" <-[error] "$r1");;;
-    (if: (![error] "werr") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "werr") #interface.nil))
     then
       do:  (let: "$a0" := ((method_call #clientv3.pkg_name' #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
       (method_call #pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] "m")) "$a0");;;
@@ -820,7 +820,7 @@ Definition Mutex__tryAcquire : val :=
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (#null, ![error] "err")
     else do:  #());;;
     let: "$r0" := (![int64T] (struct.field_ref etcdserverpb.ResponseHeader "Revision" (![ptrT] (struct.field_ref clientv3.TxnResponse "Header" (![ptrT] "resp"))))) in
@@ -862,7 +862,7 @@ Definition Mutex__Unlock : val :=
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
     else do:  #()));;;
     let: "$r0" := #" "%go in
@@ -910,7 +910,7 @@ Definition lockerMutex__Lock : val :=
     let: "$r0" := (let: "$a0" := ((method_call #clientv3.pkg_name' #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
     (method_call #pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))) "$a0") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -927,7 +927,7 @@ Definition lockerMutex__Unlock : val :=
     let: "$r0" := (let: "$a0" := ((method_call #clientv3.pkg_name' #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
     (method_call #pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))) "$a0") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (![error] "err") in
       Panic "$a0")
@@ -997,7 +997,7 @@ Definition NewSession : val :=
       let: "$r1" := "$ret1" in
       do:  ("resp" <-[ptrT] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
-      (if: (![error] "err") ≠ #interface.nil
+      (if: (~ (interface.eq (![error] "err") #interface.nil))
       then return: (#null, ![error] "err")
       else do:  #());;;
       let: "$r0" := (![clientv3.LeaseID] (struct.field_ref clientv3.LeaseGrantResponse "ID" (![ptrT] "resp"))) in
@@ -1020,7 +1020,7 @@ Definition NewSession : val :=
     let: "$r1" := "$ret1" in
     do:  ("keepAlive" <-[chanT ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: ((![error] "err") ≠ #interface.nil) || ((![chanT ptrT] "keepAlive") = #null)
+    (if: (~ (interface.eq (![error] "err") #interface.nil)) || ((![chanT ptrT] "keepAlive") = #null)
     then
       do:  ((![context.CancelFunc] "cancel") #());;;
       return: (#null, ![error] "err")
@@ -1463,7 +1463,7 @@ Definition runSTM : val :=
         exception_do ((let: "r" := (ref_ty interfaceT (zero_val interfaceT)) in
         let: "$r0" := (recover #()) in
         do:  ("r" <-[interfaceT] "$r0");;;
-        (if: (![interfaceT] "r") ≠ #interface.nil
+        (if: (~ (interface.eq (![interfaceT] "r") #interface.nil))
         then
           let: "ok" := (ref_ty boolT (zero_val boolT)) in
           let: "e" := (ref_ty stmError (zero_val stmError)) in
@@ -1496,7 +1496,7 @@ Definition runSTM : val :=
         (let: "$r0" := (let: "$a0" := (![STM] "s") in
         (![funcT] "apply") "$a0") in
         do:  ((struct.field_ref stmResponse "err" "out") <-[error] "$r0");;;
-        (if: (![error] (struct.field_ref stmResponse "err" "out")) ≠ #interface.nil
+        (if: (~ (interface.eq (![error] (struct.field_ref stmResponse "err" "out")) #interface.nil))
         then break: #()
         else do:  #()));;;
         (let: "$r0" := ((interface.get "commit" (![STM] "s")) #()) in
@@ -1723,7 +1723,7 @@ Definition stm__commit : val :=
     let: "$r1" := "$ret1" in
     do:  ("txnresp" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (interface.make #pkg_name' #"stmError" (struct.make stmError [{
         "err" ::= ![error] "err"
@@ -1777,7 +1777,7 @@ Definition stm__fetch : val :=
     let: "$r1" := "$ret1" in
     do:  ("txnresp" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (interface.make #pkg_name' #"stmError" (struct.make stmError [{
         "err" ::= ![error] "err"
@@ -1919,7 +1919,7 @@ Definition stmSerializable__commit : val :=
     let: "$r1" := "$ret1" in
     do:  ("txnresp" <-[ptrT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: (![error] "err") ≠ #interface.nil
+    (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (interface.make #pkg_name' #"stmError" (struct.make stmError [{
         "err" ::= ![error] "err"
