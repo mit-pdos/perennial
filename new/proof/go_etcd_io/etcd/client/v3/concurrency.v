@@ -9,16 +9,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 (* TODO: these should be in another file ultimately. *)
 Section client_axioms.
 
-Definition has_Grant (i : interface.t) : iProp Σ :=
-  ∀ (ctx : context.Context.t) (ttl : w64),
-  {{{ True }}}
-    interface.get #i #"Grant" #ctx #ttl
-  {{{
-      resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
-        RET (#resp_ptr, #err);
-        resp_ptr ↦ resp
-  }}}.
-
 Definition has_KeepAlive (i : interface.t) : iProp Σ :=
   ∀ (ctx : context.Context.t) (id : clientv3.LeaseID.t),
   {{{ True }}}
@@ -28,11 +18,6 @@ Definition has_KeepAlive (i : interface.t) : iProp Σ :=
         RET (#resp, #err);
         True
   }}}.
-
-Definition is_Lease (i : interface.t) : iProp Σ :=
-  "#Hgrant" ∷ has_Grant i ∗
-  "#Hka" ∷ has_KeepAlive i
-.
 
 Axiom is_Client : ∀ (client : loc), iProp Σ.
 Axiom is_Client_pers : ∀ client, Persistent (is_Client client).
@@ -50,6 +35,17 @@ Axiom wp_Client__Ctx :
   {{{ is_Client client }}}
     method_call #clientv3.pkg_name' #"Client'ptr" #"Ctx" #client #()
   {{{ (ctx : context.Context.t), RET #ctx; True }}}.
+
+Axiom wp_Client__Grant :
+  ∀ client (ctx : context.Context.t) (ttl : w64),
+  {{{ is_Client client }}}
+    method_call #clientv3.pkg_name' #"Client'ptr" #"Grant"
+      #client #ctx #ttl
+  {{{
+      resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
+        RET (#resp_ptr, #err);
+        resp_ptr ↦ resp
+  }}}.
 
 End client_axioms.
 
@@ -138,6 +134,14 @@ Proof.
   wp_load.
   wp_pures.
   wp_load.
+  wp_pures.
+  wp_load.
+  wp_apply (wp_Client__Grant with "[$]").
+  iIntros "* Hresp".
+  wp_pures.
+  wp_store.
+  wp_pures.
+  wp_store.
   wp_pures.
   wp_load.
 Admitted.

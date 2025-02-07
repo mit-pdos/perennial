@@ -90,6 +90,17 @@ Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_total_le (v1 v2 : val) : PureWp True (TotalLe v1 v2) #(val_le v1 v2).
 Proof. apply (pure_exec_pure_wp O). rewrite to_val_unseal. solve_pure_exec. Qed.
 
+Definition wp_eq_val (v1 v2 : val) :
+  PureWp (is_comparable v1 ∧ is_comparable v2) (BinOp EqOp v1 v2) #(bool_decide (v1 = v2)).
+Proof.
+  apply (pure_exec_pure_wp O).
+  intros Hcomp.
+  cut (bin_op_eval EqOp v1 v2 = Some $ LitV $ LitBool $ bool_decide (v1 = v2)).
+  { rewrite to_val_unseal. solve_pure_exec. }
+  rewrite /bin_op_eval /bin_op_eval_eq /=.
+  rewrite decide_True //.
+Qed.
+
 Global Instance wp_eq `{!IntoVal V} `{!IntoValTyped V t} (v1 v2 : V) :
   PureWp (is_comparable_go_type t = true) (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)) | 0.
 Proof.

@@ -145,6 +145,7 @@ destruct a. apply Forall_cons. split.
   Proof.
     rewrite go_type_size_unseal.
     induction 1; simpl; rewrite ?to_val_unseal /=; auto.
+    - destruct i; done.
     - simpl.
       dependent induction a.
       + simpl in *. subst. done.
@@ -415,10 +416,10 @@ Program Global Instance into_val_typed_interface : IntoValTyped interface.t inte
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
 Next Obligation.
-  rewrite to_val_unseal =>[[??] [??]] [Heq ?]. subst.
-  do 2 destruct (_ : option (go_string * go_string)).
+  rewrite to_val_unseal => [x y] Heq.
+  destruct x as [|], y as [|].
   {
-    f_equal. destruct p, p0. simpl in *.
+    simpl in *.
     injection Heq as Heq1 Heq2.
     apply to_val_inj in Heq1, Heq2.
     intuition. subst. done.

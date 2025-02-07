@@ -104,9 +104,11 @@ End slice.
 Module interface.
 Section goose_lang.
   Context `{ffi_syntax}.
-  Record t := mk { v: val; opt_pkg_type_name : option (go_string*go_string) }.
 
-  Definition nil := mk #null None.
+  Inductive t :=
+  | mk (pkg_name type_name : go_string) (v : val) : t
+  | nil : t.
+
 End goose_lang.
 End interface.
 
@@ -132,13 +134,10 @@ Proof. solve_decision. Qed.
 Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
   {|
     to_val_def (i: interface.t) :=
-      InjRV (
-          match i.(interface.opt_pkg_type_name) with
-          | None => NONEV
-          | Some pkg_type_name =>
-              SOMEV (#pkg_type_name.1, #pkg_type_name.2)
-          end,
-            i.(interface.v))%V
+      match i with
+      | interface.nil => NONEV
+      | interface.mk pkg_name type_name v => SOMEV (#pkg_name, #type_name, v)%V
+      end
   |}.
 
 End instances.

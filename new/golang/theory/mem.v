@@ -71,6 +71,7 @@ Section goose_lang.
       match! goal with
       | [ v : slice.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ v : interface.t |- _ ] => let v := Control.hyp v in destruct $v
+      (* | [ v : interface.tSome |- _ ] => let v := Control.hyp v in destruct $v *)
       | [ v : func.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ v : option (go_string * go_string )|- _ ] => let v := Control.hyp v in destruct $v as [[??]|]
       | [ h : has_go_type _ _ |- _ ] => let h := Control.hyp h in (inversion_clear $h in Heq)
@@ -188,6 +189,10 @@ Section goose_lang.
     iInduction Hty as [] "IH"; subst;
     simpl; rewrite ?to_val_unseal /= ?right_id ?loc_add_0;
       try (iApply heap_pointsto_non_null; by iFrame).
+    - (* interface *)
+      destruct i;
+        simpl; rewrite ?to_val_unseal /= ?right_id ?loc_add_0;
+        try (iApply heap_pointsto_non_null; by iFrame).
     - (* array *)
       rewrite go_type_size_unseal /= in Hlen.
       destruct a as [|].
@@ -262,6 +267,7 @@ Section goose_lang.
     rewrite load_ty_unseal.
     rename l into l'.
     iInduction Hty as [] "IH" forall (l' Φ) "HΦ".
+    all: try destruct i.
     all: rewrite ?to_val_unseal /= /= ?loc_add_0 ?right_id; wp_pures.
     all: try (iApply (wp_load with "[$]"); done).
     - (* case arrayT *)
@@ -366,8 +372,8 @@ Section goose_lang.
     rename l into l'.
     rewrite store_ty_unseal.
     iInduction Hty_old as [] "IH" forall (v' Hty l' Φ) "HΦ".
-    all: inversion_clear Hty; subst; rewrite ?to_val_unseal /= ?loc_add_0 ?right_id;
-      wp_pures.
+    all: inversion_clear Hty; subst;
+      try destruct i, i0; rewrite ?to_val_unseal /= ?loc_add_0 ?right_id; wp_pures.
     all: try (wp_apply (wp_store with "[$]"); iIntros "H"; iApply "HΦ"; iFrame).
     - (* array *)
       rename a0 into a'.
