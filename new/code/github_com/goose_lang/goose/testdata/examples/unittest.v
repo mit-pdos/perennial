@@ -731,14 +731,14 @@ Definition useEmbeddedValField : val :=
 Definition useEmbeddedMethod : val :=
   rec: "useEmbeddedMethod" "d" :=
     exception_do (let: "d" := (ref_ty embedD "d") in
-    return: (((method_call #pkg_name' #"embedB" #"Foo" (![embedB] (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) #()) = ((method_call #pkg_name' #"embedA" #"Foo" (![embedA] (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))))) #()))).
+    return: (((method_call #pkg_name' #"embedD" #"Foo" (![embedD] "d")) #()) = ((method_call #pkg_name' #"embedA" #"Foo" (![embedA] (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))))) #()))).
 
 (* go: embedded.go:64:6 *)
 Definition useEmbeddedMethod2 : val :=
   rec: "useEmbeddedMethod2" "d" :=
     exception_do (let: "d" := (ref_ty embedD "d") in
-    do:  ((method_call #pkg_name' #"embedB'ptr" #"Car" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))) #());;;
-    return: (((method_call #pkg_name' #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) #()) = ((method_call #pkg_name' #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d"))))) #()))).
+    do:  ((method_call #pkg_name' #"embedD" #"Car" (![embedD] "d")) #());;;
+    return: (((method_call #pkg_name' #"embedD" #"Bar" (![embedD] "d")) #()) = ((method_call #pkg_name' #"embedB'ptr" #"Bar" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))) #()))).
 
 (* go: empty_functions.go:3:6 *)
 Definition empty : val :=
@@ -1690,7 +1690,7 @@ Definition RecursiveEmbedded : go_type := structT [
 Definition RecursiveEmbedded__recurEmbeddedMethod : val :=
   rec: "RecursiveEmbedded__recurEmbeddedMethod" "r" <> :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
-    do:  ((method_call #pkg_name' #"RecursiveEmbedded'ptr" #"recurEmbeddedMethod" (![ptrT] (struct.field_ref Other "RecursiveEmbedded" (struct.field_ref RecursiveEmbedded "Other" (![ptrT] "r"))))) #())).
+    do:  ((method_call #pkg_name' #"Other" #"recurEmbeddedMethod" (![Other] (struct.field_ref RecursiveEmbedded "Other" (![ptrT] "r")))) #())).
 
 (* go: renamedImport.go:7:6 *)
 Definition useRenamedImport : val :=
@@ -2056,7 +2056,7 @@ Definition UseAddWithLiteral : val :=
   rec: "UseAddWithLiteral" <> :=
     exception_do (let: "r" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (method_call #pkg_name' #"Point" #"Add" "Add" #() (let: "$x" := #(W64 2) in
+    (method_call #pkg_name' #"Point" #"Add" (let: "$x" := #(W64 2) in
     let: "$y" := #(W64 3) in
     struct.make Point [{
       "x" ::= "$x";

@@ -23,14 +23,6 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition RawNode : go_type := structT [
-  "raft" :: ptrT;
-  "asyncStorageWrites" :: boolT;
-  "prevSoftSt" :: ptrT;
-  "prevHardSt" :: raftpb.HardState;
-  "stepsOnAdvance" :: sliceT
-].
-
 Definition pkg_name' : go_string := "go.etcd.io/raft/v3".
 
 Definition ReadState : go_type := structT [
@@ -83,6 +75,14 @@ Definition raft : go_type := structT [
   "logger" :: Logger;
   "pendingReadIndexMessages" :: sliceT;
   "traceLogger" :: TraceLogger
+].
+
+Definition RawNode : go_type := structT [
+  "raft" :: ptrT;
+  "asyncStorageWrites" :: boolT;
+  "prevSoftSt" :: ptrT;
+  "prevHardSt" :: raftpb.HardState;
+  "stepsOnAdvance" :: sliceT
 ].
 
 Definition Peer : go_type := structT [
@@ -206,7 +206,7 @@ Definition RawNode__Bootstrap : val :=
     slice.for_range Peer "$range" (λ: "$key" "$value",
       do:  ("peer" <-[Peer] "$value");;;
       do:  "$key";;;
-      do:  (let: "$a0" := ((method_call #raftpb.pkg_name' #"ConfChange" #"AsV2" "AsV2" #() (let: "$NodeID" := (![uint64T] (struct.field_ref Peer "ID" "peer")) in
+      do:  (let: "$a0" := ((method_call #raftpb.pkg_name' #"ConfChange" #"AsV2" (let: "$NodeID" := (![uint64T] (struct.field_ref Peer "ID" "peer")) in
       let: "$Type" := raftpb.ConfChangeAddNode in
       struct.make raftpb.ConfChange [{
         "Type" ::= "$Type";
@@ -1557,8 +1557,8 @@ Definition calldepth : Z := 2.
 Definition DefaultLogger__EnableTimestamps : val :=
   rec: "DefaultLogger__EnableTimestamps" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
-    do:  (let: "$a0" := ((((method_call #log.pkg_name' #"Logger'ptr" #"Flags" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) #()) `or` #(W64 log.Ldate)) `or` #(W64 log.Ltime)) in
-    (method_call #log.pkg_name' #"Logger'ptr" #"SetFlags" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0")).
+    do:  (let: "$a0" := ((((method_call #pkg_name' #"DefaultLogger'ptr" #"Flags" (![ptrT] "l")) #()) `or` #(W64 log.Ldate)) `or` #(W64 log.Ltime)) in
+    (method_call #pkg_name' #"DefaultLogger'ptr" #"SetFlags" (![ptrT] "l")) "$a0")).
 
 (* go: logger.go:82:25 *)
 Definition DefaultLogger__EnableDebug : val :=
@@ -1579,7 +1579,7 @@ Definition DefaultLogger__Debug : val :=
       let: "$a1" := (let: "$a0" := (![sliceT] "v") in
       (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
       (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-      (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")
+      (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")
     else do:  #())).
 
 (* go: logger.go:92:25 *)
@@ -1596,7 +1596,7 @@ Definition DefaultLogger__Debugf : val :=
       let: "$a1" := (![sliceT] "v") in
       (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
       (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-      (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")
+      (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")
     else do:  #())).
 
 (* go: logger.go:98:25 *)
@@ -1609,7 +1609,7 @@ Definition DefaultLogger__Info : val :=
     let: "$a1" := (let: "$a0" := (![sliceT] "v") in
     (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
     (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")).
+    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:102:25 *)
 Definition DefaultLogger__Infof : val :=
@@ -1623,7 +1623,7 @@ Definition DefaultLogger__Infof : val :=
     let: "$a1" := (![sliceT] "v") in
     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
     (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")).
+    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:106:25 *)
 Definition DefaultLogger__Error : val :=
@@ -1635,7 +1635,7 @@ Definition DefaultLogger__Error : val :=
     let: "$a1" := (let: "$a0" := (![sliceT] "v") in
     (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
     (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")).
+    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:110:25 *)
 Definition DefaultLogger__Errorf : val :=
@@ -1649,7 +1649,7 @@ Definition DefaultLogger__Errorf : val :=
     let: "$a1" := (![sliceT] "v") in
     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
     (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")).
+    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:114:25 *)
 Definition DefaultLogger__Warning : val :=
@@ -1661,7 +1661,7 @@ Definition DefaultLogger__Warning : val :=
     let: "$a1" := (let: "$a0" := (![sliceT] "v") in
     (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
     (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")).
+    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:118:25 *)
 Definition DefaultLogger__Warningf : val :=
@@ -1675,7 +1675,7 @@ Definition DefaultLogger__Warningf : val :=
     let: "$a1" := (![sliceT] "v") in
     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
     (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")).
+    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:122:25 *)
 Definition DefaultLogger__Fatal : val :=
@@ -1687,7 +1687,7 @@ Definition DefaultLogger__Fatal : val :=
     let: "$a1" := (let: "$a0" := (![sliceT] "v") in
     (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
     (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1");;;
+    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1");;;
     do:  (let: "$a0" := #(W64 1) in
     (func_call #os.pkg_name' #"Exit"%go) "$a0")).
 
@@ -1703,7 +1703,7 @@ Definition DefaultLogger__Fatalf : val :=
     let: "$a1" := (![sliceT] "v") in
     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
     (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1");;;
+    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1");;;
     do:  (let: "$a0" := #(W64 1) in
     (func_call #os.pkg_name' #"Exit"%go) "$a0")).
 
@@ -7122,8 +7122,8 @@ Definition MemoryStorage__SetHardState : val :=
   rec: "MemoryStorage__SetHardState" "ms" "st" :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
     let: "st" := (ref_ty raftpb.HardState "st") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7142,8 +7142,8 @@ Definition MemoryStorage__Entries : val :=
     let: "maxSize" := (ref_ty uint64T "maxSize") in
     let: "hi" := (ref_ty uint64T "hi") in
     let: "lo" := (ref_ty uint64T "lo") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7186,8 +7186,8 @@ Definition MemoryStorage__Term : val :=
   rec: "MemoryStorage__Term" "ms" "i" :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
     let: "i" := (ref_ty uint64T "i") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7212,8 +7212,8 @@ Definition MemoryStorage__Term : val :=
 Definition MemoryStorage__LastIndex : val :=
   rec: "MemoryStorage__LastIndex" "ms" <> :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7235,8 +7235,8 @@ Definition MemoryStorage__lastIndex : val :=
 Definition MemoryStorage__FirstIndex : val :=
   rec: "MemoryStorage__FirstIndex" "ms" <> :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7257,8 +7257,8 @@ Definition MemoryStorage__firstIndex : val :=
 Definition MemoryStorage__Snapshot : val :=
   rec: "MemoryStorage__Snapshot" "ms" <> :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7275,8 +7275,8 @@ Definition MemoryStorage__ApplySnapshot : val :=
   rec: "MemoryStorage__ApplySnapshot" "ms" "snap" :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
     let: "snap" := (ref_ty raftpb.Snapshot "snap") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7317,8 +7317,8 @@ Definition MemoryStorage__CreateSnapshot : val :=
     let: "data" := (ref_ty sliceT "data") in
     let: "cs" := (ref_ty ptrT "cs") in
     let: "i" := (ref_ty uint64T "i") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7364,8 +7364,8 @@ Definition MemoryStorage__Compact : val :=
   rec: "MemoryStorage__Compact" "ms" "compactIndex" :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
     let: "compactIndex" := (ref_ty uint64T "compactIndex") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7418,8 +7418,8 @@ Definition MemoryStorage__Append : val :=
     slice.len "$a0") = #(W64 0)
     then return: (#interface.nil)
     else do:  #());;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" (![ptrT] "ms"))) in
+    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;

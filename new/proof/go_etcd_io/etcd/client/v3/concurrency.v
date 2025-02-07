@@ -115,7 +115,31 @@ Proof.
   iIntros "_".
 
   wp_pures.
+  wp_alloc id_ptr as "Hid_ptr".
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_store.
+  wp_pures.
+  wp_load.
 
+  (* id == clientv3.NoLease, so call `Grant` *)
+  wp_pures.
+  wp_alloc err_ptr as "Herr_ptr".
+  wp_pures.
+  wp_alloc resp_ptr as "Hresp_ptr".
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_load.
 Admitted.
 
 End proof.

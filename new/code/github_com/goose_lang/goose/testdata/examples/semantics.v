@@ -2196,7 +2196,7 @@ Definition testStructUpdates : val :=
     do:  ("ok" <-[boolT] "$r0");;;
     do:  (let: "$a0" := #(W64 4) in
     (method_call #pkg_name' #"S'ptr" #"updateBValX" (![ptrT] "ns")) "$a0");;;
-    let: "$r0" := ((![boolT] "ok") && ((struct.field_get TwoInts "x" ((method_call #pkg_name' #"S" #"readBVal" (![S] (![ptrT] "ns"))) #())) = #(W64 4))) in
+    let: "$r0" := ((![boolT] "ok") && ((struct.field_get TwoInts "x" ((method_call #pkg_name' #"S'ptr" #"readBVal" (![ptrT] "ns")) #())) = #(W64 4))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 

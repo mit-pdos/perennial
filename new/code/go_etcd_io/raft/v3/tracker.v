@@ -582,7 +582,7 @@ Definition Config__String : val :=
     then
       do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
       let: "$a1" := #" learners=%s"%go in
-      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #quorum.pkg_name' #"MajorityConfig" #"String" "String" #() (![mapT uint64T (structT [
+      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #quorum.pkg_name' #"MajorityConfig" #"String" (![mapT uint64T (structT [
       ])] (struct.field_ref Config "Learners" "c"))) #())) in
       slice.literal interfaceT ["$sl0"])) in
       (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
@@ -592,7 +592,7 @@ Definition Config__String : val :=
     then
       do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
       let: "$a1" := #" learners_next=%s"%go in
-      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #quorum.pkg_name' #"MajorityConfig" #"String" "String" #() (![mapT uint64T (structT [
+      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #quorum.pkg_name' #"MajorityConfig" #"String" (![mapT uint64T (structT [
       ])] (struct.field_ref Config "LearnersNext" "c"))) #())) in
       slice.literal interfaceT ["$sl0"])) in
       (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
@@ -709,9 +709,9 @@ Definition ProgressTracker__ConfState : val :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
     return: (let: "$Voters" := ((method_call #quorum.pkg_name' #"MajorityConfig" #"Slice" (![quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![ptrT] "p")))) #(W64 0)))) #()) in
      let: "$VotersOutgoing" := ((method_call #quorum.pkg_name' #"MajorityConfig" #"Slice" (![quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![ptrT] "p")))) #(W64 1)))) #()) in
-     let: "$Learners" := ((method_call #quorum.pkg_name' #"MajorityConfig" #"Slice" "Slice" #() (![mapT uint64T (structT [
+     let: "$Learners" := ((method_call #quorum.pkg_name' #"MajorityConfig" #"Slice" (![mapT uint64T (structT [
      ])] (struct.field_ref Config "Learners" (struct.field_ref ProgressTracker "Config" (![ptrT] "p"))))) #()) in
-     let: "$LearnersNext" := ((method_call #quorum.pkg_name' #"MajorityConfig" #"Slice" "Slice" #() (![mapT uint64T (structT [
+     let: "$LearnersNext" := ((method_call #quorum.pkg_name' #"MajorityConfig" #"Slice" (![mapT uint64T (structT [
      ])] (struct.field_ref Config "LearnersNext" (struct.field_ref ProgressTracker "Config" (![ptrT] "p"))))) #()) in
      let: "$AutoLeave" := (![boolT] (struct.field_ref Config "AutoLeave" (struct.field_ref ProgressTracker "Config" (![ptrT] "p")))) in
      struct.make raftpb.ConfState [{

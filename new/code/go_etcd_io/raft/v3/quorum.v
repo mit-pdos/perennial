@@ -75,7 +75,7 @@ Definition JointConfig__Describe : val :=
     exception_do (let: "c" := (ref_ty JointConfig "c") in
     let: "l" := (ref_ty AckedIndexer "l") in
     return: (let: "$a0" := (![AckedIndexer] "l") in
-     (method_call #pkg_name' #"MajorityConfig" #"Describe" "Describe" #() ((method_call #pkg_name' #"JointConfig" #"IDs" (![JointConfig] "c")) #())) "$a0")).
+     (method_call #pkg_name' #"MajorityConfig" #"Describe" ((method_call #pkg_name' #"JointConfig" #"IDs" (![JointConfig] "c")) #())) "$a0")).
 
 Definition Index : go_type := uint64T.
 
