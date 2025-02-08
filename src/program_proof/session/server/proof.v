@@ -10,7 +10,7 @@ From Perennial.goose_lang.lib.list Require Import list.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list.list_slice slice.typed_slice.
 
 Module Operation.
-  
+
     Lemma struct_ty_operation_unfold :
       struct.t Operation = (slice.T uint64T * (uint64T * unitT))%ht.
     Proof. reflexivity. Qed.
@@ -56,9 +56,10 @@ Section heap.
 
   #[global] Instance into_val_for_type : IntoValForType (Slice.t*u64) (struct.t Operation).
   Proof. constructor; auto. Qed.
-  
-  Definition is_operation (opv: Slice.t*u64) (q:dfrac) (op: Operation.t): iProp Σ :=
+
+  Definition is_operation (opv: Slice.t*u64) (q:dfrac) (op: Operation.t) (opv_len: nat): iProp Σ :=
     ⌜opv.2 = op.(Operation.Data)⌝ ∗
+    ⌜opv_len = length (op.(Operation.VersionVector))⌝ ∗
     own_slice opv.1 uint64T q op.(Operation.VersionVector)%I.
 
   Definition operation_slice' q (op_s: Slice.t) (op: list Operation.t): iProp Σ :=
@@ -164,10 +165,10 @@ Section heap.
   Definition coq_equalOperations (o1 : Operation.t) (o2 : Operation.t) :=
     (coq_equalSlices o1.(Operation.VersionVector) o2.(Operation.VersionVector)) && ((uint.nat o1.(Operation.Data)) =? (uint.nat (o2.(Operation.Data)))).
 
-  Lemma wp_equalOperations (opv1: Slice.t*u64) (o1: Operation.t) (opv2: Slice.t*u64) (o2: Operation.t):
+  Lemma wp_equalOperations (opv1: Slice.t*u64) (o1: Operation.t) (opv2: Slice.t*u64) (o2: Operation.t) (n: nat):
     {{{
-          is_operation opv1 (DfracOwn 1) o1 ∗
-          is_operation opv2 (DfracOwn 1) o2 
+          is_operation opv1 (DfracOwn 1) o1 n ∗
+          is_operation opv2 (DfracOwn 1) o2 n
     }}}
       equalOperations (operation_val opv1) (operation_val opv2)
       {{{ r , RET #r;
@@ -179,7 +180,7 @@ Section heap.
     wp_rec. wp_pures. rewrite /equalSlices. wp_pures.
     wp_apply wp_ref_to; auto. iIntros "%p1 Hp1". wp_pures.
     wp_apply wp_ref_to; auto. iIntros "%p2 Hp2". wp_pures.
-    iDestruct "Ho1" as "[%Heq1 Ho1]". iDestruct "Ho2" as "[%Heq2 Ho2]".
+    iDestruct "Ho1" as "(%Heq1 & %Hlen1 & Ho1)". iDestruct "Ho2" as "(%Heq2 & %Hlen2 & Ho2)".
     wp_apply (wp_slice_len with "[Ho1 Ho2 Hp1 Hp2 Hret]"). simpl.
     wp_apply wp_ref_to; auto. iIntros "%p3 Hp3". wp_pures.
     wp_forBreak_cond. wp_pures. wp_load. wp_load. wp_if_destruct.
@@ -191,9 +192,27 @@ Section heap.
         - iPureIntro. done.
       }
       iIntros "Hopv1". destruct o2 as [[ | l2_hd l2_tl] o2d]; simpl in *.
-      { wp_load. subst. admit.
+      { word. }
+      wp_load. wp_apply (wp_SliceGet with "[Ho2]").
+      { iSplitL "Ho2".
+        - iApply (own_slice_to_small with "[Ho2]"). iExact "Ho2".
+        - iPureIntro. done.
       }
-      admit.
+      iIntros "Hopv2". wp_if_destruct.
+      + wp_pures. wp_store. iModIntro. iRight. iSplitR.
+        * iPureIntro. done.
+        * wp_pures. wp_load. wp_pures. iModIntro. iApply "Hret". unfold coq_equalOperations. simpl.
+          destruct (uint.Z l1_hd =? uint.Z l2_hd) as [ | ] eqn: H_compare1.
+          { simpl. rewrite Z.eqb_eq in H_compare1. word. }
+          { simpl. iPureIntro. done. }
+      + wp_load. wp_pures. wp_store. iModIntro. iLeft. iSplitR.
+        * iPureIntro. done.
+        * iSplitL "Hopv1".
+          { admit. }
+          iSplitL "Hopv2".
+          { admit. }
+          iFrame. admit.
+    - admit.
   Admitted.
   
   Fixpoint coq_lexicographicCompare (v1 v2: list u64) : bool :=
