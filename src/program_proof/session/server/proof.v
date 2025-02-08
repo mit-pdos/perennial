@@ -89,7 +89,54 @@ Section heap.
             ⌜r = coq_getDataFromOperationLog l⌝
       }}}.
   Proof.
-  Admitted.
+    rewrite /getDataFromOperationLog. wp_pures. iIntros "%Φ Hl H1". wp_pures.
+    wp_rec. iDestruct "Hl" as "(%ops & Hs & Hl)". wp_if_destruct.
+    - wp_rec.
+      iAssert (⌜is_Some (ops !! uint.nat (w64_word_instance .(word.sub) s .(Slice.sz) (W64 1)))⌝%I) with "[Hl Hs]" as "%Hl".
+      { induction ops as [ | ? ? _] using List.rev_ind.
+        - iAssert (⌜l = []⌝)%I with "[Hl]" as "%Hl".
+          { iApply big_sepL2_nil_inv_l. iExact "Hl". }
+          subst l. simpl. iPoseProof (own_slice_sz with "[$Hs]") as "%Hs".
+          simpl in *. iPureIntro. word.
+        - iPoseProof (own_slice_sz with "[$Hs]") as "%Hs".
+          iPureIntro. red. exists x. eapply list_lookup_middle. rewrite length_app in Hs. simpl in Hs. word.
+      }
+      iAssert (⌜length ops = length l⌝)%I with "[Hl]" as "%Hlength".
+      { iApply big_sepL2_length. iExact "Hl". }
+      destruct Hl as (x & EQ).
+      wp_apply (wp_SliceGet with "[Hs] [Hl H1]").
+      + iSplitL "Hs".
+        * simpl (struct.t Operation). iApply (own_slice_to_small with "[Hs]"). iExact "Hs".
+        * iPureIntro. exact EQ.
+      + iModIntro. iIntros "Hs".
+        wp_pures. iModIntro. iApply "H1".
+        unfold coq_getDataFromOperationLog.
+        iPoseProof (own_slice_small_sz with "[$Hs]") as "%Hs".
+        induction ops as [ | ops_last ops_init _] using List.rev_ind.
+        { simpl in *. word. }
+        induction l as [ | l_last l_init _] using List.rev_ind.
+        { simpl in *. word. }
+        iPoseProof big_sepL2_snoc as "LEMMA1".  iApply "LEMMA1" in "Hl". iClear "LEMMA1".
+        iDestruct "Hl" as "[H_init H_last]". simpl in *. destruct ops_last, l_last. simpl.
+        iDestruct "H_last" as "[Ht ->]". repeat rewrite length_app. simpl.
+        iAssert (⌜uint.nat (W64 ((length l_init + 1)%nat - 1)) = length l_init⌝)%I as "%YES1".
+        { iPureIntro. do 2 rewrite app_length in Hlength. rewrite app_length in Hs. simpl in *. word. }
+        iAssert (⌜list_lookup (uint.nat (W64 ((length l_init + 1)%nat - 1))) (l_init ++ [ {| Operation.VersionVector := VersionVector; Operation.Data := Data |} ])%list = Some {| Operation.VersionVector := VersionVector; Operation.Data := Data |}⌝)%I as "%YES".
+        { iPureIntro. eapply lookup_snoc_Some. right. done. }
+        rewrite YES. simpl. iPureIntro. destruct x as [x1 x2]. simpl.
+        assert (YES2 : uint.nat (w64_word_instance .(word.sub) s .(Slice.sz) (W64 1)) = length ops_init).
+        {  do 2 rewrite app_length in Hlength. rewrite app_length in Hs. simpl in *. word. }
+        rewrite YES2 in EQ. rewrite lookup_snoc in EQ. congruence.
+    - iModIntro. iApply "H1". unfold coq_getDataFromOperationLog.
+      iAssert (⌜uint.Z (W64 0) = uint.Z s .(Slice.sz)⌝)%I as "%NIL".
+      { word. }
+      destruct l as [ | ? ?].
+      { simpl. iPureIntro. done. }
+      simpl. destruct ops as [ | ? ?].
+      { iPoseProof (big_sepL2_nil_inv_l with "[$Hl]") as "%Hl". congruence. }
+      iPoseProof (own_slice_sz with "[$Hs]") as "%Hs".
+      simpl in Hs. word.
+  Qed.
 
   Fixpoint coq_equalSlices (l1: list u64) (l2: list u64) :=
     match l1 with
@@ -106,7 +153,13 @@ Section heap.
     coq_equalSlices l1 l2 = true ->
     l1 = l2.
   Proof.
-    Admitted.
+    revert l2. induction l1 as [ | x1 l1 IH], l2 as [ | x2 l2]; simpl; intros; try congruence.
+    destruct (uint.Z x1 =? uint.Z x2) as [ | ] eqn: H_OBS; simpl in *.
+    - rewrite Z.eqb_eq in H_OBS. f_equal.
+      + word.
+      + eauto.
+    - discriminate.
+  Qed.
 
   Definition coq_equalOperations (o1 : Operation.t) (o2 : Operation.t) :=
     (coq_equalSlices o1.(Operation.VersionVector) o2.(Operation.VersionVector)) && ((uint.nat o1.(Operation.Data)) =? (uint.nat (o2.(Operation.Data)))).
@@ -121,30 +174,79 @@ Section heap.
           ⌜r = coq_equalOperations o1 o2⌝
       }}}.
   Proof.
+    rewrite /equalOperations. iIntros "%Φ [Ho1 Ho2] Hret".
+    iLöb as "IH" forall (opv1 o1 opv2 o2) "Ho1 Ho2".
+    wp_rec. wp_pures. rewrite /equalSlices. wp_pures.
+    wp_apply wp_ref_to; auto. iIntros "%p1 Hp1". wp_pures.
+    wp_apply wp_ref_to; auto. iIntros "%p2 Hp2". wp_pures.
+    iDestruct "Ho1" as "[%Heq1 Ho1]". iDestruct "Ho2" as "[%Heq2 Ho2]".
+    wp_apply (wp_slice_len with "[Ho1 Ho2 Hp1 Hp2 Hret]"). simpl.
+    wp_apply wp_ref_to; auto. iIntros "%p3 Hp3". wp_pures.
+    wp_forBreak_cond. wp_pures. wp_load. wp_load. wp_if_destruct.
+    - wp_pures. destruct o1 as [[ | l1_hd l1_tl] o1d]; simpl in *.
+      { iExFalso. iPoseProof (own_slice_sz with "[$Ho1]") as "%Hclaim1". simpl in *. word. }
+      wp_load. wp_apply (wp_SliceGet with "[Ho1]").
+      { iSplitL "Ho1".
+        - iApply (own_slice_to_small with "[Ho1]"). iExact "Ho1".
+        - iPureIntro. done.
+      }
+      iIntros "Hopv1". destruct o2 as [[ | l2_hd l2_tl] o2d]; simpl in *.
+      { wp_load. subst. admit.
+      }
+      admit.
   Admitted.
   
-  Fixpoint coq_lexiographicCompare (v1 v2: list u64) : bool :=
+  Fixpoint coq_lexicographicCompare (v1 v2: list u64) : bool :=
     match v1 with
     | [] => false 
     | cons h1 t1 => match v2 with
                     | [] => false 
                     | cons h2 t2 => if (uint.Z h1) =? (uint.Z h2) then
-                                      (coq_lexiographicCompare t1 t2) else (uint.Z h1) >? (uint.Z h2)
+                                      (coq_lexicographicCompare t1 t2) else (uint.Z h1) >? (uint.Z h2)
                     end
     end.
 
   Lemma aux0_lexiographicCompare (l1 l2 l3: list u64) :
-    coq_lexiographicCompare l2 l1 = true ->
-    coq_lexiographicCompare l3 l2 = true ->
-    coq_lexiographicCompare l3 l1 = true.
-  Proof.
-  Admitted.
+    coq_lexicographicCompare l2 l1 = true ->
+    coq_lexicographicCompare l3 l2 = true ->
+    coq_lexicographicCompare l3 l1 = true.
+  Proof with done || lia || eauto.
+    revert l1 l3; induction l2 as [ | x2 l2 IH], l1 as [ | x1 l1], l3 as [ | x3 l3]; simpl...
+    repeat lazymatch goal with
+      | [ |- context[ uint.Z ?x =? uint.Z ?y ] ] =>
+        let H_OBS := fresh in
+        destruct (uint.Z x =? uint.Z y) as [ | ] eqn: H_OBS;
+        [rewrite Z.eqb_eq in H_OBS | rewrite Z.eqb_neq in H_OBS]
+      | [ |- context[ uint.Z ?x >? uint.Z ?y ] ] =>
+        let H_OBS := fresh in
+        pose proof (H_OBS := Zgt_cases (uint.Z x) (uint.Z y));
+        destruct (uint.Z x >? uint.Z y) as [ | ]
+      | [ H : uint.Z ?x = uint.Z ?y |- _ ] =>
+        apply word.unsigned_inj in H;
+        subst
+    end...
+  Qed.
 
   Lemma aux1_lexiographicCompare (l1 l2: list u64) :
     length l1 = length l2 -> 
-    (coq_lexiographicCompare l2 l1 = false <-> coq_lexiographicCompare l1 l2 = true).
-  Proof.
-  Admitted.
+    l1 ≠ l2 ->
+    (coq_lexicographicCompare l2 l1 = false <-> coq_lexicographicCompare l1 l2 = true).
+  Proof with done || lia || congruence || eauto.
+    revert l2; induction l1 as [ | x1 l1 IH], l2 as [ | x2 l2]; simpl; intros...
+    repeat lazymatch goal with
+      | [ |- context[ uint.Z ?x =? uint.Z ?y ] ] =>
+        let H_OBS := fresh in
+        destruct (uint.Z x =? uint.Z y) as [ | ] eqn: H_OBS;
+        [rewrite Z.eqb_eq in H_OBS | rewrite Z.eqb_neq in H_OBS]
+      | [ |- context[ uint.Z ?x >? uint.Z ?y ] ] =>
+        let H_OBS := fresh in
+        pose proof (H_OBS := Zgt_cases (uint.Z x) (uint.Z y));
+        destruct (uint.Z x >? uint.Z y) as [ | ]
+      | [ H : uint.Z ?x = uint.Z ?y |- _ ] =>
+        apply word.unsigned_inj in H;
+        subst
+    end... eapply IH...
+  Qed.
 
 End heap.
 

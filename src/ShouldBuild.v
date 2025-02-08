@@ -115,3 +115,5 @@ From New.code.github_com.goose_lang.goose.testdata.examples Require unittest sem
 
 (* FIXME: add back in. *)
 (* From Perennial.program_proof.pav Require should_build. *)
+
+From Perennial.program_proof.session Require server.proof.
