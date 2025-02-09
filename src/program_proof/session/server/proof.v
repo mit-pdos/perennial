@@ -79,7 +79,7 @@ Section heap.
     | Some v => v.(Operation.Data)
     | None => 0
     end. 
-  
+
   Lemma wp_getDataFromOperationLog (s: Slice.t) (l: list Operation.t) :
     {{{
           operation_slice s l 
@@ -126,7 +126,7 @@ Section heap.
         { iPureIntro. eapply lookup_snoc_Some. right. done. }
         rewrite YES. simpl. iPureIntro. destruct x as [x1 x2]. simpl.
         assert (YES2 : uint.nat (w64_word_instance .(word.sub) s .(Slice.sz) (W64 1)) = length ops_init).
-        {  do 2 rewrite app_length in Hlength. rewrite app_length in Hs. simpl in *. word. }
+        { do 2 rewrite app_length in Hlength. rewrite app_length in Hs. simpl in *. word. }
         rewrite YES2 in EQ. rewrite lookup_snoc in EQ. congruence.
     - iModIntro. iApply "H1". unfold coq_getDataFromOperationLog.
       iAssert (⌜uint.Z (W64 0) = uint.Z s .(Slice.sz)⌝)%I as "%NIL".
@@ -165,7 +165,7 @@ Section heap.
   Definition coq_equalOperations (o1 : Operation.t) (o2 : Operation.t) :=
     (coq_equalSlices o1.(Operation.VersionVector) o2.(Operation.VersionVector)) && ((uint.nat o1.(Operation.Data)) =? (uint.nat (o2.(Operation.Data)))).
 
-  Axiom wp_equalSlices : forall (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64),
+  Hypothesis wp_equalSlices : forall (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64),
     {{{
           own_slice x uint64T (DfracOwn 1) xs ∗
           own_slice y uint64T (DfracOwn 1) ys ∗
@@ -193,7 +193,6 @@ Section heap.
       }}}.
   Proof.
     rewrite /equalOperations. iIntros "%Φ [Ho1 Ho2] Hret".
-    iLöb as "IH" forall (opv1 o1 opv2 o2) "Ho1 Ho2".
     iDestruct "Ho1" as "(%Hopv1snd & %Hlen1 & Ho1)". iDestruct "Ho2" as "(%Hopv2snd & %Hlen2 & Ho2)".
     wp_rec. wp_pures. wp_apply (wp_equalSlices with "[Ho1 Ho2]").
     { iAssert (⌜length (o1 .(Operation.VersionVector)) < 2 ^ 64⌝)%I with "[Ho1]" as "%Hlen264".
@@ -216,7 +215,7 @@ Section heap.
     - iModIntro. iApply "Hret". unfold coq_equalOperations.
       rewrite <- OBS. simpl. iPureIntro. done.
   Qed.
-  
+
   Fixpoint coq_lexicographicCompare (v1 v2: list u64) : bool :=
     match v1 with
     | [] => false 
@@ -227,46 +226,33 @@ Section heap.
                     end
     end.
 
-  Lemma aux0_lexiographicCompare (l1 l2 l3: list u64) :
+  Lemma aux0_lexicographicCompare (l1 l2 l3: list u64) :
     coq_lexicographicCompare l2 l1 = true ->
     coq_lexicographicCompare l3 l2 = true ->
     coq_lexicographicCompare l3 l1 = true.
-  Proof with done || lia || eauto.
+  Proof with done || word || eauto.
     revert l1 l3; induction l2 as [ | x2 l2 IH], l1 as [ | x1 l1], l3 as [ | x3 l3]; simpl...
-    repeat lazymatch goal with
-      | [ |- context[ uint.Z ?x =? uint.Z ?y ] ] =>
-        let H_OBS := fresh in
-        destruct (uint.Z x =? uint.Z y) as [ | ] eqn: H_OBS;
-        [rewrite Z.eqb_eq in H_OBS | rewrite Z.eqb_neq in H_OBS]
-      | [ |- context[ uint.Z ?x >? uint.Z ?y ] ] =>
-        let H_OBS := fresh in
-        pose proof (H_OBS := Zgt_cases (uint.Z x) (uint.Z y));
-        destruct (uint.Z x >? uint.Z y) as [ | ]
-      | [ H : uint.Z ?x = uint.Z ?y |- _ ] =>
-        apply word.unsigned_inj in H;
-        subst
-    end...
+    repeat
+      lazymatch goal with
+      | [ |- context[ uint.Z ?x =? uint.Z ?y ] ] => let H_OBS := fresh in destruct (uint.Z x =? uint.Z y) as [ | ] eqn: H_OBS; [rewrite Z.eqb_eq in H_OBS | rewrite Z.eqb_neq in H_OBS]
+      | [ |- context[ uint.Z ?x >? uint.Z ?y ] ] => let H_OBS := fresh in pose proof (H_OBS := Zgt_cases (uint.Z x) (uint.Z y)); destruct (uint.Z x >? uint.Z y) as [ | ]
+      | [ H : uint.Z ?x = uint.Z ?y |- _ ] => apply word.unsigned_inj in H; subst
+      end...
   Qed.
 
-  Lemma aux1_lexiographicCompare (l1 l2: list u64) :
+  Lemma aux1_lexicographicCompare (l1 l2: list u64) :
     length l1 = length l2 -> 
     l1 ≠ l2 ->
     (coq_lexicographicCompare l2 l1 = false <-> coq_lexicographicCompare l1 l2 = true).
-  Proof with done || lia || congruence || eauto.
+  Proof with done || word || eauto.
     revert l2; induction l1 as [ | x1 l1 IH], l2 as [ | x2 l2]; simpl; intros...
-    repeat lazymatch goal with
-      | [ |- context[ uint.Z ?x =? uint.Z ?y ] ] =>
-        let H_OBS := fresh in
-        destruct (uint.Z x =? uint.Z y) as [ | ] eqn: H_OBS;
-        [rewrite Z.eqb_eq in H_OBS | rewrite Z.eqb_neq in H_OBS]
-      | [ |- context[ uint.Z ?x >? uint.Z ?y ] ] =>
-        let H_OBS := fresh in
-        pose proof (H_OBS := Zgt_cases (uint.Z x) (uint.Z y));
-        destruct (uint.Z x >? uint.Z y) as [ | ]
-      | [ H : uint.Z ?x = uint.Z ?y |- _ ] =>
-        apply word.unsigned_inj in H;
-        subst
-    end... eapply IH...
+    repeat
+      lazymatch goal with
+      | [ |- context[ uint.Z ?x =? uint.Z ?y ] ] => let H := fresh in destruct (uint.Z x =? uint.Z y) as [ | ] eqn: H; [rewrite Z.eqb_eq in H | rewrite Z.eqb_neq in H]
+      | [ |- context[ uint.Z ?x >? uint.Z ?y ] ] => let H := fresh in pose proof (Zgt_cases (uint.Z x) (uint.Z y)) as H; destruct (uint.Z x >? uint.Z y) as [ | ]
+      | [ H : uint.Z ?x = uint.Z ?y |- _ ] => apply word.unsigned_inj in H; subst
+      end...
+    eapply IH; congruence.
   Qed.
 
 End heap.
