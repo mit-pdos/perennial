@@ -165,6 +165,23 @@ Section heap.
   Definition coq_equalOperations (o1 : Operation.t) (o2 : Operation.t) :=
     (coq_equalSlices o1.(Operation.VersionVector) o2.(Operation.VersionVector)) && ((uint.nat o1.(Operation.Data)) =? (uint.nat (o2.(Operation.Data)))).
 
+  Axiom wp_equalSlices : forall (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64),
+    {{{
+          own_slice x uint64T (DfracOwn 1) xs ∗
+          own_slice y uint64T (DfracOwn 1) ys ∗
+          ⌜length xs = length ys⌝ ∗
+          ⌜length xs < 2^64⌝
+    }}}
+      equalSlices x y 
+    {{{
+          r , RET #r;
+          ⌜r = coq_equalSlices xs ys⌝ ∗ 
+          own_slice x uint64T (DfracOwn 1) xs ∗
+          own_slice y uint64T (DfracOwn 1) ys ∗
+          ⌜length xs = length ys⌝ ∗
+          ⌜length xs < 2^64⌝
+    }}}.
+
   Lemma wp_equalOperations (opv1: Slice.t*u64) (o1: Operation.t) (opv2: Slice.t*u64) (o2: Operation.t) (n: nat):
     {{{
           is_operation opv1 (DfracOwn 1) o1 n ∗
@@ -177,43 +194,28 @@ Section heap.
   Proof.
     rewrite /equalOperations. iIntros "%Φ [Ho1 Ho2] Hret".
     iLöb as "IH" forall (opv1 o1 opv2 o2) "Ho1 Ho2".
-    wp_rec. wp_pures. rewrite /equalSlices. wp_pures.
-    wp_apply wp_ref_to; auto. iIntros "%p1 Hp1". wp_pures.
-    wp_apply wp_ref_to; auto. iIntros "%p2 Hp2". wp_pures.
-    iDestruct "Ho1" as "(%Heq1 & %Hlen1 & Ho1)". iDestruct "Ho2" as "(%Heq2 & %Hlen2 & Ho2)".
-    wp_apply (wp_slice_len with "[Ho1 Ho2 Hp1 Hp2 Hret]"). simpl.
-    wp_apply wp_ref_to; auto. iIntros "%p3 Hp3". wp_pures.
-    wp_forBreak_cond. wp_pures. wp_load. wp_load. wp_if_destruct.
-    - wp_pures. destruct o1 as [[ | l1_hd l1_tl] o1d]; simpl in *.
-      { iExFalso. iPoseProof (own_slice_sz with "[$Ho1]") as "%Hclaim1". simpl in *. word. }
-      wp_load. wp_apply (wp_SliceGet with "[Ho1]").
-      { iSplitL "Ho1".
-        - iApply (own_slice_to_small with "[Ho1]"). iExact "Ho1".
-        - iPureIntro. done.
-      }
-      iIntros "Hopv1". destruct o2 as [[ | l2_hd l2_tl] o2d]; simpl in *.
-      { word. }
-      wp_load. wp_apply (wp_SliceGet with "[Ho2]").
-      { iSplitL "Ho2".
-        - iApply (own_slice_to_small with "[Ho2]"). iExact "Ho2".
-        - iPureIntro. done.
-      }
-      iIntros "Hopv2". wp_if_destruct.
-      + wp_pures. wp_store. iModIntro. iRight. iSplitR.
-        * iPureIntro. done.
-        * wp_pures. wp_load. wp_pures. iModIntro. iApply "Hret". unfold coq_equalOperations. simpl.
-          destruct (uint.Z l1_hd =? uint.Z l2_hd) as [ | ] eqn: H_compare1.
-          { simpl. rewrite Z.eqb_eq in H_compare1. word. }
-          { simpl. iPureIntro. done. }
-      + wp_load. wp_pures. wp_store. iModIntro. iLeft. iSplitR.
-        * iPureIntro. done.
-        * iSplitL "Hopv1".
-          { admit. }
-          iSplitL "Hopv2".
-          { admit. }
-          iFrame. admit.
-    - admit.
-  Admitted.
+    iDestruct "Ho1" as "(%Hopv1snd & %Hlen1 & Ho1)". iDestruct "Ho2" as "(%Hopv2snd & %Hlen2 & Ho2)".
+    wp_rec. wp_pures. wp_apply (wp_equalSlices with "[Ho1 Ho2]").
+    { iAssert (⌜length (o1 .(Operation.VersionVector)) < 2 ^ 64⌝)%I with "[Ho1]" as "%Hlen264".
+      { iPoseProof (own_slice_sz with "[$Ho1]") as "%LEN". iPureIntro. word. }
+      instantiate (1 := o1.(Operation.VersionVector)). instantiate (1 := o2.(Operation.VersionVector)).
+      iFrame. iSplitL.
+      - iPureIntro. congruence.
+      - iPureIntro. done.
+    }
+    iIntros "%r (%OBS & Hopv1 & Hopv2 & %LEN1 & %LEN2)". wp_if_destruct.
+    - wp_pures. iModIntro. iApply "Hret". unfold coq_equalOperations.
+      rewrite <- OBS. simpl. rewrite Hopv1snd Hopv2snd.
+      iPureIntro. destruct (_ =? _) as [ | ] eqn: H_compare.
+      + rewrite Z.eqb_eq in H_compare.
+        assert (EQ : o1.(Operation.Data) = o2.(Operation.Data)) by word.
+        eapply bool_decide_eq_true_2. congruence.
+      + rewrite Z.eqb_neq in H_compare.
+        assert (NE : o1.(Operation.Data) ≠ o2.(Operation.Data)) by word.
+        eapply bool_decide_eq_false_2. congruence.
+    - iModIntro. iApply "Hret". unfold coq_equalOperations.
+      rewrite <- OBS. simpl. iPureIntro. done.
+  Qed.
   
   Fixpoint coq_lexicographicCompare (v1 v2: list u64) : bool :=
     match v1 with
