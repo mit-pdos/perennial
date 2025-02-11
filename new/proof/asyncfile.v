@@ -789,13 +789,8 @@ Proof.
   wp_load. wp_pures.
 
   iRename "Hmu" into "Hmu_uninit".
-
   iDestruct (struct_fields_split with "Hl") as "Hl".
-  rewrite /struct_fields /=.
-  repeat (iDestruct "Hl" as "[H1 Hl]";
-          unshelve iSpecialize ("H1" $! _ _ _ _ _ _ _); try tc_solve;
-          iNamed "H1").
-  simpl.
+  iNamed "Hl".
   wp_load.
   wp_pures. wp_store.
   iMod (typed_pointsto_persist with "Hlocal") as "#?".

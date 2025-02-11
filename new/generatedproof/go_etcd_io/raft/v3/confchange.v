@@ -16,6 +16,8 @@ Record t := mk {
 End def.
 End Changer.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Changer `{ffi_syntax}: Settable _ :=
   settable! Changer.mk < Changer.Tracker'; Changer.LastIndex' >.
@@ -36,6 +38,8 @@ Admitted.
 Global Instance into_val_struct_field_Changer_LastIndex `{ffi_syntax} : IntoValStructField "LastIndex" confchange.Changer Changer.LastIndex'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Changer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Tracker' LastIndex':
   PureWp True
     (struct.make confchange.Changer (alist_val [
@@ -45,6 +49,15 @@ Global Instance wp_struct_make_Changer `{ffi_semantics} `{!ffi_interp ffi} `{!he
     #(Changer.mk Tracker' LastIndex').
 Admitted.
 
+
+Global Instance Changer_struct_fields_split l (v : Changer.t) :
+  StructFieldsSplit l v (
+    "HTracker" ∷ l ↦s[confchange.Changer :: "Tracker"] v.(Changer.Tracker') ∗
+    "HLastIndex" ∷ l ↦s[confchange.Changer :: "LastIndex"] v.(Changer.LastIndex')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 

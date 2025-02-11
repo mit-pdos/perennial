@@ -30,6 +30,8 @@ Record t := mk {
 End def.
 End Election.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Election `{ffi_syntax}: Settable _ :=
   settable! Election.mk < Election.session'; Election.keyPrefix'; Election.leaderKey'; Election.leaderRev'; Election.leaderSession'; Election.hdr' >.
@@ -62,6 +64,8 @@ Admitted.
 Global Instance into_val_struct_field_Election_hdr `{ffi_syntax} : IntoValStructField "hdr" concurrency.Election Election.hdr'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Election `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} session' keyPrefix' leaderKey' leaderRev' leaderSession' hdr':
   PureWp True
     (struct.make concurrency.Election (alist_val [
@@ -75,6 +79,19 @@ Global Instance wp_struct_make_Election `{ffi_semantics} `{!ffi_interp ffi} `{!h
     #(Election.mk session' keyPrefix' leaderKey' leaderRev' leaderSession' hdr').
 Admitted.
 
+
+Global Instance Election_struct_fields_split l (v : Election.t) :
+  StructFieldsSplit l v (
+    "Hsession" ∷ l ↦s[concurrency.Election :: "session"] v.(Election.session') ∗
+    "HkeyPrefix" ∷ l ↦s[concurrency.Election :: "keyPrefix"] v.(Election.keyPrefix') ∗
+    "HleaderKey" ∷ l ↦s[concurrency.Election :: "leaderKey"] v.(Election.leaderKey') ∗
+    "HleaderRev" ∷ l ↦s[concurrency.Election :: "leaderRev"] v.(Election.leaderRev') ∗
+    "HleaderSession" ∷ l ↦s[concurrency.Election :: "leaderSession"] v.(Election.leaderSession') ∗
+    "Hhdr" ∷ l ↦s[concurrency.Election :: "hdr"] v.(Election.hdr')
+  ).
+Admitted.
+
+End instances.
 Module Mutex.
 Section def.
 Context `{ffi_syntax}.
@@ -88,6 +105,8 @@ Record t := mk {
 End def.
 End Mutex.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Mutex `{ffi_syntax}: Settable _ :=
   settable! Mutex.mk < Mutex.s'; Mutex.pfx'; Mutex.myKey'; Mutex.myRev'; Mutex.hdr' >.
@@ -117,6 +136,8 @@ Admitted.
 Global Instance into_val_struct_field_Mutex_hdr `{ffi_syntax} : IntoValStructField "hdr" concurrency.Mutex Mutex.hdr'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Mutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s' pfx' myKey' myRev' hdr':
   PureWp True
     (struct.make concurrency.Mutex (alist_val [
@@ -129,6 +150,18 @@ Global Instance wp_struct_make_Mutex `{ffi_semantics} `{!ffi_interp ffi} `{!heap
     #(Mutex.mk s' pfx' myKey' myRev' hdr').
 Admitted.
 
+
+Global Instance Mutex_struct_fields_split l (v : Mutex.t) :
+  StructFieldsSplit l v (
+    "Hs" ∷ l ↦s[concurrency.Mutex :: "s"] v.(Mutex.s') ∗
+    "Hpfx" ∷ l ↦s[concurrency.Mutex :: "pfx"] v.(Mutex.pfx') ∗
+    "HmyKey" ∷ l ↦s[concurrency.Mutex :: "myKey"] v.(Mutex.myKey') ∗
+    "HmyRev" ∷ l ↦s[concurrency.Mutex :: "myRev"] v.(Mutex.myRev') ∗
+    "Hhdr" ∷ l ↦s[concurrency.Mutex :: "hdr"] v.(Mutex.hdr')
+  ).
+Admitted.
+
+End instances.
 Module lockerMutex.
 Section def.
 Context `{ffi_syntax}.
@@ -138,6 +171,8 @@ Record t := mk {
 End def.
 End lockerMutex.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_lockerMutex `{ffi_syntax}: Settable _ :=
   settable! lockerMutex.mk < lockerMutex.Mutex' >.
@@ -155,6 +190,8 @@ Global Instance into_val_typed_lockerMutex `{ffi_syntax} : IntoValTyped lockerMu
 Global Instance into_val_struct_field_lockerMutex_Mutex `{ffi_syntax} : IntoValStructField "Mutex" concurrency.lockerMutex lockerMutex.Mutex'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_lockerMutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Mutex':
   PureWp True
     (struct.make concurrency.lockerMutex (alist_val [
@@ -163,6 +200,14 @@ Global Instance wp_struct_make_lockerMutex `{ffi_semantics} `{!ffi_interp ffi} `
     #(lockerMutex.mk Mutex').
 Admitted.
 
+
+Global Instance lockerMutex_struct_fields_split l (v : lockerMutex.t) :
+  StructFieldsSplit l v (
+    "HMutex" ∷ l ↦s[concurrency.lockerMutex :: "Mutex"] v.(lockerMutex.Mutex')
+  ).
+Admitted.
+
+End instances.
 Module Session.
 Section def.
 Context `{ffi_syntax}.
@@ -177,6 +222,8 @@ Record t := mk {
 End def.
 End Session.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Session `{ffi_syntax}: Settable _ :=
   settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
@@ -209,6 +256,8 @@ Admitted.
 Global Instance into_val_struct_field_Session_donec `{ffi_syntax} : IntoValStructField "donec" concurrency.Session Session.donec'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Session `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} client' opts' id' ctx' cancel' donec':
   PureWp True
     (struct.make concurrency.Session (alist_val [
@@ -222,6 +271,19 @@ Global Instance wp_struct_make_Session `{ffi_semantics} `{!ffi_interp ffi} `{!he
     #(Session.mk client' opts' id' ctx' cancel' donec').
 Admitted.
 
+
+Global Instance Session_struct_fields_split l (v : Session.t) :
+  StructFieldsSplit l v (
+    "Hclient" ∷ l ↦s[concurrency.Session :: "client"] v.(Session.client') ∗
+    "Hopts" ∷ l ↦s[concurrency.Session :: "opts"] v.(Session.opts') ∗
+    "Hid" ∷ l ↦s[concurrency.Session :: "id"] v.(Session.id') ∗
+    "Hctx" ∷ l ↦s[concurrency.Session :: "ctx"] v.(Session.ctx') ∗
+    "Hcancel" ∷ l ↦s[concurrency.Session :: "cancel"] v.(Session.cancel') ∗
+    "Hdonec" ∷ l ↦s[concurrency.Session :: "donec"] v.(Session.donec')
+  ).
+Admitted.
+
+End instances.
 Module sessionOptions.
 Section def.
 Context `{ffi_syntax}.
@@ -233,6 +295,8 @@ Record t := mk {
 End def.
 End sessionOptions.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_sessionOptions `{ffi_syntax}: Settable _ :=
   settable! sessionOptions.mk < sessionOptions.ttl'; sessionOptions.leaseID'; sessionOptions.ctx' >.
@@ -256,6 +320,8 @@ Admitted.
 Global Instance into_val_struct_field_sessionOptions_ctx `{ffi_syntax} : IntoValStructField "ctx" concurrency.sessionOptions sessionOptions.ctx'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_sessionOptions `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ttl' leaseID' ctx':
   PureWp True
     (struct.make concurrency.sessionOptions (alist_val [
@@ -266,6 +332,16 @@ Global Instance wp_struct_make_sessionOptions `{ffi_semantics} `{!ffi_interp ffi
     #(sessionOptions.mk ttl' leaseID' ctx').
 Admitted.
 
+
+Global Instance sessionOptions_struct_fields_split l (v : sessionOptions.t) :
+  StructFieldsSplit l v (
+    "Httl" ∷ l ↦s[concurrency.sessionOptions :: "ttl"] v.(sessionOptions.ttl') ∗
+    "HleaseID" ∷ l ↦s[concurrency.sessionOptions :: "leaseID"] v.(sessionOptions.leaseID') ∗
+    "Hctx" ∷ l ↦s[concurrency.sessionOptions :: "ctx"] v.(sessionOptions.ctx')
+  ).
+Admitted.
+
+End instances.
 
 Module SessionOption.
 Section def.
@@ -296,6 +372,8 @@ Record t := mk {
 End def.
 End stmError.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_stmError `{ffi_syntax}: Settable _ :=
   settable! stmError.mk < stmError.err' >.
@@ -313,6 +391,8 @@ Global Instance into_val_typed_stmError `{ffi_syntax} : IntoValTyped stmError.t 
 Global Instance into_val_struct_field_stmError_err `{ffi_syntax} : IntoValStructField "err" concurrency.stmError stmError.err'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmError `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} err':
   PureWp True
     (struct.make concurrency.stmError (alist_val [
@@ -321,6 +401,14 @@ Global Instance wp_struct_make_stmError `{ffi_semantics} `{!ffi_interp ffi} `{!h
     #(stmError.mk err').
 Admitted.
 
+
+Global Instance stmError_struct_fields_split l (v : stmError.t) :
+  StructFieldsSplit l v (
+    "Herr" ∷ l ↦s[concurrency.stmError :: "err"] v.(stmError.err')
+  ).
+Admitted.
+
+End instances.
 Module stmOptions.
 Section def.
 Context `{ffi_syntax}.
@@ -332,6 +420,8 @@ Record t := mk {
 End def.
 End stmOptions.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_stmOptions `{ffi_syntax}: Settable _ :=
   settable! stmOptions.mk < stmOptions.iso'; stmOptions.ctx'; stmOptions.prefetch' >.
@@ -355,6 +445,8 @@ Admitted.
 Global Instance into_val_struct_field_stmOptions_prefetch `{ffi_syntax} : IntoValStructField "prefetch" concurrency.stmOptions stmOptions.prefetch'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmOptions `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} iso' ctx' prefetch':
   PureWp True
     (struct.make concurrency.stmOptions (alist_val [
@@ -365,6 +457,16 @@ Global Instance wp_struct_make_stmOptions `{ffi_semantics} `{!ffi_interp ffi} `{
     #(stmOptions.mk iso' ctx' prefetch').
 Admitted.
 
+
+Global Instance stmOptions_struct_fields_split l (v : stmOptions.t) :
+  StructFieldsSplit l v (
+    "Hiso" ∷ l ↦s[concurrency.stmOptions :: "iso"] v.(stmOptions.iso') ∗
+    "Hctx" ∷ l ↦s[concurrency.stmOptions :: "ctx"] v.(stmOptions.ctx') ∗
+    "Hprefetch" ∷ l ↦s[concurrency.stmOptions :: "prefetch"] v.(stmOptions.prefetch')
+  ).
+Admitted.
+
+End instances.
 
 Module stmOption.
 Section def.
@@ -382,6 +484,8 @@ Record t := mk {
 End def.
 End stmResponse.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_stmResponse `{ffi_syntax}: Settable _ :=
   settable! stmResponse.mk < stmResponse.resp'; stmResponse.err' >.
@@ -402,6 +506,8 @@ Admitted.
 Global Instance into_val_struct_field_stmResponse_err `{ffi_syntax} : IntoValStructField "err" concurrency.stmResponse stmResponse.err'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} resp' err':
   PureWp True
     (struct.make concurrency.stmResponse (alist_val [
@@ -411,6 +517,15 @@ Global Instance wp_struct_make_stmResponse `{ffi_semantics} `{!ffi_interp ffi} `
     #(stmResponse.mk resp' err').
 Admitted.
 
+
+Global Instance stmResponse_struct_fields_split l (v : stmResponse.t) :
+  StructFieldsSplit l v (
+    "Hresp" ∷ l ↦s[concurrency.stmResponse :: "resp"] v.(stmResponse.resp') ∗
+    "Herr" ∷ l ↦s[concurrency.stmResponse :: "err"] v.(stmResponse.err')
+  ).
+Admitted.
+
+End instances.
 
 Module readSet.
 Section def.
@@ -439,6 +554,8 @@ Record t := mk {
 End def.
 End stm.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_stm `{ffi_syntax}: Settable _ :=
   settable! stm.mk < stm.client'; stm.ctx'; stm.rset'; stm.wset'; stm.getOpts'; stm.conflicts' >.
@@ -471,6 +588,8 @@ Admitted.
 Global Instance into_val_struct_field_stm_conflicts `{ffi_syntax} : IntoValStructField "conflicts" concurrency.stm stm.conflicts'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stm `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} client' ctx' rset' wset' getOpts' conflicts':
   PureWp True
     (struct.make concurrency.stm (alist_val [
@@ -484,6 +603,19 @@ Global Instance wp_struct_make_stm `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
     #(stm.mk client' ctx' rset' wset' getOpts' conflicts').
 Admitted.
 
+
+Global Instance stm_struct_fields_split l (v : stm.t) :
+  StructFieldsSplit l v (
+    "Hclient" ∷ l ↦s[concurrency.stm :: "client"] v.(stm.client') ∗
+    "Hctx" ∷ l ↦s[concurrency.stm :: "ctx"] v.(stm.ctx') ∗
+    "Hrset" ∷ l ↦s[concurrency.stm :: "rset"] v.(stm.rset') ∗
+    "Hwset" ∷ l ↦s[concurrency.stm :: "wset"] v.(stm.wset') ∗
+    "HgetOpts" ∷ l ↦s[concurrency.stm :: "getOpts"] v.(stm.getOpts') ∗
+    "Hconflicts" ∷ l ↦s[concurrency.stm :: "conflicts"] v.(stm.conflicts')
+  ).
+Admitted.
+
+End instances.
 Module stmPut.
 Section def.
 Context `{ffi_syntax}.
@@ -494,6 +626,8 @@ Record t := mk {
 End def.
 End stmPut.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_stmPut `{ffi_syntax}: Settable _ :=
   settable! stmPut.mk < stmPut.val'; stmPut.op' >.
@@ -514,6 +648,8 @@ Admitted.
 Global Instance into_val_struct_field_stmPut_op `{ffi_syntax} : IntoValStructField "op" concurrency.stmPut stmPut.op'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmPut `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} val' op':
   PureWp True
     (struct.make concurrency.stmPut (alist_val [
@@ -523,6 +659,15 @@ Global Instance wp_struct_make_stmPut `{ffi_semantics} `{!ffi_interp ffi} `{!hea
     #(stmPut.mk val' op').
 Admitted.
 
+
+Global Instance stmPut_struct_fields_split l (v : stmPut.t) :
+  StructFieldsSplit l v (
+    "Hval" ∷ l ↦s[concurrency.stmPut :: "val"] v.(stmPut.val') ∗
+    "Hop" ∷ l ↦s[concurrency.stmPut :: "op"] v.(stmPut.op')
+  ).
+Admitted.
+
+End instances.
 Module stmSerializable.
 Section def.
 Context `{ffi_syntax}.
@@ -533,6 +678,8 @@ Record t := mk {
 End def.
 End stmSerializable.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_stmSerializable `{ffi_syntax}: Settable _ :=
   settable! stmSerializable.mk < stmSerializable.stm'; stmSerializable.prefetch' >.
@@ -553,6 +700,8 @@ Admitted.
 Global Instance into_val_struct_field_stmSerializable_prefetch `{ffi_syntax} : IntoValStructField "prefetch" concurrency.stmSerializable stmSerializable.prefetch'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmSerializable `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} stm' prefetch':
   PureWp True
     (struct.make concurrency.stmSerializable (alist_val [
@@ -562,6 +711,15 @@ Global Instance wp_struct_make_stmSerializable `{ffi_semantics} `{!ffi_interp ff
     #(stmSerializable.mk stm' prefetch').
 Admitted.
 
+
+Global Instance stmSerializable_struct_fields_split l (v : stmSerializable.t) :
+  StructFieldsSplit l v (
+    "Hstm" ∷ l ↦s[concurrency.stmSerializable :: "stm"] v.(stmSerializable.stm') ∗
+    "Hprefetch" ∷ l ↦s[concurrency.stmSerializable :: "prefetch"] v.(stmSerializable.prefetch')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 
@@ -699,251 +857,251 @@ Global Instance wp_func_call_NewSTMReadCommitted :
   WpFuncCall concurrency.pkg_name' "NewSTMReadCommitted" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_Election'ptr_Campaign : 
+Global Instance wp_method_call_Election'ptr_Campaign :
   WpMethodCall concurrency.pkg_name' "Election'ptr" "Campaign" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Election'ptr_Header : 
+Global Instance wp_method_call_Election'ptr_Header :
   WpMethodCall concurrency.pkg_name' "Election'ptr" "Header" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Election'ptr_Key : 
+Global Instance wp_method_call_Election'ptr_Key :
   WpMethodCall concurrency.pkg_name' "Election'ptr" "Key" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Election'ptr_Leader : 
+Global Instance wp_method_call_Election'ptr_Leader :
   WpMethodCall concurrency.pkg_name' "Election'ptr" "Leader" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Election'ptr_Observe : 
+Global Instance wp_method_call_Election'ptr_Observe :
   WpMethodCall concurrency.pkg_name' "Election'ptr" "Observe" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Election'ptr_Proclaim : 
+Global Instance wp_method_call_Election'ptr_Proclaim :
   WpMethodCall concurrency.pkg_name' "Election'ptr" "Proclaim" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Election'ptr_Resign : 
+Global Instance wp_method_call_Election'ptr_Resign :
   WpMethodCall concurrency.pkg_name' "Election'ptr" "Resign" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Election'ptr_Rev : 
+Global Instance wp_method_call_Election'ptr_Rev :
   WpMethodCall concurrency.pkg_name' "Election'ptr" "Rev" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Election'ptr_observe : 
+Global Instance wp_method_call_Election'ptr_observe :
   WpMethodCall concurrency.pkg_name' "Election'ptr" "observe" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Mutex'ptr_Header : 
+Global Instance wp_method_call_Mutex'ptr_Header :
   WpMethodCall concurrency.pkg_name' "Mutex'ptr" "Header" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Mutex'ptr_IsOwner : 
+Global Instance wp_method_call_Mutex'ptr_IsOwner :
   WpMethodCall concurrency.pkg_name' "Mutex'ptr" "IsOwner" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Mutex'ptr_Key : 
+Global Instance wp_method_call_Mutex'ptr_Key :
   WpMethodCall concurrency.pkg_name' "Mutex'ptr" "Key" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Mutex'ptr_Lock : 
+Global Instance wp_method_call_Mutex'ptr_Lock :
   WpMethodCall concurrency.pkg_name' "Mutex'ptr" "Lock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Mutex'ptr_TryLock : 
+Global Instance wp_method_call_Mutex'ptr_TryLock :
   WpMethodCall concurrency.pkg_name' "Mutex'ptr" "TryLock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Mutex'ptr_Unlock : 
+Global Instance wp_method_call_Mutex'ptr_Unlock :
   WpMethodCall concurrency.pkg_name' "Mutex'ptr" "Unlock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Mutex'ptr_tryAcquire : 
+Global Instance wp_method_call_Mutex'ptr_tryAcquire :
   WpMethodCall concurrency.pkg_name' "Mutex'ptr" "tryAcquire" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex_Header : 
+Global Instance wp_method_call_lockerMutex_Header :
   WpMethodCall concurrency.pkg_name' "lockerMutex" "Header" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex_IsOwner : 
+Global Instance wp_method_call_lockerMutex_IsOwner :
   WpMethodCall concurrency.pkg_name' "lockerMutex" "IsOwner" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex_Key : 
+Global Instance wp_method_call_lockerMutex_Key :
   WpMethodCall concurrency.pkg_name' "lockerMutex" "Key" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex_TryLock : 
+Global Instance wp_method_call_lockerMutex_TryLock :
   WpMethodCall concurrency.pkg_name' "lockerMutex" "TryLock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex_tryAcquire : 
+Global Instance wp_method_call_lockerMutex_tryAcquire :
   WpMethodCall concurrency.pkg_name' "lockerMutex" "tryAcquire" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex'ptr_Header : 
+Global Instance wp_method_call_lockerMutex'ptr_Header :
   WpMethodCall concurrency.pkg_name' "lockerMutex'ptr" "Header" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex'ptr_IsOwner : 
+Global Instance wp_method_call_lockerMutex'ptr_IsOwner :
   WpMethodCall concurrency.pkg_name' "lockerMutex'ptr" "IsOwner" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex'ptr_Key : 
+Global Instance wp_method_call_lockerMutex'ptr_Key :
   WpMethodCall concurrency.pkg_name' "lockerMutex'ptr" "Key" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex'ptr_Lock : 
+Global Instance wp_method_call_lockerMutex'ptr_Lock :
   WpMethodCall concurrency.pkg_name' "lockerMutex'ptr" "Lock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex'ptr_TryLock : 
+Global Instance wp_method_call_lockerMutex'ptr_TryLock :
   WpMethodCall concurrency.pkg_name' "lockerMutex'ptr" "TryLock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex'ptr_Unlock : 
+Global Instance wp_method_call_lockerMutex'ptr_Unlock :
   WpMethodCall concurrency.pkg_name' "lockerMutex'ptr" "Unlock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_lockerMutex'ptr_tryAcquire : 
+Global Instance wp_method_call_lockerMutex'ptr_tryAcquire :
   WpMethodCall concurrency.pkg_name' "lockerMutex'ptr" "tryAcquire" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Session'ptr_Client : 
+Global Instance wp_method_call_Session'ptr_Client :
   WpMethodCall concurrency.pkg_name' "Session'ptr" "Client" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Session'ptr_Close : 
+Global Instance wp_method_call_Session'ptr_Close :
   WpMethodCall concurrency.pkg_name' "Session'ptr" "Close" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Session'ptr_Ctx : 
+Global Instance wp_method_call_Session'ptr_Ctx :
   WpMethodCall concurrency.pkg_name' "Session'ptr" "Ctx" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Session'ptr_Done : 
+Global Instance wp_method_call_Session'ptr_Done :
   WpMethodCall concurrency.pkg_name' "Session'ptr" "Done" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Session'ptr_Expired : 
+Global Instance wp_method_call_Session'ptr_Expired :
   WpMethodCall concurrency.pkg_name' "Session'ptr" "Expired" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Session'ptr_Lease : 
+Global Instance wp_method_call_Session'ptr_Lease :
   WpMethodCall concurrency.pkg_name' "Session'ptr" "Lease" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Session'ptr_Orphan : 
+Global Instance wp_method_call_Session'ptr_Orphan :
   WpMethodCall concurrency.pkg_name' "Session'ptr" "Orphan" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stm'ptr_Del : 
+Global Instance wp_method_call_stm'ptr_Del :
   WpMethodCall concurrency.pkg_name' "stm'ptr" "Del" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stm'ptr_Get : 
+Global Instance wp_method_call_stm'ptr_Get :
   WpMethodCall concurrency.pkg_name' "stm'ptr" "Get" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stm'ptr_Put : 
+Global Instance wp_method_call_stm'ptr_Put :
   WpMethodCall concurrency.pkg_name' "stm'ptr" "Put" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stm'ptr_Rev : 
+Global Instance wp_method_call_stm'ptr_Rev :
   WpMethodCall concurrency.pkg_name' "stm'ptr" "Rev" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stm'ptr_commit : 
+Global Instance wp_method_call_stm'ptr_commit :
   WpMethodCall concurrency.pkg_name' "stm'ptr" "commit" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stm'ptr_fetch : 
+Global Instance wp_method_call_stm'ptr_fetch :
   WpMethodCall concurrency.pkg_name' "stm'ptr" "fetch" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stm'ptr_reset : 
+Global Instance wp_method_call_stm'ptr_reset :
   WpMethodCall concurrency.pkg_name' "stm'ptr" "reset" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_readSet_add : 
+Global Instance wp_method_call_readSet_add :
   WpMethodCall concurrency.pkg_name' "readSet" "add" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_readSet_cmps : 
+Global Instance wp_method_call_readSet_cmps :
   WpMethodCall concurrency.pkg_name' "readSet" "cmps" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_readSet_first : 
+Global Instance wp_method_call_readSet_first :
   WpMethodCall concurrency.pkg_name' "readSet" "first" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_readSet'ptr_add : 
+Global Instance wp_method_call_readSet'ptr_add :
   WpMethodCall concurrency.pkg_name' "readSet'ptr" "add" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_readSet'ptr_cmps : 
+Global Instance wp_method_call_readSet'ptr_cmps :
   WpMethodCall concurrency.pkg_name' "readSet'ptr" "cmps" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_readSet'ptr_first : 
+Global Instance wp_method_call_readSet'ptr_first :
   WpMethodCall concurrency.pkg_name' "readSet'ptr" "first" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_writeSet_cmps : 
+Global Instance wp_method_call_writeSet_cmps :
   WpMethodCall concurrency.pkg_name' "writeSet" "cmps" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_writeSet_get : 
+Global Instance wp_method_call_writeSet_get :
   WpMethodCall concurrency.pkg_name' "writeSet" "get" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_writeSet_puts : 
+Global Instance wp_method_call_writeSet_puts :
   WpMethodCall concurrency.pkg_name' "writeSet" "puts" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_writeSet'ptr_cmps : 
+Global Instance wp_method_call_writeSet'ptr_cmps :
   WpMethodCall concurrency.pkg_name' "writeSet'ptr" "cmps" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_writeSet'ptr_get : 
+Global Instance wp_method_call_writeSet'ptr_get :
   WpMethodCall concurrency.pkg_name' "writeSet'ptr" "get" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_writeSet'ptr_puts : 
+Global Instance wp_method_call_writeSet'ptr_puts :
   WpMethodCall concurrency.pkg_name' "writeSet'ptr" "puts" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stmSerializable'ptr_Del : 
+Global Instance wp_method_call_stmSerializable'ptr_Del :
   WpMethodCall concurrency.pkg_name' "stmSerializable'ptr" "Del" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stmSerializable'ptr_Get : 
+Global Instance wp_method_call_stmSerializable'ptr_Get :
   WpMethodCall concurrency.pkg_name' "stmSerializable'ptr" "Get" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stmSerializable'ptr_Put : 
+Global Instance wp_method_call_stmSerializable'ptr_Put :
   WpMethodCall concurrency.pkg_name' "stmSerializable'ptr" "Put" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stmSerializable'ptr_Rev : 
+Global Instance wp_method_call_stmSerializable'ptr_Rev :
   WpMethodCall concurrency.pkg_name' "stmSerializable'ptr" "Rev" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stmSerializable'ptr_commit : 
+Global Instance wp_method_call_stmSerializable'ptr_commit :
   WpMethodCall concurrency.pkg_name' "stmSerializable'ptr" "commit" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stmSerializable'ptr_fetch : 
+Global Instance wp_method_call_stmSerializable'ptr_fetch :
   WpMethodCall concurrency.pkg_name' "stmSerializable'ptr" "fetch" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stmSerializable'ptr_gets : 
+Global Instance wp_method_call_stmSerializable'ptr_gets :
   WpMethodCall concurrency.pkg_name' "stmSerializable'ptr" "gets" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_stmSerializable'ptr_reset : 
+Global Instance wp_method_call_stmSerializable'ptr_reset :
   WpMethodCall concurrency.pkg_name' "stmSerializable'ptr" "reset" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

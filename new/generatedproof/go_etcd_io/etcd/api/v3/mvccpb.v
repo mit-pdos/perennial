@@ -29,6 +29,8 @@ Record t := mk {
 End def.
 End KeyValue.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_KeyValue `{ffi_syntax}: Settable _ :=
   settable! KeyValue.mk < KeyValue.Key'; KeyValue.CreateRevision'; KeyValue.ModRevision'; KeyValue.Version'; KeyValue.Value'; KeyValue.Lease'; KeyValue.XXX_NoUnkeyedLiteral'; KeyValue.XXX_unrecognized'; KeyValue.XXX_sizecache' >.
@@ -70,6 +72,8 @@ Admitted.
 Global Instance into_val_struct_field_KeyValue_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" mvccpb.KeyValue KeyValue.XXX_sizecache'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_KeyValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make mvccpb.KeyValue (alist_val [
@@ -86,6 +90,22 @@ Global Instance wp_struct_make_KeyValue `{ffi_semantics} `{!ffi_interp ffi} `{!h
     #(KeyValue.mk Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
+
+Global Instance KeyValue_struct_fields_split l (v : KeyValue.t) :
+  StructFieldsSplit l v (
+    "HKey" ∷ l ↦s[mvccpb.KeyValue :: "Key"] v.(KeyValue.Key') ∗
+    "HCreateRevision" ∷ l ↦s[mvccpb.KeyValue :: "CreateRevision"] v.(KeyValue.CreateRevision') ∗
+    "HModRevision" ∷ l ↦s[mvccpb.KeyValue :: "ModRevision"] v.(KeyValue.ModRevision') ∗
+    "HVersion" ∷ l ↦s[mvccpb.KeyValue :: "Version"] v.(KeyValue.Version') ∗
+    "HValue" ∷ l ↦s[mvccpb.KeyValue :: "Value"] v.(KeyValue.Value') ∗
+    "HLease" ∷ l ↦s[mvccpb.KeyValue :: "Lease"] v.(KeyValue.Lease') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[mvccpb.KeyValue :: "XXX_NoUnkeyedLiteral"] v.(KeyValue.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[mvccpb.KeyValue :: "XXX_unrecognized"] v.(KeyValue.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[mvccpb.KeyValue :: "XXX_sizecache"] v.(KeyValue.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
 Module Event.
 Section def.
 Context `{ffi_syntax}.
@@ -100,6 +120,8 @@ Record t := mk {
 End def.
 End Event.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Event `{ffi_syntax}: Settable _ :=
   settable! Event.mk < Event.Type'; Event.Kv'; Event.PrevKv'; Event.XXX_NoUnkeyedLiteral'; Event.XXX_unrecognized'; Event.XXX_sizecache' >.
@@ -132,6 +154,8 @@ Admitted.
 Global Instance into_val_struct_field_Event_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" mvccpb.Event Event.XXX_sizecache'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Event `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' Kv' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make mvccpb.Event (alist_val [
@@ -145,6 +169,19 @@ Global Instance wp_struct_make_Event `{ffi_semantics} `{!ffi_interp ffi} `{!heap
     #(Event.mk Type' Kv' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
+
+Global Instance Event_struct_fields_split l (v : Event.t) :
+  StructFieldsSplit l v (
+    "HType" ∷ l ↦s[mvccpb.Event :: "Type"] v.(Event.Type') ∗
+    "HKv" ∷ l ↦s[mvccpb.Event :: "Kv"] v.(Event.Kv') ∗
+    "HPrevKv" ∷ l ↦s[mvccpb.Event :: "PrevKv"] v.(Event.PrevKv') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[mvccpb.Event :: "XXX_NoUnkeyedLiteral"] v.(Event.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[mvccpb.Event :: "XXX_unrecognized"] v.(Event.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[mvccpb.Event :: "XXX_sizecache"] v.(Event.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 

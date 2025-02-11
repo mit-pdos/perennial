@@ -73,6 +73,8 @@ Record t := mk {
 End def.
 End LeaseGrantResponse.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_LeaseGrantResponse `{ffi_syntax}: Settable _ :=
   settable! LeaseGrantResponse.mk < LeaseGrantResponse.ResponseHeader'; LeaseGrantResponse.ID'; LeaseGrantResponse.TTL'; LeaseGrantResponse.Error' >.
@@ -99,6 +101,8 @@ Admitted.
 Global Instance into_val_struct_field_LeaseGrantResponse_Error `{ffi_syntax} : IntoValStructField "Error" clientv3.LeaseGrantResponse LeaseGrantResponse.Error'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_LeaseGrantResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseHeader' ID' TTL' Error':
   PureWp True
     (struct.make clientv3.LeaseGrantResponse (alist_val [
@@ -110,6 +114,17 @@ Global Instance wp_struct_make_LeaseGrantResponse `{ffi_semantics} `{!ffi_interp
     #(LeaseGrantResponse.mk ResponseHeader' ID' TTL' Error').
 Admitted.
 
+
+Global Instance LeaseGrantResponse_struct_fields_split l (v : LeaseGrantResponse.t) :
+  StructFieldsSplit l v (
+    "HResponseHeader" ∷ l ↦s[clientv3.LeaseGrantResponse :: "ResponseHeader"] v.(LeaseGrantResponse.ResponseHeader') ∗
+    "HID" ∷ l ↦s[clientv3.LeaseGrantResponse :: "ID"] v.(LeaseGrantResponse.ID') ∗
+    "HTTL" ∷ l ↦s[clientv3.LeaseGrantResponse :: "TTL"] v.(LeaseGrantResponse.TTL') ∗
+    "HError" ∷ l ↦s[clientv3.LeaseGrantResponse :: "Error"] v.(LeaseGrantResponse.Error')
+  ).
+Admitted.
+
+End instances.
 
 Module Lease.
 Section def.
@@ -179,6 +194,8 @@ Record t := mk {
 End def.
 End WatchResponse.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_WatchResponse `{ffi_syntax}: Settable _ :=
   settable! WatchResponse.mk < WatchResponse.Header'; WatchResponse.Events'; WatchResponse.CompactRevision'; WatchResponse.Canceled'; WatchResponse.Created'; WatchResponse.closeErr'; WatchResponse.cancelReason' >.
@@ -214,6 +231,8 @@ Admitted.
 Global Instance into_val_struct_field_WatchResponse_cancelReason `{ffi_syntax} : IntoValStructField "cancelReason" clientv3.WatchResponse WatchResponse.cancelReason'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_WatchResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Events' CompactRevision' Canceled' Created' closeErr' cancelReason':
   PureWp True
     (struct.make clientv3.WatchResponse (alist_val [
@@ -228,6 +247,20 @@ Global Instance wp_struct_make_WatchResponse `{ffi_semantics} `{!ffi_interp ffi}
     #(WatchResponse.mk Header' Events' CompactRevision' Canceled' Created' closeErr' cancelReason').
 Admitted.
 
+
+Global Instance WatchResponse_struct_fields_split l (v : WatchResponse.t) :
+  StructFieldsSplit l v (
+    "HHeader" ∷ l ↦s[clientv3.WatchResponse :: "Header"] v.(WatchResponse.Header') ∗
+    "HEvents" ∷ l ↦s[clientv3.WatchResponse :: "Events"] v.(WatchResponse.Events') ∗
+    "HCompactRevision" ∷ l ↦s[clientv3.WatchResponse :: "CompactRevision"] v.(WatchResponse.CompactRevision') ∗
+    "HCanceled" ∷ l ↦s[clientv3.WatchResponse :: "Canceled"] v.(WatchResponse.Canceled') ∗
+    "HCreated" ∷ l ↦s[clientv3.WatchResponse :: "Created"] v.(WatchResponse.Created') ∗
+    "HcloseErr" ∷ l ↦s[clientv3.WatchResponse :: "closeErr"] v.(WatchResponse.closeErr') ∗
+    "HcancelReason" ∷ l ↦s[clientv3.WatchResponse :: "cancelReason"] v.(WatchResponse.cancelReason')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 

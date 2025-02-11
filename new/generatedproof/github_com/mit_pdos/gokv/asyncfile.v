@@ -26,6 +26,8 @@ Record t := mk {
 End def.
 End AsyncFile.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_AsyncFile `{ffi_syntax}: Settable _ :=
   settable! AsyncFile.mk < AsyncFile.mu'; AsyncFile.data'; AsyncFile.filename'; AsyncFile.index'; AsyncFile.indexCond'; AsyncFile.durableIndex'; AsyncFile.durableIndexCond'; AsyncFile.closeRequested'; AsyncFile.closed'; AsyncFile.closedCond' >.
@@ -70,6 +72,8 @@ Admitted.
 Global Instance into_val_struct_field_AsyncFile_closedCond `{ffi_syntax} : IntoValStructField "closedCond" asyncfile.AsyncFile AsyncFile.closedCond'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_AsyncFile `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' data' filename' index' indexCond' durableIndex' durableIndexCond' closeRequested' closed' closedCond':
   PureWp True
     (struct.make asyncfile.AsyncFile (alist_val [
@@ -87,6 +91,23 @@ Global Instance wp_struct_make_AsyncFile `{ffi_semantics} `{!ffi_interp ffi} `{!
     #(AsyncFile.mk mu' data' filename' index' indexCond' durableIndex' durableIndexCond' closeRequested' closed' closedCond').
 Admitted.
 
+
+Global Instance AsyncFile_struct_fields_split l (v : AsyncFile.t) :
+  StructFieldsSplit l v (
+    "Hmu" ∷ l ↦s[asyncfile.AsyncFile :: "mu"] v.(AsyncFile.mu') ∗
+    "Hdata" ∷ l ↦s[asyncfile.AsyncFile :: "data"] v.(AsyncFile.data') ∗
+    "Hfilename" ∷ l ↦s[asyncfile.AsyncFile :: "filename"] v.(AsyncFile.filename') ∗
+    "Hindex" ∷ l ↦s[asyncfile.AsyncFile :: "index"] v.(AsyncFile.index') ∗
+    "HindexCond" ∷ l ↦s[asyncfile.AsyncFile :: "indexCond"] v.(AsyncFile.indexCond') ∗
+    "HdurableIndex" ∷ l ↦s[asyncfile.AsyncFile :: "durableIndex"] v.(AsyncFile.durableIndex') ∗
+    "HdurableIndexCond" ∷ l ↦s[asyncfile.AsyncFile :: "durableIndexCond"] v.(AsyncFile.durableIndexCond') ∗
+    "HcloseRequested" ∷ l ↦s[asyncfile.AsyncFile :: "closeRequested"] v.(AsyncFile.closeRequested') ∗
+    "Hclosed" ∷ l ↦s[asyncfile.AsyncFile :: "closed"] v.(AsyncFile.closed') ∗
+    "HclosedCond" ∷ l ↦s[asyncfile.AsyncFile :: "closedCond"] v.(AsyncFile.closedCond')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 
@@ -110,19 +131,19 @@ Global Instance wp_func_call_MakeAsyncFile :
   WpFuncCall asyncfile.pkg_name' "MakeAsyncFile" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_AsyncFile'ptr_Close : 
+Global Instance wp_method_call_AsyncFile'ptr_Close :
   WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "Close" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_AsyncFile'ptr_Write : 
+Global Instance wp_method_call_AsyncFile'ptr_Write :
   WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "Write" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_AsyncFile'ptr_flushThread : 
+Global Instance wp_method_call_AsyncFile'ptr_flushThread :
   WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "flushThread" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_AsyncFile'ptr_wait : 
+Global Instance wp_method_call_AsyncFile'ptr_wait :
   WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "wait" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

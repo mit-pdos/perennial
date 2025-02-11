@@ -20,6 +20,8 @@ Record t := mk {
 End def.
 End Server.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Server `{ffi_syntax}: Settable _ :=
   settable! Server.mk < Server.handlers' >.
@@ -37,6 +39,8 @@ Global Instance into_val_typed_Server `{ffi_syntax} : IntoValTyped Server.t urpc
 Global Instance into_val_struct_field_Server_handlers `{ffi_syntax} : IntoValStructField "handlers" urpc.Server Server.handlers'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} handlers':
   PureWp True
     (struct.make urpc.Server (alist_val [
@@ -45,6 +49,14 @@ Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!hea
     #(Server.mk handlers').
 Admitted.
 
+
+Global Instance Server_struct_fields_split l (v : Server.t) :
+  StructFieldsSplit l v (
+    "Hhandlers" ∷ l ↦s[urpc.Server :: "handlers"] v.(Server.handlers')
+  ).
+Admitted.
+
+End instances.
 Module Callback.
 Section def.
 Context `{ffi_syntax}.
@@ -56,6 +68,8 @@ Record t := mk {
 End def.
 End Callback.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Callback `{ffi_syntax}: Settable _ :=
   settable! Callback.mk < Callback.reply'; Callback.state'; Callback.cond' >.
@@ -79,6 +93,8 @@ Admitted.
 Global Instance into_val_struct_field_Callback_cond `{ffi_syntax} : IntoValStructField "cond" urpc.Callback Callback.cond'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Callback `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} reply' state' cond':
   PureWp True
     (struct.make urpc.Callback (alist_val [
@@ -89,6 +105,16 @@ Global Instance wp_struct_make_Callback `{ffi_semantics} `{!ffi_interp ffi} `{!h
     #(Callback.mk reply' state' cond').
 Admitted.
 
+
+Global Instance Callback_struct_fields_split l (v : Callback.t) :
+  StructFieldsSplit l v (
+    "Hreply" ∷ l ↦s[urpc.Callback :: "reply"] v.(Callback.reply') ∗
+    "Hstate" ∷ l ↦s[urpc.Callback :: "state"] v.(Callback.state') ∗
+    "Hcond" ∷ l ↦s[urpc.Callback :: "cond"] v.(Callback.cond')
+  ).
+Admitted.
+
+End instances.
 Module Client.
 Section def.
 Context `{ffi_syntax}.
@@ -101,6 +127,8 @@ Record t := mk {
 End def.
 End Client.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Client `{ffi_syntax}: Settable _ :=
   settable! Client.mk < Client.mu'; Client.conn'; Client.seq'; Client.pending' >.
@@ -127,6 +155,8 @@ Admitted.
 Global Instance into_val_struct_field_Client_pending `{ffi_syntax} : IntoValStructField "pending" urpc.Client Client.pending'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Client `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' conn' seq' pending':
   PureWp True
     (struct.make urpc.Client (alist_val [
@@ -138,6 +168,17 @@ Global Instance wp_struct_make_Client `{ffi_semantics} `{!ffi_interp ffi} `{!hea
     #(Client.mk mu' conn' seq' pending').
 Admitted.
 
+
+Global Instance Client_struct_fields_split l (v : Client.t) :
+  StructFieldsSplit l v (
+    "Hmu" ∷ l ↦s[urpc.Client :: "mu"] v.(Client.mu') ∗
+    "Hconn" ∷ l ↦s[urpc.Client :: "conn"] v.(Client.conn') ∗
+    "Hseq" ∷ l ↦s[urpc.Client :: "seq"] v.(Client.seq') ∗
+    "Hpending" ∷ l ↦s[urpc.Client :: "pending"] v.(Client.pending')
+  ).
+Admitted.
+
+End instances.
 
 Module Error.
 Section def.
@@ -176,31 +217,31 @@ Global Instance wp_func_call_MakeClient :
   WpFuncCall urpc.pkg_name' "MakeClient" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_Server'ptr_Serve : 
+Global Instance wp_method_call_Server'ptr_Serve :
   WpMethodCall urpc.pkg_name' "Server'ptr" "Serve" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Server'ptr_readThread : 
+Global Instance wp_method_call_Server'ptr_readThread :
   WpMethodCall urpc.pkg_name' "Server'ptr" "readThread" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Server'ptr_rpcHandle : 
+Global Instance wp_method_call_Server'ptr_rpcHandle :
   WpMethodCall urpc.pkg_name' "Server'ptr" "rpcHandle" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Client'ptr_Call : 
+Global Instance wp_method_call_Client'ptr_Call :
   WpMethodCall urpc.pkg_name' "Client'ptr" "Call" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Client'ptr_CallComplete : 
+Global Instance wp_method_call_Client'ptr_CallComplete :
   WpMethodCall urpc.pkg_name' "Client'ptr" "CallComplete" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Client'ptr_CallStart : 
+Global Instance wp_method_call_Client'ptr_CallStart :
   WpMethodCall urpc.pkg_name' "Client'ptr" "CallStart" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Client'ptr_replyThread : 
+Global Instance wp_method_call_Client'ptr_replyThread :
   WpMethodCall urpc.pkg_name' "Client'ptr" "replyThread" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

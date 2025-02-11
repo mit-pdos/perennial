@@ -34,6 +34,8 @@ Record t := mk {
 End def.
 End ResponseHeader.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_ResponseHeader `{ffi_syntax}: Settable _ :=
   settable! ResponseHeader.mk < ResponseHeader.ClusterId'; ResponseHeader.MemberId'; ResponseHeader.Revision'; ResponseHeader.RaftTerm'; ResponseHeader.XXX_NoUnkeyedLiteral'; ResponseHeader.XXX_unrecognized'; ResponseHeader.XXX_sizecache' >.
@@ -69,6 +71,8 @@ Admitted.
 Global Instance into_val_struct_field_ResponseHeader_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.ResponseHeader ResponseHeader.XXX_sizecache'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ResponseHeader `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClusterId' MemberId' Revision' RaftTerm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.ResponseHeader (alist_val [
@@ -83,6 +87,20 @@ Global Instance wp_struct_make_ResponseHeader `{ffi_semantics} `{!ffi_interp ffi
     #(ResponseHeader.mk ClusterId' MemberId' Revision' RaftTerm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
+
+Global Instance ResponseHeader_struct_fields_split l (v : ResponseHeader.t) :
+  StructFieldsSplit l v (
+    "HClusterId" ∷ l ↦s[etcdserverpb.ResponseHeader :: "ClusterId"] v.(ResponseHeader.ClusterId') ∗
+    "HMemberId" ∷ l ↦s[etcdserverpb.ResponseHeader :: "MemberId"] v.(ResponseHeader.MemberId') ∗
+    "HRevision" ∷ l ↦s[etcdserverpb.ResponseHeader :: "Revision"] v.(ResponseHeader.Revision') ∗
+    "HRaftTerm" ∷ l ↦s[etcdserverpb.ResponseHeader :: "RaftTerm"] v.(ResponseHeader.RaftTerm') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.ResponseHeader :: "XXX_NoUnkeyedLiteral"] v.(ResponseHeader.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.ResponseHeader :: "XXX_unrecognized"] v.(ResponseHeader.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.ResponseHeader :: "XXX_sizecache"] v.(ResponseHeader.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
 Module RangeResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -98,6 +116,8 @@ Record t := mk {
 End def.
 End RangeResponse.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_RangeResponse `{ffi_syntax}: Settable _ :=
   settable! RangeResponse.mk < RangeResponse.Header'; RangeResponse.Kvs'; RangeResponse.More'; RangeResponse.Count'; RangeResponse.XXX_NoUnkeyedLiteral'; RangeResponse.XXX_unrecognized'; RangeResponse.XXX_sizecache' >.
@@ -133,6 +153,8 @@ Admitted.
 Global Instance into_val_struct_field_RangeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.RangeResponse RangeResponse.XXX_sizecache'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_RangeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Kvs' More' Count' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.RangeResponse (alist_val [
@@ -147,6 +169,20 @@ Global Instance wp_struct_make_RangeResponse `{ffi_semantics} `{!ffi_interp ffi}
     #(RangeResponse.mk Header' Kvs' More' Count' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
+
+Global Instance RangeResponse_struct_fields_split l (v : RangeResponse.t) :
+  StructFieldsSplit l v (
+    "HHeader" ∷ l ↦s[etcdserverpb.RangeResponse :: "Header"] v.(RangeResponse.Header') ∗
+    "HKvs" ∷ l ↦s[etcdserverpb.RangeResponse :: "Kvs"] v.(RangeResponse.Kvs') ∗
+    "HMore" ∷ l ↦s[etcdserverpb.RangeResponse :: "More"] v.(RangeResponse.More') ∗
+    "HCount" ∷ l ↦s[etcdserverpb.RangeResponse :: "Count"] v.(RangeResponse.Count') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.RangeResponse :: "XXX_NoUnkeyedLiteral"] v.(RangeResponse.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.RangeResponse :: "XXX_unrecognized"] v.(RangeResponse.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.RangeResponse :: "XXX_sizecache"] v.(RangeResponse.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
 
 Module isCompare_TargetUnion.
 Section def.
@@ -170,6 +206,8 @@ Record t := mk {
 End def.
 End Compare.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Compare `{ffi_syntax}: Settable _ :=
   settable! Compare.mk < Compare.Result'; Compare.Target'; Compare.Key'; Compare.TargetUnion'; Compare.RangeEnd'; Compare.XXX_NoUnkeyedLiteral'; Compare.XXX_unrecognized'; Compare.XXX_sizecache' >.
@@ -208,6 +246,8 @@ Admitted.
 Global Instance into_val_struct_field_Compare_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.Compare Compare.XXX_sizecache'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Compare `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.Compare (alist_val [
@@ -223,6 +263,21 @@ Global Instance wp_struct_make_Compare `{ffi_semantics} `{!ffi_interp ffi} `{!he
     #(Compare.mk Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
+
+Global Instance Compare_struct_fields_split l (v : Compare.t) :
+  StructFieldsSplit l v (
+    "HResult" ∷ l ↦s[etcdserverpb.Compare :: "Result"] v.(Compare.Result') ∗
+    "HTarget" ∷ l ↦s[etcdserverpb.Compare :: "Target"] v.(Compare.Target') ∗
+    "HKey" ∷ l ↦s[etcdserverpb.Compare :: "Key"] v.(Compare.Key') ∗
+    "HTargetUnion" ∷ l ↦s[etcdserverpb.Compare :: "TargetUnion"] v.(Compare.TargetUnion') ∗
+    "HRangeEnd" ∷ l ↦s[etcdserverpb.Compare :: "RangeEnd"] v.(Compare.RangeEnd') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.Compare :: "XXX_NoUnkeyedLiteral"] v.(Compare.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.Compare :: "XXX_unrecognized"] v.(Compare.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.Compare :: "XXX_sizecache"] v.(Compare.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
 Module TxnResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -237,6 +292,8 @@ Record t := mk {
 End def.
 End TxnResponse.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_TxnResponse `{ffi_syntax}: Settable _ :=
   settable! TxnResponse.mk < TxnResponse.Header'; TxnResponse.Succeeded'; TxnResponse.Responses'; TxnResponse.XXX_NoUnkeyedLiteral'; TxnResponse.XXX_unrecognized'; TxnResponse.XXX_sizecache' >.
@@ -269,6 +326,8 @@ Admitted.
 Global Instance into_val_struct_field_TxnResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.TxnResponse TxnResponse.XXX_sizecache'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_TxnResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Succeeded' Responses' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make etcdserverpb.TxnResponse (alist_val [
@@ -282,6 +341,19 @@ Global Instance wp_struct_make_TxnResponse `{ffi_semantics} `{!ffi_interp ffi} `
     #(TxnResponse.mk Header' Succeeded' Responses' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
 Admitted.
 
+
+Global Instance TxnResponse_struct_fields_split l (v : TxnResponse.t) :
+  StructFieldsSplit l v (
+    "HHeader" ∷ l ↦s[etcdserverpb.TxnResponse :: "Header"] v.(TxnResponse.Header') ∗
+    "HSucceeded" ∷ l ↦s[etcdserverpb.TxnResponse :: "Succeeded"] v.(TxnResponse.Succeeded') ∗
+    "HResponses" ∷ l ↦s[etcdserverpb.TxnResponse :: "Responses"] v.(TxnResponse.Responses') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.TxnResponse :: "XXX_NoUnkeyedLiteral"] v.(TxnResponse.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.TxnResponse :: "XXX_unrecognized"] v.(TxnResponse.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.TxnResponse :: "XXX_sizecache"] v.(TxnResponse.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 

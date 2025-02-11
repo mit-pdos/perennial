@@ -21,6 +21,8 @@ Record t := mk {
 End def.
 End inflight.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_inflight `{ffi_syntax}: Settable _ :=
   settable! inflight.mk < inflight.index'; inflight.bytes' >.
@@ -41,6 +43,8 @@ Admitted.
 Global Instance into_val_struct_field_inflight_bytes `{ffi_syntax} : IntoValStructField "bytes" tracker.inflight inflight.bytes'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_inflight `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} index' bytes':
   PureWp True
     (struct.make tracker.inflight (alist_val [
@@ -50,6 +54,15 @@ Global Instance wp_struct_make_inflight `{ffi_semantics} `{!ffi_interp ffi} `{!h
     #(inflight.mk index' bytes').
 Admitted.
 
+
+Global Instance inflight_struct_fields_split l (v : inflight.t) :
+  StructFieldsSplit l v (
+    "Hindex" ∷ l ↦s[tracker.inflight :: "index"] v.(inflight.index') ∗
+    "Hbytes" ∷ l ↦s[tracker.inflight :: "bytes"] v.(inflight.bytes')
+  ).
+Admitted.
+
+End instances.
 Module Inflights.
 Section def.
 Context `{ffi_syntax}.
@@ -64,6 +77,8 @@ Record t := mk {
 End def.
 End Inflights.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Inflights `{ffi_syntax}: Settable _ :=
   settable! Inflights.mk < Inflights.start'; Inflights.count'; Inflights.bytes'; Inflights.size'; Inflights.maxBytes'; Inflights.buffer' >.
@@ -96,6 +111,8 @@ Admitted.
 Global Instance into_val_struct_field_Inflights_buffer `{ffi_syntax} : IntoValStructField "buffer" tracker.Inflights Inflights.buffer'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Inflights `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} start' count' bytes' size' maxBytes' buffer':
   PureWp True
     (struct.make tracker.Inflights (alist_val [
@@ -109,6 +126,19 @@ Global Instance wp_struct_make_Inflights `{ffi_semantics} `{!ffi_interp ffi} `{!
     #(Inflights.mk start' count' bytes' size' maxBytes' buffer').
 Admitted.
 
+
+Global Instance Inflights_struct_fields_split l (v : Inflights.t) :
+  StructFieldsSplit l v (
+    "Hstart" ∷ l ↦s[tracker.Inflights :: "start"] v.(Inflights.start') ∗
+    "Hcount" ∷ l ↦s[tracker.Inflights :: "count"] v.(Inflights.count') ∗
+    "Hbytes" ∷ l ↦s[tracker.Inflights :: "bytes"] v.(Inflights.bytes') ∗
+    "Hsize" ∷ l ↦s[tracker.Inflights :: "size"] v.(Inflights.size') ∗
+    "HmaxBytes" ∷ l ↦s[tracker.Inflights :: "maxBytes"] v.(Inflights.maxBytes') ∗
+    "Hbuffer" ∷ l ↦s[tracker.Inflights :: "buffer"] v.(Inflights.buffer')
+  ).
+Admitted.
+
+End instances.
 
 Module StateType.
 Section def.
@@ -133,6 +163,8 @@ Record t := mk {
 End def.
 End Progress.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Progress `{ffi_syntax}: Settable _ :=
   settable! Progress.mk < Progress.Match'; Progress.Next'; Progress.sentCommit'; Progress.State'; Progress.PendingSnapshot'; Progress.RecentActive'; Progress.MsgAppFlowPaused'; Progress.Inflights'; Progress.IsLearner' >.
@@ -174,6 +206,8 @@ Admitted.
 Global Instance into_val_struct_field_Progress_IsLearner `{ffi_syntax} : IntoValStructField "IsLearner" tracker.Progress Progress.IsLearner'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Progress `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Match' Next' sentCommit' State' PendingSnapshot' RecentActive' MsgAppFlowPaused' Inflights' IsLearner':
   PureWp True
     (struct.make tracker.Progress (alist_val [
@@ -190,6 +224,22 @@ Global Instance wp_struct_make_Progress `{ffi_semantics} `{!ffi_interp ffi} `{!h
     #(Progress.mk Match' Next' sentCommit' State' PendingSnapshot' RecentActive' MsgAppFlowPaused' Inflights' IsLearner').
 Admitted.
 
+
+Global Instance Progress_struct_fields_split l (v : Progress.t) :
+  StructFieldsSplit l v (
+    "HMatch" ∷ l ↦s[tracker.Progress :: "Match"] v.(Progress.Match') ∗
+    "HNext" ∷ l ↦s[tracker.Progress :: "Next"] v.(Progress.Next') ∗
+    "HsentCommit" ∷ l ↦s[tracker.Progress :: "sentCommit"] v.(Progress.sentCommit') ∗
+    "HState" ∷ l ↦s[tracker.Progress :: "State"] v.(Progress.State') ∗
+    "HPendingSnapshot" ∷ l ↦s[tracker.Progress :: "PendingSnapshot"] v.(Progress.PendingSnapshot') ∗
+    "HRecentActive" ∷ l ↦s[tracker.Progress :: "RecentActive"] v.(Progress.RecentActive') ∗
+    "HMsgAppFlowPaused" ∷ l ↦s[tracker.Progress :: "MsgAppFlowPaused"] v.(Progress.MsgAppFlowPaused') ∗
+    "HInflights" ∷ l ↦s[tracker.Progress :: "Inflights"] v.(Progress.Inflights') ∗
+    "HIsLearner" ∷ l ↦s[tracker.Progress :: "IsLearner"] v.(Progress.IsLearner')
+  ).
+Admitted.
+
+End instances.
 
 Module ProgressMap.
 Section def.
@@ -209,6 +259,8 @@ Record t := mk {
 End def.
 End Config.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Config `{ffi_syntax}: Settable _ :=
   settable! Config.mk < Config.Voters'; Config.AutoLeave'; Config.Learners'; Config.LearnersNext' >.
@@ -235,6 +287,8 @@ Admitted.
 Global Instance into_val_struct_field_Config_LearnersNext `{ffi_syntax} : IntoValStructField "LearnersNext" tracker.Config Config.LearnersNext'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Voters' AutoLeave' Learners' LearnersNext':
   PureWp True
     (struct.make tracker.Config (alist_val [
@@ -246,6 +300,17 @@ Global Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!hea
     #(Config.mk Voters' AutoLeave' Learners' LearnersNext').
 Admitted.
 
+
+Global Instance Config_struct_fields_split l (v : Config.t) :
+  StructFieldsSplit l v (
+    "HVoters" ∷ l ↦s[tracker.Config :: "Voters"] v.(Config.Voters') ∗
+    "HAutoLeave" ∷ l ↦s[tracker.Config :: "AutoLeave"] v.(Config.AutoLeave') ∗
+    "HLearners" ∷ l ↦s[tracker.Config :: "Learners"] v.(Config.Learners') ∗
+    "HLearnersNext" ∷ l ↦s[tracker.Config :: "LearnersNext"] v.(Config.LearnersNext')
+  ).
+Admitted.
+
+End instances.
 Module ProgressTracker.
 Section def.
 Context `{ffi_syntax}.
@@ -259,6 +324,8 @@ Record t := mk {
 End def.
 End ProgressTracker.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_ProgressTracker `{ffi_syntax}: Settable _ :=
   settable! ProgressTracker.mk < ProgressTracker.Config'; ProgressTracker.Progress'; ProgressTracker.Votes'; ProgressTracker.MaxInflight'; ProgressTracker.MaxInflightBytes' >.
@@ -288,6 +355,8 @@ Admitted.
 Global Instance into_val_struct_field_ProgressTracker_MaxInflightBytes `{ffi_syntax} : IntoValStructField "MaxInflightBytes" tracker.ProgressTracker ProgressTracker.MaxInflightBytes'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ProgressTracker `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Config' Progress' Votes' MaxInflight' MaxInflightBytes':
   PureWp True
     (struct.make tracker.ProgressTracker (alist_val [
@@ -300,6 +369,18 @@ Global Instance wp_struct_make_ProgressTracker `{ffi_semantics} `{!ffi_interp ff
     #(ProgressTracker.mk Config' Progress' Votes' MaxInflight' MaxInflightBytes').
 Admitted.
 
+
+Global Instance ProgressTracker_struct_fields_split l (v : ProgressTracker.t) :
+  StructFieldsSplit l v (
+    "HConfig" ∷ l ↦s[tracker.ProgressTracker :: "Config"] v.(ProgressTracker.Config') ∗
+    "HProgress" ∷ l ↦s[tracker.ProgressTracker :: "Progress"] v.(ProgressTracker.Progress') ∗
+    "HVotes" ∷ l ↦s[tracker.ProgressTracker :: "Votes"] v.(ProgressTracker.Votes') ∗
+    "HMaxInflight" ∷ l ↦s[tracker.ProgressTracker :: "MaxInflight"] v.(ProgressTracker.MaxInflight') ∗
+    "HMaxInflightBytes" ∷ l ↦s[tracker.ProgressTracker :: "MaxInflightBytes"] v.(ProgressTracker.MaxInflightBytes')
+  ).
+Admitted.
+
+End instances.
 
 Module matchAckIndexer.
 Section def.
@@ -340,163 +421,163 @@ Global Instance wp_func_call_MakeProgressTracker :
   WpFuncCall tracker.pkg_name' "MakeProgressTracker" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_Inflights'ptr_Add : 
+Global Instance wp_method_call_Inflights'ptr_Add :
   WpMethodCall tracker.pkg_name' "Inflights'ptr" "Add" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Inflights'ptr_Clone : 
+Global Instance wp_method_call_Inflights'ptr_Clone :
   WpMethodCall tracker.pkg_name' "Inflights'ptr" "Clone" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Inflights'ptr_Count : 
+Global Instance wp_method_call_Inflights'ptr_Count :
   WpMethodCall tracker.pkg_name' "Inflights'ptr" "Count" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Inflights'ptr_FreeLE : 
+Global Instance wp_method_call_Inflights'ptr_FreeLE :
   WpMethodCall tracker.pkg_name' "Inflights'ptr" "FreeLE" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Inflights'ptr_Full : 
+Global Instance wp_method_call_Inflights'ptr_Full :
   WpMethodCall tracker.pkg_name' "Inflights'ptr" "Full" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Inflights'ptr_grow : 
+Global Instance wp_method_call_Inflights'ptr_grow :
   WpMethodCall tracker.pkg_name' "Inflights'ptr" "grow" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Inflights'ptr_reset : 
+Global Instance wp_method_call_Inflights'ptr_reset :
   WpMethodCall tracker.pkg_name' "Inflights'ptr" "reset" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_BecomeProbe : 
+Global Instance wp_method_call_Progress'ptr_BecomeProbe :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "BecomeProbe" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_BecomeReplicate : 
+Global Instance wp_method_call_Progress'ptr_BecomeReplicate :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "BecomeReplicate" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_BecomeSnapshot : 
+Global Instance wp_method_call_Progress'ptr_BecomeSnapshot :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "BecomeSnapshot" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_CanBumpCommit : 
+Global Instance wp_method_call_Progress'ptr_CanBumpCommit :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "CanBumpCommit" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_IsPaused : 
+Global Instance wp_method_call_Progress'ptr_IsPaused :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "IsPaused" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_MaybeDecrTo : 
+Global Instance wp_method_call_Progress'ptr_MaybeDecrTo :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "MaybeDecrTo" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_MaybeUpdate : 
+Global Instance wp_method_call_Progress'ptr_MaybeUpdate :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "MaybeUpdate" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_ResetState : 
+Global Instance wp_method_call_Progress'ptr_ResetState :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "ResetState" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_SentCommit : 
+Global Instance wp_method_call_Progress'ptr_SentCommit :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "SentCommit" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_SentEntries : 
+Global Instance wp_method_call_Progress'ptr_SentEntries :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "SentEntries" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Progress'ptr_String : 
+Global Instance wp_method_call_Progress'ptr_String :
   WpMethodCall tracker.pkg_name' "Progress'ptr" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressMap_String : 
+Global Instance wp_method_call_ProgressMap_String :
   WpMethodCall tracker.pkg_name' "ProgressMap" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressMap'ptr_String : 
+Global Instance wp_method_call_ProgressMap'ptr_String :
   WpMethodCall tracker.pkg_name' "ProgressMap'ptr" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_StateType_String : 
+Global Instance wp_method_call_StateType_String :
   WpMethodCall tracker.pkg_name' "StateType" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_StateType'ptr_String : 
+Global Instance wp_method_call_StateType'ptr_String :
   WpMethodCall tracker.pkg_name' "StateType'ptr" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Config_String : 
+Global Instance wp_method_call_Config_String :
   WpMethodCall tracker.pkg_name' "Config" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Config'ptr_Clone : 
+Global Instance wp_method_call_Config'ptr_Clone :
   WpMethodCall tracker.pkg_name' "Config'ptr" "Clone" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Config'ptr_String : 
+Global Instance wp_method_call_Config'ptr_String :
   WpMethodCall tracker.pkg_name' "Config'ptr" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker_String : 
+Global Instance wp_method_call_ProgressTracker_String :
   WpMethodCall tracker.pkg_name' "ProgressTracker" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_Clone : 
+Global Instance wp_method_call_ProgressTracker'ptr_Clone :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "Clone" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_Committed : 
+Global Instance wp_method_call_ProgressTracker'ptr_Committed :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "Committed" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_ConfState : 
+Global Instance wp_method_call_ProgressTracker'ptr_ConfState :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "ConfState" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_IsSingleton : 
+Global Instance wp_method_call_ProgressTracker'ptr_IsSingleton :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "IsSingleton" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_LearnerNodes : 
+Global Instance wp_method_call_ProgressTracker'ptr_LearnerNodes :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "LearnerNodes" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_QuorumActive : 
+Global Instance wp_method_call_ProgressTracker'ptr_QuorumActive :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "QuorumActive" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_RecordVote : 
+Global Instance wp_method_call_ProgressTracker'ptr_RecordVote :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "RecordVote" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_ResetVotes : 
+Global Instance wp_method_call_ProgressTracker'ptr_ResetVotes :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "ResetVotes" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_String : 
+Global Instance wp_method_call_ProgressTracker'ptr_String :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_TallyVotes : 
+Global Instance wp_method_call_ProgressTracker'ptr_TallyVotes :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "TallyVotes" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_Visit : 
+Global Instance wp_method_call_ProgressTracker'ptr_Visit :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "Visit" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ProgressTracker'ptr_VoterNodes : 
+Global Instance wp_method_call_ProgressTracker'ptr_VoterNodes :
   WpMethodCall tracker.pkg_name' "ProgressTracker'ptr" "VoterNodes" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_matchAckIndexer_AckedIndex : 
+Global Instance wp_method_call_matchAckIndexer_AckedIndex :
   WpMethodCall tracker.pkg_name' "matchAckIndexer" "AckedIndex" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_matchAckIndexer'ptr_AckedIndex : 
+Global Instance wp_method_call_matchAckIndexer'ptr_AckedIndex :
   WpMethodCall tracker.pkg_name' "matchAckIndexer'ptr" "AckedIndex" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

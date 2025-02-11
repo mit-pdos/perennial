@@ -21,6 +21,8 @@ Record t := mk {
 End def.
 End ReconnectingClient.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_ReconnectingClient `{ffi_syntax}: Settable _ :=
   settable! ReconnectingClient.mk < ReconnectingClient.mu'; ReconnectingClient.valid'; ReconnectingClient.urpcCl'; ReconnectingClient.addr' >.
@@ -47,6 +49,8 @@ Admitted.
 Global Instance into_val_struct_field_ReconnectingClient_addr `{ffi_syntax} : IntoValStructField "addr" reconnectclient.ReconnectingClient ReconnectingClient.addr'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ReconnectingClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' valid' urpcCl' addr':
   PureWp True
     (struct.make reconnectclient.ReconnectingClient (alist_val [
@@ -58,6 +62,17 @@ Global Instance wp_struct_make_ReconnectingClient `{ffi_semantics} `{!ffi_interp
     #(ReconnectingClient.mk mu' valid' urpcCl' addr').
 Admitted.
 
+
+Global Instance ReconnectingClient_struct_fields_split l (v : ReconnectingClient.t) :
+  StructFieldsSplit l v (
+    "Hmu" ∷ l ↦s[reconnectclient.ReconnectingClient :: "mu"] v.(ReconnectingClient.mu') ∗
+    "Hvalid" ∷ l ↦s[reconnectclient.ReconnectingClient :: "valid"] v.(ReconnectingClient.valid') ∗
+    "HurpcCl" ∷ l ↦s[reconnectclient.ReconnectingClient :: "urpcCl"] v.(ReconnectingClient.urpcCl') ∗
+    "Haddr" ∷ l ↦s[reconnectclient.ReconnectingClient :: "addr"] v.(ReconnectingClient.addr')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 
@@ -81,11 +96,11 @@ Global Instance wp_func_call_MakeReconnectingClient :
   WpFuncCall reconnectclient.pkg_name' "MakeReconnectingClient" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_ReconnectingClient'ptr_Call : 
+Global Instance wp_method_call_ReconnectingClient'ptr_Call :
   WpMethodCall reconnectclient.pkg_name' "ReconnectingClient'ptr" "Call" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ReconnectingClient'ptr_getClient : 
+Global Instance wp_method_call_ReconnectingClient'ptr_getClient :
   WpMethodCall reconnectclient.pkg_name' "ReconnectingClient'ptr" "getClient" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

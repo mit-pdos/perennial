@@ -19,6 +19,8 @@ Record t := mk {
 End def.
 End cacheValue.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_cacheValue `{ffi_syntax}: Settable _ :=
   settable! cacheValue.mk < cacheValue.v'; cacheValue.l' >.
@@ -39,6 +41,8 @@ Admitted.
 Global Instance into_val_struct_field_cacheValue_l `{ffi_syntax} : IntoValStructField "l" cachekv.cacheValue cacheValue.l'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_cacheValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} v' l':
   PureWp True
     (struct.make cachekv.cacheValue (alist_val [
@@ -48,6 +52,15 @@ Global Instance wp_struct_make_cacheValue `{ffi_semantics} `{!ffi_interp ffi} `{
     #(cacheValue.mk v' l').
 Admitted.
 
+
+Global Instance cacheValue_struct_fields_split l (v : cacheValue.t) :
+  StructFieldsSplit l v (
+    "Hv" ∷ l ↦s[cachekv.cacheValue :: "v"] v.(cacheValue.v') ∗
+    "Hl" ∷ l ↦s[cachekv.cacheValue :: "l"] v.(cacheValue.l')
+  ).
+Admitted.
+
+End instances.
 Module CacheKv.
 Section def.
 Context `{ffi_syntax}.
@@ -59,6 +72,8 @@ Record t := mk {
 End def.
 End CacheKv.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_CacheKv `{ffi_syntax}: Settable _ :=
   settable! CacheKv.mk < CacheKv.kv'; CacheKv.mu'; CacheKv.cache' >.
@@ -82,6 +97,8 @@ Admitted.
 Global Instance into_val_struct_field_CacheKv_cache `{ffi_syntax} : IntoValStructField "cache" cachekv.CacheKv CacheKv.cache'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_CacheKv `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv' mu' cache':
   PureWp True
     (struct.make cachekv.CacheKv (alist_val [
@@ -92,6 +109,16 @@ Global Instance wp_struct_make_CacheKv `{ffi_semantics} `{!ffi_interp ffi} `{!he
     #(CacheKv.mk kv' mu' cache').
 Admitted.
 
+
+Global Instance CacheKv_struct_fields_split l (v : CacheKv.t) :
+  StructFieldsSplit l v (
+    "Hkv" ∷ l ↦s[cachekv.CacheKv :: "kv"] v.(CacheKv.kv') ∗
+    "Hmu" ∷ l ↦s[cachekv.CacheKv :: "mu"] v.(CacheKv.mu') ∗
+    "Hcache" ∷ l ↦s[cachekv.CacheKv :: "cache"] v.(CacheKv.cache')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 
@@ -127,15 +154,15 @@ Global Instance wp_func_call_Make :
   WpFuncCall cachekv.pkg_name' "Make" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_CacheKv'ptr_Get : 
+Global Instance wp_method_call_CacheKv'ptr_Get :
   WpMethodCall cachekv.pkg_name' "CacheKv'ptr" "Get" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_CacheKv'ptr_GetAndCache : 
+Global Instance wp_method_call_CacheKv'ptr_GetAndCache :
   WpMethodCall cachekv.pkg_name' "CacheKv'ptr" "GetAndCache" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_CacheKv'ptr_Put : 
+Global Instance wp_method_call_CacheKv'ptr_Put :
   WpMethodCall cachekv.pkg_name' "CacheKv'ptr" "Put" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

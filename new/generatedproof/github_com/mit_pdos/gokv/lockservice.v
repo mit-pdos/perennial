@@ -15,6 +15,8 @@ Record t := mk {
 End def.
 End LockClerk.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_LockClerk `{ffi_syntax}: Settable _ :=
   settable! LockClerk.mk < LockClerk.kv' >.
@@ -32,6 +34,8 @@ Global Instance into_val_typed_LockClerk `{ffi_syntax} : IntoValTyped LockClerk.
 Global Instance into_val_struct_field_LockClerk_kv `{ffi_syntax} : IntoValStructField "kv" lockservice.LockClerk LockClerk.kv'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_LockClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv':
   PureWp True
     (struct.make lockservice.LockClerk (alist_val [
@@ -40,6 +44,14 @@ Global Instance wp_struct_make_LockClerk `{ffi_semantics} `{!ffi_interp ffi} `{!
     #(LockClerk.mk kv').
 Admitted.
 
+
+Global Instance LockClerk_struct_fields_split l (v : LockClerk.t) :
+  StructFieldsSplit l v (
+    "Hkv" ∷ l ↦s[lockservice.LockClerk :: "kv"] v.(LockClerk.kv')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 
@@ -63,11 +75,11 @@ Global Instance wp_func_call_MakeLockClerk :
   WpFuncCall lockservice.pkg_name' "MakeLockClerk" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_LockClerk'ptr_Lock : 
+Global Instance wp_method_call_LockClerk'ptr_Lock :
   WpMethodCall lockservice.pkg_name' "LockClerk'ptr" "Lock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_LockClerk'ptr_Unlock : 
+Global Instance wp_method_call_LockClerk'ptr_Unlock :
   WpMethodCall lockservice.pkg_name' "LockClerk'ptr" "Unlock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

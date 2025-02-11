@@ -15,6 +15,8 @@ Record t := mk {
 End def.
 End Builder.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Builder `{ffi_syntax}: Settable _ :=
   settable! Builder.mk < Builder.addr'; Builder.buf' >.
@@ -35,6 +37,8 @@ Admitted.
 Global Instance into_val_struct_field_Builder_buf `{ffi_syntax} : IntoValStructField "buf" strings.Builder Builder.buf'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Builder `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} addr' buf':
   PureWp True
     (struct.make strings.Builder (alist_val [
@@ -44,6 +48,15 @@ Global Instance wp_struct_make_Builder `{ffi_semantics} `{!ffi_interp ffi} `{!he
     #(Builder.mk addr' buf').
 Admitted.
 
+
+Global Instance Builder_struct_fields_split l (v : Builder.t) :
+  StructFieldsSplit l v (
+    "Haddr" ∷ l ↦s[strings.Builder :: "addr"] v.(Builder.addr') ∗
+    "Hbuf" ∷ l ↦s[strings.Builder :: "buf"] v.(Builder.buf')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 

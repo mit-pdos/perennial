@@ -20,6 +20,8 @@ Record t := mk {
 End def.
 End BankClerk.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_BankClerk `{ffi_syntax}: Settable _ :=
   settable! BankClerk.mk < BankClerk.lck'; BankClerk.kvck'; BankClerk.accts' >.
@@ -43,6 +45,8 @@ Admitted.
 Global Instance into_val_struct_field_BankClerk_accts `{ffi_syntax} : IntoValStructField "accts" bank.BankClerk BankClerk.accts'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_BankClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} lck' kvck' accts':
   PureWp True
     (struct.make bank.BankClerk (alist_val [
@@ -53,6 +57,16 @@ Global Instance wp_struct_make_BankClerk `{ffi_semantics} `{!ffi_interp ffi} `{!
     #(BankClerk.mk lck' kvck' accts').
 Admitted.
 
+
+Global Instance BankClerk_struct_fields_split l (v : BankClerk.t) :
+  StructFieldsSplit l v (
+    "Hlck" ∷ l ↦s[bank.BankClerk :: "lck"] v.(BankClerk.lck') ∗
+    "Hkvck" ∷ l ↦s[bank.BankClerk :: "kvck"] v.(BankClerk.kvck') ∗
+    "Haccts" ∷ l ↦s[bank.BankClerk :: "accts"] v.(BankClerk.accts')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 
@@ -100,19 +114,19 @@ Global Instance wp_func_call_MakeBankClerk :
   WpFuncCall bank.pkg_name' "MakeBankClerk" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_BankClerk'ptr_SimpleAudit : 
+Global Instance wp_method_call_BankClerk'ptr_SimpleAudit :
   WpMethodCall bank.pkg_name' "BankClerk'ptr" "SimpleAudit" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_BankClerk'ptr_SimpleTransfer : 
+Global Instance wp_method_call_BankClerk'ptr_SimpleTransfer :
   WpMethodCall bank.pkg_name' "BankClerk'ptr" "SimpleTransfer" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_BankClerk'ptr_get_total : 
+Global Instance wp_method_call_BankClerk'ptr_get_total :
   WpMethodCall bank.pkg_name' "BankClerk'ptr" "get_total" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_BankClerk'ptr_transfer_internal : 
+Global Instance wp_method_call_BankClerk'ptr_transfer_internal :
   WpMethodCall bank.pkg_name' "BankClerk'ptr" "transfer_internal" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

@@ -16,6 +16,8 @@ Record t := mk {
 End def.
 End unit.
 
+Section instances.
+Context `{ffi_syntax}.
 Global Instance into_val_unit `{ffi_syntax} : IntoVal unit.t.
 Admitted.
 
@@ -27,6 +29,8 @@ Global Instance into_val_typed_unit `{ffi_syntax} : IntoValTyped unit.t semantic
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_unit `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
     (struct.make semantics.unit (alist_val [
@@ -34,6 +38,8 @@ Global Instance wp_struct_make_unit `{ffi_semantics} `{!ffi_interp ffi} `{!heapG
     #(unit.mk).
 Admitted.
 
+
+End instances.
 
 Module AdderType.
 Section def.
@@ -57,6 +63,8 @@ Record t := mk {
 End def.
 End Enc.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Enc `{ffi_syntax}: Settable _ :=
   settable! Enc.mk < Enc.p' >.
@@ -74,6 +82,8 @@ Global Instance into_val_typed_Enc `{ffi_syntax} : IntoValTyped Enc.t semantics.
 Global Instance into_val_struct_field_Enc_p `{ffi_syntax} : IntoValStructField "p" semantics.Enc Enc.p'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Enc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p':
   PureWp True
     (struct.make semantics.Enc (alist_val [
@@ -82,6 +92,14 @@ Global Instance wp_struct_make_Enc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
     #(Enc.mk p').
 Admitted.
 
+
+Global Instance Enc_struct_fields_split l (v : Enc.t) :
+  StructFieldsSplit l v (
+    "Hp" ∷ l ↦s[semantics.Enc :: "p"] v.(Enc.p')
+  ).
+Admitted.
+
+End instances.
 Module Dec.
 Section def.
 Context `{ffi_syntax}.
@@ -91,6 +109,8 @@ Record t := mk {
 End def.
 End Dec.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Dec `{ffi_syntax}: Settable _ :=
   settable! Dec.mk < Dec.p' >.
@@ -108,6 +128,8 @@ Global Instance into_val_typed_Dec `{ffi_syntax} : IntoValTyped Dec.t semantics.
 Global Instance into_val_struct_field_Dec_p `{ffi_syntax} : IntoValStructField "p" semantics.Dec Dec.p'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Dec `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p':
   PureWp True
     (struct.make semantics.Dec (alist_val [
@@ -116,6 +138,14 @@ Global Instance wp_struct_make_Dec `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
     #(Dec.mk p').
 Admitted.
 
+
+Global Instance Dec_struct_fields_split l (v : Dec.t) :
+  StructFieldsSplit l v (
+    "Hp" ∷ l ↦s[semantics.Dec :: "p"] v.(Dec.p')
+  ).
+Admitted.
+
+End instances.
 Module Editor.
 Section def.
 Context `{ffi_syntax}.
@@ -126,6 +156,8 @@ Record t := mk {
 End def.
 End Editor.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Editor `{ffi_syntax}: Settable _ :=
   settable! Editor.mk < Editor.s'; Editor.next_val' >.
@@ -146,6 +178,8 @@ Admitted.
 Global Instance into_val_struct_field_Editor_next_val `{ffi_syntax} : IntoValStructField "next_val" semantics.Editor Editor.next_val'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Editor `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s' next_val':
   PureWp True
     (struct.make semantics.Editor (alist_val [
@@ -155,6 +189,15 @@ Global Instance wp_struct_make_Editor `{ffi_semantics} `{!ffi_interp ffi} `{!hea
     #(Editor.mk s' next_val').
 Admitted.
 
+
+Global Instance Editor_struct_fields_split l (v : Editor.t) :
+  StructFieldsSplit l v (
+    "Hs" ∷ l ↦s[semantics.Editor :: "s"] v.(Editor.s') ∗
+    "Hnext_val" ∷ l ↦s[semantics.Editor :: "next_val"] v.(Editor.next_val')
+  ).
+Admitted.
+
+End instances.
 Module Pair.
 Section def.
 Context `{ffi_syntax}.
@@ -165,6 +208,8 @@ Record t := mk {
 End def.
 End Pair.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Pair `{ffi_syntax}: Settable _ :=
   settable! Pair.mk < Pair.x'; Pair.y' >.
@@ -185,6 +230,8 @@ Admitted.
 Global Instance into_val_struct_field_Pair_y `{ffi_syntax} : IntoValStructField "y" semantics.Pair Pair.y'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Pair `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x' y':
   PureWp True
     (struct.make semantics.Pair (alist_val [
@@ -194,6 +241,15 @@ Global Instance wp_struct_make_Pair `{ffi_semantics} `{!ffi_interp ffi} `{!heapG
     #(Pair.mk x' y').
 Admitted.
 
+
+Global Instance Pair_struct_fields_split l (v : Pair.t) :
+  StructFieldsSplit l v (
+    "Hx" ∷ l ↦s[semantics.Pair :: "x"] v.(Pair.x') ∗
+    "Hy" ∷ l ↦s[semantics.Pair :: "y"] v.(Pair.y')
+  ).
+Admitted.
+
+End instances.
 
 Module Uint32.
 Section def.
@@ -217,6 +273,8 @@ Record t := mk {
 End def.
 End SquareStruct.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_SquareStruct `{ffi_syntax}: Settable _ :=
   settable! SquareStruct.mk < SquareStruct.Side' >.
@@ -234,6 +292,8 @@ Global Instance into_val_typed_SquareStruct `{ffi_syntax} : IntoValTyped SquareS
 Global Instance into_val_struct_field_SquareStruct_Side `{ffi_syntax} : IntoValStructField "Side" semantics.SquareStruct SquareStruct.Side'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_SquareStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Side':
   PureWp True
     (struct.make semantics.SquareStruct (alist_val [
@@ -242,6 +302,14 @@ Global Instance wp_struct_make_SquareStruct `{ffi_semantics} `{!ffi_interp ffi} 
     #(SquareStruct.mk Side').
 Admitted.
 
+
+Global Instance SquareStruct_struct_fields_split l (v : SquareStruct.t) :
+  StructFieldsSplit l v (
+    "HSide" ∷ l ↦s[semantics.SquareStruct :: "Side"] v.(SquareStruct.Side')
+  ).
+Admitted.
+
+End instances.
 Module LoopStruct.
 Section def.
 Context `{ffi_syntax}.
@@ -251,6 +319,8 @@ Record t := mk {
 End def.
 End LoopStruct.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_LoopStruct `{ffi_syntax}: Settable _ :=
   settable! LoopStruct.mk < LoopStruct.loopNext' >.
@@ -268,6 +338,8 @@ Global Instance into_val_typed_LoopStruct `{ffi_syntax} : IntoValTyped LoopStruc
 Global Instance into_val_struct_field_LoopStruct_loopNext `{ffi_syntax} : IntoValStructField "loopNext" semantics.LoopStruct LoopStruct.loopNext'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_LoopStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} loopNext':
   PureWp True
     (struct.make semantics.LoopStruct (alist_val [
@@ -276,6 +348,14 @@ Global Instance wp_struct_make_LoopStruct `{ffi_semantics} `{!ffi_interp ffi} `{
     #(LoopStruct.mk loopNext').
 Admitted.
 
+
+Global Instance LoopStruct_struct_fields_split l (v : LoopStruct.t) :
+  StructFieldsSplit l v (
+    "HloopNext" ∷ l ↦s[semantics.LoopStruct :: "loopNext"] v.(LoopStruct.loopNext')
+  ).
+Admitted.
+
+End instances.
 Module BoolTest.
 Section def.
 Context `{ffi_syntax}.
@@ -288,6 +368,8 @@ Record t := mk {
 End def.
 End BoolTest.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_BoolTest `{ffi_syntax}: Settable _ :=
   settable! BoolTest.mk < BoolTest.t'; BoolTest.f'; BoolTest.tc'; BoolTest.fc' >.
@@ -314,6 +396,8 @@ Admitted.
 Global Instance into_val_struct_field_BoolTest_fc `{ffi_syntax} : IntoValStructField "fc" semantics.BoolTest BoolTest.fc'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_BoolTest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' f' tc' fc':
   PureWp True
     (struct.make semantics.BoolTest (alist_val [
@@ -325,6 +409,17 @@ Global Instance wp_struct_make_BoolTest `{ffi_semantics} `{!ffi_interp ffi} `{!h
     #(BoolTest.mk t' f' tc' fc').
 Admitted.
 
+
+Global Instance BoolTest_struct_fields_split l (v : BoolTest.t) :
+  StructFieldsSplit l v (
+    "Ht" ∷ l ↦s[semantics.BoolTest :: "t"] v.(BoolTest.t') ∗
+    "Hf" ∷ l ↦s[semantics.BoolTest :: "f"] v.(BoolTest.f') ∗
+    "Htc" ∷ l ↦s[semantics.BoolTest :: "tc"] v.(BoolTest.tc') ∗
+    "Hfc" ∷ l ↦s[semantics.BoolTest :: "fc"] v.(BoolTest.fc')
+  ).
+Admitted.
+
+End instances.
 Module ArrayEditor.
 Section def.
 Context `{ffi_syntax}.
@@ -335,6 +430,8 @@ Record t := mk {
 End def.
 End ArrayEditor.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_ArrayEditor `{ffi_syntax}: Settable _ :=
   settable! ArrayEditor.mk < ArrayEditor.s'; ArrayEditor.next_val' >.
@@ -355,6 +452,8 @@ Admitted.
 Global Instance into_val_struct_field_ArrayEditor_next_val `{ffi_syntax} : IntoValStructField "next_val" semantics.ArrayEditor ArrayEditor.next_val'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ArrayEditor `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s' next_val':
   PureWp True
     (struct.make semantics.ArrayEditor (alist_val [
@@ -364,6 +463,15 @@ Global Instance wp_struct_make_ArrayEditor `{ffi_semantics} `{!ffi_interp ffi} `
     #(ArrayEditor.mk s' next_val').
 Admitted.
 
+
+Global Instance ArrayEditor_struct_fields_split l (v : ArrayEditor.t) :
+  StructFieldsSplit l v (
+    "Hs" ∷ l ↦s[semantics.ArrayEditor :: "s"] v.(ArrayEditor.s') ∗
+    "Hnext_val" ∷ l ↦s[semantics.ArrayEditor :: "next_val"] v.(ArrayEditor.next_val')
+  ).
+Admitted.
+
+End instances.
 Module Bar.
 Section def.
 Context `{ffi_syntax}.
@@ -374,6 +482,8 @@ Record t := mk {
 End def.
 End Bar.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Bar `{ffi_syntax}: Settable _ :=
   settable! Bar.mk < Bar.a'; Bar.b' >.
@@ -394,6 +504,8 @@ Admitted.
 Global Instance into_val_struct_field_Bar_b `{ffi_syntax} : IntoValStructField "b" semantics.Bar Bar.b'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Bar `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a' b':
   PureWp True
     (struct.make semantics.Bar (alist_val [
@@ -403,6 +515,15 @@ Global Instance wp_struct_make_Bar `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
     #(Bar.mk a' b').
 Admitted.
 
+
+Global Instance Bar_struct_fields_split l (v : Bar.t) :
+  StructFieldsSplit l v (
+    "Ha" ∷ l ↦s[semantics.Bar :: "a"] v.(Bar.a') ∗
+    "Hb" ∷ l ↦s[semantics.Bar :: "b"] v.(Bar.b')
+  ).
+Admitted.
+
+End instances.
 Module Foo.
 Section def.
 Context `{ffi_syntax}.
@@ -412,6 +533,8 @@ Record t := mk {
 End def.
 End Foo.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Foo `{ffi_syntax}: Settable _ :=
   settable! Foo.mk < Foo.bar' >.
@@ -429,6 +552,8 @@ Global Instance into_val_typed_Foo `{ffi_syntax} : IntoValTyped Foo.t semantics.
 Global Instance into_val_struct_field_Foo_bar `{ffi_syntax} : IntoValStructField "bar" semantics.Foo Foo.bar'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Foo `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} bar':
   PureWp True
     (struct.make semantics.Foo (alist_val [
@@ -437,6 +562,14 @@ Global Instance wp_struct_make_Foo `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
     #(Foo.mk bar').
 Admitted.
 
+
+Global Instance Foo_struct_fields_split l (v : Foo.t) :
+  StructFieldsSplit l v (
+    "Hbar" ∷ l ↦s[semantics.Foo :: "bar"] v.(Foo.bar')
+  ).
+Admitted.
+
+End instances.
 Module TwoInts.
 Section def.
 Context `{ffi_syntax}.
@@ -447,6 +580,8 @@ Record t := mk {
 End def.
 End TwoInts.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_TwoInts `{ffi_syntax}: Settable _ :=
   settable! TwoInts.mk < TwoInts.x'; TwoInts.y' >.
@@ -467,6 +602,8 @@ Admitted.
 Global Instance into_val_struct_field_TwoInts_y `{ffi_syntax} : IntoValStructField "y" semantics.TwoInts TwoInts.y'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_TwoInts `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x' y':
   PureWp True
     (struct.make semantics.TwoInts (alist_val [
@@ -476,6 +613,15 @@ Global Instance wp_struct_make_TwoInts `{ffi_semantics} `{!ffi_interp ffi} `{!he
     #(TwoInts.mk x' y').
 Admitted.
 
+
+Global Instance TwoInts_struct_fields_split l (v : TwoInts.t) :
+  StructFieldsSplit l v (
+    "Hx" ∷ l ↦s[semantics.TwoInts :: "x"] v.(TwoInts.x') ∗
+    "Hy" ∷ l ↦s[semantics.TwoInts :: "y"] v.(TwoInts.y')
+  ).
+Admitted.
+
+End instances.
 Module S.
 Section def.
 Context `{ffi_syntax}.
@@ -487,6 +633,8 @@ Record t := mk {
 End def.
 End S.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_S `{ffi_syntax}: Settable _ :=
   settable! S.mk < S.a'; S.b'; S.c' >.
@@ -510,6 +658,8 @@ Admitted.
 Global Instance into_val_struct_field_S_c `{ffi_syntax} : IntoValStructField "c" semantics.S S.c'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_S `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a' b' c':
   PureWp True
     (struct.make semantics.S (alist_val [
@@ -520,6 +670,16 @@ Global Instance wp_struct_make_S `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS �
     #(S.mk a' b' c').
 Admitted.
 
+
+Global Instance S_struct_fields_split l (v : S.t) :
+  StructFieldsSplit l v (
+    "Ha" ∷ l ↦s[semantics.S :: "a"] v.(S.a') ∗
+    "Hb" ∷ l ↦s[semantics.S :: "b"] v.(S.b') ∗
+    "Hc" ∷ l ↦s[semantics.S :: "c"] v.(S.c')
+  ).
+Admitted.
+
+End instances.
 Module StructWrap.
 Section def.
 Context `{ffi_syntax}.
@@ -529,6 +689,8 @@ Record t := mk {
 End def.
 End StructWrap.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_StructWrap `{ffi_syntax}: Settable _ :=
   settable! StructWrap.mk < StructWrap.i' >.
@@ -546,6 +708,8 @@ Global Instance into_val_typed_StructWrap `{ffi_syntax} : IntoValTyped StructWra
 Global Instance into_val_struct_field_StructWrap_i `{ffi_syntax} : IntoValStructField "i" semantics.StructWrap StructWrap.i'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_StructWrap `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} i':
   PureWp True
     (struct.make semantics.StructWrap (alist_val [
@@ -554,6 +718,14 @@ Global Instance wp_struct_make_StructWrap `{ffi_semantics} `{!ffi_interp ffi} `{
     #(StructWrap.mk i').
 Admitted.
 
+
+Global Instance StructWrap_struct_fields_split l (v : StructWrap.t) :
+  StructFieldsSplit l v (
+    "Hi" ∷ l ↦s[semantics.StructWrap :: "i"] v.(StructWrap.i')
+  ).
+Admitted.
+
+End instances.
 Module StructWithFunc.
 Section def.
 Context `{ffi_syntax}.
@@ -563,6 +735,8 @@ Record t := mk {
 End def.
 End StructWithFunc.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_StructWithFunc `{ffi_syntax}: Settable _ :=
   settable! StructWithFunc.mk < StructWithFunc.fn' >.
@@ -580,6 +754,8 @@ Global Instance into_val_typed_StructWithFunc `{ffi_syntax} : IntoValTyped Struc
 Global Instance into_val_struct_field_StructWithFunc_fn `{ffi_syntax} : IntoValStructField "fn" semantics.StructWithFunc StructWithFunc.fn'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_StructWithFunc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} fn':
   PureWp True
     (struct.make semantics.StructWithFunc (alist_val [
@@ -588,6 +764,14 @@ Global Instance wp_struct_make_StructWithFunc `{ffi_semantics} `{!ffi_interp ffi
     #(StructWithFunc.mk fn').
 Admitted.
 
+
+Global Instance StructWithFunc_struct_fields_split l (v : StructWithFunc.t) :
+  StructFieldsSplit l v (
+    "Hfn" ∷ l ↦s[semantics.StructWithFunc :: "fn"] v.(StructWithFunc.fn')
+  ).
+Admitted.
+
+End instances.
 Module switchConcrete.
 Section def.
 Context `{ffi_syntax}.
@@ -596,6 +780,8 @@ Record t := mk {
 End def.
 End switchConcrete.
 
+Section instances.
+Context `{ffi_syntax}.
 Global Instance into_val_switchConcrete `{ffi_syntax} : IntoVal switchConcrete.t.
 Admitted.
 
@@ -607,6 +793,8 @@ Global Instance into_val_typed_switchConcrete `{ffi_syntax} : IntoValTyped switc
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_switchConcrete `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
     (struct.make semantics.switchConcrete (alist_val [
@@ -614,6 +802,8 @@ Global Instance wp_struct_make_switchConcrete `{ffi_semantics} `{!ffi_interp ffi
     #(switchConcrete.mk).
 Admitted.
 
+
+End instances.
 
 Module switchInterface.
 Section def.
@@ -633,6 +823,8 @@ Record t := mk {
 End def.
 End Log.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Log `{ffi_syntax}: Settable _ :=
   settable! Log.mk < Log.d'; Log.l'; Log.cache'; Log.length' >.
@@ -659,6 +851,8 @@ Admitted.
 Global Instance into_val_struct_field_Log_length `{ffi_syntax} : IntoValStructField "length" semantics.Log Log.length'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} d' l' cache' length':
   PureWp True
     (struct.make semantics.Log (alist_val [
@@ -670,6 +864,17 @@ Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
     #(Log.mk d' l' cache' length').
 Admitted.
 
+
+Global Instance Log_struct_fields_split l (v : Log.t) :
+  StructFieldsSplit l v (
+    "Hd" ∷ l ↦s[semantics.Log :: "d"] v.(Log.d') ∗
+    "Hl" ∷ l ↦s[semantics.Log :: "l"] v.(Log.l') ∗
+    "Hcache" ∷ l ↦s[semantics.Log :: "cache"] v.(Log.cache') ∗
+    "Hlength" ∷ l ↦s[semantics.Log :: "length"] v.(Log.length')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 
@@ -1241,143 +1446,143 @@ Global Instance wp_func_call_disabled_testWal :
   WpFuncCall semantics.pkg_name' "disabled_testWal" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_Enc'ptr_consume : 
+Global Instance wp_method_call_Enc'ptr_consume :
   WpMethodCall semantics.pkg_name' "Enc'ptr" "consume" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Dec'ptr_consume : 
+Global Instance wp_method_call_Dec'ptr_consume :
   WpMethodCall semantics.pkg_name' "Dec'ptr" "consume" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Editor'ptr_AdvanceReturn : 
+Global Instance wp_method_call_Editor'ptr_AdvanceReturn :
   WpMethodCall semantics.pkg_name' "Editor'ptr" "AdvanceReturn" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_SquareStruct_Square : 
+Global Instance wp_method_call_SquareStruct_Square :
   WpMethodCall semantics.pkg_name' "SquareStruct" "Square" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_SquareStruct_Volume : 
+Global Instance wp_method_call_SquareStruct_Volume :
   WpMethodCall semantics.pkg_name' "SquareStruct" "Volume" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_SquareStruct'ptr_Square : 
+Global Instance wp_method_call_SquareStruct'ptr_Square :
   WpMethodCall semantics.pkg_name' "SquareStruct'ptr" "Square" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_SquareStruct'ptr_Volume : 
+Global Instance wp_method_call_SquareStruct'ptr_Volume :
   WpMethodCall semantics.pkg_name' "SquareStruct'ptr" "Volume" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_LoopStruct_forLoopWait : 
+Global Instance wp_method_call_LoopStruct_forLoopWait :
   WpMethodCall semantics.pkg_name' "LoopStruct" "forLoopWait" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_LoopStruct'ptr_forLoopWait : 
+Global Instance wp_method_call_LoopStruct'ptr_forLoopWait :
   WpMethodCall semantics.pkg_name' "LoopStruct'ptr" "forLoopWait" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_ArrayEditor'ptr_Advance : 
+Global Instance wp_method_call_ArrayEditor'ptr_Advance :
   WpMethodCall semantics.pkg_name' "ArrayEditor'ptr" "Advance" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Bar'ptr_mutate : 
+Global Instance wp_method_call_Bar'ptr_mutate :
   WpMethodCall semantics.pkg_name' "Bar'ptr" "mutate" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Foo'ptr_mutateBar : 
+Global Instance wp_method_call_Foo'ptr_mutateBar :
   WpMethodCall semantics.pkg_name' "Foo'ptr" "mutateBar" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_S_readBVal : 
+Global Instance wp_method_call_S_readBVal :
   WpMethodCall semantics.pkg_name' "S" "readBVal" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_S'ptr_negateC : 
+Global Instance wp_method_call_S'ptr_negateC :
   WpMethodCall semantics.pkg_name' "S'ptr" "negateC" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_S'ptr_readA : 
+Global Instance wp_method_call_S'ptr_readA :
   WpMethodCall semantics.pkg_name' "S'ptr" "readA" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_S'ptr_readB : 
+Global Instance wp_method_call_S'ptr_readB :
   WpMethodCall semantics.pkg_name' "S'ptr" "readB" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_S'ptr_readBVal : 
+Global Instance wp_method_call_S'ptr_readBVal :
   WpMethodCall semantics.pkg_name' "S'ptr" "readBVal" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_S'ptr_updateBValX : 
+Global Instance wp_method_call_S'ptr_updateBValX :
   WpMethodCall semantics.pkg_name' "S'ptr" "updateBValX" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_switchConcrete'ptr_marker : 
+Global Instance wp_method_call_switchConcrete'ptr_marker :
   WpMethodCall semantics.pkg_name' "switchConcrete'ptr" "marker" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log_Apply : 
+Global Instance wp_method_call_Log_Apply :
   WpMethodCall semantics.pkg_name' "Log" "Apply" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log_BeginTxn : 
+Global Instance wp_method_call_Log_BeginTxn :
   WpMethodCall semantics.pkg_name' "Log" "BeginTxn" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log_Commit : 
+Global Instance wp_method_call_Log_Commit :
   WpMethodCall semantics.pkg_name' "Log" "Commit" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log_Read : 
+Global Instance wp_method_call_Log_Read :
   WpMethodCall semantics.pkg_name' "Log" "Read" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log_Size : 
+Global Instance wp_method_call_Log_Size :
   WpMethodCall semantics.pkg_name' "Log" "Size" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log_Write : 
+Global Instance wp_method_call_Log_Write :
   WpMethodCall semantics.pkg_name' "Log" "Write" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log_lock : 
+Global Instance wp_method_call_Log_lock :
   WpMethodCall semantics.pkg_name' "Log" "lock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log_unlock : 
+Global Instance wp_method_call_Log_unlock :
   WpMethodCall semantics.pkg_name' "Log" "unlock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_Apply : 
+Global Instance wp_method_call_Log'ptr_Apply :
   WpMethodCall semantics.pkg_name' "Log'ptr" "Apply" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_BeginTxn : 
+Global Instance wp_method_call_Log'ptr_BeginTxn :
   WpMethodCall semantics.pkg_name' "Log'ptr" "BeginTxn" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_Commit : 
+Global Instance wp_method_call_Log'ptr_Commit :
   WpMethodCall semantics.pkg_name' "Log'ptr" "Commit" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_Read : 
+Global Instance wp_method_call_Log'ptr_Read :
   WpMethodCall semantics.pkg_name' "Log'ptr" "Read" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_Size : 
+Global Instance wp_method_call_Log'ptr_Size :
   WpMethodCall semantics.pkg_name' "Log'ptr" "Size" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_Write : 
+Global Instance wp_method_call_Log'ptr_Write :
   WpMethodCall semantics.pkg_name' "Log'ptr" "Write" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_lock : 
+Global Instance wp_method_call_Log'ptr_lock :
   WpMethodCall semantics.pkg_name' "Log'ptr" "lock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_unlock : 
+Global Instance wp_method_call_Log'ptr_unlock :
   WpMethodCall semantics.pkg_name' "Log'ptr" "unlock" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

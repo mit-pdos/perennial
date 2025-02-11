@@ -18,6 +18,8 @@ Record t := mk {
 End def.
 End JoinHandle.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_JoinHandle `{ffi_syntax}: Settable _ :=
   settable! JoinHandle.mk < JoinHandle.mu'; JoinHandle.done'; JoinHandle.cond' >.
@@ -41,6 +43,8 @@ Admitted.
 Global Instance into_val_struct_field_JoinHandle_cond `{ffi_syntax} : IntoValStructField "cond" std.JoinHandle JoinHandle.cond'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_JoinHandle `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' done' cond':
   PureWp True
     (struct.make std.JoinHandle (alist_val [
@@ -51,6 +55,16 @@ Global Instance wp_struct_make_JoinHandle `{ffi_semantics} `{!ffi_interp ffi} `{
     #(JoinHandle.mk mu' done' cond').
 Admitted.
 
+
+Global Instance JoinHandle_struct_fields_split l (v : JoinHandle.t) :
+  StructFieldsSplit l v (
+    "Hmu" ∷ l ↦s[std.JoinHandle :: "mu"] v.(JoinHandle.mu') ∗
+    "Hdone" ∷ l ↦s[std.JoinHandle :: "done"] v.(JoinHandle.done') ∗
+    "Hcond" ∷ l ↦s[std.JoinHandle :: "cond"] v.(JoinHandle.cond')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 

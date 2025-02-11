@@ -19,6 +19,8 @@ Record t := mk {
 End def.
 End Log.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Log `{ffi_syntax}: Settable _ :=
   settable! Log.mk < Log.m'; Log.sz'; Log.diskSz' >.
@@ -42,6 +44,8 @@ Admitted.
 Global Instance into_val_struct_field_Log_diskSz `{ffi_syntax} : IntoValStructField "diskSz" append_log.Log Log.diskSz'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} m' sz' diskSz':
   PureWp True
     (struct.make append_log.Log (alist_val [
@@ -52,6 +56,16 @@ Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
     #(Log.mk m' sz' diskSz').
 Admitted.
 
+
+Global Instance Log_struct_fields_split l (v : Log.t) :
+  StructFieldsSplit l v (
+    "Hm" ∷ l ↦s[append_log.Log :: "m"] v.(Log.m') ∗
+    "Hsz" ∷ l ↦s[append_log.Log :: "sz"] v.(Log.sz') ∗
+    "HdiskSz" ∷ l ↦s[append_log.Log :: "diskSz"] v.(Log.diskSz')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 
@@ -83,35 +97,35 @@ Global Instance wp_func_call_writeAll :
   WpFuncCall append_log.pkg_name' "writeAll" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_Append : 
+Global Instance wp_method_call_Log'ptr_Append :
   WpMethodCall append_log.pkg_name' "Log'ptr" "Append" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_Get : 
+Global Instance wp_method_call_Log'ptr_Get :
   WpMethodCall append_log.pkg_name' "Log'ptr" "Get" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_Reset : 
+Global Instance wp_method_call_Log'ptr_Reset :
   WpMethodCall append_log.pkg_name' "Log'ptr" "Reset" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_append : 
+Global Instance wp_method_call_Log'ptr_append :
   WpMethodCall append_log.pkg_name' "Log'ptr" "append" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_get : 
+Global Instance wp_method_call_Log'ptr_get :
   WpMethodCall append_log.pkg_name' "Log'ptr" "get" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_mkHdr : 
+Global Instance wp_method_call_Log'ptr_mkHdr :
   WpMethodCall append_log.pkg_name' "Log'ptr" "mkHdr" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_reset : 
+Global Instance wp_method_call_Log'ptr_reset :
   WpMethodCall append_log.pkg_name' "Log'ptr" "reset" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Log'ptr_writeHdr : 
+Global Instance wp_method_call_Log'ptr_writeHdr :
   WpMethodCall append_log.pkg_name' "Log'ptr" "writeHdr" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

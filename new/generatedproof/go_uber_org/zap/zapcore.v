@@ -25,6 +25,8 @@ Record t := mk {
 End def.
 End Field.
 
+Section instances.
+Context `{ffi_syntax}.
 
 Global Instance settable_Field `{ffi_syntax}: Settable _ :=
   settable! Field.mk < Field.Key'; Field.Type'; Field.Integer'; Field.String'; Field.Interface' >.
@@ -54,6 +56,8 @@ Admitted.
 Global Instance into_val_struct_field_Field_Interface `{ffi_syntax} : IntoValStructField "Interface" zapcore.Field Field.Interface'.
 Admitted.
 
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Field `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' Type' Integer' String' Interface':
   PureWp True
     (struct.make zapcore.Field (alist_val [
@@ -66,6 +70,18 @@ Global Instance wp_struct_make_Field `{ffi_semantics} `{!ffi_interp ffi} `{!heap
     #(Field.mk Key' Type' Integer' String' Interface').
 Admitted.
 
+
+Global Instance Field_struct_fields_split l (v : Field.t) :
+  StructFieldsSplit l v (
+    "HKey" ∷ l ↦s[zapcore.Field :: "Key"] v.(Field.Key') ∗
+    "HType" ∷ l ↦s[zapcore.Field :: "Type"] v.(Field.Type') ∗
+    "HInteger" ∷ l ↦s[zapcore.Field :: "Integer"] v.(Field.Integer') ∗
+    "HString" ∷ l ↦s[zapcore.Field :: "String"] v.(Field.String') ∗
+    "HInterface" ∷ l ↦s[zapcore.Field :: "Interface"] v.(Field.Interface')
+  ).
+Admitted.
+
+End instances.
 
 Section names.
 
