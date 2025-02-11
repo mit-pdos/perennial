@@ -1,10 +1,32 @@
+translate = [
+  "WaitGroup",
+  "WaitGroup.Add",
+  "WaitGroup.Done",
+  "WaitGroup.Wait",
+  "noCopy",
+]
+
+imports = [
+  "sync/atomic",
+  "internal/race",
+]
+
 trusted = [
+  # Unlike WaitGroup, one cannot translate and verify Mutex methods because they
+  # actually have data races (and the race detector is explicitly disabled on
+  # the sync package for these reasons).
+  # E.g. in Mutex.Lock:
+  # https://github.com/golang/go/blob/ff27d270c9f95178f9749bc8e1f15957b1c1d5b3/src/internal/sync/mutex.go#L100
   "Mutex",
   "Mutex.Lock",
   "Mutex.Unlock",
+
   "Cond",
   "Cond.Wait",
   "Cond.Signal",
   "Cond.Broadcast",
   "NewCond",
+
+  "runtime_Semacquire",
+  "runtime_Semrelease",
 ]

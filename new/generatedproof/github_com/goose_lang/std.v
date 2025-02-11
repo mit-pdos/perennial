@@ -120,11 +120,11 @@ Global Instance wp_func_call_Skip :
   WpFuncCall std.pkg_name' "Skip" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
-Global Instance wp_method_call_JoinHandle'ptr_Join : 
+Global Instance wp_method_call_JoinHandle'ptr_Join :
   WpMethodCall std.pkg_name' "JoinHandle'ptr" "Join" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_JoinHandle'ptr_finish : 
+Global Instance wp_method_call_JoinHandle'ptr_finish :
   WpMethodCall std.pkg_name' "JoinHandle'ptr" "finish" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 

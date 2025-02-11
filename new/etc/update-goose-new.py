@@ -204,7 +204,11 @@ def main():
         "slices",
         "strconv",
         "strings",
+
         "sync",
+        "sync/atomic",
+        "internal/race",
+
         "fmt",
         "log",
         "go.etcd.io/raft/v3/raftpb",

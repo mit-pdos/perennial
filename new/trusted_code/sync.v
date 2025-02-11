@@ -12,8 +12,6 @@ Definition Mutex : go_type := structT [
     "state" :: boolT
   ].
 
-Axiom WaitGroup : go_type.
-
 Definition Mutex__TryLock : val :=
   λ: "m" <>, Snd (CmpXchg (struct.field_ref Mutex "state" "m") #false #true).
 
@@ -28,14 +26,6 @@ Definition Mutex__Unlock : val :=
   λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref Mutex "state" "m") #true #false ;;; return: #())
 .
 
-Definition Mutex'mset : list (go_string * val) := [].
-
-Definition Mutex'ptr'mset : list (go_string * val) := [
-    ("TryLock"%go, Mutex__TryLock) ;
-    ("Lock"%go, Mutex__Lock) ;
-    ("Unlock"%go, Mutex__Unlock)
-  ].
-
 Definition Cond : go_type := structT [
     "L" :: interfaceT
   ].
@@ -48,46 +38,39 @@ Definition Cond__Wait : val := λ: "c" <>, exception_do (
 Definition Cond__Broadcast : val := λ: "c" <>, #().
 Definition Cond__Signal : val := λ: "c" <>, #().
 
-Definition Cond'mset : list (go_string * val) := [].
+Definition runtime_Semacquire : val :=
+  (* inspired by runtime/sema.go:272:
+     ```
+     func cansemacquire(addr *uint32) bool {
+        for {
+            v := atomic.Load(addr)
+            if v == 0 {
+                return false
+            }
+            if atomic.Cas(addr, v, v-1) {
+                return true
+            }
+        }
+    }
+    ```
+*)
+  λ: "addr", exception_do
+    (for: #true; (λ: <>, Skip) := λ: <>,
+       let: "v" := Load "addr" in
+       (if: "v" = #(W32 0) then
+          continue: #()
+        else
+          do: #()
+       ) ;;;
+       (if: CmpXchg "addr" "v" ("v" - #(W32 1)) then
+          return: #()
+        else
+          do: #())
+    )
+.
 
-Definition Cond'ptr'mset : list (go_string * val) := [
-    ("Broadcast"%go, Cond__Broadcast) ;
-    ("Signal"%go, Cond__Signal) ;
-    ("Wait"%go, Cond__Wait)
-  ].
-
-Axiom WaitGroup__Add : val.
-Axiom WaitGroup__Done : val.
-Axiom WaitGroup__Wait : val.
-
-Definition WaitGroup'mset : list (go_string * val) := [].
-
-Definition WaitGroup'ptr'mset : list (go_string * val) := [
-    ("Add"%go, WaitGroup__Add) ;
-    ("Done"%go, WaitGroup__Done) ;
-    ("Wait"%go, WaitGroup__Wait)
-  ].
-
-Definition msets' := [
-    ("Mutex"%go, Mutex'mset);
-    ("Mutex'ptr"%go, Mutex'ptr'mset);
-
-    ("Cond"%go, Cond'mset);
-    ("Cond'ptr"%go, Cond'ptr'mset);
-
-    ("WaitGroup"%go, WaitGroup'mset);
-    ("WaitGroup'ptr"%go, WaitGroup'ptr'mset)
-  ].
-
-Definition functions' :=  [
-    ("NewCond"%go, NewCond)
-  ].
-
-Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' [] functions' msets' (λ: <>,
-      exception_do (do:  #())
-      ).
+Definition runtime_Semrelease : val :=
+  λ: <>, #() #(). (* FIXME: use `AtomicAdd` *)
 
 End code.
 End sync.

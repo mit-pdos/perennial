@@ -120,25 +120,13 @@ Proof.
   - simpl in *. injection Heq as ??. by apply IHd.
 Qed.
 
-(* FIXME: could try stating this with (structT d) substituted in. The main
-   concern is that it will result in t getting unfolded. *)
-Theorem struct_fields_split `{!IntoVal V} `{!IntoValTyped V t}
-  l q {dwf : struct.Wf t} (v : V) :
-  typed_pointsto l q v
-  ⊣⊢ match t with
-     | structT d  => struct_fields l q d v
-     | _ => typed_pointsto l q v
-     end.
-Proof.
-  subst.
-  destruct t; try done.
-  iSplit.
-  - (* split up struct *)
-    iIntros "Hv".
-    admit.
-  - (* combine struct fields *)
-    admit.
-Admitted.
+Class StructFieldsSplit `{!IntoVal V} `{!IntoValTyped V t} {dwf : struct.Wf t}
+                        (l : loc) (v : V) (Psplit : iProp Σ)
+  :=
+  {
+    struct_fields_split : l ↦ v ⊢ Psplit ;
+    struct_fields_combine : Psplit ⊢ l ↦ v
+  }.
 
 Theorem struct_fields_acc_update f t V Vf
   l dq {dwf : struct.Wf t} (v : V)

@@ -1,0 +1,14 @@
+translate = [
+  "Uint64",
+  "Uint64.Load",
+  "Uint64.Store",
+  "Uint64.Add",
+  "noCopy",
+  "align64",
+]
+
+trusted = [
+  "LoadUint64",
+  "StoreUint64",
+  "AddUint64",
+]

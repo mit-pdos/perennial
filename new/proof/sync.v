@@ -9,6 +9,7 @@ From New.proof Require Import proof_prelude.
 From Perennial.algebra Require Import map.
 Require Export New.generatedproof.sync.
 
+From New.proof Require Import sync.atomic.
 
 Set Default Proof Using "Type".
 
@@ -31,7 +32,9 @@ Context `{!goGlobalsGS Σ}.
 Context `{sync.GlobalAddrs}.
 
 Definition is_initialized : iProp Σ :=
-  "#?" ∷ sync.is_defined.
+  "#?" ∷ sync.is_defined ∗
+  "#?" ∷ atomic.is_initialized
+.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
@@ -65,15 +68,26 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
+Lemma struct_val_aux_cons decls f t fvs :
+  (struct.val_aux (structT $ (f,t) :: decls) fvs) =
+  (default (zero_val t) (alist_lookup_f f fvs), (struct.val_aux (structT decls) fvs))%V.
+Proof. rewrite struct.val_aux_unseal //=. Qed.
+
+Lemma struct_val_aux_nil fvs :
+  (struct.val_aux (structT $ []) fvs) = #().
+Proof. rewrite struct.val_aux_unseal //=. Qed.
+
+Lemma flatten_struct_tt :
+  flatten_struct (# ()%V) = [].
+Proof. rewrite to_val_unseal //=. Qed.
+
 Theorem init_Mutex R E m : is_initialized -∗ m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "#Hi Hl HR".
   simpl.
   iDestruct (struct_fields_split with "Hl") as "Hl".
-  rewrite /struct_fields /=.
-  iDestruct "Hl" as "[Hl _]".
-  unshelve iSpecialize ("Hl" $! _ _ _ _ _ _ _); try tc_solve.
-  simpl. iNamed "Hl".
+  iNamed "Hl".
+  simpl.
   iFrame "#".
   iMod (inv_alloc nroot _ (_) with "[Hstate HR]") as "#?".
   2:{ by iFrame "#". }
@@ -89,9 +103,8 @@ Lemma wp_Mutex__Lock m R :
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   iIntros (Φ) "H HΦ".
-  iNamed "H".
+  iNamed "H". iNamed "Hi".
   iLöb as "IH".
-  unfold is_initialized.
   wp_method_call. wp_call.
   wp_pures.
   wp_bind (CmpXchg _ _ _).
@@ -132,6 +145,7 @@ Lemma wp_Mutex__Unlock' m :
   }}}.
 Proof.
   iIntros (Ψ) "#Hdef HΨ".
+  iNamed "Hdef".
   wp_method_call. wp_call.
   iApply "HΨ". iIntros (R).
   iIntros (Φ) "!# (#His & Hlocked & HR) HΦ".
@@ -203,20 +217,16 @@ Theorem wp_NewCond (m : interface.t) :
     func_call #sync.pkg_name' #"NewCond" #m
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
-  iIntros (Φ) "#Hdef HΦ".
+  iIntros (Φ) "#Hdef HΦ". iNamed "Hdef".
   wp_func_call. wp_call. wp_apply wp_fupd.
   wp_alloc c as "Hc".
   wp_pures.
   iApply "HΦ".
 
   iDestruct (struct_fields_split with "Hc") as "Hl".
-  rewrite /struct_fields /=.
-  repeat (iDestruct "Hl" as "[H1 Hl]";
-          unshelve iSpecialize ("H1" $! _ _ _ _ _ _ _); try tc_solve;
-          iNamed "H1").
-  simpl.
+  iNamed "Hl".
   iMod (typed_pointsto_persist with "HL") as "$".
-  done.
+  iFrame "#". done.
 Qed.
 
 Theorem wp_Cond__Signal c lk :
@@ -224,7 +234,7 @@ Theorem wp_Cond__Signal c lk :
     method_call #sync.pkg_name' #"Cond'ptr" #"Signal" #c #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "[#Hdef Hc] HΦ".
+  iIntros (Φ) "[#Hdef Hc] HΦ". iNamed "Hdef".
   wp_method_call. wp_call. iApply ("HΦ" with "[//]").
 Qed.
 
@@ -233,7 +243,7 @@ Theorem wp_Cond__Broadcast c lk :
     method_call #sync.pkg_name' #"Cond'ptr" #"Broadcast" #c #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "[#Hdef Hc] HΦ".
+  iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hi".
   wp_method_call. wp_call. iApply ("HΦ" with "[//]").
 Qed.
 
@@ -243,7 +253,7 @@ Theorem wp_Cond__Wait c m R :
   {{{ RET #(); R }}}.
 Proof.
   iIntros (Φ) "(#Hcond & #Hlock & HR) HΦ".
-  iNamed "Hcond".
+  iNamed "Hcond". iNamed "Hi".
   wp_method_call. wp_call.
   iNamed "Hlock".
   wp_load.
@@ -256,124 +266,153 @@ Proof.
   iApply "HΦ". done.
 Qed.
 
-Record waitgroup_names :=
-  mkwaitgroup_names {
-    tok_gn:gname;
-    total_gn:gname
-  }.
+Definition own_WaitGroup (wg : loc) (counter : w64) : iProp Σ :=
+  ∃ (waiters : w32),
+    "Hwg" ∷ own_Uint64 (struct.field_ref_f sync.WaitGroup "state" wg)
+      (word.or (word.slu counter (W64 32)) (W64 (uint.Z waiters))) ∗
+    "%HnoWaitersIfZero" ∷ ⌜ uint.Z (word.slu counter (W64 32)) = 0 → uint.Z waiters = 0 ⌝.
 
-Implicit Types (γ : waitgroup_names).
+(* XXX: overflow?
+  https://github.com/golang/go/issues/20687
+  https://go-review.googlesource.com/c/go/+/140937/2/src/sync/waitgroup.go *)
 
-(** Represents permission to call Done() once on a WaitGroup(). *)
-Definition own_WaitGroup_token γ (i:u64) : iProp Σ := i ⤳[γ.(tok_gn)] ().
-
-(** This means [wg] is a pointer to a WaitGroup which logically associates the
-    proposition [P i] with the ith call to Add(). This means that in order to
-    call Done(), one must logically decide which call to Add() is being
-    cancelled out (i.e. which [i]) and must provide [P i] for that particular
-    call. [γ] is used to name WaitGroup tokens, which encode the fact that the
-    ith call to Add() can only be Done()'d once. *)
-Definition is_WaitGroup wg γ P : iProp Σ :=
-  ∃ (m vptr:loc),
-    ⌜wg = (#m, #vptr)%V⌝ ∗
-    is_Mutex m (
-      ∃ (remaining:gset u64) (total:u64),
-        "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → uint.nat r < uint.nat total)⌝ ∗
-        "Htotal" ∷ ghost_var γ.(total_gn) (1/2) total ∗
-        "Hv" ∷ vptr ↦ (W64 $ size remaining) ∗
-        "Htoks" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜i ∈ remaining⌝ ∨ own_WaitGroup_token γ i) ∗
-        "HP" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜ uint.nat i ≥ uint.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (□ (P i)))
-    ).
-
-(** This denotes exclusive ownership of the permission to call Add() on the
-    waitgroup, and the fact that Add() has been called [n] times. *)
-Definition own_WaitGroup (wg:val) γ (n:u64) (P:u64 → iProp Σ) : iProp Σ :=
-    ghost_var γ.(total_gn) (1/2) n ∗
-    is_WaitGroup wg γ P.
-
-(** This denotes exclusive ownership of a waitgroup which has never been
-    Add()ed to and for which the logical predicate [P] is not yet decided. *)
-Definition own_free_WaitGroup (wg:val) : iProp Σ :=
-  ∃ (mu:loc) (vptr:loc),
-    ⌜wg = (#mu, #vptr)%V⌝ ∗
-    mu ↦ (default_val Mutex.t) ∗
-    vptr ↦ (W64 0)
-.
-
-Lemma own_WaitGroup_to_is_WaitGroup wg γ P n :
-  own_WaitGroup wg γ n P -∗ is_WaitGroup wg γ P.
-Proof. iIntros "[_ $]". Qed.
-
-(* FIXME: zero_val for WaitGroup *)
-
-Lemma free_WaitGroup_alloc P wg E :
-  is_initialized -∗ own_free_WaitGroup wg ={E}=∗ (∃ γ, own_WaitGroup wg γ 0 P ).
-Proof.
-  clear H.
-  iIntros "#Hi Hwg".
-  iDestruct "Hwg" as (??) "(%Hwg & His_Mutex & Hv)".
-  iMod (ghost_map_alloc_fin ()) as (γtok) "Htokens".
-  iMod (ghost_var_alloc (U64 0)) as (γtotal) "[Htotal Ht2]".
-  iExists (mkwaitgroup_names γtok γtotal).
-  iFrame.
-  iExists _, _.
-  iSplitL ""; first done.
-  simpl.
-
-  iMod (init_Mutex with "[$] His_Mutex [-]") as "$"; last done.
-  iNext.
-  iExists ∅, (U64 0%Z).
-  rewrite size_empty.
-  iFrame "Hv Htotal".
-  iSplitL "".
-  {
-    iPureIntro.
-    set_solver.
-  }
-  iSplitR "".
-  {
-    iApply (big_sepS_impl with "Htokens").
-    iModIntro.
-    iIntros.
-    iRight.
-    iFrame.
-  }
-  {
-    iDestruct (big_sepS_emp with "[]") as "Htriv"; first done.
-    iApply (big_sepS_impl with "Htriv").
-    iModIntro.
-    iIntros.
-    iLeft.
-    iPureIntro.
-    word.
-  }
-Qed.
-
-Lemma wp_WaitGroup__Add wg γ n P :
-uint.nat (word.add n 1) > uint.nat n →
-  {{{ own_WaitGroup wg γ n P }}}
-    method_call #sync.pkg_name' #"WaitGroup'ptr" #"Add" wg #(W64 1)
-  {{{ RET #(); own_WaitGroup wg γ (word.add n 1) P ∗ own_WaitGroup_token γ n }}}.
+Local Lemma wg_add_word_fact (counter delta : w64) (waiters : w32) :
+  word.add (word.or (word.slu counter (W64 32)) (W64 (uint.Z waiters))) (word.slu delta (W64 32)) =
+  word.or (word.slu (word.add counter delta) (W64 32)) (W64 (uint.Z waiters)).
 Proof.
 Admitted.
 
-Lemma wp_WaitGroup__Done wg γ P n :
-  {{{ is_WaitGroup wg γ P ∗ own_WaitGroup_token γ n ∗ □ P n }}}
-    method_call #sync.pkg_name' #"WaitGroup'ptr" #"Done" wg
-  {{{ RET #(); True }}}.
+Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) :
+  ∀ Φ,
+  is_initialized -∗
+  (|={⊤,∅}=> ∃ oldc, own_WaitGroup wg oldc ∗
+                    ⌜ uint.Z oldc > uint.Z delta ∧
+                      uint.Z oldc + uint.Z delta < 2^31 ⌝ ∗
+    (own_WaitGroup wg (word.add oldc delta) ={∅,⊤}=∗ Φ #())) -∗
+  WP method_call #sync.pkg_name' #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
 Proof.
-Admitted.
+  iIntros (?) "#Hi HΦ". iNamed "Hi".
+  wp_method_call. wp_call.
+  wp_pures.
+  wp_apply wp_with_defer.
+  iIntros (?) "Hdefer".
+  simpl subst.
+  wp_pures.
+  wp_alloc wg_ptr as "Hwg_ptr". wp_pures.
+  wp_alloc delta_ptr as "Hdelta_ptr". wp_pures.
+  rewrite -!default_val_eq_zero_val.
+  wp_alloc state_ptr as "Hstate_ptr". wp_pures.
+  wp_load. wp_pures.
+  wp_load. wp_pures.
+  wp_apply (wp_Uint64__Add with "[$]").
+  iMod "HΦ" as (?) "(Hwg & %Hbounds & HΦ)".
+  iNamed "Hwg".
+  iModIntro.
+  iExists _. iFrame.
+  iIntros "Hwg".
+  rewrite wg_add_word_fact.
+  iMod ("HΦ" with "[Hwg]").
+  {
+    iExists waiters.
+    iFrame. iPureIntro.
 
-Lemma wp_WaitGroup__Wait wg γ P n :
-  {{{ own_WaitGroup wg γ n P }}}
-    method_call #sync.pkg_name' #"WaitGroup'ptr" #"Wait" wg
-  {{{ RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜ uint.nat i ≥ uint.nat n ⌝ ∨ (P i) }}}.
-Proof.
+    (* FIXME: lemma *)
+    clear -H HnoWaitersIfZero Hbounds.
+    word_cleanup.
+    Transparent w64_word_instance.
+    intros Hz. apply HnoWaitersIfZero.
+    simpl in *.
+    replace (32 `mod` 2^64) with (32) in * by reflexivity.
+    rewrite Z.shiftl_mul_pow2 // in Hz.
+    Z.div_mod_to_equations; lia.
+  }
+  iModIntro.
+  wp_pures.
+  wp_store.
+  wp_pures.
+  wp_alloc v_ptr as "Hv_ptr". wp_pures.
+  wp_load. wp_pures.
+  wp_store. wp_pures.
+  wp_alloc w_ptr as "Hw_ptr". wp_pures.
+  wp_load. wp_pures.
+  wp_store. wp_pures.
+  wp_load. wp_pures.
+  destruct bool_decide eqn:Hbad.
+  {
+    exfalso.
+    rewrite bool_decide_eq_true in Hbad.
+    (* FIXME: lemma+automation *)
+    destruct Hbounds.
+    word_cleanup.
+    Transparent w64_word_instance.
+    simpl in *.
+    rewrite -!Z.land_ones //
+      Z.land_lor_distr_l Z.shiftr_lor in Hbad.
+    rewrite !Z.land_ones // in Hbad.
+    replace (32 `mod` 2^64) with (32) in * by reflexivity.
+    rewrite !Z.mod_mod // in Hbad.
+    rewrite !Z.shiftl_mul_pow2 // in Hbad.
+    rewrite !Z.shiftr_div_pow2 // in Hbad.
+    clear HnoWaitersIfZero.
+    replace ((uint.Z waiters `mod` 2 ^ 64) `div` 2 ^ 32) with (0) in Hbad.
+    2:{
+      clear.
+      simpl in *.
+      rewrite Z.div_small //.
+      Z.div_mod_to_equations. word.
+    }
+    rewrite Z.lor_0_r in Hbad.
+    rewrite (Z.mod_small (_ + _)) in Hbad; last lia.
+    rewrite (Z.mod_small (_ * _)) in Hbad; last lia.
+    rewrite Z.div_mul // in Hbad.
+    rewrite (Z.mod_small (_ + _)) in Hbad; last lia.
+    replace (32 - 1) with (31) in * by reflexivity.
+    rewrite word.signed_of_Z
+      word.swrap_as_div_mod in Hbad.
+    replace (32 - 1) with (31) in * by reflexivity.
+    rewrite (Z.mod_small (_ + _)) in Hbad; last lia.
+    rewrite Z.div_small in Hbad; last lia.
+    rewrite Z.mul_0_r in Hbad.
+    rewrite Z.sub_0_r in Hbad.
+    replace (sint.Z (W32 0)) with (0) in * by reflexivity.
+    lia.
+    Opaque w64_word_instance.
+  }
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_bind (if: _ then _ else do: #())%E.
+  clear Hbad.
+  iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[Hv_ptr Hdelta_ptr]").
+  {
+    destruct bool_decide.
+    - wp_pures.
+      iSplitR; first done.
+      iNamedAccu.
+    - wp_pures. wp_load.
+      wp_pures.
+      destruct bool_decide eqn:Heq1.
+      + wp_pures. wp_load. wp_load. wp_pures.
+        rewrite bool_decide_eq_true in Heq1.
+        destruct bool_decide eqn:Heq2.
+        * exfalso.
+          {
+            rewrite bool_decide_eq_true in Heq2.
+            (* more word reasoning *)
+            admit.
+          }
+        * wp_pures. iFrame. done.
+      + wp_pures. iFrame. done.
+  }
+  iIntros (?) "[% H]". iNamed "H".
+  subst.
+  wp_pures.
+  wp_load.
+  wp_pures.
 Admitted.
 
 End proof.
 End goose_lang.
 
 Typeclasses Opaque is_Mutex own_Mutex
-            is_Locker is_Cond
-            is_WaitGroup own_WaitGroup own_WaitGroup_token own_free_WaitGroup.
+            is_Locker is_Cond.
