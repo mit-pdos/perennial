@@ -1482,8 +1482,8 @@ Definition reverseAssignOps32 : val :=
     let: "y" := (ref_ty uint32T (zero_val uint32T)) in
     do:  ("y" <-[uint32T] ((![uint32T] "y") + (![uint32T] "x")));;;
     do:  ("y" <-[uint32T] ((![uint32T] "y") - (![uint32T] "x")));;;
-    do:  ("y" <-[uint32T] ((![uint32T] "y") + #(W64 1)));;;
-    do:  ("y" <-[uint32T] ((![uint32T] "y") - #(W64 1)));;;
+    do:  ("y" <-[uint32T] ((![uint32T] "y") + #(W32 1)));;;
+    do:  ("y" <-[uint32T] ((![uint32T] "y") - #(W32 1)));;;
     return: (![uint32T] "y")).
 
 (* go: operations.go:22:6 *)

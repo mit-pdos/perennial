@@ -269,17 +269,15 @@ Qed.
 
 Context `{!ghost_varG Σ w32}.
 
-Definition N : namespace. Admitted.
-
-Definition is_sema (x : loc) γ : iProp Σ :=
+Definition is_sema (x : loc) γ N : iProp Σ :=
   inv N (∃ (v : w32), x ↦ v ∗ ghost_var γ (1/2) v).
 
 Definition own_sema γ (v : w32) : iProp Σ :=
   ghost_var γ (1/2) v.
 
-Lemma wp_runtime_Semacquire (sema : loc) γ :
+Lemma wp_runtime_Semacquire (sema : loc) γ N :
   ∀ Φ,
-  is_initialized ∗ is_sema sema γ -∗
+  is_initialized ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP func_call #sync.pkg_name' #"runtime_Semacquire" #sema {{ Φ }}.
 Proof.
@@ -345,11 +343,11 @@ Proof.
   }
 Qed.
 
-Lemma wp_runtime_Semrelease (sema : loc) γ :
+Lemma wp_runtime_Semrelease (sema : loc) γ N (_u1 : bool) (_u2 : w64):
   ∀ Φ,
-  is_initialized ∗ is_sema sema γ -∗
+  is_initialized ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (own_sema γ (word.add v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP func_call #sync.pkg_name' #"runtime_Semrelease" #sema {{ Φ }}.
+  WP func_call #sync.pkg_name' #"runtime_Semrelease" #sema #_u1 #_u2 {{ Φ }}.
 Proof.
 Admitted.
 
@@ -397,22 +395,43 @@ Definition R : iProp Σ. Admitted.
 Definition S (unfinished_waiters : nat): iProp Σ. Admitted.
 Definition T : iProp Σ. Admitted.
 
-Local Definition is_WaitGroup_inv wg γcounter : iProp Σ :=
-  inv N (∃ counter waiters unfinished_waiters,
+Record WaitGroup_names := {
+    counter_gn : gname ;
+    sema_gn : gname
+  }.
+
+Definition N : namespace. Admitted.
+Implicit Type γ : WaitGroup_names.
+
+Local Definition is_WaitGroup_inv wg γ : iProp Σ :=
+  inv (N.@"wg") (∃ counter waiters unfinished_waiters,
   "Hptsto" ∷ own_Uint64 (struct.field_ref_f sync.WaitGroup "state" wg) (DfracOwn (1/2)) (enc waiters counter) ∗
   "Hptsto2" ∷ (
       if decide (counter = W32 0 ∧ waiters ≠ W32 0) then True
       else own_Uint64 (struct.field_ref_f sync.WaitGroup "state" wg) (DfracOwn (1/2)) (enc waiters counter)
     ) ∗
-  "Hctr" ∷ ghost_var γcounter (1/2)%Qp counter ∗
+  "Hctr" ∷ ghost_var γ.(counter_gn) (1/2)%Qp counter ∗
 
   "Hunfinished" ∷ S unfinished_waiters ∗
   "Hunfinished_token" ∷  [∗] (replicate unfinished_waiters R) ∗
 
   "HR" ∷ ([∗] (replicate (uint.nat waiters) R)) ∗
   "%Hunfinished_zero" ∷ ⌜ unfinished_waiters > 0 → waiters = W32 0 ∧ counter = W32 0 ⌝
-  )%I
-.
+  )%I.
+
+Local Definition is_WaitGroup_sema_inv γ : iProp Σ :=
+  inv (N.@"semInv") (∃ (unfinished_waiters sema : w32),
+        "Hs" ∷ own_sema γ.(sema_gn) sema ∗
+        "HT" ∷  [∗] (replicate (uint.nat sema) T) ∗
+        (* This ensures that the semaphore doesn't oveflow .*)
+        "HS" ∷ S (uint.nat unfinished_waiters) ∗
+        "%Hs" ∷ ⌜ uint.nat sema ≤ uint.nat unfinished_waiters ⌝
+    ).
+
+Local Definition is_WaitGroup wg γ : iProp Σ :=
+  "#Hsem" ∷ is_sema (struct.field_ref_f sync.WaitGroup "sema" wg) γ.(sema_gn) (N.@"sema") ∗
+  "#Hinv" ∷ is_WaitGroup_inv wg γ ∗
+  "#HsemInv" ∷ is_WaitGroup_sema_inv γ.
 
 (* Prepare to Wait() *)
 Lemma step1 w :
@@ -424,28 +443,38 @@ Lemma step2 :
 Admitted.
 
 Lemma step3 uw :
-  S uw ==∗ S (1+uw) ∗ T.
+  S uw ∗ S uw ==∗ S (1+uw) ∗ S (1+uw) ∗ T.
 Admitted.
 
 Lemma step3_many uw :
-  S 0 ==∗ S uw ∗ ([∗] replicate uw T).
+  S 0 ∗ S 0 ==∗ S uw ∗ S uw ∗ ([∗] replicate uw T).
 Proof.
   iInduction uw as [] "IH".
-  { iIntros "$". rewrite replicate_0. iModIntro. done. }
+  { iIntros "[$ $]". rewrite replicate_0. iModIntro. done. }
   iIntros "H0".
   simpl.
-  iMod ("IH" with "[$]") as "[Huw $]".
-  by iApply step3.
+  iMod ("IH" with "[$]") as "(Huw & Huw' & $)".
+  iApply step3. iFrame.
 Qed.
 
 Lemma step4 :
   S 0 ∗ T -∗ False.
 Admitted.
 
-Definition own_WaitGroup (wg : loc) (counter : w32) : iProp Σ :=
-  ∃ γcounter,
-    ghost_var γcounter (1/2)%Qp counter ∗
-    is_WaitGroup_inv wg γcounter.
+Lemma step5 uw uw' :
+  S uw ∗ S uw' -∗ ⌜ uw = uw' ⌝.
+Admitted.
+
+Lemma step6 uw n :
+  (n > uw)%nat →
+  [∗] replicate n T -∗
+  S uw -∗ False.
+Proof.
+Admitted.
+
+
+Definition own_WaitGroup γ (counter : w32) : iProp Σ :=
+  ghost_var γ.(counter_gn) (1/2)%Qp counter.
 
 Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
   delta' = (W32 (uint.Z delta)) →
@@ -465,21 +494,22 @@ Qed.
   https://github.com/golang/go/issues/20687
   https://go-review.googlesource.com/c/go/+/140937/2/src/sync/waitgroup.go *)
 
-Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) :
+Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ :
   let delta' := (W32 (uint.Z delta)) in
   ∀ Φ,
-  is_initialized -∗
+  is_initialized ∗ is_WaitGroup wg γ -∗
   (|={⊤,↑N}=>
      ∃ oldc,
-       "Hwg" ∷ own_WaitGroup wg oldc ∗
+       "Hwg" ∷ own_WaitGroup γ oldc ∗
        "%Hbounds" ∷ ⌜ 0 ≤ sint.Z oldc + sint.Z delta' < 2^31 ⌝ ∗
        "HQ" ∷ (⌜ oldc ≠ W32 0 ⌝ ∨ Q 0) ∗
-       "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ Q 0) -∗ own_WaitGroup wg (word.add oldc delta') ={↑N,⊤}=∗ Φ #())
+       "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ Q 0) -∗ own_WaitGroup γ (word.add oldc delta') ={↑N,⊤}=∗ Φ #())
   ) -∗
   WP method_call #sync.pkg_name' #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
 Proof.
   intros delta'.
-  iIntros (?) "#Hi HΦ". iNamed "Hi".
+  iIntros (?) "[#Hi #His] HΦ". iNamed "Hi".
+  iNamed "His".
   wp_method_call. wp_call.
   wp_pures.
   wp_apply wp_with_defer.
@@ -497,13 +527,13 @@ Proof.
   iMod "HΦ".
   iNamed "HΦ".
   unfold own_WaitGroup.
-  iDestruct "Hwg" as (?) "[Hctr_in #Hinv]".
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi".
-  rewrite difference_diag_L.
-  iModIntro.
-  iCombine "Hctr Hctr_in" as "Hctr" gives %[_ ->].
+  iApply fupd_mask_intro.
+  { solve_ndisj. }
+  iIntros "Hmask".
+  iCombine "Hctr Hwg" as "Hctr" gives %[_ ->].
   destruct decide as [Hw|HnotInWakingState].
   {
     iExFalso.
@@ -532,6 +562,7 @@ Proof.
   }
   destruct (decide (word.add oldc delta' = W32 0 ∧ waiters ≠ W32 0)) as [Hwake|HnoWake].
   2:{ (* not done, no need to wake waiters. *)
+    iMod "Hmask" as "_".
     iMod ("Hclose" with "[Hwg Hunfinished Hunfinished_token Hctr HR]").
     {
       iNext.
@@ -629,7 +660,8 @@ Proof.
 
   (* will have to wake *)
   iDestruct "Hwg" as "[Hwg Hwg2]".
-  iMod ("Hclose" with "[Hwg2 Hunfinished Hunfinished_token Hctr HR]").
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[Hwg2 Hunfinished Hunfinished_token Hctr HR]") as "_".
   {
     iNext.
     iExists _, _, O; iFrame "Hwg2 ∗".
@@ -719,10 +751,11 @@ Proof.
   wp_load.
   wp_pures.
   rewrite bool_decide_true //.
+  wp_pure_lc "Hlc".
+  wp_pure_lc "Hlc2".
   wp_pures.
 
   wp_load.
-  wp_pure_lc "Hlc".
   wp_pures.
 
   (* want to get a bunch of unfinisheds. *)
@@ -750,12 +783,19 @@ Proof.
   }
   clear Hunfinished_zero.
   iClear "Hunfinished_token".
-  iMod (step3_many (uint.nat waiters) with "Hunfinished") as "[Hunfinished Hunfinished_tokens]".
-  rewrite enc_0.
+  iInv "HsemInv" as "Hi" "Hclose2".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iNamed "Hi".
+  iDestruct (step5 with "[$]") as %Heq.
+  rewrite Heq in Hs |- *. clear Heq unfinished_waiters.
+  iMod (step3_many (uint.nat waiters) with "[$]") as "(Hunfinished & HS & Hunfinished_tokens)".
+  iEval (rewrite enc_0) in "Hwg".
   iDestruct "Hwg" as "[Hwg Hwg2]".
   destruct Hwake as [Hwake1 Hwake2].
   rewrite Hwake1.
-  iMod ("Hclose" with "[Hwg Hwg2 Hunfinished HR Hctr]").
+  iMod ("Hclose2" with "[HS Hs HT]") as "_".
+  { iFrame. iPureIntro. word. }
+  iMod ("Hclose" with "[Hwg Hwg2 Hunfinished HR Hctr]") as "_".
   {
     iNext. iExists _, _, (uint.nat waiters).
     iFrame. rewrite replicate_0.
@@ -765,7 +805,77 @@ Proof.
   iModIntro.
   wp_pures.
   (* call semrelease. *)
-Admitted.
+
+  iAssert (
+      ∃ (wrem : w32),
+        "Hw_ptr" ∷ w_ptr ↦ wrem ∗
+        "Hunfinished_tokens" ∷ [∗] replicate (uint.nat wrem) T
+    )%I with "[Hw_ptr Hunfinished_tokens]" as "HloopInv".
+  { iFrame. }
+
+  wp_for.
+  iNamed "HloopInv".
+  wp_pures.
+  wp_load.
+  wp_pures.
+  destruct bool_decide eqn:Hwrem.
+  { (* no more waiters to wake up. *)
+    rewrite decide_False; last naive_solver.
+    rewrite decide_True //.
+    wp_pures. wp_load.
+    wp_pures. iFrame.
+  }
+
+  (* wake up another waiter *)
+  rewrite bool_decide_eq_false in Hwrem.
+  rewrite decide_True //.
+  wp_pures.
+  wp_load.
+  wp_pure_lc "Hlc".
+  wp_pures.
+  wp_apply (wp_runtime_Semrelease with "[$]").
+  iInv "HsemInv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  clear sema Hs.
+  iNamed "Hi".
+  iApply fupd_mask_intro.
+  { solve_ndisj. }
+  iIntros "Hmask".
+  iExists _; iFrame "Hs".
+  iIntros "Hs".
+  iMod "Hmask" as "_".
+  replace (uint.nat wrem)%nat with (1+(uint.nat (word.sub wrem (W32 1))))%nat.
+  2:{
+    (* FIXME: word *)
+    apply w32_val_neq in Hwrem. word.
+  }
+  rewrite replicate_S.
+  iDestruct "Hunfinished_tokens" as "[HTnew Hunfinished_tokens]".
+
+  iMod ("Hclose" with "[Hs HT HTnew HS]").
+  {
+    destruct (decide (uint.nat sema < uint.nat unfinished_waiters)).
+    2:{ (* impossible *)
+      assert (sema = unfinished_waiters) by word. subst.
+      iDestruct (step6 _ (1+(uint.nat unfinished_waiters))%nat with "[$] [$]") as %[].
+      lia.
+    }
+    iFrame "Hs ∗".
+    replace (uint.nat (word.add sema (W32 1))) with (uint.nat sema + 1)%nat.
+    2:{ word. }
+    rewrite Nat.add_comm /=. iFrame.
+    iPureIntro. word.
+  }
+  iModIntro.
+  wp_pures.
+  iApply wp_for_post_do.
+  wp_pures.
+  wp_load.
+  wp_pures.
+  wp_store.
+  wp_pures.
+  iFrame.
+Qed.
 
 End proof.
 End goose_lang.

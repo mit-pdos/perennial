@@ -92,7 +92,7 @@ Definition WaitGroup__Add : val :=
     else do:  #());;;
     do:  (let: "$a0" := #(W64 0) in
     (method_call #atomic.pkg_name' #"Uint64'ptr" #"Store" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) "$a0");;;
-    (for: (λ: <>, (![uint32T] "w") ≠ #(W32 0)); (λ: <>, do:  ("w" <-[uint32T] ((![uint32T] "w") - #(W64 1)))) := λ: <>,
+    (for: (λ: <>, (![uint32T] "w") ≠ #(W32 0)); (λ: <>, do:  ("w" <-[uint32T] ((![uint32T] "w") - #(W32 1)))) := λ: <>,
       do:  (let: "$a0" := (struct.field_ref WaitGroup "sema" (![ptrT] "wg")) in
       let: "$a1" := #false in
       let: "$a2" := #(W64 0) in
