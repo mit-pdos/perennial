@@ -499,10 +499,10 @@ Section goose_lang.
       iIntros; iApply "HΦ"; iFrame; done.
   Qed.
 
-  Lemma wp_typed_Load (l : loc) (v : V) dq :
+  Lemma wp_typed_Load s E (l : loc) (v : V) dq :
     is_primitive_type t →
     {{{ l ↦{dq} v }}}
-      ! #l
+      ! #l @ s ; E
     {{{ RET #v; l ↦{dq} v }}}.
   Proof using Type*.
     intros Hprim.
@@ -519,10 +519,10 @@ Section goose_lang.
       iApply (wp_load with "[$Hl]"); iFrame.
   Qed.
 
-  Lemma wp_typed_AtomicStore (l : loc) (v v' : V) :
+  Lemma wp_typed_AtomicStore s E (l : loc) (v v' : V) :
     is_primitive_type t →
     {{{ l ↦ v }}}
-      AtomicStore #l #v'
+      AtomicStore #l #v' @ s ; E
     {{{ RET #(); l ↦ v' }}}.
   Proof using Type*.
     intros Hprim.

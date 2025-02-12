@@ -122,6 +122,13 @@ Proof.
   iIntros "H". rewrite /for_postcondition. iLeft. iFrame "H". iPureIntro. by eexists.
 Qed.
 
+Lemma wp_for_post_return stk E (post : val) P Φ v :
+  Φ (return_val v) -∗
+  for_postcondition stk E post P Φ (return_val v).
+Proof.
+  iIntros "H". rewrite /for_postcondition. repeat iRight. iExists _. iFrame "H". done.
+Qed.
+
 End wps.
 
 (** Tactic for convenient loop reasoning *)

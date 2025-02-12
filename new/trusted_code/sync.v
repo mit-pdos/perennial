@@ -55,14 +55,14 @@ Definition runtime_Semacquire : val :=
     ```
 *)
   λ: "addr", exception_do
-    (for: #true; (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
        let: "v" := Load "addr" in
        (if: "v" = #(W32 0) then
           continue: #()
         else
           do: #()
        ) ;;;
-       (if: CmpXchg "addr" "v" ("v" - #(W32 1)) then
+       (if: Snd (CmpXchg "addr" "v" ("v" - #(W32 1))) then
           return: #()
         else
           do: #())

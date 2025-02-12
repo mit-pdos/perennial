@@ -266,6 +266,93 @@ Proof.
   iApply "HΦ". done.
 Qed.
 
+
+Context `{!ghost_varG Σ w32}.
+
+Definition N : namespace. Admitted.
+
+Definition is_sema (x : loc) γ : iProp Σ :=
+  inv N (∃ (v : w32), x ↦ v ∗ ghost_var γ (1/2) v).
+
+Definition own_sema γ (v : w32) : iProp Σ :=
+  ghost_var γ (1/2) v.
+
+Lemma wp_runtime_Semacquire (sema : loc) γ :
+  ∀ Φ,
+  is_initialized ∗ is_sema sema γ -∗
+  (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
+  WP func_call #sync.pkg_name' #"runtime_Semacquire" #sema {{ Φ }}.
+Proof.
+  iIntros (?) "[#Hi #Hsem] HΦ". iNamed "Hi".
+  wp_func_call. wp_call.
+  wp_for. wp_pures.
+  rewrite decide_True //.
+  wp_pures.
+  wp_bind (! _)%E.
+  iInv "Hsem" as ">Hi" "Hclose".
+  iDestruct "Hi" as (?) "[Hs Hv]".
+  unshelve iApply (wp_typed_Load with "[$Hs]"); try tc_solve.
+  { done. }
+  iNext.
+  iIntros "Hs".
+  iMod ("Hclose" with "[$]") as "_".
+  iModIntro.
+  wp_pures.
+  destruct bool_decide eqn:Hnz.
+  { (* keep looping *)
+    wp_pures.
+    iApply wp_for_post_continue.
+    wp_pures. iFrame.
+  }
+
+  (* try to acquire *)
+  rewrite bool_decide_eq_false in Hnz.
+  wp_pures.
+  wp_bind (CmpXchg _ _ _).
+  iInv "Hsem" as ">Hi" "Hclose".
+  iDestruct "Hi" as (?) "[Hs Hv]".
+  destruct (decide (v = v0)).
+  {
+    subst. iMod "HΦ" as (?) "[Hv2 HΦ]".
+    iCombine "Hv Hv2" as "Hv" gives %[_ <-].
+    iMod (ghost_var_update with "Hv") as "[Hv Hv2]".
+    unshelve iApply (wp_typed_cmpxchg_suc with "[$]"); try tc_solve; try done.
+    iNext. iIntros "Hs".
+    iMod ("HΦ" with "[] [$]") as "HΦ".
+    { iPureIntro.
+      (* FIXME: word *)
+      assert (uint.nat v0 ≠ O).
+      { intros ?. apply Hnz. word. }
+      word.
+    }
+    iModIntro.
+    iMod ("Hclose" with "[$]") as "_".
+    iModIntro.
+    wp_pures.
+    iApply wp_for_post_return.
+    wp_pures. done.
+  }
+  { (* cmpxchg will fail *)
+    unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve.
+    { done. }
+    { naive_solver. }
+    iNext. iIntros "Hs".
+    iMod ("Hclose" with "[$]") as "_".
+    iModIntro.
+    wp_pures.
+    iApply wp_for_post_do. wp_pures.
+    iFrame.
+  }
+Qed.
+
+Lemma wp_runtime_Semrelease (sema : loc) γ :
+  ∀ Φ,
+  is_initialized ∗ is_sema sema γ -∗
+  (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (own_sema γ (word.add v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
+  WP func_call #sync.pkg_name' #"runtime_Semrelease" #sema {{ Φ }}.
+Proof.
+Admitted.
+
 Local Definition enc (low high : w32) : w64 :=
   word.or (word.slu (W64 (uint.Z high)) (W64 32)) (W64 (uint.Z low)).
 
@@ -303,10 +390,6 @@ Local Lemma enc_0 :
 Proof. reflexivity. Qed.
 
 (* User must not do an Add() on a wg with (counter=0, waiters>0). *)
-
-Context `{!ghost_varG Σ w32}.
-
-Definition N : namespace. Admitted.
 
 Definition Q (possible_waiters : nat) : iProp Σ. Admitted.
 Definition R : iProp Σ. Admitted.
