@@ -499,6 +499,47 @@ Section goose_lang.
       iIntros; iApply "HΦ"; iFrame; done.
   Qed.
 
+  Lemma wp_typed_Load (l : loc) (v : V) dq :
+    is_primitive_type t →
+    {{{ l ↦{dq} v }}}
+      ! #l
+    {{{ RET #v; l ↦{dq} v }}}.
+  Proof using Type*.
+    intros Hprim.
+    pose proof (to_val_has_go_type v) as Hty.
+    unseal.
+    generalize dependent (#v).
+    clear dependent V.
+    intros.
+    iIntros "Hl HΦ".
+    destruct t; try by exfalso.
+    all: inversion Hty; subst;
+      inversion Hty; subst;
+      simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
+      iApply (wp_load with "[$Hl]"); iFrame.
+  Qed.
+
+  Lemma wp_typed_AtomicStore (l : loc) (v v' : V) :
+    is_primitive_type t →
+    {{{ l ↦ v }}}
+      AtomicStore #l #v'
+    {{{ RET #(); l ↦ v' }}}.
+  Proof using Type*.
+    intros Hprim.
+    pose proof (to_val_has_go_type v) as Hty_old.
+    pose proof (to_val_has_go_type v') as Hty.
+    unseal.
+    generalize dependent (#v). generalize dependent (#v').
+    clear dependent V.
+    intros.
+    iIntros "Hl HΦ".
+    destruct t; try by exfalso.
+    all: inversion Hty; subst;
+      inversion Hty_old; inversion Hty; subst;
+      simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
+      iApply (wp_atomic_store with "[$Hl]"); iFrame.
+  Qed.
+
 End goose_lang.
 
 Notation "l ↦ dq v" := (typed_pointsto l dq v%V)

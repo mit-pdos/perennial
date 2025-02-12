@@ -20,11 +20,7 @@ Proof.
   iIntros (?) "#? HΦ".
   wp_func_call. wp_call.
   iMod "HΦ" as (?) "[Haddr HΦ]".
-  rewrite to_val_unseal.
-  iApply (wp_load with "[Haddr]").
-  { rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /= right_id loc_add_0 //. }
-  iNext. iIntros "H". iApply "HΦ".
-  rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /= right_id loc_add_0 //.
+  unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
 Qed.
 
 Lemma wp_StoreUint64 (addr : loc) (v : w64) :
@@ -36,11 +32,7 @@ Proof.
   iIntros (?) "#? HΦ".
   wp_func_call. wp_call.
   iMod "HΦ" as (?) "[Haddr HΦ]".
-  rewrite to_val_unseal.
-  iApply (wp_atomic_store with "[Haddr]").
-  { rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /= right_id loc_add_0 //. }
-  iNext. iIntros "H". iApply "HΦ".
-  rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /= right_id loc_add_0 //.
+  unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve; done.
 Qed.
 
 Lemma wp_AddUint64 (addr : loc) (v : w64) :
@@ -52,8 +44,7 @@ Proof.
 Admitted.
 
 Definition own_Uint64 (u : loc) dq (v : w64) : iProp Σ :=
-  u ↦{dq} atomic.Uint64.mk (default_val _) (default_val _) v
-.
+  u ↦{dq} atomic.Uint64.mk (default_val _) (default_val _) v.
 
 Lemma wp_Uint64__Load u dq :
   ∀ Φ,
