@@ -71,13 +71,13 @@ Global Instance wp_struct_make_Field `{ffi_semantics} `{!ffi_interp ffi} `{!heap
 Admitted.
 
 
-Global Instance Field_struct_fields_split l (v : Field.t) :
-  StructFieldsSplit l v (
-    "HKey" ∷ l ↦s[zapcore.Field :: "Key"] v.(Field.Key') ∗
-    "HType" ∷ l ↦s[zapcore.Field :: "Type"] v.(Field.Type') ∗
-    "HInteger" ∷ l ↦s[zapcore.Field :: "Integer"] v.(Field.Integer') ∗
-    "HString" ∷ l ↦s[zapcore.Field :: "String"] v.(Field.String') ∗
-    "HInterface" ∷ l ↦s[zapcore.Field :: "Interface"] v.(Field.Interface')
+Global Instance Field_struct_fields_split dq l (v : Field.t) :
+  StructFieldsSplit dq l v (
+    "HKey" ∷ l ↦s[zapcore.Field :: "Key"]{dq} v.(Field.Key') ∗
+    "HType" ∷ l ↦s[zapcore.Field :: "Type"]{dq} v.(Field.Type') ∗
+    "HInteger" ∷ l ↦s[zapcore.Field :: "Integer"]{dq} v.(Field.Integer') ∗
+    "HString" ∷ l ↦s[zapcore.Field :: "String"]{dq} v.(Field.String') ∗
+    "HInterface" ∷ l ↦s[zapcore.Field :: "Interface"]{dq} v.(Field.Interface')
   ).
 Admitted.
 

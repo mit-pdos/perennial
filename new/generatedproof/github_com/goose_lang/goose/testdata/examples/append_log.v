@@ -57,11 +57,11 @@ Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance Log_struct_fields_split l (v : Log.t) :
-  StructFieldsSplit l v (
-    "Hm" ∷ l ↦s[append_log.Log :: "m"] v.(Log.m') ∗
-    "Hsz" ∷ l ↦s[append_log.Log :: "sz"] v.(Log.sz') ∗
-    "HdiskSz" ∷ l ↦s[append_log.Log :: "diskSz"] v.(Log.diskSz')
+Global Instance Log_struct_fields_split dq l (v : Log.t) :
+  StructFieldsSplit dq l v (
+    "Hm" ∷ l ↦s[append_log.Log :: "m"]{dq} v.(Log.m') ∗
+    "Hsz" ∷ l ↦s[append_log.Log :: "sz"]{dq} v.(Log.sz') ∗
+    "HdiskSz" ∷ l ↦s[append_log.Log :: "diskSz"]{dq} v.(Log.diskSz')
   ).
 Admitted.
 

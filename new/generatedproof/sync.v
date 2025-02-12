@@ -89,11 +89,11 @@ Global Instance wp_struct_make_WaitGroup `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance WaitGroup_struct_fields_split l (v : WaitGroup.t) :
-  StructFieldsSplit l v (
-    "HnoCopy" ∷ l ↦s[sync.WaitGroup :: "noCopy"] v.(WaitGroup.noCopy') ∗
-    "Hstate" ∷ l ↦s[sync.WaitGroup :: "state"] v.(WaitGroup.state') ∗
-    "Hsema" ∷ l ↦s[sync.WaitGroup :: "sema"] v.(WaitGroup.sema')
+Global Instance WaitGroup_struct_fields_split dq l (v : WaitGroup.t) :
+  StructFieldsSplit dq l v (
+    "HnoCopy" ∷ l ↦s[sync.WaitGroup :: "noCopy"]{dq} v.(WaitGroup.noCopy') ∗
+    "Hstate" ∷ l ↦s[sync.WaitGroup :: "state"]{dq} v.(WaitGroup.state') ∗
+    "Hsema" ∷ l ↦s[sync.WaitGroup :: "sema"]{dq} v.(WaitGroup.sema')
   ).
 Admitted.
 

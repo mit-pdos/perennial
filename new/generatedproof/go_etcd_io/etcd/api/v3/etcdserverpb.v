@@ -88,15 +88,15 @@ Global Instance wp_struct_make_ResponseHeader `{ffi_semantics} `{!ffi_interp ffi
 Admitted.
 
 
-Global Instance ResponseHeader_struct_fields_split l (v : ResponseHeader.t) :
-  StructFieldsSplit l v (
-    "HClusterId" ∷ l ↦s[etcdserverpb.ResponseHeader :: "ClusterId"] v.(ResponseHeader.ClusterId') ∗
-    "HMemberId" ∷ l ↦s[etcdserverpb.ResponseHeader :: "MemberId"] v.(ResponseHeader.MemberId') ∗
-    "HRevision" ∷ l ↦s[etcdserverpb.ResponseHeader :: "Revision"] v.(ResponseHeader.Revision') ∗
-    "HRaftTerm" ∷ l ↦s[etcdserverpb.ResponseHeader :: "RaftTerm"] v.(ResponseHeader.RaftTerm') ∗
-    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.ResponseHeader :: "XXX_NoUnkeyedLiteral"] v.(ResponseHeader.XXX_NoUnkeyedLiteral') ∗
-    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.ResponseHeader :: "XXX_unrecognized"] v.(ResponseHeader.XXX_unrecognized') ∗
-    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.ResponseHeader :: "XXX_sizecache"] v.(ResponseHeader.XXX_sizecache')
+Global Instance ResponseHeader_struct_fields_split dq l (v : ResponseHeader.t) :
+  StructFieldsSplit dq l v (
+    "HClusterId" ∷ l ↦s[etcdserverpb.ResponseHeader :: "ClusterId"]{dq} v.(ResponseHeader.ClusterId') ∗
+    "HMemberId" ∷ l ↦s[etcdserverpb.ResponseHeader :: "MemberId"]{dq} v.(ResponseHeader.MemberId') ∗
+    "HRevision" ∷ l ↦s[etcdserverpb.ResponseHeader :: "Revision"]{dq} v.(ResponseHeader.Revision') ∗
+    "HRaftTerm" ∷ l ↦s[etcdserverpb.ResponseHeader :: "RaftTerm"]{dq} v.(ResponseHeader.RaftTerm') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.ResponseHeader :: "XXX_NoUnkeyedLiteral"]{dq} v.(ResponseHeader.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.ResponseHeader :: "XXX_unrecognized"]{dq} v.(ResponseHeader.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.ResponseHeader :: "XXX_sizecache"]{dq} v.(ResponseHeader.XXX_sizecache')
   ).
 Admitted.
 
@@ -170,15 +170,15 @@ Global Instance wp_struct_make_RangeResponse `{ffi_semantics} `{!ffi_interp ffi}
 Admitted.
 
 
-Global Instance RangeResponse_struct_fields_split l (v : RangeResponse.t) :
-  StructFieldsSplit l v (
-    "HHeader" ∷ l ↦s[etcdserverpb.RangeResponse :: "Header"] v.(RangeResponse.Header') ∗
-    "HKvs" ∷ l ↦s[etcdserverpb.RangeResponse :: "Kvs"] v.(RangeResponse.Kvs') ∗
-    "HMore" ∷ l ↦s[etcdserverpb.RangeResponse :: "More"] v.(RangeResponse.More') ∗
-    "HCount" ∷ l ↦s[etcdserverpb.RangeResponse :: "Count"] v.(RangeResponse.Count') ∗
-    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.RangeResponse :: "XXX_NoUnkeyedLiteral"] v.(RangeResponse.XXX_NoUnkeyedLiteral') ∗
-    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.RangeResponse :: "XXX_unrecognized"] v.(RangeResponse.XXX_unrecognized') ∗
-    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.RangeResponse :: "XXX_sizecache"] v.(RangeResponse.XXX_sizecache')
+Global Instance RangeResponse_struct_fields_split dq l (v : RangeResponse.t) :
+  StructFieldsSplit dq l v (
+    "HHeader" ∷ l ↦s[etcdserverpb.RangeResponse :: "Header"]{dq} v.(RangeResponse.Header') ∗
+    "HKvs" ∷ l ↦s[etcdserverpb.RangeResponse :: "Kvs"]{dq} v.(RangeResponse.Kvs') ∗
+    "HMore" ∷ l ↦s[etcdserverpb.RangeResponse :: "More"]{dq} v.(RangeResponse.More') ∗
+    "HCount" ∷ l ↦s[etcdserverpb.RangeResponse :: "Count"]{dq} v.(RangeResponse.Count') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.RangeResponse :: "XXX_NoUnkeyedLiteral"]{dq} v.(RangeResponse.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.RangeResponse :: "XXX_unrecognized"]{dq} v.(RangeResponse.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.RangeResponse :: "XXX_sizecache"]{dq} v.(RangeResponse.XXX_sizecache')
   ).
 Admitted.
 
@@ -264,16 +264,16 @@ Global Instance wp_struct_make_Compare `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance Compare_struct_fields_split l (v : Compare.t) :
-  StructFieldsSplit l v (
-    "HResult" ∷ l ↦s[etcdserverpb.Compare :: "Result"] v.(Compare.Result') ∗
-    "HTarget" ∷ l ↦s[etcdserverpb.Compare :: "Target"] v.(Compare.Target') ∗
-    "HKey" ∷ l ↦s[etcdserverpb.Compare :: "Key"] v.(Compare.Key') ∗
-    "HTargetUnion" ∷ l ↦s[etcdserverpb.Compare :: "TargetUnion"] v.(Compare.TargetUnion') ∗
-    "HRangeEnd" ∷ l ↦s[etcdserverpb.Compare :: "RangeEnd"] v.(Compare.RangeEnd') ∗
-    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.Compare :: "XXX_NoUnkeyedLiteral"] v.(Compare.XXX_NoUnkeyedLiteral') ∗
-    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.Compare :: "XXX_unrecognized"] v.(Compare.XXX_unrecognized') ∗
-    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.Compare :: "XXX_sizecache"] v.(Compare.XXX_sizecache')
+Global Instance Compare_struct_fields_split dq l (v : Compare.t) :
+  StructFieldsSplit dq l v (
+    "HResult" ∷ l ↦s[etcdserverpb.Compare :: "Result"]{dq} v.(Compare.Result') ∗
+    "HTarget" ∷ l ↦s[etcdserverpb.Compare :: "Target"]{dq} v.(Compare.Target') ∗
+    "HKey" ∷ l ↦s[etcdserverpb.Compare :: "Key"]{dq} v.(Compare.Key') ∗
+    "HTargetUnion" ∷ l ↦s[etcdserverpb.Compare :: "TargetUnion"]{dq} v.(Compare.TargetUnion') ∗
+    "HRangeEnd" ∷ l ↦s[etcdserverpb.Compare :: "RangeEnd"]{dq} v.(Compare.RangeEnd') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.Compare :: "XXX_NoUnkeyedLiteral"]{dq} v.(Compare.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.Compare :: "XXX_unrecognized"]{dq} v.(Compare.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.Compare :: "XXX_sizecache"]{dq} v.(Compare.XXX_sizecache')
   ).
 Admitted.
 
@@ -342,14 +342,14 @@ Global Instance wp_struct_make_TxnResponse `{ffi_semantics} `{!ffi_interp ffi} `
 Admitted.
 
 
-Global Instance TxnResponse_struct_fields_split l (v : TxnResponse.t) :
-  StructFieldsSplit l v (
-    "HHeader" ∷ l ↦s[etcdserverpb.TxnResponse :: "Header"] v.(TxnResponse.Header') ∗
-    "HSucceeded" ∷ l ↦s[etcdserverpb.TxnResponse :: "Succeeded"] v.(TxnResponse.Succeeded') ∗
-    "HResponses" ∷ l ↦s[etcdserverpb.TxnResponse :: "Responses"] v.(TxnResponse.Responses') ∗
-    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.TxnResponse :: "XXX_NoUnkeyedLiteral"] v.(TxnResponse.XXX_NoUnkeyedLiteral') ∗
-    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.TxnResponse :: "XXX_unrecognized"] v.(TxnResponse.XXX_unrecognized') ∗
-    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.TxnResponse :: "XXX_sizecache"] v.(TxnResponse.XXX_sizecache')
+Global Instance TxnResponse_struct_fields_split dq l (v : TxnResponse.t) :
+  StructFieldsSplit dq l v (
+    "HHeader" ∷ l ↦s[etcdserverpb.TxnResponse :: "Header"]{dq} v.(TxnResponse.Header') ∗
+    "HSucceeded" ∷ l ↦s[etcdserverpb.TxnResponse :: "Succeeded"]{dq} v.(TxnResponse.Succeeded') ∗
+    "HResponses" ∷ l ↦s[etcdserverpb.TxnResponse :: "Responses"]{dq} v.(TxnResponse.Responses') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.TxnResponse :: "XXX_NoUnkeyedLiteral"]{dq} v.(TxnResponse.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.TxnResponse :: "XXX_unrecognized"]{dq} v.(TxnResponse.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.TxnResponse :: "XXX_sizecache"]{dq} v.(TxnResponse.XXX_sizecache')
   ).
 Admitted.
 

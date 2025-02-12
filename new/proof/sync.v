@@ -266,66 +266,294 @@ Proof.
   iApply "HΦ". done.
 Qed.
 
-Definition own_WaitGroup (wg : loc) (counter : w64) : iProp Σ :=
-  ∃ (waiters : w32),
-    "Hwg" ∷ own_Uint64 (struct.field_ref_f sync.WaitGroup "state" wg)
-      (word.or (word.slu counter (W64 32)) (W64 (uint.Z waiters))) ∗
-    "%HnoWaitersIfZero" ∷ ⌜ uint.Z (word.slu counter (W64 32)) = 0 → uint.Z waiters = 0 ⌝.
+Local Definition enc (low high : w32) : w64 :=
+  word.or (word.slu (W64 (uint.Z high)) (W64 32)) (W64 (uint.Z low)).
+
+Local Lemma enc_add_high (low high delta : w32) :
+  word.add (enc low high) (word.slu (W64 (uint.Z delta)) (W64 32)) =
+  enc low (word.add high delta).
+Proof.
+Admitted.
+
+Local Lemma enc_get_high (low high : w32) :
+  W32 (uint.Z (word.sru (enc low high) (W64 32))) = high.
+Proof.
+Admitted.
+
+Local Lemma enc_get_low (low high : w32) :
+  W32 (uint.Z (enc low high)) = low.
+Proof.
+Admitted.
+
+Local Lemma enc_inj (low high low' high' : w32) :
+  enc low high = enc low' high' →
+  low = low' ∧ high = high'.
+Proof.
+  intros Heq.
+  split.
+  - erewrite <-(enc_get_low low high).
+    rewrite Heq enc_get_low //.
+  - erewrite <-(enc_get_high low high).
+    rewrite Heq enc_get_high //.
+Qed.
+
+
+Local Lemma enc_0 :
+  W64 0 = enc (W32 0) (W32 0).
+Proof. reflexivity. Qed.
+
+(* User must not do an Add() on a wg with (counter=0, waiters>0). *)
+
+Context `{!ghost_varG Σ w32}.
+
+Definition N : namespace. Admitted.
+
+Definition Q (possible_waiters : nat) : iProp Σ. Admitted.
+Definition R : iProp Σ. Admitted.
+
+Definition S (unfinished_waiters : nat): iProp Σ. Admitted.
+Definition T : iProp Σ. Admitted.
+
+Local Definition is_WaitGroup_inv wg γcounter : iProp Σ :=
+  inv N (∃ counter waiters unfinished_waiters,
+  "Hptsto" ∷ own_Uint64 (struct.field_ref_f sync.WaitGroup "state" wg) (DfracOwn (1/2)) (enc waiters counter) ∗
+  "Hptsto2" ∷ (
+      if decide (counter = W32 0 ∧ waiters ≠ W32 0) then True
+      else own_Uint64 (struct.field_ref_f sync.WaitGroup "state" wg) (DfracOwn (1/2)) (enc waiters counter)
+    ) ∗
+  "Hctr" ∷ ghost_var γcounter (1/2)%Qp counter ∗
+
+  "Hunfinished" ∷ S unfinished_waiters ∗
+  "Hunfinished_token" ∷  [∗] (replicate unfinished_waiters R) ∗
+
+  "HR" ∷ ([∗] (replicate (uint.nat waiters) R)) ∗
+  "%Hunfinished_zero" ∷ ⌜ unfinished_waiters > 0 → waiters = W32 0 ∧ counter = W32 0 ⌝
+  )%I
+.
+
+(* Prepare to Wait() *)
+Lemma step1 w :
+  Q w ==∗ Q (1+w) ∗ R.
+Admitted.
+
+Lemma step2 :
+  Q 0 ∗ R -∗ False.
+Admitted.
+
+Lemma step3 uw :
+  S uw ==∗ S (1+uw) ∗ T.
+Admitted.
+
+Lemma step3_many uw :
+  S 0 ==∗ S uw ∗ ([∗] replicate uw T).
+Proof.
+  iInduction uw as [] "IH".
+  { iIntros "$". rewrite replicate_0. iModIntro. done. }
+  iIntros "H0".
+  simpl.
+  iMod ("IH" with "[$]") as "[Huw $]".
+  by iApply step3.
+Qed.
+
+Lemma step4 :
+  S 0 ∗ T -∗ False.
+Admitted.
+
+Definition own_WaitGroup (wg : loc) (counter : w32) : iProp Σ :=
+  ∃ γcounter,
+    ghost_var γcounter (1/2)%Qp counter ∗
+    is_WaitGroup_inv wg γcounter.
+
+Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
+  delta' = (W32 (uint.Z delta)) →
+  word.slu delta (W64 32) = word.slu (W64 (uint.Z delta')) (W64 32).
+Proof.
+Admitted.
+
+Lemma atomic_Uint64_inj a b c a' b' c' :
+  atomic.Uint64.mk a b c = atomic.Uint64.mk a' b' c' →
+  c = c'.
+Proof.
+  inversion 1.
+  done.
+Qed.
 
 (* XXX: overflow?
   https://github.com/golang/go/issues/20687
   https://go-review.googlesource.com/c/go/+/140937/2/src/sync/waitgroup.go *)
 
-Local Lemma wg_add_word_fact (counter delta : w64) (waiters : w32) :
-  word.add (word.or (word.slu counter (W64 32)) (W64 (uint.Z waiters))) (word.slu delta (W64 32)) =
-  word.or (word.slu (word.add counter delta) (W64 32)) (W64 (uint.Z waiters)).
-Proof.
-Admitted.
-
 Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) :
+  let delta' := (W32 (uint.Z delta)) in
   ∀ Φ,
   is_initialized -∗
-  (|={⊤,∅}=> ∃ oldc, own_WaitGroup wg oldc ∗
-                    ⌜ uint.Z oldc > uint.Z delta ∧
-                      uint.Z oldc + uint.Z delta < 2^31 ⌝ ∗
-    (own_WaitGroup wg (word.add oldc delta) ={∅,⊤}=∗ Φ #())) -∗
+  (|={⊤,↑N}=>
+     ∃ oldc,
+       "Hwg" ∷ own_WaitGroup wg oldc ∗
+       "%Hbounds" ∷ ⌜ 0 ≤ sint.Z oldc + sint.Z delta' < 2^31 ⌝ ∗
+       "HQ" ∷ (⌜ oldc ≠ W32 0 ⌝ ∨ Q 0) ∗
+       "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ Q 0) -∗ own_WaitGroup wg (word.add oldc delta') ={↑N,⊤}=∗ Φ #())
+  ) -∗
   WP method_call #sync.pkg_name' #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
 Proof.
+  intros delta'.
   iIntros (?) "#Hi HΦ". iNamed "Hi".
   wp_method_call. wp_call.
   wp_pures.
   wp_apply wp_with_defer.
   iIntros (?) "Hdefer".
   simpl subst.
-  wp_pures.
-  wp_alloc wg_ptr as "Hwg_ptr". wp_pures.
+  wp_alloc wg_ptr as "Hwg_ptr".
+  wp_pure_lc "Hlc". wp_pures.
   wp_alloc delta_ptr as "Hdelta_ptr". wp_pures.
   rewrite -!default_val_eq_zero_val.
   wp_alloc state_ptr as "Hstate_ptr". wp_pures.
   wp_load. wp_pures.
   wp_load. wp_pures.
-  wp_apply (wp_Uint64__Add with "[$]").
-  iMod "HΦ" as (?) "(Hwg & %Hbounds & HΦ)".
-  iNamed "Hwg".
-  iModIntro.
-  iExists _. iFrame.
-  iIntros "Hwg".
-  rewrite wg_add_word_fact.
-  iMod ("HΦ" with "[Hwg]").
-  {
-    iExists waiters.
-    iFrame. iPureIntro.
 
-    (* FIXME: lemma *)
-    clear -H HnoWaitersIfZero Hbounds.
-    word_cleanup.
-    Transparent w64_word_instance.
-    intros Hz. apply HnoWaitersIfZero.
-    simpl in *.
-    replace (32 `mod` 2^64) with (32) in * by reflexivity.
-    rewrite Z.shiftl_mul_pow2 // in Hz.
-    Z.div_mod_to_equations; lia.
+  wp_apply (wp_Uint64__Add with "[$]").
+  iMod "HΦ".
+  iNamed "HΦ".
+  unfold own_WaitGroup.
+  iDestruct "Hwg" as (?) "[Hctr_in #Hinv]".
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iNamed "Hi".
+  rewrite difference_diag_L.
+  iModIntro.
+  iCombine "Hctr Hctr_in" as "Hctr" gives %[_ ->].
+  destruct decide as [Hw|HnotInWakingState].
+  {
+    iExFalso.
+    destruct Hw as [-> Hw].
+    destruct (uint.nat waiters) eqn:Hx.
+    { exfalso. apply Hw. word. }
+    iDestruct "HR" as "[HR _]".
+    iDestruct "HQ" as "[%|HQ]".
+    { done. }
+    iDestruct (step2 with "[$]") as %[].
   }
+  iCombine "Hptsto Hptsto2" as "Hptsto".
+  iExists _. iFrame.
+  rewrite (wg_delta_to_w32 delta') // enc_add_high.
+  iMod (ghost_var_update (word.add oldc delta') with "Hctr") as "[Hctr Hctr_in]".
+  iIntros "Hwg".
+  destruct unfinished_waiters.
+  2:{
+    iExFalso.
+    specialize (Hunfinished_zero ltac:(done)).
+    intuition. subst.
+    iDestruct "HQ" as "[%|HQ]"; first done.
+    rewrite replicate_S. iClear "HR".
+    iDestruct "Hunfinished_token" as "[HR _]".
+    iDestruct (step2 with "[$]") as %[].
+  }
+  destruct (decide (word.add oldc delta' = W32 0 ∧ waiters ≠ W32 0)) as [Hwake|HnoWake].
+  2:{ (* not done, no need to wake waiters. *)
+    iMod ("Hclose" with "[Hwg Hunfinished Hunfinished_token Hctr HR]").
+    {
+      iNext.
+      iDestruct "Hwg" as "[Hwg Hwg2]".
+      iExists _, _, O; iFrame "Hwg ∗".
+      rewrite decide_False; last intuition.
+      iFrame. done.
+    }
+    iMod ("HΦ" with "[$] [$]").
+    iModIntro.
+    wp_pures.
+    wp_store.
+    wp_pures.
+    wp_alloc v_ptr as "Hv_ptr". wp_pures.
+    wp_load. wp_pures.
+    wp_store. wp_pures.
+    rewrite enc_get_high.
+
+    wp_alloc w_ptr as "Hw_ptr". wp_pures.
+    wp_load. wp_pures.
+    wp_store. wp_pures.
+    rewrite enc_get_low.
+
+    wp_load. wp_pures.
+    destruct bool_decide eqn:Hbad.
+    {
+      exfalso.
+      rewrite bool_decide_eq_true in Hbad.
+      (* FIXME: word should do these. *)
+      rewrite word.signed_add in Hbad.
+      replace (sint.Z (W32 0)) with 0 in * by reflexivity.
+      rewrite word.swrap_inrange in Hbad; lia.
+    }
+    wp_pures.
+    wp_load.
+    wp_pures.
+    wp_bind (if: _ then _ else do: #())%E.
+    clear Hbad.
+    iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[Hv_ptr Hdelta_ptr]").
+    {
+      destruct bool_decide eqn:Heq0.
+      - wp_pures.
+        iSplitR; first done.
+        iNamedAccu.
+      - rewrite bool_decide_eq_false in Heq0.
+        wp_pures. wp_load.
+        wp_pures.
+        destruct bool_decide eqn:Heq1.
+        + wp_pures. wp_load. wp_load. wp_pures.
+          replace (W32 (uint.Z delta)) with delta' by reflexivity.
+          rewrite bool_decide_eq_true in Heq1.
+          destruct bool_decide eqn:Heq2.
+          * exfalso. rewrite bool_decide_eq_true in Heq2.
+            { (* FIXME: word. *)
+              assert (sint.Z oldc = 0).
+              {
+                word_cleanup.
+                rewrite word.signed_add /word.swrap in Heq2_signed.
+                word.
+              }
+              apply Heq0. intuition. exfalso. apply H3.
+              { apply word.signed_inj. rewrite H0 //. }
+              word.
+            }
+          * wp_pures. iFrame. done.
+        + wp_pures. iFrame. done.
+    }
+    iIntros (?) "[% H]". iNamed "H".
+    subst.
+    wp_pures.
+    wp_load.
+    wp_pures.
+    destruct (bool_decide) eqn:Heq1.
+    { (* no need to wake anyone up *) wp_pures. wp_load. wp_pures. iFrame. }
+    rewrite bool_decide_eq_false in Heq1.
+    wp_pures. wp_load. wp_pures.
+    rewrite bool_decide_true.
+    { (* no need to wake anyone up *) wp_pures. wp_load. wp_pures. iFrame. }
+    apply not_and_l in HnoWake, HnotInWakingState.
+    destruct HnoWake as [|].
+    2:{ by apply dec_stable. }
+    destruct HnotInWakingState as [|].
+    2:{ by apply dec_stable. }
+    apply Znot_gt_le in Heq1.
+    exfalso.
+    apply H0. clear H0. apply word.signed_inj.
+    replace (sint.Z (W32 0)) with 0 in * by reflexivity.
+    intuition.
+    apply Z.le_antisymm.
+    { word. }
+    { word_cleanup.
+      rewrite word.signed_add /word.swrap in H2 |- *.
+      word. }
+  }
+
+  (* will have to wake *)
+  iDestruct "Hwg" as "[Hwg Hwg2]".
+  iMod ("Hclose" with "[Hwg2 Hunfinished Hunfinished_token Hctr HR]").
+  {
+    iNext.
+    iExists _, _, O; iFrame "Hwg2 ∗".
+    rewrite decide_True; last intuition.
+    done.
+  }
+  iMod ("HΦ" with "[$] [$]").
   iModIntro.
   wp_pures.
   wp_store.
@@ -333,50 +561,22 @@ Proof.
   wp_alloc v_ptr as "Hv_ptr". wp_pures.
   wp_load. wp_pures.
   wp_store. wp_pures.
+  rewrite enc_get_high.
+
   wp_alloc w_ptr as "Hw_ptr". wp_pures.
   wp_load. wp_pures.
   wp_store. wp_pures.
+  rewrite enc_get_low.
+
   wp_load. wp_pures.
   destruct bool_decide eqn:Hbad.
   {
     exfalso.
     rewrite bool_decide_eq_true in Hbad.
-    (* FIXME: lemma+automation *)
-    destruct Hbounds.
-    word_cleanup.
-    Transparent w64_word_instance.
-    simpl in *.
-    rewrite -!Z.land_ones //
-      Z.land_lor_distr_l Z.shiftr_lor in Hbad.
-    rewrite !Z.land_ones // in Hbad.
-    replace (32 `mod` 2^64) with (32) in * by reflexivity.
-    rewrite !Z.mod_mod // in Hbad.
-    rewrite !Z.shiftl_mul_pow2 // in Hbad.
-    rewrite !Z.shiftr_div_pow2 // in Hbad.
-    clear HnoWaitersIfZero.
-    replace ((uint.Z waiters `mod` 2 ^ 64) `div` 2 ^ 32) with (0) in Hbad.
-    2:{
-      clear.
-      simpl in *.
-      rewrite Z.div_small //.
-      Z.div_mod_to_equations. word.
-    }
-    rewrite Z.lor_0_r in Hbad.
-    rewrite (Z.mod_small (_ + _)) in Hbad; last lia.
-    rewrite (Z.mod_small (_ * _)) in Hbad; last lia.
-    rewrite Z.div_mul // in Hbad.
-    rewrite (Z.mod_small (_ + _)) in Hbad; last lia.
-    replace (32 - 1) with (31) in * by reflexivity.
-    rewrite word.signed_of_Z
-      word.swrap_as_div_mod in Hbad.
-    replace (32 - 1) with (31) in * by reflexivity.
-    rewrite (Z.mod_small (_ + _)) in Hbad; last lia.
-    rewrite Z.div_small in Hbad; last lia.
-    rewrite Z.mul_0_r in Hbad.
-    rewrite Z.sub_0_r in Hbad.
-    replace (sint.Z (W32 0)) with (0) in * by reflexivity.
-    lia.
-    Opaque w64_word_instance.
+    (* FIXME: word should do these. *)
+    rewrite word.signed_add in Hbad.
+    replace (sint.Z (W32 0)) with 0 in * by reflexivity.
+    rewrite word.swrap_inrange in Hbad; lia.
   }
   wp_pures.
   wp_load.
@@ -385,21 +585,29 @@ Proof.
   clear Hbad.
   iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[Hv_ptr Hdelta_ptr]").
   {
-    destruct bool_decide.
+    destruct bool_decide eqn:Heq0.
     - wp_pures.
       iSplitR; first done.
       iNamedAccu.
-    - wp_pures. wp_load.
+    - rewrite bool_decide_eq_false in Heq0.
+      wp_pures. wp_load.
       wp_pures.
       destruct bool_decide eqn:Heq1.
       + wp_pures. wp_load. wp_load. wp_pures.
+        replace (W32 (uint.Z delta)) with delta' by reflexivity.
         rewrite bool_decide_eq_true in Heq1.
         destruct bool_decide eqn:Heq2.
-        * exfalso.
-          {
-            rewrite bool_decide_eq_true in Heq2.
-            (* more word reasoning *)
-            admit.
+        * exfalso. rewrite bool_decide_eq_true in Heq2.
+          { (* FIXME: word. *)
+            assert (sint.Z oldc = 0).
+            {
+              word_cleanup.
+              rewrite word.signed_add /word.swrap in Heq2_signed.
+              word.
+            }
+            apply Heq0. intuition. exfalso. apply H5.
+            { apply word.signed_inj. rewrite H0 //. }
+            word.
           }
         * wp_pures. iFrame. done.
       + wp_pures. iFrame. done.
@@ -407,8 +615,73 @@ Proof.
   iIntros (?) "[% H]". iNamed "H".
   subst.
   wp_pures.
+
   wp_load.
   wp_pures.
+  rewrite bool_decide_false.
+  2:{ intuition. word. }
+  wp_pures. wp_load. wp_pures.
+  rewrite bool_decide_false.
+  2:{ intuition. }
+  wp_pures.
+  wp_load. wp_pures.
+  wp_apply (wp_Uint64__Load with "[$]").
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  iExists _; iFrame.
+  iIntros "Hwg".
+  iMod "Hmask" as "_".
+  iModIntro.
+  wp_load.
+  wp_pures.
+  rewrite bool_decide_true //.
+  wp_pures.
+
+  wp_load.
+  wp_pure_lc "Hlc".
+  wp_pures.
+
+  (* want to get a bunch of unfinisheds. *)
+  wp_apply (wp_Uint64__Store with "[$]").
+  iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iApply fupd_mask_intro.
+  { set_solver. }
+  iIntros "Hmask".
+  clear Hunfinished_zero.
+  iNamed "Hi".
+  iClear "Hptsto2".
+  iCombine "Hwg Hptsto"  gives %[_ Heq].
+  apply atomic_Uint64_inj in Heq.
+  apply enc_inj in Heq as [<- <-].
+  iCombine "Hwg Hptsto" as "Hwg".
+  iExists _. iFrame.
+  iIntros "Hwg".
+  iMod "Hmask" as "_".
+  destruct unfinished_waiters.
+  2:{
+    exfalso.
+    specialize (Hunfinished_zero ltac:(done)).
+    intuition.
+  }
+  clear Hunfinished_zero.
+  iClear "Hunfinished_token".
+  iMod (step3_many (uint.nat waiters) with "Hunfinished") as "[Hunfinished Hunfinished_tokens]".
+  rewrite enc_0.
+  iDestruct "Hwg" as "[Hwg Hwg2]".
+  destruct Hwake as [Hwake1 Hwake2].
+  rewrite Hwake1.
+  iMod ("Hclose" with "[Hwg Hwg2 Hunfinished HR Hctr]").
+  {
+    iNext. iExists _, _, (uint.nat waiters).
+    iFrame. rewrite replicate_0.
+    iSplitL; first by iApply big_sepL_nil.
+    done.
+  }
+  iModIntro.
+  wp_pures.
+  (* call semrelease. *)
 Admitted.
 
 End proof.

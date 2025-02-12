@@ -94,12 +94,12 @@ Global Instance wp_struct_make_Entry `{ffi_semantics} `{!ffi_interp ffi} `{!heap
 Admitted.
 
 
-Global Instance Entry_struct_fields_split l (v : Entry.t) :
-  StructFieldsSplit l v (
-    "HTerm" ∷ l ↦s[raftpb.Entry :: "Term"] v.(Entry.Term') ∗
-    "HIndex" ∷ l ↦s[raftpb.Entry :: "Index"] v.(Entry.Index') ∗
-    "HType" ∷ l ↦s[raftpb.Entry :: "Type"] v.(Entry.Type') ∗
-    "HData" ∷ l ↦s[raftpb.Entry :: "Data"] v.(Entry.Data')
+Global Instance Entry_struct_fields_split dq l (v : Entry.t) :
+  StructFieldsSplit dq l v (
+    "HTerm" ∷ l ↦s[raftpb.Entry :: "Term"]{dq} v.(Entry.Term') ∗
+    "HIndex" ∷ l ↦s[raftpb.Entry :: "Index"]{dq} v.(Entry.Index') ∗
+    "HType" ∷ l ↦s[raftpb.Entry :: "Type"]{dq} v.(Entry.Type') ∗
+    "HData" ∷ l ↦s[raftpb.Entry :: "Data"]{dq} v.(Entry.Data')
   ).
 Admitted.
 
@@ -163,13 +163,13 @@ Global Instance wp_struct_make_ConfState `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance ConfState_struct_fields_split l (v : ConfState.t) :
-  StructFieldsSplit l v (
-    "HVoters" ∷ l ↦s[raftpb.ConfState :: "Voters"] v.(ConfState.Voters') ∗
-    "HLearners" ∷ l ↦s[raftpb.ConfState :: "Learners"] v.(ConfState.Learners') ∗
-    "HVotersOutgoing" ∷ l ↦s[raftpb.ConfState :: "VotersOutgoing"] v.(ConfState.VotersOutgoing') ∗
-    "HLearnersNext" ∷ l ↦s[raftpb.ConfState :: "LearnersNext"] v.(ConfState.LearnersNext') ∗
-    "HAutoLeave" ∷ l ↦s[raftpb.ConfState :: "AutoLeave"] v.(ConfState.AutoLeave')
+Global Instance ConfState_struct_fields_split dq l (v : ConfState.t) :
+  StructFieldsSplit dq l v (
+    "HVoters" ∷ l ↦s[raftpb.ConfState :: "Voters"]{dq} v.(ConfState.Voters') ∗
+    "HLearners" ∷ l ↦s[raftpb.ConfState :: "Learners"]{dq} v.(ConfState.Learners') ∗
+    "HVotersOutgoing" ∷ l ↦s[raftpb.ConfState :: "VotersOutgoing"]{dq} v.(ConfState.VotersOutgoing') ∗
+    "HLearnersNext" ∷ l ↦s[raftpb.ConfState :: "LearnersNext"]{dq} v.(ConfState.LearnersNext') ∗
+    "HAutoLeave" ∷ l ↦s[raftpb.ConfState :: "AutoLeave"]{dq} v.(ConfState.AutoLeave')
   ).
 Admitted.
 
@@ -223,11 +223,11 @@ Global Instance wp_struct_make_SnapshotMetadata `{ffi_semantics} `{!ffi_interp f
 Admitted.
 
 
-Global Instance SnapshotMetadata_struct_fields_split l (v : SnapshotMetadata.t) :
-  StructFieldsSplit l v (
-    "HConfState" ∷ l ↦s[raftpb.SnapshotMetadata :: "ConfState"] v.(SnapshotMetadata.ConfState') ∗
-    "HIndex" ∷ l ↦s[raftpb.SnapshotMetadata :: "Index"] v.(SnapshotMetadata.Index') ∗
-    "HTerm" ∷ l ↦s[raftpb.SnapshotMetadata :: "Term"] v.(SnapshotMetadata.Term')
+Global Instance SnapshotMetadata_struct_fields_split dq l (v : SnapshotMetadata.t) :
+  StructFieldsSplit dq l v (
+    "HConfState" ∷ l ↦s[raftpb.SnapshotMetadata :: "ConfState"]{dq} v.(SnapshotMetadata.ConfState') ∗
+    "HIndex" ∷ l ↦s[raftpb.SnapshotMetadata :: "Index"]{dq} v.(SnapshotMetadata.Index') ∗
+    "HTerm" ∷ l ↦s[raftpb.SnapshotMetadata :: "Term"]{dq} v.(SnapshotMetadata.Term')
   ).
 Admitted.
 
@@ -276,10 +276,10 @@ Global Instance wp_struct_make_Snapshot `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance Snapshot_struct_fields_split l (v : Snapshot.t) :
-  StructFieldsSplit l v (
-    "HData" ∷ l ↦s[raftpb.Snapshot :: "Data"] v.(Snapshot.Data') ∗
-    "HMetadata" ∷ l ↦s[raftpb.Snapshot :: "Metadata"] v.(Snapshot.Metadata')
+Global Instance Snapshot_struct_fields_split dq l (v : Snapshot.t) :
+  StructFieldsSplit dq l v (
+    "HData" ∷ l ↦s[raftpb.Snapshot :: "Data"]{dq} v.(Snapshot.Data') ∗
+    "HMetadata" ∷ l ↦s[raftpb.Snapshot :: "Metadata"]{dq} v.(Snapshot.Metadata')
   ).
 Admitted.
 
@@ -345,11 +345,11 @@ Global Instance wp_struct_make_HardState `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance HardState_struct_fields_split l (v : HardState.t) :
-  StructFieldsSplit l v (
-    "HTerm" ∷ l ↦s[raftpb.HardState :: "Term"] v.(HardState.Term') ∗
-    "HVote" ∷ l ↦s[raftpb.HardState :: "Vote"] v.(HardState.Vote') ∗
-    "HCommit" ∷ l ↦s[raftpb.HardState :: "Commit"] v.(HardState.Commit')
+Global Instance HardState_struct_fields_split dq l (v : HardState.t) :
+  StructFieldsSplit dq l v (
+    "HTerm" ∷ l ↦s[raftpb.HardState :: "Term"]{dq} v.(HardState.Term') ∗
+    "HVote" ∷ l ↦s[raftpb.HardState :: "Vote"]{dq} v.(HardState.Vote') ∗
+    "HCommit" ∷ l ↦s[raftpb.HardState :: "Commit"]{dq} v.(HardState.Commit')
   ).
 Admitted.
 
@@ -408,12 +408,12 @@ Global Instance wp_struct_make_ConfChange `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance ConfChange_struct_fields_split l (v : ConfChange.t) :
-  StructFieldsSplit l v (
-    "HType" ∷ l ↦s[raftpb.ConfChange :: "Type"] v.(ConfChange.Type') ∗
-    "HNodeID" ∷ l ↦s[raftpb.ConfChange :: "NodeID"] v.(ConfChange.NodeID') ∗
-    "HContext" ∷ l ↦s[raftpb.ConfChange :: "Context"] v.(ConfChange.Context') ∗
-    "HID" ∷ l ↦s[raftpb.ConfChange :: "ID"] v.(ConfChange.ID')
+Global Instance ConfChange_struct_fields_split dq l (v : ConfChange.t) :
+  StructFieldsSplit dq l v (
+    "HType" ∷ l ↦s[raftpb.ConfChange :: "Type"]{dq} v.(ConfChange.Type') ∗
+    "HNodeID" ∷ l ↦s[raftpb.ConfChange :: "NodeID"]{dq} v.(ConfChange.NodeID') ∗
+    "HContext" ∷ l ↦s[raftpb.ConfChange :: "Context"]{dq} v.(ConfChange.Context') ∗
+    "HID" ∷ l ↦s[raftpb.ConfChange :: "ID"]{dq} v.(ConfChange.ID')
   ).
 Admitted.
 
@@ -467,11 +467,11 @@ Global Instance wp_struct_make_ConfChangeV2 `{ffi_semantics} `{!ffi_interp ffi} 
 Admitted.
 
 
-Global Instance ConfChangeV2_struct_fields_split l (v : ConfChangeV2.t) :
-  StructFieldsSplit l v (
-    "HTransition" ∷ l ↦s[raftpb.ConfChangeV2 :: "Transition"] v.(ConfChangeV2.Transition') ∗
-    "HChanges" ∷ l ↦s[raftpb.ConfChangeV2 :: "Changes"] v.(ConfChangeV2.Changes') ∗
-    "HContext" ∷ l ↦s[raftpb.ConfChangeV2 :: "Context"] v.(ConfChangeV2.Context')
+Global Instance ConfChangeV2_struct_fields_split dq l (v : ConfChangeV2.t) :
+  StructFieldsSplit dq l v (
+    "HTransition" ∷ l ↦s[raftpb.ConfChangeV2 :: "Transition"]{dq} v.(ConfChangeV2.Transition') ∗
+    "HChanges" ∷ l ↦s[raftpb.ConfChangeV2 :: "Changes"]{dq} v.(ConfChangeV2.Changes') ∗
+    "HContext" ∷ l ↦s[raftpb.ConfChangeV2 :: "Context"]{dq} v.(ConfChangeV2.Context')
   ).
 Admitted.
 

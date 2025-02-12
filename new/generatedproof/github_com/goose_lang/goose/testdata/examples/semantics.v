@@ -93,9 +93,9 @@ Global Instance wp_struct_make_Enc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance Enc_struct_fields_split l (v : Enc.t) :
-  StructFieldsSplit l v (
-    "Hp" ∷ l ↦s[semantics.Enc :: "p"] v.(Enc.p')
+Global Instance Enc_struct_fields_split dq l (v : Enc.t) :
+  StructFieldsSplit dq l v (
+    "Hp" ∷ l ↦s[semantics.Enc :: "p"]{dq} v.(Enc.p')
   ).
 Admitted.
 
@@ -139,9 +139,9 @@ Global Instance wp_struct_make_Dec `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance Dec_struct_fields_split l (v : Dec.t) :
-  StructFieldsSplit l v (
-    "Hp" ∷ l ↦s[semantics.Dec :: "p"] v.(Dec.p')
+Global Instance Dec_struct_fields_split dq l (v : Dec.t) :
+  StructFieldsSplit dq l v (
+    "Hp" ∷ l ↦s[semantics.Dec :: "p"]{dq} v.(Dec.p')
   ).
 Admitted.
 
@@ -190,10 +190,10 @@ Global Instance wp_struct_make_Editor `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance Editor_struct_fields_split l (v : Editor.t) :
-  StructFieldsSplit l v (
-    "Hs" ∷ l ↦s[semantics.Editor :: "s"] v.(Editor.s') ∗
-    "Hnext_val" ∷ l ↦s[semantics.Editor :: "next_val"] v.(Editor.next_val')
+Global Instance Editor_struct_fields_split dq l (v : Editor.t) :
+  StructFieldsSplit dq l v (
+    "Hs" ∷ l ↦s[semantics.Editor :: "s"]{dq} v.(Editor.s') ∗
+    "Hnext_val" ∷ l ↦s[semantics.Editor :: "next_val"]{dq} v.(Editor.next_val')
   ).
 Admitted.
 
@@ -242,10 +242,10 @@ Global Instance wp_struct_make_Pair `{ffi_semantics} `{!ffi_interp ffi} `{!heapG
 Admitted.
 
 
-Global Instance Pair_struct_fields_split l (v : Pair.t) :
-  StructFieldsSplit l v (
-    "Hx" ∷ l ↦s[semantics.Pair :: "x"] v.(Pair.x') ∗
-    "Hy" ∷ l ↦s[semantics.Pair :: "y"] v.(Pair.y')
+Global Instance Pair_struct_fields_split dq l (v : Pair.t) :
+  StructFieldsSplit dq l v (
+    "Hx" ∷ l ↦s[semantics.Pair :: "x"]{dq} v.(Pair.x') ∗
+    "Hy" ∷ l ↦s[semantics.Pair :: "y"]{dq} v.(Pair.y')
   ).
 Admitted.
 
@@ -303,9 +303,9 @@ Global Instance wp_struct_make_SquareStruct `{ffi_semantics} `{!ffi_interp ffi} 
 Admitted.
 
 
-Global Instance SquareStruct_struct_fields_split l (v : SquareStruct.t) :
-  StructFieldsSplit l v (
-    "HSide" ∷ l ↦s[semantics.SquareStruct :: "Side"] v.(SquareStruct.Side')
+Global Instance SquareStruct_struct_fields_split dq l (v : SquareStruct.t) :
+  StructFieldsSplit dq l v (
+    "HSide" ∷ l ↦s[semantics.SquareStruct :: "Side"]{dq} v.(SquareStruct.Side')
   ).
 Admitted.
 
@@ -349,9 +349,9 @@ Global Instance wp_struct_make_LoopStruct `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance LoopStruct_struct_fields_split l (v : LoopStruct.t) :
-  StructFieldsSplit l v (
-    "HloopNext" ∷ l ↦s[semantics.LoopStruct :: "loopNext"] v.(LoopStruct.loopNext')
+Global Instance LoopStruct_struct_fields_split dq l (v : LoopStruct.t) :
+  StructFieldsSplit dq l v (
+    "HloopNext" ∷ l ↦s[semantics.LoopStruct :: "loopNext"]{dq} v.(LoopStruct.loopNext')
   ).
 Admitted.
 
@@ -410,12 +410,12 @@ Global Instance wp_struct_make_BoolTest `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance BoolTest_struct_fields_split l (v : BoolTest.t) :
-  StructFieldsSplit l v (
-    "Ht" ∷ l ↦s[semantics.BoolTest :: "t"] v.(BoolTest.t') ∗
-    "Hf" ∷ l ↦s[semantics.BoolTest :: "f"] v.(BoolTest.f') ∗
-    "Htc" ∷ l ↦s[semantics.BoolTest :: "tc"] v.(BoolTest.tc') ∗
-    "Hfc" ∷ l ↦s[semantics.BoolTest :: "fc"] v.(BoolTest.fc')
+Global Instance BoolTest_struct_fields_split dq l (v : BoolTest.t) :
+  StructFieldsSplit dq l v (
+    "Ht" ∷ l ↦s[semantics.BoolTest :: "t"]{dq} v.(BoolTest.t') ∗
+    "Hf" ∷ l ↦s[semantics.BoolTest :: "f"]{dq} v.(BoolTest.f') ∗
+    "Htc" ∷ l ↦s[semantics.BoolTest :: "tc"]{dq} v.(BoolTest.tc') ∗
+    "Hfc" ∷ l ↦s[semantics.BoolTest :: "fc"]{dq} v.(BoolTest.fc')
   ).
 Admitted.
 
@@ -464,10 +464,10 @@ Global Instance wp_struct_make_ArrayEditor `{ffi_semantics} `{!ffi_interp ffi} `
 Admitted.
 
 
-Global Instance ArrayEditor_struct_fields_split l (v : ArrayEditor.t) :
-  StructFieldsSplit l v (
-    "Hs" ∷ l ↦s[semantics.ArrayEditor :: "s"] v.(ArrayEditor.s') ∗
-    "Hnext_val" ∷ l ↦s[semantics.ArrayEditor :: "next_val"] v.(ArrayEditor.next_val')
+Global Instance ArrayEditor_struct_fields_split dq l (v : ArrayEditor.t) :
+  StructFieldsSplit dq l v (
+    "Hs" ∷ l ↦s[semantics.ArrayEditor :: "s"]{dq} v.(ArrayEditor.s') ∗
+    "Hnext_val" ∷ l ↦s[semantics.ArrayEditor :: "next_val"]{dq} v.(ArrayEditor.next_val')
   ).
 Admitted.
 
@@ -516,10 +516,10 @@ Global Instance wp_struct_make_Bar `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance Bar_struct_fields_split l (v : Bar.t) :
-  StructFieldsSplit l v (
-    "Ha" ∷ l ↦s[semantics.Bar :: "a"] v.(Bar.a') ∗
-    "Hb" ∷ l ↦s[semantics.Bar :: "b"] v.(Bar.b')
+Global Instance Bar_struct_fields_split dq l (v : Bar.t) :
+  StructFieldsSplit dq l v (
+    "Ha" ∷ l ↦s[semantics.Bar :: "a"]{dq} v.(Bar.a') ∗
+    "Hb" ∷ l ↦s[semantics.Bar :: "b"]{dq} v.(Bar.b')
   ).
 Admitted.
 
@@ -563,9 +563,9 @@ Global Instance wp_struct_make_Foo `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance Foo_struct_fields_split l (v : Foo.t) :
-  StructFieldsSplit l v (
-    "Hbar" ∷ l ↦s[semantics.Foo :: "bar"] v.(Foo.bar')
+Global Instance Foo_struct_fields_split dq l (v : Foo.t) :
+  StructFieldsSplit dq l v (
+    "Hbar" ∷ l ↦s[semantics.Foo :: "bar"]{dq} v.(Foo.bar')
   ).
 Admitted.
 
@@ -614,10 +614,10 @@ Global Instance wp_struct_make_TwoInts `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance TwoInts_struct_fields_split l (v : TwoInts.t) :
-  StructFieldsSplit l v (
-    "Hx" ∷ l ↦s[semantics.TwoInts :: "x"] v.(TwoInts.x') ∗
-    "Hy" ∷ l ↦s[semantics.TwoInts :: "y"] v.(TwoInts.y')
+Global Instance TwoInts_struct_fields_split dq l (v : TwoInts.t) :
+  StructFieldsSplit dq l v (
+    "Hx" ∷ l ↦s[semantics.TwoInts :: "x"]{dq} v.(TwoInts.x') ∗
+    "Hy" ∷ l ↦s[semantics.TwoInts :: "y"]{dq} v.(TwoInts.y')
   ).
 Admitted.
 
@@ -671,11 +671,11 @@ Global Instance wp_struct_make_S `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS �
 Admitted.
 
 
-Global Instance S_struct_fields_split l (v : S.t) :
-  StructFieldsSplit l v (
-    "Ha" ∷ l ↦s[semantics.S :: "a"] v.(S.a') ∗
-    "Hb" ∷ l ↦s[semantics.S :: "b"] v.(S.b') ∗
-    "Hc" ∷ l ↦s[semantics.S :: "c"] v.(S.c')
+Global Instance S_struct_fields_split dq l (v : S.t) :
+  StructFieldsSplit dq l v (
+    "Ha" ∷ l ↦s[semantics.S :: "a"]{dq} v.(S.a') ∗
+    "Hb" ∷ l ↦s[semantics.S :: "b"]{dq} v.(S.b') ∗
+    "Hc" ∷ l ↦s[semantics.S :: "c"]{dq} v.(S.c')
   ).
 Admitted.
 
@@ -719,9 +719,9 @@ Global Instance wp_struct_make_StructWrap `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance StructWrap_struct_fields_split l (v : StructWrap.t) :
-  StructFieldsSplit l v (
-    "Hi" ∷ l ↦s[semantics.StructWrap :: "i"] v.(StructWrap.i')
+Global Instance StructWrap_struct_fields_split dq l (v : StructWrap.t) :
+  StructFieldsSplit dq l v (
+    "Hi" ∷ l ↦s[semantics.StructWrap :: "i"]{dq} v.(StructWrap.i')
   ).
 Admitted.
 
@@ -765,9 +765,9 @@ Global Instance wp_struct_make_StructWithFunc `{ffi_semantics} `{!ffi_interp ffi
 Admitted.
 
 
-Global Instance StructWithFunc_struct_fields_split l (v : StructWithFunc.t) :
-  StructFieldsSplit l v (
-    "Hfn" ∷ l ↦s[semantics.StructWithFunc :: "fn"] v.(StructWithFunc.fn')
+Global Instance StructWithFunc_struct_fields_split dq l (v : StructWithFunc.t) :
+  StructFieldsSplit dq l v (
+    "Hfn" ∷ l ↦s[semantics.StructWithFunc :: "fn"]{dq} v.(StructWithFunc.fn')
   ).
 Admitted.
 
@@ -865,12 +865,12 @@ Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance Log_struct_fields_split l (v : Log.t) :
-  StructFieldsSplit l v (
-    "Hd" ∷ l ↦s[semantics.Log :: "d"] v.(Log.d') ∗
-    "Hl" ∷ l ↦s[semantics.Log :: "l"] v.(Log.l') ∗
-    "Hcache" ∷ l ↦s[semantics.Log :: "cache"] v.(Log.cache') ∗
-    "Hlength" ∷ l ↦s[semantics.Log :: "length"] v.(Log.length')
+Global Instance Log_struct_fields_split dq l (v : Log.t) :
+  StructFieldsSplit dq l v (
+    "Hd" ∷ l ↦s[semantics.Log :: "d"]{dq} v.(Log.d') ∗
+    "Hl" ∷ l ↦s[semantics.Log :: "l"]{dq} v.(Log.l') ∗
+    "Hcache" ∷ l ↦s[semantics.Log :: "cache"]{dq} v.(Log.cache') ∗
+    "Hlength" ∷ l ↦s[semantics.Log :: "length"]{dq} v.(Log.length')
   ).
 Admitted.
 

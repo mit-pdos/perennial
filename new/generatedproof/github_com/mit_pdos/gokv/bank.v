@@ -58,11 +58,11 @@ Global Instance wp_struct_make_BankClerk `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance BankClerk_struct_fields_split l (v : BankClerk.t) :
-  StructFieldsSplit l v (
-    "Hlck" ∷ l ↦s[bank.BankClerk :: "lck"] v.(BankClerk.lck') ∗
-    "Hkvck" ∷ l ↦s[bank.BankClerk :: "kvck"] v.(BankClerk.kvck') ∗
-    "Haccts" ∷ l ↦s[bank.BankClerk :: "accts"] v.(BankClerk.accts')
+Global Instance BankClerk_struct_fields_split dq l (v : BankClerk.t) :
+  StructFieldsSplit dq l v (
+    "Hlck" ∷ l ↦s[bank.BankClerk :: "lck"]{dq} v.(BankClerk.lck') ∗
+    "Hkvck" ∷ l ↦s[bank.BankClerk :: "kvck"]{dq} v.(BankClerk.kvck') ∗
+    "Haccts" ∷ l ↦s[bank.BankClerk :: "accts"]{dq} v.(BankClerk.accts')
   ).
 Admitted.
 

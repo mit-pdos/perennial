@@ -49,10 +49,10 @@ Global Instance wp_struct_make_Builder `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance Builder_struct_fields_split l (v : Builder.t) :
-  StructFieldsSplit l v (
-    "Haddr" ∷ l ↦s[strings.Builder :: "addr"] v.(Builder.addr') ∗
-    "Hbuf" ∷ l ↦s[strings.Builder :: "buf"] v.(Builder.buf')
+Global Instance Builder_struct_fields_split dq l (v : Builder.t) :
+  StructFieldsSplit dq l v (
+    "Haddr" ∷ l ↦s[strings.Builder :: "addr"]{dq} v.(Builder.addr') ∗
+    "Hbuf" ∷ l ↦s[strings.Builder :: "buf"]{dq} v.(Builder.buf')
   ).
 Admitted.
 

@@ -121,11 +121,11 @@ Proof.
 Qed.
 
 Class StructFieldsSplit `{!IntoVal V} `{!IntoValTyped V t} {dwf : struct.Wf t}
-                        (l : loc) (v : V) (Psplit : iProp Σ)
+                        (dq : dfrac) (l : loc) (v : V) (Psplit : iProp Σ)
   :=
   {
-    struct_fields_split : l ↦ v ⊢ Psplit ;
-    struct_fields_combine : Psplit ⊢ l ↦ v
+    struct_fields_split : l ↦{dq} v ⊢ Psplit ;
+    struct_fields_combine : Psplit ⊢ l ↦{dq} v
   }.
 
 Theorem struct_fields_acc_update f t V Vf

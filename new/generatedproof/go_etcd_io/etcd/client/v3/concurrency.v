@@ -80,14 +80,14 @@ Global Instance wp_struct_make_Election `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance Election_struct_fields_split l (v : Election.t) :
-  StructFieldsSplit l v (
-    "Hsession" ∷ l ↦s[concurrency.Election :: "session"] v.(Election.session') ∗
-    "HkeyPrefix" ∷ l ↦s[concurrency.Election :: "keyPrefix"] v.(Election.keyPrefix') ∗
-    "HleaderKey" ∷ l ↦s[concurrency.Election :: "leaderKey"] v.(Election.leaderKey') ∗
-    "HleaderRev" ∷ l ↦s[concurrency.Election :: "leaderRev"] v.(Election.leaderRev') ∗
-    "HleaderSession" ∷ l ↦s[concurrency.Election :: "leaderSession"] v.(Election.leaderSession') ∗
-    "Hhdr" ∷ l ↦s[concurrency.Election :: "hdr"] v.(Election.hdr')
+Global Instance Election_struct_fields_split dq l (v : Election.t) :
+  StructFieldsSplit dq l v (
+    "Hsession" ∷ l ↦s[concurrency.Election :: "session"]{dq} v.(Election.session') ∗
+    "HkeyPrefix" ∷ l ↦s[concurrency.Election :: "keyPrefix"]{dq} v.(Election.keyPrefix') ∗
+    "HleaderKey" ∷ l ↦s[concurrency.Election :: "leaderKey"]{dq} v.(Election.leaderKey') ∗
+    "HleaderRev" ∷ l ↦s[concurrency.Election :: "leaderRev"]{dq} v.(Election.leaderRev') ∗
+    "HleaderSession" ∷ l ↦s[concurrency.Election :: "leaderSession"]{dq} v.(Election.leaderSession') ∗
+    "Hhdr" ∷ l ↦s[concurrency.Election :: "hdr"]{dq} v.(Election.hdr')
   ).
 Admitted.
 
@@ -151,13 +151,13 @@ Global Instance wp_struct_make_Mutex `{ffi_semantics} `{!ffi_interp ffi} `{!heap
 Admitted.
 
 
-Global Instance Mutex_struct_fields_split l (v : Mutex.t) :
-  StructFieldsSplit l v (
-    "Hs" ∷ l ↦s[concurrency.Mutex :: "s"] v.(Mutex.s') ∗
-    "Hpfx" ∷ l ↦s[concurrency.Mutex :: "pfx"] v.(Mutex.pfx') ∗
-    "HmyKey" ∷ l ↦s[concurrency.Mutex :: "myKey"] v.(Mutex.myKey') ∗
-    "HmyRev" ∷ l ↦s[concurrency.Mutex :: "myRev"] v.(Mutex.myRev') ∗
-    "Hhdr" ∷ l ↦s[concurrency.Mutex :: "hdr"] v.(Mutex.hdr')
+Global Instance Mutex_struct_fields_split dq l (v : Mutex.t) :
+  StructFieldsSplit dq l v (
+    "Hs" ∷ l ↦s[concurrency.Mutex :: "s"]{dq} v.(Mutex.s') ∗
+    "Hpfx" ∷ l ↦s[concurrency.Mutex :: "pfx"]{dq} v.(Mutex.pfx') ∗
+    "HmyKey" ∷ l ↦s[concurrency.Mutex :: "myKey"]{dq} v.(Mutex.myKey') ∗
+    "HmyRev" ∷ l ↦s[concurrency.Mutex :: "myRev"]{dq} v.(Mutex.myRev') ∗
+    "Hhdr" ∷ l ↦s[concurrency.Mutex :: "hdr"]{dq} v.(Mutex.hdr')
   ).
 Admitted.
 
@@ -201,9 +201,9 @@ Global Instance wp_struct_make_lockerMutex `{ffi_semantics} `{!ffi_interp ffi} `
 Admitted.
 
 
-Global Instance lockerMutex_struct_fields_split l (v : lockerMutex.t) :
-  StructFieldsSplit l v (
-    "HMutex" ∷ l ↦s[concurrency.lockerMutex :: "Mutex"] v.(lockerMutex.Mutex')
+Global Instance lockerMutex_struct_fields_split dq l (v : lockerMutex.t) :
+  StructFieldsSplit dq l v (
+    "HMutex" ∷ l ↦s[concurrency.lockerMutex :: "Mutex"]{dq} v.(lockerMutex.Mutex')
   ).
 Admitted.
 
@@ -272,14 +272,14 @@ Global Instance wp_struct_make_Session `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance Session_struct_fields_split l (v : Session.t) :
-  StructFieldsSplit l v (
-    "Hclient" ∷ l ↦s[concurrency.Session :: "client"] v.(Session.client') ∗
-    "Hopts" ∷ l ↦s[concurrency.Session :: "opts"] v.(Session.opts') ∗
-    "Hid" ∷ l ↦s[concurrency.Session :: "id"] v.(Session.id') ∗
-    "Hctx" ∷ l ↦s[concurrency.Session :: "ctx"] v.(Session.ctx') ∗
-    "Hcancel" ∷ l ↦s[concurrency.Session :: "cancel"] v.(Session.cancel') ∗
-    "Hdonec" ∷ l ↦s[concurrency.Session :: "donec"] v.(Session.donec')
+Global Instance Session_struct_fields_split dq l (v : Session.t) :
+  StructFieldsSplit dq l v (
+    "Hclient" ∷ l ↦s[concurrency.Session :: "client"]{dq} v.(Session.client') ∗
+    "Hopts" ∷ l ↦s[concurrency.Session :: "opts"]{dq} v.(Session.opts') ∗
+    "Hid" ∷ l ↦s[concurrency.Session :: "id"]{dq} v.(Session.id') ∗
+    "Hctx" ∷ l ↦s[concurrency.Session :: "ctx"]{dq} v.(Session.ctx') ∗
+    "Hcancel" ∷ l ↦s[concurrency.Session :: "cancel"]{dq} v.(Session.cancel') ∗
+    "Hdonec" ∷ l ↦s[concurrency.Session :: "donec"]{dq} v.(Session.donec')
   ).
 Admitted.
 
@@ -333,11 +333,11 @@ Global Instance wp_struct_make_sessionOptions `{ffi_semantics} `{!ffi_interp ffi
 Admitted.
 
 
-Global Instance sessionOptions_struct_fields_split l (v : sessionOptions.t) :
-  StructFieldsSplit l v (
-    "Httl" ∷ l ↦s[concurrency.sessionOptions :: "ttl"] v.(sessionOptions.ttl') ∗
-    "HleaseID" ∷ l ↦s[concurrency.sessionOptions :: "leaseID"] v.(sessionOptions.leaseID') ∗
-    "Hctx" ∷ l ↦s[concurrency.sessionOptions :: "ctx"] v.(sessionOptions.ctx')
+Global Instance sessionOptions_struct_fields_split dq l (v : sessionOptions.t) :
+  StructFieldsSplit dq l v (
+    "Httl" ∷ l ↦s[concurrency.sessionOptions :: "ttl"]{dq} v.(sessionOptions.ttl') ∗
+    "HleaseID" ∷ l ↦s[concurrency.sessionOptions :: "leaseID"]{dq} v.(sessionOptions.leaseID') ∗
+    "Hctx" ∷ l ↦s[concurrency.sessionOptions :: "ctx"]{dq} v.(sessionOptions.ctx')
   ).
 Admitted.
 
@@ -402,9 +402,9 @@ Global Instance wp_struct_make_stmError `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance stmError_struct_fields_split l (v : stmError.t) :
-  StructFieldsSplit l v (
-    "Herr" ∷ l ↦s[concurrency.stmError :: "err"] v.(stmError.err')
+Global Instance stmError_struct_fields_split dq l (v : stmError.t) :
+  StructFieldsSplit dq l v (
+    "Herr" ∷ l ↦s[concurrency.stmError :: "err"]{dq} v.(stmError.err')
   ).
 Admitted.
 
@@ -458,11 +458,11 @@ Global Instance wp_struct_make_stmOptions `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance stmOptions_struct_fields_split l (v : stmOptions.t) :
-  StructFieldsSplit l v (
-    "Hiso" ∷ l ↦s[concurrency.stmOptions :: "iso"] v.(stmOptions.iso') ∗
-    "Hctx" ∷ l ↦s[concurrency.stmOptions :: "ctx"] v.(stmOptions.ctx') ∗
-    "Hprefetch" ∷ l ↦s[concurrency.stmOptions :: "prefetch"] v.(stmOptions.prefetch')
+Global Instance stmOptions_struct_fields_split dq l (v : stmOptions.t) :
+  StructFieldsSplit dq l v (
+    "Hiso" ∷ l ↦s[concurrency.stmOptions :: "iso"]{dq} v.(stmOptions.iso') ∗
+    "Hctx" ∷ l ↦s[concurrency.stmOptions :: "ctx"]{dq} v.(stmOptions.ctx') ∗
+    "Hprefetch" ∷ l ↦s[concurrency.stmOptions :: "prefetch"]{dq} v.(stmOptions.prefetch')
   ).
 Admitted.
 
@@ -518,10 +518,10 @@ Global Instance wp_struct_make_stmResponse `{ffi_semantics} `{!ffi_interp ffi} `
 Admitted.
 
 
-Global Instance stmResponse_struct_fields_split l (v : stmResponse.t) :
-  StructFieldsSplit l v (
-    "Hresp" ∷ l ↦s[concurrency.stmResponse :: "resp"] v.(stmResponse.resp') ∗
-    "Herr" ∷ l ↦s[concurrency.stmResponse :: "err"] v.(stmResponse.err')
+Global Instance stmResponse_struct_fields_split dq l (v : stmResponse.t) :
+  StructFieldsSplit dq l v (
+    "Hresp" ∷ l ↦s[concurrency.stmResponse :: "resp"]{dq} v.(stmResponse.resp') ∗
+    "Herr" ∷ l ↦s[concurrency.stmResponse :: "err"]{dq} v.(stmResponse.err')
   ).
 Admitted.
 
@@ -604,14 +604,14 @@ Global Instance wp_struct_make_stm `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance stm_struct_fields_split l (v : stm.t) :
-  StructFieldsSplit l v (
-    "Hclient" ∷ l ↦s[concurrency.stm :: "client"] v.(stm.client') ∗
-    "Hctx" ∷ l ↦s[concurrency.stm :: "ctx"] v.(stm.ctx') ∗
-    "Hrset" ∷ l ↦s[concurrency.stm :: "rset"] v.(stm.rset') ∗
-    "Hwset" ∷ l ↦s[concurrency.stm :: "wset"] v.(stm.wset') ∗
-    "HgetOpts" ∷ l ↦s[concurrency.stm :: "getOpts"] v.(stm.getOpts') ∗
-    "Hconflicts" ∷ l ↦s[concurrency.stm :: "conflicts"] v.(stm.conflicts')
+Global Instance stm_struct_fields_split dq l (v : stm.t) :
+  StructFieldsSplit dq l v (
+    "Hclient" ∷ l ↦s[concurrency.stm :: "client"]{dq} v.(stm.client') ∗
+    "Hctx" ∷ l ↦s[concurrency.stm :: "ctx"]{dq} v.(stm.ctx') ∗
+    "Hrset" ∷ l ↦s[concurrency.stm :: "rset"]{dq} v.(stm.rset') ∗
+    "Hwset" ∷ l ↦s[concurrency.stm :: "wset"]{dq} v.(stm.wset') ∗
+    "HgetOpts" ∷ l ↦s[concurrency.stm :: "getOpts"]{dq} v.(stm.getOpts') ∗
+    "Hconflicts" ∷ l ↦s[concurrency.stm :: "conflicts"]{dq} v.(stm.conflicts')
   ).
 Admitted.
 
@@ -660,10 +660,10 @@ Global Instance wp_struct_make_stmPut `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance stmPut_struct_fields_split l (v : stmPut.t) :
-  StructFieldsSplit l v (
-    "Hval" ∷ l ↦s[concurrency.stmPut :: "val"] v.(stmPut.val') ∗
-    "Hop" ∷ l ↦s[concurrency.stmPut :: "op"] v.(stmPut.op')
+Global Instance stmPut_struct_fields_split dq l (v : stmPut.t) :
+  StructFieldsSplit dq l v (
+    "Hval" ∷ l ↦s[concurrency.stmPut :: "val"]{dq} v.(stmPut.val') ∗
+    "Hop" ∷ l ↦s[concurrency.stmPut :: "op"]{dq} v.(stmPut.op')
   ).
 Admitted.
 
@@ -712,10 +712,10 @@ Global Instance wp_struct_make_stmSerializable `{ffi_semantics} `{!ffi_interp ff
 Admitted.
 
 
-Global Instance stmSerializable_struct_fields_split l (v : stmSerializable.t) :
-  StructFieldsSplit l v (
-    "Hstm" ∷ l ↦s[concurrency.stmSerializable :: "stm"] v.(stmSerializable.stm') ∗
-    "Hprefetch" ∷ l ↦s[concurrency.stmSerializable :: "prefetch"] v.(stmSerializable.prefetch')
+Global Instance stmSerializable_struct_fields_split dq l (v : stmSerializable.t) :
+  StructFieldsSplit dq l v (
+    "Hstm" ∷ l ↦s[concurrency.stmSerializable :: "stm"]{dq} v.(stmSerializable.stm') ∗
+    "Hprefetch" ∷ l ↦s[concurrency.stmSerializable :: "prefetch"]{dq} v.(stmSerializable.prefetch')
   ).
 Admitted.
 

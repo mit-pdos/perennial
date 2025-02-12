@@ -119,11 +119,11 @@ Global Instance wp_struct_make_Uint64 `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance Uint64_struct_fields_split l (v : Uint64.t) :
-  StructFieldsSplit l v (
-    "H_0" ∷ l ↦s[atomic.Uint64 :: "_0"] v.(Uint64._0') ∗
-    "H_1" ∷ l ↦s[atomic.Uint64 :: "_1"] v.(Uint64._1') ∗
-    "Hv" ∷ l ↦s[atomic.Uint64 :: "v"] v.(Uint64.v')
+Global Instance Uint64_struct_fields_split dq l (v : Uint64.t) :
+  StructFieldsSplit dq l v (
+    "H_0" ∷ l ↦s[atomic.Uint64 :: "_0"]{dq} v.(Uint64._0') ∗
+    "H_1" ∷ l ↦s[atomic.Uint64 :: "_1"]{dq} v.(Uint64._1') ∗
+    "Hv" ∷ l ↦s[atomic.Uint64 :: "v"]{dq} v.(Uint64.v')
   ).
 Admitted.
 

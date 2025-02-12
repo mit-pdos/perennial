@@ -56,11 +56,11 @@ Global Instance wp_struct_make_JoinHandle `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance JoinHandle_struct_fields_split l (v : JoinHandle.t) :
-  StructFieldsSplit l v (
-    "Hmu" ∷ l ↦s[std.JoinHandle :: "mu"] v.(JoinHandle.mu') ∗
-    "Hdone" ∷ l ↦s[std.JoinHandle :: "done"] v.(JoinHandle.done') ∗
-    "Hcond" ∷ l ↦s[std.JoinHandle :: "cond"] v.(JoinHandle.cond')
+Global Instance JoinHandle_struct_fields_split dq l (v : JoinHandle.t) :
+  StructFieldsSplit dq l v (
+    "Hmu" ∷ l ↦s[std.JoinHandle :: "mu"]{dq} v.(JoinHandle.mu') ∗
+    "Hdone" ∷ l ↦s[std.JoinHandle :: "done"]{dq} v.(JoinHandle.done') ∗
+    "Hcond" ∷ l ↦s[std.JoinHandle :: "cond"]{dq} v.(JoinHandle.cond')
   ).
 Admitted.
 

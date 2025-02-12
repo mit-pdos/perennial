@@ -91,17 +91,17 @@ Global Instance wp_struct_make_KeyValue `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance KeyValue_struct_fields_split l (v : KeyValue.t) :
-  StructFieldsSplit l v (
-    "HKey" ∷ l ↦s[mvccpb.KeyValue :: "Key"] v.(KeyValue.Key') ∗
-    "HCreateRevision" ∷ l ↦s[mvccpb.KeyValue :: "CreateRevision"] v.(KeyValue.CreateRevision') ∗
-    "HModRevision" ∷ l ↦s[mvccpb.KeyValue :: "ModRevision"] v.(KeyValue.ModRevision') ∗
-    "HVersion" ∷ l ↦s[mvccpb.KeyValue :: "Version"] v.(KeyValue.Version') ∗
-    "HValue" ∷ l ↦s[mvccpb.KeyValue :: "Value"] v.(KeyValue.Value') ∗
-    "HLease" ∷ l ↦s[mvccpb.KeyValue :: "Lease"] v.(KeyValue.Lease') ∗
-    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[mvccpb.KeyValue :: "XXX_NoUnkeyedLiteral"] v.(KeyValue.XXX_NoUnkeyedLiteral') ∗
-    "HXXX_unrecognized" ∷ l ↦s[mvccpb.KeyValue :: "XXX_unrecognized"] v.(KeyValue.XXX_unrecognized') ∗
-    "HXXX_sizecache" ∷ l ↦s[mvccpb.KeyValue :: "XXX_sizecache"] v.(KeyValue.XXX_sizecache')
+Global Instance KeyValue_struct_fields_split dq l (v : KeyValue.t) :
+  StructFieldsSplit dq l v (
+    "HKey" ∷ l ↦s[mvccpb.KeyValue :: "Key"]{dq} v.(KeyValue.Key') ∗
+    "HCreateRevision" ∷ l ↦s[mvccpb.KeyValue :: "CreateRevision"]{dq} v.(KeyValue.CreateRevision') ∗
+    "HModRevision" ∷ l ↦s[mvccpb.KeyValue :: "ModRevision"]{dq} v.(KeyValue.ModRevision') ∗
+    "HVersion" ∷ l ↦s[mvccpb.KeyValue :: "Version"]{dq} v.(KeyValue.Version') ∗
+    "HValue" ∷ l ↦s[mvccpb.KeyValue :: "Value"]{dq} v.(KeyValue.Value') ∗
+    "HLease" ∷ l ↦s[mvccpb.KeyValue :: "Lease"]{dq} v.(KeyValue.Lease') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[mvccpb.KeyValue :: "XXX_NoUnkeyedLiteral"]{dq} v.(KeyValue.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[mvccpb.KeyValue :: "XXX_unrecognized"]{dq} v.(KeyValue.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[mvccpb.KeyValue :: "XXX_sizecache"]{dq} v.(KeyValue.XXX_sizecache')
   ).
 Admitted.
 
@@ -170,14 +170,14 @@ Global Instance wp_struct_make_Event `{ffi_semantics} `{!ffi_interp ffi} `{!heap
 Admitted.
 
 
-Global Instance Event_struct_fields_split l (v : Event.t) :
-  StructFieldsSplit l v (
-    "HType" ∷ l ↦s[mvccpb.Event :: "Type"] v.(Event.Type') ∗
-    "HKv" ∷ l ↦s[mvccpb.Event :: "Kv"] v.(Event.Kv') ∗
-    "HPrevKv" ∷ l ↦s[mvccpb.Event :: "PrevKv"] v.(Event.PrevKv') ∗
-    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[mvccpb.Event :: "XXX_NoUnkeyedLiteral"] v.(Event.XXX_NoUnkeyedLiteral') ∗
-    "HXXX_unrecognized" ∷ l ↦s[mvccpb.Event :: "XXX_unrecognized"] v.(Event.XXX_unrecognized') ∗
-    "HXXX_sizecache" ∷ l ↦s[mvccpb.Event :: "XXX_sizecache"] v.(Event.XXX_sizecache')
+Global Instance Event_struct_fields_split dq l (v : Event.t) :
+  StructFieldsSplit dq l v (
+    "HType" ∷ l ↦s[mvccpb.Event :: "Type"]{dq} v.(Event.Type') ∗
+    "HKv" ∷ l ↦s[mvccpb.Event :: "Kv"]{dq} v.(Event.Kv') ∗
+    "HPrevKv" ∷ l ↦s[mvccpb.Event :: "PrevKv"]{dq} v.(Event.PrevKv') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[mvccpb.Event :: "XXX_NoUnkeyedLiteral"]{dq} v.(Event.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[mvccpb.Event :: "XXX_unrecognized"]{dq} v.(Event.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[mvccpb.Event :: "XXX_sizecache"]{dq} v.(Event.XXX_sizecache')
   ).
 Admitted.
 

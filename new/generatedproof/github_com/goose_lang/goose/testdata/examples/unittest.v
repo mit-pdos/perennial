@@ -96,9 +96,9 @@ Global Instance wp_struct_make_diskWrapper `{ffi_semantics} `{!ffi_interp ffi} `
 Admitted.
 
 
-Global Instance diskWrapper_struct_fields_split l (v : diskWrapper.t) :
-  StructFieldsSplit l v (
-    "Hd" ∷ l ↦s[unittest.diskWrapper :: "d"] v.(diskWrapper.d')
+Global Instance diskWrapper_struct_fields_split dq l (v : diskWrapper.t) :
+  StructFieldsSplit dq l v (
+    "Hd" ∷ l ↦s[unittest.diskWrapper :: "d"]{dq} v.(diskWrapper.d')
   ).
 Admitted.
 
@@ -142,9 +142,9 @@ Global Instance wp_struct_make_embedA `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance embedA_struct_fields_split l (v : embedA.t) :
-  StructFieldsSplit l v (
-    "Ha" ∷ l ↦s[unittest.embedA :: "a"] v.(embedA.a')
+Global Instance embedA_struct_fields_split dq l (v : embedA.t) :
+  StructFieldsSplit dq l v (
+    "Ha" ∷ l ↦s[unittest.embedA :: "a"]{dq} v.(embedA.a')
   ).
 Admitted.
 
@@ -188,9 +188,9 @@ Global Instance wp_struct_make_embedB `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance embedB_struct_fields_split l (v : embedB.t) :
-  StructFieldsSplit l v (
-    "HembedA" ∷ l ↦s[unittest.embedB :: "embedA"] v.(embedB.embedA')
+Global Instance embedB_struct_fields_split dq l (v : embedB.t) :
+  StructFieldsSplit dq l v (
+    "HembedA" ∷ l ↦s[unittest.embedB :: "embedA"]{dq} v.(embedB.embedA')
   ).
 Admitted.
 
@@ -234,9 +234,9 @@ Global Instance wp_struct_make_embedC `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance embedC_struct_fields_split l (v : embedC.t) :
-  StructFieldsSplit l v (
-    "HembedB" ∷ l ↦s[unittest.embedC :: "embedB"] v.(embedC.embedB')
+Global Instance embedC_struct_fields_split dq l (v : embedC.t) :
+  StructFieldsSplit dq l v (
+    "HembedB" ∷ l ↦s[unittest.embedC :: "embedB"]{dq} v.(embedC.embedB')
   ).
 Admitted.
 
@@ -280,9 +280,9 @@ Global Instance wp_struct_make_embedD `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance embedD_struct_fields_split l (v : embedD.t) :
-  StructFieldsSplit l v (
-    "HembedC" ∷ l ↦s[unittest.embedD :: "embedC"] v.(embedD.embedC')
+Global Instance embedD_struct_fields_split dq l (v : embedD.t) :
+  StructFieldsSplit dq l v (
+    "HembedC" ∷ l ↦s[unittest.embedD :: "embedC"]{dq} v.(embedD.embedC')
   ).
 Admitted.
 
@@ -326,9 +326,9 @@ Global Instance wp_struct_make_Enc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance Enc_struct_fields_split l (v : Enc.t) :
-  StructFieldsSplit l v (
-    "Hp" ∷ l ↦s[unittest.Enc :: "p"] v.(Enc.p')
+Global Instance Enc_struct_fields_split dq l (v : Enc.t) :
+  StructFieldsSplit dq l v (
+    "Hp" ∷ l ↦s[unittest.Enc :: "p"]{dq} v.(Enc.p')
   ).
 Admitted.
 
@@ -372,9 +372,9 @@ Global Instance wp_struct_make_Dec `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance Dec_struct_fields_split l (v : Dec.t) :
-  StructFieldsSplit l v (
-    "Hp" ∷ l ↦s[unittest.Dec :: "p"] v.(Dec.p')
+Global Instance Dec_struct_fields_split dq l (v : Dec.t) :
+  StructFieldsSplit dq l v (
+    "Hp" ∷ l ↦s[unittest.Dec :: "p"]{dq} v.(Dec.p')
   ).
 Admitted.
 
@@ -425,9 +425,9 @@ Global Instance wp_struct_make_concreteFooer `{ffi_semantics} `{!ffi_interp ffi}
 Admitted.
 
 
-Global Instance concreteFooer_struct_fields_split l (v : concreteFooer.t) :
-  StructFieldsSplit l v (
-    "Ha" ∷ l ↦s[unittest.concreteFooer :: "a"] v.(concreteFooer.a')
+Global Instance concreteFooer_struct_fields_split dq l (v : concreteFooer.t) :
+  StructFieldsSplit dq l v (
+    "Ha" ∷ l ↦s[unittest.concreteFooer :: "a"]{dq} v.(concreteFooer.a')
   ).
 Admitted.
 
@@ -471,9 +471,9 @@ Global Instance wp_struct_make_FooerUser `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance FooerUser_struct_fields_split l (v : FooerUser.t) :
-  StructFieldsSplit l v (
-    "Hf" ∷ l ↦s[unittest.FooerUser :: "f"] v.(FooerUser.f')
+Global Instance FooerUser_struct_fields_split dq l (v : FooerUser.t) :
+  StructFieldsSplit dq l v (
+    "Hf" ∷ l ↦s[unittest.FooerUser :: "f"]{dq} v.(FooerUser.f')
   ).
 Admitted.
 
@@ -580,11 +580,11 @@ Global Instance wp_struct_make_allTheLiterals `{ffi_semantics} `{!ffi_interp ffi
 Admitted.
 
 
-Global Instance allTheLiterals_struct_fields_split l (v : allTheLiterals.t) :
-  StructFieldsSplit l v (
-    "Hint" ∷ l ↦s[unittest.allTheLiterals :: "int"] v.(allTheLiterals.int') ∗
-    "Hs" ∷ l ↦s[unittest.allTheLiterals :: "s"] v.(allTheLiterals.s') ∗
-    "Hb" ∷ l ↦s[unittest.allTheLiterals :: "b"] v.(allTheLiterals.b')
+Global Instance allTheLiterals_struct_fields_split dq l (v : allTheLiterals.t) :
+  StructFieldsSplit dq l v (
+    "Hint" ∷ l ↦s[unittest.allTheLiterals :: "int"]{dq} v.(allTheLiterals.int') ∗
+    "Hs" ∷ l ↦s[unittest.allTheLiterals :: "s"]{dq} v.(allTheLiterals.s') ∗
+    "Hb" ∷ l ↦s[unittest.allTheLiterals :: "b"]{dq} v.(allTheLiterals.b')
   ).
 Admitted.
 
@@ -628,9 +628,9 @@ Global Instance wp_struct_make_hasCondVar `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance hasCondVar_struct_fields_split l (v : hasCondVar.t) :
-  StructFieldsSplit l v (
-    "Hcond" ∷ l ↦s[unittest.hasCondVar :: "cond"] v.(hasCondVar.cond')
+Global Instance hasCondVar_struct_fields_split dq l (v : hasCondVar.t) :
+  StructFieldsSplit dq l v (
+    "Hcond" ∷ l ↦s[unittest.hasCondVar :: "cond"]{dq} v.(hasCondVar.cond')
   ).
 Admitted.
 
@@ -693,10 +693,10 @@ Global Instance wp_struct_make_mapElem `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance mapElem_struct_fields_split l (v : mapElem.t) :
-  StructFieldsSplit l v (
-    "Ha" ∷ l ↦s[unittest.mapElem :: "a"] v.(mapElem.a') ∗
-    "Hb" ∷ l ↦s[unittest.mapElem :: "b"] v.(mapElem.b')
+Global Instance mapElem_struct_fields_split dq l (v : mapElem.t) :
+  StructFieldsSplit dq l v (
+    "Ha" ∷ l ↦s[unittest.mapElem :: "a"]{dq} v.(mapElem.a') ∗
+    "Hb" ∷ l ↦s[unittest.mapElem :: "b"]{dq} v.(mapElem.b')
   ).
 Admitted.
 
@@ -740,9 +740,9 @@ Global Instance wp_struct_make_wrapExternalStruct `{ffi_semantics} `{!ffi_interp
 Admitted.
 
 
-Global Instance wrapExternalStruct_struct_fields_split l (v : wrapExternalStruct.t) :
-  StructFieldsSplit l v (
-    "Hj" ∷ l ↦s[unittest.wrapExternalStruct :: "j"] v.(wrapExternalStruct.j')
+Global Instance wrapExternalStruct_struct_fields_split dq l (v : wrapExternalStruct.t) :
+  StructFieldsSplit dq l v (
+    "Hj" ∷ l ↦s[unittest.wrapExternalStruct :: "j"]{dq} v.(wrapExternalStruct.j')
   ).
 Admitted.
 
@@ -786,9 +786,9 @@ Global Instance wp_struct_make_typing `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance typing_struct_fields_split l (v : typing.t) :
-  StructFieldsSplit l v (
-    "Hproph" ∷ l ↦s[unittest.typing :: "proph"] v.(typing.proph')
+Global Instance typing_struct_fields_split dq l (v : typing.t) :
+  StructFieldsSplit dq l v (
+    "Hproph" ∷ l ↦s[unittest.typing :: "proph"]{dq} v.(typing.proph')
   ).
 Admitted.
 
@@ -837,10 +837,10 @@ Global Instance wp_struct_make_composite `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance composite_struct_fields_split l (v : composite.t) :
-  StructFieldsSplit l v (
-    "Ha" ∷ l ↦s[unittest.composite :: "a"] v.(composite.a') ∗
-    "Hb" ∷ l ↦s[unittest.composite :: "b"] v.(composite.b')
+Global Instance composite_struct_fields_split dq l (v : composite.t) :
+  StructFieldsSplit dq l v (
+    "Ha" ∷ l ↦s[unittest.composite :: "a"]{dq} v.(composite.a') ∗
+    "Hb" ∷ l ↦s[unittest.composite :: "b"]{dq} v.(composite.b')
   ).
 Admitted.
 
@@ -916,9 +916,9 @@ Global Instance wp_struct_make_Other `{ffi_semantics} `{!ffi_interp ffi} `{!heap
 Admitted.
 
 
-Global Instance Other_struct_fields_split l (v : Other.t) :
-  StructFieldsSplit l v (
-    "HRecursiveEmbedded" ∷ l ↦s[unittest.Other :: "RecursiveEmbedded"] v.(Other.RecursiveEmbedded')
+Global Instance Other_struct_fields_split dq l (v : Other.t) :
+  StructFieldsSplit dq l v (
+    "HRecursiveEmbedded" ∷ l ↦s[unittest.Other :: "RecursiveEmbedded"]{dq} v.(Other.RecursiveEmbedded')
   ).
 Admitted.
 
@@ -962,9 +962,9 @@ Global Instance wp_struct_make_RecursiveEmbedded `{ffi_semantics} `{!ffi_interp 
 Admitted.
 
 
-Global Instance RecursiveEmbedded_struct_fields_split l (v : RecursiveEmbedded.t) :
-  StructFieldsSplit l v (
-    "HOther" ∷ l ↦s[unittest.RecursiveEmbedded :: "Other"] v.(RecursiveEmbedded.Other')
+Global Instance RecursiveEmbedded_struct_fields_split dq l (v : RecursiveEmbedded.t) :
+  StructFieldsSplit dq l v (
+    "HOther" ∷ l ↦s[unittest.RecursiveEmbedded :: "Other"]{dq} v.(RecursiveEmbedded.Other')
   ).
 Admitted.
 
@@ -1008,9 +1008,9 @@ Global Instance wp_struct_make_Block `{ffi_semantics} `{!ffi_interp ffi} `{!heap
 Admitted.
 
 
-Global Instance Block_struct_fields_split l (v : Block.t) :
-  StructFieldsSplit l v (
-    "HValue" ∷ l ↦s[unittest.Block :: "Value"] v.(Block.Value')
+Global Instance Block_struct_fields_split dq l (v : Block.t) :
+  StructFieldsSplit dq l v (
+    "HValue" ∷ l ↦s[unittest.Block :: "Value"]{dq} v.(Block.Value')
   ).
 Admitted.
 
@@ -1061,9 +1061,9 @@ Global Instance wp_struct_make_thing `{ffi_semantics} `{!ffi_interp ffi} `{!heap
 Admitted.
 
 
-Global Instance thing_struct_fields_split l (v : thing.t) :
-  StructFieldsSplit l v (
-    "Hx" ∷ l ↦s[unittest.thing :: "x"] v.(thing.x')
+Global Instance thing_struct_fields_split dq l (v : thing.t) :
+  StructFieldsSplit dq l v (
+    "Hx" ∷ l ↦s[unittest.thing :: "x"]{dq} v.(thing.x')
   ).
 Admitted.
 
@@ -1107,9 +1107,9 @@ Global Instance wp_struct_make_sliceOfThings `{ffi_semantics} `{!ffi_interp ffi}
 Admitted.
 
 
-Global Instance sliceOfThings_struct_fields_split l (v : sliceOfThings.t) :
-  StructFieldsSplit l v (
-    "Hthings" ∷ l ↦s[unittest.sliceOfThings :: "things"] v.(sliceOfThings.things')
+Global Instance sliceOfThings_struct_fields_split dq l (v : sliceOfThings.t) :
+  StructFieldsSplit dq l v (
+    "Hthings" ∷ l ↦s[unittest.sliceOfThings :: "things"]{dq} v.(sliceOfThings.things')
   ).
 Admitted.
 
@@ -1158,10 +1158,10 @@ Global Instance wp_struct_make_Point `{ffi_semantics} `{!ffi_interp ffi} `{!heap
 Admitted.
 
 
-Global Instance Point_struct_fields_split l (v : Point.t) :
-  StructFieldsSplit l v (
-    "Hx" ∷ l ↦s[unittest.Point :: "x"] v.(Point.x') ∗
-    "Hy" ∷ l ↦s[unittest.Point :: "y"] v.(Point.y')
+Global Instance Point_struct_fields_split dq l (v : Point.t) :
+  StructFieldsSplit dq l v (
+    "Hx" ∷ l ↦s[unittest.Point :: "x"]{dq} v.(Point.x') ∗
+    "Hy" ∷ l ↦s[unittest.Point :: "y"]{dq} v.(Point.y')
   ).
 Admitted.
 
@@ -1210,10 +1210,10 @@ Global Instance wp_struct_make_TwoInts `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance TwoInts_struct_fields_split l (v : TwoInts.t) :
-  StructFieldsSplit l v (
-    "Hx" ∷ l ↦s[unittest.TwoInts :: "x"] v.(TwoInts.x') ∗
-    "Hy" ∷ l ↦s[unittest.TwoInts :: "y"] v.(TwoInts.y')
+Global Instance TwoInts_struct_fields_split dq l (v : TwoInts.t) :
+  StructFieldsSplit dq l v (
+    "Hx" ∷ l ↦s[unittest.TwoInts :: "x"]{dq} v.(TwoInts.x') ∗
+    "Hy" ∷ l ↦s[unittest.TwoInts :: "y"]{dq} v.(TwoInts.y')
   ).
 Admitted.
 
@@ -1267,11 +1267,11 @@ Global Instance wp_struct_make_S `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS �
 Admitted.
 
 
-Global Instance S_struct_fields_split l (v : S.t) :
-  StructFieldsSplit l v (
-    "Ha" ∷ l ↦s[unittest.S :: "a"] v.(S.a') ∗
-    "Hb" ∷ l ↦s[unittest.S :: "b"] v.(S.b') ∗
-    "Hc" ∷ l ↦s[unittest.S :: "c"] v.(S.c')
+Global Instance S_struct_fields_split dq l (v : S.t) :
+  StructFieldsSplit dq l v (
+    "Ha" ∷ l ↦s[unittest.S :: "a"]{dq} v.(S.a') ∗
+    "Hb" ∷ l ↦s[unittest.S :: "b"]{dq} v.(S.b') ∗
+    "Hc" ∷ l ↦s[unittest.S :: "c"]{dq} v.(S.c')
   ).
 Admitted.
 
@@ -1315,9 +1315,9 @@ Global Instance wp_struct_make_B `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS �
 Admitted.
 
 
-Global Instance B_struct_fields_split l (v : B.t) :
-  StructFieldsSplit l v (
-    "Ha" ∷ l ↦s[unittest.B :: "a"] v.(B.a')
+Global Instance B_struct_fields_split dq l (v : B.t) :
+  StructFieldsSplit dq l v (
+    "Ha" ∷ l ↦s[unittest.B :: "a"]{dq} v.(B.a')
   ).
 Admitted.
 

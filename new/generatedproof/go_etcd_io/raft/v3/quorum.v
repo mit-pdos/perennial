@@ -86,12 +86,12 @@ Global Instance wp_struct_make_tup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
 Admitted.
 
 
-Global Instance tup_struct_fields_split l (v : tup.t) :
-  StructFieldsSplit l v (
-    "Hid" ∷ l ↦s[quorum.tup :: "id"] v.(tup.id') ∗
-    "Hidx" ∷ l ↦s[quorum.tup :: "idx"] v.(tup.idx') ∗
-    "Hok" ∷ l ↦s[quorum.tup :: "ok"] v.(tup.ok') ∗
-    "Hbar" ∷ l ↦s[quorum.tup :: "bar"] v.(tup.bar')
+Global Instance tup_struct_fields_split dq l (v : tup.t) :
+  StructFieldsSplit dq l v (
+    "Hid" ∷ l ↦s[quorum.tup :: "id"]{dq} v.(tup.id') ∗
+    "Hidx" ∷ l ↦s[quorum.tup :: "idx"]{dq} v.(tup.idx') ∗
+    "Hok" ∷ l ↦s[quorum.tup :: "ok"]{dq} v.(tup.ok') ∗
+    "Hbar" ∷ l ↦s[quorum.tup :: "bar"]{dq} v.(tup.bar')
   ).
 Admitted.
 

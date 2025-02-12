@@ -47,9 +47,9 @@ Proof.
   by apply wp_struct_make.
 Qed.
 
-Global Instance Mutex_struct_split l (v : Mutex.t) :
-  StructFieldsSplit l v (
-      "Hstate" ∷ l ↦s[sync.Mutex :: "state"] v.(Mutex.state)
+Global Instance Mutex_struct_split dq l (v : Mutex.t) :
+  StructFieldsSplit dq l v (
+      "Hstate" ∷ l ↦s[sync.Mutex :: "state"]{dq} v.(Mutex.state)
     ).
 Proof.
   constructor.
@@ -130,9 +130,9 @@ Proof.
   by apply wp_struct_make.
 Qed.
 
-Global Instance Cond_struct_split l (v : Cond.t) :
-  StructFieldsSplit l v (
-      "HL" ∷ l ↦s[sync.Cond :: "L"] v.(Cond.L)
+Global Instance Cond_struct_split dq l (v : Cond.t) :
+  StructFieldsSplit dq l v (
+      "HL" ∷ l ↦s[sync.Cond :: "L"]{dq} v.(Cond.L)
     ).
 Admitted.
 

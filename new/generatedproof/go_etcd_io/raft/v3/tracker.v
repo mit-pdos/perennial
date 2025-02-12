@@ -55,10 +55,10 @@ Global Instance wp_struct_make_inflight `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance inflight_struct_fields_split l (v : inflight.t) :
-  StructFieldsSplit l v (
-    "Hindex" ∷ l ↦s[tracker.inflight :: "index"] v.(inflight.index') ∗
-    "Hbytes" ∷ l ↦s[tracker.inflight :: "bytes"] v.(inflight.bytes')
+Global Instance inflight_struct_fields_split dq l (v : inflight.t) :
+  StructFieldsSplit dq l v (
+    "Hindex" ∷ l ↦s[tracker.inflight :: "index"]{dq} v.(inflight.index') ∗
+    "Hbytes" ∷ l ↦s[tracker.inflight :: "bytes"]{dq} v.(inflight.bytes')
   ).
 Admitted.
 
@@ -127,14 +127,14 @@ Global Instance wp_struct_make_Inflights `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance Inflights_struct_fields_split l (v : Inflights.t) :
-  StructFieldsSplit l v (
-    "Hstart" ∷ l ↦s[tracker.Inflights :: "start"] v.(Inflights.start') ∗
-    "Hcount" ∷ l ↦s[tracker.Inflights :: "count"] v.(Inflights.count') ∗
-    "Hbytes" ∷ l ↦s[tracker.Inflights :: "bytes"] v.(Inflights.bytes') ∗
-    "Hsize" ∷ l ↦s[tracker.Inflights :: "size"] v.(Inflights.size') ∗
-    "HmaxBytes" ∷ l ↦s[tracker.Inflights :: "maxBytes"] v.(Inflights.maxBytes') ∗
-    "Hbuffer" ∷ l ↦s[tracker.Inflights :: "buffer"] v.(Inflights.buffer')
+Global Instance Inflights_struct_fields_split dq l (v : Inflights.t) :
+  StructFieldsSplit dq l v (
+    "Hstart" ∷ l ↦s[tracker.Inflights :: "start"]{dq} v.(Inflights.start') ∗
+    "Hcount" ∷ l ↦s[tracker.Inflights :: "count"]{dq} v.(Inflights.count') ∗
+    "Hbytes" ∷ l ↦s[tracker.Inflights :: "bytes"]{dq} v.(Inflights.bytes') ∗
+    "Hsize" ∷ l ↦s[tracker.Inflights :: "size"]{dq} v.(Inflights.size') ∗
+    "HmaxBytes" ∷ l ↦s[tracker.Inflights :: "maxBytes"]{dq} v.(Inflights.maxBytes') ∗
+    "Hbuffer" ∷ l ↦s[tracker.Inflights :: "buffer"]{dq} v.(Inflights.buffer')
   ).
 Admitted.
 
@@ -225,17 +225,17 @@ Global Instance wp_struct_make_Progress `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance Progress_struct_fields_split l (v : Progress.t) :
-  StructFieldsSplit l v (
-    "HMatch" ∷ l ↦s[tracker.Progress :: "Match"] v.(Progress.Match') ∗
-    "HNext" ∷ l ↦s[tracker.Progress :: "Next"] v.(Progress.Next') ∗
-    "HsentCommit" ∷ l ↦s[tracker.Progress :: "sentCommit"] v.(Progress.sentCommit') ∗
-    "HState" ∷ l ↦s[tracker.Progress :: "State"] v.(Progress.State') ∗
-    "HPendingSnapshot" ∷ l ↦s[tracker.Progress :: "PendingSnapshot"] v.(Progress.PendingSnapshot') ∗
-    "HRecentActive" ∷ l ↦s[tracker.Progress :: "RecentActive"] v.(Progress.RecentActive') ∗
-    "HMsgAppFlowPaused" ∷ l ↦s[tracker.Progress :: "MsgAppFlowPaused"] v.(Progress.MsgAppFlowPaused') ∗
-    "HInflights" ∷ l ↦s[tracker.Progress :: "Inflights"] v.(Progress.Inflights') ∗
-    "HIsLearner" ∷ l ↦s[tracker.Progress :: "IsLearner"] v.(Progress.IsLearner')
+Global Instance Progress_struct_fields_split dq l (v : Progress.t) :
+  StructFieldsSplit dq l v (
+    "HMatch" ∷ l ↦s[tracker.Progress :: "Match"]{dq} v.(Progress.Match') ∗
+    "HNext" ∷ l ↦s[tracker.Progress :: "Next"]{dq} v.(Progress.Next') ∗
+    "HsentCommit" ∷ l ↦s[tracker.Progress :: "sentCommit"]{dq} v.(Progress.sentCommit') ∗
+    "HState" ∷ l ↦s[tracker.Progress :: "State"]{dq} v.(Progress.State') ∗
+    "HPendingSnapshot" ∷ l ↦s[tracker.Progress :: "PendingSnapshot"]{dq} v.(Progress.PendingSnapshot') ∗
+    "HRecentActive" ∷ l ↦s[tracker.Progress :: "RecentActive"]{dq} v.(Progress.RecentActive') ∗
+    "HMsgAppFlowPaused" ∷ l ↦s[tracker.Progress :: "MsgAppFlowPaused"]{dq} v.(Progress.MsgAppFlowPaused') ∗
+    "HInflights" ∷ l ↦s[tracker.Progress :: "Inflights"]{dq} v.(Progress.Inflights') ∗
+    "HIsLearner" ∷ l ↦s[tracker.Progress :: "IsLearner"]{dq} v.(Progress.IsLearner')
   ).
 Admitted.
 
@@ -301,12 +301,12 @@ Global Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance Config_struct_fields_split l (v : Config.t) :
-  StructFieldsSplit l v (
-    "HVoters" ∷ l ↦s[tracker.Config :: "Voters"] v.(Config.Voters') ∗
-    "HAutoLeave" ∷ l ↦s[tracker.Config :: "AutoLeave"] v.(Config.AutoLeave') ∗
-    "HLearners" ∷ l ↦s[tracker.Config :: "Learners"] v.(Config.Learners') ∗
-    "HLearnersNext" ∷ l ↦s[tracker.Config :: "LearnersNext"] v.(Config.LearnersNext')
+Global Instance Config_struct_fields_split dq l (v : Config.t) :
+  StructFieldsSplit dq l v (
+    "HVoters" ∷ l ↦s[tracker.Config :: "Voters"]{dq} v.(Config.Voters') ∗
+    "HAutoLeave" ∷ l ↦s[tracker.Config :: "AutoLeave"]{dq} v.(Config.AutoLeave') ∗
+    "HLearners" ∷ l ↦s[tracker.Config :: "Learners"]{dq} v.(Config.Learners') ∗
+    "HLearnersNext" ∷ l ↦s[tracker.Config :: "LearnersNext"]{dq} v.(Config.LearnersNext')
   ).
 Admitted.
 
@@ -370,13 +370,13 @@ Global Instance wp_struct_make_ProgressTracker `{ffi_semantics} `{!ffi_interp ff
 Admitted.
 
 
-Global Instance ProgressTracker_struct_fields_split l (v : ProgressTracker.t) :
-  StructFieldsSplit l v (
-    "HConfig" ∷ l ↦s[tracker.ProgressTracker :: "Config"] v.(ProgressTracker.Config') ∗
-    "HProgress" ∷ l ↦s[tracker.ProgressTracker :: "Progress"] v.(ProgressTracker.Progress') ∗
-    "HVotes" ∷ l ↦s[tracker.ProgressTracker :: "Votes"] v.(ProgressTracker.Votes') ∗
-    "HMaxInflight" ∷ l ↦s[tracker.ProgressTracker :: "MaxInflight"] v.(ProgressTracker.MaxInflight') ∗
-    "HMaxInflightBytes" ∷ l ↦s[tracker.ProgressTracker :: "MaxInflightBytes"] v.(ProgressTracker.MaxInflightBytes')
+Global Instance ProgressTracker_struct_fields_split dq l (v : ProgressTracker.t) :
+  StructFieldsSplit dq l v (
+    "HConfig" ∷ l ↦s[tracker.ProgressTracker :: "Config"]{dq} v.(ProgressTracker.Config') ∗
+    "HProgress" ∷ l ↦s[tracker.ProgressTracker :: "Progress"]{dq} v.(ProgressTracker.Progress') ∗
+    "HVotes" ∷ l ↦s[tracker.ProgressTracker :: "Votes"]{dq} v.(ProgressTracker.Votes') ∗
+    "HMaxInflight" ∷ l ↦s[tracker.ProgressTracker :: "MaxInflight"]{dq} v.(ProgressTracker.MaxInflight') ∗
+    "HMaxInflightBytes" ∷ l ↦s[tracker.ProgressTracker :: "MaxInflightBytes"]{dq} v.(ProgressTracker.MaxInflightBytes')
   ).
 Admitted.
 

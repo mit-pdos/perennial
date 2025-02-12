@@ -50,10 +50,10 @@ Global Instance wp_struct_make_Changer `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance Changer_struct_fields_split l (v : Changer.t) :
-  StructFieldsSplit l v (
-    "HTracker" ∷ l ↦s[confchange.Changer :: "Tracker"] v.(Changer.Tracker') ∗
-    "HLastIndex" ∷ l ↦s[confchange.Changer :: "LastIndex"] v.(Changer.LastIndex')
+Global Instance Changer_struct_fields_split dq l (v : Changer.t) :
+  StructFieldsSplit dq l v (
+    "HTracker" ∷ l ↦s[confchange.Changer :: "Tracker"]{dq} v.(Changer.Tracker') ∗
+    "HLastIndex" ∷ l ↦s[confchange.Changer :: "LastIndex"]{dq} v.(Changer.LastIndex')
   ).
 Admitted.
 

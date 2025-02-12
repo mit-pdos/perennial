@@ -63,12 +63,12 @@ Global Instance wp_struct_make_ReconnectingClient `{ffi_semantics} `{!ffi_interp
 Admitted.
 
 
-Global Instance ReconnectingClient_struct_fields_split l (v : ReconnectingClient.t) :
-  StructFieldsSplit l v (
-    "Hmu" ∷ l ↦s[reconnectclient.ReconnectingClient :: "mu"] v.(ReconnectingClient.mu') ∗
-    "Hvalid" ∷ l ↦s[reconnectclient.ReconnectingClient :: "valid"] v.(ReconnectingClient.valid') ∗
-    "HurpcCl" ∷ l ↦s[reconnectclient.ReconnectingClient :: "urpcCl"] v.(ReconnectingClient.urpcCl') ∗
-    "Haddr" ∷ l ↦s[reconnectclient.ReconnectingClient :: "addr"] v.(ReconnectingClient.addr')
+Global Instance ReconnectingClient_struct_fields_split dq l (v : ReconnectingClient.t) :
+  StructFieldsSplit dq l v (
+    "Hmu" ∷ l ↦s[reconnectclient.ReconnectingClient :: "mu"]{dq} v.(ReconnectingClient.mu') ∗
+    "Hvalid" ∷ l ↦s[reconnectclient.ReconnectingClient :: "valid"]{dq} v.(ReconnectingClient.valid') ∗
+    "HurpcCl" ∷ l ↦s[reconnectclient.ReconnectingClient :: "urpcCl"]{dq} v.(ReconnectingClient.urpcCl') ∗
+    "Haddr" ∷ l ↦s[reconnectclient.ReconnectingClient :: "addr"]{dq} v.(ReconnectingClient.addr')
   ).
 Admitted.
 

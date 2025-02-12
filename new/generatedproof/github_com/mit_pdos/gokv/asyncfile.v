@@ -92,18 +92,18 @@ Global Instance wp_struct_make_AsyncFile `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance AsyncFile_struct_fields_split l (v : AsyncFile.t) :
-  StructFieldsSplit l v (
-    "Hmu" ∷ l ↦s[asyncfile.AsyncFile :: "mu"] v.(AsyncFile.mu') ∗
-    "Hdata" ∷ l ↦s[asyncfile.AsyncFile :: "data"] v.(AsyncFile.data') ∗
-    "Hfilename" ∷ l ↦s[asyncfile.AsyncFile :: "filename"] v.(AsyncFile.filename') ∗
-    "Hindex" ∷ l ↦s[asyncfile.AsyncFile :: "index"] v.(AsyncFile.index') ∗
-    "HindexCond" ∷ l ↦s[asyncfile.AsyncFile :: "indexCond"] v.(AsyncFile.indexCond') ∗
-    "HdurableIndex" ∷ l ↦s[asyncfile.AsyncFile :: "durableIndex"] v.(AsyncFile.durableIndex') ∗
-    "HdurableIndexCond" ∷ l ↦s[asyncfile.AsyncFile :: "durableIndexCond"] v.(AsyncFile.durableIndexCond') ∗
-    "HcloseRequested" ∷ l ↦s[asyncfile.AsyncFile :: "closeRequested"] v.(AsyncFile.closeRequested') ∗
-    "Hclosed" ∷ l ↦s[asyncfile.AsyncFile :: "closed"] v.(AsyncFile.closed') ∗
-    "HclosedCond" ∷ l ↦s[asyncfile.AsyncFile :: "closedCond"] v.(AsyncFile.closedCond')
+Global Instance AsyncFile_struct_fields_split dq l (v : AsyncFile.t) :
+  StructFieldsSplit dq l v (
+    "Hmu" ∷ l ↦s[asyncfile.AsyncFile :: "mu"]{dq} v.(AsyncFile.mu') ∗
+    "Hdata" ∷ l ↦s[asyncfile.AsyncFile :: "data"]{dq} v.(AsyncFile.data') ∗
+    "Hfilename" ∷ l ↦s[asyncfile.AsyncFile :: "filename"]{dq} v.(AsyncFile.filename') ∗
+    "Hindex" ∷ l ↦s[asyncfile.AsyncFile :: "index"]{dq} v.(AsyncFile.index') ∗
+    "HindexCond" ∷ l ↦s[asyncfile.AsyncFile :: "indexCond"]{dq} v.(AsyncFile.indexCond') ∗
+    "HdurableIndex" ∷ l ↦s[asyncfile.AsyncFile :: "durableIndex"]{dq} v.(AsyncFile.durableIndex') ∗
+    "HdurableIndexCond" ∷ l ↦s[asyncfile.AsyncFile :: "durableIndexCond"]{dq} v.(AsyncFile.durableIndexCond') ∗
+    "HcloseRequested" ∷ l ↦s[asyncfile.AsyncFile :: "closeRequested"]{dq} v.(AsyncFile.closeRequested') ∗
+    "Hclosed" ∷ l ↦s[asyncfile.AsyncFile :: "closed"]{dq} v.(AsyncFile.closed') ∗
+    "HclosedCond" ∷ l ↦s[asyncfile.AsyncFile :: "closedCond"]{dq} v.(AsyncFile.closedCond')
   ).
 Admitted.
 

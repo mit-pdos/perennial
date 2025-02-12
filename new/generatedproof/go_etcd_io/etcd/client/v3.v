@@ -115,12 +115,12 @@ Global Instance wp_struct_make_LeaseGrantResponse `{ffi_semantics} `{!ffi_interp
 Admitted.
 
 
-Global Instance LeaseGrantResponse_struct_fields_split l (v : LeaseGrantResponse.t) :
-  StructFieldsSplit l v (
-    "HResponseHeader" ∷ l ↦s[clientv3.LeaseGrantResponse :: "ResponseHeader"] v.(LeaseGrantResponse.ResponseHeader') ∗
-    "HID" ∷ l ↦s[clientv3.LeaseGrantResponse :: "ID"] v.(LeaseGrantResponse.ID') ∗
-    "HTTL" ∷ l ↦s[clientv3.LeaseGrantResponse :: "TTL"] v.(LeaseGrantResponse.TTL') ∗
-    "HError" ∷ l ↦s[clientv3.LeaseGrantResponse :: "Error"] v.(LeaseGrantResponse.Error')
+Global Instance LeaseGrantResponse_struct_fields_split dq l (v : LeaseGrantResponse.t) :
+  StructFieldsSplit dq l v (
+    "HResponseHeader" ∷ l ↦s[clientv3.LeaseGrantResponse :: "ResponseHeader"]{dq} v.(LeaseGrantResponse.ResponseHeader') ∗
+    "HID" ∷ l ↦s[clientv3.LeaseGrantResponse :: "ID"]{dq} v.(LeaseGrantResponse.ID') ∗
+    "HTTL" ∷ l ↦s[clientv3.LeaseGrantResponse :: "TTL"]{dq} v.(LeaseGrantResponse.TTL') ∗
+    "HError" ∷ l ↦s[clientv3.LeaseGrantResponse :: "Error"]{dq} v.(LeaseGrantResponse.Error')
   ).
 Admitted.
 
@@ -248,15 +248,15 @@ Global Instance wp_struct_make_WatchResponse `{ffi_semantics} `{!ffi_interp ffi}
 Admitted.
 
 
-Global Instance WatchResponse_struct_fields_split l (v : WatchResponse.t) :
-  StructFieldsSplit l v (
-    "HHeader" ∷ l ↦s[clientv3.WatchResponse :: "Header"] v.(WatchResponse.Header') ∗
-    "HEvents" ∷ l ↦s[clientv3.WatchResponse :: "Events"] v.(WatchResponse.Events') ∗
-    "HCompactRevision" ∷ l ↦s[clientv3.WatchResponse :: "CompactRevision"] v.(WatchResponse.CompactRevision') ∗
-    "HCanceled" ∷ l ↦s[clientv3.WatchResponse :: "Canceled"] v.(WatchResponse.Canceled') ∗
-    "HCreated" ∷ l ↦s[clientv3.WatchResponse :: "Created"] v.(WatchResponse.Created') ∗
-    "HcloseErr" ∷ l ↦s[clientv3.WatchResponse :: "closeErr"] v.(WatchResponse.closeErr') ∗
-    "HcancelReason" ∷ l ↦s[clientv3.WatchResponse :: "cancelReason"] v.(WatchResponse.cancelReason')
+Global Instance WatchResponse_struct_fields_split dq l (v : WatchResponse.t) :
+  StructFieldsSplit dq l v (
+    "HHeader" ∷ l ↦s[clientv3.WatchResponse :: "Header"]{dq} v.(WatchResponse.Header') ∗
+    "HEvents" ∷ l ↦s[clientv3.WatchResponse :: "Events"]{dq} v.(WatchResponse.Events') ∗
+    "HCompactRevision" ∷ l ↦s[clientv3.WatchResponse :: "CompactRevision"]{dq} v.(WatchResponse.CompactRevision') ∗
+    "HCanceled" ∷ l ↦s[clientv3.WatchResponse :: "Canceled"]{dq} v.(WatchResponse.Canceled') ∗
+    "HCreated" ∷ l ↦s[clientv3.WatchResponse :: "Created"]{dq} v.(WatchResponse.Created') ∗
+    "HcloseErr" ∷ l ↦s[clientv3.WatchResponse :: "closeErr"]{dq} v.(WatchResponse.closeErr') ∗
+    "HcancelReason" ∷ l ↦s[clientv3.WatchResponse :: "cancelReason"]{dq} v.(WatchResponse.cancelReason')
   ).
 Admitted.
 

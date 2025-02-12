@@ -50,9 +50,9 @@ Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance Server_struct_fields_split l (v : Server.t) :
-  StructFieldsSplit l v (
-    "Hhandlers" ∷ l ↦s[urpc.Server :: "handlers"] v.(Server.handlers')
+Global Instance Server_struct_fields_split dq l (v : Server.t) :
+  StructFieldsSplit dq l v (
+    "Hhandlers" ∷ l ↦s[urpc.Server :: "handlers"]{dq} v.(Server.handlers')
   ).
 Admitted.
 
@@ -106,11 +106,11 @@ Global Instance wp_struct_make_Callback `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance Callback_struct_fields_split l (v : Callback.t) :
-  StructFieldsSplit l v (
-    "Hreply" ∷ l ↦s[urpc.Callback :: "reply"] v.(Callback.reply') ∗
-    "Hstate" ∷ l ↦s[urpc.Callback :: "state"] v.(Callback.state') ∗
-    "Hcond" ∷ l ↦s[urpc.Callback :: "cond"] v.(Callback.cond')
+Global Instance Callback_struct_fields_split dq l (v : Callback.t) :
+  StructFieldsSplit dq l v (
+    "Hreply" ∷ l ↦s[urpc.Callback :: "reply"]{dq} v.(Callback.reply') ∗
+    "Hstate" ∷ l ↦s[urpc.Callback :: "state"]{dq} v.(Callback.state') ∗
+    "Hcond" ∷ l ↦s[urpc.Callback :: "cond"]{dq} v.(Callback.cond')
   ).
 Admitted.
 
@@ -169,12 +169,12 @@ Global Instance wp_struct_make_Client `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance Client_struct_fields_split l (v : Client.t) :
-  StructFieldsSplit l v (
-    "Hmu" ∷ l ↦s[urpc.Client :: "mu"] v.(Client.mu') ∗
-    "Hconn" ∷ l ↦s[urpc.Client :: "conn"] v.(Client.conn') ∗
-    "Hseq" ∷ l ↦s[urpc.Client :: "seq"] v.(Client.seq') ∗
-    "Hpending" ∷ l ↦s[urpc.Client :: "pending"] v.(Client.pending')
+Global Instance Client_struct_fields_split dq l (v : Client.t) :
+  StructFieldsSplit dq l v (
+    "Hmu" ∷ l ↦s[urpc.Client :: "mu"]{dq} v.(Client.mu') ∗
+    "Hconn" ∷ l ↦s[urpc.Client :: "conn"]{dq} v.(Client.conn') ∗
+    "Hseq" ∷ l ↦s[urpc.Client :: "seq"]{dq} v.(Client.seq') ∗
+    "Hpending" ∷ l ↦s[urpc.Client :: "pending"]{dq} v.(Client.pending')
   ).
 Admitted.
 

@@ -45,9 +45,9 @@ Global Instance wp_struct_make_LockClerk `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance LockClerk_struct_fields_split l (v : LockClerk.t) :
-  StructFieldsSplit l v (
-    "Hkv" ∷ l ↦s[lockservice.LockClerk :: "kv"] v.(LockClerk.kv')
+Global Instance LockClerk_struct_fields_split dq l (v : LockClerk.t) :
+  StructFieldsSplit dq l v (
+    "Hkv" ∷ l ↦s[lockservice.LockClerk :: "kv"]{dq} v.(LockClerk.kv')
   ).
 Admitted.
 

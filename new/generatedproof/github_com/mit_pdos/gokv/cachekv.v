@@ -53,10 +53,10 @@ Global Instance wp_struct_make_cacheValue `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance cacheValue_struct_fields_split l (v : cacheValue.t) :
-  StructFieldsSplit l v (
-    "Hv" ∷ l ↦s[cachekv.cacheValue :: "v"] v.(cacheValue.v') ∗
-    "Hl" ∷ l ↦s[cachekv.cacheValue :: "l"] v.(cacheValue.l')
+Global Instance cacheValue_struct_fields_split dq l (v : cacheValue.t) :
+  StructFieldsSplit dq l v (
+    "Hv" ∷ l ↦s[cachekv.cacheValue :: "v"]{dq} v.(cacheValue.v') ∗
+    "Hl" ∷ l ↦s[cachekv.cacheValue :: "l"]{dq} v.(cacheValue.l')
   ).
 Admitted.
 
@@ -110,11 +110,11 @@ Global Instance wp_struct_make_CacheKv `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance CacheKv_struct_fields_split l (v : CacheKv.t) :
-  StructFieldsSplit l v (
-    "Hkv" ∷ l ↦s[cachekv.CacheKv :: "kv"] v.(CacheKv.kv') ∗
-    "Hmu" ∷ l ↦s[cachekv.CacheKv :: "mu"] v.(CacheKv.mu') ∗
-    "Hcache" ∷ l ↦s[cachekv.CacheKv :: "cache"] v.(CacheKv.cache')
+Global Instance CacheKv_struct_fields_split dq l (v : CacheKv.t) :
+  StructFieldsSplit dq l v (
+    "Hkv" ∷ l ↦s[cachekv.CacheKv :: "kv"]{dq} v.(CacheKv.kv') ∗
+    "Hmu" ∷ l ↦s[cachekv.CacheKv :: "mu"]{dq} v.(CacheKv.mu') ∗
+    "Hcache" ∷ l ↦s[cachekv.CacheKv :: "cache"]{dq} v.(CacheKv.cache')
   ).
 Admitted.
 

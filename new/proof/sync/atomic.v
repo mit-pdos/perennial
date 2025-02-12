@@ -11,13 +11,10 @@ Context `{!atomic.GlobalAddrs}.
 Definition is_initialized : iProp Σ :=
   "#?" ∷ atomic.is_defined.
 
-Definition own_Uint64 (u : loc) (v : w64) : iProp Σ :=
-  u ↦ atomic.Uint64.mk atomic.noCopy.mk atomic.align64.mk v.
-
-Lemma wp_LoadUint64 (addr : loc) :
+Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,
   is_initialized -∗
-  (|={⊤,∅}=> ∃ (v : w64), addr ↦ v ∗ (addr ↦ v ={∅,⊤}=∗ Φ #v)) -∗
+  (|={⊤,∅}=> ∃ (v : w64), addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
   WP func_call #atomic.pkg_name' #"LoadUint64" #addr {{ Φ }}.
 Proof.
   iIntros (?) "#? HΦ".
@@ -54,10 +51,14 @@ Lemma wp_AddUint64 (addr : loc) (v : w64) :
 Proof.
 Admitted.
 
-Lemma wp_Uint64__Load u :
+Definition own_Uint64 (u : loc) dq (v : w64) : iProp Σ :=
+  u ↦{dq} atomic.Uint64.mk (default_val _) (default_val _) v
+.
+
+Lemma wp_Uint64__Load u dq :
   ∀ Φ,
   is_initialized -∗
-  (|={⊤,∅}=> ∃ v, own_Uint64 u v ∗ (own_Uint64 u v ={∅,⊤}=∗ Φ #v)) -∗
+  (|={⊤,∅}=> ∃ v, own_Uint64 u dq v ∗ (own_Uint64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
   WP method_call #atomic.pkg_name' #"Uint64'ptr" #"Load" #u #() {{ Φ }}.
 Proof.
   iIntros (?) "#? HΦ".
@@ -86,7 +87,7 @@ Qed.
 Lemma wp_Uint64__Store u v :
   ∀ Φ,
   is_initialized -∗
-  (|={⊤,∅}=> ∃ oldv, own_Uint64 u oldv ∗ (own_Uint64 u v ={∅,⊤}=∗ Φ #())) -∗
+  (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗ (own_Uint64 u (DfracOwn 1) v ={∅,⊤}=∗ Φ #())) -∗
   WP method_call #atomic.pkg_name' #"Uint64'ptr" #"Store" #u #v {{ Φ }}.
 Proof.
   iIntros (?) "#? HΦ".
@@ -117,7 +118,9 @@ Qed.
 Lemma wp_Uint64__Add u delta :
   ∀ Φ,
   is_initialized -∗
-  (|={⊤,∅}=> ∃ oldv, own_Uint64 u oldv ∗ (own_Uint64 u (word.add oldv delta) ={∅,⊤}=∗ Φ #(word.add oldv delta))) -∗
+  (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗
+  (own_Uint64 u (DfracOwn 1) (word.add old delta) ={∅,⊤}=∗
+   Φ #(word.add old delta))) -∗
   WP method_call #atomic.pkg_name' #"Uint64'ptr" #"Add" #u #delta {{ Φ }}.
 Proof.
   iIntros (?) "#? HΦ".

@@ -52,9 +52,9 @@ Global Instance wp_struct_make_singleClerk `{ffi_semantics} `{!ffi_interp ffi} `
 Admitted.
 
 
-Global Instance singleClerk_struct_fields_split l (v : singleClerk.t) :
-  StructFieldsSplit l v (
-    "Hcl" ∷ l ↦s[paxos.singleClerk :: "cl"] v.(singleClerk.cl')
+Global Instance singleClerk_struct_fields_split dq l (v : singleClerk.t) :
+  StructFieldsSplit dq l v (
+    "Hcl" ∷ l ↦s[paxos.singleClerk :: "cl"]{dq} v.(singleClerk.cl')
   ).
 Admitted.
 
@@ -115,11 +115,11 @@ Global Instance wp_struct_make_applyAsFollowerArgs `{ffi_semantics} `{!ffi_inter
 Admitted.
 
 
-Global Instance applyAsFollowerArgs_struct_fields_split l (v : applyAsFollowerArgs.t) :
-  StructFieldsSplit l v (
-    "Hepoch" ∷ l ↦s[paxos.applyAsFollowerArgs :: "epoch"] v.(applyAsFollowerArgs.epoch') ∗
-    "HnextIndex" ∷ l ↦s[paxos.applyAsFollowerArgs :: "nextIndex"] v.(applyAsFollowerArgs.nextIndex') ∗
-    "Hstate" ∷ l ↦s[paxos.applyAsFollowerArgs :: "state"] v.(applyAsFollowerArgs.state')
+Global Instance applyAsFollowerArgs_struct_fields_split dq l (v : applyAsFollowerArgs.t) :
+  StructFieldsSplit dq l v (
+    "Hepoch" ∷ l ↦s[paxos.applyAsFollowerArgs :: "epoch"]{dq} v.(applyAsFollowerArgs.epoch') ∗
+    "HnextIndex" ∷ l ↦s[paxos.applyAsFollowerArgs :: "nextIndex"]{dq} v.(applyAsFollowerArgs.nextIndex') ∗
+    "Hstate" ∷ l ↦s[paxos.applyAsFollowerArgs :: "state"]{dq} v.(applyAsFollowerArgs.state')
   ).
 Admitted.
 
@@ -163,9 +163,9 @@ Global Instance wp_struct_make_applyAsFollowerReply `{ffi_semantics} `{!ffi_inte
 Admitted.
 
 
-Global Instance applyAsFollowerReply_struct_fields_split l (v : applyAsFollowerReply.t) :
-  StructFieldsSplit l v (
-    "Herr" ∷ l ↦s[paxos.applyAsFollowerReply :: "err"] v.(applyAsFollowerReply.err')
+Global Instance applyAsFollowerReply_struct_fields_split dq l (v : applyAsFollowerReply.t) :
+  StructFieldsSplit dq l v (
+    "Herr" ∷ l ↦s[paxos.applyAsFollowerReply :: "err"]{dq} v.(applyAsFollowerReply.err')
   ).
 Admitted.
 
@@ -209,9 +209,9 @@ Global Instance wp_struct_make_enterNewEpochArgs `{ffi_semantics} `{!ffi_interp 
 Admitted.
 
 
-Global Instance enterNewEpochArgs_struct_fields_split l (v : enterNewEpochArgs.t) :
-  StructFieldsSplit l v (
-    "Hepoch" ∷ l ↦s[paxos.enterNewEpochArgs :: "epoch"] v.(enterNewEpochArgs.epoch')
+Global Instance enterNewEpochArgs_struct_fields_split dq l (v : enterNewEpochArgs.t) :
+  StructFieldsSplit dq l v (
+    "Hepoch" ∷ l ↦s[paxos.enterNewEpochArgs :: "epoch"]{dq} v.(enterNewEpochArgs.epoch')
   ).
 Admitted.
 
@@ -270,12 +270,12 @@ Global Instance wp_struct_make_enterNewEpochReply `{ffi_semantics} `{!ffi_interp
 Admitted.
 
 
-Global Instance enterNewEpochReply_struct_fields_split l (v : enterNewEpochReply.t) :
-  StructFieldsSplit l v (
-    "Herr" ∷ l ↦s[paxos.enterNewEpochReply :: "err"] v.(enterNewEpochReply.err') ∗
-    "HacceptedEpoch" ∷ l ↦s[paxos.enterNewEpochReply :: "acceptedEpoch"] v.(enterNewEpochReply.acceptedEpoch') ∗
-    "HnextIndex" ∷ l ↦s[paxos.enterNewEpochReply :: "nextIndex"] v.(enterNewEpochReply.nextIndex') ∗
-    "Hstate" ∷ l ↦s[paxos.enterNewEpochReply :: "state"] v.(enterNewEpochReply.state')
+Global Instance enterNewEpochReply_struct_fields_split dq l (v : enterNewEpochReply.t) :
+  StructFieldsSplit dq l v (
+    "Herr" ∷ l ↦s[paxos.enterNewEpochReply :: "err"]{dq} v.(enterNewEpochReply.err') ∗
+    "HacceptedEpoch" ∷ l ↦s[paxos.enterNewEpochReply :: "acceptedEpoch"]{dq} v.(enterNewEpochReply.acceptedEpoch') ∗
+    "HnextIndex" ∷ l ↦s[paxos.enterNewEpochReply :: "nextIndex"]{dq} v.(enterNewEpochReply.nextIndex') ∗
+    "Hstate" ∷ l ↦s[paxos.enterNewEpochReply :: "state"]{dq} v.(enterNewEpochReply.state')
   ).
 Admitted.
 
@@ -324,10 +324,10 @@ Global Instance wp_struct_make_applyReply `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance applyReply_struct_fields_split l (v : applyReply.t) :
-  StructFieldsSplit l v (
-    "Herr" ∷ l ↦s[paxos.applyReply :: "err"] v.(applyReply.err') ∗
-    "Hret" ∷ l ↦s[paxos.applyReply :: "ret"] v.(applyReply.ret')
+Global Instance applyReply_struct_fields_split dq l (v : applyReply.t) :
+  StructFieldsSplit dq l v (
+    "Herr" ∷ l ↦s[paxos.applyReply :: "err"]{dq} v.(applyReply.err') ∗
+    "Hret" ∷ l ↦s[paxos.applyReply :: "ret"]{dq} v.(applyReply.ret')
   ).
 Admitted.
 
@@ -391,13 +391,13 @@ Global Instance wp_struct_make_paxosState `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance paxosState_struct_fields_split l (v : paxosState.t) :
-  StructFieldsSplit l v (
-    "Hepoch" ∷ l ↦s[paxos.paxosState :: "epoch"] v.(paxosState.epoch') ∗
-    "HacceptedEpoch" ∷ l ↦s[paxos.paxosState :: "acceptedEpoch"] v.(paxosState.acceptedEpoch') ∗
-    "HnextIndex" ∷ l ↦s[paxos.paxosState :: "nextIndex"] v.(paxosState.nextIndex') ∗
-    "Hstate" ∷ l ↦s[paxos.paxosState :: "state"] v.(paxosState.state') ∗
-    "HisLeader" ∷ l ↦s[paxos.paxosState :: "isLeader"] v.(paxosState.isLeader')
+Global Instance paxosState_struct_fields_split dq l (v : paxosState.t) :
+  StructFieldsSplit dq l v (
+    "Hepoch" ∷ l ↦s[paxos.paxosState :: "epoch"]{dq} v.(paxosState.epoch') ∗
+    "HacceptedEpoch" ∷ l ↦s[paxos.paxosState :: "acceptedEpoch"]{dq} v.(paxosState.acceptedEpoch') ∗
+    "HnextIndex" ∷ l ↦s[paxos.paxosState :: "nextIndex"]{dq} v.(paxosState.nextIndex') ∗
+    "Hstate" ∷ l ↦s[paxos.paxosState :: "state"]{dq} v.(paxosState.state') ∗
+    "HisLeader" ∷ l ↦s[paxos.paxosState :: "isLeader"]{dq} v.(paxosState.isLeader')
   ).
 Admitted.
 
@@ -456,12 +456,12 @@ Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance Server_struct_fields_split l (v : Server.t) :
-  StructFieldsSplit l v (
-    "Hmu" ∷ l ↦s[paxos.Server :: "mu"] v.(Server.mu') ∗
-    "Hps" ∷ l ↦s[paxos.Server :: "ps"] v.(Server.ps') ∗
-    "Hstorage" ∷ l ↦s[paxos.Server :: "storage"] v.(Server.storage') ∗
-    "Hclerks" ∷ l ↦s[paxos.Server :: "clerks"] v.(Server.clerks')
+Global Instance Server_struct_fields_split dq l (v : Server.t) :
+  StructFieldsSplit dq l v (
+    "Hmu" ∷ l ↦s[paxos.Server :: "mu"]{dq} v.(Server.mu') ∗
+    "Hps" ∷ l ↦s[paxos.Server :: "ps"]{dq} v.(Server.ps') ∗
+    "Hstorage" ∷ l ↦s[paxos.Server :: "storage"]{dq} v.(Server.storage') ∗
+    "Hclerks" ∷ l ↦s[paxos.Server :: "clerks"]{dq} v.(Server.clerks')
   ).
 Admitted.
 

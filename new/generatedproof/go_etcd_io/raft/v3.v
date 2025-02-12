@@ -100,14 +100,14 @@ Global Instance wp_struct_make_unstable `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance unstable_struct_fields_split l (v : unstable.t) :
-  StructFieldsSplit l v (
-    "Hsnapshot" ∷ l ↦s[raft.unstable :: "snapshot"] v.(unstable.snapshot') ∗
-    "Hentries" ∷ l ↦s[raft.unstable :: "entries"] v.(unstable.entries') ∗
-    "Hoffset" ∷ l ↦s[raft.unstable :: "offset"] v.(unstable.offset') ∗
-    "HsnapshotInProgress" ∷ l ↦s[raft.unstable :: "snapshotInProgress"] v.(unstable.snapshotInProgress') ∗
-    "HoffsetInProgress" ∷ l ↦s[raft.unstable :: "offsetInProgress"] v.(unstable.offsetInProgress') ∗
-    "Hlogger" ∷ l ↦s[raft.unstable :: "logger"] v.(unstable.logger')
+Global Instance unstable_struct_fields_split dq l (v : unstable.t) :
+  StructFieldsSplit dq l v (
+    "Hsnapshot" ∷ l ↦s[raft.unstable :: "snapshot"]{dq} v.(unstable.snapshot') ∗
+    "Hentries" ∷ l ↦s[raft.unstable :: "entries"]{dq} v.(unstable.entries') ∗
+    "Hoffset" ∷ l ↦s[raft.unstable :: "offset"]{dq} v.(unstable.offset') ∗
+    "HsnapshotInProgress" ∷ l ↦s[raft.unstable :: "snapshotInProgress"]{dq} v.(unstable.snapshotInProgress') ∗
+    "HoffsetInProgress" ∷ l ↦s[raft.unstable :: "offsetInProgress"]{dq} v.(unstable.offsetInProgress') ∗
+    "Hlogger" ∷ l ↦s[raft.unstable :: "logger"]{dq} v.(unstable.logger')
   ).
 Admitted.
 
@@ -198,17 +198,17 @@ Global Instance wp_struct_make_raftLog `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance raftLog_struct_fields_split l (v : raftLog.t) :
-  StructFieldsSplit l v (
-    "Hstorage" ∷ l ↦s[raft.raftLog :: "storage"] v.(raftLog.storage') ∗
-    "Hunstable" ∷ l ↦s[raft.raftLog :: "unstable"] v.(raftLog.unstable') ∗
-    "Hcommitted" ∷ l ↦s[raft.raftLog :: "committed"] v.(raftLog.committed') ∗
-    "Happlying" ∷ l ↦s[raft.raftLog :: "applying"] v.(raftLog.applying') ∗
-    "Happlied" ∷ l ↦s[raft.raftLog :: "applied"] v.(raftLog.applied') ∗
-    "Hlogger" ∷ l ↦s[raft.raftLog :: "logger"] v.(raftLog.logger') ∗
-    "HmaxApplyingEntsSize" ∷ l ↦s[raft.raftLog :: "maxApplyingEntsSize"] v.(raftLog.maxApplyingEntsSize') ∗
-    "HapplyingEntsSize" ∷ l ↦s[raft.raftLog :: "applyingEntsSize"] v.(raftLog.applyingEntsSize') ∗
-    "HapplyingEntsPaused" ∷ l ↦s[raft.raftLog :: "applyingEntsPaused"] v.(raftLog.applyingEntsPaused')
+Global Instance raftLog_struct_fields_split dq l (v : raftLog.t) :
+  StructFieldsSplit dq l v (
+    "Hstorage" ∷ l ↦s[raft.raftLog :: "storage"]{dq} v.(raftLog.storage') ∗
+    "Hunstable" ∷ l ↦s[raft.raftLog :: "unstable"]{dq} v.(raftLog.unstable') ∗
+    "Hcommitted" ∷ l ↦s[raft.raftLog :: "committed"]{dq} v.(raftLog.committed') ∗
+    "Happlying" ∷ l ↦s[raft.raftLog :: "applying"]{dq} v.(raftLog.applying') ∗
+    "Happlied" ∷ l ↦s[raft.raftLog :: "applied"]{dq} v.(raftLog.applied') ∗
+    "Hlogger" ∷ l ↦s[raft.raftLog :: "logger"]{dq} v.(raftLog.logger') ∗
+    "HmaxApplyingEntsSize" ∷ l ↦s[raft.raftLog :: "maxApplyingEntsSize"]{dq} v.(raftLog.maxApplyingEntsSize') ∗
+    "HapplyingEntsSize" ∷ l ↦s[raft.raftLog :: "applyingEntsSize"]{dq} v.(raftLog.applyingEntsSize') ∗
+    "HapplyingEntsPaused" ∷ l ↦s[raft.raftLog :: "applyingEntsPaused"]{dq} v.(raftLog.applyingEntsPaused')
   ).
 Admitted.
 
@@ -257,10 +257,10 @@ Global Instance wp_struct_make_DefaultLogger `{ffi_semantics} `{!ffi_interp ffi}
 Admitted.
 
 
-Global Instance DefaultLogger_struct_fields_split l (v : DefaultLogger.t) :
-  StructFieldsSplit l v (
-    "HLogger" ∷ l ↦s[raft.DefaultLogger :: "Logger"] v.(DefaultLogger.Logger') ∗
-    "Hdebug" ∷ l ↦s[raft.DefaultLogger :: "debug"] v.(DefaultLogger.debug')
+Global Instance DefaultLogger_struct_fields_split dq l (v : DefaultLogger.t) :
+  StructFieldsSplit dq l v (
+    "HLogger" ∷ l ↦s[raft.DefaultLogger :: "Logger"]{dq} v.(DefaultLogger.Logger') ∗
+    "Hdebug" ∷ l ↦s[raft.DefaultLogger :: "debug"]{dq} v.(DefaultLogger.debug')
   ).
 Admitted.
 
@@ -323,10 +323,10 @@ Global Instance wp_struct_make_SoftState `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance SoftState_struct_fields_split l (v : SoftState.t) :
-  StructFieldsSplit l v (
-    "HLead" ∷ l ↦s[raft.SoftState :: "Lead"] v.(SoftState.Lead') ∗
-    "HRaftState" ∷ l ↦s[raft.SoftState :: "RaftState"] v.(SoftState.RaftState')
+Global Instance SoftState_struct_fields_split dq l (v : SoftState.t) :
+  StructFieldsSplit dq l v (
+    "HLead" ∷ l ↦s[raft.SoftState :: "Lead"]{dq} v.(SoftState.Lead') ∗
+    "HRaftState" ∷ l ↦s[raft.SoftState :: "RaftState"]{dq} v.(SoftState.RaftState')
   ).
 Admitted.
 
@@ -405,16 +405,16 @@ Global Instance wp_struct_make_Ready `{ffi_semantics} `{!ffi_interp ffi} `{!heap
 Admitted.
 
 
-Global Instance Ready_struct_fields_split l (v : Ready.t) :
-  StructFieldsSplit l v (
-    "HSoftState" ∷ l ↦s[raft.Ready :: "SoftState"] v.(Ready.SoftState') ∗
-    "HHardState" ∷ l ↦s[raft.Ready :: "HardState"] v.(Ready.HardState') ∗
-    "HReadStates" ∷ l ↦s[raft.Ready :: "ReadStates"] v.(Ready.ReadStates') ∗
-    "HEntries" ∷ l ↦s[raft.Ready :: "Entries"] v.(Ready.Entries') ∗
-    "HSnapshot" ∷ l ↦s[raft.Ready :: "Snapshot"] v.(Ready.Snapshot') ∗
-    "HCommittedEntries" ∷ l ↦s[raft.Ready :: "CommittedEntries"] v.(Ready.CommittedEntries') ∗
-    "HMessages" ∷ l ↦s[raft.Ready :: "Messages"] v.(Ready.Messages') ∗
-    "HMustSync" ∷ l ↦s[raft.Ready :: "MustSync"] v.(Ready.MustSync')
+Global Instance Ready_struct_fields_split dq l (v : Ready.t) :
+  StructFieldsSplit dq l v (
+    "HSoftState" ∷ l ↦s[raft.Ready :: "SoftState"]{dq} v.(Ready.SoftState') ∗
+    "HHardState" ∷ l ↦s[raft.Ready :: "HardState"]{dq} v.(Ready.HardState') ∗
+    "HReadStates" ∷ l ↦s[raft.Ready :: "ReadStates"]{dq} v.(Ready.ReadStates') ∗
+    "HEntries" ∷ l ↦s[raft.Ready :: "Entries"]{dq} v.(Ready.Entries') ∗
+    "HSnapshot" ∷ l ↦s[raft.Ready :: "Snapshot"]{dq} v.(Ready.Snapshot') ∗
+    "HCommittedEntries" ∷ l ↦s[raft.Ready :: "CommittedEntries"]{dq} v.(Ready.CommittedEntries') ∗
+    "HMessages" ∷ l ↦s[raft.Ready :: "Messages"]{dq} v.(Ready.Messages') ∗
+    "HMustSync" ∷ l ↦s[raft.Ready :: "MustSync"]{dq} v.(Ready.MustSync')
   ).
 Admitted.
 
@@ -470,10 +470,10 @@ Global Instance wp_struct_make_Peer `{ffi_semantics} `{!ffi_interp ffi} `{!heapG
 Admitted.
 
 
-Global Instance Peer_struct_fields_split l (v : Peer.t) :
-  StructFieldsSplit l v (
-    "HID" ∷ l ↦s[raft.Peer :: "ID"] v.(Peer.ID') ∗
-    "HContext" ∷ l ↦s[raft.Peer :: "Context"] v.(Peer.Context')
+Global Instance Peer_struct_fields_split dq l (v : Peer.t) :
+  StructFieldsSplit dq l v (
+    "HID" ∷ l ↦s[raft.Peer :: "ID"]{dq} v.(Peer.ID') ∗
+    "HContext" ∷ l ↦s[raft.Peer :: "Context"]{dq} v.(Peer.Context')
   ).
 Admitted.
 
@@ -522,10 +522,10 @@ Global Instance wp_struct_make_msgWithResult `{ffi_semantics} `{!ffi_interp ffi}
 Admitted.
 
 
-Global Instance msgWithResult_struct_fields_split l (v : msgWithResult.t) :
-  StructFieldsSplit l v (
-    "Hm" ∷ l ↦s[raft.msgWithResult :: "m"] v.(msgWithResult.m') ∗
-    "Hresult" ∷ l ↦s[raft.msgWithResult :: "result"] v.(msgWithResult.result')
+Global Instance msgWithResult_struct_fields_split dq l (v : msgWithResult.t) :
+  StructFieldsSplit dq l v (
+    "Hm" ∷ l ↦s[raft.msgWithResult :: "m"]{dq} v.(msgWithResult.m') ∗
+    "Hresult" ∷ l ↦s[raft.msgWithResult :: "result"]{dq} v.(msgWithResult.result')
   ).
 Admitted.
 
@@ -619,19 +619,19 @@ Global Instance wp_struct_make_node `{ffi_semantics} `{!ffi_interp ffi} `{!heapG
 Admitted.
 
 
-Global Instance node_struct_fields_split l (v : node.t) :
-  StructFieldsSplit l v (
-    "Hpropc" ∷ l ↦s[raft.node :: "propc"] v.(node.propc') ∗
-    "Hrecvc" ∷ l ↦s[raft.node :: "recvc"] v.(node.recvc') ∗
-    "Hconfc" ∷ l ↦s[raft.node :: "confc"] v.(node.confc') ∗
-    "Hconfstatec" ∷ l ↦s[raft.node :: "confstatec"] v.(node.confstatec') ∗
-    "Hreadyc" ∷ l ↦s[raft.node :: "readyc"] v.(node.readyc') ∗
-    "Hadvancec" ∷ l ↦s[raft.node :: "advancec"] v.(node.advancec') ∗
-    "Htickc" ∷ l ↦s[raft.node :: "tickc"] v.(node.tickc') ∗
-    "Hdone" ∷ l ↦s[raft.node :: "done"] v.(node.done') ∗
-    "Hstop" ∷ l ↦s[raft.node :: "stop"] v.(node.stop') ∗
-    "Hstatus" ∷ l ↦s[raft.node :: "status"] v.(node.status') ∗
-    "Hrn" ∷ l ↦s[raft.node :: "rn"] v.(node.rn')
+Global Instance node_struct_fields_split dq l (v : node.t) :
+  StructFieldsSplit dq l v (
+    "Hpropc" ∷ l ↦s[raft.node :: "propc"]{dq} v.(node.propc') ∗
+    "Hrecvc" ∷ l ↦s[raft.node :: "recvc"]{dq} v.(node.recvc') ∗
+    "Hconfc" ∷ l ↦s[raft.node :: "confc"]{dq} v.(node.confc') ∗
+    "Hconfstatec" ∷ l ↦s[raft.node :: "confstatec"]{dq} v.(node.confstatec') ∗
+    "Hreadyc" ∷ l ↦s[raft.node :: "readyc"]{dq} v.(node.readyc') ∗
+    "Hadvancec" ∷ l ↦s[raft.node :: "advancec"]{dq} v.(node.advancec') ∗
+    "Htickc" ∷ l ↦s[raft.node :: "tickc"]{dq} v.(node.tickc') ∗
+    "Hdone" ∷ l ↦s[raft.node :: "done"]{dq} v.(node.done') ∗
+    "Hstop" ∷ l ↦s[raft.node :: "stop"]{dq} v.(node.stop') ∗
+    "Hstatus" ∷ l ↦s[raft.node :: "status"]{dq} v.(node.status') ∗
+    "Hrn" ∷ l ↦s[raft.node :: "rn"]{dq} v.(node.rn')
   ).
 Admitted.
 
@@ -682,9 +682,9 @@ Global Instance wp_struct_make_lockedRand `{ffi_semantics} `{!ffi_interp ffi} `{
 Admitted.
 
 
-Global Instance lockedRand_struct_fields_split l (v : lockedRand.t) :
-  StructFieldsSplit l v (
-    "Hmu" ∷ l ↦s[raft.lockedRand :: "mu"] v.(lockedRand.mu')
+Global Instance lockedRand_struct_fields_split dq l (v : lockedRand.t) :
+  StructFieldsSplit dq l v (
+    "Hmu" ∷ l ↦s[raft.lockedRand :: "mu"]{dq} v.(lockedRand.mu')
   ).
 Admitted.
 
@@ -832,27 +832,27 @@ Global Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance Config_struct_fields_split l (v : Config.t) :
-  StructFieldsSplit l v (
-    "HID" ∷ l ↦s[raft.Config :: "ID"] v.(Config.ID') ∗
-    "HElectionTick" ∷ l ↦s[raft.Config :: "ElectionTick"] v.(Config.ElectionTick') ∗
-    "HHeartbeatTick" ∷ l ↦s[raft.Config :: "HeartbeatTick"] v.(Config.HeartbeatTick') ∗
-    "HStorage" ∷ l ↦s[raft.Config :: "Storage"] v.(Config.Storage') ∗
-    "HApplied" ∷ l ↦s[raft.Config :: "Applied"] v.(Config.Applied') ∗
-    "HAsyncStorageWrites" ∷ l ↦s[raft.Config :: "AsyncStorageWrites"] v.(Config.AsyncStorageWrites') ∗
-    "HMaxSizePerMsg" ∷ l ↦s[raft.Config :: "MaxSizePerMsg"] v.(Config.MaxSizePerMsg') ∗
-    "HMaxCommittedSizePerReady" ∷ l ↦s[raft.Config :: "MaxCommittedSizePerReady"] v.(Config.MaxCommittedSizePerReady') ∗
-    "HMaxUncommittedEntriesSize" ∷ l ↦s[raft.Config :: "MaxUncommittedEntriesSize"] v.(Config.MaxUncommittedEntriesSize') ∗
-    "HMaxInflightMsgs" ∷ l ↦s[raft.Config :: "MaxInflightMsgs"] v.(Config.MaxInflightMsgs') ∗
-    "HMaxInflightBytes" ∷ l ↦s[raft.Config :: "MaxInflightBytes"] v.(Config.MaxInflightBytes') ∗
-    "HCheckQuorum" ∷ l ↦s[raft.Config :: "CheckQuorum"] v.(Config.CheckQuorum') ∗
-    "HPreVote" ∷ l ↦s[raft.Config :: "PreVote"] v.(Config.PreVote') ∗
-    "HReadOnlyOption" ∷ l ↦s[raft.Config :: "ReadOnlyOption"] v.(Config.ReadOnlyOption') ∗
-    "HLogger" ∷ l ↦s[raft.Config :: "Logger"] v.(Config.Logger') ∗
-    "HDisableProposalForwarding" ∷ l ↦s[raft.Config :: "DisableProposalForwarding"] v.(Config.DisableProposalForwarding') ∗
-    "HDisableConfChangeValidation" ∷ l ↦s[raft.Config :: "DisableConfChangeValidation"] v.(Config.DisableConfChangeValidation') ∗
-    "HStepDownOnRemoval" ∷ l ↦s[raft.Config :: "StepDownOnRemoval"] v.(Config.StepDownOnRemoval') ∗
-    "HTraceLogger" ∷ l ↦s[raft.Config :: "TraceLogger"] v.(Config.TraceLogger')
+Global Instance Config_struct_fields_split dq l (v : Config.t) :
+  StructFieldsSplit dq l v (
+    "HID" ∷ l ↦s[raft.Config :: "ID"]{dq} v.(Config.ID') ∗
+    "HElectionTick" ∷ l ↦s[raft.Config :: "ElectionTick"]{dq} v.(Config.ElectionTick') ∗
+    "HHeartbeatTick" ∷ l ↦s[raft.Config :: "HeartbeatTick"]{dq} v.(Config.HeartbeatTick') ∗
+    "HStorage" ∷ l ↦s[raft.Config :: "Storage"]{dq} v.(Config.Storage') ∗
+    "HApplied" ∷ l ↦s[raft.Config :: "Applied"]{dq} v.(Config.Applied') ∗
+    "HAsyncStorageWrites" ∷ l ↦s[raft.Config :: "AsyncStorageWrites"]{dq} v.(Config.AsyncStorageWrites') ∗
+    "HMaxSizePerMsg" ∷ l ↦s[raft.Config :: "MaxSizePerMsg"]{dq} v.(Config.MaxSizePerMsg') ∗
+    "HMaxCommittedSizePerReady" ∷ l ↦s[raft.Config :: "MaxCommittedSizePerReady"]{dq} v.(Config.MaxCommittedSizePerReady') ∗
+    "HMaxUncommittedEntriesSize" ∷ l ↦s[raft.Config :: "MaxUncommittedEntriesSize"]{dq} v.(Config.MaxUncommittedEntriesSize') ∗
+    "HMaxInflightMsgs" ∷ l ↦s[raft.Config :: "MaxInflightMsgs"]{dq} v.(Config.MaxInflightMsgs') ∗
+    "HMaxInflightBytes" ∷ l ↦s[raft.Config :: "MaxInflightBytes"]{dq} v.(Config.MaxInflightBytes') ∗
+    "HCheckQuorum" ∷ l ↦s[raft.Config :: "CheckQuorum"]{dq} v.(Config.CheckQuorum') ∗
+    "HPreVote" ∷ l ↦s[raft.Config :: "PreVote"]{dq} v.(Config.PreVote') ∗
+    "HReadOnlyOption" ∷ l ↦s[raft.Config :: "ReadOnlyOption"]{dq} v.(Config.ReadOnlyOption') ∗
+    "HLogger" ∷ l ↦s[raft.Config :: "Logger"]{dq} v.(Config.Logger') ∗
+    "HDisableProposalForwarding" ∷ l ↦s[raft.Config :: "DisableProposalForwarding"]{dq} v.(Config.DisableProposalForwarding') ∗
+    "HDisableConfChangeValidation" ∷ l ↦s[raft.Config :: "DisableConfChangeValidation"]{dq} v.(Config.DisableConfChangeValidation') ∗
+    "HStepDownOnRemoval" ∷ l ↦s[raft.Config :: "StepDownOnRemoval"]{dq} v.(Config.StepDownOnRemoval') ∗
+    "HTraceLogger" ∷ l ↦s[raft.Config :: "TraceLogger"]{dq} v.(Config.TraceLogger')
   ).
 Admitted.
 
@@ -1065,40 +1065,40 @@ Global Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapG
 Admitted.
 
 
-Global Instance raft_struct_fields_split l (v : raft.t) :
-  StructFieldsSplit l v (
-    "Hid" ∷ l ↦s[raft.raft :: "id"] v.(raft.id') ∗
-    "HTerm" ∷ l ↦s[raft.raft :: "Term"] v.(raft.Term') ∗
-    "HVote" ∷ l ↦s[raft.raft :: "Vote"] v.(raft.Vote') ∗
-    "HreadStates" ∷ l ↦s[raft.raft :: "readStates"] v.(raft.readStates') ∗
-    "HraftLog" ∷ l ↦s[raft.raft :: "raftLog"] v.(raft.raftLog') ∗
-    "HmaxMsgSize" ∷ l ↦s[raft.raft :: "maxMsgSize"] v.(raft.maxMsgSize') ∗
-    "HmaxUncommittedSize" ∷ l ↦s[raft.raft :: "maxUncommittedSize"] v.(raft.maxUncommittedSize') ∗
-    "Htrk" ∷ l ↦s[raft.raft :: "trk"] v.(raft.trk') ∗
-    "Hstate" ∷ l ↦s[raft.raft :: "state"] v.(raft.state') ∗
-    "HisLearner" ∷ l ↦s[raft.raft :: "isLearner"] v.(raft.isLearner') ∗
-    "Hmsgs" ∷ l ↦s[raft.raft :: "msgs"] v.(raft.msgs') ∗
-    "HmsgsAfterAppend" ∷ l ↦s[raft.raft :: "msgsAfterAppend"] v.(raft.msgsAfterAppend') ∗
-    "Hlead" ∷ l ↦s[raft.raft :: "lead"] v.(raft.lead') ∗
-    "HleadTransferee" ∷ l ↦s[raft.raft :: "leadTransferee"] v.(raft.leadTransferee') ∗
-    "HpendingConfIndex" ∷ l ↦s[raft.raft :: "pendingConfIndex"] v.(raft.pendingConfIndex') ∗
-    "HdisableConfChangeValidation" ∷ l ↦s[raft.raft :: "disableConfChangeValidation"] v.(raft.disableConfChangeValidation') ∗
-    "HuncommittedSize" ∷ l ↦s[raft.raft :: "uncommittedSize"] v.(raft.uncommittedSize') ∗
-    "HreadOnly" ∷ l ↦s[raft.raft :: "readOnly"] v.(raft.readOnly') ∗
-    "HelectionElapsed" ∷ l ↦s[raft.raft :: "electionElapsed"] v.(raft.electionElapsed') ∗
-    "HheartbeatElapsed" ∷ l ↦s[raft.raft :: "heartbeatElapsed"] v.(raft.heartbeatElapsed') ∗
-    "HcheckQuorum" ∷ l ↦s[raft.raft :: "checkQuorum"] v.(raft.checkQuorum') ∗
-    "HpreVote" ∷ l ↦s[raft.raft :: "preVote"] v.(raft.preVote') ∗
-    "HheartbeatTimeout" ∷ l ↦s[raft.raft :: "heartbeatTimeout"] v.(raft.heartbeatTimeout') ∗
-    "HelectionTimeout" ∷ l ↦s[raft.raft :: "electionTimeout"] v.(raft.electionTimeout') ∗
-    "HrandomizedElectionTimeout" ∷ l ↦s[raft.raft :: "randomizedElectionTimeout"] v.(raft.randomizedElectionTimeout') ∗
-    "HdisableProposalForwarding" ∷ l ↦s[raft.raft :: "disableProposalForwarding"] v.(raft.disableProposalForwarding') ∗
-    "HstepDownOnRemoval" ∷ l ↦s[raft.raft :: "stepDownOnRemoval"] v.(raft.stepDownOnRemoval') ∗
-    "Htick" ∷ l ↦s[raft.raft :: "tick"] v.(raft.tick') ∗
-    "Hstep" ∷ l ↦s[raft.raft :: "step"] v.(raft.step') ∗
-    "Hlogger" ∷ l ↦s[raft.raft :: "logger"] v.(raft.logger') ∗
-    "HpendingReadIndexMessages" ∷ l ↦s[raft.raft :: "pendingReadIndexMessages"] v.(raft.pendingReadIndexMessages') ∗
-    "HtraceLogger" ∷ l ↦s[raft.raft :: "traceLogger"] v.(raft.traceLogger')
+Global Instance raft_struct_fields_split dq l (v : raft.t) :
+  StructFieldsSplit dq l v (
+    "Hid" ∷ l ↦s[raft.raft :: "id"]{dq} v.(raft.id') ∗
+    "HTerm" ∷ l ↦s[raft.raft :: "Term"]{dq} v.(raft.Term') ∗
+    "HVote" ∷ l ↦s[raft.raft :: "Vote"]{dq} v.(raft.Vote') ∗
+    "HreadStates" ∷ l ↦s[raft.raft :: "readStates"]{dq} v.(raft.readStates') ∗
+    "HraftLog" ∷ l ↦s[raft.raft :: "raftLog"]{dq} v.(raft.raftLog') ∗
+    "HmaxMsgSize" ∷ l ↦s[raft.raft :: "maxMsgSize"]{dq} v.(raft.maxMsgSize') ∗
+    "HmaxUncommittedSize" ∷ l ↦s[raft.raft :: "maxUncommittedSize"]{dq} v.(raft.maxUncommittedSize') ∗
+    "Htrk" ∷ l ↦s[raft.raft :: "trk"]{dq} v.(raft.trk') ∗
+    "Hstate" ∷ l ↦s[raft.raft :: "state"]{dq} v.(raft.state') ∗
+    "HisLearner" ∷ l ↦s[raft.raft :: "isLearner"]{dq} v.(raft.isLearner') ∗
+    "Hmsgs" ∷ l ↦s[raft.raft :: "msgs"]{dq} v.(raft.msgs') ∗
+    "HmsgsAfterAppend" ∷ l ↦s[raft.raft :: "msgsAfterAppend"]{dq} v.(raft.msgsAfterAppend') ∗
+    "Hlead" ∷ l ↦s[raft.raft :: "lead"]{dq} v.(raft.lead') ∗
+    "HleadTransferee" ∷ l ↦s[raft.raft :: "leadTransferee"]{dq} v.(raft.leadTransferee') ∗
+    "HpendingConfIndex" ∷ l ↦s[raft.raft :: "pendingConfIndex"]{dq} v.(raft.pendingConfIndex') ∗
+    "HdisableConfChangeValidation" ∷ l ↦s[raft.raft :: "disableConfChangeValidation"]{dq} v.(raft.disableConfChangeValidation') ∗
+    "HuncommittedSize" ∷ l ↦s[raft.raft :: "uncommittedSize"]{dq} v.(raft.uncommittedSize') ∗
+    "HreadOnly" ∷ l ↦s[raft.raft :: "readOnly"]{dq} v.(raft.readOnly') ∗
+    "HelectionElapsed" ∷ l ↦s[raft.raft :: "electionElapsed"]{dq} v.(raft.electionElapsed') ∗
+    "HheartbeatElapsed" ∷ l ↦s[raft.raft :: "heartbeatElapsed"]{dq} v.(raft.heartbeatElapsed') ∗
+    "HcheckQuorum" ∷ l ↦s[raft.raft :: "checkQuorum"]{dq} v.(raft.checkQuorum') ∗
+    "HpreVote" ∷ l ↦s[raft.raft :: "preVote"]{dq} v.(raft.preVote') ∗
+    "HheartbeatTimeout" ∷ l ↦s[raft.raft :: "heartbeatTimeout"]{dq} v.(raft.heartbeatTimeout') ∗
+    "HelectionTimeout" ∷ l ↦s[raft.raft :: "electionTimeout"]{dq} v.(raft.electionTimeout') ∗
+    "HrandomizedElectionTimeout" ∷ l ↦s[raft.raft :: "randomizedElectionTimeout"]{dq} v.(raft.randomizedElectionTimeout') ∗
+    "HdisableProposalForwarding" ∷ l ↦s[raft.raft :: "disableProposalForwarding"]{dq} v.(raft.disableProposalForwarding') ∗
+    "HstepDownOnRemoval" ∷ l ↦s[raft.raft :: "stepDownOnRemoval"]{dq} v.(raft.stepDownOnRemoval') ∗
+    "Htick" ∷ l ↦s[raft.raft :: "tick"]{dq} v.(raft.tick') ∗
+    "Hstep" ∷ l ↦s[raft.raft :: "step"]{dq} v.(raft.step') ∗
+    "Hlogger" ∷ l ↦s[raft.raft :: "logger"]{dq} v.(raft.logger') ∗
+    "HpendingReadIndexMessages" ∷ l ↦s[raft.raft :: "pendingReadIndexMessages"]{dq} v.(raft.pendingReadIndexMessages') ∗
+    "HtraceLogger" ∷ l ↦s[raft.raft :: "traceLogger"]{dq} v.(raft.traceLogger')
   ).
 Admitted.
 
@@ -1162,13 +1162,13 @@ Global Instance wp_struct_make_RawNode `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance RawNode_struct_fields_split l (v : RawNode.t) :
-  StructFieldsSplit l v (
-    "Hraft" ∷ l ↦s[raft.RawNode :: "raft"] v.(RawNode.raft') ∗
-    "HasyncStorageWrites" ∷ l ↦s[raft.RawNode :: "asyncStorageWrites"] v.(RawNode.asyncStorageWrites') ∗
-    "HprevSoftSt" ∷ l ↦s[raft.RawNode :: "prevSoftSt"] v.(RawNode.prevSoftSt') ∗
-    "HprevHardSt" ∷ l ↦s[raft.RawNode :: "prevHardSt"] v.(RawNode.prevHardSt') ∗
-    "HstepsOnAdvance" ∷ l ↦s[raft.RawNode :: "stepsOnAdvance"] v.(RawNode.stepsOnAdvance')
+Global Instance RawNode_struct_fields_split dq l (v : RawNode.t) :
+  StructFieldsSplit dq l v (
+    "Hraft" ∷ l ↦s[raft.RawNode :: "raft"]{dq} v.(RawNode.raft') ∗
+    "HasyncStorageWrites" ∷ l ↦s[raft.RawNode :: "asyncStorageWrites"]{dq} v.(RawNode.asyncStorageWrites') ∗
+    "HprevSoftSt" ∷ l ↦s[raft.RawNode :: "prevSoftSt"]{dq} v.(RawNode.prevSoftSt') ∗
+    "HprevHardSt" ∷ l ↦s[raft.RawNode :: "prevHardSt"]{dq} v.(RawNode.prevHardSt') ∗
+    "HstepsOnAdvance" ∷ l ↦s[raft.RawNode :: "stepsOnAdvance"]{dq} v.(RawNode.stepsOnAdvance')
   ).
 Admitted.
 
@@ -1224,10 +1224,10 @@ Global Instance wp_struct_make_ReadState `{ffi_semantics} `{!ffi_interp ffi} `{!
 Admitted.
 
 
-Global Instance ReadState_struct_fields_split l (v : ReadState.t) :
-  StructFieldsSplit l v (
-    "HIndex" ∷ l ↦s[raft.ReadState :: "Index"] v.(ReadState.Index') ∗
-    "HRequestCtx" ∷ l ↦s[raft.ReadState :: "RequestCtx"] v.(ReadState.RequestCtx')
+Global Instance ReadState_struct_fields_split dq l (v : ReadState.t) :
+  StructFieldsSplit dq l v (
+    "HIndex" ∷ l ↦s[raft.ReadState :: "Index"]{dq} v.(ReadState.Index') ∗
+    "HRequestCtx" ∷ l ↦s[raft.ReadState :: "RequestCtx"]{dq} v.(ReadState.RequestCtx')
   ).
 Admitted.
 
@@ -1281,11 +1281,11 @@ Global Instance wp_struct_make_readIndexStatus `{ffi_semantics} `{!ffi_interp ff
 Admitted.
 
 
-Global Instance readIndexStatus_struct_fields_split l (v : readIndexStatus.t) :
-  StructFieldsSplit l v (
-    "Hreq" ∷ l ↦s[raft.readIndexStatus :: "req"] v.(readIndexStatus.req') ∗
-    "Hindex" ∷ l ↦s[raft.readIndexStatus :: "index"] v.(readIndexStatus.index') ∗
-    "Hacks" ∷ l ↦s[raft.readIndexStatus :: "acks"] v.(readIndexStatus.acks')
+Global Instance readIndexStatus_struct_fields_split dq l (v : readIndexStatus.t) :
+  StructFieldsSplit dq l v (
+    "Hreq" ∷ l ↦s[raft.readIndexStatus :: "req"]{dq} v.(readIndexStatus.req') ∗
+    "Hindex" ∷ l ↦s[raft.readIndexStatus :: "index"]{dq} v.(readIndexStatus.index') ∗
+    "Hacks" ∷ l ↦s[raft.readIndexStatus :: "acks"]{dq} v.(readIndexStatus.acks')
   ).
 Admitted.
 
@@ -1339,11 +1339,11 @@ Global Instance wp_struct_make_readOnly `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance readOnly_struct_fields_split l (v : readOnly.t) :
-  StructFieldsSplit l v (
-    "Hoption" ∷ l ↦s[raft.readOnly :: "option"] v.(readOnly.option') ∗
-    "HpendingReadIndex" ∷ l ↦s[raft.readOnly :: "pendingReadIndex"] v.(readOnly.pendingReadIndex') ∗
-    "HreadIndexQueue" ∷ l ↦s[raft.readOnly :: "readIndexQueue"] v.(readOnly.readIndexQueue')
+Global Instance readOnly_struct_fields_split dq l (v : readOnly.t) :
+  StructFieldsSplit dq l v (
+    "Hoption" ∷ l ↦s[raft.readOnly :: "option"]{dq} v.(readOnly.option') ∗
+    "HpendingReadIndex" ∷ l ↦s[raft.readOnly :: "pendingReadIndex"]{dq} v.(readOnly.pendingReadIndex') ∗
+    "HreadIndexQueue" ∷ l ↦s[raft.readOnly :: "readIndexQueue"]{dq} v.(readOnly.readIndexQueue')
   ).
 Admitted.
 
@@ -1439,13 +1439,13 @@ Global Instance wp_struct_make_BasicStatus `{ffi_semantics} `{!ffi_interp ffi} `
 Admitted.
 
 
-Global Instance BasicStatus_struct_fields_split l (v : BasicStatus.t) :
-  StructFieldsSplit l v (
-    "HID" ∷ l ↦s[raft.BasicStatus :: "ID"] v.(BasicStatus.ID') ∗
-    "HHardState" ∷ l ↦s[raft.BasicStatus :: "HardState"] v.(BasicStatus.HardState') ∗
-    "HSoftState" ∷ l ↦s[raft.BasicStatus :: "SoftState"] v.(BasicStatus.SoftState') ∗
-    "HApplied" ∷ l ↦s[raft.BasicStatus :: "Applied"] v.(BasicStatus.Applied') ∗
-    "HLeadTransferee" ∷ l ↦s[raft.BasicStatus :: "LeadTransferee"] v.(BasicStatus.LeadTransferee')
+Global Instance BasicStatus_struct_fields_split dq l (v : BasicStatus.t) :
+  StructFieldsSplit dq l v (
+    "HID" ∷ l ↦s[raft.BasicStatus :: "ID"]{dq} v.(BasicStatus.ID') ∗
+    "HHardState" ∷ l ↦s[raft.BasicStatus :: "HardState"]{dq} v.(BasicStatus.HardState') ∗
+    "HSoftState" ∷ l ↦s[raft.BasicStatus :: "SoftState"]{dq} v.(BasicStatus.SoftState') ∗
+    "HApplied" ∷ l ↦s[raft.BasicStatus :: "Applied"]{dq} v.(BasicStatus.Applied') ∗
+    "HLeadTransferee" ∷ l ↦s[raft.BasicStatus :: "LeadTransferee"]{dq} v.(BasicStatus.LeadTransferee')
   ).
 Admitted.
 
@@ -1499,11 +1499,11 @@ Global Instance wp_struct_make_Status `{ffi_semantics} `{!ffi_interp ffi} `{!hea
 Admitted.
 
 
-Global Instance Status_struct_fields_split l (v : Status.t) :
-  StructFieldsSplit l v (
-    "HBasicStatus" ∷ l ↦s[raft.Status :: "BasicStatus"] v.(Status.BasicStatus') ∗
-    "HConfig" ∷ l ↦s[raft.Status :: "Config"] v.(Status.Config') ∗
-    "HProgress" ∷ l ↦s[raft.Status :: "Progress"] v.(Status.Progress')
+Global Instance Status_struct_fields_split dq l (v : Status.t) :
+  StructFieldsSplit dq l v (
+    "HBasicStatus" ∷ l ↦s[raft.Status :: "BasicStatus"]{dq} v.(Status.BasicStatus') ∗
+    "HConfig" ∷ l ↦s[raft.Status :: "Config"]{dq} v.(Status.Config') ∗
+    "HProgress" ∷ l ↦s[raft.Status :: "Progress"]{dq} v.(Status.Progress')
   ).
 Admitted.
 
@@ -1572,14 +1572,14 @@ Global Instance wp_struct_make_inMemStorageCallStats `{ffi_semantics} `{!ffi_int
 Admitted.
 
 
-Global Instance inMemStorageCallStats_struct_fields_split l (v : inMemStorageCallStats.t) :
-  StructFieldsSplit l v (
-    "HinitialState" ∷ l ↦s[raft.inMemStorageCallStats :: "initialState"] v.(inMemStorageCallStats.initialState') ∗
-    "HfirstIndex" ∷ l ↦s[raft.inMemStorageCallStats :: "firstIndex"] v.(inMemStorageCallStats.firstIndex') ∗
-    "HlastIndex" ∷ l ↦s[raft.inMemStorageCallStats :: "lastIndex"] v.(inMemStorageCallStats.lastIndex') ∗
-    "Hentries" ∷ l ↦s[raft.inMemStorageCallStats :: "entries"] v.(inMemStorageCallStats.entries') ∗
-    "Hterm" ∷ l ↦s[raft.inMemStorageCallStats :: "term"] v.(inMemStorageCallStats.term') ∗
-    "Hsnapshot" ∷ l ↦s[raft.inMemStorageCallStats :: "snapshot"] v.(inMemStorageCallStats.snapshot')
+Global Instance inMemStorageCallStats_struct_fields_split dq l (v : inMemStorageCallStats.t) :
+  StructFieldsSplit dq l v (
+    "HinitialState" ∷ l ↦s[raft.inMemStorageCallStats :: "initialState"]{dq} v.(inMemStorageCallStats.initialState') ∗
+    "HfirstIndex" ∷ l ↦s[raft.inMemStorageCallStats :: "firstIndex"]{dq} v.(inMemStorageCallStats.firstIndex') ∗
+    "HlastIndex" ∷ l ↦s[raft.inMemStorageCallStats :: "lastIndex"]{dq} v.(inMemStorageCallStats.lastIndex') ∗
+    "Hentries" ∷ l ↦s[raft.inMemStorageCallStats :: "entries"]{dq} v.(inMemStorageCallStats.entries') ∗
+    "Hterm" ∷ l ↦s[raft.inMemStorageCallStats :: "term"]{dq} v.(inMemStorageCallStats.term') ∗
+    "Hsnapshot" ∷ l ↦s[raft.inMemStorageCallStats :: "snapshot"]{dq} v.(inMemStorageCallStats.snapshot')
   ).
 Admitted.
 
@@ -1643,13 +1643,13 @@ Global Instance wp_struct_make_MemoryStorage `{ffi_semantics} `{!ffi_interp ffi}
 Admitted.
 
 
-Global Instance MemoryStorage_struct_fields_split l (v : MemoryStorage.t) :
-  StructFieldsSplit l v (
-    "HMutex" ∷ l ↦s[raft.MemoryStorage :: "Mutex"] v.(MemoryStorage.Mutex') ∗
-    "HhardState" ∷ l ↦s[raft.MemoryStorage :: "hardState"] v.(MemoryStorage.hardState') ∗
-    "Hsnapshot" ∷ l ↦s[raft.MemoryStorage :: "snapshot"] v.(MemoryStorage.snapshot') ∗
-    "Hents" ∷ l ↦s[raft.MemoryStorage :: "ents"] v.(MemoryStorage.ents') ∗
-    "HcallStats" ∷ l ↦s[raft.MemoryStorage :: "callStats"] v.(MemoryStorage.callStats')
+Global Instance MemoryStorage_struct_fields_split dq l (v : MemoryStorage.t) :
+  StructFieldsSplit dq l v (
+    "HMutex" ∷ l ↦s[raft.MemoryStorage :: "Mutex"]{dq} v.(MemoryStorage.Mutex') ∗
+    "HhardState" ∷ l ↦s[raft.MemoryStorage :: "hardState"]{dq} v.(MemoryStorage.hardState') ∗
+    "Hsnapshot" ∷ l ↦s[raft.MemoryStorage :: "snapshot"]{dq} v.(MemoryStorage.snapshot') ∗
+    "Hents" ∷ l ↦s[raft.MemoryStorage :: "ents"]{dq} v.(MemoryStorage.ents') ∗
+    "HcallStats" ∷ l ↦s[raft.MemoryStorage :: "callStats"]{dq} v.(MemoryStorage.callStats')
   ).
 Admitted.
 
@@ -1698,10 +1698,10 @@ Global Instance wp_struct_make_entryID `{ffi_semantics} `{!ffi_interp ffi} `{!he
 Admitted.
 
 
-Global Instance entryID_struct_fields_split l (v : entryID.t) :
-  StructFieldsSplit l v (
-    "Hterm" ∷ l ↦s[raft.entryID :: "term"] v.(entryID.term') ∗
-    "Hindex" ∷ l ↦s[raft.entryID :: "index"] v.(entryID.index')
+Global Instance entryID_struct_fields_split dq l (v : entryID.t) :
+  StructFieldsSplit dq l v (
+    "Hterm" ∷ l ↦s[raft.entryID :: "term"]{dq} v.(entryID.term') ∗
+    "Hindex" ∷ l ↦s[raft.entryID :: "index"]{dq} v.(entryID.index')
   ).
 Admitted.
 
@@ -1755,11 +1755,11 @@ Global Instance wp_struct_make_logSlice `{ffi_semantics} `{!ffi_interp ffi} `{!h
 Admitted.
 
 
-Global Instance logSlice_struct_fields_split l (v : logSlice.t) :
-  StructFieldsSplit l v (
-    "Hterm" ∷ l ↦s[raft.logSlice :: "term"] v.(logSlice.term') ∗
-    "Hprev" ∷ l ↦s[raft.logSlice :: "prev"] v.(logSlice.prev') ∗
-    "Hentries" ∷ l ↦s[raft.logSlice :: "entries"] v.(logSlice.entries')
+Global Instance logSlice_struct_fields_split dq l (v : logSlice.t) :
+  StructFieldsSplit dq l v (
+    "Hterm" ∷ l ↦s[raft.logSlice :: "term"]{dq} v.(logSlice.term') ∗
+    "Hprev" ∷ l ↦s[raft.logSlice :: "prev"]{dq} v.(logSlice.prev') ∗
+    "Hentries" ∷ l ↦s[raft.logSlice :: "entries"]{dq} v.(logSlice.entries')
   ).
 Admitted.
 
