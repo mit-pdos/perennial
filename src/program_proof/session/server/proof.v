@@ -85,10 +85,10 @@ Section heap.
           operation_slice s l 
     }}}
       getDataFromOperationLog s
-      {{{
-            r , RET #r;
-            ⌜r = coq_getDataFromOperationLog l⌝
-      }}}.
+    {{{
+          r , RET #r;
+          ⌜r = coq_getDataFromOperationLog l⌝
+    }}}.
   Proof.
     rewrite /getDataFromOperationLog. wp_pures. iIntros "%Φ Hl H1". wp_pures.
     wp_rec. iDestruct "Hl" as "(%ops & Hs & Hl)". wp_if_destruct.
@@ -165,7 +165,7 @@ Section heap.
   Definition coq_equalOperations (o1 : Operation.t) (o2 : Operation.t) :=
     (coq_equalSlices o1.(Operation.VersionVector) o2.(Operation.VersionVector)) && ((uint.nat o1.(Operation.Data)) =? (uint.nat (o2.(Operation.Data)))).
 
-  Hypothesis wp_equalSlices : forall (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64),
+  Axiom wp_equalSlices : forall (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64),
     {{{
           own_slice x uint64T (DfracOwn 1) xs ∗
           own_slice y uint64T (DfracOwn 1) ys ∗
@@ -188,9 +188,9 @@ Section heap.
           is_operation opv2 (DfracOwn 1) o2 n
     }}}
       equalOperations (operation_val opv1) (operation_val opv2)
-      {{{ r , RET #r;
-          ⌜r = coq_equalOperations o1 o2⌝
-      }}}.
+    {{{ r , RET #r;
+        ⌜r = coq_equalOperations o1 o2⌝
+    }}}.
   Proof.
     rewrite /equalOperations. iIntros "%Φ [Ho1 Ho2] Hret".
     iDestruct "Ho1" as "(%Hopv1snd & %Hlen1 & Ho1)". iDestruct "Ho2" as "(%Hopv2snd & %Hlen2 & Ho2)".
