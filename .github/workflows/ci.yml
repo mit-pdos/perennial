@@ -100,13 +100,13 @@ jobs:
           submodules: true
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: "1.24"
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           cache: "pip"
       - run: pip install .
       - name: check that Goosed files are clean
