@@ -519,12 +519,23 @@ Section inv_file.
 
   Definition paxosfileNS := paxosNS .@ "file".
 
+  (* Required during recovery. *)
+  Definition valid_wal_entry (cmd : pxcmd) :=
+    match cmd with
+    | CmdPaxosPrepare term => Z.of_nat term < 2 ^ 64
+    | CmdPaxosAdvance term lsn _ => Z.of_nat term < 2 ^ 64 ∧ Z.of_nat lsn < 2 ^ 64
+    | CmdPaxosAccept lsn _ => Z.of_nat lsn < 2 ^ 64
+    | CmdPaxosExpand lsn => Z.of_nat lsn < 2 ^ 64
+    | _ => True
+    end.
+
   Definition node_file_inv (γ : paxos_names) (nid : u64) : iProp Σ :=
     ∃ (wal : list pxcmd) (fname : byte_string) (content : list u8),
       "Hwalfile"   ∷ own_node_wal_half γ nid wal ∗
       "Hfile"      ∷ fname f↦ content ∗
       "#Hwalfname" ∷ is_node_wal_fname γ nid fname ∗
-      "%Hencwal"   ∷ ⌜encode_paxos_cmds wal content⌝.
+      "%Hvdwal"    ∷ ⌜Forall valid_wal_entry wal⌝ ∗
+      "%Hencwal"   ∷ ⌜encode_paxos_cmds wal = content⌝.
 
   Definition paxos_file_inv (γ : paxos_names) (nids : gset u64) : iProp Σ :=
     [∗ set] nid ∈ nids, node_file_inv γ nid.

@@ -375,6 +375,7 @@ Inductive pxst :=
 
 Inductive pxcmd :=
 | CmdPaxosExtend (ents : ledger)
+| CmdPaxosAppend (ent : byte_string)
 | CmdPaxosPrepare (term : nat)
 | CmdPaxosAdvance (term lsn : nat) (ents : ledger)
 | CmdPaxosAccept (lsn : nat) (ents : ledger)

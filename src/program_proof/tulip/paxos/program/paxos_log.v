@@ -34,10 +34,15 @@ Section log.
     let term := uint.nat termW in
     ⊢
     {{{ own_slice_small entsS stringT (DfracOwn 1) ents }}}
-    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal bs⌝ >>>
+    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal = bs⌝ >>>
       logAdvance #(LitString fname) #termW #lsnW (to_val entsS) @ ∅
-    <<< ∃∃ bs', fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosAdvance term lsn ents]) bs'⌝ >>>
-    {{{ RET #(); own_slice_small entsS stringT (DfracOwn 1) ents }}}.
+    <<< ∃∃ bs' (failed : bool),
+            if failed
+            then fname f↦ bs
+            else fname f↦ bs' ∗
+                 ⌜encode_paxos_cmds (wal ++ [CmdPaxosAdvance term lsn ents]) = bs'⌝
+    >>>
+    {{{ RET #(); own_slice_small entsS stringT (DfracOwn 1) ents ∗ ⌜not failed⌝ }}}.
   Proof.
     iIntros (lsn term Φ) "!> Hents HAU".
     wp_rec.
@@ -81,12 +86,27 @@ Section log.
     { apply Hszbs. }
     { iApply (own_slice_small_byte_pointsto_vals with "Hbs"). }
     iIntros (err) "[Hfile Hbs]".
-    iMod ("HAU" with "[$Hfile]") as "HΦ".
+    destruct err eqn:Herr.
+    { (* Case: Write failed. *)
+      iMod ("HAU" $! bs true with "[$Hfile]") as "HΦ".
+      iModIntro.
+      wp_pures.
+      wp_apply wp_Exit. iIntros "[]".
+    }
+    (* Case: Write succeeded. *)
+    iMod ("HAU" $! _ false with "[$Hfile]") as "HΦ".
+    { iPureIntro.
+      rewrite encode_paxos_cmds_snoc Henc.
+      f_equal.
+      rewrite app_nil_l /encode_paxos_cmd /encode_paxos_advance.
+      by rewrite -!app_assoc !w64_to_nat_id.
+    }
     iModIntro.
     wp_pures.
-    destruct err; wp_pures.
-    { wp_apply wp_Exit. iIntros "[]". }
-    by iApply "HΦ".
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    by auto.
   Qed.
 
   Theorem wp_logAccept
@@ -94,10 +114,14 @@ Section log.
     let lsn := uint.nat lsnW in
     ⊢
     {{{ own_slice_small entsS stringT (DfracOwn 1) ents }}}
-    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal bs⌝ >>>
+    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal = bs⌝ >>>
       logAccept #(LitString fname) #lsnW (to_val entsS) @ ∅
-    <<< ∃∃ bs', fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosAccept lsn ents]) bs'⌝ >>>
-    {{{ RET #(); own_slice_small entsS stringT (DfracOwn 1) ents }}}.
+    <<< ∃∃ bs' (failed : bool),
+            if failed
+            then fname f↦ bs
+            else fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosAccept lsn ents]) = bs'⌝
+    >>>
+    {{{ RET #(); own_slice_small entsS stringT (DfracOwn 1) ents ∗ ⌜not failed⌝ }}}.
   Proof.
     iIntros (lsn Φ) "!> Hents HAU".
     wp_rec.
@@ -138,22 +162,41 @@ Section log.
     { apply Hszbs. }
     { iApply (own_slice_small_byte_pointsto_vals with "Hbs"). }
     iIntros (err) "[Hfile Hbs]".
-    iMod ("HAU" with "[$Hfile]") as "HΦ".
+    destruct err eqn:Herr.
+    { (* Case: Write failed. *)
+      iMod ("HAU" $! bs true with "[$Hfile]") as "HΦ".
+      iModIntro.
+      wp_pures.
+      wp_apply wp_Exit. iIntros "[]".
+    }
+    (* Case: Write succeeded. *)
+    iMod ("HAU" $! _ false with "[$Hfile]") as "HΦ".
+    { iPureIntro.
+      rewrite encode_paxos_cmds_snoc Henc.
+      f_equal.
+      rewrite app_nil_l /encode_paxos_cmd /encode_paxos_accept.
+      by rewrite -!app_assoc !w64_to_nat_id.
+    }
     iModIntro.
     wp_pures.
-    destruct err; wp_pures.
-    { wp_apply wp_Exit. iIntros "[]". }
-    by iApply "HΦ".
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    by auto.
   Qed.
 
   Theorem wp_logPrepare (fname : byte_string) (termW : u64) :
     let term := uint.nat termW in
     ⊢
     {{{ True }}}
-    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal bs⌝ >>>
+    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal = bs⌝ >>>
       logPrepare #(LitString fname) #termW @ ∅
-    <<< ∃∃ bs', fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosPrepare term]) bs'⌝ >>>
-    {{{ RET #(); True }}}.
+    <<< ∃∃ bs' (failed : bool),
+            if failed
+            then fname f↦ bs
+            else fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosPrepare term]) = bs'⌝
+    >>>
+    {{{ RET #(); ⌜not failed⌝ }}}.
   Proof.
     iIntros (term Φ) "!> Hents HAU".
     wp_rec.
@@ -191,21 +234,40 @@ Section log.
     { apply Hszbs. }
     { iApply (own_slice_small_byte_pointsto_vals with "Hbs"). }
     iIntros (err) "[Hfile Hbs]".
-    iMod ("HAU" with "[$Hfile]") as "HΦ".
+    destruct err eqn:Herr.
+    { (* Case: Write failed. *)
+      iMod ("HAU" $! bs true with "[$Hfile]") as "HΦ".
+      iModIntro.
+      wp_pures.
+      wp_apply wp_Exit. iIntros "[]".
+    }
+    (* Case: Write succeeded. *)
+    iMod ("HAU" $! _ false with "[$Hfile]") as "HΦ".
+    { iPureIntro.
+      rewrite encode_paxos_cmds_snoc Henc.
+      f_equal.
+      rewrite app_nil_l /encode_paxos_cmd /encode_paxos_prepare.
+      by rewrite !w64_to_nat_id.
+    }
     iModIntro.
     wp_pures.
-    destruct err; wp_pures.
-    { wp_apply wp_Exit. iIntros "[]". }
-    by iApply "HΦ".
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    by auto.
   Qed.
 
   Theorem wp_logAppend (fname : byte_string) (ent : byte_string) :
     ⊢
     {{{ True }}}
-    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal bs⌝ >>>
+    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal = bs⌝ >>>
       logAppend #(LitString fname) #(LitString ent) @ ∅
-    <<< ∃∃ bs', fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosExtend [ent]]) bs'⌝ >>>
-    {{{ RET #(); True }}}.
+    <<< ∃∃ bs' (failed : bool),
+            if failed
+            then fname f↦ bs
+            else fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosAppend ent]) = bs'⌝
+    >>>
+    {{{ RET #(); ⌜not failed⌝ }}}.
   Proof.
     iIntros (Φ) "!> Hents HAU".
     wp_rec.
@@ -243,21 +305,37 @@ Section log.
     { apply Hszbs. }
     { iApply (own_slice_small_byte_pointsto_vals with "Hbs"). }
     iIntros (err) "[Hfile Hbs]".
-    iMod ("HAU" with "[$Hfile]") as "HΦ".
+    destruct err eqn:Herr.
+    { (* Case: Write failed. *)
+      iMod ("HAU" $! bs true with "[$Hfile]") as "HΦ".
+      iModIntro.
+      wp_pures.
+      wp_apply wp_Exit. iIntros "[]".
+    }
+    (* Case: Write succeeded. *)
+    iMod ("HAU" $! _ false with "[$Hfile]") as "HΦ".
+    { iPureIntro.
+      by rewrite encode_paxos_cmds_snoc Henc.
+    }
     iModIntro.
     wp_pures.
-    destruct err; wp_pures.
-    { wp_apply wp_Exit. iIntros "[]". }
-    by iApply "HΦ".
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    by auto.
   Qed.
 
   Theorem wp_logExtend (fname : byte_string) (entsS : Slice.t) (ents : list byte_string) :
     ⊢
     {{{ own_slice_small entsS stringT (DfracOwn 1) ents }}}
-    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal bs⌝ >>>
+    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal = bs⌝ >>>
       logExtend #(LitString fname) (to_val entsS) @ ∅
-    <<< ∃∃ bs', fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosExtend ents]) bs'⌝ >>>
-    {{{ RET #(); own_slice_small entsS stringT (DfracOwn 1) ents }}}.
+    <<< ∃∃ bs' (failed : bool),
+            if failed
+            then fname f↦ bs
+            else fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosExtend ents]) = bs'⌝
+    >>>
+    {{{ RET #(); own_slice_small entsS stringT (DfracOwn 1) ents ∗ ⌜not failed⌝ }}}.
   Proof.
     iIntros (Φ) "!> Hents HAU".
     wp_rec.
@@ -296,22 +374,38 @@ Section log.
     { apply Hszbs. }
     { iApply (own_slice_small_byte_pointsto_vals with "Hbs"). }
     iIntros (err) "[Hfile Hbs]".
-    iMod ("HAU" with "[$Hfile]") as "HΦ".
+    destruct err eqn:Herr.
+    { (* Case: Write failed. *)
+      iMod ("HAU" $! bs true with "[$Hfile]") as "HΦ".
+      iModIntro.
+      wp_pures.
+      wp_apply wp_Exit. iIntros "[]".
+    }
+    (* Case: Write succeeded. *)
+    iMod ("HAU" $! _ false with "[$Hfile]") as "HΦ".
+    { iPureIntro.
+      by rewrite encode_paxos_cmds_snoc Henc.
+    }
     iModIntro.
     wp_pures.
-    destruct err; wp_pures.
-    { wp_apply wp_Exit. iIntros "[]". }
-    by iApply "HΦ".
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    by auto.
   Qed.
 
   Theorem wp_logExpand (fname : byte_string) (lsnW : u64) :
     let lsn := uint.nat lsnW in
     ⊢
     {{{ True }}}
-    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal bs⌝ >>>
+    <<< ∀∀ bs wal, fname f↦ bs ∗ ⌜encode_paxos_cmds wal = bs⌝ >>>
       logExpand #(LitString fname) #lsnW @ ∅
-    <<< ∃∃ bs', fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosExpand lsn]) bs'⌝ >>>
-    {{{ RET #(); True }}}.
+    <<< ∃∃ bs' (failed : bool),
+            if failed
+            then fname f↦ bs
+            else fname f↦ bs' ∗ ⌜encode_paxos_cmds (wal ++ [CmdPaxosExpand lsn]) = bs'⌝
+    >>>
+    {{{ RET #(); ⌜not failed⌝ }}}.
   Proof.
     iIntros (lsn Φ) "!> Hents HAU".
     wp_rec.
@@ -349,12 +443,27 @@ Section log.
     { apply Hszbs. }
     { iApply (own_slice_small_byte_pointsto_vals with "Hbs"). }
     iIntros (err) "[Hfile Hbs]".
-    iMod ("HAU" with "[$Hfile]") as "HΦ".
+    destruct err eqn:Herr.
+    { (* Case: Write failed. *)
+      iMod ("HAU" $! bs true with "[$Hfile]") as "HΦ".
+      iModIntro.
+      wp_pures.
+      wp_apply wp_Exit. iIntros "[]".
+    }
+    (* Case: Write succeeded. *)
+    iMod ("HAU" $! _ false with "[$Hfile]") as "HΦ".
+    { iPureIntro.
+      rewrite encode_paxos_cmds_snoc Henc.
+      f_equal.
+      rewrite app_nil_l /encode_paxos_cmd /encode_paxos_prepare.
+      by rewrite !w64_to_nat_id.
+    }
     iModIntro.
     wp_pures.
-    destruct err; wp_pures.
-    { wp_apply wp_Exit. iIntros "[]". }
-    by iApply "HΦ".
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    by auto.
   Qed.
 
 End log.

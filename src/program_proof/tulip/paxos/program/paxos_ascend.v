@@ -69,7 +69,8 @@ Section ascend.
     wp_storeField.
 
     (*@     // Logical action: Ascend(@px.termc, @px.log).                      @*)
-    (*@                                                                         @*)
+    (*@     logAdvance(px.fname, px.termc, px.lsnc, px.entsp)                   @*)
+    (*@ }                                                                       @*)
     iNamed "Hfname".
     do 4 wp_loadField.
     wp_apply (wp_logAdvance with "Hentsp").
@@ -82,9 +83,19 @@ Section ascend.
     iApply ncfupd_mask_intro; first solve_ndisj.
     iIntros "Hmask".
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
-    iFrame "Hfile".
-    iExists wal.
-    iIntros (bs') "[Hfile %Hbs']".
+    iFrame "Hfile %".
+    iIntros (bs' failed) "Hfile".
+    destruct failed.
+    { (* Case: Write failed. Close the invariant without any updates. *)
+      iMod "Hmask" as "_".
+      iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+      { iFrame "∗ # %". }
+      iMod ("HinvfileC" with "HinvfileO") as "_".
+      iMod ("HinvC" with "HinvO") as "_".
+      by iIntros "!> [_ %Hcontra]".
+    }
+    (* Case: Write succeeded. *)
+    iDestruct "Hfile" as "[Hfile %Hbs']".
     set logc := take (uint.nat lsnc) log.
     set log' := logc ++ entsp.
     iMod (paxos_inv_ascend entsp log' with "[] Hwalfile Htermc Hterml Hlsnc Hlogn HinvO")
@@ -107,7 +118,12 @@ Section ascend.
       word.
     }
     iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
-    { iFrame "∗ # %". }
+    { iFrame "∗ # %".
+      iPureIntro.
+      apply Forall_app_2; first apply Hvdwal.
+      rewrite Forall_singleton /=.
+      word.
+    }
     iMod "Hmask" as "_".
     (* iMod ("Hclose_termc" with "Htermc") as "Htermc". *)
     iMod ("HinvfileC" with "HinvfileO") as "_".
@@ -115,8 +131,6 @@ Section ascend.
     iIntros "!> Hents".
     wp_pures.
 
-    (*@     // TODO: Write @px.log and @px.terml to disk.                       @*)
-    (*@ }                                                                       @*)
     iApply "HΦ".
     set logc' := take (uint.nat lsnc) log'.
     iAssert (own_paxos_leader px nidme termc termc log' true nids γ)%I

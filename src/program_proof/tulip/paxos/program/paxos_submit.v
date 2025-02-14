@@ -1,6 +1,6 @@
 From Perennial.program_proof.tulip.paxos Require Import prelude.
 From Perennial.program_proof.tulip.paxos.program Require Import repr paxos_leading paxos_log.
-From Perennial.program_proof.tulip.paxos.invariance Require Import extend.
+From Perennial.program_proof.tulip.paxos.invariance Require Import append.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
 Section submit.
@@ -91,15 +91,29 @@ Section submit.
     iApply ncfupd_mask_intro; first solve_ndisj.
     iIntros "Hmask".
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
-    iFrame "Hfile".
-    iExists wal.
-    iIntros (bs') "[Hfile %Hbs']".
-    iMod (paxos_inv_extend [c] with "[] Hps Hwalfile Htermc Hterml Hlogn HinvO")
+    iFrame "Hfile %".
+    iIntros (bs' failed) "Hfile".
+    destruct failed.
+    { (* Case: Write failed. Close the invariant without any updates. *)
+      iMod "Hmask" as "_".
+      iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+      { iFrame "∗ # %". }
+      iMod ("HinvfileC" with "HinvfileO") as "_".
+      iMod ("HinvC" with "HinvO") as "_".
+      by iIntros "!> %Hcontra".
+    }
+    (* Case: Write succeeded. *)
+    iDestruct "Hfile" as "[Hfile %Hbs']".
+    iMod (paxos_inv_append c with "[] Hps Hwalfile Htermc Hterml Hlogn HinvO")
       as "(Hps & Hwalfile & Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
     { set_solver. }
     { by iApply big_sepL_singleton. }
     iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
-    { by iFrame "∗ # %". }
+    { iFrame "∗ # %".
+      iPureIntro.
+      apply Forall_app_2; first apply Hvdwal.
+      by rewrite Forall_singleton.
+    }
     iMod "Hmask" as "_".
     (* iMod ("Hclose_termc" with "Htermc") as "Htermc". *)
     iMod ("HinvfileC" with "HinvfileO") as "_".

@@ -107,9 +107,19 @@ Section accept.
       iApply ncfupd_mask_intro; first solve_ndisj.
       iIntros "Hmask".
       iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
-      iFrame "Hfile".
-      iExists wal.
-      iIntros (bs') "[Hfile %Hbs']".
+      iFrame "Hfile %".
+      iIntros (bs' failed) "Hfile".
+      destruct failed.
+      { (* Case: Write failed. Close the invariant without any updates. *)
+        iMod "Hmask" as "_".
+        iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+        { iFrame "∗ # %". }
+        iMod ("HinvfileC" with "HinvfileO") as "_".
+        iMod ("HinvC" with "HinvO") as "_".
+        by iIntros "!> [_ %Hcontra]".
+      }
+      (* Case: Write succeeded. *)
+      iDestruct "Hfile" as "[Hfile %Hbs']".
       iAssert (⌜prefix logc logleader⌝)%I as %Hprefix.
       { iDestruct "Hcmted" as (p) "[Hcmted %Hple]".
         iApply (safe_ledger_prefix_base_ledger_impl_prefix with "Hcmted Hpfb HinvO").
@@ -124,7 +134,12 @@ Section accept.
       { apply Hlsnle. }
       { apply Hprefix. }
       iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
-      { iFrame "∗ # %". }
+      { iFrame "∗ # %".
+        iPureIntro.
+        apply Forall_app_2; first apply Hvdwal.
+        rewrite Forall_singleton /=.
+        word.
+      }
       iMod "Hmask" as "_".
       (* iMod ("Hclose_termc" with "Htermc") as "Htermc". *)
       iMod ("HinvfileC" with "HinvfileO") as "_".
@@ -235,6 +250,7 @@ Section accept.
     wp_pures.
 
     (*@     // Logical action: Accept(term, log)                                @*)
+    (*@     logAccept(px.fname, lsn, ents)                                      @*)
     (*@                                                                         @*)
     iDestruct (own_slice_small_sz with "Hents") as %Hszents.
     assert (length log ≤ length logleader)%nat as Hlenlog.
@@ -255,9 +271,20 @@ Section accept.
     iApply ncfupd_mask_intro; first solve_ndisj.
     iIntros "Hmask".
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
-    iFrame "Hfile".
-    iExists wal.
-    iIntros (bs') "[Hfile %Hbs']".
+
+    iFrame "Hfile %".
+    iIntros (bs' failed) "Hfile".
+    destruct failed.
+    { (* Case: Write failed. Close the invariant without any updates. *)
+      iMod "Hmask" as "_".
+      iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+      { iFrame "∗ # %". }
+      iMod ("HinvfileC" with "HinvfileO") as "_".
+      iMod ("HinvC" with "HinvO") as "_".
+      by iIntros "!> [_ %Hcontra]".
+    }
+    (* Case: Write succeeded. *)
+    iDestruct "Hfile" as "[Hfile %Hbs']".
     iMod (paxos_inv_accept (uint.nat lsn) with "Hpfb Hpfg Hwalfile Htermc Hterml Hlogn HinvO")
       as "(Hwalfile & Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
     { apply Hnidme. }
@@ -265,7 +292,12 @@ Section accept.
     { clear -Hnogap Hszlog. word. }
     { reflexivity. }
     iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
-    { iFrame "∗ # %". }
+    { iFrame "∗ # %".
+      iPureIntro.
+      apply Forall_app_2; first apply Hvdwal.
+      rewrite Forall_singleton /=.
+      word.
+    }
     iMod "Hmask" as "_".
     (* iMod ("Hclose_termc" with "Htermc") as "Htermc". *)
     iMod ("HinvfileC" with "HinvfileO") as "_".
