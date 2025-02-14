@@ -46,9 +46,9 @@ Module Message.
 	S2C_Client_OperationType: u64 ;    
 	S2C_Client_Data:          u64 ;
 	S2C_Client_VersionVector: list u64 ;
-	S2C_Client_RequestNumber: u64 ;
-	S2C_Client_Number:        u64 ;
-      }.
+	          S2C_Client_RequestNumber: u64 ;
+	          S2C_Client_Number:        u64 ;
+                }.
 
 End Message.
 
@@ -117,47 +117,50 @@ Section heap.
   Admitted.
 
   Fixpoint coq_lexiographicCompare (v1 v2: list u64) : bool :=
-  match v1 with
-  | [] => false 
-  | cons h1 t1 => match v2 with
-                  | [] => false 
-                  | cons h2 t2 => if (uint.Z h1) =? (uint.Z h2) then
-                                    (coq_lexiographicCompare t1 t2) else (uint.Z h1) >? (uint.Z h2)
-                  end
-  end.
+    match v1 with
+    | [] => false 
+    | cons h1 t1 => match v2 with
+                    | [] => false 
+                    | cons h2 t2 => if (uint.Z h1) =? (uint.Z h2) then
+                                      (coq_lexiographicCompare t1 t2) else (uint.Z h1) >? (uint.Z h2)
+                    end
+    end.
   
-Fixpoint coq_sortedInsert (l : list Operation.t) (i : Operation.t) :=
-  match l with
-  | [] => [i]
-  | cons h t => if (coq_lexiographicCompare h.(Operation.VersionVector) i.(Operation.VersionVector)) then (i :: h :: t)%list else (h :: coq_sortedInsert t i)%list
-  end.
+  Fixpoint coq_sortedInsert (l : list Operation.t) (i : Operation.t) :=
+    match l with
+    | [] => [i]
+    | cons h t => if (coq_lexiographicCompare h.(Operation.VersionVector) i.(Operation.VersionVector)) then (i :: h :: t)%list else (h :: coq_sortedInsert t i)%list
+    end.
 
-Definition coq_equalOperations (o1 : Operation.t) (o2 : Operation.t) :=
-  (coq_equalSlices o1.(Operation.VersionVector) o2.(Operation.VersionVector)) && ((uint.nat o1.(Operation.Data)) =? (uint.nat (o2.(Operation.Data)))).
+  Definition coq_equalOperations (o1 : Operation.t) (o2 : Operation.t) :=
+    (coq_equalSlices o1.(Operation.VersionVector) o2.(Operation.VersionVector)) && ((uint.nat o1.(Operation.Data)) =? (uint.nat (o2.(Operation.Data)))).
 
   Definition coq_mergeOperations (l1: list Operation.t) (l2: list Operation.t) : (list Operation.t) :=
-  let output := fold_left (fun acc element => coq_sortedInsert acc element) l1 l2 in
-  snd (fold_left (fun (acc: nat * list Operation.t) element =>
-                    let (index, acc) := acc in
-                    match (output !! (uint.nat (index - 1))) with
-                    | Some v => if (coq_equalOperations element v) then
-                                  ((index + 1)%nat, acc)
-                                else
-                                  ((index + 1)%nat, acc ++ [element])
-                    | None => ((index + 1)%nat, acc ++ [element])
-                    end) output (0%nat, [])).
-  
+    let output := fold_left (fun acc element => coq_sortedInsert acc element) l2 l1 in
+    snd (fold_left (fun (acc: nat * list Operation.t) element =>
+                      let (index, acc) := acc in
+                      if (index >? 0) then 
+                        match (output !! (uint.nat (index - 1))) with
+                        | Some v => if (coq_equalOperations element v) then
+                                      ((index + 1)%nat, acc)
+                                    else
+                                      ((index + 1)%nat,  acc ++ [element])
+                        | None => ((index + 1)%nat, acc ++ [element])
+                        end
+                      else ((index + 1)%nat, acc ++ [element]))
+           output (0%nat, [])). 
+
   Lemma wp_mergeOperations (s1 s2: Slice.t) (l1 l2: list Operation.t) (n: nat) :
-      {{{
-            operation_slice s1 l1 n ∗
-            operation_slice s2 l2 n 
-      }}}
-        mergeOperations s1 s2 
+    {{{
+          operation_slice s1 l1 n ∗
+          operation_slice s2 l2 n 
+    }}}
+      mergeOperations s1 s2 
       {{{
             (ns: Slice.t), RET slice_val (ns);
             ∃ nxs, operation_slice ns nxs n ∗
                    ⌜nxs = coq_mergeOperations l1 l2⌝
       }}}.
   Proof.
-    Admitted.
+  Admitted.
     
