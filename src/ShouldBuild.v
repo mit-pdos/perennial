@@ -117,3 +117,4 @@ From New.code.github_com.goose_lang.goose.testdata.examples Require unittest sem
 (* From Perennial.program_proof.pav Require should_build. *)
 
 From Perennial.program_proof.session Require server.proof.
+From Perennial.program_proof.session Require mergeOperations.proof.

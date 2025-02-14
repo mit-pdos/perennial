@@ -73,8 +73,8 @@ Section heap.
           iExists (b1). iExists (b2).
           iExists ((w64_word_instance.(word.add) serverId (W64 1))).
           iFrame.
-        * 
-
+        * admit. 
+Admitted.
 
     
 

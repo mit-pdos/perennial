@@ -114,7 +114,11 @@ Section heap.
     coq_equalSlices l1 l2 = false ->
     l1 ≠ l2.
   Proof.
-  Admitted.
+    revert l2. induction l1 as [ | x1 l1 IH], l2 as [ | x2 l2]; simpl; intros; congruence || eauto.
+    destruct (_ =? _) as [ | ] eqn: H_OBS; [rewrite Z.eqb_eq in H_OBS | rewrite Z.eqb_neq in H_OBS]; simpl in *.
+    - specialize IH with (l2 := l2). apply f_equal with (f := Nat.pred) in H. simpl in H. specialize (IH H H0). congruence.
+    - intros CONTRA. eapply H_OBS. congruence.
+  Qed.
 
   Fixpoint coq_lexiographicCompare (v1 v2: list u64) : bool :=
     match v1 with
@@ -162,5 +166,5 @@ Section heap.
                    ⌜nxs = coq_mergeOperations l1 l2⌝
       }}}.
   Proof.
-  Admitted.
     
+  Qed.
