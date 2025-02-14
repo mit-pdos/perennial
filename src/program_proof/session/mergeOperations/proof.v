@@ -137,16 +137,15 @@ Definition coq_equalOperations (o1 : Operation.t) (o2 : Operation.t) :=
 
   Definition coq_mergeOperations (l1: list Operation.t) (l2: list Operation.t) : (list Operation.t) :=
   let output := fold_left (fun acc element => coq_sortedInsert acc element) l1 l2 in
-  snd (fold_left (fun (acc: Z * list Operation.t) element =>
+  snd (fold_left (fun (acc: nat * list Operation.t) element =>
                     let (index, acc) := acc in
                     match (output !! (uint.nat (index - 1))) with
                     | Some v => if (coq_equalOperations element v) then
-                                  (index + 1, acc)
+                                  ((index + 1)%nat, acc)
                                 else
-                                  (index + 1, (element :: acc)%list)
-                    | None => (index + 1, (element :: acc)%list)
-                    end) output (0, [])).
-
+                                  ((index + 1)%nat, acc ++ [element])
+                    | None => ((index + 1)%nat, acc ++ [element])
+                    end) output (0%nat, [])).
   
   Lemma wp_mergeOperations (s1 s2: Slice.t) (l1 l2: list Operation.t) (n: nat) :
       {{{
