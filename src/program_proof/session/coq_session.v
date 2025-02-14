@@ -128,17 +128,19 @@ Fixpoint coq_sortedInsert (l : list Operation.t) (i : Operation.t) :=
   end.
 
 Definition coq_mergeOperations (l1: list Operation.t) (l2: list Operation.t) : (list Operation.t) :=
-  let output := fold_left (fun acc element => coq_sortedInsert acc element) l1 l2 in
-  snd (fold_left (fun (acc: Z * list Operation.t) element =>
-                    let (index, acc) := acc in
-                    match (output !! (uint.nat (index - 1))) with
-                    | Some v => if (coq_equalOperations element v) then
-                                  (index + 1, acc)
-                                else
-                                  (index + 1, (element :: acc)%list)
-                    | None => (index + 1, (element :: acc)%list)
-                    end) output (0, [])).
-
+    let output := fold_left (fun acc element => coq_sortedInsert acc element) l2 l1 in
+    snd (fold_left (fun (acc: nat * list Operation.t) element =>
+                      let (index, acc) := acc in
+                      if (index >? 0) then 
+                        match (output !! (uint.nat (index - 1))) with
+                        | Some v => if (coq_equalOperations element v) then
+                                      ((index + 1)%nat, acc)
+                                    else
+                                      ((index + 1)%nat,  acc ++ [element])
+                        | None => ((index + 1)%nat, acc ++ [element])
+                        end
+                      else ((index + 1)%nat, acc ++ [element]))
+           output (0%nat, [])). 
 
 Definition coq_deleteAtIndexOperation (o : list Operation.t) index :=
   (take index o) ++ (drop (index + 1) o).
@@ -173,13 +175,12 @@ Definition coq_acknowledgeGossip (s: Server.t) (r: Message.t) :=
     <[uint.nat i := r.(Message.S2S_Gossip_Index)]> l in
   Server.mk s.(Server.Id) s.(Server.NumberOfServers) s.(Server.UnsatisfiedRequests) s.(Server.VectorClock) s.(Server.OperationsPerformed) s.(Server.MyOperations) s.(Server.PendingOperations) gossipAcknowledgements s.(Server.SeenRequests).
 
-
 Definition coq_getGossipOperations (s: Server.t) (serverId: u64) : (list Operation.t) :=
   snd (fold_left (fun (acc: Z * list Operation.t) element =>
                     let (index, acc) := acc in
                     match lookup (uint.nat serverId) (s.(Server.GossipAcknowledgements)) with
                     | Some v => if index >=? (uint.nat v) then
-                                  (index + 1, (element :: acc)%list)
+                                  (index + 1, acc ++ [element])
                                 else (index + 1, acc)
                     | None => (index + 1, acc)
                     end)
@@ -216,7 +217,6 @@ Definition coq_processClientRequest (s: Server.t) (r: Message.t) :
       let S2C_Client_RequestNumber := r.(Message.C2S_Client_RequestNumber) in
       (true, Server.mk s.(Server.Id) s.(Server.NumberOfServers) s.(Server.UnsatisfiedRequests) VectorClock OperationsPerformed MyOperations s.(Server.PendingOperations) s.(Server.GossipAcknowledgements) SeenRequests, (Message.mk 4 0 0 0 0 [] 0 0 [] 0 0 0 0 1 S2C_Client_Data S2C_Client_VersionVector S2C_Client_RequestNumber S2C_Client_Number)).
 
-Search "element".
 Definition coq_processRequest (s: Server.t) (r: Message.t) : (Server.t * list Message.t) :=
   match (uint.nat r.(Message.MessageType))%nat with
   | 0%nat =>
@@ -225,7 +225,7 @@ Definition coq_processRequest (s: Server.t) (r: Message.t) : (Server.t * list Me
         (server, [reply])
       else
         (* change that *)
-        let UnsatisfiedRequests := (r :: s.(Server.UnsatisfiedRequests))%list in 
+        let UnsatisfiedRequests := s.(Server.UnsatisfiedRequests) ++ [r] in 
         let server := Server.mk s.(Server.Id) s.(Server.NumberOfServers) UnsatisfiedRequests s.(Server.VectorClock) s.(Server.OperationsPerformed) s.(Server.MyOperations) s.(Server.PendingOperations) s.(Server.GossipAcknowledgements) s.(Server.SeenRequests) in
         (server, [])
   | 1%nat =>
@@ -235,14 +235,14 @@ Definition coq_processRequest (s: Server.t) (r: Message.t) : (Server.t * list Me
                                            let '(index, deletedIndex, acc) := acc in
                                            let '(succeeded, server, reply) := coq_processClientRequest s r in
                                            if succeeded then
-                                             ((index + 1)%nat, (index :: deletedIndex)%list, (reply :: acc)%list)
+                                             ((index + 1)%nat, deletedIndex ++ [index], acc ++ [reply])
                                            else
                                              ((index + 1)%nat, deletedIndex, acc)) s.(Server.UnsatisfiedRequests) (0%nat, [], outGoingRequests) in
       let remainingIndexes := list_difference (seq 0 (length s.(Server.UnsatisfiedRequests))) deletedIndex in 
       let UnsatisfiedRequests := 
         fold_left (fun acc index =>
                      match (s.(Server.UnsatisfiedRequests) !! index) with
-                     | Some v => (v :: acc)%list
+                     | Some v => acc ++ [v]
                      | None => acc
                      end
           ) remainingIndexes [] in
@@ -258,7 +258,7 @@ Definition coq_processRequest (s: Server.t) (r: Message.t) : (Server.t * list Me
                                               let S2S_Gossip_Receiving_ServerId := index in
                                               let S2S_Gossip_Operations := coq_getGossipOperations s index in
                                               let S2S_Gossip_Index := length (s.(Server.MyOperations)) in
-                                              let message := Message.mk 1 0 0 0 0 [] S2S_Gossip_Sending_ServerId S2S_Gossip_Receiving_ServerId S2S_Gossip_Operations S2S_Gossip_Index 0 0 0 0 0 [] 0 0 in (message :: acc)%list
+                                              let message := Message.mk 1 0 0 0 0 [] S2S_Gossip_Sending_ServerId S2S_Gossip_Receiving_ServerId S2S_Gossip_Operations S2S_Gossip_Index 0 0 0 0 0 [] 0 0 in acc ++ [message]
                                             else
                                               acc) (seq 0 (uint.nat s.(Server.NumberOfServers)))  [] in
       (s, outGoingRequests)
