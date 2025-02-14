@@ -233,6 +233,7 @@ Section heap.
   Proof.
     iIntros (Φ) "(Hx & Hy & %H) H2".
     iDestruct (own_slice_sz with "Hx") as %Hsz.
+    assert (len_upper: length xs < 2^64) by word.
     rewrite /oneOffVersionVector.
     wp_apply wp_ref_to; auto.
     iIntros (output) "H3".
@@ -264,52 +265,44 @@ Section heap.
                    ys !! j = Some y ->
                    S (uint.nat x) < uint.nat y
                    -> b1 = false⌝ ∗
-                   ⌜∀ (j: nat), j < uint.nat i -> ∀ (x y: w64),
+                   ⌜(* ∀ (j: nat), j < uint.nat i -> ∀ (x y: w64),
                    xs !! j = Some x ->
                    ys !! j = Some y ->
                    (uint.nat x >= uint.nat y \/ (b2 = true /\ (S (uint.nat x) = uint.nat y)))
+                   -> b1 = true *)
+                     ∀ (x y: w64),
+                   xs !! uint.nat i = Some x ->
+                   ys !! uint.nat i = Some y ->
+                   b2 = true /\ (S (uint.nat x) = uint.nat y) \/ uint.nat x >= uint.nat y
                    -> b1 = true⌝ ∗
-                   ⌜b2 = true -> ∀ (j: nat) , j < (uint.nat i) -> ∀ (x y: w64), 
+                   ⌜length xs = uint.nat i -> b1 = true⌝ ∗
+                   ⌜(* ∀ (j: nat),
+                   j < uint.nat i ->
+                   ∀ (x y: w64),
                    xs !! j = Some x ->
                    ys !! j = Some y ->
-                   (S (uint.nat x) ≠ uint.nat y)⌝ ∗
-                   ⌜length xs = uint.nat i-> b1 = true /\ b2 = true⌝ ∗
-                   ⌜∀ (x y: w64),
-                   xs !! (uint.nat i) = Some x ->
-                   ys !! (uint.nat i) = Some y ->
-                   uint.nat x >= uint.nat y ->
-                   b1 = true⌝ ∗ 
+                   S (uint.nat x) < uint.nat y ->
+                   (* first conjunct too weak*)
+                   b1 = false *) true⌝ ∗
                    ⌜∀ (j: nat),
                    j < uint.nat i ->
                    ∀ (x y: w64),
                    xs !! j = Some x ->
                    ys !! j = Some y ->
-                   (b2 = false /\ (uint.nat x) < uint.nat y) \/ S (uint.nat x) < uint.nat y ->
-                   b1 = false⌝ ∗
-                   ⌜b2 = false ->
-                   ∀ (j: nat),
-                   j < uint.nat i ->
-                   ∀ (x y: w64),
-                   xs !! j = Some x ->
-                   ys !! j = Some y ->
-                   S (uint.nat x) = uint.nat y⌝ ∗
+                   b2 = false /\ uint.nat x < uint.nat y -> b1 = false⌝ ∗
                    ⌜continue = true -> b1 = true⌝ ∗
-                   ⌜∀ (j: nat), j < uint.nat i -> ∀ (x y: w64),
-                   xs !! j = Some x ->
-                   ys !! j = Some y ->
-                   (S (uint.nat x) ≠ uint.nat y)
-                   -> b2 = true⌝
+                   ⌜b2 = false -> uint.nat i > 0%nat⌝
                 )%I (* Should it be there exists *)
                with "[] [Hx Hy H3 H4 H5 H6]").
-    - admit. (* iIntros (?). iModIntro. iIntros "H H1".
-      iNamed "H". iDestruct "H" as "(output & canApply & index & l & %H1 & %H2 & %H3 & %H4 & %H5 & %H6 & %H7 & %H8 & %H9)".
+    - iIntros (?). iModIntro. iIntros "H H1".
+      iNamed "H". iDestruct "H" as "(output & canApply & index & l & %H1 & %H2 & %H3 & %H4 & %H5 & %H6 & %H7 & %H8 & %H9 & %H10)".
       iDestruct "Hx" as "[Hxs Hxcap]".
       iDestruct "Hy" as "[Hys Hycap]".
       wp_pures. wp_load. wp_load. wp_if_destruct.
       + assert (uint.nat i < length xs)%nat by word.
         assert (uint.nat i < length ys)%nat by word.
         eapply list_lookup_lt in H0 as [x0 H0].
-        eapply list_lookup_lt in H10 as [y0 H10].
+        eapply list_lookup_lt in H11 as [y0 H11].
         wp_pures. wp_load. wp_bind (if: #b2 then _ else _)%E.
         wp_if_destruct.
         * wp_load.
@@ -321,46 +314,47 @@ Section heap.
             iFrame. repeat iSplitL; try word.
             - iPureIntro. intros.
               destruct (decide (j = uint.nat i)).
-              + subst. rewrite H0 in H12. rewrite H10 in H13.
-                injection H12 as ?. injection H13 as ?. subst.
+              + subst. rewrite H0 in H13. rewrite H11 in H14. 
+                injection H13 as ?. injection H14 as ?. subst.
                 assert (S (uint.nat x1) = uint.nat (w64_word_instance.(word.add) x1 (W64 1))) by word.
-                rewrite H12 in H14. word.
+                rewrite H13 in H15. word.
               + assert (j < uint.nat i) by word. eapply H4.
                 * eassumption.
                 * eassumption.
                 * eassumption.
                 * auto.
-            - iPureIntro. intros.
-              destruct (decide (j = uint.nat i)).
-              + subst. rewrite H0 in H12. rewrite H10 in H13.
-                injection H12 as ?. injection H13 as ?. subst.
-                destruct H14.
-                * admit.
-                * destruct H12. inversion H12.
-              + assert (j < uint.nat i) by word. eapply H5.
-                * eassumption.
-                * eassumption.
-                * eassumption.
-                * destruct H14.
-                  { left. auto. }
-                  { destruct H14. inversion H14. }
-            - iPureIntro. intros. destruct H9.
-              
-              + 
+            - iPureIntro.
+              intros. auto.
+            - auto.
+            - auto.
+            - iPureIntro. intros. destruct (decide (j = uint.nat i)).
+              + subst. rewrite H0 in H13. rewrite H11 in H14. injection H13 as ?. injection H14 as ?.
+                subst. admit.
+              + assert (j < uint.nat i) by word.
+                destruct H15.
+                destruct (decide (S (uint.nat x1) < uint.nat y0)).
+                * eapply H4; eassumption.
+                * assert (S (uint.nat x1) = uint.nat y0) by word. eapply H3 in H13.
+                  { inversion H13. }
+                  { word. }
+                  { eassumption. }
+                  { eassumption. }
+            - auto.
+            (* - iPureIntro. intros. *)
           } 
           { wp_load. wp_apply (wp_SliceGet with "[Hxs]"); iFrame; auto.
             iIntros "Hxs". wp_load. wp_apply (wp_SliceGet with "[Hys]"); iFrame; auto.
             iIntros "Hys". wp_if_destruct.
-            - wp_store. wp_load. wp_store. iModIntro. iApply "H1".
-              iExists false. iExists true. iExists (W64 (uint.Z i + 1)). iFrame. iSplitL.
+            - wp_store. iModIntro. iApply "H1".
+              iExists false. iExists true. iExists i. iFrame. iSplitL.
               + word.
               + iSplitL.
                 * word.
                 * iPureIntro. intros.
                   split.
                   -- intros. destruct (decide (j = uint.nat i)).
-                     ++ subst. rewrite H0 in H12. rewrite H10 in H13. injection H12 as ?.
-                        injection H13 as ?. subst. admit. (* should be provable *)
+                     ++ subst. rewrite H0 in H13. rewrite H11 in H14. injection H13 as ?.
+                        injection H14 as ?. subst. word. 
                      ++ eapply H3.
                         ** assert (j < uint.nat i) by word. eassumption.
                         ** eassumption.
@@ -368,118 +362,210 @@ Section heap.
                         ** eassumption.
                   -- split; auto.
                      split.
-                     ++ intros. destruct (decide (j = uint.nat i)).
-                        ** subst. rewrite H0 in H12. rewrite H10 in H13. injection H12 as ?.
-                           injection H13 as ?. subst. destruct H14.
-                           { word. }
-                           { destruct H12. admit. }
-                        ** assert (j < uint.nat i) by word. 
-                           eapply H8 in H0 as H16.
-                           { rewrite H16 in H5. 
-                             eapply H5; try eassumption. }
-                           { eassumption. }
-                           (* every admit before this point should be true *)
-                           { assert (uint.Z x0 + 1 ≠ uint.Z y0) by admit.
-                             word. }
+                     ++ intros. rewrite H0 in H12. rewrite H11 in H13. injection H12 as ?. injection H13 as ?.
+                        subst. destruct H14.
+                        ** destruct H12. admit.
+                        ** word.
                      ++ split.
-                        ** intros. destruct (decide (j = uint.nat i)).
-                           { subst. rewrite H0 in H13. rewrite H10 in H14. injection H13 as ?. injection H14 as ?.
-                             subst.
-                             assert (uint.Z x1 + 1 ≠ uint.Z y1) by admit.
-                             word. }
-                           { assert (j < uint.nat i) by word. eapply H6; eassumption. }
-                        ** split.
-                           { intros. apply nil_length_inv in H11.  subst. inversion H0. }
-                           { split; auto. intros. eapply H8 in H0.
-                             - assert (S uint.nat x0 < uint.nat y0) by admit.
-
-                             
-                           
-                           
-                          
-                             
-                             - (* This is not inductive, we should be able to reach a contradiction somehow *)
-                           (* I don't think we can prove that false = true,
-                              prior to (j < uint.nat i) the invariant b1 = true is maintained
-                              look at some examples to figure this out
-                            *)
-                           
-                           
-                           
-                           
-          }
+                        ** intros. subst. word.
+                        ** split; auto.
+            - wp_load. wp_store. iModIntro. iApply "H1".
+              iExists b1. iExists true. iExists (W64 (uint.Z i + 1)).
+              iFrame.
+              iPureIntro. split.
+              + word.
+              + split.
+                * intro. inversion H12.
+                * split.
+                  -- intros. destruct (decide (j = uint.nat i)).
+                     ++ subst. rewrite H0 in H13. rewrite H11 in H14. injection H13 as ?.
+                        injection H14 as ?. subst. word. 
+                     ++ assert (j < uint.nat i) by word. eapply H3; eassumption.
+                  -- split.
+                     ++ intros.
+                        ** destruct (decide (j = uint.nat i)).
+                           { subst. rewrite H0 in H13. rewrite H11 in H14. injection H13 as ?.
+                             injection H14 as ?. subst. word. }
+                           { assert (j < uint.nat i) by word. eapply H4; eassumption. }
+                     ++ split.
+                         ** auto.
+                         ** split.
+                            { intros. eapply H9; auto. }
+                            { split.
+                              - auto.
+                              - split.
+                                + intros. destruct (decide (j = uint.nat i)).
+                                  * subst. rewrite H0 in H13. rewrite H11 in H14. injection H13 as ?.
+                                  injection H14 as ?. subst. word. 
+                                  * destruct H15. inversion H15.
+                                + split.
+                                  * auto.
+                                  * intros. inversion H12.
+                            } 
+                              (* - split.
+                                + intros. destruct (decide (j = uint.nat i)).
+                                  * subst. rewrite H0 in H13. rewrite H11 in H14. injection H13 as ?.
+                                  injection H14 as ?. subst. word. 
+                                  * assert (j < uint.nat i) by word. eapply H8; eassumption.
+                                + split; auto.
+                            } *)
+          } 
         * wp_pures. wp_load. wp_apply (wp_SliceGet with "[Hxs]"); iFrame; auto.
           iIntros "Hxs". wp_load. wp_apply (wp_SliceGet with "[Hys]"); iFrame; auto.
           iIntros "Hys". wp_pures. wp_if_destruct.
-          { wp_store. wp_load. wp_store. iModIntro. iApply "H1".
-            iExists false. iExists false. iExists (W64 (uint.Z i + 1)). 
+          -- wp_store. iModIntro. iApply "H1".
+            iExists false. iExists false. iExists i.
             iFrame. iSplitL; auto.
-            - admit.
-            - admit.
-          }
-          { wp_load. wp_store. iModIntro. iApply "H1".
-            iExists b1. iExists false. iExists (W64 (uint.Z i + 1)). 
-            iFrame. iSplitL; auto; admit. (* word. *)
-          }
+            iPureIntro.
+            split; try word. split; try word. split; try word.
+            split; try word.
+             ++ intros. destruct H14.
+                ** destruct H14. inversion H14.
+                ** rewrite H0 in H12. rewrite H11 in H13. injection H12 as ?. injection H13 as ?. subst.
+                   word.
+             ++ split.
+                ** word.
+                ** split.
+                   { auto. }
+                   { split.
+                     - auto.
+                     - split.
+                       + auto.
+                       + auto.
+                   } 
+                (* rewrite H0 in H12. rewrite H11 in H13. injection H12 as ?. injection H13 as ?. subst.
+                word. *)
+             (* ++ split; try word. split; try word. split; try word. auto. *)
+          -- wp_load. wp_store. iModIntro. iApply "H1".
+             iExists b1. iExists false. iExists (W64 (uint.Z i + 1)).
+             iFrame. iPureIntro. split; try word.
+             split; try word. split; try word. split; try word.
+             ++ intros.
+                destruct (decide (uint.nat i = j)).
+                ** subst. rewrite H0 in H13. rewrite H11 in H14. injection H13 as ?.
+                   injection H14 as ?. subst. word.
+                ** assert (j < uint.nat i) by word. eapply H4; eassumption.
+             ++ split.
+                ** auto.
+                ** split.
+                   { intros. eapply H9; auto. }
+                   { split.
+                     - auto.
+                     - split.
+                       + intros. destruct (decide (uint.nat i = j)).
+                         * subst. rewrite H0 in H13. rewrite H11 in H14. injection H13 as ?.
+                           injection H14 as ?. subst. word.
+                         * assert (j < uint.nat i) by word. destruct H15. subst.
+                           eapply H8; try eassumption. auto.
+                       + split.
+                         * auto.
+                         * intros. word.
+                   }
+                    (* - split.
+                       + intros. destruct (decide (uint.nat i = j)).
+                         * subst. rewrite H0 in H13. rewrite H11 in H14. injection H13 as ?.
+                           injection H14 as ?. subst. word.
+                         * assert (j < uint.nat i) by word. eapply H8; eassumption.
+                       + intros. auto.
+                   } *)
       + iModIntro. iApply "H1".
         iExists b1. iExists b2. iExists i.
-        iFrame. iSplitL; auto. iSplitL.
+        iFrame. iPureIntro.
+        split.
         * word.
-        * iPureIntro. auto. *) 
+        * split.
+          -- intros. destruct (decide (uint.nat i = length xs)).
+             ++ right. auto.
+             ++ left. word.
+          -- split.
+             ++ intros. eapply H3; eassumption.
+             ++ split.
+                ** intros. eapply H4; eassumption.
+                ** split.
+                   { auto. }
+                   { split.
+                     - auto.
+                     - split.
+                       + intros. eapply H7; eassumption.
+                       + split.
+                         * intros. eapply H8; eassumption.
+                         * auto.
+                   }
     - iExists true. iExists true. iExists (W64 0). 
       replace (W64 (length xs)) with (x.(Slice.sz)) by word. iFrame.
       iSplitL.
       + word.
       + iSplitL.
         * iPureIntro. word.
-        * iPureIntro. split; try word. split; try word. split; try word.
-          split; try word. split; try word. split; try word. split; try word.
-          split; try word. split; try word.
-    - iIntros "(%b1 & %b2 & %i & Hx & Hy & output & canApply & index & l & %H5 & %H6 & %H7 & %H8 & %H9 & %H10 & %H11 & %H12 & %H13 & %H14 & %H15)".
+        * iPureIntro. repeat split; try word; try auto.
+    - iIntros "(%b1 & %b2 & %i & Hx & Hy & output & canApply & index & l & %H1 & %H3 & %H4 & %H5 & %H6 & %H7 & %H8 & %H9 & %H10 & %H11)".
       wp_pures. wp_load.
       + iModIntro. iApply "H2".
         iFrame. iPureIntro. split; auto.
         rewrite /coq_oneOffVersionVector.
-        clear Hsz.
-        simpl. generalize dependent ys. generalize dependent i.
+        clear Hsz. generalize dependent ys. generalize dependent i.
         induction xs.
-        * intros. simpl. simpl in H5. assert (uint.nat i = 0%nat) by word. destruct H11.
-          { auto. }
-          { auto. }
+        * intros. simpl in H1. assert (uint.nat i = 0%nat) by word. destruct H3; auto.
         * induction ys.
           -- intros. inversion H.
           -- intros. simpl. destruct (decide (uint.Z a + 1 =? uint.Z a0 = true)).
-             ++ rewrite e. fold coq_oneOffVersionVector in *.
-                clear IHys. clear IHxs.
+             ++ rewrite e. fold coq_oneOffVersionVector in *. clear IHys. clear IHxs.
+                clear len_upper. clear H7.
                 generalize dependent ys. generalize dependent i. induction xs.
                 ** intros.
                    simpl. simpl in H.
                    assert (length ys = 0%nat) by word.
                    apply nil_length_inv in H0.
-                   destruct (decide (uint.nat i = 0%nat)).
-                   { subst. eapply H12.
-                     - rewrite e0. auto.
-                     - rewrite e0. auto.
-                     - admit.
+                   destruct H3; auto.
+                   { destruct H2. rewrite length_cons in H3. rewrite
+                       length_cons in H1. subst. simpl in *. assert (uint.nat i = 0%nat) by word.
+                     assert (uint.Z a < uint.Z a0) by word.
+                     eapply H6.
+                     - rewrite H0. auto.
+                     - rewrite H0. auto.                       
+                     - assert (S (uint.nat a) = uint.nat a0) by word.
+                       + destruct (decide (b2 = true)).
+                         * auto.
+                         * apply not_true_is_false in n. apply H11 in n. word.
                    }
-                   { rewrite length_cons in H5. simpl in H5. 
-                     assert (uint.nat i = 1%nat) by word.
-                     destruct H6; auto.
-                     - destruct H1. simpl in H2. admit.
-                     - destruct H1. destruct H2; auto.
-                   }
+                   { destruct H2; auto. }
                 ** intros. induction ys.
                    { intros. inversion H. }
                    { simpl. destruct (decide (uint.Z a1 <? uint.Z a2 = false)).
-                     - rewrite e0. simpl. clear IHys. apply (IHxs (uint.nat i - 1)). 
-                       + admit.
-                       + intros. destruct H6; auto.
-                         * left. destruct H1. admit.
-                         * right. admit.
-                       + intros. eapply H11. admit.
+                     - rewrite e0. simpl. clear IHys.
+                       apply (IHxs (uint.nat i - 1)). 
+                       + repeat rewrite length_cons in H1. rewrite length_cons.
+                         assert ((uint.nat (W64 (uint.nat i - 1)))%nat = (uint.nat i - 1)%nat) by admit.
+                         word.
+                       + intros. destruct H3; auto. 
+                         * left. destruct H2. split; auto. repeat rewrite length_cons in H3.
+                           rewrite length_cons. admit.
+                         * right. destruct H2. split; auto. admit.
+                       + intros. destruct H3; auto.
+                         * destruct (decide (uint.nat i = 1%nat)).
+                           { (* contradiction *)
+                             assert (uint.nat a1 >= uint.nat a2) by word.
+                             assert (b1 = true). {
+                               eapply H6.
+                               - rewrite e1. auto.
+                               - rewrite e1. auto.
+                               - right. auto.
+                             }
+                             destruct H2. rewrite H2 in H7. inversion H7.
+                           }
+                           { assert (uint.nat i > 1) by word. word. }
+                         * destruct H2. repeat rewrite length_cons in H2. word.
                        + auto.
-                       + intros. admit.
-                       + admit.
+                       + intros.
+                         destruct (decide (uint.nat i = 0%nat)).
+                         * rewrite e1 in H0. 
+                           
+                                       .
+                         eapply H4.
+                         * assert ((uint.nat (W64 (uint.nat i - 1)))%nat = (uint.nat i - 1)%nat) by admit.
+                           assert ((S j)%nat < uint.nat i) by word.
+                           eassumption.
+                         * 
                        + admit.
                        + admit.
                        + admit.
