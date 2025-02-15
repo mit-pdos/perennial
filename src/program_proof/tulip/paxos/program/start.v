@@ -11,27 +11,18 @@ Section start.
   Theorem wp_Start
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list byte_string)
     (addrmP : loc) (addrm : gmap u64 chan) (fname : byte_string) γ :
-    termc = (W64 0) ->
-    terml = (W64 0) ->
-    lsnc = (W64 0) ->
-    log = [] ->
-    (* remove above assumptions once recovery is proven *)
     is_node_wal_fname γ nidme fname -∗
     know_paxos_inv γ (dom addrm) -∗
     know_paxos_file_inv γ (dom addrm) -∗
     know_paxos_network_inv γ addrm -∗
     {{{ own_map addrmP (DfracOwn 1) addrm ∗
-        own_current_term_half γ nidme (uint.nat termc) ∗
-        own_ledger_term_half γ nidme (uint.nat terml) ∗
-        own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
-        own_node_ledger_half γ nidme log
+        own_crash_ex pxcrashNS (own_paxos_durable γ nidme) (PaxosDurable termc terml log lsnc)
     }}}
       Start #nidme #addrmP #(LitString fname)
     {{{ (px : loc), RET #px; is_paxos px nidme γ }}}.
   Proof.
-    iIntros (Htermcz Htermlz Hlsncz Hlogz).
     iIntros "#Hfnamewal #Hinv #Hinvfile #Hinvnet" (Φ).
-    iIntros "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
+    iIntros "!> [Haddrm Hdurable] HΦ".
     wp_rec.
 
     (*@ func Start(nidme uint64, addrm map[uint64]grove_ffi.Address) *Paxos {   @*)
@@ -61,20 +52,17 @@ Section start.
     iIntros (Hltmax).
     rewrite bool_decide_eq_true in Hltmax.
 
+    (*@     // Recover durable states from the write-ahead log.                 @*)
     (*@     termc, terml, lsnc, log := resume()                                 @*)
     (*@                                                                         @*)
-    wp_pures.
-    wp_apply wp_NewSlice.
-    iIntros (logP) "Hlog".
-    rewrite uint_nat_W64_0 replicate_0.
-    rewrite Htermcz Htermlz Hlsncz Hlogz.
-    (* wp_apply (wp_resume with "[$Htermc $Hterml $Hlsnc $Hlogn]"). *)
-    (* iIntros (logP) "(Htermc & Hterml & Hlsnc & Hlogn & Hlog)". *)
+    wp_apply (wp_resume with "Hfnamewal Hinv Hinvfile Hdurable").
+    { by apply elem_of_dom. }
+    iIntros (logP) "[Hdurable Hlog]".
 
     (*@     px := mkPaxos(nidme, termc, terml, lsnc, log, addrm)                @*)
     (*@                                                                         @*)
     wp_apply (wp_mkPaxos
-               with "Hfnamewal Hinv Hinvfile Hinvnet [$Hlog $Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
+               with "Hfnamewal Hinv Hinvfile Hinvnet [$Hlog $Haddrm $Hdurable]").
     { clear -Hmulti. word. }
     { by apply elem_of_dom. }
     { clear -Hltmax. rewrite /max_nodes. word. }

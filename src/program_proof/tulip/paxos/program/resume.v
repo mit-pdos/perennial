@@ -60,26 +60,21 @@ Section resume.
   Theorem wp_resume
     (fname : byte_string) (nidme termc terml lsnc : u64) (log : list byte_string)
     nids γ :
+    let dst := PaxosDurable termc terml log lsnc in
     nidme ∈ nids ->
     is_node_wal_fname γ nidme fname -∗
     know_paxos_inv γ nids -∗
     know_paxos_file_inv γ nids -∗
-    {{{ own_current_term_half γ nidme (uint.nat termc) ∗
-        own_ledger_term_half γ nidme (uint.nat terml) ∗
-        own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
-        own_node_ledger_half γ nidme log
+    {{{ own_crash_ex pxcrashNS (own_paxos_durable γ nidme) dst
     }}}
       resume #(LitString fname)
     {{{ (logP : Slice.t), RET (#termc, #terml, #lsnc, to_val logP);
-        own_current_term_half γ nidme (uint.nat termc) ∗
-        own_ledger_term_half γ nidme (uint.nat terml) ∗
-        own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
-        own_node_ledger_half γ nidme log ∗
+        own_crash_ex pxcrashNS (own_paxos_durable γ nidme) dst ∗
         own_slice logP stringT (DfracOwn 1) log
     }}}.
   Proof.
-    iIntros (Hnidme) "#Hfname #Hinv #Hinvfile".
-    iIntros (Φ) "!> (Htermc & Hterml & Hlsnc & Hlog) HΦ".
+    iIntros (dst Hnidme) "#Hfname #Hinv #Hinvfile".
+    iIntros (Φ) "!> Hdurable HΦ".
     wp_rec.
 
     (*@ func resume(fname string) (uint64, uint64, uint64, []string) {          @*)
@@ -105,10 +100,14 @@ Section resume.
     wp_pures.
     wp_rec. wp_pures.
     wp_bind (ExternalOp _ _).
+    iApply (wp_ncatomic _ _ ∅).
+    { solve_atomic2. }
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamed "Hdurable".
     (* Open the file invariant to obtain (1) the file points-to, (2) encoding
     relation between the file content and the WAL log. *)
     iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
-    { solve_atomic2. }
     iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hinvnode HinvnodeC]".
     { apply Hnidme. }
     iNamed "Hinvnode".
@@ -117,19 +116,21 @@ Section resume.
     [own_current_term_half]), (2) the recovery relation between the WAL log and
     the durable resources. *)
     iInv "Hinv" as "> HinvO" "HinvC".
-    { solve_atomic2. }
     iDestruct (paxos_recoverable_from_wal with
-                "Htermc Hterml Hlsnc Hlog Hwalfile HinvO") as %Hwal.
+                "Htermc Hterml Hlsnc Hlogn Hwalfile HinvO") as %Hwal.
     { apply Hnidme. }
     (* Read the WAL file. *)
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
     wp_apply (wp_FileReadOp with "Hfile").
     iIntros (err p len) "[Hfile HdataP]".
     (* Close the core invariant. *)
+    iMod "Hmask" as "_".
     iMod ("HinvC" with "HinvO") as "_".
-    iModIntro.
     iDestruct ("HinvnodeC" with "[Hwalfile Hfile]") as "HinvfileO".
     { iFrame "∗ # %". }
     iMod ("HinvfileC" with "HinvfileO") as "_".
+    iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
     iModIntro.
     destruct err; wp_pures.
     { wp_apply wp_Exit. iIntros "[]". }

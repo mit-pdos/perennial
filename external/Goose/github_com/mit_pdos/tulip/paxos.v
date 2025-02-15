@@ -817,34 +817,6 @@ Definition mkPaxos: val :=
     ] in
     "px".
 
-Definition Start: val :=
-  rec: "Start" "nidme" "addrm" "fname" :=
-    control.impl.Assume (#1 < (MapLen "addrm"));;
-    let: (<>, "ok") := MapGet "addrm" "nidme" in
-    control.impl.Assume "ok";;
-    control.impl.Assume ("nidme" < MAX_NODES);;
-    let: "termc" := #0 in
-    let: "terml" := #0 in
-    let: "lsnc" := #0 in
-    let: "log" := NewSlice stringT #0 in
-    let: "px" := mkPaxos "nidme" "termc" "terml" "lsnc" "log" "addrm" "fname" in
-    Fork (Paxos__Serve "px");;
-    Fork (Paxos__LeaderSession "px");;
-    Fork (Paxos__HeartbeatSession "px");;
-    Fork (Paxos__ElectionSession "px");;
-    ForSlice uint64T <> "nidloop" (struct.loadF Paxos "peers" "px")
-      (let: "nid" := "nidloop" in
-      Fork (Paxos__ResponseSession "px" "nid"));;
-    "px".
-
-Definition logExtend: val :=
-  rec: "logExtend" "fname" "ents" :=
-    let: "bs" := NewSliceWithCap byteT #0 #64 in
-    let: "bs1" := marshal.WriteInt "bs" CMD_EXTEND in
-    let: "bs2" := util.EncodeStrings "bs1" "ents" in
-    grove_ffi.FileAppend "fname" "bs2";;
-    #().
-
 (* Read the underlying file and perform recovery to re-construct @termc, @terml,
    @lsnc, and @log. *)
 Definition resume: val :=
@@ -906,3 +878,28 @@ Definition resume: val :=
                   Continue
                 else Continue)))))));;
     (![uint64T] "termc", ![uint64T] "terml", ![uint64T] "lsnc", ![slice.T stringT] "log").
+
+Definition Start: val :=
+  rec: "Start" "nidme" "addrm" "fname" :=
+    control.impl.Assume (#1 < (MapLen "addrm"));;
+    let: (<>, "ok") := MapGet "addrm" "nidme" in
+    control.impl.Assume "ok";;
+    control.impl.Assume ("nidme" < MAX_NODES);;
+    let: ((("termc", "terml"), "lsnc"), "log") := resume "fname" in
+    let: "px" := mkPaxos "nidme" "termc" "terml" "lsnc" "log" "addrm" "fname" in
+    Fork (Paxos__Serve "px");;
+    Fork (Paxos__LeaderSession "px");;
+    Fork (Paxos__HeartbeatSession "px");;
+    Fork (Paxos__ElectionSession "px");;
+    ForSlice uint64T <> "nidloop" (struct.loadF Paxos "peers" "px")
+      (let: "nid" := "nidloop" in
+      Fork (Paxos__ResponseSession "px" "nid"));;
+    "px".
+
+Definition logExtend: val :=
+  rec: "logExtend" "fname" "ents" :=
+    let: "bs" := NewSliceWithCap byteT #0 #64 in
+    let: "bs1" := marshal.WriteInt "bs" CMD_EXTEND in
+    let: "bs2" := util.EncodeStrings "bs1" "ents" in
+    grove_ffi.FileAppend "fname" "bs2";;
+    #().

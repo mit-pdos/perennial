@@ -518,6 +518,23 @@ Section inv_file.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Definition paxosfileNS := paxosNS .@ "file".
+  (* TODO: make name consistent, also think about the right NS structure *)
+  Definition pxcrashNS := nroot .@ "pxcrash".
+
+  (* TODO: using nat (rather than u64) here would be more consistent with the
+  principle that in the protocol world types are perfect. *)
+  Inductive pxdur :=
+  | PaxosDurable (termc terml : u64) (log : list byte_string) (lsn : u64).
+
+  Definition own_paxos_durable
+    γ (nidme : u64) (dst : pxdur) : iProp Σ :=
+    match dst with
+    | PaxosDurable termc terml log lsnc =>
+        "Htermc" ∷ own_current_term_half γ nidme (uint.nat termc) ∗
+        "Hterml" ∷ own_ledger_term_half γ nidme (uint.nat terml) ∗
+        "Hlogn"  ∷ own_node_ledger_half γ nidme log ∗
+        "Hlsnc"  ∷ own_committed_lsn_half γ nidme (uint.nat lsnc)
+    end.
 
   (* Required during recovery. *)
   Definition valid_wal_entry (cmd : pxcmd) :=

@@ -10,7 +10,7 @@ Section lookup.
     is_paxos px nidme γ -∗
     {{{ True }}}
     <<< ∀∀ log cpool, own_consensus_half γ log cpool >>>
-      Paxos__Lookup #px #lsn @ ↑paxosNS
+      Paxos__Lookup #px #lsn @ ↑paxosNS ∪ ↑pxcrashNS
     <<< ∃∃ log', own_consensus_half γ log' cpool ∗ ⌜cpool_subsume_log log' cpool⌝ >>>
     {{{ (v : byte_string) (ok : bool), RET (#(LitString v), #ok);
         ⌜if ok then log' !! (uint.nat lsn) = Some v else True⌝
@@ -43,7 +43,7 @@ Section lookup.
       wp_pures.
       (* Open the invariant to obtain subsumption property. *)
       iInv "Hinv" as "> HinvO" "HinvC".
-      iMod (ncfupd_mask_subseteq (⊤ ∖ ↑paxosNS)) as "Hclose"; first solve_ndisj.
+      iMod (ncfupd_mask_subseteq (⊤ ∖ (↑paxosNS ∪ ↑pxcrashNS))) as "Hclose"; first solve_ndisj.
       iMod "HAU" as (logcli cpoolcli) "[[Hlogcli Hcpoolcli] HAU]".
       iDestruct (paxos_inv_impl_cpool_subsume_log with "Hlogcli Hcpoolcli HinvO") as %Hincl.
       iMod ("HAU" with "[$Hlogcli $Hcpoolcli]") as "HΦ".
@@ -70,8 +70,11 @@ Section lookup.
     (*@     // Logical action: Commit(@px.log) if @px.log is longer than the global log. @*)
     (*@                                                                         @*)
     iApply ncfupd_wp.
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamed "Hdurable".
     iInv "Hinv" as "> HinvO" "HinvC".
-    iMod (ncfupd_mask_subseteq (⊤ ∖ ↑paxosNS)) as "Hmask"; first solve_ndisj.
+    iMod (ncfupd_mask_subseteq (⊤ ∖ (↑paxosNS ∪ ↑pxcrashNS))) as "Hmask"; first solve_ndisj.
     iMod "HAU" as (logcli cpoolcli) "[[Hlogcli Hcpoolcli] HAU]".
     set logc := take _ log.
     iNamed "Hnids".
@@ -88,6 +91,8 @@ Section lookup.
     { done. }
     iMod "Hmask" as "_".
     iMod ("HinvC" with "HinvO") as "_".
+    set dst := PaxosDurable termc terml log lsnc.
+    iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
     iModIntro.
 
     (*@     px.mu.Unlock()                                                      @*)

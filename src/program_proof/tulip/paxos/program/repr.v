@@ -62,8 +62,6 @@ Section repr.
   (*@     //                                                                  @*)
   (*@     conns     map[uint64]grove_ffi.Connection                           @*)
   (*@ }                                                                       @*)
-  Definition paxoscrashNS := nroot.@"paxos_crash".
-
   Definition is_paxos_addrm (paxos : loc) (addrm : gmap u64 chan) : iProp Σ :=
     ∃ (addrmP : loc),
       "#HaddrmP"   ∷ readonly (paxos ↦[Paxos :: "addrm"] #addrmP) ∗
@@ -168,17 +166,14 @@ Section repr.
   Definition own_paxos_common
     (paxos : loc) (nidme termc terml lsnc : u64) (log : list byte_string) nids γ : iProp Σ :=
     ∃ (hb : bool) (logP : Slice.t),
+      let dst := PaxosDurable termc terml log lsnc in
       "HhbP"     ∷ paxos ↦[Paxos :: "hb"] #hb ∗
       "HtermcP"  ∷ paxos ↦[Paxos :: "termc"] #termc ∗
-      "Htermc"   ∷ own_current_term_half γ nidme (uint.nat termc) ∗
-      (* "Htermc"   ∷ own_crash_ex paxoscrashNS (own_current_term_half γ nidme) (uint.nat termc) ∗ *)
       "HtermlP"  ∷ paxos ↦[Paxos :: "terml"] #terml ∗
-      "Hterml"   ∷ own_ledger_term_half γ nidme (uint.nat terml) ∗
       "HlogP"    ∷ paxos ↦[Paxos :: "log"] (to_val logP) ∗
       "Hlog"     ∷ own_slice logP stringT (DfracOwn 1) log ∗
-      "Hlogn"    ∷ own_node_ledger_half γ nidme log ∗
       "HlsncP"   ∷ paxos ↦[Paxos :: "lsnc"] #lsnc ∗
-      "Hlsnc"    ∷ own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
+      "Hdurable" ∷ own_crash_ex pxcrashNS (own_paxos_durable γ nidme) dst ∗
       "Hsc"      ∷ own_paxos_sc paxos nids ∗
       "#Hgebase" ∷ prefix_base_ledger γ (uint.nat terml) log ∗
       "#Hpreped" ∷ (if decide (termc = terml)

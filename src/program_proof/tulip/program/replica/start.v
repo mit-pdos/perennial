@@ -15,11 +15,7 @@ Section program.
     (rid : u64) (addr : chan) (fname : byte_string) (addrmpxP : loc) (fnamepx : byte_string)
     (termc : u64) (terml : u64) (lsnc : u64) (log : list byte_string) (addrmpx : gmap u64 chan)
     (addrm : gmap u64 chan) gid γ π :
-    termc = (W64 0) ->
-    terml = (W64 0) ->
-    lsnc = (W64 0) ->
-    log = [] ->
-    (* remove above assumptions once recovery is proven *)
+    let dst := PaxosDurable termc terml log lsnc in
     gid ∈ gids_all ->
     rid ∈ rids_all ->
     addrm !! rid = Some addr ->
@@ -33,13 +29,10 @@ Section program.
     (* tulip atomic invariants *)
     know_tulip_inv γ -∗
     know_tulip_network_inv γ gid addrm -∗
-    {{{ (* persistent states passed to paxos *)
+    {{{ (* durable states passed to paxos *)
         own_map addrmpxP (DfracOwn 1) addrmpx ∗
-        own_current_term_half π rid (uint.nat termc) ∗
-        own_ledger_term_half π rid (uint.nat terml) ∗
-        own_committed_lsn_half π rid (uint.nat lsnc) ∗
-        own_node_ledger_half π rid log ∗
-        (* persistent states of replica; TODO: replace [] once proving recovery *)
+        own_crash_ex pxcrashNS (own_paxos_durable π rid) dst ∗
+        (* durable states of replica; TODO: replace [] once proving recovery *)
         own_replica_clog_half γ gid rid [] ∗
         own_replica_ilog_half γ gid rid [] ∗
         (* file points-to; TODO: seal it in atomic invariance once proving recovery *)
@@ -48,23 +41,18 @@ Section program.
       Start #rid (to_val addr) #(LitString fname) #addrmpxP #(LitString fnamepx)
     {{{ (rp : loc), RET #rp; is_replica rp gid rid γ }}}.
   Proof.
-    iIntros (Htermcz Htermlz Hlsncz Hlogz).
-    iIntros (Hgid Hrid Haddr).
+    iIntros (dst Hgid Hrid Haddr).
     iIntros "#Hfnamewal #Hinvpx #Hinvpxfile #Hinvpxnet".
     iIntros "#Hinvtxnlog #Hinv #Hinvnet".
     iIntros (Φ).
-    iIntros "!> (Haddrmpx & Htermc & Hterml & Hlsnc & Hlogn & Hclog & Hilog & Hfile) HΦ".
+    iIntros "!> (Haddrmpx & Hdurable & Hclog & Hilog & Hfile) HΦ".
     wp_rec. wp_pures.
 
     (*@ func Start(rid uint64, addr grove_ffi.Address, fname string, addrmpx map[uint64]uint64, fnamepx string) *Replica { @*)
     (*@     txnlog := txnlog.Start(rid, addrmpx, fnamepx)                       @*)
     (*@                                                                         @*)
     wp_apply (wp_Start
-      with "Hfnamewal Hinvpx Hinvpxfile Hinvpxnet Hinvtxnlog [$Haddrmpx $Htermc $Hterml $Hlsnc $Hlogn]").
-    { done. }
-    { done. }
-    { done. }
-    { done. }
+      with "Hfnamewal Hinvpx Hinvpxfile Hinvpxnet Hinvtxnlog [$Haddrmpx $Hdurable]").
     iIntros (txnlogP) "#Htxnlog".
 
     (*@     // termc, terml, lsnc, log := resume(fname)                         @*)

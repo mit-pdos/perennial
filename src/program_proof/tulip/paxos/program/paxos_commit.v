@@ -82,6 +82,9 @@ Section commit.
       iNamed "Hfname".
       do 2 wp_loadField.
       wp_apply wp_logExpand.
+      iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+      { solve_ndisj. }
+      iNamed "Hdurable".
       iInv "Hinv" as "> HinvO" "HinvC".
       iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
       iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
@@ -99,6 +102,8 @@ Section commit.
         { iFrame "∗ # %". }
         iMod ("HinvfileC" with "HinvfileO") as "_".
         iMod ("HinvC" with "HinvO") as "_".
+        set dst := PaxosDurable term term log lsnc.
+        iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
         by iIntros "!> %Hcontra".
       }
       (* Case: Write succeeded. *)
@@ -120,6 +125,9 @@ Section commit.
       iMod "Hmask" as "_".
       iMod ("HinvfileC" with "HinvfileO") as "_".
       iMod ("HinvC" with "HinvO") as "_".
+      set dst := PaxosDurable term term log logP.(Slice.sz).
+      iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn Hlsnc]") as "Hdurable".
+      { by rewrite Hszlog. }
       iIntros "!> _".
       wp_pures.
 
@@ -129,7 +137,6 @@ Section commit.
       iApply "HΦ".
       iFrame "Hcand Hleader".
       iFrame "Hsafe'".
-      rewrite -Hszlog.
       iFrame "∗ # %".
       iPureIntro.
       clear -Hszlog. word.
@@ -146,6 +153,9 @@ Section commit.
     iNamed "Hfname".
     wp_loadField.
     wp_apply wp_logExpand.
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamed "Hdurable".
     iInv "Hinv" as "> HinvO" "HinvC".
     iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
     iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
@@ -163,6 +173,8 @@ Section commit.
       { iFrame "∗ # %". }
       iMod ("HinvfileC" with "HinvfileO") as "_".
       iMod ("HinvC" with "HinvO") as "_".
+      set dst := PaxosDurable term term log lsnc.
+      iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
       by iIntros "!> %Hcontra".
     }
     (* Case: Write succeeded. *)
@@ -190,6 +202,8 @@ Section commit.
     iMod "Hmask" as "_".
     iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
+    set dst := PaxosDurable term term log lsn.
+    iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
     iIntros "!> _".
     wp_pures.
     iApply "HΦ".

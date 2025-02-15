@@ -435,7 +435,8 @@ Instance subG_paxos_ghostG {Σ} :
   subG paxos_ghostΣ Σ → paxos_ghostG Σ.
 Proof. solve_inG. Qed.
 
-(* Instance stagedG_paxos_ghostG Σ : paxos_ghostG Σ → stagedG Σ. *)
+Instance stagedG_paxos_ghostG Σ : paxos_ghostG Σ → stagedG Σ.
+Admitted.
 
 Record paxos_names := {
     consensus_log : gname;

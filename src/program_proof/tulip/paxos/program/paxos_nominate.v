@@ -82,6 +82,9 @@ Section nominate.
     iNamed "Hfname".
     wp_loadField.
     wp_apply wp_logPrepare.
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamed "Hdurable".
     iInv "Hinv" as "> HinvO" "HinvC".
     iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
     iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
@@ -99,6 +102,8 @@ Section nominate.
       { iFrame "∗ # %". }
       iMod ("HinvfileC" with "HinvfileO") as "_".
       iMod ("HinvC" with "HinvO") as "_".
+      set dst := PaxosDurable termc terml log lsnc.
+      iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
       by iIntros "!> %Hcontra".
     }
     (* Case: Write succeeded. *)
@@ -122,6 +127,8 @@ Section nominate.
     iMod "Hmask" as "_".
     iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
+    set dst := PaxosDurable term terml log lsnc.
+    iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
     iIntros "!> _".
     wp_pures.
 

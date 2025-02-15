@@ -24,7 +24,7 @@ Section program.
     is_txnlog log gid γ -∗
     {{{ True }}}
     <<< ∀∀ l s, own_txn_consensus_half γ gid l s >>>
-      TxnLog__Lookup #log #lsn @ ↑paxosNS ∪ ↑txnlogNS
+      TxnLog__Lookup #log #lsn @ ↑paxosNS ∪ ↑pxcrashNS ∪ ↑txnlogNS
     <<< ∃∃ l', own_txn_consensus_half γ gid l' s ∗ ⌜txn_cpool_subsume_log s l'⌝ >>>
     {{{ (c : ccommand) (ok : bool) (pwrsP : Slice.t), RET (ccommand_to_val pwrsP c, #ok);
         (if ok then own_pwrs_slice pwrsP c else True) ∗
@@ -370,28 +370,21 @@ Section program.
   Theorem wp_Start
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list byte_string)
     (addrmP : loc) (addrm : gmap u64 chan) (fname : byte_string) gid γ π :
-    termc = (W64 0) ->
-    terml = (W64 0) ->
-    lsnc = (W64 0) ->
-    log = [] ->
-    (* remove above assumptions once recovery is proven *)
+    let dst := PaxosDurable termc terml log lsnc in
     is_node_wal_fname π nidme fname -∗
     know_paxos_inv π (dom addrm) -∗
     know_paxos_file_inv π (dom addrm) -∗
     know_paxos_network_inv π addrm -∗
     know_tulip_txnlog_inv γ π gid -∗
     {{{ own_map addrmP (DfracOwn 1) addrm ∗
-        own_current_term_half π nidme (uint.nat termc) ∗
-        own_ledger_term_half π nidme (uint.nat terml) ∗
-        own_committed_lsn_half π nidme (uint.nat lsnc) ∗
-        own_node_ledger_half π nidme log
+        own_crash_ex pxcrashNS (own_paxos_durable π nidme) dst
     }}}
       Start #nidme #addrmP #(LitString fname)
     {{{ (txnlog : loc), RET #txnlog; is_txnlog txnlog gid γ }}}.
   Proof.
-    iIntros (Htermcz Htermlz Hlsncz Hlogz).
+    intros dst.
     iIntros "#Hfnamewal #Hinv #Hinvfile #Hinvnet #Hinvtxnlog" (Φ).
-    iIntros "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
+    iIntros "!> [Haddrm Hdurable] HΦ".
     wp_rec. wp_pures.
 
     (*@ func Start(nidme uint64, addrm map[uint64]grove_ffi.Address, fname string) *TxnLog { @*)
@@ -400,11 +393,7 @@ Section program.
     (*@     return txnlog                                                       @*)
     (*@ }                                                                       @*)
     wp_apply (wp_Start
-      with "Hfnamewal Hinv Hinvfile Hinvnet [$Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
-    { done. }
-    { done. }
-    { done. }
-    { done. }
+      with "Hfnamewal Hinv Hinvfile Hinvnet [$Haddrm $Hdurable]").
     iIntros (pxP) "#Hpx".
     wp_apply (wp_allocStruct); first by auto.
     iIntros (txnlogP) "HtxnlogP".
