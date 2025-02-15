@@ -43,6 +43,37 @@ Lemma wp_AddUint64 (addr : loc) (v : w64) :
 Proof.
 Admitted.
 
+Lemma wp_CompareAndSwapUint64 (addr : loc) (old : w64) (new : w64) :
+  ∀ Φ,
+  is_initialized -∗
+  (|={⊤,∅}=>
+     ∃ (v: w64) dq,
+     addr ↦{dq} v ∗
+     ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
+     (addr ↦{dq} (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))
+  ) -∗
+  WP func_call #atomic.pkg_name' #"CompareAndSwapUint64" #addr #old #new {{ Φ }}.
+Proof.
+  iIntros "* #? HΦ".
+  wp_func_call. wp_call.
+  wp_bind (CmpXchg _ _ _).
+  iMod "HΦ" as (??) "(? & -> & HΦ)".
+  rewrite bool_decide_decide.
+  destruct decide.
+  {
+    subst.
+    unshelve iApply (wp_typed_cmpxchg_suc with "[$]"); try tc_solve; try done.
+    iIntros "!> ?". iMod ("HΦ" with "[$]"). iModIntro.
+    by wp_pures.
+  }
+  {
+    unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve; try done.
+    { naive_solver. }
+    iIntros "!> ?". iMod ("HΦ" with "[$]"). iModIntro.
+    by wp_pures.
+  }
+Qed.
+
 Definition own_Uint64 (u : loc) dq (v : w64) : iProp Σ :=
   u ↦{dq} atomic.Uint64.mk (default_val _) (default_val _) v.
 
@@ -128,6 +159,43 @@ Proof.
   iDestruct (struct_fields_split with "Hown") as "Hl".
   iNamed "Hl". simpl.
   iExists _. iFrame.
+  iIntros "Hv".
+
+  iMod ("HΦ" with "[-]").
+  {
+    (* FIXME: StructFieldsSplit typeclass is shelved unless something is specified up front. *)
+    iApply (struct_fields_combine (V:=atomic.Uint64.t)).
+    iFrame.
+  }
+  iModIntro.
+  wp_pures. done.
+Qed.
+
+Lemma wp_Uint64__CompareAndSwap u old new :
+  ∀ Φ,
+  is_initialized -∗
+  (|={⊤,∅}=> ∃ v dq, own_Uint64 u dq v ∗
+                    ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
+  (own_Uint64 u dq (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))) -∗
+  WP method_call #atomic.pkg_name' #"Uint64'ptr" #"CompareAndSwap" #u #old #new {{ Φ }}.
+Proof.
+  iIntros (?) "#? HΦ".
+  wp_method_call. wp_call.
+  rewrite -default_val_eq_zero_val.
+  wp_alloc swapped_ptr as "Hswapped_ptr". wp_pures.
+  wp_alloc x_ptr as "Hx_ptr". wp_pures.
+  wp_alloc new_ptr as "Hnew_ptr". wp_pures.
+  wp_alloc old_ptr as "Hold_ptr". wp_pures.
+  wp_load. wp_pures. wp_load. wp_pures. wp_load. wp_pures.
+  wp_apply (wp_CompareAndSwapUint64 with "[$]").
+  iMod "HΦ". iModIntro.
+  iDestruct "HΦ" as (??) "(Hown & -> & HΦ)".
+
+  iDestruct (struct_fields_split with "Hown") as "Hl".
+  iNamed "Hl". simpl.
+  iExists _. iFrame.
+  iSplitR.
+  { by destruct decide. }
   iIntros "Hv".
 
   iMod ("HΦ" with "[-]").

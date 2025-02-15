@@ -42,6 +42,20 @@ Definition Uint64__Store : val :=
     let: "$a1" := (![uint64T] "val") in
     (func_call #pkg_name' #"StoreUint64"%go) "$a0" "$a1")).
 
+(* CompareAndSwap executes the compare-and-swap operation for x.
+
+   go: type.go:178:18 *)
+Definition Uint64__CompareAndSwap : val :=
+  rec: "Uint64__CompareAndSwap" "x" "old" "new" :=
+    exception_do (let: "swapped" := (ref_ty boolT (zero_val boolT)) in
+    let: "x" := (ref_ty ptrT "x") in
+    let: "new" := (ref_ty uint64T "new") in
+    let: "old" := (ref_ty uint64T "old") in
+    return: (let: "$a0" := (struct.field_ref Uint64 "v" (![ptrT] "x")) in
+     let: "$a1" := (![uint64T] "old") in
+     let: "$a2" := (![uint64T] "new") in
+     (func_call #pkg_name' #"CompareAndSwapUint64"%go) "$a0" "$a1" "$a2")).
+
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:183:18 *)
@@ -56,9 +70,9 @@ Definition Uint64__Add : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("AddUint64"%go, AddUint64); ("LoadUint64"%go, LoadUint64); ("StoreUint64"%go, StoreUint64)].
+Definition functions' : list (go_string * val) := [("CompareAndSwapUint64"%go, CompareAndSwapUint64); ("AddUint64"%go, AddUint64); ("LoadUint64"%go, LoadUint64); ("StoreUint64"%go, StoreUint64)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Add); ("Load"%go, Uint64__Load); ("Store"%go, Uint64__Store)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Add); ("CompareAndSwap"%go, Uint64__CompareAndSwap); ("Load"%go, Uint64__Load); ("Store"%go, Uint64__Store)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
 
 Axiom _'init : val.
 

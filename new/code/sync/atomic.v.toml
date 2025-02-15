@@ -3,6 +3,7 @@ translate = [
   "Uint64.Load",
   "Uint64.Store",
   "Uint64.Add",
+  "Uint64.CompareAndSwap",
   "noCopy",
   "align64",
 ]
@@ -11,4 +12,5 @@ trusted = [
   "LoadUint64",
   "StoreUint64",
   "AddUint64",
+  "CompareAndSwapUint64",
 ]

@@ -147,6 +147,10 @@ Definition is_defined := is_global_definitions atomic.pkg_name' var_addrs atomic
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
+Global Instance wp_func_call_CompareAndSwapUint64 :
+  WpFuncCall atomic.pkg_name' "CompareAndSwapUint64" _ is_defined :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_AddUint64 :
   WpFuncCall atomic.pkg_name' "AddUint64" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -161,6 +165,10 @@ Global Instance wp_func_call_StoreUint64 :
 
 Global Instance wp_method_call_Uint64'ptr_Add :
   WpMethodCall atomic.pkg_name' "Uint64'ptr" "Add" _ is_defined :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Uint64'ptr_CompareAndSwap :
+  WpMethodCall atomic.pkg_name' "Uint64'ptr" "CompareAndSwap" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Load :
