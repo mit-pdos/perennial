@@ -354,21 +354,139 @@ Admitted.
 Local Definition enc (low high : w32) : w64 :=
   word.or (word.slu (W64 (uint.Z high)) (W64 32)) (W64 (uint.Z low)).
 
+Local Lemma word_or_shiftr (w1 w2 w3 : w64) :
+  uint.Z w3 < 64 →
+  word.sru (word.or w1 w2) w3 = (word.or (word.sru w1 w3) (word.sru w2 w3)).
+Proof.
+  intros. apply word.unsigned_inj.
+  rewrite !word.unsigned_sru // !word.unsigned_or !word.unsigned_sru //.
+  rewrite (wrap_small (Z.lor _ _)).
+  2:{
+    split.
+    { apply Z.lor_nonneg. word. }
+    rewrite Z.bounded_iff_bits_nonneg //.
+    2:{ apply Z.lor_nonneg. word. }
+    intros.
+    rewrite Z.lor_spec.
+    repeat (rewrite (Zmod_small_bits_high 64) //; last word).
+  }
+  rewrite Z.shiftr_lor.
+  repeat (rewrite -> Z.shiftr_div_pow2 by word).
+  rewrite (wrap_small (_ `div` _)).
+  2:{
+    split.
+    { apply Z_div_nonneg_nonneg; word. }
+    word.
+  }
+  rewrite (wrap_small (_ `div` _)).
+  2:{
+    split.
+    { apply Z_div_nonneg_nonneg; word. }
+    word.
+  }
+  word.
+Qed.
+
 Local Lemma enc_get_high (low high : w32) :
   W32 (uint.Z (word.sru (enc low high) (W64 32))) = high.
 Proof.
-Admitted.
+  rewrite /enc.
+  rewrite word_or_shiftr //.
+  rewrite word.unsigned_or !word.unsigned_sru // word.unsigned_slu //.
+  rewrite !Z.shiftr_div_pow2 //.
+  replace (uint.Z (W64 32)) with 32 by done.
+  replace (uint.Z (W64 (uint.Z low))) with (uint.Z low) by word.
+  rewrite (Z.div_small (uint.Z low)).
+  2:{ word. }
+  rewrite (wrap_small 0) // Z.lor_0_r.
+  rewrite Z.shiftl_mul_pow2 //.
+  replace (uint.Z (W64 _)) with (uint.Z high) by word.
+  rewrite -> (wrap_small (_ * _)) by word.
+  word.
+Qed.
 
 Local Lemma enc_get_low (low high : w32) :
   W32 (uint.Z (enc low high)) = low.
 Proof.
-Admitted.
+  rewrite /enc.
+  apply word.unsigned_inj.
+  rewrite word.unsigned_or word.unsigned_slu // unsigned_U32 /word.wrap.
+  Import bitblast.
+  word_cleanup.
+  destruct H0 as [? H0].
+  destruct H1 as [? H1].
+  rewrite Z.bounded_iff_bits_nonneg // in H0.
+  rewrite Z.bounded_iff_bits_nonneg // in H1.
+  Z.bitblast; subst.
+  - rewrite Z.testbit_neg_r //. lia.
+  - rewrite H1 //.
+  - rewrite H1 //.
+Qed.
 
 Local Lemma enc_add_high (low high delta : w32) :
   word.add (enc low high) (word.slu (W64 (uint.Z delta)) (W64 32)) =
   enc low (word.add high delta).
 Proof.
-Admitted.
+  rewrite /enc.
+  apply word.unsigned_inj.
+  repeat (
+      rewrite word.unsigned_add ||
+      rewrite word.unsigned_or ||
+      rewrite word.unsigned_slu //
+    ).
+  replace (uint.Z (W64 (uint.Z high))) with (uint.Z high) by word.
+  replace (uint.Z (W64 (uint.Z low))) with (uint.Z low) by word.
+  unfold word.wrap.
+  rewrite !Z.shiftl_mul_pow2 //.
+  rewrite -> !(Z.mod_small (uint.Z _ * 2^_)) by word.
+  Search Z.shiftl Z.pow.
+  rewrite -!Z.land_ones //.
+  word_cleanup.
+  unfold word.wrap.
+  destruct H0 as [? Hbit0].
+  destruct H1 as [? Hbit1].
+  destruct H2 as [? Hbit2].
+  rewrite Z.bounded_iff_bits_nonneg // in Hbit0.
+  rewrite Z.bounded_iff_bits_nonneg // in Hbit1.
+  rewrite Z.bounded_iff_bits_nonneg // in Hbit2.
+
+
+  match goal with
+  | [ |- context[Z.add ?a ?b] ] => pose proof (Z.add_carry_bits a b false)
+  end.
+  rewrite Z.add_0_r in H3.
+  destruct H3 as (? & -> & H3).
+
+  match goal with
+  | [ |- context[Z.add ?a ?b] ] => pose proof (Z.add_carry_bits a b false)
+  end.
+  rewrite Z.add_0_r in H4.
+  destruct H4 as (? & -> & H4).
+  Z.bitblast; subst.
+  - rewrite !andb_true_l !andb_true_r.
+    rewrite !(Z.testbit_neg_r _ (i - 32)) // /=.
+    rewrite xorb_false_r.
+    destruct H3 as [Hx Hx0].
+    enough (Z.testbit x i = false) .
+    { rewrite H3. rewrite xorb_false //. }
+    generalize dependent i.
+    set (P:=(λ i, i < 64 → i - 32 < 32 → i - 32 < 0 → i - 32 < 64 → Z.testbit x i = false)).
+    change (∀ i : Z, 0 ≤ i → P i).
+    apply (Wf_Z.natlike_rec P); subst P.
+    { simpl. intros. done. }
+    simpl. intros.
+    apply (f_equal (λ n, Z.testbit n (x1))) in Hx.
+    revert Hx.
+    rewrite -> Z.div2_bits by lia.
+    Z.bitblast_core.
+    subst.
+    repeat rewrite -> (Z.testbit_neg_r _ (x1 - 32)) by lia.
+    simpl. rewrite andb_false_r orb_false_r andb_true_r /=.
+    rewrite H5 //; lia.
+  - rewrite !andb_true_r andb_true_l.
+    Search (Z.testbit _ _).
+    rewrite
+Qed.
 
 Local Lemma enc_add_low (low high delta : w32) :
   word.add (enc low high) (W64 (uint.Z delta)) =
