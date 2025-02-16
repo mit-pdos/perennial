@@ -941,6 +941,12 @@ Proof.
   iExists _; iFrame.
   iIntros "Hptsto".
   iMod "Hmask" as "_".
+
+  iDestruct (max_waiters (1 + uint.Z waiters) with "[-]") as %HwaitersLt.
+  {
+    rewrite -> Z2Nat.inj_add by word.
+    iFrame.
+  }
   iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hctr]") as "_".
   { by iFrame. }
   iModIntro.
@@ -955,7 +961,7 @@ Proof.
   wp_pures. wp_load. wp_pures. wp_load. wp_pures.
   wp_load. wp_pure_lc "Hlc". wp_pures.
   replace (1%Z) with (uint.Z (W32 1)) by reflexivity.
-  rewrite enc_add_low.
+  rewrite -> enc_add_low by word.
   wp_apply (wp_Uint64__CompareAndSwap with "[$]").
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
@@ -1024,7 +1030,7 @@ Proof.
     wp_apply (wp_Uint64__Load with "[$]").
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iClear "Hv_ptr Hw_ptr Hstate_ptr". clear v_ptr counter w_ptr waiters state_ptr.
+    iClear "Hv_ptr Hw_ptr Hstate_ptr". clear v_ptr counter w_ptr waiters state_ptr HwaitersLt.
     clear unfinished_waiters sema n Hsema Hsem.
     iNamed "Hi".
     iApply fupd_mask_intro.
