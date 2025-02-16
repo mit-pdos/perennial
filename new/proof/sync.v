@@ -1,12 +1,11 @@
 From stdpp Require Import namespaces.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl.
-From Perennial.base_logic.lib Require Import invariants.
+From Perennial.base_logic.lib Require Import invariants ghost_map.
 From Perennial.program_logic Require Import weakestpre.
 
 Require Export New.code.sync.
 From New.proof Require Import proof_prelude.
-From Perennial.algebra Require Import map.
 Require Export New.generatedproof.sync.
 
 From New.proof Require Import sync.atomic.
@@ -14,11 +13,11 @@ From New.proof Require Import sync.atomic.
 Set Default Proof Using "Type".
 
 Class syncG Σ := {
-    #[global] wg_tokG :: mapG Σ u64 unit;
-    #[global] wg_totalG :: ghost_varG Σ u64
+    #[global] wg_tokG :: ghost_mapG Σ w32 unit;
+    #[global] wg_totalG :: ghost_varG Σ w32
   }.
 
-Definition syncΣ := #[mapΣ u64 unit ; ghost_varΣ u64].
+Definition syncΣ := #[ghost_mapΣ w32 unit ; ghost_varΣ w32].
 Global Instance subG_syncΣ{Σ} : subG (syncΣ) Σ → (syncG Σ).
 Proof. solve_inG. Qed.
 
@@ -29,7 +28,7 @@ Context `{!ffi_interp ffi}.
 Section proof.
 Context `{!heapGS Σ} `{!syncG Σ}.
 Context `{!goGlobalsGS Σ}.
-Context `{sync.GlobalAddrs}.
+Context `{!sync.GlobalAddrs}.
 
 Definition is_initialized : iProp Σ :=
   "#?" ∷ sync.is_defined ∗
@@ -266,9 +265,6 @@ Proof.
   iApply "HΦ". done.
 Qed.
 
-
-Context `{!ghost_varG Σ w32}.
-
 Definition is_sema (x : loc) γ N : iProp Σ :=
   inv N (∃ (v : w32), x ↦ v ∗ ghost_var γ (1/2) v).
 
@@ -393,7 +389,6 @@ Proof.
   intros. local_word.
 Qed.
 
-
 Local Lemma enc_inj (low high low' high' : w32) :
   enc low high = enc low' high' →
   low = low' ∧ high = high'.
@@ -410,23 +405,33 @@ Local Lemma enc_0 :
   W64 0 = enc (W32 0) (W32 0).
 Proof. reflexivity. Qed.
 
-(* User must not do an Add() on a wg with (counter=0, waiters>0). *)
-
-Definition own_WaitGroup_waiters (possible_waiters : w32) : iProp Σ. Admitted.
-Definition own_WaitGroup_wait_token: iProp Σ. Admitted.
-
-Definition own_zerostate_auth_half (unfinished_waiters : w32): iProp Σ. Admitted.
-Definition own_zerostate_token : iProp Σ. Admitted.
-
 Record WaitGroup_names := {
     counter_gn : gname ;
-    sema_gn : gname
+    sema_gn : gname ;
+    waiter_gn : gname ;
+    zerostate_gn : gname ;
   }.
 
-Definition N : namespace. Admitted.
 Implicit Type γ : WaitGroup_names.
 
-Local Definition is_WaitGroup_inv wg γ : iProp Σ :=
+(* FIXME: opaque *)
+Definition own_WaitGroup_waiters γ (possible_waiters : w32) : iProp Σ :=
+  ∃ (m : gmap w32 ()),
+  ghost_map_auth γ.(waiter_gn) 1 m ∗
+  ⌜ size m = uint.nat possible_waiters ⌝.
+
+Definition own_WaitGroup_wait_token γ : iProp Σ :=
+  ∃ k, k ↪[γ.(waiter_gn)] ().
+
+Definition own_zerostate_auth_half γ (unfinished_waiters : w32): iProp Σ :=
+  ∃ (m : gmap w32 ()),
+  ghost_map_auth γ.(zerostate_gn) (1/2) m ∗
+  ⌜ size m = uint.nat unfinished_waiters ⌝.
+
+Definition own_zerostate_token γ : iProp Σ :=
+  ∃ k, k ↪[γ.(zerostate_gn)] ().
+
+Local Definition is_WaitGroup_inv wg γ N : iProp Σ :=
   inv (N.@"wg") (∃ counter waiters unfinished_waiters,
   "Hptsto" ∷ own_Uint64 (struct.field_ref_f sync.WaitGroup "state" wg) (DfracOwn (1/2)) (enc waiters counter) ∗
   "Hptsto2" ∷ (
@@ -435,51 +440,54 @@ Local Definition is_WaitGroup_inv wg γ : iProp Σ :=
     ) ∗
   "Hctr" ∷ ghost_var γ.(counter_gn) (1/2)%Qp counter ∗
 
-  "Hunfinished" ∷ own_zerostate_auth_half unfinished_waiters ∗
-  "Hunfinished_token" ∷  [∗] (replicate (uint.nat unfinished_waiters) own_WaitGroup_wait_token) ∗
+  "Hunfinished" ∷ own_zerostate_auth_half γ unfinished_waiters ∗
+  "Hunfinished_token" ∷  [∗] (replicate (uint.nat unfinished_waiters) (own_WaitGroup_wait_token γ)) ∗
 
-  "Htoks" ∷ ([∗] (replicate (uint.nat waiters) own_WaitGroup_wait_token)) ∗
+  "Htoks" ∷ ([∗] (replicate (uint.nat waiters) (own_WaitGroup_wait_token γ))) ∗
   "%Hunfinished_zero" ∷ ⌜ unfinished_waiters ≠ W32 0 → waiters = W32 0 ∧ counter = W32 0 ⌝
   )%I.
 
-Local Definition is_WaitGroup_sema_inv γ : iProp Σ :=
+Local Definition is_WaitGroup_sema_inv γ N : iProp Σ :=
   inv (N.@"semInv") (∃ (unfinished_waiters sema : w32),
         "Hs" ∷ own_sema γ.(sema_gn) sema ∗
-        "HT" ∷  [∗] (replicate (uint.nat sema) own_zerostate_token) ∗
-        "HS" ∷ own_zerostate_auth_half unfinished_waiters
+        "HT" ∷  [∗] (replicate (uint.nat sema) (own_zerostate_token γ)) ∗
+        "HS" ∷ own_zerostate_auth_half γ unfinished_waiters
     ).
 
-Local Definition is_WaitGroup wg γ : iProp Σ :=
+Local Definition is_WaitGroup wg γ N : iProp Σ :=
   "#Hsem" ∷ is_sema (struct.field_ref_f sync.WaitGroup "sema" wg) γ.(sema_gn) (N.@"sema") ∗
-  "#Hinv" ∷ is_WaitGroup_inv wg γ ∗
-  "#HsemInv" ∷ is_WaitGroup_sema_inv γ.
+  "#Hinv" ∷ is_WaitGroup_inv wg γ N ∗
+  "#HsemInv" ∷ is_WaitGroup_sema_inv γ N.
 
 (* Prepare to Wait() *)
-Lemma alloc_wait_token (w : w32) :
+Lemma alloc_wait_token γ (w : w32) :
   uint.Z (word.add w (W32 1)) = uint.Z w + 1 →
-  own_WaitGroup_waiters w ==∗ own_WaitGroup_waiters (word.add w (W32 1)) ∗ own_WaitGroup_wait_token.
+  own_WaitGroup_waiters γ w ==∗ own_WaitGroup_waiters γ (word.add w (W32 1)) ∗ own_WaitGroup_wait_token γ.
+Proof.
 Admitted.
 
-Lemma max_waiters (n : Z) :
-  ([∗] replicate (Z.to_nat n) own_WaitGroup_wait_token) -∗
+Lemma max_waiters (n : Z) γ :
+  ([∗] replicate (Z.to_nat n) (own_WaitGroup_wait_token γ)) -∗
   ⌜ n < 2^32 ⌝.
 Proof.
 Admitted.
 
-Lemma waiters_none_token_false :
-  own_WaitGroup_waiters (W32 0) ∗ own_WaitGroup_wait_token -∗ False.
+Lemma waiters_none_token_false γ :
+  own_WaitGroup_waiters γ (W32 0) ∗ own_WaitGroup_wait_token γ -∗ False.
+Proof.
 Admitted.
 
-Lemma alloc_zerostate_token uw :
+Lemma alloc_zerostate_token uw γ :
   uint.Z (word.add uw (W32 1)) = uint.Z uw + 1 →
-  own_zerostate_auth_half uw ∗ own_zerostate_auth_half uw ==∗
-  own_zerostate_auth_half (word.add uw (W32 1)) ∗ own_zerostate_auth_half (word.add uw (W32 1)) ∗
-  own_zerostate_token.
+  own_zerostate_auth_half γ uw ∗ own_zerostate_auth_half γ uw ==∗
+  own_zerostate_auth_half γ (word.add uw (W32 1)) ∗ own_zerostate_auth_half γ (word.add uw (W32 1)) ∗
+  own_zerostate_token γ.
+Proof.
 Admitted.
 
-Lemma alloc_many_zerostate_tokens uw :
-  own_zerostate_auth_half (W32 0) -∗ own_zerostate_auth_half (W32 0) ==∗
-  own_zerostate_auth_half uw ∗ own_zerostate_auth_half uw ∗ ([∗] replicate (uint.nat uw) own_zerostate_token).
+Lemma alloc_many_zerostate_tokens uw γ :
+  own_zerostate_auth_half γ (W32 0) -∗ own_zerostate_auth_half γ (W32 0) ==∗
+  own_zerostate_auth_half γ uw ∗ own_zerostate_auth_half γ uw ∗ ([∗] replicate (uint.nat uw) (own_zerostate_token γ)).
 Proof.
   assert (∃ n, n = (uint.nat uw)) as [n Heq].
   { by eexists. }
@@ -500,22 +508,26 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma zerostate_empty_token_false :
-  own_zerostate_auth_half (W32 0) -∗ own_zerostate_token -∗ False.
+Lemma zerostate_empty_token_false γ :
+  own_zerostate_auth_half γ (W32 0) -∗ own_zerostate_token γ -∗ False.
+Proof.
 Admitted.
 
-Lemma zerostate_tokens_bound w (n : nat) :
-  own_zerostate_auth_half w -∗ [∗] replicate n own_zerostate_token -∗ ⌜ n ≤ uint.nat w ⌝.
+Lemma zerostate_tokens_bound (n : nat) w γ :
+  own_zerostate_auth_half γ w -∗ [∗] replicate n (own_zerostate_token γ) -∗ ⌜ n ≤ uint.nat w ⌝.
+Proof.
 Admitted.
 
-Lemma delete_zerostate_token uw :
-  own_zerostate_auth_half uw -∗ own_zerostate_auth_half uw -∗
-  own_zerostate_token ==∗
-  own_zerostate_auth_half (word.sub uw (W32 1)) ∗ own_zerostate_auth_half (word.sub uw (W32 1)).
+Lemma delete_zerostate_token uw γ :
+  own_zerostate_auth_half γ uw -∗ own_zerostate_auth_half γ uw -∗
+  own_zerostate_token γ ==∗
+  own_zerostate_auth_half γ (word.sub uw (W32 1)) ∗ own_zerostate_auth_half γ (word.sub uw (W32 1)).
+Proof.
 Admitted.
 
-Lemma own_zerostate_auth_half_agree uw uw' :
-  own_zerostate_auth_half uw -∗ own_zerostate_auth_half uw' -∗ ⌜ uw = uw' ⌝.
+Lemma own_zerostate_auth_half_agree uw uw' γ :
+  own_zerostate_auth_half γ uw -∗ own_zerostate_auth_half γ uw' -∗ ⌜ uw = uw' ⌝.
+Proof.
 Admitted.
 
 Definition own_WaitGroup γ (counter : w32) : iProp Σ :=
@@ -525,7 +537,8 @@ Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
   delta' = (W32 (uint.Z delta)) →
   word.slu delta (W64 32) = word.slu (W64 (uint.Z delta')) (W64 32).
 Proof.
-Admitted.
+  intros ->. local_word.
+Qed.
 
 Lemma atomic_Uint64_inj a b c a' b' c' :
   atomic.Uint64.mk a b c = atomic.Uint64.mk a' b' c' →
@@ -539,20 +552,22 @@ Qed.
   https://github.com/golang/go/issues/20687
   https://go-review.googlesource.com/c/go/+/140937/2/src/sync/waitgroup.go *)
 
-Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ :
+Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
   let delta' := (W32 (uint.Z delta)) in
   ∀ Φ,
-  is_initialized ∗ is_WaitGroup wg γ -∗
+  is_initialized ∗ is_WaitGroup wg γ N -∗
   (|={⊤,↑N}=>
      ∃ oldc,
        "Hwg" ∷ own_WaitGroup γ oldc ∗
        "%Hbounds" ∷ ⌜ 0 ≤ sint.Z oldc + sint.Z delta' < 2^31 ⌝ ∗
-       "HnoWaiters" ∷ (⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters (W32 0)) ∗
-       "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters (W32 0)) -∗
+       "HnoWaiters" ∷ (⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) ∗
+       "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
                own_WaitGroup γ (word.add oldc delta') ={↑N,⊤}=∗ Φ #())
   ) -∗
   WP method_call #sync.pkg_name' #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
 Proof.
+  (* XXX: without posing something with name H, word gets stuck. *)
+  clear H. pose proof I as H.
   intros delta'.
   iIntros (?) "[#Hi #His] HΦ". iNamed "Hi".
   iNamed "His".
@@ -829,7 +844,7 @@ Proof.
   iAssert (
       ∃ (wrem : w32),
         "Hw_ptr" ∷ w_ptr ↦ wrem ∗
-        "Hunfinished_tokens" ∷ [∗] replicate (uint.nat wrem) own_zerostate_token
+        "Hunfinished_tokens" ∷ [∗] replicate (uint.nat wrem) (own_zerostate_token γ)
     )%I with "[Hw_ptr Hunfinished_tokens]" as "HloopInv".
   { iFrame. }
 
@@ -868,7 +883,7 @@ Proof.
 
   iMod ("Hclose" with "[Hs HT HTnew HS]").
   {
-    iDestruct (zerostate_tokens_bound _ (S (uint.nat sema)) with "[$] [$]") as %Hs.
+    iDestruct (zerostate_tokens_bound (S (uint.nat sema)) with "[$] [$]") as %Hs.
     iFrame "Hs ∗".
     replace (uint.nat (word.add sema (W32 1))) with (S (uint.nat sema))%nat by word.
     iFrame.
@@ -880,13 +895,13 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ :
+Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
   ∀ Φ,
-  is_initialized ∗ is_WaitGroup wg γ ∗ own_WaitGroup_wait_token -∗
+  is_initialized ∗ is_WaitGroup wg γ N ∗ own_WaitGroup_wait_token γ -∗
   (|={⊤∖↑N, ∅}=>
      ∃ oldc,
        own_WaitGroup γ oldc ∗ (⌜ sint.Z oldc = 0 ⌝ → own_WaitGroup γ oldc ={∅,⊤∖↑N}=∗
-                               own_WaitGroup_wait_token -∗ Φ #())
+                               own_WaitGroup_wait_token γ -∗ Φ #())
   ) -∗
   WP method_call #sync.pkg_name' #"WaitGroup'ptr" #"Wait" #wg #() {{ Φ }}.
 Proof.
@@ -984,8 +999,8 @@ Proof.
     {
       iNext. repeat iExists _. iFrame "Hptsto ∗".
       iCombine "HR_in Htoks" as "Htoks".
-      iDestruct (max_waiters with "[Htoks]") as %Hmax.
-      { instantiate (1:=1 + uint.Z waiters).
+      iDestruct (max_waiters (1+uint.Z waiters) with "[Htoks]") as %Hmax.
+      {
         rewrite Z2Nat.inj_add //.
         word.
       }
