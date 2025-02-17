@@ -356,16 +356,25 @@ Section heap.
       }
       { clear s3 l3_ops.
         iIntros "(%s3 & %l3_ops & %l3_sec1 & %l3_sec2 & %l3_sec3 & H_s1 & H_s2 & H_s3 & H_l1_ops & H_l2_ops & H_l3_ops & %H_l3_secs & H_prev & H_curr & H_output & %H_continue & %H_prev_val & %H_curr_val & %H_l3_len & %H_prev_val_pos & %H_curr_val_pos)".
+        iNamed "H_s1". iNamed "H_s2". iNamed "H_s3".
         wp_pures. wp_load. wp_load. 
         iAssert ⌜uint.Z (W64 (length l3_sec1)) ≤ uint.Z s3 .(Slice.cap)⌝%I as "%H_s3_cap".
         { iPoseProof (own_slice_small_wf with "[H_s3]") as "%H_claim1".
           { iApply (own_slice_to_small with "[$H_s3]"). }
           do 2 rewrite length_app in H_l3_len. simpl in *. word.
         }
-        wp_apply (wp_SliceTake); auto.
+        iAssert ⌜uint.Z (W64 (length l3_sec1)) ≤ length l3_ops⌝%I as "%claim1".
+        { iPoseProof (big_sepL2_length with "[$H_l3_ops]") as "%H_l3_ops_len".
+          do 2 rewrite length_app in H_l3_ops_len. rewrite <- H_prev_val in H_l3_ops_len. word.
+        }
+        wp_apply (wp_SliceTake_full with "[$H_s3]"); auto. iIntros "H_s3".
         iApply "H_ret". iExists (coq_mergeOperations l1 l2). iSplitL.
-        - iExists (take (length l3_sec1) l3_ops).
-          admit.
+        - iExists (take (length l3_sec1) l3_ops). do 2 rewrite length_app in H_l3_len.
+          replace (uint.nat (W64 (length l3_sec1))) with (length l3_sec1) by word.
+          unfold coq_mergeOperations. replace (fold_left (λ (acc : list Operation.t) (element : Operation.t), coq_sortedInsert acc element) l2 l1) with (l3_hd :: l3_tl)%list.
+          specialize (H_continue eq_refl). subst l3_sec3. rewrite app_nil_r in H_l3_secs, H_l3_len |- *.
+          fold loop_step. fold loop_init. rewrite H_l3. iFrame. clear Φ.
+          simpl in *. rewrite Nat.add_0_r in H_l3_len. admit.
         - done.
       }
   Admitted.
