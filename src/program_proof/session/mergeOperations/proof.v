@@ -165,7 +165,7 @@ Section heap.
             ∃ nxs, operation_slice ns nxs n ∗
                    ⌜nxs = coq_mergeOperations l1 l2⌝
       }}}.
-  Proof. (*
+  Proof.
     rewrite /mergeOperations. iIntros (Φ) "[(%l1_ops & H_s1 & H_l1_ops) (%l2_ops & H_s2 & H_l2_ops)] H_ret".
     wp_rec. wp_pures. wp_apply (wp_NewSlice). iIntros "%s3 H_s3". replace (uint.nat (W64 0)) with 0%nat by word. simpl.
     wp_apply (wp_SliceAppendSlice with "[H_s1 H_s3]"); auto.
@@ -279,44 +279,41 @@ Section heap.
       { iExists s3. iExists l3_ops. iFrame. }
       { clear s3 l3_ops.
         iIntros "(%s3 & %l3_ops & H_s1 & H_s2 & H_s3 & H_l1_ops & H_l2_ops & H_l3_ops & H_output & H_prev & H_curr)".
-        wp_pures. wp_load. wp_load. wp_apply (wp_SliceTake with "[]").
-        - 
+        wp_pures. wp_load. wp_load. wp_apply (wp_SliceTake).
+        { admit. (* uint.Z (W64 1) ≤ uint.Z s3 .(Slice.cap) *) }
+        iApply "H_ret". iExists (coq_mergeOperations l1 l2). iSplitL.
+        - iExists []. unfold coq_mergeOperations. replace (fold_left (λ (acc : list Operation.t) (element : Operation.t), coq_sortedInsert acc element) l2 l1) with (@nil Operation.t). simpl.
+          iAssert ⌜l3_ops = []⌝%I as "%H_l3_ops_nil".
+          { iApply (big_sepL2_nil_inv_r with "[$H_l3_ops]"). }
+          subst l3_ops. iSplitR "H_l3_ops".
+          + admit. (* own_slice (slice_take s3 (W64 1)) (slice.T uint64T * (uint64T * unitT)%ht) (DfracOwn 1) [] *)
+          + iApply (big_sepL2_nil). iExact "H_l3_ops".
+        - done.
       }
-    -
-      wp_apply (wp_forBreak_cond
-        ( λ continue, ∃ s3 : Slice.t, ∃ l3_ops : list (Slice.t * w64), ∃ l3_prevs : list Operation.t, ∃ l3_nexts : list Operation.t,
+    - wp_apply (wp_forBreak_cond
+        ( λ continue, ∃ s3 : Slice.t, ∃ l3_ops : list (Slice.t * w64), ∃ l3_sec1 : list Operation.t, ∃ l3_sec2 : list Operation.t, ∃ l3_sec3 : list Operation.t,
           "H_s1" ∷ own_slice_small s1 (slice.T uint64T * (uint64T * unitT)%ht) (DfracOwn 1) l1_ops ∗
           "H_s2" ∷ own_slice s2 (slice.T uint64T * (uint64T * unitT)%ht) (DfracOwn 1) l2_ops ∗
           "H_s3" ∷ own_slice s3 (slice.T uint64T * (uint64T * unitT)%ht) (DfracOwn 1) l3_ops ∗
           ([∗ list] opv;o ∈ l1_ops;l1, □ is_operation opv (DfracOwn 1) o n) ∗
           ([∗ list] opv;o ∈ l2_ops;l2, □ is_operation opv (DfracOwn 1) o n) ∗
-          ([∗ list] opv;o ∈ l3_ops;snd (fold_left loop_step l3_prevs loop_init) ++ l3_nexts, is_operation opv (DfracOwn 1) o n) ∗
-          ⌜l3 = l3_prevs ++ l3_nexts⌝ ∗
-          prev ↦[uint64T] #(length (snd (fold_left loop_step l3_prevs loop_init))) ∗
-          curr ↦[uint64T] #(length l3_prevs) ∗
+          ([∗ list] opv;o ∈ l3_ops;snd (fold_left loop_step (l3_sec1 ++ l3_sec2) loop_init) ++ l3_sec2 ++ l3_sec3, is_operation opv (DfracOwn 1) o n) ∗
+          ⌜l3_hd :: l3_tl = l3_sec1 ++ l3_sec2 ++ l3_sec3⌝%list ∗
+          prev ↦[uint64T] #(length l3_sec1) ∗
+          curr ↦[uint64T] #(length (l3_sec1 ++ l3_sec2)) ∗
           output ↦[slice.T (slice.T uint64T * (uint64T * unitT)%ht)] s3 ∗
-          ⌜continue = false -> l3_nexts = []⌝ ∗
-          ⌜length l3_prevs ≤ uint.nat s3 .(Slice.sz)⌝%nat ∗
-          ⌜length l3 = uint.nat s3 .(Slice.sz)⌝%nat
+          ⌜continue = false -> l3_sec3 = []⌝ ∗
+          ⌜length l3_sec1 = length (snd (fold_left loop_step (l3_sec1 ++ l3_sec2) loop_init))⌝ ∗
+          ⌜length (l3_sec1 ++ l3_sec2) = fst (fold_left loop_step (l3_sec1 ++ l3_sec2) loop_init)⌝ ∗
+          ⌜length (l3_hd :: l3_tl) = uint.nat s3 .(Slice.sz)⌝
         )%I
       with "[] [H_l1_ops H_l2_ops H_l3_ops H_s1 H_s2 H_s3 H_output H_prev H_curr]").
-      { clear Φ s3 l3_ops. iIntros (Φ). iModIntro. iIntros "(%s3 & %l3_ops & %l3_prevs & %l3_nexts & H_s1 & H_s2 & H_s3 & H_l1_ops & H_l2_ops & H_l3_ops & %H_l3 & H_prev & H_curr & H_output & %H_continue & %H_l3_prevs_len & %H_l3_len)". iIntros "H_ret".
+      { clear Φ s3 l3_ops. iIntros (Φ). iModIntro.
+        iIntros "(%s3 & %l3_ops & %l3_sec1 & %l3_sec2 & %l3_sec3 & H_s1 & H_s2 & H_s3 & H_l1_ops & H_l2_ops & H_l3_ops & %H_l3_secs & H_prev & H_curr & H_output & %H_continue & %H_prev_val & %H_curr_val & %H_l3_len) H_ret".
         wp_rec. wp_load. wp_load. wp_apply wp_slice_len. wp_if_destruct.
-        - wp_rec. admit.
-        - iModIntro. iApply "H_ret". iExists s3. iExists l3_ops. iExists l3. iExists []. do 2 rewrite app_nil_r.
-          iAssert ⌜l3_nexts = []⌝%I as "%H_l3_nexts".
-          { destruct l3_nexts as [ | x xs]; try done. iExFalso.
-            rewrite H_l3 in H_l3_len. rewrite length_app in H_l3_len. simpl in *.
-            iAssert ⌜uint.nat (W64 (1 + length l3_prevs)) >= uint.nat s3 .(Slice.sz)⌝%I as "%claim1".
-            { word. }
-            iAssert ⌜(1 + length l3_prevs)%Z = (uint.nat s3 .(Slice.sz) - length xs)%Z⌝%I as "%claim2".
-            { word. }
-            rewrite claim2 in claim1.
-
-          }
-          subst l3_prevs l3_nexts. rewrite app_nil_r. iFrame. done.
+        - admit.
+        - admit.
       }
-      { iExists s3. iExists l3_ops. iExists []. iExists l3. simpl.
-        iFrame.
-      } *)
+      { admit. }
+      { admit. }
   Admitted.
