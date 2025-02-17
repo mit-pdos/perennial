@@ -28,7 +28,6 @@ Context `{!ffi_interp ffi}.
 Section proof.
 Context `{!heapGS Σ} `{!syncG Σ}.
 Context `{!goGlobalsGS Σ}.
-Context `{!sync.GlobalAddrs}.
 
 Definition is_initialized : iProp Σ :=
   "#?" ∷ sync.is_defined ∗
@@ -416,16 +415,20 @@ Implicit Type γ : WaitGroup_names.
 
 (* FIXME: opaque *)
 Definition own_WaitGroup_waiters γ (possible_waiters : w32) : iProp Σ :=
-  ∃ (m : gmap w32 ()),
-  ghost_map_auth γ.(waiter_gn) 1 m ∗
-  ⌜ size m = uint.nat possible_waiters ⌝.
+  ∃ (m : gset w32),
+  ghost_map_auth γ.(waiter_gn) 1 (gset_to_gmap () m) ∗
+  (* XXX: this helps maintain that the max number of waiters is [2^32-1] instead of [2^32]. *)
+  (W32 0) ↪[γ.(waiter_gn)]□ () ∗
+  ⌜ size m = S (uint.nat possible_waiters) ⌝.
 
 Definition own_WaitGroup_wait_token γ : iProp Σ :=
-  ∃ k, k ↪[γ.(waiter_gn)] ().
+  ∃ k,
+    k ↪[γ.(waiter_gn)] () ∗
+    (W32 0) ↪[γ.(waiter_gn)]□ ().
 
 Definition own_zerostate_auth_half γ (unfinished_waiters : w32): iProp Σ :=
-  ∃ (m : gmap w32 ()),
-  ghost_map_auth γ.(zerostate_gn) (1/2) m ∗
+  ∃ (m : gset w32),
+  ghost_map_auth γ.(zerostate_gn) (1/2) (gset_to_gmap () m) ∗
   ⌜ size m = uint.nat unfinished_waiters ⌝.
 
 Definition own_zerostate_token γ : iProp Σ :=
@@ -459,31 +462,152 @@ Local Definition is_WaitGroup wg γ N : iProp Σ :=
   "#Hinv" ∷ is_WaitGroup_inv wg γ N ∗
   "#HsemInv" ∷ is_WaitGroup_sema_inv γ N.
 
+Lemma size_fin_to_set_w32:
+  size (fin_to_set w32 : gset w32) = (Z.to_nat (2^32 : Z)).
+Proof.
+  unfold fin_to_set.
+  rewrite -> size_list_to_set by apply finite.NoDup_enum.
+  replace (length (finite.enum _)) with (finite.card w32) by reflexivity.
+  pose proof (finite.fin_card (Z.to_nat (2^32 : Z))) as <-.
+  symmetry.
+  set (f := λ (x : fin (Z.to_nat (2^32 : Z))), W32 (Z.of_nat (fin_to_nat x))).
+  unshelve eapply (finite.bijective_card f).
+  {
+    intros ???. subst f.
+    simpl in *.
+    apply fin_to_nat_inj.
+    pose proof (fin_to_nat_lt x).
+    pose proof (fin_to_nat_lt y).
+    intros.
+    (* FIXME: word. *)
+    word_cleanup.
+    word.
+  }
+  {
+    intros ?.
+    subst f. simpl.
+    unshelve eexists (nat_to_fin (p:=uint.nat y) _).
+    2:{ rewrite fin_to_nat_to_fin. word. }
+    word.
+  }
+Qed.
+
 (* Prepare to Wait() *)
 Lemma alloc_wait_token γ (w : w32) :
   uint.Z (word.add w (W32 1)) = uint.Z w + 1 →
   own_WaitGroup_waiters γ w ==∗ own_WaitGroup_waiters γ (word.add w (W32 1)) ∗ own_WaitGroup_wait_token γ.
 Proof.
-Admitted.
+  intros.
+  iIntros "(% & (H &#? & %))".
+  unshelve epose proof (size_pos_elem_of (fin_to_set w32 ∖ m) _) as [new Helem].
+  { rewrite -> size_difference by set_solver. rewrite size_fin_to_set_w32. word. }
+  iMod (ghost_map_insert new () with "[$]") as "[? ?]".
+  { rewrite lookup_gset_to_gmap_None. set_solver. }
+  rewrite -gset_to_gmap_union_singleton.
+  iFrame "∗#".
+  iPureIntro. rewrite H.
+  rewrite size_union //.
+  2:{ set_solver. }
+  rewrite size_singleton. word.
+Qed.
 
 Lemma max_waiters (n : Z) γ :
   ([∗] replicate (Z.to_nat n) (own_WaitGroup_wait_token γ)) -∗
   ⌜ n < 2^32 ⌝.
 Proof.
-Admitted.
+  iIntros "H".
+  destruct (Z.to_nat n) eqn:Hn.
+  { word. }
+  iAssert (∃ (m : gset w32 ), ⌜ size m = S (Z.to_nat n) ⌝ ∗
+                              ([∗ set] k ∈ m, ∃ dq, k ↪[γ.(waiter_gn)]{dq} ())
+          )%I with "[H]" as "(%m & %Heq & _)".
+  2:{
+    iPureIntro.
+    assert (m ⊆ (fin_to_set w32)) as Hsz by set_solver.
+    apply subseteq_size in Hsz.
+    rewrite size_fin_to_set_w32 in Hsz.
+    rewrite Heq /= in Hsz.
+    word.
+  }
+  rewrite Hn. clear n Hn.
+  rename n0 into n.
+  iInduction n as [|] "IH".
+  {
+    iDestruct "H" as "[(% & ? & ?) _]".
+    destruct (decide (k = W32 0)).
+    { iExFalso. subst. iDestruct (ghost_map_elem_valid_2 with "[$] [$]") as %Hv. naive_solver. }
+    iExists {[ k; W32 0 ]}.
+    assert ({[k]} ## ({[W32 0]} : gset w32)) by set_solver.
+    iSplitR.
+    { iPureIntro. rewrite -> size_union by set_solver. rewrite !size_singleton //. }
+    rewrite big_sepS_union // !big_sepS_singleton.
+    iFrame.
+  }
+  { generalize (S n) as n'. intros. clear n. rename n' into n.
+    rewrite replicate_S.
+    iDestruct "H" as "[Helem H]".
+    iDestruct ("IH" with "[$]") as "(% & % & H)".
+    iDestruct "Helem" as (?) "[? _]".
+    destruct (decide (k ∈ m)).
+    {
+      iExFalso.
+      iDestruct (big_sepS_elem_of_acc with "H") as "[H _]".
+      { done. }
+      iDestruct "H" as (?) "?".
+      iDestruct (ghost_map_elem_valid_2 with "[$] [$]") as %[Hv _].
+      apply dfrac_valid_own_r in Hv. done.
+    }
+    iExists ({[k]} ∪ m).
+    rewrite -> size_union by set_solver.
+    rewrite size_singleton. iSplitR.
+    { word. }
+    rewrite -> big_sepS_union by set_solver.
+    iFrame. rewrite big_sepS_singleton. iFrame.
+  }
+Qed.
 
 Lemma waiters_none_token_false γ :
-  own_WaitGroup_waiters γ (W32 0) ∗ own_WaitGroup_wait_token γ -∗ False.
+  own_WaitGroup_waiters γ (W32 0) -∗ own_WaitGroup_wait_token γ -∗ False.
 Proof.
-Admitted.
+  iIntros "(% & Hauth & Hptsto1 & %)".
+  iIntros "(% & Hptsto2 & _)".
+  iCombine "Hauth Hptsto1" gives %Hlookup1.
+  iCombine "Hauth Hptsto2" gives %Hlookup2.
+  destruct (decide (k = W32 0)).
+  { subst. iDestruct (ghost_map_elem_valid_2 with "[$] [$]") as %[Hv _]. naive_solver. }
+  rewrite !lookup_gset_to_gmap_Some in Hlookup1, Hlookup2.
+  intuition.
+  assert ({[W32 0 ; k]} ⊆ m) as Hsz.
+  { set_solver. }
+  apply subseteq_size in Hsz.
+  rewrite -> size_union in Hsz by set_solver.
+  rewrite !size_singleton in Hsz. word.
+Qed.
 
 Lemma alloc_zerostate_token uw γ :
   uint.Z (word.add uw (W32 1)) = uint.Z uw + 1 →
-  own_zerostate_auth_half γ uw ∗ own_zerostate_auth_half γ uw ==∗
+  own_zerostate_auth_half γ uw -∗ own_zerostate_auth_half γ uw ==∗
   own_zerostate_auth_half γ (word.add uw (W32 1)) ∗ own_zerostate_auth_half γ (word.add uw (W32 1)) ∗
   own_zerostate_token γ.
 Proof.
-Admitted.
+  intros. iIntros "Ha1 Ha2".
+  iDestruct "Ha1" as "(% & Ha1 & %)".
+  iDestruct "Ha2" as "(% & Ha2 & %)".
+  iCombine "Ha1 Ha2" gives %[_ Heq].
+  apply (f_equal dom) in Heq.
+  rewrite !dom_gset_to_gmap in Heq. subst.
+  iCombine "Ha1 Ha2" as "Ha".
+  unshelve epose proof (size_pos_elem_of (fin_to_set w32 ∖ m0) _) as [new Helem].
+  { rewrite -> size_difference by set_solver. rewrite size_fin_to_set_w32. word. }
+  iMod (ghost_map_insert new () with "Ha") as "[Ha ?]".
+  { rewrite lookup_gset_to_gmap_None. set_solver. }
+  iFrame.
+  rewrite -gset_to_gmap_union_singleton.
+  iDestruct "Ha" as "($ & $)". iPureIntro.
+  apply and_wlog_r; last done.
+  rewrite -> size_union by set_solver.
+  rewrite size_singleton. word.
+Qed.
 
 Lemma alloc_many_zerostate_tokens uw γ :
   own_zerostate_auth_half γ (W32 0) -∗ own_zerostate_auth_half γ (W32 0) ==∗
@@ -502,7 +626,7 @@ Proof.
   { word. }
   replace (uint.nat (word.sub _ _)) with n by word.
   iFrame.
-  iMod (alloc_zerostate_token with "[$]") as "(? & ? & $)".
+  iMod (alloc_zerostate_token with "[$] [$]") as "(? & ? & $)".
   { word. }
   replace (word.add (word.sub _ _) _) with (uw) by ring.
   by iFrame.
@@ -511,24 +635,83 @@ Qed.
 Lemma zerostate_empty_token_false γ :
   own_zerostate_auth_half γ (W32 0) -∗ own_zerostate_token γ -∗ False.
 Proof.
-Admitted.
+  iIntros "(% & Ha1 & %) (% & Hp)".
+  apply size_empty_inv in H.
+  apply leibniz_equiv in H as ->.
+  iCombine "Ha1 Hp" gives %Hbad. done.
+Qed.
 
 Lemma zerostate_tokens_bound (n : nat) w γ :
   own_zerostate_auth_half γ w -∗ [∗] replicate n (own_zerostate_token γ) -∗ ⌜ n ≤ uint.nat w ⌝.
 Proof.
-Admitted.
+  iIntros "(% & Ha & %) H".
+  iAssert (
+      ∃ (x : gset w32),
+        ⌜ size x = n ⌝ ∗
+        ⌜ x ⊆ m ⌝ ∗
+        ([∗ set] k ∈ x, k ↪[γ.(zerostate_gn)] ()) ∗
+        ghost_map_auth γ.(zerostate_gn) (1 / 2) (gset_to_gmap ()%V m)
+    )%I with "[-]" as "(% & % & %Hsz & _)".
+  2:{ iPureIntro. subst. apply subseteq_size in Hsz. word. }
+  iInduction n as [|] "IH".
+  {
+    iExists ∅. iSplitR; first done.
+    iSplitR; first done. iFrame. done.
+  }
+  rewrite replicate_S.
+  iDestruct "H" as "[Ht H]".
+  iDestruct ("IH" with "[$] [$]") as (?) "(% & % & H & Ha)".
+  iDestruct "Ht" as "(% & Ht)".
+  destruct (decide (k ∈ x)).
+  {
+    iDestruct (big_sepS_elem_of_acc with "H") as "[H _]".
+    { eassumption. }
+    iCombine "Ht H" gives %Hbad. exfalso. naive_solver.
+  }
+  iCombine "Ht Ha" gives %Hlookup.
+  apply lookup_gset_to_gmap_Some in Hlookup as [? _].
+  iExists ({[k]} ∪ x).
+  iFrame.
+  iSplitR.
+  { iPureIntro. rewrite -> size_union by set_solver. rewrite size_singleton. word. }
+  iSplitR.
+  { iPureIntro. set_solver. }
+  rewrite -> big_sepS_union by set_solver.
+  iFrame. rewrite big_sepS_singleton. iFrame.
+Qed.
 
 Lemma delete_zerostate_token uw γ :
   own_zerostate_auth_half γ uw -∗ own_zerostate_auth_half γ uw -∗
   own_zerostate_token γ ==∗
   own_zerostate_auth_half γ (word.sub uw (W32 1)) ∗ own_zerostate_auth_half γ (word.sub uw (W32 1)).
 Proof.
-Admitted.
+  iIntros "(% & Ha1 & %) (% & Ha2 & %) (% & Ht)".
+  iCombine "Ha1 Ha2" gives %[_ Heq%(f_equal dom)].
+  rewrite !dom_gset_to_gmap in Heq. subst.
+  iCombine "Ha1 Ha2" as "Ha".
+  iCombine "Ha Ht" gives %Hlookup.
+  apply lookup_gset_to_gmap_Some in Hlookup as [Helem _].
+  iMod (ghost_map_delete with "[$] [$]") as "H".
+  iModIntro.
+  rewrite -gset_to_gmap_difference_singleton.
+  iDestruct "H" as "[$ $]".
+  iPureIntro.
+  apply and_wlog_r; last done.
+  rewrite -> size_difference by set_solver.
+  rewrite size_singleton.
+  enough (size m0 ≠ O) by word.
+  intros Hbad. apply size_empty_inv in Hbad.
+  set_solver.
+Qed.
 
 Lemma own_zerostate_auth_half_agree uw uw' γ :
   own_zerostate_auth_half γ uw -∗ own_zerostate_auth_half γ uw' -∗ ⌜ uw = uw' ⌝.
 Proof.
-Admitted.
+  iIntros "(% & ? & %) (% & ? & %)".
+  iDestruct (ghost_map_auth_agree with "[$] [$]") as %Heq.
+  apply (f_equal dom) in Heq.
+  rewrite !dom_gset_to_gmap in Heq. subst. word.
+Qed.
 
 Definition own_WaitGroup γ (counter : w32) : iProp Σ :=
   ghost_var γ.(counter_gn) (1/2)%Qp counter.
@@ -566,8 +749,6 @@ Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
   ) -∗
   WP method_call #sync.pkg_name' #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
 Proof.
-  (* XXX: without posing something with name H, word gets stuck. *)
-  clear H. pose proof I as H.
   intros delta'.
   iIntros (?) "[#Hi #His] HΦ". iNamed "Hi".
   iNamed "His".
@@ -603,7 +784,7 @@ Proof.
     iDestruct "Htoks" as "[Htok _]".
     iDestruct "HnoWaiters" as "[%|HnoWaiter]".
     { done. }
-    iDestruct (waiters_none_token_false with "[$]") as %[].
+    iDestruct (waiters_none_token_false with "[$] [$]") as %[].
   }
   iCombine "Hptsto Hptsto2" as "Hptsto".
   iExists _. iFrame.
@@ -620,7 +801,7 @@ Proof.
     { exfalso. apply n. word. }
     rewrite replicate_S.
     iDestruct "Hunfinished_token" as "[Htok _]".
-    iDestruct (waiters_none_token_false with "[$]") as %[].
+    iDestruct (waiters_none_token_false with "[$] [$]") as %[].
   }
   subst.
   destruct (decide (word.add oldc delta' = W32 0 ∧ waiters ≠ W32 0)) as [Hwake|HnoWake].
@@ -675,8 +856,8 @@ Proof.
                 rewrite word.signed_add /word.swrap in Heq2_signed.
                 word.
               }
-              apply Heq0. intuition. exfalso. apply H3.
-              { apply word.signed_inj. rewrite H0 //. }
+              apply Heq0. intuition. exfalso. apply H2.
+              { apply word.signed_inj. rewrite H //. }
               word.
             }
           * wp_pures. iFrame. done.
@@ -698,7 +879,7 @@ Proof.
     2:{ by apply dec_stable. }
     apply Znot_gt_le in Heq1.
     exfalso.
-    apply H0. clear H0. apply word.signed_inj.
+    apply H. clear H. apply word.signed_inj.
     replace (sint.Z (W32 0)) with 0 in * by reflexivity.
     intuition.
     apply Z.le_antisymm.
@@ -760,8 +941,8 @@ Proof.
               rewrite word.signed_add /word.swrap in Heq2_signed.
               word.
             }
-            apply Heq0. intuition. exfalso. apply H5.
-            { apply word.signed_inj. rewrite H0 //. }
+            apply Heq0. intuition. exfalso. apply H4.
+            { apply word.signed_inj. rewrite H //. }
             word.
           }
         * wp_pures. iFrame. done.
@@ -957,7 +1138,7 @@ Proof.
   iIntros "Hptsto".
   iMod "Hmask" as "_".
 
-  iDestruct (max_waiters (1 + uint.Z waiters) with "[-]") as %HwaitersLt.
+  iDestruct (max_waiters (1 + uint.Z waiters) with "[-]") as %HwaitersLe.
   {
     rewrite -> Z2Nat.inj_add by word.
     iFrame.
@@ -1045,7 +1226,7 @@ Proof.
     wp_apply (wp_Uint64__Load with "[$]").
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iClear "Hv_ptr Hw_ptr Hstate_ptr". clear v_ptr counter w_ptr waiters state_ptr HwaitersLt.
+    iClear "Hv_ptr Hw_ptr Hstate_ptr". clear v_ptr counter w_ptr waiters state_ptr HwaitersLe.
     clear unfinished_waiters sema n Hsema Hsem.
     iNamed "Hi".
     iApply fupd_mask_intro.
