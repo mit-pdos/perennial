@@ -53,6 +53,105 @@ Module Message.
 End Message.
 
 Section heap.
+
+  Definition is_sorted (xs: list w64) : Prop :=
+    ∀ (i j: nat), (i < j)%nat ->
+    ∀ (x1 x2: w64), xs !! i = Some x1 -> xs !! j = Some x2 -> uint.Z x1 <= uint.Z x2.
+
+  Definition is_sorted_eq (xs: list w64) := 
+    ∀ (i j: nat), (i <= j)%nat ->
+    ∀ (x1 x2: w64), xs !! i = Some x1 -> xs !! j = Some x2 -> uint.Z x1 <= uint.Z x2.
+
+  Lemma is_sorted_iff_is_sorted_eq (l: list w64) :
+    is_sorted l <-> is_sorted_eq l.
+  Proof.
+    unfold is_sorted, is_sorted_eq. split.
+    - intros H_is_sorted i j i_le_j x1 x2 H_x1 H_x2.
+      assert (i < j \/ i = j)%nat as [i_lt_j | i_eq_j] by word.
+      + eapply H_is_sorted; eauto.
+      + enough (x1 = x2) by word. congruence.
+    - intros H_is_sorted_eq i j i_lt_j x1 x2 H_x1 H_x2.
+      eapply H_is_sorted_eq with (i := i) (j := j); eauto. word.
+  Qed.
+
+  Fixpoint insert (l : list w64) (i : w64) : list w64 :=
+    match l with
+    | [] => [i]
+    | cons h t => if uint.Z i <? uint.Z h then (i :: h :: t)%list else (h :: insert t i)%list
+    end.
+
+  Local Tactic Notation "unfold_lookup" :=
+    lazymatch goal with
+    | [ H : []%list !! _ = _ |- _ ] => rewrite lookup_nil in H; try congruence
+    | [ H : (_ :: _)%list !! _ = _ |- _ ] => rewrite lookup_cons in H; try congruence
+    end.
+
+  Local Tactic Notation "s" :=
+    match goal with
+    | [ |- ?G ] => change G with (id G); repeat unfold_lookup; red; eauto
+    end.
+
+  Lemma insert_spec l i
+    (SORTED : is_sorted l)
+    : ∃ prefix, ∃ suffix,
+      l = prefix ++ suffix /\
+      insert l i = prefix ++ [i] ++ suffix /\
+      (forall x : w64, forall n, prefix !! n = Some x -> uint.Z x ≤ uint.Z i)%Z /\
+      (forall x : w64, forall n, suffix !! n = Some x -> uint.Z i ≤ uint.Z x)%Z.
+  Proof.
+    rewrite is_sorted_iff_is_sorted_eq in SORTED. revert i. induction l as [ | x xs IH]; intros x0.
+    - exists []. exists []. done.
+    - assert (SORTED' : is_sorted xs).
+      { intros i j LE x1 x2 H_x1 H_x2; s. }
+      rewrite is_sorted_iff_is_sorted_eq in SORTED'. specialize (IH SORTED').
+      pose proof (IH x0) as (prefix & suffix & -> & H_insert & H_prefix & H_suffix). simpl.
+      destruct (_ <? _)%Z as [ | ] eqn: Heqb; [rewrite Z.ltb_lt in Heqb | rewrite Z.ltb_ge in Heqb].
+      + exists []%list. exists (x :: prefix ++ suffix)%list. repeat (split; try done).
+        intros x1 n H_x1. enough (uint.Z x ≤ uint.Z x1)%Z by word. red in SORTED.
+        eapply SORTED with (i := 0%nat) (j := n); try done. word.
+      + exists (x :: prefix)%list. exists suffix. rewrite H_insert. repeat (split; try done).
+        intros x1 n H_x1. s. destruct n as [ | n'].
+        * assert (x = x1) by congruence. word.
+        * eapply H_prefix. exact H_x1.
+  Qed.
+
+  Lemma insert_is_sorted l i
+    (SORTED : is_sorted l)
+    : is_sorted (insert l i).
+  Proof with try word || done.
+    pose proof (insert_spec l i SORTED) as (prefix & suffix & H_l & -> & H_prefix & H_suffix).
+    rewrite is_sorted_iff_is_sorted_eq. rename i into x, l into xs. rewrite is_sorted_iff_is_sorted_eq in SORTED.
+    unfold is_sorted_eq in SORTED. intros i j LE x1 x2 H_x1 H_x2.
+    assert (i < length prefix \/ i = length prefix \/ i > length prefix)%nat as [i_lt | [i_eq | i_gt]] by word;
+    assert (j < length prefix \/ j = length prefix \/ j > length prefix)%nat as [j_lt | [j_eq | j_gt]] by word.
+    - eapply SORTED with (i := i) (j := j)...
+      + rewrite H_l. rewrite lookup_app_l... rewrite lookup_app_l in H_x1...
+      + rewrite H_l. rewrite lookup_app_l... rewrite lookup_app_l in H_x2...
+    - rewrite list_lookup_middle in H_x2...
+      assert (x = x2) as -> by congruence. clear H_x2.
+      eapply H_prefix. rewrite lookup_app_l in H_x1...
+    - cut (uint.Z x1 ≤ uint.Z x)%Z.
+      + intros H_middle. enough (uint.Z x ≤ uint.Z x2)%Z by word. clear H_middle.
+        eapply H_suffix. rewrite app_assoc in H_x2. rewrite lookup_app_r in H_x2...
+        rewrite length_app. simpl. word.
+      + eapply H_prefix. rewrite lookup_app_l in H_x1...
+    - rewrite list_lookup_middle in H_x1...
+    - enough (x1 = x2) by word. congruence.
+    - rewrite list_lookup_middle in H_x1...
+      assert (x = x1) as -> by congruence. clear H_x1.
+      eapply H_suffix. rewrite app_assoc in H_x2. rewrite lookup_app_r in H_x2...
+      rewrite length_app. simpl. word.
+    - word.
+    - word.
+    - eapply SORTED with (i := (i - 1)%nat) (j := (j - 1)%nat)...
+      + rewrite H_l. rewrite lookup_app_r... rewrite app_assoc in H_x1. rewrite lookup_app_r in H_x1; simpl in *.
+        * rewrite length_app in H_x1. simpl in *. replace (i - 1 - length prefix)%nat with (i - (length prefix + 1))%nat by word...
+        * rewrite length_app. simpl...
+      + rewrite H_l. rewrite lookup_app_r... rewrite app_assoc in H_x2. rewrite lookup_app_r in H_x2; simpl in *.
+        * rewrite length_app in H_x2. simpl in *. replace (j - 1 - length prefix)%nat with (j - (length prefix + 1))%nat by word...
+        * rewrite length_app. simpl...
+  Qed.
+
   Context `{hG: !heapGS Σ}.
 
   Definition operation_val (op:Slice.t*u64): val :=
@@ -154,6 +253,24 @@ Section heap.
                       else ((index + 1)%nat, acc ++ [element]))
            output (0%nat, [])). 
 
+  Axiom wp_sortedInsert : forall (s: Slice.t) (xs: list w64) (v: w64),
+    {{{ own_slice s uint64T (DfracOwn 1) xs ∗ ⌜is_sorted xs⌝ ∗ ⌜length xs < 2^64⌝}}}
+      sortedInsert s #v
+      {{{ (ns: Slice.t), RET slice_val (ns);
+          (∃ (nxs: list w64), own_slice ns uint64T (DfracOwn 1) nxs ∗
+                                ⌜nxs = insert xs v⌝)%I
+      }}}.
+
+  Axiom wp_equalOperations : forall (opv1: Slice.t*u64) (o1: Operation.t) (opv2: Slice.t*u64) (o2: Operation.t) (n: nat),
+    {{{
+          is_operation opv1 (DfracOwn 1) o1 n ∗
+          is_operation opv2 (DfracOwn 1) o2 n
+    }}}
+      equalOperations (operation_val opv1) (operation_val opv2)
+    {{{ r , RET #r;
+        ⌜r = coq_equalOperations o1 o2⌝
+    }}}.
+
   Lemma wp_mergeOperations (s1 s2: Slice.t) (l1 l2: list Operation.t) (n: nat) :
     {{{
           operation_slice s1 l1 n ∗
@@ -227,13 +344,13 @@ Section heap.
     }
     { iExists s3. iExists l1_ops. iExists []. iExists l2. simpl.
       iAssert (<pers> ([∗ list] opv;o ∈ l1_ops;l1, □ is_operation opv (DfracOwn 1) o n))%I as "#H_l1_ops_pers".
-      { iApply (big_sepL2_persistently). iApply (big_sepL2_mono (fun k => fun y1 => fun y2 => □ is_operation y1 (DfracOwn 1) y2 n)%I).
+      { iApply (big_sepL2_persistently). iApply (big_sepL2_mono (λ k, λ y1, λ y2, □ is_operation y1 (DfracOwn 1) y2 n)%I).
         - intros. iIntros "#H". iApply intuitionistically_into_persistently_1. iModIntro. done.
         - done.
       }
       iPoseProof (big_sepL2_length with "[$H_l1_ops_pers]") as "%H_l1_len".
       iFrame. iSplit.
-      - iApply (big_sepL2_mono (fun k => fun y1 => fun y2 => □ is_operation y1 (DfracOwn 1) y2 n)%I).
+      - iApply (big_sepL2_mono (λ k, λ y1, λ y2, □ is_operation y1 (DfracOwn 1) y2 n)%I).
         { intros. iIntros "#H". done. }
         { done. }
       - done.
@@ -378,3 +495,5 @@ Section heap.
         - done.
       }
   Admitted.
+
+End heap.
