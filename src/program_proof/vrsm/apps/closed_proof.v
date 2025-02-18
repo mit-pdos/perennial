@@ -58,7 +58,7 @@ Qed.
 Local Instance subG_ekvΣ {Σ} : subG kv_pbΣ Σ → ekvG Σ.
 Proof. intros. solve_inG. Qed.
 
-Definition replica_fname := "kv.data".
+Definition replica_fname := "kv.data"%go.
 
 (* FIXME: put this in the file that defines ekvΣ? *)
 Opaque ekvΣ.
@@ -147,7 +147,7 @@ Proof.
 
   (* Allocate the kv system used for storing data *)
   iMod (alloc_vkv (ekvParams.mk [dr1Host ; dr2Host ]) [(dconfigHost, dconfigHostPaxos)]
-                  {[ "init"; "a1"; "a2" ]} with "[Hd1 Hd2]") as "[Hdkv Hdconf]"; try (simpl; lia).
+                  {[ "init"; "a1"; "a2" ]}%go with "[Hd1 Hd2]") as "[Hdkv Hdconf]"; try (simpl; lia).
   {
     rewrite /own_chans /=.
     repeat iDestruct (wand_refl (_ ∗ _) with "[$]") as "[? ?]".
@@ -158,7 +158,7 @@ Proof.
 
   (* Allocate the kv system used as a lockservice *)
   iMod (alloc_vkv (ekvParams.mk [lr1Host ; lr2Host ]) [(lconfigHost, lconfigHostPaxos)]
-                  {[ "init"; "a1"; "a2" ]} with "[Hl1 Hl2]") as "[Hlkv Hlconf]"; try (simpl; lia).
+                  {[ "init"; "a1"; "a2" ]}%go with "[Hl1 Hl2]") as "[Hlkv Hlconf]"; try (simpl; lia).
   {
     rewrite /own_chans /=.
     repeat iDestruct (wand_refl (_ ∗ _) with "[$]") as "[? ?]".
@@ -168,21 +168,21 @@ Proof.
   iSimpl in "Hlhost".
 
   (* set up bank *)
-  iAssert (|={⊤}=> is_bank "init" _ _ {[ "a1" ; "a2" ]})%I with "[Hlkvs Hkvs]" as ">#Hbank".
+  iAssert (|={⊤}=> is_bank "init"%go _ _ {[ "a1"%go ; "a2"%go ]})%I with "[Hlkvs Hkvs]" as ">#Hbank".
   {
-    iDestruct (big_sepS_delete _ _ "init" with "Hlkvs") as "(Hinit&Hlkvs)".
+    iDestruct (big_sepS_delete _ _ "init"%go with "Hlkvs") as "(Hinit&Hlkvs)".
     { set_solver. }
     instantiate (2:=Build_lock_names (kv_ptsto γl)).
     rewrite /is_bank.
     iMod (lock_alloc lockN {| kvptsto_lock := kv_ptsto γl |} _ "init" with "[Hinit] [-]") as "$"; last done.
     { iFrame. }
-    iDestruct (big_sepS_delete _ _ "init" with "Hkvs") as "(Hinit&Hkvs)".
+    iDestruct (big_sepS_delete _ _ "init"%go with "Hkvs") as "(Hinit&Hkvs)".
     { set_solver. }
     iLeft.
     instantiate (1:=kv_ptsto γd).
     iFrame.
     iApply (big_sepS_sep).
-    eassert (_ ∖ _ = {[ "a1"; "a2" ]}) as ->.
+    eassert (_ ∖ _ = {[ "a1"; "a2" ]}%go) as ->.
     { set_solver. }
     iFrame.
   }

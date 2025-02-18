@@ -24,5 +24,18 @@ Axiom int_leq : val.
 Axiom int_geq : val.
 Axiom int_gt : val.
 Axiom int_quot : val.
+Axiom int_negative: val.
+Axiom recover : val.
+
+(* method sets for primitive types are empty *)
+Section mset.
+Context `{ffi_syntax}.
+Definition uint64' : (go_string * go_string) := ("", "uint64")%go.
+Definition int' : (go_string * go_string) := ("", "int")%go.
+Definition bool' : (go_string * go_string) := ("", "bool")%go.
+Definition string' : (go_string * go_string) := ("", "string")%go.
+Definition slice' : (go_string * go_string) := ("", "slice")%go.
+Definition slice'ptr : (go_string * go_string) := ("", "slice'ptr")%go.
+End mset.
 
 End goose_lang.

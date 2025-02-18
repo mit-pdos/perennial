@@ -13,7 +13,7 @@ Section program.
     Persistent (is_index idx α).
   Admitted.
 
-  Theorem wp_Index__GetTuple (idx : loc) (key : string) α :
+  Theorem wp_Index__GetTuple (idx : loc) (key : byte_string) α :
     key ∈ keys_all ->
     is_index idx α -∗
     {{{ True }}}

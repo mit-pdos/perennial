@@ -817,16 +817,75 @@ Definition mkPaxos: val :=
     ] in
     "px".
 
+(* Read the underlying file and perform recovery to re-construct @termc, @terml,
+   @lsnc, and @log. *)
+Definition resume: val :=
+  rec: "resume" "fname" :=
+    let: "termc" := ref (zero_val uint64T) in
+    let: "terml" := ref (zero_val uint64T) in
+    let: "lsnc" := ref (zero_val uint64T) in
+    let: "log" := ref_to (slice.T stringT) (NewSlice stringT #0) in
+    let: "data" := ref_to (slice.T byteT) (grove_ffi.FileRead "fname") in
+    Skip;;
+    (for: (λ: <>, #0 < (slice.len (![slice.T byteT] "data"))); (λ: <>, Skip) := λ: <>,
+      let: ("kind", "bs") := marshal.ReadInt (![slice.T byteT] "data") in
+      (if: "kind" = CMD_EXTEND
+      then
+        let: ("ents", "bs1") := util.DecodeStrings "bs" in
+        "data" <-[slice.T byteT] "bs1";;
+        "log" <-[slice.T stringT] (SliceAppendSlice stringT (![slice.T stringT] "log") "ents");;
+        Continue
+      else
+        (if: "kind" = CMD_APPEND
+        then
+          let: ("ent", "bs1") := util.DecodeString "bs" in
+          "data" <-[slice.T byteT] "bs1";;
+          "log" <-[slice.T stringT] (SliceAppend stringT (![slice.T stringT] "log") "ent");;
+          Continue
+        else
+          (if: "kind" = CMD_PREPARE
+          then
+            let: ("term", "bs1") := marshal.ReadInt "bs" in
+            "data" <-[slice.T byteT] "bs1";;
+            "termc" <-[uint64T] "term";;
+            Continue
+          else
+            (if: "kind" = CMD_ADVANCE
+            then
+              let: ("term", "bs1") := marshal.ReadInt "bs" in
+              let: ("lsn", "bs2") := marshal.ReadInt "bs1" in
+              let: ("ents", "bs3") := util.DecodeStrings "bs2" in
+              "data" <-[slice.T byteT] "bs3";;
+              "terml" <-[uint64T] "term";;
+              "log" <-[slice.T stringT] (SliceTake (![slice.T stringT] "log") "lsn");;
+              "log" <-[slice.T stringT] (SliceAppendSlice stringT (![slice.T stringT] "log") "ents");;
+              Continue
+            else
+              (if: "kind" = CMD_ACCEPT
+              then
+                let: ("lsn", "bs1") := marshal.ReadInt "bs" in
+                let: ("ents", "bs2") := util.DecodeStrings "bs1" in
+                "data" <-[slice.T byteT] "bs2";;
+                "log" <-[slice.T stringT] (SliceTake (![slice.T stringT] "log") "lsn");;
+                "log" <-[slice.T stringT] (SliceAppendSlice stringT (![slice.T stringT] "log") "ents");;
+                Continue
+              else
+                (if: "kind" = CMD_EXPAND
+                then
+                  let: ("lsn", "bs1") := marshal.ReadInt "bs" in
+                  "data" <-[slice.T byteT] "bs1";;
+                  "lsnc" <-[uint64T] "lsn";;
+                  Continue
+                else Continue)))))));;
+    (![uint64T] "termc", ![uint64T] "terml", ![uint64T] "lsnc", ![slice.T stringT] "log").
+
 Definition Start: val :=
   rec: "Start" "nidme" "addrm" "fname" :=
     control.impl.Assume (#1 < (MapLen "addrm"));;
     let: (<>, "ok") := MapGet "addrm" "nidme" in
     control.impl.Assume "ok";;
     control.impl.Assume ("nidme" < MAX_NODES);;
-    let: "termc" := #0 in
-    let: "terml" := #0 in
-    let: "lsnc" := #0 in
-    let: "log" := NewSlice stringT #0 in
+    let: ((("termc", "terml"), "lsnc"), "log") := resume "fname" in
     let: "px" := mkPaxos "nidme" "termc" "terml" "lsnc" "log" "addrm" "fname" in
     Fork (Paxos__Serve "px");;
     Fork (Paxos__LeaderSession "px");;
@@ -844,85 +903,3 @@ Definition logExtend: val :=
     let: "bs2" := util.EncodeStrings "bs1" "ents" in
     grove_ffi.FileAppend "fname" "bs2";;
     #().
-
-(* Read the underlying file and perform recovery to re-construct @termc, @terml,
-   @lsnc, and @log. *)
-Definition resume: val :=
-  rec: "resume" "fname" :=
-    let: "termc" := ref (zero_val uint64T) in
-    let: "terml" := ref (zero_val uint64T) in
-    let: "lsnc" := ref (zero_val uint64T) in
-    let: "log" := ref_to (slice.T stringT) (NewSlice stringT #0) in
-    let: "kind" := ref (zero_val uint64T) in
-    let: "term" := ref (zero_val uint64T) in
-    let: "lsn" := ref (zero_val uint64T) in
-    let: "ents" := ref (zero_val (slice.T stringT)) in
-    let: "data" := ref_to (slice.T byteT) (grove_ffi.FileRead "fname") in
-    Skip;;
-    (for: (λ: <>, #0 < (slice.len (![slice.T byteT] "data"))); (λ: <>, Skip) := λ: <>,
-      let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
-      "kind" <-[uint64T] "0_ret";;
-      "data" <-[slice.T byteT] "1_ret";;
-      (if: (![uint64T] "kind") = CMD_EXTEND
-      then
-        let: ("0_ret", "1_ret") := util.DecodeStrings (![slice.T byteT] "data") in
-        "ents" <-[slice.T stringT] "0_ret";;
-        "data" <-[slice.T byteT] "1_ret";;
-        "log" <-[slice.T stringT] (SliceAppendSlice stringT (![slice.T stringT] "log") (![slice.T stringT] "ents"));;
-        Continue
-      else
-        (if: (![uint64T] "kind") = CMD_APPEND
-        then
-          "ents" <-[slice.T stringT] (NewSlice stringT #1);;
-          let: "ent" := ref (zero_val stringT) in
-          let: ("0_ret", "1_ret") := util.DecodeString (![slice.T byteT] "data") in
-          "ent" <-[stringT] "0_ret";;
-          "data" <-[slice.T byteT] "1_ret";;
-          "log" <-[slice.T stringT] (SliceAppend stringT (![slice.T stringT] "log") (![stringT] "ent"));;
-          Continue
-        else
-          (if: (![uint64T] "kind") = CMD_PREPARE
-          then
-            let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
-            "term" <-[uint64T] "0_ret";;
-            "data" <-[slice.T byteT] "1_ret";;
-            "termc" <-[uint64T] (![uint64T] "term");;
-            Continue
-          else
-            (if: (![uint64T] "kind") = CMD_ADVANCE
-            then
-              let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
-              "term" <-[uint64T] "0_ret";;
-              "data" <-[slice.T byteT] "1_ret";;
-              let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
-              "lsn" <-[uint64T] "0_ret";;
-              "data" <-[slice.T byteT] "1_ret";;
-              let: ("0_ret", "1_ret") := util.DecodeStrings (![slice.T byteT] "data") in
-              "ents" <-[slice.T stringT] "0_ret";;
-              "data" <-[slice.T byteT] "1_ret";;
-              "terml" <-[uint64T] (![uint64T] "term");;
-              "log" <-[slice.T stringT] (SliceTake (![slice.T stringT] "log") (![uint64T] "lsn"));;
-              "log" <-[slice.T stringT] (SliceAppendSlice stringT (![slice.T stringT] "log") (![slice.T stringT] "ents"));;
-              Continue
-            else
-              (if: (![uint64T] "kind") = CMD_ACCEPT
-              then
-                let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
-                "lsn" <-[uint64T] "0_ret";;
-                "data" <-[slice.T byteT] "1_ret";;
-                let: ("0_ret", "1_ret") := util.DecodeStrings (![slice.T byteT] "data") in
-                "ents" <-[slice.T stringT] "0_ret";;
-                "data" <-[slice.T byteT] "1_ret";;
-                "log" <-[slice.T stringT] (SliceTake (![slice.T stringT] "log") (![uint64T] "lsn"));;
-                "log" <-[slice.T stringT] (SliceAppendSlice stringT (![slice.T stringT] "log") (![slice.T stringT] "ents"));;
-                Continue
-              else
-                (if: (![uint64T] "kind") = CMD_EXPAND
-                then
-                  let: ("0_ret", "1_ret") := marshal.ReadInt (![slice.T byteT] "data") in
-                  "lsn" <-[uint64T] "0_ret";;
-                  "data" <-[slice.T byteT] "1_ret";;
-                  "lsnc" <-[uint64T] (![uint64T] "lsn");;
-                  Continue
-                else Continue)))))));;
-    (![uint64T] "termc", ![uint64T] "terml", ![uint64T] "lsnc", ![slice.T stringT] "log").

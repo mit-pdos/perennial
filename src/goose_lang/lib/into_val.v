@@ -228,15 +228,15 @@ Section instances.
     by injection H.
   Qed.
 
-  Global Instance string_IntoVal : IntoVal string.
+  Global Instance byte_string_IntoVal : IntoVal byte_string.
   Proof.
-    refine {| into_val.to_val := λ (x: string), #(str x);
+    refine {| into_val.to_val := λ (x: byte_string), #(str x);
               from_val := λ v, match v with #(LitString x) => Some x | _ => None end;
-              IntoVal_def := ""; |}; done.
+              IntoVal_def := []; |}; done.
   Defined.
-  Global Instance string_IntoVal_boolT : IntoValForType string stringT.
+  Global Instance byte_string_IntoVal_boolT : IntoValForType byte_string stringT.
   Proof. constructor; auto. Qed.
-  Global Instance string_IntoValComparable : IntoValComparable string.
+  Global Instance byte_string_IntoValComparable : IntoValComparable byte_string.
   Proof.
     constructor; try done.
     intros. simpl in *.

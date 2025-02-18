@@ -1179,7 +1179,7 @@ Proof using spec_trans.
     iSpecialize ("H" $! j _ Hctx' with "Hj"); clear Hctx'.
     iApply (wpc_mono' with "[] [] H"); last by auto.
     iIntros (v1) "H". iDestruct "H" as (vs1) "(Hj&Hv1)".
-    iAssert (∃ (vres: string), ⌜ un_op_eval ToStringOp v1 = Some #(LitString vres) ∧
+    iAssert (∃ (vres: byte_string), ⌜ un_op_eval ToStringOp v1 = Some #(LitString vres) ∧
                             un_op_eval ToStringOp vs1 = Some #(LitString vres) ⌝)%I with "[Hv1]" as %Hres.
     {
       destruct t; try inversion e;

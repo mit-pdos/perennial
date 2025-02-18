@@ -74,7 +74,7 @@ Section program.
   Qed.
 
   Theorem wp_GroupCoordinator__SendRead
-    (gcoord : loc) (rid : u64) (ts : u64) (key : string) addrm gid γ :
+    (gcoord : loc) (rid : u64) (ts : u64) (key : byte_string) addrm gid γ :
     safe_read_req gid (uint.nat ts) key ->
     rid ∈ dom addrm ->
     is_gcoord_with_addrm gcoord gid addrm γ -∗

@@ -63,7 +63,7 @@ Section program.
     (*@ }                                                                       @*)
   Admitted.
 
-  Theorem wp_ReplicaGroup__Read (rg : loc) (ts : u64) (key : string) gid γ :
+  Theorem wp_ReplicaGroup__Read (rg : loc) (ts : u64) (key : byte_string) gid γ :
     safe_read gid (uint.nat ts) key ->
     is_rg rg gid γ -∗
     {{{ True }}}

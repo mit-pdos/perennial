@@ -9,12 +9,12 @@ Context `{!gooseGlobalGS Σ}.
 
 Record lock_names :=
   {
-    kvptsto_lock : string → string → iProp Σ
+    kvptsto_lock : byte_string → byte_string → iProp Σ
   }
 .
 
 Definition lock_inv γ key R : iProp Σ :=
-  ∃ b : bool, kvptsto_lock γ key (if b then "1" else "") ∗ if b then True else R.
+  ∃ b : bool, kvptsto_lock γ key (if b then "1"%go else ""%go) ∗ if b then True else R.
 
 Definition is_lock N `{invGS Σ} γ key R :=
   inv N (lock_inv γ key R).

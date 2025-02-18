@@ -20,9 +20,23 @@ Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ sl_Dig,
-  "Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"] #obj.(Epoch) ∗
-  "Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"] (slice_val sl_Dig) ∗
+  "Hptr_Epoch" ∷ ptr ↦[PreSigDig :: "Epoch"] #obj.(Epoch) ∗
+  "Hptr_Dig" ∷ ptr ↦[PreSigDig :: "Dig"] (slice_val sl_Dig) ∗
   "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig).
+
+Lemma wp_enc obj sl_enc (enc : list w8) ptr :
+  {{{
+    "Hsl_enc" ∷ own_slice sl_enc byteT (DfracOwn 1) enc ∗
+    "Hown_obj" ∷ own ptr obj
+  }}}
+  PreSigDigEncode (slice_val sl_enc) #ptr
+  {{{
+    sl_enc', RET (slice_val sl_enc');
+    "Hsl_enc" ∷ own_slice sl_enc' byteT (DfracOwn 1) (enc ++ encodesF obj) ∗
+    "Hown_obj" ∷ own ptr obj
+  }}}.
+Proof. Admitted.
+
 End defs.
 End PreSigDig.
 
@@ -83,6 +97,33 @@ Lemma wp_enc obj sl_enc (enc : list w8) ptr :
     "Hown_obj" ∷ own ptr obj
   }}}.
 Proof. Admitted.
+
+(* TODO: not fully sure how to prove this, but probably relies
+on the inj lemma. *)
+Lemma enc_inj obj0 tail0 obj1 tail1 :
+  encodesF obj0 ++ tail0 = encodesF obj1 ++ tail1 →
+  obj0 = obj1 ∧ tail0 = tail1.
+Proof. Admitted.
+
+Lemma wp_dec sl_enc dq enc :
+  {{{
+    "Hsl_enc" ∷ own_slice_small sl_enc byteT dq enc
+  }}}
+  MapValPreDecode (slice_val sl_enc)
+  {{{
+    ptr_obj sl_tail (err : bool), RET (#ptr_obj, slice_val sl_tail, #err);
+    "%Hgenie" ∷ (⌜ ∀ obj tail, enc = encodesF obj ++ tail → err = false ⌝) ∗
+    (* TODO: with curr structure, genie user needs to apply enc_inj to unify
+    their obj and tail with the one they get back from Herr.
+    is there any way to rewrite the spec to avoid this? *)
+    "Herr" ∷ (⌜ err = false ⌝ -∗
+      ∃ obj tail,
+      "Hown_obj" ∷ own ptr_obj obj ∗
+      "Hsl_tail" ∷ own_slice_small sl_tail byteT dq tail ∗
+      "%Henc_obj" ∷ ⌜ enc = encodesF obj ++ tail ⌝)
+  }}}.
+Proof. Admitted.
+
 End defs.
 End MapValPre.
 
@@ -146,19 +187,19 @@ End MapLabelPre.
 Module UpdateProof.
 Record t : Type :=
   mk {
-      Updates : gmap string (list w8);
+      Updates : gmap byte_string (list w8);
       Sig: list w8
   }.
 Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ (updates_mref : loc) (updatesM : gmap string (Slice.t)) sig_sl,
-    "HUpdates" ∷ ptr ↦[UpdateProof :: "Updates"] #updates_mref ∗
-    "HSig" ∷ ptr ↦[UpdateProof :: "Sig"] (slice_val sig_sl) ∗
+  ∃ (updates_mref : loc) (updatesM : gmap byte_string (Slice.t)) sl_sig,
+    "Hptr_updates" ∷ ptr ↦[UpdateProof :: "Updates"] #updates_mref ∗
+    "Hptr_sig" ∷ ptr ↦[UpdateProof :: "Sig"] (slice_val sl_sig) ∗
     "#HUpdatesM" ∷ own_map updates_mref DfracDiscarded updatesM ∗
     "#HUpdatesMSl" ∷ ([∗ map] k ↦ sl; upd ∈ updatesM; obj.(Updates),
                        own_slice_small sl byteT DfracDiscarded upd) ∗
-    "#HSigSl" ∷ own_slice_small sig_sl byteT DfracDiscarded obj.(Sig)
+    "#Hsl_sig" ∷ own_slice_small sl_sig byteT DfracDiscarded obj.(Sig)
 .
 
 End defs.

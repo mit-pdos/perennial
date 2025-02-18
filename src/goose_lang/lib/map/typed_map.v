@@ -226,7 +226,7 @@ Theorem wp_MapIter stk E mref q m (I: iProp Σ) (P Q: K -> V -> iProp Σ) (body:
         body (to_val k) (to_val v) @ stk; E
       {{{ RET #(); I ∗ Q k v }}}) -∗
   ▷ ((own_map mref q m ∗ I ∗ [∗ map] k ↦ v ∈ m, Q k v) -∗ Φ #()) -∗
-  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
+  WP MapIter #mref body @ stk; E {{ Φ }}.
 Proof using IntoValComparable0.
   iIntros "Hm HI HP #Hbody HΦ".
   iDestruct (own_map_untype with "Hm") as "Hm".
@@ -265,7 +265,7 @@ Theorem wp_MapIter_2 stk E mref q m (I: gmap K V -> gmap K V -> iProp Σ) (body:
         body (to_val k) (to_val v) @ stk; E
       {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
   ((own_map mref q m ∗ I ∅ m) -∗ Φ #()) -∗
-  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
+  WP MapIter #mref body @ stk; E {{ Φ }}.
 Proof using IntoValComparable0.
   iIntros "Hm HI #Hbody HΦ".
   iDestruct (own_map_untype with "Hm") as "Hm".
@@ -309,7 +309,7 @@ Theorem wp_MapIter_3 stk E mref q m (I: gmap K V -> gmap K V -> iProp Σ) (body:
         body (to_val k) (to_val v) @ stk; E
       {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
   ((own_map mref q m ∗ I ∅ m) -∗ Φ #()) -∗
-  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
+  WP MapIter #mref body @ stk; E {{ Φ }}.
 Proof using IntoValComparable0.
   iIntros "Hismap HI #Hbody HΦ".
   wp_apply (wp_MapIter_2 _ _ _ _ _

@@ -3,12 +3,12 @@ From Perennial.program_logic Require Export atomic. (* prefer the ncfupd atomics
 (* Prefer untyped slices. *)
 Export Perennial.goose_lang.lib.slice.slice.
 
-Definition dbval := option string.
+Definition dbval := option byte_string.
 Canonical Structure dbvalO := leibnizO dbval.
 Notation Nil := (None : dbval).
 Notation Value x := (Some x : dbval).
 
-Definition to_dbval (b : bool) (v : string) :=
+Definition to_dbval (b : bool) (v : byte_string) :=
   if b then Value v else Nil.
 
 Definition dbmap := gmap u64 dbval.

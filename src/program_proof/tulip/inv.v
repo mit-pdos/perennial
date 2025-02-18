@@ -193,7 +193,7 @@ Section inv_network.
   Proof. destruct req; apply _. Defined.
 
   Definition safe_read_resp
-    γ (ts rid : u64) (key : string) (ver : dbpver) (slow : bool) : iProp Σ :=
+    γ (ts rid : u64) (key : byte_string) (ver : dbpver) (slow : bool) : iProp Σ :=
     "#Hsafe" ∷ fast_or_slow_read γ rid key (uint.nat ver.1) (uint.nat ts) ver.2 slow ∗
     "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
 

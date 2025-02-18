@@ -10,7 +10,7 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_GroupReader__processReadResult
-    grd (rid : u64) (key : string) (ver : dbpver) (slow : bool) ts γ :
+    grd (rid : u64) (key : byte_string) (ver : dbpver) (slow : bool) ts γ :
     rid ∈ rids_all ->
     fast_or_slow_read γ rid key (uint.nat ver.1) ts ver.2 slow -∗
     {{{ own_greader grd ts γ }}}

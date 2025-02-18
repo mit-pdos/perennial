@@ -6,7 +6,7 @@ Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_Txn__keyToGroup (txn : loc) (key : string) q wrs :
+  Theorem wp_Txn__keyToGroup (txn : loc) (key : byte_string) q wrs :
     valid_key key ->
     {{{ own_txn_wrs txn q wrs }}}
       Txn__keyToGroup #txn #(LitString key)
@@ -30,7 +30,7 @@ Section program.
     rewrite /key_to_group.
     rewrite -size_dom Hdomwrs.
     pose proof size_gids_all as Hszall.
-    set x := String.length key.
+    set x := length key.
     set y := size gids_all.
     apply valid_key_length in Hvk.
     word.

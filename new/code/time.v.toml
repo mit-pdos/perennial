@@ -1,0 +1,6 @@
+translate = [
+  "Second",
+  "Millisecond",
+  "Microsecond",
+  "Nanosecond",
+]

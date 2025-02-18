@@ -1,21 +1,31 @@
 From New.proof Require Import proof_prelude.
 From New.code.github_com.goose_lang Require Import std.
-From New.proof Require Import machine.
+Require Export New.generatedproof.github_com.goose_lang.std.
+From New.proof Require Import primitive.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!goGlobalsGS Σ}.
+Context `{!std.GlobalAddrs}.
+
+Definition is_initialized : iProp Σ :=
+  "#?" ∷ std.is_defined ∗
+  "#?" ∷ primitive.is_defined.
 
 Lemma wp_SumNoOverflow (x y : u64) :
-  ∀ Φ : val → iProp Σ,
-    Φ #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)) -∗
-    WP std.SumNoOverflow #x #y {{ Φ }}.
+  {{{ is_initialized }}}
+    func_call #std.pkg_name' #"SumNoOverflow" #x #y
+  {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
-  iIntros (Φ) "HΦ".
-  rewrite /SumNoOverflow. wp_pures.
+  iIntros (Φ) "#Hi HΦ".
+  iNamed "Hi".
+  wp_func_call.
+  wp_call.
   wp_alloc y_ptr as "Hy".
   wp_pures.
   wp_alloc x_ptr as "Hx".
   wp_pures. wp_load. wp_load. wp_load. wp_pures.
+  iSpecialize ("HΦ" with "[$]").
   iExactEq "HΦ".
   repeat f_equal.
   apply bool_decide_ext.
@@ -26,18 +36,18 @@ Proof.
 Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
-  ∀ Φ : val → iProp Σ,
-    (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(word.add x y)) -∗
-    WP std.SumAssumeNoOverflow #x #y {{ Φ }}.
+  {{{ is_initialized }}}
+    func_call #std.pkg_name' #"SumAssumeNoOverflow" #x #y
+  {{{ RET #(word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}}.
 Proof.
-  iIntros "%Φ HΦ". wp_call.
+  iIntros "* #Hi HΦ". iNamed "Hi". wp_func_call. wp_call.
   wp_alloc y_ptr as "Hy".
   wp_pures.
   wp_alloc x_ptr as "Hx".
   wp_pures. wp_load. wp_pures. wp_load.
-  wp_pures. wp_apply wp_SumNoOverflow.
+  wp_pures. wp_apply (wp_SumNoOverflow with "[$]").
   wp_pures.
-  wp_apply wp_Assume.
+  wp_apply (wp_Assume with "[$]").
   rewrite bool_decide_eq_true.
   iIntros (?). wp_pures. do 2 wp_load. wp_pures.
   iApply "HΦ". iPureIntro. done.

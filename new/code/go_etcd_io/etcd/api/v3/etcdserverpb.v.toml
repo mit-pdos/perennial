@@ -1,0 +1,9 @@
+translate = [
+  "Compare_CompareResult",
+  "Compare_CompareTarget",
+  "isCompare_TargetUnion",
+  "Compare",
+  "TxnResponse",
+  "RangeResponse",
+  "ResponseHeader",
+]

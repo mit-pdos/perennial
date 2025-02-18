@@ -90,6 +90,17 @@ Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_total_le (v1 v2 : val) : PureWp True (TotalLe v1 v2) #(val_le v1 v2).
 Proof. apply (pure_exec_pure_wp O). rewrite to_val_unseal. solve_pure_exec. Qed.
 
+Definition wp_eq_val (v1 v2 : val) :
+  PureWp (is_comparable v1 ∧ is_comparable v2) (BinOp EqOp v1 v2) #(bool_decide (v1 = v2)).
+Proof.
+  apply (pure_exec_pure_wp O).
+  intros Hcomp.
+  cut (bin_op_eval EqOp v1 v2 = Some $ LitV $ LitBool $ bool_decide (v1 = v2)).
+  { rewrite to_val_unseal. solve_pure_exec. }
+  rewrite /bin_op_eval /bin_op_eval_eq /=.
+  rewrite decide_True //.
+Qed.
+
 Global Instance wp_eq `{!IntoVal V} `{!IntoValTyped V t} (v1 v2 : V) :
   PureWp (is_comparable_go_type t = true) (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)) | 0.
 Proof.
@@ -174,7 +185,7 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_w8_s_to_w8 (v : w8) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_w8_to_string (v : w8) : PureWp True (to_string #v) #(u8_to_string v).
+Global Instance wp_w8_to_string (v : w8) : PureWp True (to_string #v) #([v]).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* bool unop *)
@@ -182,11 +193,11 @@ Global Instance wp_bool_neg (b : bool) : PureWp True (~ #b) #(negb b).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* string unop *)
-Global Instance wp_StringLength (s : string) : PureWp True (StringLength #s) #(W64 $ String.length s).
+Global Instance wp_StringLength (s : go_string) : PureWp True (StringLength #s) #(W64 $ length s).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_IsNoStringOverflow (s : string) : PureWp True (IsNoStringOverflow #s)
-                                                       #(bool_decide ((String.length s) < 2^64)).
+Global Instance wp_IsNoStringOverflow (s : go_string) : PureWp True (IsNoStringOverflow #s)
+                                                       #(bool_decide ((length s) < 2^64)).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (** Binops *)
@@ -284,7 +295,7 @@ Proof.
   - rewrite /bin_op_eval decide_False // b /= in H0. by Transitions.monad_inv.
 Qed.
 
-Global Instance wp_string_binop op (v1 v2 v : string) :
+Global Instance wp_string_binop op (v1 v2 v : go_string) :
   PureWp (op ≠ EqOp ∧ bin_op_eval_string op v1 v2 = Some v) (BinOp op #v1 #v2) #v | 1.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O).
@@ -299,24 +310,24 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (* string lookup ops *)
 
-Global Instance wp_StringGet_w64 (s : string) (i : w64) (v : w8) :
-  PureWp (string_to_bytes s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Global Instance wp_StringGet_w64 (s : go_string) (i : w64) (v : w8) :
+  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
   - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
   - rewrite /bin_op_eval /= H /= in H1. Transitions.monad_inv. done.
 Qed.
 
-Global Instance wp_StringGet_w32 (s : string) (i : w32) (v : w8) :
-  PureWp (string_to_bytes s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Global Instance wp_StringGet_w32 (s : go_string) (i : w32) (v : w8) :
+  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
   - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
   - rewrite /bin_op_eval /= H /= in H1. Transitions.monad_inv. done.
 Qed.
 
-Global Instance wp_StringGet_w8 (s : string) (i : w8) (v : w8) :
-  PureWp (string_to_bytes s !! uint.nat i = Some v) (StringGet #s #i) #v.
+Global Instance wp_StringGet_w8 (s : go_string) (i : w8) (v : w8) :
+  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
   - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
@@ -380,11 +391,11 @@ Ltac2 Type exn ::= [ Walk_expr_not_found ].
 
 Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
   let rec walk_ctx (e : constr) (k : constr) :=
-    lazy_match! e with | Val _ => Control.backtrack_tactic_failure "walk_expr: reached a val" | _ => () end;
+    lazy_match! e with | Val _ => Control.zero Walk_expr_not_found | _ => () end;
     match Control.case (fun () => f e k) with
     | Val (a, _) => a
     | Err Walk_expr_more =>
-        match! e with
+        lazy_match! e with
         | fill ?k' ?e                     => walk_ctx e '($k ++ $k')
         | App ?e1 (Val ?v)                => walk_ctx e1 '(@AppLCtx _ $v :: $k)
         | App ?e1 ?e2                     => walk_ctx e2 '(@AppRCtx _ $e1 :: $k)
@@ -408,7 +419,6 @@ Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
         | CmpXchg ?e0 ?e1 ?e2             => walk_ctx e0 '(CmpXchgLCtx $e1 $e2 :: $k)
         | ResolveProph (Val ?v) ?e        => walk_ctx e '(@ResolveProphRCtx _ $v :: $k)
         | ResolveProph ?e1 ?e2            => walk_ctx e1 '(@ResolveProphLCtx _ $e2 :: $k)
-        | _ => Control.zero Walk_expr_not_found
         end
     | Err e => Control.zero e
     end

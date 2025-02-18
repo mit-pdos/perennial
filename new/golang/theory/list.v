@@ -43,8 +43,7 @@ Global Instance wp_list_Match (l : list V) (handleNil handleCons : val) :
     (match l with
      | nil => (handleNil #())%V
      | cons v l => (handleCons #v #l)%V
-     end)
-.
+     end).
 Proof.
   rewrite list.Match_unseal.
   intros ?????. iIntros "Hwp".
@@ -76,6 +75,48 @@ Proof.
       word.
     + iClear "HΦ IH".
       wp_pures. iLöb as "IH". wp_pures. done.
+Qed.
+
+Global Instance wp_alist_cons (k : go_string) (l : list (go_string * val)) (v : val) :
+  PureWp  True
+    (list.Cons (PairV #k v) (alist_val l))
+    (alist_val ((pair k v) :: l)).
+Proof.
+  iIntros (?????) "HΦ".
+  rewrite alist_val_unseal list.Cons_unseal.
+  wp_call_lc "?". by iApply "HΦ".
+Qed.
+
+Global Instance wp_alist_lookup (k : go_string) (l : list (go_string * val)) :
+  PureWp True
+    (alist_lookup #k (alist_val l))
+    (match (alist_lookup_f k l) with | None => InjLV #() | Some v => InjRV v end).
+Proof.
+  iIntros (?????) "HΦ".
+  rewrite alist_val_unseal.
+  iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
+  [base]:{
+    simpl. wp_call. rewrite list.Match_unseal.
+    wp_call_lc "?". by iApply "HΦ".
+  }
+  [cons]: {
+    wp_call_lc "?".
+    rewrite list.Match_unseal /=.
+    wp_call.
+    destruct bool_decide eqn:Heqb; wp_pures.
+    {
+      rewrite bool_decide_eq_true in Heqb.
+      subst.
+      rewrite ByteString.eqb_refl.
+      by iApply "HΦ".
+    }
+    {
+      rewrite bool_decide_eq_false in Heqb.
+      wp_pures.
+      iApply "IH".
+      rewrite ByteString.eqb_ne //.
+    }
+  }
 Qed.
 
 End wps.

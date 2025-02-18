@@ -43,15 +43,21 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--std",
+        help="path to goose-lang/std repo (skip translation if not provided)",
+        metavar="STD_PATH",
+        default=None,
+    )
+    parser.add_argument(
         "--marshal",
-        help="path to marshal repo (skip translation if not provided)",
+        help="path to tchajed/marshal repo (skip translation if not provided)",
         metavar="MARSHAL_PATH",
         default=None,
     )
     parser.add_argument(
-        "--std",
-        help="path to goose-lang/std repo (skip translation if not provided)",
-        metavar="STD_PATH",
+        "--primitive",
+        help="path to goose-lang/primitive repo (skip translation if not provided)",
+        metavar="PRIMITIVE_PATH",
         default=None,
     )
     parser.add_argument(
@@ -66,26 +72,38 @@ def main():
         metavar="ETCD_RAFT_PATH",
         default=None,
     )
+    parser.add_argument(
+        "--etcd",
+        help="path to upamanyus/etcd repo (skip translation if not provided)",
+        metavar="ETCD_PATH",
+        default=None,
+    )
 
     args = parser.parse_args()
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
     goose_dir = args.goose
-    marshal_dir = args.marshal
+    primitive_dir = args.primitive
     std_dir = args.std
+    marshal_dir = args.marshal
     gokv_dir = args.gokv
     etcd_raft_dir = args.etcd_raft
+    etcd_dir = args.etcd
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
-    if marshal_dir is not None and not os.path.isdir(marshal_dir):
-        parser.error("marshal directory does not exist")
+    if primitive_dir is not None and not os.path.isdir(primitive_dir):
+        parser.error("primitive directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
         parser.error("std directory does not exist")
+    if marshal_dir is not None and not os.path.isdir(marshal_dir):
+        parser.error("marshal directory does not exist")
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
     if etcd_raft_dir is not None and not os.path.isdir(etcd_raft_dir):
         parser.error("etcd-raft directory does not exist")
+    if etcd_dir is not None and not os.path.isdir(etcd_dir):
+        parser.error("etcd directory does not exist")
 
     def do_run(cmd_args):
         run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
@@ -94,63 +112,41 @@ def main():
         old_dir = os.getcwd()
         os.chdir(goose_dir)
         do_run(["go", "install", "./cmd/goose"])
-        do_run(["go", "install", "./cmd/goose_axiom"])
-        do_run(["go", "install", "./cmd/recordgen"])
+        do_run(["go", "install", "./cmd/proofgen"])
         os.chdir(old_dir)
 
-    def run_goose(src_path, *pkgs):
+    def run_goose(src_path, *pkgs, extra_args=None):
         if src_path is None:
             return
         if not pkgs:
             pkgs = ["."]
+        else:
+            pkgs = list(pkgs)
 
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
             gopath = path.join(path.expanduser("~"), "go")
+
         goose_bin = path.join(gopath, "bin", "goose")
-        args = [goose_bin]
+        do_run(
+            [goose_bin, "-out", path.join(perennial_dir, "new/code/"), "-dir", src_path]
+            + pkgs
+        )
 
-        output = path.join(perennial_dir, "new/code/")
-        args.extend(["-out", output])
-        args.extend(["-dir", src_path])
-        args.extend(pkgs)
-        do_run(args)
+        proofgen_bin = path.join(gopath, "bin", "proofgen")
 
-    def run_axiomgen(dst_path, src_path, *pkgs):
-        if src_path is None:
-            return
-        if not pkgs:
-            pkgs = ["."]
-
-        gopath = os.getenv("GOPATH", default=None)
-        if gopath is None or gopath == "":
-            gopath = path.join(path.expanduser("~"), "go")
-        goose_bin = path.join(gopath, "bin", "goose_axiom")
-        args = [goose_bin]
-
-        output = path.join(perennial_dir, dst_path)
-        args.extend(["-out", output])
-        args.extend(["-dir", src_path])
-        args.extend(pkgs)
-        do_run(args)
-
-    def run_recordgen(dst_path, src_path, *pkgs):
-        if src_path is None:
-            return
-        if not pkgs:
-            pkgs = ["."]
-
-        gopath = os.getenv("GOPATH", default=None)
-        if gopath is None or gopath == "":
-            gopath = path.join(path.expanduser("~"), "go")
-        goose_bin = path.join(gopath, "bin", "recordgen")
-        args = [goose_bin]
-
-        output = path.join(perennial_dir, dst_path)
-        args.extend(["-out", output])
-        args.extend(["-dir", src_path])
-        args.extend(pkgs)
-        do_run(args)
+        do_run(
+            [
+                proofgen_bin,
+                "-out",
+                path.join(perennial_dir, "new/generatedproof"),
+                "-configdir",
+                path.join(perennial_dir, "new/code"),
+                "-dir",
+                src_path,
+            ]
+            + pkgs
+        )
 
     def run_goose_test_gen(src_path, output):
         gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
@@ -168,9 +164,11 @@ def main():
             "./unittest",
         )
 
+    run_goose(std_dir, ".")
+
     run_goose(marshal_dir, ".")
 
-    run_goose(std_dir, ".")
+    run_goose(primitive_dir, ".", "github.com/goose-lang/primitive/disk")
 
     run_goose(
         gokv_dir,
@@ -183,17 +181,11 @@ def main():
         "./lockservice",
         "./bank",
         "./globals_test",
+        "./grove_ffi",
         # "./vrsm/replica",
     )
 
-    run_recordgen(
-        "new/proof/structs/",
-        gokv_dir,
-        "./asyncfile",
-    )
-
-    run_axiomgen(
-        "new_code_axioms/",
+    run_goose(
         etcd_raft_dir,
         "testing",
         "bytes",
@@ -212,38 +204,29 @@ def main():
         "slices",
         "strconv",
         "strings",
-    )
-
-    run_axiomgen(
-        "new_partial_axioms/",
-        etcd_raft_dir,
+        "sync",
+        "sync/atomic",
+        "internal/race",
         "fmt",
         "log",
         "go.etcd.io/raft/v3/raftpb",
-    )
-
-    run_goose(
-        etcd_raft_dir,
         ".",
         "go.etcd.io/raft/v3/tracker",
         "go.etcd.io/raft/v3/quorum",
     )
 
     run_goose(
-        etcd_raft_dir,
-        "-partial",
-        "Message,MessageType,MsgHup,Entry,ConfState,SnapshotMetadata,Snapshot,HardState,"
-        + "ConfChange,ConfChangeType,ConfChangeSingle,ConfChangeV2,ConfChangeTransition,EntryType",
-        "-ignore-errors",
-        "go.etcd.io/raft/v3/raftpb",
-    )
-
-    run_recordgen(
-        "new/proof/structs/",
-        etcd_raft_dir,
-        "go.etcd.io/raft/v3/raftpb",
-        "go.etcd.io/raft/v3/tracker",
-        "go.etcd.io/raft/v3",
+        etcd_dir,
+        "time",
+        "math",
+        "google.golang.org/grpc",
+        "go.etcd.io/etcd/api/v3/etcdserverpb",
+        "go.etcd.io/etcd/api/v3/mvccpb",
+        "go.etcd.io/etcd/client/v3",
+        "go.etcd.io/etcd/client/v3/concurrency",
+        "go.etcd.io/etcd/client/v3/concurrency",
+        "go.uber.org/zap",
+        "go.uber.org/zap/zapcore",
     )
 
 

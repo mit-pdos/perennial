@@ -7,7 +7,7 @@ Section accept.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_Paxos__accept
-    (px : loc) (lsn : u64) (term : u64) (entsP : Slice.t) (ents logleader : list string)
+    (px : loc) (lsn : u64) (term : u64) (entsP : Slice.t) (ents logleader : list byte_string)
     (nidme : u64) nids γ :
     nidme ∈ nids ->
     (uint.nat lsn ≤ length logleader)%nat ->
@@ -21,7 +21,7 @@ Section accept.
         own_slice entsP stringT (DfracOwn 1) ents
     }}}
       Paxos__accept #px #lsn #term (to_val entsP)
-    {{{ (lsna : u64) (loga : list string), RET #lsna;
+    {{{ (lsna : u64) (loga : list byte_string), RET #lsna;
         own_paxos_following_with_termc px nidme term nids γ ∗
         (is_accepted_proposal_lb γ nidme (uint.nat term) loga ∨
          safe_ledger_above γ nids (uint.nat term) loga) ∗
@@ -98,18 +98,32 @@ Section accept.
       iNamed "Hfname".
       wp_loadField.
       wp_apply (wp_logAdvance with "Hents").
+      iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+      { solve_ndisj. }
+      iNamed "Hdurable".
       iInv "Hinv" as "> HinvO" "HinvC".
       iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
       iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
       { apply Hnidme. }
       iNamed "Hnodefile".
-      (* iMod (own_crash_ex_open with "Htermc") as "(>Htermc&Hclose_termc)"; first solve_ndisj. *)
       iApply ncfupd_mask_intro; first solve_ndisj.
       iIntros "Hmask".
       iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
-      iFrame "Hfile".
-      iExists wal.
-      iIntros (bs') "[Hfile %Hbs']".
+      iFrame "Hfile %".
+      iIntros (bs' failed) "Hfile".
+      destruct failed.
+      { (* Case: Write failed. Close the invariant without any updates. *)
+        iMod "Hmask" as "_".
+        iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+        { iFrame "∗ # %". }
+        iMod ("HinvfileC" with "HinvfileO") as "_".
+        iMod ("HinvC" with "HinvO") as "_".
+        set dst := PaxosDurable term terml log lsn.
+        iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
+        by iIntros "!> [_ %Hcontra]".
+      }
+      (* Case: Write succeeded. *)
+      iDestruct "Hfile" as "[Hfile %Hbs']".
       iAssert (⌜prefix logc logleader⌝)%I as %Hprefix.
       { iDestruct "Hcmted" as (p) "[Hcmted %Hple]".
         iApply (safe_ledger_prefix_base_ledger_impl_prefix with "Hcmted Hpfb HinvO").
@@ -124,18 +138,23 @@ Section accept.
       { apply Hlsnle. }
       { apply Hprefix. }
       iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
-      { iFrame "∗ # %". }
+      { iFrame "∗ # %".
+        iPureIntro.
+        apply Forall_app_2; first apply Hvdwal.
+        rewrite Forall_singleton /=.
+        word.
+      }
       iMod "Hmask" as "_".
-      (* iMod ("Hclose_termc" with "Htermc") as "Htermc". *)
       iMod ("HinvfileC" with "HinvfileO") as "_".
       iMod ("HinvC" with "HinvO") as "_".
+      set dst := PaxosDurable term term logleader lsn.
+      iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
       iIntros "!> Hents".
       wp_pures.
 
       (*@         return lsna                                                     @*)
       (*@     }                                                                   @*)
       (*@                                                                         @*)
-      iApply "HΦ".
       set log' := logc ++ _.
       set logc' := take (uint.nat lsn) log'.
       iInv "Hinv" as "> HinvO" "HinvC".
@@ -161,12 +180,14 @@ Section accept.
         by rewrite take_idemp.
       }
       iClear "Hcmted".
+      iApply "HΦ".
       iModIntro.
-      rewrite Heq.
       iSplit.
       { iFrame "Hcand Hleader HlogP HtermlP".
         iClear "Hpreped".
         case_decide; last done.
+        iFrame "∗".
+        rewrite Heq.
         iFrame "∗ # %".
         iPureIntro.
         split; first done.
@@ -174,6 +195,7 @@ Section accept.
         word.
       }
       iFrame "Hacpted'".
+      rewrite Heq.
       iApply (own_slice_sz with "Hlog").
     }
 
@@ -235,6 +257,7 @@ Section accept.
     wp_pures.
 
     (*@     // Logical action: Accept(term, log)                                @*)
+    (*@     logAccept(px.fname, lsn, ents)                                      @*)
     (*@                                                                         @*)
     iDestruct (own_slice_small_sz with "Hents") as %Hszents.
     assert (length log ≤ length logleader)%nat as Hlenlog.
@@ -246,18 +269,32 @@ Section accept.
     iNamed "Hfname".
     wp_loadField.
     wp_apply (wp_logAccept with "Hents").
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamed "Hdurable".
     iInv "Hinv" as "> HinvO" "HinvC".
     iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
     iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
     { apply Hnidme. }
     iNamed "Hnodefile".
-    (* iMod (own_crash_ex_open with "Htermc") as "(>Htermc&Hclose_termc)"; first solve_ndisj. *)
     iApply ncfupd_mask_intro; first solve_ndisj.
     iIntros "Hmask".
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
-    iFrame "Hfile".
-    iExists wal.
-    iIntros (bs') "[Hfile %Hbs']".
+    iFrame "Hfile %".
+    iIntros (bs' failed) "Hfile".
+    destruct failed.
+    { (* Case: Write failed. Close the invariant without any updates. *)
+      iMod "Hmask" as "_".
+      iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+      { iFrame "∗ # %". }
+      iMod ("HinvfileC" with "HinvfileO") as "_".
+      iMod ("HinvC" with "HinvO") as "_".
+      set dst := PaxosDurable terml terml log lsnc.
+      iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
+      by iIntros "!> [_ %Hcontra]".
+    }
+    (* Case: Write succeeded. *)
+    iDestruct "Hfile" as "[Hfile %Hbs']".
     iMod (paxos_inv_accept (uint.nat lsn) with "Hpfb Hpfg Hwalfile Htermc Hterml Hlogn HinvO")
       as "(Hwalfile & Htermc & Hterml & Hlogn & HinvO & #Hacpted')".
     { apply Hnidme. }
@@ -265,11 +302,17 @@ Section accept.
     { clear -Hnogap Hszlog. word. }
     { reflexivity. }
     iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
-    { iFrame "∗ # %". }
+    { iFrame "∗ # %".
+      iPureIntro.
+      apply Forall_app_2; first apply Hvdwal.
+      rewrite Forall_singleton /=.
+      word.
+    }
     iMod "Hmask" as "_".
-    (* iMod ("Hclose_termc" with "Htermc") as "Htermc". *)
     iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
+    set dst := PaxosDurable terml terml logleader lsnc.
+    iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
     iIntros "!> Hents".
     wp_pures.
 

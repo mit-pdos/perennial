@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 
-Definition dbkey := string.
-Definition dbval := option string.
+Definition dbkey := byte_string.
+Definition dbval := option byte_string.
 Definition dbhist := list dbval.
 Definition dbtpl := (dbhist * nat)%type.
 Definition dbmod := (dbkey * dbval)%type.
@@ -59,13 +59,13 @@ Proof.
   refine {|
       to_val := dbmod_to_val;
       from_val := dbmod_from_val;
-      IntoVal_def := ("", None);
+      IntoVal_def := (""%go, None);
     |}.
   intros [k v].
   by destruct v.
 Defined.
 
-Definition fstring := {k : string | (String.length k < 2 ^ 64)%nat}.
+Definition fstring := {k : byte_string | (length k < 2 ^ 64)%nat}.
 
 #[local]
 Instance fstring_finite :
@@ -73,7 +73,7 @@ Instance fstring_finite :
 Admitted.
 
 (* Definition keys_all : gset string := fin_to_set fstring. *)
-Definition keys_all : gset string.
+Definition keys_all : gset byte_string.
 Admitted.
 
 (** Transaction status on group/replica. *)

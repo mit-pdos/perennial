@@ -8,7 +8,7 @@ Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Theorem wp_GroupReader__pickLatestValue (grd : loc) (key : string) qreadm verm ts γ :
+  Theorem wp_GroupReader__pickLatestValue (grd : loc) (key : byte_string) qreadm verm ts γ :
     qreadm !! key = Some verm ->
     cquorum_size rids_all (dom verm) ->
     {{{ own_greader_qreadm grd qreadm ts γ }}}

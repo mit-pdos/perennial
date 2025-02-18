@@ -1,0 +1,27 @@
+translate = [
+  "LeaseID",
+  "Txn",
+  "Cmp",
+  "KV",
+  "OpOption",
+  "TxnResponse",
+  "Cluster",
+  "GetResponse",
+  "WatchResponse",
+  "WatchChan",
+  "Event",
+  "Watcher",
+  "Lease",
+  "NoLease",
+  "LeaseGrantResponse",
+]
+
+axiomatize = [
+  "Client",
+  "Op", # FIXME: sliceT shouldn't take a type as input
+]
+
+imports = [
+  "go.etcd.io/etcd/api/v3/etcdserverpb",
+  "go.etcd.io/etcd/api/v3/mvccpb",
+]

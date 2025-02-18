@@ -3,7 +3,7 @@
 From stdpp Require Import gmap vector fin_maps.
 From RecordUpdate Require Import RecordSet.
 
-From Perennial.Helpers Require Import CountableTactics Transitions Integers.
+From Perennial.Helpers Require Import CountableTactics Transitions Integers ByteString.
 From Perennial.goose_lang Require Import lang notation lib.control.impl.
 
 Set Default Proof Using "Type".
@@ -95,7 +95,7 @@ Global Instance grove_global_state_inhabited : Inhabited grove_global_state :=
 (** The per-node state *)
 Record grove_node_state : Type := {
   grove_node_tsc : u64;
-  grove_node_files: gmap string (list byte);
+  grove_node_files: gmap byte_string (list byte);
 }.
 
 Global Instance grove_node_state_settable : Settable _ :=

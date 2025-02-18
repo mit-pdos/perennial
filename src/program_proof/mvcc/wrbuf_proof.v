@@ -197,7 +197,7 @@ Proof.
 Qed.
 
 (* TODO: Return values first or others first? Make it consistent. *)
-Definition spec_wrbuf__Lookup (v : string) (b ok : bool) (key : u64) (m : gmap u64 dbval) :=
+Definition spec_wrbuf__Lookup (v : byte_string) (b ok : bool) (key : u64) (m : gmap u64 dbval) :=
   if ok then m !! key = Some (to_dbval b v) else m !! key = None.
 
 (*****************************************************************)
@@ -206,7 +206,7 @@ Definition spec_wrbuf__Lookup (v : string) (b ok : bool) (key : u64) (m : gmap u
 Theorem wp_wrbuf__Lookup wrbuf (key : u64) m :
   {{{ own_wrbuf_xtpls wrbuf m }}}
     WrBuf__Lookup #wrbuf #key
-  {{{ (v : string) (b ok : bool), RET (#(LitString v), #b, #ok);
+  {{{ (v : byte_string) (b ok : bool), RET (#(LitString v), #b, #ok);
       own_wrbuf_xtpls wrbuf m ∗ ⌜spec_wrbuf__Lookup v b ok key m⌝
   }}}.
 Proof.
@@ -271,7 +271,7 @@ Qed.
 (*****************************************************************)
 (* func (wrbuf *WrBuf) Put(key, val uint64)                      *)
 (*****************************************************************)
-Theorem wp_wrbuf__Put wrbuf (key : u64) (val : string) m :
+Theorem wp_wrbuf__Put wrbuf (key : u64) (val : byte_string) m :
   {{{ own_wrbuf_xtpls wrbuf m }}}
     WrBuf__Put #wrbuf #key #(LitString val)
   {{{ RET #(); own_wrbuf_xtpls wrbuf (<[ key := Value val ]> m) }}}.
@@ -547,7 +547,7 @@ Proof.
   iApply "HΦ".
   unfold spec_search in Hsearch.
   (* [(W64 0), ""] is the zero-value of [u64, string]. *)
-  set ents' := (ents ++ [(key, "", false, null)]).
+  set ents' := (ents ++ [(key, ""%go, false, null)]).
   unfold own_wrbuf_xtpls.
 
   iExists _, ents'.
