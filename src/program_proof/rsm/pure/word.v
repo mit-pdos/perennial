@@ -14,3 +14,8 @@ Lemma uint_nat_word_add_S (x : u64) :
   uint.Z x < 2 ^ 64 - 1 ->
   (uint.nat (word.add x (W64 1))) = S (uint.nat x).
 Proof. intros H. word. Qed.
+
+Lemma uint_nat_u64_inj (x y : u64) :
+  uint.nat x = uint.nat y ->
+  x = y.
+Proof. intros H. word. Qed.

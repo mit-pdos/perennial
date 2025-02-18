@@ -15,7 +15,7 @@ Context `{!heapGS Σ}.
 Context `{!inG Σ mono_natUR}.
 Context `{stagedG Σ}.
 
-Definition ctrname := "ctr".
+Definition ctrname := "ctr"%go.
 
 Definition own_CtrServer_durable (c:u64) : iProp Σ :=
   ∃ l, ctrname f↦ l ∗

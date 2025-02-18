@@ -14,11 +14,11 @@ From iris.algebra Require Import dfrac_agree mono_list.
 From Perennial.program_proof.vrsm.apps Require Import vsm proof kv_vsm_proof log.
 
 Class kvG Σ := KvG {
-  #[global] kv_ghostMapG :: ghost_mapG Σ string string ;
+  #[global] kv_ghostMapG :: ghost_mapG Σ byte_string byte_string ;
   #[global] kv_logG :: inG Σ (mono_listR (leibnizO kvOp)) ;
   #[global] kv_vsmG :: vsmG (sm_record:=kv_record) Σ ;
 }.
-Definition kvΣ := #[configΣ; ghost_mapΣ string string;
+Definition kvΣ := #[configΣ; ghost_mapΣ byte_string byte_string;
                       GFunctor (mono_listR (leibnizO kvOp));
                       vsmΣ (sm_record:=kv_record)
    ].
@@ -66,7 +66,7 @@ Context `{!ekvG Σ}.
    [getOp] doing [default []]. *)
 Definition own_kvs γ ops : iProp Σ :=
   ∃ allocatedKeys,
-  ghost_map_auth γ.(kv_gn) 1 (compute_state ops ∪ gset_to_gmap "" allocatedKeys)
+  ghost_map_auth γ.(kv_gn) 1 (compute_state ops ∪ gset_to_gmap ""%go allocatedKeys)
 .
 
 Definition stateN := nroot .@ "state".
@@ -74,7 +74,7 @@ Definition stateN := nroot .@ "state".
 Definition kv_inv γlog γ : iProp Σ :=
   inv stateN ( ∃ ops, own_log γlog ops ∗ own_kvs γ ops).
 
-Definition kv_ptsto γ (k v : string) : iProp Σ :=
+Definition kv_ptsto γ (k v : byte_string) : iProp Σ :=
   k ↪[γ.(kv_gn)] v.
 
 Context {params:ekvParams.t}.
@@ -280,19 +280,18 @@ Proof.
   iIntros (?) "Hck Hsl".
   wp_apply (wp_StringFromBytes with "[$]").
   iIntros "_".
-  simpl. rewrite string_to_bytes_to_string /=.
   rewrite lookup_union in Hlook.
+  simpl.
   destruct (compute_state ops !! key) as [x|]; simpl.
   - simpl in Hlook. rewrite union_Some_l in Hlook.
     injection Hlook as <-.
     iApply "HΦ". repeat iExists _. iFrame "∗#".
-  -
-    rewrite left_id lookup_gset_to_gmap_Some in Hlook.
+  - rewrite left_id lookup_gset_to_gmap_Some in Hlook.
     destruct Hlook as [? ?]; subst.
     iApply "HΦ". repeat iExists _. iFrame "∗#".
 Qed.
 
-Local Lemma helper (m:gmap string string) s k v d :
+Local Lemma helper (m:gmap byte_string byte_string) s k v d :
   (m ∪ gset_to_gmap d s) !! k = Some v →
   default d (m !! k) = v.
 Proof.
@@ -307,7 +306,7 @@ Lemma wp_Clerk__CondPut ck γkv key expect val :
   <<< ∀∀ old_value, kv_ptsto γkv key old_value >>>
     Clerk__CondPut #ck #(str key) #(str expect) #(str val) @ (↑pbN ∪ ↑prophReadN ∪ ↑esmN ∪ ↑stateN)
   <<< kv_ptsto γkv key (if bool_decide (expect = old_value) then val else old_value) >>>
-  {{{ RET #(str (if bool_decide (expect = old_value) then "ok" else "")); own_Clerk ck γkv }}}.
+  {{{ RET #(str (if bool_decide (expect = old_value) then "ok"%go else ""%go)); own_Clerk ck γkv }}}.
 Proof.
   iIntros "%Φ !# Hck Hupd".
   wp_rec.

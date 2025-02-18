@@ -35,3 +35,6 @@ __pycache__
 
 # Compiled code supplement
 /peony-code.zip
+
+# direnv 
+.direnv

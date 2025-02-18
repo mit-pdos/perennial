@@ -7,7 +7,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (* func findVersion(tid uint64, vers []Version) Version            *)
 (*******************************************************************)
 Local Theorem wp_findVersion (tid : u64) (versS : Slice.t)
-                              (vers : list (u64 * bool * string)) :
+                              (vers : list (u64 * bool * byte_string)) :
   {{{ ⌜∃ (ver : pver), (ver ∈ vers) ∧ (uint.Z ver.1.1 < uint.Z tid)⌝ ∗
       slice.own_slice versS (structTy Version) (DfracOwn 1) (ver_to_val <$> vers)
   }}}
@@ -49,7 +49,7 @@ Proof.
   (*     idx++                                               *)
   (* }                                                       *)
   (***********************************************************)
-  set P := λ (b : bool), (∃ (ver : u64 * bool * string) (idx : u64),
+  set P := λ (b : bool), (∃ (ver : u64 * bool * byte_string) (idx : u64),
              "HverR" ∷ (verR ↦[struct.t Version] ver_to_val ver) ∗
              "HidxR" ∷ (idxR ↦[uint64T] #idx) ∗
              "HversS" ∷ own_slice_small versS (struct.t Version) (DfracOwn 1) (ver_to_val <$> vers) ∗
@@ -144,7 +144,7 @@ Proof.
   }
   { (* Loop entry. *)
     unfold P.
-    iExists (W64 0, false, "").
+    iExists (W64 0, false, ""%go).
     iExists _.
     iFrame.
     iPureIntro.
@@ -307,7 +307,7 @@ Theorem wp_tuple__ReadVersion
       ⌜owned = false ∨ (uint.nat tid < length vchain)%nat⌝
   }}}
     Tuple__ReadVersion #tuple #tid
-  {{{ (val : string) (found : bool), RET (#(LitString val), #found);
+  {{{ (val : byte_string) (found : bool), RET (#(LitString val), #found);
       active_tid γ tid sid ∗ ptuple_ptsto γ key (to_dbval found val) (uint.nat tid)
   }}}.
 Proof.

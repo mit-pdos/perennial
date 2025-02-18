@@ -519,7 +519,7 @@ Section go_refinement.
       destruct iv1 => //=;
         inversion 1; eauto; subst; destruct iv2; inversion 1;
         subst; destruct l => //=; destruct l0 => //=;
-        destruct (string_to_bytes s !! (uint.nat n)) => //=; eauto.
+        destruct (s !! (uint.nat n)) => //=; eauto.
     }
 
     rewrite /bin_op_eval /bin_op_eval_eq /=.

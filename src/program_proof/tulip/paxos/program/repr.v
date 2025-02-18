@@ -62,8 +62,6 @@ Section repr.
   (*@     //                                                                  @*)
   (*@     conns     map[uint64]grove_ffi.Connection                           @*)
   (*@ }                                                                       @*)
-  Definition paxoscrashNS := nroot.@"paxos_crash".
-
   Definition is_paxos_addrm (paxos : loc) (addrm : gmap u64 chan) : iProp Σ :=
     ∃ (addrmP : loc),
       "#HaddrmP"   ∷ readonly (paxos ↦[Paxos :: "addrm"] #addrmP) ∗
@@ -86,9 +84,9 @@ Section repr.
       "%Haddrpeers" ∷ ⌜map_Forall (λ nid x, addrm !! nid = Some x.2) conns⌝.
 
   Definition own_paxos_candidate_only
-    (nidme termc terml termp : u64) (logc : list string)
+    (nidme termc terml termp : u64) (logc : list byte_string)
     (entspP : Slice.t) (resppP : loc) nids γ : iProp Σ :=
-    ∃ (entsp : list string) (respp : gmap u64 bool),
+    ∃ (entsp : list byte_string) (respp : gmap u64 bool),
       "Hentsp"   ∷ own_slice entspP stringT (DfracOwn 1) entsp ∗
       "Hrespp"   ∷ own_map resppP (DfracOwn 1) respp ∗
       "#Hvotes"  ∷ votes_in γ (dom respp) (uint.nat termc) (uint.nat termp) (logc ++ entsp) ∗
@@ -99,7 +97,7 @@ Section repr.
       "%Hpltc"   ∷ ⌜uint.Z termp < uint.Z termc⌝.
 
   Definition own_paxos_candidate
-    (paxos : loc) (nid termc terml : u64) (logc : list string) (iscand : bool) nids γ : iProp Σ :=
+    (paxos : loc) (nid termc terml : u64) (logc : list byte_string) (iscand : bool) nids γ : iProp Σ :=
     ∃ (termp : u64) (entspP : Slice.t) (resppP : loc),
       "HiscandP" ∷ paxos ↦[Paxos :: "iscand"] #iscand ∗
       "HtermpP"  ∷ paxos ↦[Paxos :: "termp"] #termp ∗
@@ -137,7 +135,7 @@ Section repr.
          accepted_or_committed_until γ nids nid a t (uint.nat i)).
 
   Definition own_paxos_leader_only
-    (termc terml : u64) (log : list string) (lsnpeersP : loc) (peers : gset u64)
+    (termc terml : u64) (log : list byte_string) (lsnpeersP : loc) (peers : gset u64)
     nids γ : iProp Σ :=
     ∃ (lsnpeers : gmap u64 u64),
       "Hps"        ∷ own_proposal γ (uint.nat termc) log ∗
@@ -148,7 +146,7 @@ Section repr.
       "%Hinclnids" ∷ ⌜dom lsnpeers ⊆ peers⌝.
 
   Definition own_paxos_leader
-    (paxos : loc) (nidme termc terml : u64) (log : list string) (isleader : bool)
+    (paxos : loc) (nidme termc terml : u64) (log : list byte_string) (isleader : bool)
     nids γ : iProp Σ :=
     ∃ (lsnpeersP : loc),
       "HisleaderP" ∷ paxos ↦[Paxos :: "isleader"] #isleader ∗
@@ -166,19 +164,16 @@ Section repr.
       "%Hsc"    ∷ ⌜size nids = uint.nat sc⌝.
 
   Definition own_paxos_common
-    (paxos : loc) (nidme termc terml lsnc : u64) (log : list string) nids γ : iProp Σ :=
+    (paxos : loc) (nidme termc terml lsnc : u64) (log : list byte_string) nids γ : iProp Σ :=
     ∃ (hb : bool) (logP : Slice.t),
+      let dst := PaxosDurable termc terml log lsnc in
       "HhbP"     ∷ paxos ↦[Paxos :: "hb"] #hb ∗
       "HtermcP"  ∷ paxos ↦[Paxos :: "termc"] #termc ∗
-      "Htermc"   ∷ own_current_term_half γ nidme (uint.nat termc) ∗
-      (* "Htermc"   ∷ own_crash_ex paxoscrashNS (own_current_term_half γ nidme) (uint.nat termc) ∗ *)
       "HtermlP"  ∷ paxos ↦[Paxos :: "terml"] #terml ∗
-      "Hterml"   ∷ own_ledger_term_half γ nidme (uint.nat terml) ∗
       "HlogP"    ∷ paxos ↦[Paxos :: "log"] (to_val logP) ∗
       "Hlog"     ∷ own_slice logP stringT (DfracOwn 1) log ∗
-      "Hlogn"    ∷ own_node_ledger_half γ nidme log ∗
       "HlsncP"   ∷ paxos ↦[Paxos :: "lsnc"] #lsnc ∗
-      "Hlsnc"    ∷ own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
+      "Hdurable" ∷ own_crash_ex pxcrashNS (own_paxos_durable γ nidme) dst ∗
       "Hsc"      ∷ own_paxos_sc paxos nids ∗
       "#Hgebase" ∷ prefix_base_ledger γ (uint.nat terml) log ∗
       "#Hpreped" ∷ (if decide (termc = terml)
@@ -197,7 +192,7 @@ Section repr.
   predicates should be existentially quantified. *)
   Definition own_paxos_internal
     (paxos : loc) (nidme termc terml lsnc : u64) (iscand isleader : bool) nids γ : iProp Σ :=
-    ∃ (log : list string),
+    ∃ (log : list byte_string),
       let logc := (take (uint.nat lsnc) log) in
       "Hpx"     ∷ own_paxos_common paxos nidme termc terml lsnc log nids γ ∗
       "Hcand"   ∷ own_paxos_candidate paxos nidme termc terml logc iscand nids γ ∗
@@ -266,7 +261,7 @@ Section repr.
   Proof. iIntros "Hpx". iFrame. Qed.
 
   Definition is_paxos_fname (paxos : loc) (nidme : u64) γ : iProp Σ :=
-    ∃ (fname : string),
+    ∃ (fname : byte_string),
       "#HfnameP"  ∷ readonly (paxos ↦[Paxos :: "fname"] #(LitString fname)) ∗
       "#Hfnameme" ∷ is_node_wal_fname γ nidme fname.
 

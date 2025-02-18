@@ -4,8 +4,9 @@ From iris.proofmode Require Import environments.
 From iris.bi.lib Require Import fractional.
 From Perennial.program_logic Require Import weakestpre.
 From New.golang.defn Require Export mem.
-From New.golang.theory Require Import proofmode typing.
+From New.golang.theory Require Import proofmode list typing.
 Require Import Coq.Program.Equality.
+
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 
@@ -43,21 +44,20 @@ Section goose_lang.
                                                      (λ q, l ↦{#q} v)%I q.
   Proof. constructor; auto. apply _. Qed.
 
-  Global Instance struct_fields_val_inj :
-    Inj (=) (=) struct.fields_val.
+  Lemma alist_val_inj a b :
+    alist_val a = alist_val b →
+    a = b.
   Proof.
-    rewrite struct.fields_val_unseal /struct.fields_val_def.
-    intros ?? Heq.
-    dependent induction y generalizing x;
-    destruct x as [|[]]; try done.
-    { destruct a; done. }
-    destruct a.
-    injection Heq as Heq.
-    subst.
-    eapply inj in Heq; last apply _.
-    subst.
-    f_equal.
-    by apply IHy.
+    rewrite alist_val_unseal.
+    dependent induction b generalizing a.
+    { by destruct a as [|[]]. }
+    destruct a0.
+    destruct a as [|[]]; first done.
+    rewrite /= => [=].
+    intros. subst.
+    repeat f_equal.
+    - by apply to_val_inj.
+    - by apply IHb.
   Qed.
 
   Local Lemma flatten_struct_inj (v1 v2 : val) :
@@ -71,9 +71,11 @@ Section goose_lang.
       match! goal with
       | [ v : slice.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ v : interface.t |- _ ] => let v := Control.hyp v in destruct $v
+      (* | [ v : interface.tSome |- _ ] => let v := Control.hyp v in destruct $v *)
       | [ v : func.t |- _ ] => let v := Control.hyp v in destruct $v
+      | [ v : option (go_string * go_string )|- _ ] => let v := Control.hyp v in destruct $v as [[??]|]
       | [ h : has_go_type _ _ |- _ ] => let h := Control.hyp h in (inversion_clear $h in Heq)
-      | [ h : struct.fields_val _ = struct.fields_val _ |- _ ] => apply struct_fields_val_inj in $h; subst
+      | [ h : alist_val _ = alist_val _ |- _ ] => apply alist_val_inj in $h; subst
 
       (* unseal whatever's relevant *)
       | [ h : context [struct.val_aux]  |- _ ] => rewrite !struct.val_aux_unseal in $h
@@ -187,6 +189,10 @@ Section goose_lang.
     iInduction Hty as [] "IH"; subst;
     simpl; rewrite ?to_val_unseal /= ?right_id ?loc_add_0;
       try (iApply heap_pointsto_non_null; by iFrame).
+    - (* interface *)
+      destruct i;
+        simpl; rewrite ?to_val_unseal /= ?right_id ?loc_add_0;
+        try (iApply heap_pointsto_non_null; by iFrame).
     - (* array *)
       rewrite go_type_size_unseal /= in Hlen.
       destruct a as [|].
@@ -200,7 +206,7 @@ Section goose_lang.
       + iFrame.
     - (* struct *)
       rewrite go_type_size_unseal /= in Hlen.
-      iInduction d as [|[]] "IH2"; simpl in *.
+      iInduction d as [|[a]] "IH2"; simpl in *.
       { exfalso. lia. }
       rewrite struct.val_aux_unseal /=.
       destruct (decide (go_type_size_def g = O)).
@@ -261,6 +267,7 @@ Section goose_lang.
     rewrite load_ty_unseal.
     rename l into l'.
     iInduction Hty as [] "IH" forall (l' Φ) "HΦ".
+    all: try destruct i.
     all: rewrite ?to_val_unseal /= /= ?loc_add_0 ?right_id; wp_pures.
     all: try (iApply (wp_load with "[$]"); done).
     - (* case arrayT *)
@@ -365,8 +372,8 @@ Section goose_lang.
     rename l into l'.
     rewrite store_ty_unseal.
     iInduction Hty_old as [] "IH" forall (v' Hty l' Φ) "HΦ".
-    all: inversion_clear Hty; subst; rewrite ?to_val_unseal /= ?loc_add_0 ?right_id;
-      wp_pures.
+    all: inversion_clear Hty; subst;
+      try destruct i, i0; rewrite ?to_val_unseal /= ?loc_add_0 ?right_id; wp_pures.
     all: try (wp_apply (wp_store with "[$]"); iIntros "H"; iApply "HΦ"; iFrame).
     - (* array *)
       rename a0 into a'.
@@ -490,6 +497,47 @@ Section goose_lang.
       simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
       iApply (wp_cmpxchg_suc with "[$Hl]"); first done; first (by econstructor);
       iIntros; iApply "HΦ"; iFrame; done.
+  Qed.
+
+  Lemma wp_typed_Load s E (l : loc) (v : V) dq :
+    is_primitive_type t →
+    {{{ l ↦{dq} v }}}
+      ! #l @ s ; E
+    {{{ RET #v; l ↦{dq} v }}}.
+  Proof using Type*.
+    intros Hprim.
+    pose proof (to_val_has_go_type v) as Hty.
+    unseal.
+    generalize dependent (#v).
+    clear dependent V.
+    intros.
+    iIntros "Hl HΦ".
+    destruct t; try by exfalso.
+    all: inversion Hty; subst;
+      inversion Hty; subst;
+      simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
+      iApply (wp_load with "[$Hl]"); iFrame.
+  Qed.
+
+  Lemma wp_typed_AtomicStore s E (l : loc) (v v' : V) :
+    is_primitive_type t →
+    {{{ l ↦ v }}}
+      AtomicStore #l #v' @ s ; E
+    {{{ RET #(); l ↦ v' }}}.
+  Proof using Type*.
+    intros Hprim.
+    pose proof (to_val_has_go_type v) as Hty_old.
+    pose proof (to_val_has_go_type v') as Hty.
+    unseal.
+    generalize dependent (#v). generalize dependent (#v').
+    clear dependent V.
+    intros.
+    iIntros "Hl HΦ".
+    destruct t; try by exfalso.
+    all: inversion Hty; subst;
+      inversion Hty_old; inversion Hty; subst;
+      simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
+      iApply (wp_atomic_store with "[$Hl]"); iFrame.
   Qed.
 
 End goose_lang.
@@ -617,7 +665,8 @@ Ltac2 wp_alloc () :=
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
   ltac2:(Control.enter wp_alloc);
-  iIntros (l) H.
+  intros l;
+  iIntros H.
 
 Tactic Notation "wp_load" := ltac2:(Control.enter wp_load).
 Tactic Notation "wp_store" := ltac2:(Control.enter wp_store).

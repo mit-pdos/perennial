@@ -258,7 +258,7 @@ Definition file_inv γ P epoch (contents:list u8) : iProp Σ :=
 .
 
 Definition own_StateMachine (s:loc) (epoch:u64) (ops:list OpType) (sealed:bool) P : iProp Σ :=
-  ∃ (fname:string) (aof_ptr:loc) γ γaof (logsize:u64) (smMem_ptr:loc) data
+  ∃ (fname:byte_string) (aof_ptr:loc) γ γaof (logsize:u64) (smMem_ptr:loc) data
     own_InMemoryStateMachine (allstates:list (list OpType * bool)),
     "Hfname" ∷ s ↦[StateMachine :: "fname"] #(LitString fname) ∗
     "HlogFile" ∷ s ↦[StateMachine :: "logFile"] #aof_ptr ∗

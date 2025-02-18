@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import os
-from os import path
 import subprocess
+from os import path
 
 
 def run_command(args, dry_run=False, verbose=False):
@@ -159,11 +159,13 @@ def main():
         do_run(["go", "install", "./cmd/goose"])
         os.chdir(old_dir)
 
-    def run_goose(src_path, *pkgs):
+    def run_goose(src_path, *pkgs, extra_args=None):
         if src_path is None:
             return
         if not pkgs:
             pkgs = ["."]
+        if not extra_args:
+            extra_args = []
 
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
@@ -174,6 +176,7 @@ def main():
         output = path.join(perennial_dir, "external/Goose")
         args.extend(["-out", output])
         args.extend(["-dir", src_path])
+        args.extend(extra_args)
         args.extend(pkgs)
         do_run(args)
 
@@ -281,10 +284,18 @@ def main():
             "./vrsm/apps/closed",
             "./tutorial",  # atomic commit
             "./tutorial/objectstore/dir",
+            "./tutorial/objectstore/dir/chunkhandle_gk",
+            "./tutorial/objectstore/dir/finishwrite_gk",
+            "./tutorial/objectstore/dir/recordchunk_gk",
             "./tutorial/objectstore/chunk",
+            "./tutorial/objectstore/chunk/writechunk_gk",
             "./tutorial/objectstore/client",
             "./tutorial/lockservice",
+            "./tutorial/lockservice/lockrequest_gk",
             "./tutorial/kvservice",
+            "./tutorial/kvservice/conditionalput_gk",
+            "./tutorial/kvservice/get_gk",
+            "./tutorial/kvservice/put_gk",
             "./tutorial/basics",
             "./tutorial/queue",
             "./map_marshal",
@@ -350,7 +361,7 @@ def main():
         "./util",
     )
 
-    run_goose(marshal_dir, ".")
+    run_goose(marshal_dir, ".", extra_args=["-skip-interfaces"])
 
     run_goose(std_dir, ".")
 

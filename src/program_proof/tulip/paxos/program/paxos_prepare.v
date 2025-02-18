@@ -9,7 +9,7 @@ Section prepare.
     termc ≠ terml ->
     {{{ own_paxos_with_termc_terml px nidme termc terml nids γ }}}
       Paxos__prepare #px #lsn
-    {{{ (entsP : Slice.t) (ents logpeer : list string), RET (#terml, (to_val entsP));
+    {{{ (entsP : Slice.t) (ents logpeer : list byte_string), RET (#terml, (to_val entsP));
         own_paxos_with_termc_terml px nidme termc terml nids γ ∗
         own_slice entsP stringT (DfracOwn 1) ents ∗
         past_nodedecs_latest_before γ nidme (uint.nat termc) (uint.nat terml) logpeer ∗

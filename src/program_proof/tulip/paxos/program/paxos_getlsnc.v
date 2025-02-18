@@ -8,7 +8,7 @@ Section getlsnc.
   Theorem wp_Paxos__getlsnc (px : loc) (nidme termc : u64) nids γ :
     {{{ own_paxos_leading_with_termc px nidme termc nids γ }}}
       Paxos__getlsnc #px
-    {{{ (lsnc : u64) (logc : list string), RET #lsnc; 
+    {{{ (lsnc : u64) (logc : list byte_string), RET #lsnc;
         own_paxos_leading_with_termc px nidme termc nids γ ∗
         safe_ledger_above γ nids (uint.nat termc) logc ∗
         ⌜length logc = uint.nat lsnc⌝

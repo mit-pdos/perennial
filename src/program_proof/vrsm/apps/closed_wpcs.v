@@ -321,11 +321,11 @@ Lemma wp_makeBankClerk γlk γkv (kvParams1 kvParams2:ekvParams.t):
   {{{
         "#Hhost1" ∷ is_kv_config_hosts (params:=kvParams1) [dconfigHost] γkv ∗
         "#Hhost2" ∷ is_kv_config_hosts (params:=kvParams2) [lconfigHost] γlk ∗
-        "#Hbank" ∷ is_bank "init" (Build_lock_names (kv_ptsto γlk)) (kv_ptsto γkv) {[ "a1"; "a2" ]}
+        "#Hbank" ∷ is_bank "init"%go (Build_lock_names (kv_ptsto γlk)) (kv_ptsto γkv) {[ "a1"%go; "a2"%go ]}
   }}}
     makeBankClerk #()
   {{{
-        (b:loc), RET #b; own_bank_clerk b {[ "a1" ; "a2" ]}
+        (b:loc), RET #b; own_bank_clerk b {[ "a1"%go ; "a2"%go ]}
   }}}
 .
 Proof.
@@ -364,7 +364,7 @@ Definition bank_pre : iProp Σ :=
   ∃ γkv γlk (p1 p2:ekvParams.t),
   "#Hhost1" ∷ is_kv_config_hosts (params:=p1)[dconfigHost] γkv ∗
   "#Hhost2" ∷ is_kv_config_hosts (params:=p2) [lconfigHost] γlk ∗
-  "#Hbank" ∷ is_bank "init" (Build_lock_names (kv_ptsto γlk)) (kv_ptsto γkv) {[ "a1"; "a2" ]}
+  "#Hbank" ∷ is_bank "init"%go (Build_lock_names (kv_ptsto γlk)) (kv_ptsto γkv) {[ "a1"%go; "a2"%go ]}
 .
 
 Lemma wp_bank_transferer_main :
@@ -703,7 +703,7 @@ Lemma alloc_vkv (params:ekvParams.t) configHostPairs allocated `{!ekvG Σ}:
   ={⊤}=∗ (∃ γ,
 
   (* system-wide: allows clients to connect to the system, and gives them ownership of keys *)
-  ([∗ set] k ∈ allocated, kv_ptsto γ k "") ∗
+  ([∗ set] k ∈ allocated, kv_ptsto γ k ""%go) ∗
   is_kv_config_hosts (configHostPairs.*1) γ ∗
 
   (* for each kv replica server:  *)
@@ -729,7 +729,7 @@ Proof.
   iMod (alloc_simplepb_system configHostPairs with "[$Hchan] [$HconfChan]") as (?) "H"; try done.
   iDestruct "H" as "(Hlog & #Hhosts & Hsrvs & HconfSrvs)".
   iFrame "HconfSrvs".
-  iMod (ghost_map_alloc (gset_to_gmap "" allocated)) as (γkv_gn) "[Hauth Hkvs]".
+  iMod (ghost_map_alloc (gset_to_gmap ""%go allocated)) as (γkv_gn) "[Hauth Hkvs]".
   iExists (Build_kv_names _ _).
   rewrite big_sepM_gset_to_gmap.
   iFrame "Hkvs".

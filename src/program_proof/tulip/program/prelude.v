@@ -49,7 +49,7 @@ Proof.
   refine {|
       to_val := dbmod_to_val;
       from_val := dbmod_from_val;
-      IntoVal_def := ("", None);
+      IntoVal_def := (""%go, None);
     |}.
   intros [k v].
   by destruct v.

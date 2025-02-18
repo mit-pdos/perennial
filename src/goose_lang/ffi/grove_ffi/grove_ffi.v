@@ -26,17 +26,17 @@ Class groveGS Σ : Set := GroveGS {
 
 Class groveGpreS Σ : Set := {
   #[global] grove_preG_net_heapG :: gen_heap.gen_heapGpreS chan (gset message) Σ;
-  #[global] grove_preG_files_heapG :: gen_heap.gen_heapGpreS string (list byte) Σ;
+  #[global] grove_preG_files_heapG :: gen_heap.gen_heapGpreS byte_string (list byte) Σ;
   #[global] grove_preG_tscG :: mono_natG Σ;
 }.
 Class groveNodeGS Σ : Set := GroveNodeGS {
   #[global] groveG_preS :: groveGpreS Σ;
   grove_tsc_name : gname;
-  #[global] groveG_files_heapG :: gen_heap.gen_heapGS string (list byte) Σ;
+  #[global] groveG_files_heapG :: gen_heap.gen_heapGS byte_string (list byte) Σ;
 }.
 
 Definition groveΣ : gFunctors :=
-  #[gen_heapΣ chan (gset message); gen_heapΣ string (list byte); mono_natΣ].
+  #[gen_heapΣ chan (gset message); gen_heapΣ byte_string (list byte); mono_natΣ].
 
 #[global]
 Instance subG_groveGpreS Σ : subG groveΣ Σ → groveGpreS Σ.
@@ -53,7 +53,7 @@ Section grove.
   Definition chan_msg_bounds (g : gmap chan (gset message)) : Prop :=
     ∀ c ms m, g !! c = Some ms → m ∈ ms → length m.(msg_data) < 2^64.
 
-  Definition file_content_bounds (g : gmap string (list byte)) : Prop :=
+  Definition file_content_bounds (g : gmap byte_string (list byte)) : Prop :=
     ∀ f c, g !! f = Some c → length c < 2^64.
 
   Local Program Instance grove_interp: ffi_interp grove_model :=
@@ -67,7 +67,7 @@ Section grove.
           mono_nat_auth_own grove_time_name 1 (uint.nat g.(grove_global_time))
          )%I;
        ffi_local_start _ _ σ :=
-         ([∗ map] f↦c ∈ σ.(grove_node_files), (pointsto (L:=string) (V:=list byte) f (DfracOwn 1) c))%I;
+         ([∗ map] f↦c ∈ σ.(grove_node_files), (pointsto (L:=byte_string) (V:=list byte) f (DfracOwn 1) c))%I;
        ffi_global_start _ _ g :=
          ([∗ map] e↦ms ∈ g.(grove_net), (pointsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
        ffi_restart _ _ _ := True%I;
@@ -80,7 +80,7 @@ End grove.
 Notation "c c↦ ms" := (pointsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
                        (at level 20, format "c  c↦  ms") : bi_scope.
 
-Notation "s f↦{ q } c" := (pointsto (L:=string) (V:=list byte) s q c)
+Notation "s f↦{ q } c" := (pointsto (L:=byte_string) (V:=list byte) s q c)
                             (at level 20, q at level 50, format "s  f↦{ q } c") : bi_scope.
 
 Notation "s f↦ c" := (s f↦{DfracOwn 1} c)%I
@@ -393,7 +393,7 @@ lemmas. *)
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
-  Lemma wp_FileReadOp (f : string) q c E :
+  Lemma wp_FileReadOp (f : byte_string) q c E :
     {{{ f f↦{q} c }}}
       ExternalOp FileReadOp #(str f) @ E
     {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
@@ -455,7 +455,7 @@ lemmas. *)
     destruct Hfresh as (Hfresh & _). eapply Hfresh.
   Qed.
 
-  Lemma wp_FileWriteOp (f : string) old new l q (len : u64) E :
+  Lemma wp_FileWriteOp f old new l q (len : u64) E :
     length new = uint.nat len →
     {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileWriteOp (#(str f), (#l, #len))%V @ E
@@ -509,7 +509,7 @@ lemmas. *)
     by iFrame.
   Qed.
 
-  Lemma wp_FileAppendOp (f : string) old new l q (len : u64) E :
+  Lemma wp_FileAppendOp f old new l q (len : u64) E :
     length new = uint.nat len →
     {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E

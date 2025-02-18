@@ -43,35 +43,38 @@ Definition MapValPreDecode: val :=
            "PkCommit" ::= "a2"
          ], "b2", #false))).
 
-Definition Auditor__checkOneUpd: val :=
-  rec: "Auditor__checkOneUpd" "a" "nextEpoch" "mapLabel" "mapVal" :=
-    let: ((((<>, <>), "proofTy"), <>), "err0") := merkle.Tree__Get (struct.loadF Auditor "keyMap" "a") "mapLabel" in
-    (if: "err0" || "proofTy"
+(* checkOneUpd from auditor.go *)
+
+(* checkOneUpd checks that an update is safe, and errs on fail. *)
+Definition checkOneUpd: val :=
+  rec: "checkOneUpd" "keys" "nextEp" "mapLabel" "mapVal" :=
+    let: ((((<>, <>), "proofTy"), <>), "err0") := merkle.Tree__Get "keys" "mapLabel" in
+    (if: "err0"
     then #true
     else
-      let: (("valPre", <>), "err1") := MapValPreDecode "mapVal" in
-      (if: "err1" || ((struct.loadF MapValPre "Epoch" "valPre") ≠ "nextEpoch")
+      (if: "proofTy"
       then #true
-      else #false)).
+      else
+        let: (("valPre", "rem"), "err1") := MapValPreDecode "mapVal" in
+        (if: "err1"
+        then #true
+        else
+          (if: (slice.len "rem") ≠ #0
+          then #true
+          else
+            (if: (struct.loadF MapValPre "Epoch" "valPre") ≠ "nextEp"
+            then #true
+            else #false))))).
 
-(* checkUpd checks that updates are okay to apply, and errors on fail. *)
-Definition Auditor__checkUpd: val :=
-  rec: "Auditor__checkUpd" "a" "upd" :=
-    let: "nextEpoch" := slice.len (struct.loadF Auditor "histInfo" "a") in
-    let: "err0" := ref (zero_val boolT) in
+(* checkUpd just runs checkOneUpd for all updates. *)
+Definition checkUpd: val :=
+  rec: "checkUpd" "keys" "nextEp" "upd" :=
+    let: "loopErr" := ref (zero_val boolT) in
     MapIter "upd" (λ: "mapLabel" "mapVal",
-      (if: Auditor__checkOneUpd "a" "nextEpoch" (StringToBytes "mapLabel") "mapVal"
-      then "err0" <-[boolT] #true
+      (if: checkOneUpd "keys" "nextEp" (StringToBytes "mapLabel") "mapVal"
+      then "loopErr" <-[boolT] #true
       else #()));;
-    ![boolT] "err0".
-
-(* applyUpd applies updates. *)
-Definition Auditor__applyUpd: val :=
-  rec: "Auditor__applyUpd" "a" "upd" :=
-    MapIter "upd" (λ: "label" "val",
-      let: ((<>, <>), "err0") := merkle.Tree__Put (struct.loadF Auditor "keyMap" "a") (StringToBytes "label") "val" in
-      control.impl.Assert (~ "err0"));;
-    #().
+    ![boolT] "loopErr".
 
 (* UpdateProof from serde.go *)
 
@@ -79,6 +82,18 @@ Definition UpdateProof := struct.decl [
   "Updates" :: mapT (slice.T byteT);
   "Sig" :: slice.T byteT
 ].
+
+(* applyUpd from auditor.go *)
+
+(* applyUpd applies a valid update. *)
+Definition applyUpd: val :=
+  rec: "applyUpd" "keys" "upd" :=
+    MapIter "upd" (λ: "label" "val",
+      let: ((<>, <>), "err0") := merkle.Tree__Put "keys" (StringToBytes "label") "val" in
+      control.impl.Assert (~ "err0"));;
+    #().
+
+(* PreSigDig from serde.go *)
 
 Definition PreSigDig := struct.decl [
   "Epoch" :: uint64T;
@@ -102,20 +117,20 @@ Definition AdtrEpochInfo := struct.decl [
   "AdtrSig" :: slice.T byteT
 ].
 
-(* Update checks new epoch updates, applies them, and rets err on fail. *)
+(* Update checks new epoch updates, applies them, and errors on fail. *)
 Definition Auditor__Update: val :=
   rec: "Auditor__Update" "a" "proof" :=
     Mutex__Lock (struct.loadF Auditor "mu" "a");;
-    let: "nextEpoch" := slice.len (struct.loadF Auditor "histInfo" "a") in
-    (if: Auditor__checkUpd "a" (struct.loadF UpdateProof "Updates" "proof")
+    let: "nextEp" := slice.len (struct.loadF Auditor "histInfo" "a") in
+    (if: checkUpd (struct.loadF Auditor "keyMap" "a") "nextEp" (struct.loadF UpdateProof "Updates" "proof")
     then
       Mutex__Unlock (struct.loadF Auditor "mu" "a");;
       #true
     else
-      Auditor__applyUpd "a" (struct.loadF UpdateProof "Updates" "proof");;
+      applyUpd (struct.loadF Auditor "keyMap" "a") (struct.loadF UpdateProof "Updates" "proof");;
       let: "dig" := merkle.Tree__Digest (struct.loadF Auditor "keyMap" "a") in
       let: "preSig" := struct.new PreSigDig [
-        "Epoch" ::= "nextEpoch";
+        "Epoch" ::= "nextEp";
         "Dig" ::= "dig"
       ] in
       let: "preSigByt" := PreSigDigEncode (NewSlice byteT #0) "preSig" in
@@ -129,8 +144,7 @@ Definition Auditor__Update: val :=
       Mutex__Unlock (struct.loadF Auditor "mu" "a");;
       #false).
 
-(* Get returns the auditor's known link for a particular epoch,
-   and errs on fail. *)
+(* Get returns the auditor's dig for a particular epoch, and errors on fail. *)
 Definition Auditor__Get: val :=
   rec: "Auditor__Get" "a" "epoch" :=
     Mutex__Lock (struct.loadF Auditor "mu" "a");;
@@ -168,8 +182,7 @@ Definition Client := struct.decl [
   "nextEpoch" :: uint64T
 ].
 
-(* ClientErr abstracts errors in the KT client.
-   maybe there's an error. if so, maybe there's irrefutable evidence. *)
+(* ClientErr abstracts errors that potentially have irrefutable evidence. *)
 Definition ClientErr := struct.decl [
   "Evid" :: ptrT;
   "Err" :: boolT

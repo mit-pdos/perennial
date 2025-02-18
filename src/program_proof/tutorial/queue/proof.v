@@ -5,6 +5,8 @@ From Perennial.goose_lang Require Import notation typing.
 From Perennial.goose_lang Require Import proofmode wpc_proofmode.
 From Perennial.goose_lang.lib Require Import typed_mem.
 From Perennial.program_proof Require Import proof_prelude.
+From Perennial.program_proof Require Import std_proof.
+From Perennial.goose_lang.automation Require Import extra_tactics.
 
 Record qt :=
   mk { queue: list u64;
@@ -189,7 +191,7 @@ Proof.
         rewrite length_drop.
         word.
       }
-      word_cleanup.
+      word.
     + (* FIXME: would be cool if [word] could handle this style of reasoning. *)
       rewrite Z.mod_small; word.
   - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
@@ -618,5 +620,70 @@ Proof.
     iApply "Post".
     iFrame.
 Qed.
+
+Definition queue_inv_ghost_list (queue : list u64) (first : u64) (count : u64) P : iProp Σ :=
+"Helem" ∷ ([∗ list] _ ↦ elem ∈ valid_elems queue first count, P elem). 
+ 
+Lemma own_queue_ghost_alloc
+  (queue : list u64) (first : u64) (count : u64)  (P : u64 -> iProp Σ):
+count = 0 -> first = 0 ->
+  ⊢ |={⊤}=> 
+  queue_inv_ghost_list queue first count P.
+Proof.
+  intros. iModIntro. unfold queue_inv_ghost_list.  unfold valid_elems. 
+  replace (uint.nat count) with (0)%nat.
+  { replace (uint.nat first) with (0)%nat.
+    { simpl. done. }
+    { set_solver. }
+  } set_solver.
+Qed.
+
+Lemma wp_new_queue (size: w64) (P: u64 → iProp Σ) :
+ {{{ ⌜0 < uint.Z size⌝ ∗ ⌜uint.Z size + 1 < 2 ^ 63⌝   }}} 
+   NewQueueRef #size
+  {{{ (ch: loc), RET #ch; 
+  is_queue ch P }}}.
+  Proof.
+  wp_start. iDestruct "Hpre" as "%Hpre".
+  rewrite -wp_fupd.
+  wp_apply (wp_new_free_lock).
+  iIntros (lk) "Hislock". wp_pures.
+  wp_apply wp_new_slice.
+  { done. }
+  iIntros (sl) "[Hslice Hempty_q_list]". 
+  wp_apply (wp_newCond' with "Hislock").
+  iIntros (cond_ptr) "Hfree_lock".
+  wp_apply wp_allocStruct.
+  { val_ty. } 
+  iIntros (l). iIntros "Hq_struct_ptr". 
+  iDestruct (struct_fields_split with "Hq_struct_ptr") as "Hq_struct_fields".
+  iNamed "Hq_struct_fields". iDestruct "Hfree_lock" as "[Hislock Hcond]".
+  iMod (struct_field_pointsto_persist with "lock") as "#mu".
+  iMod (struct_field_pointsto_persist with "cond") as "#cond".
+  iMod (struct_field_pointsto_persist with "queue") as "#queue".
+  iMod ( own_queue_ghost_alloc (replicate (uint.nat size) (W64 0)) (W64 0) (W64 0)  P) as "#Hg".
+  { done. }
+  { done. }
+  iMod (alloc_lock nroot _ lk ( queue_inv l sl P)
+  with "Hislock [first count queue Hslice]") as "Hlock".
+  { 
+    iModIntro. iFrame. iFrame "#". 
+    iExists ((replicate (uint.nat size) (W64 0))). 
+    iSplitL "Hslice". 
+      { iFrame.  assert((zero_val uint64T) = #(W64 0)). { done. }
+        replace (zero_val uint64T) with #(W64 0). 
+        iEval (rewrite /slice.own_slice_small /own_slice_small 
+        ?untype_replicate ?length_replicate).
+        done.
+      }
+    iPureIntro. rewrite length_replicate. word. 
+  }
+  iMod (own_queue_ghost_alloc (replicate (uint.nat size) (W64 0)) (W64 0) (W64 0) P) 
+  as "H3".
+  { done. }
+  { done. }
+  iNamed "H3". unfold queue_inv_inner.
+  iModIntro. iApply ("HΦ"). iFrame "#". iFrame. 
+  Qed.
 
 End proof.

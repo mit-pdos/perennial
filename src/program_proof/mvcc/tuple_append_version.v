@@ -6,7 +6,7 @@ Context `{!heapGS Σ, !mvcc_ghostG Σ}.
 (*****************************************************************)
 (* func (tuple *Tuple) appendVersion(tid uint64, val string)     *)
 (*****************************************************************)
-Theorem wp_tuple__appendVersion tuple (tid : u64) (val : string) owned tidlast vers :
+Theorem wp_tuple__appendVersion tuple (tid : u64) (val : byte_string) owned tidlast vers :
   {{{ own_tuple_phys tuple owned tidlast vers }}}
     Tuple__appendVersion #tuple #tid #(LitString val)
   {{{ RET #(); own_tuple_phys tuple false (W64 (uint.Z tid + 1)) (vers ++ [(tid, false, val)]) }}}.
@@ -49,7 +49,7 @@ Qed.
 (* func (tuple *Tuple) AppendVersion(tid uint64, val string)     *)
 (*****************************************************************)
 Theorem wp_tuple__AppendVersion
-        tuple (tid : u64) (val : string) (key : u64) (sid : u64)
+        tuple (tid : u64) (val : byte_string) (key : u64) (sid : u64)
         (phys : list dbval) γ :
   {{{ active_tid γ tid sid ∗
       own_tuple_locked tuple key (uint.nat tid) phys (extend (S (uint.nat tid)) phys ++ [Value val]) γ

@@ -3,126 +3,21 @@ From Perennial.goose_lang.lib Require Import string.impl.
 From Perennial.goose_lang.lib Require Import control.
 Import uPred.
 
+Global Delimit Scope byte_string_scope with go.
 Set Default Proof Using "Type".
 
 Section heap.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context {ext_ty: ext_types ext}.
 
-Definition bytes_to_string (l:list u8) : string :=
-  String.string_of_list_ascii (u8_to_ascii <$> l).
-
-Lemma bytes_to_string_to_bytes l :
-  string_to_bytes $ bytes_to_string l = l.
-Proof.
-  rewrite /string_to_bytes /bytes_to_string /=.
-  rewrite -{2}(list_fmap_id l).
-  rewrite String.list_ascii_of_string_of_list_ascii.
-  rewrite -list_fmap_compose.
-  apply list_fmap_ext.
-  intros.
-  simpl.
-  rewrite /string_to_bytes /bytes_to_string /= /u8_to_ascii.
-  pose proof (word.unsigned_range x).
-  assert (uint.nat x < 256)%nat.
-  { word. } (* FIXME: word_cleanup doesn't have good support for u8  *)
-  rewrite Ascii.nat_ascii_embedding.
-  {
-    apply word.unsigned_inj.
-    rewrite (Z2Nat.id _); last lia.
-    rewrite word.unsigned_of_Z.
-    by rewrite (@wrap_small _ _ _ _).
-  }
-  done.
-Qed.
-
-Global Instance bytes_to_string_inj : Inj (=) (=) bytes_to_string.
-Proof.
-  intros b1 b2 Heq.
-  apply (f_equal string_to_bytes) in Heq.
-  rewrite !bytes_to_string_to_bytes in Heq.
-  done.
-Qed.
-
-Lemma String_append s1 s2 a :
-  String a s1 +:+ s2 = String a (s1 +:+ s2).
-Proof.
-  reflexivity.
-Qed.
-
-Lemma string_to_bytes_app s1 s2 :
-  string_to_bytes (s1 ++ s2) = string_to_bytes s1 ++ string_to_bytes s2.
-Proof.
-  rewrite /string_to_bytes.
-  induction s1; first done.
-  cbn. rewrite String_append -IHs1.
-  done.
-Qed.
-
-Lemma bytes_to_string_app l1 l2 :
-  bytes_to_string (l1 ++ l2) = bytes_to_string l1 +:+ bytes_to_string l2.
-Proof.
-  rewrite /bytes_to_string.
-  induction l1; first done.
-  cbn. rewrite String_append -IHl1.
-  done.
-Qed.
-
-Lemma string_to_bytes_to_string s :
-   bytes_to_string $ string_to_bytes s = s.
-Proof.
-  rewrite /string_to_bytes /bytes_to_string /=.
-  induction s as [|].
-  { done. }
-  {
-    simpl.
-    rewrite IHs.
-    f_equal.
-    rewrite /u8_to_string /u8_to_ascii.
-    f_equal.
-    replace (uint.nat (_)) with (Ascii.nat_of_ascii a).
-    2:{ pose proof (Ascii.nat_ascii_bounded a) as H.
-        revert H. generalize (Ascii.nat_of_ascii a).
-        intros.
-        rewrite word.unsigned_of_Z.
-        word.
-    }
-    by rewrite Ascii.ascii_nat_embedding.
-  }
-Qed.
-
-Global Instance string_to_bytes_inj : Inj (=) (=) string_to_bytes.
-Proof.
-  intros s1 s2 Heq.
-  apply (f_equal bytes_to_string) in Heq.
-  rewrite !string_to_bytes_to_string in Heq.
-  done.
-Qed.
-
-Lemma string_bytes_length s :
-  String.length s = length $ string_to_bytes s.
-Proof.
-  rewrite /string_to_bytes length_fmap.
-  induction s as [|? ? IHs].
-  { done. }
-  { cbn. apply f_equal. done. }
-Qed.
-
-Lemma length_bytes_to_string bs :
-  String.length (bytes_to_string bs) = length bs.
-Proof.
-  rewrite string_bytes_length.
-  rewrite bytes_to_string_to_bytes //.
-Qed.
-
-Lemma wp_stringToBytes (i:u64) (s:string) :
+Lemma wp_stringToBytes (i:u64) (s:byte_string) :
   {{{
-        ⌜uint.nat i <= String.length s⌝
+        ⌜uint.nat i <= length s⌝
   }}}
     stringToBytes #i #(str s)
   {{{
         (sl:Slice.t), RET (slice_val sl); own_slice sl byteT (DfracOwn 1)
-                                                    (take (uint.nat i) (string_to_bytes s))
+                                                    (take (uint.nat i) s)
   }}}
 .
 Proof.
@@ -140,11 +35,10 @@ Proof.
   wp_pures.
   destruct (decide (i = 0)).
   { subst. by exfalso. }
-  assert (uint.nat (word.sub i 1%Z) < String.length s)%nat as Hlookup.
+  assert (uint.nat (word.sub i 1%Z) < length s)%nat as Hlookup.
   { enough (uint.nat i ≠ 0%nat) by word.
     intros ?. apply n. word. }
   pose proof Hlookup as Hineq2.
-  rewrite string_bytes_length in Hlookup.
   apply List.list_lookup_lt in Hlookup as [? Hlookup].
   wp_pure.
   { by rewrite /bin_op_eval /= Hlookup. }
@@ -165,13 +59,13 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_StringToBytes (s:string) :
+Lemma wp_StringToBytes (s:byte_string) :
   {{{
         True
   }}}
     StringToBytes #(str s)
   {{{
-        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (string_to_bytes s)
+        (sl:Slice.t), RET (slice_val sl); own_slice sl byteT (DfracOwn 1) s
   }}}
 .
 Proof.
@@ -185,7 +79,6 @@ Proof.
   iDestruct (own_slice_sz with "[$]") as %Hsz.
   rewrite take_ge.
   { iFrame. }
-  rewrite -string_bytes_length.
   word.
 Qed.
 
@@ -195,7 +88,7 @@ Lemma wp_StringFromBytes sl q (l:list u8) :
   }}}
     StringFromBytes (slice_val sl)
   {{{
-        RET #(str bytes_to_string l); own_slice_small sl byteT q l
+        RET #(str l); own_slice_small sl byteT q l
   }}}
 .
 Proof.
@@ -239,5 +132,3 @@ Proof.
 Qed.
 
 End heap.
-
-Hint Rewrite length_bytes_to_string : len.

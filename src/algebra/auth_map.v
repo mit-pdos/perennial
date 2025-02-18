@@ -188,11 +188,11 @@ Section auth_map.
   Proof. auto. Qed.
 
   Lemma Cinl_Cinr_op (A B:cmra) x y :
-    @Cinl A B x ⋅ @Cinr A B y = CsumBot.
+    @Cinl A B x ⋅ @Cinr A B y = CsumInvalid.
   Proof. reflexivity. Qed.
 
   Lemma Cinr_Cinl_op (A B:cmra) x y :
-    @Cinr A B y ⋅ @Cinl A B x = CsumBot.
+    @Cinr A B y ⋅ @Cinl A B x = CsumInvalid.
   Proof. reflexivity. Qed.
 
   Lemma ptsto_agree_frac_value γ k mq1 mq2 v1 v2 :
@@ -335,7 +335,7 @@ Section auth_map.
 
   Lemma Cinl_included_inv (A B: cmra) (x:A) (y:csumR A B) :
     Cinl x ≼ y →
-    y = CsumBot ∨ ∃ x', y = Cinl x' ∧ x ≼ x'.
+    y = CsumInvalid ∨ ∃ x', y = Cinl x' ∧ x ≼ x'.
   Proof.
     rewrite csum_included; intros [|[|]]; eauto; right.
     - destruct H as [x' [x'' ?]]; intuition subst.
@@ -347,7 +347,7 @@ Section auth_map.
 
   Lemma Cinr_included_inv (A B: cmra) (x:B) (y:csumR A B) :
     Cinr x ≼ y →
-    y = CsumBot ∨ ∃ x', y = Cinr x' ∧ x ≼ x'.
+    y = CsumInvalid ∨ ∃ x', y = Cinr x' ∧ x ≼ x'.
   Proof.
     rewrite csum_included; intros [|[|]]; eauto; right.
     - destruct H as [x' [x'' ?]]; intuition subst.
@@ -370,7 +370,7 @@ Section auth_map.
   Qed.
 
   Lemma Some_Cinl_included (A B: cmra) (x:A) (y: csumR A B) :
-    Some (Cinl x) ≼ Some y → y = CsumBot ∨ (∃ x', y = Cinl x' ∧ (x ≡ x' ∨ x ≼ x')).
+    Some (Cinl x) ≼ Some y → y = CsumInvalid ∨ (∃ x', y = Cinl x' ∧ (x ≡ x' ∨ x ≼ x')).
   Proof.
     intros H%Some_included_inv.
     intuition idtac.
@@ -382,7 +382,7 @@ Section auth_map.
   Qed.
 
   Lemma Some_Cinr_included (A B: cmra) (x:B) (y: csumR A B) :
-    Some (Cinr x) ≼ Some y → y = CsumBot ∨ (∃ x', y = Cinr x' ∧ (x ≡ x' ∨ x ≼ x')).
+    Some (Cinr x) ≼ Some y → y = CsumInvalid ∨ (∃ x', y = Cinr x' ∧ (x ≡ x' ∨ x ≼ x')).
   Proof.
     intros H%Some_included_inv.
     intuition idtac.

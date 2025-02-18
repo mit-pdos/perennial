@@ -56,7 +56,7 @@ func compareVersionVector(v1 []uint64, v2 []uint64) bool {
 	return output
 }
 
-func lexiographicCompare(v1 []uint64, v2 []uint64) bool {
+func lexicographicCompare(v1 []uint64, v2 []uint64) bool {
 	var output = false
 	var i = uint64(0)
 	var l = uint64(len(v1))
@@ -100,13 +100,14 @@ func oneOffVersionVector(v1 []uint64, v2 []uint64) bool {
 	for i < l {
 		if canApply && v1[i]+1 == v2[i] {
 			canApply = false
-			i++
-		} else if v1[i] < v2[i] {
-			output = false
-			i++
-		} else {
-			i++
+			i = i + 1
+			continue 
 		}
+		if v1[i] < v2[i] {
+			output = false
+			break
+		}
+		i = i + 1
 	}
 
 	return output 
@@ -137,15 +138,13 @@ func binarySearch(s []Operation, needle Operation) uint64 {
 	var j = uint64(len(s))
 	for i < j {
 		mid := i + (j-i)/2
-		if lexiographicCompare(needle.VersionVector, s[mid].VersionVector) {
+		if lexicographicCompare(needle.VersionVector, s[mid].VersionVector) {
 			i = mid + 1
 		} else {
 			j = mid
 		}
 	}
-	if i < uint64(len(s)) {
-		return i
-	}
+	
 	return i
 }
 
@@ -334,4 +333,8 @@ func processRequest(server Server, request Message) (Server, []Message) {
 	}
 
 	return s, outGoingRequests
+}
+
+func operationList(o Operation) ([] Operation) {
+     return append(make([]Operation, 0), o)
 }

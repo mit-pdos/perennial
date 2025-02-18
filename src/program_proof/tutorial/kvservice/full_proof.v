@@ -8,445 +8,15 @@ From Perennial.program_logic Require Import atomic_fupd.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-(********************************************************************************)
-
-Module putArgs.
-Record t :=
-  mk {
-      opId: u64 ;
-      key: string ;
-      val: string ;
-  }.
-
-Definition encodes (x:list u8) (a:t) : Prop :=
-  x = u64_le a.(opId) ++ (u64_le $ length $ string_to_bytes a.(key)) ++
-      string_to_bytes a.(key) ++ string_to_bytes a.(val)
-.
-
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition own (a:loc) (args:t) : iProp Σ :=
-  "HopId" ∷ a ↦[putArgs :: "opId"] #args.(opId) ∗
-  "Hkey" ∷ a ↦[putArgs :: "key"] #(str args.(key)) ∗
-  "Hval" ∷ a ↦[putArgs :: "val"] #(str args.(val))
-.
-
-Lemma wp_encode args_ptr args :
-  {{{
-        own args_ptr args
-  }}}
-    encodePutArgs #args_ptr
-  {{{
-        (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
-          ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT (DfracOwn 1) enc_args
-  }}}
-.
-Proof.
-  iIntros (Φ) "Hargs HΦ".
-  iNamed "Hargs".
-  wp_rec.
-  wp_apply wp_NewSlice.
-  iIntros (sl) "Hsl".
-  wp_apply wp_ref_to.
-  { done. }
-  iIntros (e) "He".
-
-  wp_pures.
-  wp_loadField.
-  wp_load.
-  wp_apply (wp_WriteInt with "[$]").
-  iIntros (?) "Hsl".
-  rewrite replicate_0 /=.
-  wp_store.
-
-  wp_loadField.
-  wp_apply wp_StringToBytes.
-  iIntros (key_sl) "Hkey_sl".
-  wp_pures.
-
-  wp_apply wp_slice_len.
-  iDestruct (own_slice_sz with "Hkey_sl") as "%Hsz".
-  wp_load.
-  wp_apply (wp_WriteInt with "[$Hsl]").
-  iIntros (?) "Hsl".
-  wp_store.
-
-  wp_load.
-  iDestruct (own_slice_to_small with "Hkey_sl") as "Hkey_sl".
-  wp_apply (wp_WriteBytes with "[$Hsl $Hkey_sl]").
-  iIntros (?) "[Hsl Hkey_sl]".
-  wp_store.
-
-  wp_loadField.
-  wp_apply (wp_StringToBytes).
-  iIntros (?) "Hval_sl".
-  iDestruct (own_slice_to_small with "Hval_sl") as "Hval_sl".
-  wp_load.
-  wp_apply (wp_WriteBytes with "[$Hsl $Hval_sl]").
-  iIntros (?) "[Hsl Hval_sl]".
-  wp_store.
-
-  wp_load.
-  iApply "HΦ".
-  iFrame.
-  iPureIntro.
-  unfold encodes.
-  repeat rewrite -assoc.
-  rewrite Hsz.
-  repeat f_equal.
-  word.
-Qed.
-
-Lemma wp_decode  sl enc_args args q :
-  {{{
-        "%Henc" ∷ ⌜encodes enc_args args⌝ ∗
-        "Hsl" ∷ own_slice_small sl byteT q enc_args
-  }}}
-    decodePutArgs (slice_val sl)
-  {{{
-        (args_ptr:loc), RET #args_ptr; own args_ptr args
-  }}}
-.
-Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_rec.
-  wp_apply wp_ref_to.
-  { done. }
-  iIntros (e) "He".
-  wp_pures.
-  wp_apply wp_allocStruct.
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-
-  wp_pures.
-  wp_load.
-  rewrite Henc; clear dependent enc_args.
-  wp_apply (wp_ReadInt with "[$]").
-  iIntros (?) "Hsl".
-  wp_pures.
-  wp_storeField.
-  wp_store.
-  wp_load.
-  wp_apply (wp_ReadInt with "[$]").
-  iIntros (?) "Hsl".
-  wp_pures.
-  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
-  wp_apply (wp_ReadBytes with "[$]").
-  { rewrite length_app in Hsz. word. }
-  iIntros (??) "[Hkey Hval]".
-  wp_pures.
-  wp_apply (wp_StringFromBytes with "[$Hkey]").
-  iIntros "Hkey".
-  wp_storeField.
-  wp_apply (wp_StringFromBytes with "[$Hval]").
-  iIntros "Hval".
-  wp_storeField.
-  iModIntro.
-  iApply "HΦ".
-  repeat rewrite string_to_bytes_to_string.
-  iFrame.
-Qed.
-
-End local_defs.
-End putArgs.
-
-Module conditionalPutArgs.
-Record t :=
-  mk {
-      opId: u64 ;
-      key: string ;
-      expectedVal: string ;
-      newVal: string ;
-  }.
-
-Definition encodes (x:list u8) (a:t) : Prop :=
-  x = u64_le a.(opId) ++ (u64_le $ length $ string_to_bytes a.(key)) ++ string_to_bytes a.(key) ++
-      (u64_le $ length $ string_to_bytes a.(expectedVal)) ++ string_to_bytes a.(expectedVal) ++ string_to_bytes a.(newVal)
-.
-
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition own (a:loc) (args:t) : iProp Σ :=
-  "HopId" ∷ a ↦[conditionalPutArgs :: "opId"] #args.(opId) ∗
-  "Hkey" ∷ a ↦[conditionalPutArgs :: "key"] #(str args.(key)) ∗
-  "HexpectedVal" ∷ a ↦[conditionalPutArgs :: "expectedVal"] #(str args.(expectedVal)) ∗
-  "Hval" ∷ a ↦[conditionalPutArgs :: "newVal"] #(str args.(newVal))
-.
-
-Lemma wp_encode args_ptr args :
-  {{{
-        own args_ptr args
-  }}}
-    encodeConditionalPutArgs #args_ptr
-  {{{
-        (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
-          ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT (DfracOwn 1) enc_args
-  }}}
-.
-Proof.
-  iIntros (Φ) "Hargs HΦ".
-  iNamed "Hargs".
-  wp_rec.
-  wp_apply wp_NewSlice.
-  iIntros (sl) "Hsl".
-  wp_apply wp_ref_to.
-  { done. }
-  iIntros (e) "He".
-  wp_pures.
-
-  wp_loadField.
-  wp_load.
-  wp_apply (wp_WriteInt with "[$]").
-  iIntros (?) "Hsl".
-  rewrite replicate_0 /=.
-  wp_store.
-
-  wp_loadField.
-  wp_apply wp_StringToBytes.
-  iIntros (key_sl) "Hkey_sl".
-  wp_pures.
-  wp_apply wp_slice_len.
-  iDestruct (own_slice_sz with "Hkey_sl") as "%Hsz".
-  wp_load.
-  wp_apply (wp_WriteInt with "[$Hsl]").
-  iIntros (?) "Hsl".
-  wp_store.
-
-  wp_load.
-  iDestruct (own_slice_to_small with "Hkey_sl") as "Hkey_sl".
-  wp_apply (wp_WriteBytes with "[$Hsl $Hkey_sl]").
-  iIntros (?) "[Hsl Hkey_sl]".
-  wp_store.
-
-  wp_loadField.
-  wp_apply (wp_StringToBytes).
-  iIntros (?) "Hexpect_sl".
-  iDestruct (own_slice_to_small with "Hexpect_sl") as "Hexpect_sl".
-  wp_pures.
-
-  wp_apply wp_slice_len.
-  iDestruct (own_slice_small_sz with "Hexpect_sl") as %?.
-  wp_load.
-  wp_apply (wp_WriteInt with "[$Hsl]").
-  iIntros (?) "Hsl".
-  wp_store.
-
-  wp_load.
-  wp_apply (wp_WriteBytes with "[$Hsl $Hexpect_sl]").
-  iIntros (?) "[Hsl Hexpect_sl]".
-  wp_store.
-
-  wp_loadField.
-  wp_apply (wp_StringToBytes).
-  iIntros (?) "Hval_sl".
-  wp_load.
-  iDestruct (own_slice_to_small with "Hval_sl") as "Hval_sl".
-  wp_apply (wp_WriteBytes with "[$Hsl $Hval_sl]").
-  iIntros (?) "[Hsl Hval_sl]".
-  wp_store.
-
-  wp_load.
-  iApply "HΦ".
-  iFrame.
-  iPureIntro.
-  unfold encodes.
-  repeat rewrite -assoc.
-  rewrite Hsz.
-  repeat f_equal; word.
-Qed.
-
-Lemma wp_decode  sl enc_args args q :
-  {{{
-        "%Henc" ∷ ⌜encodes enc_args args⌝ ∗
-        "Hsl" ∷ own_slice_small sl byteT q enc_args
-  }}}
-    decodeConditionalPutArgs (slice_val sl)
-  {{{
-        (args_ptr:loc), RET #args_ptr; own args_ptr args
-  }}}
-.
-Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_rec.
-  wp_apply wp_ref_to.
-  { done. }
-  iIntros (?) "He".
-  wp_pures.
-  wp_apply wp_allocStruct.
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  wp_pures.
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_load.
-  rewrite Henc.
-
-  wp_apply (wp_ReadInt with "Hsl").
-  iIntros (?) "Hsl".
-  wp_pures.
-  wp_storeField.
-  wp_store.
-
-  wp_load.
-  wp_apply (wp_ReadInt with "Hsl").
-  iIntros (?) "Hsl".
-  wp_pures.
-
-  iDestruct (own_slice_small_sz with "Hsl") as %Hsz.
-  wp_apply (wp_ReadBytes with "[$Hsl]").
-  { rewrite length_app in Hsz. word. }
-  iIntros (??) "[Hkey Hsl]".
-  wp_pures.
-  wp_apply (wp_StringFromBytes with "[$Hkey]").
-  iIntros "_".
-  wp_storeField.
-
-  wp_apply (wp_ReadInt with "[$Hsl]").
-  iIntros (?) "Hsl".
-  wp_pures.
-
-  wp_apply (wp_ReadBytes with "[$Hsl]").
-  { repeat rewrite length_app in Hsz. word. }
-  iIntros (??) "[Hexpect Hval]".
-  wp_pures.
-
-  wp_apply (wp_StringFromBytes with "[$Hexpect]").
-  iIntros "_".
-  wp_storeField.
-  wp_apply (wp_StringFromBytes with "[$Hval]").
-  iIntros "_".
-  wp_storeField.
-  iModIntro. iApply "HΦ".
-  iFrame.
-  rewrite ?string_to_bytes_to_string.
-  iFrame.
-Qed.
-
-End local_defs.
-End conditionalPutArgs.
-
-Module getArgs.
-Record t :=
-  mk {
-      opId: u64 ;
-      key: string ;
-  }.
-
-Definition encodes (x:list u8) (a:t) : Prop :=
-  x = u64_le a.(opId) ++ string_to_bytes a.(key)
-.
-
-Section local_defs.
-Context `{!heapGS Σ}.
-Definition own `{!heapGS Σ} (a:loc) (args:t) : iProp Σ :=
-  "HopId" ∷ a ↦[getArgs :: "opId"] #args.(opId) ∗
-  "Hkey" ∷ a ↦[getArgs :: "key"] #(str args.(key))
-.
-
-Lemma wp_encode args_ptr args :
-  {{{
-        own args_ptr args
-  }}}
-    encodeGetArgs #args_ptr
-  {{{
-        (sl:Slice.t) enc_args, RET (slice_val sl); own args_ptr args ∗
-          ⌜encodes enc_args args⌝ ∗
-          own_slice sl byteT (DfracOwn 1) enc_args
-  }}}
-.
-Proof.
-  iIntros (Φ) "Hargs HΦ".
-  iNamed "Hargs".
-  wp_rec.
-  wp_apply wp_NewSlice.
-  iIntros (?) "Hsl".
-  wp_apply (wp_ref_to).
-  { done. }
-  iIntros (?) "He".
-  wp_pures.
-  wp_loadField.
-  wp_load.
-  wp_apply (wp_WriteInt with "Hsl").
-  iIntros (?) "Hsl".
-  wp_store.
-  wp_loadField.
-  wp_apply (wp_StringToBytes).
-  iIntros (?) "Hkey_sl".
-  wp_load.
-  iDestruct (own_slice_to_small with "Hkey_sl") as "Hkey_sl".
-  wp_apply (wp_WriteBytes with "[$Hsl $Hkey_sl]").
-  iIntros (?) "[Hsl _]".
-  wp_store.
-  wp_load.
-  iModIntro. iApply "HΦ".
-  iFrame.
-  iPureIntro. done.
-Qed.
-
-Lemma wp_decode  sl enc_args args q :
-  {{{
-        "%Henc" ∷ ⌜encodes enc_args args⌝ ∗
-        "Hsl" ∷ own_slice_small sl byteT q enc_args
-  }}}
-    decodeGetArgs (slice_val sl)
-  {{{
-        (args_ptr:loc), RET #args_ptr; own args_ptr args
-  }}}
-.
-Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_rec.
-  wp_apply (wp_ref_to).
-  { done. }
-  iIntros (?) "He".
-  wp_pures.
-  wp_apply (wp_ref_of_zero).
-  { done. }
-  iIntros (?) "HkeyBytes".
-  wp_pures.
-  wp_apply wp_allocStruct.
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
-  wp_load.
-  rewrite Henc.
-  wp_apply (wp_ReadInt with "[$Hsl]").
-  iIntros (?) "Hsl".
-  wp_pures.
-  wp_storeField.
-  wp_store.
-
-  wp_load.
-  wp_apply (wp_StringFromBytes with "[$Hsl]").
-  iIntros "_".
-  wp_storeField.
-  iModIntro.
-  iApply "HΦ".
-  iFrame.
-  rewrite string_to_bytes_to_string.
-  iFrame.
-Qed.
-
-End local_defs.
-
-End getArgs.
-
-(********************************************************************************)
+From Perennial.program_proof.tutorial.kvservice Require Import get_proof_gk.
+From Perennial.program_proof.tutorial.kvservice Require Import conditionalput_proof_gk.
+From Perennial.program_proof.tutorial.kvservice Require Import put_proof_gk.
 
 Section marshal_proof.
 Context `{!heapGS Σ}.
 
-(* TODO: copied this naming convention from "u64_le". What does le actually
-   mean? *)
+(* TODO: copied this naming convention from "u64_le". What does le actually *)
+(*    mean? *)
 Definition bool_le (b:bool) : list u8 := if b then [W8 1] else [W8 0].
 
 Lemma wp_EncodeBool (b:bool) :
@@ -543,7 +113,7 @@ Record erpc_names :=
 Implicit Types γ:erpc_names.
 
 Class erpcG Σ := {
-    #[global] receiptG :: ghost_mapG Σ u64 string ;
+    #[global] receiptG :: ghost_mapG Σ u64 byte_string ;
     #[global] tokenG :: ghost_mapG Σ u64 unit ;
     #[global] clientTokenG :: inG Σ dfracR ;
 }.
@@ -556,20 +126,20 @@ Definition own_unexecuted_token γ (opId:u64) : iProp Σ :=
 Definition is_executed_witness γ (opId:u64) : iProp Σ :=
   opId ↪[γ.(req_gn)]□ ().
 
-Definition is_request_receipt γ (opId:u64) (r:string) : iProp Σ :=
+Definition is_request_receipt γ (opId:u64) (r:byte_string) : iProp Σ :=
   opId ↪[γ.(reply_gn)]□ r.
 
 Definition own_client_token γcl : iProp Σ :=
   own γcl (DfracOwn 1).
 
-Definition is_request_inv γ γcl (opId:u64) (pre:iProp Σ) (post:string → iProp Σ) : iProp Σ :=
+Definition is_request_inv γ γcl (opId:u64) (pre:iProp Σ) (post:byte_string → iProp Σ) : iProp Σ :=
   inv reqN (own_unexecuted_token γ opId ∗
             pre ∨
             is_executed_witness γ opId ∗
               (∃ r, is_request_receipt γ opId r ∗
                     (post r ∨ own_client_token γcl))).
 
-Definition own_erpc_server γ (nextFreshId:u64) (lastReplies:gmap u64 string) : iProp Σ :=
+Definition own_erpc_server γ (nextFreshId:u64) (lastReplies:gmap u64 byte_string) : iProp Σ :=
   ∃ (usedIds:gset u64),
   "Htoks" ∷ ghost_map_auth γ.(req_gn) 1 (gset_to_gmap () usedIds) ∗
   "Hreplies" ∷ ghost_map_auth γ.(reply_gn) 1 lastReplies ∗
@@ -581,7 +151,7 @@ Lemma alloc_erpc_server :
   ⊢ |==> ∃ γ, own_erpc_server γ 0 ∅.
 Proof.
   iMod (ghost_map_alloc_empty (V:=())) as (γreq) "Htoks".
-  iMod (ghost_map_alloc_empty (V:=string)) as (γreply) "Hreplies".
+  iMod (ghost_map_alloc_empty (V:=byte_string)) as (γreply) "Hreplies".
   iModIntro.
   iExists {| req_gn := _ ; reply_gn := _ |}.
   iExists ∅.
@@ -642,7 +212,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma server_duplicate_request_step opId r γ (lastReplies:gmap u64 string) nextFreshId:
+Lemma server_duplicate_request_step opId r γ (lastReplies:gmap u64 byte_string) nextFreshId:
   lastReplies !! opId = Some r →
   own_erpc_server γ nextFreshId lastReplies -∗
   is_executed_witness γ opId ∗
@@ -653,7 +223,7 @@ Proof.
   by iDestruct (big_sepM_lookup_acc with "Hwits") as "[$ HH]".
 Qed.
 
-Lemma server_execute_step opId γ γcl pre post (lastReplies:gmap u64 string) nextFreshId:
+Lemma server_execute_step opId γ γcl pre post (lastReplies:gmap u64 byte_string) nextFreshId:
   lastReplies !! opId = None →
   £ 1 -∗
   is_request_inv γ γcl opId pre post -∗
@@ -744,7 +314,7 @@ Record kvservice_names :=
 Class kvserviceG Σ :=
   {
     #[global] erpc_inG :: erpcG Σ ;
-    #[global] kvs_inG :: ghost_mapG Σ string string ;
+    #[global] kvs_inG :: ghost_mapG Σ byte_string byte_string ;
   }.
 
 End ghost_proof.
@@ -762,42 +332,42 @@ Definition getFreshNum_core_pre : iProp Σ :=
 Definition getFreshNum_core_post : u64 → iProp Σ :=
   λ opId, own_unexecuted_token γ.(erpc_gn) opId.
 
-Definition put_core_pre (args : putArgs.t) : iProp Σ :=
-  ∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(putArgs.opId)
-    (|={⊤∖↑reqN,∅}=> ∃ oldv, args.(putArgs.key) ↪[γ.(kv_gn)] oldv ∗
-                            (args.(putArgs.key) ↪[γ.(kv_gn)] args.(putArgs.val) ={∅,⊤∖↑reqN}=∗
+Definition put_core_pre (args : put.C) : iProp Σ :=
+  ∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(put.opId)
+    (|={⊤∖↑reqN,∅}=> ∃ oldv, args.(put.key) ↪[γ.(kv_gn)] oldv ∗
+                            (args.(put.key) ↪[γ.(kv_gn)] args.(put.value) ={∅,⊤∖↑reqN}=∗
                              Q))%I
     (λ _, Q).
 
-Definition put_core_post (args : putArgs.t) : iProp Σ :=
-  ∃ r, is_executed_witness γ.(erpc_gn) args.(putArgs.opId) ∗
-       is_request_receipt γ.(erpc_gn) args.(putArgs.opId) r.
+Definition put_core_post (args : put.C) : iProp Σ :=
+  ∃ r, is_executed_witness γ.(erpc_gn) args.(put.opId) ∗
+       is_request_receipt γ.(erpc_gn) args.(put.opId) r.
 
-Definition conditionalPut_core_pre (args:conditionalPutArgs.t) : iProp Σ :=
-  ∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(conditionalPutArgs.opId)
-    (|={⊤∖↑reqN,∅}=> ∃ oldv, args.(conditionalPutArgs.key) ↪[γ.(kv_gn)] oldv ∗
-                (args.(conditionalPutArgs.key) ↪[γ.(kv_gn)]
-                (if bool_decide (oldv = args.(conditionalPutArgs.expectedVal)) then
-                  args.(conditionalPutArgs.newVal)
+Definition conditionalPut_core_pre (args:conditionalPut.C) : iProp Σ :=
+  ∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(conditionalPut.opId)
+    (|={⊤∖↑reqN,∅}=> ∃ oldv, args.(conditionalPut.key) ↪[γ.(kv_gn)] oldv ∗
+                (args.(conditionalPut.key) ↪[γ.(kv_gn)]
+                (if bool_decide (oldv = args.(conditionalPut.expectedVal)) then
+                  args.(conditionalPut.newVal)
                 else oldv) ={∅,⊤∖↑reqN}=∗
-                 (Q (bool_decide (oldv = args.(conditionalPutArgs.expectedVal))))))
-    (λ r, if decide (r = "ok") then Q true else Q false)
+                 (Q (bool_decide (oldv = args.(conditionalPut.expectedVal))))))
+    (λ r, if decide (r = "ok"%go) then Q true else Q false)
 .
 
-Definition conditionalPut_core_post (args:conditionalPutArgs.t) r : iProp Σ :=
-  is_executed_witness γ.(erpc_gn) args.(conditionalPutArgs.opId) ∗
-  is_request_receipt γ.(erpc_gn) args.(conditionalPutArgs.opId) r.
+Definition conditionalPut_core_post (args:conditionalPut.C) r : iProp Σ :=
+  is_executed_witness γ.(erpc_gn) args.(conditionalPut.opId) ∗
+  is_request_receipt γ.(erpc_gn) args.(conditionalPut.opId) r.
 
-Definition get_core_pre (args:getArgs.t) : iProp Σ :=
-  ∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(getArgs.opId)
-    (|={⊤∖↑reqN,∅}=> ∃ v, args.(getArgs.key) ↪[γ.(kv_gn)] v ∗
-                (args.(getArgs.key) ↪[γ.(kv_gn)] v ={∅,⊤∖↑reqN}=∗
+Definition get_core_pre (args:get.C) : iProp Σ :=
+  ∃ γcl Q, is_request_inv γ.(erpc_gn) γcl args.(get.opId)
+    (|={⊤∖↑reqN,∅}=> ∃ v, args.(get.key) ↪[γ.(kv_gn)] v ∗
+                (args.(get.key) ↪[γ.(kv_gn)] v ={∅,⊤∖↑reqN}=∗
                 (Q v)))
     Q.
 
-Definition get_core_post (args:getArgs.t) r : iProp Σ :=
-  is_executed_witness γ.(erpc_gn) args.(getArgs.opId) ∗
-  is_request_receipt γ.(erpc_gn) args.(getArgs.opId) r.
+Definition get_core_post (args:get.C) r : iProp Σ :=
+  is_executed_witness γ.(erpc_gn) args.(get.opId) ∗
+  is_request_receipt γ.(erpc_gn) args.(get.opId) r.
 
 End rpc_definitions.
 
@@ -805,15 +375,15 @@ Module server.
 Record t :=
   mk {
       nextFreshId : u64 ;
-      lastReplies : gmap u64 string ;
-      kvs : gmap string string ;
+      lastReplies : gmap u64 byte_string ;
+      kvs : gmap byte_string byte_string ;
     }.
 
 Global Instance etaServer : Settable _ :=
   settable! (mk) <nextFreshId; lastReplies; kvs>.
 
-Definition gauge_eq : relation (gmap string string) :=
-  λ m1 m2, ∀ k, default "" (m1 !! k) = default "" (m2 !! k).
+Definition gauge_eq : relation (gmap byte_string byte_string) :=
+  λ m1 m2, ∀ k, default ""%go (m1 !! k) = default ""%go (m2 !! k).
 
 Global Instance gauge_eq_Equivalence: Equivalence (gauge_eq).
 Proof.
@@ -831,14 +401,14 @@ Proof. intros ????. destruct (decide (k = k0)).
        - do 2 (rewrite lookup_insert_ne; last done). done.
 Qed.
 
-Global Instance gauge_proper_default_lookup (k:string) :
-  Proper (gauge_eq ==> eq) (λ m, default "" (lookup k m)).
+Global Instance gauge_proper_default_lookup (k:byte_string) :
+  Proper (gauge_eq ==> eq) (λ m, default ""%go (lookup k m)).
 Proof. intros ???. apply H. Qed.
 
 Section local_defns.
 Context `{!heapGS Σ}.
 Definition own_mem (s:loc) (st:t) : iProp Σ :=
-  ∃ (lastReplies_loc kvs_loc:loc) (kvs_phys:gmap string string),
+  ∃ (lastReplies_loc kvs_loc:loc) (kvs_phys:gmap byte_string byte_string),
   "HnextFreshId" ∷ s ↦[Server :: "nextFreshId"] #st.(nextFreshId) ∗
   "HlastReplies" ∷ s ↦[Server :: "lastReplies"] #lastReplies_loc ∗
   "Hkvs" ∷ s ↦[Server :: "kvs"] #kvs_loc ∗
@@ -930,7 +500,7 @@ Proof.
 Qed.
 
 Lemma ghost_put_dup γ st r args :
-  st.(server.lastReplies) !! args.(putArgs.opId) = Some r →
+  st.(server.lastReplies) !! args.(put.opId) = Some r →
   put_core_pre γ args -∗
   server.own_ghost γ st -∗
   server.own_ghost γ st ∗
@@ -944,13 +514,13 @@ Proof.
 Qed.
 
 Lemma ghost_put γ st args :
-  st.(server.lastReplies) !! args.(putArgs.opId) = None →
+  st.(server.lastReplies) !! args.(put.opId) = None →
   £ 1 -∗
   put_core_pre γ args -∗
   server.own_ghost γ st ={⊤}=∗
   server.own_ghost γ
-        (st <|server.lastReplies := <[args.(putArgs.opId) := ""]> st.(server.lastReplies)|>
-            <|server.kvs := <[args.(putArgs.key) := args.(putArgs.val)]> st.(server.kvs)|>) ∗
+        (st <|server.lastReplies := <[args.(put.opId) := ""%go]> st.(server.lastReplies)|>
+            <|server.kvs := <[args.(put.key) := args.(put.value)]> st.(server.kvs)|>) ∗
   put_core_post γ args.
 Proof.
   intros.
@@ -967,13 +537,13 @@ Proof.
   iPureIntro. simpl. by f_equiv.
 Qed.
 
-Lemma wp_Server__put (s:loc) γ args_ptr (args:putArgs.t) :
+Lemma wp_Server__put (s:loc) γ (args__v:val) (args:put.C) :
   {{{
         "#Hsrv" ∷ is_Server s γ ∗
         "Hspec" ∷ put_core_pre γ args ∗
-        "Hargs" ∷ putArgs.own args_ptr args
+        "Hargs" ∷ put.own args__v args (DfracOwn 1)
   }}}
-  Server__put #s #args_ptr
+  Server__put #s args__v
   {{{
         RET #(); put_core_post γ args
   }}}
@@ -989,8 +559,8 @@ Proof.
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
-  iNamed "Hargs".
-  wp_loadField.
+  iUnfold put.own in "Hargs". iNamed "Hargs".
+  rewrite Hown_struct. wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "HlastRepliesM").
   iIntros (??) "[%HlastReply HlastRepliesM]".
@@ -1012,13 +582,10 @@ Proof.
     iApply "Hspec".
   }
   wp_loadField.
-  wp_loadField.
-  wp_loadField.
   wp_apply (wp_MapInsert with "HkvsM").
   { done. }
   iIntros "HkvsM".
   wp_pures.
-  wp_loadField.
   wp_loadField.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
@@ -1040,7 +607,7 @@ Proof.
 Qed.
 
 Lemma ghost_conditionalPut_dup γ st r args :
-  st.(server.lastReplies) !! args.(conditionalPutArgs.opId) = Some r →
+  st.(server.lastReplies) !! args.(conditionalPut.opId) = Some r →
   conditionalPut_core_pre γ args -∗
   server.own_ghost γ st -∗
   server.own_ghost γ st ∗
@@ -1056,19 +623,19 @@ Qed.
 Local Definition cond_put_ok st args :=
   (st
      <|server.lastReplies :=
-        <[args.(conditionalPutArgs.opId) := "ok"]> st.(server.lastReplies)|>
+        <[args.(conditionalPut.opId) := "ok"%go]> st.(server.lastReplies)|>
      <|server.kvs :=
-        <[args.(conditionalPutArgs.key) := args.(conditionalPutArgs.newVal)]> st.(server.kvs)|>)
+        <[args.(conditionalPut.key) := args.(conditionalPut.newVal)]> st.(server.kvs)|>)
 .
 
 Local Definition cond_put_not_ok st args :=
-  (st <|server.lastReplies := <[args.(conditionalPutArgs.opId) := ""]>
+  (st <|server.lastReplies := <[args.(conditionalPut.opId) := ""%go]>
                                 st.(server.lastReplies)|>)
 .
 
 Lemma ghost_conditionalPut_ok γ st args :
-  st.(server.lastReplies) !! args.(conditionalPutArgs.opId) = None →
-  default "" (st.(server.kvs) !! args.(conditionalPutArgs.key)) = args.(conditionalPutArgs.expectedVal) →
+  st.(server.lastReplies) !! args.(conditionalPut.opId) = None →
+  default ""%go (st.(server.kvs) !! args.(conditionalPut.key)) = args.(conditionalPut.expectedVal) →
   £ 1 -∗
   conditionalPut_core_pre γ args -∗
   server.own_ghost γ st ={⊤}=∗
@@ -1091,19 +658,19 @@ Proof.
     by rewrite H1.
   }
 
-  iMod ("Hclose" $! "ok" with "HQ") as "[Herpc #Hwit]".
+  iMod ("Hclose" $! "ok"%go with "HQ") as "[Herpc #Hwit]".
   iModIntro.
   iFrame "∗#%". iPureIntro. simpl. by f_equiv.
 Qed.
 
 Lemma ghost_conditionalPut_not_ok γ st args :
-  st.(server.lastReplies) !! args.(conditionalPutArgs.opId) = None →
-  default "" (st.(server.kvs) !! args.(conditionalPutArgs.key)) ≠ args.(conditionalPutArgs.expectedVal) →
+  st.(server.lastReplies) !! args.(conditionalPut.opId) = None →
+  default ""%go (st.(server.kvs) !! args.(conditionalPut.key)) ≠ args.(conditionalPut.expectedVal) →
   £ 1 -∗
   conditionalPut_core_pre γ args -∗
   server.own_ghost γ st ={⊤}=∗
   server.own_ghost γ (cond_put_not_ok st args) ∗
-  conditionalPut_core_post γ args "".
+  conditionalPut_core_post γ args ""%go.
 Proof.
   intros.
   iIntros "Hlc Hspec". iNamed 1.
@@ -1119,18 +686,18 @@ Proof.
     by rewrite H1.
   }
   iMod ("Hau" with "Hptsto") as "HQ".
-  iMod ("Hclose" $! "" with "HQ") as "[Herpc #Hwit]".
+  iMod ("Hclose" $! ""%go with "HQ") as "[Herpc #Hwit]".
   iModIntro.
   iFrame "∗#%" .
 Qed.
 
-Lemma wp_Server__conditionalPut γ (s:loc) args_ptr (args:conditionalPutArgs.t) :
+Lemma wp_Server__conditionalPut γ (s:loc) (args__v:val) (args:conditionalPut.C) :
   {{{
         "#Hsrv" ∷ is_Server s γ ∗
         "Hspec" ∷ conditionalPut_core_pre γ args ∗
-        "Hargs" ∷ conditionalPutArgs.own args_ptr args
+        "Hargs" ∷ conditionalPut.own args__v args (DfracOwn 1)
   }}}
-    Server__conditionalPut #s #args_ptr
+    Server__conditionalPut #s args__v
   {{{ r, RET #(str r); conditionalPut_core_post γ args r }}}
 .
 Proof.
@@ -1144,8 +711,8 @@ Proof.
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
-  iNamed "Hargs".
-  wp_loadField.
+  iUnfold conditionalPut.own in "Hargs". iNamed "Hargs".
+  rewrite Hown_struct. wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "HlastRepliesM").
   iIntros (??) "[%HlastReply HlastRepliesM]".
@@ -1170,16 +737,11 @@ Proof.
   iIntros (ret2_ptr) "Hret".
   wp_pures.
   wp_loadField.
-  wp_loadField.
   wp_apply (wp_MapGet with "HkvsM").
   iIntros (??) "[%Hlookup HkvsM]".
   wp_pures.
-  wp_loadField.
-  wp_pures.
   wp_if_destruct.
   { (* case: the old value matches the expected value *)
-    wp_loadField.
-    wp_loadField.
     wp_loadField.
     wp_apply (wp_MapInsert with "HkvsM").
     { done. }
@@ -1190,7 +752,6 @@ Proof.
     wp_store.
     wp_pures.
     wp_load.
-    wp_loadField.
     wp_loadField.
     wp_apply (wp_MapInsert with "HlastRepliesM").
     { done. }
@@ -1224,7 +785,6 @@ Proof.
   wp_pures.
   wp_load.
   wp_loadField.
-  wp_loadField.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
   iIntros "HlastRepliesM".
@@ -1255,7 +815,7 @@ Proof.
 Qed.
 
 Lemma ghost_get_dup γ st r args :
-  st.(server.lastReplies) !! args.(getArgs.opId) = Some r →
+  st.(server.lastReplies) !! args.(get.opId) = Some r →
   get_core_pre γ args -∗
   server.own_ghost γ st -∗
   server.own_ghost γ st ∗
@@ -1269,15 +829,15 @@ Proof.
 Qed.
 
 Lemma ghost_get γ st args :
-  st.(server.lastReplies) !! args.(getArgs.opId) = None →
+  st.(server.lastReplies) !! args.(get.opId) = None →
   £ 1 -∗
   get_core_pre γ args -∗
   server.own_ghost γ st ={⊤}=∗
   server.own_ghost γ
         (st <|server.lastReplies :=
-        <[args.(getArgs.opId) := (default "" (st.(server.kvs) !! args.(getArgs.key)))]>
+        <[args.(get.opId) := (default ""%go (st.(server.kvs) !! args.(get.key)))]>
           st.(server.lastReplies)|>) ∗
-  get_core_post γ args (default "" (st.(server.kvs) !! args.(getArgs.key))).
+  get_core_post γ args (default ""%go (st.(server.kvs) !! args.(get.key))).
 Proof.
   intros.
   iIntros "Hlc Hspec". iNamed 1.
@@ -1294,13 +854,13 @@ Proof.
   iFrame "∗#%".
 Qed.
 
-Lemma wp_Server__get (s:loc) γ args_ptr (args:getArgs.t) :
+Lemma wp_Server__get (s:loc) γ (args__v:val) (args:get.C) :
   {{{
         "#Hsrv" ∷ is_Server s γ ∗
         "Hspec" ∷ get_core_pre γ args ∗
-        "Hargs" ∷ getArgs.own args_ptr args
+        "Hargs" ∷ get.own args__v args (DfracOwn 1)
   }}}
-    Server__get #s #args_ptr
+    Server__get #s args__v
   {{{
         r, RET #(str r); get_core_post γ args r
   }}}
@@ -1316,8 +876,8 @@ Proof.
   iIntros "[Hlocked Hown]".
   repeat iNamed "Hown".
   wp_pures.
-  iNamed "Hargs".
-  wp_loadField.
+  iUnfold get.own in "Hargs". iNamed "Hargs".
+  rewrite Hown_struct. wp_pures.
   wp_loadField.
   wp_apply (wp_MapGet with "HlastRepliesM").
   iIntros (??) "[%HlastReply HlastRepliesM]".
@@ -1338,11 +898,9 @@ Proof.
     iApply "Hspec".
   }
   wp_loadField.
-  wp_loadField.
   wp_apply (wp_MapGet with "HkvsM").
   iIntros (?? )"[%Hlookup HkvsM]".
   wp_pures.
-  wp_loadField.
   wp_loadField.
   wp_apply (wp_MapInsert with "HlastRepliesM").
   { done. }
@@ -1406,7 +964,7 @@ Proof.
   wp_apply (wp_new_free_lock).
   iIntros (mu) "HmuInv".
   wp_storeField.
-  wp_apply (wp_NewMap string).
+  wp_apply (wp_NewMap byte_string).
   iIntros (kvs_loc) "HkvsM".
   wp_storeField.
   wp_apply (wp_NewMap u64).
@@ -1441,29 +999,27 @@ Definition getFreshNum_spec γ :=
 
 Program Definition put_spec γ :=
   {|
-    spec_ty := putArgs.t ;
-    spec_Pre := (λ args enc_args, ⌜ putArgs.encodes enc_args args ⌝ ∗ put_core_pre γ args)%I;
+    spec_ty := put.C ;
+    spec_Pre := (λ args enc_args, ⌜ put.has_encoding enc_args args ⌝ ∗ put_core_pre γ args)%I;
     spec_Post := (λ args enc_args _, put_core_post γ args)%I;
   |}.
 
 Program Definition conditionalPut_spec γ :=
   {|
-    spec_ty := conditionalPutArgs.t ;
-    spec_Pre := (λ args enc_args, ⌜ conditionalPutArgs.encodes enc_args args ⌝ ∗
+    spec_ty := conditionalPut.C ;
+    spec_Pre := (λ args enc_args, ⌜ conditionalPut.has_encoding enc_args args ⌝ ∗
                                        conditionalPut_core_pre γ args)%I;
-    spec_Post := (λ args enc_args enc_reply, ∃ reply,
-                     ⌜ enc_reply = string_to_bytes reply ⌝ ∗
-                     conditionalPut_core_post γ args reply)%I;
+    spec_Post := (λ args enc_args enc_reply,
+                     conditionalPut_core_post γ args enc_reply)%I;
   |}.
 
 Program Definition get_spec γ :=
   {|
-    spec_ty := getArgs.t ;
-    spec_Pre := (λ args enc_args, ⌜ getArgs.encodes enc_args args ⌝ ∗
+    spec_ty := get.C ;
+    spec_Pre := (λ args enc_args, ⌜ get.has_encoding enc_args args ⌝ ∗
                                        get_core_pre γ args)%I;
-    spec_Post := (λ args enc_args enc_reply, ∃ reply,
-                     ⌜ enc_reply = string_to_bytes reply ⌝ ∗
-                     get_core_post γ args reply)%I;
+    spec_Post := (λ args enc_args enc_reply,
+                     get_core_post γ args enc_reply)%I;
   |}.
 
 Definition is_kvserver_host host γ : iProp Σ :=
@@ -1547,8 +1103,9 @@ Proof.
       iIntros "%*%* !# (Hreq_sl & Hrep_sl & Hpre) HΦ".
       iDestruct "Hpre" as (?) "[% Hpre]".
       wp_pures.
-      wp_apply (getArgs.wp_decode with "[$Hreq_sl //]").
-      iIntros (?) "[Hargs Hreq_sl]".
+      wp_apply (get.wp_Decode _ _ _ [] with "[Hreq_sl]").
+      { rewrite app_nil_r. iFrame. done. }
+      iIntros (??) "[Hargs Hreq_sl]".
       wp_apply (wp_Server__get with "[$]").
       iIntros (?) "HΨ".
       wp_pures. wp_apply wp_StringToBytes.
@@ -1565,8 +1122,9 @@ Proof.
       iIntros "%*%* !# (Hreq_sl & Hrep_sl & Hpre) HΦ".
       iDestruct "Hpre" as (?) "[% Hpre]".
       wp_pures.
-      wp_apply (conditionalPutArgs.wp_decode with "[$Hreq_sl //]").
-      iIntros (?) "[Hargs Hreq_sl]".
+      wp_apply (conditionalPut.wp_Decode _ _ _ [] with "[Hreq_sl]").
+      { rewrite app_nil_r. iFrame. done. }
+      iIntros (??) "[Hargs Hreq_sl]".
       wp_apply (wp_Server__conditionalPut with "[$]").
       iIntros (?) "HΨ".
       wp_pures. wp_apply wp_StringToBytes.
@@ -1583,11 +1141,13 @@ Proof.
       iIntros "%*%* !# (Hreq_sl & Hrep_sl & Hpre) HΦ".
       iDestruct "Hpre" as (?) "[% Hpre]".
       wp_pures.
-      wp_apply (putArgs.wp_decode with "[$Hreq_sl //]").
-      iIntros (?) "[Hargs Hreq_sl]".
+      wp_apply (put.wp_Decode _ _ _ [] with "[Hreq_sl]").
+      { rewrite app_nil_r. iFrame. done. }
+      iIntros (??) "[Hargs Hreq_sl]".
       wp_apply (wp_Server__put with "[$]").
       iIntros "HΨ".
       wp_pures.
+      iClear "Hreq_sl". (* Clear extra information about suff_sl to avoid confusing coq *)
       iModIntro. iApply "HΦ".
       iFrame.
       by iApply (own_slice_small_nil _ (DfracOwn 1)).
@@ -1698,13 +1258,13 @@ Proof.
   }
 Qed.
 
-Lemma wp_Client__putRpc cl args args_ptr γ :
+Lemma wp_Client__putRpc cl args args__v γ :
   {{{
-        "Hargs" ∷ putArgs.own args_ptr args ∗
+        "Hargs" ∷ put.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl γ ∗
         "#Hspec" ∷ □ put_core_pre γ args
   }}}
-    Client__putRpc #cl #args_ptr
+    Client__putRpc #cl args__v
   {{{
         (err:u64), RET #err; if decide (err = 0) then put_core_post γ args else True
   }}}.
@@ -1717,8 +1277,9 @@ Proof.
   { done. }
   iIntros (rep_ptr) "Hrep".
   wp_pures.
-  wp_apply (putArgs.wp_encode with "[$]").
-  iIntros (??) "(Hargs & %Henc & Hreq_sl)".
+  wp_apply (wp_NewSlice). iIntros (?) "Hnew_sl".
+  wp_apply (put.wp_Encode with "[$]").
+  iIntros (??) "(%Henc & Hargs_own & Hreq_sl)".
   wp_pures.
   iNamed "Hcl".
   wp_loadField.
@@ -1740,15 +1301,15 @@ Proof.
   { iApply "HΦ". rewrite decide_False //. }
 Qed.
 
-Lemma wp_Client__conditionalPutRpc γ cl args args_ptr :
+Lemma wp_Client__conditionalPutRpc γ cl args args__v :
   {{{
-        "Hargs" ∷ conditionalPutArgs.own args_ptr args ∗
+        "Hargs" ∷ conditionalPut.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl γ ∗
         "#Hspec" ∷ □ conditionalPut_core_pre γ args
   }}}
-    Client__conditionalPutRpc #cl #args_ptr
+    Client__conditionalPutRpc #cl args__v
   {{{
-        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then
+        (s:byte_string) (err:u64), RET (#str s, #err); if decide (err = 0) then
                                                     conditionalPut_core_post γ args s
                                                   else True
   }}}.
@@ -1761,8 +1322,9 @@ Proof.
   { done. }
   iIntros (rep_ptr) "Hrep".
   wp_pures.
-  wp_apply (conditionalPutArgs.wp_encode with "[$]").
-  iIntros (??) "(Hargs & %Henc & Hreq_sl)".
+  wp_apply (wp_NewSlice). iIntros (?) "Hs".
+  wp_apply (conditionalPut.wp_Encode with "[$]").
+  iIntros (??) "(%Henc & Hargs & Hreq_sl)".
   wp_pures.
   iNamed "Hcl".
   wp_loadField.
@@ -1776,26 +1338,26 @@ Proof.
   {
     destruct err.
     { destruct c; by exfalso. }
-    iDestruct "Hpost" as "(? & (% & % & ? & ? & (% & % & ?)))".
+    iDestruct "Hpost" as "(? & (% & % & ? & ? & ?))".
     subst.
     wp_load.
     wp_apply (wp_StringFromBytes with "[$]").
     iIntros "?".
     wp_pures. iApply "HΦ".
-    iModIntro. rewrite string_to_bytes_to_string. iFrame.
+    iModIntro. iFrame.
   }
   { wp_pures. iApply "HΦ". rewrite decide_False //. }
 Qed.
 
-Lemma wp_Client__getRpc γ cl args args_ptr :
+Lemma wp_Client__getRpc γ cl args args__v :
   {{{
-        "Hargs" ∷ getArgs.own args_ptr args ∗
+        "Hargs" ∷ get.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl γ ∗
         "#Hspec" ∷ □ get_core_pre γ args
   }}}
-    Client__getRpc #cl #args_ptr
+    Client__getRpc #cl args__v
   {{{
-        (s:string) (err:u64), RET (#str s, #err); if decide (err = 0) then get_core_post γ args s else True
+        (s:byte_string) (err:u64), RET (#str s, #err); if decide (err = 0) then get_core_post γ args s else True
   }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
@@ -1806,8 +1368,9 @@ Proof.
   { done. }
   iIntros (rep_ptr) "Hrep".
   wp_pures.
-  wp_apply (getArgs.wp_encode with "[$]").
-  iIntros (??) "(Hargs & %Henc & Hreq_sl)".
+  wp_apply (wp_NewSlice). iIntros (?) "Hs".
+  wp_apply (get.wp_Encode with "[$]").
+  iIntros (??) "(%Henc & Hargs & Hreq_sl)".
   wp_pures.
   iNamed "Hcl".
   wp_loadField.
@@ -1821,13 +1384,13 @@ Proof.
   {
     destruct err.
     { destruct c; by exfalso. }
-    iDestruct "Hpost" as "(? & (% & % & ? & ? & (% & % & ?)))".
+    iDestruct "Hpost" as "(? & (% & % & ? & ? & ?))".
     subst.
     wp_load.
     wp_apply (wp_StringFromBytes with "[$]").
     iIntros "?".
     wp_pures. iApply "HΦ".
-    iModIntro. rewrite string_to_bytes_to_string. iFrame.
+    iModIntro. iFrame.
   }
   { wp_pures. iApply "HΦ". rewrite decide_False //. }
 Qed.
@@ -1897,17 +1460,13 @@ Proof.
 
   wp_load.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
-  wp_loadField.
+  wp_loadField. 
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__putRpc with "[Hcl opId key val]").
-  { instantiate (1:=putArgs.mk _ _ _). iFrame "∗#". }
+  wp_apply (wp_Client__putRpc with "[Hcl]").
+  { instantiate (1:=put.mkC _ _ _). iFrame "∗#".
+    iUnfold put.own. iPureIntro. reflexivity.
+  }
   Unshelve.
   2:{ iFrame. }
   iIntros (err) "Hpost".
@@ -1986,17 +1545,13 @@ Proof.
 
   wp_load.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__conditionalPutRpc with "[Hcl opId key expectedVal newVal]").
-  { instantiate (1:=conditionalPutArgs.mk _ _ _ _). iFrame "∗#". }
+  wp_apply (wp_Client__conditionalPutRpc with "[Hcl]").
+  { instantiate (1:=conditionalPut.mkC _ _ _ _). iFrame "∗#".
+    iUnfold conditionalPut.own. iPureIntro. reflexivity.
+  }
   Unshelve.
   2:{
     instantiate (1:=(λ x, True -∗ Φ #x)%I).
@@ -2084,17 +1639,13 @@ Proof.
 
   wp_load.
   wp_pures.
-  wp_apply (wp_allocStruct).
-  { repeat econstructor. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
-  wp_pures.
   wp_loadField.
 
   (* TUTORIAL: *)
-  wp_apply (wp_Client__getRpc with "[Hcl opId key]").
-  { instantiate (1:=getArgs.mk _ _). iFrame "∗#". }
+  wp_apply (wp_Client__getRpc with "[Hcl]").
+  { instantiate (1:=get.mkC _ _). iFrame "∗#".
+    iUnfold get.own. iPureIntro. reflexivity.
+  }
   Unshelve.
   3:{ iFrame. }
   iIntros (ret err) "Hpost".

@@ -58,7 +58,7 @@ Definition RPCServer_own_vol (sv:loc) (γrpc:rpc_names) (lastSeqM lastReplyM:gma
 
 Definition Reply64 := @RPCReply (u64).
 
-Definition RPCClient_own_vol (cl_ptr:loc) (cid seqno:u64) (host:string) : iProp Σ :=
+Definition RPCClient_own_vol (cl_ptr:loc) (cid seqno:u64) (host:byte_string) : iProp Σ :=
   ∃ (rawCl:loc),
     "%" ∷ ⌜uint.nat seqno > 0⌝ ∗
     "Hcid" ∷ cl_ptr ↦[RPCClient :: "cid"] #cid ∗
@@ -67,7 +67,7 @@ Definition RPCClient_own_vol (cl_ptr:loc) (cid seqno:u64) (host:string) : iProp 
     "HrawClOwn" ∷ grove_ffi.RPCClient_own rawCl host
 .
 
-Definition RPCClient_own (cl_ptr:loc) (host:string) γrpc : iProp Σ :=
+Definition RPCClient_own (cl_ptr:loc) (host:byte_string) γrpc : iProp Σ :=
   ∃ cid seqno,
     RPCClient_own_vol cl_ptr cid seqno host ∗
     RPCClient_own_ghost γrpc cid seqno
@@ -453,7 +453,7 @@ Definition EncodedPost2 {X:Type} Post : (X → list u8 → list u8 → iProp Σ)
 
 (* This says an rpc handler has the given PreCond and PostCond; it does NOT say
    that the handler sits behind a reply table with the given Pre/Post. *)
-Definition handler_is2 (X:Type) (host:string) (rpcid:u64) PreCond PostCond : iProp Σ :=
+Definition handler_is2 (X:Type) (host:byte_string) (rpcid:u64) PreCond PostCond : iProp Σ :=
   handler_is X host rpcid (EncodedPre2 PreCond) (EncodedPost2 PostCond)
 .
 
@@ -461,7 +461,7 @@ Definition is_rpcHandler2 {X:Type} f Pre Post : iProp Σ :=
   is_rpcHandler (X:=X) f (EncodedPre2 Pre) (EncodedPost2 Post)
 .
 
-Lemma wp_RemoteProcedureCall2 (cl_ptr req_ptr reply_ptr:loc) (host:string) (rpcid:u64) (req:RPCRequestID) args (reply:Reply64) X PreCond PostCond x:
+Lemma wp_RemoteProcedureCall2 (cl_ptr req_ptr reply_ptr:loc) (host:byte_string) (rpcid:u64) (req:RPCRequestID) args (reply:Reply64) X PreCond PostCond x:
 handler_is2 X host rpcid PreCond PostCond -∗
 {{{
   "#HargsPre" ∷ □ PreCond x req args ∗
@@ -549,7 +549,7 @@ Proof.
   done.
 Admitted.
 
-Lemma RPCClient__MakeRequest_spec {X:Type} (host:string) (rpcid:u64) cl_ptr args γrpc X PreCond PostCond (x:X):
+Lemma RPCClient__MakeRequest_spec {X:Type} (host:byte_string) (rpcid:u64) cl_ptr args γrpc X PreCond PostCond (x:X):
   ∀ RawPreCond, handler_is2 X host rpcid RawPreCond (λ y req args reply, RPCRequestStale γrpc req ∨ RPCReplyReceipt γrpc req reply.(Rep_Ret)) -∗
 □(∀ y req γreq, is_RPCRequest γrpc γreq (PreCond x args) (PostCond x args) req -∗ RawPreCond y req args) -∗
 {{{
@@ -648,7 +648,7 @@ Proof using Type*.
   iPureIntro. lia.
 Qed.
 
-Lemma MakeRPCClient_spec γrpc (host : string) (cid : u64) :
+Lemma MakeRPCClient_spec γrpc (host : byte_string) (cid : u64) :
   {{{ RPCClient_own_ghost γrpc cid 1 }}}
     MakeRPCClient #(str host) #cid
   {{{ cl, RET #cl; RPCClient_own cl host γrpc }}}.

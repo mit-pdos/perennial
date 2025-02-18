@@ -26,10 +26,10 @@ Context `{!heapGS Σ}.
 
 Class filesysG Σ := FileSysG {
   filesys_gname : gname ; (* Name of str -> []byte authmap used for filesys ffi *)
-  #[global] filesys_inG :: mapG Σ string (list byte)
+  #[global] filesys_inG :: mapG Σ byte_string (list byte)
 }.
 
-Definition file_pointsto {fG:filesysG Σ} (s:string) (c:list byte) (q:Qp): iProp Σ :=
+Definition file_pointsto {fG:filesysG Σ} (s:byte_string) (c:list byte) (q:Qp): iProp Σ :=
   s [[filesys_gname]]↦{q} c.
 
 Context `{!filesysG Σ}.
@@ -83,7 +83,7 @@ Axiom wpc_AtomicAppend : ∀ filename content_old content (content_sl:Slice.t) q
       filename f↦ (content_old ++ content)
   }}}.
 
-Definition u64_to_string : u64 -> string := λ u, NilZero.string_of_int (Z.to_int (uint.Z u)).
+Definition u64_to_string : u64 -> byte_string := λ u, NilZero.string_of_int (Z.to_int (uint.Z u)).
 
 (* Spec for W64ToString will be annoying *)
 Axiom wp_U64ToString : ∀ (u:u64),
@@ -97,7 +97,7 @@ Axiom wp_U64ToString : ∀ (u:u64),
 
 Class rpcregG Σ := RpcRegG {
   rpcreg_gname : gname ;
-  #[global] rpcreg_inG :: ghost_mapG Σ (string*u64) ((list u8 → laterO (iPropO Σ)) * (list u8 → list u8 → laterO (iPropO Σ)))
+  #[global] rpcreg_inG :: ghost_mapG Σ (byte_string*u64) ((list u8 → laterO (iPropO Σ)) * (list u8 → list u8 → laterO (iPropO Σ)))
 }.
 (* XXX: these laters probably aren't a problem, because the eventual
    implementation of RPC will possibly have to use invariants to move the Pre to

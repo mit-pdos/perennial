@@ -131,6 +131,11 @@ Section lemma.
     length l ≠ O.
   Proof. intros Hnnil Hlen. by apply nil_length_inv in Hlen. Qed.
 
+  Lemma length_not_nil_inv l :
+    length l ≠ O ->
+    l ≠ [].
+  Proof. intros Hlen Hl. by rewrite Hl /= in Hlen. Qed.
+
   Lemma prefix_not_nil l1 l2 :
     prefix l1 l2 ->
     l1 ≠ [] ->

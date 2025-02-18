@@ -1,0 +1,4 @@
+kvservice/get_proof.v linguist-generated
+kvservice/put_proof.v linguist-generated
+kvservice/conditionalput_proof.v linguist-generated
+objectstore/**/**_proof.v linguist-generated

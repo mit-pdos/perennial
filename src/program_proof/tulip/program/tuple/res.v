@@ -4,7 +4,7 @@ From Perennial.program_proof.tulip.program Require Import prelude.
 Section res.
   Context `{!tulip_ghostG Σ}.
 
-  Definition own_phys_hist_half α (key : string) (hist : dbhist) : iProp Σ :=
+  Definition own_phys_hist_half α (key : byte_string) (hist : dbhist) : iProp Σ :=
     own α {[ key := (to_dfrac_agree (DfracOwn (1 / 2)) hist) ]}.
 
   Lemma phys_hist_update {α k h1 h2} h :

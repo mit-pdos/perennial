@@ -1,4 +1,4 @@
-From iris.bi.lib Require Import fixpoint.
+From iris.bi.lib Require Import fixpoint_mono.
 From iris.base_logic.lib Require Import mono_nat saved_prop.
 From New.proof Require Export proof_prelude.
 

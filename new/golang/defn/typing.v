@@ -1,5 +1,10 @@
 From Perennial.goose_lang Require Export lang notation.
 
+Definition go_string := byte_string.
+Delimit Scope byte_string_scope with go.
+Bind Scope byte_string_scope with go_string.
+Delimit Scope byte_char_scope with go_byte.
+
 Inductive go_type :=
 (* Boolean *)
 | boolT
@@ -19,7 +24,7 @@ Inductive go_type :=
 | arrayT (n : nat) (elem : go_type)
 | sliceT
 | interfaceT
-| structT (decls : list (string * go_type)) (* What if this were a gmap? *)
+| structT (decls : list (go_string * go_type)) (* What if this were a gmap? *)
 | ptrT (* Untyped pointer; convenient to support recursion in structs *)
 | funcT
 .
@@ -45,7 +50,7 @@ Program Definition to_val := unseal (_:seal (@to_val_def)). Obligation 1. by eex
 Definition to_val_unseal : to_val = _ := seal_eq _.
 Arguments to_val {_ _ _} v.
 (* Disable Notation "# l". *)
-Global Notation "# x" := (to_val x).
+Global Notation "# x" := (to_val x%go).
 Global Notation "#" := to_val.
 
 (* One of [V] or [ty] should not be an evar before doing typeclass search *)
@@ -84,7 +89,7 @@ Global Instance into_val_unit : IntoVal () :=
 Global Instance into_val_bool : IntoVal bool :=
   {| to_val_def := λ b, (LitV $ LitBool b) |}.
 
-Global Instance into_val_string : IntoVal string :=
+Global Instance into_val_go_string : IntoVal go_string :=
   {| to_val_def := λ s, (LitV $ LitString s) |}.
 
 Global Instance into_val_func : IntoVal func.t :=
@@ -99,33 +104,16 @@ End slice.
 Module interface.
 Section goose_lang.
   Context `{ffi_syntax}.
-  Record t := mk { v: val; mset: list (string * val) }.
 
-  (* FIXME: use the typeid to distinguish nil interface value from nil pointer
-     used as a non-nil interface value. *)
-  Definition nil := mk #null [].
+  Inductive t :=
+  | mk (pkg_name type_name : go_string) (v : val) : t
+  | nil : t.
+
 End goose_lang.
 End interface.
 
-Fixpoint assocl_lookup {A} (f : string) (field_vals: list (string * A)) : option A :=
-  match field_vals with
-  | [] => None
-  | (f', v)::fs => if String.eqb f' f then Some v else assocl_lookup f fs
-  end.
-
 Module struct.
-Definition descriptor := list (string * go_type).
-Section goose_lang.
-  Context `{ffi_syntax}.
-
-  Fixpoint fields_val_def (m : list (string * val)) : val :=
-    match m with
-    | [] => InjLV #()
-    | (f, v) :: tl => InjRV ((#f, v), fields_val_def tl)
-    end.
-  Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
-  Definition fields_val_unseal : fields_val = _ := seal_eq _.
-End goose_lang.
+Definition descriptor := list (go_string * go_type).
 End struct.
 
 Section instances.
@@ -146,7 +134,10 @@ Proof. solve_decision. Qed.
 Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
   {|
     to_val_def (i: interface.t) :=
-      InjLV (#"NO TYPE IDS YET", i.(interface.v), (struct.fields_val i.(interface.mset)))
+      match i with
+      | interface.nil => NONEV
+      | interface.mk pkg_name type_name v => SOMEV (#pkg_name, #type_name, v)%V
+      end
   |}.
 
 End instances.
@@ -165,6 +156,7 @@ Section val_types.
 
   Definition byteT := uint8T.
   Definition intT := int64T.
+  Definition uintT := uint64T.
 
   Context `{ffi_syntax}.
   Fixpoint zero_val_def (t : go_type) : val :=
@@ -177,7 +169,7 @@ Section val_types.
     | uint32T => #(W32 0)
     | uint64T => #(W64 0)
 
-    | stringT => #""
+    | stringT => #""%V
     | arrayT n elem => Vector.fold_right PairV (vreplicate n (zero_val_def elem)) #()
     | sliceT => #slice.nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)

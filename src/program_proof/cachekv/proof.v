@@ -7,7 +7,7 @@ From iris.base_logic.lib Require Import ghost_map.
 Module cacheValueC.
 Record t :=
   mk {
-      v : string ;
+      v : byte_string ;
       l : u64 ;
     }.
 
@@ -31,11 +31,11 @@ End cacheValueC.
 
 Section proof.
 Context `{!heapGS Σ}.
-Context `{!ghost_mapG Σ string string}.
+Context `{!ghost_mapG Σ byte_string byte_string}.
 Context `{!renewable_leaseG Σ}.
 
-Definition encode_cacheValue (v:string) (lease:u64) : string :=
-  (bytes_to_string $ u64_le lease) ++ v.
+Definition encode_cacheValue (v:byte_string) (lease:u64) : byte_string :=
+  (u64_le lease) ++ v.
 
 Lemma encode_cacheValue_inj v l v' l' :
   encode_cacheValue v l = encode_cacheValue v' l' →
@@ -44,15 +44,11 @@ Lemma encode_cacheValue_inj v l v' l' :
 Proof.
   intros H.
   rewrite /encode_cacheValue in H.
-  apply (f_equal string_to_bytes) in H.
-  repeat rewrite string_to_bytes_app bytes_to_string_to_bytes in H.
   apply app_inj_1 in H.
   2:{ done. }
   destruct H as [H1 H2].
   split.
-  {
-    apply (f_equal bytes_to_string) in H2. repeat rewrite string_to_bytes_to_string in H2. done.
-  }
+  { done. }
   apply (f_equal le_to_u64) in H1.
   repeat rewrite u64_le_to_word in H1.
   done.
@@ -72,7 +68,7 @@ Definition kvptsto γ key value : iProp Σ :=
 .
 
 (* KV points-to for the internal kv service *)
-Implicit Types kvptsto_int: string → string → iProp Σ.
+Implicit Types kvptsto_int: byte_string → byte_string → iProp Σ.
 
 Definition is_cachekv_inv kvptsto_int γ : iProp Σ :=
   inv invN (∃ kvs,
@@ -88,7 +84,7 @@ Definition is_cachekv_inv kvptsto_int γ : iProp Σ :=
 .
 
 Definition own_CacheKv (k:loc) γ : iProp Σ :=
-  ∃ (cache_ptr:loc) (cache:gmap string cacheValueC.t),
+  ∃ (cache_ptr:loc) (cache:gmap byte_string cacheValueC.t),
   "Hcache_ptr" ∷ k ↦[CacheKv :: "cache"] #cache_ptr ∗
   "Hcache" ∷ own_map cache_ptr (DfracOwn 1) cache ∗
   "#Hleases" ∷ ([∗ map] k ↦ cv ∈ cache,
@@ -124,18 +120,18 @@ Proof.
   iIntros (?) "Hptr".
   wp_pures.
   wp_load.
-  rewrite /encode_cacheValue string_to_bytes_app bytes_to_string_to_bytes.
+  rewrite /encode_cacheValue.
   iDestruct (own_slice_to_small with "Hsl") as "Hsl".
   wp_apply (wp_ReadInt with "[$Hsl]").
   iIntros (?) "Hsl".
   wp_pures.
   wp_apply (wp_StringFromBytes with "[$]").
-  iIntros "_". rewrite string_to_bytes_to_string.
+  iIntros "_".
   wp_pures. iModIntro.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_EncodeValue (v:string) (l:u64) :
+Lemma wp_EncodeValue (v:byte_string) (l:u64) :
   {{{ True }}}
   EncodeValue (to_val (cacheValueC.mk v l))
   {{{ RET #(str encode_cacheValue v l); True }}}.
@@ -166,7 +162,6 @@ Proof.
   iIntros "_".
   Opaque u64_le.
   simpl. rewrite replicate_0 /=.
-  rewrite bytes_to_string_app string_to_bytes_to_string.
   by iApply "HΦ".
 Qed.
 

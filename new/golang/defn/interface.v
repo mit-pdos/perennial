@@ -1,42 +1,43 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.defn Require Import struct typing.
+From New.golang.defn Require Import struct typing globals.
 
 Module interface.
 Section goose_lang.
 Context `{ffi_syntax}.
 
-Definition get (f : string) : val :=
-  λ: "v",
-    let: "v" := (match: "v" with InjL "v" => "v" | InjR <> => #() end) in
-    let: (("typeid", "val"), "mset") := "v" in
-    (match: (struct.assocl_lookup #f "mset") with
-       InjL <> => #()
-     | InjR "m" => "m"
-     end) "val"
-.
+Definition get_def : val :=
+  λ: "method_name" "v",
+    let: (("pkg_name", "type_name"), "val") := globals.unwrap "v" in
+    method_call "pkg_name" "type_name" "method_name" "val".
 
-Local Definition make_def (mset : list (string*val)) : val :=
-  λ: "v", InjL (#"NO TYPE IDS YET", "v", (struct.fields_val mset)).
+Program Definition get := unseal (_:seal (@get_def)). Obligation 1. by eexists. Qed.
+Definition get_unseal : get = _ := seal_eq _.
+
+Local Definition make_def : val :=
+  λ: "pkg_name" "type_name" "v", SOME ("pkg_name", "type_name", "v").
 Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
 Definition make_unseal : make = _ := seal_eq _.
 
-Definition equals : val :=
-  λ: "v1 v2",
-    let: "v1" := (match: "v1" with InjL "v1" => "v1" | InjR <> => #() end) in
-    let: "v2" := (match: "v2" with InjL "v2" => "v2" | InjR <> => #() end) in
-    (Snd (Fst "v1")) = (Snd (Fst "v2"))
-.
+Definition eq : val :=
+  (* XXX: this is a "short-circuiting" comparison that first checks if the type
+     names are equal before possibly checking if the values are equal. *)
+  λ: "v1" "v2",
+    match: "v1" with
+      NONE => match: "v2" with
+               NONE => #true
+             | SOME <> => #false
+             end
+    | SOME "i1" => match: "v2" with
+                    NONE => #false
+                  | SOME "i1" =>
+                      let: ("pkg_type1", "v1") := "i1" in
+                      let: ("pkg_type2", "v2") := "i2" in
+                      if: "pkg_type1" = "pkg_type2" then
+                        "v1" = "v2"
+                      else
+                        #false
+                  end
+    end.
 
 End goose_lang.
 End interface.
-
-(* method sets for primitive types are empty *)
-Section mset.
-Context `{ffi_syntax}.
-Definition uint64__mset : list (string * val) := [].
-Definition int__mset : list (string * val) := [].
-Definition bool__mset : list (string * val) := [].
-Definition string__mset : list (string * val) := [].
-Definition slice__mset : list (string * val) := [].
-Definition slice__mset_ptr : list (string * val) := [].
-End mset.

@@ -28,7 +28,7 @@ Qed.
 Definition consented_impl_committed (v c : consensus) :=
   if v then c = v else True.
 
-Definition proposals_incl_candidates (vs : gset string) (ps : gmap nat string) :=
+Definition proposals_incl_candidates (vs : gset byte_string) (ps : gmap nat byte_string) :=
   map_img ps ⊆ vs.
 
 Definition spaxos_inv sc γ : iProp Σ :=
@@ -67,7 +67,7 @@ Instance is_proposal_nz_persistent γ n v :
   Persistent (is_proposal_nz γ n v).
 Proof. unfold is_proposal_nz. case_decide; apply _. Qed.
 
-Definition is_chosen_commitment_learned γ (l : bool) (v : string) : iProp Σ :=
+Definition is_chosen_commitment_learned γ (l : bool) (v : byte_string) : iProp Σ :=
   (if l then is_chosen_commitment γ v else True)%I.
 
 #[global]
@@ -106,7 +106,7 @@ Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 (*@     peers   map[uint64]*Paxos                                           @*)
 (*@ }                                                                       @*)
 Definition own_paxos (paxos : loc) (nid : u64) γ : iProp Σ :=
-  ∃ (termc termp : u64) (decreep : string) (learned : bool) (blt : ballot),
+  ∃ (termc termp : u64) (decreep : byte_string) (learned : bool) (blt : ballot),
     "Htermc" ∷ paxos ↦[Paxos :: "termc"] #termc ∗
     "%Hnz"   ∷ ⌜uint.nat termc ≠ O⌝ ∗
     "Htermp" ∷ paxos ↦[Paxos :: "termp"] #termp ∗
@@ -244,7 +244,7 @@ Theorem wp_Paxos__outcome (px : loc) nid sc γ :
   {{{ True }}}
   <<< ∀∀ c, own_consensus_half γ c >>>
     Paxos__outcome #px @ ↑spaxosN
-  <<< ∃∃ (v : string) (ok : bool), own_consensus_half γ (if ok then Chosen v else c) >>>
+  <<< ∃∃ (v : byte_string) (ok : bool), own_consensus_half γ (if ok then Chosen v else c) >>>
   {{{ RET (#(LitString v), #ok); True }}}.
 Proof.
   iIntros "#Hnode" (Φ) "!> _ HAU".
@@ -294,7 +294,7 @@ Proof.
       iDestruct (proposal_lookup with "Hproposed Hps") as %Hin.
       iMod (consensus_update decreep with "Hv Hvs") as "[Hv Hvs]".
       { unfold proposals_incl_candidates in Hpic.
-        apply (elem_of_map_img_2 (SA:=gset string)) in Hin.
+        apply (elem_of_map_img_2 (SA:=gset byte_string)) in Hin.
         set_solver.
       }
       iDestruct (consensus_split with "Hv") as "[Hv Hv']".
@@ -308,7 +308,7 @@ Theorem wp_Paxos__Outcome (px : loc) nid sc γ :
   {{{ True }}}
   <<< ∀∀ c, own_consensus_half γ c >>>
     Paxos__Outcome #px @ ↑spaxosN
-  <<< ∃∃ (v : string) (ok : bool), own_consensus_half γ (if ok then Chosen v else c) >>>
+  <<< ∃∃ (v : byte_string) (ok : bool), own_consensus_half γ (if ok then Chosen v else c) >>>
   {{{ RET (#(LitString v), #ok); True }}}.
 Proof.
   iIntros "#Hpaxos" (Φ) "!> _ HAU".
@@ -329,7 +329,7 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Definition node_prepared (term termp : u64) (decree : string) nid γ : iProp Σ :=
+Definition node_prepared (term termp : u64) (decree : byte_string) nid γ : iProp Σ :=
   ∃ (l : ballot),
     "#Hlb"     ∷ is_ballot_lb γ nid l ∗
     "#Hdecree" ∷ is_proposal_nz γ (uint.nat termp) decree ∗
@@ -340,7 +340,7 @@ Theorem wp_Paxos__prepare (px : loc) (term : u64) nid sc γ :
   is_paxos_node px nid sc γ -∗
   {{{ True }}}
     Paxos__prepare #px #term
-  {{{ (termp : u64) (decree : string) (ok : bool), RET (#termp, #(LitString decree), #ok);
+  {{{ (termp : u64) (decree : byte_string) (ok : bool), RET (#termp, #(LitString decree), #ok);
       if ok then node_prepared term termp decree nid γ else True
   }}}.
 Proof.
@@ -435,7 +435,7 @@ Theorem wp_Paxos__advance (px : loc) nid sc γ :
   is_paxos_node px nid sc γ -∗
   {{{ True }}}
     Paxos__advance #px
-  {{{ (term : u64) (termp : u64) (decree : string), RET (#term, #termp, #(LitString decree));
+  {{{ (term : u64) (termp : u64) (decree : byte_string), RET (#term, #termp, #(LitString decree));
       node_prepared term termp decree nid γ ∗ ⌜is_term_of_node nid (uint.nat term) ∧ uint.nat term ≠ O⌝
   }}}.
 Proof.
@@ -520,12 +520,12 @@ Proof.
   apply latest_term_extend_false.
 Qed.
 
-Definition node_accepted (term : u64) (decree : string) nid γ : iProp Σ :=
+Definition node_accepted (term : u64) (decree : byte_string) nid γ : iProp Σ :=
   ∃ (l : ballot),
     "#Hlb"    ∷ is_ballot_lb γ nid l ∗
     "%Haccin" ∷ ⌜accepted_in l (uint.nat term)⌝.
 
-Theorem wp_Paxos__accept (px : loc) (term : u64) (decree : string) nid sc γ :
+Theorem wp_Paxos__accept (px : loc) (term : u64) (decree : byte_string) nid sc γ :
   is_proposal γ (uint.nat term) decree -∗
   is_paxos_node px nid sc γ -∗
   {{{ True }}}
@@ -647,7 +647,7 @@ Qed.
 Definition reached_quorum (sc n : nat) := sc / 2 < n.
 
 Definition quorum_prepared
-  (term : u64) (terml : u64) (decreel : string) (sc : nat) (γ : spaxos_names) : iProp Σ :=
+  (term : u64) (terml : u64) (decreel : byte_string) (sc : nat) (γ : spaxos_names) : iProp Σ :=
   ∃ (bsqlb : gmap u64 ballot),
     "#Hlbs"      ∷ ([∗ map] x ↦ l ∈ bsqlb, is_ballot_lb γ x l) ∗
     "#Hproposal" ∷ is_proposal_nz γ (uint.nat terml) decreel ∗
@@ -661,8 +661,8 @@ Instance quorum_prepared_persistent term terml decree sc γ :
 Proof. apply _. Qed.
 
 Theorem wp_Paxos__accept__proposer
-  {px : loc} {term : u64} {decree : string}
-  (v : string) (terml : u64) decreel nid sc γ :
+  {px : loc} {term : u64} {decree : byte_string}
+  (v : byte_string) (terml : u64) decreel nid sc γ :
   is_term_of_node nid (uint.nat term) ->
   decree = (if decide (uint.nat terml = O) then v else decreel) ->
   (* (if decide (uint.nat terml = O) then True else decree = decreel) -> *)
@@ -851,11 +851,11 @@ Proof.
       - (* Case: Adding [v] to [ps]. *)
         etransitivity; [apply map_img_insert_subseteq | set_solver].
       - (* Case: Adding [decreel] to [ps]. *)
-        transitivity (map_img (SA:=gset string) ps); last by set_solver.
+        transitivity (map_img (SA:=gset byte_string) ps); last by set_solver.
         specialize (Hterml H).
         clear -Hterml.
         etransitivity; first apply map_img_insert_subseteq.
-        apply (elem_of_map_img_2 (SA:=gset string)) in Hterml.
+        apply (elem_of_map_img_2 (SA:=gset byte_string)) in Hterml.
         set_solver.
     }
     iMod ("HinvC" with "[Hv Hvs Hc Hbs Hps Hts]") as "_"; first by eauto 10 with iFrame.
@@ -941,12 +941,12 @@ Lemma ite_apply (A B : Type) (b : bool) (f : A -> B) x y :
   (if b then f x else f y) = f (if b then x else y).
 Proof. destruct b; done. Qed.
 
-Theorem wp_Paxos__prepareAll (px : loc) (term terma : u64) (decreea : string) nid sc γ :
+Theorem wp_Paxos__prepareAll (px : loc) (term terma : u64) (decreea : byte_string) nid sc γ :
   node_prepared term terma decreea nid γ -∗
   is_paxos_comm px nid sc γ -∗
   {{{ True }}}
     Paxos__prepareAll #px #term #terma #(LitString decreea)
-  {{{ (termp : u64) (decree : string) (ok : bool), RET (#termp, #(LitString decree), #ok);
+  {{{ (termp : u64) (decree : byte_string) (ok : bool), RET (#termp, #(LitString decree), #ok);
       if ok then quorum_prepared term termp decree sc γ else True
   }}}.
 Proof.
@@ -983,7 +983,7 @@ Proof.
   wp_loadField.
   iMod (readonly_load with "HpeersMR") as (q) "HpeersM".
   set P := (λ (m : gmap u64 loc),
-    ∃ (terml : u64) (decreel : string) (n : u64) (bsqlb : gmap u64 ballot),
+    ∃ (terml : u64) (decreel : byte_string) (n : u64) (bsqlb : gmap u64 ballot),
       "HtermlRef"   ∷ termlRef ↦[uint64T] #terml ∗
       "HdecreelRef" ∷ decreelRef ↦[stringT] #(str decreel) ∗
       "HnRef"  ∷ nRef ↦[uint64T] #n ∗
@@ -1121,7 +1121,7 @@ Instance quorum_accepted_persistent term sc γ :
   Persistent (quorum_accepted γ term sc).
 Proof. apply _. Qed.
 
-Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : string) nid sc γ :
+Theorem wp_Paxos__acceptAll (px : loc) (term : u64) (decree : byte_string) nid sc γ :
   node_accepted term decree nid γ -∗
   is_proposal γ (uint.nat term) decree -∗
   is_paxos_comm px nid sc γ -∗
@@ -1232,7 +1232,7 @@ Proof.
   by iFrame "∗ # %".
 Qed.
 
-Theorem wp_Paxos__learn (px : loc) (term : u64) (decree : string) nid sc γ :
+Theorem wp_Paxos__learn (px : loc) (term : u64) (decree : byte_string) nid sc γ :
   is_proposal γ (uint.nat term) decree -∗
   is_chosen_commitment γ decree -∗
   is_paxos_node px nid sc γ -∗
@@ -1330,7 +1330,7 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : string) nid sc γ :
+Theorem wp_Paxos__learnAll (px : loc) (term : u64) (decree : byte_string) nid sc γ :
   is_proposal γ (uint.nat term) decree -∗
   is_chosen_commitment γ decree -∗
   is_paxos_comm px nid sc γ -∗
@@ -1367,7 +1367,7 @@ End temp.
 Section prog.
 Context `{!heapGS Σ, !spaxos_ghostG Σ}.
 
-Theorem wp_Paxos__Propose (px : loc) (v : string) nid sc γ :
+Theorem wp_Paxos__Propose (px : loc) (v : byte_string) nid sc γ :
   is_paxos px nid sc γ -∗
   {{{ True }}}
   <<< ∀∀ vs, own_candidates_half γ vs >>>

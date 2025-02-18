@@ -519,7 +519,7 @@ Section pure.
   Definition spaxos_prepare (bs : gmap A ballot) (x : A) (n : nat) :=
     alter (λ l, extend false n l) x bs.
 
-  Definition spaxos_propose (ps : proposals) (n : nat) (v : string) :=
+  Definition spaxos_propose (ps : proposals) (n : nat) (v : byte_string) :=
     <[n := v]> ps.
 
   Definition spaxos_advance (ts : gmap A nat) (x : A) (n : nat) :=
