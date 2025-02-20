@@ -175,6 +175,18 @@ Definition Replica__Read: val :=
           Mutex__Unlock (struct.loadF Replica "mu" "rp");;
           ("v2", #true, #true)))).
 
+Definition Replica__acquireKey: val :=
+  rec: "Replica__acquireKey" "rp" "ts" "key" :=
+    MapInsert (struct.loadF Replica "ptsm" "rp") "key" "ts";;
+    MapInsert (struct.loadF Replica "sptsm" "rp") "key" "ts";;
+    #().
+
+Definition Replica__acquire: val :=
+  rec: "Replica__acquire" "rp" "ts" "pwrs" :=
+    ForSlice (struct.t tulip.WriteEntry) <> "ent" "pwrs"
+      (Replica__acquireKey "rp" "ts" (struct.get tulip.WriteEntry "Key" "ent"));;
+    #().
+
 Definition Replica__writableKey: val :=
   rec: "Replica__writableKey" "rp" "ts" "key" :=
     let: "pts" := Fst (MapGet (struct.loadF Replica "ptsm" "rp") "key") in
@@ -186,14 +198,8 @@ Definition Replica__writableKey: val :=
       then #false
       else #true)).
 
-Definition Replica__acquireKey: val :=
-  rec: "Replica__acquireKey" "rp" "ts" "key" :=
-    MapInsert (struct.loadF Replica "ptsm" "rp") "key" "ts";;
-    MapInsert (struct.loadF Replica "sptsm" "rp") "key" "ts";;
-    #().
-
-Definition Replica__acquire: val :=
-  rec: "Replica__acquire" "rp" "ts" "pwrs" :=
+Definition Replica__tryAcquire: val :=
+  rec: "Replica__tryAcquire" "rp" "ts" "pwrs" :=
     let: "pos" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, (![uint64T] "pos") < (slice.len "pwrs")); (λ: <>, Skip) := λ: <>,
@@ -207,9 +213,13 @@ Definition Replica__acquire: val :=
     (if: (![uint64T] "pos") < (slice.len "pwrs")
     then #false
     else
-      ForSlice (struct.t tulip.WriteEntry) <> "ent" "pwrs"
-        (Replica__acquireKey "rp" "ts" (struct.get tulip.WriteEntry "Key" "ent"));;
+      Replica__acquire "rp" "ts" "pwrs";;
       #true).
+
+Definition Replica__memorize: val :=
+  rec: "Replica__memorize" "rp" "ts" "pwrs" "ptgs" :=
+    MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
+    #().
 
 Definition Replica__finalized: val :=
   rec: "Replica__finalized" "rp" "ts" :=
@@ -247,12 +257,12 @@ Definition Replica__validate: val :=
       (if: "validated"
       then tulip.REPLICA_OK
       else
-        let: "acquired" := Replica__acquire "rp" "ts" "pwrs" in
+        let: "acquired" := Replica__tryAcquire "rp" "ts" "pwrs" in
         (if: (~ "acquired")
         then tulip.REPLICA_FAILED_VALIDATION
         else
-          MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
           logValidate (struct.loadF Replica "fname" "rp") "ts" "pwrs" "ptgs";;
+          Replica__memorize "rp" "ts" "pwrs" "ptgs";;
           tulip.REPLICA_OK))).
 
 (* Keep alive coordinator for @ts at @rank. *)
@@ -330,15 +340,15 @@ Definition Replica__fastPrepare: val :=
         (if: "validated"
         then tulip.REPLICA_STALE_COORDINATOR
         else
-          let: "acquired" := Replica__acquire "rp" "ts" "pwrs" in
+          let: "acquired" := Replica__tryAcquire "rp" "ts" "pwrs" in
           Replica__accept "rp" "ts" #0 "acquired";;
           (if: (~ "acquired")
           then
             logAccept (struct.loadF Replica "fname" "rp") "ts" #0 #false;;
             tulip.REPLICA_FAILED_VALIDATION
           else
-            MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
             logFastPrepare (struct.loadF Replica "fname" "rp") "ts" "pwrs" "ptgs";;
+            Replica__memorize "rp" "ts" "pwrs" "ptgs";;
             tulip.REPLICA_OK)))).
 
 Definition Replica__FastPrepare: val :=
@@ -704,4 +714,87 @@ Definition Start: val :=
     ] in
     Fork (Replica__Serve "rp");;
     Fork (Replica__Applier "rp");;
+    "rp".
+
+(* Argument:
+   1. @lsn: LSN of consistent command to replay. *)
+Definition Replica__replay: val :=
+  rec: "Replica__replay" "rp" "lsn" :=
+    let: "cmd" := ref (zero_val (struct.t txnlog.Cmd)) in
+    let: "ok" := ref_to boolT #false in
+    Skip;;
+    (for: (λ: <>, (~ (![boolT] "ok"))); (λ: <>, Skip) := λ: <>,
+      let: ("0_ret", "1_ret") := txnlog.TxnLog__Lookup (struct.loadF Replica "txnlog" "rp") "lsn" in
+      "cmd" <-[struct.t txnlog.Cmd] "0_ret";;
+      "ok" <-[boolT] "1_ret";;
+      Continue);;
+    Replica__apply "rp" (![struct.t txnlog.Cmd] "cmd");;
+    #().
+
+(* Argument:
+   1. @lsnx and @lsny: LSN range [@lsnx, @lsny) of consistent commands to
+   replay. *)
+Definition Replica__replayBetween: val :=
+  rec: "Replica__replayBetween" "rp" "lsnx" "lsny" :=
+    let: "lsn" := ref_to uint64T "lsnx" in
+    (for: (λ: <>, (![uint64T] "lsn") < "lsny"); (λ: <>, "lsn" <-[uint64T] ((![uint64T] "lsn") + #1)) := λ: <>,
+      Replica__replay "rp" (![uint64T] "lsn");;
+      Continue);;
+    #().
+
+Definition resume: val :=
+  rec: "resume" "fname" "txnlog" :=
+    let: "rp" := struct.new Replica [
+      "txnlog" ::= "txnlog";
+      "lsna" ::= #0;
+      "prepm" ::= NewMap uint64T (slice.T (struct.t tulip.WriteEntry)) #();
+      "ptgsm" ::= NewMap uint64T (slice.T uint64T) #();
+      "pstbl" ::= NewMap uint64T (struct.t PrepareProposal) #();
+      "rktbl" ::= NewMap uint64T uint64T #();
+      "txntbl" ::= NewMap uint64T boolT #();
+      "ptsm" ::= NewMap stringT uint64T #();
+      "sptsm" ::= NewMap stringT uint64T #();
+      "idx" ::= index.MkIndex #()
+    ] in
+    let: "lsnx" := ref_to uint64T #0 in
+    let: "data" := ref_to (slice.T byteT) (grove_ffi.FileRead "fname") in
+    Skip;;
+    (for: (λ: <>, #0 < (slice.len (![slice.T byteT] "data"))); (λ: <>, Skip) := λ: <>,
+      let: ("lsny", "bs1") := marshal.ReadInt (![slice.T byteT] "data") in
+      Replica__replayBetween "rp" (![uint64T] "lsnx") "lsny";;
+      "lsnx" <-[uint64T] "lsny";;
+      let: ("kind", "bs2") := marshal.ReadInt "bs1" in
+      let: ("ts", "bs3") := marshal.ReadInt "bs2" in
+      (if: "kind" = CMD_READ
+      then
+        let: ("key", "bs4") := util.DecodeString "bs3" in
+        "data" <-[slice.T byteT] "bs4";;
+        Replica__bumpKey "rp" "ts" "key";;
+        Continue
+      else
+        (if: "kind" = CMD_VALIDATE
+        then
+          let: ("pwrs", "bs4") := util.DecodeKVMapIntoSlice "bs3" in
+          "data" <-[slice.T byteT] "bs4";;
+          Replica__acquire "rp" "ts" "pwrs";;
+          Replica__memorize "rp" "ts" "pwrs" slice.nil;;
+          Continue
+        else
+          (if: "kind" = CMD_FAST_PREPARE
+          then
+            let: ("pwrs", "bs4") := util.DecodeKVMapIntoSlice "bs3" in
+            "data" <-[slice.T byteT] "bs4";;
+            Replica__acquire "rp" "ts" "pwrs";;
+            Replica__memorize "rp" "ts" "pwrs" slice.nil;;
+            Replica__accept "rp" "ts" #0 #true;;
+            Continue
+          else
+            (if: "kind" = CMD_ACCEPT
+            then
+              let: ("rank", "bs4") := marshal.ReadInt "bs3" in
+              let: ("dec", "bs5") := marshal.ReadBool "bs4" in
+              "data" <-[slice.T byteT] "bs5";;
+              Replica__accept "rp" "ts" "rank" "dec";;
+              Continue
+            else Continue)))));;
     "rp".

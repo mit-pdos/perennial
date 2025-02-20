@@ -1,7 +1,8 @@
 From Perennial.program_proof.tulip.invariance Require Import execute validate.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
-  replica_repr replica_finalized replica_acquire replica_refresh replica_log.
+  replica_repr replica_finalized replica_try_acquire replica_memorize
+  replica_refresh replica_log.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -68,13 +69,13 @@ Section program.
     }
 
     (*@     // Validate timestamps.                                             @*)
-    (*@     acquired := rp.acquire(ts, pwrs)                                    @*)
+    (*@     acquired := rp.tryAcquire(ts, pwrs)                                 @*)
     (*@     if !acquired {                                                      @*)
     (*@         return tulip.REPLICA_FAILED_VALIDATION                          @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
     iDestruct (safe_txn_pwrs_dom_pwrs with "Hsafepwrs") as %Hdompwrs.
-    wp_apply (wp_Replica__acquire with "[$Hpwrs $Hptsmsptsm]").
+    wp_apply (wp_Replica__tryAcquire with "[$Hpwrs $Hptsmsptsm]").
     { apply Hdompwrs. }
     iIntros (acquired) "[Hpwrs Hptsmsptsm]".
     wp_pures.
@@ -82,14 +83,10 @@ Section program.
     { iApply ("HΦ" $! ReplicaFailedValidation). by iFrame "∗ # %". }
     iDestruct "Hptsmsptsm" as "(Hptsmsptsm & %Hvptsm & %Hvsptsm)".
 
-    (*@     // Record the write set and the participant groups.                 @*)
-    (*@     rp.prepm[ts] = pwrs                                                 @*)
-    (*@     // rp.ptgsm[ts] = ptgs                                              @*)
-    (*@                                                                         @*)
-    wp_loadField.
-    wp_apply (wp_MapInsert with "HprepmS"); first done.
-    iIntros "HprepmS".
-    
+    (* Normally we log at the end to save one [iApply ncfupd_wp], but
+    since @rp.memorize consumes the ownership of [Hpwrs], we log one step
+    earlier. *)
+
     (*@     // Logical action: Validate(@ts, @pwrs, @ptgs).                     @*)
     (*@     rp.logValidate(ts, pwrs, ptgs)                                      @*)
     (*@                                                                         @*)
@@ -97,6 +94,7 @@ Section program.
     wp_apply (wp_logValidate with "[$Hfile $Hpwrs]").
     iIntros (bs') "[Hfile Hpwrs]".
     wp_pures.
+    iApply ncfupd_wp.
     iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
     iNamed "HinvO".
@@ -124,12 +122,20 @@ Section program.
     iDestruct ("HrgsC" with "Hrg") as "Hrgs".
     iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
+    iModIntro.
+
+    (*@     // Record the write set and the participant groups.                 @*)
+    (*@     rp.memorize(ts, pwrs, ptgs)                                         @*)
+    (*@                                                                         @*)
+    iAssert (own_replica_cpm rp cpm)%I with "[$HprepmP $HprepmS $Hprepm]" as "Hcpm".
+    { done. }
+    wp_apply (wp_Replica__memorize _ _ _ _ Slice.nil with "[$Hpwrs $Hcpm]").
+    iIntros "Hcpm".
 
     (*@     return tulip.REPLICA_OK                                             @*)
     (*@ }                                                                       @*)
+    wp_pures.
     iApply ("HΦ" $! ReplicaOK).
-    iDestruct (big_sepM2_insert_2 _ _ _ tsW with "[Hpwrs] Hprepm") as "Hprepm".
-    { iFrame "Hpwrs". }
     iAssert ([∗ set] t ∈ dom (<[ts := pwrs]> cpm), is_replica_validated_ts γ gid rid t)%I
       as "Hrpvds'".
     { rewrite dom_insert_L.
@@ -141,8 +147,6 @@ Section program.
     iModIntro.
     iPureIntro. simpl.
     exists (<[ts := ∅]> ptgsm).
-    split.
-    { rewrite 2!kmap_insert. f_equal; [word | done]. }
     split; first done.
     rewrite merge_clog_ilog_snoc_ilog; last done.
     split.
