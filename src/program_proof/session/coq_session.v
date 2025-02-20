@@ -1,68 +1,6 @@
-From Perennial.program_proof Require Import std_proof. 
-From Perennial.goose_lang.ffi.grove_ffi Require Export impl.
-From Perennial.program_logic Require Export atomic.
-From Perennial.program_proof Require Export proof_prelude.
-From Perennial.program_proof Require Import grove_prelude.
-From Perennial.goose_lang.lib Require Import struct.struct into_val.
-From RecordUpdate Require Import RecordSet.
-From Perennial.goose_lang Require Import prelude.
-
-Module Operation.
-
-  Record t :=
-    mk {
-        VersionVector: list u64 ;
-        Data:          u64 ;
-      }.
-
-End Operation.
-
-Module Message.
-
-  Record t :=
-    mk {
-        MessageType: u64 ;
-
-        C2S_Client_Id:            u64 ;
-	C2S_Client_RequestNumber: u64 ;
-	C2S_Client_OperationType: u64 ;
-	C2S_Client_Data:          u64 ;
-	C2S_Client_VersionVector: list u64 ;
-
-	S2S_Gossip_Sending_ServerId:   u64 ;
-	S2S_Gossip_Receiving_ServerId: u64 ;
-	S2S_Gossip_Operations:         list Operation.t ;
-	S2S_Gossip_Index:              u64 ;
-
-	S2S_Acknowledge_Gossip_Sending_ServerId:   u64 ;
-	S2S_Acknowledge_Gossip_Receiving_ServerId: u64 ;
-	S2S_Acknowledge_Gossip_Index:              u64 ;
-
-	S2C_Client_OperationType: u64 ;    
-	S2C_Client_Data:          u64 ;
-	S2C_Client_VersionVector: list u64 ;
-	S2C_Client_RequestNumber: u64 ;
-	S2C_Client_Number:        u64 ;
-      }.
-
-End Message.
-
-Module Server.
-
-  Record t :=
-    mk {
-        Id:                     u64 ;
-	NumberOfServers:        u64 ;
-	UnsatisfiedRequests:    list Message.t ;
-	VectorClock:            list u64 ;
-	OperationsPerformed:    list Operation.t ;
-	MyOperations:           list Operation.t ;
-	PendingOperations:      list Operation.t ;
-	GossipAcknowledgements: list u64 ;
-	SeenRequests:           list u64 ;
-      }.
-
-End Server.
+From Perennial.program_proof Require Export std_proof. 
+From Perennial.program_proof Require Export grove_prelude.
+From Perennial.program_proof.session Require Export definitions.
 
 Fixpoint coq_compareVersionVector (v1: list u64) (v2: list u64) : bool :=
   match v1 with
@@ -75,13 +13,13 @@ Fixpoint coq_compareVersionVector (v1: list u64) (v2: list u64) : bool :=
                     
   end.
 
-Fixpoint coq_lexiographicCompare (v1 v2: list u64) : bool :=
+Fixpoint coq_lexicographicCompare (v1 v2: list u64) : bool :=
   match v1 with
   | [] => false 
   | cons h1 t1 => match v2 with
                   | [] => false 
                   | cons h2 t2 => if (uint.Z h1) =? (uint.Z h2) then
-                                    (coq_lexiographicCompare t1 t2) else (uint.Z h1) >? (uint.Z h2)
+                                    (coq_lexicographicCompare t1 t2) else (uint.Z h1) >? (uint.Z h2)
                   end
   end.
 
@@ -124,7 +62,7 @@ Definition coq_equalOperations (o1 : Operation.t) (o2 : Operation.t) :=
 Fixpoint coq_sortedInsert (l : list Operation.t) (i : Operation.t) :=
   match l with
   | [] => [i]
-  | cons h t => if (coq_lexiographicCompare h.(Operation.VersionVector) i.(Operation.VersionVector)) then (i :: h :: t)%list else (h :: coq_sortedInsert t i)%list
+  | cons h t => if (coq_lexicographicCompare h.(Operation.VersionVector) i.(Operation.VersionVector)) then (i :: h :: t)%list else (h :: coq_sortedInsert t i)%list
   end.
 
 Definition coq_mergeOperations (l1: list Operation.t) (l2: list Operation.t) : (list Operation.t) :=
@@ -265,5 +203,7 @@ Definition coq_processRequest (s: Server.t) (r: Message.t) : (Server.t * list Me
         
   | _ => (s, [])
   end.
+
+
 
 

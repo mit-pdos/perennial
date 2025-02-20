@@ -58,8 +58,8 @@ Definition compareVersionVector: val :=
         Continue));;
     ![boolT] "output".
 
-Definition lexiographicCompare: val :=
-  rec: "lexiographicCompare" "v1" "v2" :=
+Definition lexicographicCompare: val :=
+  rec: "lexicographicCompare" "v1" "v2" :=
     let: "output" := ref_to boolT #false in
     let: "i" := ref_to uint64T #0 in
     let: "l" := ref_to uint64T (slice.len "v1") in
@@ -109,8 +109,7 @@ Definition oneOffVersionVector: val :=
         (if: (SliceGet uint64T "v1" (![uint64T] "i")) < (SliceGet uint64T "v2" (![uint64T] "i"))
         then
           "output" <-[boolT] #false;;
-          "i" <-[uint64T] ((![uint64T] "i") + #1);;
-          Continue
+          Break
         else
           "i" <-[uint64T] ((![uint64T] "i") + #1);;
           Continue)));;
@@ -143,16 +142,14 @@ Definition binarySearch: val :=
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < (![uint64T] "j")); (λ: <>, Skip) := λ: <>,
       let: "mid" := (![uint64T] "i") + (((![uint64T] "j") - (![uint64T] "i")) `quot` #2) in
-      (if: lexiographicCompare (struct.get Operation "VersionVector" "needle") (struct.get Operation "VersionVector" (SliceGet (struct.t Operation) "s" "mid"))
+      (if: lexicographicCompare (struct.get Operation "VersionVector" "needle") (struct.get Operation "VersionVector" (SliceGet (struct.t Operation) "s" "mid"))
       then
         "i" <-[uint64T] ("mid" + #1);;
         Continue
       else
         "j" <-[uint64T] "mid";;
         Continue));;
-    (if: (![uint64T] "i") < (slice.len "s")
-    then ![uint64T] "i"
-    else ![uint64T] "i").
+    ![uint64T] "i".
 
 Definition sortedInsert: val :=
   rec: "sortedInsert" "s" "value" :=
@@ -342,5 +339,9 @@ Definition processRequest: val :=
               Continue)
           else #()))));;
     (![struct.t Server] "s", ![slice.T (struct.t Message)] "outGoingRequests").
+
+Definition operationList: val :=
+  rec: "operationList" "o" :=
+    SliceAppend (struct.t Operation) (NewSlice (struct.t Operation) #0) "o".
 
 End code.
