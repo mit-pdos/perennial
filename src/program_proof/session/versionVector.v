@@ -1,4 +1,4 @@
-From Perennial.program_proof.session Require Import session_prelude.
+From Perennial.program_proof.session Require Import coq_session.
 
 Section heap.
   Context `{hG: !heapGS Σ}.

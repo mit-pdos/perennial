@@ -1,5 +1,6 @@
-From Perennial.program_proof.session Require Export coq_session.
 From Perennial.program_proof.session Require Export session_prelude.
+From Perennial.program_proof.session Require Export versionVector.
+
 
 Section heap.
   Context `{hG: !heapGS Σ}.
@@ -152,7 +153,7 @@ Section heap.
                   ** auto.
   Qed.
 
-  Lemma operation_length (s: Slice.t) (l: list Operation.t) 
+  Lemma vv_len (s: Slice.t) (l: list Operation.t) 
     (opv: Slice.t*u64) (n: nat) :
     (operation_slice s l n ⊢@{_}
     ⌜∀ e, e ∈ l -> length e.(Operation.VersionVector) = n⌝)%I.
@@ -161,8 +162,26 @@ Section heap.
     unfold operation_slice. unfold operation_slice'.
     iDestruct "H" as "[%ops H]".
     iDestruct "H" as "(H & H1)".
+    iDestruct (big_sepL2_length with "H1") as "%H".
     iApply big_sepL2_sep in "H1".
-  Admitted.
+    iDestruct "H1" as "(H1 & H2)".
+    iApply big_sepL2_sep in "H2".
+    iDestruct "H2" as "(H2 & _)".
+    iApply big_sepL2_pure_1 in "H2".
+    iDestruct "H2" as "%H1".
+    iPureIntro.
+    intros.
+    apply elem_of_list_lookup_1 in H0 as [i H0].
+    assert (i < length l)%nat. {
+        eapply lookup_lt_Some.
+        eassumption.
+      }
+      assert (i < length ops)%nat by word.
+    apply list_lookup_lt in H3 as [x H3].
+    symmetry. eapply H1.
+    - eassumption.
+    - auto.
+  Qed.
   
   Lemma wp_BinarySearch (s: Slice.t) (l: list Operation.t)
     (opv: Slice.t*u64) (needle: Operation.t) (n: nat) :
@@ -185,8 +204,6 @@ Section heap.
                                 ⌜uint.nat i <= length l⌝
       }}}.
   Proof.
-  Admitted.
-  (* 
     iIntros (Φ) "(H & H1 & %H2) H4". unfold binarySearch.
     wp_pures.
     wp_apply wp_ref_to; auto.
@@ -194,14 +211,14 @@ Section heap.
     wp_apply wp_slice_len.
     wp_apply wp_ref_to; auto.
     iIntros (j_l) "j". wp_pures.
+    iDestruct (vv_len with "H") as "%len"; auto.
     iNamed "H".
     iDestruct "H" as "(H & H2)".
     iDestruct "H" as "(H & H3)".
-    iDestruct (big_sepL2_length with "H2") as "%len".
+    iDestruct (big_sepL2_length with "H2") as "%len1".
     iDestruct (slice.own_slice_small_sz with "H") as %Hsz.
     unfold is_operation.
     iApply big_sepL2_sep in "H2".
-    iDestruct "H2" as "[H2 H3]".
     wp_apply (wp_forBreak_cond
                 (λ continue, ∃ (i j: w64),
                     operation_slice s l n ∗
