@@ -1009,4 +1009,6 @@ Section heap.
                     | None => (index + 1, (element :: acc)%list)
                     end) output (0, [])).
 
+End heap.
+
   (* Fix goose for bsearch *)

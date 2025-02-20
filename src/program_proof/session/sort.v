@@ -431,7 +431,7 @@ Section heap.
         eapply H9; eassumption.
       + destruct H10. auto.
    *)
-
+  Admitted.
 
   Lemma wp_sortedInsert (s: Slice.t) (l: list Operation.t)
     (opv: Slice.t*u64) (v: Operation.t) (n: nat) :
