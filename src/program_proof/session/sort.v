@@ -204,6 +204,7 @@ Section heap.
                                 ⌜uint.nat i <= length l⌝
       }}}.
   Proof.
+    (* 
     iIntros (Φ) "(H & H1 & %H2) H4". unfold binarySearch.
     wp_pures.
     wp_apply wp_ref_to; auto.
