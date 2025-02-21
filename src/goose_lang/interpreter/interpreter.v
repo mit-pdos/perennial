@@ -888,6 +888,17 @@ Ltac runStateT_inv :=
         subst.
         Transitions.monad_inv.
         do 2 eexists.
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx (AtomicOpOp op) e2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx (AtomicOpOp op) #l4)])|].
+        single_step.
+        exact H.
+      }
+      { runStateT_inv.
+        destruct v2 eqn:?; simpl in H; try by inversion H.
+        destruct l2 eqn:?; simpl in H; try by inversion H.
+        subst.
+        Transitions.monad_inv.
+        do 2 eexists.
         eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx GlobalPutOp e2)])|].
         eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx GlobalPutOp #(str s1))])|].
         single_step.

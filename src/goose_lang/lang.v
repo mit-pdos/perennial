@@ -108,6 +108,7 @@ Inductive prim_op2 : Set :=
  | AllocNOp (* array length (positive number), initial value *)
  | FinishStoreOp (* pointer, value *)
  | AtomicStoreOp (* pointer, value *) (* atomic store *)
+ | AtomicOpOp (op : bin_op) (* pointer, value *) (* atomic binary operation *)
  | GlobalPutOp (* string, val *)
 .
 
@@ -178,6 +179,7 @@ Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
 Notation AtomicStore := (Primitive2 AtomicStoreOp).
+Notation AtomicOp o := (Primitive2 (AtomicOpOp o)).
 Notation StartRead := (Primitive1 StartReadOp).
 Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
@@ -546,7 +548,23 @@ Instance prim_op1_countable : Countable prim_op1.
 Proof. solve_countable prim_op1_rec 7%nat. Qed.
 
 Instance prim_op2_countable : Countable prim_op2.
-Proof. solve_countable prim_op2_rec 5%nat. Qed.
+Proof.
+  refine (inj_countable' (λ op, match op with
+                                | AllocNOp => inl 0
+                                | FinishStoreOp => inl 1
+                                | AtomicStoreOp => inl 2
+                                | GlobalPutOp => inl 3
+                                | AtomicOpOp x => inr x
+                                end)
+                         (λ x, match x with
+                               | inl 0 => AllocNOp
+                               | inl 1 => FinishStoreOp
+                               | inl 2 => AtomicStoreOp
+                               | inl 3 => GlobalPutOp
+                               | inr k => AtomicOpOp k
+                               | inl _ => AllocNOp
+                               end) _); by intros [].
+Qed.
 
 Definition prim_op' : Type := prim_op0 + prim_op1 + prim_op2.
 
@@ -1195,6 +1213,16 @@ Definition base_trans (e: expr) :
            ret $ LitV $ LitUnit
        | _ => undefined
       end)
+  | AtomicOp op (Val (LitV (LitLoc l))) (Val v) => (* atomic add *)
+    atomically
+      (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
+       match nav with
+       | (Reading 0, oldv) =>
+           v ← unwrap (bin_op_eval op oldv v);
+           modifyσ (set heap <[l:=Free v]>);;
+           ret $ LitV $ LitUnit
+       | _ => undefined
+      end)
   | ExternalOp op (Val v) => atomicallyM $ ffi_step op v
   | Input (Val (LitV (LitInt selv))) =>
     atomically
@@ -1742,6 +1770,7 @@ Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
 Notation AtomicStore := (Primitive2 AtomicStoreOp).
+Notation AtomicOp o := (Primitive2 (AtomicOpOp o)).
 Notation StartRead := (Primitive1 StartReadOp).
 Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
