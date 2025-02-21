@@ -1,4 +1,4 @@
-From Goose.github_com.session Require Import sort.
+From Goose.github_com.session Require Import server.
 From Perennial.program_proof Require Import std_proof. 
 From Perennial.goose_lang.ffi.grove_ffi Require Export impl.
 From Perennial.program_logic Require Export atomic.
@@ -578,9 +578,7 @@ Section heap.
     intros.
     apply list_eq.
     intros. unfold is_sorted in *.
-    induction 
-
-    
+  Admitted.
                 
 
 (* TODO:
@@ -588,6 +586,8 @@ Section heap.
    prove that if two lists are permutations,
    then they satisfy is_sorted
  *)
+
+End heap.
 
 Inductive sorted: list w64 → Prop :=
 | sorted_nil: sorted []
@@ -625,12 +625,11 @@ Proof.
       intros.
 Admitted.
 
-
+(**
 Lemma impl f h l :
   is_sorted f ->
   is_sorted h ->
-  
-            
+*)
 
 Definition is_a_sorting_algorithm (f: list w64 → list w64) := ∀ al,
     Permutation al (f al) ∧ is_sorted (f al).
@@ -655,7 +654,7 @@ Proof.
     destruct H.
     destruct H0.
     unfold is_sorted in *.
-    
+Admitted.
     
 
     
@@ -676,12 +675,3 @@ Fixpoint sort (l : list nat) : list nat :=
   | [] =? []
   | h :: t => insert h (sort t)
   end.
-      
-  
-  
-  
-
-
-
-
-End heap. 

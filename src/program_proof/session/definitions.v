@@ -96,7 +96,8 @@ Section heap.
   #[global] Instance into_val_for_type : IntoValForType (Slice.t*u64) (struct.t Operation).
   Proof. constructor; auto. Qed.
 
-  Search "persistent".
+  (* Search "persistent". *)
+
   Definition is_operation (opv: Slice.t*u64) (op: Operation.t) (opv_len: nat): iProp Σ :=
     ⌜opv.2 = op.(Operation.Data)⌝ ∗
     ⌜opv_len = length (op.(Operation.VersionVector))⌝ ∗
