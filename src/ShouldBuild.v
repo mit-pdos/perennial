@@ -116,3 +116,19 @@ From New.proof Require go_etcd_io.etcd.client.v3.concurrency.
 
 (* FIXME: add back in. *)
 (* From Perennial.program_proof.pav Require should_build. *)
+
+(* session *)
+From Perennial.program_proof.session Require coq_session.
+From Perennial.program_proof.session Require definitions.
+From Perennial.program_proof.session Require session_prelude.
+From Perennial.program_proof.session Require sort.
+From Perennial.program_proof.session Require versionVector.
+
+(* session proof *)
+(* From Perennial.program_proof.session Require mergeOperations.proof.      *)
+(* From Perennial.program_proof.session Require newServer.proof.            *)
+(* From Perennial.program_proof.session Require newSortOperation.proof.     *)
+(* From Perennial.program_proof.session Require operations.proof.           *)
+(* From Perennial.program_proof.session Require processClientRequest.proof. *)
+(* From Perennial.program_proof.session Require server.proof.               *)
+(* From Perennial.program_proof.session Require sort.proof.                 *)

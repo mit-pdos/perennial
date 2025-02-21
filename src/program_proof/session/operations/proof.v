@@ -1,4 +1,4 @@
-From Goose.github_com.session Require Import operations.
+From Goose.github_com.session Require Import server.
 From Perennial.program_proof Require Import std_proof. 
 From Perennial.goose_lang.ffi.grove_ffi Require Export impl.
 From Perennial.program_logic Require Export atomic.
