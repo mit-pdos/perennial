@@ -1,6 +1,4 @@
-From Goose.github_com.session Require Export server.
-From Perennial.program_proof Require Export std_proof.
-From Perennial.program_proof Require Export grove_prelude.
+From Perennial.program_proof Require Export session_prelude.
 
 Module Operation.
   
@@ -96,7 +94,6 @@ Section heap.
   #[global] Instance into_val_for_type : IntoValForType (Slice.t*u64) (struct.t Operation).
   Proof. constructor; auto. Qed.
 
-  Search "persistent".
   Definition is_operation (opv: Slice.t*u64) (op: Operation.t) (opv_len: nat): iProp Σ :=
     ⌜opv.2 = op.(Operation.Data)⌝ ∗
     ⌜opv_len = length (op.(Operation.VersionVector))⌝ ∗

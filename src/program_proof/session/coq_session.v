@@ -1,5 +1,4 @@
-From Perennial.program_proof Require Export std_proof. 
-From Perennial.program_proof Require Export grove_prelude.
+From Perennial.program_proof.session Require Export session_prelude.
 From Perennial.program_proof.session Require Export definitions.
 
 Fixpoint coq_compareVersionVector (v1: list u64) (v2: list u64) : bool :=

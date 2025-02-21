@@ -4,18 +4,18 @@ Section heap.
   Context `{hG: !heapGS Σ}.
                
   Lemma wp_compareVersionVector (x: Slice.t) (xs: list w64) (y: Slice.t)
-    (ys: list w64) :
+    (ys: list w64) (d: dfrac) :
     {{{
-          own_slice_small x uint64T (DfracOwn 1) xs ∗
-          own_slice_small y uint64T (DfracOwn 1) ys ∗
+          own_slice_small x uint64T d xs ∗
+          own_slice_small y uint64T d ys ∗
           ⌜length xs = length ys⌝ 
     }}}
       compareVersionVector x y 
       {{{
             r , RET #r;
             ⌜r = coq_compareVersionVector xs ys⌝ ∗
-            own_slice_small x uint64T (DfracOwn 1) xs ∗
-            own_slice_small y uint64T (DfracOwn 1) ys ∗            
+            own_slice_small x uint64T d xs ∗
+            own_slice_small y uint64T d ys ∗            
             ⌜length xs = length ys⌝ 
       }}}.
   Proof.
@@ -33,8 +33,8 @@ Section heap.
     wp_apply (wp_forBreak_cond
                 (λ continue,
                    ∃ (b: bool) (i: w64),
-                     "Hx" ∷ own_slice_small x uint64T (DfracOwn 1) xs ∗
-                     "Hy" ∷ own_slice_small y uint64T (DfracOwn 1) ys ∗
+                     "Hx" ∷ own_slice_small x uint64T d xs ∗
+                     "Hy" ∷ own_slice_small y uint64T d ys ∗
                      output ↦[boolT] #b ∗
                      index ↦[uint64T] #i ∗
                      l ↦[uint64T] #(length xs) ∗
@@ -216,18 +216,18 @@ Section heap.
           }
   Qed.
 
-  Lemma wp_lexicographicCompare (x: Slice.t) (xs: list u64) (y: Slice.t) (ys: list u64) :
+  Lemma wp_lexicographicCompare (x: Slice.t) (xs: list u64) (y: Slice.t) (ys: list u64) (d: dfrac) :
     {{{
-          own_slice_small x uint64T (DfracOwn 1) xs ∗
-          own_slice_small y uint64T (DfracOwn 1) ys ∗
+          own_slice_small x uint64T d xs ∗
+          own_slice_small y uint64T d ys ∗
           ⌜length xs = length ys⌝ 
     }}}
       lexicographicCompare x y 
       {{{
             r , RET #r;
             ⌜r = coq_lexicographicCompare xs ys⌝ ∗ 
-            own_slice_small x uint64T (DfracOwn 1) xs ∗
-            own_slice_small y uint64T (DfracOwn 1) ys ∗
+            own_slice_small x uint64T d xs ∗
+            own_slice_small y uint64T d ys ∗
             ⌜length xs = length ys⌝ 
       }}}.
   Proof.
@@ -243,11 +243,10 @@ Section heap.
     wp_apply wp_slice_len.
     wp_apply wp_ref_to; auto.
     iIntros (l) "H8". wp_pures.
-    iDestruct "H1" as "[H1 H9]".
     wp_apply (wp_forBreak_cond
                 (λ continue, ∃ (b: bool) (i: w64),
-                    "Hx" ∷ own_slice_small x uint64T (DfracOwn 1) xs ∗
-                    "Hy" ∷ own_slice_small y uint64T (DfracOwn 1) ys ∗
+                    "Hx" ∷ own_slice_small x uint64T d xs ∗
+                    "Hy" ∷ own_slice_small y uint64T d ys ∗
                     output ↦[boolT] #b ∗
                     index ↦[uint64T] #i ∗
                     l ↦[uint64T] #(length xs) ∗
@@ -267,7 +266,7 @@ Section heap.
                          (uint.Z x =? uint.Z y) = false /\
                          b = (uint.Z x >? uint.Z y))⌝ 
                 )%I
-               with "[] [H1 H2 H6 H7 H8 H9]").
+               with "[] [H1 H2 H6 H7 H8]").
     - iIntros (?). iModIntro. iIntros "H1 H2".
       iNamed "H1". iDestruct "H1" as "(H1 & H3 & H4 & H5 & %H6 & %H7 & %H8 & %H9)".
       wp_load. wp_load.
@@ -324,7 +323,7 @@ Section heap.
         intros. left.
         split. { word. }
         auto.
-    - iCombine "H1 H9" as "H10". iExists false. iExists (W64 0).
+    - iExists false. iExists (W64 0).
       rewrite Hsz.
       replace ((W64 (uint.nat x.(Slice.sz)))) with (x.(Slice.sz)) by word. iFrame.
       iPureIntro.
@@ -444,18 +443,18 @@ Section heap.
       auto.
   Qed.
 
-  Lemma wp_maxTS (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64) :
+  Lemma wp_maxTS (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64) (d: dfrac) :
     {{{
-          own_slice_small x uint64T (DfracOwn 1) xs ∗
-            own_slice_small y uint64T (DfracOwn 1) ys ∗
+          own_slice_small x uint64T d xs ∗
+            own_slice_small y uint64T d ys ∗
             ⌜length xs = length ys⌝
     }}}
       maxTS x y 
       {{{
             (s': Slice.t), RET slice_val s'; 
             own_slice s' uint64T (DfracOwn 1) (coq_maxTS xs ys) ∗ 
-            own_slice_small x uint64T (DfracOwn 1) xs ∗
-            own_slice_small y uint64T (DfracOwn 1) ys 
+            own_slice_small x uint64T d xs ∗
+            own_slice_small y uint64T d ys 
       }}}.
   Proof.
     iIntros (Φ) "(H & H1 & %H3) H2".
@@ -475,8 +474,8 @@ Section heap.
     iIntros (slice) "slice". wp_pures.
     wp_apply (wp_forBreak_cond
                 (λ continue, ∃ (i: w64) (l: list w64),
-                    own_slice_small x uint64T (DfracOwn 1) xs ∗
-                    own_slice_small y uint64T (DfracOwn 1) ys ∗
+                    own_slice_small x uint64T d xs ∗
+                    own_slice_small y uint64T d ys ∗
                     own_slice s' uint64T (DfracOwn 1) l ∗ 
                     index ↦[uint64T] #i ∗
                     len ↦[uint64T] #(length xs) ∗
@@ -637,18 +636,18 @@ Section heap.
       rewrite H. iFrame.
   Qed.
 
-  Lemma wp_equalSlices (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64) :
+  Lemma wp_equalSlices (x: Slice.t) (xs: list w64) (y: Slice.t) (ys: list w64)  (d: dfrac):
       {{{
-            own_slice_small x uint64T (DfracOwn 1) xs ∗
-            own_slice_small y uint64T (DfracOwn 1) ys ∗
+            own_slice_small x uint64T d xs ∗
+            own_slice_small y uint64T d ys ∗
             ⌜length xs = length ys⌝ 
       }}}
         equalSlices x y 
         {{{
               r , RET #r;
               ⌜r = coq_equalSlices xs ys⌝ ∗ 
-              own_slice_small x uint64T (DfracOwn 1) xs ∗
-              own_slice_small y uint64T (DfracOwn 1) ys ∗
+              own_slice_small x uint64T d xs ∗
+              own_slice_small y uint64T d ys ∗
               ⌜length xs = length ys⌝
         }}}.
     Proof.
@@ -665,8 +664,8 @@ Section heap.
       wp_apply (wp_forBreak_cond
                   (λ continue,
                      ∃ (b: bool) (i: w64),
-                       "Hx" ∷ own_slice_small x uint64T (DfracOwn 1) xs ∗
-                       "Hy" ∷ own_slice_small y uint64T (DfracOwn 1) ys ∗
+                       "Hx" ∷ own_slice_small x uint64T d xs ∗
+                       "Hy" ∷ own_slice_small y uint64T d ys ∗
                        output ↦[boolT] #b ∗
                        index ↦[uint64T] #i ∗
                        l ↦[uint64T] #(length xs) ∗
