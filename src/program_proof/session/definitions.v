@@ -20,7 +20,6 @@ Module Message.
                   MessageType: u64 ;
 
                   C2S_Client_Id:            u64;
-	          C2S_Client_RequestNumber: u64;
 	          C2S_Client_OperationType: u64;
 	          C2S_Client_Data:          u64;
 	          C2S_Client_VersionVector: list u64;
