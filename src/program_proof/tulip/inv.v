@@ -1,14 +1,12 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
-From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps.
-From Perennial.program_proof.tulip Require Import base res cmd msg.
+From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps serialize.
+From Perennial.program_proof.tulip Require Import base res cmd msg big_sep.
 From Perennial.program_proof.tulip Require Export
   inv_txnsys inv_key inv_group inv_replica.
 
 Section inv.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : tulip_names).
 
   Definition tulip_inv_with_proph γ p : iProp Σ :=
     (* txn invariants *)
@@ -35,8 +33,6 @@ End inv.
 
 Section def.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : tulip_names).
 
   Definition slow_read γ rid key lts ts v : iProp Σ :=
     "#Hv"    ∷ is_repl_hist_at γ key lts v ∗
@@ -156,10 +152,42 @@ Section def.
 
 End def.
 
+Section inv_file.
+  Context `{!heapGS Σ, !tulip_ghostG Σ}.
+
+  Definition tulipfileNS := tulipNS .@ "file".
+  (* TODO: make name consistent, also think about the right NS structure *)
+  Definition rpcrashNS := nroot .@ "rpcrash".
+
+  Inductive rpdur :=
+  | ReplicaDurable (clog : list ccommand) (ilog : list (nat * icommand)).
+
+  Definition own_replica_durable γ (gid rid : u64) (dst : rpdur) : iProp Σ :=
+    match dst with
+    | ReplicaDurable clog ilog =>
+        "Hclog" ∷ own_replica_clog_half γ gid rid clog ∗
+        "Hilog" ∷ own_replica_ilog_quarter γ gid rid ilog
+    end.
+
+  Definition encode_ilog (ilog : list (nat * icommand)) (ilogbytes : list byte_string) :=
+    Forall2 (λ (nc : nat * icommand) bs, encode_lsn_icommand nc.1 nc.2 bs) ilog ilogbytes.
+
+  Definition replica_file_inv (γ : tulip_names) (gid rid : u64) : iProp Σ :=
+    ∃ (ilog : list (nat * icommand)) (ilogbytes : list byte_string)
+      (fname : byte_string) (content : list u8),
+      "Hfile"        ∷ fname f↦ content ∗
+      "Hilogfileinv" ∷ own_replica_ilog_quarter γ gid rid ilog ∗
+      "#Hilogfname"  ∷ is_replica_ilog_fname γ gid rid fname ∗
+      "%Hencilog"    ∷ ⌜encode_ilog ilog ilogbytes⌝ ∗
+      "%Hilogserial" ∷ ⌜serialize id ilogbytes = content⌝.
+
+  Definition know_replica_file_inv γ gid rid : iProp Σ :=
+    inv tulipfileNS (replica_file_inv γ gid rid).
+
+End inv_file.
+
 Section inv_network.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : tulip_names).
 
   Definition tulipnetNS := tulipNS .@ "net".
 
@@ -281,34 +309,42 @@ End inv_network.
 Section alloc.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Lemma tulip_inv_alloc p future (gaddrm : gmap u64 (gmap u64 chan)) :
+  (* TODO: make gfnames gmap to gmap to be consistent with gaddrm *)
+
+  Lemma tulip_inv_alloc
+    p future
+    (gaddrm : gmap u64 (gmap u64 chan))
+    (gfnames : gmap (u64 * u64) byte_string) :
     dom gaddrm = gids_all ->
     map_Forall (λ _ m, dom m = rids_all) gaddrm ->
+    dom gfnames = gset_cprod gids_all rids_all ->
     ([∗ map] addrm ∈ gaddrm, [∗ set] addr ∈ map_img addrm, addr c↦ ∅) -∗
+    ([∗ map] fname ∈ gfnames, fname f↦ []) -∗
     own_txn_proph p future ==∗
     ∃ γ,
       (* give to client *)
       ([∗ set] k ∈ keys_all, own_db_ptsto γ k None) ∗
       (* give to replica lock invariant *)
       ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
-         own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []) ∗
+         own_replica_clog_half γ g r [] ∗ own_replica_ilog_quarter γ g r []) ∗
       (* give to txnlog invariant *)
       ([∗ set] gid ∈ dom gaddrm, own_txn_log_half γ gid []) ∗
       ([∗ set] gid ∈ dom gaddrm, own_txn_cpool_half γ gid ∅) ∗
       (* tulip atomic invariant *)
       tulip_inv_with_proph γ p ∗
+      ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all, replica_file_inv γ g r) ∗
       gentid_init γ ∗
       ([∗ map] gid ↦ addrm ∈ gaddrm, tulip_network_inv γ gid addrm).
   Proof.
-    iIntros (Hdomgaddrm Hdomaddrm) "Hchans".
+    iIntros (Hdomgaddrm Hdomaddrm Hdomgfnames) "Hchans Hfiles".
     iIntros "Hproph".
-    iMod (tulip_res_alloc) as (γ) "Hres".
+    iMod (tulip_res_alloc gfnames) as (γ) "Hres".
     iDestruct "Hres" as "(Hcli & Hresm & Hwrsm & Hltids & Hwabt & Htmods & Hres)".
     iDestruct "Hres" as "(Hexcltids & Hexclctks & Hpost & Hlts & Hres)".
     iDestruct "Hres" as "(Hdbpts & Hrhistmg & Hrhistmk & Hrtsg & Hrtsk & Hres)".
     iDestruct "Hres" as "(Hchistm & Hlhistm & Hkmodlst & Hkmodlsk & Hkmodcst & Hkmodcsk & Hres)".
     iDestruct "Hres" as "(Hlogs & Hlogstl & Hcpools & Hcpoolstl & Hres)".
-    iDestruct "Hres" as "(Hpms & Hpsms & Hcms & Htrmls & Hrps & Hrplocks)".
+    iDestruct "Hres" as "(Hpms & Hpsms & Hcms & Hfnames & Hilogs & Htrmls & Hrps & Hrplocks & Hts)".
     (* Obtain a lb on the largest timestamp to later establish group invariant. *)
     iDestruct (largest_ts_witness with "Hlts") as "#Hltslb".
     iAssert (txnsys_inv γ p)
@@ -567,6 +603,20 @@ Section alloc.
       by rewrite big_sepM_empty dom_gset_to_gmap Hdomaddrm.
     }
     rewrite Hdomgaddrm.
+    iAssert ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all, replica_file_inv γ g r)%I
+      with "[Hfiles Hilogs Hfnames]" as "Hfiles".
+    { iApply big_sepS_gset_cprod.
+      rewrite -Hdomgfnames 2!big_sepS_big_sepM.
+      iCombine "Hfiles Hilogs Hfnames" as "Hfiles".
+      rewrite -2!big_sepM_sep.
+      iApply (big_sepM_mono with "Hfiles").
+      iIntros ([g r] data Hdata) "(Hfile & Hilog & Hfname)".
+      iFrame.
+      iPureIntro.
+      exists [].
+      split; last done.
+      by apply Forall2_nil.
+    }
     by iFrame.
   Qed.
 

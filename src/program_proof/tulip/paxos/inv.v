@@ -1238,6 +1238,7 @@ Section alloc.
       ([∗ set] nid ∈ nids, own_committed_lsn_half γ nid O) ∗
       ([∗ set] nid ∈ nids, own_node_ledger_half γ nid []) ∗
       (* paxos atomic invariant *)
+      (* TODO: also give [is_node_wal_fname] *)
       paxos_inv γ nids ∗ paxos_file_inv γ nids ∗ paxos_network_inv γ addrm.
   Proof.
     iIntros (nids Hmulti Hdomfnames) "Hfiles Hchans".

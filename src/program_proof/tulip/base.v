@@ -364,6 +364,8 @@ Definition votemR := gmap_viewR (nat * nat) (agreeR coordidO).
 Definition replica_votemR := gmapR (u64 * u64) votemR.
 Definition tokenmR := gmap_viewR (nat * nat * u64) unitR.
 Definition replica_tokenmR := gmapR (u64 * u64) tokenmR.
+Definition byte_stringO := listO w8.
+Definition replica_stringR := gmapR (u64 * u64) (agreeR byte_stringO).
 Definition trmlmR := gmap_viewR chan unitR.
 Definition group_trmlmR := gmapR u64 trmlmR.
 Canonical Structure dbhistO := leibnizO dbhist.
@@ -391,7 +393,6 @@ Class tulip_ghostG (Σ : gFunctors) :=
     #[global] txn_client_tokenG :: ghost_mapG Σ (nat * u64) unit;
     #[global] txn_postcondG :: ghost_mapG Σ nat (dbmap -> Prop);
     #[global] largest_tsG :: mono_natG Σ;
-    (* TODO: proph *)
     (* group resources defined in res_group.v *)
     #[global] group_prepG :: inG Σ group_natboolmvR;
     #[global] group_ppslG :: inG Σ group_ppslmR;
@@ -405,6 +406,7 @@ Class tulip_ghostG (Σ : gFunctors) :=
     #[global] ballotG :: inG Σ ballotR;
     #[global] replica_voteG :: inG Σ replica_votemR;
     #[global] replica_tokenG :: inG Σ replica_tokenmR;
+    #[global] replica_ilog_fnameG :: inG Σ replica_stringR;
     (* network resources defined din res_network.v *)
     #[global] group_trmlmG :: inG Σ group_trmlmR;
     (* txn local resources defined in program/txn/res.v *)
@@ -439,7 +441,6 @@ Definition tulip_ghostΣ :=
      ghost_mapΣ (nat * u64) unit;
      ghost_mapΣ nat (dbmap -> Prop);
      mono_natΣ;
-     (* TODO: proph *)
      (* res_group.v *)
      GFunctor group_natboolmvR;
      GFunctor group_ppslmR;
@@ -453,6 +454,7 @@ Definition tulip_ghostΣ :=
      GFunctor ballotR;
      GFunctor replica_votemR;
      GFunctor replica_tokenmR;
+     GFunctor replica_stringR;
      (* res_network.v *)
      GFunctor group_trmlmR;
      (* program/txn/res.v *)
@@ -491,7 +493,6 @@ Record tulip_names :=
     txn_client_token : gname;
     txn_postcond : gname;
     largest_ts : gname;
-    (* TODO: proph *)
     (* res_group.v *)
     group_prep : gname;
     group_prepare_proposal : gname;
@@ -504,6 +505,7 @@ Record tulip_names :=
     replica_ballot : gname;
     replica_vote : gname;
     replica_token : gname;
+    replica_ilog_fname : gname;
     (* res_network.v *)
     group_trmlm : gname;
     (* tid *)
@@ -515,4 +517,3 @@ Definition sysNS := nroot .@ "sys".
 Definition tulipNS := sysNS .@ "tulip".
 Definition tsNS := sysNS .@ "ts".
 Definition txnlogNS := sysNS .@ "txnlog".
-Definition tidNS := sysNS .@ "tid".

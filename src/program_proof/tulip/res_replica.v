@@ -255,8 +255,38 @@ Section res.
 
     (** Per-replica inconsistent log. *)
 
+    Definition own_replica_ilog_frac
+      γ (gid rid : u64) (q : Qp) (l : list (nat * icommand)) : iProp Σ :=
+      own γ.(replica_ilog) {[ (gid, rid) := (to_dfrac_agree (A:=ilogO) (DfracOwn q) l) ]}.
+
+    Definition own_replica_ilog_quarter γ (gid rid : u64) (l : list (nat * icommand)) : iProp Σ :=
+      own_replica_ilog_frac γ gid rid (1 / 4) l.
+
     Definition own_replica_ilog_half γ (gid rid : u64) (l : list (nat * icommand)) : iProp Σ :=
-      own γ.(replica_ilog) {[ (gid, rid) := (to_dfrac_agree (A:=ilogO) (DfracOwn (1 / 2)) l) ]}.
+      own_replica_ilog_frac γ gid rid (1 / 2) l.
+
+    Lemma replica_ilog_combine {γ gid rid l1 l2} :
+      own_replica_ilog_quarter γ gid rid l1 -∗
+      own_replica_ilog_quarter γ gid rid l2 -∗
+      own_replica_ilog_half γ gid rid l1 ∗ ⌜l2 = l1⌝.
+    Proof.
+      iIntros "Hl1 Hl2".
+      iDestruct (own_valid_2 with "Hl1 Hl2") as %Hvalid.
+      rewrite singleton_op singleton_valid dfrac_agree_op_valid_L in Hvalid.
+      destruct Hvalid as [_ Heq]. subst l2.
+      iCombine "Hl1 Hl2" as "Hl".
+      rewrite -dfrac_agree_op dfrac_op_own Qp.quarter_quarter.
+      by iFrame.
+    Qed.
+
+    Lemma replica_ilog_split {γ gid rid l} :
+      own_replica_ilog_half γ gid rid l -∗
+      own_replica_ilog_quarter γ gid rid l ∗ own_replica_ilog_quarter γ gid rid l.
+    Proof.
+      iIntros "Hl".
+      rewrite -own_op singleton_op -dfrac_agree_op dfrac_op_own Qp.quarter_quarter.
+      by iFrame.
+    Qed.
 
     Lemma replica_ilog_update {γ gid rid l1 l2} l' :
       own_replica_ilog_half γ gid rid l1 -∗
@@ -720,5 +750,28 @@ Section res.
     Qed.
 
   End replica_backup_token.
+
+  Section replica_ilog_fname.
+
+    Definition is_replica_ilog_fname γ (gid rid : u64) (fname : byte_string) : iProp Σ :=
+      own γ.(replica_ilog_fname) {[ (gid, rid) := (to_agree (A:=byte_stringO) fname) ]}.
+
+    #[global]
+    Instance is_replica_ilog_fname_persistent γ gid rid fname :
+      Persistent (is_replica_ilog_fname γ gid rid fname).
+    Proof. apply _. Defined.
+
+    Lemma replica_ilog_fname_agree {γ gid rid fname1 fname2} :
+      is_replica_ilog_fname γ gid rid fname1 -∗
+      is_replica_ilog_fname γ gid rid fname2 -∗
+      ⌜fname2 = fname1⌝.
+    Proof.
+      iIntros "Hv1 Hv2".
+      iDestruct (own_valid_2 with "Hv1 Hv2") as %Hvalid.
+      rewrite singleton_op singleton_valid in Hvalid.
+      by apply to_agree_op_inv_L in Hvalid.
+    Qed.
+
+  End replica_ilog_fname.
 
 End res.

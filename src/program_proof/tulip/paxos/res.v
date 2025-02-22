@@ -9,8 +9,6 @@ From Perennial.program_proof.tulip.paxos Require Export res_network.
 
 Section res.
   Context `{!paxos_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : paxos_names).
 
   Section consensus.
 
@@ -844,8 +842,6 @@ End res.
 
 Section wal.
   Context `{!paxos_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : paxos_names).
 
   Definition own_node_wal_half γ (nid : u64) (wal : list pxcmd) : iProp Σ :=
       own γ.(node_wal) {[ nid := (to_dfrac_agree (A:=pxcmdlO) (DfracOwn (1 / 2)) wal) ]}.
@@ -964,7 +960,7 @@ Section alloc.
            (γnode_wal) "Hnode_wal".
     { apply gset_to_gmap_valid. rewrite //=. }
 
-    iMod (own_alloc ((to_agree  <$> fnames) : gmapR u64 (agreeR byte_stringO))) as
+    iMod (own_alloc ((to_agree <$> fnames) : gmapR u64 (agreeR byte_stringO))) as
            (γnode_wal_fname) "Hnode_wal_fname".
     { intros k. rewrite lookup_fmap; destruct (fnames !! k) eqn:Heq; rewrite Heq //=. }
 
@@ -988,10 +984,9 @@ Section alloc.
          node_wal_fname := γnode_wal_fname;
          trmlm := γtrmlm |}.
 
-    iAssert (|==> [∗ set] nid ∈ nids, own_accepted_proposals γ nid ∅)%I
-      with "[Hnode_proposal]" as ">Hnode_proposal".
-    {
-      rewrite /own_accepted_proposals.
+    iAssert ([∗ set] nid ∈ nids, own_accepted_proposals γ nid ∅)%I
+      with "[Hnode_proposal]" as "Hnode_proposal".
+    { rewrite /own_accepted_proposals.
       rewrite -big_opS_gset_to_gmap big_opS_own_1.
       iApply (big_sepS_mono with "Hnode_proposal").
       iIntros (? Hin) "H". iExists _. iFrame.

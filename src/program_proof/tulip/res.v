@@ -15,8 +15,6 @@ their respective files. *)
 
 Section res.
   Context `{!tulip_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : tulip_names).
 
   Section db_ptsto.
 
@@ -578,7 +576,7 @@ Section alloc.
     (* per-replica backup-tokens map *)
     ([∗ set] r ∈ rids_all, own_replica_backup_tokens_map γ g r ∅).
 
-  Lemma tulip_res_alloc :
+  Lemma tulip_res_alloc (gfnames : gmap (u64 * u64) byte_string) :
     ⊢ |==> ∃ γ,
       (* database points-to | client *)
       ([∗ set] k ∈ keys_all, own_db_ptsto γ k None) ∗
@@ -628,13 +626,17 @@ Section alloc.
       ([∗ set] g ∈ gids_all, own_group_prepare_proposals_map γ g ∅) ∗
       (* per-group prepare map | group *)
       ([∗ set] g ∈ gids_all, own_group_commit_map γ g ∅) ∗
+      (* per-replica ilog file name | file *)
+      ([∗ map] gr ↦ fname ∈ gfnames, is_replica_ilog_fname γ gr.1 gr.2 fname) ∗
+      (* per-replica inconsistent log | file *)
+      ([∗ set] gr ∈ gset_cprod gids_all rids_all, own_replica_ilog_quarter γ gr.1 gr.2 []) ∗
       (* per-group network terminals | network *)
       ([∗ set] g ∈ gids_all, own_terminals γ g ∅ ) ∗
       (* per-replica resources *)
       ([∗ set] g ∈ gids_all, replica_init_res γ g) ∗
-      (* per-replica logs | replica lock *)
+      (* per-replica consistent and inconsistent log | replica lock *)
       ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
-         own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []) ∗
+         own_replica_clog_half γ g r [] ∗ own_replica_ilog_quarter γ g r []) ∗
       (* gentid init *)
       gentid_init γ.
   Proof.
@@ -771,6 +773,10 @@ Section alloc.
     iMod (ghost_map_alloc_empty (K := u64) (V := gname)) as
       (γgentid_reserved) "Hgentid".
 
+    iMod (own_alloc ((to_agree <$> gfnames) : gmapR (u64 * u64) (agreeR byte_stringO))) as
+           (γreplica_ilog_fname) "Hilog_wal_fname".
+    { intros k. rewrite lookup_fmap; destruct (gfnames !! k) eqn:Heq; rewrite Heq //=. }
+
     set γ := {|
     db_ptsto := γdb_ptsto;
     repl_hist := γrepl_hist;
@@ -800,6 +806,7 @@ Section alloc.
     replica_ballot := γreplica_ballot;
     replica_vote := γreplica_vote;
     replica_token := γreplica_token;
+    replica_ilog_fname := γreplica_ilog_fname;
     group_trmlm := γgroup_trmlm;
     sids := γsids;
     gentid_reserved := γgentid_reserved |}.
@@ -862,6 +869,25 @@ Section alloc.
       iApply (big_sepS_mono with "Hgroup_commit").
       iIntros (? Hin) "H". rewrite big_sepM_empty //=. iFrame.
     }
+    iSplitL "Hilog_wal_fname".
+    { rewrite -big_opM_own_1.
+      setoid_rewrite <- surjective_pairing.
+      rewrite -big_opM_fmap big_opM_singletons //.
+    }
+
+    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hreplica_ilog")
+      as "(Hreplica_ilog1&Hreplica_ilog2)".
+
+    iDestruct (big_sepS_singleton_sep
+                 _ (gset_cprod gids_all rids_all) (λ _, ([] : ilogO))
+                 (1 / 4)%Qp (1 / 4)%Qp
+                with "[Hreplica_ilog2]") as "[Hreplica_ilog2 Hreplica_ilog3]".
+    { by rewrite Qp.quarter_quarter. }
+
+    iSplitL "Hreplica_ilog3".
+    { rewrite /own_replica_ilog_quarter /own_replica_ilog_frac.
+      by setoid_rewrite <- surjective_pairing.
+    }
     iSplitL "Hgroup_trmlm".
     { rewrite -big_opS_gset_to_gmap big_opS_own_1.
       iApply (big_sepS_mono with "Hgroup_trmlm").
@@ -869,12 +895,8 @@ Section alloc.
       iFrame.
     }
 
-
     iDestruct (own_gset_to_gmap_singleton_sep_half with "Hreplica_clog")
       as "(Hreplica_clog1&Hreplica_clog2)".
-
-    iDestruct (own_gset_to_gmap_singleton_sep_half with "Hreplica_ilog")
-      as "(Hreplica_ilog1&Hreplica_ilog2)".
 
     iSplitR "Hreplica_clog2 Hreplica_ilog2 Hlargest2 Hgentid".
     {
@@ -935,6 +957,7 @@ Section alloc.
         iExists ∅. iFrame. iPureIntro. set_solver.
       }
     }
+
     iDestruct (big_sepS_sep with "[$Hreplica_clog2 $Hreplica_ilog2]") as "H".
     iDestruct (big_sepS_gset_cprod' with "H") as "H".
     iFrame.
