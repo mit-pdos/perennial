@@ -48,10 +48,11 @@ Section heap.
       iSplit. *)
   Admitted.
 
+  (*
   Lemma wp_deleteAtIndexMessage (s: Slice.t) (index: w64) (l: list Message.t) (n: nat) :
     {{{
-      ⌜0 <= uint.nat index < length l⌝ ∗   
-      message_slice s l n
+        ⌜0 <= uint.nat index < length l⌝ ∗   
+        message_slice s l n
     }}}
       deleteAtIndexMessage s #index
     {{{
@@ -60,7 +61,8 @@ Section heap.
     }}}.
   Proof.
   Admitted.
-  
+  *)
+
   Lemma wp_getDataFromOperationLog (s: Slice.t) (l: list Operation.t) (n: nat) :
     {{{
         operation_slice s l n

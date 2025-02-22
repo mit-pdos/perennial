@@ -409,17 +409,17 @@ Module SessionPrelude.
 
     Context {hsOrd : hsOrd A (hsEq := hsEq)}.
 
-    Definition is_sorted (xs : list A) : Prop :=
+    Definition isSorted (xs : list A) : Prop :=
       ∀ i : nat, ∀ j : nat, (i < j)%nat ->
       ∀ x1 : A, ∀ x2 : A, xs !! i = Some x1 -> xs !! j = Some x2 -> ltb x1 x2 = true \/ eqb x2 x1 = true.
 
-    Definition is_sorted' (xs : list A) : Prop :=
+    Definition isSorted' (xs : list A) : Prop :=
       ∀ i : nat, ∀ j : nat, (i <= j)%nat ->
       ∀ x1 : A, ∀ x2 : A, xs !! i = Some x1 -> xs !! j = Some x2 -> ltb x1 x2 = true \/ eqb x2 x1 = true.
 
-    Lemma is_sorted_iff_is_sorted' xs
+    Lemma isSorted_iff_isSorted' xs
       (xs_wf : Forall well_formed xs)
-      : is_sorted xs <-> is_sorted' xs.
+      : isSorted xs <-> isSorted' xs.
     Proof with eauto.
       split; [intros SORTED | intros SORTED']; intros i j i_lt_j x1 x2 H_x1 H_x2.
       - assert (i = j \/ i < j)%nat as [EQ | GT] by word.
@@ -435,26 +435,26 @@ Module SessionPrelude.
       end.
 
     Lemma sortedInsert_spec (l : list A) (i : A) (l_wf : Forall well_formed l) (i_wf : well_formed i) :
-      is_sorted l ->
+      isSorted l ->
       ∃ prefix, ∃ suffix, l = prefix ++ suffix /\
         sortedInsert l i = prefix ++ [i] ++ suffix /\
         (∀ n : nat, ∀ x, prefix !! n = Some x -> ltb x i = true \/ eqb i x = true) /\
-        (∀ n : nat, ∀ x, suffix !! n = Some x -> ltb i x = true \/ eqb x i = true) /\
+        (∀ n : nat, ∀ x, suffix !! n = Some x -> ltb i x = true) /\
         Forall well_formed (sortedInsert l i).
     Proof with eauto.
-      intros SORTED. rewrite is_sorted_iff_is_sorted' in SORTED... revert i SORTED i_wf. induction l_wf as [ | x1 xs x1_wf xs_wf IH]; intros x0 SORTED' x0_wf.
+      intros SORTED. rewrite isSorted_iff_isSorted' in SORTED... revert i SORTED i_wf. induction l_wf as [ | x1 xs x1_wf xs_wf IH]; intros x0 SORTED' x0_wf.
       - exists []. exists []. split. { done. } split. { reflexivity. } split.
         { intros n x H_x. rewrite lookup_nil in H_x. congruence. } split.
         { intros n x H_x. rewrite lookup_nil in H_x. congruence. } econstructor; eauto.
-      - assert (SORTED : is_sorted xs).
+      - assert (SORTED : isSorted xs).
         { intros i j i_lt_j x x' H_x H_x'. eapply SORTED' with (i := S i) (j := S j); try (word || done). }
-        rewrite -> is_sorted_iff_is_sorted' in SORTED... specialize (IH x0 SORTED). destruct IH as (prefix & suffix & -> & EQ & H_prefix & H_suffix & H_wf)... simpl.
+        rewrite -> isSorted_iff_isSorted' in SORTED... specialize (IH x0 SORTED). destruct IH as (prefix & suffix & -> & EQ & H_prefix & H_suffix & H_wf)... simpl.
         destruct (ltb x0 x1) as [ | ] eqn: H_OBS; [rewrite ltb_lt in H_OBS | rewrite ltb_nlt in H_OBS]...
         { exists []. exists (x1 :: prefix ++ suffix)%list. repeat (split; try done).
           - intros n x H_x. enough (want_to_show : ltb x1 x = true \/ eqb x x1 = true).
             + destruct want_to_show as [H_lt | H_eq].
-              * left. rewrite ltb_lt...  eapply ltProp_transitivity with (y := x1); try done... rewrite <- ltb_lt...
-              * left. rewrite ltb_lt... rewrite eqb_eq in H_eq... pose proof (ltProp_trichotomy x0 x) as [? | [? | ?]]...
+              * rewrite ltb_lt...  eapply ltProp_transitivity with (y := x1); try done... rewrite <- ltb_lt...
+              * rewrite ltb_lt... rewrite eqb_eq in H_eq... pose proof (ltProp_trichotomy x0 x) as [? | [? | ?]]...
                 { contradiction (ltProp_irreflexivity x0 x1)... eapply eqProp_transitivity with (y := x)... }
                 { contradiction (ltProp_irreflexivity x x1); try done... eapply ltProp_transitivity with (y := x0)... }
             + red in SORTED'. eapply SORTED' with (i := 0%nat) (j := n); try (word || done)...
@@ -473,13 +473,13 @@ Module SessionPrelude.
         }
     Qed.
 
-    Lemma sortedInsert_is_sorted l i (l_wf : Forall well_formed l) (i_wf : well_formed i) :
-      is_sorted l ->
-      is_sorted (sortedInsert l i).
+    Lemma sortedInsert_isSorted l i (l_wf : Forall well_formed l) (i_wf : well_formed i) :
+      isSorted l ->
+      isSorted (sortedInsert l i).
     Proof with try (word || congruence || eauto || done).
       intros SORTED. pose proof (sortedInsert_spec l i l_wf i_wf SORTED) as (prefix & suffix & H_l & -> & H_prefix & H_suffix & H_wf).
-      rewrite is_sorted_iff_is_sorted'... rename i into x, l into xs. rewrite is_sorted_iff_is_sorted' in SORTED...
-      unfold is_sorted' in SORTED. intros i j LE x1 x2 H_x1 H_x2.
+      rewrite isSorted_iff_isSorted'... rename i into x, l into xs. rewrite isSorted_iff_isSorted' in SORTED...
+      unfold isSorted' in SORTED. intros i j LE x1 x2 H_x1 H_x2.
       assert (i < length prefix \/ i = length prefix \/ i > length prefix)%nat as [i_lt | [i_eq | i_gt]] by word;
       assert (j < length prefix \/ j = length prefix \/ j > length prefix)%nat as [j_lt | [j_eq | j_gt]] by word.
       - eapply SORTED with (i := i) (j := j)...
@@ -505,14 +505,14 @@ Module SessionPrelude.
               + contradiction (ltProp_irreflexivity x x1)... eapply ltProp_transitivity with (y := x2)...
             - right. eapply eqProp_transitivity with (y := x)... eapply eqProp_symmetry...
           }
-          clear H_middle. rewrite eqb_comm...
+          clear H_middle. rewrite eqb_comm... left.
           eapply H_suffix. rewrite app_assoc in H_x2. rewrite lookup_app_r in H_x2...
           rewrite length_app. simpl. word.
         + eapply H_prefix. rewrite lookup_app_l in H_x1...
       - rewrite list_lookup_middle in H_x1...
       - right. replace x2 with x1 by congruence. rewrite eqb_eq... eapply eqProp_reflexivity...
       - rewrite list_lookup_middle in H_x1...
-        assert (x = x1) as -> by congruence. clear H_x1.
+        assert (x = x1) as -> by congruence. clear H_x1. left.
         eapply H_suffix. rewrite app_assoc in H_x2. rewrite lookup_app_r in H_x2...
         rewrite length_app. simpl. word.
       - word.
