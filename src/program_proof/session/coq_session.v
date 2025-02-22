@@ -123,12 +123,17 @@ Definition coq_getGossipOperations (s: Server.t) (serverId: u64) : (list Operati
                     end)
          [] (0, s.(Server.MyOperations))).
 
+(* error:
+  "The reference Message.C2S_Client_RequestNumber was not found in the current environment."
 Definition coq_checkIfDuplicateRequest (s: Server.t) (r: Message.t) : bool :=
   match s.(Server.SeenRequests) !! (uint.nat (r.(Message.C2S_Client_Id))) with
   | Some v => (uint.Z v) >=? (uint.Z r.(Message.C2S_Client_RequestNumber))
   | None => false
   end.
+*)
 
+(* error:
+  "The reference Message.C2S_Client_RequestNumber was not found in the current environment."
 Definition coq_processClientRequest (s: Server.t) (r: Message.t) :
   (bool * Server.t * Message.t) :=
   if (negb (coq_compareVersionVector s.(Server.VectorClock) r.(Message.C2S_Client_VersionVector))) || (coq_checkIfDuplicateRequest s r) then
@@ -153,7 +158,10 @@ Definition coq_processClientRequest (s: Server.t) (r: Message.t) :
       let S2C_Client_Number := r.(Message.C2S_Client_Id) in
       let S2C_Client_RequestNumber := r.(Message.C2S_Client_RequestNumber) in
       (true, Server.mk s.(Server.Id) s.(Server.NumberOfServers) s.(Server.UnsatisfiedRequests) VectorClock OperationsPerformed MyOperations s.(Server.PendingOperations) s.(Server.GossipAcknowledgements) SeenRequests, (Message.mk 4 0 0 0 0 [] 0 0 [] 0 0 0 0 1 S2C_Client_Data S2C_Client_VersionVector S2C_Client_RequestNumber S2C_Client_Number)).
+*)
 
+(* error:
+  "The reference coq_processClientRequest was not found in the current environment."
 Definition coq_processRequest (s: Server.t) (r: Message.t) : (Server.t * list Message.t) :=
   match (uint.nat r.(Message.MessageType))%nat with
   | 0%nat =>
@@ -202,7 +210,137 @@ Definition coq_processRequest (s: Server.t) (r: Message.t) : (Server.t * list Me
         
   | _ => (s, [])
   end.
+*)
 
+Section REDEFINE.
 
+  Import SessionPrelude.
 
+  Lemma redefine_coq_lexicographicCompare :
+    coq_lexicographicCompare = vectorGt.
+  Proof.
+    reflexivity.
+  Defined.
 
+  Lemma redefine_coq_equalSlices :
+    coq_equalSlices = vectorEq.
+  Proof.
+    reflexivity.
+  Defined.
+
+  Definition Operation_wf (len : nat) : Operation.t -> Prop :=
+    fun o => Forall (fun _ => True) (o .(Operation.VersionVector)) /\ length (o .(Operation.VersionVector)) = len.
+
+  #[global]
+  Instance hsEq_Operation (len : nat) : hsEq Operation.t (well_formed := Operation_wf len) :=
+    hsEq_preimage _.
+
+  #[global]
+  Instance hsOrd_Operation (len : nat) : hsOrd Operation.t (hsEq := hsEq_Operation len) :=
+    hsOrd_preimage _.
+
+  Lemma redefine_coq_sortedInsert (len : nat) :
+    coq_sortedInsert = sortedInsert (hsOrd := hsOrd_Operation len).
+  Proof.
+    reflexivity.
+  Defined.
+
+  #[local] Hint Resolve @Forall_True : core.
+
+  Lemma aux0_lexicographicCompare (l1 l2 l3: list u64) :
+    coq_lexicographicCompare l2 l1 = true ->
+    coq_lexicographicCompare l3 l2 = true ->
+    coq_lexicographicCompare l3 l1 = true.
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. 
+    intros. eapply vectorGt_transitive; eauto.
+  Qed.
+
+  Lemma aux1_lexicographicCompare (l1 l2: list u64) :
+    length l1 = length l2 -> 
+    l1 ≠ l2 ->
+    (coq_lexicographicCompare l2 l1 = false <-> coq_lexicographicCompare l1 l2 = true).
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. remember (length l1) as len eqn: len_eq.
+    pose proof (ltProp_trichotomy (hsOrd := hsOrd_vector len) l1 l2) as claim. simpl in claim.
+    symmetry in len_eq. intros len_eq'. symmetry in len_eq'.
+    specialize (claim (conj (Forall_True _) len_eq) (conj (Forall_True _) len_eq')).
+    destruct claim as [H_lt | [H_eq | H_gt]].
+    - rewrite H_lt. intros NE. split.
+      + congruence.
+      + intros l1_gt_l2. contradiction (ltProp_irreflexivity (hsOrd := hsOrd_vector len) l1 l1); eauto.
+        * eapply eqProp_reflexivity; eauto.
+        * eapply ltProp_transitivity with (y := l2); eauto.
+    - intros NE. contradiction NE. clear NE. rewrite <- vectorEq_true_iff; eauto 2.
+      change (eqb (hsEq := hsEq_vector len) l1 l2 = true). rewrite eqb_eq; eauto 2.
+    - rewrite H_gt. intros NE. split.
+      + congruence.
+      + intros _. change (ltb (hsOrd := hsOrd_vector len) l1 l2 = false).
+        rewrite ltb_nlt; eauto 2. intros NLT. change (ltb (hsOrd := hsOrd_vector len) l2 l1 = true) in H_gt.
+        rewrite ltb_lt in H_gt; eauto 2. contradiction (ltProp_irreflexivity (hsOrd := hsOrd_vector len) l1 l1); eauto.
+        * eapply eqProp_reflexivity; eauto.
+        * eapply ltProp_transitivity with (y := l2); eauto.
+  Qed.
+
+  Lemma aux3_lexicographicCompare (l1 l2: list u64) :
+    length l1 = length l2 -> 
+    coq_lexicographicCompare l2 l1 = false ->
+    coq_lexicographicCompare l1 l2 = false ->
+    l1 = l2.
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. intros. rewrite <- vectorEq_true_iff; eauto 2.
+    change (eqb (hsEq := hsEq_vector (length l1)) l1 l2 = true). rewrite eqb_eq; eauto 2.
+    pose proof (ltProp_trichotomy (hsOrd := hsOrd_vector (length l1)) l1 l2) as [H_lt | [H_eq | H_gt]]; eauto.
+    - rewrite <- ltb_lt in H_lt; eauto 2. simpl in *. congruence.
+    - rewrite <- ltb_lt in H_gt; eauto 2. simpl in *. congruence.
+  Qed.
+
+  Lemma aux4_lexicographicCompare (l1 l2: list u64) :
+    coq_lexicographicCompare l1 l2 = true ->
+    coq_equalSlices l1 l2 = false.
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. rewrite redefine_coq_equalSlices.
+    intros. eapply vectorGt_implies_not_vectorEq; eauto 2.
+  Qed.
+
+  Lemma aux5_lexicographicCompare (l1 l2: list u64) :
+    coq_equalSlices l1 l2 = true ->
+    coq_lexicographicCompare l1 l2 = false.
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. rewrite redefine_coq_equalSlices.
+    intros. eapply vectorEq_implies_not_vectorGt; eauto 2.
+  Qed.
+
+  Lemma aux0_equalSlices (l1 l2: list u64) :
+    length l1 = length l2 ->
+    coq_equalSlices l1 l2 = true ->
+    l1 = l2.
+  Proof.
+    rewrite redefine_coq_equalSlices. intros. rewrite <- vectorEq_true_iff; eauto 2.
+  Qed.
+
+  Lemma aux1_equalSlices (l1 l2: list u64) :
+    length l1 = length l2 ->
+    coq_equalSlices l1 l2 = false ->
+    l1 ≠ l2.
+  Proof.
+    rewrite redefine_coq_equalSlices. intros. rewrite <- vectorEq_true_iff; eauto 2.
+    rewrite H0; congruence.
+  Qed.
+
+  Lemma aux2_equalSlices (l1 l2: list u64) (b: bool) :
+    length l1 = length l2 ->
+    coq_equalSlices l1 l2 = b ->
+    coq_equalSlices l2 l1 = b.
+  Proof.
+    rewrite redefine_coq_equalSlices. intros. subst b. eapply (eqb_comm (hsEq_A := hsEq_vector (length l1))); eauto.
+  Qed.
+
+  Lemma aux3_equalSlices (l: list u64) :
+    coq_equalSlices l l = true.
+  Proof.
+    change (coq_equalSlices l l) with (eqb (hsEq := hsEq_vector (length l)) l l).
+    rewrite eqb_eq; eauto 2. eapply eqProp_reflexivity; eauto 2.
+  Qed.
+
+End REDEFINE.
