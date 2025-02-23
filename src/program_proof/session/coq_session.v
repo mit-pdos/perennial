@@ -34,16 +34,19 @@ Fixpoint coq_maxTS (t1: list u64) (t2: list u64) : list u64 :=
                     end
   end.
 
-
-Fixpoint coq_oneOffVersionVector (v1: list w64) (v2: list w64) (index: nat) (canApply: bool) : bool :=
-  match v1 with
-  | [] => true
-  | cons h1 t1 => match v2 with
-                  | [] => true
-                  | cons h2 t2 => (if (canApply && (uint.Z h1 + 1 =? uint.Z h2)) then (coq_oneOffVersionVector t1 t2 (index + 1) (false)) else false)
-                  end
-  end.
-
+Definition coq_oneOffVersionVector (v1: list w64) (v2: list w64) : bool :=
+  let (output, canApply) :=
+    fold_left (fun (acc: bool * bool) (element: w64 * w64) =>
+                 let (e1, e2) := element in
+                 let (output, canApply) := acc in
+                 if (canApply && (uint.Z e1 + 1 =? uint.Z e2)) then
+                   (output && true, false)
+                 else
+                   if uint.Z e1 >=? uint.Z e2 then
+                     (output && true, canApply)
+                   else 
+                     (false, canApply)) (zip v1 v2) (true, true) in
+  output && (negb canApply).
 
 Fixpoint coq_equalSlices (s1: list u64) (s2: list u64) :=
   match s1 with
