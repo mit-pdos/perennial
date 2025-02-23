@@ -349,4 +349,12 @@ Section heap.
       + exact YES1.
   Qed.
 
+  Lemma pers_big_sepL2_is_operation l ops (n : nat)
+    : ([∗ list] opv;o ∈ ops;l, is_operation opv o n)%I ⊢@{iProp Σ} (<pers> ([∗ list] opv;o ∈ ops;l, is_operation opv o n))%I.
+  Proof.
+    iIntros "H_big_sepL2". iApply (big_sepL2_persistently). iApply (big_sepL2_mono (λ k, λ y1, λ y2, is_operation y1 y2 n)%I).
+    - intros. iIntros "#H". iApply intuitionistically_into_persistently_1. iModIntro. done.
+    - done.
+  Qed.
+
 End heap.
