@@ -101,7 +101,7 @@ Definition coq_receiveGossip (s: Server.t) (r: Message.t) : Server.t :=
     let pendingOperations := coq_mergeOperations s.(Server.PendingOperations) r.(Message.S2S_Gossip_Operations) in
     snd (fold_left (fun (acc: Z * Server.t) (element: Operation.t) =>
                       let (index, acc) := acc in 
-                      if coq_oneOffVersionVector acc.(Server.VectorClock) element.(Operation.VersionVector) 0 true then
+                      if coq_oneOffVersionVector acc.(Server.VectorClock) element.(Operation.VersionVector) then
                         let OperationsPerformed := coq_mergeOperations acc.(Server.OperationsPerformed) [element] in
                         let VectorClock := coq_maxTS acc.(Server.VectorClock) element.(Operation.VersionVector) in
                         let PendingOperations := coq_deleteAtIndexOperation s.(Server.PendingOperations) (uint.nat index) in (index + 1,
