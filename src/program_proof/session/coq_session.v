@@ -328,3 +328,25 @@ Section REDEFINE.
   Qed.
 
 End REDEFINE.
+
+Section heap.
+
+  Context `{hG: !heapGS Σ}.
+
+  Lemma Forall_Operation_wf l ops (n : nat)
+    : ([∗ list] opv;o ∈ ops; l, is_operation opv o n)%I ⊢@{iProp Σ} (⌜Forall (Operation_wf n) l⌝)%I.
+  Proof.
+    revert ops. induction l as [ | hd tl IH]; intros ops.
+    - iIntros "H_big_sepL2". iPureIntro. eauto.
+    - iIntros "H_big_sepL2". iPoseProof (big_sepL2_cons_inv_r with "H_big_sepL2") as "(%hd' & %tl' & -> & H_hd & H_tl)".
+      iDestruct "H_hd" as "(%H1 & %H2 & H3)". iClear "H3".
+      iAssert ⌜Forall (Operation_wf n) tl⌝%I as "%YES1".
+      { iApply IH. iExact "H_tl". }
+      iPureIntro. econstructor.
+      + split.
+        * eapply SessionPrelude.Forall_True.
+        * done.
+      + exact YES1.
+  Qed.
+
+End heap.
