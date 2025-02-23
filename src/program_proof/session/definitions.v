@@ -1,4 +1,6 @@
-From Perennial.program_proof Require Export session_prelude.
+From Goose.github_com.session Require Export server.
+From Perennial.program_proof Require Export std_proof.
+From Perennial.program_proof Require Export grove_prelude.
 
 Module Operation.
   
@@ -20,6 +22,7 @@ Module Message.
                   MessageType: u64 ;
 
                   C2S_Client_Id:            u64;
+	          C2S_Server_Id:            u64;
 	          C2S_Client_OperationType: u64;
 	          C2S_Client_Data:          u64;
 	          C2S_Client_VersionVector: list u64;
@@ -36,7 +39,6 @@ Module Message.
 	          S2C_Client_OperationType: u64;    
 	          S2C_Client_Data:          u64;
 	          S2C_Client_VersionVector: list u64;
-	          S2C_Client_RequestNumber: u64;
 	          S2C_Client_Number:        u64;
                 }.
 
@@ -54,7 +56,6 @@ Module Server.
 	MyOperations:           list Operation.t ;
 	PendingOperations:      list Operation.t ;
 	GossipAcknowledgements: list u64 ;
-	SeenRequests:           list u64 ;
       }.
 
 End Server.
