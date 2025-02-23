@@ -384,7 +384,6 @@ Section heap.
       + destruct H10. auto.
   Qed.
 
-  (*
   Lemma wp_sortedInsert (s: Slice.t) (l: list Operation.t)
     (opv: Slice.t*u64) (v: Operation.t) (n: nat) :
     {{{
@@ -397,7 +396,7 @@ Section heap.
           ∃ nxs, operation_slice ns nxs n %I ∗
                  ⌜nxs = coq_sortedInsert l v⌝
       }}}.
-  Proof.
+  Proof. (*
     iIntros (Φ) "(H & H1 & %H2) H4". unfold sortedInsert. wp_pures.
     wp_apply (wp_BinarySearch with "[$H $H1]"); auto.
     iIntros (i) "(H & H1 & %H4 & %H5 & %H6 & %H7)". wp_pures.
@@ -656,7 +655,7 @@ Section heap.
                 ** intros. eapply H6.
                    { assert (uint.nat w <= j') by word. apply H8. }
                    { auto. } *)
-  Admitted.
   *)
+  Admitted.
 
 End heap.
