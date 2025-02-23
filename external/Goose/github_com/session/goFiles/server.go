@@ -9,7 +9,7 @@ type Message struct {
 	MessageType uint64
 
 	C2S_Client_Id            uint64
-	C2S_Client_RequestNumber uint64
+	C2S_Server_Id            uint64
 	C2S_Client_OperationType uint64
 	C2S_Client_Data          uint64
 	C2S_Client_VersionVector []uint64
@@ -26,7 +26,6 @@ type Message struct {
 	S2C_Client_OperationType uint64
 	S2C_Client_Data          uint64
 	S2C_Client_VersionVector []uint64
-	S2C_Client_RequestNumber uint64
 	S2C_Client_Number        uint64
 }
 
@@ -39,7 +38,6 @@ type Server struct {
 	MyOperations           []Operation
 	PendingOperations      []Operation
 	GossipAcknowledgements []uint64
-	SeenRequests           []uint64
 }
 
 func compareVersionVector(v1 []uint64, v2 []uint64) bool {
@@ -101,7 +99,7 @@ func oneOffVersionVector(v1 []uint64, v2 []uint64) bool {
 		if canApply && v1[i]+1 == v2[i] {
 			canApply = false
 			i = i + 1
-			continue 
+			continue
 		}
 		if v1[i] < v2[i] {
 			output = false
@@ -110,7 +108,7 @@ func oneOffVersionVector(v1 []uint64, v2 []uint64) bool {
 		i = i + 1
 	}
 
-	return output 
+	return output && canApply
 }
 
 func equalSlices(s1 []uint64, s2 []uint64) bool {
@@ -144,7 +142,7 @@ func binarySearch(s []Operation, needle Operation) uint64 {
 			j = mid
 		}
 	}
-	
+
 	return i
 }
 
@@ -160,26 +158,34 @@ func sortedInsert(s []Operation, value Operation) []Operation {
 }
 
 func mergeOperations(l1 []Operation, l2 []Operation) []Operation {
-	var output = append([]Operation{}, l1...)
+	var intermediate = append([]Operation{}, l1...)
 	var i = uint64(0)
 	var l = uint64(len(l2))
 
 	for i < l {
-		output = sortedInsert(output, l2[i])
+		intermediate = sortedInsert(intermediate, l2[i])
 		i++
 	}
 
 	var prev = uint64(1)
 	var curr = uint64(1)
-	for curr < uint64(len(output)) {
-		if !equalOperations(output[curr-1], output[curr]) {
-			output[prev] = output[curr]
+	for curr < uint64(len(intermediate)) {
+		if !equalOperations(intermediate[curr-1], intermediate[curr]) {
+			intermediate[prev] = intermediate[curr]
 			prev = prev + 1
 		}
 		curr = curr + 1
 	}
 
-	return output[:prev]
+	var output = make([]Operation, 0)
+
+	i = uint64(0)
+	l = prev
+	for i < prev {
+		output = append(output, intermediate[i])
+		i = i + 1
+	}
+	return output
 }
 
 func deleteAtIndexOperation(l []Operation, index uint64) []Operation {
@@ -224,7 +230,7 @@ func receiveGossip(server Server, request Message) Server {
 }
 
 func acknowledgeGossip(server Server, request Message) Server {
-	server.GossipAcknowledgements[request.S2S_Acknowledge_Gossip_Sending_ServerId] = request.S2S_Gossip_Index
+	server.GossipAcknowledgements[request.S2S_Acknowledge_Gossip_Sending_ServerId] = maxTwoInts(server.GossipAcknowledgements[request.S2S_Acknowledge_Gossip_Sending_ServerId], request.S2S_Acknowledge_Gossip_Index)
 	return server
 }
 
@@ -232,31 +238,23 @@ func getGossipOperations(server Server, serverId uint64) []Operation {
 	return append([]Operation(nil), server.MyOperations[server.GossipAcknowledgements[serverId]:]...)
 }
 
-func checkIfDuplicateRequest(server Server, request Message) bool {
-	return server.SeenRequests[request.C2S_Client_Id] >= request.C2S_Client_RequestNumber
-}
-
 func processClientRequest(server Server, request Message) (bool, Server, Message) {
 	reply := Message{}
 
-	if !equalSlices(make([]uint64, server.NumberOfServers), request.C2S_Client_VersionVector) && (!(compareVersionVector(server.VectorClock, request.C2S_Client_VersionVector)) || checkIfDuplicateRequest(server, request)) {
+	if !equalSlices(make([]uint64, server.NumberOfServers), request.C2S_Client_VersionVector) && !compareVersionVector(server.VectorClock, request.C2S_Client_VersionVector) {
 		return false, server, reply
 	}
 
 	if request.C2S_Client_OperationType == 0 {
-		server.SeenRequests[request.C2S_Client_Id] = request.C2S_Client_RequestNumber
-
 		reply.MessageType = 4
 		reply.S2C_Client_OperationType = 0
 		reply.S2C_Client_Data = getDataFromOperationLog(server.OperationsPerformed)
-		reply.S2C_Client_VersionVector = maxTS(request.C2S_Client_VersionVector, server.VectorClock)
+		reply.S2C_Client_VersionVector = server.VectorClock
 		reply.S2C_Client_Number = request.C2S_Client_Id
-		reply.S2C_Client_RequestNumber = request.C2S_Client_RequestNumber
 
 		return true, server, reply
 	} else {
 		server.VectorClock[server.Id] += 1
-		server.SeenRequests[request.C2S_Client_Id] = request.C2S_Client_RequestNumber
 
 		server.OperationsPerformed = append(server.OperationsPerformed, Operation{
 			VersionVector: append([]uint64(nil), server.VectorClock...),
@@ -270,10 +268,9 @@ func processClientRequest(server Server, request Message) (bool, Server, Message
 
 		reply.MessageType = 4
 		reply.S2C_Client_OperationType = 1
-		reply.S2C_Client_Data = getDataFromOperationLog(server.OperationsPerformed)
+		reply.S2C_Client_Data = 0
 		reply.S2C_Client_VersionVector = append([]uint64(nil), server.VectorClock...)
 		reply.S2C_Client_Number = request.C2S_Client_Id
-		reply.S2C_Client_RequestNumber = request.C2S_Client_RequestNumber
 
 		return true, server, reply
 	}
@@ -282,7 +279,7 @@ func processClientRequest(server Server, request Message) (bool, Server, Message
 func processRequest(server Server, request Message) (Server, []Message) {
 	var outGoingRequests = make([]Message, 0)
 	var s = server
-	if request.MessageType == 0 { 
+	if request.MessageType == 0 {
 		var succeeded = false
 		var reply = Message{}
 		succeeded, s, reply = processClientRequest(s, request)
@@ -291,7 +288,7 @@ func processRequest(server Server, request Message) (Server, []Message) {
 		} else {
 			s.UnsatisfiedRequests = append(s.UnsatisfiedRequests, request)
 		}
-	} else if request.MessageType == 1 { 
+	} else if request.MessageType == 1 {
 		s = receiveGossip(s, request)
 		outGoingRequests = append(outGoingRequests,
 			Message{MessageType: 2,
@@ -313,9 +310,9 @@ func processRequest(server Server, request Message) (Server, []Message) {
 			i++
 		}
 
-	} else if request.MessageType == 2 { 
+	} else if request.MessageType == 2 {
 		s = acknowledgeGossip(s, request)
-	} else if request.MessageType == 3 { 
+	} else if request.MessageType == 3 {
 		var i = uint64(0)
 		for i < server.NumberOfServers {
 			if uint64(i) != uint64(s.Id) {
@@ -325,7 +322,7 @@ func processRequest(server Server, request Message) (Server, []Message) {
 						S2S_Gossip_Sending_ServerId:   s.Id,
 						S2S_Gossip_Receiving_ServerId: index,
 						S2S_Gossip_Operations:         getGossipOperations(s, index),
-						S2S_Gossip_Index:              uint64(len(s.MyOperations)),
+						S2S_Gossip_Index:              uint64(len(s.MyOperations) - 1),
 					})
 			}
 			i = i + 1
@@ -333,8 +330,4 @@ func processRequest(server Server, request Message) (Server, []Message) {
 	}
 
 	return s, outGoingRequests
-}
-
-func operationList(o Operation) ([] Operation) {
-     return append(make([]Operation, 0), o)
 }
