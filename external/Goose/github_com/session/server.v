@@ -12,7 +12,7 @@ Definition Operation := struct.decl [
 Definition Message := struct.decl [
   "MessageType" :: uint64T;
   "C2S_Client_Id" :: uint64T;
-  "C2S_Client_RequestNumber" :: uint64T;
+  "C2S_Server_Id" :: uint64T;
   "C2S_Client_OperationType" :: uint64T;
   "C2S_Client_Data" :: uint64T;
   "C2S_Client_VersionVector" :: slice.T uint64T;
@@ -26,7 +26,6 @@ Definition Message := struct.decl [
   "S2C_Client_OperationType" :: uint64T;
   "S2C_Client_Data" :: uint64T;
   "S2C_Client_VersionVector" :: slice.T uint64T;
-  "S2C_Client_RequestNumber" :: uint64T;
   "S2C_Client_Number" :: uint64T
 ].
 
@@ -38,8 +37,7 @@ Definition Server := struct.decl [
   "OperationsPerformed" :: slice.T (struct.t Operation);
   "MyOperations" :: slice.T (struct.t Operation);
   "PendingOperations" :: slice.T (struct.t Operation);
-  "GossipAcknowledgements" :: slice.T uint64T;
-  "SeenRequests" :: slice.T uint64T
+  "GossipAcknowledgements" :: slice.T uint64T
 ].
 
 Definition compareVersionVector: val :=
@@ -113,7 +111,7 @@ Definition oneOffVersionVector: val :=
         else
           "i" <-[uint64T] ((![uint64T] "i") + #1);;
           Continue)));;
-    ![boolT] "output".
+    (![boolT] "output") && (![boolT] "canApply").
 
 Definition equalSlices: val :=
   rec: "equalSlices" "s1" "s2" :=
@@ -163,26 +161,34 @@ Definition sortedInsert: val :=
 
 Definition mergeOperations: val :=
   rec: "mergeOperations" "l1" "l2" :=
-    let: "output" := ref_to (slice.T (struct.t Operation)) (SliceAppendSlice (struct.t Operation) (NewSlice (struct.t Operation) #0) "l1") in
+    let: "intermediate" := ref_to (slice.T (struct.t Operation)) (SliceAppendSlice (struct.t Operation) (NewSlice (struct.t Operation) #0) "l1") in
     let: "i" := ref_to uint64T #0 in
     let: "l" := ref_to uint64T (slice.len "l2") in
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < (![uint64T] "l")); (λ: <>, Skip) := λ: <>,
-      "output" <-[slice.T (struct.t Operation)] (sortedInsert (![slice.T (struct.t Operation)] "output") (SliceGet (struct.t Operation) "l2" (![uint64T] "i")));;
+      "intermediate" <-[slice.T (struct.t Operation)] (sortedInsert (![slice.T (struct.t Operation)] "intermediate") (SliceGet (struct.t Operation) "l2" (![uint64T] "i")));;
       "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
     let: "prev" := ref_to uint64T #1 in
     let: "curr" := ref_to uint64T #1 in
     Skip;;
-    (for: (λ: <>, (![uint64T] "curr") < (slice.len (![slice.T (struct.t Operation)] "output"))); (λ: <>, Skip) := λ: <>,
-      (if: (~ (equalOperations (SliceGet (struct.t Operation) (![slice.T (struct.t Operation)] "output") ((![uint64T] "curr") - #1)) (SliceGet (struct.t Operation) (![slice.T (struct.t Operation)] "output") (![uint64T] "curr"))))
+    (for: (λ: <>, (![uint64T] "curr") < (slice.len (![slice.T (struct.t Operation)] "intermediate"))); (λ: <>, Skip) := λ: <>,
+      (if: (~ (equalOperations (SliceGet (struct.t Operation) (![slice.T (struct.t Operation)] "intermediate") ((![uint64T] "curr") - #1)) (SliceGet (struct.t Operation) (![slice.T (struct.t Operation)] "intermediate") (![uint64T] "curr"))))
       then
-        SliceSet (struct.t Operation) (![slice.T (struct.t Operation)] "output") (![uint64T] "prev") (SliceGet (struct.t Operation) (![slice.T (struct.t Operation)] "output") (![uint64T] "curr"));;
+        SliceSet (struct.t Operation) (![slice.T (struct.t Operation)] "intermediate") (![uint64T] "prev") (SliceGet (struct.t Operation) (![slice.T (struct.t Operation)] "intermediate") (![uint64T] "curr"));;
         "prev" <-[uint64T] ((![uint64T] "prev") + #1)
       else #());;
       "curr" <-[uint64T] ((![uint64T] "curr") + #1);;
       Continue);;
-    SliceTake (![slice.T (struct.t Operation)] "output") (![uint64T] "prev").
+    let: "output" := ref_to (slice.T (struct.t Operation)) (NewSlice (struct.t Operation) #0) in
+    "i" <-[uint64T] #0;;
+    "l" <-[uint64T] (![uint64T] "prev");;
+    Skip;;
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "prev")); (λ: <>, Skip) := λ: <>,
+      "output" <-[slice.T (struct.t Operation)] (SliceAppend (struct.t Operation) (![slice.T (struct.t Operation)] "output") (SliceGet (struct.t Operation) (![slice.T (struct.t Operation)] "intermediate") (![uint64T] "i")));;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
+    ![slice.T (struct.t Operation)] "output".
 
 Definition deleteAtIndexOperation: val :=
   rec: "deleteAtIndexOperation" "l" "index" :=
@@ -224,37 +230,30 @@ Definition receiveGossip: val :=
 
 Definition acknowledgeGossip: val :=
   rec: "acknowledgeGossip" "server" "request" :=
-    SliceSet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request") (struct.get Message "S2S_Gossip_Index" "request");;
+    SliceSet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request") (maxTwoInts (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request")) (struct.get Message "S2S_Acknowledge_Gossip_Index" "request"));;
     "server".
 
 Definition getGossipOperations: val :=
   rec: "getGossipOperations" "server" "serverId" :=
     SliceAppendSlice (struct.t Operation) slice.nil (SliceSkip (struct.t Operation) (struct.get Server "MyOperations" "server") (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") "serverId")).
 
-Definition checkIfDuplicateRequest: val :=
-  rec: "checkIfDuplicateRequest" "server" "request" :=
-    (SliceGet uint64T (struct.get Server "SeenRequests" "server") (struct.get Message "C2S_Client_Id" "request")) ≥ (struct.get Message "C2S_Client_RequestNumber" "request").
-
 Definition processClientRequest: val :=
   rec: "processClientRequest" "server" "request" :=
     let: "reply" := struct.mk Message [
     ] in
-    (if: (~ (equalSlices (NewSlice uint64T (struct.get Server "NumberOfServers" "server")) (struct.get Message "C2S_Client_VersionVector" "request"))) && ((~ (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get Message "C2S_Client_VersionVector" "request"))) || (checkIfDuplicateRequest "server" "request"))
+    (if: (~ (equalSlices (NewSlice uint64T (struct.get Server "NumberOfServers" "server")) (struct.get Message "C2S_Client_VersionVector" "request"))) && (~ (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get Message "C2S_Client_VersionVector" "request")))
     then (#false, "server", "reply")
     else
       (if: (struct.get Message "C2S_Client_OperationType" "request") = #0
       then
-        SliceSet uint64T (struct.get Server "SeenRequests" "server") (struct.get Message "C2S_Client_Id" "request") (struct.get Message "C2S_Client_RequestNumber" "request");;
         struct.storeF Message "MessageType" "reply" #4;;
         struct.storeF Message "S2C_Client_OperationType" "reply" #0;;
         struct.storeF Message "S2C_Client_Data" "reply" (getDataFromOperationLog (struct.get Server "OperationsPerformed" "server"));;
-        struct.storeF Message "S2C_Client_VersionVector" "reply" (maxTS (struct.get Message "C2S_Client_VersionVector" "request") (struct.get Server "VectorClock" "server"));;
+        struct.storeF Message "S2C_Client_VersionVector" "reply" (struct.get Server "VectorClock" "server");;
         struct.storeF Message "S2C_Client_Number" "reply" (struct.get Message "C2S_Client_Id" "request");;
-        struct.storeF Message "S2C_Client_RequestNumber" "reply" (struct.get Message "C2S_Client_RequestNumber" "request");;
         (#true, "server", "reply")
       else
         SliceSet uint64T (struct.get Server "VectorClock" "server") (struct.get Server "Id" "server") ((SliceGet uint64T (struct.get Server "VectorClock" "server") (struct.get Server "Id" "server")) + #1);;
-        SliceSet uint64T (struct.get Server "SeenRequests" "server") (struct.get Message "C2S_Client_Id" "request") (struct.get Message "C2S_Client_RequestNumber" "request");;
         struct.storeF Server "OperationsPerformed" "server" (SliceAppend (struct.t Operation) (struct.get Server "OperationsPerformed" "server") (struct.mk Operation [
           "VersionVector" ::= SliceAppendSlice uint64T slice.nil (struct.get Server "VectorClock" "server");
           "Data" ::= struct.get Message "C2S_Client_Data" "request"
@@ -265,10 +264,9 @@ Definition processClientRequest: val :=
         ]));;
         struct.storeF Message "MessageType" "reply" #4;;
         struct.storeF Message "S2C_Client_OperationType" "reply" #1;;
-        struct.storeF Message "S2C_Client_Data" "reply" (getDataFromOperationLog (struct.get Server "OperationsPerformed" "server"));;
+        struct.storeF Message "S2C_Client_Data" "reply" #0;;
         struct.storeF Message "S2C_Client_VersionVector" "reply" (SliceAppendSlice uint64T slice.nil (struct.get Server "VectorClock" "server"));;
         struct.storeF Message "S2C_Client_Number" "reply" (struct.get Message "C2S_Client_Id" "request");;
-        struct.storeF Message "S2C_Client_RequestNumber" "reply" (struct.get Message "C2S_Client_RequestNumber" "request");;
         (#true, "server", "reply"))).
 
 Definition processRequest: val :=
@@ -332,16 +330,12 @@ Definition processRequest: val :=
                   "S2S_Gossip_Sending_ServerId" ::= struct.get Server "Id" (![struct.t Server] "s");
                   "S2S_Gossip_Receiving_ServerId" ::= "index";
                   "S2S_Gossip_Operations" ::= getGossipOperations (![struct.t Server] "s") "index";
-                  "S2S_Gossip_Index" ::= slice.len (struct.get Server "MyOperations" (![struct.t Server] "s"))
+                  "S2S_Gossip_Index" ::= (slice.len (struct.get Server "MyOperations" (![struct.t Server] "s"))) - #1
                 ]))
               else #());;
               "i" <-[uint64T] ((![uint64T] "i") + #1);;
               Continue)
           else #()))));;
     (![struct.t Server] "s", ![slice.T (struct.t Message)] "outGoingRequests").
-
-Definition operationList: val :=
-  rec: "operationList" "o" :=
-    SliceAppend (struct.t Operation) (NewSlice (struct.t Operation) #0) "o".
 
 End code.
