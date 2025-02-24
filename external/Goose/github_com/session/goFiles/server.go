@@ -103,12 +103,11 @@ func oneOffVersionVector(v1 []uint64, v2 []uint64) bool {
 		}
 		if v1[i] < v2[i] {
 			output = false
-			break
 		}
 		i = i + 1
 	}
 
-	return output && canApply
+	return output && !canApply
 }
 
 func equalSlices(s1 []uint64, s2 []uint64) bool {

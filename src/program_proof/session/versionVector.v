@@ -850,6 +850,467 @@ Section heap.
                   * auto.
             } 
     Qed.
+
+    Lemma wp_oneOffVersionVector (x: Slice.t) (xs: list u64) (y: Slice.t) (ys: list u64) :
+    {{{
+          own_slice_small x uint64T (DfracOwn 1) xs ∗
+          own_slice_small y uint64T (DfracOwn 1) ys ∗
+          ⌜length xs = length ys⌝
+    }}}
+      oneOffVersionVector x y
+      {{{ (b: bool) , RET #b ;
+          ⌜b = coq_oneOffVersionVector xs ys⌝ ∗
+          own_slice_small x uint64T (DfracOwn 1) xs ∗
+          own_slice_small y uint64T (DfracOwn 1) ys ∗
+          ⌜length xs = length ys⌝ 
+      }}}.
+  Proof.
+    iIntros (Φ) "(Hx & Hy & %H) H2".
+    iDestruct (own_slice_small_sz with "Hx") as %Hsz.
+    assert (length xs < 2^64) by word.
+    rewrite /oneOffVersionVector.
+    wp_apply wp_ref_to; auto.
+    iIntros (output) "H3".
+    wp_apply wp_ref_to; auto.
+    iIntros (canApply) "H4".
+    wp_apply wp_ref_to; auto.
+    iIntros (index) "H5".
+    wp_pures.
+    wp_apply (wp_slice_len).
+    wp_apply wp_ref_to; auto.
+    iIntros (l) "H6".
+    wp_pures.
+    set (loop_step := λ (acc: bool * bool) (element : w64 * w64),
+           let (e1, e2) := element in
+                 let (output, canApply) := acc in
+                 if (canApply && (uint.Z (w64_word_instance.(word.add) e1 (W64 1)) =? uint.Z e2)) then
+                   (output && true, false)
+                 else
+                   if uint.Z e1 >=? uint.Z e2 then
+                     (output && true, canApply)
+                   else 
+                     (false, canApply)).
+    set (loop_init := (true, true)).
+    wp_apply (wp_forBreak_cond
+                ( λ continue, ∃ (b1 b2 : bool) , ∃ (xs_prev xs_next ys_prev ys_next : list u64),
+                    own_slice_small x uint64T (DfracOwn 1) xs ∗
+                    own_slice_small y uint64T (DfracOwn 1) ys ∗
+                    output ↦[boolT] #b1 ∗
+                    canApply ↦[boolT] #b2 ∗
+                    index ↦[uint64T] #(length xs_prev) ∗
+                    l ↦[uint64T] #(length xs) ∗
+                    ⌜xs = xs_prev ++ xs_next⌝ ∗
+                    ⌜ys = ys_prev ++ ys_next⌝ ∗
+                    ⌜length xs_prev = length ys_prev⌝ ∗
+                    ⌜continue = false -> xs_next = [] /\ ys_next = []⌝ ∗ 
+                    ⌜b1 = fst (fold_left loop_step (zip xs_prev ys_prev) loop_init)⌝ ∗
+                    ⌜b2 = snd (fold_left loop_step (zip xs_prev ys_prev) loop_init)⌝ 
+                )%I
+               with "[] [Hx Hy H3 H4 H5 H6]").
+    - iIntros (Φ'). iModIntro. iIntros "(%b1 & %b2 & %xs_prev & %xs_next & %ys_prev & %ys_next & Hxs & Hys & H2
+& H3 & H4 & H5 & %H6 & %H7 & %H8 & %H9 & %H10 & %H11) H_ret".
+      wp_load. wp_load. wp_if_destruct.
+      + wp_load. wp_bind (if: #b2 then _ else _)%E.
+        wp_if_destruct.
+        * assert (length xs_prev <= length xs). {
+            rewrite H6. rewrite length_app. word. }
+          assert (uint.nat (length xs_prev) < length xs)%nat by word.
+          assert (uint.nat (length xs_prev) < length ys)%nat by word.
+          apply list_lookup_lt in H2 as [x0 H2].
+          apply list_lookup_lt in H3 as [y0 H3].
+          wp_load. wp_apply (wp_SliceGet with "[Hxs]"); iFrame; auto.
+          iIntros "Hxs". wp_load. wp_apply (wp_SliceGet with "[Hys]"); iFrame; auto.
+          iIntros "Hys". wp_pures.
+          wp_if_destruct.
+          { wp_store. wp_load. wp_store. iModIntro. iApply "H_ret".
+            - iExists (fold_left loop_step (zip xs_prev ys_prev)
+                             loop_init).1.
+              iExists false. 
+              iExists (xs_prev ++ [x0]).
+              iExists (drop 1 xs_next).
+              iExists (ys_prev ++ [(w64_word_instance.(word.add) x0 (W64 1))]).
+              iExists (drop 1 ys_next).
+              iFrame.
+              iSplitL. { rewrite length_app. simpl.
+                         assert (w64_word_instance.(word.add) (W64 (length xs_prev)) (W64 1)
+                                 = (W64 (length xs_prev + 1)%nat)) by word.
+                         rewrite H4. auto. }
+              iPureIntro.
+              assert (xs_next !! 0%nat = Some x0). { 
+                rewrite lookup_app_r in H2.
+                - assert ((uint.nat (W64 (length xs_prev)) - length xs_prev)%nat = 0%nat)
+                    by word.
+                  rewrite H4 in H2. auto. 
+                - word.
+              }
+              assert (head xs_next = Some x0). { rewrite lookup_app_r in H2.
+                                                 - rewrite head_lookup. auto.
+                                                 - word. }
+              split. { apply head_Some in H5 as [l' H5]. rewrite H5. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+              assert (ys_next !! 0%nat = Some (w64_word_instance.(word.add) x0 (W64 1))). { 
+                rewrite lookup_app_r in H3.
+                - assert ((uint.nat (W64 (length xs_prev)) - length ys_prev)%nat = 0%nat)
+                    by word.
+                  rewrite H6 in H3. auto. 
+                - word.
+              }
+              assert (head ys_next = Some (w64_word_instance.(word.add) x0 (W64 1))).
+              { rewrite lookup_app_r in H3.
+                - rewrite head_lookup. auto.
+                - word. }
+              split. { apply head_Some in H7 as [l' H7]. rewrite H7. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+              split. { repeat rewrite length_app. simpl. auto. }
+              assert ((zip (xs_prev ++ [x0]) (ys_prev ++ [w64_word_instance.(word.add) x0 (W64 1)])) = zip xs_prev ys_prev ++ zip [x0] [w64_word_instance.(word.add) x0 (W64 1)]). {
+                rewrite zip_with_app; auto. }
+              rewrite H10.
+              split. { intros. inversion H12. }
+              split. { 
+                rewrite fold_left_app.
+                destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+                unfold loop_step.
+                simpl. 
+                assert (uint.Z (w64_word_instance.(word.add) x0 (W64 1)) =? uint.Z (w64_word_instance.(word.add) x0 (W64 1))
+                        = true) by word.
+                rewrite H12. simpl in H11. rewrite <- H11. simpl.
+                rewrite andb_true_r. auto. }
+              rewrite fold_left_app.
+              destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+              unfold loop_step.
+              simpl.
+              assert (uint.Z (w64_word_instance.(word.add) x0 (W64 1)) =? uint.Z (w64_word_instance.(word.add) x0 (W64 1))
+                        = true) by word.
+              rewrite H12. simpl in H11. rewrite <- H11.
+              auto.
+          }
+          { wp_load. wp_apply (wp_SliceGet with "[Hxs]"); iFrame; auto.
+            iIntros "Hxs". wp_load.
+            wp_apply (wp_SliceGet with "[Hys]"); iFrame; auto.
+            iIntros "Hys". wp_pures. wp_if_destruct.
+            - wp_store. wp_load.
+              wp_store. iModIntro. iApply "H_ret".
+              iExists false. iExists true. 
+              iExists (xs_prev ++ [x0]). iExists (drop 1 xs_next).
+              iExists (ys_prev ++ [y0]). iExists (drop 1 ys_next).
+              iFrame.
+              iSplitL. { rewrite length_app. simpl.
+                         assert (w64_word_instance.(word.add) (W64 (length xs_prev)) (W64 1)
+                                 = (W64 (length xs_prev + 1)%nat)) by word.
+                         rewrite H4. auto. }
+              iPureIntro.
+              rewrite H6 in H2.
+              assert (xs_next !! 0%nat = Some x0). { 
+                rewrite lookup_app_r in H2.
+                - assert ((uint.nat (W64 (length xs_prev)) - length xs_prev)%nat = 0%nat)
+                    by word.
+                  rewrite H4 in H2. auto. 
+                - word.
+              }
+              assert (head xs_next = Some x0). { rewrite lookup_app_r in H2.
+                                                 - rewrite head_lookup. auto.
+                                                 - word. }
+              split. { rewrite H6.
+                       apply head_Some in H5 as [l' H5]. rewrite H5. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+              rewrite H7 in H3.
+              assert (ys_next !! 0%nat = Some (y0)). { 
+                rewrite lookup_app_r in H3.
+                - assert ((uint.nat (W64 (length xs_prev)) - length ys_prev)%nat = 0%nat)
+                    by word. rewrite H12 in H3. auto.
+                - word.
+              }
+              assert (head ys_next = Some (y0)).
+              { rewrite lookup_app_r in H3.
+                - rewrite head_lookup. auto.
+                - word. }
+              split. { rewrite H7.
+                       apply head_Some in H13 as [l' H13]. rewrite H13. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+              split. { repeat rewrite length_app. simpl. auto. }
+              split. { intros. inversion H14. }
+              assert ((zip (xs_prev ++ [x0]) (ys_prev ++ [y0])) =
+                      zip xs_prev ys_prev ++ zip [x0] [y0]). {
+                rewrite zip_with_app; auto. }
+              rewrite H14.
+              split. {
+                rewrite fold_left_app.
+                destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+                unfold loop_step.
+                simpl.
+                apply w64_val_neq in Heqb1 as [? ?].
+                apply Z.eqb_neq in H15.
+                rewrite H15.
+                simpl in H11. rewrite <- H11. simpl. assert (uint.Z x0 >=? uint.Z y0 = false)
+                                                       by word.
+                rewrite H17. auto.
+              }
+              rewrite fold_left_app.
+              destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+              unfold loop_step.
+              simpl.
+              apply w64_val_neq in Heqb1 as [? ?].
+              apply Z.eqb_neq in H15.
+              rewrite H15.
+              simpl in H11. rewrite <- H11. simpl. assert (uint.Z x0 >=? uint.Z y0 = false)
+                                                     by word.
+              rewrite H17. auto.
+            - wp_load. wp_store. iModIntro.
+              iApply "H_ret".
+              iExists b1. iExists true. 
+              iExists (xs_prev ++ [x0]). iExists (drop 1 xs_next).
+              iExists (ys_prev ++ [y0]). iExists (drop 1 ys_next).
+              iFrame.
+              iSplitL. { rewrite length_app. simpl.
+                         assert (w64_word_instance.(word.add) (W64 (length xs_prev)) (W64 1)
+                                 = (W64 (length xs_prev + 1)%nat)) by word.
+                         rewrite H4. auto. }
+              iPureIntro.
+              rewrite H6 in H2.
+              assert (xs_next !! 0%nat = Some x0). { 
+                rewrite lookup_app_r in H2.
+                - assert ((uint.nat (W64 (length xs_prev)) - length xs_prev)%nat = 0%nat)
+                    by word.
+                  rewrite H4 in H2. auto. 
+                - word.
+              }
+              assert (head xs_next = Some x0). { rewrite lookup_app_r in H2.
+                                                 - rewrite head_lookup. auto.
+                                                 - word. }
+              split. { rewrite H6.
+                       apply head_Some in H5 as [l' H5]. rewrite H5. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+              rewrite H7 in H3.
+              assert (ys_next !! 0%nat = Some (y0)). { 
+                rewrite lookup_app_r in H3.
+                - assert ((uint.nat (W64 (length xs_prev)) - length ys_prev)%nat = 0%nat)
+                    by word. rewrite H12 in H3. auto.
+                - word.
+              }
+              assert (head ys_next = Some (y0)).
+              { rewrite lookup_app_r in H3.
+                - rewrite head_lookup. auto.
+                - word. }
+              split. { rewrite H7.
+                       apply head_Some in H13 as [l' H13]. rewrite H13. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+              split. { repeat rewrite length_app. simpl. auto. }
+              split. { intros. inversion H14. }
+              assert ((zip (xs_prev ++ [x0]) (ys_prev ++ [y0])) =
+                      zip xs_prev ys_prev ++ zip [x0] [y0]). {
+                rewrite zip_with_app; auto. }
+              rewrite H14.
+              split. {
+                rewrite fold_left_app.
+                destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+                unfold loop_step.
+                simpl. 
+                apply w64_val_neq in Heqb1 as [? ?].
+                apply Z.eqb_neq in H15.
+                rewrite H15. 
+                simpl in H11. rewrite <- H11. simpl. assert (uint.Z x0 >=? uint.Z y0 = true)
+                                                       by word.
+                rewrite H17. simpl. rewrite H10. simpl. rewrite andb_true_r. auto.
+              }
+              rewrite fold_left_app.
+              destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+              unfold loop_step.
+              simpl. apply w64_val_neq in Heqb1 as [? ?].
+              apply Z.eqb_neq in H15.
+              rewrite H15. 
+              simpl in H11. rewrite <- H11. simpl. assert (uint.Z x0 >=? uint.Z y0 = true)
+                                                     by word. 
+              rewrite H17. auto.
+          }
+        * assert (length xs_prev <= length xs). {
+            rewrite H6. rewrite length_app. word. }
+          assert (uint.nat (length xs_prev) < length xs)%nat by word.
+          assert (uint.nat (length xs_prev) < length ys)%nat by word.
+          apply list_lookup_lt in H2 as [x0 H2].
+          apply list_lookup_lt in H3 as [y0 H3].
+          wp_pures. wp_load.  wp_apply (wp_SliceGet with "[Hxs]"); iFrame; auto.
+          iIntros "Hxs". wp_load.
+          wp_apply (wp_SliceGet with "[Hys]"); iFrame; auto.
+          iIntros "Hys". wp_pures.
+          wp_if_destruct.
+          { wp_store. wp_load. wp_store. iModIntro.
+            iApply "H_ret".
+            iExists false. iExists false. 
+              iExists (xs_prev ++ [x0]). iExists (drop 1 xs_next).
+              iExists (ys_prev ++ [y0]). iExists (drop 1 ys_next).
+              iFrame.
+              iSplitL. { rewrite length_app. simpl.
+                         assert (w64_word_instance.(word.add) (W64 (length xs_prev)) (W64 1)
+                                 = (W64 (length xs_prev + 1)%nat)) by word.
+                         rewrite H4. auto. }
+              iPureIntro.
+              rewrite H6 in H2.
+              assert (xs_next !! 0%nat = Some x0). { 
+                rewrite lookup_app_r in H2.
+                - assert ((uint.nat (W64 (length xs_prev)) - length xs_prev)%nat = 0%nat)
+                    by word.
+                  rewrite H4 in H2. auto. 
+                - word.
+              }
+              assert (head xs_next = Some x0). { rewrite lookup_app_r in H2.
+                                                 - rewrite head_lookup. auto.
+                                                 - word. }
+              split. { rewrite H6.
+                       apply head_Some in H5 as [l' H5]. rewrite H5. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+              rewrite H7 in H3.
+              assert (ys_next !! 0%nat = Some (y0)). { 
+                rewrite lookup_app_r in H3.
+                - assert ((uint.nat (W64 (length xs_prev)) - length ys_prev)%nat = 0%nat)
+                    by word. rewrite H12 in H3. auto.
+                - word.
+              }
+              assert (head ys_next = Some (y0)).
+              { rewrite lookup_app_r in H3.
+                - rewrite head_lookup. auto.
+                - word. }
+              split. { rewrite H7.
+                       apply head_Some in H13 as [l' H13]. rewrite H13. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+              split. { repeat rewrite length_app. simpl. auto. }
+              split. { intros. inversion H14. }
+              assert ((zip (xs_prev ++ [x0]) (ys_prev ++ [y0])) =
+                      zip xs_prev ys_prev ++ zip [x0] [y0]). {
+                rewrite zip_with_app; auto. }
+              rewrite H14.
+              split. {
+                rewrite fold_left_app.
+                destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+                unfold loop_step.
+                simpl in H11. simpl. rewrite <- H11. simpl.
+                assert (uint.Z x0 >=? uint.Z y0 = false) by word.
+                rewrite H15. auto.
+              }
+              rewrite fold_left_app.
+              destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+              unfold loop_step. simpl.
+              simpl in H11. rewrite <- H11. simpl. assert (uint.Z x0 >=? uint.Z y0 = false)
+                                                     by word.
+              rewrite H15. auto.
+          }
+          { wp_load. wp_store. iModIntro.
+            iApply "H_ret".
+            iExists b1. iExists false. 
+            iExists (xs_prev ++ [x0]). iExists (drop 1 xs_next).
+            iExists (ys_prev ++ [y0]). iExists (drop 1 ys_next).
+            iFrame.
+            iSplitL. { rewrite length_app. simpl.
+                         assert (w64_word_instance.(word.add) (W64 (length xs_prev)) (W64 1)
+                                 = (W64 (length xs_prev + 1)%nat)) by word.
+                         rewrite H4. auto. }
+            iPureIntro.
+            rewrite H6 in H2.
+              assert (xs_next !! 0%nat = Some x0). { 
+                rewrite lookup_app_r in H2.
+                - assert ((uint.nat (W64 (length xs_prev)) - length xs_prev)%nat = 0%nat)
+                    by word.
+                  rewrite H4 in H2. auto. 
+                - word.
+              }
+              assert (head xs_next = Some x0). { rewrite lookup_app_r in H2.
+                                                 - rewrite head_lookup. auto.
+                                                 - word. }
+              split. { rewrite H6.
+                       apply head_Some in H5 as [l' H5]. rewrite H5. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+              rewrite H7 in H3.
+              assert (ys_next !! 0%nat = Some (y0)). { 
+                rewrite lookup_app_r in H3.
+                - assert ((uint.nat (W64 (length xs_prev)) - length ys_prev)%nat = 0%nat)
+                    by word. rewrite H12 in H3. auto.
+                - word.
+              }
+              assert (head ys_next = Some (y0)).
+              { rewrite lookup_app_r in H3.
+                - rewrite head_lookup. auto.
+                - word. }
+              split. { rewrite H7.
+                       apply head_Some in H13 as [l' H13]. rewrite H13. simpl. rewrite drop_0.
+                       rewrite cons_middle. rewrite app_assoc. auto. }
+            split. { repeat rewrite length_app. simpl. auto. }
+            split. { intros. inversion H14. }
+            assert ((zip (xs_prev ++ [x0]) (ys_prev ++ [y0])) =
+                    zip xs_prev ys_prev ++ zip [x0] [y0]). {
+              rewrite zip_with_app; auto. }
+            rewrite H14.
+            split. {
+              rewrite fold_left_app.
+              destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+              unfold loop_step.
+              simpl in H11. simpl. rewrite <- H11. simpl.
+              assert (uint.Z x0 >=? uint.Z y0 = true) by word.
+              rewrite H15. rewrite H10. simpl. rewrite andb_true_r. auto.
+            }
+            rewrite fold_left_app.
+            destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+            unfold loop_step. simpl.
+            simpl in H11. rewrite <- H11. simpl. assert (uint.Z x0 >=? uint.Z y0 = true)
+                                                   by word.
+            rewrite H15. auto.
+          }
+      + iModIntro. iApply "H_ret". iExists b1. iExists b2. iExists xs. iExists [].
+        iExists ys. iExists []. iFrame.
+        assert (length xs_prev >= length xs) by word.
+        assert (length xs = length xs_prev + length xs_next)%nat. { rewrite H6.
+                                                                    rewrite app_length. auto. }
+        assert (length xs_prev = length xs) by word.
+        assert (length xs_next = 0%nat) by word.
+        apply length_zero_iff_nil in H4.
+        rewrite H4 in H6. 
+        assert (xs = xs_prev). {
+          rewrite app_nil_r in H6. auto. }
+        assert (length ys_prev >= length ys) by word.
+        assert (length ys = length ys_prev + length ys_next)%nat. { rewrite H7.
+                                                                    rewrite app_length. auto. }
+        assert (length ys_prev = length ys) by word.
+        assert (length ys_next = 0%nat) by word.
+        apply length_zero_iff_nil in H15.
+        rewrite H15 in H7.
+        assert (ys = ys_prev). {
+          rewrite app_nil_r in H7. auto. }
+        iSplitL. { rewrite H5. auto. }
+        iPureIntro.
+        split. { rewrite app_nil_r. auto. }
+        split. { rewrite app_nil_r. auto. }
+        split. { auto. }
+        split. { auto. }
+        split. { rewrite H5. rewrite H16. auto. }
+        rewrite H5. rewrite H16. auto.
+    - iExists true. iExists true. 
+      iExists []. iExists xs. iExists []. iExists ys.
+      iFrame. rewrite Hsz.
+      iSplitL; auto. assert (x.(Slice.sz) = (W64 (uint.nat x.(Slice.sz)))) by word.
+      rewrite <- H1. iFrame.
+    - iIntros "(%b1 & %b2 & %xs_prev & %xs_next & %ys_prev & %ys_next & Hxs & Hys & H3 & H4 & H5 & H6 & %H7 & %H8 & %H9 & %H10 & %H11 & %H12)".
+      wp_load. wp_if_destruct.
+      + wp_load. wp_pures. iModIntro. iApply "H2".
+        iFrame. iSplitL; auto.
+        iPureIntro.
+        destruct H10; auto.
+        rewrite H1 in H7. rewrite H2 in H8. rewrite app_nil_r in H7. rewrite app_nil_r in H8. 
+        rewrite H7. rewrite H8.
+        unfold coq_oneOffVersionVector.
+        fold loop_step.
+        replace (true, true) with loop_init by auto.
+        destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+        simpl in *. rewrite <- H11. rewrite andb_true_l. rewrite H12. auto.
+      + wp_pures. iModIntro. iApply "H2".
+        iFrame. iSplitL; auto.
+        iPureIntro.
+        destruct H10; auto.
+        rewrite H1 in H7. rewrite H2 in H8. rewrite app_nil_r in H7. rewrite app_nil_r in H8. 
+        rewrite H7. rewrite H8.
+        unfold coq_oneOffVersionVector.
+        fold loop_step.
+        replace (true, true) with loop_init by auto.
+        destruct (fold_left loop_step (zip xs_prev ys_prev) loop_init) as [ind ?].
+        simpl in *. rewrite <- H11. rewrite andb_false_l. auto.
+  Qed. 
     
 End heap.
 

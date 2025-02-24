@@ -105,13 +105,11 @@ Definition oneOffVersionVector: val :=
         Continue
       else
         (if: (SliceGet uint64T "v1" (![uint64T] "i")) < (SliceGet uint64T "v2" (![uint64T] "i"))
-        then
-          "output" <-[boolT] #false;;
-          Break
-        else
-          "i" <-[uint64T] ((![uint64T] "i") + #1);;
-          Continue)));;
-    (![boolT] "output") && (![boolT] "canApply").
+        then "output" <-[boolT] #false
+        else #());;
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
+        Continue));;
+    (![boolT] "output") && (~ (![boolT] "canApply")).
 
 Definition equalSlices: val :=
   rec: "equalSlices" "s1" "s2" :=

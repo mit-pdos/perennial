@@ -39,7 +39,7 @@ Definition coq_oneOffVersionVector (v1: list w64) (v2: list w64) : bool :=
     fold_left (fun (acc: bool * bool) (element: w64 * w64) =>
                  let (e1, e2) := element in
                  let (output, canApply) := acc in
-                 if (canApply && (uint.Z e1 + 1 =? uint.Z e2)) then
+                 if (canApply && (uint.Z (w64_word_instance.(word.add) e1 (W64 1)) =? uint.Z e2)) then
                    (output && true, false)
                  else
                    if uint.Z e1 >=? uint.Z e2 then
