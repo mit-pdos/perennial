@@ -198,6 +198,165 @@ Definition coq_processRequest (s: Server.t) (r: Message.t) : (Server.t * list Me
   | _ => (s, [])
   end.
 
+Section REDEFINE.
 
+  Import SessionPrelude.
 
+  Lemma redefine_coq_lexicographicCompare :
+    coq_lexicographicCompare = vectorGt.
+  Proof.
+    reflexivity.
+  Defined.
 
+  Lemma redefine_coq_equalSlices :
+    coq_equalSlices = vectorEq.
+  Proof.
+    reflexivity.
+  Defined.
+
+  Definition Operation_wf (len : nat) : Operation.t -> Prop :=
+    fun o => Forall (fun _ => True) (o .(Operation.VersionVector)) /\ length (o .(Operation.VersionVector)) = len.
+
+  #[global]
+  Instance hsEq_Operation (len : nat) : hsEq Operation.t (well_formed := Operation_wf len) :=
+    hsEq_preimage _.
+
+  #[global]
+  Instance hsOrd_Operation (len : nat) : hsOrd Operation.t (hsEq := hsEq_Operation len) :=
+    hsOrd_preimage _.
+
+  Lemma redefine_coq_sortedInsert (len : nat) :
+    coq_sortedInsert = sortedInsert (hsOrd := hsOrd_Operation len).
+  Proof.
+    reflexivity.
+  Defined.
+
+  #[local] Hint Resolve @Forall_True : core.
+
+  Lemma aux0_lexicographicCompare (l1 l2 l3: list u64) :
+    coq_lexicographicCompare l2 l1 = true ->
+    coq_lexicographicCompare l3 l2 = true ->
+    coq_lexicographicCompare l3 l1 = true.
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. 
+    intros. eapply vectorGt_transitive; eauto.
+  Qed.
+
+  Lemma aux1_lexicographicCompare (l1 l2: list u64) :
+    length l1 = length l2 -> 
+    l1 ≠ l2 ->
+    (coq_lexicographicCompare l2 l1 = false <-> coq_lexicographicCompare l1 l2 = true).
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. remember (length l1) as len eqn: len_eq.
+    pose proof (ltProp_trichotomy (hsOrd := hsOrd_vector len) l1 l2) as claim. simpl in claim.
+    symmetry in len_eq. intros len_eq'. symmetry in len_eq'.
+    specialize (claim (conj (Forall_True _) len_eq) (conj (Forall_True _) len_eq')).
+    destruct claim as [H_lt | [H_eq | H_gt]].
+    - rewrite H_lt. intros NE. split.
+      + congruence.
+      + intros l1_gt_l2. contradiction (ltProp_irreflexivity (hsOrd := hsOrd_vector len) l1 l1); eauto.
+        * eapply eqProp_reflexivity; eauto.
+        * eapply ltProp_transitivity with (y := l2); eauto.
+    - intros NE. contradiction NE. clear NE. rewrite <- vectorEq_true_iff; eauto 2.
+      change (eqb (hsEq := hsEq_vector len) l1 l2 = true). rewrite eqb_eq; eauto 2.
+    - rewrite H_gt. intros NE. split.
+      + congruence.
+      + intros _. change (ltb (hsOrd := hsOrd_vector len) l1 l2 = false).
+        rewrite ltb_nlt; eauto 2. intros NLT. change (ltb (hsOrd := hsOrd_vector len) l2 l1 = true) in H_gt.
+        rewrite ltb_lt in H_gt; eauto 2. contradiction (ltProp_irreflexivity (hsOrd := hsOrd_vector len) l1 l1); eauto.
+        * eapply eqProp_reflexivity; eauto.
+        * eapply ltProp_transitivity with (y := l2); eauto.
+  Qed.
+
+  Lemma aux3_lexicographicCompare (l1 l2: list u64) :
+    length l1 = length l2 -> 
+    coq_lexicographicCompare l2 l1 = false ->
+    coq_lexicographicCompare l1 l2 = false ->
+    l1 = l2.
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. intros. rewrite <- vectorEq_true_iff; eauto 2.
+    change (eqb (hsEq := hsEq_vector (length l1)) l1 l2 = true). rewrite eqb_eq; eauto 2.
+    pose proof (ltProp_trichotomy (hsOrd := hsOrd_vector (length l1)) l1 l2) as [H_lt | [H_eq | H_gt]]; eauto.
+    - rewrite <- ltb_lt in H_lt; eauto 2. simpl in *. congruence.
+    - rewrite <- ltb_lt in H_gt; eauto 2. simpl in *. congruence.
+  Qed.
+
+  Lemma aux4_lexicographicCompare (l1 l2: list u64) :
+    coq_lexicographicCompare l1 l2 = true ->
+    coq_equalSlices l1 l2 = false.
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. rewrite redefine_coq_equalSlices.
+    intros. eapply vectorGt_implies_not_vectorEq; eauto 2.
+  Qed.
+
+  Lemma aux5_lexicographicCompare (l1 l2: list u64) :
+    coq_equalSlices l1 l2 = true ->
+    coq_lexicographicCompare l1 l2 = false.
+  Proof.
+    rewrite redefine_coq_lexicographicCompare. rewrite redefine_coq_equalSlices.
+    intros. eapply vectorEq_implies_not_vectorGt; eauto 2.
+  Qed.
+
+  Lemma aux0_equalSlices (l1 l2: list u64) :
+    length l1 = length l2 ->
+    coq_equalSlices l1 l2 = true ->
+    l1 = l2.
+  Proof.
+    rewrite redefine_coq_equalSlices. intros. rewrite <- vectorEq_true_iff; eauto 2.
+  Qed.
+
+  Lemma aux1_equalSlices (l1 l2: list u64) :
+    length l1 = length l2 ->
+    coq_equalSlices l1 l2 = false ->
+    l1 ≠ l2.
+  Proof.
+    rewrite redefine_coq_equalSlices. intros. rewrite <- vectorEq_true_iff; eauto 2.
+    rewrite H0; congruence.
+  Qed.
+
+  Lemma aux2_equalSlices (l1 l2: list u64) (b: bool) :
+    length l1 = length l2 ->
+    coq_equalSlices l1 l2 = b ->
+    coq_equalSlices l2 l1 = b.
+  Proof.
+    rewrite redefine_coq_equalSlices. intros. subst b. eapply (eqb_comm (hsEq_A := hsEq_vector (length l1))); eauto.
+  Qed.
+
+  Lemma aux3_equalSlices (l: list u64) :
+    coq_equalSlices l l = true.
+  Proof.
+    change (coq_equalSlices l l) with (eqb (hsEq := hsEq_vector (length l)) l l).
+    rewrite eqb_eq; eauto 2. eapply eqProp_reflexivity; eauto 2.
+  Qed.
+
+End REDEFINE.
+
+Section heap.
+
+  Context `{hG: !heapGS Σ}.
+
+  Lemma Forall_Operation_wf l ops (n : nat)
+    : ([∗ list] opv;o ∈ ops; l, is_operation opv o n)%I ⊢@{iProp Σ} (⌜Forall (Operation_wf n) l⌝)%I.
+  Proof.
+    revert ops. induction l as [ | hd tl IH]; intros ops.
+    - iIntros "H_big_sepL2". iPureIntro. eauto.
+    - iIntros "H_big_sepL2". iPoseProof (big_sepL2_cons_inv_r with "H_big_sepL2") as "(%hd' & %tl' & -> & H_hd & H_tl)".
+      iDestruct "H_hd" as "(%H1 & %H2 & H3)". iClear "H3".
+      iAssert ⌜Forall (Operation_wf n) tl⌝%I as "%YES1".
+      { iApply IH. iExact "H_tl". }
+      iPureIntro. econstructor.
+      + split.
+        * eapply SessionPrelude.Forall_True.
+        * done.
+      + exact YES1.
+  Qed.
+
+  Lemma pers_big_sepL2_is_operation l ops (n : nat)
+    : ([∗ list] opv;o ∈ ops;l, is_operation opv o n)%I ⊢@{iProp Σ} (<pers> ([∗ list] opv;o ∈ ops;l, is_operation opv o n))%I.
+  Proof.
+    iIntros "H_big_sepL2". iApply (big_sepL2_persistently). iApply (big_sepL2_mono (λ k, λ y1, λ y2, is_operation y1 y2 n)%I).
+    - intros. iIntros "#H". iApply intuitionistically_into_persistently_1. iModIntro. done.
+    - done.
+  Qed.
+
+End heap.

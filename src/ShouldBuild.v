@@ -123,6 +123,8 @@ From Perennial.program_proof.session Require definitions.
 From Perennial.program_proof.session Require session_prelude.
 From Perennial.program_proof.session Require sort.
 From Perennial.program_proof.session Require versionVector.
+From Perennial.program_proof.session Require processClientRequest.
+From Perennial.program_proof.session Require processRequest.
 
 (* session proof *)
 (* From Perennial.program_proof.session Require mergeOperations.proof.      *)
