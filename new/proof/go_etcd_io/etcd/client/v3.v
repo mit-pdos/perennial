@@ -1,54 +1,76 @@
 Require Import New.code.go_etcd_io.etcd.client.v3.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.
 Require Import New.proof.proof_prelude.
+From Perennial.Helpers Require Import Transitions.
 
-(** Notes about the etcd robustness test model.
- - The real `Lease.Grant()` does not take in a LeaseID, it gets it from the server.
-   The model, on the other hand, uses the LeaseID straight from the LeaseGrant
-   request (even if the LeaseID were zero, which indicates to the LeaseGrant RPC
-   that the lessor should choose an ID).
-*)
+(* https://etcd.io/docs/v3.6/learning/api/ *)
+Module KeyValue.
+Record t :=
+mk {
+    key : list w8;
+    create_revision : w64;
+    mod_revision : w64;
+    version : w64;
+    value : list w8;
+    lease : w64;
+  }.
+
+Global Instance settable : Settable _ :=
+  settable! mk < key; create_revision; mod_revision; version; value; lease>.
+End KeyValue.
 
 Module EtcdState.
 Record t :=
 mk {
-    Revision : w64;
-    CompactRevision : w64;
-    KeyValues : gmap string (string * w64);
-    KeyLeases : gmap string w64;
-    Leases : gmap w64 (w64 * gset string);
+    revision : w64;
+    compact_revision : w64;
+    key_values : gmap w64 (gmap (list w8) KeyValue.t);
+
+    (* XXX: Though the docs don't explain or guarantee this, this tracks lease
+       IDs that have been given out previously to avoid reusing LeaseIDs. If
+       reuse were allowed, it's possible that a lease expires & its keys are
+       deleted, then another client creates a lease with the same ID and
+       attaches the same keys, after which the first expired client would
+       incorrectly see its keys still attached with its leaseid.
+     *)
+    used_lease_ids : gset w64;
   }.
 
-Global Instance settable_EtcdState : Settable _ :=
-  settable! EtcdState.mk < Revision; CompactRevision; KeyValues; KeyLeases; Leases >.
+Global Instance settable : Settable _ :=
+  settable! mk < revision; compact_revision; key_values; used_lease_ids>.
 End EtcdState.
 
-
-Definition is_Grant (leaseid) (s s' : EtcdState.t) : Prop :=
-  let leaase := LeaseId
-.
-
-
-Module RangeRequest.
+Module LeaseGrantRequest.
 Record t :=
 mk {
-    Revision : w64;
-    Start : go_string;
-    End : go_string;
-    Limit : w64;
+    TTL : w64;
+    ID : w64;
   }.
-End RangeRequest.
+Global Instance settable_EtcdState : Settable _ :=
+  settable! mk < TTL; ID>.
+End LeaseGrantRequest.
 
-Definition get_range (start end : go_string) (limit : w64) (s : EtcdState.t) : Prop :=
-.
+Module LeaseGrantResponse.
+Record t :=
+mk {
+    TTL : w64;
+    ID : w64;
+  }.
+Global Instance settable : Settable _ :=
+  settable! mk <TTL; ID>.
+End LeaseGrantResponse.
 
-Definition range_operation (request : RangeRequest.t) (s s' : EtcdState.t) : Prop :=
-  if decide (request.(RangeRequest.Revision) = 0 ∨
-             request.(RangeRequest.Revision) = s.(EtcdState.Revision))
-  then
-    True
-  else if decide (request.(RangeRequest.Revision) > s.(EtcdState.Revision)) then
-         True
-       else
-         True
-.
+Existing Instance fallback_genPred.
+Existing Instances r_mbind r_mret r_fmap.
+
+Definition LeaseGrant (req : LeaseGrantRequest.t) : transition EtcdState.t LeaseGrantResponse.t :=
+  (* req.TTL is advisory, so it is ignored. *)
+  ttl ← suchThat (λ _ _, True);
+  lease_id ← (if (word.eqb req.(LeaseGrantRequest.ID) (W64 0)) then
+                suchThat (λ σ lease_id, lease_id ∉ σ.(EtcdState.used_lease_ids))
+              else
+                (assert (λ σ, req.(LeaseGrantRequest.ID) ∉ σ.(EtcdState.used_lease_ids));;
+                 ret req.(LeaseGrantRequest.ID))
+    );
+  modify (set EtcdState.used_lease_ids (λ old, {[lease_id]} ∪ old)) ;;
+  ret (LeaseGrantResponse.mk lease_id ttl).
