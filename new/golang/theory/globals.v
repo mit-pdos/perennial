@@ -370,8 +370,7 @@ Ltac solve_wp_globals_alloc :=
   rewrite /WpGlobalsAlloc;
   iIntros (?) "!# _ HΦ";
   wp_call;
-  rewrite -!default_val_eq_zero_val /=;
-    repeat (let x := fresh "l" in wp_alloc x as "?"; wp_pures);
+  repeat (let x := fresh "l" in wp_alloc x as "?"; wp_pures);
   unshelve iSpecialize ("HΦ" $! _); first (econstructor; shelve);
   iApply "HΦ"; iFrame.
 

@@ -650,8 +650,8 @@ Ltac2 wp_store () :=
   end.
 
 Ltac2 wp_alloc_visit e k :=
-  Control.once_plus (fun () => (Std.unify e '(ref_ty _ (Val _))))
-         (fun _ => Control.zero Walk_expr_more);
+  Control.once_plus (fun () => Std.unify e '(ref_ty _ (Val _)))
+    (fun _ => Control.zero Walk_expr_more);
   Control.once_plus (fun _ => eapply (tac_wp_ref_ty $k); ectx_simpl ())
     (fun _ => Control.backtrack_tactic_failure "wp_alloc: failed to apply tac_wp_ref_ty")
 .

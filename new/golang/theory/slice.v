@@ -293,9 +293,9 @@ Proof.
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros.
     rewrite /pointsto_vals typed_pointsto_unseal /typed_pointsto_def /=.
+    rewrite default_val_eq_zero_val.
     erewrite has_go_type_len.
     2:{ apply zero_val_has_go_type. }
-    rewrite default_val_eq_zero_val.
     iApply (big_sepL_impl with "[$]").
     iModIntro. iIntros. iFrame.
     apply lookup_seq in H0 as [? ?].
@@ -307,6 +307,7 @@ Proof.
     rewrite /own_slice_cap_def /=.
     iSplitR; first iPureIntro.
     { word. }
+    rewrite default_val_eq_zero_val.
     erewrite has_go_type_len.
     2:{ apply zero_val_has_go_type. }
     iApply (big_sepL_impl with "[$]").
@@ -444,7 +445,6 @@ Proof.
   { instantiate (1:=#l). rewrite to_val_unseal /=. by destruct l. }
   iNext. iIntros (l_ptr) "Hl".
   wp_pures.
-  rewrite -default_val_eq_zero_val.
   wp_alloc i_ptr as "Hi".
   wp_pures.
   iDestruct (own_slice_len with "Hsl") as %Hsz.

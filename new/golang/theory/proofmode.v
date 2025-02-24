@@ -482,10 +482,13 @@ Ltac2 wp_call_visit e k :=
       ltac1:(reduction.pm_prettify; simpl subst'; simpl fill)].
 
 Ltac2 wp_call () :=
+  (* XXX: this is when `zero_val`s tend to show up (unfolding the body of a
+     function), so try rewriting to use IntoValTyped's default. *)
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
       wp_walk_unwrap (fun () => walk_expr e wp_call_visit)
-        "wp_call: could not find a function call expression at the head"
+        "wp_call: could not find a function call expression at the head";
+      try (rewrite <- !default_val_eq_zero_val)
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_call: current proof is not a WP"
   end.
 Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); iIntros "_"; wp_pures.

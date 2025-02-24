@@ -76,7 +76,6 @@ Proof.
   wp_func_call.
   wp_call.
   wp_alloc opts_ptr as "Hopts".
-  rewrite -!default_val_eq_zero_val.
   wp_pures.
   wp_alloc client_ptr as "Hclient_ptr".
   wp_pures.

@@ -147,7 +147,6 @@ Lemma wp_Uint64__Add u delta :
 Proof.
   iIntros (?) "#? HΦ".
   wp_method_call. wp_call.
-  rewrite -default_val_eq_zero_val.
   wp_alloc new_ptr as "Hnew_ptr". wp_pures.
   wp_alloc x_ptr as "Hx_ptr". wp_pures.
   wp_alloc delta_ptr as "Hdelta_ptr". wp_pures.
@@ -181,7 +180,6 @@ Lemma wp_Uint64__CompareAndSwap u old new :
 Proof.
   iIntros (?) "#? HΦ".
   wp_method_call. wp_call.
-  rewrite -default_val_eq_zero_val.
   wp_alloc swapped_ptr as "Hswapped_ptr". wp_pures.
   wp_alloc x_ptr as "Hx_ptr". wp_pures.
   wp_alloc new_ptr as "Hnew_ptr". wp_pures.

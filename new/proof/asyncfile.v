@@ -431,7 +431,6 @@ Proof.
   iIntros (Hno_overflow).
   wp_pures. wp_load. wp_pures. wp_store.
   wp_pures.
-  rewrite -!default_val_eq_zero_val.
   wp_alloc index_ptr as "Hlocal3".
   wp_pures. wp_load.
   wp_pures. wp_load.
@@ -591,7 +590,6 @@ Proof.
   }
   (* case: have something to write *)
   wp_pures.
-  rewrite -!default_val_eq_zero_val.
   wp_alloc index_ptr as "Hlocal2".
   wp_pures.
   wp_load. wp_pures. wp_load. wp_pures. wp_store. wp_pures.
@@ -748,7 +746,6 @@ Proof.
   wp_alloc filename_addr as "Hlocal".
   iMod (typed_pointsto_persist with "Hlocal") as "#?".
   wp_pures.
-  rewrite -!default_val_eq_zero_val /=.
   wp_alloc mu as "Hmu".
   wp_pures.
   wp_alloc s as "Hlocal".

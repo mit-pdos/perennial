@@ -760,7 +760,6 @@ Proof.
   wp_alloc wg_ptr as "Hwg_ptr".
   wp_pure_lc "Hlc". wp_pures.
   wp_alloc delta_ptr as "Hdelta_ptr". wp_pures.
-  rewrite -!default_val_eq_zero_val.
   wp_alloc state_ptr as "Hstate_ptr". wp_pures.
   wp_load. wp_pures. wp_load. wp_pures.
 
@@ -1089,7 +1088,6 @@ Proof.
   iIntros (?) "(#Hinit & #Hwg & HR_in) HΦ".
   iNamed "Hinit". iNamed "Hwg".
   wp_method_call. wp_call.
-  rewrite -!default_val_eq_zero_val.
   wp_alloc wg_ptr as "Hwg_ptr".
   wp_pures.
   wp_for.
