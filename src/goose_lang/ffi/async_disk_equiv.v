@@ -426,32 +426,24 @@ Section translate.
            | H: relation.denote (unwrap _) _ _ _ |- _ => inv H; intuition
            end.
       * (* AtomicOp *)
-        inversion Hstep; monad_inv.
-        inv H1. inv H2. monad_inv.
-        destruct x0. destruct n; monad_inv.
-        destruct n; monad_inv.
-        inv H3; monad_inv.
-        destruct s2 as [σ' g']. inv H1.
-        destruct bin_op_eval eqn:Hbin.
-        2:{ exfalso. by inv H2. }
-        destruct (heap σ1 !! l) eqn:Heq; subst.
-        ** select (relation.denote (unwrap _) _ _ _) (fun H => inv H). monad_inv.
-           inv H4. inv H5. monad_inv.
-           inversion H.
-           intuition.
-           eexists ({| heap := heap _; oracle := _; trace := _;
-                      world := world pσ2 |}).
-           eexists.
-           split_and!.
-           *** simpl in *. split_and!; eauto.
-           *** eauto.
-           *** econstructor; eauto; repeat econstructor; eauto.
-               { rewrite //=. rewrite Heq. econstructor; eauto. }
-               rewrite //=. rewrite Hbin. repeat econstructor; eauto. f_equal.
-               f_equal. destruct pσ2; subst.
-               simpl in * => //=. rewrite /RecordSet.set //=.
-               f_equal; eauto.
-        ** inv H4; intuition.
+        rewrite /atomically /= in Hstep.
+        monad_inv. simpl in Hstep.
+        unfold unwrap in Hstep.
+        destruct (heap σ1 !! l) as [[[|[|]]]|] eqn:Hlookup;
+          repeat ((by exfalso) || simpl in * || monad_inv).
+        destruct bin_op_eval eqn:Hop; repeat ((by exfalso) || simpl in * || monad_inv).
+        inversion H. intuition.
+        eexists ({| heap := heap _; oracle := _; trace := _;
+                                                 world := world pσ2 |}).
+        eexists. split_and!.
+        *** simpl in *. split_and!; eauto.
+        *** eauto.
+        *** econstructor; eauto; repeat econstructor; eauto.
+            { rewrite //=. rewrite Hlookup. econstructor; eauto. }
+            rewrite //=. rewrite Hop. repeat econstructor; eauto. f_equal.
+            f_equal. destruct pσ2; subst.
+            simpl in * => //=. rewrite /RecordSet.set //=.
+            f_equal; eauto.
       * (* GlobalPut *)
         inversion Hstep; monad_inv.
         inv H1. monad_inv.
