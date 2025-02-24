@@ -158,6 +158,10 @@ func sortedInsert(s []Operation, value Operation) []Operation {
 }
 
 func mergeOperations(l1 []Operation, l2 []Operation) []Operation {
+        if (len(l1) + len(l2)) == 0 {
+	   return make([]Operation, 0)
+	}
+	
 	var intermediate = append([]Operation{}, l1...)
 	var i = uint64(0)
 	var l = uint64(len(l2))
@@ -178,7 +182,7 @@ func mergeOperations(l1 []Operation, l2 []Operation) []Operation {
 	}
 
 	var output = make([]Operation, 0)
-
+	
 	i = uint64(0)
 	l = prev
 	for i < prev {
