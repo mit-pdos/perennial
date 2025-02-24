@@ -101,7 +101,7 @@ Definition coq_receiveGossip (s: Server.t) (r: Message.t) : Server.t :=
     let pendingOperations := coq_mergeOperations s.(Server.PendingOperations) r.(Message.S2S_Gossip_Operations) in
     snd (fold_left (fun (acc: Z * Server.t) (element: Operation.t) =>
                       let (index, acc) := acc in 
-                      if coq_oneOffVersionVector acc.(Server.VectorClock) element.(Operation.VersionVector) 0 true then
+                      if coq_oneOffVersionVector acc.(Server.VectorClock) element.(Operation.VersionVector) then
                         let OperationsPerformed := coq_mergeOperations acc.(Server.OperationsPerformed) [element] in
                         let VectorClock := coq_maxTS acc.(Server.VectorClock) element.(Operation.VersionVector) in
                         let PendingOperations := coq_deleteAtIndexOperation s.(Server.PendingOperations) (uint.nat index) in (index + 1,
@@ -131,8 +131,7 @@ Definition coq_getGossipOperations (s: Server.t) (serverId: u64) : (list Operati
 
 Definition coq_processClientRequest (s: Server.t) (r: Message.t) :
   (bool * Server.t * Message.t) :=
-  if (negb (coq_equalSlices (replicate (uint.nat s.(Server.NumberOfServers)) (W64 0)) r.(Message.C2S_Client_VersionVector))) &&
-       (negb (coq_compareVersionVector s.(Server.VectorClock) r.(Message.C2S_Client_VersionVector))) then
+  if (negb (coq_compareVersionVector s.(Server.VectorClock) r.(Message.C2S_Client_VersionVector))) then
     (false, s, (Message.mk 0 0 0 0 0 [] 0 0 [] 0 0 0 0 0 0 [] 0))
   else
     if (uint.nat r.(Message.C2S_Client_OperationType) =? 0) then

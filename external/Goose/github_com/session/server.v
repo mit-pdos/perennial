@@ -241,7 +241,7 @@ Definition processClientRequest: val :=
   rec: "processClientRequest" "server" "request" :=
     let: "reply" := struct.mk Message [
     ] in
-    (if: (~ (equalSlices (NewSlice uint64T (struct.get Server "NumberOfServers" "server")) (struct.get Message "C2S_Client_VersionVector" "request"))) && (~ (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get Message "C2S_Client_VersionVector" "request")))
+    (if: (~ (compareVersionVector (struct.get Server "VectorClock" "server") (struct.get Message "C2S_Client_VersionVector" "request")))
     then (#false, "server", "reply")
     else
       (if: (struct.get Message "C2S_Client_OperationType" "request") = #0
