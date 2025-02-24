@@ -158,7 +158,7 @@ func sortedInsert(s []Operation, value Operation) []Operation {
 }
 
 func mergeOperations(l1 []Operation, l2 []Operation) []Operation {
-        if (len(l1) + len(l2)) == 0 {
+        if (len(l1) == 0) && (len(l2) == 0) {
 	   return make([]Operation, 0)
 	}
 	

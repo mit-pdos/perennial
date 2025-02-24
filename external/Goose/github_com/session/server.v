@@ -161,7 +161,7 @@ Definition sortedInsert: val :=
 
 Definition mergeOperations: val :=
   rec: "mergeOperations" "l1" "l2" :=
-    (if: ((slice.len "l1") + (slice.len "l2")) = #0
+    (if: ((slice.len "l1") = #0) && ((slice.len "l2") = #0)
     then NewSlice (struct.t Operation) #0
     else
       let: "intermediate" := ref_to (slice.T (struct.t Operation)) (SliceAppendSlice (struct.t Operation) (NewSlice (struct.t Operation) #0) "l1") in
