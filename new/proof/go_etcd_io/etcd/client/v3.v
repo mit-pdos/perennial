@@ -175,16 +175,19 @@ Inductive etcdE : Type → Type :=
 | Assert (b : Prop) : etcdE unit.
 (* XXX: the assert effect should be interpreted when converting to Iris precondition? *)
 
-Inductive handle_etcdE (t : w64) : ∀ (A : Type) (e : etcdE A), relation.t EtcdState.t A :=
-| SuchThat_handle : ∀ {A} σ pred (a : A), pred a → handle_etcdE t _ (SuchThat pred) σ σ a
-| GetState_handle : ∀ σ, handle_etcdE t _ (GetState) σ σ σ
-| SetState_handle : ∀ σ σ', handle_etcdE t _ (SetState σ') σ σ' ()
-| TimeGet_handle : ∀ σ, handle_etcdE t _ TimeGet σ σ t
-| Assume_handle : ∀ σ P, P → handle_etcdE t _ (Assume P) σ σ ()
+Definition handle_etcdE (t : w64) (A : Type) (e : etcdE A) : relation.t EtcdState.t A :=
+  match e with
+  | SuchThat pred => λ σ σ' a, pred a ∧ σ' = σ
+  | GetState => λ σ σ' σret, σ' = σ ∧ σret = σ
+  | SetState σnew => λ σ σ' _, σ' = σnew
+  | TimeGet => λ σ σ' tret, tret = t ∧ σ' = σ
+  | Assume P => λ σ σ' tret, P ∧ σ = σ'
+  | _ => λ σ σ' _, False
+  end
 .
 
 Instance relation_mret A : MRet (relation.t A) :=
-  λ {A} a, λ σ σ' a', a = a'.
+  λ {A} a, λ σ σ' a', a = a' ∧ σ' = σ.
 
 Instance relation_mbind A : MBind (relation.t A) :=
   λ {A B} kmb ma, λ σ σ' b,
@@ -227,23 +230,44 @@ Proof.
       exists lease_id, σ; split; first by constructor.
       exists time, σ; split; first by constructor.
       eexists (), _; split; first by constructor.
-      constructor.
+      by constructor.
     }
     {
       simpl in *.
       monad_inv.
       eexists _, σ; split.
-      { exists (), σ. split; econstructor. done. }
+      { exists (), σ. split; econstructor; done. }
       exists time, σ; split; first by constructor.
       eexists (), _; split; first by constructor.
-      econstructor.
+      by econstructor.
     }
   }
   {
     intros Hstep.
+    destruct Hstep as [? Hstep].
     repeat destruct Hstep as [? Hstep].
-    econstructor; first by econstructor.
     simpl in *.
-    admit.
+    econstructor; first by econstructor.
+    simpl in *. intuition. subst.
+    destruct decide.
+    {
+      simpl in *.
+      intuition. subst.
+      econstructor; try done.
+      econstructor; try done.
+      econstructor; try done.
+    }
+    {
+      simpl in *.
+      rename H1 into Hstep.
+      repeat destruct Hstep as [? Hstep].
+      intuition. subst.
+      econstructor.
+      { econstructor; try done. }
+      Unshelve.
+      2:{ done. }
+      econstructor; try done.
+      econstructor; try done.
+    }
   }
-Admitted.
+Qed.
