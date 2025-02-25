@@ -105,7 +105,7 @@ End LeaseGrantResponse.
 
 (* time is *)
 Definition LeaseGrant (time : w64) (req : LeaseGrantRequest.t) : transition EtcdState.t LeaseGrantResponse.t :=
-  SpontaneousTransition time;;
+  (* SpontaneousTransition time;; *)
   (* req.TTL is advisory, so it is ignored. *)
   ttl ← any w64;
   lease_id ← (if decide (req.(LeaseGrantRequest.ID) = (W64 0)) then
@@ -144,3 +144,106 @@ Definition LeaseKeepAlive (time : w64) (req : LeaseKeepAliveRequest.t) :
   SpontaneousTransition time;;
 .
 *)
+
+Inductive ecomp (E : Type → Type) : Type → Type :=
+| Ret {A} (a : A) : ecomp E A
+| Effect {A} (e : E A) : ecomp E A
+| Bind {A B} (k : A → ecomp E B) (e : ecomp E A) : ecomp E B.
+
+Arguments Ret {_ _} (_).
+Arguments Effect {_ _} (_).
+Arguments Bind {_ _ _} (_ _).
+
+Instance ecomp_MBind E : MBind (ecomp E) := (@Bind E).
+Instance ecomp_MRet E : MRet (ecomp E) := (@Ret E).
+
+Fixpoint denote `{MBind M} `{!MRet M} {E R} (handler : ∀ A (e : E A), M A) (e : ecomp E R) : M R :=
+  match e with
+  | Ret a => mret a
+  | Effect e => (handler _ e)
+  | Bind k e =>
+      v ← (denote handler e);
+      denote handler (k v)
+  end.
+
+Inductive etcdE : Type → Type :=
+| SuchThat {A} (pred : A → Prop) : etcdE A
+| GetState : etcdE EtcdState.t
+| SetState (σ' : EtcdState.t) : etcdE unit
+| TimeGet : etcdE w64
+| Assume (b : Prop) : etcdE unit
+| Assert (b : Prop) : etcdE unit.
+(* XXX: the assert effect should be interpreted when converting to Iris precondition? *)
+
+Inductive handle_etcdE (t : w64) : ∀ (A : Type) (e : etcdE A), relation.t EtcdState.t A :=
+| SuchThat_handle : ∀ {A} σ pred (a : A), pred a → handle_etcdE t _ (SuchThat pred) σ σ a
+| GetState_handle : ∀ σ, handle_etcdE t _ (GetState) σ σ σ
+| SetState_handle : ∀ σ σ', handle_etcdE t _ (SetState σ') σ σ' ()
+| TimeGet_handle : ∀ σ, handle_etcdE t _ TimeGet σ σ t
+| Assume_handle : ∀ σ P, P → handle_etcdE t _ (Assume P) σ σ ()
+.
+
+Instance relation_mret A : MRet (relation.t A) :=
+  λ {A} a, λ σ σ' a', a = a'.
+
+Instance relation_mbind A : MBind (relation.t A) :=
+  λ {A B} kmb ma, λ σ σ' b,
+    ∃ a σmiddle,
+      ma σ σmiddle a ∧
+      kmb a σmiddle σ' b.
+
+Definition LeaseGrant2 (req : LeaseGrantRequest.t) : ecomp etcdE LeaseGrantResponse.t :=
+  (* req.TTL is advisory, so it is ignored. *)
+  ttl ← Effect $ SuchThat (λ (_ : w64), True);
+  σ ← Effect GetState;
+  lease_id ← (if decide (req.(LeaseGrantRequest.ID) = (W64 0)) then
+                Effect $ SuchThat (λ lease_id, lease_id ∉ σ.(EtcdState.used_lease_ids))
+              else
+                (Effect $ Assume (req.(LeaseGrantRequest.ID) ∉ σ.(EtcdState.used_lease_ids));;
+                 mret req.(LeaseGrantRequest.ID)));
+  time ← Effect TimeGet;
+  let σ := (set EtcdState.used_lease_ids (λ old, {[lease_id]} ∪ old) σ) in
+  let σ := (set EtcdState.lease_expiration <[lease_id := Some (word.add time ttl)]> σ) in
+  Effect (SetState σ);;
+  mret (LeaseGrantResponse.mk lease_id ttl).
+
+Lemma test_equivalence req time :
+  ∀ σ σ' resp,
+  relation.denote (LeaseGrant time req) σ σ' resp ↔
+  denote (handle_etcdE time) (LeaseGrant2 req) σ σ' resp.
+Proof.
+  intros.
+  split.
+  {
+    intros Hstep.
+    simpl in *.
+    monad_inv.
+    exists x, σ; split; first by constructor.
+    exists σ, σ; split; first by constructor.
+    destruct decide.
+    {
+      simpl in *.
+      monad_inv.
+      exists lease_id, σ; split; first by constructor.
+      exists time, σ; split; first by constructor.
+      eexists (), _; split; first by constructor.
+      constructor.
+    }
+    {
+      simpl in *.
+      monad_inv.
+      eexists _, σ; split.
+      { exists (), σ. split; econstructor. done. }
+      exists time, σ; split; first by constructor.
+      eexists (), _; split; first by constructor.
+      econstructor.
+    }
+  }
+  {
+    intros Hstep.
+    repeat destruct Hstep as [? Hstep].
+    econstructor; first by econstructor.
+    simpl in *.
+    admit.
+  }
+Admitted.
