@@ -84,6 +84,10 @@ Definition is_defined := is_global_definitions std.pkg_name' var_addrs std.funct
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
+Global Instance wp_func_call_Assert :
+  WpFuncCall std.pkg_name' "Assert" _ is_defined :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_BytesEqual :
   WpFuncCall std.pkg_name' "BytesEqual" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).

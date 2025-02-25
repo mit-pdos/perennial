@@ -8,9 +8,21 @@ Section code.
 Context `{ffi_syntax}.
 
 
-(* BytesEqual returns if the two byte slices are equal.
+(* Assert(b) panics if b doesn't hold
 
    go: goose_std.go:10:6 *)
+Definition Assert : val :=
+  rec: "Assert" "b" :=
+    exception_do (let: "b" := (ref_ty boolT "b") in
+    (if: (~ (![boolT] "b"))
+    then
+      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"assertion failure"%go) in
+      Panic "$a0")
+    else do:  #())).
+
+(* BytesEqual returns if the two byte slices are equal.
+
+   go: goose_std.go:17:6 *)
 Definition BytesEqual : val :=
   rec: "BytesEqual" "x" "y" :=
     exception_do (let: "y" := (ref_ty sliceT "y") in
@@ -44,7 +56,7 @@ Definition BytesEqual : val :=
 
    [reference]: https://pkg.go.dev/bytes#Clone
 
-   go: goose_std.go:31:6 *)
+   go: goose_std.go:38:6 *)
 Definition BytesClone : val :=
   rec: "BytesClone" "b" :=
     exception_do (let: "b" := (ref_ty sliceT "b") in
@@ -63,7 +75,7 @@ Definition BytesClone : val :=
    TODO: once goose supports it, make this function generic in the slice element
    type
 
-   go: goose_std.go:45:6 *)
+   go: goose_std.go:52:6 *)
 Definition SliceSplit : val :=
   rec: "SliceSplit" "xs" "n" :=
     exception_do (let: "n" := (ref_ty uint64T "n") in
@@ -74,7 +86,7 @@ Definition SliceSplit : val :=
 
 (* Returns true if x + y does not overflow
 
-   go: goose_std.go:53:6 *)
+   go: goose_std.go:60:6 *)
 Definition SumNoOverflow : val :=
   rec: "SumNoOverflow" "x" "y" :=
     exception_do (let: "y" := (ref_ty uint64T "y") in
@@ -87,7 +99,7 @@ Definition pkg_name' : go_string := "github.com/goose-lang/std".
 
    *Use with care* - if the assumption is violated this function will panic.
 
-   go: goose_std.go:60:6 *)
+   go: goose_std.go:67:6 *)
 Definition SumAssumeNoOverflow : val :=
   rec: "SumAssumeNoOverflow" "x" "y" :=
     exception_do (let: "y" := (ref_ty uint64T "y") in
@@ -104,7 +116,7 @@ Definition JoinHandle : go_type := structT [
   "cond" :: ptrT
 ].
 
-(* go: goose_std.go:73:6 *)
+(* go: goose_std.go:80:6 *)
 Definition newJoinHandle : val :=
   rec: "newJoinHandle" <> :=
     exception_do (let: "mu" := (ref_ty ptrT (zero_val ptrT)) in
@@ -123,7 +135,7 @@ Definition newJoinHandle : val :=
        "cond" ::= "$cond"
      }]))).
 
-(* go: goose_std.go:83:22 *)
+(* go: goose_std.go:90:22 *)
 Definition JoinHandle__finish : val :=
   rec: "JoinHandle__finish" "h" <> :=
     exception_do (let: "h" := (ref_ty ptrT "h") in
@@ -141,7 +153,7 @@ Definition JoinHandle__finish : val :=
    essentially the same implementation, replacing `done` with a pointer to the
    result value.
 
-   go: goose_std.go:97:6 *)
+   go: goose_std.go:104:6 *)
 Definition Spawn : val :=
   rec: "Spawn" "f" :=
     exception_do (let: "f" := (ref_ty funcT "f") in
@@ -155,7 +167,7 @@ Definition Spawn : val :=
     do:  (Fork ("$go" #()));;;
     return: (![ptrT] "h")).
 
-(* go: goose_std.go:106:22 *)
+(* go: goose_std.go:113:22 *)
 Definition JoinHandle__Join : val :=
   rec: "JoinHandle__Join" "h" <> :=
     exception_do (let: "h" := (ref_ty ptrT "h") in
@@ -176,7 +188,7 @@ Definition JoinHandle__Join : val :=
    pattern in Go) because this is not supported by Goose. Instead uses mutexes
    and condition variables since these are modeled in Goose
 
-   go: goose_std.go:125:6 *)
+   go: goose_std.go:132:6 *)
 Definition Multipar : val :=
   rec: "Multipar" "num" "op" :=
     exception_do (let: "op" := (ref_ty funcT "op") in
@@ -220,14 +232,14 @@ Definition Multipar : val :=
    is a simple way to do so - the model always requires one step to reduce this
    application to a value.
 
-   go: goose_std.go:156:6 *)
+   go: goose_std.go:163:6 *)
 Definition Skip : val :=
   rec: "Skip" <> :=
     exception_do (do:  #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("BytesEqual"%go, BytesEqual); ("BytesClone"%go, BytesClone); ("SliceSplit"%go, SliceSplit); ("SumNoOverflow"%go, SumNoOverflow); ("SumAssumeNoOverflow"%go, SumAssumeNoOverflow); ("newJoinHandle"%go, newJoinHandle); ("Spawn"%go, Spawn); ("Multipar"%go, Multipar); ("Skip"%go, Skip)].
+Definition functions' : list (go_string * val) := [("Assert"%go, Assert); ("BytesEqual"%go, BytesEqual); ("BytesClone"%go, BytesClone); ("SliceSplit"%go, SliceSplit); ("SumNoOverflow"%go, SumNoOverflow); ("SumAssumeNoOverflow"%go, SumAssumeNoOverflow); ("newJoinHandle"%go, newJoinHandle); ("Spawn"%go, Spawn); ("Multipar"%go, Multipar); ("Skip"%go, Skip)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("JoinHandle"%go, []); ("JoinHandle'ptr"%go, [("Join"%go, JoinHandle__Join); ("finish"%go, JoinHandle__finish)])].
 

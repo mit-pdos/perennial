@@ -19,6 +19,18 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
 
 Implicit Types (v:val).
 
+(* This lemma shadows the one for primitive.Assert *)
+Lemma wp_Assert stk E cond :
+  {{{ ⌜cond = true⌝ }}}
+    Assert #cond @ stk; E
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "% HΦ". subst.
+  wp_rec. wp_pures.
+  iModIntro.
+  by iApply "HΦ".
+Qed.
+
 Local Lemma take_S_lookup_ne {T} (xs : list T) i j :
   i ≠ j →
   take (S i) xs !! j = take i xs !! j.

@@ -4,6 +4,15 @@ From Perennial.goose_lang Require Import prelude.
 Section code.
 Context `{ext_ty: ext_types}.
 
+(* Assert(b) panics if b doesn't hold *)
+Definition Assert: val :=
+  rec: "Assert" "b" :=
+    (if: (~ "b")
+    then
+      Panic "assertion failure";;
+      #()
+    else #()).
+
 (* BytesEqual returns if the two byte slices are equal. *)
 Definition BytesEqual: val :=
   rec: "BytesEqual" "x" "y" :=

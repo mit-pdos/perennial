@@ -12,6 +12,19 @@ Definition is_initialized : iProp Σ :=
   "#?" ∷ std.is_defined ∗
   "#?" ∷ primitive.is_defined.
 
+Lemma wp_Assert (cond : bool) :
+  {{{ is_initialized ∗ ⌜cond = true⌝ }}}
+    func_call #std.pkg_name' #"Assert" #cond
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "[init %] HΦ". iNamed "init".
+  subst.
+  wp_func_call; wp_call; wp_pures.
+  wp_alloc b_l as "b".
+  wp_pures. wp_load. wp_pures.
+  by iApply "HΦ".
+Qed.
+
 Lemma wp_SumNoOverflow (x y : u64) :
   {{{ is_initialized }}}
     func_call #std.pkg_name' #"SumNoOverflow" #x #y
