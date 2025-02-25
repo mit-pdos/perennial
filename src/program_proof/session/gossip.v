@@ -3,8 +3,8 @@ From Perennial.program_proof.session Require Export versionVector sort.
 
 Section heap.
 
-  Context `{hG: !heapGS Σ}.
-
+  Context `{hG: !heapGS Σ}.                               
+  
   Lemma wp_getGossipOperations (sv: u64*u64*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t) (s: Server.t)
     (serverId: w64) (n: nat) :
     {{{
