@@ -26,6 +26,7 @@ type Message struct {
 	S2C_Client_OperationType uint64
 	S2C_Client_Data          uint64
 	S2C_Client_VersionVector []uint64
+	S2C_Server_Id            uint64
 	S2C_Client_Number        uint64
 }
 
@@ -157,10 +158,10 @@ func sortedInsert(s []Operation, value Operation) []Operation {
 }
 
 func mergeOperations(l1 []Operation, l2 []Operation) []Operation {
-        if (len(l1) == 0) && (len(l2) == 0) {
-	   return make([]Operation, 0)
+	if (len(l1) == 0) && (len(l2) == 0) {
+		return make([]Operation, 0)
 	}
-	
+
 	var intermediate = append([]Operation{}, l1...)
 	var i = uint64(0)
 	var l = uint64(len(l2))
@@ -181,7 +182,7 @@ func mergeOperations(l1 []Operation, l2 []Operation) []Operation {
 	}
 
 	var output = make([]Operation, 0)
-	
+
 	i = uint64(0)
 	l = prev
 	for i < prev {
@@ -233,6 +234,9 @@ func receiveGossip(server Server, request Message) Server {
 }
 
 func acknowledgeGossip(server Server, request Message) Server {
+	if request.S2S_Acknowledge_Gossip_Sending_ServerId >= uint64(len(server.GossipAcknowledgements)) {
+		return server
+	}
 	server.GossipAcknowledgements[request.S2S_Acknowledge_Gossip_Sending_ServerId] = maxTwoInts(server.GossipAcknowledgements[request.S2S_Acknowledge_Gossip_Sending_ServerId], request.S2S_Acknowledge_Gossip_Index)
 	return server
 }
@@ -253,6 +257,7 @@ func processClientRequest(server Server, request Message) (bool, Server, Message
 		reply.S2C_Client_OperationType = 0
 		reply.S2C_Client_Data = getDataFromOperationLog(server.OperationsPerformed)
 		reply.S2C_Client_VersionVector = server.VectorClock
+		reply.S2C_Server_Id = server.Id
 		reply.S2C_Client_Number = request.C2S_Client_Id
 
 		return true, server, reply
@@ -273,6 +278,7 @@ func processClientRequest(server Server, request Message) (bool, Server, Message
 		reply.S2C_Client_OperationType = 1
 		reply.S2C_Client_Data = 0
 		reply.S2C_Client_VersionVector = append([]uint64(nil), server.VectorClock...)
+		reply.S2C_Server_Id = server.Id
 		reply.S2C_Client_Number = request.C2S_Client_Id
 
 		return true, server, reply

@@ -110,6 +110,7 @@ Definition coq_receiveGossip (s: Server.t) (r: Message.t) : Server.t :=
 Definition coq_acknowledgeGossip (s: Server.t) (r: Message.t) :=
   let i := r.(Message.S2S_Acknowledge_Gossip_Sending_ServerId) in
   let l : (list u64) := s.(Server.GossipAcknowledgements) in
+  if (uint.Z i >=? length l) then s else 
   let prevGossipAcknowledgementsValue : u64 := match s.(Server.GossipAcknowledgements) !! (uint.nat i) with
                                             | Some x => x
                                             | None => 0

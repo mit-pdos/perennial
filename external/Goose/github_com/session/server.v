@@ -232,8 +232,11 @@ Definition receiveGossip: val :=
 
 Definition acknowledgeGossip: val :=
   rec: "acknowledgeGossip" "server" "request" :=
-    SliceSet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request") (maxTwoInts (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request")) (struct.get Message "S2S_Acknowledge_Gossip_Index" "request"));;
-    "server".
+    (if: (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request") ≥ (slice.len (struct.get Server "GossipAcknowledgements" "server"))
+    then "server"
+    else
+      SliceSet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request") (maxTwoInts (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request")) (struct.get Message "S2S_Acknowledge_Gossip_Index" "request"));;
+      "server").
 
 Definition getGossipOperations: val :=
   rec: "getGossipOperations" "server" "serverId" :=
