@@ -26,6 +26,7 @@ Definition Message := struct.decl [
   "S2C_Client_OperationType" :: uint64T;
   "S2C_Client_Data" :: uint64T;
   "S2C_Client_VersionVector" :: slice.T uint64T;
+  "S2C_Server_Id" :: uint64T;
   "S2C_Client_Number" :: uint64T
 ].
 
@@ -251,6 +252,7 @@ Definition processClientRequest: val :=
         struct.storeF Message "S2C_Client_OperationType" "reply" #0;;
         struct.storeF Message "S2C_Client_Data" "reply" (getDataFromOperationLog (struct.get Server "OperationsPerformed" "server"));;
         struct.storeF Message "S2C_Client_VersionVector" "reply" (struct.get Server "VectorClock" "server");;
+        struct.storeF Message "S2C_Server_Id" "reply" (struct.get Server "Id" "server");;
         struct.storeF Message "S2C_Client_Number" "reply" (struct.get Message "C2S_Client_Id" "request");;
         (#true, "server", "reply")
       else
@@ -267,6 +269,7 @@ Definition processClientRequest: val :=
         struct.storeF Message "S2C_Client_OperationType" "reply" #1;;
         struct.storeF Message "S2C_Client_Data" "reply" #0;;
         struct.storeF Message "S2C_Client_VersionVector" "reply" (SliceAppendSlice uint64T slice.nil (struct.get Server "VectorClock" "server"));;
+        struct.storeF Message "S2C_Server_Id" "reply" (struct.get Server "Id" "server");;
         struct.storeF Message "S2C_Client_Number" "reply" (struct.get Message "C2S_Client_Id" "request");;
         (#true, "server", "reply"))).
 
