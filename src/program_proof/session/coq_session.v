@@ -329,6 +329,17 @@ Section REDEFINE.
     rewrite eqb_eq; eauto 2. eapply eqProp_reflexivity; eauto 2.
   Qed.
 
+  Lemma coq_equalOperations_comm o1 o2
+    : coq_equalOperations o1 o2 = coq_equalOperations o2 o1.
+  Proof.
+    unfold coq_equalOperations. replace Z.eqb with (SessionPrelude.eqb (hsEq := hsEq_Z)) by reflexivity. rewrite eqb_comm; eauto.
+    destruct (hsEq_Z .(eqb) (uint.nat o2 .(Operation.Data)) (uint.nat o1 .(Operation.Data))) as [ | ] eqn: H_obs; rewrite eqb_obs in H_obs; eauto.
+    - do 2 rewrite andb_true_r. simpl in H_obs. generalize (o1 .(Operation.VersionVector)) as v1. generalize (o2 .(Operation.VersionVector)) as v2.
+      induction v2 as [ | v2_hd v2_tl IH], v1 as [ | v1_hd v1_tl]; simpl; eauto.
+      rewrite IH. replace Z.eqb with (SessionPrelude.eqb (hsEq := hsEq_Z)) by reflexivity. rewrite eqb_comm; eauto.
+    - do 2 rewrite andb_false_r. reflexivity.
+  Qed.
+
 End REDEFINE.
 
 Section heap.
@@ -357,6 +368,59 @@ Section heap.
     iIntros "H_big_sepL2". iApply (big_sepL2_persistently). iApply (big_sepL2_mono (λ k, λ y1, λ y2, is_operation y1 y2 n)%I).
     - intros. iIntros "#H". iApply intuitionistically_into_persistently_1. iModIntro. done.
     - done.
+  Qed.
+
+  Lemma pers_is_operation opv o (n : nat)
+    : (is_operation opv o n)%I ⊢@{iProp Σ} (<pers> (is_operation opv o n))%I.
+  Proof.
+    iIntros "#H". done.
+  Qed.
+
+  Lemma pers_emp
+    : emp ⊢@{iProp Σ} <pers> emp.
+  Proof.
+    iIntros "#H". done.
+  Qed.
+
+  Lemma big_sepL2_is_operation_elim l ops (n: nat) (i: nat) l_i ops_i
+    (H_l_i: l !! i = Some l_i)
+    (H_ops_i: ops !! i = Some ops_i)
+    : ([∗ list] opv;o ∈ ops;l, is_operation opv o n) ⊢@{iProp Σ} is_operation ops_i l_i n.
+  Proof.
+    rewrite <- take_drop with (l := l) (i := i). rewrite <- take_drop with (l := ops) (i := i). iIntros "H". 
+    assert (i < length l)%nat as H1_i by now eapply lookup_lt_is_Some_1.
+    assert (i < length ops)%nat as H2_i by now eapply lookup_lt_is_Some_1.  
+    iAssert (([∗ list] opv;o ∈ take i ops;take i l, is_operation opv o n) ∗ ([∗ list] opv;o ∈ drop i ops;drop i l, is_operation opv o n))%I with "[H]" as "[H1 H2]".
+    { iApply (big_sepL2_app_equiv with "H").
+      do 2 rewrite length_take. word.
+    }
+    destruct (drop i ops) as [ | ops_i' ops_suffix] eqn: H_ops_suffix.
+    { apply f_equal with (f := length) in H_ops_suffix. simpl in *. rewrite length_drop in H_ops_suffix. word. }
+    iPoseProof (big_sepL2_cons_inv_l with "[$H2]") as "(%l_i' & %l_suffix & %H_l_suffix & H3 & H4)".
+    rewrite <- take_drop with (l := l) (i := i) in H_l_i. rewrite <- take_drop with (l := ops) (i := i) in H_ops_i.
+    rewrite H_l_suffix in H_l_i. rewrite H_ops_suffix in H_ops_i.
+    assert (i = length (take i l)) as H3_i.
+    { rewrite length_take. word. }
+    assert (i = length (take i ops)) as H4_i.
+    { rewrite length_take. word. }
+    pose proof (list_lookup_middle (take i l) l_suffix l_i' i H3_i) as H1.
+    pose proof (list_lookup_middle (take i ops) ops_suffix ops_i' i H4_i) as H2.
+    assert (l_i = l_i') as <- by congruence.
+    assert (ops_i = ops_i') as <- by congruence.
+    iExact "H3".
+  Qed.
+
+  Lemma big_sepL2_is_operation_intro (l: list Operation.t) (ops: list (Slice.t * w64)) (n: nat)
+    (LENGTH: length l = length ops)
+    : (∀ i : nat, ∀ l_i, ∀ ops_i, ⌜(l !! i = Some l_i) /\ (ops !! i = Some ops_i)⌝ -∗ is_operation ops_i l_i n) ⊢@{iProp Σ} ([∗ list] opv;o ∈ ops;l, is_operation opv o n).
+  Proof.
+    revert ops n LENGTH. induction l as [ | l_hd l_tl IH], ops as [ | ops_hd ops_tl]; intros; simpl in *; try congruence.
+    - iIntros "#H". iClear "H". done.
+    - iIntros "#H". iSplit.
+      + iApply "H". instantiate (1 := 0%nat). done.
+      + iApply IH.
+        * word.
+        * iIntros "%i %l_i %ops_i [%H_l_i %H_ops_i]". iApply "H". instantiate (1 := S i). done.
   Qed.
 
 End heap.
