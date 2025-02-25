@@ -1,18 +1,14 @@
 From Perennial.program_proof.session Require Export session_prelude coq_session.
 From Perennial.program_proof.session Require Export versionVector sort.
 
-
 Section heap.
 
   Context `{hG: !heapGS Σ}.
 
-  (* 
   Lemma wp_getGossipOperations (sv: u64*u64*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t) (s: Server.t)
     (serverId: w64) (n: nat) :
     {{{
-          is_server sv s n ∗
-          ⌜(uint.nat serverId < length s.(Server.GossipAcknowledgements))%nat⌝ ∗
-          ⌜server.MyOperations
+          is_server sv s n 
     }}}
       getGossipOperations (server_val sv) #serverId
       {{{
@@ -21,17 +17,38 @@ Section heap.
             is_server sv s n 
       }}}.
   Proof.
-    iIntros "%Φ (H1 & %H) H_ret".
+    iIntros "%Φ H1 H_ret".
     iDestruct "H1" as "(%H1 & %H2 & H1 & %H3 & H4 & H5 & H6 & H7 & %H4 & H8)".
     rewrite /getGossipOperations.
-    wp_pures. wp_bind (SliceSkip _ _ _)%E.
-    apply list_lookup_lt in H as [x H].
-    wp_apply (wp_SliceGet with "[H8]"). {iFrame. auto. }
-    iIntros "H8". wp_pures.
-    wp_apply (wp_SliceSkip with "[]").
-   *)
-
-    
+    iDestruct (own_slice_small_sz with "H8") as "%H5".
+    wp_pures.
+    wp_apply (wp_NewSlice).
+    iIntros (s') "H".
+    wp_apply (wp_ref_to). { auto. }
+    iIntros (ret) "H2".
+    wp_apply (wp_slice_len). wp_pures.
+    wp_bind (if: #(bool_decide (uint.Z (sv.2).(Slice.sz) ≤ uint.Z serverId)) then _ else _)%E.
+    wp_if_destruct.
+    - wp_pures. admit.
+    - wp_pures. 
+      wp_apply (wp_slice_len).
+      assert (uint.nat serverId < length s.(Server.GossipAcknowledgements))%nat
+        by word.
+      apply list_lookup_lt in H as [x H].
+      wp_apply (wp_SliceGet with "[H8]"). { iFrame. auto. }
+      iIntros "H8". wp_if_destruct.
+      + admit.
+      + wp_apply (wp_SliceGet with "[H8]"). {iFrame. auto. }
+        iIntros "H8". wp_pures.
+        wp_apply (wp_SliceSkip). { word. }
+        wp_load.
+        rewrite /operation_slice. rewrite /operation_slice'.
+        iDestruct "H6" as "(%ops & H6 & H9)".
+        unfold own_slice. unfold slice.own_slice.
+        iDestruct "H6" as "[H6 H10]".
+        wp_apply (wp_SliceAppendSlice with "[H H6]"); eauto. {
+          iFrame. simpl. unfold own_slice_small.
+  Admitted.
 
   Lemma wp_acknowledgeGossip (sv: u64*u64*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t) (s: Server.t)
     (msgv: u64*u64*u64*u64*u64*Slice.t*u64*u64*Slice.t*u64*u64*u64*u64*u64*u64*Slice.t*u64*u64)
@@ -56,8 +73,7 @@ Section heap.
     iDestruct (own_slice_small_sz with "H8") as "%H22". 
     wp_if_destruct.
     { iModIntro. iApply "H_ret". iFrame.
-    assert (uint.Z msg.(Message.S2S_Acknowledge_Gossip_Sending_ServerId) >=? length s.(Server.GossipAcknowledgements)
-            = true) by word.
+    assert (uint.Z msg.(Message.S2S_Acknowledge_Gossip_Sending_ServerId) >=? length s.(Server.GossipAcknowledgements) = true) by word.
       iSplitL.
       - unfold coq_acknowledgeGossip.
         rewrite H. iFrame. iPureIntro.

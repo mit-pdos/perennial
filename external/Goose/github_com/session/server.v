@@ -240,7 +240,10 @@ Definition acknowledgeGossip: val :=
 
 Definition getGossipOperations: val :=
   rec: "getGossipOperations" "server" "serverId" :=
-    SliceAppendSlice (struct.t Operation) slice.nil (SliceSkip (struct.t Operation) (struct.get Server "MyOperations" "server") (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") "serverId")).
+    let: "ret" := ref_to (slice.T (struct.t Operation)) (NewSlice (struct.t Operation) #0) in
+    (if: ("serverId" ≥ (slice.len (struct.get Server "GossipAcknowledgements" "server"))) || ((SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") "serverId") ≥ (slice.len (struct.get Server "MyOperations" "server")))
+    then ![slice.T (struct.t Operation)] "ret"
+    else SliceAppendSlice (struct.t Operation) (![slice.T (struct.t Operation)] "ret") (SliceSkip (struct.t Operation) (struct.get Server "MyOperations" "server") (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") "serverId"))).
 
 Definition processClientRequest: val :=
   rec: "processClientRequest" "server" "request" :=

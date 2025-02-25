@@ -242,7 +242,12 @@ func acknowledgeGossip(server Server, request Message) Server {
 }
 
 func getGossipOperations(server Server, serverId uint64) []Operation {
-	return append([]Operation(nil), server.MyOperations[server.GossipAcknowledgements[serverId]:]...)
+	var ret = make([]Operation, 0)
+	if serverId >= uint64(len(server.GossipAcknowledgements)) || (server.GossipAcknowledgements[serverId] >= uint64(len(server.MyOperations))) {
+		return ret
+	}
+
+	return append(ret, server.MyOperations[server.GossipAcknowledgements[serverId]:]...)
 }
 
 func processClientRequest(server Server, request Message) (bool, Server, Message) {

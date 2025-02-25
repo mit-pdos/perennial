@@ -237,16 +237,16 @@ Section heap.
                          (slice_val s.2,
                             #()))))))))%V.
 
-  Definition is_server (sv: u64*u64*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t) (s: Server.t) (sv_len: nat): iProp Σ :=
+  Definition is_server (sv: u64*u64*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t) (s: Server.t) (n: nat): iProp Σ :=
     ⌜sv.1.1.1.1.1.1.1 = s.(Server.Id)⌝ ∗
     ⌜sv.1.1.1.1.1.1.2 = s.(Server.NumberOfServers)⌝ ∗
-    message_slice sv.1.1.1.1.1.2 s.(Server.UnsatisfiedRequests) sv_len ∗
-    ⌜sv_len = length s.(Server.UnsatisfiedRequests)⌝ ∗
+    message_slice sv.1.1.1.1.1.2 s.(Server.UnsatisfiedRequests) n ∗
+    ⌜n = length s.(Server.VectorClock)⌝ ∗
     own_slice_small sv.1.1.1.1.2 uint64T (DfracOwn 1) s.(Server.VectorClock) ∗
-    operation_slice sv.1.1.1.2 s.(Server.OperationsPerformed) sv_len ∗
-    operation_slice sv.1.1.2 s.(Server.MyOperations) sv_len ∗
-    operation_slice sv.1.2 s.(Server.PendingOperations) sv_len ∗
-    ⌜sv_len = length s.(Server.GossipAcknowledgements)⌝ ∗
+    operation_slice sv.1.1.1.2 s.(Server.OperationsPerformed) n ∗
+    operation_slice sv.1.1.2 s.(Server.MyOperations) n ∗
+    operation_slice sv.1.2 s.(Server.PendingOperations) n ∗
+    ⌜n = length s.(Server.GossipAcknowledgements)⌝ ∗
     own_slice_small sv.2 uint64T (DfracOwn 1) s.(Server.GossipAcknowledgements).
 
 End heap.
