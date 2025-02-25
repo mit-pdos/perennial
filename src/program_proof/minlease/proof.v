@@ -426,7 +426,7 @@ Proof.
     iMod "Hmask" as "_".
     iModIntro.
     wp_pures.
-    wp_apply (wp_Assert).
+    wp_apply (control.wp_Assert).
     { apply bool_decide_true. done. }
     wp_pures.
     iModIntro.
