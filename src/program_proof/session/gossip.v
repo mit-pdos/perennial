@@ -6,7 +6,36 @@ Section heap.
 
   Context `{hG: !heapGS Σ}.
 
-  Lemma wp_acknowledgeGossip (sv: u64*u64*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t) (s: Server.t) (msgv: u64*u64*u64*u64*u64*Slice.t*u64*u64*Slice.t*u64*u64*u64*u64*u64*u64*Slice.t*u64*u64) (msg: Message.t) (n: nat) :
+  (* 
+  Lemma wp_getGossipOperations (sv: u64*u64*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t) (s: Server.t)
+    (serverId: w64) (n: nat) :
+    {{{
+          is_server sv s n ∗
+          ⌜(uint.nat serverId < length s.(Server.GossipAcknowledgements))%nat⌝ ∗
+          ⌜server.MyOperations
+    }}}
+      getGossipOperations (server_val sv) #serverId
+      {{{
+            ns , RET slice_val (ns);
+            operation_slice ns (coq_getGossipOperations s serverId) n ∗
+            is_server sv s n 
+      }}}.
+  Proof.
+    iIntros "%Φ (H1 & %H) H_ret".
+    iDestruct "H1" as "(%H1 & %H2 & H1 & %H3 & H4 & H5 & H6 & H7 & %H4 & H8)".
+    rewrite /getGossipOperations.
+    wp_pures. wp_bind (SliceSkip _ _ _)%E.
+    apply list_lookup_lt in H as [x H].
+    wp_apply (wp_SliceGet with "[H8]"). {iFrame. auto. }
+    iIntros "H8". wp_pures.
+    wp_apply (wp_SliceSkip with "[]").
+   *)
+
+    
+
+  Lemma wp_acknowledgeGossip (sv: u64*u64*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t*Slice.t) (s: Server.t)
+    (msgv: u64*u64*u64*u64*u64*Slice.t*u64*u64*Slice.t*u64*u64*u64*u64*u64*u64*Slice.t*u64*u64)
+    (msg: Message.t) (n: nat) :
     {{{
           is_server sv s n ∗ 
           is_message msgv msg n
@@ -24,9 +53,17 @@ Section heap.
     iDestruct "H2" as "(%H5 & %H6 & %H7 & %H8 & %H9 & %H10 & H9 & %H11 & %H12 & H10 & %H13 & %H14 & %H15 & %H16 & %H17 & %H18 & %H19 & H11 & %H20 & %H21)".
     wp_pures.
     wp_apply (wp_slice_len).
-    wp_if_destruct.
-    { iModIntro. iApply "H_ret". iFrame. admit. }
     iDestruct (own_slice_small_sz with "H8") as "%H22". 
+    wp_if_destruct.
+    { iModIntro. iApply "H_ret". iFrame.
+    assert (uint.Z msg.(Message.S2S_Acknowledge_Gossip_Sending_ServerId) >=? length s.(Server.GossipAcknowledgements)
+            = true) by word.
+      iSplitL.
+      - unfold coq_acknowledgeGossip.
+        rewrite H. iFrame. iPureIntro.
+        repeat split; auto.
+      - iPureIntro. repeat split; auto.
+    } 
     assert (uint.nat msgv.1.1.1.1.1.1.1.2 < length s.(Server.GossipAcknowledgements))%nat
       by word.
     apply list_lookup_lt in H as [x H].
@@ -38,10 +75,43 @@ Section heap.
     rewrite H23.
     wp_apply (slice.wp_SliceSet with "[H8]"). { iSplitL "H8".
                                                 - iApply "H8".
-                                                - iPureIntro. split; auto. admit. }
+                                                - iPureIntro. split; auto.
+                                                  unfold is_Some.
+                                                  exists (u64_IntoVal.(to_val) x).
+                                                  simpl. unfold list.untype.
+                                                  simpl. rewrite list_lookup_fmap.
+                                                  rewrite H. auto. }
     iIntros "H". wp_pures. iModIntro.
     iApply "H_ret".
-  Admitted.
-    
-    
+    iSplitL "H H1 H4 H5 H6 H7".
+    - unfold coq_acknowledgeGossip.
+      assert (uint.Z msg.(Message.S2S_Acknowledge_Gossip_Sending_ServerId) >=?
+                           length s.(Server.GossipAcknowledgements) = false) by word.
+      rewrite H0. 
+      iSplit. { auto. }
+      iSplit. { auto. }
+      iSplitL "H1". { auto. }
+      iSplit. { auto. }
+      iSplitL "H4". { auto. }
+      iSplitL "H5". { auto. }
+      iSplitL "H6". { auto. }
+      iSplitL "H7". { auto. }
+      iSplit. { simpl. iPureIntro.
+                rewrite length_insert. auto. }
+      simpl.
+      rewrite <- H14.
+      rewrite H. 
+      unfold own_slice_small.
+      assert ((<[uint.nat msgv.1.1.1.1.1.1.1.2:=#(coq_maxTwoInts x msgv.1.1.1.1.1.2)]>
+                 (list.untype s.(Server.GossipAcknowledgements))) =
+              (list.untype
+                 (<[uint.nat msgv.1.1.1.1.1.1.1.2:=coq_maxTwoInts x msg.(Message.S2S_Acknowledge_Gossip_Index)]>
+                    s.(Server.GossipAcknowledgements)))).
+      { unfold list.untype. rewrite list_fmap_insert. simpl. rewrite H16. auto. }
+      rewrite H24. iFrame.
+    - unfold is_message. iFrame.
+      iPureIntro.
+      repeat split; auto.
+  Qed.
+
 End heap.
