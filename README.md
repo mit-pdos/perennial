@@ -3,30 +3,30 @@ GooseLang files are in `goose_converison/external/Goose/github_com/session`
 Proof files are in `goose_converison/src/program_proof/session`
 
 First run git `submodule update --init --recursive`
-To compile dependencies for proofs do (`make src/program_proof/session/dependencyCheck/proof.required_vos`) for respective files  
+To compile dependencies for proofs do (`make src/program_proof/session/versionVector.required_vos`) for respective files  
 
 ## Completed equivalence proofs:
 1. compareVersionVector
 2. lexiographicCompare
 3. maxTwoInts
 4. maxTS
-5. equalSlices
-6. equalOperations
-7. deleteAtIndex
-8. sortedInsert
-9. dependencyCheck
-10. acknowledgeGossip (contains admit)
-11. getGossipOperations (contains admit)
-12. binarySearch (contains admits)
+5. oneOffVersionVector
+6. equalSlices
+7. equalOperations
+8. binarySearch
+9. sortedInsert (WIP)
+10. mergeOperations (WIP) 
+11. deleteAtIndexOperation
+12. deleteAtIndexMessage (WIP)
+13. getDataFromOperationLog
+14. acknowledgeGossip
+15. getGossipOperations (WIP)
 
 ## Functions left to complete:
-1. ProcessClientRequest (medium)
-2. oneOffVersionVector (medium)
-4. mergeOperations (medium)
-5. receiveGossip (medium)
-6. ProcessRequest (medium) 
-7. writeToServer (easy)
-8. readFromServer (easy)
+1. processClientRequest (medium)
+2. processRequest (medium)
+3. writeToServer (easy)
+4. readFromServer (easy)
 
 # Verifying concurrent, crash-safe systems with Perennial
 
