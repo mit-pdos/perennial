@@ -46,9 +46,8 @@ Definition for_postcondition_def stk E (post : val) P Φ bv : iProp Σ :=
             (∃ v, ⌜ bv = execute_val v ⌝ ∗ WP post #() @ stk; E {{ _, P }}) ∨
             ⌜ bv = break_val ⌝ ∗ Φ (execute_val #()) ∨
             (∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv).
-Definition for_postcondition_aux : seal (@for_postcondition_def). Proof. by eexists. Qed.
-Definition for_postcondition := (for_postcondition_aux).(unseal).
-Definition for_postcondition_eq : @for_postcondition = @for_postcondition_def  := (for_postcondition_aux).(seal_eq).
+Program Definition for_postcondition := unseal (_:seal (@for_postcondition_def)). Obligation 1. by eexists. Qed.
+Definition for_postcondition_unseal : for_postcondition = _ := seal_eq _.
 
 Lemma wp_for P stk E (cond body post : val) Φ :
   P -∗
@@ -64,7 +63,7 @@ Lemma wp_for P stk E (cond body post : val) Φ :
 Proof.
   iIntros "HP #Hloop".
   rewrite do_for_unseal.
-  rewrite for_postcondition_eq.
+  rewrite for_postcondition_unseal.
   iLöb as "IH".
   wp_call.
   iDestruct ("Hloop" with "HP") as "Hloop1".
@@ -118,7 +117,7 @@ Lemma wp_for_post_do (v : val) stk E (post : val) P Φ :
   WP (post #()) @ stk; E {{ _, P }} -∗
   for_postcondition stk E post P Φ (execute_val v).
 Proof.
-  iIntros "H". rewrite for_postcondition_eq /for_postcondition_def.
+  iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.
   eauto 10 with iFrame.
 Qed.
 
@@ -126,7 +125,7 @@ Lemma wp_for_post_continue stk E (post : val) P Φ :
   WP (post #()) @ stk; E {{ _, P }} -∗
   for_postcondition stk E post P Φ continue_val.
 Proof.
-  iIntros "H". rewrite for_postcondition_eq /for_postcondition_def.
+  iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.
   eauto 10 with iFrame.
 Qed.
 
@@ -134,7 +133,7 @@ Lemma wp_for_post_return stk E (post : val) P Φ v :
   Φ (return_val v) -∗
   for_postcondition stk E post P Φ (return_val v).
 Proof.
-  iIntros "H". rewrite for_postcondition_eq /for_postcondition_def.
+  iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.
   eauto 10 with iFrame.
 Qed.
 
