@@ -19,6 +19,7 @@ projs = {
     "goose": Proj("goose", "https://github.com/goose-lang/goose/", "master"),
     "new_goose": Proj("new_goose", "https://github.com/goose-lang/goose/", "new"),
     "std": Proj("std", "https://github.com/goose-lang/std", "master"),
+    "primitive": Proj("primitive", "https://github.com/goose-lang/primitive", "main"),
     "marshal": Proj("marshal", "https://github.com/tchajed/marshal", "master"),
     "examples": Proj(
         "examples", "https://github.com/mit-pdos/perennial-examples", "master"
@@ -98,6 +99,8 @@ sp.run(
         projs["marshal"].path(),
         "--std",
         projs["std"].path(),
+        "--primitive",
+        projs["primitive"].path(),
     ],
     check=True,
 )
