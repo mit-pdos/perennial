@@ -1,19 +1,10 @@
 From stdpp Require Import strings.
-From Ltac2 Require Import Ltac2.
-
-Set Primitive Projections.
-Module foo.
-Record t :=
-mk {
-    field1 : nat;
-    field2 : string;
-  }.
-End foo.
-
+From Ltac2 Require Import Ltac2 Printf.
 Import Constr.Unsafe.
 
-Import Printf.
-Ltac2 record_field_resolve (x : constr) (field_name : string) :=
+Ltac2 record_field_resolve (x : preterm) (field_name : ident) :=
+  let field_name := Ident.to_string field_name in
+  let x := Constr.pretype x in
   let ty := (Constr.type x) in
   let (ind, inst) :=
     match kind ty with
@@ -54,11 +45,30 @@ Ltac2 record_field_resolve (x : constr) (field_name : string) :=
     end in
   make (Constant proj_const inst).
 
+Module foo.
+Local Set Primitive Projections.
+Record t :=
+mk {
+    field1 : nat;
+    field2 : string;
+  }.
+End foo.
+
 Section test.
 Variable (x : foo.t).
-Ltac2 Eval (record_field_resolve constr:(x) "field1").
-Ltac2 Eval (record_field_resolve constr:(x) "field2").
-Fail Ltac2 Eval (record_field_resolve constr:(x) "field3").
-Fail Ltac2 Eval (record_field_resolve constr:(O) "field1").
-Fail Ltac2 Eval (record_field_resolve open_constr:(_) "field1").
+
+Section eval.
+Local Ltac2 Notation "record_field_resolve" x(preterm) f(ident) :=
+  record_field_resolve x f.
+
+Ltac2 Eval (record_field_resolve x field1).
+Ltac2 Eval (record_field_resolve x field2).
+Fail Ltac2 Eval (record_field_resolve x field3).
+Fail Ltac2 Eval (record_field_resolve O field1).
+Fail Ltac2 Eval (record_field_resolve _ field1).
+End eval.
+
+(* FIXME: w has type preterm but [record_field_resolve] expects an ident. *)
+(* Notation "'blah' z w" := (ltac2:(record_field_resolve z w)) (only parsing, at level 0). *)
+
 End test.
