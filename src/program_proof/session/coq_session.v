@@ -71,16 +71,14 @@ Definition coq_mergeOperations (l1: list Operation.t) (l2: list Operation.t) : (
     let output := fold_left (fun acc element => coq_sortedInsert acc element) l2 l1 in
     snd (fold_left (fun (acc: nat * list Operation.t) element =>
                       let (index, acc) := acc in
-                      if (index >? 0) then 
-                        match (output !! (uint.nat (index - 1))) with
-                        | Some v => if (coq_equalOperations element v) then
-                                      ((index + 1)%nat, acc)
-                                    else
-                                      ((index + 1)%nat,  acc ++ [element])
-                        | None => ((index + 1)%nat, acc ++ [element])
-                        end
-                      else ((index + 1)%nat, acc ++ [element]))
-           output (0%nat, [])). 
+                      match (output !! (index + 1)%nat) with
+                      | Some v => if (coq_equalOperations element v) then
+                                    ((index + 1)%nat, acc)
+                                  else
+                                    ((index + 1)%nat, acc ++ [element])
+                      | None => ((index + 1)%nat, acc ++ [element])
+                      end)
+         output (0%nat, [])).
 
 Definition coq_deleteAtIndexOperation (o : list Operation.t) index :=
   (take index o) ++ (drop (index + 1) o).
