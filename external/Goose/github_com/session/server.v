@@ -26,6 +26,7 @@ Definition Message := struct.decl [
   "S2C_Client_OperationType" :: uint64T;
   "S2C_Client_Data" :: uint64T;
   "S2C_Client_VersionVector" :: slice.T uint64T;
+  "S2C_Server_Id" :: uint64T;
   "S2C_Client_Number" :: uint64T
 ].
 
@@ -105,13 +106,11 @@ Definition oneOffVersionVector: val :=
         Continue
       else
         (if: (SliceGet uint64T "v1" (![uint64T] "i")) < (SliceGet uint64T "v2" (![uint64T] "i"))
-        then
-          "output" <-[boolT] #false;;
-          Break
-        else
-          "i" <-[uint64T] ((![uint64T] "i") + #1);;
-          Continue)));;
-    (![boolT] "output") && (![boolT] "canApply").
+        then "output" <-[boolT] #false
+        else #());;
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
+        Continue));;
+    (![boolT] "output") && (~ (![boolT] "canApply")).
 
 Definition equalSlices: val :=
   rec: "equalSlices" "s1" "s2" :=
@@ -233,12 +232,18 @@ Definition receiveGossip: val :=
 
 Definition acknowledgeGossip: val :=
   rec: "acknowledgeGossip" "server" "request" :=
-    SliceSet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request") (maxTwoInts (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request")) (struct.get Message "S2S_Acknowledge_Gossip_Index" "request"));;
-    "server".
+    (if: (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request") ≥ (slice.len (struct.get Server "GossipAcknowledgements" "server"))
+    then "server"
+    else
+      SliceSet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request") (maxTwoInts (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") (struct.get Message "S2S_Acknowledge_Gossip_Sending_ServerId" "request")) (struct.get Message "S2S_Acknowledge_Gossip_Index" "request"));;
+      "server").
 
 Definition getGossipOperations: val :=
   rec: "getGossipOperations" "server" "serverId" :=
-    SliceAppendSlice (struct.t Operation) slice.nil (SliceSkip (struct.t Operation) (struct.get Server "MyOperations" "server") (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") "serverId")).
+    let: "ret" := ref_to (slice.T (struct.t Operation)) (NewSlice (struct.t Operation) #0) in
+    (if: ("serverId" ≥ (slice.len (struct.get Server "GossipAcknowledgements" "server"))) || ((SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") "serverId") ≥ (slice.len (struct.get Server "MyOperations" "server")))
+    then ![slice.T (struct.t Operation)] "ret"
+    else SliceAppendSlice (struct.t Operation) (![slice.T (struct.t Operation)] "ret") (SliceSkip (struct.t Operation) (struct.get Server "MyOperations" "server") (SliceGet uint64T (struct.get Server "GossipAcknowledgements" "server") "serverId"))).
 
 Definition processClientRequest: val :=
   rec: "processClientRequest" "server" "request" :=
@@ -253,6 +258,7 @@ Definition processClientRequest: val :=
         struct.storeF Message "S2C_Client_OperationType" "reply" #0;;
         struct.storeF Message "S2C_Client_Data" "reply" (getDataFromOperationLog (struct.get Server "OperationsPerformed" "server"));;
         struct.storeF Message "S2C_Client_VersionVector" "reply" (struct.get Server "VectorClock" "server");;
+        struct.storeF Message "S2C_Server_Id" "reply" (struct.get Server "Id" "server");;
         struct.storeF Message "S2C_Client_Number" "reply" (struct.get Message "C2S_Client_Id" "request");;
         (#true, "server", "reply")
       else
@@ -269,6 +275,7 @@ Definition processClientRequest: val :=
         struct.storeF Message "S2C_Client_OperationType" "reply" #1;;
         struct.storeF Message "S2C_Client_Data" "reply" #0;;
         struct.storeF Message "S2C_Client_VersionVector" "reply" (SliceAppendSlice uint64T slice.nil (struct.get Server "VectorClock" "server"));;
+        struct.storeF Message "S2C_Server_Id" "reply" (struct.get Server "Id" "server");;
         struct.storeF Message "S2C_Client_Number" "reply" (struct.get Message "C2S_Client_Id" "request");;
         (#true, "server", "reply"))).
 
