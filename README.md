@@ -15,9 +15,9 @@ To compile dependencies for proofs do (`make src/program_proof/session/versionVe
 7. equalOperations
 8. binarySearch
 9. sortedInsert (WIP)
-10. mergeOperations (WIP) 
+10. mergeOperations 
 11. deleteAtIndexOperation
-12. deleteAtIndexMessage (WIP)
+12. deleteAtIndexMessage 
 13. getDataFromOperationLog
 14. acknowledgeGossip
 15. getGossipOperations (WIP)
