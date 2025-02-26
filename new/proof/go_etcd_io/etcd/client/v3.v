@@ -3,25 +3,30 @@ Require Import New.generatedproof.go_etcd_io.etcd.client.v3.
 Require Import New.proof.proof_prelude.
 From Perennial.Helpers Require Import Transitions.
 
-Inductive ecomp (E : Type → Type) : Type → Type :=
-| Ret {A} (a : A) : ecomp E A
-| Effect {A} (e : E A) : ecomp E A
-| Bind {A B} (k : A → ecomp E B) (e : ecomp E A) : ecomp E B.
+Inductive ecomp (E : Type → Type) (R : Type) : Type :=
+| Ret (r : R) : ecomp E R
+| Effect {A} (e : E A) (k : A → ecomp E R) : ecomp E R
+(* Having a separate [Bind] permits binding at pure computation steps, whereas
+   binding only in [Effect] results in a shallower (and thus easier to reason
+   about) embedding. *)
+.
 
 Arguments Ret {_ _} (_).
-Arguments Effect {_ _} (_).
-Arguments Bind {_ _ _} (_ _).
+Arguments Effect {_ _ _} (_).
 
-Instance ecomp_MBind E : MBind (ecomp E) := (@Bind E).
+Fixpoint ecomp_bind E {A B} (kx : A → ecomp E B) (x : ecomp E A) : (ecomp E B) :=
+  match x with
+  | Ret y => (kx y)
+  | Effect e k => (Effect e (λ c, ecomp_bind E kx (k c)))
+  end.
+Instance ecomp_MBind E : MBind (ecomp E) := @ecomp_bind E.
+
 Instance ecomp_MRet E : MRet (ecomp E) := (@Ret E).
 
 Fixpoint denote `{MBind M} `{!MRet M} {E R} (handler : ∀ A (e : E A), M A) (e : ecomp E R) : M R :=
   match e with
   | Ret a => mret a
-  | Effect e => (handler _ e)
-  | Bind k e =>
-      v ← (denote handler e);
-      denote handler (k v)
+  | Effect e k => v ← (handler _ e); denote handler (k v)
   end.
 
 Existing Instance fallback_genPred.
@@ -98,6 +103,8 @@ Definition handle_etcdE (t : w64) (A : Type) (e : etcdE A) : relation.t EtcdStat
 Definition interp {A} (time_of_execution : w64) (e : ecomp etcdE A) : relation.t EtcdState.t A :=
   denote (handle_etcdE time_of_execution) e.
 
+Definition eff {E R} (e : E R) : ecomp E R := Effect e Ret.
+
 (** This covers all transitions of the etcd state that are not tied to a client
    API call, e.g. lease expiration happens "in the background". This will be
    called as a prelude by all the client-facing operations, since it is sound to
@@ -109,11 +116,11 @@ Definition SingleSpontaneousTransition : ecomp etcdE () :=
   (* expire some lease *)
   (* XXX: this is a "partial" transition: it is not always possible to expire a
      lease. *)
-  time ← Effect GetTime;
-  σ ← Effect GetState;
-  lease_id ← Effect $ SuchThat (λ l, ∃ exp, σ.(EtcdState.lease_expiration) !! l = (Some exp) ∧
+  time ← eff GetTime;
+  σ ← eff GetState;
+  lease_id ← eff $ SuchThat (λ l, ∃ exp, σ.(EtcdState.lease_expiration) !! l = (Some exp) ∧
                                      uint.nat time > uint.nat exp);
-  Effect $ SetState (set EtcdState.lease_expiration (delete lease_id) σ).
+  eff $ SetState (set EtcdState.lease_expiration (delete lease_id) σ).
 
 Lemma SingleSpontaneousTransition_monotonic (time time' : w64) σ σ' :
   uint.nat time < uint.nat time' →
@@ -122,18 +129,18 @@ Lemma SingleSpontaneousTransition_monotonic (time time' : w64) σ σ' :
 Proof.
   intros Htime Hstep.
   rewrite /SingleSpontaneousTransition in Hstep |- *.
-  rewrite /interp /= /mbind /relation_mbind in Hstep.
+  rewrite /interp /= /mbind /relation_mbind /mret /relation_mret in Hstep.
   destruct Hstep as (? & ? & [-> ->] & Hstep).
   destruct Hstep as (? & ? & [-> ->] & Hstep).
-  destruct Hstep as (? & ? & [Hstep ->] & ->).
-  destruct Hstep as (? & Hlookup & Hgt).
+  destruct Hstep as (? & ? & [(? & Hexp & Hlt) ->] & Hstep).
+  destruct Hstep as (? & ? & -> & _ & ->).
   repeat econstructor; try done.
   lia.
 Qed.
 
 (** This does a non-deterministic number of spontaneous transitions. *)
 Definition SpontaneousTransition : ecomp etcdE unit :=
-  num_steps ← Effect $ SuchThat (λ (_ : nat), True);
+  num_steps ← eff $ SuchThat (λ (_ : nat), True);
   Nat.iter num_steps (λ p, p;; SingleSpontaneousTransition) (mret ()).
 
 Module LeaseGrantRequest.
@@ -160,17 +167,17 @@ Definition LeaseGrant (req : LeaseGrantRequest.t) : ecomp etcdE LeaseGrantRespon
   (* FIXME: add this back *)
   (* SpontaneousTransition;; *)
   (* req.TTL is advisory, so it is ignored. *)
-  ttl ← Effect $ SuchThat (λ _, True);
-  σ ← Effect GetState;
+  ttl ← eff $ SuchThat (λ _, True);
+  σ ← eff GetState;
   lease_id ← (if decide (req.(LeaseGrantRequest.ID) = (W64 0)) then
-                Effect $ SuchThat (λ lease_id, lease_id ∉ σ.(EtcdState.used_lease_ids))
+                eff $ SuchThat (λ lease_id, lease_id ∉ σ.(EtcdState.used_lease_ids))
               else
-                (Effect $ Assert (req.(LeaseGrantRequest.ID) ∉ σ.(EtcdState.used_lease_ids));;
+                (eff $ Assert (req.(LeaseGrantRequest.ID) ∉ σ.(EtcdState.used_lease_ids));;
                  mret req.(LeaseGrantRequest.ID)));
-  time ← Effect GetTime;
+  time ← eff GetTime;
   let σ := (set EtcdState.used_lease_ids (λ old, {[lease_id]} ∪ old) σ) in
   let σ := (set EtcdState.lease_expiration <[lease_id := (word.add time ttl)]> σ) in
-  Effect (SetState σ);;
+  eff (SetState σ);;
   mret (LeaseGrantResponse.mk lease_id ttl).
 
 Module LeaseKeepAliveRequest.
@@ -210,7 +217,7 @@ Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKee
     small?
  *)
   SpontaneousTransition;;
-  σ ← Effect $ GetState;
+  σ ← eff $ GetState;
   (* This is conservative. lessor.go looks like it avoids renewing a lease
      if its expiration is in the past, but it's actually possible for it to
      still renew something that would have been considered expired here because
@@ -219,14 +226,14 @@ Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKee
   match σ.(EtcdState.lease_expiration) !! req.(LeaseKeepAliveRequest.ID) with
   | None => mret $ LeaseKeepAliveResponse.mk (W64 0) req.(LeaseKeepAliveRequest.ID)
   | Some expiration =>
-      ttl ← Effect $ SuchThat (λ _, True);
-      time ← Effect $ GetTime;
+      ttl ← eff $ SuchThat (λ _, True);
+      time ← eff $ GetTime;
       let new_expiration_lower := (word.add time ttl) in
       let new_expiration := if decide (sint.Z new_expiration_lower < sint.Z expiration) then
                               expiration
                             else
                               new_expiration_lower in
-      Effect $ SetState (set EtcdState.lease_expiration <[req.(LeaseKeepAliveRequest.ID) := new_expiration]> σ);;
+      eff $ SetState (set EtcdState.lease_expiration <[req.(LeaseKeepAliveRequest.ID) := new_expiration]> σ);;
       mret $ LeaseKeepAliveResponse.mk ttl req.(LeaseKeepAliveRequest.ID)
   end.
 
@@ -276,6 +283,7 @@ Proof.
   simpl.
   destruct decide.
   {
+    simpl.
     iIntros "* %Hnot".
     iIntros (?) "Htime".
     iFrame "Htime".
