@@ -58,7 +58,7 @@ mk {
        incorrectly see its keys still attached with its leaseid.
      *)
     used_lease_ids : gset w64;
-    lease_expiration : gmap w64 (option w64); (* [None] means the lease has been expired. *)
+    lease_expiration : gmap w64 w64; (* If an ID is used but not in here, then it has been expired. *)
   }.
 
 Global Instance settable : Settable _ :=
@@ -111,9 +111,9 @@ Definition SingleSpontaneousTransition : ecomp etcdE () :=
      lease. *)
   time ← Effect GetTime;
   σ ← Effect GetState;
-  lease_id ← Effect $ SuchThat (λ l, ∃ exp, σ.(EtcdState.lease_expiration) !! l = Some (Some exp) ∧
+  lease_id ← Effect $ SuchThat (λ l, ∃ exp, σ.(EtcdState.lease_expiration) !! l = (Some exp) ∧
                                      uint.nat time > uint.nat exp);
-  Effect $ SetState (set EtcdState.lease_expiration <[ lease_id := None ]> σ).
+  Effect $ SetState (set EtcdState.lease_expiration (delete lease_id) σ).
 
 Lemma SingleSpontaneousTransition_monotonic (time time' : w64) σ σ' :
   uint.nat time < uint.nat time' →
@@ -169,7 +169,7 @@ Definition LeaseGrant (req : LeaseGrantRequest.t) : ecomp etcdE LeaseGrantRespon
                  mret req.(LeaseGrantRequest.ID)));
   time ← Effect GetTime;
   let σ := (set EtcdState.used_lease_ids (λ old, {[lease_id]} ∪ old) σ) in
-  let σ := (set EtcdState.lease_expiration <[lease_id := Some (word.add time ttl)]> σ) in
+  let σ := (set EtcdState.lease_expiration <[lease_id := (word.add time ttl)]> σ) in
   Effect (SetState σ);;
   mret (LeaseGrantResponse.mk lease_id ttl).
 
@@ -218,8 +218,15 @@ Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKee
      promotion. *)
   match σ.(EtcdState.lease_expiration) !! req.(LeaseKeepAliveRequest.ID) with
   | None => mret $ LeaseKeepAliveResponse.mk (W64 0) req.(LeaseKeepAliveRequest.ID)
-  | Some _ =>
+  | Some expiration =>
       ttl ← Effect $ SuchThat (λ _, True);
+      time ← Effect $ GetTime;
+      let new_expiration_lower := (word.add time ttl) in
+      let new_expiration := if decide (sint.Z new_expiration_lower < sint.Z expiration) then
+                              expiration
+                            else
+                              new_expiration_lower in
+      Effect $ SetState (set EtcdState.lease_expiration <[req.(LeaseKeepAliveRequest.ID) := new_expiration]> σ);;
       mret $ LeaseKeepAliveResponse.mk ttl req.(LeaseKeepAliveRequest.ID)
   end.
 
