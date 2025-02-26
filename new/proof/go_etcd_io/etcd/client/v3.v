@@ -1,7 +1,6 @@
 Require Import New.code.go_etcd_io.etcd.client.v3.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.
 Require Import New.proof.proof_prelude.
-From Perennial.Helpers Require Import Transitions.
 
 Inductive ecomp (E : Type → Type) (R : Type) : Type :=
 | Ret (r : R) : ecomp E R
@@ -233,8 +232,62 @@ Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKee
                               expiration
                             else
                               new_expiration_lower in
+      (* TODO: delete attached keys *)
       eff $ SetState (set EtcdState.lease_expiration <[req.(LeaseKeepAliveRequest.ID) := new_expiration]> σ);;
       mret $ LeaseKeepAliveResponse.mk ttl req.(LeaseKeepAliveRequest.ID)
+  end.
+
+Module PutRequest.
+Record t :=
+mk {
+    key : list w8;
+    value : list w8;
+    lease : w64;
+    prev_kv : bool;
+    ignore_value : bool;
+    ignore_lease : bool;
+  }.
+Global Instance settable : Settable _ :=
+  settable! mk < key; value; lease; prev_kv; ignore_value; ignore_lease>.
+End PutRequest.
+
+Module PutResponse.
+Record t :=
+mk {
+    (* TODO: add response header *)
+    (* header : ResponseHeader.t; *)
+    prev_kv : option KeyValue.t;
+  }.
+Global Instance settable : Settable _ :=
+  settable! mk < prev_kv>.
+End PutResponse.
+
+(* server/etcdserver/txn.go:58, then
+   server/storage/mvcc/kvstore_txn.go:196 *)
+Definition Put (req : PutRequest.t) : ecomp etcdE (option PutResponse.t) :=
+  SpontaneousTransition;;
+  σ ← eff GetState;
+  let kvs := default ∅ (σ.(EtcdState.key_values) !! σ.(EtcdState.revision)) in
+  (* NOTE: could use [Range] here. *)
+  let prev_kv := kvs !! req.(PutRequest.key) in
+
+  (* The Go code uses early returns, which this mimics. *)
+  let opt_computation :=
+    (value ← (if req.(PutRequest.ignore_value) then KeyValue.value <$> prev_kv else mret req.(PutRequest.value));
+     lease ← (if req.(PutRequest.ignore_lease) then KeyValue.lease <$> prev_kv else mret req.(PutRequest.lease));
+     let ret_prev_kv := (if req.(PutRequest.prev_kv) then prev_kv else None) in
+     let prev_ver := default (W64 0) (KeyValue.version <$> prev_kv) in
+     let create_revision := default σ.(EtcdState.revision) (KeyValue.create_revision <$> prev_kv) in
+     let ver := (word.add prev_ver (W64 1)) in (* should this handle overflow? *)
+     (* FIXME: attach/unattach leases *)
+     Some (
+         (* FIXME: update state *)
+         Ret $ Some (PutResponse.mk ret_prev_kv)
+    ))
+  in
+  match opt_computation with
+  | None => Ret None
+  | Some c => c
   end.
 
 Section spec.
