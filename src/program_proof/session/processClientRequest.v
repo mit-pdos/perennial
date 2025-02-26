@@ -80,7 +80,6 @@ Section heap.
       rewrite drop_drop. f_equal.
   Qed.
 
-  (*
   Lemma wp_deleteAtIndexMessage (s: Slice.t) (index: w64) (l: list Message.t) (n: nat) :
     {{{
         ⌜0 <= uint.nat index < length l⌝ ∗   
@@ -92,8 +91,50 @@ Section heap.
         message_slice ns (coq_deleteAtIndexMessage l (uint.nat index)) n
     }}}.
   Proof.
-  Admitted.
-  *)
+    rewrite/ deleteAtIndexMessage. rename s into s1. iIntros (Φ) "[%H_index (%ops1 & H_s1 & H_ops1)] HΦ".
+    iPoseProof (big_sepL2_length with "[$H_ops1]") as "%claim1".
+    iPoseProof (own_slice_sz with "[$H_s1]") as "%claim2".
+    wp_pures. wp_apply wp_NewSlice. iIntros "%s2 H_s2". wp_apply wp_ref_to; auto.
+    iIntros "%ret H_ret". wp_pures.
+    iAssert ⌜uint.Z index ≤ uint.Z s1 .(Slice.cap)⌝%I as "%H_s_cap".
+    { iPoseProof (own_slice_wf with "[$H_s1]") as "%claim3".
+      iPoseProof (big_sepL2_length with "[$H_ops1]") as "%claim4".
+      iPoseProof (own_slice_sz with "[$H_s1]") as "%claim5".
+      iPureIntro. word.
+    }
+    iPoseProof (own_slice_cap_wf with "[H_s1]") as "%claim3".
+    { iDestruct "H_s1" as "[H1_s1 H2_s1]". iFrame. }
+    iAssert ⌜uint.Z index ≤ length ops1⌝%I as "%H_ops1_len".
+    { iPureIntro. word. }
+    wp_apply (wp_SliceTake with "[H_s1 H_s2 H_ops1 H_ret HΦ]"); eauto.
+    iModIntro. wp_load.
+    iAssert ⌜uint.Z (w64_word_instance .(word.add) index (W64 1)) ≤ length ops1⌝%I as "%YES". { word. }
+    iPoseProof (slice_small_split _ _ _ _ _ YES with "[H_s1]") as "[H1_s1 H3_s1]".
+    { iApply (own_slice_to_small with "[$H_s1]"). }
+    assert (forall A : Type, forall x : A, replicate (uint.nat (W64 0)) x = []) as YES1 by reflexivity.
+    rewrite YES1. simpl. clear YES1.
+    assert (uint.Z index ≤ length (take (uint.nat (w64_word_instance .(word.add) index (W64 1))) ops1)) as YES2. { rewrite length_take. word. }
+    iPoseProof (slice_small_split _ _ _ _ _ YES2 with "[$H1_s1]") as "[H1_s1 H2_s1]".
+    wp_apply (wp_SliceAppendSlice with "[H_s2 H1_s1]"); eauto.
+    { done. } { iFrame. } iIntros "%s' [H1_s' H2_s']". wp_pures. wp_store.
+    wp_apply (wp_SliceSkip); eauto. { word. } wp_load. wp_apply (wp_SliceAppendSlice with "[H1_s' H3_s1]"). { done. }
+    { simpl in *. iFrame. } iIntros "%s'' [H1_s'' H2_s'']". iApply "HΦ".
+    unfold message_slice, message_slice'. iExists (take (uint.nat index) ops1 ++ drop (uint.nat index + 1)%nat ops1). iSplitR "H_ops1".
+    - remember (uint.nat index) as k eqn: H_k in *.
+      replace (uint.nat (w64_word_instance .(word.add) index (W64 1))) with (k + 1)%nat in * by word.
+      rewrite take_take. replace (k `min` (k + 1))%nat with k by word. iFrame.
+    - unfold coq_deleteAtIndexMessage. iPoseProof (big_sepL2_length with "[$H_ops1]") as "%YES1".
+      iApply big_sepL2_app_equiv. { do 2 rewrite length_take; word. }
+      rewrite <- take_drop with (l := ops1) (i := uint.nat index) at 1.
+      rewrite <- take_drop with (l := l) (i := uint.nat index) at 1.
+      iAssert (([∗ list] mv;m ∈ take (uint.nat index) ops1;take (uint.nat index) l, is_message mv m n) ∗ ([∗ list] mv;m ∈ drop (uint.nat index) ops1;drop (uint.nat index) l, is_message mv m n))%I with "[H_ops1]" as "[H_prefix H_suffix]".
+      { iApply (big_sepL2_app_equiv with "[$H_ops1]"). do 2 rewrite length_take. word. }
+      iFrame. destruct (drop (uint.nat index) ops1) as [ | hd tl] eqn: H_obs.
+      + iPoseProof (big_sepL2_nil_inv_l with "[$H_suffix]") as "%H_obs'".
+        do 2 rewrite <- drop_drop. rewrite H_obs H_obs'. simpl. done.
+      + iPoseProof (big_sepL2_cons_inv_l with "[$H_suffix]") as "(%hd' & %tl' & %H_obs' & H1 & H2)".
+        do 2 rewrite <- drop_drop. rewrite H_obs H_obs'. simpl. done.
+  Qed.
 
   Lemma wp_getDataFromOperationLog (s: Slice.t) (l: list Operation.t) (n: nat) :
     {{{
