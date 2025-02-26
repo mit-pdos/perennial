@@ -125,12 +125,4 @@ From Perennial.program_proof.session Require sort.
 From Perennial.program_proof.session Require versionVector.
 From Perennial.program_proof.session Require processClientRequest.
 From Perennial.program_proof.session Require processRequest.
-
-(* session proof *)
-(* From Perennial.program_proof.session Require mergeOperations.proof.      *)
-(* From Perennial.program_proof.session Require newServer.proof.            *)
-(* From Perennial.program_proof.session Require newSortOperation.proof.     *)
-(* From Perennial.program_proof.session Require operations.proof.           *)
-(* From Perennial.program_proof.session Require processClientRequest.proof. *)
-(* From Perennial.program_proof.session Require server.proof.               *)
-(* From Perennial.program_proof.session Require sort.proof.                 *)
+From Perennial.program_proof.session Require gossip.
