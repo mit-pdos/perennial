@@ -160,7 +160,7 @@ Definition LeaseGrant (req : LeaseGrantRequest.t) : ecomp etcdE LeaseGrantRespon
   (* FIXME: add this back *)
   (* SpontaneousTransition;; *)
   (* req.TTL is advisory, so it is ignored. *)
-  ttl ← Effect $ SuchThat (λ (_ : w64), True);
+  ttl ← Effect $ SuchThat (λ _, True);
   σ ← Effect GetState;
   lease_id ← (if decide (req.(LeaseGrantRequest.ID) = (W64 0)) then
                 Effect $ SuchThat (λ lease_id, lease_id ∉ σ.(EtcdState.used_lease_ids))
@@ -192,6 +192,37 @@ Global Instance settable : Settable _ :=
   settable! mk <TTL; ID>.
 End LeaseKeepAliveResponse.
 
+Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKeepAliveResponse.t :=
+  (* XXX *)
+  (* if the lease is expired, returns TTL=0. *)
+  (* Q: if the lease expiration time is in the past, is it guaranteed that
+     the lease is expired (i.e. its attached keys are now deleted)? Or does a
+     failed KeepAlive merely mean a _lack_ of new knowledge of a lower bound on
+     lease expiration?
+     A comment in v3_server.go says:
+    // A expired lease might be pending for revoking or going through
+    // quorum to be revoked. To be accurate, renew request must wait for the
+    // deletion to complete.
+    But the following code actually also returns if the lessor gets demoted, in
+    which case the lease expiration time is extended to "forever".
+    Q: when refreshing, "extend" is set to 0. Is it possible for `remainingTTL >
+    0` when reaching lessor.go:441, resulting in the `Lease` expiry being too
+    small?
+ *)
+  SpontaneousTransition;;
+  σ ← Effect $ GetState;
+  (* This is conservative. lessor.go looks like it avoids renewing a lease
+     if its expiration is in the past, but it's actually possible for it to
+     still renew something that would have been considered expired here because
+     of leader change, which sets expiry to "forever" before restarting it upon
+     promotion. *)
+  match σ.(EtcdState.lease_expiration) !! req.(LeaseKeepAliveRequest.ID) with
+  | None => mret $ LeaseKeepAliveResponse.mk (W64 0) req.(LeaseKeepAliveRequest.ID)
+  | Some _ =>
+      ttl ← Effect $ SuchThat (λ _, True);
+      mret $ LeaseKeepAliveResponse.mk ttl req.(LeaseKeepAliveRequest.ID)
+  end.
+
 Section spec.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Definition Spec Resp := (Resp → iProp Σ) → iProp Σ.
@@ -208,7 +239,6 @@ Context `{!ghost_varG Σ EtcdState.t}.
 (* This is only in grove_ffi. *)
 Axiom own_time : w64 → iProp Σ.
 
-(* Handle etcd effects as a in the [relation.t EtcdState.t] monad. *)
 Definition handle_etcdE_spec (γ : gname) (A : Type) (e : etcdE A) : Spec A :=
   (match e with
    | GetState => λ Φ, (∃ σ q, ghost_var γ q σ ∗ (ghost_var γ q σ -∗ Φ σ))
