@@ -119,6 +119,7 @@ Definition SingleSpontaneousTransition : ecomp etcdE () :=
   σ ← eff GetState;
   lease_id ← eff $ SuchThat (λ l, ∃ exp, σ.(EtcdState.lease_expiration) !! l = (Some exp) ∧
                                      uint.nat time > uint.nat exp);
+  (* FIXME: delete attached keys *)
   eff $ SetState (set EtcdState.lease_expiration (delete lease_id) σ).
 
 Lemma SingleSpontaneousTransition_monotonic (time time' : w64) σ σ' :
@@ -140,7 +141,7 @@ Qed.
 (** This does a non-deterministic number of spontaneous transitions. *)
 Definition SpontaneousTransition : ecomp etcdE unit :=
   num_steps ← eff $ SuchThat (λ (_ : nat), True);
-  Nat.iter num_steps (λ p, p;; SingleSpontaneousTransition) (mret ()).
+  Nat.iter num_steps (λ p, SingleSpontaneousTransition;; p) (mret ()).
 
 Module LeaseGrantRequest.
 Record t :=
@@ -166,7 +167,7 @@ Definition LeaseGrant (req : LeaseGrantRequest.t) : ecomp etcdE LeaseGrantRespon
   (* FIXME: add this back *)
   (* SpontaneousTransition;; *)
   (* req.TTL is advisory, so it is ignored. *)
-  ttl ← eff $ SuchThat (λ _, True);
+  ttl ← eff $ SuchThat (λ ttl, uint.nat ttl > 0);
   σ ← eff GetState;
   lease_id ← (if decide (req.(LeaseGrantRequest.ID) = (W64 0)) then
                 eff $ SuchThat (λ lease_id, lease_id ∉ σ.(EtcdState.used_lease_ids))
@@ -214,7 +215,7 @@ Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKee
     Q: when refreshing, "extend" is set to 0. Is it possible for `remainingTTL >
     0` when reaching lessor.go:441, resulting in the `Lease` expiry being too
     small?
- *)
+  *)
   SpontaneousTransition;;
   σ ← eff $ GetState;
   (* This is conservative. lessor.go looks like it avoids renewing a lease
@@ -232,7 +233,6 @@ Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKee
                               expiration
                             else
                               new_expiration_lower in
-      (* TODO: delete attached keys *)
       eff $ SetState (set EtcdState.lease_expiration <[req.(LeaseKeepAliveRequest.ID) := new_expiration]> σ);;
       mret $ LeaseKeepAliveResponse.mk ttl req.(LeaseKeepAliveRequest.ID)
   end.
@@ -277,11 +277,16 @@ Definition Put (req : PutRequest.t) : ecomp etcdE (option PutResponse.t) :=
      lease ← (if req.(PutRequest.ignore_lease) then KeyValue.lease <$> prev_kv else mret req.(PutRequest.lease));
      let ret_prev_kv := (if req.(PutRequest.prev_kv) then prev_kv else None) in
      let prev_ver := default (W64 0) (KeyValue.version <$> prev_kv) in
-     let create_revision := default σ.(EtcdState.revision) (KeyValue.create_revision <$> prev_kv) in
+     let mod_revision := (word.add σ.(EtcdState.revision) 1) in
+     let create_revision := default mod_revision (KeyValue.create_revision <$> prev_kv) in
      let ver := (word.add prev_ver (W64 1)) in (* should this handle overflow? *)
-     (* FIXME: attach/unattach leases *)
+     let new_kv := KeyValue.mk req.(PutRequest.key) create_revision mod_revision ver value lease in
+     let σ := set EtcdState.key_values <[mod_revision := <[req.(PutRequest.key) := new_kv]> kvs]> σ in
+     let σ := set EtcdState.revision (const mod_revision) σ in
+     (* updating [key_values] handles attaching/detaching leases, since the map
+        itself defines the association from LeaseID to Key. *)
      Some (
-         (* FIXME: update state *)
+         eff $ SetState $ σ;;
          Ret $ Some (PutResponse.mk ret_prev_kv)
     ))
   in
