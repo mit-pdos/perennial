@@ -1,7 +1,36 @@
+From stdpp Require Import sorting.
 Require Import New.code.go_etcd_io.etcd.client.v3.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.
 Require Import New.proof.proof_prelude.
 
+Inductive ecomp (E : Type → Type) (EK : Type → Type → Type) (R : Type) : Type :=
+| Effect {A} (e : E A) (k : A → ecomp E EK R) : ecomp E EK R
+| EffectK {A} (e : EK A R) (k : A → ecomp E EK R) : ecomp E EK R.
+
+Arguments Effect {_ _ _ _} (_ _).
+Arguments EffectK {_ _ _ _} (_ _).
+
+Definition Handler E (M : Type → Type) := ∀ A (e : E A), M A.
+Definition HandlerK EK (M : Type → Type) := ∀ A R (e : EK A R) (k : A → M R), M R.
+
+Fixpoint denote {M E EK R} `{!MBind M}
+  (handler : Handler E M) (handlerK : HandlerK EK M)
+  (e : ecomp E EK R)
+  : M R :=
+  match e with
+  | Effect e k => v ← handler _ e; denote handler handlerK (k v)
+  | EffectK e k => handlerK _ _ e (λ a, denote handler handlerK (k a))
+  end.
+
+(* Definition Handler E M := ∀ (A B : Type) (e : E A) (k : A → M B), M B. *)
+Fixpoint ecomp_bind {E Ek A B} (kx : A → ecomp E Ek B) (x : ecomp E Ek A) : (ecomp E Ek B) :=
+  match x with
+  | Effect e k => (Effect e (λ c, ecomp_bind kx (k c)))
+  | EffectK e k => (EffectK e (λ c, ecomp_bind kx (k c)))
+  end.
+Instance ecomp_MBind E : MBind (ecomp E) := @ecomp_bind E.
+
+(*
 Inductive ecomp (E : Type → Type) (R : Type) : Type :=
 | Ret (r : R) : ecomp E R
 | Effect {A} (e : E A) (k : A → ecomp E R) : ecomp E R
@@ -26,7 +55,7 @@ Fixpoint denote `{MBind M} `{!MRet M} {E R} (handler : ∀ A (e : E A), M A) (e 
   match e with
   | Ret a => mret a
   | Effect e k => v ← (handler _ e); denote handler (k v)
-  end.
+  end. *)
 
 Existing Instance fallback_genPred.
 Existing Instances r_mbind r_mret r_fmap.
@@ -71,6 +100,8 @@ End EtcdState.
 
 (** Effects for etcd specification. *)
 Inductive etcdE : Type → Type :=
+| Return {R} (r : R) : etcdE R
+| Diverge : etcdE False
 | SuchThat {A} (pred : A → Prop) : etcdE A
 | GetState : etcdE EtcdState.t
 | SetState (σ' : EtcdState.t) : etcdE unit
@@ -89,20 +120,42 @@ Instance relation_mbind A : MBind (relation.t A) :=
       kmb a σmiddle σ' b.
 
 (* Handle etcd effects as a in the [relation.t EtcdState.t] monad. *)
-Definition handle_etcdE (t : w64) (A : Type) (e : etcdE A) : relation.t EtcdState.t A :=
-  match e with
-  | SuchThat pred => λ σ σ' a, pred a ∧ σ' = σ
-  | GetState => λ σ σ' σret, σ' = σ ∧ σret = σ
-  | SetState σnew => λ σ σ' _, σ' = σnew
-  | GetTime => λ σ σ' tret, tret = t ∧ σ' = σ
-  | Assume P => λ σ σ' tret, P ∧ σ = σ'
-  | _ => λ σ σ' _, False (* XXX: the assert effect should be interpreted when converting to Iris precondition? *)
+
+Definition Handler E M := ∀ (A B : Type) (e : E A) (k : A → M B), M B.
+Definition SimpleHandler E (M : Type → Type) := ∀ A (e : E A), M A.
+Definition SimplerHandler E M := ∀ A (e : E A), (M A) + (∀ B (k : A → M B), M B).
+
+Definition from_simple_handler {E M} `{!MBind M} (simple_handler : SimpleHandler E M)
+  : ∀ (A B : Type) (e : E A) (k : A → M B), M B :=
+  λ _ _ e k, a ← simple_handler _ e; k a.
+
+Definition from_simpler_handler {E M} `{!MBind M} (simpler_handler : SimplerHandler E M) :
+  ∀ (A B : Type) (e : E A) (k : A → M B), M B :=
+  λ _ _ e k,
+  match simpler_handler _ e with
+  | inl comp => (a ← comp; k a)
+  | inr handle_rest => (handle_rest _ k)
   end.
 
-Definition interp {A} (time_of_execution : w64) (e : ecomp etcdE A) : relation.t EtcdState.t A :=
-  denote (handle_etcdE time_of_execution) e.
+Definition simpler_handler_etcdE (t : w64) : SimplerHandler etcdE (relation.t EtcdState.t) :=
+  λ A e,
+  match e with
+  | SuchThat pred => inl $ λ σ σ' a, pred a ∧ σ' = σ
+  | GetState => inl $ λ σ σ' σret, σ' = σ ∧ σret = σ
+  | SetState σnew => inl $ λ σ σ' _, σ' = σnew
+  | GetTime => inl $ λ σ σ' tret, tret = t ∧ σ' = σ
+  | Assume P => inl $ λ σ σ' tret, P ∧ σ = σ'
+  | Assert P => inl $ λ σ σ' tret, (P → σ = σ')
+  | Diverge => inl $ λ σ σ' _, False
+  | Return _ => inr $ λ B k, λ σ σ' r, False
+  end.
 
-Definition eff {E R} (e : E R) : ecomp E R := Effect e Ret.
+Definition handler_etcdE t := from_simpler_handler (simpler_handler_etcdE t).
+
+Definition interp {A} (time_of_execution : w64) (e : ecomp etcdE A) : relation.t EtcdState.t A :=
+  denote2 (handler_etcdE time_of_execution) e.
+
+Definition eff {E R} (e : E R) : ecomp E R := Effect2 e Ret.
 
 (** This covers all transitions of the etcd state that are not tied to a client
    API call, e.g. lease expiration happens "in the background". This will be
@@ -236,6 +289,73 @@ Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKee
       eff $ SetState (set EtcdState.lease_expiration <[req.(LeaseKeepAliveRequest.ID) := new_expiration]> σ);;
       mret $ LeaseKeepAliveResponse.mk ttl req.(LeaseKeepAliveRequest.ID)
   end.
+
+Module RangeRequest.
+(* sort order *)
+Definition NONE := (W32 0).
+Definition ASCEND := (W32 1).
+Definition DESCEND := (W32 2).
+
+(* sort target *)
+Definition KEY := (W32 0).
+Definition VERSION := (W32 1).
+Definition MOD := (W32 2).
+Definition VALUE := (W32 3).
+
+Record t :=
+mk {
+    key : list w8;
+    range_end : list w8;
+    limit : list w8;
+    revision : list w8;
+    sort_order : w32;
+    sort_target : w32;
+    serializable : bool;
+    keys_only : bool;
+    count_only : bool;
+    min_mod_revision : w64;
+    max_mod_revision : w64;
+    min_create_revision : w64;
+    max_create_revision : w64;
+  }.
+End RangeRequest.
+
+Module RangeResponse.
+Record t :=
+mk {
+    kvs : list KeyValue.t;
+    more : bool;
+    count : w64;
+  }.
+End RangeResponse.
+
+Search (list _ → list _ → Prop).
+
+Search order list.
+(* Early return:
+
+   EarlyReturn x; e
+
+   Should equal `EarlyReturn x`
+   interp
+ *)
+Definition key_le (key1 key2 : list w8) : bool :=
+  match key1 key2 with
+  | (_ :: _) nil =>
+  end
+.
+
+(* txn.go:152 which calls
+   kvstore_txn.go:72 *)
+Definition Range (req : RangeRequest.t) : ecomp etcdE (option RangeResponse.t) :=
+  kvs ← eff $ SuchThat
+    (λ kvs,
+       ∀ k,
+       k ≥ req.(RangeRequest.key)
+    );
+  mret None
+  (* computing over a gmap will be annoying *)
+.
 
 Module PutRequest.
 Record t :=
