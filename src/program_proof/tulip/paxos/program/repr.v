@@ -2,6 +2,8 @@ From Perennial.program_proof.tulip.paxos Require Import prelude.
 From Perennial.program_logic Require Export own_crash_inv.
 From Goose.github_com.mit_pdos.tulip Require Import paxos.
 
+(* TODO: rename this file to paxos_repr.v *)
+
 Section repr.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 

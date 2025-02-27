@@ -8,6 +8,8 @@ From Perennial.program_proof.tulip Require Export
 Section inv.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
+  Definition tulipcoreNS := tulipNS .@ "core".
+
   Definition tulip_inv_with_proph γ p : iProp Σ :=
     (* txn invariants *)
     "Htxnsys" ∷ txnsys_inv γ p ∗
@@ -24,10 +26,10 @@ Section inv.
   Proof. apply _. Qed.
 
   Definition know_tulip_inv_with_proph γ p : iProp Σ :=
-    inv tulipNS (tulip_inv_with_proph γ p).
+    inv tulipcoreNS (tulip_inv_with_proph γ p).
 
   Definition know_tulip_inv γ : iProp Σ :=
-    ∃ p, inv tulipNS (tulip_inv_with_proph γ p).
+    ∃ p, know_tulip_inv_with_proph γ p.
 
 End inv.
 
@@ -169,17 +171,35 @@ Section inv_file.
         "Hilog" ∷ own_replica_ilog_quarter γ gid rid ilog
     end.
 
-  Definition encode_ilog (ilog : list (nat * icommand)) (ilogbytes : list byte_string) :=
+  Definition encode_ilog_frag (ilog : list (nat * icommand)) (ilogbytes : list byte_string) :=
     Forall2 (λ (nc : nat * icommand) bs, encode_lsn_icommand nc.1 nc.2 bs) ilog ilogbytes.
 
+  Lemma encode_ilog_frag_nil_inv ilog :
+    encode_ilog_frag ilog [] ->
+    ilog = [].
+  Proof.
+    intros Henc.
+    by eapply Forall2_nil_inv_r.
+  Qed.
+
+  Definition encode_ilog (ilog : list (nat * icommand)) (data : byte_string) :=
+    ∃ frags, encode_ilog_frag ilog frags ∧ serialize id frags = data.
+
+  Definition valid_icommand (icmd : icommand) :=
+    match icmd with
+    | CmdRead ts key => valid_ts ts ∧ valid_key key
+    | CmdAcquire ts pwrs _ => Z.of_nat ts < 2 ^ 64 ∧ valid_wrs pwrs
+    | CmdAdvance ts rank => Z.of_nat ts < 2 ^ 64 ∧ Z.of_nat rank < 2 ^ 64
+    | CmdAccept ts rank _ => Z.of_nat ts < 2 ^ 64 ∧ Z.of_nat rank < 2 ^ 64
+    end.
+
   Definition replica_file_inv (γ : tulip_names) (gid rid : u64) : iProp Σ :=
-    ∃ (ilog : list (nat * icommand)) (ilogbytes : list byte_string)
-      (fname : byte_string) (content : list u8),
+    ∃ (ilog : list (nat * icommand)) (fname : byte_string) (content : list u8),
       "Hfile"        ∷ fname f↦ content ∗
       "Hilogfileinv" ∷ own_replica_ilog_quarter γ gid rid ilog ∗
       "#Hilogfname"  ∷ is_replica_ilog_fname γ gid rid fname ∗
-      "%Hencilog"    ∷ ⌜encode_ilog ilog ilogbytes⌝ ∗
-      "%Hilogserial" ∷ ⌜serialize id ilogbytes = content⌝.
+      "%Hvilog"      ∷ ⌜Forall (λ nc, Z.of_nat nc.1 < 2 ^ 64 ∧ valid_icommand nc.2) ilog⌝ ∗
+      "%Hencilog"    ∷ ⌜encode_ilog ilog content⌝.
 
   Definition know_replica_file_inv γ gid rid : iProp Σ :=
     inv tulipfileNS (replica_file_inv γ gid rid).
@@ -559,6 +579,8 @@ Section alloc.
       iSplit.
       { iApply (big_sepS_elem_of with "Hloglbs"); first apply Hgid. }
       iPureIntro.
+      split; first done.
+      split; first done.
       split.
       { by rewrite /execute_cmds merge_clog_ilog_nil. }
       split; first done.
@@ -613,9 +635,9 @@ Section alloc.
       iIntros ([g r] data Hdata) "(Hfile & Hilog & Hfname)".
       iFrame.
       iPureIntro.
+      split; first by apply Forall_nil.
       exists [].
-      split; last done.
-      by apply Forall2_nil.
+      by split; first apply Forall2_nil.
     }
     by iFrame.
   Qed.

@@ -64,7 +64,7 @@ Section advance.
     advance_requirement st ts rk ->
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
-    replica_inv γ gid rid ==∗
+    replica_inv_weak γ gid rid ==∗
     own_replica_clog_half γ gid rid clog ∗
     own_replica_ilog_half γ gid rid (ilog ++ [(length clog, CmdAdvance ts rk)]) ∗
     replica_inv γ gid rid ∗
@@ -93,6 +93,12 @@ Section advance.
     iNamed "Hbackup".
     iNamed "Hbm".
     simpl in Hrsm'.
+    (* Establish [eq_lsn_last_ilog (length clog) ilog'] with [ge_lsn_last_ilog ...]. *)
+    assert (Heqlast' : eq_lsn_last_ilog (length clog) ilog').
+    { by rewrite /eq_lsn_last_ilog last_snoc. }
+    (* Re-establish [ilog_lsn_sorted ilog']. *)
+    assert (Hisorted' : ilog_lsn_sorted ilog').
+    { apply ilog_lsn_sorted_inv_snoc; [apply Heqlast | apply Hisorted]. }
     destruct (bm !! ts) as [blt |] eqn:Hbmts; last first.
     { (* Case: [bm !! ts = None]. *)
       assert (Hpsmts : psm !! ts = None).

@@ -159,6 +159,7 @@ Section resume.
                   "HlogPP"  ∷ logPP ↦[slice.T stringT] (to_val logaP) ∗
                   "HlogP"   ∷ own_slice logaP stringT (DfracOwn 1) loga ∗
                   "%Hwalar" ∷ ⌜wal = wala ++ walr⌝ ∗
+                  (* TODO: is [Hwala] unnecessary? *)
                   "%Hwala"  ∷ ⌜encode_paxos_cmds wala = applied⌝ ∗
                   "%Hwalr"  ∷ ⌜encode_paxos_cmds walr = remaining⌝ ∗
                   "%Hexec"  ∷ ⌜execute_paxos_cmds wala = pxst⌝ ∗

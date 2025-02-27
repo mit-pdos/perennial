@@ -21,7 +21,7 @@ Section local_read.
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
     group_inv γ gid -∗
-    replica_inv γ gid rid ==∗
+    replica_inv_weak γ gid rid ==∗
     own_replica_clog_half γ gid rid clog ∗
     own_replica_ilog_half γ gid rid (ilog ++ [(length clog, CmdRead rts key)]) ∗
     group_inv γ gid ∗
@@ -63,6 +63,12 @@ Section local_read.
       { by eauto 10. }
       by rewrite /hist_from_log Happly.
     }
+    (* Establish [eq_lsn_last_ilog (length clog) ilog'] with [ge_lsn_last_ilog ...]. *)
+    assert (Heqlast' : eq_lsn_last_ilog (length clog) ilog').
+    { by rewrite /eq_lsn_last_ilog last_snoc. }
+    (* Re-establish [ilog_lsn_sorted ilog']. *)
+    assert (Hisorted' : ilog_lsn_sorted ilog').
+    { apply ilog_lsn_sorted_inv_snoc; [apply Heqlast | apply Hisorted]. }
     destruct (decide (pts = O)) as [Hz | Hnz]; last first.
     { (* Case: Key locked by txn [pts] where [rts ≤ pts]. No extension required. *)
       destruct Hlock as [? | Hle]; first done.

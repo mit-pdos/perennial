@@ -536,4 +536,22 @@ Section lemma.
     group_inv γ gid.
   Proof. iIntros "Hcpool Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
 
+  Lemma group_inv_impl_valid_ccommand_log {γ gid} loglb :
+    is_txn_log_lb γ gid loglb -∗
+    group_inv γ gid -∗
+    ⌜Forall (valid_ccommand gid) loglb⌝.
+  Proof.
+    iIntros "#Hlb Hinv".
+    iDestruct (group_inv_extract_cpool with "Hinv") as (cpool) "[Hcpool Hinv]".
+    iDestruct (group_inv_impl_valid_ccommand_cpool with "Hinv") as %Hvcmds.
+    iNamed "Hinv".
+    iDestruct (txn_log_prefix with "Hlog Hlb") as %Hprefix.
+    iNamed "Hgroup".
+    iPureIntro.
+    rewrite /txn_cpool_subsume_log Forall_forall in Hcscincl.
+    rewrite Forall_forall.
+    intros cmd Hcmd.
+    by apply Hvcmds, Hcscincl, (elem_of_prefix loglb).
+  Qed.
+
 End lemma.

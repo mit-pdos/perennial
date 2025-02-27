@@ -910,4 +910,11 @@ Section encode.
                | CmdAccept ts rank pdec => encode_tulip_accept ts rank pdec cmddata
                end.
 
+  Lemma encode_lsn_icommand_not_nil lsn icmd :
+    not (encode_lsn_icommand lsn icmd []).
+  Proof.
+    intros Henc.
+    by destruct Henc as (cmddata & Happ & _).
+  Qed.
+
 End encode.

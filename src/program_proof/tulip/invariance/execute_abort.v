@@ -10,11 +10,11 @@ Section execute_abort.
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
     group_inv γ gid -∗
-    replica_inv γ gid rid ==∗
+    replica_inv_weak γ gid rid ==∗
     own_replica_clog_half γ gid rid clog' ∗
     own_replica_ilog_half γ gid rid ilog ∗
     group_inv γ gid ∗
-    replica_inv γ gid rid.
+    replica_inv_weak γ gid rid.
   Proof.
     iIntros (clog') "#Hloglb Hclogprog Hilogprog Hgroup Hrp".
     iAssert (⌜not_stuck (apply_cmds clog')⌝)%I as %Hns.
@@ -70,6 +70,10 @@ Section execute_abort.
       intros [n c] Hlen. simpl in Hlen.
       rewrite length_app /=.
       clear -Hlen. lia.
+    }
+    assert (Heqlast' : ge_lsn_last_ilog (length clog') ilog).
+    { eapply ge_lsn_last_ilog_weaken; last apply Heqlast.
+      rewrite length_app /=. lia.
     }
     destruct (cm !! ts) as [b |] eqn:Hcm.
     { (* Case: Txn [ts] already finalized. Contradiction for committed; no-op for aborted. *)

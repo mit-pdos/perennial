@@ -52,7 +52,7 @@ Section validate.
     safe_txn_pwrs γ gid ts pwrs -∗
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
-    replica_inv γ gid rid ==∗
+    replica_inv_weak γ gid rid ==∗
     own_replica_clog_half γ gid rid clog ∗
     own_replica_ilog_half γ gid rid (ilog ++ [(length clog, CmdAcquire ts pwrs ptgs)]) ∗
     replica_inv γ gid rid ∗
@@ -134,6 +134,12 @@ Section validate.
     iDestruct (big_sepM_insert_2 _ _ ts pwrs with "Hsafepwrs Hsafep") as "#Hsafep'".
     (* Re-establish [validated_pwrs_of_txn] over [{[ts]} ∪ vtss]. *)
     iDestruct (big_sepS_insert_2 ts with "Hvkeys Hvpwrs") as "#Hvpwrs'".
+    (* Establish [eq_lsn_last_ilog (length clog) ilog'] with [ge_lsn_last_ilog ...]. *)
+    assert (Heqlast' : eq_lsn_last_ilog (length clog) ilog').
+    { by rewrite /eq_lsn_last_ilog last_snoc. }
+    (* Re-establish [ilog_lsn_sorted ilog']. *)
+    assert (Hisorted' : ilog_lsn_sorted ilog').
+    { apply ilog_lsn_sorted_inv_snoc; [apply Heqlast | apply Hisorted]. }
     iFrame "∗ # %".
     iModIntro.
     iSplit.

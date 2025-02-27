@@ -14,13 +14,14 @@ Section program.
     rid ∈ rids_all ->
     safe_txn_pwrs γ gid ts pwrs -∗
     know_tulip_inv γ -∗
+    know_replica_file_inv γ gid rid -∗
     {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica rp gid rid γ α }}}
       Replica__validate #rp #tsW (to_val pwrsS) slice.nil
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         own_replica rp gid rid γ α ∗ validate_outcome γ gid rid ts res
     }}}.
   Proof.
-    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hinv".
+    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hinv #Hinvfile".
     iIntros (Φ) "!> [Hpwrs Hrp] HΦ".
     wp_rec.
 
@@ -88,15 +89,43 @@ Section program.
     earlier. *)
 
     (*@     // Logical action: Validate(@ts, @pwrs, @ptgs).                     @*)
-    (*@     rp.logValidate(ts, pwrs, ptgs)                                      @*)
+    (*@     logAcquire(rp.fname, rp.lsna, ts, pwrs, ptgs)                       @*)
     (*@                                                                         @*)
-    wp_loadField.
-    wp_apply (wp_logValidate with "[$Hfile $Hpwrs]").
-    iIntros (bs') "[Hfile Hpwrs]".
     wp_pures.
-    iApply ncfupd_wp.
+    iNamed "Hlsna".
+    wp_loadField.
+    iNamed "Hfname".
+    wp_loadField.
+    wp_apply (wp_logAcquire with "Hpwrs").
+    (* Open the crash, replica, and file invariants. *)
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamed "Hdurable".
     iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
+    iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+    iNamed "HinvfileO".
+    (* Agree on the fname, and merge the two ilog quarter. *)
+    iDestruct (replica_ilog_fname_agree with "Hfname Hilogfname") as %->.
+    iDestruct (replica_ilog_combine with "Hilog Hilogfileinv") as "[Hilog ->]".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    (* Give the file points-to to the logging method. *)
+    iFrame "Hfile %".
+    iIntros (bs' failed) "Hfile".
+    destruct failed.
+    { (* Case: Write failed. Close the invariants without any updates. *)
+      iMod "Hmask" as "_".
+      iDestruct (replica_ilog_split with "Hilog") as "[Hilog Hilogfileinv]".
+      iMod ("HinvfileC" with "[Hfile Hilogfileinv]") as "_".
+      { by iFrame "∗ # %". }
+      iMod ("HinvC" with "HinvO") as "_".
+      set dst := ReplicaDurable clog ilog.
+      iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
+      by iIntros "!> [_ %Hcontra]".
+    }
+    (* Case: Write succeeded. Update the logical state and re-establish invariant. *)
+    iDestruct "Hfile" as "[Hfile %Hencilog']".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
     iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]"; first apply Hgid.
@@ -118,11 +147,30 @@ Section program.
       apply Hcpm.
       word.
     }
+    (* Close the file, replica, and crash invariants. *)
+    iDestruct (replica_ilog_split with "Hilog") as "[Hilog Hilogfileinv]".
+    iMod "Hmask" as "_".
+    iMod ("HinvfileC" with "[Hfile Hilogfileinv]") as "_".
+    { iFrame "∗ #".
+      iPureIntro.
+      split.
+      { apply Forall_app_2; first apply Hvilog.
+        rewrite Forall_singleton.
+        simpl.
+        split.
+        { clear -Hlencloga HlsnaW. word. }
+        split; [word | done].
+      }
+      { by rewrite Hlencloga -HlsnaW. }
+    }
+    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iDestruct ("HrgC" with "Hrp") as "Hrg".
     iDestruct ("HrgsC" with "Hrg") as "Hrgs".
-    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
-    iModIntro.
+    set ilog' := ilog ++ _.
+    set dst := ReplicaDurable (clog ++ cmdsa) ilog'.
+    iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
+    iIntros "!> [Hpwrs _]".
 
     (*@     // Record the write set and the participant groups.                 @*)
     (*@     rp.memorize(ts, pwrs, ptgs)                                         @*)
@@ -188,7 +236,7 @@ Section program.
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
-    wp_apply (wp_Replica__validate with "Hsafepwrs Hinv [$Hpwrs $Hrp]").
+    wp_apply (wp_Replica__validate with "Hsafepwrs Hinv Hinvfile [$Hpwrs $Hrp]").
     { apply Hgid. }
     { apply Hrid. }
     iIntros (res) "[Hrp #Hfp]".

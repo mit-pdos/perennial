@@ -303,9 +303,9 @@ Section res.
       by rewrite dfrac_op_own Qp.half_half.
     Qed.
 
-    Lemma replica_ilog_agree {γ gid rid l1 l2} :
-      own_replica_ilog_half γ gid rid l1 -∗
-      own_replica_ilog_half γ gid rid l2 -∗
+    Lemma replica_ilog_agree {γ gid rid l1 l2} q1 q2 :
+      own_replica_ilog_frac γ gid rid q1 l1 -∗
+      own_replica_ilog_frac γ gid rid q2 l2 -∗
       ⌜l2 = l1⌝.
     Proof.
       iIntros "Hv1 Hv2".

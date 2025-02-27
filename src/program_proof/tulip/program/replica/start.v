@@ -1,5 +1,6 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
-From Perennial.program_proof.tulip.program.replica Require Import  replica_repr.
+From Perennial.program_proof.tulip.program.replica Require Import
+  replica_repr replica_resume.
 From Perennial.program_proof.tulip.program.txnlog Require Import txnlog.
 From Perennial.program_proof.tulip.program.tuple Require Import res.
 From Perennial.program_proof.tulip.program.index Require Import index.
@@ -13,13 +14,15 @@ Section program.
 
   Theorem wp_Start
     (rid : u64) (addr : chan) (fname : byte_string) (addrmpxP : loc) (fnamepx : byte_string)
-    (termc : u64) (terml : u64) (lsnc : u64) (log : list byte_string) (addrmpx : gmap u64 chan)
-    (addrm : gmap u64 chan) gid γ π :
-    let dst := PaxosDurable termc terml log lsnc in
+    (termc : u64) (terml : u64) (lsnc : u64) (logpx : list byte_string) (addrmpx : gmap u64 chan)
+    (clog : dblog) (ilog : list (nat * icommand)) (addrm : gmap u64 chan) gid γ π :
+    let dstpx := PaxosDurable termc terml logpx lsnc in
+    let dstrp := ReplicaDurable clog ilog in
     gid ∈ gids_all ->
     rid ∈ rids_all ->
     addrm !! rid = Some addr ->
     is_node_wal_fname π rid fnamepx -∗
+    is_replica_ilog_fname γ gid rid fname -∗
     (* paxos atomic invariants *)
     know_paxos_inv π (dom addrmpx) -∗
     know_paxos_file_inv π (dom addrmpx) -∗
@@ -28,35 +31,30 @@ Section program.
     know_tulip_txnlog_inv γ π gid -∗
     (* tulip atomic invariants *)
     know_tulip_inv γ -∗
+    know_replica_file_inv γ gid rid -∗
     know_tulip_network_inv γ gid addrm -∗
     {{{ (* durable states passed to paxos *)
         own_map addrmpxP (DfracOwn 1) addrmpx ∗
-        own_crash_ex pxcrashNS (own_paxos_durable π rid) dst ∗
-        (* durable states of replica; TODO: replace [] once proving recovery *)
-        own_replica_clog_half γ gid rid [] ∗
-        own_replica_ilog_half γ gid rid [] ∗
-        (* file points-to; TODO: seal it in atomic invariance once proving recovery *)
-        fname f↦ []
+        own_crash_ex pxcrashNS (own_paxos_durable π rid) dstpx ∗
+        own_crash_ex rpcrashNS (own_replica_durable γ gid rid) dstrp
     }}}
       Start #rid (to_val addr) #(LitString fname) #addrmpxP #(LitString fnamepx)
     {{{ (rp : loc), RET #rp; is_replica rp gid rid γ }}}.
   Proof.
-    iIntros (dst Hgid Hrid Haddr).
-    iIntros "#Hfnamewal #Hinvpx #Hinvpxfile #Hinvpxnet".
-    iIntros "#Hinvtxnlog #Hinv #Hinvnet".
+    iIntros (dstpx dstrp Hgid Hrid Haddr).
+    iIntros "#Hfnamewal #Hfnameilog #Hinvpx #Hinvpxfile #Hinvpxnet".
+    iIntros "#Hinvtxnlog #Hinv #Hinvfile #Hinvnet".
     iIntros (Φ).
-    iIntros "!> (Haddrmpx & Hdurable & Hclog & Hilog & Hfile) HΦ".
+    iIntros "!> (Haddrmpx & Hdurablepx & Hdurable) HΦ".
     wp_rec. wp_pures.
 
     (*@ func Start(rid uint64, addr grove_ffi.Address, fname string, addrmpx map[uint64]uint64, fnamepx string) *Replica { @*)
     (*@     txnlog := txnlog.Start(rid, addrmpx, fnamepx)                       @*)
     (*@                                                                         @*)
     wp_apply (wp_Start
-      with "Hfnamewal Hinvpx Hinvpxfile Hinvpxnet Hinvtxnlog [$Haddrmpx $Hdurable]").
+      with "Hfnamewal Hinvpx Hinvpxfile Hinvpxnet Hinvtxnlog [$Haddrmpx $Hdurablepx]").
     iIntros (txnlogP) "#Htxnlog".
 
-    (*@     // termc, terml, lsnc, log := resume(fname)                         @*)
-    (*@                                                                         @*)
     (*@     rp := &Replica{                                                     @*)
     (*@         mu     : new(sync.Mutex),                                       @*)
     (*@         rid    : rid,                                                   @*)
@@ -137,6 +135,7 @@ Section program.
     iMod (readonly_alloc_1 with "rid") as "#HridP".
     iMod (readonly_alloc_1 with "idx") as "#HidxP".
     iMod (readonly_alloc_1 with "txnlog") as "#HtxnlogP".
+    iMod (readonly_alloc_1 with "fname") as "#HfnameP".
     iAssert (own_replica_cm rp ∅)%I with "[$txntbl $Htxntbl]" as "Hcm"; first done.
     iAssert (own_replica_histm rp (gset_to_gmap [None] keys_all : gmap dbkey dbhist) α)%I
       with "[Hphysm]" as "Hhistm".
@@ -157,16 +156,58 @@ Section program.
     }
     iAssert (own_replica_psm_rkm rp ∅ ∅)%I
       with "[$pstbl $rktbl $Hpstbl $Hrktbl]" as "Hpsmrkm"; first done.
-    iAssert (own_replica_with_cloga_no_lsna rp [] gid rid γ α)%I
-      with "[$Hcm $Hhistm $Hcpm $Hptsmsptsm $Hpsmrkm $Hclog $Hilog]" as "Hrp".
-    { iExists ∅.
-      iSplit; first by rewrite dom_empty_L big_sepS_empty.
-      iSplit; first by rewrite big_sepM_empty.
-      iSplit; first done.
+    iAssert (own_replica_lsna rp O)%I with "[$lsna]" as "Hlsna"; first done.
+    iAssert (is_replica_fname rp gid rid γ)%I with "[$HfnameP $Hfnameilog]" as "Hfname".
+    iAssert (own_replica_replaying rp [] [] α)%I with
+      "[$Hcm $Hhistm $Hcpm $Hptsmsptsm $Hpsmrkm]" as "Hrp".
+    { iPureIntro. simpl.
+      exists ∅.
       by rewrite merge_clog_ilog_nil.
     }
-    iAssert (own_replica rp gid rid γ α)%I with "[$lsna $Hfile $fname Hrp]" as "Hrp".
-    { iExists []. by iFrame. }
+    iAssert (is_replica_idx rp γ α)%I with "[$HidxP $Hidx]" as "#Hidxrp".
+    iAssert (is_replica_txnlog rp gid γ)%I with "[$HtxnlogP $Htxnlog]" as "Htxnlogrp".
+    wp_apply (wp_Replica__resume with
+               "Hinv Hinvfile Hfname Hidxrp Htxnlogrp [$Hrp $Hlsna $Hdurable]").
+    { apply Hgid. }
+    { apply Hrid. }
+    iIntros "(Hrp & Hlsna & Hdurable)".
+    iAssert (|NC={⊤}=> own_replica rp gid rid γ α)%I with "[Hrp Hlsna Hdurable]" as "> Hrp".
+    { iNamed "Hrp".
+      (* Open the crash and atomic replica invariants. *)
+      iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+      { solve_ndisj. }
+      iDestruct "Hinv" as (proph) "Hinv".
+      iInv "Hinv" as "> HinvO" "HinvC".
+      iNamed "HinvO".
+      iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]".
+      { apply Hgid. }
+      iDestruct (big_sepS_elem_of_acc with "Hrg") as "[Hrp HrgC]".
+      { apply Hrid. }
+      do 2 iNamed "Hrp".
+      iNamedSuffix "Hdurable" "X".
+      (* Prove equality between logs and applications states. *)
+      iDestruct (replica_clog_agree with "HclogX Hclog") as %->.
+      iDestruct (replica_ilog_agree with "HilogX Hilog") as %->.
+      rewrite Hrsm in Hexec. inv Hexec.
+      (* Close the crash and atomic replica invariants. *)
+      iDestruct ("HrgC" with "[$Hvtss $Hclog $Hilog $Hkvdm $Hbm $Hbackup]") as "Hrg".
+      { by iFrame "# %". }
+      iDestruct ("HrgsC" with "Hrg") as "Hrgs".
+      iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
+      iMod ("HdurableC" $! dstrp with "[$HclogX $HilogX]") as "Hdurable".
+      iModIntro.
+      iFrame "Hlsna".
+      iExists clog.
+      iSplit; last done.
+      iFrame "∗ # %".
+      iExists clog.
+      iSplitL.
+      { subst dstrp. admit. (* XXX: somehow iFrame doesn't work here? *) }
+      iPureIntro.
+      split; last done.
+      pose proof (map_Forall2_dom_L _ _ _ Hbmpsm) as <-.
+      by pose proof (map_Forall2_dom_L _ _ _ Hbmrkm) as <-.
+    }
     iMod (alloc_lock _ _ _ (own_replica rp gid rid γ α) with "Hfree [$Hrp]") as "#Hlock".
     iAssert (is_replica_plus_txnlog rp gid rid γ)%I as "#Hrptxnlog".
     { by iFrame "#". }
@@ -193,6 +234,6 @@ Section program.
     (*@ }                                                                       @*)
     iApply "HΦ".
     by iFrame "#".
-  Qed.
+  Admitted.
 
 End program.

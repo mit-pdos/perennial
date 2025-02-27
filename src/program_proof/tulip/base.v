@@ -90,8 +90,8 @@ Inductive ccommand :=
 | CmdAbort (tid : nat).
 
 Inductive icommand :=
-| CmdAcquire (tid : nat) (pwrs : dbmap) (ptgs : gset u64)
 | CmdRead (tid : nat) (key : dbkey)
+| CmdAcquire (tid : nat) (pwrs : dbmap) (ptgs : gset u64)
 | CmdAdvance (tid : nat) (rank : nat)
 | CmdAccept (tid : nat) (rank : nat) (pdec : bool).
 
@@ -517,3 +517,7 @@ Definition sysNS := nroot .@ "sys".
 Definition tulipNS := sysNS .@ "tulip".
 Definition tsNS := sysNS .@ "ts".
 Definition txnlogNS := sysNS .@ "txnlog".
+
+#[global]
+Instance stagedG_tulip_ghostG Σ : tulip_ghostG Σ → stagedG Σ.
+Admitted.

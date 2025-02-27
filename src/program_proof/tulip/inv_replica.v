@@ -90,13 +90,88 @@ Section inv.
     Persistent (fast_proposal_witness γ gid rid ts ps).
   Proof. rewrite /fast_proposal_witness. apply _. Defined.
 
+  Definition eq_lsn_last_ilog (lsna : nat) (ilog : list (nat * icommand)) :=
+    match last ilog with
+    | Some (n, _) => n = lsna
+    | _ => lsna = O
+    end.
+
+  Definition ge_lsn_last_ilog (lsna : nat) (ilog : list (nat * icommand)) :=
+    match last ilog with
+    | Some (n, _) => (n ≤ lsna)%nat
+    | _ => True
+    end.
+
+  Lemma eq_lsn_last_ilog_weaken n ilog :
+    eq_lsn_last_ilog n ilog ->
+    ge_lsn_last_ilog n ilog.
+  Proof.
+    rewrite /eq_lsn_last_ilog /ge_lsn_last_ilog.
+    intros Hlsn.
+    destruct (last ilog) as [[n' c] |]; [lia | done].
+  Qed.
+
+  Lemma ge_lsn_last_ilog_weaken n1 n2 ilog :
+    (n1 ≤ n2)%nat ->
+    ge_lsn_last_ilog n1 ilog ->
+    ge_lsn_last_ilog n2 ilog.
+  Proof.
+    rewrite /ge_lsn_last_ilog.
+    intros Hle Hlsn.
+    destruct (last ilog) as [[n c] |]; [lia | done].
+  Qed.
+
+  Definition ilog_lsn_sorted (ilog : list (nat * icommand)) :=
+    ∀ i j x y, (i ≤ j)%nat -> ilog !! i = Some x -> ilog !! j = Some y -> (x.1 ≤ y.1)%nat.
+
+  Lemma ilog_lsn_sorted_inv_snoc (lsn : nat) (icmd : icommand) ilog :
+    ge_lsn_last_ilog lsn ilog ->
+    ilog_lsn_sorted ilog ->
+    ilog_lsn_sorted (ilog ++ [(lsn, icmd)]).
+  Proof.
+    intros Hge Hsorted i j x y Hij Hx Hy.
+    destruct (decide (j = length ilog)) as [Heqj | Hne]; last first.
+    { (* Case: [j] points to an old entry. *)
+      apply lookup_lt_Some in Hy as Hj.
+      rewrite length_app /= in Hj.
+      rewrite lookup_app_l in Hx; last first.
+      { clear -Hij Hne Hj. lia. }
+      rewrite lookup_app_l in Hy; last first.
+      { clear -Hne Hj. lia. }
+      by specialize (Hsorted _ _ _ _ Hij Hx Hy).
+    }
+    (* Case: [j] points to the new entry. *)
+    destruct (decide (i = length ilog)) as [Heqi | Hne].
+    { (* Case: [i] points to the new entry. *)
+      subst i j. rewrite Hx in Hy. by inv Hy.
+    }
+    (* Case: [i] points to an old entry. *)
+    subst j. rewrite lookup_snoc_length in Hy. inv Hy. simpl.
+    apply lookup_lt_Some in Hx as Hi.
+    rewrite length_app /= in Hi.
+    assert (Hlt : (i < length ilog)%nat).
+    { clear -Hne Hi. lia. }
+    rewrite lookup_app_l in Hx; last apply Hlt.
+    rewrite /ge_lsn_last_ilog in Hge.
+    destruct (last ilog) as [[n c] |] eqn:Hlast; last first.
+    { rewrite last_None in Hlast. rewrite Hlast /= in Hlt.
+      clear -Hlt. lia.
+    }
+    rewrite last_lookup in Hlast.
+    trans n; last apply Hge.
+    unshelve epose proof (Hsorted _ _ _ _ _ Hx Hlast) as Hle.
+    { clear -Hlt. lia. }
+    apply Hle.
+  Qed.
+
   Definition replica_inv_internal
     γ (gid rid : u64) (clog : dblog) (ilog : list (nat * icommand))
-    (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
+    (cm : gmap nat bool) (cpm : gmap nat dbmap) (weak : bool) : iProp Σ :=
     ∃ (vtss : gset nat) (kvdm : gmap dbkey (list bool)) (bm : gmap nat ballot)
       (histm : gmap dbkey dbhist) (ptgsm : gmap nat (gset u64)) (sptsm ptsm : gmap dbkey nat)
       (psm : gmap nat (nat * bool)) (rkm : gmap nat nat),
       let log := merge_clog_ilog clog ilog in
+      let lenc := length clog in
       "Hvtss"     ∷ own_replica_validated_tss γ gid rid vtss ∗
       "Hclog"     ∷ own_replica_clog_half γ gid rid clog ∗
       "Hilog"     ∷ own_replica_ilog_half γ gid rid ilog ∗
@@ -109,6 +184,8 @@ Section inv.
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
       "#Hcloglb"  ∷ is_txn_log_lb γ gid clog ∗
+      "%Heqlast"  ∷ ⌜(if weak then ge_lsn_last_ilog lenc ilog else eq_lsn_last_ilog lenc ilog)⌝ ∗
+      "%Hisorted" ∷ ⌜ilog_lsn_sorted ilog⌝ ∗
       "%Hrsm"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝ ∗
       "%Hcloglen" ∷ ⌜Forall (λ nc, (nc.1 <= length clog)%nat) ilog⌝ ∗
       "%Hvtss"    ∷ ⌜vtss ⊆ dom cm ∪ dom cpm⌝ ∗
@@ -122,15 +199,13 @@ Section inv.
 
   Definition replica_inv_with_cm_with_cpm
     γ (gid rid : u64) (cm : gmap nat bool) (cpm : gmap nat dbmap) : iProp Σ :=
-    ∃ clog ilog, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm.
-
-  (* TODO: check if this is actually needed *)
-  Definition replica_inv_with_clog_with_ilog
-    γ (gid rid : u64) (clog : dblog) (ilog : list (nat * icommand)) : iProp Σ :=
-    ∃ cm cpm, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm.
+    ∃ clog ilog, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm false.
 
   Definition replica_inv γ (gid rid : u64) : iProp Σ :=
-    ∃ clog ilog cm cpm, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm.
+    ∃ clog ilog cm cpm, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm false.
+
+  Definition replica_inv_weak γ (gid rid : u64) : iProp Σ :=
+    ∃ clog ilog cm cpm, "Hrp" ∷ replica_inv_internal γ gid rid clog ilog cm cpm true.
 
   #[global]
   Instance replica_inv_timeless γ gid rid :
@@ -142,6 +217,17 @@ Section inv.
     apply big_sepM_timeless. intros ???.
     rewrite /fast_proposal_witness.
     apply _.
+  Qed.
+
+  Lemma replica_inv_weaken γ gid rid :
+    replica_inv γ gid rid -∗
+    replica_inv_weak γ gid rid.
+  Proof.
+    iIntros "Hrp".
+    do 2 iNamed "Hrp".
+    iFrame "∗ # %".
+    iPureIntro.
+    by apply eq_lsn_last_ilog_weaken.
   Qed.
 
   Definition replica_inv_xfinalized γ (gid rid : u64) (ptsm : gset nat) : iProp Σ :=

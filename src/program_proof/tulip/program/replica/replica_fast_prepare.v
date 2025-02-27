@@ -14,13 +14,14 @@ Section program.
     rid ∈ rids_all ->
     safe_txn_pwrs γ gid ts pwrs -∗
     know_tulip_inv γ -∗
+    know_replica_file_inv γ gid rid -∗
     {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica rp gid rid γ α }}}
       Replica__fastPrepare #rp #tsW (to_val pwrsS) slice.nil
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         own_replica rp gid rid γ α ∗ fast_prepare_outcome γ gid rid ts res
     }}}.
   Proof.
-    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hinv".
+    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hinv #Hinvfile".
     iIntros (Φ) "!> [Hpwrs Hrp] HΦ".
     wp_rec.
 
@@ -125,12 +126,41 @@ Section program.
     (*@                                                                         @*)
     wp_pures.
     destruct acquired; wp_pures; last first.
-    { wp_loadField.
-      wp_apply (wp_logAccept with "Hfile").
-      iIntros (bs') "Hfile".
-      wp_pures.
+    { wp_pures.
+      iNamed "Hlsna".
+      wp_loadField.
+      iNamed "Hfname".
+      wp_loadField.
+      wp_apply wp_logAccept.
+      (* Open the crash, replica, and file invariants. *)
+      iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+      { solve_ndisj. }
+      iNamed "Hdurable".
       iNamed "Hinv".
       iInv "Hinv" as "> HinvO" "HinvC".
+      iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+      iNamed "HinvfileO".
+      (* Agree on the fname, and merge the two ilog quarter. *)
+      iDestruct (replica_ilog_fname_agree with "Hfname Hilogfname") as %->.
+      iDestruct (replica_ilog_combine with "Hilog Hilogfileinv") as "[Hilog ->]".
+      iApply ncfupd_mask_intro; first solve_ndisj.
+      iIntros "Hmask".
+      (* Give the file points-to to the logging method. *)
+      iFrame "Hfile %".
+      iIntros (bs' failed) "Hfile".
+      destruct failed.
+      { (* Case: Write failed. Close the invariants without any updates. *)
+        iMod "Hmask" as "_".
+        iDestruct (replica_ilog_split with "Hilog") as "[Hilog Hilogfileinv]".
+        iMod ("HinvfileC" with "[Hfile Hilogfileinv]") as "_".
+        { by iFrame "∗ # %". }
+        iMod ("HinvC" with "HinvO") as "_".
+        set dst := ReplicaDurable clog ilog.
+        iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
+        by iIntros "!> %Hcontra".
+      }
+      (* Case: Write succeeded. Update the logical state and re-establish invariant. *)
+      iDestruct "Hfile" as "[Hfile %Hencilog']".
       iNamed "HinvO".
       iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
       iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]"; first apply Hgid.
@@ -139,6 +169,7 @@ Section program.
       destruct Hcloga as [cmdsa ->].
       iMod (replica_inv_execute with "Hclogalb Hclog Hilog Hgroup Hrp")
         as "(Hclog & Hilog & Hgroup & Hrp)".
+      (* Then snoc the new inconsistent command. *)
       iMod (replica_inv_accept ts O false with "[] Hclog Hilog Hrp")
         as "(Hclog & Hilog & Hrp & #Hacc)".
       { apply Hexec. }
@@ -148,10 +179,31 @@ Section program.
         by rewrite -not_elem_of_dom Hdompsmrkm in Hok.
       }
       { done. }
+      (* Close the file, replica, and crash invariants. *)
+      iDestruct (replica_ilog_split with "Hilog") as "[Hilog Hilogfileinv]".
+      iMod "Hmask" as "_".
+      iMod ("HinvfileC" with "[Hfile Hilogfileinv]") as "_".
+      { iFrame "∗ #".
+        iPureIntro.
+        split.
+        { apply Forall_app_2; first apply Hvilog.
+          rewrite Forall_singleton.
+          simpl.
+          split.
+          { clear -Hlencloga HlsnaW. word. }
+          split; [word | done].
+        }
+        { by rewrite Hlencloga -HlsnaW. }
+      }
+      iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
       iDestruct ("HrgC" with "Hrp") as "Hrg".
       iDestruct ("HrgsC" with "Hrg") as "Hrgs".
-      iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
       iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
+      set ilog' := ilog ++ _.
+      set dst := ReplicaDurable (clog ++ cmdsa) ilog'.
+      iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
+      iIntros "!> _".
+      wp_pures.
       iApply ("HΦ" $! ReplicaFailedValidation).
       iFrame "∗ # %".
       iModIntro.
@@ -185,15 +237,42 @@ Section program.
 
     (*@     // Logical actions: Execute() and then Validate(@ts, @pwrs, @ptgs) and @*)
     (*@     // Accept(@ts, @0, @true).                                          @*)
-    (*@     rp.logFastPrepare(ts, pwrs, ptgs)                                   @*)
+    (*@     logFastPrepare(rp.fname, rp.lsna, ts, pwrs, ptgs)                   @*)
     (*@                                                                         @*)
-    wp_loadField.
-    wp_apply (wp_logFastPrepare with "[$Hfile $Hpwrs]").
-    iIntros (bs') "[Hfile Hpwrs]".
     wp_pures.
+    iNamed "Hlsna".
+    wp_loadField.
+    iNamed "Hfname".
+    wp_loadField.
+    wp_apply (wp_logFastPrepare with "Hpwrs").
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamed "Hdurable".
     iNamed "Hinv".
-    iApply ncfupd_wp.
     iInv "Hinv" as "> HinvO" "HinvC".
+    iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+    iNamed "HinvfileO".
+    (* Agree on the fname, and merge the two ilog quarter. *)
+    iDestruct (replica_ilog_fname_agree with "Hfname Hilogfname") as %->.
+    iDestruct (replica_ilog_combine with "Hilog Hilogfileinv") as "[Hilog ->]".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    (* Give the file points-to to the logging method. *)
+    iFrame "Hfile %".
+    iIntros (bs' failed) "Hfile".
+    destruct failed.
+    { (* Case: Write failed. Close the invariants without any updates. *)
+      iMod "Hmask" as "_".
+      iDestruct (replica_ilog_split with "Hilog") as "[Hilog Hilogfileinv]".
+      iMod ("HinvfileC" with "[Hfile Hilogfileinv]") as "_".
+      { by iFrame "∗ # %". }
+      iMod ("HinvC" with "HinvO") as "_".
+      set dst := ReplicaDurable clog ilog.
+      iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
+      by iIntros "!> [_ %Hcontra]".
+    }
+    (* Case: Write succeeded. Update the logical state and re-establish invariant. *)
+    iDestruct "Hfile" as "[Hfile %Hencilog']".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
     iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]"; first apply Hgid.
@@ -214,6 +293,7 @@ Section program.
       apply Hcpm.
       word.
     }
+    iDestruct (replica_inv_weaken with "Hrp") as "Hrp".
     iMod (replica_inv_accept ts O true with "[] Hclog Hilog Hrp")
       as "(Hclog & Hilog & Hrp & #Hacc)".
     { rewrite merge_clog_ilog_snoc_ilog; last done.
@@ -225,11 +305,36 @@ Section program.
       by rewrite -not_elem_of_dom Hdompsmrkm in Hok.
     }
     { iFrame "Hvd". }
+    (* Close the file, replica, and crash invariants. *)
+    iDestruct (replica_ilog_split with "Hilog") as "[Hilog Hilogfileinv]".
+    iMod "Hmask" as "_".
+    rewrite -app_assoc.
+    iMod ("HinvfileC" with "[Hfile Hilogfileinv]") as "_".
+    { iFrame "∗ #".
+      iPureIntro.
+      split.
+      { apply Forall_app_2; first apply Hvilog.
+        apply Forall_cons_2.
+        { simpl.
+          split.
+          { clear -Hlencloga HlsnaW. word. }
+          split; [word | done].
+        }
+        rewrite Forall_singleton /=.
+        split.
+        { clear -Hlencloga HlsnaW. word. }
+        split; [word | done].
+      }
+      { by rewrite Hlencloga -HlsnaW. }
+    }
+    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iDestruct ("HrgC" with "Hrp") as "Hrg".
     iDestruct ("HrgsC" with "Hrg") as "Hrgs".
-    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
-    iModIntro.
+    set ilog' := ilog ++ _.
+    set dst := ReplicaDurable (clog ++ cmdsa) ilog'.
+    iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
+    iIntros "!> [Hpwrs _]".
 
     (*@     // Record the write set and the participant groups.                 @*)
     (*@     rp.memorize(ts, pwrs, ptgs)                                         @*)
@@ -263,6 +368,8 @@ Section program.
     split.
     { by rewrite 2!dom_insert_L Hdompsmrkm. }
     split; first done.
+    subst ilog'.
+    rewrite app_assoc.
     do 2 (rewrite merge_clog_ilog_snoc_ilog; last done).
     rewrite /execute_cmds foldl_snoc execute_cmds_unfold.
     split.
@@ -308,7 +415,7 @@ Section program.
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
-    wp_apply (wp_Replica__fastPrepare with "Hsafepwrs Hinv [$Hpwrs $Hrp]").
+    wp_apply (wp_Replica__fastPrepare with "Hsafepwrs Hinv Hinvfile [$Hpwrs $Hrp]").
     { apply Hgid. }
     { apply Hrid. }
     iIntros (res) "[Hrp #Hfp]".

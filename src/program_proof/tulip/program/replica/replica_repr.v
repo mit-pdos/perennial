@@ -102,6 +102,11 @@ Section repr.
   Definition own_replica_histm (rp : loc) (histm : gmap dbkey dbhist) α : iProp Σ :=
     ([∗ map] k ↦ h ∈ histm, own_phys_hist_half α k h).
 
+  Definition is_replica_fname (rp : loc) (gid rid : u64) γ : iProp Σ :=
+    ∃ (fname : byte_string),
+      "HfnameP" ∷ readonly (rp ↦[Replica :: "fname"] #(LitString fname)) ∗
+      "#Hfname" ∷ is_replica_ilog_fname γ gid rid fname.
+
   Definition own_replica_with_cloga_no_lsna
     (rp : loc) (cloga : dblog) (gid rid : u64) γ α : iProp Σ :=
     ∃ (cm : gmap nat bool) (histm : gmap dbkey dbhist)
@@ -109,13 +114,14 @@ Section repr.
       (sptsm ptsm : gmap dbkey nat) (psm : gmap nat (nat * bool)) (rkm : gmap nat nat)
       (clog : dblog) (ilog : list (nat * icommand)),
       let log := merge_clog_ilog cloga ilog in
+      let dst := ReplicaDurable clog ilog in
       "Hcm"         ∷ own_replica_cm rp cm ∗
       "Hhistm"      ∷ own_replica_histm rp histm α ∗
       "Hcpm"        ∷ own_replica_cpm rp cpm ∗
       "Hptsmsptsm"  ∷ own_replica_ptsm_sptsm rp ptsm sptsm ∗
       "Hpsmrkm"     ∷ own_replica_psm_rkm rp psm rkm ∗
-      "Hclog"       ∷ own_replica_clog_half γ gid rid clog ∗
-      "Hilog"       ∷ own_replica_ilog_half γ gid rid ilog ∗
+      "Hdurable"    ∷ own_crash_ex rpcrashNS (own_replica_durable γ gid rid) dst ∗
+      "#Hfname"     ∷ is_replica_fname rp gid rid γ ∗
       "#Hrpvds"     ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
       "#Hfpw"       ∷ ([∗ map] t ↦ ps ∈ psm, fast_proposal_witness γ gid rid t ps) ∗
       "#Hclogalb"   ∷ is_txn_log_lb γ gid cloga ∗
@@ -125,16 +131,40 @@ Section repr.
       "%Hvicmds"    ∷ ⌜Forall (λ nc, (nc.1 <= length cloga)%nat) ilog⌝ ∗
       "%Hexec"      ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝.
 
-  Definition own_replica (rp : loc) (gid rid : u64) γ α : iProp Σ :=
-    ∃ (cloga : dblog) (lsna : u64) (fname : byte_string) (bs : list u8),
-      "Hrp"        ∷ own_replica_with_cloga_no_lsna rp cloga gid rid γ α ∗
-      "Hlsna"      ∷ rp ↦[Replica :: "lsna"] #lsna ∗
-      "HfnameP"    ∷ rp ↦[Replica :: "fname"] #(LitString fname) ∗
-      (* TODO: The file pointsto really should be sealed in an atomic invariant,
-      but this won't be a problem until we start proving recovery. *)
-      "Hfile"      ∷ fname f↦ bs ∗
-      "%Hlencloga" ∷ ⌜length cloga = uint.nat lsna⌝.
+  (* TODO: expose lsna as a nat, without taking cloga *)
 
+  Definition own_replica_lsna (rp : loc) (lsna : nat) : iProp Σ :=
+    ∃ (lsnaW : u64),
+      "HlsnaP"  ∷ rp ↦[Replica :: "lsna"] #lsnaW ∗
+      "%HlsnaW" ∷ ⌜uint.nat lsnaW = lsna⌝.
+
+  Definition own_replica (rp : loc) (gid rid : u64) γ α : iProp Σ :=
+    ∃ (cloga : dblog) (lsna : nat),
+      "Hrp"        ∷ own_replica_with_cloga_no_lsna rp cloga gid rid γ α ∗
+      "Hlsna"      ∷ own_replica_lsna rp lsna ∗
+      "%Hlencloga" ∷ ⌜length cloga = lsna⌝.
+
+  Definition own_replica_replaying
+    (rp : loc) (clog : dblog) (ilog : list (nat * icommand)) α : iProp Σ :=
+    ∃ (cm : gmap nat bool) (histm : gmap dbkey dbhist)
+      (cpm : gmap nat dbmap) (ptgsm : gmap nat (gset u64))
+      (sptsm ptsm : gmap dbkey nat) (psm : gmap nat (nat * bool)) (rkm : gmap nat nat),
+      let log := merge_clog_ilog clog ilog in
+      "Hcm"        ∷ own_replica_cm rp cm ∗
+      "Hhistm"     ∷ own_replica_histm rp histm α ∗
+      "Hcpm"       ∷ own_replica_cpm rp cpm ∗
+      "Hptsmsptsm" ∷ own_replica_ptsm_sptsm rp ptsm sptsm ∗
+      "Hpsmrkm"    ∷ own_replica_psm_rkm rp psm rkm ∗
+      "%Hvcpm"     ∷ ⌜map_Forall (λ _ m, valid_wrs m) cpm⌝ ∗
+      "%Hexec"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝.
+
+  Definition own_replica_replaying_in_lsn
+    (rp : loc) (lsna : nat) (ilog : list (nat * icommand)) gid γ α : iProp Σ :=
+    ∃ (clog : dblog),
+      "Hrp"       ∷ own_replica_replaying rp clog ilog α ∗
+      "#Hcloglb"  ∷ is_txn_log_lb γ gid clog ∗
+      "%Hlenclog" ∷ ⌜length clog = lsna⌝.
+  
   Definition is_replica_idx (rp : loc) γ α : iProp Σ :=
     ∃ (idx : loc),
       "#HidxP" ∷ readonly (rp ↦[Replica :: "idx"] #idx) ∗
@@ -143,12 +173,13 @@ Section repr.
   (* TODO: rename this to [is_replica_core] and the one below to just [is_replica]. *)
   Definition is_replica (rp : loc) gid rid γ : iProp Σ :=
     ∃ (mu : loc) α,
-      "#HmuP"    ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
-      "#Hlock"   ∷ is_lock tulipNS #mu (own_replica rp gid rid γ α) ∗
-      "#Hidx"    ∷ is_replica_idx rp γ α ∗
-      "#Hinv"    ∷ know_tulip_inv γ ∗
-      "%Hgid"    ∷ ⌜gid ∈ gids_all⌝ ∗
-      "%Hrid"    ∷ ⌜rid ∈ rids_all⌝.
+      "#HmuP"     ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
+      "#Hlock"    ∷ is_lock tulipNS #mu (own_replica rp gid rid γ α) ∗
+      "#Hidx"     ∷ is_replica_idx rp γ α ∗
+      "#Hinv"     ∷ know_tulip_inv γ ∗
+      "#Hinvfile" ∷ know_replica_file_inv γ gid rid ∗
+      "%Hgid"     ∷ ⌜gid ∈ gids_all⌝ ∗
+      "%Hrid"     ∷ ⌜rid ∈ rids_all⌝.
 
 End repr.
 

@@ -14,13 +14,14 @@ Section program.
     rank ≠ O ->
     is_group_prepare_proposal γ gid ts rank dec -∗
     know_tulip_inv γ -∗
+    know_replica_file_inv γ gid rid -∗
     {{{ own_replica rp gid rid γ α }}}
       Replica__tryAccept #rp #tsW #rankW #dec
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         own_replica rp gid rid γ α ∗ accept_outcome γ gid rid ts rank dec res
     }}}.
   Proof.
-    iIntros (ts rank Hgid Hrid Hranknz) "#Hgpsl #Hinv".
+    iIntros (ts rank Hgid Hrid Hranknz) "#Hgpsl #Hinv #Hinvfile".
     iIntros (Φ) "!> Hrp HΦ".
     wp_rec.
 
@@ -69,12 +70,41 @@ Section program.
     (*@     // Logical actions: Execute() and then Accept(@ts, @rank, @dec).    @*)
     (*@     rp.logAccept(ts, rank, dec)                                         @*)
     (*@                                                                         @*)
-    wp_loadField.
-    wp_apply (wp_logAccept with "Hfile").
-    iIntros (bs') "Hfile".
     wp_pures.
+    iNamed "Hlsna".
+    wp_loadField.
+    iNamed "Hfname".
+    wp_loadField.
+    wp_apply wp_logAccept.
+    (* Open the crash, replica, and file invariants. *)
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamed "Hdurable".
     iNamed "Hinv".
     iInv "Hinv" as "> HinvO" "HinvC".
+    iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
+    iNamed "HinvfileO".
+    (* Agree on the fname, and merge the two ilog quarter. *)
+    iDestruct (replica_ilog_fname_agree with "Hfname Hilogfname") as %->.
+    iDestruct (replica_ilog_combine with "Hilog Hilogfileinv") as "[Hilog ->]".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    (* Give the file points-to to the logging method. *)
+    iFrame "Hfile %".
+    iIntros (bs' failed) "Hfile".
+    destruct failed.
+    { (* Case: Write failed. Close the invariants without any updates. *)
+      iMod "Hmask" as "_".
+      iDestruct (replica_ilog_split with "Hilog") as "[Hilog Hilogfileinv]".
+      iMod ("HinvfileC" with "[Hfile Hilogfileinv]") as "_".
+      { by iFrame "∗ # %". }
+      iMod ("HinvC" with "HinvO") as "_".
+      set dst := ReplicaDurable clog ilog.
+      iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
+      by iIntros "!> %Hcontra".
+    }
+    (* Case: Write succeeded. Update the logical state and re-establish invariant. *)
+    iDestruct "Hfile" as "[Hfile %Hencilog']".
     iNamed "HinvO".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
     iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]"; first apply Hgid.
@@ -83,7 +113,6 @@ Section program.
     destruct Hcloga as [cmdsa ->].
     iMod (replica_inv_execute with "Hclogalb Hclog Hilog Hgroup Hrp")
       as "(Hclog & Hilog & Hgroup & Hrp)".
-    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iMod (replica_inv_accept ts rank dec with "[Hgpsl] Hclog Hilog Hrp")
       as "(Hclog & Hilog & Hrp & #Hacc)".
     { apply Hexec. }
@@ -94,9 +123,31 @@ Section program.
       clear -Hge. lia.
     }
     { case_decide as Hrank; [word | done]. }
+    (* Close the file, replica, and crash invariants. *)
+    iDestruct (replica_ilog_split with "Hilog") as "[Hilog Hilogfileinv]".
+    iMod "Hmask" as "_".
+    iMod ("HinvfileC" with "[Hfile Hilogfileinv]") as "_".
+    { iFrame "∗ #".
+      iPureIntro.
+      split.
+      { apply Forall_app_2; first apply Hvilog.
+        rewrite Forall_singleton.
+        simpl.
+        split.
+        { clear -Hlencloga HlsnaW. word. }
+        word.
+      }
+      { by rewrite Hlencloga -HlsnaW. }
+    }
+    iDestruct ("HgroupsC" with "Hgroup") as "Hgroups".
     iDestruct ("HrgC" with "Hrp") as "Hrg".
     iDestruct ("HrgsC" with "Hrg") as "Hrgs".
     iMod ("HinvC" with "[$Htxnsys $Hkeys $Hgroups $Hrgs]") as "_".
+    set ilog' := ilog ++ _.
+    set dst := ReplicaDurable (clog ++ cmdsa) ilog'.
+    iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
+    iIntros "!> _".
+    wp_pures.
 
     (*@     return tulip.REPLICA_OK                                             @*)
     (*@ }                                                                       @*)

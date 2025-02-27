@@ -30,9 +30,9 @@ Section lemmas.
     serialize f (x :: l) = f x ++ serialize f l.
   Proof. by rewrite /serialize /= -app_serialize. Qed.
 
-  Lemma serialize_app f l x :
-    serialize f (l ++ [x]) = serialize f l ++ f x.
-  Proof. by rewrite /serialize foldl_snoc. Qed.
+  Lemma serialize_app f l1 l2 :
+    serialize f (l1 ++ l2) = serialize f l1 ++ serialize f l2.
+  Proof. by rewrite /serialize foldl_app -app_serialize. Qed.
 
   Lemma serialize_length_inv f l n :
     (∀ x, length (f x) ≠ O) ->

@@ -3,6 +3,8 @@ From iris.proofmode Require Import tactics.
 From Perennial.Helpers Require Import ipm.
 From Perennial.program_proof.rsm Require Import big_sep.
 
+Open Scope Z_scope.
+
 (* TODO: move *)
 Section big_sepS_cprod.
   Context {PROP : bi}.
