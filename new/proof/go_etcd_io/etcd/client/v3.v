@@ -3,59 +3,34 @@ Require Import New.code.go_etcd_io.etcd.client.v3.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.
 Require Import New.proof.proof_prelude.
 
-Inductive ecomp (E : Type → Type) (EK : Type → Type → Type) (R : Type) : Type :=
-| Effect {A} (e : E A) (k : A → ecomp E EK R) : ecomp E EK R
-| EffectK {A} (e : EK A R) (k : A → ecomp E EK R) : ecomp E EK R.
-
-Arguments Effect {_ _ _ _} (_ _).
-Arguments EffectK {_ _ _ _} (_ _).
-
-Definition Handler E (M : Type → Type) := ∀ A (e : E A), M A.
-Definition HandlerK EK (M : Type → Type) := ∀ A R (e : EK A R) (k : A → M R), M R.
-
-Fixpoint denote {M E EK R} `{!MBind M}
-  (handler : Handler E M) (handlerK : HandlerK EK M)
-  (e : ecomp E EK R)
-  : M R :=
-  match e with
-  | Effect e k => v ← handler _ e; denote handler handlerK (k v)
-  | EffectK e k => handlerK _ _ e (λ a, denote handler handlerK (k a))
-  end.
-
-(* Definition Handler E M := ∀ (A B : Type) (e : E A) (k : A → M B), M B. *)
-Fixpoint ecomp_bind {E Ek A B} (kx : A → ecomp E Ek B) (x : ecomp E Ek A) : (ecomp E Ek B) :=
-  match x with
-  | Effect e k => (Effect e (λ c, ecomp_bind kx (k c)))
-  | EffectK e k => (EffectK e (λ c, ecomp_bind kx (k c)))
-  end.
-Instance ecomp_MBind E : MBind (ecomp E) := @ecomp_bind E.
-
-(*
 Inductive ecomp (E : Type → Type) (R : Type) : Type :=
-| Ret (r : R) : ecomp E R
+| Pure (r : R) : ecomp E R
 | Effect {A} (e : E A) (k : A → ecomp E R) : ecomp E R
 (* Having a separate [Bind] permits binding at pure computation steps, whereas
    binding only in [Effect] results in a shallower (and thus easier to reason
    about) embedding. *)
 .
 
-Arguments Ret {_ _} (_).
-Arguments Effect {_ _ _} (_).
+Arguments Pure {_ _} (_).
+Arguments Effect {_ _ _} (_ _).
 
-Fixpoint ecomp_bind E {A B} (kx : A → ecomp E B) (x : ecomp E A) : (ecomp E B) :=
-  match x with
-  | Ret y => (kx y)
-  | Effect e k => (Effect e (λ c, ecomp_bind E kx (k c)))
-  end.
-Instance ecomp_MBind E : MBind (ecomp E) := @ecomp_bind E.
+Definition Handler E (M : Type → Type) := ∀ A (e : E A), M A.
 
-Instance ecomp_MRet E : MRet (ecomp E) := (@Ret E).
-
-Fixpoint denote `{MBind M} `{!MRet M} {E R} (handler : ∀ A (e : E A), M A) (e : ecomp E R) : M R :=
+Fixpoint denote {M E R}`{!MRet M} `{!MBind M} (handler : Handler E M) (e : ecomp E R) : M R :=
   match e with
-  | Ret a => mret a
-  | Effect e k => v ← (handler _ e); denote handler (k v)
-  end. *)
+  | Pure r => mret r
+  | Effect e k => v ← handler _ e; denote handler (k v)
+  end.
+
+(* Definition Handler E M := ∀ (A B : Type) (e : E A) (k : A → M B), M B. *)
+Fixpoint ecomp_bind {E} A B (kx : A → ecomp E B) (x : ecomp E A) : (ecomp E B) :=
+  match x with
+  | Pure r => kx r
+  | Effect e k => (Effect e (λ c, ecomp_bind _ _ kx (k c)))
+  end.
+Instance ecomp_MBind E : MBind (ecomp E) := ecomp_bind.
+
+Instance ecomp_MRet E : MRet (ecomp E) := (@Pure E).
 
 Existing Instance fallback_genPred.
 Existing Instances r_mbind r_mret r_fmap.
@@ -98,9 +73,10 @@ Global Instance settable : Settable _ :=
   settable! mk < revision; compact_revision; key_values; used_lease_ids; lease_expiration>.
 End EtcdState.
 
-(** Effects for etcd specification. *)
-Inductive etcdE : Type → Type :=
-| Return {R} (r : R) : etcdE R
+(** Effects for etcd specification, with return type [R]. This must be specified
+    in the effect type to support early return. *)
+Inductive etcdE {R : Type} : Type → Type :=
+| Return {A} (r : R) : etcdE A
 | Diverge : etcdE False
 | SuchThat {A} (pred : A → Prop) : etcdE A
 | GetState : etcdE EtcdState.t
@@ -108,6 +84,8 @@ Inductive etcdE : Type → Type :=
 | GetTime : etcdE w64
 | Assume (b : Prop) : etcdE unit
 | Assert (b : Prop) : etcdE unit.
+
+Arguments etcdE _ _ : clear implicits.
 
 (* Establish monadicity of relation.t *)
 Instance relation_mret A : MRet (relation.t A) :=
@@ -119,36 +97,36 @@ Instance relation_mbind A : MBind (relation.t A) :=
       ma σ σmiddle a ∧
       kmb a σmiddle σ' b.
 
-(* Handle etcd effects as a in the [relation.t EtcdState.t] monad. *)
+Inductive exceptionE R : Type → Type :=
+| Throw {A} (r : R) : exceptionE R A.
+Arguments Throw {_ _} (_).
 
-Definition Handler E M := ∀ (A B : Type) (e : E A) (k : A → M B), M B.
-Definition SimpleHandler E (M : Type → Type) := ∀ A (e : E A), M A.
-Definition SimplerHandler E M := ∀ A (e : E A), (M A) + (∀ B (k : A → M B), M B).
+Search compose MBind.
+Program Instance MBind_compose `{mb1:MBind M1, mb2:MBind M2} : MBind (M1 ∘ M2) :=
+  λ {A B} (kmb : A → M1 (M2 B)),
+    mbind (MBind:=mb1) _.
 
-Definition from_simple_handler {E M} `{!MBind M} (simple_handler : SimpleHandler E M)
-  : ∀ (A B : Type) (e : E A) (k : A → M B), M B :=
-  λ _ _ e k, a ← simple_handler _ e; k a.
-
-Definition from_simpler_handler {E M} `{!MBind M} (simpler_handler : SimplerHandler E M) :
-  ∀ (A B : Type) (e : E A) (k : A → M B), M B :=
-  λ _ _ e k,
-  match simpler_handler _ e with
-  | inl comp => (a ← comp; k a)
-  | inr handle_rest => (handle_rest _ k)
-  end.
-
-Definition simpler_handler_etcdE (t : w64) : SimplerHandler etcdE (relation.t EtcdState.t) :=
+(*
+Definition handle_exception R E : Handler (λ A, exceptionE R A + E A)%type (ecomp E) (sum R) :=
   λ A e,
-  match e with
-  | SuchThat pred => inl $ λ σ σ' a, pred a ∧ σ' = σ
-  | GetState => inl $ λ σ σ' σret, σ' = σ ∧ σret = σ
-  | SetState σnew => inl $ λ σ σ' _, σ' = σnew
-  | GetTime => inl $ λ σ σ' tret, tret = t ∧ σ' = σ
-  | Assume P => inl $ λ σ σ' tret, P ∧ σ = σ'
-  | Assert P => inl $ λ σ σ' tret, (P → σ = σ')
-  | Diverge => inl $ λ σ σ' _, False
-  | Return _ => inr $ λ B k, λ σ σ' r, False
-  end.
+    match e with
+    | Throw r =>
+    end
+.
+
+(* Handle etcd effects as a in the [relation.t EtcdState.t] monad. *)
+Definition handler_etcdE (t : w64) R : Handler (etcdE R) (relation.t EtcdState.t) :=
+  λ A e,
+    match e with
+    | Return r => λ σ σ' x, x = inl r
+    | SuchThat pred => inl $ λ σ σ' x, ∃ a, x = inr a ∧ pred a ∧ σ' = σ
+    | GetState => inl $ λ σ σ' ret, σ' = σ ∧ ret = inr σ
+    | SetState σnew => inl $ λ σ σ' ret, σ' = σnew
+    | GetTime => inl $ λ σ σ' tret, tret = t ∧ σ' = σ
+    | Assume P => inl $ λ σ σ' tret, P ∧ σ = σ'
+    | Assert P => inl $ λ σ σ' tret, (P → σ = σ')
+    | Diverge => inl $ λ σ σ' _, False
+    end.
 
 Definition handler_etcdE t := from_simpler_handler (simpler_handler_etcdE t).
 
@@ -483,3 +461,4 @@ Proof.
   }
 Abort.
 End spec.
+ *)
