@@ -1,5 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_logic Require Import atomic. (* prefer the ncfupd atomics *)
+From Perennial.program_proof Require Import std_proof.
 From Goose.github_com.mit_pdos.rsm Require Import mpaxos.
 
 (* TODO: move to mpaxos_ghost.v once stable *)
@@ -329,9 +330,9 @@ Section prog.
     destruct Heqb as [Hok1 Hok2]. subst ok1 ok2.
     iDestruct (consensus_lb_prefix with "Hlb1 Hlb2") as %Hprefix.
     rewrite -(prefix_lookup_same_index Hprefix Hv1 Hv2).
-    wp_apply wp_Assert; first by rewrite bool_decide_eq_true.
+    wp_apply std_proof.wp_Assert; first by rewrite bool_decide_eq_true.
     wp_pures.
-    wp_apply wp_Assert; first by rewrite Hlenv1.
+    wp_apply std_proof.wp_Assert; first by rewrite Hlenv1.
     wp_pures.
     by iApply "HΦ".
   Qed.

@@ -90,7 +90,7 @@ Definition applyUpd: val :=
   rec: "applyUpd" "keys" "upd" :=
     MapIter "upd" (λ: "label" "val",
       let: ((<>, <>), "err0") := merkle.Tree__Put "keys" (StringToBytes "label") "val" in
-      control.impl.Assert (~ "err0"));;
+      std.Assert (~ "err0"));;
     #().
 
 (* PreSigDig from serde.go *)
@@ -1033,7 +1033,7 @@ Definition getUidLabelCache: val :=
     let: ("labels", "ok") := MapGet "cache" "uid" in
     (if: "ok"
     then
-      control.impl.Assert ((slice.len "labels") ≥ #1);;
+      std.Assert ((slice.len "labels") ≥ #1);;
       "labels"
     else
       let: ("label", "proof") := compMapLabel "uid" #0 "sk" in
@@ -1096,7 +1096,7 @@ Definition Server__Put: val :=
     MapInsert (struct.loadF Server "pkCommOpens" "s") (StringFromBytes (struct.loadF vrfCache "hash" "latLabel")) "open";;
     let: "mapVal" := compMapVal "nextEpoch" "open" in
     let: (("dig", "latestProof"), "err1") := merkle.Tree__Put (struct.loadF Server "keyMap" "s") (struct.loadF vrfCache "hash" "latLabel") "mapVal" in
-    control.impl.Assert (~ "err1");;
+    std.Assert (~ "err1");;
     let: "latest" := struct.new Memb [
       "LabelProof" ::= struct.loadF vrfCache "proof" "latLabel";
       "EpochAdded" ::= "nextEpoch";
@@ -1108,8 +1108,8 @@ Definition Server__Put: val :=
     let: ("newHist", "sigDig") := updHist (struct.loadF Server "histInfo" "s") "nextEpoch" "upd" "dig" (struct.loadF Server "sigSk" "s") in
     struct.storeF Server "histInfo" "s" "newHist";;
     let: ((((<>, <>), "boundProofTy"), "boundProof"), "err1") := merkle.Tree__Get (struct.loadF Server "keyMap" "s") "boundLabel" in
-    control.impl.Assert (~ "err1");;
-    control.impl.Assert (~ "boundProofTy");;
+    std.Assert (~ "err1");;
+    std.Assert (~ "boundProofTy");;
     let: "bound" := struct.new NonMemb [
       "LabelProof" ::= "boundLabelProof";
       "MerkProof" ::= "boundProof"
@@ -1184,8 +1184,8 @@ Definition getHist: val :=
       (for: (λ: <>, (![uint64T] "ver") < ("numRegVers" - #1)); (λ: <>, "ver" <-[uint64T] ((![uint64T] "ver") + #1)) := λ: <>,
         let: "label" := SliceGet ptrT "labels" (![uint64T] "ver") in
         let: (((("mapVal", <>), "proofTy"), "proof"), "err0") := merkle.Tree__Get "keyMap" (struct.loadF vrfCache "hash" "label") in
-        control.impl.Assert (~ "err0");;
-        control.impl.Assert "proofTy";;
+        std.Assert (~ "err0");;
+        std.Assert "proofTy";;
         "hist" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "hist") (struct.new MembHide [
           "LabelProof" ::= struct.loadF vrfCache "proof" "label";
           "MapVal" ::= "mapVal";
@@ -1207,12 +1207,12 @@ Definition getLatest: val :=
     else
       let: "label" := SliceGet ptrT "labels" ("numRegVers" - #1) in
       let: (((("mapVal", <>), "proofTy"), "proof"), "err0") := merkle.Tree__Get "keyMap" (struct.loadF vrfCache "hash" "label") in
-      control.impl.Assert (~ "err0");;
-      control.impl.Assert "proofTy";;
+      std.Assert (~ "err0");;
+      std.Assert "proofTy";;
       let: (("valPre", <>), "err1") := MapValPreDecode "mapVal" in
-      control.impl.Assert (~ "err1");;
+      std.Assert (~ "err1");;
       let: ("open", "ok0") := MapGet "opens" (StringFromBytes (struct.loadF vrfCache "hash" "label")) in
-      control.impl.Assert "ok0";;
+      std.Assert "ok0";;
       (#true, struct.new Memb [
          "LabelProof" ::= struct.loadF vrfCache "proof" "label";
          "EpochAdded" ::= struct.loadF MapValPre "Epoch" "valPre";
@@ -1225,8 +1225,8 @@ Definition getBound: val :=
     let: "boundVer" := (slice.len "labels") - #1 in
     let: "label" := SliceGet ptrT "labels" "boundVer" in
     let: ((((<>, <>), "proofTy"), "proof"), "err0") := merkle.Tree__Get "keyMap" (struct.loadF vrfCache "hash" "label") in
-    control.impl.Assert (~ "err0");;
-    control.impl.Assert (~ "proofTy");;
+    std.Assert (~ "err0");;
+    std.Assert (~ "proofTy");;
     struct.new NonMemb [
       "LabelProof" ::= struct.loadF vrfCache "proof" "label";
       "MerkProof" ::= "proof"

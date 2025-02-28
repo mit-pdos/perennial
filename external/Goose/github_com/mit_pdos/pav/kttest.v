@@ -135,10 +135,10 @@ Definition testAll: val :=
     doAudits (struct.loadF alice "cli" "alice") (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
     doAudits (struct.loadF bob "cli" "bob") (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
     let: ("isReg", "alicePk") := kt.GetHist (struct.loadF alice "hist" "alice") (struct.loadF bob "epoch" "bob") in
-    control.impl.Assert ("isReg" = (struct.loadF bob "isReg" "bob"));;
+    std.Assert ("isReg" = (struct.loadF bob "isReg" "bob"));;
     (if: "isReg"
     then
-      control.impl.Assert (std.BytesEqual "alicePk" (struct.loadF bob "alicePk" "bob"));;
+      std.Assert (std.BytesEqual "alicePk" (struct.loadF bob "alicePk" "bob"));;
       #()
     else #()).
 
