@@ -334,7 +334,12 @@ Inductive Error :=
    sort_order == None.
  *)
 
-Definition relation_pullback {A B} (f : A → B) (R : relation B) : relation A :=
+(* XXX: cannot use `relation A` and `relation B` here because it causes universe
+   inconsistency....
+   Relatedly, [Set Universe Polymorphism.] causes the [Put] definition to be
+   rejected.
+ *)
+Definition relation_pullback {A B} (f : A → B) (R : B → B → Prop) : (A → A → Prop) :=
   λ a1 a2, R (f a1) (f a2).
 
 (* This should be eventually be defined in lang.v *)
@@ -372,9 +377,6 @@ Fixpoint go_string_lt (x y : go_string) : Prop :=
 
 Definition kv_key_comp := (relation_pullback (KeyValue.key) go_string_lt).
 
-(* FIXME: seems like universe problem.... *)
-Fail Definition bad := Pure kv_key_comp.
-
 Definition Range (req : RangeRequest.t) : ecomp etcdE (Error + RangeResponse.t) :=
 interp handle_exceptionE (
   σ ← do $ Ok $ GetState;
@@ -403,13 +405,11 @@ interp handle_exceptionE (
        filter (λ kv,  sint.Z req.(RangeRequest.min_create_revision) ≤ sint.Z kv.(KeyValue.create_revision)) kvs
      else kvs) in
   (* for sorting in ascending order; descending means flipping the order of the list. *)
-  let sort_relation := kv_key_comp in
-  (* sort_relation ←
+  sort_relation ←
     (match uint.Z req.(RangeRequest.sort_target) with
-     | (* KEY *) _ => Pure ((λ _ _, True) : relation KeyValue.t)
-     (* | (* KEY *) 1 => Pure (λ (k1 k2 : KeyValue.t), True) *)
-     (* | _ => (do $ Ok (Assert False);; do $ Throw $ Bad "unreachable") *)
-     end); *)
+     | (* KEY *) 0 => Pure (relation_pullback KeyValue.key go_string_lt)
+     | _ => (do $ Ok (Assert False);; do $ Throw $ Bad "unreachable")
+     end);
   (* | 0 => Pure (@id (list KeyValue.t)) (* XXX: the etcd implementation seems to sort even in this case. *) *)
   (do $ Throw $ Bad "Incomplete spec")
 ).
