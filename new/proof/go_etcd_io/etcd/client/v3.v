@@ -379,6 +379,7 @@ Definition kv_key_comp := (relation_pullback (KeyValue.key) go_string_lt).
 
 Definition Range (req : RangeRequest.t) : ecomp etcdE (Error + RangeResponse.t) :=
 interp handle_exceptionE (
+  do $ Ok $ Assert (req.(RangeRequest.serializable) = false);;
   σ ← do $ Ok $ GetState;
   let current_revision := σ.(EtcdState.revision) in
   (if decide (sint.Z req.(RangeRequest.revision) > sint.Z current_revision) then
@@ -408,9 +409,20 @@ interp handle_exceptionE (
   sort_relation ←
     (match uint.Z req.(RangeRequest.sort_target) with
      | (* KEY *) 0 => Pure (relation_pullback KeyValue.key go_string_lt)
+     | (* VERSION *) 1 => Pure (relation_pullback (sint.Z ∘ KeyValue.version) Z.lt)
+     | (* CREATE *) 2 => Pure (relation_pullback (sint.Z ∘ KeyValue.create_revision) Z.lt)
+     | (* MOD *) 3 => Pure (relation_pullback (sint.Z ∘ KeyValue.mod_revision) Z.lt)
+     | (* VALUE *) 4 => Pure (relation_pullback KeyValue.value go_string_lt)
      | _ => (do $ Ok (Assert False);; do $ Throw $ Bad "unreachable")
      end);
-  (* | 0 => Pure (@id (list KeyValue.t)) (* XXX: the etcd implementation seems to sort even in this case. *) *)
+  let kvs_sorted := merge_sort sort_relation kvs in *)
+  let kvs_sorted := kvs in
+  kvs ← (match (uint.Z req.(RangeRequest.sort_order)) with
+         | (* NONE *) 0 => Pure kvs (* XXX: the etcd implementation seems to sort even in this case. *)
+         | (* ASCEND *) 1 => Pure kvs_sorted
+         | (* DESCEND *) 2 => Pure (reverse kvs_sorted)
+         | _ => (do $ Ok $ Assert False;; do $ Throw $ Bad "unreachable")
+         end);
   (do $ Throw $ Bad "Incomplete spec")
 ).
 
