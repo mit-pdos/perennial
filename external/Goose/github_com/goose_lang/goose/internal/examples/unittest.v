@@ -610,8 +610,15 @@ Definition IntWrapper: ty := uint64T.
 
 Definition MapWrapper: ty := mapT boolT.
 
-Definition MapTypeAliases: val :=
-  rec: "MapTypeAliases" "m1" "m2" :=
+Notation MapAlias := MapWrapper (only parsing).
+
+Definition MapNamedType: val :=
+  rec: "MapNamedType" "m1" "m2" :=
+    MapInsert "m1" #4 (Fst (MapGet "m2" #0));;
+    #().
+
+Definition MapAliasType: val :=
+  rec: "MapAliasType" "m1" "m2" :=
     MapInsert "m1" #4 (Fst (MapGet "m2" #0));;
     #().
 
@@ -903,6 +910,7 @@ Definition useAlias: val :=
   rec: "useAlias" <> :=
     let: "s" := NewSlice uint32T #10 in
     let: "s2" := NewSlice uint32T #5 in
+    SliceSet uint32T "s" #1 #(U32 2);;
     SliceCopy uint32T "s" "s2";;
     SliceGet uint32T "s" #2.
 
