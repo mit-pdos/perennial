@@ -333,6 +333,48 @@ Inductive Error :=
    Nonetheless, this model is conservative and does not guarantee sortedness if
    sort_order == None.
  *)
+
+Definition relation_pullback {A B} (f : A → B) (R : relation B) : relation A :=
+  λ a1 a2, R (f a1) (f a2).
+
+(* This should be eventually be defined in lang.v *)
+Fixpoint go_string_ltb (x y : go_string) : bool :=
+  match x, y with
+  | [], [] => false
+  | [], _ => true
+  | _, [] => false
+  | (a :: x), (b :: y) => if (word.ltu a b) then
+                         true
+                       else if (word.eqb a b) then
+                              go_string_ltb x y
+                            else false
+  end.
+
+Example go_string_ltb_examples :
+  go_string_ltb "" "" = false ∧
+  go_string_ltb "" "a" = true ∧
+  go_string_ltb "a" "" = false ∧
+  go_string_ltb "ab" "a" = false ∧
+  go_string_ltb "ab" "b" = true
+  := ltac:(auto).
+
+Fixpoint go_string_lt (x y : go_string) : Prop :=
+  match x, y with
+  | [], [] => False
+  | [], _ => True
+  | _, [] => False
+  | (a :: x), (b :: y) => if decide (uint.Z a < uint.Z b) then
+                         True
+                       else if decide (uint.Z a = uint.Z b) then
+                              go_string_lt x y
+                            else false
+  end.
+
+Definition kv_key_comp := (relation_pullback (KeyValue.key) go_string_lt).
+
+(* FIXME: seems like universe problem.... *)
+Fail Definition bad := Pure kv_key_comp.
+
 Definition Range (req : RangeRequest.t) : ecomp etcdE (Error + RangeResponse.t) :=
 interp handle_exceptionE (
   σ ← do $ Ok $ GetState;
@@ -360,6 +402,15 @@ interp handle_exceptionE (
     (if decide (req.(RangeRequest.min_create_revision) ≠ W64 0) then
        filter (λ kv,  sint.Z req.(RangeRequest.min_create_revision) ≤ sint.Z kv.(KeyValue.create_revision)) kvs
      else kvs) in
+  (* for sorting in ascending order; descending means flipping the order of the list. *)
+  let sort_relation := kv_key_comp in
+  (* sort_relation ←
+    (match uint.Z req.(RangeRequest.sort_target) with
+     | (* KEY *) _ => Pure ((λ _ _, True) : relation KeyValue.t)
+     (* | (* KEY *) 1 => Pure (λ (k1 k2 : KeyValue.t), True) *)
+     (* | _ => (do $ Ok (Assert False);; do $ Throw $ Bad "unreachable") *)
+     end); *)
+  (* | 0 => Pure (@id (list KeyValue.t)) (* XXX: the etcd implementation seems to sort even in this case. *) *)
   (do $ Throw $ Bad "Incomplete spec")
 ).
 
