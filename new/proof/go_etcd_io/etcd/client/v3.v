@@ -147,14 +147,6 @@ Definition handle_etcdE (t : w64) : Handler etcdE (relation.t EtcdState.t) :=
     | Assert P => λ σ σ' tret, (P → σ = σ')
     end.
 
-(* Definition withReturn R E := (λ A, exceptionE R A + E A)%type. *)
-
-Definition interp_relation {R} (time_of_execution : w64) (e : ecomp etcdE R) :
-  relation.t EtcdState.t R := interp (handle_etcdE time_of_execution) e.
-
-Program Definition unwrap_exception {R E} (e : ecomp (with_exceptionE R E) R) :=
-  r ← (interp handle_exceptionE e); match r with | inl r' => Pure r' | inr r' => Pure r' end.
-
 Definition do {E R} (e : E R) : ecomp E R := Effect e Pure.
 
 (** This covers all transitions of the etcd state that are not tied to a client
@@ -329,35 +321,19 @@ mk {
   }.
 End RangeResponse.
 
-(* Early return:
+Inductive Error :=
+| Bad (msg : go_string).
 
-   EarlyReturn x; e
-
-   Should equal `EarlyReturn x`
-   interp
- *)
-(*
-Definition key_le (key1 key2 : list w8) : bool :=
-  match key1 key2 with
-  | (_ :: _) nil =>
-  end
-. *)
-
-(* Program Definition throw (r : R) : (ecomp (withReturn R E)) A :=
-  let z := (eff $ inl (Throw r (A:=False))) in
-  mbind _ z. *)
-
-(* txn.go:152 which calls
-   kvstore_txn.go:72 *)
-Definition Range (req : RangeRequest.t) : ecomp etcdE (option RangeResponse.t) :=
-  unwrap_exception (
-      σ ← do $ Ok $ GetState;
-      let cur_revision := σ.(EtcdState.revision) in
-      (if decide (* sint.Z req.(RangeRequest.revision) > sint.Z cur_revision *) True then
-         (do $ Throw None)
-       else Pure ());;
-      Pure None
-    ).
+(* txn.go:152 which calls kvstore_txn.go:72 *)
+Definition Range (req : RangeRequest.t) : ecomp etcdE (Error + RangeResponse.t) :=
+interp handle_exceptionE (
+  σ ← do $ Ok $ GetState;
+  let cur_revision := σ.(EtcdState.revision) in
+  (if decide (sint.Z req.(RangeRequest.revision) > sint.Z cur_revision) then
+     (do $ Throw $ Bad "Future revision")
+   else Pure ());;
+  (do $ Throw $ Bad "Incomplete spec")
+).
 
 Module PutRequest.
 Record t :=
@@ -386,36 +362,34 @@ End PutResponse.
 
 (* server/etcdserver/txn.go:58, then
    server/storage/mvcc/kvstore_txn.go:196 *)
-Definition Put (req : PutRequest.t) : ecomp etcdE (option PutResponse.t) :=
-  SpontaneousTransition;;
-  σ ← do GetState;
+Definition Put (req : PutRequest.t) : ecomp etcdE (Error + PutResponse.t) :=
+interp handle_exceptionE (
+  σ ← do $ Ok $ GetState;
   let kvs := default ∅ (σ.(EtcdState.key_values) !! σ.(EtcdState.revision)) in
   (* NOTE: could use [Range] here. *)
   let prev_kv := kvs !! req.(PutRequest.key) in
 
-  (* The Go code uses early returns, which this mimics. *)
-  let opt_computation :=
-    (value ← (if req.(PutRequest.ignore_value) then KeyValue.value <$> prev_kv else mret req.(PutRequest.value));
-     lease ← (if req.(PutRequest.ignore_lease) then KeyValue.lease <$> prev_kv else mret req.(PutRequest.lease));
-     let ret_prev_kv := (if req.(PutRequest.prev_kv) then prev_kv else None) in
-     let prev_ver := default (W64 0) (KeyValue.version <$> prev_kv) in
-     let mod_revision := (word.add σ.(EtcdState.revision) 1) in
-     let create_revision := default mod_revision (KeyValue.create_revision <$> prev_kv) in
-     let ver := (word.add prev_ver (W64 1)) in (* should this handle overflow? *)
-     let new_kv := KeyValue.mk req.(PutRequest.key) create_revision mod_revision ver value lease in
-     let σ := set EtcdState.key_values <[mod_revision := <[req.(PutRequest.key) := new_kv]> kvs]> σ in
-     let σ := set EtcdState.revision (const mod_revision) σ in
-     (* updating [key_values] handles attaching/detaching leases, since the map
+  (* compute value and lease, possibly throwing an error. *)
+  value ← (if req.(PutRequest.ignore_value) then
+             default (do $ Throw $ Bad "Key not found") ((Pure ∘ KeyValue.value) <$> prev_kv)
+           else Pure req.(PutRequest.value));
+  lease ← (if req.(PutRequest.ignore_lease) then
+             default (do $ Throw $ Bad "Key not found") ((Pure ∘ KeyValue.lease) <$> prev_kv)
+           else Pure req.(PutRequest.lease));
+
+  let ret_prev_kv := (if req.(PutRequest.prev_kv) then prev_kv else None) in
+  let prev_ver := default (W64 0) (KeyValue.version <$> prev_kv) in
+  let ver := (word.add prev_ver (W64 1)) in (* should this handle overflow? *)
+  let mod_revision := (word.add σ.(EtcdState.revision) 1) in
+  let create_revision := default mod_revision (KeyValue.create_revision <$> prev_kv) in
+  let new_kv := KeyValue.mk req.(PutRequest.key) create_revision mod_revision ver value lease in
+  let σ := set EtcdState.key_values <[mod_revision := <[req.(PutRequest.key) := new_kv]> kvs]> σ in
+  let σ := set EtcdState.revision (const mod_revision) σ in
+  (* updating [key_values] handles attaching/detaching leases, since the map
         itself defines the association from LeaseID to Key. *)
-     Some (
-         do $ SetState $ σ;;
-         Pure $ Some (PutResponse.mk ret_prev_kv)
-    ))
-  in
-  match opt_computation with
-  | None => Pure None
-  | Some c => c
-  end.
+  do $ Ok $ SetState $ σ;;
+  Pure (PutResponse.mk ret_prev_kv)
+).
 
 Section spec.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
