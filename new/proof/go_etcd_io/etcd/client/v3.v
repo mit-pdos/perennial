@@ -101,12 +101,31 @@ Inductive exceptionE R : Type → Type :=
 | Throw {A} (r : R) : exceptionE R A.
 Arguments Throw {_ _} (_).
 
-Search compose MBind.
-Program Instance MBind_compose `{mb1:MBind M1, mb2:MBind M2} : MBind (M1 ∘ M2) :=
-  λ {A B} (kmb : A → M1 (M2 B)),
-    mbind (MBind:=mb1) _.
 
-(*
+(* Monads can't be composed in general.
+  Can we still show that ecomp E (R + ∙) is a monad?
+  https://www.cis.upenn.edu/~stevez/papers/SH+23.pdf claims to use `interp` to
+  interpret an exception effect into a (R + A) value type.
+  However, the paper does not argue (or even claim) that (itree (excE Err ⊕ E)
+  (Err ⊕ ∙)) is a monad, which is needed for interpretation.
+  E.g. one must define that as soon as an exception is reached, no more effects
+  should be carried out, which seems like it ought to be part of the bind for
+  that not-a-Monad....
+  In fact, looking at the code
+  (https://github.com/DeepSpec/InteractionTrees/blob/secure/theories/Events/Exception.v),
+  reveals that the formal development does not do what the paper claims.
+  Instead, it manually creates a looping itree computation that carries out one
+  effect at a time, terminating early if an exception is encountered. It does
+  not use the standard `interp`. Is it possible to define *any* itree handler
+  such that Theorem 2 holds?
+ *)
+Program Instance MBind_compose_exception `{mb:MBind M} R :
+  MBind (M ∘ (sum R)) :=
+  λ {A B} (kmb : A → M (R + B)%type),
+    _
+.
+Abort.
+
 Definition handle_exception R E : Handler (λ A, exceptionE R A + E A)%type (ecomp E) (sum R) :=
   λ A e,
     match e with
@@ -461,4 +480,3 @@ Proof.
   }
 Abort.
 End spec.
- *)
