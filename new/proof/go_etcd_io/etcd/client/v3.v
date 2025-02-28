@@ -325,13 +325,41 @@ Inductive Error :=
 | Bad (msg : go_string).
 
 (* txn.go:152 which calls kvstore_txn.go:72 *)
+(* XXX:
+   The etcd documentation states that if the sort_order is None, there will be "no sorting".
+   In fact, the implementation seems to *always* return sorted results, as of
+   https://github.com/etcd-io/etcd/issues/6671
+
+   Nonetheless, this model is conservative and does not guarantee sortedness if
+   sort_order == None.
+ *)
 Definition Range (req : RangeRequest.t) : ecomp etcdE (Error + RangeResponse.t) :=
 interp handle_exceptionE (
   σ ← do $ Ok $ GetState;
-  let cur_revision := σ.(EtcdState.revision) in
-  (if decide (sint.Z req.(RangeRequest.revision) > sint.Z cur_revision) then
+  let current_revision := σ.(EtcdState.revision) in
+  (if decide (sint.Z req.(RangeRequest.revision) > sint.Z current_revision) then
      (do $ Throw $ Bad "Future revision")
    else Pure ());;
+  let rev := (if decide (sint.Z req.(RangeRequest.revision) < 0) then current_revision
+              else req.(RangeRequest.revision))
+  in
+  kvs ← do $ Ok $ SuchThat (λ (kvs : list KeyValue.t), True); (* FIXME: say stuff about the range containing everything *)
+  let kvs :=
+    (if decide (req.(RangeRequest.max_mod_revision) ≠ W64 0) then
+       filter (λ kv, sint.Z kv.(KeyValue.mod_revision) ≤ sint.Z req.(RangeRequest.max_mod_revision)) kvs
+     else kvs) in
+  let kvs :=
+    (if decide (req.(RangeRequest.min_mod_revision) ≠ W64 0) then
+       filter (λ kv,  sint.Z req.(RangeRequest.min_mod_revision) ≤ sint.Z kv.(KeyValue.mod_revision)) kvs
+     else kvs) in
+  let kvs :=
+    (if decide (req.(RangeRequest.max_create_revision) ≠ W64 0) then
+       filter (λ kv, sint.Z kv.(KeyValue.create_revision) ≤ sint.Z req.(RangeRequest.max_create_revision)) kvs
+     else kvs) in
+  let kvs :=
+    (if decide (req.(RangeRequest.min_create_revision) ≠ W64 0) then
+       filter (λ kv,  sint.Z req.(RangeRequest.min_create_revision) ≤ sint.Z kv.(KeyValue.create_revision)) kvs
+     else kvs) in
   (do $ Throw $ Bad "Incomplete spec")
 ).
 
