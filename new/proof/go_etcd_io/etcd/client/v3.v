@@ -14,12 +14,12 @@ Inductive ecomp (E : Type → Type) (R : Type) : Type :=
 Arguments Pure {_ _} (_).
 Arguments Effect {_ _ _} (_ _).
 
-Definition Handler E (M : Type → Type) := ∀ A (e : E A), M A.
+Definition Handler (E M : Type → Type) := ∀ A (e : E A), M A.
 
-Fixpoint denote {M E R}`{!MRet M} `{!MBind M} (handler : Handler E M) (e : ecomp E R) : M R :=
+Fixpoint interp {M E R}`{!MRet M} `{!MBind M} (handler : Handler E M) (e : ecomp E R) : M R :=
   match e with
   | Pure r => mret r
-  | Effect e k => v ← handler _ e; denote handler (k v)
+  | Effect e k => v ← handler _ e; interp handler (k v)
   end.
 
 (* Definition Handler E M := ∀ (A B : Type) (e : E A) (k : A → M B), M B. *)
@@ -73,11 +73,8 @@ Global Instance settable : Settable _ :=
   settable! mk < revision; compact_revision; key_values; used_lease_ids; lease_expiration>.
 End EtcdState.
 
-(** Effects for etcd specification, with return type [R]. This must be specified
-    in the effect type to support early return. *)
-Inductive etcdE {R : Type} : Type → Type :=
-| Return {A} (r : R) : etcdE A
-| Diverge : etcdE False
+(** Effects for etcd specification. *)
+Inductive etcdE : Type → Type :=
 | SuchThat {A} (pred : A → Prop) : etcdE A
 | GetState : etcdE EtcdState.t
 | SetState (σ' : EtcdState.t) : etcdE unit
@@ -85,7 +82,6 @@ Inductive etcdE {R : Type} : Type → Type :=
 | Assume (b : Prop) : etcdE unit
 | Assert (b : Prop) : etcdE unit.
 
-Arguments etcdE _ _ : clear implicits.
 
 (* Establish monadicity of relation.t *)
 Instance relation_mret A : MRet (relation.t A) :=
@@ -96,11 +92,6 @@ Instance relation_mbind A : MBind (relation.t A) :=
     ∃ a σmiddle,
       ma σ σmiddle a ∧
       kmb a σmiddle σ' b.
-
-Inductive exceptionE R : Type → Type :=
-| Throw {A} (r : R) : exceptionE R A.
-Arguments Throw {_ _} (_).
-
 
 (* Monads can't be composed in general.
   Can we still show that ecomp E (R + ∙) is a monad?
@@ -119,40 +110,52 @@ Arguments Throw {_ _} (_).
   not use the standard `interp`. Is it possible to define *any* itree handler
   such that Theorem 2 holds?
  *)
-Program Instance MBind_compose_exception `{mb:MBind M} R :
+Instance exception_compose_mret {M} `{!MRet M} R :
+  MRet (M ∘ (sum R)) := λ {A} a, mret $ inr a.
+
+Instance exception_compose_mbind {M} `{!MBind M, !MRet M} R :
   MBind (M ∘ (sum R)) :=
-  λ {A B} (kmb : A → M (R + B)%type),
-    _
-.
-Abort.
+  λ {A B} (kmb : A → M (R + B)%type) (a : M (R + A)%type),
+    mbind (λ ea, match ea with | inl r => mret $ inl r | inr a => kmb a end) a.
 
-Definition handle_exception R E : Handler (λ A, exceptionE R A + E A)%type (ecomp E) (sum R) :=
-  λ A e,
-    match e with
-    | Throw r =>
-    end
+(* I guess this just proved that M ↦ (M ∘ sum R) is a monad transformation.... *)
+
+Inductive with_exceptionE R (E : Type → Type) (A : Type) : Type :=
+| Throw (r : R)
+| Ok (e : E A)
 .
 
-(* Handle etcd effects as a in the [relation.t EtcdState.t] monad. *)
-Definition handler_etcdE (t : w64) R : Handler (etcdE R) (relation.t EtcdState.t) :=
+Arguments Throw {_ _ _} (_).
+Arguments Ok {_ _ _} (_).
+
+Definition handle_exceptionE {R E} : Handler (with_exceptionE R E) ((ecomp E) ∘ (sum R)) :=
   λ A e,
     match e with
-    | Return r => λ σ σ' x, x = inl r
-    | SuchThat pred => inl $ λ σ σ' x, ∃ a, x = inr a ∧ pred a ∧ σ' = σ
-    | GetState => inl $ λ σ σ' ret, σ' = σ ∧ ret = inr σ
-    | SetState σnew => inl $ λ σ σ' ret, σ' = σnew
-    | GetTime => inl $ λ σ σ' tret, tret = t ∧ σ' = σ
-    | Assume P => inl $ λ σ σ' tret, P ∧ σ = σ'
-    | Assert P => inl $ λ σ σ' tret, (P → σ = σ')
-    | Diverge => inl $ λ σ σ' _, False
+    | Throw r => Pure (inl r)
+    | Ok e => Effect e (λ x, Pure (inr x))
     end.
 
-Definition handler_etcdE t := from_simpler_handler (simpler_handler_etcdE t).
+(* Handle etcd effects with the [relation.t EtcdState.t] monad. *)
+Definition handle_etcdE (t : w64) : Handler etcdE (relation.t EtcdState.t) :=
+  λ A e,
+    match e with
+    | SuchThat pred => λ σ σ' a, pred a ∧ σ' = σ
+    | GetState => λ σ σ' ret, σ' = σ ∧ ret = σ
+    | SetState σnew => λ σ σ' ret, σ' = σnew
+    | GetTime => λ σ σ' tret, tret = t ∧ σ' = σ
+    | Assume P => λ σ σ' tret, P ∧ σ = σ'
+    | Assert P => λ σ σ' tret, (P → σ = σ')
+    end.
 
-Definition interp {A} (time_of_execution : w64) (e : ecomp etcdE A) : relation.t EtcdState.t A :=
-  denote2 (handler_etcdE time_of_execution) e.
+(* Definition withReturn R E := (λ A, exceptionE R A + E A)%type. *)
 
-Definition eff {E R} (e : E R) : ecomp E R := Effect2 e Ret.
+Definition interp_relation {R} (time_of_execution : w64) (e : ecomp etcdE R) :
+  relation.t EtcdState.t R := interp (handle_etcdE time_of_execution) e.
+
+Program Definition unwrap_exception {R E} (e : ecomp (with_exceptionE R E) R) :=
+  r ← (interp handle_exceptionE e); match r with | inl r' => Pure r' | inr r' => Pure r' end.
+
+Definition do {E R} (e : E R) : ecomp E R := Effect e Pure.
 
 (** This covers all transitions of the etcd state that are not tied to a client
    API call, e.g. lease expiration happens "in the background". This will be
@@ -165,17 +168,17 @@ Definition SingleSpontaneousTransition : ecomp etcdE () :=
   (* expire some lease *)
   (* XXX: this is a "partial" transition: it is not always possible to expire a
      lease. *)
-  time ← eff GetTime;
-  σ ← eff GetState;
-  lease_id ← eff $ SuchThat (λ l, ∃ exp, σ.(EtcdState.lease_expiration) !! l = (Some exp) ∧
+  time ← do GetTime;
+  σ ← do GetState;
+  lease_id ← do $ SuchThat (λ l, ∃ exp, σ.(EtcdState.lease_expiration) !! l = (Some exp) ∧
                                      uint.nat time > uint.nat exp);
   (* FIXME: delete attached keys *)
-  eff $ SetState (set EtcdState.lease_expiration (delete lease_id) σ).
+  do $ SetState (set EtcdState.lease_expiration (delete lease_id) σ).
 
 Lemma SingleSpontaneousTransition_monotonic (time time' : w64) σ σ' :
   uint.nat time < uint.nat time' →
-  interp time SingleSpontaneousTransition σ σ' () →
-  interp time' SingleSpontaneousTransition σ σ' ().
+  interp (handle_etcdE time) SingleSpontaneousTransition σ σ' () →
+  interp (handle_etcdE time') SingleSpontaneousTransition σ σ' ().
 Proof.
   intros Htime Hstep.
   rewrite /SingleSpontaneousTransition in Hstep |- *.
@@ -190,7 +193,7 @@ Qed.
 
 (** This does a non-deterministic number of spontaneous transitions. *)
 Definition SpontaneousTransition : ecomp etcdE unit :=
-  num_steps ← eff $ SuchThat (λ (_ : nat), True);
+  num_steps ← do $ SuchThat (λ (_ : nat), True);
   Nat.iter num_steps (λ p, SingleSpontaneousTransition;; p) (mret ()).
 
 Module LeaseGrantRequest.
@@ -217,17 +220,17 @@ Definition LeaseGrant (req : LeaseGrantRequest.t) : ecomp etcdE LeaseGrantRespon
   (* FIXME: add this back *)
   (* SpontaneousTransition;; *)
   (* req.TTL is advisory, so it is ignored. *)
-  ttl ← eff $ SuchThat (λ ttl, uint.nat ttl > 0);
-  σ ← eff GetState;
+  ttl ← do $ SuchThat (λ ttl, uint.nat ttl > 0);
+  σ ← do GetState;
   lease_id ← (if decide (req.(LeaseGrantRequest.ID) = (W64 0)) then
-                eff $ SuchThat (λ lease_id, lease_id ∉ σ.(EtcdState.used_lease_ids))
+                do $ SuchThat (λ lease_id, lease_id ∉ σ.(EtcdState.used_lease_ids))
               else
-                (eff $ Assert (req.(LeaseGrantRequest.ID) ∉ σ.(EtcdState.used_lease_ids));;
+                (do $ Assert (req.(LeaseGrantRequest.ID) ∉ σ.(EtcdState.used_lease_ids));;
                  mret req.(LeaseGrantRequest.ID)));
-  time ← eff GetTime;
+  time ← do GetTime;
   let σ := (set EtcdState.used_lease_ids (λ old, {[lease_id]} ∪ old) σ) in
   let σ := (set EtcdState.lease_expiration <[lease_id := (word.add time ttl)]> σ) in
-  eff (SetState σ);;
+  do (SetState σ);;
   mret (LeaseGrantResponse.mk lease_id ttl).
 
 Module LeaseKeepAliveRequest.
@@ -267,7 +270,7 @@ Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKee
     small?
   *)
   SpontaneousTransition;;
-  σ ← eff $ GetState;
+  σ ← do $ GetState;
   (* This is conservative. lessor.go looks like it avoids renewing a lease
      if its expiration is in the past, but it's actually possible for it to
      still renew something that would have been considered expired here because
@@ -276,14 +279,14 @@ Definition LeaseKeepAlive (req : LeaseKeepAliveRequest.t) : ecomp etcdE LeaseKee
   match σ.(EtcdState.lease_expiration) !! req.(LeaseKeepAliveRequest.ID) with
   | None => mret $ LeaseKeepAliveResponse.mk (W64 0) req.(LeaseKeepAliveRequest.ID)
   | Some expiration =>
-      ttl ← eff $ SuchThat (λ _, True);
-      time ← eff $ GetTime;
+      ttl ← do $ SuchThat (λ _, True);
+      time ← do $ GetTime;
       let new_expiration_lower := (word.add time ttl) in
       let new_expiration := if decide (sint.Z new_expiration_lower < sint.Z expiration) then
                               expiration
                             else
                               new_expiration_lower in
-      eff $ SetState (set EtcdState.lease_expiration <[req.(LeaseKeepAliveRequest.ID) := new_expiration]> σ);;
+      do $ SetState (set EtcdState.lease_expiration <[req.(LeaseKeepAliveRequest.ID) := new_expiration]> σ);;
       mret $ LeaseKeepAliveResponse.mk ttl req.(LeaseKeepAliveRequest.ID)
   end.
 
@@ -303,8 +306,8 @@ Record t :=
 mk {
     key : list w8;
     range_end : list w8;
-    limit : list w8;
-    revision : list w8;
+    limit : w64;
+    revision : w64;
     sort_order : w32;
     sort_target : w32;
     serializable : bool;
@@ -326,9 +329,6 @@ mk {
   }.
 End RangeResponse.
 
-Search (list _ → list _ → Prop).
-
-Search order list.
 (* Early return:
 
    EarlyReturn x; e
@@ -336,23 +336,28 @@ Search order list.
    Should equal `EarlyReturn x`
    interp
  *)
+(*
 Definition key_le (key1 key2 : list w8) : bool :=
   match key1 key2 with
   | (_ :: _) nil =>
   end
-.
+. *)
+
+(* Program Definition throw (r : R) : (ecomp (withReturn R E)) A :=
+  let z := (eff $ inl (Throw r (A:=False))) in
+  mbind _ z. *)
 
 (* txn.go:152 which calls
    kvstore_txn.go:72 *)
 Definition Range (req : RangeRequest.t) : ecomp etcdE (option RangeResponse.t) :=
-  kvs ← eff $ SuchThat
-    (λ kvs,
-       ∀ k,
-       k ≥ req.(RangeRequest.key)
-    );
-  mret None
-  (* computing over a gmap will be annoying *)
-.
+  unwrap_exception (
+      σ ← do $ Ok $ GetState;
+      let cur_revision := σ.(EtcdState.revision) in
+      (if decide (* sint.Z req.(RangeRequest.revision) > sint.Z cur_revision *) True then
+         (do $ Throw None)
+       else Pure ());;
+      Pure None
+    ).
 
 Module PutRequest.
 Record t :=
@@ -383,7 +388,7 @@ End PutResponse.
    server/storage/mvcc/kvstore_txn.go:196 *)
 Definition Put (req : PutRequest.t) : ecomp etcdE (option PutResponse.t) :=
   SpontaneousTransition;;
-  σ ← eff GetState;
+  σ ← do GetState;
   let kvs := default ∅ (σ.(EtcdState.key_values) !! σ.(EtcdState.revision)) in
   (* NOTE: could use [Range] here. *)
   let prev_kv := kvs !! req.(PutRequest.key) in
@@ -403,12 +408,12 @@ Definition Put (req : PutRequest.t) : ecomp etcdE (option PutResponse.t) :=
      (* updating [key_values] handles attaching/detaching leases, since the map
         itself defines the association from LeaseID to Key. *)
      Some (
-         eff $ SetState $ σ;;
-         Ret $ Some (PutResponse.mk ret_prev_kv)
+         do $ SetState $ σ;;
+         Pure $ Some (PutResponse.mk ret_prev_kv)
     ))
   in
   match opt_computation with
-  | None => Ret None
+  | None => Pure None
   | Some c => c
   end.
 
@@ -438,7 +443,7 @@ Definition handle_etcdE_spec (γ : gname) (A : Type) (e : etcdE A) : Spec A :=
    | SuchThat pred => λ Φ, ∀ x, ⌜ pred x ⌝ -∗ Φ x
    end)%I.
 
-Definition GrantSpec req γ := denote (handle_etcdE_spec γ) (LeaseGrant req).
+Definition GrantSpec req γ := interp (handle_etcdE_spec γ) (LeaseGrant req).
 Lemma test req γ :
   ⊢ ∀ Φ,
   (∃ (σ : EtcdState.t), ghost_var γ 1%Qp σ ∗
@@ -447,7 +452,7 @@ Lemma test req γ :
 Proof.
   iIntros (?) "Hupd".
   unfold GrantSpec.
-  unfold denote.
+  unfold interp.
   simpl. unfold mbind, mret.
   unfold Spec_MBind, Spec_MRet, handle_etcdE_spec.
   simpl.
