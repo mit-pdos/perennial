@@ -11,8 +11,8 @@ Context `{!std.GlobalAddrs}.
 (** NOTE:
   The discipline followed by other proofs so far has been to define
   [is_initialized] to require [is_defined] of the current package, but the
-  [is_initialized] of all the imported packages (as opposed to [std.is_defined],
-  it would be [std.is_initialized]).
+  [is_initialized] of all the imported packages (as opposed to [primitive.is_defined],
+  it would be [primitive.is_initialized]).
 
   A package's [is_initialized] predicate is meant to include not only the
   systematic [is_defined] predicate, but also custom logical facts written by
