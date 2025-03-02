@@ -189,14 +189,19 @@ Proof.
   rewrite decide_True //.
   repeat (wp_pures || wp_load).
   destruct done_b0; repeat (wp_pures || wp_load || wp_store).
-  - admit. (* TODO: this isn't any of the loop terminating values, is there a translation bug? *)
+  - iApply wp_for_post_break.
+    repeat (wp_pures || wp_load || wp_store).
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $locked $done]").
+    wp_pures. iApply "HΦ". done.
   - wp_apply (wp_Cond__Wait with "[$Hcond locked done HP]").
-      { iSplit.
-        - iApply (Mutex_is_Locker with "Hlock").
-        - iFrame. }
-      iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
-      wp_pures.
-      admit. (* TODO: same as above *)
-Admitted.
+    { iSplit.
+      - iApply (Mutex_is_Locker with "Hlock").
+      - iFrame. }
+    iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
+    wp_pures.
+    iApply wp_for_post_do.
+    repeat (wp_pures || wp_load || wp_store).
+    iFrame.
+Qed.
 
 End wps.

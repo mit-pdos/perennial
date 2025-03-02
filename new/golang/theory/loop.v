@@ -129,6 +129,14 @@ Proof.
   eauto 10 with iFrame.
 Qed.
 
+Lemma wp_for_post_break stk E (post : val) P Φ :
+  Φ (execute_val #()) -∗
+  for_postcondition stk E post P Φ break_val.
+Proof.
+  iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.
+  eauto 10 with iFrame.
+Qed.
+
 Lemma wp_for_post_return stk E (post : val) P Φ v :
   Φ (return_val v) -∗
   for_postcondition stk E post P Φ (return_val v).
