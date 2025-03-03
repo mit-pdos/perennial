@@ -145,6 +145,15 @@ Definition handle_etcdE (t : w64) : Handler etcdE (relation.t EtcdState.t) :=
     | GetTime => λ σ σ' tret, tret = t ∧ σ' = σ
     | Assume P => λ σ σ' tret, P ∧ σ = σ'
     | Assert P => λ σ σ' tret, (P → σ = σ')
+    (* FIXME: the [Assert] case is a bit sketchy, and probably wrong in some
+       way; it implies that after an assert statement, there *is* some next
+       state, but nothing about that state is known unless `P` is true. Even
+       knowing there's some [σ'] can probably allow for some unsoundness.
+       Fundamental problem: the [Assume] handler is designed to make sense when
+       a must merely prove that [∀ σ'] that follow the current [σ], the client
+       can reestablish their invariants. In GooseLang programs, we handle
+       assumes by diverging if an assume fails.
+*)
     end.
 
 Definition do {E R} (e : E R) : ecomp E R := Effect e Pure.
@@ -154,8 +163,8 @@ Definition do {E R} (e : E R) : ecomp E R := Effect e Pure.
    called as a prelude by all the client-facing operations, since it is sound to
    delay running spontaneous transitions until they would actually affect the
    client. This relies on [SpontaneousTransition] being monotonic: if a
-   transition can happen at time [t'] with [t' > t], then it must be possible at
-   [t] as well. The following lemma confirms this. *)
+   transition can happen at time [t], then for any [t' > t] it must be
+   possible at [t'] as well. The following lemma confirms this. *)
 Definition SingleSpontaneousTransition : ecomp etcdE () :=
   (* expire some lease *)
   (* XXX: this is a "partial" transition: it is not always possible to expire a
@@ -395,7 +404,7 @@ interp handle_exceptionE (
      else kvs) in
   let kvs :=
     (if decide (req.(RangeRequest.min_mod_revision) ≠ W64 0) then
-       filter (λ kv,  sint.Z req.(RangeRequest.min_mod_revision) ≤ sint.Z kv.(KeyValue.mod_revision)) kvs
+       filter (λ kv, sint.Z req.(RangeRequest.min_mod_revision) ≤ sint.Z kv.(KeyValue.mod_revision)) kvs
      else kvs) in
   let kvs :=
     (if decide (req.(RangeRequest.max_create_revision) ≠ W64 0) then
@@ -403,7 +412,7 @@ interp handle_exceptionE (
      else kvs) in
   let kvs :=
     (if decide (req.(RangeRequest.min_create_revision) ≠ W64 0) then
-       filter (λ kv,  sint.Z req.(RangeRequest.min_create_revision) ≤ sint.Z kv.(KeyValue.create_revision)) kvs
+       filter (λ kv, sint.Z req.(RangeRequest.min_create_revision) ≤ sint.Z kv.(KeyValue.create_revision)) kvs
      else kvs) in
   (* for sorting in ascending order; descending means flipping the order of the list. *)
   sort_relation ←
@@ -415,15 +424,24 @@ interp handle_exceptionE (
      | (* VALUE *) 4 => Pure (relation_pullback KeyValue.value go_string_lt)
      | _ => (do $ Ok (Assert False);; do $ Throw $ Bad "unreachable")
      end);
-  let kvs_sorted := merge_sort sort_relation kvs in *)
-  let kvs_sorted := kvs in
+  kvs_sorted ← (do $ Ok $ SuchThat (StronglySorted sort_relation));
   kvs ← (match (uint.Z req.(RangeRequest.sort_order)) with
          | (* NONE *) 0 => Pure kvs (* XXX: the etcd implementation seems to sort even in this case. *)
          | (* ASCEND *) 1 => Pure kvs_sorted
          | (* DESCEND *) 2 => Pure (reverse kvs_sorted)
          | _ => (do $ Ok $ Assert False;; do $ Throw $ Bad "unreachable")
          end);
-  (do $ Throw $ Bad "Incomplete spec")
+  if req.(RangeRequest.count_only) then
+    Pure (RangeResponse.mk [] false (W64 (length kvs)))
+  else
+    kvs_limited ← (if decide (sint.Z req.(RangeRequest.limit) = 0) then
+              Pure kvs
+            else if decide (sint.Z req.(RangeRequest.limit) > 0) then
+                   Pure $ take (Z.to_nat (sint.Z req.(RangeRequest.limit))) kvs
+                 else
+                   do $ Ok $ Assert False;; do $ Throw $ Bad "unreachable");
+     Pure (RangeResponse.mk kvs_limited (bool_decide (length kvs_limited < length kvs)) (W64 (length kvs)))
+  (* XXX: keys_only is not currently handled. *)
 ).
 
 Module PutRequest.
