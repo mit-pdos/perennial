@@ -47,8 +47,7 @@ def main():
     parser.add_argument(
         "--channel",
         help="translate channel model",
-        metavar="GO_CHANNEL_PATH",
-        default=None,
+        action="store_true",
     )
     parser.add_argument(
         "--nfsd",
@@ -132,7 +131,6 @@ def main():
     marshal_dir = args.marshal
     std_dir = args.std
     pav_dir = args.pav
-    chan_dir = args.channel
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -156,8 +154,6 @@ def main():
         parser.error("std directory does not exist")
     if pav_dir is not None and not os.path.isdir(pav_dir):
         parser.error("pav directory does not exist")
-    if chan_dir is not None and not os.path.isdir(chan_dir):
-        parser.error("channel directory does not exist")
 
     def do_run(cmd_args):
         run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
@@ -191,6 +187,9 @@ def main():
 
     if args.compile:
         compile_goose()
+
+    if args.channel:
+        run_goose(path.join(goose_dir, "./channel"))
 
     if args.goose_examples:
         # generate semantics tests
@@ -373,8 +372,6 @@ def main():
     run_goose(marshal_dir, ".", extra_args=["-skip-interfaces"])
 
     run_goose(std_dir, ".")
-
-    run_goose(chan_dir, ".")
 
 
 if __name__ == "__main__":

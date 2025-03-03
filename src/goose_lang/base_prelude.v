@@ -1,4 +1,6 @@
-(* Gooselang dependencies included in every translated Goose file *)
+(* Gooselang dependencies included in every translated Goose file. These are 
+the minimal dependencies needed for models implemented in Goose compatible 
+Go i.e. the channel model. *)
 From Perennial.goose_lang Require Export lang notation typing.
 From Perennial.goose_lang.lib Require Export
      typed_mem.impl struct.impl loop.impl
