@@ -163,7 +163,7 @@ Proof.
   done.
 Qed.
 
-Lemma wp_Spawn (P: iProp Σ) (f x: binder) (e: val) :
+Lemma wp_Spawn (P: iProp Σ) (f x: binder) (e: expr) :
   {{{ is_initialized ∗ sync.is_defined ∗ atomic.is_initialized ∗
         (∀ Φ, ▷(P -∗ Φ #()) -∗ WP #({| func.f := f; func.x := x; func.e := e |}) #() {{ Φ }}) }}}
   func_call #std.pkg_name' #"Spawn" #({| func.f := f; func.x := x; func.e := e |})
