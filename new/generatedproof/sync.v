@@ -125,6 +125,10 @@ Global Instance wp_func_call_runtime_Semacquire :
   WpFuncCall sync.pkg_name' "runtime_Semacquire" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_runtime_SemacquireWaitGroup :
+  WpFuncCall sync.pkg_name' "runtime_SemacquireWaitGroup" _ is_defined :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_runtime_Semrelease :
   WpFuncCall sync.pkg_name' "runtime_Semrelease" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).

@@ -20,6 +20,8 @@ Axiom fn'init : val.
 
 Axiom randautoseed'init : val.
 
+Axiom randseednop'init : val.
+
 Axiom rngCooked'init : val.
 
 Definition pkg_name' : go_string := "math/rand".
@@ -42,6 +44,7 @@ Definition initialize' : val :=
       do:  (wn'init #());;;
       do:  (fn'init #());;;
       do:  (randautoseed'init #());;;
+      do:  (randseednop'init #());;;
       do:  (rngCooked'init #()))
       ).
 

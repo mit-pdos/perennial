@@ -12,8 +12,6 @@ Definition MaxInt64 : Z := 9223372036854775808 - 1.
 (* 18446744073709551615 *)
 Definition MaxUint64 : Z := 18446744073709551616 - 1.
 
-Axiom useFMA'init : val.
-
 Axiom _gamP'init : val.
 
 Axiom _gamQ'init : val.
@@ -131,8 +129,7 @@ Axiom _'init : val.
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  (useFMA'init #());;;
-      do:  (_gamP'init #());;;
+      exception_do (do:  (_gamP'init #());;;
       do:  (_gamQ'init #());;;
       do:  (_gamS'init #());;;
       do:  (p0R8'init #());;;

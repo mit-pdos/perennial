@@ -8,8 +8,6 @@ Context `{ffi_syntax}.
 
 Axiom _Accuracy_index'init : val.
 
-Axiom support_adx'init : val.
-
 Axiom pow5tab'init : val.
 
 Axiom intOne'init : val.
@@ -50,7 +48,6 @@ Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  (_Accuracy_index'init #());;;
-      do:  (support_adx'init #());;;
       do:  (pow5tab'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;

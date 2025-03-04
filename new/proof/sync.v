@@ -338,6 +338,18 @@ Proof.
   }
 Qed.
 
+Lemma wp_runtime_SemacquireWaitGroup (sema : loc) γ N :
+  ∀ Φ,
+  is_initialized ∗ is_sema sema γ N -∗
+  (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
+  WP func_call #sync.pkg_name' #"runtime_SemacquireWaitGroup" #sema {{ Φ }}.
+Proof.
+  iIntros (?) "[#Hi #Hsem] HΦ". iNamed "Hi".
+  wp_func_call. wp_call.
+  wp_apply (wp_runtime_Semacquire with "[$]").
+  iFrame.
+Qed.
+
 Lemma wp_runtime_Semrelease (sema : loc) γ N (_u1 : bool) (_u2 : w64):
   ∀ Φ,
   is_initialized ∗ is_sema sema γ N -∗
@@ -1198,7 +1210,7 @@ Proof.
 
     clear n unfinished_waiters Hunfinished_zero unfinished_waiters0 Hunfinished_zero0.
 
-    wp_apply (wp_runtime_Semacquire with "[$]").
+    wp_apply (wp_runtime_SemacquireWaitGroup with "[$]").
     iInv "HsemInv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
     iNamed "Hi".

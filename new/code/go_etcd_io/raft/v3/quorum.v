@@ -29,18 +29,21 @@ Definition JointConfig__String : val :=
     else do:  #());;;
     return: ((method_call #pkg_name' #"MajorityConfig" #"String" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #())).
 
+Definition unit : go_type := structT [
+].
+
 (* IDs returns a newly initialized map representing the set of voters present
    in the joint configuration.
 
-   go: joint.go:30:22 *)
+   go: joint.go:32:22 *)
 Definition JointConfig__IDs : val :=
   rec: "JointConfig__IDs" "c" <> :=
     exception_do (let: "c" := (ref_ty JointConfig "c") in
     let: "m" := (ref_ty (mapT uint64T (structT [
     ])) (zero_val (mapT uint64T (structT [
     ])))) in
-    let: "$r0" := ((map.literal (structT [
-    ]) [])) in
+    let: "$r0" := (map.make uint64T (structT [
+    ]) #()) in
     do:  ("m" <-[mapT uint64T (structT [
     ])] "$r0");;;
     (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
@@ -69,7 +72,7 @@ Definition AckedIndexer : go_type := interfaceT.
 (* Describe returns a (multi-line) representation of the commit indexes for the
    given lookuper.
 
-   go: joint.go:43:22 *)
+   go: joint.go:45:22 *)
 Definition JointConfig__Describe : val :=
   rec: "JointConfig__Describe" "c" "l" :=
     exception_do (let: "c" := (ref_ty JointConfig "c") in
@@ -83,7 +86,7 @@ Definition Index : go_type := uint64T.
    quorum. An index is jointly committed if it is committed in both constituent
    majorities.
 
-   go: joint.go:50:22 *)
+   go: joint.go:52:22 *)
 Definition JointConfig__CommittedIndex : val :=
   rec: "JointConfig__CommittedIndex" "c" "l" :=
     exception_do (let: "c" := (ref_ty JointConfig "c") in
@@ -111,7 +114,7 @@ Definition VoteLost : expr := #(W8 2).
    a result indicating whether the vote is pending, lost, or won. A joint quorum
    requires both majority quorums to vote in favor.
 
-   go: joint.go:62:22 *)
+   go: joint.go:64:22 *)
 Definition JointConfig__VoteResult : val :=
   rec: "JointConfig__VoteResult" "c" "votes" :=
     exception_do (let: "c" := (ref_ty JointConfig "c") in
@@ -132,7 +135,7 @@ Definition JointConfig__VoteResult : val :=
     else do:  #());;;
     return: (VotePending)).
 
-(* go: majority.go:29:25 *)
+(* go: majority.go:28:25 *)
 Definition MajorityConfig__String : val :=
   rec: "MajorityConfig__String" "c" <> :=
     exception_do (let: "c" := (ref_ty MajorityConfig "c") in
@@ -186,7 +189,7 @@ Definition tup : go_type := structT [
 (* Describe returns a (multi-line) representation of the commit indexes for the
    given lookuper.
 
-   go: majority.go:56:25 *)
+   go: majority.go:55:25 *)
 Definition MajorityConfig__Describe : val :=
   rec: "MajorityConfig__Describe" "c" "l" :=
     exception_do (let: "c" := (ref_ty MajorityConfig "c") in
@@ -296,7 +299,7 @@ Definition MajorityConfig__Describe : val :=
 
 (* Slice returns the MajorityConfig as a sorted slice.
 
-   go: majority.go:109:25 *)
+   go: majority.go:108:25 *)
 Definition MajorityConfig__Slice : val :=
   rec: "MajorityConfig__Slice" "c" <> :=
     exception_do (let: "c" := (ref_ty MajorityConfig "c") in
@@ -322,7 +325,7 @@ Definition MajorityConfig__Slice : val :=
 (* CommittedIndex computes the committed index from those supplied via the
    provided AckedIndexer (for the active config).
 
-   go: majority.go:120:25 *)
+   go: majority.go:119:25 *)
 Definition MajorityConfig__CommittedIndex : val :=
   rec: "MajorityConfig__CommittedIndex" "c" "l" :=
     exception_do (let: "c" := (ref_ty MajorityConfig "c") in
@@ -379,7 +382,7 @@ Definition VoteWon : expr := #(W8 3).
    yes/no has been reached), won (a quorum of yes has been reached), or lost (a
    quorum of no has been reached).
 
-   go: majority.go:169:25 *)
+   go: majority.go:168:25 *)
 Definition MajorityConfig__VoteResult : val :=
   rec: "MajorityConfig__VoteResult" "c" "votes" :=
     exception_do (let: "c" := (ref_ty MajorityConfig "c") in
@@ -448,25 +451,33 @@ Definition mapAckIndexer__AckedIndex : val :=
     do:  ("ok" <-[boolT] "$r1");;;
     return: (![Index] "idx", ![boolT] "ok")).
 
-Definition _VoteResult_name : go_string := "VotePendingVoteLostVoteWon"%go.
+(* go: voteresult_string.go:7:6 *)
+Definition _unused : val :=
+  rec: "_unused" <> :=
+    exception_do (let: "x" := (ref_ty (arrayT 1 (structT [
+    ])) (zero_val (arrayT 1 (structT [
+    ])))) in
+    let: "$r0" := (![structT [
+    ]] (array.elem_ref (structT [
+    ]) (![arrayT 1 (structT [
+    ])] "x") (VotePending - #(W8 1)))) in
+    do:  "$r0";;;
+    let: "$r0" := (![structT [
+    ]] (array.elem_ref (structT [
+    ]) (![arrayT 1 (structT [
+    ])] "x") (VoteLost - #(W8 2)))) in
+    do:  "$r0";;;
+    let: "$r0" := (![structT [
+    ]] (array.elem_ref (structT [
+    ]) (![arrayT 1 (structT [
+    ])] "x") (VoteWon - #(W8 3)))) in
+    do:  "$r0").
 
-(* go: voteresult_string.go:20:21 *)
-Definition VoteResult__String : val :=
-  rec: "VoteResult__String" "i" <> :=
-    exception_do (let: "i" := (ref_ty VoteResult "i") in
-    do:  ("i" <-[VoteResult] ((![VoteResult] "i") - #(W8 1)));;;
-    (if: (![VoteResult] "i") ≥ (to_u8 ((array.len (arrayT 4 uint8T)) - #(W64 1)))
-    then
-      return: ((#"VoteResult("%go + (let: "$a0" := (to_u64 ((![VoteResult] "i") + #(W8 1))) in
-       let: "$a1" := #(W64 10) in
-       (func_call #strconv.pkg_name' #"FormatInt"%go) "$a0" "$a1")) + #")"%go)
-    else do:  #());;;
-    return: (string.from_bytes (let: "$s" := (string.to_bytes #_VoteResult_name) in
-     slice.slice byteT "$s" (![uint8T] (array.elem_ref uint8T (![arrayT 4 uint8T] (globals.get #pkg_name' #"_VoteResult_index"%go)) (![VoteResult] "i"))) (![uint8T] (array.elem_ref uint8T (![arrayT 4 uint8T] (globals.get #pkg_name' #"_VoteResult_index"%go)) ((![VoteResult] "i") + #(W8 1))))))).
+Definition _VoteResult_name : go_string := "VotePendingVoteLostVoteWon"%go.
 
 Definition vars' : list (go_string * go_type) := [("_VoteResult_index"%go, arrayT 4 uint8T)].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [("_unused"%go, _unused)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("JointConfig"%go, [("CommittedIndex"%go, JointConfig__CommittedIndex); ("Describe"%go, JointConfig__Describe); ("IDs"%go, JointConfig__IDs); ("String"%go, JointConfig__String); ("VoteResult"%go, JointConfig__VoteResult)]); ("JointConfig'ptr"%go, [("CommittedIndex"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"JointConfig" #"CommittedIndex" (![JointConfig] "$recvAddr")
@@ -492,17 +503,15 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("JointConfi
                  method_call #pkg_name' #"Index" #"String" (![Index] "$recvAddr")
                  )%V)]); ("mapAckIndexer"%go, [("AckedIndex"%go, mapAckIndexer__AckedIndex)]); ("mapAckIndexer'ptr"%go, [("AckedIndex"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"mapAckIndexer" #"AckedIndex" (![mapAckIndexer] "$recvAddr")
-                 )%V)]); ("VoteResult"%go, [("String"%go, VoteResult__String)]); ("VoteResult'ptr"%go, [("String"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"VoteResult" #"String" (![VoteResult] "$recvAddr")
-                 )%V)])].
+                 )%V)]); ("VoteResult"%go, []); ("VoteResult'ptr"%go, [])].
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  strconv.initialize';;;
-      do:  slices64.initialize';;;
       do:  strings.initialize';;;
       do:  sort.initialize';;;
+      do:  slices64.initialize';;;
       do:  math.initialize';;;
       do:  fmt.initialize';;;
       let: "$r0" := ((let: "$ar0" := #(W8 0) in

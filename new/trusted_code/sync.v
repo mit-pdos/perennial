@@ -69,6 +69,11 @@ Definition runtime_Semacquire : val :=
     )
 .
 
+(* differs from runtime_Semacquire only in the park "reason", used for internal
+concurrency testing *)
+Definition runtime_SemacquireWaitGroup : val :=
+  λ: "addr", func_call #pkg_name' #"runtime_Semacquire" "addr".
+
 Definition runtime_Semrelease : val :=
   λ: <>, #() #(). (* FIXME: use `AtomicAdd` *)
 
