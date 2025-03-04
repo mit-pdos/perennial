@@ -189,7 +189,7 @@ def main():
         compile_goose()
 
     if args.channel:
-        run_goose(goose_dir,"./channel")
+        run_goose(goose_dir, "./channel")
 
     if args.goose_examples:
         # generate semantics tests
