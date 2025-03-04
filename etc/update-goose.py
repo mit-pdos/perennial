@@ -45,6 +45,11 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--channel",
+        help="translate channel model",
+        action="store_true",
+    )
+    parser.add_argument(
         "--nfsd",
         help="path to go-nfsd repo (skip translation if not provided)",
         metavar="GO_NFSD_PATH",
@@ -182,6 +187,9 @@ def main():
 
     if args.compile:
         compile_goose()
+
+    if args.channel:
+        run_goose(goose_dir, "./channel")
 
     if args.goose_examples:
         # generate semantics tests
