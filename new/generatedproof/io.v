@@ -4,6 +4,7 @@ Require Export New.code.io.
 Require Export New.golang.theory.
 
 Module io.
+Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Module Reader.
@@ -34,6 +35,9 @@ Definition var_addrs : list (go_string * loc) := [
   ].
 
 Definition is_defined := is_global_definitions io.pkg_name' var_addrs io.functions' io.msets'.
+
+Global Instance is_pkg_defined : PkgIsDefined io.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.

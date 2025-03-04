@@ -4,6 +4,7 @@ Require Export New.code.github_com.mit_pdos.gokv.globals_test.
 Require Export New.golang.theory.
 
 Module main.
+Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.
@@ -29,6 +30,9 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions main.pkg_name' var_addrs main.functions' main.msets'.
 
+Global Instance is_pkg_defined : PkgIsDefined main.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
+
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HGlobalX" ∷ GlobalX ↦ (default_val w64) ∗
   "HglobalY" ∷ globalY ↦ (default_val go_string) ∗
@@ -52,19 +56,19 @@ Global Instance wp_globals_get_globalB :
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_func_call_foo :
-  WpFuncCall main.pkg_name' "foo" _ is_defined :=
+  WpFuncCall main.pkg_name' "foo" _ (pkg_defined main.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_other :
-  WpFuncCall main.pkg_name' "other" _ is_defined :=
+  WpFuncCall main.pkg_name' "other" _ (pkg_defined main.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_bar :
-  WpFuncCall main.pkg_name' "bar" _ is_defined :=
+  WpFuncCall main.pkg_name' "bar" _ (pkg_defined main.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_main :
-  WpFuncCall main.pkg_name' "main" _ is_defined :=
+  WpFuncCall main.pkg_name' "main" _ (pkg_defined main.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

@@ -8,12 +8,13 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 Context `{!atomic.GlobalAddrs}.
 
-Definition is_initialized : iProp Σ :=
-  "#?" ∷ atomic.is_defined.
+#[global]
+Instance pkg_initialized : PkgIsInitialized atomic.pkg_name' _ :=
+  ltac:(basic_pkg_init atomic.imported_pkgs).
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,
-  is_initialized -∗
+  pkg_init atomic.pkg_name' -∗
   (|={⊤,∅}=> ∃ (v : w64), addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
   WP func_call #atomic.pkg_name' #"LoadUint64" #addr {{ Φ }}.
 Proof.
@@ -25,7 +26,7 @@ Qed.
 
 Lemma wp_StoreUint64 (addr : loc) (v : w64) :
   ∀ Φ,
-  is_initialized -∗
+  pkg_init atomic.pkg_name' -∗
   (|={⊤,∅}=> ∃ (oldv : w64), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
   WP func_call #atomic.pkg_name' #"StoreUint64" #addr #v {{ Φ }}.
 Proof.
@@ -37,7 +38,7 @@ Qed.
 
 Lemma wp_AddUint64 (addr : loc) (v : w64) :
   ∀ Φ,
-  is_initialized -∗
+  pkg_init atomic.pkg_name' -∗
   (|={⊤,∅}=> ∃ (oldv : w64), addr ↦ oldv ∗ (addr ↦ (word.add oldv v) ={∅,⊤}=∗ Φ #(word.add oldv v))) -∗
   WP func_call #atomic.pkg_name' #"AddUint64" #addr #v {{ Φ }}.
 Proof.
@@ -45,7 +46,7 @@ Admitted.
 
 Lemma wp_CompareAndSwapUint64 (addr : loc) (old : w64) (new : w64) :
   ∀ Φ,
-  is_initialized -∗
+  pkg_init atomic.pkg_name' -∗
   (|={⊤,∅}=>
      ∃ (v: w64) dq,
      addr ↦{dq} v ∗
@@ -79,7 +80,7 @@ Definition own_Uint64 (u : loc) dq (v : w64) : iProp Σ :=
 
 Lemma wp_Uint64__Load u dq :
   ∀ Φ,
-  is_initialized -∗
+  pkg_init atomic.pkg_name' -∗
   (|={⊤,∅}=> ∃ v, own_Uint64 u dq v ∗ (own_Uint64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
   WP method_call #atomic.pkg_name' #"Uint64'ptr" #"Load" #u #() {{ Φ }}.
 Proof.
@@ -108,7 +109,7 @@ Qed.
 
 Lemma wp_Uint64__Store u v :
   ∀ Φ,
-  is_initialized -∗
+  pkg_init atomic.pkg_name' -∗
   (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗ (own_Uint64 u (DfracOwn 1) v ={∅,⊤}=∗ Φ #())) -∗
   WP method_call #atomic.pkg_name' #"Uint64'ptr" #"Store" #u #v {{ Φ }}.
 Proof.
@@ -139,7 +140,7 @@ Qed.
 
 Lemma wp_Uint64__Add u delta :
   ∀ Φ,
-  is_initialized -∗
+  pkg_init atomic.pkg_name' -∗
   (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗
   (own_Uint64 u (DfracOwn 1) (word.add old delta) ={∅,⊤}=∗
    Φ #(word.add old delta))) -∗
@@ -172,7 +173,7 @@ Qed.
 
 Lemma wp_Uint64__CompareAndSwap u old new :
   ∀ Φ,
-  is_initialized -∗
+  pkg_init atomic.pkg_name' -∗
   (|={⊤,∅}=> ∃ v dq, own_Uint64 u dq v ∗
                     ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
   (own_Uint64 u dq (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))) -∗

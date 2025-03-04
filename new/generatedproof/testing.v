@@ -4,6 +4,7 @@ Require Export New.code.testing.
 Require Export New.golang.theory.
 
 Module testing.
+Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 Module T.
 Section def.
@@ -32,6 +33,9 @@ Definition var_addrs : list (go_string * loc) := [
   ].
 
 Definition is_defined := is_global_definitions testing.pkg_name' var_addrs testing.functions' testing.msets'.
+
+Global Instance is_pkg_defined : PkgIsDefined testing.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.

@@ -6,8 +6,12 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 
+#[global]
+Instance : PkgIsInitialized primitive.pkg_name' _ :=
+  ltac:(basic_pkg_init primitive.imported_pkgs).
+
 Lemma wp_Assume (cond : bool) :
-  {{{ primitive.is_defined }}}
+  {{{ pkg_init primitive.pkg_name' }}}
     func_call #primitive.pkg_name' #"Assume" #cond
   {{{ RET #(); ⌜ cond = true ⌝ }}}
 .

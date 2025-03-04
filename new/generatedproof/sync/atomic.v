@@ -5,6 +5,7 @@ Require Export New.code.sync.atomic.
 Require Export New.golang.theory.
 
 Module atomic.
+Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 Module noCopy.
 Section def.
@@ -144,39 +145,42 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions atomic.pkg_name' var_addrs atomic.functions' atomic.msets'.
 
+Global Instance is_pkg_defined : PkgIsDefined atomic.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
+
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_CompareAndSwapUint64 :
-  WpFuncCall atomic.pkg_name' "CompareAndSwapUint64" _ is_defined :=
+  WpFuncCall atomic.pkg_name' "CompareAndSwapUint64" _ (pkg_defined atomic.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AddUint64 :
-  WpFuncCall atomic.pkg_name' "AddUint64" _ is_defined :=
+  WpFuncCall atomic.pkg_name' "AddUint64" _ (pkg_defined atomic.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LoadUint64 :
-  WpFuncCall atomic.pkg_name' "LoadUint64" _ is_defined :=
+  WpFuncCall atomic.pkg_name' "LoadUint64" _ (pkg_defined atomic.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StoreUint64 :
-  WpFuncCall atomic.pkg_name' "StoreUint64" _ is_defined :=
+  WpFuncCall atomic.pkg_name' "StoreUint64" _ (pkg_defined atomic.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Add :
-  WpMethodCall atomic.pkg_name' "Uint64'ptr" "Add" _ is_defined :=
+  WpMethodCall atomic.pkg_name' "Uint64'ptr" "Add" _ (pkg_defined atomic.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_CompareAndSwap :
-  WpMethodCall atomic.pkg_name' "Uint64'ptr" "CompareAndSwap" _ is_defined :=
+  WpMethodCall atomic.pkg_name' "Uint64'ptr" "CompareAndSwap" _ (pkg_defined atomic.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Load :
-  WpMethodCall atomic.pkg_name' "Uint64'ptr" "Load" _ is_defined :=
+  WpMethodCall atomic.pkg_name' "Uint64'ptr" "Load" _ (pkg_defined atomic.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Store :
-  WpMethodCall atomic.pkg_name' "Uint64'ptr" "Store" _ is_defined :=
+  WpMethodCall atomic.pkg_name' "Uint64'ptr" "Store" _ (pkg_defined atomic.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

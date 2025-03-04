@@ -38,16 +38,16 @@ Context `{!std.GlobalAddrs}.
   discipline somehow (e.g. maybe the imported packages' [is_initialized] gets
   automatically included here).
  *)
-Definition is_initialized : iProp Σ :=
-  "#?" ∷ std.is_defined ∗
-  "#?" ∷ primitive.is_defined.
+#[global]
+Instance : PkgIsInitialized std.pkg_name' _ :=
+  ltac:(basic_pkg_init std.imported_pkgs).
 
 Lemma wp_Assert (cond : bool) :
-  {{{ is_initialized ∗ ⌜cond = true⌝ }}}
+  {{{ pkg_init std.pkg_name' ∗ ⌜cond = true⌝ }}}
     func_call #std.pkg_name' #"Assert" #cond
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "[init %] HΦ". iNamed "init".
+  iIntros (Φ) "[#init %] HΦ".
   subst.
   wp_func_call; wp_call; wp_pures.
   wp_alloc b_l as "b".
@@ -56,7 +56,7 @@ Proof.
 Qed.
 
 Lemma wp_SumNoOverflow (x y : u64) :
-  {{{ is_initialized }}}
+  {{{ pkg_init std.pkg_name' }}}
     func_call #std.pkg_name' #"SumNoOverflow" #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
@@ -79,7 +79,7 @@ Proof.
 Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
-  {{{ is_initialized }}}
+  {{{ pkg_init std.pkg_name' }}}
     func_call #std.pkg_name' #"SumAssumeNoOverflow" #x #y
   {{{ RET #(word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}}.
 Proof.
@@ -90,7 +90,7 @@ Proof.
   wp_pures. wp_load. wp_pures. wp_load.
   wp_pures. wp_apply (wp_SumNoOverflow with "[$]").
   wp_pures.
-  wp_apply (wp_Assume with "[$]").
+  wp_apply (wp_Assume).
   rewrite bool_decide_eq_true.
   iIntros (?). wp_pures. do 2 wp_load. wp_pures.
   iApply "HΦ". iPureIntro. done.
@@ -108,7 +108,7 @@ Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
 .
 
 Lemma wp_newJoinHandle (P: iProp Σ) :
-  {{{ is_initialized ∗ sync.is_initialized }}}
+  {{{ pkg_init std.pkg_name' }}}
     func_call #std.pkg_name' #"newJoinHandle" #()
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
 Proof.
@@ -118,7 +118,6 @@ Proof.
   wp_store; wp_pures.
   wp_alloc cond_l as "cond"; repeat (wp_load || wp_pures).
   wp_apply (wp_NewCond with "[#]").
-  { iFrame "#". }
   iIntros (cond) "#His_cond".
   repeat (wp_pures || wp_store || wp_load).
   iMod (typed_pointsto_persist with "mu") as "mu".
@@ -141,12 +140,12 @@ Proof.
 Qed.
 
 Lemma wp_JoinHandle__finish l (P: iProp Σ) :
-  {{{ is_initialized ∗ sync.is_defined ∗ atomic.is_initialized ∗ is_JoinHandle l P ∗ P }}}
+  {{{ pkg_init std.pkg_name' ∗ is_JoinHandle l P ∗ P }}}
     method_call #std.pkg_name' #"JoinHandle'ptr" #"finish" #l #()
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "Hpre HΦ".
-  iDestruct "Hpre" as "(#init & #? & #? & #Hhandle & P)". iNamed "init".
+  iDestruct "Hpre" as "(#init & #Hhandle & P)".
   iNamed "Hhandle".
   wp_method_call. wp_call.
   wp_alloc h_l as "h". repeat (wp_pures || wp_load).
@@ -154,7 +153,6 @@ Proof.
   iIntros "[locked Hinv]". iNamed "Hinv".
   repeat (wp_pures || wp_load || wp_store).
   wp_apply (wp_Cond__Signal with "[$Hcond]").
-  { iFrame "#". }
   repeat (wp_pures || wp_load).
   wp_apply (wp_Mutex__Unlock with "[$Hlock $locked done_b P]").
   { iFrame "done_b P". }
@@ -164,18 +162,17 @@ Proof.
 Qed.
 
 Lemma wp_Spawn (P: iProp Σ) (f : func.t) :
-  {{{ is_initialized ∗ sync.is_defined ∗ atomic.is_initialized ∗
+  {{{ pkg_init std.pkg_name' ∗
         (∀ Φ, ▷(P -∗ Φ #()) -∗ WP #f #() {{ Φ }}) }}}
   func_call #std.pkg_name' #"Spawn" #f
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
 Proof.
-  iIntros (Φ) "(#init & #? & #? & Hwp) HΦ". iNamed "init".
+  iIntros (Φ) "(#init & Hwp) HΦ".
   wp_func_call; wp_call.
   wp_alloc f_l as "f"; wp_pures.
   wp_alloc h_l as "h"; wp_pures.
   iMod (typed_pointsto_persist with "f") as "#f".
   wp_apply (wp_newJoinHandle P).
-  { iFrame "#". }
   iIntros (l) "#Hhandle".
   repeat (wp_load || wp_store || wp_pures).
   iMod (typed_pointsto_persist with "h") as "#h".
@@ -188,7 +185,6 @@ Proof.
     iIntros "HP".
     wp_pures. wp_load.
     wp_apply (wp_JoinHandle__finish with "[$Hhandle $HP]").
-    { iFrame "#". }
     wp_pures.
     done.
   - iModIntro.
@@ -198,11 +194,11 @@ Proof.
 Qed.
 
 Lemma wp_JoinHandle__Join l P :
-  {{{ is_initialized ∗ sync.is_defined ∗ is_JoinHandle l P }}}
+  {{{ pkg_init std.pkg_name' ∗ is_JoinHandle l P }}}
     method_call #std.pkg_name' #"JoinHandle'ptr" #"Join" #l #()
   {{{ RET #(); P }}}.
 Proof.
-  iIntros (Φ) "(#init & #? & Hjh) HΦ". iNamed "init". iNamed "Hjh".
+  iIntros (Φ) "(#init & Hjh) HΦ". iNamed "Hjh".
   wp_method_call. wp_call.
   wp_alloc h_l as "h"; wp_pures.
   repeat (wp_load || wp_pures).

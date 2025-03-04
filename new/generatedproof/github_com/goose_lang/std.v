@@ -6,6 +6,10 @@ Require Export New.code.github_com.goose_lang.std.
 Require Export New.golang.theory.
 
 Module std.
+Definition imported_pkgs: list go_string := [
+  New.code.sync.sync.pkg_name';
+  New.code.github_com.goose_lang.primitive.primitive.pkg_name'
+]%go.
 Axiom falso : False.
 Module JoinHandle.
 Section def.
@@ -81,55 +85,58 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions std.pkg_name' var_addrs std.functions' std.msets'.
 
+Global Instance is_pkg_defined : PkgIsDefined std.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
+
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Assert :
-  WpFuncCall std.pkg_name' "Assert" _ is_defined :=
+  WpFuncCall std.pkg_name' "Assert" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_BytesEqual :
-  WpFuncCall std.pkg_name' "BytesEqual" _ is_defined :=
+  WpFuncCall std.pkg_name' "BytesEqual" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_BytesClone :
-  WpFuncCall std.pkg_name' "BytesClone" _ is_defined :=
+  WpFuncCall std.pkg_name' "BytesClone" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SliceSplit :
-  WpFuncCall std.pkg_name' "SliceSplit" _ is_defined :=
+  WpFuncCall std.pkg_name' "SliceSplit" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SumNoOverflow :
-  WpFuncCall std.pkg_name' "SumNoOverflow" _ is_defined :=
+  WpFuncCall std.pkg_name' "SumNoOverflow" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SumAssumeNoOverflow :
-  WpFuncCall std.pkg_name' "SumAssumeNoOverflow" _ is_defined :=
+  WpFuncCall std.pkg_name' "SumAssumeNoOverflow" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newJoinHandle :
-  WpFuncCall std.pkg_name' "newJoinHandle" _ is_defined :=
+  WpFuncCall std.pkg_name' "newJoinHandle" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Spawn :
-  WpFuncCall std.pkg_name' "Spawn" _ is_defined :=
+  WpFuncCall std.pkg_name' "Spawn" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Multipar :
-  WpFuncCall std.pkg_name' "Multipar" _ is_defined :=
+  WpFuncCall std.pkg_name' "Multipar" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Skip :
-  WpFuncCall std.pkg_name' "Skip" _ is_defined :=
+  WpFuncCall std.pkg_name' "Skip" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_JoinHandle'ptr_Join :
-  WpMethodCall std.pkg_name' "JoinHandle'ptr" "Join" _ is_defined :=
+  WpMethodCall std.pkg_name' "JoinHandle'ptr" "Join" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_JoinHandle'ptr_finish :
-  WpMethodCall std.pkg_name' "JoinHandle'ptr" "finish" _ is_defined :=
+  WpMethodCall std.pkg_name' "JoinHandle'ptr" "finish" _ (pkg_defined std.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

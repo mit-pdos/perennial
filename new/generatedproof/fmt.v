@@ -5,6 +5,7 @@ Require Export New.code.fmt.
 Require Export New.golang.theory.
 
 Module fmt.
+Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.
@@ -22,15 +23,18 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions fmt.pkg_name' var_addrs fmt.functions' fmt.msets'.
 
+Global Instance is_pkg_defined : PkgIsDefined fmt.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
+
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Printf :
-  WpFuncCall fmt.pkg_name' "Printf" _ is_defined :=
+  WpFuncCall fmt.pkg_name' "Printf" _ (pkg_defined fmt.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Print :
-  WpFuncCall fmt.pkg_name' "Print" _ is_defined :=
+  WpFuncCall fmt.pkg_name' "Print" _ (pkg_defined fmt.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

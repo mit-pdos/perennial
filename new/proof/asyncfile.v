@@ -139,16 +139,13 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
   right now because it's unused. *)
 .
 
-Definition is_initialized : iProp Σ :=
-  "#?" ∷ asyncfile.is_defined ∗
-  "#?" ∷ sync.is_initialized ∗
-  "#?" ∷ std.is_initialized ∗
-  "#?" ∷ grove_ffi.is_initialized
-.
+#[global]
+Instance : PkgIsInitialized asyncfile.pkg_name' _ :=
+  ltac:(basic_pkg_init asyncfile.imported_pkgs).
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
-  "#Hdef" ∷ is_initialized ∗
+  "#Hdef" ∷ pkg_init asyncfile.pkg_name' ∗
   "#Hmu" ∷ f ↦s[asyncfile.AsyncFile :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
                              (interface.mk sync.pkg_name' "Mutex'ptr"%go #mu))
@@ -230,7 +227,7 @@ Proof.
   iIntros "[Hlocked Hown]".
   wp_pures. wp_load.
   wp_pures. wp_load.
-  wp_apply (wp_Mutex__Unlock' with "[$]").
+  wp_apply (wp_Mutex__Unlock').
   iIntros (m_unlock) "#Hunlock".
   wp_pures.
   wp_load. wp_pures. wp_store.
@@ -420,14 +417,12 @@ Proof.
   wp_pures. wp_load.
   wp_pures.
   wp_apply (wp_Mutex__Unlock' with "[]").
-  { iClear "Hmu". iNamed "His". iNamed "Hdef". done. }
   iIntros (m_unlock) "Hunlock".
   wp_pures. wp_load. wp_pures. wp_store.
   wp_pures.
   wp_load. wp_pures. wp_load. wp_pures. wp_store. wp_pures. wp_load.
   wp_pures. wp_load. wp_pures.
   wp_apply (wp_SumAssumeNoOverflow with "[]").
-  { iClear "Hmu". iNamed "His". iNamed "Hdef". done. }
   iIntros (Hno_overflow).
   wp_pures. wp_load. wp_pures. wp_store.
   wp_pures.
@@ -538,7 +533,6 @@ Proof.
   iIntros "His Hwp".
   iNamed "His".
   wp_method_call.
-  { by iNamed "Hdef". }
   wp_call.
   iApply "Hwp".
   clear Φ.
@@ -602,7 +596,6 @@ Proof.
   iDestruct "H" as "(HpreData & HpreIdx & HdurIdx & Hupd & Hghost)".
   wp_apply (wp_Mutex__Unlock with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile Hlocal1 Hlocal2 Hlocal3]").
   {
-    iNamed "Hdef".
     iFrame "HmuInv Hlocked".
     repeat iExists _; iFrame "∗#%".
     iFrame "#".
@@ -616,7 +609,6 @@ Proof.
 
   iCombine "Hfilename_in Hfilename" gives %[_ [=<-]].
   wp_apply (wp_FileWrite with "[$Hdata]").
-  { iNamed "Hdef". iFrame "#". }
   iDestruct (own_crash_unfold with "Hfile") as "Hfile".
   rewrite /own_crash_pre /=.
   unshelve iMod ("Hfile" $! _ _ with "[$]") as "[[HP $] Hau]".
@@ -729,7 +721,7 @@ Qed.
 
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
-        "#Hinit" ∷ is_initialized ∗
+        "#Hinit" ∷ pkg_init asyncfile.pkg_name' ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
     func_call #asyncfile.pkg_name' #"MakeAsyncFile" #fname
@@ -750,13 +742,13 @@ Proof.
   wp_pures.
   wp_alloc s as "Hlocal".
   wp_pures.
-  wp_apply (wp_NewCond with "[$]").
+  wp_apply (wp_NewCond).
   iIntros (?) "#?".
   wp_pures.
-  wp_apply (wp_NewCond with "[$]").
+  wp_apply (wp_NewCond).
   iIntros (?) "#?".
   wp_pures.
-  wp_apply (wp_NewCond with "[$]").
+  wp_apply (wp_NewCond).
   iIntros (?) "#?".
   wp_pures.
   wp_load.
@@ -764,7 +756,7 @@ Proof.
   wp_load.
   wp_pure_lc "H1". wp_pure_lc "H2".
   iCombine "H1 H2" as "Hlc".
-  wp_apply (wp_FileRead with "[$]").
+  wp_apply (wp_FileRead).
   iDestruct (own_crash_unfold with "Hfile") as "Hfile".
   unshelve iMod ("Hfile" $! _ _ with "[$]") as "[[HP $] Hau]".
   { solve_ndisj. }
@@ -800,7 +792,8 @@ Proof.
   iNamed "H".
   iAssert (|={⊤}=> is_AsyncFile N l γ P)%I with "[-HpreIdx HpreData HdurIdx Hfile HΦ Hvol_data Hnotclosed]" as ">#His".
   {
-    iMod (init_Mutex with "[$] [$] [-]") as "$"; last by iFrame "#".
+    iMod (init_Mutex with "[] [$] [-]") as "$"; last by iFrame "#".
+    { iPkgInit. }
     iNext. by iFrame "∗#".
   }
 

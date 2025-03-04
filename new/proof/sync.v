@@ -29,14 +29,17 @@ Section proof.
 Context `{!heapGS Σ} `{!syncG Σ}.
 Context `{!goGlobalsGS Σ}.
 
-Definition is_initialized : iProp Σ :=
-  "#?" ∷ sync.is_defined ∗
-  "#?" ∷ atomic.is_initialized
-.
+#[global]
+Instance race_pkg_is_init : PkgIsInitialized race.pkg_name' _ :=
+  ltac:(basic_pkg_init race.imported_pkgs).
+
+#[global]
+Instance pkg_is_init : PkgIsInitialized sync.pkg_name' _ :=
+  ltac:(basic_pkg_init sync.imported_pkgs).
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
-  "#Hi" ∷ is_initialized ∗
+  "#Hi" ∷ pkg_init sync.pkg_name' ∗
   "#Hinv" ∷ inv nroot (
         ∃ b : bool,
           (m ↦s[ sync.Mutex :: "state" ]{# 1/4} b) ∗
@@ -79,7 +82,7 @@ Lemma flatten_struct_tt :
   flatten_struct (# ()%V) = [].
 Proof. rewrite to_val_unseal //=. Qed.
 
-Theorem init_Mutex R E m : is_initialized -∗ m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : pkg_init sync.pkg_name' -∗ m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "#Hi Hl HR".
   simpl.
@@ -101,7 +104,7 @@ Lemma wp_Mutex__Lock m R :
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   iIntros (Φ) "H HΦ".
-  iNamed "H". iNamed "Hi".
+  iNamed "H".
   iLöb as "IH".
   wp_method_call. wp_call.
   wp_pures.
@@ -135,7 +138,7 @@ Qed.
 
 (* this form is useful for defer statements *)
 Lemma wp_Mutex__Unlock' m :
-  {{{ is_initialized }}}
+  {{{ pkg_init sync.pkg_name' }}}
     method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #m
   {{{ (f : func.t), RET #f;
       ∀ R,
@@ -205,17 +208,17 @@ Qed.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
-  "#Hi" ∷ is_initialized ∗
+  "#Hi" ∷ pkg_init sync.pkg_name' ∗
   "#Hc" ∷ c ↦s[sync.Cond :: "L"]□ m.
 
 Global Instance is_Cond_persistent c m : Persistent (is_Cond c m) := _.
 
 Theorem wp_NewCond (m : interface.t) :
-  {{{ is_initialized }}}
+  {{{ pkg_init sync.pkg_name' }}}
     func_call #sync.pkg_name' #"NewCond" #m
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
-  iIntros (Φ) "#Hdef HΦ". iNamed "Hdef".
+  iIntros (Φ) "#Hdef HΦ".
   wp_func_call. wp_call. wp_apply wp_fupd.
   wp_alloc c as "Hc".
   wp_pures.
@@ -228,7 +231,7 @@ Proof.
 Qed.
 
 Theorem wp_Cond__Signal c lk :
-  {{{ is_initialized ∗ is_Cond c lk }}}
+  {{{ is_Cond c lk }}}
     method_call #sync.pkg_name' #"Cond'ptr" #"Signal" #c #()
   {{{ RET #(); True }}}.
 Proof.
@@ -272,11 +275,11 @@ Definition own_sema γ (v : w32) : iProp Σ :=
 
 Lemma wp_runtime_Semacquire (sema : loc) γ N :
   ∀ Φ,
-  is_initialized ∗ is_sema sema γ N -∗
+  pkg_init sync.pkg_name' ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP func_call #sync.pkg_name' #"runtime_Semacquire" #sema {{ Φ }}.
 Proof.
-  iIntros (?) "[#Hi #Hsem] HΦ". iNamed "Hi".
+  iIntros (?) "[#init #Hsem] HΦ".
   wp_func_call. wp_call.
   wp_for. wp_pures.
   rewrite decide_True //.
@@ -340,7 +343,7 @@ Qed.
 
 Lemma wp_runtime_SemacquireWaitGroup (sema : loc) γ N :
   ∀ Φ,
-  is_initialized ∗ is_sema sema γ N -∗
+  pkg_init sync.pkg_name' ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP func_call #sync.pkg_name' #"runtime_SemacquireWaitGroup" #sema {{ Φ }}.
 Proof.
@@ -352,7 +355,7 @@ Qed.
 
 Lemma wp_runtime_Semrelease (sema : loc) γ N (_u1 : bool) (_u2 : w64):
   ∀ Φ,
-  is_initialized ∗ is_sema sema γ N -∗
+  pkg_init sync.pkg_name' ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (own_sema γ (word.add v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP func_call #sync.pkg_name' #"runtime_Semrelease" #sema #_u1 #_u2 {{ Φ }}.
 Proof.
@@ -750,7 +753,7 @@ Qed.
 Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
   let delta' := (W32 (uint.Z delta)) in
   ∀ Φ,
-  is_initialized ∗ is_WaitGroup wg γ N -∗
+  pkg_init sync.pkg_name' ∗ is_WaitGroup wg γ N -∗
   (|={⊤,↑N}=>
      ∃ oldc,
        "Hwg" ∷ own_WaitGroup γ oldc ∗
@@ -762,7 +765,7 @@ Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
   WP method_call #sync.pkg_name' #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
 Proof.
   intros delta'.
-  iIntros (?) "[#Hi #His] HΦ". iNamed "Hi".
+  iIntros (?) "[#init #His] HΦ".
   iNamed "His".
   wp_method_call. wp_call.
   wp_pures.
@@ -775,7 +778,7 @@ Proof.
   wp_alloc state_ptr as "Hstate_ptr". wp_pures.
   wp_load. wp_pures. wp_load. wp_pures.
 
-  wp_apply (wp_Uint64__Add with "[$]").
+  wp_apply (wp_Uint64__Add).
   iMod "HΦ".
   iNamed "HΦ".
   unfold own_WaitGroup.
@@ -968,7 +971,7 @@ Proof.
   rewrite bool_decide_false.
   2:{ intuition. }
   wp_pures. wp_load. wp_pures.
-  wp_apply (wp_Uint64__Load with "[$]").
+  wp_apply (wp_Uint64__Load).
   iApply fupd_mask_intro.
   { set_solver. }
   iIntros "Hmask".
@@ -983,7 +986,7 @@ Proof.
   wp_load. wp_pures.
 
   (* want to get a bunch of unfinisheds. *)
-  wp_apply (wp_Uint64__Store with "[$]").
+  wp_apply (wp_Uint64__Store).
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iApply fupd_mask_intro.
@@ -1089,7 +1092,7 @@ Qed.
 
 Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
   ∀ Φ,
-  is_initialized ∗ is_WaitGroup wg γ N ∗ own_WaitGroup_wait_token γ -∗
+  pkg_init sync.pkg_name' ∗ is_WaitGroup wg γ N ∗ own_WaitGroup_wait_token γ -∗
   (|={⊤∖↑N, ∅}=>
      ∃ oldc,
        own_WaitGroup γ oldc ∗ (⌜ sint.Z oldc = 0 ⌝ → own_WaitGroup γ oldc ={∅,⊤∖↑N}=∗
@@ -1109,7 +1112,7 @@ Proof.
 
   wp_alloc state_ptr as "Hstate_ptr".
   wp_pures. wp_load. wp_pure_lc "Hlc". wp_pures.
-  wp_apply (wp_Uint64__Load with "[$]").
+  wp_apply (wp_Uint64__Load).
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi".
@@ -1168,7 +1171,7 @@ Proof.
   wp_load. wp_pure_lc "Hlc". wp_pures.
   replace (1%Z) with (uint.Z (W32 1)) by reflexivity.
   rewrite -> enc_add_low by word.
-  wp_apply (wp_Uint64__CompareAndSwap with "[$]").
+  wp_apply (wp_Uint64__CompareAndSwap).
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi".
@@ -1233,7 +1236,7 @@ Proof.
     iModIntro.
     wp_pure_lc "Hlc". wp_pure_lc "Hlc2". wp_pures.
     wp_load. wp_pures.
-    wp_apply (wp_Uint64__Load with "[$]").
+    wp_apply (wp_Uint64__Load).
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
     iClear "Hv_ptr Hw_ptr Hstate_ptr". clear v_ptr counter w_ptr waiters state_ptr HwaitersLe.

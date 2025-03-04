@@ -5,6 +5,9 @@ Require Export New.code.go_etcd_io.raft.v3.confchange.
 Require Export New.golang.theory.
 
 Module confchange.
+Definition imported_pkgs: list go_string := [
+  New.code.go_etcd_io.raft.v3.tracker.tracker.pkg_name'
+]%go.
 Axiom falso : False.
 Module Changer.
 Section def.
@@ -73,6 +76,9 @@ Definition var_addrs : list (go_string * loc) := [
   ].
 
 Definition is_defined := is_global_definitions confchange.pkg_name' var_addrs confchange.functions' confchange.msets'.
+
+Global Instance is_pkg_defined : PkgIsDefined confchange.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.

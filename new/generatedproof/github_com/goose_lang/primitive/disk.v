@@ -5,6 +5,7 @@ Require Export New.code.github_com.goose_lang.primitive.disk.
 Require Export New.golang.theory.
 
 Module disk.
+Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.
@@ -22,27 +23,30 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions disk.pkg_name' var_addrs disk.functions' disk.msets'.
 
+Global Instance is_pkg_defined : PkgIsDefined disk.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
+
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Get :
-  WpFuncCall disk.pkg_name' "Get" _ is_defined :=
+  WpFuncCall disk.pkg_name' "Get" _ (pkg_defined disk.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Read :
-  WpFuncCall disk.pkg_name' "Read" _ is_defined :=
+  WpFuncCall disk.pkg_name' "Read" _ (pkg_defined disk.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Write :
-  WpFuncCall disk.pkg_name' "Write" _ is_defined :=
+  WpFuncCall disk.pkg_name' "Write" _ (pkg_defined disk.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Size :
-  WpFuncCall disk.pkg_name' "Size" _ is_defined :=
+  WpFuncCall disk.pkg_name' "Size" _ (pkg_defined disk.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Barrier :
-  WpFuncCall disk.pkg_name' "Barrier" _ is_defined :=
+  WpFuncCall disk.pkg_name' "Barrier" _ (pkg_defined disk.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

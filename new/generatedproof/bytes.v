@@ -4,6 +4,7 @@ Require Export New.code.bytes.
 Require Export New.golang.theory.
 
 Module bytes.
+Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 Module Buffer.
 Section def.
@@ -32,6 +33,9 @@ Definition var_addrs : list (go_string * loc) := [
   ].
 
 Definition is_defined := is_global_definitions bytes.pkg_name' var_addrs bytes.functions' bytes.msets'.
+
+Global Instance is_pkg_defined : PkgIsDefined bytes.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.

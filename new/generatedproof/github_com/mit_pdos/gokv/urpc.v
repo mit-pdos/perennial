@@ -10,6 +10,14 @@ Require Export New.code.github_com.mit_pdos.gokv.urpc.
 Require Export New.golang.theory.
 
 Module urpc.
+Definition imported_pkgs: list go_string := [
+  New.code.log.log.pkg_name';
+  New.code.sync.sync.pkg_name';
+  New.code.github_com.goose_lang.primitive.primitive.pkg_name';
+  New.code.github_com.goose_lang.std.std.pkg_name';
+  New.code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi.pkg_name';
+  New.code.github_com.tchajed.marshal.marshal.pkg_name'
+]%go.
 Axiom falso : False.
 Module Server.
 Section def.
@@ -202,47 +210,50 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions urpc.pkg_name' var_addrs urpc.functions' urpc.msets'.
 
+Global Instance is_pkg_defined : PkgIsDefined urpc.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
+
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MakeServer :
-  WpFuncCall urpc.pkg_name' "MakeServer" _ is_defined :=
+  WpFuncCall urpc.pkg_name' "MakeServer" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TryMakeClient :
-  WpFuncCall urpc.pkg_name' "TryMakeClient" _ is_defined :=
+  WpFuncCall urpc.pkg_name' "TryMakeClient" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeClient :
-  WpFuncCall urpc.pkg_name' "MakeClient" _ is_defined :=
+  WpFuncCall urpc.pkg_name' "MakeClient" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Serve :
-  WpMethodCall urpc.pkg_name' "Server'ptr" "Serve" _ is_defined :=
+  WpMethodCall urpc.pkg_name' "Server'ptr" "Serve" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_readThread :
-  WpMethodCall urpc.pkg_name' "Server'ptr" "readThread" _ is_defined :=
+  WpMethodCall urpc.pkg_name' "Server'ptr" "readThread" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_rpcHandle :
-  WpMethodCall urpc.pkg_name' "Server'ptr" "rpcHandle" _ is_defined :=
+  WpMethodCall urpc.pkg_name' "Server'ptr" "rpcHandle" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Call :
-  WpMethodCall urpc.pkg_name' "Client'ptr" "Call" _ is_defined :=
+  WpMethodCall urpc.pkg_name' "Client'ptr" "Call" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_CallComplete :
-  WpMethodCall urpc.pkg_name' "Client'ptr" "CallComplete" _ is_defined :=
+  WpMethodCall urpc.pkg_name' "Client'ptr" "CallComplete" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_CallStart :
-  WpMethodCall urpc.pkg_name' "Client'ptr" "CallStart" _ is_defined :=
+  WpMethodCall urpc.pkg_name' "Client'ptr" "CallStart" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_replyThread :
-  WpMethodCall urpc.pkg_name' "Client'ptr" "replyThread" _ is_defined :=
+  WpMethodCall urpc.pkg_name' "Client'ptr" "replyThread" _ (pkg_defined urpc.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

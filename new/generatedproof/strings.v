@@ -4,6 +4,7 @@ Require Export New.code.strings.
 Require Export New.golang.theory.
 
 Module strings.
+Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 Module Builder.
 Section def.
@@ -72,6 +73,9 @@ Definition var_addrs : list (go_string * loc) := [
   ].
 
 Definition is_defined := is_global_definitions strings.pkg_name' var_addrs strings.functions' strings.msets'.
+
+Global Instance is_pkg_defined : PkgIsDefined strings.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.

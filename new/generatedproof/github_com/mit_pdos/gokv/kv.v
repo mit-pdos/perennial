@@ -4,6 +4,7 @@ Require Export New.code.github_com.mit_pdos.gokv.kv.
 Require Export New.golang.theory.
 
 Module kv.
+Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Module Kv.
@@ -34,6 +35,9 @@ Definition var_addrs : list (go_string * loc) := [
   ].
 
 Definition is_defined := is_global_definitions kv.pkg_name' var_addrs kv.functions' kv.msets'.
+
+Global Instance is_pkg_defined : PkgIsDefined kv.pkg_name' is_defined :=
+  ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
