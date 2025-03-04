@@ -6,6 +6,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Axiom dirBufPool'init : val.
+
 Axiom ErrInvalid'init : val.
 
 Axiom ErrPermission'init : val.
@@ -26,10 +28,6 @@ Axiom Interrupt'init : val.
 
 Axiom Kill'init : val.
 
-Axiom initCwd'init : val.
-
-Axiom initCwdErr'init : val.
-
 Axiom Stdin'init : val.
 
 Axiom Stdout'init : val.
@@ -44,7 +42,13 @@ Axiom lstat'init : val.
 
 Axiom checkWrapErr'init : val.
 
+Axiom checkPidfdOnce'init : val.
+
 Axiom errPatternHasSeparator'init : val.
+
+Axiom pollCopyFileRange'init : val.
+
+Axiom pollSplice'init : val.
 
 Definition pkg_name' : go_string := "os".
 
@@ -59,7 +63,8 @@ Axiom _'init : val.
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  (ErrInvalid'init #());;;
+      exception_do (do:  (dirBufPool'init #());;;
+      do:  (ErrInvalid'init #());;;
       do:  (ErrPermission'init #());;;
       do:  (ErrExist'init #());;;
       do:  (ErrNotExist'init #());;;
@@ -76,8 +81,10 @@ Definition initialize' : val :=
       do:  (errPathEscapes'init #());;;
       do:  (lstat'init #());;;
       do:  (checkWrapErr'init #());;;
-      do:  (initCwd'init #());;;
-      do:  (errPatternHasSeparator'init #()))
+      do:  (checkPidfdOnce'init #());;;
+      do:  (errPatternHasSeparator'init #());;;
+      do:  (pollCopyFileRange'init #());;;
+      do:  (pollSplice'init #()))
       ).
 
 End code.
