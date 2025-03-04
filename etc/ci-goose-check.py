@@ -66,6 +66,7 @@ sp.run(
         "--goose",
         projs["goose"].path(),
         "--goose-examples",
+        "--channel",
         "--std",
         projs["std"].path(),
         "--marshal",
