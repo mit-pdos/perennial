@@ -13,8 +13,6 @@ Context `{ffi_syntax}.
 Definition noCopy : go_type := structT [
 ].
 
-Axiom expunged'init : val.
-
 Definition WaitGroup : go_type := structT [
   "noCopy" :: noCopy;
   "state" :: atomic.Uint64;
@@ -146,7 +144,7 @@ Definition WaitGroup__Wait : val :=
           (func_call #race.pkg_name' #"Write"%go) "$a0")
         else do:  #());;;
         do:  (let: "$a0" := (struct.field_ref WaitGroup "sema" (![ptrT] "wg")) in
-        (func_call #pkg_name' #"runtime_Semacquire"%go) "$a0");;;
+        (func_call #pkg_name' #"runtime_SemacquireWaitGroup"%go) "$a0");;;
         (if: ((method_call #atomic.pkg_name' #"Uint64'ptr" #"Load" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) #()) ≠ #(W64 0)
         then
           do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup is reused before previous Wait has returned"%go) in
@@ -163,7 +161,7 @@ Definition WaitGroup__Wait : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("runtime_Semacquire"%go, runtime_Semacquire); ("runtime_Semrelease"%go, runtime_Semrelease)].
+Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("runtime_Semacquire"%go, runtime_Semacquire); ("runtime_SemacquireWaitGroup"%go, runtime_SemacquireWaitGroup); ("runtime_Semrelease"%go, runtime_Semrelease)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("Unlock"%go, Mutex__Unlock)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
 
@@ -173,8 +171,7 @@ Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  race.initialize';;;
-      do:  atomic.initialize';;;
-      do:  (expunged'init #()))
+      do:  atomic.initialize')
       ).
 
 End code.

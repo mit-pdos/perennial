@@ -36,6 +36,8 @@ Axiom Stderr'init : val.
 
 Axiom errWriteAtInAppendMode'init : val.
 
+Axiom errPathEscapes'init : val.
+
 Axiom lstat'init : val.
 
 Axiom checkWrapErr'init : val.
@@ -76,6 +78,7 @@ Definition initialize' : val :=
       do:  (Stdout'init #());;;
       do:  (Stderr'init #());;;
       do:  (errWriteAtInAppendMode'init #());;;
+      do:  (errPathEscapes'init #());;;
       do:  (lstat'init #());;;
       do:  (checkWrapErr'init #());;;
       do:  (checkPidfdOnce'init #());;;

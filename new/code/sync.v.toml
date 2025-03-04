@@ -28,5 +28,6 @@ trusted = [
   "NewCond",
 
   "runtime_Semacquire",
+  "runtime_SemacquireWaitGroup",
   "runtime_Semrelease",
 ]

@@ -43,6 +43,11 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--std-lib",
+        help="translate (parts of) Go standard library",
+        action="store_true",
+    )
+    parser.add_argument(
         "--std",
         help="path to goose-lang/std repo (skip translation if not provided)",
         metavar="STD_PATH",
@@ -164,6 +169,31 @@ def main():
             "./unittest",
         )
 
+    if args.std_lib:
+        # this list of packages comes from the dependencies of etcd-raft
+        run_goose(
+            goose_dir,
+            "testing",
+            "bytes",
+            "context",
+            "crypto/rand",
+            "errors",
+            "io",
+            "math",
+            "math/big",
+            "math/rand",
+            "os",
+            "sort",
+            "slices",
+            "strconv",
+            "strings",
+            "sync",
+            "sync/atomic",
+            "internal/race",
+            "fmt",
+            "log",
+        )
+
     run_goose(std_dir, ".")
 
     run_goose(marshal_dir, ".")
@@ -187,28 +217,9 @@ def main():
 
     run_goose(
         etcd_raft_dir,
-        "testing",
-        "bytes",
-        "context",
-        "crypto/rand",
-        "errors",
         "go.etcd.io/raft/v3/confchange",
         "go.etcd.io/raft/v3/quorum/slices64",
         "github.com/stretchr/testify/assert",
-        "io",
-        "math",
-        "math/big",
-        "math/rand",
-        "os",
-        "sort",
-        "slices",
-        "strconv",
-        "strings",
-        "sync",
-        "sync/atomic",
-        "internal/race",
-        "fmt",
-        "log",
         "go.etcd.io/raft/v3/raftpb",
         ".",
         "go.etcd.io/raft/v3/tracker",

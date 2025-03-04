@@ -677,8 +677,8 @@ Definition MakeProgressTracker : val :=
     let: "p" := (ref_ty ProgressTracker (zero_val ProgressTracker)) in
     let: "$r0" := (let: "$MaxInflight" := (![intT] "maxInflight") in
     let: "$MaxInflightBytes" := (![uint64T] "maxBytes") in
-    let: "$Config" := (let: "$Voters" := ((let: "$ar0" := ((map.literal (structT [
-    ]) [])) in
+    let: "$Config" := (let: "$Voters" := ((let: "$ar0" := (map.make uint64T (structT [
+    ]) #()) in
     let: "$ar1" := #null in
     array.literal ["$ar0"; "$ar1"])) in
     let: "$Learners" := #null in
@@ -689,8 +689,8 @@ Definition MakeProgressTracker : val :=
       "Learners" ::= "$Learners";
       "LearnersNext" ::= "$LearnersNext"
     }]) in
-    let: "$Votes" := ((map.literal boolT [])) in
-    let: "$Progress" := ((map.literal ptrT [])) in
+    let: "$Votes" := (map.make uint64T boolT #()) in
+    let: "$Progress" := (map.make uint64T ptrT #()) in
     struct.make ProgressTracker [{
       "Config" ::= "$Config";
       "Progress" ::= "$Progress";
@@ -811,7 +811,7 @@ Definition ProgressTracker__QuorumActive : val :=
   rec: "ProgressTracker__QuorumActive" "p" <> :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
     let: "votes" := (ref_ty (mapT uint64T boolT) (zero_val (mapT uint64T boolT))) in
-    let: "$r0" := ((map.literal boolT [])) in
+    let: "$r0" := (map.make uint64T boolT #()) in
     do:  ("votes" <-[mapT uint64T boolT] "$r0");;;
     do:  (let: "$a0" := (λ: "id" "pr",
       exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -903,7 +903,7 @@ Definition ProgressTracker__LearnerNodes : val :=
 Definition ProgressTracker__ResetVotes : val :=
   rec: "ProgressTracker__ResetVotes" "p" <> :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
-    let: "$r0" := ((map.literal boolT [])) in
+    let: "$r0" := (map.make uint64T boolT #()) in
     do:  ((struct.field_ref ProgressTracker "Votes" (![ptrT] "p")) <-[mapT uint64T boolT] "$r0")).
 
 (* RecordVote records that the node with the given id voted for this Raft
@@ -933,10 +933,9 @@ Definition ProgressTracker__RecordVote : val :=
    go: tracker.go:261:27 *)
 Definition ProgressTracker__TallyVotes : val :=
   rec: "ProgressTracker__TallyVotes" "p" <> :=
-    exception_do (let: <> := (ref_ty quorum.VoteResult (zero_val quorum.VoteResult)) in
+    exception_do (let: "p" := (ref_ty ptrT "p") in
     let: "rejected" := (ref_ty intT (zero_val intT)) in
     let: "granted" := (ref_ty intT (zero_val intT)) in
-    let: "p" := (ref_ty ptrT "p") in
     (let: "pr" := (ref_ty uint64T (zero_val uint64T)) in
     let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![ProgressMap] (struct.field_ref ProgressTracker "Progress" (![ptrT] "p"))) in

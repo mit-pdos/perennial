@@ -30,6 +30,7 @@ projs = {
     "new_gokv": Proj("new_gokv", "https://github.com/mit-pdos/gokv", "new"),
     "mvcc": Proj("mvcc", "https://github.com/mit-pdos/vmvcc", "main"),
     "pav": Proj("pav", "https://github.com/mit-pdos/pav", "main"),
+    "etcd-raft": Proj("etcd-raft", "https://github.com/upamanyus/etcd-raft", "main"),
 }
 
 
@@ -94,6 +95,7 @@ sp.run(
         "--compile",
         "--goose",
         projs["new_goose"].path(),
+        "--std-lib",
         "--gokv",
         projs["new_gokv"].path(),
         "--marshal",
@@ -102,6 +104,8 @@ sp.run(
         projs["std"].path(),
         "--primitive",
         projs["primitive"].path(),
+        "--etcd-raft",
+        projs["etcd-raft"].path(),
     ],
     check=True,
 )
