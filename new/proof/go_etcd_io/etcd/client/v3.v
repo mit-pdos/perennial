@@ -532,7 +532,8 @@ mk {
   }.
 End DeleteRangeResponse.
 
-Definition DeleteRange (req : DeleteRangeRequest)
+Definition DeleteRange (req : DeleteRangeRequest.t) : ecomp etcdE DeleteRangeResponse.t.
+Admitted.
 
 Module Compare.
 
@@ -555,14 +556,51 @@ mk {
   }.
 End Compare.
 
+Module RequestOp.
+Inductive t :=
+| Range (request_range : RangeRequest.t)
+| Put (request_put : PutRequest.t)
+| DeleteRange (request_delete_range : DeleteRangeRequest.t)
+(* | Txn (request_txn : TxnRequest.t) *)
+(* This does not support Txn as a RequestOp. *)
+.
+End RequestOp.
+
+Module ResponseOp.
+Inductive t :=
+| Range (response_range : RangeResponse.t)
+| Put (response_put : PutResponse.t)
+| DeleteRange (response_delete_range : DeleteRangeResponse.t)
+(* | Txn (response_txn : TxnResponse.t) *)
+(* This does not support Txn as a ResponseOp. *)
+.
+End ResponseOp.
+
 Module TxnRequest.
 (* FIXME: etcd documentation out of date. *)
 Record t :=
 mk {
-  compare : list Compare;
-  success : list RequestOp;
-  failure : list RequestOp;
+  compare : list Compare.t;
+  success : list RequestOp.t;
+  failure : list RequestOp.t;
   }.
+End TxnRequest.
+
+Module TxnResponse.
+Record t :=
+mk {
+    succeeded : bool;
+    responses : list ResponseOp.t;
+  }.
+End TxnResponse.
+
+(* Q: What is the meaning of this from rpc.proto:
+  // It is not allowed to modify the same key several times within one txn.
+  In particular, does Txn return an error if the ops try to modify the same key multiple times?
+  Or does the Txn coalesce that into one modification?
+ *)
+Definition Txn (req : TxnRequest.t) : ecomp etcdE TxnResponse.t.
+Admitted.
 
 Section spec.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
