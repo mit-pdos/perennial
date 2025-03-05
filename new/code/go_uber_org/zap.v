@@ -21,7 +21,7 @@ Axiom _globalL'init : val.
 
 Axiom _globalS'init : val.
 
-Axiom _sinkRegistry'init : val.
+Axiom _stacktracePool'init : val.
 
 Definition pkg_name' : go_string := "go.uber.org/zap".
 
@@ -44,8 +44,7 @@ Definition initialize' : val :=
       do:  (_maxTimeInt64'init #());;;
       do:  (_globalL'init #());;;
       do:  (_globalS'init #());;;
-      do:  (_'init #());;;
-      do:  (_sinkRegistry'init #()))
+      do:  (_stacktracePool'init #()))
       ).
 
 End code.

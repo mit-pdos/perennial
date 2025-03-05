@@ -2,9 +2,9 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.fmt.
 Require Export New.generatedproof.math.
-Require Export New.generatedproof.go_etcd_io.raft.v3.quorum.slices64.
 Require Export New.generatedproof.sort.
 Require Export New.generatedproof.strings.
+Require Export New.generatedproof.go_etcd_io.raft.v3.quorum.slices64.
 Require Export New.generatedproof.strconv.
 Require Export New.code.go_etcd_io.raft.v3.quorum.
 Require Export New.golang.theory.
@@ -25,38 +25,6 @@ Context `{ffi_syntax}.
 Definition t := (vec MajorityConfig.t 2).
 End def.
 End JointConfig.
-Module unit.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-}.
-End def.
-End unit.
-
-Section instances.
-Context `{ffi_syntax}.
-Global Instance into_val_unit `{ffi_syntax} : IntoVal unit.t.
-Admitted.
-
-Global Instance into_val_typed_unit `{ffi_syntax} : IntoValTyped unit.t quorum.unit :=
-{|
-  default_val := unit.mk;
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
-|}.
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_unit `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
-  PureWp True
-    (struct.make quorum.unit (alist_val [
-    ]))%V
-    #(unit.mk).
-Admitted.
-
-
-End instances.
 
 Module Index.
 Section def.
@@ -174,10 +142,6 @@ Global Instance wp_globals_get__VoteResult_index :
   WpGlobalsGet quorum.pkg_name' "_VoteResult_index" _VoteResult_index is_defined.
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
-Global Instance wp_func_call__unused :
-  WpFuncCall quorum.pkg_name' "_unused" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_method_call_JointConfig_CommittedIndex :
   WpMethodCall quorum.pkg_name' "JointConfig" "CommittedIndex" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
@@ -272,6 +236,14 @@ Global Instance wp_method_call_mapAckIndexer_AckedIndex :
 
 Global Instance wp_method_call_mapAckIndexer'ptr_AckedIndex :
   WpMethodCall quorum.pkg_name' "mapAckIndexer'ptr" "AckedIndex" _ is_defined :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_VoteResult_String :
+  WpMethodCall quorum.pkg_name' "VoteResult" "String" _ is_defined :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_VoteResult'ptr_String :
+  WpMethodCall quorum.pkg_name' "VoteResult'ptr" "String" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -40,6 +40,18 @@ Admitted.
 
 
 End instances.
+Module RWMutex.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End RWMutex.
+
+Global Instance into_val_RWMutex `{ffi_syntax} : IntoVal RWMutex.t.
+Admitted.
+
+Global Instance into_val_typed_RWMutex `{ffi_syntax} : IntoValTyped RWMutex.t sync.RWMutex.
+Admitted.
 Module WaitGroup.
 Section def.
 Context `{ffi_syntax}.

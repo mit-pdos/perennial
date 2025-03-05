@@ -6,9 +6,7 @@ Require Export New.code.fmt.
 Require Export New.code.go_etcd_io.etcd.api.v3.etcdserverpb.
 Require Export New.code.go_etcd_io.etcd.api.v3.mvccpb.
 Require Export New.code.go_etcd_io.etcd.client.v3.
-Require Export New.code.go_uber_org.zap.
 Require Export New.code.math.
-Require Export New.code.strings.
 Require Export New.code.sync.
 Require Export New.code.time.
 
@@ -73,7 +71,6 @@ Definition Session : go_type := structT [
   "client" :: ptrT;
   "opts" :: ptrT;
   "id" :: clientv3.LeaseID;
-  "ctx" :: context.Context;
   "cancel" :: context.CancelFunc;
   "donec" :: chanT (structT [
   ])
@@ -171,12 +168,15 @@ Definition Election__Campaign : val :=
         else do:  #()))
       else do:  #())
     else do:  #());;;
-    let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
     let: "$a1" := (![ptrT] "client") in
     let: "$a2" := (![stringT] (struct.field_ref Election "keyPrefix" (![ptrT] "e"))) in
     let: "$a3" := ((![int64T] (struct.field_ref Election "leaderRev" (![ptrT] "e"))) - #(W64 1)) in
     (func_call #pkg_name' #"waitDeletes"%go) "$a0" "$a1" "$a2" "$a3") in
-    do:  ("err" <-[error] "$r0");;;
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  "$r0";;;
+    do:  ("err" <-[error] "$r1");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (chan.select [] [("$recvChan0", (λ: "$recvVal",
@@ -518,7 +518,7 @@ Definition Election__Header : val :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     return: (![ptrT] (struct.field_ref Election "hdr" (![ptrT] "e")))).
 
-(* go: key.go:25:6 *)
+(* go: key.go:26:6 *)
 Definition waitDelete : val :=
   rec: "waitDelete" "ctx" "client" "key" "rev" :=
     with_defer: (let: "rev" := (ref_ty int64T "rev") in
@@ -572,12 +572,13 @@ Definition waitDelete : val :=
     then return: (![error] "err")
     else do:  #()));;;
     return: (let: "$a0" := #"lost watcher waiting for delete"%go in
-     (func_call #errors.pkg_name' #"New"%go) "$a0")).
+     let: "$a1" := #slice.nil in
+     (func_call #fmt.pkg_name' #"Errorf"%go) "$a0" "$a1")).
 
 (* waitDeletes efficiently waits until all keys matching the prefix and no greater
-   than the create revision are deleted.
+   than the create revision.
 
-   go: key.go:49:6 *)
+   go: key.go:50:6 *)
 Definition waitDeletes : val :=
   rec: "waitDeletes" "ctx" "client" "pfx" "maxCreateRev" :=
     exception_do (let: "maxCreateRev" := (ref_ty int64T "maxCreateRev") in
@@ -603,11 +604,11 @@ Definition waitDeletes : val :=
       do:  ("resp" <-[ptrT] "$r0");;;
       do:  ("err" <-[error] "$r1");;;
       (if: (~ (interface.eq (![error] "err") #interface.nil))
-      then return: (![error] "err")
+      then return: (#null, ![error] "err")
       else do:  #());;;
       (if: (let: "$a0" := (![sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![ptrT] "resp"))) in
       slice.len "$a0") = #(W64 0)
-      then return: (#interface.nil)
+      then return: (![ptrT] (struct.field_ref clientv3.GetResponse "Header" (![ptrT] "resp")), #interface.nil)
       else do:  #());;;
       let: "lastKey" := (ref_ty stringT (zero_val stringT)) in
       let: "$r0" := (string.from_bytes (![sliceT] (struct.field_ref mvccpb.KeyValue "Key" (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![ptrT] "resp"))) #(W64 0)))))) in
@@ -619,7 +620,7 @@ Definition waitDeletes : val :=
       (func_call #pkg_name' #"waitDelete"%go) "$a0" "$a1" "$a2" "$a3") in
       do:  ("err" <-[error] "$r0");;;
       (if: (~ (interface.eq (![error] "err") #interface.nil))
-      then return: (![error] "err")
+      then return: (#null, ![error] "err")
       else do:  #())))).
 
 Definition Mutex : go_type := structT [
@@ -630,7 +631,7 @@ Definition Mutex : go_type := structT [
   "hdr" :: ptrT
 ].
 
-(* go: mutex.go:45:6 *)
+(* go: mutex.go:41:6 *)
 Definition NewMutex : val :=
   rec: "NewMutex" "s" "pfx" :=
     exception_do (let: "pfx" := (ref_ty stringT "pfx") in
@@ -647,7 +648,7 @@ Definition NewMutex : val :=
    If lock is held by another session, return immediately after attempting necessary cleanup
    The ctx argument is used for the sending/receiving Txn RPC.
 
-   go: mutex.go:52:17 *)
+   go: mutex.go:48:17 *)
 Definition Mutex__TryLock : val :=
   rec: "Mutex__TryLock" "m" "ctx" :=
     exception_do (let: "m" := (ref_ty ptrT "m") in
@@ -697,7 +698,7 @@ Definition Mutex__TryLock : val :=
 (* Lock locks the mutex with a cancelable context. If the context is canceled
    while trying to acquire the lock, the mutex tries to clean its stale lock entry.
 
-   go: mutex.go:75:17 *)
+   go: mutex.go:71:17 *)
 Definition Mutex__Lock : val :=
   rec: "Mutex__Lock" "m" "ctx" :=
     exception_do (let: "m" := (ref_ty ptrT "m") in
@@ -727,12 +728,15 @@ Definition Mutex__Lock : val :=
     let: "$r0" := ((method_call #pkg_name' #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     let: "werr" := (ref_ty error (zero_val error)) in
-    let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
     let: "$a1" := (![ptrT] "client") in
     let: "$a2" := (![stringT] (struct.field_ref Mutex "pfx" (![ptrT] "m"))) in
     let: "$a3" := ((![int64T] (struct.field_ref Mutex "myRev" (![ptrT] "m"))) - #(W64 1)) in
     (func_call #pkg_name' #"waitDeletes"%go) "$a0" "$a1" "$a2" "$a3") in
-    do:  ("werr" <-[error] "$r0");;;
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  "$r0";;;
+    do:  ("werr" <-[error] "$r1");;;
     (if: (~ (interface.eq (![error] "werr") #interface.nil))
     then
       do:  (let: "$a0" := ((method_call #clientv3.pkg_name' #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
@@ -762,7 +766,7 @@ Definition Mutex__Lock : val :=
     do:  ((struct.field_ref Mutex "hdr" (![ptrT] "m")) <-[ptrT] "$r0");;;
     return: (#interface.nil)).
 
-(* go: mutex.go:111:17 *)
+(* go: mutex.go:107:17 *)
 Definition Mutex__tryAcquire : val :=
   rec: "Mutex__tryAcquire" "m" "ctx" :=
     exception_do (let: "m" := (ref_ty ptrT "m") in
@@ -832,24 +836,11 @@ Definition Mutex__tryAcquire : val :=
     else do:  #());;;
     return: (![ptrT] "resp", #interface.nil)).
 
-(* go: mutex.go:134:17 *)
+(* go: mutex.go:130:17 *)
 Definition Mutex__Unlock : val :=
   rec: "Mutex__Unlock" "m" "ctx" :=
     exception_do (let: "m" := (ref_ty ptrT "m") in
     let: "ctx" := (ref_ty context.Context "ctx") in
-    (if: (((![stringT] (struct.field_ref Mutex "myKey" (![ptrT] "m"))) = #""%go) || (int_leq (![int64T] (struct.field_ref Mutex "myRev" (![ptrT] "m"))) #(W64 0))) || ((![stringT] (struct.field_ref Mutex "myKey" (![ptrT] "m"))) = #" "%go)
-    then return: (![error] (globals.get #pkg_name' #"ErrLockReleased"%go))
-    else do:  #());;;
-    (if: (~ (let: "$a0" := (![stringT] (struct.field_ref Mutex "myKey" (![ptrT] "m"))) in
-    let: "$a1" := (![stringT] (struct.field_ref Mutex "pfx" (![ptrT] "m"))) in
-    (func_call #strings.pkg_name' #"HasPrefix"%go) "$a0" "$a1"))
-    then
-      return: (let: "$a0" := #"invalid key %q, it should have prefix %q"%go in
-       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![stringT] (struct.field_ref Mutex "myKey" (![ptrT] "m")))) in
-       let: "$sl1" := (interface.make #""%go #"string"%go (![stringT] (struct.field_ref Mutex "pfx" (![ptrT] "m")))) in
-       slice.literal interfaceT ["$sl0"; "$sl1"])) in
-       (func_call #fmt.pkg_name' #"Errorf"%go) "$a0" "$a1")
-    else do:  #());;;
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := ((method_call #pkg_name' #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
@@ -871,7 +862,7 @@ Definition Mutex__Unlock : val :=
     do:  ((struct.field_ref Mutex "myRev" (![ptrT] "m")) <-[int64T] "$r0");;;
     return: (#interface.nil)).
 
-(* go: mutex.go:152:17 *)
+(* go: mutex.go:140:17 *)
 Definition Mutex__IsOwner : val :=
   rec: "Mutex__IsOwner" "m" <> :=
     exception_do (let: "m" := (ref_ty ptrT "m") in
@@ -881,7 +872,7 @@ Definition Mutex__IsOwner : val :=
      let: "$a2" := (interface.make #""%go #"int64"%go (![int64T] (struct.field_ref Mutex "myRev" (![ptrT] "m")))) in
      (func_call #clientv3.pkg_name' #"Compare"%go) "$a0" "$a1" "$a2")).
 
-(* go: mutex.go:156:17 *)
+(* go: mutex.go:144:17 *)
 Definition Mutex__Key : val :=
   rec: "Mutex__Key" "m" <> :=
     exception_do (let: "m" := (ref_ty ptrT "m") in
@@ -889,7 +880,7 @@ Definition Mutex__Key : val :=
 
 (* Header is the response header received from etcd on acquiring the lock.
 
-   go: mutex.go:159:17 *)
+   go: mutex.go:147:17 *)
 Definition Mutex__Header : val :=
   rec: "Mutex__Header" "m" <> :=
     exception_do (let: "m" := (ref_ty ptrT "m") in
@@ -899,7 +890,7 @@ Definition lockerMutex : go_type := structT [
   "Mutex" :: ptrT
 ].
 
-(* go: mutex.go:163:24 *)
+(* go: mutex.go:151:24 *)
 Definition lockerMutex__Lock : val :=
   rec: "lockerMutex__Lock" "lm" <> :=
     exception_do (let: "lm" := (ref_ty ptrT "lm") in
@@ -916,7 +907,7 @@ Definition lockerMutex__Lock : val :=
       Panic "$a0")
     else do:  #()))).
 
-(* go: mutex.go:170:24 *)
+(* go: mutex.go:157:24 *)
 Definition lockerMutex__Unlock : val :=
   rec: "lockerMutex__Unlock" "lm" <> :=
     exception_do (let: "lm" := (ref_ty ptrT "lm") in
@@ -935,7 +926,7 @@ Definition lockerMutex__Unlock : val :=
 
 (* NewLocker creates a sync.Locker backed by an etcd mutex.
 
-   go: mutex.go:178:6 *)
+   go: mutex.go:165:6 *)
 Definition NewLocker : val :=
   rec: "NewLocker" "s" "pfx" :=
     exception_do (let: "pfx" := (ref_ty stringT "pfx") in
@@ -958,14 +949,11 @@ Definition SessionOption : go_type := funcT.
 
 (* NewSession gets the leased session for a client.
 
-   go: session.go:41:6 *)
+   go: session.go:38:6 *)
 Definition NewSession : val :=
   rec: "NewSession" "client" "opts" :=
     exception_do (let: "opts" := (ref_ty sliceT "opts") in
     let: "client" := (ref_ty ptrT "client") in
-    let: "lg" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #clientv3.pkg_name' #"Client'ptr" #"GetLogger" (![ptrT] "client")) #()) in
-    do:  ("lg" <-[ptrT] "$r0");;;
     let: "ops" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty sessionOptions (let: "$ttl" := #(W64 defaultSessionTTL) in
     let: "$ctx" := ((method_call #clientv3.pkg_name' #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
@@ -981,8 +969,7 @@ Definition NewSession : val :=
       do:  ("opt" <-[SessionOption] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![ptrT] "ops") in
-      let: "$a1" := (![ptrT] "lg") in
-      (![SessionOption] "opt") "$a0" "$a1")));;;
+      (![SessionOption] "opt") "$a0")));;;
     let: "id" := (ref_ty clientv3.LeaseID (zero_val clientv3.LeaseID)) in
     let: "$r0" := (![clientv3.LeaseID] (struct.field_ref sessionOptions "leaseID" (![ptrT] "ops"))) in
     do:  ("id" <-[clientv3.LeaseID] "$r0");;;
@@ -1036,7 +1023,6 @@ Definition NewSession : val :=
     let: "$r0" := (ref_ty Session (let: "$client" := (![ptrT] "client") in
     let: "$opts" := (![ptrT] "ops") in
     let: "$id" := (![clientv3.LeaseID] "id") in
-    let: "$ctx" := (![context.Context] "ctx") in
     let: "$cancel" := (![context.CancelFunc] "cancel") in
     let: "$donec" := (![chanT (structT [
     ])] "donec") in
@@ -1044,21 +1030,17 @@ Definition NewSession : val :=
       "client" ::= "$client";
       "opts" ::= "$opts";
       "id" ::= "$id";
-      "ctx" ::= "$ctx";
       "cancel" ::= "$cancel";
       "donec" ::= "$donec"
     }])) in
     do:  ("s" <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      with_defer: (do:  (let: "$f" := (λ: <>,
-        exception_do (do:  (let: "$a0" := (![chanT (structT [
-        ])] "donec") in
-        chan.close "$a0");;;
-        do:  ((![context.CancelFunc] "cancel") #()))
-        ) in
+      with_defer: (do:  (let: "$a0" := (![chanT (structT [
+      ])] "donec") in
+      let: "$f" := chan.close in
       "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
       (λ: <>,
-        "$f" #();;
+        "$f" "a0";;
         "$oldf" #()
         )));;;
       let: "$range" := (![chanT ptrT] "keepAlive") in
@@ -1070,7 +1052,7 @@ Definition NewSession : val :=
 
 (* Client is the etcd client that is attached to the session.
 
-   go: session.go:82:19 *)
+   go: session.go:75:19 *)
 Definition Session__Client : val :=
   rec: "Session__Client" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
@@ -1078,25 +1060,16 @@ Definition Session__Client : val :=
 
 (* Lease is the lease ID for keys bound to the session.
 
-   go: session.go:87:19 *)
+   go: session.go:80:19 *)
 Definition Session__Lease : val :=
   rec: "Session__Lease" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
     return: (![clientv3.LeaseID] (struct.field_ref Session "id" (![ptrT] "s")))).
 
-(* Ctx is the context attached to the session, it is canceled when the lease is orphaned, expires, or
-   is otherwise no longer being refreshed.
-
-   go: session.go:91:19 *)
-Definition Session__Ctx : val :=
-  rec: "Session__Ctx" "s" <> :=
-    exception_do (let: "s" := (ref_ty ptrT "s") in
-    return: (![context.Context] (struct.field_ref Session "ctx" (![ptrT] "s")))).
-
 (* Done returns a channel that closes when the lease is orphaned, expires, or
    is otherwise no longer being refreshed.
 
-   go: session.go:97:19 *)
+   go: session.go:84:19 *)
 Definition Session__Done : val :=
   rec: "Session__Done" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
@@ -1107,7 +1080,7 @@ Definition Session__Done : val :=
    in case the state of the client connection is indeterminate (revoke
    would fail) or when transferring lease ownership.
 
-   go: session.go:102:19 *)
+   go: session.go:89:19 *)
 Definition Session__Orphan : val :=
   rec: "Session__Orphan" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
@@ -1117,7 +1090,7 @@ Definition Session__Orphan : val :=
 
 (* Close orphans the session and revokes the session lease.
 
-   go: session.go:108:19 *)
+   go: session.go:95:19 *)
 Definition Session__Close : val :=
   rec: "Session__Close" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
@@ -1145,37 +1118,29 @@ Definition Session__Close : val :=
 (* WithTTL configures the session's TTL in seconds.
    If TTL is <= 0, the default 60 seconds TTL will be used.
 
-   go: session.go:128:6 *)
+   go: session.go:115:6 *)
 Definition WithTTL : val :=
   rec: "WithTTL" "ttl" :=
     exception_do (let: "ttl" := (ref_ty intT "ttl") in
-    return: ((λ: "so" "lg",
-       exception_do (let: "lg" := (ref_ty ptrT "lg") in
-       let: "so" := (ref_ty ptrT "so") in
+    return: ((λ: "so",
+       exception_do (let: "so" := (ref_ty ptrT "so") in
        (if: int_gt (![intT] "ttl") #(W64 0)
        then
          let: "$r0" := (![intT] "ttl") in
          do:  ((struct.field_ref sessionOptions "ttl" (![ptrT] "so")) <-[intT] "$r0")
-       else
-         do:  (let: "$a0" := #"WithTTL(): TTL should be > 0, preserving current TTL"%go in
-         let: "$a1" := ((let: "$sl0" := (let: "$a0" := #"current-session-ttl"%go in
-         let: "$a1" := (![intT] (struct.field_ref sessionOptions "ttl" (![ptrT] "so"))) in
-         (func_call #zap.pkg_name' #"Int64"%go) "$a0" "$a1") in
-         slice.literal zapcore.Field ["$sl0"])) in
-         (method_call #zap.pkg_name' #"Logger'ptr" #"Warn" (![ptrT] "lg")) "$a0" "$a1")))
+       else do:  #()))
        ))).
 
 (* WithLease specifies the existing leaseID to be used for the session.
    This is useful in process restart scenario, for example, to reclaim
    leadership from an election prior to restart.
 
-   go: session.go:141:6 *)
+   go: session.go:126:6 *)
 Definition WithLease : val :=
   rec: "WithLease" "leaseID" :=
     exception_do (let: "leaseID" := (ref_ty clientv3.LeaseID "leaseID") in
-    return: ((λ: "so" <>,
-       exception_do (let: <> := (ref_ty ptrT "_") in
-       let: "so" := (ref_ty ptrT "so") in
+    return: ((λ: "so",
+       exception_do (let: "so" := (ref_ty ptrT "so") in
        let: "$r0" := (![clientv3.LeaseID] "leaseID") in
        do:  ((struct.field_ref sessionOptions "leaseID" (![ptrT] "so")) <-[clientv3.LeaseID] "$r0"))
        ))).
@@ -1186,25 +1151,15 @@ Definition WithLease : val :=
    context is canceled before Close() completes, the session's lease will be
    abandoned and left to expire instead of being revoked.
 
-   go: session.go:152:6 *)
+   go: session.go:137:6 *)
 Definition WithContext : val :=
   rec: "WithContext" "ctx" :=
     exception_do (let: "ctx" := (ref_ty context.Context "ctx") in
-    return: ((λ: "so" <>,
-       exception_do (let: <> := (ref_ty ptrT "_") in
-       let: "so" := (ref_ty ptrT "so") in
+    return: ((λ: "so",
+       exception_do (let: "so" := (ref_ty ptrT "so") in
        let: "$r0" := (![context.Context] "ctx") in
        do:  ((struct.field_ref sessionOptions "ctx" (![ptrT] "so")) <-[context.Context] "$r0"))
        ))).
-
-(* Expired returns true iff the session is expired.
-
-   go: session.go:159:19 *)
-Definition Session__Expired : val :=
-  rec: "Session__Expired" "s" <> :=
-    exception_do (let: "s" := (ref_ty ptrT "s") in
-    return: (let: "$a0" := (![clientv3.LeaseID] (struct.field_ref Session "id" (![ptrT] "s"))) in
-     (method_call #clientv3.pkg_name' #"Client'ptr" #"Expired" (![ptrT] (struct.field_ref Session "client" (![ptrT] "s")))) "$a0")).
 
 Definition STM : go_type := interfaceT.
 
@@ -1803,10 +1758,6 @@ Definition stmSerializable__Get : val :=
   rec: "stmSerializable__Get" "s" "keys" :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
     let: "keys" := (ref_ty sliceT "keys") in
-    (if: (let: "$a0" := (![sliceT] "keys") in
-    slice.len "$a0") = #(W64 0)
-    then return: (#""%go)
-    else do:  #());;;
     (let: "wv" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "keys") in
     (method_call #pkg_name' #"writeSet" #"get" (![writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0") in
@@ -1853,7 +1804,7 @@ Definition stmSerializable__Get : val :=
     return: (let: "$a0" := (![ptrT] "resp") in
      (func_call #pkg_name' #"respToValue"%go) "$a0")).
 
-(* go: stm.go:331:27 *)
+(* go: stm.go:327:27 *)
 Definition stmSerializable__Rev : val :=
   rec: "stmSerializable__Rev" "s" "key" :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
@@ -1864,7 +1815,7 @@ Definition stmSerializable__Rev : val :=
     return: (let: "$a0" := (![stringT] "key") in
      (method_call #pkg_name' #"stm'ptr" #"Rev" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))) "$a0")).
 
-(* go: stm.go:336:27 *)
+(* go: stm.go:332:27 *)
 Definition stmSerializable__gets : val :=
   rec: "stmSerializable__gets" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
@@ -1894,7 +1845,7 @@ Definition stmSerializable__gets : val :=
       do:  ("ops" <-[sliceT] "$r0")));;;
     return: (![sliceT] "keys", ![sliceT] "ops")).
 
-(* go: stm.go:346:27 *)
+(* go: stm.go:342:27 *)
 Definition stmSerializable__commit : val :=
   rec: "stmSerializable__commit" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
@@ -1938,7 +1889,7 @@ Definition stmSerializable__commit : val :=
     do:  ((struct.field_ref stm "getOpts" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))) <-[sliceT] "$r0");;;
     return: (#null)).
 
-(* go: stm.go:364:6 *)
+(* go: stm.go:360:6 *)
 Definition isKeyCurrent : val :=
   rec: "isKeyCurrent" "k" "r" :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
@@ -1958,7 +1909,7 @@ Definition isKeyCurrent : val :=
      let: "$a2" := (interface.make #""%go #"int"%go #(W64 0)) in
      (func_call #clientv3.pkg_name' #"Compare"%go) "$a0" "$a1" "$a2")).
 
-(* go: stm.go:371:6 *)
+(* go: stm.go:367:6 *)
 Definition respToValue : val :=
   rec: "respToValue" "resp" :=
     exception_do (let: "resp" := (ref_ty ptrT "resp") in
@@ -1970,7 +1921,7 @@ Definition respToValue : val :=
 
 (* NewSTMRepeatable is deprecated.
 
-   go: stm.go:379:6 *)
+   go: stm.go:375:6 *)
 Definition NewSTMRepeatable : val :=
   rec: "NewSTMRepeatable" "ctx" "c" "apply" :=
     exception_do (let: "apply" := (ref_ty funcT "apply") in
@@ -1988,7 +1939,7 @@ Definition NewSTMRepeatable : val :=
 
 (* NewSTMSerializable is deprecated.
 
-   go: stm.go:384:6 *)
+   go: stm.go:380:6 *)
 Definition NewSTMSerializable : val :=
   rec: "NewSTMSerializable" "ctx" "c" "apply" :=
     exception_do (let: "apply" := (ref_ty funcT "apply") in
@@ -2006,7 +1957,7 @@ Definition NewSTMSerializable : val :=
 
 (* NewSTMReadCommitted is deprecated.
 
-   go: stm.go:389:6 *)
+   go: stm.go:385:6 *)
 Definition NewSTMReadCommitted : val :=
   rec: "NewSTMReadCommitted" "ctx" "c" "apply" :=
     exception_do (let: "apply" := (ref_ty funcT "apply") in
@@ -2022,7 +1973,7 @@ Definition NewSTMReadCommitted : val :=
     (func_call #pkg_name' #"NewSTM"%go) "$a0" "$a1" "$a2")) in
     return: ("$ret0", "$ret1")).
 
-Definition vars' : list (go_string * go_type) := [("ErrElectionNotLeader"%go, error); ("ErrElectionNoLeader"%go, error); ("ErrLocked"%go, error); ("ErrSessionExpired"%go, error); ("ErrLockReleased"%go, error)].
+Definition vars' : list (go_string * go_type) := [("ErrElectionNotLeader"%go, error); ("ErrElectionNoLeader"%go, error); ("ErrLocked"%go, error); ("ErrSessionExpired"%go, error)].
 
 Definition functions' : list (go_string * val) := [("NewElection"%go, NewElection); ("ResumeElection"%go, ResumeElection); ("waitDelete"%go, waitDelete); ("waitDeletes"%go, waitDeletes); ("NewMutex"%go, NewMutex); ("NewLocker"%go, NewLocker); ("NewSession"%go, NewSession); ("WithTTL"%go, WithTTL); ("WithLease"%go, WithLease); ("WithContext"%go, WithContext); ("WithIsolation"%go, WithIsolation); ("WithAbortContext"%go, WithAbortContext); ("WithPrefetch"%go, WithPrefetch); ("NewSTM"%go, NewSTM); ("mkSTM"%go, mkSTM); ("runSTM"%go, runSTM); ("isKeyCurrent"%go, isKeyCurrent); ("respToValue"%go, respToValue); ("NewSTMRepeatable"%go, NewSTMRepeatable); ("NewSTMSerializable"%go, NewSTMSerializable); ("NewSTMReadCommitted"%go, NewSTMReadCommitted)].
 
@@ -2046,7 +1997,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Election"%
                  method_call #pkg_name' #"Mutex'ptr" #"TryLock" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
                  )%V); ("Unlock"%go, lockerMutex__Unlock); ("tryAcquire"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"Mutex'ptr" #"tryAcquire" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
-                 )%V)]); ("Session"%go, []); ("Session'ptr"%go, [("Client"%go, Session__Client); ("Close"%go, Session__Close); ("Ctx"%go, Session__Ctx); ("Done"%go, Session__Done); ("Expired"%go, Session__Expired); ("Lease"%go, Session__Lease); ("Orphan"%go, Session__Orphan)]); ("sessionOptions"%go, []); ("sessionOptions'ptr"%go, []); ("SessionOption"%go, []); ("SessionOption'ptr"%go, []); ("Isolation"%go, []); ("Isolation'ptr"%go, []); ("stmError"%go, []); ("stmError'ptr"%go, []); ("stmOptions"%go, []); ("stmOptions'ptr"%go, []); ("stmOption"%go, []); ("stmOption'ptr"%go, []); ("stmResponse"%go, []); ("stmResponse'ptr"%go, []); ("stm"%go, []); ("stm'ptr"%go, [("Del"%go, stm__Del); ("Get"%go, stm__Get); ("Put"%go, stm__Put); ("Rev"%go, stm__Rev); ("commit"%go, stm__commit); ("fetch"%go, stm__fetch); ("reset"%go, stm__reset)]); ("stmPut"%go, []); ("stmPut'ptr"%go, []); ("readSet"%go, [("add"%go, readSet__add); ("cmps"%go, readSet__cmps); ("first"%go, readSet__first)]); ("readSet'ptr"%go, [("add"%go, (λ: "$recvAddr",
+                 )%V)]); ("Session"%go, []); ("Session'ptr"%go, [("Client"%go, Session__Client); ("Close"%go, Session__Close); ("Done"%go, Session__Done); ("Lease"%go, Session__Lease); ("Orphan"%go, Session__Orphan)]); ("sessionOptions"%go, []); ("sessionOptions'ptr"%go, []); ("SessionOption"%go, []); ("SessionOption'ptr"%go, []); ("Isolation"%go, []); ("Isolation'ptr"%go, []); ("stmError"%go, []); ("stmError'ptr"%go, []); ("stmOptions"%go, []); ("stmOptions'ptr"%go, []); ("stmOption"%go, []); ("stmOption'ptr"%go, []); ("stmResponse"%go, []); ("stmResponse'ptr"%go, []); ("stm"%go, []); ("stm'ptr"%go, [("Del"%go, stm__Del); ("Get"%go, stm__Get); ("Put"%go, stm__Put); ("Rev"%go, stm__Rev); ("commit"%go, stm__commit); ("fetch"%go, stm__fetch); ("reset"%go, stm__reset)]); ("stmPut"%go, []); ("stmPut'ptr"%go, []); ("readSet"%go, [("add"%go, readSet__add); ("cmps"%go, readSet__cmps); ("first"%go, readSet__first)]); ("readSet'ptr"%go, [("add"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"readSet" #"add" (![readSet] "$recvAddr")
                  )%V); ("cmps"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"readSet" #"cmps" (![readSet] "$recvAddr")
@@ -2072,10 +2023,8 @@ Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  math.initialize';;;
-      do:  zap.initialize';;;
       do:  time.initialize';;;
       do:  sync.initialize';;;
-      do:  strings.initialize';;;
       do:  clientv3.initialize';;;
       do:  mvccpb.initialize';;;
       do:  etcdserverpb.initialize';;;
@@ -2093,10 +2042,7 @@ Definition initialize' : val :=
       do:  ((globals.get #pkg_name' #"ErrLocked"%go) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"mutex: session is expired"%go in
       (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrSessionExpired"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := #"mutex: lock has already been released"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrLockReleased"%go) <-[error] "$r0"))
+      do:  ((globals.get #pkg_name' #"ErrSessionExpired"%go) <-[error] "$r0"))
       ).
 
 End code.

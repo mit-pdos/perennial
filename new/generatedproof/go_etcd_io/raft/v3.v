@@ -17,9 +17,6 @@ Require Export New.generatedproof.strings.
 Require Export New.generatedproof.go_etcd_io.raft.v3.confchange.
 Require Export New.generatedproof.go_etcd_io.raft.v3.quorum.
 Require Export New.generatedproof.go_etcd_io.raft.v3.tracker.
-Require Export New.generatedproof.github_com.stretchr.testify.assert.
-Require Export New.generatedproof.math.rand.
-Require Export New.generatedproof.testing.
 Require Export New.code.go_etcd_io.raft.v3.
 Require Export New.golang.theory.
 
@@ -867,6 +864,13 @@ Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End entryPayloadSize.
+
+Module stepFunc.
+Section def.
+Context `{ffi_syntax}.
+Definition t := func.t.
+End def.
+End stepFunc.
 Module raft.
 Section def.
 Context `{ffi_syntax}.
@@ -898,9 +902,8 @@ Record t := mk {
   randomizedElectionTimeout' : w64;
   disableProposalForwarding' : bool;
   stepDownOnRemoval' : bool;
-  tickId' : w64;
-  step' : func.t;
-  StepHigherOrder' : func.t;
+  tick' : func.t;
+  step' : stepFunc.t;
   logger' : Logger.t;
   pendingReadIndexMessages' : slice.t;
   traceLogger' : TraceLogger.t;
@@ -912,13 +915,13 @@ Section instances.
 Context `{ffi_syntax}.
 
 Global Instance settable_raft `{ffi_syntax}: Settable _ :=
-  settable! raft.mk < raft.id'; raft.Term'; raft.Vote'; raft.readStates'; raft.raftLog'; raft.maxMsgSize'; raft.maxUncommittedSize'; raft.trk'; raft.state'; raft.isLearner'; raft.msgs'; raft.msgsAfterAppend'; raft.lead'; raft.leadTransferee'; raft.pendingConfIndex'; raft.disableConfChangeValidation'; raft.uncommittedSize'; raft.readOnly'; raft.electionElapsed'; raft.heartbeatElapsed'; raft.checkQuorum'; raft.preVote'; raft.heartbeatTimeout'; raft.electionTimeout'; raft.randomizedElectionTimeout'; raft.disableProposalForwarding'; raft.stepDownOnRemoval'; raft.tickId'; raft.step'; raft.StepHigherOrder'; raft.logger'; raft.pendingReadIndexMessages'; raft.traceLogger' >.
+  settable! raft.mk < raft.id'; raft.Term'; raft.Vote'; raft.readStates'; raft.raftLog'; raft.maxMsgSize'; raft.maxUncommittedSize'; raft.trk'; raft.state'; raft.isLearner'; raft.msgs'; raft.msgsAfterAppend'; raft.lead'; raft.leadTransferee'; raft.pendingConfIndex'; raft.disableConfChangeValidation'; raft.uncommittedSize'; raft.readOnly'; raft.electionElapsed'; raft.heartbeatElapsed'; raft.checkQuorum'; raft.preVote'; raft.heartbeatTimeout'; raft.electionTimeout'; raft.randomizedElectionTimeout'; raft.disableProposalForwarding'; raft.stepDownOnRemoval'; raft.tick'; raft.step'; raft.logger'; raft.pendingReadIndexMessages'; raft.traceLogger' >.
 Global Instance into_val_raft `{ffi_syntax} : IntoVal raft.t.
 Admitted.
 
 Global Instance into_val_typed_raft `{ffi_syntax} : IntoValTyped raft.t raft.raft :=
 {|
-  default_val := raft.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  default_val := raft.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
   default_val_eq_zero_val := ltac:(destruct falso);
   to_val_inj := ltac:(destruct falso);
@@ -1005,13 +1008,10 @@ Admitted.
 Global Instance into_val_struct_field_raft_stepDownOnRemoval `{ffi_syntax} : IntoValStructField "stepDownOnRemoval" raft.raft raft.stepDownOnRemoval'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_tickId `{ffi_syntax} : IntoValStructField "tickId" raft.raft raft.tickId'.
+Global Instance into_val_struct_field_raft_tick `{ffi_syntax} : IntoValStructField "tick" raft.raft raft.tick'.
 Admitted.
 
 Global Instance into_val_struct_field_raft_step `{ffi_syntax} : IntoValStructField "step" raft.raft raft.step'.
-Admitted.
-
-Global Instance into_val_struct_field_raft_StepHigherOrder `{ffi_syntax} : IntoValStructField "StepHigherOrder" raft.raft raft.StepHigherOrder'.
 Admitted.
 
 Global Instance into_val_struct_field_raft_logger `{ffi_syntax} : IntoValStructField "logger" raft.raft raft.logger'.
@@ -1025,7 +1025,7 @@ Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tickId' step' StepHigherOrder' logger' pendingReadIndexMessages' traceLogger':
+Global Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger':
   PureWp True
     (struct.make raft.raft (alist_val [
       "id" ::= #id';
@@ -1055,14 +1055,13 @@ Global Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapG
       "randomizedElectionTimeout" ::= #randomizedElectionTimeout';
       "disableProposalForwarding" ::= #disableProposalForwarding';
       "stepDownOnRemoval" ::= #stepDownOnRemoval';
-      "tickId" ::= #tickId';
+      "tick" ::= #tick';
       "step" ::= #step';
-      "StepHigherOrder" ::= #StepHigherOrder';
       "logger" ::= #logger';
       "pendingReadIndexMessages" ::= #pendingReadIndexMessages';
       "traceLogger" ::= #traceLogger'
     ]))%V
-    #(raft.mk id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tickId' step' StepHigherOrder' logger' pendingReadIndexMessages' traceLogger').
+    #(raft.mk id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger').
 Admitted.
 
 
@@ -1095,251 +1094,11 @@ Global Instance raft_struct_fields_split dq l (v : raft.t) :
     "HrandomizedElectionTimeout" ∷ l ↦s[raft.raft :: "randomizedElectionTimeout"]{dq} v.(raft.randomizedElectionTimeout') ∗
     "HdisableProposalForwarding" ∷ l ↦s[raft.raft :: "disableProposalForwarding"]{dq} v.(raft.disableProposalForwarding') ∗
     "HstepDownOnRemoval" ∷ l ↦s[raft.raft :: "stepDownOnRemoval"]{dq} v.(raft.stepDownOnRemoval') ∗
-    "HtickId" ∷ l ↦s[raft.raft :: "tickId"]{dq} v.(raft.tickId') ∗
+    "Htick" ∷ l ↦s[raft.raft :: "tick"]{dq} v.(raft.tick') ∗
     "Hstep" ∷ l ↦s[raft.raft :: "step"]{dq} v.(raft.step') ∗
-    "HStepHigherOrder" ∷ l ↦s[raft.raft :: "StepHigherOrder"]{dq} v.(raft.StepHigherOrder') ∗
     "Hlogger" ∷ l ↦s[raft.raft :: "logger"]{dq} v.(raft.logger') ∗
     "HpendingReadIndexMessages" ∷ l ↦s[raft.raft :: "pendingReadIndexMessages"]{dq} v.(raft.pendingReadIndexMessages') ∗
     "HtraceLogger" ∷ l ↦s[raft.raft :: "traceLogger"]{dq} v.(raft.traceLogger')
-  ).
-Admitted.
-
-End instances.
-
-Module stepFunc.
-Section def.
-Context `{ffi_syntax}.
-Definition t := func.t.
-End def.
-End stepFunc.
-Module blackHole.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-}.
-End def.
-End blackHole.
-
-Section instances.
-Context `{ffi_syntax}.
-Global Instance into_val_blackHole `{ffi_syntax} : IntoVal blackHole.t.
-Admitted.
-
-Global Instance into_val_typed_blackHole `{ffi_syntax} : IntoValTyped blackHole.t raft.blackHole :=
-{|
-  default_val := blackHole.mk;
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
-|}.
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_blackHole `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
-  PureWp True
-    (struct.make raft.blackHole (alist_val [
-    ]))%V
-    #(blackHole.mk).
-Admitted.
-
-
-End instances.
-
-Module stateMachine.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End stateMachine.
-Module connem.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  from' : w64;
-  to' : w64;
-}.
-End def.
-End connem.
-
-Section instances.
-Context `{ffi_syntax}.
-
-Global Instance settable_connem `{ffi_syntax}: Settable _ :=
-  settable! connem.mk < connem.from'; connem.to' >.
-Global Instance into_val_connem `{ffi_syntax} : IntoVal connem.t.
-Admitted.
-
-Global Instance into_val_typed_connem `{ffi_syntax} : IntoValTyped connem.t raft.connem :=
-{|
-  default_val := connem.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
-|}.
-Global Instance into_val_struct_field_connem_from `{ffi_syntax} : IntoValStructField "from" raft.connem connem.from'.
-Admitted.
-
-Global Instance into_val_struct_field_connem_to `{ffi_syntax} : IntoValStructField "to" raft.connem connem.to'.
-Admitted.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_connem `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} from' to':
-  PureWp True
-    (struct.make raft.connem (alist_val [
-      "from" ::= #from';
-      "to" ::= #to'
-    ]))%V
-    #(connem.mk from' to').
-Admitted.
-
-
-Global Instance connem_struct_fields_split dq l (v : connem.t) :
-  StructFieldsSplit dq l v (
-    "Hfrom" ∷ l ↦s[raft.connem :: "from"]{dq} v.(connem.from') ∗
-    "Hto" ∷ l ↦s[raft.connem :: "to"]{dq} v.(connem.to')
-  ).
-Admitted.
-
-End instances.
-Module network.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  t' : loc;
-  peers' : loc;
-  storage' : loc;
-  dropm64' : loc;
-  ignorem' : loc;
-  msgHook' : func.t;
-}.
-End def.
-End network.
-
-Section instances.
-Context `{ffi_syntax}.
-
-Global Instance settable_network `{ffi_syntax}: Settable _ :=
-  settable! network.mk < network.t'; network.peers'; network.storage'; network.dropm64'; network.ignorem'; network.msgHook' >.
-Global Instance into_val_network `{ffi_syntax} : IntoVal network.t.
-Admitted.
-
-Global Instance into_val_typed_network `{ffi_syntax} : IntoValTyped network.t raft.network :=
-{|
-  default_val := network.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
-|}.
-Global Instance into_val_struct_field_network_t `{ffi_syntax} : IntoValStructField "t" raft.network network.t'.
-Admitted.
-
-Global Instance into_val_struct_field_network_peers `{ffi_syntax} : IntoValStructField "peers" raft.network network.peers'.
-Admitted.
-
-Global Instance into_val_struct_field_network_storage `{ffi_syntax} : IntoValStructField "storage" raft.network network.storage'.
-Admitted.
-
-Global Instance into_val_struct_field_network_dropm64 `{ffi_syntax} : IntoValStructField "dropm64" raft.network network.dropm64'.
-Admitted.
-
-Global Instance into_val_struct_field_network_ignorem `{ffi_syntax} : IntoValStructField "ignorem" raft.network network.ignorem'.
-Admitted.
-
-Global Instance into_val_struct_field_network_msgHook `{ffi_syntax} : IntoValStructField "msgHook" raft.network network.msgHook'.
-Admitted.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_network `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' peers' storage' dropm64' ignorem' msgHook':
-  PureWp True
-    (struct.make raft.network (alist_val [
-      "t" ::= #t';
-      "peers" ::= #peers';
-      "storage" ::= #storage';
-      "dropm64" ::= #dropm64';
-      "ignorem" ::= #ignorem';
-      "msgHook" ::= #msgHook'
-    ]))%V
-    #(network.mk t' peers' storage' dropm64' ignorem' msgHook').
-Admitted.
-
-
-Global Instance network_struct_fields_split dq l (v : network.t) :
-  StructFieldsSplit dq l v (
-    "Ht" ∷ l ↦s[raft.network :: "t"]{dq} v.(network.t') ∗
-    "Hpeers" ∷ l ↦s[raft.network :: "peers"]{dq} v.(network.peers') ∗
-    "Hstorage" ∷ l ↦s[raft.network :: "storage"]{dq} v.(network.storage') ∗
-    "Hdropm64" ∷ l ↦s[raft.network :: "dropm64"]{dq} v.(network.dropm64') ∗
-    "Hignorem" ∷ l ↦s[raft.network :: "ignorem"]{dq} v.(network.ignorem') ∗
-    "HmsgHook" ∷ l ↦s[raft.network :: "msgHook"]{dq} v.(network.msgHook')
-  ).
-Admitted.
-
-End instances.
-
-Module testMemoryStorageOptions.
-Section def.
-Context `{ffi_syntax}.
-Definition t := func.t.
-End def.
-End testMemoryStorageOptions.
-Module testLeaderElectionStruct.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  network' : loc;
-  state' : StateType.t;
-  expTerm' : w64;
-}.
-End def.
-End testLeaderElectionStruct.
-
-Section instances.
-Context `{ffi_syntax}.
-
-Global Instance settable_testLeaderElectionStruct `{ffi_syntax}: Settable _ :=
-  settable! testLeaderElectionStruct.mk < testLeaderElectionStruct.network'; testLeaderElectionStruct.state'; testLeaderElectionStruct.expTerm' >.
-Global Instance into_val_testLeaderElectionStruct `{ffi_syntax} : IntoVal testLeaderElectionStruct.t.
-Admitted.
-
-Global Instance into_val_typed_testLeaderElectionStruct `{ffi_syntax} : IntoValTyped testLeaderElectionStruct.t raft.testLeaderElectionStruct :=
-{|
-  default_val := testLeaderElectionStruct.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
-|}.
-Global Instance into_val_struct_field_testLeaderElectionStruct_network `{ffi_syntax} : IntoValStructField "network" raft.testLeaderElectionStruct testLeaderElectionStruct.network'.
-Admitted.
-
-Global Instance into_val_struct_field_testLeaderElectionStruct_state `{ffi_syntax} : IntoValStructField "state" raft.testLeaderElectionStruct testLeaderElectionStruct.state'.
-Admitted.
-
-Global Instance into_val_struct_field_testLeaderElectionStruct_expTerm `{ffi_syntax} : IntoValStructField "expTerm" raft.testLeaderElectionStruct testLeaderElectionStruct.expTerm'.
-Admitted.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_testLeaderElectionStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} network' state' expTerm':
-  PureWp True
-    (struct.make raft.testLeaderElectionStruct (alist_val [
-      "network" ::= #network';
-      "state" ::= #state';
-      "expTerm" ::= #expTerm'
-    ]))%V
-    #(testLeaderElectionStruct.mk network' state' expTerm').
-Admitted.
-
-
-Global Instance testLeaderElectionStruct_struct_fields_split dq l (v : testLeaderElectionStruct.t) :
-  StructFieldsSplit dq l v (
-    "Hnetwork" ∷ l ↦s[raft.testLeaderElectionStruct :: "network"]{dq} v.(testLeaderElectionStruct.network') ∗
-    "Hstate" ∷ l ↦s[raft.testLeaderElectionStruct :: "state"]{dq} v.(testLeaderElectionStruct.state') ∗
-    "HexpTerm" ∷ l ↦s[raft.testLeaderElectionStruct :: "expTerm"]{dq} v.(testLeaderElectionStruct.expTerm')
   ).
 Admitted.
 
@@ -2027,10 +1786,6 @@ Class GlobalAddrs :=
   globalRand : loc;
   stmap : loc;
   errBreak : loc;
-  stepLeaderGlobal : loc;
-  stepCandidateGlobal : loc;
-  stepFollowerGlobal : loc;
-  nopStepper : loc;
   ErrStepLocalMsg : loc;
   ErrStepPeerNotFound : loc;
   ErrCompacted : loc;
@@ -2056,10 +1811,6 @@ Definition var_addrs : list (go_string * loc) := [
     ("globalRand"%go, globalRand);
     ("stmap"%go, stmap);
     ("errBreak"%go, errBreak);
-    ("stepLeaderGlobal"%go, stepLeaderGlobal);
-    ("stepCandidateGlobal"%go, stepCandidateGlobal);
-    ("stepFollowerGlobal"%go, stepFollowerGlobal);
-    ("nopStepper"%go, nopStepper);
     ("ErrStepLocalMsg"%go, ErrStepLocalMsg);
     ("ErrStepPeerNotFound"%go, ErrStepPeerNotFound);
     ("ErrCompacted"%go, ErrCompacted);
@@ -2083,10 +1834,6 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HglobalRand" ∷ globalRand ↦ (default_val loc) ∗
   "Hstmap" ∷ stmap ↦ (default_val (vec go_string 4)) ∗
   "HerrBreak" ∷ errBreak ↦ (default_val error.t) ∗
-  "HstepLeaderGlobal" ∷ stepLeaderGlobal ↦ (default_val func.t) ∗
-  "HstepCandidateGlobal" ∷ stepCandidateGlobal ↦ (default_val func.t) ∗
-  "HstepFollowerGlobal" ∷ stepFollowerGlobal ↦ (default_val func.t) ∗
-  "HnopStepper" ∷ nopStepper ↦ (default_val loc) ∗
   "HErrStepLocalMsg" ∷ ErrStepLocalMsg ↦ (default_val error.t) ∗
   "HErrStepPeerNotFound" ∷ ErrStepPeerNotFound ↦ (default_val error.t) ∗
   "HErrCompacted" ∷ ErrCompacted ↦ (default_val error.t) ∗
@@ -2134,22 +1881,6 @@ Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_errBreak : 
   WpGlobalsGet raft.pkg_name' "errBreak" errBreak is_defined.
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_stepLeaderGlobal : 
-  WpGlobalsGet raft.pkg_name' "stepLeaderGlobal" stepLeaderGlobal is_defined.
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_stepCandidateGlobal : 
-  WpGlobalsGet raft.pkg_name' "stepCandidateGlobal" stepCandidateGlobal is_defined.
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_stepFollowerGlobal : 
-  WpGlobalsGet raft.pkg_name' "stepFollowerGlobal" stepFollowerGlobal is_defined.
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_nopStepper : 
-  WpGlobalsGet raft.pkg_name' "nopStepper" nopStepper is_defined.
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrStepLocalMsg : 
@@ -2266,38 +1997,6 @@ Global Instance wp_func_call_releasePendingReadIndexMessages :
 
 Global Instance wp_func_call_sendMsgReadIndexResponse :
   WpFuncCall raft.pkg_name' "sendMsgReadIndexResponse" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_newTestConfig :
-  WpFuncCall raft.pkg_name' "newTestConfig" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_entsWithConfig :
-  WpFuncCall raft.pkg_name' "entsWithConfig" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_preVoteConfig :
-  WpFuncCall raft.pkg_name' "preVoteConfig" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_idsBySize :
-  WpFuncCall raft.pkg_name' "idsBySize" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_withPeers :
-  WpFuncCall raft.pkg_name' "withPeers" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_newTestMemoryStorage :
-  WpFuncCall raft.pkg_name' "newTestMemoryStorage" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_newNetworkWithConfigInit :
-  WpFuncCall raft.pkg_name' "newNetworkWithConfigInit" _ is_defined :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_testLeaderElection2 :
-  WpFuncCall raft.pkg_name' "testLeaderElection2" _ is_defined :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewRawNode :
@@ -3020,10 +2719,6 @@ Global Instance wp_method_call_raft'ptr_abortLeaderTransfer :
   WpMethodCall raft.pkg_name' "raft'ptr" "abortLeaderTransfer" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_raft'ptr_advanceMessagesAfterAppend :
-  WpMethodCall raft.pkg_name' "raft'ptr" "advanceMessagesAfterAppend" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
 Global Instance wp_method_call_raft'ptr_appendEntry :
   WpMethodCall raft.pkg_name' "raft'ptr" "appendEntry" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
@@ -3136,10 +2831,6 @@ Global Instance wp_method_call_raft'ptr_promotable :
   WpMethodCall raft.pkg_name' "raft'ptr" "promotable" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_raft'ptr_readMessages :
-  WpMethodCall raft.pkg_name' "raft'ptr" "readMessages" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
 Global Instance wp_method_call_raft'ptr_reduceUncommittedSize :
   WpMethodCall raft.pkg_name' "raft'ptr" "reduceUncommittedSize" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
@@ -3180,20 +2871,8 @@ Global Instance wp_method_call_raft'ptr_softState :
   WpMethodCall raft.pkg_name' "raft'ptr" "softState" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_raft'ptr_stepOrSend :
-  WpMethodCall raft.pkg_name' "raft'ptr" "stepOrSend" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
 Global Instance wp_method_call_raft'ptr_switchToConfig :
   WpMethodCall raft.pkg_name' "raft'ptr" "switchToConfig" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_raft'ptr_takeMessagesAfterAppend :
-  WpMethodCall raft.pkg_name' "raft'ptr" "takeMessagesAfterAppend" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_raft'ptr_tick :
-  WpMethodCall raft.pkg_name' "raft'ptr" "tick" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_raft'ptr_tickElection :
@@ -3202,54 +2881,6 @@ Global Instance wp_method_call_raft'ptr_tickElection :
 
 Global Instance wp_method_call_raft'ptr_tickHeartbeat :
   WpMethodCall raft.pkg_name' "raft'ptr" "tickHeartbeat" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_blackHole_Step :
-  WpMethodCall raft.pkg_name' "blackHole" "Step" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_blackHole_advanceMessagesAfterAppend :
-  WpMethodCall raft.pkg_name' "blackHole" "advanceMessagesAfterAppend" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_blackHole_readMessages :
-  WpMethodCall raft.pkg_name' "blackHole" "readMessages" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_blackHole'ptr_Step :
-  WpMethodCall raft.pkg_name' "blackHole'ptr" "Step" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_blackHole'ptr_advanceMessagesAfterAppend :
-  WpMethodCall raft.pkg_name' "blackHole'ptr" "advanceMessagesAfterAppend" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_blackHole'ptr_readMessages :
-  WpMethodCall raft.pkg_name' "blackHole'ptr" "readMessages" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_network'ptr_filter :
-  WpMethodCall raft.pkg_name' "network'ptr" "filter" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_network'ptr_send :
-  WpMethodCall raft.pkg_name' "network'ptr" "send" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_testLeaderElectionStruct_filter :
-  WpMethodCall raft.pkg_name' "testLeaderElectionStruct" "filter" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_testLeaderElectionStruct_send :
-  WpMethodCall raft.pkg_name' "testLeaderElectionStruct" "send" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_testLeaderElectionStruct'ptr_filter :
-  WpMethodCall raft.pkg_name' "testLeaderElectionStruct'ptr" "filter" _ is_defined :=
-  ltac:(apply wp_method_call'; reflexivity).
-
-Global Instance wp_method_call_testLeaderElectionStruct'ptr_send :
-  WpMethodCall raft.pkg_name' "testLeaderElectionStruct'ptr" "send" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RawNode'ptr_Advance :

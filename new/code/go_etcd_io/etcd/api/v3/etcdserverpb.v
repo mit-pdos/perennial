@@ -36,11 +36,29 @@ Axiom RangeRequest_SortTarget_value'init : val.
 
 Definition Compare_CompareResult : go_type := int32T.
 
+Definition Compare_EQUAL : expr := #(W32 0).
+
+Definition Compare_GREATER : expr := #(W32 1).
+
+Definition Compare_LESS : expr := #(W32 2).
+
+Definition Compare_NOT_EQUAL : expr := #(W32 3).
+
 Axiom Compare_CompareResult_name'init : val.
 
 Axiom Compare_CompareResult_value'init : val.
 
 Definition Compare_CompareTarget : go_type := int32T.
+
+Definition Compare_VERSION : expr := #(W32 0).
+
+Definition Compare_CREATE : expr := #(W32 1).
+
+Definition Compare_MOD : expr := #(W32 2).
+
+Definition Compare_VALUE : expr := #(W32 3).
+
+Definition Compare_LEASE : expr := #(W32 4).
 
 Axiom Compare_CompareTarget_name'init : val.
 
@@ -80,6 +98,51 @@ Definition RangeResponse : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition PutResponse : go_type := structT [
+  "Header" :: ptrT;
+  "PrevKv" :: ptrT;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
+Definition DeleteRangeResponse : go_type := structT [
+  "Header" :: ptrT;
+  "Deleted" :: int64T;
+  "PrevKvs" :: sliceT;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
+Definition isResponseOp_Response : go_type := interfaceT.
+
+Definition ResponseOp : go_type := structT [
+  "Response" :: isResponseOp_Response;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
+Definition ResponseOp_ResponseRange : go_type := structT [
+  "ResponseRange" :: ptrT
+].
+
+Definition ResponseOp_ResponsePut : go_type := structT [
+  "ResponsePut" :: ptrT
+].
+
+Definition ResponseOp_ResponseDeleteRange : go_type := structT [
+  "ResponseDeleteRange" :: ptrT
+].
+
+Definition ResponseOp_ResponseTxn : go_type := structT [
+  "ResponseTxn" :: ptrT
+].
+
 Definition isCompare_TargetUnion : go_type := interfaceT.
 
 Definition Compare : go_type := structT [
@@ -92,6 +155,26 @@ Definition Compare : go_type := structT [
   ];
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
+].
+
+Definition Compare_Version : go_type := structT [
+  "Version" :: int64T
+].
+
+Definition Compare_CreateRevision : go_type := structT [
+  "CreateRevision" :: int64T
+].
+
+Definition Compare_ModRevision : go_type := structT [
+  "ModRevision" :: int64T
+].
+
+Definition Compare_Value : go_type := structT [
+  "Value" :: sliceT
+].
+
+Definition Compare_Lease : go_type := structT [
+  "Lease" :: int64T
 ].
 
 Definition TxnResponse : go_type := structT [
@@ -130,7 +213,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Compare_CompareResult"%go, []); ("Compare_CompareResult'ptr"%go, []); ("Compare_CompareTarget"%go, []); ("Compare_CompareTarget'ptr"%go, []); ("ResponseHeader"%go, []); ("ResponseHeader'ptr"%go, []); ("RangeResponse"%go, []); ("RangeResponse'ptr"%go, []); ("Compare"%go, []); ("Compare'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Compare_CompareResult"%go, []); ("Compare_CompareResult'ptr"%go, []); ("Compare_CompareTarget"%go, []); ("Compare_CompareTarget'ptr"%go, []); ("ResponseHeader"%go, []); ("ResponseHeader'ptr"%go, []); ("RangeResponse"%go, []); ("RangeResponse'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("DeleteRangeResponse"%go, []); ("DeleteRangeResponse'ptr"%go, []); ("ResponseOp"%go, []); ("ResponseOp'ptr"%go, []); ("ResponseOp_ResponseRange"%go, []); ("ResponseOp_ResponseRange'ptr"%go, []); ("ResponseOp_ResponsePut"%go, []); ("ResponseOp_ResponsePut'ptr"%go, []); ("ResponseOp_ResponseDeleteRange"%go, []); ("ResponseOp_ResponseDeleteRange'ptr"%go, []); ("ResponseOp_ResponseTxn"%go, []); ("ResponseOp_ResponseTxn'ptr"%go, []); ("Compare"%go, []); ("Compare'ptr"%go, []); ("Compare_Version"%go, []); ("Compare_Version'ptr"%go, []); ("Compare_CreateRevision"%go, []); ("Compare_CreateRevision'ptr"%go, []); ("Compare_ModRevision"%go, []); ("Compare_ModRevision'ptr"%go, []); ("Compare_Value"%go, []); ("Compare_Value'ptr"%go, []); ("Compare_Lease"%go, []); ("Compare_Lease'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, [])].
 
 Axiom _'init : val.
 

@@ -26,6 +26,12 @@ Axiom unitMap'init : val.
 
 Axiom asynctimerchan'init : val.
 
+Definition Time : go_type := structT [
+  "wall" :: uint64T;
+  "ext" :: int64T;
+  "loc" :: ptrT
+].
+
 Definition Nanosecond : expr := #(W64 1).
 
 Definition Microsecond : expr := #(W64 1000) * Nanosecond.
@@ -33,8 +39,6 @@ Definition Microsecond : expr := #(W64 1000) * Nanosecond.
 Definition Millisecond : expr := #(W64 1000) * Microsecond.
 
 Definition Second : expr := #(W64 1000) * Millisecond.
-
-Axiom daysBefore'init : val.
 
 Axiom startNano'init : val.
 
@@ -56,7 +60,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Time"%go, []); ("Time'ptr"%go, [])].
 
 Axiom _'init : val.
 
@@ -73,7 +77,6 @@ Definition initialize' : val :=
       do:  (errLeadingInt'init #());;;
       do:  (unitMap'init #());;;
       do:  (asynctimerchan'init #());;;
-      do:  (daysBefore'init #());;;
       do:  (startNano'init #());;;
       do:  (utcLoc'init #());;;
       do:  (UTC'init #());;;

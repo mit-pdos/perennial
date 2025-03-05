@@ -8,8 +8,6 @@ Context `{ffi_syntax}.
 
 Axiom DefaultBackoffConfig'init : val.
 
-Axiom setConnectedAddress'init : val.
-
 Axiom unaryStreamDesc'init : val.
 
 Axiom ErrClientConnClosing'init : val.
@@ -18,25 +16,17 @@ Axiom errConnDrain'init : val.
 
 Axiom errConnClosing'init : val.
 
-Axiom errConnIdling'init : val.
-
 Axiom invalidDefaultServiceConfigErrPrefix'init : val.
-
-Axiom PickFirstBalancerName'init : val.
 
 Axiom errNoTransportSecurity'init : val.
 
 Axiom errTransportCredsAndBundle'init : val.
 
-Axiom errNoTransportCredsInBundle'init : val.
-
 Axiom errTransportCredentialsMissing'init : val.
 
+Axiom errCredentialsConflict'init : val.
+
 Axiom ErrClientConnTimeout'init : val.
-
-Axiom errContextCanceled'init : val.
-
-Axiom errContextDeadline'init : val.
 
 Axiom statusOK'init : val.
 
@@ -49,8 +39,6 @@ Axiom ErrServerStopped'init : val.
 Axiom errDuplicatedName'init : val.
 
 Axiom errEmptyServiceNonEmptyMethod'init : val.
-
-Axiom metadataFromOutgoingContextRaw'init : val.
 
 Definition pkg_name' : go_string := "google.golang.org/grpc".
 
@@ -66,38 +54,26 @@ Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  (DefaultBackoffConfig'init #());;;
-      do:  (setConnectedAddress'init #());;;
       do:  (unaryStreamDesc'init #());;;
       do:  (ErrClientConnClosing'init #());;;
       do:  (errConnDrain'init #());;;
       do:  (errConnClosing'init #());;;
-      do:  (errConnIdling'init #());;;
       do:  (invalidDefaultServiceConfigErrPrefix'init #());;;
-      do:  (PickFirstBalancerName'init #());;;
       do:  (errNoTransportSecurity'init #());;;
       do:  (errTransportCredsAndBundle'init #());;;
-      do:  (errNoTransportCredsInBundle'init #());;;
       do:  (errTransportCredentialsMissing'init #());;;
+      do:  (errCredentialsConflict'init #());;;
       do:  (_'init #());;;
       do:  (ErrClientConnTimeout'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;
-      do:  (errContextCanceled'init #());;;
-      do:  (errContextDeadline'init #());;;
       do:  (statusOK'init #());;;
       do:  (logger'init #());;;
       do:  (defaultServerOptions'init #());;;
       do:  (ErrServerStopped'init #());;;
       do:  (_'init #());;;
       do:  (errDuplicatedName'init #());;;
-      do:  (errEmptyServiceNonEmptyMethod'init #());;;
-      do:  (metadataFromOutgoingContextRaw'init #());;;
-      do:  (_'init #());;;
-      do:  (_'init #());;;
-      do:  (_'init #());;;
-      do:  (_'init #());;;
-      do:  (_'init #());;;
-      do:  (_'init #()))
+      do:  (errEmptyServiceNonEmptyMethod'init #()))
       ).
 
 End code.

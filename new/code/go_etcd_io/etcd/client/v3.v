@@ -18,11 +18,22 @@ Definition Cluster : go_type := interfaceT.
 
 Definition Cmp : go_type := etcdserverpb.Compare.
 
+Definition PutResponse : go_type := etcdserverpb.PutResponse.
+
 Definition GetResponse : go_type := etcdserverpb.RangeResponse.
+
+Definition DeleteResponse : go_type := etcdserverpb.DeleteRangeResponse.
 
 Definition TxnResponse : go_type := etcdserverpb.TxnResponse.
 
 Definition KV : go_type := interfaceT.
+
+Definition OpResponse : go_type := structT [
+  "put" :: ptrT;
+  "get" :: ptrT;
+  "del" :: ptrT;
+  "txn" :: ptrT
+].
 
 Definition LeaseID : go_type := int64T.
 
@@ -65,6 +76,8 @@ Axiom defaultOptions'init : val.
 
 Definition Txn : go_type := interfaceT.
 
+Definition EventTypeDelete : expr := mvccpb.DELETE.
+
 Definition Event : go_type := mvccpb.Event.
 
 Definition WatchResponse : go_type := structT [
@@ -93,7 +106,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Cmp"%go, []); ("Cmp'ptr"%go, []); ("GetResponse"%go, []); ("GetResponse'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, []); ("LeaseID"%go, []); ("LeaseID'ptr"%go, []); ("LeaseGrantResponse"%go, []); ("LeaseGrantResponse'ptr"%go, []); ("OpOption"%go, []); ("OpOption'ptr"%go, []); ("Event"%go, []); ("Event'ptr"%go, []); ("WatchChan"%go, []); ("WatchChan'ptr"%go, []); ("WatchResponse"%go, []); ("WatchResponse'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Cmp"%go, []); ("Cmp'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("GetResponse"%go, []); ("GetResponse'ptr"%go, []); ("DeleteResponse"%go, []); ("DeleteResponse'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, []); ("OpResponse"%go, []); ("OpResponse'ptr"%go, []); ("LeaseID"%go, []); ("LeaseID'ptr"%go, []); ("LeaseGrantResponse"%go, []); ("LeaseGrantResponse'ptr"%go, []); ("OpOption"%go, []); ("OpOption'ptr"%go, []); ("Event"%go, []); ("Event'ptr"%go, []); ("WatchChan"%go, []); ("WatchChan'ptr"%go, []); ("WatchResponse"%go, []); ("WatchResponse'ptr"%go, [])].
 
 Axiom _'init : val.
 

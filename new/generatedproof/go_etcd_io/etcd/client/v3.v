@@ -34,12 +34,26 @@ Definition t := etcdserverpb.Compare.t.
 End def.
 End Cmp.
 
+Module PutResponse.
+Section def.
+Context `{ffi_syntax}.
+Definition t := etcdserverpb.PutResponse.t.
+End def.
+End PutResponse.
+
 Module GetResponse.
 Section def.
 Context `{ffi_syntax}.
 Definition t := etcdserverpb.RangeResponse.t.
 End def.
 End GetResponse.
+
+Module DeleteResponse.
+Section def.
+Context `{ffi_syntax}.
+Definition t := etcdserverpb.DeleteRangeResponse.t.
+End def.
+End DeleteResponse.
 
 Module TxnResponse.
 Section def.
@@ -54,6 +68,70 @@ Context `{ffi_syntax}.
 Definition t := interface.t.
 End def.
 End KV.
+Module OpResponse.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  put' : loc;
+  get' : loc;
+  del' : loc;
+  txn' : loc;
+}.
+End def.
+End OpResponse.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_OpResponse `{ffi_syntax}: Settable _ :=
+  settable! OpResponse.mk < OpResponse.put'; OpResponse.get'; OpResponse.del'; OpResponse.txn' >.
+Global Instance into_val_OpResponse `{ffi_syntax} : IntoVal OpResponse.t.
+Admitted.
+
+Global Instance into_val_typed_OpResponse `{ffi_syntax} : IntoValTyped OpResponse.t clientv3.OpResponse :=
+{|
+  default_val := OpResponse.mk (default_val _) (default_val _) (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_OpResponse_put `{ffi_syntax} : IntoValStructField "put" clientv3.OpResponse OpResponse.put'.
+Admitted.
+
+Global Instance into_val_struct_field_OpResponse_get `{ffi_syntax} : IntoValStructField "get" clientv3.OpResponse OpResponse.get'.
+Admitted.
+
+Global Instance into_val_struct_field_OpResponse_del `{ffi_syntax} : IntoValStructField "del" clientv3.OpResponse OpResponse.del'.
+Admitted.
+
+Global Instance into_val_struct_field_OpResponse_txn `{ffi_syntax} : IntoValStructField "txn" clientv3.OpResponse OpResponse.txn'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_OpResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} put' get' del' txn':
+  PureWp True
+    (struct.make clientv3.OpResponse (alist_val [
+      "put" ::= #put';
+      "get" ::= #get';
+      "del" ::= #del';
+      "txn" ::= #txn'
+    ]))%V
+    #(OpResponse.mk put' get' del' txn').
+Admitted.
+
+
+Global Instance OpResponse_struct_fields_split dq l (v : OpResponse.t) :
+  StructFieldsSplit dq l v (
+    "Hput" ∷ l ↦s[clientv3.OpResponse :: "put"]{dq} v.(OpResponse.put') ∗
+    "Hget" ∷ l ↦s[clientv3.OpResponse :: "get"]{dq} v.(OpResponse.get') ∗
+    "Hdel" ∷ l ↦s[clientv3.OpResponse :: "del"]{dq} v.(OpResponse.del') ∗
+    "Htxn" ∷ l ↦s[clientv3.OpResponse :: "txn"]{dq} v.(OpResponse.txn')
+  ).
+Admitted.
+
+End instances.
 
 Module LeaseID.
 Section def.

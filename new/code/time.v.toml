@@ -1,4 +1,5 @@
 translate = [
+  "Time",
   "Second",
   "Millisecond",
   "Microsecond",
