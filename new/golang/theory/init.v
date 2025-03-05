@@ -62,6 +62,7 @@ Ltac basic_pkg_init deps :=
   end.
 
 Ltac iPkgInit :=
+  unfold named;
   lazymatch goal with
   | |- environments.envs_entails ?env (pkg_init _) => idtac
   | |- environments.envs_entails ?env (pkg_defined _) => idtac

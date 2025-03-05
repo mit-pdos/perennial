@@ -47,11 +47,8 @@ Lemma wp_Assert (cond : bool) :
     func_call #std.pkg_name' #"Assert" #cond
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "[#init %] HΦ".
-  subst.
-  wp_func_call; wp_call; wp_pures.
-  wp_alloc b_l as "b".
-  wp_pures. wp_load. wp_pures.
+  wp_start as "%". subst.
+  wp_auto.
   by iApply "HΦ".
 Qed.
 
@@ -60,22 +57,14 @@ Lemma wp_SumNoOverflow (x y : u64) :
     func_call #std.pkg_name' #"SumNoOverflow" #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
-  iIntros (Φ) "#Hi HΦ".
-  iNamed "Hi".
-  wp_func_call.
-  wp_call.
-  wp_alloc y_ptr as "Hy".
-  wp_pures.
-  wp_alloc x_ptr as "Hx".
-  wp_pures. wp_load. wp_load. wp_load. wp_pures.
+  wp_start as "_".
+  wp_auto.
   iSpecialize ("HΦ" with "[$]").
   iExactEq "HΦ".
   repeat f_equal.
   apply bool_decide_ext.
   pose proof (sum_overflow_check x y).
-  destruct (decide (uint.Z x ≤ uint.Z (word.add x y))); intuition idtac.
-  - word.
-  - word.
+  word.
 Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
@@ -83,16 +72,12 @@ Lemma wp_SumAssumeNoOverflow (x y : u64) :
     func_call #std.pkg_name' #"SumAssumeNoOverflow" #x #y
   {{{ RET #(word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}}.
 Proof.
-  iIntros "* #Hi HΦ". iNamed "Hi". wp_func_call. wp_call.
-  wp_alloc y_ptr as "Hy".
-  wp_pures.
-  wp_alloc x_ptr as "Hx".
-  wp_pures. wp_load. wp_pures. wp_load.
-  wp_pures. wp_apply (wp_SumNoOverflow with "[$]").
-  wp_pures.
-  wp_apply (wp_Assume).
-  rewrite bool_decide_eq_true.
-  iIntros (?). wp_pures. do 2 wp_load. wp_pures.
+  wp_start as "_".
+  wp_auto.
+  wp_apply wp_SumNoOverflow.
+  wp_auto.
+  wp_apply wp_Assume. rewrite bool_decide_eq_true.
+  iIntros (?). wp_auto.
   iApply "HΦ". iPureIntro. done.
 Qed.
 
@@ -112,11 +97,8 @@ Lemma wp_newJoinHandle (P: iProp Σ) :
     func_call #std.pkg_name' #"newJoinHandle" #()
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
 Proof.
-  iIntros (Φ) "[#Hi #?] HΦ". iNamed "Hi". wp_func_call. wp_call.
-  wp_alloc mu_l as "mu"; wp_pures.
-  wp_alloc m as "m"; wp_pures.
-  wp_store; wp_pures.
-  wp_alloc cond_l as "cond"; repeat (wp_load || wp_pures).
+  wp_start as "_".
+  wp_auto.
   wp_apply (wp_NewCond with "[#]").
   iIntros (cond) "#His_cond".
   repeat (wp_pures || wp_store || wp_load).
@@ -129,7 +111,8 @@ Proof.
   iMod (init_Mutex (∃ (done_b: bool),
          "done_b" ∷ jh_l ↦s[std.JoinHandle :: "done"] done_b ∗
          "HP" ∷ if done_b then P else True)
-         with "[//] m [Hdone]") as "Hlock".
+         with "[] r0 [Hdone]") as "Hlock".
+  { iPkgInit. }
   { iNext.
     iFrame.
   }
@@ -144,16 +127,14 @@ Lemma wp_JoinHandle__finish l (P: iProp Σ) :
     method_call #std.pkg_name' #"JoinHandle'ptr" #"finish" #l #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iDestruct "Hpre" as "(#init & #Hhandle & P)".
+  wp_start as "[Hhandle P]".
   iNamed "Hhandle".
-  wp_method_call. wp_call.
-  wp_alloc h_l as "h". repeat (wp_pures || wp_load).
+  wp_auto.
   wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[locked Hinv]". iNamed "Hinv".
-  repeat (wp_pures || wp_load || wp_store).
+  wp_auto.
   wp_apply (wp_Cond__Signal with "[$Hcond]").
-  repeat (wp_pures || wp_load).
+  wp_auto.
   wp_apply (wp_Mutex__Unlock with "[$Hlock $locked done_b P]").
   { iFrame "done_b P". }
   wp_pures.
@@ -167,14 +148,11 @@ Lemma wp_Spawn (P: iProp Σ) (f : func.t) :
   func_call #std.pkg_name' #"Spawn" #f
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
 Proof.
-  iIntros (Φ) "(#init & Hwp) HΦ".
-  wp_func_call; wp_call.
-  wp_alloc f_l as "f"; wp_pures.
-  wp_alloc h_l as "h"; wp_pures.
+  wp_start as "Hwp".
+  wp_auto.
   iMod (typed_pointsto_persist with "f") as "#f".
   wp_apply (wp_newJoinHandle P).
-  iIntros (l) "#Hhandle".
-  repeat (wp_load || wp_store || wp_pures).
+  iIntros (l) "#Hhandle". wp_auto.
   iMod (typed_pointsto_persist with "h") as "#h".
   wp_bind (Fork _).
   iApply (wp_fork with "[Hwp]").
@@ -183,12 +161,12 @@ Proof.
     produce a substitution into the lambda *)
     wp_apply "Hwp".
     iIntros "HP".
-    wp_pures. wp_load.
+    wp_auto.
     wp_apply (wp_JoinHandle__finish with "[$Hhandle $HP]").
     wp_pures.
     done.
   - iModIntro.
-    repeat (wp_pures || wp_load).
+    wp_auto.
     iApply "HΦ".
     iFrame "#".
 Qed.
@@ -198,10 +176,8 @@ Lemma wp_JoinHandle__Join l P :
     method_call #std.pkg_name' #"JoinHandle'ptr" #"Join" #l #()
   {{{ RET #(); P }}}.
 Proof.
-  iIntros (Φ) "(#init & Hjh) HΦ". iNamed "Hjh".
-  wp_method_call. wp_call.
-  wp_alloc h_l as "h"; wp_pures.
-  repeat (wp_load || wp_pures).
+  wp_start as "Hjh". iNamed "Hjh".
+  wp_auto.
   wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
   wp_pures.
@@ -213,10 +189,10 @@ Proof.
           with "[$Hlocked $done_b $HP]" as "HI".
   wp_for. iNamed "HI". wp_pures.
   rewrite decide_True //.
-  repeat (wp_pures || wp_load).
-  destruct done_b0; repeat (wp_pures || wp_load || wp_store).
+  wp_auto.
+  destruct done_b0; wp_auto.
   - iApply wp_for_post_break.
-    repeat (wp_pures || wp_load || wp_store).
+    wp_auto.
     wp_apply (wp_Mutex__Unlock with "[$Hlock $locked $done]").
     wp_pures. iApply "HΦ". done.
   - wp_apply (wp_Cond__Wait with "[$Hcond locked done HP]").
@@ -226,7 +202,7 @@ Proof.
     iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
     wp_pures.
     iApply wp_for_post_do.
-    repeat (wp_pures || wp_load || wp_store).
+    wp_auto.
     iFrame.
 Qed.
 

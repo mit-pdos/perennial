@@ -103,8 +103,7 @@ Lemma wp_Mutex__Lock m R :
     method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" #m #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
-  iIntros (Φ) "H HΦ".
-  iNamed "H".
+  wp_start as "H". iNamed "H".
   iLöb as "IH".
   wp_method_call. wp_call.
   wp_pures.
@@ -146,10 +145,9 @@ Lemma wp_Mutex__Unlock' m :
   }}}.
 Proof.
   iIntros (Ψ) "#Hdef HΨ".
-  iNamed "Hdef".
   wp_method_call. wp_call.
   iApply "HΨ". iIntros (R).
-  iIntros (Φ) "!# (#His & Hlocked & HR) HΦ".
+  wp_start as "(#His & Hlocked & HR)".
   iNamed "His".
   wp_pures.
   wp_bind (CmpXchg _ _ _).
@@ -175,7 +173,7 @@ Lemma wp_Mutex__Unlock m R :
     method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #m #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(#Hinv & Hlocked & HR) HΦ".
+  wp_start as "(#Hinv & Hlocked & HR)".
   wp_bind (method_call _ _ _ #m)%E.
   iNamed "Hinv".
   wp_apply (wp_Mutex__Unlock' with "[$]"). iIntros (?) "Hspec".
@@ -218,8 +216,8 @@ Theorem wp_NewCond (m : interface.t) :
     func_call #sync.pkg_name' #"NewCond" #m
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
-  iIntros (Φ) "#Hdef HΦ".
-  wp_func_call. wp_call. wp_apply wp_fupd.
+  wp_start as "_".
+  wp_apply wp_fupd.
   wp_alloc c as "Hc".
   wp_pures.
   iApply "HΦ".
@@ -235,8 +233,8 @@ Theorem wp_Cond__Signal c lk :
     method_call #sync.pkg_name' #"Cond'ptr" #"Signal" #c #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "[#Hdef Hc] HΦ". iNamed "Hdef".
-  wp_method_call. wp_call. iApply ("HΦ" with "[//]").
+  wp_start as "[#Hdef Hc]".
+  iApply ("HΦ" with "[//]").
 Qed.
 
 Theorem wp_Cond__Broadcast c lk :
@@ -244,7 +242,7 @@ Theorem wp_Cond__Broadcast c lk :
     method_call #sync.pkg_name' #"Cond'ptr" #"Broadcast" #c #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hi".
+  wp_start as "H"; iNamed "H".
   wp_method_call. wp_call. iApply ("HΦ" with "[//]").
 Qed.
 
@@ -253,8 +251,8 @@ Theorem wp_Cond__Wait c m R :
     method_call #sync.pkg_name' #"Cond'ptr" #"Wait" #c #()
   {{{ RET #(); R }}}.
 Proof.
-  iIntros (Φ) "(#Hcond & #Hlock & HR) HΦ".
-  iNamed "Hcond". iNamed "Hi".
+  wp_start as "(#Hcond & #Hlock & HR)".
+  iNamed "Hcond".
   wp_method_call. wp_call.
   iNamed "Hlock".
   wp_load.
@@ -279,8 +277,7 @@ Lemma wp_runtime_Semacquire (sema : loc) γ N :
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP func_call #sync.pkg_name' #"runtime_Semacquire" #sema {{ Φ }}.
 Proof.
-  iIntros (?) "[#init #Hsem] HΦ".
-  wp_func_call. wp_call.
+  wp_start as "#Hsem".
   wp_for. wp_pures.
   rewrite decide_True //.
   wp_pures.
@@ -347,8 +344,7 @@ Lemma wp_runtime_SemacquireWaitGroup (sema : loc) γ N :
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP func_call #sync.pkg_name' #"runtime_SemacquireWaitGroup" #sema {{ Φ }}.
 Proof.
-  iIntros (?) "[#Hi #Hsem] HΦ". iNamed "Hi".
-  wp_func_call. wp_call.
+  wp_start as "#Hsem".
   wp_apply (wp_runtime_Semacquire with "[$]").
   iFrame.
 Qed.
