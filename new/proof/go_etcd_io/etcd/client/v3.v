@@ -153,7 +153,10 @@ Definition handle_etcdE (t : w64) : Handler etcdE (relation.t EtcdState.t) :=
        a must merely prove that [∀ σ'] that follow the current [σ], the client
        can reestablish their invariants. In GooseLang programs, we handle
        assumes by diverging if an assume fails.
-*)
+
+       Maybe [Assert] should set a flag "assert_failed" to true in
+       [EtcdState.t.], and soundness requires that the flag always remain false?
+     *)
     end.
 
 Definition do {E R} (e : E R) : ecomp E R := Effect e Pure.
@@ -343,11 +346,6 @@ Inductive Error :=
    sort_order == None.
  *)
 
-(* XXX: cannot use `relation A` and `relation B` here because it causes universe
-   inconsistency....
-   Relatedly, [Set Universe Polymorphism.] causes the [Put] definition to be
-   rejected.
- *)
 Definition relation_pullback {A B} (f : A → B) (R : B → B → Prop) : (A → A → Prop) :=
   λ a1 a2, R (f a1) (f a2).
 
@@ -384,7 +382,8 @@ Fixpoint go_string_lt (x y : go_string) : Prop :=
                             else false
   end.
 
-Definition kv_key_comp := (relation_pullback (KeyValue.key) go_string_lt).
+Definition go_string_le (x y : go_string) : Prop :=
+  x = y ∨ go_string_lt x y.
 
 Definition Range (req : RangeRequest.t) : ecomp etcdE (Error + RangeResponse.t) :=
 interp handle_exceptionE (
@@ -397,7 +396,24 @@ interp handle_exceptionE (
   let rev := (if decide (sint.Z req.(RangeRequest.revision) < 0) then current_revision
               else req.(RangeRequest.revision))
   in
-  kvs ← do $ Ok $ SuchThat (λ (kvs : list KeyValue.t), True); (* FIXME: say stuff about the range containing everything *)
+  let kv_map := default ∅ (σ.(EtcdState.key_values) !! rev) in
+  kvs ← do $ Ok $ SuchThat (λ (kvs : list KeyValue.t),
+                              match req.(RangeRequest.range_end) with
+                              | [] => (* just the one key *)
+                                  (∀ kv, kv ∈ kvs ↔
+                                     kv_map !! req.(RangeRequest.key) = Some kv)
+                              | _ =>
+                                  if decide (req.(RangeRequest.range_end) = "\x00"%go) then
+                                    (∀ kv, kv ∈ kvs ↔
+                                           (go_string_le req.(RangeRequest.key) kv.(KeyValue.key) ∧
+                                            kv_map !! kv.(KeyValue.key) = Some kv))
+                                  else
+                                    (∀ kv, kv ∈ kvs ↔
+                                           (go_string_le req.(RangeRequest.key) kv.(KeyValue.key) ∧
+                                            go_string_lt kv.(KeyValue.key) req.(RangeRequest.range_end) ∧
+                                            kv_map !! kv.(KeyValue.key) = Some kv))
+                              end
+                           );
   let kvs :=
     (if decide (req.(RangeRequest.max_mod_revision) ≠ W64 0) then
        filter (λ kv, sint.Z kv.(KeyValue.mod_revision) ≤ sint.Z req.(RangeRequest.max_mod_revision)) kvs
@@ -424,7 +440,7 @@ interp handle_exceptionE (
      | (* VALUE *) 4 => Pure (relation_pullback KeyValue.value go_string_lt)
      | _ => (do $ Ok (Assert False);; do $ Throw $ Bad "unreachable")
      end);
-  kvs_sorted ← (do $ Ok $ SuchThat (StronglySorted sort_relation));
+  kvs_sorted ← (do $ Ok $ SuchThat (λ kvs_sorted, StronglySorted sort_relation kvs_sorted ∧ Permutation kvs kvs_sorted));
   kvs ← (match (uint.Z req.(RangeRequest.sort_order)) with
          | (* NONE *) 0 => Pure kvs (* XXX: the etcd implementation seems to sort even in this case. *)
          | (* ASCEND *) 1 => Pure kvs_sorted
@@ -499,6 +515,54 @@ interp handle_exceptionE (
   do $ Ok $ SetState $ σ;;
   Pure (PutResponse.mk ret_prev_kv)
 ).
+
+Module DeleteRangeRequest.
+Record t :=
+mk {
+    key : list w8;
+    range_end : list w8;
+    prev_kv : bool;
+  }.
+End DeleteRangeRequest.
+
+Module DeleteRangeResponse.
+Record t :=
+mk {
+    prev_kvs : list KeyValue.t;
+  }.
+End DeleteRangeResponse.
+
+Definition DeleteRange (req : DeleteRangeRequest)
+
+Module Compare.
+
+(* FIXME: the etcd documentation is out-of-date for this. *)
+Inductive TargetUnion :=
+| Version (version : w64)
+| CreateRevision (create_revision : w64)
+| ModRevision (mod_revision : w64)
+| Value (value : list w8)
+| Lease (lease : w64)
+.
+
+Record t :=
+mk {
+    result : w32; (* CompareResult *)
+    target : w32; (* CompareTarget *)
+    key : list w8;
+    target_union : TargetUnion;
+    range_end : list w8;
+  }.
+End Compare.
+
+Module TxnRequest.
+(* FIXME: etcd documentation out of date. *)
+Record t :=
+mk {
+  compare : list Compare;
+  success : list RequestOp;
+  failure : list RequestOp;
+  }.
 
 Section spec.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
