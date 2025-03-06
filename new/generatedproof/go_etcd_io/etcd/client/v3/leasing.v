@@ -7,10 +7,11 @@ Require Export New.generatedproof.time.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.etcdserverpb.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.mvccpb.
 Require Export New.generatedproof.go_etcd_io.etcd.client.v3.
-Require Export New.generatedproof.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.
-Require Export New.generatedproof.go_etcd_io.etcd.client.v3.concurrency.
+Require Export New.generatedproof.errors.
 Require Export New.generatedproof.google_golang_org.grpc.codes.
 Require Export New.generatedproof.google_golang_org.grpc.status.
+Require Export New.generatedproof.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.
+Require Export New.generatedproof.go_etcd_io.etcd.client.v3.concurrency.
 Require Export New.generatedproof.bytes.
 Require Export New.code.go_etcd_io.etcd.client.v3.leasing.
 Require Export New.golang.theory.

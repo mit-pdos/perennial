@@ -6,8 +6,10 @@ Require Export New.generatedproof.fmt.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.etcdserverpb.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.mvccpb.
 Require Export New.generatedproof.go_etcd_io.etcd.client.v3.
+Require Export New.generatedproof.strings.
 Require Export New.generatedproof.sync.
 Require Export New.generatedproof.time.
+Require Export New.generatedproof.go_uber_org.zap.
 Require Export New.generatedproof.math.
 Require Export New.code.go_etcd_io.etcd.client.v3.concurrency.
 Require Export New.golang.theory.
@@ -213,6 +215,7 @@ Record t := mk {
   client' : loc;
   opts' : loc;
   id' : clientv3.LeaseID.t;
+  ctx' : context.Context.t;
   cancel' : context.CancelFunc.t;
   donec' : loc;
 }.
@@ -223,13 +226,13 @@ Section instances.
 Context `{ffi_syntax}.
 
 Global Instance settable_Session `{ffi_syntax}: Settable _ :=
-  settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.cancel'; Session.donec' >.
+  settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
 Global Instance into_val_Session `{ffi_syntax} : IntoVal Session.t.
 Admitted.
 
 Global Instance into_val_typed_Session `{ffi_syntax} : IntoValTyped Session.t concurrency.Session :=
 {|
-  default_val := Session.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  default_val := Session.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
   default_val_eq_zero_val := ltac:(destruct falso);
   to_val_inj := ltac:(destruct falso);
@@ -244,6 +247,9 @@ Admitted.
 Global Instance into_val_struct_field_Session_id `{ffi_syntax} : IntoValStructField "id" concurrency.Session Session.id'.
 Admitted.
 
+Global Instance into_val_struct_field_Session_ctx `{ffi_syntax} : IntoValStructField "ctx" concurrency.Session Session.ctx'.
+Admitted.
+
 Global Instance into_val_struct_field_Session_cancel `{ffi_syntax} : IntoValStructField "cancel" concurrency.Session Session.cancel'.
 Admitted.
 
@@ -252,16 +258,17 @@ Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Session `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} client' opts' id' cancel' donec':
+Global Instance wp_struct_make_Session `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} client' opts' id' ctx' cancel' donec':
   PureWp True
     (struct.make concurrency.Session (alist_val [
       "client" ::= #client';
       "opts" ::= #opts';
       "id" ::= #id';
+      "ctx" ::= #ctx';
       "cancel" ::= #cancel';
       "donec" ::= #donec'
     ]))%V
-    #(Session.mk client' opts' id' cancel' donec').
+    #(Session.mk client' opts' id' ctx' cancel' donec').
 Admitted.
 
 
@@ -270,6 +277,7 @@ Global Instance Session_struct_fields_split dq l (v : Session.t) :
     "Hclient" ∷ l ↦s[concurrency.Session :: "client"]{dq} v.(Session.client') ∗
     "Hopts" ∷ l ↦s[concurrency.Session :: "opts"]{dq} v.(Session.opts') ∗
     "Hid" ∷ l ↦s[concurrency.Session :: "id"]{dq} v.(Session.id') ∗
+    "Hctx" ∷ l ↦s[concurrency.Session :: "ctx"]{dq} v.(Session.ctx') ∗
     "Hcancel" ∷ l ↦s[concurrency.Session :: "cancel"]{dq} v.(Session.cancel') ∗
     "Hdonec" ∷ l ↦s[concurrency.Session :: "donec"]{dq} v.(Session.donec')
   ).
@@ -721,6 +729,7 @@ Class GlobalAddrs :=
   ErrElectionNoLeader : loc;
   ErrLocked : loc;
   ErrSessionExpired : loc;
+  ErrLockReleased : loc;
 }.
 
 Context `{!GlobalAddrs}.
@@ -731,7 +740,8 @@ Definition var_addrs : list (go_string * loc) := [
     ("ErrElectionNotLeader"%go, ErrElectionNotLeader);
     ("ErrElectionNoLeader"%go, ErrElectionNoLeader);
     ("ErrLocked"%go, ErrLocked);
-    ("ErrSessionExpired"%go, ErrSessionExpired)
+    ("ErrSessionExpired"%go, ErrSessionExpired);
+    ("ErrLockReleased"%go, ErrLockReleased)
   ].
 
 Definition is_defined := is_global_definitions concurrency.pkg_name' var_addrs concurrency.functions' concurrency.msets'.
@@ -740,7 +750,8 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrElectionNotLeader" ∷ ErrElectionNotLeader ↦ (default_val error.t) ∗
   "HErrElectionNoLeader" ∷ ErrElectionNoLeader ↦ (default_val error.t) ∗
   "HErrLocked" ∷ ErrLocked ↦ (default_val error.t) ∗
-  "HErrSessionExpired" ∷ ErrSessionExpired ↦ (default_val error.t).
+  "HErrSessionExpired" ∷ ErrSessionExpired ↦ (default_val error.t) ∗
+  "HErrLockReleased" ∷ ErrLockReleased ↦ (default_val error.t).
 
 Global Instance wp_globals_get_ErrElectionNotLeader : 
   WpGlobalsGet concurrency.pkg_name' "ErrElectionNotLeader" ErrElectionNotLeader is_defined.
@@ -756,6 +767,10 @@ Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrSessionExpired : 
   WpGlobalsGet concurrency.pkg_name' "ErrSessionExpired" ErrSessionExpired is_defined.
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_ErrLockReleased : 
+  WpGlobalsGet concurrency.pkg_name' "ErrLockReleased" ErrLockReleased is_defined.
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_func_call_NewElection :
@@ -960,6 +975,10 @@ Global Instance wp_method_call_Session'ptr_Client :
 
 Global Instance wp_method_call_Session'ptr_Close :
   WpMethodCall concurrency.pkg_name' "Session'ptr" "Close" _ is_defined :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Session'ptr_Ctx :
+  WpMethodCall concurrency.pkg_name' "Session'ptr" "Ctx" _ is_defined :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Session'ptr_Done :

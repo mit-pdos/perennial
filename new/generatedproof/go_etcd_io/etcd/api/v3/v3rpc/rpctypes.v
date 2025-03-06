@@ -59,6 +59,38 @@ Global Instance EtcdError_struct_fields_split dq l (v : EtcdError.t) :
 Admitted.
 
 End instances.
+Module TokenFieldNameGRPCKey.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+}.
+End def.
+End TokenFieldNameGRPCKey.
+
+Section instances.
+Context `{ffi_syntax}.
+Global Instance into_val_TokenFieldNameGRPCKey `{ffi_syntax} : IntoVal TokenFieldNameGRPCKey.t.
+Admitted.
+
+Global Instance into_val_typed_TokenFieldNameGRPCKey `{ffi_syntax} : IntoValTyped TokenFieldNameGRPCKey.t rpctypes.TokenFieldNameGRPCKey :=
+{|
+  default_val := TokenFieldNameGRPCKey.mk;
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_TokenFieldNameGRPCKey `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+  PureWp True
+    (struct.make rpctypes.TokenFieldNameGRPCKey (alist_val [
+    ]))%V
+    #(TokenFieldNameGRPCKey.mk).
+Admitted.
+
+
+End instances.
 
 Section names.
 
@@ -87,6 +119,8 @@ Class GlobalAddrs :=
   ErrGRPCMemberNotLearner : loc;
   ErrGRPCLearnerNotReady : loc;
   ErrGRPCTooManyLearners : loc;
+  ErrGRPCClusterIDMismatch : loc;
+  ErrGRPCClusterIdMismatch : loc;
   ErrGRPCRequestTooLarge : loc;
   ErrGRPCRequestTooManyRequests : loc;
   ErrGRPCRootUserNotExist : loc;
@@ -166,6 +200,8 @@ Class GlobalAddrs :=
   ErrInvalidAuthToken : loc;
   ErrAuthOldRevision : loc;
   ErrInvalidAuthMgmt : loc;
+  ErrClusterIDMismatch : loc;
+  ErrClusterIdMismatch : loc;
   ErrNoLeader : loc;
   ErrNotLeader : loc;
   ErrLeaderChanged : loc;
@@ -218,6 +254,8 @@ Definition var_addrs : list (go_string * loc) := [
     ("ErrGRPCMemberNotLearner"%go, ErrGRPCMemberNotLearner);
     ("ErrGRPCLearnerNotReady"%go, ErrGRPCLearnerNotReady);
     ("ErrGRPCTooManyLearners"%go, ErrGRPCTooManyLearners);
+    ("ErrGRPCClusterIDMismatch"%go, ErrGRPCClusterIDMismatch);
+    ("ErrGRPCClusterIdMismatch"%go, ErrGRPCClusterIdMismatch);
     ("ErrGRPCRequestTooLarge"%go, ErrGRPCRequestTooLarge);
     ("ErrGRPCRequestTooManyRequests"%go, ErrGRPCRequestTooManyRequests);
     ("ErrGRPCRootUserNotExist"%go, ErrGRPCRootUserNotExist);
@@ -297,6 +335,8 @@ Definition var_addrs : list (go_string * loc) := [
     ("ErrInvalidAuthToken"%go, ErrInvalidAuthToken);
     ("ErrAuthOldRevision"%go, ErrAuthOldRevision);
     ("ErrInvalidAuthMgmt"%go, ErrInvalidAuthMgmt);
+    ("ErrClusterIDMismatch"%go, ErrClusterIDMismatch);
+    ("ErrClusterIdMismatch"%go, ErrClusterIdMismatch);
     ("ErrNoLeader"%go, ErrNoLeader);
     ("ErrNotLeader"%go, ErrNotLeader);
     ("ErrLeaderChanged"%go, ErrLeaderChanged);
@@ -347,6 +387,8 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrGRPCMemberNotLearner" ∷ ErrGRPCMemberNotLearner ↦ (default_val error.t) ∗
   "HErrGRPCLearnerNotReady" ∷ ErrGRPCLearnerNotReady ↦ (default_val error.t) ∗
   "HErrGRPCTooManyLearners" ∷ ErrGRPCTooManyLearners ↦ (default_val error.t) ∗
+  "HErrGRPCClusterIDMismatch" ∷ ErrGRPCClusterIDMismatch ↦ (default_val error.t) ∗
+  "HErrGRPCClusterIdMismatch" ∷ ErrGRPCClusterIdMismatch ↦ (default_val error.t) ∗
   "HErrGRPCRequestTooLarge" ∷ ErrGRPCRequestTooLarge ↦ (default_val error.t) ∗
   "HErrGRPCRequestTooManyRequests" ∷ ErrGRPCRequestTooManyRequests ↦ (default_val error.t) ∗
   "HErrGRPCRootUserNotExist" ∷ ErrGRPCRootUserNotExist ↦ (default_val error.t) ∗
@@ -426,6 +468,8 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrInvalidAuthToken" ∷ ErrInvalidAuthToken ↦ (default_val error.t) ∗
   "HErrAuthOldRevision" ∷ ErrAuthOldRevision ↦ (default_val error.t) ∗
   "HErrInvalidAuthMgmt" ∷ ErrInvalidAuthMgmt ↦ (default_val error.t) ∗
+  "HErrClusterIDMismatch" ∷ ErrClusterIDMismatch ↦ (default_val error.t) ∗
+  "HErrClusterIdMismatch" ∷ ErrClusterIdMismatch ↦ (default_val error.t) ∗
   "HErrNoLeader" ∷ ErrNoLeader ↦ (default_val error.t) ∗
   "HErrNotLeader" ∷ ErrNotLeader ↦ (default_val error.t) ∗
   "HErrLeaderChanged" ∷ ErrLeaderChanged ↦ (default_val error.t) ∗
@@ -539,6 +583,14 @@ Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCTooManyLearners : 
   WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTooManyLearners" ErrGRPCTooManyLearners is_defined.
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_ErrGRPCClusterIDMismatch : 
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCClusterIDMismatch" ErrGRPCClusterIDMismatch is_defined.
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_ErrGRPCClusterIdMismatch : 
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCClusterIdMismatch" ErrGRPCClusterIdMismatch is_defined.
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCRequestTooLarge : 
@@ -855,6 +907,14 @@ Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrInvalidAuthMgmt : 
   WpGlobalsGet rpctypes.pkg_name' "ErrInvalidAuthMgmt" ErrInvalidAuthMgmt is_defined.
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_ErrClusterIDMismatch : 
+  WpGlobalsGet rpctypes.pkg_name' "ErrClusterIDMismatch" ErrClusterIDMismatch is_defined.
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_ErrClusterIdMismatch : 
+  WpGlobalsGet rpctypes.pkg_name' "ErrClusterIdMismatch" ErrClusterIdMismatch is_defined.
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrNoLeader : 

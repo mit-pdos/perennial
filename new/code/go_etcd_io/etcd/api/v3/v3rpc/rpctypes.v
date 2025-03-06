@@ -16,13 +16,13 @@ Definition EtcdError : go_type := structT [
 (* Code returns grpc/codes.Code.
    TODO: define clientv3/codes.Code.
 
-   go: error.go:237:20 *)
+   go: error.go:248:20 *)
 Definition EtcdError__Code : val :=
   rec: "EtcdError__Code" "e" <> :=
     exception_do (let: "e" := (ref_ty EtcdError "e") in
     return: (![codes.Code] (struct.field_ref EtcdError "code" "e"))).
 
-(* go: error.go:241:20 *)
+(* go: error.go:252:20 *)
 Definition EtcdError__Error : val :=
   rec: "EtcdError__Error" "e" <> :=
     exception_do (let: "e" := (ref_ty EtcdError "e") in
@@ -30,7 +30,7 @@ Definition EtcdError__Error : val :=
 
 Definition pkg_name' : go_string := "go.etcd.io/etcd/api/v3/v3rpc/rpctypes".
 
-(* go: error.go:245:6 *)
+(* go: error.go:256:6 *)
 Definition Error : val :=
   rec: "Error" "err" :=
     exception_do (let: "err" := (ref_ty error "err") in
@@ -70,7 +70,7 @@ Definition Error : val :=
        "desc" ::= "$desc"
      }]))).
 
-(* go: error.go:263:6 *)
+(* go: error.go:274:6 *)
 Definition ErrorDesc : val :=
   rec: "ErrorDesc" "err" :=
     exception_do (let: "err" := (ref_ty error "err") in
@@ -87,7 +87,10 @@ Definition ErrorDesc : val :=
     else do:  #()));;;
     return: ((interface.get "Error" (![error] "err")) #())).
 
-Definition vars' : list (go_string * go_type) := [("ErrGRPCEmptyKey"%go, error); ("ErrGRPCKeyNotFound"%go, error); ("ErrGRPCValueProvided"%go, error); ("ErrGRPCLeaseProvided"%go, error); ("ErrGRPCTooManyOps"%go, error); ("ErrGRPCDuplicateKey"%go, error); ("ErrGRPCInvalidClientAPIVersion"%go, error); ("ErrGRPCInvalidSortOption"%go, error); ("ErrGRPCCompacted"%go, error); ("ErrGRPCFutureRev"%go, error); ("ErrGRPCNoSpace"%go, error); ("ErrGRPCLeaseNotFound"%go, error); ("ErrGRPCLeaseExist"%go, error); ("ErrGRPCLeaseTTLTooLarge"%go, error); ("ErrGRPCWatchCanceled"%go, error); ("ErrGRPCMemberExist"%go, error); ("ErrGRPCPeerURLExist"%go, error); ("ErrGRPCMemberNotEnoughStarted"%go, error); ("ErrGRPCMemberBadURLs"%go, error); ("ErrGRPCMemberNotFound"%go, error); ("ErrGRPCMemberNotLearner"%go, error); ("ErrGRPCLearnerNotReady"%go, error); ("ErrGRPCTooManyLearners"%go, error); ("ErrGRPCRequestTooLarge"%go, error); ("ErrGRPCRequestTooManyRequests"%go, error); ("ErrGRPCRootUserNotExist"%go, error); ("ErrGRPCRootRoleNotExist"%go, error); ("ErrGRPCUserAlreadyExist"%go, error); ("ErrGRPCUserEmpty"%go, error); ("ErrGRPCUserNotFound"%go, error); ("ErrGRPCRoleAlreadyExist"%go, error); ("ErrGRPCRoleNotFound"%go, error); ("ErrGRPCRoleEmpty"%go, error); ("ErrGRPCAuthFailed"%go, error); ("ErrGRPCPermissionNotGiven"%go, error); ("ErrGRPCPermissionDenied"%go, error); ("ErrGRPCRoleNotGranted"%go, error); ("ErrGRPCPermissionNotGranted"%go, error); ("ErrGRPCAuthNotEnabled"%go, error); ("ErrGRPCInvalidAuthToken"%go, error); ("ErrGRPCInvalidAuthMgmt"%go, error); ("ErrGRPCAuthOldRevision"%go, error); ("ErrGRPCNoLeader"%go, error); ("ErrGRPCNotLeader"%go, error); ("ErrGRPCLeaderChanged"%go, error); ("ErrGRPCNotCapable"%go, error); ("ErrGRPCStopped"%go, error); ("ErrGRPCTimeout"%go, error); ("ErrGRPCTimeoutDueToLeaderFail"%go, error); ("ErrGRPCTimeoutDueToConnectionLost"%go, error); ("ErrGRPCTimeoutWaitAppliedIndex"%go, error); ("ErrGRPCUnhealthy"%go, error); ("ErrGRPCCorrupt"%go, error); ("ErrGRPCNotSupportedForLearner"%go, error); ("ErrGRPCBadLeaderTransferee"%go, error); ("ErrGRPCWrongDowngradeVersionFormat"%go, error); ("ErrGRPCInvalidDowngradeTargetVersion"%go, error); ("ErrGRPCClusterVersionUnavailable"%go, error); ("ErrGRPCDowngradeInProcess"%go, error); ("ErrGRPCNoInflightDowngrade"%go, error); ("ErrGRPCCanceled"%go, error); ("ErrGRPCDeadlineExceeded"%go, error); ("errStringToError"%go, mapT stringT error); ("ErrEmptyKey"%go, error); ("ErrKeyNotFound"%go, error); ("ErrValueProvided"%go, error); ("ErrLeaseProvided"%go, error); ("ErrTooManyOps"%go, error); ("ErrDuplicateKey"%go, error); ("ErrInvalidSortOption"%go, error); ("ErrCompacted"%go, error); ("ErrFutureRev"%go, error); ("ErrNoSpace"%go, error); ("ErrLeaseNotFound"%go, error); ("ErrLeaseExist"%go, error); ("ErrLeaseTTLTooLarge"%go, error); ("ErrMemberExist"%go, error); ("ErrPeerURLExist"%go, error); ("ErrMemberNotEnoughStarted"%go, error); ("ErrMemberBadURLs"%go, error); ("ErrMemberNotFound"%go, error); ("ErrMemberNotLearner"%go, error); ("ErrMemberLearnerNotReady"%go, error); ("ErrTooManyLearners"%go, error); ("ErrRequestTooLarge"%go, error); ("ErrTooManyRequests"%go, error); ("ErrRootUserNotExist"%go, error); ("ErrRootRoleNotExist"%go, error); ("ErrUserAlreadyExist"%go, error); ("ErrUserEmpty"%go, error); ("ErrUserNotFound"%go, error); ("ErrRoleAlreadyExist"%go, error); ("ErrRoleNotFound"%go, error); ("ErrRoleEmpty"%go, error); ("ErrAuthFailed"%go, error); ("ErrPermissionDenied"%go, error); ("ErrRoleNotGranted"%go, error); ("ErrPermissionNotGranted"%go, error); ("ErrAuthNotEnabled"%go, error); ("ErrInvalidAuthToken"%go, error); ("ErrAuthOldRevision"%go, error); ("ErrInvalidAuthMgmt"%go, error); ("ErrNoLeader"%go, error); ("ErrNotLeader"%go, error); ("ErrLeaderChanged"%go, error); ("ErrNotCapable"%go, error); ("ErrStopped"%go, error); ("ErrTimeout"%go, error); ("ErrTimeoutDueToLeaderFail"%go, error); ("ErrTimeoutDueToConnectionLost"%go, error); ("ErrTimeoutWaitAppliedIndex"%go, error); ("ErrUnhealthy"%go, error); ("ErrCorrupt"%go, error); ("ErrBadLeaderTransferee"%go, error); ("ErrClusterVersionUnavailable"%go, error); ("ErrWrongDowngradeVersionFormat"%go, error); ("ErrInvalidDowngradeTargetVersion"%go, error); ("ErrDowngradeInProcess"%go, error); ("ErrNoInflightDowngrade"%go, error); ("MetadataRequireLeaderKey"%go, stringT); ("MetadataHasLeader"%go, stringT); ("MetadataClientAPIVersionKey"%go, stringT); ("TokenFieldNameGRPC"%go, stringT); ("TokenFieldNameSwagger"%go, stringT)].
+Definition TokenFieldNameGRPCKey : go_type := structT [
+].
+
+Definition vars' : list (go_string * go_type) := [("ErrGRPCEmptyKey"%go, error); ("ErrGRPCKeyNotFound"%go, error); ("ErrGRPCValueProvided"%go, error); ("ErrGRPCLeaseProvided"%go, error); ("ErrGRPCTooManyOps"%go, error); ("ErrGRPCDuplicateKey"%go, error); ("ErrGRPCInvalidClientAPIVersion"%go, error); ("ErrGRPCInvalidSortOption"%go, error); ("ErrGRPCCompacted"%go, error); ("ErrGRPCFutureRev"%go, error); ("ErrGRPCNoSpace"%go, error); ("ErrGRPCLeaseNotFound"%go, error); ("ErrGRPCLeaseExist"%go, error); ("ErrGRPCLeaseTTLTooLarge"%go, error); ("ErrGRPCWatchCanceled"%go, error); ("ErrGRPCMemberExist"%go, error); ("ErrGRPCPeerURLExist"%go, error); ("ErrGRPCMemberNotEnoughStarted"%go, error); ("ErrGRPCMemberBadURLs"%go, error); ("ErrGRPCMemberNotFound"%go, error); ("ErrGRPCMemberNotLearner"%go, error); ("ErrGRPCLearnerNotReady"%go, error); ("ErrGRPCTooManyLearners"%go, error); ("ErrGRPCClusterIDMismatch"%go, error); ("ErrGRPCClusterIdMismatch"%go, error); ("ErrGRPCRequestTooLarge"%go, error); ("ErrGRPCRequestTooManyRequests"%go, error); ("ErrGRPCRootUserNotExist"%go, error); ("ErrGRPCRootRoleNotExist"%go, error); ("ErrGRPCUserAlreadyExist"%go, error); ("ErrGRPCUserEmpty"%go, error); ("ErrGRPCUserNotFound"%go, error); ("ErrGRPCRoleAlreadyExist"%go, error); ("ErrGRPCRoleNotFound"%go, error); ("ErrGRPCRoleEmpty"%go, error); ("ErrGRPCAuthFailed"%go, error); ("ErrGRPCPermissionNotGiven"%go, error); ("ErrGRPCPermissionDenied"%go, error); ("ErrGRPCRoleNotGranted"%go, error); ("ErrGRPCPermissionNotGranted"%go, error); ("ErrGRPCAuthNotEnabled"%go, error); ("ErrGRPCInvalidAuthToken"%go, error); ("ErrGRPCInvalidAuthMgmt"%go, error); ("ErrGRPCAuthOldRevision"%go, error); ("ErrGRPCNoLeader"%go, error); ("ErrGRPCNotLeader"%go, error); ("ErrGRPCLeaderChanged"%go, error); ("ErrGRPCNotCapable"%go, error); ("ErrGRPCStopped"%go, error); ("ErrGRPCTimeout"%go, error); ("ErrGRPCTimeoutDueToLeaderFail"%go, error); ("ErrGRPCTimeoutDueToConnectionLost"%go, error); ("ErrGRPCTimeoutWaitAppliedIndex"%go, error); ("ErrGRPCUnhealthy"%go, error); ("ErrGRPCCorrupt"%go, error); ("ErrGRPCNotSupportedForLearner"%go, error); ("ErrGRPCBadLeaderTransferee"%go, error); ("ErrGRPCWrongDowngradeVersionFormat"%go, error); ("ErrGRPCInvalidDowngradeTargetVersion"%go, error); ("ErrGRPCClusterVersionUnavailable"%go, error); ("ErrGRPCDowngradeInProcess"%go, error); ("ErrGRPCNoInflightDowngrade"%go, error); ("ErrGRPCCanceled"%go, error); ("ErrGRPCDeadlineExceeded"%go, error); ("errStringToError"%go, mapT stringT error); ("ErrEmptyKey"%go, error); ("ErrKeyNotFound"%go, error); ("ErrValueProvided"%go, error); ("ErrLeaseProvided"%go, error); ("ErrTooManyOps"%go, error); ("ErrDuplicateKey"%go, error); ("ErrInvalidSortOption"%go, error); ("ErrCompacted"%go, error); ("ErrFutureRev"%go, error); ("ErrNoSpace"%go, error); ("ErrLeaseNotFound"%go, error); ("ErrLeaseExist"%go, error); ("ErrLeaseTTLTooLarge"%go, error); ("ErrMemberExist"%go, error); ("ErrPeerURLExist"%go, error); ("ErrMemberNotEnoughStarted"%go, error); ("ErrMemberBadURLs"%go, error); ("ErrMemberNotFound"%go, error); ("ErrMemberNotLearner"%go, error); ("ErrMemberLearnerNotReady"%go, error); ("ErrTooManyLearners"%go, error); ("ErrRequestTooLarge"%go, error); ("ErrTooManyRequests"%go, error); ("ErrRootUserNotExist"%go, error); ("ErrRootRoleNotExist"%go, error); ("ErrUserAlreadyExist"%go, error); ("ErrUserEmpty"%go, error); ("ErrUserNotFound"%go, error); ("ErrRoleAlreadyExist"%go, error); ("ErrRoleNotFound"%go, error); ("ErrRoleEmpty"%go, error); ("ErrAuthFailed"%go, error); ("ErrPermissionDenied"%go, error); ("ErrRoleNotGranted"%go, error); ("ErrPermissionNotGranted"%go, error); ("ErrAuthNotEnabled"%go, error); ("ErrInvalidAuthToken"%go, error); ("ErrAuthOldRevision"%go, error); ("ErrInvalidAuthMgmt"%go, error); ("ErrClusterIDMismatch"%go, error); ("ErrClusterIdMismatch"%go, error); ("ErrNoLeader"%go, error); ("ErrNotLeader"%go, error); ("ErrLeaderChanged"%go, error); ("ErrNotCapable"%go, error); ("ErrStopped"%go, error); ("ErrTimeout"%go, error); ("ErrTimeoutDueToLeaderFail"%go, error); ("ErrTimeoutDueToConnectionLost"%go, error); ("ErrTimeoutWaitAppliedIndex"%go, error); ("ErrUnhealthy"%go, error); ("ErrCorrupt"%go, error); ("ErrBadLeaderTransferee"%go, error); ("ErrClusterVersionUnavailable"%go, error); ("ErrWrongDowngradeVersionFormat"%go, error); ("ErrInvalidDowngradeTargetVersion"%go, error); ("ErrDowngradeInProcess"%go, error); ("ErrNoInflightDowngrade"%go, error); ("MetadataRequireLeaderKey"%go, stringT); ("MetadataHasLeader"%go, stringT); ("MetadataClientAPIVersionKey"%go, stringT); ("TokenFieldNameGRPC"%go, stringT); ("TokenFieldNameSwagger"%go, stringT)].
 
 Definition functions' : list (go_string * val) := [("Error"%go, Error); ("ErrorDesc"%go, ErrorDesc)].
 
@@ -95,260 +98,266 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("EtcdError"
                  method_call #pkg_name' #"EtcdError" #"Code" (![EtcdError] "$recvAddr")
                  )%V); ("Error"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"EtcdError" #"Error" (![EtcdError] "$recvAddr")
-                 )%V)])].
+                 )%V)]); ("TokenFieldNameGRPCKey"%go, []); ("TokenFieldNameGRPCKey'ptr"%go, [])].
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  status.initialize';;;
       do:  codes.initialize';;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: key is not provided"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCEmptyKey"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: key not found"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCKeyNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: value is provided"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCValueProvided"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: lease is provided"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCLeaseProvided"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: too many operations in txn request"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCTooManyOps"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: duplicate key given in txn request"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCDuplicateKey"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid client api version"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCInvalidClientAPIVersion"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid sort option"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCInvalidSortOption"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.OutOfRange in
+      let: "$r0" := (let: "$a0" := codes.OutOfRange in
       let: "$a1" := #"etcdserver: mvcc: required revision has been compacted"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCCompacted"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.OutOfRange in
+      let: "$r0" := (let: "$a0" := codes.OutOfRange in
       let: "$a1" := #"etcdserver: mvcc: required revision is a future revision"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCFutureRev"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.ResourceExhausted in
+      let: "$r0" := (let: "$a0" := codes.ResourceExhausted in
       let: "$a1" := #"etcdserver: mvcc: database space exceeded"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCNoSpace"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.NotFound in
+      let: "$r0" := (let: "$a0" := codes.NotFound in
       let: "$a1" := #"etcdserver: requested lease not found"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCLeaseNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: lease already exists"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCLeaseExist"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.OutOfRange in
+      let: "$r0" := (let: "$a0" := codes.OutOfRange in
       let: "$a1" := #"etcdserver: too large lease TTL"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCLeaseTTLTooLarge"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Canceled in
+      let: "$r0" := (let: "$a0" := codes.Canceled in
       let: "$a1" := #"etcdserver: watch canceled"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCWatchCanceled"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: member ID already exist"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCMemberExist"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: Peer URLs already exists"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCPeerURLExist"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: re-configuration failed due to not enough started members"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCMemberNotEnoughStarted"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: given member URLs are invalid"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCMemberBadURLs"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.NotFound in
+      let: "$r0" := (let: "$a0" := codes.NotFound in
       let: "$a1" := #"etcdserver: member not found"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCMemberNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: can only promote a learner member"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCMemberNotLearner"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: can only promote a learner member which is in sync with leader"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCLearnerNotReady"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: too many learner members in cluster"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCTooManyLearners"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
+      let: "$a1" := #"etcdserver: cluster ID mismatch"%go in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
+      do:  ((globals.get #pkg_name' #"ErrGRPCClusterIDMismatch"%go) <-[error] "$r0");;;
+      let: "$r0" := (![error] (globals.get #pkg_name' #"ErrGRPCClusterIDMismatch"%go)) in
+      do:  ((globals.get #pkg_name' #"ErrGRPCClusterIdMismatch"%go) <-[error] "$r0");;;
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: request is too large"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCRequestTooLarge"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.ResourceExhausted in
+      let: "$r0" := (let: "$a0" := codes.ResourceExhausted in
       let: "$a1" := #"etcdserver: too many requests"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCRequestTooManyRequests"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: root user does not exist"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCRootUserNotExist"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: root user does not have root role"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCRootRoleNotExist"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: user name already exists"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCUserAlreadyExist"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: user name is empty"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCUserEmpty"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: user name not found"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCUserNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: role name already exists"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCRoleAlreadyExist"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: role name not found"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCRoleNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: role name is empty"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCRoleEmpty"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: authentication failed, invalid user ID or password"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCAuthFailed"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: permission not given"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCPermissionNotGiven"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.PermissionDenied in
+      let: "$r0" := (let: "$a0" := codes.PermissionDenied in
       let: "$a1" := #"etcdserver: permission denied"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCPermissionDenied"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: role is not granted to the user"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCRoleNotGranted"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: permission is not granted to the role"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCPermissionNotGranted"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: authentication is not enabled"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCAuthNotEnabled"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Unauthenticated in
+      let: "$r0" := (let: "$a0" := codes.Unauthenticated in
       let: "$a1" := #"etcdserver: invalid auth token"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCInvalidAuthToken"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid auth management"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCInvalidAuthMgmt"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: revision of auth store is old"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCAuthOldRevision"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: no leader"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCNoLeader"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: not leader"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCNotLeader"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: leader changed"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCLeaderChanged"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: not capable"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCNotCapable"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: server stopped"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCStopped"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCTimeout"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out, possibly due to previous leader failure"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCTimeoutDueToLeaderFail"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out, possibly due to connection lost"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCTimeoutDueToConnectionLost"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out, waiting for the applied index took too long"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCTimeoutWaitAppliedIndex"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Unavailable in
+      let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: unhealthy cluster"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCUnhealthy"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.DataLoss in
+      let: "$r0" := (let: "$a0" := codes.DataLoss in
       let: "$a1" := #"etcdserver: corrupt cluster"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCCorrupt"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: rpc not supported for learner"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCNotSupportedForLearner"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: bad leader transferee"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCBadLeaderTransferee"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: wrong downgrade target version format"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCWrongDowngradeVersionFormat"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.InvalidArgument in
+      let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid downgrade target version"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCInvalidDowngradeTargetVersion"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: cluster version not found during downgrade"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCClusterVersionUnavailable"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: cluster has a downgrade job in progress"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCDowngradeInProcess"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.FailedPrecondition in
+      let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: no inflight downgrade job"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCNoInflightDowngrade"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.Canceled in
+      let: "$r0" := (let: "$a0" := codes.Canceled in
       let: "$a1" := #"etcdserver: request canceled"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCCanceled"%go) <-[error] "$r0");;;
-      let: "$r0" := ((method_call #status.pkg_name' #"Status'ptr" #"Err" (let: "$a0" := codes.DeadlineExceeded in
+      let: "$r0" := (let: "$a0" := codes.DeadlineExceeded in
       let: "$a1" := #"etcdserver: context deadline exceeded"%go in
-      (func_call #status.pkg_name' #"New"%go) "$a0" "$a1")) #()) in
+      (func_call #status.pkg_name' #"Error"%go) "$a0" "$a1") in
       do:  ((globals.get #pkg_name' #"ErrGRPCDeadlineExceeded"%go) <-[error] "$r0");;;
       let: "$r0" := ((let: "$v0" := (![error] (globals.get #pkg_name' #"ErrGRPCEmptyKey"%go)) in
       let: "$k0" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCEmptyKey"%go)) in
@@ -413,112 +422,115 @@ Definition initialize' : val :=
       let: "$v20" := (![error] (globals.get #pkg_name' #"ErrGRPCTooManyLearners"%go)) in
       let: "$k20" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCTooManyLearners"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v21" := (![error] (globals.get #pkg_name' #"ErrGRPCRequestTooLarge"%go)) in
-      let: "$k21" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRequestTooLarge"%go)) in
+      let: "$v21" := (![error] (globals.get #pkg_name' #"ErrGRPCClusterIDMismatch"%go)) in
+      let: "$k21" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCClusterIDMismatch"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v22" := (![error] (globals.get #pkg_name' #"ErrGRPCRequestTooManyRequests"%go)) in
-      let: "$k22" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRequestTooManyRequests"%go)) in
+      let: "$v22" := (![error] (globals.get #pkg_name' #"ErrGRPCRequestTooLarge"%go)) in
+      let: "$k22" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRequestTooLarge"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v23" := (![error] (globals.get #pkg_name' #"ErrGRPCRootUserNotExist"%go)) in
-      let: "$k23" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRootUserNotExist"%go)) in
+      let: "$v23" := (![error] (globals.get #pkg_name' #"ErrGRPCRequestTooManyRequests"%go)) in
+      let: "$k23" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRequestTooManyRequests"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v24" := (![error] (globals.get #pkg_name' #"ErrGRPCRootRoleNotExist"%go)) in
-      let: "$k24" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRootRoleNotExist"%go)) in
+      let: "$v24" := (![error] (globals.get #pkg_name' #"ErrGRPCRootUserNotExist"%go)) in
+      let: "$k24" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRootUserNotExist"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v25" := (![error] (globals.get #pkg_name' #"ErrGRPCUserAlreadyExist"%go)) in
-      let: "$k25" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCUserAlreadyExist"%go)) in
+      let: "$v25" := (![error] (globals.get #pkg_name' #"ErrGRPCRootRoleNotExist"%go)) in
+      let: "$k25" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRootRoleNotExist"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v26" := (![error] (globals.get #pkg_name' #"ErrGRPCUserEmpty"%go)) in
-      let: "$k26" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCUserEmpty"%go)) in
+      let: "$v26" := (![error] (globals.get #pkg_name' #"ErrGRPCUserAlreadyExist"%go)) in
+      let: "$k26" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCUserAlreadyExist"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v27" := (![error] (globals.get #pkg_name' #"ErrGRPCUserNotFound"%go)) in
-      let: "$k27" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCUserNotFound"%go)) in
+      let: "$v27" := (![error] (globals.get #pkg_name' #"ErrGRPCUserEmpty"%go)) in
+      let: "$k27" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCUserEmpty"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v28" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleAlreadyExist"%go)) in
-      let: "$k28" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleAlreadyExist"%go)) in
+      let: "$v28" := (![error] (globals.get #pkg_name' #"ErrGRPCUserNotFound"%go)) in
+      let: "$k28" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCUserNotFound"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v29" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleNotFound"%go)) in
-      let: "$k29" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleNotFound"%go)) in
+      let: "$v29" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleAlreadyExist"%go)) in
+      let: "$k29" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleAlreadyExist"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v30" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleEmpty"%go)) in
-      let: "$k30" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleEmpty"%go)) in
+      let: "$v30" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleNotFound"%go)) in
+      let: "$k30" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleNotFound"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v31" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthFailed"%go)) in
-      let: "$k31" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthFailed"%go)) in
+      let: "$v31" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleEmpty"%go)) in
+      let: "$k31" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleEmpty"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v32" := (![error] (globals.get #pkg_name' #"ErrGRPCPermissionDenied"%go)) in
-      let: "$k32" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCPermissionDenied"%go)) in
+      let: "$v32" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthFailed"%go)) in
+      let: "$k32" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthFailed"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v33" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleNotGranted"%go)) in
-      let: "$k33" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleNotGranted"%go)) in
+      let: "$v33" := (![error] (globals.get #pkg_name' #"ErrGRPCPermissionDenied"%go)) in
+      let: "$k33" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCPermissionDenied"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v34" := (![error] (globals.get #pkg_name' #"ErrGRPCPermissionNotGranted"%go)) in
-      let: "$k34" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCPermissionNotGranted"%go)) in
+      let: "$v34" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleNotGranted"%go)) in
+      let: "$k34" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCRoleNotGranted"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v35" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthNotEnabled"%go)) in
-      let: "$k35" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthNotEnabled"%go)) in
+      let: "$v35" := (![error] (globals.get #pkg_name' #"ErrGRPCPermissionNotGranted"%go)) in
+      let: "$k35" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCPermissionNotGranted"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v36" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidAuthToken"%go)) in
-      let: "$k36" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidAuthToken"%go)) in
+      let: "$v36" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthNotEnabled"%go)) in
+      let: "$k36" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthNotEnabled"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v37" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidAuthMgmt"%go)) in
-      let: "$k37" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidAuthMgmt"%go)) in
+      let: "$v37" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidAuthToken"%go)) in
+      let: "$k37" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidAuthToken"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v38" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthOldRevision"%go)) in
-      let: "$k38" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthOldRevision"%go)) in
+      let: "$v38" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidAuthMgmt"%go)) in
+      let: "$k38" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidAuthMgmt"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v39" := (![error] (globals.get #pkg_name' #"ErrGRPCNoLeader"%go)) in
-      let: "$k39" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNoLeader"%go)) in
+      let: "$v39" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthOldRevision"%go)) in
+      let: "$k39" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCAuthOldRevision"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v40" := (![error] (globals.get #pkg_name' #"ErrGRPCNotLeader"%go)) in
-      let: "$k40" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNotLeader"%go)) in
+      let: "$v40" := (![error] (globals.get #pkg_name' #"ErrGRPCNoLeader"%go)) in
+      let: "$k40" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNoLeader"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v41" := (![error] (globals.get #pkg_name' #"ErrGRPCLeaderChanged"%go)) in
-      let: "$k41" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCLeaderChanged"%go)) in
+      let: "$v41" := (![error] (globals.get #pkg_name' #"ErrGRPCNotLeader"%go)) in
+      let: "$k41" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNotLeader"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v42" := (![error] (globals.get #pkg_name' #"ErrGRPCNotCapable"%go)) in
-      let: "$k42" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNotCapable"%go)) in
+      let: "$v42" := (![error] (globals.get #pkg_name' #"ErrGRPCLeaderChanged"%go)) in
+      let: "$k42" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCLeaderChanged"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v43" := (![error] (globals.get #pkg_name' #"ErrGRPCStopped"%go)) in
-      let: "$k43" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCStopped"%go)) in
+      let: "$v43" := (![error] (globals.get #pkg_name' #"ErrGRPCNotCapable"%go)) in
+      let: "$k43" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNotCapable"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v44" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeout"%go)) in
-      let: "$k44" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeout"%go)) in
+      let: "$v44" := (![error] (globals.get #pkg_name' #"ErrGRPCStopped"%go)) in
+      let: "$k44" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCStopped"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v45" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
-      let: "$k45" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
+      let: "$v45" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeout"%go)) in
+      let: "$k45" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeout"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v46" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
-      let: "$k46" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
+      let: "$v46" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
+      let: "$k46" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v47" := (![error] (globals.get #pkg_name' #"ErrGRPCUnhealthy"%go)) in
-      let: "$k47" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCUnhealthy"%go)) in
+      let: "$v47" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
+      let: "$k47" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v48" := (![error] (globals.get #pkg_name' #"ErrGRPCCorrupt"%go)) in
-      let: "$k48" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCCorrupt"%go)) in
+      let: "$v48" := (![error] (globals.get #pkg_name' #"ErrGRPCUnhealthy"%go)) in
+      let: "$k48" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCUnhealthy"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v49" := (![error] (globals.get #pkg_name' #"ErrGRPCNotSupportedForLearner"%go)) in
-      let: "$k49" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNotSupportedForLearner"%go)) in
+      let: "$v49" := (![error] (globals.get #pkg_name' #"ErrGRPCCorrupt"%go)) in
+      let: "$k49" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCCorrupt"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v50" := (![error] (globals.get #pkg_name' #"ErrGRPCBadLeaderTransferee"%go)) in
-      let: "$k50" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCBadLeaderTransferee"%go)) in
+      let: "$v50" := (![error] (globals.get #pkg_name' #"ErrGRPCNotSupportedForLearner"%go)) in
+      let: "$k50" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNotSupportedForLearner"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v51" := (![error] (globals.get #pkg_name' #"ErrGRPCClusterVersionUnavailable"%go)) in
-      let: "$k51" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCClusterVersionUnavailable"%go)) in
+      let: "$v51" := (![error] (globals.get #pkg_name' #"ErrGRPCBadLeaderTransferee"%go)) in
+      let: "$k51" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCBadLeaderTransferee"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v52" := (![error] (globals.get #pkg_name' #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
-      let: "$k52" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
+      let: "$v52" := (![error] (globals.get #pkg_name' #"ErrGRPCClusterVersionUnavailable"%go)) in
+      let: "$k52" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCClusterVersionUnavailable"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v53" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
-      let: "$k53" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
+      let: "$v53" := (![error] (globals.get #pkg_name' #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
+      let: "$k53" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v54" := (![error] (globals.get #pkg_name' #"ErrGRPCDowngradeInProcess"%go)) in
-      let: "$k54" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCDowngradeInProcess"%go)) in
+      let: "$v54" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
+      let: "$k54" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      let: "$v55" := (![error] (globals.get #pkg_name' #"ErrGRPCNoInflightDowngrade"%go)) in
-      let: "$k55" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNoInflightDowngrade"%go)) in
+      let: "$v55" := (![error] (globals.get #pkg_name' #"ErrGRPCDowngradeInProcess"%go)) in
+      let: "$k55" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCDowngradeInProcess"%go)) in
       (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
-      map.literal error [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4"); ("$k5", "$v5"); ("$k6", "$v6"); ("$k7", "$v7"); ("$k8", "$v8"); ("$k9", "$v9"); ("$k10", "$v10"); ("$k11", "$v11"); ("$k12", "$v12"); ("$k13", "$v13"); ("$k14", "$v14"); ("$k15", "$v15"); ("$k16", "$v16"); ("$k17", "$v17"); ("$k18", "$v18"); ("$k19", "$v19"); ("$k20", "$v20"); ("$k21", "$v21"); ("$k22", "$v22"); ("$k23", "$v23"); ("$k24", "$v24"); ("$k25", "$v25"); ("$k26", "$v26"); ("$k27", "$v27"); ("$k28", "$v28"); ("$k29", "$v29"); ("$k30", "$v30"); ("$k31", "$v31"); ("$k32", "$v32"); ("$k33", "$v33"); ("$k34", "$v34"); ("$k35", "$v35"); ("$k36", "$v36"); ("$k37", "$v37"); ("$k38", "$v38"); ("$k39", "$v39"); ("$k40", "$v40"); ("$k41", "$v41"); ("$k42", "$v42"); ("$k43", "$v43"); ("$k44", "$v44"); ("$k45", "$v45"); ("$k46", "$v46"); ("$k47", "$v47"); ("$k48", "$v48"); ("$k49", "$v49"); ("$k50", "$v50"); ("$k51", "$v51"); ("$k52", "$v52"); ("$k53", "$v53"); ("$k54", "$v54"); ("$k55", "$v55")])) in
+      let: "$v56" := (![error] (globals.get #pkg_name' #"ErrGRPCNoInflightDowngrade"%go)) in
+      let: "$k56" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNoInflightDowngrade"%go)) in
+      (func_call #pkg_name' #"ErrorDesc"%go) "$a0") in
+      map.literal error [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4"); ("$k5", "$v5"); ("$k6", "$v6"); ("$k7", "$v7"); ("$k8", "$v8"); ("$k9", "$v9"); ("$k10", "$v10"); ("$k11", "$v11"); ("$k12", "$v12"); ("$k13", "$v13"); ("$k14", "$v14"); ("$k15", "$v15"); ("$k16", "$v16"); ("$k17", "$v17"); ("$k18", "$v18"); ("$k19", "$v19"); ("$k20", "$v20"); ("$k21", "$v21"); ("$k22", "$v22"); ("$k23", "$v23"); ("$k24", "$v24"); ("$k25", "$v25"); ("$k26", "$v26"); ("$k27", "$v27"); ("$k28", "$v28"); ("$k29", "$v29"); ("$k30", "$v30"); ("$k31", "$v31"); ("$k32", "$v32"); ("$k33", "$v33"); ("$k34", "$v34"); ("$k35", "$v35"); ("$k36", "$v36"); ("$k37", "$v37"); ("$k38", "$v38"); ("$k39", "$v39"); ("$k40", "$v40"); ("$k41", "$v41"); ("$k42", "$v42"); ("$k43", "$v43"); ("$k44", "$v44"); ("$k45", "$v45"); ("$k46", "$v46"); ("$k47", "$v47"); ("$k48", "$v48"); ("$k49", "$v49"); ("$k50", "$v50"); ("$k51", "$v51"); ("$k52", "$v52"); ("$k53", "$v53"); ("$k54", "$v54"); ("$k55", "$v55"); ("$k56", "$v56")])) in
       do:  ((globals.get #pkg_name' #"errStringToError"%go) <-[mapT stringT error] "$r0");;;
       let: "$r0" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCEmptyKey"%go)) in
       (func_call #pkg_name' #"Error"%go) "$a0") in
@@ -637,6 +649,11 @@ Definition initialize' : val :=
       let: "$r0" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCInvalidAuthMgmt"%go)) in
       (func_call #pkg_name' #"Error"%go) "$a0") in
       do:  ((globals.get #pkg_name' #"ErrInvalidAuthMgmt"%go) <-[error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCClusterIDMismatch"%go)) in
+      (func_call #pkg_name' #"Error"%go) "$a0") in
+      do:  ((globals.get #pkg_name' #"ErrClusterIDMismatch"%go) <-[error] "$r0");;;
+      let: "$r0" := (![error] (globals.get #pkg_name' #"ErrClusterIDMismatch"%go)) in
+      do:  ((globals.get #pkg_name' #"ErrClusterIdMismatch"%go) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := (![error] (globals.get #pkg_name' #"ErrGRPCNoLeader"%go)) in
       (func_call #pkg_name' #"Error"%go) "$a0") in
       do:  ((globals.get #pkg_name' #"ErrNoLeader"%go) <-[error] "$r0");;;

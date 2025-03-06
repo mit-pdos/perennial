@@ -6,6 +6,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Axiom DefaultClock'init : val.
+
 Axiom _sliceEncoderPool'init : val.
 
 Axiom _cePool'init : val.
@@ -49,16 +51,28 @@ Axiom _'init : val.
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  (_sliceEncoderPool'init #());;;
+      exception_do (do:  (DefaultClock'init #());;;
+      do:  (_sliceEncoderPool'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
       do:  (_cePool'init #());;;
+      do:  (_'init #());;;
       do:  (_errArrayElemPool'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
       do:  (_jsonPool'init #());;;
       do:  (nullLiteralBytes'init #());;;
       do:  (errUnmarshalNilLevel'init #());;;
       do:  (_levelToColor'init #());;;
       do:  (_unknownLevelColor'init #());;;
       do:  (_levelToLowercaseColorString'init #());;;
-      do:  (_levelToCapitalColorString'init #()))
+      do:  (_levelToCapitalColorString'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #());;;
+      do:  (_'init #()))
       ).
 
 End code.
