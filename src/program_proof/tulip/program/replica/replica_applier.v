@@ -140,7 +140,7 @@ Section program.
     (*@         rp.apply(cmd)                                                   @*)
     (*@                                                                         @*)
     iAssert (own_replica_with_cloga_no_lsna rp cloga gid rid γ α)%I
-      with "[Hcm Hhistm Hcpm Hptsmsptsm Hpsmrkm Hdurable]" as "Hrp".
+      with "[Hcm Hhistm Hcpm Hpgm Hptsmsptsm Hpsmrkm Hdurable]" as "Hrp".
     { iFrame "∗ # %". }
     wp_apply (wp_Replica__apply with "Hhistmlb Hlb Hidx [$HpwrsS $Hrp]").
     { rewrite Forall_forall in Hvc.

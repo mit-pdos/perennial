@@ -146,6 +146,15 @@ Section def.
     ∃ l : list dbmod,
       own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
 
+  Definition is_txnptgs_in_slice s (g : txnptgs) : iProp Σ :=
+    ∃ l : list u64,
+      readonly (own_slice_small s uint64T (DfracOwn 1) l) ∗ ⌜list_to_set l = g⌝.
+
+  #[global]
+  Instance is_txnptgs_in_slice_persistent s g :
+    Persistent (is_txnptgs_in_slice s g).
+  Proof. apply _. Defined.
+
   Definition own_pwrs_slice (pwrsS : Slice.t) (c : ccommand) : iProp Σ :=
     match c with
     | CmdCommit _ pwrs => own_dbmap_in_slice pwrsS pwrs

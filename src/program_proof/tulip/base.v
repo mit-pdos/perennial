@@ -16,6 +16,7 @@ Definition dbkmod := gmap nat dbval.
 Definition dbpver := (u64 * dbval)%type.
 Definition coordid := (u64 * u64)%type.
 Definition ppsl := (u64 * bool)%type.
+Definition txnptgs := gset u64.
 
 (** Transaction result. *)
 Inductive txnres :=

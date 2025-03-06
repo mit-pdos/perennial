@@ -32,7 +32,8 @@ Definition BackupGroupPreparer := struct.decl [
   "pwrsok" :: boolT;
   "pwrs" :: mapT (struct.t tulip.Value);
   "pps" :: mapT (struct.t PrepareProposal);
-  "resps" :: mapT boolT
+  "vdm" :: mapT boolT;
+  "srespm" :: mapT boolT
 ].
 
 Definition BGPP_INQUIRING : expr := #0.
@@ -81,21 +82,21 @@ Definition BackupGroupPreparer__action: val :=
         (if: (~ "inquired")
         then BGPP_INQUIRE
         else
-          let: (<>, "validated") := MapGet (struct.loadF BackupGroupPreparer "resps" "gpp") "rid" in
+          let: (<>, "validated") := MapGet (struct.loadF BackupGroupPreparer "vdm" "gpp") "rid" in
           (if: (~ "validated")
           then BGPP_VALIDATE
           else BGPP_REFRESH))
       else
         (if: (struct.loadF BackupGroupPreparer "phase" "gpp") = BGPP_PREPARING
         then
-          let: (<>, "prepared") := MapGet (struct.loadF BackupGroupPreparer "resps" "gpp") "rid" in
+          let: (<>, "prepared") := MapGet (struct.loadF BackupGroupPreparer "srespm" "gpp") "rid" in
           (if: (~ "prepared")
           then BGPP_PREPARE
           else BGPP_REFRESH)
         else
           (if: (struct.loadF BackupGroupPreparer "phase" "gpp") = BGPP_UNPREPARING
           then
-            let: (<>, "unprepared") := MapGet (struct.loadF BackupGroupPreparer "resps" "gpp") "rid" in
+            let: (<>, "unprepared") := MapGet (struct.loadF BackupGroupPreparer "srespm" "gpp") "rid" in
             (if: (~ "unprepared")
             then BGPP_UNPREPARE
             else BGPP_REFRESH)
@@ -374,7 +375,7 @@ Definition BackupGroupPreparer__processInquireResult: val :=
         then
           struct.storeF BackupGroupPreparer "pwrsok" "gpp" #true;;
           struct.storeF BackupGroupPreparer "pwrs" "gpp" "pwrs";;
-          MapInsert (struct.loadF BackupGroupPreparer "resps" "gpp") "rid" #true
+          MapInsert (struct.loadF BackupGroupPreparer "vdm" "gpp") "rid" #true
         else #());;
         let: "n" := MapLen (struct.loadF BackupGroupPreparer "pps" "gpp") in
         (if: (~ (BackupGroupPreparer__cquorum "gpp" "n"))
@@ -394,7 +395,7 @@ Definition BackupGroupPreparer__processInquireResult: val :=
               struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_UNPREPARING;;
               #()
             else
-              let: "nvd" := MapLen (struct.loadF BackupGroupPreparer "resps" "gpp") in
+              let: "nvd" := MapLen (struct.loadF BackupGroupPreparer "vdm" "gpp") in
               (if: BackupGroupPreparer__cquorum "gpp" "nvd"
               then
                 struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARING;;
@@ -414,8 +415,8 @@ Definition BackupGroupPreparer__processValidateResult: val :=
         (if: "res" = tulip.REPLICA_FAILED_VALIDATION
         then #()
         else
-          MapInsert (struct.loadF BackupGroupPreparer "resps" "gpp") "rid" #true;;
-          let: "nvd" := MapLen (struct.loadF BackupGroupPreparer "resps" "gpp") in
+          MapInsert (struct.loadF BackupGroupPreparer "vdm" "gpp") "rid" #true;;
+          let: "nvd" := MapLen (struct.loadF BackupGroupPreparer "vdm" "gpp") in
           (if: BackupGroupPreparer__cquorum "gpp" "nvd"
           then
             struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARING;;
@@ -427,8 +428,8 @@ Definition BackupGroupPreparer__processPrepareResult: val :=
     (if: BackupGroupPreparer__tryResign "gpp" "res"
     then #()
     else
-      MapInsert (struct.loadF BackupGroupPreparer "resps" "gpp") "rid" #true;;
-      let: "n" := MapLen (struct.loadF BackupGroupPreparer "resps" "gpp") in
+      MapInsert (struct.loadF BackupGroupPreparer "srespm" "gpp") "rid" #true;;
+      let: "n" := MapLen (struct.loadF BackupGroupPreparer "srespm" "gpp") in
       (if: BackupGroupPreparer__cquorum "gpp" "n"
       then
         struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARED;;
@@ -440,8 +441,8 @@ Definition BackupGroupPreparer__processUnprepareResult: val :=
     (if: BackupGroupPreparer__tryResign "gpp" "res"
     then #()
     else
-      MapInsert (struct.loadF BackupGroupPreparer "resps" "gpp") "rid" #true;;
-      let: "n" := MapLen (struct.loadF BackupGroupPreparer "resps" "gpp") in
+      MapInsert (struct.loadF BackupGroupPreparer "srespm" "gpp") "rid" #true;;
+      let: "n" := MapLen (struct.loadF BackupGroupPreparer "srespm" "gpp") in
       (if: BackupGroupPreparer__cquorum "gpp" "n"
       then
         struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_ABORTED;;
@@ -461,8 +462,8 @@ Definition BackupGroupPreparer__processFinalizationResult: val :=
       BackupGroupPreparer__stop "gpp";;
       #()).
 
-Definition BackupGroupCoordinator__ResultSession: val :=
-  rec: "BackupGroupCoordinator__ResultSession" "gcoord" "rid" :=
+Definition BackupGroupCoordinator__ResponseSession: val :=
+  rec: "BackupGroupCoordinator__ResponseSession" "gcoord" "rid" :=
     Skip;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: ("data", "ok") := BackupGroupCoordinator__Receive "gcoord" "rid" in
@@ -547,7 +548,8 @@ Definition MkBackupTxnCoordinator: val :=
         "phase" ::= BGPP_INQUIRING;
         "pwrsok" ::= #false;
         "pps" ::= NewMap uint64T (struct.t PrepareProposal) #();
-        "resps" ::= NewMap uint64T boolT #()
+        "vdm" ::= NewMap uint64T boolT #();
+        "srespm" ::= NewMap uint64T boolT #()
       ] in
       let: "mu" := newMutex #() in
       let: "cv" := NewCond "mu" in

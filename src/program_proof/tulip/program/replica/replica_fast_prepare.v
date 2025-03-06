@@ -8,20 +8,23 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Replica__fastPrepare
-    rp (tsW : u64) pwrsS pwrs gid rid γ α :
+    rp (tsW : u64) pwrsS pwrs ptgsS ptgs gid rid γ α :
     let ts := uint.nat tsW in
     gid ∈ gids_all ->
     rid ∈ rids_all ->
     safe_txn_pwrs γ gid ts pwrs -∗
+    is_txnptgs_in_slice ptgsS ptgs -∗
     know_tulip_inv γ -∗
     know_replica_file_inv γ gid rid -∗
-    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica rp gid rid γ α }}}
-      Replica__fastPrepare #rp #tsW (to_val pwrsS) slice.nil
+    {{{ own_dbmap_in_slice pwrsS pwrs ∗
+        own_replica rp gid rid γ α
+    }}}
+      Replica__fastPrepare #rp #tsW (to_val pwrsS) (to_val ptgsS)
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         own_replica rp gid rid γ α ∗ fast_prepare_outcome γ gid rid ts res
     }}}.
   Proof.
-    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hinv #Hinvfile".
+    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hptgs #Hinv #Hinvfile".
     iIntros (Φ) "!> [Hpwrs Hrp] HΦ".
     wp_rec.
 
@@ -207,7 +210,6 @@ Section program.
       iApply ("HΦ" $! ReplicaFailedValidation).
       iFrame "∗ # %".
       iModIntro.
-      iExists ptgsm.
       iSplit.
       { iApply (big_sepM_insert_2 with "[] Hfpw").
         rewrite /fast_proposal_witness /=.
@@ -244,7 +246,7 @@ Section program.
     wp_loadField.
     iNamed "Hfname".
     wp_loadField.
-    wp_apply (wp_logFastPrepare with "Hpwrs").
+    wp_apply (wp_logFastPrepare with "Hptgs Hpwrs").
     iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
     { solve_ndisj. }
     iNamed "Hdurable".
@@ -282,7 +284,7 @@ Section program.
     iMod (replica_inv_execute with "Hclogalb Hclog Hilog Hgroup Hrp")
       as "(Hclog & Hilog & Hgroup & Hrp)".
     iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
-    iMod (replica_inv_validate _ _ ∅ with "Hsafepwrs Hclog Hilog Hrp")
+    iMod (replica_inv_validate with "Hsafepwrs Hclog Hilog Hrp")
       as "(Hclog & Hilog & Hrp & #Hvd)".
     { apply Hexec. }
     { do 2 (split; first done).
@@ -341,8 +343,8 @@ Section program.
     (*@                                                                         @*)
     iAssert (own_replica_cpm rp cpm)%I with "[$HprepmP $HprepmS $Hprepm]" as "Hcpm".
     { done. }
-    wp_apply (wp_Replica__memorize _ _ _ _ Slice.nil with "[$Hpwrs $Hcpm]").
-    iIntros "Hcpm".
+    wp_apply (wp_Replica__memorize with "Hptgs [$Hpwrs $Hcpm $Hpgm]").
+    iIntros "[Hcpm Hpgm]".
 
     (*@     return tulip.REPLICA_OK                                             @*)
     (*@ }                                                                       @*)
@@ -363,8 +365,7 @@ Section program.
     iClear "Hfpw".
     iDestruct (safe_txn_pwrs_impl_valid_wrs with "Hsafepwrs") as %Hvw.
     iFrame "∗ # %".
-    iPureIntro. simpl.
-    exists (<[ts := ∅]> ptgsm).
+    iPureIntro.
     split.
     { by rewrite 2!dom_insert_L Hdompsmrkm. }
     split; first done.
@@ -390,17 +391,18 @@ Section program.
   Qed.
 
   Theorem wp_Replica__FastPrepare
-    rp (tsW : u64) pwrsS pwrs gid rid γ :
+    rp (tsW : u64) pwrsS pwrs ptgsS ptgs gid rid γ :
     let ts := uint.nat tsW in
     safe_txn_pwrs γ gid ts pwrs -∗
+    is_txnptgs_in_slice ptgsS ptgs -∗
     is_replica rp gid rid γ -∗
     {{{ own_dbmap_in_slice pwrsS pwrs }}}
-      Replica__FastPrepare #rp #tsW (to_val pwrsS) slice.nil
+      Replica__FastPrepare #rp #tsW (to_val pwrsS) (to_val ptgsS)
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         fast_prepare_outcome γ gid rid ts res
     }}}.
   Proof.
-    iIntros (ts) "#Hsafepwrs #Hrp".
+    iIntros (ts) "#Hsafepwrs #Hptgs #Hrp".
     iIntros (Φ) "!> Hpwrs HΦ".
     wp_rec.
 
@@ -415,7 +417,7 @@ Section program.
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
-    wp_apply (wp_Replica__fastPrepare with "Hsafepwrs Hinv Hinvfile [$Hpwrs $Hrp]").
+    wp_apply (wp_Replica__fastPrepare with "Hsafepwrs Hptgs Hinv Hinvfile [$Hpwrs $Hrp]").
     { apply Hgid. }
     { apply Hrid. }
     iIntros (res) "[Hrp #Hfp]".

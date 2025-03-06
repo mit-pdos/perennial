@@ -147,6 +147,8 @@ Section program.
     }
     iAssert (own_replica_cpm rp ∅)%I with "[$prepm $Hprepm]" as "Hcpm".
     { iExists ∅. by rewrite big_sepM2_empty. }
+    iAssert (own_replica_pgm rp ∅)%I with "[$ptgsm $Hptgsm]" as "Hpgm".
+    { iExists ∅. by rewrite big_sepM2_empty. }
     set ptsm_init : gmap dbkey nat := gset_to_gmap O keys_all.
     iAssert (own_replica_ptsm_sptsm rp ptsm_init ptsm_init)%I
       with "[$ptsm $sptsm $Hptsm $Hsptsm]" as "Hptsmsptsm".
@@ -160,11 +162,8 @@ Section program.
     iAssert (own_replica_lsna rp O)%I with "[$lsna]" as "Hlsna"; first done.
     iAssert (is_replica_fname rp gid rid γ)%I with "[$HfnameP $Hfnameilog]" as "Hfname".
     iAssert (own_replica_replaying rp [] [] α)%I with
-      "[$Hcm $Hhistm $Hcpm $Hptsmsptsm $Hpsmrkm]" as "Hrp".
-    { iPureIntro. simpl.
-      exists ∅.
-      by rewrite merge_clog_ilog_nil.
-    }
+      "[$Hcm $Hhistm $Hcpm $Hpgm $Hptsmsptsm $Hpsmrkm]" as "Hrp".
+    { iPureIntro. by rewrite merge_clog_ilog_nil. }
     iAssert (is_replica_idx rp γ α)%I with "[$HidxP $Hidx]" as "#Hidxrp".
     iAssert (is_replica_txnlog rp gid γ)%I with "[$HtxnlogP $Htxnlog]" as "Htxnlogrp".
     wp_apply (wp_Replica__resume with

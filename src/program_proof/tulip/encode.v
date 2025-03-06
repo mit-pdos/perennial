@@ -2,6 +2,41 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base.
 From Perennial.program_proof.rsm Require Import serialize.
 
+Definition encode_u64s_xlen (xs : list u64) : list u8 :=
+  serialize u64_le xs.
+
+Definition encode_u64s (xs : list u64) : list u8 :=
+  u64_le (U64 (length xs)) ++ encode_u64s_xlen xs.
+
+Lemma encode_u64s_xlen_snoc xs x :
+  encode_u64s_xlen (xs ++ [x]) = encode_u64s_xlen xs ++ u64_le x.
+Proof. by rewrite /encode_u64s_xlen serialize_snoc. Qed.
+
+Lemma encode_u64s_xlen_cons xs x :
+  encode_u64s_xlen (x :: xs) = u64_le x ++ encode_u64s_xlen xs.
+Proof. by rewrite /encode_u64s_xlen serialize_cons. Qed.
+
+Lemma encode_u64s_xlen_length_inv xs n :
+  (length (encode_u64s_xlen xs) ≤ n)%nat ->
+  (length xs ≤ n)%nat.
+Proof.
+  rewrite /encode_u64s_xlen.
+  intros Hlen.
+  apply (serialize_length_inv u64_le).
+  { intros x. by destruct (nil_or_length_pos (u64_le x)). }
+  done.
+Qed.
+
+Lemma encode_u64s_length_inv xs n :
+  (length (encode_u64s xs) ≤ n)%nat ->
+  (length xs ≤ n)%nat.
+Proof.
+  rewrite /encode_u64s length_app.
+  intros Hn.
+  pose proof (encode_u64s_xlen_length_inv xs n) as Hlen.
+  lia.
+Qed.
+
 Definition encode_string (x : byte_string) : list u8 :=
   u64_le (U64 (length x)) ++ x.
 
@@ -86,6 +121,9 @@ Qed.
 
 Definition encode_dbmap (m : dbmap) (data : list u8) :=
   ∃ xs, data = encode_dbmods xs ∧ xs ≡ₚ map_to_list m.
+
+Definition encode_txnptgs (g : txnptgs) (data : list u8) :=
+  ∃ ns, data = encode_u64s ns ∧ list_to_set ns = g.
 
 Definition encode_dbpver (x : dbpver) : list u8 :=
   u64_le x.1 ++ encode_dbval x.2.

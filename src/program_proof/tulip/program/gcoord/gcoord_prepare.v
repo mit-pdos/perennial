@@ -7,10 +7,12 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_GroupCoordinator__Prepare
-    (gcoord : loc) (tsW : u64) (ptgsP : Slice.t) (pwrsP : loc) (pwrs : dbmap) gid γ :
+    (gcoord : loc) (tsW : u64) (pwrsP : loc) (ptgsP : Slice.t)
+    (pwrs : dbmap) (ptgs : txnptgs) gid γ :
     let ts := uint.nat tsW in
     safe_txn_pwrs γ gid ts pwrs -∗
     own_map pwrsP DfracDiscarded pwrs -∗
+    is_txnptgs_in_slice ptgsP ptgs -∗
     is_gcoord gcoord gid γ -∗
     {{{ True }}}
       GroupCoordinator__Prepare #gcoord #tsW (to_val ptgsP) #pwrsP
@@ -18,7 +20,7 @@ Section program.
         if valid then safe_group_txnphase γ ts gid phase else True
     }}}.
   Proof.
-    iIntros (ts) "#Hsafepwrs #Hpwrs #Hgcoord".
+    iIntros (ts) "#Hsafepwrs #Hpwrs #Hptgs #Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
@@ -42,7 +44,7 @@ Section program.
       iAssert (is_gcoord_with_addrm gcoord gid addrm γ)%I as "#Hgcoord".
       { iFrame "HcvP # %". }
       wp_apply wp_fork.
-      { wp_apply (wp_GroupCoordinator__PrepareSession with "Hsafepwrs Hpwrs Hgcoord").
+      { wp_apply (wp_GroupCoordinator__PrepareSession with "Hsafepwrs Hpwrs Hptgs Hgcoord").
         { by apply elem_of_dom_2 in Hrid. }
         done.
       }

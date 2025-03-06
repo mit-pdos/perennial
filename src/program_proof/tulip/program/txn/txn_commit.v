@@ -63,8 +63,8 @@ Section program.
     set P := (λ (_ : u64),
                 "HpwrsmP" ∷ own_map wrsP (DfracOwn 1) pwrsmP ∗
                 "Hgcoords" ∷ own_txn_gcoords txn γ)%I.
-    iDestruct (own_slice_small_acc with "Hptgs") as "[Hptgs HptgsC]".
-    wp_apply (wp_forSlice P with "[] [$Hptgs $HpwrsmP $Hgcoords]").
+    iMod (readonly_load with "HptgsL") as (q) "HptgsL'".
+    wp_apply (wp_forSlice P with "[] [$HptgsL' $HpwrsmP $Hgcoords]").
     { (* Loop body. *)
       clear Φ.
 
@@ -77,7 +77,7 @@ Section program.
       assert (Hin : gid ∈ gids_all).
       { pose proof (subseteq_ptgroups (dom wrsphys)) as Hdom.
         apply elem_of_list_lookup_2 in Hgid.
-        clear -Hdom Hgid Hptgs.
+        clear -Hdom Hgid HptgsL.
         set_solver.
       }
       wp_apply (wp_MapGet with "Hgcoords").
@@ -114,7 +114,7 @@ Section program.
           iFrame "Hcmt Htxnwrs".
           iPureIntro.
           assert (Hinptgs : gid ∈ ptgroups (dom wrsphys)).
-          { rewrite -Hptgs elem_of_list_to_set elem_of_list_lookup. by eauto. }
+          { rewrite -HptgsL elem_of_list_to_set elem_of_list_lookup. by eauto. }
           specialize (Hwrsg _ _ Hpwrs).
           done.
         }
@@ -123,18 +123,17 @@ Section program.
       iApply "HΦ".
       iFrame "∗ # %".
     }
-    iIntros "[HP Hptgs]".
+    iIntros "[HP _]".
     iNamed "HP". clear P.
-    iDestruct ("HptgsC" with "Hptgs") as "Hptgs".
-    iAssert (own_txn_ptgs txn ptgs)%I with "[$HptgsS $Hptgs]" as "Hptgs"; first done.
+    iAssert (own_txn_ptgs_empty txn)%I with "[$HptgsS]" as "Hptgs".
 
     (*@     txn.reset()                                                         @*)
     (*@ }                                                                       @*)
     iAssert (own_txn_wrs txn DfracDiscarded wrsphys)%I
       with "[$HwrsP $HwrspP $Hwrsp $HpwrsmP]" as "Hwrs".
     { iFrame "# %". }
-    wp_apply (wp_Txn__reset with "[$Hwrs $Hptgs]").
-    iIntros "[Hwrs Hptgs]".
+    wp_apply (wp_Txn__reset with "Hwrs").
+    iIntros "Hwrs".
     wp_pures.
     iApply "HΦ".
     by iFrame "∗ # %".

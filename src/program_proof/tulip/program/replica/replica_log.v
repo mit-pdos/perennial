@@ -2,7 +2,7 @@ From Perennial.program_proof.rsm.pure Require Import serialize.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.util Require Import
-  encode_string encode_kvmap_from_slice.
+  encode_string encode_kvmap_from_slice encode_ints.
 
 (* Copy pasted from grove_ffi_typed.v *)
 Ltac inv_undefined :=
@@ -122,22 +122,26 @@ Section program.
   Qed.
 
   Theorem wp_logAcquire
-    (fname : byte_string) (lsnW tsW : u64) (pwrsP : Slice.t) (pwrs : dbmap) :
+    (fname : byte_string) (lsnW tsW : u64) (pwrsP : Slice.t) (pwrs : dbmap)
+    (ptgsP : Slice.t) (ptgs : txnptgs) :
     let lsn := uint.nat lsnW in
     let ts := uint.nat tsW in
-    ⊢
+    is_txnptgs_in_slice ptgsP ptgs -∗
     {{{ own_dbmap_in_slice pwrsP pwrs }}}
     <<< ∀∀ bs ilog, fname f↦ bs ∗ ⌜encode_ilog ilog bs⌝ >>>
-      logAcquire #(LitString fname) #lsnW #tsW (to_val pwrsP) slice.nil @ ∅
+      logAcquire #(LitString fname) #lsnW #tsW (to_val pwrsP) (to_val ptgsP) @ ∅
     <<< ∃∃ bs' (failed : bool),
             if failed
             then fname f↦ bs
             else fname f↦ bs' ∗
-                 ⌜encode_ilog (ilog ++ [(lsn, CmdAcquire ts pwrs ∅)]) bs'⌝
+                 ⌜encode_ilog (ilog ++ [(lsn, CmdAcquire ts pwrs ptgs)]) bs'⌝
     >>>
-    {{{ RET #(); own_dbmap_in_slice pwrsP pwrs ∗ ⌜not failed⌝ }}}.
+    {{{ RET #(); 
+        own_dbmap_in_slice pwrsP pwrs ∗ ⌜not failed⌝
+    }}}.
   Proof.
-    iIntros (lsn ts Φ) "!> Hpwrs HAU".
+    iIntros (lsn ts) "#Hptgs".
+    iIntros (Φ) "!> Hpwrs HAU".
     wp_rec.
 
     (*@ func logAcquire(fname string, lsn, ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)
@@ -152,7 +156,7 @@ Section program.
     (*@     bs1 := marshal.WriteInt(bs0, CMD_ACQUIRE)                           @*)
     (*@     bs2 := marshal.WriteInt(bs1, ts)                                    @*)
     (*@     bs3 := util.EncodeKVMapFromSlice(bs2, pwrs)                         @*)
-    (*@     // TODO: encode ptgs                                                @*)
+    (*@     bs4 := util.EncodeInts(bs3, ptgs)                                   @*)
     (*@                                                                         @*)
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p2) "Hbs".
@@ -162,9 +166,11 @@ Section program.
     iIntros (p4) "Hbs".
     wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $Hpwrs]").
     iIntros (p5 mdata) "[Hbs [Hpwrs %Hmdata]]".
+    wp_apply (wp_EncodeInts__encode_txnptgs with "Hptgs Hbs").
+    iIntros (p6 gdata) "[Hbs %Hgdata]".
     wp_pures.
 
-    (*@     grove_ffi.FileAppend(fname, bs3)                                    @*)
+    (*@     grove_ffi.FileAppend(fname, bs4)                                    @*)
     (*@ }                                                                       @*)
     wp_rec. wp_pures.
     wp_rec. wp_pures.
@@ -200,12 +206,12 @@ Section program.
       { apply Forall2_app; first apply Hencfrag.
         apply Forall2_cons_2; last by apply Forall2_nil.
         simpl.
-        exists (u64_le (U64 1) ++ u64_le ts ++ mdata).
+        exists (u64_le (U64 1) ++ u64_le ts ++ mdata ++ gdata).
         subst frag.
         assert (W64 lsn = lsnW) as -> by word.
         assert (W64 ts = tsW) as -> by word.
         split; first done.
-        by exists mdata.
+        by exists mdata, gdata.
       }
       by rewrite serialize_snoc Hserial.
     }
@@ -218,23 +224,27 @@ Section program.
   Qed.
 
   Theorem wp_logFastPrepare
-    (fname : byte_string) (lsnW tsW : u64) (pwrsP : Slice.t) (pwrs : dbmap) :
+    (fname : byte_string) (lsnW tsW : u64) (pwrsP : Slice.t) (pwrs : dbmap)
+    (ptgsP : Slice.t) (ptgs : txnptgs) :
     let lsn := uint.nat lsnW in
     let ts := uint.nat tsW in
-    let icmds := [(lsn, CmdAcquire ts pwrs ∅); (lsn, CmdAccept ts O true)] in
-    ⊢
+    let icmds := [(lsn, CmdAcquire ts pwrs ptgs); (lsn, CmdAccept ts O true)] in
+    is_txnptgs_in_slice ptgsP ptgs -∗
     {{{ own_dbmap_in_slice pwrsP pwrs }}}
     <<< ∀∀ bs ilog, fname f↦ bs ∗ ⌜encode_ilog ilog bs⌝ >>>
-      logFastPrepare #(LitString fname) #lsnW #tsW (to_val pwrsP) slice.nil @ ∅
+      logFastPrepare #(LitString fname) #lsnW #tsW (to_val pwrsP) (to_val ptgsP) @ ∅
     <<< ∃∃ bs' (failed : bool),
             if failed
             then fname f↦ bs
             else fname f↦ bs' ∗
                  ⌜encode_ilog (ilog ++ icmds) bs'⌝
     >>>
-    {{{ RET #(); own_dbmap_in_slice pwrsP pwrs ∗ ⌜not failed⌝ }}}.
+    {{{ RET #(); 
+        own_dbmap_in_slice pwrsP pwrs ∗ ⌜not failed⌝ 
+    }}}.
   Proof.
-    iIntros (lsn ts icmds Φ) "!> Hpwrs HAU".
+    iIntros (lsn ts icmds) "#Hptgs".
+    iIntros (Φ) "!> Hpwrs HAU".
     wp_rec.
 
     (*@ func logFastPrepare(fname string, lsn, ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)
@@ -249,12 +259,12 @@ Section program.
     (*@     bs1 := marshal.WriteInt(bs0, CMD_ACQUIRE)                           @*)
     (*@     bs2 := marshal.WriteInt(bs1, ts)                                    @*)
     (*@     bs3 := util.EncodeKVMapFromSlice(bs2, pwrs)                         @*)
-    (*@     // TODO: encode ptgs                                                @*)
-    (*@     bs4 := marshal.WriteInt(bs3, lsn)                                   @*)
-    (*@     bs5 := marshal.WriteInt(bs4, CMD_ACCEPT)                            @*)
-    (*@     bs6 := marshal.WriteInt(bs5, ts)                                    @*)
-    (*@     bs7 := marshal.WriteInt(bs6, 0)                                     @*)
-    (*@     bs8 := marshal.WriteBool(bs7, true)                                 @*)
+    (*@     bs4 := util.EncodeInts(bs3, ptgs)                                   @*)
+    (*@     bs5 := marshal.WriteInt(bs4, lsn)                                   @*)
+    (*@     bs6 := marshal.WriteInt(bs5, CMD_ACCEPT)                            @*)
+    (*@     bs7 := marshal.WriteInt(bs6, ts)                                    @*)
+    (*@     bs8 := marshal.WriteInt(bs7, 0)                                     @*)
+    (*@     bs9 := marshal.WriteBool(bs8, true)                                 @*)
     (*@                                                                         @*)
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p2) "Hbs".
@@ -264,20 +274,21 @@ Section program.
     iIntros (p4) "Hbs".
     wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $Hpwrs]").
     iIntros (p5 mdata) "[Hbs [Hpwrs %Hmdata]]".
-    wp_pures.
-    wp_apply (wp_WriteInt with "Hbs").
-    iIntros (p6) "Hbs".
+    wp_apply (wp_EncodeInts__encode_txnptgs with "Hptgs Hbs").
+    iIntros (p6 gdata) "[Hbs %Hgdata]".
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p7) "Hbs".
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p8) "Hbs".
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p9) "Hbs".
-    wp_apply (wp_WriteBool with "Hbs").
+    wp_apply (wp_WriteInt with "Hbs").
     iIntros (p10) "Hbs".
+    wp_apply (wp_WriteBool with "Hbs").
+    iIntros (p11) "Hbs".
     wp_pures.
 
-    (*@     grove_ffi.FileAppend(fname, bs8)                                    @*)
+    (*@     grove_ffi.FileAppend(fname, bs9)                                    @*)
     (*@ }                                                                       @*)
     wp_rec. wp_pures.
     wp_rec. wp_pures.
@@ -288,8 +299,9 @@ Section program.
     { solve_atomic2. }
     iDestruct (own_slice_to_small with "Hbs") as "Hbs".
     rewrite -4!app_assoc app_nil_l.
-    rewrite -(app_assoc _ _ mdata).
-    rewrite -(app_assoc _ _ (u64_le tsW ++ mdata)).
+    rewrite -(app_assoc _ _ gdata).
+    rewrite -(app_assoc _ _ (mdata ++ gdata)).
+    rewrite -(app_assoc _ _ (u64_le tsW ++ mdata ++ gdata)).
     set fragacq := _ ++ u64_le (W64 1) ++ _.
     set fragacp := _ ++ u64_le (W64 3) ++ _.
     iDestruct (own_slice_small_sz with "Hbs") as %Hszbs.
@@ -316,12 +328,12 @@ Section program.
       { apply Forall2_app; first apply Hencfrag.
         apply Forall2_cons_2.
         { simpl.
-          exists (u64_le (U64 1) ++ u64_le ts ++ mdata).
+          exists (u64_le (U64 1) ++ u64_le ts ++ mdata ++ gdata).
           subst fragacq.
           assert (W64 lsn = lsnW) as -> by word.
           assert (W64 ts = tsW) as -> by word.
           split; first done.
-          by exists mdata.
+          by exists mdata, gdata.
         }
         apply Forall2_cons_2; last by apply Forall2_nil.
         simpl.

@@ -307,8 +307,10 @@ Section program.
         iMod "Htidc" as "[Htidc %Heq]".
         destruct Heq as [-> ->].
         iNamed "Htxn".
-        wp_apply (wp_Txn__reset with "[$Hwrs $Hptgs]").
-        iIntros "[Hwrs Hptgs]".
+        wp_apply (wp_Txn__reset with "Hwrs").
+        iIntros "Hwrs".
+        iAssert (own_txn_ptgs_empty txn)%I with "[Hptgs]" as "Hptgs".
+        { iNamed "Hptgs". by iFrame. }
         wp_pures.
         iApply "HΦ".
         by iFrame "∗ # %".

@@ -104,17 +104,20 @@ Definition EncodeTxnFastPrepareRequest: val :=
     let: "bs" := NewSliceWithCap byteT #0 #64 in
     let: "bs1" := marshal.WriteInt "bs" MSG_TXN_FAST_PREPARE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
-    let: "data" := util.EncodeKVMap "bs2" "pwrs" in
+    let: "bs3" := util.EncodeKVMap "bs2" "pwrs" in
+    let: "data" := util.EncodeInts "bs3" "ptgs" in
     "data".
 
 Definition DecodeTxnFastPrepareRequest: val :=
   rec: "DecodeTxnFastPrepareRequest" "bs" :=
     let: ("ts", "bs1") := marshal.ReadInt "bs" in
-    let: ("pwrs", <>) := util.DecodeKVMapIntoSlice "bs1" in
+    let: ("pwrs", "bs2") := util.DecodeKVMapIntoSlice "bs1" in
+    let: ("ptgs", <>) := util.DecodeInts "bs2" in
     struct.mk TxnRequest [
       "Kind" ::= MSG_TXN_FAST_PREPARE;
       "Timestamp" ::= "ts";
-      "PartialWrites" ::= "pwrs"
+      "PartialWrites" ::= "pwrs";
+      "ParticipantGroups" ::= "ptgs"
     ].
 
 Definition EncodeTxnFastPrepareResponse: val :=
@@ -144,19 +147,22 @@ Definition EncodeTxnValidateRequest: val :=
     let: "bs1" := marshal.WriteInt "bs" MSG_TXN_VALIDATE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "bs3" := marshal.WriteInt "bs2" "rank" in
-    let: "data" := util.EncodeKVMap "bs3" "pwrs" in
+    let: "bs4" := util.EncodeKVMap "bs3" "pwrs" in
+    let: "data" := util.EncodeInts "bs4" "ptgs" in
     "data".
 
 Definition DecodeTxnValidateRequest: val :=
   rec: "DecodeTxnValidateRequest" "bs" :=
     let: ("ts", "bs1") := marshal.ReadInt "bs" in
     let: ("rank", "bs2") := marshal.ReadInt "bs1" in
-    let: ("pwrs", <>) := util.DecodeKVMapIntoSlice "bs2" in
+    let: ("pwrs", "bs3") := util.DecodeKVMapIntoSlice "bs2" in
+    let: ("ptgs", <>) := util.DecodeInts "bs3" in
     struct.mk TxnRequest [
       "Kind" ::= MSG_TXN_VALIDATE;
       "Timestamp" ::= "ts";
       "Rank" ::= "rank";
-      "PartialWrites" ::= "pwrs"
+      "PartialWrites" ::= "pwrs";
+      "ParticipantGroups" ::= "ptgs"
     ].
 
 Definition EncodeTxnValidateResponse: val :=

@@ -60,7 +60,7 @@ Section program.
     iDestruct (own_slice_to_small with "Hretdata") as "Hretdata".
     wp_apply (wp_DecodeTxnRequest with "Hretdata").
     { apply Hreq. }
-    iIntros (pwrsP) "Hpwrs".
+    iIntros (pwrsP ptgsP) "Hpwrsptgs".
     assert (Hrid : rid ∈ rids_all).
     { apply elem_of_dom_2 in Haddr. by rewrite Hdomaddrm in Haddr. }
     destruct req; wp_pures.
@@ -145,13 +145,15 @@ Section program.
 
       (*@         } else if kind == message.MSG_TXN_FAST_PREPARE {                @*)
       (*@             pwrs := req.PartialWrites                                   @*)
-      (*@             res := rp.FastPrepare(ts, pwrs, nil)                        @*)
+      (*@             ptgs := req.ParticipantGroups                               @*)
+      (*@             res := rp.FastPrepare(ts, pwrs, ptgs)                       @*)
       (*@             data := message.EncodeTxnFastPrepareResponse(rp.rid, ts, res) @*)
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
       iNamed "Hrp".
-      wp_apply (wp_Replica__FastPrepare with "Hsafe Hrp Hpwrs").
+      iDestruct "Hpwrsptgs" as "[Hpwrs Hptgs]".
+      wp_apply (wp_Replica__FastPrepare with "Hsafe Hptgs Hrp Hpwrs").
       iIntros (res) "#Houtcome".
       wp_loadField.
       wp_apply (wp_EncodeTxnFastPrepareResponse).
@@ -206,15 +208,17 @@ Section program.
     { (* Case: TxnValidate. *)
 
       (*@         } else if kind == message.MSG_TXN_VALIDATE {                    @*)
-      (*@             pwrs := req.PartialWrites                                   @*)
       (*@             rank := req.Rank                                            @*)
-      (*@             res := rp.Validate(ts, rank, pwrs, nil)                     @*)
-      (*@             data := message.EncodeTxnValidateResponse(rp.rid, ts, res)  @*)
+      (*@             pwrs := req.PartialWrites                                   @*)
+      (*@             ptgs := req.ParticipantGroups                               @*)
+      (*@             res := rp.Validate(ts, rank, pwrs, ptgs)                    @*)
+      (*@             data := message.EncodeTxnValidateResponse(ts, rp.rid, res)  @*)
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
       iNamed "Hrp".
-      wp_apply (wp_Replica__Validate with "Hsafe Hrp Hpwrs").
+      iDestruct "Hpwrsptgs" as "[Hpwrs Hptgs]".
+      wp_apply (wp_Replica__Validate with "Hsafe Hptgs Hrp Hpwrs").
       iIntros (res) "#Houtcome".
       wp_loadField.
       wp_apply (wp_EncodeTxnValidateResponse).
@@ -471,6 +475,7 @@ Section program.
       (*@             }                                                           @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
+      iRename "Hpwrsptgs" into "Hpwrs".
       wp_apply (wp_Replica__Commit with "Hsafe Hrp Hpwrs").
       iIntros (ok) "_".
       wp_pures.

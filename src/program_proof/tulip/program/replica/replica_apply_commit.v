@@ -1,6 +1,6 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
-  replica_repr replica_terminated replica_multiwrite replica_release.
+  replica_repr replica_terminated replica_multiwrite replica_release replica_erase.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -48,8 +48,7 @@ Section program.
     { iApply "HΦ".
       apply elem_of_dom in Hterm as [b Hb].
       iFrame "∗ # %".
-      iPureIntro. simpl.
-      exists ptgsm.
+      iPureIntro.
       rewrite merge_clog_ilog_snoc_clog; last apply Hvicmds.
       rewrite /execute_cmds foldl_snoc /= execute_cmds_unfold Hexec /= Hb.
       destruct b; first done.
@@ -87,31 +86,31 @@ Section program.
 
     (*@     if prepared {                                                       @*)
     (*@         rp.release(pwrs)                                                @*)
-    (*@         delete(rp.prepm, ts)                                            @*)
+    (*@         rp.erase(ts)                                                    @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
+    iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
     destruct prepared; wp_pures.
     { wp_apply (wp_Replica__release with "[$Hpwrs $Hptsmsptsm]").
       { clear -Hvpwrs. set_solver. }
       iIntros "[Hpwrs Hptsmsptsm]".
-      wp_loadField.
-      wp_apply (wp_MapDelete with "HprepmS").
-      iIntros "HprepmS".
+      iAssert (own_replica_cpm rp cpm)%I with "[$HprepmP $HprepmS $Hprepm]" as "Hcpm".
+      { done. }
+      wp_apply (wp_Replica__erase with "[$Hcpm $Hpgm]").
+      iIntros "[Hcpm Hpgm]".
       wp_pures.
       iApply "HΦ".
       apply map_get_true in Hprepared.
-      iDestruct (big_sepM2_delete_l with "Hprepm") as (m) "(%Hm & _ & Hprepm)".
-      { apply Hprepared. }
       iFrame "∗ #".
       iPureIntro. simpl.
-      exists (<[ts := true]> cm), (delete ts cpm), (delete ts ptgsm).
+      exists (<[ts := true]> cm).
       split.
       { rewrite 2!kmap_insert. f_equal; [word | done]. }
       split.
-      { rewrite 2!kmap_delete. f_equal; [word | done]. }
-      split.
       { by apply map_Forall_delete. }
       { rewrite merge_clog_ilog_snoc_clog; last apply Hvicmds.
+        assert (is_Some (prepm !! tsW)) as [m Hm].
+        { by rewrite -elem_of_dom -Hdomprepm elem_of_dom. }
         symmetry in Hcpmabs.
         pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hcpmabs Hm) as (ts' & Hts' & Hcpmts).
         assert (ts' = ts) as -> by word.
@@ -119,11 +118,10 @@ Section program.
         by case_decide.
       }
     }
-    iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
     iApply "HΦ".
     iFrame "∗ # %".
     iPureIntro. simpl.
-    exists (<[ts := true]> cm), ptgsm.
+    exists (<[ts := true]> cm).
     split.
     { rewrite 2!kmap_insert. f_equal; [word | done]. }
     { rewrite merge_clog_ilog_snoc_clog; last apply Hvicmds.
@@ -181,8 +179,7 @@ Section program.
     { iApply "HΦ".
       apply elem_of_dom in Hterm as [b Hb].
       iFrame "∗ # %".
-      iPureIntro. simpl.
-      exists ptgsm.
+      iPureIntro.
       split.
       { by apply prefix_app_r. }
       rewrite merge_clog_ilog_snoc_clog; last apply Hvicmds.
@@ -228,38 +225,38 @@ Section program.
 
     (*@     if prepared {                                                       @*)
     (*@         rp.release(pwrs)                                                @*)
-    (*@         delete(rp.prepm, ts)                                            @*)
+    (*@         rp.erase(ts)                                                    @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
+    iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
     destruct prepared; wp_pures.
     { wp_apply (wp_Replica__release with "[$Hpwrs $Hptsmsptsm]").
       { clear -Hvpwrs. set_solver. }
       iIntros "[Hpwrs Hptsmsptsm]".
-      wp_loadField.
-      wp_apply (wp_MapDelete with "HprepmS").
-      iIntros "HprepmS".
+      iAssert (own_replica_cpm rp cpm)%I with "[$HprepmP $HprepmS $Hprepm]" as "Hcpm".
+      { done. }
+      wp_apply (wp_Replica__erase with "[$Hcpm $Hpgm]").
+      iIntros "[Hcpm Hpgm]".
       wp_pures.
       iApply "HΦ".
       apply map_get_true in Hprepared.
-      iDestruct (big_sepM2_delete_l with "Hprepm") as (m) "(%Hm & _ & Hprepm)".
-      { apply Hprepared. }
+      assert (is_Some (prepm !! tsW)) as [m Hm].
+      { by rewrite -elem_of_dom -Hdomprepm elem_of_dom. }
+      symmetry in Hcpmabs.
+      pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hcpmabs Hm) as (ts' & Hts' & Hcpmts).
+      assert (ts' = ts) as -> by word.
       iAssert ([∗ set] t ∈ dom (delete ts cpm), is_replica_validated_ts γ gid rid t)%I
         as "#Hrpvds'".
       { rewrite dom_delete_L.
         iDestruct (big_sepS_delete _ _ ts with "Hrpvds") as "[_ ?]"; last done.
-        symmetry in Hcpmabs.
-        pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hcpmabs Hm) as (ts' & Hts' & Hcpmts).
-        assert (ts' = ts) as -> by word.
         by apply elem_of_dom.
       }
       iClear "Hrpvds".
       iFrame "∗ # %".
       iPureIntro. simpl.
-      exists (<[ts := true]> cm), (delete ts ptgsm).
+      exists (<[ts := true]> cm).
       split.
       { rewrite 2!kmap_insert. f_equal; [word | done]. }
-      split.
-      { rewrite 2!kmap_delete. f_equal; [word | done]. }
       split.
       { by apply prefix_app_r. }
       { rewrite merge_clog_ilog_snoc_clog; last apply Hvicmds.
@@ -271,18 +268,14 @@ Section program.
           rewrite length_app /=.
           clear -Hnc. lia.
         }
-        symmetry in Hcpmabs.
-        pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hcpmabs Hm) as (ts' & Hts' & Hcpmts).
-        assert (ts' = ts) as -> by word.
         rewrite /execute_cmds foldl_snoc /= execute_cmds_unfold Hexec /= Hterm Hcpmts.
         by case_decide.
       }
     }
-    iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
     iApply "HΦ".
     iFrame "∗ # %".
     iPureIntro. simpl.
-    exists (<[ts := true]> cm), ptgsm.
+    exists (<[ts := true]> cm).
     split.
     { rewrite 2!kmap_insert. f_equal; [word | done]. }
     split.

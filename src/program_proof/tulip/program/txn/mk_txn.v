@@ -76,13 +76,6 @@ Section program.
     iIntros (wrspP) "Hwrsp".
     wp_storeField.
 
-    (*@     txn.ptgs = make([]uint64, 0)                                        @*)
-    (*@                                                                         @*)
-    wp_apply wp_NewSlice.
-    iIntros (ptgsP) "Hptgs".
-    rewrite uint_nat_W64_0 replicate_0.
-    wp_storeField.
-
     (*@     gcoords := make(map[uint64]*gcoord.GroupCoordinator)                @*)
     (*@     for gid, addrm := range(gaddrm) {                                   @*)
     (*@         gcoords[gid] = gcoord.Start(addrm)                              @*)
@@ -141,8 +134,8 @@ Section program.
       }
       by rewrite Hdomwrs Hdomgaddrm Hgid.
     }
-    iAssert (own_txn_ptgs txn [])%I with "[$ptgs $Hptgs]" as "Hptgs".
-    { by rewrite NoDup_nil. }
+    iAssert (own_txn_ptgs_empty txn)%I with "[ptgs]" as "Hptgs".
+    { iExists Slice.nil. by iFrame. }
     iRename "Hgcoords" into "Hgcoordsabs".
     iAssert (own_txn_gcoords txn γ)%I with "[$gcoords $HgcoordsP]" as "Hgcoords".
     { iFrame "#". by rewrite Hdom Hdomgaddrm Hgid. }

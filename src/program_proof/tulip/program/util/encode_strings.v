@@ -3,7 +3,7 @@ From Perennial.program_proof.tulip.program.util Require Import encode_string.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 
 Section program.
-  Context `{!heapGS Σ, !paxos_ghostG Σ}.
+  Context `{!heapGS Σ}.
 
   Theorem wp_EncodeStrings
     (bsP : Slice.t) (strsP : Slice.t) (bs : list u8) (strs : list byte_string) :

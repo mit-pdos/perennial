@@ -33,18 +33,19 @@ Section program.
   Qed.
 
   Theorem wp_GroupCoordinator__PrepareSession
-    (gcoord : loc) (rid : u64) (tsW : u64) (ptgsP : Slice.t) (pwrsP : loc) (pwrs : dbmap)
-    addrm gid γ :
+    (gcoord : loc) (rid : u64) (tsW : u64) (ptgsP : Slice.t) (pwrsP : loc)
+    (pwrs : dbmap) (ptgs : txnptgs) addrm gid γ :
     let ts := uint.nat tsW in
     rid ∈ dom addrm ->
     safe_txn_pwrs γ gid ts pwrs -∗
     own_map pwrsP DfracDiscarded pwrs -∗
+    is_txnptgs_in_slice ptgsP ptgs -∗
     is_gcoord_with_addrm gcoord gid addrm γ -∗
     {{{ True }}}
       GroupCoordinator__PrepareSession #gcoord #rid #tsW (to_val ptgsP) #pwrsP
     {{{ RET #(); True }}}.
   Proof.
-    iIntros (ts Hrid) "#Hsafepwrs #Hpwrs #Hgcoord".
+    iIntros (ts Hrid) "#Hsafepwrs #Hpwrs #Hptgs #Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec. wp_pures.
 
@@ -99,7 +100,7 @@ Section program.
       (*@     }                                                                   @*)
       (*@                                                                         @*)
       case_bool_decide as Hfp; wp_pures.
-      { wp_apply (wp_GroupCoordinator__SendFastPrepare with "Hsafepwrs Hgcoord Hpwrs").
+      { wp_apply (wp_GroupCoordinator__SendFastPrepare with "Hsafepwrs Hptgs Hgcoord Hpwrs").
         { apply Hrid. }
         wp_pures.
         rewrite Hfp /=.
@@ -109,7 +110,7 @@ Section program.
         by iApply "HΦ".
       }
       case_bool_decide as Hvd; wp_pures.
-      { wp_apply (wp_GroupCoordinator__SendValidate with "Hsafepwrs Hgcoord Hpwrs").
+      { wp_apply (wp_GroupCoordinator__SendValidate with "Hsafepwrs Hptgs Hgcoord Hpwrs").
         { apply Hrid. }
         wp_pures.
         rewrite Hvd /=.

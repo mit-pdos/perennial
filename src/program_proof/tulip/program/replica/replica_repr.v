@@ -56,6 +56,13 @@ Section repr.
       "Hprepm"   ∷ ([∗ map] s; m ∈ prepmS; prepm, own_dbmap_in_slice s m) ∗
       "%Hcpmabs" ∷ ⌜(kmap Z.of_nat cpm : gmap Z dbmap) = kmap uint.Z prepm⌝.
 
+  Definition own_replica_pgm (rp : loc) (pgm : gmap nat txnptgs) : iProp Σ :=
+    ∃ (ptgsmP : loc) (ptgsmS : gmap u64 Slice.t) (ptgsm : gmap u64 txnptgs),
+      "HptgsmP"  ∷ rp ↦[Replica :: "ptgsm"] #ptgsmP ∗
+      "HptgsmS"  ∷ own_map ptgsmP (DfracOwn 1) ptgsmS ∗
+      "#Hptgsm"  ∷ ([∗ map] s; g ∈ ptgsmS; ptgsm, is_txnptgs_in_slice s g) ∗
+      "%Hpgmabs" ∷ ⌜(kmap Z.of_nat pgm : gmap Z txnptgs) = kmap uint.Z ptgsm⌝.
+
   Definition absrel_ptsm (ptsm : gmap dbkey nat) (ptsmM : gmap dbkey u64) :=
     ∀ k,
     k ∈ keys_all ->
@@ -110,7 +117,7 @@ Section repr.
   Definition own_replica_with_cloga_no_lsna
     (rp : loc) (cloga : dblog) (gid rid : u64) γ α : iProp Σ :=
     ∃ (cm : gmap nat bool) (histm : gmap dbkey dbhist)
-      (cpm : gmap nat dbmap) (ptgsm : gmap nat (gset u64))
+      (cpm : gmap nat dbmap) (pgm : gmap nat (gset u64))
       (sptsm ptsm : gmap dbkey nat) (psm : gmap nat (nat * bool)) (rkm : gmap nat nat)
       (clog : dblog) (ilog : list (nat * icommand)),
       let log := merge_clog_ilog cloga ilog in
@@ -118,6 +125,7 @@ Section repr.
       "Hcm"         ∷ own_replica_cm rp cm ∗
       "Hhistm"      ∷ own_replica_histm rp histm α ∗
       "Hcpm"        ∷ own_replica_cpm rp cpm ∗
+      "Hpgm"        ∷ own_replica_pgm rp pgm ∗
       "Hptsmsptsm"  ∷ own_replica_ptsm_sptsm rp ptsm sptsm ∗
       "Hpsmrkm"     ∷ own_replica_psm_rkm rp psm rkm ∗
       "Hdurable"    ∷ own_crash_ex rpcrashNS (own_replica_durable γ gid rid) dst ∗
@@ -129,9 +137,7 @@ Section repr.
       "%Hcloga"     ∷ ⌜prefix clog cloga⌝ ∗
       "%Hvcpm"      ∷ ⌜map_Forall (λ _ m, valid_wrs m) cpm⌝ ∗
       "%Hvicmds"    ∷ ⌜Forall (λ nc, (nc.1 <= length cloga)%nat) ilog⌝ ∗
-      "%Hexec"      ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝.
-
-  (* TODO: expose lsna as a nat, without taking cloga *)
+      "%Hexec"      ∷ ⌜execute_cmds log = LocalState cm histm cpm pgm sptsm ptsm psm rkm⌝.
 
   Definition own_replica_lsna (rp : loc) (lsna : nat) : iProp Σ :=
     ∃ (lsnaW : u64),
@@ -147,16 +153,17 @@ Section repr.
   Definition own_replica_replaying
     (rp : loc) (clog : dblog) (ilog : list (nat * icommand)) α : iProp Σ :=
     ∃ (cm : gmap nat bool) (histm : gmap dbkey dbhist)
-      (cpm : gmap nat dbmap) (ptgsm : gmap nat (gset u64))
+      (cpm : gmap nat dbmap) (pgm : gmap nat (gset u64))
       (sptsm ptsm : gmap dbkey nat) (psm : gmap nat (nat * bool)) (rkm : gmap nat nat),
       let log := merge_clog_ilog clog ilog in
       "Hcm"        ∷ own_replica_cm rp cm ∗
       "Hhistm"     ∷ own_replica_histm rp histm α ∗
       "Hcpm"       ∷ own_replica_cpm rp cpm ∗
+      "Hpgm"       ∷ own_replica_pgm rp pgm ∗
       "Hptsmsptsm" ∷ own_replica_ptsm_sptsm rp ptsm sptsm ∗
       "Hpsmrkm"    ∷ own_replica_psm_rkm rp psm rkm ∗
       "%Hvcpm"     ∷ ⌜map_Forall (λ _ m, valid_wrs m) cpm⌝ ∗
-      "%Hexec"     ∷ ⌜execute_cmds log = LocalState cm histm cpm ptgsm sptsm ptsm psm rkm⌝.
+      "%Hexec"     ∷ ⌜execute_cmds log = LocalState cm histm cpm pgm sptsm ptsm psm rkm⌝.
 
   Definition own_replica_replaying_in_lsn
     (rp : loc) (lsna : nat) (ilog : list (nat * icommand)) gid γ α : iProp Σ :=

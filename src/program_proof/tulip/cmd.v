@@ -529,7 +529,7 @@ Section execute_cmds.
     | LocalStuck => LocalStuck
     end.
 
-  Definition execute_acquire st (tid : nat) (pwrs : dbmap) (ptgs : gset u64) :=
+  Definition execute_acquire st (tid : nat) (pwrs : dbmap) (ptgs : txnptgs) :=
     match st with
     | LocalState cm hists cpm ptgsm sptsm ptsm psm rkm =>
         LocalState
@@ -892,8 +892,11 @@ Section encode.
   Definition encode_tulip_read (ts : u64) (key : byte_string) (data : byte_string) :=
     data = u64_le (U64 0) ++ u64_le ts ++ encode_string key.
 
-  Definition encode_tulip_acquire (ts : u64) (pwrs : dbmap) (data : byte_string) :=
-    ∃ mdata, data = u64_le (U64 1) ++ u64_le ts ++ mdata ∧ encode_dbmap pwrs mdata.
+  Definition encode_tulip_acquire
+    (ts : u64) (pwrs : dbmap) (ptgs : txnptgs) (data : byte_string) :=
+    ∃ mdata gdata, data = u64_le (U64 1) ++ u64_le ts ++ mdata ++ gdata ∧
+                   encode_dbmap pwrs mdata ∧
+                   encode_txnptgs ptgs gdata.
 
   Definition encode_tulip_advance (ts rank : u64) (data : byte_string) :=
     data = u64_le (U64 2) ++ u64_le ts ++ u64_le rank.
@@ -905,7 +908,7 @@ Section encode.
     ∃ cmddata, data = u64_le lsn ++ cmddata ∧
                match icmd with
                | CmdRead ts key => encode_tulip_read ts key cmddata
-               | CmdAcquire ts pwrs _ => encode_tulip_acquire ts pwrs cmddata
+               | CmdAcquire ts pwrs ptgs => encode_tulip_acquire ts pwrs ptgs cmddata
                | CmdAdvance ts rank => encode_tulip_advance ts rank cmddata
                | CmdAccept ts rank pdec => encode_tulip_accept ts rank pdec cmddata
                end.

@@ -43,8 +43,8 @@ Section program.
     iNamed "Hptgs".
     do 2 wp_loadField.
     set P := (λ (_ : u64), own_txn_gcoords txn γ)%I.
-    iDestruct (own_slice_small_acc with "Hptgs") as "[Hptgs HptgsC]".
-    wp_apply (wp_forSlice P with "[] [$Hptgs $Hgcoords]").
+    iMod (readonly_load with "HptgsL") as (q) "HptgsL'".
+    wp_apply (wp_forSlice P with "[] [$HptgsL' $Hgcoords]").
     { (* Loop body. *)
       clear Φ.
 
@@ -56,7 +56,7 @@ Section program.
       assert (Hin : gid ∈ gids_all).
       { pose proof (subseteq_ptgroups (dom wrs)) as Hdom.
         apply elem_of_list_lookup_2 in Hgid.
-        clear -Hdom Hgid Hptgs.
+        clear -Hdom Hgid HptgsL.
         set_solver.
       }
       wp_apply (wp_MapGet with "Hgcoords").
@@ -82,14 +82,13 @@ Section program.
       iApply "HΦ".
       iFrame "∗ # %".
     }
-    iIntros "[Hgcoods Hptgs]". subst P. simpl.
-    iDestruct ("HptgsC" with "Hptgs") as "Hptgs".
-    iAssert (own_txn_ptgs txn ptgs)%I with "[$HptgsS $Hptgs]" as "Hptgs"; first done.
+    iIntros "[Hgcoods _]". subst P. simpl.
+    iAssert (own_txn_ptgs_empty txn)%I with "[$HptgsS]" as "Hptgs".
 
     (*@     txn.reset()                                                         @*)
     (*@ }                                                                       @*)
-    wp_apply (wp_Txn__reset with "[$Hwrs $Hptgs]").
-    iIntros "[Hwrs Hptgs]".
+    wp_apply (wp_Txn__reset with "Hwrs").
+    iIntros "Hwrs".
     wp_pures.
     iApply "HΦ".
     by iFrame "∗ # %".

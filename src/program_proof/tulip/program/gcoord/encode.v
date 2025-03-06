@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.util Require Import
-  encode_string encode_kvmap.
+  encode_string encode_kvmap encode_ints.
 
 Opaque u64_le.
 
@@ -41,23 +41,26 @@ Section encode.
   Qed.
 
   Theorem wp_EncodeTxnFastPrepareRequest
-    (ts : u64) (pwrsP : loc) (ptgsP : Slice.t) q (pwrs : dbmap) :
+    (ts : u64) (pwrsP : loc) (ptgsP : Slice.t) q (pwrs : dbmap) (ptgs : txnptgs) :
+    is_txnptgs_in_slice ptgsP ptgs -∗
     {{{ own_map pwrsP q pwrs }}}
       EncodeTxnFastPrepareRequest #ts #pwrsP (to_val ptgsP)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
         own_map pwrsP q pwrs ∗
-        ⌜encode_txnreq (FastPrepareReq ts pwrs) data⌝
+        ⌜encode_txnreq (FastPrepareReq ts pwrs ptgs) data⌝
     }}}.
   Proof.
-    iIntros (Φ) "Hpwrs HΦ".
+    iIntros "#Hptgs".
+    iIntros (Φ) "!> Hpwrs HΦ".
     wp_rec.
 
     (*@ func EncodeTxnFastPrepareRequest(ts uint64, pwrs tulip.KVMap, ptgs []uint64) []byte { @*)
     (*@     bs := make([]byte, 0, 64)                                           @*)
     (*@     bs1 := marshal.WriteInt(bs, MSG_TXN_FAST_PREPARE)                   @*)
     (*@     bs2 := marshal.WriteInt(bs1, ts)                                    @*)
-    (*@     data := util.EncodeKVMap(bs2, pwrs)                                 @*)
+    (*@     bs3 := util.EncodeKVMap(bs2, pwrs)                                  @*)
+    (*@     data := util.EncodeInts(bs3, ptgs)                                  @*)
     (*@     return data                                                         @*)
     (*@ }                                                                       @*)
     wp_apply wp_NewSliceWithCap; first word.
@@ -67,27 +70,31 @@ Section encode.
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p2) "Hbs".
     wp_apply (wp_EncodeKVMap with "[$Hbs $Hpwrs]").
-    iIntros (dataP mdata) "(Hdata & Hpwrs & %Hmdata)".
+    iIntros (p3 mdata) "(Hbs & Hpwrs & %Hmdata)".
+    wp_apply (wp_EncodeInts__encode_txnptgs with "Hptgs Hbs").
+    iIntros (dataP gdata) "[Hdata %Hgdata]".
     wp_pures.
     rewrite uint_nat_W64_0 replicate_0 app_nil_l -app_assoc.
     iApply "HΦ".
     iFrame.
     iPureIntro.
     rewrite /= /encode_fast_prepare_req /encode_fast_prepare_req_xkind.
-    by eauto.
+    by eauto 10.
   Qed.
 
   Theorem wp_EncodeTxnValidateRequest
-    (ts rank : u64) (pwrsP : loc) (ptgsP : Slice.t) q (pwrs : dbmap) :
+    (ts rank : u64) (pwrsP : loc) (ptgsP : Slice.t) q (pwrs : dbmap) (ptgs : txnptgs) :
+    is_txnptgs_in_slice ptgsP ptgs -∗
     {{{ own_map pwrsP q pwrs }}}
       EncodeTxnValidateRequest #ts #rank #pwrsP (to_val ptgsP)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
         own_map pwrsP q pwrs ∗
-        ⌜encode_txnreq (ValidateReq ts rank pwrs) data⌝
+        ⌜encode_txnreq (ValidateReq ts rank pwrs ptgs) data⌝
     }}}.
   Proof.
-    iIntros (Φ) "Hpwrs HΦ".
+    iIntros "#Hptgs".
+    iIntros (Φ) "!> Hpwrs HΦ".
     wp_rec.
 
     (*@ func EncodeTxnValidateRequest(ts, rank uint64, pwrs tulip.KVMap, ptgs []uint64) []byte { @*)
@@ -95,7 +102,8 @@ Section encode.
     (*@     bs1 := marshal.WriteInt(bs, MSG_TXN_VALIDATE)                       @*)
     (*@     bs2 := marshal.WriteInt(bs1, ts)                                    @*)
     (*@     bs3 := marshal.WriteInt(bs2, rank)                                  @*)
-    (*@     data := util.EncodeKVMap(bs3, pwrs)                                 @*)
+    (*@     bs4 := util.EncodeKVMap(bs3, pwrs)                                  @*)
+    (*@     data := util.EncodeKVMap(bs4, pwrs)                                 @*)
     (*@     return data                                                         @*)
     (*@ }                                                                       @*)
     wp_apply wp_NewSliceWithCap; first word.
@@ -107,14 +115,16 @@ Section encode.
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p3) "Hbs".
     wp_apply (wp_EncodeKVMap with "[$Hbs $Hpwrs]").
-    iIntros (dataP mdata) "(Hdata & Hpwrs & %Hmdata)".
+    iIntros (p4 mdata) "(Hbs & Hpwrs & %Hmdata)".
+    wp_apply (wp_EncodeInts__encode_txnptgs with "Hptgs Hbs").
+    iIntros (dataP gdata) "[Hdata %Hgdata]".
     wp_pures.
     rewrite uint_nat_W64_0 replicate_0 app_nil_l -app_assoc.
     iApply "HΦ".
     iFrame.
     iPureIntro.
     rewrite /= /encode_validate_req /encode_validate_req_xkind.
-    by eauto.
+    by eauto 10.
   Qed.
 
   Theorem wp_EncodeTxnPrepareRequest (ts : u64) (rank : u64) :

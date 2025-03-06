@@ -160,8 +160,7 @@ Section program.
     }
     iClear "Hfpw".
     iFrame "∗ # %".
-    iPureIntro. simpl.
-    exists ptgsm.
+    iPureIntro.
     split.
     { by rewrite 2!dom_insert_L Hdompsmrkm. }
     split; first done.

@@ -22,11 +22,8 @@ Section program.
     (*@                                                                         @*)
     iNamed "Htxn".
     wp_apply (wp_Txn__setptgs with "[$Hwrs $Hptgs]").
-    iIntros "Hptgs".
-    iDestruct "Hptgs" as (ptgs) "(Hwrs & Hptgs & %Hptgs)".
+    iIntros "[Hwrs Hptgs]".
 
-    (*@     // TODO: init the group coordinator                                 @*)
-    (*@                                                                         @*)
     (*@     ts := txn.ts                                                        @*)
     (*@     ptgs := txn.ptgs                                                    @*)
     (*@                                                                         @*)
@@ -107,11 +104,11 @@ Section program.
     set P := (λ (i : u64),
                 "HpwrsmP" ∷ own_map wrsP (DfracOwn 1) pwrsmP ∗
                 "Hgcoords" ∷ own_txn_gcoords txn γ ∗
-                "Htks" ∷ [∗ set] gid ∈ list_to_set (drop (uint.nat i) ptgs), local_gid_token α gid)%I.
-    iDestruct (own_slice_small_acc with "Hptgs") as "[Hptgs HptgsC]".
-    iDestruct (own_slice_small_sz with "Hptgs") as %Hlenptgs.
-    wp_apply (wp_forSlice P with "[] [$Hptgs $HpwrsmP $Hgcoords Htks]"); last first; first 1 last.
-    { by rewrite uint_nat_W64_0 drop_0 Hptgs. }
+                "Htks" ∷ [∗ set] gid ∈ list_to_set (drop (uint.nat i) ptgsL), local_gid_token α gid)%I.
+    iMod (readonly_load with "HptgsL") as (q) "HptgsL'".
+    iDestruct (own_slice_small_sz with "HptgsL'") as %Hlenptgs.
+    wp_apply (wp_forSlice P with "[] [$HptgsL' $HpwrsmP $Hgcoords Htks]"); last first; first 1 last.
+    { by rewrite uint_nat_W64_0 drop_0 HptgsL. }
     { clear Φ.
 
       (*@         gcoord := txn.gcoords[gid]                                      @*)
@@ -123,7 +120,7 @@ Section program.
       assert (Hin : gid ∈ gids_all).
       { pose proof (subseteq_ptgroups (dom wrs)) as Hdom.
         apply elem_of_list_lookup_2 in Hgid.
-        clear -Hdom Hgid Hptgs.
+        clear -Hdom Hgid HptgsL.
         set_solver.
       }
       wp_apply (wp_MapGet with "Hgcoords").
@@ -148,7 +145,7 @@ Section program.
       iDestruct (big_sepM2_lookup_acc with "Hpwrsm") as "[Hpwrs HpwrsmC]"; [done | done |].
       wp_pures.
       assert (Hvg : gid ∈ ptgroups (dom wrs)).
-      { rewrite -Hptgs elem_of_list_to_set. by apply elem_of_list_lookup_2 in Hgid. }
+      { rewrite -HptgsL elem_of_list_to_set. by apply elem_of_list_lookup_2 in Hgid. }
 
       (*@         go func() {                                                     @*)
       (*@                                                                         @*)
@@ -175,8 +172,9 @@ Section program.
           rewrite -Hwrsg in Hne.
           done.
         }
-        wp_apply (wp_GroupCoordinator__Prepare with "[] Hpwrs Hgcoordabs").
+        wp_apply (wp_GroupCoordinator__Prepare with "[] Hpwrs [] Hgcoordabs").
         { by rewrite Htsword. }
+        { by iFrame "# %". }
         iIntros (stg ok) "#Hsafe".
         wp_pures.
 
@@ -301,7 +299,7 @@ Section program.
     (*@         cv.Wait()                                                       @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    iIntros "[HP Hptgs]".
+    iIntros "[HP _]".
     subst P. iNamed "HP".
     wp_apply (wp_Mutex__Lock with "Hmu").
     iIntros "[Hlocked HI]".
@@ -322,7 +320,7 @@ Section program.
                   "%Hcond"     ∷ ⌜(if cont
                                    then True
                                    else match st with
-                                        | TxnPrepared => uint.nat np = length ptgs
+                                        | TxnPrepared => uint.nat np = length ptgsL
                                         | _ => True
                                         end)⌝)%I.
     wp_apply (wp_forBreak_cond P with "[] [Hlocked HI]"); last first; first 1 last.
@@ -378,10 +376,9 @@ Section program.
       iFrame "Htxnwrs".
       assert (gids = ptgroups (dom wrs)) as ->; last done.
       apply set_subseteq_size_eq; first apply Hgidsincl.
-      rewrite -Hptgs size_list_to_set; last apply Hnd.
+      rewrite -HptgsL size_list_to_set; last apply Hnd.
       clear -Hsizegids Hcond. lia.
     }
-    iDestruct ("HptgsC" with "Hptgs") as "Hptgs".
     by iFrame "Hsafe ∗ # %".
   Qed.
 

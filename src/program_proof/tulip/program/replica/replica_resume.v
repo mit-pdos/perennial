@@ -3,7 +3,7 @@ From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import  replica_repr.
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.tulip.program.util Require Import
-  decode_string.
+  decode_string decode_ints.
 From Goose.github_com.mit_pdos.tulip Require Import replica.
 From Perennial.program_proof.tulip.paxos Require Import prelude.
 
@@ -461,8 +461,7 @@ Section program.
         iSplitL.
         { iClear "Hloglb".
           iFrame "∗ # %".
-          iPureIntro. simpl.
-          exists ptgsm.
+          iPureIntro.
           destruct cmd as [lsn icmd].
           rewrite merge_clog_ilog_snoc_ilog; last first.
           { clear -Hlenclog. simpl in Hlenclog. word. }
@@ -496,11 +495,10 @@ Section program.
         (*@             data = bs4                                                  @*)
         (*@             // Apply validate.                                          @*)
         (*@             rp.acquire(ts, pwrs)                                        @*)
-        (*@             // TODO: pass @ptgs                                         @*)
-        (*@             rp.memorize(ts, pwrs, nil)                                  @*)
+        (*@             rp.memorize(ts, pwrs, ptgs)                                 @*)
         (*@                                                                         @*)
-        destruct Henc as [mdata [Hcmddata Hmdata]].
-        rewrite Hcmddata -2!app_assoc.
+        destruct Henc as (mdata & gdata & Hcmddata & Hmdata & Hgdata).
+        rewrite Hcmddata -!app_assoc.
         wp_apply (wp_ReadInt with "Hdata").
         iIntros (bs2P) "Hdata".
         wp_apply (wp_ReadInt with "Hdata").
@@ -508,6 +506,10 @@ Section program.
         wp_apply (wp_DecodeKVMapIntoSlice with "Hdata").
         { apply Hmdata. }
         iIntros (pwrsS bs4P) "[Hpwrs Hdata]".
+        wp_pures.
+        wp_apply (wp_DecodeInts__encode_txnptgs with "Hdata").
+        { apply Hgdata. }
+        iIntros (ptgsP bs5P) "[#Hptgs Hdata]".
         wp_store.
         assert (Hvpwrs : valid_wrs pwrs).
         { rewrite /= in Hvicmd. by destruct Hvicmd as [_ ?]. }
@@ -515,8 +517,8 @@ Section program.
         wp_apply (wp_Replica__acquire with "[$Hpwrs $Hptsmsptsm]").
         { apply Hvpwrs. }
         iIntros "[Hpwrs Hptsmsptsm]".
-        wp_apply (wp_Replica__memorize _ _ _ _ Slice.nil with "[$Hpwrs $Hcpm]").
-        iIntros "Hcpm".
+        wp_apply (wp_Replica__memorize with "Hptgs [$Hpwrs $Hcpm $Hpgm]").
+        iIntros "[Hcpm Hpgm]".
         wp_pures.
         iApply "HΦ".
         subst P. simpl.
@@ -526,7 +528,6 @@ Section program.
         { iClear "Hloglb".
           iFrame "∗ # %".
           iPureIntro. simpl.
-          exists (<[tid := ptgs]> ptgsm).
           split.
           { apply map_Forall_insert_2; [apply Hvpwrs | apply Hvcpm]. }
           destruct cmd as [lsn icmd].
@@ -579,8 +580,7 @@ Section program.
         iSplitL.
         { iClear "Hloglb".
           iFrame "∗ # %".
-          iPureIntro. simpl.
-          exists ptgsm.
+          iPureIntro.
           destruct cmd as [lsn icmd].
           rewrite merge_clog_ilog_snoc_ilog; last first.
           { clear -Hlenclog. simpl in Hlenclog. word. }
@@ -638,8 +638,7 @@ Section program.
         iSplitL.
         { iClear "Hloglb".
           iFrame "∗ # %".
-          iPureIntro. simpl.
-          exists ptgsm.
+          iPureIntro.
           destruct cmd as [lsn icmd].
           rewrite merge_clog_ilog_snoc_ilog; last first.
           { clear -Hlenclog. simpl in Hlenclog. word. }

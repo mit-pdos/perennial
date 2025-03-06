@@ -50,6 +50,28 @@ Definition CountBoolMap: val :=
       else #()));;
     ![uint64T] "n".
 
+Definition EncodeInts: val :=
+  rec: "EncodeInts" "bs" "ns" :=
+    let: "data" := ref_to (slice.T byteT) (marshal.WriteInt "bs" (slice.len "ns")) in
+    ForSlice uint64T <> "s" "ns"
+      ("data" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "data") "s"));;
+    ![slice.T byteT] "data".
+
+Definition DecodeInts: val :=
+  rec: "DecodeInts" "bs" :=
+    let: ("n", "bs1") := marshal.ReadInt "bs" in
+    let: "data" := ref_to (slice.T byteT) "bs1" in
+    let: "ents" := ref_to (slice.T uint64T) (NewSliceWithCap uint64T #0 "n") in
+    let: "i" := ref_to uint64T #0 in
+    Skip;;
+    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, Skip) := λ: <>,
+      let: ("s", "bsloop") := marshal.ReadInt (![slice.T byteT] "data") in
+      "ents" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "ents") "s");;
+      "data" <-[slice.T byteT] "bsloop";;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
+    (![slice.T uint64T] "ents", ![slice.T byteT] "data").
+
 Definition EncodeString: val :=
   rec: "EncodeString" "bs" "str" :=
     let: "bs1" := marshal.WriteInt "bs" (StringLength "str") in

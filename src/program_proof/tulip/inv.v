@@ -221,8 +221,8 @@ Section inv_network.
   Definition safe_txnreq γ (gid : u64) req : iProp Σ :=
     match req with
     | ReadReq ts key => ⌜safe_read_req gid (uint.nat ts) key⌝
-    | FastPrepareReq ts pwrs => safe_txn_pwrs γ gid (uint.nat ts) pwrs
-    | ValidateReq ts _ pwrs => safe_txn_pwrs γ gid (uint.nat ts) pwrs
+    | FastPrepareReq ts pwrs _ => safe_txn_pwrs γ gid (uint.nat ts) pwrs
+    | ValidateReq ts _ pwrs _ => safe_txn_pwrs γ gid (uint.nat ts) pwrs
     | PrepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) true
     | UnprepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) false
     | CommitReq ts pwrs => safe_commit γ gid (uint.nat ts) pwrs

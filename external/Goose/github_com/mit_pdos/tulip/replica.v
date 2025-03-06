@@ -220,6 +220,13 @@ Definition Replica__tryAcquire: val :=
 Definition Replica__memorize: val :=
   rec: "Replica__memorize" "rp" "ts" "pwrs" "ptgs" :=
     MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
+    MapInsert (struct.loadF Replica "ptgsm" "rp") "ts" "ptgs";;
+    #().
+
+Definition Replica__erase: val :=
+  rec: "Replica__erase" "rp" "ts" :=
+    MapDelete (struct.loadF Replica "prepm" "rp") "ts";;
+    MapDelete (struct.loadF Replica "ptgsm" "rp") "ts";;
     #().
 
 Definition Replica__finalized: val :=
@@ -239,7 +246,8 @@ Definition logAcquire: val :=
     let: "bs1" := marshal.WriteInt "bs0" CMD_ACQUIRE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "bs3" := util.EncodeKVMapFromSlice "bs2" "pwrs" in
-    grove_ffi.FileAppend "fname" "bs3";;
+    let: "bs4" := util.EncodeInts "bs3" "ptgs" in
+    grove_ffi.FileAppend "fname" "bs4";;
     #().
 
 (* Arguments:
@@ -313,12 +321,13 @@ Definition logFastPrepare: val :=
     let: "bs1" := marshal.WriteInt "bs0" CMD_ACQUIRE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "bs3" := util.EncodeKVMapFromSlice "bs2" "pwrs" in
-    let: "bs4" := marshal.WriteInt "bs3" "lsn" in
-    let: "bs5" := marshal.WriteInt "bs4" CMD_ACCEPT in
-    let: "bs6" := marshal.WriteInt "bs5" "ts" in
-    let: "bs7" := marshal.WriteInt "bs6" #0 in
-    let: "bs8" := marshal.WriteBool "bs7" #true in
-    grove_ffi.FileAppend "fname" "bs8";;
+    let: "bs4" := util.EncodeInts "bs3" "ptgs" in
+    let: "bs5" := marshal.WriteInt "bs4" "lsn" in
+    let: "bs6" := marshal.WriteInt "bs5" CMD_ACCEPT in
+    let: "bs7" := marshal.WriteInt "bs6" "ts" in
+    let: "bs8" := marshal.WriteInt "bs7" #0 in
+    let: "bs9" := marshal.WriteBool "bs8" #true in
+    grove_ffi.FileAppend "fname" "bs9";;
     #().
 
 (* Arguments:
@@ -519,7 +528,7 @@ Definition Replica__applyCommit: val :=
       (if: "prepared"
       then
         Replica__release "rp" "pwrs";;
-        MapDelete (struct.loadF Replica "prepm" "rp") "ts";;
+        Replica__erase "rp" "ts";;
         #()
       else #())).
 
@@ -534,7 +543,7 @@ Definition Replica__applyAbort: val :=
       (if: "prepared"
       then
         Replica__release "rp" "pwrs";;
-        MapDelete (struct.loadF Replica "prepm" "rp") "ts";;
+        Replica__erase "rp" "ts";;
         #()
       else #())).
 
@@ -628,16 +637,18 @@ Definition Replica__RequestSession: val :=
           (if: "kind" = message.MSG_TXN_FAST_PREPARE
           then
             let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
-            let: "res" := Replica__FastPrepare "rp" "ts" "pwrs" slice.nil in
+            let: "ptgs" := struct.get message.TxnRequest "ParticipantGroups" "req" in
+            let: "res" := Replica__FastPrepare "rp" "ts" "pwrs" "ptgs" in
             let: "data" := message.EncodeTxnFastPrepareResponse "ts" (struct.loadF Replica "rid" "rp") "res" in
             grove_ffi.Send "conn" "data";;
             Continue
           else
             (if: "kind" = message.MSG_TXN_VALIDATE
             then
-              let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
               let: "rank" := struct.get message.TxnRequest "Rank" "req" in
-              let: "res" := Replica__Validate "rp" "ts" "rank" "pwrs" slice.nil in
+              let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
+              let: "ptgs" := struct.get message.TxnRequest "ParticipantGroups" "req" in
+              let: "res" := Replica__Validate "rp" "ts" "rank" "pwrs" "ptgs" in
               let: "data" := message.EncodeTxnValidateResponse "ts" (struct.loadF Replica "rid" "rp") "res" in
               grove_ffi.Send "conn" "data";;
               Continue
@@ -763,9 +774,10 @@ Definition Replica__resume: val :=
         (if: "kind" = CMD_ACQUIRE
         then
           let: ("pwrs", "bs4") := util.DecodeKVMapIntoSlice "bs3" in
-          "data" <-[slice.T byteT] "bs4";;
+          let: ("ptgs", "bs5") := util.DecodeInts "bs4" in
+          "data" <-[slice.T byteT] "bs5";;
           Replica__acquire "rp" "ts" "pwrs";;
-          Replica__memorize "rp" "ts" "pwrs" slice.nil;;
+          Replica__memorize "rp" "ts" "pwrs" "ptgs";;
           Continue
         else
           (if: "kind" = CMD_ADVANCE

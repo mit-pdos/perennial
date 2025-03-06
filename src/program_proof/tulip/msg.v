@@ -3,8 +3,8 @@ From Perennial.program_proof.tulip Require Import base encode.
 
 Inductive txnreq :=
 | ReadReq        (ts : u64) (key : byte_string)
-| FastPrepareReq (ts : u64) (pwrs : dbmap)
-| ValidateReq    (ts : u64) (rank : u64) (pwrs : dbmap)
+| FastPrepareReq (ts : u64) (pwrs : dbmap) (ptgs : txnptgs)
+| ValidateReq    (ts : u64) (rank : u64) (pwrs : dbmap) (ptgs : txnptgs)
 | PrepareReq     (ts : u64) (rank : u64)
 | UnprepareReq   (ts : u64) (rank : u64)
 | QueryReq       (ts : u64) (rank : u64)
@@ -24,8 +24,8 @@ Proof.
   refine (inj_countable'
             (λ x, match x with
                   | ReadReq ts key => inl (ts, key)
-                  | FastPrepareReq ts pwrs => inr (inl (ts, pwrs))
-                  | ValidateReq ts rank pwrs => inr (inr (inl (ts, rank, pwrs)))
+                  | FastPrepareReq ts pwrs ptgs => inr (inl (ts, pwrs, ptgs))
+                  | ValidateReq ts rank pwrs ptgs => inr (inr (inl (ts, rank, pwrs, ptgs)))
                   | PrepareReq ts rank => inr (inr (inr (inl (ts, rank))))
                   | UnprepareReq ts rank =>
                       inr (inr (inr (inr (inl (ts, rank)))))
@@ -40,8 +40,8 @@ Proof.
                   end)
             (λ x, match x with
                   | inl (ts, key) => ReadReq ts key
-                  | inr (inl (ts, pwrs)) => FastPrepareReq ts pwrs
-                  | inr (inr (inl (ts, rank, pwrs))) => ValidateReq ts rank pwrs
+                  | inr (inl (ts, pwrs, ptgs)) => FastPrepareReq ts pwrs ptgs
+                  | inr (inr (inl (ts, rank, pwrs, ptgs))) => ValidateReq ts rank pwrs ptgs
                   | inr (inr (inr (inl (ts, rank)))) => PrepareReq ts rank
                   | inr (inr (inr (inr (inl (ts, rank))))) => UnprepareReq ts rank
                   | inr (inr (inr (inr (inr (inl (ts, rank)))))) =>
@@ -63,17 +63,25 @@ Definition encode_read_req_xkind (ts : u64) (key : byte_string) :=
 Definition encode_read_req (ts : u64) (key : byte_string) (data : list u8) :=
   data = u64_le (U64 100) ++ encode_read_req_xkind ts key.
 
-Definition encode_fast_prepare_req_xkind (ts : u64) (m : dbmap) (data : list u8) :=
-  ∃ mdata, data = u64_le ts ++ mdata ∧ encode_dbmap m mdata.
+Definition encode_fast_prepare_req_xkind
+  (ts : u64) (m : dbmap) (g : txnptgs) (data : list u8) :=
+  ∃ mdata gdata, data = u64_le ts ++ mdata ++ gdata ∧
+                 encode_dbmap m mdata ∧
+                 encode_txnptgs g gdata.
 
-Definition encode_fast_prepare_req (ts : u64) (m : dbmap) (data : list u8) :=
-  ∃ reqdata, data = u64_le (U64 201) ++ reqdata ∧ encode_fast_prepare_req_xkind ts m reqdata.
+Definition encode_fast_prepare_req
+  (ts : u64) (m : dbmap) (g : txnptgs) (data : list u8) :=
+  ∃ reqdata, data = u64_le (U64 201) ++ reqdata ∧ encode_fast_prepare_req_xkind ts m g reqdata.
 
-Definition encode_validate_req_xkind (ts rank : u64) (m : dbmap) (data : list u8) :=
-  ∃ mdata, data = u64_le ts ++ u64_le rank ++ mdata ∧ encode_dbmap m mdata.
+Definition encode_validate_req_xkind
+  (ts rank : u64) (m : dbmap) (g : txnptgs) (data : list u8) :=
+  ∃ mdata gdata, data = u64_le ts ++ u64_le rank ++ mdata ++ gdata ∧
+                 encode_dbmap m mdata ∧
+                 encode_txnptgs g gdata.
 
-Definition encode_validate_req (ts rank : u64) (m : dbmap) (data : list u8) :=
-  ∃ reqdata, data = u64_le (U64 202) ++ reqdata ∧ encode_validate_req_xkind ts rank m reqdata.
+Definition encode_validate_req
+  (ts rank : u64) (m : dbmap) (g : txnptgs) (data : list u8) :=
+  ∃ reqdata, data = u64_le (U64 202) ++ reqdata ∧ encode_validate_req_xkind ts rank m g reqdata.
 
 Definition encode_ts_rank (ts rank : u64) := u64_le ts ++ u64_le rank.
 
@@ -94,8 +102,8 @@ Definition encode_abort_req (ts : u64) (data : list u8) :=
 Definition encode_txnreq (req : txnreq) (data : list u8) :=
   match req with
   | ReadReq ts key => encode_read_req ts key data
-  | FastPrepareReq ts pwrs => encode_fast_prepare_req ts pwrs data
-  | ValidateReq ts rank pwrs => encode_validate_req ts rank pwrs data
+  | FastPrepareReq ts pwrs ptgs => encode_fast_prepare_req ts pwrs ptgs data
+  | ValidateReq ts rank pwrs ptgs => encode_validate_req ts rank pwrs ptgs data
   | PrepareReq ts rank => encode_txnreq_of_ts_rank (U64 203) ts rank data
   | UnprepareReq ts rank => encode_txnreq_of_ts_rank (U64 204) ts rank data
   | QueryReq ts rank => encode_txnreq_of_ts_rank (U64 205) ts rank data

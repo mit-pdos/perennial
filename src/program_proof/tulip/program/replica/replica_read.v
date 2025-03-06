@@ -211,8 +211,7 @@ Section program.
     wp_loadField.
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { iFrame "Hlock Hlocked ∗ # %".
-      iPureIntro. simpl.
-      exists ptgsm.
+      iPureIntro.
       split; first done.
       split.
       { rewrite Forall_forall.
