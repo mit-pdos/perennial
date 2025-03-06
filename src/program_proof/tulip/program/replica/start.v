@@ -36,7 +36,8 @@ Section program.
     {{{ (* durable states passed to paxos *)
         own_map addrmpxP (DfracOwn 1) addrmpx ∗
         own_crash_ex pxcrashNS (own_paxos_durable π rid) dstpx ∗
-        own_crash_ex rpcrashNS (own_replica_durable γ gid rid) dstrp
+        own_crash_ex (stagedG0 := tulip_ghostG0.(@tulip_stagedG Σ))
+          rpcrashNS (own_replica_durable γ gid rid) dstrp
     }}}
       Start #rid (to_val addr) #(LitString fname) #addrmpxP #(LitString fnamepx)
     {{{ (rp : loc), RET #rp; is_replica rp gid rid γ }}}.
@@ -200,9 +201,6 @@ Section program.
       iExists clog.
       iSplit; last done.
       iFrame "∗ # %".
-      iExists clog.
-      iSplitL.
-      { subst dstrp. admit. (* XXX: somehow iFrame doesn't work here? *) }
       iPureIntro.
       split; last done.
       pose proof (map_Forall2_dom_L _ _ _ Hbmpsm) as <-.
@@ -234,6 +232,6 @@ Section program.
     (*@ }                                                                       @*)
     iApply "HΦ".
     by iFrame "#".
-  Admitted.
+  Qed.
 
 End program.
