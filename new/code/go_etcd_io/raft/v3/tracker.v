@@ -2,9 +2,8 @@
 From New.golang Require Import defn.
 Require Export New.code.fmt.
 Require Export New.code.go_etcd_io.raft.v3.quorum.
-Require Export New.code.go_etcd_io.raft.v3.quorum.slices64.
+Require Export New.code.go_etcd_io.raft.v3.quorum.slices.
 Require Export New.code.go_etcd_io.raft.v3.raftpb.
-Require Export New.code.sort.
 Require Export New.code.strings.
 
 Module tracker.
@@ -220,7 +219,7 @@ Definition Progress : go_type := structT [
 (* ResetState moves the Progress into the specified State, resetting MsgAppFlowPaused,
    PendingSnapshot, and Inflights.
 
-   go: progress.go:121:21 *)
+   go: progress.go:122:21 *)
 Definition Progress__ResetState : val :=
   rec: "Progress__ResetState" "pr" "state" :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -240,7 +239,7 @@ Definition StateSnapshot : expr := #(W64 2).
 (* BecomeProbe transitions into StateProbe. Next is reset to Match+1 or,
    optionally and if larger, the index of the pending snapshot.
 
-   go: progress.go:130:21 *)
+   go: progress.go:131:21 *)
 Definition Progress__BecomeProbe : val :=
   rec: "Progress__BecomeProbe" "pr" <> :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -269,7 +268,7 @@ Definition StateReplicate : expr := #(W64 1).
 
 (* BecomeReplicate transitions into StateReplicate, resetting Next to Match+1.
 
-   go: progress.go:146:21 *)
+   go: progress.go:147:21 *)
 Definition Progress__BecomeReplicate : val :=
   rec: "Progress__BecomeReplicate" "pr" <> :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -281,7 +280,7 @@ Definition Progress__BecomeReplicate : val :=
 (* BecomeSnapshot moves the Progress to StateSnapshot with the specified pending
    snapshot index.
 
-   go: progress.go:153:21 *)
+   go: progress.go:154:21 *)
 Definition Progress__BecomeSnapshot : val :=
   rec: "Progress__BecomeSnapshot" "pr" "snapshoti" :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -301,7 +300,7 @@ Definition Progress__BecomeSnapshot : val :=
 
    Must be used with StateProbe or StateReplicate.
 
-   go: progress.go:165:21 *)
+   go: progress.go:166:21 *)
 Definition Progress__SentEntries : val :=
   rec: "Progress__SentEntries" "pr" "entries" "bytes" :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -337,7 +336,7 @@ Definition Progress__SentEntries : val :=
 (* CanBumpCommit returns true if sending the given commit index can potentially
    advance the follower's commit index.
 
-   go: progress.go:189:21 *)
+   go: progress.go:190:21 *)
 Definition Progress__CanBumpCommit : val :=
   rec: "Progress__CanBumpCommit" "pr" "index" :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -346,7 +345,7 @@ Definition Progress__CanBumpCommit : val :=
 
 (* SentCommit updates the sentCommit.
 
-   go: progress.go:198:21 *)
+   go: progress.go:199:21 *)
 Definition Progress__SentCommit : val :=
   rec: "Progress__SentCommit" "pr" "commit" :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -358,7 +357,7 @@ Definition Progress__SentCommit : val :=
    index acked by it. The method returns false if the given n index comes from
    an outdated message. Otherwise it updates the progress and returns true.
 
-   go: progress.go:205:21 *)
+   go: progress.go:206:21 *)
 Definition Progress__MaybeUpdate : val :=
   rec: "Progress__MaybeUpdate" "pr" "n" :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -388,7 +387,7 @@ Definition Progress__MaybeUpdate : val :=
    If the rejection is genuine, Next is lowered sensibly, and the Progress is
    cleared for sending log entries.
 
-   go: progress.go:226:21 *)
+   go: progress.go:227:21 *)
 Definition Progress__MaybeDecrTo : val :=
   rec: "Progress__MaybeDecrTo" "pr" "rejected" "matchHint" :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -431,7 +430,7 @@ Definition Progress__MaybeDecrTo : val :=
    until it has reached a state in which it's able to accept a steady stream of
    log entries again.
 
-   go: progress.go:262:21 *)
+   go: progress.go:263:21 *)
 Definition Progress__IsPaused : val :=
   rec: "Progress__IsPaused" "pr" <> :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -448,7 +447,7 @@ Definition Progress__IsPaused : val :=
           do:  (let: "$a0" := (interface.make #""%go #"string"%go #"unexpected state"%go) in
           Panic "$a0"))))).
 
-(* go: progress.go:275:21 *)
+(* go: progress.go:276:21 *)
 Definition Progress__String : val :=
   rec: "Progress__String" "pr" <> :=
     exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -513,7 +512,7 @@ Definition ProgressMap : go_type := mapT uint64T ptrT.
 
 (* String prints the ProgressMap in sorted key order, one Progress per line.
 
-   go: progress.go:303:22 *)
+   go: progress.go:304:22 *)
 Definition ProgressMap__String : val :=
   rec: "ProgressMap__String" "m" <> :=
     exception_do (let: "m" := (ref_ty ProgressMap "m") in
@@ -530,13 +529,8 @@ Definition ProgressMap__String : val :=
       slice.literal uint64T ["$sl0"])) in
       (slice.append sliceT) "$a0" "$a1") in
       do:  ("ids" <-[sliceT] "$r0")));;;
-    do:  (let: "$a0" := (interface.make #"slice'"%go (![sliceT] "ids")) in
-    let: "$a1" := (λ: "i" "j",
-      exception_do (let: "j" := (ref_ty intT "j") in
-      let: "i" := (ref_ty intT "i") in
-      return: ((![uint64T] (slice.elem_ref uint64T (![sliceT] "ids") (![intT] "i"))) < (![uint64T] (slice.elem_ref uint64T (![sliceT] "ids") (![intT] "j")))))
-      ) in
-    (func_call #sort.pkg_name' #"Slice"%go) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![sliceT] "ids") in
+    (func_call #slices.pkg_name' #"SortUint64"%go) "$a0");;;
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
     (let: "id" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ids") in
@@ -567,7 +561,7 @@ Definition Config : go_type := structT [
   ])
 ].
 
-(* go: tracker.go:81:17 *)
+(* go: tracker.go:80:17 *)
 Definition Config__String : val :=
   rec: "Config__String" "c" <> :=
     exception_do (let: "c" := (ref_ty Config "c") in
@@ -608,7 +602,7 @@ Definition Config__String : val :=
 
 (* Clone returns a copy of the Config that shares no memory with the original.
 
-   go: tracker.go:97:18 *)
+   go: tracker.go:96:18 *)
 Definition Config__Clone : val :=
   rec: "Config__Clone" "c" <> :=
     exception_do (let: "c" := (ref_ty ptrT "c") in
@@ -669,7 +663,7 @@ Definition ProgressTracker : go_type := structT [
 
 (* MakeProgressTracker initializes a ProgressTracker.
 
-   go: tracker.go:130:6 *)
+   go: tracker.go:129:6 *)
 Definition MakeProgressTracker : val :=
   rec: "MakeProgressTracker" "maxInflight" "maxBytes" :=
     exception_do (let: "maxBytes" := (ref_ty uint64T "maxBytes") in
@@ -677,8 +671,8 @@ Definition MakeProgressTracker : val :=
     let: "p" := (ref_ty ProgressTracker (zero_val ProgressTracker)) in
     let: "$r0" := (let: "$MaxInflight" := (![intT] "maxInflight") in
     let: "$MaxInflightBytes" := (![uint64T] "maxBytes") in
-    let: "$Config" := (let: "$Voters" := ((let: "$ar0" := (map.make uint64T (structT [
-    ]) #()) in
+    let: "$Config" := (let: "$Voters" := ((let: "$ar0" := ((map.literal (structT [
+    ]) [])) in
     let: "$ar1" := #null in
     array.literal ["$ar0"; "$ar1"])) in
     let: "$Learners" := #null in
@@ -689,8 +683,8 @@ Definition MakeProgressTracker : val :=
       "Learners" ::= "$Learners";
       "LearnersNext" ::= "$LearnersNext"
     }]) in
-    let: "$Votes" := (map.make uint64T boolT #()) in
-    let: "$Progress" := (map.make uint64T ptrT #()) in
+    let: "$Votes" := ((map.literal boolT [])) in
+    let: "$Progress" := ((map.literal ptrT [])) in
     struct.make ProgressTracker [{
       "Config" ::= "$Config";
       "Progress" ::= "$Progress";
@@ -703,7 +697,7 @@ Definition MakeProgressTracker : val :=
 
 (* ConfState returns a ConfState representing the active configuration.
 
-   go: tracker.go:149:27 *)
+   go: tracker.go:148:27 *)
 Definition ProgressTracker__ConfState : val :=
   rec: "ProgressTracker__ConfState" "p" <> :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
@@ -725,7 +719,7 @@ Definition ProgressTracker__ConfState : val :=
 (* IsSingleton returns true if (and only if) there is only one voting member
    (i.e. the leader) in the current configuration.
 
-   go: tracker.go:161:27 *)
+   go: tracker.go:160:27 *)
 Definition ProgressTracker__IsSingleton : val :=
   rec: "ProgressTracker__IsSingleton" "p" <> :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
@@ -737,7 +731,7 @@ Definition matchAckIndexer : go_type := mapT uint64T ptrT.
 
 (* AckedIndex implements IndexLookuper.
 
-   go: tracker.go:170:26 *)
+   go: tracker.go:169:26 *)
 Definition matchAckIndexer__AckedIndex : val :=
   rec: "matchAckIndexer__AckedIndex" "l" "id" :=
     exception_do (let: "l" := (ref_ty matchAckIndexer "l") in
@@ -757,7 +751,7 @@ Definition matchAckIndexer__AckedIndex : val :=
 (* Committed returns the largest log index known to be committed based on what
    the voting members of the group have acknowledged.
 
-   go: tracker.go:180:27 *)
+   go: tracker.go:179:27 *)
 Definition ProgressTracker__Committed : val :=
   rec: "ProgressTracker__Committed" "p" <> :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
@@ -766,7 +760,7 @@ Definition ProgressTracker__Committed : val :=
 
 (* Visit invokes the supplied closure for all tracked progresses in stable order.
 
-   go: tracker.go:185:27 *)
+   go: tracker.go:184:27 *)
 Definition ProgressTracker__Visit : val :=
   rec: "ProgressTracker__Visit" "p" "f" :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
@@ -793,7 +787,7 @@ Definition ProgressTracker__Visit : val :=
       let: "$r0" := (![uint64T] "id") in
       do:  ((slice.elem_ref uint64T (![sliceT] "ids") (![intT] "n")) <-[uint64T] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "ids") in
-    (func_call #slices64.pkg_name' #"Sort"%go) "$a0");;;
+    (func_call #slices.pkg_name' #"SortUint64"%go) "$a0");;;
     (let: "id" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ids") in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
@@ -806,12 +800,12 @@ Definition ProgressTracker__Visit : val :=
 (* QuorumActive returns true if the quorum is active from the view of the local
    raft state machine. Otherwise, it returns false.
 
-   go: tracker.go:209:27 *)
+   go: tracker.go:208:27 *)
 Definition ProgressTracker__QuorumActive : val :=
   rec: "ProgressTracker__QuorumActive" "p" <> :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
     let: "votes" := (ref_ty (mapT uint64T boolT) (zero_val (mapT uint64T boolT))) in
-    let: "$r0" := (map.make uint64T boolT #()) in
+    let: "$r0" := ((map.literal boolT [])) in
     do:  ("votes" <-[mapT uint64T boolT] "$r0");;;
     do:  (let: "$a0" := (λ: "id" "pr",
       exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -828,7 +822,7 @@ Definition ProgressTracker__QuorumActive : val :=
 
 (* VoterNodes returns a sorted slice of voters.
 
-   go: tracker.go:222:27 *)
+   go: tracker.go:221:27 *)
 Definition ProgressTracker__VoterNodes : val :=
   rec: "ProgressTracker__VoterNodes" "p" <> :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
@@ -853,18 +847,13 @@ Definition ProgressTracker__VoterNodes : val :=
       slice.literal uint64T ["$sl0"])) in
       (slice.append sliceT) "$a0" "$a1") in
       do:  ("nodes" <-[sliceT] "$r0")));;;
-    do:  (let: "$a0" := (interface.make #"slice'"%go (![sliceT] "nodes")) in
-    let: "$a1" := (λ: "i" "j",
-      exception_do (let: "j" := (ref_ty intT "j") in
-      let: "i" := (ref_ty intT "i") in
-      return: ((![uint64T] (slice.elem_ref uint64T (![sliceT] "nodes") (![intT] "i"))) < (![uint64T] (slice.elem_ref uint64T (![sliceT] "nodes") (![intT] "j")))))
-      ) in
-    (func_call #sort.pkg_name' #"Slice"%go) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![sliceT] "nodes") in
+    (func_call #slices.pkg_name' #"SortUint64"%go) "$a0");;;
     return: (![sliceT] "nodes")).
 
 (* LearnerNodes returns a sorted slice of learners.
 
-   go: tracker.go:233:27 *)
+   go: tracker.go:232:27 *)
 Definition ProgressTracker__LearnerNodes : val :=
   rec: "ProgressTracker__LearnerNodes" "p" <> :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
@@ -888,28 +877,23 @@ Definition ProgressTracker__LearnerNodes : val :=
       slice.literal uint64T ["$sl0"])) in
       (slice.append sliceT) "$a0" "$a1") in
       do:  ("nodes" <-[sliceT] "$r0")));;;
-    do:  (let: "$a0" := (interface.make #"slice'"%go (![sliceT] "nodes")) in
-    let: "$a1" := (λ: "i" "j",
-      exception_do (let: "j" := (ref_ty intT "j") in
-      let: "i" := (ref_ty intT "i") in
-      return: ((![uint64T] (slice.elem_ref uint64T (![sliceT] "nodes") (![intT] "i"))) < (![uint64T] (slice.elem_ref uint64T (![sliceT] "nodes") (![intT] "j")))))
-      ) in
-    (func_call #sort.pkg_name' #"Slice"%go) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![sliceT] "nodes") in
+    (func_call #slices.pkg_name' #"SortUint64"%go) "$a0");;;
     return: (![sliceT] "nodes")).
 
 (* ResetVotes prepares for a new round of vote counting via recordVote.
 
-   go: tracker.go:246:27 *)
+   go: tracker.go:245:27 *)
 Definition ProgressTracker__ResetVotes : val :=
   rec: "ProgressTracker__ResetVotes" "p" <> :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
-    let: "$r0" := (map.make uint64T boolT #()) in
+    let: "$r0" := ((map.literal boolT [])) in
     do:  ((struct.field_ref ProgressTracker "Votes" (![ptrT] "p")) <-[mapT uint64T boolT] "$r0")).
 
 (* RecordVote records that the node with the given id voted for this Raft
    instance if v == true (and declined it otherwise).
 
-   go: tracker.go:252:27 *)
+   go: tracker.go:251:27 *)
 Definition ProgressTracker__RecordVote : val :=
   rec: "ProgressTracker__RecordVote" "p" "id" "v" :=
     exception_do (let: "p" := (ref_ty ptrT "p") in
@@ -930,12 +914,13 @@ Definition ProgressTracker__RecordVote : val :=
 (* TallyVotes returns the number of granted and rejected Votes, and whether the
    election outcome is known.
 
-   go: tracker.go:261:27 *)
+   go: tracker.go:260:27 *)
 Definition ProgressTracker__TallyVotes : val :=
   rec: "ProgressTracker__TallyVotes" "p" <> :=
-    exception_do (let: "p" := (ref_ty ptrT "p") in
+    exception_do (let: <> := (ref_ty quorum.VoteResult (zero_val quorum.VoteResult)) in
     let: "rejected" := (ref_ty intT (zero_val intT)) in
     let: "granted" := (ref_ty intT (zero_val intT)) in
+    let: "p" := (ref_ty ptrT "p") in
     (let: "pr" := (ref_ty uint64T (zero_val uint64T)) in
     let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![ProgressMap] (struct.field_ref ProgressTracker "Progress" (![ptrT] "p"))) in
@@ -988,10 +973,9 @@ Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init pkg_name' vars' functions' msets' (λ: <>,
       exception_do (do:  raftpb.initialize';;;
-      do:  slices64.initialize';;;
       do:  quorum.initialize';;;
+      do:  slices.initialize';;;
       do:  strings.initialize';;;
-      do:  sort.initialize';;;
       do:  fmt.initialize';;;
       let: "$r0" := ((let: "$ar0" := #"StateProbe"%go in
       let: "$ar1" := #"StateReplicate"%go in

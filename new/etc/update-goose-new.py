@@ -217,8 +217,8 @@ def main():
 
     run_goose(
         etcd_raft_dir,
+        "go.etcd.io/raft/v3/quorum/slices",
         "go.etcd.io/raft/v3/confchange",
-        "go.etcd.io/raft/v3/quorum/slices64",
         "github.com/stretchr/testify/assert",
         "go.etcd.io/raft/v3/raftpb",
         ".",

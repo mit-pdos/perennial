@@ -81,10 +81,17 @@ Proof.
   wp_pures.
   wp_alloc lg_ptr as "Hlg_ptr".
   wp_pures. wp_load.
-  wp_apply (wp_Client__Ctx with "[$]"). iIntros (ctx) "_".
-  wp_pures.
-  wp_alloc so_l as "Hso_ptr". wp_pures. wp_store. wp_pures.
+  wp_apply (wp_Client__GetLogger with "[$]").
+  iIntros (?) "_".
+  wp_pures. wp_store. wp_pures.
   wp_alloc ops_ptr as "Hops_ptr".
+  wp_pures. wp_load.
+  wp_apply (wp_Client__Ctx with "[$]").
+  iIntros (?) "_".
+  wp_pures.
+  wp_alloc ops as "Hops".
+  wp_pures. wp_store. wp_pures.
+  wp_alloc opt_ptr as "Hopt_ptr".
   wp_pures. wp_load. wp_pures.
 
   (* only consider nil options *)
