@@ -195,15 +195,13 @@ Definition functions' : list (go_string * val) := [("Init"%go, Init); ("Open"%go
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Log"%go, []); ("Log'ptr"%go, [("Append"%go, Log__Append); ("Get"%go, Log__Get); ("Reset"%go, Log__Reset); ("append"%go, Log__append); ("get"%go, Log__get); ("mkHdr"%go, Log__mkHdr); ("reset"%go, Log__reset); ("writeHdr"%go, Log__writeHdr)])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [sync.pkg_name'; marshal.pkg_name'; disk.pkg_name'];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [sync.pkg_name'; marshal.pkg_name'; disk.pkg_name'];
+  |}.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=

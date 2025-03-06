@@ -167,15 +167,13 @@ Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("ru
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("Unlock"%go, Mutex__Unlock)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [atomic.pkg_name'; race.pkg_name'];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [atomic.pkg_name'; race.pkg_name'];
+  |}.
 
 Axiom _'init : val.
 

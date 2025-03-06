@@ -394,15 +394,13 @@ Definition functions' : list (go_string * val) := [("MakeServer"%go, MakeServer)
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Server"%go, []); ("Server'ptr"%go, [("Serve"%go, Server__Serve); ("readThread"%go, Server__readThread); ("rpcHandle"%go, Server__rpcHandle)]); ("Callback"%go, []); ("Callback'ptr"%go, []); ("Client"%go, []); ("Client'ptr"%go, [("Call"%go, Client__Call); ("CallComplete"%go, Client__CallComplete); ("CallStart"%go, Client__CallStart); ("replyThread"%go, Client__replyThread)])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [log.pkg_name'; sync.pkg_name'; primitive.pkg_name'; std.pkg_name'; grove_ffi.pkg_name'; marshal.pkg_name'];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [log.pkg_name'; sync.pkg_name'; primitive.pkg_name'; std.pkg_name'; grove_ffi.pkg_name'; marshal.pkg_name'];
+  |}.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=

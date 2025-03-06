@@ -112,15 +112,13 @@ Definition functions' : list (go_string * val) := [("MakeReconnectingClient"%go,
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("ReconnectingClient"%go, []); ("ReconnectingClient'ptr"%go, [("Call"%go, ReconnectingClient__Call); ("getClient"%go, ReconnectingClient__getClient)])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [sync.pkg_name'; primitive.pkg_name'; grove_ffi.pkg_name'; urpc.pkg_name'];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [sync.pkg_name'; primitive.pkg_name'; grove_ffi.pkg_name'; urpc.pkg_name'];
+  |}.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=

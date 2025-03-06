@@ -215,15 +215,13 @@ Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Compare_CompareResult"%go, []); ("Compare_CompareResult'ptr"%go, []); ("Compare_CompareTarget"%go, []); ("Compare_CompareTarget'ptr"%go, []); ("ResponseHeader"%go, []); ("ResponseHeader'ptr"%go, []); ("RangeResponse"%go, []); ("RangeResponse'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("DeleteRangeResponse"%go, []); ("DeleteRangeResponse'ptr"%go, []); ("ResponseOp"%go, []); ("ResponseOp'ptr"%go, []); ("ResponseOp_ResponseRange"%go, []); ("ResponseOp_ResponseRange'ptr"%go, []); ("ResponseOp_ResponsePut"%go, []); ("ResponseOp_ResponsePut'ptr"%go, []); ("ResponseOp_ResponseDeleteRange"%go, []); ("ResponseOp_ResponseDeleteRange'ptr"%go, []); ("ResponseOp_ResponseTxn"%go, []); ("ResponseOp_ResponseTxn'ptr"%go, []); ("Compare"%go, []); ("Compare'ptr"%go, []); ("Compare_Version"%go, []); ("Compare_Version'ptr"%go, []); ("Compare_CreateRevision"%go, []); ("Compare_CreateRevision'ptr"%go, []); ("Compare_ModRevision"%go, []); ("Compare_ModRevision'ptr"%go, []); ("Compare_Value"%go, []); ("Compare_Value'ptr"%go, []); ("Compare_Lease"%go, []); ("Compare_Lease'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, [])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [];
+  |}.
 
 Axiom _'init : val.
 

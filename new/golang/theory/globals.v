@@ -145,7 +145,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
 Definition is_global_definitions (pkg_name : go_string)
-                                 `{!PkgInfo pkg_name info}
+                                 `{!PkgInfo pkg_name}
   (var_addrs : list (go_string * loc))
   : iProp Σ :=
   let var_addrs_val := alist_val ((λ '(name, addr), (name, #addr)) <$> var_addrs) in
@@ -189,7 +189,7 @@ Class WpGlobalsAlloc (vars : list (go_string * go_type)) (GlobalAddrs : Type)
           own_allocated d
       }}}.
 
-Lemma wp_globals_get' {pkg_name var_name var_addrs addr} `{!PkgInfo pkg_name info} :
+Lemma wp_globals_get' {pkg_name var_name var_addrs addr} `{!PkgInfo pkg_name} :
   alist_lookup_f var_name var_addrs = Some addr →
   WpGlobalsGet pkg_name var_name addr (is_global_definitions pkg_name var_addrs).
 Proof.
@@ -208,7 +208,7 @@ Proof.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Lemma wp_func_call' {pkg_name func_name var_addrs func} `{!PkgInfo pkg_name info} :
+Lemma wp_func_call' {pkg_name func_name var_addrs func} `{!PkgInfo pkg_name} :
   alist_lookup_f func_name (pkg_functions pkg_name) = Some func →
   WpFuncCall pkg_name func_name func (is_global_definitions pkg_name var_addrs).
 Proof.
@@ -226,7 +226,7 @@ Proof.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Lemma wp_method_call' {pkg_name type_name method_name var_addrs m} `{!PkgInfo pkg_name info} :
+Lemma wp_method_call' {pkg_name type_name method_name var_addrs m} `{!PkgInfo pkg_name} :
   ((alist_lookup_f method_name) <$> (alist_lookup_f type_name (pkg_msets pkg_name))) = Some (Some m) →
   WpMethodCall pkg_name type_name method_name m (is_global_definitions pkg_name var_addrs).
 Proof.
@@ -261,7 +261,7 @@ Context `{!goGlobalsGS Σ}.
 Lemma wp_package_init
   pending
   (postconds : gmap go_string (iProp Σ))
-  (pkg_name : go_string) `{!PkgInfo pkg_name info} (init_func : val)
+  (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val)
 
   `{!WpGlobalsAlloc (pkg_vars pkg_name) GlobalAddrs var_addrs own_allocated}
   (is_initialized : GlobalAddrs → iProp Σ)

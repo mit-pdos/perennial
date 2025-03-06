@@ -48,15 +48,13 @@ Definition functions' : list (go_string * val) := [("MakeLockClerk"%go, MakeLock
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("LockClerk"%go, []); ("LockClerk'ptr"%go, [("Lock"%go, LockClerk__Lock); ("Unlock"%go, LockClerk__Unlock)])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [kv.pkg_name'];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [kv.pkg_name'];
+  |}.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=

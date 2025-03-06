@@ -2059,15 +2059,13 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Election"%
                  method_call #pkg_name' #"stm'ptr" #"reset" (struct.field_ref stmSerializable "stm" "$recvAddr")
                  )%V)])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [context.pkg_name'; errors.pkg_name'; fmt.pkg_name'; etcdserverpb.pkg_name'; mvccpb.pkg_name'; clientv3.pkg_name'; strings.pkg_name'; sync.pkg_name'; time.pkg_name'; zap.pkg_name'; math.pkg_name'];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [context.pkg_name'; errors.pkg_name'; fmt.pkg_name'; etcdserverpb.pkg_name'; mvccpb.pkg_name'; clientv3.pkg_name'; strings.pkg_name'; sync.pkg_name'; time.pkg_name'; zap.pkg_name'; math.pkg_name'];
+  |}.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=

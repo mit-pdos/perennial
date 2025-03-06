@@ -74,15 +74,13 @@ Definition functions' : list (go_string * val) := [("CompareAndSwapUint64"%go, C
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Add); ("CompareAndSwap"%go, Uint64__CompareAndSwap); ("Load"%go, Uint64__Load); ("Store"%go, Uint64__Store)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [];
+  |}.
 
 Axiom _'init : val.
 

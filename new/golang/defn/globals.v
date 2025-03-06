@@ -29,7 +29,7 @@ Definition alloc (vars : list (go_string * go_type)) : val :=
             end)%E) vars
 .
 
-Definition package_init_def (pkg_name : go_string) `{!PkgInfo pkg_name info} : val :=
+Definition package_init_def (pkg_name : go_string) `{!PkgInfo pkg_name} : val :=
   let functions_val := alist_val (pkg_functions pkg_name) in
   let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> (pkg_msets pkg_name)) in
   λ: "init",
@@ -43,7 +43,7 @@ Definition package_init_def (pkg_name : go_string) `{!PkgInfo pkg_name info} : v
 Program Definition package_init := unseal (_:seal (@package_init_def)). Obligation 1. by eexists. Qed.
 Definition package_init_unseal : package_init = _ := seal_eq _.
 #[global]
-Arguments package_init pkg_name {info PkgInfo0}.
+Arguments package_init pkg_name {PkgInfo0}.
 
 End defns.
 End globals.

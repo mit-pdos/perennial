@@ -2302,15 +2302,13 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [
                  method_call #pkg_name' #"S" #"readBVal" (![S] "$recvAddr")
                  )%V); ("refC"%go, S__refC); ("writeB"%go, S__writeB)]); ("B"%go, []); ("B'ptr"%go, []); ("A"%go, []); ("A'ptr"%go, []); ("Timestamp"%go, []); ("Timestamp'ptr"%go, []); ("UseTypeAbbrev"%go, []); ("UseTypeAbbrev'ptr"%go, []); ("UseNamedType"%go, []); ("UseNamedType'ptr"%go, [])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [fmt.pkg_name'; sync.pkg_name'; primitive.pkg_name'; disk.pkg_name'; log.pkg_name'; std.pkg_name'];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [fmt.pkg_name'; sync.pkg_name'; primitive.pkg_name'; disk.pkg_name'; log.pkg_name'; std.pkg_name'];
+  |}.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=

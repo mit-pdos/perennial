@@ -915,15 +915,13 @@ Definition functions' : list (go_string * val) := [("MakeSingleClerk"%go, MakeSi
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("singleClerk"%go, []); ("singleClerk'ptr"%go, [("TryBecomeLeader"%go, singleClerk__TryBecomeLeader); ("applyAsFollower"%go, singleClerk__applyAsFollower); ("enterNewEpoch"%go, singleClerk__enterNewEpoch)]); ("Error"%go, []); ("Error'ptr"%go, []); ("applyAsFollowerArgs"%go, []); ("applyAsFollowerArgs'ptr"%go, []); ("applyAsFollowerReply"%go, []); ("applyAsFollowerReply'ptr"%go, []); ("enterNewEpochArgs"%go, []); ("enterNewEpochArgs'ptr"%go, []); ("enterNewEpochReply"%go, []); ("enterNewEpochReply'ptr"%go, []); ("applyReply"%go, []); ("applyReply'ptr"%go, []); ("paxosState"%go, []); ("paxosState'ptr"%go, []); ("Server"%go, []); ("Server'ptr"%go, [("TryAcquire"%go, Server__TryAcquire); ("TryBecomeLeader"%go, Server__TryBecomeLeader); ("WeakRead"%go, Server__WeakRead); ("applyAsFollower"%go, Server__applyAsFollower); ("enterNewEpoch"%go, Server__enterNewEpoch); ("withLock"%go, Server__withLock)])].
 
-Definition info' : pkg_info.t := {|
-             pkg_info.vars := vars';
-             pkg_info.functions := functions';
-             pkg_info.msets := msets';
-             pkg_info.imported_pkgs := [grove_ffi.pkg_name'; reconnectclient.pkg_name'; marshal.pkg_name'; log.pkg_name'; sync.pkg_name'; std.pkg_name'; asyncfile.pkg_name'; urpc.pkg_name'];
-           |}.
-
-#[global] Instance  : PkgInfo pkg_name' info' :=
-  {}.
+#[global] Instance info' : PkgInfo pkg_name' :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [grove_ffi.pkg_name'; reconnectclient.pkg_name'; marshal.pkg_name'; log.pkg_name'; sync.pkg_name'; std.pkg_name'; asyncfile.pkg_name'; urpc.pkg_name'];
+  |}.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
