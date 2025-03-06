@@ -31,6 +31,7 @@ projs = {
     "mvcc": Proj("mvcc", "https://github.com/mit-pdos/vmvcc", "main"),
     "pav": Proj("pav", "https://github.com/mit-pdos/pav", "main"),
     "etcd-raft": Proj("etcd-raft", "https://github.com/upamanyus/etcd-raft", "main"),
+    "etcd": Proj("etcd", "https://github.com/upamanyus/etcd", "main"),
 }
 
 
@@ -96,6 +97,7 @@ sp.run(
         "--goose",
         projs["new_goose"].path(),
         "--std-lib",
+        "--goose-examples",
         "--gokv",
         projs["new_gokv"].path(),
         "--marshal",
@@ -104,6 +106,8 @@ sp.run(
         projs["std"].path(),
         "--primitive",
         projs["primitive"].path(),
+        "--etcd",
+        projs["etcd"].path(),
         "--etcd-raft",
         projs["etcd-raft"].path(),
     ],
