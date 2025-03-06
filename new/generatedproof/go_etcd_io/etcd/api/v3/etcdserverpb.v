@@ -183,6 +183,407 @@ Global Instance RangeResponse_struct_fields_split dq l (v : RangeResponse.t) :
 Admitted.
 
 End instances.
+Module PutResponse.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Header' : loc;
+  PrevKv' : loc;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
+End def.
+End PutResponse.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_PutResponse `{ffi_syntax}: Settable _ :=
+  settable! PutResponse.mk < PutResponse.Header'; PutResponse.PrevKv'; PutResponse.XXX_NoUnkeyedLiteral'; PutResponse.XXX_unrecognized'; PutResponse.XXX_sizecache' >.
+Global Instance into_val_PutResponse `{ffi_syntax} : IntoVal PutResponse.t.
+Admitted.
+
+Global Instance into_val_typed_PutResponse `{ffi_syntax} : IntoValTyped PutResponse.t etcdserverpb.PutResponse :=
+{|
+  default_val := PutResponse.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_PutResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.PutResponse PutResponse.Header'.
+Admitted.
+
+Global Instance into_val_struct_field_PutResponse_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" etcdserverpb.PutResponse PutResponse.PrevKv'.
+Admitted.
+
+Global Instance into_val_struct_field_PutResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.PutResponse PutResponse.XXX_NoUnkeyedLiteral'.
+Admitted.
+
+Global Instance into_val_struct_field_PutResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.PutResponse PutResponse.XXX_unrecognized'.
+Admitted.
+
+Global Instance into_val_struct_field_PutResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.PutResponse PutResponse.XXX_sizecache'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_PutResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make etcdserverpb.PutResponse (alist_val [
+      "Header" ::= #Header';
+      "PrevKv" ::= #PrevKv';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(PutResponse.mk Header' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Admitted.
+
+
+Global Instance PutResponse_struct_fields_split dq l (v : PutResponse.t) :
+  StructFieldsSplit dq l v (
+    "HHeader" ∷ l ↦s[etcdserverpb.PutResponse :: "Header"]{dq} v.(PutResponse.Header') ∗
+    "HPrevKv" ∷ l ↦s[etcdserverpb.PutResponse :: "PrevKv"]{dq} v.(PutResponse.PrevKv') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.PutResponse :: "XXX_NoUnkeyedLiteral"]{dq} v.(PutResponse.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.PutResponse :: "XXX_unrecognized"]{dq} v.(PutResponse.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.PutResponse :: "XXX_sizecache"]{dq} v.(PutResponse.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
+Module DeleteRangeResponse.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Header' : loc;
+  Deleted' : w64;
+  PrevKvs' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
+End def.
+End DeleteRangeResponse.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_DeleteRangeResponse `{ffi_syntax}: Settable _ :=
+  settable! DeleteRangeResponse.mk < DeleteRangeResponse.Header'; DeleteRangeResponse.Deleted'; DeleteRangeResponse.PrevKvs'; DeleteRangeResponse.XXX_NoUnkeyedLiteral'; DeleteRangeResponse.XXX_unrecognized'; DeleteRangeResponse.XXX_sizecache' >.
+Global Instance into_val_DeleteRangeResponse `{ffi_syntax} : IntoVal DeleteRangeResponse.t.
+Admitted.
+
+Global Instance into_val_typed_DeleteRangeResponse `{ffi_syntax} : IntoValTyped DeleteRangeResponse.t etcdserverpb.DeleteRangeResponse :=
+{|
+  default_val := DeleteRangeResponse.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_DeleteRangeResponse_Header `{ffi_syntax} : IntoValStructField "Header" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.Header'.
+Admitted.
+
+Global Instance into_val_struct_field_DeleteRangeResponse_Deleted `{ffi_syntax} : IntoValStructField "Deleted" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.Deleted'.
+Admitted.
+
+Global Instance into_val_struct_field_DeleteRangeResponse_PrevKvs `{ffi_syntax} : IntoValStructField "PrevKvs" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.PrevKvs'.
+Admitted.
+
+Global Instance into_val_struct_field_DeleteRangeResponse_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.XXX_NoUnkeyedLiteral'.
+Admitted.
+
+Global Instance into_val_struct_field_DeleteRangeResponse_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.XXX_unrecognized'.
+Admitted.
+
+Global Instance into_val_struct_field_DeleteRangeResponse_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.DeleteRangeResponse DeleteRangeResponse.XXX_sizecache'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_DeleteRangeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Deleted' PrevKvs' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make etcdserverpb.DeleteRangeResponse (alist_val [
+      "Header" ::= #Header';
+      "Deleted" ::= #Deleted';
+      "PrevKvs" ::= #PrevKvs';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(DeleteRangeResponse.mk Header' Deleted' PrevKvs' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Admitted.
+
+
+Global Instance DeleteRangeResponse_struct_fields_split dq l (v : DeleteRangeResponse.t) :
+  StructFieldsSplit dq l v (
+    "HHeader" ∷ l ↦s[etcdserverpb.DeleteRangeResponse :: "Header"]{dq} v.(DeleteRangeResponse.Header') ∗
+    "HDeleted" ∷ l ↦s[etcdserverpb.DeleteRangeResponse :: "Deleted"]{dq} v.(DeleteRangeResponse.Deleted') ∗
+    "HPrevKvs" ∷ l ↦s[etcdserverpb.DeleteRangeResponse :: "PrevKvs"]{dq} v.(DeleteRangeResponse.PrevKvs') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.DeleteRangeResponse :: "XXX_NoUnkeyedLiteral"]{dq} v.(DeleteRangeResponse.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.DeleteRangeResponse :: "XXX_unrecognized"]{dq} v.(DeleteRangeResponse.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.DeleteRangeResponse :: "XXX_sizecache"]{dq} v.(DeleteRangeResponse.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
+
+Module isResponseOp_Response.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End isResponseOp_Response.
+Module ResponseOp.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Response' : isResponseOp_Response.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
+End def.
+End ResponseOp.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_ResponseOp `{ffi_syntax}: Settable _ :=
+  settable! ResponseOp.mk < ResponseOp.Response'; ResponseOp.XXX_NoUnkeyedLiteral'; ResponseOp.XXX_unrecognized'; ResponseOp.XXX_sizecache' >.
+Global Instance into_val_ResponseOp `{ffi_syntax} : IntoVal ResponseOp.t.
+Admitted.
+
+Global Instance into_val_typed_ResponseOp `{ffi_syntax} : IntoValTyped ResponseOp.t etcdserverpb.ResponseOp :=
+{|
+  default_val := ResponseOp.mk (default_val _) (default_val _) (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_ResponseOp_Response `{ffi_syntax} : IntoValStructField "Response" etcdserverpb.ResponseOp ResponseOp.Response'.
+Admitted.
+
+Global Instance into_val_struct_field_ResponseOp_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.ResponseOp ResponseOp.XXX_NoUnkeyedLiteral'.
+Admitted.
+
+Global Instance into_val_struct_field_ResponseOp_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" etcdserverpb.ResponseOp ResponseOp.XXX_unrecognized'.
+Admitted.
+
+Global Instance into_val_struct_field_ResponseOp_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" etcdserverpb.ResponseOp ResponseOp.XXX_sizecache'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_ResponseOp `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Response' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make etcdserverpb.ResponseOp (alist_val [
+      "Response" ::= #Response';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%V
+    #(ResponseOp.mk Response' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Admitted.
+
+
+Global Instance ResponseOp_struct_fields_split dq l (v : ResponseOp.t) :
+  StructFieldsSplit dq l v (
+    "HResponse" ∷ l ↦s[etcdserverpb.ResponseOp :: "Response"]{dq} v.(ResponseOp.Response') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.ResponseOp :: "XXX_NoUnkeyedLiteral"]{dq} v.(ResponseOp.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.ResponseOp :: "XXX_unrecognized"]{dq} v.(ResponseOp.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.ResponseOp :: "XXX_sizecache"]{dq} v.(ResponseOp.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
+Module ResponseOp_ResponseRange.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  ResponseRange' : loc;
+}.
+End def.
+End ResponseOp_ResponseRange.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_ResponseOp_ResponseRange `{ffi_syntax}: Settable _ :=
+  settable! ResponseOp_ResponseRange.mk < ResponseOp_ResponseRange.ResponseRange' >.
+Global Instance into_val_ResponseOp_ResponseRange `{ffi_syntax} : IntoVal ResponseOp_ResponseRange.t.
+Admitted.
+
+Global Instance into_val_typed_ResponseOp_ResponseRange `{ffi_syntax} : IntoValTyped ResponseOp_ResponseRange.t etcdserverpb.ResponseOp_ResponseRange :=
+{|
+  default_val := ResponseOp_ResponseRange.mk (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_ResponseOp_ResponseRange_ResponseRange `{ffi_syntax} : IntoValStructField "ResponseRange" etcdserverpb.ResponseOp_ResponseRange ResponseOp_ResponseRange.ResponseRange'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_ResponseOp_ResponseRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseRange':
+  PureWp True
+    (struct.make etcdserverpb.ResponseOp_ResponseRange (alist_val [
+      "ResponseRange" ::= #ResponseRange'
+    ]))%V
+    #(ResponseOp_ResponseRange.mk ResponseRange').
+Admitted.
+
+
+Global Instance ResponseOp_ResponseRange_struct_fields_split dq l (v : ResponseOp_ResponseRange.t) :
+  StructFieldsSplit dq l v (
+    "HResponseRange" ∷ l ↦s[etcdserverpb.ResponseOp_ResponseRange :: "ResponseRange"]{dq} v.(ResponseOp_ResponseRange.ResponseRange')
+  ).
+Admitted.
+
+End instances.
+Module ResponseOp_ResponsePut.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  ResponsePut' : loc;
+}.
+End def.
+End ResponseOp_ResponsePut.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_ResponseOp_ResponsePut `{ffi_syntax}: Settable _ :=
+  settable! ResponseOp_ResponsePut.mk < ResponseOp_ResponsePut.ResponsePut' >.
+Global Instance into_val_ResponseOp_ResponsePut `{ffi_syntax} : IntoVal ResponseOp_ResponsePut.t.
+Admitted.
+
+Global Instance into_val_typed_ResponseOp_ResponsePut `{ffi_syntax} : IntoValTyped ResponseOp_ResponsePut.t etcdserverpb.ResponseOp_ResponsePut :=
+{|
+  default_val := ResponseOp_ResponsePut.mk (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_ResponseOp_ResponsePut_ResponsePut `{ffi_syntax} : IntoValStructField "ResponsePut" etcdserverpb.ResponseOp_ResponsePut ResponseOp_ResponsePut.ResponsePut'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_ResponseOp_ResponsePut `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponsePut':
+  PureWp True
+    (struct.make etcdserverpb.ResponseOp_ResponsePut (alist_val [
+      "ResponsePut" ::= #ResponsePut'
+    ]))%V
+    #(ResponseOp_ResponsePut.mk ResponsePut').
+Admitted.
+
+
+Global Instance ResponseOp_ResponsePut_struct_fields_split dq l (v : ResponseOp_ResponsePut.t) :
+  StructFieldsSplit dq l v (
+    "HResponsePut" ∷ l ↦s[etcdserverpb.ResponseOp_ResponsePut :: "ResponsePut"]{dq} v.(ResponseOp_ResponsePut.ResponsePut')
+  ).
+Admitted.
+
+End instances.
+Module ResponseOp_ResponseDeleteRange.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  ResponseDeleteRange' : loc;
+}.
+End def.
+End ResponseOp_ResponseDeleteRange.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_ResponseOp_ResponseDeleteRange `{ffi_syntax}: Settable _ :=
+  settable! ResponseOp_ResponseDeleteRange.mk < ResponseOp_ResponseDeleteRange.ResponseDeleteRange' >.
+Global Instance into_val_ResponseOp_ResponseDeleteRange `{ffi_syntax} : IntoVal ResponseOp_ResponseDeleteRange.t.
+Admitted.
+
+Global Instance into_val_typed_ResponseOp_ResponseDeleteRange `{ffi_syntax} : IntoValTyped ResponseOp_ResponseDeleteRange.t etcdserverpb.ResponseOp_ResponseDeleteRange :=
+{|
+  default_val := ResponseOp_ResponseDeleteRange.mk (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_ResponseOp_ResponseDeleteRange_ResponseDeleteRange `{ffi_syntax} : IntoValStructField "ResponseDeleteRange" etcdserverpb.ResponseOp_ResponseDeleteRange ResponseOp_ResponseDeleteRange.ResponseDeleteRange'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_ResponseOp_ResponseDeleteRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseDeleteRange':
+  PureWp True
+    (struct.make etcdserverpb.ResponseOp_ResponseDeleteRange (alist_val [
+      "ResponseDeleteRange" ::= #ResponseDeleteRange'
+    ]))%V
+    #(ResponseOp_ResponseDeleteRange.mk ResponseDeleteRange').
+Admitted.
+
+
+Global Instance ResponseOp_ResponseDeleteRange_struct_fields_split dq l (v : ResponseOp_ResponseDeleteRange.t) :
+  StructFieldsSplit dq l v (
+    "HResponseDeleteRange" ∷ l ↦s[etcdserverpb.ResponseOp_ResponseDeleteRange :: "ResponseDeleteRange"]{dq} v.(ResponseOp_ResponseDeleteRange.ResponseDeleteRange')
+  ).
+Admitted.
+
+End instances.
+Module ResponseOp_ResponseTxn.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  ResponseTxn' : loc;
+}.
+End def.
+End ResponseOp_ResponseTxn.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_ResponseOp_ResponseTxn `{ffi_syntax}: Settable _ :=
+  settable! ResponseOp_ResponseTxn.mk < ResponseOp_ResponseTxn.ResponseTxn' >.
+Global Instance into_val_ResponseOp_ResponseTxn `{ffi_syntax} : IntoVal ResponseOp_ResponseTxn.t.
+Admitted.
+
+Global Instance into_val_typed_ResponseOp_ResponseTxn `{ffi_syntax} : IntoValTyped ResponseOp_ResponseTxn.t etcdserverpb.ResponseOp_ResponseTxn :=
+{|
+  default_val := ResponseOp_ResponseTxn.mk (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_ResponseOp_ResponseTxn_ResponseTxn `{ffi_syntax} : IntoValStructField "ResponseTxn" etcdserverpb.ResponseOp_ResponseTxn ResponseOp_ResponseTxn.ResponseTxn'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_ResponseOp_ResponseTxn `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseTxn':
+  PureWp True
+    (struct.make etcdserverpb.ResponseOp_ResponseTxn (alist_val [
+      "ResponseTxn" ::= #ResponseTxn'
+    ]))%V
+    #(ResponseOp_ResponseTxn.mk ResponseTxn').
+Admitted.
+
+
+Global Instance ResponseOp_ResponseTxn_struct_fields_split dq l (v : ResponseOp_ResponseTxn.t) :
+  StructFieldsSplit dq l v (
+    "HResponseTxn" ∷ l ↦s[etcdserverpb.ResponseOp_ResponseTxn :: "ResponseTxn"]{dq} v.(ResponseOp_ResponseTxn.ResponseTxn')
+  ).
+Admitted.
+
+End instances.
 
 Module isCompare_TargetUnion.
 Section def.
@@ -274,6 +675,236 @@ Global Instance Compare_struct_fields_split dq l (v : Compare.t) :
     "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.Compare :: "XXX_NoUnkeyedLiteral"]{dq} v.(Compare.XXX_NoUnkeyedLiteral') ∗
     "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.Compare :: "XXX_unrecognized"]{dq} v.(Compare.XXX_unrecognized') ∗
     "HXXX_sizecache" ∷ l ↦s[etcdserverpb.Compare :: "XXX_sizecache"]{dq} v.(Compare.XXX_sizecache')
+  ).
+Admitted.
+
+End instances.
+Module Compare_Version.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Version' : w64;
+}.
+End def.
+End Compare_Version.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Compare_Version `{ffi_syntax}: Settable _ :=
+  settable! Compare_Version.mk < Compare_Version.Version' >.
+Global Instance into_val_Compare_Version `{ffi_syntax} : IntoVal Compare_Version.t.
+Admitted.
+
+Global Instance into_val_typed_Compare_Version `{ffi_syntax} : IntoValTyped Compare_Version.t etcdserverpb.Compare_Version :=
+{|
+  default_val := Compare_Version.mk (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_Compare_Version_Version `{ffi_syntax} : IntoValStructField "Version" etcdserverpb.Compare_Version Compare_Version.Version'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Compare_Version `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Version':
+  PureWp True
+    (struct.make etcdserverpb.Compare_Version (alist_val [
+      "Version" ::= #Version'
+    ]))%V
+    #(Compare_Version.mk Version').
+Admitted.
+
+
+Global Instance Compare_Version_struct_fields_split dq l (v : Compare_Version.t) :
+  StructFieldsSplit dq l v (
+    "HVersion" ∷ l ↦s[etcdserverpb.Compare_Version :: "Version"]{dq} v.(Compare_Version.Version')
+  ).
+Admitted.
+
+End instances.
+Module Compare_CreateRevision.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  CreateRevision' : w64;
+}.
+End def.
+End Compare_CreateRevision.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Compare_CreateRevision `{ffi_syntax}: Settable _ :=
+  settable! Compare_CreateRevision.mk < Compare_CreateRevision.CreateRevision' >.
+Global Instance into_val_Compare_CreateRevision `{ffi_syntax} : IntoVal Compare_CreateRevision.t.
+Admitted.
+
+Global Instance into_val_typed_Compare_CreateRevision `{ffi_syntax} : IntoValTyped Compare_CreateRevision.t etcdserverpb.Compare_CreateRevision :=
+{|
+  default_val := Compare_CreateRevision.mk (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_Compare_CreateRevision_CreateRevision `{ffi_syntax} : IntoValStructField "CreateRevision" etcdserverpb.Compare_CreateRevision Compare_CreateRevision.CreateRevision'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Compare_CreateRevision `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} CreateRevision':
+  PureWp True
+    (struct.make etcdserverpb.Compare_CreateRevision (alist_val [
+      "CreateRevision" ::= #CreateRevision'
+    ]))%V
+    #(Compare_CreateRevision.mk CreateRevision').
+Admitted.
+
+
+Global Instance Compare_CreateRevision_struct_fields_split dq l (v : Compare_CreateRevision.t) :
+  StructFieldsSplit dq l v (
+    "HCreateRevision" ∷ l ↦s[etcdserverpb.Compare_CreateRevision :: "CreateRevision"]{dq} v.(Compare_CreateRevision.CreateRevision')
+  ).
+Admitted.
+
+End instances.
+Module Compare_ModRevision.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  ModRevision' : w64;
+}.
+End def.
+End Compare_ModRevision.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Compare_ModRevision `{ffi_syntax}: Settable _ :=
+  settable! Compare_ModRevision.mk < Compare_ModRevision.ModRevision' >.
+Global Instance into_val_Compare_ModRevision `{ffi_syntax} : IntoVal Compare_ModRevision.t.
+Admitted.
+
+Global Instance into_val_typed_Compare_ModRevision `{ffi_syntax} : IntoValTyped Compare_ModRevision.t etcdserverpb.Compare_ModRevision :=
+{|
+  default_val := Compare_ModRevision.mk (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_Compare_ModRevision_ModRevision `{ffi_syntax} : IntoValStructField "ModRevision" etcdserverpb.Compare_ModRevision Compare_ModRevision.ModRevision'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Compare_ModRevision `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ModRevision':
+  PureWp True
+    (struct.make etcdserverpb.Compare_ModRevision (alist_val [
+      "ModRevision" ::= #ModRevision'
+    ]))%V
+    #(Compare_ModRevision.mk ModRevision').
+Admitted.
+
+
+Global Instance Compare_ModRevision_struct_fields_split dq l (v : Compare_ModRevision.t) :
+  StructFieldsSplit dq l v (
+    "HModRevision" ∷ l ↦s[etcdserverpb.Compare_ModRevision :: "ModRevision"]{dq} v.(Compare_ModRevision.ModRevision')
+  ).
+Admitted.
+
+End instances.
+Module Compare_Value.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Value' : slice.t;
+}.
+End def.
+End Compare_Value.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Compare_Value `{ffi_syntax}: Settable _ :=
+  settable! Compare_Value.mk < Compare_Value.Value' >.
+Global Instance into_val_Compare_Value `{ffi_syntax} : IntoVal Compare_Value.t.
+Admitted.
+
+Global Instance into_val_typed_Compare_Value `{ffi_syntax} : IntoValTyped Compare_Value.t etcdserverpb.Compare_Value :=
+{|
+  default_val := Compare_Value.mk (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_Compare_Value_Value `{ffi_syntax} : IntoValStructField "Value" etcdserverpb.Compare_Value Compare_Value.Value'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Compare_Value `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Value':
+  PureWp True
+    (struct.make etcdserverpb.Compare_Value (alist_val [
+      "Value" ::= #Value'
+    ]))%V
+    #(Compare_Value.mk Value').
+Admitted.
+
+
+Global Instance Compare_Value_struct_fields_split dq l (v : Compare_Value.t) :
+  StructFieldsSplit dq l v (
+    "HValue" ∷ l ↦s[etcdserverpb.Compare_Value :: "Value"]{dq} v.(Compare_Value.Value')
+  ).
+Admitted.
+
+End instances.
+Module Compare_Lease.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Lease' : w64;
+}.
+End def.
+End Compare_Lease.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Compare_Lease `{ffi_syntax}: Settable _ :=
+  settable! Compare_Lease.mk < Compare_Lease.Lease' >.
+Global Instance into_val_Compare_Lease `{ffi_syntax} : IntoVal Compare_Lease.t.
+Admitted.
+
+Global Instance into_val_typed_Compare_Lease `{ffi_syntax} : IntoValTyped Compare_Lease.t etcdserverpb.Compare_Lease :=
+{|
+  default_val := Compare_Lease.mk (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_Compare_Lease_Lease `{ffi_syntax} : IntoValStructField "Lease" etcdserverpb.Compare_Lease Compare_Lease.Lease'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Compare_Lease `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Lease':
+  PureWp True
+    (struct.make etcdserverpb.Compare_Lease (alist_val [
+      "Lease" ::= #Lease'
+    ]))%V
+    #(Compare_Lease.mk Lease').
+Admitted.
+
+
+Global Instance Compare_Lease_struct_fields_split dq l (v : Compare_Lease.t) :
+  StructFieldsSplit dq l v (
+    "HLease" ∷ l ↦s[etcdserverpb.Compare_Lease :: "Lease"]{dq} v.(Compare_Lease.Lease')
   ).
 Admitted.
 

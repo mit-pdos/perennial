@@ -217,8 +217,8 @@ def main():
 
     run_goose(
         etcd_raft_dir,
+        "go.etcd.io/raft/v3/quorum/slices",
         "go.etcd.io/raft/v3/confchange",
-        "go.etcd.io/raft/v3/quorum/slices64",
         "github.com/stretchr/testify/assert",
         "go.etcd.io/raft/v3/raftpb",
         ".",
@@ -235,7 +235,10 @@ def main():
         "go.etcd.io/etcd/api/v3/mvccpb",
         "go.etcd.io/etcd/client/v3",
         "go.etcd.io/etcd/client/v3/concurrency",
-        "go.etcd.io/etcd/client/v3/concurrency",
+        "go.etcd.io/etcd/client/v3/leasing",
+        "go.etcd.io/etcd/api/v3/v3rpc/rpctypes",
+        "google.golang.org/grpc/codes",
+        "google.golang.org/grpc/status",
         "go.uber.org/zap",
         "go.uber.org/zap/zapcore",
     )

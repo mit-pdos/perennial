@@ -13,6 +13,8 @@ Context `{ffi_syntax}.
 Definition noCopy : go_type := structT [
 ].
 
+Axiom RWMutex : go_type.
+
 Definition WaitGroup : go_type := structT [
   "noCopy" :: noCopy;
   "state" :: atomic.Uint64;

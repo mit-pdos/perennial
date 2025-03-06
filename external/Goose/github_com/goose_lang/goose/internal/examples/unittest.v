@@ -5,6 +5,31 @@ From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+(* channel.go *)
+
+Definition chan_stuff: val :=
+  rec: "chan_stuff" "c" "d" :=
+    let: "to_send" := ref_to uint64T #0 in
+    Channel__Send uint64T "c" (![uint64T] "to_send");;
+    "d".
+
+Definition more_chan_stuff: val :=
+  rec: "more_chan_stuff" <> :=
+    let: "c" := NewChannelRef uint64T #0 in
+    let: "d" := NewChannelRef uint64T #0 in
+    Channel__Send uint64T "c" #1;;
+    Channel__Close uint64T "d";;
+    let: "u" := ref_to uint64T (Channel__ReceiveDiscardOk uint64T "c") in
+    let: "v" := ref (zero_val uint64T) in
+    let: "ok" := ref (zero_val boolT) in
+    let: ("0_ret", "1_ret") := Channel__Receive uint64T "d" in
+    "v" <-[uint64T] "0_ret";;
+    "ok" <-[boolT] "1_ret";;
+    "ok" <-[boolT] (~ (![boolT] "ok"));;
+    "u" <-[uint64T] ((![uint64T] "u") + #1);;
+    "v" <-[uint64T] ((![uint64T] "v") + #1);;
+    #().
+
 (* comments.go *)
 
 (* unittest is a package full of many independent and small translation examples *)

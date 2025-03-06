@@ -6,4 +6,36 @@ translate = [
   "TxnResponse",
   "RangeResponse",
   "ResponseHeader",
+
+  "PutResponse",
+  "RangeResponse",
+  "DeleteRangeResponse",
+
+  "ResponseOp",
+  "isResponseOp_Response",
+  "ResponseOp_ResponseRange",
+  "ResponseOp_ResponseRange",
+  "ResponseOp_ResponsePut",
+  "ResponseOp_ResponseDeleteRange",
+  "ResponseOp_ResponseTxn",
+
+
+  "Compare_VERSION",
+  "Compare_CREATE",
+  "Compare_MOD",
+  "Compare_VALUE",
+  "Compare_LEASE",
+
+
+  "Compare_EQUAL",
+  "Compare_GREATER",
+  "Compare_LESS",
+  "Compare_NOT_EQUAL",
+
+  "Compare_Version",
+  "Compare_CreateRevision",
+  "Compare_ModRevision",
+  "Compare_Value",
+  "Compare_Lease",
+
 ]

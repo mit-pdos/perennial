@@ -418,6 +418,7 @@ Class tulip_ghostG (Σ : gFunctors) :=
     #[global] gentid_predG :: savedPredG Σ val;
     #[global] gentid_reservedG :: ghost_mapG Σ u64 gname;
     #[global] gentid_sidG :: inG Σ sid_ownR;
+    #[global] tulip_stagedG :: stagedG Σ;
   }.
 
 Definition tulip_ghostΣ :=
@@ -464,7 +465,8 @@ Definition tulip_ghostΣ :=
      GFunctor phistmR;
      ghost_mapΣ u64 gname;
      savedPredΣ val;
-     GFunctor sid_ownR
+     GFunctor sid_ownR;
+     stagedΣ
    ].
 
 #[global]
@@ -517,7 +519,3 @@ Definition sysNS := nroot .@ "sys".
 Definition tulipNS := sysNS .@ "tulip".
 Definition tsNS := sysNS .@ "ts".
 Definition txnlogNS := sysNS .@ "txnlog".
-
-#[global]
-Instance stagedG_tulip_ghostG Σ : tulip_ghostG Σ → stagedG Σ.
-Admitted.

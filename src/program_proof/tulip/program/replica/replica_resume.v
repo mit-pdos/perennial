@@ -247,13 +247,13 @@ Section program.
     is_replica_txnlog rp gid γ -∗
     {{{ own_replica_replaying rp [] [] α ∗
         own_replica_lsna rp O ∗
-        own_crash_ex rpcrashNS (own_replica_durable γ gid rid) dst
+        own_crash_ex (stagedG0 := tulip_ghostG0.(@tulip_stagedG Σ)) rpcrashNS (own_replica_durable γ gid rid) dst
     }}}
       Replica__resume #rp
     {{{ RET #();
         own_replica_replaying rp clog ilog α ∗
         own_replica_lsna rp (length clog) ∗
-        own_crash_ex rpcrashNS (own_replica_durable γ gid rid) dst
+        own_crash_ex (stagedG0 := tulip_ghostG0.(@tulip_stagedG Σ)) rpcrashNS (own_replica_durable γ gid rid) dst
     }}}.
   Proof.
     iIntros (dst Hgid Hrid) "#Hinv #Hinvfile #Hfname #Hidx #Htxnlog".
@@ -308,7 +308,8 @@ Section program.
     wp_pures.
 
     iAssert (|NC={⊤}=>
-               (own_crash_ex rpcrashNS (own_replica_durable γ gid rid) dst ∗
+               (own_crash_ex (stagedG0 := tulip_ghostG0.(@tulip_stagedG Σ)) rpcrashNS
+                  (own_replica_durable γ gid rid) dst ∗
                 is_txn_log_lb γ gid clog ∗
                 ⌜ilog_lsn_sorted ilog⌝ ∗
                 ⌜eq_lsn_last_ilog (length clog) ilog⌝))%I

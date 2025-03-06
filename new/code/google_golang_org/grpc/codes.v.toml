@@ -1,0 +1,14 @@
+translate = [
+  "Code",
+  "Canceled",
+  "DataLoss",
+  "DeadlineExceeded",
+  "FailedPrecondition",
+  "InvalidArgument",
+  "NotFound",
+  "OutOfRange",
+  "PermissionDenied",
+  "ResourceExhausted",
+  "Unauthenticated",
+  "Unavailable",
+]
