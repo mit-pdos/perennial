@@ -132,11 +132,21 @@ Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Compare_CompareResult"%go, []); ("Compare_CompareResult'ptr"%go, []); ("Compare_CompareTarget"%go, []); ("Compare_CompareTarget'ptr"%go, []); ("ResponseHeader"%go, []); ("ResponseHeader'ptr"%go, []); ("RangeResponse"%go, []); ("RangeResponse'ptr"%go, []); ("Compare"%go, []); ("Compare'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, [])].
 
+Definition info' : pkg_info.t := {|
+             pkg_info.vars := vars';
+             pkg_info.functions := functions';
+             pkg_info.msets := msets';
+             pkg_info.imported_pkgs := [];
+           |}.
+
+#[global] Instance  : PkgInfo pkg_name' info' :=
+  {}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;

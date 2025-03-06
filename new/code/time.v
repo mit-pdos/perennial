@@ -34,8 +34,6 @@ Definition Millisecond : expr := #(W64 1000) * Microsecond.
 
 Definition Second : expr := #(W64 1000) * Millisecond.
 
-Axiom daysBefore'init : val.
-
 Axiom startNano'init : val.
 
 Axiom UTC'init : val.
@@ -58,11 +56,21 @@ Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
+Definition info' : pkg_info.t := {|
+             pkg_info.vars := vars';
+             pkg_info.functions := functions';
+             pkg_info.msets := msets';
+             pkg_info.imported_pkgs := [];
+           |}.
+
+#[global] Instance  : PkgInfo pkg_name' info' :=
+  {}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (do:  (std0x'init #());;;
       do:  (longDayNames'init #());;;
       do:  (shortDayNames'init #());;;
@@ -73,7 +81,6 @@ Definition initialize' : val :=
       do:  (errLeadingInt'init #());;;
       do:  (unitMap'init #());;;
       do:  (asynctimerchan'init #());;;
-      do:  (daysBefore'init #());;;
       do:  (startNano'init #());;;
       do:  (utcLoc'init #());;;
       do:  (UTC'init #());;;

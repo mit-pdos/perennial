@@ -5,7 +5,6 @@ Require Export New.code.github_com.goose_lang.primitive.disk.
 Require Export New.golang.theory.
 
 Module disk.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

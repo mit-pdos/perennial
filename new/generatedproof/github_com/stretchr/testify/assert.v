@@ -4,7 +4,6 @@ Require Export New.code.github_com.stretchr.testify.assert.
 Require Export New.golang.theory.
 
 Module assert.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

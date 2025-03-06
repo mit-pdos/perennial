@@ -16,11 +16,21 @@ Definition functions' : list (go_string * val) := [("FileWrite"%go, FileWrite); 
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Listener"%go, []); ("Listener'ptr"%go, []); ("Connection"%go, []); ("Connection'ptr"%go, []); ("ConnectRet"%go, []); ("ConnectRet'ptr"%go, []); ("ReceiveRet"%go, []); ("ReceiveRet'ptr"%go, [])].
 
+Definition info' : pkg_info.t := {|
+             pkg_info.vars := vars';
+             pkg_info.functions := functions';
+             pkg_info.msets := msets';
+             pkg_info.imported_pkgs := [];
+           |}.
+
+#[global] Instance  : PkgInfo pkg_name' info' :=
+  {}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (do:  #())
       ).
 

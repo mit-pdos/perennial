@@ -51,10 +51,10 @@ Ltac build_pkg_init_cps deps_list base rx :=
   | nil => rx base
   end.
 
-Ltac basic_pkg_init deps :=
+Ltac basic_pkg_init :=
   match goal with
   | |- PkgIsInitialized ?name _ =>
-      let deps := (eval hnf in deps) in
+      let deps := (eval hnf in (pkg_imported_pkgs name)) in
       build_pkg_init_cps deps uconstr:(pkg_defined name) ltac:(fun P =>
         apply (Build_PkgIsInitialized name _ P);
         refine _

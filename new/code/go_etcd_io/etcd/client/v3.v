@@ -95,11 +95,21 @@ Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Cmp"%go, []); ("Cmp'ptr"%go, []); ("GetResponse"%go, []); ("GetResponse'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, []); ("LeaseID"%go, []); ("LeaseID'ptr"%go, []); ("LeaseGrantResponse"%go, []); ("LeaseGrantResponse'ptr"%go, []); ("OpOption"%go, []); ("OpOption'ptr"%go, []); ("Event"%go, []); ("Event'ptr"%go, []); ("WatchChan"%go, []); ("WatchChan'ptr"%go, []); ("WatchResponse"%go, []); ("WatchResponse'ptr"%go, [])].
 
+Definition info' : pkg_info.t := {|
+             pkg_info.vars := vars';
+             pkg_info.functions := functions';
+             pkg_info.msets := msets';
+             pkg_info.imported_pkgs := [etcdserverpb.pkg_name'; mvccpb.pkg_name'];
+           |}.
+
+#[global] Instance  : PkgInfo pkg_name' info' :=
+  {}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (do:  mvccpb.initialize';;;
       do:  etcdserverpb.initialize';;;
       do:  (ErrNoAvailableEndpoints'init #());;;

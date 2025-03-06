@@ -10,14 +10,6 @@ Require Export New.code.go_etcd_io.raft.v3.tracker.
 Require Export New.golang.theory.
 
 Module tracker.
-Definition imported_pkgs: list go_string := [
-  New.code.fmt.fmt.pkg_name';
-  New.code.sort.sort.pkg_name';
-  New.code.strings.strings.pkg_name';
-  New.code.go_etcd_io.raft.v3.quorum.quorum.pkg_name';
-  New.code.go_etcd_io.raft.v3.quorum.slices64.slices64.pkg_name';
-  New.code.go_etcd_io.raft.v3.raftpb.raftpb.pkg_name'
-]%go.
 Axiom falso : False.
 Module inflight.
 Section def.

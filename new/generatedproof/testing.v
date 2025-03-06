@@ -4,7 +4,6 @@ Require Export New.code.testing.
 Require Export New.golang.theory.
 
 Module testing.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 Module T.
 Section def.

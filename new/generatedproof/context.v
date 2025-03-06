@@ -4,7 +4,6 @@ Require Export New.code.context.
 Require Export New.golang.theory.
 
 Module context.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Module Context.

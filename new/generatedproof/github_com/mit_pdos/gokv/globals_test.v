@@ -4,7 +4,6 @@ Require Export New.code.github_com.mit_pdos.gokv.globals_test.
 Require Export New.golang.theory.
 
 Module main.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

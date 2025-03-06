@@ -10,7 +10,7 @@ Context `{!atomic.GlobalAddrs}.
 
 #[global]
 Instance pkg_initialized : PkgIsInitialized atomic.pkg_name' _ :=
-  ltac:(basic_pkg_init atomic.imported_pkgs).
+  ltac:(basic_pkg_init).
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,

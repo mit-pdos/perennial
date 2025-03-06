@@ -1197,15 +1197,6 @@ Definition WithContext : val :=
        do:  ((struct.field_ref sessionOptions "ctx" (![ptrT] "so")) <-[context.Context] "$r0"))
        ))).
 
-(* Expired returns true iff the session is expired.
-
-   go: session.go:159:19 *)
-Definition Session__Expired : val :=
-  rec: "Session__Expired" "s" <> :=
-    exception_do (let: "s" := (ref_ty ptrT "s") in
-    return: (let: "$a0" := (![clientv3.LeaseID] (struct.field_ref Session "id" (![ptrT] "s"))) in
-     (method_call #clientv3.pkg_name' #"Client'ptr" #"Expired" (![ptrT] (struct.field_ref Session "client" (![ptrT] "s")))) "$a0")).
-
 Definition STM : go_type := interfaceT.
 
 Definition Isolation : go_type := intT.
@@ -2046,7 +2037,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Election"%
                  method_call #pkg_name' #"Mutex'ptr" #"TryLock" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
                  )%V); ("Unlock"%go, lockerMutex__Unlock); ("tryAcquire"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"Mutex'ptr" #"tryAcquire" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
-                 )%V)]); ("Session"%go, []); ("Session'ptr"%go, [("Client"%go, Session__Client); ("Close"%go, Session__Close); ("Ctx"%go, Session__Ctx); ("Done"%go, Session__Done); ("Expired"%go, Session__Expired); ("Lease"%go, Session__Lease); ("Orphan"%go, Session__Orphan)]); ("sessionOptions"%go, []); ("sessionOptions'ptr"%go, []); ("SessionOption"%go, []); ("SessionOption'ptr"%go, []); ("Isolation"%go, []); ("Isolation'ptr"%go, []); ("stmError"%go, []); ("stmError'ptr"%go, []); ("stmOptions"%go, []); ("stmOptions'ptr"%go, []); ("stmOption"%go, []); ("stmOption'ptr"%go, []); ("stmResponse"%go, []); ("stmResponse'ptr"%go, []); ("stm"%go, []); ("stm'ptr"%go, [("Del"%go, stm__Del); ("Get"%go, stm__Get); ("Put"%go, stm__Put); ("Rev"%go, stm__Rev); ("commit"%go, stm__commit); ("fetch"%go, stm__fetch); ("reset"%go, stm__reset)]); ("stmPut"%go, []); ("stmPut'ptr"%go, []); ("readSet"%go, [("add"%go, readSet__add); ("cmps"%go, readSet__cmps); ("first"%go, readSet__first)]); ("readSet'ptr"%go, [("add"%go, (λ: "$recvAddr",
+                 )%V)]); ("Session"%go, []); ("Session'ptr"%go, [("Client"%go, Session__Client); ("Close"%go, Session__Close); ("Ctx"%go, Session__Ctx); ("Done"%go, Session__Done); ("Lease"%go, Session__Lease); ("Orphan"%go, Session__Orphan)]); ("sessionOptions"%go, []); ("sessionOptions'ptr"%go, []); ("SessionOption"%go, []); ("SessionOption'ptr"%go, []); ("Isolation"%go, []); ("Isolation'ptr"%go, []); ("stmError"%go, []); ("stmError'ptr"%go, []); ("stmOptions"%go, []); ("stmOptions'ptr"%go, []); ("stmOption"%go, []); ("stmOption'ptr"%go, []); ("stmResponse"%go, []); ("stmResponse'ptr"%go, []); ("stm"%go, []); ("stm'ptr"%go, [("Del"%go, stm__Del); ("Get"%go, stm__Get); ("Put"%go, stm__Put); ("Rev"%go, stm__Rev); ("commit"%go, stm__commit); ("fetch"%go, stm__fetch); ("reset"%go, stm__reset)]); ("stmPut"%go, []); ("stmPut'ptr"%go, []); ("readSet"%go, [("add"%go, readSet__add); ("cmps"%go, readSet__cmps); ("first"%go, readSet__first)]); ("readSet'ptr"%go, [("add"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"readSet" #"add" (![readSet] "$recvAddr")
                  )%V); ("cmps"%go, (λ: "$recvAddr",
                  method_call #pkg_name' #"readSet" #"cmps" (![readSet] "$recvAddr")
@@ -2068,9 +2059,19 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Election"%
                  method_call #pkg_name' #"stm'ptr" #"reset" (struct.field_ref stmSerializable "stm" "$recvAddr")
                  )%V)])].
 
+Definition info' : pkg_info.t := {|
+             pkg_info.vars := vars';
+             pkg_info.functions := functions';
+             pkg_info.msets := msets';
+             pkg_info.imported_pkgs := [context.pkg_name'; errors.pkg_name'; fmt.pkg_name'; etcdserverpb.pkg_name'; mvccpb.pkg_name'; clientv3.pkg_name'; strings.pkg_name'; sync.pkg_name'; time.pkg_name'; zap.pkg_name'; math.pkg_name'];
+           |}.
+
+#[global] Instance  : PkgInfo pkg_name' info' :=
+  {}.
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (do:  math.initialize';;;
       do:  zap.initialize';;;
       do:  time.initialize';;;

@@ -12,16 +12,6 @@ Require Export New.code.github_com.mit_pdos.gokv.vrsm.paxos.
 Require Export New.golang.theory.
 
 Module paxos.
-Definition imported_pkgs: list go_string := [
-  New.code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi.pkg_name';
-  New.code.github_com.mit_pdos.gokv.reconnectclient.reconnectclient.pkg_name';
-  New.code.github_com.tchajed.marshal.marshal.pkg_name';
-  New.code.log.log.pkg_name';
-  New.code.sync.sync.pkg_name';
-  New.code.github_com.goose_lang.std.std.pkg_name';
-  New.code.github_com.mit_pdos.gokv.asyncfile.asyncfile.pkg_name';
-  New.code.github_com.mit_pdos.gokv.urpc.urpc.pkg_name'
-]%go.
 Axiom falso : False.
 Module singleClerk.
 Section def.

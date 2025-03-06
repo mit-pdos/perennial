@@ -31,11 +31,11 @@ Context `{!goGlobalsGS Σ}.
 
 #[global]
 Instance race_pkg_is_init : PkgIsInitialized race.pkg_name' _ :=
-  ltac:(basic_pkg_init race.imported_pkgs).
+  ltac:(basic_pkg_init).
 
 #[global]
 Instance pkg_is_init : PkgIsInitialized sync.pkg_name' _ :=
-  ltac:(basic_pkg_init sync.imported_pkgs).
+  ltac:(basic_pkg_init).
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=

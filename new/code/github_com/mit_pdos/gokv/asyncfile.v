@@ -171,9 +171,19 @@ Definition functions' : list (go_string * val) := [("MakeAsyncFile"%go, MakeAsyn
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("AsyncFile"%go, []); ("AsyncFile'ptr"%go, [("Close"%go, AsyncFile__Close); ("Write"%go, AsyncFile__Write); ("flushThread"%go, AsyncFile__flushThread); ("wait"%go, AsyncFile__wait)])].
 
+Definition info' : pkg_info.t := {|
+             pkg_info.vars := vars';
+             pkg_info.functions := functions';
+             pkg_info.msets := msets';
+             pkg_info.imported_pkgs := [sync.pkg_name'; std.pkg_name'; grove_ffi.pkg_name'];
+           |}.
+
+#[global] Instance  : PkgInfo pkg_name' info' :=
+  {}.
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (do:  grove_ffi.initialize';;;
       do:  std.initialize';;;
       do:  sync.initialize')

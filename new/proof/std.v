@@ -40,7 +40,7 @@ Context `{!std.GlobalAddrs}.
  *)
 #[global]
 Instance : PkgIsInitialized std.pkg_name' _ :=
-  ltac:(basic_pkg_init std.imported_pkgs).
+  ltac:(basic_pkg_init).
 
 Lemma wp_Assert (cond : bool) :
   {{{ pkg_init std.pkg_name' ∗ ⌜cond = true⌝ }}}

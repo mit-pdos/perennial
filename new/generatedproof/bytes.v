@@ -4,7 +4,6 @@ Require Export New.code.bytes.
 Require Export New.golang.theory.
 
 Module bytes.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 Module Buffer.
 Section def.

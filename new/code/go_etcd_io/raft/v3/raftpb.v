@@ -157,11 +157,21 @@ Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("EntryType"%go, []); ("EntryType'ptr"%go, []); ("MessageType"%go, []); ("MessageType'ptr"%go, []); ("ConfChangeTransition"%go, []); ("ConfChangeTransition'ptr"%go, []); ("ConfChangeType"%go, []); ("ConfChangeType'ptr"%go, []); ("Entry"%go, []); ("Entry'ptr"%go, []); ("SnapshotMetadata"%go, []); ("SnapshotMetadata'ptr"%go, []); ("Snapshot"%go, []); ("Snapshot'ptr"%go, []); ("HardState"%go, []); ("HardState'ptr"%go, []); ("ConfState"%go, []); ("ConfState'ptr"%go, []); ("ConfChange"%go, []); ("ConfChange'ptr"%go, []); ("ConfChangeV2"%go, []); ("ConfChangeV2'ptr"%go, [])].
 
+Definition info' : pkg_info.t := {|
+             pkg_info.vars := vars';
+             pkg_info.functions := functions';
+             pkg_info.msets := msets';
+             pkg_info.imported_pkgs := [];
+           |}.
+
+#[global] Instance  : PkgInfo pkg_name' info' :=
+  {}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;

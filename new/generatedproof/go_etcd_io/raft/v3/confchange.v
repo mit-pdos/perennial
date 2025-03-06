@@ -5,9 +5,6 @@ Require Export New.code.go_etcd_io.raft.v3.confchange.
 Require Export New.golang.theory.
 
 Module confchange.
-Definition imported_pkgs: list go_string := [
-  New.code.go_etcd_io.raft.v3.tracker.tracker.pkg_name'
-]%go.
 Axiom falso : False.
 Module Changer.
 Section def.

@@ -5,9 +5,6 @@ Require Export New.code.github_com.mit_pdos.gokv.lockservice.
 Require Export New.golang.theory.
 
 Module lockservice.
-Definition imported_pkgs: list go_string := [
-  New.code.github_com.mit_pdos.gokv.kv.kv.pkg_name'
-]%go.
 Axiom falso : False.
 Module LockClerk.
 Section def.

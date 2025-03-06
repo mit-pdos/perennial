@@ -4,7 +4,6 @@ Require Export New.code.math.big.
 Require Export New.golang.theory.
 
 Module big.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

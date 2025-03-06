@@ -8,12 +8,6 @@ Require Export New.code.github_com.mit_pdos.gokv.bank.
 Require Export New.golang.theory.
 
 Module bank.
-Definition imported_pkgs: list go_string := [
-  New.code.github_com.goose_lang.primitive.primitive.pkg_name';
-  New.code.github_com.mit_pdos.gokv.kv.kv.pkg_name';
-  New.code.github_com.mit_pdos.gokv.lockservice.lockservice.pkg_name';
-  New.code.github_com.tchajed.marshal.marshal.pkg_name'
-]%go.
 Axiom falso : False.
 Module BankClerk.
 Section def.

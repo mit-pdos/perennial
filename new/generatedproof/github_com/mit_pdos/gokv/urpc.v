@@ -10,14 +10,6 @@ Require Export New.code.github_com.mit_pdos.gokv.urpc.
 Require Export New.golang.theory.
 
 Module urpc.
-Definition imported_pkgs: list go_string := [
-  New.code.log.log.pkg_name';
-  New.code.sync.sync.pkg_name';
-  New.code.github_com.goose_lang.primitive.primitive.pkg_name';
-  New.code.github_com.goose_lang.std.std.pkg_name';
-  New.code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi.pkg_name';
-  New.code.github_com.tchajed.marshal.marshal.pkg_name'
-]%go.
 Axiom falso : False.
 Module Server.
 Section def.

@@ -6,10 +6,6 @@ Require Export New.code.github_com.goose_lang.std.
 Require Export New.golang.theory.
 
 Module std.
-Definition imported_pkgs: list go_string := [
-  New.code.sync.sync.pkg_name';
-  New.code.github_com.goose_lang.primitive.primitive.pkg_name'
-]%go.
 Axiom falso : False.
 Module JoinHandle.
 Section def.

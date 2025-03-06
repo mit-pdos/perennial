@@ -5,7 +5,6 @@ Require Export New.code.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.golang.theory.
 
 Module grove_ffi.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

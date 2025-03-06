@@ -4,7 +4,6 @@ Require Export New.code.crypto.rand.
 Require Export New.golang.theory.
 
 Module rand.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

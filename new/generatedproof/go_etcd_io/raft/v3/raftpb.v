@@ -4,7 +4,6 @@ Require Export New.code.go_etcd_io.raft.v3.raftpb.
 Require Export New.golang.theory.
 
 Module raftpb.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Module ConfChangeI.

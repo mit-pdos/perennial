@@ -8,7 +8,7 @@ Context `{!goGlobalsGS Σ}.
 
 #[global]
 Instance : PkgIsInitialized primitive.pkg_name' _ :=
-  ltac:(basic_pkg_init primitive.imported_pkgs).
+  ltac:(basic_pkg_init).
 
 Lemma wp_Assume (cond : bool) :
   {{{ pkg_init primitive.pkg_name' }}}

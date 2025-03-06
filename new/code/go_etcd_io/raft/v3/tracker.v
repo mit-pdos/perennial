@@ -984,9 +984,19 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("inflight"%
                  method_call #pkg_name' #"matchAckIndexer" #"AckedIndex" (![matchAckIndexer] "$recvAddr")
                  )%V)])].
 
+Definition info' : pkg_info.t := {|
+             pkg_info.vars := vars';
+             pkg_info.functions := functions';
+             pkg_info.msets := msets';
+             pkg_info.imported_pkgs := [fmt.pkg_name'; sort.pkg_name'; strings.pkg_name'; quorum.pkg_name'; slices64.pkg_name'; raftpb.pkg_name'];
+           |}.
+
+#[global] Instance  : PkgInfo pkg_name' info' :=
+  {}.
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (do:  raftpb.initialize';;;
       do:  slices64.initialize';;;
       do:  quorum.initialize';;;

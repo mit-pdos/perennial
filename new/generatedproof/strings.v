@@ -4,7 +4,6 @@ Require Export New.code.strings.
 Require Export New.golang.theory.
 
 Module strings.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 Module Builder.
 Section def.

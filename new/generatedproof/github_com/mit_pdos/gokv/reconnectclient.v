@@ -8,12 +8,6 @@ Require Export New.code.github_com.mit_pdos.gokv.reconnectclient.
 Require Export New.golang.theory.
 
 Module reconnectclient.
-Definition imported_pkgs: list go_string := [
-  New.code.sync.sync.pkg_name';
-  New.code.github_com.goose_lang.primitive.primitive.pkg_name';
-  New.code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi.pkg_name';
-  New.code.github_com.mit_pdos.gokv.urpc.urpc.pkg_name'
-]%go.
 Axiom falso : False.
 Module ReconnectingClient.
 Section def.

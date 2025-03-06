@@ -4,7 +4,6 @@ Require Export New.code.github_com.mit_pdos.gokv.kv.
 Require Export New.golang.theory.
 
 Module kv.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Module Kv.

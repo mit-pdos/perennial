@@ -86,9 +86,17 @@ this in GooseLang, so we just loop. *)
     ].
   Definition msets' : list (go_string * (list (go_string * val))) := [].
 
+  #[global]
+  Instance : PkgInfo pkg_name' {|
+                       pkg_info.vars := vars';
+                       pkg_info.functions := functions';
+                       pkg_info.msets := msets';
+                       pkg_info.imported_pkgs := [sync.pkg_name'];
+               |} := {}.
+
   Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (do:  sync.initialize')
       ).
 

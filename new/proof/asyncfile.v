@@ -141,7 +141,7 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
 
 #[global]
 Instance : PkgIsInitialized asyncfile.pkg_name' _ :=
-  ltac:(basic_pkg_init asyncfile.imported_pkgs).
+  ltac:(basic_pkg_init).
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),

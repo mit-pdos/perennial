@@ -4,7 +4,6 @@ Require Export New.code.go_etcd_io.raft.v3.quorum.slices64.
 Require Export New.golang.theory.
 
 Module slices64.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

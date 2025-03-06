@@ -262,16 +262,16 @@ Context `{!goGlobalsGS Σ}.
 Lemma wp_package_init
   pending
   (postconds : gmap go_string (iProp Σ))
-  (pkg_name : go_string) (init_func : val)
-  functions msets
-  `{!WpGlobalsAlloc vars GlobalAddrs var_addrs own_allocated}
+  (pkg_name : go_string) `{!PkgInfo pkg_name info} (init_func : val)
+
+  `{!WpGlobalsAlloc (pkg_vars pkg_name) GlobalAddrs var_addrs own_allocated}
   (is_initialized : GlobalAddrs → iProp Σ)
   (is_defined : GlobalAddrs → iProp Σ)
   :
   postconds !! pkg_name = Some (∃ d, is_defined d ∗ is_initialized d)%I →
   pkg_name ∉ pending →
   (∀ (d : GlobalAddrs),
-     is_global_definitions pkg_name (var_addrs d) functions msets -∗
+     is_global_definitions pkg_name (var_addrs d) (pkg_functions pkg_name) (pkg_msets pkg_name) -∗
      own_allocated d -∗
      own_globals_tok ({[ pkg_name ]} ∪ pending) postconds -∗
      WP init_func #()
@@ -281,7 +281,7 @@ Lemma wp_package_init
        }}
   ) →
   {{{ own_globals_tok pending postconds }}}
-    globals.package_init pkg_name vars functions msets init_func
+    globals.package_init pkg_name init_func
   {{{ (d : GlobalAddrs), RET #(); is_defined d ∗ is_initialized d ∗ own_globals_tok pending postconds }}}.
 Proof.
   unseal.

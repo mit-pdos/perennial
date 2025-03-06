@@ -4,7 +4,6 @@ Require Export New.code.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Module marshal.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

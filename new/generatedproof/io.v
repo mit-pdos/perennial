@@ -4,7 +4,6 @@ Require Export New.code.io.
 Require Export New.golang.theory.
 
 Module io.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Module Reader.

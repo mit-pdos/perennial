@@ -79,7 +79,7 @@ Section grove.
 
   #[global]
   Instance pkg_is_initialized : PkgIsInitialized grove_ffi.pkg_name' _ :=
-    ltac:(basic_pkg_init grove_ffi.imported_pkgs).
+    ltac:(basic_pkg_init).
 
   Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
     pkg_init grove_ffi.pkg_name' ∗

@@ -24,28 +24,6 @@ Require Export New.code.go_etcd_io.raft.v3.
 Require Export New.golang.theory.
 
 Module raft.
-Definition imported_pkgs: list go_string := [
-  New.code.errors.errors.pkg_name';
-  New.code.go_etcd_io.raft.v3.raftpb.raftpb.pkg_name';
-  New.code.fmt.fmt.pkg_name';
-  New.code.io.io.pkg_name';
-  New.code.log.log.pkg_name';
-  New.code.os.os.pkg_name';
-  New.code.sync.sync.pkg_name';
-  New.code.context.context.pkg_name';
-  New.code.bytes.bytes.pkg_name';
-  New.code.crypto.rand.rand.pkg_name';
-  New.code.math.math.pkg_name';
-  New.code.math.big.big.pkg_name';
-  New.code.sort.sort.pkg_name';
-  New.code.strings.strings.pkg_name';
-  New.code.go_etcd_io.raft.v3.confchange.confchange.pkg_name';
-  New.code.go_etcd_io.raft.v3.quorum.quorum.pkg_name';
-  New.code.go_etcd_io.raft.v3.tracker.tracker.pkg_name';
-  New.code.github_com.stretchr.testify.assert.assert.pkg_name';
-  New.code.math.rand.rand.pkg_name';
-  New.code.testing.testing.pkg_name'
-]%go.
 Axiom falso : False.
 
 Module Storage.

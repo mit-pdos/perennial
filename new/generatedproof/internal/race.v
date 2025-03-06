@@ -4,7 +4,6 @@ Require Export New.code.internal.race.
 Require Export New.golang.theory.
 
 Module race.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

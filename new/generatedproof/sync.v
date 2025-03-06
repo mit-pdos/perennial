@@ -7,10 +7,6 @@ Require Export New.code.sync.
 Require Export New.golang.theory.
 
 Module sync.
-Definition imported_pkgs: list go_string := [
-  New.code.sync.atomic.atomic.pkg_name';
-  New.code.internal.race.race.pkg_name'
-]%go.
 Axiom falso : False.
 Module noCopy.
 Section def.

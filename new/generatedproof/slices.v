@@ -4,7 +4,6 @@ Require Export New.code.slices.
 Require Export New.golang.theory.
 
 Module slices.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.

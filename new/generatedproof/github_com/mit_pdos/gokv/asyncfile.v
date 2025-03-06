@@ -7,11 +7,6 @@ Require Export New.code.github_com.mit_pdos.gokv.asyncfile.
 Require Export New.golang.theory.
 
 Module asyncfile.
-Definition imported_pkgs: list go_string := [
-  New.code.sync.sync.pkg_name';
-  New.code.github_com.goose_lang.std.std.pkg_name';
-  New.code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi.pkg_name'
-]%go.
 Axiom falso : False.
 Module AsyncFile.
 Section def.

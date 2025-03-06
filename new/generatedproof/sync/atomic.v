@@ -5,7 +5,6 @@ Require Export New.code.sync.atomic.
 Require Export New.golang.theory.
 
 Module atomic.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 Module noCopy.
 Section def.

@@ -40,9 +40,19 @@ Definition functions' : list (go_string * val) := [("foo"%go, foo); ("other"%go,
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
+Definition info' : pkg_info.t := {|
+             pkg_info.vars := vars';
+             pkg_info.functions := functions';
+             pkg_info.msets := msets';
+             pkg_info.imported_pkgs := [];
+           |}.
+
+#[global] Instance  : PkgInfo pkg_name' info' :=
+  {}.
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init pkg_name' (λ: <>,
       exception_do (let: "$r0" := ((func_call #pkg_name' #"foo"%go) #()) in
       do:  ((globals.get #pkg_name' #"GlobalX"%go) <-[uint64T] "$r0");;;
       let: "$r0" := #"a"%go in

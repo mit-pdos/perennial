@@ -4,7 +4,6 @@ Require Export New.code.strconv.
 Require Export New.golang.theory.
 
 Module strconv.
-Definition imported_pkgs: list go_string := [].
 Axiom falso : False.
 
 Section names.
