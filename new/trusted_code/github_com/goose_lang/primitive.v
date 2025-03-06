@@ -4,8 +4,6 @@ From New.golang Require Import defn.
 Section code.
   Context `{ffi_syntax}.
 
-  Definition pkg_name' : go_string := "github.com/mit-pdos/goose_lang/primitive".
-
   (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)
   Definition Assume : val :=
@@ -79,25 +77,5 @@ this in GooseLang, so we just loop. *)
   Definition ResolveProph : val := λ: "p" "val", goose_lang.ResolveProph (Var "p") (Var "val").
 
   Definition Linearize : val := λ: <>, #().
-
-  Definition vars' : list (go_string * go_type) := [].
-  Definition functions' : list (go_string * val) := [
-      ("Assume"%go, Assume)
-    ].
-  Definition msets' : list (go_string * (list (go_string * val))) := [].
-
-  #[global]
-  Instance : PkgInfo pkg_name' {|
-                       pkg_info.vars := vars';
-                       pkg_info.functions := functions';
-                       pkg_info.msets := msets';
-                       pkg_info.imported_pkgs := [sync.pkg_name'];
-               |} := {}.
-
-  Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
-      exception_do (do:  sync.initialize')
-      ).
 
 End code.
