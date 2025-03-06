@@ -133,7 +133,7 @@ Context `{!goGlobalsGS Σ}.
 Definition var_addrs : list (go_string * loc) := [
   ].
 
-Definition is_defined := is_global_definitions cachekv.pkg_name' var_addrs cachekv.functions' cachekv.msets'.
+Definition is_defined := is_global_definitions cachekv.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined cachekv.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

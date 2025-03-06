@@ -2070,7 +2070,7 @@ Definition var_addrs : list (go_string * loc) := [
     ("isResponseMsg"%go, isResponseMsg)
   ].
 
-Definition is_defined := is_global_definitions raft.pkg_name' var_addrs raft.functions' raft.msets'.
+Definition is_defined := is_global_definitions raft.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined raft.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

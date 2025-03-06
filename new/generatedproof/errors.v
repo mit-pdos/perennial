@@ -19,7 +19,7 @@ Context `{!goGlobalsGS Σ}.
 Definition var_addrs : list (go_string * loc) := [
   ].
 
-Definition is_defined := is_global_definitions errors.pkg_name' var_addrs errors.functions' errors.msets'.
+Definition is_defined := is_global_definitions errors.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined errors.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

@@ -165,7 +165,7 @@ Definition var_addrs : list (go_string * loc) := [
     ("_VoteResult_index"%go, _VoteResult_index)
   ].
 
-Definition is_defined := is_global_definitions quorum.pkg_name' var_addrs quorum.functions' quorum.msets'.
+Definition is_defined := is_global_definitions quorum.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined quorum.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

@@ -142,7 +142,7 @@ Context `{!goGlobalsGS Σ}.
 Definition var_addrs : list (go_string * loc) := [
   ].
 
-Definition is_defined := is_global_definitions atomic.pkg_name' var_addrs atomic.functions' atomic.msets'.
+Definition is_defined := is_global_definitions atomic.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined atomic.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

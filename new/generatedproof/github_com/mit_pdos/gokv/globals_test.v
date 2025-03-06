@@ -27,7 +27,7 @@ Definition var_addrs : list (go_string * loc) := [
     ("globalB"%go, globalB)
   ].
 
-Definition is_defined := is_global_definitions main.pkg_name' var_addrs main.functions' main.msets'.
+Definition is_defined := is_global_definitions main.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined main.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

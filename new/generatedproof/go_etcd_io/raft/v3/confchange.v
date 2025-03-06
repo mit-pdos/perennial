@@ -72,7 +72,7 @@ Context `{!goGlobalsGS Σ}.
 Definition var_addrs : list (go_string * loc) := [
   ].
 
-Definition is_defined := is_global_definitions confchange.pkg_name' var_addrs confchange.functions' confchange.msets'.
+Definition is_defined := is_global_definitions confchange.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined confchange.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

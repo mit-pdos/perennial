@@ -744,7 +744,7 @@ Definition var_addrs : list (go_string * loc) := [
     ("ErrLockReleased"%go, ErrLockReleased)
   ].
 
-Definition is_defined := is_global_definitions concurrency.pkg_name' var_addrs concurrency.functions' concurrency.msets'.
+Definition is_defined := is_global_definitions concurrency.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined concurrency.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

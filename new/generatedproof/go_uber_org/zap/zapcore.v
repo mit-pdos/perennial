@@ -96,7 +96,7 @@ Context `{!goGlobalsGS Σ}.
 Definition var_addrs : list (go_string * loc) := [
   ].
 
-Definition is_defined := is_global_definitions zapcore.pkg_name' var_addrs zapcore.functions' zapcore.msets'.
+Definition is_defined := is_global_definitions zapcore.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined zapcore.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

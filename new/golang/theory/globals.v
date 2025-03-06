@@ -145,13 +145,12 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
 Definition is_global_definitions (pkg_name : go_string)
+                                 `{!PkgInfo pkg_name info}
   (var_addrs : list (go_string * loc))
-  (functions : list (go_string * val))
-  (msets: list (go_string * (list (go_string * val))))
   : iProp Σ :=
   let var_addrs_val := alist_val ((λ '(name, addr), (name, #addr)) <$> var_addrs) in
-  let functions_val := alist_val functions in
-  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> msets) in
+  let functions_val := alist_val (pkg_functions pkg_name) in
+  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> (pkg_msets pkg_name)) in
   is_global pkg_name (var_addrs_val, functions_val, msets_val).
 
 Lemma alist_lookup_f_fmap {A B} n (l: list (go_string * A)) (f : A → B) :
@@ -190,9 +189,9 @@ Class WpGlobalsAlloc (vars : list (go_string * go_type)) (GlobalAddrs : Type)
           own_allocated d
       }}}.
 
-Lemma wp_globals_get' {pkg_name var_name var_addrs functions msets addr} :
+Lemma wp_globals_get' {pkg_name var_name var_addrs addr} `{!PkgInfo pkg_name info} :
   alist_lookup_f var_name var_addrs = Some addr →
-  WpGlobalsGet pkg_name var_name addr (is_global_definitions pkg_name var_addrs functions msets).
+  WpGlobalsGet pkg_name var_name addr (is_global_definitions pkg_name var_addrs).
 Proof.
   intros Hlookup. rewrite /WpGlobalsGet.
   iStartProof.
@@ -209,9 +208,9 @@ Proof.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Lemma wp_func_call' {pkg_name func_name var_addrs functions msets func} :
-  alist_lookup_f func_name functions = Some func →
-  WpFuncCall pkg_name func_name func (is_global_definitions pkg_name var_addrs functions msets).
+Lemma wp_func_call' {pkg_name func_name var_addrs func} `{!PkgInfo pkg_name info} :
+  alist_lookup_f func_name (pkg_functions pkg_name) = Some func →
+  WpFuncCall pkg_name func_name func (is_global_definitions pkg_name var_addrs).
 Proof.
   intros Hlookup. rewrite /WpFuncCall.
   iIntros (?) "!# #Hctx HΦ".
@@ -227,9 +226,9 @@ Proof.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Lemma wp_method_call' {pkg_name type_name method_name var_addrs functions msets m} :
-  ((alist_lookup_f method_name) <$> (alist_lookup_f type_name msets)) = Some (Some m) →
-  WpMethodCall pkg_name type_name method_name m (is_global_definitions pkg_name var_addrs functions msets).
+Lemma wp_method_call' {pkg_name type_name method_name var_addrs m} `{!PkgInfo pkg_name info} :
+  ((alist_lookup_f method_name) <$> (alist_lookup_f type_name (pkg_msets pkg_name))) = Some (Some m) →
+  WpMethodCall pkg_name type_name method_name m (is_global_definitions pkg_name var_addrs).
 Proof.
   intros Hlookup. rewrite /WpMethodCall.
   iIntros (?) "!# #Hctx HΦ".
@@ -271,7 +270,7 @@ Lemma wp_package_init
   postconds !! pkg_name = Some (∃ d, is_defined d ∗ is_initialized d)%I →
   pkg_name ∉ pending →
   (∀ (d : GlobalAddrs),
-     is_global_definitions pkg_name (var_addrs d) (pkg_functions pkg_name) (pkg_msets pkg_name) -∗
+     is_global_definitions pkg_name (var_addrs d) -∗
      own_allocated d -∗
      own_globals_tok ({[ pkg_name ]} ∪ pending) postconds -∗
      WP init_func #()

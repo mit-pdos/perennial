@@ -404,7 +404,7 @@ Definition var_addrs : list (go_string * loc) := [
     ("prstmap"%go, prstmap)
   ].
 
-Definition is_defined := is_global_definitions tracker.pkg_name' var_addrs tracker.functions' tracker.msets'.
+Definition is_defined := is_global_definitions tracker.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined tracker.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).

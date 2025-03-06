@@ -1408,7 +1408,7 @@ Definition var_addrs : list (go_string * loc) := [
     ("mapLiteralWithConversion"%go, mapLiteralWithConversion)
   ].
 
-Definition is_defined := is_global_definitions unittest.pkg_name' var_addrs unittest.functions' unittest.msets'.
+Definition is_defined := is_global_definitions unittest.pkg_name' var_addrs.
 
 Global Instance : PkgIsDefined unittest.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).
