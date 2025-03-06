@@ -22,18 +22,18 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions primitive.pkg_name' var_addrs primitive.functions' primitive.msets'.
 
-Global Instance is_pkg_defined : PkgIsDefined primitive.pkg_name' is_defined :=
+Global Instance : PkgIsDefined primitive.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_UInt64Put :
-  WpFuncCall primitive.pkg_name' "UInt64Put" _ (pkg_defined primitive.pkg_name') :=
+  WpFuncCall primitive.pkg_name' "UInt64Put" _ (is_pkg_defined primitive.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Assume :
-  WpFuncCall primitive.pkg_name' "Assume" _ (pkg_defined primitive.pkg_name') :=
+  WpFuncCall primitive.pkg_name' "Assume" _ (is_pkg_defined primitive.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

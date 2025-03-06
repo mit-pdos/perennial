@@ -43,7 +43,7 @@ Instance : PkgIsInitialized std.pkg_name' _ :=
   ltac:(basic_pkg_init).
 
 Lemma wp_Assert (cond : bool) :
-  {{{ pkg_init std.pkg_name' ∗ ⌜cond = true⌝ }}}
+  {{{ is_pkg_init std.pkg_name' ∗ ⌜cond = true⌝ }}}
     func_call #std.pkg_name' #"Assert" #cond
   {{{ RET #(); True }}}.
 Proof.
@@ -53,7 +53,7 @@ Proof.
 Qed.
 
 Lemma wp_SumNoOverflow (x y : u64) :
-  {{{ pkg_init std.pkg_name' }}}
+  {{{ is_pkg_init std.pkg_name' }}}
     func_call #std.pkg_name' #"SumNoOverflow" #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
@@ -68,7 +68,7 @@ Proof.
 Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
-  {{{ pkg_init std.pkg_name' }}}
+  {{{ is_pkg_init std.pkg_name' }}}
     func_call #std.pkg_name' #"SumAssumeNoOverflow" #x #y
   {{{ RET #(word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}}.
 Proof.
@@ -93,7 +93,7 @@ Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
 .
 
 Lemma wp_newJoinHandle (P: iProp Σ) :
-  {{{ pkg_init std.pkg_name' }}}
+  {{{ is_pkg_init std.pkg_name' }}}
     func_call #std.pkg_name' #"newJoinHandle" #()
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
 Proof.
@@ -123,7 +123,7 @@ Proof.
 Qed.
 
 Lemma wp_JoinHandle__finish l (P: iProp Σ) :
-  {{{ pkg_init std.pkg_name' ∗ is_JoinHandle l P ∗ P }}}
+  {{{ is_pkg_init std.pkg_name' ∗ is_JoinHandle l P ∗ P }}}
     method_call #std.pkg_name' #"JoinHandle'ptr" #"finish" #l #()
   {{{ RET #(); True }}}.
 Proof.
@@ -143,7 +143,7 @@ Proof.
 Qed.
 
 Lemma wp_Spawn (P: iProp Σ) (f : func.t) :
-  {{{ pkg_init std.pkg_name' ∗
+  {{{ is_pkg_init std.pkg_name' ∗
         (∀ Φ, ▷(P -∗ Φ #()) -∗ WP #f #() {{ Φ }}) }}}
   func_call #std.pkg_name' #"Spawn" #f
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
@@ -172,7 +172,7 @@ Proof.
 Qed.
 
 Lemma wp_JoinHandle__Join l P :
-  {{{ pkg_init std.pkg_name' ∗ is_JoinHandle l P }}}
+  {{{ is_pkg_init std.pkg_name' ∗ is_JoinHandle l P }}}
     method_call #std.pkg_name' #"JoinHandle'ptr" #"Join" #l #()
   {{{ RET #(); P }}}.
 Proof.

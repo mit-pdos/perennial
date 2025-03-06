@@ -124,30 +124,30 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions asyncfile.pkg_name' var_addrs asyncfile.functions' asyncfile.msets'.
 
-Global Instance is_pkg_defined : PkgIsDefined asyncfile.pkg_name' is_defined :=
+Global Instance : PkgIsDefined asyncfile.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MakeAsyncFile :
-  WpFuncCall asyncfile.pkg_name' "MakeAsyncFile" _ (pkg_defined asyncfile.pkg_name') :=
+  WpFuncCall asyncfile.pkg_name' "MakeAsyncFile" _ (is_pkg_defined asyncfile.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_Close :
-  WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "Close" _ (pkg_defined asyncfile.pkg_name') :=
+  WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "Close" _ (is_pkg_defined asyncfile.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_Write :
-  WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "Write" _ (pkg_defined asyncfile.pkg_name') :=
+  WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "Write" _ (is_pkg_defined asyncfile.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_flushThread :
-  WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "flushThread" _ (pkg_defined asyncfile.pkg_name') :=
+  WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "flushThread" _ (is_pkg_defined asyncfile.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_wait :
-  WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "wait" _ (pkg_defined asyncfile.pkg_name') :=
+  WpMethodCall asyncfile.pkg_name' "AsyncFile'ptr" "wait" _ (is_pkg_defined asyncfile.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

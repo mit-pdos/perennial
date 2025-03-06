@@ -135,38 +135,38 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions cachekv.pkg_name' var_addrs cachekv.functions' cachekv.msets'.
 
-Global Instance is_pkg_defined : PkgIsDefined cachekv.pkg_name' is_defined :=
+Global Instance : PkgIsDefined cachekv.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_DecodeValue :
-  WpFuncCall cachekv.pkg_name' "DecodeValue" _ (pkg_defined cachekv.pkg_name') :=
+  WpFuncCall cachekv.pkg_name' "DecodeValue" _ (is_pkg_defined cachekv.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeValue :
-  WpFuncCall cachekv.pkg_name' "EncodeValue" _ (pkg_defined cachekv.pkg_name') :=
+  WpFuncCall cachekv.pkg_name' "EncodeValue" _ (is_pkg_defined cachekv.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_max :
-  WpFuncCall cachekv.pkg_name' "max" _ (pkg_defined cachekv.pkg_name') :=
+  WpFuncCall cachekv.pkg_name' "max" _ (is_pkg_defined cachekv.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Make :
-  WpFuncCall cachekv.pkg_name' "Make" _ (pkg_defined cachekv.pkg_name') :=
+  WpFuncCall cachekv.pkg_name' "Make" _ (is_pkg_defined cachekv.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_Get :
-  WpMethodCall cachekv.pkg_name' "CacheKv'ptr" "Get" _ (pkg_defined cachekv.pkg_name') :=
+  WpMethodCall cachekv.pkg_name' "CacheKv'ptr" "Get" _ (is_pkg_defined cachekv.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_GetAndCache :
-  WpMethodCall cachekv.pkg_name' "CacheKv'ptr" "GetAndCache" _ (pkg_defined cachekv.pkg_name') :=
+  WpMethodCall cachekv.pkg_name' "CacheKv'ptr" "GetAndCache" _ (is_pkg_defined cachekv.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_Put :
-  WpMethodCall cachekv.pkg_name' "CacheKv'ptr" "Put" _ (pkg_defined cachekv.pkg_name') :=
+  WpMethodCall cachekv.pkg_name' "CacheKv'ptr" "Put" _ (is_pkg_defined cachekv.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -11,7 +11,7 @@ Instance : PkgIsInitialized primitive.pkg_name' _ :=
   ltac:(basic_pkg_init).
 
 Lemma wp_Assume (cond : bool) :
-  {{{ pkg_init primitive.pkg_name' }}}
+  {{{ is_pkg_init primitive.pkg_name' }}}
     func_call #primitive.pkg_name' #"Assume" #cond
   {{{ RET #(); ⌜ cond = true ⌝ }}}
 .

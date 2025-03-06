@@ -13,7 +13,7 @@ Tactic Notation "wp_method_call" :=
 Tactic Notation "wp_apply" open_constr(lem) :=
   wp_apply_core lem; try iPkgInit.
 
-(* remove and introduce [pkg_init] and [pkg_defined] facts from a hypothesis *)
+(* remove and introduce [is_pkg_init] and [is_pkg_defined] facts from a hypothesis *)
 Ltac destruct_pkg_init H :=
   let i := lazymatch type of H with
            | string => constr:(INamed H)
@@ -28,11 +28,11 @@ Ltac destruct_pkg_init H :=
     lazymatch goal with
     | |- environments.envs_entails ?env _ =>
         lazymatch env with
-        | context[environments.Esnoc _ i (pkg_init _ ∗ _)%I] =>
+        | context[environments.Esnoc _ i (is_pkg_init _ ∗ _)%I] =>
             split_hyp
-        | context[environments.Esnoc _ i (pkg_defined _ ∗ _)%I] =>
+        | context[environments.Esnoc _ i (is_pkg_defined _ ∗ _)%I] =>
             split_hyp
-        | context[environments.Esnoc _ i (pkg_init _)] =>
+        | context[environments.Esnoc _ i (is_pkg_init _)] =>
             iDestruct i as "#?";
             iAssert emp%I with "[//]" as i
         end

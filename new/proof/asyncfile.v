@@ -145,7 +145,7 @@ Instance : PkgIsInitialized asyncfile.pkg_name' _ :=
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
-  "#Hdef" ∷ pkg_init asyncfile.pkg_name' ∗
+  "#Hdef" ∷ is_pkg_init asyncfile.pkg_name' ∗
   "#Hmu" ∷ f ↦s[asyncfile.AsyncFile :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
                              (interface.mk sync.pkg_name' "Mutex'ptr"%go #mu))
@@ -721,7 +721,7 @@ Qed.
 
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
-        "#Hinit" ∷ pkg_init asyncfile.pkg_name' ∗
+        "#Hinit" ∷ is_pkg_init asyncfile.pkg_name' ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
     func_call #asyncfile.pkg_name' #"MakeAsyncFile" #fname

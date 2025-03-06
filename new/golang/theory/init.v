@@ -24,8 +24,9 @@ Hint Mode PkgIsInitialized + - - : typeclass_instances.
 Ltac prove_pkg_is_initialized :=
   constructor; refine _.
 
-(** [pkg_init pkg] looks up the package's initialization predicate *)
-Definition pkg_init (pkg_name: go_string) {PROP: bi} {initP: PROP}
+(** [is_pkg_init pkg] gets the package's initialization predicate via the
+[PkgInitialized] typeclass *)
+Definition is_pkg_init (pkg_name: go_string) {PROP: bi} {initP: PROP}
   `{!PkgIsInitialized pkg_name initP}: PROP := initP.
 
 (** [PkgIsDefined] is analogous to [PkgIsInitialized] but looks up the
@@ -39,15 +40,15 @@ Hint Mode PkgIsDefined + - - : typeclass_instances.
 Ltac prove_pkg_is_defined :=
   constructor; refine _.
 
-(** [pkg_init pkg] looks up the package's definedness predicate *)
-Definition pkg_defined (pkg_name: go_string) {PROP: bi} {definedP: PROP}
+(** [is_pkg_init pkg] looks up the package's definedness predicate *)
+Definition is_pkg_defined (pkg_name: go_string) {PROP: bi} {definedP: PROP}
   `{!PkgIsDefined pkg_name definedP}: PROP := definedP.
 
 Ltac build_pkg_init_cps deps_list base rx :=
   lazymatch deps_list with
   | cons ?pkg ?deps_list' =>
       build_pkg_init_cps deps_list' base
-        ltac:(fun initP' => rx (pkg_init pkg ∗ initP')%I)
+        ltac:(fun initP' => rx (is_pkg_init pkg ∗ initP')%I)
   | nil => rx base
   end.
 
@@ -55,7 +56,7 @@ Ltac basic_pkg_init :=
   match goal with
   | |- PkgIsInitialized ?name _ =>
       let deps := (eval hnf in (pkg_imported_pkgs name)) in
-      build_pkg_init_cps deps uconstr:(pkg_defined name) ltac:(fun P =>
+      build_pkg_init_cps deps uconstr:(is_pkg_defined name) ltac:(fun P =>
         apply (Build_PkgIsInitialized name _ P);
         refine _
         )
@@ -64,12 +65,12 @@ Ltac basic_pkg_init :=
 Ltac iPkgInit :=
   unfold named;
   lazymatch goal with
-  | |- environments.envs_entails ?env (pkg_init _) => idtac
-  | |- environments.envs_entails ?env (pkg_defined _) => idtac
-  | _ => fail "not a pkg_init or pkg_defined goal"
+  | |- environments.envs_entails ?env (is_pkg_init _) => idtac
+  | |- environments.envs_entails ?env (is_pkg_defined _) => idtac
+  | _ => fail "not a is_pkg_init or is_pkg_defined goal"
   end;
   iClear "∗";
-  unfold pkg_init;
+  unfold is_pkg_init;
   repeat
     lazymatch goal with
     | |- environments.envs_entails ?env _ =>

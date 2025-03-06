@@ -198,7 +198,7 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions mvccpb.pkg_name' var_addrs mvccpb.functions' mvccpb.msets'.
 
-Global Instance is_pkg_defined : PkgIsDefined mvccpb.pkg_name' is_defined :=
+Global Instance : PkgIsDefined mvccpb.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=

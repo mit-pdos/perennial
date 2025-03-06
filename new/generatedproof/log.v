@@ -22,18 +22,18 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions log.pkg_name' var_addrs log.functions' log.msets'.
 
-Global Instance is_pkg_defined : PkgIsDefined log.pkg_name' is_defined :=
+Global Instance : PkgIsDefined log.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Printf :
-  WpFuncCall log.pkg_name' "Printf" _ (pkg_defined log.pkg_name') :=
+  WpFuncCall log.pkg_name' "Printf" _ (is_pkg_defined log.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Println :
-  WpFuncCall log.pkg_name' "Println" _ (pkg_defined log.pkg_name') :=
+  WpFuncCall log.pkg_name' "Println" _ (is_pkg_defined log.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

@@ -89,22 +89,22 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions reconnectclient.pkg_name' var_addrs reconnectclient.functions' reconnectclient.msets'.
 
-Global Instance is_pkg_defined : PkgIsDefined reconnectclient.pkg_name' is_defined :=
+Global Instance : PkgIsDefined reconnectclient.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MakeReconnectingClient :
-  WpFuncCall reconnectclient.pkg_name' "MakeReconnectingClient" _ (pkg_defined reconnectclient.pkg_name') :=
+  WpFuncCall reconnectclient.pkg_name' "MakeReconnectingClient" _ (is_pkg_defined reconnectclient.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_Call :
-  WpMethodCall reconnectclient.pkg_name' "ReconnectingClient'ptr" "Call" _ (pkg_defined reconnectclient.pkg_name') :=
+  WpMethodCall reconnectclient.pkg_name' "ReconnectingClient'ptr" "Call" _ (is_pkg_defined reconnectclient.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_getClient :
-  WpMethodCall reconnectclient.pkg_name' "ReconnectingClient'ptr" "getClient" _ (pkg_defined reconnectclient.pkg_name') :=
+  WpMethodCall reconnectclient.pkg_name' "ReconnectingClient'ptr" "getClient" _ (is_pkg_defined reconnectclient.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

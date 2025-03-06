@@ -68,22 +68,22 @@ Definition var_addrs : list (go_string * loc) := [
 
 Definition is_defined := is_global_definitions lockservice.pkg_name' var_addrs lockservice.functions' lockservice.msets'.
 
-Global Instance is_pkg_defined : PkgIsDefined lockservice.pkg_name' is_defined :=
+Global Instance : PkgIsDefined lockservice.pkg_name' is_defined :=
   ltac:(prove_pkg_is_defined).
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MakeLockClerk :
-  WpFuncCall lockservice.pkg_name' "MakeLockClerk" _ (pkg_defined lockservice.pkg_name') :=
+  WpFuncCall lockservice.pkg_name' "MakeLockClerk" _ (is_pkg_defined lockservice.pkg_name') :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_LockClerk'ptr_Lock :
-  WpMethodCall lockservice.pkg_name' "LockClerk'ptr" "Lock" _ (pkg_defined lockservice.pkg_name') :=
+  WpMethodCall lockservice.pkg_name' "LockClerk'ptr" "Lock" _ (is_pkg_defined lockservice.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LockClerk'ptr_Unlock :
-  WpMethodCall lockservice.pkg_name' "LockClerk'ptr" "Unlock" _ (pkg_defined lockservice.pkg_name') :=
+  WpMethodCall lockservice.pkg_name' "LockClerk'ptr" "Unlock" _ (is_pkg_defined lockservice.pkg_name') :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
