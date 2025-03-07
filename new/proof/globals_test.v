@@ -3,6 +3,8 @@ From New.code.github_com.mit_pdos.gokv Require Import globals_test.
 Require Import New.generatedproof.github_com.mit_pdos.gokv.globals_test.
 From Perennial.algebra Require Import map.
 
+From New.golang Require Import theory.
+
 Section proof.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
@@ -25,12 +27,12 @@ Definition is_initialized (γtok : gname) `{!main.GlobalAddrs} : iProp Σ :=
   inv nroot (ghost_var γtok 1 () ∨ own_initialized).
 
 Lemma wp_initialize' pending postconds γtok :
-  main.pkg_name' ∉ pending →
-  postconds !! main.pkg_name' = Some (∃ (d : main.GlobalAddrs), main.is_defined ∗ is_initialized γtok)%I →
+  main ∉ pending →
+  postconds !! main = Some (∃ (d : main.GlobalAddrs), is_pkg_defined main ∗ is_initialized γtok)%I →
   {{{ own_globals_tok pending postconds }}}
     main.initialize' #()
   {{{ (_ : main.GlobalAddrs), RET #();
-      main.is_defined ∗ is_initialized γtok ∗ own_globals_tok pending postconds
+      is_pkg_defined main ∗ is_initialized γtok ∗ own_globals_tok pending postconds
   }}}.
 Proof.
   iIntros (???) "Hunused HΦ".
@@ -78,9 +80,10 @@ Proof.
 Qed.
 
 Context `{!main.GlobalAddrs}.
+
 Lemma wp_main :
-  {{{ main.is_defined ∗ own_initialized }}}
-  func_call #main.pkg_name' #"main" #()
+  {{{ is_pkg_defined main ∗ own_initialized }}}
+  func_call #main #"main" #()
   {{{ RET #(); True }}}.
 Proof.
   iIntros (?) "[#Hdef Hpre] HΦ".
@@ -113,7 +116,7 @@ Lemma globals_test_boot σ (g : goose_lang.global_state) :
   ffi_initP σ.(world) g.(global_world) →
   σ.(globals) = ∅ → (* FIXME: this should be abstracted into a "goose_lang.init" predicate or something. *)
   dist_adequate_failstop [
-      ((main.initialize' #() ;; func_call #main.pkg_name' #"main" #())%E, σ) ] g (λ _, True).
+      ((main.initialize' #() ;; func_call #main #"main" #())%E, σ) ] g (λ _, True).
 Proof.
   simpl.
   intros ? ? Hgempty.
@@ -134,7 +137,7 @@ Proof.
     rewrite Hgempty.
     iMod (ghost_var_alloc ()) as (γtok) "Hescrow".
     iMod (go_global_init
-            (λ _, {[ main.pkg_name' := _ ]}) with "[$]") as
+            (λ _, {[ main := _ ]}) with "[$]") as
       (hGlobals) "Hpost".
     iModIntro.
     iExists (λ _, True)%I.

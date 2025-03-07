@@ -5,6 +5,8 @@ Require Export New.code.github_com.mit_pdos.gokv.kv.
 Require Export New.code.github_com.tchajed.marshal.
 Require Export New.code.sync.
 
+Definition cachekv : go_string := "github.com/mit-pdos/gokv/cachekv".
+
 From New Require Import grove_prelude.
 Module cachekv.
 Section code.
@@ -31,7 +33,7 @@ Definition DecodeValue : val :=
     let: "vBytes" := (ref_ty sliceT (zero_val sliceT)) in
     let: "l" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "e") in
-    (func_call #marshal.pkg_name' #"ReadInt"%go) "$a0") in
+    (func_call #marshal #"ReadInt"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("l" <-[uint64T] "$r0");;;
@@ -52,11 +54,11 @@ Definition EncodeValue : val :=
     do:  ("e" <-[sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![sliceT] "e") in
     let: "$a1" := (![uint64T] (struct.field_ref cacheValue "l" "c")) in
-    (func_call #marshal.pkg_name' #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("e" <-[sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![sliceT] "e") in
     let: "$a1" := (string.to_bytes (![stringT] (struct.field_ref cacheValue "v" "c"))) in
-    (func_call #marshal.pkg_name' #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #marshal #"WriteBytes"%go) "$a0" "$a1") in
     do:  ("e" <-[sliceT] "$r0");;;
     return: (string.from_bytes (![sliceT] "e"))).
 
@@ -83,14 +85,12 @@ Definition Make : val :=
        "cache" ::= "$cache"
      }]))).
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/cachekv".
-
 (* go: clerk.go:55:19 *)
 Definition CacheKv__Get : val :=
   rec: "CacheKv__Get" "k" "key" :=
     exception_do (let: "k" := (ref_ty ptrT "k") in
     let: "key" := (ref_ty stringT "key") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "cv" := (ref_ty cacheValue (zero_val cacheValue)) in
     let: ("$ret0", "$ret1") := (map.get (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key")) in
@@ -99,23 +99,23 @@ Definition CacheKv__Get : val :=
     do:  ("cv" <-[cacheValue] "$r0");;;
     do:  ("ok" <-[boolT] "$r1");;;
     let: "high" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call #grove_ffi.pkg_name' #"GetTimeRange"%go) #()) in
+    let: ("$ret0", "$ret1") := ((func_call #grove_ffi #"GetTimeRange"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("high" <-[uint64T] "$r1");;;
     (if: (![boolT] "ok") && ((![uint64T] "high") < (![uint64T] (struct.field_ref cacheValue "l" "cv")))
     then
-      do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
       return: (![stringT] (struct.field_ref cacheValue "v" "cv"))
     else do:  #());;;
     do:  (let: "$a0" := (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) in
     let: "$a1" := (![stringT] "key") in
     map.delete "$a0" "$a1");;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
     return: (struct.field_get cacheValue "v" (let: "$a0" := (let: "$a0" := (![stringT] "key") in
      (interface.get "Get" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0") in
-     (func_call #pkg_name' #"DecodeValue"%go) "$a0"))).
+     (func_call #cachekv.cachekv #"DecodeValue"%go) "$a0"))).
 
 (* go: clerk.go:69:19 *)
 Definition CacheKv__GetAndCache : val :=
@@ -130,10 +130,10 @@ Definition CacheKv__GetAndCache : val :=
       do:  ("enc" <-[stringT] "$r0");;;
       let: "old" := (ref_ty cacheValue (zero_val cacheValue)) in
       let: "$r0" := (let: "$a0" := (![stringT] "enc") in
-      (func_call #pkg_name' #"DecodeValue"%go) "$a0") in
+      (func_call #cachekv.cachekv #"DecodeValue"%go) "$a0") in
       do:  ("old" <-[cacheValue] "$r0");;;
       let: "latest" := (ref_ty uint64T (zero_val uint64T)) in
-      let: ("$ret0", "$ret1") := ((func_call #grove_ffi.pkg_name' #"GetTimeRange"%go) #()) in
+      let: ("$ret0", "$ret1") := ((func_call #grove_ffi #"GetTimeRange"%go) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -141,7 +141,7 @@ Definition CacheKv__GetAndCache : val :=
       let: "newLeaseExpiration" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := (let: "$a0" := ((![uint64T] "latest") + (![uint64T] "cachetime")) in
       let: "$a1" := (![uint64T] (struct.field_ref cacheValue "l" "old")) in
-      (func_call #pkg_name' #"max"%go) "$a0" "$a1") in
+      (func_call #cachekv.cachekv #"max"%go) "$a0" "$a1") in
       do:  ("newLeaseExpiration" <-[uint64T] "$r0");;;
       let: "resp" := (ref_ty stringT (zero_val stringT)) in
       let: "$r0" := (let: "$a0" := (![stringT] "key") in
@@ -152,12 +152,12 @@ Definition CacheKv__GetAndCache : val :=
         "v" ::= "$v";
         "l" ::= "$l"
       }]) in
-      (func_call #pkg_name' #"EncodeValue"%go) "$a0") in
+      (func_call #cachekv.cachekv #"EncodeValue"%go) "$a0") in
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[stringT] "$r0");;;
       (if: (![stringT] "resp") = #"ok"%go
       then
-        do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
+        do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
         let: "$r0" := (let: "$v" := (![stringT] (struct.field_ref cacheValue "v" "old")) in
         let: "$l" := (![uint64T] "newLeaseExpiration") in
         struct.make cacheValue [{
@@ -170,7 +170,7 @@ Definition CacheKv__GetAndCache : val :=
     let: "ret" := (ref_ty stringT (zero_val stringT)) in
     let: "$r0" := (struct.field_get cacheValue "v" (Fst (map.get (![mapT stringT cacheValue] (struct.field_ref CacheKv "cache" (![ptrT] "k"))) (![stringT] "key")))) in
     do:  ("ret" <-[stringT] "$r0");;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref CacheKv "mu" (![ptrT] "k")))) #());;;
     return: (![stringT] "ret")).
 
 (* go: clerk.go:90:19 *)
@@ -186,10 +186,10 @@ Definition CacheKv__Put : val :=
       do:  ("enc" <-[stringT] "$r0");;;
       let: "leaseExpiration" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := (struct.field_get cacheValue "l" (let: "$a0" := (![stringT] "enc") in
-      (func_call #pkg_name' #"DecodeValue"%go) "$a0")) in
+      (func_call #cachekv.cachekv #"DecodeValue"%go) "$a0")) in
       do:  ("leaseExpiration" <-[uint64T] "$r0");;;
       let: "earliest" := (ref_ty uint64T (zero_val uint64T)) in
-      let: ("$ret0", "$ret1") := ((func_call #grove_ffi.pkg_name' #"GetTimeRange"%go) #()) in
+      let: ("$ret0", "$ret1") := ((func_call #grove_ffi #"GetTimeRange"%go) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("earliest" <-[uint64T] "$r0");;;
@@ -206,7 +206,7 @@ Definition CacheKv__Put : val :=
         "v" ::= "$v";
         "l" ::= "$l"
       }]) in
-      (func_call #pkg_name' #"EncodeValue"%go) "$a0") in
+      (func_call #cachekv.cachekv #"EncodeValue"%go) "$a0") in
       (interface.get "ConditionalPut" (![kv.KvCput] (struct.field_ref CacheKv "kv" (![ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[stringT] "$r0");;;
       (if: (![stringT] "resp") = #"ok"%go
@@ -219,9 +219,17 @@ Definition functions' : list (go_string * val) := [("DecodeValue"%go, DecodeValu
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("cacheValue"%go, []); ("cacheValue'ptr"%go, []); ("CacheKv"%go, []); ("CacheKv'ptr"%go, [("Get"%go, CacheKv__Get); ("GetAndCache"%go, CacheKv__GetAndCache); ("Put"%go, CacheKv__Put)])].
 
+#[global] Instance info' : PkgInfo cachekv.cachekv :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [sync; grove_ffi; kv; marshal];
+  |}.
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init cachekv.cachekv (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  kv.initialize';;;
       do:  grove_ffi.initialize';;;

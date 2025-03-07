@@ -5,6 +5,8 @@ Require Export New.code.sync.atomic.
 
 Require Export New.trusted_code.sync.
 Import sync.
+Definition sync : go_string := "sync".
+
 Module sync.
 Section code.
 Context `{ffi_syntax}.
@@ -20,8 +22,6 @@ Definition WaitGroup : go_type := structT [
   "state" :: atomic.Uint64;
   "sema" :: uint32T
 ].
-
-Definition pkg_name' : go_string := "sync".
 
 (* Add adds delta, which may be negative, to the [WaitGroup] counter.
    If the counter becomes zero, all goroutines blocked on [WaitGroup.Wait] are released.
@@ -47,10 +47,10 @@ Definition WaitGroup__Add : val :=
       (if: int_lt (![intT] "delta") #(W64 0)
       then
         do:  (let: "$a0" := (![ptrT] "wg") in
-        (func_call #race.pkg_name' #"ReleaseMerge"%go) "$a0")
+        (func_call #race #"ReleaseMerge"%go) "$a0")
       else do:  #());;;
-      do:  ((func_call #race.pkg_name' #"Disable"%go) #());;;
-      do:  (let: "$f" := (func_call #race.pkg_name' #"Enable"%go) in
+      do:  ((func_call #race #"Disable"%go) #());;;
+      do:  (let: "$f" := (func_call #race #"Enable"%go) in
       "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
       (λ: <>,
         "$f" #();;
@@ -59,7 +59,7 @@ Definition WaitGroup__Add : val :=
     else do:  #());;;
     let: "state" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := ((![intT] "delta") ≪ #(W64 32)) in
-    (method_call #atomic.pkg_name' #"Uint64'ptr" #"Add" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) "$a0") in
+    (method_call #atomic #"Uint64'ptr" #"Add" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) "$a0") in
     do:  ("state" <-[uint64T] "$r0");;;
     let: "v" := (ref_ty int32T (zero_val int32T)) in
     let: "$r0" := (to_u32 ((![uint64T] "state") ≫ #(W64 32))) in
@@ -70,7 +70,7 @@ Definition WaitGroup__Add : val :=
     (if: (race.Enabled && (int_gt (![intT] "delta") #(W64 0))) && ((![int32T] "v") = (to_u32 (![intT] "delta")))
     then
       do:  (let: "$a0" := (struct.field_ref WaitGroup "sema" (![ptrT] "wg")) in
-      (func_call #race.pkg_name' #"Read"%go) "$a0")
+      (func_call #race #"Read"%go) "$a0")
     else do:  #());;;
     (if: int_lt (![int32T] "v") #(W32 0)
     then
@@ -85,18 +85,18 @@ Definition WaitGroup__Add : val :=
     (if: (int_gt (![int32T] "v") #(W32 0)) || ((![uint32T] "w") = #(W32 0))
     then return: (#())
     else do:  #());;;
-    (if: ((method_call #atomic.pkg_name' #"Uint64'ptr" #"Load" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) #()) ≠ (![uint64T] "state")
+    (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) #()) ≠ (![uint64T] "state")
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := #(W64 0) in
-    (method_call #atomic.pkg_name' #"Uint64'ptr" #"Store" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) "$a0");;;
+    (method_call #atomic #"Uint64'ptr" #"Store" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) "$a0");;;
     (for: (λ: <>, (![uint32T] "w") ≠ #(W32 0)); (λ: <>, do:  ("w" <-[uint32T] ((![uint32T] "w") - #(W32 1)))) := λ: <>,
       do:  (let: "$a0" := (struct.field_ref WaitGroup "sema" (![ptrT] "wg")) in
       let: "$a1" := #false in
       let: "$a2" := #(W64 0) in
-      (func_call #pkg_name' #"runtime_Semrelease"%go) "$a0" "$a1" "$a2"))).
+      (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2"))).
 
 (* Done decrements the [WaitGroup] counter by one.
 
@@ -105,7 +105,7 @@ Definition WaitGroup__Done : val :=
   rec: "WaitGroup__Done" "wg" <> :=
     exception_do (let: "wg" := (ref_ty ptrT "wg") in
     do:  (let: "$a0" := #(W64 (- 1)) in
-    (method_call #pkg_name' #"WaitGroup'ptr" #"Add" (![ptrT] "wg")) "$a0")).
+    (method_call #sync.sync #"WaitGroup'ptr" #"Add" (![ptrT] "wg")) "$a0")).
 
 (* Wait blocks until the [WaitGroup] counter is zero.
 
@@ -114,11 +114,11 @@ Definition WaitGroup__Wait : val :=
   rec: "WaitGroup__Wait" "wg" <> :=
     exception_do (let: "wg" := (ref_ty ptrT "wg") in
     (if: race.Enabled
-    then do:  ((func_call #race.pkg_name' #"Disable"%go) #())
+    then do:  ((func_call #race #"Disable"%go) #())
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "state" := (ref_ty uint64T (zero_val uint64T)) in
-      let: "$r0" := ((method_call #atomic.pkg_name' #"Uint64'ptr" #"Load" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) #()) in
+      let: "$r0" := ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) #()) in
       do:  ("state" <-[uint64T] "$r0");;;
       let: "v" := (ref_ty int32T (zero_val int32T)) in
       let: "$r0" := (to_u32 ((![uint64T] "state") ≫ #(W64 32))) in
@@ -130,33 +130,33 @@ Definition WaitGroup__Wait : val :=
       then
         (if: race.Enabled
         then
-          do:  ((func_call #race.pkg_name' #"Enable"%go) #());;;
+          do:  ((func_call #race #"Enable"%go) #());;;
           do:  (let: "$a0" := (![ptrT] "wg") in
-          (func_call #race.pkg_name' #"Acquire"%go) "$a0")
+          (func_call #race #"Acquire"%go) "$a0")
         else do:  #());;;
         return: (#())
       else do:  #());;;
       (if: let: "$a0" := (![uint64T] "state") in
       let: "$a1" := ((![uint64T] "state") + #(W64 1)) in
-      (method_call #atomic.pkg_name' #"Uint64'ptr" #"CompareAndSwap" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) "$a0" "$a1"
+      (method_call #atomic #"Uint64'ptr" #"CompareAndSwap" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) "$a0" "$a1"
       then
         (if: race.Enabled && ((![uint32T] "w") = #(W32 0))
         then
           do:  (let: "$a0" := (struct.field_ref WaitGroup "sema" (![ptrT] "wg")) in
-          (func_call #race.pkg_name' #"Write"%go) "$a0")
+          (func_call #race #"Write"%go) "$a0")
         else do:  #());;;
         do:  (let: "$a0" := (struct.field_ref WaitGroup "sema" (![ptrT] "wg")) in
-        (func_call #pkg_name' #"runtime_SemacquireWaitGroup"%go) "$a0");;;
-        (if: ((method_call #atomic.pkg_name' #"Uint64'ptr" #"Load" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) #()) ≠ #(W64 0)
+        (func_call #sync.sync #"runtime_SemacquireWaitGroup"%go) "$a0");;;
+        (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) #()) ≠ #(W64 0)
         then
           do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup is reused before previous Wait has returned"%go) in
           Panic "$a0")
         else do:  #());;;
         (if: race.Enabled
         then
-          do:  ((func_call #race.pkg_name' #"Enable"%go) #());;;
+          do:  ((func_call #race #"Enable"%go) #());;;
           do:  (let: "$a0" := (![ptrT] "wg") in
-          (func_call #race.pkg_name' #"Acquire"%go) "$a0")
+          (func_call #race #"Acquire"%go) "$a0")
         else do:  #());;;
         return: (#())
       else do:  #()))).
@@ -167,11 +167,19 @@ Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("ru
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("Unlock"%go, Mutex__Unlock)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
 
+#[global] Instance info' : PkgInfo sync.sync :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [atomic; race];
+  |}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init sync.sync (λ: <>,
       exception_do (do:  race.initialize';;;
       do:  atomic.initialize')
       ).

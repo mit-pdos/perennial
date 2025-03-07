@@ -145,13 +145,12 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 
 Definition is_global_definitions (pkg_name : go_string)
+                                 `{!PkgInfo pkg_name}
   (var_addrs : list (go_string * loc))
-  (functions : list (go_string * val))
-  (msets: list (go_string * (list (go_string * val))))
   : iProp Σ :=
   let var_addrs_val := alist_val ((λ '(name, addr), (name, #addr)) <$> var_addrs) in
-  let functions_val := alist_val functions in
-  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> msets) in
+  let functions_val := alist_val (pkg_functions pkg_name) in
+  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> (pkg_msets pkg_name)) in
   is_global pkg_name (var_addrs_val, functions_val, msets_val).
 
 Lemma alist_lookup_f_fmap {A B} n (l: list (go_string * A)) (f : A → B) :
@@ -190,9 +189,9 @@ Class WpGlobalsAlloc (vars : list (go_string * go_type)) (GlobalAddrs : Type)
           own_allocated d
       }}}.
 
-Lemma wp_globals_get' {pkg_name var_name var_addrs functions msets addr} :
+Lemma wp_globals_get' {pkg_name var_name var_addrs addr} `{!PkgInfo pkg_name} :
   alist_lookup_f var_name var_addrs = Some addr →
-  WpGlobalsGet pkg_name var_name addr (is_global_definitions pkg_name var_addrs functions msets).
+  WpGlobalsGet pkg_name var_name addr (is_global_definitions pkg_name var_addrs).
 Proof.
   intros Hlookup. rewrite /WpGlobalsGet.
   iStartProof.
@@ -209,9 +208,9 @@ Proof.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Lemma wp_func_call' {pkg_name func_name var_addrs functions msets func} :
-  alist_lookup_f func_name functions = Some func →
-  WpFuncCall pkg_name func_name func (is_global_definitions pkg_name var_addrs functions msets).
+Lemma wp_func_call' {pkg_name func_name var_addrs func} `{!PkgInfo pkg_name} :
+  alist_lookup_f func_name (pkg_functions pkg_name) = Some func →
+  WpFuncCall pkg_name func_name func (is_global_definitions pkg_name var_addrs).
 Proof.
   intros Hlookup. rewrite /WpFuncCall.
   iIntros (?) "!# #Hctx HΦ".
@@ -227,9 +226,9 @@ Proof.
   wp_pures. by iApply "HΦ".
 Qed.
 
-Lemma wp_method_call' {pkg_name type_name method_name var_addrs functions msets m} :
-  ((alist_lookup_f method_name) <$> (alist_lookup_f type_name msets)) = Some (Some m) →
-  WpMethodCall pkg_name type_name method_name m (is_global_definitions pkg_name var_addrs functions msets).
+Lemma wp_method_call' {pkg_name type_name method_name var_addrs m} `{!PkgInfo pkg_name} :
+  ((alist_lookup_f method_name) <$> (alist_lookup_f type_name (pkg_msets pkg_name))) = Some (Some m) →
+  WpMethodCall pkg_name type_name method_name m (is_global_definitions pkg_name var_addrs).
 Proof.
   intros Hlookup. rewrite /WpMethodCall.
   iIntros (?) "!# #Hctx HΦ".
@@ -262,16 +261,16 @@ Context `{!goGlobalsGS Σ}.
 Lemma wp_package_init
   pending
   (postconds : gmap go_string (iProp Σ))
-  (pkg_name : go_string) (init_func : val)
-  functions msets
-  `{!WpGlobalsAlloc vars GlobalAddrs var_addrs own_allocated}
+  (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val)
+
+  `{!WpGlobalsAlloc (pkg_vars pkg_name) GlobalAddrs var_addrs own_allocated}
   (is_initialized : GlobalAddrs → iProp Σ)
   (is_defined : GlobalAddrs → iProp Σ)
   :
   postconds !! pkg_name = Some (∃ d, is_defined d ∗ is_initialized d)%I →
   pkg_name ∉ pending →
   (∀ (d : GlobalAddrs),
-     is_global_definitions pkg_name (var_addrs d) functions msets -∗
+     is_global_definitions pkg_name (var_addrs d) -∗
      own_allocated d -∗
      own_globals_tok ({[ pkg_name ]} ∪ pending) postconds -∗
      WP init_func #()
@@ -281,7 +280,7 @@ Lemma wp_package_init
        }}
   ) →
   {{{ own_globals_tok pending postconds }}}
-    globals.package_init pkg_name vars functions msets init_func
+    globals.package_init pkg_name init_func
   {{{ (d : GlobalAddrs), RET #(); is_defined d ∗ is_initialized d ∗ own_globals_tok pending postconds }}}.
 Proof.
   unseal.
@@ -376,21 +375,16 @@ Ltac solve_wp_globals_alloc :=
 
 
 (* TODO: better error messages if tc_solve fails to find a val for the name. *)
-Tactic Notation "wp_globals_get" :=
+Tactic Notation "wp_globals_get_core" :=
   (wp_bind (globals.get _ _);
-   unshelve wp_apply (wp_globals_get with "[]"); [| | tc_solve | |]; try iFrame "#").
+   unshelve wp_apply (wp_globals_get with "[]"); [| | tc_solve | |]).
 
-Tactic Notation "wp_func_call" :=
+Tactic Notation "wp_func_call_core" :=
   (wp_bind (func_call _ _);
    unshelve wp_apply (wp_func_call with "[]");
-   [| | (tc_solve || fail "could not find mapping from global var name to address") | | ]; try iFrame "#").
+   [| | (tc_solve || fail "could not find mapping from function name to val") | | ]).
 
-Tactic Notation "wp_func_call" :=
-  (wp_bind (func_call _ _);
-   unshelve wp_apply (wp_func_call with "[]");
-   [| | (tc_solve || fail "could not find mapping from function name to val") | | ]; try iFrame "#").
-
-Tactic Notation "wp_method_call" :=
+Tactic Notation "wp_method_call_core" :=
   (wp_bind (method_call _ _ _);
    unshelve wp_apply (wp_method_call with "[]");
-   [| | (tc_solve || fail "could not find mapping from method to val") | |]; try iFrame "#").
+   [| | (tc_solve || fail "could not find mapping from method to val") | |]).

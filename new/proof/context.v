@@ -34,6 +34,12 @@ End Context_state.
 Section definitions.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!goGlobalsGS Σ}.
+
+#[global]
+Program Instance : IsPkgInit context :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
 
 Import Context_state.
 Definition is_Context (c : interface.t) (s : Context_state.t) : iProp Σ :=
@@ -67,7 +73,7 @@ then (cancel was run) ∨ (chan.is_closed ctx.Done). *)
 
 Lemma wp_WithCancel N (ctx : interface.t) :
   {{{ True }}}
-    func_call #context.pkg_name' #"WithCancel" #ctx
+    func_call #context #"WithCancel" #ctx
   {{{
         ctx' ctx_state (cancel : func.t), RET (#ctx', #cancel);
         is_Context ctx' ctx_state ∗

@@ -94,10 +94,4 @@ Section grove.
   Definition GetTimeRange : val :=
     λ: <>, ExternalOp GetTimeRangeOp #().
 
-  Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/grove_ffi".
-
-  Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' [] [] [] (λ: <>, #()).
-
 End grove.

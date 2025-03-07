@@ -7,6 +7,8 @@ Require Export New.code.github_com.tchajed.marshal.
 Require Export New.code.log.
 Require Export New.code.sync.
 
+Definition urpc : go_string := "github.com/mit-pdos/gokv/urpc".
+
 From New Require Import grove_prelude.
 Module urpc.
 Section code.
@@ -40,16 +42,16 @@ Definition Server__rpcHandle : val :=
     let: "data2" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "data1") in
     let: "$a1" := (![uint64T] "seqno") in
-    (func_call #marshal.pkg_name' #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("data2" <-[sliceT] "$r0");;;
     let: "data3" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "data2") in
     let: "$a1" := (![sliceT] (![ptrT] "replyData")) in
-    (func_call #marshal.pkg_name' #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #marshal #"WriteBytes"%go) "$a0" "$a1") in
     do:  ("data3" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := (![grove_ffi.Connection] "conn") in
     let: "$a1" := (![sliceT] "data3") in
-    (func_call #grove_ffi.pkg_name' #"Send"%go) "$a0" "$a1")).
+    (func_call #grove_ffi #"Send"%go) "$a0" "$a1")).
 
 (* go: urpc.go:32:6 *)
 Definition MakeServer : val :=
@@ -60,8 +62,6 @@ Definition MakeServer : val :=
        "handlers" ::= "$handlers"
      }]))).
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/urpc".
-
 (* go: urpc.go:36:20 *)
 Definition Server__readThread : val :=
   rec: "Server__readThread" "srv" "conn" :=
@@ -70,7 +70,7 @@ Definition Server__readThread : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := (ref_ty grove_ffi.ReceiveRet (zero_val grove_ffi.ReceiveRet)) in
       let: "$r0" := (let: "$a0" := (![grove_ffi.Connection] "conn") in
-      (func_call #grove_ffi.pkg_name' #"Receive"%go) "$a0") in
+      (func_call #grove_ffi #"Receive"%go) "$a0") in
       do:  ("r" <-[grove_ffi.ReceiveRet] "$r0");;;
       (if: ![boolT] (struct.field_ref grove_ffi.ReceiveRet "Err" "r")
       then break: #()
@@ -80,14 +80,14 @@ Definition Server__readThread : val :=
       do:  ("data" <-[sliceT] "$r0");;;
       let: "rpcid" := (ref_ty uint64T (zero_val uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "data") in
-      (func_call #marshal.pkg_name' #"ReadInt"%go) "$a0") in
+      (func_call #marshal #"ReadInt"%go) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("rpcid" <-[uint64T] "$r0");;;
       do:  ("data" <-[sliceT] "$r1");;;
       let: "seqno" := (ref_ty uint64T (zero_val uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "data") in
-      (func_call #marshal.pkg_name' #"ReadInt"%go) "$a0") in
+      (func_call #marshal #"ReadInt"%go) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("seqno" <-[uint64T] "$r0");;;
@@ -100,7 +100,7 @@ Definition Server__readThread : val :=
         let: "$a1" := (![uint64T] "rpcid") in
         let: "$a2" := (![uint64T] "seqno") in
         let: "$a3" := (![sliceT] "req") in
-        (method_call #pkg_name' #"Server'ptr" #"rpcHandle" (![ptrT] "srv")) "$a0" "$a1" "$a2" "$a3"))
+        (method_call #urpc.urpc #"Server'ptr" #"rpcHandle" (![ptrT] "srv")) "$a0" "$a1" "$a2" "$a3"))
         ) in
       do:  (Fork ("$go" #()));;;
       continue: #())).
@@ -112,17 +112,17 @@ Definition Server__Serve : val :=
     let: "host" := (ref_ty uint64T "host") in
     let: "listener" := (ref_ty grove_ffi.Listener (zero_val grove_ffi.Listener)) in
     let: "$r0" := (let: "$a0" := (![uint64T] "host") in
-    (func_call #grove_ffi.pkg_name' #"Listen"%go) "$a0") in
+    (func_call #grove_ffi #"Listen"%go) "$a0") in
     do:  ("listener" <-[grove_ffi.Listener] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         let: "conn" := (ref_ty grove_ffi.Connection (zero_val grove_ffi.Connection)) in
         let: "$r0" := (let: "$a0" := (![grove_ffi.Listener] "listener") in
-        (func_call #grove_ffi.pkg_name' #"Accept"%go) "$a0") in
+        (func_call #grove_ffi #"Accept"%go) "$a0") in
         do:  ("conn" <-[grove_ffi.Connection] "$r0");;;
         let: "$go" := (λ: <>,
           exception_do (do:  (let: "$a0" := (![grove_ffi.Connection] "conn") in
-          (method_call #pkg_name' #"Server'ptr" #"readThread" (![ptrT] "srv")) "$a0"))
+          (method_call #urpc.urpc #"Server'ptr" #"readThread" (![ptrT] "srv")) "$a0"))
           ) in
         do:  (Fork ("$go" #()))))
       ) in
@@ -154,11 +154,11 @@ Definition Client__replyThread : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := (ref_ty grove_ffi.ReceiveRet (zero_val grove_ffi.ReceiveRet)) in
       let: "$r0" := (let: "$a0" := (![grove_ffi.Connection] (struct.field_ref Client "conn" (![ptrT] "cl"))) in
-      (func_call #grove_ffi.pkg_name' #"Receive"%go) "$a0") in
+      (func_call #grove_ffi #"Receive"%go) "$a0") in
       do:  ("r" <-[grove_ffi.ReceiveRet] "$r0");;;
       (if: ![boolT] (struct.field_ref grove_ffi.ReceiveRet "Err" "r")
       then
-        do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
+        do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
         (let: "cb" := (ref_ty uint64T (zero_val uint64T)) in
         let: "$range" := (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) in
         map.for_range "$range" (λ: "$key" "value",
@@ -166,8 +166,8 @@ Definition Client__replyThread : val :=
           do:  "$key";;;
           let: "$r0" := callbackStateAborted in
           do:  ((![ptrT] (struct.field_ref Callback "state" (![ptrT] "cb"))) <-[uint64T] "$r0");;;
-          do:  ((method_call #sync.pkg_name' #"Cond'ptr" #"Signal" (![ptrT] (struct.field_ref Callback "cond" (![ptrT] "cb")))) #())));;;
-        do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
+          do:  ((method_call #sync #"Cond'ptr" #"Signal" (![ptrT] (struct.field_ref Callback "cond" (![ptrT] "cb")))) #())));;;
+        do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
         break: #()
       else do:  #());;;
       let: "data" := (ref_ty sliceT (zero_val sliceT)) in
@@ -175,7 +175,7 @@ Definition Client__replyThread : val :=
       do:  ("data" <-[sliceT] "$r0");;;
       let: "seqno" := (ref_ty uint64T (zero_val uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "data") in
-      (func_call #marshal.pkg_name' #"ReadInt"%go) "$a0") in
+      (func_call #marshal #"ReadInt"%go) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("seqno" <-[uint64T] "$r0");;;
@@ -183,7 +183,7 @@ Definition Client__replyThread : val :=
       let: "reply" := (ref_ty sliceT (zero_val sliceT)) in
       let: "$r0" := (![sliceT] "data") in
       do:  ("reply" <-[sliceT] "$r0");;;
-      do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
+      do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
       let: "ok" := (ref_ty boolT (zero_val boolT)) in
       let: "cb" := (ref_ty ptrT (zero_val ptrT)) in
       let: ("$ret0", "$ret1") := (map.get (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) (![uint64T] "seqno")) in
@@ -200,9 +200,9 @@ Definition Client__replyThread : val :=
         do:  ((![ptrT] (struct.field_ref Callback "reply" (![ptrT] "cb"))) <-[sliceT] "$r0");;;
         let: "$r0" := callbackStateDone in
         do:  ((![ptrT] (struct.field_ref Callback "state" (![ptrT] "cb"))) <-[uint64T] "$r0");;;
-        do:  ((method_call #sync.pkg_name' #"Cond'ptr" #"Signal" (![ptrT] (struct.field_ref Callback "cond" (![ptrT] "cb")))) #())
+        do:  ((method_call #sync #"Cond'ptr" #"Signal" (![ptrT] (struct.field_ref Callback "cond" (![ptrT] "cb")))) #())
       else do:  #());;;
-      do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
       continue: #())).
 
 (* go: urpc.go:120:6 *)
@@ -214,7 +214,7 @@ Definition TryMakeClient : val :=
     do:  ("host" <-[uint64T] "$r0");;;
     let: "a" := (ref_ty grove_ffi.ConnectRet (zero_val grove_ffi.ConnectRet)) in
     let: "$r0" := (let: "$a0" := (![uint64T] "host") in
-    (func_call #grove_ffi.pkg_name' #"Connect"%go) "$a0") in
+    (func_call #grove_ffi #"Connect"%go) "$a0") in
     do:  ("a" <-[grove_ffi.ConnectRet] "$r0");;;
     let: "nilClient" := (ref_ty ptrT (zero_val ptrT)) in
     (if: ![boolT] (struct.field_ref grove_ffi.ConnectRet "Err" "a")
@@ -233,7 +233,7 @@ Definition TryMakeClient : val :=
     }])) in
     do:  ("cl" <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #pkg_name' #"Client'ptr" #"replyThread" (![ptrT] "cl")) #()))
+      exception_do (do:  ((method_call #urpc.urpc #"Client'ptr" #"replyThread" (![ptrT] "cl")) #()))
       ) in
     do:  (Fork ("$go" #()));;;
     return: (#(W64 0), ![ptrT] "cl")).
@@ -245,7 +245,7 @@ Definition MakeClient : val :=
     let: "cl" := (ref_ty ptrT (zero_val ptrT)) in
     let: "err" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "host_name") in
-    (func_call #pkg_name' #"TryMakeClient"%go) "$a0") in
+    (func_call #urpc.urpc #"TryMakeClient"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err" <-[uint64T] "$r0");;;
@@ -254,12 +254,12 @@ Definition MakeClient : val :=
     then
       do:  (let: "$a0" := #"Unable to connect to %s"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![uint64T] "host_name") in
-      (func_call #grove_ffi.pkg_name' #"AddressToStr"%go) "$a0")) in
+      (func_call #grove_ffi #"AddressToStr"%go) "$a0")) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #log.pkg_name' #"Printf"%go) "$a0" "$a1")
+      (func_call #log #"Printf"%go) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := ((![uint64T] "err") = #(W64 0)) in
-    (func_call #primitive.pkg_name' #"Assume"%go) "$a0");;;
+    (func_call #primitive #"Assume"%go) "$a0");;;
     return: (![ptrT] "cl")).
 
 Definition Error : go_type := uint64T.
@@ -282,8 +282,8 @@ Definition Client__CallStart : val :=
     let: "cb" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty Callback (let: "$reply" := (![ptrT] "reply_buf") in
     let: "$state" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$cond" := (let: "$a0" := (interface.make #sync.pkg_name' #"Mutex'ptr" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) in
-    (func_call #sync.pkg_name' #"NewCond"%go) "$a0") in
+    let: "$cond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) in
+    (func_call #sync #"NewCond"%go) "$a0") in
     struct.make Callback [{
       "reply" ::= "$reply";
       "state" ::= "$state";
@@ -292,17 +292,17 @@ Definition Client__CallStart : val :=
     do:  ("cb" <-[ptrT] "$r0");;;
     let: "$r0" := callbackStateWaiting in
     do:  ((![ptrT] (struct.field_ref Callback "state" (![ptrT] "cb"))) <-[uint64T] "$r0");;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
     let: "seqno" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (struct.field_ref Client "seq" (![ptrT] "cl"))) in
     do:  ("seqno" <-[uint64T] "$r0");;;
     let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref Client "seq" (![ptrT] "cl"))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.pkg_name' #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
+    (func_call #std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
     do:  ((struct.field_ref Client "seq" (![ptrT] "cl")) <-[uint64T] "$r0");;;
     let: "$r0" := (![ptrT] "cb") in
     do:  (map.insert (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) (![uint64T] "seqno") "$r0");;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
     let: "data1" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![sliceT] "args") in
     slice.len "$a0"))) in
@@ -310,21 +310,21 @@ Definition Client__CallStart : val :=
     let: "data2" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "data1") in
     let: "$a1" := (![uint64T] "rpcid") in
-    (func_call #marshal.pkg_name' #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("data2" <-[sliceT] "$r0");;;
     let: "data3" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "data2") in
     let: "$a1" := (![uint64T] "seqno") in
-    (func_call #marshal.pkg_name' #"WriteInt"%go) "$a0" "$a1") in
+    (func_call #marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("data3" <-[sliceT] "$r0");;;
     let: "reqData" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "data3") in
     let: "$a1" := (![sliceT] "args") in
-    (func_call #marshal.pkg_name' #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #marshal #"WriteBytes"%go) "$a0" "$a1") in
     do:  ("reqData" <-[sliceT] "$r0");;;
     (if: let: "$a0" := (![grove_ffi.Connection] (struct.field_ref Client "conn" (![ptrT] "cl"))) in
     let: "$a1" := (![sliceT] "reqData") in
-    (func_call #grove_ffi.pkg_name' #"Send"%go) "$a0" "$a1"
+    (func_call #grove_ffi #"Send"%go) "$a0" "$a1"
     then
       return: (ref_ty Callback (struct.make Callback [{
          "reply" ::= zero_val ptrT;
@@ -341,12 +341,12 @@ Definition Client__CallComplete : val :=
     let: "timeout_ms" := (ref_ty uint64T "timeout_ms") in
     let: "reply" := (ref_ty ptrT "reply") in
     let: "cb" := (ref_ty ptrT "cb") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
     (if: (![uint64T] (![ptrT] (struct.field_ref Callback "state" (![ptrT] "cb")))) = callbackStateWaiting
     then
       do:  (let: "$a0" := (![ptrT] (struct.field_ref Callback "cond" (![ptrT] "cb"))) in
       let: "$a1" := (![uint64T] "timeout_ms") in
-      (func_call #primitive.pkg_name' #"WaitTimeout"%go) "$a0" "$a1")
+      (func_call #primitive #"WaitTimeout"%go) "$a0" "$a1")
     else do:  #());;;
     let: "state" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Callback "state" (![ptrT] "cb")))) in
@@ -355,10 +355,10 @@ Definition Client__CallComplete : val :=
     then
       let: "$r0" := (![sliceT] (![ptrT] (struct.field_ref Callback "reply" (![ptrT] "cb")))) in
       do:  ((![ptrT] "reply") <-[sliceT] "$r0");;;
-      do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
       return: (#(W64 0))
     else
-      do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
       (if: (![uint64T] "state") = callbackStateAborted
       then return: (ErrDisconnect)
       else return: (ErrTimeout)))).
@@ -375,7 +375,7 @@ Definition Client__Call : val :=
     let: "cb" := (ref_ty ptrT (zero_val ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "rpcid") in
     let: "$a1" := (![sliceT] "args") in
-    (method_call #pkg_name' #"Client'ptr" #"CallStart" (![ptrT] "cl")) "$a0" "$a1") in
+    (method_call #urpc.urpc #"Client'ptr" #"CallStart" (![ptrT] "cl")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("cb" <-[ptrT] "$r0");;;
@@ -386,7 +386,7 @@ Definition Client__Call : val :=
     return: (let: "$a0" := (![ptrT] "cb") in
      let: "$a1" := (![ptrT] "reply") in
      let: "$a2" := (![uint64T] "timeout_ms") in
-     (method_call #pkg_name' #"Client'ptr" #"CallComplete" (![ptrT] "cl")) "$a0" "$a1" "$a2")).
+     (method_call #urpc.urpc #"Client'ptr" #"CallComplete" (![ptrT] "cl")) "$a0" "$a1" "$a2")).
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -394,9 +394,17 @@ Definition functions' : list (go_string * val) := [("MakeServer"%go, MakeServer)
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Server"%go, []); ("Server'ptr"%go, [("Serve"%go, Server__Serve); ("readThread"%go, Server__readThread); ("rpcHandle"%go, Server__rpcHandle)]); ("Callback"%go, []); ("Callback'ptr"%go, []); ("Client"%go, []); ("Client'ptr"%go, [("Call"%go, Client__Call); ("CallComplete"%go, Client__CallComplete); ("CallStart"%go, Client__CallStart); ("replyThread"%go, Client__replyThread)])].
 
+#[global] Instance info' : PkgInfo urpc.urpc :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [log; sync; primitive; std; grove_ffi; marshal];
+  |}.
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init urpc.urpc (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  grove_ffi.initialize';;;
       do:  std.initialize';;;

@@ -8,54 +8,53 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 Context `{!atomic.GlobalAddrs}.
 
-Definition is_initialized : iProp Σ :=
-  "#?" ∷ atomic.is_defined.
+#[global]
+Program Instance is_pkg_init_inst : IsPkgInit atomic :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. apply _. Qed.
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,
-  is_initialized -∗
+  is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ (v : w64), addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
-  WP func_call #atomic.pkg_name' #"LoadUint64" #addr {{ Φ }}.
+  WP func_call #atomic #"LoadUint64" #addr {{ Φ }}.
 Proof.
-  iIntros (?) "#? HΦ".
-  wp_func_call. wp_call.
+  wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
   unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
 Qed.
 
 Lemma wp_StoreUint64 (addr : loc) (v : w64) :
   ∀ Φ,
-  is_initialized -∗
+  is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ (oldv : w64), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
-  WP func_call #atomic.pkg_name' #"StoreUint64" #addr #v {{ Φ }}.
+  WP func_call #atomic #"StoreUint64" #addr #v {{ Φ }}.
 Proof.
-  iIntros (?) "#? HΦ".
-  wp_func_call. wp_call.
+  wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
   unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve; done.
 Qed.
 
 Lemma wp_AddUint64 (addr : loc) (v : w64) :
   ∀ Φ,
-  is_initialized -∗
+  is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ (oldv : w64), addr ↦ oldv ∗ (addr ↦ (word.add oldv v) ={∅,⊤}=∗ Φ #(word.add oldv v))) -∗
-  WP func_call #atomic.pkg_name' #"AddUint64" #addr #v {{ Φ }}.
+  WP func_call #atomic #"AddUint64" #addr #v {{ Φ }}.
 Proof.
 Admitted.
 
 Lemma wp_CompareAndSwapUint64 (addr : loc) (old : w64) (new : w64) :
   ∀ Φ,
-  is_initialized -∗
+  is_pkg_init atomic -∗
   (|={⊤,∅}=>
      ∃ (v: w64) dq,
      addr ↦{dq} v ∗
      ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
      (addr ↦{dq} (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))
   ) -∗
-  WP func_call #atomic.pkg_name' #"CompareAndSwapUint64" #addr #old #new {{ Φ }}.
+  WP func_call #atomic #"CompareAndSwapUint64" #addr #old #new {{ Φ }}.
 Proof.
-  iIntros "* #? HΦ".
-  wp_func_call. wp_call.
+  wp_start as "_".
   wp_bind (CmpXchg _ _ _).
   iMod "HΦ" as (??) "(? & -> & HΦ)".
   rewrite bool_decide_decide.
@@ -79,12 +78,11 @@ Definition own_Uint64 (u : loc) dq (v : w64) : iProp Σ :=
 
 Lemma wp_Uint64__Load u dq :
   ∀ Φ,
-  is_initialized -∗
+  is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ v, own_Uint64 u dq v ∗ (own_Uint64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-  WP method_call #atomic.pkg_name' #"Uint64'ptr" #"Load" #u #() {{ Φ }}.
+  WP method_call #atomic #"Uint64'ptr" #"Load" #u #() {{ Φ }}.
 Proof.
-  iIntros (?) "#? HΦ".
-  wp_method_call. wp_call.
+  wp_start as "_".
   wp_alloc x_ptr as "Hx_ptr".
   wp_pures. wp_load. wp_pures.
   wp_apply (wp_LoadUint64 with "[$]").
@@ -108,12 +106,11 @@ Qed.
 
 Lemma wp_Uint64__Store u v :
   ∀ Φ,
-  is_initialized -∗
+  is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗ (own_Uint64 u (DfracOwn 1) v ={∅,⊤}=∗ Φ #())) -∗
-  WP method_call #atomic.pkg_name' #"Uint64'ptr" #"Store" #u #v {{ Φ }}.
+  WP method_call #atomic #"Uint64'ptr" #"Store" #u #v {{ Φ }}.
 Proof.
-  iIntros (?) "#? HΦ".
-  wp_method_call. wp_call.
+  wp_start as "_".
   wp_alloc x_ptr as "Hx_ptr". wp_pures.
   wp_alloc val_ptr as "Hval_ptr".
   wp_pures. wp_load. wp_pures.
@@ -139,14 +136,13 @@ Qed.
 
 Lemma wp_Uint64__Add u delta :
   ∀ Φ,
-  is_initialized -∗
+  is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗
   (own_Uint64 u (DfracOwn 1) (word.add old delta) ={∅,⊤}=∗
    Φ #(word.add old delta))) -∗
-  WP method_call #atomic.pkg_name' #"Uint64'ptr" #"Add" #u #delta {{ Φ }}.
+  WP method_call #atomic #"Uint64'ptr" #"Add" #u #delta {{ Φ }}.
 Proof.
-  iIntros (?) "#? HΦ".
-  wp_method_call. wp_call.
+  wp_start as "_".
   wp_alloc new_ptr as "Hnew_ptr". wp_pures.
   wp_alloc x_ptr as "Hx_ptr". wp_pures.
   wp_alloc delta_ptr as "Hdelta_ptr". wp_pures.
@@ -172,14 +168,13 @@ Qed.
 
 Lemma wp_Uint64__CompareAndSwap u old new :
   ∀ Φ,
-  is_initialized -∗
+  is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ v dq, own_Uint64 u dq v ∗
                     ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
   (own_Uint64 u dq (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))) -∗
-  WP method_call #atomic.pkg_name' #"Uint64'ptr" #"CompareAndSwap" #u #old #new {{ Φ }}.
+  WP method_call #atomic #"Uint64'ptr" #"CompareAndSwap" #u #old #new {{ Φ }}.
 Proof.
-  iIntros (?) "#? HΦ".
-  wp_method_call. wp_call.
+  wp_start as "_".
   wp_alloc swapped_ptr as "Hswapped_ptr". wp_pures.
   wp_alloc x_ptr as "Hx_ptr". wp_pures.
   wp_alloc new_ptr as "Hnew_ptr". wp_pures.

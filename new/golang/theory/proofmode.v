@@ -543,7 +543,10 @@ Ltac2 solve_bi_true () :=
   | [ |- envs_entails _ (bi_wand (bi_pure True) _) ] => apply tac_wp_true_elim
   end.
 
-Tactic Notation "wp_apply" open_constr(lem) :=
+Tactic Notation "wp_apply_core" open_constr(lem) :=
   ltac2:(Control.enter wp_bind_apply);
   iApply lem; try iNext; try ltac2:(Control.enter solve_bi_true)
 .
+
+Tactic Notation "wp_apply" open_constr(lem) :=
+  wp_apply_core lem.

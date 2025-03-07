@@ -3,12 +3,12 @@ From New.golang Require Import defn.
 
 Require Export New.trusted_code.github_com.mit_pdos.gokv.grove_ffi.
 Import grove_ffi.
+Definition grove_ffi : go_string := "github.com/mit-pdos/gokv/grove_ffi".
+
 From New Require Import grove_prelude.
 Module grove_ffi.
 Section code.
 
-
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/grove_ffi".
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -16,11 +16,19 @@ Definition functions' : list (go_string * val) := [("FileWrite"%go, FileWrite); 
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Listener"%go, []); ("Listener'ptr"%go, []); ("Connection"%go, []); ("Connection'ptr"%go, []); ("ConnectRet"%go, []); ("ConnectRet'ptr"%go, []); ("ReceiveRet"%go, []); ("ReceiveRet'ptr"%go, [])].
 
+#[global] Instance info' : PkgInfo grove_ffi.grove_ffi :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [];
+  |}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init grove_ffi.grove_ffi (λ: <>,
       exception_do (do:  #())
       ).
 

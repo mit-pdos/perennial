@@ -1,4 +1,4 @@
-From New.golang.defn Require Export mem typing list.
+From New.golang.defn Require Export mem typing list pkg.
 
 Module globals.
 Section defns.
@@ -29,19 +29,21 @@ Definition alloc (vars : list (go_string * go_type)) : val :=
             end)%E) vars
 .
 
-Definition package_init_def (pkg_name : go_string) vars functions msets : val :=
-  let functions_val := alist_val functions in
-  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> msets) in
+Definition package_init_def (pkg_name : go_string) `{!PkgInfo pkg_name} : val :=
+  let functions_val := alist_val (pkg_functions pkg_name) in
+  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> (pkg_msets pkg_name)) in
   λ: "init",
     match: GlobalGet #pkg_name with
       SOME <> => #()
     | NONE =>
-        let: "var_addrs" := alloc vars #() in
+        let: "var_addrs" := alloc (pkg_vars pkg_name) #() in
         GlobalPut #pkg_name ("var_addrs", functions_val, msets_val) ;;
         "init" #()
     end.
 Program Definition package_init := unseal (_:seal (@package_init_def)). Obligation 1. by eexists. Qed.
 Definition package_init_unseal : package_init = _ := seal_eq _.
+#[global]
+Arguments package_init pkg_name {PkgInfo0}.
 
 End defns.
 End globals.

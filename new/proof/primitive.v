@@ -6,15 +6,18 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 
+#[global]
+Program Instance is_pkg_init_inst : IsPkgInit (PROP:=iProp Σ) primitive :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
 Lemma wp_Assume (cond : bool) :
-  {{{ primitive.is_defined }}}
-    func_call #primitive.pkg_name' #"Assume" #cond
+  {{{ is_pkg_init primitive }}}
+    func_call #primitive #"Assume" #cond
   {{{ RET #(); ⌜ cond = true ⌝ }}}
 .
 Proof.
-  iIntros (Φ) "#Hdef HΦ".
-  wp_func_call.
-  wp_call.
+  wp_start as "#Hdef".
   destruct cond; wp_pures.
   - wp_pures. iApply ("HΦ" with "[//]").
   - wp_pures.

@@ -4,8 +4,6 @@ From New.golang Require Import defn.
 Section code.
   Context `{ffi_syntax}.
 
-  Definition pkg_name' : go_string := "github.com/mit-pdos/goose_lang/primitive".
-
   (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)
   Definition Assume : val :=
@@ -70,7 +68,7 @@ this in GooseLang, so we just loop. *)
 
   Definition AfterFunc : val := λ: "duration" "f", Fork "f" ;; ref "f".
 
-  Definition WaitTimeout : val := λ: "l" "timeout", method_call #sync.pkg_name' #"Cond" "Wait" "l".
+  Definition WaitTimeout : val := λ: "l" "timeout", method_call #sync #"Cond" "Wait" "l".
 
   Definition RandomUint64 : val := λ: <>, ArbitraryInt.
 
@@ -79,17 +77,5 @@ this in GooseLang, so we just loop. *)
   Definition ResolveProph : val := λ: "p" "val", goose_lang.ResolveProph (Var "p") (Var "val").
 
   Definition Linearize : val := λ: <>, #().
-
-  Definition vars' : list (go_string * go_type) := [].
-  Definition functions' : list (go_string * val) := [
-      ("Assume"%go, Assume)
-    ].
-  Definition msets' : list (go_string * (list (go_string * val))) := [].
-
-  Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
-      exception_do (do:  sync.initialize')
-      ).
 
 End code.

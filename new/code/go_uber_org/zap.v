@@ -2,6 +2,8 @@
 From New.golang Require Import defn.
 Require Export New.code.go_uber_org.zap.zapcore.
 
+Definition zap : go_string := "go.uber.org/zap".
+
 Module zap.
 Section code.
 Context `{ffi_syntax}.
@@ -23,19 +25,25 @@ Axiom _globalS'init : val.
 
 Axiom _sinkRegistry'init : val.
 
-Definition pkg_name' : go_string := "go.uber.org/zap".
-
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
+#[global] Instance info' : PkgInfo zap.zap :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [zapcore];
+  |}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init zap.zap (λ: <>,
       exception_do (do:  zapcore.initialize';;;
       do:  (errNoEncoderNameSpecified'init #());;;
       do:  (_encoderNameToConstructor'init #());;;

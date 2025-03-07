@@ -12,7 +12,7 @@ Section instances.
 Context `{ffi_syntax}.
 Global Instance into_val_Mutex : IntoVal Mutex.t :=
   {|
-    to_val_def := λ v, struct.val_aux sync.Mutex [("state" ::= #v.(Mutex.state))]%V
+    to_val_def := λ v, struct.val_aux sync.Mutex [("state" ::= #v.(Mutex.state))]%struct
   |}.
 
 Global Program Instance into_val_typed_Mutex : IntoValTyped Mutex.t sync.Mutex :=
@@ -40,7 +40,7 @@ Global Instance wp_struct_make_Mutex (state : bool) :
   PureWp True
     (struct.make sync.Mutex (alist_val [
       "state" ::= #state
-    ]))%V
+    ]))%struct
     #(Mutex.mk state).
 Proof.
   rewrite [in #(_ : Mutex.t)]to_val_unseal.
@@ -82,7 +82,7 @@ Global Instance settable_Cond : Settable _ :=
   settable! Cond.mk < Cond.L >.
 Global Instance into_val_Cond : IntoVal Cond.t :=
   {
-    to_val_def := λ v, struct.val_aux sync.Cond [("L" ::= #v.(Cond.L))]%V
+    to_val_def := λ v, struct.val_aux sync.Cond [("L" ::= #v.(Cond.L))]%struct
   }.
 
 Global Program Instance into_val_typed_Cond : IntoValTyped Cond.t sync.Cond :=
@@ -123,7 +123,7 @@ Global Instance wp_struct_make_Cond L :
   PureWp True
     (struct.make sync.Cond (alist_val [
       "L" ::= #L
-    ]))%V
+    ]))%struct
     #(Cond.mk L).
 Proof.
   rewrite [in #(_ : Cond.t)]to_val_unseal.

@@ -2,6 +2,8 @@
 From New.golang Require Import defn.
 Require Export New.code.github_com.mit_pdos.gokv.kv.
 
+Definition lockservice : go_string := "github.com/mit-pdos/gokv/lockservice".
+
 Module lockservice.
 Section code.
 Context `{ffi_syntax}.
@@ -40,17 +42,23 @@ Definition MakeLockClerk : val :=
        "kv" ::= "$kv"
      }]))).
 
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/lockservice".
-
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [("MakeLockClerk"%go, MakeLockClerk)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("LockClerk"%go, []); ("LockClerk'ptr"%go, [("Lock"%go, LockClerk__Lock); ("Unlock"%go, LockClerk__Unlock)])].
 
+#[global] Instance info' : PkgInfo lockservice.lockservice :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [kv];
+  |}.
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init lockservice.lockservice (λ: <>,
       exception_do (do:  kv.initialize')
       ).
 

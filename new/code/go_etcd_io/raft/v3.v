@@ -18,12 +18,12 @@ Require Export New.code.os.
 Require Export New.code.strings.
 Require Export New.code.sync.
 
+Definition raft : go_string := "go.etcd.io/raft/v3".
+
 Module raft.
 Section code.
 Context `{ffi_syntax}.
 
-
-Definition pkg_name' : go_string := "go.etcd.io/raft/v3".
 
 Definition ReadState : go_type := structT [
   "Index" :: uint64T;
@@ -132,7 +132,7 @@ Definition RawNode__Bootstrap : val :=
     slice.len "$a0") = #(W64 0)
     then
       return: (let: "$a0" := #"must provide at least one peer to Bootstrap"%go in
-       (func_call #errors.pkg_name' #"New"%go) "$a0")
+       (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "lastIndex" := (ref_ty uint64T (zero_val uint64T)) in
@@ -147,13 +147,13 @@ Definition RawNode__Bootstrap : val :=
     (if: (![uint64T] "lastIndex") ≠ #(W64 0)
     then
       return: (let: "$a0" := #"can't bootstrap a nonempty Storage"%go in
-       (func_call #errors.pkg_name' #"New"%go) "$a0")
+       (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
-    let: "$r0" := (![raftpb.HardState] (globals.get #pkg_name' #"emptyState"%go)) in
+    let: "$r0" := (![raftpb.HardState] (globals.get #v3.raft #"emptyState"%go)) in
     do:  ((struct.field_ref RawNode "prevHardSt" (![ptrT] "rn")) <-[raftpb.HardState] "$r0");;;
     do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := None in
-    (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0" "$a1");;;
+    (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0" "$a1");;;
     let: "ents" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 raftpb.Entry (let: "$a0" := (![sliceT] "peers") in
     slice.len "$a0")) in
@@ -177,7 +177,7 @@ Definition RawNode__Bootstrap : val :=
       do:  ("cc" <-[raftpb.ConfChange] "$r0");;;
       let: "err" := (ref_ty error (zero_val error)) in
       let: "data" := (ref_ty sliceT (zero_val sliceT)) in
-      let: ("$ret0", "$ret1") := ((method_call #raftpb.pkg_name' #"ConfChange'ptr" #"Marshal" "cc") #()) in
+      let: ("$ret0", "$ret1") := ((method_call #raftpb #"ConfChange'ptr" #"Marshal" "cc") #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("data" <-[sliceT] "$r0");;;
@@ -197,7 +197,7 @@ Definition RawNode__Bootstrap : val :=
       }]) in
       do:  ((slice.elem_ref raftpb.Entry (![sliceT] "ents") (![intT] "i")) <-[raftpb.Entry] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "ents") in
-    (method_call #pkg_name' #"raftLog'ptr" #"append" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) "$a0");;;
+    (method_call #v3.raft #"raftLog'ptr" #"append" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) "$a0");;;
     let: "$r0" := (let: "$a0" := (![sliceT] "ents") in
     slice.len "$a0") in
     do:  ((struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) <-[uint64T] "$r0");;;
@@ -206,7 +206,7 @@ Definition RawNode__Bootstrap : val :=
     slice.for_range Peer "$range" (λ: "$key" "$value",
       do:  ("peer" <-[Peer] "$value");;;
       do:  "$key";;;
-      do:  (let: "$a0" := ((method_call #raftpb.pkg_name' #"ConfChange" #"AsV2" (let: "$NodeID" := (![uint64T] (struct.field_ref Peer "ID" "peer")) in
+      do:  (let: "$a0" := ((method_call #raftpb #"ConfChange" #"AsV2" (let: "$NodeID" := (![uint64T] (struct.field_ref Peer "ID" "peer")) in
       let: "$Type" := raftpb.ConfChangeAddNode in
       struct.make raftpb.ConfChange [{
         "Type" ::= "$Type";
@@ -214,7 +214,7 @@ Definition RawNode__Bootstrap : val :=
         "Context" ::= zero_val sliceT;
         "ID" ::= zero_val uint64T
       }])) #()) in
-      (method_call #pkg_name' #"raft'ptr" #"applyConfChange" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")));;;
+      (method_call #v3.raft #"raft'ptr" #"applyConfChange" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")));;;
     return: (#interface.nil)).
 
 Definition noLimit : Z := math.MaxUint64.
@@ -231,7 +231,7 @@ Definition newLog : val :=
     return: (let: "$a0" := (![Storage] "storage") in
      let: "$a1" := (![Logger] "logger") in
      let: "$a2" := #(W64 noLimit) in
-     (func_call #pkg_name' #"newLogWithSize"%go) "$a0" "$a1" "$a2")).
+     (func_call #v3.raft #"newLogWithSize"%go) "$a0" "$a1" "$a2")).
 
 (* newLogWithSize returns a log using the given storage and max
    message size.
@@ -307,7 +307,7 @@ Definition raftLog__String : val :=
      let: "$sl5" := (interface.make #""%go #"int"%go (let: "$a0" := (![sliceT] (struct.field_ref unstable "entries" (struct.field_ref raftLog "unstable" (![ptrT] "l")))) in
      slice.len "$a0")) in
      slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"])) in
-     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")).
+     (func_call #fmt #"Sprintf"%go) "$a0" "$a1")).
 
 Definition entryID : go_type := structT [
   "term" :: uint64T;
@@ -332,7 +332,7 @@ Definition raftLog__maybeAppend : val :=
     let: "committed" := (ref_ty uint64T "committed") in
     let: "a" := (ref_ty logSlice "a") in
     (if: (~ (let: "$a0" := (![entryID] (struct.field_ref logSlice "prev" "a")) in
-    (method_call #pkg_name' #"raftLog'ptr" #"matchTerm" (![ptrT] "l")) "$a0"))
+    (method_call #v3.raft #"raftLog'ptr" #"matchTerm" (![ptrT] "l")) "$a0"))
     then return: (#(W64 0), #false)
     else do:  #());;;
     let: "$r0" := ((![uint64T] (struct.field_ref entryID "index" (struct.field_ref logSlice "prev" "a"))) + (let: "$a0" := (![sliceT] (struct.field_ref logSlice "entries" "a")) in
@@ -340,7 +340,7 @@ Definition raftLog__maybeAppend : val :=
     do:  ("lastnewi" <-[uint64T] "$r0");;;
     let: "ci" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref logSlice "entries" "a")) in
-    (method_call #pkg_name' #"raftLog'ptr" #"findConflict" (![ptrT] "l")) "$a0") in
+    (method_call #v3.raft #"raftLog'ptr" #"findConflict" (![ptrT] "l")) "$a0") in
     do:  ("ci" <-[uint64T] "$r0");;;
     let: "$sw" := #true in
     (if: "$sw" = ((![uint64T] "ci") = #(W64 0))
@@ -369,11 +369,11 @@ Definition raftLog__maybeAppend : val :=
         else do:  #());;;
         do:  (let: "$a0" := (let: "$s" := (![sliceT] (struct.field_ref logSlice "entries" "a")) in
         slice.slice raftpb.Entry "$s" ((![uint64T] "ci") - (![uint64T] "offset")) (slice.len "$s")) in
-        (method_call #pkg_name' #"raftLog'ptr" #"append" (![ptrT] "l")) "$a0")));;;
+        (method_call #v3.raft #"raftLog'ptr" #"append" (![ptrT] "l")) "$a0")));;;
     do:  (let: "$a0" := (let: "$a0" := (![uint64T] "committed") in
     let: "$a1" := (![uint64T] "lastnewi") in
     (minUint64 2) "$a0" "$a1") in
-    (method_call #pkg_name' #"raftLog'ptr" #"commitTo" (![ptrT] "l")) "$a0");;;
+    (method_call #v3.raft #"raftLog'ptr" #"commitTo" (![ptrT] "l")) "$a0");;;
     return: (![uint64T] "lastnewi", #true)).
 
 (* go: log.go:131:19 *)
@@ -383,7 +383,7 @@ Definition raftLog__append : val :=
     let: "ents" := (ref_ty sliceT "ents") in
     (if: (let: "$a0" := (![sliceT] "ents") in
     slice.len "$a0") = #(W64 0)
-    then return: ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())
+    then return: ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())
     else do:  #());;;
     (let: "after" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := ((![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT] "ents") #(W64 0)))) - #(W64 1)) in
@@ -397,8 +397,8 @@ Definition raftLog__append : val :=
       (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
     else do:  #()));;;
     do:  (let: "$a0" := (![sliceT] "ents") in
-    (method_call #pkg_name' #"unstable'ptr" #"truncateAndAppend" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0");;;
-    return: ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())).
+    (method_call #v3.raft #"unstable'ptr" #"truncateAndAppend" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0");;;
+    return: ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())).
 
 (* findConflict finds the index of the conflict.
    It returns the first pair of conflicting entries between the existing
@@ -422,20 +422,20 @@ Definition raftLog__findConflict : val :=
       do:  ("i" <-[intT] "$key");;;
       (let: "id" := (ref_ty entryID (zero_val entryID)) in
       let: "$r0" := (let: "$a0" := (slice.elem_ref raftpb.Entry (![sliceT] "ents") (![intT] "i")) in
-      (func_call #pkg_name' #"pbEntryID"%go) "$a0") in
+      (func_call #v3.raft #"pbEntryID"%go) "$a0") in
       do:  ("id" <-[entryID] "$r0");;;
       (if: (~ (let: "$a0" := (![entryID] "id") in
-      (method_call #pkg_name' #"raftLog'ptr" #"matchTerm" (![ptrT] "l")) "$a0"))
+      (method_call #v3.raft #"raftLog'ptr" #"matchTerm" (![ptrT] "l")) "$a0"))
       then
-        (if: (![uint64T] (struct.field_ref entryID "index" "id")) ≤ ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())
+        (if: (![uint64T] (struct.field_ref entryID "index" "id")) ≤ ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())
         then
           do:  (let: "$a0" := #"found conflict at index %d [existing term: %d, conflicting term: %d]"%go in
           let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "index" "id"))) in
           let: "$sl1" := (interface.make #""%go #"uint64"%go (let: ("$ret0", "$ret1") := ((let: "$a0" := (![uint64T] (struct.field_ref entryID "index" "id")) in
-          (method_call #pkg_name' #"raftLog'ptr" #"term" (![ptrT] "l")) "$a0")) in
+          (method_call #v3.raft #"raftLog'ptr" #"term" (![ptrT] "l")) "$a0")) in
           let: "$a0" := "$ret0" in
           let: "$a1" := "$ret1" in
-          (method_call #pkg_name' #"raftLog'ptr" #"zeroTermOnOutOfBounds" (![ptrT] "l")) "$a0" "$a1")) in
+          (method_call #v3.raft #"raftLog'ptr" #"zeroTermOnOutOfBounds" (![ptrT] "l")) "$a0" "$a1")) in
           let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "term" "id"))) in
           slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
           (interface.get "Infof" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
@@ -468,7 +468,7 @@ Definition raftLog__findConflictByTerm : val :=
       (let: "err" := (ref_ty error (zero_val error)) in
       let: "ourTerm" := (ref_ty uint64T (zero_val uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "index") in
-      (method_call #pkg_name' #"raftLog'ptr" #"term" (![ptrT] "l")) "$a0") in
+      (method_call #v3.raft #"raftLog'ptr" #"term" (![ptrT] "l")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("ourTerm" <-[uint64T] "$r0");;;
@@ -488,7 +488,7 @@ Definition raftLog__findConflictByTerm : val :=
 Definition raftLog__nextUnstableEnts : val :=
   rec: "raftLog__nextUnstableEnts" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
-    return: ((method_call #pkg_name' #"unstable'ptr" #"nextEntries" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #())).
+    return: ((method_call #v3.raft #"unstable'ptr" #"nextEntries" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #())).
 
 (* hasNextUnstableEnts returns if there are any entries that are available to be
    written to the local stable log and are not already in-progress.
@@ -497,7 +497,7 @@ Definition raftLog__nextUnstableEnts : val :=
 Definition raftLog__hasNextUnstableEnts : val :=
   rec: "raftLog__hasNextUnstableEnts" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
-    return: (int_gt (let: "$a0" := ((method_call #pkg_name' #"raftLog'ptr" #"nextUnstableEnts" (![ptrT] "l")) #()) in
+    return: (int_gt (let: "$a0" := ((method_call #v3.raft #"raftLog'ptr" #"nextUnstableEnts" (![ptrT] "l")) #()) in
      slice.len "$a0") #(W64 0))).
 
 (* hasNextOrInProgressUnstableEnts returns if there are any entries that are
@@ -526,14 +526,14 @@ Definition raftLog__nextCommittedEnts : val :=
     (if: ![boolT] (struct.field_ref raftLog "applyingEntsPaused" (![ptrT] "l"))
     then return: (#slice.nil)
     else do:  #());;;
-    (if: (method_call #pkg_name' #"raftLog'ptr" #"hasNextOrInProgressSnapshot" (![ptrT] "l")) #()
+    (if: (method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressSnapshot" (![ptrT] "l")) #()
     then return: (#slice.nil)
     else do:  #());;;
     let: "hi" := (ref_ty uint64T (zero_val uint64T)) in
     let: "lo" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := ((![uint64T] (struct.field_ref raftLog "applying" (![ptrT] "l"))) + #(W64 1)) in
     let: "$r1" := ((let: "$a0" := (![boolT] "allowUnstable") in
-    (method_call #pkg_name' #"raftLog'ptr" #"maxAppliableIndex" (![ptrT] "l")) "$a0") + #(W64 1)) in
+    (method_call #v3.raft #"raftLog'ptr" #"maxAppliableIndex" (![ptrT] "l")) "$a0") + #(W64 1)) in
     do:  ("lo" <-[uint64T] "$r0");;;
     do:  ("hi" <-[uint64T] "$r1");;;
     (if: (![uint64T] "lo") ≥ (![uint64T] "hi")
@@ -545,9 +545,9 @@ Definition raftLog__nextCommittedEnts : val :=
     (if: (![entryEncodingSize] "maxSize") ≤ #(W64 0)
     then
       do:  (let: "$a0" := #"applying entry size (%d-%d)=%d not positive"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #pkg_name' #"entryEncodingSize" (![entryEncodingSize] (struct.field_ref raftLog "maxApplyingEntsSize" (![ptrT] "l")))) in
-      let: "$sl1" := (interface.make #pkg_name' #"entryEncodingSize" (![entryEncodingSize] (struct.field_ref raftLog "applyingEntsSize" (![ptrT] "l")))) in
-      let: "$sl2" := (interface.make #pkg_name' #"entryEncodingSize" (![entryEncodingSize] "maxSize")) in
+      let: "$a1" := ((let: "$sl0" := (interface.make #v3.raft #"entryEncodingSize" (![entryEncodingSize] (struct.field_ref raftLog "maxApplyingEntsSize" (![ptrT] "l")))) in
+      let: "$sl1" := (interface.make #v3.raft #"entryEncodingSize" (![entryEncodingSize] (struct.field_ref raftLog "applyingEntsSize" (![ptrT] "l")))) in
+      let: "$sl2" := (interface.make #v3.raft #"entryEncodingSize" (![entryEncodingSize] "maxSize")) in
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
       (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
     else do:  #());;;
@@ -555,7 +555,7 @@ Definition raftLog__nextCommittedEnts : val :=
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "lo") in
     let: "$a1" := (![uint64T] "hi") in
     let: "$a2" := (![entryEncodingSize] "maxSize") in
-    (method_call #pkg_name' #"raftLog'ptr" #"slice" (![ptrT] "l")) "$a0" "$a1" "$a2") in
+    (method_call #v3.raft #"raftLog'ptr" #"slice" (![ptrT] "l")) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT] "$r0");;;
@@ -580,14 +580,14 @@ Definition raftLog__hasNextCommittedEnts : val :=
     (if: ![boolT] (struct.field_ref raftLog "applyingEntsPaused" (![ptrT] "l"))
     then return: (#false)
     else do:  #());;;
-    (if: (method_call #pkg_name' #"raftLog'ptr" #"hasNextOrInProgressSnapshot" (![ptrT] "l")) #()
+    (if: (method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressSnapshot" (![ptrT] "l")) #()
     then return: (#false)
     else do:  #());;;
     let: "hi" := (ref_ty uint64T (zero_val uint64T)) in
     let: "lo" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := ((![uint64T] (struct.field_ref raftLog "applying" (![ptrT] "l"))) + #(W64 1)) in
     let: "$r1" := ((let: "$a0" := (![boolT] "allowUnstable") in
-    (method_call #pkg_name' #"raftLog'ptr" #"maxAppliableIndex" (![ptrT] "l")) "$a0") + #(W64 1)) in
+    (method_call #v3.raft #"raftLog'ptr" #"maxAppliableIndex" (![ptrT] "l")) "$a0") + #(W64 1)) in
     do:  ("lo" <-[uint64T] "$r0");;;
     do:  ("hi" <-[uint64T] "$r1");;;
     return: ((![uint64T] "lo") < (![uint64T] "hi"))).
@@ -621,7 +621,7 @@ Definition raftLog__maxAppliableIndex : val :=
 Definition raftLog__nextUnstableSnapshot : val :=
   rec: "raftLog__nextUnstableSnapshot" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
-    return: ((method_call #pkg_name' #"unstable'ptr" #"nextSnapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #())).
+    return: ((method_call #v3.raft #"unstable'ptr" #"nextSnapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #())).
 
 (* hasNextUnstableSnapshot returns if there is a snapshot that is available to
    be applied to the local storage and is not already in-progress.
@@ -630,7 +630,7 @@ Definition raftLog__nextUnstableSnapshot : val :=
 Definition raftLog__hasNextUnstableSnapshot : val :=
   rec: "raftLog__hasNextUnstableSnapshot" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
-    return: (((method_call #pkg_name' #"unstable'ptr" #"nextSnapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #()) ≠ #null)).
+    return: (((method_call #v3.raft #"unstable'ptr" #"nextSnapshot" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #()) ≠ #null)).
 
 (* hasNextOrInProgressSnapshot returns if there is pending snapshot waiting for
    applying or in the process of being applied.
@@ -657,7 +657,7 @@ Definition raftLog__firstIndex : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #pkg_name' #"unstable'ptr" #"maybeFirstIndex" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #v3.raft #"unstable'ptr" #"maybeFirstIndex" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -685,7 +685,7 @@ Definition raftLog__lastIndex : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #pkg_name' #"unstable'ptr" #"maybeLastIndex" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #v3.raft #"unstable'ptr" #"maybeLastIndex" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("i" <-[uint64T] "$r0");;;
@@ -714,11 +714,11 @@ Definition raftLog__commitTo : val :=
     let: "tocommit" := (ref_ty uint64T "tocommit") in
     (if: (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l"))) < (![uint64T] "tocommit")
     then
-      (if: ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #()) < (![uint64T] "tocommit")
+      (if: ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #()) < (![uint64T] "tocommit")
       then
         do:  (let: "$a0" := #"tocommit(%d) is out of range [lastIndex(%d)]. Was the raft log corrupted, truncated, or lost?"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "tocommit")) in
-        let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())) in
+        let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
       else do:  #());;;
@@ -775,7 +775,7 @@ Definition raftLog__acceptApplying : val :=
     do:  ((struct.field_ref raftLog "applying" (![ptrT] "l")) <-[uint64T] "$r0");;;
     do:  ((struct.field_ref raftLog "applyingEntsSize" (![ptrT] "l")) <-[entryEncodingSize] ((![entryEncodingSize] (struct.field_ref raftLog "applyingEntsSize" (![ptrT] "l"))) + (![entryEncodingSize] "size")));;;
     let: "$r0" := (((![entryEncodingSize] (struct.field_ref raftLog "applyingEntsSize" (![ptrT] "l"))) ≥ (![entryEncodingSize] (struct.field_ref raftLog "maxApplyingEntsSize" (![ptrT] "l")))) || ((![uint64T] "i") < (let: "$a0" := (![boolT] "allowUnstable") in
-    (method_call #pkg_name' #"raftLog'ptr" #"maxAppliableIndex" (![ptrT] "l")) "$a0"))) in
+    (method_call #v3.raft #"raftLog'ptr" #"maxAppliableIndex" (![ptrT] "l")) "$a0"))) in
     do:  ((struct.field_ref raftLog "applyingEntsPaused" (![ptrT] "l")) <-[boolT] "$r0")).
 
 (* go: log.go:365:19 *)
@@ -784,7 +784,7 @@ Definition raftLog__stableTo : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "id" := (ref_ty entryID "id") in
     do:  (let: "$a0" := (![entryID] "id") in
-    (method_call #pkg_name' #"unstable'ptr" #"stableTo" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0")).
+    (method_call #v3.raft #"unstable'ptr" #"stableTo" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0")).
 
 (* go: log.go:367:19 *)
 Definition raftLog__stableSnapTo : val :=
@@ -792,7 +792,7 @@ Definition raftLog__stableSnapTo : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "i" := (ref_ty uint64T "i") in
     do:  (let: "$a0" := (![uint64T] "i") in
-    (method_call #pkg_name' #"unstable'ptr" #"stableSnapTo" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0")).
+    (method_call #v3.raft #"unstable'ptr" #"stableSnapTo" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0")).
 
 (* acceptUnstable indicates that the application has started persisting the
    unstable entries in storage, and that the current unstable entries are thus
@@ -803,7 +803,7 @@ Definition raftLog__stableSnapTo : val :=
 Definition raftLog__acceptUnstable : val :=
   rec: "raftLog__acceptUnstable" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
-    do:  ((method_call #pkg_name' #"unstable'ptr" #"acceptInProgress" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #())).
+    do:  ((method_call #v3.raft #"unstable'ptr" #"acceptInProgress" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) #())).
 
 (* lastEntryID returns the ID of the last entry in the log.
 
@@ -812,12 +812,12 @@ Definition raftLog__lastEntryID : val :=
   rec: "raftLog__lastEntryID" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "index" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #()) in
     do:  ("index" <-[uint64T] "$r0");;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "t" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "index") in
-    (method_call #pkg_name' #"raftLog'ptr" #"term" (![ptrT] "l")) "$a0") in
+    (method_call #v3.raft #"raftLog'ptr" #"term" (![ptrT] "l")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
@@ -845,7 +845,7 @@ Definition raftLog__term : val :=
     (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "t" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "i") in
-    (method_call #pkg_name' #"unstable'ptr" #"maybeTerm" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0") in
+    (method_call #v3.raft #"unstable'ptr" #"maybeTerm" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
@@ -853,11 +853,11 @@ Definition raftLog__term : val :=
     (if: ![boolT] "ok"
     then return: (![uint64T] "t", #interface.nil)
     else do:  #()));;;
-    (if: ((![uint64T] "i") + #(W64 1)) < ((method_call #pkg_name' #"raftLog'ptr" #"firstIndex" (![ptrT] "l")) #())
-    then return: (#(W64 0), ![error] (globals.get #pkg_name' #"ErrCompacted"%go))
+    (if: ((![uint64T] "i") + #(W64 1)) < ((method_call #v3.raft #"raftLog'ptr" #"firstIndex" (![ptrT] "l")) #())
+    then return: (#(W64 0), ![error] (globals.get #v3.raft #"ErrCompacted"%go))
     else do:  #());;;
-    (if: (![uint64T] "i") > ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())
-    then return: (#(W64 0), ![error] (globals.get #pkg_name' #"ErrUnavailable"%go))
+    (if: (![uint64T] "i") > ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())
+    then return: (#(W64 0), ![error] (globals.get #v3.raft #"ErrUnavailable"%go))
     else do:  #());;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "t" := (ref_ty uint64T (zero_val uint64T)) in
@@ -870,7 +870,7 @@ Definition raftLog__term : val :=
     (if: interface.eq (![error] "err") #interface.nil
     then return: (![uint64T] "t", #interface.nil)
     else do:  #());;;
-    (if: (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrCompacted"%go))) || (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrUnavailable"%go)))
+    (if: (interface.eq (![error] "err") (![error] (globals.get #v3.raft #"ErrCompacted"%go))) || (interface.eq (![error] "err") (![error] (globals.get #v3.raft #"ErrUnavailable"%go)))
     then return: (#(W64 0), ![error] "err")
     else do:  #());;;
     do:  (let: "$a0" := (![error] "err") in
@@ -882,13 +882,13 @@ Definition raftLog__entries : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "maxSize" := (ref_ty entryEncodingSize "maxSize") in
     let: "i" := (ref_ty uint64T "i") in
-    (if: (![uint64T] "i") > ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())
+    (if: (![uint64T] "i") > ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())
     then return: (#slice.nil, #interface.nil)
     else do:  #());;;
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![uint64T] "i") in
-    let: "$a1" := (((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #()) + #(W64 1)) in
+    let: "$a1" := (((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #()) + #(W64 1)) in
     let: "$a2" := (![entryEncodingSize] "maxSize") in
-    (method_call #pkg_name' #"raftLog'ptr" #"slice" (![ptrT] "l")) "$a0" "$a1" "$a2")) in
+    (method_call #v3.raft #"raftLog'ptr" #"slice" (![ptrT] "l")) "$a0" "$a1" "$a2")) in
     return: ("$ret0", "$ret1")).
 
 (* allEntries returns all entries in the log.
@@ -899,9 +899,9 @@ Definition raftLog__allEntries : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "err" := (ref_ty error (zero_val error)) in
     let: "ents" := (ref_ty sliceT (zero_val sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := ((method_call #pkg_name' #"raftLog'ptr" #"firstIndex" (![ptrT] "l")) #()) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := ((method_call #v3.raft #"raftLog'ptr" #"firstIndex" (![ptrT] "l")) #()) in
     let: "$a1" := #(W64 noLimit) in
-    (method_call #pkg_name' #"raftLog'ptr" #"entries" (![ptrT] "l")) "$a0" "$a1") in
+    (method_call #v3.raft #"raftLog'ptr" #"entries" (![ptrT] "l")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT] "$r0");;;
@@ -909,8 +909,8 @@ Definition raftLog__allEntries : val :=
     (if: interface.eq (![error] "err") #interface.nil
     then return: (![sliceT] "ents")
     else do:  #());;;
-    (if: interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrCompacted"%go))
-    then return: ((method_call #pkg_name' #"raftLog'ptr" #"allEntries" (![ptrT] "l")) #())
+    (if: interface.eq (![error] "err") (![error] (globals.get #v3.raft #"ErrCompacted"%go))
+    then return: ((method_call #v3.raft #"raftLog'ptr" #"allEntries" (![ptrT] "l")) #())
     else do:  #());;;
     do:  (let: "$a0" := (![error] "err") in
     Panic "$a0")).
@@ -929,7 +929,7 @@ Definition raftLog__isUpToDate : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "their" := (ref_ty entryID "their") in
     let: "our" := (ref_ty entryID (zero_val entryID)) in
-    let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastEntryID" (![ptrT] "l")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![ptrT] "l")) #()) in
     do:  ("our" <-[entryID] "$r0");;;
     return: (((![uint64T] (struct.field_ref entryID "term" "their")) > (![uint64T] (struct.field_ref entryID "term" "our"))) || (((![uint64T] (struct.field_ref entryID "term" "their")) = (![uint64T] (struct.field_ref entryID "term" "our"))) && ((![uint64T] (struct.field_ref entryID "index" "their")) ≥ (![uint64T] (struct.field_ref entryID "index" "our")))))).
 
@@ -941,7 +941,7 @@ Definition raftLog__matchTerm : val :=
     let: "err" := (ref_ty error (zero_val error)) in
     let: "t" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] (struct.field_ref entryID "index" "id")) in
-    (method_call #pkg_name' #"raftLog'ptr" #"term" (![ptrT] "l")) "$a0") in
+    (method_call #v3.raft #"raftLog'ptr" #"term" (![ptrT] "l")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("t" <-[uint64T] "$r0");;;
@@ -957,10 +957,10 @@ Definition raftLog__maybeCommit : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "at" := (ref_ty entryID "at") in
     (if: (((![uint64T] (struct.field_ref entryID "term" "at")) ≠ #(W64 0)) && ((![uint64T] (struct.field_ref entryID "index" "at")) > (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] "l"))))) && (let: "$a0" := (![entryID] "at") in
-    (method_call #pkg_name' #"raftLog'ptr" #"matchTerm" (![ptrT] "l")) "$a0")
+    (method_call #v3.raft #"raftLog'ptr" #"matchTerm" (![ptrT] "l")) "$a0")
     then
       do:  (let: "$a0" := (![uint64T] (struct.field_ref entryID "index" "at")) in
-      (method_call #pkg_name' #"raftLog'ptr" #"commitTo" (![ptrT] "l")) "$a0");;;
+      (method_call #v3.raft #"raftLog'ptr" #"commitTo" (![ptrT] "l")) "$a0");;;
       return: (#true)
     else do:  #());;;
     return: (#false)).
@@ -971,7 +971,7 @@ Definition raftLog__restore : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "s" := (ref_ty raftpb.Snapshot "s") in
     do:  (let: "$a0" := #"log [%s] starts to restore snapshot [index: %d, term: %d]"%go in
-    let: "$a1" := ((let: "$sl0" := (interface.make #pkg_name' #"raftLog'ptr" (![ptrT] "l")) in
+    let: "$a1" := ((let: "$sl0" := (interface.make #v3.raft #"raftLog'ptr" (![ptrT] "l")) in
     let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Index" (struct.field_ref raftpb.Snapshot "Metadata" "s")))) in
     let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Term" (struct.field_ref raftpb.Snapshot "Metadata" "s")))) in
     slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
@@ -979,7 +979,7 @@ Definition raftLog__restore : val :=
     let: "$r0" := (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Index" (struct.field_ref raftpb.Snapshot "Metadata" "s"))) in
     do:  ((struct.field_ref raftLog "committed" (![ptrT] "l")) <-[uint64T] "$r0");;;
     do:  (let: "$a0" := (![raftpb.Snapshot] "s") in
-    (method_call #pkg_name' #"unstable'ptr" #"restore" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0")).
+    (method_call #v3.raft #"unstable'ptr" #"restore" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0")).
 
 (* scan visits all log entries in the [lo, hi) range, returning them via the
    given callback. The callback can be invoked multiple times, with consecutive
@@ -1006,7 +1006,7 @@ Definition raftLog__scan : val :=
       let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "lo") in
       let: "$a1" := (![uint64T] "hi") in
       let: "$a2" := (![entryEncodingSize] "pageSize") in
-      (method_call #pkg_name' #"raftLog'ptr" #"slice" (![ptrT] "l")) "$a0" "$a1" "$a2") in
+      (method_call #v3.raft #"raftLog'ptr" #"slice" (![ptrT] "l")) "$a0" "$a1" "$a2") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("ents" <-[sliceT] "$r0");;;
@@ -1021,7 +1021,7 @@ Definition raftLog__scan : val :=
            let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "lo")) in
            let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] "hi")) in
            slice.literal interfaceT ["$sl0"; "$sl1"])) in
-           (func_call #fmt.pkg_name' #"Errorf"%go) "$a0" "$a1")
+           (func_call #fmt #"Errorf"%go) "$a0" "$a1")
         else do:  #()));;;
       (let: "err" := (ref_ty error (zero_val error)) in
       let: "$r0" := (let: "$a0" := (![sliceT] "ents") in
@@ -1046,7 +1046,7 @@ Definition raftLog__slice : val :=
     (let: "err" := (ref_ty error (zero_val error)) in
     let: "$r0" := (let: "$a0" := (![uint64T] "lo") in
     let: "$a1" := (![uint64T] "hi") in
-    (method_call #pkg_name' #"raftLog'ptr" #"mustCheckOutOfBounds" (![ptrT] "l")) "$a0" "$a1") in
+    (method_call #v3.raft #"raftLog'ptr" #"mustCheckOutOfBounds" (![ptrT] "l")) "$a0" "$a1") in
     do:  ("err" <-[error] "$r0");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (#slice.nil, ![error] "err")
@@ -1059,9 +1059,9 @@ Definition raftLog__slice : val :=
       let: "ents" := (ref_ty sliceT (zero_val sliceT)) in
       let: "$r0" := (let: "$a0" := (let: "$a0" := (![uint64T] "lo") in
       let: "$a1" := (![uint64T] "hi") in
-      (method_call #pkg_name' #"unstable'ptr" #"slice" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0" "$a1") in
+      (method_call #v3.raft #"unstable'ptr" #"slice" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0" "$a1") in
       let: "$a1" := (![entryEncodingSize] "maxSize") in
-      (func_call #pkg_name' #"limitSize"%go) "$a0" "$a1") in
+      (func_call #v3.raft #"limitSize"%go) "$a0" "$a1") in
       do:  ("ents" <-[sliceT] "$r0");;;
       return: (let: "$s" := (![sliceT] "ents") in
        slice.full_slice raftpb.Entry "$s" #(W64 0) (let: "$a0" := (![sliceT] "ents") in
@@ -1083,10 +1083,10 @@ Definition raftLog__slice : val :=
     let: "$r1" := "$ret1" in
     do:  ("ents" <-[sliceT] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
-    (if: interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrCompacted"%go))
+    (if: interface.eq (![error] "err") (![error] (globals.get #v3.raft #"ErrCompacted"%go))
     then return: (#slice.nil, ![error] "err")
     else
-      (if: interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrUnavailable"%go))
+      (if: interface.eq (![error] "err") (![error] (globals.get #v3.raft #"ErrUnavailable"%go))
       then
         do:  (let: "$a0" := #"entries[%d:%d) is unavailable from storage"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "lo")) in
@@ -1108,7 +1108,7 @@ Definition raftLog__slice : val :=
     else do:  #());;;
     let: "size" := (ref_ty entryEncodingSize (zero_val entryEncodingSize)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "ents") in
-    (func_call #pkg_name' #"entsSize"%go) "$a0") in
+    (func_call #v3.raft #"entsSize"%go) "$a0") in
     do:  ("size" <-[entryEncodingSize] "$r0");;;
     (if: (![entryEncodingSize] "size") ≥ (![entryEncodingSize] "maxSize")
     then return: (![sliceT] "ents", #interface.nil)
@@ -1116,18 +1116,18 @@ Definition raftLog__slice : val :=
     let: "unstable" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![uint64T] (struct.field_ref unstable "offset" (struct.field_ref raftLog "unstable" (![ptrT] "l")))) in
     let: "$a1" := (![uint64T] "hi") in
-    (method_call #pkg_name' #"unstable'ptr" #"slice" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0" "$a1") in
+    (method_call #v3.raft #"unstable'ptr" #"slice" (struct.field_ref raftLog "unstable" (![ptrT] "l"))) "$a0" "$a1") in
     let: "$a1" := ((![entryEncodingSize] "maxSize") - (![entryEncodingSize] "size")) in
-    (func_call #pkg_name' #"limitSize"%go) "$a0" "$a1") in
+    (func_call #v3.raft #"limitSize"%go) "$a0" "$a1") in
     do:  ("unstable" <-[sliceT] "$r0");;;
     (if: ((let: "$a0" := (![sliceT] "unstable") in
     slice.len "$a0") = #(W64 1)) && (((![entryEncodingSize] "size") + (let: "$a0" := (![sliceT] "unstable") in
-    (func_call #pkg_name' #"entsSize"%go) "$a0")) > (![entryEncodingSize] "maxSize"))
+    (func_call #v3.raft #"entsSize"%go) "$a0")) > (![entryEncodingSize] "maxSize"))
     then return: (![sliceT] "ents", #interface.nil)
     else do:  #());;;
     return: (let: "$a0" := (![sliceT] "ents") in
      let: "$a1" := (![sliceT] "unstable") in
-     (func_call #pkg_name' #"extend"%go) "$a0" "$a1", #interface.nil)).
+     (func_call #v3.raft #"extend"%go) "$a0" "$a1", #interface.nil)).
 
 (* l.firstIndex <= lo <= hi <= l.firstIndex + len(l.entries)
 
@@ -1146,13 +1146,13 @@ Definition raftLog__mustCheckOutOfBounds : val :=
       (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
     else do:  #());;;
     let: "fi" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"firstIndex" (![ptrT] "l")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"firstIndex" (![ptrT] "l")) #()) in
     do:  ("fi" <-[uint64T] "$r0");;;
     (if: (![uint64T] "lo") < (![uint64T] "fi")
-    then return: (![error] (globals.get #pkg_name' #"ErrCompacted"%go))
+    then return: (![error] (globals.get #v3.raft #"ErrCompacted"%go))
     else do:  #());;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := ((((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #()) + #(W64 1)) - (![uint64T] "fi")) in
+    let: "$r0" := ((((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #()) + #(W64 1)) - (![uint64T] "fi")) in
     do:  ("length" <-[uint64T] "$r0");;;
     (if: (![uint64T] "hi") > ((![uint64T] "fi") + (![uint64T] "length"))
     then
@@ -1160,7 +1160,7 @@ Definition raftLog__mustCheckOutOfBounds : val :=
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "lo")) in
       let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] "hi")) in
       let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] "fi")) in
-      let: "$sl3" := (interface.make #""%go #"uint64"%go ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())) in
+      let: "$sl3" := (interface.make #""%go #"uint64"%go ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] "l")) #())) in
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
       (interface.get "Panicf" (![Logger] (struct.field_ref raftLog "logger" (![ptrT] "l")))) "$a0" "$a1")
     else do:  #());;;
@@ -1175,7 +1175,7 @@ Definition raftLog__zeroTermOnOutOfBounds : val :=
     (if: interface.eq (![error] "err") #interface.nil
     then return: (![uint64T] "t")
     else do:  #());;;
-    (if: (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrCompacted"%go))) || (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrUnavailable"%go)))
+    (if: (interface.eq (![error] "err") (![error] (globals.get #v3.raft #"ErrCompacted"%go))) || (interface.eq (![error] "err") (![error] (globals.get #v3.raft #"ErrUnavailable"%go)))
     then return: (#(W64 0))
     else do:  #());;;
     do:  (let: "$a0" := #"unexpected error (%v)"%go in
@@ -1232,7 +1232,7 @@ Definition unstable__maybeTerm : val :=
     else do:  #());;;
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "last" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #pkg_name' #"unstable'ptr" #"maybeLastIndex" (![ptrT] "u")) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #v3.raft #"unstable'ptr" #"maybeLastIndex" (![ptrT] "u")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("last" <-[uint64T] "$r0");;;
@@ -1312,7 +1312,7 @@ Definition unstable__stableTo : val :=
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "gt" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] (struct.field_ref entryID "index" "id")) in
-    (method_call #pkg_name' #"unstable'ptr" #"maybeTerm" (![ptrT] "u")) "$a0") in
+    (method_call #v3.raft #"unstable'ptr" #"maybeTerm" (![ptrT] "u")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("gt" <-[uint64T] "$r0");;;
@@ -1356,7 +1356,7 @@ Definition unstable__stableTo : val :=
     let: "$a1" := (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u"))) in
     (maxUint64 2) "$a0" "$a1") in
     do:  ((struct.field_ref unstable "offsetInProgress" (![ptrT] "u")) <-[uint64T] "$r0");;;
-    do:  ((method_call #pkg_name' #"unstable'ptr" #"shrinkEntriesArray" (![ptrT] "u")) #())).
+    do:  ((method_call #v3.raft #"unstable'ptr" #"shrinkEntriesArray" (![ptrT] "u")) #())).
 
 Definition lenMultiple : Z := 2.
 
@@ -1451,7 +1451,7 @@ Definition unstable__truncateAndAppend : val :=
         let: "keep" := (ref_ty sliceT (zero_val sliceT)) in
         let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u"))) in
         let: "$a1" := (![uint64T] "fromIndex") in
-        (method_call #pkg_name' #"unstable'ptr" #"slice" (![ptrT] "u")) "$a0" "$a1") in
+        (method_call #v3.raft #"unstable'ptr" #"slice" (![ptrT] "u")) "$a0" "$a1") in
         do:  ("keep" <-[sliceT] "$r0");;;
         let: "$r0" := (let: "$a0" := (![sliceT] "keep") in
         let: "$a1" := (![sliceT] "ents") in
@@ -1479,7 +1479,7 @@ Definition unstable__slice : val :=
     let: "lo" := (ref_ty uint64T "lo") in
     do:  (let: "$a0" := (![uint64T] "lo") in
     let: "$a1" := (![uint64T] "hi") in
-    (method_call #pkg_name' #"unstable'ptr" #"mustCheckOutOfBounds" (![ptrT] "u")) "$a0" "$a1");;;
+    (method_call #v3.raft #"unstable'ptr" #"mustCheckOutOfBounds" (![ptrT] "u")) "$a0" "$a1");;;
     return: (let: "$s" := (![sliceT] (struct.field_ref unstable "entries" (![ptrT] "u"))) in
      slice.full_slice raftpb.Entry "$s" ((![uint64T] "lo") - (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u")))) ((![uint64T] "hi") - (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u")))) ((![uint64T] "hi") - (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u")))))).
 
@@ -1518,10 +1518,10 @@ Definition unstable__mustCheckOutOfBounds : val :=
 Definition SetLogger : val :=
   rec: "SetLogger" "l" :=
     exception_do (let: "l" := (ref_ty Logger "l") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (globals.get #pkg_name' #"raftLoggerMu"%go)) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (globals.get #v3.raft #"raftLoggerMu"%go)) #());;;
     let: "$r0" := (![Logger] "l") in
-    do:  ((globals.get #pkg_name' #"raftLogger"%go) <-[Logger] "$r0");;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (globals.get #pkg_name' #"raftLoggerMu"%go)) #())).
+    do:  ((globals.get #v3.raft #"raftLogger"%go) <-[Logger] "$r0");;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (globals.get #v3.raft #"raftLoggerMu"%go)) #())).
 
 Definition DefaultLogger : go_type := structT [
   "Logger" :: ptrT;
@@ -1531,20 +1531,20 @@ Definition DefaultLogger : go_type := structT [
 (* go: logger.go:51:6 *)
 Definition ResetDefaultLogger : val :=
   rec: "ResetDefaultLogger" <> :=
-    exception_do (do:  (let: "$a0" := (interface.make #pkg_name' #"DefaultLogger'ptr" (![ptrT] (globals.get #pkg_name' #"defaultLogger"%go))) in
-    (func_call #pkg_name' #"SetLogger"%go) "$a0")).
+    exception_do (do:  (let: "$a0" := (interface.make #v3.raft #"DefaultLogger'ptr" (![ptrT] (globals.get #v3.raft #"defaultLogger"%go))) in
+    (func_call #v3.raft #"SetLogger"%go) "$a0")).
 
 (* go: logger.go:55:6 *)
 Definition getLogger : val :=
   rec: "getLogger" <> :=
-    with_defer: (do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (globals.get #pkg_name' #"raftLoggerMu"%go)) #());;;
-    do:  (let: "$f" := (method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (globals.get #pkg_name' #"raftLoggerMu"%go)) in
+    with_defer: (do:  ((method_call #sync #"Mutex'ptr" #"Lock" (globals.get #v3.raft #"raftLoggerMu"%go)) #());;;
+    do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (globals.get #v3.raft #"raftLoggerMu"%go)) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    return: (![Logger] (globals.get #pkg_name' #"raftLogger"%go))).
+    return: (![Logger] (globals.get #v3.raft #"raftLogger"%go))).
 
 Definition calldepth : Z := 2.
 
@@ -1552,8 +1552,8 @@ Definition calldepth : Z := 2.
 Definition DefaultLogger__EnableTimestamps : val :=
   rec: "DefaultLogger__EnableTimestamps" "l" <> :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
-    do:  (let: "$a0" := ((((method_call #pkg_name' #"DefaultLogger'ptr" #"Flags" (![ptrT] "l")) #()) `or` #(W64 log.Ldate)) `or` #(W64 log.Ltime)) in
-    (method_call #pkg_name' #"DefaultLogger'ptr" #"SetFlags" (![ptrT] "l")) "$a0")).
+    do:  (let: "$a0" := ((((method_call #v3.raft #"DefaultLogger'ptr" #"Flags" (![ptrT] "l")) #()) `or` #(W64 log.Ldate)) `or` #(W64 log.Ltime)) in
+    (method_call #v3.raft #"DefaultLogger'ptr" #"SetFlags" (![ptrT] "l")) "$a0")).
 
 (* go: logger.go:82:25 *)
 Definition DefaultLogger__EnableDebug : val :=
@@ -1572,9 +1572,9 @@ Definition DefaultLogger__Debug : val :=
       do:  (let: "$a0" := #(W64 calldepth) in
       let: "$a1" := (let: "$a0" := #"DEBUG"%go in
       let: "$a1" := (let: "$a0" := (![sliceT] "v") in
-      (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
-      (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-      (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")
+      (func_call #fmt #"Sprint"%go) "$a0") in
+      (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+      (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")
     else do:  #())).
 
 (* go: logger.go:92:25 *)
@@ -1589,9 +1589,9 @@ Definition DefaultLogger__Debugf : val :=
       let: "$a1" := (let: "$a0" := #"DEBUG"%go in
       let: "$a1" := (let: "$a0" := (![stringT] "format") in
       let: "$a1" := (![sliceT] "v") in
-      (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
-      (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-      (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")
+      (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
+      (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+      (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")
     else do:  #())).
 
 (* go: logger.go:98:25 *)
@@ -1602,9 +1602,9 @@ Definition DefaultLogger__Info : val :=
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"INFO"%go in
     let: "$a1" := (let: "$a0" := (![sliceT] "v") in
-    (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
-    (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
+    (func_call #fmt #"Sprint"%go) "$a0") in
+    (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+    (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:102:25 *)
 Definition DefaultLogger__Infof : val :=
@@ -1616,9 +1616,9 @@ Definition DefaultLogger__Infof : val :=
     let: "$a1" := (let: "$a0" := #"INFO"%go in
     let: "$a1" := (let: "$a0" := (![stringT] "format") in
     let: "$a1" := (![sliceT] "v") in
-    (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
-    (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
+    (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
+    (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+    (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:106:25 *)
 Definition DefaultLogger__Error : val :=
@@ -1628,9 +1628,9 @@ Definition DefaultLogger__Error : val :=
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"ERROR"%go in
     let: "$a1" := (let: "$a0" := (![sliceT] "v") in
-    (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
-    (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
+    (func_call #fmt #"Sprint"%go) "$a0") in
+    (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+    (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:110:25 *)
 Definition DefaultLogger__Errorf : val :=
@@ -1642,9 +1642,9 @@ Definition DefaultLogger__Errorf : val :=
     let: "$a1" := (let: "$a0" := #"ERROR"%go in
     let: "$a1" := (let: "$a0" := (![stringT] "format") in
     let: "$a1" := (![sliceT] "v") in
-    (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
-    (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
+    (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
+    (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+    (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:114:25 *)
 Definition DefaultLogger__Warning : val :=
@@ -1654,9 +1654,9 @@ Definition DefaultLogger__Warning : val :=
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"WARN"%go in
     let: "$a1" := (let: "$a0" := (![sliceT] "v") in
-    (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
-    (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
+    (func_call #fmt #"Sprint"%go) "$a0") in
+    (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+    (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:118:25 *)
 Definition DefaultLogger__Warningf : val :=
@@ -1668,9 +1668,9 @@ Definition DefaultLogger__Warningf : val :=
     let: "$a1" := (let: "$a0" := #"WARN"%go in
     let: "$a1" := (let: "$a0" := (![stringT] "format") in
     let: "$a1" := (![sliceT] "v") in
-    (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
-    (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
+    (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
+    (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+    (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1")).
 
 (* go: logger.go:122:25 *)
 Definition DefaultLogger__Fatal : val :=
@@ -1680,11 +1680,11 @@ Definition DefaultLogger__Fatal : val :=
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"FATAL"%go in
     let: "$a1" := (let: "$a0" := (![sliceT] "v") in
-    (func_call #fmt.pkg_name' #"Sprint"%go) "$a0") in
-    (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1");;;
+    (func_call #fmt #"Sprint"%go) "$a0") in
+    (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+    (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1");;;
     do:  (let: "$a0" := #(W64 1) in
-    (func_call #os.pkg_name' #"Exit"%go) "$a0")).
+    (func_call #os #"Exit"%go) "$a0")).
 
 (* go: logger.go:127:25 *)
 Definition DefaultLogger__Fatalf : val :=
@@ -1696,11 +1696,11 @@ Definition DefaultLogger__Fatalf : val :=
     let: "$a1" := (let: "$a0" := #"FATAL"%go in
     let: "$a1" := (let: "$a0" := (![stringT] "format") in
     let: "$a1" := (![sliceT] "v") in
-    (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
-    (func_call #pkg_name' #"header"%go) "$a0" "$a1") in
-    (method_call #pkg_name' #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1");;;
+    (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
+    (func_call #v3.raft #"header"%go) "$a0" "$a1") in
+    (method_call #v3.raft #"DefaultLogger'ptr" #"Output" (![ptrT] "l")) "$a0" "$a1");;;
     do:  (let: "$a0" := #(W64 1) in
-    (func_call #os.pkg_name' #"Exit"%go) "$a0")).
+    (func_call #os #"Exit"%go) "$a0")).
 
 (* go: logger.go:132:25 *)
 Definition DefaultLogger__Panic : val :=
@@ -1708,7 +1708,7 @@ Definition DefaultLogger__Panic : val :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "v" := (ref_ty sliceT "v") in
     do:  (let: "$a0" := (![sliceT] "v") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Panic" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0")).
+    (method_call #log #"Logger'ptr" #"Panic" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0")).
 
 (* go: logger.go:136:25 *)
 Definition DefaultLogger__Panicf : val :=
@@ -1718,7 +1718,7 @@ Definition DefaultLogger__Panicf : val :=
     let: "format" := (ref_ty stringT "format") in
     do:  (let: "$a0" := (![stringT] "format") in
     let: "$a1" := (![sliceT] "v") in
-    (method_call #log.pkg_name' #"Logger'ptr" #"Panicf" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")).
+    (method_call #log #"Logger'ptr" #"Panicf" (![ptrT] (struct.field_ref DefaultLogger "Logger" (![ptrT] "l")))) "$a0" "$a1")).
 
 (* go: logger.go:140:6 *)
 Definition header : val :=
@@ -1729,7 +1729,7 @@ Definition header : val :=
      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![stringT] "lvl")) in
      let: "$sl1" := (interface.make #""%go #"string"%go (![stringT] "msg")) in
      slice.literal interfaceT ["$sl0"; "$sl1"])) in
-     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")).
+     (func_call #fmt #"Sprintf"%go) "$a0" "$a1")).
 
 Definition SnapshotStatus : go_type := intT.
 
@@ -1774,8 +1774,8 @@ Definition IsEmptyHardState : val :=
   rec: "IsEmptyHardState" "st" :=
     exception_do (let: "st" := (ref_ty raftpb.HardState "st") in
     return: (let: "$a0" := (![raftpb.HardState] "st") in
-     let: "$a1" := (![raftpb.HardState] (globals.get #pkg_name' #"emptyState"%go)) in
-     (func_call #pkg_name' #"isHardStateEqual"%go) "$a0" "$a1")).
+     let: "$a1" := (![raftpb.HardState] (globals.get #v3.raft #"emptyState"%go)) in
+     (func_call #v3.raft #"isHardStateEqual"%go) "$a0" "$a1")).
 
 (* IsEmptySnap returns true if the given Snapshot is empty.
 
@@ -1862,7 +1862,7 @@ Definition setupNode : val :=
     let: "err" := (ref_ty error (zero_val error)) in
     let: "rn" := (ref_ty ptrT (zero_val ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![ptrT] "c") in
-    (func_call #pkg_name' #"NewRawNode"%go) "$a0") in
+    (func_call #v3.raft #"NewRawNode"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("rn" <-[ptrT] "$r0");;;
@@ -1873,7 +1873,7 @@ Definition setupNode : val :=
       Panic "$a0")
     else do:  #());;;
     let: "$r0" := (let: "$a0" := (![sliceT] "peers") in
-    (method_call #pkg_name' #"RawNode'ptr" #"Bootstrap" (![ptrT] "rn")) "$a0") in
+    (method_call #v3.raft #"RawNode'ptr" #"Bootstrap" (![ptrT] "rn")) "$a0") in
     do:  ("err" <-[error] "$r0");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
@@ -1884,7 +1884,7 @@ Definition setupNode : val :=
     else do:  #());;;
     let: "n" := (ref_ty node (zero_val node)) in
     let: "$r0" := (let: "$a0" := (![ptrT] "rn") in
-    (func_call #pkg_name' #"newNode"%go) "$a0") in
+    (func_call #v3.raft #"newNode"%go) "$a0") in
     do:  ("n" <-[node] "$r0");;;
     return: ("n")).
 
@@ -1901,11 +1901,11 @@ Definition StartNode : val :=
     let: "n" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := (![ptrT] "c") in
     let: "$a1" := (![sliceT] "peers") in
-    (func_call #pkg_name' #"setupNode"%go) "$a0" "$a1") in
+    (func_call #v3.raft #"setupNode"%go) "$a0" "$a1") in
     do:  ("n" <-[ptrT] "$r0");;;
-    let: "$go" := (method_call #pkg_name' #"node'ptr" #"run" (![ptrT] "n")) in
+    let: "$go" := (method_call #v3.raft #"node'ptr" #"run" (![ptrT] "n")) in
     do:  (Fork ("$go" #()));;;
-    return: (interface.make #pkg_name' #"node'ptr" (![ptrT] "n"))).
+    return: (interface.make #v3.raft #"node'ptr" (![ptrT] "n"))).
 
 (* RestartNode is similar to StartNode but does not take a list of peers.
    The current membership of the cluster will be restored from the Storage.
@@ -1919,7 +1919,7 @@ Definition RestartNode : val :=
     let: "err" := (ref_ty error (zero_val error)) in
     let: "rn" := (ref_ty ptrT (zero_val ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![ptrT] "c") in
-    (func_call #pkg_name' #"NewRawNode"%go) "$a0") in
+    (func_call #v3.raft #"NewRawNode"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("rn" <-[ptrT] "$r0");;;
@@ -1931,11 +1931,11 @@ Definition RestartNode : val :=
     else do:  #());;;
     let: "n" := (ref_ty node (zero_val node)) in
     let: "$r0" := (let: "$a0" := (![ptrT] "rn") in
-    (func_call #pkg_name' #"newNode"%go) "$a0") in
+    (func_call #v3.raft #"newNode"%go) "$a0") in
     do:  ("n" <-[node] "$r0");;;
-    let: "$go" := (method_call #pkg_name' #"node'ptr" #"run" "n") in
+    let: "$go" := (method_call #v3.raft #"node'ptr" #"run" "n") in
     do:  (Fork ("$go" #()));;;
-    return: (interface.make #pkg_name' #"node'ptr" "n")).
+    return: (interface.make #v3.raft #"node'ptr" "n")).
 
 (* go: node.go:312:6 *)
 Definition newNode : val :=
@@ -2000,16 +2000,16 @@ Definition node__run : val :=
     do:  ("lead" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ((![chanT (structT [
-      ])] "advancec") = #null) && ((method_call #pkg_name' #"RawNode'ptr" #"HasReady" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) #())
+      ])] "advancec") = #null) && ((method_call #v3.raft #"RawNode'ptr" #"HasReady" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) #())
       then
-        let: "$r0" := ((method_call #pkg_name' #"RawNode'ptr" #"readyWithoutAccept" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) #()) in
+        let: "$r0" := ((method_call #v3.raft #"RawNode'ptr" #"readyWithoutAccept" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) #()) in
         do:  ("rd" <-[Ready] "$r0");;;
         let: "$r0" := (![chanT Ready] (struct.field_ref node "readyc" (![ptrT] "n"))) in
         do:  ("readyc" <-[chanT Ready] "$r0")
       else do:  #());;;
       (if: (![uint64T] "lead") ≠ (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r")))
       then
-        (if: (method_call #pkg_name' #"raft'ptr" #"hasLeader" (![ptrT] "r")) #()
+        (if: (method_call #v3.raft #"raft'ptr" #"hasLeader" (![ptrT] "r")) #()
         then
           (if: (![uint64T] "lead") = None
           then
@@ -2043,7 +2043,7 @@ Definition node__run : val :=
       else do:  #());;;
       do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
           do:  (let: "$a0" := (![Ready] "rd") in
-          (method_call #pkg_name' #"RawNode'ptr" #"acceptReady" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) "$a0");;;
+          (method_call #v3.raft #"RawNode'ptr" #"acceptReady" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) "$a0");;;
           (if: (~ (![boolT] (struct.field_ref RawNode "asyncStorageWrites" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n"))))))
           then
             let: "$r0" := (![chanT (structT [
@@ -2075,7 +2075,7 @@ Definition node__run : val :=
           do:  ((struct.field_ref raftpb.Message "From" "m") <-[uint64T] "$r0");;;
           let: "err" := (ref_ty error (zero_val error)) in
           let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
-          (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
+          (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
           do:  ("err" <-[error] "$r0");;;
           (if: (![chanT error] (struct.field_ref msgWithResult "result" "pm")) ≠ #null
           then
@@ -2090,12 +2090,12 @@ Definition node__run : val :=
           let: "$r0" := (Fst "$recvVal") in
           do:  ("m" <-[raftpb.Message] "$r0");;;
           (if: ((let: "$a0" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
-          (func_call #pkg_name' #"IsResponseMsg"%go) "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-          (func_call #pkg_name' #"IsLocalMsgTarget"%go) "$a0"))) && ((Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r")))) (![uint64T] (struct.field_ref raftpb.Message "From" "m")))) = #null)
+          (func_call #v3.raft #"IsResponseMsg"%go) "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
+          (func_call #v3.raft #"IsLocalMsgTarget"%go) "$a0"))) && ((Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r")))) (![uint64T] (struct.field_ref raftpb.Message "From" "m")))) = #null)
           then break: #()
           else do:  #());;;
           do:  (let: "$a0" := (![raftpb.Message] "m") in
-          (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0")
+          (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] "r")) "$a0")
           )); ("$recvChan2", (λ: "$recvVal",
           let: "cc" := (ref_ty raftpb.ConfChangeV2 (zero_val raftpb.ConfChangeV2)) in
           let: "$r0" := (Fst "$recvVal") in
@@ -2108,7 +2108,7 @@ Definition node__run : val :=
           do:  ("okBefore" <-[boolT] "$r1");;;
           let: "cs" := (ref_ty raftpb.ConfState (zero_val raftpb.ConfState)) in
           let: "$r0" := (let: "$a0" := (![raftpb.ConfChangeV2] "cc") in
-          (method_call #pkg_name' #"raft'ptr" #"applyConfChange" (![ptrT] "r")) "$a0") in
+          (method_call #v3.raft #"raft'ptr" #"applyConfChange" (![ptrT] "r")) "$a0") in
           do:  ("cs" <-[raftpb.ConfState] "$r0");;;
           (let: "okAfter" := (ref_ty boolT (zero_val boolT)) in
           let: ("$ret0", "$ret1") := (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r")))) (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -2152,10 +2152,10 @@ Definition node__run : val :=
               do:  #()
               ))] (InjLV #()))
           )); ("$recvChan3", (λ: "$recvVal",
-          do:  ((method_call #pkg_name' #"RawNode'ptr" #"Tick" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) #())
+          do:  ((method_call #v3.raft #"RawNode'ptr" #"Tick" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) #())
           )); ("$recvChan4", (λ: "$recvVal",
           do:  (let: "$a0" := (![Ready] "rd") in
-          (method_call #pkg_name' #"RawNode'ptr" #"Advance" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) "$a0");;;
+          (method_call #v3.raft #"RawNode'ptr" #"Advance" (![ptrT] (struct.field_ref node "rn" (![ptrT] "n")))) "$a0");;;
           let: "$r0" := (struct.make Ready [{
             "SoftState" ::= zero_val ptrT;
             "HardState" ::= zero_val raftpb.HardState;
@@ -2176,7 +2176,7 @@ Definition node__run : val :=
           do:  ("c" <-[chanT Status] "$r0");;;
           do:  (let: "$chan" := (![chanT Status] "c") in
           let: "$v" := (let: "$a0" := (![ptrT] "r") in
-          (func_call #pkg_name' #"getStatus"%go) "$a0") in
+          (func_call #v3.raft #"getStatus"%go) "$a0") in
           chan.send "$chan" "$v")
           )); ("$recvChan6", (λ: "$recvVal",
           do:  (let: "$a0" := (![chanT (structT [
@@ -2226,7 +2226,7 @@ Definition node__Campaign : val :=
        "Context" ::= zero_val sliceT;
        "Responses" ::= zero_val sliceT
      }]) in
-     (method_call #pkg_name' #"node'ptr" #"step" (![ptrT] "n")) "$a0" "$a1")).
+     (method_call #v3.raft #"node'ptr" #"step" (![ptrT] "n")) "$a0" "$a1")).
 
 (* go: node.go:469:16 *)
 Definition node__Propose : val :=
@@ -2260,7 +2260,7 @@ Definition node__Propose : val :=
        "Context" ::= zero_val sliceT;
        "Responses" ::= zero_val sliceT
      }]) in
-     (method_call #pkg_name' #"node'ptr" #"stepWait" (![ptrT] "n")) "$a0" "$a1")).
+     (method_call #v3.raft #"node'ptr" #"stepWait" (![ptrT] "n")) "$a0" "$a1")).
 
 (* go: node.go:473:16 *)
 Definition node__Step : val :=
@@ -2269,13 +2269,13 @@ Definition node__Step : val :=
     let: "m" := (ref_ty raftpb.Message "m") in
     let: "ctx" := (ref_ty context.Context "ctx") in
     (if: (let: "$a0" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
-    (func_call #pkg_name' #"IsLocalMsg"%go) "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-    (func_call #pkg_name' #"IsLocalMsgTarget"%go) "$a0"))
+    (func_call #v3.raft #"IsLocalMsg"%go) "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
+    (func_call #v3.raft #"IsLocalMsgTarget"%go) "$a0"))
     then return: (#interface.nil)
     else do:  #());;;
     return: (let: "$a0" := (![context.Context] "ctx") in
      let: "$a1" := (![raftpb.Message] "m") in
-     (method_call #pkg_name' #"node'ptr" #"step" (![ptrT] "n")) "$a0" "$a1")).
+     (method_call #v3.raft #"node'ptr" #"step" (![ptrT] "n")) "$a0" "$a1")).
 
 (* go: node.go:482:6 *)
 Definition confChangeToMsg : val :=
@@ -2285,7 +2285,7 @@ Definition confChangeToMsg : val :=
     let: "data" := (ref_ty sliceT (zero_val sliceT)) in
     let: "typ" := (ref_ty raftpb.EntryType (zero_val raftpb.EntryType)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![raftpb.ConfChangeI] "c") in
-    (func_call #raftpb.pkg_name' #"MarshalConfChange"%go) "$a0") in
+    (func_call #raftpb #"MarshalConfChange"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -2347,7 +2347,7 @@ Definition node__ProposeConfChange : val :=
     let: "err" := (ref_ty error (zero_val error)) in
     let: "msg" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![raftpb.ConfChangeI] "cc") in
-    (func_call #pkg_name' #"confChangeToMsg"%go) "$a0") in
+    (func_call #v3.raft #"confChangeToMsg"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("msg" <-[raftpb.Message] "$r0");;;
@@ -2357,7 +2357,7 @@ Definition node__ProposeConfChange : val :=
     else do:  #());;;
     return: (let: "$a0" := (![context.Context] "ctx") in
      let: "$a1" := (![raftpb.Message] "msg") in
-     (method_call #pkg_name' #"node'ptr" #"Step" (![ptrT] "n")) "$a0" "$a1")).
+     (method_call #v3.raft #"node'ptr" #"Step" (![ptrT] "n")) "$a0" "$a1")).
 
 (* go: node.go:498:16 *)
 Definition node__step : val :=
@@ -2368,7 +2368,7 @@ Definition node__step : val :=
     return: (let: "$a0" := (![context.Context] "ctx") in
      let: "$a1" := (![raftpb.Message] "m") in
      let: "$a2" := #false in
-     (method_call #pkg_name' #"node'ptr" #"stepWithWaitOption" (![ptrT] "n")) "$a0" "$a1" "$a2")).
+     (method_call #v3.raft #"node'ptr" #"stepWithWaitOption" (![ptrT] "n")) "$a0" "$a1" "$a2")).
 
 (* go: node.go:502:16 *)
 Definition node__stepWait : val :=
@@ -2379,7 +2379,7 @@ Definition node__stepWait : val :=
     return: (let: "$a0" := (![context.Context] "ctx") in
      let: "$a1" := (![raftpb.Message] "m") in
      let: "$a2" := #true in
-     (method_call #pkg_name' #"node'ptr" #"stepWithWaitOption" (![ptrT] "n")) "$a0" "$a1" "$a2")).
+     (method_call #v3.raft #"node'ptr" #"stepWithWaitOption" (![ptrT] "n")) "$a0" "$a1" "$a2")).
 
 (* Step advances the state machine using msgs. The ctx.Err() will be returned,
    if any.
@@ -2398,7 +2398,7 @@ Definition node__stepWithWaitOption : val :=
           ))] [("$recvChan0", (λ: "$recvVal",
           return: ((interface.get "Err" (![context.Context] "ctx")) #())
           )); ("$recvChan1", (λ: "$recvVal",
-          return: (![error] (globals.get #pkg_name' #"ErrStopped"%go))
+          return: (![error] (globals.get #v3.raft #"ErrStopped"%go))
           ))] (InjLV #()))
     else do:  #());;;
     let: "ch" := (ref_ty (chanT msgWithResult) (zero_val (chanT msgWithResult))) in
@@ -2423,7 +2423,7 @@ Definition node__stepWithWaitOption : val :=
         ))] [("$recvChan0", (λ: "$recvVal",
         return: ((interface.get "Err" (![context.Context] "ctx")) #())
         )); ("$recvChan1", (λ: "$recvVal",
-        return: (![error] (globals.get #pkg_name' #"ErrStopped"%go))
+        return: (![error] (globals.get #v3.raft #"ErrStopped"%go))
         ))] (InjLV #()));;;
     do:  (chan.select [] [("$recvChan0", (λ: "$recvVal",
         let: "err" := (ref_ty error (zero_val error)) in
@@ -2435,7 +2435,7 @@ Definition node__stepWithWaitOption : val :=
         )); ("$recvChan1", (λ: "$recvVal",
         return: ((interface.get "Err" (![context.Context] "ctx")) #())
         )); ("$recvChan2", (λ: "$recvVal",
-        return: (![error] (globals.get #pkg_name' #"ErrStopped"%go))
+        return: (![error] (globals.get #v3.raft #"ErrStopped"%go))
         ))] (InjLV #()));;;
     return: (#interface.nil)).
 
@@ -2556,7 +2556,7 @@ Definition node__ForgetLeader : val :=
        "Context" ::= zero_val sliceT;
        "Responses" ::= zero_val sliceT
      }]) in
-     (method_call #pkg_name' #"node'ptr" #"step" (![ptrT] "n")) "$a0" "$a1")).
+     (method_call #v3.raft #"node'ptr" #"step" (![ptrT] "n")) "$a0" "$a1")).
 
 (* go: node.go:608:16 *)
 Definition node__ReadIndex : val :=
@@ -2590,7 +2590,7 @@ Definition node__ReadIndex : val :=
        "Context" ::= zero_val sliceT;
        "Responses" ::= zero_val sliceT
      }]) in
-     (method_call #pkg_name' #"node'ptr" #"step" (![ptrT] "n")) "$a0" "$a1")).
+     (method_call #v3.raft #"node'ptr" #"step" (![ptrT] "n")) "$a0" "$a1")).
 
 Definition LocalAppendThread : expr := #(W64 math.MaxUint64).
 
@@ -2625,18 +2625,18 @@ Definition lockedRand__Intn : val :=
   rec: "lockedRand__Intn" "r" "n" :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     let: "n" := (ref_ty intT "n") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref lockedRand "mu" (![ptrT] "r"))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (struct.field_ref lockedRand "mu" (![ptrT] "r"))) #());;;
     let: "v" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![io.Reader] (globals.get #rand.pkg_name' #"Reader"%go)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![io.Reader] (globals.get #rand #"Reader"%go)) in
     let: "$a1" := (let: "$a0" := (![intT] "n") in
-    (func_call #big.pkg_name' #"NewInt"%go) "$a0") in
-    (func_call #rand.pkg_name' #"Int"%go) "$a0" "$a1") in
+    (func_call #big #"NewInt"%go) "$a0") in
+    (func_call #rand #"Int"%go) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[ptrT] "$r0");;;
     do:  "$r1";;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref lockedRand "mu" (![ptrT] "r"))) #());;;
-    return: ((method_call #big.pkg_name' #"Int'ptr" #"Int64" (![ptrT] "v")) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (struct.field_ref lockedRand "mu" (![ptrT] "r"))) #());;;
+    return: ((method_call #big #"Int'ptr" #"Int64" (![ptrT] "v")) #())).
 
 Definition CampaignType : go_type := stringT.
 
@@ -2644,7 +2644,7 @@ Definition CampaignType : go_type := stringT.
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
     exception_do (let: "st" := (ref_ty StateType "st") in
-    return: (![stringT] (array.elem_ref stringT (![arrayT 4 stringT] (globals.get #pkg_name' #"stmap"%go)) (![StateType] "st")))).
+    return: (![stringT] (array.elem_ref stringT (![arrayT 4 stringT] (globals.get #v3.raft #"stmap"%go)) (![StateType] "st")))).
 
 (* go: raft.go:291:18 *)
 Definition Config__validate : val :=
@@ -2653,28 +2653,28 @@ Definition Config__validate : val :=
     (if: (![uint64T] (struct.field_ref Config "ID" (![ptrT] "c"))) = None
     then
       return: (let: "$a0" := #"cannot use none as id"%go in
-       (func_call #errors.pkg_name' #"New"%go) "$a0")
+       (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
     (if: let: "$a0" := (![uint64T] (struct.field_ref Config "ID" (![ptrT] "c"))) in
-    (func_call #pkg_name' #"IsLocalMsgTarget"%go) "$a0"
+    (func_call #v3.raft #"IsLocalMsgTarget"%go) "$a0"
     then
       return: (let: "$a0" := #"cannot use local target as id"%go in
-       (func_call #errors.pkg_name' #"New"%go) "$a0")
+       (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
     (if: int_leq (![intT] (struct.field_ref Config "HeartbeatTick" (![ptrT] "c"))) #(W64 0)
     then
       return: (let: "$a0" := #"heartbeat tick must be greater than 0"%go in
-       (func_call #errors.pkg_name' #"New"%go) "$a0")
+       (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
     (if: int_leq (![intT] (struct.field_ref Config "ElectionTick" (![ptrT] "c"))) (![intT] (struct.field_ref Config "HeartbeatTick" (![ptrT] "c")))
     then
       return: (let: "$a0" := #"election tick must be greater than heartbeat tick"%go in
-       (func_call #errors.pkg_name' #"New"%go) "$a0")
+       (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
     (if: interface.eq (![Storage] (struct.field_ref Config "Storage" (![ptrT] "c"))) #interface.nil
     then
       return: (let: "$a0" := #"storage cannot be nil"%go in
-       (func_call #errors.pkg_name' #"New"%go) "$a0")
+       (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
     (if: (![uint64T] (struct.field_ref Config "MaxUncommittedEntriesSize" (![ptrT] "c"))) = #(W64 0)
     then
@@ -2689,7 +2689,7 @@ Definition Config__validate : val :=
     (if: int_leq (![intT] (struct.field_ref Config "MaxInflightMsgs" (![ptrT] "c"))) #(W64 0)
     then
       return: (let: "$a0" := #"max inflight messages must be greater than 0"%go in
-       (func_call #errors.pkg_name' #"New"%go) "$a0")
+       (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
     (if: (![uint64T] (struct.field_ref Config "MaxInflightBytes" (![ptrT] "c"))) = #(W64 0)
     then
@@ -2699,17 +2699,17 @@ Definition Config__validate : val :=
       (if: (![uint64T] (struct.field_ref Config "MaxInflightBytes" (![ptrT] "c"))) < (![uint64T] (struct.field_ref Config "MaxSizePerMsg" (![ptrT] "c")))
       then
         return: (let: "$a0" := #"max inflight bytes must be >= max message size"%go in
-         (func_call #errors.pkg_name' #"New"%go) "$a0")
+         (func_call #errors #"New"%go) "$a0")
       else do:  #()));;;
     (if: interface.eq (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c"))) #interface.nil
     then
-      let: "$r0" := ((func_call #pkg_name' #"getLogger"%go) #()) in
+      let: "$r0" := ((func_call #v3.raft #"getLogger"%go) #()) in
       do:  ((struct.field_ref Config "Logger" (![ptrT] "c")) <-[Logger] "$r0")
     else do:  #());;;
     (if: ((![ReadOnlyOption] (struct.field_ref Config "ReadOnlyOption" (![ptrT] "c"))) = ReadOnlyLeaseBased) && (~ (![boolT] (struct.field_ref Config "CheckQuorum" (![ptrT] "c"))))
     then
       return: (let: "$a0" := #"CheckQuorum must be enabled when ReadOnlyOption is ReadOnlyLeaseBased"%go in
-       (func_call #errors.pkg_name' #"New"%go) "$a0")
+       (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
     return: (#interface.nil)).
 
@@ -2718,7 +2718,7 @@ Definition newRaft : val :=
   rec: "newRaft" "c" :=
     exception_do (let: "c" := (ref_ty ptrT "c") in
     (let: "err" := (ref_ty error (zero_val error)) in
-    let: "$r0" := ((method_call #pkg_name' #"Config'ptr" #"validate" (![ptrT] "c")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"Config'ptr" #"validate" (![ptrT] "c")) #()) in
     do:  ("err" <-[error] "$r0");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
@@ -2729,7 +2729,7 @@ Definition newRaft : val :=
     let: "$r0" := (let: "$a0" := (![Storage] (struct.field_ref Config "Storage" (![ptrT] "c"))) in
     let: "$a1" := (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c"))) in
     let: "$a2" := (![uint64T] (struct.field_ref Config "MaxCommittedSizePerReady" (![ptrT] "c"))) in
-    (func_call #pkg_name' #"newLogWithSize"%go) "$a0" "$a1" "$a2") in
+    (func_call #v3.raft #"newLogWithSize"%go) "$a0" "$a1" "$a2") in
     do:  ("raftlog" <-[ptrT] "$r0");;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "cs" := (ref_ty raftpb.ConfState (zero_val raftpb.ConfState)) in
@@ -2755,14 +2755,14 @@ Definition newRaft : val :=
     let: "$maxUncommittedSize" := (![uint64T] (struct.field_ref Config "MaxUncommittedEntriesSize" (![ptrT] "c"))) in
     let: "$trk" := (let: "$a0" := (![intT] (struct.field_ref Config "MaxInflightMsgs" (![ptrT] "c"))) in
     let: "$a1" := (![uint64T] (struct.field_ref Config "MaxInflightBytes" (![ptrT] "c"))) in
-    (func_call #tracker.pkg_name' #"MakeProgressTracker"%go) "$a0" "$a1") in
+    (func_call #tracker #"MakeProgressTracker"%go) "$a0" "$a1") in
     let: "$electionTimeout" := (![intT] (struct.field_ref Config "ElectionTick" (![ptrT] "c"))) in
     let: "$heartbeatTimeout" := (![intT] (struct.field_ref Config "HeartbeatTick" (![ptrT] "c"))) in
     let: "$logger" := (![Logger] (struct.field_ref Config "Logger" (![ptrT] "c"))) in
     let: "$checkQuorum" := (![boolT] (struct.field_ref Config "CheckQuorum" (![ptrT] "c"))) in
     let: "$preVote" := (![boolT] (struct.field_ref Config "PreVote" (![ptrT] "c"))) in
     let: "$readOnly" := (let: "$a0" := (![ReadOnlyOption] (struct.field_ref Config "ReadOnlyOption" (![ptrT] "c"))) in
-    (func_call #pkg_name' #"newReadOnly"%go) "$a0") in
+    (func_call #v3.raft #"newReadOnly"%go) "$a0") in
     let: "$disableProposalForwarding" := (![boolT] (struct.field_ref Config "DisableProposalForwarding" (![ptrT] "c"))) in
     let: "$disableConfChangeValidation" := (![boolT] (struct.field_ref Config "DisableConfChangeValidation" (![ptrT] "c"))) in
     let: "$stepDownOnRemoval" := (![boolT] (struct.field_ref Config "StepDownOnRemoval" (![ptrT] "c"))) in
@@ -2803,9 +2803,9 @@ Definition newRaft : val :=
     }])) in
     do:  ("r" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (![ptrT] "r") in
-    (func_call #pkg_name' #"traceInitState"%go) "$a0");;;
+    (func_call #v3.raft #"traceInitState"%go) "$a0");;;
     let: "lastID" := (ref_ty entryID (zero_val entryID)) in
-    let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
     do:  ("lastID" <-[entryID] "$r0");;;
     let: "trk" := (ref_ty tracker.ProgressMap (zero_val tracker.ProgressMap)) in
     let: "cfg" := (ref_ty tracker.Config (zero_val tracker.Config)) in
@@ -2816,7 +2816,7 @@ Definition newRaft : val :=
       "LastIndex" ::= "$LastIndex"
     }]) in
     let: "$a1" := (![raftpb.ConfState] "cs") in
-    (func_call #confchange.pkg_name' #"Restore"%go) "$a0" "$a1") in
+    (func_call #confchange #"Restore"%go) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -2832,26 +2832,26 @@ Definition newRaft : val :=
     let: "$a1" := (![raftpb.ConfState] "cs") in
     let: "$a2" := (let: "$a0" := (![tracker.Config] "cfg") in
     let: "$a1" := (![tracker.ProgressMap] "trk") in
-    (method_call #pkg_name' #"raft'ptr" #"switchToConfig" (![ptrT] "r")) "$a0" "$a1") in
-    (func_call #pkg_name' #"assertConfStatesEquivalent"%go) "$a0" "$a1" "$a2");;;
+    (method_call #v3.raft #"raft'ptr" #"switchToConfig" (![ptrT] "r")) "$a0" "$a1") in
+    (func_call #v3.raft #"assertConfStatesEquivalent"%go) "$a0" "$a1" "$a2");;;
     (if: (~ (let: "$a0" := (![raftpb.HardState] "hs") in
-    (func_call #pkg_name' #"IsEmptyHardState"%go) "$a0"))
+    (func_call #v3.raft #"IsEmptyHardState"%go) "$a0"))
     then
       do:  (let: "$a0" := (![raftpb.HardState] "hs") in
-      (method_call #pkg_name' #"raft'ptr" #"loadState" (![ptrT] "r")) "$a0")
+      (method_call #v3.raft #"raft'ptr" #"loadState" (![ptrT] "r")) "$a0")
     else do:  #());;;
     (if: (![uint64T] (struct.field_ref Config "Applied" (![ptrT] "c"))) > #(W64 0)
     then
       do:  (let: "$a0" := (![uint64T] (struct.field_ref Config "Applied" (![ptrT] "c"))) in
       let: "$a1" := #(W64 0) in
-      (method_call #pkg_name' #"raftLog'ptr" #"appliedTo" (![ptrT] "raftlog")) "$a0" "$a1")
+      (method_call #v3.raft #"raftLog'ptr" #"appliedTo" (![ptrT] "raftlog")) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
     let: "$a1" := None in
-    (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
+    (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
     let: "nodesStrs" := (ref_ty sliceT (zero_val sliceT)) in
     (let: "n" := (ref_ty intT (zero_val intT)) in
-    let: "$range" := ((method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"VoterNodes" (struct.field_ref raft "trk" (![ptrT] "r"))) #()) in
+    let: "$range" := ((method_call #tracker #"ProgressTracker'ptr" #"VoterNodes" (struct.field_ref raft "trk" (![ptrT] "r"))) #()) in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
       do:  ("n" <-[uint64T] "$value");;;
       do:  "$key";;;
@@ -2859,7 +2859,7 @@ Definition newRaft : val :=
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := #"%x"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "n")) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
+      (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
       slice.literal stringT ["$sl0"])) in
       (slice.append sliceT) "$a0" "$a1") in
       do:  ("nodesStrs" <-[sliceT] "$r0")));;;
@@ -2867,7 +2867,7 @@ Definition newRaft : val :=
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make #""%go #"string"%go (let: "$a0" := (![sliceT] "nodesStrs") in
     let: "$a1" := #","%go in
-    (func_call #strings.pkg_name' #"Join"%go) "$a0" "$a1")) in
+    (func_call #strings #"Join"%go) "$a0" "$a1")) in
     let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
     let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
     let: "$sl4" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
@@ -2925,7 +2925,7 @@ Definition raft__send : val :=
       (if: (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) = #(W64 0)
       then
         do:  (let: "$a0" := #"term should be set when sending %s"%go in
-        let: "$a1" := ((let: "$sl0" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+        let: "$a1" := ((let: "$sl0" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
       else do:  #())
@@ -2933,7 +2933,7 @@ Definition raft__send : val :=
       (if: (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) ≠ #(W64 0)
       then
         do:  (let: "$a0" := #"term should not be set when sending %s (was %d)"%go in
-        let: "$a1" := ((let: "$sl0" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+        let: "$a1" := ((let: "$sl0" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
         let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Term" "m"))) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -2952,12 +2952,12 @@ Definition raft__send : val :=
       do:  ((struct.field_ref raft "msgsAfterAppend" (![ptrT] "r")) <-[sliceT] "$r0");;;
       do:  (let: "$a0" := (![ptrT] "r") in
       let: "$a1" := "m" in
-      (func_call #pkg_name' #"traceSendMessage"%go) "$a0" "$a1")
+      (func_call #v3.raft #"traceSendMessage"%go) "$a0" "$a1")
     else
       (if: (![uint64T] (struct.field_ref raftpb.Message "To" "m")) = (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))
       then
         do:  (let: "$a0" := #"message should not be self-addressed when sending %s"%go in
-        let: "$a1" := ((let: "$sl0" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+        let: "$a1" := ((let: "$sl0" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
       else do:  #());;;
@@ -2968,7 +2968,7 @@ Definition raft__send : val :=
       do:  ((struct.field_ref raft "msgs" (![ptrT] "r")) <-[sliceT] "$r0");;;
       do:  (let: "$a0" := (![ptrT] "r") in
       let: "$a1" := "m" in
-      (func_call #pkg_name' #"traceSendMessage"%go) "$a0" "$a1"))).
+      (func_call #v3.raft #"traceSendMessage"%go) "$a0" "$a1"))).
 
 (* sendAppend sends an append RPC with new entries (if any) and the
    current commit index to the given peer.
@@ -2980,7 +2980,7 @@ Definition raft__sendAppend : val :=
     let: "to" := (ref_ty uint64T "to") in
     do:  (let: "$a0" := (![uint64T] "to") in
     let: "$a1" := #true in
-    (method_call #pkg_name' #"raft'ptr" #"maybeSendAppend" (![ptrT] "r")) "$a0" "$a1")).
+    (method_call #v3.raft #"raft'ptr" #"maybeSendAppend" (![ptrT] "r")) "$a0" "$a1")).
 
 (* maybeSendAppend sends an append RPC with new entries to the given peer,
    if necessary. Returns true if a message was sent. The sendIfEmpty
@@ -3001,7 +3001,7 @@ Definition raft__maybeSendAppend : val :=
     let: "pr" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r")))) (![uint64T] "to"))) in
     do:  ("pr" <-[ptrT] "$r0");;;
-    (if: (method_call #tracker.pkg_name' #"Progress'ptr" #"IsPaused" (![ptrT] "pr")) #()
+    (if: (method_call #tracker #"Progress'ptr" #"IsPaused" (![ptrT] "pr")) #()
     then return: (#false)
     else do:  #());;;
     let: "prevIndex" := (ref_ty uint64T (zero_val uint64T)) in
@@ -3010,7 +3010,7 @@ Definition raft__maybeSendAppend : val :=
     let: "err" := (ref_ty error (zero_val error)) in
     let: "prevTerm" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "prevIndex") in
-    (method_call #pkg_name' #"raftLog'ptr" #"term" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0") in
+    (method_call #v3.raft #"raftLog'ptr" #"term" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("prevTerm" <-[uint64T] "$r0");;;
@@ -3019,14 +3019,14 @@ Definition raft__maybeSendAppend : val :=
     then
       return: (let: "$a0" := (![uint64T] "to") in
        let: "$a1" := (![ptrT] "pr") in
-       (method_call #pkg_name' #"raft'ptr" #"maybeSendSnapshot" (![ptrT] "r")) "$a0" "$a1")
+       (method_call #v3.raft #"raft'ptr" #"maybeSendSnapshot" (![ptrT] "r")) "$a0" "$a1")
     else do:  #());;;
     let: "ents" := (ref_ty sliceT (zero_val sliceT)) in
-    (if: ((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) ≠ tracker.StateReplicate) || (~ ((method_call #tracker.pkg_name' #"Inflights'ptr" #"Full" (![ptrT] (struct.field_ref tracker.Progress "Inflights" (![ptrT] "pr")))) #()))
+    (if: ((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) ≠ tracker.StateReplicate) || (~ ((method_call #tracker #"Inflights'ptr" #"Full" (![ptrT] (struct.field_ref tracker.Progress "Inflights" (![ptrT] "pr")))) #()))
     then
       let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] (struct.field_ref tracker.Progress "Next" (![ptrT] "pr"))) in
       let: "$a1" := (![entryEncodingSize] (struct.field_ref raft "maxMsgSize" (![ptrT] "r"))) in
-      (method_call #pkg_name' #"raftLog'ptr" #"entries" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") in
+      (method_call #v3.raft #"raftLog'ptr" #"entries" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("ents" <-[sliceT] "$r0");;;
@@ -3040,7 +3040,7 @@ Definition raft__maybeSendAppend : val :=
     then
       return: (let: "$a0" := (![uint64T] "to") in
        let: "$a1" := (![ptrT] "pr") in
-       (method_call #pkg_name' #"raft'ptr" #"maybeSendSnapshot" (![ptrT] "r")) "$a0" "$a1")
+       (method_call #v3.raft #"raft'ptr" #"maybeSendSnapshot" (![ptrT] "r")) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (let: "$To" := (![uint64T] "to") in
     let: "$Type" := raftpb.MsgApp in
@@ -3064,14 +3064,14 @@ Definition raft__maybeSendAppend : val :=
       "Context" ::= zero_val sliceT;
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
+    (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
     do:  (let: "$a0" := (let: "$a0" := (![sliceT] "ents") in
     slice.len "$a0") in
     let: "$a1" := (let: "$a0" := (![sliceT] "ents") in
-    (func_call #pkg_name' #"payloadsSize"%go) "$a0") in
-    (method_call #tracker.pkg_name' #"Progress'ptr" #"SentEntries" (![ptrT] "pr")) "$a0" "$a1");;;
+    (func_call #v3.raft #"payloadsSize"%go) "$a0") in
+    (method_call #tracker #"Progress'ptr" #"SentEntries" (![ptrT] "pr")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r"))))) in
-    (method_call #tracker.pkg_name' #"Progress'ptr" #"SentCommit" (![ptrT] "pr")) "$a0");;;
+    (method_call #tracker #"Progress'ptr" #"SentCommit" (![ptrT] "pr")) "$a0");;;
     return: (#true)).
 
 (* maybeSendSnapshot fetches a snapshot from Storage, and sends it to the given
@@ -3093,14 +3093,14 @@ Definition raft__maybeSendSnapshot : val :=
     else do:  #());;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "snapshot" := (ref_ty raftpb.Snapshot (zero_val raftpb.Snapshot)) in
-    let: ("$ret0", "$ret1") := ((method_call #pkg_name' #"raftLog'ptr" #"snapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #v3.raft #"raftLog'ptr" #"snapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("snapshot" <-[raftpb.Snapshot] "$r0");;;
     do:  ("err" <-[error] "$r1");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
-      (if: interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"ErrSnapshotTemporarilyUnavailable"%go))
+      (if: interface.eq (![error] "err") (![error] (globals.get #v3.raft #"ErrSnapshotTemporarilyUnavailable"%go))
       then
         do:  (let: "$a0" := #"%x failed to send snapshot to %x because snapshot is temporarily unavailable"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -3113,7 +3113,7 @@ Definition raft__maybeSendSnapshot : val :=
       Panic "$a0")
     else do:  #());;;
     (if: let: "$a0" := (![raftpb.Snapshot] "snapshot") in
-    (func_call #pkg_name' #"IsEmptySnap"%go) "$a0"
+    (func_call #v3.raft #"IsEmptySnap"%go) "$a0"
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"need non-empty snapshot"%go) in
       Panic "$a0")
@@ -3126,20 +3126,20 @@ Definition raft__maybeSendSnapshot : val :=
     do:  ("sterm" <-[uint64T] "$r1");;;
     do:  (let: "$a0" := #"%x [firstindex: %d, commit: %d] sent snapshot[index: %d, term: %d] to %x [%s]"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
-    let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #pkg_name' #"raftLog'ptr" #"firstIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())) in
+    let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #v3.raft #"raftLog'ptr" #"firstIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())) in
     let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
     let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] "sindex")) in
     let: "$sl4" := (interface.make #""%go #"uint64"%go (![uint64T] "sterm")) in
     let: "$sl5" := (interface.make #""%go #"uint64"%go (![uint64T] "to")) in
-    let: "$sl6" := (interface.make #tracker.pkg_name' #"Progress'ptr" (![ptrT] "pr")) in
+    let: "$sl6" := (interface.make #tracker #"Progress'ptr" (![ptrT] "pr")) in
     slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"; "$sl6"])) in
     (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
     do:  (let: "$a0" := (![uint64T] "sindex") in
-    (method_call #tracker.pkg_name' #"Progress'ptr" #"BecomeSnapshot" (![ptrT] "pr")) "$a0");;;
+    (method_call #tracker #"Progress'ptr" #"BecomeSnapshot" (![ptrT] "pr")) "$a0");;;
     do:  (let: "$a0" := #"%x paused sending replication messages to %x [%s]"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] "to")) in
-    let: "$sl2" := (interface.make #tracker.pkg_name' #"Progress'ptr" (![ptrT] "pr")) in
+    let: "$sl2" := (interface.make #tracker #"Progress'ptr" (![ptrT] "pr")) in
     slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
     (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
     do:  (let: "$a0" := (let: "$To" := (![uint64T] "to") in
@@ -3161,7 +3161,7 @@ Definition raft__maybeSendSnapshot : val :=
       "Context" ::= zero_val sliceT;
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
+    (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
     return: (#true)).
 
 (* sendHeartbeat sends a heartbeat RPC to the given peer.
@@ -3200,9 +3200,9 @@ Definition raft__sendHeartbeat : val :=
       "Context" ::= "$Context";
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
+    (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
     do:  (let: "$a0" := (![uint64T] "commit") in
-    (method_call #tracker.pkg_name' #"Progress'ptr" #"SentCommit" (![ptrT] "pr")) "$a0")).
+    (method_call #tracker #"Progress'ptr" #"SentCommit" (![ptrT] "pr")) "$a0")).
 
 (* bcastAppend sends RPC, with entries to all peers that are not up-to-date
    according to the progress recorded in r.trk.
@@ -3218,9 +3218,9 @@ Definition raft__bcastAppend : val :=
       then return: (#())
       else do:  #());;;
       do:  (let: "$a0" := (![uint64T] "id") in
-      (method_call #pkg_name' #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0"))
+      (method_call #v3.raft #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0"))
       ) in
-    (method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0")).
+    (method_call #tracker #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0")).
 
 Definition readOnly : go_type := structT [
   "option" :: ReadOnlyOption;
@@ -3235,16 +3235,16 @@ Definition raft__bcastHeartbeat : val :=
   rec: "raft__bcastHeartbeat" "r" <> :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     let: "lastCtx" := (ref_ty stringT (zero_val stringT)) in
-    let: "$r0" := ((method_call #pkg_name' #"readOnly'ptr" #"lastPendingRequestCtx" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) #()) in
+    let: "$r0" := ((method_call #v3.raft #"readOnly'ptr" #"lastPendingRequestCtx" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) #()) in
     do:  ("lastCtx" <-[stringT] "$r0");;;
     (if: (let: "$a0" := (![stringT] "lastCtx") in
     StringLength "$a0") = #(W64 0)
     then
       do:  (let: "$a0" := #slice.nil in
-      (method_call #pkg_name' #"raft'ptr" #"bcastHeartbeatWithCtx" (![ptrT] "r")) "$a0")
+      (method_call #v3.raft #"raft'ptr" #"bcastHeartbeatWithCtx" (![ptrT] "r")) "$a0")
     else
       do:  (let: "$a0" := (string.to_bytes (![stringT] "lastCtx")) in
-      (method_call #pkg_name' #"raft'ptr" #"bcastHeartbeatWithCtx" (![ptrT] "r")) "$a0"))).
+      (method_call #v3.raft #"raft'ptr" #"bcastHeartbeatWithCtx" (![ptrT] "r")) "$a0"))).
 
 (* go: raft.go:731:16 *)
 Definition raft__bcastHeartbeatWithCtx : val :=
@@ -3259,9 +3259,9 @@ Definition raft__bcastHeartbeatWithCtx : val :=
       else do:  #());;;
       do:  (let: "$a0" := (![uint64T] "id") in
       let: "$a1" := (![sliceT] "ctx") in
-      (method_call #pkg_name' #"raft'ptr" #"sendHeartbeat" (![ptrT] "r")) "$a0" "$a1"))
+      (method_call #v3.raft #"raft'ptr" #"sendHeartbeat" (![ptrT] "r")) "$a0" "$a1"))
       ) in
-    (method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0")).
+    (method_call #tracker #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0")).
 
 (* go: raft.go:740:16 *)
 Definition raft__appliedTo : val :=
@@ -3279,13 +3279,13 @@ Definition raft__appliedTo : val :=
     do:  ("newApplied" <-[uint64T] "$r0");;;
     do:  (let: "$a0" := (![uint64T] "newApplied") in
     let: "$a1" := (![entryEncodingSize] "size") in
-    (method_call #pkg_name' #"raftLog'ptr" #"appliedTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1");;;
+    (method_call #v3.raft #"raftLog'ptr" #"appliedTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1");;;
     (if: ((![boolT] (struct.field_ref tracker.Config "AutoLeave" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) && ((![uint64T] "newApplied") ≥ (![uint64T] (struct.field_ref raft "pendingConfIndex" (![ptrT] "r"))))) && ((![StateType] (struct.field_ref raft "state" (![ptrT] "r"))) = StateLeader)
     then
       let: "err" := (ref_ty error (zero_val error)) in
       let: "m" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := #interface.nil in
-      (func_call #pkg_name' #"confChangeToMsg"%go) "$a0") in
+      (func_call #v3.raft #"confChangeToMsg"%go) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("m" <-[raftpb.Message] "$r0");;;
@@ -3297,18 +3297,18 @@ Definition raft__appliedTo : val :=
       else do:  #());;;
       (let: "err" := (ref_ty error (zero_val error)) in
       let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
-      (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
+      (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
       (if: (~ (interface.eq (![error] "err") #interface.nil))
       then
         do:  (let: "$a0" := #"not initiating automatic transition out of joint configuration %s: %v"%go in
-        let: "$a1" := ((let: "$sl0" := (interface.make #tracker.pkg_name' #"Config" (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
+        let: "$a1" := ((let: "$sl0" := (interface.make #tracker #"Config" (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
         let: "$sl1" := (![error] "err") in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
       else
         do:  (let: "$a0" := #"initiating automatic transition out of joint configuration %s"%go in
-        let: "$a1" := ((let: "$sl0" := (interface.make #tracker.pkg_name' #"Config" (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
+        let: "$a1" := ((let: "$sl0" := (interface.make #tracker #"Config" (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
         slice.literal interfaceT ["$sl0"])) in
         (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")))
     else do:  #())).
@@ -3322,10 +3322,10 @@ Definition raft__appliedSnap : val :=
     let: "$r0" := (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Index" (struct.field_ref raftpb.Snapshot "Metadata" (![ptrT] "snap")))) in
     do:  ("index" <-[uint64T] "$r0");;;
     do:  (let: "$a0" := (![uint64T] "index") in
-    (method_call #pkg_name' #"raftLog'ptr" #"stableSnapTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0");;;
+    (method_call #v3.raft #"raftLog'ptr" #"stableSnapTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0");;;
     do:  (let: "$a0" := (![uint64T] "index") in
     let: "$a1" := #(W64 0) in
-    (method_call #pkg_name' #"raft'ptr" #"appliedTo" (![ptrT] "r")) "$a0" "$a1")).
+    (method_call #v3.raft #"raft'ptr" #"appliedTo" (![ptrT] "r")) "$a0" "$a1")).
 
 (* maybeCommit attempts to advance the commit index. Returns true if the commit
    index changed (in which case the caller should call r.bcastAppend). This can
@@ -3336,19 +3336,19 @@ Definition raft__maybeCommit : val :=
   rec: "raft__maybeCommit" "r" <> :=
     with_defer: (let: "r" := (ref_ty ptrT "r") in
     do:  (let: "$a0" := (![ptrT] "r") in
-    let: "$f" := (func_call #pkg_name' #"traceCommit"%go) in
+    let: "$f" := (func_call #v3.raft #"traceCommit"%go) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" "a0";;
       "$oldf" #()
       )));;;
     return: (let: "$a0" := (let: "$term" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
-     let: "$index" := ((method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"Committed" (struct.field_ref raft "trk" (![ptrT] "r"))) #()) in
+     let: "$index" := ((method_call #tracker #"ProgressTracker'ptr" #"Committed" (struct.field_ref raft "trk" (![ptrT] "r"))) #()) in
      struct.make entryID [{
        "term" ::= "$term";
        "index" ::= "$index"
      }]) in
-     (method_call #pkg_name' #"raftLog'ptr" #"maybeCommit" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")).
+     (method_call #v3.raft #"raftLog'ptr" #"maybeCommit" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")).
 
 (* go: raft.go:784:16 *)
 Definition raft__reset : val :=
@@ -3368,17 +3368,17 @@ Definition raft__reset : val :=
     do:  ((struct.field_ref raft "electionElapsed" (![ptrT] "r")) <-[intT] "$r0");;;
     let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref raft "heartbeatElapsed" (![ptrT] "r")) <-[intT] "$r0");;;
-    do:  ((method_call #pkg_name' #"raft'ptr" #"resetRandomizedElectionTimeout" (![ptrT] "r")) #());;;
-    do:  ((method_call #pkg_name' #"raft'ptr" #"abortLeaderTransfer" (![ptrT] "r")) #());;;
-    do:  ((method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"ResetVotes" (struct.field_ref raft "trk" (![ptrT] "r"))) #());;;
+    do:  ((method_call #v3.raft #"raft'ptr" #"resetRandomizedElectionTimeout" (![ptrT] "r")) #());;;
+    do:  ((method_call #v3.raft #"raft'ptr" #"abortLeaderTransfer" (![ptrT] "r")) #());;;
+    do:  ((method_call #tracker #"ProgressTracker'ptr" #"ResetVotes" (struct.field_ref raft "trk" (![ptrT] "r"))) #());;;
     do:  (let: "$a0" := (λ: "id" "pr",
       exception_do (let: "pr" := (ref_ty ptrT "pr") in
       let: "id" := (ref_ty uint64T "id") in
       let: "$r0" := (let: "$Match" := #(W64 0) in
-      let: "$Next" := (((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) + #(W64 1)) in
+      let: "$Next" := (((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) + #(W64 1)) in
       let: "$Inflights" := (let: "$a0" := (![intT] (struct.field_ref tracker.ProgressTracker "MaxInflight" (struct.field_ref raft "trk" (![ptrT] "r")))) in
       let: "$a1" := (![uint64T] (struct.field_ref tracker.ProgressTracker "MaxInflightBytes" (struct.field_ref raft "trk" (![ptrT] "r")))) in
-      (func_call #tracker.pkg_name' #"NewInflights"%go) "$a0" "$a1") in
+      (func_call #tracker #"NewInflights"%go) "$a0" "$a1") in
       let: "$IsLearner" := (![boolT] (struct.field_ref tracker.Progress "IsLearner" (![ptrT] "pr"))) in
       struct.make tracker.Progress [{
         "Match" ::= "$Match";
@@ -3394,17 +3394,17 @@ Definition raft__reset : val :=
       do:  ((![ptrT] "pr") <-[tracker.Progress] "$r0");;;
       (if: (![uint64T] "id") = (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))
       then
-        let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+        let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
         do:  ((struct.field_ref tracker.Progress "Match" (![ptrT] "pr")) <-[uint64T] "$r0")
       else do:  #()))
       ) in
-    (method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0");;;
+    (method_call #tracker #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0");;;
     let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref raft "pendingConfIndex" (![ptrT] "r")) <-[uint64T] "$r0");;;
     let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref raft "uncommittedSize" (![ptrT] "r")) <-[entryPayloadSize] "$r0");;;
     let: "$r0" := (let: "$a0" := (![ReadOnlyOption] (struct.field_ref readOnly "option" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r"))))) in
-    (func_call #pkg_name' #"newReadOnly"%go) "$a0") in
+    (func_call #v3.raft #"newReadOnly"%go) "$a0") in
     do:  ((struct.field_ref raft "readOnly" (![ptrT] "r")) <-[ptrT] "$r0")).
 
 (* go: raft.go:815:16 *)
@@ -3414,7 +3414,7 @@ Definition raft__appendEntry : val :=
     let: "r" := (ref_ty ptrT "r") in
     let: "es" := (ref_ty sliceT "es") in
     let: "li" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
     do:  ("li" <-[uint64T] "$r0");;;
     (let: "i" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "es") in
@@ -3425,7 +3425,7 @@ Definition raft__appendEntry : val :=
       let: "$r0" := (((![uint64T] "li") + #(W64 1)) + (![intT] "i")) in
       do:  ((struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT] "es") (![intT] "i"))) <-[uint64T] "$r0")));;;
     (if: (~ (let: "$a0" := (![sliceT] "es") in
-    (method_call #pkg_name' #"raft'ptr" #"increaseUncommittedSize" (![ptrT] "r")) "$a0"))
+    (method_call #v3.raft #"raft'ptr" #"increaseUncommittedSize" (![ptrT] "r")) "$a0"))
     then
       do:  (let: "$a0" := #"%x appending new entries to log would exceed uncommitted entry size limit; dropping proposal"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -3435,9 +3435,9 @@ Definition raft__appendEntry : val :=
     else do:  #());;;
     do:  (let: "$a0" := (![ptrT] "r") in
     let: "$a1" := (![sliceT] "es") in
-    (func_call #pkg_name' #"traceReplicate"%go) "$a0" "$a1");;;
+    (func_call #v3.raft #"traceReplicate"%go) "$a0" "$a1");;;
     let: "$r0" := (let: "$a0" := (![sliceT] "es") in
-    (method_call #pkg_name' #"raftLog'ptr" #"append" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0") in
+    (method_call #v3.raft #"raftLog'ptr" #"append" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0") in
     do:  ("li" <-[uint64T] "$r0");;;
     do:  (let: "$a0" := (let: "$To" := (![uint64T] (struct.field_ref raft "id" (![ptrT] "r"))) in
     let: "$Type" := raftpb.MsgAppResp in
@@ -3458,7 +3458,7 @@ Definition raft__appendEntry : val :=
       "Context" ::= zero_val sliceT;
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
+    (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
     return: (#true)).
 
 (* tickElection is run by followers and candidates after r.electionTimeout.
@@ -3468,7 +3468,7 @@ Definition raft__tickElection : val :=
   rec: "raft__tickElection" "r" <> :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     do:  ((struct.field_ref raft "electionElapsed" (![ptrT] "r")) <-[intT] ((![intT] (struct.field_ref raft "electionElapsed" (![ptrT] "r"))) + #(W64 1)));;;
-    (if: ((method_call #pkg_name' #"raft'ptr" #"promotable" (![ptrT] "r")) #()) && ((method_call #pkg_name' #"raft'ptr" #"pastElectionTimeout" (![ptrT] "r")) #())
+    (if: ((method_call #v3.raft #"raft'ptr" #"promotable" (![ptrT] "r")) #()) && ((method_call #v3.raft #"raft'ptr" #"pastElectionTimeout" (![ptrT] "r")) #())
     then
       let: "$r0" := #(W64 0) in
       do:  ((struct.field_ref raft "electionElapsed" (![ptrT] "r")) <-[intT] "$r0");;;
@@ -3491,7 +3491,7 @@ Definition raft__tickElection : val :=
         "Context" ::= zero_val sliceT;
         "Responses" ::= zero_val sliceT
       }]) in
-      (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
+      (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
       (if: (~ (interface.eq (![error] "err") #interface.nil))
       then
@@ -3535,7 +3535,7 @@ Definition raft__tickHeartbeat : val :=
           "Context" ::= zero_val sliceT;
           "Responses" ::= zero_val sliceT
         }]) in
-        (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
+        (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
         do:  ("err" <-[error] "$r0");;;
         (if: (~ (interface.eq (![error] "err") #interface.nil))
         then
@@ -3546,7 +3546,7 @@ Definition raft__tickHeartbeat : val :=
         else do:  #()))
       else do:  #());;;
       (if: ((![StateType] (struct.field_ref raft "state" (![ptrT] "r"))) = StateLeader) && ((![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r"))) ≠ None)
-      then do:  ((method_call #pkg_name' #"raft'ptr" #"abortLeaderTransfer" (![ptrT] "r")) #())
+      then do:  ((method_call #v3.raft #"raft'ptr" #"abortLeaderTransfer" (![ptrT] "r")) #())
       else do:  #())
     else do:  #());;;
     (if: (![StateType] (struct.field_ref raft "state" (![ptrT] "r"))) ≠ StateLeader
@@ -3575,7 +3575,7 @@ Definition raft__tickHeartbeat : val :=
         "Context" ::= zero_val sliceT;
         "Responses" ::= zero_val sliceT
       }]) in
-      (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
+      (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] "r")) "$a0") in
       do:  ("err" <-[error] "$r0");;;
       (if: (~ (interface.eq (![error] "err") #interface.nil))
       then
@@ -3592,11 +3592,11 @@ Definition raft__becomeFollower : val :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     let: "lead" := (ref_ty uint64T "lead") in
     let: "term" := (ref_ty uint64T "term") in
-    let: "$r0" := (func_call #pkg_name' #"stepFollower"%go) in
+    let: "$r0" := (func_call #v3.raft #"stepFollower"%go) in
     do:  ((struct.field_ref raft "step" (![ptrT] "r")) <-[stepFunc] "$r0");;;
     do:  (let: "$a0" := (![uint64T] "term") in
-    (method_call #pkg_name' #"raft'ptr" #"reset" (![ptrT] "r")) "$a0");;;
-    let: "$r0" := (method_call #pkg_name' #"raft'ptr" #"tickElection" (![ptrT] "r")) in
+    (method_call #v3.raft #"raft'ptr" #"reset" (![ptrT] "r")) "$a0");;;
+    let: "$r0" := (method_call #v3.raft #"raft'ptr" #"tickElection" (![ptrT] "r")) in
     do:  ((struct.field_ref raft "tick" (![ptrT] "r")) <-[funcT] "$r0");;;
     let: "$r0" := (![uint64T] "lead") in
     do:  ((struct.field_ref raft "lead" (![ptrT] "r")) <-[uint64T] "$r0");;;
@@ -3608,7 +3608,7 @@ Definition raft__becomeFollower : val :=
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
     (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
     do:  (let: "$a0" := (![ptrT] "r") in
-    (func_call #pkg_name' #"traceBecomeFollower"%go) "$a0")).
+    (func_call #v3.raft #"traceBecomeFollower"%go) "$a0")).
 
 (* go: raft.go:902:16 *)
 Definition raft__becomeCandidate : val :=
@@ -3619,11 +3619,11 @@ Definition raft__becomeCandidate : val :=
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"invalid transition [leader -> candidate]"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "$r0" := (func_call #pkg_name' #"stepCandidate"%go) in
+    let: "$r0" := (func_call #v3.raft #"stepCandidate"%go) in
     do:  ((struct.field_ref raft "step" (![ptrT] "r")) <-[stepFunc] "$r0");;;
     do:  (let: "$a0" := ((![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) + #(W64 1)) in
-    (method_call #pkg_name' #"raft'ptr" #"reset" (![ptrT] "r")) "$a0");;;
-    let: "$r0" := (method_call #pkg_name' #"raft'ptr" #"tickElection" (![ptrT] "r")) in
+    (method_call #v3.raft #"raft'ptr" #"reset" (![ptrT] "r")) "$a0");;;
+    let: "$r0" := (method_call #v3.raft #"raft'ptr" #"tickElection" (![ptrT] "r")) in
     do:  ((struct.field_ref raft "tick" (![ptrT] "r")) <-[funcT] "$r0");;;
     let: "$r0" := (![uint64T] (struct.field_ref raft "id" (![ptrT] "r"))) in
     do:  ((struct.field_ref raft "Vote" (![ptrT] "r")) <-[uint64T] "$r0");;;
@@ -3635,7 +3635,7 @@ Definition raft__becomeCandidate : val :=
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
     (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
     do:  (let: "$a0" := (![ptrT] "r") in
-    (func_call #pkg_name' #"traceBecomeCandidate"%go) "$a0")).
+    (func_call #v3.raft #"traceBecomeCandidate"%go) "$a0")).
 
 (* go: raft.go:917:16 *)
 Definition raft__becomePreCandidate : val :=
@@ -3646,10 +3646,10 @@ Definition raft__becomePreCandidate : val :=
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"invalid transition [leader -> pre-candidate]"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "$r0" := (func_call #pkg_name' #"stepCandidate"%go) in
+    let: "$r0" := (func_call #v3.raft #"stepCandidate"%go) in
     do:  ((struct.field_ref raft "step" (![ptrT] "r")) <-[stepFunc] "$r0");;;
-    do:  ((method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"ResetVotes" (struct.field_ref raft "trk" (![ptrT] "r"))) #());;;
-    let: "$r0" := (method_call #pkg_name' #"raft'ptr" #"tickElection" (![ptrT] "r")) in
+    do:  ((method_call #tracker #"ProgressTracker'ptr" #"ResetVotes" (struct.field_ref raft "trk" (![ptrT] "r"))) #());;;
+    let: "$r0" := (method_call #v3.raft #"raft'ptr" #"tickElection" (![ptrT] "r")) in
     do:  ((struct.field_ref raft "tick" (![ptrT] "r")) <-[funcT] "$r0");;;
     let: "$r0" := None in
     do:  ((struct.field_ref raft "lead" (![ptrT] "r")) <-[uint64T] "$r0");;;
@@ -3670,11 +3670,11 @@ Definition raft__becomeLeader : val :=
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"invalid transition [follower -> leader]"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "$r0" := (func_call #pkg_name' #"stepLeader"%go) in
+    let: "$r0" := (func_call #v3.raft #"stepLeader"%go) in
     do:  ((struct.field_ref raft "step" (![ptrT] "r")) <-[stepFunc] "$r0");;;
     do:  (let: "$a0" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
-    (method_call #pkg_name' #"raft'ptr" #"reset" (![ptrT] "r")) "$a0");;;
-    let: "$r0" := (method_call #pkg_name' #"raft'ptr" #"tickHeartbeat" (![ptrT] "r")) in
+    (method_call #v3.raft #"raft'ptr" #"reset" (![ptrT] "r")) "$a0");;;
+    let: "$r0" := (method_call #v3.raft #"raft'ptr" #"tickHeartbeat" (![ptrT] "r")) in
     do:  ((struct.field_ref raft "tick" (![ptrT] "r")) <-[funcT] "$r0");;;
     let: "$r0" := (![uint64T] (struct.field_ref raft "id" (![ptrT] "r"))) in
     do:  ((struct.field_ref raft "lead" (![ptrT] "r")) <-[uint64T] "$r0");;;
@@ -3683,13 +3683,13 @@ Definition raft__becomeLeader : val :=
     let: "pr" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r")))) (![uint64T] (struct.field_ref raft "id" (![ptrT] "r"))))) in
     do:  ("pr" <-[ptrT] "$r0");;;
-    do:  ((method_call #tracker.pkg_name' #"Progress'ptr" #"BecomeReplicate" (![ptrT] "pr")) #());;;
+    do:  ((method_call #tracker #"Progress'ptr" #"BecomeReplicate" (![ptrT] "pr")) #());;;
     let: "$r0" := #true in
     do:  ((struct.field_ref tracker.Progress "RecentActive" (![ptrT] "pr")) <-[boolT] "$r0");;;
-    let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
     do:  ((struct.field_ref raft "pendingConfIndex" (![ptrT] "r")) <-[uint64T] "$r0");;;
     do:  (let: "$a0" := (![ptrT] "r") in
-    (func_call #pkg_name' #"traceBecomeLeader"%go) "$a0");;;
+    (func_call #v3.raft #"traceBecomeLeader"%go) "$a0");;;
     let: "emptyEnt" := (ref_ty raftpb.Entry (zero_val raftpb.Entry)) in
     let: "$r0" := (let: "$Data" := #slice.nil in
     struct.make raftpb.Entry [{
@@ -3701,7 +3701,7 @@ Definition raft__becomeLeader : val :=
     do:  ("emptyEnt" <-[raftpb.Entry] "$r0");;;
     (if: (~ (let: "$a0" := ((let: "$sl0" := (![raftpb.Entry] "emptyEnt") in
     slice.literal raftpb.Entry ["$sl0"])) in
-    (method_call #pkg_name' #"raft'ptr" #"appendEntry" (![ptrT] "r")) "$a0"))
+    (method_call #v3.raft #"raft'ptr" #"appendEntry" (![ptrT] "r")) "$a0"))
     then
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"empty entry was dropped"%go) in
       slice.literal interfaceT ["$sl0"])) in
@@ -3726,7 +3726,7 @@ Definition raft__hup : val :=
       (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
       return: (#())
     else do:  #());;;
-    (if: (~ ((method_call #pkg_name' #"raft'ptr" #"promotable" (![ptrT] "r")) #()))
+    (if: (~ ((method_call #v3.raft #"raft'ptr" #"promotable" (![ptrT] "r")) #()))
     then
       do:  (let: "$a0" := #"%x is unpromotable and can not campaign"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -3734,7 +3734,7 @@ Definition raft__hup : val :=
       (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
       return: (#())
     else do:  #());;;
-    (if: (method_call #pkg_name' #"raft'ptr" #"hasUnappliedConfChanges" (![ptrT] "r")) #()
+    (if: (method_call #v3.raft #"raft'ptr" #"hasUnappliedConfChanges" (![ptrT] "r")) #()
     then
       do:  (let: "$a0" := #"%x cannot campaign at term %d since there are still pending configuration changes to apply"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -3749,7 +3749,7 @@ Definition raft__hup : val :=
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
     (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
     do:  (let: "$a0" := (![CampaignType] "t") in
-    (method_call #pkg_name' #"raft'ptr" #"campaign" (![ptrT] "r")) "$a0")).
+    (method_call #v3.raft #"raft'ptr" #"campaign" (![ptrT] "r")) "$a0")).
 
 (* go: raft.go:995:16 *)
 Definition raft__hasUnappliedConfChanges : val :=
@@ -3784,13 +3784,13 @@ Definition raft__hasUnappliedConfChanges : val :=
         then
           let: "$r0" := #true in
           do:  ("found" <-[boolT] "$r0");;;
-          return: (![error] (globals.get #pkg_name' #"errBreak"%go))
+          return: (![error] (globals.get #v3.raft #"errBreak"%go))
         else do:  #())));;;
       return: (#interface.nil))
       ) in
-    (method_call #pkg_name' #"raftLog'ptr" #"scan" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1" "$a2" "$a3") in
+    (method_call #v3.raft #"raftLog'ptr" #"scan" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1" "$a2" "$a3") in
     do:  ("err" <-[error] "$r0");;;
-    (if: (~ (interface.eq (![error] "err") #interface.nil)) && (~ (interface.eq (![error] "err") (![error] (globals.get #pkg_name' #"errBreak"%go))))
+    (if: (~ (interface.eq (![error] "err") #interface.nil)) && (~ (interface.eq (![error] "err") (![error] (globals.get #v3.raft #"errBreak"%go))))
     then
       do:  (let: "$a0" := #"error scanning unapplied entries [%d, %d): %v"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "lo")) in
@@ -3809,7 +3809,7 @@ Definition raft__campaign : val :=
   rec: "raft__campaign" "r" "t" :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     let: "t" := (ref_ty CampaignType "t") in
-    (if: (~ ((method_call #pkg_name' #"raft'ptr" #"promotable" (![ptrT] "r")) #()))
+    (if: (~ ((method_call #v3.raft #"raft'ptr" #"promotable" (![ptrT] "r")) #()))
     then
       do:  (let: "$a0" := #"%x is unpromotable; campaign() should have been called"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -3820,13 +3820,13 @@ Definition raft__campaign : val :=
     let: "voteMsg" := (ref_ty raftpb.MessageType (zero_val raftpb.MessageType)) in
     (if: (![CampaignType] "t") = campaignPreElection
     then
-      do:  ((method_call #pkg_name' #"raft'ptr" #"becomePreCandidate" (![ptrT] "r")) #());;;
+      do:  ((method_call #v3.raft #"raft'ptr" #"becomePreCandidate" (![ptrT] "r")) #());;;
       let: "$r0" := raftpb.MsgPreVote in
       do:  ("voteMsg" <-[raftpb.MessageType] "$r0");;;
       let: "$r0" := ((![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) + #(W64 1)) in
       do:  ("term" <-[uint64T] "$r0")
     else
-      do:  ((method_call #pkg_name' #"raft'ptr" #"becomeCandidate" (![ptrT] "r")) #());;;
+      do:  ((method_call #v3.raft #"raft'ptr" #"becomeCandidate" (![ptrT] "r")) #());;;
       let: "$r0" := raftpb.MsgVote in
       do:  ("voteMsg" <-[raftpb.MessageType] "$r0");;;
       let: "$r0" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
@@ -3835,7 +3835,7 @@ Definition raft__campaign : val :=
     let: "idMap" := (ref_ty (mapT uint64T (structT [
     ])) (zero_val (mapT uint64T (structT [
     ])))) in
-    let: "$r0" := ((method_call #quorum.pkg_name' #"JointConfig" #"IDs" (![quorum.JointConfig] (struct.field_ref tracker.Config "Voters" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))))) #()) in
+    let: "$r0" := ((method_call #quorum #"JointConfig" #"IDs" (![quorum.JointConfig] (struct.field_ref tracker.Config "Voters" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))))) #()) in
     do:  ("idMap" <-[mapT uint64T (structT [
     ])] "$r0");;;
     let: "$r0" := (slice.make3 uint64T #(W64 0) (let: "$a0" := (![mapT uint64T (structT [
@@ -3853,7 +3853,7 @@ Definition raft__campaign : val :=
       (slice.append sliceT) "$a0" "$a1") in
       do:  ("ids" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "ids") in
-    (func_call #slices.pkg_name' #"SortUint64"%go) "$a0");;;
+    (func_call #slices #"SortUint64"%go) "$a0");;;
     (let: "id" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ids") in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
@@ -3864,7 +3864,7 @@ Definition raft__campaign : val :=
         do:  (let: "$a0" := (let: "$To" := (![uint64T] "id") in
         let: "$Term" := (![uint64T] "term") in
         let: "$Type" := (let: "$a0" := (![raftpb.MessageType] "voteMsg") in
-        (func_call #pkg_name' #"voteRespMsgType"%go) "$a0") in
+        (func_call #v3.raft #"voteRespMsgType"%go) "$a0") in
         struct.make raftpb.Message [{
           "Type" ::= "$Type";
           "To" ::= "$To";
@@ -3881,17 +3881,17 @@ Definition raft__campaign : val :=
           "Context" ::= zero_val sliceT;
           "Responses" ::= zero_val sliceT
         }]) in
-        (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
+        (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
         continue: #()
       else do:  #());;;
       let: "last" := (ref_ty entryID (zero_val entryID)) in
-      let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+      let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
       do:  ("last" <-[entryID] "$r0");;;
       do:  (let: "$a0" := #"%x [logterm: %d, index: %d] sent %s request to %x at term %d"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "term" "last"))) in
       let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "index" "last"))) in
-      let: "$sl3" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] "voteMsg")) in
+      let: "$sl3" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] "voteMsg")) in
       let: "$sl4" := (interface.make #""%go #"uint64"%go (![uint64T] "id")) in
       let: "$sl5" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"])) in
@@ -3924,7 +3924,7 @@ Definition raft__campaign : val :=
         "Context" ::= "$Context";
         "Responses" ::= zero_val sliceT
       }]) in
-      (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")))).
+      (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")))).
 
 (* go: raft.go:1075:16 *)
 Definition raft__poll : val :=
@@ -3940,7 +3940,7 @@ Definition raft__poll : val :=
     then
       do:  (let: "$a0" := #"%x received %s from %x at term %d"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
-      let: "$sl1" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] "t")) in
+      let: "$sl1" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] "t")) in
       let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] "id")) in
       let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
@@ -3948,15 +3948,15 @@ Definition raft__poll : val :=
     else
       do:  (let: "$a0" := #"%x received %s rejection from %x at term %d"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
-      let: "$sl1" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] "t")) in
+      let: "$sl1" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] "t")) in
       let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] "id")) in
       let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
       (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1"));;;
     do:  (let: "$a0" := (![uint64T] "id") in
     let: "$a1" := (![boolT] "v") in
-    (method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"RecordVote" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0" "$a1");;;
-    let: (("$ret0", "$ret1"), "$ret2") := (((method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"TallyVotes" (struct.field_ref raft "trk" (![ptrT] "r"))) #())) in
+    (method_call #tracker #"ProgressTracker'ptr" #"RecordVote" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0" "$a1");;;
+    let: (("$ret0", "$ret1"), "$ret2") := (((method_call #tracker #"ProgressTracker'ptr" #"TallyVotes" (struct.field_ref raft "trk" (![ptrT] "r"))) #())) in
     return: ("$ret0", "$ret1", "$ret2")).
 
 (* go: raft.go:1085:16 *)
@@ -3966,7 +3966,7 @@ Definition raft__Step : val :=
     let: "m" := (ref_ty raftpb.Message "m") in
     do:  (let: "$a0" := (![ptrT] "r") in
     let: "$a1" := "m" in
-    (func_call #pkg_name' #"traceReceiveMessage"%go) "$a0" "$a1");;;
+    (func_call #v3.raft #"traceReceiveMessage"%go) "$a0" "$a1");;;
     let: "$sw" := #true in
     (if: "$sw" = ((![uint64T] (struct.field_ref raftpb.Message "Term" "m")) = #(W64 0))
     then do:  #()
@@ -3978,7 +3978,7 @@ Definition raft__Step : val :=
           let: "force" := (ref_ty boolT (zero_val boolT)) in
           let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Message "Context" "m")) in
           let: "$a1" := (string.to_bytes campaignTransfer) in
-          (func_call #bytes.pkg_name' #"Equal"%go) "$a0" "$a1") in
+          (func_call #bytes #"Equal"%go) "$a0" "$a1") in
           do:  ("force" <-[boolT] "$r0");;;
           let: "inLease" := (ref_ty boolT (zero_val boolT)) in
           let: "$r0" := (((![boolT] (struct.field_ref raft "checkQuorum" (![ptrT] "r"))) && ((![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) ≠ None)) && (int_lt (![intT] (struct.field_ref raft "electionElapsed" (![ptrT] "r"))) (![intT] (struct.field_ref raft "electionTimeout" (![ptrT] "r"))))) in
@@ -3986,14 +3986,14 @@ Definition raft__Step : val :=
           (if: (~ (![boolT] "force")) && (![boolT] "inLease")
           then
             let: "last" := (ref_ty entryID (zero_val entryID)) in
-            let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+            let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
             do:  ("last" <-[entryID] "$r0");;;
             do:  (let: "$a0" := #"%x [logterm: %d, index: %d, vote: %x] ignored %s from %x [logterm: %d, index: %d] at term %d: lease is not expired (remaining ticks: %d)"%go in
             let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "term" "last"))) in
             let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "index" "last"))) in
             let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Vote" (![ptrT] "r")))) in
-            let: "$sl4" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+            let: "$sl4" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
             let: "$sl5" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
             let: "$sl6" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "LogTerm" "m"))) in
             let: "$sl7" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Index" "m"))) in
@@ -4014,7 +4014,7 @@ Definition raft__Step : val :=
             do:  (let: "$a0" := #"%x [term: %d] received a %s message with higher term from %x [term: %d]"%go in
             let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
-            let: "$sl2" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+            let: "$sl2" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
             let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
             let: "$sl4" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Term" "m"))) in
             slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
@@ -4023,11 +4023,11 @@ Definition raft__Step : val :=
             then
               do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) in
               let: "$a1" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-              (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1")
+              (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1")
             else
               do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) in
               let: "$a1" := None in
-              (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1"))))
+              (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1"))))
       else
         (if: "$sw" = ((![uint64T] (struct.field_ref raftpb.Message "Term" "m")) < (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))))
         then
@@ -4051,19 +4051,19 @@ Definition raft__Step : val :=
               "Context" ::= zero_val sliceT;
               "Responses" ::= zero_val sliceT
             }]) in
-            (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
+            (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
           else
             (if: (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) = raftpb.MsgPreVote
             then
               let: "last" := (ref_ty entryID (zero_val entryID)) in
-              let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+              let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
               do:  ("last" <-[entryID] "$r0");;;
               do:  (let: "$a0" := #"%x [logterm: %d, index: %d, vote: %x] rejected %s from %x [logterm: %d, index: %d] at term %d"%go in
               let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "term" "last"))) in
               let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "index" "last"))) in
               let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Vote" (![ptrT] "r")))) in
-              let: "$sl4" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+              let: "$sl4" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
               let: "$sl5" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
               let: "$sl6" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "LogTerm" "m"))) in
               let: "$sl7" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Index" "m"))) in
@@ -4090,7 +4090,7 @@ Definition raft__Step : val :=
                 "Context" ::= zero_val sliceT;
                 "Responses" ::= zero_val sliceT
               }]) in
-              (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
+              (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
             else
               (if: (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) = raftpb.MsgStorageAppendResp
               then
@@ -4099,7 +4099,7 @@ Definition raft__Step : val :=
                   do:  (let: "$a0" := #"%x [term: %d] ignored entry appends from a %s message with lower term [term: %d]"%go in
                   let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                   let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
-                  let: "$sl2" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+                  let: "$sl2" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
                   let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Term" "m"))) in
                   slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
                   (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -4107,13 +4107,13 @@ Definition raft__Step : val :=
                 (if: (![ptrT] (struct.field_ref raftpb.Message "Snapshot" "m")) ≠ #null
                 then
                   do:  (let: "$a0" := (![ptrT] (struct.field_ref raftpb.Message "Snapshot" "m")) in
-                  (method_call #pkg_name' #"raft'ptr" #"appliedSnap" (![ptrT] "r")) "$a0")
+                  (method_call #v3.raft #"raft'ptr" #"appliedSnap" (![ptrT] "r")) "$a0")
                 else do:  #())
               else
                 do:  (let: "$a0" := #"%x [term: %d] ignored a %s message with lower term from %x [term: %d]"%go in
                 let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
-                let: "$sl2" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+                let: "$sl2" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
                 let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
                 let: "$sl4" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Term" "m"))) in
                 slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
@@ -4126,10 +4126,10 @@ Definition raft__Step : val :=
       (if: ![boolT] (struct.field_ref raft "preVote" (![ptrT] "r"))
       then
         do:  (let: "$a0" := campaignPreElection in
-        (method_call #pkg_name' #"raft'ptr" #"hup" (![ptrT] "r")) "$a0")
+        (method_call #v3.raft #"raft'ptr" #"hup" (![ptrT] "r")) "$a0")
       else
         do:  (let: "$a0" := campaignElection in
-        (method_call #pkg_name' #"raft'ptr" #"hup" (![ptrT] "r")) "$a0"))
+        (method_call #v3.raft #"raft'ptr" #"hup" (![ptrT] "r")) "$a0"))
     else
       (if: "$sw" = raftpb.MsgStorageAppendResp
       then
@@ -4141,12 +4141,12 @@ Definition raft__Step : val :=
             "term" ::= "$term";
             "index" ::= "$index"
           }]) in
-          (method_call #pkg_name' #"raftLog'ptr" #"stableTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")
+          (method_call #v3.raft #"raftLog'ptr" #"stableTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")
         else do:  #());;;
         (if: (![ptrT] (struct.field_ref raftpb.Message "Snapshot" "m")) ≠ #null
         then
           do:  (let: "$a0" := (![ptrT] (struct.field_ref raftpb.Message "Snapshot" "m")) in
-          (method_call #pkg_name' #"raft'ptr" #"appliedSnap" (![ptrT] "r")) "$a0")
+          (method_call #v3.raft #"raft'ptr" #"appliedSnap" (![ptrT] "r")) "$a0")
         else do:  #())
       else
         (if: "$sw" = raftpb.MsgStorageApplyResp
@@ -4160,11 +4160,11 @@ Definition raft__Step : val :=
             do:  ("index" <-[uint64T] "$r0");;;
             do:  (let: "$a0" := (![uint64T] "index") in
             let: "$a1" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) in
-            (func_call #pkg_name' #"entsSize"%go) "$a0") in
-            (method_call #pkg_name' #"raft'ptr" #"appliedTo" (![ptrT] "r")) "$a0" "$a1");;;
+            (func_call #v3.raft #"entsSize"%go) "$a0") in
+            (method_call #v3.raft #"raft'ptr" #"appliedTo" (![ptrT] "r")) "$a0" "$a1");;;
             do:  (let: "$a0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) in
-            (func_call #pkg_name' #"payloadsSize"%go) "$a0") in
-            (method_call #pkg_name' #"raft'ptr" #"reduceUncommittedSize" (![ptrT] "r")) "$a0")
+            (func_call #v3.raft #"payloadsSize"%go) "$a0") in
+            (method_call #v3.raft #"raft'ptr" #"reduceUncommittedSize" (![ptrT] "r")) "$a0")
           else do:  #())
         else
           (if: ("$sw" = raftpb.MsgPreVote) || ("$sw" = raftpb.MsgVote)
@@ -4173,7 +4173,7 @@ Definition raft__Step : val :=
             let: "$r0" := ((((![uint64T] (struct.field_ref raft "Vote" (![ptrT] "r"))) = (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) || (((![uint64T] (struct.field_ref raft "Vote" (![ptrT] "r"))) = None) && ((![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) = None))) || (((![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) = raftpb.MsgPreVote) && ((![uint64T] (struct.field_ref raftpb.Message "Term" "m")) > (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))))) in
             do:  ("canVote" <-[boolT] "$r0");;;
             let: "lastID" := (ref_ty entryID (zero_val entryID)) in
-            let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+            let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
             do:  ("lastID" <-[entryID] "$r0");;;
             let: "candLastID" := (ref_ty entryID (zero_val entryID)) in
             let: "$r0" := (let: "$term" := (![uint64T] (struct.field_ref raftpb.Message "LogTerm" "m")) in
@@ -4184,14 +4184,14 @@ Definition raft__Step : val :=
             }]) in
             do:  ("candLastID" <-[entryID] "$r0");;;
             (if: (![boolT] "canVote") && (let: "$a0" := (![entryID] "candLastID") in
-            (method_call #pkg_name' #"raftLog'ptr" #"isUpToDate" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")
+            (method_call #v3.raft #"raftLog'ptr" #"isUpToDate" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")
             then
               do:  (let: "$a0" := #"%x [logterm: %d, index: %d, vote: %x] cast %s for %x [logterm: %d, index: %d] at term %d"%go in
               let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "term" "lastID"))) in
               let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "index" "lastID"))) in
               let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Vote" (![ptrT] "r")))) in
-              let: "$sl4" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+              let: "$sl4" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
               let: "$sl5" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
               let: "$sl6" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "term" "candLastID"))) in
               let: "$sl7" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "index" "candLastID"))) in
@@ -4201,7 +4201,7 @@ Definition raft__Step : val :=
               do:  (let: "$a0" := (let: "$To" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
               let: "$Term" := (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) in
               let: "$Type" := (let: "$a0" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
-              (func_call #pkg_name' #"voteRespMsgType"%go) "$a0") in
+              (func_call #v3.raft #"voteRespMsgType"%go) "$a0") in
               struct.make raftpb.Message [{
                 "Type" ::= "$Type";
                 "To" ::= "$To";
@@ -4218,7 +4218,7 @@ Definition raft__Step : val :=
                 "Context" ::= zero_val sliceT;
                 "Responses" ::= zero_val sliceT
               }]) in
-              (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
+              (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
               (if: (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) = raftpb.MsgVote
               then
                 let: "$r0" := #(W64 0) in
@@ -4232,7 +4232,7 @@ Definition raft__Step : val :=
               let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "term" "lastID"))) in
               let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "index" "lastID"))) in
               let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Vote" (![ptrT] "r")))) in
-              let: "$sl4" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+              let: "$sl4" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
               let: "$sl5" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
               let: "$sl6" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "term" "candLastID"))) in
               let: "$sl7" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref entryID "index" "candLastID"))) in
@@ -4242,7 +4242,7 @@ Definition raft__Step : val :=
               do:  (let: "$a0" := (let: "$To" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
               let: "$Term" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
               let: "$Type" := (let: "$a0" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
-              (func_call #pkg_name' #"voteRespMsgType"%go) "$a0") in
+              (func_call #v3.raft #"voteRespMsgType"%go) "$a0") in
               let: "$Reject" := #true in
               struct.make raftpb.Message [{
                 "Type" ::= "$Type";
@@ -4260,7 +4260,7 @@ Definition raft__Step : val :=
                 "Context" ::= zero_val sliceT;
                 "Responses" ::= zero_val sliceT
               }]) in
-              (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0"))
+              (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0"))
           else
             let: "err" := (ref_ty error (zero_val error)) in
             let: "$r0" := (let: "$a0" := (![ptrT] "r") in
@@ -4286,12 +4286,12 @@ Definition stepLeader : val :=
     let: "$sw" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
     (if: "$sw" = raftpb.MsgBeat
     then
-      do:  ((method_call #pkg_name' #"raft'ptr" #"bcastHeartbeat" (![ptrT] "r")) #());;;
+      do:  ((method_call #v3.raft #"raft'ptr" #"bcastHeartbeat" (![ptrT] "r")) #());;;
       return: (#interface.nil)
     else
       (if: "$sw" = raftpb.MsgCheckQuorum
       then
-        (if: (~ ((method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"QuorumActive" (struct.field_ref raft "trk" (![ptrT] "r"))) #()))
+        (if: (~ ((method_call #tracker #"ProgressTracker'ptr" #"QuorumActive" (struct.field_ref raft "trk" (![ptrT] "r"))) #()))
         then
           do:  (let: "$a0" := #"%x stepped down to follower since quorum is not active"%go in
           let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -4299,7 +4299,7 @@ Definition stepLeader : val :=
           (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
           do:  (let: "$a0" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
           let: "$a1" := None in
-          (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1")
+          (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1")
         else do:  #());;;
         do:  (let: "$a0" := (λ: "id" "pr",
           exception_do (let: "pr" := (ref_ty ptrT "pr") in
@@ -4310,7 +4310,7 @@ Definition stepLeader : val :=
             do:  ((struct.field_ref tracker.Progress "RecentActive" (![ptrT] "pr")) <-[boolT] "$r0")
           else do:  #()))
           ) in
-        (method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0");;;
+        (method_call #tracker #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0");;;
         return: (#interface.nil)
       else
         (if: "$sw" = raftpb.MsgProp
@@ -4324,7 +4324,7 @@ Definition stepLeader : val :=
             (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
           else do:  #());;;
           (if: (Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r")))) (![uint64T] (struct.field_ref raft "id" (![ptrT] "r"))))) = #null
-          then return: (![error] (globals.get #pkg_name' #"ErrProposalDropped"%go))
+          then return: (![error] (globals.get #v3.raft #"ErrProposalDropped"%go))
           else do:  #());;;
           (if: (![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r"))) ≠ None
           then
@@ -4334,7 +4334,7 @@ Definition stepLeader : val :=
             let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r")))) in
             slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
             (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-            return: (![error] (globals.get #pkg_name' #"ErrProposalDropped"%go))
+            return: (![error] (globals.get #v3.raft #"ErrProposalDropped"%go))
           else do:  #());;;
           (let: "i" := (ref_ty intT (zero_val intT)) in
           let: "$range" := (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) in
@@ -4349,14 +4349,14 @@ Definition stepLeader : val :=
               let: "ccc" := (ref_ty raftpb.ConfChange (zero_val raftpb.ConfChange)) in
               (let: "err" := (ref_ty error (zero_val error)) in
               let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Entry "Data" (![ptrT] "e"))) in
-              (method_call #raftpb.pkg_name' #"ConfChange'ptr" #"Unmarshal" "ccc") "$a0") in
+              (method_call #raftpb #"ConfChange'ptr" #"Unmarshal" "ccc") "$a0") in
               do:  ("err" <-[error] "$r0");;;
               (if: (~ (interface.eq (![error] "err") #interface.nil))
               then
                 do:  (let: "$a0" := (![error] "err") in
                 Panic "$a0")
               else do:  #()));;;
-              let: "$r0" := (interface.make #raftpb.pkg_name' #"ConfChange" (![raftpb.ConfChange] "ccc")) in
+              let: "$r0" := (interface.make #raftpb #"ConfChange" (![raftpb.ConfChange] "ccc")) in
               do:  ("cc" <-[raftpb.ConfChangeI] "$r0")
             else
               (if: (![raftpb.EntryType] (struct.field_ref raftpb.Entry "Type" (![ptrT] "e"))) = raftpb.EntryConfChangeV2
@@ -4364,14 +4364,14 @@ Definition stepLeader : val :=
                 let: "ccc" := (ref_ty raftpb.ConfChangeV2 (zero_val raftpb.ConfChangeV2)) in
                 (let: "err" := (ref_ty error (zero_val error)) in
                 let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Entry "Data" (![ptrT] "e"))) in
-                (method_call #raftpb.pkg_name' #"ConfChangeV2'ptr" #"Unmarshal" "ccc") "$a0") in
+                (method_call #raftpb #"ConfChangeV2'ptr" #"Unmarshal" "ccc") "$a0") in
                 do:  ("err" <-[error] "$r0");;;
                 (if: (~ (interface.eq (![error] "err") #interface.nil))
                 then
                   do:  (let: "$a0" := (![error] "err") in
                   Panic "$a0")
                 else do:  #()));;;
-                let: "$r0" := (interface.make #raftpb.pkg_name' #"ConfChangeV2" (![raftpb.ConfChangeV2] "ccc")) in
+                let: "$r0" := (interface.make #raftpb #"ConfChangeV2" (![raftpb.ConfChangeV2] "ccc")) in
                 do:  ("cc" <-[raftpb.ConfChangeI] "$r0")
               else do:  #()));;;
             (if: (~ (interface.eq (![raftpb.ConfChangeI] "cc") #interface.nil))
@@ -4394,7 +4394,7 @@ Definition stepLeader : val :=
                 let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "pendingConfIndex" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
                 slice.literal interfaceT ["$sl0"; "$sl1"])) in
-                (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
+                (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
                 do:  ("failedCheck" <-[stringT] "$r0")
               else
                 (if: (![boolT] "alreadyJoint") && (~ (![boolT] "wantsLeaveJoint"))
@@ -4412,7 +4412,7 @@ Definition stepLeader : val :=
                 do:  (let: "$a0" := #"%x ignoring conf change %v at config %s: %s"%go in
                 let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (![raftpb.ConfChangeI] "cc") in
-                let: "$sl2" := (interface.make #tracker.pkg_name' #"Config" (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
+                let: "$sl2" := (interface.make #tracker #"Config" (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
                 let: "$sl3" := (interface.make #""%go #"string"%go (![stringT] "failedCheck")) in
                 slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
                 (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
@@ -4425,36 +4425,36 @@ Definition stepLeader : val :=
                 }]) in
                 do:  ((slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) (![intT] "i")) <-[raftpb.Entry] "$r0")
               else
-                let: "$r0" := ((((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) + (![intT] "i")) + #(W64 1)) in
+                let: "$r0" := ((((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) + (![intT] "i")) + #(W64 1)) in
                 do:  ((struct.field_ref raft "pendingConfIndex" (![ptrT] "r")) <-[uint64T] "$r0");;;
                 do:  (let: "$a0" := (![raftpb.ConfChangeI] "cc") in
                 let: "$a1" := (![ptrT] "r") in
-                (func_call #pkg_name' #"traceChangeConfEvent"%go) "$a0" "$a1"))
+                (func_call #v3.raft #"traceChangeConfEvent"%go) "$a0" "$a1"))
             else do:  #())));;;
           (if: (~ (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) in
-          (method_call #pkg_name' #"raft'ptr" #"appendEntry" (![ptrT] "r")) "$a0"))
-          then return: (![error] (globals.get #pkg_name' #"ErrProposalDropped"%go))
+          (method_call #v3.raft #"raft'ptr" #"appendEntry" (![ptrT] "r")) "$a0"))
+          then return: (![error] (globals.get #v3.raft #"ErrProposalDropped"%go))
           else do:  #());;;
-          do:  ((method_call #pkg_name' #"raft'ptr" #"bcastAppend" (![ptrT] "r")) #());;;
+          do:  ((method_call #v3.raft #"raft'ptr" #"bcastAppend" (![ptrT] "r")) #());;;
           return: (#interface.nil)
         else
           (if: "$sw" = raftpb.MsgReadIndex
           then
-            (if: (method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"IsSingleton" (struct.field_ref raft "trk" (![ptrT] "r"))) #()
+            (if: (method_call #tracker #"ProgressTracker'ptr" #"IsSingleton" (struct.field_ref raft "trk" (![ptrT] "r"))) #()
             then
               (let: "resp" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
               let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
               let: "$a1" := (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r"))))) in
-              (method_call #pkg_name' #"raft'ptr" #"responseToReadIndexReq" (![ptrT] "r")) "$a0" "$a1") in
+              (method_call #v3.raft #"raft'ptr" #"responseToReadIndexReq" (![ptrT] "r")) "$a0" "$a1") in
               do:  ("resp" <-[raftpb.Message] "$r0");;;
               (if: (![uint64T] (struct.field_ref raftpb.Message "To" "resp")) ≠ None
               then
                 do:  (let: "$a0" := (![raftpb.Message] "resp") in
-                (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
+                (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
               else do:  #()));;;
               return: (#interface.nil)
             else do:  #());;;
-            (if: (~ ((method_call #pkg_name' #"raft'ptr" #"committedEntryInCurrentTerm" (![ptrT] "r")) #()))
+            (if: (~ ((method_call #v3.raft #"raft'ptr" #"committedEntryInCurrentTerm" (![ptrT] "r")) #()))
             then
               let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raft "pendingReadIndexMessages" (![ptrT] "r"))) in
               let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
@@ -4465,7 +4465,7 @@ Definition stepLeader : val :=
             else do:  #());;;
             do:  (let: "$a0" := (![ptrT] "r") in
             let: "$a1" := (![raftpb.Message] "m") in
-            (func_call #pkg_name' #"sendMsgReadIndexResponse"%go) "$a0" "$a1");;;
+            (func_call #v3.raft #"sendMsgReadIndexResponse"%go) "$a0" "$a1");;;
             return: (#interface.nil)
           else
             (if: "$sw" = raftpb.MsgForgetLeader
@@ -4505,7 +4505,7 @@ Definition stepLeader : val :=
         then
           let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "RejectHint" "m")) in
           let: "$a1" := (![uint64T] (struct.field_ref raftpb.Message "LogTerm" "m")) in
-          (method_call #pkg_name' #"raftLog'ptr" #"findConflictByTerm" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") in
+          (method_call #v3.raft #"raftLog'ptr" #"findConflictByTerm" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  ("nextProbeIdx" <-[uint64T] "$r0");;;
@@ -4513,64 +4513,64 @@ Definition stepLeader : val :=
         else do:  #());;;
         (if: let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Index" "m")) in
         let: "$a1" := (![uint64T] "nextProbeIdx") in
-        (method_call #tracker.pkg_name' #"Progress'ptr" #"MaybeDecrTo" (![ptrT] "pr")) "$a0" "$a1"
+        (method_call #tracker #"Progress'ptr" #"MaybeDecrTo" (![ptrT] "pr")) "$a0" "$a1"
         then
           do:  (let: "$a0" := #"%x decreased progress of %x to [%s]"%go in
           let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
           let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
-          let: "$sl2" := (interface.make #tracker.pkg_name' #"Progress'ptr" (![ptrT] "pr")) in
+          let: "$sl2" := (interface.make #tracker #"Progress'ptr" (![ptrT] "pr")) in
           slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
           (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
           (if: (![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateReplicate
-          then do:  ((method_call #tracker.pkg_name' #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #())
+          then do:  ((method_call #tracker #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #())
           else do:  #());;;
           do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-          (method_call #pkg_name' #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0")
+          (method_call #v3.raft #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0")
         else do:  #())
       else
         (if: (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Index" "m")) in
-        (method_call #tracker.pkg_name' #"Progress'ptr" #"MaybeUpdate" (![ptrT] "pr")) "$a0") || (((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) = (![uint64T] (struct.field_ref raftpb.Message "Index" "m"))) && ((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateProbe))
+        (method_call #tracker #"Progress'ptr" #"MaybeUpdate" (![ptrT] "pr")) "$a0") || (((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) = (![uint64T] (struct.field_ref raftpb.Message "Index" "m"))) && ((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateProbe))
         then
           let: "$sw" := #true in
           (if: "$sw" = ((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateProbe)
-          then do:  ((method_call #tracker.pkg_name' #"Progress'ptr" #"BecomeReplicate" (![ptrT] "pr")) #())
+          then do:  ((method_call #tracker #"Progress'ptr" #"BecomeReplicate" (![ptrT] "pr")) #())
           else
-            (if: "$sw" = (((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateSnapshot) && (((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) + #(W64 1)) ≥ ((method_call #pkg_name' #"raftLog'ptr" #"firstIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())))
+            (if: "$sw" = (((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateSnapshot) && (((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) + #(W64 1)) ≥ ((method_call #v3.raft #"raftLog'ptr" #"firstIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())))
             then
               do:  (let: "$a0" := #"%x recovered from needing snapshot, resumed sending replication messages to %x [%s]"%go in
               let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
-              let: "$sl2" := (interface.make #tracker.pkg_name' #"Progress'ptr" (![ptrT] "pr")) in
+              let: "$sl2" := (interface.make #tracker #"Progress'ptr" (![ptrT] "pr")) in
               slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
               (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-              do:  ((method_call #tracker.pkg_name' #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #());;;
-              do:  ((method_call #tracker.pkg_name' #"Progress'ptr" #"BecomeReplicate" (![ptrT] "pr")) #())
+              do:  ((method_call #tracker #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #());;;
+              do:  ((method_call #tracker #"Progress'ptr" #"BecomeReplicate" (![ptrT] "pr")) #())
             else
               (if: "$sw" = ((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateReplicate)
               then
                 do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Index" "m")) in
-                (method_call #tracker.pkg_name' #"Inflights'ptr" #"FreeLE" (![ptrT] (struct.field_ref tracker.Progress "Inflights" (![ptrT] "pr")))) "$a0")
+                (method_call #tracker #"Inflights'ptr" #"FreeLE" (![ptrT] (struct.field_ref tracker.Progress "Inflights" (![ptrT] "pr")))) "$a0")
               else #())));;;
-          (if: (method_call #pkg_name' #"raft'ptr" #"maybeCommit" (![ptrT] "r")) #()
+          (if: (method_call #v3.raft #"raft'ptr" #"maybeCommit" (![ptrT] "r")) #()
           then
             do:  (let: "$a0" := (![ptrT] "r") in
-            (func_call #pkg_name' #"releasePendingReadIndexMessages"%go) "$a0");;;
-            do:  ((method_call #pkg_name' #"raft'ptr" #"bcastAppend" (![ptrT] "r")) #())
+            (func_call #v3.raft #"releasePendingReadIndexMessages"%go) "$a0");;;
+            do:  ((method_call #v3.raft #"raft'ptr" #"bcastAppend" (![ptrT] "r")) #())
           else
             (if: ((![uint64T] (struct.field_ref raft "id" (![ptrT] "r"))) ≠ (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) && (let: "$a0" := (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r"))))) in
-            (method_call #tracker.pkg_name' #"Progress'ptr" #"CanBumpCommit" (![ptrT] "pr")) "$a0")
+            (method_call #tracker #"Progress'ptr" #"CanBumpCommit" (![ptrT] "pr")) "$a0")
             then
               do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-              (method_call #pkg_name' #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0")
+              (method_call #v3.raft #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0")
             else do:  #()));;;
           (if: (![uint64T] (struct.field_ref raft "id" (![ptrT] "r"))) ≠ (![uint64T] (struct.field_ref raftpb.Message "From" "m"))
           then
             (for: (λ: <>, let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
             let: "$a1" := #false in
-            (method_call #pkg_name' #"raft'ptr" #"maybeSendAppend" (![ptrT] "r")) "$a0" "$a1"); (λ: <>, Skip) := λ: <>,
+            (method_call #v3.raft #"raft'ptr" #"maybeSendAppend" (![ptrT] "r")) "$a0" "$a1"); (λ: <>, Skip) := λ: <>,
               do:  #())
           else do:  #());;;
-          (if: ((![uint64T] (struct.field_ref raftpb.Message "From" "m")) = (![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r")))) && ((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) = ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()))
+          (if: ((![uint64T] (struct.field_ref raftpb.Message "From" "m")) = (![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r")))) && ((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) = ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()))
           then
             do:  (let: "$a0" := #"%x sent MsgTimeoutNow to %x after received MsgAppResp"%go in
             let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -4578,7 +4578,7 @@ Definition stepLeader : val :=
             slice.literal interfaceT ["$sl0"; "$sl1"])) in
             (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
             do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-            (method_call #pkg_name' #"raft'ptr" #"sendTimeoutNow" (![ptrT] "r")) "$a0")
+            (method_call #v3.raft #"raft'ptr" #"sendTimeoutNow" (![ptrT] "r")) "$a0")
           else do:  #())
         else do:  #()))
     else
@@ -4588,10 +4588,10 @@ Definition stepLeader : val :=
         do:  ((struct.field_ref tracker.Progress "RecentActive" (![ptrT] "pr")) <-[boolT] "$r0");;;
         let: "$r0" := #false in
         do:  ((struct.field_ref tracker.Progress "MsgAppFlowPaused" (![ptrT] "pr")) <-[boolT] "$r0");;;
-        (if: ((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) < ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())) || ((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateProbe)
+        (if: ((![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) < ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())) || ((![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateProbe)
         then
           do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-          (method_call #pkg_name' #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0")
+          (method_call #v3.raft #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0")
         else do:  #());;;
         (if: ((![ReadOnlyOption] (struct.field_ref readOnly "option" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r"))))) ≠ ReadOnlySafe) || ((let: "$a0" := (![sliceT] (struct.field_ref raftpb.Message "Context" "m")) in
         slice.len "$a0") = #(W64 0))
@@ -4599,13 +4599,13 @@ Definition stepLeader : val :=
         else do:  #());;;
         (if: (let: "$a0" := (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
         let: "$a1" := (![sliceT] (struct.field_ref raftpb.Message "Context" "m")) in
-        (method_call #pkg_name' #"readOnly'ptr" #"recvAck" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0" "$a1") in
-        (method_call #quorum.pkg_name' #"JointConfig" #"VoteResult" (![quorum.JointConfig] (struct.field_ref tracker.Config "Voters" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))))) "$a0") ≠ quorum.VoteWon
+        (method_call #v3.raft #"readOnly'ptr" #"recvAck" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0" "$a1") in
+        (method_call #quorum #"JointConfig" #"VoteResult" (![quorum.JointConfig] (struct.field_ref tracker.Config "Voters" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))))) "$a0") ≠ quorum.VoteWon
         then return: (#interface.nil)
         else do:  #());;;
         let: "rss" := (ref_ty sliceT (zero_val sliceT)) in
         let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
-        (method_call #pkg_name' #"readOnly'ptr" #"advance" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0") in
+        (method_call #v3.raft #"readOnly'ptr" #"advance" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0") in
         do:  ("rss" <-[sliceT] "$r0");;;
         (let: "rs" := (ref_ty intT (zero_val intT)) in
         let: "$range" := (![sliceT] "rss") in
@@ -4615,12 +4615,12 @@ Definition stepLeader : val :=
           (let: "resp" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
           let: "$r0" := (let: "$a0" := (![raftpb.Message] (struct.field_ref readIndexStatus "req" (![ptrT] "rs"))) in
           let: "$a1" := (![uint64T] (struct.field_ref readIndexStatus "index" (![ptrT] "rs"))) in
-          (method_call #pkg_name' #"raft'ptr" #"responseToReadIndexReq" (![ptrT] "r")) "$a0" "$a1") in
+          (method_call #v3.raft #"raft'ptr" #"responseToReadIndexReq" (![ptrT] "r")) "$a0" "$a1") in
           do:  ("resp" <-[raftpb.Message] "$r0");;;
           (if: (![uint64T] (struct.field_ref raftpb.Message "To" "resp")) ≠ None
           then
             do:  (let: "$a0" := (![raftpb.Message] "resp") in
-            (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
+            (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
           else do:  #()))))
       else
         (if: "$sw" = raftpb.MsgSnapStatus
@@ -4630,21 +4630,21 @@ Definition stepLeader : val :=
           else do:  #());;;
           (if: (~ (![boolT] (struct.field_ref raftpb.Message "Reject" "m")))
           then
-            do:  ((method_call #tracker.pkg_name' #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #());;;
+            do:  ((method_call #tracker #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #());;;
             do:  (let: "$a0" := #"%x snapshot succeeded, resumed sending replication messages to %x [%s]"%go in
             let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
-            let: "$sl2" := (interface.make #tracker.pkg_name' #"Progress'ptr" (![ptrT] "pr")) in
+            let: "$sl2" := (interface.make #tracker #"Progress'ptr" (![ptrT] "pr")) in
             slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
             (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
           else
             let: "$r0" := #(W64 0) in
             do:  ((struct.field_ref tracker.Progress "PendingSnapshot" (![ptrT] "pr")) <-[uint64T] "$r0");;;
-            do:  ((method_call #tracker.pkg_name' #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #());;;
+            do:  ((method_call #tracker #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #());;;
             do:  (let: "$a0" := #"%x snapshot failed, resumed sending replication messages to %x [%s]"%go in
             let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
-            let: "$sl2" := (interface.make #tracker.pkg_name' #"Progress'ptr" (![ptrT] "pr")) in
+            let: "$sl2" := (interface.make #tracker #"Progress'ptr" (![ptrT] "pr")) in
             slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
             (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1"));;;
           let: "$r0" := #true in
@@ -4653,12 +4653,12 @@ Definition stepLeader : val :=
           (if: "$sw" = raftpb.MsgUnreachable
           then
             (if: (![tracker.StateType] (struct.field_ref tracker.Progress "State" (![ptrT] "pr"))) = tracker.StateReplicate
-            then do:  ((method_call #tracker.pkg_name' #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #())
+            then do:  ((method_call #tracker #"Progress'ptr" #"BecomeProbe" (![ptrT] "pr")) #())
             else do:  #());;;
             do:  (let: "$a0" := #"%x failed to send message to %x because it is unreachable [%s]"%go in
             let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
             let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
-            let: "$sl2" := (interface.make #tracker.pkg_name' #"Progress'ptr" (![ptrT] "pr")) in
+            let: "$sl2" := (interface.make #tracker #"Progress'ptr" (![ptrT] "pr")) in
             slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
             (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
           else
@@ -4691,7 +4691,7 @@ Definition stepLeader : val :=
                   (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
                   return: (#interface.nil)
                 else do:  #());;;
-                do:  ((method_call #pkg_name' #"raft'ptr" #"abortLeaderTransfer" (![ptrT] "r")) #());;;
+                do:  ((method_call #v3.raft #"raft'ptr" #"abortLeaderTransfer" (![ptrT] "r")) #());;;
                 do:  (let: "$a0" := #"%x [term %d] abort previous transferring leadership to %x"%go in
                 let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
@@ -4717,10 +4717,10 @@ Definition stepLeader : val :=
               do:  ((struct.field_ref raft "electionElapsed" (![ptrT] "r")) <-[intT] "$r0");;;
               let: "$r0" := (![uint64T] "leadTransferee") in
               do:  ((struct.field_ref raft "leadTransferee" (![ptrT] "r")) <-[uint64T] "$r0");;;
-              (if: (![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) = ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())
+              (if: (![uint64T] (struct.field_ref tracker.Progress "Match" (![ptrT] "pr"))) = ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())
               then
                 do:  (let: "$a0" := (![uint64T] "leadTransferee") in
-                (method_call #pkg_name' #"raft'ptr" #"sendTimeoutNow" (![ptrT] "r")) "$a0");;;
+                (method_call #v3.raft #"raft'ptr" #"sendTimeoutNow" (![ptrT] "r")) "$a0");;;
                 do:  (let: "$a0" := #"%x sends MsgTimeoutNow to %x immediately as %x already has up-to-date log"%go in
                 let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] "leadTransferee")) in
@@ -4729,7 +4729,7 @@ Definition stepLeader : val :=
                 (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
               else
                 do:  (let: "$a0" := (![uint64T] "leadTransferee") in
-                (method_call #pkg_name' #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0"))
+                (method_call #v3.raft #"raft'ptr" #"sendAppend" (![ptrT] "r")) "$a0"))
             else #())))));;;
     return: (#interface.nil)).
 
@@ -4757,31 +4757,31 @@ Definition stepCandidate : val :=
       let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-      return: (![error] (globals.get #pkg_name' #"ErrProposalDropped"%go))
+      return: (![error] (globals.get #v3.raft #"ErrProposalDropped"%go))
     else
       (if: "$sw" = raftpb.MsgApp
       then
         do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) in
         let: "$a1" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-        (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
+        (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
         do:  (let: "$a0" := (![raftpb.Message] "m") in
-        (method_call #pkg_name' #"raft'ptr" #"handleAppendEntries" (![ptrT] "r")) "$a0")
+        (method_call #v3.raft #"raft'ptr" #"handleAppendEntries" (![ptrT] "r")) "$a0")
       else
         (if: "$sw" = raftpb.MsgHeartbeat
         then
           do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) in
           let: "$a1" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-          (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
+          (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
           do:  (let: "$a0" := (![raftpb.Message] "m") in
-          (method_call #pkg_name' #"raft'ptr" #"handleHeartbeat" (![ptrT] "r")) "$a0")
+          (method_call #v3.raft #"raft'ptr" #"handleHeartbeat" (![ptrT] "r")) "$a0")
         else
           (if: "$sw" = raftpb.MsgSnap
           then
             do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Term" "m")) in
             let: "$a1" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-            (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
+            (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
             do:  (let: "$a0" := (![raftpb.Message] "m") in
-            (method_call #pkg_name' #"raft'ptr" #"handleSnapshot" (![ptrT] "r")) "$a0")
+            (method_call #v3.raft #"raft'ptr" #"handleSnapshot" (![ptrT] "r")) "$a0")
           else
             (if: "$sw" = (![raftpb.MessageType] "myVoteRespType")
             then
@@ -4791,7 +4791,7 @@ Definition stepCandidate : val :=
               let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
               let: "$a1" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
               let: "$a2" := (~ (![boolT] (struct.field_ref raftpb.Message "Reject" "m"))) in
-              (method_call #pkg_name' #"raft'ptr" #"poll" (![ptrT] "r")) "$a0" "$a1" "$a2") in
+              (method_call #v3.raft #"raft'ptr" #"poll" (![ptrT] "r")) "$a0" "$a1" "$a2") in
               let: "$r0" := "$ret0" in
               let: "$r1" := "$ret1" in
               let: "$r2" := "$ret2" in
@@ -4801,7 +4801,7 @@ Definition stepCandidate : val :=
               do:  (let: "$a0" := #"%x has received %d %s votes and %d vote rejections"%go in
               let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
               let: "$sl1" := (interface.make #""%go #"int"%go (![intT] "gr")) in
-              let: "$sl2" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+              let: "$sl2" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
               let: "$sl3" := (interface.make #""%go #"int"%go (![intT] "rj")) in
               slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
               (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
@@ -4811,16 +4811,16 @@ Definition stepCandidate : val :=
                 (if: (![StateType] (struct.field_ref raft "state" (![ptrT] "r"))) = StatePreCandidate
                 then
                   do:  (let: "$a0" := campaignElection in
-                  (method_call #pkg_name' #"raft'ptr" #"campaign" (![ptrT] "r")) "$a0")
+                  (method_call #v3.raft #"raft'ptr" #"campaign" (![ptrT] "r")) "$a0")
                 else
-                  do:  ((method_call #pkg_name' #"raft'ptr" #"becomeLeader" (![ptrT] "r")) #());;;
-                  do:  ((method_call #pkg_name' #"raft'ptr" #"bcastAppend" (![ptrT] "r")) #()))
+                  do:  ((method_call #v3.raft #"raft'ptr" #"becomeLeader" (![ptrT] "r")) #());;;
+                  do:  ((method_call #v3.raft #"raft'ptr" #"bcastAppend" (![ptrT] "r")) #()))
               else
                 (if: "$sw" = quorum.VoteLost
                 then
                   do:  (let: "$a0" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
                   let: "$a1" := None in
-                  (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1")
+                  (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1")
                 else #()))
             else
               (if: "$sw" = raftpb.MsgTimeoutNow
@@ -4828,7 +4828,7 @@ Definition stepCandidate : val :=
                 do:  (let: "$a0" := #"%x [term %d state %v] ignored MsgTimeoutNow from %x"%go in
                 let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
                 let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
-                let: "$sl2" := (interface.make #pkg_name' #"StateType" (![StateType] (struct.field_ref raft "state" (![ptrT] "r")))) in
+                let: "$sl2" := (interface.make #v3.raft #"StateType" (![StateType] (struct.field_ref raft "state" (![ptrT] "r")))) in
                 let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "From" "m"))) in
                 slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
                 (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
@@ -4850,7 +4850,7 @@ Definition stepFollower : val :=
         let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
         (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-        return: (![error] (globals.get #pkg_name' #"ErrProposalDropped"%go))
+        return: (![error] (globals.get #v3.raft #"ErrProposalDropped"%go))
       else
         (if: ![boolT] (struct.field_ref raft "disableProposalForwarding" (![ptrT] "r"))
         then
@@ -4860,12 +4860,12 @@ Definition stepFollower : val :=
           let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r")))) in
           slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
           (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
-          return: (![error] (globals.get #pkg_name' #"ErrProposalDropped"%go))
+          return: (![error] (globals.get #v3.raft #"ErrProposalDropped"%go))
         else do:  #()));;;
       let: "$r0" := (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) in
       do:  ((struct.field_ref raftpb.Message "To" "m") <-[uint64T] "$r0");;;
       do:  (let: "$a0" := (![raftpb.Message] "m") in
-      (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
+      (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
     else
       (if: "$sw" = raftpb.MsgApp
       then
@@ -4874,7 +4874,7 @@ Definition stepFollower : val :=
         let: "$r0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
         do:  ((struct.field_ref raft "lead" (![ptrT] "r")) <-[uint64T] "$r0");;;
         do:  (let: "$a0" := (![raftpb.Message] "m") in
-        (method_call #pkg_name' #"raft'ptr" #"handleAppendEntries" (![ptrT] "r")) "$a0")
+        (method_call #v3.raft #"raft'ptr" #"handleAppendEntries" (![ptrT] "r")) "$a0")
       else
         (if: "$sw" = raftpb.MsgHeartbeat
         then
@@ -4883,7 +4883,7 @@ Definition stepFollower : val :=
           let: "$r0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
           do:  ((struct.field_ref raft "lead" (![ptrT] "r")) <-[uint64T] "$r0");;;
           do:  (let: "$a0" := (![raftpb.Message] "m") in
-          (method_call #pkg_name' #"raft'ptr" #"handleHeartbeat" (![ptrT] "r")) "$a0")
+          (method_call #v3.raft #"raft'ptr" #"handleHeartbeat" (![ptrT] "r")) "$a0")
         else
           (if: "$sw" = raftpb.MsgSnap
           then
@@ -4892,7 +4892,7 @@ Definition stepFollower : val :=
             let: "$r0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
             do:  ((struct.field_ref raft "lead" (![ptrT] "r")) <-[uint64T] "$r0");;;
             do:  (let: "$a0" := (![raftpb.Message] "m") in
-            (method_call #pkg_name' #"raft'ptr" #"handleSnapshot" (![ptrT] "r")) "$a0")
+            (method_call #v3.raft #"raft'ptr" #"handleSnapshot" (![ptrT] "r")) "$a0")
           else
             (if: "$sw" = raftpb.MsgTransferLeader
             then
@@ -4908,7 +4908,7 @@ Definition stepFollower : val :=
               let: "$r0" := (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) in
               do:  ((struct.field_ref raftpb.Message "To" "m") <-[uint64T] "$r0");;;
               do:  (let: "$a0" := (![raftpb.Message] "m") in
-              (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
+              (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
             else
               (if: "$sw" = raftpb.MsgForgetLeader
               then
@@ -4940,7 +4940,7 @@ Definition stepFollower : val :=
                   slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
                   (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
                   do:  (let: "$a0" := campaignTransfer in
-                  (method_call #pkg_name' #"raft'ptr" #"hup" (![ptrT] "r")) "$a0")
+                  (method_call #v3.raft #"raft'ptr" #"hup" (![ptrT] "r")) "$a0")
                 else
                   (if: "$sw" = raftpb.MsgReadIndex
                   then
@@ -4956,7 +4956,7 @@ Definition stepFollower : val :=
                     let: "$r0" := (![uint64T] (struct.field_ref raft "lead" (![ptrT] "r"))) in
                     do:  ((struct.field_ref raftpb.Message "To" "m") <-[uint64T] "$r0");;;
                     do:  (let: "$a0" := (![raftpb.Message] "m") in
-                    (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
+                    (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
                   else
                     (if: "$sw" = raftpb.MsgReadIndexResp
                     then
@@ -5012,7 +5012,7 @@ Definition raft__handleAppendEntries : val :=
     let: "m" := (ref_ty raftpb.Message "m") in
     let: "a" := (ref_ty logSlice (zero_val logSlice)) in
     let: "$r0" := (let: "$a0" := "m" in
-    (func_call #pkg_name' #"logSliceFromMsgApp"%go) "$a0") in
+    (func_call #v3.raft #"logSliceFromMsgApp"%go) "$a0") in
     do:  ("a" <-[logSlice] "$r0");;;
     (if: (![uint64T] (struct.field_ref entryID "index" (struct.field_ref logSlice "prev" "a"))) < (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))
     then
@@ -5035,14 +5035,14 @@ Definition raft__handleAppendEntries : val :=
         "Context" ::= zero_val sliceT;
         "Responses" ::= zero_val sliceT
       }]) in
-      (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
+      (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
       return: (#())
     else do:  #());;;
     (let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "mlastIndex" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![logSlice] "a") in
     let: "$a1" := (![uint64T] (struct.field_ref raftpb.Message "Commit" "m")) in
-    (method_call #pkg_name' #"raftLog'ptr" #"maybeAppend" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") in
+    (method_call #v3.raft #"raftLog'ptr" #"maybeAppend" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("mlastIndex" <-[uint64T] "$r0");;;
@@ -5068,16 +5068,16 @@ Definition raft__handleAppendEntries : val :=
         "Context" ::= zero_val sliceT;
         "Responses" ::= zero_val sliceT
       }]) in
-      (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
+      (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0");;;
       return: (#())
     else do:  #()));;;
     do:  (let: "$a0" := #"%x [logterm: %d, index: %d] rejected MsgApp [logterm: %d, index: %d] from %x"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
     let: "$sl1" := (interface.make #""%go #"uint64"%go (let: ("$ret0", "$ret1") := ((let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Index" "m")) in
-    (method_call #pkg_name' #"raftLog'ptr" #"term" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")) in
+    (method_call #v3.raft #"raftLog'ptr" #"term" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")) in
     let: "$a0" := "$ret0" in
     let: "$a1" := "$ret1" in
-    (method_call #pkg_name' #"raftLog'ptr" #"zeroTermOnOutOfBounds" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1")) in
+    (method_call #v3.raft #"raftLog'ptr" #"zeroTermOnOutOfBounds" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1")) in
     let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Index" "m"))) in
     let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "LogTerm" "m"))) in
     let: "$sl4" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Index" "m"))) in
@@ -5086,13 +5086,13 @@ Definition raft__handleAppendEntries : val :=
     (interface.get "Debugf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
     let: "hintIndex" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Index" "m")) in
-    let: "$a1" := ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+    let: "$a1" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
     (minUint64 2) "$a0" "$a1") in
     do:  ("hintIndex" <-[uint64T] "$r0");;;
     let: "hintTerm" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "hintIndex") in
     let: "$a1" := (![uint64T] (struct.field_ref raftpb.Message "LogTerm" "m")) in
-    (method_call #pkg_name' #"raftLog'ptr" #"findConflictByTerm" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") in
+    (method_call #v3.raft #"raftLog'ptr" #"findConflictByTerm" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("hintIndex" <-[uint64T] "$r0");;;
@@ -5119,7 +5119,7 @@ Definition raft__handleAppendEntries : val :=
       "Context" ::= zero_val sliceT;
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")).
+    (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")).
 
 (* go: raft.go:1830:16 *)
 Definition raft__handleHeartbeat : val :=
@@ -5127,7 +5127,7 @@ Definition raft__handleHeartbeat : val :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     let: "m" := (ref_ty raftpb.Message "m") in
     do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "Commit" "m")) in
-    (method_call #pkg_name' #"raftLog'ptr" #"commitTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0");;;
+    (method_call #v3.raft #"raftLog'ptr" #"commitTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0");;;
     do:  (let: "$a0" := (let: "$To" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
     let: "$Type" := raftpb.MsgHeartbeatResp in
     let: "$Context" := (![sliceT] (struct.field_ref raftpb.Message "Context" "m")) in
@@ -5147,7 +5147,7 @@ Definition raft__handleHeartbeat : val :=
       "Context" ::= "$Context";
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")).
+    (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")).
 
 (* go: raft.go:1835:16 *)
 Definition raft__handleSnapshot : val :=
@@ -5167,7 +5167,7 @@ Definition raft__handleSnapshot : val :=
     do:  ("sindex" <-[uint64T] "$r0");;;
     do:  ("sterm" <-[uint64T] "$r1");;;
     (if: let: "$a0" := (![raftpb.Snapshot] "s") in
-    (method_call #pkg_name' #"raft'ptr" #"restore" (![ptrT] "r")) "$a0"
+    (method_call #v3.raft #"raft'ptr" #"restore" (![ptrT] "r")) "$a0"
     then
       do:  (let: "$a0" := #"%x [commit: %d] restored snapshot [index: %d, term: %d]"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -5178,7 +5178,7 @@ Definition raft__handleSnapshot : val :=
       (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
       do:  (let: "$a0" := (let: "$To" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
       let: "$Type" := raftpb.MsgAppResp in
-      let: "$Index" := ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+      let: "$Index" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
       struct.make raftpb.Message [{
         "Type" ::= "$Type";
         "To" ::= "$To";
@@ -5195,7 +5195,7 @@ Definition raft__handleSnapshot : val :=
         "Context" ::= zero_val sliceT;
         "Responses" ::= zero_val sliceT
       }]) in
-      (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
+      (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
     else
       do:  (let: "$a0" := #"%x [commit: %d] ignored snapshot [index: %d, term: %d]"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -5223,7 +5223,7 @@ Definition raft__handleSnapshot : val :=
         "Context" ::= zero_val sliceT;
         "Responses" ::= zero_val sliceT
       }]) in
-      (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0"))).
+      (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0"))).
 
 (* restore recovers the state machine from a snapshot. It restores the log and the
    configuration of state machine. If this method returns false, the snapshot was
@@ -5245,7 +5245,7 @@ Definition raft__restore : val :=
       (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
       do:  (let: "$a0" := ((![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) + #(W64 1)) in
       let: "$a1" := None in
-      (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
+      (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
       return: (#false)
     else do:  #());;;
     let: "found" := (ref_ty boolT (zero_val boolT)) in
@@ -5280,7 +5280,7 @@ Definition raft__restore : val :=
     then
       do:  (let: "$a0" := #"%x attempted to restore snapshot but it is not in the ConfState %v; should never happen"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
-      let: "$sl1" := (interface.make #raftpb.pkg_name' #"ConfState" (![raftpb.ConfState] "cs")) in
+      let: "$sl1" := (interface.make #raftpb #"ConfState" (![raftpb.ConfState] "cs")) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
       (interface.get "Warningf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
       return: (#false)
@@ -5294,10 +5294,10 @@ Definition raft__restore : val :=
     }]) in
     do:  ("id" <-[entryID] "$r0");;;
     (if: let: "$a0" := (![entryID] "id") in
-    (method_call #pkg_name' #"raftLog'ptr" #"matchTerm" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0"
+    (method_call #v3.raft #"raftLog'ptr" #"matchTerm" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0"
     then
       let: "last" := (ref_ty entryID (zero_val entryID)) in
-      let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+      let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
       do:  ("last" <-[entryID] "$r0");;;
       do:  (let: "$a0" := #"%x [commit: %d, lastindex: %d, lastterm: %d] fast-forwarded commit to snapshot [index: %d, term: %d]"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -5309,26 +5309,26 @@ Definition raft__restore : val :=
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"])) in
       (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
       do:  (let: "$a0" := (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Index" (struct.field_ref raftpb.Snapshot "Metadata" "s"))) in
-      (method_call #pkg_name' #"raftLog'ptr" #"commitTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0");;;
+      (method_call #v3.raft #"raftLog'ptr" #"commitTo" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0");;;
       return: (#false)
     else do:  #());;;
     do:  (let: "$a0" := (![raftpb.Snapshot] "s") in
-    (method_call #pkg_name' #"raftLog'ptr" #"restore" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0");;;
+    (method_call #v3.raft #"raftLog'ptr" #"restore" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0");;;
     let: "$r0" := (let: "$a0" := (![intT] (struct.field_ref tracker.ProgressTracker "MaxInflight" (struct.field_ref raft "trk" (![ptrT] "r")))) in
     let: "$a1" := (![uint64T] (struct.field_ref tracker.ProgressTracker "MaxInflightBytes" (struct.field_ref raft "trk" (![ptrT] "r")))) in
-    (func_call #tracker.pkg_name' #"MakeProgressTracker"%go) "$a0" "$a1") in
+    (func_call #tracker #"MakeProgressTracker"%go) "$a0" "$a1") in
     do:  ((struct.field_ref raft "trk" (![ptrT] "r")) <-[tracker.ProgressTracker] "$r0");;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "trk" := (ref_ty tracker.ProgressMap (zero_val tracker.ProgressMap)) in
     let: "cfg" := (ref_ty tracker.Config (zero_val tracker.Config)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (let: "$Tracker" := (![tracker.ProgressTracker] (struct.field_ref raft "trk" (![ptrT] "r"))) in
-    let: "$LastIndex" := ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+    let: "$LastIndex" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
     struct.make confchange.Changer [{
       "Tracker" ::= "$Tracker";
       "LastIndex" ::= "$LastIndex"
     }]) in
     let: "$a1" := (![raftpb.ConfState] "cs") in
-    (func_call #confchange.pkg_name' #"Restore"%go) "$a0" "$a1") in
+    (func_call #confchange #"Restore"%go) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -5338,20 +5338,20 @@ Definition raft__restore : val :=
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go (let: "$a0" := #"unable to restore config %+v: %s"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #raftpb.pkg_name' #"ConfState" (![raftpb.ConfState] "cs")) in
+      let: "$a1" := ((let: "$sl0" := (interface.make #raftpb #"ConfState" (![raftpb.ConfState] "cs")) in
       let: "$sl1" := (![error] "err") in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
-      (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")) in
+      (func_call #fmt #"Sprintf"%go) "$a0" "$a1")) in
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := (![Logger] (struct.field_ref raft "logger" (![ptrT] "r"))) in
     let: "$a1" := (![raftpb.ConfState] "cs") in
     let: "$a2" := (let: "$a0" := (![tracker.Config] "cfg") in
     let: "$a1" := (![tracker.ProgressMap] "trk") in
-    (method_call #pkg_name' #"raft'ptr" #"switchToConfig" (![ptrT] "r")) "$a0" "$a1") in
-    (func_call #pkg_name' #"assertConfStatesEquivalent"%go) "$a0" "$a1" "$a2");;;
+    (method_call #v3.raft #"raft'ptr" #"switchToConfig" (![ptrT] "r")) "$a0" "$a1") in
+    (func_call #v3.raft #"assertConfStatesEquivalent"%go) "$a0" "$a1" "$a2");;;
     let: "last" := (ref_ty entryID (zero_val entryID)) in
-    let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
     do:  ("last" <-[entryID] "$r0");;;
     do:  (let: "$a0" := #"%x [commit: %d, lastindex: %d, lastterm: %d] restored snapshot [index: %d, term: %d]"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -5374,7 +5374,7 @@ Definition raft__promotable : val :=
     let: "pr" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r")))) (![uint64T] (struct.field_ref raft "id" (![ptrT] "r"))))) in
     do:  ("pr" <-[ptrT] "$r0");;;
-    return: ((((![ptrT] "pr") ≠ #null) && (~ (![boolT] (struct.field_ref tracker.Progress "IsLearner" (![ptrT] "pr"))))) && (~ ((method_call #pkg_name' #"raftLog'ptr" #"hasNextOrInProgressSnapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())))).
+    return: ((((![ptrT] "pr") ≠ #null) && (~ (![boolT] (struct.field_ref tracker.Progress "IsLearner" (![ptrT] "pr"))))) && (~ ((method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressSnapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())))).
 
 (* go: raft.go:1947:16 *)
 Definition raft__applyConfChange : val :=
@@ -5387,20 +5387,20 @@ Definition raft__applyConfChange : val :=
     let: (("$ret0", "$ret1"), "$ret2") := ((λ: <>,
       exception_do (let: "changer" := (ref_ty confchange.Changer (zero_val confchange.Changer)) in
       let: "$r0" := (let: "$Tracker" := (![tracker.ProgressTracker] (struct.field_ref raft "trk" (![ptrT] "r"))) in
-      let: "$LastIndex" := ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+      let: "$LastIndex" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
       struct.make confchange.Changer [{
         "Tracker" ::= "$Tracker";
         "LastIndex" ::= "$LastIndex"
       }]) in
       do:  ("changer" <-[confchange.Changer] "$r0");;;
-      (if: (method_call #raftpb.pkg_name' #"ConfChangeV2" #"LeaveJoint" (![raftpb.ConfChangeV2] "cc")) #()
+      (if: (method_call #raftpb #"ConfChangeV2" #"LeaveJoint" (![raftpb.ConfChangeV2] "cc")) #()
       then
-        let: (("$ret0", "$ret1"), "$ret2") := (((method_call #confchange.pkg_name' #"Changer" #"LeaveJoint" (![confchange.Changer] "changer")) #())) in
+        let: (("$ret0", "$ret1"), "$ret2") := (((method_call #confchange #"Changer" #"LeaveJoint" (![confchange.Changer] "changer")) #())) in
         return: ("$ret0", "$ret1", "$ret2")
       else
         (let: "ok" := (ref_ty boolT (zero_val boolT)) in
         let: "autoLeave" := (ref_ty boolT (zero_val boolT)) in
-        let: ("$ret0", "$ret1") := ((method_call #raftpb.pkg_name' #"ConfChangeV2" #"EnterJoint" (![raftpb.ConfChangeV2] "cc")) #()) in
+        let: ("$ret0", "$ret1") := ((method_call #raftpb #"ConfChangeV2" #"EnterJoint" (![raftpb.ConfChangeV2] "cc")) #()) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("autoLeave" <-[boolT] "$r0");;;
@@ -5409,11 +5409,11 @@ Definition raft__applyConfChange : val :=
         then
           let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![boolT] "autoLeave") in
           let: "$a1" := (![sliceT] (struct.field_ref raftpb.ConfChangeV2 "Changes" "cc")) in
-          (method_call #confchange.pkg_name' #"Changer" #"EnterJoint" (![confchange.Changer] "changer")) "$a0" "$a1")) in
+          (method_call #confchange #"Changer" #"EnterJoint" (![confchange.Changer] "changer")) "$a0" "$a1")) in
           return: ("$ret0", "$ret1", "$ret2")
         else do:  #())));;;
       let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![sliceT] (struct.field_ref raftpb.ConfChangeV2 "Changes" "cc")) in
-      (method_call #confchange.pkg_name' #"Changer" #"Simple" (![confchange.Changer] "changer")) "$a0")) in
+      (method_call #confchange #"Changer" #"Simple" (![confchange.Changer] "changer")) "$a0")) in
       return: ("$ret0", "$ret1", "$ret2"))
       ) #()) in
     let: "$r0" := "$ret0" in
@@ -5429,7 +5429,7 @@ Definition raft__applyConfChange : val :=
     else do:  #());;;
     return: (let: "$a0" := (![tracker.Config] "cfg") in
      let: "$a1" := (![tracker.ProgressMap] "trk") in
-     (method_call #pkg_name' #"raft'ptr" #"switchToConfig" (![ptrT] "r")) "$a0" "$a1")).
+     (method_call #v3.raft #"raft'ptr" #"switchToConfig" (![ptrT] "r")) "$a0" "$a1")).
 
 (* switchToConfig reconfigures this node to use the provided configuration. It
    updates the in-memory state and, when necessary, carries out additional
@@ -5446,18 +5446,18 @@ Definition raft__switchToConfig : val :=
     let: "cfg" := (ref_ty tracker.Config "cfg") in
     do:  (let: "$a0" := (![tracker.Config] "cfg") in
     let: "$a1" := (![ptrT] "r") in
-    (func_call #pkg_name' #"traceConfChangeEvent"%go) "$a0" "$a1");;;
+    (func_call #v3.raft #"traceConfChangeEvent"%go) "$a0" "$a1");;;
     let: "$r0" := (![tracker.Config] "cfg") in
     do:  ((struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))) <-[tracker.Config] "$r0");;;
     let: "$r0" := (![tracker.ProgressMap] "trk") in
     do:  ((struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] "r"))) <-[tracker.ProgressMap] "$r0");;;
     do:  (let: "$a0" := #"%x switched to configuration %s"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
-    let: "$sl1" := (interface.make #tracker.pkg_name' #"Config" (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
+    let: "$sl1" := (interface.make #tracker #"Config" (![tracker.Config] (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r"))))) in
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
     (interface.get "Infof" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
     let: "cs" := (ref_ty raftpb.ConfState (zero_val raftpb.ConfState)) in
-    let: "$r0" := ((method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"ConfState" (struct.field_ref raft "trk" (![ptrT] "r"))) #()) in
+    let: "$r0" := ((method_call #tracker #"ProgressTracker'ptr" #"ConfState" (struct.field_ref raft "trk" (![ptrT] "r"))) #()) in
     do:  ("cs" <-[raftpb.ConfState] "$r0");;;
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "pr" := (ref_ty ptrT (zero_val ptrT)) in
@@ -5474,7 +5474,7 @@ Definition raft__switchToConfig : val :=
       then
         do:  (let: "$a0" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
         let: "$a1" := None in
-        (method_call #pkg_name' #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1")
+        (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1")
       else do:  #());;;
       return: (![raftpb.ConfState] "cs")
     else do:  #());;;
@@ -5482,8 +5482,8 @@ Definition raft__switchToConfig : val :=
     slice.len "$a0") = #(W64 0))
     then return: (![raftpb.ConfState] "cs")
     else do:  #());;;
-    (if: (method_call #pkg_name' #"raft'ptr" #"maybeCommit" (![ptrT] "r")) #()
-    then do:  ((method_call #pkg_name' #"raft'ptr" #"bcastAppend" (![ptrT] "r")) #())
+    (if: (method_call #v3.raft #"raft'ptr" #"maybeCommit" (![ptrT] "r")) #()
+    then do:  ((method_call #v3.raft #"raft'ptr" #"bcastAppend" (![ptrT] "r")) #())
     else
       do:  (let: "$a0" := (λ: "id" <>,
         exception_do (let: <> := (ref_ty ptrT "_") in
@@ -5493,17 +5493,17 @@ Definition raft__switchToConfig : val :=
         else do:  #());;;
         do:  (let: "$a0" := (![uint64T] "id") in
         let: "$a1" := #false in
-        (method_call #pkg_name' #"raft'ptr" #"maybeSendAppend" (![ptrT] "r")) "$a0" "$a1"))
+        (method_call #v3.raft #"raft'ptr" #"maybeSendAppend" (![ptrT] "r")) "$a0" "$a1"))
         ) in
-      (method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0"));;;
+      (method_call #tracker #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0"));;;
     (let: "tOK" := (ref_ty boolT (zero_val boolT)) in
-    let: ("$ret0", "$ret1") := (map.get ((method_call #quorum.pkg_name' #"JointConfig" #"IDs" (![quorum.JointConfig] (struct.field_ref tracker.Config "Voters" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))))) #()) (![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r")))) in
+    let: ("$ret0", "$ret1") := (map.get ((method_call #quorum #"JointConfig" #"IDs" (![quorum.JointConfig] (struct.field_ref tracker.Config "Voters" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))))) #()) (![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r")))) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("tOK" <-[boolT] "$r1");;;
     (if: (~ (![boolT] "tOK")) && ((![uint64T] (struct.field_ref raft "leadTransferee" (![ptrT] "r"))) ≠ #(W64 0))
-    then do:  ((method_call #pkg_name' #"raft'ptr" #"abortLeaderTransfer" (![ptrT] "r")) #())
+    then do:  ((method_call #v3.raft #"raft'ptr" #"abortLeaderTransfer" (![ptrT] "r")) #())
     else do:  #()));;;
     return: (![raftpb.ConfState] "cs")).
 
@@ -5512,13 +5512,13 @@ Definition raft__loadState : val :=
   rec: "raft__loadState" "r" "state" :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     let: "state" := (ref_ty raftpb.HardState "state") in
-    (if: ((![uint64T] (struct.field_ref raftpb.HardState "Commit" "state")) < (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) || ((![uint64T] (struct.field_ref raftpb.HardState "Commit" "state")) > ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()))
+    (if: ((![uint64T] (struct.field_ref raftpb.HardState "Commit" "state")) < (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) || ((![uint64T] (struct.field_ref raftpb.HardState "Commit" "state")) > ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()))
     then
       do:  (let: "$a0" := #"%x state.commit %d is out of range [%d, %d]"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
       let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.HardState "Commit" "state"))) in
       let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))))) in
-      let: "$sl3" := (interface.make #""%go #"uint64"%go ((method_call #pkg_name' #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())) in
+      let: "$sl3" := (interface.make #""%go #"uint64"%go ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())) in
       slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
       (interface.get "Panicf" (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1")
     else do:  #());;;
@@ -5544,7 +5544,7 @@ Definition raft__resetRandomizedElectionTimeout : val :=
   rec: "raft__resetRandomizedElectionTimeout" "r" <> :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     let: "$r0" := ((![intT] (struct.field_ref raft "electionTimeout" (![ptrT] "r"))) + (let: "$a0" := (![intT] (struct.field_ref raft "electionTimeout" (![ptrT] "r"))) in
-    (method_call #pkg_name' #"lockedRand'ptr" #"Intn" (![ptrT] (globals.get #pkg_name' #"globalRand"%go))) "$a0")) in
+    (method_call #v3.raft #"lockedRand'ptr" #"Intn" (![ptrT] (globals.get #v3.raft #"globalRand"%go))) "$a0")) in
     do:  ((struct.field_ref raft "randomizedElectionTimeout" (![ptrT] "r")) <-[intT] "$r0")).
 
 (* go: raft.go:2053:16 *)
@@ -5570,7 +5570,7 @@ Definition raft__sendTimeoutNow : val :=
       "Context" ::= zero_val sliceT;
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")).
+    (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")).
 
 (* go: raft.go:2057:16 *)
 Definition raft__abortLeaderTransfer : val :=
@@ -5586,10 +5586,10 @@ Definition raft__committedEntryInCurrentTerm : val :=
   rec: "raft__committedEntryInCurrentTerm" "r" <> :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     return: ((let: ("$ret0", "$ret1") := ((let: "$a0" := (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r"))))) in
-     (method_call #pkg_name' #"raftLog'ptr" #"term" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")) in
+     (method_call #v3.raft #"raftLog'ptr" #"term" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")) in
      let: "$a0" := "$ret0" in
      let: "$a1" := "$ret1" in
-     (method_call #pkg_name' #"raftLog'ptr" #"zeroTermOnOutOfBounds" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") = (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))))).
+     (method_call #v3.raft #"raftLog'ptr" #"zeroTermOnOutOfBounds" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0" "$a1") = (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))))).
 
 (* responseToReadIndexReq constructs a response for `req`. If `req` comes from the peer
    itself, a blank value will be returned.
@@ -5666,7 +5666,7 @@ Definition raft__increaseUncommittedSize : val :=
     let: "ents" := (ref_ty sliceT "ents") in
     let: "s" := (ref_ty entryPayloadSize (zero_val entryPayloadSize)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "ents") in
-    (func_call #pkg_name' #"payloadsSize"%go) "$a0") in
+    (func_call #v3.raft #"payloadsSize"%go) "$a0") in
     do:  ("s" <-[entryPayloadSize] "$r0");;;
     (if: (((![entryPayloadSize] (struct.field_ref raft "uncommittedSize" (![ptrT] "r"))) > #(W64 0)) && ((![entryPayloadSize] "s") > #(W64 0))) && (((![entryPayloadSize] (struct.field_ref raft "uncommittedSize" (![ptrT] "r"))) + (![entryPayloadSize] "s")) > (![entryPayloadSize] (struct.field_ref raft "maxUncommittedSize" (![ptrT] "r"))))
     then return: (#false)
@@ -5696,7 +5696,7 @@ Definition releasePendingReadIndexMessages : val :=
     slice.len "$a0") = #(W64 0)
     then return: (#())
     else do:  #());;;
-    (if: (~ ((method_call #pkg_name' #"raft'ptr" #"committedEntryInCurrentTerm" (![ptrT] "r")) #()))
+    (if: (~ ((method_call #v3.raft #"raft'ptr" #"committedEntryInCurrentTerm" (![ptrT] "r")) #()))
     then
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"pending MsgReadIndex should be released only after first commit in current term"%go) in
       slice.literal interfaceT ["$sl0"])) in
@@ -5715,7 +5715,7 @@ Definition releasePendingReadIndexMessages : val :=
       do:  "$key";;;
       do:  (let: "$a0" := (![ptrT] "r") in
       let: "$a1" := (![raftpb.Message] "m") in
-      (func_call #pkg_name' #"sendMsgReadIndexResponse"%go) "$a0" "$a1")))).
+      (func_call #v3.raft #"sendMsgReadIndexResponse"%go) "$a0" "$a1")))).
 
 (* go: raft.go:2142:6 *)
 Definition sendMsgReadIndexResponse : val :=
@@ -5727,24 +5727,24 @@ Definition sendMsgReadIndexResponse : val :=
     then
       do:  (let: "$a0" := (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r"))))) in
       let: "$a1" := (![raftpb.Message] "m") in
-      (method_call #pkg_name' #"readOnly'ptr" #"addRequest" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0" "$a1");;;
+      (method_call #v3.raft #"readOnly'ptr" #"addRequest" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0" "$a1");;;
       do:  (let: "$a0" := (![uint64T] (struct.field_ref raft "id" (![ptrT] "r"))) in
       let: "$a1" := (![sliceT] (struct.field_ref raftpb.Entry "Data" (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) #(W64 0)))) in
-      (method_call #pkg_name' #"readOnly'ptr" #"recvAck" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0" "$a1");;;
+      (method_call #v3.raft #"readOnly'ptr" #"recvAck" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0" "$a1");;;
       do:  (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Entry "Data" (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) #(W64 0)))) in
-      (method_call #pkg_name' #"raft'ptr" #"bcastHeartbeatWithCtx" (![ptrT] "r")) "$a0")
+      (method_call #v3.raft #"raft'ptr" #"bcastHeartbeatWithCtx" (![ptrT] "r")) "$a0")
     else
       (if: "$sw" = ReadOnlyLeaseBased
       then
         (let: "resp" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
         let: "$a1" := (![uint64T] (struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r"))))) in
-        (method_call #pkg_name' #"raft'ptr" #"responseToReadIndexReq" (![ptrT] "r")) "$a0" "$a1") in
+        (method_call #v3.raft #"raft'ptr" #"responseToReadIndexReq" (![ptrT] "r")) "$a0" "$a1") in
         do:  ("resp" <-[raftpb.Message] "$r0");;;
         (if: (![uint64T] (struct.field_ref raftpb.Message "To" "resp")) ≠ None
         then
           do:  (let: "$a0" := (![raftpb.Message] "resp") in
-          (method_call #pkg_name' #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
+          (method_call #v3.raft #"raft'ptr" #"send" (![ptrT] "r")) "$a0")
         else do:  #()))
       else #()))).
 
@@ -5762,7 +5762,7 @@ Definition NewRawNode : val :=
     exception_do (let: "config" := (ref_ty ptrT "config") in
     let: "r" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := (![ptrT] "config") in
-    (func_call #pkg_name' #"newRaft"%go) "$a0") in
+    (func_call #v3.raft #"newRaft"%go) "$a0") in
     do:  ("r" <-[ptrT] "$r0");;;
     let: "rn" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty RawNode (let: "$raft" := (![ptrT] "r") in
@@ -5777,11 +5777,11 @@ Definition NewRawNode : val :=
     let: "$r0" := (![boolT] (struct.field_ref Config "AsyncStorageWrites" (![ptrT] "config"))) in
     do:  ((struct.field_ref RawNode "asyncStorageWrites" (![ptrT] "rn")) <-[boolT] "$r0");;;
     let: "ss" := (ref_ty SoftState (zero_val SoftState)) in
-    let: "$r0" := ((method_call #pkg_name' #"raft'ptr" #"softState" (![ptrT] "r")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"softState" (![ptrT] "r")) #()) in
     do:  ("ss" <-[SoftState] "$r0");;;
     let: "$r0" := "ss" in
     do:  ((struct.field_ref RawNode "prevSoftSt" (![ptrT] "rn")) <-[ptrT] "$r0");;;
-    let: "$r0" := ((method_call #pkg_name' #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
     do:  ((struct.field_ref RawNode "prevHardSt" (![ptrT] "rn")) <-[raftpb.HardState] "$r0");;;
     return: (![ptrT] "rn", #interface.nil)).
 
@@ -5833,7 +5833,7 @@ Definition RawNode__Campaign : val :=
        "Context" ::= zero_val sliceT;
        "Responses" ::= zero_val sliceT
      }]) in
-     (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
+     (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
 
 (* Propose proposes data be appended to the raft log.
 
@@ -5868,7 +5868,7 @@ Definition RawNode__Propose : val :=
        "Context" ::= zero_val sliceT;
        "Responses" ::= zero_val sliceT
      }]) in
-     (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
+     (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
 
 (* ProposeConfChange proposes a config change. See (Node).ProposeConfChange for
    details.
@@ -5881,7 +5881,7 @@ Definition RawNode__ProposeConfChange : val :=
     let: "err" := (ref_ty error (zero_val error)) in
     let: "m" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![raftpb.ConfChangeI] "cc") in
-    (func_call #pkg_name' #"confChangeToMsg"%go) "$a0") in
+    (func_call #v3.raft #"confChangeToMsg"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("m" <-[raftpb.Message] "$r0");;;
@@ -5890,7 +5890,7 @@ Definition RawNode__ProposeConfChange : val :=
     then return: (![error] "err")
     else do:  #());;;
     return: (let: "$a0" := (![raftpb.Message] "m") in
-     (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
+     (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
 
 (* ApplyConfChange applies a config change to the local node. The app must call
    this when it applies a configuration change, except when it decides to reject
@@ -5903,7 +5903,7 @@ Definition RawNode__ApplyConfChange : val :=
     let: "cc" := (ref_ty raftpb.ConfChangeI "cc") in
     let: "cs" := (ref_ty raftpb.ConfState (zero_val raftpb.ConfState)) in
     let: "$r0" := (let: "$a0" := ((interface.get "AsV2" (![raftpb.ConfChangeI] "cc")) #()) in
-    (method_call #pkg_name' #"raft'ptr" #"applyConfChange" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
+    (method_call #v3.raft #"raft'ptr" #"applyConfChange" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
     do:  ("cs" <-[raftpb.ConfState] "$r0");;;
     return: ("cs")).
 
@@ -5915,17 +5915,17 @@ Definition RawNode__Step : val :=
     exception_do (let: "rn" := (ref_ty ptrT "rn") in
     let: "m" := (ref_ty raftpb.Message "m") in
     (if: (let: "$a0" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
-    (func_call #pkg_name' #"IsLocalMsg"%go) "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-    (func_call #pkg_name' #"IsLocalMsgTarget"%go) "$a0"))
-    then return: (![error] (globals.get #pkg_name' #"ErrStepLocalMsg"%go))
+    (func_call #v3.raft #"IsLocalMsg"%go) "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
+    (func_call #v3.raft #"IsLocalMsgTarget"%go) "$a0"))
+    then return: (![error] (globals.get #v3.raft #"ErrStepLocalMsg"%go))
     else do:  #());;;
     (if: ((let: "$a0" := (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m")) in
-    (func_call #pkg_name' #"IsResponseMsg"%go) "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-    (func_call #pkg_name' #"IsLocalMsgTarget"%go) "$a0"))) && ((Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) (![uint64T] (struct.field_ref raftpb.Message "From" "m")))) = #null)
-    then return: (![error] (globals.get #pkg_name' #"ErrStepPeerNotFound"%go))
+    (func_call #v3.raft #"IsResponseMsg"%go) "$a0") && (~ (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
+    (func_call #v3.raft #"IsLocalMsgTarget"%go) "$a0"))) && ((Fst (map.get (![tracker.ProgressMap] (struct.field_ref tracker.ProgressTracker "Progress" (struct.field_ref raft "trk" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) (![uint64T] (struct.field_ref raftpb.Message "From" "m")))) = #null)
+    then return: (![error] (globals.get #v3.raft #"ErrStepPeerNotFound"%go))
     else do:  #());;;
     return: (let: "$a0" := (![raftpb.Message] "m") in
-     (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
+     (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
 
 (* Ready returns the outstanding work that the application needs to handle. This
    includes appending and applying entries or a snapshot, updating the HardState,
@@ -5937,10 +5937,10 @@ Definition RawNode__Ready : val :=
   rec: "RawNode__Ready" "rn" <> :=
     exception_do (let: "rn" := (ref_ty ptrT "rn") in
     let: "rd" := (ref_ty Ready (zero_val Ready)) in
-    let: "$r0" := ((method_call #pkg_name' #"RawNode'ptr" #"readyWithoutAccept" (![ptrT] "rn")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"RawNode'ptr" #"readyWithoutAccept" (![ptrT] "rn")) #()) in
     do:  ("rd" <-[Ready] "$r0");;;
     do:  (let: "$a0" := (![Ready] "rd") in
-    (method_call #pkg_name' #"RawNode'ptr" #"acceptReady" (![ptrT] "rn")) "$a0");;;
+    (method_call #v3.raft #"RawNode'ptr" #"acceptReady" (![ptrT] "rn")) "$a0");;;
     return: (![Ready] "rd")).
 
 (* readyWithoutAccept returns a Ready. This is a read-only operation, i.e. there
@@ -5954,9 +5954,9 @@ Definition RawNode__readyWithoutAccept : val :=
     let: "$r0" := (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))) in
     do:  ("r" <-[ptrT] "$r0");;;
     let: "rd" := (ref_ty Ready (zero_val Ready)) in
-    let: "$r0" := (let: "$Entries" := ((method_call #pkg_name' #"raftLog'ptr" #"nextUnstableEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
-    let: "$CommittedEntries" := (let: "$a0" := ((method_call #pkg_name' #"RawNode'ptr" #"applyUnstableEntries" (![ptrT] "rn")) #()) in
-    (method_call #pkg_name' #"raftLog'ptr" #"nextCommittedEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0") in
+    let: "$r0" := (let: "$Entries" := ((method_call #v3.raft #"raftLog'ptr" #"nextUnstableEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+    let: "$CommittedEntries" := (let: "$a0" := ((method_call #v3.raft #"RawNode'ptr" #"applyUnstableEntries" (![ptrT] "rn")) #()) in
+    (method_call #v3.raft #"raftLog'ptr" #"nextCommittedEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0") in
     let: "$Messages" := (![sliceT] (struct.field_ref raft "msgs" (![ptrT] "r"))) in
     struct.make Ready [{
       "SoftState" ::= zero_val ptrT;
@@ -5970,10 +5970,10 @@ Definition RawNode__readyWithoutAccept : val :=
     }]) in
     do:  ("rd" <-[Ready] "$r0");;;
     (let: "softSt" := (ref_ty SoftState (zero_val SoftState)) in
-    let: "$r0" := ((method_call #pkg_name' #"raft'ptr" #"softState" (![ptrT] "r")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"softState" (![ptrT] "r")) #()) in
     do:  ("softSt" <-[SoftState] "$r0");;;
     (if: (~ (let: "$a0" := (![ptrT] (struct.field_ref RawNode "prevSoftSt" (![ptrT] "rn"))) in
-    (method_call #pkg_name' #"SoftState'ptr" #"equal" "softSt") "$a0"))
+    (method_call #v3.raft #"SoftState'ptr" #"equal" "softSt") "$a0"))
     then
       let: "escapingSoftSt" := (ref_ty SoftState (zero_val SoftState)) in
       let: "$r0" := (![SoftState] "softSt") in
@@ -5982,18 +5982,18 @@ Definition RawNode__readyWithoutAccept : val :=
       do:  ((struct.field_ref Ready "SoftState" "rd") <-[ptrT] "$r0")
     else do:  #()));;;
     (let: "hardSt" := (ref_ty raftpb.HardState (zero_val raftpb.HardState)) in
-    let: "$r0" := ((method_call #pkg_name' #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
     do:  ("hardSt" <-[raftpb.HardState] "$r0");;;
     (if: (~ (let: "$a0" := (![raftpb.HardState] "hardSt") in
     let: "$a1" := (![raftpb.HardState] (struct.field_ref RawNode "prevHardSt" (![ptrT] "rn"))) in
-    (func_call #pkg_name' #"isHardStateEqual"%go) "$a0" "$a1"))
+    (func_call #v3.raft #"isHardStateEqual"%go) "$a0" "$a1"))
     then
       let: "$r0" := (![raftpb.HardState] "hardSt") in
       do:  ((struct.field_ref Ready "HardState" "rd") <-[raftpb.HardState] "$r0")
     else do:  #()));;;
-    (if: (method_call #pkg_name' #"raftLog'ptr" #"hasNextUnstableSnapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()
+    (if: (method_call #v3.raft #"raftLog'ptr" #"hasNextUnstableSnapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()
     then
-      let: "$r0" := (![raftpb.Snapshot] ((method_call #pkg_name' #"raftLog'ptr" #"nextUnstableSnapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())) in
+      let: "$r0" := (![raftpb.Snapshot] ((method_call #v3.raft #"raftLog'ptr" #"nextUnstableSnapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #())) in
       do:  ((struct.field_ref Ready "Snapshot" "rd") <-[raftpb.Snapshot] "$r0")
     else do:  #());;;
     (if: (let: "$a0" := (![sliceT] (struct.field_ref raft "readStates" (![ptrT] "r"))) in
@@ -6002,22 +6002,22 @@ Definition RawNode__readyWithoutAccept : val :=
       let: "$r0" := (![sliceT] (struct.field_ref raft "readStates" (![ptrT] "r"))) in
       do:  ((struct.field_ref Ready "ReadStates" "rd") <-[sliceT] "$r0")
     else do:  #());;;
-    let: "$r0" := (let: "$a0" := ((method_call #pkg_name' #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
+    let: "$r0" := (let: "$a0" := ((method_call #v3.raft #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
     let: "$a1" := (![raftpb.HardState] (struct.field_ref RawNode "prevHardSt" (![ptrT] "rn"))) in
     let: "$a2" := (let: "$a0" := (![sliceT] (struct.field_ref Ready "Entries" "rd")) in
     slice.len "$a0") in
-    (func_call #pkg_name' #"MustSync"%go) "$a0" "$a1" "$a2") in
+    (func_call #v3.raft #"MustSync"%go) "$a0" "$a1" "$a2") in
     do:  ((struct.field_ref Ready "MustSync" "rd") <-[boolT] "$r0");;;
     (if: ![boolT] (struct.field_ref RawNode "asyncStorageWrites" (![ptrT] "rn"))
     then
       (if: let: "$a0" := (![ptrT] "r") in
       let: "$a1" := (![Ready] "rd") in
-      (func_call #pkg_name' #"needStorageAppendMsg"%go) "$a0" "$a1"
+      (func_call #v3.raft #"needStorageAppendMsg"%go) "$a0" "$a1"
       then
         let: "m" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![ptrT] "r") in
         let: "$a1" := (![Ready] "rd") in
-        (func_call #pkg_name' #"newStorageAppendMsg"%go) "$a0" "$a1") in
+        (func_call #v3.raft #"newStorageAppendMsg"%go) "$a0" "$a1") in
         do:  ("m" <-[raftpb.Message] "$r0");;;
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref Ready "Messages" "rd")) in
         let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
@@ -6026,12 +6026,12 @@ Definition RawNode__readyWithoutAccept : val :=
         do:  ((struct.field_ref Ready "Messages" "rd") <-[sliceT] "$r0")
       else do:  #());;;
       (if: let: "$a0" := (![Ready] "rd") in
-      (func_call #pkg_name' #"needStorageApplyMsg"%go) "$a0"
+      (func_call #v3.raft #"needStorageApplyMsg"%go) "$a0"
       then
         let: "m" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![ptrT] "r") in
         let: "$a1" := (![Ready] "rd") in
-        (func_call #pkg_name' #"newStorageApplyMsg"%go) "$a0" "$a1") in
+        (func_call #v3.raft #"newStorageApplyMsg"%go) "$a0" "$a1") in
         do:  ("m" <-[raftpb.Message] "$r0");;;
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref Ready "Messages" "rd")) in
         let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
@@ -6073,8 +6073,8 @@ Definition needStorageAppendMsg : val :=
     let: "r" := (ref_ty ptrT "r") in
     return: ((((int_gt (let: "$a0" := (![sliceT] (struct.field_ref Ready "Entries" "rd")) in
      slice.len "$a0") #(W64 0)) || (~ (let: "$a0" := (![raftpb.HardState] (struct.field_ref Ready "HardState" "rd")) in
-     (func_call #pkg_name' #"IsEmptyHardState"%go) "$a0"))) || (~ (let: "$a0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
-     (func_call #pkg_name' #"IsEmptySnap"%go) "$a0"))) || (int_gt (let: "$a0" := (![sliceT] (struct.field_ref raft "msgsAfterAppend" (![ptrT] "r"))) in
+     (func_call #v3.raft #"IsEmptyHardState"%go) "$a0"))) || (~ (let: "$a0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
+     (func_call #v3.raft #"IsEmptySnap"%go) "$a0"))) || (int_gt (let: "$a0" := (![sliceT] (struct.field_ref raft "msgsAfterAppend" (![ptrT] "r"))) in
      slice.len "$a0") #(W64 0)))).
 
 (* go: rawnode.go:212:6 *)
@@ -6082,8 +6082,8 @@ Definition needStorageAppendRespMsg : val :=
   rec: "needStorageAppendRespMsg" "r" "rd" :=
     exception_do (let: "rd" := (ref_ty Ready "rd") in
     let: "r" := (ref_ty ptrT "r") in
-    return: (((method_call #pkg_name' #"raftLog'ptr" #"hasNextOrInProgressUnstableEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) || (~ (let: "$a0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
-     (func_call #pkg_name' #"IsEmptySnap"%go) "$a0")))).
+    return: (((method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressUnstableEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) || (~ (let: "$a0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
+     (func_call #v3.raft #"IsEmptySnap"%go) "$a0")))).
 
 (* newStorageAppendMsg creates the message that should be sent to the local
    append thread to instruct it to append log entries, write an updated hard
@@ -6119,7 +6119,7 @@ Definition newStorageAppendMsg : val :=
     }]) in
     do:  ("m" <-[raftpb.Message] "$r0");;;
     (if: (~ (let: "$a0" := (![raftpb.HardState] (struct.field_ref Ready "HardState" "rd")) in
-    (func_call #pkg_name' #"IsEmptyHardState"%go) "$a0"))
+    (func_call #v3.raft #"IsEmptyHardState"%go) "$a0"))
     then
       let: "$r0" := (![uint64T] (struct.field_ref raftpb.HardState "Term" (struct.field_ref Ready "HardState" "rd"))) in
       do:  ((struct.field_ref raftpb.Message "Term" "m") <-[uint64T] "$r0");;;
@@ -6129,7 +6129,7 @@ Definition newStorageAppendMsg : val :=
       do:  ((struct.field_ref raftpb.Message "Commit" "m") <-[uint64T] "$r0")
     else do:  #());;;
     (if: (~ (let: "$a0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
-    (func_call #pkg_name' #"IsEmptySnap"%go) "$a0"))
+    (func_call #v3.raft #"IsEmptySnap"%go) "$a0"))
     then
       let: "snap" := (ref_ty raftpb.Snapshot (zero_val raftpb.Snapshot)) in
       let: "$r0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
@@ -6141,12 +6141,12 @@ Definition newStorageAppendMsg : val :=
     do:  ((struct.field_ref raftpb.Message "Responses" "m") <-[sliceT] "$r0");;;
     (if: let: "$a0" := (![ptrT] "r") in
     let: "$a1" := (![Ready] "rd") in
-    (func_call #pkg_name' #"needStorageAppendRespMsg"%go) "$a0" "$a1"
+    (func_call #v3.raft #"needStorageAppendRespMsg"%go) "$a0" "$a1"
     then
       let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Message "Responses" "m")) in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![ptrT] "r") in
       let: "$a1" := (![Ready] "rd") in
-      (func_call #pkg_name' #"newStorageAppendRespMsg"%go) "$a0" "$a1") in
+      (func_call #v3.raft #"newStorageAppendRespMsg"%go) "$a0" "$a1") in
       slice.literal raftpb.Message ["$sl0"])) in
       (slice.append sliceT) "$a0" "$a1") in
       do:  ((struct.field_ref raftpb.Message "Responses" "m") <-[sliceT] "$r0")
@@ -6185,10 +6185,10 @@ Definition newStorageAppendRespMsg : val :=
       "Responses" ::= zero_val sliceT
     }]) in
     do:  ("m" <-[raftpb.Message] "$r0");;;
-    (if: (method_call #pkg_name' #"raftLog'ptr" #"hasNextOrInProgressUnstableEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()
+    (if: (method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressUnstableEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()
     then
       let: "last" := (ref_ty entryID (zero_val entryID)) in
-      let: "$r0" := ((method_call #pkg_name' #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
+      let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
       do:  ("last" <-[entryID] "$r0");;;
       let: "$r0" := (![uint64T] (struct.field_ref entryID "index" "last")) in
       do:  ((struct.field_ref raftpb.Message "Index" "m") <-[uint64T] "$r0");;;
@@ -6196,7 +6196,7 @@ Definition newStorageAppendRespMsg : val :=
       do:  ((struct.field_ref raftpb.Message "LogTerm" "m") <-[uint64T] "$r0")
     else do:  #());;;
     (if: (~ (let: "$a0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
-    (func_call #pkg_name' #"IsEmptySnap"%go) "$a0"))
+    (func_call #v3.raft #"IsEmptySnap"%go) "$a0"))
     then
       let: "snap" := (ref_ty raftpb.Snapshot (zero_val raftpb.Snapshot)) in
       let: "$r0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
@@ -6218,7 +6218,7 @@ Definition needStorageApplyRespMsg : val :=
   rec: "needStorageApplyRespMsg" "rd" :=
     exception_do (let: "rd" := (ref_ty Ready "rd") in
     return: (let: "$a0" := (![Ready] "rd") in
-     (func_call #pkg_name' #"needStorageApplyMsg"%go) "$a0")).
+     (func_call #v3.raft #"needStorageApplyMsg"%go) "$a0")).
 
 (* newStorageApplyMsg creates the message that should be sent to the local
    apply thread to instruct it to apply committed log entries. The message
@@ -6240,7 +6240,7 @@ Definition newStorageApplyMsg : val :=
      let: "$Entries" := (![sliceT] "ents") in
      let: "$Responses" := ((let: "$sl0" := (let: "$a0" := (![ptrT] "r") in
      let: "$a1" := (![sliceT] "ents") in
-     (func_call #pkg_name' #"newStorageApplyRespMsg"%go) "$a0" "$a1") in
+     (func_call #v3.raft #"newStorageApplyRespMsg"%go) "$a0" "$a1") in
      slice.literal raftpb.Message ["$sl0"])) in
      struct.make raftpb.Message [{
        "Type" ::= "$Type";
@@ -6305,7 +6305,7 @@ Definition RawNode__acceptReady : val :=
       do:  ((struct.field_ref RawNode "prevSoftSt" (![ptrT] "rn")) <-[ptrT] "$r0")
     else do:  #());;;
     (if: (~ (let: "$a0" := (![raftpb.HardState] (struct.field_ref Ready "HardState" "rd")) in
-    (func_call #pkg_name' #"IsEmptyHardState"%go) "$a0"))
+    (func_call #v3.raft #"IsEmptyHardState"%go) "$a0"))
     then
       let: "$r0" := (![raftpb.HardState] (struct.field_ref Ready "HardState" "rd")) in
       do:  ((struct.field_ref RawNode "prevHardSt" (![ptrT] "rn")) <-[raftpb.HardState] "$r0")
@@ -6340,12 +6340,12 @@ Definition RawNode__acceptReady : val :=
         else do:  #())));;;
       (if: let: "$a0" := (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))) in
       let: "$a1" := (![Ready] "rd") in
-      (func_call #pkg_name' #"needStorageAppendRespMsg"%go) "$a0" "$a1"
+      (func_call #v3.raft #"needStorageAppendRespMsg"%go) "$a0" "$a1"
       then
         let: "m" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))) in
         let: "$a1" := (![Ready] "rd") in
-        (func_call #pkg_name' #"newStorageAppendRespMsg"%go) "$a0" "$a1") in
+        (func_call #v3.raft #"newStorageAppendRespMsg"%go) "$a0" "$a1") in
         do:  ("m" <-[raftpb.Message] "$r0");;;
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn"))) in
         let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
@@ -6354,12 +6354,12 @@ Definition RawNode__acceptReady : val :=
         do:  ((struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn")) <-[sliceT] "$r0")
       else do:  #());;;
       (if: let: "$a0" := (![Ready] "rd") in
-      (func_call #pkg_name' #"needStorageApplyRespMsg"%go) "$a0"
+      (func_call #v3.raft #"needStorageApplyRespMsg"%go) "$a0"
       then
         let: "m" := (ref_ty raftpb.Message (zero_val raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))) in
         let: "$a1" := (![sliceT] (struct.field_ref Ready "CommittedEntries" "rd")) in
-        (func_call #pkg_name' #"newStorageApplyRespMsg"%go) "$a0" "$a1") in
+        (func_call #v3.raft #"newStorageApplyRespMsg"%go) "$a0" "$a1") in
         do:  ("m" <-[raftpb.Message] "$r0");;;
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn"))) in
         let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
@@ -6372,7 +6372,7 @@ Definition RawNode__acceptReady : val :=
     do:  ((struct.field_ref raft "msgs" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) <-[sliceT] "$r0");;;
     let: "$r0" := #slice.nil in
     do:  ((struct.field_ref raft "msgsAfterAppend" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) <-[sliceT] "$r0");;;
-    do:  ((method_call #pkg_name' #"raftLog'ptr" #"acceptUnstable" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) #());;;
+    do:  ((method_call #v3.raft #"raftLog'ptr" #"acceptUnstable" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) #());;;
     (if: int_gt (let: "$a0" := (![sliceT] (struct.field_ref Ready "CommittedEntries" "rd")) in
     slice.len "$a0") #(W64 0)
     then
@@ -6385,12 +6385,12 @@ Definition RawNode__acceptReady : val :=
       do:  ("index" <-[uint64T] "$r0");;;
       do:  (let: "$a0" := (![uint64T] "index") in
       let: "$a1" := (let: "$a0" := (![sliceT] "ents") in
-      (func_call #pkg_name' #"entsSize"%go) "$a0") in
-      let: "$a2" := ((method_call #pkg_name' #"RawNode'ptr" #"applyUnstableEntries" (![ptrT] "rn")) #()) in
-      (method_call #pkg_name' #"raftLog'ptr" #"acceptApplying" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) "$a0" "$a1" "$a2")
+      (func_call #v3.raft #"entsSize"%go) "$a0") in
+      let: "$a2" := ((method_call #v3.raft #"RawNode'ptr" #"applyUnstableEntries" (![ptrT] "rn")) #()) in
+      (method_call #v3.raft #"raftLog'ptr" #"acceptApplying" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) "$a0" "$a1" "$a2")
     else do:  #());;;
     do:  (let: "$a0" := (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))) in
-    (func_call #pkg_name' #"traceReady"%go) "$a0")).
+    (func_call #v3.raft #"traceReady"%go) "$a0")).
 
 (* applyUnstableEntries returns whether entries are allowed to be applied once
    they are known to be committed but before they have been written locally to
@@ -6412,22 +6412,22 @@ Definition RawNode__HasReady : val :=
     let: "$r0" := (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))) in
     do:  ("r" <-[ptrT] "$r0");;;
     (let: "softSt" := (ref_ty SoftState (zero_val SoftState)) in
-    let: "$r0" := ((method_call #pkg_name' #"raft'ptr" #"softState" (![ptrT] "r")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"softState" (![ptrT] "r")) #()) in
     do:  ("softSt" <-[SoftState] "$r0");;;
     (if: (~ (let: "$a0" := (![ptrT] (struct.field_ref RawNode "prevSoftSt" (![ptrT] "rn"))) in
-    (method_call #pkg_name' #"SoftState'ptr" #"equal" "softSt") "$a0"))
+    (method_call #v3.raft #"SoftState'ptr" #"equal" "softSt") "$a0"))
     then return: (#true)
     else do:  #()));;;
     (let: "hardSt" := (ref_ty raftpb.HardState (zero_val raftpb.HardState)) in
-    let: "$r0" := ((method_call #pkg_name' #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
     do:  ("hardSt" <-[raftpb.HardState] "$r0");;;
     (if: (~ (let: "$a0" := (![raftpb.HardState] "hardSt") in
-    (func_call #pkg_name' #"IsEmptyHardState"%go) "$a0")) && (~ (let: "$a0" := (![raftpb.HardState] "hardSt") in
+    (func_call #v3.raft #"IsEmptyHardState"%go) "$a0")) && (~ (let: "$a0" := (![raftpb.HardState] "hardSt") in
     let: "$a1" := (![raftpb.HardState] (struct.field_ref RawNode "prevHardSt" (![ptrT] "rn"))) in
-    (func_call #pkg_name' #"isHardStateEqual"%go) "$a0" "$a1"))
+    (func_call #v3.raft #"isHardStateEqual"%go) "$a0" "$a1"))
     then return: (#true)
     else do:  #()));;;
-    (if: (method_call #pkg_name' #"raftLog'ptr" #"hasNextUnstableSnapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()
+    (if: (method_call #v3.raft #"raftLog'ptr" #"hasNextUnstableSnapshot" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()
     then return: (#true)
     else do:  #());;;
     (if: (int_gt (let: "$a0" := (![sliceT] (struct.field_ref raft "msgs" (![ptrT] "r"))) in
@@ -6435,8 +6435,8 @@ Definition RawNode__HasReady : val :=
     slice.len "$a0") #(W64 0))
     then return: (#true)
     else do:  #());;;
-    (if: ((method_call #pkg_name' #"raftLog'ptr" #"hasNextUnstableEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) || (let: "$a0" := ((method_call #pkg_name' #"RawNode'ptr" #"applyUnstableEntries" (![ptrT] "rn")) #()) in
-    (method_call #pkg_name' #"raftLog'ptr" #"hasNextCommittedEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")
+    (if: ((method_call #v3.raft #"raftLog'ptr" #"hasNextUnstableEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) || (let: "$a0" := ((method_call #v3.raft #"RawNode'ptr" #"applyUnstableEntries" (![ptrT] "rn")) #()) in
+    (method_call #v3.raft #"raftLog'ptr" #"hasNextCommittedEnts" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) "$a0")
     then return: (#true)
     else do:  #());;;
     (if: (let: "$a0" := (![sliceT] (struct.field_ref raft "readStates" (![ptrT] "r"))) in
@@ -6469,7 +6469,7 @@ Definition RawNode__Advance : val :=
       do:  ("m" <-[raftpb.Message] "$value");;;
       do:  ("i" <-[intT] "$key");;;
       let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
-      (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
+      (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
       do:  "$r0";;;
       let: "$r0" := (struct.make raftpb.Message [{
         "Type" ::= zero_val raftpb.MessageType;
@@ -6501,7 +6501,7 @@ Definition RawNode__Status : val :=
     exception_do (let: "rn" := (ref_ty ptrT "rn") in
     let: "status" := (ref_ty Status (zero_val Status)) in
     let: "$r0" := (let: "$a0" := (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))) in
-    (func_call #pkg_name' #"getStatus"%go) "$a0") in
+    (func_call #v3.raft #"getStatus"%go) "$a0") in
     do:  ("status" <-[Status] "$r0");;;
     return: (![Status] "status")).
 
@@ -6513,7 +6513,7 @@ Definition RawNode__BasicStatus : val :=
   rec: "RawNode__BasicStatus" "rn" <> :=
     exception_do (let: "rn" := (ref_ty ptrT "rn") in
     return: (let: "$a0" := (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))) in
-     (func_call #pkg_name' #"getBasicStatus"%go) "$a0")).
+     (func_call #v3.raft #"getBasicStatus"%go) "$a0")).
 
 Definition ProgressType : go_type := byteT.
 
@@ -6550,7 +6550,7 @@ Definition RawNode__WithProgress : val :=
       let: "$a2" := (![tracker.Progress] "p") in
       (![funcT] "visitor") "$a0" "$a1" "$a2"))
       ) in
-    (method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))))) "$a0")).
+    (method_call #tracker #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))))) "$a0")).
 
 (* ReportUnreachable reports the given node is not reachable for the last send.
 
@@ -6577,7 +6577,7 @@ Definition RawNode__ReportUnreachable : val :=
       "Context" ::= zero_val sliceT;
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
+    (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
     do:  "$r0").
 
 (* ReportSnapshot reports the status of the sent snapshot.
@@ -6610,7 +6610,7 @@ Definition RawNode__ReportSnapshot : val :=
       "Context" ::= zero_val sliceT;
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
+    (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
     do:  "$r0").
 
 (* TransferLeader tries to transfer leadership to the given transferee.
@@ -6638,7 +6638,7 @@ Definition RawNode__TransferLeader : val :=
       "Context" ::= zero_val sliceT;
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
+    (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
     do:  "$r0").
 
 (* ForgetLeader forgets a follower's current leader, changing it to None.
@@ -6665,7 +6665,7 @@ Definition RawNode__ForgetLeader : val :=
        "Context" ::= zero_val sliceT;
        "Responses" ::= zero_val sliceT
      }]) in
-     (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
+     (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0")).
 
 (* ReadIndex requests a read state. The read state will be set in ready.
    Read State has a read index. Once the application advances further than the read
@@ -6702,7 +6702,7 @@ Definition RawNode__ReadIndex : val :=
       "Context" ::= zero_val sliceT;
       "Responses" ::= zero_val sliceT
     }]) in
-    (method_call #pkg_name' #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
+    (method_call #v3.raft #"raft'ptr" #"Step" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))) "$a0") in
     do:  "$r0").
 
 (* go: read_only.go:45:6 *)
@@ -6943,14 +6943,14 @@ Definition getProgressCopy : val :=
       let: "p" := (ref_ty tracker.Progress (zero_val tracker.Progress)) in
       let: "$r0" := (![tracker.Progress] (![ptrT] "pr")) in
       do:  ("p" <-[tracker.Progress] "$r0");;;
-      let: "$r0" := ((method_call #tracker.pkg_name' #"Inflights'ptr" #"Clone" (![ptrT] (struct.field_ref tracker.Progress "Inflights" (![ptrT] "pr")))) #()) in
+      let: "$r0" := ((method_call #tracker #"Inflights'ptr" #"Clone" (![ptrT] (struct.field_ref tracker.Progress "Inflights" (![ptrT] "pr")))) #()) in
       do:  ((struct.field_ref tracker.Progress "Inflights" "p") <-[ptrT] "$r0");;;
       let: "$r0" := #null in
       do:  ("pr" <-[ptrT] "$r0");;;
       let: "$r0" := (![tracker.Progress] "p") in
       do:  (map.insert (![mapT uint64T tracker.Progress] "m") (![uint64T] "id") "$r0"))
       ) in
-    (method_call #tracker.pkg_name' #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0");;;
+    (method_call #tracker #"ProgressTracker'ptr" #"Visit" (struct.field_ref raft "trk" (![ptrT] "r"))) "$a0");;;
     return: (![mapT uint64T tracker.Progress] "m")).
 
 (* go: status.go:56:6 *)
@@ -6968,9 +6968,9 @@ Definition getBasicStatus : val :=
       "LeadTransferee" ::= "$LeadTransferee"
     }]) in
     do:  ("s" <-[BasicStatus] "$r0");;;
-    let: "$r0" := ((method_call #pkg_name' #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"hardState" (![ptrT] "r")) #()) in
     do:  ((struct.field_ref BasicStatus "HardState" "s") <-[raftpb.HardState] "$r0");;;
-    let: "$r0" := ((method_call #pkg_name' #"raft'ptr" #"softState" (![ptrT] "r")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"softState" (![ptrT] "r")) #()) in
     do:  ((struct.field_ref BasicStatus "SoftState" "s") <-[SoftState] "$r0");;;
     let: "$r0" := (![uint64T] (struct.field_ref raftLog "applied" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r"))))) in
     do:  ((struct.field_ref BasicStatus "Applied" "s") <-[uint64T] "$r0");;;
@@ -6984,15 +6984,15 @@ Definition getStatus : val :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
     let: "s" := (ref_ty Status (zero_val Status)) in
     let: "$r0" := (let: "$a0" := (![ptrT] "r") in
-    (func_call #pkg_name' #"getBasicStatus"%go) "$a0") in
+    (func_call #v3.raft #"getBasicStatus"%go) "$a0") in
     do:  ((struct.field_ref Status "BasicStatus" "s") <-[BasicStatus] "$r0");;;
     (if: (![StateType] (struct.field_ref SoftState "RaftState" (struct.field_ref BasicStatus "SoftState" (struct.field_ref Status "BasicStatus" "s")))) = StateLeader
     then
       let: "$r0" := (let: "$a0" := (![ptrT] "r") in
-      (func_call #pkg_name' #"getProgressCopy"%go) "$a0") in
+      (func_call #v3.raft #"getProgressCopy"%go) "$a0") in
       do:  ((struct.field_ref Status "Progress" "s") <-[mapT uint64T tracker.Progress] "$r0")
     else do:  #());;;
-    let: "$r0" := ((method_call #tracker.pkg_name' #"Config'ptr" #"Clone" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))) #()) in
+    let: "$r0" := ((method_call #tracker #"Config'ptr" #"Clone" (struct.field_ref tracker.ProgressTracker "Config" (struct.field_ref raft "trk" (![ptrT] "r")))) #()) in
     do:  ((struct.field_ref Status "Config" "s") <-[tracker.Config] "$r0");;;
     return: (![Status] "s")).
 
@@ -7010,10 +7010,10 @@ Definition Status__MarshalJSON : val :=
     let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.HardState "Vote" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "s"))))) in
     let: "$sl3" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.HardState "Commit" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "s"))))) in
     let: "$sl4" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref SoftState "Lead" (struct.field_ref BasicStatus "SoftState" (struct.field_ref Status "BasicStatus" "s"))))) in
-    let: "$sl5" := (interface.make #pkg_name' #"StateType" (![StateType] (struct.field_ref SoftState "RaftState" (struct.field_ref BasicStatus "SoftState" (struct.field_ref Status "BasicStatus" "s"))))) in
+    let: "$sl5" := (interface.make #v3.raft #"StateType" (![StateType] (struct.field_ref SoftState "RaftState" (struct.field_ref BasicStatus "SoftState" (struct.field_ref Status "BasicStatus" "s"))))) in
     let: "$sl6" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref BasicStatus "Applied" (struct.field_ref Status "BasicStatus" "s")))) in
     slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"; "$sl6"])) in
-    (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
+    (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ("j" <-[stringT] "$r0");;;
     (if: (let: "$a0" := (![mapT uint64T tracker.Progress] (struct.field_ref Status "Progress" "s")) in
     map.len "$a0") = #(W64 0)
@@ -7030,9 +7030,9 @@ Definition Status__MarshalJSON : val :=
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "k")) in
         let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref tracker.Progress "Match" "v"))) in
         let: "$sl2" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref tracker.Progress "Next" "v"))) in
-        let: "$sl3" := (interface.make #tracker.pkg_name' #"StateType" (![tracker.StateType] (struct.field_ref tracker.Progress "State" "v"))) in
+        let: "$sl3" := (interface.make #tracker #"StateType" (![tracker.StateType] (struct.field_ref tracker.Progress "State" "v"))) in
         slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
-        (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1") in
+        (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
         do:  ("subj" <-[stringT] "$r0");;;
         do:  ("j" <-[stringT] ((![stringT] "j") + (![stringT] "subj")))));;;
       let: "$r0" := ((string.from_bytes (let: "$s" := (string.to_bytes (![stringT] "j")) in
@@ -7042,7 +7042,7 @@ Definition Status__MarshalJSON : val :=
     do:  ("j" <-[stringT] ((![stringT] "j") + (let: "$a0" := #"""leadtransferee"":""%x""}"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref BasicStatus "LeadTransferee" (struct.field_ref Status "BasicStatus" "s")))) in
     slice.literal interfaceT ["$sl0"])) in
-    (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")));;;
+    (func_call #fmt #"Sprintf"%go) "$a0" "$a1")));;;
     return: (string.to_bytes (![stringT] "j"), #interface.nil)).
 
 (* go: status.go:99:17 *)
@@ -7051,7 +7051,7 @@ Definition Status__String : val :=
     exception_do (let: "s" := (ref_ty Status "s") in
     let: "err" := (ref_ty error (zero_val error)) in
     let: "b" := (ref_ty sliceT (zero_val sliceT)) in
-    let: ("$ret0", "$ret1") := ((method_call #pkg_name' #"Status" #"MarshalJSON" (![Status] "s")) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #v3.raft #"Status" #"MarshalJSON" (![Status] "s")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("b" <-[sliceT] "$r0");;;
@@ -7061,7 +7061,7 @@ Definition Status__String : val :=
       do:  (let: "$a0" := #"unexpected error: %v"%go in
       let: "$a1" := ((let: "$sl0" := (![error] "err") in
       slice.literal interfaceT ["$sl0"])) in
-      (interface.get "Panicf" ((func_call #pkg_name' #"getLogger"%go) #())) "$a0" "$a1")
+      (interface.get "Panicf" ((func_call #v3.raft #"getLogger"%go) #())) "$a0" "$a1")
     else do:  #());;;
     return: (string.from_bytes (![sliceT] "b"))).
 
@@ -7112,8 +7112,8 @@ Definition MemoryStorage__SetHardState : val :=
   rec: "MemoryStorage__SetHardState" "ms" "st" :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
     let: "st" := (ref_ty raftpb.HardState "st") in
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7132,8 +7132,8 @@ Definition MemoryStorage__Entries : val :=
     let: "maxSize" := (ref_ty uint64T "maxSize") in
     let: "hi" := (ref_ty uint64T "hi") in
     let: "lo" := (ref_ty uint64T "lo") in
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7144,25 +7144,25 @@ Definition MemoryStorage__Entries : val :=
     let: "$r0" := (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) #(W64 0)))) in
     do:  ("offset" <-[uint64T] "$r0");;;
     (if: (![uint64T] "lo") ≤ (![uint64T] "offset")
-    then return: (#slice.nil, ![error] (globals.get #pkg_name' #"ErrCompacted"%go))
+    then return: (#slice.nil, ![error] (globals.get #v3.raft #"ErrCompacted"%go))
     else do:  #());;;
-    (if: (![uint64T] "hi") > (((method_call #pkg_name' #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #()) + #(W64 1))
+    (if: (![uint64T] "hi") > (((method_call #v3.raft #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #()) + #(W64 1))
     then
       do:  (let: "$a0" := #"entries' hi(%d) is out of bound lastindex(%d)"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "hi")) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #pkg_name' #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())) in
+      let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #v3.raft #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
-      (interface.get "Panicf" ((func_call #pkg_name' #"getLogger"%go) #())) "$a0" "$a1")
+      (interface.get "Panicf" ((func_call #v3.raft #"getLogger"%go) #())) "$a0" "$a1")
     else do:  #());;;
     (if: (let: "$a0" := (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) in
     slice.len "$a0") = #(W64 1)
-    then return: (#slice.nil, ![error] (globals.get #pkg_name' #"ErrUnavailable"%go))
+    then return: (#slice.nil, ![error] (globals.get #v3.raft #"ErrUnavailable"%go))
     else do:  #());;;
     let: "ents" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (let: "$s" := (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) in
     slice.slice raftpb.Entry "$s" ((![uint64T] "lo") - (![uint64T] "offset")) ((![uint64T] "hi") - (![uint64T] "offset"))) in
     let: "$a1" := (![uint64T] "maxSize") in
-    (func_call #pkg_name' #"limitSize"%go) "$a0" "$a1") in
+    (func_call #v3.raft #"limitSize"%go) "$a0" "$a1") in
     do:  ("ents" <-[sliceT] "$r0");;;
     return: (let: "$s" := (![sliceT] "ents") in
      slice.full_slice raftpb.Entry "$s" #(W64 0) (let: "$a0" := (![sliceT] "ents") in
@@ -7176,8 +7176,8 @@ Definition MemoryStorage__Term : val :=
   rec: "MemoryStorage__Term" "ms" "i" :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
     let: "i" := (ref_ty uint64T "i") in
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7188,11 +7188,11 @@ Definition MemoryStorage__Term : val :=
     let: "$r0" := (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) #(W64 0)))) in
     do:  ("offset" <-[uint64T] "$r0");;;
     (if: (![uint64T] "i") < (![uint64T] "offset")
-    then return: (#(W64 0), ![error] (globals.get #pkg_name' #"ErrCompacted"%go))
+    then return: (#(W64 0), ![error] (globals.get #v3.raft #"ErrCompacted"%go))
     else do:  #());;;
     (if: int_geq ((![uint64T] "i") - (![uint64T] "offset")) (let: "$a0" := (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) in
     slice.len "$a0")
-    then return: (#(W64 0), ![error] (globals.get #pkg_name' #"ErrUnavailable"%go))
+    then return: (#(W64 0), ![error] (globals.get #v3.raft #"ErrUnavailable"%go))
     else do:  #());;;
     return: (![uint64T] (struct.field_ref raftpb.Entry "Term" (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) ((![uint64T] "i") - (![uint64T] "offset")))), #interface.nil)).
 
@@ -7202,15 +7202,15 @@ Definition MemoryStorage__Term : val :=
 Definition MemoryStorage__LastIndex : val :=
   rec: "MemoryStorage__LastIndex" "ms" <> :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref inMemStorageCallStats "lastIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "lastIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: ((method_call #pkg_name' #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #(), #interface.nil)).
+    return: ((method_call #v3.raft #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #(), #interface.nil)).
 
 (* go: storage.go:181:26 *)
 Definition MemoryStorage__lastIndex : val :=
@@ -7225,15 +7225,15 @@ Definition MemoryStorage__lastIndex : val :=
 Definition MemoryStorage__FirstIndex : val :=
   rec: "MemoryStorage__FirstIndex" "ms" <> :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref inMemStorageCallStats "firstIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms"))) <-[intT] ((![intT] (struct.field_ref inMemStorageCallStats "firstIndex" (struct.field_ref MemoryStorage "callStats" (![ptrT] "ms")))) + #(W64 1)));;;
-    return: ((method_call #pkg_name' #"MemoryStorage'ptr" #"firstIndex" (![ptrT] "ms")) #(), #interface.nil)).
+    return: ((method_call #v3.raft #"MemoryStorage'ptr" #"firstIndex" (![ptrT] "ms")) #(), #interface.nil)).
 
 (* go: storage.go:193:26 *)
 Definition MemoryStorage__firstIndex : val :=
@@ -7247,8 +7247,8 @@ Definition MemoryStorage__firstIndex : val :=
 Definition MemoryStorage__Snapshot : val :=
   rec: "MemoryStorage__Snapshot" "ms" <> :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7265,8 +7265,8 @@ Definition MemoryStorage__ApplySnapshot : val :=
   rec: "MemoryStorage__ApplySnapshot" "ms" "snap" :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
     let: "snap" := (ref_ty raftpb.Snapshot "snap") in
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7279,7 +7279,7 @@ Definition MemoryStorage__ApplySnapshot : val :=
     let: "$r0" := (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Index" (struct.field_ref raftpb.Snapshot "Metadata" "snap"))) in
     do:  ("snapIndex" <-[uint64T] "$r0");;;
     (if: (![uint64T] "msIndex") ≥ (![uint64T] "snapIndex")
-    then return: (![error] (globals.get #pkg_name' #"ErrSnapOutOfDate"%go))
+    then return: (![error] (globals.get #v3.raft #"ErrSnapOutOfDate"%go))
     else do:  #());;;
     let: "$r0" := (![raftpb.Snapshot] "snap") in
     do:  ((struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")) <-[raftpb.Snapshot] "$r0");;;
@@ -7307,8 +7307,8 @@ Definition MemoryStorage__CreateSnapshot : val :=
     let: "data" := (ref_ty sliceT "data") in
     let: "cs" := (ref_ty ptrT "cs") in
     let: "i" := (ref_ty uint64T "i") in
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7319,18 +7319,18 @@ Definition MemoryStorage__CreateSnapshot : val :=
       return: (struct.make raftpb.Snapshot [{
          "Data" ::= zero_val sliceT;
          "Metadata" ::= zero_val raftpb.SnapshotMetadata
-       }], ![error] (globals.get #pkg_name' #"ErrSnapOutOfDate"%go))
+       }], ![error] (globals.get #v3.raft #"ErrSnapOutOfDate"%go))
     else do:  #());;;
     let: "offset" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) #(W64 0)))) in
     do:  ("offset" <-[uint64T] "$r0");;;
-    (if: (![uint64T] "i") > ((method_call #pkg_name' #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())
+    (if: (![uint64T] "i") > ((method_call #v3.raft #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())
     then
       do:  (let: "$a0" := #"snapshot %d is out of bound lastindex(%d)"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "i")) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #pkg_name' #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())) in
+      let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #v3.raft #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
-      (interface.get "Panicf" ((func_call #pkg_name' #"getLogger"%go) #())) "$a0" "$a1")
+      (interface.get "Panicf" ((func_call #v3.raft #"getLogger"%go) #())) "$a0" "$a1")
     else do:  #());;;
     let: "$r0" := (![uint64T] "i") in
     do:  ((struct.field_ref raftpb.SnapshotMetadata "Index" (struct.field_ref raftpb.Snapshot "Metadata" (struct.field_ref MemoryStorage "snapshot" (![ptrT] "ms")))) <-[uint64T] "$r0");;;
@@ -7354,8 +7354,8 @@ Definition MemoryStorage__Compact : val :=
   rec: "MemoryStorage__Compact" "ms" "compactIndex" :=
     with_defer: (let: "ms" := (ref_ty ptrT "ms") in
     let: "compactIndex" := (ref_ty uint64T "compactIndex") in
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -7365,15 +7365,15 @@ Definition MemoryStorage__Compact : val :=
     let: "$r0" := (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) #(W64 0)))) in
     do:  ("offset" <-[uint64T] "$r0");;;
     (if: (![uint64T] "compactIndex") ≤ (![uint64T] "offset")
-    then return: (![error] (globals.get #pkg_name' #"ErrCompacted"%go))
+    then return: (![error] (globals.get #v3.raft #"ErrCompacted"%go))
     else do:  #());;;
-    (if: (![uint64T] "compactIndex") > ((method_call #pkg_name' #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())
+    (if: (![uint64T] "compactIndex") > ((method_call #v3.raft #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())
     then
       do:  (let: "$a0" := #"compact %d is out of bound lastindex(%d)"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "compactIndex")) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #pkg_name' #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())) in
+      let: "$sl1" := (interface.make #""%go #"uint64"%go ((method_call #v3.raft #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
-      (interface.get "Panicf" ((func_call #pkg_name' #"getLogger"%go) #())) "$a0" "$a1")
+      (interface.get "Panicf" ((func_call #v3.raft #"getLogger"%go) #())) "$a0" "$a1")
     else do:  #());;;
     let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := ((![uint64T] "compactIndex") - (![uint64T] "offset")) in
@@ -7408,15 +7408,15 @@ Definition MemoryStorage__Append : val :=
     slice.len "$a0") = #(W64 0)
     then return: (#interface.nil)
     else do:  #());;;
-    do:  ((method_call #pkg_name' #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
-    do:  (let: "$f" := (method_call #pkg_name' #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
+    do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![ptrT] "ms")) #());;;
+    do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![ptrT] "ms")) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
     let: "first" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := ((method_call #pkg_name' #"MemoryStorage'ptr" #"firstIndex" (![ptrT] "ms")) #()) in
+    let: "$r0" := ((method_call #v3.raft #"MemoryStorage'ptr" #"firstIndex" (![ptrT] "ms")) #()) in
     do:  ("first" <-[uint64T] "$r0");;;
     let: "last" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (((![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT] "entries") #(W64 0)))) + (let: "$a0" := (![sliceT] "entries") in
@@ -7453,10 +7453,10 @@ Definition MemoryStorage__Append : val :=
         do:  ((struct.field_ref MemoryStorage "ents" (![ptrT] "ms")) <-[sliceT] "$r0")
       else
         do:  (let: "$a0" := #"missing log entry [last: %d, append at: %d]"%go in
-        let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go ((method_call #pkg_name' #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())) in
+        let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go ((method_call #v3.raft #"MemoryStorage'ptr" #"lastIndex" (![ptrT] "ms")) #())) in
         let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Entry "Index" (slice.elem_ref raftpb.Entry (![sliceT] "entries") #(W64 0))))) in
         slice.literal interfaceT ["$sl0"; "$sl1"])) in
-        (interface.get "Panicf" ((func_call #pkg_name' #"getLogger"%go) #())) "$a0" "$a1")));;;
+        (interface.get "Panicf" ((func_call #v3.raft #"getLogger"%go) #())) "$a0" "$a1")));;;
     return: (#interface.nil)).
 
 (* pbEntryID returns the ID of the given pb.Entry.
@@ -7496,7 +7496,7 @@ Definition logSlice__lastEntryID : val :=
     (if: (![intT] "ln") ≠ #(W64 0)
     then
       return: (let: "$a0" := (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref logSlice "entries" "s")) ((![intT] "ln") - #(W64 1))) in
-       (func_call #pkg_name' #"pbEntryID"%go) "$a0")
+       (func_call #v3.raft #"pbEntryID"%go) "$a0")
     else do:  #()));;;
     return: (![entryID] (struct.field_ref logSlice "prev" "s"))).
 
@@ -7516,16 +7516,16 @@ Definition logSlice__valid : val :=
       do:  ("i" <-[intT] "$key");;;
       let: "id" := (ref_ty entryID (zero_val entryID)) in
       let: "$r0" := (let: "$a0" := (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref logSlice "entries" "s")) (![intT] "i")) in
-      (func_call #pkg_name' #"pbEntryID"%go) "$a0") in
+      (func_call #v3.raft #"pbEntryID"%go) "$a0") in
       do:  ("id" <-[entryID] "$r0");;;
       (if: ((![uint64T] (struct.field_ref entryID "term" "id")) < (![uint64T] (struct.field_ref entryID "term" "prev"))) || ((![uint64T] (struct.field_ref entryID "index" "id")) ≠ ((![uint64T] (struct.field_ref entryID "index" "prev")) + #(W64 1)))
       then
         return: (let: "$a0" := #"leader term %d: entries %+v and %+v not consistent"%go in
          let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref logSlice "term" "s"))) in
-         let: "$sl1" := (interface.make #pkg_name' #"entryID" (![entryID] "prev")) in
-         let: "$sl2" := (interface.make #pkg_name' #"entryID" (![entryID] "id")) in
+         let: "$sl1" := (interface.make #v3.raft #"entryID" (![entryID] "prev")) in
+         let: "$sl2" := (interface.make #v3.raft #"entryID" (![entryID] "id")) in
          slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
-         (func_call #fmt.pkg_name' #"Errorf"%go) "$a0" "$a1")
+         (func_call #fmt #"Errorf"%go) "$a0" "$a1")
       else do:  #());;;
       let: "$r0" := (![entryID] "id") in
       do:  ("prev" <-[entryID] "$r0")));;;
@@ -7533,9 +7533,9 @@ Definition logSlice__valid : val :=
     then
       return: (let: "$a0" := #"leader term %d: entry %+v has a newer term"%go in
        let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref logSlice "term" "s"))) in
-       let: "$sl1" := (interface.make #pkg_name' #"entryID" (![entryID] "prev")) in
+       let: "$sl1" := (interface.make #v3.raft #"entryID" (![entryID] "prev")) in
        slice.literal interfaceT ["$sl0"; "$sl1"])) in
-       (func_call #fmt.pkg_name' #"Errorf"%go) "$a0" "$a1")
+       (func_call #fmt #"Errorf"%go) "$a0" "$a1")
     else do:  #());;;
     return: (#interface.nil)).
 
@@ -7544,9 +7544,9 @@ Definition StateType__MarshalJSON : val :=
   rec: "StateType__MarshalJSON" "st" <> :=
     exception_do (let: "st" := (ref_ty StateType "st") in
     return: (string.to_bytes (let: "$a0" := #"%q"%go in
-     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #pkg_name' #"StateType" #"String" (![StateType] "st")) #())) in
+     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #v3.raft #"StateType" #"String" (![StateType] "st")) #())) in
      slice.literal interfaceT ["$sl0"])) in
-     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1"), #interface.nil)).
+     (func_call #fmt #"Sprintf"%go) "$a0" "$a1"), #interface.nil)).
 
 (* go: util.go:52:6 *)
 Definition isMsgInArray : val :=
@@ -7564,18 +7564,18 @@ Definition IsLocalMsg : val :=
   rec: "IsLocalMsg" "msgt" :=
     exception_do (let: "msgt" := (ref_ty raftpb.MessageType "msgt") in
     return: (let: "$a0" := (![raftpb.MessageType] "msgt") in
-     let: "$a1" := (let: "$a" := (globals.get #pkg_name' #"isLocalMsg"%go) in
+     let: "$a1" := (let: "$a" := (globals.get #v3.raft #"isLocalMsg"%go) in
      array.slice "$a" #(W64 0) (array.len (arrayT 23 boolT))) in
-     (func_call #pkg_name' #"isMsgInArray"%go) "$a0" "$a1")).
+     (func_call #v3.raft #"isMsgInArray"%go) "$a0" "$a1")).
 
 (* go: util.go:61:6 *)
 Definition IsResponseMsg : val :=
   rec: "IsResponseMsg" "msgt" :=
     exception_do (let: "msgt" := (ref_ty raftpb.MessageType "msgt") in
     return: (let: "$a0" := (![raftpb.MessageType] "msgt") in
-     let: "$a1" := (let: "$a" := (globals.get #pkg_name' #"isResponseMsg"%go) in
+     let: "$a1" := (let: "$a" := (globals.get #v3.raft #"isResponseMsg"%go) in
      array.slice "$a" #(W64 0) (array.len (arrayT 23 boolT))) in
-     (func_call #pkg_name' #"isMsgInArray"%go) "$a0" "$a1")).
+     (func_call #v3.raft #"isMsgInArray"%go) "$a0" "$a1")).
 
 (* go: util.go:65:6 *)
 Definition IsLocalMsgTarget : val :=
@@ -7597,9 +7597,9 @@ Definition voteRespMsgType : val :=
       then return: (raftpb.MsgPreVoteResp)
       else
         do:  (let: "$a0" := (interface.make #""%go #"string"%go (let: "$a0" := #"not a vote message: %s"%go in
-        let: "$a1" := ((let: "$sl0" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] "msgt")) in
+        let: "$a1" := ((let: "$sl0" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] "msgt")) in
         slice.literal interfaceT ["$sl0"])) in
-        (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")) in
+        (func_call #fmt #"Sprintf"%go) "$a0" "$a1")) in
         Panic "$a0")))).
 
 (* go: util.go:81:6 *)
@@ -7607,25 +7607,25 @@ Definition DescribeHardState : val :=
   rec: "DescribeHardState" "hs" :=
     exception_do (let: "hs" := (ref_ty raftpb.HardState "hs") in
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
-    do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+    do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
     let: "$a1" := #"Term:%d"%go in
     let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.HardState "Term" "hs"))) in
     slice.literal interfaceT ["$sl0"])) in
-    (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2");;;
+    (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
     (if: (![uint64T] (struct.field_ref raftpb.HardState "Vote" "hs")) ≠ #(W64 0)
     then
-      do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #" Vote:%d"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.HardState "Vote" "hs"))) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+    do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
     let: "$a1" := #" Commit:%d"%go in
     let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.HardState "Commit" "hs"))) in
     slice.literal interfaceT ["$sl0"])) in
-    (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2");;;
-    return: ((method_call #strings.pkg_name' #"Builder'ptr" #"String" "buf") #())).
+    (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
+    return: ((method_call #strings #"Builder'ptr" #"String" "buf") #())).
 
 (* go: util.go:91:6 *)
 Definition DescribeSoftState : val :=
@@ -7633,9 +7633,9 @@ Definition DescribeSoftState : val :=
     exception_do (let: "ss" := (ref_ty SoftState "ss") in
     return: (let: "$a0" := #"Lead:%d State:%s"%go in
      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref SoftState "Lead" "ss"))) in
-     let: "$sl1" := (interface.make #pkg_name' #"StateType" (![StateType] (struct.field_ref SoftState "RaftState" "ss"))) in
+     let: "$sl1" := (interface.make #v3.raft #"StateType" (![StateType] (struct.field_ref SoftState "RaftState" "ss"))) in
      slice.literal interfaceT ["$sl0"; "$sl1"])) in
-     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")).
+     (func_call #fmt #"Sprintf"%go) "$a0" "$a1")).
 
 (* go: util.go:95:6 *)
 Definition DescribeConfState : val :=
@@ -7648,7 +7648,7 @@ Definition DescribeConfState : val :=
      let: "$sl3" := (interface.make #"slice'"%go (![sliceT] (struct.field_ref raftpb.ConfState "LearnersNext" "state"))) in
      let: "$sl4" := (interface.make #""%go #"bool"%go (![boolT] (struct.field_ref raftpb.ConfState "AutoLeave" "state"))) in
      slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
-     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")).
+     (func_call #fmt #"Sprintf"%go) "$a0" "$a1")).
 
 (* go: util.go:102:6 *)
 Definition DescribeSnapshot : val :=
@@ -7661,9 +7661,9 @@ Definition DescribeSnapshot : val :=
      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Index" "m"))) in
      let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.SnapshotMetadata "Term" "m"))) in
      let: "$sl2" := (interface.make #""%go #"string"%go (let: "$a0" := (![raftpb.ConfState] (struct.field_ref raftpb.SnapshotMetadata "ConfState" "m")) in
-     (func_call #pkg_name' #"DescribeConfState"%go) "$a0")) in
+     (func_call #v3.raft #"DescribeConfState"%go) "$a0")) in
      slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
-     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")).
+     (func_call #fmt #"Sprintf"%go) "$a0" "$a1")).
 
 Definition EntryFormatter : go_type := funcT.
 
@@ -7675,101 +7675,101 @@ Definition DescribeReady : val :=
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
     (if: (![ptrT] (struct.field_ref Ready "SoftState" "rd")) ≠ #null
     then
-      do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![SoftState] (![ptrT] (struct.field_ref Ready "SoftState" "rd"))) in
-      (func_call #pkg_name' #"DescribeSoftState"%go) "$a0")) in
+      (func_call #v3.raft #"DescribeSoftState"%go) "$a0")) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprint"%go) "$a0" "$a1");;;
+      (func_call #fmt #"Fprint"%go) "$a0" "$a1");;;
       do:  (let: "$a0" := #(W8 10) in
-      (method_call #strings.pkg_name' #"Builder'ptr" #"WriteByte" "buf") "$a0")
+      (method_call #strings #"Builder'ptr" #"WriteByte" "buf") "$a0")
     else do:  #());;;
     (if: (~ (let: "$a0" := (![raftpb.HardState] (struct.field_ref Ready "HardState" "rd")) in
-    (func_call #pkg_name' #"IsEmptyHardState"%go) "$a0"))
+    (func_call #v3.raft #"IsEmptyHardState"%go) "$a0"))
     then
-      do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #"HardState %s"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![raftpb.HardState] (struct.field_ref Ready "HardState" "rd")) in
-      (func_call #pkg_name' #"DescribeHardState"%go) "$a0")) in
+      (func_call #v3.raft #"DescribeHardState"%go) "$a0")) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2");;;
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
       do:  (let: "$a0" := #(W8 10) in
-      (method_call #strings.pkg_name' #"Builder'ptr" #"WriteByte" "buf") "$a0")
+      (method_call #strings #"Builder'ptr" #"WriteByte" "buf") "$a0")
     else do:  #());;;
     (if: int_gt (let: "$a0" := (![sliceT] (struct.field_ref Ready "ReadStates" "rd")) in
     slice.len "$a0") #(W64 0)
     then
-      do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #"ReadStates %v
       "%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #"slice'"%go (![sliceT] (struct.field_ref Ready "ReadStates" "rd"))) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: int_gt (let: "$a0" := (![sliceT] (struct.field_ref Ready "Entries" "rd")) in
     slice.len "$a0") #(W64 0)
     then
       do:  (let: "$a0" := #"Entries:
       "%go in
-      (method_call #strings.pkg_name' #"Builder'ptr" #"WriteString" "buf") "$a0");;;
-      do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+      (method_call #strings #"Builder'ptr" #"WriteString" "buf") "$a0");;;
+      do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![sliceT] (struct.field_ref Ready "Entries" "rd")) in
       let: "$a1" := (![EntryFormatter] "f") in
-      (func_call #pkg_name' #"DescribeEntries"%go) "$a0" "$a1")) in
+      (func_call #v3.raft #"DescribeEntries"%go) "$a0" "$a1")) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprint"%go) "$a0" "$a1")
+      (func_call #fmt #"Fprint"%go) "$a0" "$a1")
     else do:  #());;;
     (if: (~ (let: "$a0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
-    (func_call #pkg_name' #"IsEmptySnap"%go) "$a0"))
+    (func_call #v3.raft #"IsEmptySnap"%go) "$a0"))
     then
-      do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #"Snapshot %s
       "%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![raftpb.Snapshot] (struct.field_ref Ready "Snapshot" "rd")) in
-      (func_call #pkg_name' #"DescribeSnapshot"%go) "$a0")) in
+      (func_call #v3.raft #"DescribeSnapshot"%go) "$a0")) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: int_gt (let: "$a0" := (![sliceT] (struct.field_ref Ready "CommittedEntries" "rd")) in
     slice.len "$a0") #(W64 0)
     then
       do:  (let: "$a0" := #"CommittedEntries:
       "%go in
-      (method_call #strings.pkg_name' #"Builder'ptr" #"WriteString" "buf") "$a0");;;
-      do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+      (method_call #strings #"Builder'ptr" #"WriteString" "buf") "$a0");;;
+      do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![sliceT] (struct.field_ref Ready "CommittedEntries" "rd")) in
       let: "$a1" := (![EntryFormatter] "f") in
-      (func_call #pkg_name' #"DescribeEntries"%go) "$a0" "$a1")) in
+      (func_call #v3.raft #"DescribeEntries"%go) "$a0" "$a1")) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprint"%go) "$a0" "$a1")
+      (func_call #fmt #"Fprint"%go) "$a0" "$a1")
     else do:  #());;;
     (if: int_gt (let: "$a0" := (![sliceT] (struct.field_ref Ready "Messages" "rd")) in
     slice.len "$a0") #(W64 0)
     then
       do:  (let: "$a0" := #"Messages:
       "%go in
-      (method_call #strings.pkg_name' #"Builder'ptr" #"WriteString" "buf") "$a0");;;
+      (method_call #strings #"Builder'ptr" #"WriteString" "buf") "$a0");;;
       (let: "msg" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] (struct.field_ref Ready "Messages" "rd")) in
       slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
         do:  ("msg" <-[raftpb.Message] "$value");;;
         do:  "$key";;;
-        do:  (let: "$a0" := (interface.make #strings.pkg_name' #"Builder'ptr" "buf") in
+        do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![raftpb.Message] "msg") in
         let: "$a1" := (![EntryFormatter] "f") in
-        (func_call #pkg_name' #"DescribeMessage"%go) "$a0" "$a1")) in
+        (func_call #v3.raft #"DescribeMessage"%go) "$a0" "$a1")) in
         slice.literal interfaceT ["$sl0"])) in
-        (func_call #fmt.pkg_name' #"Fprint"%go) "$a0" "$a1");;;
+        (func_call #fmt #"Fprint"%go) "$a0" "$a1");;;
         do:  (let: "$a0" := #(W8 10) in
-        (method_call #strings.pkg_name' #"Builder'ptr" #"WriteByte" "buf") "$a0")))
+        (method_call #strings #"Builder'ptr" #"WriteByte" "buf") "$a0")))
     else do:  #());;;
-    (if: int_gt ((method_call #strings.pkg_name' #"Builder'ptr" #"Len" "buf") #()) #(W64 0)
+    (if: int_gt ((method_call #strings #"Builder'ptr" #"Len" "buf") #()) #(W64 0)
     then
       return: (let: "$a0" := #"Ready MustSync=%t:
        %s"%go in
        let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"bool"%go (![boolT] (struct.field_ref Ready "MustSync" "rd"))) in
-       let: "$sl1" := (interface.make #""%go #"string"%go ((method_call #strings.pkg_name' #"Builder'ptr" #"String" "buf") #())) in
+       let: "$sl1" := (interface.make #""%go #"string"%go ((method_call #strings #"Builder'ptr" #"String" "buf") #())) in
        slice.literal interfaceT ["$sl0"; "$sl1"])) in
-       (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")
+       (func_call #fmt #"Sprintf"%go) "$a0" "$a1")
     else do:  #());;;
     return: (#"<empty Ready>"%go)).
 
@@ -7784,7 +7784,7 @@ Definition DescribeMessage : val :=
     return: (let: "$a0" := #""%go in
      let: "$a1" := (![raftpb.Message] "m") in
      let: "$a2" := (![EntryFormatter] "f") in
-     (func_call #pkg_name' #"describeMessageWithIndent"%go) "$a0" "$a1" "$a2")).
+     (func_call #v3.raft #"describeMessageWithIndent"%go) "$a0" "$a1" "$a2")).
 
 (* go: util.go:154:6 *)
 Definition describeMessageWithIndent : val :=
@@ -7793,42 +7793,42 @@ Definition describeMessageWithIndent : val :=
     let: "m" := (ref_ty raftpb.Message "m") in
     let: "indent" := (ref_ty stringT "indent") in
     let: "buf" := (ref_ty bytes.Buffer (zero_val bytes.Buffer)) in
-    do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+    do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
     let: "$a1" := #"%s%s->%s %v Term:%d Log:%d/%d"%go in
     let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![stringT] "indent")) in
     let: "$sl1" := (interface.make #""%go #"string"%go (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "From" "m")) in
-    (func_call #pkg_name' #"describeTarget"%go) "$a0")) in
+    (func_call #v3.raft #"describeTarget"%go) "$a0")) in
     let: "$sl2" := (interface.make #""%go #"string"%go (let: "$a0" := (![uint64T] (struct.field_ref raftpb.Message "To" "m")) in
-    (func_call #pkg_name' #"describeTarget"%go) "$a0")) in
-    let: "$sl3" := (interface.make #raftpb.pkg_name' #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
+    (func_call #v3.raft #"describeTarget"%go) "$a0")) in
+    let: "$sl3" := (interface.make #raftpb #"MessageType" (![raftpb.MessageType] (struct.field_ref raftpb.Message "Type" "m"))) in
     let: "$sl4" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Term" "m"))) in
     let: "$sl5" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "LogTerm" "m"))) in
     let: "$sl6" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Index" "m"))) in
     slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"; "$sl6"])) in
-    (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2");;;
+    (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
     (if: ![boolT] (struct.field_ref raftpb.Message "Reject" "m")
     then
-      do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
       let: "$a1" := #" Rejected (Hint: %d)"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "RejectHint" "m"))) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: (![uint64T] (struct.field_ref raftpb.Message "Commit" "m")) ≠ #(W64 0)
     then
-      do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
       let: "$a1" := #" Commit:%d"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Commit" "m"))) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: (![uint64T] (struct.field_ref raftpb.Message "Vote" "m")) ≠ #(W64 0)
     then
-      do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
       let: "$a1" := #" Vote:%d"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Message "Vote" "m"))) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     (let: "ln" := (ref_ty intT (zero_val intT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) in
@@ -7836,64 +7836,64 @@ Definition describeMessageWithIndent : val :=
     do:  ("ln" <-[intT] "$r0");;;
     (if: (![intT] "ln") = #(W64 1)
     then
-      do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
       let: "$a1" := #" Entries:[%s]"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![raftpb.Entry] (slice.elem_ref raftpb.Entry (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) #(W64 0))) in
       let: "$a1" := (![EntryFormatter] "f") in
-      (func_call #pkg_name' #"DescribeEntry"%go) "$a0" "$a1")) in
+      (func_call #v3.raft #"DescribeEntry"%go) "$a0" "$a1")) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else
       (if: int_gt (![intT] "ln") #(W64 1)
       then
-        do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+        do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #" Entries:["%go) in
         slice.literal interfaceT ["$sl0"])) in
-        (func_call #fmt.pkg_name' #"Fprint"%go) "$a0" "$a1");;;
+        (func_call #fmt #"Fprint"%go) "$a0" "$a1");;;
         (let: "e" := (ref_ty intT (zero_val intT)) in
         let: "$range" := (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) in
         slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
           do:  ("e" <-[raftpb.Entry] "$value");;;
           do:  "$key";;;
-          do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+          do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
           let: "$a1" := #"
           %s  "%go in
           let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![stringT] "indent")) in
           slice.literal interfaceT ["$sl0"])) in
-          (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2");;;
+          (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
           do:  (let: "$a0" := (let: "$a0" := (![raftpb.Entry] "e") in
           let: "$a1" := (![EntryFormatter] "f") in
-          (func_call #pkg_name' #"DescribeEntry"%go) "$a0" "$a1") in
-          (method_call #bytes.pkg_name' #"Buffer'ptr" #"WriteString" "buf") "$a0")));;;
-        do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+          (func_call #v3.raft #"DescribeEntry"%go) "$a0" "$a1") in
+          (method_call #bytes #"Buffer'ptr" #"WriteString" "buf") "$a0")));;;
+        do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
         let: "$a1" := #"
         %s]"%go in
         let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![stringT] "indent")) in
         slice.literal interfaceT ["$sl0"])) in
-        (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+        (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
       else do:  #())));;;
     (let: "s" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (![ptrT] (struct.field_ref raftpb.Message "Snapshot" "m")) in
     do:  ("s" <-[ptrT] "$r0");;;
     (if: ((![ptrT] "s") ≠ #null) && (~ (let: "$a0" := (![raftpb.Snapshot] (![ptrT] "s")) in
-    (func_call #pkg_name' #"IsEmptySnap"%go) "$a0"))
+    (func_call #v3.raft #"IsEmptySnap"%go) "$a0"))
     then
-      do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
       let: "$a1" := #"
       %s  Snapshot: %s"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![stringT] "indent")) in
       let: "$sl1" := (interface.make #""%go #"string"%go (let: "$a0" := (![raftpb.Snapshot] (![ptrT] "s")) in
-      (func_call #pkg_name' #"DescribeSnapshot"%go) "$a0")) in
+      (func_call #v3.raft #"DescribeSnapshot"%go) "$a0")) in
       slice.literal interfaceT ["$sl0"; "$sl1"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #()));;;
     (if: int_gt (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Message "Responses" "m")) in
     slice.len "$a0") #(W64 0)
     then
-      do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+      do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
       let: "$a1" := #" Responses:["%go in
       let: "$a2" := #slice.nil in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2");;;
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
       (let: "m" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] (struct.field_ref raftpb.Message "Responses" "m")) in
       slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
@@ -7901,20 +7901,20 @@ Definition describeMessageWithIndent : val :=
         do:  "$key";;;
         do:  (let: "$a0" := #"
         "%go in
-        (method_call #bytes.pkg_name' #"Buffer'ptr" #"WriteString" "buf") "$a0");;;
+        (method_call #bytes #"Buffer'ptr" #"WriteString" "buf") "$a0");;;
         do:  (let: "$a0" := (let: "$a0" := ((![stringT] "indent") + #"  "%go) in
         let: "$a1" := (![raftpb.Message] "m") in
         let: "$a2" := (![EntryFormatter] "f") in
-        (func_call #pkg_name' #"describeMessageWithIndent"%go) "$a0" "$a1" "$a2") in
-        (method_call #bytes.pkg_name' #"Buffer'ptr" #"WriteString" "buf") "$a0")));;;
-      do:  (let: "$a0" := (interface.make #bytes.pkg_name' #"Buffer'ptr" "buf") in
+        (func_call #v3.raft #"describeMessageWithIndent"%go) "$a0" "$a1" "$a2") in
+        (method_call #bytes #"Buffer'ptr" #"WriteString" "buf") "$a0")));;;
+      do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
       let: "$a1" := #"
       %s]"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![stringT] "indent")) in
       slice.literal interfaceT ["$sl0"])) in
-      (func_call #fmt.pkg_name' #"Fprintf"%go) "$a0" "$a1" "$a2")
+      (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
-    return: ((method_call #bytes.pkg_name' #"Buffer'ptr" #"String" "buf") #())).
+    return: ((method_call #bytes #"Buffer'ptr" #"String" "buf") #())).
 
 (* go: util.go:191:6 *)
 Definition describeTarget : val :=
@@ -7933,7 +7933,7 @@ Definition describeTarget : val :=
           return: (let: "$a0" := #"%x"%go in
            let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "id")) in
            slice.literal interfaceT ["$sl0"])) in
-           (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1"))))).
+           (func_call #fmt #"Sprintf"%go) "$a0" "$a1"))))).
 
 (* DescribeEntry returns a concise human-readable description of an
    Entry for debugging.
@@ -7950,7 +7950,7 @@ Definition DescribeEntry : val :=
         return: (let: "$a0" := #"%q"%go in
          let: "$a1" := ((let: "$sl0" := (interface.make #"slice'"%go (![sliceT] "data")) in
          slice.literal interfaceT ["$sl0"])) in
-         (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1"))
+         (func_call #fmt #"Sprintf"%go) "$a0" "$a1"))
         ) in
       do:  ("f" <-[EntryFormatter] "$r0")
     else do:  #());;;
@@ -7958,7 +7958,7 @@ Definition DescribeEntry : val :=
     let: "$r0" := (λ: "cc",
       exception_do (let: "cc" := (ref_ty raftpb.ConfChangeI "cc") in
       return: (let: "$a0" := (struct.field_get raftpb.ConfChangeV2 "Changes" ((interface.get "AsV2" (![raftpb.ConfChangeI] "cc")) #())) in
-       (func_call #raftpb.pkg_name' #"ConfChangesToString"%go) "$a0"))
+       (func_call #raftpb #"ConfChangesToString"%go) "$a0"))
       ) in
     do:  ("formatConfChange" <-[funcT] "$r0");;;
     let: "formatted" := (ref_ty stringT (zero_val stringT)) in
@@ -7974,14 +7974,14 @@ Definition DescribeEntry : val :=
         let: "cc" := (ref_ty raftpb.ConfChange (zero_val raftpb.ConfChange)) in
         (let: "err" := (ref_ty error (zero_val error)) in
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Entry "Data" "e")) in
-        (method_call #raftpb.pkg_name' #"ConfChange'ptr" #"Unmarshal" "cc") "$a0") in
+        (method_call #raftpb #"ConfChange'ptr" #"Unmarshal" "cc") "$a0") in
         do:  ("err" <-[error] "$r0");;;
         (if: (~ (interface.eq (![error] "err") #interface.nil))
         then
           let: "$r0" := ((interface.get "Error" (![error] "err")) #()) in
           do:  ("formatted" <-[stringT] "$r0")
         else
-          let: "$r0" := (let: "$a0" := (interface.make #raftpb.pkg_name' #"ConfChange" (![raftpb.ConfChange] "cc")) in
+          let: "$r0" := (let: "$a0" := (interface.make #raftpb #"ConfChange" (![raftpb.ConfChange] "cc")) in
           (![funcT] "formatConfChange") "$a0") in
           do:  ("formatted" <-[stringT] "$r0")))
       else
@@ -7990,14 +7990,14 @@ Definition DescribeEntry : val :=
           let: "cc" := (ref_ty raftpb.ConfChangeV2 (zero_val raftpb.ConfChangeV2)) in
           (let: "err" := (ref_ty error (zero_val error)) in
           let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raftpb.Entry "Data" "e")) in
-          (method_call #raftpb.pkg_name' #"ConfChangeV2'ptr" #"Unmarshal" "cc") "$a0") in
+          (method_call #raftpb #"ConfChangeV2'ptr" #"Unmarshal" "cc") "$a0") in
           do:  ("err" <-[error] "$r0");;;
           (if: (~ (interface.eq (![error] "err") #interface.nil))
           then
             let: "$r0" := ((interface.get "Error" (![error] "err")) #()) in
             do:  ("formatted" <-[stringT] "$r0")
           else
-            let: "$r0" := (let: "$a0" := (interface.make #raftpb.pkg_name' #"ConfChangeV2" (![raftpb.ConfChangeV2] "cc")) in
+            let: "$r0" := (let: "$a0" := (interface.make #raftpb #"ConfChangeV2" (![raftpb.ConfChangeV2] "cc")) in
             (![funcT] "formatConfChange") "$a0") in
             do:  ("formatted" <-[stringT] "$r0")))
         else #())));;;
@@ -8009,10 +8009,10 @@ Definition DescribeEntry : val :=
     return: (let: "$a0" := #"%d/%d %s%s"%go in
      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Entry "Term" "e"))) in
      let: "$sl1" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raftpb.Entry "Index" "e"))) in
-     let: "$sl2" := (interface.make #raftpb.pkg_name' #"EntryType" (![raftpb.EntryType] (struct.field_ref raftpb.Entry "Type" "e"))) in
+     let: "$sl2" := (interface.make #raftpb #"EntryType" (![raftpb.EntryType] (struct.field_ref raftpb.Entry "Type" "e"))) in
      let: "$sl3" := (interface.make #""%go #"string"%go (![stringT] "formatted")) in
      slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
-     (func_call #fmt.pkg_name' #"Sprintf"%go) "$a0" "$a1")).
+     (func_call #fmt #"Sprintf"%go) "$a0" "$a1")).
 
 (* DescribeEntries calls DescribeEntry for each Entry, adding a newline to
    each.
@@ -8030,14 +8030,14 @@ Definition DescribeEntries : val :=
       do:  "$key";;;
       let: ("$ret0", "$ret1") := (let: "$a0" := ((let: "$a0" := (![raftpb.Entry] "e") in
       let: "$a1" := (![EntryFormatter] "f") in
-      (func_call #pkg_name' #"DescribeEntry"%go) "$a0" "$a1") + #"
+      (func_call #v3.raft #"DescribeEntry"%go) "$a0" "$a1") + #"
       "%go) in
-      (method_call #bytes.pkg_name' #"Buffer'ptr" #"WriteString" "buf") "$a0") in
+      (method_call #bytes #"Buffer'ptr" #"WriteString" "buf") "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
       do:  "$r1"));;;
-    return: ((method_call #bytes.pkg_name' #"Buffer'ptr" #"String" "buf") #())).
+    return: ((method_call #bytes #"Buffer'ptr" #"String" "buf") #())).
 
 (* go: util.go:256:6 *)
 Definition entsSize : val :=
@@ -8049,7 +8049,7 @@ Definition entsSize : val :=
     slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("ent" <-[raftpb.Entry] "$value");;;
       do:  "$key";;;
-      do:  ("size" <-[entryEncodingSize] ((![entryEncodingSize] "size") + ((method_call #raftpb.pkg_name' #"Entry'ptr" #"Size" "ent") #())))));;;
+      do:  ("size" <-[entryEncodingSize] ((![entryEncodingSize] "size") + ((method_call #raftpb #"Entry'ptr" #"Size" "ent") #())))));;;
     return: (![entryEncodingSize] "size")).
 
 (* limitSize returns the longest prefix of the given entries slice, such that
@@ -8067,14 +8067,14 @@ Definition limitSize : val :=
     then return: (![sliceT] "ents")
     else do:  #());;;
     let: "size" := (ref_ty intT (zero_val intT)) in
-    let: "$r0" := ((method_call #raftpb.pkg_name' #"Entry'ptr" #"Size" (slice.elem_ref raftpb.Entry (![sliceT] "ents") #(W64 0))) #()) in
+    let: "$r0" := ((method_call #raftpb #"Entry'ptr" #"Size" (slice.elem_ref raftpb.Entry (![sliceT] "ents") #(W64 0))) #()) in
     do:  ("size" <-[intT] "$r0");;;
     (let: "limit" := (ref_ty intT (zero_val intT)) in
     let: "$r0" := #(W64 1) in
     do:  ("limit" <-[intT] "$r0");;;
     (for: (λ: <>, int_lt (![intT] "limit") (let: "$a0" := (![sliceT] "ents") in
     slice.len "$a0")); (λ: <>, do:  ("limit" <-[intT] ((![intT] "limit") + #(W64 1)))) := λ: <>,
-      do:  ("size" <-[intT] ((![intT] "size") + ((method_call #raftpb.pkg_name' #"Entry'ptr" #"Size" (slice.elem_ref raftpb.Entry (![sliceT] "ents") (![intT] "limit"))) #())));;;
+      do:  ("size" <-[intT] ((![intT] "size") + ((method_call #raftpb #"Entry'ptr" #"Size" (slice.elem_ref raftpb.Entry (![sliceT] "ents") (![intT] "limit"))) #())));;;
       (if: (![intT] "size") > (![entryEncodingSize] "maxSize")
       then
         return: (let: "$s" := (![sliceT] "ents") in
@@ -8104,7 +8104,7 @@ Definition payloadsSize : val :=
       do:  ("e" <-[raftpb.Entry] "$value");;;
       do:  "$key";;;
       do:  ("s" <-[entryPayloadSize] ((![entryPayloadSize] "s") + (let: "$a0" := (![raftpb.Entry] "e") in
-      (func_call #pkg_name' #"payloadSize"%go) "$a0")))));;;
+      (func_call #v3.raft #"payloadSize"%go) "$a0")))));;;
     return: (![entryPayloadSize] "s")).
 
 (* go: util.go:302:6 *)
@@ -8115,7 +8115,7 @@ Definition assertConfStatesEquivalent : val :=
     let: "l" := (ref_ty Logger "l") in
     let: "err" := (ref_ty error (zero_val error)) in
     let: "$r0" := (let: "$a0" := (![raftpb.ConfState] "cs2") in
-    (method_call #raftpb.pkg_name' #"ConfState" #"Equivalent" (![raftpb.ConfState] "cs1")) "$a0") in
+    (method_call #raftpb #"ConfState" #"Equivalent" (![raftpb.ConfState] "cs1")) "$a0") in
     do:  ("err" <-[error] "$r0");;;
     (if: interface.eq (![error] "err") #interface.nil
     then return: (#())
@@ -8166,172 +8166,180 @@ Definition vars' : list (go_string * go_type) := [("defaultLogger"%go, ptrT); ("
 Definition functions' : list (go_string * val) := [("newLog"%go, newLog); ("newLogWithSize"%go, newLogWithSize); ("SetLogger"%go, SetLogger); ("ResetDefaultLogger"%go, ResetDefaultLogger); ("getLogger"%go, getLogger); ("header"%go, header); ("isHardStateEqual"%go, isHardStateEqual); ("IsEmptyHardState"%go, IsEmptyHardState); ("IsEmptySnap"%go, IsEmptySnap); ("setupNode"%go, setupNode); ("StartNode"%go, StartNode); ("RestartNode"%go, RestartNode); ("newNode"%go, newNode); ("confChangeToMsg"%go, confChangeToMsg); ("newRaft"%go, newRaft); ("stepLeader"%go, stepLeader); ("stepCandidate"%go, stepCandidate); ("stepFollower"%go, stepFollower); ("logSliceFromMsgApp"%go, logSliceFromMsgApp); ("releasePendingReadIndexMessages"%go, releasePendingReadIndexMessages); ("sendMsgReadIndexResponse"%go, sendMsgReadIndexResponse); ("NewRawNode"%go, NewRawNode); ("MustSync"%go, MustSync); ("needStorageAppendMsg"%go, needStorageAppendMsg); ("needStorageAppendRespMsg"%go, needStorageAppendRespMsg); ("newStorageAppendMsg"%go, newStorageAppendMsg); ("newStorageAppendRespMsg"%go, newStorageAppendRespMsg); ("needStorageApplyMsg"%go, needStorageApplyMsg); ("needStorageApplyRespMsg"%go, needStorageApplyRespMsg); ("newStorageApplyMsg"%go, newStorageApplyMsg); ("newStorageApplyRespMsg"%go, newStorageApplyRespMsg); ("newReadOnly"%go, newReadOnly); ("traceInitState"%go, traceInitState); ("traceReady"%go, traceReady); ("traceCommit"%go, traceCommit); ("traceReplicate"%go, traceReplicate); ("traceBecomeFollower"%go, traceBecomeFollower); ("traceBecomeCandidate"%go, traceBecomeCandidate); ("traceBecomeLeader"%go, traceBecomeLeader); ("traceChangeConfEvent"%go, traceChangeConfEvent); ("traceConfChangeEvent"%go, traceConfChangeEvent); ("traceSendMessage"%go, traceSendMessage); ("traceReceiveMessage"%go, traceReceiveMessage); ("getProgressCopy"%go, getProgressCopy); ("getBasicStatus"%go, getBasicStatus); ("getStatus"%go, getStatus); ("NewMemoryStorage"%go, NewMemoryStorage); ("pbEntryID"%go, pbEntryID); ("isMsgInArray"%go, isMsgInArray); ("IsLocalMsg"%go, IsLocalMsg); ("IsResponseMsg"%go, IsResponseMsg); ("IsLocalMsgTarget"%go, IsLocalMsgTarget); ("voteRespMsgType"%go, voteRespMsgType); ("DescribeHardState"%go, DescribeHardState); ("DescribeSoftState"%go, DescribeSoftState); ("DescribeConfState"%go, DescribeConfState); ("DescribeSnapshot"%go, DescribeSnapshot); ("DescribeReady"%go, DescribeReady); ("DescribeMessage"%go, DescribeMessage); ("describeMessageWithIndent"%go, describeMessageWithIndent); ("describeTarget"%go, describeTarget); ("DescribeEntry"%go, DescribeEntry); ("DescribeEntries"%go, DescribeEntries); ("entsSize"%go, entsSize); ("limitSize"%go, limitSize); ("payloadSize"%go, payloadSize); ("payloadsSize"%go, payloadsSize); ("assertConfStatesEquivalent"%go, assertConfStatesEquivalent); ("extend"%go, extend)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("raftLog"%go, []); ("raftLog'ptr"%go, [("String"%go, raftLog__String); ("acceptApplying"%go, raftLog__acceptApplying); ("acceptUnstable"%go, raftLog__acceptUnstable); ("allEntries"%go, raftLog__allEntries); ("append"%go, raftLog__append); ("appliedTo"%go, raftLog__appliedTo); ("commitTo"%go, raftLog__commitTo); ("entries"%go, raftLog__entries); ("findConflict"%go, raftLog__findConflict); ("findConflictByTerm"%go, raftLog__findConflictByTerm); ("firstIndex"%go, raftLog__firstIndex); ("hasNextCommittedEnts"%go, raftLog__hasNextCommittedEnts); ("hasNextOrInProgressSnapshot"%go, raftLog__hasNextOrInProgressSnapshot); ("hasNextOrInProgressUnstableEnts"%go, raftLog__hasNextOrInProgressUnstableEnts); ("hasNextUnstableEnts"%go, raftLog__hasNextUnstableEnts); ("hasNextUnstableSnapshot"%go, raftLog__hasNextUnstableSnapshot); ("isUpToDate"%go, raftLog__isUpToDate); ("lastEntryID"%go, raftLog__lastEntryID); ("lastIndex"%go, raftLog__lastIndex); ("matchTerm"%go, raftLog__matchTerm); ("maxAppliableIndex"%go, raftLog__maxAppliableIndex); ("maybeAppend"%go, raftLog__maybeAppend); ("maybeCommit"%go, raftLog__maybeCommit); ("mustCheckOutOfBounds"%go, raftLog__mustCheckOutOfBounds); ("nextCommittedEnts"%go, raftLog__nextCommittedEnts); ("nextUnstableEnts"%go, raftLog__nextUnstableEnts); ("nextUnstableSnapshot"%go, raftLog__nextUnstableSnapshot); ("restore"%go, raftLog__restore); ("scan"%go, raftLog__scan); ("slice"%go, raftLog__slice); ("snapshot"%go, raftLog__snapshot); ("stableSnapTo"%go, raftLog__stableSnapTo); ("stableTo"%go, raftLog__stableTo); ("term"%go, raftLog__term); ("zeroTermOnOutOfBounds"%go, raftLog__zeroTermOnOutOfBounds)]); ("unstable"%go, []); ("unstable'ptr"%go, [("acceptInProgress"%go, unstable__acceptInProgress); ("maybeFirstIndex"%go, unstable__maybeFirstIndex); ("maybeLastIndex"%go, unstable__maybeLastIndex); ("maybeTerm"%go, unstable__maybeTerm); ("mustCheckOutOfBounds"%go, unstable__mustCheckOutOfBounds); ("nextEntries"%go, unstable__nextEntries); ("nextSnapshot"%go, unstable__nextSnapshot); ("restore"%go, unstable__restore); ("shrinkEntriesArray"%go, unstable__shrinkEntriesArray); ("slice"%go, unstable__slice); ("stableSnapTo"%go, unstable__stableSnapTo); ("stableTo"%go, unstable__stableTo); ("truncateAndAppend"%go, unstable__truncateAndAppend)]); ("DefaultLogger"%go, [("Fatalln"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Fatalln" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"Fatalln" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("Flags"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Flags" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"Flags" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("Output"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Output" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"Output" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("Panicln"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Panicln" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"Panicln" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("Prefix"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Prefix" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"Prefix" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("Print"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Print" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"Print" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("Printf"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Printf" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"Printf" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("Println"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Println" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"Println" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("SetFlags"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"SetFlags" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"SetFlags" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("SetOutput"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"SetOutput" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"SetOutput" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("SetPrefix"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"SetPrefix" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"SetPrefix" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("Writer"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Writer" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"Writer" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V); ("output"%go, (λ: "$recv",
-                 method_call #log.pkg_name' #"Logger'ptr" #"output" (struct.field_get DefaultLogger "Logger" "$recv")
+                 method_call #log #"Logger'ptr" #"output" (struct.field_get DefaultLogger "Logger" "$recv")
                  )%V)]); ("DefaultLogger'ptr"%go, [("Debug"%go, DefaultLogger__Debug); ("Debugf"%go, DefaultLogger__Debugf); ("EnableDebug"%go, DefaultLogger__EnableDebug); ("EnableTimestamps"%go, DefaultLogger__EnableTimestamps); ("Error"%go, DefaultLogger__Error); ("Errorf"%go, DefaultLogger__Errorf); ("Fatal"%go, DefaultLogger__Fatal); ("Fatalf"%go, DefaultLogger__Fatalf); ("Fatalln"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Fatalln" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"Fatalln" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("Flags"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Flags" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"Flags" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("Info"%go, DefaultLogger__Info); ("Infof"%go, DefaultLogger__Infof); ("Output"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"Output" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("Panic"%go, DefaultLogger__Panic); ("Panicf"%go, DefaultLogger__Panicf); ("Panicln"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Panicln" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"Panicln" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("Prefix"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Prefix" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"Prefix" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("Print"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Print" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"Print" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("Printf"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Printf" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"Printf" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("Println"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Println" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"Println" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("SetFlags"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"SetFlags" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"SetFlags" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("SetOutput"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"SetOutput" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"SetOutput" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("SetPrefix"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"SetPrefix" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"SetPrefix" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("Warning"%go, DefaultLogger__Warning); ("Warningf"%go, DefaultLogger__Warningf); ("Writer"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"Writer" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"Writer" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V); ("output"%go, (λ: "$recvAddr",
-                 method_call #log.pkg_name' #"Logger'ptr" #"output" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
+                 method_call #log #"Logger'ptr" #"output" (![ptrT] (struct.field_ref DefaultLogger "Logger" "$recvAddr"))
                  )%V)]); ("SnapshotStatus"%go, []); ("SnapshotStatus'ptr"%go, []); ("SoftState"%go, []); ("SoftState'ptr"%go, [("equal"%go, SoftState__equal)]); ("Ready"%go, [("equal"%go, (λ: "$recv",
-                 method_call #pkg_name' #"SoftState'ptr" #"equal" (struct.field_get Ready "SoftState" "$recv")
+                 method_call #v3.raft #"SoftState'ptr" #"equal" (struct.field_get Ready "SoftState" "$recv")
                  )%V)]); ("Ready'ptr"%go, [("Descriptor"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Descriptor" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Descriptor" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Marshal" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Marshal" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("MarshalTo"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"MarshalTo" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"MarshalTo" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("MarshalToSizedBuffer"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"MarshalToSizedBuffer" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"MarshalToSizedBuffer" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("ProtoMessage"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"ProtoMessage" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"ProtoMessage" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("Reset"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Reset" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Reset" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Size" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Size" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"String" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"String" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Unmarshal" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Unmarshal" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("XXX_DiscardUnknown"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_DiscardUnknown" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_DiscardUnknown" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("XXX_Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Marshal" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_Marshal" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("XXX_Merge"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Merge" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_Merge" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("XXX_Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Size" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_Size" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("XXX_Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Unmarshal" (struct.field_ref Ready "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_Unmarshal" (struct.field_ref Ready "HardState" "$recvAddr")
                  )%V); ("equal"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"SoftState'ptr" #"equal" (![ptrT] (struct.field_ref Ready "SoftState" "$recvAddr"))
+                 method_call #v3.raft #"SoftState'ptr" #"equal" (![ptrT] (struct.field_ref Ready "SoftState" "$recvAddr"))
                  )%V)]); ("Peer"%go, []); ("Peer'ptr"%go, []); ("msgWithResult"%go, []); ("msgWithResult'ptr"%go, []); ("node"%go, []); ("node'ptr"%go, [("Advance"%go, node__Advance); ("ApplyConfChange"%go, node__ApplyConfChange); ("Campaign"%go, node__Campaign); ("ForgetLeader"%go, node__ForgetLeader); ("Propose"%go, node__Propose); ("ProposeConfChange"%go, node__ProposeConfChange); ("ReadIndex"%go, node__ReadIndex); ("Ready"%go, node__Ready); ("ReportSnapshot"%go, node__ReportSnapshot); ("ReportUnreachable"%go, node__ReportUnreachable); ("Status"%go, node__Status); ("Step"%go, node__Step); ("Stop"%go, node__Stop); ("Tick"%go, node__Tick); ("TransferLeadership"%go, node__TransferLeadership); ("run"%go, node__run); ("step"%go, node__step); ("stepWait"%go, node__stepWait); ("stepWithWaitOption"%go, node__stepWithWaitOption)]); ("ReadOnlyOption"%go, []); ("ReadOnlyOption'ptr"%go, []); ("lockedRand"%go, []); ("lockedRand'ptr"%go, [("Intn"%go, lockedRand__Intn)]); ("CampaignType"%go, []); ("CampaignType'ptr"%go, []); ("StateType"%go, [("MarshalJSON"%go, StateType__MarshalJSON); ("String"%go, StateType__String)]); ("StateType'ptr"%go, [("MarshalJSON"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"StateType" #"MarshalJSON" (![StateType] "$recvAddr")
+                 method_call #v3.raft #"StateType" #"MarshalJSON" (![StateType] "$recvAddr")
                  )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"StateType" #"String" (![StateType] "$recvAddr")
+                 method_call #v3.raft #"StateType" #"String" (![StateType] "$recvAddr")
                  )%V)]); ("Config"%go, []); ("Config'ptr"%go, [("validate"%go, Config__validate)]); ("raft"%go, []); ("raft'ptr"%go, [("Step"%go, raft__Step); ("abortLeaderTransfer"%go, raft__abortLeaderTransfer); ("appendEntry"%go, raft__appendEntry); ("appliedSnap"%go, raft__appliedSnap); ("appliedTo"%go, raft__appliedTo); ("applyConfChange"%go, raft__applyConfChange); ("bcastAppend"%go, raft__bcastAppend); ("bcastHeartbeat"%go, raft__bcastHeartbeat); ("bcastHeartbeatWithCtx"%go, raft__bcastHeartbeatWithCtx); ("becomeCandidate"%go, raft__becomeCandidate); ("becomeFollower"%go, raft__becomeFollower); ("becomeLeader"%go, raft__becomeLeader); ("becomePreCandidate"%go, raft__becomePreCandidate); ("campaign"%go, raft__campaign); ("committedEntryInCurrentTerm"%go, raft__committedEntryInCurrentTerm); ("handleAppendEntries"%go, raft__handleAppendEntries); ("handleHeartbeat"%go, raft__handleHeartbeat); ("handleSnapshot"%go, raft__handleSnapshot); ("hardState"%go, raft__hardState); ("hasLeader"%go, raft__hasLeader); ("hasUnappliedConfChanges"%go, raft__hasUnappliedConfChanges); ("hup"%go, raft__hup); ("increaseUncommittedSize"%go, raft__increaseUncommittedSize); ("loadState"%go, raft__loadState); ("maybeCommit"%go, raft__maybeCommit); ("maybeSendAppend"%go, raft__maybeSendAppend); ("maybeSendSnapshot"%go, raft__maybeSendSnapshot); ("pastElectionTimeout"%go, raft__pastElectionTimeout); ("poll"%go, raft__poll); ("promotable"%go, raft__promotable); ("reduceUncommittedSize"%go, raft__reduceUncommittedSize); ("reset"%go, raft__reset); ("resetRandomizedElectionTimeout"%go, raft__resetRandomizedElectionTimeout); ("responseToReadIndexReq"%go, raft__responseToReadIndexReq); ("restore"%go, raft__restore); ("send"%go, raft__send); ("sendAppend"%go, raft__sendAppend); ("sendHeartbeat"%go, raft__sendHeartbeat); ("sendTimeoutNow"%go, raft__sendTimeoutNow); ("softState"%go, raft__softState); ("switchToConfig"%go, raft__switchToConfig); ("tickElection"%go, raft__tickElection); ("tickHeartbeat"%go, raft__tickHeartbeat)]); ("stepFunc"%go, []); ("stepFunc'ptr"%go, []); ("RawNode"%go, []); ("RawNode'ptr"%go, [("Advance"%go, RawNode__Advance); ("ApplyConfChange"%go, RawNode__ApplyConfChange); ("BasicStatus"%go, RawNode__BasicStatus); ("Bootstrap"%go, RawNode__Bootstrap); ("Campaign"%go, RawNode__Campaign); ("ForgetLeader"%go, RawNode__ForgetLeader); ("HasReady"%go, RawNode__HasReady); ("Propose"%go, RawNode__Propose); ("ProposeConfChange"%go, RawNode__ProposeConfChange); ("ReadIndex"%go, RawNode__ReadIndex); ("Ready"%go, RawNode__Ready); ("ReportSnapshot"%go, RawNode__ReportSnapshot); ("ReportUnreachable"%go, RawNode__ReportUnreachable); ("Status"%go, RawNode__Status); ("Step"%go, RawNode__Step); ("Tick"%go, RawNode__Tick); ("TickQuiesced"%go, RawNode__TickQuiesced); ("TransferLeader"%go, RawNode__TransferLeader); ("WithProgress"%go, RawNode__WithProgress); ("acceptReady"%go, RawNode__acceptReady); ("applyUnstableEntries"%go, RawNode__applyUnstableEntries); ("readyWithoutAccept"%go, RawNode__readyWithoutAccept)]); ("ProgressType"%go, []); ("ProgressType'ptr"%go, []); ("ReadState"%go, []); ("ReadState'ptr"%go, []); ("readIndexStatus"%go, []); ("readIndexStatus'ptr"%go, []); ("readOnly"%go, []); ("readOnly'ptr"%go, [("addRequest"%go, readOnly__addRequest); ("advance"%go, readOnly__advance); ("lastPendingRequestCtx"%go, readOnly__lastPendingRequestCtx); ("recvAck"%go, readOnly__recvAck)]); ("TracingEvent"%go, []); ("TracingEvent'ptr"%go, []); ("Status"%go, [("MarshalJSON"%go, Status__MarshalJSON); ("String"%go, Status__String)]); ("Status'ptr"%go, [("Descriptor"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Descriptor" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"Descriptor" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Marshal" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"Marshal" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("MarshalJSON"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"Status" #"MarshalJSON" (![Status] "$recvAddr")
+                 method_call #v3.raft #"Status" #"MarshalJSON" (![Status] "$recvAddr")
                  )%V); ("MarshalTo"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"MarshalTo" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"MarshalTo" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("MarshalToSizedBuffer"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"MarshalToSizedBuffer" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"MarshalToSizedBuffer" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("ProtoMessage"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"ProtoMessage" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"ProtoMessage" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("Reset"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Reset" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"Reset" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Size" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"Size" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"Status" #"String" (![Status] "$recvAddr")
+                 method_call #v3.raft #"Status" #"String" (![Status] "$recvAddr")
                  )%V); ("Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Unmarshal" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"Unmarshal" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("XXX_DiscardUnknown"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_DiscardUnknown" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"XXX_DiscardUnknown" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("XXX_Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Marshal" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"XXX_Marshal" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("XXX_Merge"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Merge" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"XXX_Merge" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("XXX_Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Size" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"XXX_Size" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("XXX_Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Unmarshal" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #raftpb #"HardState'ptr" #"XXX_Unmarshal" (struct.field_ref BasicStatus "HardState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V); ("equal"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"SoftState'ptr" #"equal" (struct.field_ref BasicStatus "SoftState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
+                 method_call #v3.raft #"SoftState'ptr" #"equal" (struct.field_ref BasicStatus "SoftState" (struct.field_ref Status "BasicStatus" "$recvAddr"))
                  )%V)]); ("BasicStatus"%go, []); ("BasicStatus'ptr"%go, [("Descriptor"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Descriptor" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Descriptor" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Marshal" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Marshal" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("MarshalTo"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"MarshalTo" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"MarshalTo" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("MarshalToSizedBuffer"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"MarshalToSizedBuffer" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"MarshalToSizedBuffer" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("ProtoMessage"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"ProtoMessage" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"ProtoMessage" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("Reset"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Reset" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Reset" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Size" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Size" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"String" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"String" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"Unmarshal" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"Unmarshal" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("XXX_DiscardUnknown"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_DiscardUnknown" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_DiscardUnknown" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("XXX_Marshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Marshal" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_Marshal" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("XXX_Merge"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Merge" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_Merge" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("XXX_Size"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Size" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_Size" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("XXX_Unmarshal"%go, (λ: "$recvAddr",
-                 method_call #raftpb.pkg_name' #"HardState'ptr" #"XXX_Unmarshal" (struct.field_ref BasicStatus "HardState" "$recvAddr")
+                 method_call #raftpb #"HardState'ptr" #"XXX_Unmarshal" (struct.field_ref BasicStatus "HardState" "$recvAddr")
                  )%V); ("equal"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"SoftState'ptr" #"equal" (struct.field_ref BasicStatus "SoftState" "$recvAddr")
+                 method_call #v3.raft #"SoftState'ptr" #"equal" (struct.field_ref BasicStatus "SoftState" "$recvAddr")
                  )%V)]); ("inMemStorageCallStats"%go, []); ("inMemStorageCallStats'ptr"%go, []); ("MemoryStorage"%go, []); ("MemoryStorage'ptr"%go, [("Append"%go, MemoryStorage__Append); ("ApplySnapshot"%go, MemoryStorage__ApplySnapshot); ("Compact"%go, MemoryStorage__Compact); ("CreateSnapshot"%go, MemoryStorage__CreateSnapshot); ("Entries"%go, MemoryStorage__Entries); ("FirstIndex"%go, MemoryStorage__FirstIndex); ("InitialState"%go, MemoryStorage__InitialState); ("LastIndex"%go, MemoryStorage__LastIndex); ("Lock"%go, (λ: "$recvAddr",
-                 method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" "$recvAddr")
+                 method_call #sync #"Mutex'ptr" #"Lock" (struct.field_ref MemoryStorage "Mutex" "$recvAddr")
                  )%V); ("SetHardState"%go, MemoryStorage__SetHardState); ("Snapshot"%go, MemoryStorage__Snapshot); ("Term"%go, MemoryStorage__Term); ("TryLock"%go, (λ: "$recvAddr",
-                 method_call #sync.pkg_name' #"Mutex'ptr" #"TryLock" (struct.field_ref MemoryStorage "Mutex" "$recvAddr")
+                 method_call #sync #"Mutex'ptr" #"TryLock" (struct.field_ref MemoryStorage "Mutex" "$recvAddr")
                  )%V); ("Unlock"%go, (λ: "$recvAddr",
-                 method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" "$recvAddr")
+                 method_call #sync #"Mutex'ptr" #"Unlock" (struct.field_ref MemoryStorage "Mutex" "$recvAddr")
                  )%V); ("firstIndex"%go, MemoryStorage__firstIndex); ("lastIndex"%go, MemoryStorage__lastIndex)]); ("entryID"%go, []); ("entryID'ptr"%go, []); ("logSlice"%go, [("lastEntryID"%go, logSlice__lastEntryID); ("lastIndex"%go, logSlice__lastIndex); ("valid"%go, logSlice__valid)]); ("logSlice'ptr"%go, [("lastEntryID"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"logSlice" #"lastEntryID" (![logSlice] "$recvAddr")
+                 method_call #v3.raft #"logSlice" #"lastEntryID" (![logSlice] "$recvAddr")
                  )%V); ("lastIndex"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"logSlice" #"lastIndex" (![logSlice] "$recvAddr")
+                 method_call #v3.raft #"logSlice" #"lastIndex" (![logSlice] "$recvAddr")
                  )%V); ("valid"%go, (λ: "$recvAddr",
-                 method_call #pkg_name' #"logSlice" #"valid" (![logSlice] "$recvAddr")
+                 method_call #v3.raft #"logSlice" #"valid" (![logSlice] "$recvAddr")
                  )%V)]); ("EntryFormatter"%go, []); ("EntryFormatter'ptr"%go, []); ("entryEncodingSize"%go, []); ("entryEncodingSize'ptr"%go, []); ("entryPayloadSize"%go, []); ("entryPayloadSize'ptr"%go, [])].
+
+#[global] Instance info' : PkgInfo v3.raft :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [errors; raftpb; fmt; io; log; os; sync; context; bytes; rand; math; big; strings; confchange; quorum; slices; tracker];
+  |}.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init v3.raft (λ: <>,
       exception_do (do:  tracker.initialize';;;
       do:  slices.initialize';;;
       do:  quorum.initialize';;;
@@ -8349,69 +8357,69 @@ Definition initialize' : val :=
       do:  fmt.initialize';;;
       do:  raftpb.initialize';;;
       do:  errors.initialize';;;
-      let: "$r0" := (ref_ty DefaultLogger (let: "$Logger" := (let: "$a0" := (interface.make #os.pkg_name' #"File'ptr" (![ptrT] (globals.get #os.pkg_name' #"Stderr"%go))) in
+      let: "$r0" := (ref_ty DefaultLogger (let: "$Logger" := (let: "$a0" := (interface.make #os #"File'ptr" (![ptrT] (globals.get #os #"Stderr"%go))) in
       let: "$a1" := #"raft"%go in
       let: "$a2" := #(W64 log.LstdFlags) in
-      (func_call #log.pkg_name' #"New"%go) "$a0" "$a1" "$a2") in
+      (func_call #log #"New"%go) "$a0" "$a1" "$a2") in
       struct.make DefaultLogger [{
         "Logger" ::= "$Logger";
         "debug" ::= zero_val boolT
       }])) in
-      do:  ((globals.get #pkg_name' #"defaultLogger"%go) <-[ptrT] "$r0");;;
-      let: "$r0" := (ref_ty DefaultLogger (let: "$Logger" := (let: "$a0" := (![io.Writer] (globals.get #io.pkg_name' #"Discard"%go)) in
+      do:  ((globals.get #v3.raft #"defaultLogger"%go) <-[ptrT] "$r0");;;
+      let: "$r0" := (ref_ty DefaultLogger (let: "$Logger" := (let: "$a0" := (![io.Writer] (globals.get #io #"Discard"%go)) in
       let: "$a1" := #""%go in
       let: "$a2" := #(W64 0) in
-      (func_call #log.pkg_name' #"New"%go) "$a0" "$a1" "$a2") in
+      (func_call #log #"New"%go) "$a0" "$a1" "$a2") in
       struct.make DefaultLogger [{
         "Logger" ::= "$Logger";
         "debug" ::= zero_val boolT
       }])) in
-      do:  ((globals.get #pkg_name' #"discardLogger"%go) <-[ptrT] "$r0");;;
-      let: "$r0" := (interface.make #pkg_name' #"DefaultLogger'ptr" (![ptrT] (globals.get #pkg_name' #"defaultLogger"%go))) in
-      do:  ((globals.get #pkg_name' #"raftLogger"%go) <-[Logger] "$r0");;;
+      do:  ((globals.get #v3.raft #"discardLogger"%go) <-[ptrT] "$r0");;;
+      let: "$r0" := (interface.make #v3.raft #"DefaultLogger'ptr" (![ptrT] (globals.get #v3.raft #"defaultLogger"%go))) in
+      do:  ((globals.get #v3.raft #"raftLogger"%go) <-[Logger] "$r0");;;
       let: "$r0" := (struct.make raftpb.HardState [{
         "Term" ::= zero_val uint64T;
         "Vote" ::= zero_val uint64T;
         "Commit" ::= zero_val uint64T
       }]) in
-      do:  ((globals.get #pkg_name' #"emptyState"%go) <-[raftpb.HardState] "$r0");;;
+      do:  ((globals.get #v3.raft #"emptyState"%go) <-[raftpb.HardState] "$r0");;;
       let: "$r0" := (let: "$a0" := #"raft: stopped"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrStopped"%go) <-[error] "$r0");;;
+      (func_call #errors #"New"%go) "$a0") in
+      do:  ((globals.get #v3.raft #"ErrStopped"%go) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"raft proposal dropped"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrProposalDropped"%go) <-[error] "$r0");;;
+      (func_call #errors #"New"%go) "$a0") in
+      do:  ((globals.get #v3.raft #"ErrProposalDropped"%go) <-[error] "$r0");;;
       let: "$r0" := (ref_ty lockedRand (struct.make lockedRand [{
         "mu" ::= zero_val sync.Mutex
       }])) in
-      do:  ((globals.get #pkg_name' #"globalRand"%go) <-[ptrT] "$r0");;;
+      do:  ((globals.get #v3.raft #"globalRand"%go) <-[ptrT] "$r0");;;
       let: "$r0" := ((let: "$ar0" := #"StateFollower"%go in
       let: "$ar1" := #"StateCandidate"%go in
       let: "$ar2" := #"StateLeader"%go in
       let: "$ar3" := #"StatePreCandidate"%go in
       array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"])) in
-      do:  ((globals.get #pkg_name' #"stmap"%go) <-[arrayT 4 stringT] "$r0");;;
+      do:  ((globals.get #v3.raft #"stmap"%go) <-[arrayT 4 stringT] "$r0");;;
       let: "$r0" := (let: "$a0" := #"break"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"errBreak"%go) <-[error] "$r0");;;
+      (func_call #errors #"New"%go) "$a0") in
+      do:  ((globals.get #v3.raft #"errBreak"%go) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"raft: cannot step raft local message"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrStepLocalMsg"%go) <-[error] "$r0");;;
+      (func_call #errors #"New"%go) "$a0") in
+      do:  ((globals.get #v3.raft #"ErrStepLocalMsg"%go) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"raft: cannot step as peer not found"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrStepPeerNotFound"%go) <-[error] "$r0");;;
+      (func_call #errors #"New"%go) "$a0") in
+      do:  ((globals.get #v3.raft #"ErrStepPeerNotFound"%go) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"requested index is unavailable due to compaction"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrCompacted"%go) <-[error] "$r0");;;
+      (func_call #errors #"New"%go) "$a0") in
+      do:  ((globals.get #v3.raft #"ErrCompacted"%go) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"requested index is older than the existing snapshot"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrSnapOutOfDate"%go) <-[error] "$r0");;;
+      (func_call #errors #"New"%go) "$a0") in
+      do:  ((globals.get #v3.raft #"ErrSnapOutOfDate"%go) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"requested entry at index is unavailable"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrUnavailable"%go) <-[error] "$r0");;;
+      (func_call #errors #"New"%go) "$a0") in
+      do:  ((globals.get #v3.raft #"ErrUnavailable"%go) <-[error] "$r0");;;
       let: "$r0" := (let: "$a0" := #"snapshot is temporarily unavailable"%go in
-      (func_call #errors.pkg_name' #"New"%go) "$a0") in
-      do:  ((globals.get #pkg_name' #"ErrSnapshotTemporarilyUnavailable"%go) <-[error] "$r0");;;
+      (func_call #errors #"New"%go) "$a0") in
+      do:  ((globals.get #v3.raft #"ErrSnapshotTemporarilyUnavailable"%go) <-[error] "$r0");;;
       let: "$r0" := ((let: "$ar0" := #true in
       let: "$ar1" := #true in
       let: "$ar2" := (zero_val boolT) in
@@ -8436,7 +8444,7 @@ Definition initialize' : val :=
       let: "$ar21" := #true in
       let: "$ar22" := #true in
       array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"; "$ar4"; "$ar5"; "$ar6"; "$ar7"; "$ar8"; "$ar9"; "$ar10"; "$ar11"; "$ar12"; "$ar13"; "$ar14"; "$ar15"; "$ar16"; "$ar17"; "$ar18"; "$ar19"; "$ar20"; "$ar21"; "$ar22"])) in
-      do:  ((globals.get #pkg_name' #"isLocalMsg"%go) <-[arrayT 23 boolT] "$r0");;;
+      do:  ((globals.get #v3.raft #"isLocalMsg"%go) <-[arrayT 23 boolT] "$r0");;;
       let: "$r0" := ((let: "$ar0" := (zero_val boolT) in
       let: "$ar1" := (zero_val boolT) in
       let: "$ar2" := (zero_val boolT) in
@@ -8461,7 +8469,7 @@ Definition initialize' : val :=
       let: "$ar21" := (zero_val boolT) in
       let: "$ar22" := #true in
       array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"; "$ar4"; "$ar5"; "$ar6"; "$ar7"; "$ar8"; "$ar9"; "$ar10"; "$ar11"; "$ar12"; "$ar13"; "$ar14"; "$ar15"; "$ar16"; "$ar17"; "$ar18"; "$ar19"; "$ar20"; "$ar21"; "$ar22"])) in
-      do:  ((globals.get #pkg_name' #"isResponseMsg"%go) <-[arrayT 23 boolT] "$r0"))
+      do:  ((globals.get #v3.raft #"isResponseMsg"%go) <-[arrayT 23 boolT] "$r0"))
       ).
 
 End code.

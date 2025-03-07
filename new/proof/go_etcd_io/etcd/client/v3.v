@@ -670,3 +670,25 @@ Proof.
   }
 Abort.
 End spec.
+
+Section init.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!goGlobalsGS Σ}.
+
+(* FIXME: move these *)
+#[global]
+Program Instance : IsPkgInit mvccpb :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+#[global]
+Program Instance : IsPkgInit etcdserverpb :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+#[global]
+Program Instance : IsPkgInit clientv3 :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+End init.

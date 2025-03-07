@@ -2,6 +2,8 @@
 From New.golang Require Import defn.
 Require Export New.code.go_etcd_io.raft.v3.tracker.
 
+Definition confchange : go_string := "go.etcd.io/raft/v3/confchange".
+
 Module confchange.
 Section code.
 Context `{ffi_syntax}.
@@ -12,19 +14,25 @@ Definition Changer : go_type := structT [
   "LastIndex" :: uint64T
 ].
 
-Definition pkg_name' : go_string := "go.etcd.io/raft/v3/confchange".
-
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Changer"%go, []); ("Changer'ptr"%go, [])].
 
+#[global] Instance info' : PkgInfo confchange.confchange :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [tracker];
+  |}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init confchange.confchange (λ: <>,
       exception_do (do:  tracker.initialize')
       ).
 

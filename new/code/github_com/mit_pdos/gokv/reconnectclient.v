@@ -5,6 +5,8 @@ Require Export New.code.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.code.github_com.mit_pdos.gokv.urpc.
 Require Export New.code.sync.
 
+Definition reconnectclient : go_string := "github.com/mit-pdos/gokv/reconnectclient".
+
 From New Require Import grove_prelude.
 Module reconnectclient.
 Section code.
@@ -36,20 +38,20 @@ Definition MakeReconnectingClient : val :=
 Definition ReconnectingClient__getClient : val :=
   rec: "ReconnectingClient__getClient" "cl" <> :=
     exception_do (let: "cl" := (ref_ty ptrT "cl") in
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     (if: ![boolT] (struct.field_ref ReconnectingClient "valid" (![ptrT] "cl"))
     then
       let: "ret" := (ref_ty ptrT (zero_val ptrT)) in
       let: "$r0" := (![ptrT] (struct.field_ref ReconnectingClient "urpcCl" (![ptrT] "cl"))) in
       do:  ("ret" <-[ptrT] "$r0");;;
-      do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
       return: (#(W64 0), ![ptrT] "ret")
     else do:  #());;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     let: "newRpcCl" := (ref_ty ptrT (zero_val ptrT)) in
     let: "err" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] (struct.field_ref ReconnectingClient "addr" (![ptrT] "cl"))) in
-    (func_call #urpc.pkg_name' #"TryMakeClient"%go) "$a0") in
+    (func_call #urpc #"TryMakeClient"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err" <-[uint64T] "$r0");;;
@@ -57,9 +59,9 @@ Definition ReconnectingClient__getClient : val :=
     (if: (![uint64T] "err") ≠ #(W64 0)
     then
       do:  (let: "$a0" := #(W64 10000000) in
-      (func_call #primitive.pkg_name' #"Sleep"%go) "$a0")
+      (func_call #primitive #"Sleep"%go) "$a0")
     else do:  #());;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     (if: (![uint64T] "err") = #(W64 0)
     then
       let: "$r0" := (![ptrT] "newRpcCl") in
@@ -67,10 +69,8 @@ Definition ReconnectingClient__getClient : val :=
       let: "$r0" := #true in
       do:  ((struct.field_ref ReconnectingClient "valid" (![ptrT] "cl")) <-[boolT] "$r0")
     else do:  #());;;
-    do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
     return: (![uint64T] "err", ![ptrT] "newRpcCl")).
-
-Definition pkg_name' : go_string := "github.com/mit-pdos/gokv/reconnectclient".
 
 (* go: client.go:63:31 *)
 Definition ReconnectingClient__Call : val :=
@@ -82,7 +82,7 @@ Definition ReconnectingClient__Call : val :=
     let: "rpcid" := (ref_ty uint64T "rpcid") in
     let: "urpcCl" := (ref_ty ptrT (zero_val ptrT)) in
     let: "err1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #pkg_name' #"ReconnectingClient'ptr" #"getClient" (![ptrT] "cl")) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #reconnectclient.reconnectclient #"ReconnectingClient'ptr" #"getClient" (![ptrT] "cl")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err1" <-[uint64T] "$r0");;;
@@ -95,14 +95,14 @@ Definition ReconnectingClient__Call : val :=
     let: "$a1" := (![sliceT] "args") in
     let: "$a2" := (![ptrT] "reply") in
     let: "$a3" := (![uint64T] "timeout_ms") in
-    (method_call #urpc.pkg_name' #"Client'ptr" #"Call" (![ptrT] "urpcCl")) "$a0" "$a1" "$a2" "$a3") in
+    (method_call #urpc #"Client'ptr" #"Call" (![ptrT] "urpcCl")) "$a0" "$a1" "$a2" "$a3") in
     do:  ("err" <-[uint64T] "$r0");;;
     (if: (![uint64T] "err") = urpc.ErrDisconnect
     then
-      do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
+      do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #());;;
       let: "$r0" := #false in
       do:  ((struct.field_ref ReconnectingClient "valid" (![ptrT] "cl")) <-[boolT] "$r0");;;
-      do:  ((method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #())
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref ReconnectingClient "mu" (![ptrT] "cl")))) #())
     else do:  #());;;
     return: (![uint64T] "err")).
 
@@ -112,9 +112,17 @@ Definition functions' : list (go_string * val) := [("MakeReconnectingClient"%go,
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("ReconnectingClient"%go, []); ("ReconnectingClient'ptr"%go, [("Call"%go, ReconnectingClient__Call); ("getClient"%go, ReconnectingClient__getClient)])].
 
+#[global] Instance info' : PkgInfo reconnectclient.reconnectclient :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [sync; primitive; grove_ffi; urpc];
+  |}.
+
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init reconnectclient.reconnectclient (λ: <>,
       exception_do (do:  urpc.initialize';;;
       do:  grove_ffi.initialize';;;
       do:  primitive.initialize';;;

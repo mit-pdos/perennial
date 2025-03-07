@@ -38,8 +38,7 @@ End struct.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair go_string go_type f%go t) : struct_scope.
-Notation "f ::= v" := (@pair go_string val f%go v%V) (at level 60) : val_scope.
-Notation "f ::= v" := (@pair go_string expr f%go v%E) (at level 60) : expr_scope.
+Notation "f ::= v" := (@pair go_string val f%go v%V) (at level 60) : struct_scope.
 Delimit Scope struct_scope with struct.
 
 (** * Pure Coq reasoning principles *)

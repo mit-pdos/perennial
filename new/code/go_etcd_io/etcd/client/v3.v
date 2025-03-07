@@ -3,6 +3,8 @@ From New.golang Require Import defn.
 Require Export New.code.go_etcd_io.etcd.api.v3.etcdserverpb.
 Require Export New.code.go_etcd_io.etcd.api.v3.mvccpb.
 
+Definition clientv3 : go_string := "go.etcd.io/etcd/client/v3".
+
 Module clientv3.
 Section code.
 Context `{ffi_syntax}.
@@ -100,19 +102,25 @@ Axiom zeroTime'init : val.
 
 Axiom maxBackoff'init : val.
 
-Definition pkg_name' : go_string := "go.etcd.io/etcd/client/v3".
-
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Cmp"%go, []); ("Cmp'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("GetResponse"%go, []); ("GetResponse'ptr"%go, []); ("DeleteResponse"%go, []); ("DeleteResponse'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, []); ("OpResponse"%go, []); ("OpResponse'ptr"%go, []); ("LeaseID"%go, []); ("LeaseID'ptr"%go, []); ("LeaseGrantResponse"%go, []); ("LeaseGrantResponse'ptr"%go, []); ("OpOption"%go, []); ("OpOption'ptr"%go, []); ("Event"%go, []); ("Event'ptr"%go, []); ("WatchChan"%go, []); ("WatchChan'ptr"%go, []); ("WatchResponse"%go, []); ("WatchResponse'ptr"%go, [])].
 
+#[global] Instance info' : PkgInfo v3.clientv3 :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [etcdserverpb; mvccpb];
+  |}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init v3.clientv3 (λ: <>,
       exception_do (do:  mvccpb.initialize';;;
       do:  etcdserverpb.initialize';;;
       do:  (ErrNoAvailableEndpoints'init #());;;

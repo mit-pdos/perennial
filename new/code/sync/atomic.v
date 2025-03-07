@@ -3,6 +3,8 @@ From New.golang Require Import defn.
 
 Require Export New.trusted_code.sync.atomic.
 Import atomic.
+Definition atomic : go_string := "sync/atomic".
+
 Module atomic.
 Section code.
 Context `{ffi_syntax}.
@@ -20,8 +22,6 @@ Definition Uint64 : go_type := structT [
   "v" :: uint64T
 ].
 
-Definition pkg_name' : go_string := "sync/atomic".
-
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:169:18 *)
@@ -29,7 +29,7 @@ Definition Uint64__Load : val :=
   rec: "Uint64__Load" "x" <> :=
     exception_do (let: "x" := (ref_ty ptrT "x") in
     return: (let: "$a0" := (struct.field_ref Uint64 "v" (![ptrT] "x")) in
-     (func_call #pkg_name' #"LoadUint64"%go) "$a0")).
+     (func_call #atomic.atomic #"LoadUint64"%go) "$a0")).
 
 (* Store atomically stores val into x.
 
@@ -40,7 +40,7 @@ Definition Uint64__Store : val :=
     let: "val" := (ref_ty uint64T "val") in
     do:  (let: "$a0" := (struct.field_ref Uint64 "v" (![ptrT] "x")) in
     let: "$a1" := (![uint64T] "val") in
-    (func_call #pkg_name' #"StoreUint64"%go) "$a0" "$a1")).
+    (func_call #atomic.atomic #"StoreUint64"%go) "$a0" "$a1")).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
@@ -54,7 +54,7 @@ Definition Uint64__CompareAndSwap : val :=
     return: (let: "$a0" := (struct.field_ref Uint64 "v" (![ptrT] "x")) in
      let: "$a1" := (![uint64T] "old") in
      let: "$a2" := (![uint64T] "new") in
-     (func_call #pkg_name' #"CompareAndSwapUint64"%go) "$a0" "$a1" "$a2")).
+     (func_call #atomic.atomic #"CompareAndSwapUint64"%go) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
 
@@ -66,7 +66,7 @@ Definition Uint64__Add : val :=
     let: "delta" := (ref_ty uint64T "delta") in
     return: (let: "$a0" := (struct.field_ref Uint64 "v" (![ptrT] "x")) in
      let: "$a1" := (![uint64T] "delta") in
-     (func_call #pkg_name' #"AddUint64"%go) "$a0" "$a1")).
+     (func_call #atomic.atomic #"AddUint64"%go) "$a0" "$a1")).
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -74,11 +74,19 @@ Definition functions' : list (go_string * val) := [("CompareAndSwapUint64"%go, C
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Add); ("CompareAndSwap"%go, Uint64__CompareAndSwap); ("Load"%go, Uint64__Load); ("Store"%go, Uint64__Store)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
 
+#[global] Instance info' : PkgInfo atomic.atomic :=
+  {|
+    pkg_vars := vars';
+    pkg_functions := functions';
+    pkg_msets := msets';
+    pkg_imported_pkgs := [];
+  |}.
+
 Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' vars' functions' msets' (λ: <>,
+    globals.package_init atomic.atomic (λ: <>,
       exception_do (do:  (_'init #()))
       ).
 

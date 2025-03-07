@@ -6,8 +6,6 @@ From New.golang Require Import defn.
 Existing Instances disk_op disk_model.
 Section disk.
 
-  Definition pkg_name' : go_string := "github.com/goose-lang/primitive/disk".
-
   Definition Disk : go_type := ptrT.
 
   Definition BlockSize := BlockSize.
@@ -35,7 +33,5 @@ Section disk.
   Definition Size: val :=
     λ: "v",
        ExternalOp SizeOp (Var "v").
-
-  Definition initialize' : val := λ: <>, #().
 
 End disk.
