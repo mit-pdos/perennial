@@ -81,7 +81,8 @@ Ltac2 build_pkg_init () :=
        end
     ).
 
-Ltac iPkgInit :=
+(* solve a goal which is just [is_pkg_init] or [is_pkg_defined] *)
+Ltac solve_pkg_init :=
   unfold named;
   lazymatch goal with
   | |- environments.envs_entails ?env (is_pkg_init _) => idtac
@@ -99,3 +100,16 @@ Ltac iPkgInit :=
         end
     end;
   solve [ iFrame "#" ].
+
+(* Attempt to solve [is_pkg_init] at the front of the goal.
+
+NOTE: The automation here is limited to match what we expect in goals and to make the
+implementation simple. It is possible that the shape of expected goals changes,
+for example to have multiple [is_pkg_init] conjuncts, in which case this
+automation will need improvement.
+*)
+Ltac iPkgInit :=
+  progress (
+      try solve_pkg_init;
+      repeat (iSplitR; [ solve_pkg_init | ])
+    ).
