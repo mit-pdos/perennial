@@ -19,11 +19,14 @@ incomparable ones.
 Class IsPkgInit (pkg_name: go_string) {PROP: bi} :=
   {
     is_pkg_init_def : PROP ;
+    #[global]
     is_pkg_init_persistent :: Persistent is_pkg_init_def;
   }.
 
 #[global]
 Arguments is_pkg_init_def (pkg_name) {_ _}.
+#[global]
+Typeclasses Opaque is_pkg_init_def.
 
 (* XXX: To avoid printing the IsPkgInit instances when printing [is_pkg_init]
    See https://github.com/coq/coq/issues/9814 for a description of the problem. *)
@@ -41,6 +44,7 @@ Ltac prove_is_pkg_init :=
 Class IsPkgDefined (pkg_name: go_string) {PROP: bi} :=
   {
     is_pkg_defined_def : PROP;
+    #[global]
     is_pkg_defined_persistent :: Persistent is_pkg_defined_def;
   }.
 
