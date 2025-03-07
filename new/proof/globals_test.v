@@ -3,6 +3,8 @@ From New.code.github_com.mit_pdos.gokv Require Import globals_test.
 Require Import New.generatedproof.github_com.mit_pdos.gokv.globals_test.
 From Perennial.algebra Require Import map.
 
+From New.golang Require Import theory.
+
 Section proof.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
@@ -26,11 +28,11 @@ Definition is_initialized (γtok : gname) `{!main.GlobalAddrs} : iProp Σ :=
 
 Lemma wp_initialize' pending postconds γtok :
   main.pkg_name' ∉ pending →
-  postconds !! main.pkg_name' = Some (∃ (d : main.GlobalAddrs), main.is_defined ∗ is_initialized γtok)%I →
+  postconds !! main.pkg_name' = Some (∃ (d : main.GlobalAddrs), is_pkg_defined main.pkg_name' ∗ is_initialized γtok)%I →
   {{{ own_globals_tok pending postconds }}}
     main.initialize' #()
   {{{ (_ : main.GlobalAddrs), RET #();
-      main.is_defined ∗ is_initialized γtok ∗ own_globals_tok pending postconds
+      is_pkg_defined main.pkg_name' ∗ is_initialized γtok ∗ own_globals_tok pending postconds
   }}}.
 Proof.
   iIntros (???) "Hunused HΦ".
@@ -78,8 +80,9 @@ Proof.
 Qed.
 
 Context `{!main.GlobalAddrs}.
+
 Lemma wp_main :
-  {{{ main.is_defined ∗ own_initialized }}}
+  {{{ is_pkg_defined main.pkg_name' ∗ own_initialized }}}
   func_call #main.pkg_name' #"main" #()
   {{{ RET #(); True }}}.
 Proof.

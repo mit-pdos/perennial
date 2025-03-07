@@ -27,10 +27,10 @@ Definition var_addrs : list (go_string * loc) := [
     ("globalB"%go, globalB)
   ].
 
-Definition is_defined := is_global_definitions main.pkg_name' var_addrs.
-
-Global Instance : PkgIsDefined main.pkg_name' is_defined :=
-  ltac:(prove_pkg_is_defined).
+Global Instance is_pkg_defined_instance : IsPkgDefined main.pkg_name' :=
+{|
+  is_pkg_defined := is_global_definitions main.pkg_name' var_addrs;
+|}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HGlobalX" ∷ GlobalX ↦ (default_val w64) ∗
@@ -39,19 +39,19 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HglobalB" ∷ globalB ↦ (default_val go_string).
 
 Global Instance wp_globals_get_GlobalX : 
-  WpGlobalsGet main.pkg_name' "GlobalX" GlobalX is_defined.
+  WpGlobalsGet main.pkg_name' "GlobalX" GlobalX (is_pkg_defined main.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_globalY : 
-  WpGlobalsGet main.pkg_name' "globalY" globalY is_defined.
+  WpGlobalsGet main.pkg_name' "globalY" globalY (is_pkg_defined main.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_globalA : 
-  WpGlobalsGet main.pkg_name' "globalA" globalA is_defined.
+  WpGlobalsGet main.pkg_name' "globalA" globalA (is_pkg_defined main.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_globalB : 
-  WpGlobalsGet main.pkg_name' "globalB" globalB is_defined.
+  WpGlobalsGet main.pkg_name' "globalB" globalB (is_pkg_defined main.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_func_call_foo :

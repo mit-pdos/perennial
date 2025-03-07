@@ -68,16 +68,16 @@ Definition var_addrs : list (go_string * loc) := [
     ("_VoteResult_index"%go, _VoteResult_index)
   ].
 
-Definition is_defined := is_global_definitions quorum.pkg_name' var_addrs.
-
-Global Instance : PkgIsDefined quorum.pkg_name' is_defined :=
-  ltac:(prove_pkg_is_defined).
+Global Instance is_pkg_defined_instance : IsPkgDefined quorum.pkg_name' :=
+{|
+  is_pkg_defined := is_global_definitions quorum.pkg_name' var_addrs;
+|}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "H_VoteResult_index" ∷ _VoteResult_index ↦ (default_val (vec w8 4)).
 
 Global Instance wp_globals_get__VoteResult_index : 
-  WpGlobalsGet quorum.pkg_name' "_VoteResult_index" _VoteResult_index is_defined.
+  WpGlobalsGet quorum.pkg_name' "_VoteResult_index" _VoteResult_index (is_pkg_defined quorum.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_method_call_JointConfig_CommittedIndex :

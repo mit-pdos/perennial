@@ -34,6 +34,12 @@ End Context_state.
 Section definitions.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!goGlobalsGS Σ}.
+
+#[global]
+Program Instance : IsPkgInit context.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
 
 Import Context_state.
 Definition is_Context (c : interface.t) (s : Context_state.t) : iProp Σ :=

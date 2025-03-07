@@ -1,7 +1,8 @@
 Require Import New.code.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.proof_prelude.
-Require Import New.proof.context.
+Require Import New.proof.go_etcd_io.etcd.client.v3.
+From New.proof Require Import context sync.
 
 Section proof.
 
@@ -53,15 +54,46 @@ End client_axioms.
 Context `{!concurrency.GlobalAddrs}.
 Context `{!goGlobalsGS Σ}.
 
-Definition is_initialized :=
-  concurrency.is_defined.
+(* FIXME: move these *)
+Program Instance : IsPkgInit math.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+Program Instance : IsPkgInit zapcore.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+Program Instance : IsPkgInit zap.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+Program Instance : IsPkgInit time.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+Program Instance : IsPkgInit strings.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+Program Instance : IsPkgInit fmt.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+Program Instance : IsPkgInit errors.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
+
+#[global]
+Program Instance : IsPkgInit concurrency.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
 
 Definition is_Session (s : loc) : iProp Σ :=
   True.
 
 Lemma wp_NewSession (client : loc) :
   {{{
-        "#Hinit" ∷ is_initialized ∗
+        is_pkg_init concurrency.pkg_name' ∗
         "#His_client" ∷ is_Client client
   }}}
     func_call #concurrency.pkg_name' #"NewSession" #client #slice.nil
@@ -72,9 +104,7 @@ Lemma wp_NewSession (client : loc) :
         is_Session s
   }}}.
 Proof.
-  iIntros (?) "H HΦ". iNamed "H".
-  wp_func_call.
-  wp_call.
+  wp_start as "Hpre". iNamed "Hpre".
   wp_alloc opts_ptr as "Hopts".
   wp_pures.
   wp_alloc client_ptr as "Hclient_ptr".

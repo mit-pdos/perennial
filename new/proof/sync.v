@@ -30,12 +30,14 @@ Context `{!heapGS Σ} `{!syncG Σ}.
 Context `{!goGlobalsGS Σ}.
 
 #[global]
-Instance race_pkg_is_init : PkgIsInitialized race.pkg_name' _ :=
-  ltac:(basic_pkg_init).
+Program Instance race_pkg_is_init : IsPkgInit race.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. Proof. apply _. Qed.
 
 #[global]
-Instance pkg_is_init : PkgIsInitialized sync.pkg_name' _ :=
-  ltac:(basic_pkg_init).
+Program Instance pkg_is_init : IsPkgInit sync.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. apply _. Qed.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=

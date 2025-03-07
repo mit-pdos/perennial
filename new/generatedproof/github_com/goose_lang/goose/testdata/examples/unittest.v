@@ -1408,10 +1408,10 @@ Definition var_addrs : list (go_string * loc) := [
     ("mapLiteralWithConversion"%go, mapLiteralWithConversion)
   ].
 
-Definition is_defined := is_global_definitions unittest.pkg_name' var_addrs.
-
-Global Instance : PkgIsDefined unittest.pkg_name' is_defined :=
-  ltac:(prove_pkg_is_defined).
+Global Instance is_pkg_defined_instance : IsPkgDefined unittest.pkg_name' :=
+{|
+  is_pkg_defined := is_global_definitions unittest.pkg_name' var_addrs;
+|}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HGlobalX" ∷ GlobalX ↦ (default_val w64) ∗
@@ -1422,27 +1422,27 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HmapLiteralWithConversion" ∷ mapLiteralWithConversion ↦ (default_val loc).
 
 Global Instance wp_globals_get_GlobalX : 
-  WpGlobalsGet unittest.pkg_name' "GlobalX" GlobalX is_defined.
+  WpGlobalsGet unittest.pkg_name' "GlobalX" GlobalX (is_pkg_defined unittest.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_globalY : 
-  WpGlobalsGet unittest.pkg_name' "globalY" globalY is_defined.
+  WpGlobalsGet unittest.pkg_name' "globalY" globalY (is_pkg_defined unittest.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_globalA : 
-  WpGlobalsGet unittest.pkg_name' "globalA" globalA is_defined.
+  WpGlobalsGet unittest.pkg_name' "globalA" globalA (is_pkg_defined unittest.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_globalB : 
-  WpGlobalsGet unittest.pkg_name' "globalB" globalB is_defined.
+  WpGlobalsGet unittest.pkg_name' "globalB" globalB (is_pkg_defined unittest.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_mapLiteral : 
-  WpGlobalsGet unittest.pkg_name' "mapLiteral" mapLiteral is_defined.
+  WpGlobalsGet unittest.pkg_name' "mapLiteral" mapLiteral (is_pkg_defined unittest.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_mapLiteralWithConversion : 
-  WpGlobalsGet unittest.pkg_name' "mapLiteralWithConversion" mapLiteralWithConversion is_defined.
+  WpGlobalsGet unittest.pkg_name' "mapLiteralWithConversion" mapLiteralWithConversion (is_pkg_defined unittest.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_func_call_takesArray :

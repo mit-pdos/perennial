@@ -20,10 +20,10 @@ Context `{!goGlobalsGS Σ}.
 Definition var_addrs : list (go_string * loc) := [
   ].
 
-Definition is_defined := is_global_definitions fmt.pkg_name' var_addrs.
-
-Global Instance : PkgIsDefined fmt.pkg_name' is_defined :=
-  ltac:(prove_pkg_is_defined).
+Global Instance is_pkg_defined_instance : IsPkgDefined fmt.pkg_name' :=
+{|
+  is_pkg_defined := is_global_definitions fmt.pkg_name' var_addrs;
+|}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.

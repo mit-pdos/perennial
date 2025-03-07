@@ -1821,10 +1821,10 @@ Definition var_addrs : list (go_string * loc) := [
     ("isResponseMsg"%go, isResponseMsg)
   ].
 
-Definition is_defined := is_global_definitions raft.pkg_name' var_addrs.
-
-Global Instance : PkgIsDefined raft.pkg_name' is_defined :=
-  ltac:(prove_pkg_is_defined).
+Global Instance is_pkg_defined_instance : IsPkgDefined raft.pkg_name' :=
+{|
+  is_pkg_defined := is_global_definitions raft.pkg_name' var_addrs;
+|}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HdefaultLogger" ∷ defaultLogger ↦ (default_val loc) ∗
@@ -1847,75 +1847,75 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HisResponseMsg" ∷ isResponseMsg ↦ (default_val (vec bool 23)).
 
 Global Instance wp_globals_get_defaultLogger : 
-  WpGlobalsGet raft.pkg_name' "defaultLogger" defaultLogger is_defined.
+  WpGlobalsGet raft.pkg_name' "defaultLogger" defaultLogger (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_discardLogger : 
-  WpGlobalsGet raft.pkg_name' "discardLogger" discardLogger is_defined.
+  WpGlobalsGet raft.pkg_name' "discardLogger" discardLogger (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_raftLoggerMu : 
-  WpGlobalsGet raft.pkg_name' "raftLoggerMu" raftLoggerMu is_defined.
+  WpGlobalsGet raft.pkg_name' "raftLoggerMu" raftLoggerMu (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_raftLogger : 
-  WpGlobalsGet raft.pkg_name' "raftLogger" raftLogger is_defined.
+  WpGlobalsGet raft.pkg_name' "raftLogger" raftLogger (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_emptyState : 
-  WpGlobalsGet raft.pkg_name' "emptyState" emptyState is_defined.
+  WpGlobalsGet raft.pkg_name' "emptyState" emptyState (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrStopped : 
-  WpGlobalsGet raft.pkg_name' "ErrStopped" ErrStopped is_defined.
+  WpGlobalsGet raft.pkg_name' "ErrStopped" ErrStopped (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrProposalDropped : 
-  WpGlobalsGet raft.pkg_name' "ErrProposalDropped" ErrProposalDropped is_defined.
+  WpGlobalsGet raft.pkg_name' "ErrProposalDropped" ErrProposalDropped (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_globalRand : 
-  WpGlobalsGet raft.pkg_name' "globalRand" globalRand is_defined.
+  WpGlobalsGet raft.pkg_name' "globalRand" globalRand (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_stmap : 
-  WpGlobalsGet raft.pkg_name' "stmap" stmap is_defined.
+  WpGlobalsGet raft.pkg_name' "stmap" stmap (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_errBreak : 
-  WpGlobalsGet raft.pkg_name' "errBreak" errBreak is_defined.
+  WpGlobalsGet raft.pkg_name' "errBreak" errBreak (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrStepLocalMsg : 
-  WpGlobalsGet raft.pkg_name' "ErrStepLocalMsg" ErrStepLocalMsg is_defined.
+  WpGlobalsGet raft.pkg_name' "ErrStepLocalMsg" ErrStepLocalMsg (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrStepPeerNotFound : 
-  WpGlobalsGet raft.pkg_name' "ErrStepPeerNotFound" ErrStepPeerNotFound is_defined.
+  WpGlobalsGet raft.pkg_name' "ErrStepPeerNotFound" ErrStepPeerNotFound (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrCompacted : 
-  WpGlobalsGet raft.pkg_name' "ErrCompacted" ErrCompacted is_defined.
+  WpGlobalsGet raft.pkg_name' "ErrCompacted" ErrCompacted (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrSnapOutOfDate : 
-  WpGlobalsGet raft.pkg_name' "ErrSnapOutOfDate" ErrSnapOutOfDate is_defined.
+  WpGlobalsGet raft.pkg_name' "ErrSnapOutOfDate" ErrSnapOutOfDate (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrUnavailable : 
-  WpGlobalsGet raft.pkg_name' "ErrUnavailable" ErrUnavailable is_defined.
+  WpGlobalsGet raft.pkg_name' "ErrUnavailable" ErrUnavailable (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrSnapshotTemporarilyUnavailable : 
-  WpGlobalsGet raft.pkg_name' "ErrSnapshotTemporarilyUnavailable" ErrSnapshotTemporarilyUnavailable is_defined.
+  WpGlobalsGet raft.pkg_name' "ErrSnapshotTemporarilyUnavailable" ErrSnapshotTemporarilyUnavailable (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_isLocalMsg : 
-  WpGlobalsGet raft.pkg_name' "isLocalMsg" isLocalMsg is_defined.
+  WpGlobalsGet raft.pkg_name' "isLocalMsg" isLocalMsg (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_isResponseMsg : 
-  WpGlobalsGet raft.pkg_name' "isResponseMsg" isResponseMsg is_defined.
+  WpGlobalsGet raft.pkg_name' "isResponseMsg" isResponseMsg (is_pkg_defined raft.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_func_call_newLog :

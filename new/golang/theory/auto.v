@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.theory Require Import proofmode mem globals init.
+From New.golang.theory Require Import proofmode mem globals pkg.
 From Coq Require Import Strings.Ascii.
 
 (* TODO: iFrame # is only for backwards compatibility *)

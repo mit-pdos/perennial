@@ -361,10 +361,10 @@ Definition var_addrs : list (go_string * loc) := [
     ("TokenFieldNameSwagger"%go, TokenFieldNameSwagger)
   ].
 
-Definition is_defined := is_global_definitions rpctypes.pkg_name' var_addrs.
-
-Global Instance : PkgIsDefined rpctypes.pkg_name' is_defined :=
-  ltac:(prove_pkg_is_defined).
+Global Instance is_pkg_defined_instance : IsPkgDefined rpctypes.pkg_name' :=
+{|
+  is_pkg_defined := is_global_definitions rpctypes.pkg_name' var_addrs;
+|}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrGRPCEmptyKey" ∷ ErrGRPCEmptyKey ↦ (default_val error.t) ∗
@@ -497,515 +497,515 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HTokenFieldNameSwagger" ∷ TokenFieldNameSwagger ↦ (default_val go_string).
 
 Global Instance wp_globals_get_ErrGRPCEmptyKey : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCEmptyKey" ErrGRPCEmptyKey is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCEmptyKey" ErrGRPCEmptyKey (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCKeyNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCKeyNotFound" ErrGRPCKeyNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCKeyNotFound" ErrGRPCKeyNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCValueProvided : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCValueProvided" ErrGRPCValueProvided is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCValueProvided" ErrGRPCValueProvided (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCLeaseProvided : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaseProvided" ErrGRPCLeaseProvided is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaseProvided" ErrGRPCLeaseProvided (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCTooManyOps : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTooManyOps" ErrGRPCTooManyOps is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTooManyOps" ErrGRPCTooManyOps (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCDuplicateKey : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCDuplicateKey" ErrGRPCDuplicateKey is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCDuplicateKey" ErrGRPCDuplicateKey (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCInvalidClientAPIVersion : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidClientAPIVersion" ErrGRPCInvalidClientAPIVersion is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidClientAPIVersion" ErrGRPCInvalidClientAPIVersion (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCInvalidSortOption : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidSortOption" ErrGRPCInvalidSortOption is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidSortOption" ErrGRPCInvalidSortOption (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCCompacted : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCCompacted" ErrGRPCCompacted is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCCompacted" ErrGRPCCompacted (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCFutureRev : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCFutureRev" ErrGRPCFutureRev is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCFutureRev" ErrGRPCFutureRev (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCNoSpace : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNoSpace" ErrGRPCNoSpace is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNoSpace" ErrGRPCNoSpace (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCLeaseNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaseNotFound" ErrGRPCLeaseNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaseNotFound" ErrGRPCLeaseNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCLeaseExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaseExist" ErrGRPCLeaseExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaseExist" ErrGRPCLeaseExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCLeaseTTLTooLarge : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaseTTLTooLarge" ErrGRPCLeaseTTLTooLarge is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaseTTLTooLarge" ErrGRPCLeaseTTLTooLarge (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCWatchCanceled : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCWatchCanceled" ErrGRPCWatchCanceled is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCWatchCanceled" ErrGRPCWatchCanceled (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCMemberExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberExist" ErrGRPCMemberExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberExist" ErrGRPCMemberExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCPeerURLExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCPeerURLExist" ErrGRPCPeerURLExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCPeerURLExist" ErrGRPCPeerURLExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCMemberNotEnoughStarted : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberNotEnoughStarted" ErrGRPCMemberNotEnoughStarted is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberNotEnoughStarted" ErrGRPCMemberNotEnoughStarted (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCMemberBadURLs : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberBadURLs" ErrGRPCMemberBadURLs is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberBadURLs" ErrGRPCMemberBadURLs (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCMemberNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberNotFound" ErrGRPCMemberNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberNotFound" ErrGRPCMemberNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCMemberNotLearner : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberNotLearner" ErrGRPCMemberNotLearner is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCMemberNotLearner" ErrGRPCMemberNotLearner (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCLearnerNotReady : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLearnerNotReady" ErrGRPCLearnerNotReady is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLearnerNotReady" ErrGRPCLearnerNotReady (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCTooManyLearners : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTooManyLearners" ErrGRPCTooManyLearners is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTooManyLearners" ErrGRPCTooManyLearners (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCClusterIDMismatch : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCClusterIDMismatch" ErrGRPCClusterIDMismatch is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCClusterIDMismatch" ErrGRPCClusterIDMismatch (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCClusterIdMismatch : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCClusterIdMismatch" ErrGRPCClusterIdMismatch is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCClusterIdMismatch" ErrGRPCClusterIdMismatch (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCRequestTooLarge : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRequestTooLarge" ErrGRPCRequestTooLarge is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRequestTooLarge" ErrGRPCRequestTooLarge (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCRequestTooManyRequests : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRequestTooManyRequests" ErrGRPCRequestTooManyRequests is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRequestTooManyRequests" ErrGRPCRequestTooManyRequests (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCRootUserNotExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRootUserNotExist" ErrGRPCRootUserNotExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRootUserNotExist" ErrGRPCRootUserNotExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCRootRoleNotExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRootRoleNotExist" ErrGRPCRootRoleNotExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRootRoleNotExist" ErrGRPCRootRoleNotExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCUserAlreadyExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCUserAlreadyExist" ErrGRPCUserAlreadyExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCUserAlreadyExist" ErrGRPCUserAlreadyExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCUserEmpty : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCUserEmpty" ErrGRPCUserEmpty is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCUserEmpty" ErrGRPCUserEmpty (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCUserNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCUserNotFound" ErrGRPCUserNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCUserNotFound" ErrGRPCUserNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCRoleAlreadyExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRoleAlreadyExist" ErrGRPCRoleAlreadyExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRoleAlreadyExist" ErrGRPCRoleAlreadyExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCRoleNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRoleNotFound" ErrGRPCRoleNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRoleNotFound" ErrGRPCRoleNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCRoleEmpty : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRoleEmpty" ErrGRPCRoleEmpty is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRoleEmpty" ErrGRPCRoleEmpty (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCAuthFailed : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCAuthFailed" ErrGRPCAuthFailed is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCAuthFailed" ErrGRPCAuthFailed (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCPermissionNotGiven : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCPermissionNotGiven" ErrGRPCPermissionNotGiven is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCPermissionNotGiven" ErrGRPCPermissionNotGiven (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCPermissionDenied : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCPermissionDenied" ErrGRPCPermissionDenied is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCPermissionDenied" ErrGRPCPermissionDenied (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCRoleNotGranted : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRoleNotGranted" ErrGRPCRoleNotGranted is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCRoleNotGranted" ErrGRPCRoleNotGranted (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCPermissionNotGranted : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCPermissionNotGranted" ErrGRPCPermissionNotGranted is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCPermissionNotGranted" ErrGRPCPermissionNotGranted (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCAuthNotEnabled : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCAuthNotEnabled" ErrGRPCAuthNotEnabled is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCAuthNotEnabled" ErrGRPCAuthNotEnabled (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCInvalidAuthToken : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidAuthToken" ErrGRPCInvalidAuthToken is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidAuthToken" ErrGRPCInvalidAuthToken (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCInvalidAuthMgmt : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidAuthMgmt" ErrGRPCInvalidAuthMgmt is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidAuthMgmt" ErrGRPCInvalidAuthMgmt (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCAuthOldRevision : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCAuthOldRevision" ErrGRPCAuthOldRevision is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCAuthOldRevision" ErrGRPCAuthOldRevision (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCNoLeader : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNoLeader" ErrGRPCNoLeader is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNoLeader" ErrGRPCNoLeader (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCNotLeader : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNotLeader" ErrGRPCNotLeader is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNotLeader" ErrGRPCNotLeader (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCLeaderChanged : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaderChanged" ErrGRPCLeaderChanged is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCLeaderChanged" ErrGRPCLeaderChanged (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCNotCapable : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNotCapable" ErrGRPCNotCapable is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNotCapable" ErrGRPCNotCapable (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCStopped : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCStopped" ErrGRPCStopped is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCStopped" ErrGRPCStopped (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCTimeout : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTimeout" ErrGRPCTimeout is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTimeout" ErrGRPCTimeout (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCTimeoutDueToLeaderFail : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTimeoutDueToLeaderFail" ErrGRPCTimeoutDueToLeaderFail is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTimeoutDueToLeaderFail" ErrGRPCTimeoutDueToLeaderFail (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCTimeoutDueToConnectionLost : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTimeoutDueToConnectionLost" ErrGRPCTimeoutDueToConnectionLost is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTimeoutDueToConnectionLost" ErrGRPCTimeoutDueToConnectionLost (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCTimeoutWaitAppliedIndex : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTimeoutWaitAppliedIndex" ErrGRPCTimeoutWaitAppliedIndex is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCTimeoutWaitAppliedIndex" ErrGRPCTimeoutWaitAppliedIndex (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCUnhealthy : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCUnhealthy" ErrGRPCUnhealthy is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCUnhealthy" ErrGRPCUnhealthy (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCCorrupt : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCCorrupt" ErrGRPCCorrupt is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCCorrupt" ErrGRPCCorrupt (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCNotSupportedForLearner : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNotSupportedForLearner" ErrGRPCNotSupportedForLearner is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNotSupportedForLearner" ErrGRPCNotSupportedForLearner (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCBadLeaderTransferee : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCBadLeaderTransferee" ErrGRPCBadLeaderTransferee is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCBadLeaderTransferee" ErrGRPCBadLeaderTransferee (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCWrongDowngradeVersionFormat : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCWrongDowngradeVersionFormat" ErrGRPCWrongDowngradeVersionFormat is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCWrongDowngradeVersionFormat" ErrGRPCWrongDowngradeVersionFormat (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCInvalidDowngradeTargetVersion : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidDowngradeTargetVersion" ErrGRPCInvalidDowngradeTargetVersion is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCInvalidDowngradeTargetVersion" ErrGRPCInvalidDowngradeTargetVersion (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCClusterVersionUnavailable : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCClusterVersionUnavailable" ErrGRPCClusterVersionUnavailable is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCClusterVersionUnavailable" ErrGRPCClusterVersionUnavailable (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCDowngradeInProcess : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCDowngradeInProcess" ErrGRPCDowngradeInProcess is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCDowngradeInProcess" ErrGRPCDowngradeInProcess (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCNoInflightDowngrade : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNoInflightDowngrade" ErrGRPCNoInflightDowngrade is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCNoInflightDowngrade" ErrGRPCNoInflightDowngrade (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCCanceled : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCCanceled" ErrGRPCCanceled is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCCanceled" ErrGRPCCanceled (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrGRPCDeadlineExceeded : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCDeadlineExceeded" ErrGRPCDeadlineExceeded is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrGRPCDeadlineExceeded" ErrGRPCDeadlineExceeded (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_errStringToError : 
-  WpGlobalsGet rpctypes.pkg_name' "errStringToError" errStringToError is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "errStringToError" errStringToError (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrEmptyKey : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrEmptyKey" ErrEmptyKey is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrEmptyKey" ErrEmptyKey (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrKeyNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrKeyNotFound" ErrKeyNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrKeyNotFound" ErrKeyNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrValueProvided : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrValueProvided" ErrValueProvided is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrValueProvided" ErrValueProvided (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrLeaseProvided : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrLeaseProvided" ErrLeaseProvided is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrLeaseProvided" ErrLeaseProvided (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrTooManyOps : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrTooManyOps" ErrTooManyOps is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrTooManyOps" ErrTooManyOps (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrDuplicateKey : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrDuplicateKey" ErrDuplicateKey is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrDuplicateKey" ErrDuplicateKey (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrInvalidSortOption : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrInvalidSortOption" ErrInvalidSortOption is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrInvalidSortOption" ErrInvalidSortOption (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrCompacted : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrCompacted" ErrCompacted is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrCompacted" ErrCompacted (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrFutureRev : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrFutureRev" ErrFutureRev is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrFutureRev" ErrFutureRev (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrNoSpace : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrNoSpace" ErrNoSpace is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrNoSpace" ErrNoSpace (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrLeaseNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrLeaseNotFound" ErrLeaseNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrLeaseNotFound" ErrLeaseNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrLeaseExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrLeaseExist" ErrLeaseExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrLeaseExist" ErrLeaseExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrLeaseTTLTooLarge : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrLeaseTTLTooLarge" ErrLeaseTTLTooLarge is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrLeaseTTLTooLarge" ErrLeaseTTLTooLarge (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrMemberExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrMemberExist" ErrMemberExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrMemberExist" ErrMemberExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrPeerURLExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrPeerURLExist" ErrPeerURLExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrPeerURLExist" ErrPeerURLExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrMemberNotEnoughStarted : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrMemberNotEnoughStarted" ErrMemberNotEnoughStarted is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrMemberNotEnoughStarted" ErrMemberNotEnoughStarted (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrMemberBadURLs : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrMemberBadURLs" ErrMemberBadURLs is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrMemberBadURLs" ErrMemberBadURLs (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrMemberNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrMemberNotFound" ErrMemberNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrMemberNotFound" ErrMemberNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrMemberNotLearner : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrMemberNotLearner" ErrMemberNotLearner is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrMemberNotLearner" ErrMemberNotLearner (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrMemberLearnerNotReady : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrMemberLearnerNotReady" ErrMemberLearnerNotReady is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrMemberLearnerNotReady" ErrMemberLearnerNotReady (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrTooManyLearners : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrTooManyLearners" ErrTooManyLearners is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrTooManyLearners" ErrTooManyLearners (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrRequestTooLarge : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrRequestTooLarge" ErrRequestTooLarge is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrRequestTooLarge" ErrRequestTooLarge (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrTooManyRequests : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrTooManyRequests" ErrTooManyRequests is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrTooManyRequests" ErrTooManyRequests (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrRootUserNotExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrRootUserNotExist" ErrRootUserNotExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrRootUserNotExist" ErrRootUserNotExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrRootRoleNotExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrRootRoleNotExist" ErrRootRoleNotExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrRootRoleNotExist" ErrRootRoleNotExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrUserAlreadyExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrUserAlreadyExist" ErrUserAlreadyExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrUserAlreadyExist" ErrUserAlreadyExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrUserEmpty : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrUserEmpty" ErrUserEmpty is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrUserEmpty" ErrUserEmpty (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrUserNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrUserNotFound" ErrUserNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrUserNotFound" ErrUserNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrRoleAlreadyExist : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrRoleAlreadyExist" ErrRoleAlreadyExist is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrRoleAlreadyExist" ErrRoleAlreadyExist (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrRoleNotFound : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrRoleNotFound" ErrRoleNotFound is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrRoleNotFound" ErrRoleNotFound (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrRoleEmpty : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrRoleEmpty" ErrRoleEmpty is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrRoleEmpty" ErrRoleEmpty (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrAuthFailed : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrAuthFailed" ErrAuthFailed is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrAuthFailed" ErrAuthFailed (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrPermissionDenied : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrPermissionDenied" ErrPermissionDenied is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrPermissionDenied" ErrPermissionDenied (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrRoleNotGranted : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrRoleNotGranted" ErrRoleNotGranted is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrRoleNotGranted" ErrRoleNotGranted (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrPermissionNotGranted : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrPermissionNotGranted" ErrPermissionNotGranted is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrPermissionNotGranted" ErrPermissionNotGranted (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrAuthNotEnabled : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrAuthNotEnabled" ErrAuthNotEnabled is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrAuthNotEnabled" ErrAuthNotEnabled (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrInvalidAuthToken : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrInvalidAuthToken" ErrInvalidAuthToken is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrInvalidAuthToken" ErrInvalidAuthToken (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrAuthOldRevision : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrAuthOldRevision" ErrAuthOldRevision is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrAuthOldRevision" ErrAuthOldRevision (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrInvalidAuthMgmt : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrInvalidAuthMgmt" ErrInvalidAuthMgmt is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrInvalidAuthMgmt" ErrInvalidAuthMgmt (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrClusterIDMismatch : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrClusterIDMismatch" ErrClusterIDMismatch is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrClusterIDMismatch" ErrClusterIDMismatch (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrClusterIdMismatch : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrClusterIdMismatch" ErrClusterIdMismatch is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrClusterIdMismatch" ErrClusterIdMismatch (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrNoLeader : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrNoLeader" ErrNoLeader is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrNoLeader" ErrNoLeader (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrNotLeader : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrNotLeader" ErrNotLeader is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrNotLeader" ErrNotLeader (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrLeaderChanged : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrLeaderChanged" ErrLeaderChanged is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrLeaderChanged" ErrLeaderChanged (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrNotCapable : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrNotCapable" ErrNotCapable is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrNotCapable" ErrNotCapable (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrStopped : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrStopped" ErrStopped is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrStopped" ErrStopped (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrTimeout : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrTimeout" ErrTimeout is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrTimeout" ErrTimeout (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrTimeoutDueToLeaderFail : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrTimeoutDueToLeaderFail" ErrTimeoutDueToLeaderFail is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrTimeoutDueToLeaderFail" ErrTimeoutDueToLeaderFail (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrTimeoutDueToConnectionLost : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrTimeoutDueToConnectionLost" ErrTimeoutDueToConnectionLost is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrTimeoutDueToConnectionLost" ErrTimeoutDueToConnectionLost (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrTimeoutWaitAppliedIndex : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrTimeoutWaitAppliedIndex" ErrTimeoutWaitAppliedIndex is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrTimeoutWaitAppliedIndex" ErrTimeoutWaitAppliedIndex (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrUnhealthy : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrUnhealthy" ErrUnhealthy is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrUnhealthy" ErrUnhealthy (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrCorrupt : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrCorrupt" ErrCorrupt is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrCorrupt" ErrCorrupt (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrBadLeaderTransferee : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrBadLeaderTransferee" ErrBadLeaderTransferee is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrBadLeaderTransferee" ErrBadLeaderTransferee (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrClusterVersionUnavailable : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrClusterVersionUnavailable" ErrClusterVersionUnavailable is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrClusterVersionUnavailable" ErrClusterVersionUnavailable (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrWrongDowngradeVersionFormat : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrWrongDowngradeVersionFormat" ErrWrongDowngradeVersionFormat is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrWrongDowngradeVersionFormat" ErrWrongDowngradeVersionFormat (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrInvalidDowngradeTargetVersion : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrInvalidDowngradeTargetVersion" ErrInvalidDowngradeTargetVersion is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrInvalidDowngradeTargetVersion" ErrInvalidDowngradeTargetVersion (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrDowngradeInProcess : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrDowngradeInProcess" ErrDowngradeInProcess is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrDowngradeInProcess" ErrDowngradeInProcess (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrNoInflightDowngrade : 
-  WpGlobalsGet rpctypes.pkg_name' "ErrNoInflightDowngrade" ErrNoInflightDowngrade is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "ErrNoInflightDowngrade" ErrNoInflightDowngrade (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_MetadataRequireLeaderKey : 
-  WpGlobalsGet rpctypes.pkg_name' "MetadataRequireLeaderKey" MetadataRequireLeaderKey is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "MetadataRequireLeaderKey" MetadataRequireLeaderKey (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_MetadataHasLeader : 
-  WpGlobalsGet rpctypes.pkg_name' "MetadataHasLeader" MetadataHasLeader is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "MetadataHasLeader" MetadataHasLeader (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_MetadataClientAPIVersionKey : 
-  WpGlobalsGet rpctypes.pkg_name' "MetadataClientAPIVersionKey" MetadataClientAPIVersionKey is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "MetadataClientAPIVersionKey" MetadataClientAPIVersionKey (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_TokenFieldNameGRPC : 
-  WpGlobalsGet rpctypes.pkg_name' "TokenFieldNameGRPC" TokenFieldNameGRPC is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "TokenFieldNameGRPC" TokenFieldNameGRPC (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_TokenFieldNameSwagger : 
-  WpGlobalsGet rpctypes.pkg_name' "TokenFieldNameSwagger" TokenFieldNameSwagger is_defined.
+  WpGlobalsGet rpctypes.pkg_name' "TokenFieldNameSwagger" TokenFieldNameSwagger (is_pkg_defined rpctypes.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_func_call_Error :

@@ -403,16 +403,16 @@ Definition var_addrs : list (go_string * loc) := [
     ("prstmap"%go, prstmap)
   ].
 
-Definition is_defined := is_global_definitions tracker.pkg_name' var_addrs.
-
-Global Instance : PkgIsDefined tracker.pkg_name' is_defined :=
-  ltac:(prove_pkg_is_defined).
+Global Instance is_pkg_defined_instance : IsPkgDefined tracker.pkg_name' :=
+{|
+  is_pkg_defined := is_global_definitions tracker.pkg_name' var_addrs;
+|}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "Hprstmap" ∷ prstmap ↦ (default_val (vec go_string 3)).
 
 Global Instance wp_globals_get_prstmap : 
-  WpGlobalsGet tracker.pkg_name' "prstmap" prstmap is_defined.
+  WpGlobalsGet tracker.pkg_name' "prstmap" prstmap (is_pkg_defined tracker.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_func_call_NewInflights :

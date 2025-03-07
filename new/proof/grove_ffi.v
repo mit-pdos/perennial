@@ -78,8 +78,9 @@ Section grove.
     is_pkg_defined grove_ffi.pkg_name'.
 
   #[global]
-  Instance pkg_is_initialized : PkgIsInitialized grove_ffi.pkg_name' _ :=
-    ltac:(basic_pkg_init).
+  Program Instance pkg_is_initialized : IsPkgInit grove_ffi.pkg_name' :=
+    ltac2:(build_pkg_init ()).
+  Final Obligation. apply _. Qed.
 
   Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
     is_pkg_init grove_ffi.pkg_name' ∗
@@ -92,7 +93,7 @@ Section grove.
       func_call #grove_ffi.pkg_name' #"Listen" #host
     {{{ l, RET #l; is_Listener l host }}}.
   Proof.
-    iIntros (Φ) "#Hdef HΦ". wp_func_call. wp_call.
+    wp_start as "#Hdef".
     rewrite to_val_unseal. simpl. wp_bind (ExternalOp _ _).
     iApply wp_ListenOp; first done.
     iIntros "!# _".
@@ -117,8 +118,7 @@ Section grove.
         if err then True else is_Connection l local remote
     }}}.
   Proof.
-    iIntros (Φ) "#Hdef HΦ".
-    wp_func_call. wp_call.
+    wp_start as "#Hdef".
     wp_bind (ExternalOp _ _)%E. rewrite [in #remote]to_val_unseal. iApply (wp_ConnectOp with "[//]").
     iNext. iIntros (err recv) "Hr". wp_pures.
     replace (LitV err) with #err.
@@ -144,7 +144,7 @@ Section grove.
       func_call #grove_ffi.pkg_name' #"Accept" #l
     {{{ c remote, RET #c; is_Connection c local remote }}}.
   Proof.
-    iIntros (Φ) "[#? ?] HΦ". wp_func_call. wp_call.
+    wp_start as "[#? ?]".
     wp_bind (! _)%E.
     rewrite [in #l]to_val_unseal.
     iApply (wp_load with "[$]").
@@ -228,9 +228,7 @@ Section grove.
       {{{ (err : bool), RET #err; ⌜if err then True else msg_sent⌝ ∗
                                 s ↦*{dq} data }}}.
   Proof.
-    iIntros "!#" (Φ) "[Hs #[? ?]] HΦ".
-    wp_func_call.
-    wp_call.
+    wp_start as "[Hs #[? ?]]".
     wp_bind (! _)%E.
     rewrite [in #c]to_val_unseal.
     iApply (wp_load with "[$]").
@@ -267,7 +265,7 @@ Section grove.
       >>>
       {{{ s, RET #(ReceiveRet.mk err s); s ↦* data }}}.
   Proof.
-    iIntros "!#" (Φ) "#[? ?] HΦ". wp_func_call. wp_call.
+    wp_start as "#[? ?]".
     wp_bind (! _)%E.
     rewrite [in #c]to_val_unseal.
     iApply (wp_load with "[$]").
@@ -306,18 +304,17 @@ Section grove.
      This avoids existentially quantifying c inside the fupd to require the
      caller to "know" the file contents before callin Read.
    *)
-  Lemma wp_FileRead f dq c Φ :
-    ⊢ is_pkg_init grove_ffi.pkg_name' -∗
-      (|NC={⊤, ∅}=> f f↦{dq} c ∗ (f f↦{dq} c -∗ |NC={∅, ⊤}=>
-                                 ∀ s, s ↦* c -∗ Φ #s)) -∗
+  Lemma wp_FileRead f dq c :
+    ⊢ ∀ Φ,
+    is_pkg_init grove_ffi.pkg_name' -∗
+    (|NC={⊤, ∅}=> f f↦{dq} c ∗ (f f↦{dq} c -∗ |NC={∅, ⊤}=> ∀ s, s ↦* c -∗ Φ #s)) -∗
     WP func_call #grove_ffi.pkg_name' #"FileRead" #f {{ Φ }}.
   Proof.
-    iIntros "#Hdef Hau".
-    wp_func_call. wp_call.
+    wp_start as "_".
     wp_bind (ExternalOp _ _).
     iApply wp_ncatomic.
     { solve_atomic2. }
-    iMod "Hau" as "[Hf Hau]".
+    iMod "HΦ" as "[Hf Hau]".
     rewrite to_val_unseal /=.
     iModIntro.
     iApply (wp_FileReadOp with "Hf").
@@ -348,21 +345,20 @@ Section grove.
     word.
   Qed.
 
-  Lemma wp_FileWrite f s dq old data Φ :
-    ⊢ (is_pkg_init grove_ffi.pkg_name' ∗
-       s ↦*{dq} data) -∗
+  Lemma wp_FileWrite f s dq old data :
+    ⊢ ∀ Φ,
+    (is_pkg_init grove_ffi.pkg_name' ∗ s ↦*{dq} data) -∗
     (|NC={⊤, ∅}=> f f↦ old ∗ (f f↦ data -∗ |NC={∅,⊤}=> s ↦*{dq} data -∗ Φ #()) ∧
                             (f f↦ old -∗ |NC={∅,⊤}=> True)
     ) -∗
     WP func_call #grove_ffi.pkg_name' #"FileWrite" #f #s {{ Φ }}.
   Proof.
-    iIntros "[#Hdef Hs] Hau".
-    wp_func_call. wp_call.
+    wp_start as "Hs".
     wp_bind (ExternalOp _ _).
     rewrite to_val_unseal /=.
     iApply wp_ncatomic.
     { solve_atomic2. }
-    iMod "Hau" as "[Hf Hau]".
+    iMod "HΦ" as "[Hf Hau]".
     iModIntro.
     iDestruct (own_slice_len with "Hs") as %Hlen.
     iDestruct (own_slice_wf with "Hs") as %Hcap.
@@ -387,19 +383,19 @@ Section grove.
       simpl in *. repeat f_equal. word.
   Qed.
 
-  Lemma wp_FileAppend f s dq old data Φ :
-    ⊢ (is_pkg_init grove_ffi.pkg_name' ∗ s ↦*{dq} data) -∗
+  Lemma wp_FileAppend f s dq old data :
+    ⊢ ∀ Φ,
+    (is_pkg_init grove_ffi.pkg_name' ∗ s ↦*{dq} data) -∗
     (|NC={⊤, ∅}=> f f↦ old ∗ (f f↦ (old ++ data) -∗ |NC={∅, ⊤}=> s ↦*{dq} data -∗ Φ #()) ∧
                             (f f↦ old -∗ |NC={∅, ⊤}=> True)
     ) -∗
     WP func_call #grove_ffi.pkg_name' #"FileAppend" #f #s {{ Φ }}.
   Proof.
-    iIntros "[#Hdef Hs] Hau".
-    wp_func_call. wp_call.
+    wp_start as "Hs".
     wp_bind (ExternalOp _ _).
     iApply wp_ncatomic.
     { solve_atomic2. }
-    iMod "Hau" as "[Hf Hau]".
+    iMod "HΦ" as "[Hf Hau]".
     iModIntro.
     iDestruct (own_slice_len with "Hs") as %Hlen.
     iDestruct (own_slice_wf with "Hs") as %Hcap.
@@ -432,9 +428,9 @@ Section grove.
     <<< ∃∃ (new_time: u64), ⌜prev_time ≤ uint.nat new_time⌝ ∗ tsc_lb (uint.nat new_time) >>>
     {{{ RET #new_time; True }}}.
   Proof.
-    iIntros "!>" (Φ) "#Hdef HAU". wp_func_call. wp_call.
+    wp_start as "_".
     rewrite difference_empty_L.
-    iMod "HAU" as (prev_time) "[Hlb HΦ]".
+    iMod "HΦ" as (prev_time) "[Hlb HΦ]".
     { solve_atomic2. }
     rewrite to_val_unseal /=.
     iApply (wp_GetTscOp with "Hlb").
@@ -451,8 +447,7 @@ Section grove.
                       own_time t -∗ |NC={⊤}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
     WP func_call #grove_ffi.pkg_name' #"GetTimeRange" #() {{ Φ }}.
   Proof.
-    iIntros (?) "#Hdef HΦ". wp_func_call.
-    wp_call. rewrite to_val_unseal /=. iApply (wp_GetTimeRangeOp with "HΦ").
+    wp_start as "_". rewrite to_val_unseal /=. iApply (wp_GetTimeRangeOp with "HΦ").
   Qed.
 
   Lemma tsc_lb_0 :

@@ -332,16 +332,16 @@ Definition var_addrs : list (go_string * loc) := [
     ("closedCh"%go, closedCh)
   ].
 
-Definition is_defined := is_global_definitions leasing.pkg_name' var_addrs.
-
-Global Instance : PkgIsDefined leasing.pkg_name' is_defined :=
-  ltac:(prove_pkg_is_defined).
+Global Instance is_pkg_defined_instance : IsPkgDefined leasing.pkg_name' :=
+{|
+  is_pkg_defined := is_global_definitions leasing.pkg_name' var_addrs;
+|}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HclosedCh" ∷ closedCh ↦ (default_val loc).
 
 Global Instance wp_globals_get_closedCh : 
-  WpGlobalsGet leasing.pkg_name' "closedCh" closedCh is_defined.
+  WpGlobalsGet leasing.pkg_name' "closedCh" closedCh (is_pkg_defined leasing.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_func_call_inRange :

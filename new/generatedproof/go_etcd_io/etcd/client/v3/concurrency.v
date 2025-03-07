@@ -744,10 +744,10 @@ Definition var_addrs : list (go_string * loc) := [
     ("ErrLockReleased"%go, ErrLockReleased)
   ].
 
-Definition is_defined := is_global_definitions concurrency.pkg_name' var_addrs.
-
-Global Instance : PkgIsDefined concurrency.pkg_name' is_defined :=
-  ltac:(prove_pkg_is_defined).
+Global Instance is_pkg_defined_instance : IsPkgDefined concurrency.pkg_name' :=
+{|
+  is_pkg_defined := is_global_definitions concurrency.pkg_name' var_addrs;
+|}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrElectionNotLeader" ∷ ErrElectionNotLeader ↦ (default_val error.t) ∗
@@ -757,23 +757,23 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrLockReleased" ∷ ErrLockReleased ↦ (default_val error.t).
 
 Global Instance wp_globals_get_ErrElectionNotLeader : 
-  WpGlobalsGet concurrency.pkg_name' "ErrElectionNotLeader" ErrElectionNotLeader is_defined.
+  WpGlobalsGet concurrency.pkg_name' "ErrElectionNotLeader" ErrElectionNotLeader (is_pkg_defined concurrency.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrElectionNoLeader : 
-  WpGlobalsGet concurrency.pkg_name' "ErrElectionNoLeader" ErrElectionNoLeader is_defined.
+  WpGlobalsGet concurrency.pkg_name' "ErrElectionNoLeader" ErrElectionNoLeader (is_pkg_defined concurrency.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrLocked : 
-  WpGlobalsGet concurrency.pkg_name' "ErrLocked" ErrLocked is_defined.
+  WpGlobalsGet concurrency.pkg_name' "ErrLocked" ErrLocked (is_pkg_defined concurrency.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrSessionExpired : 
-  WpGlobalsGet concurrency.pkg_name' "ErrSessionExpired" ErrSessionExpired is_defined.
+  WpGlobalsGet concurrency.pkg_name' "ErrSessionExpired" ErrSessionExpired (is_pkg_defined concurrency.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_globals_get_ErrLockReleased : 
-  WpGlobalsGet concurrency.pkg_name' "ErrLockReleased" ErrLockReleased is_defined.
+  WpGlobalsGet concurrency.pkg_name' "ErrLockReleased" ErrLockReleased (is_pkg_defined concurrency.pkg_name').
 Proof. apply wp_globals_get'. reflexivity. Qed.
 
 Global Instance wp_func_call_NewElection :

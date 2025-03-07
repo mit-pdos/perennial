@@ -9,8 +9,9 @@ Context `{!goGlobalsGS Σ}.
 Context `{!atomic.GlobalAddrs}.
 
 #[global]
-Instance pkg_initialized : PkgIsInitialized atomic.pkg_name' _ :=
-  ltac:(basic_pkg_init).
+Program Instance is_pkg_init_inst : IsPkgInit atomic.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. apply _. Qed.
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,

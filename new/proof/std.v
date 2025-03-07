@@ -39,8 +39,9 @@ Context `{!std.GlobalAddrs}.
   automatically included here).
  *)
 #[global]
-Instance : PkgIsInitialized std.pkg_name' _ :=
-  ltac:(basic_pkg_init).
+Program Instance : IsPkgInit std.pkg_name' :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. apply _. Qed.
 
 Lemma wp_Assert (cond : bool) :
   {{{ is_pkg_init std.pkg_name' ∗ ⌜cond = true⌝ }}}
