@@ -48,7 +48,7 @@ Definition AsyncFile__Write : val :=
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![ptrT] (struct.field_ref AsyncFile "indexCond" (![ptrT] "s")))) #());;;
     return: ((λ: <>,
        exception_do (do:  (let: "$a0" := (![uint64T] "index") in
-       (method_call #asyncfile #"AsyncFile'ptr" #"wait" (![ptrT] "s")) "$a0"))
+       (method_call #asyncfile.asyncfile #"AsyncFile'ptr" #"wait" (![ptrT] "s")) "$a0"))
        ))).
 
 (* go: storage.go:36:21 *)
@@ -161,7 +161,7 @@ Definition MakeAsyncFile : val :=
     let: "data" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (![sliceT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
     do:  ("data" <-[sliceT] "$r0");;;
-    let: "$go" := (method_call #asyncfile #"AsyncFile'ptr" #"flushThread" (![ptrT] "s")) in
+    let: "$go" := (method_call #asyncfile.asyncfile #"AsyncFile'ptr" #"flushThread" (![ptrT] "s")) in
     do:  (Fork ("$go" #()));;;
     return: (![sliceT] "data", ![ptrT] "s")).
 

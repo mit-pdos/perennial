@@ -162,7 +162,7 @@ Definition Spawn : val :=
     do:  ("h" <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  ((![funcT] "f") #());;;
-      do:  ((method_call #std #"JoinHandle'ptr" #"finish" (![ptrT] "h")) #()))
+      do:  ((method_call #std.std #"JoinHandle'ptr" #"finish" (![ptrT] "h")) #()))
       ) in
     do:  (Fork ("$go" #()));;;
     return: (![ptrT] "h")).

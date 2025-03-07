@@ -24,9 +24,9 @@ Definition JointConfig__String : val :=
     exception_do (let: "c" := (ref_ty JointConfig "c") in
     (if: int_gt (let: "$a0" := (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1))) in
     map.len "$a0") #(W64 0)
-    then return: ((((method_call #quorum #"MajorityConfig" #"String" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #()) + #"&&"%go) + ((method_call #quorum #"MajorityConfig" #"String" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) #()))
+    then return: ((((method_call #quorum.quorum #"MajorityConfig" #"String" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #()) + #"&&"%go) + ((method_call #quorum.quorum #"MajorityConfig" #"String" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) #()))
     else do:  #());;;
-    return: ((method_call #quorum #"MajorityConfig" #"String" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #())).
+    return: ((method_call #quorum.quorum #"MajorityConfig" #"String" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) #())).
 
 (* IDs returns a newly initialized map representing the set of voters present
    in the joint configuration.
@@ -74,7 +74,7 @@ Definition JointConfig__Describe : val :=
     exception_do (let: "c" := (ref_ty JointConfig "c") in
     let: "l" := (ref_ty AckedIndexer "l") in
     return: (let: "$a0" := (![AckedIndexer] "l") in
-     (method_call #quorum #"MajorityConfig" #"Describe" ((method_call #quorum #"JointConfig" #"IDs" (![JointConfig] "c")) #())) "$a0")).
+     (method_call #quorum.quorum #"MajorityConfig" #"Describe" ((method_call #quorum.quorum #"JointConfig" #"IDs" (![JointConfig] "c")) #())) "$a0")).
 
 Definition Index : go_type := uint64T.
 
@@ -89,11 +89,11 @@ Definition JointConfig__CommittedIndex : val :=
     let: "l" := (ref_ty AckedIndexer "l") in
     let: "idx0" := (ref_ty Index (zero_val Index)) in
     let: "$r0" := (let: "$a0" := (![AckedIndexer] "l") in
-    (method_call #quorum #"MajorityConfig" #"CommittedIndex" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) "$a0") in
+    (method_call #quorum.quorum #"MajorityConfig" #"CommittedIndex" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) "$a0") in
     do:  ("idx0" <-[Index] "$r0");;;
     let: "idx1" := (ref_ty Index (zero_val Index)) in
     let: "$r0" := (let: "$a0" := (![AckedIndexer] "l") in
-    (method_call #quorum #"MajorityConfig" #"CommittedIndex" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) "$a0") in
+    (method_call #quorum.quorum #"MajorityConfig" #"CommittedIndex" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) "$a0") in
     do:  ("idx1" <-[Index] "$r0");;;
     (if: (![Index] "idx0") < (![Index] "idx1")
     then return: (![Index] "idx0")
@@ -117,11 +117,11 @@ Definition JointConfig__VoteResult : val :=
     let: "votes" := (ref_ty (mapT uint64T boolT) "votes") in
     let: "r1" := (ref_ty VoteResult (zero_val VoteResult)) in
     let: "$r0" := (let: "$a0" := (![mapT uint64T boolT] "votes") in
-    (method_call #quorum #"MajorityConfig" #"VoteResult" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) "$a0") in
+    (method_call #quorum.quorum #"MajorityConfig" #"VoteResult" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0)))) "$a0") in
     do:  ("r1" <-[VoteResult] "$r0");;;
     let: "r2" := (ref_ty VoteResult (zero_val VoteResult)) in
     let: "$r0" := (let: "$a0" := (![mapT uint64T boolT] "votes") in
-    (method_call #quorum #"MajorityConfig" #"VoteResult" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) "$a0") in
+    (method_call #quorum.quorum #"MajorityConfig" #"VoteResult" (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1)))) "$a0") in
     do:  ("r2" <-[VoteResult] "$r0");;;
     (if: (![VoteResult] "r1") = (![VoteResult] "r2")
     then return: (![VoteResult] "r1")
@@ -460,31 +460,31 @@ Definition vars' : list (go_string * go_type) := [("_VoteResult_index"%go, array
 Definition functions' : list (go_string * val) := [].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("JointConfig"%go, [("CommittedIndex"%go, JointConfig__CommittedIndex); ("Describe"%go, JointConfig__Describe); ("IDs"%go, JointConfig__IDs); ("String"%go, JointConfig__String); ("VoteResult"%go, JointConfig__VoteResult)]); ("JointConfig'ptr"%go, [("CommittedIndex"%go, (λ: "$recvAddr",
-                 method_call #quorum #"JointConfig" #"CommittedIndex" (![JointConfig] "$recvAddr")
+                 method_call #quorum.quorum #"JointConfig" #"CommittedIndex" (![JointConfig] "$recvAddr")
                  )%V); ("Describe"%go, (λ: "$recvAddr",
-                 method_call #quorum #"JointConfig" #"Describe" (![JointConfig] "$recvAddr")
+                 method_call #quorum.quorum #"JointConfig" #"Describe" (![JointConfig] "$recvAddr")
                  )%V); ("IDs"%go, (λ: "$recvAddr",
-                 method_call #quorum #"JointConfig" #"IDs" (![JointConfig] "$recvAddr")
+                 method_call #quorum.quorum #"JointConfig" #"IDs" (![JointConfig] "$recvAddr")
                  )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #quorum #"JointConfig" #"String" (![JointConfig] "$recvAddr")
+                 method_call #quorum.quorum #"JointConfig" #"String" (![JointConfig] "$recvAddr")
                  )%V); ("VoteResult"%go, (λ: "$recvAddr",
-                 method_call #quorum #"JointConfig" #"VoteResult" (![JointConfig] "$recvAddr")
+                 method_call #quorum.quorum #"JointConfig" #"VoteResult" (![JointConfig] "$recvAddr")
                  )%V)]); ("MajorityConfig"%go, [("CommittedIndex"%go, MajorityConfig__CommittedIndex); ("Describe"%go, MajorityConfig__Describe); ("Slice"%go, MajorityConfig__Slice); ("String"%go, MajorityConfig__String); ("VoteResult"%go, MajorityConfig__VoteResult)]); ("MajorityConfig'ptr"%go, [("CommittedIndex"%go, (λ: "$recvAddr",
-                 method_call #quorum #"MajorityConfig" #"CommittedIndex" (![MajorityConfig] "$recvAddr")
+                 method_call #quorum.quorum #"MajorityConfig" #"CommittedIndex" (![MajorityConfig] "$recvAddr")
                  )%V); ("Describe"%go, (λ: "$recvAddr",
-                 method_call #quorum #"MajorityConfig" #"Describe" (![MajorityConfig] "$recvAddr")
+                 method_call #quorum.quorum #"MajorityConfig" #"Describe" (![MajorityConfig] "$recvAddr")
                  )%V); ("Slice"%go, (λ: "$recvAddr",
-                 method_call #quorum #"MajorityConfig" #"Slice" (![MajorityConfig] "$recvAddr")
+                 method_call #quorum.quorum #"MajorityConfig" #"Slice" (![MajorityConfig] "$recvAddr")
                  )%V); ("String"%go, (λ: "$recvAddr",
-                 method_call #quorum #"MajorityConfig" #"String" (![MajorityConfig] "$recvAddr")
+                 method_call #quorum.quorum #"MajorityConfig" #"String" (![MajorityConfig] "$recvAddr")
                  )%V); ("VoteResult"%go, (λ: "$recvAddr",
-                 method_call #quorum #"MajorityConfig" #"VoteResult" (![MajorityConfig] "$recvAddr")
+                 method_call #quorum.quorum #"MajorityConfig" #"VoteResult" (![MajorityConfig] "$recvAddr")
                  )%V)]); ("Index"%go, [("String"%go, Index__String)]); ("Index'ptr"%go, [("String"%go, (λ: "$recvAddr",
-                 method_call #quorum #"Index" #"String" (![Index] "$recvAddr")
+                 method_call #quorum.quorum #"Index" #"String" (![Index] "$recvAddr")
                  )%V)]); ("mapAckIndexer"%go, [("AckedIndex"%go, mapAckIndexer__AckedIndex)]); ("mapAckIndexer'ptr"%go, [("AckedIndex"%go, (λ: "$recvAddr",
-                 method_call #quorum #"mapAckIndexer" #"AckedIndex" (![mapAckIndexer] "$recvAddr")
+                 method_call #quorum.quorum #"mapAckIndexer" #"AckedIndex" (![mapAckIndexer] "$recvAddr")
                  )%V)]); ("VoteResult"%go, [("String"%go, VoteResult__String)]); ("VoteResult'ptr"%go, [("String"%go, (λ: "$recvAddr",
-                 method_call #quorum #"VoteResult" #"String" (![VoteResult] "$recvAddr")
+                 method_call #quorum.quorum #"VoteResult" #"String" (![VoteResult] "$recvAddr")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo quorum.quorum :=

@@ -100,7 +100,7 @@ Definition Server__readThread : val :=
         let: "$a1" := (![uint64T] "rpcid") in
         let: "$a2" := (![uint64T] "seqno") in
         let: "$a3" := (![sliceT] "req") in
-        (method_call #urpc #"Server'ptr" #"rpcHandle" (![ptrT] "srv")) "$a0" "$a1" "$a2" "$a3"))
+        (method_call #urpc.urpc #"Server'ptr" #"rpcHandle" (![ptrT] "srv")) "$a0" "$a1" "$a2" "$a3"))
         ) in
       do:  (Fork ("$go" #()));;;
       continue: #())).
@@ -122,7 +122,7 @@ Definition Server__Serve : val :=
         do:  ("conn" <-[grove_ffi.Connection] "$r0");;;
         let: "$go" := (λ: <>,
           exception_do (do:  (let: "$a0" := (![grove_ffi.Connection] "conn") in
-          (method_call #urpc #"Server'ptr" #"readThread" (![ptrT] "srv")) "$a0"))
+          (method_call #urpc.urpc #"Server'ptr" #"readThread" (![ptrT] "srv")) "$a0"))
           ) in
         do:  (Fork ("$go" #()))))
       ) in
@@ -233,7 +233,7 @@ Definition TryMakeClient : val :=
     }])) in
     do:  ("cl" <-[ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #urpc #"Client'ptr" #"replyThread" (![ptrT] "cl")) #()))
+      exception_do (do:  ((method_call #urpc.urpc #"Client'ptr" #"replyThread" (![ptrT] "cl")) #()))
       ) in
     do:  (Fork ("$go" #()));;;
     return: (#(W64 0), ![ptrT] "cl")).
@@ -375,7 +375,7 @@ Definition Client__Call : val :=
     let: "cb" := (ref_ty ptrT (zero_val ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "rpcid") in
     let: "$a1" := (![sliceT] "args") in
-    (method_call #urpc #"Client'ptr" #"CallStart" (![ptrT] "cl")) "$a0" "$a1") in
+    (method_call #urpc.urpc #"Client'ptr" #"CallStart" (![ptrT] "cl")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("cb" <-[ptrT] "$r0");;;
@@ -386,7 +386,7 @@ Definition Client__Call : val :=
     return: (let: "$a0" := (![ptrT] "cb") in
      let: "$a1" := (![ptrT] "reply") in
      let: "$a2" := (![uint64T] "timeout_ms") in
-     (method_call #urpc #"Client'ptr" #"CallComplete" (![ptrT] "cl")) "$a0" "$a1" "$a2")).
+     (method_call #urpc.urpc #"Client'ptr" #"CallComplete" (![ptrT] "cl")) "$a0" "$a1" "$a2")).
 
 Definition vars' : list (go_string * go_type) := [].
 

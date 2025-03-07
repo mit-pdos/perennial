@@ -731,14 +731,14 @@ Definition useEmbeddedValField : val :=
 Definition useEmbeddedMethod : val :=
   rec: "useEmbeddedMethod" "d" :=
     exception_do (let: "d" := (ref_ty embedD "d") in
-    return: (((method_call #unittest #"embedD" #"Foo" (![embedD] "d")) #()) = ((method_call #unittest #"embedA" #"Foo" (![embedA] (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))))) #()))).
+    return: (((method_call #unittest.unittest #"embedD" #"Foo" (![embedD] "d")) #()) = ((method_call #unittest.unittest #"embedA" #"Foo" (![embedA] (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))))) #()))).
 
 (* go: embedded.go:64:6 *)
 Definition useEmbeddedMethod2 : val :=
   rec: "useEmbeddedMethod2" "d" :=
     exception_do (let: "d" := (ref_ty embedD "d") in
-    do:  ((method_call #unittest #"embedD" #"Car" (![embedD] "d")) #());;;
-    return: (((method_call #unittest #"embedD" #"Bar" (![embedD] "d")) #()) = ((method_call #unittest #"embedB'ptr" #"Bar" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))) #()))).
+    do:  ((method_call #unittest.unittest #"embedD" #"Car" (![embedD] "d")) #());;;
+    return: (((method_call #unittest.unittest #"embedD" #"Bar" (![embedD] "d")) #()) = ((method_call #unittest.unittest #"embedB'ptr" #"Bar" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "d")))) #()))).
 
 (* go: empty_functions.go:3:6 *)
 Definition empty : val :=
@@ -774,7 +774,7 @@ Definition Enc__UInt64 : val :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "x" := (ref_ty uint64T "x") in
     do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
-    (method_call #unittest #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
+    (method_call #unittest.unittest #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint64T] "x") in
     (func_call #primitive #"UInt64Put"%go) "$a0" "$a1")).
 
@@ -784,7 +784,7 @@ Definition Enc__UInt32 : val :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "x" := (ref_ty uint32T "x") in
     do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
-    (method_call #unittest #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
+    (method_call #unittest.unittest #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint32T] "x") in
     (func_call #primitive #"UInt32Put"%go) "$a0" "$a1")).
 
@@ -811,7 +811,7 @@ Definition Dec__UInt64 : val :=
   rec: "Dec__UInt64" "d" <> :=
     exception_do (let: "d" := (ref_ty ptrT "d") in
     return: (let: "$a0" := (let: "$a0" := #(W64 8) in
-     (method_call #unittest #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
+     (method_call #unittest.unittest #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
      (func_call #primitive #"UInt64Get"%go) "$a0")).
 
 (* go: encoding.go:37:15 *)
@@ -819,7 +819,7 @@ Definition Dec__UInt32 : val :=
   rec: "Dec__UInt32" "d" <> :=
     exception_do (let: "d" := (ref_ty ptrT "d") in
     return: (let: "$a0" := (let: "$a0" := #(W64 4) in
-     (method_call #unittest #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
+     (method_call #unittest.unittest #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
      (func_call #primitive #"UInt32Get"%go) "$a0")).
 
 (* go: for_range.go:5:6 *)
@@ -905,7 +905,7 @@ Definition testAssignConcreteToInterface : val :=
       "a" ::= zero_val uint64T
     }])) in
     do:  ("c" <-[ptrT] "$r0");;;
-    let: "$r0" := (interface.make #unittest #"concreteFooer'ptr" (![ptrT] "c")) in
+    let: "$r0" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "c")) in
     do:  ((![ptrT] "x") <-[Fooer] "$r0")).
 
 (* go: interfaces.go:27:6 *)
@@ -916,14 +916,14 @@ Definition testPassConcreteToInterfaceArg : val :=
       "a" ::= zero_val uint64T
     }])) in
     do:  ("c" <-[ptrT] "$r0");;;
-    do:  (let: "$a0" := (interface.make #unittest #"concreteFooer'ptr" (![ptrT] "c")) in
+    do:  (let: "$a0" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "c")) in
     (func_call #unittest.unittest #"fooConsumer"%go) "$a0");;;
     let: "f" := (ref_ty Fooer (zero_val Fooer)) in
-    let: "$r0" := (interface.make #unittest #"concreteFooer'ptr" (![ptrT] "c")) in
+    let: "$r0" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "c")) in
     do:  ("f" <-[Fooer] "$r0");;;
     do:  (let: "$a0" := (![Fooer] "f") in
     (func_call #unittest.unittest #"fooConsumer"%go) "$a0");;;
-    do:  ((method_call #unittest #"concreteFooer'ptr" #"Foo" (![ptrT] "c")) #());;;
+    do:  ((method_call #unittest.unittest #"concreteFooer'ptr" #"Foo" (![ptrT] "c")) #());;;
     do:  ((interface.get "Foo" (![Fooer] "f")) #())).
 
 (* go: interfaces.go:37:6 *)
@@ -940,18 +940,18 @@ Definition testPassConcreteToInterfaceArgSpecial : val :=
     }])) in
     do:  ("c2" <-[ptrT] "$r0");;;
     let: "l" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := ((let: "$sl0" := (interface.make #unittest #"concreteFooer'ptr" (![ptrT] "c1")) in
-    let: "$sl1" := (interface.make #unittest #"concreteFooer'ptr" (![ptrT] "c2")) in
+    let: "$r0" := ((let: "$sl0" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "c1")) in
+    let: "$sl1" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "c2")) in
     slice.literal Fooer ["$sl0"; "$sl1"])) in
     do:  ("l" <-[sliceT] "$r0");;;
     let: "m" := (ref_ty (mapT uint64T Fooer) (zero_val (mapT uint64T Fooer))) in
     let: "$r0" := (map.make uint64T Fooer #()) in
     do:  ("m" <-[mapT uint64T Fooer] "$r0");;;
-    let: "$r0" := (interface.make #unittest #"concreteFooer'ptr" (![ptrT] "c1")) in
+    let: "$r0" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "c1")) in
     do:  (map.insert (![mapT uint64T Fooer] "m") #(W64 10) "$r0");;;
     let: "f" := (ref_ty FooerUser (zero_val FooerUser)) in
     let: "$r0" := (struct.make FooerUser [{
-      "f" ::= interface.make #unittest #"concreteFooer'ptr" (![ptrT] "c1")
+      "f" ::= interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "c1")
     }]) in
     do:  ("f" <-[FooerUser] "$r0");;;
     return: (![sliceT] "l", ![mapT uint64T Fooer] "m", ![FooerUser] "f")).
@@ -965,10 +965,10 @@ Definition takesVarArgsInterface : val :=
 (* go: interfaces.go:55:6 *)
 Definition test : val :=
   rec: "test" <> :=
-    exception_do (do:  (let: "$a0" := ((let: "$sl0" := (interface.make #unittest #"concreteFooer'ptr" (ref_ty concreteFooer (struct.make concreteFooer [{
+    exception_do (do:  (let: "$a0" := ((let: "$sl0" := (interface.make #unittest.unittest #"concreteFooer'ptr" (ref_ty concreteFooer (struct.make concreteFooer [{
       "a" ::= zero_val uint64T
     }]))) in
-    let: "$sl1" := (interface.make #unittest #"concreteFooer'ptr" (ref_ty concreteFooer (struct.make concreteFooer [{
+    let: "$sl1" := (interface.make #unittest.unittest #"concreteFooer'ptr" (ref_ty concreteFooer (struct.make concreteFooer [{
       "a" ::= zero_val uint64T
     }]))) in
     slice.literal Fooer ["$sl0"; "$sl1"])) in
@@ -989,7 +989,7 @@ Definition testMultiReturn : val :=
     exception_do (let: "x" := (ref_ty ptrT "x") in
     let: "y" := (ref_ty uint64T (zero_val uint64T)) in
     let: ("$ret0", "$ret1") := ((func_call #unittest.unittest #"returnConcrete"%go) #()) in
-    let: "$r0" := (interface.make #unittest #"concreteFooer'ptr" "$ret0") in
+    let: "$r0" := (interface.make #unittest.unittest #"concreteFooer'ptr" "$ret0") in
     let: "$r1" := "$ret1" in
     do:  ((![ptrT] "x") <-[Fooer] "$r0");;;
     do:  ("y" <-[uint64T] "$r1");;;
@@ -1003,7 +1003,7 @@ Definition testReturnStatment : val :=
       "a" ::= zero_val uint64T
     }])) in
     do:  ("y" <-[ptrT] "$r0");;;
-    return: (interface.make #unittest #"concreteFooer'ptr" (![ptrT] "y"))).
+    return: (interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "y"))).
 
 (* go: interfaces.go:75:6 *)
 Definition testConversionInEq : val :=
@@ -1014,9 +1014,9 @@ Definition testConversionInEq : val :=
       "a" ::= zero_val uint64T
     }])) in
     do:  ("c" <-[ptrT] "$r0");;;
-    let: "$r0" := (interface.make #unittest #"concreteFooer'ptr" (![ptrT] "c")) in
+    let: "$r0" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "c")) in
     do:  ("f" <-[Fooer] "$r0");;;
-    return: (interface.eq (interface.make #unittest #"concreteFooer'ptr" (![ptrT] "c")) (![Fooer] "f"))).
+    return: (interface.eq (interface.make #unittest.unittest #"concreteFooer'ptr" (![ptrT] "c")) (![Fooer] "f"))).
 
 (* go: interfaces.go:82:6 *)
 Definition takeMultiple : val :=
@@ -1028,7 +1028,7 @@ Definition takeMultiple : val :=
 (* go: interfaces.go:85:6 *)
 Definition giveMultiple : val :=
   rec: "giveMultiple" <> :=
-    exception_do (return: (#(W64 0), interface.make #unittest #"concreteFooer'ptr" (ref_ty concreteFooer (struct.make concreteFooer [{
+    exception_do (return: (#(W64 0), interface.make #unittest.unittest #"concreteFooer'ptr" (ref_ty concreteFooer (struct.make concreteFooer [{
        "a" ::= zero_val uint64T
      }])), ref_ty concreteFooer (struct.make concreteFooer [{
        "a" ::= zero_val uint64T
@@ -1038,7 +1038,7 @@ Definition giveMultiple : val :=
 Definition testConversionInMultipleReturnPassThrough : val :=
   rec: "testConversionInMultipleReturnPassThrough" <> :=
     exception_do (let: (("$ret0", "$ret1"), "$ret2") := (((func_call #unittest.unittest #"giveMultiple"%go) #())) in
-    return: ("$ret0", "$ret1", interface.make #unittest #"concreteFooer'ptr" "$ret2")).
+    return: ("$ret0", "$ret1", interface.make #unittest.unittest #"concreteFooer'ptr" "$ret2")).
 
 (* See "special case" in https://go.dev/ref/spec#Calls
 
@@ -1048,7 +1048,7 @@ Definition testConversionInMultiplePassThrough : val :=
     exception_do (do:  (let: (("$ret0", "$ret1"), "$ret2") := (((func_call #unittest.unittest #"giveMultiple"%go) #())) in
     let: "$a0" := "$ret0" in
     let: "$a1" := ((let: "$sl0" := "$ret1" in
-    let: "$sl1" := (interface.make #unittest #"concreteFooer'ptr" "$ret2") in
+    let: "$sl1" := (interface.make #unittest.unittest #"concreteFooer'ptr" "$ret2") in
     slice.literal Fooer ["$sl0"; "$sl1"])) in
     (func_call #unittest.unittest #"takeMultiple"%go) "$a0" "$a1")).
 
@@ -1077,10 +1077,10 @@ Definition testPtrMset : val :=
     }])) in
     do:  ("a" <-[ptrT] "$r0");;;
     let: "p" := (ref_ty PointerInterface (zero_val PointerInterface)) in
-    let: "$r0" := (interface.make #unittest #"concrete1'ptr" (![ptrT] "a")) in
+    let: "$r0" := (interface.make #unittest.unittest #"concrete1'ptr" (![ptrT] "a")) in
     do:  ("p" <-[PointerInterface] "$r0");;;
     let: "f" := (ref_ty Fooer (zero_val Fooer)) in
-    let: "$r0" := (interface.make #unittest #"concrete1" (![concrete1] (![ptrT] "a"))) in
+    let: "$r0" := (interface.make #unittest.unittest #"concrete1" (![concrete1] (![ptrT] "a"))) in
     do:  ("f" <-[Fooer] "$r0");;;
     do:  ((interface.get "B" (![PointerInterface] "p")) #());;;
     do:  ((interface.get "Foo" (![Fooer] "f")) #())).
@@ -1676,7 +1676,7 @@ Definition R : go_type := structT [
 Definition R__recurMethod : val :=
   rec: "R__recurMethod" "r" <> :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
-    do:  ((method_call #unittest #"R'ptr" #"recurMethod" (![ptrT] "r")) #())).
+    do:  ((method_call #unittest.unittest #"R'ptr" #"recurMethod" (![ptrT] "r")) #())).
 
 Definition Other : go_type := structT [
   "RecursiveEmbedded" :: ptrT
@@ -1690,7 +1690,7 @@ Definition RecursiveEmbedded : go_type := structT [
 Definition RecursiveEmbedded__recurEmbeddedMethod : val :=
   rec: "RecursiveEmbedded__recurEmbeddedMethod" "r" <> :=
     exception_do (let: "r" := (ref_ty ptrT "r") in
-    do:  ((method_call #unittest #"Other" #"recurEmbeddedMethod" (![Other] (struct.field_ref RecursiveEmbedded "Other" (![ptrT] "r")))) #())).
+    do:  ((method_call #unittest.unittest #"Other" #"recurEmbeddedMethod" (![Other] (struct.field_ref RecursiveEmbedded "Other" (![ptrT] "r")))) #())).
 
 (* go: renamedImport.go:7:6 *)
 Definition useRenamedImport : val :=
@@ -2047,7 +2047,7 @@ Definition UseAdd : val :=
     do:  ("c" <-[Point] "$r0");;;
     let: "r" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (method_call #unittest #"Point" #"Add" (![Point] "c")) "$a0") in
+    (method_call #unittest.unittest #"Point" #"Add" (![Point] "c")) "$a0") in
     do:  ("r" <-[uint64T] "$r0");;;
     return: (![uint64T] "r")).
 
@@ -2056,7 +2056,7 @@ Definition UseAddWithLiteral : val :=
   rec: "UseAddWithLiteral" <> :=
     exception_do (let: "r" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (method_call #unittest #"Point" #"Add" (let: "$x" := #(W64 2) in
+    (method_call #unittest.unittest #"Point" #"Add" (let: "$x" := #(W64 2) in
     let: "$y" := #(W64 3) in
     struct.make Point [{
       "x" ::= "$x";
@@ -2255,51 +2255,51 @@ Definition vars' : list (go_string * go_type) := [("GlobalX"%go, uint64T); ("glo
 Definition functions' : list (go_string * val) := [("takesArray"%go, takesArray); ("takesPtr"%go, takesPtr); ("usesArrayElemRef"%go, usesArrayElemRef); ("sum"%go, sum); ("arrayToSlice"%go, arrayToSlice); ("arrayLiteralKeyed"%go, arrayLiteralKeyed); ("chanBasic"%go, chanBasic); ("f"%go, f); ("chanSelect"%go, chanSelect); ("chanDirectional"%go, chanDirectional); ("chanRange"%go, chanRange); ("doSubtleThings"%go, doSubtleThings); ("hasStartComment"%go, hasStartComment); ("hasEndComment"%go, hasEndComment); ("condvarWrapping"%go, condvarWrapping); ("useUntypedInt"%go, useUntypedInt); ("useUntypedString"%go, useUntypedString); ("conditionalReturn"%go, conditionalReturn); ("alwaysReturn"%go, alwaysReturn); ("alwaysReturnInNestedBranches"%go, alwaysReturnInNestedBranches); ("earlyReturn"%go, earlyReturn); ("conditionalAssign"%go, conditionalAssign); ("elseIf"%go, elseIf); ("ifStmtInitialization"%go, ifStmtInitialization); ("typedLiteral"%go, typedLiteral); ("literalCast"%go, literalCast); ("castInt"%go, castInt); ("stringToByteSlice"%go, stringToByteSlice); ("byteSliceToString"%go, byteSliceToString); ("stringToStringWrapper"%go, stringToStringWrapper); ("stringWrapperToString"%go, stringWrapperToString); ("testCopySimple"%go, testCopySimple); ("testCopyDifferentLengths"%go, testCopyDifferentLengths); ("atomicCreateStub"%go, atomicCreateStub); ("useSlice"%go, useSlice); ("useSliceIndexing"%go, useSliceIndexing); ("useMap"%go, useMap); ("usePtr"%go, usePtr); ("iterMapKeysAndValues"%go, iterMapKeysAndValues); ("iterMapKeys"%go, iterMapKeys); ("getRandom"%go, getRandom); ("diskArgument"%go, diskArgument); ("returnEmbedVal"%go, returnEmbedVal); ("returnEmbedValWithPointer"%go, returnEmbedValWithPointer); ("useEmbeddedField"%go, useEmbeddedField); ("useEmbeddedValField"%go, useEmbeddedValField); ("useEmbeddedMethod"%go, useEmbeddedMethod); ("useEmbeddedMethod2"%go, useEmbeddedMethod2); ("empty"%go, empty); ("emptyReturn"%go, emptyReturn); ("forRangeNoBinding"%go, forRangeNoBinding); ("forRangeOldVars"%go, forRangeOldVars); ("foo"%go, foo); ("other"%go, other); ("bar"%go, bar); ("TakesFunctionType"%go, TakesFunctionType); ("fooConsumer"%go, fooConsumer); ("testAssignConcreteToInterface"%go, testAssignConcreteToInterface); ("testPassConcreteToInterfaceArg"%go, testPassConcreteToInterfaceArg); ("testPassConcreteToInterfaceArgSpecial"%go, testPassConcreteToInterfaceArgSpecial); ("takesVarArgsInterface"%go, takesVarArgsInterface); ("test"%go, test); ("returnConcrete"%go, returnConcrete); ("testMultiReturn"%go, testMultiReturn); ("testReturnStatment"%go, testReturnStatment); ("testConversionInEq"%go, testConversionInEq); ("takeMultiple"%go, takeMultiple); ("giveMultiple"%go, giveMultiple); ("testConversionInMultipleReturnPassThrough"%go, testConversionInMultipleReturnPassThrough); ("testConversionInMultiplePassThrough"%go, testConversionInMultiplePassThrough); ("testPtrMset"%go, testPtrMset); ("useInts"%go, useInts); ("normalLiterals"%go, normalLiterals); ("outOfOrderLiteral"%go, outOfOrderLiteral); ("specialLiterals"%go, specialLiterals); ("oddLiterals"%go, oddLiterals); ("unKeyedLiteral"%go, unKeyedLiteral); ("useLocks"%go, useLocks); ("useCondVar"%go, useCondVar); ("ToBeDebugged"%go, ToBeDebugged); ("DoNothing"%go, DoNothing); ("DoSomething"%go, DoSomething); ("standardForLoop"%go, standardForLoop); ("conditionalInLoop"%go, conditionalInLoop); ("conditionalInLoopElse"%go, conditionalInLoopElse); ("nestedConditionalInLoopImplicitContinue"%go, nestedConditionalInLoopImplicitContinue); ("ImplicitLoopContinue"%go, ImplicitLoopContinue); ("ImplicitLoopContinue2"%go, ImplicitLoopContinue2); ("ImplicitLoopContinueAfterIfBreak"%go, ImplicitLoopContinueAfterIfBreak); ("nestedLoops"%go, nestedLoops); ("nestedGoStyleLoops"%go, nestedGoStyleLoops); ("sumSlice"%go, sumSlice); ("breakFromLoop"%go, breakFromLoop); ("IterateMapKeys"%go, IterateMapKeys); ("MapSize"%go, MapSize); ("MapTypeAliases"%go, MapTypeAliases); ("StringMap"%go, StringMap); ("mapUpdateField"%go, mapUpdateField); ("returnTwo"%go, returnTwo); ("returnTwoWrapper"%go, returnTwoWrapper); ("multipleVar"%go, multipleVar); ("multiplePassThrough"%go, multiplePassThrough); ("multipleReturnPassThrough"%go, multipleReturnPassThrough); ("AssignNilSlice"%go, AssignNilSlice); ("AssignNilPointer"%go, AssignNilPointer); ("CompareSliceToNil"%go, CompareSliceToNil); ("ComparePointerToNil"%go, ComparePointerToNil); ("LogicalOperators"%go, LogicalOperators); ("LogicalAndEqualityOperators"%go, LogicalAndEqualityOperators); ("ArithmeticShifts"%go, ArithmeticShifts); ("BitwiseOps"%go, BitwiseOps); ("Comparison"%go, Comparison); ("AssignOps"%go, AssignOps); ("Negative"%go, Negative); ("PanicAtTheDisco"%go, PanicAtTheDisco); ("Oracle"%go, Oracle); ("ReassignVars"%go, ReassignVars); ("recur"%go, recur); ("useRenamedImport"%go, useRenamedImport); ("TwoDiskWrite"%go, TwoDiskWrite); ("TwoDiskRead"%go, TwoDiskRead); ("TwoDiskLock"%go, TwoDiskLock); ("TwoDiskUnlock"%go, TwoDiskUnlock); ("ReplicatedDiskRead"%go, ReplicatedDiskRead); ("ReplicatedDiskWrite"%go, ReplicatedDiskWrite); ("ReplicatedDiskRecover"%go, ReplicatedDiskRecover); ("BasicNamedReturn"%go, BasicNamedReturn); ("NamedReturn"%go, NamedReturn); ("BasicNamedReturnMany"%go, BasicNamedReturnMany); ("NamedReturnMany"%go, NamedReturnMany); ("NamedReturnOverride"%go, NamedReturnOverride); ("sliceOps"%go, sliceOps); ("makeSingletonSlice"%go, makeSingletonSlice); ("makeAlias"%go, makeAlias); ("Skip"%go, Skip); ("simpleSpawn"%go, simpleSpawn); ("threadCode"%go, threadCode); ("loopSpawn"%go, loopSpawn); ("stringAppend"%go, stringAppend); ("stringLength"%go, stringLength); ("x"%go, x); ("UseAdd"%go, UseAdd); ("UseAddWithLiteral"%go, UseAddWithLiteral); ("NewS"%go, NewS); ("localSRef"%go, localSRef); ("setField"%go, setField); ("DoSomeLocking"%go, DoSomeLocking); ("makeLock"%go, makeLock); ("sleep"%go, sleep); ("mkInt"%go, mkInt); ("mkNothing"%go, mkNothing); ("convertToAlias"%go, convertToAlias); ("variadicFunc"%go, variadicFunc); ("testVariadicCall"%go, testVariadicCall); ("returnMultiple"%go, returnMultiple); ("testVariadicPassThrough"%go, testVariadicPassThrough)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, []); ("Foo'ptr"%go, []); ("importantStruct"%go, []); ("importantStruct'ptr"%go, []); ("stringWrapper"%go, []); ("stringWrapper'ptr"%go, []); ("diskWrapper"%go, []); ("diskWrapper'ptr"%go, []); ("embedA"%go, [("Foo"%go, embedA__Foo)]); ("embedA'ptr"%go, [("Bar"%go, embedA__Bar); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest #"embedA" #"Foo" (![embedA] "$recvAddr")
+                 method_call #unittest.unittest #"embedA" #"Foo" (![embedA] "$recvAddr")
                  )%V)]); ("embedB"%go, [("Foo"%go, embedB__Foo)]); ("embedB'ptr"%go, [("Bar"%go, (λ: "$recvAddr",
-                 method_call #unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" "$recvAddr")
+                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" "$recvAddr")
                  )%V); ("Car"%go, embedB__Car); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest #"embedB" #"Foo" (![embedB] "$recvAddr")
+                 method_call #unittest.unittest #"embedB" #"Foo" (![embedB] "$recvAddr")
                  )%V)]); ("embedC"%go, [("Bar"%go, (λ: "$recv",
-                 method_call #unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (struct.field_get embedC "embedB" "$recv"))
+                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (struct.field_get embedC "embedB" "$recv"))
                  )%V); ("Car"%go, (λ: "$recv",
-                 method_call #unittest #"embedB'ptr" #"Car" (struct.field_get embedC "embedB" "$recv")
+                 method_call #unittest.unittest #"embedB'ptr" #"Car" (struct.field_get embedC "embedB" "$recv")
                  )%V); ("Foo"%go, (λ: "$recv",
-                 method_call #unittest #"embedB" #"Foo" (![embedB] (struct.field_get embedC "embedB" "$recv"))
+                 method_call #unittest.unittest #"embedB" #"Foo" (![embedB] (struct.field_get embedC "embedB" "$recv"))
                  )%V)]); ("embedC'ptr"%go, [("Bar"%go, (λ: "$recvAddr",
-                 method_call #unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr")))
+                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr")))
                  )%V); ("Car"%go, (λ: "$recvAddr",
-                 method_call #unittest #"embedB'ptr" #"Car" (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr"))
+                 method_call #unittest.unittest #"embedB'ptr" #"Car" (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr"))
                  )%V); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest #"embedB" #"Foo" (![embedB] (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr")))
+                 method_call #unittest.unittest #"embedB" #"Foo" (![embedB] (![ptrT] (struct.field_ref embedC "embedB" "$recvAddr")))
                  )%V)]); ("embedD"%go, [("Bar"%go, (λ: "$recv",
-                 method_call #unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv")))
+                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv")))
                  )%V); ("Car"%go, (λ: "$recv",
-                 method_call #unittest #"embedB'ptr" #"Car" (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv"))
+                 method_call #unittest.unittest #"embedB'ptr" #"Car" (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv"))
                  )%V); ("Foo"%go, (λ: "$recv",
-                 method_call #unittest #"embedB" #"Foo" (![embedB] (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv")))
+                 method_call #unittest.unittest #"embedB" #"Foo" (![embedB] (struct.field_get embedC "embedB" (struct.field_get embedD "embedC" "$recv")))
                  )%V)]); ("embedD'ptr"%go, [("Bar"%go, (λ: "$recvAddr",
-                 method_call #unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr"))))
+                 method_call #unittest.unittest #"embedA'ptr" #"Bar" (struct.field_ref embedB "embedA" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr"))))
                  )%V); ("Car"%go, (λ: "$recvAddr",
-                 method_call #unittest #"embedB'ptr" #"Car" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr")))
+                 method_call #unittest.unittest #"embedB'ptr" #"Car" (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr")))
                  )%V); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest #"embedB" #"Foo" (![embedB] (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr"))))
+                 method_call #unittest.unittest #"embedB" #"Foo" (![embedB] (![ptrT] (struct.field_ref embedC "embedB" (struct.field_ref embedD "embedC" "$recvAddr"))))
                  )%V)]); ("Enc"%go, []); ("Enc'ptr"%go, [("UInt32"%go, Enc__UInt32); ("UInt64"%go, Enc__UInt64); ("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("UInt32"%go, Dec__UInt32); ("UInt64"%go, Dec__UInt64); ("consume"%go, Dec__consume)]); ("concreteFooer"%go, []); ("concreteFooer'ptr"%go, [("Foo"%go, concreteFooer__Foo)]); ("FooerUser"%go, []); ("FooerUser'ptr"%go, []); ("concrete1"%go, [("Foo"%go, concrete1__Foo)]); ("concrete1'ptr"%go, [("B"%go, concrete1__B); ("Foo"%go, (λ: "$recvAddr",
-                 method_call #unittest #"concrete1" #"Foo" (![concrete1] "$recvAddr")
+                 method_call #unittest.unittest #"concrete1" #"Foo" (![concrete1] "$recvAddr")
                  )%V)]); ("my_u32"%go, []); ("my_u32'ptr"%go, []); ("also_u32"%go, []); ("also_u32'ptr"%go, []); ("allTheLiterals"%go, []); ("allTheLiterals'ptr"%go, []); ("hasCondVar"%go, []); ("hasCondVar'ptr"%go, []); ("IntWrapper"%go, []); ("IntWrapper'ptr"%go, []); ("MapWrapper"%go, []); ("MapWrapper'ptr"%go, []); ("mapElem"%go, []); ("mapElem'ptr"%go, []); ("wrapExternalStruct"%go, [("join"%go, wrapExternalStruct__join)]); ("wrapExternalStruct'ptr"%go, [("join"%go, (λ: "$recvAddr",
-                 method_call #unittest #"wrapExternalStruct" #"join" (![wrapExternalStruct] "$recvAddr")
+                 method_call #unittest.unittest #"wrapExternalStruct" #"join" (![wrapExternalStruct] "$recvAddr")
                  )%V)]); ("typing"%go, []); ("typing'ptr"%go, []); ("composite"%go, []); ("composite'ptr"%go, []); ("R"%go, []); ("R'ptr"%go, [("recurMethod"%go, R__recurMethod)]); ("Other"%go, [("recurEmbeddedMethod"%go, (λ: "$recv",
-                 method_call #unittest #"RecursiveEmbedded'ptr" #"recurEmbeddedMethod" (struct.field_get Other "RecursiveEmbedded" "$recv")
+                 method_call #unittest.unittest #"RecursiveEmbedded'ptr" #"recurEmbeddedMethod" (struct.field_get Other "RecursiveEmbedded" "$recv")
                  )%V)]); ("Other'ptr"%go, [("recurEmbeddedMethod"%go, (λ: "$recvAddr",
-                 method_call #unittest #"RecursiveEmbedded'ptr" #"recurEmbeddedMethod" (![ptrT] (struct.field_ref Other "RecursiveEmbedded" "$recvAddr"))
+                 method_call #unittest.unittest #"RecursiveEmbedded'ptr" #"recurEmbeddedMethod" (![ptrT] (struct.field_ref Other "RecursiveEmbedded" "$recvAddr"))
                  )%V)]); ("RecursiveEmbedded"%go, []); ("RecursiveEmbedded'ptr"%go, [("recurEmbeddedMethod"%go, RecursiveEmbedded__recurEmbeddedMethod)]); ("Block"%go, []); ("Block'ptr"%go, []); ("SliceAlias"%go, []); ("SliceAlias'ptr"%go, []); ("thing"%go, []); ("thing'ptr"%go, []); ("sliceOfThings"%go, [("getThingRef"%go, sliceOfThings__getThingRef)]); ("sliceOfThings'ptr"%go, [("getThingRef"%go, (λ: "$recvAddr",
-                 method_call #unittest #"sliceOfThings" #"getThingRef" (![sliceOfThings] "$recvAddr")
+                 method_call #unittest.unittest #"sliceOfThings" #"getThingRef" (![sliceOfThings] "$recvAddr")
                  )%V)]); ("Point"%go, [("Add"%go, Point__Add); ("GetField"%go, Point__GetField)]); ("Point'ptr"%go, [("Add"%go, (λ: "$recvAddr",
-                 method_call #unittest #"Point" #"Add" (![Point] "$recvAddr")
+                 method_call #unittest.unittest #"Point" #"Add" (![Point] "$recvAddr")
                  )%V); ("GetField"%go, (λ: "$recvAddr",
-                 method_call #unittest #"Point" #"GetField" (![Point] "$recvAddr")
+                 method_call #unittest.unittest #"Point" #"GetField" (![Point] "$recvAddr")
                  )%V)]); ("TwoInts"%go, []); ("TwoInts'ptr"%go, []); ("S"%go, [("readBVal"%go, S__readBVal)]); ("S'ptr"%go, [("negateC"%go, S__negateC); ("readA"%go, S__readA); ("readB"%go, S__readB); ("readBVal"%go, (λ: "$recvAddr",
-                 method_call #unittest #"S" #"readBVal" (![S] "$recvAddr")
+                 method_call #unittest.unittest #"S" #"readBVal" (![S] "$recvAddr")
                  )%V); ("refC"%go, S__refC); ("writeB"%go, S__writeB)]); ("B"%go, []); ("B'ptr"%go, []); ("A"%go, []); ("A'ptr"%go, []); ("Timestamp"%go, []); ("Timestamp'ptr"%go, []); ("UseTypeAbbrev"%go, []); ("UseTypeAbbrev'ptr"%go, []); ("UseNamedType"%go, []); ("UseNamedType'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo unittest.unittest :=

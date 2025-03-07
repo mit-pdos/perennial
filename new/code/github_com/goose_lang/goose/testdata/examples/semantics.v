@@ -499,11 +499,11 @@ Definition roundtripEncDec32 : val :=
     }])) in
     do:  ("d" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
-    (method_call #semantics #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
+    (method_call #semantics.semantics #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint32T] "x") in
     (func_call #primitive #"UInt32Put"%go) "$a0" "$a1");;;
     return: (let: "$a0" := (let: "$a0" := #(W64 4) in
-     (method_call #semantics #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
+     (method_call #semantics.semantics #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
      (func_call #primitive #"UInt32Get"%go) "$a0")).
 
 (* go: encoding.go:34:6 *)
@@ -526,11 +526,11 @@ Definition roundtripEncDec64 : val :=
     }])) in
     do:  ("d" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
-    (method_call #semantics #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
+    (method_call #semantics.semantics #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
     let: "$a1" := (![uint64T] "x") in
     (func_call #primitive #"UInt64Put"%go) "$a0" "$a1");;;
     return: (let: "$a0" := (let: "$a0" := #(W64 8) in
-     (method_call #semantics #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
+     (method_call #semantics.semantics #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
      (func_call #primitive #"UInt64Get"%go) "$a0")).
 
 (* tests
@@ -717,21 +717,21 @@ Definition failing_testFunctionOrdering : val :=
     }]) in
     do:  ("e2" <-[Editor] "$r0");;;
     (if: ((let: "$a0" := #(W64 2) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") + (let: "$a0" := #(W64 102) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0")) ≠ #(W64 102)
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") + (let: "$a0" := #(W64 102) in
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0")) ≠ #(W64 102)
     then return: (#false)
     else do:  #());;;
     (if: (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) ≠ #(W64 101)
     then return: (#false)
     else do:  #());;;
     (if: (let: "$a0" := (let: "$a0" := #(W64 3) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
     let: "$a1" := (let: "$a0" := #(W64 103) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
     let: "$a2" := (let: "$a0" := #(W64 104) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
     let: "$a3" := (let: "$a0" := #(W64 4) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
     (func_call #semantics.semantics #"addFour64"%go) "$a0" "$a1" "$a2" "$a3") ≠ #(W64 210)
     then return: (#false)
     else do:  #());;;
@@ -743,9 +743,9 @@ Definition failing_testFunctionOrdering : val :=
     else do:  #());;;
     let: "p" := (ref_ty Pair (zero_val Pair)) in
     let: "$r0" := (let: "$x" := (let: "$a0" := #(W64 5) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
     let: "$y" := (let: "$a0" := #(W64 105) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
     struct.make Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
@@ -756,9 +756,9 @@ Definition failing_testFunctionOrdering : val :=
     else do:  #());;;
     let: "q" := (ref_ty Pair (zero_val Pair)) in
     let: "$r0" := (let: "$y" := (let: "$a0" := #(W64 6) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
     let: "$x" := (let: "$a0" := #(W64 106) in
-    (method_call #semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
+    (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
     struct.make Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
@@ -892,7 +892,7 @@ Definition testBasicInterface : val :=
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
-    return: ((let: "$a0" := (interface.make #semantics #"SquareStruct" (![SquareStruct] "s")) in
+    return: ((let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
      (func_call #semantics.semantics #"measureArea"%go) "$a0") = #(W64 4))).
 
 (* go: interfaces.go:47:6 *)
@@ -905,7 +905,7 @@ Definition testAssignInterface : val :=
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     let: "area" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics #"SquareStruct" (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
     do:  ("area" <-[uint64T] "$r0");;;
     return: ((![uint64T] "area") = #(W64 9))).
@@ -920,11 +920,11 @@ Definition testMultipleInterface : val :=
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     let: "square1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics #"SquareStruct" (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
     do:  ("square1" <-[uint64T] "$r0");;;
     let: "square2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics #"SquareStruct" (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
     do:  ("square2" <-[uint64T] "$r0");;;
     return: ((![uint64T] "square1") = (![uint64T] "square2"))).
@@ -939,15 +939,15 @@ Definition testBinaryExprInterface : val :=
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     let: "square1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics #"SquareStruct" (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
     do:  ("square1" <-[uint64T] "$r0");;;
     let: "square2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics #"SquareStruct" (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureVolume"%go) "$a0") in
     do:  ("square2" <-[uint64T] "$r0");;;
-    return: (((![uint64T] "square1") = (let: "$a0" := (interface.make #semantics #"SquareStruct" (![SquareStruct] "s")) in
-     (func_call #semantics.semantics #"measureArea"%go) "$a0")) && ((![uint64T] "square2") = (let: "$a0" := (interface.make #semantics #"SquareStruct" (![SquareStruct] "s")) in
+    return: (((![uint64T] "square1") = (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
+     (func_call #semantics.semantics #"measureArea"%go) "$a0")) && ((![uint64T] "square2") = (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
      (func_call #semantics.semantics #"measureVolume"%go) "$a0")))).
 
 (* go: interfaces.go:73:6 *)
@@ -959,7 +959,7 @@ Definition testIfStmtInterface : val :=
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[SquareStruct] "$r0");;;
-    (if: (let: "$a0" := (interface.make #semantics #"SquareStruct" (![SquareStruct] "s")) in
+    (if: (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") = #(W64 9)
     then return: (#true)
     else do:  #());;;
@@ -1057,7 +1057,7 @@ Definition testForLoopWait : val :=
     }]) in
     do:  ("ls" <-[LoopStruct] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
-    (method_call #semantics #"LoopStruct" #"forLoopWait" (![LoopStruct] "ls")) "$a0");;;
+    (method_call #semantics.semantics #"LoopStruct" #"forLoopWait" (![LoopStruct] "ls")) "$a0");;;
     return: ((![uint64T] (![ptrT] (struct.field_ref LoopStruct "loopNext" "ls"))) = #(W64 4))).
 
 (* go: loops.go:59:6 *)
@@ -2014,25 +2014,25 @@ Definition testOverwriteArray : val :=
     do:  ("ae2" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 103) in
-    (method_call #semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae2")) "$a0" "$a1");;;
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae2")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 104) in
-    (method_call #semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae2")) "$a0" "$a1");;;
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae2")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 105) in
-    (method_call #semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae2")) "$a0" "$a1");;;
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae2")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 2) in
-    (method_call #semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 3) in
-    (method_call #semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 4) in
-    (method_call #semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
     do:  (let: "$a0" := (![sliceT] "arr") in
     let: "$a1" := #(W64 5) in
-    (method_call #semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
     (if: ((((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 1)))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 2)))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 3)))) ≥ #(W64 100)
     then return: (#false)
     else do:  #());;;
@@ -2083,7 +2083,7 @@ Definition Bar__mutate : val :=
 Definition Foo__mutateBar : val :=
   rec: "Foo__mutateBar" "foo" <> :=
     exception_do (let: "foo" := (ref_ty ptrT "foo") in
-    do:  ((method_call #semantics #"Bar'ptr" #"mutate" (struct.field_ref Foo "bar" (![ptrT] "foo"))) #())).
+    do:  ((method_call #semantics.semantics #"Bar'ptr" #"mutate" (struct.field_ref Foo "bar" (![ptrT] "foo"))) #())).
 
 (* go: struct_pointers.go:23:6 *)
 Definition testFooBarMutation : val :=
@@ -2099,7 +2099,7 @@ Definition testFooBarMutation : val :=
       "bar" ::= "$bar"
     }]) in
     do:  ("x" <-[Foo] "$r0");;;
-    do:  ((method_call #semantics #"Foo'ptr" #"mutateBar" "x") #());;;
+    do:  ((method_call #semantics.semantics #"Foo'ptr" #"mutateBar" "x") #());;;
     return: ((![uint64T] (struct.field_ref Bar "a" (struct.field_ref Foo "bar" "x"))) = #(W64 2))).
 
 Definition TwoInts : go_type := structT [
@@ -2172,20 +2172,20 @@ Definition testStructUpdates : val :=
     let: "ns" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
     do:  ("ns" <-[ptrT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && (((method_call #semantics #"S'ptr" #"readA" (![ptrT] "ns")) #()) = #(W64 2))) in
+    let: "$r0" := ((![boolT] "ok") && (((method_call #semantics.semantics #"S'ptr" #"readA" (![ptrT] "ns")) #()) = #(W64 2))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "b1" := (ref_ty TwoInts (zero_val TwoInts)) in
-    let: "$r0" := ((method_call #semantics #"S'ptr" #"readB" (![ptrT] "ns")) #()) in
+    let: "$r0" := ((method_call #semantics.semantics #"S'ptr" #"readB" (![ptrT] "ns")) #()) in
     do:  ("b1" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" "b1")) = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    do:  ((method_call #semantics #"S'ptr" #"negateC" (![ptrT] "ns")) #());;;
+    do:  ((method_call #semantics.semantics #"S'ptr" #"negateC" (![ptrT] "ns")) #());;;
     let: "$r0" := ((![boolT] "ok") && ((![boolT] (struct.field_ref S "c" (![ptrT] "ns"))) = #false)) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := #(W64 3) in
     do:  ((struct.field_ref TwoInts "x" "b1") <-[uint64T] "$r0");;;
     let: "b2" := (ref_ty TwoInts (zero_val TwoInts)) in
-    let: "$r0" := ((method_call #semantics #"S'ptr" #"readB" (![ptrT] "ns")) #()) in
+    let: "$r0" := ((method_call #semantics.semantics #"S'ptr" #"readB" (![ptrT] "ns")) #()) in
     do:  ("b2" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" "b2")) = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -2195,8 +2195,8 @@ Definition testStructUpdates : val :=
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (![ptrT] "b3"))) = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
     do:  (let: "$a0" := #(W64 4) in
-    (method_call #semantics #"S'ptr" #"updateBValX" (![ptrT] "ns")) "$a0");;;
-    let: "$r0" := ((![boolT] "ok") && ((struct.field_get TwoInts "x" ((method_call #semantics #"S'ptr" #"readBVal" (![ptrT] "ns")) #())) = #(W64 4))) in
+    (method_call #semantics.semantics #"S'ptr" #"updateBValX" (![ptrT] "ns")) "$a0");;;
+    let: "$r0" := ((![boolT] "ok") && ((struct.field_get TwoInts "x" ((method_call #semantics.semantics #"S'ptr" #"readBVal" (![ptrT] "ns")) #())) = #(W64 4))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
@@ -2443,14 +2443,14 @@ Definition testSwitchConversion : val :=
     }])) in
     do:  ("v" <-[ptrT] "$r0");;;
     let: "x" := (ref_ty switchInterface (zero_val switchInterface)) in
-    let: "$r0" := (interface.make #semantics #"switchConcrete'ptr" (![ptrT] "v")) in
+    let: "$r0" := (interface.make #semantics.semantics #"switchConcrete'ptr" (![ptrT] "v")) in
     do:  ("x" <-[switchInterface] "$r0");;;
     let: "$sw" := (![switchInterface] "x") in
-    (if: "$sw" = (interface.make #semantics #"switchConcrete'ptr" (![ptrT] "v"))
+    (if: "$sw" = (interface.make #semantics.semantics #"switchConcrete'ptr" (![ptrT] "v"))
     then do:  #()
     else return: (#false));;;
     let: "$sw" := (![ptrT] "v") in
-    (if: (interface.make #semantics #"switchConcrete'ptr" "$sw") = (![switchInterface] "x")
+    (if: (interface.make #semantics.semantics #"switchConcrete'ptr" "$sw") = (![switchInterface] "x")
     then do:  #()
     else return: (#false));;;
     return: (#true)).
@@ -2582,16 +2582,16 @@ Definition Log__unlock : val :=
 Definition Log__BeginTxn : val :=
   rec: "Log__BeginTxn" "l" <> :=
     exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call #semantics #"Log" #"lock" (![Log] "l")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
     do:  ("length" <-[uint64T] "$r0");;;
     (if: (![uint64T] "length") = #(W64 0)
     then
-      do:  ((method_call #semantics #"Log" #"unlock" (![Log] "l")) #());;;
+      do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
       return: (#true)
     else do:  #());;;
-    do:  ((method_call #semantics #"Log" #"unlock" (![Log] "l")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
     return: (#false)).
 
 (* Read from the logical disk.
@@ -2603,7 +2603,7 @@ Definition Log__Read : val :=
   rec: "Log__Read" "l" "a" :=
     exception_do (let: "l" := (ref_ty Log "l") in
     let: "a" := (ref_ty uint64T "a") in
-    do:  ((method_call #semantics #"Log" #"lock" (![Log] "l")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "v" := (ref_ty sliceT (zero_val sliceT)) in
     let: ("$ret0", "$ret1") := (map.get (![mapT uint64T sliceT] (struct.field_ref Log "cache" "l")) (![uint64T] "a")) in
@@ -2613,10 +2613,10 @@ Definition Log__Read : val :=
     do:  ("ok" <-[boolT] "$r1");;;
     (if: ![boolT] "ok"
     then
-      do:  ((method_call #semantics #"Log" #"unlock" (![Log] "l")) #());;;
+      do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
       return: (![sliceT] "v")
     else do:  #());;;
-    do:  ((method_call #semantics #"Log" #"unlock" (![Log] "l")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
     let: "dv" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (logLength + (![uint64T] "a")) in
     (interface.get "Read" (![disk.Disk] (struct.field_ref Log "d" "l"))) "$a0") in
@@ -2640,7 +2640,7 @@ Definition Log__Write : val :=
     exception_do (let: "l" := (ref_ty Log "l") in
     let: "v" := (ref_ty sliceT "v") in
     let: "a" := (ref_ty uint64T "a") in
-    do:  ((method_call #semantics #"Log" #"lock" (![Log] "l")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
     do:  ("length" <-[uint64T] "$r0");;;
@@ -2666,7 +2666,7 @@ Definition Log__Write : val :=
     do:  (map.insert (![mapT uint64T sliceT] (struct.field_ref Log "cache" "l")) (![uint64T] "a") "$r0");;;
     let: "$r0" := ((![uint64T] "length") + #(W64 1)) in
     do:  ((![ptrT] (struct.field_ref Log "length" "l")) <-[uint64T] "$r0");;;
-    do:  ((method_call #semantics #"Log" #"unlock" (![Log] "l")) #())).
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #())).
 
 (* Commit the current transaction.
 
@@ -2674,11 +2674,11 @@ Definition Log__Write : val :=
 Definition Log__Commit : val :=
   rec: "Log__Commit" "l" <> :=
     exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call #semantics #"Log" #"lock" (![Log] "l")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
     do:  ("length" <-[uint64T] "$r0");;;
-    do:  ((method_call #semantics #"Log" #"unlock" (![Log] "l")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
     let: "header" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![uint64T] "length") in
     (func_call #semantics.semantics #"intToBlock"%go) "$a0") in
@@ -2760,7 +2760,7 @@ Definition clearLog : val :=
 Definition Log__Apply : val :=
   rec: "Log__Apply" "l" <> :=
     exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call #semantics #"Log" #"lock" (![Log] "l")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
     let: "length" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
     do:  ("length" <-[uint64T] "$r0");;;
@@ -2771,7 +2771,7 @@ Definition Log__Apply : val :=
     (func_call #semantics.semantics #"clearLog"%go) "$a0");;;
     let: "$r0" := #(W64 0) in
     do:  ((![ptrT] (struct.field_ref Log "length" "l")) <-[uint64T] "$r0");;;
-    do:  ((method_call #semantics #"Log" #"unlock" (![Log] "l")) #())).
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #())).
 
 (* Open recovers the log following a crash or shutdown
 
@@ -2827,27 +2827,27 @@ Definition disabled_testWal : val :=
     let: "lg" := (ref_ty Log (zero_val Log)) in
     let: "$r0" := ((func_call #semantics.semantics #"New"%go) #()) in
     do:  ("lg" <-[Log] "$r0");;;
-    (if: (method_call #semantics #"Log" #"BeginTxn" (![Log] "lg")) #()
+    (if: (method_call #semantics.semantics #"Log" #"BeginTxn" (![Log] "lg")) #()
     then
       do:  (let: "$a0" := #(W64 2) in
       let: "$a1" := (let: "$a0" := #(W64 11) in
       (func_call #semantics.semantics #"intToBlock"%go) "$a0") in
-      (method_call #semantics #"Log" #"Write" (![Log] "lg")) "$a0" "$a1")
+      (method_call #semantics.semantics #"Log" #"Write" (![Log] "lg")) "$a0" "$a1")
     else do:  #());;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 2) in
-    (method_call #semantics #"Log" #"Read" (![Log] "lg")) "$a0") in
+    (method_call #semantics.semantics #"Log" #"Read" (![Log] "lg")) "$a0") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") = #(W64 11))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
     (interface.get "Read" (![disk.Disk] (struct.field_ref Log "d" "lg"))) "$a0") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    do:  ((method_call #semantics #"Log" #"Commit" (![Log] "lg")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"Commit" (![Log] "lg")) #());;;
     let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
     (interface.get "Read" (![disk.Disk] (struct.field_ref Log "d" "lg"))) "$a0") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") = #(W64 1))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    do:  ((method_call #semantics #"Log" #"Apply" (![Log] "lg")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"Apply" (![Log] "lg")) #());;;
     let: "$r0" := ((![boolT] "ok") && ((![uint64T] (![ptrT] (struct.field_ref Log "length" "lg"))) = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
@@ -2857,29 +2857,29 @@ Definition vars' : list (go_string * go_type) := [].
 Definition functions' : list (go_string * val) := [("findKey"%go, findKey); ("allocate"%go, allocate); ("freeRange"%go, freeRange); ("testAllocateDistinct"%go, testAllocateDistinct); ("testAllocateFull"%go, testAllocateFull); ("testExplicitBlockStmt"%go, testExplicitBlockStmt); ("testMinUint64"%go, testMinUint64); ("testMaxUint64"%go, testMaxUint64); ("adder"%go, adder); ("testClosureBasic"%go, testClosureBasic); ("testCompareAll"%go, testCompareAll); ("testCompareGT"%go, testCompareGT); ("testCompareGE"%go, testCompareGE); ("testCompareLT"%go, testCompareLT); ("testCompareLE"%go, testCompareLE); ("literalCast"%go, literalCast); ("stringToByteSlice"%go, stringToByteSlice); ("byteSliceToString"%go, byteSliceToString); ("testByteSliceToString"%go, testByteSliceToString); ("testCopySimple"%go, testCopySimple); ("testCopyShorterDst"%go, testCopyShorterDst); ("testCopyShorterSrc"%go, testCopyShorterSrc); ("deferSimple"%go, deferSimple); ("testDefer"%go, testDefer); ("testDeferFuncLit"%go, testDeferFuncLit); ("roundtripEncDec32"%go, roundtripEncDec32); ("roundtripEncDec64"%go, roundtripEncDec64); ("testEncDec32Simple"%go, testEncDec32Simple); ("failing_testEncDec32"%go, failing_testEncDec32); ("testEncDec64Simple"%go, testEncDec64Simple); ("testEncDec64"%go, testEncDec64); ("FirstClassFunction"%go, FirstClassFunction); ("ApplyF"%go, ApplyF); ("testFirstClassFunction"%go, testFirstClassFunction); ("addFour64"%go, addFour64); ("failing_testFunctionOrdering"%go, failing_testFunctionOrdering); ("storeAndReturn"%go, storeAndReturn); ("failing_testArgumentOrder"%go, failing_testArgumentOrder); ("testU64ToU32"%go, testU64ToU32); ("testU32Len"%go, testU32Len); ("failing_testU32NewtypeLen"%go, failing_testU32NewtypeLen); ("measureArea"%go, measureArea); ("measureVolumePlusNM"%go, measureVolumePlusNM); ("measureVolume"%go, measureVolume); ("testBasicInterface"%go, testBasicInterface); ("testAssignInterface"%go, testAssignInterface); ("testMultipleInterface"%go, testMultipleInterface); ("testBinaryExprInterface"%go, testBinaryExprInterface); ("testIfStmtInterface"%go, testIfStmtInterface); ("testsUseLocks"%go, testsUseLocks); ("standardForLoop"%go, standardForLoop); ("testStandardForLoop"%go, testStandardForLoop); ("testForLoopWait"%go, testForLoopWait); ("testBreakFromLoopWithContinue"%go, testBreakFromLoopWithContinue); ("testBreakFromLoopNoContinue"%go, testBreakFromLoopNoContinue); ("testBreakFromLoopNoContinueDouble"%go, testBreakFromLoopNoContinueDouble); ("testBreakFromLoopForOnly"%go, testBreakFromLoopForOnly); ("testBreakFromLoopAssignAndContinue"%go, testBreakFromLoopAssignAndContinue); ("testNestedLoops"%go, testNestedLoops); ("testNestedGoStyleLoops"%go, testNestedGoStyleLoops); ("testNestedGoStyleLoopsNoComparison"%go, testNestedGoStyleLoopsNoComparison); ("IterateMapKeys"%go, IterateMapKeys); ("IterateMapValues"%go, IterateMapValues); ("testIterateMap"%go, testIterateMap); ("testMapSize"%go, testMapSize); ("multReturnTwo"%go, multReturnTwo); ("testAssignTwo"%go, testAssignTwo); ("multReturnThree"%go, multReturnThree); ("testAssignThree"%go, testAssignThree); ("testMultipleAssignToMap"%go, testMultipleAssignToMap); ("returnTwo"%go, returnTwo); ("testReturnTwo"%go, testReturnTwo); ("testAnonymousBinding"%go, testAnonymousBinding); ("returnThree"%go, returnThree); ("testReturnThree"%go, testReturnThree); ("returnFour"%go, returnFour); ("testReturnFour"%go, testReturnFour); ("failing_testCompareSliceToNil"%go, failing_testCompareSliceToNil); ("testComparePointerToNil"%go, testComparePointerToNil); ("testCompareNilToNil"%go, testCompareNilToNil); ("testComparePointerWrappedToNil"%go, testComparePointerWrappedToNil); ("testComparePointerWrappedDefaultToNil"%go, testComparePointerWrappedDefaultToNil); ("reverseAssignOps64"%go, reverseAssignOps64); ("reverseAssignOps32"%go, reverseAssignOps32); ("add64Equals"%go, add64Equals); ("sub64Equals"%go, sub64Equals); ("testReverseAssignOps64"%go, testReverseAssignOps64); ("failing_testReverseAssignOps32"%go, failing_testReverseAssignOps32); ("testAdd64Equals"%go, testAdd64Equals); ("testSub64Equals"%go, testSub64Equals); ("testDivisionPrecedence"%go, testDivisionPrecedence); ("testModPrecedence"%go, testModPrecedence); ("testBitwiseOpsPrecedence"%go, testBitwiseOpsPrecedence); ("testArithmeticShifts"%go, testArithmeticShifts); ("testBitAddAnd"%go, testBitAddAnd); ("testManyParentheses"%go, testManyParentheses); ("testPlusTimes"%go, testPlusTimes); ("testOrCompareSimple"%go, testOrCompareSimple); ("testOrCompare"%go, testOrCompare); ("testAndCompare"%go, testAndCompare); ("testShiftMod"%go, testShiftMod); ("testLinearize"%go, testLinearize); ("CheckTrue"%go, CheckTrue); ("CheckFalse"%go, CheckFalse); ("testShortcircuitAndTF"%go, testShortcircuitAndTF); ("testShortcircuitAndFT"%go, testShortcircuitAndFT); ("testShortcircuitOrTF"%go, testShortcircuitOrTF); ("testShortcircuitOrFT"%go, testShortcircuitOrFT); ("testSliceOps"%go, testSliceOps); ("testSliceCapacityOps"%go, testSliceCapacityOps); ("testOverwriteArray"%go, testOverwriteArray); ("testSliceLiteral"%go, testSliceLiteral); ("testFooBarMutation"%go, testFooBarMutation); ("NewS"%go, NewS); ("testStructUpdates"%go, testStructUpdates); ("testNestedStructUpdates"%go, testNestedStructUpdates); ("testStructConstructions"%go, testStructConstructions); ("testIncompleteStruct"%go, testIncompleteStruct); ("testStoreInStructVar"%go, testStoreInStructVar); ("testStoreInStructPointerVar"%go, testStoreInStructPointerVar); ("testStoreComposite"%go, testStoreComposite); ("testStoreSlice"%go, testStoreSlice); ("testStructFieldFunc"%go, testStructFieldFunc); ("testSwitchVal"%go, testSwitchVal); ("testSwitchMultiple"%go, testSwitchMultiple); ("testSwitchDefaultTrue"%go, testSwitchDefaultTrue); ("testSwitchConversion"%go, testSwitchConversion); ("testPointerAssignment"%go, testPointerAssignment); ("testAddressOfLocal"%go, testAddressOfLocal); ("testAnonymousAssign"%go, testAnonymousAssign); ("intToBlock"%go, intToBlock); ("blockToInt"%go, blockToInt); ("New"%go, New); ("getLogEntry"%go, getLogEntry); ("applyLog"%go, applyLog); ("clearLog"%go, clearLog); ("Open"%go, Open); ("disabled_testWal"%go, disabled_testWal)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("unit"%go, []); ("unit'ptr"%go, []); ("Enc"%go, []); ("Enc'ptr"%go, [("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("consume"%go, Dec__consume)]); ("Editor"%go, []); ("Editor'ptr"%go, [("AdvanceReturn"%go, Editor__AdvanceReturn)]); ("Pair"%go, []); ("Pair'ptr"%go, []); ("Uint32"%go, []); ("Uint32'ptr"%go, []); ("SquareStruct"%go, [("Square"%go, SquareStruct__Square); ("Volume"%go, SquareStruct__Volume)]); ("SquareStruct'ptr"%go, [("Square"%go, (λ: "$recvAddr",
-                 method_call #semantics #"SquareStruct" #"Square" (![SquareStruct] "$recvAddr")
+                 method_call #semantics.semantics #"SquareStruct" #"Square" (![SquareStruct] "$recvAddr")
                  )%V); ("Volume"%go, (λ: "$recvAddr",
-                 method_call #semantics #"SquareStruct" #"Volume" (![SquareStruct] "$recvAddr")
+                 method_call #semantics.semantics #"SquareStruct" #"Volume" (![SquareStruct] "$recvAddr")
                  )%V)]); ("LoopStruct"%go, [("forLoopWait"%go, LoopStruct__forLoopWait)]); ("LoopStruct'ptr"%go, [("forLoopWait"%go, (λ: "$recvAddr",
-                 method_call #semantics #"LoopStruct" #"forLoopWait" (![LoopStruct] "$recvAddr")
+                 method_call #semantics.semantics #"LoopStruct" #"forLoopWait" (![LoopStruct] "$recvAddr")
                  )%V)]); ("BoolTest"%go, []); ("BoolTest'ptr"%go, []); ("ArrayEditor"%go, []); ("ArrayEditor'ptr"%go, [("Advance"%go, ArrayEditor__Advance)]); ("Bar"%go, []); ("Bar'ptr"%go, [("mutate"%go, Bar__mutate)]); ("Foo"%go, []); ("Foo'ptr"%go, [("mutateBar"%go, Foo__mutateBar)]); ("TwoInts"%go, []); ("TwoInts'ptr"%go, []); ("S"%go, [("readBVal"%go, S__readBVal)]); ("S'ptr"%go, [("negateC"%go, S__negateC); ("readA"%go, S__readA); ("readB"%go, S__readB); ("readBVal"%go, (λ: "$recvAddr",
-                 method_call #semantics #"S" #"readBVal" (![S] "$recvAddr")
+                 method_call #semantics.semantics #"S" #"readBVal" (![S] "$recvAddr")
                  )%V); ("updateBValX"%go, S__updateBValX)]); ("StructWrap"%go, []); ("StructWrap'ptr"%go, []); ("StructWithFunc"%go, []); ("StructWithFunc'ptr"%go, []); ("switchConcrete"%go, []); ("switchConcrete'ptr"%go, [("marker"%go, switchConcrete__marker)]); ("Log"%go, [("Apply"%go, Log__Apply); ("BeginTxn"%go, Log__BeginTxn); ("Commit"%go, Log__Commit); ("Read"%go, Log__Read); ("Size"%go, Log__Size); ("Write"%go, Log__Write); ("lock"%go, Log__lock); ("unlock"%go, Log__unlock)]); ("Log'ptr"%go, [("Apply"%go, (λ: "$recvAddr",
-                 method_call #semantics #"Log" #"Apply" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Apply" (![Log] "$recvAddr")
                  )%V); ("BeginTxn"%go, (λ: "$recvAddr",
-                 method_call #semantics #"Log" #"BeginTxn" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"BeginTxn" (![Log] "$recvAddr")
                  )%V); ("Commit"%go, (λ: "$recvAddr",
-                 method_call #semantics #"Log" #"Commit" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Commit" (![Log] "$recvAddr")
                  )%V); ("Read"%go, (λ: "$recvAddr",
-                 method_call #semantics #"Log" #"Read" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Read" (![Log] "$recvAddr")
                  )%V); ("Size"%go, (λ: "$recvAddr",
-                 method_call #semantics #"Log" #"Size" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Size" (![Log] "$recvAddr")
                  )%V); ("Write"%go, (λ: "$recvAddr",
-                 method_call #semantics #"Log" #"Write" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Write" (![Log] "$recvAddr")
                  )%V); ("lock"%go, (λ: "$recvAddr",
-                 method_call #semantics #"Log" #"lock" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"lock" (![Log] "$recvAddr")
                  )%V); ("unlock"%go, (λ: "$recvAddr",
-                 method_call #semantics #"Log" #"unlock" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"unlock" (![Log] "$recvAddr")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo semantics.semantics :=

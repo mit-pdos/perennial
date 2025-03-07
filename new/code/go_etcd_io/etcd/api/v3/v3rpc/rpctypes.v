@@ -63,7 +63,7 @@ Definition Error : val :=
     else
       let: "$r0" := ((interface.get "Error" (![error] "verr")) #()) in
       do:  ("desc" <-[stringT] "$r0"));;;
-    return: (interface.make #rpctypes #"EtcdError" (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![ptrT] "ev")) #()) in
+    return: (interface.make #rpctypes.rpctypes #"EtcdError" (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![ptrT] "ev")) #()) in
      let: "$desc" := (![stringT] "desc") in
      struct.make EtcdError [{
        "code" ::= "$code";
@@ -95,9 +95,9 @@ Definition vars' : list (go_string * go_type) := [("ErrGRPCEmptyKey"%go, error);
 Definition functions' : list (go_string * val) := [("Error"%go, Error); ("ErrorDesc"%go, ErrorDesc)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("EtcdError"%go, [("Code"%go, EtcdError__Code); ("Error"%go, EtcdError__Error)]); ("EtcdError'ptr"%go, [("Code"%go, (λ: "$recvAddr",
-                 method_call #rpctypes #"EtcdError" #"Code" (![EtcdError] "$recvAddr")
+                 method_call #rpctypes.rpctypes #"EtcdError" #"Code" (![EtcdError] "$recvAddr")
                  )%V); ("Error"%go, (λ: "$recvAddr",
-                 method_call #rpctypes #"EtcdError" #"Error" (![EtcdError] "$recvAddr")
+                 method_call #rpctypes.rpctypes #"EtcdError" #"Error" (![EtcdError] "$recvAddr")
                  )%V)]); ("TokenFieldNameGRPCKey"%go, []); ("TokenFieldNameGRPCKey'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo rpctypes.rpctypes :=

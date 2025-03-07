@@ -142,7 +142,7 @@ Definition BankClerk__SimpleTransfer : val :=
         do:  (let: "$a0" := (![stringT] (slice.elem_ref stringT (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) (![uint64T] "src"))) in
         let: "$a1" := (![stringT] (slice.elem_ref stringT (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) (![uint64T] "dst"))) in
         let: "$a2" := (![uint64T] "amount") in
-        (method_call #bank #"BankClerk'ptr" #"transfer_internal" (![ptrT] "bck")) "$a0" "$a1" "$a2")
+        (method_call #bank.bank #"BankClerk'ptr" #"transfer_internal" (![ptrT] "bck")) "$a0" "$a1" "$a2")
       else do:  #()))).
 
 (* go: bank.go:76:23 *)
@@ -175,7 +175,7 @@ Definition BankClerk__SimpleAudit : val :=
   rec: "BankClerk__SimpleAudit" "bck" <> :=
     exception_do (let: "bck" := (ref_ty ptrT "bck") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ((method_call #bank #"BankClerk'ptr" #"get_total" (![ptrT] "bck")) #()) ≠ BAL_TOTAL
+      (if: ((method_call #bank.bank #"BankClerk'ptr" #"get_total" (![ptrT] "bck")) #()) ≠ BAL_TOTAL
       then
         do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Balance total invariant violated"%go) in
         Panic "$a0")

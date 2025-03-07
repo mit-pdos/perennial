@@ -509,7 +509,7 @@ Definition Server__applyAsFollower : val :=
         let: "$r0" := EEpochStale in
         do:  ((struct.field_ref applyAsFollowerReply "err" (![ptrT] "reply")) <-[Error] "$r0")))
       ) in
-    (method_call #paxos #"Server'ptr" #"withLock" (![ptrT] "s")) "$a0")).
+    (method_call #paxos.paxos #"Server'ptr" #"withLock" (![ptrT] "s")) "$a0")).
 
 (* NOTE:
    This will vote yes only the first time it's called in an epoch.
@@ -544,7 +544,7 @@ Definition Server__enterNewEpoch : val :=
       let: "$r0" := (![sliceT] (struct.field_ref paxosState "state" (![ptrT] "ps"))) in
       do:  ((struct.field_ref enterNewEpochReply "state" (![ptrT] "reply")) <-[sliceT] "$r0"))
       ) in
-    (method_call #paxos #"Server'ptr" #"withLock" (![ptrT] "s")) "$a0")).
+    (method_call #paxos.paxos #"Server'ptr" #"withLock" (![ptrT] "s")) "$a0")).
 
 (* go: server.go:83:18 *)
 Definition Server__TryBecomeLeader : val :=
@@ -599,7 +599,7 @@ Definition Server__TryBecomeLeader : val :=
       let: "$go" := (λ: <>,
         exception_do (let: "reply" := (ref_ty ptrT (zero_val ptrT)) in
         let: "$r0" := (let: "$a0" := (![ptrT] "args") in
-        (method_call #paxos #"singleClerk'ptr" #"enterNewEpoch" (![ptrT] "ck")) "$a0") in
+        (method_call #paxos.paxos #"singleClerk'ptr" #"enterNewEpoch" (![ptrT] "ck")) "$a0") in
         do:  ("reply" <-[ptrT] "$r0");;;
         do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] "mu")) #());;;
         do:  ("numReplies" <-[uint64T] ((![uint64T] "numReplies") + #(W64 1)));;;
@@ -668,7 +668,7 @@ Definition Server__TryBecomeLeader : val :=
           do:  ((struct.field_ref paxosState "state" (![ptrT] "ps")) <-[sliceT] "$r0")
         else do:  #()))
         ) in
-      (method_call #paxos #"Server'ptr" #"withLock" (![ptrT] "s")) "$a0");;;
+      (method_call #paxos.paxos #"Server'ptr" #"withLock" (![ptrT] "s")) "$a0");;;
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] "mu")) #())
     else
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] "mu")) #());;;
@@ -747,7 +747,7 @@ Definition Server__TryAcquire : val :=
         let: "$go" := (λ: <>,
           exception_do (let: "reply" := (ref_ty ptrT (zero_val ptrT)) in
           let: "$r0" := (let: "$a0" := (![ptrT] "args") in
-          (method_call #paxos #"singleClerk'ptr" #"applyAsFollower" (![ptrT] "ck")) "$a0") in
+          (method_call #paxos.paxos #"singleClerk'ptr" #"applyAsFollower" (![ptrT] "ck")) "$a0") in
           do:  ("reply" <-[ptrT] "$r0");;;
           do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] "mu")) #());;;
           do:  ("numReplies" <-[uint64T] ((![uint64T] "numReplies") + #(W64 1)));;;
@@ -871,7 +871,7 @@ Definition StartServer : val :=
       do:  ("args" <-[ptrT] "$r0");;;
       do:  (let: "$a0" := (![ptrT] "args") in
       let: "$a1" := (![ptrT] "reply") in
-      (method_call #paxos #"Server'ptr" #"applyAsFollower" (![ptrT] "s")) "$a0" "$a1");;;
+      (method_call #paxos.paxos #"Server'ptr" #"applyAsFollower" (![ptrT] "s")) "$a0" "$a1");;;
       let: "$r0" := (let: "$a0" := (![ptrT] "reply") in
       (func_call #paxos.paxos #"encodeApplyAsFollowerReply"%go) "$a0") in
       do:  ((![ptrT] "raw_reply") <-[sliceT] "$r0"))
@@ -889,7 +889,7 @@ Definition StartServer : val :=
       do:  ("args" <-[ptrT] "$r0");;;
       do:  (let: "$a0" := (![ptrT] "args") in
       let: "$a1" := (![ptrT] "reply") in
-      (method_call #paxos #"Server'ptr" #"enterNewEpoch" (![ptrT] "s")) "$a0" "$a1");;;
+      (method_call #paxos.paxos #"Server'ptr" #"enterNewEpoch" (![ptrT] "s")) "$a0" "$a1");;;
       let: "$r0" := (let: "$a0" := (![ptrT] "reply") in
       (func_call #paxos.paxos #"encodeEnterNewEpochReply"%go) "$a0") in
       do:  ((![ptrT] "raw_reply") <-[sliceT] "$r0"))
@@ -898,7 +898,7 @@ Definition StartServer : val :=
     let: "$r0" := (λ: "raw_args" "raw_reply",
       exception_do (let: "raw_reply" := (ref_ty ptrT "raw_reply") in
       let: "raw_args" := (ref_ty sliceT "raw_args") in
-      do:  ((method_call #paxos #"Server'ptr" #"TryBecomeLeader" (![ptrT] "s")) #()))
+      do:  ((method_call #paxos.paxos #"Server'ptr" #"TryBecomeLeader" (![ptrT] "s")) #()))
       ) in
     do:  (map.insert (![mapT uint64T funcT] "handlers") RPC_BECOME_LEADER "$r0");;;
     let: "r" := (ref_ty ptrT (zero_val ptrT)) in

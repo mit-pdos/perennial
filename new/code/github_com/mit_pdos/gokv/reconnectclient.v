@@ -82,7 +82,7 @@ Definition ReconnectingClient__Call : val :=
     let: "rpcid" := (ref_ty uint64T "rpcid") in
     let: "urpcCl" := (ref_ty ptrT (zero_val ptrT)) in
     let: "err1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #reconnectclient #"ReconnectingClient'ptr" #"getClient" (![ptrT] "cl")) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #reconnectclient.reconnectclient #"ReconnectingClient'ptr" #"getClient" (![ptrT] "cl")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err1" <-[uint64T] "$r0");;;

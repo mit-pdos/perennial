@@ -105,7 +105,7 @@ Definition WaitGroup__Done : val :=
   rec: "WaitGroup__Done" "wg" <> :=
     exception_do (let: "wg" := (ref_ty ptrT "wg") in
     do:  (let: "$a0" := #(W64 (- 1)) in
-    (method_call #sync #"WaitGroup'ptr" #"Add" (![ptrT] "wg")) "$a0")).
+    (method_call #sync.sync #"WaitGroup'ptr" #"Add" (![ptrT] "wg")) "$a0")).
 
 (* Wait blocks until the [WaitGroup] counter is zero.
 

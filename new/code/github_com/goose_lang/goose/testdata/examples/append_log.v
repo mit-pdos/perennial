@@ -36,7 +36,7 @@ Definition Log__writeHdr : val :=
   rec: "Log__writeHdr" "log" <> :=
     exception_do (let: "log" := (ref_ty ptrT "log") in
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := ((method_call #append_log #"Log'ptr" #"mkHdr" (![ptrT] "log")) #()) in
+    let: "$a1" := ((method_call #append_log.append_log #"Log'ptr" #"mkHdr" (![ptrT] "log")) #()) in
     (func_call #disk #"Write"%go) "$a0" "$a1")).
 
 (* go: append_log.go:33:6 *)
@@ -64,7 +64,7 @@ Definition Init : val :=
       "diskSz" ::= "$diskSz"
     }])) in
     do:  ("log" <-[ptrT] "$r0");;;
-    do:  ((method_call #append_log #"Log'ptr" #"writeHdr" (![ptrT] "log")) #());;;
+    do:  ((method_call #append_log.append_log #"Log'ptr" #"writeHdr" (![ptrT] "log")) #());;;
     return: (![ptrT] "log", #true)).
 
 (* go: append_log.go:42:6 *)
@@ -117,7 +117,7 @@ Definition Log__Get : val :=
     let: "b" := (ref_ty boolT (zero_val boolT)) in
     let: "v" := (ref_ty sliceT (zero_val sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "i") in
-    (method_call #append_log #"Log'ptr" #"get" (![ptrT] "log")) "$a0") in
+    (method_call #append_log.append_log #"Log'ptr" #"get" (![ptrT] "log")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[sliceT] "$r0");;;
@@ -157,7 +157,7 @@ Definition Log__append : val :=
     (func_call #append_log.append_log #"writeAll"%go) "$a0" "$a1");;;
     do:  ((struct.field_ref Log "sz" (![ptrT] "log")) <-[uint64T] ((![uint64T] (struct.field_ref Log "sz" (![ptrT] "log"))) + (let: "$a0" := (![sliceT] "bks") in
     slice.len "$a0")));;;
-    do:  ((method_call #append_log #"Log'ptr" #"writeHdr" (![ptrT] "log")) #());;;
+    do:  ((method_call #append_log.append_log #"Log'ptr" #"writeHdr" (![ptrT] "log")) #());;;
     return: (#true)).
 
 (* go: append_log.go:82:17 *)
@@ -168,7 +168,7 @@ Definition Log__Append : val :=
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Log "m" (![ptrT] "log")))) #());;;
     let: "b" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "bks") in
-    (method_call #append_log #"Log'ptr" #"append" (![ptrT] "log")) "$a0") in
+    (method_call #append_log.append_log #"Log'ptr" #"append" (![ptrT] "log")) "$a0") in
     do:  ("b" <-[boolT] "$r0");;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Log "m" (![ptrT] "log")))) #());;;
     return: (![boolT] "b")).
@@ -179,14 +179,14 @@ Definition Log__reset : val :=
     exception_do (let: "log" := (ref_ty ptrT "log") in
     let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref Log "sz" (![ptrT] "log")) <-[uint64T] "$r0");;;
-    do:  ((method_call #append_log #"Log'ptr" #"writeHdr" (![ptrT] "log")) #())).
+    do:  ((method_call #append_log.append_log #"Log'ptr" #"writeHdr" (![ptrT] "log")) #())).
 
 (* go: append_log.go:94:17 *)
 Definition Log__Reset : val :=
   rec: "Log__Reset" "log" <> :=
     exception_do (let: "log" := (ref_ty ptrT "log") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Log "m" (![ptrT] "log")))) #());;;
-    do:  ((method_call #append_log #"Log'ptr" #"reset" (![ptrT] "log")) #());;;
+    do:  ((method_call #append_log.append_log #"Log'ptr" #"reset" (![ptrT] "log")) #());;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Log "m" (![ptrT] "log")))) #())).
 
 Definition vars' : list (go_string * go_type) := [].

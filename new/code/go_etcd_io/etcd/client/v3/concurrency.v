@@ -100,12 +100,12 @@ Definition Election__Campaign : val :=
     let: "$r0" := (![ptrT] (struct.field_ref Election "session" (![ptrT] "e"))) in
     do:  ("s" <-[ptrT] "$r0");;;
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     let: "k" := (ref_ty stringT (zero_val stringT)) in
     let: "$r0" := (let: "$a0" := #"%s%x"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![stringT] (struct.field_ref Election "keyPrefix" (![ptrT] "e")))) in
-    let: "$sl1" := (interface.make #clientv3 #"LeaseID" ((method_call #concurrency #"Session'ptr" #"Lease" (![ptrT] "s")) #())) in
+    let: "$sl1" := (interface.make #clientv3 #"LeaseID" ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![ptrT] "s")) #())) in
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
     (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ("k" <-[stringT] "$r0");;;
@@ -121,7 +121,7 @@ Definition Election__Campaign : val :=
     do:  ("txn" <-[clientv3.Txn] "$r0");;;
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![stringT] "k") in
     let: "$a1" := (![stringT] "val") in
-    let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency #"Session'ptr" #"Lease" (![ptrT] "s")) #()) in
+    let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![ptrT] "s")) #()) in
     (func_call #clientv3 #"WithLease"%go) "$a0") in
     slice.literal clientv3.OpOption ["$sl0"])) in
     (func_call #clientv3 #"OpPut"%go) "$a0" "$a1" "$a2") in
@@ -161,12 +161,12 @@ Definition Election__Campaign : val :=
       then
         (let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
         let: "$a1" := (![stringT] "val") in
-        (method_call #concurrency #"Election'ptr" #"Proclaim" (![ptrT] "e")) "$a0" "$a1") in
+        (method_call #concurrency.concurrency #"Election'ptr" #"Proclaim" (![ptrT] "e")) "$a0" "$a1") in
         do:  ("err" <-[error] "$r0");;;
         (if: (~ (interface.eq (![error] "err") #interface.nil))
         then
           do:  (let: "$a0" := (![context.Context] "ctx") in
-          (method_call #concurrency #"Election'ptr" #"Resign" (![ptrT] "e")) "$a0");;;
+          (method_call #concurrency.concurrency #"Election'ptr" #"Resign" (![ptrT] "e")) "$a0");;;
           return: (![error] "err")
         else do:  #()))
       else do:  #())
@@ -181,7 +181,7 @@ Definition Election__Campaign : val :=
     then
       do:  (chan.select [] [("$recvChan0", (λ: "$recvVal",
           do:  (let: "$a0" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
-          (method_call #concurrency #"Election'ptr" #"Resign" (![ptrT] "e")) "$a0")
+          (method_call #concurrency.concurrency #"Election'ptr" #"Resign" (![ptrT] "e")) "$a0")
           ))] (InjR (λ: <>,
         let: "$r0" := #null in
         do:  ((struct.field_ref Election "leaderSession" (![ptrT] "e")) <-[ptrT] "$r0")
@@ -204,7 +204,7 @@ Definition Election__Proclaim : val :=
     then return: (![error] (globals.get #concurrency.concurrency #"ErrElectionNotLeader"%go))
     else do:  #());;;
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     let: "cmp" := (ref_ty clientv3.Cmp (zero_val clientv3.Cmp)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![stringT] (struct.field_ref Election "leaderKey" (![ptrT] "e"))) in
@@ -221,7 +221,7 @@ Definition Election__Proclaim : val :=
     do:  ("txn" <-[clientv3.Txn] "$r0");;;
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![stringT] (struct.field_ref Election "leaderKey" (![ptrT] "e"))) in
     let: "$a1" := (![stringT] "val") in
-    let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency #"Session'ptr" #"Lease" (![ptrT] (struct.field_ref Election "leaderSession" (![ptrT] "e")))) #()) in
+    let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![ptrT] (struct.field_ref Election "leaderSession" (![ptrT] "e")))) #()) in
     (func_call #clientv3 #"WithLease"%go) "$a0") in
     slice.literal clientv3.OpOption ["$sl0"])) in
     (func_call #clientv3 #"OpPut"%go) "$a0" "$a1" "$a2") in
@@ -260,7 +260,7 @@ Definition Election__Resign : val :=
     then return: (#interface.nil)
     else do:  #());;;
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     let: "cmp" := (ref_ty clientv3.Cmp (zero_val clientv3.Cmp)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![stringT] (struct.field_ref Election "leaderKey" (![ptrT] "e"))) in
@@ -301,7 +301,7 @@ Definition Election__Leader : val :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "ctx" := (ref_ty context.Context "ctx") in
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "resp" := (ref_ty ptrT (zero_val ptrT)) in
@@ -340,7 +340,7 @@ Definition Election__Observe : val :=
     do:  ("retc" <-[chanT clientv3.GetResponse] "$r0");;;
     let: "$a0" := (![context.Context] "ctx") in
     let: "$a1" := (![chanT clientv3.GetResponse] "retc") in
-    let: "$go" := (method_call #concurrency #"Election'ptr" #"observe" (![ptrT] "e")) in
+    let: "$go" := (method_call #concurrency.concurrency #"Election'ptr" #"observe" (![ptrT] "e")) in
     do:  (Fork ("$go" "a0" "a1"));;;
     return: (![chanT clientv3.GetResponse] "retc")).
 
@@ -351,7 +351,7 @@ Definition Election__observe : val :=
     let: "ch" := (ref_ty (chanT clientv3.GetResponse) "ch") in
     let: "ctx" := (ref_ty context.Context "ctx") in
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Election "session" (![ptrT] "e")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     do:  (let: "$a0" := (![chanT clientv3.GetResponse] "ch") in
     let: "$f" := chan.close in
@@ -655,7 +655,7 @@ Definition Mutex__TryLock : val :=
     let: "err" := (ref_ty error (zero_val error)) in
     let: "resp" := (ref_ty ptrT (zero_val ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-    (method_call #concurrency #"Mutex'ptr" #"tryAcquire" (![ptrT] "m")) "$a0") in
+    (method_call #concurrency.concurrency #"Mutex'ptr" #"tryAcquire" (![ptrT] "m")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[ptrT] "$r0");;;
@@ -674,7 +674,7 @@ Definition Mutex__TryLock : val :=
       return: (#interface.nil)
     else do:  #());;;
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     (let: "err" := (ref_ty error (zero_val error)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
@@ -705,7 +705,7 @@ Definition Mutex__Lock : val :=
     let: "err" := (ref_ty error (zero_val error)) in
     let: "resp" := (ref_ty ptrT (zero_val ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-    (method_call #concurrency #"Mutex'ptr" #"tryAcquire" (![ptrT] "m")) "$a0") in
+    (method_call #concurrency.concurrency #"Mutex'ptr" #"tryAcquire" (![ptrT] "m")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[ptrT] "$r0");;;
@@ -724,7 +724,7 @@ Definition Mutex__Lock : val :=
       return: (#interface.nil)
     else do:  #());;;
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     let: "werr" := (ref_ty error (zero_val error)) in
     let: "$r0" := (let: "$a0" := (![context.Context] "ctx") in
@@ -736,7 +736,7 @@ Definition Mutex__Lock : val :=
     (if: (~ (interface.eq (![error] "werr") #interface.nil))
     then
       do:  (let: "$a0" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
-      (method_call #concurrency #"Mutex'ptr" #"Unlock" (![ptrT] "m")) "$a0");;;
+      (method_call #concurrency.concurrency #"Mutex'ptr" #"Unlock" (![ptrT] "m")) "$a0");;;
       return: (![error] "werr")
     else do:  #());;;
     let: "gresp" := (ref_ty ptrT (zero_val ptrT)) in
@@ -751,7 +751,7 @@ Definition Mutex__Lock : val :=
     (if: (~ (interface.eq (![error] "werr") #interface.nil))
     then
       do:  (let: "$a0" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
-      (method_call #concurrency #"Mutex'ptr" #"Unlock" (![ptrT] "m")) "$a0");;;
+      (method_call #concurrency.concurrency #"Mutex'ptr" #"Unlock" (![ptrT] "m")) "$a0");;;
       return: (![error] "werr")
     else do:  #());;;
     (if: (let: "$a0" := (![sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![ptrT] "gresp"))) in
@@ -771,11 +771,11 @@ Definition Mutex__tryAcquire : val :=
     let: "$r0" := (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m"))) in
     do:  ("s" <-[ptrT] "$r0");;;
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := #"%s%x"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![stringT] (struct.field_ref Mutex "pfx" (![ptrT] "m")))) in
-    let: "$sl1" := (interface.make #clientv3 #"LeaseID" ((method_call #concurrency #"Session'ptr" #"Lease" (![ptrT] "s")) #())) in
+    let: "$sl1" := (interface.make #clientv3 #"LeaseID" ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![ptrT] "s")) #())) in
     slice.literal interfaceT ["$sl0"; "$sl1"])) in
     (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ((struct.field_ref Mutex "myKey" (![ptrT] "m")) <-[stringT] "$r0");;;
@@ -789,7 +789,7 @@ Definition Mutex__tryAcquire : val :=
     let: "put" := (ref_ty clientv3.Op (zero_val clientv3.Op)) in
     let: "$r0" := (let: "$a0" := (![stringT] (struct.field_ref Mutex "myKey" (![ptrT] "m"))) in
     let: "$a1" := #""%go in
-    let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency #"Session'ptr" #"Lease" (![ptrT] "s")) #()) in
+    let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![ptrT] "s")) #()) in
     (func_call #clientv3 #"WithLease"%go) "$a0") in
     slice.literal clientv3.OpOption ["$sl0"])) in
     (func_call #clientv3 #"OpPut"%go) "$a0" "$a1" "$a2") in
@@ -851,7 +851,7 @@ Definition Mutex__Unlock : val :=
        (func_call #fmt #"Errorf"%go) "$a0" "$a1")
     else do:  #());;;
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] "m")))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     (let: "err" := (ref_ty error (zero_val error)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
@@ -904,11 +904,11 @@ Definition lockerMutex__Lock : val :=
   rec: "lockerMutex__Lock" "lm" <> :=
     exception_do (let: "lm" := (ref_ty ptrT "lm") in
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     (let: "err" := (ref_ty error (zero_val error)) in
     let: "$r0" := (let: "$a0" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
-    (method_call #concurrency #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))) "$a0") in
+    (method_call #concurrency.concurrency #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))) "$a0") in
     do:  ("err" <-[error] "$r0");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
@@ -921,11 +921,11 @@ Definition lockerMutex__Unlock : val :=
   rec: "lockerMutex__Unlock" "lm" <> :=
     exception_do (let: "lm" := (ref_ty ptrT "lm") in
     let: "client" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := ((method_call #concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))))) #()) in
+    let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![ptrT] (struct.field_ref Mutex "s" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))))) #()) in
     do:  ("client" <-[ptrT] "$r0");;;
     (let: "err" := (ref_ty error (zero_val error)) in
     let: "$r0" := (let: "$a0" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![ptrT] "client")) #()) in
-    (method_call #concurrency #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))) "$a0") in
+    (method_call #concurrency.concurrency #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref lockerMutex "Mutex" (![ptrT] "lm")))) "$a0") in
     do:  ("err" <-[error] "$r0");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
@@ -940,7 +940,7 @@ Definition NewLocker : val :=
   rec: "NewLocker" "s" "pfx" :=
     exception_do (let: "pfx" := (ref_ty stringT "pfx") in
     let: "s" := (ref_ty ptrT "s") in
-    return: (interface.make #concurrency #"lockerMutex'ptr" (ref_ty lockerMutex (struct.make lockerMutex [{
+    return: (interface.make #concurrency.concurrency #"lockerMutex'ptr" (ref_ty lockerMutex (struct.make lockerMutex [{
        "Mutex" ::= let: "$a0" := (![ptrT] "s") in
        let: "$a1" := (![stringT] "pfx") in
        (func_call #concurrency.concurrency #"NewMutex"%go) "$a0" "$a1"
@@ -1121,7 +1121,7 @@ Definition Session__Orphan : val :=
 Definition Session__Close : val :=
   rec: "Session__Close" "s" <> :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
-    do:  ((method_call #concurrency #"Session'ptr" #"Orphan" (![ptrT] "s")) #());;;
+    do:  ((method_call #concurrency.concurrency #"Session'ptr" #"Orphan" (![ptrT] "s")) #());;;
     let: "cancel" := (ref_ty context.CancelFunc (zero_val context.CancelFunc)) in
     let: "ctx" := (ref_ty context.Context (zero_val context.Context)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] (struct.field_ref sessionOptions "ctx" (![ptrT] (struct.field_ref Session "opts" (![ptrT] "s"))))) in
@@ -1356,13 +1356,13 @@ Definition mkSTM : val :=
       }])) in
       do:  ("s" <-[ptrT] "$r0");;;
       let: "$r0" := (λ: <>,
-        exception_do (return: (let: "$a0" := ((method_call #concurrency #"readSet" #"cmps" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()) in
-         let: "$a1" := (let: "$a0" := (((method_call #concurrency #"readSet" #"first" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()) + #(W64 1)) in
-         (method_call #concurrency #"writeSet" #"cmps" (![writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0") in
+        exception_do (return: (let: "$a0" := ((method_call #concurrency.concurrency #"readSet" #"cmps" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()) in
+         let: "$a1" := (let: "$a0" := (((method_call #concurrency.concurrency #"readSet" #"first" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()) + #(W64 1)) in
+         (method_call #concurrency.concurrency #"writeSet" #"cmps" (![writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0") in
          (slice.append sliceT) "$a0" "$a1"))
         ) in
       do:  ((struct.field_ref stm "conflicts" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))) <-[funcT] "$r0");;;
-      return: (interface.make #concurrency #"stmSerializable'ptr" (![ptrT] "s"))
+      return: (interface.make #concurrency.concurrency #"stmSerializable'ptr" (![ptrT] "s"))
     else
       (if: "$sw" = Serializable
       then
@@ -1384,10 +1384,10 @@ Definition mkSTM : val :=
         }])) in
         do:  ("s" <-[ptrT] "$r0");;;
         let: "$r0" := (λ: <>,
-          exception_do (return: ((method_call #concurrency #"readSet" #"cmps" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()))
+          exception_do (return: ((method_call #concurrency.concurrency #"readSet" #"cmps" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()))
           ) in
         do:  ((struct.field_ref stm "conflicts" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))) <-[funcT] "$r0");;;
-        return: (interface.make #concurrency #"stmSerializable'ptr" (![ptrT] "s"))
+        return: (interface.make #concurrency.concurrency #"stmSerializable'ptr" (![ptrT] "s"))
       else
         (if: "$sw" = RepeatableReads
         then
@@ -1406,10 +1406,10 @@ Definition mkSTM : val :=
           }])) in
           do:  ("s" <-[ptrT] "$r0");;;
           let: "$r0" := (λ: <>,
-            exception_do (return: ((method_call #concurrency #"readSet" #"cmps" (![readSet] (struct.field_ref stm "rset" (![ptrT] "s")))) #()))
+            exception_do (return: ((method_call #concurrency.concurrency #"readSet" #"cmps" (![readSet] (struct.field_ref stm "rset" (![ptrT] "s")))) #()))
             ) in
           do:  ((struct.field_ref stm "conflicts" (![ptrT] "s")) <-[funcT] "$r0");;;
-          return: (interface.make #concurrency #"stm'ptr" (![ptrT] "s"))
+          return: (interface.make #concurrency.concurrency #"stm'ptr" (![ptrT] "s"))
         else
           (if: "$sw" = ReadCommitted
           then
@@ -1431,7 +1431,7 @@ Definition mkSTM : val :=
               exception_do (return: (#slice.nil))
               ) in
             do:  ((struct.field_ref stm "conflicts" (![ptrT] "s")) <-[funcT] "$r0");;;
-            return: (interface.make #concurrency #"stm'ptr" (![ptrT] "s"))
+            return: (interface.make #concurrency.concurrency #"stm'ptr" (![ptrT] "s"))
           else
             do:  (let: "$a0" := (interface.make #""%go #"string"%go #"unsupported stm"%go) in
             Panic "$a0")))))).
@@ -1646,13 +1646,13 @@ Definition stm__Get : val :=
     let: "keys" := (ref_ty sliceT "keys") in
     (let: "wv" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "keys") in
-    (method_call #concurrency #"writeSet" #"get" (![writeSet] (struct.field_ref stm "wset" (![ptrT] "s")))) "$a0") in
+    (method_call #concurrency.concurrency #"writeSet" #"get" (![writeSet] (struct.field_ref stm "wset" (![ptrT] "s")))) "$a0") in
     do:  ("wv" <-[ptrT] "$r0");;;
     (if: (![ptrT] "wv") ≠ #null
     then return: (![stringT] (struct.field_ref stmPut "val" (![ptrT] "wv")))
     else do:  #()));;;
     return: (let: "$a0" := (let: "$a0" := (![sliceT] "keys") in
-     (method_call #concurrency #"stm'ptr" #"fetch" (![ptrT] "s")) "$a0") in
+     (method_call #concurrency.concurrency #"stm'ptr" #"fetch" (![ptrT] "s")) "$a0") in
      (func_call #concurrency.concurrency #"respToValue"%go) "$a0")).
 
 (* go: stm.go:252:15 *)
@@ -1692,7 +1692,7 @@ Definition stm__Rev : val :=
     (let: "resp" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (![stringT] "key") in
     slice.literal stringT ["$sl0"])) in
-    (method_call #concurrency #"stm'ptr" #"fetch" (![ptrT] "s")) "$a0") in
+    (method_call #concurrency.concurrency #"stm'ptr" #"fetch" (![ptrT] "s")) "$a0") in
     do:  ("resp" <-[ptrT] "$r0");;;
     (if: ((![ptrT] "resp") ≠ #null) && ((let: "$a0" := (![sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![ptrT] "resp"))) in
     slice.len "$a0") ≠ #(W64 0))
@@ -1706,7 +1706,7 @@ Definition stm__commit : val :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
     let: "err" := (ref_ty error (zero_val error)) in
     let: "txnresp" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := ((interface.get "Commit" (let: "$a0" := ((method_call #concurrency #"writeSet" #"puts" (![writeSet] (struct.field_ref stm "wset" (![ptrT] "s")))) #()) in
+    let: ("$ret0", "$ret1") := ((interface.get "Commit" (let: "$a0" := ((method_call #concurrency.concurrency #"writeSet" #"puts" (![writeSet] (struct.field_ref stm "wset" (![ptrT] "s")))) #()) in
     (interface.get "Then" (let: "$a0" := ((![funcT] (struct.field_ref stm "conflicts" (![ptrT] "s"))) #()) in
     (interface.get "If" (let: "$a0" := (![context.Context] (struct.field_ref stm "ctx" (![ptrT] "s"))) in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![ptrT] (struct.field_ref stm "client" (![ptrT] "s")))) "$a0")) "$a0")) "$a0")) #()) in
@@ -1716,7 +1716,7 @@ Definition stm__commit : val :=
     do:  ("err" <-[error] "$r1");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
-      do:  (let: "$a0" := (interface.make #concurrency #"stmError" (struct.make stmError [{
+      do:  (let: "$a0" := (interface.make #concurrency.concurrency #"stmError" (struct.make stmError [{
         "err" ::= ![error] "err"
       }])) in
       Panic "$a0")
@@ -1770,14 +1770,14 @@ Definition stm__fetch : val :=
     do:  ("err" <-[error] "$r1");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
-      do:  (let: "$a0" := (interface.make #concurrency #"stmError" (struct.make stmError [{
+      do:  (let: "$a0" := (interface.make #concurrency.concurrency #"stmError" (struct.make stmError [{
         "err" ::= ![error] "err"
       }])) in
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := (![sliceT] "keys") in
     let: "$a1" := (![ptrT] "txnresp") in
-    (method_call #concurrency #"readSet" #"add" (![readSet] (struct.field_ref stm "rset" (![ptrT] "s")))) "$a0" "$a1");;;
+    (method_call #concurrency.concurrency #"readSet" #"add" (![readSet] (struct.field_ref stm "rset" (![ptrT] "s")))) "$a0" "$a1");;;
     return: ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![ptrT] "txnresp"))) #(W64 0)))) #())).
 
 (* go: stm.go:295:15 *)
@@ -1800,7 +1800,7 @@ Definition stmSerializable__Get : val :=
     else do:  #());;;
     (let: "wv" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "keys") in
-    (method_call #concurrency #"writeSet" #"get" (![writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0") in
+    (method_call #concurrency.concurrency #"writeSet" #"get" (![writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0") in
     do:  ("wv" <-[ptrT] "$r0");;;
     (if: (![ptrT] "wv") ≠ #null
     then return: (![stringT] (struct.field_ref stmPut "val" (![ptrT] "wv")))
@@ -1831,7 +1831,7 @@ Definition stmSerializable__Get : val :=
       else do:  #()))));;;
     let: "resp" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "keys") in
-    (method_call #concurrency #"stm'ptr" #"fetch" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))) "$a0") in
+    (method_call #concurrency.concurrency #"stm'ptr" #"fetch" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))) "$a0") in
     do:  ("resp" <-[ptrT] "$r0");;;
     (if: ![boolT] "firstRead"
     then
@@ -1851,9 +1851,9 @@ Definition stmSerializable__Rev : val :=
     let: "key" := (ref_ty stringT "key") in
     do:  (let: "$a0" := ((let: "$sl0" := (![stringT] "key") in
     slice.literal stringT ["$sl0"])) in
-    (method_call #concurrency #"stmSerializable'ptr" #"Get" (![ptrT] "s")) "$a0");;;
+    (method_call #concurrency.concurrency #"stmSerializable'ptr" #"Get" (![ptrT] "s")) "$a0");;;
     return: (let: "$a0" := (![stringT] "key") in
-     (method_call #concurrency #"stm'ptr" #"Rev" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))) "$a0")).
+     (method_call #concurrency.concurrency #"stm'ptr" #"Rev" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))) "$a0")).
 
 (* go: stm.go:336:27 *)
 Definition stmSerializable__gets : val :=
@@ -1891,13 +1891,13 @@ Definition stmSerializable__commit : val :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
     let: "getops" := (ref_ty sliceT (zero_val sliceT)) in
     let: "keys" := (ref_ty sliceT (zero_val sliceT)) in
-    let: ("$ret0", "$ret1") := ((method_call #concurrency #"stmSerializable'ptr" #"gets" (![ptrT] "s")) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #concurrency.concurrency #"stmSerializable'ptr" #"gets" (![ptrT] "s")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("keys" <-[sliceT] "$r0");;;
     do:  ("getops" <-[sliceT] "$r1");;;
     let: "txn" := (ref_ty clientv3.Txn (zero_val clientv3.Txn)) in
-    let: "$r0" := (let: "$a0" := ((method_call #concurrency #"writeSet" #"puts" (![writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()) in
+    let: "$r0" := (let: "$a0" := ((method_call #concurrency.concurrency #"writeSet" #"puts" (![writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()) in
     (interface.get "Then" (let: "$a0" := ((![funcT] (struct.field_ref stm "conflicts" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) #()) in
     (interface.get "If" (let: "$a0" := (![context.Context] (struct.field_ref stm "ctx" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![ptrT] (struct.field_ref stm "client" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0")) "$a0")) "$a0") in
@@ -1912,7 +1912,7 @@ Definition stmSerializable__commit : val :=
     do:  ("err" <-[error] "$r1");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then
-      do:  (let: "$a0" := (interface.make #concurrency #"stmError" (struct.make stmError [{
+      do:  (let: "$a0" := (interface.make #concurrency.concurrency #"stmError" (struct.make stmError [{
         "err" ::= ![error] "err"
       }])) in
       Panic "$a0")
@@ -1922,7 +1922,7 @@ Definition stmSerializable__commit : val :=
     else do:  #());;;
     do:  (let: "$a0" := (![sliceT] "keys") in
     let: "$a1" := (![ptrT] "txnresp") in
-    (method_call #concurrency #"readSet" #"add" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0" "$a1");;;
+    (method_call #concurrency.concurrency #"readSet" #"add" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0" "$a1");;;
     let: "$r0" := (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) in
     do:  ((struct.field_ref stmSerializable "prefetch" (![ptrT] "s")) <-[mapT stringT ptrT] "$r0");;;
     let: "$r0" := #slice.nil in
@@ -2018,45 +2018,45 @@ Definition vars' : list (go_string * go_type) := [("ErrElectionNotLeader"%go, er
 Definition functions' : list (go_string * val) := [("NewElection"%go, NewElection); ("ResumeElection"%go, ResumeElection); ("waitDelete"%go, waitDelete); ("waitDeletes"%go, waitDeletes); ("NewMutex"%go, NewMutex); ("NewLocker"%go, NewLocker); ("NewSession"%go, NewSession); ("WithTTL"%go, WithTTL); ("WithLease"%go, WithLease); ("WithContext"%go, WithContext); ("WithIsolation"%go, WithIsolation); ("WithAbortContext"%go, WithAbortContext); ("WithPrefetch"%go, WithPrefetch); ("NewSTM"%go, NewSTM); ("mkSTM"%go, mkSTM); ("runSTM"%go, runSTM); ("isKeyCurrent"%go, isKeyCurrent); ("respToValue"%go, respToValue); ("NewSTMRepeatable"%go, NewSTMRepeatable); ("NewSTMSerializable"%go, NewSTMSerializable); ("NewSTMReadCommitted"%go, NewSTMReadCommitted)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Election"%go, []); ("Election'ptr"%go, [("Campaign"%go, Election__Campaign); ("Header"%go, Election__Header); ("Key"%go, Election__Key); ("Leader"%go, Election__Leader); ("Observe"%go, Election__Observe); ("Proclaim"%go, Election__Proclaim); ("Resign"%go, Election__Resign); ("Rev"%go, Election__Rev); ("observe"%go, Election__observe)]); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Header"%go, Mutex__Header); ("IsOwner"%go, Mutex__IsOwner); ("Key"%go, Mutex__Key); ("Lock"%go, Mutex__Lock); ("TryLock"%go, Mutex__TryLock); ("Unlock"%go, Mutex__Unlock); ("tryAcquire"%go, Mutex__tryAcquire)]); ("lockerMutex"%go, [("Header"%go, (λ: "$recv",
-                 method_call #concurrency #"Mutex'ptr" #"Header" (struct.field_get lockerMutex "Mutex" "$recv")
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"Header" (struct.field_get lockerMutex "Mutex" "$recv")
                  )%V); ("IsOwner"%go, (λ: "$recv",
-                 method_call #concurrency #"Mutex'ptr" #"IsOwner" (struct.field_get lockerMutex "Mutex" "$recv")
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"IsOwner" (struct.field_get lockerMutex "Mutex" "$recv")
                  )%V); ("Key"%go, (λ: "$recv",
-                 method_call #concurrency #"Mutex'ptr" #"Key" (struct.field_get lockerMutex "Mutex" "$recv")
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"Key" (struct.field_get lockerMutex "Mutex" "$recv")
                  )%V); ("TryLock"%go, (λ: "$recv",
-                 method_call #concurrency #"Mutex'ptr" #"TryLock" (struct.field_get lockerMutex "Mutex" "$recv")
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"TryLock" (struct.field_get lockerMutex "Mutex" "$recv")
                  )%V); ("tryAcquire"%go, (λ: "$recv",
-                 method_call #concurrency #"Mutex'ptr" #"tryAcquire" (struct.field_get lockerMutex "Mutex" "$recv")
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"tryAcquire" (struct.field_get lockerMutex "Mutex" "$recv")
                  )%V)]); ("lockerMutex'ptr"%go, [("Header"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"Mutex'ptr" #"Header" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"Header" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
                  )%V); ("IsOwner"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"Mutex'ptr" #"IsOwner" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"IsOwner" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
                  )%V); ("Key"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"Mutex'ptr" #"Key" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"Key" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
                  )%V); ("Lock"%go, lockerMutex__Lock); ("TryLock"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"Mutex'ptr" #"TryLock" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"TryLock" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
                  )%V); ("Unlock"%go, lockerMutex__Unlock); ("tryAcquire"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"Mutex'ptr" #"tryAcquire" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
+                 method_call #concurrency.concurrency #"Mutex'ptr" #"tryAcquire" (![ptrT] (struct.field_ref lockerMutex "Mutex" "$recvAddr"))
                  )%V)]); ("Session"%go, []); ("Session'ptr"%go, [("Client"%go, Session__Client); ("Close"%go, Session__Close); ("Ctx"%go, Session__Ctx); ("Done"%go, Session__Done); ("Lease"%go, Session__Lease); ("Orphan"%go, Session__Orphan)]); ("sessionOptions"%go, []); ("sessionOptions'ptr"%go, []); ("SessionOption"%go, []); ("SessionOption'ptr"%go, []); ("Isolation"%go, []); ("Isolation'ptr"%go, []); ("stmError"%go, []); ("stmError'ptr"%go, []); ("stmOptions"%go, []); ("stmOptions'ptr"%go, []); ("stmOption"%go, []); ("stmOption'ptr"%go, []); ("stmResponse"%go, []); ("stmResponse'ptr"%go, []); ("stm"%go, []); ("stm'ptr"%go, [("Del"%go, stm__Del); ("Get"%go, stm__Get); ("Put"%go, stm__Put); ("Rev"%go, stm__Rev); ("commit"%go, stm__commit); ("fetch"%go, stm__fetch); ("reset"%go, stm__reset)]); ("stmPut"%go, []); ("stmPut'ptr"%go, []); ("readSet"%go, [("add"%go, readSet__add); ("cmps"%go, readSet__cmps); ("first"%go, readSet__first)]); ("readSet'ptr"%go, [("add"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"readSet" #"add" (![readSet] "$recvAddr")
+                 method_call #concurrency.concurrency #"readSet" #"add" (![readSet] "$recvAddr")
                  )%V); ("cmps"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"readSet" #"cmps" (![readSet] "$recvAddr")
+                 method_call #concurrency.concurrency #"readSet" #"cmps" (![readSet] "$recvAddr")
                  )%V); ("first"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"readSet" #"first" (![readSet] "$recvAddr")
+                 method_call #concurrency.concurrency #"readSet" #"first" (![readSet] "$recvAddr")
                  )%V)]); ("writeSet"%go, [("cmps"%go, writeSet__cmps); ("get"%go, writeSet__get); ("puts"%go, writeSet__puts)]); ("writeSet'ptr"%go, [("cmps"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"writeSet" #"cmps" (![writeSet] "$recvAddr")
+                 method_call #concurrency.concurrency #"writeSet" #"cmps" (![writeSet] "$recvAddr")
                  )%V); ("get"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"writeSet" #"get" (![writeSet] "$recvAddr")
+                 method_call #concurrency.concurrency #"writeSet" #"get" (![writeSet] "$recvAddr")
                  )%V); ("puts"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"writeSet" #"puts" (![writeSet] "$recvAddr")
+                 method_call #concurrency.concurrency #"writeSet" #"puts" (![writeSet] "$recvAddr")
                  )%V)]); ("stmSerializable"%go, []); ("stmSerializable'ptr"%go, [("Del"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"stm'ptr" #"Del" (struct.field_ref stmSerializable "stm" "$recvAddr")
+                 method_call #concurrency.concurrency #"stm'ptr" #"Del" (struct.field_ref stmSerializable "stm" "$recvAddr")
                  )%V); ("Get"%go, stmSerializable__Get); ("Put"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"stm'ptr" #"Put" (struct.field_ref stmSerializable "stm" "$recvAddr")
+                 method_call #concurrency.concurrency #"stm'ptr" #"Put" (struct.field_ref stmSerializable "stm" "$recvAddr")
                  )%V); ("Rev"%go, stmSerializable__Rev); ("commit"%go, stmSerializable__commit); ("fetch"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"stm'ptr" #"fetch" (struct.field_ref stmSerializable "stm" "$recvAddr")
+                 method_call #concurrency.concurrency #"stm'ptr" #"fetch" (struct.field_ref stmSerializable "stm" "$recvAddr")
                  )%V); ("gets"%go, stmSerializable__gets); ("reset"%go, (λ: "$recvAddr",
-                 method_call #concurrency #"stm'ptr" #"reset" (struct.field_ref stmSerializable "stm" "$recvAddr")
+                 method_call #concurrency.concurrency #"stm'ptr" #"reset" (struct.field_ref stmSerializable "stm" "$recvAddr")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo concurrency.concurrency :=
