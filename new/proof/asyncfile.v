@@ -140,16 +140,16 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
 .
 
 #[global]
-Program Instance : IsPkgInit asyncfile.pkg_name' :=
+Program Instance : IsPkgInit asyncfile :=
   ltac2:(build_pkg_init ()).
 Final Obligation. apply _. Qed.
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
-  "#Hdef" ∷ is_pkg_init asyncfile.pkg_name' ∗
+  "#Hdef" ∷ is_pkg_init asyncfile ∗
   "#Hmu" ∷ f ↦s[asyncfile.AsyncFile :: "mu"]□ mu ∗
   "#HmuInv" ∷ is_Mutex mu (own_AsyncFile_internal f N γ P
-                             (interface.mk sync.pkg_name' "Mutex'ptr"%go #mu))
+                             (interface.mk sync "Mutex'ptr"%go #mu))
 .
 
 Definition own_AsyncFile (N:namespace) (f:loc) γ (P: list u8 → iProp Σ) (data:list u8) : iProp Σ :=
@@ -201,7 +201,7 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
         "#Hinv" ∷ is_write_inv N γ i Q ∗
         "Htok" ∷ own_escrow_token γ i
   }}}
-    method_call #asyncfile.pkg_name' #"AsyncFile'ptr" #"wait" #f #i
+    method_call #asyncfile #"AsyncFile'ptr" #"wait" #f #i
   {{{
         RET #(); Q
   }}}
@@ -529,7 +529,7 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data Φ :
   {{{
         RET #(); True
   }}} -∗ Φ v) -∗
-  WP method_call #asyncfile.pkg_name' #"AsyncFile'ptr" #"flushThread" #f {{ Φ }}.
+  WP method_call #asyncfile #"AsyncFile'ptr" #"flushThread" #f {{ Φ }}.
 Proof.
   iIntros "His Hwp".
   iNamed "His".
@@ -722,10 +722,10 @@ Qed.
 
 Lemma wp_MakeAsyncFile fname N P data :
   {{{
-        "#Hinit" ∷ is_pkg_init asyncfile.pkg_name' ∗
+        "#Hinit" ∷ is_pkg_init asyncfile ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    func_call #asyncfile.pkg_name' #"MakeAsyncFile" #fname
+    func_call #asyncfile #"MakeAsyncFile" #fname
   {{{
         γ sl f, RET (#sl, #f); sl ↦*□ data ∗ own_AsyncFile N f γ P data
   }}}
@@ -820,8 +820,8 @@ Qed.
 
 (*
 Lemma wp_initialize' pending postconds γtok :
-  main.pkg_name' ∉ pending →
-  postconds !! main.pkg_name' = Some (∃ (d : main.GlobalAddrs), main.is_defined ∗ is_initialized γtok)%I →
+  main ∉ pending →
+  postconds !! main = Some (∃ (d : main.GlobalAddrs), main.is_defined ∗ is_initialized γtok)%I →
   {{{ own_globals_tok pending postconds }}}
     asyncfile.initialize' #()
   {{{ (_ : main.GlobalAddrs), RET #();

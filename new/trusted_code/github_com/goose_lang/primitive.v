@@ -68,7 +68,7 @@ this in GooseLang, so we just loop. *)
 
   Definition AfterFunc : val := λ: "duration" "f", Fork "f" ;; ref "f".
 
-  Definition WaitTimeout : val := λ: "l" "timeout", method_call #sync.pkg_name' #"Cond" "Wait" "l".
+  Definition WaitTimeout : val := λ: "l" "timeout", method_call #sync #"Cond" "Wait" "l".
 
   Definition RandomUint64 : val := λ: <>, ArbitraryInt.
 

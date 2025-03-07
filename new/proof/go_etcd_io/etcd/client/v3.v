@@ -677,17 +677,17 @@ Context `{!goGlobalsGS Σ}.
 
 (* FIXME: move these *)
 #[global]
-Program Instance : IsPkgInit mvccpb.pkg_name' :=
+Program Instance : IsPkgInit mvccpb :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
 #[global]
-Program Instance : IsPkgInit etcdserverpb.pkg_name' :=
+Program Instance : IsPkgInit etcdserverpb :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
 #[global]
-Program Instance : IsPkgInit clientv3.pkg_name' :=
+Program Instance : IsPkgInit clientv3 :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 

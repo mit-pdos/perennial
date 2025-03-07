@@ -30,18 +30,18 @@ Context `{!heapGS Σ} `{!syncG Σ}.
 Context `{!goGlobalsGS Σ}.
 
 #[global]
-Program Instance race_pkg_is_init : IsPkgInit race.pkg_name' :=
+Program Instance race_pkg_is_init : IsPkgInit race :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
 #[global]
-Program Instance pkg_is_init : IsPkgInit sync.pkg_name' :=
+Program Instance pkg_is_init : IsPkgInit sync :=
   ltac2:(build_pkg_init ()).
 Final Obligation. apply _. Qed.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
-  "#Hi" ∷ is_pkg_init sync.pkg_name' ∗
+  "#Hi" ∷ is_pkg_init sync ∗
   "#Hinv" ∷ inv nroot (
         ∃ b : bool,
           (m ↦s[ sync.Mutex :: "state" ]{# 1/4} b) ∗
@@ -84,7 +84,7 @@ Lemma flatten_struct_tt :
   flatten_struct (# ()%V) = [].
 Proof. rewrite to_val_unseal //=. Qed.
 
-Theorem init_Mutex R E m : is_pkg_init sync.pkg_name' -∗ m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : is_pkg_init sync -∗ m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "#Hi Hl HR".
   simpl.
@@ -102,7 +102,7 @@ Qed.
 
 Lemma wp_Mutex__Lock m R :
   {{{ is_Mutex m R }}}
-    method_call #sync.pkg_name' #"Mutex'ptr" #"Lock" #m #()
+    method_call #sync #"Mutex'ptr" #"Lock" #m #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   wp_start as "H". iNamed "H".
@@ -139,8 +139,8 @@ Qed.
 
 (* this form is useful for defer statements *)
 Lemma wp_Mutex__Unlock' m :
-  {{{ is_pkg_init sync.pkg_name' }}}
-    method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #m
+  {{{ is_pkg_init sync }}}
+    method_call #sync #"Mutex'ptr" #"Unlock" #m
   {{{ (f : func.t), RET #f;
       ∀ R,
     {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} #f #() {{{ RET #(); True }}}
@@ -172,7 +172,7 @@ Qed.
 
 Lemma wp_Mutex__Unlock m R :
   {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}}
-    method_call #sync.pkg_name' #"Mutex'ptr" #"Unlock" #m #()
+    method_call #sync #"Mutex'ptr" #"Unlock" #m #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "(#Hinv & Hlocked & HR)".
@@ -192,7 +192,7 @@ Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 
 Lemma Mutex_is_Locker (m : loc) R :
   is_Mutex m R -∗
-  is_Locker (interface.mk sync.pkg_name' "Mutex'ptr"%go #m) (own_Mutex m ∗ R).
+  is_Locker (interface.mk sync "Mutex'ptr"%go #m) (own_Mutex m ∗ R).
 Proof.
   iIntros "#[? ?]".
   iSplitL.
@@ -208,14 +208,14 @@ Qed.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
-  "#Hi" ∷ is_pkg_init sync.pkg_name' ∗
+  "#Hi" ∷ is_pkg_init sync ∗
   "#Hc" ∷ c ↦s[sync.Cond :: "L"]□ m.
 
 Global Instance is_Cond_persistent c m : Persistent (is_Cond c m) := _.
 
 Theorem wp_NewCond (m : interface.t) :
-  {{{ is_pkg_init sync.pkg_name' }}}
-    func_call #sync.pkg_name' #"NewCond" #m
+  {{{ is_pkg_init sync }}}
+    func_call #sync #"NewCond" #m
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
   wp_start as "_".
@@ -232,7 +232,7 @@ Qed.
 
 Theorem wp_Cond__Signal c lk :
   {{{ is_Cond c lk }}}
-    method_call #sync.pkg_name' #"Cond'ptr" #"Signal" #c #()
+    method_call #sync #"Cond'ptr" #"Signal" #c #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[#Hdef Hc]".
@@ -241,7 +241,7 @@ Qed.
 
 Theorem wp_Cond__Broadcast c lk :
   {{{ is_Cond c lk }}}
-    method_call #sync.pkg_name' #"Cond'ptr" #"Broadcast" #c #()
+    method_call #sync #"Cond'ptr" #"Broadcast" #c #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "H"; iNamed "H".
@@ -250,7 +250,7 @@ Qed.
 
 Theorem wp_Cond__Wait c m R :
   {{{ is_Cond c m ∗ is_Locker m R ∗ R }}}
-    method_call #sync.pkg_name' #"Cond'ptr" #"Wait" #c #()
+    method_call #sync #"Cond'ptr" #"Wait" #c #()
   {{{ RET #(); R }}}.
 Proof.
   wp_start as "(#Hcond & #Hlock & HR)".
@@ -275,9 +275,9 @@ Definition own_sema γ (v : w32) : iProp Σ :=
 
 Lemma wp_runtime_Semacquire (sema : loc) γ N :
   ∀ Φ,
-  is_pkg_init sync.pkg_name' ∗ is_sema sema γ N -∗
+  is_pkg_init sync ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP func_call #sync.pkg_name' #"runtime_Semacquire" #sema {{ Φ }}.
+  WP func_call #sync #"runtime_Semacquire" #sema {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
   wp_for. wp_pures.
@@ -342,9 +342,9 @@ Qed.
 
 Lemma wp_runtime_SemacquireWaitGroup (sema : loc) γ N :
   ∀ Φ,
-  is_pkg_init sync.pkg_name' ∗ is_sema sema γ N -∗
+  is_pkg_init sync ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP func_call #sync.pkg_name' #"runtime_SemacquireWaitGroup" #sema {{ Φ }}.
+  WP func_call #sync #"runtime_SemacquireWaitGroup" #sema {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
   wp_apply (wp_runtime_Semacquire with "[$]").
@@ -353,9 +353,9 @@ Qed.
 
 Lemma wp_runtime_Semrelease (sema : loc) γ N (_u1 : bool) (_u2 : w64):
   ∀ Φ,
-  is_pkg_init sync.pkg_name' ∗ is_sema sema γ N -∗
+  is_pkg_init sync ∗ is_sema sema γ N -∗
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (own_sema γ (word.add v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP func_call #sync.pkg_name' #"runtime_Semrelease" #sema #_u1 #_u2 {{ Φ }}.
+  WP func_call #sync #"runtime_Semrelease" #sema #_u1 #_u2 {{ Φ }}.
 Proof.
 Admitted.
 
@@ -751,7 +751,7 @@ Qed.
 Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
   let delta' := (W32 (uint.Z delta)) in
   ∀ Φ,
-  is_pkg_init sync.pkg_name' ∗ is_WaitGroup wg γ N -∗
+  is_pkg_init sync ∗ is_WaitGroup wg γ N -∗
   (|={⊤,↑N}=>
      ∃ oldc,
        "Hwg" ∷ own_WaitGroup γ oldc ∗
@@ -760,7 +760,7 @@ Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
        "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
                own_WaitGroup γ (word.add oldc delta') ={↑N,⊤}=∗ Φ #())
   ) -∗
-  WP method_call #sync.pkg_name' #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
+  WP method_call #sync #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
 Proof.
   intros delta'.
   iIntros (?) "[#init #His] HΦ".
@@ -1090,13 +1090,13 @@ Qed.
 
 Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
   ∀ Φ,
-  is_pkg_init sync.pkg_name' ∗ is_WaitGroup wg γ N ∗ own_WaitGroup_wait_token γ -∗
+  is_pkg_init sync ∗ is_WaitGroup wg γ N ∗ own_WaitGroup_wait_token γ -∗
   (|={⊤∖↑N, ∅}=>
      ∃ oldc,
        own_WaitGroup γ oldc ∗ (⌜ sint.Z oldc = 0 ⌝ → own_WaitGroup γ oldc ={∅,⊤∖↑N}=∗
                                own_WaitGroup_wait_token γ -∗ Φ #())
   ) -∗
-  WP method_call #sync.pkg_name' #"WaitGroup'ptr" #"Wait" #wg #() {{ Φ }}.
+  WP method_call #sync #"WaitGroup'ptr" #"Wait" #wg #() {{ Φ }}.
 Proof.
   iIntros (?) "(#Hinit & #Hwg & HR_in) HΦ".
   iNamed "Hinit". iNamed "Hwg".

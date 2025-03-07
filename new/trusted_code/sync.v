@@ -4,8 +4,6 @@ Module sync.
 Section code.
 Context `{ffi_syntax}.
 
-Definition pkg_name' : go_string := "sync".
-
 (* FIXME: make everything in here opaque. *)
 
 Definition Mutex : go_type := structT [
@@ -20,7 +18,7 @@ Definition Mutex__Lock : val :=
     if: Snd (CmpXchg (struct.field_ref Mutex "state" "m") #false #true) then
       #()
     else
-      method_call #pkg_name' #"Mutex'ptr" #"Lock" "m" #().
+      method_call #"sync" #"Mutex'ptr" #"Lock" "m" #().
 
 Definition Mutex__Unlock : val :=
   λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref Mutex "state" "m") #true #false ;;; return: #())
@@ -72,7 +70,7 @@ Definition runtime_Semacquire : val :=
 (* differs from runtime_Semacquire only in the park "reason", used for internal
 concurrency testing *)
 Definition runtime_SemacquireWaitGroup : val :=
-  λ: "addr", func_call #pkg_name' #"runtime_Semacquire" "addr".
+  λ: "addr", func_call #"sync" #"runtime_Semacquire" "addr".
 
 Definition runtime_Semrelease : val :=
   λ: <>, #() #(). (* FIXME: use `AtomicAdd` *)

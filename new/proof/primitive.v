@@ -7,13 +7,13 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 
 #[global]
-Program Instance is_pkg_init_inst : IsPkgInit (PROP:=iProp Σ) primitive.pkg_name' :=
+Program Instance is_pkg_init_inst : IsPkgInit (PROP:=iProp Σ) primitive :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
 Lemma wp_Assume (cond : bool) :
-  {{{ is_pkg_init primitive.pkg_name' }}}
-    func_call #primitive.pkg_name' #"Assume" #cond
+  {{{ is_pkg_init primitive }}}
+    func_call #primitive #"Assume" #cond
   {{{ RET #(); ⌜ cond = true ⌝ }}}
 .
 Proof.

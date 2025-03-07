@@ -3,6 +3,8 @@ From New.golang Require Import defn.
 
 Require Export New.trusted_code.fmt.
 Import fmt.
+Definition fmt : go_string := "fmt".
+
 Module fmt.
 Section code.
 Context `{ffi_syntax}.
@@ -18,15 +20,13 @@ Axiom errComplex'init : val.
 
 Axiom errBool'init : val.
 
-Definition pkg_name' : go_string := "fmt".
-
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [("Printf"%go, Printf); ("Print"%go, Print)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
-#[global] Instance info' : PkgInfo pkg_name' :=
+#[global] Instance info' : PkgInfo fmt.fmt :=
   {|
     pkg_vars := vars';
     pkg_functions := functions';
@@ -38,7 +38,7 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
+    globals.package_init fmt.fmt (λ: <>,
       exception_do (do:  (ppFree'init #());;;
       do:  (space'init #());;;
       do:  (ssFree'init #());;;

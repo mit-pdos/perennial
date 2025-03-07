@@ -29,19 +29,19 @@ Global Existing Instance is_Client_pers.
 Axiom wp_Client__GetLogger :
   ∀ (client : loc),
   {{{ is_Client client }}}
-    method_call #clientv3.pkg_name' #"Client'ptr" #"GetLogger" #client #()
+    method_call #clientv3 #"Client'ptr" #"GetLogger" #client #()
   {{{ (lg : loc), RET #lg; True }}}.
 
 Axiom wp_Client__Ctx :
   ∀ (client : loc),
   {{{ is_Client client }}}
-    method_call #clientv3.pkg_name' #"Client'ptr" #"Ctx" #client #()
+    method_call #clientv3 #"Client'ptr" #"Ctx" #client #()
   {{{ (ctx : context.Context.t), RET #ctx; True }}}.
 
 Axiom wp_Client__Grant :
   ∀ client (ctx : context.Context.t) (ttl : w64),
   {{{ is_Client client }}}
-    method_call #clientv3.pkg_name' #"Client'ptr" #"Grant"
+    method_call #clientv3 #"Client'ptr" #"Grant"
       #client #ctx #ttl
   {{{
       resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
@@ -55,36 +55,36 @@ Context `{!concurrency.GlobalAddrs}.
 Context `{!goGlobalsGS Σ}.
 
 (* FIXME: move these *)
-Program Instance : IsPkgInit math.pkg_name' :=
+Program Instance : IsPkgInit math :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
-Program Instance : IsPkgInit zapcore.pkg_name' :=
+Program Instance : IsPkgInit zapcore :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
-Program Instance : IsPkgInit zap.pkg_name' :=
+Program Instance : IsPkgInit zap :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
-Program Instance : IsPkgInit time.pkg_name' :=
+Program Instance : IsPkgInit time :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
-Program Instance : IsPkgInit strings.pkg_name' :=
+Program Instance : IsPkgInit strings :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
-Program Instance : IsPkgInit fmt.pkg_name' :=
+Program Instance : IsPkgInit fmt :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
-Program Instance : IsPkgInit errors.pkg_name' :=
+Program Instance : IsPkgInit errors :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
 #[global]
-Program Instance : IsPkgInit concurrency.pkg_name' :=
+Program Instance : IsPkgInit concurrency :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
@@ -93,10 +93,10 @@ Definition is_Session (s : loc) : iProp Σ :=
 
 Lemma wp_NewSession (client : loc) :
   {{{
-        is_pkg_init concurrency.pkg_name' ∗
+        is_pkg_init concurrency ∗
         "#His_client" ∷ is_Client client
   }}}
-    func_call #concurrency.pkg_name' #"NewSession" #client #slice.nil
+    func_call #concurrency #"NewSession" #client #slice.nil
   {{{ s err, RET (#s, #err);
       if decide (err = interface.nil) then
         True

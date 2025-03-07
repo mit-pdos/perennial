@@ -3,6 +3,8 @@ From New.golang Require Import defn.
 
 Require Export New.trusted_code.log.
 Import log.
+Definition log : go_string := "log".
+
 Module log.
 Section code.
 Context `{ffi_syntax}.
@@ -21,15 +23,13 @@ Axiom std'init : val.
 
 Axiom bufferPool'init : val.
 
-Definition pkg_name' : go_string := "log".
-
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [("Printf"%go, Printf); ("Println"%go, Println)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
-#[global] Instance info' : PkgInfo pkg_name' :=
+#[global] Instance info' : PkgInfo log.log :=
   {|
     pkg_vars := vars';
     pkg_functions := functions';
@@ -41,7 +41,7 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
-    globals.package_init pkg_name' (λ: <>,
+    globals.package_init log.log (λ: <>,
       exception_do (do:  (std'init #());;;
       do:  (bufferPool'init #()))
       ).
