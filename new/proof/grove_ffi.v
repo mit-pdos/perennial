@@ -94,7 +94,8 @@ Section grove.
     {{{ l, RET #l; is_Listener l host }}}.
   Proof.
     wp_start as "#Hdef".
-    rewrite to_val_unseal. simpl. wp_bind (ExternalOp _ _).
+    rewrite to_val_unseal. cbn [to_val_def into_val_loc into_val_w64].
+    wp_bind (ExternalOp _ _).
     iApply wp_ListenOp; first done.
     iIntros "!# _".
     iApply wp_fupd.
