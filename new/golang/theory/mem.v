@@ -5,6 +5,7 @@ From iris.bi.lib Require Import fractional.
 From Perennial.program_logic Require Import weakestpre.
 From New.golang.defn Require Export mem.
 From New.golang.theory Require Import proofmode list typing.
+From iris.proofmode Require Import string_ident.
 Require Import Coq.Program.Equality.
 
 From Ltac2 Require Import Ltac2.
@@ -662,6 +663,35 @@ Ltac2 wp_alloc () :=
                                                         "wp_alloc: could not find ref_ty"
   | [ |- _ ] => Control.backtrack_tactic_failure "wp_alloc: not a wp"
   end.
+
+Ltac2 wp_alloc_auto_visit e k :=
+  lazy_match! e with
+  (* Manually writing out [let: ?var_name := (ref_ty _ (Val _)) in ?e1] to get
+     pattern matching to work. *)
+  | (App (Rec BAnon (BNamed ?var_name) ?e1) (App (Val (ref_ty _)) (Val _))) =>
+      let let_expr1 := '(Rec BAnon (BNamed $var_name) $e1) in
+      let ptr_name := Std.eval_vm None constr:($var_name +:+ "_ptr") in
+      let k := constr:(@AppRCtx _ $let_expr1 :: $k) in
+      Control.once_plus (fun _ => eapply (tac_wp_ref_ty $k); ectx_simpl ())
+        (fun _ => Control.backtrack_tactic_failure "wp_alloc_auto: failed to apply tac_wp_ref_ty");
+      let i :=
+        orelse (fun () => Option.get_bt (Ident.of_string (StringToIdent.coq_string_to_string ptr_name)))
+          (fun _ => Control.backtrack_tactic_failure "wp_alloc_auto: could not convert to ident") in
+      Std.intros false [Std.IntroNaming (Std.IntroIdentifier i)];
+      let hyp_name := constr:("H" +:+ $ptr_name) in
+      ltac1:(hyp_name |- iIntros hyp_name) (Ltac1.of_constr hyp_name)
+  | _ => Control.zero Walk_expr_more
+  end.
+
+Ltac2 wp_alloc_auto () :=
+  lazy_match! goal with
+  | [ |- envs_entails _ (wp _ _ ?e _) ] => wp_walk_unwrap (fun () => walk_expr e wp_alloc_auto_visit)
+                                                        "wp_alloc_auto: could not find ref_ty"
+  | [ |- _ ] => Control.backtrack_tactic_failure "wp_alloc_auto: not a wp"
+  end.
+
+Tactic Notation "wp_alloc_auto" :=
+  ltac2:(Control.enter wp_alloc_auto).
 
 Tactic Notation "wp_alloc" ident(l) "as" constr(H) :=
   ltac2:(Control.enter wp_alloc);

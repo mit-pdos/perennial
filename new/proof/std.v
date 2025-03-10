@@ -100,11 +100,11 @@ Lemma wp_newJoinHandle (P: iProp Σ) :
 Proof.
   wp_start as "_".
   wp_auto.
+  wp_alloc mu as "?".
+  wp_auto.
   wp_apply (wp_NewCond with "[#]").
   iIntros (cond) "#His_cond".
-  repeat (wp_pures || wp_store || wp_load).
-  iMod (typed_pointsto_persist with "mu") as "mu".
-  iMod (typed_pointsto_persist with "cond") as "cond".
+  wp_auto.
   wp_alloc jh_l as "jh".
   iApply struct_fields_split in "jh". simpl. iNamed "jh".
   iMod (typed_pointsto_persist with "Hmu") as "Hmu".
@@ -112,12 +112,12 @@ Proof.
   iMod (init_Mutex (∃ (done_b: bool),
          "done_b" ∷ jh_l ↦s[std.JoinHandle :: "done"] done_b ∗
          "HP" ∷ if done_b then P else True)
-         with "[] r0 [Hdone]") as "Hlock".
+         with "[] [$] [Hdone]") as "Hlock".
   { iPkgInit. }
   { iNext.
     iFrame.
   }
-  wp_pures.
+  wp_auto.
   iApply "HΦ".
   rewrite /is_JoinHandle.
   iFrame "His_cond". iFrame.
@@ -138,7 +138,7 @@ Proof.
   wp_auto.
   wp_apply (wp_Mutex__Unlock with "[$Hlock $locked done_b P]").
   { iFrame "done_b P". }
-  wp_pures.
+  wp_auto.
   iApply "HΦ".
   done.
 Qed.
@@ -151,20 +151,20 @@ Lemma wp_Spawn (P: iProp Σ) (f : func.t) :
 Proof.
   wp_start as "Hwp".
   wp_auto.
-  iMod (typed_pointsto_persist with "f") as "#f".
   wp_apply (wp_newJoinHandle P).
   iIntros (l) "#Hhandle". wp_auto.
-  iMod (typed_pointsto_persist with "h") as "#h".
+  iMod (typed_pointsto_persist with "[$]") as "#?".
+  iMod (typed_pointsto_persist with "[$]") as "#?".
   wp_bind (Fork _).
   iApply (wp_fork with "[Hwp]").
-  - iModIntro. wp_pures. wp_load.
+  - iModIntro. wp_auto.
     (* NOTE: it's important not to do a pure reduction here since it would
     produce a substitution into the lambda *)
     wp_apply "Hwp".
     iIntros "HP".
     wp_auto.
     wp_apply (wp_JoinHandle__finish with "[$Hhandle $HP]").
-    wp_pures.
+    wp_auto.
     done.
   - iModIntro.
     wp_auto.
@@ -181,27 +181,27 @@ Proof.
   wp_auto.
   wp_apply (wp_Mutex__Lock with "Hlock").
   iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
-  wp_pures.
+  wp_auto.
 
   iAssert (∃ (done_b: bool),
            "locked" ∷ own_Mutex mu_l ∗
            "done" ∷ l ↦s[std.JoinHandle::"done"] done_b ∗
            "HP" ∷ (if done_b then P else True))%I
           with "[$Hlocked $done_b $HP]" as "HI".
-  wp_for. iNamed "HI". wp_pures.
+  wp_for. iNamed "HI". wp_auto.
   rewrite decide_True //.
   wp_auto.
   destruct done_b0; wp_auto.
   - iApply wp_for_post_break.
     wp_auto.
     wp_apply (wp_Mutex__Unlock with "[$Hlock $locked $done]").
-    wp_pures. iApply "HΦ". done.
+    wp_auto. iApply "HΦ". done.
   - wp_apply (wp_Cond__Wait with "[$Hcond locked done HP]").
     { iSplit.
       - iApply (Mutex_is_Locker with "Hlock").
       - iFrame. }
     iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
-    wp_pures.
+    wp_auto.
     iApply wp_for_post_do.
     wp_auto.
     iFrame.
