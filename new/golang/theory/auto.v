@@ -61,17 +61,14 @@ Tactic Notation "wp_start" "as" constr(pat) :=
 Tactic Notation "wp_start" :=
   wp_start as "Hpre".
 
-Ltac2 wp_pure_maybe_lc num_lc_wanted :=
-  if (Int.gt (Ref.get num_lc_wanted) 0) then
-    ltac1:(wp_pure_lc "?") > [];
-    (Ref.decr num_lc_wanted)
-  else
-    wp_pure () > [].
-
 Ltac2 wp_auto_lc (num_lc_wanted : int) :=
+  let num_lc_wanted := Ref.ref num_lc_wanted in
+  let wp_pure_maybe_lc () :=
+    if (Int.gt (Ref.get num_lc_wanted) 0) then ltac1:(wp_pure_lc "?") > []; (Ref.decr num_lc_wanted)
+    else wp_pure () > []
+  in
   progress (
-      let num_lc_wanted := Ref.ref num_lc_wanted in
-      repeat (first [ progress (wp_pure_maybe_lc num_lc_wanted)
+      repeat (first [ progress (wp_pure_maybe_lc ())
                     | wp_load ()
                     | wp_store ()
                     | wp_alloc_auto ()]);
