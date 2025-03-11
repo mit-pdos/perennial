@@ -1,4 +1,4 @@
-From Perennial.Helpers Require Import List Fractional NamedProps.
+From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
 From iris.algebra Require Import dfrac.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export list mem exception loop typing.
@@ -553,10 +553,48 @@ Qed.
 Global Instance points_to_access_slice_elem_ref s (i : w64) (vs : list V) dq v
   {Hlookup : TCSimpl (vs !! (uint.nat i)) (Some v)}
   : PointsToAccess (slice.elem_ref_f s t i) v dq (s ↦*{dq} vs)
-      (λ v', s ↦*{dq} <[(uint.nat i) := v]> vs).
-Proof. Admitted.
+      (λ v', s ↦*{dq} <[(uint.nat i) := v']> vs).
+Proof.
+  constructor.
+  - inv Hlookup.
+    iIntros "Hs".
+    iDestruct (own_slice_elem_acc with "Hs") as "Hs"; eauto.
+  - inv Hlookup.
+    rewrite list_insert_id //.
+Qed.
+
+Lemma wp_load_slice_elem s (i: w64) (vs: list V) dq v :
+  {{{ s ↦*{dq} vs ∗ ⌜vs !! (uint.nat i) = Some v⌝ }}}
+    ![t] #(slice.elem_ref_f s t i)
+  {{{ RET #v; s ↦*{dq} vs }}}.
+Proof.
+  iIntros (Φ) "[Hs %Hlookup] HΦ".
+  iDestruct (own_slice_elem_acc with "Hs") as "[Hv Hs]"; [ by eauto | ].
+  (* NOTE: cannot use [wp_load] because we need to strip a later *)
+  wp_apply (wp_load_ty with "Hv"). iIntros "Hv".
+  iApply "HΦ".
+  iDestruct ("Hs" with "Hv") as "Hs".
+  rewrite -> list_insert_id by auto.
+  iFrame.
+Qed.
+
+Lemma wp_store_slice_elem s (i: w64) (vs: list V) (v': V) :
+  {{{ s ↦* vs ∗ ⌜uint.Z i < Z.of_nat (length vs)⌝ }}}
+    store_ty t #(slice.elem_ref_f s t i) #v'
+  {{{ RET #(); s ↦* (<[uint.nat i := v']> vs) }}}.
+Proof.
+  iIntros (Φ) "[Hs %bound] HΦ".
+  list_elem vs i as v.
+  iDestruct (own_slice_elem_acc with "Hs") as "[Hv Hs]"; [ by eauto | ].
+  (* NOTE: cannot use [wp_store] because we need to strip a later *)
+  wp_apply (wp_store_ty with "Hv"). iIntros "Hv".
+  iApply "HΦ".
+  iDestruct ("Hs" with "Hv") as "Hs".
+  iFrame.
+Qed.
 
 End wps.
 
 Notation "s ↦* dq vs" := (own_slice s dq vs)
-                            (at level 20, dq custom dfrac at level 50, format "s  ↦* dq  vs").
+                            (at level 20, dq custom dfrac at level 50,
+                              vs constr at next level, format "s  ↦* dq  vs").
