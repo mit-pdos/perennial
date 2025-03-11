@@ -177,7 +177,7 @@ Proof.
   wp_start as "(#Hinv & Hlocked & HR)".
   wp_bind (method_call _ _ _ #m)%E.
   iNamed "Hinv".
-  wp_apply (wp_Mutex__Unlock' with "[$]"). iIntros (?) "Hspec".
+  wp_apply (wp_Mutex__Unlock' with "[$]") as "% Hspec".
   wp_apply ("Hspec" with "[$Hinv $Hlocked $HR $Hi]").
   by iApply "HΦ".
 Qed.
@@ -258,10 +258,7 @@ Proof.
   iNamed "Hlock".
   wp_auto.
   wp_apply ("H_Unlock" with "[$]").
-  wp_auto.
-  wp_apply ("H_Lock" with "[$]").
-  iIntros "HR".
-  wp_auto.
+  wp_apply ("H_Lock" with "[$]") as "?".
   iApply "HΦ". done.
 Qed.
 
@@ -543,7 +540,7 @@ Proof.
   }
   rewrite Hn. clear n Hn.
   rename n0 into n.
-  iInduction n as [|] "IH".
+  iInduction n as [|].
   {
     iDestruct "H" as "[(% & ? & ?) _]".
     destruct (decide (k = W32 0)).
@@ -558,7 +555,7 @@ Proof.
   { generalize (S n) as n'. intros. clear n. rename n' into n.
     rewrite replicate_S.
     iDestruct "H" as "[Helem H]".
-    iDestruct ("IH" with "[$]") as "(% & % & H)".
+    iDestruct ("IHn" with "[$]") as "(% & % & H)".
     iDestruct "Helem" as (?) "[? _]".
     destruct (decide (k ∈ m)).
     {
@@ -627,14 +624,14 @@ Lemma alloc_many_zerostate_tokens uw γ :
 Proof.
   assert (∃ n, n = (uint.nat uw)) as [n Heq].
   { by eexists. }
-  iInduction n as [] "IH" forall (uw Heq).
+  iInduction n as [] forall (uw Heq).
   { rewrite -Heq.
     replace (uw) with (W32 0) by word.
     iIntros "$ $". rewrite replicate_0. iModIntro. done. }
   rewrite -Heq.
   iIntros "? ?".
   simpl.
-  iMod ("IH" $! (word.sub uw (W32 1)) with "[] [$] [$]") as "(Huw & Huw' & ?)".
+  iMod ("IHn" $! (word.sub uw (W32 1)) with "[] [$] [$]") as "(Huw & Huw' & ?)".
   { word. }
   replace (uint.nat (word.sub _ _)) with n by word.
   iFrame.
@@ -665,14 +662,14 @@ Proof.
         ghost_map_auth γ.(zerostate_gn) (1 / 2) (gset_to_gmap ()%V m)
     )%I with "[-]" as "(% & % & %Hsz & _)".
   2:{ iPureIntro. subst. apply subseteq_size in Hsz. word. }
-  iInduction n as [|] "IH".
+  iInduction n as [|].
   {
     iExists ∅. iSplitR; first done.
     iSplitR; first done. iFrame. done.
   }
   rewrite replicate_S.
   iDestruct "H" as "[Ht H]".
-  iDestruct ("IH" with "[$] [$]") as (?) "(% & % & H & Ha)".
+  iDestruct ("IHn" with "[$] [$]") as (?) "(% & % & H & Ha)".
   iDestruct "Ht" as "(% & Ht)".
   destruct (decide (k ∈ x)).
   {
@@ -763,10 +760,8 @@ Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
 Proof.
   intros delta'.
   wp_start as "#His".
-  wp_apply wp_with_defer.
-  iIntros (?) "Hdefer".
-  simpl subst.
-  wp_auto_lc 1.
+  wp_apply wp_with_defer as "%defer defer".
+  simpl subst. wp_auto_lc 1.
   wp_apply wp_Uint64__Add.
   iMod "HΦ".
   iNamed "HΦ".
@@ -953,7 +948,7 @@ Proof.
   rewrite bool_decide_false.
   2:{ intuition. }
   wp_auto.
-  wp_apply (wp_Uint64__Load).
+  wp_apply wp_Uint64__Load.
   iApply fupd_mask_intro.
   { set_solver. }
   iIntros "Hmask".
@@ -966,7 +961,7 @@ Proof.
   wp_auto_lc 2.
 
   (* want to get a bunch of unfinisheds. *)
-  wp_apply (wp_Uint64__Store).
+  wp_apply wp_Uint64__Store.
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iApply fupd_mask_intro.

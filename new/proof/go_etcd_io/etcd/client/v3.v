@@ -733,15 +733,15 @@ Notation "k etcd[ γ ]↦ dq kv" := (own_etcd_pointsto γ dq k kv)
 #[global]
 Instance bot : Bottom (option KeyValue.t) := None.
 
-Axiom is_etcd_lease_lb : ∀ γ (expiration : w64), iProp Σ.
+Axiom is_etcd_lease_lb : ∀ γ (l : clientv3.LeaseID.t) (expiration : w64), iProp Σ.
 
-Axiom is_etcd_lease_lb_pers : ∀ γ expiration, Persistent (is_etcd_lease_lb γ expiration).
+Axiom is_etcd_lease_lb_pers : ∀ γ l expiration, Persistent (is_etcd_lease_lb γ l expiration).
+Global Existing Instance is_etcd_lease_lb_pers.
 
 Axiom is_Client : ∀ (cl : loc) γ, iProp Σ.
 
 Axiom is_Client_pers : ∀ client γ, Persistent (is_Client client γ).
 Global Existing Instance is_Client_pers.
-
 
 Axiom is_Op : ∀ (op : clientv3.Op.t) (o : Op.t), iProp Σ.
 
@@ -768,8 +768,7 @@ Axiom wp_Client__Do_Get : ∀ key client γ (ctx : context.Context.t) (op : clie
   (|={⊤∖↑N,∅}=> ∃ dq val, key etcd[γ]↦{dq} val ∗
                         (key etcd[γ]↦{dq} val ={∅,⊤∖↑N}=∗ Φ #())) -∗
   (* TODO: return value. *)
-  WP method_call #clientv3 #"Client" #"Do" #client #ctx #op {{ Φ }}
-.
+  WP method_call #clientv3 #"Client" #"Do" #client #ctx #op {{ Φ }}.
 
 Axiom wp_Client__GetLogger :
   ∀ (client : loc) γ,
@@ -785,12 +784,13 @@ Axiom wp_Client__Ctx :
 
 Axiom wp_Client__Grant :
   ∀ client (ctx : context.Context.t) (ttl : w64),
-  {{{ is_Client client }}}
+  {{{ is_Client client γ }}}
     method_call #clientv3 #"Client'ptr" #"Grant" #client #ctx #ttl
   {{{
       resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
         RET (#resp_ptr, #err);
-        resp_ptr ↦ resp
+        resp_ptr ↦ resp ∗
+        is_lease_valid
   }}}.
 
 End client_axioms.

@@ -208,17 +208,12 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
 Proof.
   wp_start. iNamed "Hpre".
   iNamed "His".
-  wp_apply wp_with_defer.
-  iIntros (defer) "defer".
+  wp_apply wp_with_defer as "%defer defer".
   simpl subst.
   wp_auto.
   iDestruct (Mutex_is_Locker with "[$]") as "#Hlk".
-  wp_apply (wp_Mutex__Lock with "[$]").
-  iIntros "[Hlocked Hown]".
-  wp_auto.
-  wp_apply (wp_Mutex__Unlock').
-  iIntros (m_unlock) "#Hunlock".
-  wp_auto.
+  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]".
+  wp_apply (wp_Mutex__Unlock') as "%m_unlock #Hunlock".
   wp_for.
   iNamed "Hown".
   wp_auto.
@@ -226,13 +221,12 @@ Proof.
   { (* case: wait *)
     simpl. rewrite decide_True //.
     wp_auto.
-    wp_apply (wp_Cond__Wait with "[-Htok HΦ s index defer]").
+    wp_apply (wp_Cond__Wait with "[-Htok HΦ s index defer]") as "H".
     {
       iFrame "HdurableIndexCond_is Hlk".
       iFrame "∗#%".
     }
-    iIntros "[Hlocked Hown]".
-    wp_auto.
+    iDestruct "H" as "[Hlocked Hown]".
     iApply wp_for_post_do.
     wp_auto. by iFrame.
   }
@@ -244,13 +238,13 @@ Proof.
     wp_auto.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
-    wp_apply ("Hunlock" with "[-Htok HΦ s index defer]").
+    iMod (wait_step with "[$] [$] [$]") as "HQ".
+    wp_apply ("Hunlock" with "[-HΦ s index defer HQ]").
     {
       iFrame "HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
     }
-    iMod (wait_step with "[$] [$] [$]") as "HQ".
-    wp_auto. iApply "HΦ". iFrame.
+    iApply "HΦ". iFrame.
   }
 Qed.
 
@@ -371,20 +365,12 @@ Proof.
   iNamed "Hf".
   iAssert (_) with "His" as "His2".
   iNamed "His2".
-
-  wp_apply wp_with_defer.
-  iIntros (defer) "Hdefer". simpl subst.
-  wp_auto.
-  wp_apply (wp_Mutex__Lock with "[$]").
-  iIntros "[Hlocked Hown]".
+  wp_apply wp_with_defer as "%defer Hdefer".
+  simpl subst. wp_auto.
+  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]".
   iNamed "Hown".
-  wp_auto.
-  wp_apply (wp_Mutex__Unlock' with "[]").
-  iIntros (m_unlock) "Hunlock".
-  wp_auto.
-  wp_apply (wp_SumAssumeNoOverflow with "[]").
-  iIntros (Hno_overflow).
-  wp_auto.
+  wp_apply wp_Mutex__Unlock' as "%m_unlock Hunlock".
+  wp_apply wp_SumAssumeNoOverflow as "%Hno_overflow".
   iMod (write_step with "[$] [$] [$] [Hupd]") as "H".
   { word. }
   {
@@ -393,9 +379,7 @@ Proof.
   }
   iDestruct "H" as "(Hnoclose & Hdat & Hghost & Hesc & #Hinv)".
   iMod (own_slice_persist with "Hdata_in") as "#Hdata_in".
-  wp_apply wp_Cond__Signal.
-  { iFrame "#". }
-  wp_auto.
+  wp_apply wp_Cond__Signal; first iFrame "#".
   wp_apply ("Hunlock" with "[-HΦ Hnoclose Hdat Hesc s data index]").
   {
     iFrame "HmuInv Hlocked".
@@ -403,7 +387,6 @@ Proof.
     repeat iExists _.
     iFrame "∗#%".
   }
-  wp_auto.
   iApply "HΦ".
   iFrame "∗#".
   wp_auto.
@@ -489,10 +472,8 @@ Proof.
   clear Φ.
   wp_start. iNamed "Hpre".
   wp_auto.
-  wp_apply (wp_Mutex__Lock with "[]").
+  wp_apply (wp_Mutex__Lock with "[]") as "[Hlocked Hown]".
   { iFrame "#". }
-  iIntros "[Hlocked Hown]".
-  wp_auto.
   iAssert (∃ curdata curidx,
               "HpreData" ∷ own_predurable_data γ curdata ∗
               "HpreIdx" ∷ own_predurable_index γ curidx ∗
@@ -500,8 +481,7 @@ Proof.
               "Hfile" ∷ own_crash (N.@"crash") (∃ d : list u8, P d ∗ fname f↦d) (P curdata ∗ fname f↦ curdata)
           )%I with "[HpreData HpreIdx HdurIdx Hfile]" as "HH".
   { repeat iExists _. iFrame. }
-  wp_for.
-  wp_auto.
+  wp_for. wp_auto.
   rewrite decide_True //.
   clear data.
   iNamed "Hown".
@@ -517,8 +497,7 @@ Proof.
       { iFrame "#". }
       iFrame "∗#%". done.
     }
-    iIntros "[Hlocked Hown]".
-    wp_auto.
+    iIntros "[Hlocked Hown]". wp_auto.
     iApply wp_for_post_continue.
     wp_auto. by iFrame.
   }
@@ -527,14 +506,13 @@ Proof.
   iNamed "HH".
   iMod (get_upd with "[$] [$] [$] [$]") as "H".
   iDestruct "H" as "(HpreData & HpreIdx & HdurIdx & Hupd & Hghost)".
-  wp_apply (wp_Mutex__Unlock with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile s index data]").
+  wp_apply_lc 2 (wp_Mutex__Unlock with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile s index data]").
   {
     iFrame "HmuInv Hlocked".
     repeat iExists _; iFrame "∗#%".
     iFrame "#".
     done.
   }
-  wp_auto_lc 2.
   iDestruct (lc_split with "[$]") as "Hlc".
   iCombine "Hfilename_in Hfilename" gives %[_ [=<-]].
   wp_apply (wp_FileWrite with "[$Hdata]").
@@ -562,15 +540,13 @@ Proof.
   iModIntro.
   iIntros "Hfile".
   wp_auto.
-  wp_apply (wp_Mutex__Lock with "[$]").
-  iIntros "[Hlocked Hown]".
+  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]".
   iClear "Hfilename Hdata HindexCond_is HdurableIndexCond_is".
   iNamed "Hown".
   wp_auto.
+  iMod (update_durable_index with "[$] HnewWits [$]") as "[HdurIdx Hghost]".
   wp_apply wp_Cond__Broadcast.
   { iFrame "#". }
-  iMod (update_durable_index with "[$] HnewWits [$]") as "[HdurIdx Hghost]".
-  wp_auto.
   iApply wp_for_post_do.
   wp_auto.
   iFrame "HΦ Hlocked".
@@ -657,17 +633,11 @@ Lemma wp_MakeAsyncFile fname N P data :
 .
 Proof.
   wp_start. iNamed "Hpre".
-  wp_auto.
-  wp_apply (wp_NewCond).
-  iIntros (?) "#?".
-  wp_auto.
-  wp_apply (wp_NewCond).
-  iIntros (?) "#?".
-  wp_auto.
-  wp_apply (wp_NewCond).
-  iIntros (?) "#?".
   wp_auto_lc 2.
   iDestruct (lc_split with "[$]") as "Hlc".
+  wp_apply (wp_NewCond) as "% #?".
+  wp_apply (wp_NewCond) as "% #?".
+  wp_apply (wp_NewCond) as "% #?".
   wp_apply (wp_FileRead).
   iDestruct (own_crash_unfold with "Hfile") as "Hfile".
   unshelve iMod ("Hfile" $! _ _ with "[$]") as "[[HP $] Hau]".
@@ -698,9 +668,7 @@ Proof.
     iNext. by iFrame "∗#".
   }
 
-  wp_apply (wp_AsyncFile__flushThread with "[$]").
-  iIntros (flush) "Hwp_flush".
-  wp_auto.
+  wp_apply (wp_AsyncFile__flushThread with "[$]") as "%flush Hwp_flush".
   wp_bind (Fork _)%E.
   iApply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile Hwp_flush]").
   {

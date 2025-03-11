@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import notation.
 Import Ltac2.
-From New.golang.theory Require Import proofmode mem globals pkg.
+From New.golang.theory Require Import proofmode mem globals pkg loop.
 From Coq Require Import Strings.Ascii.
 
 (* TODO: iFrame # is only for backwards compatibility *)
@@ -10,9 +10,6 @@ Tactic Notation "wp_func_call" :=
   wp_func_call_core; try iPkgInit; try iFrame "#".
 Tactic Notation "wp_method_call" :=
   wp_method_call_core; try iPkgInit; try iFrame "#".
-
-Tactic Notation "wp_apply" open_constr(lem) :=
-  wp_apply_core lem; try iPkgInit.
 
 (* remove and introduce [is_pkg_init] and [is_pkg_defined] facts from a hypothesis *)
 Ltac destruct_pkg_init H :=
@@ -87,3 +84,20 @@ Tactic Notation "wp_auto" := ltac2:(wp_auto_lc 0).
 Tactic Notation "wp_auto_lc" int(x) :=
   let f := ltac2:(x |- wp_auto_lc (Option.get (Ltac1.to_int x))) in
   f x.
+
+Tactic Notation "wp_apply_lc" int(n) open_constr(lem) :=
+  wp_apply_core lem; try iPkgInit;
+  last try (let f := ltac2:(n |- wp_auto_lc (Option.get (Ltac1.to_int n))) in f n).
+
+(* NOTE: did not copy in other variants of [iIntros] from [iris/iris/proofmode/ltac_tactics.v] to
+   make intro patterns more canonical.
+ *)
+Tactic Notation "wp_apply_lc" int(n) open_constr(lem) "as" constr(pat) :=
+  wp_apply_core lem; try iPkgInit;
+  last (iIntros pat; try (let f := ltac2:(n |- wp_auto_lc (Option.get (Ltac1.to_int n))) in f n)).
+
+Tactic Notation "wp_apply" open_constr(lem) :=
+  wp_apply_lc 0 lem.
+
+Tactic Notation "wp_apply" open_constr(lem) "as" constr(pat) :=
+  wp_apply_lc 0 lem as pat.
