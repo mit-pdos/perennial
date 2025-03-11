@@ -108,7 +108,6 @@ Proof.
   wp_start as "H". iNamed "H".
   iLöb as "IH".
   wp_method_call. wp_call.
-  wp_pures.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as ([]) "[Hl HR]".
   - wp_bind (CmpXchg _ _ _).
@@ -118,7 +117,7 @@ Proof.
     iNext.
     iIntros "Hl".
     iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
-    wp_pures.
+    wp_auto.
     by iApply "IH".
   - iDestruct "HR" as "[Hl2 HR]".
     iCombine "Hl Hl2" as "Hl".
@@ -132,7 +131,7 @@ Proof.
     iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
     iDestruct "Hl" as "[Hl1 Hl2]".
     iSplitL "Hl1"; first (iNext; iExists true; eauto).
-    rewrite /locked. wp_pures.
+    rewrite /locked. wp_auto.
     iApply "HΦ".
     eauto with iFrame.
 Qed.
@@ -151,7 +150,7 @@ Proof.
   iApply "HΨ". iIntros (R).
   wp_start as "(#His & Hlocked & HR)".
   iNamed "His".
-  wp_pures.
+  wp_auto.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as (b) "[>Hl _]".
 
@@ -164,7 +163,7 @@ Proof.
   { econstructor. }
   iIntros "!# Hl".
   iModIntro.
-  iSplitR "HΦ"; last by wp_pures; iApply "HΦ".
+  iSplitR "HΦ"; last by wp_auto; iApply "HΦ".
   iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
   iDestruct "Hl" as "[Hl1 Hl2]".
   iNext. iExists false. iFrame.
@@ -178,7 +177,7 @@ Proof.
   wp_start as "(#Hinv & Hlocked & HR)".
   wp_bind (method_call _ _ _ #m)%E.
   iNamed "Hinv".
-  wp_apply (wp_Mutex__Unlock' with "[$]"). iIntros (?) "Hspec".
+  wp_apply (wp_Mutex__Unlock' with "[$]") as "% Hspec".
   wp_apply ("Hspec" with "[$Hinv $Hlocked $HR $Hi]").
   by iApply "HΦ".
 Qed.
@@ -197,10 +196,10 @@ Proof.
   iIntros "#[? ?]".
   iSplitL.
   - iIntros (?) "!# _ HΦ".
-    wp_pures.
+    wp_auto.
     by wp_apply (wp_Mutex__Lock with "[$]").
   - iIntros (?) "!# [? ?] HΦ".
-    wp_pures.
+    wp_auto.
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { iFrame "#∗". }
     by iApply "HΦ".
@@ -221,7 +220,7 @@ Proof.
   wp_start as "_".
   wp_apply wp_fupd.
   wp_alloc c as "Hc".
-  wp_pures.
+  wp_auto.
   iApply "HΦ".
 
   iDestruct (struct_fields_split with "Hc") as "Hl".
@@ -257,13 +256,9 @@ Proof.
   iNamed "Hcond".
   wp_method_call. wp_call.
   iNamed "Hlock".
-  wp_load.
+  wp_auto.
   wp_apply ("H_Unlock" with "[$]").
-  wp_pures.
-  wp_load.
-  wp_apply ("H_Lock" with "[$]").
-  iIntros "HR".
-  wp_pures.
+  wp_apply ("H_Lock" with "[$]") as "?".
   iApply "HΦ". done.
 Qed.
 
@@ -280,9 +275,10 @@ Lemma wp_runtime_Semacquire (sema : loc) γ N :
   WP func_call #sync #"runtime_Semacquire" #sema {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
-  wp_for. wp_pures.
+  wp_for.
+  wp_auto.
   rewrite decide_True //.
-  wp_pures.
+  wp_auto.
   wp_bind (! _)%E.
   iInv "Hsem" as ">Hi" "Hclose".
   iDestruct "Hi" as (?) "[Hs Hv]".
@@ -292,17 +288,17 @@ Proof.
   iIntros "Hs".
   iMod ("Hclose" with "[$]") as "_".
   iModIntro.
-  wp_pures.
+  wp_auto.
   destruct bool_decide eqn:Hnz.
   { (* keep looping *)
-    wp_pures.
+    wp_auto.
     iApply wp_for_post_continue.
-    wp_pures. iFrame.
+    wp_auto. iFrame.
   }
 
   (* try to acquire *)
   rewrite bool_decide_eq_false in Hnz.
-  wp_pures.
+  wp_auto.
   wp_bind (CmpXchg _ _ _).
   iInv "Hsem" as ">Hi" "Hclose".
   iDestruct "Hi" as (?) "[Hs Hv]".
@@ -323,9 +319,9 @@ Proof.
     iModIntro.
     iMod ("Hclose" with "[$]") as "_".
     iModIntro.
-    wp_pures.
+    wp_auto.
     iApply wp_for_post_return.
-    wp_pures. done.
+    wp_auto. done.
   }
   { (* cmpxchg will fail *)
     unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve.
@@ -334,8 +330,8 @@ Proof.
     iNext. iIntros "Hs".
     iMod ("Hclose" with "[$]") as "_".
     iModIntro.
-    wp_pures.
-    iApply wp_for_post_do. wp_pures.
+    wp_auto.
+    iApply wp_for_post_do. wp_auto.
     iFrame.
   }
 Qed.
@@ -544,7 +540,7 @@ Proof.
   }
   rewrite Hn. clear n Hn.
   rename n0 into n.
-  iInduction n as [|] "IH".
+  iInduction n as [|].
   {
     iDestruct "H" as "[(% & ? & ?) _]".
     destruct (decide (k = W32 0)).
@@ -559,7 +555,7 @@ Proof.
   { generalize (S n) as n'. intros. clear n. rename n' into n.
     rewrite replicate_S.
     iDestruct "H" as "[Helem H]".
-    iDestruct ("IH" with "[$]") as "(% & % & H)".
+    iDestruct ("IHn" with "[$]") as "(% & % & H)".
     iDestruct "Helem" as (?) "[? _]".
     destruct (decide (k ∈ m)).
     {
@@ -628,14 +624,14 @@ Lemma alloc_many_zerostate_tokens uw γ :
 Proof.
   assert (∃ n, n = (uint.nat uw)) as [n Heq].
   { by eexists. }
-  iInduction n as [] "IH" forall (uw Heq).
+  iInduction n as [] forall (uw Heq).
   { rewrite -Heq.
     replace (uw) with (W32 0) by word.
     iIntros "$ $". rewrite replicate_0. iModIntro. done. }
   rewrite -Heq.
   iIntros "? ?".
   simpl.
-  iMod ("IH" $! (word.sub uw (W32 1)) with "[] [$] [$]") as "(Huw & Huw' & ?)".
+  iMod ("IHn" $! (word.sub uw (W32 1)) with "[] [$] [$]") as "(Huw & Huw' & ?)".
   { word. }
   replace (uint.nat (word.sub _ _)) with n by word.
   iFrame.
@@ -666,14 +662,14 @@ Proof.
         ghost_map_auth γ.(zerostate_gn) (1 / 2) (gset_to_gmap ()%V m)
     )%I with "[-]" as "(% & % & %Hsz & _)".
   2:{ iPureIntro. subst. apply subseteq_size in Hsz. word. }
-  iInduction n as [|] "IH".
+  iInduction n as [|].
   {
     iExists ∅. iSplitR; first done.
     iSplitR; first done. iFrame. done.
   }
   rewrite replicate_S.
   iDestruct "H" as "[Ht H]".
-  iDestruct ("IH" with "[$] [$]") as (?) "(% & % & H & Ha)".
+  iDestruct ("IHn" with "[$] [$]") as (?) "(% & % & H & Ha)".
   iDestruct "Ht" as "(% & Ht)".
   destruct (decide (k ∈ x)).
   {
@@ -763,23 +759,14 @@ Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
   WP method_call #sync #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
 Proof.
   intros delta'.
-  iIntros (?) "[#init #His] HΦ".
-  iNamed "His".
-  wp_method_call. wp_call.
-  wp_pures.
-  wp_apply wp_with_defer.
-  iIntros (?) "Hdefer".
-  simpl subst.
-  wp_alloc wg_ptr as "Hwg_ptr".
-  wp_pure_lc "Hlc". wp_pures.
-  wp_alloc delta_ptr as "Hdelta_ptr". wp_pures.
-  wp_alloc state_ptr as "Hstate_ptr". wp_pures.
-  wp_load. wp_pures. wp_load. wp_pures.
-
-  wp_apply (wp_Uint64__Add).
+  wp_start as "#His".
+  wp_apply wp_with_defer as "%defer defer".
+  simpl subst. wp_auto_lc 1.
+  wp_apply wp_Uint64__Add.
   iMod "HΦ".
   iNamed "HΦ".
   unfold own_WaitGroup.
+  iNamed "His".
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi".
@@ -829,11 +816,8 @@ Proof.
     }
     iMod ("HΦ" with "[$] [$]").
     iModIntro.
-    wp_pures. wp_store. wp_pures. wp_alloc v_ptr as "Hv_ptr". wp_pures.
-    wp_load. wp_pures. wp_store. wp_pures. rewrite enc_get_high.
-
-    wp_alloc w_ptr as "Hw_ptr". wp_pures. wp_load. wp_pures. wp_store.
-    wp_pures. rewrite enc_get_low. wp_load. wp_pures.
+    wp_auto.
+    rewrite enc_get_high enc_get_low.
 
     destruct bool_decide eqn:Hbad.
     {
@@ -844,19 +828,19 @@ Proof.
       replace (sint.Z (W32 0)) with 0 in * by reflexivity.
       rewrite word.swrap_inrange in Hbad; lia.
     }
-    wp_pures. wp_load. wp_pures.
+    wp_auto.
     wp_bind (if: _ then _ else do: #())%E.
     clear Hbad.
-    iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[Hv_ptr Hdelta_ptr]").
+    iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[-]").
     {
       destruct bool_decide eqn:Heq0.
-      - wp_pures.
+      - wp_auto.
         iSplitR; first done.
         iNamedAccu.
       - rewrite bool_decide_eq_false in Heq0.
-        wp_pures. wp_load. wp_pures.
+        wp_auto.
         destruct bool_decide eqn:Heq1.
-        + wp_pures. wp_load. wp_load. wp_pures.
+        + wp_auto.
           replace (W32 (uint.Z delta)) with delta' by reflexivity.
           rewrite bool_decide_eq_true in Heq1.
           destruct bool_decide eqn:Heq2.
@@ -872,18 +856,18 @@ Proof.
               { apply word.signed_inj. rewrite H //. }
               word.
             }
-          * wp_pures. iFrame. done.
-        + wp_pures. iFrame. done.
+          * wp_auto. iFrame. done.
+        + wp_auto. iFrame. done.
     }
     iIntros (?) "[% H]". iNamed "H".
     subst.
-    wp_pures. wp_load. wp_pures.
+    wp_auto.
     destruct (bool_decide) eqn:Heq1.
-    { (* no need to wake anyone up *) wp_pures. wp_load. wp_pures. iFrame. }
+    { (* no need to wake anyone up *) wp_auto. iFrame. }
     rewrite bool_decide_eq_false in Heq1.
-    wp_pures. wp_load. wp_pures.
+    wp_auto.
     rewrite bool_decide_true.
-    { (* no need to wake anyone up *) wp_pures. wp_load. wp_pures. iFrame. }
+    { (* no need to wake anyone up *) wp_auto. iFrame. }
     apply not_and_l in HnoWake, HnotInWakingState.
     destruct HnoWake as [|].
     2:{ by apply dec_stable. }
@@ -913,13 +897,8 @@ Proof.
   }
   iMod ("HΦ" with "[$] [$]").
   iModIntro.
-  wp_pures. wp_store. wp_pures. wp_alloc v_ptr as "Hv_ptr". wp_pures.
-  wp_load. wp_pures. wp_store. wp_pures. rewrite enc_get_high.
+  wp_auto. rewrite enc_get_high enc_get_low.
 
-  wp_alloc w_ptr as "Hw_ptr". wp_pures. wp_load. wp_pures. wp_store.
-  wp_pures. rewrite enc_get_low.
-
-  wp_load. wp_pures.
   destruct bool_decide eqn:Hbad.
   {
     exfalso.
@@ -929,19 +908,19 @@ Proof.
     replace (sint.Z (W32 0)) with 0 in * by reflexivity.
     rewrite word.swrap_inrange in Hbad; lia.
   }
-  wp_pures. wp_load. wp_pures.
+  wp_auto.
   wp_bind (if: _ then _ else do: #())%E.
   clear Hbad.
-  iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[Hv_ptr Hdelta_ptr]").
+  iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[-]").
   {
     destruct bool_decide eqn:Heq0.
-    - wp_pures.
+    - wp_auto.
       iSplitR; first done.
       iNamedAccu.
     - rewrite bool_decide_eq_false in Heq0.
-      wp_pures. wp_load. wp_pures.
+      wp_auto.
       destruct bool_decide eqn:Heq1.
-      + wp_pures. wp_load. wp_load. wp_pures.
+      + wp_auto.
         replace (W32 (uint.Z delta)) with delta' by reflexivity.
         rewrite bool_decide_eq_true in Heq1.
         destruct bool_decide eqn:Heq2.
@@ -957,19 +936,19 @@ Proof.
             { apply word.signed_inj. rewrite H //. }
             word.
           }
-        * wp_pures. iFrame. done.
-      + wp_pures. iFrame. done.
+        * wp_auto. iFrame. done.
+      + wp_auto. iFrame. done.
   }
   iIntros (?) "[% H]". iNamed "H".
   subst.
-  wp_pures. wp_load. wp_pures.
+  wp_auto.
   rewrite bool_decide_false.
   2:{ intuition. word. }
-  wp_pures. wp_load. wp_pures.
+  wp_auto.
   rewrite bool_decide_false.
   2:{ intuition. }
-  wp_pures. wp_load. wp_pures.
-  wp_apply (wp_Uint64__Load).
+  wp_auto.
+  wp_apply wp_Uint64__Load.
   iApply fupd_mask_intro.
   { set_solver. }
   iIntros "Hmask".
@@ -977,14 +956,12 @@ Proof.
   iIntros "Hwg".
   iMod "Hmask" as "_".
   iModIntro.
-  wp_load. wp_pures.
+  wp_auto.
   rewrite bool_decide_true //.
-  wp_pure_lc "Hlc". wp_pure_lc "Hlc2". wp_pures.
-
-  wp_load. wp_pures.
+  wp_auto_lc 2.
 
   (* want to get a bunch of unfinisheds. *)
-  wp_apply (wp_Uint64__Store).
+  wp_apply wp_Uint64__Store.
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iApply fupd_mask_intro.
@@ -1031,30 +1008,29 @@ Proof.
     done.
   }
   iModIntro.
-  wp_pures.
+  wp_auto.
   (* call semrelease. *)
 
   iAssert (
       ∃ (wrem : w32),
-        "Hw_ptr" ∷ w_ptr ↦ wrem ∗
+        "w" ∷ w_ptr ↦ wrem ∗
         "Hunfinished_tokens" ∷ [∗] replicate (uint.nat wrem) (own_zerostate_token γ)
-    )%I with "[Hw_ptr Hunfinished_tokens]" as "HloopInv".
-  { iFrame. }
+    )%I with "[$]" as "HloopInv".
 
   wp_for.
   iNamed "HloopInv".
-  wp_pures. wp_load. wp_pures.
+  wp_auto.
   destruct bool_decide eqn:Hwrem.
   { (* no more waiters to wake up. *)
     rewrite decide_False; last naive_solver.
     rewrite decide_True //.
-    wp_pures. wp_load. wp_pures. iFrame.
+    wp_auto. iFrame.
   }
 
   (* wake up another waiter *)
   rewrite bool_decide_eq_false in Hwrem.
   rewrite decide_True //.
-  wp_pures. wp_load. wp_pure_lc "Hlc". wp_pures.
+  wp_auto_lc 1.
   wp_apply (wp_runtime_Semrelease with "[$]").
   iInv "HsemInv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
@@ -1082,9 +1058,9 @@ Proof.
     iFrame.
   }
   iModIntro.
-  wp_pures.
+  wp_auto.
   iApply wp_for_post_do.
-  wp_pures. wp_load. wp_pures. wp_store. wp_pures.
+  wp_auto.
   iFrame.
 Qed.
 
@@ -1098,18 +1074,12 @@ Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
   ) -∗
   WP method_call #sync #"WaitGroup'ptr" #"Wait" #wg #() {{ Φ }}.
 Proof.
-  iIntros (?) "(#Hinit & #Hwg & HR_in) HΦ".
-  iNamed "Hinit". iNamed "Hwg".
-  wp_method_call. wp_call.
-  wp_alloc wg_ptr as "Hwg_ptr".
-  wp_pures.
+  wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
+  wp_auto.
   wp_for.
-  wp_pures.
+  wp_auto.
   rewrite decide_True //.
-  wp_pures.
-
-  wp_alloc state_ptr as "Hstate_ptr".
-  wp_pures. wp_load. wp_pure_lc "Hlc". wp_pures.
+  wp_auto_lc 1.
   wp_apply (wp_Uint64__Load).
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
@@ -1130,15 +1100,10 @@ Proof.
     iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hwg]").
     { by iFrame. }
     iModIntro.
-    wp_pures. wp_store. wp_pures.
-    wp_alloc v_ptr as "Hv_ptr". wp_pures.
-    wp_load. wp_pures.
-    rewrite enc_get_high. wp_store. wp_pures.
-    wp_alloc w_ptr as "Hw_ptr". wp_pures.
-    wp_load. wp_pures.
-    rewrite enc_get_low. wp_store. wp_pures. wp_load. wp_pures.
+    wp_auto. rewrite enc_get_high enc_get_low bool_decide_true //=.
+    wp_auto.
     iApply wp_for_post_return.
-    wp_pures.
+    wp_auto.
     by iApply "HΦ".
   }
   (* actually go to sleep *)
@@ -1157,16 +1122,9 @@ Proof.
   iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hctr]") as "_".
   { by iFrame. }
   iModIntro.
-  wp_pures. wp_store. wp_pures.
-  wp_alloc v_ptr as "Hv_ptr". wp_pures.
-  wp_load. wp_pures.
-  rewrite enc_get_high. wp_store. wp_pures.
-  wp_alloc w_ptr as "Hw_ptr". wp_pures.
-  wp_load. wp_pures.
-  rewrite enc_get_low. wp_store. wp_pures. wp_load. wp_pures.
-  rewrite bool_decide_false //.
-  wp_pures. wp_load. wp_pures. wp_load. wp_pures.
-  wp_load. wp_pure_lc "Hlc". wp_pures.
+  wp_auto.
+  rewrite enc_get_high enc_get_low bool_decide_false //.
+  wp_auto_lc 1.
   replace (1%Z) with (uint.Z (W32 1)) by reflexivity.
   rewrite -> enc_add_low by word.
   wp_apply (wp_Uint64__CompareAndSwap).
@@ -1204,10 +1162,7 @@ Proof.
       intros Hun. exfalso. naive_solver.
     }
     iModIntro.
-    wp_pures.
-    wp_load.
-    wp_pure_lc "Hlc".
-    wp_pures.
+    wp_auto_lc 1.
 
     clear n unfinished_waiters Hunfinished_zero unfinished_waiters0 Hunfinished_zero0.
 
@@ -1232,12 +1187,11 @@ Proof.
       iFrame.
     }
     iModIntro.
-    wp_pure_lc "Hlc". wp_pure_lc "Hlc2". wp_pures.
-    wp_load. wp_pures.
+    wp_auto_lc 2.
     wp_apply (wp_Uint64__Load).
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iClear "Hv_ptr Hw_ptr Hstate_ptr". clear v_ptr counter w_ptr waiters state_ptr HwaitersLe.
+    iClear "v w state". clear v_ptr counter w_ptr waiters state_ptr HwaitersLe.
     clear unfinished_waiters sema n Hsema Hsem.
     iNamed "Hi".
     iApply fupd_mask_intro.
@@ -1276,9 +1230,9 @@ Proof.
       iFrame. done.
     }
     iModIntro.
-    wp_pures.
+    wp_auto.
     iApply wp_for_post_return.
-    wp_pures.
+    wp_auto.
     iApply "HΦ". done.
   }
   {
@@ -1288,9 +1242,9 @@ Proof.
     iMod "Hmask" as "_".
     iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hctr]") as "_".
     { iFrame. done. }
-    iModIntro. wp_pures.
+    iModIntro. wp_auto.
     iApply wp_for_post_do.
-    wp_pures.
+    wp_auto.
     iFrame.
   }
 Qed.

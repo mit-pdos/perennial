@@ -1,5 +1,5 @@
 Require Import New.code.context.
-Require Import New.generatedproof.context.
+Require Export New.generatedproof.context.
 Require Import New.proof.proof_prelude.
 
 Require Import Perennial.Helpers.CountableTactics.

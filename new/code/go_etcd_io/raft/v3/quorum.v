@@ -196,7 +196,7 @@ Definition MajorityConfig__Describe : val :=
       let: "ok" := (ref_ty boolT (zero_val boolT)) in
       let: "idx" := (ref_ty Index (zero_val Index)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "id") in
-      (interface.get "AckedIndex" (![AckedIndexer] "l")) "$a0") in
+      (interface.get #"AckedIndex"%go (![AckedIndexer] "l")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("idx" <-[Index] "$r0");;;
@@ -345,7 +345,7 @@ Definition MajorityConfig__CommittedIndex : val :=
       (let: "ok" := (ref_ty boolT (zero_val boolT)) in
       let: "idx" := (ref_ty Index (zero_val Index)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "id") in
-      (interface.get "AckedIndex" (![AckedIndexer] "l")) "$a0") in
+      (interface.get #"AckedIndex"%go (![AckedIndexer] "l")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("idx" <-[Index] "$r0");;;

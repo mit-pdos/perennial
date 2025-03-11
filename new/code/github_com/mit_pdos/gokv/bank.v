@@ -100,7 +100,7 @@ Definition BankClerk__transfer_internal : val :=
     (func_call #bank.bank #"acquire_two"%go) "$a0" "$a1" "$a2");;;
     let: "old_amount" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![stringT] "acc_from") in
-    (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") in
+    (interface.get #"Get"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") in
     (func_call #bank.bank #"decodeInt"%go) "$a0") in
     do:  ("old_amount" <-[uint64T] "$r0");;;
     (if: (![uint64T] "old_amount") ≥ (![uint64T] "amount")
@@ -108,13 +108,13 @@ Definition BankClerk__transfer_internal : val :=
       do:  (let: "$a0" := (![stringT] "acc_from") in
       let: "$a1" := (let: "$a0" := ((![uint64T] "old_amount") - (![uint64T] "amount")) in
       (func_call #bank.bank #"encodeInt"%go) "$a0") in
-      (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1");;;
+      (interface.get #"Put"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1");;;
       do:  (let: "$a0" := (![stringT] "acc_to") in
       let: "$a1" := (let: "$a0" := ((let: "$a0" := (let: "$a0" := (![stringT] "acc_to") in
-      (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") in
+      (interface.get #"Get"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") in
       (func_call #bank.bank #"decodeInt"%go) "$a0") + (![uint64T] "amount")) in
       (func_call #bank.bank #"encodeInt"%go) "$a0") in
-      (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")
+      (interface.get #"Put"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (![ptrT] (struct.field_ref BankClerk "lck" (![ptrT] "bck"))) in
     let: "$a1" := (![stringT] "acc_from") in
@@ -158,7 +158,7 @@ Definition BankClerk__get_total : val :=
       do:  (let: "$a0" := (![stringT] "acct") in
       (method_call #lockservice #"LockClerk'ptr" #"Lock" (![ptrT] (struct.field_ref BankClerk "lck" (![ptrT] "bck")))) "$a0");;;
       let: "$r0" := ((![uint64T] "sum") + (let: "$a0" := (let: "$a0" := (![stringT] "acct") in
-      (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") in
+      (interface.get #"Get"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") in
       (func_call #bank.bank #"decodeInt"%go) "$a0")) in
       do:  ("sum" <-[uint64T] "$r0")));;;
     (let: "acct" := (ref_ty intT (zero_val intT)) in
@@ -200,12 +200,12 @@ Definition MakeBankClerkSlice : val :=
     do:  (let: "$a0" := (![stringT] "init_flag") in
     (method_call #lockservice #"LockClerk'ptr" #"Lock" (![ptrT] (struct.field_ref BankClerk "lck" (![ptrT] "bck")))) "$a0");;;
     (if: (let: "$a0" := (![stringT] "init_flag") in
-    (interface.get "Get" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") = #""%go
+    (interface.get #"Get"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") = #""%go
     then
       do:  (let: "$a0" := (![stringT] (slice.elem_ref stringT (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) #(W64 0))) in
       let: "$a1" := (let: "$a0" := BAL_TOTAL in
       (func_call #bank.bank #"encodeInt"%go) "$a0") in
-      (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1");;;
+      (interface.get #"Put"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1");;;
       (let: "acct" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (let: "$s" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
       slice.slice stringT "$s" #(W64 1) (slice.len "$s")) in
@@ -215,10 +215,10 @@ Definition MakeBankClerkSlice : val :=
         do:  (let: "$a0" := (![stringT] "acct") in
         let: "$a1" := (let: "$a0" := #(W64 0) in
         (func_call #bank.bank #"encodeInt"%go) "$a0") in
-        (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")));;;
+        (interface.get #"Put"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")));;;
       do:  (let: "$a0" := (![stringT] "init_flag") in
       let: "$a1" := #"1"%go in
-      (interface.get "Put" (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")
+      (interface.get #"Put"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (![stringT] "init_flag") in
     (method_call #lockservice #"LockClerk'ptr" #"Unlock" (![ptrT] (struct.field_ref BankClerk "lck" (![ptrT] "bck")))) "$a0");;;

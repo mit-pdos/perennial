@@ -18,11 +18,9 @@ Lemma wp_Assume (cond : bool) :
 .
 Proof.
   wp_start as "#Hdef".
-  destruct cond; wp_pures.
-  - wp_pures. iApply ("HΦ" with "[//]").
-  - wp_pures.
-    iLöb as "IH".
-    wp_pures.
+  destruct cond; wp_auto.
+  - iApply ("HΦ" with "[//]").
+  - iLöb as "IH". wp_auto.
     wp_apply ("IH" with "[$]").
 Qed.
 

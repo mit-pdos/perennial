@@ -78,7 +78,7 @@ class Classify:
         r"""(?:#\[(local|global|export)\]\s+)?(?:(Local|Global)\s+)?(?:Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact|Program Lemma)\s+"""
         + r"""(?P<ident>\w(\w|')*)"""
     )
-    OBLIGATION_RE = re.compile(r"""Next Obligation\.""")
+    OBLIGATION_RE = re.compile(r"""(Next Obligation\.)|(Final Obligation\.)""")
     GOAL_RE = re.compile(r"""\s*Goal\s+""")
     TIME_RE = re.compile(
         r"""Chars (?P<start>\d*) - (?P<end>\d*) \[.*\] """

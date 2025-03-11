@@ -637,11 +637,11 @@ Definition diskArgument : val :=
     exception_do (let: "d" := (ref_ty disk.Disk "d") in
     let: "b" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (interface.get "Read" (![disk.Disk] "d")) "$a0") in
+    (interface.get #"Read"%go (![disk.Disk] "d")) "$a0") in
     do:  ("b" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := (![sliceT] "b") in
-    (interface.get "Write" (![disk.Disk] "d")) "$a0" "$a1")).
+    (interface.get #"Write"%go (![disk.Disk] "d")) "$a0" "$a1")).
 
 Definition embedA : go_type := structT [
   "a" :: uint64T
@@ -894,7 +894,7 @@ Definition concreteFooer__Foo : val :=
 Definition fooConsumer : val :=
   rec: "fooConsumer" "f" :=
     exception_do (let: "f" := (ref_ty Fooer "f") in
-    do:  ((interface.get "Foo" (![Fooer] "f")) #())).
+    do:  ((interface.get #"Foo"%go (![Fooer] "f")) #())).
 
 (* go: interfaces.go:22:6 *)
 Definition testAssignConcreteToInterface : val :=
@@ -924,7 +924,7 @@ Definition testPassConcreteToInterfaceArg : val :=
     do:  (let: "$a0" := (![Fooer] "f") in
     (func_call #unittest.unittest #"fooConsumer"%go) "$a0");;;
     do:  ((method_call #unittest.unittest #"concreteFooer'ptr" #"Foo" (![ptrT] "c")) #());;;
-    do:  ((interface.get "Foo" (![Fooer] "f")) #())).
+    do:  ((interface.get #"Foo"%go (![Fooer] "f")) #())).
 
 (* go: interfaces.go:37:6 *)
 Definition testPassConcreteToInterfaceArgSpecial : val :=
@@ -960,7 +960,7 @@ Definition testPassConcreteToInterfaceArgSpecial : val :=
 Definition takesVarArgsInterface : val :=
   rec: "takesVarArgsInterface" "fs" :=
     exception_do (let: "fs" := (ref_ty sliceT "fs") in
-    do:  ((interface.get "Foo" (![Fooer] (slice.elem_ref Fooer (![sliceT] "fs") #(W64 0)))) #())).
+    do:  ((interface.get #"Foo"%go (![Fooer] (slice.elem_ref Fooer (![sliceT] "fs") #(W64 0)))) #())).
 
 (* go: interfaces.go:55:6 *)
 Definition test : val :=
@@ -1082,8 +1082,8 @@ Definition testPtrMset : val :=
     let: "f" := (ref_ty Fooer (zero_val Fooer)) in
     let: "$r0" := (interface.make #unittest.unittest #"concrete1" (![concrete1] (![ptrT] "a"))) in
     do:  ("f" <-[Fooer] "$r0");;;
-    do:  ((interface.get "B" (![PointerInterface] "p")) #());;;
-    do:  ((interface.get "Foo" (![Fooer] "f")) #())).
+    do:  ((interface.get #"B"%go (![PointerInterface] "p")) #());;;
+    do:  ((interface.get #"Foo"%go (![Fooer] "f")) #())).
 
 (* go: ints.go:3:6 *)
 Definition useInts : val :=

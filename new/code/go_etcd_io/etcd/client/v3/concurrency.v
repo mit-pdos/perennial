@@ -116,7 +116,7 @@ Definition Election__Campaign : val :=
     let: "$a2" := (interface.make #""%go #"int"%go #(W64 0)) in
     (func_call #clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
     slice.literal clientv3.Cmp ["$sl0"])) in
-    (interface.get "If" (let: "$a0" := (![context.Context] "ctx") in
+    (interface.get #"If"%go (let: "$a0" := (![context.Context] "ctx") in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![ptrT] "client")) "$a0")) "$a0") in
     do:  ("txn" <-[clientv3.Txn] "$r0");;;
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![stringT] "k") in
@@ -126,17 +126,17 @@ Definition Election__Campaign : val :=
     slice.literal clientv3.OpOption ["$sl0"])) in
     (func_call #clientv3 #"OpPut"%go) "$a0" "$a1" "$a2") in
     slice.literal clientv3.Op ["$sl0"])) in
-    (interface.get "Then" (![clientv3.Txn] "txn")) "$a0") in
+    (interface.get #"Then"%go (![clientv3.Txn] "txn")) "$a0") in
     do:  ("txn" <-[clientv3.Txn] "$r0");;;
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![stringT] "k") in
     let: "$a1" := #slice.nil in
     (func_call #clientv3 #"OpGet"%go) "$a0" "$a1") in
     slice.literal clientv3.Op ["$sl0"])) in
-    (interface.get "Else" (![clientv3.Txn] "txn")) "$a0") in
+    (interface.get #"Else"%go (![clientv3.Txn] "txn")) "$a0") in
     do:  ("txn" <-[clientv3.Txn] "$r0");;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "resp" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := ((interface.get "Commit" (![clientv3.Txn] "txn")) #()) in
+    let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (![clientv3.Txn] "txn")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[ptrT] "$r0");;;
@@ -216,7 +216,7 @@ Definition Election__Proclaim : val :=
     let: "txn" := (ref_ty clientv3.Txn (zero_val clientv3.Txn)) in
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (![clientv3.Cmp] "cmp") in
     slice.literal clientv3.Cmp ["$sl0"])) in
-    (interface.get "If" (let: "$a0" := (![context.Context] "ctx") in
+    (interface.get #"If"%go (let: "$a0" := (![context.Context] "ctx") in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![ptrT] "client")) "$a0")) "$a0") in
     do:  ("txn" <-[clientv3.Txn] "$r0");;;
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![stringT] (struct.field_ref Election "leaderKey" (![ptrT] "e"))) in
@@ -226,11 +226,11 @@ Definition Election__Proclaim : val :=
     slice.literal clientv3.OpOption ["$sl0"])) in
     (func_call #clientv3 #"OpPut"%go) "$a0" "$a1" "$a2") in
     slice.literal clientv3.Op ["$sl0"])) in
-    (interface.get "Then" (![clientv3.Txn] "txn")) "$a0") in
+    (interface.get #"Then"%go (![clientv3.Txn] "txn")) "$a0") in
     do:  ("txn" <-[clientv3.Txn] "$r0");;;
     let: "terr" := (ref_ty error (zero_val error)) in
     let: "tresp" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := ((interface.get "Commit" (![clientv3.Txn] "txn")) #()) in
+    let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (![clientv3.Txn] "txn")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("tresp" <-[ptrT] "$r0");;;
@@ -270,13 +270,13 @@ Definition Election__Resign : val :=
     (func_call #clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
     do:  ("cmp" <-[clientv3.Cmp] "$r0");;;
     let: "resp" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := ((interface.get "Commit" (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![stringT] (struct.field_ref Election "leaderKey" (![ptrT] "e"))) in
+    let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![stringT] (struct.field_ref Election "leaderKey" (![ptrT] "e"))) in
     let: "$a1" := #slice.nil in
     (func_call #clientv3 #"OpDelete"%go) "$a0" "$a1") in
     slice.literal clientv3.Op ["$sl0"])) in
-    (interface.get "Then" (let: "$a0" := ((let: "$sl0" := (![clientv3.Cmp] "cmp") in
+    (interface.get #"Then"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Cmp] "cmp") in
     slice.literal clientv3.Cmp ["$sl0"])) in
-    (interface.get "If" (let: "$a0" := (![context.Context] "ctx") in
+    (interface.get #"If"%go (let: "$a0" := (![context.Context] "ctx") in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![ptrT] "client")) "$a0")) "$a0")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -566,7 +566,7 @@ Definition waitDelete : val :=
     then return: (![error] "err")
     else do:  #()));;;
     (let: "err" := (ref_ty error (zero_val error)) in
-    let: "$r0" := ((interface.get "Err" (![context.Context] "ctx")) #()) in
+    let: "$r0" := ((interface.get #"Err"%go (![context.Context] "ctx")) #()) in
     do:  ("err" <-[error] "$r0");;;
     (if: (~ (interface.eq (![error] "err") #interface.nil))
     then return: (![error] "err")
@@ -806,15 +806,15 @@ Definition Mutex__tryAcquire : val :=
     do:  ("getOwner" <-[clientv3.Op] "$r0");;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "resp" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := ((interface.get "Commit" (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "get") in
+    let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "get") in
     let: "$sl1" := (![clientv3.Op] "getOwner") in
     slice.literal clientv3.Op ["$sl0"; "$sl1"])) in
-    (interface.get "Else" (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "put") in
+    (interface.get #"Else"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Op] "put") in
     let: "$sl1" := (![clientv3.Op] "getOwner") in
     slice.literal clientv3.Op ["$sl0"; "$sl1"])) in
-    (interface.get "Then" (let: "$a0" := ((let: "$sl0" := (![clientv3.Cmp] "cmp") in
+    (interface.get #"Then"%go (let: "$a0" := ((let: "$sl0" := (![clientv3.Cmp] "cmp") in
     slice.literal clientv3.Cmp ["$sl0"])) in
-    (interface.get "If" (let: "$a0" := (![context.Context] "ctx") in
+    (interface.get #"If"%go (let: "$a0" := (![context.Context] "ctx") in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![ptrT] "client")) "$a0")) "$a0")) "$a0")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1294,7 +1294,7 @@ Definition NewSTM : val :=
       let: "$r0" := (λ: "s",
         exception_do (let: "s" := (ref_ty STM "s") in
         do:  (let: "$a0" := (![sliceT] (struct.field_ref stmOptions "prefetch" (![ptrT] "opts"))) in
-        (interface.get "Get" (![STM] "s")) "$a0");;;
+        (interface.get #"Get"%go (![STM] "s")) "$a0");;;
         return: (let: "$a0" := (![STM] "s") in
          (![funcT] "f") "$a0"))
         ) in
@@ -1483,14 +1483,14 @@ Definition runSTM : val :=
         )));;;
       let: "out" := (ref_ty stmResponse (zero_val stmResponse)) in
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        do:  ((interface.get "reset" (![STM] "s")) #());;;
+        do:  ((interface.get #"reset"%go (![STM] "s")) #());;;
         (let: "$r0" := (let: "$a0" := (![STM] "s") in
         (![funcT] "apply") "$a0") in
         do:  ((struct.field_ref stmResponse "err" "out") <-[error] "$r0");;;
         (if: (~ (interface.eq (![error] (struct.field_ref stmResponse "err" "out")) #interface.nil))
         then break: #()
         else do:  #()));;;
-        (let: "$r0" := ((interface.get "commit" (![STM] "s")) #()) in
+        (let: "$r0" := ((interface.get #"commit"%go (![STM] "s")) #()) in
         do:  ((struct.field_ref stmResponse "resp" "out") <-[ptrT] "$r0");;;
         (if: (![ptrT] (struct.field_ref stmResponse "resp" "out")) ≠ #null
         then break: #()
@@ -1706,9 +1706,9 @@ Definition stm__commit : val :=
     exception_do (let: "s" := (ref_ty ptrT "s") in
     let: "err" := (ref_ty error (zero_val error)) in
     let: "txnresp" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := ((interface.get "Commit" (let: "$a0" := ((method_call #concurrency.concurrency #"writeSet" #"puts" (![writeSet] (struct.field_ref stm "wset" (![ptrT] "s")))) #()) in
-    (interface.get "Then" (let: "$a0" := ((![funcT] (struct.field_ref stm "conflicts" (![ptrT] "s"))) #()) in
-    (interface.get "If" (let: "$a0" := (![context.Context] (struct.field_ref stm "ctx" (![ptrT] "s"))) in
+    let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((method_call #concurrency.concurrency #"writeSet" #"puts" (![writeSet] (struct.field_ref stm "wset" (![ptrT] "s")))) #()) in
+    (interface.get #"Then"%go (let: "$a0" := ((![funcT] (struct.field_ref stm "conflicts" (![ptrT] "s"))) #()) in
+    (interface.get #"If"%go (let: "$a0" := (![context.Context] (struct.field_ref stm "ctx" (![ptrT] "s"))) in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![ptrT] (struct.field_ref stm "client" (![ptrT] "s")))) "$a0")) "$a0")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1761,8 +1761,8 @@ Definition stm__fetch : val :=
       do:  ((slice.elem_ref clientv3.Op (![sliceT] "ops") (![intT] "i")) <-[clientv3.Op] "$r0")));;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "txnresp" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := ((interface.get "Commit" (let: "$a0" := (![sliceT] "ops") in
-    (interface.get "Then" (let: "$a0" := (![context.Context] (struct.field_ref stm "ctx" (![ptrT] "s"))) in
+    let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := (![sliceT] "ops") in
+    (interface.get #"Then"%go (let: "$a0" := (![context.Context] (struct.field_ref stm "ctx" (![ptrT] "s"))) in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![ptrT] (struct.field_ref stm "client" (![ptrT] "s")))) "$a0")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1898,14 +1898,14 @@ Definition stmSerializable__commit : val :=
     do:  ("getops" <-[sliceT] "$r1");;;
     let: "txn" := (ref_ty clientv3.Txn (zero_val clientv3.Txn)) in
     let: "$r0" := (let: "$a0" := ((method_call #concurrency.concurrency #"writeSet" #"puts" (![writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()) in
-    (interface.get "Then" (let: "$a0" := ((![funcT] (struct.field_ref stm "conflicts" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) #()) in
-    (interface.get "If" (let: "$a0" := (![context.Context] (struct.field_ref stm "ctx" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) in
+    (interface.get #"Then"%go (let: "$a0" := ((![funcT] (struct.field_ref stm "conflicts" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) #()) in
+    (interface.get #"If"%go (let: "$a0" := (![context.Context] (struct.field_ref stm "ctx" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![ptrT] (struct.field_ref stm "client" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0")) "$a0")) "$a0") in
     do:  ("txn" <-[clientv3.Txn] "$r0");;;
     let: "err" := (ref_ty error (zero_val error)) in
     let: "txnresp" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := ((interface.get "Commit" (let: "$a0" := (![sliceT] "getops") in
-    (interface.get "Else" (![clientv3.Txn] "txn")) "$a0")) #()) in
+    let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := (![sliceT] "getops") in
+    (interface.get #"Else"%go (![clientv3.Txn] "txn")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("txnresp" <-[ptrT] "$r0");;;

@@ -35,39 +35,22 @@ Lemma wp_initialize' pending postconds γtok :
       is_pkg_defined main ∗ is_initialized γtok ∗ own_globals_tok pending postconds
   }}}.
 Proof.
-  iIntros (???) "Hunused HΦ".
+  intros ??. wp_start as "Hunused".
   wp_call.
   wp_apply (wp_package_init with "[$]").
   { rewrite H0 //. }
   { set_solver. }
   { (* prove init function *)
     iIntros "* #Hdefs Hvars Htok".
-    wp_pures.
+    wp_auto.
 
     iNamed "Hvars".
 
     (* go into foo() *)
     wp_func_call.
     wp_call.
-    wp_globals_get.
-    wp_store.
-    wp_pures.
-    wp_globals_get.
-    wp_store.
-    wp_pures.
-    wp_globals_get.
-    wp_store.
-    wp_pures.
-    wp_globals_get.
-    wp_load.
-    wp_pures.
-    wp_globals_get.
-    wp_store.
-    wp_pures.
-    wp_globals_get.
-    wp_store.
     iApply wp_fupd.
-    wp_pures.
+    repeat (wp_globals_get || wp_auto).
     iFrame "Htok".
     iSplitR; first done.
     unfold is_initialized.
@@ -91,14 +74,7 @@ Proof.
   wp_func_call. wp_call.
   wp_func_call. wp_call.
   wp_func_call. wp_call.
-  wp_globals_get.
-  wp_store.
-  wp_pures.
-  wp_globals_get.
-  wp_load. wp_pures.
-  wp_globals_get.
-  wp_load.
-  wp_pures.
+  repeat (wp_globals_get || wp_auto).
   by iApply "HΦ".
 Qed.
 
@@ -148,7 +124,7 @@ Proof.
     iApply fupd_wp. iInv "Hinit" as ">[Hbad|Hi]" "Hclose".
     { iCombine "Hbad Hescrow" gives %[Hbad _]. done. }
     iMod ("Hclose" with "[$Hescrow]") as "_". iModIntro.
-    wp_pures.
+    wp_auto.
     by wp_apply (wp_main with "[$]").
   }
   by iApply big_sepL_nil.

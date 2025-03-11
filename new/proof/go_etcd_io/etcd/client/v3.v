@@ -2,6 +2,7 @@ From stdpp Require Import sorting.
 Require Import New.code.go_etcd_io.etcd.client.v3.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.
 Require Import New.proof.proof_prelude.
+Require Import New.proof.context.
 
 Inductive ecomp (E : Type → Type) (R : Type) : Type :=
 | Pure (r : R) : ecomp E R
@@ -322,6 +323,18 @@ mk {
     min_create_revision : w64;
     max_create_revision : w64;
   }.
+
+Global Instance settable : Settable _ :=
+  settable! mk < key; range_end; limit; revision; sort_order; sort_target; serializable; keys_only;
+count_only; min_mod_revision; max_mod_revision; min_create_revision; max_create_revision>.
+
+Definition default `{ffi_syntax} : t :=
+  ltac:(let x := eval simpl in
+        (mk [] [] (default_val _) (default_val _) (default_val _) (default_val _) (default_val _)
+           (default_val _) (default_val _) (default_val _) (default_val _) (default_val _)
+           (default_val _)) in
+          refine x
+       ).
 End RangeRequest.
 
 Module RangeResponse.
@@ -692,3 +705,94 @@ Program Instance : IsPkgInit clientv3 :=
 Final Obligation. Proof. apply _. Qed.
 
 End init.
+
+(* abstraction of an etcd [Op] *)
+Module Op.
+Inductive t :=
+| Get (req : RangeRequest.t)
+| Put (req : PutRequest.t)
+| DeleteRange (req : DeleteRangeRequest.t)
+| Txn (req : TxnRequest.t)
+.
+End Op.
+
+Section wps.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!goGlobalsGS Σ}.
+
+Axiom clientv3G : gFunctors → Set.
+Axiom clientv3_names : Set.
+Context `{!clientv3G Σ}.
+Implicit Types (γ : clientv3_names).
+
+Axiom own_etcd_pointsto : ∀ γ (dq : dfrac) (k : go_string) (kv : option KeyValue.t), iProp Σ.
+
+Notation "k etcd[ γ ]↦ dq kv" := (own_etcd_pointsto γ dq k kv)
+  (at level 20, γ at level 50, dq custom dfrac at level 1, format "k  etcd[ γ ]↦ dq  kv").
+
+#[global]
+Instance bot : Bottom (option KeyValue.t) := None.
+
+Axiom is_etcd_lease_lb : ∀ γ (l : clientv3.LeaseID.t) (expiration : w64), iProp Σ.
+
+Axiom is_etcd_lease_lb_pers : ∀ γ l expiration, Persistent (is_etcd_lease_lb γ l expiration).
+Global Existing Instance is_etcd_lease_lb_pers.
+
+Axiom is_Client : ∀ (cl : loc) γ, iProp Σ.
+
+Axiom is_Client_pers : ∀ client γ, Persistent (is_Client client γ).
+Global Existing Instance is_Client_pers.
+
+Axiom is_Op : ∀ (op : clientv3.Op.t) (o : Op.t), iProp Σ.
+
+(* NOTE: for simplicity, this only supports empty opts list. *)
+Axiom wp_OpGet : ∀ key opts_sl ,
+  {{{
+      is_pkg_init clientv3 ∗
+      "Hopts" ∷ opts_sl ↦* ([] : list clientv3.OpOption.t)
+  }}}
+    func_call #clientv3 "OpGet" #key #opts_sl
+  {{{
+      op, RET #op;
+      is_Op op (Op.Get (RangeRequest.default <|RangeRequest.key := key|>))
+  }}}.
+
+Axiom N : namespace.
+
+(* Only specifying Do Get for now. *)
+Axiom wp_Client__Do_Get : ∀ key client γ (ctx : context.Context.t) (op : clientv3.Op.t),
+  ∀ Φ,
+  (is_Client client γ ∗
+   is_Op op (Op.Get (RangeRequest.default <| RangeRequest.key := key |>))) -∗
+  (* FIXME: wrong because a lease could delete the value. *)
+  (|={⊤∖↑N,∅}=> ∃ dq val, key etcd[γ]↦{dq} val ∗
+                        (key etcd[γ]↦{dq} val ={∅,⊤∖↑N}=∗ Φ #())) -∗
+  (* TODO: return value. *)
+  WP method_call #clientv3 #"Client" #"Do" #client #ctx #op {{ Φ }}.
+
+Axiom wp_Client__GetLogger :
+  ∀ (client : loc) γ,
+  {{{ is_Client client γ }}}
+    method_call #clientv3 #"Client'ptr" #"GetLogger" #client #()
+  {{{ (lg : loc), RET #lg; True }}}.
+
+Axiom wp_Client__Ctx :
+  ∀ (client : loc) γ,
+  {{{ is_Client client γ }}}
+    method_call #clientv3 #"Client'ptr" #"Ctx" #client #()
+  {{{ (ctx : context.Context.t), RET #ctx; True }}}.
+
+Axiom wp_Client__Grant :
+  ∀ client (ctx : context.Context.t) (ttl : w64),
+  {{{ is_Client client γ }}}
+    method_call #clientv3 #"Client'ptr" #"Grant" #client #ctx #ttl
+  {{{
+      expiration resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
+        RET (#resp_ptr, #err);
+        resp_ptr ↦ resp ∗
+        is_etcd_lease_lb γ resp.(LeaseGrantResponse.ID) expiration
+  }}}.
+
+End client_axioms.
+
+End wps.

@@ -1,5 +1,6 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.theory Require Import proofmode mem globals pkg.
+Import Ltac2.
+From New.golang.theory Require Import proofmode mem globals pkg loop.
 From Coq Require Import Strings.Ascii.
 
 (* TODO: iFrame # is only for backwards compatibility *)
@@ -9,9 +10,6 @@ Tactic Notation "wp_func_call" :=
   wp_func_call_core; try iPkgInit; try iFrame "#".
 Tactic Notation "wp_method_call" :=
   wp_method_call_core; try iPkgInit; try iFrame "#".
-
-Tactic Notation "wp_apply" open_constr(lem) :=
-  wp_apply_core lem; try iPkgInit.
 
 (* remove and introduce [is_pkg_init] and [is_pkg_defined] facts from a hypothesis *)
 Ltac destruct_pkg_init H :=
@@ -60,30 +58,46 @@ Tactic Notation "wp_start" "as" constr(pat) :=
 Tactic Notation "wp_start" :=
   wp_start as "Hpre".
 
-(* string $ prefix to create valid Coq identifiers *)
-Definition clean_ident (s: string): string :=
-  match s with
-  | String "$"%char s' => s'
-  | _ => s
-  end.
+Ltac2 wp_auto_lc (num_lc_wanted : int) :=
+  let num_lc_wanted := Ref.ref num_lc_wanted in
+  let wp_pure_maybe_lc () :=
+    if (Int.gt (Ref.get num_lc_wanted) 0) then ltac1:(wp_pure_lc "?") > []; (Ref.decr num_lc_wanted)
+    else wp_pure () > []
+  in
+  progress (
+      repeat (first [ wp_pure_maybe_lc ()
+                    | wp_load ()
+                    | wp_store ()
+                    | wp_alloc_auto ()]);
+      if (Int.gt (Ref.get num_lc_wanted) 0) then
+        Control.backtrack_tactic_failure "wp_auto_lc: unable to generate enough later credits"
+      else
+        ()
+    ).
 
-(* Use the Go variable name to automate calling wp_alloc. A variable called "x"
-will get a location variable x_l (in Gallina) and a spatial hypothesis "x" for
-the points-to. *)
-Ltac wp_alloc_auto :=
-  match goal with
-    (* matches (exception_do (let: ?v := _ in _)), but this has to be written
-    out since we don't have function coercions being inserted *)
-  | |- context[(WP (App (Val exception.exception_do)
-                      (App (Rec BAnon (BNamed ?v) _) _)%E) {{ _ }})%I ] =>
-      let i := (eval compute in (clean_ident v)) in
-      string_ident.string_to_ident_cps i
-        ltac:(fun x => let x_l := fresh x "_l" in
-                       wp_alloc x_l as i
-             )
-  end.
+(* NOTE: this could be refined to give helpful errors when auto gets stuck by
+   using the [Tactic_failure] exception under the hood for backtracking, but using
+   some new exception [Human_input_needed] which causes [wp_auto] to stop
+   backtracking and to immediately report to the user.
+ *)
+Tactic Notation "wp_auto" := ltac2:(wp_auto_lc 0).
+Tactic Notation "wp_auto_lc" int(x) :=
+  let f := ltac2:(x |- wp_auto_lc (Option.get (Ltac1.to_int x))) in
+  f x.
 
-Ltac wp_auto := repeat first [ progress wp_pures
-                             | wp_load
-                             | wp_store
-                             | wp_alloc_auto ].
+Tactic Notation "wp_apply_lc" int(n) open_constr(lem) :=
+  wp_apply_core lem; try iPkgInit;
+  try (let f := ltac2:(n |- wp_auto_lc (Option.get (Ltac1.to_int n))) in f n).
+
+(* NOTE: did not copy in other variants of [iIntros] from [iris/iris/proofmode/ltac_tactics.v] to
+   make intro patterns more canonical.
+ *)
+Tactic Notation "wp_apply_lc" int(n) open_constr(lem) "as" constr(pat) :=
+  wp_apply_core lem; try iPkgInit;
+  last (iIntros pat; try (let f := ltac2:(n |- wp_auto_lc (Option.get (Ltac1.to_int n))) in f n)).
+
+Tactic Notation "wp_apply" open_constr(lem) :=
+  wp_apply_lc 0 lem.
+
+Tactic Notation "wp_apply" open_constr(lem) "as" constr(pat) :=
+  wp_apply_lc 0 lem as pat.
