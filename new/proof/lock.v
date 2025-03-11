@@ -1,5 +1,6 @@
 From New.code Require Import github_com.mit_pdos.gokv.lockservice.
 From New.proof Require Import grove_prelude std kv.
+Require Import New.generatedproof.github_com.mit_pdos.gokv.lockservice.
 
 Section defns.
 
@@ -8,11 +9,11 @@ Context `{!gooseGlobalGS Σ}.
 (* KV points-to for the internal kv service *)
 Record lockservice_params :=
   mk_lockservice_params {
-    kvptsto_lock : string → string → iProp Σ
+    kvptsto_lock : go_string → go_string → iProp Σ
   }.
 
 Definition lock_inv γ key R : iProp Σ :=
-  ∃ b : bool, kvptsto_lock γ key (if b then "1" else "") ∗ if b then True else R.
+  ∃ b : bool, kvptsto_lock γ key (if b then "1" else "")%go ∗ if b then True else R.
 
 Definition is_lock N `{invGS Σ} γ key R :=
   inv N (lock_inv γ key R).
@@ -21,6 +22,7 @@ End defns.
 
 Section proof.
 Context `{!heapGS Σ}.
+Context `{!goGlobalsGS Σ}.
 
 Context (N: namespace).
 
@@ -34,8 +36,8 @@ Proof.
 Qed.
 
 Definition is_LockClerk (ck:loc) γ : iProp Σ :=
-  ∃ (kv : val) E,
-    "#Hkv_ptsto" ∷ ck ↦s[LockClerk :: "kv"]□ kv ∗
+  ∃ kv E,
+    "#Hkv_ptsto" ∷ ck ↦s[lockservice.LockClerk :: "kv"]□ kv ∗
     "#Hkv_is" ∷ is_KvCput kv (kvptsto_lock γ) E ∗
     "%Hdisj" ∷ ⌜ E ## ↑N ⌝
 .
@@ -44,69 +46,53 @@ Global Instance is_LockClerk_pers ck γ : Persistent (is_LockClerk ck γ) := _.
 
 Global Instance is_lock_pers N γ key R : Persistent (is_lock N γ key R) := _.
 
-Lemma wp_MakeLockClerk (kv : val) kvptsto E :
-has_go_type kv interfaceT →
+#[global]
+Program Instance : IsPkgInit lockservice :=
+  ltac2:(build_pkg_init ()).
+Final Obligation. apply _. Qed.
+
+Lemma wp_MakeLockClerk kv kvptsto E :
   {{{
+       is_pkg_init lockservice ∗
        is_KvCput kv kvptsto E ∗
        ⌜ E ## ↑N ⌝
   }}}
-    MakeLockClerk kv
+    func_call #lockservice #"MakeLockClerk" #kv
   {{{
        (ck:loc), RET #ck; is_LockClerk ck (mk_lockservice_params kvptsto)
   }}}
 .
 Proof.
-  intros ?.
-  iIntros (?) "[#? %] HΦ".
-  wp_rec.
-  wp_alloc k as "?".
-  wp_pures.
-  wp_load. wp_pures.
-  wp_alloc l as "Hl".
-  (* FIXME: automate splitting. *)
-  iDestruct (struct_fields_split with "Hl") as "Hl".
-  { done. }
-  { apply _. }
-  iEval (repeat (rewrite zero_val_eq || rewrite struct.val_unseal)) in "Hl".
-  iNamed "Hl".
-
-  wp_pures.
-  iApply "HΦ".
+  wp_start as "[#? %]".
+  wp_auto.
+  wp_alloc l as "l".
+  iDestruct (struct_fields_split with "l") as "l".
+  iNamed "l".
   iMod (typed_pointsto_persist with "Hkv") as "#Hkv".
-  iModIntro. iFrame "∗#". done.
+  wp_auto. iApply "HΦ". iFrame "∗#%".
 Qed.
 
 Lemma wp_LockClerk__Lock ck key γ R :
   {{{
-       is_LockClerk ck γ ∗ is_lock N γ key R
+      is_pkg_init lockservice ∗
+      is_LockClerk ck γ ∗ is_lock N γ key R
   }}}
-    LockClerk__Lock #ck #(str key)
+    method_call #lockservice #"LockClerk'ptr" #"Lock" #ck #key
   {{{
        RET #(); R
   }}}
 .
 Proof.
-  iIntros (Φ) "(#Hck&#Hlock) HΦ".
-  wp_rec.
-  wp_pures.
-  wp_alloc ck_ptr as "?".
-  wp_alloc key_ptr as "?".
-  wp_pures.
-  wp_for.
-  wp_pures.
-  wp_load.
-  wp_pure_credit "Hlc".
-  wp_pures.
-  wp_load.
-  wp_pures.
+  wp_start as "(#Hck&#Hlock)".
   iNamed "Hck".
-  wp_load.
-  wp_pures.
   iNamed "Hkv_is".
+  wp_auto_lc 1.
+  wp_for.
+  wp_auto.
   wp_apply ("HcputSpec" with "[//]").
   rewrite /is_lock.
   iInv "Hlock" as "Hlock_inner" "Hclo".
-  iMod (lc_fupd_elim_later with "Hlc Hlock_inner") as "Hlock_inner".
+  iMod (lc_fupd_elim_later with "[$] Hlock_inner") as "Hlock_inner".
   iDestruct "Hlock_inner" as (?) "(Hk&HR)".
   iApply fupd_mask_intro.
   { solve_ndisj. }
@@ -118,46 +104,35 @@ Proof.
   - rewrite bool_decide_false //.
     iMod ("Hclo" with "[HR Hk]").
     { iExists true. iFrame. }
-    iModIntro. iIntros "Hck". wp_pures. iModIntro. iLeft.
-    iSplit; first by eauto.
-    wp_pures.
-    iModIntro. iApply wp_for_post_do.
-    wp_pures. by iFrame.
+    iModIntro. iIntros "Hck". wp_auto_lc 1. rewrite decide_True //. wp_auto.
+    iApply wp_for_post_do. wp_auto. by iFrame.
   - rewrite bool_decide_true //.
     iMod ("Hclo" with "[Hk]").
     { iExists true. iFrame. }
-    iModIntro. iIntros "Hck". wp_pures. iModIntro. iRight.
-    iSplit; first by eauto.
-    wp_pures. iModIntro. iApply "HΦ". iFrame.
+    iModIntro. iIntros "Hck". wp_auto. rewrite bool_decide_true // decide_False //.
+    2:{ naive_solver. } rewrite decide_True //.
+    wp_auto. iApply "HΦ". iFrame.
 Qed.
 
 Lemma wp_LockClerk__Unlock ck key γ R :
   {{{
-       is_LockClerk ck γ ∗ is_lock N γ key R ∗ R
+       is_pkg_init lockservice ∗ is_LockClerk ck γ ∗ is_lock N γ key R ∗ R
   }}}
-    LockClerk__Unlock #ck #(str key)
+    method_call #lockservice #"LockClerk'ptr" #"Unlock" #ck #key
   {{{
        RET #(); True
   }}}
 .
 Proof.
-  iIntros (Φ) "(#Hck&#Hlock&HR) HΦ".
-  wp_rec.
-  wp_pure_credit "Hlc".
-  wp_pures.
+  wp_start as "(#Hck&#Hlock&HR)".
   iNamed "Hck".
-  wp_alloc ck_ptr as "?".
-  wp_alloc key_ptr as "?".
   iNamed "Hkv_is".
-  wp_load.
-  wp_pures.
-  wp_load.
-  wp_load.
   iNamed "Hkv".
+  wp_auto_lc 1.
   wp_apply ("HputSpec" with "[//]").
   rewrite /is_lock.
   iInv "Hlock" as "Hlock_inner" "Hclo".
-  iMod (lc_fupd_elim_later with "Hlc Hlock_inner") as "Hlock_inner".
+  iMod (lc_fupd_elim_later with "[$] Hlock_inner") as "Hlock_inner".
   iDestruct "Hlock_inner" as (?) "(Hk&_)".
   iApply fupd_mask_intro.
   { solve_ndisj. }
@@ -168,7 +143,7 @@ Proof.
   iMod ("Hclo" with "[HR Hk]").
   { iExists false. iFrame. }
   iModIntro. iIntros "Hck".
-  wp_pures. by iApply "HΦ".
+  wp_auto. by iApply "HΦ".
 Qed.
 
 End proof.

@@ -256,7 +256,7 @@ Proof.
   iNamed "Hcond".
   wp_method_call. wp_call.
   iNamed "Hlock".
-  wp_load.
+  wp_auto.
   wp_apply ("H_Unlock" with "[$]").
   wp_auto.
   wp_apply ("H_Lock" with "[$]").
@@ -836,7 +836,7 @@ Proof.
     wp_auto.
     wp_bind (if: _ then _ else do: #())%E.
     clear Hbad.
-    iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[Hv_ptr Hdelta_ptr]").
+    iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[-]").
     {
       destruct bool_decide eqn:Heq0.
       - wp_auto.
@@ -916,7 +916,7 @@ Proof.
   wp_auto.
   wp_bind (if: _ then _ else do: #())%E.
   clear Hbad.
-  iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[Hv_ptr Hdelta_ptr]").
+  iApply (wp_wand _ _ _ (λ v, ⌜ v = execute_val #tt ⌝ ∗ _)%I with "[-]").
   {
     destruct bool_decide eqn:Heq0.
     - wp_auto.
@@ -1018,10 +1018,9 @@ Proof.
 
   iAssert (
       ∃ (wrem : w32),
-        "Hw_ptr" ∷ w_ptr ↦ wrem ∗
+        "w" ∷ w_ptr ↦ wrem ∗
         "Hunfinished_tokens" ∷ [∗] replicate (uint.nat wrem) (own_zerostate_token γ)
-    )%I with "[Hw_ptr Hunfinished_tokens]" as "HloopInv".
-  { iFrame. }
+    )%I with "[$]" as "HloopInv".
 
   wp_for.
   iNamed "HloopInv".
@@ -1080,10 +1079,7 @@ Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
   ) -∗
   WP method_call #sync #"WaitGroup'ptr" #"Wait" #wg #() {{ Φ }}.
 Proof.
-  iIntros (?) "(#Hinit & #Hwg & HR_in) HΦ".
-  iNamed "Hinit". iNamed "Hwg".
-  wp_method_call. wp_call.
-  wp_alloc wg_ptr as "Hwg_ptr".
+  wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
   wp_auto.
   wp_for.
   wp_auto.
@@ -1200,7 +1196,7 @@ Proof.
     wp_apply (wp_Uint64__Load).
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iClear "Hv_ptr Hw_ptr Hstate_ptr". clear v_ptr counter w_ptr waiters state_ptr HwaitersLe.
+    iClear "v w state". clear v_ptr counter w_ptr waiters state_ptr HwaitersLe.
     clear unfinished_waiters sema n Hsema Hsem.
     iNamed "Hi".
     iApply fupd_mask_intro.

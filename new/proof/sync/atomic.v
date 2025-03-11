@@ -63,13 +63,13 @@ Proof.
     subst.
     unshelve iApply (wp_typed_cmpxchg_suc with "[$]"); try tc_solve; try done.
     iIntros "!> ?". iMod ("HΦ" with "[$]"). iModIntro.
-    by wp_pures.
+    by wp_auto.
   }
   {
     unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve; try done.
     { naive_solver. }
     iIntros "!> ?". iMod ("HΦ" with "[$]"). iModIntro.
-    by wp_pures.
+    by wp_auto.
   }
 Qed.
 
@@ -83,8 +83,7 @@ Lemma wp_Uint64__Load u dq :
   WP method_call #atomic #"Uint64'ptr" #"Load" #u #() {{ Φ }}.
 Proof.
   wp_start as "_".
-  wp_alloc x_ptr as "Hx_ptr".
-  wp_pures. wp_load. wp_pures.
+  wp_auto.
   wp_apply (wp_LoadUint64 with "[$]").
   iMod "HΦ". iModIntro.
   iDestruct "HΦ" as (?) "[Hown HΦ]".
@@ -101,7 +100,7 @@ Proof.
     iFrame.
   }
   iModIntro.
-  wp_pures. done.
+  wp_auto. done.
 Qed.
 
 Lemma wp_Uint64__Store u v :
@@ -111,10 +110,7 @@ Lemma wp_Uint64__Store u v :
   WP method_call #atomic #"Uint64'ptr" #"Store" #u #v {{ Φ }}.
 Proof.
   wp_start as "_".
-  wp_alloc x_ptr as "Hx_ptr". wp_pures.
-  wp_alloc val_ptr as "Hval_ptr".
-  wp_pures. wp_load. wp_pures.
-  wp_load. wp_pures.
+  wp_auto.
   wp_apply (wp_StoreUint64 with "[$]").
   iMod "HΦ". iModIntro.
   iDestruct "HΦ" as (?) "[Hown HΦ]".
@@ -131,7 +127,7 @@ Proof.
     iFrame.
   }
   iModIntro.
-  wp_pures. done.
+  wp_auto. done.
 Qed.
 
 Lemma wp_Uint64__Add u delta :
@@ -143,10 +139,7 @@ Lemma wp_Uint64__Add u delta :
   WP method_call #atomic #"Uint64'ptr" #"Add" #u #delta {{ Φ }}.
 Proof.
   wp_start as "_".
-  wp_alloc new_ptr as "Hnew_ptr". wp_pures.
-  wp_alloc x_ptr as "Hx_ptr". wp_pures.
-  wp_alloc delta_ptr as "Hdelta_ptr". wp_pures.
-  wp_load. wp_pures. wp_load. wp_pures.
+  wp_auto.
   wp_apply (wp_AddUint64 with "[$]").
   iMod "HΦ". iModIntro.
   iDestruct "HΦ" as (?) "[Hown HΦ]".
@@ -163,7 +156,7 @@ Proof.
     iFrame.
   }
   iModIntro.
-  wp_pures. done.
+  wp_auto. done.
 Qed.
 
 Lemma wp_Uint64__CompareAndSwap u old new :
@@ -175,11 +168,7 @@ Lemma wp_Uint64__CompareAndSwap u old new :
   WP method_call #atomic #"Uint64'ptr" #"CompareAndSwap" #u #old #new {{ Φ }}.
 Proof.
   wp_start as "_".
-  wp_alloc swapped_ptr as "Hswapped_ptr". wp_pures.
-  wp_alloc x_ptr as "Hx_ptr". wp_pures.
-  wp_alloc new_ptr as "Hnew_ptr". wp_pures.
-  wp_alloc old_ptr as "Hold_ptr". wp_pures.
-  wp_load. wp_pures. wp_load. wp_pures. wp_load. wp_pures.
+  wp_auto.
   wp_apply (wp_CompareAndSwapUint64 with "[$]").
   iMod "HΦ". iModIntro.
   iDestruct "HΦ" as (??) "(Hown & -> & HΦ)".
@@ -198,7 +187,7 @@ Proof.
     iFrame.
   }
   iModIntro.
-  wp_pures. done.
+  wp_auto. done.
 Qed.
 
 End wps.

@@ -61,7 +61,7 @@ Definition Error : val :=
       let: "$r0" := ((method_call #status #"Status'ptr" #"Message" (![ptrT] "ev")) #()) in
       do:  ("desc" <-[stringT] "$r0")
     else
-      let: "$r0" := ((interface.get "Error" (![error] "verr")) #()) in
+      let: "$r0" := ((interface.get #"Error"%go (![error] "verr")) #()) in
       do:  ("desc" <-[stringT] "$r0"));;;
     return: (interface.make #rpctypes.rpctypes #"EtcdError" (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![ptrT] "ev")) #()) in
      let: "$desc" := (![stringT] "desc") in
@@ -85,7 +85,7 @@ Definition ErrorDesc : val :=
     (if: ![boolT] "ok"
     then return: ((method_call #status #"Status'ptr" #"Message" (![ptrT] "s")) #())
     else do:  #()));;;
-    return: ((interface.get "Error" (![error] "err")) #())).
+    return: ((interface.get #"Error"%go (![error] "err")) #())).
 
 Definition TokenFieldNameGRPCKey : go_type := structT [
 ].

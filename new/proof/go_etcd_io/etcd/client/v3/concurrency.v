@@ -8,49 +8,6 @@ Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
-(* TODO: these should be in another file ultimately. *)
-Section client_axioms.
-
-Definition has_KeepAlive (i : interface.t) : iProp Σ :=
-  ∀ (ctx : context.Context.t) (id : clientv3.LeaseID.t),
-  {{{ True }}}
-    interface.get #i #"KeepAlive"
-  {{{
-      (resp : chan.t) (err : error.t),
-        RET (#resp, #err);
-        True
-  }}}.
-
-Axiom is_Client : ∀ (client : loc), iProp Σ.
-Axiom is_Client_pers : ∀ client, Persistent (is_Client client).
-
-Global Existing Instance is_Client_pers.
-
-Axiom wp_Client__GetLogger :
-  ∀ (client : loc),
-  {{{ is_Client client }}}
-    method_call #clientv3 #"Client'ptr" #"GetLogger" #client #()
-  {{{ (lg : loc), RET #lg; True }}}.
-
-Axiom wp_Client__Ctx :
-  ∀ (client : loc),
-  {{{ is_Client client }}}
-    method_call #clientv3 #"Client'ptr" #"Ctx" #client #()
-  {{{ (ctx : context.Context.t), RET #ctx; True }}}.
-
-Axiom wp_Client__Grant :
-  ∀ client (ctx : context.Context.t) (ttl : w64),
-  {{{ is_Client client }}}
-    method_call #clientv3 #"Client'ptr" #"Grant"
-      #client #ctx #ttl
-  {{{
-      resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
-        RET (#resp_ptr, #err);
-        resp_ptr ↦ resp
-  }}}.
-
-End client_axioms.
-
 Context `{!concurrency.GlobalAddrs}.
 Context `{!goGlobalsGS Σ}.
 
