@@ -68,12 +68,12 @@ Ltac2 wp_auto_lc (num_lc_wanted : int) :=
     else wp_pure () > []
   in
   progress (
-      repeat (first [ progress (wp_pure_maybe_lc ())
+      repeat (first [ wp_pure_maybe_lc ()
                     | wp_load ()
                     | wp_store ()
                     | wp_alloc_auto ()]);
       if (Int.gt (Ref.get num_lc_wanted) 0) then
-        Control.backtrack_tactic_failure "Unable to generate enough later credits"
+        Control.backtrack_tactic_failure "wp_auto_lc: unable to generate enough later credits"
       else
         ()
     ).

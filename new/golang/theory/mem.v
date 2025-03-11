@@ -678,8 +678,7 @@ Ltac2 wp_alloc_auto_visit e k :=
         orelse (fun () => Option.get_bt (Ident.of_string (StringToIdent.coq_string_to_string ptr_name)))
           (fun _ => Control.backtrack_tactic_failure "wp_alloc_auto: could not convert to ident") in
       Std.intros false [Std.IntroNaming (Std.IntroIdentifier i)];
-      let hyp_name := constr:("H" +:+ $ptr_name) in
-      ltac1:(hyp_name |- iIntros hyp_name) (Ltac1.of_constr hyp_name)
+      ltac1:(hyp_name |- iIntros hyp_name) (Ltac1.of_constr var_name)
   | _ => Control.zero Walk_expr_more
   end.
 
