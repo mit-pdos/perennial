@@ -87,7 +87,7 @@ Tactic Notation "wp_auto_lc" int(x) :=
 
 Tactic Notation "wp_apply_lc" int(n) open_constr(lem) :=
   wp_apply_core lem; try iPkgInit;
-  last try (let f := ltac2:(n |- wp_auto_lc (Option.get (Ltac1.to_int n))) in f n).
+  try (let f := ltac2:(n |- wp_auto_lc (Option.get (Ltac1.to_int n))) in f n).
 
 (* NOTE: did not copy in other variants of [iIntros] from [iris/iris/proofmode/ltac_tactics.v] to
    make intro patterns more canonical.

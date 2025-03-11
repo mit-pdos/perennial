@@ -787,10 +787,10 @@ Axiom wp_Client__Grant :
   {{{ is_Client client γ }}}
     method_call #clientv3 #"Client'ptr" #"Grant" #client #ctx #ttl
   {{{
-      resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
+      expiration resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
         RET (#resp_ptr, #err);
         resp_ptr ↦ resp ∗
-        is_lease_valid
+        is_etcd_lease_lb γ resp.(LeaseGrantResponse.ID) expiration
   }}}.
 
 End client_axioms.

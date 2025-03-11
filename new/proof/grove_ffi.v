@@ -121,7 +121,7 @@ Section grove.
   Proof.
     wp_start as "#Hdef".
     wp_bind (ExternalOp _ _)%E. rewrite [in #remote]to_val_unseal. iApply (wp_ConnectOp with "[//]").
-    iNext. iIntros (err recv) "Hr". wp_pures.
+    iNext. iIntros (err recv) "Hr". wp_auto.
     replace (LitV err) with #err.
     2:{ rewrite to_val_unseal //. }
     wp_bind (ref _)%E.
@@ -130,14 +130,14 @@ Section grove.
       iIntros "!# * ?".
       replace (LitV l) with #l.
       2:{ rewrite to_val_unseal //. }
-      wp_pures. by iApply "HΦ".
+      wp_auto. by iApply "HΦ".
       Unshelve. done.
     - iApply wp_alloc_untyped; try done.
       iIntros "!# * ?".
       replace (LitV l) with #l.
       2:{ rewrite to_val_unseal //. }
       iMod (heap_pointsto_persist with "[$]").
-      wp_pures. iApply "HΦ". iFrame "∗#".
+      wp_auto. iApply "HΦ". iFrame "∗#".
   Qed.
 
   Lemma wp_Accept l local :
@@ -234,7 +234,7 @@ Section grove.
     rewrite [in #c]to_val_unseal.
     iApply (wp_load with "[$]").
     iIntros "!> * #?".
-    wp_pures.
+    wp_auto.
     destruct s.
     iDestruct (own_slice_len with "Hs") as "%Hlen".
     iDestruct (own_slice_wf with "Hs") as "%Hwf".
@@ -279,7 +279,7 @@ Section grove.
     iIntros "!#" (err l len data) "(%Hm & Hc & Hl)".
     iMod ("HΦ" $! err data with "[Hc]") as "HΦ".
     { iFrame. destruct err; first done. iPureIntro. apply Hm. }
-    iModIntro. wp_pures.
+    iModIntro. wp_auto.
 
     replace (LitV err) with #err; last by rewrite to_val_unseal.
     replace (InjLV _) with #(slice.mk l len len).
@@ -287,12 +287,12 @@ Section grove.
     destruct err.
     {
       destruct Hm as (?&?&?); subst.
-      wp_pures.
+      wp_auto.
       iApply "HΦ".
       iApply own_slice_empty. done.
     }
     destruct Hm as [Hin Hlen].
-    wp_pures.
+    wp_auto.
     iApply ("HΦ" $! (slice.mk _ _ _)).
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
     { word. }
@@ -322,19 +322,19 @@ Section grove.
     iNext. iIntros "* [Hf Hs]".
     iMod ("Hau" with "Hf") as "HΦ".
     iModIntro.
-    wp_pures.
+    wp_auto.
     replace (LitV err) with (#err); last by rewrite to_val_unseal.
     destruct err.
     {
-      wp_pures.
+      wp_auto.
       wp_call.
       iClear "HΦ Hs".
       replace (LitV LitUnit) with (#()); last by rewrite to_val_unseal.
       iLöb as "IH".
-      wp_pures.
+      wp_auto.
       wp_apply "IH".
     }
-    wp_pures.
+    wp_auto.
     rewrite to_val_unseal /=.
     iDestruct "Hs" as "[% Hl]".
     iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
@@ -370,13 +370,12 @@ Section grove.
     replace (LitV err) with #err; last by rewrite to_val_unseal //.
     destruct err.
     - iMod ("Hau" with "[$]") as "HΦ".
-      iModIntro. wp_pures.
-      wp_pures.
+      iModIntro. wp_auto.
       wp_call. iClear "HΦ Hl".
       replace (LitV LitUnit) with (#()); last by rewrite to_val_unseal.
-      iLöb as "IH". wp_pures. wp_apply "IH".
+      iLöb as "IH". wp_auto. wp_apply "IH".
     - iLeft in "Hau". iMod ("Hau" with "[$]") as "Hau".
-      iModIntro. wp_pures. iApply "Hau".
+      iModIntro. wp_auto. iApply "Hau".
       iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
       { word. }
       { instantiate (1:= s.(slice.cap_f)). word. }
@@ -408,13 +407,12 @@ Section grove.
     replace (LitV err) with #err; last by rewrite to_val_unseal //.
     destruct err.
     - iMod ("Hau" with "[$]") as "HΦ".
-      iModIntro. wp_pures.
-      wp_pures.
+      iModIntro. wp_auto.
       wp_call. iClear "HΦ Hl".
       replace (LitV LitUnit) with (#()); last by rewrite to_val_unseal.
-      iLöb as "IH". wp_pures. wp_apply "IH".
+      iLöb as "IH". wp_auto. wp_apply "IH".
     - iLeft in "Hau". iMod ("Hau" with "[$]") as "Hau".
-      iModIntro. wp_pures. iApply "Hau".
+      iModIntro. wp_auto. iApply "Hau".
       iDestruct (pointsto_vals_to_own_slice with "Hl") as "H".
       { word. }
       { instantiate (1:= s.(slice.cap_f)). word. }

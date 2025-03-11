@@ -76,9 +76,8 @@ Proof.
   wp_start as "_".
   wp_auto.
   wp_apply wp_SumNoOverflow.
-  wp_auto.
-  wp_apply wp_Assume. rewrite bool_decide_eq_true.
-  iIntros (?). wp_auto.
+  wp_apply wp_Assume as "%Hassume".
+  rewrite bool_decide_eq_true in Hassume.
   iApply "HΦ". iPureIntro. done.
 Qed.
 
@@ -102,9 +101,7 @@ Proof.
   wp_auto.
   wp_alloc mu as "?".
   wp_auto.
-  wp_apply (wp_NewCond with "[#]").
-  iIntros (cond) "#His_cond".
-  wp_auto.
+  wp_apply (wp_NewCond with "[#]") as "%cond #His_cond".
   wp_alloc jh_l as "jh".
   iApply struct_fields_split in "jh". simpl. iNamed "jh".
   iMod (typed_pointsto_persist with "Hmu") as "Hmu".
@@ -131,14 +128,12 @@ Proof.
   wp_start as "[Hhandle P]".
   iNamed "Hhandle".
   wp_auto.
-  wp_apply (wp_Mutex__Lock with "Hlock").
-  iIntros "[locked Hinv]". iNamed "Hinv".
+  wp_apply (wp_Mutex__Lock with "Hlock") as "[locked Hinv]".
+  iNamed "Hinv".
   wp_auto.
   wp_apply (wp_Cond__Signal with "[$Hcond]").
-  wp_auto.
   wp_apply (wp_Mutex__Unlock with "[$Hlock $locked done_b P]").
   { iFrame "done_b P". }
-  wp_auto.
   iApply "HΦ".
   done.
 Qed.
@@ -151,8 +146,7 @@ Lemma wp_Spawn (P: iProp Σ) (f : func.t) :
 Proof.
   wp_start as "Hwp".
   wp_auto.
-  wp_apply (wp_newJoinHandle P).
-  iIntros (l) "#Hhandle". wp_auto.
+  wp_apply (wp_newJoinHandle P) as "%l #Hhandle".
   iMod (typed_pointsto_persist with "[$]") as "#?".
   iMod (typed_pointsto_persist with "[$]") as "#?".
   wp_bind (Fork _).
@@ -164,7 +158,6 @@ Proof.
     iIntros "HP".
     wp_auto.
     wp_apply (wp_JoinHandle__finish with "[$Hhandle $HP]").
-    wp_auto.
     done.
   - iModIntro.
     wp_auto.
@@ -195,16 +188,14 @@ Proof.
   - iApply wp_for_post_break.
     wp_auto.
     wp_apply (wp_Mutex__Unlock with "[$Hlock $locked $done]").
-    wp_auto. iApply "HΦ". done.
-  - wp_apply (wp_Cond__Wait with "[$Hcond locked done HP]").
+    iApply "HΦ". done.
+  - wp_apply (wp_Cond__Wait with "[$Hcond locked done HP]") as "H".
     { iSplit.
       - iApply (Mutex_is_Locker with "Hlock").
       - iFrame. }
-    iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
-    wp_auto.
+    iDestruct "H" as "[Hlocked Hlinv]". iNamed "Hlinv".
     iApply wp_for_post_do.
-    wp_auto.
-    iFrame.
+    wp_auto. iFrame.
 Qed.
 
 End wps.
