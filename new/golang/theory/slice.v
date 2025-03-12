@@ -407,11 +407,7 @@ Proof.
     simpl.
     wp_apply (wp_wand with "Hiters").
     iIntros (?) "[-> Hiters]".
-    iApply wp_for_post_do.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_store. wp_pures.
+    wp_for_post.
     iFrame.
     replace (uint.nat (word.add _ $ W64 1)) with (S $ uint.nat j) by word.
     iFrame.
@@ -497,11 +493,7 @@ Proof.
     }
     wp_store.
     wp_pures.
-    iApply wp_for_post_do.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_store. wp_pures.
+    wp_for_post.
     iFrame.
     replace (uint.nat (word.add i (W64 1))) with (uint.nat i + 1)%nat by word.
     rewrite -drop_drop.

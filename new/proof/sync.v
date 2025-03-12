@@ -289,8 +289,8 @@ Proof.
   destruct bool_decide eqn:Hnz.
   { (* keep looping *)
     wp_auto.
-    iApply wp_for_post_continue.
-    wp_auto. iFrame.
+    wp_for_post.
+    iFrame.
   }
 
   (* try to acquire *)
@@ -317,8 +317,8 @@ Proof.
     iMod ("Hclose" with "[$]") as "_".
     iModIntro.
     wp_auto.
-    iApply wp_for_post_return.
-    wp_auto. done.
+    wp_for_post.
+    done.
   }
   { (* cmpxchg will fail *)
     unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve.
@@ -328,7 +328,7 @@ Proof.
     iMod ("Hclose" with "[$]") as "_".
     iModIntro.
     wp_auto.
-    iApply wp_for_post_do. wp_auto.
+    wp_for_post.
     iFrame.
   }
 Qed.
@@ -1056,8 +1056,7 @@ Proof.
   }
   iModIntro.
   wp_auto.
-  iApply wp_for_post_do.
-  wp_auto.
+  wp_for_post.
   iFrame.
 Qed.
 
@@ -1098,8 +1097,7 @@ Proof.
     iModIntro.
     wp_auto. rewrite enc_get_high enc_get_low bool_decide_true //=.
     wp_auto.
-    iApply wp_for_post_return.
-    wp_auto.
+    wp_for_post.
     by iApply "HΦ".
   }
   (* actually go to sleep *)
@@ -1227,8 +1225,7 @@ Proof.
     }
     iModIntro.
     wp_auto.
-    iApply wp_for_post_return.
-    wp_auto.
+    wp_for_post.
     iApply "HΦ". done.
   }
   {
@@ -1239,8 +1236,7 @@ Proof.
     iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hctr]") as "_".
     { iFrame. done. }
     iModIntro. wp_auto.
-    iApply wp_for_post_do.
-    wp_auto.
+    wp_for_post.
     iFrame.
   }
 Qed.

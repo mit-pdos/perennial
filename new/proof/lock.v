@@ -104,7 +104,7 @@ Proof.
     iMod ("Hclo" with "[HR Hk]").
     { iExists true. iFrame. }
     iModIntro. iIntros "Hck". wp_auto_lc 1. rewrite decide_True //. wp_auto.
-    iApply wp_for_post_do. wp_auto. by iFrame.
+    wp_for_post. by iFrame.
   - rewrite bool_decide_true //.
     iMod ("Hclo" with "[Hk]").
     { iExists true. iFrame. }

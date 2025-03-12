@@ -225,8 +225,8 @@ Proof.
       iFrame "∗#%".
     }
     iDestruct "H" as "[Hlocked Hown]".
-    iApply wp_for_post_do.
-    wp_auto. by iFrame.
+    wp_for_post.
+    by iFrame.
   }
   { (* case: i is durable *)
     simpl.
@@ -493,8 +493,8 @@ Proof.
       iFrame "∗#%". done.
     }
     iIntros "[Hlocked Hown]". wp_auto.
-    iApply wp_for_post_continue.
-    wp_auto. by iFrame.
+    wp_for_post.
+    by iFrame.
   }
   (* case: have something to write *)
   wp_auto.
@@ -542,8 +542,7 @@ Proof.
   iMod (update_durable_index with "[$] HnewWits [$]") as "[HdurIdx Hghost]".
   wp_apply wp_Cond__Broadcast.
   { iFrame "#". }
-  iApply wp_for_post_do.
-  wp_auto.
+  wp_for_post.
   iFrame "HΦ Hlocked".
   iFrame "∗#%".
 Qed.
