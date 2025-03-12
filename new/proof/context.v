@@ -4,14 +4,6 @@ Require Import New.proof.proof_prelude.
 
 Require Import Perennial.Helpers.CountableTactics.
 
-Section chan.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Axiom own_chan :
-  ∀ `{!IntoVal V} (c : chan.t) (buf : list V) (unbuf_entry : option V) (closed : bool), iProp Σ.
-
-End chan.
-
 Module Context_state.
 Section defn.
 Context `{ffi_syntax}.
@@ -78,7 +70,7 @@ Lemma wp_WithCancel N (ctx : interface.t) :
         ctx' ctx_state (cancel : func.t), RET (#ctx', #cancel);
         is_Context ctx' ctx_state ∗
         {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
-        inv N (∃ closed, own_chan ctx_state.(Done) ([] : list unit) None closed)
+        inv N (∃ (s : chanstate.t unit), own_chan ctx_state.(Done) s)
   }}}.
 Proof.
 Admitted.

@@ -3,9 +3,8 @@ on: push
 
 jobs:
   mailbot:
-    uses: upamanyus/github-mailbot/.github/workflows/mailbot.yml@main
+    uses: sanjit-bhat/github-mailbot/.github/workflows/mailbot.yml@main
     with:
-      mailbot_repo: upamanyus/github-mailbot
       host: smtp.gmail.com
       port: 587
       from: mit.pdos.mailbot@gmail.com
