@@ -4,17 +4,35 @@ From Perennial.goose_lang Require Import base_prelude.
 Section code.
 Context `{ext_ty: ext_types}.
 
+Definition ChannelState: ty := uint64T.
+
+Definition start : expr := #0.
+
+Definition receiver_ready : expr := #1.
+
+Definition sender_ready : expr := #2.
+
+Definition receiver_done : expr := #3.
+
+Definition sender_done : expr := #4.
+
+Definition closed_receiver_done : expr := #5.
+
+Definition closed_sender_done : expr := #6.
+
+Definition closed_final : expr := #7.
+
+Definition ChannelState__any_closed_state: val :=
+  rec: "ChannelState__any_closed_state" "s" :=
+    (("s" = closed_receiver_done) || ("s" = closed_sender_done)) || ("s" = closed_final).
+
 Definition Channel (T: ty) : descriptor := struct.decl [
   "lock" :: ptrT;
-  "closed" :: boolT;
+  "state" :: ChannelState;
   "buffer" :: slice.T T;
   "first" :: uint64T;
   "count" :: uint64T;
-  "v" :: T;
-  "receiver_ready" :: boolT;
-  "sender_ready" :: boolT;
-  "receiver_done" :: boolT;
-  "sender_done" :: boolT
+  "v" :: T
 ].
 
 (* buffer_size = 0 is an unbuffered channel *)
@@ -24,7 +42,8 @@ Definition NewChannel (T:ty): val :=
       "buffer" ::= NewSlice T "buffer_size";
       "lock" ::= newMutex #();
       "first" ::= #0;
-      "count" ::= #0
+      "count" ::= #0;
+      "state" ::= start
     ].
 
 (* buffer_size = 0 is an unbuffered channel *)
@@ -34,7 +53,8 @@ Definition NewChannelRef (T:ty): val :=
       "buffer" ::= NewSlice T "buffer_size";
       "lock" ::= newMutex #();
       "first" ::= #0;
-      "count" ::= #0
+      "count" ::= #0;
+      "state" ::= start
     ].
 
 (* c.Send(val)
@@ -56,7 +76,7 @@ Definition Channel__Send (T:ty): val :=
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: struct.loadF (Channel T) "closed" "c"
+        (if: (struct.loadF (Channel T) "state" "c") = closed_final
         then Panic "send on closed channel"
         else #());;
         (if: (struct.loadF (Channel T) "count" "c") ≥ (![uint64T] "buffer_size")
@@ -75,22 +95,21 @@ Definition Channel__Send (T:ty): val :=
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: struct.loadF (Channel T) "closed" "c"
+        (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
         then Panic "send on closed channel"
         else #());;
-        (if: struct.loadF (Channel T) "receiver_ready" "c"
+        (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
         then
-          struct.storeF (Channel T) "receiver_ready" "c" #false;;
-          struct.storeF (Channel T) "sender_done" "c" #true;;
+          struct.storeF (Channel T) "state" "c" sender_done;;
           struct.storeF (Channel T) "v" "c" "val";;
           Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
           "return_early" <-[boolT] #true;;
           Break
         else
-          (if: (((~ (struct.loadF (Channel T) "receiver_ready" "c")) && (~ (struct.loadF (Channel T) "sender_ready" "c"))) && (~ (struct.loadF (Channel T) "receiver_done" "c"))) && (~ (struct.loadF (Channel T) "sender_done" "c"))
+          (if: (struct.loadF (Channel T) "state" "c") = start
           then
             struct.storeF (Channel T) "v" "c" "val";;
-            struct.storeF (Channel T) "sender_ready" "c" #true;;
+            struct.storeF (Channel T) "state" "c" sender_ready;;
             Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
             Break
           else
@@ -101,7 +120,7 @@ Definition Channel__Send (T:ty): val :=
         Skip;;
         (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
           Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-          (if: (~ (struct.loadF (Channel T) "sender_done" "c"))
+          (if: (~ (((struct.loadF (Channel T) "state" "c") = sender_done) || ((struct.loadF (Channel T) "state" "c") = closed_sender_done)))
           then
             Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
             Break
@@ -113,17 +132,23 @@ Definition Channel__Send (T:ty): val :=
         Skip;;
         (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
           Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-          (if: struct.loadF (Channel T) "closed" "c"
+          (if: (struct.loadF (Channel T) "state" "c") = closed_final
           then Panic "send on closed channel"
           else #());;
-          (if: struct.loadF (Channel T) "receiver_done" "c"
+          (if: (struct.loadF (Channel T) "state" "c") = closed_receiver_done
           then
-            struct.storeF (Channel T) "receiver_done" "c" #false;;
+            struct.storeF (Channel T) "state" "c" closed_final;;
             Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
             Break
           else
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            Continue));;
+            (if: (struct.loadF (Channel T) "state" "c") = receiver_done
+            then
+              struct.storeF (Channel T) "state" "c" start;;
+              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+              Break
+            else
+              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+              Continue)));;
         #())).
 
 (* Equivalent to:
@@ -147,7 +172,7 @@ Definition Channel__Receive (T:ty): val :=
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "closed" "c") && ((struct.loadF (Channel T) "count" "c") = #0)
+        (if: ((struct.loadF (Channel T) "state" "c") = closed_final) && ((struct.loadF (Channel T) "count" "c") = #0)
         then
           Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
           "closed" <-[boolT] #true;;
@@ -169,24 +194,23 @@ Definition Channel__Receive (T:ty): val :=
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: struct.loadF (Channel T) "closed" "c"
+        (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
         then
           Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
           "closed" <-[boolT] #true;;
           Break
         else
-          (if: struct.loadF (Channel T) "sender_ready" "c"
+          (if: (struct.loadF (Channel T) "state" "c") = sender_ready
           then
-            struct.storeF (Channel T) "sender_ready" "c" #false;;
-            struct.storeF (Channel T) "receiver_done" "c" #true;;
+            struct.storeF (Channel T) "state" "c" receiver_done;;
             "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
             Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
             "return_early" <-[boolT] #true;;
             Break
           else
-            (if: (((~ (struct.loadF (Channel T) "receiver_ready" "c")) && (~ (struct.loadF (Channel T) "sender_ready" "c"))) && (~ (struct.loadF (Channel T) "receiver_done" "c"))) && (~ (struct.loadF (Channel T) "sender_done" "c"))
+            (if: (struct.loadF (Channel T) "state" "c") = start
             then
-              struct.storeF (Channel T) "receiver_ready" "c" #true;;
+              struct.storeF (Channel T) "state" "c" receiver_ready;;
               Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
               Break
             else
@@ -200,7 +224,7 @@ Definition Channel__Receive (T:ty): val :=
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-            (if: (~ (struct.loadF (Channel T) "receiver_done" "c"))
+            (if: (~ (((struct.loadF (Channel T) "state" "c") = receiver_done) || ((struct.loadF (Channel T) "state" "c") = closed_receiver_done)))
             then
               Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
               Break
@@ -212,21 +236,28 @@ Definition Channel__Receive (T:ty): val :=
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-            (if: struct.loadF (Channel T) "closed" "c"
+            (if: (struct.loadF (Channel T) "state" "c") = closed_final
             then
               Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
               "closed" <-[boolT] #true;;
               Break
             else
-              (if: struct.loadF (Channel T) "sender_done" "c"
+              (if: (struct.loadF (Channel T) "state" "c") = closed_sender_done
               then
-                struct.storeF (Channel T) "sender_done" "c" #false;;
+                struct.storeF (Channel T) "state" "c" closed_final;;
                 "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
                 Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
                 Break
               else
-                Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-                Continue)));;
+                (if: (struct.loadF (Channel T) "state" "c") = sender_done
+                then
+                  struct.storeF (Channel T) "state" "c" start;;
+                  "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
+                  Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+                  Break
+                else
+                  Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+                  Continue))));;
           (![T] "ret_val", (~ (![boolT] "closed")))))).
 
 (* c.Close()
@@ -240,12 +271,16 @@ Definition Channel__Close (T:ty): val :=
     then Panic "close of nil channel"
     else #());;
     Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-    (if: struct.loadF (Channel T) "closed" "c"
+    (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
     then Panic "close of closed channel"
     else #());;
-    struct.storeF (Channel T) "receiver_ready" "c" #false;;
-    struct.storeF (Channel T) "sender_ready" "c" #false;;
-    struct.storeF (Channel T) "closed" "c" #true;;
+    struct.storeF (Channel T) "state" "c" closed_final;;
+    (if: (struct.loadF (Channel T) "state" "c") = receiver_done
+    then struct.storeF (Channel T) "state" "c" closed_receiver_done
+    else #());;
+    (if: (struct.loadF (Channel T) "state" "c") = sender_done
+    then struct.storeF (Channel T) "state" "c" closed_sender_done
+    else #());;
     Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
     #().
 
@@ -336,7 +371,7 @@ Definition Channel__ReceiveDiscardOk (T:ty): val :=
    a case statement with uniform probability among all "selectable" statements, meaning those that
    have a waiting sender/receiver on the other end and receives on closed channels. Since threading
    behavior means that it already can't be assumed with certainty which blocks are selected, the if/
-   else block translation should be equivalent from a correctness perspective. There are at least 2
+   else block translation should be equivalent from a correctness perspective. There is at least 1
    notable unsound property with this approach:
    1. Once a channel is closed, a receive case statement on said channel will always be selectable.
    This means that after the channel is closed, this case statement will always be selected above
@@ -344,40 +379,21 @@ Definition Channel__ReceiveDiscardOk (T:ty): val :=
    recommended that if a select case permits a closed channel receive, the channel is set to nil so
    that the statement will no longer be selectable. We can prevent this with the specfication by
    forcing the receiver to renounce receive ownership after receiving on a closed channel.
-   2. When there are multiple blocking select statements(no default case) with 2 cases: a send and
-   a receive statement on the same unbuffered channel running concurrently, this model's
-   implementation will livelock since neither goroutine will communicate to the other that it is
-   waiting with a matching send/receive statement, so TrySend/TryReceive will fail repeatedly. See
-   TestSelfSelect in https://go.dev/src/runtime/chan_test.go for the unit test that brought
-   attention to this issue.
 
-   We will eventually be able to make this model sound for 1. once we have support for random
-   permutations using a similar approach to dynamic select statements in the reflect package but for
-   now our specification will prevent code that isn't equivalent from being verified which should
-   be good enough.
+   One approach for making 1. sound would be to do the following for select statements:
+   1. Create a mutex guarded "winner_index" int
+   2. Launch a goroutine for each channel in the select with an index for the select cases
+   (For selects with multiple cases for a single channel, we still have just 1 goroutine)
+   3. Lock the associated channel in each goroutine
+   4. If there is a case for a channel that is "immediately selectable" i.e the channel is closed
+   or in the receiver/sender_ready state for the sender/receiver respectively, lock the
+   winner_index mutex and if not already set, set the winner_index to the goroutine's index
+   5. If winner_index was set, complete the exchange and run the case's body
+   6. Join the above goroutines and if no winner is selected, go through the if/else TryReceive/
+   TrySend sequence that we currently use.
 
-   For 2, I believe that if we have support for random numbers we can implement blocking select
-   statements with unbuffered channels by randomly selecting a case with an unbuffered channel
-   using the following algorithm:
-   1. Attempt each case's channel operation with TrySend/TryReceive. If one of them succeeds,
-   select this case and execute its block
-   2. For each case statement with an unbuffered channel, lock the associated channel
-   3. Randomly select an unbuffered channel and set the sender_ready or receiver_ready flag for a
-   Send/Receive operation respectively.
-   4. Unlock all of the unbuffered channels
-   5. Lock the channel that was chosen in step 3 and if the ready flag has been set to false,
-   continue the send/receive using the same procedure as Send()/Receive(), unlock the channel and
-   execute the associated case block
-   6. Otherwise, unlock the channel and go back to step 1.
-   This is not particularly graceful and relies on the sending thread being preempted in between
-   steps 4 and 5 and the goroutine with the goroutine executing the matching select statement
-   acquiring the lock in between but it should eventually be able to make progress eventually. This
-   is indeed a tough edge case for real channels as well as it breaks an otherwise powerful
-   invariant as described in the comment on line 10 in the runtime
-   implementation(https://go.dev/src/runtime/chan.go), so I don't think there will be a
-   particularly graceful solution here. I also don't know of any useful patterns that would require
-   a select statement of this sort so it may be worth it to fix this problem lazily i.e. if/when a
-   use case happens to call for it in the future.
+   This would make it so the race to setting winner_index simulates the randomness of
+   Go select statements where any selectable case has uniform probablity of being selected
 
    Note: The above code technically makes it so the top block's expression variables
    are in scope in all of the other blocks. This would error in the Go code before it is translated
@@ -396,7 +412,7 @@ Definition Channel__TryReceive (T:ty): val :=
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
         (if: (struct.loadF (Channel T) "count" "c") = #0
         then
-          (if: struct.loadF (Channel T) "closed" "c"
+          (if: (struct.loadF (Channel T) "state" "c") = closed_final
           then
             "closed" <-[boolT] #true;;
             "selected" <-[boolT] #true
@@ -410,29 +426,48 @@ Definition Channel__TryReceive (T:ty): val :=
           Mutex__Unlock (struct.loadF (Channel T) "lock" "c"));;
         (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed")))
       else
+        let: "offer" := ref_to boolT #false in
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: struct.loadF (Channel T) "closed" "c"
+        (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
         then
           "closed" <-[boolT] #true;;
           "selected" <-[boolT] #true
         else
-          (if: struct.loadF (Channel T) "sender_ready" "c"
+          (if: (struct.loadF (Channel T) "state" "c") = sender_ready
           then
-            struct.storeF (Channel T) "sender_ready" "c" #false;;
-            struct.storeF (Channel T) "receiver_done" "c" #true;;
+            struct.storeF (Channel T) "state" "c" receiver_done;;
             "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
             "selected" <-[boolT] #true
+          else #());;
+          (if: (struct.loadF (Channel T) "state" "c") = start
+          then
+            struct.storeF (Channel T) "state" "c" receiver_ready;;
+            "offer" <-[boolT] #true
           else #()));;
         Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+        (if: ![boolT] "offer"
+        then
+          Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
+          (if: (struct.loadF (Channel T) "state" "c") = sender_done
+          then
+            "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
+            struct.storeF (Channel T) "state" "c" start;;
+            "selected" <-[boolT] #true
+          else #());;
+          (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
+          then struct.storeF (Channel T) "state" "c" start
+          else #());;
+          Mutex__Unlock (struct.loadF (Channel T) "lock" "c")
+        else #());;
         (if: ![boolT] "closed"
         then (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed")))
         else
-          (if: ![boolT] "selected"
+          (if: (![boolT] "selected") && (~ (![boolT] "offer"))
           then
             Skip;;
             (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
               Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-              (if: (~ (struct.loadF (Channel T) "receiver_done" "c"))
+              (if: (~ (((struct.loadF (Channel T) "state" "c") = receiver_done) || ((struct.loadF (Channel T) "state" "c") = closed_receiver_done)))
               then
                 Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
                 Break
@@ -453,7 +488,7 @@ Definition Channel__TrySend (T:ty): val :=
       (if: (![uint64T] "buffer_size") ≠ #0
       then
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: struct.loadF (Channel T) "closed" "c"
+        (if: (struct.loadF (Channel T) "state" "c") = closed_final
         then Panic "send on closed channel"
         else #());;
         (if: (~ ((struct.loadF (Channel T) "count" "c") ≥ (![uint64T] "buffer_size")))
@@ -466,25 +501,46 @@ Definition Channel__TrySend (T:ty): val :=
         Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
         ![boolT] "selected"
       else
+        let: "offer" := ref_to boolT #false in
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: struct.loadF (Channel T) "closed" "c"
+        (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
         then Panic "send on closed channel"
         else #());;
-        (if: struct.loadF (Channel T) "receiver_ready" "c"
+        (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
         then
-          struct.storeF (Channel T) "receiver_ready" "c" #false;;
-          struct.storeF (Channel T) "sender_done" "c" #true;;
+          struct.storeF (Channel T) "state" "c" sender_done;;
           struct.storeF (Channel T) "v" "c" "val";;
           "selected" <-[boolT] #true
         else #());;
+        (if: (struct.loadF (Channel T) "state" "c") = start
+        then
+          struct.storeF (Channel T) "state" "c" sender_ready;;
+          struct.storeF (Channel T) "v" "c" "val";;
+          "offer" <-[boolT] #true
+        else #());;
         Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-        (if: ![boolT] "selected"
+        (if: ![boolT] "offer"
+        then
+          Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
+          (if: ((struct.loadF (Channel T) "state" "c") = receiver_done) || ((struct.loadF (Channel T) "state" "c") = closed_receiver_done)
+          then
+            struct.storeF (Channel T) "state" "c" start;;
+            "selected" <-[boolT] #true
+          else #());;
+          (if: (struct.loadF (Channel T) "state" "c") = sender_ready
+          then struct.storeF (Channel T) "state" "c" start
+          else #());;
+          Mutex__Unlock (struct.loadF (Channel T) "lock" "c")
+        else #());;
+        (if: (![boolT] "selected") && (~ (![boolT] "offer"))
         then
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-            (if: (~ (struct.loadF (Channel T) "sender_done" "c"))
-            then Break
+            (if: (~ (((struct.loadF (Channel T) "state" "c") = sender_done) || ((struct.loadF (Channel T) "state" "c") = closed_sender_done)))
+            then
+              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+              Break
             else
               Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
               Continue))
