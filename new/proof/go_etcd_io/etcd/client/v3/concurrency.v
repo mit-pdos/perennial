@@ -48,10 +48,10 @@ Final Obligation. Proof. apply _. Qed.
 Definition is_Session (s : loc) : iProp Σ :=
   True.
 
-Lemma wp_NewSession (client : loc) :
+Lemma wp_NewSession (client : loc) γetcd :
   {{{
         is_pkg_init concurrency ∗
-        "#His_client" ∷ is_Client client
+        "#His_client" ∷ is_Client client γetcd
   }}}
     func_call #concurrency #"NewSession" #client #slice.nil
   {{{ s err, RET (#s, #err);
@@ -61,14 +61,10 @@ Lemma wp_NewSession (client : loc) :
         is_Session s
   }}}.
 Proof.
-  wp_start as "Hpre". iNamed "Hpre".
+  wp_start. iNamed "Hpre".
   wp_auto.
-  wp_apply (wp_Client__GetLogger with "[$]").
-  iIntros (?) "_".
-  wp_auto.
-  wp_apply (wp_Client__Ctx with "[$]").
-  iIntros (?) "_".
-  wp_auto.
+  wp_apply (wp_Client__GetLogger with "[$]") as "% _".
+  wp_apply (wp_Client__Ctx with "[$]") as "% _".
   wp_alloc ops as "Hops".
   wp_auto.
   (* only consider nil options *)
@@ -76,29 +72,44 @@ Proof.
   { instantiate (1:=[] : list concurrency.SessionOption.t ). instantiate (1:=DfracOwn 1).
     Unshelve. all: try apply _.
     iApply own_slice_nil. }
-  simpl.
+  iEval simpl.
   iIntros "_".
 
   wp_auto.
-  wp_apply (wp_Client__Grant with "[$]").
-  iIntros "* Hresp".
-  wp_auto.
+  wp_apply (wp_Client__Grant with "[$]") as "* [Hresp Hl]".
   destruct bool_decide eqn:Herr.
   2:{ (* got an error; early return *)
     wp_auto.
     iApply "HΦ".
     rewrite bool_decide_eq_false in Herr.
-    rewrite decide_False //.
+    destruct decide; done.
   }
   (* no error from Grant() call *)
+  rewrite bool_decide_eq_true in Herr. subst.
   wp_auto.
+  rewrite decide_True //.
+  iClear "err". clear err_ptr.
+  iDestruct "Hl" as "#Hlease0".
+  wp_apply wp_WithCancel as "* (Hctx & Hcancel & Hchan)".
 
-  (* XXX: eventually, this spec will require context.is_initialized *)
-  wp_apply (wp_WithCancel nroot with "[]").
-  iIntros "* [#Hctx #Hctx_done_inv]".
-  iClear "Herr_ptr". clear err_ptr.
+  wp_apply (wp_Client__KeepAlive with "[$]") as "* Hkch".
+  rewrite bool_decide_decide. destruct decide.
+  2:{ (* error *)
+    wp_auto. wp_apply "Hcancel". iApply "HΦ".
+    rewrite decide_False //.
+  }
   wp_auto.
-  (* TODO: call KeepAlive *)
+  rewrite bool_decide_decide. destruct decide.
+  {
+    wp_auto. wp_apply "Hcancel". iApply "HΦ".
+    rewrite decide_False //.
+    (* FIXME: in this case, the code can return nil error and also a nil
+       `*Session`; can this actually happen? There are cases higher level in
+       etcd assuming that (err = nil → session ≠ nil).
+       So is the `keepAlive == nil` Check redundant? *)
+    admit.
+  }
+  wp_auto.
 Admitted.
 
 End proof.

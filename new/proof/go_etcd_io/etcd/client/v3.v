@@ -783,16 +783,30 @@ Axiom wp_Client__Ctx :
   {{{ (ctx : context.Context.t), RET #ctx; True }}}.
 
 Axiom wp_Client__Grant :
-  ∀ client (ctx : context.Context.t) (ttl : w64),
+  ∀ client γ (ctx : context.Context.t) (ttl : w64),
   {{{ is_Client client γ }}}
     method_call #clientv3 #"Client'ptr" #"Grant" #client #ctx #ttl
   {{{
       expiration resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
         RET (#resp_ptr, #err);
         resp_ptr ↦ resp ∗
-        is_etcd_lease_lb γ resp.(LeaseGrantResponse.ID) expiration
+        if decide (err = interface.nil) then
+          is_etcd_lease_lb γ resp.(clientv3.LeaseGrantResponse.ID') expiration
+        else True
   }}}.
 
-End client_axioms.
+Axiom wp_Client__KeepAlive :
+  ∀ client γ (ctx : context.Context.t) id old_exp,
+  (* The precondition requires that this is only called on a `Grant`ed lease. *)
+  {{{ is_Client client γ ∗ is_etcd_lease_lb γ id old_exp }}}
+    method_call #clientv3 #"Client'ptr" #"KeepAlive" #client #ctx #id
+  {{{
+      (kch : chan.t) (err : error.t),
+        RET (#kch, #err);
+        if decide (err = interface.nil) then
+          □(|={⊤,∅}=> ∃ (buf : list loc) ent cl, own_chan kch buf ent cl ∗
+                                                (own_chan kch buf ent cl ={∅,⊤}=∗ True))
+        else True
+  }}}.
 
 End wps.

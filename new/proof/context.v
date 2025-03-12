@@ -77,6 +77,7 @@ Lemma wp_WithCancel N (ctx : interface.t) :
   {{{
         ctx' ctx_state (cancel : func.t), RET (#ctx', #cancel);
         is_Context ctx' ctx_state ∗
+        {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
         inv N (∃ closed, own_chan ctx_state.(Done) ([] : list unit) None closed)
   }}}.
 Proof.
