@@ -214,12 +214,10 @@ Proof.
   iDestruct (Mutex_is_Locker with "[$]") as "#Hlk".
   wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]".
   wp_apply (wp_Mutex__Unlock') as "%m_unlock #Hunlock".
-  wp_for.
-  iNamed "Hown".
-  wp_auto.
+  wp_for "Hown".
   destruct bool_decide eqn:?.
   { (* case: wait *)
-    simpl. rewrite decide_True //.
+    simpl.
     wp_auto.
     wp_apply (wp_Cond__Wait with "[-Htok HΦ s index defer]") as "H".
     {
@@ -232,8 +230,6 @@ Proof.
   }
   { (* case: i is durable *)
     simpl.
-    rewrite decide_False; last naive_solver.
-    rewrite decide_True; last naive_solver.
     rewrite bool_decide_eq_false in Heqb.
     wp_auto.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
@@ -481,8 +477,7 @@ Proof.
               "Hfile" ∷ own_crash (N.@"crash") (∃ d : list u8, P d ∗ fname f↦d) (P curdata ∗ fname f↦ curdata)
           )%I with "[HpreData HpreIdx HdurIdx Hfile]" as "HH".
   { repeat iExists _. iFrame. }
-  wp_for. wp_auto.
-  rewrite decide_True //.
+  wp_for.
   clear data.
   iNamed "Hown".
   subst.

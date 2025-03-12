@@ -88,7 +88,6 @@ Proof.
   iNamed "Hkv_is".
   wp_auto_lc 1.
   wp_for.
-  wp_auto.
   wp_apply ("HcputSpec" with "[//]").
   rewrite /is_lock.
   iInv "Hlock" as "Hlock_inner" "Hclo".

@@ -101,3 +101,16 @@ Tactic Notation "wp_apply" open_constr(lem) :=
 
 Tactic Notation "wp_apply" open_constr(lem) "as" constr(pat) :=
   wp_apply_lc 0 lem as pat.
+
+#[local]
+Ltac wp_for_cleanup :=
+  try wp_auto;
+  try (rewrite if_decide_bool_eq || rewrite if_decide_true_eq);
+  try wp_auto.
+
+Tactic Notation "wp_for" :=
+  loop.wp_for_core; wp_for_cleanup.
+Tactic Notation "wp_for" constr(hyp) :=
+  loop.wp_for_core; iNamed hyp; wp_for_cleanup.
+Ltac wp_for_post :=
+  loop.wp_for_post_core; try wp_auto.

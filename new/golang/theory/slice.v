@@ -1,7 +1,7 @@
 From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
 From iris.algebra Require Import dfrac.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Export list mem exception loop typing.
+From New.golang.theory Require Export list mem exception loop typing auto.
 
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
@@ -390,15 +390,11 @@ Proof.
         "Hiters" ∷ (fold_right _ _ (drop (uint.nat j) vs)) j
     )%I with "[Hi HΦ]" as "Hinv".
   { iExists (W64 0). iFrame. }
-  wp_for.
-  iNamed "Hinv".
-  wp_pures.
-  wp_load.
-  wp_pures.
+  wp_for "Hinv".
   iDestruct (own_slice_len with "Hsl") as %Hlen.
   case_bool_decide as Hlt.
-  - simpl. (* Case: execute loop body *)
-    rewrite decide_True //. wp_pures.
+  - (* Case: execute loop body *)
+    wp_pures.
     wp_load.
     wp_pures.
     pose proof (list_lookup_lt vs (uint.nat j) ltac:(word)) as [w Hlookup].
@@ -422,8 +418,6 @@ Proof.
   - simpl.  (* Case: done with loop body. *)
     rewrite drop_ge.
     2:{ word. }
-    rewrite decide_False /=; last naive_solver.
-    rewrite decide_True /=; last naive_solver.
     iApply "Hiters". by iFrame.
 Qed.
 

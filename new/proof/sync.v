@@ -276,9 +276,6 @@ Lemma wp_runtime_Semacquire (sema : loc) γ N :
 Proof.
   wp_start as "#Hsem".
   wp_for.
-  wp_auto.
-  rewrite decide_True //.
-  wp_auto.
   wp_bind (! _)%E.
   iInv "Hsem" as ">Hi" "Hclose".
   iDestruct "Hi" as (?) "[Hs Hv]".
@@ -1076,10 +1073,9 @@ Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
 Proof.
   wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
   wp_auto.
-  wp_for.
-  wp_auto.
-  rewrite decide_True //.
+  wp_for_core. (* TODO: need to set later credits *)
   wp_auto_lc 1.
+  rewrite decide_True //. wp_auto.
   wp_apply (wp_Uint64__Load).
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
