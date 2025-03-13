@@ -26,6 +26,7 @@ End chanstate.
 
 Section chan.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+(* FIXME: should this take an explicit V? *)
 Axiom is_chan : ∀ (c : chan.t), iProp Σ.
 Axiom is_chan_pers : ∀ c, Persistent (is_chan c).
 Global Existing Instance is_chan_pers.
@@ -46,40 +47,45 @@ Lemma wp_chan_make cap :
 Proof.
 Admitted.
 
+Definition receive_atomic_update ch Φ : iProp Σ :=
+  |={⊤,∅}=>
+    ▷∃ s, own_chan ch s ∗
+          if decide (s.(chanstate.closed) = true ∧ s.(chanstate.received) = length s.(chanstate.sent)) then
+            (* the channel is closed and empty, so return the zero value and false *)
+            (own_chan ch s ={∅,⊤}=∗ (Φ (#(default_val V), #false)%V))
+          else
+            (* notify the sender that this thread is receiving *)
+            (own_chan ch (set chanstate.received S s) ={∅,⊤}=∗
+             (* receive the value from the sender *)
+             (|={⊤,∅}=> ▷∃ (s' : chanstate.t V),
+                           own_chan ch s' ∗
+                           (∀ v, ⌜ s'.(chanstate.sent) !! s.(chanstate.received) = Some v ⌝ -∗
+                                 own_chan ch s' ={∅,⊤}=∗ Φ (#v, #true)%V))).
+
 Lemma wp_chan_receive ch :
   ∀ Φ,
   is_chan ch -∗
-  ▷(|={⊤,∅}=>
-      ▷∃ s, own_chan ch s ∗
-            if decide (s.(chanstate.closed) = true ∧ s.(chanstate.received) = length s.(chanstate.sent)) then
-              (* the channel is closed and empty, so return the zero value and false *)
-              (own_chan ch s ={∅,⊤}=∗ (Φ (#(default_val V), #false)%V))
-            else
-              (* notify the sender that this thread is receiving *)
-              (own_chan ch (set chanstate.received S s) ={∅,⊤}=∗
-               (* receive the value from the sender *)
-               (|={⊤,∅}=> ▷∃ (s' : chanstate.t V),
-                             own_chan ch s' ∗
-                             (∀ v, ⌜ s'.(chanstate.sent) !! s.(chanstate.received) = Some v ⌝ -∗
-                                   own_chan ch s' ={∅,⊤}=∗ Φ (#v, #true)%V)))
-  ) -∗
+  ▷ receive_atomic_update ch Φ -∗
   WP chan.receive #ch {{ Φ }}.
 Proof.
 Admitted.
 
+Definition send_atomic_update ch (v : V) Φ : iProp Σ :=
+  (* send the value *)
+  |={⊤,∅}=>
+    ▷∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
+          (own_chan ch (s <| chanstate.sent := s.(chanstate.sent) ++ [v] |>) ={∅,⊤}=∗
+           (* get notified that there was enough space of the buffer for it *)
+           (|={⊤,∅}=>
+              ▷∃ (s' : chanstate.t V),
+                  own_chan ch s' ∗
+                  (⌜ length s.(chanstate.sent) < s'.(chanstate.received) + uint.nat (s.(chanstate.cap)) ⌝ -∗
+                   own_chan ch s' ={∅,⊤}=∗ Φ #()))).
+
 Lemma wp_chan_send ch (v : V) :
   ∀ Φ,
   is_chan ch -∗
-  ▷((* send the value *)
-    |={⊤,∅}=>
-      ▷∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
-           (own_chan ch (s <| chanstate.sent := s.(chanstate.sent) ++ [v] |>) ={∅,⊤}=∗
-            (* get notified that there was enough space of the buffer for it *)
-            (|={⊤,∅}=> ▷∃ (s' : chanstate.t V),
-               own_chan ch s' ∗
-               (⌜ length s.(chanstate.sent) < s'.(chanstate.received) + uint.nat (s.(chanstate.cap)) ⌝ -∗
-                own_chan ch s' ={∅,⊤}=∗ Φ #())))
-  ) -∗
+  ▷ send_atomic_update ch v Φ -∗
   WP chan.send #ch #v {{ Φ }}.
 Proof.
 Admitted.
@@ -87,167 +93,197 @@ Admitted.
 Lemma wp_chan_close ch :
   ∀ Φ,
   is_chan ch -∗
-  (|={⊤,∅}=> ∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
+  ▷ (|={⊤,∅}=> ▷ ∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
                  (own_chan ch (s <|chanstate.closed := true |>) ={∅,⊤}=∗ Φ #())
   ) -∗
   WP chan.close #ch {{ Φ }}.
 Proof.
 Admitted.
 
+End proof.
+
+Section select_proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+
+(* TODO: require [is_chan] for everything. *)
+(* TODO: combine the chans+(vals)+handlers into one list? *)
+Lemma wp_chan_select_blocking (send_chans recv_chans : list chan.t)
+  (send_vals : list val) (send_handlers recv_handlers : list func.t) :
+  ∀ Φ,
+  ((∀ idx send_chan send_val send_handler,
+      ⌜ send_chans !! idx = Some send_chan ∧ send_vals !! idx = Some send_val ∧
+      send_handlers !! idx = Some send_handler ⌝ →
+      ∃ V (v : V) `(!IntoVal V),
+        ⌜ send_val = #v ⌝ ∗
+        send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }})
+   ) ∧
+   (∀ idx recv_chan recv_handler,
+      ⌜ recv_chans !! idx = Some recv_chan ∧ recv_handlers !! idx = Some recv_handler ⌝ →
+      ∃ V t `(!IntoVal V) `(!IntoValTyped V t),
+        receive_atomic_update (V:=V) recv_chan (λ v, WP #recv_handler v {{ Φ }})
+  )) -∗
+  WP chan.select (* #send_vals *) #send_chans #recv_chans (InjLV #()) {{ Φ }}.
+Proof.
+Admitted.
+
+End select_proof.
+
 Section onetime_barrier.
-  Context `{!ghost_varG Σ ()}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!ghost_varG Σ ()}.
 
-  Record params :=
-    {
-      gauge_init : nat; (* XXX: putting "gauge" in the name because this would
-                         change under a `chan` gauge transformation. *)
-      send_gn : gname;
-      recv_gn : gname;
-    }.
-  Implicit Types γ : params.
+Implicit Types (s : chanstate.t unit).
 
-  Definition own_send_tok γ := ghost_var γ.(send_gn) 1 ().
-  Definition own_recv_tok γ := ghost_var γ.(recv_gn) 1 ().
+Record params :=
+  {
+    gauge_init : nat; (* XXX: putting "gauge" in the name because this would
+                       change under a `chan` gauge transformation. *)
+    send_gn : gname;
+    recv_gn : gname;
+  }.
+Implicit Types γ : params.
 
-  Definition is_onetime_barrier γ (ch : chan.t) Sd Rv : iProp Σ :=
-    is_chan ch ∗
-    inv nroot (
-        ∃ s,
-          "Hch" ∷ own_chan ch s ∗
-          "%Hcap" ∷ ⌜ s.(chanstate.cap) = W64 0 ⌝ ∗
-          "%Hopen" ∷ ⌜ s.(chanstate.closed) = false ⌝ ∗
-          "%Hoffset_r" ∷ ⌜ γ.(gauge_init) ≤ s.(chanstate.received) ⌝%nat ∗
-          "%Hoffset_s" ∷ ⌜ γ.(gauge_init) ≤ length s.(chanstate.sent) ⌝%nat ∗
-          "Hr" ∷ match (s.(chanstate.received) - γ.(gauge_init))%nat with
-            | O => True
-            | S _ => (Rv ∨ own_send_tok γ)
-            end ∗
-          "Hs" ∷ match (length s.(chanstate.sent) - γ.(gauge_init))%nat with
-            | O => True
-            | S _ => (Sd ∨ own_recv_tok γ)
-            end
-      ).
+Definition own_send_tok γ := ghost_var γ.(send_gn) 1 ().
+Definition own_recv_tok γ := ghost_var γ.(recv_gn) 1 ().
 
-  Lemma start_onetime_barrier Sd Rv ch s:
-    s.(chanstate.cap) = (W64 0) →
-    s.(chanstate.closed) = false →
-    s.(chanstate.received) = length s.(chanstate.sent) →
-    is_chan ch -∗
-    own_chan ch s ={⊤}=∗
-    ∃ γ, is_onetime_barrier γ ch Sd Rv ∗
-         own_recv_tok γ ∗
-         own_send_tok γ.
-  Proof.
-    intros.
-    iIntros "#? Hchan".
-    iMod (ghost_var_alloc ()) as "[% ?]".
-    iMod (ghost_var_alloc ()) as "[% ?]".
-    iExists _.
-    instantiate (1:=(ltac:(econstructor))). simpl.
-    iFrame "#". iFrame. simpl.
-    iApply inv_alloc.
-    iNext. iFrame "∗%".
-    instantiate (1:=s.(chanstate.received)).
-    iSplitR; first word.
-    iSplitR; first word.
-    rewrite H1 Nat.sub_diag //.
-  Qed.
+Definition is_onetime_barrier γ (ch : chan.t) Sd Rv : iProp Σ :=
+  is_chan ch ∗
+  inv nroot (
+      ∃ s,
+        "Hch" ∷ own_chan ch s ∗
+        "%Hcap" ∷ ⌜ s.(chanstate.cap) = W64 0 ⌝ ∗
+        "%Hopen" ∷ ⌜ s.(chanstate.closed) = false ⌝ ∗
+        "%Hoffset_r" ∷ ⌜ γ.(gauge_init) ≤ s.(chanstate.received) ⌝%nat ∗
+        "%Hoffset_s" ∷ ⌜ γ.(gauge_init) ≤ length s.(chanstate.sent) ⌝%nat ∗
+        "Hr" ∷ match (s.(chanstate.received) - γ.(gauge_init))%nat with
+          | O => True
+          | S _ => (Rv ∨ own_send_tok γ)
+          end ∗
+        "Hs" ∷ match (length s.(chanstate.sent) - γ.(gauge_init))%nat with
+          | O => True
+          | S _ => (Sd ∨ own_recv_tok γ)
+          end
+    ).
 
-  Lemma wp_onetime_barrier_receive γ ch Sd Rv :
-    {{{
-        is_onetime_barrier γ ch Sd Rv ∗
-        own_recv_tok γ ∗
-        Rv
-    }}}
-      chan.receive #ch
-    {{{
-        v, RET (#v, #true); Sd
-    }}}.
-  Proof.
-    iIntros (?) "((#Hchan & #Hinv) & Htok & HR) HΦ".
-    wp_apply (wp_chan_receive with "[$]").
+Lemma start_onetime_barrier Sd Rv ch s:
+  s.(chanstate.cap) = (W64 0) →
+  s.(chanstate.closed) = false →
+  s.(chanstate.received) = length s.(chanstate.sent) →
+  is_chan ch -∗
+  own_chan ch s ={⊤}=∗
+  ∃ γ, is_onetime_barrier γ ch Sd Rv ∗
+       own_recv_tok γ ∗
+       own_send_tok γ.
+Proof.
+  intros.
+  iIntros "#? Hchan".
+  iMod (ghost_var_alloc ()) as "[% ?]".
+  iMod (ghost_var_alloc ()) as "[% ?]".
+  iExists _.
+  instantiate (1:=(ltac:(econstructor))). simpl.
+  iFrame "#". iFrame. simpl.
+  iApply inv_alloc.
+  iNext. iFrame "∗%".
+  instantiate (1:=s.(chanstate.received)).
+  iSplitR; first word.
+  iSplitR; first word.
+  rewrite H1 Nat.sub_diag //.
+Qed.
 
-    (* send Rv *)
-    iInv "Hinv" as "Hi" "Hclose".
-    iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
-    iNext. iNamed "Hi".
-    iExists _; iFrame.
-    rewrite Hopen.
-    iIntros "Hch".
-    iMod "Hmask" as "_".
-    iMod ("Hclose" with "[-Htok HΦ]").
-    { iNext. iFrame "∗%".
-      simpl. iSplitR; first word.
-      rewrite Nat.sub_succ_l //. iFrame.
-    }
-    iModIntro.
+Lemma wp_onetime_barrier_receive γ ch Sd Rv :
+  {{{
+      is_onetime_barrier γ ch Sd Rv ∗
+      own_recv_tok γ ∗
+      Rv
+  }}}
+    chan.receive #ch
+  {{{
+      RET (#(), #true); Sd
+  }}}.
+Proof.
+  iIntros (?) "((#Hchan & #Hinv) & Htok & HR) HΦ".
+  wp_apply (wp_chan_receive (V:=()) with "[$]").
 
-    (* get Sd *)
-    iInv "Hinv" as "Hi" "Hclose".
-    iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
-    iNext. iNamed "Hi".
-    iExists _; iFrame.
-    iIntros "* % Hch".
+  (* send Rv *)
+  iInv "Hinv" as "Hi" "Hclose".
+  iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
+  iNext. iNamed "Hi".
+  iExists _; iFrame.
+  rewrite Hopen.
+  iIntros "Hch".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[-Htok HΦ]").
+  { iNext. iFrame "∗%".
+    simpl. iSplitR; first word.
+    rewrite Nat.sub_succ_l //. iFrame.
+  }
+  iModIntro.
 
-    edestruct (length _ - _)%nat eqn:?.
-    { simpl in *. exfalso. apply lookup_lt_Some in H. lia. }
-    iDestruct "Hs" as "[Hs|Hbad]".
-    2:{ iCombine "Hbad Htok" gives %[Hbad _]. done. }
-    iMod "Hmask" as "_".
-    iMod ("Hclose" with "[-HΦ Hs]").
-    { iNext. iFrame "∗%". destruct (_ - _)%nat; iFrame. }
-    iModIntro.
-    iApply "HΦ".
-    iFrame.
-  Qed.
+  (* get Sd *)
+  iInv "Hinv" as "Hi" "Hclose".
+  iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
+  iNext. iNamed "Hi".
+  iExists _; iFrame.
+  iIntros "* % Hch".
 
-  Lemma wp_onetime_barrier_send γ ch Sd Rv v :
-    {{{
-        is_onetime_barrier γ ch Sd Rv ∗
-        own_send_tok γ ∗
-        Sd
-    }}}
-      chan.send #ch #v
-    {{{
-        RET #(); Rv
-    }}}.
-  Proof.
-    iIntros (?) "((#Hchan & #Hinv) & Htok & HR) HΦ".
-    wp_apply (wp_chan_send with "[$]").
+  edestruct (length _ - _)%nat eqn:?.
+  { simpl in *. exfalso. apply lookup_lt_Some in H. lia. }
+  iDestruct "Hs" as "[Hs|Hbad]".
+  2:{ iCombine "Hbad Htok" gives %[Hbad _]. done. }
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[-HΦ Hs]").
+  { iNext. iFrame "∗%". destruct (_ - _)%nat; iFrame. }
+  iModIntro.
+  destruct v.
+  iApply "HΦ".
+  iFrame.
+Qed.
 
-    (* send Sd *)
-    iInv "Hinv" as "Hi" "Hclose".
-    iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
-    iNext. iNamed "Hi".
-    iExists _; iFrame "∗%".
-    iIntros "Hch".
-    iMod "Hmask" as "_".
-    iMod ("Hclose" with "[-Htok HΦ]").
-    { iNext. iFrame "∗%". iSplitR.
-      { rewrite length_app /=. iPureIntro. lia. }
-      iClear "Hs". by destruct Nat.sub; iFrame.
-    }
-    iModIntro.
+Lemma wp_onetime_barrier_send γ ch Sd Rv :
+  {{{
+      is_onetime_barrier γ ch Sd Rv ∗
+      own_send_tok γ ∗
+      Sd
+  }}}
+    chan.send #ch #()
+  {{{
+      RET #(); Rv
+  }}}.
+Proof.
+  iIntros (?) "((#Hchan & #Hinv) & Htok & HR) HΦ".
+  wp_apply (wp_chan_send (V:=()) with "[$]").
 
-    (* get Rv *)
-    iInv "Hinv" as "Hi" "Hclose".
-    iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
-    iNext. iNamed "Hi".
-    iExists _; iFrame.
-    iIntros "* % Hch".
+  (* send Sd *)
+  iInv "Hinv" as "Hi" "Hclose".
+  iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
+  iNext. iNamed "Hi".
+  iExists _; iFrame "∗%".
+  iIntros "Hch".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[-Htok HΦ]").
+  { iNext. iFrame "∗%". iSplitR.
+    { rewrite length_app /=. iPureIntro. lia. }
+    iClear "Hs". by destruct Nat.sub; iFrame.
+  }
+  iModIntro.
 
-    edestruct (chanstate.received s0 - _)%nat eqn:?.
-    { simpl in *. exfalso. word. }
-    iDestruct "Hr" as "[Hr|Hbad]".
-    2:{ iCombine "Hbad Htok" gives %[Hbad _]. done. }
-    iMod "Hmask" as "_".
-    iMod ("Hclose" with "[-HΦ Hr]").
-    { iNext. iFrame "∗%". by destruct Nat.sub; iFrame. }
-    iModIntro.
-    iApply "HΦ".
-    iFrame.
-  Qed.
+  (* get Rv *)
+  iInv "Hinv" as "Hi" "Hclose".
+  iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
+  iNext. iNamed "Hi".
+  iExists _; iFrame.
+  iIntros "* % Hch".
+
+  edestruct (chanstate.received s0 - _)%nat eqn:?.
+  { simpl in *. exfalso. word. }
+  iDestruct "Hr" as "[Hr|Hbad]".
+  2:{ iCombine "Hbad Htok" gives %[Hbad _]. done. }
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[-HΦ Hr]").
+  { iNext. iFrame "∗%". by destruct Nat.sub; iFrame. }
+  iModIntro.
+  iApply "HΦ".
+  iFrame.
+Qed.
 
 End onetime_barrier.
-
-End proof.
