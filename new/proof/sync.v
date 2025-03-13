@@ -276,9 +276,6 @@ Lemma wp_runtime_Semacquire (sema : loc) γ N :
 Proof.
   wp_start as "#Hsem".
   wp_for.
-  wp_auto.
-  rewrite decide_True //.
-  wp_auto.
   wp_bind (! _)%E.
   iInv "Hsem" as ">Hi" "Hclose".
   iDestruct "Hi" as (?) "[Hs Hv]".
@@ -292,8 +289,8 @@ Proof.
   destruct bool_decide eqn:Hnz.
   { (* keep looping *)
     wp_auto.
-    iApply wp_for_post_continue.
-    wp_auto. iFrame.
+    wp_for_post.
+    iFrame.
   }
 
   (* try to acquire *)
@@ -320,8 +317,8 @@ Proof.
     iMod ("Hclose" with "[$]") as "_".
     iModIntro.
     wp_auto.
-    iApply wp_for_post_return.
-    wp_auto. done.
+    wp_for_post.
+    done.
   }
   { (* cmpxchg will fail *)
     unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve.
@@ -331,7 +328,7 @@ Proof.
     iMod ("Hclose" with "[$]") as "_".
     iModIntro.
     wp_auto.
-    iApply wp_for_post_do. wp_auto.
+    wp_for_post.
     iFrame.
   }
 Qed.
@@ -1059,8 +1056,7 @@ Proof.
   }
   iModIntro.
   wp_auto.
-  iApply wp_for_post_do.
-  wp_auto.
+  wp_for_post.
   iFrame.
 Qed.
 
@@ -1076,10 +1072,9 @@ Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
 Proof.
   wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
   wp_auto.
-  wp_for.
-  wp_auto.
-  rewrite decide_True //.
+  wp_for_core. (* TODO: need to set later credits *)
   wp_auto_lc 1.
+  rewrite decide_True //. wp_auto.
   wp_apply (wp_Uint64__Load).
   iInv "Hinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
@@ -1102,8 +1097,7 @@ Proof.
     iModIntro.
     wp_auto. rewrite enc_get_high enc_get_low bool_decide_true //=.
     wp_auto.
-    iApply wp_for_post_return.
-    wp_auto.
+    wp_for_post.
     by iApply "HΦ".
   }
   (* actually go to sleep *)
@@ -1231,8 +1225,7 @@ Proof.
     }
     iModIntro.
     wp_auto.
-    iApply wp_for_post_return.
-    wp_auto.
+    wp_for_post.
     iApply "HΦ". done.
   }
   {
@@ -1243,8 +1236,7 @@ Proof.
     iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hctr]") as "_".
     { iFrame. done. }
     iModIntro. wp_auto.
-    iApply wp_for_post_do.
-    wp_auto.
+    wp_for_post.
     iFrame.
   }
 Qed.

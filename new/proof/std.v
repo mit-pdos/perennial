@@ -181,12 +181,9 @@ Proof.
            "done" ∷ l ↦s[std.JoinHandle::"done"] done_b ∗
            "HP" ∷ (if done_b then P else True))%I
           with "[$Hlocked $done_b $HP]" as "HI".
-  wp_for. iNamed "HI". wp_auto.
-  rewrite decide_True //.
-  wp_auto.
+  wp_for "HI".
   destruct done_b0; wp_auto.
-  - iApply wp_for_post_break.
-    wp_auto.
+  - wp_for_post.
     wp_apply (wp_Mutex__Unlock with "[$Hlock $locked $done]").
     iApply "HΦ". done.
   - wp_apply (wp_Cond__Wait with "[$Hcond locked done HP]") as "H".
@@ -194,8 +191,8 @@ Proof.
       - iApply (Mutex_is_Locker with "Hlock").
       - iFrame. }
     iDestruct "H" as "[Hlocked Hlinv]". iNamed "Hlinv".
-    iApply wp_for_post_do.
-    wp_auto. iFrame.
+    wp_for_post.
+    iFrame.
 Qed.
 
 End wps.
