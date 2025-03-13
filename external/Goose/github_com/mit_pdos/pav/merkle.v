@@ -2,222 +2,321 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.pav.cryptoffi.
+From Goose Require github_com.mit_pdos.pav.cryptoutil.
+From Goose Require github_com.mit_pdos.pav.marshalutil.
 From Goose Require github_com.tchajed.marshal.
 
 Section code.
 Context `{ext_ty: ext_types}.
 
-Definition numChildren : expr := #256.
-
-Definition hashesPerProofDepth : expr := (numChildren - #1) * cryptoffi.HashLen.
+(* merkle.go *)
 
 Definition emptyNodeTag : expr := #(U8 0).
 
-Definition leafNodeTag : expr := #(U8 1).
+Definition innerNodeTag : expr := #(U8 1).
 
-Definition interiorNodeTag : expr := #(U8 2).
-
-Definition NonmembProofTy : expr := #false.
-
-Definition MembProofTy : expr := #true.
+Definition leafNodeTag : expr := #(U8 2).
 
 Definition Tree := struct.decl [
   "ctx" :: ptrT;
   "root" :: ptrT
 ].
 
+(* node contains the union of different node types, which distinguish as:
+    1. empty node. if node ptr is nil.
+    2. inner node. if either child0 or child1 not nil. has hash.
+    3. leaf node. else. has hash, full label, and val. *)
 Definition node := struct.decl [
-  "mapVal" :: slice.T byteT;
   "hash" :: slice.T byteT;
-  "children" :: slice.T ptrT
+  "child0" :: ptrT;
+  "child1" :: ptrT;
+  "label" :: slice.T byteT;
+  "val" :: slice.T byteT
 ].
 
-(* context is a result of:
-   1) for performance reasons, wanting to pre-compute the empty hash.
-   2) requiring that all hashes come from program steps.
-   3) goose not having init() support. *)
 Definition context := struct.decl [
   "emptyHash" :: slice.T byteT
 ].
 
-(* getHash getter to support hashes of empty (nil) nodes. *)
-Definition context__getHash: val :=
-  rec: "context__getHash" "ctx" "n" :=
+Definition compLeafHash: val :=
+  rec: "compLeafHash" "label" "val" :=
+    let: "valLen" := slice.len "val" in
+    let: "hr" := cryptoffi.NewHasher #() in
+    cryptoffi.Hasher__Write "hr" "label";;
+    cryptoffi.Hasher__Write "hr" (marshal.WriteInt slice.nil "valLen");;
+    cryptoffi.Hasher__Write "hr" "val";;
+    cryptoffi.Hasher__Write "hr" (SliceSingleton leafNodeTag);;
+    cryptoffi.Hasher__Sum "hr" slice.nil.
+
+Definition setLeafHash: val :=
+  rec: "setLeafHash" "n" :=
+    struct.storeF node "hash" "n" (compLeafHash (struct.loadF node "label" "n") (struct.loadF node "val" "n"));;
+    #().
+
+Definition getBit: val :=
+  rec: "getBit" "b" "n" :=
+    let: "slot" := "n" `quot` #8 in
+    let: "off" := "n" `rem` #8 in
+    let: "x" := SliceGet byteT "b" "slot" in
+    ("x" `and` (#(U8 1) ≪ "off")) ≠ #(U8 0).
+
+(* getChild returns a child and its sibling child,
+   relative to the bit referenced by label and depth. *)
+Definition getChild: val :=
+  rec: "getChild" "n" "label" "depth" :=
+    (if: (~ (getBit "label" "depth"))
+    then (struct.fieldRef node "child0" "n", struct.loadF node "child1" "n")
+    else (struct.fieldRef node "child1" "n", struct.loadF node "child0" "n")).
+
+Definition getNodeHash: val :=
+  rec: "getNodeHash" "n" "c" :=
     (if: "n" = #null
-    then struct.loadF context "emptyHash" "ctx"
+    then struct.loadF context "emptyHash" "c"
     else struct.loadF node "hash" "n").
+
+Definition compInnerHash: val :=
+  rec: "compInnerHash" "child0" "child1" "h" :=
+    let: "hr" := cryptoffi.NewHasher #() in
+    cryptoffi.Hasher__Write "hr" "child0";;
+    cryptoffi.Hasher__Write "hr" "child1";;
+    cryptoffi.Hasher__Write "hr" (SliceSingleton innerNodeTag);;
+    cryptoffi.Hasher__Sum "hr" "h".
+
+Definition setInnerHash: val :=
+  rec: "setInnerHash" "n" "c" :=
+    let: "child0" := getNodeHash (struct.loadF node "child0" "n") "c" in
+    let: "child1" := getNodeHash (struct.loadF node "child1" "n") "c" in
+    struct.storeF node "hash" "n" (compInnerHash "child0" "child1" slice.nil);;
+    #().
+
+Definition put: val :=
+  rec: "put" "n0" "depth" "label" "val" "ctx" :=
+    let: "n" := ![ptrT] "n0" in
+    (if: "n" = #null
+    then
+      let: "leaf" := struct.new node [
+        "label" ::= "label";
+        "val" ::= "val"
+      ] in
+      "n0" <-[ptrT] "leaf";;
+      setLeafHash "leaf";;
+      #()
+    else
+      (if: ((struct.loadF node "child0" "n") = #null) && ((struct.loadF node "child1" "n") = #null)
+      then
+        (if: std.BytesEqual (struct.loadF node "label" "n") "label"
+        then
+          struct.storeF node "val" "n" "val";;
+          setLeafHash "n";;
+          #()
+        else
+          let: "inner" := struct.new node [
+          ] in
+          "n0" <-[ptrT] "inner";;
+          let: ("leafChild", <>) := getChild "inner" (struct.loadF node "label" "n") "depth" in
+          "leafChild" <-[ptrT] "n";;
+          let: ("recurChild", <>) := getChild "inner" "label" "depth" in
+          "put" "recurChild" ("depth" + #1) "label" "val" "ctx";;
+          setInnerHash "inner" "ctx";;
+          #())
+      else
+        let: ("c", <>) := getChild "n" "label" "depth" in
+        "put" "c" ("depth" + #1) "label" "val" "ctx";;
+        setInnerHash "n" "ctx";;
+        #())).
+
+(* Put adds (label, val) to the tree and errors if label isn't a hash.
+   it consumes both label and val. *)
+Definition Tree__Put: val :=
+  rec: "Tree__Put" "t" "label" "val" :=
+    (if: (slice.len "label") ≠ cryptoffi.HashLen
+    then #true
+    else
+      put (struct.fieldRef Tree "root" "t") #0 "label" "val" (struct.loadF Tree "ctx" "t");;
+      #false).
+
+Definition Tree__get: val :=
+  rec: "Tree__get" "t" "label" "prove" :=
+    (if: (slice.len "label") ≠ cryptoffi.HashLen
+    then (#false, slice.nil, slice.nil, #true)
+    else
+      let: "n" := ref_to ptrT (struct.loadF Tree "root" "t") in
+      let: "proof" := ref (zero_val (slice.T byteT)) in
+      (if: "prove"
+      then
+        let: "valLen" := #32 in
+        "proof" <-[slice.T byteT] (NewSliceWithCap byteT #8 (((((#8 + (#30 * cryptoffi.HashLen)) + #8) + cryptoffi.HashLen) + #8) + "valLen"))
+      else #());;
+      let: "depth" := ref (zero_val uint64T) in
+      Skip;;
+      (for: (λ: <>, (![uint64T] "depth") < (cryptoffi.HashLen * #8)); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
+        (if: (![ptrT] "n") = #null
+        then Break
+        else
+          (if: ((struct.loadF node "child0" (![ptrT] "n")) = #null) && ((struct.loadF node "child1" (![ptrT] "n")) = #null)
+          then Break
+          else
+            let: ("child", "sib") := getChild (![ptrT] "n") "label" (![uint64T] "depth") in
+            (if: "prove"
+            then "proof" <-[slice.T byteT] (SliceAppendSlice byteT (![slice.T byteT] "proof") (getNodeHash "sib" (struct.loadF Tree "ctx" "t")))
+            else #());;
+            "n" <-[ptrT] (![ptrT] "child");;
+            Continue)));;
+      (if: "prove"
+      then UInt64Put (![slice.T byteT] "proof") ((slice.len (![slice.T byteT] "proof")) - #8)
+      else #());;
+      (if: (![ptrT] "n") = #null
+      then
+        (if: "prove"
+        then
+          "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0);;
+          "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0)
+        else #());;
+        (#false, slice.nil, ![slice.T byteT] "proof", #false)
+      else
+        std.Assert (((struct.loadF node "child0" (![ptrT] "n")) = #null) && ((struct.loadF node "child1" (![ptrT] "n")) = #null));;
+        (if: (~ (std.BytesEqual (struct.loadF node "label" (![ptrT] "n")) "label"))
+        then
+          (if: "prove"
+          then
+            "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") (slice.len (struct.loadF node "label" (![ptrT] "n"))));;
+            "proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (struct.loadF node "label" (![ptrT] "n")));;
+            "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") (slice.len (struct.loadF node "val" (![ptrT] "n"))));;
+            "proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (struct.loadF node "val" (![ptrT] "n")))
+          else #());;
+          (#false, slice.nil, ![slice.T byteT] "proof", #false)
+        else
+          (if: "prove"
+          then
+            "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0);;
+            "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0)
+          else #());;
+          (#true, struct.loadF node "val" (![ptrT] "n"), ![slice.T byteT] "proof", #false)))).
+
+(* Get returns if label is in the tree and, if so, the val.
+   it errors if label isn't a hash. *)
+Definition Tree__Get: val :=
+  rec: "Tree__Get" "t" "label" :=
+    let: ((("inTree", "val"), <>), "err") := Tree__get "t" "label" #false in
+    ("inTree", "val", "err").
+
+(* Prove returns (1) if label is in the tree and, if so, (2) the val.
+   it gives a (3) cryptographic proof of this.
+   it (4) errors if label isn't a hash. *)
+Definition Tree__Prove: val :=
+  rec: "Tree__Prove" "t" "label" :=
+    Tree__get "t" "label" #true.
+
+(* MerkleProof from serde.go *)
+
+(* Proof has non-nil leaf data for non-membership proofs
+   that terminate in a different leaf. *)
+Definition MerkleProof := struct.decl [
+  "Siblings" :: slice.T byteT;
+  "LeafLabel" :: slice.T byteT;
+  "LeafVal" :: slice.T byteT
+].
+
+(* MerkleProofDecode from serde.out.go *)
+
+Definition MerkleProofDecode: val :=
+  rec: "MerkleProofDecode" "b0" :=
+    let: (("a1", "b1"), "err1") := marshalutil.ReadSlice1D "b0" in
+    (if: "err1"
+    then (slice.nil, slice.nil, #true)
+    else
+      let: (("a2", "b2"), "err2") := marshalutil.ReadSlice1D "b1" in
+      (if: "err2"
+      then (slice.nil, slice.nil, #true)
+      else
+        let: (("a3", "b3"), "err3") := marshalutil.ReadSlice1D "b2" in
+        (if: "err3"
+        then (slice.nil, slice.nil, #true)
+        else
+          (struct.new MerkleProof [
+             "Siblings" ::= "a1";
+             "LeafLabel" ::= "a2";
+             "LeafVal" ::= "a3"
+           ], "b3", #false)))).
+
+(* compEmptyHash from merkle.go *)
+
+Definition compEmptyHash: val :=
+  rec: "compEmptyHash" <> :=
+    let: "b" := SliceSingleton emptyNodeTag in
+    cryptoutil.Hash "b".
+
+(* Verify verifies proof against the tree rooted at dig
+   and returns an error upon failure.
+   there are two types of inputs.
+   if inTree, (label, val) should be in the tree.
+   if !inTree, label should not be in the tree. *)
+Definition Verify: val :=
+  rec: "Verify" "inTree" "label" "val" "proof" "dig" :=
+    (if: (slice.len "label") ≠ cryptoffi.HashLen
+    then #true
+    else
+      let: (("proofDec", <>), "err0") := MerkleProofDecode "proof" in
+      (if: "err0"
+      then #true
+      else
+        let: "sibsLen" := slice.len (struct.loadF MerkleProof "Siblings" "proofDec") in
+        (if: ("sibsLen" `rem` cryptoffi.HashLen) ≠ #0
+        then #true
+        else
+          let: "maxDepth" := "sibsLen" `quot` cryptoffi.HashLen in
+          (if: "maxDepth" > (cryptoffi.HashLen * #8)
+          then #true
+          else
+            let: "currHash" := ref (zero_val (slice.T byteT)) in
+            (if: "inTree"
+            then "currHash" <-[slice.T byteT] (compLeafHash "label" "val")
+            else
+              (if: (slice.len (struct.loadF MerkleProof "LeafLabel" "proofDec")) ≠ #0
+              then "currHash" <-[slice.T byteT] (compLeafHash (struct.loadF MerkleProof "LeafLabel" "proofDec") (struct.loadF MerkleProof "LeafVal" "proofDec"))
+              else "currHash" <-[slice.T byteT] (compEmptyHash #())));;
+            let: "hashOut" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 cryptoffi.HashLen) in
+            let: "depth" := ref_to uint64T "maxDepth" in
+            Skip;;
+            (for: (λ: <>, (![uint64T] "depth") ≥ #1); (λ: <>, Skip) := λ: <>,
+              let: "begin" := ((![uint64T] "depth") - #1) * cryptoffi.HashLen in
+              let: "end" := (![uint64T] "depth") * cryptoffi.HashLen in
+              let: "sib" := SliceSubslice byteT (struct.loadF MerkleProof "Siblings" "proofDec") "begin" "end" in
+              (if: (~ (getBit "label" ((![uint64T] "depth") - #1)))
+              then "hashOut" <-[slice.T byteT] (compInnerHash (![slice.T byteT] "currHash") "sib" (![slice.T byteT] "hashOut"))
+              else "hashOut" <-[slice.T byteT] (compInnerHash "sib" (![slice.T byteT] "currHash") (![slice.T byteT] "hashOut")));;
+              "currHash" <-[slice.T byteT] (SliceAppendSlice byteT (SliceTake (![slice.T byteT] "currHash") #0) (![slice.T byteT] "hashOut"));;
+              "hashOut" <-[slice.T byteT] (SliceTake (![slice.T byteT] "hashOut") #0);;
+              "depth" <-[uint64T] ((![uint64T] "depth") - #1);;
+              Continue);;
+            (~ (std.BytesEqual (![slice.T byteT] "currHash") "dig")))))).
 
 Definition Tree__Digest: val :=
   rec: "Tree__Digest" "t" :=
-    context__getHash (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t").
-
-Definition newInteriorNode: val :=
-  rec: "newInteriorNode" <> :=
-    let: "c" := NewSlice ptrT numChildren in
-    struct.new node [
-      "children" ::= "c"
-    ].
-
-Definition compLeafNodeHash: val :=
-  rec: "compLeafNodeHash" "mapVal" :=
-    let: "b" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((slice.len "mapVal") + #1)) in
-    "b" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b") "mapVal");;
-    "b" <-[slice.T byteT] (SliceAppend byteT (![slice.T byteT] "b") leafNodeTag);;
-    cryptoffi.Hash (![slice.T byteT] "b").
-
-(* Assumes recursive child hashes are already up-to-date.
-   uses and returns hash buf, to allow for its re-use. *)
-Definition context__updInteriorHash: val :=
-  rec: "context__updInteriorHash" "ctx" "b" "n" :=
-    let: "b0" := ref_to (slice.T byteT) "b" in
-    ForSlice ptrT <> "child" (struct.loadF node "children" "n")
-      ("b0" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "b0") (context__getHash "ctx" "child")));;
-    "b0" <-[slice.T byteT] (SliceAppend byteT (![slice.T byteT] "b0") interiorNodeTag);;
-    struct.storeF node "hash" "n" (cryptoffi.Hash (![slice.T byteT] "b0"));;
-    ![slice.T byteT] "b0".
-
-Definition context__getProof: val :=
-  rec: "context__getProof" "ctx" "root" "label" :=
-    let: "proof" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 (cryptoffi.HashLen * hashesPerProofDepth)) in
-    let: "currNode" := ref_to ptrT "root" in
-    let: "depth" := ref_to uint64T #0 in
-    Skip;;
-    (for: (λ: <>, ((![uint64T] "depth") < cryptoffi.HashLen) && ((![ptrT] "currNode") ≠ #null)); (λ: <>, Skip) := λ: <>,
-      let: "children" := struct.loadF node "children" (![ptrT] "currNode") in
-      let: "pos" := to_u64 (SliceGet byteT "label" (![uint64T] "depth")) in
-      ForSlice ptrT <> "n" (SliceTake "children" "pos")
-        ("proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (context__getHash "ctx" "n")));;
-      "currNode" <-[ptrT] (SliceGet ptrT (struct.loadF node "children" (![ptrT] "currNode")) "pos");;
-      ForSlice ptrT <> "n" (SliceSkip ptrT "children" ("pos" + #1))
-        ("proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (context__getHash "ctx" "n")));;
-      "depth" <-[uint64T] ((![uint64T] "depth") + #1);;
-      Continue);;
-    ![slice.T byteT] "proof".
-
-(* Put returns the digest, proof, and error. *)
-Definition Tree__Put: val :=
-  rec: "Tree__Put" "t" "label" "mapVal" :=
-    (if: (slice.len "label") ≠ cryptoffi.HashLen
-    then (slice.nil, slice.nil, #true)
-    else
-      let: "interiors" := ref_to (slice.T ptrT) (NewSliceWithCap ptrT #0 cryptoffi.HashLen) in
-      (if: (struct.loadF Tree "root" "t") = #null
-      then struct.storeF Tree "root" "t" (newInteriorNode #())
-      else #());;
-      "interiors" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "interiors") (struct.loadF Tree "root" "t"));;
-      let: "n" := cryptoffi.HashLen - #1 in
-      let: "depth" := ref_to uint64T #0 in
-      (for: (λ: <>, (![uint64T] "depth") < "n"); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
-        let: "currNode" := SliceGet ptrT (![slice.T ptrT] "interiors") (![uint64T] "depth") in
-        let: "pos" := to_u64 (SliceGet byteT "label" (![uint64T] "depth")) in
-        (if: (SliceGet ptrT (struct.loadF node "children" "currNode") "pos") = #null
-        then SliceSet ptrT (struct.loadF node "children" "currNode") "pos" (newInteriorNode #())
-        else #());;
-        "interiors" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "interiors") (SliceGet ptrT (struct.loadF node "children" "currNode") "pos"));;
-        Continue);;
-      let: "lastInterior" := SliceGet ptrT (![slice.T ptrT] "interiors") (cryptoffi.HashLen - #1) in
-      let: "lastPos" := to_u64 (SliceGet byteT "label" (cryptoffi.HashLen - #1)) in
-      SliceSet ptrT (struct.loadF node "children" "lastInterior") "lastPos" (struct.new node [
-        "mapVal" ::= "mapVal";
-        "hash" ::= compLeafNodeHash "mapVal"
-      ]);;
-      let: "loopBuf" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((numChildren * cryptoffi.HashLen) + #1)) in
-      let: "depth" := ref_to uint64T cryptoffi.HashLen in
-      Skip;;
-      (for: (λ: <>, (![uint64T] "depth") ≥ #1); (λ: <>, Skip) := λ: <>,
-        "loopBuf" <-[slice.T byteT] (context__updInteriorHash (struct.loadF Tree "ctx" "t") (![slice.T byteT] "loopBuf") (SliceGet ptrT (![slice.T ptrT] "interiors") ((![uint64T] "depth") - #1)));;
-        "loopBuf" <-[slice.T byteT] (SliceTake (![slice.T byteT] "loopBuf") #0);;
-        "depth" <-[uint64T] ((![uint64T] "depth") - #1);;
-        Continue);;
-      let: "dig" := context__getHash (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") in
-      let: "proof" := context__getProof (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") "label" in
-      ("dig", "proof", #false)).
-
-(* getPath fetches including the leaf node.
-   if the path doesn't exist, it terminates in an empty node. *)
-Definition getPath: val :=
-  rec: "getPath" "root" "label" :=
-    let: "currNode" := ref_to ptrT "root" in
-    let: "depth" := ref_to uint64T #0 in
-    (for: (λ: <>, ((![uint64T] "depth") < cryptoffi.HashLen) && ((![ptrT] "currNode") ≠ #null)); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
-      let: "pos" := to_u64 (SliceGet byteT "label" (![uint64T] "depth")) in
-      "currNode" <-[ptrT] (SliceGet ptrT (struct.loadF node "children" (![ptrT] "currNode")) "pos");;
-      Continue);;
-    ![ptrT] "currNode".
-
-(* Get returns the mapVal, digest, proofTy, proof, and error.
-   return ProofTy vs. having sep funcs bc regardless, would want a proof. *)
-Definition Tree__Get: val :=
-  rec: "Tree__Get" "t" "label" :=
-    (if: (slice.len "label") ≠ cryptoffi.HashLen
-    then (slice.nil, slice.nil, #false, slice.nil, #true)
-    else
-      let: "lastNode" := getPath (struct.loadF Tree "root" "t") "label" in
-      let: "dig" := context__getHash (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") in
-      let: "proof" := context__getProof (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") "label" in
-      (if: "lastNode" = #null
-      then (slice.nil, "dig", NonmembProofTy, "proof", #false)
-      else
-        let: "val" := struct.loadF node "mapVal" "lastNode" in
-        ("val", "dig", MembProofTy, "proof", #false))).
-
-Definition compEmptyNodeHash: val :=
-  rec: "compEmptyNodeHash" <> :=
-    cryptoffi.Hash (SliceSingleton emptyNodeTag).
-
-Definition newCtx: val :=
-  rec: "newCtx" <> :=
-    struct.new context [
-      "emptyHash" ::= compEmptyNodeHash #()
-    ].
+    getNodeHash (struct.loadF Tree "root" "t") (struct.loadF Tree "ctx" "t").
 
 Definition NewTree: val :=
   rec: "NewTree" <> :=
+    let: "c" := struct.new context [
+      "emptyHash" ::= compEmptyHash #()
+    ] in
     struct.new Tree [
-      "ctx" ::= newCtx #()
+      "ctx" ::= "c"
     ].
 
-(* CheckProof returns an error if the proof is invalid. *)
-Definition CheckProof: val :=
-  rec: "CheckProof" "proofTy" "proof" "label" "mapVal" "dig" :=
-    let: "proofLen" := slice.len "proof" in
-    (if: ("proofLen" `rem` hashesPerProofDepth) ≠ #0
-    then #true
-    else
-      let: "proofDepth" := "proofLen" `quot` hashesPerProofDepth in
-      (if: "proofDepth" > cryptoffi.HashLen
-      then #true
-      else
-        (if: (slice.len "label") ≠ cryptoffi.HashLen
-        then #true
-        else
-          let: "labelPref" := SliceTake "label" "proofDepth" in
-          let: "nodeHash" := ref (zero_val (slice.T byteT)) in
-          (if: "proofTy"
-          then "nodeHash" <-[slice.T byteT] (compLeafNodeHash "mapVal")
-          else "nodeHash" <-[slice.T byteT] (compEmptyNodeHash #()));;
-          let: "loopErr" := ref_to boolT #false in
-          let: "loopCurrHash" := ref_to (slice.T byteT) (![slice.T byteT] "nodeHash") in
-          let: "loopBuf" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 ((numChildren * cryptoffi.HashLen) + #1)) in
-          let: "loopIdx" := ref_to uint64T #0 in
-          Skip;;
-          (for: (λ: <>, (![uint64T] "loopIdx") < "proofDepth"); (λ: <>, "loopIdx" <-[uint64T] ((![uint64T] "loopIdx") + #1)) := λ: <>,
-            let: "depth" := ("proofDepth" - #1) - (![uint64T] "loopIdx") in
-            let: "begin" := "depth" * hashesPerProofDepth in
-            let: "middle" := "begin" + ((to_u64 (SliceGet byteT "labelPref" "depth")) * cryptoffi.HashLen) in
-            let: "end" := ("depth" + #1) * hashesPerProofDepth in
-            "loopBuf" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "loopBuf") (SliceSubslice byteT "proof" "begin" "middle"));;
-            "loopBuf" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "loopBuf") (![slice.T byteT] "loopCurrHash"));;
-            "loopBuf" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "loopBuf") (SliceSubslice byteT "proof" "middle" "end"));;
-            "loopBuf" <-[slice.T byteT] (SliceAppend byteT (![slice.T byteT] "loopBuf") interiorNodeTag);;
-            "loopCurrHash" <-[slice.T byteT] (cryptoffi.Hash (![slice.T byteT] "loopBuf"));;
-            "loopBuf" <-[slice.T byteT] (SliceTake (![slice.T byteT] "loopBuf") #0);;
-            Continue);;
-          (if: ![boolT] "loopErr"
-          then #true
-          else
-            (if: (~ (std.BytesEqual (![slice.T byteT] "loopCurrHash") "dig"))
-            then #true
-            else #false))))).
+(* serde.go *)
+
+(* serde.out.go *)
+
+(* Auto-generated from spec "github.com/mit-pdos/pav/merkle/serde.go"
+   using compiler "github.com/mit-pdos/pav/serde". *)
+
+Definition MerkleProofEncode: val :=
+  rec: "MerkleProofEncode" "b0" "o" :=
+    let: "b" := ref_to (slice.T byteT) "b0" in
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MerkleProof "Siblings" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MerkleProof "LeafLabel" "o"));;
+    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MerkleProof "LeafVal" "o"));;
+    ![slice.T byteT] "b".
 
 End code.
