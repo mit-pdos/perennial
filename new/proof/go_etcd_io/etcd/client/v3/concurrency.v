@@ -92,7 +92,7 @@ Proof.
   iDestruct "Hl" as "#Hlease0".
   wp_apply wp_WithCancel as "* (Hctx & Hcancel & Hchan)".
 
-  wp_apply (wp_Client__KeepAlive with "[$]") as "* Hkch".
+  wp_apply (wp_Client__KeepAlive with "[$]") as "* #Hkch".
   rewrite bool_decide_decide. destruct decide.
   2:{ (* error *)
     wp_auto. wp_apply "Hcancel". iApply "HΦ".
@@ -110,6 +110,10 @@ Proof.
     admit.
   }
   wp_auto.
+  ltac2:(wp_bind_apply ()).
+  (* FIXME: goose should translate the capacity argument. *)
+  (* iApply (wp_chan_make (t:=structT []) (V:=())). *)
+
 Admitted.
 
 End proof.

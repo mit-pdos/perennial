@@ -804,8 +804,13 @@ Axiom wp_Client__KeepAlive :
       (kch : chan.t) (err : error.t),
         RET (#kch, #err);
         if decide (err = interface.nil) then
-          □(|={⊤,∅}=> ∃ (buf : list loc) ent cl, own_chan kch buf ent cl ∗
-                                                (own_chan kch buf ent cl ={∅,⊤}=∗ True))
+          is_chan kch ∗
+          (* Persistent ability to do receives, including when [kch] is closed;
+             could wrap this in a definition *)
+          □(|={⊤,∅}=> ∃ (s : chanstate.t ()),
+              own_chan kch s ∗
+              (own_chan kch (set chanstate.received S s) ∨ own_chan kch s ={∅,⊤}=∗ True)
+            )
         else True
   }}}.
 
