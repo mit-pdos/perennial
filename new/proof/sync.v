@@ -225,7 +225,7 @@ Proof.
 
   iDestruct (struct_fields_split with "Hc") as "Hl".
   iNamed "Hl".
-  iMod (typed_pointsto_persist with "HL") as "$".
+  iPersist "HL".
   iFrame "#". done.
 Qed.
 
