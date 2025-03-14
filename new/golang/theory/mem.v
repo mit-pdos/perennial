@@ -180,6 +180,17 @@ Section goose_lang.
     iApply (heap_pointsto_persist with "[$]").
   Qed.
 
+  #[global]
+  Instance typed_pointsto_update_persist l dq v :
+    UpdateIntoPersistently (l ↦{dq} v) (l ↦□ v).
+  Proof.
+    rewrite /UpdateIntoPersistently.
+    iIntros "H".
+    iMod (typed_pointsto_persist with "H") as "#H".
+    iFrame "H".
+    done.
+  Qed.
+
   Lemma typed_pointsto_not_null l dq v :
     go_type_size t > 0 →
     l ↦{dq} v -∗ ⌜ l ≠ null ⌝.
