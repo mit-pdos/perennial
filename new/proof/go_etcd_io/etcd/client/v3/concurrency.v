@@ -116,9 +116,7 @@ Proof.
   wp_alloc s as "Hs".
   wp_auto.
   wp_bind (Fork _).
-  iMod (typed_pointsto_persist with "cancel") as "#cancel".
-  iMod (typed_pointsto_persist with "donec") as "#donec".
-  iMod (typed_pointsto_persist with "keepAlive") as "#keepAlive".
+  iPersist "cancel donec keepAlive".
   iApply (wp_fork with "[Hdonec Hcancel]").
   {
     iNext.
@@ -165,8 +163,7 @@ Proof.
   iNext.
   iDestruct (struct_fields_split with "Hs") as "hs".
   simpl. iClear "Hctx". iNamed "hs".
-  iMod (typed_pointsto_persist with "Hclient") as "#?".
-  iMod (typed_pointsto_persist with "Hid") as "#?".
+  iPersist "Hclient Hid".
   wp_auto.
   iApply "HΦ".
   rewrite decide_True //.
