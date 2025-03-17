@@ -1,3 +1,4 @@
+From Perennial.base_logic.lib Require Import ghost_map.
 Require Import New.code.go_etcd_io.etcd.client.v3.leasing.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.leasing.
 Require Import New.generatedproof.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.
@@ -50,6 +51,84 @@ Program Instance : IsPkgInit leasing :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
+Context `{!syncG Σ}.
+
+(* TODO: move this somewhere else *)
+Context `{!ghost_mapG Σ nat ()}.
+Lemma trivial_WaitGroup_start_done wg_ptr γ N ctr :
+  is_WaitGroup wg_ptr γ N ∗ own_WaitGroup γ ctr ={⊤}=∗
+  [∗] (replicate (Z.to_nat (sint.Z ctr))
+         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP method_call #sync #"WaitGroup'ptr" #"Done" #wg_ptr #() {{ Φ }})).
+Proof.
+  iIntros "(#His & Hctr)".
+  destruct (decide (sint.Z ctr > 0)).
+  2:{ rewrite Z2Nat.nonpos // replicate_0 big_sepL_nil //. }
+  set (n:=Z.to_nat (sint.Z ctr)).
+  unshelve iMod (ghost_map_alloc (gset_to_gmap () (list_to_set $ seq 0 n))) as (γtoks) "[Hm Htoks]".
+  iDestruct (big_sepM_gset_to_gmap with "Htoks") as "Htoks".
+  iDestruct (big_sepS_list_to_set with "Htoks") as "Htoks".
+  { apply NoDup_seq. }
+  iMod (inv_alloc nroot _ (
+            ∃ ctr m,
+              "Hctr" ∷ own_WaitGroup γ ctr ∗
+              "Hm" ∷ ghost_map_auth γtoks 1 m ∗
+              "%Hm" ∷ ⌜ size (dom m) = Z.to_nat (sint.Z ctr) ⌝ ∗
+              "%Hctr" ∷ ⌜ sint.Z ctr < 2^32 ⌝
+          )%I with "[-Htoks]") as "#Hinv".
+  {
+    iFrame. iPureIntro.
+    rewrite dom_gset_to_gmap.
+    rewrite size_list_to_set.
+    2:{ apply NoDup_seq. }
+    rewrite length_seq. word.
+  }
+  iModIntro.
+  rewrite <- (seq_replicate_fmap 0).
+  rewrite big_sepL_fmap.
+  iApply (big_sepL_impl with "Htoks []").
+  iIntros "!# * % Hx * #Hinit HΦ".
+  clear ctr g n H2.
+  wp_apply (wp_WaitGroup__Done with "[$]").
+  iInv "Hinv" as ">Hi" "Hclose".
+  iNamed "Hi".
+  iCombine "Hm Hx" gives %Helem.
+  destruct (decide (sint.Z ctr > 0)).
+  2:{
+    exfalso.
+    rewrite Z2Nat.nonpos // size_dom in Hm.
+    apply map_size_empty_inv in Hm. subst. done.
+  }
+  iApply fupd_mask_intro.
+  { admit. } (* FIXME: find a disjoint namespaces. *)
+  iIntros "Hmask".
+  iFrame.
+  iSplitR.
+  { word. }
+  iSplitR.
+  { iLeft. iPureIntro. intros Hbad. subst. admit. (* FIXME: word. *) }.
+  iIntros "_ Hctr". iMod "Hmask" as "_".
+  iMod (ghost_map_delete with "[$] [$]") as "Hm".
+  iMod ("Hclose" with "[-]").
+  {
+    iFrame. iPureIntro.
+    split.
+    { rewrite dom_delete.
+      rewrite size_difference.
+      2:{ rewrite singleton_subseteq_l elem_of_dom //. }
+      rewrite size_singleton.
+      rewrite Hm.
+      (* FIXME: word. *)
+      rewrite -(Z2Nat.inj_sub _ 1) //.
+      f_equal.
+      rewrite word.signed_sub.
+      replace (sint.Z (W32 1)) with 1 by done.
+      unfold word.swrap. word.
+    }
+    { word. }
+  }
+  done.
+Admitted.
+
 Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
   {{{
       is_pkg_init leasing ∗
@@ -90,9 +169,35 @@ Proof.
   wp_auto.
   replace (word.add _ (W32 (uint.Z (W64 2)))) with (W32 2) by word. (* FIXME: word_simplify? *)
 
-  (* TODO: helper library for a correctness-irrelevant waitgroup. *)
-  (* TODO: wp_monitorSession. *)
-  (* TODO: wp_clearOldRevokes. *)
+  (* monitorSession is the only thread that modifies `lkv.session`. *)
+  iDestruct "Hsession" as "[session session_monitor]".
+  iPersist "lkv".
+  iMod (trivial_WaitGroup_start_done with "[$]") as "H".
+  replace (Z.to_nat (sint.Z (W32 2))) with (2%nat) by done.
+  iEval (simpl) in "H".
+  iDestruct "H" as "[Hwg_done1 Hwg_done2]".
+  wp_bind (Fork _).
+  iApply (wp_fork with "[Hwg_done1 session_monitor]").
+  {
+    iNext. wp_auto.
+    wp_apply wp_with_defer as "%defer defer".
+    simpl subst.
+    (* TODO: WaitGroup__Done currying. *)
+    (* TODO: wp_monitorSession. *)
+    admit.
+  }
+  iNext. wp_auto.
+  wp_bind (Fork _).
+  iApply (wp_fork with "[Hwg_done2]").
+  {
+    iNext. wp_auto.
+    (* TODO: wp_clearOldRevokes. *)
+    admit.
+  }
+  iNext.
+  wp_auto.
+  (* TODO: wp_waitSession. *)
+  admit.
 Admitted.
 
 End proof.
