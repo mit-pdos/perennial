@@ -61,7 +61,7 @@ Definition make_def (t : go_type) : val :=
          end) d
   | _ => LitV $ LitPoison
   end.
-Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
+Program Definition make := unseal (_:seal (@make_def)).
 Definition make_unseal : make = _ := seal_eq _.
 
 End goose_lang.

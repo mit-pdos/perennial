@@ -116,7 +116,7 @@ Definition for_chan_postcondition_def P Φ bv : iProp Σ :=
             (∃ (v : val), ⌜ bv = execute_val v ⌝ ∗ P) ∨
             ⌜ bv = break_val ⌝ ∗ Φ (execute_val #()) ∨
             (∃ (v : val), ⌜ bv = return_val v ⌝ ∗ Φ bv).
-Program Definition for_chan_postcondition := unseal (_:seal (@for_chan_postcondition_def)). Obligation 1. by eexists. Qed.
+Program Definition for_chan_postcondition := unseal (_:seal (@for_chan_postcondition_def)).
 Definition for_chan_postcondition_unseal : for_chan_postcondition = _ := seal_eq _.
 
 Lemma wp_for_chan_range P ch (body : func.t) :

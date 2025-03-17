@@ -31,7 +31,7 @@ Section goose_lang.
                      end) d
     | _ => LitV LitPoison
     end.
-  Program Definition val_aux := unseal (_:seal (@val_aux_def)). Obligation 1. by eexists. Qed.
+  Program Definition val_aux := unseal (_:seal (@val_aux_def)).
   Definition val_aux_unseal : val_aux = _ := seal_eq _.
 End goose_lang.
 End struct.

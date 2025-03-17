@@ -5,19 +5,19 @@ Section goose_lang.
 Context {ext: ffi_syntax}.
 
 Definition break_val_def : val := (#"break", #()).
-Program Definition break_val := unseal (_:seal (@break_val_def)). Obligation 1. by eexists. Qed.
+Program Definition break_val := unseal (_:seal (@break_val_def)).
 Definition break_val_unseal : break_val = _ := seal_eq _.
 
 Definition continue_val_def : val := (#"continue", #()).
-Program Definition continue_val := unseal (_:seal (@continue_val_def)). Obligation 1. by eexists. Qed.
+Program Definition continue_val := unseal (_:seal (@continue_val_def)).
 Definition continue_val_unseal : continue_val = _ := seal_eq _.
 
 Definition do_break_def : val := λ: "v", (#"break", Var "v").
-Program Definition do_break := unseal (_:seal (@do_break_def)). Obligation 1. by eexists. Qed.
+Program Definition do_break := unseal (_:seal (@do_break_def)).
 Definition do_break_unseal : do_break = _ := seal_eq _.
 
 Definition do_continue_def : val := λ: "v", (#"continue", Var "v").
-Program Definition do_continue := unseal (_:seal (@do_continue_def)). Obligation 1. by eexists. Qed.
+Program Definition do_continue := unseal (_:seal (@do_continue_def)).
 Definition do_continue_unseal : do_continue = _ := seal_eq _.
 
 Local Definition do_for_def : val :=
@@ -32,7 +32,7 @@ Local Definition do_for_def : val :=
      return: Var "b"
   ).
 
-Program Definition do_for := unseal (_:seal (@do_for_def)). Obligation 1. by eexists. Qed.
+Program Definition do_for := unseal (_:seal (@do_for_def)).
 Definition do_for_unseal : do_for = _ := seal_eq _.
 
 Definition do_loop_def: val :=
@@ -45,7 +45,7 @@ Definition do_loop_def: val :=
      return: Var "b"
   )) #().
 
-Program Definition do_loop := unseal (_:seal (@do_loop_def)). Obligation 1. by eexists. Qed.
+Program Definition do_loop := unseal (_:seal (@do_loop_def)).
 Definition do_loop_unseal : do_loop = _ := seal_eq _.
 
 End goose_lang.

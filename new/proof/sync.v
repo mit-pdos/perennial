@@ -32,12 +32,10 @@ Context `{!goGlobalsGS Σ}.
 #[global]
 Program Instance race_pkg_is_init : IsPkgInit race :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 #[global]
 Program Instance pkg_is_init : IsPkgInit sync :=
   ltac2:(build_pkg_init ()).
-Final Obligation. apply _. Qed.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
