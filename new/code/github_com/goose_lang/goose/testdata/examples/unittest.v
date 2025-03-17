@@ -96,7 +96,7 @@ Definition arrayLiteralKeyed : val :=
 Definition chanBasic : val :=
   rec: "chanBasic" <> :=
     exception_do (let: "x" := (ref_ty (chanT stringT) (zero_val (chanT stringT))) in
-    let: "$r0" := (chan.make stringT #()) in
+    let: "$r0" := (chan.make stringT #(W64 0)) in
     do:  ("x" <-[chanT stringT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$chan" := (![chanT stringT] "x") in

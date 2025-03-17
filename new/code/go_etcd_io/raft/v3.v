@@ -1941,20 +1941,20 @@ Definition RestartNode : val :=
 Definition newNode : val :=
   rec: "newNode" "rn" :=
     exception_do (let: "rn" := (ref_ty ptrT "rn") in
-    return: (let: "$propc" := (chan.make msgWithResult #()) in
-     let: "$recvc" := (chan.make raftpb.Message #()) in
-     let: "$confc" := (chan.make raftpb.ConfChangeV2 #()) in
-     let: "$confstatec" := (chan.make raftpb.ConfState #()) in
-     let: "$readyc" := (chan.make Ready #()) in
+    return: (let: "$propc" := (chan.make msgWithResult #(W64 0)) in
+     let: "$recvc" := (chan.make raftpb.Message #(W64 0)) in
+     let: "$confc" := (chan.make raftpb.ConfChangeV2 #(W64 0)) in
+     let: "$confstatec" := (chan.make raftpb.ConfState #(W64 0)) in
+     let: "$readyc" := (chan.make Ready #(W64 0)) in
      let: "$advancec" := (chan.make (structT [
-     ]) #()) in
+     ]) #(W64 0)) in
      let: "$tickc" := (chan.make (structT [
-     ]) #()) in
+     ]) #(W64 128)) in
      let: "$done" := (chan.make (structT [
-     ]) #()) in
+     ]) #(W64 0)) in
      let: "$stop" := (chan.make (structT [
-     ]) #()) in
-     let: "$status" := (chan.make (chanT Status) #()) in
+     ]) #(W64 0)) in
+     let: "$status" := (chan.make (chanT Status) #(W64 0)) in
      let: "$rn" := (![ptrT] "rn") in
      struct.make node [{
        "propc" ::= "$propc";
@@ -2413,7 +2413,7 @@ Definition node__stepWithWaitOption : val :=
     do:  ("pm" <-[msgWithResult] "$r0");;;
     (if: ![boolT] "wait"
     then
-      let: "$r0" := (chan.make error #()) in
+      let: "$r0" := (chan.make error #(W64 1)) in
       do:  ((struct.field_ref msgWithResult "result" "pm") <-[chanT error] "$r0")
     else do:  #());;;
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
@@ -2480,7 +2480,7 @@ Definition node__Status : val :=
   rec: "node__Status" "n" <> :=
     exception_do (let: "n" := (ref_ty ptrT "n") in
     let: "c" := (ref_ty (chanT Status) (zero_val (chanT Status))) in
-    let: "$r0" := (chan.make Status #()) in
+    let: "$r0" := (chan.make Status #(W64 0)) in
     do:  ("c" <-[chanT Status] "$r0");;;
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
         return: (Fst (chan.receive (![chanT Status] "c")))

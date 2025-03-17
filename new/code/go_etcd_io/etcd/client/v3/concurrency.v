@@ -336,7 +336,7 @@ Definition Election__Observe : val :=
     exception_do (let: "e" := (ref_ty ptrT "e") in
     let: "ctx" := (ref_ty context.Context "ctx") in
     let: "retc" := (ref_ty (chanT clientv3.GetResponse) (zero_val (chanT clientv3.GetResponse))) in
-    let: "$r0" := (chan.make clientv3.GetResponse #()) in
+    let: "$r0" := (chan.make clientv3.GetResponse #(W64 0)) in
     do:  ("retc" <-[chanT clientv3.GetResponse] "$r0");;;
     let: "$a0" := (![context.Context] "ctx") in
     let: "$a1" := (![chanT clientv3.GetResponse] "retc") in
@@ -1029,7 +1029,7 @@ Definition NewSession : val :=
     ])) (zero_val (chanT (structT [
     ])))) in
     let: "$r0" := (chan.make (structT [
-    ]) #()) in
+    ]) #(W64 0)) in
     do:  ("donec" <-[chanT (structT [
     ])] "$r0");;;
     let: "s" := (ref_ty ptrT (zero_val ptrT)) in
@@ -1447,7 +1447,7 @@ Definition runSTM : val :=
     exception_do (let: "apply" := (ref_ty funcT "apply") in
     let: "s" := (ref_ty STM "s") in
     let: "outc" := (ref_ty (chanT stmResponse) (zero_val (chanT stmResponse))) in
-    let: "$r0" := (chan.make stmResponse #()) in
+    let: "$r0" := (chan.make stmResponse #(W64 1)) in
     do:  ("outc" <-[chanT stmResponse] "$r0");;;
     let: "$go" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
