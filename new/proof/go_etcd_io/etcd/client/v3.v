@@ -740,6 +740,13 @@ Global Existing Instance is_etcd_lease_pers.
 
 Axiom is_Client : ∀ (cl : loc) γ, iProp Σ.
 
+Definition is_Client_pub (cl : loc) γ : iProp Σ :=
+  ∃ (kv : interface.t),
+  "KV" ∷ cl ↦s[clientv3.Client :: "KV"]□ kv
+.
+
+Axiom is_Client_to_pub : ∀ (cl : loc) γ, is_Client cl γ -∗ is_Client_pub cl γ.
+
 Axiom is_Client_pers : ∀ client γ, Persistent (is_Client client γ).
 Global Existing Instance is_Client_pers.
 
