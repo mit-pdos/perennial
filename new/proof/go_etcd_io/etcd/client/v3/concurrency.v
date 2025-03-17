@@ -173,4 +173,12 @@ Proof.
   iFrame "#".
 Qed.
 
+Lemma wp_Session__Lease s γ lease :
+  {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
+    method_call #concurrency #"Session'ptr" #"Lease" #s #()
+  {{{ RET #lease; True }}}.
+Proof.
+  wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
+Qed.
+
 End proof.
