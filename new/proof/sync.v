@@ -427,16 +427,18 @@ Definition own_WaitGroup_waiters γ (possible_waiters : w32) : iProp Σ :=
   (W32 0) ↪[γ.(waiter_gn)]□ () ∗
   ⌜ size m = S (uint.nat possible_waiters) ⌝.
 
+(* FIXME: opaque *)
 Definition own_WaitGroup_wait_token γ : iProp Σ :=
   ∃ k,
     k ↪[γ.(waiter_gn)] () ∗
     (W32 0) ↪[γ.(waiter_gn)]□ ().
 
-Definition own_zerostate_auth_half γ (unfinished_waiters : w32): iProp Σ :=
+Local Definition own_zerostate_auth_half γ (unfinished_waiters : w32): iProp Σ :=
   ∃ (m : gset w32),
   ghost_map_auth γ.(zerostate_gn) (1/2) (gset_to_gmap () m) ∗
   ⌜ size m = uint.nat unfinished_waiters ⌝.
 
+(* FIXME: opaque *)
 Definition own_zerostate_token γ : iProp Σ :=
   ∃ k, k ↪[γ.(zerostate_gn)] ().
 
@@ -463,7 +465,8 @@ Local Definition is_WaitGroup_sema_inv γ N : iProp Σ :=
         "HS" ∷ own_zerostate_auth_half γ unfinished_waiters
     ).
 
-Local Definition is_WaitGroup wg γ N : iProp Σ :=
+(* FIXME: opaque *)
+Definition is_WaitGroup wg γ N : iProp Σ :=
   "#Hsem" ∷ is_sema (struct.field_ref_f sync.WaitGroup "sema" wg) γ.(sema_gn) (N.@"sema") ∗
   "#Hinv" ∷ is_WaitGroup_inv wg γ N ∗
   "#HsemInv" ∷ is_WaitGroup_sema_inv γ N.
@@ -721,6 +724,42 @@ Qed.
 
 Definition own_WaitGroup γ (counter : w32) : iProp Σ :=
   ghost_var γ.(counter_gn) (1/2)%Qp counter.
+
+Lemma start_WaitGroup N wg_ptr :
+  wg_ptr ↦ (default_val sync.WaitGroup.t) ={⊤}=∗
+  ∃ γ,
+  is_WaitGroup wg_ptr γ N ∗ own_WaitGroup γ (W32 0) ∗ own_WaitGroup_waiters γ (W32 0).
+Proof.
+  iIntros "H".
+  iDestruct (struct_fields_split with "H") as "H".
+  iNamed "H". simpl.
+
+  iMod (ghost_var_alloc (W32 0)) as "[%counter_gn [Hctr1 Hctr2]]".
+  iMod (ghost_var_alloc (W32 0)) as "[%sema_gn [Hs1 Hs2]]".
+  iMod (ghost_map_alloc (gset_to_gmap () {[ W32 0 ]})) as "[%waiter_gn [Hwaiters Hw]]".
+  iMod (ghost_map_alloc (gset_to_gmap () ∅)) as "[%zerostate_gn [[Hzerostate Hzerostate2] _]]".
+
+  iExists {| sema_gn := sema_gn; counter_gn := counter_gn; zerostate_gn := zerostate_gn; waiter_gn := waiter_gn |}.
+  iEval (rewrite gset_to_gmap_singleton big_sepM_singleton) in "Hw".
+  iMod (ghost_map_elem_persist with "Hw") as "#?".
+  iFrame "∗#". rewrite size_singleton. iSplitL; last done.
+  unfold is_WaitGroup.
+  iMod (inv_alloc with "[Hsema Hs2]") as "$".
+  { iFrame. }
+  iDestruct "Hstate" as "[Hstate Hstate2]".
+  iMod (inv_alloc with "[Hstate Hstate2 HnoCopy Hctr1 Hzerostate]") as "$".
+  {
+    iNext. repeat iExists (W32 0).
+    iFrame. iSplitR; first done.
+    rewrite !replicate_0.
+    by rewrite big_sepL_nil.
+  }
+  iMod (inv_alloc with "[-]") as "$".
+  {
+    iFrame. iExists (W32 0). rewrite replicate_0 big_sepL_nil //.
+  }
+  done.
+Qed.
 
 Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
   delta' = (W32 (uint.Z delta)) →
