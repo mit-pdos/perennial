@@ -68,7 +68,7 @@ Proof.
   wp_alloc l as "l".
   iDestruct (struct_fields_split with "l") as "l".
   iNamed "l".
-  iMod (typed_pointsto_persist with "Hkv") as "#Hkv".
+  iPersist "Hkv".
   wp_auto. iApply "HΦ". iFrame "∗#%".
 Qed.
 

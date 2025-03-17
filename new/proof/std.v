@@ -104,8 +104,7 @@ Proof.
   wp_apply (wp_NewCond with "[#]") as "%cond #His_cond".
   wp_alloc jh_l as "jh".
   iApply struct_fields_split in "jh". simpl. iNamed "jh".
-  iMod (typed_pointsto_persist with "Hmu") as "Hmu".
-  iMod (typed_pointsto_persist with "Hcond") as "Hcond".
+  iPersist "Hmu Hcond".
   iMod (init_Mutex (∃ (done_b: bool),
          "done_b" ∷ jh_l ↦s[std.JoinHandle :: "done"] done_b ∗
          "HP" ∷ if done_b then P else True)
@@ -117,7 +116,7 @@ Proof.
   wp_auto.
   iApply "HΦ".
   rewrite /is_JoinHandle.
-  iFrame "His_cond". iFrame.
+  iFrame "His_cond #". iFrame.
 Qed.
 
 Lemma wp_JoinHandle__finish l (P: iProp Σ) :
@@ -147,8 +146,7 @@ Proof.
   wp_start as "Hwp".
   wp_auto.
   wp_apply (wp_newJoinHandle P) as "%l #Hhandle".
-  iMod (typed_pointsto_persist with "[$]") as "#?".
-  iMod (typed_pointsto_persist with "[$]") as "#?".
+  iPersist "f h".
   wp_bind (Fork _).
   iApply (wp_fork with "[Hwp]").
   - iModIntro. wp_auto.
