@@ -641,7 +641,7 @@ Proof.
   wp_rec. wp_pures.
   wp_load.
   iDestruct (own_slice_small_sz with "Hs") as %Hsz.
-  iMod (own_slice_small_persist with "Hs") as "#Hs".
+  iPersist "Hs".
   wp_pures.
   wp_apply (wp_SliceSubslice_small with "Hs"); first by word.
   iIntros (s') "Hbs".

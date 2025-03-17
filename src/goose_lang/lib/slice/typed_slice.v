@@ -186,6 +186,16 @@ Proof.
   iFrame.
 Qed.
 
+#[global]
+Instance own_slice_small_persistently s t dq vs :
+  UpdateIntoPersistently (own_slice_small s t dq vs) (own_slice_small s t DfracDiscarded vs).
+Proof.
+  rewrite /UpdateIntoPersistently.
+  iIntros "H".
+  iMod (own_slice_small_persist with "H") as "#H".
+  done.
+Qed.
+
 Lemma wp_NewSlice stk E t `{!IntoValForType V t} (sz: u64) :
   {{{ True }}}
     NewSlice t #sz @ stk; E

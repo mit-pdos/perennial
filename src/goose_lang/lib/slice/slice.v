@@ -189,6 +189,16 @@ Proof.
   iFrame. done.
 Qed.
 
+#[global]
+Instance own_slice_small_persistently s t dq vs :
+  UpdateIntoPersistently (own_slice_small s t dq vs) (own_slice_small s t DfracDiscarded vs).
+Proof.
+  rewrite /UpdateIntoPersistently.
+  iIntros "H".
+  iMod (own_slice_small_persist with "H") as "#H".
+  done.
+Qed.
+
 Global Instance own_slice_small_timeless s t q vs :
   Timeless (own_slice_small s t q vs) := _.
 
