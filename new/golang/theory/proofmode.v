@@ -1,5 +1,5 @@
 From Perennial.program_logic Require Export weakestpre.
-From Perennial.goose_lang Require Export lang lifting.
+From Perennial.goose_lang Require Export lang lifting ipersist.
 From Perennial.Helpers Require Export ipm.
 From iris.proofmode Require Import coq_tactics.
 From New.golang.theory Require Export typing.

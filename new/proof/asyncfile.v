@@ -650,8 +650,8 @@ Proof.
   iNamed "Hl".
   wp_auto.
 
-  iMod (typed_pointsto_persist with "Hmu") as "#Hmu".
-  iMod (typed_pointsto_persist with "Hfilename") as "#Hfilename".
+  iPersist "Hmu".
+  iPersist "Hfilename".
   iMod (own_slice_persist with "Hdata_new") as "#Hdata_new".
   iMod (alloc_ghost N P data fname) as (γ) "H".
   iNamed "H".
