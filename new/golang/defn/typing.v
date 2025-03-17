@@ -101,6 +101,11 @@ Record t := mk { ptr_f: loc; len_f: u64; cap_f: u64; }.
 Definition nil : slice.t := mk null 0 0.
 End slice.
 
+Module chan.
+  Definition t := loc.
+  Definition nil : chan.t := null.
+End chan.
+
 Module interface.
 Section goose_lang.
   Context `{ffi_syntax}.

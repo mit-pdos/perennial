@@ -45,8 +45,12 @@ Program Instance : IsPkgInit concurrency :=
   ltac2:(build_pkg_init ()).
 Final Obligation. Proof. apply _. Qed.
 
-Definition is_Session (s : loc) : iProp Σ :=
-  True.
+Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
+  ∃ cl,
+  "#client" ∷ s ↦s[concurrency.Session :: "client"]□ cl ∗
+  "#id" ∷ s ↦s[concurrency.Session :: "id"]□ lease ∗
+  "#Hclient" ∷ is_Client cl γ ∗
+  "#Hlease" ∷ is_etcd_lease γ lease.
 
 Lemma wp_NewSession (client : loc) γetcd :
   {{{
@@ -56,7 +60,7 @@ Lemma wp_NewSession (client : loc) γetcd :
     func_call #concurrency #"NewSession" #client #slice.nil
   {{{ s err, RET (#s, #err);
       if decide (err = interface.nil) then
-        is_Session s
+        ∃ lease, is_Session s γetcd lease
       else
         True
   }}}.
@@ -98,16 +102,14 @@ Proof.
     wp_auto. wp_apply "Hcancel". iApply "HΦ".
     rewrite decide_False //.
   }
+  iDestruct "Hkch" as "#[Hkch #Hkrecv]".
   wp_auto.
   rewrite bool_decide_decide. destruct decide.
   {
-    wp_auto. wp_apply "Hcancel". iApply "HΦ".
-    rewrite decide_False //.
-    (* FIXME: in this case, the code can return nil error and also a nil
-       `*Session`; can this actually happen? There are cases higher level in
-       etcd assuming that (err = nil → session ≠ nil).
-       So is the `keepAlive == nil` Check redundant? *)
-    admit.
+    (* NOTE: if `clientv3.lessor.KeepAlive` returns `nil` for its error, it is guaranteed to
+       return a non-nil chan, so this case is impossible. *)
+    iDestruct (is_chan_not_nil with "Hkch") as %hbad.
+    done.
   }
   wp_auto.
   unshelve wp_apply wp_chan_make as "* Hdonec"; try tc_solve.
@@ -124,9 +126,7 @@ Proof.
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
-    iDestruct "Hkch" as "#[Hkch #Hkrecv]".
     wp_for_chan.
-    { iFrame "#". }
     iAssert _ with "Hkrecv" as "Hkrecv1".
     iMod "Hkrecv1" as "(% & ? & Hkrecv1)".
     iFrame. iModIntro. iNext.
@@ -137,7 +137,7 @@ Proof.
       iModIntro.
       wp_auto.
       iDestruct (own_chan_is_chan with "Hdonec") as "#?".
-      wp_apply (wp_chan_close with "[$] [Hdonec Hcancel]").
+      unshelve wp_apply (wp_chan_close with "[$] [Hdonec Hcancel]"); try tc_solve.
       iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
       iNext. iFrame.
       iSplitR; first done.
@@ -163,12 +163,14 @@ Proof.
     }
   }
   iNext.
+  iDestruct (struct_fields_split with "Hs") as "hs".
+  simpl. iClear "Hctx". iNamed "hs".
+  iMod (typed_pointsto_persist with "Hclient") as "#?".
+  iMod (typed_pointsto_persist with "Hid") as "#?".
   wp_auto.
   iApply "HΦ".
   rewrite decide_True //.
-  (* FIXME: avoid putting shelving these things.*)
-  Unshelve.
-  all: try tc_solve.
-Admitted.
+  iFrame "#".
+Qed.
 
 End proof.

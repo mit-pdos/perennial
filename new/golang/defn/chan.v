@@ -8,7 +8,6 @@ Axiom make : go_type → val.
 Axiom receive : val.
 Axiom send : val.
 Axiom select : val.
-Axiom nil : val.
 Axiom close : val.
 Axiom len : val.
 Axiom cap : val.

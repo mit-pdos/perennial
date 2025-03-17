@@ -2,10 +2,6 @@ From New.golang.defn Require Export chan.
 From iris.base_logic Require Export lib.ghost_var.
 From New.golang.theory Require Export exception list mem loop typing struct proofmode.
 
-Module chan.
-  Definition t := loc.
-End chan.
-
 Module chanstate.
 Record t (V : Type) :=
   mk {
@@ -26,14 +22,17 @@ End chanstate.
 
 Section chan.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: should this take an explicit V? *)
-Definition is_chan :  ∀ (c : chan.t), iProp Σ.
+Context `{!IntoVal V}.
+
+Definition is_chan (ch : chan.t) : iProp Σ.
 Admitted.
-Axiom is_chan_pers : ∀ c, Persistent (is_chan c).
-Global Existing Instance is_chan_pers.
-Definition own_chan : ∀ `{!IntoVal V} (c : chan.t) (s : chanstate.t V), iProp Σ.
+Global Instance is_chan_pers ch : Persistent (is_chan ch).
+Admitted.
+Definition own_chan (ch: chan.t) (s : chanstate.t V) : iProp Σ.
 Admitted.
 End chan.
+
+Arguments is_chan {_ _ _ _ _ _} (_) {_} ch.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -43,7 +42,12 @@ Implicit Types v : V.
 Implicit Types (s : chanstate.t V).
 
 Lemma own_chan_is_chan ch s :
-  own_chan ch s -∗ is_chan ch.
+  own_chan ch s -∗ is_chan V ch.
+Proof.
+Admitted.
+
+Lemma is_chan_not_nil ch :
+  is_chan V ch -∗ ⌜ ch ≠ chan.nil ⌝.
 Proof.
 Admitted.
 
@@ -71,7 +75,7 @@ Definition receive_atomic_update ch Φ : iProp Σ :=
 
 Lemma wp_chan_receive ch :
   ∀ Φ,
-  is_chan ch -∗
+  is_chan V ch -∗
   ▷ receive_atomic_update ch Φ -∗
   WP chan.receive #ch {{ Φ }}.
 Proof.
@@ -91,7 +95,7 @@ Definition send_atomic_update ch (v : V) Φ : iProp Σ :=
 
 Lemma wp_chan_send ch (v : V) :
   ∀ Φ,
-  is_chan ch -∗
+  is_chan V ch -∗
   ▷ send_atomic_update ch v Φ -∗
   WP chan.send #ch #v {{ Φ }}.
 Proof.
@@ -99,7 +103,7 @@ Admitted.
 
 Lemma wp_chan_close ch :
   ∀ Φ,
-  is_chan ch -∗
+  is_chan V ch -∗
   ▷ (|={⊤,∅}=> ▷ ∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
                  (own_chan ch (s <|chanstate.closed := true |>) ={∅,⊤}=∗ Φ #())
   ) -∗
@@ -118,7 +122,7 @@ Definition for_chan_postcondition_unseal : for_chan_postcondition = _ := seal_eq
 Lemma wp_for_chan_range P ch (body : func.t) :
   ∀ Φ,
   P -∗
-  is_chan ch -∗
+  is_chan V ch -∗
   □(P -∗
     |={⊤,∅}=>
       ▷∃ s, own_chan ch s ∗
@@ -174,13 +178,14 @@ Qed.
 End proof.
 
 (** Tactic for convenient chan loop reasoning. First use [iAssert] to generalize the
-current context to the loop invariant, then apply this tactic. Use
-[wp_for_chan_post] for the leaves of the proof. *)
+    current context to the loop invariant, then apply this tactic. Use
+    [wp_for_chan_post] for the leaves of the proof. *)
 Ltac wp_for_chan_core :=
-  wp_bind (chan.for_range _ _); iApply (wp_for_chan_range with "[-]");
+  wp_bind (chan.for_range _ _); (iApply (wp_for_chan_range (IntoValTyped0:=?[ivt]) with "[-]"));
   [ by iNamedAccu
-  |
-  | iIntros "!# __CTX"; iNamed "__CTX" ].
+  | (by iFrame "#" || fail "wp_for_chan_core: could not solve [is_chan] by [iFrame ""#""]. ")
+  | iIntros "!# __CTX"; iNamed "__CTX" ]; instantiate(ivt:=ltac:(tc_solve)).
+
 
 (** Automatically apply the right theorem for [for_chan_postcondition] *)
 Ltac wp_for_chan_post_core :=
@@ -200,7 +205,6 @@ Ltac wp_for_chan_post_core :=
 Section select_proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
-(* TODO: require [is_chan] for everything. *)
 (* TODO: combine the chans+(vals)+handlers into one list? *)
 Lemma wp_chan_select_blocking (send_chans recv_chans : list chan.t)
   (send_vals : list val) (send_handlers recv_handlers : list func.t) :
@@ -210,11 +214,13 @@ Lemma wp_chan_select_blocking (send_chans recv_chans : list chan.t)
       send_handlers !! idx = Some send_handler ⌝ →
       ∃ V (v : V) `(!IntoVal V),
         ⌜ send_val = #v ⌝ ∗
+        is_chan V send_chan ∗
         send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }})
    ) ∧
    (∀ idx recv_chan recv_handler,
       ⌜ recv_chans !! idx = Some recv_chan ∧ recv_handlers !! idx = Some recv_handler ⌝ →
       ∃ V t `(!IntoVal V) `(!IntoValTyped V t),
+        is_chan V recv_chan ∗
         receive_atomic_update (V:=V) recv_chan (λ v, WP #recv_handler v {{ Φ }})
   )) -∗
   WP chan.select (* #send_vals *) #send_chans #recv_chans (InjLV #()) {{ Φ }}.
@@ -242,7 +248,7 @@ Definition own_send_tok γ := ghost_var γ.(send_gn) 1 ().
 Definition own_recv_tok γ := ghost_var γ.(recv_gn) 1 ().
 
 Definition is_onetime_barrier γ (ch : chan.t) Sd Rv : iProp Σ :=
-  is_chan ch ∗
+  is_chan () ch ∗
   inv nroot (
       ∃ s,
         "Hch" ∷ own_chan ch s ∗
@@ -264,7 +270,7 @@ Lemma start_onetime_barrier Sd Rv ch s:
   s.(chanstate.cap) = (W64 0) →
   s.(chanstate.closed) = false →
   s.(chanstate.received) = length s.(chanstate.sent) →
-  is_chan ch -∗
+  is_chan () ch -∗
   own_chan ch s ={⊤}=∗
   ∃ γ, is_onetime_barrier γ ch Sd Rv ∗
        own_recv_tok γ ∗

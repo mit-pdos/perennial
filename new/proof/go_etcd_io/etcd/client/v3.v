@@ -733,10 +733,10 @@ Notation "k etcd[ γ ]↦ dq kv" := (own_etcd_pointsto γ dq k kv)
 #[global]
 Instance bot : Bottom (option KeyValue.t) := None.
 
-Axiom is_etcd_lease_lb : ∀ γ (l : clientv3.LeaseID.t) (expiration : w64), iProp Σ.
+Axiom is_etcd_lease : ∀ γ (l : clientv3.LeaseID.t), iProp Σ.
 
-Axiom is_etcd_lease_lb_pers : ∀ γ l expiration, Persistent (is_etcd_lease_lb γ l expiration).
-Global Existing Instance is_etcd_lease_lb_pers.
+Axiom is_etcd_lease_pers : ∀ γ l, Persistent (is_etcd_lease γ l).
+Global Existing Instance is_etcd_lease_pers.
 
 Axiom is_Client : ∀ (cl : loc) γ, iProp Σ.
 
@@ -787,24 +787,24 @@ Axiom wp_Client__Grant :
   {{{ is_Client client γ }}}
     method_call #clientv3 #"Client'ptr" #"Grant" #client #ctx #ttl
   {{{
-      expiration resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
+      resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
         RET (#resp_ptr, #err);
         resp_ptr ↦ resp ∗
         if decide (err = interface.nil) then
-          is_etcd_lease_lb γ resp.(clientv3.LeaseGrantResponse.ID') expiration
+          is_etcd_lease γ resp.(clientv3.LeaseGrantResponse.ID')
         else True
   }}}.
 
 Axiom wp_Client__KeepAlive :
-  ∀ client γ (ctx : context.Context.t) id old_exp,
+  ∀ client γ (ctx : context.Context.t) id,
   (* The precondition requires that this is only called on a `Grant`ed lease. *)
-  {{{ is_Client client γ ∗ is_etcd_lease_lb γ id old_exp }}}
+  {{{ is_Client client γ ∗ is_etcd_lease γ id }}}
     method_call #clientv3 #"Client'ptr" #"KeepAlive" #client #ctx #id
   {{{
       (kch : chan.t) (err : error.t),
         RET (#kch, #err);
         if decide (err = interface.nil) then
-          is_chan kch ∗
+          is_chan () kch ∗
           (* Persistent ability to do receives, including when [kch] is closed;
              could wrap this in a definition *)
           □(|={⊤,∅}=> ∃ (s : chanstate.t ()),
