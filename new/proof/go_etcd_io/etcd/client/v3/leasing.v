@@ -67,17 +67,32 @@ Proof.
   wp_apply (wp_WithCancel with "[$]").
   iIntros "* #(Hctx' & Hcancel_spec & Hctx_done)".
   wp_auto.
-  wp_apply wp_map_make as "%revokes Hrevokes".
+  unshelve wp_apply wp_map_make as "%revokes Hrevokes"; try tc_solve.
   { done. }
-  wp_apply wp_chan_make as "* ?".
+  unshelve wp_apply wp_chan_make as "* ?"; try tc_solve.
   wp_alloc lkv as "Hlkv".
   wp_auto.
   iDestruct (struct_fields_split with "Hlkv") as "Hl".
   iEval (simpl) in "Hl".
   iRename "Hcl" into "#Hcl_in".
   iNamed "Hl".
-  wp_apply wp_WaitGroup__Add.
-  (* FIXME: go from zero value for [WaitGroup] to `is_WaitGroup`. *)
+  iMod (start_WaitGroup with "[$]") as (γwg) "(#Hwg_is & Hwg_ctr & Hwg_wait)".
+  wp_apply (wp_WaitGroup__Add with "[]").
+  { iFrame "#". }
+  instantiate (1:=nroot).
+  iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+  iFrame.
+  iSplitR.
+  { iPureIntro. admit. (* FIXME: word. *) }
+  iIntros "[%Hbad|Hwg_wait] Hwg_ctr".
+  { by exfalso. }
+  iMod "Hmask" as "_". iModIntro.
+  wp_auto.
+  replace (word.add _ (W32 (uint.Z (W64 2)))) with (W32 2) by word. (* FIXME: word_simplify? *)
+
+  (* TODO: helper library for a correctness-irrelevant waitgroup. *)
+  (* TODO: wp_monitorSession. *)
+  (* TODO: wp_clearOldRevokes. *)
 Admitted.
 
 End proof.
