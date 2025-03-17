@@ -1,6 +1,6 @@
 From New.golang.defn Require Export chan.
 From iris.base_logic Require Export lib.ghost_var.
-From New.golang.theory Require Export list mem loop typing struct proofmode.
+From New.golang.theory Require Export exception list mem loop typing struct proofmode.
 
 Module chan.
   Definition t := loc.
@@ -100,7 +100,95 @@ Lemma wp_chan_close ch :
 Proof.
 Admitted.
 
+Definition for_chan_postcondition_def P Φ bv : iProp Σ :=
+            ⌜ bv = continue_val ⌝ ∗ P ∨
+            (∃ (v : val), ⌜ bv = execute_val v ⌝ ∗ P) ∨
+            ⌜ bv = break_val ⌝ ∗ Φ (execute_val #()) ∨
+            (∃ (v : val), ⌜ bv = return_val v ⌝ ∗ Φ bv).
+Program Definition for_chan_postcondition := unseal (_:seal (@for_chan_postcondition_def)). Obligation 1. by eexists. Qed.
+Definition for_chan_postcondition_unseal : for_chan_postcondition = _ := seal_eq _.
+
+Lemma wp_for_chan_range P ch (body : func.t) :
+  ∀ Φ,
+  P -∗
+  is_chan ch -∗
+  □(P -∗
+    |={⊤,∅}=>
+      ▷∃ s, own_chan ch s ∗
+            if decide (s.(chanstate.closed) = true ∧ s.(chanstate.received) = length s.(chanstate.sent)) then
+              (* the channel is closed and empty, so the loop exits *)
+              (own_chan ch s ={∅,⊤}=∗ (Φ (execute_val #())))
+            else
+              (* notify the sender that this thread is receiving *)
+              (own_chan ch (set chanstate.received S s) ={∅,⊤}=∗
+               (* receive the value from the sender *)
+               (|={⊤,∅}=>
+                  ▷∃ (s' : chanstate.t V),
+                      own_chan ch s' ∗
+                      (∀ v, ⌜ s'.(chanstate.sent) !! s.(chanstate.received) = Some v ⌝ -∗
+                            own_chan ch s' ={∅,⊤}=∗ WP #body #v {{ for_chan_postcondition P Φ }})))
+    ) -∗
+  WP chan.for_range #ch #body {{ Φ }}.
+Proof.
+Admitted.
+
+Lemma wp_for_chan_post_do (v : val) P Φ :
+  P -∗
+  for_chan_postcondition P Φ (execute_val v).
+Proof.
+  iIntros "H". rewrite for_chan_postcondition_unseal /for_chan_postcondition_def.
+  eauto 10 with iFrame.
+Qed.
+
+Lemma wp_for_chan_post_continue P Φ :
+  P -∗
+  for_chan_postcondition P Φ continue_val.
+Proof.
+  iIntros "H". rewrite for_chan_postcondition_unseal /for_chan_postcondition_def.
+  eauto 10 with iFrame.
+Qed.
+
+Lemma wp_for_chan_post_break P Φ :
+  Φ (execute_val #()) -∗
+  for_chan_postcondition P Φ break_val.
+Proof.
+  iIntros "H". rewrite for_chan_postcondition_unseal /for_chan_postcondition_def.
+  eauto 10 with iFrame.
+Qed.
+
+Lemma wp_for_chan_post_return P Φ (v : val) :
+  Φ (return_val v) -∗
+  for_chan_postcondition P Φ (return_val v).
+Proof.
+  iIntros "H". rewrite for_chan_postcondition_unseal /for_chan_postcondition_def.
+  eauto 10 with iFrame.
+Qed.
+
 End proof.
+
+(** Tactic for convenient chan loop reasoning. First use [iAssert] to generalize the
+current context to the loop invariant, then apply this tactic. Use
+[wp_for_chan_post] for the leaves of the proof. *)
+Ltac wp_for_chan_core :=
+  wp_bind (chan.for_range _ _); iApply (wp_for_chan_range with "[-]");
+  [ by iNamedAccu
+  |
+  | iIntros "!# __CTX"; iNamed "__CTX" ].
+
+(** Automatically apply the right theorem for [for_chan_postcondition] *)
+Ltac wp_for_chan_post_core :=
+  lazymatch goal with
+  | |- environments.envs_entails _ (for_chan_postcondition _ _ _) =>
+      (* this could use pattern matching but it's not really necessary,
+      unification will handle it *)
+      first [
+          iApply wp_for_chan_post_do
+        | iApply wp_for_chan_post_continue
+        | iApply wp_for_chan_post_break
+        | iApply wp_for_chan_post_return
+        ]
+  | _ => fail "wp_for_chan_post: not a for_chan_postcondition goal"
+  end.
 
 Section select_proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.

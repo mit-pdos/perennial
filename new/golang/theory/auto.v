@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import notation.
 Import Ltac2.
-From New.golang.theory Require Import proofmode mem globals pkg loop.
+From New.golang.theory Require Import proofmode mem globals pkg loop chan.
 From Coq Require Import Strings.Ascii.
 
 (* TODO: iFrame # is only for backwards compatibility *)
@@ -114,3 +114,12 @@ Tactic Notation "wp_for" constr(hyp) :=
   loop.wp_for_core; iNamed hyp; wp_for_cleanup.
 Ltac wp_for_post :=
   loop.wp_for_post_core; try wp_auto.
+
+Tactic Notation "wp_for_chan" :=
+  chan.wp_for_chan_core; wp_for_cleanup.
+Tactic Notation "wp_for_chan" constr(hyp) :=
+  chan.wp_for_chan_core; iNamed hyp; wp_for_cleanup.
+Ltac wp_for_chan_post :=
+  chan.wp_for_chan_post_core; try wp_auto.
+
+(* TODO: one tactic to handle all for loops. *)
