@@ -63,14 +63,14 @@ would be a liveness property. But should be able to do the converse.
 Should be able to prove that if the returned context's Done channel is closed,
 then (cancel was run) ∨ (chan.is_closed ctx.Done). *)
 
-Lemma wp_WithCancel N (ctx : interface.t) :
+Lemma wp_WithCancel (ctx : interface.t) :
   {{{ True }}}
     func_call #context #"WithCancel" #ctx
   {{{
         ctx' ctx_state (cancel : func.t), RET (#ctx', #cancel);
         is_Context ctx' ctx_state ∗
         {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
-        inv N (∃ (s : chanstate.t unit), own_chan ctx_state.(Done) s)
+        inv nroot (∃ (s : chanstate.t unit), own_chan ctx_state.(Done) s)
   }}}.
 Proof.
 Admitted.

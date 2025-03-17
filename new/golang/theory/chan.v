@@ -27,10 +27,12 @@ End chanstate.
 Section chan.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 (* FIXME: should this take an explicit V? *)
-Axiom is_chan : ∀ (c : chan.t), iProp Σ.
+Definition is_chan :  ∀ (c : chan.t), iProp Σ.
+Admitted.
 Axiom is_chan_pers : ∀ c, Persistent (is_chan c).
 Global Existing Instance is_chan_pers.
-Axiom own_chan : ∀ `{!IntoVal V} (c : chan.t) (s : chanstate.t V), iProp Σ.
+Definition own_chan : ∀ `{!IntoVal V} (c : chan.t) (s : chanstate.t V), iProp Σ.
+Admitted.
 End chan.
 
 Section proof.
@@ -39,6 +41,11 @@ Context `{!IntoVal V, !IntoValTyped V t}.
 
 Implicit Types v : V.
 Implicit Types (s : chanstate.t V).
+
+Lemma own_chan_is_chan ch s :
+  own_chan ch s -∗ is_chan ch.
+Proof.
+Admitted.
 
 Lemma wp_chan_make cap :
   {{{ True }}}
