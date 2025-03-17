@@ -110,9 +110,21 @@ Proof.
     admit.
   }
   wp_auto.
-  ltac2:(wp_bind_apply ()).
-  (* FIXME: goose should translate the capacity argument. *)
-  (* iApply (wp_chan_make (t:=structT []) (V:=())). *)
+  unshelve wp_apply wp_chan_make as "* Hdonec"; try tc_solve.
+  wp_alloc s as "Hs".
+  wp_auto.
+  wp_bind (Fork _).
+  iMod (typed_pointsto_persist with "keepAlive") as "#keepAlive".
+  iApply wp_fork.
+  {
+    iNext.
+    wp_auto.
+    wp_apply wp_with_defer as "%defer defer".
+    simpl subst.
+    wp_auto.
+    (* FIXME: spec for chan.for_range *)
+    admit.
+  }
 
 Admitted.
 
