@@ -412,8 +412,8 @@ Definition Election__observe : val :=
             do:  ((![context.CancelFunc] "cancel") #());;;
             return: (#())
           else do:  #());;;
-          (let: "ev" := (ref_ty intT (zero_val intT)) in
           let: "$range" := (![sliceT] (struct.field_ref clientv3.WatchResponse "Events" "wr")) in
+          (let: "ev" := (ref_ty intT (zero_val intT)) in
           slice.for_range ptrT "$range" (λ: "$key" "$value",
             do:  ("ev" <-[ptrT] "$value");;;
             do:  "$key";;;
@@ -470,8 +470,8 @@ Definition Election__observe : val :=
           do:  ((![context.CancelFunc] "cancel") #());;;
           return: (#())
         else do:  #());;;
-        (let: "ev" := (ref_ty intT (zero_val intT)) in
         let: "$range" := (![sliceT] (struct.field_ref clientv3.WatchResponse "Events" "wr")) in
+        (let: "ev" := (ref_ty intT (zero_val intT)) in
         slice.for_range ptrT "$range" (λ: "$key" "$value",
           do:  ("ev" <-[ptrT] "$value");;;
           do:  "$key";;;
@@ -549,10 +549,10 @@ Definition waitDelete : val :=
     (method_call #clientv3 #"Client'ptr" #"Watch" (![ptrT] "client")) "$a0" "$a1" "$a2") in
     do:  ("wch" <-[clientv3.WatchChan] "$r0");;;
     let: "$range" := (![clientv3.WatchChan] "wch") in
-    chan.for_range "$range" (λ: "$key" "$value",
+    chan.for_range "$range" (λ: "$key",
       do:  ("wr" <-[clientv3.WatchResponse] "$key");;;
-      (let: "ev" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] (struct.field_ref clientv3.WatchResponse "Events" "wr")) in
+      (let: "ev" := (ref_ty intT (zero_val intT)) in
       slice.for_range ptrT "$range" (λ: "$key" "$value",
         do:  ("ev" <-[ptrT] "$value");;;
         do:  "$key";;;
@@ -975,8 +975,8 @@ Definition NewSession : val :=
       "ctx" ::= "$ctx"
     }])) in
     do:  ("ops" <-[ptrT] "$r0");;;
-    (let: "opt" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "opts") in
+    (let: "opt" := (ref_ty intT (zero_val intT)) in
     slice.for_range SessionOption "$range" (λ: "$key" "$value",
       do:  ("opt" <-[SessionOption] "$value");;;
       do:  "$key";;;
@@ -1062,7 +1062,7 @@ Definition NewSession : val :=
         "$oldf" #()
         )));;;
       let: "$range" := (![chanT ptrT] "keepAlive") in
-      chan.for_range "$range" (λ: "$key" "$value",
+      chan.for_range "$range" (λ: "$key",
         do:  #()))
       ) in
     do:  (Fork ("$go" #()));;;
@@ -1278,8 +1278,8 @@ Definition NewSTM : val :=
       "prefetch" ::= zero_val sliceT
     }])) in
     do:  ("opts" <-[ptrT] "$r0");;;
-    (let: "f" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "so") in
+    (let: "f" := (ref_ty intT (zero_val intT)) in
     slice.for_range stmOption "$range" (λ: "$key" "$value",
       do:  ("f" <-[stmOption] "$value");;;
       do:  "$key";;;
@@ -1511,9 +1511,9 @@ Definition readSet__add : val :=
     exception_do (let: "rs" := (ref_ty readSet "rs") in
     let: "txnresp" := (ref_ty ptrT "txnresp") in
     let: "keys" := (ref_ty sliceT "keys") in
+    let: "$range" := (![sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![ptrT] "txnresp"))) in
     (let: "resp" := (ref_ty intT (zero_val intT)) in
     let: "i" := (ref_ty intT (zero_val intT)) in
-    let: "$range" := (![sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![ptrT] "txnresp"))) in
     slice.for_range ptrT "$range" (λ: "$key" "$value",
       do:  ("resp" <-[ptrT] "$value");;;
       do:  ("i" <-[intT] "$key");;;
@@ -1529,8 +1529,8 @@ Definition readSet__first : val :=
     let: "ret" := (ref_ty int64T (zero_val int64T)) in
     let: "$r0" := #(W64 (math.MaxInt64 - 1)) in
     do:  ("ret" <-[int64T] "$r0");;;
-    (let: "resp" := (ref_ty stringT (zero_val stringT)) in
     let: "$range" := (![readSet] "rs") in
+    (let: "resp" := (ref_ty stringT (zero_val stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("resp" <-[ptrT] "$value");;;
       do:  "$key";;;
@@ -1554,9 +1554,9 @@ Definition readSet__cmps : val :=
     let: "$r0" := (slice.make3 clientv3.Cmp #(W64 0) (let: "$a0" := (![readSet] "rs") in
     map.len "$a0")) in
     do:  ("cmps" <-[sliceT] "$r0");;;
+    let: "$range" := (![readSet] "rs") in
     (let: "rk" := (ref_ty stringT (zero_val stringT)) in
     let: "k" := (ref_ty stringT (zero_val stringT)) in
-    let: "$range" := (![readSet] "rs") in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("rk" <-[ptrT] "$value");;;
       do:  ("k" <-[stringT] "$key");;;
@@ -1574,8 +1574,8 @@ Definition writeSet__get : val :=
   rec: "writeSet__get" "ws" "keys" :=
     exception_do (let: "ws" := (ref_ty writeSet "ws") in
     let: "keys" := (ref_ty sliceT "keys") in
-    (let: "key" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "keys") in
+    (let: "key" := (ref_ty intT (zero_val intT)) in
     slice.for_range stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[stringT] "$value");;;
       do:  "$key";;;
@@ -1602,8 +1602,8 @@ Definition writeSet__cmps : val :=
     let: "$r0" := (slice.make3 clientv3.Cmp #(W64 0) (let: "$a0" := (![writeSet] "ws") in
     map.len "$a0")) in
     do:  ("cmps" <-[sliceT] "$r0");;;
-    (let: "key" := (ref_ty stringT (zero_val stringT)) in
     let: "$range" := (![writeSet] "ws") in
+    (let: "key" := (ref_ty stringT (zero_val stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("key" <-[stringT] "$key");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "cmps") in
@@ -1627,8 +1627,8 @@ Definition writeSet__puts : val :=
     let: "$r0" := (slice.make3 clientv3.Op #(W64 0) (let: "$a0" := (![writeSet] "ws") in
     map.len "$a0")) in
     do:  ("puts" <-[sliceT] "$r0");;;
-    (let: "v" := (ref_ty stringT (zero_val stringT)) in
     let: "$range" := (![writeSet] "ws") in
+    (let: "v" := (ref_ty stringT (zero_val stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("v" <-[stmPut] "$value");;;
       do:  "$key";;;
@@ -1739,9 +1739,9 @@ Definition stm__fetch : val :=
     let: "$r0" := (slice.make2 clientv3.Op (let: "$a0" := (![sliceT] "keys") in
     slice.len "$a0")) in
     do:  ("ops" <-[sliceT] "$r0");;;
+    let: "$range" := (![sliceT] "keys") in
     (let: "key" := (ref_ty intT (zero_val intT)) in
     let: "i" := (ref_ty intT (zero_val intT)) in
-    let: "$range" := (![sliceT] "keys") in
     slice.for_range stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[stringT] "$value");;;
       do:  ("i" <-[intT] "$key");;;
@@ -1809,8 +1809,8 @@ Definition stmSerializable__Get : val :=
     let: "$r0" := ((let: "$a0" := (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) in
     map.len "$a0") = #(W64 0)) in
     do:  ("firstRead" <-[boolT] "$r0");;;
-    (let: "key" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "keys") in
+    (let: "key" := (ref_ty intT (zero_val intT)) in
     slice.for_range stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[stringT] "$value");;;
       do:  "$key";;;
@@ -1867,8 +1867,8 @@ Definition stmSerializable__gets : val :=
     let: "$r0" := (slice.make3 clientv3.Op #(W64 0) (let: "$a0" := (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) in
     map.len "$a0")) in
     do:  ("ops" <-[sliceT] "$r0");;;
-    (let: "k" := (ref_ty stringT (zero_val stringT)) in
     let: "$range" := (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s")))) in
+    (let: "k" := (ref_ty stringT (zero_val stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[stringT] "$key");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "keys") in

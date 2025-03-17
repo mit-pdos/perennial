@@ -42,8 +42,8 @@ Definition JointConfig__IDs : val :=
     ]) [])) in
     do:  ("m" <-[mapT uint64T (structT [
     ])] "$r0");;;
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 0))) in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       let: "$r0" := (struct.make (structT [
@@ -51,8 +51,8 @@ Definition JointConfig__IDs : val :=
       }]) in
       do:  (map.insert (![mapT uint64T (structT [
       ])] "m") (![uint64T] "id") "$r0")));;;
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![MajorityConfig] (array.elem_ref MajorityConfig (![JointConfig] "c") #(W64 1))) in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       let: "$r0" := (struct.make (structT [
@@ -139,8 +139,8 @@ Definition MajorityConfig__String : val :=
     let: "$r0" := (slice.make3 uint64T #(W64 0) (let: "$a0" := (![MajorityConfig] "c") in
     map.len "$a0")) in
     do:  ("sl" <-[sliceT] "$r0");;;
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![MajorityConfig] "c") in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "sl") in
@@ -153,8 +153,8 @@ Definition MajorityConfig__String : val :=
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
     do:  (let: "$a0" := #(W8 40) in
     (method_call #strings #"Builder'ptr" #"WriteByte" "buf") "$a0");;;
-    (let: "i" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "sl") in
+    (let: "i" := (ref_ty intT (zero_val intT)) in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
       do:  ("i" <-[intT] "$key");;;
       (if: int_gt (![intT] "i") #(W64 0)
@@ -189,8 +189,8 @@ Definition MajorityConfig__Describe : val :=
     let: "info" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make3 slices.Tup #(W64 0) (![intT] "n")) in
     do:  ("info" <-[sliceT] "$r0");;;
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![MajorityConfig] "c") in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       let: "ok" := (ref_ty boolT (zero_val boolT)) in
@@ -231,8 +231,8 @@ Definition MajorityConfig__Describe : val :=
        (func_call #slices #"CompareUint64"%go) "$a0" "$a1"))
       ) in
     (func_call #slices #"SortFuncTup"%go) "$a0" "$a1");;;
-    (let: "i" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "info") in
+    (let: "i" := (ref_ty intT (zero_val intT)) in
     slice.for_range slices.Tup "$range" (λ: "$key" "$value",
       do:  ("i" <-[intT] "$key");;;
       (if: (int_gt (![intT] "i") #(W64 0)) && ((![uint64T] (struct.field_ref slices.Tup "Idx" (slice.elem_ref slices.Tup (![sliceT] "info") ((![intT] "i") - #(W64 1))))) < (![uint64T] (struct.field_ref slices.Tup "Idx" (slice.elem_ref slices.Tup (![sliceT] "info") (![intT] "i")))))
@@ -257,8 +257,8 @@ Definition MajorityConfig__Describe : val :=
     "%go)) in
     slice.literal interfaceT ["$sl0"])) in
     (func_call #fmt #"Fprint"%go) "$a0" "$a1");;;
-    (let: "i" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "info") in
+    (let: "i" := (ref_ty intT (zero_val intT)) in
     slice.for_range slices.Tup "$range" (λ: "$key" "$value",
       do:  ("i" <-[intT] "$key");;;
       let: "bar" := (ref_ty intT (zero_val intT)) in
@@ -297,8 +297,8 @@ Definition MajorityConfig__Slice : val :=
   rec: "MajorityConfig__Slice" "c" <> :=
     exception_do (let: "c" := (ref_ty MajorityConfig "c") in
     let: "sl" := (ref_ty sliceT (zero_val sliceT)) in
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![MajorityConfig] "c") in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "sl") in
@@ -338,8 +338,8 @@ Definition MajorityConfig__CommittedIndex : val :=
     let: "i" := (ref_ty intT (zero_val intT)) in
     let: "$r0" := ((![intT] "n") - #(W64 1)) in
     do:  ("i" <-[intT] "$r0");;;
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![MajorityConfig] "c") in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       (let: "ok" := (ref_ty boolT (zero_val boolT)) in
@@ -381,8 +381,8 @@ Definition MajorityConfig__VoteResult : val :=
     else do:  #());;;
     let: "votedCnt" := (ref_ty intT (zero_val intT)) in
     let: "missing" := (ref_ty intT (zero_val intT)) in
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![MajorityConfig] "c") in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       let: "ok" := (ref_ty boolT (zero_val boolT)) in

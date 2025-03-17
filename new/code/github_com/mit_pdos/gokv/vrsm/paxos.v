@@ -590,9 +590,9 @@ Definition Server__TryBecomeLeader : val :=
     let: "$r0" := (let: "$a0" := (![sliceT] "clerks") in
     slice.len "$a0") in
     do:  ("n" <-[uint64T] "$r0");;;
+    let: "$range" := (![sliceT] "clerks") in
     (let: "ck" := (ref_ty intT (zero_val intT)) in
     let: "i" := (ref_ty intT (zero_val intT)) in
-    let: "$range" := (![sliceT] "clerks") in
     slice.for_range ptrT "$range" (λ: "$key" "$value",
       do:  ("ck" <-[ptrT] "$value");;;
       do:  ("i" <-[intT] "$key");;;
@@ -618,8 +618,8 @@ Definition Server__TryBecomeLeader : val :=
     let: "numSuccesses" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("numSuccesses" <-[uint64T] "$r0");;;
-    (let: "reply" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "replies") in
+    (let: "reply" := (ref_ty intT (zero_val intT)) in
     slice.for_range ptrT "$range" (λ: "$key" "$value",
       do:  ("reply" <-[ptrT] "$value");;;
       do:  "$key";;;
@@ -732,9 +732,9 @@ Definition Server__TryAcquire : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "clerks") in
       slice.len "$a0") in
       do:  ("n" <-[uint64T] "$r0");;;
+      let: "$range" := (![sliceT] "clerks") in
       (let: "ck" := (ref_ty intT (zero_val intT)) in
       let: "i" := (ref_ty intT (zero_val intT)) in
-      let: "$range" := (![sliceT] "clerks") in
       slice.for_range ptrT "$range" (λ: "$key" "$value",
         do:  ("ck" <-[ptrT] "$value");;;
         do:  ("i" <-[intT] "$key");;;
@@ -765,8 +765,8 @@ Definition Server__TryAcquire : val :=
       let: "numSuccesses" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := #(W64 0) in
       do:  ("numSuccesses" <-[uint64T] "$r0");;;
-      (let: "reply" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] "replies") in
+      (let: "reply" := (ref_ty intT (zero_val intT)) in
       slice.for_range ptrT "$range" (λ: "$key" "$value",
         do:  ("reply" <-[ptrT] "$value");;;
         do:  "$key";;;
@@ -812,8 +812,8 @@ Definition makeServer : val :=
     do:  ((struct.field_ref Server "mu" (![ptrT] "s")) <-[ptrT] "$r0");;;
     let: "$r0" := (slice.make2 ptrT #(W64 0)) in
     do:  ((struct.field_ref Server "clerks" (![ptrT] "s")) <-[sliceT] "$r0");;;
-    (let: "host" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "config") in
+    (let: "host" := (ref_ty intT (zero_val intT)) in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
       do:  ("host" <-[uint64T] "$value");;;
       do:  "$key";;;

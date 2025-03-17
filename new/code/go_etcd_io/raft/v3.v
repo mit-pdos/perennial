@@ -158,9 +158,9 @@ Definition RawNode__Bootstrap : val :=
     let: "$r0" := (slice.make2 raftpb.Entry (let: "$a0" := (![sliceT] "peers") in
     slice.len "$a0")) in
     do:  ("ents" <-[sliceT] "$r0");;;
+    let: "$range" := (![sliceT] "peers") in
     (let: "peer" := (ref_ty intT (zero_val intT)) in
     let: "i" := (ref_ty intT (zero_val intT)) in
-    let: "$range" := (![sliceT] "peers") in
     slice.for_range Peer "$range" (λ: "$key" "$value",
       do:  ("peer" <-[Peer] "$value");;;
       do:  ("i" <-[intT] "$key");;;
@@ -201,8 +201,8 @@ Definition RawNode__Bootstrap : val :=
     let: "$r0" := (let: "$a0" := (![sliceT] "ents") in
     slice.len "$a0") in
     do:  ((struct.field_ref raftLog "committed" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) <-[uint64T] "$r0");;;
-    (let: "peer" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "peers") in
+    (let: "peer" := (ref_ty intT (zero_val intT)) in
     slice.for_range Peer "$range" (λ: "$key" "$value",
       do:  ("peer" <-[Peer] "$value");;;
       do:  "$key";;;
@@ -416,8 +416,8 @@ Definition raftLog__findConflict : val :=
   rec: "raftLog__findConflict" "l" "ents" :=
     exception_do (let: "l" := (ref_ty ptrT "l") in
     let: "ents" := (ref_ty sliceT "ents") in
-    (let: "i" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ents") in
+    (let: "i" := (ref_ty intT (zero_val intT)) in
     slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[intT] "$key");;;
       (let: "id" := (ref_ty entryID (zero_val entryID)) in
@@ -2119,15 +2119,15 @@ Definition node__run : val :=
           (if: (![boolT] "okBefore") && (~ (![boolT] "okAfter"))
           then
             let: "found" := (ref_ty boolT (zero_val boolT)) in
-            (let: "sl" := (ref_ty intT (zero_val intT)) in
             let: "$range" := ((let: "$sl0" := (![sliceT] (struct.field_ref raftpb.ConfState "Voters" "cs")) in
             let: "$sl1" := (![sliceT] (struct.field_ref raftpb.ConfState "VotersOutgoing" "cs")) in
             slice.literal sliceT ["$sl0"; "$sl1"])) in
+            (let: "sl" := (ref_ty intT (zero_val intT)) in
             slice.for_range sliceT "$range" (λ: "$key" "$value",
               do:  ("sl" <-[sliceT] "$value");;;
               do:  "$key";;;
-              (let: "id" := (ref_ty intT (zero_val intT)) in
               let: "$range" := (![sliceT] "sl") in
+              (let: "id" := (ref_ty intT (zero_val intT)) in
               slice.for_range uint64T "$range" (λ: "$key" "$value",
                 do:  ("id" <-[uint64T] "$value");;;
                 do:  "$key";;;
@@ -2850,8 +2850,8 @@ Definition newRaft : val :=
     let: "$a1" := None in
     (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![ptrT] "r")) "$a0" "$a1");;;
     let: "nodesStrs" := (ref_ty sliceT (zero_val sliceT)) in
-    (let: "n" := (ref_ty intT (zero_val intT)) in
     let: "$range" := ((method_call #tracker #"ProgressTracker'ptr" #"VoterNodes" (struct.field_ref raft "trk" (![ptrT] "r"))) #()) in
+    (let: "n" := (ref_ty intT (zero_val intT)) in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
       do:  ("n" <-[uint64T] "$value");;;
       do:  "$key";;;
@@ -3416,8 +3416,8 @@ Definition raft__appendEntry : val :=
     let: "li" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![ptrT] (struct.field_ref raft "raftLog" (![ptrT] "r")))) #()) in
     do:  ("li" <-[uint64T] "$r0");;;
-    (let: "i" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "es") in
+    (let: "i" := (ref_ty intT (zero_val intT)) in
     slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[intT] "$key");;;
       let: "$r0" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
@@ -3776,8 +3776,8 @@ Definition raft__hasUnappliedConfChanges : val :=
     let: "$a2" := (![entryEncodingSize] "pageSize") in
     let: "$a3" := (λ: "ents",
       exception_do (let: "ents" := (ref_ty sliceT "ents") in
-      (let: "i" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] "ents") in
+      (let: "i" := (ref_ty intT (zero_val intT)) in
       slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
         do:  ("i" <-[intT] "$key");;;
         (if: ((![raftpb.EntryType] (struct.field_ref raftpb.Entry "Type" (slice.elem_ref raftpb.Entry (![sliceT] "ents") (![intT] "i")))) = raftpb.EntryConfChange) || ((![raftpb.EntryType] (struct.field_ref raftpb.Entry "Type" (slice.elem_ref raftpb.Entry (![sliceT] "ents") (![intT] "i")))) = raftpb.EntryConfChangeV2)
@@ -3842,9 +3842,9 @@ Definition raft__campaign : val :=
     ])] "idMap") in
     map.len "$a0")) in
     do:  ("ids" <-[sliceT] "$r0");;;
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![mapT uint64T (structT [
     ])] "idMap") in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "ids") in
@@ -3854,8 +3854,8 @@ Definition raft__campaign : val :=
       do:  ("ids" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "ids") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
-    (let: "id" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ids") in
+    (let: "id" := (ref_ty intT (zero_val intT)) in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
       do:  ("id" <-[uint64T] "$value");;;
       do:  "$key";;;
@@ -4336,8 +4336,8 @@ Definition stepLeader : val :=
             (interface.get #"Debugf"%go (![Logger] (struct.field_ref raft "logger" (![ptrT] "r")))) "$a0" "$a1");;;
             return: (![error] (globals.get #v3.raft #"ErrProposalDropped"%go))
           else do:  #());;;
-          (let: "i" := (ref_ty intT (zero_val intT)) in
           let: "$range" := (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) in
+          (let: "i" := (ref_ty intT (zero_val intT)) in
           slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
             do:  ("i" <-[intT] "$key");;;
             let: "e" := (ref_ty ptrT (zero_val ptrT)) in
@@ -4607,8 +4607,8 @@ Definition stepLeader : val :=
         let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
         (method_call #v3.raft #"readOnly'ptr" #"advance" (![ptrT] (struct.field_ref raft "readOnly" (![ptrT] "r")))) "$a0") in
         do:  ("rss" <-[sliceT] "$r0");;;
-        (let: "rs" := (ref_ty intT (zero_val intT)) in
         let: "$range" := (![sliceT] "rss") in
+        (let: "rs" := (ref_ty intT (zero_val intT)) in
         slice.for_range ptrT "$range" (λ: "$key" "$value",
           do:  ("rs" <-[ptrT] "$value");;;
           do:  "$key";;;
@@ -5254,16 +5254,16 @@ Definition raft__restore : val :=
     let: "cs" := (ref_ty raftpb.ConfState (zero_val raftpb.ConfState)) in
     let: "$r0" := (![raftpb.ConfState] (struct.field_ref raftpb.SnapshotMetadata "ConfState" (struct.field_ref raftpb.Snapshot "Metadata" "s"))) in
     do:  ("cs" <-[raftpb.ConfState] "$r0");;;
-    (let: "set" := (ref_ty intT (zero_val intT)) in
     let: "$range" := ((let: "$sl0" := (![sliceT] (struct.field_ref raftpb.ConfState "Voters" "cs")) in
     let: "$sl1" := (![sliceT] (struct.field_ref raftpb.ConfState "Learners" "cs")) in
     let: "$sl2" := (![sliceT] (struct.field_ref raftpb.ConfState "VotersOutgoing" "cs")) in
     slice.literal sliceT ["$sl0"; "$sl1"; "$sl2"])) in
+    (let: "set" := (ref_ty intT (zero_val intT)) in
     slice.for_range sliceT "$range" (λ: "$key" "$value",
       do:  ("set" <-[sliceT] "$value");;;
       do:  "$key";;;
-      (let: "id" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] "set") in
+      (let: "id" := (ref_ty intT (zero_val intT)) in
       slice.for_range uint64T "$range" (λ: "$key" "$value",
         do:  ("id" <-[uint64T] "$value");;;
         do:  "$key";;;
@@ -5708,8 +5708,8 @@ Definition releasePendingReadIndexMessages : val :=
     do:  ("msgs" <-[sliceT] "$r0");;;
     let: "$r0" := #slice.nil in
     do:  ((struct.field_ref raft "pendingReadIndexMessages" (![ptrT] "r")) <-[sliceT] "$r0");;;
-    (let: "m" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "msgs") in
+    (let: "m" := (ref_ty intT (zero_val intT)) in
     slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
       do:  ("m" <-[raftpb.Message] "$value");;;
       do:  "$key";;;
@@ -6040,8 +6040,8 @@ Definition RawNode__readyWithoutAccept : val :=
         do:  ((struct.field_ref Ready "Messages" "rd") <-[sliceT] "$r0")
       else do:  #())
     else
-      (let: "m" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] (struct.field_ref raft "msgsAfterAppend" (![ptrT] "r"))) in
+      (let: "m" := (ref_ty intT (zero_val intT)) in
       slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
         do:  ("m" <-[raftpb.Message] "$value");;;
         do:  "$key";;;
@@ -6325,8 +6325,8 @@ Definition RawNode__acceptReady : val :=
         let: "$a1" := #slice.nil in
         (interface.get #"Panicf"%go (![Logger] (struct.field_ref raft "logger" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) "$a0" "$a1")
       else do:  #());;;
-      (let: "m" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] (struct.field_ref raft "msgsAfterAppend" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))))) in
+      (let: "m" := (ref_ty intT (zero_val intT)) in
       slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
         do:  ("m" <-[raftpb.Message] "$value");;;
         do:  "$key";;;
@@ -6462,9 +6462,9 @@ Definition RawNode__Advance : val :=
       let: "$a1" := #slice.nil in
       (interface.get #"Panicf"%go (![Logger] (struct.field_ref raft "logger" (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn")))))) "$a0" "$a1")
     else do:  #());;;
+    let: "$range" := (![sliceT] (struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn"))) in
     (let: "m" := (ref_ty intT (zero_val intT)) in
     let: "i" := (ref_ty intT (zero_val intT)) in
-    let: "$range" := (![sliceT] (struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn"))) in
     slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
       do:  ("m" <-[raftpb.Message] "$value");;;
       do:  ("i" <-[intT] "$key");;;
@@ -6794,8 +6794,8 @@ Definition readOnly__advance : val :=
     let: "$r0" := (string.from_bytes (![sliceT] (struct.field_ref raftpb.Message "Context" "m"))) in
     do:  ("ctx" <-[stringT] "$r0");;;
     let: "rss" := (ref_ty sliceT (zero_val sliceT)) in
-    (let: "okctx" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] (struct.field_ref readOnly "readIndexQueue" (![ptrT] "ro"))) in
+    (let: "okctx" := (ref_ty intT (zero_val intT)) in
     slice.for_range stringT "$range" (λ: "$key" "$value",
       do:  ("okctx" <-[stringT] "$value");;;
       do:  "$key";;;
@@ -6828,8 +6828,8 @@ Definition readOnly__advance : val :=
       let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref readOnly "readIndexQueue" (![ptrT] "ro"))) in
       slice.slice stringT "$s" (![intT] "i") (slice.len "$s")) in
       do:  ((struct.field_ref readOnly "readIndexQueue" (![ptrT] "ro")) <-[sliceT] "$r0");;;
-      (let: "rs" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] "rss") in
+      (let: "rs" := (ref_ty intT (zero_val intT)) in
       slice.for_range ptrT "$range" (λ: "$key" "$value",
         do:  ("rs" <-[ptrT] "$value");;;
         do:  "$key";;;
@@ -7019,9 +7019,9 @@ Definition Status__MarshalJSON : val :=
     map.len "$a0") = #(W64 0)
     then do:  ("j" <-[stringT] ((![stringT] "j") + #"},"%go))
     else
+      let: "$range" := (![mapT uint64T tracker.Progress] (struct.field_ref Status "Progress" "s")) in
       (let: "v" := (ref_ty uint64T (zero_val uint64T)) in
       let: "k" := (ref_ty uint64T (zero_val uint64T)) in
-      let: "$range" := (![mapT uint64T tracker.Progress] (struct.field_ref Status "Progress" "s")) in
       map.for_range "$range" (λ: "$key" "value",
         do:  ("v" <-[tracker.Progress] "$value");;;
         do:  ("k" <-[uint64T] "$key");;;
@@ -7510,8 +7510,8 @@ Definition logSlice__valid : val :=
     let: "prev" := (ref_ty entryID (zero_val entryID)) in
     let: "$r0" := (![entryID] (struct.field_ref logSlice "prev" "s")) in
     do:  ("prev" <-[entryID] "$r0");;;
-    (let: "i" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] (struct.field_ref logSlice "entries" "s")) in
+    (let: "i" := (ref_ty intT (zero_val intT)) in
     slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[intT] "$key");;;
       let: "id" := (ref_ty entryID (zero_val entryID)) in
@@ -7748,8 +7748,8 @@ Definition DescribeReady : val :=
       do:  (let: "$a0" := #"Messages:
       "%go in
       (method_call #strings #"Builder'ptr" #"WriteString" "buf") "$a0");;;
-      (let: "msg" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] (struct.field_ref Ready "Messages" "rd")) in
+      (let: "msg" := (ref_ty intT (zero_val intT)) in
       slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
         do:  ("msg" <-[raftpb.Message] "$value");;;
         do:  "$key";;;
@@ -7850,8 +7850,8 @@ Definition describeMessageWithIndent : val :=
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #" Entries:["%go) in
         slice.literal interfaceT ["$sl0"])) in
         (func_call #fmt #"Fprint"%go) "$a0" "$a1");;;
-        (let: "e" := (ref_ty intT (zero_val intT)) in
         let: "$range" := (![sliceT] (struct.field_ref raftpb.Message "Entries" "m")) in
+        (let: "e" := (ref_ty intT (zero_val intT)) in
         slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
           do:  ("e" <-[raftpb.Entry] "$value");;;
           do:  "$key";;;
@@ -7894,8 +7894,8 @@ Definition describeMessageWithIndent : val :=
       let: "$a1" := #" Responses:["%go in
       let: "$a2" := #slice.nil in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
-      (let: "m" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (![sliceT] (struct.field_ref raftpb.Message "Responses" "m")) in
+      (let: "m" := (ref_ty intT (zero_val intT)) in
       slice.for_range raftpb.Message "$range" (λ: "$key" "$value",
         do:  ("m" <-[raftpb.Message] "$value");;;
         do:  "$key";;;
@@ -8023,8 +8023,8 @@ Definition DescribeEntries : val :=
     exception_do (let: "f" := (ref_ty EntryFormatter "f") in
     let: "ents" := (ref_ty sliceT "ents") in
     let: "buf" := (ref_ty bytes.Buffer (zero_val bytes.Buffer)) in
-    (let: "e" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ents") in
+    (let: "e" := (ref_ty intT (zero_val intT)) in
     slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("e" <-[raftpb.Entry] "$value");;;
       do:  "$key";;;
@@ -8044,8 +8044,8 @@ Definition entsSize : val :=
   rec: "entsSize" "ents" :=
     exception_do (let: "ents" := (ref_ty sliceT "ents") in
     let: "size" := (ref_ty entryEncodingSize (zero_val entryEncodingSize)) in
-    (let: "ent" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ents") in
+    (let: "ent" := (ref_ty intT (zero_val intT)) in
     slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("ent" <-[raftpb.Entry] "$value");;;
       do:  "$key";;;
@@ -8098,8 +8098,8 @@ Definition payloadsSize : val :=
   rec: "payloadsSize" "ents" :=
     exception_do (let: "ents" := (ref_ty sliceT "ents") in
     let: "s" := (ref_ty entryPayloadSize (zero_val entryPayloadSize)) in
-    (let: "e" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ents") in
+    (let: "e" := (ref_ty intT (zero_val intT)) in
     slice.for_range raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("e" <-[raftpb.Entry] "$value");;;
       do:  "$key";;;

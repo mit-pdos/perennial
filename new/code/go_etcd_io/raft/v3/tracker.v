@@ -520,8 +520,8 @@ Definition ProgressMap__String : val :=
     let: "$r0" := (slice.make3 uint64T #(W64 0) (let: "$a0" := (![ProgressMap] "m") in
     map.len "$a0")) in
     do:  ("ids" <-[sliceT] "$r0");;;
-    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![ProgressMap] "m") in
+    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "ids") in
@@ -532,8 +532,8 @@ Definition ProgressMap__String : val :=
     do:  (let: "$a0" := (![sliceT] "ids") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
     let: "buf" := (ref_ty strings.Builder (zero_val strings.Builder)) in
-    (let: "id" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ids") in
+    (let: "id" := (ref_ty intT (zero_val intT)) in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
       do:  ("id" <-[uint64T] "$value");;;
       do:  "$key";;;
@@ -621,9 +621,9 @@ Definition Config__Clone : val :=
       ]) #()) in
       do:  ("mm" <-[mapT uint64T (structT [
       ])] "$r0");;;
-      (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$range" := (![mapT uint64T (structT [
       ])] "m") in
+      (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
       map.for_range "$range" (λ: "$key" "value",
         do:  ("k" <-[uint64T] "$key");;;
         let: "$r0" := (struct.make (structT [
@@ -779,8 +779,8 @@ Definition ProgressTracker__Visit : val :=
     else
       let: "$r0" := (slice.make2 uint64T (![intT] "n")) in
       do:  ("ids" <-[sliceT] "$r0"));;;
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![ProgressMap] (struct.field_ref ProgressTracker "Progress" (![ptrT] "p"))) in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       do:  ("n" <-[intT] ((![intT] "n") - #(W64 1)));;;
@@ -788,8 +788,8 @@ Definition ProgressTracker__Visit : val :=
       do:  ((slice.elem_ref uint64T (![sliceT] "ids") (![intT] "n")) <-[uint64T] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "ids") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
-    (let: "id" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "ids") in
+    (let: "id" := (ref_ty intT (zero_val intT)) in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
       do:  ("id" <-[uint64T] "$value");;;
       do:  "$key";;;
@@ -837,9 +837,9 @@ Definition ProgressTracker__VoterNodes : val :=
     ])] "m") in
     map.len "$a0")) in
     do:  ("nodes" <-[sliceT] "$r0");;;
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![mapT uint64T (structT [
     ])] "m") in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "nodes") in
@@ -867,9 +867,9 @@ Definition ProgressTracker__LearnerNodes : val :=
     ])] (struct.field_ref Config "Learners" (struct.field_ref ProgressTracker "Config" (![ptrT] "p")))) in
     map.len "$a0")) in
     do:  ("nodes" <-[sliceT] "$r0");;;
-    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![mapT uint64T (structT [
     ])] (struct.field_ref Config "Learners" (struct.field_ref ProgressTracker "Config" (![ptrT] "p")))) in
+    (let: "id" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "nodes") in
@@ -921,9 +921,9 @@ Definition ProgressTracker__TallyVotes : val :=
     let: "rejected" := (ref_ty intT (zero_val intT)) in
     let: "granted" := (ref_ty intT (zero_val intT)) in
     let: "p" := (ref_ty ptrT "p") in
+    let: "$range" := (![ProgressMap] (struct.field_ref ProgressTracker "Progress" (![ptrT] "p"))) in
     (let: "pr" := (ref_ty uint64T (zero_val uint64T)) in
     let: "id" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$range" := (![ProgressMap] (struct.field_ref ProgressTracker "Progress" (![ptrT] "p"))) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("pr" <-[ptrT] "$value");;;
       do:  ("id" <-[uint64T] "$key");;;

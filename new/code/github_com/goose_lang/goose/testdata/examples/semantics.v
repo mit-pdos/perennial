@@ -24,8 +24,8 @@ Definition findKey : val :=
     let: "ok" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #false in
     do:  ("ok" <-[boolT] "$r0");;;
-    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![mapT uint64T unit] "m") in
+    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[uint64T] "$key");;;
       (if: (~ (![boolT] "ok"))
@@ -1222,8 +1222,8 @@ Definition IterateMapKeys : val :=
   rec: "IterateMapKeys" "m" :=
     exception_do (let: "m" := (ref_ty (mapT uint64T uint64T) "m") in
     let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
-    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![mapT uint64T uint64T] "m") in
+    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[uint64T] "$key");;;
       let: "$r0" := ((![uint64T] "sum") + (![uint64T] "k")) in
@@ -1235,8 +1235,8 @@ Definition IterateMapValues : val :=
   rec: "IterateMapValues" "m" :=
     exception_do (let: "m" := (ref_ty (mapT uint64T uint64T) "m") in
     let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
-    (let: "v" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![mapT uint64T uint64T] "m") in
+    (let: "v" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("v" <-[uint64T] "$value");;;
       do:  "$key";;;

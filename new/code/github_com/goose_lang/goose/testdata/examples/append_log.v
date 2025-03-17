@@ -130,9 +130,9 @@ Definition writeAll : val :=
   rec: "writeAll" "bks" "off" :=
     exception_do (let: "off" := (ref_ty uint64T "off") in
     let: "bks" := (ref_ty sliceT "bks") in
+    let: "$range" := (![sliceT] "bks") in
     (let: "bk" := (ref_ty intT (zero_val intT)) in
     let: "i" := (ref_ty intT (zero_val intT)) in
-    let: "$range" := (![sliceT] "bks") in
     slice.for_range sliceT "$range" (λ: "$key" "$value",
       do:  ("bk" <-[sliceT] "$value");;;
       do:  ("i" <-[intT] "$key");;;

@@ -159,8 +159,8 @@ Definition Client__replyThread : val :=
       (if: ![boolT] (struct.field_ref grove_ffi.ReceiveRet "Err" "r")
       then
         do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Client "mu" (![ptrT] "cl")))) #());;;
-        (let: "cb" := (ref_ty uint64T (zero_val uint64T)) in
         let: "$range" := (![mapT uint64T ptrT] (struct.field_ref Client "pending" (![ptrT] "cl"))) in
+        (let: "cb" := (ref_ty uint64T (zero_val uint64T)) in
         map.for_range "$range" (λ: "$key" "value",
           do:  ("cb" <-[ptrT] "$value");;;
           do:  "$key";;;

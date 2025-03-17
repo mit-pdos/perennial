@@ -150,8 +150,8 @@ Definition BankClerk__get_total : val :=
   rec: "BankClerk__get_total" "bck" <> :=
     exception_do (let: "bck" := (ref_ty ptrT "bck") in
     let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
-    (let: "acct" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
+    (let: "acct" := (ref_ty intT (zero_val intT)) in
     slice.for_range stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[stringT] "$value");;;
       do:  "$key";;;
@@ -161,8 +161,8 @@ Definition BankClerk__get_total : val :=
       (interface.get #"Get"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0") in
       (func_call #bank.bank #"decodeInt"%go) "$a0")) in
       do:  ("sum" <-[uint64T] "$r0")));;;
-    (let: "acct" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
+    (let: "acct" := (ref_ty intT (zero_val intT)) in
     slice.for_range stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[stringT] "$value");;;
       do:  "$key";;;
@@ -206,9 +206,9 @@ Definition MakeBankClerkSlice : val :=
       let: "$a1" := (let: "$a0" := BAL_TOTAL in
       (func_call #bank.bank #"encodeInt"%go) "$a0") in
       (interface.get #"Put"%go (![kv.Kv] (struct.field_ref BankClerk "kvck" (![ptrT] "bck")))) "$a0" "$a1");;;
-      (let: "acct" := (ref_ty intT (zero_val intT)) in
       let: "$range" := (let: "$s" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
       slice.slice stringT "$s" #(W64 1) (slice.len "$s")) in
+      (let: "acct" := (ref_ty intT (zero_val intT)) in
       slice.for_range stringT "$range" (λ: "$key" "$value",
         do:  ("acct" <-[stringT] "$value");;;
         do:  "$key";;;

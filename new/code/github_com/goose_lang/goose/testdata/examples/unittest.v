@@ -96,6 +96,8 @@ Definition arrayLiteralKeyed : val :=
 Definition chanBasic : val :=
   rec: "chanBasic" <> :=
     exception_do (let: "x" := (ref_ty (chanT stringT) (zero_val (chanT stringT))) in
+    let: "$r0" := (chan.make stringT #(W64 10)) in
+    do:  ("x" <-[chanT stringT] "$r0");;;
     let: "$r0" := (chan.make stringT #(W64 0)) in
     do:  ("x" <-[chanT stringT] "$r0");;;
     let: "$go" := (λ: <>,
@@ -122,14 +124,14 @@ Definition chanBasic : val :=
       do:  ("y" <-[stringT] "$r0")
     else do:  #())).
 
-(* go: chan.go:19:6 *)
+(* go: chan.go:20:6 *)
 Definition f : val :=
   rec: "f" <> :=
     exception_do (return: (#(W64 0))).
 
 (* modified version of example from https://go.dev/ref/spec#Select_statements
 
-   go: chan.go:24:6 *)
+   go: chan.go:25:6 *)
 Definition chanSelect : val :=
   rec: "chanSelect" <> :=
     exception_do (let: "a" := (ref_ty sliceT (zero_val sliceT)) in
@@ -197,7 +199,7 @@ Definition chanSelect : val :=
           ))] [] (InjLV #())));;;
     do:  (chan.select [] [] (InjLV #()))).
 
-(* go: chan.go:58:6 *)
+(* go: chan.go:59:6 *)
 Definition chanDirectional : val :=
   rec: "chanDirectional" <> :=
     exception_do (let: "x" := (ref_ty (chanT uint64T) (zero_val (chanT uint64T))) in
@@ -207,12 +209,26 @@ Definition chanDirectional : val :=
     let: "$v" := #""%go in
     chan.send "$chan" "$v")).
 
-(* go: chan.go:65:6 *)
+(* go: chan.go:66:6 *)
 Definition chanRange : val :=
   rec: "chanRange" <> :=
     exception_do (let: "x" := (ref_ty (chanT uint64T) (zero_val (chanT uint64T))) in
     let: "$range" := (![chanT uint64T] "x") in
-    chan.for_range "$range" (λ: "$key" "$value",
+    (let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    chan.for_range "$range" (λ: "$key",
+      do:  ("y" <-[uint64T] "$key");;;
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "y")) in
+      slice.literal interfaceT ["$sl0"])) in
+      (func_call #fmt #"Print"%go) "$a0")));;;
+    let: "$range" := (![chanT uint64T] "x") in
+    (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    chan.for_range "$range" (λ: "$key",
+      do:  ("x" <-[uint64T] "$key");;;
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] "x")) in
+      slice.literal interfaceT ["$sl0"])) in
+      (func_call #fmt #"Print"%go) "$a0")));;;
+    let: "$range" := (![chanT uint64T] "x") in
+    chan.for_range "$range" (λ: "$key",
       do:  #())).
 
 Definition importantStruct : go_type := structT [
@@ -571,9 +587,9 @@ Definition iterMapKeysAndValues : val :=
     let: "sumPtr" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
     do:  ("sumPtr" <-[ptrT] "$r0");;;
+    let: "$range" := (![mapT uint64T uint64T] "m") in
     (let: "v" := (ref_ty uint64T (zero_val uint64T)) in
     let: "k" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$range" := (![mapT uint64T uint64T] "m") in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("v" <-[uint64T] "$value");;;
       do:  ("k" <-[uint64T] "$key");;;
@@ -599,8 +615,8 @@ Definition iterMapKeys : val :=
     do:  ("keysRef" <-[ptrT] "$r0");;;
     let: "$r0" := (![sliceT] "keysSlice") in
     do:  ((![ptrT] "keysRef") <-[sliceT] "$r0");;;
-    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![mapT uint64T uint64T] "m") in
+    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[uint64T] "$key");;;
       let: "keys" := (ref_ty sliceT (zero_val sliceT)) in
@@ -1388,8 +1404,8 @@ Definition sumSlice : val :=
   rec: "sumSlice" "xs" :=
     exception_do (let: "xs" := (ref_ty sliceT "xs") in
     let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
-    (let: "x" := (ref_ty intT (zero_val intT)) in
     let: "$range" := (![sliceT] "xs") in
+    (let: "x" := (ref_ty intT (zero_val intT)) in
     slice.for_range uint64T "$range" (λ: "$key" "$value",
       do:  ("x" <-[uint64T] "$value");;;
       do:  "$key";;;
@@ -1410,8 +1426,8 @@ Definition IterateMapKeys : val :=
   rec: "IterateMapKeys" "m" "sum" :=
     exception_do (let: "sum" := (ref_ty ptrT "sum") in
     let: "m" := (ref_ty (mapT uint64T uint64T) "m") in
-    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$range" := (![mapT uint64T uint64T] "m") in
+    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[uint64T] "$key");;;
       let: "oldSum" := (ref_ty uint64T (zero_val uint64T)) in
