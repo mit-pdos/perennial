@@ -2,9 +2,9 @@ From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
 From iris.algebra Require Import dfrac.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export list mem exception loop typing auto.
+From Perennial Require Import base.
 
 Set Default Proof Using "Type".
-Set Default Goal Selector "!".
 
 Transparent slice.ptr slice.len slice.cap slice.make3 slice.make2
   slice.elem_ref slice.slice slice.full_slice slice.for_range
@@ -26,7 +26,7 @@ Context `{!heapGS Σ}.
 Definition own_slice_def `{!IntoVal V} `{!IntoValTyped V t} (s : slice.t) (dq : dfrac) (vs : list V): iProp Σ :=
   ([∗ list] i ↦ v ∈ vs, (s.(slice.ptr_f) +ₗ[t] i) ↦{dq} v ) ∗
   ⌜length vs = uint.nat s.(slice.len_f) ∧ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝.
-Program Definition own_slice := unseal (_:seal (@own_slice_def)). Obligation 1. by eexists. Qed.
+Program Definition own_slice := sealed @own_slice_def.
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
 
 Global Arguments own_slice {_ _ _ _} (s dq vs).
@@ -41,7 +41,7 @@ Definition own_slice_cap_def (s : slice.t) : iProp Σ :=
   ⌜ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) ⌝ ∗
   [∗ list] i ∈ (seq (uint.nat s.(slice.len_f)) (uint.nat s.(slice.cap_f) - uint.nat s.(slice.len_f))),
     (s.(slice.ptr_f) +ₗ[t] Z.of_nat i) ↦ (default_val V).
-Program Definition own_slice_cap := unseal (_:seal (@own_slice_cap_def)). Obligation 1. by eexists. Qed.
+Program Definition own_slice_cap := sealed @own_slice_cap_def.
 Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 
 Ltac unseal := rewrite ?own_slice_unseal /own_slice_def

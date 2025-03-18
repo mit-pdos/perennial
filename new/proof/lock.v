@@ -49,7 +49,6 @@ Global Instance is_lock_pers N γ key R : Persistent (is_lock N γ key R) := _.
 #[global]
 Program Instance : IsPkgInit lockservice :=
   ltac2:(build_pkg_init ()).
-Final Obligation. apply _. Qed.
 
 Lemma wp_MakeLockClerk kv kvptsto E :
   {{{

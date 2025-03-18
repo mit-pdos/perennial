@@ -41,7 +41,6 @@ Context `{!std.GlobalAddrs}.
 #[global]
 Program Instance : IsPkgInit std :=
   ltac2:(build_pkg_init ()).
-Final Obligation. apply _. Qed.
 
 Lemma wp_Assert (cond : bool) :
   {{{ is_pkg_init std ∗ ⌜cond = true⌝ }}}

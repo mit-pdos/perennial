@@ -1,11 +1,12 @@
 From New.golang.defn Require Export typing.
+From Perennial Require Import base.
 
 (** * Memory load, store, and allocation with type annotations. *)
 Section go_lang.
   Context `{ffi_syntax}.
 
   Definition ref_ty_def (t : go_type) : val := λ: "v", ref (Var "v").
-  Program Definition ref_ty := unseal (_:seal (@ref_ty_def)). Obligation 1. by eexists. Qed.
+  Program Definition ref_ty := sealed @ref_ty_def.
   Definition ref_ty_unseal : ref_ty = _ := seal_eq _.
 
   Fixpoint load_ty_def (t : go_type) : val :=
@@ -24,7 +25,7 @@ Section go_lang.
           end) n
     | _ => (λ: "l", !(Var "l"))%V
     end.
-  Program Definition load_ty := unseal (_:seal (@load_ty_def)). Obligation 1. by eexists. Qed.
+  Program Definition load_ty := sealed @load_ty_def.
   Definition load_ty_unseal : load_ty = _ := seal_eq _.
 
   Fixpoint store_ty_def (t : go_type): val :=
@@ -48,7 +49,7 @@ Section go_lang.
           end) n
     | _ => (λ: "p" "v", "p" <- "v")%V
     end.
-  Program Definition store_ty := unseal (_:seal (@store_ty_def)). Obligation 1. by eexists. Qed.
+  Program Definition store_ty := sealed @store_ty_def.
   Definition store_ty_unseal : store_ty = _ := seal_eq _.
 
 End go_lang.

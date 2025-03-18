@@ -1,10 +1,8 @@
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import Coq.Program.Equality.
-From New.golang.defn Require Export typing.
+From Coq Require Import Logic.FunctionalExtensionality.
+From Coq Require Import Program.Equality.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
-
-Set Default Proof Using "Type".
+From New.golang.defn Require Export typing.
 
 Section alist.
 
@@ -31,7 +29,7 @@ Section goose_lang.
                      end) d
     | _ => LitV LitPoison
     end.
-  Program Definition val_aux := unseal (_:seal (@val_aux_def)). Obligation 1. by eexists. Qed.
+  Program Definition val_aux := unseal (_ : seal (@val_aux_def)). Final Obligation. by eexists. Qed.
   Definition val_aux_unseal : val_aux = _ := seal_eq _.
 End goose_lang.
 End struct.

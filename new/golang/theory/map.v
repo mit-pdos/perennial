@@ -1,6 +1,7 @@
 From Perennial.Helpers Require Import NamedProps.
 From New.golang.defn Require Export map.
 From New.golang.theory Require Export list mem exception loop typing.
+From Perennial Require Import base.
 
 Transparent map.insert map.get map.delete map.for_range map.len map.make.
 
@@ -27,7 +28,7 @@ Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
     heap_pointsto mptr dq v ∗
     ⌜ is_comparable_go_type kt = true ⌝ ∗
     ⌜ is_map_val v m ⌝.
-Program Definition own_map := unseal (_:seal (@own_map_def)). Obligation 1. by eexists. Qed.
+Program Definition own_map := sealed @own_map_def.
 Definition own_map_unseal : own_map = _ := seal_eq _.
 
 Notation "mref ↦$ dq m" := (own_map mref dq m)

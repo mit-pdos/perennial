@@ -3,6 +3,7 @@ From New.golang.defn Require Export struct.
 From New.golang.theory Require Import mem exception list typing.
 From Perennial.Helpers Require Import NamedProps.
 From RecordUpdate Require Export RecordUpdate.
+From Perennial Require Import base.
 
 Module struct.
 Section goose_lang.
@@ -47,7 +48,7 @@ Definition field_set_f t f0 fv: val -> val :=
   .
 
 Definition field_ref_f_def t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
-Program Definition field_ref_f := unseal (_:seal (@field_ref_f_def)). Obligation 1. by eexists. Qed.
+Program Definition field_ref_f := sealed @field_ref_f_def.
 Definition field_ref_f_unseal : field_ref_f = _ := seal_eq _.
 
 Class Wf (t : go_type) : Set :=

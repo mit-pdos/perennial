@@ -80,7 +80,6 @@ Section grove.
   #[global]
   Program Instance pkg_is_initialized : IsPkgInit grove_ffi :=
     ltac2:(build_pkg_init ()).
-  Final Obligation. apply _. Qed.
 
   Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
     is_pkg_init grove_ffi ∗

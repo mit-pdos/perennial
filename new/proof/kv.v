@@ -13,7 +13,6 @@ Implicit Types (E:coPset).
 #[global]
 Program Instance : IsPkgInit kv :=
   ltac2:(build_pkg_init ()).
-Final Obligation. apply _. Qed.
 
 (* Specification of Kv interface. *)
 Definition is_Kv_Put kvptsto E (v : interface.t) : iProp Σ :=

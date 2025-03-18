@@ -10,6 +10,7 @@ From Perennial.base_logic Require Export proph_map frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Export notation.
+From Perennial Require Import base.
 Set Default Proof Using "Type".
 
 Notation nonAtomic T := (naMode * T)%type.
@@ -142,7 +143,7 @@ Definition own_globals_ctx `{hG : globalsGS Σ} (g : gmap byte_string val) :=
 
 Definition own_globals_def `{hG : globalsGS Σ} (dq : dfrac) (g : gmap byte_string val) :=
   own globals_name (●{dq}Some (Excl (g : leibnizO _))).
-Program Definition own_globals := unseal (_:seal (@own_globals_def)). Obligation 1. by eexists. Qed.
+Program Definition own_globals := sealed @own_globals_def.
 Definition own_globals_unseal : own_globals = _ := seal_eq _.
 Global Arguments own_globals {Σ hG}.
 

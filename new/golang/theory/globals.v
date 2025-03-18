@@ -2,6 +2,9 @@ From New.golang.theory Require Import exception mem typing list.
 From New.golang.defn Require Import globals.
 From iris.base_logic.lib Require Import ghost_map ghost_var.
 From Coq Require Import Ascii Equality.
+From Perennial Require Import base.
+
+Set Default Proof Using "Type".
 
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
@@ -135,7 +138,7 @@ Definition own_globals_tok_def (pending_packages : gset go_string)
   "#Hinited" ∷ □ ([∗ set] pkg_name ∈ pkg_initialized,
                   default False (pkg_postconds !! pkg_name)
     ).
-Program Definition own_globals_tok := unseal (_:seal (@own_globals_tok_def)). Obligation 1. by eexists. Qed.
+Program Definition own_globals_tok := sealed @own_globals_tok_def.
 Definition own_globals_tok_unseal : own_globals_tok = _ := seal_eq _.
 
 End definitions_and_lemmas.

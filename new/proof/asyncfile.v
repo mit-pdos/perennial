@@ -142,7 +142,6 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
 #[global]
 Program Instance : IsPkgInit asyncfile :=
   ltac2:(build_pkg_init ()).
-Final Obligation. apply _. Qed.
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),

@@ -2,6 +2,7 @@ From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Export loop.
 From New.golang.theory Require Import exception typing.
 From iris_named_props Require Export named_props.
+From Perennial Require Import base.
 
 Set Default Proof Using "Type".
 
@@ -46,7 +47,7 @@ Definition for_postcondition_def stk E (post : val) P Φ bv : iProp Σ :=
             (∃ v, ⌜ bv = execute_val v ⌝ ∗ WP post #() @ stk; E {{ _, P }}) ∨
             ⌜ bv = break_val ⌝ ∗ Φ (execute_val #()) ∨
             (∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv).
-Program Definition for_postcondition := unseal (_:seal (@for_postcondition_def)). Obligation 1. by eexists. Qed.
+Program Definition for_postcondition := sealed @for_postcondition_def.
 Definition for_postcondition_unseal : for_postcondition = _ := seal_eq _.
 
 Lemma wp_for P stk E (cond body post : val) Φ :

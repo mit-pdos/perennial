@@ -1,4 +1,5 @@
 From New.golang.defn Require Export mem typing list pkg.
+From Perennial Require Import base.
 
 Module globals.
 Section defns.
@@ -9,14 +10,14 @@ Definition unwrap_def : val :=
             NONE => #() #()
           | SOME "x" => "x"
           end.
-Program Definition unwrap := unseal (_:seal (@unwrap_def)). Obligation 1. by eexists. Qed.
+Program Definition unwrap := sealed @unwrap_def.
 Definition unwrap_unseal : unwrap = _ := seal_eq _.
 
 Definition get_def : val :=
   λ: "pkg_name" "var_name",
     let: (("varAddrs", "functions"), "typeToMethodSets") := unwrap $ GlobalGet "pkg_name" in
     unwrap $ alist_lookup "var_name" "varAddrs".
-Program Definition get := unseal (_:seal (@get_def)). Obligation 1. by eexists. Qed.
+Program Definition get := sealed @get_def.
 Definition get_unseal : get = _ := seal_eq _.
 
 (* XXX: unsealed because user has to prove WPs for this by unfolding. *)
@@ -40,7 +41,7 @@ Definition package_init_def (pkg_name : go_string) `{!PkgInfo pkg_name} : val :=
         GlobalPut #pkg_name ("var_addrs", functions_val, msets_val) ;;
         "init" #()
     end.
-Program Definition package_init := unseal (_:seal (@package_init_def)). Obligation 1. by eexists. Qed.
+Program Definition package_init := sealed @package_init_def.
 Definition package_init_unseal : package_init = _ := seal_eq _.
 #[global]
 Arguments package_init pkg_name {PkgInfo0}.
@@ -55,7 +56,7 @@ Definition func_call_def : val :=
   λ: "pkg_name" "func_name",
     let: (("varAddrs", "functions"), "typeToMethodSets") := globals.unwrap $ GlobalGet "pkg_name" in
     globals.unwrap $ alist_lookup "func_name" "functions".
-Program Definition func_call := unseal (_:seal (@func_call_def)). Obligation 1. by eexists. Qed.
+Program Definition func_call := sealed @func_call_def.
 Definition func_call_unseal : func_call = _ := seal_eq _.
 
 Definition method_call_def : val :=
@@ -63,7 +64,7 @@ Definition method_call_def : val :=
     let: (("varAddrs", "functions"), "typeToMethodSets") := globals.unwrap $ GlobalGet "pkg_name" in
     let: "methodSet" := globals.unwrap $ alist_lookup "type_name" "typeToMethodSets" in
     globals.unwrap $ alist_lookup "method_name" "methodSet".
-Program Definition method_call := unseal (_:seal (@method_call_def)). Obligation 1. by eexists. Qed.
+Program Definition method_call := sealed @method_call_def.
 Definition method_call_unseal : method_call = _ := seal_eq _.
 
 End defns.

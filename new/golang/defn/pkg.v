@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.defn Require Import typing.
+From New.golang.defn Require Export typing.
 
 (** [PkgInfo] associates a pkg_name to its static information. *)
 Class PkgInfo (pkg_name: go_string) `{ffi_syntax} := {

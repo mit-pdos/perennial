@@ -11,7 +11,6 @@ Context `{!atomic.GlobalAddrs}.
 #[global]
 Program Instance is_pkg_init_inst : IsPkgInit atomic :=
   ltac2:(build_pkg_init ()).
-Final Obligation. apply _. Qed.
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,

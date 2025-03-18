@@ -1,4 +1,8 @@
 From New.golang.defn Require Import mem list.
+From Perennial Require Import base.
+
+(* cannot be export *)
+#[global] Open Scope Z_scope.
 
 (* FIXME: these notations don't work properly. *)
 Declare Scope struct_scope.
@@ -61,7 +65,7 @@ Definition make_def (t : go_type) : val :=
          end) d
   | _ => LitV $ LitPoison
   end.
-Program Definition make := unseal (_:seal (@make_def)). Obligation 1. by eexists. Qed.
+Program Definition make := sealed @make_def.
 Definition make_unseal : make = _ := seal_eq _.
 
 End goose_lang.

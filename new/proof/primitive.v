@@ -9,7 +9,6 @@ Context `{!goGlobalsGS Σ}.
 #[global]
 Program Instance is_pkg_init_inst : IsPkgInit (PROP:=iProp Σ) primitive :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Lemma wp_Assume (cond : bool) :
   {{{ is_pkg_init primitive }}}
