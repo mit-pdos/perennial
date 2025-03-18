@@ -1,6 +1,7 @@
 Require Import New.code.github_com.mit_pdos.gokv.partialapp.
 Require Import New.generatedproof.github_com.mit_pdos.gokv.partialapp.
 Require Import New.proof.proof_prelude.
+Require Import New.golang.theory.globals.
 
 Section proof.
 Context `{ffi_sem: ffi_semantics}.
@@ -14,7 +15,7 @@ Program Instance : IsPkgInit main := ltac2:(build_pkg_init ()).
 Lemma wp_partiallyApplyMe (s : go_string) (x : w64):
   Z.of_nat (length s) = sint.Z x →
   {{{ is_pkg_init main }}}
-    #(func_callv main "partiallyApplyMe") #s #x
+    main@"partiallyApplyMe" #s #x
   {{{ RET #(); True }}}.
 Proof.
   intros ?. wp_start as "_".
@@ -33,7 +34,7 @@ Qed.
 
 Lemma wp_Foo__someMethod (f : main.Foo.t) :
   {{{ is_pkg_init main }}}
-    #(method_callv main "Foo" "someMethod" #f) #()
+    f @ main @ "Foo" @ "someMethod" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_".
@@ -43,7 +44,7 @@ Qed.
 Lemma wp_Foo__someMethodWithArgs (f : main.Foo.t) (y : go_string) (z : w64) :
   Z.of_nat (length (f ++ y)) = sint.Z z →
   {{{ is_pkg_init main }}}
-    #(method_callv main "Foo" "someMethodWithArgs" #f) #y #z
+    f @ main @ "Foo" @ "someMethodWithArgs" #y #z
   {{{ RET #(); True }}}.
 Proof.
   intros ?. wp_start as "_".
@@ -54,7 +55,7 @@ Qed.
 
 Lemma wp_main :
   {{{ is_pkg_init main }}}
-    #(func_callv main "main") #()
+    main@"main" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_".

@@ -441,3 +441,12 @@ Tactic Notation "wp_method_call_core" :=
   (wp_bind (#(method_callv _ _ _ _) _);
    unshelve iApply (wp_method_call with "[]");
    [| | (tc_solve || fail "could not find mapping from method to val") | |]).
+
+#[global]
+Notation "pkg @ func" :=
+  #(func_callv pkg func) (at level 1, no associativity) : expr_scope.
+
+#[global]
+Notation "rcvr @ pkg @ type @ method" :=
+  #(method_callv pkg type method #rcvr)
+    (at level 1, pkg at next level, type at next level, no associativity) : expr_scope.
