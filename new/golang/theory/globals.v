@@ -433,8 +433,8 @@ Tactic Notation "wp_globals_get_core" :=
    unshelve wp_apply (wp_globals_get with "[]"); [| | tc_solve | |]).
 
 Tactic Notation "wp_func_call_core" :=
-  (wp_bind (func_call _ _);
-   unshelve wp_apply (wp_func_call with "[]");
+  (wp_bind (#(func_callv _ _) _);
+   unshelve iApply (wp_func_call with "[]");
    [| | (tc_solve || fail "could not find mapping from function name to val") | | ]).
 
 Tactic Notation "wp_method_call_core" :=

@@ -3339,7 +3339,7 @@ Definition raft__maybeCommit : val :=
     let: "$f" := (func_call #v3.raft #"traceCommit"%go) in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
-      "$f" "a0";;
+      "$f" "$a0";;
       "$oldf" #()
       )));;;
     return: (let: "$a0" := (let: "$term" := (![uint64T] (struct.field_ref raft "Term" (![ptrT] "r"))) in
