@@ -26,7 +26,7 @@ Section defn.
       if: (IsNoStringOverflow "s") then
         to_bytes_aux (StringLength "s") "s"
       else "f".
-  Program Definition to_bytes := unseal (_:seal (@to_bytes_def)).
+  Program Definition to_bytes := sealed @to_bytes_def.
   Definition to_bytes_unseal : to_bytes = _ := seal_eq _.
 
   Definition from_bytes : val :=

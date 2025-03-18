@@ -47,7 +47,7 @@ Class IntoVal `{ffi_syntax} (V : Type) :=
     to_val_def : V → val;
   }.
 
-Program Definition to_val := unseal (_:seal (@to_val_def)).
+Program Definition to_val := sealed @to_val_def.
 Definition to_val_unseal : to_val = _ := seal_eq _.
 Arguments to_val {_ _ _} v.
 (* Disable Notation "# l". *)
@@ -157,7 +157,7 @@ Section val_types.
      to deal with it in a proof, then something in Goose must have gone
      wrong. *)
   Definition badT_def := ptrT.
-  Program Definition badT := unseal (_:seal (@badT_def)).
+  Program Definition badT := sealed @badT_def.
   Definition badT_unseal : badT = _ := seal_eq _.
 
   Definition byteT := uint8T.
@@ -183,7 +183,7 @@ Section val_types.
     | funcT => #func.nil
     | interfaceT => #interface.nil
     end.
-  Program Definition zero_val := unseal (_:seal (@zero_val_def)).
+  Program Definition zero_val := sealed @zero_val_def.
   Definition zero_val_unseal : zero_val = _ := seal_eq _.
 
   Fixpoint go_type_size_def (t : go_type) : nat :=
@@ -198,7 +198,7 @@ Section val_types.
     | arrayT n e => n * (go_type_size_def e)
     | _ => 1
     end.
-  Program Definition go_type_size := unseal (_:seal (@go_type_size_def)).
+  Program Definition go_type_size := sealed @go_type_size_def.
   Definition go_type_size_unseal : go_type_size = _ := seal_eq _.
 End val_types.
 

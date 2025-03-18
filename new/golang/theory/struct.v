@@ -48,7 +48,7 @@ Definition field_set_f t f0 fv: val -> val :=
   .
 
 Definition field_ref_f_def t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
-Program Definition field_ref_f := unseal (_:seal (@field_ref_f_def)).
+Program Definition field_ref_f := sealed @field_ref_f_def.
 Definition field_ref_f_unseal : field_ref_f = _ := seal_eq _.
 
 Class Wf (t : go_type) : Set :=

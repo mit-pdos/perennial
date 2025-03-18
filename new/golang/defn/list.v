@@ -7,11 +7,11 @@ Section defn.
   Context `{ffi_syntax}.
 
   Definition Nil_def : val := InjLV #().
-  Program Definition Nil := unseal (_:seal (@Nil_def)).
+  Program Definition Nil := sealed @Nil_def.
   Definition Nil_unseal : Nil = _ := seal_eq _.
 
   Definition Cons_def : val := λ: "h" "tl", InjR ("h", "tl").
-  Program Definition Cons := unseal (_:seal (@Cons_def)).
+  Program Definition Cons := sealed @Cons_def.
   Definition Cons_unseal : Cons = _ := seal_eq _.
 
   Definition Match_def : val :=
@@ -19,7 +19,7 @@ Section defn.
       Match "l"
         <> ("nilCase" #())
         "x" (let: ("hd", "tl") := "x" in "consCase" "hd" "tl").
-  Program Definition Match := unseal (_:seal (@Match_def)).
+  Program Definition Match := sealed @Match_def.
   Definition Match_unseal : Match = _ := seal_eq _.
 
   Definition Length : val :=
@@ -49,7 +49,7 @@ Fixpoint alist_val_def (m : list (go_string * val)) : val :=
   | [] => InjLV #()
   | (f, v) :: tl => InjRV ((#f, v), alist_val_def tl)
   end.
-Program Definition alist_val := unseal (_:seal (@alist_val_def)).
+Program Definition alist_val := sealed @alist_val_def.
 Definition alist_val_unseal : alist_val = _ := seal_eq _.
 
 End defn.

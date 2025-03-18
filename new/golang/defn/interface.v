@@ -11,12 +11,12 @@ Definition get_def : val :=
     let: (("pkg_name", "type_name"), "val") := globals.unwrap "v" in
     method_call "pkg_name" "type_name" "method_name" "val".
 
-Program Definition get := unseal (_:seal (@get_def)).
+Program Definition get := sealed @get_def.
 Definition get_unseal : get = _ := seal_eq _.
 
 Local Definition make_def : val :=
   λ: "pkg_name" "type_name" "v", SOME ("pkg_name", "type_name", "v").
-Program Definition make := unseal (_:seal (@make_def)).
+Program Definition make := sealed @make_def.
 Definition make_unseal : make = _ := seal_eq _.
 
 Definition eq : val :=

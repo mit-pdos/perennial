@@ -28,7 +28,7 @@ Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
     heap_pointsto mptr dq v ∗
     ⌜ is_comparable_go_type kt = true ⌝ ∗
     ⌜ is_map_val v m ⌝.
-Program Definition own_map := unseal (_:seal (@own_map_def)).
+Program Definition own_map := sealed @own_map_def.
 Definition own_map_unseal : own_map = _ := seal_eq _.
 
 Notation "mref ↦$ dq m" := (own_map mref dq m)
