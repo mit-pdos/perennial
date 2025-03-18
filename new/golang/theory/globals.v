@@ -177,9 +177,36 @@ Class WpFuncCall (pkg_name : go_string) (func_name : go_string) (func : val)
                    (P : iProp Σ)
   := wp_func_call : ⊢ {{{ P }}} (func_call #pkg_name #func_name) {{{ RET func; True }}}.
 
+Definition method_callv_def (pkg_name type_name method_name : go_string) (receiver : val) : func.t :=
+  {|
+    func.f := <>;
+    func.x := "firstArg";
+    func.e :=
+      let: "__p" := globals.unwrap (GlobalGet (# pkg_name)) in
+      let: "varAddrs" := Fst (Fst "__p") in
+      let: "functions" := Snd (Fst "__p") in
+      let: "typeToMethodSets" := Snd "__p" in
+      let: "methodSet" := globals.unwrap (alist_lookup (# type_name) "typeToMethodSets") in
+      globals.unwrap (alist_lookup (# method_name) "methodSet") receiver "firstArg"
+  |}.
+Program Definition method_callv := sealed @method_callv_def.
+Definition method_callv_unseal : method_callv = _ := seal_eq _.
+
+Global Instance wp_method_callv (pkg_name type_name method_name : go_string) (receiver : val) :
+  PureWp True (method_call #pkg_name #type_name #method_name receiver)%E
+    #(method_callv pkg_name type_name method_name receiver)%E.
+Proof.
+  rewrite method_call_unseal /method_call_def method_callv_unseal.
+  intros ?????. iIntros "Hwp". wp_pure_lc "?".
+  wp_pures. by iApply "Hwp".
+Qed.
+
 Class WpMethodCall (pkg_name : go_string) (type_name : go_string) (func_name : go_string) (m : val)
                    (P : iProp Σ)
-  := wp_method_call : ⊢ {{{ P }}} (method_call #pkg_name #type_name #func_name) {{{ RET m; True }}}.
+  := wp_method_call :
+    ⊢ (∀ (first_arg receiver : val) Φ,
+         P -∗ (WP (m receiver first_arg) {{ Φ }}) -∗
+         WP #(method_callv pkg_name type_name func_name receiver) first_arg {{ Φ }}).
 
 Class WpGlobalsAlloc (vars : list (go_string * go_type)) (GlobalAddrs : Type)
                      (var_addrs : GlobalAddrs → list (go_string * loc))
@@ -234,9 +261,9 @@ Lemma wp_method_call' {pkg_name type_name method_name var_addrs m} `{!PkgInfo pk
   WpMethodCall pkg_name type_name method_name m (is_global_definitions pkg_name var_addrs).
 Proof.
   intros Hlookup. rewrite /WpMethodCall.
-  iIntros (?) "!# #Hctx HΦ".
-  rewrite method_call_unseal.
-  wp_call.
+  iIntros "* #Hctx HΦ".
+  rewrite method_callv_unseal.
+  rewrite /method_callv_def.
   wp_pures.
   wp_bind (GlobalGet _).
   (* FIXME: go_string is getting simplifid to [{| Naive.unsigned := 118; ... |} :: ...] *)
@@ -376,7 +403,6 @@ Ltac solve_wp_globals_alloc :=
   unshelve iSpecialize ("HΦ" $! _); first (econstructor; shelve);
   iApply "HΦ"; iFrame.
 
-
 (* TODO: better error messages if tc_solve fails to find a val for the name. *)
 Tactic Notation "wp_globals_get_core" :=
   (wp_bind (globals.get _ _);
@@ -388,6 +414,6 @@ Tactic Notation "wp_func_call_core" :=
    [| | (tc_solve || fail "could not find mapping from function name to val") | | ]).
 
 Tactic Notation "wp_method_call_core" :=
-  (wp_bind (method_call _ _ _);
-   unshelve wp_apply (wp_method_call with "[]");
+  (wp_bind (#(method_callv _ _ _ _) _);
+   unshelve iApply (wp_method_call with "[]");
    [| | (tc_solve || fail "could not find mapping from method to val") | |]).

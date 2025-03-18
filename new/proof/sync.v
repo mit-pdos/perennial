@@ -102,7 +102,7 @@ Qed.
 
 Lemma wp_Mutex__Lock m R :
   {{{ is_Mutex m R }}}
-    method_call #sync #"Mutex'ptr" #"Lock" #m #()
+    #(method_callv sync "Mutex'ptr" "Lock" #m) #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   wp_start as "H". iNamed "H".
@@ -137,20 +137,13 @@ Proof.
 Qed.
 
 (* this form is useful for defer statements *)
-Lemma wp_Mutex__Unlock' m :
-  {{{ is_pkg_init sync }}}
-    method_call #sync #"Mutex'ptr" #"Unlock" #m
-  {{{ (f : func.t), RET #f;
-      ∀ R,
-    {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}} #f #() {{{ RET #(); True }}}
-  }}}.
+Lemma wp_Mutex__Unlock m R :
+  {{{ is_pkg_init sync ∗ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}}
+    #(method_callv sync "Mutex'ptr" "Unlock" #m) #()
+  {{{ RET #(); True }}}.
 Proof.
-  iIntros (Ψ) "#Hdef HΨ".
-  wp_method_call. wp_call.
-  iApply "HΨ". iIntros (R).
   wp_start as "(#His & Hlocked & HR)".
   iNamed "His".
-  wp_auto.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as (b) "[>Hl _]".
 
@@ -167,19 +160,6 @@ Proof.
   iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
   iDestruct "Hl" as "[Hl1 Hl2]".
   iNext. iExists false. iFrame.
-Qed.
-
-Lemma wp_Mutex__Unlock m R :
-  {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}}
-    method_call #sync #"Mutex'ptr" #"Unlock" #m #()
-  {{{ RET #(); True }}}.
-Proof.
-  wp_start as "(#Hinv & Hlocked & HR)".
-  wp_bind (method_call _ _ _ #m)%E.
-  iNamed "Hinv".
-  wp_apply (wp_Mutex__Unlock' with "[$]") as "% Hspec".
-  wp_apply ("Hspec" with "[$Hinv $Hlocked $HR $Hi]").
-  by iApply "HΦ".
 Qed.
 
 Definition is_Locker (i : interface.t) (P : iProp Σ) : iProp Σ :=
@@ -231,7 +211,7 @@ Qed.
 
 Theorem wp_Cond__Signal c lk :
   {{{ is_Cond c lk }}}
-    method_call #sync #"Cond'ptr" #"Signal" #c #()
+    #(method_callv sync "Cond'ptr" "Signal" #c) #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[#Hdef Hc]".
@@ -240,7 +220,7 @@ Qed.
 
 Theorem wp_Cond__Broadcast c lk :
   {{{ is_Cond c lk }}}
-    method_call #sync #"Cond'ptr" #"Broadcast" #c #()
+    #(method_callv sync "Cond'ptr" "Broadcast" #c) #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "H"; iNamed "H".
@@ -249,7 +229,7 @@ Qed.
 
 Theorem wp_Cond__Wait c m R :
   {{{ is_Cond c m ∗ is_Locker m R ∗ R }}}
-    method_call #sync #"Cond'ptr" #"Wait" #c #()
+    #(method_callv sync "Cond'ptr" "Wait" #c) #()
   {{{ RET #(); R }}}.
 Proof.
   wp_start as "(#Hcond & #Hlock & HR)".
@@ -792,7 +772,7 @@ Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
        "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
                own_WaitGroup γ (word.add oldc delta') ={↑N,⊤}=∗ Φ #())
   ) -∗
-  WP method_call #sync #"WaitGroup'ptr" #"Add" #wg #delta {{ Φ }}.
+  WP #(method_callv sync "WaitGroup'ptr" "Add" #wg) #delta {{ Φ }}.
 Proof.
   intros delta'.
   wp_start as "#His".
@@ -1110,7 +1090,7 @@ Lemma wp_WaitGroup__Done (wg : loc) γ N :
        "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
                own_WaitGroup γ (word.sub oldc (W32 1)) ={↑N,⊤}=∗ Φ #())
   ) -∗
-  WP method_call #sync #"WaitGroup'ptr" #"Done" #wg #() {{ Φ }}.
+  WP #(method_callv sync "WaitGroup'ptr" "Done" #wg) #() {{ Φ }}.
 Proof.
   wp_start as "#His".
   wp_auto.
@@ -1134,7 +1114,7 @@ Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
        own_WaitGroup γ oldc ∗ (⌜ sint.Z oldc = 0 ⌝ → own_WaitGroup γ oldc ={∅,⊤∖↑N}=∗
                                own_WaitGroup_wait_token γ -∗ Φ #())
   ) -∗
-  WP method_call #sync #"WaitGroup'ptr" #"Wait" #wg #() {{ Φ }}.
+  WP #(method_callv sync "WaitGroup'ptr" "Wait" #wg) #() {{ Φ }}.
 Proof.
   wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
   wp_auto.

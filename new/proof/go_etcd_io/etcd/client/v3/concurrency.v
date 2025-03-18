@@ -14,36 +14,28 @@ Context `{!goGlobalsGS Σ}.
 (* FIXME: move these *)
 Program Instance : IsPkgInit math :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit zapcore :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit zap :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit time :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit strings :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit fmt :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit errors :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 #[global]
 Program Instance : IsPkgInit concurrency :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   ∃ cl,
@@ -172,7 +164,7 @@ Qed.
 
 Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    method_call #concurrency #"Session'ptr" #"Lease" #s #()
+    #(method_callv concurrency "Session'ptr" "Lease" #s) #()
   {{{ RET #lease; True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".

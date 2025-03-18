@@ -692,17 +692,14 @@ Context `{!goGlobalsGS Σ}.
 #[global]
 Program Instance : IsPkgInit mvccpb :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 #[global]
 Program Instance : IsPkgInit etcdserverpb :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 #[global]
 Program Instance : IsPkgInit clientv3 :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 End init.
 
@@ -775,24 +772,24 @@ Axiom wp_Client__Do_Get : ∀ key client γ (ctx : context.Context.t) (op : clie
   (|={⊤∖↑N,∅}=> ∃ dq val, key etcd[γ]↦{dq} val ∗
                         (key etcd[γ]↦{dq} val ={∅,⊤∖↑N}=∗ Φ #())) -∗
   (* TODO: return value. *)
-  WP method_call #clientv3 #"Client" #"Do" #client #ctx #op {{ Φ }}.
+  WP #(method_callv clientv3 "Client" "Do" #client) #ctx #op {{ Φ }}.
 
 Axiom wp_Client__GetLogger :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    method_call #clientv3 #"Client'ptr" #"GetLogger" #client #()
+    #(method_callv clientv3 "Client'ptr" "GetLogger" #client) #()
   {{{ (lg : loc), RET #lg; True }}}.
 
 Axiom wp_Client__Ctx :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    method_call #clientv3 #"Client'ptr" #"Ctx" #client #()
+    #(method_callv clientv3 "Client'ptr" "Ctx" #client) #()
   {{{ (ctx : context.Context.t), RET #ctx; True }}}.
 
 Axiom wp_Client__Grant :
   ∀ client γ (ctx : context.Context.t) (ttl : w64),
   {{{ is_Client client γ }}}
-    method_call #clientv3 #"Client'ptr" #"Grant" #client #ctx #ttl
+    #(method_callv clientv3 "Client'ptr" "Grant" #client) #ctx #ttl
   {{{
       resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
         RET (#resp_ptr, #err);
@@ -806,7 +803,7 @@ Axiom wp_Client__KeepAlive :
   ∀ client γ (ctx : context.Context.t) id,
   (* The precondition requires that this is only called on a `Grant`ed lease. *)
   {{{ is_Client client γ ∗ is_etcd_lease γ id }}}
-    method_call #clientv3 #"Client'ptr" #"KeepAlive" #client #ctx #id
+    #(method_callv clientv3 "Client'ptr" "KeepAlive" #client) #ctx #id
   {{{
       (kch : chan.t) (err : error.t),
         RET (#kch, #err);

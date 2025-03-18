@@ -200,7 +200,7 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
         "#Hinv" ∷ is_write_inv N γ i Q ∗
         "Htok" ∷ own_escrow_token γ i
   }}}
-    method_call #asyncfile #"AsyncFile'ptr" #"wait" #f #i
+    #(method_callv asyncfile "AsyncFile'ptr" "wait" #f) #i
   {{{
         RET #(); Q
   }}}.
@@ -212,7 +212,6 @@ Proof.
   wp_auto.
   iDestruct (Mutex_is_Locker with "[$]") as "#Hlk".
   wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]".
-  wp_apply (wp_Mutex__Unlock') as "%m_unlock #Hunlock".
   wp_for "Hown".
   destruct bool_decide eqn:?.
   { (* case: wait *)
@@ -234,7 +233,7 @@ Proof.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
     iMod (wait_step with "[$] [$] [$]") as "HQ".
-    wp_apply ("Hunlock" with "[-HΦ s index defer HQ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ s index defer HQ]").
     {
       iFrame "HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
@@ -349,7 +348,7 @@ Lemma wp_AsyncFile__Write N f γ P olddata data_sl data Q:
         "Hdata_in" ∷ data_sl ↦* data ∗
         "Hupd" ∷ (P olddata ={⊤∖↑N}=∗ P data ∗ Q)
   }}}
-    method_call #asyncfile #"AsyncFile'ptr" #"Write" #f #data_sl
+    #(method_callv asyncfile "AsyncFile'ptr" "Write" #f) #data_sl
   {{{
         (w:val), RET w;
         own_AsyncFile N f γ P data ∗
@@ -364,7 +363,7 @@ Proof.
   simpl subst. wp_auto.
   wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]".
   iNamed "Hown".
-  wp_apply wp_Mutex__Unlock' as "%m_unlock Hunlock".
+  wp_auto.
   wp_apply wp_SumAssumeNoOverflow as "%Hno_overflow".
   iMod (write_step with "[$] [$] [$] [Hupd]") as "H".
   { word. }
@@ -375,7 +374,7 @@ Proof.
   iDestruct "H" as "(Hnoclose & Hdat & Hghost & Hesc & #Hinv)".
   iMod (own_slice_persist with "Hdata_in") as "#Hdata_in".
   wp_apply wp_Cond__Signal; first iFrame "#".
-  wp_apply ("Hunlock" with "[-HΦ Hnoclose Hdat Hesc s data index]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hnoclose Hdat Hesc s data index]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
@@ -445,28 +444,20 @@ Qed.
 Lemma wp_AsyncFile__flushThread fname N f γ P data :
   {{{
         is_pkg_init asyncfile ∗
-        is_AsyncFile N f γ P
+        "His" ∷ is_AsyncFile N f γ P ∗
+        "HpreData" ∷ own_predurable_data γ data ∗
+        "HpreIdx" ∷ own_predurable_index γ 0 ∗
+        "HdurIdx" ∷ own_durable_index γ 0 ∗
+        "#Hfilename_in" ∷ f ↦s[asyncfile.AsyncFile :: "filename"]□ fname ∗
+        "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    method_call #asyncfile #"AsyncFile'ptr" #"flushThread" #f
+    #(method_callv asyncfile "AsyncFile'ptr" "flushThread" #f) #()
   {{{
-        (fn : func.t), RET #fn;
-         ({{{
-            "HpreData" ∷ own_predurable_data γ data ∗
-            "HpreIdx" ∷ own_predurable_index γ 0 ∗
-            "HdurIdx" ∷ own_durable_index γ 0 ∗
-            "#Hfilename_in" ∷ f ↦s[asyncfile.AsyncFile :: "filename"]□ fname ∗
-            "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
-          }}}
-            #fn #()
-          {{{ RET #(); True }}})
+        RET #(); True
   }}}.
 Proof.
-  wp_start as "His".
-  iNamed "His".
-  iApply "HΦ".
-  clear Φ.
   wp_start. iNamed "Hpre".
-  wp_auto.
+  iNamed "His". wp_auto.
   wp_apply (wp_Mutex__Lock with "[]") as "[Hlocked Hown]".
   { iFrame "#". }
   iAssert (∃ curdata curidx,
@@ -661,12 +652,11 @@ Proof.
     iNext. by iFrame "∗#".
   }
 
-  wp_apply (wp_AsyncFile__flushThread with "[$]") as "%flush Hwp_flush".
   wp_bind (Fork _)%E.
-  iApply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile Hwp_flush]").
+  iApply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile]").
   {
     iNext.
-    wp_apply ("Hwp_flush" with "[-]").
+    wp_apply (wp_AsyncFile__flushThread with "[-]").
     { iFrame "∗#". }
     done.
   }

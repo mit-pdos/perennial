@@ -79,7 +79,7 @@ Lemma wp_Uint64__Load u dq :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ v, own_Uint64 u dq v ∗ (own_Uint64 u dq v ={∅,⊤}=∗ Φ #v)) -∗
-  WP method_call #atomic #"Uint64'ptr" #"Load" #u #() {{ Φ }}.
+  WP #(method_callv atomic "Uint64'ptr" "Load" #u) #() {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -106,7 +106,7 @@ Lemma wp_Uint64__Store u v :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗ (own_Uint64 u (DfracOwn 1) v ={∅,⊤}=∗ Φ #())) -∗
-  WP method_call #atomic #"Uint64'ptr" #"Store" #u #v {{ Φ }}.
+  WP #(method_callv atomic "Uint64'ptr" "Store" #u) #v {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -135,7 +135,7 @@ Lemma wp_Uint64__Add u delta :
   (|={⊤,∅}=> ∃ old, own_Uint64 u (DfracOwn 1) old ∗
   (own_Uint64 u (DfracOwn 1) (word.add old delta) ={∅,⊤}=∗
    Φ #(word.add old delta))) -∗
-  WP method_call #atomic #"Uint64'ptr" #"Add" #u #delta {{ Φ }}.
+  WP #(method_callv atomic "Uint64'ptr" "Add" #u) #delta {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
@@ -164,7 +164,7 @@ Lemma wp_Uint64__CompareAndSwap u old new :
   (|={⊤,∅}=> ∃ v dq, own_Uint64 u dq v ∗
                     ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
   (own_Uint64 u dq (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))) -∗
-  WP method_call #atomic #"Uint64'ptr" #"CompareAndSwap" #u #old #new {{ Φ }}.
+  WP #(method_callv atomic "Uint64'ptr" "CompareAndSwap" #u) #old #new {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
