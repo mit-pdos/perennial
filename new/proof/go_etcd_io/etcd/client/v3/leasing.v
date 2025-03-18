@@ -55,11 +55,13 @@ Context `{!syncG Σ}.
 
 (* TODO: move this somewhere else *)
 Context `{!ghost_mapG Σ nat ()}.
-Lemma trivial_WaitGroup_start_done wg_ptr γ N ctr :
+Lemma trivial_WaitGroup_start_done N' wg_ptr γ (N : namespace) ctr :
+  (↑N' : coPset) ## ↑N →
   is_WaitGroup wg_ptr γ N ∗ own_WaitGroup γ ctr ={⊤}=∗
   [∗] (replicate (Z.to_nat (sint.Z ctr))
          (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP method_call #sync #"WaitGroup'ptr" #"Done" #wg_ptr #() {{ Φ }})).
-Proof.
+Proof using ghost_mapG0.
+  intros HN.
   iIntros "(#His & Hctr)".
   destruct (decide (sint.Z ctr > 0)).
   2:{ rewrite Z2Nat.nonpos // replicate_0 big_sepL_nil //. }
@@ -68,7 +70,7 @@ Proof.
   iDestruct (big_sepM_gset_to_gmap with "Htoks") as "Htoks".
   iDestruct (big_sepS_list_to_set with "Htoks") as "Htoks".
   { apply NoDup_seq. }
-  iMod (inv_alloc nroot _ (
+  iMod (inv_alloc N' _ (
             ∃ ctr m,
               "Hctr" ∷ own_WaitGroup γ ctr ∗
               "Hm" ∷ ghost_map_auth γtoks 1 m ∗
@@ -99,13 +101,15 @@ Proof.
     apply map_size_empty_inv in Hm. subst. done.
   }
   iApply fupd_mask_intro.
-  { admit. } (* FIXME: find a disjoint namespaces. *)
+  { solve_ndisj. }
   iIntros "Hmask".
   iFrame.
   iSplitR.
   { word. }
   iSplitR.
-  { iLeft. iPureIntro. intros Hbad. subst. admit. (* FIXME: word. *) }.
+  { iLeft. iPureIntro. intros Hbad. subst.
+    (* FIXME: word. *)
+    replace (sint.Z (W32 0)) with 0 in g by done. done. }
   iIntros "_ Hctr". iMod "Hmask" as "_".
   iMod (ghost_map_delete with "[$] [$]") as "Hm".
   iMod ("Hclose" with "[-]").
@@ -127,7 +131,7 @@ Proof.
     { word. }
   }
   done.
-Admitted.
+Qed.
 
 Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
   {{{
@@ -155,10 +159,9 @@ Proof.
   iEval (simpl) in "Hl".
   iRename "Hcl" into "#Hcl_in".
   iNamed "Hl".
-  iMod (start_WaitGroup with "[$]") as (γwg) "(#Hwg_is & Hwg_ctr & Hwg_wait)".
+  iMod (start_WaitGroup (nroot .@ "wg") with "[$]") as (γwg) "(#Hwg_is & Hwg_ctr & Hwg_wait)".
   wp_apply (wp_WaitGroup__Add with "[]").
   { iFrame "#". }
-  instantiate (1:=nroot).
   iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
   iFrame.
   iSplitR.
@@ -172,7 +175,8 @@ Proof.
   (* monitorSession is the only thread that modifies `lkv.session`. *)
   iDestruct "Hsession" as "[session session_monitor]".
   iPersist "lkv".
-  iMod (trivial_WaitGroup_start_done with "[$]") as "H".
+  iMod (trivial_WaitGroup_start_done (nroot .@ "done") with "[$]") as "H".
+  { solve_ndisj. }
   replace (Z.to_nat (sint.Z (W32 2))) with (2%nat) by done.
   iEval (simpl) in "H".
   iDestruct "H" as "[Hwg_done1 Hwg_done2]".
