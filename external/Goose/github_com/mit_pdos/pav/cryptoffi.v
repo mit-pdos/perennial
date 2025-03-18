@@ -5,56 +5,62 @@ Notation SigPublicKey := (slice.T byteT) (only parsing).
 Section code.
 Context `{ext_ty: ext_types}.
 
+(* Hash. *)
+
 Definition HashLen : expr := #32.
 
-Definition Hash: val :=
-  rec: "Hash" "data" :=
-    Panic "ffi";;
-    #().
+Definition NewHasher: val :=
+  rec: "NewHasher" <> :=
+    Panic "ffi".
+
+Definition Hasher__Write: val :=
+  rec: "Hasher__Write" "ptr_hr" "sl_b" :=
+    Panic "ffi".
+
+Definition Hasher__Sum: val :=
+  rec: "Hasher__Sum" "ptr_hr" "sl_b" :=
+    Panic "ffi".
+
+(* Signature. *)
 
 Definition SigGenerateKey: val :=
   rec: "SigGenerateKey" <> :=
-    Panic "ffi";;
-    #().
+    Panic "ffi".
 
 Definition SigPrivateKey__Sign: val :=
   rec: "SigPrivateKey__Sign" "sk" "message" :=
-    Panic "ffi";;
-    #().
+    Panic "ffi".
 
 Definition SigPublicKey__Verify: val :=
   rec: "SigPublicKey__Verify" "pk" "message" "sig" :=
-    Panic "ffi";;
-    #().
+    Panic "ffi".
+
+(* Verifiable Random Function (VRF). *)
 
 Definition VrfGenerateKey: val :=
   rec: "VrfGenerateKey" <> :=
-    Panic "ffi";;
-    #().
+    Panic "ffi".
 
-Definition VrfPrivateKey__Hash: val :=
-  rec: "VrfPrivateKey__Hash" "sk" "data" :=
-    Panic "ffi";;
-    #().
+Definition VrfPrivateKey__Prove: val :=
+  rec: "VrfPrivateKey__Prove" "sk" "data" :=
+    Panic "ffi".
 
 Definition VrfPublicKey__Verify: val :=
   rec: "VrfPublicKey__Verify" "pk" "data" "proof" :=
-    Panic "ffi";;
-    #().
+    Panic "ffi".
 
 Definition VrfPublicKeyEncode: val :=
   rec: "VrfPublicKeyEncode" "pk" :=
-    Panic "ffi";;
-    #().
+    Panic "ffi".
 
 Definition VrfPublicKeyDecode: val :=
   rec: "VrfPublicKeyDecode" "b" :=
-    Panic "ffi";;
-    #().
+    Panic "ffi".
+
+(* Random. *)
 
 Definition RandBytes: val :=
   rec: "RandBytes" "n" :=
-    Panic "ffi";;
-    #().
+    Panic "ffi".
 
 End code.

@@ -42,10 +42,10 @@ Definition compLeafHash: val :=
   rec: "compLeafHash" "label" "val" :=
     let: "valLen" := slice.len "val" in
     let: "hr" := cryptoffi.NewHasher #() in
+    cryptoffi.Hasher__Write "hr" (SliceSingleton leafNodeTag);;
     cryptoffi.Hasher__Write "hr" "label";;
     cryptoffi.Hasher__Write "hr" (marshal.WriteInt slice.nil "valLen");;
     cryptoffi.Hasher__Write "hr" "val";;
-    cryptoffi.Hasher__Write "hr" (SliceSingleton leafNodeTag);;
     cryptoffi.Hasher__Sum "hr" slice.nil.
 
 Definition setLeafHash: val :=
@@ -77,9 +77,9 @@ Definition getNodeHash: val :=
 Definition compInnerHash: val :=
   rec: "compInnerHash" "child0" "child1" "h" :=
     let: "hr" := cryptoffi.NewHasher #() in
+    cryptoffi.Hasher__Write "hr" (SliceSingleton innerNodeTag);;
     cryptoffi.Hasher__Write "hr" "child0";;
     cryptoffi.Hasher__Write "hr" "child1";;
-    cryptoffi.Hasher__Write "hr" (SliceSingleton innerNodeTag);;
     cryptoffi.Hasher__Sum "hr" "h".
 
 Definition setInnerHash: val :=
@@ -135,8 +135,8 @@ Definition Tree__Put: val :=
       put (struct.fieldRef Tree "root" "t") #0 "label" "val" (struct.loadF Tree "ctx" "t");;
       #false).
 
-Definition Tree__get: val :=
-  rec: "Tree__get" "t" "label" "prove" :=
+Definition Tree__prove: val :=
+  rec: "Tree__prove" "t" "label" "prove" :=
     (if: (slice.len "label") ≠ cryptoffi.HashLen
     then (#false, slice.nil, slice.nil, #true)
     else
@@ -197,7 +197,7 @@ Definition Tree__get: val :=
    it errors if label isn't a hash. *)
 Definition Tree__Get: val :=
   rec: "Tree__Get" "t" "label" :=
-    let: ((("inTree", "val"), <>), "err") := Tree__get "t" "label" #false in
+    let: ((("inTree", "val"), <>), "err") := Tree__prove "t" "label" #false in
     ("inTree", "val", "err").
 
 (* Prove returns (1) if label is in the tree and, if so, (2) the val.
@@ -205,7 +205,7 @@ Definition Tree__Get: val :=
    it (4) errors if label isn't a hash. *)
 Definition Tree__Prove: val :=
   rec: "Tree__Prove" "t" "label" :=
-    Tree__get "t" "label" #true.
+    Tree__prove "t" "label" #true.
 
 (* MerkleProof from serde.go *)
 
@@ -243,8 +243,7 @@ Definition MerkleProofDecode: val :=
 
 Definition compEmptyHash: val :=
   rec: "compEmptyHash" <> :=
-    let: "b" := SliceSingleton emptyNodeTag in
-    cryptoutil.Hash "b".
+    cryptoutil.Hash (SliceSingleton emptyNodeTag).
 
 (* Verify verifies proof against the tree rooted at dig
    and returns an error upon failure.
