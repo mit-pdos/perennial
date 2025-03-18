@@ -755,7 +755,7 @@ Axiom wp_OpGet : ∀ key opts_sl ,
       is_pkg_init clientv3 ∗
       "Hopts" ∷ opts_sl ↦* ([] : list clientv3.OpOption.t)
   }}}
-    func_call #clientv3 "OpGet" #key #opts_sl
+    clientv3 @ "OpGet" #key #opts_sl
   {{{
       op, RET #op;
       is_Op op (Op.Get (RangeRequest.default <|RangeRequest.key := key|>))
@@ -772,24 +772,24 @@ Axiom wp_Client__Do_Get : ∀ key client γ (ctx : context.Context.t) (op : clie
   (|={⊤∖↑N,∅}=> ∃ dq val, key etcd[γ]↦{dq} val ∗
                         (key etcd[γ]↦{dq} val ={∅,⊤∖↑N}=∗ Φ #())) -∗
   (* TODO: return value. *)
-  WP #(method_callv clientv3 "Client" "Do" #client) #ctx #op {{ Φ }}.
+  WP client @ clientv3 @ "Client" @ "Do" #ctx #op {{ Φ }}.
 
 Axiom wp_Client__GetLogger :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    #(method_callv clientv3 "Client'ptr" "GetLogger" #client) #()
+    client @ clientv3 @ "Client'ptr" @ "GetLogger" #()
   {{{ (lg : loc), RET #lg; True }}}.
 
 Axiom wp_Client__Ctx :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    #(method_callv clientv3 "Client'ptr" "Ctx" #client) #()
+    client @ clientv3 @ "Client'ptr" @ "Ctx" #()
   {{{ (ctx : context.Context.t), RET #ctx; True }}}.
 
 Axiom wp_Client__Grant :
   ∀ client γ (ctx : context.Context.t) (ttl : w64),
   {{{ is_Client client γ }}}
-    #(method_callv clientv3 "Client'ptr" "Grant" #client) #ctx #ttl
+    client @ clientv3 @ "Client'ptr" @ "Grant" #ctx #ttl
   {{{
       resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
         RET (#resp_ptr, #err);
@@ -803,7 +803,7 @@ Axiom wp_Client__KeepAlive :
   ∀ client γ (ctx : context.Context.t) id,
   (* The precondition requires that this is only called on a `Grant`ed lease. *)
   {{{ is_Client client γ ∗ is_etcd_lease γ id }}}
-    #(method_callv clientv3 "Client'ptr" "KeepAlive" #client) #ctx #id
+    client @ clientv3 @ "Client'ptr" @ "KeepAlive" #ctx #id
   {{{
       (kch : chan.t) (err : error.t),
         RET (#kch, #err);

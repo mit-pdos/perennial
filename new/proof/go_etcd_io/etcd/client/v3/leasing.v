@@ -44,7 +44,7 @@ Lemma trivial_WaitGroup_start_done N' wg_ptr γ (N : namespace) ctr :
   (↑N' : coPset) ## ↑N →
   is_WaitGroup wg_ptr γ N ∗ own_WaitGroup γ ctr ={⊤}=∗
   [∗] (replicate (Z.to_nat (sint.Z ctr))
-         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP #(method_callv sync "WaitGroup'ptr" "Done" #wg_ptr) #() {{ Φ }})).
+         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP wg_ptr @ sync @ "WaitGroup'ptr" @ "Done" #() {{ Φ }})).
 Proof using ghost_mapG0.
   intros HN.
   iIntros "(#His & Hctr)".
@@ -124,7 +124,7 @@ Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
       "#Hcl" ∷ is_Client cl γetcd ∗
       "Hopts_sl"  ∷ opts_sl ↦* ([] : list concurrency.SessionOption.t)
   }}}
-    func_call #leasing #"NewKV" #cl #pfx #opts_sl
+    leasing @ "NewKV" #cl #pfx #opts_sl
   {{{ RET #(); True }}}.
 Proof.
   wp_start. iNamed "Hpre".

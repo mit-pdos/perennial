@@ -200,7 +200,7 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
         "#Hinv" ∷ is_write_inv N γ i Q ∗
         "Htok" ∷ own_escrow_token γ i
   }}}
-    #(method_callv asyncfile "AsyncFile'ptr" "wait" #f) #i
+    f @ asyncfile @ "AsyncFile'ptr" @ "wait" #i
   {{{
         RET #(); Q
   }}}.
@@ -348,7 +348,7 @@ Lemma wp_AsyncFile__Write N f γ P olddata data_sl data Q:
         "Hdata_in" ∷ data_sl ↦* data ∗
         "Hupd" ∷ (P olddata ={⊤∖↑N}=∗ P data ∗ Q)
   }}}
-    #(method_callv asyncfile "AsyncFile'ptr" "Write" #f) #data_sl
+    f @ asyncfile @ "AsyncFile'ptr" @ "Write" #data_sl
   {{{
         (w:val), RET w;
         own_AsyncFile N f γ P data ∗
@@ -451,7 +451,7 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data :
         "#Hfilename_in" ∷ f ↦s[asyncfile.AsyncFile :: "filename"]□ fname ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    #(method_callv asyncfile "AsyncFile'ptr" "flushThread" #f) #()
+    f @ asyncfile @ "AsyncFile'ptr" @ "flushThread" #()
   {{{
         RET #(); True
   }}}.
@@ -610,7 +610,7 @@ Lemma wp_MakeAsyncFile fname N P data :
         is_pkg_init asyncfile ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    func_call #asyncfile #"MakeAsyncFile" #fname
+    asyncfile @ "MakeAsyncFile" #fname
   {{{
         γ sl f, RET (#sl, #f); sl ↦*□ data ∗ own_AsyncFile N f γ P data
   }}}

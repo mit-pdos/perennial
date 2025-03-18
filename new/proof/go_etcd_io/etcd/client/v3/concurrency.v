@@ -49,7 +49,7 @@ Lemma wp_NewSession (client : loc) γetcd :
         is_pkg_init concurrency ∗
         "#His_client" ∷ is_Client client γetcd
   }}}
-    func_call #concurrency #"NewSession" #client #slice.nil
+    concurrency @ "NewSession" #client #slice.nil
   {{{ s err, RET (#s, #err);
       if decide (err = interface.nil) then
         ∃ lease, is_Session s γetcd lease
@@ -164,7 +164,7 @@ Qed.
 
 Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    #(method_callv concurrency "Session'ptr" "Lease" #s) #()
+    s @ concurrency @ "Session'ptr" @ "Lease" #()
   {{{ RET #lease; True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".

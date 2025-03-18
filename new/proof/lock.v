@@ -56,7 +56,7 @@ Lemma wp_MakeLockClerk kv kvptsto E :
        is_KvCput kv kvptsto E ∗
        ⌜ E ## ↑N ⌝
   }}}
-    func_call #lockservice #"MakeLockClerk" #kv
+    lockservice @ "MakeLockClerk" #kv
   {{{
        (ck:loc), RET #ck; is_LockClerk ck (mk_lockservice_params kvptsto)
   }}}
@@ -76,7 +76,7 @@ Lemma wp_LockClerk__Lock ck key γ R :
       is_pkg_init lockservice ∗
       is_LockClerk ck γ ∗ is_lock N γ key R
   }}}
-    method_call #lockservice #"LockClerk'ptr" #"Lock" #ck #key
+    ck @ lockservice @ "LockClerk'ptr" @ "Lock" #key
   {{{
        RET #(); R
   }}}
@@ -116,7 +116,7 @@ Lemma wp_LockClerk__Unlock ck key γ R :
   {{{
        is_pkg_init lockservice ∗ is_LockClerk ck γ ∗ is_lock N γ key R ∗ R
   }}}
-    method_call #lockservice #"LockClerk'ptr" #"Unlock" #ck #key
+    ck @ lockservice @ "LockClerk'ptr" @ "Unlock" #key
   {{{
        RET #(); True
   }}}

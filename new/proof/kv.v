@@ -19,7 +19,7 @@ Definition is_Kv_Put kvptsto E (v : interface.t) : iProp Σ :=
   ∀ key value,
   {{{ True }}}
   <<< ∀∀ old_value, kvptsto key old_value >>>
-    (interface.get #"Put" #v) #key #value @ E
+    (interface.get #"Put" #v) #key #value @@ E
   <<< kvptsto key value >>>
   {{{ RET #(); True }}}.
 
@@ -27,7 +27,7 @@ Definition is_Kv_Get kvptsto E (v : interface.t) : iProp Σ :=
   ∀ key,
   {{{ True }}}
   <<< ∀∀ value, kvptsto key value >>>
-    (interface.get #"Get" #v) #key @ E
+    (interface.get #"Get" #v) #key @@ E
   <<< kvptsto key value >>>
   {{{ RET #value; True }}}.
 
@@ -39,7 +39,7 @@ Definition is_Kv_ConditionalPut kvptsto E (v : interface.t) : iProp Σ :=
   ∀ key expect value,
   {{{ True }}}
   <<< ∀∀ old_value, kvptsto key old_value >>>
-    (interface.get #"ConditionalPut") #v #key #expect #value @ E
+    (interface.get #"ConditionalPut") #v #key #expect #value @@ E
   <<< kvptsto key (if bool_decide (expect = old_value) then value else old_value) >>>
   {{{ RET #(if bool_decide (expect = old_value) then "ok" else ""); True }}}.
 
