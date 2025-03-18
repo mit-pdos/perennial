@@ -8,7 +8,7 @@ Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Global Instance wp_interface_get (i : interface.t) (method : go_string) pkg_name type_name v :
   PureWp (i = interface.mk pkg_name type_name v)
     (interface.get #method #i)
-    (method_call #pkg_name #type_name #method v).
+    (#(method_callv pkg_name type_name method v)).
 Proof.
   iIntros (?????) "Hwp".
   rewrite [in #i]to_val_unseal interface.get_unseal.

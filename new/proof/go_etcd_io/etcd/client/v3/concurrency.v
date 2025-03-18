@@ -14,36 +14,28 @@ Context `{!goGlobalsGS Σ}.
 (* FIXME: move these *)
 Program Instance : IsPkgInit math :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit zapcore :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit zap :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit time :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit strings :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit fmt :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Program Instance : IsPkgInit errors :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 #[global]
 Program Instance : IsPkgInit concurrency :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   ∃ cl,
@@ -57,7 +49,7 @@ Lemma wp_NewSession (client : loc) γetcd :
         is_pkg_init concurrency ∗
         "#His_client" ∷ is_Client client γetcd
   }}}
-    func_call #concurrency #"NewSession" #client #slice.nil
+    concurrency @ "NewSession" #client #slice.nil
   {{{ s err, RET (#s, #err);
       if decide (err = interface.nil) then
         ∃ lease, is_Session s γetcd lease
@@ -172,7 +164,7 @@ Qed.
 
 Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    method_call #concurrency #"Session'ptr" #"Lease" #s #()
+    s @ concurrency @ "Session'ptr" @ "Lease" #()
   {{{ RET #lease; True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".

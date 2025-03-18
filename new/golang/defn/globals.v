@@ -54,16 +54,19 @@ Context `{ffi_syntax}.
 
 Definition func_call_def : val :=
   λ: "pkg_name" "func_name",
+    (λ: "firstArg",
     let: (("varAddrs", "functions"), "typeToMethodSets") := globals.unwrap $ GlobalGet "pkg_name" in
-    globals.unwrap $ alist_lookup "func_name" "functions".
+    (globals.unwrap $ alist_lookup "func_name" "functions") "firstArg").
 Program Definition func_call := sealed @func_call_def.
 Definition func_call_unseal : func_call = _ := seal_eq _.
 
 Definition method_call_def : val :=
-  λ: "pkg_name" "type_name" "method_name",
-    let: (("varAddrs", "functions"), "typeToMethodSets") := globals.unwrap $ GlobalGet "pkg_name" in
-    let: "methodSet" := globals.unwrap $ alist_lookup "type_name" "typeToMethodSets" in
-    globals.unwrap $ alist_lookup "method_name" "methodSet".
+  λ: "pkg_name" "type_name" "method_name" "receiver",
+    (λ: "firstArg",
+       let: (("varAddrs", "functions"), "typeToMethodSets") := globals.unwrap $ GlobalGet "pkg_name" in
+       let: "methodSet" := globals.unwrap $ alist_lookup "type_name" "typeToMethodSets" in
+       (globals.unwrap $ alist_lookup "method_name" "methodSet") "receiver" "firstArg"
+    ).
 Program Definition method_call := sealed @method_call_def.
 Definition method_call_unseal : method_call = _ := seal_eq _.
 

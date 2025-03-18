@@ -357,7 +357,7 @@ Definition Election__observe : val :=
     let: "$f" := chan.close in
     "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
     (λ: <>,
-      "$f" "a0";;
+      "$f" "$a0";;
       "$oldf" #()
       )));;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,

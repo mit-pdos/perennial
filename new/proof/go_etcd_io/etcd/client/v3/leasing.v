@@ -20,36 +20,21 @@ Context `{!goGlobalsGS Σ}.
 (* FIXME: move these *)
 Program Instance : IsPkgInit bytes :=
   ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
 
-Program Instance : IsPkgInit status.status :=
-  ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
+Program Instance : IsPkgInit status.status := ltac2:(build_pkg_init ()).
 
-Program Instance : IsPkgInit codes :=
-  ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
+Program Instance : IsPkgInit codes := ltac2:(build_pkg_init ()).
 
-Program Instance : IsPkgInit rpctypes :=
-  ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
+Program Instance : IsPkgInit rpctypes := ltac2:(build_pkg_init ()).
 
-Program Instance : IsPkgInit errors :=
-  ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
+Program Instance : IsPkgInit errors := ltac2:(build_pkg_init ()).
 
-Program Instance : IsPkgInit time :=
-  ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
+Program Instance : IsPkgInit time := ltac2:(build_pkg_init ()).
 
-Program Instance : IsPkgInit strings :=
-  ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
+Program Instance : IsPkgInit strings := ltac2:(build_pkg_init ()).
 
 #[global]
-Program Instance : IsPkgInit leasing :=
-  ltac2:(build_pkg_init ()).
-Final Obligation. Proof. apply _. Qed.
+Program Instance : IsPkgInit leasing := ltac2:(build_pkg_init ()).
 
 Context `{!syncG Σ}.
 
@@ -59,7 +44,7 @@ Lemma trivial_WaitGroup_start_done N' wg_ptr γ (N : namespace) ctr :
   (↑N' : coPset) ## ↑N →
   is_WaitGroup wg_ptr γ N ∗ own_WaitGroup γ ctr ={⊤}=∗
   [∗] (replicate (Z.to_nat (sint.Z ctr))
-         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP method_call #sync #"WaitGroup'ptr" #"Done" #wg_ptr #() {{ Φ }})).
+         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP wg_ptr @ sync @ "WaitGroup'ptr" @ "Done" #() {{ Φ }})).
 Proof using ghost_mapG0.
   intros HN.
   iIntros "(#His & Hctr)".
@@ -139,7 +124,7 @@ Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
       "#Hcl" ∷ is_Client cl γetcd ∗
       "Hopts_sl"  ∷ opts_sl ↦* ([] : list concurrency.SessionOption.t)
   }}}
-    func_call #leasing #"NewKV" #cl #pfx #opts_sl
+    leasing @ "NewKV" #cl #pfx #opts_sl
   {{{ RET #(); True }}}.
 Proof.
   wp_start. iNamed "Hpre".
@@ -163,7 +148,7 @@ Proof.
   wp_apply (wp_WaitGroup__Add with "[]").
   { iFrame "#". }
   iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-  iFrame.
+  iFrame "Hwg_ctr Hwg_wait".
   iSplitR.
   { iPureIntro. admit. (* FIXME: word. *) }
   iIntros "[%Hbad|Hwg_wait] Hwg_ctr".
@@ -186,7 +171,7 @@ Proof.
     iNext. wp_auto.
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
-    (* TODO: WaitGroup__Done currying. *)
+    wp_auto.
     (* TODO: wp_monitorSession. *)
     admit.
   }

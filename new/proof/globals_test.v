@@ -66,7 +66,7 @@ Context `{!main.GlobalAddrs}.
 
 Lemma wp_main :
   {{{ is_pkg_defined main ∗ own_initialized }}}
-  func_call #main #"main" #()
+  main @ "main" #()
   {{{ RET #(); True }}}.
 Proof.
   iIntros (?) "[#Hdef Hpre] HΦ".
@@ -92,7 +92,7 @@ Lemma globals_test_boot σ (g : goose_lang.global_state) :
   ffi_initP σ.(world) g.(global_world) →
   σ.(globals) = ∅ → (* FIXME: this should be abstracted into a "goose_lang.init" predicate or something. *)
   dist_adequate_failstop [
-      ((main.initialize' #() ;; func_call #main #"main" #())%E, σ) ] g (λ _, True).
+      ((main.initialize' #() ;; main @ "main" #())%E, σ) ] g (λ _, True).
 Proof.
   simpl.
   intros ? ? Hgempty.

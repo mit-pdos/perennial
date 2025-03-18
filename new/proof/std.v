@@ -44,7 +44,7 @@ Program Instance : IsPkgInit std :=
 
 Lemma wp_Assert (cond : bool) :
   {{{ is_pkg_init std ∗ ⌜cond = true⌝ }}}
-    func_call #std #"Assert" #cond
+    std @ "Assert" #cond
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "%". subst.
@@ -54,7 +54,7 @@ Qed.
 
 Lemma wp_SumNoOverflow (x y : u64) :
   {{{ is_pkg_init std }}}
-    func_call #std #"SumNoOverflow" #x #y
+    std @ "SumNoOverflow" #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
   wp_start as "_".
@@ -69,7 +69,7 @@ Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
   {{{ is_pkg_init std }}}
-    func_call #std #"SumAssumeNoOverflow" #x #y
+    std @ "SumAssumeNoOverflow" #x #y
   {{{ RET #(word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}}.
 Proof.
   wp_start as "_".
@@ -93,7 +93,7 @@ Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
 
 Lemma wp_newJoinHandle (P: iProp Σ) :
   {{{ is_pkg_init std }}}
-    func_call #std #"newJoinHandle" #()
+    std @ "newJoinHandle" #()
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
 Proof.
   wp_start as "_".
@@ -120,7 +120,7 @@ Qed.
 
 Lemma wp_JoinHandle__finish l (P: iProp Σ) :
   {{{ is_pkg_init std ∗ is_JoinHandle l P ∗ P }}}
-    method_call #std #"JoinHandle'ptr" #"finish" #l #()
+    l @ std @ "JoinHandle'ptr" @ "finish" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[Hhandle P]".
@@ -139,7 +139,7 @@ Qed.
 Lemma wp_Spawn (P: iProp Σ) (f : func.t) :
   {{{ is_pkg_init std ∗
         (∀ Φ, ▷(P -∗ Φ #()) -∗ WP #f #() {{ Φ }}) }}}
-  func_call #std #"Spawn" #f
+  std @ "Spawn" #f
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
 Proof.
   wp_start as "Hwp".
@@ -164,7 +164,7 @@ Qed.
 
 Lemma wp_JoinHandle__Join l P :
   {{{ is_pkg_init std ∗ is_JoinHandle l P }}}
-    method_call #std #"JoinHandle'ptr" #"Join" #l #()
+    l @ std @ "JoinHandle'ptr" @ "Join" #()
   {{{ RET #(); P }}}.
 Proof.
   wp_start as "Hjh". iNamed "Hjh".

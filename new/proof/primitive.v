@@ -12,7 +12,7 @@ Program Instance is_pkg_init_inst : IsPkgInit (PROP:=iProp Σ) primitive :=
 
 Lemma wp_Assume (cond : bool) :
   {{{ is_pkg_init primitive }}}
-    func_call #primitive #"Assume" #cond
+    primitive@"Assume" #cond
   {{{ RET #(); ⌜ cond = true ⌝ }}}
 .
 Proof.

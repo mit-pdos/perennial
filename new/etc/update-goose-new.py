@@ -202,6 +202,7 @@ def main():
 
     run_goose(
         gokv_dir,
+        "./partialapp",
         "./urpc",
         "./reconnectclient",
         "./asyncfile",

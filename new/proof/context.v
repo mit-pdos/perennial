@@ -64,7 +64,7 @@ then (cancel was run) ∨ (chan.is_closed ctx.Done). *)
 
 Lemma wp_WithCancel (ctx : interface.t) :
   {{{ True }}}
-    func_call #context #"WithCancel" #ctx
+    context @ "WithCancel" #ctx
   {{{
         ctx' ctx_state (cancel : func.t), RET (#ctx', #cancel);
         is_Context ctx' ctx_state ∗
