@@ -173,9 +173,35 @@ Class WpGlobalsGet (pkg_name : go_string) (var_name : go_string) (addr : loc)
                    (P : iProp Σ)
   := wp_globals_get : ⊢ {{{ P }}} (globals.get #pkg_name #var_name) {{{ RET #addr; True }}}.
 
-Class WpFuncCall (pkg_name : go_string) (func_name : go_string) (func : val)
+Definition func_callv_def (pkg_name func_name : go_string) : func.t :=
+  {|
+    func.f := <>;
+    func.x := "firstArg";
+    func.e :=
+      let: "__p" := globals.unwrap (GlobalGet (# pkg_name)) in
+      let: "varAddrs" := Fst (Fst "__p") in
+      let: "functions" := Snd (Fst "__p") in
+      let: "typeToMethodSets" := Snd "__p" in
+      globals.unwrap (alist_lookup (# func_name) "functions") "firstArg"
+  |}.
+Program Definition func_callv := sealed @func_callv_def.
+Definition func_callv_unseal : func_callv = _ := seal_eq _.
+
+Global Instance wp_func_callv (pkg_name func_name : go_string) :
+  PureWp True (func_call #pkg_name #func_name)%E
+    #(func_callv pkg_name func_name)%E.
+Proof.
+  rewrite func_call_unseal /func_call_def func_callv_unseal.
+  intros ?????. iIntros "Hwp". wp_pure_lc "?".
+  wp_pures. by iApply "Hwp".
+Qed.
+
+Class WpFuncCall (pkg_name : go_string) (func_name : go_string) (m : val)
                    (P : iProp Σ)
-  := wp_func_call : ⊢ {{{ P }}} (func_call #pkg_name #func_name) {{{ RET func; True }}}.
+  := wp_func_call :
+    ⊢ (∀ (first_arg : val) Φ,
+         P -∗ (WP (m first_arg) {{ Φ }}) -∗
+         WP #(func_callv pkg_name func_name) first_arg {{ Φ }}).
 
 Definition method_callv_def (pkg_name type_name method_name : go_string) (receiver : val) : func.t :=
   {|
@@ -243,9 +269,8 @@ Lemma wp_func_call' {pkg_name func_name var_addrs func} `{!PkgInfo pkg_name} :
   WpFuncCall pkg_name func_name func (is_global_definitions pkg_name var_addrs).
 Proof.
   intros Hlookup. rewrite /WpFuncCall.
-  iIntros (?) "!# #Hctx HΦ".
-  rewrite func_call_unseal.
-  wp_call.
+  iIntros "* #Hctx HΦ".
+  rewrite func_callv_unseal /func_callv_def.
   wp_pures.
   wp_bind (GlobalGet _).
   (* FIXME: go_string is getting simplifid to [{| Naive.unsigned := 118; ... |} :: ...] *)
@@ -262,8 +287,7 @@ Lemma wp_method_call' {pkg_name type_name method_name var_addrs m} `{!PkgInfo pk
 Proof.
   intros Hlookup. rewrite /WpMethodCall.
   iIntros "* #Hctx HΦ".
-  rewrite method_callv_unseal.
-  rewrite /method_callv_def.
+  rewrite method_callv_unseal /method_callv_def.
   wp_pures.
   wp_bind (GlobalGet _).
   (* FIXME: go_string is getting simplifid to [{| Naive.unsigned := 118; ... |} :: ...] *)
