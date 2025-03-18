@@ -1,5 +1,6 @@
 From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Import struct typing globals.
+From Perennial Require Import base.
 
 Module interface.
 Section goose_lang.

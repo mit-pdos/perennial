@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Export lang notation.
-From Perennial.Helpers Require Export ProgramAuto.
+From Perennial Require Import base.
 
 Definition go_string := byte_string.
 Delimit Scope byte_string_scope with go.

@@ -1,4 +1,8 @@
 From New.golang.defn Require Import mem list.
+From Perennial Require Import base.
+
+(* cannot be export *)
+#[global] Open Scope Z_scope.
 
 (* FIXME: these notations don't work properly. *)
 Declare Scope struct_scope.

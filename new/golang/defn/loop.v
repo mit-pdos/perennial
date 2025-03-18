@@ -1,5 +1,6 @@
 From New Require Export notation.
 From New.golang.defn Require Import exception.
+From Perennial Require Import base.
 
 Section goose_lang.
 Context {ext: ffi_syntax}.

@@ -10,6 +10,8 @@ Require Export New.generatedproof.sync.
 
 From New.proof Require Import sync.atomic.
 
+From Perennial Require Import base.
+
 Set Default Proof Using "Type".
 
 Class syncG Σ := {

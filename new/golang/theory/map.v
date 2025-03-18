@@ -1,6 +1,7 @@
 From Perennial.Helpers Require Import NamedProps.
 From New.golang.defn Require Export map.
 From New.golang.theory Require Export list mem exception loop typing.
+From Perennial Require Import base.
 
 Transparent map.insert map.get map.delete map.for_range map.len map.make.
 

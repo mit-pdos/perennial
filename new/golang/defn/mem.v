@@ -1,4 +1,5 @@
 From New.golang.defn Require Export typing.
+From Perennial Require Import base.
 
 (** * Memory load, store, and allocation with type annotations. *)
 Section go_lang.

@@ -2,9 +2,9 @@ From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
 From iris.algebra Require Import dfrac.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export list mem exception loop typing auto.
+From Perennial Require Import base.
 
 Set Default Proof Using "Type".
-Set Default Goal Selector "!".
 
 Transparent slice.ptr slice.len slice.cap slice.make3 slice.make2
   slice.elem_ref slice.slice slice.full_slice slice.for_range

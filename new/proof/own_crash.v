@@ -1,6 +1,12 @@
+From iris.algebra Require Export auth gmap frac agree excl.
 From iris.bi.lib Require Import fixpoint_mono.
 From iris.base_logic.lib Require Import mono_nat saved_prop.
-From New.proof Require Export proof_prelude.
+From Perennial.goose_lang Require Import lifting.
+From New.golang.theory Require Import typing.
+From Perennial Require Import base.
+From stdpp Require Import tactics.
+
+Set Default Proof Using "Type".
 
 Class simpleCrashG Σ :=
   SimpleCrashG {
@@ -14,7 +20,6 @@ Proof. solve_inG. Qed.
 
 Section defns_and_lemmas.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-  Context `{!heapGS Σ}.
   Context `{!simpleCrashG Σ}.
   Context (N : namespace).
   Definition own_crash_concrete P Pc : iProp Σ :=
@@ -80,7 +85,7 @@ Section defns_and_lemmas.
       2:{
         iDestruct (NC_C with "[$] [$]") as %?. done.
       }
-      iLeft in "Hi". iFrame "Hi".
+      iDestruct "Hi" as "[$ _]".
       iFrame.
       iApply fupd_mask_intro.
       { set_solver. }
@@ -103,7 +108,7 @@ Section defns_and_lemmas.
     iInv "Hinv" as "Hi" "Hclose".
     iDestruct "Hi" as (?) "[? [H|>[Hbad _]]]".
     2:{ iCombine "Htok Hbad" gives %Hbad. done. }
-    iRight in "H".
+    iDestruct "H" as "[_ $]".
     iFrame.
     iMod ("Hclose" with "[-]"); last done.
     iNext. iExists _; iFrame. iRight. iFrame.

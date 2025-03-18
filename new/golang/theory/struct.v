@@ -3,6 +3,7 @@ From New.golang.defn Require Export struct.
 From New.golang.theory Require Import mem exception list typing.
 From Perennial.Helpers Require Import NamedProps.
 From RecordUpdate Require Export RecordUpdate.
+From Perennial Require Import base.
 
 Module struct.
 Section goose_lang.

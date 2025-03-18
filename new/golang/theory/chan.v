@@ -1,6 +1,7 @@
 From New.golang.defn Require Export chan.
 From iris.base_logic Require Export lib.ghost_var.
 From New.golang.theory Require Export exception list mem loop typing struct proofmode.
+From Perennial Require Import base.
 
 Module chanstate.
 Record t (V : Type) :=
@@ -140,7 +141,7 @@ Lemma wp_for_chan_range P ch (body : func.t) :
                             own_chan ch s' ={∅,⊤}=∗ WP #body #v {{ for_chan_postcondition P Φ }})))
     ) -∗
   WP chan.for_range #ch #body {{ Φ }}.
-Proof.
+Proof using IntoValTyped0.
 Admitted.
 
 Lemma wp_for_chan_post_do (v : val) P Φ :
