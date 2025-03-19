@@ -259,6 +259,7 @@ Proof.
   change (W64 8) with (W64 (1 * 8)).
   rewrite -?word64_byte_extract; try lia.
   subst.
+  Transparent u64_le.
   simpl.
   iFrame.
 Qed.

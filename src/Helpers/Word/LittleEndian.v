@@ -14,7 +14,6 @@ Definition u64_le (x: u64) : list byte :=
   let n := word.unsigned x in
   let t := split (byte:=w8_word_instance) w64_bytes n in
   tuple.to_list t.
-Global Arguments u64_le : simpl never.
 
 Definition le_to_u64 (l: list byte) : u64.
 Proof.
@@ -179,3 +178,5 @@ Proof.
   cbv [length].
   apply combine_bound.
 Qed.
+
+Global Opaque u64_le.
