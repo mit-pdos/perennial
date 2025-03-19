@@ -1,6 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
 
+From Perennial.Helpers Require Import bytes.
 From Perennial.program_proof.pav Require Import cryptoffi cryptoutil.
 From Perennial.program_proof Require Import std_proof marshal_stateless_proof.
 
@@ -11,10 +12,13 @@ Notation leaf_node_tag := (W8 2) (only parsing).
 Section proof.
 Context `{!heapGS Σ}.
 
-(* returns false if bit n of l is 0. *)
-Definition get_bit (l : list w8) (n : nat) : option bool. Admitted.
+(* get_bit returns false if bit n of l is 0. *)
+Definition get_bit (l : list w8) (n : nat) : option bool :=
+  concat (byte_to_bits <$> l) !! n.
 
-Fixpoint is_merk_proof_recur (depth_inv : nat) (label : list w8) (val : option $ list w8) (proof : list $ list w8) (hash : list w8) : iProp Σ :=
+Fixpoint is_merk_proof_recur (depth_inv : nat) (label : list w8)
+    (val : option $ list w8) (proof : list $ list w8)
+    (hash : list w8) : iProp Σ :=
   match depth_inv with
   | 0%nat =>
     match val with
@@ -41,13 +45,31 @@ Fixpoint is_merk_proof_recur (depth_inv : nat) (label : list w8) (val : option $
     end
   end.
 
-Definition is_merk_proof (label : list w8) (val : option $ list w8) (proof : list $ list w8) (dig : list w8) : iProp Σ :=
+Definition is_merk_proof (label : list w8) (val : option $ list w8)
+    (proof : list $ list w8) (dig : list w8) : iProp Σ :=
   is_merk_proof_recur (length proof) label val proof dig.
 
 Lemma is_merk_proof_inj label val0 val1 proof0 proof1 dig :
   is_merk_proof label val0 proof0 dig -∗
   is_merk_proof label val1 proof1 dig -∗
   ⌜ val0 = val1 ⌝.
-Proof. Admitted.
+Proof.
+  (* TODO: figure out how to structure this recursive argument.
+  iInduction (length proof0) as [|d] "IH" forall ((length proof1) dig).
+  *)
+  rewrite /is_merk_proof /is_merk_proof_recur. iIntros "H0 H1".
+  destruct (length proof0), (length proof1); rewrite -/is_merk_proof_recur.
+  (* case: both last nodes. *)
+  - repeat case_match; iDestruct (is_hash_inj with "H0 H1") as %?; naive_solver.
+  (* case: one last and one inner. *)
+  - iDestruct "H1" as (?) "[_ H1]".
+    repeat case_match; try done;
+      iDestruct (is_hash_inj with "H0 H1") as %?; naive_solver.
+  - iDestruct "H0" as (?) "[_ H0]".
+    repeat case_match; try done;
+      iDestruct (is_hash_inj with "H0 H1") as %?; naive_solver.
+  (* case: both inner. *)
+  - admit.
+Admitted.
 
 End proof.
