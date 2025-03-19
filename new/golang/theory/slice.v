@@ -1,5 +1,6 @@
 From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
 From iris.algebra Require Import dfrac.
+From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export list mem exception loop typing auto.
 From Perennial Require Import base.
@@ -120,6 +121,16 @@ Proof.
   iApply (big_sepL_impl with "Hs").
   iModIntro. iIntros "* % ?".
   iApply (typed_pointsto_persist with "[$]").
+Qed.
+
+#[global]
+Instance own_slice_update_to_persistent s dq vs :
+  UpdateIntoPersistently (s ↦*{dq} vs) (s ↦*□ vs).
+Proof.
+  red.
+  iIntros "H".
+  iMod (own_slice_persist with "H") as "#H".
+  iModIntro. iFrame "H".
 Qed.
 
 Global Instance own_slice_timeless s dq vs : Timeless (s ↦*{dq} vs).
