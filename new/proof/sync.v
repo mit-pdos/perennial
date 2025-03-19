@@ -9,17 +9,18 @@ From New.proof Require Import proof_prelude.
 Require Export New.generatedproof.sync.
 
 From New.proof Require Import sync.atomic.
+From New.proof Require Import tok_set.
 
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
 
 Class syncG Σ := {
-    #[global] wg_tokG :: ghost_mapG Σ w32 unit;
+    #[global] wg_tokG :: tok_setG Σ;
     #[global] wg_totalG :: ghost_varG Σ w32
   }.
 
-Definition syncΣ := #[ghost_mapΣ w32 unit ; ghost_varΣ w32].
+Definition syncΣ := #[tok_setΣ; ghost_varΣ w32].
 Global Instance subG_syncΣ{Σ} : subG (syncΣ) Σ → (syncG Σ).
 Proof. solve_inG. Qed.
 
@@ -399,29 +400,17 @@ Implicit Type γ : WaitGroup_names.
 
 (* FIXME: opaque *)
 Definition own_WaitGroup_waiters γ (possible_waiters : w32) : iProp Σ :=
-  ∃ (m : gset w32),
-  ghost_map_auth γ.(waiter_gn) 1 (gset_to_gmap () m) ∗
-  (* XXX: this helps maintain that the max number of waiters is [2^32-1] instead of [2^32]. *)
-  (W32 0) ↪[γ.(waiter_gn)]□ () ∗
-  ⌜ size m = S (uint.nat possible_waiters) ⌝.
+  own_tok_auth_dfrac γ.(waiter_gn) (DfracOwn (1/2)) (uint.nat possible_waiters).
 
 (* FIXME: opaque *)
 Definition own_WaitGroup_wait_token γ : iProp Σ :=
-  ∃ k,
-    k ↪[γ.(waiter_gn)] () ∗
-    (W32 0) ↪[γ.(waiter_gn)]□ ().
-
-Local Definition own_zerostate_auth_half γ (unfinished_waiters : w32): iProp Σ :=
-  ∃ (m : gset w32),
-  ghost_map_auth γ.(zerostate_gn) (1/2) (gset_to_gmap () m) ∗
-  ⌜ size m = uint.nat unfinished_waiters ⌝.
-
-(* FIXME: opaque *)
-Definition own_zerostate_token γ : iProp Σ :=
-  ∃ k, k ↪[γ.(zerostate_gn)] ().
+  own_toks γ.(waiter_gn) 1.
 
 Local Definition is_WaitGroup_inv wg γ N : iProp Σ :=
-  inv (N.@"wg") (∃ counter waiters unfinished_waiters,
+  inv (N.@"wg") (∃ (counter waiters sema possible_waiters : w32) unfinished_waiters,
+  "Hsema" ∷ own_sema γ.(sema_gn) sema ∗
+  "Hsema_zerotoks" ∷  own_toks γ.(zerostate_gn) (uint.nat sema) ∗
+
   "Hptsto" ∷ own_Uint64 (struct.field_ref_f sync.WaitGroup "state" wg) (DfracOwn (1/2)) (enc waiters counter) ∗
   "Hptsto2" ∷ (
       if decide (counter = W32 0 ∧ waiters ≠ W32 0) then True
@@ -429,277 +418,53 @@ Local Definition is_WaitGroup_inv wg γ N : iProp Σ :=
     ) ∗
   "Hctr" ∷ ghost_var γ.(counter_gn) (1/2)%Qp counter ∗
 
-  "Hunfinished" ∷ own_zerostate_auth_half γ unfinished_waiters ∗
-  "Hunfinished_token" ∷  [∗] (replicate (uint.nat unfinished_waiters) (own_WaitGroup_wait_token γ)) ∗
+  (* When Add's caller has [own_waiters 0], this resource implies that there are no waiters. *)
+  "Hwait_toks" ∷  own_toks γ.(waiter_gn) (uint.nat waiters) ∗
+  "Hunfinished_wait_toks" ∷ own_toks γ.(waiter_gn) unfinished_waiters ∗
 
-  "Htoks" ∷ ([∗] (replicate (uint.nat waiters) (own_WaitGroup_wait_token γ))) ∗
-  "%Hunfinished_zero" ∷ ⌜ unfinished_waiters ≠ W32 0 → waiters = W32 0 ∧ counter = W32 0 ⌝
+  "Hzeroauth" ∷ own_tok_auth γ.(zerostate_gn) unfinished_waiters ∗
+
+  (* keeping this to maintain that the number of waiters does not overflow. *)
+  "Hwaiters_bounded" ∷ own_tok_auth_dfrac γ.(waiter_gn) (DfracOwn (1/2)) (uint.nat possible_waiters) ∗
+
+  "%Hunfinished_zero" ∷ ⌜ unfinished_waiters ≠ O → waiters = W32 0 ∧ counter = W32 0 ⌝ ∗
+  "%Hunfinished_bound" ∷ ⌜ Z.of_nat unfinished_waiters < 2^32 ⌝
   )%I.
-
-Local Definition is_WaitGroup_sema_inv γ N : iProp Σ :=
-  inv (N.@"semInv") (∃ (unfinished_waiters sema : w32),
-        "Hs" ∷ own_sema γ.(sema_gn) sema ∗
-        "HT" ∷  [∗] (replicate (uint.nat sema) (own_zerostate_token γ)) ∗
-        "HS" ∷ own_zerostate_auth_half γ unfinished_waiters
-    ).
 
 (* FIXME: opaque *)
 Definition is_WaitGroup wg γ N : iProp Σ :=
   "#Hsem" ∷ is_sema (struct.field_ref_f sync.WaitGroup "sema" wg) γ.(sema_gn) (N.@"sema") ∗
-  "#Hinv" ∷ is_WaitGroup_inv wg γ N ∗
-  "#HsemInv" ∷ is_WaitGroup_sema_inv γ N.
+  "#Hinv" ∷ is_WaitGroup_inv wg γ N.
 
-Lemma size_fin_to_set_w32:
-  size (fin_to_set w32 : gset w32) = (Z.to_nat (2^32 : Z)).
-Proof.
-  unfold fin_to_set.
-  rewrite -> size_list_to_set by apply finite.NoDup_enum.
-  replace (length (finite.enum _)) with (finite.card w32) by reflexivity.
-  pose proof (finite.fin_card (Z.to_nat (2^32 : Z))) as <-.
-  symmetry.
-  set (f := λ (x : fin (Z.to_nat (2^32 : Z))), W32 (Z.of_nat (fin_to_nat x))).
-  unshelve eapply (finite.bijective_card f).
-  {
-    intros ???. subst f.
-    simpl in *.
-    apply fin_to_nat_inj.
-    pose proof (fin_to_nat_lt x).
-    pose proof (fin_to_nat_lt y).
-    intros.
-    (* FIXME: word. *)
-    word_cleanup.
-    word.
-  }
-  {
-    intros ?.
-    subst f. simpl.
-    unshelve eexists (nat_to_fin (p:=uint.nat y) _).
-    2:{ rewrite fin_to_nat_to_fin. word. }
-    word.
-  }
-Qed.
+#[local]
+Instance if_sumbool_timeless {PROP : bi} (P Q : PROP) {_:Timeless P} {_:Timeless Q} A B
+  (x : sumbool A B) :
+  Timeless (if x then P else Q).
+Proof. apply _. Qed.
 
 (* Prepare to Wait() *)
-Lemma alloc_wait_token γ (w : w32) :
+Lemma alloc_wait_token wg γ N (w : w32) :
   uint.Z (word.add w (W32 1)) = uint.Z w + 1 →
-  own_WaitGroup_waiters γ w ==∗ own_WaitGroup_waiters γ (word.add w (W32 1)) ∗ own_WaitGroup_wait_token γ.
+  is_WaitGroup wg γ N -∗
+  own_WaitGroup_waiters γ w ={↑N}=∗ own_WaitGroup_waiters γ (word.add w (W32 1)) ∗ own_WaitGroup_wait_token γ.
 Proof.
-  intros.
-  iIntros "(% & (H &#? & %))".
-  unshelve epose proof (size_pos_elem_of (fin_to_set w32 ∖ m) _) as [new Helem].
-  { rewrite -> size_difference by set_solver. rewrite size_fin_to_set_w32. word. }
-  iMod (ghost_map_insert new () with "[$]") as "[? ?]".
-  { rewrite lookup_gset_to_gmap_None. set_solver. }
-  rewrite -gset_to_gmap_union_singleton.
-  iFrame "∗#".
-  iPureIntro. rewrite H.
-  rewrite size_union //.
-  2:{ set_solver. }
-  rewrite size_singleton. word.
-Qed.
-
-Lemma max_waiters (n : Z) γ :
-  ([∗] replicate (Z.to_nat n) (own_WaitGroup_wait_token γ)) -∗
-  ⌜ n < 2^32 ⌝.
-Proof.
-  iIntros "H".
-  destruct (Z.to_nat n) eqn:Hn.
-  { word. }
-  iAssert (∃ (m : gset w32 ), ⌜ size m = S (Z.to_nat n) ⌝ ∗
-                              ([∗ set] k ∈ m, ∃ dq, k ↪[γ.(waiter_gn)]{dq} ())
-          )%I with "[H]" as "(%m & %Heq & _)".
-  2:{
-    iPureIntro.
-    assert (m ⊆ (fin_to_set w32)) as Hsz by set_solver.
-    apply subseteq_size in Hsz.
-    rewrite size_fin_to_set_w32 in Hsz.
-    rewrite Heq /= in Hsz.
-    word.
-  }
-  rewrite Hn. clear n Hn.
-  rename n0 into n.
-  iInduction n as [|].
-  {
-    iDestruct "H" as "[(% & ? & ?) _]".
-    destruct (decide (k = W32 0)).
-    { iExFalso. subst. iDestruct (ghost_map_elem_valid_2 with "[$] [$]") as %Hv. naive_solver. }
-    iExists {[ k; W32 0 ]}.
-    assert ({[k]} ## ({[W32 0]} : gset w32)) by set_solver.
-    iSplitR.
-    { iPureIntro. rewrite -> size_union by set_solver. rewrite !size_singleton //. }
-    rewrite big_sepS_union // !big_sepS_singleton.
-    iFrame.
-  }
-  { generalize (S n) as n'. intros. clear n. rename n' into n.
-    rewrite replicate_S.
-    iDestruct "H" as "[Helem H]".
-    iDestruct ("IHn" with "[$]") as "(% & % & H)".
-    iDestruct "Helem" as (?) "[? _]".
-    destruct (decide (k ∈ m)).
-    {
-      iExFalso.
-      iDestruct (big_sepS_elem_of_acc with "H") as "[H _]".
-      { done. }
-      iDestruct "H" as (?) "?".
-      iDestruct (ghost_map_elem_valid_2 with "[$] [$]") as %[Hv _].
-      apply dfrac_valid_own_r in Hv. done.
-    }
-    iExists ({[k]} ∪ m).
-    rewrite -> size_union by set_solver.
-    rewrite size_singleton. iSplitR.
-    { word. }
-    rewrite -> big_sepS_union by set_solver.
-    iFrame. rewrite big_sepS_singleton. iFrame.
-  }
+  intros. iIntros "[_ #Hinv] H".
+  iInv "Hinv" as ">Hi". iNamed "Hi".
+  iCombine "Hwaiters_bounded H" gives %[_ ->].
+  iCombine "Hwaiters_bounded H" as "H". rewrite dfrac_op_own Qp.half_half.
+  iMod (own_tok_auth_plus 1 with "H") as "[H Htok]".
+  iModIntro. rewrite <- (Z2Nat.inj_add _ 1) by word. rewrite -H.
+  iDestruct "H" as "[H1 H2]". iSplitR "Htok H2"; by iFrame.
 Qed.
 
 Lemma waiters_none_token_false γ :
   own_WaitGroup_waiters γ (W32 0) -∗ own_WaitGroup_wait_token γ -∗ False.
 Proof.
-  iIntros "(% & Hauth & Hptsto1 & %)".
-  iIntros "(% & Hptsto2 & _)".
-  iCombine "Hauth Hptsto1" gives %Hlookup1.
-  iCombine "Hauth Hptsto2" gives %Hlookup2.
-  destruct (decide (k = W32 0)).
-  { subst. iDestruct (ghost_map_elem_valid_2 with "[$] [$]") as %[Hv _]. naive_solver. }
-  rewrite !lookup_gset_to_gmap_Some in Hlookup1, Hlookup2.
-  intuition.
-  assert ({[W32 0 ; k]} ⊆ m) as Hsz.
-  { set_solver. }
-  apply subseteq_size in Hsz.
-  rewrite -> size_union in Hsz by set_solver.
-  rewrite !size_singleton in Hsz. word.
+  iIntros "H1 H2".
+  iCombine "H1 H2" gives %H. word.
 Qed.
 
-Lemma alloc_zerostate_token uw γ :
-  uint.Z (word.add uw (W32 1)) = uint.Z uw + 1 →
-  own_zerostate_auth_half γ uw -∗ own_zerostate_auth_half γ uw ==∗
-  own_zerostate_auth_half γ (word.add uw (W32 1)) ∗ own_zerostate_auth_half γ (word.add uw (W32 1)) ∗
-  own_zerostate_token γ.
-Proof.
-  intros. iIntros "Ha1 Ha2".
-  iDestruct "Ha1" as "(% & Ha1 & %)".
-  iDestruct "Ha2" as "(% & Ha2 & %)".
-  iCombine "Ha1 Ha2" gives %[_ Heq].
-  apply (f_equal dom) in Heq.
-  rewrite !dom_gset_to_gmap in Heq. subst.
-  iCombine "Ha1 Ha2" as "Ha".
-  unshelve epose proof (size_pos_elem_of (fin_to_set w32 ∖ m0) _) as [new Helem].
-  { rewrite -> size_difference by set_solver. rewrite size_fin_to_set_w32. word. }
-  iMod (ghost_map_insert new () with "Ha") as "[Ha ?]".
-  { rewrite lookup_gset_to_gmap_None. set_solver. }
-  iFrame.
-  rewrite -gset_to_gmap_union_singleton.
-  iDestruct "Ha" as "($ & $)". iPureIntro.
-  apply and_wlog_r; last done.
-  rewrite -> size_union by set_solver.
-  rewrite size_singleton. word.
-Qed.
-
-Lemma alloc_many_zerostate_tokens uw γ :
-  own_zerostate_auth_half γ (W32 0) -∗ own_zerostate_auth_half γ (W32 0) ==∗
-  own_zerostate_auth_half γ uw ∗ own_zerostate_auth_half γ uw ∗ ([∗] replicate (uint.nat uw) (own_zerostate_token γ)).
-Proof.
-  assert (∃ n, n = (uint.nat uw)) as [n Heq].
-  { by eexists. }
-  iInduction n as [] forall (uw Heq).
-  { rewrite -Heq.
-    replace (uw) with (W32 0) by word.
-    iIntros "$ $". rewrite replicate_0. iModIntro. done. }
-  rewrite -Heq.
-  iIntros "? ?".
-  simpl.
-  iMod ("IHn" $! (word.sub uw (W32 1)) with "[] [$] [$]") as "(Huw & Huw' & ?)".
-  { word. }
-  replace (uint.nat (word.sub _ _)) with n by word.
-  iFrame.
-  iMod (alloc_zerostate_token with "[$] [$]") as "(? & ? & $)".
-  { word. }
-  replace (word.add (word.sub _ _) _) with (uw) by ring.
-  by iFrame.
-Qed.
-
-Lemma zerostate_empty_token_false γ :
-  own_zerostate_auth_half γ (W32 0) -∗ own_zerostate_token γ -∗ False.
-Proof.
-  iIntros "(% & Ha1 & %) (% & Hp)".
-  apply size_empty_inv in H.
-  apply leibniz_equiv in H as ->.
-  iCombine "Ha1 Hp" gives %Hbad. done.
-Qed.
-
-Lemma zerostate_tokens_bound (n : nat) w γ :
-  own_zerostate_auth_half γ w -∗ [∗] replicate n (own_zerostate_token γ) -∗ ⌜ n ≤ uint.nat w ⌝.
-Proof.
-  iIntros "(% & Ha & %) H".
-  iAssert (
-      ∃ (x : gset w32),
-        ⌜ size x = n ⌝ ∗
-        ⌜ x ⊆ m ⌝ ∗
-        ([∗ set] k ∈ x, k ↪[γ.(zerostate_gn)] ()) ∗
-        ghost_map_auth γ.(zerostate_gn) (1 / 2) (gset_to_gmap ()%V m)
-    )%I with "[-]" as "(% & % & %Hsz & _)".
-  2:{ iPureIntro. subst. apply subseteq_size in Hsz. word. }
-  iInduction n as [|].
-  {
-    iExists ∅. iSplitR; first done.
-    iSplitR; first done. iFrame. done.
-  }
-  rewrite replicate_S.
-  iDestruct "H" as "[Ht H]".
-  iDestruct ("IHn" with "[$] [$]") as (?) "(% & % & H & Ha)".
-  iDestruct "Ht" as "(% & Ht)".
-  destruct (decide (k ∈ x)).
-  {
-    iDestruct (big_sepS_elem_of_acc with "H") as "[H _]".
-    { eassumption. }
-    iCombine "Ht H" gives %Hbad. exfalso. naive_solver.
-  }
-  iCombine "Ht Ha" gives %Hlookup.
-  apply lookup_gset_to_gmap_Some in Hlookup as [? _].
-  iExists ({[k]} ∪ x).
-  iFrame.
-  iSplitR.
-  { iPureIntro. rewrite -> size_union by set_solver. rewrite size_singleton. word. }
-  iSplitR.
-  { iPureIntro. set_solver. }
-  rewrite -> big_sepS_union by set_solver.
-  iFrame. rewrite big_sepS_singleton. iFrame.
-Qed.
-
-Lemma delete_zerostate_token uw γ :
-  own_zerostate_auth_half γ uw -∗ own_zerostate_auth_half γ uw -∗
-  own_zerostate_token γ ==∗
-  own_zerostate_auth_half γ (word.sub uw (W32 1)) ∗ own_zerostate_auth_half γ (word.sub uw (W32 1)).
-Proof.
-  iIntros "(% & Ha1 & %) (% & Ha2 & %) (% & Ht)".
-  iCombine "Ha1 Ha2" gives %[_ Heq%(f_equal dom)].
-  rewrite !dom_gset_to_gmap in Heq. subst.
-  iCombine "Ha1 Ha2" as "Ha".
-  iCombine "Ha Ht" gives %Hlookup.
-  apply lookup_gset_to_gmap_Some in Hlookup as [Helem _].
-  iMod (ghost_map_delete with "[$] [$]") as "H".
-  iModIntro.
-  rewrite -gset_to_gmap_difference_singleton.
-  iDestruct "H" as "[$ $]".
-  iPureIntro.
-  apply and_wlog_r; last done.
-  rewrite -> size_difference by set_solver.
-  rewrite size_singleton.
-  enough (size m0 ≠ O) by word.
-  intros Hbad. apply size_empty_inv in Hbad.
-  set_solver.
-Qed.
-
-Lemma own_zerostate_auth_half_agree uw uw' γ :
-  own_zerostate_auth_half γ uw -∗ own_zerostate_auth_half γ uw' -∗ ⌜ uw = uw' ⌝.
-Proof.
-  iIntros "(% & ? & %) (% & ? & %)".
-  iDestruct (ghost_map_auth_agree with "[$] [$]") as %Heq.
-  apply (f_equal dom) in Heq.
-  rewrite !dom_gset_to_gmap in Heq. subst. word.
-Qed.
-
+(* FIXME: Opaque *)
 Definition own_WaitGroup γ (counter : w32) : iProp Σ :=
   ghost_var γ.(counter_gn) (1/2)%Qp counter.
 
@@ -714,28 +479,20 @@ Proof.
 
   iMod (ghost_var_alloc (W32 0)) as "[%counter_gn [Hctr1 Hctr2]]".
   iMod (ghost_var_alloc (W32 0)) as "[%sema_gn [Hs1 Hs2]]".
-  iMod (ghost_map_alloc (gset_to_gmap () {[ W32 0 ]})) as "[%waiter_gn [Hwaiters Hw]]".
-  iMod (ghost_map_alloc (gset_to_gmap () ∅)) as "[%zerostate_gn [[Hzerostate Hzerostate2] _]]".
+  iMod (own_tok_auth_alloc) as "[%waiter_gn [Hwaiters Hw2]]".
+  iMod (own_tok_auth_alloc) as "[%zerostate_gn Hzerostate]".
 
   iExists {| sema_gn := sema_gn; counter_gn := counter_gn; zerostate_gn := zerostate_gn; waiter_gn := waiter_gn |}.
-  iEval (rewrite gset_to_gmap_singleton big_sepM_singleton) in "Hw".
-  iMod (ghost_map_elem_persist with "Hw") as "#?".
-  iFrame "∗#". rewrite size_singleton. iSplitL; last done.
+  iFrame "∗#".
   unfold is_WaitGroup.
   iMod (inv_alloc with "[Hsema Hs2]") as "$".
   { iFrame. }
   iDestruct "Hstate" as "[Hstate Hstate2]".
-  iMod (inv_alloc with "[Hstate Hstate2 HnoCopy Hctr1 Hzerostate]") as "$".
-  {
-    iNext. repeat iExists (W32 0).
-    iFrame. iSplitR; first done.
-    rewrite !replicate_0.
-    by rewrite big_sepL_nil.
-  }
+  iMod (own_toks_0 waiter_gn) as "?".
+  iMod (own_toks_0 waiter_gn) as "?".
+  iMod (own_toks_0 zerostate_gn) as "?".
   iMod (inv_alloc with "[-]") as "$".
-  {
-    iFrame. iExists (W32 0). rewrite replicate_0 big_sepL_nil //.
-  }
+  { iNext. repeat iExists (W32 0). iFrame. done. }
   done.
 Qed.
 
@@ -775,14 +532,13 @@ Proof.
   intros delta'.
   wp_start as "#His".
   wp_apply wp_with_defer as "%defer defer".
-  simpl subst. wp_auto_lc 1.
+  simpl subst. wp_auto.
   wp_apply wp_Uint64__Add.
   iMod "HΦ".
   iNamed "HΦ".
   unfold own_WaitGroup.
   iNamed "His".
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iInv "Hinv" as ">Hi" "Hclose".
   iNamed "Hi".
   iApply fupd_mask_intro.
   { solve_ndisj. }
@@ -792,39 +548,30 @@ Proof.
   {
     iExFalso.
     destruct Hw as [-> Hw].
-    destruct (uint.nat waiters) eqn:Hx.
-    { exfalso. apply Hw. word. }
-    iDestruct "Htoks" as "[Htok _]".
-    iDestruct "HnoWaiters" as "[%|HnoWaiter]".
-    { done. }
-    iDestruct (waiters_none_token_false with "[$] [$]") as %[].
+    iDestruct "HnoWaiters" as "[%|HnoWaiter]"; first by exfalso.
+    iCombine "HnoWaiter Hwait_toks" gives %Hbad.
+    exfalso. apply Hw. word.
   }
   iCombine "Hptsto Hptsto2" as "Hptsto".
   iExists _. iFrame.
   rewrite (wg_delta_to_w32 delta') // enc_add_high.
   iMod (ghost_var_update (word.add oldc delta') with "Hctr") as "[Hctr Hctr_in]".
   iIntros "Hwg".
-  destruct (decide (unfinished_waiters = W32 0)).
+  destruct unfinished_waiters.
   2:{
-    iExFalso.
-    destruct (Hunfinished_zero ltac:(done)) as [-> ->].
-    subst.
+    iExFalso. destruct (Hunfinished_zero ltac:(done)) as [-> ->].
     iDestruct "HnoWaiters" as "[%|HnoWaiters]"; first done.
-    destruct (uint.nat unfinished_waiters) eqn:Hx.
-    { exfalso. apply n. word. }
-    rewrite replicate_S.
-    iDestruct "Hunfinished_token" as "[Htok _]".
-    iDestruct (waiters_none_token_false with "[$] [$]") as %[].
+    iCombine "HnoWaiters Hunfinished_wait_toks" gives %Hbad. word.
   }
   subst.
   destruct (decide (word.add oldc delta' = W32 0 ∧ waiters ≠ W32 0)) as [Hwake|HnoWake].
   2:{ (* not done, no need to wake waiters. *)
     iMod "Hmask" as "_".
-    iMod ("Hclose" with "[Hwg Hunfinished Hunfinished_token Hctr Htoks]").
+    iMod ("Hclose" with "[Hwaiters_bounded Hsema Hsema_zerotoks Hwg Hzeroauth Hwait_toks Hunfinished_wait_toks Hctr]").
     {
       iNext.
       iDestruct "Hwg" as "[Hwg Hwg2]".
-      iExists _, _, (W32 0); iFrame "Hwg ∗".
+      iExists _, _, _, _, O; iFrame "Hwg ∗".
       rewrite decide_False; last intuition.
       iFrame. done.
     }
@@ -889,6 +636,7 @@ Proof.
     2:{ by apply dec_stable. }
     apply Znot_gt_le in Heq1.
     exfalso.
+    (* FIXME: word *)
     apply H. clear H. apply word.signed_inj.
     replace (sint.Z (W32 0)) with 0 in * by reflexivity.
     intuition.
@@ -902,14 +650,14 @@ Proof.
   (* will have to wake *)
   iDestruct "Hwg" as "[Hwg Hwg2]".
   iMod "Hmask" as "_".
-  iMod ("Hclose" with "[Hwg2 Hunfinished Hunfinished_token Hctr Htoks]") as "_".
+  iMod ("Hclose" with "[Hwaiters_bounded Hsema Hsema_zerotoks Hwg2 Hzeroauth Hwait_toks Hunfinished_wait_toks Hctr]") as "_".
   {
     iNext.
-    iExists _, _, (W32 0); iFrame "Hwg2 ∗".
+    iExists _, _, _, _, O; iFrame "Hwg2 ∗".
     rewrite decide_True; last intuition.
     done.
   }
-  iMod ("HΦ" with "[$] [$]").
+  iMod ("HΦ" with "[$] [$]") as "HΦ".
   iModIntro.
   wp_auto. rewrite enc_get_high enc_get_low.
 
@@ -972,16 +720,15 @@ Proof.
   iModIntro.
   wp_auto.
   rewrite bool_decide_true //.
-  wp_auto_lc 2.
 
   (* want to get a bunch of unfinisheds. *)
+  wp_auto.
   wp_apply wp_Uint64__Store.
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iInv "Hinv" as ">Hi" "Hclose".
   iApply fupd_mask_intro.
   { set_solver. }
   iIntros "Hmask".
-  clear Hunfinished_zero.
+  clear Hunfinished_zero sema.
   iNamed "Hi".
   iClear "Hptsto2".
   iCombine "Hwg Hptsto"  gives %[_ Heq].
@@ -991,36 +738,21 @@ Proof.
   iExists _. iFrame.
   iIntros "Hwg".
   iMod "Hmask" as "_".
-  destruct (uint.nat unfinished_waiters) eqn:Huf.
-  2:{
-    exfalso.
-    specialize (Hunfinished_zero ltac:(word)).
-    intuition.
-  }
+  destruct (unfinished_waiters) eqn:Huf.
+  2:{ exfalso. specialize (Hunfinished_zero ltac:(word)). intuition. }
   clear Hunfinished_zero.
-  iClear "Hunfinished_token".
-  iInv "HsemInv" as "Hi" "Hclose2".
-  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-  iNamed "Hi".
-  iDestruct (own_zerostate_auth_half_agree with "[$] [$]") as %->.
-  replace (unfinished_waiters) with (W32 0) by word.
-  iDestruct (zerostate_tokens_bound with "[$] [$]") as %Hs.
+  iClear "Hunfinished_wait_toks".
+  iCombine "Hzeroauth Hsema_zerotoks" gives %Hs.
   replace (sema) with (W32 0) by word.
-  clear Huf Hs unfinished_waiters.
-  iMod (alloc_many_zerostate_tokens waiters with "[$] [$]") as "(Hunfinished & HS & Hunfinished_tokens)".
+  clear Huf Hs unfinished_waiters sema.
+  iMod (own_tok_auth_plus (uint.nat waiters) with "[$Hzeroauth]") as "[Hzeroauth Hzerotoks]".
   iEval (rewrite enc_0) in "Hwg".
   iDestruct "Hwg" as "[Hwg Hwg2]".
   destruct Hwake as [Hwake1 Hwake2].
   rewrite Hwake1.
-  iMod ("Hclose2" with "[HS Hs HT]") as "_".
-  { iFrame. }
-  iMod ("Hclose" with "[Hwg Hwg2 Hunfinished Htoks Hctr]") as "_".
-  {
-    iNext. iExists _, _, waiters.
-    iFrame. rewrite replicate_0.
-    iSplitL; first by iApply big_sepL_nil.
-    done.
-  }
+  iMod (own_toks_0 γ.(waiter_gn)) as "Hwait_toks'".
+  iMod ("Hclose" with "[Hwaiters_bounded Hwg Hwg2 Hzeroauth Hwait_toks Hwait_toks' Hctr Hsema Hsema_zerotoks]") as "_".
+  { iNext. iFrame "Hwg ∗". iPureIntro. split; [done | word]. }
   iModIntro.
   wp_auto.
   (* call semrelease. *)
@@ -1028,7 +760,7 @@ Proof.
   iAssert (
       ∃ (wrem : w32),
         "w" ∷ w_ptr ↦ wrem ∗
-        "Hunfinished_tokens" ∷ [∗] replicate (uint.nat wrem) (own_zerostate_token γ)
+        "Hzerotoks" ∷ own_toks γ.(zerostate_gn) (uint.nat wrem)
     )%I with "[$]" as "HloopInv".
 
   wp_for.
@@ -1044,37 +776,29 @@ Proof.
   (* wake up another waiter *)
   rewrite bool_decide_eq_false in Hwrem.
   rewrite decide_True //.
-  wp_auto_lc 1.
+  wp_auto.
   wp_apply (wp_runtime_Semrelease with "[$]").
-  iInv "HsemInv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-  clear sema.
+  iInv "Hinv" as ">Hi" "Hclose".
   iNamed "Hi".
   iApply fupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
-  iExists _; iFrame "Hs".
-  iIntros "Hs".
+  iExists _; iFrame "Hsema".
+  iIntros "Hsema".
   iMod "Hmask" as "_".
   replace (uint.nat wrem)%nat with (1+(uint.nat (word.sub wrem (W32 1))))%nat.
-  2:{
-    (* FIXME: word *)
-    apply w32_val_neq in Hwrem. word.
-  }
-  rewrite replicate_S.
-  iDestruct "Hunfinished_tokens" as "[HTnew Hunfinished_tokens]".
+  2:{ (* FIXME: word *) apply w32_val_neq in Hwrem. word. }
+  iDestruct (own_toks_plus with "Hzerotoks") as "[Hzerotok Hzerotoks]".
+  iCombine "Hsema_zerotoks Hzerotok" as "Hsema_zerotok".
+  iCombine "Hzeroauth Hsema_zerotok" gives %Hbound.
 
-  iMod ("Hclose" with "[Hs HT HTnew HS]").
+  iMod ("Hclose" with "[-w defer delta v state wg Hzerotoks HΦ]").
   {
-    iDestruct (zerostate_tokens_bound (S (uint.nat sema)) with "[$] [$]") as %Hs.
-    iFrame "Hs ∗".
-    replace (uint.nat (word.add sema (W32 1))) with (S (uint.nat sema))%nat by word.
+    iFrame "Hsema ∗ %".
+    replace (uint.nat (word.add sema (W32 1))) with ((uint.nat sema) + 1)%nat by word.
     iFrame.
   }
-  iModIntro.
-  wp_auto.
-  wp_for_post.
-  iFrame.
+  iModIntro. wp_auto. wp_for_post. iFrame.
 Qed.
 
 Lemma wp_WaitGroup__Done (wg : loc) γ N :
@@ -1117,11 +841,10 @@ Proof.
   wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
   wp_auto.
   wp_for_core. (* TODO: need to set later credits *)
-  wp_auto_lc 1.
+  wp_auto.
   rewrite decide_True //. wp_auto.
   wp_apply (wp_Uint64__Load).
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iInv "Hinv" as ">Hi" "Hclose".
   iNamed "Hi".
   destruct (decide (counter = W32 0)).
   { (* counter is zero, so can return. *)
@@ -1136,7 +859,7 @@ Proof.
     iIntros "Hptsto".
     iMod ("HΦ" with "[//] [$]") as "HΦ".
     iMod "Hmask" as "_".
-    iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hwg]").
+    iMod ("Hclose" with "[Hwaiters_bounded Hptsto Hptsto2 Hwait_toks Hunfinished_wait_toks Hzeroauth Hwg Hsema Hsema_zerotoks]").
     { by iFrame. }
     iModIntro.
     wp_auto. rewrite enc_get_high enc_get_low bool_decide_true //=.
@@ -1152,22 +875,19 @@ Proof.
   iIntros "Hptsto".
   iMod "Hmask" as "_".
 
-  iDestruct (max_waiters (1 + uint.Z waiters) with "[-]") as %HwaitersLe.
-  {
-    rewrite -> Z2Nat.inj_add by word.
-    iFrame.
-  }
-  iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hctr]") as "_".
+  iCombine "HR_in Hwait_toks" as "Hwait_toks'".
+  iCombine "Hwaiters_bounded Hwait_toks'" gives %HwaitersLe.
+  iDestruct (own_toks_plus with "Hwait_toks'") as "[HR_in Hwait_toks]".
+  iMod ("Hclose" with "[Hwaiters_bounded Hptsto Hptsto2 Hwait_toks Hunfinished_wait_toks Hzeroauth Hctr Hsema Hsema_zerotoks]").
   { by iFrame. }
   iModIntro.
   wp_auto.
   rewrite enc_get_high enc_get_low bool_decide_false //.
-  wp_auto_lc 1.
+  wp_auto.
   replace (1%Z) with (uint.Z (W32 1)) by reflexivity.
   rewrite -> enc_add_low by word.
   wp_apply (wp_Uint64__CompareAndSwap).
-  iInv "Hinv" as "Hi" "Hclose".
-  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iInv "Hinv" as ">Hi" "Hclose".
   iNamed "Hi".
   setoid_rewrite bool_decide_decide.
   iApply fupd_mask_intro.
@@ -1183,90 +903,69 @@ Proof.
     iSplitR; first done.
     iIntros "[Hptsto Hptsto2]".
     iMod "Hmask" as "_".
-    iMod ("Hclose" with "[HR_in Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hctr]") as "_".
+    iMod ("Hclose" with "[Hwaiters_bounded HR_in Hptsto Hptsto2 Hwait_toks Hunfinished_wait_toks Hsema Hsema_zerotoks Hzeroauth Hctr]") as "_".
     {
       iNext. repeat iExists _. iFrame "Hptsto ∗".
-      iCombine "HR_in Htoks" as "Htoks".
-      iDestruct (max_waiters (1+uint.Z waiters) with "[Htoks]") as %Hmax.
-      {
-        rewrite Z2Nat.inj_add //.
-        word.
-      }
+      iCombine "HR_in Hwait_toks" as "Hwait_toks".
       replace (uint.nat (word.add waiters (W32 1))) with (1 + uint.nat waiters)%nat by word.
       simpl. iFrame.
       iSplitL.
       { by destruct decide. }
-      iPureIntro.
+      iPureIntro. split; last done.
       intros Hun. exfalso. naive_solver.
     }
     iModIntro.
-    wp_auto_lc 1.
+    wp_auto.
 
-    clear n unfinished_waiters Hunfinished_zero unfinished_waiters0 Hunfinished_zero0.
+    clear sema n unfinished_waiters Hunfinished_zero Hunfinished_bound unfinished_waiters0 Hunfinished_zero0 Hunfinished_bound0.
 
     wp_apply (wp_runtime_SemacquireWaitGroup with "[$]").
-    iInv "HsemInv" as "Hi" "Hclose".
-    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+    iInv "Hinv" as ">Hi" "Hclose".
     iNamed "Hi".
     iApply fupd_mask_intro.
     { solve_ndisj. }
     iIntros "Hmask".
-    iExists _; iFrame "Hs".
+    iExists _; iFrame "Hsema".
     iIntros "%Hsem Hsema".
     destruct (uint.nat sema) eqn:Hsema.
     { exfalso. lia. }
-    rewrite replicate_S /=.
-    iDestruct "HT" as "[Htok HT]".
+    replace (S n) with (1 + n)%nat by done.
+    iDestruct (own_toks_plus with "Hsema_zerotoks") as "[Hzerotok Hsema_zerotoks]".
     iMod "Hmask" as "_".
-    iMod ("Hclose" with "[HT HS Hsema]") as "_".
+    iMod ("Hclose" with "[Hwaiters_bounded Hptsto Hptsto2 Hwait_toks Hunfinished_wait_toks Hsema Hsema_zerotoks Hzeroauth Hctr]") as "_".
     {
       iNext. iFrame.
       replace (uint.nat (word.sub sema (W32 1))) with n by word.
-      iFrame.
+      iFrame. done.
     }
     iModIntro.
-    wp_auto_lc 2.
+    wp_auto.
     wp_apply (wp_Uint64__Load).
-    iInv "Hinv" as "Hi" "Hclose".
-    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+    iInv "Hinv" as ">Hi" "Hclose".
     iClear "v w state". clear v_ptr counter w_ptr waiters state_ptr HwaitersLe.
-    clear unfinished_waiters sema n Hsema Hsem.
+    clear unfinished_waiters sema n Hsema Hsem Hunfinished_zero Hunfinished_bound.
     iNamed "Hi".
     iApply fupd_mask_intro.
     { solve_ndisj. }
     iIntros "Hmask".
     iExists _. iFrame "Hptsto".
-    destruct (decide (unfinished_waiters = W32 0)).
-    {
-      subst.
-      iDestruct (zerostate_empty_token_false with "[$] [$]") as %[].
-    }
-    specialize (Hunfinished_zero ltac:(done)) as [-> ->].
+    iCombine "Hzeroauth Hzerotok" gives %Hunfinished_pos.
+    specialize (Hunfinished_zero ltac:(lia)) as [-> ->].
     iIntros "Hptsto".
     iMod "Hmask" as "_".
 
     (* now, deallocate Htok. *)
-    iInv "HsemInv" as "Hi" "Hclose2".
-    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-    iNamed "Hi".
-    iDestruct (own_zerostate_auth_half_agree with "[$] [$]") as %->.
-    iMod (delete_zerostate_token with "[$] [$] [$]") as "[Hunfinished HS]".
-    destruct (uint.nat unfinished_waiters) eqn:Hbad.
-    { exfalso. apply n. word. }
-    rewrite replicate_S /=.
-    iDestruct "Hunfinished_token" as "[HR Hunfinished_token]".
-    iMod ("Hclose2" with "[$]") as "_".
+    destruct unfinished_waiters; first by (exfalso; lia).
+    iMod (own_tok_auth_delete_S with "Hzeroauth Hzerotok") as "Hzeroauth".
+    replace (S _) with (1 + unfinished_waiters)%nat by done.
+    iDestruct (own_toks_plus with "Hunfinished_wait_toks") as "[HR Hunfinished_wait_toks]".
     iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "HΦ" as (?) "[Hwg HΦ]".
     { solve_ndisj. }
     iCombine "Hwg Hctr" gives %[_ ->].
     iMod ("HΦ" with "[//] [$Hwg]") as "HΦ".
     iMod "Hmask".
-    iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hctr]") as "_".
-    {
-      iFrame.
-      replace (uint.nat (word.sub _ _)) with n0 by word.
-      iFrame. done.
-    }
+    iMod ("Hclose" with "[Hwaiters_bounded Hptsto Hptsto2 Hwait_toks Hunfinished_wait_toks Hsema Hsema_zerotoks Hzeroauth Hctr]") as "_".
+    { iFrame. iPureIntro. split; [done | word]. }
     iModIntro.
     wp_auto.
     wp_for_post.
@@ -1277,7 +976,7 @@ Proof.
     iSplitR; first done.
     iIntros "Hptsto".
     iMod "Hmask" as "_".
-    iMod ("Hclose" with "[Hptsto Hptsto2 Htoks Hunfinished Hunfinished_token Hctr]") as "_".
+    iMod ("Hclose" with "[Hwaiters_bounded Hptsto Hptsto2 Hwait_toks Hunfinished_wait_toks Hsema Hsema_zerotoks Hzeroauth Hctr]") as "_".
     { iFrame. done. }
     iModIntro. wp_auto.
     wp_for_post.
