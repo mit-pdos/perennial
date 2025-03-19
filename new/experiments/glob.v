@@ -6,16 +6,17 @@ Import Ltac2.
 
 Ltac2 is_glob_identifier_char (x : char) : bool :=
   let n := Char.to_int x in
-  let alpha := Bool.and (Int.le n 123) (Int.le 65 n) in
+  let alpha_upper := Bool.and (Int.le n 90) (Int.le 65 n) in
+  let alpha_lower := Bool.and (Int.le n 122) (Int.le 97 n) in
   let num := Bool.and (Int.le n 57) (Int.le 48 n) in
-  if (Bool.or alpha num) then true
+  if (Bool.or (Bool.or alpha_lower alpha_upper) num) then true
   else match (String.make 1 x) with
        | "_" => true | "'" => true | "*" => true | _ => false
        end.
 
 Ltac2 is_glob_char (x : char) : bool := Int.equal 42 (Char.to_int x).
 
-Ltac2 glob (handle_glob : int -> string -> string) (x : string) : string :=
+Ltac2 glob (handle_glob : string -> string -> string) (x : string) : string :=
   let word_start := Ref.ref 0 in
   let glob_pos : int option Ref.ref := Ref.ref None in
 
@@ -25,8 +26,10 @@ Ltac2 glob (handle_glob : int -> string -> string) (x : string) : string :=
       match (Ref.get glob_pos) with
       | None => gs
       | Some p => (* and if it has a glob in it, then handle it. *)
-          let glob_rel_pos := (Int.sub p (Ref.get word_start)) in
-          handle_glob glob_rel_pos gs
+          let gp := (Int.sub p (Ref.get word_start)) in
+          let pref := (String.sub gs 0 gp) in
+          let suff := (String.sub gs (Int.add gp 1) (Int.sub (String.length gs) (Int.add gp 1))) in
+          handle_glob pref suff
       end
     else ""
   in
@@ -45,8 +48,11 @@ Ltac2 glob (handle_glob : int -> string -> string) (x : string) : string :=
   loop 0.
 
 Ltac2 Eval glob
-  (fun gp g =>
-     let pre := (String.sub g 0 gp) in
-     let post := (String.sub g (Int.add gp 1) (Int.sub (String.length g) (Int.add gp 1))) in
+  (fun pre post =>
      String.concat "" [pre; "GLOB"; post] )
   "[Hstruct_*] [//=] [$] [Hwg*_2]".
+
+Ltac2 handle_iris_glob pref suff := String.concat "" [pref; "1"; suff; " "; pref; "2"; suff].
+Ltac2 iris_glob x := glob handle_iris_glob x.
+
+Ltac2 Eval iris_glob "[Hstruct_*] [//] [$] [Hwg*_2]".
