@@ -107,11 +107,11 @@ Proof. iIntros "H0 H1". iApply (is_merk_proof_recur_inj with "H0 H1"). Qed.
 
 Fixpoint is_merk_tree_recur (depth_inv : nat)
     (elems : gmap (list w8) (list w8)) (hash : list w8) : iProp Σ :=
-  match (depth_inv, map_to_list elems) with
-  | (_, []) => is_hash [empty_node_tag] hash
-  | (_, [(label, val)]) => is_hash (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
-  | (0%nat, _ :: _ :: _) => False
-  | (S depth_inv', _ :: _ :: _) =>
+  match (map_to_list elems, depth_inv) with
+  | ([], _) => is_hash [empty_node_tag] hash
+  | ([(label, val)], _) => is_hash (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
+  | (_ :: _ :: _, 0%nat) => False
+  | (_ :: _ :: _, S depth_inv') =>
     let depth := (256-depth_inv)%nat in
     ∃ elems0 elems1 next_hash0 next_hash1,
     ⌜ elems0 ∪ elems1 = elems ⌝ ∗
@@ -122,5 +122,19 @@ Fixpoint is_merk_tree_recur (depth_inv : nat)
     is_merk_tree_recur depth_inv' elems1 next_hash1 ∗
     is_hash (inner_node_tag :: next_hash0 ++ next_hash1) hash
   end.
+
+Definition is_merk_tree (elems : gmap (list w8) (list w8))
+    (dig : list w8) : iProp Σ :=
+  is_merk_tree_recur 256 elems dig.
+
+Lemma get_merk_proof depth_inv label val elems hash :
+  elems !! label = val →
+  is_merk_tree_recur depth_inv elems hash -∗
+  ∃ proof, is_merk_proof_recur (256-depth_inv)%nat label val proof hash.
+Proof.
+  iIntros (Hlook) "Htree".
+  rewrite /is_merk_tree_recur.
+  destruct (map_to_list elems); simpl.
+Admitted.
 
 End proof.
