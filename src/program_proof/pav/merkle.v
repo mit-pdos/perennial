@@ -116,10 +116,8 @@ Fixpoint is_merk_tree_recur (depth_inv : nat)
     ∃ elems0 elems1 next_hash0 next_hash1,
     ⌜ elems0 ∪ elems1 = elems ⌝ ∗
     ⌜ elems0 ##ₘ elems1 ⌝ ∗
-    ⌜ (∀ l, l ∈ dom elems0 →
-      match get_bit l depth with None => False | Some b => ¬Is_true b end) ⌝ ∗
-    ⌜ (∀ l, l ∈ dom elems1 →
-      match get_bit l depth with None => False | Some b => Is_true b end) ⌝ ∗
+    ⌜ (∀ l, l ∈ dom elems0 → get_bit l depth = Some false) ⌝ ∗
+    ⌜ (∀ l, l ∈ dom elems1 → get_bit l depth = Some true) ⌝ ∗
     is_merk_tree_recur depth_inv' elems0 next_hash0 ∗
     is_merk_tree_recur depth_inv' elems1 next_hash1 ∗
     is_hash (inner_node_tag :: next_hash0 ++ next_hash1) hash
