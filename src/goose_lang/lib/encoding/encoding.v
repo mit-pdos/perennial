@@ -120,6 +120,7 @@ Theorem u32_le_to_sru (x: u32) :
                    (cons #(W8 (uint.Z (word.sru x (W32 (3%nat * 8)))))
                          nil))).
 Proof.
+  rewrite u32_le_unseal /u32_le_def.
   rewrite /b2val.
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite -word_byte_extract; last lia.
@@ -134,6 +135,7 @@ Theorem wp_EncodeUInt32 (l: loc) (x: u32) vs s E :
     EncodeUInt32 #x #l @ s ; E
   {{{ RET #(); l ↦∗[byteT] (b2val <$> u32_le x) }}}.
 Proof.
+  rewrite u32_le_unseal /u32_le_def.
   iIntros (Φ) "(>Hl & %) HΦ".
   unfold EncodeUInt32.
   repeat (destruct vs; simpl in H; [ congruence | ]).
@@ -183,6 +185,7 @@ Definition u64_le_bytes (x: u64) : list val :=
 
 Lemma u64_le_bytes_length x : length (u64_le_bytes x) = w64_bytes.
 Proof.
+  rewrite /u64_le_bytes u64_le_unseal /u64_le_def.
   rewrite length_fmap //.
 Qed.
 
@@ -191,6 +194,7 @@ Theorem wp_EncodeUInt64 (l: loc) (x: u64) vs stk E :
     EncodeUInt64 #x #l @ stk ; E
   {{{ RET #(); l ↦∗[byteT] (b2val <$> u64_le x) }}}.
 Proof.
+  rewrite u64_le_unseal /u64_le_def.
   iIntros (Φ) "(>Hl & %) HΦ".
   unfold EncodeUInt64.
   repeat (destruct vs; simpl in H; [ congruence | ]).
@@ -281,11 +285,12 @@ Proof.
   { iPureIntro.
     rewrite length_take; lia. }
   iIntros "Henc".
-  change (Z.to_nat 8) with 8%nat.
-  iDestruct (array_app with "[$Henc $Hrest]") as "Htogether".
   iApply "HΦ".
-  iFrame.
+  change (Z.to_nat 8) with 8%nat.
   rewrite length_app length_drop u64_le_bytes_length.
+  rewrite /u64_le_bytes u64_le_unseal /u64_le_def.
+  iDestruct (array_app with "[$Henc $Hrest]") as "Htogether".
+  iFrame.
   iPureIntro.
   lia.
 Qed.
@@ -295,6 +300,7 @@ Definition u32_le_bytes (x: u32) : list val :=
 
 Lemma u32_le_bytes_length x : length (u32_le_bytes x) = w32_bytes.
 Proof.
+  rewrite /u32_le_bytes u32_le_unseal /u32_le_def.
   rewrite length_fmap //.
 Qed.
 
@@ -316,11 +322,12 @@ Proof.
   { iPureIntro.
     rewrite length_take; lia. }
   iIntros "Henc".
-  change (Z.to_nat 4) with 4%nat.
-  iDestruct (array_app with "[$Henc $Hrest]") as "Htogether".
   iApply "HΦ".
-  iFrame.
+  change (Z.to_nat 4) with 4%nat.
   rewrite length_app length_drop u32_le_bytes_length.
+  rewrite /u32_le_bytes u32_le_unseal /u32_le_def.
+  iDestruct (array_app with "[$Henc $Hrest]") as "Htogether".
+  iFrame.
   iPureIntro.
   lia.
 Qed.
@@ -522,6 +529,7 @@ Theorem decode_encode (x : w32) :
 Proof.
   apply word.unsigned_inj.
   pose proof (u32_le_to_word x).
+  rewrite u32_le_unseal /u32_le_def in H.
   cbv [le_to_u32 u32_le map LittleEndian.combine LittleEndian.split length Datatypes.HList.tuple.to_list Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2] in H.
   rewrite Z.shiftl_0_l in H.
   rewrite Z.lor_0_r in H.
@@ -565,6 +573,7 @@ Theorem decode_encode64 (x : w64) :
 Proof.
   apply word.unsigned_inj.
   pose proof (u64_le_to_word x).
+  rewrite u64_le_unseal /u64_le_def in H.
   cbv [le_to_u64 u64_le map LittleEndian.combine LittleEndian.split length Datatypes.HList.tuple.to_list Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2] in H.
   rewrite Z.shiftl_0_l in H.
   rewrite Z.lor_0_r in H.
@@ -597,6 +606,7 @@ Theorem wp_DecodeUInt32 (l: loc) q (x: u32) s E :
     DecodeUInt32 #l @ s ; E
   {{{ RET #x; l ↦∗[byteT]{q} (b2val <$> u32_le x) }}}.
 Proof.
+  rewrite u32_le_unseal /u32_le_def.
   iIntros (Φ) ">Hl HΦ".
   cbv [u32_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite ?array_cons ?loc_add_assoc.
@@ -620,6 +630,7 @@ Theorem wp_DecodeUInt64 (l: loc) q (x: u64) s E :
     DecodeUInt64 #l @ s ; E
   {{{ RET #x; l ↦∗[byteT]{q} (b2val <$> u64_le x) }}}.
 Proof.
+  rewrite u64_le_unseal /u64_le_def.
   iIntros (Φ) ">Hl HΦ".
   cbv [u64_le fmap list_fmap LittleEndian.split HList.tuple.to_list List.map].
   rewrite ?array_cons ?loc_add_assoc.
@@ -681,7 +692,8 @@ Proof.
   wp_apply (wp_UInt64Get with "[$Hs]").
   { iPureIntro.
     rewrite Htake8.
-    rewrite take_app_le; len; eauto. }
+    rewrite take_app_length'; [done|].
+    by rewrite u64_le_bytes_length. }
   iIntros "Hs".
   rewrite -Htake8.
   iApply "HΦ".
@@ -694,7 +706,7 @@ Proof.
   apply (f_equal length) in Htake8.
   autorewrite with len in Htake8.
   rewrite Htake8.
-  auto.
+  by rewrite u64_le_bytes_length.
 Qed.
 
 Theorem wp_UInt64Get' stk E s q (x: u64) :

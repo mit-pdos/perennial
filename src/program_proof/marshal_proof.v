@@ -231,8 +231,7 @@ Proof.
   rewrite -!fmap_app.
   iSplitR; first eauto.
   iFrame "Hs". iModIntro.
-  rewrite encoded_length_app1.
-  change (length (encode1 (EncUInt64 x))) with 8%nat.
+  rewrite encoded_length_app1 u64_le_length.
   iSplitR; first by iPureIntro; len.
   iSplitR; first by iPureIntro; len.
   iSplitL "Hoff".
@@ -276,7 +275,7 @@ Proof.
   rewrite -!fmap_app.
   iSplitR; first eauto.
   iFrame "Hs". iModIntro.
-  rewrite encoded_length_app1.
+  rewrite encoded_length_app1 u32_le_length.
   change (length (encode1 _)) with 4%nat.
   iSplitR; first by iPureIntro; len.
   iSplitR; first by iPureIntro; len.
@@ -493,7 +492,8 @@ Proof.
   { eapply has_encoding_inv in Henc as [extra [Henc ?]].
     rewrite -fmap_drop -fmap_take.
     rewrite Henc.
-    reflexivity. }
+    rewrite encode_cons -(assoc_L (++)) take_app_length'; [done|].
+    by rewrite u64_le_length. }
   iIntros "Hs2".
   iDestruct (slice.own_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
   iApply "HΦ".
@@ -502,7 +502,7 @@ Proof.
   pose proof (has_encoding_length Henc).
   autorewrite with len in H.
   rewrite encoded_length_cons in H.
-  change (length (encode1 _)) with 8%nat in H.
+  rewrite u64_le_length in H.
   iSplitR; first iPureIntro.
   { word. }
   iPureIntro.
@@ -534,7 +534,8 @@ Proof.
   { eapply has_encoding_inv in Henc as [extra [Henc ?]].
     rewrite -fmap_drop -fmap_take.
     rewrite Henc.
-    reflexivity. }
+    rewrite encode_cons -(assoc_L (++)) take_app_length'; [done|].
+    by rewrite u32_le_length. }
   iIntros "Hs2".
   iDestruct (slice.own_slice_small_take_drop_1 with "[$Hs1 $Hs2]") as "Hs"; first by word.
   iApply "HΦ".
@@ -543,6 +544,7 @@ Proof.
   pose proof (has_encoding_length Henc).
   autorewrite with len in H.
   rewrite encoded_length_cons in H.
+  rewrite u32_le_length in H.
   change (length (encode1 _)) with 4%nat in H.
   iSplitR; first iPureIntro.
   { word. }
