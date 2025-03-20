@@ -105,22 +105,29 @@ Proof. iIntros "H0 H1". iApply (is_merk_proof_recur_inj with "H0 H1"). Qed.
 
 (** Merkle trees. *)
 
-Fixpoint is_merk_tree_recur (depth : nat)
+Fixpoint is_merk_tree_recur (depth_inv : nat)
     (elems : gmap (list w8) (list w8)) (hash : list w8) : iProp Σ :=
-  match map_to_list elems with
-  | [] => is_hash [empty_node_tag] hash
-  | [(label, val)] => is_hash (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
-  | _ =>
-    ∃ elems0 elems1 next_hash0 next_hash1,
-    ⌜ elems0 ∪ elems1 = elems ⌝ ∗
-    ⌜ elems0 ##ₘ elems1 ⌝ ∗
-    ⌜ (∀ l, l ∈ dom elems0 →
-      match get_bit l depth with None => False | Some b => ¬Is_true b end) ⌝ ∗
-    ⌜ (∀ l, l ∈ dom elems1 →
-      match get_bit l depth with None => False | Some b => Is_true b end) ⌝ ∗
-    is_merk_tree_recur (S depth) elems0 next_hash0 ∗
-    is_merk_tree_recur (S depth) elems1 next_hash1 ∗
-    is_hash (inner_node_tag :: next_hash0 ++ next_hash1) hash
+  match (depth_inv, map_to_list elems) with
+  | (_, []) => is_hash [empty_node_tag] hash
+  | (_, [(label, val)]) => is_hash (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
+  | (0%nat, _ :: _ :: _) => False
+  | (S depth_inv', _ :: _ :: _) =>
+    match map_to_list elems with
+    | [] => is_hash [empty_node_tag] hash
+    | [(label, val)] => is_hash (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
+    | _ =>
+      let depth := (256-depth_inv)%nat in
+      ∃ elems0 elems1 next_hash0 next_hash1,
+      ⌜ elems0 ∪ elems1 = elems ⌝ ∗
+      ⌜ elems0 ##ₘ elems1 ⌝ ∗
+      ⌜ (∀ l, l ∈ dom elems0 →
+        match get_bit l depth with None => False | Some b => ¬Is_true b end) ⌝ ∗
+      ⌜ (∀ l, l ∈ dom elems1 →
+        match get_bit l depth with None => False | Some b => Is_true b end) ⌝ ∗
+      is_merk_tree_recur depth_inv' elems0 next_hash0 ∗
+      is_merk_tree_recur depth_inv' elems1 next_hash1 ∗
+      is_hash (inner_node_tag :: next_hash0 ++ next_hash1) hash
+    end
   end.
 
 End proof.
