@@ -24,6 +24,8 @@ Lemma u64_le_seal_len x :
   length $ u64_le_seal x = 8%nat.
 Proof. Admitted.
 
+(** Merkle proofs. *)
+
 Fixpoint is_merk_proof_recur (depth : nat) (label : list w8)
     (val : option $ list w8) (proof : list $ list w8)
     (hash : list w8) : iProp Σ :=
@@ -100,5 +102,25 @@ Lemma is_merk_proof_inj label val0 val1 proof0 proof1 dig :
   is_merk_proof label val1 proof1 dig -∗
   ⌜ val0 = val1 ⌝.
 Proof. iIntros "H0 H1". iApply (is_merk_proof_recur_inj with "H0 H1"). Qed.
+
+(** Merkle trees. *)
+
+Fixpoint is_merk_tree_recur (depth : nat)
+    (elems : gmap (list w8) (list w8)) (hash : list w8) : iProp Σ :=
+  match map_to_list elems with
+  | [] => is_hash [empty_node_tag] hash
+  | [(label, val)] => is_hash (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
+  | _ =>
+    ∃ elems0 elems1 next_hash0 next_hash1,
+    ⌜ elems0 ∪ elems1 = elems ⌝ ∗
+    ⌜ elems0 ##ₘ elems1 ⌝ ∗
+    ⌜ (∀ l, l ∈ dom elems0 →
+      match get_bit l depth with None => False | Some b => ¬Is_true b end) ⌝ ∗
+    ⌜ (∀ l, l ∈ dom elems1 →
+      match get_bit l depth with None => False | Some b => Is_true b end) ⌝ ∗
+    is_merk_tree_recur (S depth) elems0 next_hash0 ∗
+    is_merk_tree_recur (S depth) elems1 next_hash1 ∗
+    is_hash (inner_node_tag :: next_hash0 ++ next_hash1) hash
+  end.
 
 End proof.
