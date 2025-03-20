@@ -72,15 +72,14 @@ Lemma is_merk_proof_recur_inj depth label val0 val1 proof0 proof1 hash :
 Proof.
   iIntros "H0 H1".
   iInduction (proof0) as [|sib_hash0] "IH" forall (depth proof1 hash).
-  { destruct proof1; simpl.
-    - repeat case_match; try done;
-        iDestruct (is_hash_inj with "H0 H1") as %Heq; try naive_solver.
-      iPureIntro. simplify_eq/=.
-      apply app_inj_1 in Heq; [naive_solver|].
-      by rewrite !u64_le_seal_len.
-    - iDestruct "H1" as (?) "(_ & _ & H1)".
+  { destruct proof1; simpl;
+      [|iDestruct "H1" as (?) "(_ & _ & H1)"];
       repeat case_match; try done;
-        iDestruct (is_hash_inj with "H0 H1") as %Heq; naive_solver. }
+      iDestruct (is_hash_inj with "H0 H1") as %Heq; try naive_solver.
+    (* both leaves. use leaf encoding. *)
+    iPureIntro. simplify_eq/=.
+    apply app_inj_1 in Heq; [naive_solver|].
+    by rewrite !u64_le_seal_len. }
   destruct proof1 as [|sib_hash1]; simpl.
   - iDestruct "H0" as (?) "(_ & % & H0)".
     repeat case_match; try done;
@@ -89,6 +88,8 @@ Proof.
     iDestruct "H1" as (?) "(HR1 & % & H1)".
     iDestruct (is_merk_proof_recur_len with "HR0") as %?.
     iDestruct (is_merk_proof_recur_len with "HR1") as %?.
+    (* both inner. use inner encoding and next_pos same to get
+    the same next_hash. then apply IH. *)
     repeat case_match; try done;
       iDestruct (is_hash_inj with "H0 H1") as %?;
       list_simplifier; iApply ("IH" with "HR0 HR1").
