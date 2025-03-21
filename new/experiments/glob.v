@@ -88,22 +88,32 @@ Ltac2 handle_ipm_glob pref suff :=
                 if String.is_prefix pref s then String.is_suffix suff s else false
               else false)).
 
-Ltac2 glob_ipm (s : preterm) :=
-  IdentToString.string_to_coq_string (glob handle_ipm_glob (StringToIdent.coq_string_to_string (Constr.pretype s))).
+Ltac2 glob_ipm s :=
+  IdentToString.string_to_coq_string (glob handle_ipm_glob s).
+
+Ltac2 iCombineNamed_tac2 (pat : string) (out : string) :=
+  ltac1:(hyps out |- iAssert (_) with hyps as out; [iNamedAccu|])
+          (Ltac1.of_constr ((glob_ipm (String.concat "" [ "["; pat; "]"]))))
+          (Ltac1.of_constr (IdentToString.string_to_coq_string out)).
+
+Ltac iCombineNamed_tac1 pat out :=
+  let f := ltac2val:
+      (pat |- Ltac1.of_constr ((glob_ipm (String.concat ""
+                                           [ "["; (StringToIdent.coq_string_to_string (Option.get (Ltac1.to_constr pat))); "]"])))) in
+  let hyps := f pat in
+  iAssert (_) with hyps as out; [iNamedAccu|].
+
+Tactic Notation "iCombineNamed" constr(ipat) "as" constr(out) :=
+  iCombineNamed_tac1 ipat out.
 
 Section test.
 Context `{PROP : bi}.
-
-Notation " 'f' s" :=
-  (ltac2:(let n := glob_ipm s in set (_glob_name:=$n); Message.print (Message.of_constr n)))
-    (at level 0, only parsing).
-(* ltac:(refine _glob_name)) (at level 0, only parsing). *)
 
 Lemma test (P Q : PROP) :
   P -∗ P -∗ P -∗ P -∗ Q ∗ Q.
 Proof.
   iIntros "H1 H2 P1 P2".
-  (* FIXME: have not found a way to layer "glob" on top of exising Iris tactics.
+  (* NOTE: have not found a way to layer "glob" on top of exising Iris tactics.
      E.g. the `Tactic Notation` for `iSplitL` expects its argument to be a `constr`.
      When that constr is built up by embedding ltac2 as `ltac2:(glob_ipm
      whatever)`, that ltac2 actually gets run in a new proofview/goal just for
@@ -120,17 +130,9 @@ Proof.
      strings as input, then computing the string ought to be run in the current
      proofview; the proofview changes when there are quotations/antiquotations.
    *)
-  (* let p := f"H*" in *)
-  ltac2:(glob_ipm preterm:("H*")).
-  constr:(f"H*").
-  iSplitL ltac2:(glob_ipm preterm:("H*")).
-  constr:(f"H*").
-
-  Time ltac2:(let n := glob_ipm "H*" in set (_glob_name:=$n));
-  iSplitL _glob_name; clear _glob_name.
-
-  iDestruct "H" as ltac2:(glob_ipm "H*").
-  set (x:=ltac2:(glob_ipm "H*")).
-  Ltac2 Eval glob_ipm "*2".
+  iCombineNamed "H*" as "Hout".
+  iNamedSuffix "Hout" "_wg".
+  iCombineNamed "*_wg" as "Hout".
 Abort.
+
 End test.
