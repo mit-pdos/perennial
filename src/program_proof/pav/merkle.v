@@ -105,36 +105,74 @@ Proof. iIntros "H0 H1". iApply (is_merk_proof_recur_inj with "H0 H1"). Qed.
 
 (** Merkle trees. *)
 
-Fixpoint is_merk_tree_recur (depth_inv : nat)
+Definition is_merk_tree (elems : gmap (list w8) (list w8))
+    (dig : list w8) : iProp Σ :=
+  ∀ label val,
+  ⌜ elems !! label = val ⌝ -∗
+  ∃ proof, is_merk_proof label val proof dig.
+
+(* could remove depth_inv if make this an iris bi_least_fixpoint,
+but then need to figure out proof of BiMonoPred. *)
+Fixpoint own_merk_tree_recur (depth_inv : nat) (ptr_node : loc)
     (elems : gmap (list w8) (list w8)) (hash : list w8) : iProp Σ :=
+  ∃ sl_hash,
+  ptr_node ↦[node :: "hash"] (slice_val sl_hash) ∗
+  own_slice_small sl_hash byteT DfracDiscarded hash ∗
+
   match (map_to_list elems, depth_inv) with
   | ([], _) => is_hash [empty_node_tag] hash
-  | ([(label, val)], _) => is_hash (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
+
+  | ([(label, val)], _) =>
+    ∃ sl_label sl_val,
+    own_slice_small sl_label byteT DfracDiscarded label ∗
+    ptr_node ↦[node :: "label"] (slice_val sl_label) ∗
+    own_slice_small sl_val byteT DfracDiscarded val ∗
+    ptr_node ↦[node :: "val"] (slice_val sl_val) ∗
+    is_hash (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
+
   | (_ :: _ :: _, 0%nat) => False
   | (_ :: _ :: _, S depth_inv') =>
+    ∃ elems0 elems1 next_hash0 next_hash1 ptr_child0 ptr_child1,
     let depth := (256-depth_inv)%nat in
-    ∃ elems0 elems1 next_hash0 next_hash1,
     ⌜ elems0 ∪ elems1 = elems ⌝ ∗
     ⌜ elems0 ##ₘ elems1 ⌝ ∗
     ⌜ (∀ l, l ∈ dom elems0 → get_bit l depth = Some false) ⌝ ∗
     ⌜ (∀ l, l ∈ dom elems1 → get_bit l depth = Some true) ⌝ ∗
-    is_merk_tree_recur depth_inv' elems0 next_hash0 ∗
-    is_merk_tree_recur depth_inv' elems1 next_hash1 ∗
+
+    own_merk_tree_recur depth_inv' ptr_child0 elems0 next_hash0 ∗
+    ptr_node ↦[node :: "child0"] #ptr_child0 ∗
+    own_merk_tree_recur depth_inv' ptr_child1 elems1 next_hash1 ∗
+    ptr_node ↦[node :: "child1"] #ptr_child1 ∗
     is_hash (inner_node_tag :: next_hash0 ++ next_hash1) hash
   end.
 
-Definition is_merk_tree (elems : gmap (list w8) (list w8))
+Definition own_merk_tree (ptr_node : loc) (elems : gmap (list w8) (list w8))
     (dig : list w8) : iProp Σ :=
-  is_merk_tree_recur 256 elems dig.
+  own_merk_tree_recur 256 ptr_node elems dig.
 
-Lemma get_merk_proof depth_inv label val elems hash :
+Lemma merk_tree_persist_recur label val depth_inv ptr_node elems hash :
   elems !! label = val →
-  is_merk_tree_recur depth_inv elems hash -∗
+  own_merk_tree_recur depth_inv ptr_node elems hash -∗
   ∃ proof, is_merk_proof_recur (256-depth_inv)%nat label val proof hash.
 Proof.
-  iIntros (Hlook) "Htree".
-  rewrite /is_merk_tree_recur.
-  destruct (map_to_list elems); simpl.
+  iIntros (Hlook) "Hown".
+  rewrite /own_merk_tree_recur.
+  destruct depth_inv; simpl.
+  - destruct (map_to_list elems) as [|l0 l1] eqn:Heq_map; [|destruct l1].
+    + iExists [].
+      apply map_to_list_empty_iff in Heq_map.
+      iDestruct "Hown" as (?) "(?&?&?)".
+      naive_solver.
+    + iExists [].
+      iDestruct "Hown" as (?) "(H0&H1&H2)".
+      destruct l0.
+      iDestruct "H2" as (??) "H2".
+      rewrite /is_merk_proof_recur.
+      assert (elems = {[l := l0]}) as H.
+      { Search map_to_list "single". admit. }
+      (* need to reason that the elems lookup from the premise
+      is the exact same as the single element in own_merk_tree elems.
+      this type of reasoning, across map_to_list, is annoying. *)
 Admitted.
 
 End proof.
