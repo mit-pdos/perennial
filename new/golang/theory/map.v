@@ -11,9 +11,17 @@ Set Default Proof Using "Type".
 Section defns_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Context `{!IntoVal K} `{!IntoValTyped K kt} `{!Countable K} `{!IntoVal V} `{!IntoValTyped V vt}.
+(* NOTE: we assume EqDecision explicitly here even though it is also available
+through [IntoValTyped K kt] so that the instance used to type-check [gmap K V]
+is independent of the [IntoValTyped] instance. Otherwise, these proofs end up
+relying on a [gmap] with a particular proof of [EqDecision K]. *)
+Context `{!IntoVal K} `{!EqDecision K} `{!Countable K} `{!IntoVal V}.
 
-Local Definition is_map_val (mv : val) (m : gmap K V) : Prop :=
+Local Definition is_map_val (mv : val) (m : gmap K V)
+  (* these arguments are written out manually so that the type of m directs
+  inferring kt and vt *)
+ `{!IntoValTyped K kt} `{!IntoValTyped V vt}
+  : Prop :=
   ∀ (k : K),
   (fix go (mv : val) : Prop :=
      match mv with
@@ -26,7 +34,9 @@ Local Definition is_map_val (mv : val) (m : gmap K V) : Prop :=
      end
   ) mv.
 
-Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
+Definition own_map_def mptr dq (m : gmap K V)
+ `{!IntoValTyped K kt} `{!IntoValTyped V vt}
+  : iProp Σ :=
   ∃ (v : val) ,
     heap_pointsto mptr dq v ∗
     ⌜ is_comparable_go_type kt = true ⌝ ∗
@@ -34,6 +44,9 @@ Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
 Program Definition own_map := sealed @own_map_def.
 Definition own_map_unseal : own_map = _ := seal_eq _.
 
+Arguments own_map mptr dq m {kt IntoValTyped0 vt IntoValTyped1}.
+
+Context `{!IntoValTyped K kt} `{!IntoValTyped V vt}.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
 
@@ -93,12 +106,12 @@ Proof.
     subst.
     wp_pures.
     simpl.
-    destruct_decide (bool_decide_reflect (k = x)).
-    + subst. wp_pures.
-      rewrite decide_True // in Hm.
+    destruct (decide (k = x)); subst.
+    + rewrite !bool_decide_eq_true_2 //.
+      wp_pures.
       rewrite Hm. done.
-    + wp_pure.
-      rewrite decide_False // in Hm.
+    + rewrite -> (bool_decide_eq_false_2 (k = x)) by congruence.
+      wp_pure.
       iApply ("IH" with "[//] HΦ").
 Qed.
 
@@ -155,3 +168,15 @@ End defns_and_lemmas.
 
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
+
+Arguments own_map {ext ffi ffi_interp0 Σ heapGS0} {K}%_type_scope
+  {IntoVal0 EqDecision0 Countable0} {V}%_type_scope {IntoVal1} mptr dq m
+  {kt IntoValTyped0 vt IntoValTyped1}.
+
+Module test_own_map.
+  Section proof.
+  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+  Definition foo (mref: loc) (m: gmap w64 w64): iProp Σ :=
+    own_map mref DfracDiscarded m.
+  End proof.
+End test_own_map.
