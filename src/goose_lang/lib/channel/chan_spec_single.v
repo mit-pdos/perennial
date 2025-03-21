@@ -149,7 +149,7 @@ From Perennial.Helpers Require Import List ModArith.
  here since we can give them up to the lock and not try to close twice. 
  It also does not make sense to close on the receiving end so we don't allow
  this. *)
- Definition is_UnbufferedChannel_CloserProps (l: loc) (i: nat) (R: iProp Σ) (chan_type: ty) γs: iProp _ :=
+ Definition own_UnbufferedChannel_CloserProps (l: loc) (i: nat) (R: iProp Σ) (chan_type: ty) γs: iProp _ :=
    ∃ (Ps: list (iProp Σ)) (Qs: list (iProp Σ)) (Vs: list val) (num_uses: nat) γ1 γ2 γ3 γ4 γ5 γr,
    "Hchanhand" ∷  is_UnbufferedChannel l Ps Qs Vs R num_uses chan_type γs γr γ1 γ2 γ3 γ4 γ5 ∗
    "Hchanhandsender" ∷  own_UnbufferedChannel_Sender l i γs ∗
@@ -165,9 +165,8 @@ From Perennial.Helpers Require Import List ModArith.
  Definition own_UnbufferedChannel_SenderProps_Or_Closeable
   (l: loc) (i: nat) (num_uses: nat) (R: iProp Σ) (chan_type: ty) γs: iProp _ :=
  match bool_decide(i < num_uses) with
-   | false => is_UnbufferedChannel_CloserProps l i R chan_type γs
-   | true => ∃ (P: iProp Σ) (Q: iProp Σ) (v: val),
-   own_UnbufferedChannel_SenderProps  l P Q R v i num_uses chan_type γs
+   | false => own_UnbufferedChannel_CloserProps l i R chan_type γs
+   | true => own_UnbufferedChannel_Sender  l i γs
  end
   .
  
@@ -264,6 +263,48 @@ From Perennial.Helpers Require Import List ModArith.
  Proof.
  Admitted. 
 
+(* The lemmas below can be used after sending to get permission to send the next item or close. *)
+
+(* Once we have sent the prop/value at index i we can gain permission to send index i+1 
+if we are still below num_uses. *)
+Lemma next_send (l: loc) 
+  (P: iProp Σ) (Q: iProp Σ) (R: iProp Σ) (v: val) (i: nat) (num_uses: nat) (chan_type: ty)
+  (Ps: list (iProp Σ)) (Qs: list (iProp Σ)) (Vs: list val) γs :
+  i < num_uses ∧ nth i Ps True%I = P ∧ nth i Qs True%I = Q
+  ∧ nth i Vs (zero_val chan_type) = v ->
+  (∃ γ1 γ2 γ3 γ4 γ5 γr,
+  is_UnbufferedChannel l Ps Qs Vs R num_uses chan_type γs γr γ1 γ2 γ3 γ4 γ5 ∗
+  own_UnbufferedChannel_SenderProps_Or_Closeable l i num_uses R chan_type γs)
+  ==∗  
+  own_UnbufferedChannel_SenderProps l P Q R v i  num_uses chan_type γs
+  .
+Proof.
+  intros H. iIntros "H". iNamed "H".  unfold own_UnbufferedChannel_SenderProps_Or_Closeable. 
+  rewrite bool_decide_true. 
+  { unfold own_UnbufferedChannel_SenderProps. iModIntro. iExists Ps. iExists Qs.
+  iExists Vs. iExists γ1. iExists γ2. iExists γ3. iExists γ4. iExists γ5. iExists γr. iDestruct "H" as "[H1 H2]". iFrame "#". iFrame. iPureIntro. done.
+  }
+  apply H.
+Qed.
+
+(* Once we have sent everything, we can get permission to close. *)
+Lemma last_send (l: loc) 
+(P: iProp Σ) (Q: iProp Σ) (R: iProp Σ) (v: val) (i: nat) (num_uses: nat) (chan_type: ty)
+(Ps: list (iProp Σ)) (Qs: list (iProp Σ)) (Vs: list val) γs :
+   i = num_uses ->
+   own_UnbufferedChannel_SenderProps_Or_Closeable l i num_uses R chan_type γs
+   ==∗  
+   own_UnbufferedChannel_CloserProps l i R chan_type γs
+   .
+Proof.
+  intros H. iIntros "H". iNamed "H".  unfold own_UnbufferedChannel_SenderProps_Or_Closeable. 
+  rewrite bool_decide_false. 
+  { done. }
+  lia.
+Qed. 
+
+ 
+
  (* By proving P and sending v, we can gain Q. i is the number of times we 
  have sent so far which is used as an index into the lists of propositions
   and values that we declare when we initialize the channel.
@@ -279,7 +320,7 @@ From Perennial.Helpers Require Import List ModArith.
    own_UnbufferedChannel_SenderProps_Or_Closeable l (i + 1) num_uses R chan_type γs ∗ Q  }}}.
  Proof.
    Admitted.
- 
+  
  (* By proving Q, we can gain P and know that the return value is v. 
  i is the number of times we have received so far which is used as an index
  into the lists of propositions and values. *)
@@ -324,7 +365,7 @@ From Perennial.Helpers Require Import List ModArith.
  Lemma wp_UnbufferedChannel__Close (l: loc) 
  (P: iProp Σ) (Q: iProp Σ) (R: iProp Σ) (i: nat) (chan_type: ty) γs :
  i + 1 < 2 ^ 63 ->
-   {{{ is_UnbufferedChannel_CloserProps l i R chan_type γs ∗ R}}}
+   {{{ own_UnbufferedChannel_CloserProps l i R chan_type γs ∗ R}}}
     Channel__Close chan_type #l
    {{{RET #(); True }}}.
    Proof.
