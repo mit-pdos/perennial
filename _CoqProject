@@ -8,9 +8,7 @@
 -arg -w -arg +deprecated-tactic-notation
 -arg -w -arg -deprecated-since-8.19
 -arg -w -arg -deprecated-since-8.20
-# std lib moved from Coq to Stdlib; will be available in Coq 8.21
--arg -w -arg -deprecated-from-Coq
--arg -w -arg -deprecated-dirpath-Coq
+-arg -w -arg -deprecated-since-9.0
 # seems to have false positives
 -arg -w -arg -notation-incompatible-prefix
 # we haven't updated our code to fix this one
