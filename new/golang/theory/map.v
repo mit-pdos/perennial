@@ -77,6 +77,21 @@ Proof.
     + rewrite lookup_insert_ne //. apply Hm.
 Qed.
 
+Lemma wp_map_delete l (m : gmap K V) k :
+  {{{ l ↦$ m }}}
+    map.delete #l #k
+  {{{ RET #(); l ↦$ delete k m }}}.
+Proof.
+  rewrite [in #l]to_val_unseal own_map_unseal.
+  iIntros (?) "Hm HΦ".
+  iDestruct "Hm" as (?) "(Hm & % & %Hm)".
+  wp_call.
+  wp_bind (! _)%E.
+  iApply (wp_load with "[$]"). iNext.
+  iIntros "Hm".
+  wp_pures.
+Admitted.
+
 Lemma wp_map_get l (m : gmap K V) k dq :
   {{{ l ↦${dq} m }}}
     map.get #l #k
