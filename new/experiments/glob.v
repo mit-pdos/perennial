@@ -46,7 +46,7 @@ Ltac2 glob (handle_glob : string -> string -> string) (x : string) : string :=
   in loop 0.
 
 Ltac2 get_matching_hyps (check : string -> bool) : string list :=
-  orelse (fun () =>
+  (* orelse (fun () => *)
             lazy_match! goal with
             | [ |- envs_entails (Envs _ ?es _) _ ] =>
                 let rec loop es :=
@@ -58,9 +58,13 @@ Ltac2 get_matching_hyps (check : string -> bool) : string list :=
                   | _ => []
                   end in
                 loop es
-            | [ |- _ ] => Control.backtrack_tactic_failure "get_matching_hyps: was not run with Iris context"
-            end)
-    (fun _ => Control.throw (Tactic_failure (Some (Message.of_string "get_matching_hyps: was not run with Iris context")))).
+            | [ |- ?g ] =>
+                Message.print (Message.of_constr g);
+                Control.enter (fun () => Message.print (Message.of_constr (Control.goal ())));
+                Control.backtrack_tactic_failure "get_matching_hyps: was not run with Iris context"
+            end
+    (* (fun _ => Control.throw (Tactic_failure (Some (Message.of_string "get_matching_hyps: oreslse failed")))). *)
+.
 
 Module String.
 Ltac2 is_prefix pref s :=
@@ -74,26 +78,59 @@ Ltac2 is_suffix suff s :=
     let suff' := (String.sub s (Int.sub (String.length s) (String.length suff)) (String.length suff)) in
     String.equal suff suff'
   else false.
+End String.
 
 Ltac2 handle_ipm_glob pref suff :=
   let minlen := Int.add (String.length pref) (String.length suff) in
   String.concat " "
     (get_matching_hyps
-       (fun s =>
-          if (Int.ge (String.length s) minlen) then (* for overlapping [pref] and [suff] *)
-            if is_prefix pref s then is_suffix suff s else false
-          else false
-    )).
+       (fun s => if (Int.ge (String.length s) minlen) then (* for overlapping [pref] and [suff] *)
+                if String.is_prefix pref s then String.is_suffix suff s else false
+              else false)).
 
-Ltac2 glob_ipm s := IdentToString.string_to_coq_string (glob handle_ipm_glob s).
+Ltac2 glob_ipm (s : preterm) :=
+  IdentToString.string_to_coq_string (glob handle_ipm_glob (StringToIdent.coq_string_to_string (Constr.pretype s))).
 
 Section test.
 Context `{PROP : bi}.
+
+Notation " 'f' s" :=
+  (ltac2:(let n := glob_ipm s in set (_glob_name:=$n); Message.print (Message.of_constr n)))
+    (at level 0, only parsing).
+(* ltac:(refine _glob_name)) (at level 0, only parsing). *)
+
 Lemma test (P Q : PROP) :
-  P -∗ P -∗ P -∗ P -∗ Q.
+  P -∗ P -∗ P -∗ P -∗ Q ∗ Q.
 Proof.
   iIntros "H1 H2 P1 P2".
-  Ltac2 Eval glob_ipm "H*".
+  (* FIXME: have not found a way to layer "glob" on top of exising Iris tactics.
+     E.g. the `Tactic Notation` for `iSplitL` expects its argument to be a `constr`.
+     When that constr is built up by embedding ltac2 as `ltac2:(glob_ipm
+     whatever)`, that ltac2 actually gets run in a new proofview/goal just for
+     constructing the constr. So, the goal is `?T` (to construct some constr,
+     whose type is not even known).
+     However, `glob_ipm` must be run against the actual IPM goal so it can see
+     the named hypotheses.
+
+     This implies that there's no way to use ltac to expand a glob in the constr
+     arguments to existing Iris tactics.
+
+     One solution: do glob expansion in something at the level of `envs_split_go`.
+     Another possible solution: if tactics (like iSplitL) took e.g. ltac2
+     strings as input, then computing the string ought to be run in the current
+     proofview; the proofview changes when there are quotations/antiquotations.
+   *)
+  (* let p := f"H*" in *)
+  ltac2:(glob_ipm preterm:("H*")).
+  constr:(f"H*").
+  iSplitL ltac2:(glob_ipm preterm:("H*")).
+  constr:(f"H*").
+
+  Time ltac2:(let n := glob_ipm "H*" in set (_glob_name:=$n));
+  iSplitL _glob_name; clear _glob_name.
+
+  iDestruct "H" as ltac2:(glob_ipm "H*").
+  set (x:=ltac2:(glob_ipm "H*")).
   Ltac2 Eval glob_ipm "*2".
 Abort.
 End test.
