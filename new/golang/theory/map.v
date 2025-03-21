@@ -1,9 +1,12 @@
 From Perennial.Helpers Require Import NamedProps.
+From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export map.
 From New.golang.theory Require Export list mem exception loop typing.
 From Perennial Require Import base.
 
 Transparent map.insert map.get map.delete map.for_range map.len map.make.
+
+Set Default Proof Using "Type".
 
 Section defns_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
@@ -118,6 +121,34 @@ Proof.
   unfold is_map_val.
   intros ?.
   by rewrite default_val_eq_zero_val.
+Qed.
+
+#[global]
+Instance own_map_discarded_persist mref m : Persistent (own_map mref DfracDiscarded m).
+Proof.
+  rewrite own_map_unseal.
+  apply _.
+Qed.
+
+Lemma own_map_persist mref dq m :
+  own_map mref dq m ==∗ own_map mref DfracDiscarded m.
+Proof.
+  rewrite own_map_unseal /own_map_def.
+  iIntros "(%v & H & % & %)".
+  iMod (heap_pointsto_persist with "H") as "H".
+  iModIntro.
+  iFrame.
+  eauto.
+Qed.
+
+#[global]
+Instance own_map_update_into_persistently mref dq m :
+  UpdateIntoPersistently (own_map mref dq m) (own_map mref DfracDiscarded m).
+Proof.
+  red.
+  iIntros "H".
+  iMod (own_map_persist with "H") as "#H".
+  iModIntro. iFrame "#".
 Qed.
 
 End defns_and_lemmas.
