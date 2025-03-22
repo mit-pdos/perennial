@@ -43,15 +43,73 @@ End instances.
 Module RWMutex.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Record t := mk {
+  w' : Mutex.t;
+  writerSem' : w32;
+  readerSem' : w32;
+  readerCount' : atomic.Int32.t;
+  readerWait' : atomic.Int32.t;
+}.
 End def.
 End RWMutex.
 
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_RWMutex `{ffi_syntax}: Settable _ :=
+  settable! RWMutex.mk < RWMutex.w'; RWMutex.writerSem'; RWMutex.readerSem'; RWMutex.readerCount'; RWMutex.readerWait' >.
 Global Instance into_val_RWMutex `{ffi_syntax} : IntoVal RWMutex.t.
 Admitted.
 
-Global Instance into_val_typed_RWMutex `{ffi_syntax} : IntoValTyped RWMutex.t sync.RWMutex.
+Global Instance into_val_typed_RWMutex `{ffi_syntax} : IntoValTyped RWMutex.t sync.RWMutex :=
+{|
+  default_val := RWMutex.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_RWMutex_w `{ffi_syntax} : IntoValStructField "w" sync.RWMutex RWMutex.w'.
 Admitted.
+
+Global Instance into_val_struct_field_RWMutex_writerSem `{ffi_syntax} : IntoValStructField "writerSem" sync.RWMutex RWMutex.writerSem'.
+Admitted.
+
+Global Instance into_val_struct_field_RWMutex_readerSem `{ffi_syntax} : IntoValStructField "readerSem" sync.RWMutex RWMutex.readerSem'.
+Admitted.
+
+Global Instance into_val_struct_field_RWMutex_readerCount `{ffi_syntax} : IntoValStructField "readerCount" sync.RWMutex RWMutex.readerCount'.
+Admitted.
+
+Global Instance into_val_struct_field_RWMutex_readerWait `{ffi_syntax} : IntoValStructField "readerWait" sync.RWMutex RWMutex.readerWait'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_RWMutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} w' writerSem' readerSem' readerCount' readerWait':
+  PureWp True
+    (struct.make sync.RWMutex (alist_val [
+      "w" ::= #w';
+      "writerSem" ::= #writerSem';
+      "readerSem" ::= #readerSem';
+      "readerCount" ::= #readerCount';
+      "readerWait" ::= #readerWait'
+    ]))%struct
+    #(RWMutex.mk w' writerSem' readerSem' readerCount' readerWait').
+Admitted.
+
+
+Global Instance RWMutex_struct_fields_split dq l (v : RWMutex.t) :
+  StructFieldsSplit dq l v (
+    "Hw" ∷ l ↦s[sync.RWMutex :: "w"]{dq} v.(RWMutex.w') ∗
+    "HwriterSem" ∷ l ↦s[sync.RWMutex :: "writerSem"]{dq} v.(RWMutex.writerSem') ∗
+    "HreaderSem" ∷ l ↦s[sync.RWMutex :: "readerSem"]{dq} v.(RWMutex.readerSem') ∗
+    "HreaderCount" ∷ l ↦s[sync.RWMutex :: "readerCount"]{dq} v.(RWMutex.readerCount') ∗
+    "HreaderWait" ∷ l ↦s[sync.RWMutex :: "readerWait"]{dq} v.(RWMutex.readerWait')
+  ).
+Admitted.
+
+End instances.
 Module WaitGroup.
 Section def.
 Context `{ffi_syntax}.
@@ -166,6 +224,30 @@ Global Instance wp_method_call_Mutex'ptr_Lock :
 
 Global Instance wp_method_call_Mutex'ptr_Unlock :
   WpMethodCall sync "Mutex'ptr" "Unlock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RWMutex'ptr_Lock :
+  WpMethodCall sync "RWMutex'ptr" "Lock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RWMutex'ptr_RLock :
+  WpMethodCall sync "RWMutex'ptr" "RLock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RWMutex'ptr_RUnlock :
+  WpMethodCall sync "RWMutex'ptr" "RUnlock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RWMutex'ptr_TryLock :
+  WpMethodCall sync "RWMutex'ptr" "TryLock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RWMutex'ptr_TryRLock :
+  WpMethodCall sync "RWMutex'ptr" "TryRLock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RWMutex'ptr_Unlock :
+  WpMethodCall sync "RWMutex'ptr" "Unlock" _ (is_pkg_defined sync) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_WaitGroup'ptr_Add :

@@ -185,6 +185,217 @@ Proof.
     by iApply "HΦ".
 Qed.
 
+Inductive rwmutex := RLocked (num_readers : nat) | Locked.
+
+Inductive wlock_state :=
+| NotLocked (unnotified_readers : nat)
+| SignalingReaders (remaining_readers : nat)
+| WaitingForReaders
+| IsLocked.
+
+(* own_current_rlock_attempts (positive version of reader_count) ∗ (* at most sync.rwmutexMaxReaders *) *)
+
+Definition reader_count_abs (reader_count : w32) : Z :=
+  if decide (0 ≤ (sint.Z reader_count)) then
+    sint.Z reader_count
+  else
+    sint.Z reader_count + sync.rwmutexMaxReaders.
+
+Definition pure_RWMutex_invariant (writer_sem reader_sem reader_count reader_wait : w32)
+  (wl : wlock_state) (state : rwmutex) : Prop :=
+
+  0 ≤ reader_count_abs reader_count < sync.rwmutexMaxReaders ∧
+    if decide (0 ≤ sint.Z reader_count) then
+      ∃ unnotified_readers,
+        wl = NotLocked unnotified_readers ∧ reader_wait = W32 0 ∧ writer_sem = W32 0 ∧
+        (unnotified_readers + uint.Z reader_sem ≤ sint.Z reader_count) ∧ (* NOTE: added this for inductiveness *)
+        state = RLocked (Z.to_nat (sint.Z reader_count - unnotified_readers - uint.Z reader_sem))
+    else
+      reader_sem = W32 0 ∧
+      ((∃ remaining_readers,
+           wl = SignalingReaders remaining_readers ∧ reader_wait = W32 0 ∧ writer_sem = W32 0 ∧
+           remaining_readers ≤ sint.Z reader_count ∧ (* NOTE: added this for inductiveness *)
+           state = RLocked remaining_readers) ∨
+       (wl = WaitingForReaders ∧
+        state = RLocked (Z.to_nat (sint.Z reader_wait)) ∧
+        sint.Z reader_wait ≤ reader_count_abs reader_count ∧ (* NOTE: added this for inductiveness *)
+        (writer_sem = W32 0 ∨ (writer_sem = W32 1 ∧ reader_wait = W32 0))) ∨
+  (* FIXME: there's an intermediate state between decrementing reader_count and decrementing reader_wait. *)
+  (* Add auxiliary state for how many of these "in-progress" runlocks there are? *)
+  (* Could decrement state count when decrementing readerCount, or do it when decrementing readerWait.
+     Gauge invariance suggests that the invariant should avoid specifying one or the other.
+   *)
+       (wl = IsLocked ∧ reader_wait = W32 0 ∧ writer_sem = W32 0 ∧ state = Locked)
+      ).
+
+Ltac simpl_word_constants :=
+  repeat match goal with
+         | [ H: context[word.unsigned (W64 ?x)] |- _ ] => change (uint.Z x) with x in H
+         | [ |- context[word.unsigned (W64 ?x)] ] => change (uint.Z x) with x
+         | [ H: context[word.unsigned (W32 ?x)] |- _ ] => change (uint.Z (W32 x)) with x in H
+         | [ |- context[word.unsigned (W32 ?x)] ] => change (uint.Z (W32 x)) with x
+         | [ H: context[word.unsigned (W8 ?x)] |- _ ] => change (uint.Z (W32 8)) with x in H
+         | [ |- context[word.unsigned (W8 ?x)] ] => change (uint.Z (W8 x)) with x
+         | [ H: context[word.signed (W64 ?x)] |- _ ] => change (sint.Z x) with x in H
+         | [ |- context[word.signed (W64 ?x)] ] => change (sint.Z x) with x
+         | [ H: context[word.signed (W32 ?x)] |- _ ] => change (sint.Z (W32 x)) with x in H
+         | [ |- context[word.signed (W32 ?x)] ] => change (sint.Z (W32 x)) with x
+         | [ H: context[word.signed (W8 ?x)] |- _ ] => change (sint.Z (W32 8)) with x in H
+         | [ |- context[word.signed (W8 ?x)] ] => change (sint.Z (W8 x)) with x
+        (* TODO: add sint versions *)
+    end.
+
+Ltac word_cleanup_core :=
+  (* this is so that the following pattern succeeds when (for some reason)
+  instead of w64 we have its unfolding *)
+  fold w64 w32 w8 in *;
+  repeat autounfold with word in *;
+  try lazymatch goal with
+      (* TODO: this isn't the right strategy if the numbers in the goal are used
+      signed. [word] can try both via backtracking, but this can't be part of
+      "cleanup".  *)
+      | |- @eq u64 _ _ => apply word.unsigned_inj
+      | |- @eq u32 _ _ => apply word.unsigned_inj
+      | |- @eq u8 _ _ => apply word.unsigned_inj
+      | |- not (@eq u64 _ _) => apply (f_not_equal uint.Z)
+      | |- not (@eq u32 _ _) => apply (f_not_equal uint.Z)
+      | |- not (@eq u8 _ _) => apply (f_not_equal uint.Z)
+      end;
+  simpl_word_constants;
+  (* can't replace some of these with [autorewrite], probably because typeclass inference
+  isn't the same *)
+  repeat (
+      rewrite -> ?word.unsigned_add, ?word.unsigned_sub,
+        ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
+        ?word.unsigned_mul, ?w64_unsigned_ltu,
+        ?word.signed_add, ?word.signed_sub in *
+      || rewrite -> ?word.unsigned_of_Z, ?word.of_Z_unsigned in *
+      || autorewrite with word in *
+    );
+  repeat match goal with
+         | _ => progress simpl_word_constants
+         | [ H: @eq w64 _ _ |- _ ] => let H' := fresh H "_signed" in
+                                      apply w64_val_f_equal in H as [H H']
+         | [ H: @eq w32 _ _ |- _ ] => let H' := fresh H "_signed" in
+                                      apply w32_val_f_equal in H as [H H']
+         | [ H: not (@eq w64 _ _) |- _ ] => let H' := fresh H "_signed" in
+                                      apply w64_val_neq in H as [H H']
+         | [ H: @eq w32 _ _ |- _ ] => let H' := fresh H "_signed" in
+                                      apply w32_val_neq in H as [H H']
+         end;
+  repeat match goal with
+         | [ |- context[uint.Z ?x] ] =>
+           lazymatch goal with
+           | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
+           | _ => pose proof (word.unsigned_range x)
+           end
+         | [ H: context[uint.Z ?x] |- _ ] =>
+           lazymatch goal with
+           | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
+           | _ => pose proof (word.unsigned_range x)
+           end
+         | [ |- context[sint.Z ?x] ] =>
+           lazymatch goal with
+           | [ H': - (2^ _) ≤ sint.Z x < 2^_ |- _ ] => fail
+           | _ => pose proof (word.signed_range x)
+           end
+         | [ H: context[sint.Z ?x] |- _ ] =>
+           lazymatch goal with
+           | [ H': - (2^ _) ≤ sint.Z x < 2^_ |- _ ] => fail
+           | _ => pose proof (word.signed_range x)
+           end
+         end;
+  repeat match goal with
+         | |- context[@word.wrap _ ?word ?ok ?z] =>
+           rewrite -> (@wrap_small _ word ok z) by lia
+         | |- context[@word.swrap _ ?word ?ok ?z] =>
+           rewrite -> (@swrap_small _ word ok z) by lia
+         | |- context[Z.of_nat (Z.to_nat ?z)] =>
+           rewrite -> (Z2Nat.id z) by lia
+         end.
+
+(* TODO: only for backwards compatibility.
+
+[word_cleanup] should be be replaced with a new tactic
+that does a subset of safe and useful rewrites *)
+Ltac word_cleanup := word_cleanup_core; try lia.
+
+Ltac word := first [
+                 solve [
+                     try iPureIntro;
+                     word_cleanup_core;
+                     unfold word.wrap in *;
+                     unfold word.swrap in *;
+                     (* NOTE: some inefficiency here because [lia] will do [zify]
+                 again, but we can't rebind the zify hooks in Ltac *)
+                     zify; Z.div_mod_to_equations; lia
+                   ]
+               | fail 1 "word could not solve goal"
+               ].
+
+Local Ltac rwauto :=
+  solve [repeat first [eexists || done || subst || split || f_equal || word || intuition ||
+                               simplify_eq || destruct decide]].
+
+Lemma step_rlock_fast writer_sem reader_sem reader_count reader_wait wl state :
+  0 ≤ (sint.Z (word.add reader_count (W32 1))) →
+  reader_count_abs reader_count + 1 < sync.rwmutexMaxReaders →
+  pure_RWMutex_invariant writer_sem reader_sem reader_count reader_wait wl state →
+  ∃ num_readers,
+    state = RLocked num_readers ∧
+    pure_RWMutex_invariant writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait wl (RLocked (num_readers + 1)).
+Proof.
+  intros ?? Hinv.
+  unfold pure_RWMutex_invariant, reader_count_abs in *.
+  destruct decide; [|exfalso; rwauto].
+  destruct Hinv as (? & ? & ?).
+  rwauto.
+Qed.
+
+Lemma step_rlock_slow writer_sem reader_sem reader_count reader_wait wl state :
+  0 < (uint.Z reader_sem) →
+  pure_RWMutex_invariant writer_sem reader_sem reader_count reader_wait wl state →
+  ∃ num_readers,
+    state = RLocked num_readers ∧
+    pure_RWMutex_invariant writer_sem (word.sub reader_sem (W32 1)) reader_count reader_wait wl (RLocked (num_readers + 1)).
+Proof.
+  intros Hsem_acq Hinv.
+  unfold pure_RWMutex_invariant in *.
+  destruct decide; [| exfalso; rwauto].
+  destruct Hinv as (? & ? & ?).
+  rwauto.
+Qed.
+
+Lemma step_runlock_fast writer_sem reader_sem reader_count reader_wait wl state num_readers :
+  state = RLocked (S num_readers) →
+  pure_RWMutex_invariant writer_sem reader_sem reader_count reader_wait wl state →
+  pure_RWMutex_invariant writer_sem reader_sem (word.sub reader_count (W32 1)) reader_wait wl (RLocked num_readers).
+Proof.
+  intros ? Hinv.
+  unfold pure_RWMutex_invariant, reader_count_abs in *.
+  destruct decide.
+  { destruct Hinv as (? & ? & ?). rwauto. }
+  { destruct Hinv as (? & ? & Hinv).
+    destruct Hinv as [(? & ?) | ?].
+    { rwauto. }
+    {
+      split_and!; try rwauto.
+      destruct decide.
+      { intuition; subst.
+        {
+          eexists.
+Abort.
+
+Lemma step_runlock_slow writer_sem reader_sem reader_count reader_wait wl state :
+  pure_RWMutex_invariant writer_sem reader_sem reader_count reader_wait wl state →
+  pure_RWMutex_invariant writer_sem reader_sem reader_count (word.sub reader_wait (W32 1)) wl state.
+Proof.
+  intros Hinv.
+  unfold pure_RWMutex_invariant, reader_count_abs in *.
+  destruct decide.
+  { destruct Hinv as (? & ? & ?).
+Abort.
+
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
   "#Hi" ∷ is_pkg_init sync ∗

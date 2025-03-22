@@ -1,4 +1,13 @@
 translate = [
+  "rwmutexMaxReaders",
+  "RWMutex",
+  "RWMutex.TryLock",
+  "RWMutex.Lock",
+  "RWMutex.Unlock",
+  "RWMutex.RLock",
+  "RWMutex.TryRLock",
+  "RWMutex.RUnlock",
+
   "WaitGroup",
   "WaitGroup.Add",
   "WaitGroup.Done",
@@ -12,7 +21,6 @@ imports = [
 ]
 
 axiomatize = [
-  "RWMutex",
 ]
 
 trusted = [

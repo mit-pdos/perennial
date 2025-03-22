@@ -136,7 +136,6 @@ Abort.
 
 End test.
 
-
 From iris.proofmode Require Import string_ident.
 From iris.proofmode Require Import tactics environments intro_patterns monpred.
 
