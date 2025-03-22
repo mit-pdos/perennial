@@ -11,11 +11,6 @@ From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-Definition PrepareProposal := struct.decl [
-  "rank" :: uint64T;
-  "dec" :: boolT
-].
-
 Definition Replica := struct.decl [
   "mu" :: ptrT;
   "rid" :: uint64T;
@@ -25,13 +20,13 @@ Definition Replica := struct.decl [
   "lsna" :: uint64T;
   "prepm" :: mapT (slice.T (struct.t tulip.WriteEntry));
   "ptgsm" :: mapT (slice.T uint64T);
-  "pstbl" :: mapT (struct.t PrepareProposal);
+  "pstbl" :: mapT (struct.t tulip.PrepareProposal);
   "rktbl" :: mapT uint64T;
   "txntbl" :: mapT boolT;
   "ptsm" :: mapT uint64T;
   "sptsm" :: mapT uint64T;
   "idx" :: ptrT;
-  "rps" :: mapT uint64T;
+  "gaddrm" :: tulip.AddressMaps;
   "leader" :: uint64T
 ].
 
@@ -291,13 +286,13 @@ Definition Replica__Validate: val :=
 Definition Replica__lastProposal: val :=
   rec: "Replica__lastProposal" "rp" "ts" :=
     let: ("ps", "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
-    (struct.get PrepareProposal "rank" "ps", struct.get PrepareProposal "dec" "ps", "ok").
+    (struct.get tulip.PrepareProposal "Rank" "ps", struct.get tulip.PrepareProposal "Prepared" "ps", "ok").
 
 Definition Replica__accept: val :=
   rec: "Replica__accept" "rp" "ts" "rank" "dec" :=
-    let: "pp" := struct.mk PrepareProposal [
-      "rank" ::= "rank";
-      "dec" ::= "dec"
+    let: "pp" := struct.mk tulip.PrepareProposal [
+      "Rank" ::= "rank";
+      "Prepared" ::= "dec"
     ] in
     MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "pp";;
     MapInsert (struct.loadF Replica "rktbl" "rp") "ts" (std.SumAssumeNoOverflow "rank" #1);;
@@ -427,9 +422,9 @@ Definition Replica__advance: val :=
     let: (<>, "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
     (if: (~ "ok")
     then
-      let: "pp" := struct.mk PrepareProposal [
-        "rank" ::= #0;
-        "dec" ::= #false
+      let: "pp" := struct.mk tulip.PrepareProposal [
+        "Rank" ::= #0;
+        "Prepared" ::= #false
       ] in
       MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "pp";;
       #()
@@ -437,21 +432,16 @@ Definition Replica__advance: val :=
 
 Definition Replica__inquire: val :=
   rec: "Replica__inquire" "rp" "ts" "rank" :=
-    let: ("cmted", "done") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
+    let: ("res", "done") := Replica__finalized "rp" "ts" in
     (if: "done"
     then
-      (if: "cmted"
-      then
-        (struct.mk PrepareProposal [
-         ], #false, slice.nil, tulip.REPLICA_COMMITTED_TXN)
-      else
-        (struct.mk PrepareProposal [
-         ], #false, slice.nil, tulip.REPLICA_ABORTED_TXN))
+      (struct.mk tulip.PrepareProposal [
+       ], #false, slice.nil, "res")
     else
-      let: ("rankl", "ok") := MapGet (struct.loadF Replica "rktbl" "rp") "ts" in
+      let: ("rankl", "ok") := Replica__lowestRank "rp" "ts" in
       (if: "ok" && ("rank" ≤ "rankl")
       then
-        (struct.mk PrepareProposal [
+        (struct.mk tulip.PrepareProposal [
          ], #false, slice.nil, tulip.REPLICA_INVALID_RANK)
       else
         let: "pp" := Fst (MapGet (struct.loadF Replica "pstbl" "rp") "ts") in
@@ -583,7 +573,7 @@ Definition Replica__StartBackupTxnCoordinator: val :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "rank" := (Fst (MapGet (struct.loadF Replica "rktbl" "rp") "ts")) + #1 in
     let: "ptgs" := Fst (MapGet (struct.loadF Replica "ptgsm" "rp") "ts") in
-    let: "tcoord" := backup.MkBackupTxnCoordinator "ts" "rank" "ptgs" (struct.loadF Replica "rps" "rp") (struct.loadF Replica "leader" "rp") in
+    let: "tcoord" := backup.MkBackupTxnCoordinator "ts" "rank" "ptgs" (struct.loadF Replica "gaddrm" "rp") (struct.loadF Replica "leader" "rp") in
     backup.BackupTxnCoordinator__ConnectAll "tcoord";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     backup.BackupTxnCoordinator__Finalize "tcoord";;
@@ -810,7 +800,7 @@ Definition Start: val :=
       "lsna" ::= #0;
       "prepm" ::= NewMap uint64T (slice.T (struct.t tulip.WriteEntry)) #();
       "ptgsm" ::= NewMap uint64T (slice.T uint64T) #();
-      "pstbl" ::= NewMap uint64T (struct.t PrepareProposal) #();
+      "pstbl" ::= NewMap uint64T (struct.t tulip.PrepareProposal) #();
       "rktbl" ::= NewMap uint64T uint64T #();
       "txntbl" ::= NewMap uint64T boolT #();
       "ptsm" ::= NewMap stringT uint64T #();

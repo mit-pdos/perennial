@@ -4,22 +4,9 @@ From Goose Require github_com.mit_pdos.tulip.message.
 From Goose Require github_com.mit_pdos.tulip.params.
 From Goose Require github_com.mit_pdos.tulip.quorum.
 From Goose Require github_com.mit_pdos.tulip.tulip.
+From Perennial.goose_lang.trusted Require Import github_com.mit_pdos.tulip.trusted_proph.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
-
-Definition BackupGroupCoordinator := struct.decl [
-  "rps" :: mapT uint64T;
-  "mu" :: ptrT;
-  "cv" :: ptrT;
-  "leader" :: uint64T;
-  "gpp" :: ptrT;
-  "conns" :: mapT grove_ffi.Connection
-].
-
-Definition PrepareProposal := struct.decl [
-  "rank" :: uint64T;
-  "dec" :: boolT
-].
 
 (* A note on relationship between @phase and @pwrsok/@pwrs: Ideally, we should
    construct an invariant saying that if @phase is VALIDATING, PREPARING, or
@@ -31,7 +18,7 @@ Definition BackupGroupPreparer := struct.decl [
   "phase" :: uint64T;
   "pwrsok" :: boolT;
   "pwrs" :: mapT (struct.t tulip.Value);
-  "pps" :: mapT (struct.t PrepareProposal);
+  "pps" :: mapT (struct.t tulip.PrepareProposal);
   "vdm" :: mapT boolT;
   "srespm" :: mapT boolT
 ].
@@ -102,16 +89,208 @@ Definition BackupGroupPreparer__action: val :=
             else BGPP_REFRESH)
           else BGPP_REFRESH)))).
 
+Definition BackupGroupPreparer__fquorum: val :=
+  rec: "BackupGroupPreparer__fquorum" "gpp" "n" :=
+    (quorum.FastQuorum (struct.loadF BackupGroupPreparer "nrps" "gpp")) ≤ "n".
+
+Definition BackupGroupPreparer__cquorum: val :=
+  rec: "BackupGroupPreparer__cquorum" "gpp" "n" :=
+    (quorum.ClassicQuorum (struct.loadF BackupGroupPreparer "nrps" "gpp")) ≤ "n".
+
+Definition BackupGroupPreparer__hcquorum: val :=
+  rec: "BackupGroupPreparer__hcquorum" "gpp" "n" :=
+    (quorum.Half (quorum.ClassicQuorum (struct.loadF BackupGroupPreparer "nrps" "gpp"))) ≤ "n".
+
+Definition BackupGroupPreparer__tryResign: val :=
+  rec: "BackupGroupPreparer__tryResign" "gpp" "res" :=
+    (if: BGPP_PREPARED ≤ (struct.loadF BackupGroupPreparer "phase" "gpp")
+    then #true
+    else
+      (if: "res" = tulip.REPLICA_COMMITTED_TXN
+      then
+        struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_COMMITTED;;
+        #true
+      else
+        (if: "res" = tulip.REPLICA_ABORTED_TXN
+        then
+          struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_ABORTED;;
+          #true
+        else
+          (if: "res" = tulip.REPLICA_STALE_COORDINATOR
+          then
+            struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_STOPPED;;
+            #true
+          else #false)))).
+
+Definition BackupGroupPreparer__processPrepareResult: val :=
+  rec: "BackupGroupPreparer__processPrepareResult" "gpp" "rid" "res" :=
+    (if: BackupGroupPreparer__tryResign "gpp" "res"
+    then #()
+    else
+      MapInsert (struct.loadF BackupGroupPreparer "srespm" "gpp") "rid" #true;;
+      let: "n" := MapLen (struct.loadF BackupGroupPreparer "srespm" "gpp") in
+      (if: BackupGroupPreparer__cquorum "gpp" "n"
+      then
+        struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARED;;
+        #()
+      else #())).
+
+Definition BackupGroupPreparer__processUnprepareResult: val :=
+  rec: "BackupGroupPreparer__processUnprepareResult" "gpp" "rid" "res" :=
+    (if: BackupGroupPreparer__tryResign "gpp" "res"
+    then #()
+    else
+      MapInsert (struct.loadF BackupGroupPreparer "srespm" "gpp") "rid" #true;;
+      let: "n" := MapLen (struct.loadF BackupGroupPreparer "srespm" "gpp") in
+      (if: BackupGroupPreparer__cquorum "gpp" "n"
+      then
+        struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_ABORTED;;
+        #()
+      else #())).
+
+(* Return value:
+   @latest: The latest non-fast proposal if @latest.rank > 0; @gpp.pps
+   contain only fast proposals if @latest.rank == 0. *)
+Definition BackupGroupPreparer__latestProposal: val :=
+  rec: "BackupGroupPreparer__latestProposal" "gpp" :=
+    let: "latest" := ref (zero_val (struct.t tulip.PrepareProposal)) in
+    MapIter (struct.loadF BackupGroupPreparer "pps" "gpp") (λ: <> "pp",
+      (if: (struct.get tulip.PrepareProposal "Rank" (![struct.t tulip.PrepareProposal] "latest")) < (struct.get tulip.PrepareProposal "Rank" "pp")
+      then "latest" <-[struct.t tulip.PrepareProposal] "pp"
+      else #()));;
+    ![struct.t tulip.PrepareProposal] "latest".
+
+(* Return value:
+   @nprep: The number of fast unprepares collected in @gpp.pps. *)
+Definition BackupGroupPreparer__countFastUnprepare: val :=
+  rec: "BackupGroupPreparer__countFastUnprepare" "gpp" :=
+    let: "nprep" := ref (zero_val uint64T) in
+    MapIter (struct.loadF BackupGroupPreparer "pps" "gpp") (λ: <> "pp",
+      (if: ((struct.get tulip.PrepareProposal "Rank" "pp") = #0) && (~ (struct.get tulip.PrepareProposal "Prepared" "pp"))
+      then "nprep" <-[uint64T] ((![uint64T] "nprep") + #1)
+      else #()));;
+    ![uint64T] "nprep".
+
+Definition BackupGroupPreparer__getPwrs: val :=
+  rec: "BackupGroupPreparer__getPwrs" "gpp" :=
+    (struct.loadF BackupGroupPreparer "pwrs" "gpp", struct.loadF BackupGroupPreparer "pwrsok" "gpp").
+
+Definition BackupGroupPreparer__processInquireResult: val :=
+  rec: "BackupGroupPreparer__processInquireResult" "gpp" "rid" "pp" "vd" "pwrs" "res" :=
+    (if: BackupGroupPreparer__tryResign "gpp" "res"
+    then #()
+    else
+      (if: ((struct.loadF BackupGroupPreparer "phase" "gpp") = BGPP_PREPARING) || ((struct.loadF BackupGroupPreparer "phase" "gpp") = BGPP_UNPREPARING)
+      then #()
+      else
+        MapInsert (struct.loadF BackupGroupPreparer "pps" "gpp") "rid" "pp";;
+        (if: "vd"
+        then
+          struct.storeF BackupGroupPreparer "pwrsok" "gpp" #true;;
+          struct.storeF BackupGroupPreparer "pwrs" "gpp" "pwrs";;
+          MapInsert (struct.loadF BackupGroupPreparer "vdm" "gpp") "rid" #true
+        else #());;
+        let: "n" := MapLen (struct.loadF BackupGroupPreparer "pps" "gpp") in
+        (if: (~ (BackupGroupPreparer__cquorum "gpp" "n"))
+        then #()
+        else
+          let: "latest" := BackupGroupPreparer__latestProposal "gpp" in
+          (if: (struct.get tulip.PrepareProposal "Rank" "latest") ≠ #0
+          then
+            (if: (~ (struct.get tulip.PrepareProposal "Prepared" "latest"))
+            then
+              struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_UNPREPARING;;
+              #()
+            else
+              let: (<>, "ok") := BackupGroupPreparer__getPwrs "gpp" in
+              (if: (~ "ok")
+              then #()
+              else
+                struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARING;;
+                #()))
+          else
+            let: "nfu" := BackupGroupPreparer__countFastUnprepare "gpp" in
+            (if: BackupGroupPreparer__hcquorum "gpp" "nfu"
+            then
+              struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_UNPREPARING;;
+              #()
+            else
+              let: "nvd" := MapLen (struct.loadF BackupGroupPreparer "vdm" "gpp") in
+              (if: BackupGroupPreparer__cquorum "gpp" "nvd"
+              then
+                struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARING;;
+                #()
+              else
+                (if: "nvd" = #0
+                then #()
+                else
+                  struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_VALIDATING;;
+                  #()))))))).
+
+Definition BackupGroupPreparer__processValidateResult: val :=
+  rec: "BackupGroupPreparer__processValidateResult" "gpp" "rid" "res" :=
+    (if: BackupGroupPreparer__tryResign "gpp" "res"
+    then #()
+    else
+      (if: (struct.loadF BackupGroupPreparer "phase" "gpp") ≠ BGPP_VALIDATING
+      then #()
+      else
+        (if: "res" = tulip.REPLICA_FAILED_VALIDATION
+        then #()
+        else
+          MapInsert (struct.loadF BackupGroupPreparer "vdm" "gpp") "rid" #true;;
+          let: "nvd" := MapLen (struct.loadF BackupGroupPreparer "vdm" "gpp") in
+          (if: BackupGroupPreparer__cquorum "gpp" "nvd"
+          then
+            struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARING;;
+            #()
+          else #())))).
+
+Definition BackupGroupPreparer__processQueryResult: val :=
+  rec: "BackupGroupPreparer__processQueryResult" "gpp" "rid" "res" :=
+    BackupGroupPreparer__tryResign "gpp" "res";;
+    #().
+
+Definition BackupGroupPreparer__stop: val :=
+  rec: "BackupGroupPreparer__stop" "gpp" :=
+    struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_STOPPED;;
+    #().
+
+Definition BackupGroupPreparer__processFinalizationResult: val :=
+  rec: "BackupGroupPreparer__processFinalizationResult" "gpp" "res" :=
+    (if: "res" = tulip.REPLICA_WRONG_LEADER
+    then #()
+    else
+      BackupGroupPreparer__stop "gpp";;
+      #()).
+
+Definition BackupGroupPreparer__ready: val :=
+  rec: "BackupGroupPreparer__ready" "gpp" :=
+    BGPP_PREPARED ≤ (struct.loadF BackupGroupPreparer "phase" "gpp").
+
+Definition BackupGroupPreparer__finalized: val :=
+  rec: "BackupGroupPreparer__finalized" "gpp" :=
+    BGPP_COMMITTED ≤ (struct.loadF BackupGroupPreparer "phase" "gpp").
+
+Definition BackupGroupPreparer__getPhase: val :=
+  rec: "BackupGroupPreparer__getPhase" "gpp" :=
+    struct.loadF BackupGroupPreparer "phase" "gpp".
+
+Definition BackupGroupCoordinator := struct.decl [
+  "rps" :: mapT uint64T;
+  "mu" :: ptrT;
+  "cv" :: ptrT;
+  "leader" :: uint64T;
+  "gpp" :: ptrT;
+  "conns" :: mapT grove_ffi.Connection
+].
+
 Definition BackupGroupCoordinator__NextPrepareAction: val :=
   rec: "BackupGroupCoordinator__NextPrepareAction" "gcoord" "rid" :=
     Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     let: "a" := BackupGroupPreparer__action (struct.loadF BackupGroupCoordinator "gpp" "gcoord") "rid" in
     Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     "a".
-
-Definition BackupGroupPreparer__finalized: val :=
-  rec: "BackupGroupPreparer__finalized" "gpp" :=
-    BGPP_COMMITTED ≤ (struct.loadF BackupGroupPreparer "phase" "gpp").
 
 Definition BackupGroupCoordinator__Finalized: val :=
   rec: "BackupGroupCoordinator__Finalized" "gcoord" :=
@@ -120,13 +299,45 @@ Definition BackupGroupCoordinator__Finalized: val :=
     Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     "done".
 
+Definition BackupGroupCoordinator__GetConnection: val :=
+  rec: "BackupGroupCoordinator__GetConnection" "gcoord" "rid" :=
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    let: ("conn", "ok") := MapGet (struct.loadF BackupGroupCoordinator "conns" "gcoord") "rid" in
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    ("conn", "ok").
+
+Definition BackupGroupCoordinator__Connect: val :=
+  rec: "BackupGroupCoordinator__Connect" "gcoord" "rid" :=
+    let: "addr" := Fst (MapGet (struct.loadF BackupGroupCoordinator "rps" "gcoord") "rid") in
+    let: "ret" := grove_ffi.Connect "addr" in
+    (if: (~ (struct.get grove_ffi.ConnectRet "Err" "ret"))
+    then
+      Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+      MapInsert (struct.loadF BackupGroupCoordinator "conns" "gcoord") "rid" (struct.get grove_ffi.ConnectRet "Connection" "ret");;
+      Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+      #true
+    else #false).
+
+Definition BackupGroupCoordinator__Send: val :=
+  rec: "BackupGroupCoordinator__Send" "gcoord" "rid" "data" :=
+    let: ("conn", "ok") := BackupGroupCoordinator__GetConnection "gcoord" "rid" in
+    (if: (~ "ok")
+    then
+      BackupGroupCoordinator__Connect "gcoord" "rid";;
+      #()
+    else
+      let: "err" := grove_ffi.Send "conn" "data" in
+      (if: "err"
+      then
+        BackupGroupCoordinator__Connect "gcoord" "rid";;
+        #()
+      else #())).
+
 Definition BackupGroupCoordinator__SendInquire: val :=
   rec: "BackupGroupCoordinator__SendInquire" "gcoord" "rid" "ts" "rank" :=
+    let: "data" := message.EncodeTxnInquireRequest "ts" "rank" in
+    BackupGroupCoordinator__Send "gcoord" "rid" "data";;
     #().
-
-Definition BackupGroupPreparer__getPwrs: val :=
-  rec: "BackupGroupPreparer__getPwrs" "gpp" :=
-    (struct.loadF BackupGroupPreparer "pwrs" "gpp", struct.loadF BackupGroupPreparer "pwrsok" "gpp").
 
 Definition BackupGroupCoordinator__GetPwrs: val :=
   rec: "BackupGroupCoordinator__GetPwrs" "gcoord" :=
@@ -137,18 +348,26 @@ Definition BackupGroupCoordinator__GetPwrs: val :=
 
 Definition BackupGroupCoordinator__SendValidate: val :=
   rec: "BackupGroupCoordinator__SendValidate" "gcoord" "rid" "ts" "rank" "pwrs" "ptgs" :=
+    let: "data" := message.EncodeTxnValidateRequest "ts" "rank" "pwrs" "ptgs" in
+    BackupGroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition BackupGroupCoordinator__SendPrepare: val :=
   rec: "BackupGroupCoordinator__SendPrepare" "gcoord" "rid" "ts" "rank" :=
+    let: "data" := message.EncodeTxnPrepareRequest "ts" "rank" in
+    BackupGroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition BackupGroupCoordinator__SendUnprepare: val :=
   rec: "BackupGroupCoordinator__SendUnprepare" "gcoord" "rid" "ts" "rank" :=
+    let: "data" := message.EncodeTxnUnprepareRequest "ts" "rank" in
+    BackupGroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition BackupGroupCoordinator__SendRefresh: val :=
   rec: "BackupGroupCoordinator__SendRefresh" "gcoord" "rid" "ts" "rank" :=
+    let: "data" := message.EncodeTxnRefreshRequest "ts" "rank" in
+    BackupGroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition BackupGroupCoordinator__PrepareSession: val :=
@@ -161,10 +380,8 @@ Definition BackupGroupCoordinator__PrepareSession: val :=
       else
         (if: (![uint64T] "act") = BGPP_VALIDATE
         then
-          let: ("pwrs", "ok") := BackupGroupCoordinator__GetPwrs "gcoord" in
-          (if: "ok"
-          then BackupGroupCoordinator__SendValidate "gcoord" "rid" "ts" "rank" "pwrs" "ptgs"
-          else BackupGroupCoordinator__SendInquire "gcoord" "rid" "ts" "rank")
+          let: ("pwrs", <>) := BackupGroupCoordinator__GetPwrs "gcoord" in
+          BackupGroupCoordinator__SendValidate "gcoord" "rid" "ts" "rank" "pwrs" "ptgs"
         else
           (if: (![uint64T] "act") = BGPP_PREPARE
           then BackupGroupCoordinator__SendPrepare "gcoord" "rid" "ts" "rank"
@@ -181,14 +398,6 @@ Definition BackupGroupCoordinator__PrepareSession: val :=
       "act" <-[uint64T] (BackupGroupCoordinator__NextPrepareAction "gcoord" "rid");;
       Continue);;
     #().
-
-Definition BackupGroupPreparer__ready: val :=
-  rec: "BackupGroupPreparer__ready" "gpp" :=
-    BGPP_PREPARED ≤ (struct.loadF BackupGroupPreparer "phase" "gpp").
-
-Definition BackupGroupPreparer__getPhase: val :=
-  rec: "BackupGroupPreparer__getPhase" "gpp" :=
-    struct.loadF BackupGroupPreparer "phase" "gpp".
 
 Definition BackupGroupCoordinator__WaitUntilPrepareDone: val :=
   rec: "BackupGroupCoordinator__WaitUntilPrepareDone" "gcoord" :=
@@ -236,6 +445,8 @@ Definition BackupGroupCoordinator__GetLeader: val :=
 
 Definition BackupGroupCoordinator__SendCommit: val :=
   rec: "BackupGroupCoordinator__SendCommit" "gcoord" "rid" "ts" "pwrs" :=
+    let: "data" := message.EncodeTxnCommitRequest "ts" "pwrs" in
+    BackupGroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition BackupGroupCoordinator__ChangeLeader: val :=
@@ -248,52 +459,39 @@ Definition BackupGroupCoordinator__ChangeLeader: val :=
 
 Definition BackupGroupCoordinator__Commit: val :=
   rec: "BackupGroupCoordinator__Commit" "gcoord" "ts" :=
-    let: "leader" := ref_to uint64T (BackupGroupCoordinator__GetLeader "gcoord") in
-    Skip;;
-    (for: (λ: <>, (~ (BackupGroupCoordinator__Finalized "gcoord"))); (λ: <>, Skip) := λ: <>,
-      let: ("pwrs", "ok") := BackupGroupCoordinator__GetPwrs "gcoord" in
-      (if: (~ "ok")
-      then Break
-      else
+    let: ("pwrs", "ok") := BackupGroupCoordinator__GetPwrs "gcoord" in
+    (if: (~ "ok")
+    then #()
+    else
+      let: "leader" := ref_to uint64T (BackupGroupCoordinator__GetLeader "gcoord") in
+      BackupGroupCoordinator__SendCommit "gcoord" (![uint64T] "leader") "ts" "pwrs";;
+      time.Sleep params.NS_RESEND_COMMIT;;
+      Skip;;
+      (for: (λ: <>, (~ (BackupGroupCoordinator__Finalized "gcoord"))); (λ: <>, Skip) := λ: <>,
+        "leader" <-[uint64T] (BackupGroupCoordinator__ChangeLeader "gcoord");;
         BackupGroupCoordinator__SendCommit "gcoord" (![uint64T] "leader") "ts" "pwrs";;
         time.Sleep params.NS_RESEND_COMMIT;;
-        "leader" <-[uint64T] (BackupGroupCoordinator__ChangeLeader "gcoord");;
-        Continue));;
-    #().
+        Continue);;
+      #()).
 
 Definition BackupGroupCoordinator__SendAbort: val :=
   rec: "BackupGroupCoordinator__SendAbort" "gcoord" "rid" "ts" :=
+    let: "data" := message.EncodeTxnAbortRequest "ts" in
+    BackupGroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
 Definition BackupGroupCoordinator__Abort: val :=
   rec: "BackupGroupCoordinator__Abort" "gcoord" "ts" :=
     let: "leader" := ref_to uint64T (BackupGroupCoordinator__GetLeader "gcoord") in
+    BackupGroupCoordinator__SendAbort "gcoord" (![uint64T] "leader") "ts";;
+    time.Sleep params.NS_RESEND_ABORT;;
     Skip;;
     (for: (λ: <>, (~ (BackupGroupCoordinator__Finalized "gcoord"))); (λ: <>, Skip) := λ: <>,
+      "leader" <-[uint64T] (BackupGroupCoordinator__ChangeLeader "gcoord");;
       BackupGroupCoordinator__SendAbort "gcoord" (![uint64T] "leader") "ts";;
       time.Sleep params.NS_RESEND_ABORT;;
-      "leader" <-[uint64T] (BackupGroupCoordinator__ChangeLeader "gcoord");;
       Continue);;
     #().
-
-Definition BackupGroupCoordinator__GetConnection: val :=
-  rec: "BackupGroupCoordinator__GetConnection" "gcoord" "rid" :=
-    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    let: ("conn", "ok") := MapGet (struct.loadF BackupGroupCoordinator "conns" "gcoord") "rid" in
-    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    ("conn", "ok").
-
-Definition BackupGroupCoordinator__Connect: val :=
-  rec: "BackupGroupCoordinator__Connect" "gcoord" "rid" :=
-    let: "addr" := Fst (MapGet (struct.loadF BackupGroupCoordinator "rps" "gcoord") "rid") in
-    let: "ret" := grove_ffi.Connect "addr" in
-    (if: (~ (struct.get grove_ffi.ConnectRet "Err" "ret"))
-    then
-      Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-      MapInsert (struct.loadF BackupGroupCoordinator "conns" "gcoord") "rid" (struct.get grove_ffi.ConnectRet "Connection" "ret");;
-      Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-      #true
-    else #false).
 
 Definition BackupGroupCoordinator__Receive: val :=
   rec: "BackupGroupCoordinator__Receive" "gcoord" "rid" :=
@@ -309,158 +507,6 @@ Definition BackupGroupCoordinator__Receive: val :=
         BackupGroupCoordinator__Connect "gcoord" "rid";;
         (slice.nil, #false)
       else (struct.get grove_ffi.ReceiveRet "Data" "ret", #true))).
-
-Definition BackupGroupPreparer__tryResign: val :=
-  rec: "BackupGroupPreparer__tryResign" "gpp" "res" :=
-    (if: BGPP_PREPARED ≤ (struct.loadF BackupGroupPreparer "phase" "gpp")
-    then #true
-    else
-      (if: "res" = tulip.REPLICA_COMMITTED_TXN
-      then
-        struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_COMMITTED;;
-        #true
-      else
-        (if: "res" = tulip.REPLICA_ABORTED_TXN
-        then
-          struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_ABORTED;;
-          #true
-        else
-          (if: "res" = tulip.REPLICA_STALE_COORDINATOR
-          then
-            struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_STOPPED;;
-            #true
-          else #false)))).
-
-Definition BackupGroupPreparer__cquorum: val :=
-  rec: "BackupGroupPreparer__cquorum" "gpp" "n" :=
-    (quorum.ClassicQuorum (struct.loadF BackupGroupPreparer "nrps" "gpp")) ≤ "n".
-
-(* Return value:
-   @latest: The latest non-fast proposal if @latest.rank > 0; @gpp.pps
-   contain only fast proposals if @latest.rank == 0. *)
-Definition BackupGroupPreparer__latestProposal: val :=
-  rec: "BackupGroupPreparer__latestProposal" "gpp" :=
-    let: "latest" := ref (zero_val (struct.t PrepareProposal)) in
-    MapIter (struct.loadF BackupGroupPreparer "pps" "gpp") (λ: <> "pp",
-      (if: (struct.get PrepareProposal "rank" (![struct.t PrepareProposal] "latest")) < (struct.get PrepareProposal "rank" "pp")
-      then "latest" <-[struct.t PrepareProposal] "pp"
-      else #()));;
-    ![struct.t PrepareProposal] "latest".
-
-(* Return value:
-   @nprep: The number of fast unprepares collected in @gpp.pps. *)
-Definition BackupGroupPreparer__countFastUnprepare: val :=
-  rec: "BackupGroupPreparer__countFastUnprepare" "gpp" :=
-    let: "nprep" := ref (zero_val uint64T) in
-    MapIter (struct.loadF BackupGroupPreparer "pps" "gpp") (λ: <> "pp",
-      (if: ((struct.get PrepareProposal "rank" "pp") = #0) && (~ (struct.get PrepareProposal "dec" "pp"))
-      then "nprep" <-[uint64T] ((![uint64T] "nprep") + #1)
-      else #()));;
-    ![uint64T] "nprep".
-
-Definition BackupGroupPreparer__hcquorum: val :=
-  rec: "BackupGroupPreparer__hcquorum" "gpp" "n" :=
-    (quorum.Half (quorum.ClassicQuorum (struct.loadF BackupGroupPreparer "nrps" "gpp"))) ≤ "n".
-
-Definition BackupGroupPreparer__processInquireResult: val :=
-  rec: "BackupGroupPreparer__processInquireResult" "gpp" "rid" "pp" "vd" "pwrs" "res" :=
-    (if: BackupGroupPreparer__tryResign "gpp" "res"
-    then #()
-    else
-      (if: ((struct.loadF BackupGroupPreparer "phase" "gpp") = BGPP_PREPARING) || ((struct.loadF BackupGroupPreparer "phase" "gpp") = BGPP_UNPREPARING)
-      then #()
-      else
-        MapInsert (struct.loadF BackupGroupPreparer "pps" "gpp") "rid" "pp";;
-        (if: "vd"
-        then
-          struct.storeF BackupGroupPreparer "pwrsok" "gpp" #true;;
-          struct.storeF BackupGroupPreparer "pwrs" "gpp" "pwrs";;
-          MapInsert (struct.loadF BackupGroupPreparer "vdm" "gpp") "rid" #true
-        else #());;
-        let: "n" := MapLen (struct.loadF BackupGroupPreparer "pps" "gpp") in
-        (if: (~ (BackupGroupPreparer__cquorum "gpp" "n"))
-        then #()
-        else
-          let: "latest" := BackupGroupPreparer__latestProposal "gpp" in
-          (if: (struct.get PrepareProposal "rank" "latest") ≠ #0
-          then
-            (if: struct.get PrepareProposal "dec" "latest"
-            then struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARING
-            else struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_UNPREPARING);;
-            #()
-          else
-            let: "nfu" := BackupGroupPreparer__countFastUnprepare "gpp" in
-            (if: BackupGroupPreparer__hcquorum "gpp" "nfu"
-            then
-              struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_UNPREPARING;;
-              #()
-            else
-              let: "nvd" := MapLen (struct.loadF BackupGroupPreparer "vdm" "gpp") in
-              (if: BackupGroupPreparer__cquorum "gpp" "nvd"
-              then
-                struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARING;;
-                #()
-              else
-                struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_VALIDATING;;
-                #())))))).
-
-Definition BackupGroupPreparer__processValidateResult: val :=
-  rec: "BackupGroupPreparer__processValidateResult" "gpp" "rid" "res" :=
-    (if: BackupGroupPreparer__tryResign "gpp" "res"
-    then #()
-    else
-      (if: (struct.loadF BackupGroupPreparer "phase" "gpp") ≠ BGPP_VALIDATING
-      then #()
-      else
-        (if: "res" = tulip.REPLICA_FAILED_VALIDATION
-        then #()
-        else
-          MapInsert (struct.loadF BackupGroupPreparer "vdm" "gpp") "rid" #true;;
-          let: "nvd" := MapLen (struct.loadF BackupGroupPreparer "vdm" "gpp") in
-          (if: BackupGroupPreparer__cquorum "gpp" "nvd"
-          then
-            struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARING;;
-            #()
-          else #())))).
-
-Definition BackupGroupPreparer__processPrepareResult: val :=
-  rec: "BackupGroupPreparer__processPrepareResult" "gpp" "rid" "res" :=
-    (if: BackupGroupPreparer__tryResign "gpp" "res"
-    then #()
-    else
-      MapInsert (struct.loadF BackupGroupPreparer "srespm" "gpp") "rid" #true;;
-      let: "n" := MapLen (struct.loadF BackupGroupPreparer "srespm" "gpp") in
-      (if: BackupGroupPreparer__cquorum "gpp" "n"
-      then
-        struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_PREPARED;;
-        #()
-      else #())).
-
-Definition BackupGroupPreparer__processUnprepareResult: val :=
-  rec: "BackupGroupPreparer__processUnprepareResult" "gpp" "rid" "res" :=
-    (if: BackupGroupPreparer__tryResign "gpp" "res"
-    then #()
-    else
-      MapInsert (struct.loadF BackupGroupPreparer "srespm" "gpp") "rid" #true;;
-      let: "n" := MapLen (struct.loadF BackupGroupPreparer "srespm" "gpp") in
-      (if: BackupGroupPreparer__cquorum "gpp" "n"
-      then
-        struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_ABORTED;;
-        #()
-      else #())).
-
-Definition BackupGroupPreparer__stop: val :=
-  rec: "BackupGroupPreparer__stop" "gpp" :=
-    struct.storeF BackupGroupPreparer "phase" "gpp" BGPP_STOPPED;;
-    #().
-
-Definition BackupGroupPreparer__processFinalizationResult: val :=
-  rec: "BackupGroupPreparer__processFinalizationResult" "gpp" "res" :=
-    (if: "res" = tulip.REPLICA_WRONG_LEADER
-    then #()
-    else
-      BackupGroupPreparer__stop "gpp";;
-      #()).
 
 Definition BackupGroupCoordinator__ResponseSession: val :=
   rec: "BackupGroupCoordinator__ResponseSession" "gcoord" "rid" :=
@@ -478,9 +524,9 @@ Definition BackupGroupCoordinator__ResponseSession: val :=
         let: "gpp" := struct.loadF BackupGroupCoordinator "gpp" "gcoord" in
         (if: "kind" = message.MSG_TXN_INQUIRE
         then
-          let: "pp" := struct.mk PrepareProposal [
-            "rank" ::= struct.get message.TxnResponse "Rank" "msg";
-            "dec" ::= struct.get message.TxnResponse "Prepared" "msg"
+          let: "pp" := struct.mk tulip.PrepareProposal [
+            "Rank" ::= struct.get message.TxnResponse "Rank" "msg";
+            "Prepared" ::= struct.get message.TxnResponse "Prepared" "msg"
           ] in
           BackupGroupPreparer__processInquireResult "gpp" "rid" "pp" (struct.get message.TxnResponse "Validated" "msg") (struct.get message.TxnResponse "PartialWrites" "msg") (struct.get message.TxnResponse "Result" "msg")
         else
@@ -504,57 +550,37 @@ Definition BackupGroupCoordinator__ResponseSession: val :=
         Continue));;
     #().
 
-Definition BackupGroupCoordinator__Send: val :=
-  rec: "BackupGroupCoordinator__Send" "gcoord" "rid" "data" :=
-    let: ("conn", "ok") := BackupGroupCoordinator__GetConnection "gcoord" "rid" in
-    (if: (~ "ok")
-    then BackupGroupCoordinator__Connect "gcoord" "rid"
-    else #());;
-    let: "err" := grove_ffi.Send "conn" "data" in
-    (if: "err"
-    then
-      BackupGroupCoordinator__Connect "gcoord" "rid";;
-      #()
-    else #()).
-
 Definition BackupGroupCoordinator__ConnectAll: val :=
   rec: "BackupGroupCoordinator__ConnectAll" "gcoord" :=
     MapIter (struct.loadF BackupGroupCoordinator "rps" "gcoord") (λ: <> "rid",
       BackupGroupCoordinator__Connect "gcoord" "rid");;
     #().
 
-Definition BackupGroupPreparer__fquorum: val :=
-  rec: "BackupGroupPreparer__fquorum" "gpp" "n" :=
-    (quorum.FastQuorum (struct.loadF BackupGroupPreparer "nrps" "gpp")) ≤ "n".
-
-Definition BackupGroupPreparer__processQueryResult: val :=
-  rec: "BackupGroupPreparer__processQueryResult" "gpp" "rid" "res" :=
-    BackupGroupPreparer__tryResign "gpp" "res";;
-    #().
-
 Definition BackupTxnCoordinator := struct.decl [
   "ts" :: uint64T;
   "rank" :: uint64T;
   "ptgs" :: slice.T uint64T;
-  "gcoords" :: mapT ptrT
+  "gcoords" :: mapT ptrT;
+  "proph" :: ProphIdT
 ].
 
 Definition MkBackupTxnCoordinator: val :=
-  rec: "MkBackupTxnCoordinator" "ts" "rank" "ptgs" "rps" "leader" :=
+  rec: "MkBackupTxnCoordinator" "ts" "rank" "ptgs" "gaddrm" "leader" :=
     let: "gcoords" := NewMap uint64T ptrT #() in
     ForSlice uint64T <> "gid" "ptgs"
-      (let: "gpp" := struct.new BackupGroupPreparer [
-        "nrps" ::= MapLen "rps";
+      (let: "addrm" := Fst (MapGet "gaddrm" "gid") in
+      let: "gpp" := struct.new BackupGroupPreparer [
+        "nrps" ::= MapLen "addrm";
         "phase" ::= BGPP_INQUIRING;
         "pwrsok" ::= #false;
-        "pps" ::= NewMap uint64T (struct.t PrepareProposal) #();
+        "pps" ::= NewMap uint64T (struct.t tulip.PrepareProposal) #();
         "vdm" ::= NewMap uint64T boolT #();
         "srespm" ::= NewMap uint64T boolT #()
       ] in
       let: "mu" := newMutex #() in
       let: "cv" := NewCond "mu" in
       let: "gcoord" := struct.new BackupGroupCoordinator [
-        "rps" ::= "rps";
+        "rps" ::= "addrm";
         "mu" ::= "mu";
         "cv" ::= "cv";
         "leader" ::= "leader";
@@ -580,6 +606,9 @@ Definition BackupTxnCoordinator__ConnectAll: val :=
 
 Definition BackupTxnCoordinator__stabilize: val :=
   rec: "BackupTxnCoordinator__stabilize" "tcoord" :=
+    let: "ts" := struct.loadF BackupTxnCoordinator "ts" "tcoord" in
+    let: "rank" := struct.loadF BackupTxnCoordinator "rank" "tcoord" in
+    let: "ptgs" := struct.loadF BackupTxnCoordinator "ptgs" "tcoord" in
     let: "mu" := newMutex #() in
     let: "cv" := NewCond "mu" in
     let: "nr" := ref_to uint64T #0 in
@@ -588,7 +617,7 @@ Definition BackupTxnCoordinator__stabilize: val :=
     let: "vd" := ref_to boolT #true in
     MapIter (struct.loadF BackupTxnCoordinator "gcoords" "tcoord") (λ: <> "gcoordloop",
       let: "gcoord" := "gcoordloop" in
-      Fork (let: ("stg", "vdg") := BackupGroupCoordinator__Prepare "gcoord" (struct.loadF BackupTxnCoordinator "ts" "tcoord") (struct.loadF BackupTxnCoordinator "rank" "tcoord") (struct.loadF BackupTxnCoordinator "ptgs" "tcoord") in
+      Fork (let: ("stg", "vdg") := BackupGroupCoordinator__Prepare "gcoord" "ts" "rank" "ptgs" in
             Mutex__Lock "mu";;
             "nr" <-[uint64T] ((![uint64T] "nr") + #1);;
             (if: (~ "vdg")
@@ -608,6 +637,25 @@ Definition BackupTxnCoordinator__stabilize: val :=
     let: "valid" := ![boolT] "vd" in
     Mutex__Unlock "mu";;
     ("status", "valid").
+
+(* TODO: This function should go to a trusted package (but not trusted_proph
+   since that would create a circular dependency). *)
+Definition BackupTxnCoordinator__mergeWrites: val :=
+  rec: "BackupTxnCoordinator__mergeWrites" "tcoord" :=
+    let: "wrs" := NewMap stringT (struct.t tulip.Value) #() in
+    MapIter (struct.loadF BackupTxnCoordinator "gcoords" "tcoord") (λ: <> "gcoord",
+      let: ("pwrs", <>) := BackupGroupCoordinator__GetPwrs "gcoord" in
+      MapIter "pwrs" (λ: "k" "v",
+        MapInsert "wrs" "k" "v"));;
+    "wrs".
+
+Definition BackupTxnCoordinator__resolve: val :=
+  rec: "BackupTxnCoordinator__resolve" "tcoord" "status" :=
+    (if: "status" = tulip.TXN_PREPARED
+    then
+      trusted_proph.ResolveCommit (struct.loadF BackupTxnCoordinator "proph" "tcoord") (struct.loadF BackupTxnCoordinator "ts" "tcoord") (BackupTxnCoordinator__mergeWrites "tcoord");;
+      #()
+    else #()).
 
 Definition BackupTxnCoordinator__commit: val :=
   rec: "BackupTxnCoordinator__commit" "tcoord" :=
@@ -635,5 +683,6 @@ Definition BackupTxnCoordinator__Finalize: val :=
         BackupTxnCoordinator__abort "tcoord";;
         #()
       else
+        BackupTxnCoordinator__resolve "tcoord" "status";;
         BackupTxnCoordinator__commit "tcoord";;
         #())).

@@ -5,7 +5,6 @@ From Perennial.program_proof.tulip.program.gcoord Require Import gcoord_repr.
 Section repr.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-
   (*@ type Txn struct {                                                       @*)
   (*@     // Timestamp of this transaction.                                   @*)
   (*@     ts      uint64                                                      @*)

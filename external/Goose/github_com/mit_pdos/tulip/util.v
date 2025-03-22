@@ -4,8 +4,7 @@ From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.tulip.tulip.
 From Goose Require github_com.tchajed.marshal.
 
-Section code.
-Context `{ext_ty: ext_types}.
+From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition NextAligned: val :=
   rec: "NextAligned" "current" "interval" "low" :=
@@ -106,6 +105,22 @@ Definition DecodeStrings: val :=
       Continue);;
     (![slice.T stringT] "ents", ![slice.T byteT] "data").
 
+Definition EncodePrepareProposal: val :=
+  rec: "EncodePrepareProposal" "bs" "pp" :=
+    let: "bs1" := marshal.WriteInt "bs" (struct.get tulip.PrepareProposal "Rank" "pp") in
+    let: "data" := marshal.WriteBool "bs1" (struct.get tulip.PrepareProposal "Prepared" "pp") in
+    "data".
+
+Definition DecodePrepareProposal: val :=
+  rec: "DecodePrepareProposal" "bs" :=
+    let: ("rank", "bs1") := marshal.ReadInt "bs" in
+    let: ("prepared", "data") := marshal.ReadBool "bs1" in
+    let: "pp" := struct.mk tulip.PrepareProposal [
+      "Rank" ::= "rank";
+      "Prepared" ::= "prepared"
+    ] in
+    ("pp", "data").
+
 Definition EncodeValue: val :=
   rec: "EncodeValue" "bs" "v" :=
     (if: (~ (struct.get tulip.Value "Present" "v"))
@@ -200,4 +215,17 @@ Definition DecodeKVMapIntoSlice: val :=
       Continue);;
     (![slice.T (struct.t tulip.WriteEntry)] "ents", ![slice.T byteT] "data").
 
-End code.
+Definition DecodeKVMap: val :=
+  rec: "DecodeKVMap" "bs" :=
+    let: ("n", "bs1") := marshal.ReadInt "bs" in
+    let: "data" := ref_to (slice.T byteT) "bs1" in
+    let: "m" := NewMap stringT (struct.t tulip.Value) #() in
+    let: "i" := ref_to uint64T #0 in
+    Skip;;
+    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, Skip) := λ: <>,
+      let: ("x", "bsloop") := DecodeWriteEntry (![slice.T byteT] "data") in
+      MapInsert "m" (struct.get tulip.WriteEntry "Key" "x") (struct.get tulip.WriteEntry "Value" "x");;
+      "data" <-[slice.T byteT] "bsloop";;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
+    ("m", ![slice.T byteT] "data").

@@ -2,8 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.mit_pdos.tulip.tulip.
 
-Section code.
-Context `{ext_ty: ext_types}.
+From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition Tuple := struct.decl [
   "mu" :: ptrT;
@@ -87,5 +86,3 @@ Definition MkTuple: val :=
     ]);;
     struct.storeF Tuple "vers" "tuple" "vers";;
     "tuple".
-
-End code.

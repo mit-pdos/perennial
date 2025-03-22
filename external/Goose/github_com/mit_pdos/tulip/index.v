@@ -2,8 +2,7 @@
 From Perennial.goose_lang Require Import prelude.
 From Goose Require github_com.mit_pdos.tulip.tuple.
 
-Section code.
-Context `{ext_ty: ext_types}.
+From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition Index := struct.decl [
   "mu" :: ptrT;
@@ -30,5 +29,3 @@ Definition MkIndex: val :=
     struct.storeF Index "mu" "idx" (newMutex #());;
     struct.storeF Index "tplm" "idx" (NewMap stringT ptrT #());;
     "idx".
-
-End code.
