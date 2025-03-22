@@ -119,7 +119,20 @@ Ltac word := first [
                | fail 1 "word could not solve goal"
                ].
 
+(* TODO: use for first abstraction. *)
+Local Definition enc (low high : w32) : w64 :=
+  word.add (word.slu (W64 (uint.Z high)) (W64 32)) (W64 (uint.Z low)).
 
+(* TODO: use for first abstraction. *)
+Local Ltac local_word :=
+  try apply word.unsigned_inj;
+  repeat try (
+      rewrite !word.unsigned_sru // in * ||
+      rewrite word.unsigned_add ||
+      rewrite word.unsigned_slu // ||
+      rewrite !Z.shiftr_div_pow2 // ||
+      rewrite Z.shiftl_mul_pow2 //
+    ); word.
 
 (* TODO: this is an abstraction of the physical state. *)
 Record Impl := mkImpl { v : w32; w : w32; sema : u32; }.
@@ -128,7 +141,9 @@ Global Instance settable : Settable _ :=
 Implicit Types s : Impl.
 
 Inductive ImplStep :=
-| Add1 (delta : w32) | Add2 | Add3.
+| Add1 (delta : w32) | Add2 | Add3
+| Wait1 (oldv oldw : w32) | Wait2.
+
 Implicit Type (l : ImplStep).
 
 Definition step_impl l s s' : Prop :=
@@ -136,6 +151,11 @@ Definition step_impl l s s' : Prop :=
   | Add1 delta => (s' = s <| v := word.add s.(v) delta |>)
   | Add2 => (s' = s <| v := W32 0 |> <| w := W32 0 |>)
   | Add3 => (s' = s <| sema := (word.add s.(sema) (W32 1)) |>)
+
+  | Wait1 oldv oldw => if decide (s.(v) = oldv ∧ s.(w) = oldw) then
+                        (s' = s <| w := (word.add oldw (W32 1)) |>)
+                      else s' = s
+  | Wait2 => (0 < uint.Z s.(sema)) ∧ (s' = s <| sema := word.sub s.(sema) (W32 1) |>)
   end.
 
 Record Spec := { counter : w32; }.
@@ -158,24 +178,8 @@ Definition next_add_aux l s s' a : AuxAdd :=
   | _ => AddNot
   end.
 
-(* TODO: use for first abstraction. *)
-Local Definition enc (low high : w32) : w64 :=
-  word.add (word.slu (W64 (uint.Z high)) (W64 32)) (W64 (uint.Z low)).
-
-(* TODO: use for first abstraction. *)
-Local Ltac local_word :=
-  try apply word.unsigned_inj;
-  repeat try (
-      rewrite !word.unsigned_sru // in * ||
-      rewrite word.unsigned_add ||
-      rewrite word.unsigned_slu // ||
-      rewrite !Z.shiftr_div_pow2 // ||
-      rewrite Z.shiftl_mul_pow2 //
-    ); word.
-
 Definition invariant s t a : Prop :=
   t.(counter) = s.(v) ∧ (* abstraction *)
-  0 ≤ sint.Z s.(v) ∧
   match a with
   | AddNeedToSignal => s.(v) = W32 0
   | _ => True
@@ -187,35 +191,61 @@ Lemma impl_invariant_Add1 delta s s' t a :
   invariant s t a →
   ∃ t', step_spec (Add delta) t t' ∧ invariant s' t' (next_add_aux (Add1 delta) s s' a).
 Proof.
-  intros Hpre Hstep Hinv. unfold invariant in *.
-  destruct s as [v w sema], s' as [v' w' sema'].
-  destruct t as [counter]. exists {|sync2.counter := v'|}. simpl in *.
+  intros Hpre Hstep Hinv. destruct s as [v w sema], s' as [v' w' sema'], t as [counter].
+  exists {|sync2.counter := v'|}. unfold invariant in *. simpl in *.
   unfold set in Hstep. simplify_eq. intuition; try word. by destruct decide.
 Qed.
 
 Lemma impl_invariant_Add2 s s' t a :
+  (* XXX: The precondition here is actually meant to denote ownership. *)
   a = AddNeedToSignal →
   step_impl Add2 s s' →
   invariant s t a →
   invariant s' t (next_add_aux (Add2) s s' a).
 Proof.
-  intros -> Hstep Hinv.
-  destruct s as [v w sema], s' as [v' w' sema'], t as [counter].
+  intros -> Hstep Hinv. destruct s as [v w sema], s' as [v' w' sema'], t as [counter].
   unfold invariant in *. simpl in *. unfold set in *. simpl in *. simplify_eq.
   intuition; subst; done.
 Qed.
 
 Lemma impl_invariant_Add3 s s' t a :
-  a = AddNeedToSignal →
-  step_impl Add2 s s' →
+  step_impl Add3 s s' →
   invariant s t a →
-  invariant s' t (next_add_aux (Add2) s s' a).
+  invariant s' t (next_add_aux (Add3) s s' a).
 Proof.
-  intros -> Hstep Hinv. unfold invariant in *.
-  destruct s as [v w sema], s' as [v' w' sema'].
-  destruct t as [counter]. simpl in Hstep. unfold set in *. simpl in *. simplify_eq.
+  intros Hstep Hinv. destruct s as [v w sema], s' as [v' w' sema'], t as [counter].
+  unfold invariant in *. simpl in *. unfold set in *. simpl in *. simplify_eq.
   intuition; subst; done.
 Qed.
+
+Lemma impl_invariant_Wait1 oldv oldw s s' t a :
+  sint.Z oldv ≠ 0 →
+  step_impl (Wait1 oldv oldw) s s' →
+  invariant s t a →
+  invariant s' t (next_add_aux (Wait1 oldv oldw) s s' a).
+Proof.
+  intros Hstep Hinv. destruct s as [v w sema], s' as [v' w' sema'], t as [counter].
+  unfold invariant in *. simpl in *.
+  unfold set in *. simpl in *. destruct decide; simplify_eq.
+  all: intuition; subst; done.
+Qed.
+
+Lemma impl_invariant_Wait2 s s' t a :
+  step_impl Wait2 s s' →
+  invariant s t a →
+  ∃ t', step_spec Wait t t' ∧
+        invariant s' t' (next_add_aux Wait2 s s' a).
+Proof.
+  intros Hstep Hinv. exists t. destruct s as [v w sema], s' as [v' w' sema'], t as [counter].
+  unfold invariant in *. simpl in *.
+  unfold set in *. simpl in *. destruct Hstep as [? Hstep].
+  simplify_eq. split_and!; try done.
+  {
+Abort.
+(* Need invariant to imply that counter = 0 in this case. But, that's not enough:
+   need to walk away with a fact that says the counter will remain zero until
+   the Wait() call returns.
+   I.e. want some sort of ownership. *)
 
 
 (* Q: steps are constrained by preconditions on API functions. How does that show up here? *)
