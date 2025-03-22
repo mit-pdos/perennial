@@ -26,6 +26,8 @@ Proof. Admitted.
 
 (** Merkle proofs. *)
 
+(* TODO: allow for establishing merk proof val=None
+when there's a leaf node in the tree with a different label. *)
 Fixpoint is_merk_proof_recur (depth : nat) (label : list w8)
     (val : option $ list w8) (proof : list $ list w8)
     (hash : list w8) : iProp Σ :=

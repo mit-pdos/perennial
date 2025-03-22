@@ -10,6 +10,55 @@ Notation empty_node_tag := (W8 0) (only parsing).
 Notation inner_node_tag := (W8 1) (only parsing).
 Notation leaf_node_tag := (W8 2) (only parsing).
 
+Module MerkleProof.
+Record t :=
+  mk {
+    Siblings: list w8;
+    d0: dfrac;
+    LeafLabel: list w8;
+    d1: dfrac;
+    LeafVal: list w8;
+    d2: dfrac;
+  }.
+Definition encodes (obj : t) : list w8 :=
+  u64_le (length obj.(Siblings)) ++ obj.(Siblings) ++
+  u64_le (length obj.(LeafLabel)) ++ obj.(LeafLabel) ++
+  u64_le (length obj.(LeafVal)) ++ obj.(LeafVal).
+
+Section defs.
+Context `{!heapGS Σ}.
+Definition own ptr obj : iProp Σ :=
+  ∃ sl_sibs sl_leaf_label sl_leaf_val,
+  "Hsl_sibs" ∷ own_slice_small sl_sibs byteT obj.(d0) obj.(Siblings) ∗
+  "Hptr_sibs" ∷ ptr ↦[MerkleProof :: "Siblings"] (slice_val sl_sibs) ∗
+  "Hsl_leaf_label" ∷ own_slice_small sl_leaf_label byteT obj.(d1) obj.(LeafLabel) ∗
+  "Hptr_leaf_label" ∷ ptr ↦[MerkleProof :: "LeafLabel"] (slice_val sl_leaf_label) ∗
+  "Hsl_leaf_val" ∷ own_slice_small sl_leaf_val byteT obj.(d2) obj.(LeafVal) ∗
+  "Hptr_leaf_val" ∷ ptr ↦[MerkleProof :: "LeafVal"] (slice_val sl_leaf_val).
+
+Lemma wp_dec sl_enc d0 enc :
+  {{{
+    "Hsl_enc" ∷ own_slice_small sl_enc byteT d0 enc
+  }}}
+  MerkleProofDecode (slice_val sl_enc)
+  {{{
+    ptr_obj sl_tail err, RET (#ptr_obj, slice_val sl_tail, #err);
+    "Hgenie" ∷
+      (⌜ err = false ⌝ ∗-∗
+      ∃ obj tail,
+      "%Henc_obj" ∷ ⌜ enc = encodes obj ++ tail ⌝) ∗
+    "Herr" ∷
+      (∀ obj tail,
+      "%Henc_obj" ∷ ⌜ enc = encodes obj ++ tail ⌝
+      -∗
+      "Hown_obj" ∷ own ptr_obj obj ∗
+      "Hsl_tail" ∷ own_slice_small sl_tail byteT d0 tail)
+  }}}.
+Proof. Admitted.
+
+End defs.
+End MerkleProof.
+
 Section proof.
 Context `{!heapGS Σ}.
 
@@ -23,14 +72,14 @@ Definition get_bit (l : list w8) (n : nat) : bool :=
 Inductive tree :=
 | Empty
 | Leaf (label: list w8) (val: list w8)
-| Internal (l: tree) (r: tree)
+| Inner (l: tree) (r: tree)
 | Cut (hash: list w8).
 
 Fixpoint tree_to_gmap (t: tree) : gmap (list w8) (list w8) :=
   match t with
   | Empty => ∅
   | Leaf label val => {[label := val]}
-  | Internal lt rt => (tree_to_gmap lt) ∪ (tree_to_gmap rt)
+  | Inner lt rt => (tree_to_gmap lt) ∪ (tree_to_gmap rt)
   | Cut h => ∅
   end.
 
@@ -43,7 +92,7 @@ Fixpoint sorted_tree (t: tree) (depth: nat) : Prop :=
   match t with
   | Empty => True
   | Leaf label val => length label = hash_len
-  | Internal lt rt =>
+  | Inner lt rt =>
     sorted_tree lt (depth+1) ∧ tree_labels_have_bit lt depth false ∧
     sorted_tree rt (depth+1) ∧ tree_labels_have_bit rt depth true
   | Cut h => True
@@ -52,7 +101,7 @@ Fixpoint sorted_tree (t: tree) (depth: nat) : Prop :=
 Inductive cutless_tree : ∀ (t: tree), Prop :=
   | CutlessEmpty : cutless_tree Empty
   | CutlessLeaf : ∀ label val, cutless_tree (Leaf label val)
-  | CutlessInternal : ∀ lt rt, cutless_tree lt -> cutless_tree rt -> cutless_tree (Internal lt rt).
+  | CutlessInner : ∀ lt rt, cutless_tree lt -> cutless_tree rt -> cutless_tree (Inner lt rt).
 
 Fixpoint tree_path (t: tree) (label: list w8) (label_depth: nat) (result: option (list w8 * list w8)%type) : Prop :=
   match t with
@@ -60,7 +109,7 @@ Fixpoint tree_path (t: tree) (label: list w8) (label_depth: nat) (result: option
     result = None
   | Leaf found_label found_val =>
     result = Some (found_label, found_val) ∧ length found_label = hash_len
-  | Internal lt rt =>
+  | Inner lt rt =>
     match get_bit label label_depth with
     | false => tree_path lt label (label_depth+1) result
     | true  => tree_path rt label (label_depth+1) result
@@ -74,7 +123,7 @@ Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
     is_hash [empty_node_tag] h
   | Leaf label val =>
     is_hash ([leaf_node_tag] ++ label ++ (u64_le $ length val) ++ val) h
-  | Internal lt rt =>
+  | Inner lt rt =>
     ∃ hl hr,
     is_tree_hash lt hl ∗
     is_tree_hash rt hr ∗
@@ -228,7 +277,7 @@ Fixpoint tree_siblings_proof (t: tree) (label: list w8) (label_depth: nat) (proo
   match t with
   | Empty => ⌜proof = []⌝
   | Leaf found_label found_val => ⌜proof = []⌝
-  | Internal lt rt =>
+  | Inner lt rt =>
     ∃ sibhash proof', ⌜proof = sibhash :: proof'⌝ ∗
       match get_bit label label_depth with
       | false => tree_siblings_proof lt label (label_depth+1) proof' ∗ is_tree_hash rt sibhash
@@ -258,7 +307,7 @@ Fixpoint own_merkle_tree (ptr: loc) (t: tree) : iProp Σ :=
         own_slice_small sl_label byteT DfracDiscarded label ∗
         own_slice_small sl_val byteT DfracDiscarded val ∗
         own_slice_small sl_hash byteT DfracDiscarded hash
-    | Internal lt rt =>
+    | Inner lt rt =>
       ∃ sl_hash (ptr_l ptr_r : loc),
         ptr ↦[node :: "hash"] (slice_val sl_hash) ∗
         ptr ↦[node :: "child0"] #ptr_l ∗
@@ -325,5 +374,113 @@ Proof.
     iDestruct (tree_path_agree with "Hm Hf") as "%Hagree"; eauto.
     iPureIntro. right. intuition subst; eauto.
 Qed.
+
+(* Program proofs. *)
+
+Lemma wp_compEmptyHash :
+  {{{ True }}}
+  compEmptyHash #()
+  {{{
+    sl_hash hash, RET (slice_val sl_hash);
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
+    "#His_hash" ∷ is_hash [empty_node_tag] hash
+  }}}.
+Proof. Admitted.
+
+Lemma wp_compLeafHash sl_label sl_val d0 d1 (label val : list w8) :
+  {{{
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hsl_val" ∷ own_slice_small sl_val byteT d1 val
+  }}}
+  compLeafHash (slice_val sl_label) (slice_val sl_val)
+  {{{
+    sl_hash hash, RET (slice_val sl_hash);
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
+    "#His_hash" ∷ is_hash
+      (leaf_node_tag :: label ++ (u64_le $ length val) ++ val) hash
+  }}}.
+Proof. Admitted.
+
+Lemma wp_Verify sl_label sl_val sl_proof sl_dig (in_tree : bool)
+    d0 d1 d2 d3 (label val proof dig : list w8) :
+  {{{
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
+    "Hsl_proof" ∷ own_slice_small sl_proof byteT d2 proof ∗
+    "Hsl_dig" ∷ own_slice_small sl_dig byteT d3 dig
+  }}}
+  Verify #in_tree (slice_val sl_label) (slice_val sl_val)
+    (slice_val sl_proof) (slice_val sl_dig)
+  {{{
+    (err : bool), RET #err;
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
+    "Hsl_dig" ∷ own_slice_small sl_dig byteT d3 dig ∗
+    "Herr" ∷ (if err then True else
+      if in_tree then
+        is_merkle_membership label val dig
+      else
+        is_merkle_nonmembership label dig)
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_apply wp_slice_len.
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
+  wp_apply (MerkleProof.wp_dec with "Hsl_proof"). iIntros "*". iNamed 1.
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
+  iDestruct "Hgenie" as "[Hgenie _]".
+  iDestruct ("Hgenie" with "[//]") as "H". iNamed "H".
+  iDestruct ("Herr" with "[//]") as "H". iNamed "H". iClear "Hsl_tail".
+  iNamed "Hown_obj". wp_loadField. wp_apply wp_slice_len.
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
+
+  (* leaf hash. *)
+  wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_curr_hash) "Hptr_curr_hash".
+  wp_pures. wp_bind (if: _ then _ else _)%E.
+  wp_apply (wp_wand _ _ _
+    (λ _,
+    ∃ sl_curr_hash (curr_hash : list w8),
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
+    "Hsl_leaf_label" ∷ own_slice_small sl_leaf_label byteT
+                         obj.(MerkleProof.d1) obj.(MerkleProof.LeafLabel) ∗
+    "Hptr_leaf_label" ∷ ptr_obj ↦[MerkleProof::"LeafLabel"] sl_leaf_label ∗
+    "Hsl_leaf_val" ∷ own_slice_small sl_leaf_val byteT
+                       obj.(MerkleProof.d2) obj.(MerkleProof.LeafVal) ∗
+    "Hptr_leaf_val" ∷ ptr_obj ↦[MerkleProof::"LeafVal"] sl_leaf_val ∗
+
+    "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] (slice_val sl_curr_hash) ∗
+    "Hsl_curr_hash" ∷ own_slice_small sl_curr_hash byteT (DfracOwn 1) curr_hash ∗
+    "#Hlast_hash" ∷
+      is_tree_hash
+      (if in_tree then Leaf label val else
+        match obj.(MerkleProof.LeafLabel) with
+        | [] => Empty
+        | _ => Leaf obj.(MerkleProof.LeafLabel) obj.(MerkleProof.LeafVal)
+        end)
+      curr_hash
+    )%I
+    with "[Hsl_label Hsl_val Hsl_leaf_label Hptr_leaf_label
+    Hptr_leaf_val Hsl_leaf_val Hptr_curr_hash]"
+  ).
+  { wp_if_destruct.
+    - wp_apply (wp_compLeafHash with "[$Hsl_label $Hsl_val]").
+      iIntros "*". iNamed 1. wp_store. by iFrame.
+    - wp_loadField. wp_apply wp_slice_len.
+      wp_if_destruct.
+      + do 2 wp_loadField.
+        wp_apply (wp_compLeafHash with "[$Hsl_leaf_label $Hsl_leaf_val]").
+        iIntros "*". iNamedSuffix 1 "_leaf". wp_store.
+        iDestruct (own_slice_small_sz with "Hsl_label_leaf") as %Hlen_label.
+        iFrame. case_match; [|done]. simpl in *. word.
+      + wp_apply wp_compEmptyHash.
+        iIntros "*".  iNamed 1. wp_store.
+        iDestruct (own_slice_small_sz with "Hsl_leaf_label") as %Hlen_label.
+        iFrame. case_match; [done|]. simpl in *. word. }
+  iIntros (tmp). iNamed 1. wp_pures. clear tmp.
+Admitted.
 
 End proof.
