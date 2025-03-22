@@ -195,14 +195,46 @@ Inductive wlock_state :=
 
 (* own_current_rlock_attempts (positive version of reader_count) ∗ (* at most sync.rwmutexMaxReaders *) *)
 
-Definition reader_count_abs (reader_count : w32) : Z :=
-  if decide (0 ≤ (sint.Z reader_count)) then
-    sint.Z reader_count
-  else
-    sint.Z reader_count + sync.rwmutexMaxReaders.
+Definition own_half (wl : wlock_state) : iProp Σ.
+Admitted.
+
+(*
+   The `r` read during `Lock()` is not actually the current number of readers.
+   It's the number of "pending" readers, which includes semaphore-released
+   soon-to-be readers.
+*)
 
 Definition pure_RWMutex_invariant (writer_sem reader_sem reader_count reader_wait : w32)
-  (wl : wlock_state) (state : rwmutex) : Prop :=
+  (state : rwmutex) : iProp Σ :=
+  ∃ wl (pos_reader_count : w32),
+    own_half wl ∗
+    "%Hpos_reader_count_bounds" ∷ ⌜ 0 ≤ sint.Z pos_reader_count < sync.rwmutexMaxReaders ⌝ ∗
+
+    "%Hreader_count" ∷
+      ⌜ match wl with
+      | NotLocked _ => reader_count = pos_reader_count
+      | _ => reader_sem = W32 0 ∧
+            reader_count = word.sub pos_reader_count (W32 sync.rwmutexMaxReaders)
+      end ⌝ ∗
+
+    "%Hnum_readers_le" ∷
+      ⌜ match state with
+      | RLocked num_readers => num_readers ≤ sint.Z pos_reader_count
+      | _ => True
+      end ⌝ ∗
+
+    match wl, state with
+    | NotLocked unnotified_readers, RLocked num_readers =>
+        ⌜ reader_wait = W32 0 ∧ writer_sem = W32 0 ∧
+          sint.Z pos_reader_count = (Z.of_nat num_readers + sint.Z unnotified_readers + sint.Z reader_sem)%Z ⌝
+    | SignalingReaders remaining_readers, RLocked num_readers =>
+        ⌜ Z.of_nat num_readers + sint.Z reader_sem ≤ sint.Z pos_reader_count ∧
+        (Z.of_nat num_readers + sint.Z reader_sem)%Z = Z.of_nat remaining_readers ∧ reader_wait = W32 0 ∧ writer_sem = W32 0 ⌝
+    | WaitingForReaders, RLocked num_readers =>
+        ⌜ (Z.of_nat num_readers + sint.Z reader_sem ≤ sint.Z pos_reader_count)%Z ∧
+          Z.of_nat num_readers + sint.Z reader_sem ≤ sint.Z reader_wait ∧ writer_sem = W32 0 ⌝
+    | _, _ => False
+    end.
 
   0 ≤ reader_count_abs reader_count < sync.rwmutexMaxReaders ∧
     if decide (0 ≤ sint.Z reader_count) then
@@ -220,8 +252,6 @@ Definition pure_RWMutex_invariant (writer_sem reader_sem reader_count reader_wai
         state = RLocked (Z.to_nat (sint.Z reader_wait)) ∧
         sint.Z reader_wait ≤ reader_count_abs reader_count ∧ (* NOTE: added this for inductiveness *)
         (writer_sem = W32 0 ∨ (writer_sem = W32 1 ∧ reader_wait = W32 0))) ∨
-  (* FIXME: there's an intermediate state between decrementing reader_count and decrementing reader_wait. *)
-  (* Add auxiliary state for how many of these "in-progress" runlocks there are? *)
   (* Could decrement state count when decrementing readerCount, or do it when decrementing readerWait.
      Gauge invariance suggests that the invariant should avoid specifying one or the other.
    *)
