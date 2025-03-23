@@ -303,12 +303,14 @@ Record RWMutex_names :=
     read_wait_gn : gname;
     rlock_overflow_gn : gname;
     wlock_gn : gname;
+    writer_sem_gn : gname;
   }.
 
 Implicit Types γ : RWMutex_names.
 
 Context `{!tok_setG Σ}.
 Context `{!ghost_varG Σ wlock_state}.
+Context `{!ghost_varG Σ unit}.
 
 Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_wait : w32)
   (state : rwmutex) : iProp Σ :=
@@ -332,8 +334,15 @@ Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_w
     end ∗
 
     match wl with
-    | SignalingReaders _ | WaitingForReaders => "_" ∷ emp
+    | SignalingReaders _
+    | WaitingForReaders =>
+        "_" ∷ True
     | _ => "%Houtstanding_zero" ∷ ⌜ outstanding_reader_wait = O ⌝
+    end ∗
+
+    match wl with
+    | WaitingForReaders => "_" ∷ True
+    | _ => "Hwriter_unused" ∷ ghost_var γ.(writer_sem_gn) 1 ()
     end ∗
 
     match wl, state with
@@ -343,9 +352,14 @@ Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_w
            sint.Z pos_reader_count = (Z.of_nat num_readers + sint.Z unnotified_readers + uint.Z reader_sem)%Z ⌝)
     | SignalingReaders remaining_readers, RLocked num_readers =>
         "%Hblocked_unsignaled" ∷
-        ⌜ (Z.of_nat outstanding_reader_wait + Z.of_nat num_readers + uint.Z reader_sem = Z.of_nat remaining_readers + sint.Z reader_wait)%Z ∧
+        ⌜ Z.of_nat remaining_readers < sync.rwmutexMaxReaders ∧
+          sint.Z reader_wait ≤ 0 ∧
+          (Z.of_nat outstanding_reader_wait + Z.of_nat num_readers + uint.Z reader_sem =
+           Z.of_nat remaining_readers + sint.Z reader_wait)%Z ∧
            writer_sem = W32 0 ⌝
     | WaitingForReaders, RLocked num_readers =>
+        "Hwriter" ∷ (ghost_var γ.(writer_sem_gn) 1 () ∨
+                     ghost_var γ.(writer_sem_gn) (1/2) () ∗ ⌜ reader_wait = W32 0 ⌝) ∗
         "%Hblocked" ∷
         ⌜ Z.of_nat outstanding_reader_wait + Z.of_nat num_readers + uint.Z reader_sem ≤ sint.Z reader_wait ∧
           (writer_sem = W32 0 ∨ writer_sem = W32 1 ∧ reader_wait = W32 0) ⌝
@@ -355,8 +369,11 @@ Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_w
     | _, _ => False
     end.
 
+
+Import Ltac2.
+Set Default Proof Mode "Classic".
 Local Ltac rwauto :=
-  solve [repeat first [eexists || done || subst || word || split || f_equal || intuition ||
+  solve [repeat first [eexists || intuition || subst || done || word || split ||
                                simplify_eq || destruct decide || unfold sync.rwmutexMaxReaders in *]].
 
 Lemma step_rlock_fast γ writer_sem reader_sem reader_count reader_wait state :
@@ -372,10 +389,10 @@ Proof.
   iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
   destruct wl; first last.
   1-3: rwauto.
-  { destruct state; first last. { iNamed "Hinv". done. }
+  { destruct state; first last. { iNamed "Hinv". iFrame. done. }
     iNamed "Hinv". intuition. subst. iExists _; iSplitR; first done.
-    iFrame. iExists (word.add pos_reader_count (W32 1)).
-    iSplitL "Hrlocks". { iApply to_named. iExactEq "Hrlocks". rwauto. }
+    iFrame. iFrame. iExists (word.add pos_reader_count (W32 1)).
+    iSplitL "Hrlocks". { iApply to_named. iExactEq "Hrlocks". f_equal. rwauto. }
     iPureIntro. rwauto. }
 Qed.
 
@@ -390,8 +407,8 @@ Proof.
   iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
   destruct state, wl.
   all: iNamed "Hinv"; try done; try (iExists _; iSplitR; first done).
-  all: iFrame; iExists (word.add pos_reader_count (W32 1));
-    iSplitL "Hrlocks"; [iApply to_named; iExactEq "Hrlocks"; rwauto| ].
+  all: iFrame; iFrame; iExists (word.add pos_reader_count (W32 1));
+    iSplitL "Hrlocks"; [iApply to_named; iExactEq "Hrlocks"; f_equal; rwauto| ].
   all: iPureIntro; rwauto.
 Qed.
 
@@ -405,7 +422,7 @@ Proof.
   iIntros "%Hsem_acq Hinv".
   iNamed "Hinv". destruct state.
   - destruct wl; iNamed "Hinv"; try (iExists _; iSplitR; first done).
-    all: intuition; subst; iFrame; iPureIntro; rwauto.
+    all: intuition; subst; iFrame; iFrame; iPureIntro; rwauto.
   - iNamed "Hinv"; destruct wl; iNamed "Hinv"; rwauto.
 Qed.
 
@@ -420,7 +437,7 @@ Proof.
   replace (Z.to_nat (1 + _))%nat with (1 + Z.to_nat (1 + sint.Z (word.sub pos_reader_count (W32 1))))%nat by word.
   iDestruct (own_toks_plus with "Hrlocks") as "[Hr Hrlocks]".
   destruct wl; iNamed "Hinv"; try done.
-  - iFrame. iPureIntro. rwauto.
+  - iFrame. iFrame. iPureIntro. rwauto.
   - rwauto. - rwauto.
 Qed.
 
@@ -438,15 +455,19 @@ Proof.
   destruct wl; iNamed "Hinv"; try done.
   - rwauto.
   - iMod (own_tok_auth_plus 1 with "Houtstanding") as "[Houtstanding $]".
-    iFrame. iPureIntro. rwauto.
+    iFrame. iFrame. iPureIntro. rwauto.
   - iMod (own_tok_auth_plus 1 with "Houtstanding") as "[Houtstanding $]".
-    iFrame. iPureIntro. rwauto.
+    iFrame. iFrame. iPureIntro.
+    intuition; subst; try rwauto.
 Qed.
 
-Lemma step_runlock_slow_finish γ writer_sem reader_sem reader_count reader_wait state :
+Lemma step_runlock_slow_signal γ writer_sem reader_sem reader_count reader_wait state :
   own_toks γ.(read_wait_gn) 1 -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.sub reader_wait (W32 1)) state.
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.sub reader_wait (W32 1)) state ∗
+  if decide (word.sub reader_wait (W32 1) = W32 0) then
+    ghost_var γ.(writer_sem_gn) (1/2) ()
+  else True.
 Proof.
   iIntros "Hwait_tok Hinv". iNamed "Hinv".
   iCombine "Houtstanding Hwait_tok" gives %Hle.
@@ -454,15 +475,31 @@ Proof.
   - rwauto.
   - destruct outstanding_reader_wait; first rwauto.
     iMod (own_tok_auth_delete_S with "Houtstanding [$]") as "Houtstanding".
-    iFrame. iPureIntro.
-    intuition; subst.
-    FIXME:
+    iFrame.
+    destruct decide.
+    { exfalso.
+      assert (outstanding_reader_wait < sync.rwmutexMaxReaders).
+      { rwauto. }
+      (* FIXME: word_cleanup_core not idempotent. *)
+      word_cleanup_core.
+      word_cleanup_core.
+      word.
+    }
+    iFrame.
+    iPureIntro. rwauto.
+  - destruct outstanding_reader_wait; first rwauto.
+    iMod (own_tok_auth_delete_S with "Houtstanding [$]") as "Houtstanding".
+    iModIntro. iFrame.
+    iDestruct "Hwriter" as "[[Hwriter Hwriter2]|[_ %Hbad]]".
+    2:{ exfalso. rwauto. }
+    destruct decide.
+    * iSplitR "Hwriter2"; last by iFrame.
+      repeat (iSplitR; first by iPureIntro; rwauto).
+      iSplitL.
+      { iRight. iFrame. iPureIntro. rwauto. }
+      iPureIntro. rwauto.
+    * iFrame. iPureIntro. rwauto.
   - rwauto.
-
-  }
-  unfold pure_RWMutex_invariant, reader_count_abs in *.
-  destruct decide.
-  { destruct Hinv as (? & ? & ?).
 Qed.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
