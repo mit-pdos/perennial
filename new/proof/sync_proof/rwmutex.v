@@ -415,5 +415,52 @@ Proof.
     iModIntro. wp_auto. iFrame.
 Qed.
 
+Lemma wp_RWMutex__TryRLock γ rw N :
+  ∀ Φ,
+  is_pkg_init sync ∗ is_RWMutex rw γ N ∗ own_RLock_token γ -∗
+  ((|={⊤∖↑N,∅}=> ∃ num_readers,
+      own_RWMutex γ (RLocked num_readers) ∗
+      (own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #true)) ∧
+   Φ #false)
+  -∗
+  WP rw @ sync @ "RWMutex'ptr" @ "TryRLock" #() {{ Φ }}.
+Proof.
+  wp_start as "[#His Htok]". iNamed "His". wp_auto.
+  wp_for. wp_apply wp_Int32__Load.
+  iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
+  iFrame. iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+  iIntros "H1_inv". iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
+  iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
+  iModIntro. wp_auto. rewrite bool_decide_decide. destruct decide.
+  - (* failed to get RLock *)
+    wp_auto. wp_for_post. iRight in "HΦ". iFrame.
+  - (* try doing a CAS *)
+    wp_auto.
+    wp_apply wp_Int32__CompareAndSwap.
+    iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
+    iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+    iFrame. destruct decide.
+    * (* CAS successful *)
+      iSplitR; first done.
+      iDestruct (step_TryRLock_readerCount_CompareAndSwap with "[$] [$]") as (?) "[% Hprot_inv]".
+      { word. }
+      subst. iIntros "H1_inv". iMod "Hmask" as "_". iLeft in "HΦ".
+      iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
+      iDestruct "HΦ" as (?) "[Hstate HΦ]".
+      iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
+      iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
+      iMod ("HΦ" with "Hstate") as "HΦ".
+      iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
+      iModIntro. rewrite bool_decide_true //. wp_auto.
+      wp_for_post. iFrame.
+    * (* CAS failed *)
+      iSplitR; first done. iIntros "H1_inv". iMod "Hmask" as "_".
+      iCombineNamed "*_inv" as "Hi".
+      iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
+      iModIntro. rewrite bool_decide_false //. wp_auto.
+      wp_for_post. iFrame.
+Qed.
+
 End wps.
 End proof.
