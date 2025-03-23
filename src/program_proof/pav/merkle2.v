@@ -90,12 +90,10 @@ Definition tree_labels_have_bit (t: tree) (nbit: nat) (val: bool) : Prop :=
 
 Fixpoint sorted_tree (t: tree) (depth: nat) : Prop :=
   match t with
-  | Empty => True
-  | Leaf label val => length label = hash_len
   | Inner lt rt =>
     sorted_tree lt (depth+1) ∧ tree_labels_have_bit lt depth false ∧
     sorted_tree rt (depth+1) ∧ tree_labels_have_bit rt depth true
-  | Cut h => True
+  | _ => True
   end.
 
 Inductive cutless_tree : ∀ (t: tree), Prop :=
@@ -108,7 +106,7 @@ Fixpoint tree_path (t: tree) (label: list w8) (label_depth: nat) (result: option
   | Empty =>
     result = None
   | Leaf found_label found_val =>
-    result = Some (found_label, found_val) ∧ length found_label = hash_len
+    result = Some (found_label, found_val)
   | Inner lt rt =>
     match get_bit label label_depth with
     | false => tree_path lt label (label_depth+1) result
@@ -117,73 +115,64 @@ Fixpoint tree_path (t: tree) (label: list w8) (label_depth: nat) (result: option
   | Cut _ => False
   end.
 
+(* TODO: rm once seal merged in. *)
+Program Definition u64_le_seal := sealed @u64_le.
+Definition u64_le_unseal : u64_le_seal = _ := seal_eq _.
+Lemma u64_le_seal_len x :
+  length $ u64_le_seal x = 8%nat.
+Proof. Admitted.
+
 Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
   match t with
   | Empty =>
-    is_hash [empty_node_tag] h
+    "#His_hash" ∷ is_hash [empty_node_tag] h
   | Leaf label val =>
-    is_hash ([leaf_node_tag] ++ label ++ (u64_le $ length val) ++ val) h
+    "%Hlen_label" ∷ ⌜ length label = hash_len ⌝ ∗
+    "#His_hash" ∷ is_hash ([leaf_node_tag] ++ label ++ (u64_le_seal $ length val) ++ val) h
   | Inner lt rt =>
     ∃ hl hr,
-    is_tree_hash lt hl ∗
-    is_tree_hash rt hr ∗
-    is_hash ([inner_node_tag] ++ hl ++ hr) h
+    "#Hleft_hash" ∷ is_tree_hash lt hl ∗
+    "#Hright_hash" ∷ is_tree_hash rt hr ∗
+    "#His_hash" ∷ is_hash ([inner_node_tag] ++ hl ++ hr) h
   | Cut ch =>
-    ⌜h = ch ∧ length h = hash_len⌝
+    "%Heq_cut" ∷ ⌜ h = ch ⌝ ∗
+    "%Hlen_hash" ∷ ⌜ length h = hash_len ⌝
   end.
+
+#[global]
+Instance is_tree_hash_persistent t h : Persistent (is_tree_hash t h).
+Proof. revert h. induction t; apply _. Qed.
 
 Lemma is_tree_hash_len t h:
   is_tree_hash t h -∗
   ⌜length h = hash_len⌝.
-Proof.
-  induction t; simpl; iIntros "H".
-  - iApply is_hash_len; done.
-  - iApply is_hash_len; done.
-  - iDestruct "H" as (??) "(_ & _ & H)". iApply is_hash_len; done.
-  - iDestruct "H" as "%". intuition.
-Qed.
+Proof. destruct t; iNamed 1; [..|done]; by iApply is_hash_len. Qed.
 
 Theorem tree_path_agree label label_depth found0 found1 h t0 t1:
-  tree_path t0 label label_depth found0 ->
-  tree_path t1 label label_depth found1 ->
+  tree_path t0 label label_depth found0 →
+  tree_path t1 label label_depth found1 →
   is_tree_hash t0 h -∗
   is_tree_hash t1 h -∗
   ⌜found0 = found1⌝.
 Proof.
-  revert label_depth t1 h.
-  induction t0; simpl; intros; eauto.
-  - iIntros "H0 H1".
-    destruct t1; simpl in *; intuition subst; eauto.
-    * iDestruct (is_hash_inj with "H0 H1") as "%Hinj". naive_solver.
-    * iDestruct "H1" as (??) "(_ & _ & H1)".
-      iDestruct (is_hash_inj with "H0 H1") as "%Hinj". naive_solver.
-  - iIntros "H0 H1".
-    destruct t1; simpl in *; intuition subst; eauto.
-    * iDestruct (is_hash_inj with "H0 H1") as "%Hinj". naive_solver.
-    * iDestruct (is_hash_inj with "H0 H1") as "%Hinj".
-      inversion Hinj as [Hinj2].
-      apply app_inj_1 in Hinj2; last by congruence.
-      destruct Hinj2 as [-> Hinj2].
-      apply app_inj_1 in Hinj2; last by rewrite !u64_le_length //.
-      destruct Hinj2 as [Hlen ->].
-      done.
-    * iDestruct "H1" as (??) "(_ & _ & H1)".
-      iDestruct (is_hash_inj with "H0 H1") as "%Hinj". naive_solver.
-  - iIntros "H0 H1".
-    iDestruct "H0" as (hl0 hr0) "(Htl0 & Htr0 & Hh0)".
-    destruct t1; simpl in *; intuition subst; eauto.
-    * iDestruct (is_hash_inj with "Hh0 H1") as "%Hinj". naive_solver.
-    * iDestruct (is_hash_inj with "Hh0 H1") as "%Hinj". naive_solver.
-    * iDestruct "H1" as (hl1 hr1) "(Htl1 & Htr1 & Hh1)".
-      iDestruct (is_hash_inj with "Hh0 Hh1") as "%Hinj".
-      iDestruct (is_tree_hash_len with "Htl0") as "%Htllen0".
-      iDestruct (is_tree_hash_len with "Htr0") as "%Htrlen0".
-      iDestruct (is_tree_hash_len with "Htl1") as "%Htllen1".
-      iDestruct (is_tree_hash_len with "Htr1") as "%Htrlen1".
-      inversion Hinj; list_simplifier.
-      destruct (get_bit label label_depth).
-      + iApply (IHt0_2 with "Htr0 Htr1"); eauto.
-      + iApply (IHt0_1 with "Htl0 Htl1"); eauto.
+  iInduction t0 as [| ? | ? IH0 ? IH1 | ?] forall (label_depth t1 h);
+    destruct t1; simpl; iIntros "*"; try done;
+    iNamedSuffix 1 "0";
+    iNamedSuffix 1 "1";
+    iDestruct (is_hash_inj with "His_hash0 His_hash1") as %?;
+    try naive_solver.
+
+  (* both leaves. use leaf encoding. *)
+  - iPureIntro. list_simplifier.
+    apply app_inj_1 in H0; [naive_solver|].
+    by rewrite !u64_le_seal_len.
+  (* both inner. use inner encoding and next_pos same to get
+  the same next_hash. then apply IH. *)
+  - iDestruct (is_tree_hash_len with "Hleft_hash0") as %?.
+    iDestruct (is_tree_hash_len with "Hleft_hash1") as %?.
+    list_simplifier. case_match.
+    + by iApply "IH1".
+    + by iApply "IH0".
 Qed.
 
 Lemma tree_labels_have_bit_disjoint t0 t1 depth:
@@ -231,7 +220,7 @@ Proof.
   - rewrite lookup_empty in H. congruence.
 Qed.
 
-Definition found_nonmembership (label: list w8) (found: option ((list w8) * (list w8))%type) :=
+Definition found_nonmemb (label: list w8) (found: option ((list w8) * (list w8))%type) :=
   match found with
   | None => True
   | Some (found_label, _) => label ≠ found_label
@@ -243,7 +232,7 @@ Theorem tree_to_gmap_None t label depth:
   cutless_tree t ->
   ∃ found,
     tree_path t label depth found ∧
-    found_nonmembership label found.
+    found_nonmemb label found.
 Proof.
   revert depth.
   induction t; simpl; intros.
@@ -265,23 +254,23 @@ Definition is_merkle_found (label: list w8) (found: option ((list w8) * (list w8
     ⌜tree_path t label 0 found⌝ ∗
     is_tree_hash t h.
 
-Definition is_merkle_membership (label: list w8) (val: list w8) (h: list w8) : iProp Σ :=
+Definition is_merkle_memb (label: list w8) (val: list w8) (h: list w8) : iProp Σ :=
   is_merkle_found label (Some (label, val)) h.
 
-Definition is_merkle_nonmembership (label: list w8) (h: list w8) : iProp Σ :=
+Definition is_merkle_nonmemb (label: list w8) (h: list w8) : iProp Σ :=
   ∃ found,
     is_merkle_found label found h ∗
-    ⌜found_nonmembership label found⌝.
+    ⌜found_nonmemb label found⌝.
 
-Fixpoint tree_siblings_proof (t: tree) (label: list w8) (label_depth: nat) (proof: list $ list w8) : iProp Σ :=
+Fixpoint tree_sibs_proof (t: tree) (label: list w8) (label_depth: nat) (proof: list $ list w8) : iProp Σ :=
   match t with
   | Empty => ⌜proof = []⌝
   | Leaf found_label found_val => ⌜proof = []⌝
   | Inner lt rt =>
     ∃ sibhash proof', ⌜proof = sibhash :: proof'⌝ ∗
       match get_bit label label_depth with
-      | false => tree_siblings_proof lt label (label_depth+1) proof' ∗ is_tree_hash rt sibhash
-      | true  => tree_siblings_proof rt label (label_depth+1) proof' ∗ is_tree_hash lt sibhash
+      | false => tree_sibs_proof lt label (label_depth+1) proof' ∗ is_tree_hash rt sibhash
+      | true  => tree_sibs_proof rt label (label_depth+1) proof' ∗ is_tree_hash lt sibhash
       end
   | Cut _ => False
   end.
@@ -289,7 +278,7 @@ Fixpoint tree_siblings_proof (t: tree) (label: list w8) (label_depth: nat) (proo
 Definition is_merkle_proof (label: list w8) (found: option ((list w8) * (list w8)%type)) (proof: list $ list w8) (h: list w8) : iProp Σ :=
   ∃ t,
     is_tree_hash t h ∗
-    tree_siblings_proof t label 0 proof ∗
+    tree_sibs_proof t label 0 proof ∗
     ⌜tree_path t label 0 found⌝.
 
 Fixpoint own_merkle_tree (ptr: loc) (t: tree) : iProp Σ :=
@@ -361,7 +350,7 @@ Lemma is_merkle_map_agree_is_merkle_found m h label found:
   is_merkle_map m h -∗
   is_merkle_found label found h -∗
   ⌜ ( ∃ val, m !! label = Some val ∧ found = Some (label, val) ) ∨
-    ( m !! label = None ∧ found_nonmembership label found ) ⌝.
+    ( m !! label = None ∧ found_nonmemb label found ) ⌝.
 Proof.
   iIntros "Hm Hf".
   iDestruct "Hm" as (?) "[% Hm]". intuition subst.
@@ -399,7 +388,7 @@ Lemma wp_compLeafHash sl_label sl_val d0 d1 (label val : list w8) :
     "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
     "Hsl_hash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
     "#His_hash" ∷ is_hash
-      (leaf_node_tag :: label ++ (u64_le $ length val) ++ val) hash
+      (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
   }}}.
 Proof. Admitted.
 
@@ -420,9 +409,9 @@ Lemma wp_Verify sl_label sl_val sl_proof sl_dig (in_tree : bool)
     "Hsl_dig" ∷ own_slice_small sl_dig byteT d3 dig ∗
     "Herr" ∷ (if err then True else
       if in_tree then
-        is_merkle_membership label val dig
+        is_merkle_memb label val dig
       else
-        is_merkle_nonmembership label dig)
+        is_merkle_nonmemb label dig)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -436,13 +425,16 @@ Proof.
   iNamed "Hown_obj". wp_loadField. wp_apply wp_slice_len.
   wp_if_destruct. { iApply "HΦ". by iFrame. }
   wp_if_destruct. { iApply "HΦ". by iFrame. }
+  wp_loadField. wp_apply (wp_BytesEqual with "[$Hsl_label $Hsl_leaf_label]").
+  iIntros "[Hsl_label Hsl_leaf_label]".
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
 
   (* leaf hash. *)
   wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_curr_hash) "Hptr_curr_hash".
   wp_pures. wp_bind (if: _ then _ else _)%E.
   wp_apply (wp_wand _ _ _
     (λ _,
-    ∃ sl_curr_hash (curr_hash : list w8),
+    ∃ last_node found sl_curr_hash (curr_hash : list w8),
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
     "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
     "Hsl_leaf_label" ∷ own_slice_small sl_leaf_label byteT
@@ -454,33 +446,43 @@ Proof.
 
     "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] (slice_val sl_curr_hash) ∗
     "Hsl_curr_hash" ∷ own_slice_small sl_curr_hash byteT (DfracOwn 1) curr_hash ∗
-    "#Hlast_hash" ∷
-      is_tree_hash
-      (if in_tree then Leaf label val else
-        match obj.(MerkleProof.LeafLabel) with
-        | [] => Empty
-        | _ => Leaf obj.(MerkleProof.LeafLabel) obj.(MerkleProof.LeafVal)
-        end)
-      curr_hash
+
+    "#Htree_hash" ∷ is_tree_hash last_node curr_hash ∗
+    "%Htree_path" ∷ ⌜ tree_path last_node label
+        (uint.nat (w64_word_instance.(word.divu) sl_sibs.(Slice.sz) (W64 32)))
+        found ⌝ ∗
+    "%Hfound" ∷ ⌜ if in_tree then found = Some (label, val)
+      else found_nonmemb label found ⌝
     )%I
     with "[Hsl_label Hsl_val Hsl_leaf_label Hptr_leaf_label
     Hptr_leaf_val Hsl_leaf_val Hptr_curr_hash]"
   ).
   { wp_if_destruct.
     - wp_apply (wp_compLeafHash with "[$Hsl_label $Hsl_val]").
-      iIntros "*". iNamed 1. wp_store. by iFrame.
+      iIntros "*". iNamed 1. wp_store.
+      iDestruct (own_slice_small_sz with "Hsl_label") as %Hlen_label.
+      iExists (Leaf label val), (Some (label, val)). iFrame "∗#".
+      iIntros "!>". iSplit; [word|naive_solver].
     - wp_loadField. wp_apply wp_slice_len.
       wp_if_destruct.
       + do 2 wp_loadField.
         wp_apply (wp_compLeafHash with "[$Hsl_leaf_label $Hsl_leaf_val]").
         iIntros "*". iNamedSuffix 1 "_leaf". wp_store.
         iDestruct (own_slice_small_sz with "Hsl_label_leaf") as %Hlen_label.
-        iFrame. case_match; [|done]. simpl in *. word.
+        iExists (Leaf obj.(MerkleProof.LeafLabel) obj.(MerkleProof.LeafVal)),
+          (Some (obj.(MerkleProof.LeafLabel), obj.(MerkleProof.LeafVal))).
+        iFrame "∗#". iIntros "!>". iSplit; [word|naive_solver].
       + wp_apply wp_compEmptyHash.
-        iIntros "*".  iNamed 1. wp_store.
+        iIntros "*". iNamed 1. wp_store.
         iDestruct (own_slice_small_sz with "Hsl_leaf_label") as %Hlen_label.
-        iFrame. case_match; [done|]. simpl in *. word. }
+        iExists Empty, None. iFrame "∗#". naive_solver. }
   iIntros (tmp). iNamed 1. wp_pures. clear tmp.
+
+  (* hash up the tree. *)
+  wp_apply wp_NewSliceWithCap; [done|]. iIntros (sl_hash_out) "Hsl_hash_out".
+  wp_apply wp_ref_to; [done|]. iIntros (ptr_hash_out) "Hptr_hash_out".
+  wp_apply wp_ref_to; [naive_solver|]. iIntros (ptr_depth) "Hptr_depth".
+  wp_pures.
 Admitted.
 
 End proof.
