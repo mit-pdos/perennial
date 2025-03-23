@@ -316,7 +316,7 @@ Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_w
     "Houtstanding" ∷ own_tok_auth γ.(read_wait_gn) outstanding_reader_wait ∗
     "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2) wl ∗
     "Hrlock_overflow" ∷ own_tok_auth γ.(rlock_overflow_gn) (Z.to_nat sync.rwmutexMaxReaders) ∗
-    "Hrlocks" ∷ own_toks γ.(rlock_overflow_gn) (S (Z.to_nat (sint.Z pos_reader_count))) ∗
+    "Hrlocks" ∷ own_toks γ.(rlock_overflow_gn) (Z.to_nat (1 + sint.Z pos_reader_count)) ∗
     "%Hpos_reader_count_pos" ∷ ⌜ 0 ≤ sint.Z pos_reader_count ⌝ ∗
 
     "%Hreader_count" ∷
@@ -344,7 +344,7 @@ Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_w
     | SignalingReaders remaining_readers, RLocked num_readers =>
         "%Hblocked_unsignaled" ∷
         ⌜ (Z.of_nat outstanding_reader_wait + Z.of_nat num_readers + uint.Z reader_sem = Z.of_nat remaining_readers + sint.Z reader_wait)%Z ∧
-          reader_wait = W32 0 ∧ writer_sem = W32 0 ⌝
+           writer_sem = W32 0 ⌝
     | WaitingForReaders, RLocked num_readers =>
         "%Hblocked" ∷
         ⌜ Z.of_nat outstanding_reader_wait + Z.of_nat num_readers + uint.Z reader_sem ≤ sint.Z reader_wait ∧
@@ -417,33 +417,49 @@ Lemma step_runlock_fast γ writer_sem reader_sem reader_count reader_wait num_re
 Proof.
   iIntros "%Hfast Hinv". iNamed "Hinv".
   iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
-  iDestruct (own_toks_plus _ _ 1 with "Hrlocks") as "[Hr Hrlocks]".
+  replace (Z.to_nat (1 + _))%nat with (1 + Z.to_nat (1 + sint.Z (word.sub pos_reader_count (W32 1))))%nat by word.
+  iDestruct (own_toks_plus with "Hrlocks") as "[Hr Hrlocks]".
   destruct wl; iNamed "Hinv"; try done.
-  - iFrame. iExists (word.sub pos_reader_count (W32 1)).
-    iSplitL "Hrlocks". { iApply to_named. iExactEq "Hrlocks". rwauto. }
-    iPureIntro. rwauto.
+  - iFrame. iPureIntro. rwauto.
   - rwauto. - rwauto.
 Qed.
 
-Lemma step_runlock_slow_start writer_sem reader_sem reader_count reader_wait wl state :
-  0 ≤ sint.Z (word.sub reader_count (W32 1)) →
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait (RLocked (S num_readers)) -∗
+Lemma step_runlock_slow_start γ writer_sem reader_sem reader_count reader_wait num_readers :
+  sint.Z (word.sub reader_count (W32 1)) < 0 →
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait (RLocked (S num_readers)) ==∗
   own_toks γ.(rlock_overflow_gn) 1 ∗
+  own_toks γ.(read_wait_gn) 1 ∗
   own_RWMutex_invariant γ writer_sem reader_sem (word.sub reader_count (W32 1)) reader_wait (RLocked num_readers).
 Proof.
-  intros Hinv.
-  unfold pure_RWMutex_invariant, reader_count_abs in *.
-  destruct decide.
-  { destruct Hinv as (? & ? & ?).
+  iIntros "%Hfast Hinv". iNamed "Hinv".
+  iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
+  replace (Z.to_nat (1 + _))%nat with (1 + Z.to_nat (1 + sint.Z (word.sub pos_reader_count (W32 1))))%nat by word.
+  iDestruct (own_toks_plus with "Hrlocks") as "[Hr Hrlocks]".
+  destruct wl; iNamed "Hinv"; try done.
+  - rwauto.
+  - iMod (own_tok_auth_plus 1 with "Houtstanding") as "[Houtstanding $]".
+    iFrame. iPureIntro. rwauto.
+  - iMod (own_tok_auth_plus 1 with "Houtstanding") as "[Houtstanding $]".
+    iFrame. iPureIntro. rwauto.
 Qed.
 
-Lemma step_runlock_slow_finish writer_sem reader_sem reader_count reader_wait wl state :
-  0 ≤ sint.Z (word.sub reader_count (W32 1)) →
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait (RLocked (S num_readers)) -∗
-  own_toks γ.(rlock_overflow_gn) 1 ∗
-  own_RWMutex_invariant γ writer_sem reader_sem (word.sub reader_count (W32 1)) reader_wait (RLocked num_readers).
+Lemma step_runlock_slow_finish γ writer_sem reader_sem reader_count reader_wait state :
+  own_toks γ.(read_wait_gn) 1 -∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.sub reader_wait (W32 1)) state.
 Proof.
-  intros Hinv.
+  iIntros "Hwait_tok Hinv". iNamed "Hinv".
+  iCombine "Houtstanding Hwait_tok" gives %Hle.
+  destruct state, wl; iNamed "Hinv"; try done.
+  - rwauto.
+  - destruct outstanding_reader_wait; first rwauto.
+    iMod (own_tok_auth_delete_S with "Houtstanding [$]") as "Houtstanding".
+    iFrame. iPureIntro.
+    intuition; subst.
+    FIXME:
+  - rwauto.
+
+  }
   unfold pure_RWMutex_invariant, reader_count_abs in *.
   destruct decide.
   { destruct Hinv as (? & ? & ?).
