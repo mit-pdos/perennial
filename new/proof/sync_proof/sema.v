@@ -107,6 +107,21 @@ Lemma wp_runtime_Semrelease (sema : loc) γ N (_u1 : bool) (_u2 : w64):
   (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (own_sema γ (word.add v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP sync @ "runtime_Semrelease" #sema #_u1 #_u2 {{ Φ }}.
 Proof.
-Admitted.
+  wp_start as "#Hsem".
+  wp_bind (AtomicOp _ _ _).
+  iInv "Hsem" as ">Hi".
+  iDestruct "Hi" as (?) "[Hptsto Hs]".
+  iMod "HΦ" as (?) "[Hs2 HΦ]".
+  iCombine "Hs Hs2" gives %[_ ->].
+  rewrite typed_pointsto_unseal /typed_pointsto_def /=.
+  rewrite to_val_unseal /=. rewrite loc_add_0 !right_id.
+  iApply (wp_atomic_op with "[$]"); first done.
+  iNext. iIntros "Hptsto".
+  iMod (ghost_var_update_2 with "[$] [$]") as "[? ?]".
+  { apply Qp.half_half. }
+  iMod ("HΦ" with "[$]").
+  iModIntro. iModIntro. iFrame.
+  wp_auto. iFrame.
+Qed.
 
 End proof.

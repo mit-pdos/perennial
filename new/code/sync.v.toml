@@ -41,5 +41,7 @@ trusted = [
 
   "runtime_Semacquire",
   "runtime_SemacquireWaitGroup",
+  "runtime_SemacquireRWMutexR",
+  "runtime_SemacquireRWMutex",
   "runtime_Semrelease",
 ]

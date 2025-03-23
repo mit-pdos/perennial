@@ -393,7 +393,7 @@ Definition WaitGroup__Wait : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("runtime_Semacquire"%go, runtime_Semacquire); ("runtime_SemacquireWaitGroup"%go, runtime_SemacquireWaitGroup); ("runtime_Semrelease"%go, runtime_Semrelease)].
+Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("runtime_Semacquire"%go, runtime_Semacquire); ("runtime_SemacquireWaitGroup"%go, runtime_SemacquireWaitGroup); ("runtime_SemacquireRWMutexR"%go, runtime_SemacquireRWMutexR); ("runtime_SemacquireRWMutex"%go, runtime_SemacquireRWMutex); ("runtime_Semrelease"%go, runtime_Semrelease)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("Unlock"%go, Mutex__Unlock)]); ("RWMutex"%go, []); ("RWMutex'ptr"%go, [("Lock"%go, RWMutex__Lock); ("RLock"%go, RWMutex__RLock); ("RUnlock"%go, RWMutex__RUnlock); ("TryLock"%go, RWMutex__TryLock); ("TryRLock"%go, RWMutex__TryRLock); ("Unlock"%go, RWMutex__Unlock)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
 

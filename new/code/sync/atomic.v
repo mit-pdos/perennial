@@ -121,7 +121,7 @@ Definition Uint64__Add : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("CompareAndSwapUint64"%go, CompareAndSwapUint64); ("AddUint64"%go, AddUint64); ("LoadUint64"%go, LoadUint64); ("StoreUint64"%go, StoreUint64)].
+Definition functions' : list (go_string * val) := [("CompareAndSwapInt32"%go, CompareAndSwapInt32); ("AddInt32"%go, AddInt32); ("LoadInt32"%go, LoadInt32); ("StoreInt32"%go, StoreInt32); ("CompareAndSwapUint64"%go, CompareAndSwapUint64); ("AddUint64"%go, AddUint64); ("LoadUint64"%go, LoadUint64); ("StoreUint64"%go, StoreUint64)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Int32"%go, []); ("Int32'ptr"%go, [("Add"%go, Int32__Add); ("CompareAndSwap"%go, Int32__CompareAndSwap); ("Load"%go, Int32__Load); ("Store"%go, Int32__Store)]); ("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Add); ("CompareAndSwap"%go, Uint64__CompareAndSwap); ("Load"%go, Uint64__Load); ("Store"%go, Uint64__Store)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
 

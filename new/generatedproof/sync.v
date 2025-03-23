@@ -202,6 +202,14 @@ Global Instance wp_func_call_runtime_SemacquireWaitGroup :
   WpFuncCall sync "runtime_SemacquireWaitGroup" _ (is_pkg_defined sync) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_runtime_SemacquireRWMutexR :
+  WpFuncCall sync "runtime_SemacquireRWMutexR" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_runtime_SemacquireRWMutex :
+  WpFuncCall sync "runtime_SemacquireRWMutex" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_runtime_Semrelease :
   WpFuncCall sync "runtime_Semrelease" _ (is_pkg_defined sync) :=
   ltac:(apply wp_func_call'; reflexivity).

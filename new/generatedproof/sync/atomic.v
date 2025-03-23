@@ -202,6 +202,22 @@ Global Instance is_pkg_defined_instance : IsPkgDefined atomic :=
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
+Global Instance wp_func_call_CompareAndSwapInt32 :
+  WpFuncCall atomic "CompareAndSwapInt32" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_AddInt32 :
+  WpFuncCall atomic "AddInt32" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_LoadInt32 :
+  WpFuncCall atomic "LoadInt32" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_StoreInt32 :
+  WpFuncCall atomic "StoreInt32" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_CompareAndSwapUint64 :
   WpFuncCall atomic "CompareAndSwapUint64" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).

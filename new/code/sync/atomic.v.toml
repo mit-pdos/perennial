@@ -20,4 +20,8 @@ trusted = [
   "StoreUint64",
   "AddUint64",
   "CompareAndSwapUint64",
+  "LoadInt32",
+  "StoreInt32",
+  "AddInt32",
+  "CompareAndSwapInt32",
 ]
