@@ -181,14 +181,6 @@ Proof.
   intros ->. local_word.
 Qed.
 
-Lemma atomic_Uint64_inj a b c a' b' c' :
-  atomic.Uint64.mk a b c = atomic.Uint64.mk a' b' c' →
-  c = c'.
-Proof.
-  inversion 1.
-  done.
-Qed.
-
 (* XXX: overflow?
   https://github.com/golang/go/issues/20687
   https://go-review.googlesource.com/c/go/+/140937/2/src/sync/waitgroup.go *)
@@ -367,7 +359,6 @@ Proof.
   iNamedSuffix "Hi" "_wg".
   iClear "Hptsto2_wg".
   iCombine "Hptsto Hptsto_wg"  gives %[_ Heq].
-  apply atomic_Uint64_inj in Heq.
   apply enc_inj in Heq as [<- <-].
   iCombine "Hptsto Hptsto_wg" as "Hptsto".
   iExists _. iFrame.

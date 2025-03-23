@@ -74,6 +74,8 @@ Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count re
 #[global] Opaque own_RWMutex_invariant.
 #[local] Transparent own_RWMutex_invariant.
 
+Instance own_RWMutex_invariant_timeless a b c d e f : Timeless (own_RWMutex_invariant a b c d e f) := _.
+
 Local Ltac rwauto :=
   solve [repeat first [eexists || intuition || subst || done || split ||
                                simplify_eq || destruct decide || unfold sync.rwmutexMaxReaders in * || word ]].
@@ -334,8 +336,6 @@ Proof.
 Qed.
 End protocol.
 
-Opaque own_RWMutex_invariant.
-
 Section wps.
 Record RWMutex_names :=
   {
@@ -350,20 +350,46 @@ Definition own_RWMutex γ (state : rwmutex) : iProp Σ :=
 #[global] Opaque own_RWMutex.
 #[local] Transparent own_RWMutex.
 
-Definition is_RWMutex (rw : loc) γ : iProp Σ :=
+Definition own_RLock_token γ : iProp Σ :=
+  own_toks γ.(prot_gn).(rlock_overflow_gn) 1.
+#[global] Opaque own_RLock_token.
+#[local] Transparent own_RLock_token.
+
+Definition is_RWMutex (rw : loc) γ N : iProp Σ :=
   ∃ w,
-  "#mu" ∷ rw ↦s[sync.RWMutex :: "w"] w ∗
+  "#mu" ∷ rw ↦s[sync.RWMutex :: "w"]□ w ∗
   "#Hmu" ∷ is_Mutex w (ghost_var γ.(prot_gn).(wlock_gn) (1/2) (NotLocked (W32 0))) ∗
-  "#HreaderSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "readerSem" rw) γ.(reader_sem_gn) (nroot.@"sema") ∗
-  "#HwriterSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "writerSem" rw) γ.(writer_sem_gn) (nroot.@"sema") ∗
-  "#Hinv" ∷ inv (nroot.@"inv") (
-      ∃ writer_sem reader_sem reader_count reader_wait state,
+  "#HreaderSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "readerSem" rw) γ.(reader_sem_gn) (N.@"sema") ∗
+  "#HwriterSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "writerSem" rw) γ.(writer_sem_gn) (N.@"sema") ∗
+  "#Hinv" ∷ inv (N.@"inv") (
+      ∃ writer_sem reader_sem reader_count reader_wait st,
         "HreaderSem" ∷ own_sema γ.(reader_sem_gn) reader_sem ∗
         "HwriterSem" ∷ own_sema γ.(writer_sem_gn) writer_sem ∗
-        "Hprot" ∷ own_RWMutex_invariant γ.(prot_gn) writer_sem reader_sem reader_count reader_wait state
+        "HreaderCount" ∷ own_Int32 (struct.field_ref_f sync.RWMutex "writerSem" rw) (DfracOwn 1)
+          reader_count ∗
+        "HreaderWait" ∷ own_Int32 (struct.field_ref_f sync.RWMutex "writerSem" rw) (DfracOwn 1)
+          reader_wait ∗
+        "Hprot" ∷ own_RWMutex_invariant γ.(prot_gn) writer_sem reader_sem reader_count reader_wait st
     ).
 #[global] Opaque is_RWMutex.
 #[local] Transparent is_RWMutex.
+
+Lemma wp_RWMutex__RLock γ rw N :
+  ∀ Φ,
+  is_pkg_init sync ∗ is_RWMutex rw γ N ∗ own_RLock_token γ -∗
+  (|={⊤∖↑N,∅}=> ∃ num_readers,
+     own_RWMutex γ (RLocked num_readers) ∗
+     (own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
+  WP rw @ sync @ "RWMutex'ptr" @ "RLock" #() {{ Φ }}.
+Proof.
+  wp_start as "[#His Htok]". iNamed "His". wp_auto.
+  wp_apply wp_Int32__Add.
+  iInv "Hinv" as "Hi".
+  iDestruct "Hi" as (????) "Hi".
+  (* FIXME: [iExistDestruct: cannot destruct] *)
+  iDestruct "Hi" as (?) "_".
+Qed.
+
 
 End wps.
 End proof.

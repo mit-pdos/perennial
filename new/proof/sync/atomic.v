@@ -1,4 +1,5 @@
 From New.proof Require Import proof_prelude.
+From iris.bi.lib Require Import fractional.
 
 Require Export New.code.sync.atomic.
 Require Export New.generatedproof.sync.atomic.
@@ -146,6 +147,19 @@ Qed.
 
 Definition own_Uint64 (u : loc) dq (v : w64) : iProp Σ :=
   u ↦{dq} atomic.Uint64.mk (default_val _) (default_val _) v.
+#[global] Opaque own_Uint64.
+#[local] Transparent own_Uint64.
+Global Instance own_Uint64_timeless a b c : Timeless (own_Uint64 a b c) := _.
+Global Instance own_Uint64_fractional u v : Fractional (λ q, own_Uint64 u (DfracOwn q) v) := _.
+Global Instance own_Uint64_as_fractional u q v :
+  AsFractional (own_Uint64 u (DfracOwn q) v) (λ q, own_Uint64 u (DfracOwn q) v) q := _.
+Global Instance own_Uint64_combines_gives u v v' dq dq' :
+  CombineSepGives (own_Uint64 u dq v) (own_Uint64 u dq' v') (⌜ ✓(dq⋅dq') ∧ v = v'⌝).
+Proof. unfold CombineSepGives.
+  iIntros "?". iDestruct (combine_sep_gives with "[$]") as "#H".
+  rewrite go_type_size_unseal. iDestruct "H" as %?. iModIntro. iPureIntro.
+  naive_solver.
+Qed.
 
 Lemma wp_Uint64__Load u dq :
   ∀ Φ,
@@ -264,6 +278,19 @@ Qed.
 
 Definition own_Int32 (u : loc) dq (v : w32) : iProp Σ :=
   u ↦{dq} atomic.Int32.mk (default_val _) v.
+#[global] Opaque own_Int32.
+#[local] Transparent own_Int32.
+Global Instance own_Int32_timeless a b c : Timeless (own_Int32 a b c) := _.
+Global Instance own_Int32_fractional u v : Fractional (λ q, own_Int32 u (DfracOwn q) v) := _.
+Global Instance own_Int32_as_fractional u q v :
+  AsFractional (own_Int32 u (DfracOwn q) v) (λ q, own_Int32 u (DfracOwn q) v) q := _.
+Global Instance own_Int32_combines_gives u v v' dq dq' :
+  CombineSepGives (own_Int32 u dq v) (own_Int32 u dq' v') (⌜ ✓(dq⋅dq') ∧ v = v'⌝).
+Proof. unfold CombineSepGives.
+  iIntros "?". iDestruct (combine_sep_gives with "[$]") as "#H".
+  rewrite go_type_size_unseal. iDestruct "H" as %?. iModIntro. iPureIntro.
+  naive_solver.
+Qed.
 
 Lemma wp_Int32__Load u dq :
   ∀ Φ,
