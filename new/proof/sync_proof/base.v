@@ -5,6 +5,7 @@ Require Export New.generatedproof.sync.
 From New.proof Require Export sync.atomic.
 From New.proof Require Export tok_set.
 
+From New.experiments Require Export glob.
 From Perennial Require Export base.
 
 Set Default Proof Using "Type".

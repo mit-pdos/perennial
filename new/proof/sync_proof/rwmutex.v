@@ -74,46 +74,34 @@ Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count re
 #[global] Opaque own_RWMutex_invariant.
 #[local] Transparent own_RWMutex_invariant.
 
-Instance own_RWMutex_invariant_timeless a b c d e f : Timeless (own_RWMutex_invariant a b c d e f) := _.
+#[global] Instance own_RWMutex_invariant_timeless a b c d e f : Timeless (own_RWMutex_invariant a b c d e f) := _.
 
 Local Ltac rwauto :=
   solve [repeat first [eexists || intuition || subst || done || split ||
                                simplify_eq || destruct decide || unfold sync.rwmutexMaxReaders in * || word ]].
 
-Lemma step_RLock_readerCount_Add_fast γ writer_sem reader_sem reader_count reader_wait state :
-  0 ≤ (sint.Z (word.add reader_count (W32 1))) →
+Lemma step_RLock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait state :
   own_toks γ.(rlock_overflow_gn) 1 -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
-  ∃ num_readers,
-    ⌜ state = RLocked num_readers ⌝ ∧
-    own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait (RLocked (num_readers + 1)).
+  if decide (0 ≤ (sint.Z (word.add reader_count (W32 1)))) then
+    ∃ num_readers,
+      ⌜ state = RLocked num_readers ⌝ ∧
+      own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait (RLocked (S num_readers))
+  else
+    own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait state.
 Proof.
-  iIntros "%Hpos Hrlock Hinv". iNamed "Hinv".
+  iIntros "Hrlock Hinv". iNamed "Hinv".
   iCombine "Hrlock Hrlocks" as "Hrlocks".
   iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
-  destruct wl; first last.
-  1-3: rwauto.
-  { destruct state; first last. { iNamed "Hinv". iFrame. done. }
-    iNamed "Hinv". intuition. subst. iExists _; iSplitR; first done.
-    iFrame. iFrame. iExists (word.add pos_reader_count (W32 1)).
+  destruct state, wl; iNamed "Hinv"; try done.
+  { destruct decide; last (exfalso; rwauto).
+    iExists _; iSplitR; first done. iFrame. iFrame. iExists (word.add pos_reader_count (W32 1)).
     iSplitL "Hrlocks". { iApply to_named. iExactEq "Hrlocks". f_equal. rwauto. }
     iPureIntro. rwauto. }
-Qed.
-
-Lemma step_RLock_readerCount_Add_slow γ writer_sem reader_sem reader_count reader_wait state :
-  (sint.Z (word.add reader_count (W32 1))) < 0 →
-  own_toks γ.(rlock_overflow_gn) 1 -∗
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
-  own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait state.
-Proof.
-  iIntros "%Hpos Hrlock Hinv". iNamed "Hinv".
-  iCombine "Hrlock Hrlocks" as "Hrlocks".
-  iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
-  destruct state, wl.
-  all: iNamed "Hinv"; try done; try (iExists _; iSplitR; first done).
-  all: iFrame; iFrame; iExists (word.add pos_reader_count (W32 1));
-    iSplitL "Hrlocks"; [iApply to_named; iExactEq "Hrlocks"; f_equal; rwauto| ].
-  all: iPureIntro; rwauto.
+  all: destruct decide; [exfalso; rwauto| ];
+    iFrame; iFrame; iExists (word.add pos_reader_count (W32 1));
+    iSplitL "Hrlocks"; [iApply to_named; iExactEq "Hrlocks"; f_equal; rwauto| ];
+    iPureIntro; rwauto.
 Qed.
 
 Lemma step_RLock_readerSem_Semacquire γ writer_sem reader_sem reader_count reader_wait state :
@@ -359,17 +347,18 @@ Definition is_RWMutex (rw : loc) γ N : iProp Σ :=
   ∃ w,
   "#mu" ∷ rw ↦s[sync.RWMutex :: "w"]□ w ∗
   "#Hmu" ∷ is_Mutex w (ghost_var γ.(prot_gn).(wlock_gn) (1/2) (NotLocked (W32 0))) ∗
-  "#HreaderSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "readerSem" rw) γ.(reader_sem_gn) (N.@"sema") ∗
-  "#HwriterSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "writerSem" rw) γ.(writer_sem_gn) (N.@"sema") ∗
+  "#His_readerSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "readerSem" rw) γ.(reader_sem_gn) (N.@"sema") ∗
+  "#His_writerSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "writerSem" rw) γ.(writer_sem_gn) (N.@"sema") ∗
   "#Hinv" ∷ inv (N.@"inv") (
-      ∃ writer_sem reader_sem reader_count reader_wait st,
+      ∃ writer_sem reader_sem reader_count reader_wait state,
+        "Hstate" ∷ ghost_var γ.(prot_gn).(state_gn) (1/2) state ∗
         "HreaderSem" ∷ own_sema γ.(reader_sem_gn) reader_sem ∗
         "HwriterSem" ∷ own_sema γ.(writer_sem_gn) writer_sem ∗
-        "HreaderCount" ∷ own_Int32 (struct.field_ref_f sync.RWMutex "writerSem" rw) (DfracOwn 1)
+        "HreaderCount" ∷ own_Int32 (struct.field_ref_f sync.RWMutex "readerCount" rw) (DfracOwn 1)
           reader_count ∗
-        "HreaderWait" ∷ own_Int32 (struct.field_ref_f sync.RWMutex "writerSem" rw) (DfracOwn 1)
+        "HreaderWait" ∷ own_Int32 (struct.field_ref_f sync.RWMutex "readerWait" rw) (DfracOwn 1)
           reader_wait ∗
-        "Hprot" ∷ own_RWMutex_invariant γ.(prot_gn) writer_sem reader_sem reader_count reader_wait st
+        "Hprot" ∷ own_RWMutex_invariant γ.(prot_gn) writer_sem reader_sem reader_count reader_wait state
     ).
 #[global] Opaque is_RWMutex.
 #[local] Transparent is_RWMutex.
@@ -384,12 +373,47 @@ Lemma wp_RWMutex__RLock γ rw N :
 Proof.
   wp_start as "[#His Htok]". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
-  iInv "Hinv" as "Hi".
-  iDestruct "Hi" as (????) "Hi".
-  (* FIXME: [iExistDestruct: cannot destruct] *)
-  iDestruct "Hi" as (?) "_".
+  iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
+  iDestruct (step_RLock_readerCount_Add with "[$] [$]") as "Hprot_inv".
+  destruct decide.
+  - (* fast path *)
+    iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
+    iFrame. iIntros "!> H1_inv". iDestruct "HΦ" as (?) "[Hstate HΦ]".
+    iCombine "Hstate Hstate_inv" gives %[_ ?]. subst.
+    iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
+    iMod ("HΦ" with "Hstate") as "HΦ".
+    iDestruct "Hprot_inv" as (?) "[% Hprot_inv]". simplify_eq.
+    iMod "Hmask". iCombineNamed "*_inv" as "Hi".
+    iMod ("Hclose" with "[Hi]"). { iNamed "Hi". iFrame. }
+    iModIntro. wp_auto. rewrite bool_decide_decide decide_False //.
+    2:{ word. }
+    wp_auto. iApply "HΦ".
+  - (* slow path *)
+    iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+    iFrame. iIntros "H1_inv".
+    iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
+    iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
+    clear writer_sem reader_sem reader_wait.
+    iModIntro. wp_auto. rewrite bool_decide_decide decide_True //.
+    2:{ word. }
+    wp_auto.
+    wp_apply wp_runtime_SemacquireRWMutexR.
+    { iFrame "#". }
+    iInv "Hinv" as ">Hi" "Hclose".
+    iNamedSuffix "Hi" "_inv".
+    iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+    iFrame. iIntros "%Hpos H1_inv".
+    iDestruct (step_RLock_readerSem_Semacquire with "[$]") as (?) "[%Heq Hprot_inv]"; first word.
+    iMod "Hmask" as "_". subst.
+    iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
+    iDestruct "HΦ" as (?) "[Hstate HΦ]".
+    iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
+    iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
+    iMod ("HΦ" with "Hstate") as "HΦ".
+    iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
+    iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
+    iModIntro. wp_auto. iFrame.
 Qed.
-
 
 End wps.
 End proof.
