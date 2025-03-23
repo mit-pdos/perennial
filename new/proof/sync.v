@@ -359,10 +359,10 @@ Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_w
            writer_sem = W32 0 ⌝
     | WaitingForReaders, RLocked num_readers =>
         "Hwriter" ∷ (ghost_var γ.(writer_sem_gn) 1 () ∨
-                     ghost_var γ.(writer_sem_gn) (1/2) () ∗ ⌜ reader_wait = W32 0 ⌝) ∗
+                     ghost_var γ.(writer_sem_gn) (1/2) () ∗ ⌜ writer_sem = W32 0 ∧ reader_wait = W32 0 ⌝) ∗
         "%Hblocked" ∷
         ⌜ Z.of_nat outstanding_reader_wait + Z.of_nat num_readers + uint.Z reader_sem ≤ sint.Z reader_wait ∧
-          (writer_sem = W32 0 ∨ writer_sem = W32 1 ∧ reader_wait = W32 0) ⌝
+          (writer_sem = W32 0 ∨ (writer_sem = W32 1 ∧ reader_wait = W32 0)) ⌝
     | IsLocked, Locked =>
         "%Hlocked" ∷
         ⌜ writer_sem = W32 0 ∧ reader_wait = W32 0 ∧ reader_sem = W32 0 ⌝
@@ -478,15 +478,10 @@ Proof.
     iFrame.
     destruct decide.
     { exfalso.
-      assert (outstanding_reader_wait < sync.rwmutexMaxReaders).
-      { rwauto. }
       (* FIXME: word_cleanup_core not idempotent. *)
-      word_cleanup_core.
-      word_cleanup_core.
-      word.
+      word_cleanup_core. word_cleanup_core. word.
     }
-    iFrame.
-    iPureIntro. rwauto.
+    iFrame. iPureIntro. rwauto.
   - destruct outstanding_reader_wait; first rwauto.
     iMod (own_tok_auth_delete_S with "Houtstanding [$]") as "Houtstanding".
     iModIntro. iFrame.
@@ -495,11 +490,27 @@ Proof.
     destruct decide.
     * iSplitR "Hwriter2"; last by iFrame.
       repeat (iSplitR; first by iPureIntro; rwauto).
-      iSplitL.
-      { iRight. iFrame. iPureIntro. rwauto. }
+      iSplitL. { iRight. iFrame. iPureIntro. rwauto. }
       iPureIntro. rwauto.
     * iFrame. iPureIntro. rwauto.
   - rwauto.
+Qed.
+
+Lemma step_runlock_slow_semrelease γ writer_sem reader_sem reader_count reader_wait state :
+  ghost_var γ.(writer_sem_gn) (1/2) () -∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
+  own_RWMutex_invariant γ (word.add writer_sem (W32 1)) reader_sem reader_count reader_wait state.
+Proof.
+  iIntros "Hwriter_tok Hinv". iNamed "Hinv".
+  destruct state, wl; iNamed "Hinv"; try done.
+  all: try (iCombine "Hwriter_unused Hwriter_tok" gives %[Hbad _]; done).
+  iDestruct "Hwriter" as "[Hbad | [Hwriter %]]".
+  { iCombine "Hbad Hwriter_tok" gives %[Hbad _]; done. }
+  iCombine "Hwriter Hwriter_tok" as "Hwriter".
+  iFrame. iFrame. iPureIntro.
+  intuition; subst.
+  { right. rwauto. }
+  { right. rwauto. }
 Qed.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
