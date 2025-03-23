@@ -392,6 +392,20 @@ Lemma wp_compLeafHash sl_label sl_val d0 d1 (label val : list w8) :
   }}}.
 Proof. Admitted.
 
+Lemma word_subslice_ub (depth max_depth : w64) :
+  uint.Z depth <= uint.Z max_depth →
+  uint.Z (word.mul max_depth (W64 32)) = uint.Z max_depth * uint.Z 32 →
+  uint.Z (word.mul depth (W64 32)) <= uint.Z (word.mul max_depth (W64 32)).
+Proof. word. Qed.
+
+Lemma word_max_depth (sibs_sz : w64) :
+  let max_depth := word.divu sibs_sz (W64 32) in
+  word.modu sibs_sz (W64 32) = W64 0 →
+  word.mul max_depth (W64 32) = sibs_sz.
+Proof.
+  intros.
+Admitted.
+
 Lemma wp_Verify sl_label sl_val sl_proof sl_dig (in_tree : bool)
     d0 d1 d2 d3 (label val proof dig : list w8) :
   {{{
@@ -426,6 +440,7 @@ Proof.
   iNamed "Hown_obj". wp_loadField. wp_apply wp_slice_len.
   wp_if_destruct. { iApply "HΦ". by iFrame. }
   wp_if_destruct. { iApply "HΦ". by iFrame. }
+  remember (word.divu _ _) as max_depth.
   wp_loadField. wp_apply (wp_BytesEqual with "[$Hsl_label $Hsl_leaf_label]").
   iIntros "[Hsl_label Hsl_leaf_label]".
   wp_if_destruct. { iApply "HΦ". by iFrame. }
@@ -449,9 +464,7 @@ Proof.
     "Hsl_curr_hash" ∷ own_slice sl_curr_hash byteT (DfracOwn 1) curr_hash ∗
 
     "#Htree_hash" ∷ is_tree_hash last_node curr_hash ∗
-    "%Htree_path" ∷ ⌜ tree_path last_node label
-        (uint.nat (w64_word_instance.(word.divu) sl_sibs.(Slice.sz) (W64 32)))
-        found ⌝ ∗
+    "%Htree_path" ∷ ⌜ tree_path last_node label (uint.nat max_depth) found ⌝ ∗
     "%Hfound" ∷ ⌜ if in_tree then found = Some (label, val)
       else found_nonmemb label found ⌝
     )%I
@@ -480,20 +493,31 @@ Proof.
 
   (* hash up the tree. *)
   wp_apply wp_NewSliceWithCap; [done|]. iIntros (sl_hash_out) "Hsl_hash_out".
+  iDestruct (own_slice_to_small with "Hsl_hash_out") as "Hsl_hash_out".
   wp_apply wp_ref_to; [done|]. iIntros (ptr_hash_out) "Hptr_hash_out".
   wp_apply wp_ref_to; [naive_solver|]. iIntros (ptr_depth) "Hptr_depth".
+
+  destruct (uint.nat max_depth) eqn:Hzero_depth.
+  { wp_pures. wp_rec. wp_load. wp_if_destruct; [word|]. wp_load.
+    iDestruct (own_slice_to_small with "Hsl_curr_hash") as "Hsl_curr_hash".
+    wp_apply (wp_BytesEqual with "[$Hsl_curr_hash $Hsl_dig]").
+    iIntros "[_ Hsl_dig]". case_bool_decide; wp_pures.
+    2: { iApply "HΦ". by iFrame. }
+    iApply "HΦ". iFrame.
+    case_match; subst; by iFrame "#%". }
+
+  iMod (own_slice_small_persist with "Hsl_sibs") as "#Hsl_sibs".
   wp_apply (wp_forBreak_cond
     (λ cond, ∃ tr (depth : w64) curr_hash' sl_hash_out' hash_out',
     "Hptr_depth" ∷ ptr_depth ↦[uint64T] #depth ∗
-    "%Hcond" ∷ ⌜ cond = bool_decide (uint.Z depth >= 1) ⌝ ∗
+    "%Hcond" ∷ ⌜ bool_decide (uint.Z depth >= 1) = cond ⌝ ∗
+    "%Hlt_depth" ∷ ⌜ uint.Z depth <= uint.Z max_depth ⌝ ∗
 
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
-    "Hsl_sibs" ∷ own_slice_small sl_sibs byteT obj.(MerkleProof.d0)
-                   obj.(MerkleProof.Siblings) ∗
     "Hptr_sibs" ∷ ptr_obj ↦[MerkleProof::"Siblings"] sl_sibs ∗
     "Hsl_curr_hash" ∷ own_slice sl_curr_hash byteT (DfracOwn 1) curr_hash' ∗
     "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] sl_curr_hash ∗
-    "Hsl_hash_out" ∷ own_slice sl_hash_out' byteT (DfracOwn 1) hash_out' ∗
+    "Hsl_hash_out" ∷ own_slice_small sl_hash_out' byteT (DfracOwn 1) hash_out' ∗
     "Hptr_hash_out" ∷ ptr_hash_out ↦[slice.T byteT] sl_hash_out' ∗
 
     "#Htree_hash" ∷ is_tree_hash tr curr_hash' ∗
@@ -502,7 +526,24 @@ Proof.
     with "[] [Hptr_depth Hsl_label Hsl_sibs Hptr_sibs
       Hsl_curr_hash Hptr_curr_hash Hsl_hash_out Hptr_hash_out]"
   ).
-  2: { iFrame "∗#%". admit. }
+  2: { iFrame "∗#%". iSplit.
+    - case_bool_decide; [done|word].
+    - by rewrite -Hzero_depth in Htree_path. }
+  { iClear (Hzero_depth Htree_path Hfound) "Htree_hash".
+    iIntros (Φ2) "!> H HΦ2". iNamed "H".
+    apply bool_decide_eq_true in Hcond.
+    wp_load. wp_if_destruct; [|word].
+    do 2 wp_load. wp_loadField.
+    iDestruct (own_slice_small_sz with "Hsl_sibs") as "%Hlen_sibs".
+    wp_apply wp_SliceSubslice_small.
+    3: iFrame "#".
+    { apply _. }
+    { split.
+      - admit.
+      -
+        assert (sl_sibs.(Slice.sz) = word.mul max_depth (W64 32)) as ? by admit.
+        assert (uint.Z (word.mul max_depth (W64 32)) = uint.Z max_depth * uint.Z 32) as ? by admit.
+        word.
 Admitted.
 
 End proof.
