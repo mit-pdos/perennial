@@ -1,19 +1,20 @@
-From New.proof.sync_proof Require Import base.
+From New.proof.sync_proof Require Import base mutex sema.
 
 Section proof.
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 Context `{!syncG Σ}.
-Record RWMutex_names :=
+Section protocol.
+Record RWMutex_protocol_names :=
   {
     read_wait_gn : gname;
     rlock_overflow_gn : gname;
     wlock_gn : gname;
-    writer_sem_gn : gname;
+    writer_sem_tok_gn : gname;
     state_gn : gname;
   }.
 
-Implicit Types γ : RWMutex_names.
+Implicit Types γ : RWMutex_protocol_names.
 Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_wait : w32)
   (state : rwmutex) : iProp Σ :=
   ∃ wl (pos_reader_count : w32) outstanding_reader_wait,
@@ -44,7 +45,7 @@ Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count re
 
     match wl with
     | WaitingForReaders => "_" ∷ True
-    | _ => "Hwriter_unused" ∷ ghost_var γ.(writer_sem_gn) 1 ()
+    | _ => "Hwriter_unused" ∷ ghost_var γ.(writer_sem_tok_gn) 1 ()
     end ∗
 
     match wl, state with
@@ -60,8 +61,8 @@ Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count re
            sint.Z remaining_readers + sint.Z reader_wait)%Z ∧
            writer_sem = W32 0 ⌝
     | WaitingForReaders, RLocked num_readers =>
-        "Hwriter" ∷ (ghost_var γ.(writer_sem_gn) 1 () ∨
-                     ghost_var γ.(writer_sem_gn) (1/2) () ∗ ⌜ writer_sem = W32 0 ∧ reader_wait = W32 0 ⌝) ∗
+        "Hwriter" ∷ (ghost_var γ.(writer_sem_tok_gn) 1 () ∨
+                     ghost_var γ.(writer_sem_tok_gn) (1/2) () ∗ ⌜ writer_sem = W32 0 ∧ reader_wait = W32 0 ⌝) ∗
         "%Hblocked" ∷
         ⌜ Z.of_nat outstanding_reader_wait + Z.of_nat num_readers + uint.Z reader_sem ≤ sint.Z reader_wait ∧
           (writer_sem = W32 0 ∨ (writer_sem = W32 1 ∧ reader_wait = W32 0)) ⌝
@@ -175,7 +176,7 @@ Lemma step_rUnlockSlow_readerWait_Add γ writer_sem reader_sem reader_count read
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.sub reader_wait (W32 1)) state ∗
   if decide (word.sub reader_wait (W32 1) = W32 0) then
-    ghost_var γ.(writer_sem_gn) (1/2) ()
+    ghost_var γ.(writer_sem_tok_gn) (1/2) ()
   else True.
 Proof.
   iIntros "Hwait_tok Hinv". iNamed "Hinv".
@@ -203,7 +204,7 @@ Proof.
 Qed.
 
 Lemma step_rUnlockSlow_writerSem_Semrelease γ writer_sem reader_sem reader_count reader_wait state :
-  ghost_var γ.(writer_sem_gn) (1/2) () -∗
+  ghost_var γ.(writer_sem_tok_gn) (1/2) () -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
   own_RWMutex_invariant γ (word.add writer_sem (W32 1)) reader_sem reader_count reader_wait state.
 Proof.
@@ -331,25 +332,38 @@ Proof.
   { apply Qp.half_half. }
   iFrame. iPureIntro. rwauto.
 Qed.
+End protocol.
 
 Opaque own_RWMutex_invariant.
 
+Section wps.
+Record RWMutex_names :=
+  {
+    prot_gn : RWMutex_protocol_names;
+    reader_sem_gn : gname;
+    writer_sem_gn : gname;
+  }.
+Implicit Types γ : RWMutex_names.
+
 Definition own_RWMutex γ (state : rwmutex) : iProp Σ :=
-  ghost_var γ.(state_gn) (1/2) state.
+  ghost_var γ.(prot_gn).(state_gn) (1/2) state.
 #[global] Opaque own_RWMutex.
 #[local] Transparent own_RWMutex.
 
-(* Definition is_RWMutex (rw : loc) γ : iProp Σ :=
+Definition is_RWMutex (rw : loc) γ : iProp Σ :=
   ∃ w,
-  "#mu" ∷ rw ↦s[sync.RWMutex :: "w"] #w ∗
-  "#Hmu" ∷ is_Mutex w (own_ghost_var γ.(wlock_gn) (NotLocked (W32 0))) ∗
-  "#Hinv" ∷ inv nroot (
+  "#mu" ∷ rw ↦s[sync.RWMutex :: "w"] w ∗
+  "#Hmu" ∷ is_Mutex w (ghost_var γ.(prot_gn).(wlock_gn) (1/2) (NotLocked (W32 0))) ∗
+  "#HreaderSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "readerSem" rw) γ.(reader_sem_gn) (nroot.@"sema") ∗
+  "#HwriterSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "writerSem" rw) γ.(writer_sem_gn) (nroot.@"sema") ∗
+  "#Hinv" ∷ inv (nroot.@"inv") (
       ∃ writer_sem reader_sem reader_count reader_wait state,
-        (struct.)
-
-    )
-  ghost_var (1/2) γ.(state_gn) state.
+        "HreaderSem" ∷ own_sema γ.(reader_sem_gn) reader_sem ∗
+        "HwriterSem" ∷ own_sema γ.(writer_sem_gn) writer_sem ∗
+        "Hprot" ∷ own_RWMutex_invariant γ.(prot_gn) writer_sem reader_sem reader_count reader_wait state
+    ).
 #[global] Opaque is_RWMutex.
-#[local] Transparent is_RWMutex. *)
+#[local] Transparent is_RWMutex.
 
+End wps.
 End proof.
