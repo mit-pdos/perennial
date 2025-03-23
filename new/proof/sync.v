@@ -376,7 +376,7 @@ Local Ltac rwauto :=
   solve [repeat first [eexists || intuition || subst || done || word || split ||
                                simplify_eq || destruct decide || unfold sync.rwmutexMaxReaders in *]].
 
-Lemma step_rlock_fast γ writer_sem reader_sem reader_count reader_wait state :
+Lemma step_RLock_readerCount_Add_fast γ writer_sem reader_sem reader_count reader_wait state :
   0 ≤ (sint.Z (word.add reader_count (W32 1))) →
   own_toks γ.(rlock_overflow_gn) 1 -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
@@ -396,7 +396,7 @@ Proof.
     iPureIntro. rwauto. }
 Qed.
 
-Lemma step_rlock_fail_slow γ writer_sem reader_sem reader_count reader_wait state :
+Lemma step_RLock_readerCount_Add_slow γ writer_sem reader_sem reader_count reader_wait state :
   (sint.Z (word.add reader_count (W32 1))) < 0 →
   own_toks γ.(rlock_overflow_gn) 1 -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
@@ -412,7 +412,7 @@ Proof.
   all: iPureIntro; rwauto.
 Qed.
 
-Lemma step_rlock_slow γ writer_sem reader_sem reader_count reader_wait state :
+Lemma step_RLock_readerSem_Semacquire γ writer_sem reader_sem reader_count reader_wait state :
   0 < uint.Z reader_sem →
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
   ∃ num_readers,
@@ -426,7 +426,7 @@ Proof.
   - iNamed "Hinv"; destruct wl; iNamed "Hinv"; rwauto.
 Qed.
 
-Lemma step_runlock_fast γ writer_sem reader_sem reader_count reader_wait num_readers :
+Lemma step_RUnlock_readerCount_Add_fast γ writer_sem reader_sem reader_count reader_wait num_readers :
   0 ≤ sint.Z (word.sub reader_count (W32 1)) →
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait (RLocked (S num_readers)) -∗
   own_toks γ.(rlock_overflow_gn) 1 ∗
@@ -441,7 +441,7 @@ Proof.
   - rwauto. - rwauto.
 Qed.
 
-Lemma step_runlock_slow_start γ writer_sem reader_sem reader_count reader_wait num_readers :
+Lemma step_RUnlock_readerCount_Add_slow γ writer_sem reader_sem reader_count reader_wait num_readers :
   sint.Z (word.sub reader_count (W32 1)) < 0 →
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait (RLocked (S num_readers)) ==∗
   own_toks γ.(rlock_overflow_gn) 1 ∗
@@ -461,7 +461,7 @@ Proof.
     intuition; subst; try rwauto.
 Qed.
 
-Lemma step_runlock_slow_signal γ writer_sem reader_sem reader_count reader_wait state :
+Lemma step_RUnlock_readerWait_Add γ writer_sem reader_sem reader_count reader_wait state :
   own_toks γ.(read_wait_gn) 1 -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.sub reader_wait (W32 1)) state ∗
@@ -496,7 +496,7 @@ Proof.
   - rwauto.
 Qed.
 
-Lemma step_runlock_slow_semrelease γ writer_sem reader_sem reader_count reader_wait state :
+Lemma step_RUnlock_writerSem_Semrelease γ writer_sem reader_sem reader_count reader_wait state :
   ghost_var γ.(writer_sem_gn) (1/2) () -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
   own_RWMutex_invariant γ (word.add writer_sem (W32 1)) reader_sem reader_count reader_wait state.
@@ -513,7 +513,7 @@ Proof.
   { right. rwauto. }
 Qed.
 
-Lemma step_lock_announce γ writer_sem reader_sem reader_count reader_wait state :
+Lemma step_Lock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait state :
   ghost_var γ.(wlock_gn) (1/2) (NotLocked O) -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   (if decide (reader_count = W32 0) then
@@ -540,7 +540,7 @@ Proof.
     iFrame. iPureIntro. rwauto.
 Qed.
 
-Lemma step_lock_readerWait_Add γ r writer_sem reader_sem reader_count reader_wait state :
+Lemma step_Lock_readerWait_Add γ r writer_sem reader_sem reader_count reader_wait state :
   ghost_var γ.(wlock_gn) (1/2) (SignalingReaders r) -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   ghost_var γ.(wlock_gn) (1/2) WaitingForReaders ∗
@@ -554,7 +554,7 @@ Proof.
   iFrame. iPureIntro. rwauto.
 Qed.
 
-Lemma step_lock_writerSem_Semacquire γ writer_sem reader_sem reader_count reader_wait state :
+Lemma step_Lock_writerSem_Semacquire γ writer_sem reader_sem reader_count reader_wait state :
   0 < uint.Z writer_sem →
   ghost_var γ.(wlock_gn) (1/2) WaitingForReaders -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
@@ -562,8 +562,7 @@ Lemma step_lock_writerSem_Semacquire γ writer_sem reader_sem reader_count reade
   ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
   own_RWMutex_invariant γ (word.sub writer_sem (W32 1)) reader_sem reader_count reader_wait Locked.
 Proof.
-  intros Hsem.
-  iIntros "Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  iIntros "%Hsem Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl, state; iNamed "Hinv"; try done.
   iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
   iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
