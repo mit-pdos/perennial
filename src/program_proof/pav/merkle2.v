@@ -371,7 +371,7 @@ Lemma wp_compEmptyHash :
   compEmptyHash #()
   {{{
     sl_hash hash, RET (slice_val sl_hash);
-    "Hsl_hash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
+    "Hsl_hash" ∷ own_slice sl_hash byteT (DfracOwn 1) hash ∗
     "#His_hash" ∷ is_hash [empty_node_tag] hash
   }}}.
 Proof. Admitted.
@@ -386,7 +386,7 @@ Lemma wp_compLeafHash sl_label sl_val d0 d1 (label val : list w8) :
     sl_hash hash, RET (slice_val sl_hash);
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
     "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
-    "Hsl_hash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
+    "Hsl_hash" ∷ own_slice sl_hash byteT (DfracOwn 1) hash ∗
     "#His_hash" ∷ is_hash
       (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
   }}}.
@@ -421,7 +421,8 @@ Proof.
   wp_if_destruct. { iApply "HΦ". by iFrame. }
   iDestruct "Hgenie" as "[Hgenie _]".
   iDestruct ("Hgenie" with "[//]") as "H". iNamed "H".
-  iDestruct ("Herr" with "[//]") as "H". iNamed "H". iClear "Hsl_tail".
+  iDestruct ("Herr" with "[//]") as "H". iNamed "H".
+  iClear (err Heqb0 tail sl_tail Henc_obj) "Hsl_tail".
   iNamed "Hown_obj". wp_loadField. wp_apply wp_slice_len.
   wp_if_destruct. { iApply "HΦ". by iFrame. }
   wp_if_destruct. { iApply "HΦ". by iFrame. }
@@ -445,7 +446,7 @@ Proof.
     "Hptr_leaf_val" ∷ ptr_obj ↦[MerkleProof::"LeafVal"] sl_leaf_val ∗
 
     "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] (slice_val sl_curr_hash) ∗
-    "Hsl_curr_hash" ∷ own_slice_small sl_curr_hash byteT (DfracOwn 1) curr_hash ∗
+    "Hsl_curr_hash" ∷ own_slice sl_curr_hash byteT (DfracOwn 1) curr_hash ∗
 
     "#Htree_hash" ∷ is_tree_hash last_node curr_hash ∗
     "%Htree_path" ∷ ⌜ tree_path last_node label
@@ -461,7 +462,7 @@ Proof.
     - wp_apply (wp_compLeafHash with "[$Hsl_label $Hsl_val]").
       iIntros "*". iNamed 1. wp_store.
       iDestruct (own_slice_small_sz with "Hsl_label") as %Hlen_label.
-      iExists (Leaf label val), (Some (label, val)). iFrame "∗#".
+      iExists (Leaf label val), _. iFrame "∗#".
       iIntros "!>". iSplit; [word|naive_solver].
     - wp_loadField. wp_apply wp_slice_len.
       wp_if_destruct.
@@ -469,20 +470,39 @@ Proof.
         wp_apply (wp_compLeafHash with "[$Hsl_leaf_label $Hsl_leaf_val]").
         iIntros "*". iNamedSuffix 1 "_leaf". wp_store.
         iDestruct (own_slice_small_sz with "Hsl_label_leaf") as %Hlen_label.
-        iExists (Leaf obj.(MerkleProof.LeafLabel) obj.(MerkleProof.LeafVal)),
-          (Some (obj.(MerkleProof.LeafLabel), obj.(MerkleProof.LeafVal))).
+        iExists (Leaf obj.(MerkleProof.LeafLabel) obj.(MerkleProof.LeafVal)), _.
         iFrame "∗#". iIntros "!>". iSplit; [word|naive_solver].
       + wp_apply wp_compEmptyHash.
         iIntros "*". iNamed 1. wp_store.
         iDestruct (own_slice_small_sz with "Hsl_leaf_label") as %Hlen_label.
-        iExists Empty, None. iFrame "∗#". naive_solver. }
-  iIntros (tmp). iNamed 1. wp_pures. clear tmp.
+        iExists Empty, _. iFrame "∗#". naive_solver. }
+  iIntros (tmp). iNamed 1. wp_pures. clear tmp Heqb Heqb2.
 
   (* hash up the tree. *)
   wp_apply wp_NewSliceWithCap; [done|]. iIntros (sl_hash_out) "Hsl_hash_out".
   wp_apply wp_ref_to; [done|]. iIntros (ptr_hash_out) "Hptr_hash_out".
   wp_apply wp_ref_to; [naive_solver|]. iIntros (ptr_depth) "Hptr_depth".
-  wp_pures.
+  wp_apply (wp_forBreak_cond
+    (λ cond, ∃ tr (depth : w64) curr_hash' sl_hash_out' hash_out',
+    "Hptr_depth" ∷ ptr_depth ↦[uint64T] #depth ∗
+    "%Hcond" ∷ ⌜ cond = bool_decide (uint.Z depth >= 1) ⌝ ∗
+
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hsl_sibs" ∷ own_slice_small sl_sibs byteT obj.(MerkleProof.d0)
+                   obj.(MerkleProof.Siblings) ∗
+    "Hptr_sibs" ∷ ptr_obj ↦[MerkleProof::"Siblings"] sl_sibs ∗
+    "Hsl_curr_hash" ∷ own_slice sl_curr_hash byteT (DfracOwn 1) curr_hash' ∗
+    "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] sl_curr_hash ∗
+    "Hsl_hash_out" ∷ own_slice sl_hash_out' byteT (DfracOwn 1) hash_out' ∗
+    "Hptr_hash_out" ∷ ptr_hash_out ↦[slice.T byteT] sl_hash_out' ∗
+
+    "#Htree_hash" ∷ is_tree_hash tr curr_hash' ∗
+    "%Htree_path" ∷ ⌜ tree_path tr label (uint.nat depth) found ⌝
+    )%I
+    with "[] [Hptr_depth Hsl_label Hsl_sibs Hptr_sibs
+      Hsl_curr_hash Hptr_curr_hash Hsl_hash_out Hptr_hash_out]"
+  ).
+  2: { iFrame "∗#%". admit. }
 Admitted.
 
 End proof.
