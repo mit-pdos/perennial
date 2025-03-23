@@ -294,7 +294,7 @@ Inductive rwmutex := RLocked (num_readers : nat) | Locked.
 
 Inductive wlock_state :=
 | NotLocked (unnotified_readers : nat)
-| SignalingReaders (remaining_readers : nat)
+| SignalingReaders (remaining_readers : w32)
 | WaitingForReaders
 | IsLocked.
 
@@ -352,10 +352,10 @@ Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_w
            sint.Z pos_reader_count = (Z.of_nat num_readers + sint.Z unnotified_readers + uint.Z reader_sem)%Z ⌝)
     | SignalingReaders remaining_readers, RLocked num_readers =>
         "%Hblocked_unsignaled" ∷
-        ⌜ Z.of_nat remaining_readers < sync.rwmutexMaxReaders ∧
+        ⌜ 0 ≤ sint.Z remaining_readers < sync.rwmutexMaxReaders ∧
           sint.Z reader_wait ≤ 0 ∧
           (Z.of_nat outstanding_reader_wait + Z.of_nat num_readers + uint.Z reader_sem =
-           Z.of_nat remaining_readers + sint.Z reader_wait)%Z ∧
+           sint.Z remaining_readers + sint.Z reader_wait)%Z ∧
            writer_sem = W32 0 ⌝
     | WaitingForReaders, RLocked num_readers =>
         "Hwriter" ∷ (ghost_var γ.(writer_sem_gn) 1 () ∨
@@ -522,12 +522,11 @@ Lemma step_lock_announce γ writer_sem reader_sem reader_count reader_wait state
      own_RWMutex_invariant γ writer_sem reader_sem
        (word.add reader_count (W32 (-sync.rwmutexMaxReaders))) reader_wait Locked
    else
-     ghost_var γ.(wlock_gn) (1/2) (SignalingReaders (Z.to_nat (sint.Z reader_count))) ∗
+     ghost_var γ.(wlock_gn) (1/2) (SignalingReaders reader_count) ∗
      own_RWMutex_invariant γ writer_sem reader_sem
        (word.add reader_count (W32 (-sync.rwmutexMaxReaders))) reader_wait state).
 Proof.
-  iIntros "Hwl_in Hinv".
-  iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  iIntros "Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl, state; iNamed "Hinv"; try done.
   destruct decide.
   - iMod (ghost_var_update_2 IsLocked with "Hwl Hwl_in") as "[Hwl Hwl_in]".
@@ -539,6 +538,20 @@ Proof.
   - iMod (ghost_var_update_2 (SignalingReaders _) with "Hwl Hwl_in") as "[Hwl Hwl_in]".
     { apply Qp.half_half. }
     iFrame. iPureIntro. rwauto.
+Qed.
+
+Lemma step_lock_readerWait_Add γ r writer_sem reader_sem reader_count reader_wait state :
+  ghost_var γ.(wlock_gn) (1/2) (SignalingReaders r) -∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
+  ghost_var γ.(wlock_gn) (1/2) WaitingForReaders ∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.add reader_wait r) state.
+Proof.
+  iIntros "Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  destruct wl, state; iNamed "Hinv"; try done.
+  iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
+  iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
+  { apply Qp.half_half. }
+  iFrame. iPureIntro. rwauto.
 Qed.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
