@@ -101,6 +101,28 @@ Proof.
   iFrame.
 Qed.
 
+Lemma wp_runtime_SemacquireRWMutexR (sema : loc) γ N (lifo : bool) (skipframes : w64) :
+  ∀ Φ,
+  is_pkg_init sync ∗ is_sema sema γ N -∗
+  (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
+  WP sync @ "runtime_SemacquireRWMutexR" #sema #lifo #skipframes {{ Φ }}.
+Proof.
+  wp_start as "#Hsem".
+  wp_apply (wp_runtime_Semacquire with "[$]").
+  iFrame.
+Qed.
+
+Lemma wp_runtime_SemacquireRWMutex (sema : loc) γ N (lifo : bool) (skipframes : w64) :
+  ∀ Φ,
+  is_pkg_init sync ∗ is_sema sema γ N -∗
+  (|={⊤∖↑N,∅}=> ∃ v, own_sema γ v ∗ (⌜ uint.nat v > 0 ⌝ → own_sema γ (word.sub v (W32 1)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
+  WP sync @ "runtime_SemacquireRWMutex" #sema #lifo #skipframes {{ Φ }}.
+Proof.
+  wp_start as "#Hsem".
+  wp_apply (wp_runtime_Semacquire with "[$]").
+  iFrame.
+Qed.
+
 Lemma wp_runtime_Semrelease (sema : loc) γ N (_u1 : bool) (_u2 : w64):
   ∀ Φ,
   is_pkg_init sync ∗ is_sema sema γ N -∗

@@ -75,10 +75,10 @@ Definition runtime_SemacquireWaitGroup : val :=
   λ: "addr", func_call #"sync" #"runtime_Semacquire" "addr".
 
 Definition runtime_SemacquireRWMutexR : val :=
-  λ: "addr", func_call #"sync" #"runtime_Semacquire" "addr".
+  λ: "addr" "_lifo" "_skipframes", func_call #"sync" #"runtime_Semacquire" "addr".
 
 Definition runtime_SemacquireRWMutex : val :=
-  λ: "addr", func_call #"sync" #"runtime_Semacquire" "addr".
+  λ: "addr" "_lifo" "_skipframes", func_call #"sync" #"runtime_Semacquire" "addr".
 
 End code.
 End sync.
