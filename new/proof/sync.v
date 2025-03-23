@@ -554,6 +554,27 @@ Proof.
   iFrame. iPureIntro. rwauto.
 Qed.
 
+Lemma step_lock_writerSem_Semacquire γ writer_sem reader_sem reader_count reader_wait state :
+  0 < uint.Z writer_sem →
+  ghost_var γ.(wlock_gn) (1/2) WaitingForReaders -∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
+  ⌜ state = RLocked 0 ⌝ ∗
+  ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
+  own_RWMutex_invariant γ (word.sub writer_sem (W32 1)) reader_sem reader_count reader_wait Locked.
+Proof.
+  intros Hsem.
+  iIntros "Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  destruct wl, state; iNamed "Hinv"; try done.
+  iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
+  iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
+  { apply Qp.half_half. }
+  destruct num_readers. 2:{ exfalso. rwauto. }
+  iSplitR; first done. iModIntro.
+  iFrame. iDestruct "Hwriter" as "[?|[_ %]]".
+  2:{ exfalso. rwauto. }
+  iFrame. iPureIntro. rwauto.
+Qed.
+
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
   "#Hi" ∷ is_pkg_init sync ∗
