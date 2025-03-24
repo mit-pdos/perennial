@@ -106,12 +106,6 @@ Ltac word_cleanup_core :=
       | |- not (@eq u8 _ _) => apply (f_not_equal uint.Z)
       end;
   simpl_word_constants;
-  (* can't replace some of these with [autorewrite], probably because typeclass inference
-  isn't the same *)
-  repeat (
-      rewrite -> ?word.unsigned_of_Z, ?word.of_Z_unsigned in *
-      || autorewrite with word in *
-    );
   repeat match goal with
          | [ |- context[word.add _ _] ] =>
            rewrite word.unsigned_add
@@ -138,6 +132,12 @@ Ltac word_cleanup_core :=
          | [ H : context[word.ltu _ _] |- _ ] =>
            rewrite w64_unsigned_ltu in H
          end;
+  (* can't replace some of these with [autorewrite], probably because typeclass inference
+  isn't the same *)
+  repeat (
+      rewrite -> ?word.unsigned_of_Z, ?word.of_Z_unsigned in *
+      || autorewrite with word in *
+    );
   repeat match goal with
          | _ => progress simpl_word_constants
          | [ H: @eq w64 _ _ |- _ ] => let H' := fresh H "_signed" in
