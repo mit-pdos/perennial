@@ -366,9 +366,8 @@ Definition is_RWMutex (rw : loc) γ N : iProp Σ :=
 Lemma wp_RWMutex__RLock γ rw N :
   ∀ Φ,
   is_pkg_init sync ∗ is_RWMutex rw γ N ∗ own_RLock_token γ -∗
-  (|={⊤∖↑N,∅}=> ∃ num_readers,
-     own_RWMutex γ (RLocked num_readers) ∗
-     (own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
+  (|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
+     (∀ num_readers, ⌜ state = RLocked num_readers ⌝ → own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP rw @ sync @ "RWMutex'ptr" @ "RLock" #() {{ Φ }}.
 Proof.
   wp_start as "[#His Htok]". iNamed "His". wp_auto.
@@ -380,9 +379,9 @@ Proof.
     iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
     iFrame. iIntros "!> H1_inv". iDestruct "HΦ" as (?) "[Hstate HΦ]".
     iCombine "Hstate Hstate_inv" gives %[_ ?]. subst.
-    iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-    iMod ("HΦ" with "Hstate") as "HΦ".
     iDestruct "Hprot_inv" as (?) "[% Hprot_inv]". simplify_eq.
+    iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
+    iMod ("HΦ" with "[//] Hstate") as "HΦ".
     iMod "Hmask". iCombineNamed "*_inv" as "Hi".
     iMod ("Hclose" with "[Hi]"). { iNamed "Hi". iFrame. }
     iModIntro. wp_auto. rewrite bool_decide_decide decide_False //.
@@ -409,7 +408,7 @@ Proof.
     iDestruct "HΦ" as (?) "[Hstate HΦ]".
     iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
     iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-    iMod ("HΦ" with "Hstate") as "HΦ".
+    iMod ("HΦ" with "[//] Hstate") as "HΦ".
     iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
     iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
     iModIntro. wp_auto. iFrame.
@@ -418,9 +417,9 @@ Qed.
 Lemma wp_RWMutex__TryRLock γ rw N :
   ∀ Φ,
   is_pkg_init sync ∗ is_RWMutex rw γ N ∗ own_RLock_token γ -∗
-  ((|={⊤∖↑N,∅}=> ∃ num_readers,
-      own_RWMutex γ (RLocked num_readers) ∗
-      (own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #true)) ∧
+  ((|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
+      (∀ num_readers, ⌜ state = RLocked num_readers ⌝ →
+                      own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #true)) ∧
    Φ #false)
   -∗
   WP rw @ sync @ "RWMutex'ptr" @ "TryRLock" #() {{ Φ }}.
@@ -449,7 +448,7 @@ Proof.
       iDestruct "HΦ" as (?) "[Hstate HΦ]".
       iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
       iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-      iMod ("HΦ" with "Hstate") as "HΦ".
+      iMod ("HΦ" with "[//] Hstate") as "HΦ".
       iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
       iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
       iModIntro. rewrite bool_decide_true //. wp_auto.
