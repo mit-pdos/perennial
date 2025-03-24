@@ -151,22 +151,22 @@ Ltac word_cleanup_core :=
   repeat match goal with
          | [ |- context[uint.Z ?x] ] =>
            lazymatch goal with
-           | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
+           | [ H': and (Z.le 0 (uint.Z x)) (Z.lt (uint.Z x) (2 ^ _)) |- _ ] => fail
            | _ => pose proof (word.unsigned_range x)
            end
          | [ H: context[uint.Z ?x] |- _ ] =>
            lazymatch goal with
-           | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
+           | [ H': and (Z.le 0 (uint.Z x)) (Z.lt (uint.Z x) (2 ^ _)) |- _ ] => fail
            | _ => pose proof (word.unsigned_range x)
            end
          | [ |- context[sint.Z ?x] ] =>
            lazymatch goal with
-           | [ H': - (2^ _) ≤ sint.Z x < 2^_ |- _ ] => fail
+           | [ H': and (Z.le (Z.opp (2 ^ _)) (sint.Z x)) (Z.lt (sint.Z x) (2 ^ _)) |- _ ] => fail
            | _ => pose proof (word.signed_range x)
            end
          | [ H: context[sint.Z ?x] |- _ ] =>
            lazymatch goal with
-           | [ H': - (2^ _) ≤ sint.Z x < 2^_ |- _ ] => fail
+           | [ H': and (Z.le (Z.opp (2 ^ _)) (sint.Z x)) (Z.lt (sint.Z x) (2 ^ _)) |- _ ] => fail
            | _ => pose proof (word.signed_range x)
            end
          end;
