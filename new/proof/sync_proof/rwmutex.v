@@ -595,5 +595,69 @@ Proof.
       iModIntro. wp_auto. iFrame.
 Qed.
 
+Lemma wp_RWMutex__TryLock γ rw N :
+  ∀ Φ,
+  is_pkg_init sync ∗ is_RWMutex rw γ N -∗
+  ((|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
+    (⌜ state = RLocked 0 ⌝ → own_RWMutex γ Locked ={∅,⊤∖↑N}=∗ Φ #true)) ∧
+     Φ #false) -∗
+  WP rw @ sync @ "RWMutex'ptr" @ "TryLock" #() {{ Φ }}.
+Proof.
+  (* NOTE(llm): proved by cursor/claude-3.5-sonnet with interactive feedback (copied
+     at each proof step by a human...). *)
+  wp_start as "His". iNamed "His". wp_auto.
+  wp_apply wp_Mutex__TryLock.
+  { iFrame "#". }
+  iIntros (locked) "Hlocked".
+  destruct locked.
+  2:{ (* false case *)
+    wp_auto. iRight in "HΦ". iFrame.
+  }
+  wp_auto. wp_apply wp_Int32__CompareAndSwap.
+  iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
+  iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+  iFrame.
+  destruct (decide (reader_count = W32 0)).
+  - iSplitR; first done.
+    iIntros "HreaderCount". iMod "Hmask" as "_".
+    iDestruct "Hlocked" as "[Hlocked Hwl]".
+    iMod (step_TryLock_readerCount_CompareAndSwap with "Hwl Hprot_inv") as "(% & Hwl & Hprot_inv)".
+    { rewrite e. word. }
+    iLeft in "HΦ".
+    iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
+    iDestruct "HΦ" as (?) "[Hstate HΦ]".
+    iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
+    iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
+    iMod ("HΦ" with "[//] Hstate") as "HΦ".
+    iMod "Hmask" as "_".
+    iCombineNamed "*_inv" as "Hi".
+    iNamed "Hi".
+    iMod ("Hclose" with "[HreaderCount Hlocked Hstate_inv HreaderSem_inv HwriterSem_inv HreaderWait_inv Hprot_inv Hwl]") as "_".
+    { iNext. iExists writer_sem, reader_sem, _, reader_wait, Locked.
+      iFrame "HreaderCount Hlocked Hstate_inv HreaderSem_inv HwriterSem_inv HreaderWait_inv Hprot_inv Hwl". }
+    iModIntro.
+    rewrite bool_decide_decide. rewrite -> decide_True; last done. (* XXX: human intervention bc `rewrite decide_True` failed *)
+    wp_auto. iFrame.
+  - (* CAS failed *)
+    iSplitR; first done.
+    iIntros "HreaderCount".
+    iMod "Hmask" as "_".
+    iCombineNamed "*_inv" as "Hi".
+    iMod ("Hclose" with "[Hi HreaderCount]") as "_".
+    { iNext. iNamed "Hi". iExists writer_sem, reader_sem, reader_count, reader_wait, state0. iFrame. }
+    iModIntro.
+    wp_pures.
+    rewrite bool_decide_decide.
+    rewrite decide_False; last done.
+    wp_pures.
+    wp_bind (method_call _ _ _ _ _).
+    wp_auto.
+    iDestruct "Hlocked" as "[Hlocked Hwl]".
+    (* XXX: human intervention as a hint after lots of failed attempts bc of missing Hwl *)
+    wp_apply (wp_Mutex__Unlock with "[$Hmu $Hlocked $Hwl]").
+    wp_pures.
+    iRight in "HΦ". iFrame.
+Qed.
+
 End wps.
 End proof.
