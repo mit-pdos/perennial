@@ -60,7 +60,7 @@ Definition Inflights__Clone : val :=
     do:  ("ins" <-[Inflights] "$r0");;;
     let: "$r0" := (let: "$a0" := #slice.nil in
     let: "$a1" := (![sliceT] (struct.field_ref Inflights "buffer" (![ptrT] "in"))) in
-    (slice.append sliceT) "$a0" "$a1") in
+    (slice.append inflight) "$a0" "$a1") in
     do:  ((struct.field_ref Inflights "buffer" "ins") <-[sliceT] "$r0");;;
     return: ("ins")).
 
@@ -527,7 +527,7 @@ Definition ProgressMap__String : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "ids") in
       let: "$a1" := ((let: "$sl0" := (![uint64T] "k") in
       slice.literal uint64T ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append uint64T) "$a0" "$a1") in
       do:  ("ids" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "ids") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
@@ -845,7 +845,7 @@ Definition ProgressTracker__VoterNodes : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "nodes") in
       let: "$a1" := ((let: "$sl0" := (![uint64T] "id") in
       slice.literal uint64T ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append uint64T) "$a0" "$a1") in
       do:  ("nodes" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "nodes") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
@@ -875,7 +875,7 @@ Definition ProgressTracker__LearnerNodes : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "nodes") in
       let: "$a1" := ((let: "$sl0" := (![uint64T] "id") in
       slice.literal uint64T ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append uint64T) "$a0" "$a1") in
       do:  ("nodes" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "nodes") in
     (func_call #slices #"SortUint64"%go) "$a0");;;

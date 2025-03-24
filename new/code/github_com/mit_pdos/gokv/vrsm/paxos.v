@@ -821,7 +821,7 @@ Definition makeServer : val :=
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![uint64T] "host") in
       (func_call #paxos.paxos #"MakeSingleClerk"%go) "$a0") in
       slice.literal ptrT ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append ptrT) "$a0" "$a1") in
       do:  ((struct.field_ref Server "clerks" (![ptrT] "s")) <-[sliceT] "$r0")));;;
     let: "encstate" := (ref_ty sliceT (zero_val sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![stringT] "fname") in

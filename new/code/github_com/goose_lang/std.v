@@ -67,7 +67,7 @@ Definition BytesClone : val :=
     else do:  #());;;
     return: (let: "$a0" := #slice.nil in
      let: "$a1" := (![sliceT] "b") in
-     (slice.append sliceT) "$a0" "$a1")).
+     (slice.append byteT) "$a0" "$a1")).
 
 (* SliceSplit splits xs at n into two slices.
 

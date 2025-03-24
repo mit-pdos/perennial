@@ -236,12 +236,12 @@ Definition MakeBankClerk : val :=
     let: "$r0" := (let: "$a0" := (![sliceT] "accts") in
     let: "$a1" := ((let: "$sl0" := (![stringT] "acc1") in
     slice.literal stringT ["$sl0"])) in
-    (slice.append sliceT) "$a0" "$a1") in
+    (slice.append stringT) "$a0" "$a1") in
     do:  ("accts" <-[sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![sliceT] "accts") in
     let: "$a1" := ((let: "$sl0" := (![stringT] "acc2") in
     slice.literal stringT ["$sl0"])) in
-    (slice.append sliceT) "$a0" "$a1") in
+    (slice.append stringT) "$a0" "$a1") in
     do:  ("accts" <-[sliceT] "$r0");;;
     return: (let: "$a0" := (![ptrT] "lck") in
      let: "$a1" := (![kv.Kv] "kv") in

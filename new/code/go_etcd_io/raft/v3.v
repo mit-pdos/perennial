@@ -1428,7 +1428,7 @@ Definition unstable__truncateAndAppend : val :=
     then
       let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref unstable "entries" (![ptrT] "u"))) in
       let: "$a1" := (![sliceT] "ents") in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append raftpb.Entry) "$a0" "$a1") in
       do:  ((struct.field_ref unstable "entries" (![ptrT] "u")) <-[sliceT] "$r0")
     else
       (if: "$sw" = ((![uint64T] "fromIndex") ≤ (![uint64T] (struct.field_ref unstable "offset" (![ptrT] "u"))))
@@ -1455,7 +1455,7 @@ Definition unstable__truncateAndAppend : val :=
         do:  ("keep" <-[sliceT] "$r0");;;
         let: "$r0" := (let: "$a0" := (![sliceT] "keep") in
         let: "$a1" := (![sliceT] "ents") in
-        (slice.append sliceT) "$a0" "$a1") in
+        (slice.append raftpb.Entry) "$a0" "$a1") in
         do:  ((struct.field_ref unstable "entries" (![ptrT] "u")) <-[sliceT] "$r0");;;
         let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref unstable "offsetInProgress" (![ptrT] "u"))) in
         let: "$a1" := (![uint64T] "fromIndex") in
@@ -2861,7 +2861,7 @@ Definition newRaft : val :=
       slice.literal interfaceT ["$sl0"])) in
       (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
       slice.literal stringT ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append stringT) "$a0" "$a1") in
       do:  ("nodesStrs" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := #"newRaft %x [peers: [%s], term: %d, commit: %d, applied: %d, lastindex: %d, lastterm: %d]"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![uint64T] (struct.field_ref raft "id" (![ptrT] "r")))) in
@@ -2948,7 +2948,7 @@ Definition raft__send : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raft "msgsAfterAppend" (![ptrT] "r"))) in
       let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
       slice.literal raftpb.Message ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append raftpb.Message) "$a0" "$a1") in
       do:  ((struct.field_ref raft "msgsAfterAppend" (![ptrT] "r")) <-[sliceT] "$r0");;;
       do:  (let: "$a0" := (![ptrT] "r") in
       let: "$a1" := "m" in
@@ -2964,7 +2964,7 @@ Definition raft__send : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raft "msgs" (![ptrT] "r"))) in
       let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
       slice.literal raftpb.Message ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append raftpb.Message) "$a0" "$a1") in
       do:  ((struct.field_ref raft "msgs" (![ptrT] "r")) <-[sliceT] "$r0");;;
       do:  (let: "$a0" := (![ptrT] "r") in
       let: "$a1" := "m" in
@@ -3850,7 +3850,7 @@ Definition raft__campaign : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "ids") in
       let: "$a1" := ((let: "$sl0" := (![uint64T] "id") in
       slice.literal uint64T ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append uint64T) "$a0" "$a1") in
       do:  ("ids" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "ids") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
@@ -4459,7 +4459,7 @@ Definition stepLeader : val :=
               let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref raft "pendingReadIndexMessages" (![ptrT] "r"))) in
               let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
               slice.literal raftpb.Message ["$sl0"])) in
-              (slice.append sliceT) "$a0" "$a1") in
+              (slice.append raftpb.Message) "$a0" "$a1") in
               do:  ((struct.field_ref raft "pendingReadIndexMessages" (![ptrT] "r")) <-[sliceT] "$r0");;;
               return: (#interface.nil)
             else do:  #());;;
@@ -4980,7 +4980,7 @@ Definition stepFollower : val :=
                         "RequestCtx" ::= "$RequestCtx"
                       }]) in
                       slice.literal ReadState ["$sl0"])) in
-                      (slice.append sliceT) "$a0" "$a1") in
+                      (slice.append ReadState) "$a0" "$a1") in
                       do:  ((struct.field_ref raft "readStates" (![ptrT] "r")) <-[sliceT] "$r0")
                     else #())))))))));;;
     return: (#interface.nil)).
@@ -5610,7 +5610,7 @@ Definition raft__responseToReadIndexReq : val :=
         "RequestCtx" ::= "$RequestCtx"
       }]) in
       slice.literal ReadState ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append ReadState) "$a0" "$a1") in
       do:  ((struct.field_ref raft "readStates" (![ptrT] "r")) <-[sliceT] "$r0");;;
       return: (struct.make raftpb.Message [{
          "Type" ::= zero_val raftpb.MessageType;
@@ -6022,7 +6022,7 @@ Definition RawNode__readyWithoutAccept : val :=
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref Ready "Messages" "rd")) in
         let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
         slice.literal raftpb.Message ["$sl0"])) in
-        (slice.append sliceT) "$a0" "$a1") in
+        (slice.append raftpb.Message) "$a0" "$a1") in
         do:  ((struct.field_ref Ready "Messages" "rd") <-[sliceT] "$r0")
       else do:  #());;;
       (if: let: "$a0" := (![Ready] "rd") in
@@ -6036,7 +6036,7 @@ Definition RawNode__readyWithoutAccept : val :=
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref Ready "Messages" "rd")) in
         let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
         slice.literal raftpb.Message ["$sl0"])) in
-        (slice.append sliceT) "$a0" "$a1") in
+        (slice.append raftpb.Message) "$a0" "$a1") in
         do:  ((struct.field_ref Ready "Messages" "rd") <-[sliceT] "$r0")
       else do:  #())
     else
@@ -6050,7 +6050,7 @@ Definition RawNode__readyWithoutAccept : val :=
           let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref Ready "Messages" "rd")) in
           let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
           slice.literal raftpb.Message ["$sl0"])) in
-          (slice.append sliceT) "$a0" "$a1") in
+          (slice.append raftpb.Message) "$a0" "$a1") in
           do:  ((struct.field_ref Ready "Messages" "rd") <-[sliceT] "$r0")
         else do:  #()))));;;
     return: (![Ready] "rd")).
@@ -6148,7 +6148,7 @@ Definition newStorageAppendMsg : val :=
       let: "$a1" := (![Ready] "rd") in
       (func_call #v3.raft #"newStorageAppendRespMsg"%go) "$a0" "$a1") in
       slice.literal raftpb.Message ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append raftpb.Message) "$a0" "$a1") in
       do:  ((struct.field_ref raftpb.Message "Responses" "m") <-[sliceT] "$r0")
     else do:  #());;;
     return: (![raftpb.Message] "m")).
@@ -6335,7 +6335,7 @@ Definition RawNode__acceptReady : val :=
           let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn"))) in
           let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
           slice.literal raftpb.Message ["$sl0"])) in
-          (slice.append sliceT) "$a0" "$a1") in
+          (slice.append raftpb.Message) "$a0" "$a1") in
           do:  ((struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn")) <-[sliceT] "$r0")
         else do:  #())));;;
       (if: let: "$a0" := (![ptrT] (struct.field_ref RawNode "raft" (![ptrT] "rn"))) in
@@ -6350,7 +6350,7 @@ Definition RawNode__acceptReady : val :=
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn"))) in
         let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
         slice.literal raftpb.Message ["$sl0"])) in
-        (slice.append sliceT) "$a0" "$a1") in
+        (slice.append raftpb.Message) "$a0" "$a1") in
         do:  ((struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn")) <-[sliceT] "$r0")
       else do:  #());;;
       (if: let: "$a0" := (![Ready] "rd") in
@@ -6364,7 +6364,7 @@ Definition RawNode__acceptReady : val :=
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn"))) in
         let: "$a1" := ((let: "$sl0" := (![raftpb.Message] "m") in
         slice.literal raftpb.Message ["$sl0"])) in
-        (slice.append sliceT) "$a0" "$a1") in
+        (slice.append raftpb.Message) "$a0" "$a1") in
         do:  ((struct.field_ref RawNode "stepsOnAdvance" (![ptrT] "rn")) <-[sliceT] "$r0")
       else do:  #())
     else do:  #());;;
@@ -6752,7 +6752,7 @@ Definition readOnly__addRequest : val :=
     let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref readOnly "readIndexQueue" (![ptrT] "ro"))) in
     let: "$a1" := ((let: "$sl0" := (![stringT] "s") in
     slice.literal stringT ["$sl0"])) in
-    (slice.append sliceT) "$a0" "$a1") in
+    (slice.append stringT) "$a0" "$a1") in
     do:  ((struct.field_ref readOnly "readIndexQueue" (![ptrT] "ro")) <-[sliceT] "$r0")).
 
 (* recvAck notifies the readonly struct that the raft state machine received
@@ -6815,7 +6815,7 @@ Definition readOnly__advance : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "rss") in
       let: "$a1" := ((let: "$sl0" := (![ptrT] "rs") in
       slice.literal ptrT ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append ptrT) "$a0" "$a1") in
       do:  ("rss" <-[sliceT] "$r0");;;
       (if: (![stringT] "okctx") = (![stringT] "ctx")
       then
@@ -7389,7 +7389,7 @@ Definition MemoryStorage__Compact : val :=
     let: "$r0" := (let: "$a0" := (![sliceT] "ents") in
     let: "$a1" := (let: "$s" := (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) in
     slice.slice raftpb.Entry "$s" ((![uint64T] "i") + #(W64 1)) (slice.len "$s")) in
-    (slice.append sliceT) "$a0" "$a1") in
+    (slice.append raftpb.Entry) "$a0" "$a1") in
     do:  ("ents" <-[sliceT] "$r0");;;
     let: "$r0" := (![sliceT] "ents") in
     do:  ((struct.field_ref MemoryStorage "ents" (![ptrT] "ms")) <-[sliceT] "$r0");;;
@@ -7441,7 +7441,7 @@ Definition MemoryStorage__Append : val :=
       let: "$r0" := (let: "$a0" := (let: "$s" := (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) in
       slice.full_slice raftpb.Entry "$s" #(W64 0) (![uint64T] "offset") (![uint64T] "offset")) in
       let: "$a1" := (![sliceT] "entries") in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append raftpb.Entry) "$a0" "$a1") in
       do:  ((struct.field_ref MemoryStorage "ents" (![ptrT] "ms")) <-[sliceT] "$r0")
     else
       (if: "$sw" = ((let: "$a0" := (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) in
@@ -7449,7 +7449,7 @@ Definition MemoryStorage__Append : val :=
       then
         let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref MemoryStorage "ents" (![ptrT] "ms"))) in
         let: "$a1" := (![sliceT] "entries") in
-        (slice.append sliceT) "$a0" "$a1") in
+        (slice.append raftpb.Entry) "$a0" "$a1") in
         do:  ((struct.field_ref MemoryStorage "ents" (![ptrT] "ms")) <-[sliceT] "$r0")
       else
         do:  (let: "$a0" := #"missing log entry [last: %d, append at: %d]"%go in
@@ -8146,7 +8146,7 @@ Definition extend : val :=
     then
       return: (let: "$a0" := (![sliceT] "dst") in
        let: "$a1" := (![sliceT] "vals") in
-       (slice.append sliceT) "$a0" "$a1")
+       (slice.append raftpb.Entry) "$a0" "$a1")
     else do:  #());;;
     let: "buf" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make3 raftpb.Entry (![intT] "need") (![intT] "need")) in

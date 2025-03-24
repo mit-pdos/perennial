@@ -180,7 +180,7 @@ Definition WriteBytes : val :=
     let: "b" := (ref_ty sliceT "b") in
     return: (let: "$a0" := (![sliceT] "b") in
      let: "$a1" := (![sliceT] "data") in
-     (slice.append sliceT) "$a0" "$a1")).
+     (slice.append byteT) "$a0" "$a1")).
 
 (* go: stateless.go:100:6 *)
 Definition WriteBool : val :=
@@ -192,12 +192,12 @@ Definition WriteBool : val :=
       return: (let: "$a0" := (![sliceT] "b") in
        let: "$a1" := ((let: "$sl0" := #(W8 1) in
        slice.literal byteT ["$sl0"])) in
-       (slice.append sliceT) "$a0" "$a1")
+       (slice.append byteT) "$a0" "$a1")
     else
       return: (let: "$a0" := (![sliceT] "b") in
        let: "$a1" := ((let: "$sl0" := #(W8 0) in
        slice.literal byteT ["$sl0"])) in
-       (slice.append sliceT) "$a0" "$a1"))).
+       (slice.append byteT) "$a0" "$a1"))).
 
 (* go: stateless.go:108:6 *)
 Definition WriteLenPrefixedBytes : val :=

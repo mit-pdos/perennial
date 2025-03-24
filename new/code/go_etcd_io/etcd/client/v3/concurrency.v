@@ -589,7 +589,7 @@ Definition waitDeletes : val :=
     let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![int64T] "maxCreateRev") in
     (func_call #clientv3 #"WithMaxCreateRev"%go) "$a0") in
     slice.literal clientv3.OpOption ["$sl0"])) in
-    (slice.append sliceT) "$a0" "$a1") in
+    (slice.append clientv3.OpOption) "$a0" "$a1") in
     do:  ("getOpts" <-[sliceT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := (ref_ty error (zero_val error)) in
@@ -1258,7 +1258,7 @@ Definition WithPrefetch : val :=
        exception_do (let: "so" := (ref_ty ptrT "so") in
        let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref stmOptions "prefetch" (![ptrT] "so"))) in
        let: "$a1" := (![sliceT] "keys") in
-       (slice.append sliceT) "$a0" "$a1") in
+       (slice.append stringT) "$a0" "$a1") in
        do:  ((struct.field_ref stmOptions "prefetch" (![ptrT] "so")) <-[sliceT] "$r0"))
        ))).
 
@@ -1359,7 +1359,7 @@ Definition mkSTM : val :=
         exception_do (return: (let: "$a0" := ((method_call #concurrency.concurrency #"readSet" #"cmps" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()) in
          let: "$a1" := (let: "$a0" := (((method_call #concurrency.concurrency #"readSet" #"first" (![readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) #()) + #(W64 1)) in
          (method_call #concurrency.concurrency #"writeSet" #"cmps" (![writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))))) "$a0") in
-         (slice.append sliceT) "$a0" "$a1"))
+         (slice.append clientv3.Cmp) "$a0" "$a1"))
         ) in
       do:  ((struct.field_ref stm "conflicts" (struct.field_ref stmSerializable "stm" (![ptrT] "s"))) <-[funcT] "$r0");;;
       return: (interface.make #concurrency.concurrency #"stmSerializable'ptr" (![ptrT] "s"))
@@ -1565,7 +1565,7 @@ Definition readSet__cmps : val :=
       let: "$a1" := (![ptrT] "rk") in
       (func_call #concurrency.concurrency #"isKeyCurrent"%go) "$a0" "$a1") in
       slice.literal clientv3.Cmp ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append clientv3.Cmp) "$a0" "$a1") in
       do:  ("cmps" <-[sliceT] "$r0")));;;
     return: (![sliceT] "cmps")).
 
@@ -1613,7 +1613,7 @@ Definition writeSet__cmps : val :=
       let: "$a2" := (interface.make #""%go #"int64"%go (![int64T] "rev")) in
       (func_call #clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
       slice.literal clientv3.Cmp ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append clientv3.Cmp) "$a0" "$a1") in
       do:  ("cmps" <-[sliceT] "$r0")));;;
     return: (![sliceT] "cmps")).
 
@@ -1635,7 +1635,7 @@ Definition writeSet__puts : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "puts") in
       let: "$a1" := ((let: "$sl0" := (![clientv3.Op] (struct.field_ref stmPut "op" "v")) in
       slice.literal clientv3.Op ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append clientv3.Op) "$a0" "$a1") in
       do:  ("puts" <-[sliceT] "$r0")));;;
     return: (![sliceT] "puts")).
 
@@ -1874,14 +1874,14 @@ Definition stmSerializable__gets : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "keys") in
       let: "$a1" := ((let: "$sl0" := (![stringT] "k") in
       slice.literal stringT ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append stringT) "$a0" "$a1") in
       do:  ("keys" <-[sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![sliceT] "ops") in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![stringT] "k") in
       let: "$a1" := #slice.nil in
       (func_call #clientv3 #"OpGet"%go) "$a0" "$a1") in
       slice.literal clientv3.Op ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append clientv3.Op) "$a0" "$a1") in
       do:  ("ops" <-[sliceT] "$r0")));;;
     return: (![sliceT] "keys", ![sliceT] "ops")).
 

@@ -146,7 +146,7 @@ Definition MajorityConfig__String : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "sl") in
       let: "$a1" := ((let: "$sl0" := (![uint64T] "id") in
       slice.literal uint64T ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append uint64T) "$a0" "$a1") in
       do:  ("sl" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "sl") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
@@ -212,7 +212,7 @@ Definition MajorityConfig__Describe : val :=
         "Bar" ::= zero_val intT
       }]) in
       slice.literal slices.Tup ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append slices.Tup) "$a0" "$a1") in
       do:  ("info" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "info") in
     let: "$a1" := (λ: "a" "b",
@@ -304,7 +304,7 @@ Definition MajorityConfig__Slice : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "sl") in
       let: "$a1" := ((let: "$sl0" := (![uint64T] "id") in
       slice.literal uint64T ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append uint64T) "$a0" "$a1") in
       do:  ("sl" <-[sliceT] "$r0")));;;
     do:  (let: "$a0" := (![sliceT] "sl") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
