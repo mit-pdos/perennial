@@ -105,7 +105,17 @@ Ltac word_cleanup_core :=
       | |- not (@eq u32 _ _) => apply (f_not_equal uint.Z)
       | |- not (@eq u8 _ _) => apply (f_not_equal uint.Z)
       end;
-  simpl_word_constants;
+  repeat match goal with
+         | _ => progress simpl_word_constants
+         | [ H: @eq w64 _ _ |- _ ] => let H' := fresh H "_signed" in
+                                      apply w64_val_f_equal in H as [H H']
+         | [ H: @eq w32 _ _ |- _ ] => let H' := fresh H "_signed" in
+                                      apply w32_val_f_equal in H as [H H']
+         | [ H: not (@eq w64 _ _) |- _ ] => let H' := fresh H "_signed" in
+                                      apply w64_val_neq in H as [H H']
+         | [ H: @eq w32 _ _ |- _ ] => let H' := fresh H "_signed" in
+                                      apply w32_val_neq in H as [H H']
+         end;
   repeat match goal with
          | [ |- context[word.add _ _] ] =>
            rewrite word.unsigned_add
@@ -138,17 +148,6 @@ Ltac word_cleanup_core :=
       rewrite -> ?word.unsigned_of_Z, ?word.of_Z_unsigned in *
       || autorewrite with word in *
     );
-  repeat match goal with
-         | _ => progress simpl_word_constants
-         | [ H: @eq w64 _ _ |- _ ] => let H' := fresh H "_signed" in
-                                      apply w64_val_f_equal in H as [H H']
-         | [ H: @eq w32 _ _ |- _ ] => let H' := fresh H "_signed" in
-                                      apply w32_val_f_equal in H as [H H']
-         | [ H: not (@eq w64 _ _) |- _ ] => let H' := fresh H "_signed" in
-                                      apply w64_val_neq in H as [H H']
-         | [ H: @eq w32 _ _ |- _ ] => let H' := fresh H "_signed" in
-                                      apply w32_val_neq in H as [H H']
-         end;
   repeat match goal with
          | [ |- context[uint.Z ?x] ] =>
            lazymatch goal with
