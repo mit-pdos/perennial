@@ -303,7 +303,8 @@ Lemma step_Unlock_readerCount_Add γ writer_sem reader_sem reader_count reader_w
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait Locked ==∗
   "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2) (NotLocked (word.add reader_count (W32 sync.rwmutexMaxReaders))) ∗
   "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 sync.rwmutexMaxReaders)) reader_wait (RLocked 0) ∗
-  "%" ∷ ⌜ 0 ≤ sint.Z (word.add reader_count (W32 sync.rwmutexMaxReaders)) ⌝.
+  "%" ∷ ⌜ 0 ≤ sint.Z (word.add reader_count (W32 sync.rwmutexMaxReaders)) ⌝ ∗
+  "%" ∷ ⌜ sint.Z (word.add reader_count (W32 sync.rwmutexMaxReaders)) < sint.Z sync.rwmutexMaxReaders ⌝.
 Proof.
   iIntros "[Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl; iNamed "Hinv"; try done.
@@ -553,6 +554,61 @@ Proof.
     { iFrame "#". iFrame. }
     iRight in "HΦ". iFrame.
 Qed.
+
+Lemma wp_RWMutex__Unlock γ rw N :
+  ∀ Φ,
+  is_pkg_init sync ∗ is_RWMutex rw γ N -∗
+  (|={⊤∖↑N,∅}=> own_RWMutex γ Locked ∗
+    (own_RWMutex γ (RLocked 0) ={∅,⊤∖↑N}=∗ Φ #())
+  ) -∗
+  WP rw @ sync @ "RWMutex'ptr" @ "Unlock" #() {{ Φ }}.
+Proof.
+  wp_start as "His". iNamed "His". wp_auto.
+  wp_apply wp_Int32__Add.
+  rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+  rwLinearize. iDestruct "Hlocked_inv" as "[Hlocked ?]". rwStep step_Unlock_readerCount_Add. rwInvEnd.
+  wp_auto. rewrite bool_decide_decide. destruct decide.
+  { exfalso. word. }
+  wp_auto.
+  set (r:=(word.add reader_count (W32 sync.rwmutexMaxReaders))) in *.
+  iAssert (∃ (i : w64) r',
+              "i" ∷ i_ptr ↦ i ∗
+              "Hwl" ∷ ghost_var γ.(prot_gn).(wlock_gn) (1/2) (NotLocked r') ∗
+              "%Hi" ∷ ⌜ sint.Z i ≤ sint.Z r ⌝ ∗
+              "%Hr'" ∷ ⌜ sint.Z r' = sint.Z r - sint.Z i ⌝
+          )%I with "[i Hwl]" as "Hloop".
+  { iFrame. iPureIntro. word. }
+  wp_for "Hloop". rewrite bool_decide_decide; destruct decide.
+  - (* not done with loop *)
+    wp_auto. wp_apply wp_runtime_Semrelease. { iFrame "#". }
+    rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv".
+    iMod (step_Unlock_readerSem_Semrelease with "[$]") as "Hprot_inv".
+    {
+      rewrite Hr'. clear dependent r'.
+      enough (sint.Z (W64 (uint.Z r)) = sint.Z r) by word.
+      clear -H H0.
+      unfold W64.
+      generalize dependent r. intros.
+      rewrite !word.signed_of_Z.
+      rewrite word.signed_eq_swrap_unsigned.
+      rewrite word.signed_eq_swrap_unsigned in H H0.
+      unfold word.swrap in *.
+      unfold sync.rwmutexMaxReaders in H0.
+      word.
+      (* FIXME: word. *)
+    }
+    iNamed "Hprot_inv". rwAtomicEnd. rwInvEnd.
+    wp_auto. wp_for_post.
+    iFrame. iPureIntro. split.
+    { assert (sint.Z (word.add i (W64 1)) = sint.Z i + 1) by word.
+      rewrite H1. admit. (* FIXME: signed cast seems to be incorrect. *) }
+    { word. }
+  - wp_auto. replace (r') with (W32 0).
+    2:{ admit. } (* FIXME: word. *)
+    wp_apply (wp_Mutex__Unlock with "[Hlocked Hwl]").
+    { iFrame "#". iFrame. }
+    iFrame.
+Admitted.
 
 End wps.
 End proof.
