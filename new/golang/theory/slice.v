@@ -590,6 +590,31 @@ Proof.
   iFrame.
 Qed.
 
+Lemma wp_slice_append (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
+  {{{ s ↦* vs ∗ own_slice_cap V s ∗ s2 ↦*{dq} vs' }}}
+    slice.append t #s #s2
+  {{{ (s': slice.t), RET #s';
+      s' ↦* (vs ++ vs') ∗ own_slice_cap V s' ∗ s2 ↦*{dq} vs' }}}.
+Proof.
+  iIntros (Φ) "(Hs & Hcap & Hs2) HΦ".
+  wp_call.
+  iDestruct (own_slice_len with "Hs") as %Hs.
+  match goal with
+  | |- context[bool_decide ?P] =>
+      destruct (bool_decide_reflect P); wp_auto
+  end.
+  - admit. (* TODO: slice.slice reasoning, going into capacity *)
+  - wp_bind (ArbitraryInt).
+    iApply (wp_ArbitraryInt with "[//]").
+    iIntros "!>" (x) "_". wp_auto.
+    replace (LitV x) with (#x).
+    2:{ rewrite to_val_unseal //. }
+    wp_auto.
+    wp_apply wp_slice_make2. iIntros (s') "[Hs_new Hnew_cap]".
+    wp_auto.
+    admit. (* TODO: need wp for slice.copy *)
+Admitted.
+
 End wps.
 
 Notation "s ↦* dq vs" := (own_slice s dq vs)
