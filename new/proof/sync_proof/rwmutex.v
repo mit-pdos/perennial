@@ -140,7 +140,7 @@ Lemma step_RUnlock_readerCount_Add γ writer_sem reader_sem reader_count reader_
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait (RLocked (S num_readers)) ==∗
   own_toks γ.(rlock_overflow_gn) 1 ∗
   own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 (-1))) reader_wait (RLocked num_readers) ∗
-  if decide (sint.Z (word.add reader_count (W32 (-1)) < sint.Z 0) then
+  if decide (sint.Z (word.add reader_count (W32 (-1))) < sint.Z 0) then
     own_toks γ.(read_wait_gn) 1 ∗
     ⌜ sint.Z reader_count ≠ sint.Z 0 ⌝ ∗
     ⌜ sint.Z reader_count ≠ -sint.Z sync.rwmutexMaxReaders ⌝
@@ -164,8 +164,8 @@ Qed.
 Lemma step_rUnlockSlow_readerWait_Add γ writer_sem reader_sem reader_count reader_wait state :
   own_toks γ.(read_wait_gn) 1 -∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.sub reader_wait (W32 1)) state ∗
-  if decide (word.sub reader_wait (W32 1) = W32 0) then
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.add reader_wait (W32 (-1))) state ∗
+  if decide (word.add reader_wait (W32 (-1)) = W32 0) then
     ghost_var γ.(writer_sem_tok_gn) (1/2) ()
   else True.
 Proof.
@@ -484,8 +484,33 @@ Proof.
   iMod ("HΦ" with "Hstate [$]"). iMod "Hmask" as "_".
   iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
   iModIntro. wp_auto. rewrite bool_decide_decide. destruct decide.
-  - (* signal waiting Lock() call *)
-    wp_auto. wp_method_call.
+  - (* decrease number of readers Lock() is waiting for *)
+    wp_auto. wp_method_call. wp_call. iClear "rw r". clear r_ptr rw_ptr.
+    wp_auto. iDestruct "Htok" as "(Htok & % & %)".
+    rewrite bool_decide_decide. destruct decide.
+    { exfalso. word. }
+    wp_auto.
+    rewrite bool_decide_decide. destruct decide.
+    { exfalso. word. }
+    wp_auto. wp_apply wp_Int32__Add.
+    iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
+    iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+    iFrame. iIntros "H1_inv". iMod "Hmask" as "_".
+    iMod (step_rUnlockSlow_readerWait_Add with "[$] [$]") as "[Hprot_inv Htok]".
+    iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
+    iModIntro. wp_auto. rewrite bool_decide_decide. destruct decide.
+    * (* wake up Lock() *)
+      wp_auto. wp_apply wp_runtime_Semrelease.
+      { iFrame "#". }
+      iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
+      iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+      iFrame. iIntros "H1_inv". iMod "Hmask" as "_".
+      iDestruct (step_rUnlockSlow_writerSem_Semrelease with "[$] [$]") as "Hprot_inv".
+      iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_".
+      { iNamed "Hi". iFrame. } iModIntro. wp_auto. iFrame.
+    * wp_auto. iFrame.
+  - wp_auto. iFrame.
+Qed.
 
 End wps.
 End proof.
