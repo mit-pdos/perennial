@@ -1,3 +1,4 @@
+From iris.proofmode Require Import environments.
 From New.proof.sync_proof Require Import base mutex sema.
 
 Section proof.
@@ -81,16 +82,16 @@ Local Ltac rwauto :=
                                simplify_eq || destruct decide || unfold sync.rwmutexMaxReaders in * || word ]].
 
 Lemma step_RLock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait state :
-  own_toks γ.(rlock_overflow_gn) 1 -∗
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
+  own_toks γ.(rlock_overflow_gn) 1 ∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   if decide (0 ≤ (sint.Z (word.add reader_count (W32 1)))) then
     ∃ num_readers,
-      ⌜ state = RLocked num_readers ⌝ ∧
-      own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait (RLocked (S num_readers))
+      "%" ∷ ⌜ state = RLocked num_readers ⌝ ∗
+      "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait (RLocked (S num_readers))
   else
-    own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait state.
+    "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait state.
 Proof.
-  iIntros "Hrlock Hinv". iNamed "Hinv".
+  iIntros "[Hrlock Hinv]". iNamed "Hinv". iModIntro.
   iCombine "Hrlock Hrlocks" as "Hrlocks".
   iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
   destruct state, wl; iNamed "Hinv"; try done.
@@ -106,10 +107,10 @@ Qed.
 
 Lemma step_RLock_readerSem_Semacquire γ writer_sem reader_sem reader_count reader_wait state :
   0 < uint.Z reader_sem →
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   ∃ num_readers,
-    ⌜ state = RLocked num_readers ⌝ ∧
-    own_RWMutex_invariant γ writer_sem (word.sub reader_sem (W32 1)) reader_count reader_wait (RLocked (S num_readers)).
+    "%" ∷ ⌜ state = RLocked num_readers ⌝ ∗
+    "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem (word.sub reader_sem (W32 1)) reader_count reader_wait (RLocked (S num_readers)).
 Proof.
   iIntros "%Hsem_acq Hinv". iNamed "Hinv". destruct state, wl; iNamed "Hinv"; try done.
   1-3: try (iExists _; iSplitR; first done); iFrame; iFrame; iPureIntro; rwauto.
@@ -118,14 +119,14 @@ Qed.
 
 Lemma step_TryRLock_readerCount_CompareAndSwap γ writer_sem reader_sem reader_count reader_wait state :
   0 ≤ sint.Z reader_count →
-  own_toks γ.(rlock_overflow_gn) 1 -∗
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
+  own_toks γ.(rlock_overflow_gn) 1 ∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   ∃ num_readers,
-    ⌜ state = RLocked num_readers ⌝ ∧
-  own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait
+    "%" ∷ ⌜ state = RLocked num_readers ⌝ ∗
+  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 1)) reader_wait
     (RLocked (S num_readers)).
 Proof.
-  iIntros "%Hpos Hrlock Hinv". iNamed "Hinv".
+  iIntros "%Hpos [Hrlock Hinv]". iNamed "Hinv". iModIntro.
   iCombine "Hrlock Hrlocks" as "Hrlocks".
   iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
   destruct state, wl; iNamed "Hinv"; try done.
@@ -138,12 +139,12 @@ Qed.
 
 Lemma step_RUnlock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait num_readers :
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait (RLocked (S num_readers)) ==∗
-  own_toks γ.(rlock_overflow_gn) 1 ∗
-  own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 (-1))) reader_wait (RLocked num_readers) ∗
+  "Hrtok" ∷ own_toks γ.(rlock_overflow_gn) 1 ∗
+  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 (-1))) reader_wait (RLocked num_readers) ∗
   if decide (sint.Z (word.add reader_count (W32 (-1))) < sint.Z 0) then
-    own_toks γ.(read_wait_gn) 1 ∗
-    ⌜ sint.Z reader_count ≠ sint.Z 0 ⌝ ∗
-    ⌜ sint.Z reader_count ≠ -sint.Z sync.rwmutexMaxReaders ⌝
+    "Hwait_tok" ∷ own_toks γ.(read_wait_gn) 1 ∗
+    "%" ∷ ⌜ sint.Z reader_count ≠ sint.Z 0 ⌝ ∗
+    "%" ∷ ⌜ sint.Z reader_count ≠ -sint.Z sync.rwmutexMaxReaders ⌝
   else True.
 Proof.
   iIntros "Hinv". iNamed "Hinv".
@@ -162,14 +163,14 @@ Proof.
 Qed.
 
 Lemma step_rUnlockSlow_readerWait_Add γ writer_sem reader_sem reader_count reader_wait state :
-  own_toks γ.(read_wait_gn) 1 -∗
+  own_toks γ.(read_wait_gn) 1 ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.add reader_wait (W32 (-1))) state ∗
+  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.add reader_wait (W32 (-1))) state ∗
   if decide (word.add reader_wait (W32 (-1)) = W32 0) then
-    ghost_var γ.(writer_sem_tok_gn) (1/2) ()
-  else True.
+    "Hwtok" ∷ ghost_var γ.(writer_sem_tok_gn) (1/2) ()
+  else "_" ∷ True.
 Proof.
-  iIntros "Hwait_tok Hinv". iNamed "Hinv".
+  iIntros "[Hwait_tok Hinv]". iNamed "Hinv".
   iCombine "Houtstanding Hwait_tok" gives %Hle.
   destruct state, wl; iNamed "Hinv"; try done.
   - rwauto.
@@ -194,11 +195,11 @@ Proof.
 Qed.
 
 Lemma step_rUnlockSlow_writerSem_Semrelease γ writer_sem reader_sem reader_count reader_wait state :
-  ghost_var γ.(writer_sem_tok_gn) (1/2) () -∗
-  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state -∗
-  own_RWMutex_invariant γ (word.add writer_sem (W32 1)) reader_sem reader_count reader_wait state.
+  ghost_var γ.(writer_sem_tok_gn) (1/2) () ∗
+  own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
+  "Hprot_inv" ∷ own_RWMutex_invariant γ (word.add writer_sem (W32 1)) reader_sem reader_count reader_wait state.
 Proof.
-  iIntros "Hwriter_tok Hinv". iNamed "Hinv".
+  iIntros "[Hwriter_tok Hinv]". iNamed "Hinv". iModIntro.
   destruct state, wl; iNamed "Hinv"; try done.
   all: try (iCombine "Hwriter_unused Hwriter_tok" gives %[Hbad _]; done).
   iDestruct "Hwriter" as "[Hbad | [Hwriter %]]".
@@ -211,21 +212,21 @@ Proof.
 Qed.
 
 Lemma step_Lock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait state :
-  ghost_var γ.(wlock_gn) (1/2) (NotLocked (W32 0)) -∗
+  ghost_var γ.(wlock_gn) (1/2) (NotLocked (W32 0)) ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   (if decide (reader_count = W32 0) then
-     ⌜ state = RLocked 0 ⌝ ∗
-     ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
-     own_RWMutex_invariant γ writer_sem reader_sem
+     "%" ∷ ⌜ state = RLocked 0 ⌝ ∗
+     "Hwl_inv" ∷ ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
+     "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem
        (word.add reader_count (W32 (-sync.rwmutexMaxReaders))) reader_wait Locked
    else
-     ghost_var γ.(wlock_gn) (1/2)
+     "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2)
       (SignalingReaders (word.add (word.add reader_count (W32 (-sync.rwmutexMaxReaders)))
                            (W32 sync.rwmutexMaxReaders))) ∗
-     own_RWMutex_invariant γ writer_sem reader_sem
+     "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem
        (word.add reader_count (W32 (-sync.rwmutexMaxReaders))) reader_wait state).
 Proof.
-  iIntros "Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  iIntros "[Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl, state; iNamed "Hinv"; try done.
   destruct decide.
   - iMod (ghost_var_update_2 IsLocked with "Hwl Hwl_in") as "[Hwl Hwl_in]".
@@ -240,17 +241,17 @@ Proof.
 Qed.
 
 Lemma step_Lock_readerWait_Add γ r writer_sem reader_sem reader_count reader_wait state :
-  ghost_var γ.(wlock_gn) (1/2) (SignalingReaders r) -∗
+  ghost_var γ.(wlock_gn) (1/2) (SignalingReaders r) ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   if decide (sint.Z (word.add reader_wait r) = sint.Z 0) then
-     ⌜ state = RLocked 0 ⌝ ∗
-     ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
-    own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.add reader_wait r) Locked
+     "%" ∷ ⌜ state = RLocked 0 ⌝ ∗
+     "Hwl_inv" ∷ ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
+    "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.add reader_wait r) Locked
   else
-    ghost_var γ.(wlock_gn) (1/2) WaitingForReaders ∗
-    own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.add reader_wait r) state.
+    "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2) WaitingForReaders ∗
+    "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.add reader_wait r) state.
 Proof.
-  iIntros "Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  iIntros "[Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl, state; iNamed "Hinv"; try done.
   injection H as ->.
   destruct decide.
@@ -264,13 +265,13 @@ Qed.
 
 Lemma step_Lock_writerSem_Semacquire γ writer_sem reader_sem reader_count reader_wait state :
   0 < uint.Z writer_sem →
-  ghost_var γ.(wlock_gn) (1/2) WaitingForReaders -∗
+  ghost_var γ.(wlock_gn) (1/2) WaitingForReaders ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
-  ⌜ state = RLocked 0 ⌝ ∗
-  ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
-  own_RWMutex_invariant γ (word.sub writer_sem (W32 1)) reader_sem reader_count reader_wait Locked.
+  "%" ∷ ⌜ state = RLocked 0 ⌝ ∗
+  "Hwl_inv" ∷ ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
+  "Hprot_inv" ∷ own_RWMutex_invariant γ (word.sub writer_sem (W32 1)) reader_sem reader_count reader_wait Locked.
 Proof.
-  iIntros "%Hsem Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  iIntros "%Hsem [Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl, state; iNamed "Hinv"; try done.
   iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
   { apply Qp.half_half. }
@@ -283,14 +284,14 @@ Qed.
 
 Lemma step_TryLock_readerCount_CompareAndSwap γ writer_sem reader_sem reader_count reader_wait state :
   sint.Z reader_count = sint.Z 0 →
-  ghost_var γ.(wlock_gn) (1/2) (NotLocked (W32 0)) -∗
+  ghost_var γ.(wlock_gn) (1/2) (NotLocked (W32 0)) ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
-  ⌜ state = RLocked 0 ⌝ ∗
-  ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
-  own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 (-sync.rwmutexMaxReaders)))
+  "%" ∷ ⌜ state = RLocked 0 ⌝ ∗
+  "Hwl_inv" ∷ ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
+  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 (-sync.rwmutexMaxReaders)))
     reader_wait Locked.
 Proof.
-  iIntros "%Hz Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  iIntros "%Hz [Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl, state; iNamed "Hinv"; try done.
   iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
   { apply Qp.half_half. }
@@ -298,13 +299,13 @@ Proof.
 Qed.
 
 Lemma step_Unlock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait :
-  ghost_var γ.(wlock_gn) (1/2) IsLocked -∗
+  ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait Locked ==∗
-  ghost_var γ.(wlock_gn) (1/2) (NotLocked (word.add reader_count (W32 sync.rwmutexMaxReaders))) ∗
-  own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 sync.rwmutexMaxReaders)) reader_wait (RLocked 0) ∗
-  ⌜ 0 ≤ sint.Z (word.add reader_count (W32 sync.rwmutexMaxReaders)) ⌝.
+  "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2) (NotLocked (word.add reader_count (W32 sync.rwmutexMaxReaders))) ∗
+  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 sync.rwmutexMaxReaders)) reader_wait (RLocked 0) ∗
+  "%" ∷ ⌜ 0 ≤ sint.Z (word.add reader_count (W32 sync.rwmutexMaxReaders)) ⌝.
 Proof.
-  iIntros "Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  iIntros "[Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl; iNamed "Hinv"; try done.
   iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
   { apply Qp.half_half. }
@@ -313,12 +314,12 @@ Qed.
 
 Lemma step_Unlock_readerSem_Semrelease γ writer_sem reader_sem reader_count reader_wait r state :
   0 < sint.Z r →
-  ghost_var γ.(wlock_gn) (1/2) (NotLocked r) -∗
+  ghost_var γ.(wlock_gn) (1/2) (NotLocked r) ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
-  ghost_var γ.(wlock_gn) (1/2) (NotLocked (word.sub r (W32 1))) ∗
-  own_RWMutex_invariant γ writer_sem (word.add reader_sem (W32 1))reader_count reader_wait state.
+  "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2) (NotLocked (word.sub r (W32 1))) ∗
+  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem (word.add reader_sem (W32 1))reader_count reader_wait state.
 Proof.
-  iIntros "%Hpos Hwl_in Hinv". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
+  iIntros "%Hpos [Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl, state; iNamed "Hinv"; try done.
   iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
   { apply Qp.half_half. }
@@ -374,6 +375,36 @@ Definition is_RWMutex (rw : loc) γ N : iProp Σ :=
 #[local] Transparent is_RWMutex.
 Instance is_RWMutex_pers rw γ N : Persistent (is_RWMutex rw γ N) := _.
 
+Import Ltac2.
+Set Default Proof Mode "Classic".
+
+Tactic Notation "runInPure" tactic(x) :=
+  lazymatch goal with
+  | [ |- envs_entails (Envs _ ?es _) _ ] => idtac
+  | [ |- _ ] => x
+  end.
+
+Ltac rwInvStart := iInv "Hinv" as ">Hi" "Hclose"; iNamedSuffix "Hi" "_inv".
+Ltac rwInvEnd := iCombineNamed "*_inv" as "Hi"; iMod ("Hclose" with "[Hi]") as "_";
+                   [iNamed "Hi"; solve [repeat iFrame] | ]; iModIntro.
+Ltac rwStep x :=
+  iMod (x with "[$]") as "Hprot_inv";
+  (runInPure word); []; try destruct decide; iNamed "Hprot_inv".
+
+Ltac rwLinearizeStart :=
+  iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj];
+  try (iDestruct "HΦ" as (?) "HΦ"); iDestruct "HΦ" as "[Hstate HΦ]";
+  iCombine "Hstate Hstate_inv" gives %[_ ?]; simplify_eq;
+  iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate2_inv Hstate_inv]"; first apply Qp.half_half;
+  try iModIntro.
+Ltac rwLinearizeEnd :=
+  first [ iMod ("HΦ" with "[$]") as "HΦ" |
+          iMod ("HΦ" with "[//] [$]") as "HΦ" ]; iMod "Hmask" as "_".
+Ltac rwLinearize := rwLinearizeStart; rwLinearizeEnd.
+
+Ltac rwAtomicStart := iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+Ltac rwAtomicEnd := iMod "Hmask" as "_".
+
 Lemma wp_RWMutex__RLock γ rw N :
   ∀ Φ,
   is_pkg_init sync ∗ is_RWMutex rw γ N ∗ own_RLock_token γ -∗
@@ -383,46 +414,17 @@ Lemma wp_RWMutex__RLock γ rw N :
 Proof.
   wp_start as "[#His Htok]". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
-  iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-  iDestruct (step_RLock_readerCount_Add with "[$] [$]") as "Hprot_inv".
-  destruct decide.
+  rwInvStart.
+  rwStep step_RLock_readerCount_Add.
   - (* fast path *)
-    iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
-    iFrame. iIntros "!> H1_inv". iDestruct "HΦ" as (?) "[Hstate HΦ]".
-    iCombine "Hstate Hstate_inv" gives %[_ ?]. subst.
-    iDestruct "Hprot_inv" as (?) "[% Hprot_inv]". simplify_eq.
-    iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-    iMod ("HΦ" with "[//] Hstate") as "HΦ".
-    iMod "Hmask". iCombineNamed "*_inv" as "Hi".
-    iMod ("Hclose" with "[Hi]"). { iNamed "Hi". iFrame. }
-    iModIntro. wp_auto. rewrite bool_decide_decide decide_False //.
-    2:{ word. }
-    wp_auto. iApply "HΦ".
+    rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd. rwLinearize. rwInvEnd.
+    wp_auto. rewrite -> bool_decide_false by word. wp_auto. iApply "HΦ".
   - (* slow path *)
-    iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-    iFrame. iIntros "H1_inv".
-    iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
-    iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
-    clear writer_sem reader_sem reader_wait.
-    iModIntro. wp_auto. rewrite bool_decide_decide decide_True //.
-    2:{ word. }
-    wp_auto.
-    wp_apply wp_runtime_SemacquireRWMutexR.
-    { iFrame "#". }
-    iInv "Hinv" as ">Hi" "Hclose".
-    iNamedSuffix "Hi" "_inv".
-    iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-    iFrame. iIntros "%Hpos H1_inv".
-    iDestruct (step_RLock_readerSem_Semacquire with "[$]") as (?) "[%Heq Hprot_inv]"; first word.
-    iMod "Hmask" as "_". subst.
-    iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
-    iDestruct "HΦ" as (?) "[Hstate HΦ]".
-    iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
-    iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-    iMod ("HΦ" with "[//] Hstate") as "HΦ".
-    iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
-    iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
-    iModIntro. wp_auto. iFrame.
+    rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd. rwInvEnd.
+    wp_auto. rewrite -> bool_decide_true by word. wp_auto.
+    wp_apply wp_runtime_SemacquireRWMutexR; first iFrame "#".
+    rwInvStart. rwAtomicStart. iFrame. iIntros "% H1_inv". rwAtomicEnd.
+    rwStep step_RLock_readerSem_Semacquire. rwLinearize. rwInvEnd. wp_auto. iFrame.
 Qed.
 
 Lemma wp_RWMutex__TryRLock γ rw N :
@@ -437,39 +439,21 @@ Lemma wp_RWMutex__TryRLock γ rw N :
 Proof.
   wp_start as "[#His Htok]". iNamed "His". wp_auto.
   wp_for. wp_apply wp_Int32__Load.
-  iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-  iFrame. iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-  iIntros "H1_inv". iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
-  iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
-  iModIntro. wp_auto. rewrite bool_decide_decide. destruct decide.
+  rwInvStart. iFrame. rwAtomicStart. iIntros "H1_inv". rwAtomicEnd. rwInvEnd.
+  wp_auto. rewrite bool_decide_decide. destruct decide.
   - (* failed to get RLock *)
     wp_auto. wp_for_post. iRight in "HΦ". iFrame.
   - (* try doing a CAS *)
-    wp_auto.
-    wp_apply wp_Int32__CompareAndSwap.
-    iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-    iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+    wp_auto. wp_apply wp_Int32__CompareAndSwap. rwInvStart. rwAtomicStart.
     iFrame. destruct decide.
     * (* CAS successful *)
-      iSplitR; first done.
-      iDestruct (step_TryRLock_readerCount_CompareAndSwap with "[$] [$]") as (?) "[% Hprot_inv]".
-      { word. }
-      subst. iIntros "H1_inv". iMod "Hmask" as "_". iLeft in "HΦ".
-      iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
-      iDestruct "HΦ" as (?) "[Hstate HΦ]".
-      iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
-      iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-      iMod ("HΦ" with "[//] Hstate") as "HΦ".
-      iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
-      iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
-      iModIntro. rewrite bool_decide_true //. wp_auto.
-      wp_for_post. iFrame.
+      iSplitR; first done. iIntros "H1_inv".
+      rwStep step_TryRLock_readerCount_CompareAndSwap.
+      rwAtomicEnd. iLeft in "HΦ". rwLinearize. rwInvEnd.
+      rewrite bool_decide_true //. wp_auto. wp_for_post. iFrame.
     * (* CAS failed *)
-      iSplitR; first done. iIntros "H1_inv". iMod "Hmask" as "_".
-      iCombineNamed "*_inv" as "Hi".
-      iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
-      iModIntro. rewrite bool_decide_false //. wp_auto.
-      wp_for_post. iFrame.
+      iSplitR; first done. iIntros "H1_inv". rwAtomicEnd. rwInvEnd.
+      rewrite bool_decide_false //. wp_auto. wp_for_post. iFrame.
 Qed.
 
 Lemma wp_RWMutex__RUnlock γ rw N :
@@ -477,49 +461,31 @@ Lemma wp_RWMutex__RUnlock γ rw N :
   is_pkg_init sync ∗ is_RWMutex rw γ N -∗
   (|={⊤∖↑N,∅}=> ∃ num_readers,
      own_RWMutex γ (RLocked (S num_readers)) ∗
-     (own_RWMutex γ (RLocked num_readers) -∗ own_RLock_token γ ={∅,⊤∖↑N}=∗
+     (own_RWMutex γ (RLocked num_readers) ∗ own_RLock_token γ ={∅,⊤∖↑N}=∗
       Φ #())) -∗
   WP rw @ sync @ "RWMutex'ptr" @ "RUnlock" #() {{ Φ }}.
 Proof.
   wp_start as "#His". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
-  iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-  iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-  iFrame. iIntros "H1_inv". iMod "Hmask" as "_".
-  iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
-  iDestruct "HΦ" as (?) "[Hstate HΦ]".
-  iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
-  iMod (step_RUnlock_readerCount_Add with "[$]") as "(Hrtok & Hprot_inv & Htok)".
-  iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-  iMod ("HΦ" with "Hstate [$]"). iMod "Hmask" as "_".
-  iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
-  iModIntro. wp_auto. rewrite bool_decide_decide. destruct decide.
+  rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+  rwLinearizeStart.
+  rwStep step_RUnlock_readerCount_Add; rwLinearizeEnd; rwInvEnd.
   - (* decrease number of readers Lock() is waiting for *)
-    wp_auto. wp_method_call. wp_call. iClear "rw r". clear r_ptr rw_ptr.
-    wp_auto. iDestruct "Htok" as "(Htok & % & %)".
-    rewrite bool_decide_decide. destruct decide.
-    { exfalso. word. }
-    wp_auto.
-    rewrite bool_decide_decide. destruct decide.
-    { exfalso. word. }
+    wp_auto. rewrite bool_decide_true //. wp_auto.
+    wp_method_call. wp_call. iClear "rw r". clear r_ptr rw_ptr.
+    wp_auto. rewrite bool_decide_decide. destruct decide. { exfalso. word. }
+    wp_auto. rewrite bool_decide_decide. destruct decide. { exfalso. word. }
     wp_auto. wp_apply wp_Int32__Add.
-    iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-    iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-    iFrame. iIntros "H1_inv". iMod "Hmask" as "_".
-    iMod (step_rUnlockSlow_readerWait_Add with "[$] [$]") as "[Hprot_inv Htok]".
-    iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
-    iModIntro. wp_auto. rewrite bool_decide_decide. destruct decide.
+    rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+    rwStep step_rUnlockSlow_readerWait_Add; rwInvEnd.
     * (* wake up Lock() *)
-      wp_auto. wp_apply wp_runtime_Semrelease.
+      wp_auto. rewrite bool_decide_true //. wp_auto. wp_apply wp_runtime_Semrelease.
       { iFrame "#". }
-      iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-      iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-      iFrame. iIntros "H1_inv". iMod "Hmask" as "_".
-      iDestruct (step_rUnlockSlow_writerSem_Semrelease with "[$] [$]") as "Hprot_inv".
-      iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_".
-      { iNamed "Hi". iFrame. } iModIntro. wp_auto. iFrame.
-    * wp_auto. iFrame.
-  - wp_auto. iFrame.
+      rwInvStart. rwStep step_rUnlockSlow_writerSem_Semrelease.
+      rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd. rwInvEnd.
+      wp_auto. iFrame.
+    * wp_auto. rewrite bool_decide_false //. wp_auto. iFrame.
+  - wp_auto. rewrite bool_decide_false //. wp_auto. iFrame.
 Qed.
 
 Lemma wp_RWMutex__Lock γ rw N :
@@ -534,65 +500,29 @@ Proof.
   { iFrame "#". }
   iIntros "[Hlocked Hwl]". wp_auto.
   wp_apply wp_Int32__Add.
-  iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-  iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-  iFrame. iIntros "H1_inv". iMod "Hmask" as "_".
-  iMod (step_Lock_readerCount_Add with "[$] [$]") as "Hprot_inv".
-  destruct decide.
+  rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+  rwStep step_Lock_readerCount_Add.
   - (* fast path *)
-    iDestruct "Hprot_inv" as "(% & Hwl & Hprot_inv)".
-    iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
-    iDestruct "HΦ" as (?) "[Hstate HΦ]".
-    iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
-    iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-    iMod ("HΦ" with "[//] Hstate") as "HΦ".
-    iRename "Hlocked" into "Hlocked2_inv". iRename "Hwl" into "Hwl_inv".
-    iMod "Hmask" as "_". iCombineNamed "*_inv" as "Hi".
-    iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. iFrame. }
-    iModIntro. wp_auto. iFrame.
+    rwLinearize. iRename "Hlocked" into "Hlocked2_inv". rwInvEnd.
+    wp_auto. iFrame.
   - (* slow path *)
-    iDestruct "Hprot_inv" as "(Hwl & Hprot_inv)".
-    iCombineNamed "*_inv" as "Hi".
-    iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
-    iModIntro. wp_auto. rewrite bool_decide_decide. rewrite decide_False.
+    rwInvEnd. wp_auto. rewrite bool_decide_false.
     2:{ intros H. word. } (* FIXME: word. *)
-    wp_auto.
-    wp_apply wp_Int32__Add.
-    iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-    iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-    iFrame. iIntros "H1_inv". iMod "Hmask" as "_".
-    iMod (step_Lock_readerWait_Add with "[$] [$]") as "Hprot_inv".
-    destruct decide.
+    wp_auto. wp_apply wp_Int32__Add.
+    rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
+    rwStep step_Lock_readerWait_Add.
     * (* got lock now, no need to Semacquire *)
-      iDestruct "Hprot_inv" as "(% & Hl_inv & Hprot_inv)".
-      iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
-      iDestruct "HΦ" as (?) "[Hstate HΦ]".
-      iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
-      iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-      iMod ("HΦ" with "[//] Hstate"). iMod "Hmask" as "_". iRename "Hlocked" into "Hlocked2_inv".
-      iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. iFrame. }
-      iModIntro. wp_auto. rewrite -> bool_decide_true by word. wp_auto. iFrame.
+      rwLinearize. iRename "Hlocked" into "Hlocked2_inv". rwInvEnd.
+      wp_auto. rewrite -> bool_decide_true by word. wp_auto. iFrame.
     * (* Wait for remaining readers *)
-      iDestruct "Hprot_inv" as "(Hwl & Hprot_inv)".
-      iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
-      iModIntro. wp_auto. rewrite -> bool_decide_false.
+      rwInvEnd. wp_auto. rewrite -> bool_decide_false.
       2:{ intros ?. word. } (* FIXME: word *)
-      wp_auto.
-      wp_apply wp_runtime_SemacquireRWMutex.
+      wp_auto. wp_apply wp_runtime_SemacquireRWMutex.
       { iFrame "#". }
-      iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-      iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-      iFrame. iIntros "%Hpos H1_inv". iMod "Hmask" as "_".
-      iMod (step_Lock_writerSem_Semacquire with "[$] [$]") as "Hprot_inv".
-      { word. }
-      iDestruct "Hprot_inv" as "(% & Hwl_inv & Hprot_inv)".
-      iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
-      iDestruct "HΦ" as (?) "[Hstate HΦ]".
-      iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
-      iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-      iMod ("HΦ" with "[//] Hstate"). iMod "Hmask" as "_". iRename "Hlocked" into "Hlocked2_inv".
-      iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. iFrame. }
-      iModIntro. wp_auto. iFrame.
+      rwInvStart. rwAtomicStart. iFrame. iIntros "%Hpos H1_inv". rwAtomicEnd.
+      rwStep step_Lock_writerSem_Semacquire.
+      rwLinearize. iRename "Hlocked" into "Hlocked2_inv". rwInvEnd.
+      wp_auto. iFrame.
 Qed.
 
 Lemma wp_RWMutex__TryLock γ rw N :
@@ -603,59 +533,24 @@ Lemma wp_RWMutex__TryLock γ rw N :
      Φ #false) -∗
   WP rw @ sync @ "RWMutex'ptr" @ "TryLock" #() {{ Φ }}.
 Proof.
-  (* NOTE(llm): proved by cursor/claude-3.5-sonnet with interactive feedback (copied
-     at each proof step by a human...). *)
   wp_start as "His". iNamed "His". wp_auto.
   wp_apply wp_Mutex__TryLock.
   { iFrame "#". }
-  iIntros (locked) "Hlocked".
+  iIntros (?) "Hl".
   destruct locked.
-  2:{ (* false case *)
-    wp_auto. iRight in "HΦ". iFrame.
-  }
-  wp_auto. wp_apply wp_Int32__CompareAndSwap.
-  iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
-  iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-  iFrame.
-  destruct (decide (reader_count = W32 0)).
-  - iSplitR; first done.
-    iIntros "HreaderCount". iMod "Hmask" as "_".
-    iDestruct "Hlocked" as "[Hlocked Hwl]".
-    iMod (step_TryLock_readerCount_CompareAndSwap with "Hwl Hprot_inv") as "(% & Hwl & Hprot_inv)".
-    { rewrite e. word. }
-    iLeft in "HΦ".
-    iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
-    iDestruct "HΦ" as (?) "[Hstate HΦ]".
-    iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
-    iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
-    iMod ("HΦ" with "[//] Hstate") as "HΦ".
-    iMod "Hmask" as "_".
-    iCombineNamed "*_inv" as "Hi".
-    iNamed "Hi".
-    iMod ("Hclose" with "[HreaderCount Hlocked Hstate_inv HreaderSem_inv HwriterSem_inv HreaderWait_inv Hprot_inv Hwl]") as "_".
-    { iNext. iExists writer_sem, reader_sem, _, reader_wait, Locked.
-      iFrame "HreaderCount Hlocked Hstate_inv HreaderSem_inv HwriterSem_inv HreaderWait_inv Hprot_inv Hwl". }
-    iModIntro.
-    rewrite bool_decide_decide. rewrite -> decide_True; last done. (* XXX: human intervention bc `rewrite decide_True` failed *)
+  2:{ iRight in "HΦ". wp_auto. iFrame. }
+  iDestruct "Hl" as "[Hlocked Hwl]".
+  wp_auto.
+  wp_apply wp_Int32__CompareAndSwap. rwInvStart.
+  rwAtomicStart. iFrame. destruct decide.
+  - iSplitR; first done. iIntros "H1_inv". rwAtomicEnd.
+    rwStep step_TryLock_readerCount_CompareAndSwap.
+    iLeft in "HΦ". rwLinearize. iRename "Hlocked" into "Hlocked2_inv". rwInvEnd.
     wp_auto. iFrame.
-  - (* CAS failed *)
-    iSplitR; first done.
-    iIntros "HreaderCount".
-    iMod "Hmask" as "_".
-    iCombineNamed "*_inv" as "Hi".
-    iMod ("Hclose" with "[Hi HreaderCount]") as "_".
-    { iNext. iNamed "Hi". iExists writer_sem, reader_sem, reader_count, reader_wait, state0. iFrame. }
-    iModIntro.
-    wp_pures.
-    rewrite bool_decide_decide.
-    rewrite decide_False; last done.
-    wp_pures.
-    wp_bind (method_call _ _ _ _ _).
-    wp_auto.
-    iDestruct "Hlocked" as "[Hlocked Hwl]".
-    (* XXX: human intervention as a hint after lots of failed attempts bc of missing Hwl *)
-    wp_apply (wp_Mutex__Unlock with "[$Hmu $Hlocked $Hwl]").
-    wp_pures.
+  - iSplitR; first done. iIntros "H1_inv". rwAtomicEnd. rwInvEnd.
+    rewrite bool_decide_false //. wp_auto.
+    wp_apply (wp_Mutex__Unlock with "[Hlocked Hwl]").
+    { iFrame "#". iFrame. }
     iRight in "HΦ". iFrame.
 Qed.
 
