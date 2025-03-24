@@ -1345,6 +1345,10 @@ Global Instance wp_func_call_testSliceLiteral :
   WpFuncCall semantics "testSliceLiteral" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_testSliceAppend :
+  WpFuncCall semantics "testSliceAppend" _ (is_pkg_defined semantics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_testFooBarMutation :
   WpFuncCall semantics "testFooBarMutation" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_func_call'; reflexivity).

@@ -525,7 +525,7 @@ Definition useSlice : val :=
     let: "s1" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "s") in
     let: "$a1" := (![sliceT] "s") in
-    (slice.append sliceT) "$a0" "$a1") in
+    (slice.append byteT) "$a0" "$a1") in
     do:  ("s1" <-[sliceT] "$r0");;;
     do:  (let: "$a0" := #"dir"%go in
     let: "$a1" := #"file"%go in
@@ -626,7 +626,7 @@ Definition iterMapKeys : val :=
       let: "$r0" := (let: "$a0" := (![sliceT] "keys") in
       let: "$a1" := ((let: "$sl0" := (![uint64T] "k") in
       slice.literal uint64T ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
+      (slice.append uint64T) "$a0" "$a1") in
       do:  ("newKeys" <-[sliceT] "$r0");;;
       let: "$r0" := (![sliceT] "newKeys") in
       do:  ((![ptrT] "keysRef") <-[sliceT] "$r0")));;;
