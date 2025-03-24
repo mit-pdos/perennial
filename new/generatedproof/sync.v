@@ -230,6 +230,10 @@ Global Instance wp_method_call_Mutex'ptr_Lock :
   WpMethodCall sync "Mutex'ptr" "Lock" _ (is_pkg_defined sync) :=
   ltac:(apply wp_method_call'; reflexivity).
 
+Global Instance wp_method_call_Mutex'ptr_TryLock :
+  WpMethodCall sync "Mutex'ptr" "TryLock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
 Global Instance wp_method_call_Mutex'ptr_Unlock :
   WpMethodCall sync "Mutex'ptr" "Unlock" _ (is_pkg_defined sync) :=
   ltac:(apply wp_method_call'; reflexivity).
