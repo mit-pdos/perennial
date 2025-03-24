@@ -139,8 +139,8 @@ Qed.
 Lemma step_RUnlock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait num_readers :
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait (RLocked (S num_readers)) ==∗
   own_toks γ.(rlock_overflow_gn) 1 ∗
-  own_RWMutex_invariant γ writer_sem reader_sem (word.sub reader_count (W32 1)) reader_wait (RLocked num_readers) ∗
-  if decide (sint.Z (word.sub reader_count (W32 1)) < sint.Z 0) then
+  own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 (-1))) reader_wait (RLocked num_readers) ∗
+  if decide (sint.Z (word.add reader_count (W32 (-1)) < sint.Z 0) then
     own_toks γ.(read_wait_gn) 1 ∗
     ⌜ sint.Z reader_count ≠ sint.Z 0 ⌝ ∗
     ⌜ sint.Z reader_count ≠ -sint.Z sync.rwmutexMaxReaders ⌝
@@ -461,6 +461,31 @@ Proof.
       iModIntro. rewrite bool_decide_false //. wp_auto.
       wp_for_post. iFrame.
 Qed.
+
+Lemma wp_RWMutex__RUnlock γ rw N :
+  ∀ Φ,
+  is_pkg_init sync ∗ is_RWMutex rw γ N -∗
+  (|={⊤∖↑N,∅}=> ∃ num_readers,
+     own_RWMutex γ (RLocked (S num_readers)) ∗
+     (own_RWMutex γ (RLocked num_readers) -∗ own_RLock_token γ ={∅,⊤∖↑N}=∗
+      Φ #())) -∗
+  WP rw @ sync @ "RWMutex'ptr" @ "RUnlock" #() {{ Φ }}.
+Proof.
+  wp_start as "#His". iNamed "His". wp_auto.
+  wp_apply wp_Int32__Add.
+  iInv "Hinv" as ">Hi" "Hclose". iNamedSuffix "Hi" "_inv".
+  iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
+  iFrame. iIntros "H1_inv". iMod "Hmask" as "_".
+  iMod (fupd_mask_subseteq _) as "Hmask"; last first; [iMod "HΦ" | solve_ndisj].
+  iDestruct "HΦ" as (?) "[Hstate HΦ]".
+  iCombine "Hstate Hstate_inv" gives %[_ ?]. simplify_eq.
+  iMod (step_RUnlock_readerCount_Add with "[$]") as "(Hrtok & Hprot_inv & Htok)".
+  iMod (ghost_var_update_2 with "Hstate [$]") as "[Hstate Hstate_inv]"; first apply Qp.half_half.
+  iMod ("HΦ" with "Hstate [$]"). iMod "Hmask" as "_".
+  iCombineNamed "*_inv" as "Hi". iMod ("Hclose" with "[Hi]") as "_". { iNamed "Hi". iFrame. }
+  iModIntro. wp_auto. rewrite bool_decide_decide. destruct decide.
+  - (* signal waiting Lock() call *)
+    wp_auto. wp_method_call.
 
 End wps.
 End proof.

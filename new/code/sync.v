@@ -126,6 +126,26 @@ Definition RWMutex__RUnlock : val :=
     then do:  ((func_call #race #"Enable"%go) #())
     else do:  #())).
 
+(* go: rwmutex.go:129:20 *)
+Definition RWMutex__rUnlockSlow : val :=
+  rec: "RWMutex__rUnlockSlow" "rw" "r" :=
+    exception_do (let: "rw" := (ref_ty ptrT "rw") in
+    let: "r" := (ref_ty int32T "r") in
+    (if: (((![int32T] "r") + #(W32 1)) = #(W32 0)) || (((![int32T] "r") + #(W32 1)) = #(W32 (- rwmutexMaxReaders)))
+    then
+      do:  ((func_call #race #"Enable"%go) #());;;
+      do:  (let: "$a0" := #"sync: RUnlock of unlocked RWMutex"%go in
+      (func_call #sync.sync #"fatal"%go) "$a0")
+    else do:  #());;;
+    (if: (let: "$a0" := #(W32 (- 1)) in
+    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref RWMutex "readerWait" (![ptrT] "rw"))) "$a0") = #(W32 0)
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "writerSem" (![ptrT] "rw")) in
+      let: "$a1" := #false in
+      let: "$a2" := #(W64 1) in
+      (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2")
+    else do:  #())).
+
 (* Lock locks rw for writing.
    If the lock is already locked for reading or writing,
    Lock blocks until the lock is available.
@@ -395,7 +415,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("runtime_Semacquire"%go, runtime_Semacquire); ("runtime_SemacquireWaitGroup"%go, runtime_SemacquireWaitGroup); ("runtime_SemacquireRWMutexR"%go, runtime_SemacquireRWMutexR); ("runtime_SemacquireRWMutex"%go, runtime_SemacquireRWMutex); ("runtime_Semrelease"%go, runtime_Semrelease)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("Unlock"%go, Mutex__Unlock)]); ("RWMutex"%go, []); ("RWMutex'ptr"%go, [("Lock"%go, RWMutex__Lock); ("RLock"%go, RWMutex__RLock); ("RUnlock"%go, RWMutex__RUnlock); ("TryLock"%go, RWMutex__TryLock); ("TryRLock"%go, RWMutex__TryRLock); ("Unlock"%go, RWMutex__Unlock)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("Unlock"%go, Mutex__Unlock)]); ("RWMutex"%go, []); ("RWMutex'ptr"%go, [("Lock"%go, RWMutex__Lock); ("RLock"%go, RWMutex__RLock); ("RUnlock"%go, RWMutex__RUnlock); ("TryLock"%go, RWMutex__TryLock); ("TryRLock"%go, RWMutex__TryRLock); ("Unlock"%go, RWMutex__Unlock); ("rUnlockSlow"%go, RWMutex__rUnlockSlow)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
 
 #[global] Instance info' : PkgInfo sync.sync :=
   {|

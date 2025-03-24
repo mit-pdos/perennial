@@ -258,6 +258,10 @@ Global Instance wp_method_call_RWMutex'ptr_Unlock :
   WpMethodCall sync "RWMutex'ptr" "Unlock" _ (is_pkg_defined sync) :=
   ltac:(apply wp_method_call'; reflexivity).
 
+Global Instance wp_method_call_RWMutex'ptr_rUnlockSlow :
+  WpMethodCall sync "RWMutex'ptr" "rUnlockSlow" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
 Global Instance wp_method_call_WaitGroup'ptr_Add :
   WpMethodCall sync "WaitGroup'ptr" "Add" _ (is_pkg_defined sync) :=
   ltac:(apply wp_method_call'; reflexivity).
