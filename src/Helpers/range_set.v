@@ -84,9 +84,6 @@ Proof.
   - split; intros; eauto.
     word.
   - intuition; try word.
-    right.
-    assert (uint.Z x ≠ uint.Z i) by (apply not_inj; auto).
-    word.
 Qed.
 
 Lemma rangeSet_first:
