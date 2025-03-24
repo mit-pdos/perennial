@@ -109,13 +109,35 @@ Ltac word_cleanup_core :=
   (* can't replace some of these with [autorewrite], probably because typeclass inference
   isn't the same *)
   repeat (
-      rewrite -> ?word.unsigned_add, ?word.unsigned_sub,
-        ?word.unsigned_divu_nowrap, ?word.unsigned_modu_nowrap,
-        ?word.unsigned_mul,
-        ?w64_unsigned_ltu
-      || rewrite -> ?word.unsigned_of_Z, ?word.of_Z_unsigned in *
+      rewrite -> ?word.unsigned_of_Z, ?word.of_Z_unsigned in *
       || autorewrite with word in *
     );
+  repeat match goal with
+         | [ |- context[word.add _ _] ] =>
+           rewrite word.unsigned_add
+         | [ H : context[word.add _ _] |- _ ] =>
+           rewrite word.unsigned_add in H
+         | [ |- context[word.sub _ _] ] =>
+           rewrite word.unsigned_sub
+         | [ H : context[word.sub _ _] |- _ ] =>
+           rewrite word.unsigned_sub in H
+         | [ |- context[word.mul _ _] ] =>
+           rewrite word.unsigned_mul
+         | [ H : context[word.mul _ _] |- _ ] =>
+           rewrite word.unsigned_mul in H
+         | [ |- context[word.divu _ _] ] =>
+           rewrite word.unsigned_divu_nowrap
+         | [ H : context[word.divu _ _] |- _ ] =>
+           rewrite word.unsigned_divu_nowrap in H
+         | [ |- context[word.modu _ _] ] =>
+           rewrite word.unsigned_modu_nowrap
+         | [ H : context[word.modu _ _] |- _ ] =>
+           rewrite word.unsigned_modu_nowrap in H
+         | [ |- context[word.ltu _ _] ] =>
+           rewrite w64_unsigned_ltu
+         | [ H : context[word.ltu _ _] |- _ ] =>
+           rewrite w64_unsigned_ltu in H
+         end;
   repeat match goal with
          | _ => progress simpl_word_constants
          | [ H: @eq w64 _ _ |- _ ] => let H' := fresh H "_signed" in
