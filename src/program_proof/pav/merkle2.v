@@ -392,20 +392,6 @@ Lemma wp_compLeafHash sl_label sl_val d0 d1 (label val : list w8) :
   }}}.
 Proof. Admitted.
 
-Lemma word_subslice_ub (depth max_depth : w64) :
-  uint.Z depth <= uint.Z max_depth →
-  uint.Z (word.mul max_depth (W64 32)) = uint.Z max_depth * uint.Z 32 →
-  uint.Z (word.mul depth (W64 32)) <= uint.Z (word.mul max_depth (W64 32)).
-Proof. word. Qed.
-
-Lemma word_max_depth (sibs_sz : w64) :
-  let max_depth := word.divu sibs_sz (W64 32) in
-  word.modu sibs_sz (W64 32) = W64 0 →
-  word.mul max_depth (W64 32) = sibs_sz.
-Proof.
-  intros.
-Admitted.
-
 Lemma wp_Verify sl_label sl_val sl_proof sl_dig (in_tree : bool)
     d0 d1 d2 d3 (label val proof dig : list w8) :
   {{{
@@ -535,15 +521,19 @@ Proof.
     wp_load. wp_if_destruct; [|word].
     do 2 wp_load. wp_loadField.
     iDestruct (own_slice_small_sz with "Hsl_sibs") as "%Hlen_sibs".
+    (* FIXME(word) *)
+    assert (sl_sibs.(Slice.sz) = word.mul max_depth (W64 32)) as Hlen_sibs0.
+    { apply w64_val_f_equal in Heqb0 as [Heqb0 _].
+      rewrite word.unsigned_modu_nowrap in Heqb0; [|word].
+      subst. word. }
+    (* FIXME(word): word should probably do subst. *)
+    assert (uint.Z (word.mul max_depth (W64 32)) = uint.Z max_depth * uint.Z 32) as Hnoof.
+    { subst. word. }
     wp_apply wp_SliceSubslice_small.
     3: iFrame "#".
     { apply _. }
-    { split.
-      - admit.
-      -
-        assert (sl_sibs.(Slice.sz) = word.mul max_depth (W64 32)) as ? by admit.
-        assert (uint.Z (word.mul max_depth (W64 32)) = uint.Z max_depth * uint.Z 32) as ? by admit.
-        word.
+    { word. }
+    iIntros (?) "Hsl_sibs_sub".
 Admitted.
 
 End proof.
