@@ -176,10 +176,26 @@ Proof.
 Qed.
 
 Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
-  delta' = (W32 (uint.Z delta)) →
-  word.slu delta (W64 32) = word.slu (W64 (uint.Z delta')) (W64 32).
+  delta' = (W32 (sint.Z delta)) →
+  word.slu delta (W64 32) = word.slu (W64 (sint.Z delta')) (W64 32).
 Proof.
-  intros ->. local_word.
+  intros ->.
+  unfold w64, W64, W32 in *.
+  try apply word.unsigned_inj;
+  repeat try (
+      rewrite !word.unsigned_sru // ||
+      rewrite word.unsigned_add ||
+      rewrite word.unsigned_slu // ||
+      rewrite !Z.shiftr_div_pow2 // ||
+      rewrite Z.shiftl_mul_pow2 //
+    ).
+  rewrite !word.signed_of_Z !word.unsigned_of_Z.
+  rewrite word.signed_eq_swrap_unsigned.
+  unfold word.wrap, word.swrap in *.
+  vm_compute (Z.pow (Zpos _)). simpl.
+  Z.div_mod_to_equations.
+  lia.
+  local_word.
 Qed.
 
 (* XXX: overflow?
