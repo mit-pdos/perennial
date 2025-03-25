@@ -64,16 +64,21 @@ Definition runtime_Semacquire : val :=
           return: #()
         else
           do: #())
-    )
-.
+    ).
+
+Definition runtime_Semrelease : val :=
+  λ: "addr" "_handoff" "_skipframes", AtomicOp PlusOp "addr" #(W32 1);; #().
 
 (* differs from runtime_Semacquire only in the park "reason", used for internal
 concurrency testing *)
 Definition runtime_SemacquireWaitGroup : val :=
   λ: "addr", func_call #"sync" #"runtime_Semacquire" "addr".
 
-Definition runtime_Semrelease : val :=
-  λ: <>, #() #(). (* FIXME: use `AtomicAdd` *)
+Definition runtime_SemacquireRWMutexR : val :=
+  λ: "addr" "_lifo" "_skipframes", func_call #"sync" #"runtime_Semacquire" "addr".
+
+Definition runtime_SemacquireRWMutex : val :=
+  λ: "addr" "_lifo" "_skipframes", func_call #"sync" #"runtime_Semacquire" "addr".
 
 End code.
 End sync.

@@ -677,6 +677,8 @@ Global Instance finish_read_atomic s v1 : Atomic s (FinishRead (Val v1)).
 Proof. solve_atomic. Qed.
 Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
+Global Instance atomic_op_atomic s op v0 v1 : Atomic s (AtomicOp op (Val v0) (Val v1)).
+Proof. solve_atomic. Qed.
 Global Instance fork_atomic s e : Atomic s (Fork e).
 Proof. solve_atomic. monad_inv. eauto. Qed.
 Global Instance skip_atomic s  : Atomic s Skip.
@@ -1270,6 +1272,32 @@ Lemma wp_atomic_store s E l v0 v :
   {{{ RET #(); l ↦ v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
+  iApply wp_lift_atomic_base_step_no_fork; auto.
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg".
+  iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iMod (na_heap_write _ _ _ _ _ v with "Hσ Hl") as "(Hσ&Hl)"; first done.
+  iModIntro.
+  iSplit.
+  { iPureIntro.
+    eexists _, _, _, _, _.
+    constructor.
+    eauto. }
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iSplit=>//.
+  iFrame "Hσ ∗". iApply "HΦ".
+  iApply "Hl_rest". iFrame.
+Qed.
+
+Lemma wp_atomic_op s E l v0 v1 v op :
+  bin_op_eval op v0 v1 = Some v →
+  {{{ ▷ l ↦ v0 }}} AtomicOp op (Val $ LitV (LitLoc l)) v1 @ s; E
+  {{{ RET v; l ↦ v }}}.
+Proof.
+  iIntros (? Φ) ">Hl HΦ".
   iApply wp_lift_atomic_base_step_no_fork; auto.
   iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg".
   iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".

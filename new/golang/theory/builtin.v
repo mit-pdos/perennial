@@ -26,4 +26,16 @@ Proof. Admitted.
 Global Instance wp_int32_lt (l r : w32) : PureWp True (int_lt #l #r) #(bool_decide (sint.Z l < sint.Z r)).
 Proof. Admitted.
 
+Global Instance wp_int64_geq (l r : w64) : PureWp True (int_geq #l #r) #(bool_decide (sint.Z l >= sint.Z r)).
+Proof. Admitted.
+
+Global Instance wp_int64_leq (l r : w64) : PureWp True (int_leq #l #r) #(bool_decide (sint.Z l ≤ sint.Z r)).
+Proof. Admitted.
+
+Global Instance wp_int32_geq (l r : w32) : PureWp True (int_geq #l #r) #(bool_decide (sint.Z l >= sint.Z r)).
+Proof. Admitted.
+
+Global Instance wp_int32_leq (l r : w32) : PureWp True (int_leq #l #r) #(bool_decide (sint.Z l ≤ sint.Z r)).
+Proof. Admitted.
+
 End wps.

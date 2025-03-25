@@ -55,6 +55,7 @@ Ltac2 get_matching_hyps (check : string -> bool) : string list :=
                       let s := StringToIdent.coq_string_to_string n in
                       if check s then s :: (loop es)
                       else loop es
+                  | Esnoc ?es (base.ident.IAnon _) _ => loop es
                   | _ => []
                   end in
                 loop es
@@ -135,7 +136,6 @@ Proof.
 Abort.
 
 End test.
-
 
 From iris.proofmode Require Import string_ident.
 From iris.proofmode Require Import tactics environments intro_patterns monpred.

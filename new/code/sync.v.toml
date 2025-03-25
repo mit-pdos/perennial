@@ -1,4 +1,14 @@
 translate = [
+  "rwmutexMaxReaders",
+  "RWMutex",
+  "RWMutex.TryLock",
+  "RWMutex.Lock",
+  "RWMutex.Unlock",
+  "RWMutex.RLock",
+  "RWMutex.TryRLock",
+  "RWMutex.RUnlock",
+  "RWMutex.rUnlockSlow",
+
   "WaitGroup",
   "WaitGroup.Add",
   "WaitGroup.Done",
@@ -12,7 +22,6 @@ imports = [
 ]
 
 axiomatize = [
-  "RWMutex",
 ]
 
 trusted = [
@@ -23,6 +32,7 @@ trusted = [
   # https://github.com/golang/go/blob/ff27d270c9f95178f9749bc8e1f15957b1c1d5b3/src/internal/sync/mutex.go#L100
   "Mutex",
   "Mutex.Lock",
+  "Mutex.TryLock",
   "Mutex.Unlock",
 
   "Cond",
@@ -33,5 +43,7 @@ trusted = [
 
   "runtime_Semacquire",
   "runtime_SemacquireWaitGroup",
+  "runtime_SemacquireRWMutexR",
+  "runtime_SemacquireRWMutex",
   "runtime_Semrelease",
 ]

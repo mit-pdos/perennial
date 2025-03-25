@@ -1220,7 +1220,7 @@ Definition base_trans (e: expr) :
        | (Reading 0, oldv) =>
            v ← unwrap (bin_op_eval op oldv v);
            modifyσ (set heap <[l:=Free v]>);;
-           ret $ LitV $ LitUnit
+           ret $ v
        | _ => undefined
       end)
   | ExternalOp op (Val v) => atomicallyM $ ffi_step op v

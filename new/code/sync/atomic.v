@@ -13,6 +13,57 @@ Context `{ffi_syntax}.
 Definition noCopy : go_type := structT [
 ].
 
+Definition Int32 : go_type := structT [
+  "_0" :: noCopy;
+  "v" :: int32T
+].
+
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:74:17 *)
+Definition Int32__Load : val :=
+  rec: "Int32__Load" "x" <> :=
+    exception_do (let: "x" := (ref_ty ptrT "x") in
+    return: (let: "$a0" := (struct.field_ref Int32 "v" (![ptrT] "x")) in
+     (func_call #atomic.atomic #"LoadInt32"%go) "$a0")).
+
+(* Store atomically stores val into x.
+
+   go: type.go:77:17 *)
+Definition Int32__Store : val :=
+  rec: "Int32__Store" "x" "val" :=
+    exception_do (let: "x" := (ref_ty ptrT "x") in
+    let: "val" := (ref_ty int32T "val") in
+    do:  (let: "$a0" := (struct.field_ref Int32 "v" (![ptrT] "x")) in
+    let: "$a1" := (![int32T] "val") in
+    (func_call #atomic.atomic #"StoreInt32"%go) "$a0" "$a1")).
+
+(* CompareAndSwap executes the compare-and-swap operation for x.
+
+   go: type.go:83:17 *)
+Definition Int32__CompareAndSwap : val :=
+  rec: "Int32__CompareAndSwap" "x" "old" "new" :=
+    exception_do (let: "swapped" := (ref_ty boolT (zero_val boolT)) in
+    let: "x" := (ref_ty ptrT "x") in
+    let: "new" := (ref_ty int32T "new") in
+    let: "old" := (ref_ty int32T "old") in
+    return: (let: "$a0" := (struct.field_ref Int32 "v" (![ptrT] "x")) in
+     let: "$a1" := (![int32T] "old") in
+     let: "$a2" := (![int32T] "new") in
+     (func_call #atomic.atomic #"CompareAndSwapInt32"%go) "$a0" "$a1" "$a2")).
+
+(* Add atomically adds delta to x and returns the new value.
+
+   go: type.go:88:17 *)
+Definition Int32__Add : val :=
+  rec: "Int32__Add" "x" "delta" :=
+    exception_do (let: "new" := (ref_ty int32T (zero_val int32T)) in
+    let: "x" := (ref_ty ptrT "x") in
+    let: "delta" := (ref_ty int32T "delta") in
+    return: (let: "$a0" := (struct.field_ref Int32 "v" (![ptrT] "x")) in
+     let: "$a1" := (![int32T] "delta") in
+     (func_call #atomic.atomic #"AddInt32"%go) "$a0" "$a1")).
+
 Definition align64 : go_type := structT [
 ].
 
@@ -70,9 +121,9 @@ Definition Uint64__Add : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("CompareAndSwapUint64"%go, CompareAndSwapUint64); ("AddUint64"%go, AddUint64); ("LoadUint64"%go, LoadUint64); ("StoreUint64"%go, StoreUint64)].
+Definition functions' : list (go_string * val) := [("CompareAndSwapInt32"%go, CompareAndSwapInt32); ("AddInt32"%go, AddInt32); ("LoadInt32"%go, LoadInt32); ("StoreInt32"%go, StoreInt32); ("CompareAndSwapUint64"%go, CompareAndSwapUint64); ("AddUint64"%go, AddUint64); ("LoadUint64"%go, LoadUint64); ("StoreUint64"%go, StoreUint64)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Add); ("CompareAndSwap"%go, Uint64__CompareAndSwap); ("Load"%go, Uint64__Load); ("Store"%go, Uint64__Store)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Int32"%go, []); ("Int32'ptr"%go, [("Add"%go, Int32__Add); ("CompareAndSwap"%go, Int32__CompareAndSwap); ("Load"%go, Int32__Load); ("Store"%go, Int32__Store)]); ("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Add); ("CompareAndSwap"%go, Uint64__CompareAndSwap); ("Load"%go, Uint64__Load); ("Store"%go, Uint64__Store)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo atomic.atomic :=
   {|

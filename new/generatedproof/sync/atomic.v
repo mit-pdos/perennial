@@ -38,6 +38,58 @@ Admitted.
 
 
 End instances.
+Module Int32.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  _0' : noCopy.t;
+  v' : w32;
+}.
+End def.
+End Int32.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Int32 `{ffi_syntax}: Settable _ :=
+  settable! Int32.mk < Int32._0'; Int32.v' >.
+Global Instance into_val_Int32 `{ffi_syntax} : IntoVal Int32.t.
+Admitted.
+
+Global Instance into_val_typed_Int32 `{ffi_syntax} : IntoValTyped Int32.t atomic.Int32 :=
+{|
+  default_val := Int32.mk (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_Int32__0 `{ffi_syntax} : IntoValStructField "_0" atomic.Int32 Int32._0'.
+Admitted.
+
+Global Instance into_val_struct_field_Int32_v `{ffi_syntax} : IntoValStructField "v" atomic.Int32 Int32.v'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Int32 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} _0' v':
+  PureWp True
+    (struct.make atomic.Int32 (alist_val [
+      "_0" ::= #_0';
+      "v" ::= #v'
+    ]))%struct
+    #(Int32.mk _0' v').
+Admitted.
+
+
+Global Instance Int32_struct_fields_split dq l (v : Int32.t) :
+  StructFieldsSplit dq l v (
+    "H_0" ∷ l ↦s[atomic.Int32 :: "_0"]{dq} v.(Int32._0') ∗
+    "Hv" ∷ l ↦s[atomic.Int32 :: "v"]{dq} v.(Int32.v')
+  ).
+Admitted.
+
+End instances.
 Module align64.
 Section def.
 Context `{ffi_syntax}.
@@ -150,6 +202,22 @@ Global Instance is_pkg_defined_instance : IsPkgDefined atomic :=
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
 True.
 
+Global Instance wp_func_call_CompareAndSwapInt32 :
+  WpFuncCall atomic "CompareAndSwapInt32" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_AddInt32 :
+  WpFuncCall atomic "AddInt32" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_LoadInt32 :
+  WpFuncCall atomic "LoadInt32" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_StoreInt32 :
+  WpFuncCall atomic "StoreInt32" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_CompareAndSwapUint64 :
   WpFuncCall atomic "CompareAndSwapUint64" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -165,6 +233,22 @@ Global Instance wp_func_call_LoadUint64 :
 Global Instance wp_func_call_StoreUint64 :
   WpFuncCall atomic "StoreUint64" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_method_call_Int32'ptr_Add :
+  WpMethodCall atomic "Int32'ptr" "Add" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Int32'ptr_CompareAndSwap :
+  WpMethodCall atomic "Int32'ptr" "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Int32'ptr_Load :
+  WpMethodCall atomic "Int32'ptr" "Load" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Int32'ptr_Store :
+  WpMethodCall atomic "Int32'ptr" "Store" _ (is_pkg_defined atomic) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Add :
   WpMethodCall atomic "Uint64'ptr" "Add" _ (is_pkg_defined atomic) :=

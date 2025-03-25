@@ -15,7 +15,257 @@ Context `{ffi_syntax}.
 Definition noCopy : go_type := structT [
 ].
 
-Axiom RWMutex : go_type.
+Definition RWMutex : go_type := structT [
+  "w" :: Mutex;
+  "writerSem" :: uint32T;
+  "readerSem" :: uint32T;
+  "readerCount" :: atomic.Int32;
+  "readerWait" :: atomic.Int32
+].
+
+Definition rwmutexMaxReaders : Z := 1073741824.
+
+(* RLock locks rw for reading.
+
+   It should not be used for recursive read locking; a blocked Lock
+   call excludes new readers from acquiring the lock. See the
+   documentation on the [RWMutex] type.
+
+   go: rwmutex.go:67:20 *)
+Definition RWMutex__RLock : val :=
+  rec: "RWMutex__RLock" "rw" <> :=
+    exception_do (let: "rw" := (ref_ty ptrT "rw") in
+    (if: race.Enabled
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "w" (![ptrT] "rw")) in
+      (func_call #race #"Read"%go) "$a0");;;
+      do:  ((func_call #race #"Disable"%go) #())
+    else do:  #());;;
+    (if: int_lt (let: "$a0" := #(W32 1) in
+    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref RWMutex "readerCount" (![ptrT] "rw"))) "$a0") #(W32 0)
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "readerSem" (![ptrT] "rw")) in
+      let: "$a1" := #false in
+      let: "$a2" := #(W64 0) in
+      (func_call #sync.sync #"runtime_SemacquireRWMutexR"%go) "$a0" "$a1" "$a2")
+    else do:  #());;;
+    (if: race.Enabled
+    then
+      do:  ((func_call #race #"Enable"%go) #());;;
+      do:  (let: "$a0" := (struct.field_ref RWMutex "readerSem" (![ptrT] "rw")) in
+      (func_call #race #"Acquire"%go) "$a0")
+    else do:  #())).
+
+(* TryRLock tries to lock rw for reading and reports whether it succeeded.
+
+   Note that while correct uses of TryRLock do exist, they are rare,
+   and use of TryRLock is often a sign of a deeper problem
+   in a particular use of mutexes.
+
+   go: rwmutex.go:87:20 *)
+Definition RWMutex__TryRLock : val :=
+  rec: "RWMutex__TryRLock" "rw" <> :=
+    exception_do (let: "rw" := (ref_ty ptrT "rw") in
+    (if: race.Enabled
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "w" (![ptrT] "rw")) in
+      (func_call #race #"Read"%go) "$a0");;;
+      do:  ((func_call #race #"Disable"%go) #())
+    else do:  #());;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: "c" := (ref_ty int32T (zero_val int32T)) in
+      let: "$r0" := ((method_call #atomic #"Int32'ptr" #"Load" (struct.field_ref RWMutex "readerCount" (![ptrT] "rw"))) #()) in
+      do:  ("c" <-[int32T] "$r0");;;
+      (if: int_lt (![int32T] "c") #(W32 0)
+      then
+        (if: race.Enabled
+        then do:  ((func_call #race #"Enable"%go) #())
+        else do:  #());;;
+        return: (#false)
+      else do:  #());;;
+      (if: let: "$a0" := (![int32T] "c") in
+      let: "$a1" := ((![int32T] "c") + #(W32 1)) in
+      (method_call #atomic #"Int32'ptr" #"CompareAndSwap" (struct.field_ref RWMutex "readerCount" (![ptrT] "rw"))) "$a0" "$a1"
+      then
+        (if: race.Enabled
+        then
+          do:  ((func_call #race #"Enable"%go) #());;;
+          do:  (let: "$a0" := (struct.field_ref RWMutex "readerSem" (![ptrT] "rw")) in
+          (func_call #race #"Acquire"%go) "$a0")
+        else do:  #());;;
+        return: (#true)
+      else do:  #()))).
+
+(* RUnlock undoes a single [RWMutex.RLock] call;
+   it does not affect other simultaneous readers.
+   It is a run-time error if rw is not locked for reading
+   on entry to RUnlock.
+
+   go: rwmutex.go:114:20 *)
+Definition RWMutex__RUnlock : val :=
+  rec: "RWMutex__RUnlock" "rw" <> :=
+    exception_do (let: "rw" := (ref_ty ptrT "rw") in
+    (if: race.Enabled
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "w" (![ptrT] "rw")) in
+      (func_call #race #"Read"%go) "$a0");;;
+      do:  (let: "$a0" := (struct.field_ref RWMutex "writerSem" (![ptrT] "rw")) in
+      (func_call #race #"ReleaseMerge"%go) "$a0");;;
+      do:  ((func_call #race #"Disable"%go) #())
+    else do:  #());;;
+    (let: "r" := (ref_ty int32T (zero_val int32T)) in
+    let: "$r0" := (let: "$a0" := #(W32 (- 1)) in
+    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref RWMutex "readerCount" (![ptrT] "rw"))) "$a0") in
+    do:  ("r" <-[int32T] "$r0");;;
+    (if: int_lt (![int32T] "r") #(W32 0)
+    then
+      do:  (let: "$a0" := (![int32T] "r") in
+      (method_call #sync.sync #"RWMutex'ptr" #"rUnlockSlow" (![ptrT] "rw")) "$a0")
+    else do:  #()));;;
+    (if: race.Enabled
+    then do:  ((func_call #race #"Enable"%go) #())
+    else do:  #())).
+
+(* go: rwmutex.go:129:20 *)
+Definition RWMutex__rUnlockSlow : val :=
+  rec: "RWMutex__rUnlockSlow" "rw" "r" :=
+    exception_do (let: "rw" := (ref_ty ptrT "rw") in
+    let: "r" := (ref_ty int32T "r") in
+    (if: (((![int32T] "r") + #(W32 1)) = #(W32 0)) || (((![int32T] "r") + #(W32 1)) = #(W32 (- rwmutexMaxReaders)))
+    then
+      do:  ((func_call #race #"Enable"%go) #());;;
+      do:  (let: "$a0" := #"sync: RUnlock of unlocked RWMutex"%go in
+      (func_call #sync.sync #"fatal"%go) "$a0")
+    else do:  #());;;
+    (if: (let: "$a0" := #(W32 (- 1)) in
+    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref RWMutex "readerWait" (![ptrT] "rw"))) "$a0") = #(W32 0)
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "writerSem" (![ptrT] "rw")) in
+      let: "$a1" := #false in
+      let: "$a2" := #(W64 1) in
+      (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2")
+    else do:  #())).
+
+(* Lock locks rw for writing.
+   If the lock is already locked for reading or writing,
+   Lock blocks until the lock is available.
+
+   go: rwmutex.go:144:20 *)
+Definition RWMutex__Lock : val :=
+  rec: "RWMutex__Lock" "rw" <> :=
+    exception_do (let: "rw" := (ref_ty ptrT "rw") in
+    (if: race.Enabled
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "w" (![ptrT] "rw")) in
+      (func_call #race #"Read"%go) "$a0");;;
+      do:  ((func_call #race #"Disable"%go) #())
+    else do:  #());;;
+    do:  ((method_call #sync.sync #"Mutex'ptr" #"Lock" (struct.field_ref RWMutex "w" (![ptrT] "rw"))) #());;;
+    let: "r" := (ref_ty int32T (zero_val int32T)) in
+    let: "$r0" := ((let: "$a0" := #(W32 (- rwmutexMaxReaders)) in
+    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref RWMutex "readerCount" (![ptrT] "rw"))) "$a0") + #(W32 rwmutexMaxReaders)) in
+    do:  ("r" <-[int32T] "$r0");;;
+    (if: ((![int32T] "r") ≠ #(W32 0)) && ((let: "$a0" := (![int32T] "r") in
+    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref RWMutex "readerWait" (![ptrT] "rw"))) "$a0") ≠ #(W32 0))
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "writerSem" (![ptrT] "rw")) in
+      let: "$a1" := #false in
+      let: "$a2" := #(W64 0) in
+      (func_call #sync.sync #"runtime_SemacquireRWMutex"%go) "$a0" "$a1" "$a2")
+    else do:  #());;;
+    (if: race.Enabled
+    then
+      do:  ((func_call #race #"Enable"%go) #());;;
+      do:  (let: "$a0" := (struct.field_ref RWMutex "readerSem" (![ptrT] "rw")) in
+      (func_call #race #"Acquire"%go) "$a0");;;
+      do:  (let: "$a0" := (struct.field_ref RWMutex "writerSem" (![ptrT] "rw")) in
+      (func_call #race #"Acquire"%go) "$a0")
+    else do:  #())).
+
+(* TryLock tries to lock rw for writing and reports whether it succeeded.
+
+   Note that while correct uses of TryLock do exist, they are rare,
+   and use of TryLock is often a sign of a deeper problem
+   in a particular use of mutexes.
+
+   go: rwmutex.go:169:20 *)
+Definition RWMutex__TryLock : val :=
+  rec: "RWMutex__TryLock" "rw" <> :=
+    exception_do (let: "rw" := (ref_ty ptrT "rw") in
+    (if: race.Enabled
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "w" (![ptrT] "rw")) in
+      (func_call #race #"Read"%go) "$a0");;;
+      do:  ((func_call #race #"Disable"%go) #())
+    else do:  #());;;
+    (if: (~ ((method_call #sync.sync #"Mutex'ptr" #"TryLock" (struct.field_ref RWMutex "w" (![ptrT] "rw"))) #()))
+    then
+      (if: race.Enabled
+      then do:  ((func_call #race #"Enable"%go) #())
+      else do:  #());;;
+      return: (#false)
+    else do:  #());;;
+    (if: (~ (let: "$a0" := #(W32 0) in
+    let: "$a1" := #(W32 (- rwmutexMaxReaders)) in
+    (method_call #atomic #"Int32'ptr" #"CompareAndSwap" (struct.field_ref RWMutex "readerCount" (![ptrT] "rw"))) "$a0" "$a1"))
+    then
+      do:  ((method_call #sync.sync #"Mutex'ptr" #"Unlock" (struct.field_ref RWMutex "w" (![ptrT] "rw"))) #());;;
+      (if: race.Enabled
+      then do:  ((func_call #race #"Enable"%go) #())
+      else do:  #());;;
+      return: (#false)
+    else do:  #());;;
+    (if: race.Enabled
+    then
+      do:  ((func_call #race #"Enable"%go) #());;;
+      do:  (let: "$a0" := (struct.field_ref RWMutex "readerSem" (![ptrT] "rw")) in
+      (func_call #race #"Acquire"%go) "$a0");;;
+      do:  (let: "$a0" := (struct.field_ref RWMutex "writerSem" (![ptrT] "rw")) in
+      (func_call #race #"Acquire"%go) "$a0")
+    else do:  #());;;
+    return: (#true)).
+
+(* Unlock unlocks rw for writing. It is a run-time error if rw is
+   not locked for writing on entry to Unlock.
+
+   As with Mutexes, a locked [RWMutex] is not associated with a particular
+   goroutine. One goroutine may [RWMutex.RLock] ([RWMutex.Lock]) a RWMutex and then
+   arrange for another goroutine to [RWMutex.RUnlock] ([RWMutex.Unlock]) it.
+
+   go: rwmutex.go:201:20 *)
+Definition RWMutex__Unlock : val :=
+  rec: "RWMutex__Unlock" "rw" <> :=
+    exception_do (let: "rw" := (ref_ty ptrT "rw") in
+    (if: race.Enabled
+    then
+      do:  (let: "$a0" := (struct.field_ref RWMutex "w" (![ptrT] "rw")) in
+      (func_call #race #"Read"%go) "$a0");;;
+      do:  (let: "$a0" := (struct.field_ref RWMutex "readerSem" (![ptrT] "rw")) in
+      (func_call #race #"Release"%go) "$a0");;;
+      do:  ((func_call #race #"Disable"%go) #())
+    else do:  #());;;
+    let: "r" := (ref_ty int32T (zero_val int32T)) in
+    let: "$r0" := (let: "$a0" := #(W32 rwmutexMaxReaders) in
+    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref RWMutex "readerCount" (![ptrT] "rw"))) "$a0") in
+    do:  ("r" <-[int32T] "$r0");;;
+    (if: int_geq (![int32T] "r") #(W32 rwmutexMaxReaders)
+    then
+      do:  ((func_call #race #"Enable"%go) #());;;
+      do:  (let: "$a0" := #"sync: Unlock of unlocked RWMutex"%go in
+      (func_call #sync.sync #"fatal"%go) "$a0")
+    else do:  #());;;
+    (let: "i" := (ref_ty intT (zero_val intT)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("i" <-[intT] "$r0");;;
+    (for: (λ: <>, int_lt (![intT] "i") (to_u64 (![int32T] "r"))); (λ: <>, do:  ("i" <-[intT] ((![intT] "i") + #(W64 1)))) := λ: <>,
+      do:  (let: "$a0" := (struct.field_ref RWMutex "readerSem" (![ptrT] "rw")) in
+      let: "$a1" := #false in
+      let: "$a2" := #(W64 0) in
+      (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2")));;;
+    do:  ((method_call #sync.sync #"Mutex'ptr" #"Unlock" (struct.field_ref RWMutex "w" (![ptrT] "rw"))) #());;;
+    (if: race.Enabled
+    then do:  ((func_call #race #"Enable"%go) #())
+    else do:  #())).
 
 Definition WaitGroup : go_type := structT [
   "noCopy" :: noCopy;
@@ -163,9 +413,9 @@ Definition WaitGroup__Wait : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("runtime_Semacquire"%go, runtime_Semacquire); ("runtime_SemacquireWaitGroup"%go, runtime_SemacquireWaitGroup); ("runtime_Semrelease"%go, runtime_Semrelease)].
+Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("runtime_Semacquire"%go, runtime_Semacquire); ("runtime_SemacquireWaitGroup"%go, runtime_SemacquireWaitGroup); ("runtime_SemacquireRWMutexR"%go, runtime_SemacquireRWMutexR); ("runtime_SemacquireRWMutex"%go, runtime_SemacquireRWMutex); ("runtime_Semrelease"%go, runtime_Semrelease)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("Unlock"%go, Mutex__Unlock)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("TryLock"%go, Mutex__TryLock); ("Unlock"%go, Mutex__Unlock)]); ("RWMutex"%go, []); ("RWMutex'ptr"%go, [("Lock"%go, RWMutex__Lock); ("RLock"%go, RWMutex__RLock); ("RUnlock"%go, RWMutex__RUnlock); ("TryLock"%go, RWMutex__TryLock); ("TryRLock"%go, RWMutex__TryRLock); ("Unlock"%go, RWMutex__Unlock); ("rUnlockSlow"%go, RWMutex__rUnlockSlow)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
 
 #[global] Instance info' : PkgInfo sync.sync :=
   {|
