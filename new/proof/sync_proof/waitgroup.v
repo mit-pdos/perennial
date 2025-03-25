@@ -1,6 +1,7 @@
 From New.proof.sync_proof Require Import base sema.
 From New.experiments Require Import glob.
 
+Import syncword.
 Section proof.
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.

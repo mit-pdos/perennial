@@ -1,6 +1,7 @@
 From iris.proofmode Require Import environments.
 From New.proof.sync_proof Require Import base mutex sema.
 
+Import syncword.
 Section proof.
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
