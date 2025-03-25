@@ -421,6 +421,152 @@ Lemma wp_getBit sl_b d0 (b : list w8) (n : w64) :
   }}}.
 Proof. Admitted.
 
+Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
+    d0 d1 d2 (label last_hash sibs dig : list w8) last_node found :
+  {{{
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "%Hlen_label" ∷ ⌜ length label = hash_len ⌝ ∗
+    "Hsl_last_hash" ∷ own_slice sl_last_hash byteT (DfracOwn 1) last_hash ∗
+    "Hsl_sibs" ∷ own_slice_small sl_sibs byteT d1 sibs ∗
+    "Hsl_dig" ∷ own_slice_small sl_dig byteT d2 dig ∗
+
+    "#Hlast_hash" ∷ is_tree_hash last_node last_hash ∗
+    "%Hlast_path" ∷ ⌜ ∀ depth, tree_path last_node label depth found ⌝
+  }}}
+  verifySiblings (slice_val sl_label) (slice_val sl_last_hash)
+    (slice_val sl_sibs) (slice_val sl_dig)
+  {{{
+    (err : bool), RET #err;
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hsl_dig" ∷ own_slice_small sl_dig byteT d2 dig ∗
+
+    "Herr" ∷ (if err then True else
+      ∃ tr,
+      "#Htree_hash" ∷ is_tree_hash tr dig ∗
+      "%Htree_path" ∷ ⌜ tree_path tr label 0 found ⌝)
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_apply wp_slice_len.
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
+  remember (word.divu _ _) as max_depth.
+
+  wp_apply wp_ref_to; [done|]. iIntros (ptr_curr_hash) "Hptr_curr_hash".
+  wp_apply wp_NewSliceWithCap; [done|]. iIntros (?) "Hsl_hash_out".
+  wp_apply wp_ref_to; [done|]. iIntros (ptr_hash_out) "Hptr_hash_out".
+  wp_apply wp_ref_to; [naive_solver|]. iIntros (ptr_depth) "Hptr_depth".
+
+  iMod (own_slice_small_persist with "Hsl_sibs") as "#Hsl_sibs".
+  wp_apply (wp_forDec
+    (λ depth, ∃ tr sl_curr_hash curr_hash sl_hash_out,
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hsl_curr_hash" ∷ own_slice sl_curr_hash byteT (DfracOwn 1) curr_hash ∗
+    "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] sl_curr_hash ∗
+    "Hsl_hash_out" ∷ own_slice sl_hash_out byteT (DfracOwn 1) [] ∗
+    "Hptr_hash_out" ∷ ptr_hash_out ↦[slice.T byteT] sl_hash_out ∗
+
+    "#Htree_hash" ∷ is_tree_hash tr curr_hash ∗
+    "%Htree_path" ∷ ⌜ tree_path tr label (uint.nat depth) found ⌝
+    )%I
+    with "[] [Hptr_depth Hsl_label Hsl_last_hash Hptr_curr_hash
+      Hsl_hash_out Hptr_hash_out]"
+  ).
+  2: { specialize (Hlast_path (uint.nat max_depth)).
+    iFrame "Hptr_curr_hash Hptr_hash_out ∗#%". }
+
+  (* return. *)
+  2: { iIntros "[H Hptr_depth]". iNamed "H". wp_load.
+    iDestruct (own_slice_to_small with "Hsl_curr_hash") as "Hsl_curr_hash".
+    wp_apply (wp_BytesEqual with "[$Hsl_curr_hash $Hsl_dig]").
+    iIntros "[_ Hsl_dig]".
+    case_bool_decide; wp_pures.
+    2: { iApply "HΦ". by iFrame. }
+    iApply "HΦ". subst. by iFrame "∗#%". }
+
+  (* loop body. *)
+  iIntros (depth Φ2) "!> (H & Hptr_depth & %Hlt_depth) HΦ2". iNamed "H".
+  do 2 wp_load.
+  iDestruct (own_slice_small_sz with "Hsl_sibs") as "%Hlen_sibs".
+  (* FIXME(word) *)
+  assert (sl_sibs.(Slice.sz) = word.mul max_depth (W64 32)) as Hlen_sibs0.
+  { apply w64_val_f_equal in Heqb as [Heqb _].
+    rewrite word.unsigned_modu_nowrap in Heqb; [|word].
+    subst. word. }
+  (* FIXME(word): word should probably do subst. *)
+  assert (uint.Z (word.mul max_depth (W64 32)) = uint.Z max_depth * uint.Z 32) as Hnoof.
+  { subst. word. }
+  wp_apply wp_SliceSubslice_small.
+  3: iFrame "#".
+  { apply _. }
+  { word. }
+  iIntros (?) "#Hsl_sibs_sub". wp_load.
+  match goal with
+  | |- context[own_slice_small s' _ _ ?x] => set (sibs_sub:=x)
+  end.
+
+  iDestruct (own_slice_small_sz with "Hsl_label") as %?.
+  wp_apply (wp_getBit with "[$Hsl_label]").
+  { (* FIXME(word) *)
+    rewrite word.unsigned_mul in Heqb0.
+    subst. word. }
+  iIntros "*". iNamed 1. iRename "Hsl_b" into "Hsl_label".
+  wp_pures. wp_bind (if: _ then _ else _)%E.
+  wp_apply (wp_wand _ _ _
+    (λ _,
+    ∃ new_sl_hash_out new_hash_out,
+    "Hsl_curr_hash" ∷ own_slice sl_curr_hash byteT (DfracOwn 1) curr_hash ∗
+    "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] sl_curr_hash ∗
+    "Hsl_hash_out" ∷ own_slice new_sl_hash_out byteT (DfracOwn 1) new_hash_out ∗
+    "Hptr_hash_out" ∷ ptr_hash_out ↦[slice.T byteT] new_sl_hash_out ∗
+    "#His_hash" ∷
+      match pos with
+      | false => is_hash (inner_node_tag :: curr_hash ++ sibs_sub) new_hash_out
+      | true => is_hash (inner_node_tag :: sibs_sub ++ curr_hash) new_hash_out
+      end
+    )%I
+    with "[Hsl_curr_hash Hptr_curr_hash Hsl_hash_out Hptr_hash_out]"
+  ).
+  { wp_if_destruct.
+    - do 2 wp_load.
+      iDestruct (own_slice_small_read with "Hsl_curr_hash") as "[Hsl_curr_hash Hclose]".
+      wp_apply (wp_compInnerHash with "[$Hsl_curr_hash $Hsl_sibs_sub $Hsl_hash_out]").
+      iIntros "*". iNamed 1. wp_store.
+      iDestruct ("Hclose" with "Hsl_child0") as "Hsl_curr_hash".
+      rewrite Heqb1. by iFrame "∗#".
+    - do 2 wp_load.
+      iDestruct (own_slice_small_read with "Hsl_curr_hash") as "[Hsl_curr_hash Hclose]".
+      wp_apply (wp_compInnerHash with "[Hsl_curr_hash $Hsl_hash_out]").
+      { iFrame "∗#". }
+      iIntros "*". iNamed 1. wp_store.
+      iDestruct ("Hclose" with "Hsl_child1") as "Hsl_curr_hash".
+      rewrite Heqb1. by iFrame "∗#". }
+
+  iIntros (tmp). iNamed 1. wp_pures. clear tmp.
+  do 2 wp_load.
+  wp_apply (wp_SliceTake_full with "[$Hsl_curr_hash]"); [word|].
+  iIntros "Hsl_curr_hash". rewrite take_0.
+  iDestruct (own_slice_small_read with "Hsl_hash_out") as "[Hsl_hash_out Hclose]".
+  wp_apply (wp_SliceAppendSlice with "[$Hsl_curr_hash $Hsl_hash_out]"); [done|].
+  iIntros (?) "[Hsl_curr_hash Hsl_hash_out]".
+  iDestruct ("Hclose" with "Hsl_hash_out") as "Hsl_hash_out".
+  wp_store. wp_load.
+  wp_apply (wp_SliceTake_full with "[$Hsl_hash_out]"); [word|].
+  iIntros "Hsl_hash_out". rewrite take_0. wp_store.
+  iApply "HΦ2". iFrame "Hptr_curr_hash Hptr_hash_out ∗".
+  iIntros "!>". case_match.
+  - iExists (Inner (Cut sibs_sub) tr).
+    iFrame "#". repeat iSplit; [done|..].
+    + rewrite subslice_length; word.
+    + simpl. rewrite Hget_bit.
+      replace (uint.nat (word.sub depth _) + _)%nat with (uint.nat depth); [done|word].
+  - iExists (Inner tr (Cut sibs_sub)).
+    iFrame "#". repeat iSplit; [done|..].
+    + rewrite subslice_length; word.
+    + simpl. rewrite Hget_bit.
+      replace (uint.nat (word.sub depth _) + _)%nat with (uint.nat depth); [done|word].
+Qed.
+
 Lemma wp_Verify sl_label sl_val sl_proof sl_dig (in_tree : bool)
     d0 d1 d2 d3 (label val proof dig : list w8) :
   {{{
@@ -452,20 +598,17 @@ Proof.
   iDestruct ("Hgenie" with "[//]") as "H". iNamed "H".
   iDestruct ("Herr" with "[//]") as "H". iNamed "H".
   iClear (err Heqb0 tail sl_tail Henc_obj) "Hsl_tail".
-  iNamed "Hown_obj". wp_loadField. wp_apply wp_slice_len.
-  wp_if_destruct. { iApply "HΦ". by iFrame. }
-  wp_if_destruct. { iApply "HΦ". by iFrame. }
-  remember (word.divu _ _) as max_depth.
-  wp_loadField. wp_apply (wp_BytesEqual with "[$Hsl_label $Hsl_leaf_label]").
+  iNamed "Hown_obj". wp_loadField.
+  wp_apply (wp_BytesEqual with "[$Hsl_label $Hsl_leaf_label]").
   iIntros "[Hsl_label Hsl_leaf_label]".
   wp_if_destruct. { iApply "HΦ". by iFrame. }
 
   (* leaf hash. *)
-  wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_curr_hash) "Hptr_curr_hash".
+  wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_last_hash) "Hptr_last_hash".
   wp_pures. wp_bind (if: _ then _ else _)%E.
   wp_apply (wp_wand _ _ _
     (λ _,
-    ∃ last_node found sl_curr_hash (curr_hash : list w8),
+    ∃ last_node found sl_last_hash (last_hash : list w8),
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
     "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
     "Hsl_leaf_label" ∷ own_slice_small sl_leaf_label byteT
@@ -474,17 +617,16 @@ Proof.
     "Hsl_leaf_val" ∷ own_slice_small sl_leaf_val byteT
                        obj.(MerkleProof.d2) obj.(MerkleProof.LeafVal) ∗
     "Hptr_leaf_val" ∷ ptr_obj ↦[MerkleProof::"LeafVal"] sl_leaf_val ∗
+    "Hptr_last_hash" ∷ ptr_last_hash ↦[slice.T byteT] (slice_val sl_last_hash) ∗
+    "Hsl_last_hash" ∷ own_slice sl_last_hash byteT (DfracOwn 1) last_hash ∗
 
-    "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] (slice_val sl_curr_hash) ∗
-    "Hsl_curr_hash" ∷ own_slice sl_curr_hash byteT (DfracOwn 1) curr_hash ∗
-
-    "#Htree_hash" ∷ is_tree_hash last_node curr_hash ∗
-    "%Htree_path" ∷ ⌜ tree_path last_node label (uint.nat max_depth) found ⌝ ∗
+    "#Htree_hash" ∷ is_tree_hash last_node last_hash ∗
+    "%Htree_path" ∷ ⌜ ∀ depth, tree_path last_node label depth found ⌝ ∗
     "%Hfound" ∷ ⌜ if in_tree then found = Some (label, val)
       else found_nonmemb label found ⌝
     )%I
     with "[Hsl_label Hsl_val Hsl_leaf_label Hptr_leaf_label
-    Hptr_leaf_val Hsl_leaf_val Hptr_curr_hash]"
+      Hptr_leaf_val Hsl_leaf_val Hptr_last_hash]"
   ).
   { wp_if_destruct.
     - wp_apply (wp_compLeafHash with "[$Hsl_label $Hsl_val]").
@@ -504,123 +646,17 @@ Proof.
         iIntros "*". iNamed 1. wp_store.
         iDestruct (own_slice_small_sz with "Hsl_leaf_label") as %Hlen_label.
         iExists Empty, _. iFrame "∗#". naive_solver. }
-  iIntros (tmp). iNamed 1. wp_pures. clear tmp Heqb2.
+  iIntros (tmp). iNamed 1. wp_pures. clear tmp Heqb0.
 
-  (* hash up the tree. *)
-  wp_apply wp_NewSliceWithCap; [done|]. iIntros (sl_hash_out) "Hsl_hash_out".
-  wp_apply wp_ref_to; [done|]. iIntros (ptr_hash_out) "Hptr_hash_out".
-  wp_apply wp_ref_to; [naive_solver|]. iIntros (ptr_depth) "Hptr_depth".
-
-  iMod (own_slice_small_persist with "Hsl_sibs") as "#Hsl_sibs".
-  wp_apply (wp_forDec
-    (λ depth, ∃ tr sl_curr_hash' curr_hash' sl_hash_out',
-    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
-    "Hptr_sibs" ∷ ptr_obj ↦[MerkleProof::"Siblings"] sl_sibs ∗
-    "Hsl_curr_hash" ∷ own_slice sl_curr_hash' byteT (DfracOwn 1) curr_hash' ∗
-    "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] sl_curr_hash' ∗
-    "Hsl_hash_out" ∷ own_slice sl_hash_out' byteT (DfracOwn 1) [] ∗
-    "Hptr_hash_out" ∷ ptr_hash_out ↦[slice.T byteT] sl_hash_out' ∗
-
-    "#Htree_hash" ∷ is_tree_hash tr curr_hash' ∗
-    "%Htree_path" ∷ ⌜ tree_path tr label (uint.nat depth) found ⌝
-    )%I
-    with "[] [Hptr_depth Hsl_label Hsl_sibs Hptr_sibs
-      Hsl_curr_hash Hptr_curr_hash Hsl_hash_out Hptr_hash_out]"
-  ).
-  2: { iFrame "Hptr_curr_hash Hptr_hash_out ∗#%". }
-
-  (* return. *)
-  2: { iClear (Htree_path) "Htree_hash".
-    iIntros "[H Hptr_depth]". iNamed "H". wp_load.
-    iDestruct (own_slice_to_small with "Hsl_curr_hash") as "Hsl_curr_hash".
-    wp_apply (wp_BytesEqual with "[$Hsl_curr_hash $Hsl_dig]").
-    iIntros "[_ Hsl_dig]".
-    case_bool_decide; wp_pures.
-    2: { iApply "HΦ". by iFrame. }
-    iApply "HΦ". iFrame.
-    case_match; subst; by iFrame "#%". }
-
-  (* loop body. *)
-  iClear (Htree_path Hfound) "Htree_hash".
-  iIntros (depth Φ2) "!> (H & Hptr_depth & %Hlt_depth) HΦ2". iNamed "H".
-  do 2 wp_load. wp_loadField.
-  iDestruct (own_slice_small_sz with "Hsl_sibs") as "%Hlen_sibs".
-  (* FIXME(word) *)
-  assert (sl_sibs.(Slice.sz) = word.mul max_depth (W64 32)) as Hlen_sibs0.
-  { apply w64_val_f_equal in Heqb0 as [Heqb0 _].
-    rewrite word.unsigned_modu_nowrap in Heqb0; [|word].
-    subst. word. }
-  (* FIXME(word): word should probably do subst. *)
-  assert (uint.Z (word.mul max_depth (W64 32)) = uint.Z max_depth * uint.Z 32) as Hnoof.
-  { subst. word. }
-  wp_apply wp_SliceSubslice_small.
-  3: iFrame "#".
-  { apply _. }
-  { word. }
-  iIntros (?) "Hsl_sibs_sub". wp_load.
-  match goal with
-  | |- context[own_slice_small s' _ _ ?x] => set (sibs_sub:=x)
-  end.
-
+  wp_loadField. wp_load.
   iDestruct (own_slice_small_sz with "Hsl_label") as %?.
-  wp_apply (wp_getBit with "[$Hsl_label]").
-  { (* FIXME(word) *)
-    rewrite word.unsigned_mul in Heqb1.
-    subst. word. }
-  iIntros "*". iNamed 1. iRename "Hsl_b" into "Hsl_label".
-  wp_pures. wp_bind (if: _ then _ else _)%E.
-  wp_apply (wp_wand _ _ _
-    (λ _,
-    ∃ new_sl_hash_out new_hash_out,
-    "Hsl_curr_hash" ∷ own_slice sl_curr_hash' byteT (DfracOwn 1) curr_hash' ∗
-    "Hptr_curr_hash" ∷ ptr_curr_hash ↦[slice.T byteT] sl_curr_hash' ∗
-    "Hsl_hash_out" ∷ own_slice new_sl_hash_out byteT (DfracOwn 1) new_hash_out ∗
-    "Hptr_hash_out" ∷ ptr_hash_out ↦[slice.T byteT] new_sl_hash_out ∗
-    "#His_hash" ∷
-      match pos with
-      | false => is_hash (inner_node_tag :: curr_hash' ++ sibs_sub) new_hash_out
-      | true => is_hash (inner_node_tag :: sibs_sub ++ curr_hash') new_hash_out
-      end
-    )%I
-    with "[Hsl_curr_hash Hptr_curr_hash Hsl_hash_out Hptr_hash_out Hsl_sibs_sub]"
-  ).
-  { wp_if_destruct.
-    - do 2 wp_load.
-      iDestruct (own_slice_small_read with "Hsl_curr_hash") as "[Hsl_curr_hash Hclose]".
-      wp_apply (wp_compInnerHash with "[$Hsl_curr_hash $Hsl_sibs_sub $Hsl_hash_out]").
-      iIntros "*". iNamed 1. wp_store.
-      iDestruct ("Hclose" with "Hsl_child0") as "Hsl_curr_hash".
-      rewrite Heqb2. by iFrame "∗#".
-    - do 2 wp_load.
-      iDestruct (own_slice_small_read with "Hsl_curr_hash") as "[Hsl_curr_hash Hclose]".
-      wp_apply (wp_compInnerHash with "[$Hsl_sibs_sub $Hsl_curr_hash $Hsl_hash_out]").
-      iIntros "*". iNamed 1. wp_store.
-      iDestruct ("Hclose" with "Hsl_child1") as "Hsl_curr_hash".
-      rewrite Heqb2. by iFrame "∗#". }
-
-  iIntros (tmp). iNamed 1. wp_pures. clear tmp.
-  do 2 wp_load.
-  wp_apply (wp_SliceTake_full with "[$Hsl_curr_hash]"); [word|].
-  iIntros "Hsl_curr_hash". rewrite take_0.
-  iDestruct (own_slice_small_read with "Hsl_hash_out") as "[Hsl_hash_out Hclose]".
-  wp_apply (wp_SliceAppendSlice with "[$Hsl_curr_hash $Hsl_hash_out]"); [done|].
-  iIntros (?) "[Hsl_curr_hash Hsl_hash_out]".
-  iDestruct ("Hclose" with "Hsl_hash_out") as "Hsl_hash_out".
-  wp_store. wp_load.
-  wp_apply (wp_SliceTake_full with "[$Hsl_hash_out]"); [word|].
-  iIntros "Hsl_hash_out". rewrite take_0. wp_store.
-  iApply "HΦ2". iFrame "Hptr_sibs Hptr_curr_hash Hptr_hash_out ∗".
-  iIntros "!>". case_match.
-  - iExists (Inner (Cut sibs_sub) tr).
-    iFrame "#". repeat iSplit; [done|..].
-    + rewrite subslice_length; word.
-    + simpl. rewrite Hget_bit.
-      replace (uint.nat (word.sub depth _) + _)%nat with (uint.nat depth); [done|word].
-  - iExists (Inner tr (Cut sibs_sub)).
-    iFrame "#". repeat iSplit; [done|..].
-    + rewrite subslice_length; word.
-    + simpl. rewrite Hget_bit.
-      replace (uint.nat (word.sub depth _) + _)%nat with (uint.nat depth); [done|word].
+  wp_apply (wp_verifySiblings with "[$Hsl_label $Hsl_last_hash
+    $Hsl_sibs $Hsl_dig]").
+  { iFrame "#%". word. }
+  iClear (Htree_path) "Htree_hash". iIntros (err) "H". iNamed "H".
+  iApply "HΦ". iFrame.
+  destruct err; [done|]. iNamed "Herr".
+  case_match; subst; by iFrame "#%".
 Qed.
 
 End proof.

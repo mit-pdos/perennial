@@ -245,6 +245,32 @@ Definition compEmptyHash: val :=
   rec: "compEmptyHash" <> :=
     cryptoutil.Hash (SliceSingleton emptyNodeTag).
 
+Definition verifySiblings: val :=
+  rec: "verifySiblings" "label" "lastHash" "siblings" "dig" :=
+    let: "sibsLen" := slice.len "siblings" in
+    (if: ("sibsLen" `rem` cryptoffi.HashLen) ≠ #0
+    then #true
+    else
+      let: "maxDepth" := "sibsLen" `quot` cryptoffi.HashLen in
+      (if: "maxDepth" > (cryptoffi.HashLen * #8)
+      then #true
+      else
+        let: "currHash" := ref_to (slice.T byteT) "lastHash" in
+        let: "hashOut" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 cryptoffi.HashLen) in
+        let: "depth" := ref_to uint64T "maxDepth" in
+        Skip;;
+        (for: (λ: <>, (![uint64T] "depth") > #0); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") - #1)) := λ: <>,
+          let: "begin" := ((![uint64T] "depth") - #1) * cryptoffi.HashLen in
+          let: "end" := (![uint64T] "depth") * cryptoffi.HashLen in
+          let: "sib" := SliceSubslice byteT "siblings" "begin" "end" in
+          (if: (~ (getBit "label" ((![uint64T] "depth") - #1)))
+          then "hashOut" <-[slice.T byteT] (compInnerHash (![slice.T byteT] "currHash") "sib" (![slice.T byteT] "hashOut"))
+          else "hashOut" <-[slice.T byteT] (compInnerHash "sib" (![slice.T byteT] "currHash") (![slice.T byteT] "hashOut")));;
+          "currHash" <-[slice.T byteT] (SliceAppendSlice byteT (SliceTake (![slice.T byteT] "currHash") #0) (![slice.T byteT] "hashOut"));;
+          "hashOut" <-[slice.T byteT] (SliceTake (![slice.T byteT] "hashOut") #0);;
+          Continue);;
+        (~ (std.BytesEqual (![slice.T byteT] "currHash") "dig")))).
+
 (* Verify verifies proof against the tree rooted at dig
    and returns an error upon failure.
    there are two types of inputs.
@@ -259,38 +285,17 @@ Definition Verify: val :=
       (if: "err0"
       then #true
       else
-        let: "sibsLen" := slice.len (struct.loadF MerkleProof "Siblings" "proofDec") in
-        (if: ("sibsLen" `rem` cryptoffi.HashLen) ≠ #0
+        (if: std.BytesEqual "label" (struct.loadF MerkleProof "LeafLabel" "proofDec")
         then #true
         else
-          let: "maxDepth" := "sibsLen" `quot` cryptoffi.HashLen in
-          (if: "maxDepth" > (cryptoffi.HashLen * #8)
-          then #true
+          let: "lastHash" := ref (zero_val (slice.T byteT)) in
+          (if: "inTree"
+          then "lastHash" <-[slice.T byteT] (compLeafHash "label" "val")
           else
-            (if: std.BytesEqual "label" (struct.loadF MerkleProof "LeafLabel" "proofDec")
-            then #true
-            else
-              let: "currHash" := ref (zero_val (slice.T byteT)) in
-              (if: "inTree"
-              then "currHash" <-[slice.T byteT] (compLeafHash "label" "val")
-              else
-                (if: (slice.len (struct.loadF MerkleProof "LeafLabel" "proofDec")) = cryptoffi.HashLen
-                then "currHash" <-[slice.T byteT] (compLeafHash (struct.loadF MerkleProof "LeafLabel" "proofDec") (struct.loadF MerkleProof "LeafVal" "proofDec"))
-                else "currHash" <-[slice.T byteT] (compEmptyHash #())));;
-              let: "hashOut" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 cryptoffi.HashLen) in
-              let: "depth" := ref_to uint64T "maxDepth" in
-              Skip;;
-              (for: (λ: <>, (![uint64T] "depth") > #0); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") - #1)) := λ: <>,
-                let: "begin" := ((![uint64T] "depth") - #1) * cryptoffi.HashLen in
-                let: "end" := (![uint64T] "depth") * cryptoffi.HashLen in
-                let: "sib" := SliceSubslice byteT (struct.loadF MerkleProof "Siblings" "proofDec") "begin" "end" in
-                (if: (~ (getBit "label" ((![uint64T] "depth") - #1)))
-                then "hashOut" <-[slice.T byteT] (compInnerHash (![slice.T byteT] "currHash") "sib" (![slice.T byteT] "hashOut"))
-                else "hashOut" <-[slice.T byteT] (compInnerHash "sib" (![slice.T byteT] "currHash") (![slice.T byteT] "hashOut")));;
-                "currHash" <-[slice.T byteT] (SliceAppendSlice byteT (SliceTake (![slice.T byteT] "currHash") #0) (![slice.T byteT] "hashOut"));;
-                "hashOut" <-[slice.T byteT] (SliceTake (![slice.T byteT] "hashOut") #0);;
-                Continue);;
-              (~ (std.BytesEqual (![slice.T byteT] "currHash") "dig"))))))).
+            (if: (slice.len (struct.loadF MerkleProof "LeafLabel" "proofDec")) = cryptoffi.HashLen
+            then "lastHash" <-[slice.T byteT] (compLeafHash (struct.loadF MerkleProof "LeafLabel" "proofDec") (struct.loadF MerkleProof "LeafVal" "proofDec"))
+            else "lastHash" <-[slice.T byteT] (compEmptyHash #())));;
+          verifySiblings "label" (![slice.T byteT] "lastHash") (struct.loadF MerkleProof "Siblings" "proofDec") "dig"))).
 
 Definition Tree__Digest: val :=
   rec: "Tree__Digest" "t" :=
