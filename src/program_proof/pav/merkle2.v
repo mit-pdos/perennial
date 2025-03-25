@@ -1,3 +1,4 @@
+From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial Require Import base.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
@@ -420,6 +421,36 @@ Lemma wp_getBit sl_b d0 (b : list w8) (n : w64) :
     "%Hget_bit" ∷ ⌜ get_bit b (uint.nat n) = pos ⌝
   }}}.
 Proof. Admitted.
+
+Definition own_context ptr q : iProp Σ :=
+  ∃ sl_empty_hash empty_hash,
+  "Hptr_empty_hash" ∷ ptr ↦[context :: "emptyHash"]{DfracOwn q} (slice_val sl_empty_hash) ∗
+  "Hsl_empty_hash" ∷ own_slice_small sl_empty_hash byteT (DfracOwn q) empty_hash ∗
+  "#His_empty_hash" ∷ is_hash [empty_node_tag] empty_hash.
+
+Global Instance own_context_fractional ptr :
+  Fractional (λ q, own_context ptr q).
+Proof.
+  intros p q. iSplit.
+  - iNamed 1.
+    iDestruct "Hptr_empty_hash" as "[H0 H1]".
+    iDestruct "Hsl_empty_hash" as "[H2 H3]".
+    iSplitL "H0 H2"; iFrame "∗#".
+  - iIntros "[H0 H1]". iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
+
+    iDestruct (struct_field_pointsto_agree with "Hptr_empty_hash0 Hptr_empty_hash1") as %Heq.
+    destruct sl_empty_hash, sl_empty_hash0. simplify_eq/=.
+    iCombine "Hptr_empty_hash0 Hptr_empty_hash1" as "H0".
+
+    iDestruct (own_slice_small_agree with "Hsl_empty_hash0 Hsl_empty_hash1") as %->.
+    iCombine "Hsl_empty_hash0 Hsl_empty_hash1" as "H1".
+
+    iFrame "∗#".
+Qed.
+
+Global Instance own_context_as_fractional ptr q :
+  AsFractional (own_context ptr q) (own_context ptr) q.
+Proof. split; [auto|apply _]. Qed.
 
 Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
     d0 d1 d2 (label last_hash sibs dig : list w8) last_node found :

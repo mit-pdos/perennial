@@ -54,6 +54,16 @@ Typeclasses Transparent slice.own_slice_small.
 Definition own_slice s t q vs := slice.own_slice s t q (list.untype vs).
 Definition own_slice_small s t q vs := slice.own_slice_small s t q (list.untype vs).
 
+Lemma own_slice_small_agree s t q1 q2 vs1 vs2 :
+  own_slice_small s t q1 vs1 -∗
+  own_slice_small s t q2 vs2 -∗
+  ⌜vs1 = vs2⌝.
+Proof.
+  rewrite /own_slice_small. iIntros "H0 H1".
+  iDestruct (slice.own_slice_small_agree with "H0 H1") as %Heq.
+  naive_solver.
+Qed.
+
 Lemma own_slice_split s t q vs :
   own_slice s t q vs ⊣⊢
   own_slice_small s t q vs ∗ own_slice_cap s t.
