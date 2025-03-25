@@ -511,22 +511,9 @@ Proof.
   wp_apply wp_ref_to; [done|]. iIntros (ptr_hash_out) "Hptr_hash_out".
   wp_apply wp_ref_to; [naive_solver|]. iIntros (ptr_depth) "Hptr_depth".
 
-  destruct (uint.nat max_depth) eqn:Hzero_depth.
-  { wp_pures. wp_rec. wp_load. wp_if_destruct; [word|]. wp_load.
-    iDestruct (own_slice_to_small with "Hsl_curr_hash") as "Hsl_curr_hash".
-    wp_apply (wp_BytesEqual with "[$Hsl_curr_hash $Hsl_dig]").
-    iIntros "[_ Hsl_dig]". case_bool_decide; wp_pures.
-    2: { iApply "HΦ". by iFrame. }
-    iApply "HΦ". iFrame.
-    case_match; subst; by iFrame "#%". }
-
   iMod (own_slice_small_persist with "Hsl_sibs") as "#Hsl_sibs".
-  wp_apply (wp_forBreak_cond
-    (λ cond, ∃ tr (depth : w64) sl_curr_hash' curr_hash' sl_hash_out',
-    "Hptr_depth" ∷ ptr_depth ↦[uint64T] #depth ∗
-    "%Hcond" ∷ ⌜ bool_decide (uint.Z depth >= 1) = cond ⌝ ∗
-    "%Hlt_depth" ∷ ⌜ uint.Z depth <= uint.Z max_depth ⌝ ∗
-
+  wp_apply (wp_forDec
+    (λ depth, ∃ tr sl_curr_hash' curr_hash' sl_hash_out',
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
     "Hptr_sibs" ∷ ptr_obj ↦[MerkleProof::"Siblings"] sl_sibs ∗
     "Hsl_curr_hash" ∷ own_slice sl_curr_hash' byteT (DfracOwn 1) curr_hash' ∗
@@ -540,26 +527,22 @@ Proof.
     with "[] [Hptr_depth Hsl_label Hsl_sibs Hptr_sibs
       Hsl_curr_hash Hptr_curr_hash Hsl_hash_out Hptr_hash_out]"
   ).
-  2: { iFrame "Hptr_curr_hash Hptr_hash_out ∗#%". iSplit.
-    - case_bool_decide; [done|word].
-    - by rewrite -Hzero_depth in Htree_path. }
+  2: { iFrame "Hptr_curr_hash Hptr_hash_out ∗#%". }
+
   (* return. *)
-  2: { iClear (Htree_path) "Htree_hash". iNamed 1. wp_load.
+  2: { iClear (Htree_path) "Htree_hash".
+    iIntros "[H Hptr_depth]". iNamed "H". wp_load.
     iDestruct (own_slice_to_small with "Hsl_curr_hash") as "Hsl_curr_hash".
     wp_apply (wp_BytesEqual with "[$Hsl_curr_hash $Hsl_dig]").
     iIntros "[_ Hsl_dig]".
-    apply bool_decide_eq_false in Hcond.
-    replace depth with (W64 0) in *; [|word].
     case_bool_decide; wp_pures.
     2: { iApply "HΦ". by iFrame. }
     iApply "HΦ". iFrame.
     case_match; subst; by iFrame "#%". }
 
   (* loop body. *)
-  iClear (Hzero_depth Htree_path Hfound) "Htree_hash".
-  iIntros (Φ2) "!> H HΦ2". iNamed "H".
-  apply bool_decide_eq_true in Hcond.
-  wp_load. wp_if_destruct; [|word].
+  iClear (Htree_path Hfound) "Htree_hash".
+  iIntros (depth Φ2) "!> (H & Hptr_depth & %Hlt_depth) HΦ2". iNamed "H".
   do 2 wp_load. wp_loadField.
   iDestruct (own_slice_small_sz with "Hsl_sibs") as "%Hlen_sibs".
   (* FIXME(word) *)
@@ -607,13 +590,13 @@ Proof.
       wp_apply (wp_compInnerHash with "[$Hsl_curr_hash $Hsl_sibs_sub $Hsl_hash_out]").
       iIntros "*". iNamed 1. wp_store.
       iDestruct ("Hclose" with "Hsl_child0") as "Hsl_curr_hash".
-      rewrite Heqb3. by iFrame "∗#".
+      rewrite Heqb2. by iFrame "∗#".
     - do 2 wp_load.
       iDestruct (own_slice_small_read with "Hsl_curr_hash") as "[Hsl_curr_hash Hclose]".
       wp_apply (wp_compInnerHash with "[$Hsl_sibs_sub $Hsl_curr_hash $Hsl_hash_out]").
       iIntros "*". iNamed 1. wp_store.
       iDestruct ("Hclose" with "Hsl_child1") as "Hsl_curr_hash".
-      rewrite Heqb3. by iFrame "∗#". }
+      rewrite Heqb2. by iFrame "∗#". }
 
   iIntros (tmp). iNamed 1. wp_pures. clear tmp.
   do 2 wp_load.
@@ -625,9 +608,19 @@ Proof.
   iDestruct ("Hclose" with "Hsl_hash_out") as "Hsl_hash_out".
   wp_store. wp_load.
   wp_apply (wp_SliceTake_full with "[$Hsl_hash_out]"); [word|].
-  iIntros "Hsl_hash_out". rewrite take_0.
-  wp_store. wp_load. wp_store.
+  iIntros "Hsl_hash_out". rewrite take_0. wp_store.
   iApply "HΦ2". iFrame "Hptr_sibs Hptr_curr_hash Hptr_hash_out ∗".
-Admitted.
+  iIntros "!>". case_match.
+  - iExists (Inner (Cut sibs_sub) tr).
+    iFrame "#". repeat iSplit; [done|..].
+    + rewrite subslice_length; word.
+    + simpl. rewrite Hget_bit.
+      replace (uint.nat (word.sub depth _) + _)%nat with (uint.nat depth); [done|word].
+  - iExists (Inner tr (Cut sibs_sub)).
+    iFrame "#". repeat iSplit; [done|..].
+    + rewrite subslice_length; word.
+    + simpl. rewrite Hget_bit.
+      replace (uint.nat (word.sub depth _) + _)%nat with (uint.nat depth); [done|word].
+Qed.
 
 End proof.

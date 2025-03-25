@@ -280,7 +280,7 @@ Definition Verify: val :=
               let: "hashOut" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 cryptoffi.HashLen) in
               let: "depth" := ref_to uint64T "maxDepth" in
               Skip;;
-              (for: (λ: <>, (![uint64T] "depth") ≥ #1); (λ: <>, Skip) := λ: <>,
+              (for: (λ: <>, (![uint64T] "depth") > #0); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") - #1)) := λ: <>,
                 let: "begin" := ((![uint64T] "depth") - #1) * cryptoffi.HashLen in
                 let: "end" := (![uint64T] "depth") * cryptoffi.HashLen in
                 let: "sib" := SliceSubslice byteT (struct.loadF MerkleProof "Siblings" "proofDec") "begin" "end" in
@@ -289,7 +289,6 @@ Definition Verify: val :=
                 else "hashOut" <-[slice.T byteT] (compInnerHash "sib" (![slice.T byteT] "currHash") (![slice.T byteT] "hashOut")));;
                 "currHash" <-[slice.T byteT] (SliceAppendSlice byteT (SliceTake (![slice.T byteT] "currHash") #0) (![slice.T byteT] "hashOut"));;
                 "hashOut" <-[slice.T byteT] (SliceTake (![slice.T byteT] "hashOut") #0);;
-                "depth" <-[uint64T] ((![uint64T] "depth") - #1);;
                 Continue);;
               (~ (std.BytesEqual (![slice.T byteT] "currHash") "dig"))))))).
 
