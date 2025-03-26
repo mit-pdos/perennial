@@ -73,14 +73,14 @@ Definition get_bit (l : list w8) (n : nat) : bool :=
 Inductive tree :=
 | Empty
 | Leaf (label: list w8) (val: list w8)
-| Inner (l: tree) (r: tree)
+| Inner (child0: tree) (child1: tree)
 | Cut (hash: list w8).
 
 Fixpoint tree_to_gmap (t: tree) : gmap (list w8) (list w8) :=
   match t with
   | Empty => ∅
   | Leaf label val => {[label := val]}
-  | Inner lt rt => (tree_to_gmap lt) ∪ (tree_to_gmap rt)
+  | Inner child0 child1 => (tree_to_gmap child0) ∪ (tree_to_gmap child1)
   | Cut h => ∅
   end.
 
@@ -91,16 +91,16 @@ Definition tree_labels_have_bit (t: tree) (nbit: nat) (val: bool) : Prop :=
 
 Fixpoint sorted_tree (t: tree) (depth: nat) : Prop :=
   match t with
-  | Inner lt rt =>
-    sorted_tree lt (depth+1) ∧ tree_labels_have_bit lt depth false ∧
-    sorted_tree rt (depth+1) ∧ tree_labels_have_bit rt depth true
+  | Inner child0 child1 =>
+    sorted_tree child0 (depth+1) ∧ tree_labels_have_bit child0 depth false ∧
+    sorted_tree child1 (depth+1) ∧ tree_labels_have_bit child1 depth true
   | _ => True
   end.
 
 Inductive cutless_tree : ∀ (t: tree), Prop :=
   | CutlessEmpty : cutless_tree Empty
   | CutlessLeaf : ∀ label val, cutless_tree (Leaf label val)
-  | CutlessInner : ∀ lt rt, cutless_tree lt -> cutless_tree rt -> cutless_tree (Inner lt rt).
+  | CutlessInner : ∀ child0 child1, cutless_tree child0 -> cutless_tree child1 -> cutless_tree (Inner child0 child1).
 
 Fixpoint tree_path (t: tree) (label: list w8) (label_depth: nat) (result: option (list w8 * list w8)%type) : Prop :=
   match t with
@@ -108,10 +108,10 @@ Fixpoint tree_path (t: tree) (label: list w8) (label_depth: nat) (result: option
     result = None
   | Leaf found_label found_val =>
     result = Some (found_label, found_val)
-  | Inner lt rt =>
+  | Inner child0 child1 =>
     match get_bit label label_depth with
-    | false => tree_path lt label (label_depth+1) result
-    | true  => tree_path rt label (label_depth+1) result
+    | false => tree_path child0 label (label_depth+1) result
+    | true  => tree_path child1 label (label_depth+1) result
     end
   | Cut _ => False
   end.
@@ -130,10 +130,10 @@ Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
   | Leaf label val =>
     "%Hlen_label" ∷ ⌜ length label = hash_len ⌝ ∗
     "#His_hash" ∷ is_hash ([leaf_node_tag] ++ label ++ (u64_le_seal $ length val) ++ val) h
-  | Inner lt rt =>
+  | Inner child0 child1 =>
     ∃ hl hr,
-    "#Hleft_hash" ∷ is_tree_hash lt hl ∗
-    "#Hright_hash" ∷ is_tree_hash rt hr ∗
+    "#Hleft_hash" ∷ is_tree_hash child0 hl ∗
+    "#Hright_hash" ∷ is_tree_hash child1 hr ∗
     "#His_hash" ∷ is_hash ([inner_node_tag] ++ hl ++ hr) h
   | Cut ch =>
     "%Heq_cut" ∷ ⌜ h = ch ⌝ ∗
@@ -267,11 +267,11 @@ Fixpoint tree_sibs_proof (t: tree) (label: list w8) (label_depth: nat) (proof: l
   match t with
   | Empty => ⌜proof = []⌝
   | Leaf found_label found_val => ⌜proof = []⌝
-  | Inner lt rt =>
+  | Inner child0 child1 =>
     ∃ sibhash proof', ⌜proof = sibhash :: proof'⌝ ∗
       match get_bit label label_depth with
-      | false => tree_sibs_proof lt label (label_depth+1) proof' ∗ is_tree_hash rt sibhash
-      | true  => tree_sibs_proof rt label (label_depth+1) proof' ∗ is_tree_hash lt sibhash
+      | false => tree_sibs_proof child0 label (label_depth+1) proof' ∗ is_tree_hash child1 sibhash
+      | true  => tree_sibs_proof child1 label (label_depth+1) proof' ∗ is_tree_hash child0 sibhash
       end
   | Cut _ => False
   end.
@@ -282,43 +282,41 @@ Definition is_merkle_proof (label: list w8) (found: option ((list w8) * (list w8
     tree_sibs_proof t label 0 proof ∗
     ⌜tree_path t label 0 found⌝.
 
-Fixpoint own_merkle_tree (ptr: loc) (t: tree) : iProp Σ :=
+Fixpoint own_merkle_tree (ptr: loc) (t: tree) d : iProp Σ :=
   ∃ hash,
-    is_tree_hash t hash ∗
-    match t with
-    | Empty => ⌜ptr = null⌝
-    | Leaf label val =>
-      ∃ sl_hash sl_label sl_val,
-        ptr ↦[node :: "hash"] (slice_val sl_hash) ∗
-        ptr ↦[node :: "child0"] #null ∗
-        ptr ↦[node :: "child1"] #null ∗
-        ptr ↦[node :: "label"] (slice_val sl_label) ∗
-        ptr ↦[node :: "val"] (slice_val sl_val) ∗
-        own_slice_small sl_label byteT DfracDiscarded label ∗
-        own_slice_small sl_val byteT DfracDiscarded val ∗
-        own_slice_small sl_hash byteT DfracDiscarded hash
-    | Inner lt rt =>
-      ∃ sl_hash (ptr_l ptr_r : loc),
-        ptr ↦[node :: "hash"] (slice_val sl_hash) ∗
-        ptr ↦[node :: "child0"] #ptr_l ∗
-        ptr ↦[node :: "child1"] #ptr_r ∗
-        ptr ↦[node :: "label"] #null ∗
-        ptr ↦[node :: "val"] #null ∗
-        own_merkle_tree ptr_l lt ∗
-        own_merkle_tree ptr_r rt ∗
-        own_slice_small sl_hash byteT DfracDiscarded hash
-    | Cut _ => False
-    end.
+  "#Htree_hash" ∷ is_tree_hash t hash ∗
+  match t with
+  | Empty => "%->" ∷ ⌜ptr = null⌝
+  | Leaf label val =>
+    ∃ sl_hash sl_label sl_val,
+    "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
+    "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #null ∗
+    "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #null ∗
+    "Hptr_label" ∷ ptr ↦[node :: "label"]{d} (slice_val sl_label) ∗
+    "Hptr_val" ∷ ptr ↦[node :: "val"]{d} (slice_val sl_val) ∗
+    "Hsl_label" ∷ own_slice_small sl_label byteT d label ∗
+    "Hsl_val" ∷ own_slice_small sl_val byteT d val ∗
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash
+  | Inner child0 child1 =>
+    ∃ sl_hash (ptr_child0 ptr_child1 : loc),
+    "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
+    "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #ptr_child0 ∗
+    "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #ptr_child1 ∗
+    "Hown_child0" ∷ own_merkle_tree ptr_child0 child0 d ∗
+    "Hown_child1" ∷ own_merkle_tree ptr_child1 child1 d ∗
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash
+  | Cut _ => False
+  end.
 
-Definition own_merkle_map (ptr: loc) (m: gmap (list w8) (list w8)) : iProp Σ :=
+Definition own_merkle_map (ptr: loc) (m: gmap (list w8) (list w8)) d : iProp Σ :=
   ∃ t,
     ⌜m = tree_to_gmap t ∧ sorted_tree t 0 ∧ cutless_tree t⌝ ∗
-    own_merkle_tree ptr t.
+    own_merkle_tree ptr t d.
 
 (* Some facts that might be helpful to derive from the above: *)
 
-Lemma own_merkle_map_to_is_merkle_map ptr m:
-  own_merkle_map ptr m -∗
+Lemma own_merkle_map_to_is_merkle_map ptr m d:
+  own_merkle_map ptr m d -∗
   ∃ h,
     is_merkle_map m h.
 Proof.
@@ -422,14 +420,14 @@ Lemma wp_getBit sl_b d0 (b : list w8) (n : w64) :
   }}}.
 Proof. Admitted.
 
-Definition own_context ptr q : iProp Σ :=
+Definition own_context ptr d : iProp Σ :=
   ∃ sl_empty_hash empty_hash,
-  "Hptr_empty_hash" ∷ ptr ↦[context :: "emptyHash"]{DfracOwn q} (slice_val sl_empty_hash) ∗
-  "Hsl_empty_hash" ∷ own_slice_small sl_empty_hash byteT (DfracOwn q) empty_hash ∗
+  "Hptr_empty_hash" ∷ ptr ↦[context :: "emptyHash"]{d} (slice_val sl_empty_hash) ∗
+  "Hsl_empty_hash" ∷ own_slice_small sl_empty_hash byteT d empty_hash ∗
   "#His_empty_hash" ∷ is_hash [empty_node_tag] empty_hash.
 
 Global Instance own_context_fractional ptr :
-  Fractional (λ q, own_context ptr q).
+  Fractional (λ q, own_context ptr (DfracOwn q)).
 Proof.
   intros p q. iSplit.
   - iNamed 1.
@@ -449,8 +447,27 @@ Proof.
 Qed.
 
 Global Instance own_context_as_fractional ptr q :
-  AsFractional (own_context ptr q) (own_context ptr) q.
+  AsFractional (own_context ptr (DfracOwn q)) (λ q, own_context ptr (DfracOwn q)) q.
 Proof. split; [auto|apply _]. Qed.
+
+Lemma wp_put n0 ptr_n (depth : w64) elems sl_label sl_val d0 d1 (label val : list w8) ptr_ctx d2 :
+  {{{
+    "Hown_merkle" ∷ own_merkle_map ptr_n elems (DfracOwn 1) ∗
+    "Hptr_n0" ∷ n0 ↦[ptrT] #ptr_n ∗
+    "%Hlt_depth" ∷ ⌜ uint.Z depth < uint.Z (length label) * 8 ⌝ ∗
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "%Hlen_label" ∷ ⌜ length label = hash_len ⌝ ∗
+    "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
+    "Hown_ctx" ∷ own_context ptr_ctx d2
+  }}}
+  put #n0 #depth (slice_val sl_label) (slice_val sl_val) #ptr_ctx
+  {{{
+    ptr_n', RET #();
+    "Hown_merkle" ∷ own_merkle_map ptr_n' (<[ label := val ]>elems) (DfracOwn 1) ∗
+    "Hptr_n0" ∷ n0 ↦[ptrT] #ptr_n' ∗
+    "Hown_ctx" ∷ own_context ptr_ctx d2
+  }}}.
+Proof. Admitted.
 
 Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
     d0 d1 d2 (label last_hash sibs dig : list w8) last_node found :
