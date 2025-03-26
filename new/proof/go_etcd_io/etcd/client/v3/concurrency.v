@@ -107,12 +107,9 @@ Proof.
   unshelve wp_apply wp_chan_make as "* Hdonec"; try tc_solve.
   wp_alloc s as "Hs".
   wp_auto.
-  wp_bind (Fork _).
   iPersist "cancel donec keepAlive".
-  iApply (wp_fork with "[Hdonec Hcancel]").
+  wp_apply (wp_fork with "[Hdonec Hcancel]").
   {
-    iNext.
-    wp_auto.
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
@@ -152,7 +149,6 @@ Proof.
       iFrame.
     }
   }
-  iNext.
   iDestruct (struct_fields_split with "Hs") as "hs".
   simpl. iClear "Hctx". iNamed "hs".
   iPersist "Hclient Hid".
