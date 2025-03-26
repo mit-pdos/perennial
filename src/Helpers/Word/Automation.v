@@ -29,15 +29,18 @@ Proof. by destruct (decide P). Qed.
 Import Printf.
 Ltac2 verbose_logger m := printf "word: %a" (fun () () => m) ().
 Ltac2 handle_goal logger :=
-  first [
-      apply decision_assume_opposite | (* if decidable, assume the opposite; *)
-      logger (fprintf "eliminating goal and trying to prove false instead"); Std.cut 'False
-    ].
+  lazy_match! goal with
+  | [ |- False ] => ()
+  | [ |- _ ] => first [
+          apply decision_assume_opposite; intros | (* if decidable, assume the opposite; *)
+          logger (fprintf "eliminating goal and trying to prove false instead"); Std.cut 'False
+        ]
+  end.
 
 Ltac2 unfold_w_whatever () :=
   unfold W64, W32, (* W16, *) W8, w64, w32, (* w16, *) w8 in *.
 
-Local Lemma word_eq_iff_Z_eq (x y: w64) :
+Local Lemma word_eq_iff_Z_eq {width} {word : Interface.word width} {word_ok : word.ok word} (x y : word):
   x = y ↔ word.unsigned x = word.unsigned y.
 Proof. split; first by intros ->. apply inj. apply _. Qed.
 
@@ -68,13 +71,18 @@ Import Interface.word.
 
 Print Ltac2 Signatures.
 
+(* FIXME: check for these and throw an error if found. *)
 Ltac2 unsupported_ops () : constr list :=
   ['mulhss ; 'mulhsu ; 'mulhuu ; 'eqb ; 'ltu ; 'lts ; 'srs; 'divs; 'mods ] .
 
 (* These equalities have no sideconditions, and should always be used to
    rewrite. *)
-Ltac2 sidegoal_free_word_laws () : constr list :=
-  [ 'unsigned_of_Z; 'of_Z_unsigned; 'unsigned_add; 'unsigned_sub;
+(* TODO: stratify the rewrites; e.g. can do the eq rewrites first, then never
+   again.
+   Do the unsigned_of_Z, of_Z_unsigned at the end
+ *)
+Ltac2 word_laws_without_side_goal () : constr list :=
+  [ 'word_eq_iff_Z_eq; 'unsigned_of_Z; 'of_Z_unsigned; 'unsigned_add; 'unsigned_sub;
     'unsigned_opp; 'unsigned_or; 'unsigned_and; 'unsigned_xor;
     'unsigned_not; 'unsigned_ndn; 'unsigned_mul
     (* 'signed_mulhss; 'signed_mulhsu; 'unsigned_mulhuu; 'unsigned_eqb; *)
@@ -101,7 +109,7 @@ Qed.
 
 (* These equalities have 1 sidegoal, and the string is a description of what
    that sidegoal must prove. The string is used in error messages. *)
-Ltac2 word_laws_with_sidecondition () : (constr * string) list := [
+Ltac2 word_laws_with_side_goals () : (constr * string) list := [
     ('unsigned_slu', "slu: the shift amount must be less than width");
     ('unsigned_sru', "sru: the shift amount must be less than width");
     (* signed_srs *)
@@ -113,39 +121,77 @@ Ltac2 word_laws_with_sidecondition () : (constr * string) list := [
 
 Ltac2 mutable solve_word () := ().
 
-Ltac2 Type exn ::= [Word_side_goal_failed (string)].
+Ltac2 Type exn ::= [Word_side_goal_failed (string, exn)].
 
-Ltac2 solve_side_goal (parent_hyp : ident) (err_msg : string) :=
+Print Ltac2 Signatures.
+Ltac2 solve_side_goal logger (parent_hyp : ident) (err : string) () :=
+  logger (fprintf "side goal: begin (%s) on %t" err (Control.goal ()));
+  let parent_expr := Constr.type (Control.hyp parent_hyp) in
   Std.clear [parent_hyp];
-  first [
-      solve_word () |
-      let m := (fprintf "side goal failed: %s from expression %t" err_msg (Control.hyp parent_hyp)) in
-      Control.zero (Word_side_goal_failed (Message.to_string m))
-    ].
+  orelse (fun () => Control.enter solve_word)
+    (fun ex =>
+       let m := (fprintf "side goal failed: %s from expression: %a %t" err (fun () () => Message.force_new_line) ()
+                   parent_expr) in
+       Control.throw (Word_side_goal_failed (Message.to_string m) ex));
+  Control.enter
+    (fun () =>
+       Control.throw (Tactic_failure (Some (Message.of_string "fatal solve_side_goal: expected [solve_word] to succeed or throw an exception")))
+    ).
 
-(* TODO: have to rewrite the sidegoals one at a time so we can eliminate only
-   the originating hypothesis. *)
-Ltac2 eliminate_word_ops () :=
-  let tacs :=
-    List.map (fun law () =>
-                let rw := { Std.rew_orient := Some Std.LTR;
-                            Std.rew_repeat := Std.RepeatStar;
-                            Std.rew_equatn := (fun () => (law, Std.NoBindings))  }
-                in
-                rewrite0 false [rw] None None
-      ) (sidegoal_free_word_laws ()) in
-  repeat0 (fun () => (first0 tacs))
-.
+Ltac2 eliminate_word_ops logger :=
+  let make_rw law := { Std.rew_orient := Some Std.LTR;
+                       Std.rew_repeat := Std.RepeatPlus;
+                       Std.rew_equatn := (fun () => (law, Std.NoBindings)) } in
+  let all_cl := Some { Std.on_hyps := None; Std.on_concl := Std.AllOccurrences} in
+  let make_cl h := Some { Std.on_hyps := Some [(h, Std.AllOccurrences, Std.InHyp)];
+                          Std.on_concl := Std.NoOccurrences } in
+  let tacs := List.map (fun law () =>
+                          logger (fprintf "trying word law %t in *" law);
+                          rewrite0 false [make_rw law] all_cl (Some (fun () => ltac1:(tc_solve)));
+                          logger (fprintf "succeeded word law %t in *" law)
+                )
+                (word_laws_without_side_goal ()) in
+  let hyps := (Control.hyps ()) in
+  let tacs' := List.map
+                 (fun y () => let (law, err_str) := y in
+                           first0 (List.map
+                                     (fun h () =>
+                                        let (h, _, _) := h in
+                                        logger (fprintf "trying word_law %t in hypothesis %I" law h);
 
+                                        rewrite0 true [make_rw law] (make_cl h) (Some (solve_side_goal logger h err_str));
+                                        Message.print (Message.of_string "succeeded");
+                                        Control.enter (fun () => logger (fprintf "succeeded word law %t in hypothesis %I" law h)))
+                                     hyps)
+                 )
+                (word_laws_with_side_goals ()) in
+  let tacs := List.append tacs' tacs in
+  repeat0 (fun () => (first0 tacs));
+  ().
+
+Ltac2 noop_logger m := ().
 Ltac2 all_but_lia () :=
-  handle_goal verbose_logger;
+  handle_goal noop_logger;
   unfold_w_whatever ();
-  eliminate_word_ops ()
+  eliminate_word_ops noop_logger
   (* TODO: unfold word.wrap *)
   (* TODO: simplify Z constants *)
 .
 
 Ltac2 Set solve_word as old := fun () => all_but_lia (); ltac1:(lia).
+
+Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
+  delta' = (W32 (sint.Z delta)) →
+  word.slu delta (W64 32) = word.slu (W64 (sint.Z delta')) (W64 32).
+Proof.
+  intros. subst.
+  unfold W64 in *. unfold w64 in *.
+  Time ltac2:(Control.enter all_but_lia).
+  Time ltac2:(Control.enter all_but_lia).
+
+Qed.
+
+Lemma test
 
 End word.
 
