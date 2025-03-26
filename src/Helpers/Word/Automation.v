@@ -75,14 +75,20 @@ Print Ltac2 Signatures.
 Ltac2 unsupported_ops () : constr list :=
   ['mulhss ; 'mulhsu ; 'mulhuu ; 'eqb ; 'ltu ; 'lts ; 'srs; 'divs; 'mods ] .
 
+
+Ltac2 word_eq_elim_facts () : constr list := [
+    'word_eq_iff_Z_eq
+  ].
+
 (* These equalities have no sideconditions, and should always be used to
    rewrite. *)
+
 (* TODO: stratify the rewrites; e.g. can do the eq rewrites first, then never
    again.
    Do the unsigned_of_Z, of_Z_unsigned at the end
  *)
 Ltac2 word_laws_without_side_goal () : constr list :=
-  [ 'word_eq_iff_Z_eq; 'unsigned_of_Z; 'of_Z_unsigned; 'unsigned_add; 'unsigned_sub;
+  [ 'unsigned_of_Z; 'of_Z_unsigned; 'unsigned_add; 'unsigned_sub;
     'unsigned_opp; 'unsigned_or; 'unsigned_and; 'unsigned_xor;
     'unsigned_not; 'unsigned_ndn; 'unsigned_mul
     (* 'signed_mulhss; 'signed_mulhsu; 'unsigned_mulhuu; 'unsigned_eqb; *)
@@ -122,9 +128,10 @@ Ltac2 word_laws_with_side_goals () : (constr * string) list := [
 Ltac2 mutable solve_word () := ().
 
 Ltac2 Type exn ::= [Word_side_goal_failed (string, exn)].
+Ltac2 Type exn ::= [Word_side_goal_not_expected (constr)].
 
 Print Ltac2 Signatures.
-Ltac2 solve_side_goal logger (parent_hyp : ident) (err : string) () :=
+Ltac2 solve_side_goal logger (err : string) (parent_hyp : ident) :=
   logger (fprintf "side goal: begin (%s) on %t" err (Control.goal ()));
   let parent_expr := Constr.type (Control.hyp parent_hyp) in
   Std.clear [parent_hyp];
@@ -138,31 +145,32 @@ Ltac2 solve_side_goal logger (parent_hyp : ident) (err : string) () :=
        Control.throw (Tactic_failure (Some (Message.of_string "fatal solve_side_goal: expected [solve_word] to succeed or throw an exception")))
     ).
 
-Ltac2 eliminate_word_ops logger :=
+Ltac2 rewrite_everywhere logger law side_goal_solver :=
   let make_rw law := { Std.rew_orient := Some Std.LTR;
                        Std.rew_repeat := Std.RepeatPlus;
                        Std.rew_equatn := (fun () => (law, Std.NoBindings)) } in
-  let all_cl := Some { Std.on_hyps := None; Std.on_concl := Std.AllOccurrences} in
   let make_cl h := Some { Std.on_hyps := Some [(h, Std.AllOccurrences, Std.InHyp)];
                           Std.on_concl := Std.NoOccurrences } in
-  let tacs := List.map (fun law () =>
-                          logger (fprintf "trying word law %t in *" law);
-                          rewrite0 false [make_rw law] all_cl (Some (fun () => ltac1:(tc_solve)));
-                          logger (fprintf "succeeded word law %t in *" law)
-                )
-                (word_laws_without_side_goal ()) in
-  let hyps := (Control.hyps ()) in
-  let tacs' := List.map
-                 (fun y () => let (law, err_str) := y in
-                           first0 (List.map
-                                     (fun h () =>
-                                        let (h, _, _) := h in
-                                        logger (fprintf "trying word_law %t in hypothesis %I" law h);
+  first0 (List.map
+            (fun h () =>
+               let (h, _, _) := h in
+               logger (fprintf "trying rewrite %t in %I" law h);
+               rewrite0 false [make_rw law] (make_cl h) (Some (fun () => side_goal_solver h));
+               Message.print (Message.of_string "succeeded");
+               Control.enter (fun () => logger (fprintf "succeeded word law %t in hypothesis %I" law h))
+            ) (Control.hyps ())).
 
-                                        rewrite0 true [make_rw law] (make_cl h) (Some (solve_side_goal logger h err_str));
-                                        Message.print (Message.of_string "succeeded");
-                                        Control.enter (fun () => logger (fprintf "succeeded word law %t in hypothesis %I" law h)))
-                                     hyps)
+Ltac2 no_side_condition logger h :=
+  logger (fprintf "fatal: unexpected side condition in %I" h);
+  Control.throw (Word_side_goal_not_expected (Control.goal ()));
+  ().
+
+Ltac2 eliminate_word_ops logger :=
+  let tacs := List.map (fun law () => rewrite_everywhere logger law (no_side_condition logger))
+                (word_laws_without_side_goal ()) in
+  let tacs' := List.map (fun y () =>
+                           let (law, err_str) := y in
+                           rewrite_everywhere logger law (solve_side_goal logger err_str)
                  )
                 (word_laws_with_side_goals ()) in
   let tacs := List.append tacs' tacs in
@@ -171,9 +179,9 @@ Ltac2 eliminate_word_ops logger :=
 
 Ltac2 noop_logger m := ().
 Ltac2 all_but_lia () :=
-  handle_goal noop_logger;
+  handle_goal verbose_logger;
   unfold_w_whatever ();
-  eliminate_word_ops noop_logger
+  eliminate_word_ops verbose_logger
   (* TODO: unfold word.wrap *)
   (* TODO: simplify Z constants *)
 .
@@ -187,7 +195,27 @@ Proof.
   intros. subst.
   unfold W64 in *. unfold w64 in *.
   Time ltac2:(Control.enter all_but_lia).
-  Time ltac2:(Control.enter all_but_lia).
+  ltac2:(rewrite -> unsigned_slu' in H).
+
+  ltac2:(let make_rw law := { Std.rew_orient := Some Std.LTR;
+                              Std.rew_repeat := Std.RepeatPlus;
+                              Std.rew_equatn := (fun () => (law, Std.NoBindings)) } in
+         let make_cl h := Some { Std.on_hyps := Some [(h, Std.AllOccurrences, Std.InHyp)];
+                                 Std.on_concl := Std.NoOccurrences } in
+         rewrite0 false [make_rw 'unsigned_of_Z] (make_cl @H)
+           (Some (
+                (no_side_condition verbose_logger) @H))
+        ).
+
+  ltac2:(let make_rw law := { Std.rew_orient := Some Std.LTR;
+                              Std.rew_repeat := Std.RepeatPlus;
+                              Std.rew_equatn := (fun () => (law, Std.NoBindings)) } in
+         let make_cl h := Some { Std.on_hyps := Some [(h, Std.AllOccurrences, Std.InHyp)];
+                                 Std.on_concl := Std.NoOccurrences } in
+         rewrite0 false [make_rw 'unsigned_of_Z] (make_cl @H)
+           (Some ((fun h () => no_side_condition verbose_logger h) @H))).
+
+
 
 Qed.
 
