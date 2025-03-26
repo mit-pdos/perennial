@@ -146,19 +146,15 @@ Proof.
   wp_auto.
   wp_apply (wp_newJoinHandle P) as "%l #Hhandle".
   iPersist "f h".
-  wp_bind (Fork _).
-  iApply (wp_fork with "[Hwp]").
-  - iModIntro. wp_auto.
-    (* NOTE: it's important not to do a pure reduction here since it would
+  wp_apply (wp_fork with "[Hwp]").
+  - (* NOTE: it's important not to do a pure reduction here since it would
     produce a substitution into the lambda *)
     wp_apply "Hwp".
     iIntros "HP".
     wp_auto.
     wp_apply (wp_JoinHandle__finish with "[$Hhandle $HP]").
     done.
-  - iModIntro.
-    wp_auto.
-    iApply "HΦ".
+  - iApply "HΦ".
     iFrame "#".
 Qed.
 

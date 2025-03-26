@@ -524,6 +524,8 @@ Ltac2 wp_bind_apply () : unit :=
                      lazy_match! e with
                      | App (Val _) (Val _) => ()
                      | App ?e1 (Val _) => f e1
+                     | Fork _ => ()
+                     | ArbitraryInt => ()
                      | _ => fail
                      end
                    in f e

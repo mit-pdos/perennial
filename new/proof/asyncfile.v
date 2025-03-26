@@ -652,15 +652,12 @@ Proof.
     iNext. by iFrame "∗#".
   }
 
-  wp_bind (Fork _)%E.
-  iApply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile]").
+  wp_apply (wp_fork with "[HpreIdx HpreData HdurIdx Hfile]").
   {
-    iNext.
     wp_apply (wp_AsyncFile__flushThread with "[-]").
     { iFrame "∗#". }
     done.
   }
-  iNext. wp_auto.
   iApply "HΦ".
   iFrame "∗#".
 Qed.
