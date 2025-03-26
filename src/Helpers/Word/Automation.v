@@ -23,10 +23,34 @@ Set Default Proof Mode "Classic".
 
 Module word.
 
+Import Interface.word.
 Local Lemma decision_assume_opposite `{!Decision P} : (¬ P → False) → P.
 Proof. by destruct (decide P). Qed.
 
+Local Lemma word_eq_iff_Z_eq {width} {word : word width} {word_ok : ok word} (x y : word):
+  x = y ↔ unsigned x = unsigned y.
+Proof. split; first by intros ->. apply inj. apply _. Qed.
+
+Local Lemma unsigned_slu' {width} {word : word width} {word_ok : word.ok word}
+  (x y : word) :
+  Z.lt (unsigned y) width -> unsigned (slu x y) = wrap ((unsigned x) * (2^(unsigned y))).
+Proof.
+  intros. rewrite unsigned_slu //. pose proof (word.unsigned_range y) as [??].
+  rewrite Z.shiftl_mul_pow2 //.
+Qed.
+
+Local Lemma unsigned_sru' {width} {word : word width} {word_ok : word.ok word}
+  (x y : word) :
+  Z.lt (unsigned y) width -> unsigned (sru x y) = ((unsigned x) / (2^(unsigned y))).
+Proof.
+  pose proof (word.unsigned_range y) as [??].
+  pose proof (word.unsigned_range x) as [??].
+  intros. rewrite unsigned_sru //. rewrite Z.shiftr_div_pow2 //. rewrite wrap_small //.
+  Z.div_mod_to_equations. nia.
+Qed.
+
 Import Printf.
+
 Ltac2 verbose_logger m := printf "word: %a" (fun () () => m) ().
 Ltac2 handle_goal logger :=
   lazy_match! goal with
@@ -40,54 +64,27 @@ Ltac2 handle_goal logger :=
 Ltac2 unfold_w_whatever () :=
   unfold W64, W32, (* W16, *) W8, w64, w32, (* w16, *) w8 in *.
 
-Local Lemma word_eq_iff_Z_eq {width} {word : Interface.word width} {word_ok : word.ok word} (x y : word):
-  x = y ↔ word.unsigned x = word.unsigned y.
-Proof. split; first by intros ->. apply inj. apply _. Qed.
-
 Ltac2 normalize_to_word_unsigned () :=
   (* eliminate sint.Z *)
   rewrite -> ?word.signed_eq_swrap_unsigned in *;
   (* eliminate any (eq (word.)*)
   rewrite -> ?word_eq_iff_Z_eq in *
 .
-
-Search word.of_Z.
-(* uint.Z (W64 (a + b)). *)
-
-(** Precondition: in all "relevant" hypotheses, all terms of type [word.rep _]
-    are either fed into [uint.Z] or fed into a [word] operation.
-
-   Postcondition: in all "relevant" hypotheses: all terms of type [word.rep _]
-   are directly wrapped in a [uint.Z], with some exceptions explained next.
-
-   Exceptions: if there are [word.rep]s showing up underneath a word-opaque
-   term. E.g. if [x y : w64] and [f : w64 → w64] is some function that's not a
-   standard word op, then [uint.Z [word.add (f x) y]] will turn into
-   [wrap (Z.add uint.Z (f x) (uint.Z y)]], which has the [word.rep] x that is
-   not getting passed into [uint.Z]. In this case, [f x] is treated as opaque
-   and unrelated to [x]. Any relationships should be proven and stated upfront.
- *)
-Import Interface.word.
-
 Print Ltac2 Signatures.
 
 (* FIXME: check for these and throw an error if found. *)
 Ltac2 unsupported_ops () : constr list :=
-  ['mulhss ; 'mulhsu ; 'mulhuu ; 'eqb ; 'ltu ; 'lts ; 'srs; 'divs; 'mods ] .
+  ['eqb; 'ltu; 'lts; 'mulhss ; 'mulhsu ; 'mulhuu ; 'eqb ; 'ltu ; 'lts ; 'srs; 'divs; 'mods ] .
 
-
-Ltac2 word_eq_elim_facts () : constr list := [
+(* This eliminates [@eq (word.rep) _ _], which should the following rewrites
+   never reintroduce. *)
+Ltac2 word_elim_eq_laws () : constr list := [
     'word_eq_iff_Z_eq
   ].
 
 (* These equalities have no sideconditions, and should always be used to
    rewrite. *)
-
-(* TODO: stratify the rewrites; e.g. can do the eq rewrites first, then never
-   again.
-   Do the unsigned_of_Z, of_Z_unsigned at the end
- *)
-Ltac2 word_laws_without_side_goal () : constr list :=
+Ltac2 word_op_laws_without_side_goal () : constr list :=
   [ 'unsigned_of_Z; 'of_Z_unsigned; 'unsigned_add; 'unsigned_sub;
     'unsigned_opp; 'unsigned_or; 'unsigned_and; 'unsigned_xor;
     'unsigned_not; 'unsigned_ndn; 'unsigned_mul
@@ -95,27 +92,14 @@ Ltac2 word_laws_without_side_goal () : constr list :=
     (* 'unsigned_ltu; 'signed_lts *)
   ].
 
-Local Lemma unsigned_slu' {width} {word : Interface.word width} {word_ok : word.ok word}
-  (x y : word) :
-  Z.lt (unsigned y) width -> unsigned (slu x y) = wrap ((unsigned x) * (2^(unsigned y))).
-Proof.
-  intros. rewrite unsigned_slu //. pose proof (word.unsigned_range y) as [??].
-  rewrite Z.shiftl_mul_pow2 //.
-Qed.
-
-Local Lemma unsigned_sru' {width} {word : Interface.word width} {word_ok : word.ok word}
-  (x y : word) :
-  Z.lt (unsigned y) width -> unsigned (sru x y) = ((unsigned x) / (2^(unsigned y))).
-Proof.
-  pose proof (word.unsigned_range y) as [??].
-  pose proof (word.unsigned_range x) as [??].
-  intros. rewrite unsigned_sru //. rewrite Z.shiftr_div_pow2 //. rewrite wrap_small //.
-  Z.div_mod_to_equations. nia.
-Qed.
+Ltac2 word_elim_of_Z_laws () : constr list :=
+  [ 'unsigned_of_Z (* 'of_Z_unsigned *) ].
+(* NOTE: don't want to rewrite by [of_Z_unsigned], since it results in a term
+wrapped by [unsigned] becoming no longer wrapped. *)
 
 (* These equalities have 1 sidegoal, and the string is a description of what
    that sidegoal must prove. The string is used in error messages. *)
-Ltac2 word_laws_with_side_goals () : (constr * string) list := [
+Ltac2 word_op_laws_with_side_goals () : (constr * string) list := [
     ('unsigned_slu', "slu: the shift amount must be less than width");
     ('unsigned_sru', "sru: the shift amount must be less than width");
     (* signed_srs *)
@@ -165,28 +149,65 @@ Ltac2 no_side_condition logger h :=
   Control.throw (Word_side_goal_not_expected (Control.goal ()));
   ().
 
+(** Precondition: in all "relevant" hypotheses, all terms of type [word.rep _]
+    are either fed into [uint.Z] or fed into a [word] operation.
+
+   Postcondition: in all "relevant" hypotheses: all terms of type [word.rep _]
+   are directly wrapped in a [uint.Z], with some exceptions explained next.
+
+   Exceptions: if there are [word.rep]s showing up underneath a word-opaque
+   term. E.g. if [x y : w64] and [f : w64 → w64] is some function that's not a
+   standard word op, then [uint.Z [word.add (f x) y]] will turn into
+   [wrap (Z.add uint.Z (f x) (uint.Z y)]], which has the [word.rep] x that is
+   not getting passed into [uint.Z]. In this case, [f x] is treated as opaque
+   and unrelated to [x]. Any relationships should be proven and stated upfront.
+ *)
 Ltac2 eliminate_word_ops logger :=
-  let tacs := List.map (fun law () => rewrite_everywhere logger law (no_side_condition logger))
-                (word_laws_without_side_goal ()) in
+  let rewrite_everywhere := rewrite_everywhere logger in
+  let no_side_condition := no_side_condition logger in
+
+  (* Eliminate word equality. *)
+  repeat (first0 (List.map (fun lem () => rewrite_everywhere lem no_side_condition)
+                    (word_elim_eq_laws ())));
+
+  (* Eliminate [signed] in favor of [swrap ∘ unsigned] *)
+  repeat (rewrite_everywhere 'word.signed_eq_swrap_unsigned no_side_condition);
+
+  (* At this point, every relevant term of type [rep] is wrapped in either
+     a word op or [unsigned]. *)
+  (* Eliminate word ops (add, mul, etc.). *)
+  let tacs := List.map (fun law () => rewrite_everywhere law no_side_condition)
+                (word_op_laws_without_side_goal ()) in
   let tacs' := List.map (fun y () =>
                            let (law, err_str) := y in
-                           rewrite_everywhere logger law (solve_side_goal logger err_str)
+                           rewrite_everywhere law (solve_side_goal logger err_str)
                  )
-                (word_laws_with_side_goals ()) in
+                (word_op_laws_with_side_goals ()) in
   let tacs := List.append tacs' tacs in
-  repeat0 (fun () => (first0 tacs));
+  repeat (first0 tacs);
+
+  (* At this point, every relevant term of type [rep] is wrapped in
+     [unsigned]. *)
+  (* Eliminate [of_Z]. *)
+  repeat (first0 (List.map (fun lem () => rewrite_everywhere lem no_side_condition)
+                    (word_elim_of_Z_laws ())));
   ().
+
+Ltac2 unfold_word_wrap () :=
+  unfold wrap, swrap in *.
 
 Ltac2 noop_logger m := ().
 Ltac2 all_but_lia () :=
   handle_goal verbose_logger;
   unfold_w_whatever ();
-  eliminate_word_ops verbose_logger
-  (* TODO: unfold word.wrap *)
+  eliminate_word_ops verbose_logger;
+  unfold_word_wrap ()
   (* TODO: simplify Z constants *)
 .
 
-Ltac2 Set solve_word as old := fun () => all_but_lia (); ltac1:(lia).
+Ltac2 Set solve_word as old :=
+  fun () => all_but_lia ();
+         ltac1:(zify; Z.div_mod_to_equations; lia).
 
 Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
   delta' = (W32 (sint.Z delta)) →
@@ -194,7 +215,12 @@ Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
 Proof.
   intros. subst.
   unfold W64 in *. unfold w64 in *.
-  Time ltac2:(Control.enter all_but_lia).
+  Time unshelve ltac2:(Control.enter all_but_lia).
+  zify. Z.div_mod_to_equations.
+  lia.
+  {
+    unfold wrap in *. zify. Z.div_mod_to_equations. lia.
+  }
   ltac2:(rewrite -> unsigned_slu' in H).
 
   ltac2:(let make_rw law := { Std.rew_orient := Some Std.LTR;
