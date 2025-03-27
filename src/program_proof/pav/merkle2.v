@@ -1,4 +1,4 @@
-From iris.bi.lib Require Import fractional.
+From iris.bi.lib Require Import fractional fixpoint_mono.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial Require Import base.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
@@ -205,31 +205,41 @@ Definition is_merkle_proof (label: list w8)
   tree_sibs_proof t label 0 proof ∗
   ⌜tree_path t label 0 found⌝.
 
-Fixpoint own_merkle_tree (ptr: loc) (t: tree) d : iProp Σ :=
+Definition own_merkle_tree_fix (recur : loc -d> tree -d> dfrac -d> iProp Σ) :
+    loc -d> tree -d> dfrac -d> iProp Σ :=
+  (λ ptr t d,
   ∃ hash,
   "#Htree_hash" ∷ is_tree_hash t hash ∗
-  match t with
-  | Empty => "%->" ∷ ⌜ptr = null⌝
-  | Leaf label val =>
-    ∃ sl_hash sl_label sl_val,
+  ( ⌜ ptr = null ⌝ ∗
+    ⌜ t = Empty ⌝ ) ∨
+  ( ⌜ ptr ≠ null ⌝ ∗
+    ∃ sl_hash (ptr_child0 ptr_child1 : loc) sl_label sl_val,
     "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
-    "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #null ∗
-    "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #null ∗
-    "Hptr_label" ∷ ptr ↦[node :: "label"]{d} (slice_val sl_label) ∗
-    "Hptr_val" ∷ ptr ↦[node :: "val"]{d} (slice_val sl_val) ∗
-    "Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
-    "Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
-    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash
-  | Inner child0 child1 =>
-    ∃ sl_hash (ptr_child0 ptr_child1 : loc),
-    "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash ∗
     "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #ptr_child0 ∗
     "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #ptr_child1 ∗
-    "Hown_child0" ∷ own_merkle_tree ptr_child0 child0 d ∗
-    "Hown_child1" ∷ own_merkle_tree ptr_child1 child1 d ∗
-    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash
-  | Cut _ => False
-  end.
+    "Hptr_label" ∷ ptr ↦[node :: "label"]{d} (slice_val sl_label) ∗
+    "Hptr_val" ∷ ptr ↦[node :: "val"]{d} (slice_val sl_val) ∗
+    ( ∃ label val,
+      ⌜ ptr_child0 = null ∧ ptr_child1 = null ⌝ ∗
+      ⌜ t = Leaf label val ⌝ ∗
+      "Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
+      "Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ) ∨
+    ( ∃ child0 child1,
+      ⌜ ptr_child0 ≠ null ∨ ptr_child1 ≠ null ⌝ ∗
+      ⌜ t = Inner child0 child1 ⌝ ∗
+      "Hown_child0" ∷ ▷ recur ptr_child0 child0 d ∗
+      "Hown_child1" ∷ ▷ recur ptr_child1 child1 d ) ) )%I.
+
+Local Instance own_merkle_tree_fix_contractive : Contractive own_merkle_tree_fix.
+Proof.
+  repeat intros ?.
+  solve_proper_prepare.
+  repeat (f_contractive || f_equiv); apply H.
+Qed.
+
+Definition own_merkle_tree :=
+  fixpoint own_merkle_tree_fix.
 
 Definition own_merkle_map_aux (ptr : loc) (t : tree)
     (m : gmap (list w8) (list w8)) depth d : iProp Σ :=
