@@ -66,7 +66,7 @@ Context `{!heapGS Σ}.
 Definition bytes_to_bits l := mjoin (byte_to_bits <$> l).
 
 (* get_bit returns false if bit n of l is 0 (or the bit is past the length of l). *)
-Definition get_bit (l : list w8) (n : nat) : bool :=
+Definition get_bit l (n : nat) : bool :=
   match bytes_to_bits l !! n with
   | None => false
   | Some bit => bit
@@ -217,8 +217,8 @@ Fixpoint own_merkle_tree (ptr: loc) (t: tree) d : iProp Σ :=
     "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #null ∗
     "Hptr_label" ∷ ptr ↦[node :: "label"]{d} (slice_val sl_label) ∗
     "Hptr_val" ∷ ptr ↦[node :: "val"]{d} (slice_val sl_val) ∗
-    "Hsl_label" ∷ own_slice_small sl_label byteT d label ∗
-    "Hsl_val" ∷ own_slice_small sl_val byteT d val ∗
+    "Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
+    "Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
     "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash
   | Inner child0 child1 =>
     ∃ sl_hash (ptr_child0 ptr_child1 : loc),
@@ -231,7 +231,7 @@ Fixpoint own_merkle_tree (ptr: loc) (t: tree) d : iProp Σ :=
   | Cut _ => False
   end.
 
-Definition own_merkle_map_int (ptr : loc) (t : tree)
+Definition own_merkle_map_aux (ptr : loc) (t : tree)
     (m : gmap (list w8) (list w8)) depth d : iProp Σ :=
   ⌜ tree_map_reln t m depth ⌝ ∗
   own_merkle_tree ptr t d.
@@ -374,23 +374,65 @@ Global Instance own_context_as_fractional ptr q :
   AsFractional (own_context ptr (DfracOwn q)) (λ q, own_context ptr (DfracOwn q)) q.
 Proof. split; [auto|apply _]. Qed.
 
-Lemma wp_put n0 ptr_n tr (depth : w64) elems sl_label sl_val d0 d1 (label val : list w8) ptr_ctx d2 :
+Lemma own_nil_tree t d :
+  own_merkle_tree null t d -∗
+  ⌜ t = Empty ⌝.
+Proof.
+  iIntros "Htree". destruct t; [done|iExFalso..].
+  - iNamed "Htree". iNamed "Htree".
+    iDestruct (struct_field_pointsto_not_null with "Hptr_child0") as %Heq.
+    (* annoying reasoning here. *)
+    { admit. }
+    { admit. }
+    done.
+  - admit.
+  - admit.
+Admitted.
+
+Lemma own_nil_map m depth :
+  tree_map_reln Empty m depth →
+  m = ∅.
+Proof.
+  intros Hreln.
+  apply map_empty. intros label. specialize (Hreln label).
+  by destruct (m !! label).
+Qed.
+
+Lemma wp_put n0 ptr_n tr (depth : w64) elems sl_label sl_val (label val : list w8) ptr_ctx :
   {{{
-    "Hown_merkle" ∷ own_merkle_map_int ptr_n tr elems (uint.nat depth) (DfracOwn 1) ∗
+    "Hown_merkle" ∷ own_merkle_map_aux ptr_n tr elems (uint.nat depth) (DfracOwn 1) ∗
     "Hptr_n0" ∷ n0 ↦[ptrT] #ptr_n ∗
-    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
     "%Hlen_label" ∷ ⌜ length label = hash_len ⌝ ∗
-    "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
-    "Hown_ctx" ∷ own_context ptr_ctx d2
+    "Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
+    "Hown_ctx" ∷ own_context ptr_ctx (DfracOwn 1)
   }}}
   put #n0 #depth (slice_val sl_label) (slice_val sl_val) #ptr_ctx
   {{{
     ptr_n' tr', RET #();
-    "Hown_merkle" ∷ own_merkle_map_int ptr_n' tr' (<[label:=val]>elems) (uint.nat depth) (DfracOwn 1) ∗
+    "Hown_merkle" ∷ own_merkle_map_aux ptr_n' tr' (<[label:=val]>elems) (uint.nat depth) (DfracOwn 1) ∗
     "Hptr_n0" ∷ n0 ↦[ptrT] #ptr_n' ∗
-    "Hown_ctx" ∷ own_context ptr_ctx d2
+    "Hown_ctx" ∷ own_context ptr_ctx (DfracOwn 1)
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H".
+  iLöb as "IH" forall (n0 ptr_n tr elems depth).
+  wp_rec. wp_load. wp_if_destruct.
+  { wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Hptr_leaf".
+    iDestruct (struct_fields_split with "Hptr_leaf") as "H". iNamed "H".
+    wp_store. wp_rec. do 2 wp_loadField.
+    wp_apply (wp_compLeafHash with "[$Hsl_label $Hsl_val]").
+    iIntros "*". iNamed 1.
+    iDestruct (own_slice_to_small with "Hsl_hash") as "Hsl_hash".
+    wp_storeField.
+    wp_pures. iApply ("HΦ" $! _ (Leaf label val)). iFrame "∗#%".
+    iDestruct "Hown_merkle" as "[%Hreln _]". iIntros "!%".
+    unfold tree_map_reln in *.
+    intros label'.
+    destruct (bool_decide (label = label')) eqn:Heq.
+    - apply bool_decide_eq_true in Heq. subst. by simpl_map.
+    - apply bool_decide_eq_false in Heq. simpl_map.
+Admitted.
 
 Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
     d0 d1 d2 (label last_hash sibs dig : list w8) last_node found :
