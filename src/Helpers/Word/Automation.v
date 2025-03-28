@@ -209,11 +209,57 @@ Ltac2 eliminate_word_ops logger :=
 Ltac2 unfold_word_wrap () :=
   unfold wrap, swrap in *.
 
-Ltac2 noop_logger m := ().
+Ltac2 noop_logger _ := ().
 
-(* TODO: Walk down the constr, and try to simplify a maximal constant expression. *)
+Ltac2 eval_Z_constants_in_hyp (h : ident) : unit :=
+  let rec try_eval_aux (e : constr) : (bool * constr) :=
+    let (should_eval, e) :=
+      lazy_match! e with
+      | Zpos _ => (true, e)
+      | Zneg _ => (true, e)
+      | ?op ?a ?b =>
+          let ((sa, a), (sb, b)) := (try_eval_aux a, try_eval_aux b) in
+          let should_eval :=
+            lazy_match! op with
+            | Z.add => true | Z.sub => true
+            | Z.mul => true | Z.div => true
+            | Z.pow => true | Z.modulo => true
+            | _ => false
+            end
+          in (Bool.and should_eval (Bool.and sa sb), '($op $a $b))
+      | ?a ?b => let ((_, a), (_, b)) := (try_eval_aux a, try_eval_aux b) in
+                (false, '($a $b))
+      | _ => (false, e)
+      end
+    in
+    if should_eval then (true, Std.eval_vm None e) else (false, e)
+  in
+
+  let try_eval () :=
+    let e := Constr.type (Control.hyp h) in
+    let (_, e') := try_eval_aux e in
+    Std.change None (fun _ => e')
+      { Std.on_hyps := Some [(h, Std.AllOccurrences, Std.InHyp)]; Std.on_concl := Std.NoOccurrences }
+  in
+  repeat0 (fun () => Control.progress try_eval).
+
 Ltac2 simplify_Z_constants () :=
-  ().
+  List.iter (fun h => let (h, _, _) := h in eval_Z_constants_in_hyp h) (Control.hyps ()).
+
+Ltac2 set_all () :=
+  List.iter
+    (fun h =>
+       let (h, _, _) := h in
+       repeat (
+           Std.set false (fun () => (None, '(Zpos _)))
+             { Std.on_hyps := Some [(h, Std.AllOccurrences, Std.InHyp)];
+               Std.on_concl := Std.NoOccurrences }
+    ))
+    (Control.hyps ()).
+
+Ltac2 subst_all () :=
+  List.iter (fun h => let (h, _, _) := h in orelse (fun () => Std.subst [h]) (fun _ => ()))
+            (Control.hyps ()).
 
 Ltac2 all_but_lia () :=
   handle_goal noop_logger;
@@ -224,27 +270,21 @@ Ltac2 all_but_lia () :=
 .
 
 Ltac2 Set solve_word_unsafe as old :=
-  fun () => all_but_lia ();
-         ltac1:(zify; Z.div_mod_to_equations; lia).
+  (fun () => all_but_lia ();
+         set_all ();
+         ltac1:(zify; Z.div_mod_to_equations);
+         subst_all ();
+         ltac1:(lia)).
 
 Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
   delta' = (W32 (sint.Z delta)) →
   word.slu delta (W64 32) = word.slu (W64 (sint.Z delta')) (W64 32).
 Proof.
   intros. subst.
-  Time unshelve ltac2:(Control.enter all_but_lia);
-
-  repeat (first [ progress (vm_compute (Z.modulo (Z.pos _) (Z.pos _)) in H) |
-                  progress (vm_compute (Z.sub (Z.pos _) (Z.pos _)) in H) |
-                  progress (vm_compute (Z.pow (Z.pos _) (Z.pos _)) in H) |
-                  progress (vm_compute (Z.mul (Z.pos _) (Z.pos _)) in H) ] );
-  zify;
-  repeat set (Zpos _) in H;
-  Z.div_mod_to_equations;
-  subst z z0 z1 z2 z3;
-  lia.
+  Time ltac2:(solve_word_unsafe ()).
 Qed.
 
-Lemma test
-
 End word.
+
+Tactic Notation "word" :=
+  try iPureIntro; ltac2:(word.solve_word_unsafe ()).
