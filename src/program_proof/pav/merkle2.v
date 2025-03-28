@@ -213,7 +213,8 @@ Fixpoint own_merkle_tree ptr t d : iProp Σ :=
   ∃ hash,
   "#Htree_hash" ∷ is_tree_hash t hash ∗
   match t with
-  | Empty => ⌜ ptr = null ⌝
+  | Empty =>
+    "%Heq_ptr" ∷ ⌜ ptr = null ⌝
   | Leaf label val =>
     ∃ sl_hash sl_label sl_val,
     "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash ∗
@@ -231,7 +232,8 @@ Fixpoint own_merkle_tree ptr t d : iProp Σ :=
     "Hown_child0" ∷ own_merkle_tree ptr_child0 child0 d ∗
     "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #ptr_child0 ∗
     "Hown_child1" ∷ own_merkle_tree ptr_child1 child1 d ∗
-    "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #ptr_child1
+    "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #ptr_child1 ∗
+    "%Heq_children" ∷ ⌜ ptr_child0 ≠ null ∨ ptr_child1 ≠ null ⌝
   | Cut _ => False
   end.
 
@@ -338,14 +340,12 @@ Proof. Admitted.
 
 Lemma wp_getBit sl_b d0 (b : list w8) (n : w64) :
   {{{
-    "Hsl_b" ∷ own_slice_small sl_b byteT d0 b ∗
-    "%Hinb" ∷ ⌜ uint.nat n < length b * 8 ⌝
+    "Hsl_b" ∷ own_slice_small sl_b byteT d0 b
   }}}
   getBit (slice_val sl_b) #n
   {{{
-    pos, RET #pos;
-    "Hsl_b" ∷ own_slice_small sl_b byteT d0 b ∗
-    "%Hget_bit" ∷ ⌜ get_bit b (uint.nat n) = pos ⌝
+    RET #(get_bit b (uint.nat n));
+    "Hsl_b" ∷ own_slice_small sl_b byteT d0 b
   }}}.
 Proof. Admitted.
 
@@ -384,7 +384,7 @@ Lemma own_empty_tree t d :
   ⌜ t = Empty ⌝.
 Proof.
   iIntros "H". destruct t; [done|..];
-    iNamed "H"; [..|done]; iNamed "H"; iExFalso;
+    iNamed "H"; [..|done]; iNamed "H";
     by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
 Qed.
 
@@ -396,6 +396,25 @@ Proof.
   apply map_empty. intros label. specialize (Hreln label).
   by destruct (m !! label).
 Qed.
+
+Lemma wp_getChild n d0 ptr_child0 ptr_child1 sl_label d1 (label : list w8) (depth : w64) :
+  {{{
+    "Hptr_child0" ∷ n ↦[node :: "child0"]{d0} #ptr_child0 ∗
+    "Hptr_child1" ∷ n ↦[node :: "child1"]{d0} #ptr_child1 ∗
+    "Hsl_label" ∷ own_slice_small sl_label byteT d1 label
+  }}}
+  getChild #n (slice_val sl_label) #depth
+  {{{
+    ptr2_child_bit,
+    RET (#ptr2_child_bit,
+      #(if get_bit label depth then ptr_child0 else ptr_child1));
+    "Hptr_child0" ∷ n ↦[node :: "child0"]{d0} #ptr_child0 ∗
+    "Hptr_child1" ∷ n ↦[node :: "child1"]{d0} #ptr_child1 ∗
+    "Hsl_label" ∷ own_slice_small sl_label byteT d1 label ∗
+    "Hptr2_child_bit" ∷ ptr2_child_bit ↦[ptrT]
+      #(if get_bit label depth then ptr_child1 else ptr_child0)
+  }}}.
+Proof. Admitted.
 
 Lemma wp_put n0 ptr_n tr (depth : w64) elems sl_label sl_val (label val : list w8) ptr_ctx :
   {{{
@@ -414,8 +433,8 @@ Lemma wp_put n0 ptr_n tr (depth : w64) elems sl_label sl_val (label val : list w
     "Hown_ctx" ∷ own_context ptr_ctx (DfracOwn 1)
   }}}.
 Proof.
-  iIntros (Φ) "H HΦ". iNamed "H".
   iLöb as "IH" forall (n0 ptr_n tr elems depth).
+  iIntros (Φ) "H HΦ". iNamed "H".
   wp_rec. wp_load. wp_if_destruct.
   { (* empty node. *)
     iDestruct "Hown_merkle" as "[%Htr_reln Hown_merkle]".
@@ -433,6 +452,38 @@ Proof.
     iFrame "Hown_ctx ∗#%". iIntros "!%".
     intros label'.
     destruct (decide (label = label')); subst; simpl_map; naive_solver. }
+
+  iDestruct "Hown_merkle" as "[%Htr_reln Hown_merkle]".
+  destruct tr; iNamed "Hown_merkle"; [done|..|done];
+    iNamed "Hown_merkle"; fold own_merkle_tree.
+  2: {
+    wp_bind (If _ _ #false).
+    wp_apply (wp_wand _ _ _
+      (λ ret,
+      "%Hret" ∷ ⌜ ret = #false ⌝ ∗
+      "Hptr_child0" ∷ ptr_n ↦[node::"child0"] #ptr_child0 ∗
+      "Hptr_child1" ∷ ptr_n ↦[node::"child1"] #ptr_child1
+      )%I
+      with "[Hptr_child0 Hptr_child1]"
+    ).
+    { wp_loadField. wp_if_destruct.
+      - wp_loadField. wp_pures. iFrame. iPureIntro.
+        case_bool_decide; naive_solver.
+      - by iFrame. }
+    iIntros "*". iNamed 1. subst.
+    wp_apply (wp_getChild with "[$Hptr_child0 $Hptr_child1 $Hsl_label]").
+    iIntros "*". iNamed 1. wp_pures.
+    case_match.
+    - wp_apply ("IH" with "[Hown_child1 $Hptr2_child_bit $Hsl_label $Hsl_val $Hown_ctx]").
+      { iFrame "∗%".
+        (* this approach requires partitioning the elems map into the map
+        for its two children. this is tricky.
+        old_merkle.v fixed this by keeping the elems constant
+        and adding a prefix into tree_map_reln that selects a subset of
+        elems to relate to the tree.
+        instead, i'll try the approach in the original merkle2.v,
+        which derives a map from the tree. *)
+        admit.
 Admitted.
 
 Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
