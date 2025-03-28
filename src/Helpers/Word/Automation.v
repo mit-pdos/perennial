@@ -61,7 +61,8 @@ Ltac2 handle_goal logger :=
   | [ |- False ] => ()
   | [ |- _ ] => first [
           apply decision_assume_opposite; intros | (* if decidable, assume the opposite; *)
-          logger (fprintf "eliminating goal and trying to prove false instead"); Std.cut 'False
+          logger (fprintf "eliminating goal and trying to prove false instead");
+          apply False_ind
         ]
   end.
 
@@ -304,6 +305,8 @@ Ltac2 Set solve_unsafe as old :=
          ltac1:(zify; Z.div_mod_to_equations);
          subst_all ();
          ltac1:(lia)).
+(* FIXME: add a warning/error for nonlinear arithmetic? Sometimes it's hard to
+   notice. *)
 
 Local Lemma sum_overflow_check (x y: u64) :
   uint.Z (word.add x y) < uint.Z x <-> uint.Z x + uint.Z y >= 2^64.
@@ -321,4 +324,7 @@ Qed.
 End word.
 
 Tactic Notation "word" :=
-  try iPureIntro; ltac2:(word.solve_unsafe ()).
+  try iPureIntro; ltac2:(Control.enter word.solve_unsafe).
+
+Tactic Notation "nat_cleanup" :=
+  rewrite -> ?Nat2Z.id; rewrite -> ?Z2Nat.id by word.

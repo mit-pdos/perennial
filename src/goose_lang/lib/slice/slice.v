@@ -520,18 +520,19 @@ Proof.
   iIntros "[[Hsmall %] Hcap]".
   iDestruct "Hcap" as (extra) "[% Hcap]".
   iDestruct (array_split (uint.nat n) with "Hsmall") as "[Hsmall0 Hsmall1]"; try lia.
-  word_cleanup.
+  nat_cleanup.
   iSplitL "Hsmall0".
-  - iFrame. iPureIntro. split; word.
+  - iFrame. word.
   - iExists _. iSplitR.
     2: {
-      iApply array_app. iFrame "Hsmall1".
+      iApply array_app.
+      iFrame "Hsmall1".
       replace (uint.Z (Slice.sz s)) with (uint.Z n + length (drop (uint.nat n) vs)).
-      2: { rewrite length_drop. lia. }
+      2: { rewrite length_drop. word. }
       rewrite Z.mul_add_distr_l -loc_add_assoc //.
     }
     iPureIntro.
-    rewrite length_app length_drop. lia.
+    rewrite length_app length_drop. word.
 Qed.
 
 Lemma slice_small_split s (n: u64) t q vs :
@@ -570,6 +571,8 @@ Proof.
     iDestruct "Hs2" as "[Ha2 %Hlen2]".
     rewrite length_drop /= in Hlen1.
     rewrite length_take /= in Hlen2.
+    Import Ltac2.
+    Set Default Proof Mode "Classic".
     iDestruct (array_split with "[$Ha1 $Ha2]") as "Ha"; try word.
     iFrame.
     iPureIntro.
@@ -649,6 +652,9 @@ Proof.
   rewrite /slice_skip /=.
   f_equal; try word.
   rewrite !loc_add_assoc.
+  f_equal.
+  (* NOTE: the goal is not currently linear because of variable [ty_size t] *)
+  rewrite -Z.mul_add_distr_l.
   f_equal.
   word.
 Qed.
@@ -933,7 +939,7 @@ Proof.
   repeat wp_rec. wp_pures.
   iDestruct (array_elem_acc H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
-  word_cleanup.
+  nat_cleanup.
   iDestruct (struct_pointsto_ty with "Hi") as %Hty.
   wp_load.
   iSpecialize ("Hsl'" with "Hi").
