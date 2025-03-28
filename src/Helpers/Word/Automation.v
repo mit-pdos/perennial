@@ -83,28 +83,32 @@ Ltac2 normalize_to_word_unsigned () :=
   do: rewrite -> ?word_eq_iff_Z_eq in *.
 
 (* FIXME: check for these and throw an error if found. *)
-Ltac2 unsupported_ops () : constr list :=
-  ['eqb; 'ltu; 'lts; 'mulhss ; 'mulhsu ; 'mulhuu ; 'eqb ; 'ltu ; 'lts ; 'srs; 'divs; 'mods ] .
+
+(* delayed open_constr *)
+Local Ltac2 Notation "delayed:(" t(thunk(open_constr)) ")" := t.
+
+Local Ltac2 Notation "delayed:[" ts(list1(thunk(open_constr))) "]" := ts.
+
+Ltac2 unsupported_ops () : (unit -> constr) list :=
+  delayed:[eqb ltu lts mulhss mulhsu mulhuu eqb ltu lts srs divs mods].
 
 (* These equalities have no sideconditions, and should always be used to
    rewrite. *)
-Ltac2 word_op_laws_without_side_goal () : constr list :=
-  [ 'unsigned_of_Z; 'of_Z_unsigned; 'unsigned_add; 'unsigned_sub;
-    'unsigned_opp; 'unsigned_or; 'unsigned_and; 'unsigned_xor;
-    'unsigned_not; 'unsigned_ndn; 'unsigned_mul
+Ltac2 word_op_laws_without_side_goal () : (unit -> constr) list :=
+  delayed:[unsigned_add unsigned_sub unsigned_opp unsigned_or
+             unsigned_and unsigned_xor unsigned_not unsigned_ndn unsigned_mul].
     (* 'signed_mulhss; 'signed_mulhsu; 'unsigned_mulhuu; 'unsigned_eqb; *)
     (* 'unsigned_ltu; 'signed_lts *)
-  ].
 
 (* These equalities have 1 sidegoal, and the string is a description of what
    that sidegoal must prove. The string is used in error messages. *)
-Ltac2 word_op_laws_with_side_goals () : (constr * string) list := [
-    ('unsigned_slu', "slu: the shift amount must be less than width");
-    ('unsigned_sru', "sru: the shift amount must be less than width");
+Ltac2 word_op_laws_with_side_goals () : ((unit -> constr) * string) list := [
+    (delayed:(unsigned_slu'), "slu: the shift amount must be less than width");
+    (delayed:(unsigned_sru'), "sru: the shift amount must be less than width");
     (* signed_srs *)
-    ('word.unsigned_divu_nowrap, "divu: the divisor must be non-zero");
+    (delayed:(word.unsigned_divu_nowrap), "divu: the divisor must be non-zero");
     (* signed_divs *)
-    ('word.unsigned_modu_nowrap, "modu: the modulus must be non-zero")
+    (delayed:(word.unsigned_modu_nowrap), "modu: the modulus must be non-zero")
       (* signed_mods *)
   ].
 
@@ -129,7 +133,7 @@ Ltac2 solve_side_goal logger (err : string) (parent_hyp : ident) :=
     ).
 
 (* safe *)
-Ltac2 try_rewrite_anywhere logger law side_goal_solver : bool :=
+Ltac2 try_rewrite_anywhere logger dlaw side_goal_solver : bool :=
   let make_rw law := { Std.rew_orient := Some Std.LTR;
                        Std.rew_repeat := Std.RepeatPlus;
                        Std.rew_equatn := (fun () => (law, Std.NoBindings)) } in
@@ -139,12 +143,15 @@ Ltac2 try_rewrite_anywhere logger law side_goal_solver : bool :=
     (match hyps with
      | [] => false
      | (h, _, _) :: hyps =>
-         logger (fprintf "trying rewrite %t in %I" law h);
          orelse
-           (fun () => rewrite0 false [make_rw law] (make_cl h) (Some (fun () => side_goal_solver h));
-                   logger (fprintf "succeeded word law %t in hypothesis %I" law h);
-                   Control.enter (fun () => Control.zero (Tactic_failure None));
-                   true)
+           (fun () =>
+              let law := dlaw () in
+              logger (fprintf "trying rewrite %t in %I" law h);
+              rewrite0 false [make_rw law] (make_cl h) (Some (fun () => side_goal_solver h));
+              if (Int.equal (Control.numgoals ()) 1) then ()
+              else Control.throw (Tactic_failure (Some (Message.of_string "word fatal: rewrite failed")));
+              logger (fprintf "succeeded word law %t in hypothesis %I" law h);
+              true)
            (fun _ => loop hyps) (* [rewrite0] didn't find anything to rewrite *)
      end) in
   loop (Control.hyps ()).
@@ -173,10 +180,10 @@ Ltac2 eliminate_word_ops logger :=
   let rec loop f := if (f ()) then loop f else () in
 
   (* Eliminate word equality, which should following rewrites should never reintroduce. *)
-  loop (fun () => try_rewrite_anywhere 'word_eq_iff_Z_eq no_side_condition);
+  loop (fun () => try_rewrite_anywhere (delayed:(word_eq_iff_Z_eq)) no_side_condition);
 
   (* Eliminate [signed] in favor of [swrap ∘ unsigned]. *)
-  loop (fun () => try_rewrite_anywhere 'word.signed_eq_swrap_unsigned no_side_condition);
+  loop (fun () => try_rewrite_anywhere (delayed:(word.signed_eq_swrap_unsigned)) no_side_condition);
 
   (* At this point, every relevant term of type [rep] is wrapped in either
      a word op or [unsigned]. *)
@@ -194,7 +201,7 @@ Ltac2 eliminate_word_ops logger :=
   (* At this point, every relevant term of type [rep] is wrapped in
      [unsigned]. *)
   (* Eliminate [of_Z]. *)
-  (* loop (fun () => try_rewrite_anywhere 'unsigned_of_Z no_side_condition); *)
+  loop (fun () => try_rewrite_anywhere (delayed:(unsigned_of_Z)) no_side_condition);
     (* NOTE: don't want to rewrite by [of_Z_unsigned], since it results in a term
        wrapped by [unsigned] becoming no longer wrapped. *)
   ().
@@ -209,9 +216,9 @@ Ltac2 simplify_Z_constants () :=
   ().
 
 Ltac2 all_but_lia () :=
-  handle_goal verbose_logger;
+  handle_goal noop_logger;
   unfold_w_whatever ();
-  eliminate_word_ops verbose_logger;
+  eliminate_word_ops noop_logger;
   unfold_word_wrap ();
   simplify_Z_constants () (* FIXME: should probably simplify Z constants after zify *)
 .
@@ -225,34 +232,13 @@ Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
   word.slu delta (W64 32) = word.slu (W64 (sint.Z delta')) (W64 32).
 Proof.
   intros. subst.
-  (* Time unshelve ltac2:(Control.enter all_but_lia). *)
-  ltac2:(
-  handle_goal verbose_logger;
-  unfold_w_whatever ()).
-  clear H.
-  ltac2:(Control.enter (fun () => try_rewrite_anywhere verbose_logger 'unsigned_of_Z (no_side_condition verbose_logger); ())).
-  ltac2:(
-  let make_rw law := { Std.rew_orient := Some Std.LTR;
-                       Std.rew_repeat := Std.RepeatPlus;
-                       Std.rew_equatn := (fun () => (law, Std.NoBindings)) } in
-  let make_cl h := Some { Std.on_hyps := Some [(h, Std.AllOccurrences, Std.InHyp)];
-                          Std.on_concl := Std.NoOccurrences } in
-  rewrite0 false [make_rw 'unsigned_of_Z] (make_cl @delta) (Some (fun () => no_side_condition verbose_logger @delta))
-         ).
-  ltac2:(try_rewrite_anywhere verbose_logger 'unsigned_of_Z (no_side_condition verbose_logger)).
-  ltac2:(eliminate_word_ops verbose_logger).
-  ltac2:(try_rewrite_anywhere verbose_logger 'unsigned_of_Z (no_side_condition verbose_logger)).
-  ltac2:(try_rewrite_anywhere verbose_logger 'unsigned_of_Z (no_side_condition verbose_logger)).
-  ltac2:(try_rewrite_anywhere verbose_logger 'unsigned_of_Z (no_side_condition verbose_logger)).
-  rewrite -> unsigned_of_Z in H.
-  rewrite -> unsigned_of_Z in H.
-  rewrite -> unsigned_of_Z in H.
-  rewrite -> unsigned_of_Z in H.
+  Time unshelve ltac2:(Control.enter all_but_lia);
+
   repeat (first [ progress (vm_compute (Z.modulo (Z.pos _) (Z.pos _)) in H) |
                   progress (vm_compute (Z.sub (Z.pos _) (Z.pos _)) in H) |
                   progress (vm_compute (Z.pow (Z.pos _) (Z.pos _)) in H) |
                   progress (vm_compute (Z.mul (Z.pos _) (Z.pos _)) in H) ] );
-  zify.
+  zify;
   repeat set (Zpos _) in H;
   Z.div_mod_to_equations;
   subst z z0 z1 z2 z3;
