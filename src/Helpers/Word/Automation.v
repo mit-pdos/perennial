@@ -112,7 +112,7 @@ Ltac2 word_op_laws_with_side_goals () : ((unit -> constr) * string) list := [
       (* signed_mods *)
   ].
 
-Ltac2 mutable solve_word_unsafe () := ().
+Ltac2 mutable solve_unsafe () := ().
 
 Ltac2 Type exn ::= [Word_side_goal_failed (string, exn)].
 Ltac2 Type exn ::= [Word_side_goal_not_expected (constr)].
@@ -122,7 +122,7 @@ Ltac2 solve_side_goal logger (err : string) (parent_hyp : ident) :=
   logger (fprintf "side goal: begin (%s) on %t" err (Control.goal ()));
   let parent_expr := Constr.type (Control.hyp parent_hyp) in
   Std.clear [parent_hyp];
-  orelse solve_word_unsafe
+  orelse solve_unsafe
     (fun ex =>
        let m := (fprintf "side goal failed: %s from expression: %a %t" err (fun () () => Message.force_new_line) ()
                    parent_expr) in
@@ -261,30 +261,64 @@ Ltac2 subst_all () :=
   List.iter (fun h => let (h, _, _) := h in orelse (fun () => Std.subst [h]) (fun _ => ()))
             (Control.hyps ()).
 
+(* XXX: using ltac1 because constrs can't be directly used in patterns.
+   Example workaround to do it in ltac2: https://github.com/rocq-prover/rocq/issues/13962
+ *)
+Ltac2 add_range_facts () :=
+  ltac1:(
+           repeat match goal with
+             | [ H: context[uint.Z ?x] |- _ ] =>
+                 lazymatch goal with
+                 | [ H': 0 <= uint.Z x < 2^_ |- _ ] => fail
+                 | _ => pose proof (word.unsigned_range x)
+                 end
+           end
+  ).
+
+(*
+  let is := FSet.empty FSet.ident_tag in
+  repeat
+    (match! goal with
+     | [ _ : context[uint.Z ?x] |- _ ] =>
+         lazy_match! goal with
+         | [ _ : 0 ≤ uint.Z $x < 2^ _ |- _ ] => Control.backtrack_tactic_failure "backtrack"
+         | [ |- _] =>
+             Std.assert (Std.AssertType None '(0 ≤ uint.Z $x < 2^_)
+                           (Some (fun () => Control.refine (fun () => '(word.unsigned_range $x));
+                                         ltac1:(tc_solve))))
+         end
+     end). *)
+
 Ltac2 all_but_lia () :=
   handle_goal noop_logger;
   unfold_w_whatever ();
   eliminate_word_ops noop_logger;
   unfold_word_wrap ();
+  add_range_facts ();
   simplify_Z_constants () (* FIXME: should probably simplify Z constants after zify *)
 .
 
-Ltac2 Set solve_word_unsafe as old :=
+Ltac2 Set solve_unsafe as old :=
   (fun () => all_but_lia ();
          set_all ();
          ltac1:(zify; Z.div_mod_to_equations);
          subst_all ();
          ltac1:(lia)).
 
+Local Lemma sum_overflow_check (x y: u64) :
+  uint.Z (word.add x y) < uint.Z x <-> uint.Z x + uint.Z y >= 2^64.
+Proof.
+  Time ltac2:(word.solve_unsafe ()).
+Qed.
+
 Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
   delta' = (W32 (sint.Z delta)) →
   word.slu delta (W64 32) = word.slu (W64 (sint.Z delta')) (W64 32).
 Proof.
-  intros. subst.
-  Time ltac2:(solve_word_unsafe ()).
+  intros. ltac2:(solve_unsafe ()).
 Qed.
 
 End word.
 
 Tactic Notation "word" :=
-  try iPureIntro; ltac2:(word.solve_word_unsafe ()).
+  try iPureIntro; ltac2:(word.solve_unsafe ()).
