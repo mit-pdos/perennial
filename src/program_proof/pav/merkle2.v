@@ -78,6 +78,38 @@ Inductive tree :=
 | Inner (child0: tree) (child1: tree)
 | Cut (hash: list w8).
 
+Fixpoint tree_to_map t : gmap (list w8) (list w8) :=
+  match t with
+  | Empty => ∅
+  | Leaf label val => {[label := val]}
+  | Inner child0 child1 => (tree_to_map child0) ∪ (tree_to_map child1)
+  | Cut h => ∅
+  end.
+
+Definition tree_labels_have_bit t n val : Prop :=
+  ∀ l,
+  l ∈ dom (tree_to_map t) →
+  get_bit l n = val.
+
+Fixpoint sorted_tree t depth : Prop :=
+  match t with
+  | Inner child0 child1 =>
+    sorted_tree child0 (word.add depth (W64 1)) ∧
+    tree_labels_have_bit child0 depth false ∧
+    sorted_tree child1 (word.add depth (W64 1)) ∧
+    tree_labels_have_bit child1 depth true
+  | _ => True
+  end.
+
+Inductive cutless_tree : ∀ (t: tree), Prop :=
+  | CutlessEmpty : cutless_tree Empty
+  | CutlessLeaf : ∀ label val, cutless_tree (Leaf label val)
+  | CutlessInner :
+    ∀ child0 child1,
+    cutless_tree child0 →
+    cutless_tree child1 →
+    cutless_tree (Inner child0 child1).
+
 Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
     (result: option (list w8 * list w8)%type) : Prop :=
   match t with
@@ -91,20 +123,6 @@ Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
     | true  => tree_path child1 label (word.add depth (W64 1)) result
     end
   | Cut _ => False
-  end.
-
-Definition found_nonmemb (label: list w8)
-    (found: option ((list w8) * (list w8))%type) :=
-  match found with
-  | None => True
-  | Some (found_label, _) => label ≠ found_label
-  end.
-
-Definition tree_map_reln (t : tree) (m : gmap (list w8) (list w8)) depth : Prop :=
-  ∀ label,
-  match m !! label with
-  | None => ∃ found, tree_path t label depth found ∧ found_nonmemb label found
-  | Some val => tree_path t label depth (Some (label, val))
   end.
 
 (* TODO: rm once seal merged in. *)
@@ -135,56 +153,33 @@ Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
 Instance is_tree_hash_persistent t h : Persistent (is_tree_hash t h).
 Proof. revert h. induction t; apply _. Qed.
 
-Lemma is_tree_hash_len t h:
-  is_tree_hash t h -∗
-  ⌜length h = hash_len⌝.
-Proof. destruct t; iNamed 1; [..|done]; by iApply is_hash_len. Qed.
-
-Theorem tree_path_agree label depth found0 found1 h t0 t1:
-  tree_path t0 label depth found0 →
-  tree_path t1 label depth found1 →
-  is_tree_hash t0 h -∗
-  is_tree_hash t1 h -∗
-  ⌜found0 = found1⌝.
-Proof.
-  iInduction t0 as [| ? | ? IH0 ? IH1 | ?] forall (depth t1 h);
-    destruct t1; simpl; iIntros "*"; try done;
-    iNamedSuffix 1 "0";
-    iNamedSuffix 1 "1";
-    iDestruct (is_hash_inj with "His_hash0 His_hash1") as %?;
-    try naive_solver.
-
-  (* both leaves. use leaf encoding. *)
-  - iPureIntro. list_simplifier.
-    apply app_inj_1 in H0; [naive_solver|].
-    by rewrite !u64_le_seal_len.
-  (* both inner. use inner encoding and next_pos same to get
-  the same next_hash. then apply IH. *)
-  - iDestruct (is_tree_hash_len with "Hleft_hash0") as %?.
-    iDestruct (is_tree_hash_len with "Hleft_hash1") as %?.
-    list_simplifier. case_match.
-    + by iApply "IH1".
-    + by iApply "IH0".
-Qed.
-
 Definition is_merkle_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :=
   ∃ t,
-  ⌜ tree_map_reln t m 0 ⌝ ∗
-  is_tree_hash t h.
+  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
+  "%Hsorted" ∷ ⌜ sorted_tree t 0 ⌝ ∗
+  "%Hcutless" ∷ ⌜ cutless_tree t ⌝ ∗
+  "#Htree_hash" ∷ is_tree_hash t h.
 
 Definition is_merkle_found (label: list w8)
     (found: option ((list w8) * (list w8))%type) (h: list w8) : iProp Σ :=
   ∃ t,
-  ⌜tree_path t label 0 found⌝ ∗
-  is_tree_hash t h.
+  "%Htree_path" ∷ ⌜ tree_path t label 0 found ⌝ ∗
+  "#Htree_hash" ∷ is_tree_hash t h.
 
 Definition is_merkle_memb (label: list w8) (val: list w8) (h: list w8) : iProp Σ :=
-  is_merkle_found label (Some (label, val)) h.
+  "#His_found" ∷ is_merkle_found label (Some (label, val)) h.
+
+Definition found_nonmemb (label: list w8)
+    (found: option ((list w8) * (list w8))%type) :=
+  match found with
+  | None => True
+  | Some (found_label, _) => label ≠ found_label
+  end.
 
 Definition is_merkle_nonmemb (label: list w8) (h: list w8) : iProp Σ :=
   ∃ found,
-  is_merkle_found label found h ∗
-  ⌜found_nonmemb label found⌝.
+  "#His_found" ∷ is_merkle_found label found h ∗
+  "%Heq_nonmemb" ∷ ⌜ found_nonmemb label found ⌝.
 
 Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth: nat)
     (proof: list $ list w8) : iProp Σ :=
@@ -239,23 +234,135 @@ Fixpoint own_merkle_tree ptr t d : iProp Σ :=
 
 Definition own_merkle_map_aux (ptr : loc) (t : tree)
     (m : gmap (list w8) (list w8)) depth d : iProp Σ :=
-  ⌜ tree_map_reln t m depth ⌝ ∗
-  own_merkle_tree ptr t d.
+  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
+  "%Hsorted" ∷ ⌜ sorted_tree t depth ⌝ ∗
+  "Hown_tree" ∷ own_merkle_tree ptr t d.
 
 Definition own_merkle_map (ptr: loc) (m: gmap (list w8) (list w8)) d : iProp Σ :=
   ∃ t,
-  ⌜ tree_map_reln t m 0 ⌝ ∗
-  own_merkle_tree ptr t d.
+  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
+  "%Hsorted" ∷ ⌜ sorted_tree t (W64 0) ⌝ ∗
+  "Hown_tree" ∷ own_merkle_tree ptr t d.
 
-(* Some facts that might be helpful to derive from the above: *)
+(* Derived facts. *)
+
+Lemma is_tree_hash_len t h:
+  is_tree_hash t h -∗
+  ⌜length h = hash_len⌝.
+Proof. destruct t; iNamed 1; [..|done]; by iApply is_hash_len. Qed.
+
+Lemma tree_path_agree label depth found0 found1 h t0 t1:
+  tree_path t0 label depth found0 →
+  tree_path t1 label depth found1 →
+  is_tree_hash t0 h -∗
+  is_tree_hash t1 h -∗
+  ⌜found0 = found1⌝.
+Proof.
+  iInduction t0 as [| ? | ? IH0 ? IH1 | ?] forall (depth t1 h);
+    destruct t1; simpl; iIntros "*"; try done;
+    iNamedSuffix 1 "0";
+    iNamedSuffix 1 "1";
+    iDestruct (is_hash_inj with "His_hash0 His_hash1") as %?;
+    try naive_solver.
+
+  (* both leaves. use leaf encoding. *)
+  - iPureIntro. list_simplifier.
+    apply app_inj_1 in H0; [naive_solver|].
+    by rewrite !u64_le_seal_len.
+  (* both inner. use inner encoding and next_pos same to get
+  the same next_hash. then apply IH. *)
+  - iDestruct (is_tree_hash_len with "Hleft_hash0") as %?.
+    iDestruct (is_tree_hash_len with "Hleft_hash1") as %?.
+    list_simplifier. case_match.
+    + by iApply "IH1".
+    + by iApply "IH0".
+Qed.
+
+Lemma tree_labels_have_bit_disjoint t0 t1 depth:
+  tree_labels_have_bit t0 depth true ->
+  tree_labels_have_bit t1 depth false ->
+  disjoint (dom (tree_to_map t0)) (dom (tree_to_map t1)).
+Proof.
+  intros.
+  apply elem_of_disjoint; intros.
+  apply H in H1.
+  apply H0 in H2.
+  congruence.
+Qed.
+
+Lemma tree_to_map_lookup_None label depth bit t:
+  get_bit label depth = (negb bit) ->
+  tree_labels_have_bit t depth bit ->
+  tree_to_map t !! label = None.
+Proof.
+  intros.
+  destruct (tree_to_map t !! label) eqn:He; eauto.
+  assert (get_bit label depth = bit).
+  { apply H0. apply elem_of_dom; eauto. }
+  rewrite H1 in H. destruct bit; simpl in *; congruence.
+Qed.
+
+Lemma tree_to_map_Some t label depth val:
+  tree_to_map t !! label = Some val ->
+  sorted_tree t depth ->
+  tree_path t label depth (Some (label, val)).
+Proof.
+  revert depth.
+  induction t; simpl; intros.
+  - rewrite lookup_empty in H. congruence.
+  - apply lookup_singleton_Some in H. intuition congruence.
+  - intuition.
+    eapply tree_labels_have_bit_disjoint in H4 as Hd; eauto.
+    apply lookup_union_Some in H.
+    2: apply map_disjoint_dom_2; eauto.
+    destruct (get_bit label depth) eqn:Hbit.
+    + eapply tree_to_map_lookup_None in H0; eauto. destruct H; try congruence.
+      eapply IHt2; eauto.
+    + eapply tree_to_map_lookup_None in H4; eauto. destruct H; try congruence.
+      eapply IHt1; eauto.
+  - rewrite lookup_empty in H. congruence.
+Qed.
+
+Lemma tree_to_map_None t label depth:
+  tree_to_map t !! label = None ->
+  sorted_tree t depth ->
+  cutless_tree t ->
+  ∃ found,
+    tree_path t label depth found ∧
+    found_nonmemb label found.
+Proof.
+  revert depth.
+  induction t; simpl; intros.
+  - rewrite lookup_empty in H. eexists; eauto.
+  - apply lookup_singleton_None in H. eexists. split; eauto. simpl; congruence.
+  - apply lookup_union_None in H; intuition.
+    inversion H1; subst.
+    destruct (get_bit label depth); eauto.
+  - inversion H1.
+Qed.
+
+Lemma own_merkle_tree_cutless ptr t d :
+  own_merkle_tree ptr t d -∗
+  ⌜ cutless_tree t ⌝.
+Proof.
+  iIntros "H".
+  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (ptr); iNamed "H"; [..|done].
+  - iPureIntro. constructor.
+  - iPureIntro. constructor.
+  - fold own_merkle_tree. iNamed "H".
+    iDestruct ("IH0" with "Hown_child0") as %?.
+    iDestruct ("IH1" with "Hown_child1") as %?.
+    iPureIntro. by constructor.
+Qed.
 
 Lemma own_merkle_map_to_is_merkle_map ptr m d:
   own_merkle_map ptr m d -∗
   ∃ h,
   is_merkle_map m h.
 Proof.
-  iIntros "H". iDestruct "H" as (t) "[% H]".
-  destruct t; iNamed "H"; iFrame "#%".
+  iNamed 1. destruct t;
+    iDestruct (own_merkle_tree_cutless with "Hown_tree") as %?;
+    iNamed "Hown_tree"; [..|done]; iFrame "%#".
 Qed.
 
 Lemma is_merkle_proof_to_is_merkle_found label found proof h:
@@ -286,12 +393,14 @@ Lemma is_merkle_map_agree_is_merkle_found m h label found:
   | Some val => found = Some (label, val)
   end ⌝.
 Proof.
-  iIntros "[% [%Hreln Hhash0]] [% [%Hpath1 Hhash1]]".
-  opose proof (Hreln label) as Hpath0.
-  case_match.
-  - by iDestruct (tree_path_agree with "Hhash0 Hhash1") as %?.
-  - destruct Hpath0 as [? [? ?]].
-    by iDestruct (tree_path_agree with "Hhash0 Hhash1") as %<-.
+  iNamedSuffix 1 "0". iNamedSuffix 1 "1". subst.
+  destruct (tree_to_map t !! label) eqn:He.
+  - eapply tree_to_map_Some in He; eauto.
+    iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree"; eauto.
+  - eapply tree_to_map_None in He; eauto.
+    destruct He as [? [? ?]].
+    iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree"; eauto.
+    naive_solver.
 Qed.
 
 (* Program proofs. *)
