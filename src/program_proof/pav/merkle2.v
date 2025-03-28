@@ -232,17 +232,14 @@ Fixpoint own_merkle_tree ptr t d : iProp Σ :=
   | Cut _ => False
   end.
 
-Definition own_merkle_map_aux (ptr : loc) (t : tree)
-    (m : gmap (list w8) (list w8)) depth d : iProp Σ :=
+Definition own_merkle_map_aux ptr m depth d : iProp Σ :=
+  ∃ t,
   "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
   "%Hsorted" ∷ ⌜ sorted_tree t depth ⌝ ∗
   "Hown_tree" ∷ own_merkle_tree ptr t d.
 
-Definition own_merkle_map (ptr: loc) (m: gmap (list w8) (list w8)) d : iProp Σ :=
-  ∃ t,
-  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
-  "%Hsorted" ∷ ⌜ sorted_tree t (W64 0) ⌝ ∗
-  "Hown_tree" ∷ own_merkle_tree ptr t d.
+Definition own_merkle_map ptr m d : iProp Σ :=
+  own_merkle_map_aux ptr m (W64 0) d.
 
 (* Derived facts. *)
 
@@ -453,7 +450,7 @@ Lemma wp_getBit sl_b d0 (b : list w8) (n : w64) :
   }}}
   getBit (slice_val sl_b) #n
   {{{
-    RET #(get_bit b (uint.nat n));
+    RET #(get_bit b n);
     "Hsl_b" ∷ own_slice_small sl_b byteT d0 b
   }}}.
 Proof. Admitted.
@@ -461,7 +458,7 @@ Proof. Admitted.
 Definition own_context ptr d : iProp Σ :=
   ∃ sl_empty_hash empty_hash,
   "Hptr_empty_hash" ∷ ptr ↦[context :: "emptyHash"]{d} (slice_val sl_empty_hash) ∗
-  "Hsl_empty_hash" ∷ own_slice_small sl_empty_hash byteT d empty_hash ∗
+  "#Hsl_empty_hash" ∷ own_slice_small sl_empty_hash byteT DfracDiscarded empty_hash ∗
   "#His_empty_hash" ∷ is_hash [empty_node_tag] empty_hash.
 
 Global Instance own_context_fractional ptr :
@@ -470,8 +467,7 @@ Proof.
   intros ??. iSplit.
   - iNamed 1.
     iDestruct "Hptr_empty_hash" as "[H0 H1]".
-    iDestruct "Hsl_empty_hash" as "[H2 H3]".
-    iSplitL "H0 H2"; iFrame "∗#".
+    iSplitL "H0"; iFrame "∗#".
   - iIntros "[H0 H1]". iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
 
     iDestruct (struct_field_pointsto_agree with "Hptr_empty_hash0 Hptr_empty_hash1") as %Heq.
@@ -479,7 +475,6 @@ Proof.
     iCombine "Hptr_empty_hash0 Hptr_empty_hash1" as "H0".
 
     iDestruct (own_slice_small_agree with "Hsl_empty_hash0 Hsl_empty_hash1") as %->.
-    iCombine "Hsl_empty_hash0 Hsl_empty_hash1" as "H1".
 
     iFrame "∗#".
 Qed.
@@ -497,15 +492,6 @@ Proof.
     by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
 Qed.
 
-Lemma empty_tree_reln m depth :
-  tree_map_reln Empty m depth →
-  m = ∅.
-Proof.
-  intros Hreln.
-  apply map_empty. intros label. specialize (Hreln label).
-  by destruct (m !! label).
-Qed.
-
 Lemma wp_getChild n d0 ptr_child0 ptr_child1 sl_label d1 (label : list w8) (depth : w64) :
   {{{
     "Hptr_child0" ∷ n ↦[node :: "child0"]{d0} #ptr_child0 ∗
@@ -514,20 +500,55 @@ Lemma wp_getChild n d0 ptr_child0 ptr_child1 sl_label d1 (label : list w8) (dept
   }}}
   getChild #n (slice_val sl_label) #depth
   {{{
-    ptr2_child_bit,
-    RET (#ptr2_child_bit,
-      #(if get_bit label depth then ptr_child0 else ptr_child1));
-    "Hptr_child0" ∷ n ↦[node :: "child0"]{d0} #ptr_child0 ∗
-    "Hptr_child1" ∷ n ↦[node :: "child1"]{d0} #ptr_child1 ∗
-    "Hsl_label" ∷ own_slice_small sl_label byteT d1 label ∗
-    "Hptr2_child_bit" ∷ ptr2_child_bit ↦[ptrT]
-      #(if get_bit label depth then ptr_child1 else ptr_child0)
+    ptr2_child_b ptr_child_nb, RET (#ptr2_child_b, #ptr_child_nb);
+    if get_bit label depth
+      then
+      "->" ∷ ⌜ ptr_child_nb = ptr_child0 ⌝ ∗
+      "Hptr_child_nb" ∷ n ↦[node :: "child0"]{d0} #ptr_child0 ∗
+      "Hptr2_child_b" ∷ ptr2_child_b ↦[ptrT]{d0} #ptr_child1 ∗
+      "Hclose_child_b" ∷ (∀ v, ptr2_child_b ↦[ptrT]{d0} #v -∗ n ↦[node :: "child1"]{d0} #v) ∗
+      "Hsl_label" ∷ own_slice_small sl_label byteT d1 label
+      else
+      "->" ∷ ⌜ ptr_child_nb = ptr_child1 ⌝ ∗
+      "Hptr_child_nb" ∷ n ↦[node :: "child1"]{d0} #ptr_child1 ∗
+      "Hptr2_child_b" ∷ ptr2_child_b ↦[ptrT]{d0} #ptr_child0 ∗
+      "Hclose_child_b" ∷ (∀ v, ptr2_child_b ↦[ptrT]{d0} #v -∗ n ↦[node :: "child0"]{d0} #v) ∗
+      "Hsl_label" ∷ own_slice_small sl_label byteT d1 label
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_apply (wp_getBit with "[$Hsl_label]"). iNamed 1.
+  wp_if_destruct.
+  - wp_apply (wp_struct_fieldRef_pointsto with "[$Hptr_child0]"); [done|].
+    iIntros "* [%Hclose H]". wp_loadField. wp_pures. rewrite Heqb.
+    iApply "HΦ". iFrame. iIntros "!>". iSplit; [done|].
+    iIntros (v) "H". specialize (Hclose #v).
+    by iApply Hclose.
+  - wp_apply (wp_struct_fieldRef_pointsto with "[$Hptr_child1]"); [done|].
+    iIntros "* [%Hclose H]". wp_loadField. wp_pures. rewrite Heqb.
+    iApply "HΦ". iFrame. iIntros "!>". iSplit; [done|].
+    iIntros (v) "H". specialize (Hclose #v).
+    by iApply Hclose.
+Qed.
+
+Lemma wp_getNodeHash ptr_tr t d0 ptr_ctx d1 :
+  {{{
+    "Hown_tree" ∷ own_merkle_tree ptr_tr t d0 ∗
+    "Hown_ctx" ∷ own_context ptr_ctx d1
+  }}}
+  getNodeHash #ptr_tr #ptr_ctx
+  {{{
+    sl_hash hash, RET (slice_val sl_hash);
+    "Hown_tree" ∷ own_merkle_tree ptr_tr t d0 ∗
+    "Hown_ctx" ∷ own_context ptr_ctx d1 ∗
+    "#Hsl_hash" ∷ own_slice_small sl_hash byteT DfracDiscarded hash ∗
+    "#Htree_hash" ∷ is_tree_hash t hash
   }}}.
 Proof. Admitted.
 
-Lemma wp_put n0 ptr_n tr (depth : w64) elems sl_label sl_val (label val : list w8) ptr_ctx :
+Lemma wp_put n0 ptr_n (depth : w64) elems sl_label sl_val (label val : list w8) ptr_ctx :
   {{{
-    "Hown_merkle" ∷ own_merkle_map_aux ptr_n tr elems (uint.nat depth) (DfracOwn 1) ∗
+    "Hown_merkle" ∷ own_merkle_map_aux ptr_n elems depth (DfracOwn 1) ∗
     "Hptr_n0" ∷ n0 ↦[ptrT] #ptr_n ∗
     "Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
     "%Hlen_label" ∷ ⌜ length label = hash_len ⌝ ∗
@@ -536,19 +557,18 @@ Lemma wp_put n0 ptr_n tr (depth : w64) elems sl_label sl_val (label val : list w
   }}}
   put #n0 #depth (slice_val sl_label) (slice_val sl_val) #ptr_ctx
   {{{
-    ptr_n' tr', RET #();
-    "Hown_merkle" ∷ own_merkle_map_aux ptr_n' tr' (<[label:=val]>elems) (uint.nat depth) (DfracOwn 1) ∗
+    ptr_n', RET #();
+    "Hown_merkle" ∷ own_merkle_map_aux ptr_n' (<[label:=val]>elems) depth (DfracOwn 1) ∗
     "Hptr_n0" ∷ n0 ↦[ptrT] #ptr_n' ∗
     "Hown_ctx" ∷ own_context ptr_ctx (DfracOwn 1)
   }}}.
 Proof.
-  iLöb as "IH" forall (n0 ptr_n tr elems depth).
+  iLöb as "IH" forall (n0 ptr_n elems depth).
   iIntros (Φ) "H HΦ". iNamed "H".
   wp_rec. wp_load. wp_if_destruct.
   { (* empty node. *)
-    iDestruct "Hown_merkle" as "[%Htr_reln Hown_merkle]".
-    iDestruct (own_empty_tree with "Hown_merkle") as %->.
-    opose proof (empty_tree_reln _ _ Htr_reln) as ->.
+    iNamed "Hown_merkle".
+    iDestruct (own_empty_tree with "Hown_tree") as %->.
 
     wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Hptr_leaf".
     iDestruct (struct_fields_split with "Hptr_leaf") as "H". iNamed "H".
@@ -557,15 +577,15 @@ Proof.
     iIntros "*". iNamed 1.
     iDestruct (own_slice_to_small with "Hsl_hash") as "Hsl_hash".
     wp_storeField.
-    wp_pures. iApply ("HΦ" $! _ (Leaf label val)).
-    iFrame "Hown_ctx ∗#%". iIntros "!%".
-    intros label'.
-    destruct (decide (label = label')); subst; simpl_map; naive_solver. }
+    wp_pures. iApply "HΦ".
+    iFrame "Hown_ctx ∗". iExists (Leaf label val).
+    iFrame "∗#%". naive_solver. }
 
-  iDestruct "Hown_merkle" as "[%Htr_reln Hown_merkle]".
-  destruct tr; iNamed "Hown_merkle"; [done|..|done];
-    iNamed "Hown_merkle"; fold own_merkle_tree.
+  iNamed "Hown_merkle".
+  destruct t; iNamed "Hown_tree"; [done|..|done];
+    iNamed "Hown_tree"; fold own_merkle_tree.
   2: {
+    (* inner node. *)
     wp_bind (If _ _ #false).
     wp_apply (wp_wand _ _ _
       (λ ret,
@@ -581,17 +601,25 @@ Proof.
       - by iFrame. }
     iIntros "*". iNamed 1. subst.
     wp_apply (wp_getChild with "[$Hptr_child0 $Hptr_child1 $Hsl_label]").
-    iIntros "*". iNamed 1. wp_pures.
-    case_match.
-    - wp_apply ("IH" with "[Hown_child1 $Hptr2_child_bit $Hsl_label $Hsl_val $Hown_ctx]").
-      { iFrame "∗%".
-        (* this approach requires partitioning the elems map into the map
-        for its two children. this is tricky.
-        old_merkle.v fixed this by keeping the elems constant
-        and adding a prefix into tree_map_reln that selects a subset of
-        elems to relate to the tree.
-        instead, i'll try the approach in the original merkle2.v,
-        which derives a map from the tree. *)
+    iIntros "* H". wp_pures.
+    case_match; iNamed "H".
+    - wp_apply ("IH" with "[Hown_child1 $Hptr2_child_b $Hsl_label $Hsl_val $Hown_ctx]").
+      { iFrame "∗%". naive_solver. }
+      iIntros "* H". iNamedSuffix "H" "_child1".
+      iDestruct ("Hclose_child_b" with "Hptr_n0_child1") as "Hptr_child1".
+      wp_pures. wp_rec. wp_loadField.
+      wp_apply (wp_getNodeHash with "[$Hown_child0 $Hown_ctx_child1]").
+      iIntros "*". iNamedSuffix 1 "0". wp_loadField.
+      iNamedSuffix "Hown_merkle_child1" "1".
+      wp_apply (wp_getNodeHash with "[$Hown_tree1 $Hown_ctx0]").
+      iIntros "*". iNamedSuffix 1 "1".
+      wp_apply (wp_compInnerHash sl_hash0 sl_hash1 Slice.nil).
+      { iFrame "#". iApply own_slice_zero. }
+      iIntros "*". iNamed 1. wp_storeField.
+      wp_pures. iApply "HΦ". iFrame "Hown_ctx1 Hptr_n0".
+      iExists (Inner t1 t). iIntros "!>". iSplit; [|iSplit]; [iPureIntro..|].
+      + simpl. rewrite -Heq_tree_map1.
+        (* TODO: show that t1 doesn't have label. *)
         admit.
 Admitted.
 
