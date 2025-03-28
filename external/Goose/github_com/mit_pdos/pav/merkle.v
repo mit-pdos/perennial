@@ -13,9 +13,9 @@ Context `{ext_ty: ext_types}.
 
 Definition emptyNodeTag : expr := #(U8 0).
 
-Definition innerNodeTag : expr := #(U8 1).
+Definition leafNodeTag : expr := #(U8 1).
 
-Definition leafNodeTag : expr := #(U8 2).
+Definition innerNodeTag : expr := #(U8 2).
 
 Definition Tree := struct.decl [
   "ctx" :: ptrT;
@@ -24,8 +24,8 @@ Definition Tree := struct.decl [
 
 (* node contains the union of different node types, which distinguish as:
     1. empty node. if node ptr is nil.
-    2. inner node. if either child0 or child1 not nil. has hash.
-    3. leaf node. else. has hash, full label, and val. *)
+    2. leaf node. if child0 and child1 nil. has hash, label, and val.
+    3. inner node. else. has hash. *)
 Definition node := struct.decl [
   "hash" :: slice.T byteT;
   "child0" :: ptrT;
@@ -53,12 +53,18 @@ Definition setLeafHash: val :=
     struct.storeF node "hash" "n" (compLeafHash (struct.loadF node "label" "n") (struct.loadF node "val" "n"));;
     #().
 
+(* getBit returns false if the nth bit of b is 0.
+   if n exceeds b, it returns false.
+   this is fine as long as it's used consistently across the code. *)
 Definition getBit: val :=
   rec: "getBit" "b" "n" :=
     let: "slot" := "n" `quot` #8 in
-    let: "off" := "n" `rem` #8 in
-    let: "x" := SliceGet byteT "b" "slot" in
-    ("x" `and` (#(U8 1) ≪ "off")) ≠ #(U8 0).
+    (if: "slot" < (slice.len "b")
+    then
+      let: "off" := "n" `rem` #8 in
+      let: "x" := SliceGet byteT "b" "slot" in
+      ("x" `and` (#(U8 1) ≪ "off")) ≠ #(U8 0)
+    else #false).
 
 (* getChild returns a child and its sibling child,
    relative to the bit referenced by label and depth. *)
@@ -149,7 +155,7 @@ Definition Tree__prove: val :=
       else #());;
       let: "depth" := ref (zero_val uint64T) in
       Skip;;
-      (for: (λ: <>, (![uint64T] "depth") < (cryptoffi.HashLen * #8)); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
+      (for: (λ: <>, #true); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
         (if: (![ptrT] "n") = #null
         then Break
         else
@@ -174,7 +180,6 @@ Definition Tree__prove: val :=
         else #());;
         (#false, slice.nil, ![slice.T byteT] "proof", #false)
       else
-        std.Assert (((struct.loadF node "child0" (![ptrT] "n")) = #null) && ((struct.loadF node "child1" (![ptrT] "n")) = #null));;
         (if: (~ (std.BytesEqual (struct.loadF node "label" (![ptrT] "n")) "label"))
         then
           (if: "prove"
@@ -251,25 +256,21 @@ Definition verifySiblings: val :=
     (if: ("sibsLen" `rem` cryptoffi.HashLen) ≠ #0
     then #true
     else
-      let: "maxDepth" := "sibsLen" `quot` cryptoffi.HashLen in
-      (if: "maxDepth" > (cryptoffi.HashLen * #8)
-      then #true
-      else
-        let: "currHash" := ref_to (slice.T byteT) "lastHash" in
-        let: "hashOut" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 cryptoffi.HashLen) in
-        let: "depth" := ref_to uint64T "maxDepth" in
-        Skip;;
-        (for: (λ: <>, (![uint64T] "depth") > #0); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") - #1)) := λ: <>,
-          let: "begin" := ((![uint64T] "depth") - #1) * cryptoffi.HashLen in
-          let: "end" := (![uint64T] "depth") * cryptoffi.HashLen in
-          let: "sib" := SliceSubslice byteT "siblings" "begin" "end" in
-          (if: (~ (getBit "label" ((![uint64T] "depth") - #1)))
-          then "hashOut" <-[slice.T byteT] (compInnerHash (![slice.T byteT] "currHash") "sib" (![slice.T byteT] "hashOut"))
-          else "hashOut" <-[slice.T byteT] (compInnerHash "sib" (![slice.T byteT] "currHash") (![slice.T byteT] "hashOut")));;
-          "currHash" <-[slice.T byteT] (SliceAppendSlice byteT (SliceTake (![slice.T byteT] "currHash") #0) (![slice.T byteT] "hashOut"));;
-          "hashOut" <-[slice.T byteT] (SliceTake (![slice.T byteT] "hashOut") #0);;
-          Continue);;
-        (~ (std.BytesEqual (![slice.T byteT] "currHash") "dig")))).
+      let: "currHash" := ref_to (slice.T byteT) "lastHash" in
+      let: "hashOut" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 cryptoffi.HashLen) in
+      let: "depth" := ref_to uint64T ("sibsLen" `quot` cryptoffi.HashLen) in
+      Skip;;
+      (for: (λ: <>, (![uint64T] "depth") > #0); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") - #1)) := λ: <>,
+        let: "begin" := ((![uint64T] "depth") - #1) * cryptoffi.HashLen in
+        let: "end" := (![uint64T] "depth") * cryptoffi.HashLen in
+        let: "sib" := SliceSubslice byteT "siblings" "begin" "end" in
+        (if: (~ (getBit "label" ((![uint64T] "depth") - #1)))
+        then "hashOut" <-[slice.T byteT] (compInnerHash (![slice.T byteT] "currHash") "sib" (![slice.T byteT] "hashOut"))
+        else "hashOut" <-[slice.T byteT] (compInnerHash "sib" (![slice.T byteT] "currHash") (![slice.T byteT] "hashOut")));;
+        "currHash" <-[slice.T byteT] (SliceAppendSlice byteT (SliceTake (![slice.T byteT] "currHash") #0) (![slice.T byteT] "hashOut"));;
+        "hashOut" <-[slice.T byteT] (SliceTake (![slice.T byteT] "hashOut") #0);;
+        Continue);;
+      (~ (std.BytesEqual (![slice.T byteT] "currHash") "dig"))).
 
 (* Verify verifies proof against the tree rooted at dig
    and returns an error upon failure.
