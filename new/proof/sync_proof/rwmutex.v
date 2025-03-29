@@ -1,10 +1,11 @@
 From iris.proofmode Require Import environments.
 From New.proof.sync_proof Require Import base mutex sema.
 
+Section proof.
+
 Local Tactic Notation "word" :=
   unfold sync.rwmutexMaxReaders in *; word.
 
-Section proof.
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 Context `{!syncG Σ}.
