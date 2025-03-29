@@ -1,7 +1,6 @@
 From New.proof.sync_proof Require Import base sema.
 From New.experiments Require Import glob.
 
-Import syncword.
 Section proof.
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
@@ -10,56 +9,29 @@ Context `{!syncG Σ}.
 Local Definition enc (low high : w32) : w64 :=
   word.add (word.slu (W64 (uint.Z high)) (W64 32)) (W64 (uint.Z low)).
 
-Local Ltac local_word :=
-  try apply word.unsigned_inj;
-  repeat try (
-      rewrite !word.unsigned_sru // ||
-      rewrite word.unsigned_add ||
-      rewrite word.unsigned_slu // ||
-      rewrite !Z.shiftr_div_pow2 // ||
-      rewrite Z.shiftl_mul_pow2 //
-    );
-  word
-.
-
 Local Lemma enc_get_high (low high : w32) :
   W32 (uint.Z (word.sru (enc low high) (W64 32))) = high.
-Proof.
-  local_word.
-Qed.
+Proof. unfold enc. word. Qed.
 
 Local Lemma enc_get_low (low high : w32) :
   W32 (uint.Z (enc low high)) = low.
-Proof.
-  local_word.
-Qed.
+Proof. unfold enc. word. Qed.
 
 Local Lemma enc_add_high (low high delta : w32) :
   word.add (enc low high) (word.slu (W64 (uint.Z delta)) (W64 32)) =
   enc low (word.add high delta).
-Proof.
-  local_word.
-Qed.
+Proof. unfold enc. word. Qed.
 
 Local Lemma enc_add_low (low high delta : w32) :
   uint.Z (word.add low delta) = uint.Z low + uint.Z delta →
   word.add (enc low high) (W64 (uint.Z delta)) =
   enc (word.add low delta) high.
-Proof.
-  intros. local_word.
-Qed.
+Proof. unfold enc. word. Qed.
 
 Local Lemma enc_inj (low high low' high' : w32) :
   enc low high = enc low' high' →
   low = low' ∧ high = high'.
-Proof.
-  intros Heq.
-  split.
-  - erewrite <-(enc_get_low low high).
-    rewrite Heq enc_get_low //.
-  - erewrite <-(enc_get_high low high).
-    rewrite Heq enc_get_high //.
-Qed.
+Proof. unfold enc. intros. word. Qed.
 
 Local Lemma enc_0 :
   W64 0 = enc (W32 0) (W32 0).
@@ -176,27 +148,9 @@ Proof.
 Qed.
 
 Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
-  delta' = (W32 (sint.Z delta)) →
-  word.slu delta (W64 32) = word.slu (W64 (sint.Z delta')) (W64 32).
-Proof.
-  intros ->.
-  unfold w64, W64, W32 in *.
-  try apply word.unsigned_inj;
-  repeat try (
-      rewrite !word.unsigned_sru // ||
-      rewrite word.unsigned_add ||
-      rewrite word.unsigned_slu // ||
-      rewrite !Z.shiftr_div_pow2 // ||
-      rewrite Z.shiftl_mul_pow2 //
-    ).
-  rewrite !word.signed_of_Z !word.unsigned_of_Z.
-  rewrite word.signed_eq_swrap_unsigned.
-  unfold word.wrap, word.swrap in *.
-  vm_compute (Z.pow (Zpos _)). simpl.
-  Z.div_mod_to_equations.
-  lia.
-  local_word.
-Qed.
+  delta' = (W32 (uint.Z delta)) →
+  word.slu delta (W64 32) = word.slu (W64 (uint.Z delta')) (W64 32).
+Proof. intros. word. Qed.
 
 (* XXX: overflow?
   https://github.com/golang/go/issues/20687
@@ -300,13 +254,6 @@ Proof.
     wp_auto.
     rewrite bool_decide_true.
     { (* no need to wake anyone up *) wp_auto. iFrame. }
-    apply not_and_l in HnoWake, HnotInWakingState.
-    destruct HnoWake as [|].
-    2:{ by apply dec_stable. }
-    destruct HnotInWakingState as [|].
-    2:{ by apply dec_stable. }
-    apply Znot_gt_le in Heq1.
-    exfalso.
     word.
   }
 
@@ -348,11 +295,9 @@ Proof.
   iIntros (?) "[% H]". iNamed "H".
   subst.
   wp_auto.
-  rewrite bool_decide_false.
-  2:{ intuition. word. }
+  rewrite -> bool_decide_false by word.
   wp_auto.
-  rewrite bool_decide_false.
-  2:{ intuition. }
+  rewrite -> bool_decide_false by word.
   wp_auto.
   wp_apply wp_Uint64__Load.
   iApply fupd_mask_intro.
@@ -382,7 +327,7 @@ Proof.
   iIntros "Hptsto".
   iMod "Hmask" as "_".
   destruct (unfinished_waiters) eqn:Huf.
-  2:{ exfalso. specialize (Hunfinished_zero_wg ltac:(word)). intuition. }
+  2:{ exfalso. word. }
   clear Hunfinished_zero_wg.
   iClear "Hunfinished_wait_toks_wg".
   iCombine "Hzeroauth_wg Hsema_zerotoks_wg" gives %Hs.
@@ -431,8 +376,7 @@ Proof.
   iExists _; iFrame "Hsema_wg".
   iIntros "Hsema_wg".
   iMod "Hmask" as "_".
-  replace (uint.nat wrem)%nat with (1+(uint.nat (word.sub wrem (W32 1))))%nat.
-  2:{ word. }
+  replace (uint.nat wrem)%nat with (1+(uint.nat (word.sub wrem (W32 1))))%nat by word.
   iDestruct (own_toks_plus with "Hzerotoks") as "[Hzerotok Hzerotoks]".
   iCombine "Hsema_zerotoks_wg Hzerotok" as "Hsema_zerotok_wg".
   iCombine "Hzeroauth_wg Hsema_zerotok_wg" gives %Hbound.
