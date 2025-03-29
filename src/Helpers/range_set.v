@@ -80,13 +80,6 @@ Proof.
   rewrite elem_of_union.
   rewrite elem_of_singleton.
   rewrite !rangeSet_lookup; try word.
-  destruct (decide (x = i)); subst.
-  - split; intros; eauto.
-    word.
-  - intuition; try word.
-    right.
-    assert (uint.Z x ≠ uint.Z i) by (apply not_inj; auto).
-    word.
 Qed.
 
 Lemma rangeSet_first:

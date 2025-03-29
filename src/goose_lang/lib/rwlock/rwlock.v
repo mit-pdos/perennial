@@ -32,7 +32,8 @@ Section proof.
   Definition remaining_frac (n: u64) :=
     ((Qp_of_Z (remaining_readers n)) * rfrac)%Qp.
 
-  Hint Unfold num_readers remaining_readers : word.
+  Local Tactic Notation "word" :=
+      unfold remaining_readers, num_readers in *; word.
 
   Lemma remaining_frac_read_acquire n :
     1 ≤ uint.Z n →
