@@ -52,7 +52,9 @@ Section lemmas.
       %(av' & _ & _ & Hav' & _ & Hincl)%gmap_view_both_dfrac_valid_discrete_total.
     iPureIntro.
     apply lookup_fmap_Some in Hav' as [v' [<- Hv']].
-    apply to_agree_included_L in Hincl. by rewrite Hincl.
+    apply (@to_agree_included_L _) in Hincl.
+    { by rewrite Hincl. }
+    apply _.
   Qed.
 
   Lemma ghost_map_auth_pers_agree γ q1 m1 m2 :

@@ -22,7 +22,7 @@ Next Obligation.
     [ apply dist_later_0 | apply dist_later_S ].
   eapply ofe_mor_ne.
   intros out.
-  eapply (later_car_anti_contractive (S n)); [ | lia ].
+  eapply (later_car_anti_contractive (S n)); [ | simpl; lia ].
   eapply (HΦ out).
 Qed.
 
