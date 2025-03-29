@@ -50,11 +50,13 @@ Definition own_WaitGroup_waiters γ (possible_waiters : w32) : iProp Σ :=
   own_tok_auth_dfrac γ.(waiter_gn) (DfracOwn (1/2)) (uint.nat possible_waiters).
 #[global] Opaque own_WaitGroup_waiters.
 #[local] Transparent own_WaitGroup_waiters.
+#[global] Instance own_WaitGroup_waiters_timeless γ w : Timeless (own_WaitGroup_waiters γ w) := _.
 
 Definition own_WaitGroup_wait_token γ : iProp Σ :=
   own_toks γ.(waiter_gn) 1.
 #[global] Opaque own_WaitGroup_wait_token.
 #[local] Transparent own_WaitGroup_wait_token.
+#[global] Instance own_WaitGroup_wait_token_timeless γ  : Timeless (own_WaitGroup_wait_token γ) := _.
 
 Local Definition is_WaitGroup_inv wg γ N : iProp Σ :=
   inv (N.@"wg") (∃ (counter waiters sema possible_waiters : w32) unfinished_waiters,
@@ -87,6 +89,7 @@ Definition is_WaitGroup wg γ N : iProp Σ :=
   "#Hinv" ∷ is_WaitGroup_inv wg γ N.
 #[global] Opaque is_WaitGroup.
 #[local] Transparent is_WaitGroup.
+#[global] Instance is_WaitGroup_persistent wg γ N : Persistent (is_WaitGroup wg γ N) := _.
 
 #[local]
 Instance if_sumbool_timeless {PROP : bi} (P Q : PROP) {_:Timeless P} {_:Timeless Q} A B
@@ -120,6 +123,7 @@ Definition own_WaitGroup γ (counter : w32) : iProp Σ :=
   ghost_var γ.(counter_gn) (1/2)%Qp counter.
 #[global] Opaque own_WaitGroup.
 #[local] Transparent own_WaitGroup.
+#[global] Instance own_WaitGroup_timeless γ counter : Timeless (own_WaitGroup γ counter) := _.
 
 Lemma start_WaitGroup N wg_ptr :
   wg_ptr ↦ (default_val sync.WaitGroup.t) ={⊤}=∗
