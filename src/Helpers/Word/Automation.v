@@ -252,11 +252,11 @@ Ltac2 set_all () :=
     (fun h =>
        let (h, _, _) := h in
        repeat (
-           Std.set false (fun () => (None, '(Zpos _)))
-             { Std.on_hyps := Some [(h, Std.AllOccurrences, Std.InHyp)];
-               Std.on_concl := Std.NoOccurrences }
-    ))
-    (Control.hyps ()).
+           lazy_match! Constr.type (Control.hyp h) with
+           | context[Zpos ?x] => set (Zpos $x) in *
+           | context[Zneg ?x] => set (Zneg $x) in *
+           end
+    )) (Control.hyps ()).
 
 Ltac2 subst_all () :=
   List.iter (fun h => let (h, _, _) := h in orelse (fun () => Std.subst [h]) (fun _ => ()))
@@ -308,13 +308,13 @@ Ltac2 Set solve_unsafe as old :=
 (* FIXME: add a warning/error for nonlinear arithmetic? Sometimes it's hard to
    notice. *)
 
-Local Lemma sum_overflow_check (x y: u64) :
+Local Lemma test_sum_overflow_check (x y: u64) :
   uint.Z (word.add x y) < uint.Z x <-> uint.Z x + uint.Z y >= 2^64.
 Proof.
   Time ltac2:(word.solve_unsafe ()).
 Qed.
 
-Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
+Local Lemma test_from_wg (delta' : w32) (delta : w64) :
   delta' = (W32 (sint.Z delta)) →
   word.slu delta (W64 32) = word.slu (W64 (sint.Z delta')) (W64 32).
 Proof.
