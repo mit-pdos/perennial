@@ -20,15 +20,7 @@ Lemma wp_partiallyApplyMe (s : go_string) (x : w64):
 Proof.
   intros ?. wp_start as "_".
   wp_auto.
-  rewrite bool_decide_true.
-  2:{
-    (* FIXME: word. *)
-    apply word.signed_inj.
-    rewrite H.
-    rewrite signed_U64.
-    unfold word.swrap.
-    word.
-  }
+  rewrite -> bool_decide_true by word.
   wp_auto. by iApply "HΦ".
 Qed.
 
