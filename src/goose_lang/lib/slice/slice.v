@@ -1144,16 +1144,6 @@ Proof.
   iApply "HΦ"; iFrame.
 Qed.
 
-Lemma u64_nat_0 (n: u64) : 0%nat = uint.nat n -> n = W64 0.
-Proof.
-  intros.
-  apply (f_equal Z.of_nat) in H.
-  rewrite u64_Z_through_nat in H.
-  apply word.unsigned_inj.
-  rewrite <- H.
-  reflexivity.
-Qed.
-
 Lemma wp_MemCpy_rec s E t q dst vs1 src vs2 (n: u64) :
   {{{ dst ↦∗[t] vs1 ∗ src ↦∗[t]{q} vs2 ∗
             ⌜ length vs1 = uint.nat n /\ length vs2 >= length vs1 ⌝ }}}
