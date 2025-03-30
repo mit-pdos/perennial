@@ -95,6 +95,7 @@ Section program.
           }
           rewrite elem_of_singleton in Hgid.
           subst g.
+          word.
           (* FIXME: not sure if word is supposed to solve this immediately *)
           assert (Hnz : size pwrs ≠ O).
           { intros Hz. rewrite Hz in Heqb. word. }

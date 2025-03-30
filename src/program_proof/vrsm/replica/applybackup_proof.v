@@ -577,11 +577,7 @@ Proof.
     }
     epose proof (applybackup_step_helper2 _ _ _ _ Hghost_op_σ _ Hprefix) as H.
     Unshelve.
-    3: {
-      rewrite Hσ_index.
-      rewrite Heqb2.
-      word. (* FIXME: why do I need to manually rewrite for word? *)
-    }
+    3: { word. }
     2: { shelve. }
     rewrite -H.
     iFrame.
