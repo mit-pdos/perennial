@@ -1007,11 +1007,8 @@ Proof.
     replace (membufC') with (membufC ++ newData) by done.
     rewrite app_assoc.
     rewrite length_app.
-    word_cleanup.
-    rewrite -Hlengthsafe.
-    repeat (rewrite Nat2Z.inj_add).
-    replace (length newData) with (Z.to_nat (Z.of_nat (length newData))) by lia.
     rewrite /list_safe_size in HnewDataSafe.
+    rewrite -Hlengthsafe.
     word.
   }
 

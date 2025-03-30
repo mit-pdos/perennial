@@ -496,10 +496,7 @@ Proof.
     iIntros "_ Hghost".
     iMod (applybackup_step with "Hprop_lb Hprop_facts Hprim_facts Hghost") as "Hghost".
     { done. }
-    { word_cleanup.
-      rewrite -> unsigned_U64 in *. (* TODO: regression in [word] *)
-      word.
-    }
+    { word. }
     iModIntro.
     iDestruct "Hghost" as "(Hghost & %Hre & H)".
     rewrite Hre.

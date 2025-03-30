@@ -261,8 +261,7 @@ Proof.
       2 d↦∗ blocks0
     )%I
     (fun i => 2 d↦∗ blocks0)%I with "[] [Hbufsloc $Hposl $Hd2 Hdiskaddrs]").
-  - word_cleanup.
-    destruct Hwf.
+  - destruct Hwf.
     rewrite /circΣ.diskEnd.
     word.
   - iIntros (??) "(H&?&?&?)".
@@ -281,11 +280,8 @@ Proof.
     wp_load.
     list_elem addrs0 (uint.Z i `mod` LogSz) as a.
     wp_apply (wp_SliceGet _ _ _ _ (DfracOwn 1) addrs0 with "[$Hdiskaddrs]"); eauto.
-    { iPureIntro.
-      change (word.divu _ _) with (W64 LogSz).
-      word_cleanup.
-      rewrite Ha_lookup.
-      eauto. }
+    { iPureIntro. instantiate (1:=a). rewrite -Ha_lookup.
+      f_equal. word. }
     iIntros "Hdiskaddrs".
     iNamed 1.
     wpc_pures.
@@ -343,20 +339,17 @@ Proof.
     destruct Hwf.
     destruct Hlow_wf.
     rewrite /circΣ.diskEnd in H.
-    word_cleanup.
     autorewrite with len in Hupdslen.
-    revert Hupdslen H; word_cleanup; intros.
     assert (uint.nat i - uint.nat σ.(start) < length σ.(upds))%nat as Hinbounds by word.
     apply list_lookup_lt in Hinbounds.
     destruct Hinbounds as [[a' b'] Hieq].
-    pose proof (Hupds _ _ Hieq) as Haddr_block_eq. rewrite /LogSz /= in Haddr_block_eq.
+    pose proof (Hupds _ _ Hieq) as Haddr_block_eq.
     replace (uint.Z (start σ) + Z.of_nat (uint.nat i - uint.nat (start σ)))
       with (uint.Z i) in Haddr_block_eq by word.
     destruct Haddr_block_eq.
-    rewrite -> wrap_small by lia.
-    replace (Z.to_nat (uint.Z i + 1) - uint.nat (start σ))%nat with (S (uint.nat i - uint.nat (start σ))) by word.
+    replace (uint.nat (word.add _ _) - _)%nat with (S (uint.nat i - uint.nat (start σ))) by word.
     erewrite take_S_r; eauto.
-    rewrite Hieq /=.
+    rewrite Hieq /=. simpl in *.
     congruence.
 
   - iDestruct (own_slice_to_small with "Hdiskaddrs") as "Hdiskaddrs".

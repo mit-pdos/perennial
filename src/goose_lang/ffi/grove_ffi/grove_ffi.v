@@ -657,14 +657,8 @@ lemmas. *)
       { word. }
     }
     iMod ("HΦ" $! low_time high_time _ with "[] [] Ht") as "[Ht HΦ]".
-    { iPureIntro.
-      apply Is_true_true_1 in H1. rewrite Z.leb_le in H1.
-      by do 2 rewrite u64_Z_through_nat.
-    }
-    { iPureIntro.
-      apply Is_true_true_1 in H0. rewrite Z.leb_le in H0.
-      by do 2 rewrite u64_Z_through_nat.
-    }
+    {apply Is_true_true_1 in H1. word. }
+    { apply Is_true_true_1 in H0. word. }
     iModIntro.
     iFrame "HΦ".
     by iFrame.

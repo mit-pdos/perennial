@@ -678,12 +678,8 @@ Proof.
     rewrite map_to_list_gset_to_gmap. subst sids.
     rewrite big_sepL_fmap elements_list_to_set.
     2:{ unfold sids_all. apply NoDup_fmap_2_strong, NoDup_seqZ.
-        Set Printing Coercions.
         clear. intros x y Hx%elem_of_seqZ Hy%elem_of_seqZ Heq.
-        rewrite -(Z_u64 x); last lia.
-        rewrite -(Z_u64 y); last lia.
-        rewrite Heq. done.
-        Unset Printing Coercions.
+        word.
     }
     iFrame.
   }
