@@ -135,9 +135,9 @@ Definition BankClerk__SimpleTransfer : val :=
       let: "amount" := (ref_ty uint64T (zero_val uint64T)) in
       let: "$r0" := ((func_call #primitive #"RandomUint64"%go) #()) in
       do:  ("amount" <-[uint64T] "$r0");;;
-      (if: (((![uint64T] "src") < (let: "$a0" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
-      slice.len "$a0")) && ((![uint64T] "dst") < (let: "$a0" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
-      slice.len "$a0"))) && ((![uint64T] "src") ≠ (![uint64T] "dst"))
+      (if: (((![uint64T] "src") < (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
+      slice.len "$a0"))) && ((![uint64T] "dst") < (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) in
+      slice.len "$a0")))) && ((![uint64T] "src") ≠ (![uint64T] "dst"))
       then
         do:  (let: "$a0" := (![stringT] (slice.elem_ref stringT (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) (![uint64T] "src"))) in
         let: "$a1" := (![stringT] (slice.elem_ref stringT (![sliceT] (struct.field_ref BankClerk "accts" (![ptrT] "bck"))) (![uint64T] "dst"))) in

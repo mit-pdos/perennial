@@ -371,9 +371,9 @@ Definition testCopyShorterDst : val :=
     let: "$r0" := (slice.make2 byteT #(W64 10)) in
     do:  ("y" <-[sliceT] "$r0");;;
     let: "n" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "y") in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] "y") in
     let: "$a1" := (![sliceT] "x") in
-    (slice.copy byteT) "$a0" "$a1") in
+    (slice.copy byteT) "$a0" "$a1")) in
     do:  ("n" <-[uint64T] "$r0");;;
     return: (((![uint64T] "n") = #(W64 10)) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 3))) = #(W8 1)))).
 
@@ -391,9 +391,9 @@ Definition testCopyShorterSrc : val :=
     let: "$r0" := #(W8 2) in
     do:  ((slice.elem_ref byteT (![sliceT] "y") #(W64 12)) <-[byteT] "$r0");;;
     let: "n" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "y") in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] "y") in
     let: "$a1" := (![sliceT] "x") in
-    (slice.copy byteT) "$a0" "$a1") in
+    (slice.copy byteT) "$a0" "$a1")) in
     do:  ("n" <-[uint64T] "$r0");;;
     return: ((((![uint64T] "n") = #(W64 10)) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 3))) = #(W8 1))) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 12))) = #(W8 2)))).
 
@@ -817,9 +817,9 @@ Definition testU64ToU32 : val :=
     let: "y" := (ref_ty uint32T (zero_val uint32T)) in
     let: "$r0" := #(W32 1230) in
     do:  ("y" <-[uint32T] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((to_u32 (![uint64T] "x")) = (![uint32T] "y"))) in
+    let: "$r0" := ((![boolT] "ok") && ((u_to_w32 (![uint64T] "x")) = (![uint32T] "y"))) in
     do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((to_u64 (![uint32T] "y")) = (![uint64T] "x"))) in
+    let: "$r0" := ((![boolT] "ok") && ((u_to_w64 (![uint32T] "y")) = (![uint64T] "x"))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
@@ -829,7 +829,7 @@ Definition testU32Len : val :=
     exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 100)) in
     do:  ("s" <-[sliceT] "$r0");;;
-    return: ((to_u32 (let: "$a0" := (![sliceT] "s") in
+    return: ((s_to_w32 (let: "$a0" := (![sliceT] "s") in
      slice.len "$a0")) = #(W32 100))).
 
 Definition Uint32 : go_type := uint32T.
@@ -842,7 +842,7 @@ Definition failing_testU32NewtypeLen : val :=
     exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (slice.make2 byteT #(W64 20)) in
     do:  ("s" <-[sliceT] "$r0");;;
-    return: ((to_u32 (let: "$a0" := (![sliceT] "s") in
+    return: ((s_to_w32 (let: "$a0" := (![sliceT] "s") in
      slice.len "$a0")) = #(W32 20))).
 
 Definition geometryInterface : go_type := interfaceT.
@@ -991,8 +991,8 @@ Definition standardForLoop : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") < (let: "$a0" := (![sliceT] "s") in
-      slice.len "$a0")
+      (if: (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] "s") in
+      slice.len "$a0"))
       then
         let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
         let: "$r0" := (![uint64T] (![ptrT] "sumPtr")) in
@@ -1276,8 +1276,8 @@ Definition testMapSize : val :=
     let: "m" := (ref_ty (mapT uint64T uint64T) (zero_val (mapT uint64T uint64T))) in
     let: "$r0" := (map.make uint64T uint64T #()) in
     do:  ("m" <-[mapT uint64T uint64T] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![mapT uint64T uint64T] "m") in
-    map.len "$a0") = #(W64 0))) in
+    let: "$r0" := ((![boolT] "ok") && ((s_to_w64 (let: "$a0" := (![mapT uint64T uint64T] "m") in
+    map.len "$a0")) = #(W64 0))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := #(W64 1) in
     do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 0) "$r0");;;
@@ -1285,8 +1285,8 @@ Definition testMapSize : val :=
     do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
     do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 3) "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![mapT uint64T uint64T] "m") in
-    map.len "$a0") = #(W64 3))) in
+    let: "$r0" := ((![boolT] "ok") && ((s_to_w64 (let: "$a0" := (![mapT uint64T uint64T] "m") in
+    map.len "$a0")) = #(W64 3))) in
     do:  ("ok" <-[boolT] "$r0");;;
     return: (![boolT] "ok")).
 
@@ -2084,8 +2084,8 @@ Definition testSliceAppend : val :=
     let: "$a1" := (![sliceT] "newBytes") in
     (slice.append byteT) "$a0" "$a1") in
     do:  ("bytes" <-[sliceT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![sliceT] "bytes") in
-    slice.len "$a0") = #(W64 3))) in
+    let: "$r0" := ((![boolT] "ok") && ((s_to_w64 (let: "$a0" := (![sliceT] "bytes") in
+    slice.len "$a0")) = #(W64 3))) in
     do:  ("ok" <-[boolT] "$r0");;;
     let: "$r0" := ((![boolT] "ok") && ((![byteT] (slice.elem_ref byteT (![sliceT] "bytes") #(W64 2))) = #(W8 3))) in
     do:  ("ok" <-[boolT] "$r0");;;
@@ -2390,8 +2390,8 @@ Definition testStoreSlice : val :=
     do:  ("s" <-[sliceT] "$r0");;;
     let: "$r0" := (![sliceT] "s") in
     do:  ((![ptrT] "p") <-[sliceT] "$r0");;;
-    return: ((let: "$a0" := (![sliceT] (![ptrT] "p")) in
-     slice.len "$a0") = #(W64 3))).
+    return: ((s_to_w64 (let: "$a0" := (![sliceT] (![ptrT] "p")) in
+     slice.len "$a0")) = #(W64 3))).
 
 Definition StructWithFunc : go_type := structT [
   "fn" :: funcT
