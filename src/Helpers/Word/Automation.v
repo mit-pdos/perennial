@@ -315,21 +315,29 @@ Ltac2 add_range_facts () :=
            end
   ).
 
-Ltac2 normalize () :=
+Ltac2 normalize tac :=
   handle_goal noop_logger;
   unfold_w_whatever ();
   eliminate_word_ops noop_logger;
-  unfold_word_wrap ();
   add_range_facts ();
+  tac ();
+  unfold_word_wrap ();
   simplify_Z_constants () (* FIXME: should probably simplify Z constants after zify *)
 .
 
 Ltac2 Set solve_unsafe as old :=
-  (fun () => normalize ();
+  (fun () => normalize (fun () => ());
          set_all ();
          ltac1:(zify; Z.div_mod_to_equations);
          subst_all ();
          ltac1:(lia)).
+
+Ltac2 solve_unsafe_with tac :=
+  normalize tac;
+  set_all ();
+  ltac1:(zify; Z.div_mod_to_equations);
+  subst_all ();
+  ltac1:(lia).
 (* Add a warning/error for nonlinear arithmetic? Sometimes it's hard to
    notice. *)
 
@@ -350,6 +358,11 @@ End word.
 
 Tactic Notation "word" :=
   try iPureIntro; ltac2:(Control.enter word.solve_unsafe).
+
+Tactic Notation "word" "with" tactic(t) :=
+  try iPureIntro;
+  let w := ltac2:(t |- Control.enter (fun () => word.solve_unsafe_with (fun () => Ltac1.run t))) in
+  w t.
 
 Tactic Notation "nat_cleanup" :=
   rewrite -> ?Nat2Z.id; rewrite -> ?Z2Nat.id by word.
