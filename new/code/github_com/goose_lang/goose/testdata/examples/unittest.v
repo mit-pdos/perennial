@@ -51,9 +51,9 @@ Definition sum : val :=
     (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (array.len (arrayT 100 uint64T))); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (array.len (arrayT 100 uint64T)))); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
       do:  ("sum" <-[uint64T] ((![uint64T] "sum") + (![uint64T] (array.elem_ref uint64T (![arrayT 100 uint64T] "x") (![uint64T] "i")))))));;;
-    do:  ("sum" <-[uint64T] ((![uint64T] "sum") + (array.cap (arrayT 100 uint64T))));;;
+    do:  ("sum" <-[uint64T] ((![uint64T] "sum") + (s_to_w64 (array.cap (arrayT 100 uint64T)))));;;
     return: (![uint64T] "sum")).
 
 (* go: array.go:31:6 *)
@@ -439,8 +439,8 @@ Definition literalCast : val :=
 Definition castInt : val :=
   rec: "castInt" "p" :=
     exception_do (let: "p" := (ref_ty sliceT "p") in
-    return: (let: "$a0" := (![sliceT] "p") in
-     slice.len "$a0")).
+    return: (s_to_w64 (let: "$a0" := (![sliceT] "p") in
+     slice.len "$a0"))).
 
 (* go: conversions.go:19:6 *)
 Definition stringToByteSlice : val :=
@@ -502,9 +502,9 @@ Definition testCopyDifferentLengths : val :=
     let: "$r0" := (slice.make2 byteT #(W64 10)) in
     do:  ("y" <-[sliceT] "$r0");;;
     let: "n" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "y") in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] "y") in
     let: "$a1" := (![sliceT] "x") in
-    (slice.copy byteT) "$a0" "$a1") in
+    (slice.copy byteT) "$a0" "$a1")) in
     do:  ("n" <-[uint64T] "$r0");;;
     return: (((![uint64T] "n") = #(W64 10)) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 3))) = #(W8 1)))).
 
@@ -1107,7 +1107,7 @@ Definition useInts : val :=
     exception_do (let: "y" := (ref_ty uint32T "y") in
     let: "x" := (ref_ty uint64T "x") in
     let: "z" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (to_u64 (![uint32T] "y")) in
+    let: "$r0" := (u_to_w64 (![uint32T] "y")) in
     do:  ("z" <-[uint64T] "$r0");;;
     let: "$r0" := ((![uint64T] "z") + #(W64 1)) in
     do:  ("z" <-[uint64T] "$r0");;;
@@ -1255,8 +1255,8 @@ Definition standardForLoop : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") < (let: "$a0" := (![sliceT] "s") in
-      slice.len "$a0")
+      (if: (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] "s") in
+      slice.len "$a0"))
       then
         let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
         let: "$r0" := (![uint64T] (![ptrT] "sumPtr")) in
@@ -1440,8 +1440,8 @@ Definition IterateMapKeys : val :=
 Definition MapSize : val :=
   rec: "MapSize" "m" :=
     exception_do (let: "m" := (ref_ty (mapT uint64T boolT) "m") in
-    return: (let: "$a0" := (![mapT uint64T boolT] "m") in
-     map.len "$a0")).
+    return: (s_to_w64 (let: "$a0" := (![mapT uint64T boolT] "m") in
+     map.len "$a0"))).
 
 Definition IntWrapper : go_type := uint64T.
 
@@ -1578,7 +1578,7 @@ Definition BitwiseOps : val :=
   rec: "BitwiseOps" "x" "y" :=
     exception_do (let: "y" := (ref_ty uint64T "y") in
     let: "x" := (ref_ty uint32T "x") in
-    return: ((to_u64 (![uint32T] "x")) `or` ((to_u64 (to_u32 (![uint64T] "y"))) `and` #(W64 43)))).
+    return: ((u_to_w64 (![uint32T] "x")) `or` ((u_to_w64 (u_to_w32 (![uint64T] "y"))) `and` #(W64 43)))).
 
 (* go: operators.go:20:6 *)
 Definition Comparison : val :=
@@ -1915,9 +1915,9 @@ Definition sliceOps : val :=
     let: "v4" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (slice.elem_ref uint64T (![sliceT] "x") #(W64 2)) in
     do:  ("v4" <-[ptrT] "$r0");;;
-    return: ((((((![uint64T] "v1") + (![uint64T] (slice.elem_ref uint64T (![sliceT] "v2") #(W64 0)))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "v3") #(W64 1)))) + (![uint64T] (![ptrT] "v4"))) + (let: "$a0" := (![sliceT] "x") in
-     slice.len "$a0")) + (let: "$a0" := (![sliceT] "x") in
-     slice.cap "$a0"))).
+    return: ((((((![uint64T] "v1") + (![uint64T] (slice.elem_ref uint64T (![sliceT] "v2") #(W64 0)))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "v3") #(W64 1)))) + (![uint64T] (![ptrT] "v4"))) + (s_to_w64 (let: "$a0" := (![sliceT] "x") in
+     slice.len "$a0"))) + (s_to_w64 (let: "$a0" := (![sliceT] "x") in
+     slice.cap "$a0")))).
 
 (* go: slices.go:14:6 *)
 Definition makeSingletonSlice : val :=
@@ -2017,8 +2017,8 @@ Definition stringAppend : val :=
 Definition stringLength : val :=
   rec: "stringLength" "s" :=
     exception_do (let: "s" := (ref_ty stringT "s") in
-    return: (let: "$a0" := (![stringT] "s") in
-     StringLength "$a0")).
+    return: (s_to_w64 (let: "$a0" := (![stringT] "s") in
+     StringLength "$a0"))).
 
 (* go: strings.go:11:6 *)
 Definition x : val :=

@@ -32,17 +32,17 @@ Definition reserve : val :=
     exception_do (let: "additional" := (ref_ty uint64T "additional") in
     let: "b" := (ref_ty sliceT "b") in
     let: "min_cap" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (let: "$a0" := (![sliceT] "b") in
-    slice.len "$a0") in
+    let: "$r0" := (let: "$a0" := (s_to_w64 (let: "$a0" := (![sliceT] "b") in
+    slice.len "$a0")) in
     let: "$a1" := (![uint64T] "additional") in
     (func_call #std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
     do:  ("min_cap" <-[uint64T] "$r0");;;
-    (if: (let: "$a0" := (![sliceT] "b") in
-    slice.cap "$a0") < (![uint64T] "min_cap")
+    (if: (s_to_w64 (let: "$a0" := (![sliceT] "b") in
+    slice.cap "$a0")) < (![uint64T] "min_cap")
     then
       let: "new_cap" := (ref_ty uint64T (zero_val uint64T)) in
-      let: "$r0" := (let: "$a0" := (let: "$a0" := (![sliceT] "b") in
-      slice.cap "$a0") in
+      let: "$r0" := (let: "$a0" := (s_to_w64 (let: "$a0" := (![sliceT] "b") in
+      slice.cap "$a0")) in
       let: "$a1" := (![uint64T] "min_cap") in
       (func_call #marshal.marshal #"compute_new_cap"%go) "$a0" "$a1") in
       do:  ("new_cap" <-[uint64T] "$r0");;;
@@ -206,8 +206,8 @@ Definition WriteLenPrefixedBytes : val :=
     let: "b" := (ref_ty sliceT "b") in
     let: "b2" := (ref_ty sliceT (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (let: "$a0" := (![sliceT] "bs") in
-    slice.len "$a0") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "bs") in
+    slice.len "$a0")) in
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("b2" <-[sliceT] "$r0");;;
     return: (let: "$a0" := (![sliceT] "b2") in

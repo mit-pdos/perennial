@@ -136,7 +136,7 @@ Definition writeAll : val :=
     slice.for_range sliceT "$range" (λ: "$key" "$value",
       do:  ("bk" <-[sliceT] "$value");;;
       do:  ("i" <-[intT] "$key");;;
-      do:  (let: "$a0" := ((![uint64T] "off") + (![intT] "i")) in
+      do:  (let: "$a0" := ((![uint64T] "off") + (s_to_w64 (![intT] "i"))) in
       let: "$a1" := (![sliceT] "bk") in
       (func_call #disk #"Write"%go) "$a0" "$a1")))).
 
@@ -148,15 +148,15 @@ Definition Log__append : val :=
     let: "sz" := (ref_ty uint64T (zero_val uint64T)) in
     let: "$r0" := (![uint64T] (struct.field_ref Log "sz" (![ptrT] "log"))) in
     do:  ("sz" <-[uint64T] "$r0");;;
-    (if: (let: "$a0" := (![sliceT] "bks") in
-    slice.len "$a0") ≥ (((![uint64T] (struct.field_ref Log "diskSz" (![ptrT] "log"))) - #(W64 1)) - (![uint64T] "sz"))
+    (if: (s_to_w64 (let: "$a0" := (![sliceT] "bks") in
+    slice.len "$a0")) ≥ (((![uint64T] (struct.field_ref Log "diskSz" (![ptrT] "log"))) - #(W64 1)) - (![uint64T] "sz"))
     then return: (#false)
     else do:  #());;;
     do:  (let: "$a0" := (![sliceT] "bks") in
     let: "$a1" := (#(W64 1) + (![uint64T] "sz")) in
     (func_call #append_log.append_log #"writeAll"%go) "$a0" "$a1");;;
-    do:  ((struct.field_ref Log "sz" (![ptrT] "log")) <-[uint64T] ((![uint64T] (struct.field_ref Log "sz" (![ptrT] "log"))) + (let: "$a0" := (![sliceT] "bks") in
-    slice.len "$a0")));;;
+    do:  ((struct.field_ref Log "sz" (![ptrT] "log")) <-[uint64T] ((![uint64T] (struct.field_ref Log "sz" (![ptrT] "log"))) + (s_to_w64 (let: "$a0" := (![sliceT] "bks") in
+    slice.len "$a0"))));;;
     do:  ((method_call #append_log.append_log #"Log'ptr" #"writeHdr" (![ptrT] "log")) #());;;
     return: (#true)).
 

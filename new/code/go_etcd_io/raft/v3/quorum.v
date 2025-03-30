@@ -446,9 +446,9 @@ Definition VoteResult__String : val :=
   rec: "VoteResult__String" "i" <> :=
     exception_do (let: "i" := (ref_ty VoteResult "i") in
     do:  ("i" <-[VoteResult] ((![VoteResult] "i") - #(W8 1)));;;
-    (if: (![VoteResult] "i") ≥ (to_u8 ((array.len (arrayT 4 uint8T)) - #(W64 1)))
+    (if: (![VoteResult] "i") ≥ (s_to_w8 ((array.len (arrayT 4 uint8T)) - #(W64 1)))
     then
-      return: ((#"VoteResult("%go + (let: "$a0" := (to_u64 ((![VoteResult] "i") + #(W8 1))) in
+      return: ((#"VoteResult("%go + (let: "$a0" := (u_to_w64 ((![VoteResult] "i") + #(W8 1))) in
        let: "$a1" := #(W64 10) in
        (func_call #strconv #"FormatInt"%go) "$a0" "$a1")) + #")"%go)
     else do:  #());;;

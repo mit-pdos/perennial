@@ -43,7 +43,7 @@ Definition BytesEqual : val :=
     let: "retval" := (ref_ty boolT (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("retval" <-[boolT] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![intT] "xlen")); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (![intT] "xlen"))); (λ: <>, Skip) := λ: <>,
       (if: (![byteT] (slice.elem_ref byteT (![sliceT] "x") (![uint64T] "i"))) ≠ (![byteT] (slice.elem_ref byteT (![sliceT] "y") (![uint64T] "i")))
       then
         let: "$r0" := #false in
