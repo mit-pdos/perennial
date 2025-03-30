@@ -833,10 +833,9 @@ Section goose.
     rewrite -wp_fupd.
     wp_apply (wp_newAllocator s_alloc with "Hused_set").
     { word. }
-    { word_cleanup.
-      rewrite /alloc.domain.
+    { rewrite /alloc.domain.
       rewrite Halloc_dom.
-      f_equal; lia. }
+      f_equal. word. }
     { congruence. }
     { auto. }
     iIntros (alloc_ref) "Halloc_mem".

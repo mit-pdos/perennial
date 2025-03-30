@@ -487,7 +487,7 @@ Proof.
       subst vs'; rewrite length_fmap. rewrite !length_take.
       rewrite //=.
       rewrite min_l; last word.
-      rewrite u64_Z_through_nat. eauto.
+      nat_cleanup. eauto.
     - iPureIntro. rewrite length_fmap /=.
       split; last word.
       subst vs'. rewrite length_drop length_take. word.

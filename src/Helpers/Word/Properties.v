@@ -19,3 +19,10 @@ Proof.
   2:{ apply NoDup_seqZ. }
   setoid_rewrite elem_of_seqZ. intros; word.
 Qed.
+
+Lemma w64_to_nat_id x : W64 (Z.of_nat (uint.nat x)) = x.
+Proof. word. Qed.
+
+(* FIXME:(stdpp) These are missing from stdpp numbers.v *)
+Global Instance Nat_ge_dec : RelDecision ge := ge_dec.
+Global Instance Nat_gt_dec : RelDecision gt := gt_dec.

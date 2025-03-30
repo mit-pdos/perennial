@@ -117,7 +117,7 @@ Proof.
     wp_pures. iApply "HΦ". eauto. }
   iDestruct (typed_slice.own_slice_small_sz (V:=u64) with "[$]") as %Hsz.
   edestruct (list_lookup_lt (shardMapping) (uint.nat k)) as (v&Heq).
-  { word_cleanup. }
+  { word. }
   wp_apply (typed_slice.wp_SliceGet (V:=u64) with "[HshardMap_sl]").
   { rewrite /HostName. iFrame "HshardMap_sl". iPureIntro. eauto. }
   iIntros "HshardMap_sl". wp_pures.

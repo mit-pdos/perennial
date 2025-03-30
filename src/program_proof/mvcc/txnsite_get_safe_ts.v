@@ -91,7 +91,7 @@ Proof.
       }
       { apply set_Forall_union_inv_2 in Hmax.
         eapply set_Forall_impl; first apply Hmax.
-        word.
+        intros. word.
       }
     }
   }
@@ -149,7 +149,7 @@ Proof.
       { rewrite app_comm_cons fmap_app.
         rewrite Forall_app.
         split.
-        { apply (Forall_impl _ _ _ Htidloop). word. }
+        { apply (Forall_impl _ _ _ Htidloop). intros. word. }
         apply Forall_singleton. done.
       }
     - iApply "HΦ".
@@ -163,7 +163,7 @@ Proof.
       { rewrite app_comm_cons fmap_app.
         rewrite Forall_app.
         split.
-        { apply (Forall_impl _ _ _ Htidloop). word. }
+        { apply (Forall_impl _ _ _ Htidloop). intros. word. }
         apply Forall_singleton. subst u64_to_nat. word.
       }
   }

@@ -15,6 +15,9 @@ Set Default Proof Mode "Classic".
   expressions together along with (in)equalities. E.g.  [word.mul (W32 4)
   (word.add x y)] is a "linear" expression.
 
+    To have [word] automatically unfold definitions before trying to solve the
+  goal, add a hint the the [word] HintDb, by doing [Hint Unfold foo : word.]
+
     [word] is likely to fail at handling non-linear expressions, e.g. [word.mul
   x y] where [x] and [y] are both non-constants. In some proofs, it is possible
   to handle non-linear reasoning first (e.g. by removing a common factor on both
@@ -95,7 +98,10 @@ Ltac2 handle_goal logger :=
         ]
   end.
 
+Create HintDb word.
+
 Ltac2 unfold_w_whatever () :=
+  ltac1:(autounfold with word in * );
   unfold W64, W32, (* W16, *) W8, w64, w32, (* w16, *) w8 in *.
 
 (* Runs [t] and panics unrecoverably if it throws an exception. *)

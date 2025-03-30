@@ -199,7 +199,7 @@ Proof.
   iDestruct "Hsl" as "[Hsl %]".
   iDestruct (big_sepL_insert_acc _ _ (uint.nat i) with "Hsl") as "[Hptsto Hsl]".
   { done. }
-  rewrite u64_Z_through_nat.
+  nat_cleanup.
   iFrame "Hptsto".
   iIntros (?) "Hptsto".
   iSpecialize ("Hsl" with "Hptsto").
