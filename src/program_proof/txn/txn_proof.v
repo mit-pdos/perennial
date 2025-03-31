@@ -1759,23 +1759,13 @@ Proof.
   wp_rec. wp_pures.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (sl) "Hslice".
-  rewrite unsigned_U64 /word.wrap Z.mod_small //=.
   iDestruct (own_slice_small_read with "Hslice")
     as "[Hslice Hslice_restore]".
   wp_apply wp_bitToByte.
-  {
-    rewrite word.unsigned_modu_nowrap; last by word.
-    rewrite unsigned_U64 /word.wrap (Z.mod_small 8); last by lia.
-    apply Z.mod_pos_bound.
-    lia.
-  }
+  { word. }
   wp_apply (wp_SliceSet (V:=u8) with "[$Hslice]").
-  {
-    iPureIntro.
-    rewrite unsigned_U64 /word.wrap Z.mod_small //=.
-  }
+  { iPureIntro. word with eauto. }
   iIntros "Hslice".
-  rewrite unsigned_U64 /word.wrap Z.mod_small //=.
   unshelve (wp_apply (
     wp_Txn__OverWrite_raw _ _ _ _ _ _ _ _ _ _ _
     (existT _ (bufBit b))
@@ -1788,74 +1778,27 @@ Proof.
   {
     eexists _.
     split; first by reflexivity.
-    rewrite word.unsigned_modu; last by word.
-    rewrite (unsigned_U64 8) (wrap_small 8); last by lia.
-    rewrite wrap_small;
-      last by (apply Z_mod_pos_bound_weak; lia).
-    rewrite /get_bit -bool_decide_decide.
-    unshelve (erewrite bool_decide_ext).
-    4: {
-      split.
-      - intros Heq.
-        apply (f_equal word.unsigned) in Heq.
-        apply Heq.
-      - intros Heq.
-        apply word.unsigned_inj in Heq.
-        assumption.
-    }
-    1: refine _.
-    unshelve (erewrite bool_decide_ext).
-    4: {
-      rewrite word.unsigned_and word.unsigned_modu;
-        last by word.
-      rewrite unsigned_U64 (wrap_small 8); last by lia.
-      unfold word.wrap at 2.
-      rewrite (Z.mod_small _ (2^64));
-        last by (apply Z_mod_pos_bound_weak; lia).
-      rewrite unsigned_U8 wrap_small; last by lia.
-      rewrite word.unsigned_sru.
-      2: {
-        rewrite unsigned_U8 wrap_small;
-          last by (apply Z_mod_pos_bound_weak; lia).
-        apply Z.mod_pos_bound.
-        lia.
-      }
-      rewrite !unsigned_U8.
-      rewrite (wrap_small (_ `mod` _));
-        last by (apply Z_mod_pos_bound_weak; lia).
-      apply Logic.iff_refl.
-    }
-    1: refine _.
+    rewrite /get_bit.
     destruct b.
-    2: {
-      rewrite bool_decide_eq_false_2; first by reflexivity.
-      rewrite (wrap_small 0); last by lia.
-      rewrite Z.shiftr_0_l.
-      rewrite (wrap_small 0); last by lia.
-      lia.
+    {
+      rewrite decide_True //.
+      rewrite -> Z.shiftl_mul_pow2 by word. rewrite left_id.
+      rewrite Automation.word.word_eq_iff_Z_eq.
+      rewrite word.unsigned_and. rewrite -> Automation.word.unsigned_sru' by word.
+      rewrite -> word.unsigned_modu by word.
+      unfold W64, W8 in *. rewrite !word.unsigned_of_Z.
+      rewrite -> (wrap_small 8) by lia.
+      repeat rewrite -> (wrap_small (uint.Z (addrOff a) `mod` 8)) by word.
+      rewrite -> (wrap_small (2 ^ _)).
+      2:{ split; first by (apply Z.pow_nonneg; lia).
+          apply Z.pow_lt_mono_r; word. }
+      rewrite Z.div_same; last word.
+      rewrite Z.land_diag //.
     }
-    rewrite bool_decide_eq_true_2; first by reflexivity.
-    rewrite Z.shiftl_1_l Z.shiftr_div_pow2;
-      last by apply Z.mod_pos_bound.
-    rewrite (wrap_small (2^_)).
-    2: {
-      split; first by (apply Z.pow_nonneg; lia).
-      apply Z.pow_lt_mono_r; [lia|lia|].
-      apply Z.mod_pos_bound.
-      lia.
+    {
+      rewrite decide_False //.
+      word with (try (rewrite -> (wrap_small 0) in *; last by lia)).
     }
-    rewrite Z.div_same.
-    2: {
-      match goal with
-      | |- context[(?a ^ ?b)%Z] =>
-        unshelve (epose proof (Z.pow_le_mono_r a 0 b _ _) as Hle)
-      end.
-      1: lia.
-      1: apply Z.mod_pos_bound; lia.
-      lia.
-    }
-    rewrite (wrap_small 1); last by lia.
-    reflexivity.
   }
   iIntros (?) "Hpost".
   iNamed "Hpost".
