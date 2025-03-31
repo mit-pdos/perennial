@@ -553,12 +553,7 @@ Section proof.
     destruct Hacc as [x Hacc].
     iDestruct (own_slice_small_read with "Hslice") as "[Hslice Hrestore]".
     wp_apply (wp_SliceGet with "[$Hslice]").
-    {
-      iPureIntro.
-      word_cleanup.
-      rewrite Nat2Z.id.
-      apply Hacc.
-    }
+    { replace (uint.nat (W64 from)) with from by word. done. }
     iIntros "[Hslice %Hty]".
     iApply "Hrestore" in "Hslice".
     wp_pures.
