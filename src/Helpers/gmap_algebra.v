@@ -1,4 +1,5 @@
 From stdpp Require Export list gmap.
+From iris.algebra Require Import stepindex_finite.
 From iris.algebra Require Export list cmra.
 From iris.algebra Require Import gset.
 From iris.algebra Require Import updates local_updates proofmode_classes big_op gmap.

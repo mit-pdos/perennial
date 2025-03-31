@@ -1,4 +1,5 @@
 From Coq.QArith Require Import Qcanon.
+From iris.algebra Require Import stepindex_finite.
 From iris.algebra Require Export view gmap frac dfrac gset.
 From iris.algebra Require Import local_updates proofmode_classes big_op.
 From iris.prelude Require Import options.
