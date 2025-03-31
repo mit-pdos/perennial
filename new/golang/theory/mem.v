@@ -126,6 +126,19 @@ Section goose_lang.
     }
   Qed.
 
+  Lemma typed_pointsto_valid l dq v :
+    l ↦{dq} v ⊢ ⌜go_type_size t > 0 → ✓dq⌝.
+  Proof using IntoValTyped0.
+    iIntros "H".
+    unseal.
+    pose proof (to_val_has_go_type v) as H.
+    destruct (flatten_struct (#v)) eqn:Hbad.
+    { apply (f_equal length) in Hbad. rewrite (has_go_type_len (t:=t)) //= in Hbad.
+      iPureIntro. lia. }
+    iDestruct "H" as "[H1 H2]".
+    iDestruct (heap_pointsto_valid with "H1") as %Hvalid; done.
+  Qed.
+
   Global Instance typed_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
     CombineSepGives (l ↦{dq1} v1)%I (l ↦{dq2} v2)%I
                     ⌜ (go_type_size t > O → ✓(dq1 ⋅ dq2)) ∧ v1 = v2 ⌝%I.
