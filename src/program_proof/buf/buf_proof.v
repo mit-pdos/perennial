@@ -424,77 +424,13 @@ Opaque PeanoNat.Nat.div.
       word.
     }
     rewrite Hoff0.
-    rewrite firstn_all2.
-    2:{
-      rewrite length_Block_to_vals.
-      Set Ltac Profiling.
-      Set Ltac2 In Ltac1 Profiling.
-      Import Automation.word.
-
-      ltac2:(
-  handle_goal noop_logger;
-  unfold_w_whatever ()).
-
-Ltac2 normalize () :=
-  handle_goal verbose_logger;
-  unfold_w_whatever ();
-  eliminate_word_ops verbose_logger;
-  add_range_facts ();
-  unfold_word_wrap ();
-  simplify_Z_constants () (* FIXME: should probably simplify Z constants after zify *)
-.
-
-Ltac2 Set solve_unsafe as old :=
-  (fun () => normalize ();
-         set_all ();
-         ltac1:(zify; Z.div_mod_to_equations);
-         subst_all ();
-         ltac1:(lia)).
-
-  (* Ltac2 Set solve_unsafe as old := fun () => ltac1:(time shelve). *)
-rewrite word.unsigned_add in H2.
-rewrite -> word.unsigned_divu_nowrap in H2.
-2:{
-  clear H2.
-  rewrite word.unsigned_of_Z. unfold word.wrap in *.
-  #[local] Ltac Zify.zify_post_hook ::= idtac.
-  unfold bufSz in Hoff.
-  simpl in Hoff.
-  Set Printing Coercions.
-  replace (Z.of_nat _) with (32768%Z) in Hoff.
-  2:{ admit. }
-  Z.div_mod_to_equations.
-  clear Hoff.
-  lia.
-  zify.
-  word.
-}
-word. *)
-Import Ltac2.
-time rewrite -> word.unsigned_divu_nowrap in H2 by (clear H2; word).
-time ltac2:(rewrite word.unsigned_divu_nowrap in H2 by (clear H2; solve_unsafe ())).
-2:{
-
-}
-  time unshelve ltac2:(eliminate_word_ops verbose_logger).
-  { time word. }
-  time word.
-  add_range_facts ()).
-  unfold_word_wrap ();
-  simplify_Z_constants ()
-      ltac2:(word.normalize (fun () => ())).
-      Show Ltac Profile.
-      change (word.divu 0 8) with (W64 0).
+    change (word.divu 0 8) with (W64 0).
     change (word.add 0 (Z.to_nat 4096 * 8)%nat) with (W64 (4096 * 8)).
     change (word.sub (4096 * 8) 1) with (W64 32767).
     change (word.divu 32767 8) with (W64 4095).
     change (word.add 4095 1) with (W64 4096).
     rewrite firstn_all2.
-    2: { rewrite length_Block_to_vals /block_bytes.
-         ltac2:(word.normalize (fun () => ())).
-         lia.
-         Show Lia Profile.
-         Time word. }
+    2: { rewrite length_Block_to_vals /block_bytes. word. }
     rewrite skipn_O //.
 Qed.
 
@@ -879,7 +815,7 @@ Proof.
   iIntros "Hsrc".
   wp_apply wp_installOneBit; first word.
   wp_apply (wp_SliceSet (V:=u8) with "[$Hdst]").
-  { iPureIntro. word with eauto. ltac2:(word.normalize ()). eauto. }
+  { iPureIntro. ltac2:(word.normalize ()). eauto. }
   iIntros "Hdst".
   wp_pures. iModIntro. iApply "HΦ".
   iFrame "Hsrc".

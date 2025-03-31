@@ -138,7 +138,7 @@ lemmas. *)
     { apply step_count_next_incr. }
     iMod (na_heap_alloc_list tls _ l (Block_to_vals b) (Reading O) with "Hσ")
       as "(Hσ & Hblock & Hl)".
-    { zify. rewrite length_Block_to_vals. rewrite /block_bytes. lia. }
+    { rewrite length_Block_to_vals. rewrite /block_bytes. lia. }
     { destruct H1 as (?&?); eauto. }
     { destruct H1 as (H'&?); eauto. eapply H'. }
     { destruct H1 as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
@@ -158,7 +158,7 @@ lemmas. *)
     }
   Qed.
 
-  Definition bindex_of_Z (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) : fin (Z.to_nat block_bytes).
+  Definition bindex_of_Z (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) : fin block_bytes.
     cut (Z.to_nat i < 4096)%nat.
     { apply nat_to_fin. }
     change 4096%nat with (Z.to_nat 4096%Z).
@@ -216,10 +216,9 @@ lemmas. *)
   Proof.
     intros.
     assert (Block_to_vals b1 = Block_to_vals b2).
-    { apply (list_eq_same_length _ _ 4096%nat).
-      { zify; rewrite ?length_Block_to_vals; auto. }
-      { zify; rewrite ?length_Block_to_vals; auto. }
-      intros. rewrite <- (Nat2Z.id i) in H1, H2.
+    { apply (list_eq_same_length _ _ 4096%nat);
+        rewrite ?length_Block_to_vals; auto; intros.
+      rewrite <- (Nat2Z.id i) in H1, H2.
       rewrite H in H1; try lia; congruence. }
     apply vec_to_list_inj2.
     apply list_fmap_eq_inj in H0; auto.

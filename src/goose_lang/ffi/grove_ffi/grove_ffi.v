@@ -60,11 +60,11 @@ Section grove.
     {| ffiGlobalGS := groveGS;
        ffiLocalGS := groveNodeGS;
        ffi_local_ctx _ _ σ :=
-         (mono_nat_auth_own grove_tsc_name 1 (Z.to_nat $ uint.Z σ.(grove_node_tsc)) ∗
+         (mono_nat_auth_own grove_tsc_name 1 (uint.nat σ.(grove_node_tsc)) ∗
           ⌜file_content_bounds σ.(grove_node_files)⌝ ∗ gen_heap_interp σ.(grove_node_files))%I;
        ffi_global_ctx _ _ g :=
          (gen_heap_interp g.(grove_net) ∗ ⌜chan_msg_bounds g.(grove_net)⌝ ∗
-          mono_nat_auth_own grove_time_name 1 (Z.to_nat $ uint.Z g.(grove_global_time))
+          mono_nat_auth_own grove_time_name 1 (uint.nat g.(grove_global_time))
          )%I;
        ffi_local_start _ _ σ :=
          ([∗ map] f↦c ∈ σ.(grove_node_files), (pointsto (L:=byte_string) (V:=list byte) f (DfracOwn 1) c))%I;
@@ -98,12 +98,12 @@ Section lifting.
     gen_heap.meta (hG := groveG_net_heapG) c N x.
 
   (** "The TSC is at least" *)
-  Definition tsc_lb (time : Z) : iProp Σ :=
-    mono_nat_lb_own grove_tsc_name (Z.to_nat time).
+  Definition tsc_lb (time : nat) : iProp Σ :=
+    mono_nat_lb_own grove_tsc_name time.
 
   (* FIXME: have to manually put some of this stuff here because of two mono_natG's in context *)
-  Definition is_time_lb (t:u64) := @mono_nat_lb_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name (Z.to_nat $ uint.Z t).
-  Definition own_time (t:u64) := @mono_nat_auth_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name 1 (Z.to_nat $ uint.Z t).
+  Definition is_time_lb (t:u64) := @mono_nat_lb_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name (uint.nat t).
+  Definition own_time (t:u64) := @mono_nat_auth_own Σ (goose_groveGS.(groveG_timeG)) grove_time_name 1 (uint.nat t).
 
   Lemma own_time_get_lb t :
     own_time t -∗ is_time_lb t.
@@ -113,7 +113,7 @@ Section lifting.
   Qed.
 
   Lemma is_time_lb_mono t t':
-    uint.Z t <= uint.Z t' →
+    uint.nat t <= uint.nat t' →
     is_time_lb t' -∗ is_time_lb t.
   Proof.
     rewrite /own_time /is_time_lb. destruct goose_groveGS.
@@ -256,7 +256,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_SendOp c_l c_r ms (l : loc) (len : u64) (data : list u8) (q : dfrac) s E :
-    Z.of_nat (length data) = uint.Z len →
+    length data = uint.nat len →
     {{{ c_r c↦ ms ∗ pointsto_vals l q (data_vals data) }}}
       ExternalOp SendOp (connection_socket c_l c_r, (#l, #len))%V @ s; E
     {{{ (err_early err_late : bool), RET #(err_early || err_late);
@@ -293,8 +293,8 @@ lemmas. *)
     iMod (@gen_heap_update with "Hg Hc") as "[$ Hc]".
     assert (data = data0) as <-.
     { apply list_eq=>i.
-      rename select (Z.of_nat (length _) = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length data0 = length data) as Hlen by word.
+      rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
+      assert (length data0 = length data) as Hlen by rewrite Hmlen //.
       destruct (data !! i) as [v|] eqn:Hm; last first.
       { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
       rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
@@ -323,7 +323,7 @@ lemmas. *)
     {{{ (err : bool) (l : loc) (len : u64) (data : list u8),
         RET (#err, (#l, #len));
         ⌜if err then l = null ∧ data = [] ∧ len = 0 else
-          Message c_r data ∈ ms ∧ Z.of_nat (length data) = uint.Z len⌝ ∗
+          Message c_r data ∈ ms ∧ length data = uint.nat len⌝ ∗
         c_l c↦ ms ∗ pointsto_vals l (DfracOwn 1) (data_vals data)
     }}}.
   Proof.
@@ -397,7 +397,7 @@ lemmas. *)
     {{{ f f↦{q} c }}}
       ExternalOp FileReadOp #(str f) @ E
     {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
-      f f↦{q} c ∗ if err then True else ⌜ Z.of_nat (length c) = uint.Z len ⌝ ∗ pointsto_vals l (DfracOwn 1) (data_vals c)
+      f f↦{q} c ∗ if err then True else ⌜length c = uint.nat len⌝ ∗ pointsto_vals l (DfracOwn 1) (data_vals c)
     }}}.
   Proof.
     iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -456,7 +456,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_FileWriteOp f old new l q (len : u64) E :
-    Z.of_nat (length new) = uint.Z len →
+    length new = uint.nat len →
     {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileWriteOp (#(str f), (#l, #len))%V @ E
     {{{ (err : bool), RET #err; f f↦ (if err then old else new) ∗ pointsto_vals l q (data_vals new) }}}.
@@ -488,8 +488,8 @@ lemmas. *)
     iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
     assert (data = new) as <-.
     { apply list_eq=>i.
-      rename select (Z.of_nat (length _) = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length new = length data) as Hlen by word.
+      rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
+      assert (length new = length data) as Hlen by rewrite Hmlen //.
       destruct (data !! i) as [v|] eqn:Hm; last first.
       { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
       rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
@@ -510,7 +510,7 @@ lemmas. *)
   Qed.
 
   Lemma wp_FileAppendOp f old new l q (len : u64) E :
-    Z.of_nat (length new) = uint.Z len →
+    length new = uint.nat len →
     {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
       ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E
     {{{ (err : bool), RET #err; f f↦ (if err then old else (old ++ new)) ∗ pointsto_vals l q (data_vals new) }}}.
@@ -546,8 +546,8 @@ lemmas. *)
     iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
     assert (data = new) as <-.
     { apply list_eq=>i.
-      rename select (Z.of_nat (length _) = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length new = length data) as Hlen by word.
+      rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
+      assert (length new = length data) as Hlen by rewrite Hmlen //.
       destruct (data !! i) as [v|] eqn:Hm; last first.
       { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
       rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
@@ -571,7 +571,7 @@ lemmas. *)
     {{{ tsc_lb prev_time }}}
       ExternalOp GetTscOp #() @ s; E
     {{{ (new_time: u64), RET #new_time;
-      ⌜prev_time ≤ uint.Z new_time⌝ ∗ tsc_lb (uint.Z new_time)
+      ⌜prev_time ≤ uint.nat new_time⌝ ∗ tsc_lb (uint.nat new_time)
     }}}.
   Proof.
     iIntros (Φ) "Hprev HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -592,8 +592,8 @@ lemmas. *)
     iDestruct (mono_nat_lb_own_valid with "Htsc Hprev") as %[_ Hlb].
     iClear "Hprev".
     evar (new: u64).
-    assert (uint.Z old <= uint.Z new) as Hupd.
-    2: iMod (mono_nat_own_update (Z.to_nat (uint.Z new)) with "Htsc") as "[Htsc Hnew]"; first lia.
+    assert (uint.nat old <= uint.nat new) as Hupd.
+    2: iMod (mono_nat_own_update (uint.nat new) with "Htsc") as "[Htsc Hnew]"; first lia.
     2: subst new; iFrame "Htsc Hfiles".
     { subst new.
       (* NOTE: word does not reason about [unsigned_ltu] since it's not used by
@@ -601,11 +601,11 @@ lemmas. *)
       rewrite word.unsigned_ltu.
       edestruct (Z.ltb_spec (uint.Z old) (uint.Z (word.add old x))); word.
     }
-    iApply "HΦ". iFrame. iPureIntro. word.
+    iApply "HΦ". iFrame. iPureIntro. lia.
   Qed.
 
   Lemma wp_GetTimeRangeOp s E :
-   ∀ Φ, (∀ (l h t:u64), ⌜uint.Z t <= uint.Z h⌝ -∗ ⌜uint.Z l <= uint.Z t⌝ -∗
+   ∀ Φ, (∀ (l h t:u64), ⌜uint.nat t <= uint.nat h⌝ -∗ ⌜uint.nat l <= uint.nat t⌝ -∗
                   own_time t -∗ |NC={E}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
    WP ExternalOp GetTimeRangeOp #() @ s; E {{ Φ }}.
   Proof.
@@ -643,11 +643,11 @@ lemmas. *)
     iDestruct "Hg" as "((? & %Hg & Ht)&?)".
     iMod (mono_nat_own_update with "Ht") as "[Ht _]".
     {
-      instantiate (1:=(Z.to_nat (uint.Z ((if
+      instantiate (1:=(uint.nat ((if
            uint.Z g1.(global_world).(grove_global_time) <=?
            uint.Z (word.add g1.(global_world).(grove_global_time) x)
           then word.add g1.(global_world).(grove_global_time) x
-          else g1.(global_world).(grove_global_time)))))).
+          else g1.(global_world).(grove_global_time))))).
       destruct (Z.leb (uint.Z _) (uint.Z (word.add _ _))) eqn:Hlt.
       {
         rewrite Z.leb_le in Hlt.
@@ -693,9 +693,9 @@ Section grove.
   Proof. iApply mono_nat_lb_own_0. Qed.
 
   Lemma tsc_lb_weaken t1 t2 :
-    t1 ≤ t2 →
+    (t1 ≤ t2)%nat →
     tsc_lb t2 -∗ tsc_lb t1.
-  Proof. intros. apply mono_nat_lb_own_le. word. Qed.
+  Proof. intros. apply mono_nat_lb_own_le. done. Qed.
 End grove.
 
 From Perennial.goose_lang Require Import adequacy.
@@ -712,13 +712,13 @@ Program Instance grove_interp_adequacy:
 Next Obligation.
   rewrite //=. iIntros (Σ hPre g Hchan). eauto.
   iMod (gen_heap_init g.(grove_net)) as (names) "(H1&H2&H3)".
-  iMod (mono_nat_own_alloc (Z.to_nat (uint.Z g.(grove_global_time)))) as (?) "[Ht _]".
+  iMod (mono_nat_own_alloc (uint.nat g.(grove_global_time))) as (?) "[Ht _]".
   iExists (GroveGS _ names _ _). iFrame. eauto.
 Qed.
 Next Obligation.
   rewrite //=.
   iIntros (Σ hPre σ ??).
-  iMod (mono_nat_own_alloc (Z.to_nat (uint.Z σ.(grove_node_tsc)))) as (tsc_name) "[Htsc _]".
+  iMod (mono_nat_own_alloc (uint.nat σ.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
   iMod (gen_heap_init σ.(grove_node_files)) as (names) "(H1&H2&_)".
   iExists (GroveNodeGS _ _ tsc_name _). eauto with iFrame.
 Qed.

@@ -913,7 +913,7 @@ Definition bin_op_eval_string (op : bin_op) (s1 s2 : byte_string) : option byte_
 
 Definition bin_op_eval_string_word (op : bin_op) (s1 : byte_string) {width} {word: Interface.word width} (w2 : word): option w8 :=
   match op with
-  | StringGetOp => (s1 !! (Z.to_nat $ uint.Z w2))
+  | StringGetOp => (s1 !! (uint.nat w2))
   | _ => None
   end.
 
@@ -985,11 +985,11 @@ Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
 Definition state_insert_list (l: loc) (vs: list val) (σ: state): state :=
   set heap (λ h, heap_array l (fmap Free vs) ∪ h) σ.
 
-Definition concat_replicate {A} (n : Z) (l: list A): list A :=
-  concat (replicate (Z.to_nat n) l).
+Definition concat_replicate {A} (n: nat) (l: list A): list A :=
+  concat (replicate n l).
 
 Definition state_init_heap (l : loc) (n : Z) (v : val) (σ : state) : state :=
-  state_insert_list l (concat_replicate n (flatten_struct v)) σ.
+  state_insert_list l (concat_replicate (Z.to_nat n) (flatten_struct v)) σ.
 
 Lemma state_init_heap_singleton l v σ :
   state_init_heap l 1 v σ = state_insert_list l (flatten_struct v) σ.
@@ -1247,7 +1247,7 @@ Definition base_trans (e: expr) :
       match nav with
       | (Reading n, vl) =>
         check (vals_compare_safe vl v1);;
-        when (vl = v1) (check (Z.of_nat n = 0);; modifyσ (set heap <[l:=Free v2]>));;
+        when (vl = v1) (check (n = 0%nat);; modifyσ (set heap <[l:=Free v2]>));;
         ret $ PairV vl (LitV $ LitBool (bool_decide (vl = v1)))
       | _ => undefined
       end)

@@ -315,11 +315,8 @@ Ltac2 add_range_facts () :=
            end
   ).
 
-Ltac2 nat_cleanup () := rewrite -> ?Nat2Z.id in *.
-
 Ltac2 normalize tac :=
   handle_goal noop_logger;
-  nat_cleanup ();
   unfold_w_whatever ();
   eliminate_word_ops noop_logger;
   add_range_facts ();
@@ -367,4 +364,5 @@ Tactic Notation "word" "with" tactic(t) :=
   let w := ltac2:(t |- Control.enter (fun () => word.solve_unsafe_with (fun () => Ltac1.run t))) in
   w t.
 
-Tactic Notation "nat_cleanup" := ltac2:(word.nat_cleanup ()).
+Tactic Notation "nat_cleanup" :=
+  rewrite -> ?Nat2Z.id; rewrite -> ?Z2Nat.id by word.

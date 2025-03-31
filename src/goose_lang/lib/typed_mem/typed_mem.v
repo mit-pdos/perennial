@@ -303,7 +303,7 @@ Section goose_lang.
     iIntros (Hty Φ) "_ HΦ".
     destruct (decide (ty_size t = 0)).
     { wp_apply wp_allocN_seq; first by word.
-      change (uint.Z 1) with 1; simpl.
+      change (uint.nat 1) with 1%nat; simpl.
       iIntros (l) "[Hl _]".
       iApply "HΦ".
       rewrite Z.mul_0_r loc_add_0.
@@ -317,7 +317,7 @@ Section goose_lang.
       lia. }
     { word. }
     iIntros (l) "(%Hl & Hblock & Hl)".
-    change (seqZ 0 (uint.Z (W64 1))) with [0]; simpl.
+    change (seq 0 (uint.nat (W64 1))) with [0%nat]; simpl.
     rewrite Z.mul_0_r loc_add_0.
     iDestruct "Hl" as "[Hl _]".
 
