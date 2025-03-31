@@ -95,10 +95,9 @@ Section program.
           }
           rewrite elem_of_singleton in Hgid.
           subst g.
-          word.
-          (* FIXME: not sure if word is supposed to solve this immediately *)
-          assert (Hnz : size pwrs ≠ O).
-          { intros Hz. rewrite Hz in Heqb. word. }
+          unfold dbmap in *. (* XXX: this is because some occurrences of dbmap
+                                are unfolded (perhaps because of lemmas like wp_MapLen). *)
+          assert (Hnz : (size pwrs ≠ O)) by word.
           clear Heqb.
           specialize (Hwrsg _ _ Hpwrs). simpl in Hwrsg.
           intros Hempty.
