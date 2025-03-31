@@ -33,17 +33,19 @@ Definition elem_ref t : val :=
               then (ptr "s" +ₗ[t] "i")
               else Panic "slice index out-of-bounds".
 
+(* s[a:b], as well as s[a:] = s[a:len(s)] and s[:b] = s[0:b] *)
 Definition slice t : val :=
-  λ: "a" "low" "high",
-  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ cap "a") then
-    (ptr "s" +ₗ[t] "low", "high" - "low", cap "s" - "low")
+  λ: "s" "low" "high",
+  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ cap "s") then
+    InjL (ptr "s" +ₗ[t] "low", "high" - "low", cap "s" - "low")
   else Panic "slice indices out of order"
 .
 
+(* s[a:b:c] (picking a specific capacity c) *)
 Definition full_slice t : val :=
-  λ: "a" "low" "high" "max",
-  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ "max") && ("max" ≤ cap "a") then
-    (ptr "s" +ₗ[t] "low", "high" - "low", "max" - "low")
+  λ: "s" "low" "high" "max",
+  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ "max") && ("max" ≤ cap "s") then
+    InjL (ptr "s" +ₗ[t] "low", "high" - "low", "max" - "low")
   else Panic "slice indices out of order"
 .
 

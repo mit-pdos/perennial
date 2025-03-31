@@ -15,9 +15,11 @@ Module slice.
 Definition slice_f (sl : slice.t) (t : go_type) (n1 n2 : u64) : slice.t :=
   slice.mk (sl.(slice.ptr_f) +ₗ[t] uint.Z n1) (word.sub n2 n1) (word.sub sl.(slice.cap_f) n1).
 
+Definition full_slice_f (sl : slice.t) (t : go_type) (n1 n2 n3 : u64) : slice.t :=
+  slice.mk (sl.(slice.ptr_f) +ₗ[t] uint.Z n1) (word.sub n2 n1) (word.sub n3 n1).
+
 Definition elem_ref_f (sl : slice.t) (t : go_type) (i : u64) : loc :=
   sl.(slice.ptr_f) +ₗ[t] (uint.Z i).
-
 End slice.
 
 Section defns_and_lemmas.
@@ -373,9 +375,55 @@ Global Instance wp_slice_elem_ref s (i : w64) :
     #(slice.elem_ref_f s t i).
 Proof.
   iIntros (?????) "HΦ".
-  wp_call.
+  wp_call_lc "?".
   rewrite bool_decide_true; last done.
-  wp_pure_lc "?". wp_pures. by iApply "HΦ".
+  wp_pures. by iApply "HΦ".
+Qed.
+
+Global Instance wp_slice_slice s (n m : w64) :
+  PureWp (uint.Z n ≤ uint.Z m ≤ uint.Z (slice.len_f s) ∧
+          uint.Z (slice.len_f s) ≤ uint.Z (slice.cap_f s)) (slice.slice t #s #n #m)
+    #(slice.slice_f s t n m).
+Proof.
+  iIntros (?????) "HΦ".
+  wp_call_lc "?".
+  rewrite bool_decide_true; last word.
+  wp_pures.
+  rewrite bool_decide_true; last word.
+  wp_pures.
+  rewrite bool_decide_true; last word.
+  wp_pures.
+  iDestruct ("HΦ" with "[$]") as "HΦ".
+  iExactEq "HΦ".
+  repeat f_equal.
+  rewrite /slice.slice_f.
+  rewrite !to_val_unseal /=.
+  rewrite !to_val_unseal /=.
+  reflexivity.
+Qed.
+
+Global Instance wp_slice_full_slice s (n m c : w64) :
+  PureWp (uint.Z n ≤ uint.Z m ≤ uint.Z c ∧
+          uint.Z c ≤ uint.Z (slice.cap_f s)) (slice.full_slice t #s #n #m #c)
+    #(slice.full_slice_f s t n m c).
+Proof.
+  iIntros (?????) "HΦ".
+  wp_call_lc "?".
+  rewrite bool_decide_true; last word.
+  wp_pures.
+  rewrite bool_decide_true; last word.
+  wp_pures.
+  rewrite bool_decide_true; last word.
+  wp_pures.
+  rewrite bool_decide_true; last word.
+  wp_pures.
+  iDestruct ("HΦ" with "[$]") as "HΦ".
+  iExactEq "HΦ".
+  repeat f_equal.
+  rewrite /slice.full_slice_f.
+  rewrite !to_val_unseal /=.
+  rewrite !to_val_unseal /=.
+  reflexivity.
 Qed.
 
 Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
