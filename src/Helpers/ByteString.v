@@ -133,11 +133,11 @@ Proof. byte_cases w; reflexivity. Qed.
   print_string (parse_string s) = s.
 Proof.
   rewrite /print_string /parse_string.
-  rewrite -list.list_fmap_compose.
-  eapply list.list_eq_same_length; eauto.
-  - rewrite list.length_fmap //.
+  rewrite -list_monad.list_fmap_compose.
+  eapply list_basics.list_eq_same_length; eauto.
+  - rewrite list_monad.length_fmap //.
   - intros i x y Hlt Hget1 Hget2.
-    rewrite list.list_lookup_fmap in Hget1.
+    rewrite list_monad.list_lookup_fmap in Hget1.
     rewrite Hget2 /= in Hget1.
     rewrite byte_to_w8_to_byte in Hget1.
     congruence.
