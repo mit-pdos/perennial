@@ -16,15 +16,7 @@ Definition receiver_done : expr := #3.
 
 Definition sender_done : expr := #4.
 
-Definition closed_receiver_done : expr := #5.
-
-Definition closed_sender_done : expr := #6.
-
-Definition closed_final : expr := #7.
-
-Definition ChannelState__any_closed_state: val :=
-  rec: "ChannelState__any_closed_state" "s" :=
-    (("s" = closed_receiver_done) || ("s" = closed_sender_done)) || ("s" = closed_final).
+Definition closed : expr := #5.
 
 Definition Channel (T: ty) : descriptor := struct.decl [
   "lock" :: ptrT;
@@ -76,7 +68,7 @@ Definition Channel__Send (T:ty): val :=
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "state" "c") = closed_final
+        (if: (struct.loadF (Channel T) "state" "c") = closed
         then Panic "send on closed channel"
         else #());;
         (if: (struct.loadF (Channel T) "count" "c") ≥ (![uint64T] "buffer_size")
@@ -95,7 +87,7 @@ Definition Channel__Send (T:ty): val :=
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
+        (if: (struct.loadF (Channel T) "state" "c") = closed
         then Panic "send on closed channel"
         else #());;
         (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
@@ -120,7 +112,7 @@ Definition Channel__Send (T:ty): val :=
         Skip;;
         (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
           Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-          (if: (~ (((struct.loadF (Channel T) "state" "c") = sender_done) || ((struct.loadF (Channel T) "state" "c") = closed_sender_done)))
+          (if: (~ ((struct.loadF (Channel T) "state" "c") = sender_done))
           then
             Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
             Break
@@ -132,23 +124,17 @@ Definition Channel__Send (T:ty): val :=
         Skip;;
         (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
           Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-          (if: (struct.loadF (Channel T) "state" "c") = closed_final
+          (if: (struct.loadF (Channel T) "state" "c") = closed
           then Panic "send on closed channel"
           else #());;
-          (if: (struct.loadF (Channel T) "state" "c") = closed_receiver_done
+          (if: (struct.loadF (Channel T) "state" "c") = receiver_done
           then
-            struct.storeF (Channel T) "state" "c" closed_final;;
+            struct.storeF (Channel T) "state" "c" start;;
             Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
             Break
           else
-            (if: (struct.loadF (Channel T) "state" "c") = receiver_done
-            then
-              struct.storeF (Channel T) "state" "c" start;;
-              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              Break
-            else
-              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              Continue)));;
+            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+            Continue));;
         #())).
 
 (* Equivalent to:
@@ -166,16 +152,16 @@ Definition Channel__Receive (T:ty): val :=
     else #());;
     let: "ret_val" := ref (zero_val T) in
     let: "buffer_size" := ref_to uint64T (slice.len (struct.loadF (Channel T) "buffer" "c")) in
-    let: "closed" := ref_to boolT #false in
+    let: "closed_local" := ref_to boolT #false in
     (if: (![uint64T] "buffer_size") ≠ #0
     then
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: ((struct.loadF (Channel T) "state" "c") = closed_final) && ((struct.loadF (Channel T) "count" "c") = #0)
+        (if: ((struct.loadF (Channel T) "state" "c") = closed) && ((struct.loadF (Channel T) "count" "c") = #0)
         then
           Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-          "closed" <-[boolT] #true;;
+          "closed_local" <-[boolT] #true;;
           Break
         else
           (if: (struct.loadF (Channel T) "count" "c") = #0
@@ -188,16 +174,16 @@ Definition Channel__Receive (T:ty): val :=
             struct.storeF (Channel T) "count" "c" ((struct.loadF (Channel T) "count" "c") - #1);;
             Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
             Break)));;
-      (![T] "ret_val", (~ (![boolT] "closed")))
+      (![T] "ret_val", (~ (![boolT] "closed_local")))
     else
       let: "return_early" := ref_to boolT #false in
       Skip;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
+        (if: (struct.loadF (Channel T) "state" "c") = closed
         then
           Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-          "closed" <-[boolT] #true;;
+          "closed_local" <-[boolT] #true;;
           Break
         else
           (if: (struct.loadF (Channel T) "state" "c") = sender_ready
@@ -216,49 +202,42 @@ Definition Channel__Receive (T:ty): val :=
             else
               Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
               Continue))));;
-      (if: ![boolT] "closed"
-      then (![T] "ret_val", (~ (![boolT] "closed")))
+      (if: ![boolT] "closed_local"
+      then (![T] "ret_val", (~ (![boolT] "closed_local")))
       else
         (if: ![boolT] "return_early"
         then
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-            (if: (~ (((struct.loadF (Channel T) "state" "c") = receiver_done) || ((struct.loadF (Channel T) "state" "c") = closed_receiver_done)))
+            (if: (~ ((struct.loadF (Channel T) "state" "c") = receiver_done))
             then
               Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
               Break
             else
               Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
               Continue));;
-          (![T] "ret_val", (~ (![boolT] "closed")))
+          (![T] "ret_val", (~ (![boolT] "closed_local")))
         else
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-            (if: (struct.loadF (Channel T) "state" "c") = closed_final
+            (if: (struct.loadF (Channel T) "state" "c") = closed
             then
               Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              "closed" <-[boolT] #true;;
+              "closed_local" <-[boolT] #true;;
               Break
             else
-              (if: (struct.loadF (Channel T) "state" "c") = closed_sender_done
+              (if: (struct.loadF (Channel T) "state" "c") = sender_done
               then
-                struct.storeF (Channel T) "state" "c" closed_final;;
+                struct.storeF (Channel T) "state" "c" start;;
                 "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
                 Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
                 Break
               else
-                (if: (struct.loadF (Channel T) "state" "c") = sender_done
-                then
-                  struct.storeF (Channel T) "state" "c" start;;
-                  "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
-                  Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-                  Break
-                else
-                  Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-                  Continue))));;
-          (![T] "ret_val", (~ (![boolT] "closed")))))).
+                Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+                Continue)));;
+          (![T] "ret_val", (~ (![boolT] "closed_local")))))).
 
 (* c.Close()
 
@@ -270,18 +249,20 @@ Definition Channel__Close (T:ty): val :=
     (if: "c" = #null
     then Panic "close of nil channel"
     else #());;
-    Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-    (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
-    then Panic "close of closed channel"
-    else #());;
-    struct.storeF (Channel T) "state" "c" closed_final;;
-    (if: (struct.loadF (Channel T) "state" "c") = receiver_done
-    then struct.storeF (Channel T) "state" "c" closed_receiver_done
-    else #());;
-    (if: (struct.loadF (Channel T) "state" "c") = sender_done
-    then struct.storeF (Channel T) "state" "c" closed_sender_done
-    else #());;
-    Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
+      (if: (struct.loadF (Channel T) "state" "c") = closed
+      then Panic "close of closed channel"
+      else #());;
+      (if: ((struct.loadF (Channel T) "state" "c") = receiver_done) || ((struct.loadF (Channel T) "state" "c") = sender_done)
+      then
+        Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+        Continue
+      else
+        struct.storeF (Channel T) "state" "c" closed;;
+        Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+        Break));;
     #().
 
 (* v := c.ReceiveDiscardOk
@@ -405,16 +386,16 @@ Definition Channel__TryReceive (T:ty): val :=
     then (#false, ![T] "ret_val", #false)
     else
       let: "buffer_size" := ref_to uint64T (slice.len (struct.loadF (Channel T) "buffer" "c")) in
-      let: "closed" := ref_to boolT #false in
+      let: "closed_local" := ref_to boolT #false in
       let: "selected" := ref_to boolT #false in
       (if: (![uint64T] "buffer_size") ≠ #0
       then
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
         (if: (struct.loadF (Channel T) "count" "c") = #0
         then
-          (if: (struct.loadF (Channel T) "state" "c") = closed_final
+          (if: (struct.loadF (Channel T) "state" "c") = closed
           then
-            "closed" <-[boolT] #true;;
+            "closed_local" <-[boolT] #true;;
             "selected" <-[boolT] #true
           else #());;
           Mutex__Unlock (struct.loadF (Channel T) "lock" "c")
@@ -424,13 +405,13 @@ Definition Channel__TryReceive (T:ty): val :=
           struct.storeF (Channel T) "count" "c" ((struct.loadF (Channel T) "count" "c") - #1);;
           "selected" <-[boolT] #true;;
           Mutex__Unlock (struct.loadF (Channel T) "lock" "c"));;
-        (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed")))
+        (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed_local")))
       else
         let: "offer" := ref_to boolT #false in
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
+        (if: (struct.loadF (Channel T) "state" "c") = closed
         then
-          "closed" <-[boolT] #true;;
+          "closed_local" <-[boolT] #true;;
           "selected" <-[boolT] #true
         else
           (if: (struct.loadF (Channel T) "state" "c") = sender_ready
@@ -459,15 +440,15 @@ Definition Channel__TryReceive (T:ty): val :=
           else #());;
           Mutex__Unlock (struct.loadF (Channel T) "lock" "c")
         else #());;
-        (if: ![boolT] "closed"
-        then (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed")))
+        (if: ![boolT] "closed_local"
+        then (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed_local")))
         else
           (if: (![boolT] "selected") && (~ (![boolT] "offer"))
           then
             Skip;;
             (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
               Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-              (if: (~ (((struct.loadF (Channel T) "state" "c") = receiver_done) || ((struct.loadF (Channel T) "state" "c") = closed_receiver_done)))
+              (if: (~ ((struct.loadF (Channel T) "state" "c") = receiver_done))
               then
                 Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
                 Break
@@ -475,7 +456,7 @@ Definition Channel__TryReceive (T:ty): val :=
                 Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
                 Continue))
           else #());;
-          (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed")))))).
+          (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed_local")))))).
 
 (* See comment in TryReceive for how this is used to translate selects. *)
 Definition Channel__TrySend (T:ty): val :=
@@ -488,7 +469,7 @@ Definition Channel__TrySend (T:ty): val :=
       (if: (![uint64T] "buffer_size") ≠ #0
       then
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "state" "c") = closed_final
+        (if: (struct.loadF (Channel T) "state" "c") = closed
         then Panic "send on closed channel"
         else #());;
         (if: (~ ((struct.loadF (Channel T) "count" "c") ≥ (![uint64T] "buffer_size")))
@@ -503,7 +484,7 @@ Definition Channel__TrySend (T:ty): val :=
       else
         let: "offer" := ref_to boolT #false in
         Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: ChannelState__any_closed_state (struct.loadF (Channel T) "state" "c")
+        (if: (struct.loadF (Channel T) "state" "c") = closed
         then Panic "send on closed channel"
         else #());;
         (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
@@ -522,7 +503,7 @@ Definition Channel__TrySend (T:ty): val :=
         (if: ![boolT] "offer"
         then
           Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-          (if: ((struct.loadF (Channel T) "state" "c") = receiver_done) || ((struct.loadF (Channel T) "state" "c") = closed_receiver_done)
+          (if: (struct.loadF (Channel T) "state" "c") = receiver_done
           then
             struct.storeF (Channel T) "state" "c" start;;
             "selected" <-[boolT] #true
@@ -537,7 +518,7 @@ Definition Channel__TrySend (T:ty): val :=
           Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-            (if: (~ (((struct.loadF (Channel T) "state" "c") = sender_done) || ((struct.loadF (Channel T) "state" "c") = closed_sender_done)))
+            (if: (~ ((struct.loadF (Channel T) "state" "c") = sender_done))
             then
               Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
               Break
