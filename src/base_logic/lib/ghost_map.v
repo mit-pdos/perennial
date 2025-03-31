@@ -62,25 +62,20 @@ Section lemmas.
   Proof.
     unseal. iIntros "H1 H2".
     iCombine "H1 H2" gives %[? Heq]%gmap_view_auth_dfrac_op_valid.
-    (* TODO: inj no longer works? *)
-    (*
-    apply (inj _) in Heq.
-    iPureIntro. by fold_leibniz.
+    apply (map_fmap_equiv_inj (A:=leibnizO V)) in Heq.
+    { iPureIntro. by fold_leibniz. }
+    apply (to_agree_inj (A:=leibnizO V)).
   Qed.
-*)
-  Admitted.
 
   Lemma ghost_map_auth_pers_pers_agree γ m1 m2 :
     ghost_map_auth_pers γ m1 -∗ ghost_map_auth_pers γ m2 -∗ ⌜m1 = m2⌝.
   Proof.
     unseal. iIntros "H1 H2".
-    (* TODO: inj no longer works? *)
-    (*
-    iCombine "H1 H2" gives %[? ?%(inj _)]%gmap_view_auth_dfrac_op_valid.
-    iPureIntro. by fold_leibniz.
+    iCombine "H1 H2" gives %[? Heq]%gmap_view_auth_dfrac_op_valid.
+    apply (map_fmap_equiv_inj (A:=leibnizO V)) in Heq.
+    { iPureIntro. by fold_leibniz. }
+    apply (to_agree_inj (A:=leibnizO V)).
   Qed.
-  *)
-  Admitted.
 
   Lemma ghost_map_elem_big_exist γ m :
     ([∗ map] l↦_ ∈ m, ∃ v', l ↪[γ] v') -∗
