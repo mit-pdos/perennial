@@ -224,12 +224,7 @@ Proof.
   iMod "Hclose2" as "_".
   set inbounds := bool_decide (uint.Z clock2 + 32 < 2^64).
   set clock2_boundsafe := if inbounds then clock2 else 0.
-  (*opose proof (u64_round_up_spec clock2_boundsafe (W64 32) _ _) as H.
-  { subst clock2_boundsafe inbounds. case_bool_decide; word. }
-  { word. } *)
-  (* move:H. *)
   set rounded_ts := u64_round_up clock2_boundsafe (W64 32).
-  (* intros (Hmod & Hbound1 & Hbound2). *)
   set reserved_ts := word.add rounded_ts sid.
   assert ((uint.Z rounded_ts + uint.Z sid) `mod` 32 = uint.Z sid) as Hsidmod.
   { subst rounded_ts reserved_ts. word. }

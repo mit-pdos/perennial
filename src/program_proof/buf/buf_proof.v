@@ -815,14 +815,14 @@ Proof.
   iIntros "Hsrc".
   wp_apply wp_installOneBit; first word.
   wp_apply (wp_SliceSet (V:=u8) with "[$Hdst]").
-  { iPureIntro. ltac2:(word.normalize ()). eauto. }
+  { word with eauto. }
   iIntros "Hdst".
   wp_pures. iModIntro. iApply "HΦ".
   iFrame "Hsrc".
   iExactEq "Hdst".
   f_equal.
-  ltac2:(word.normalize ()).
-  erewrite list_alter_lookup_insert in H; eauto.
+  erewrite list_alter_lookup_insert; last done.
+  word with eauto.
 Qed.
 
 Lemma list_inserts_app_r' {A} (l1 l2 l3: list A) (i: nat) :
@@ -950,7 +950,7 @@ Proof.
     f_equal.
     rewrite Hlookup_byte.
     rewrite install_one_bit_spec; [ | word ].
-    rewrite decide_True //=. subst. ltac2:(word.normalize ()). eauto.
+    rewrite decide_True //=. subst. word with eauto.
   + (* other bits are unchanged *)
     apply is_bufData_bit; split; [done|].
     f_equal.

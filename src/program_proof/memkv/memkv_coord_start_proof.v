@@ -314,7 +314,7 @@ Proof.
       iIntros (fl) "(H1&H2)".
       iDestruct (typed_slice.own_slice_small_acc with "HshardMap_sl") as "[HshardMap_sl HshardMap_close]".
       wp_apply (wp_encodeShardMap with "[$]").
-      { word. }
+      { unfold uNSHARD in *. word. }
       iIntros (sl data) "(%Henc&H)".
       wp_apply (wp_StoreAt with "[$]").
       { apply slice_val_ty. }
