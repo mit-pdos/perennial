@@ -18,13 +18,13 @@ Local Lemma enc_get_low (low high : w32) :
 Proof. unfold enc. word. Qed.
 
 Local Lemma enc_add_high (low high delta : w32) :
-  word.add (enc low high) (word.slu (W64 (uint.Z delta)) (W64 32)) =
+  word.add (enc low high) (word.slu (W64 (sint.Z delta)) (W64 32)) =
   enc low (word.add high delta).
 Proof. unfold enc. word. Qed.
 
 Local Lemma enc_add_low (low high delta : w32) :
-  uint.Z (word.add low delta) = uint.Z low + uint.Z delta →
-  word.add (enc low high) (W64 (uint.Z delta)) =
+  uint.Z (word.add low delta) = uint.Z low + sint.Z delta →
+  word.add (enc low high) (W64 (sint.Z delta)) =
   enc (word.add low delta) high.
 Proof. unfold enc. word. Qed.
 
@@ -152,8 +152,8 @@ Proof.
 Qed.
 
 Local Lemma wg_delta_to_w32 (delta' : w32) (delta : w64) :
-  delta' = (W32 (uint.Z delta)) →
-  word.slu delta (W64 32) = word.slu (W64 (uint.Z delta')) (W64 32).
+  delta' = (W32 (sint.Z delta)) →
+  word.slu delta (W64 32) = word.slu (W64 (sint.Z delta')) (W64 32).
 Proof. intros. word. Qed.
 
 (* XXX: overflow?
@@ -161,7 +161,7 @@ Proof. intros. word. Qed.
   https://go-review.googlesource.com/c/go/+/140937/2/src/sync/waitgroup.go *)
 
 Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
-  let delta' := (W32 (uint.Z delta)) in
+  let delta' := (W32 (sint.Z delta)) in
   ∀ Φ,
   is_pkg_init sync ∗ is_WaitGroup wg γ N -∗
   (|={⊤,↑N}=>
@@ -243,7 +243,7 @@ Proof.
         wp_auto.
         destruct bool_decide eqn:Heq1.
         + wp_auto. rewrite bool_decide_eq_true in Heq1.
-          replace (W32 (uint.Z delta)) with delta' by reflexivity.
+          replace (W32 (sint.Z delta)) with delta' by reflexivity.
           destruct bool_decide eqn:Heq2.
           * exfalso. rewrite bool_decide_eq_true in Heq2. word.
           * wp_auto. iFrame. done.
@@ -289,7 +289,7 @@ Proof.
       wp_auto.
       destruct bool_decide eqn:Heq1.
       + wp_auto.
-        replace (W32 (uint.Z delta)) with delta' by reflexivity.
+        replace (W32 (sint.Z delta)) with delta' by reflexivity.
         rewrite bool_decide_eq_true in Heq1.
         destruct bool_decide eqn:Heq2.
         * exfalso. rewrite bool_decide_eq_true in Heq2. word.
@@ -479,7 +479,7 @@ Proof.
   wp_auto.
   rewrite enc_get_high enc_get_low bool_decide_false //.
   wp_auto.
-  replace (1%Z) with (uint.Z (W32 1)) by reflexivity.
+  replace (1%Z) with (sint.Z (W32 1)) by reflexivity.
   rewrite -> enc_add_low by word.
   wp_apply (wp_Uint64__CompareAndSwap).
   iInv "Hinv" as ">Hi" "Hclose".
