@@ -68,22 +68,23 @@ Definition setattr (f : fh) (a : sattr) (i : buf) : transition State unit :=
   match (sattr_size a) with
   | None => ret tt
   | Some sz =>
-    let i' := i[:uint.nat sz] ++ replicate (uint.nat sz - length i) (W8 0) in
+    let i' := i[:Z.to_nat $ uint.Z sz] ++ replicate (Z.to_nat (uint.Z sz - (Z.of_nat $ length i))) (W8 0) in
     _ <- modify (fun s => insert f i' s);
     ret tt
   end.
 
 Definition read (f : fh) (off : u64) (count : u32) (i : buf) : transition State (bool * buf) :=
-  let off := uint.nat off in
-  readcount <- suchThat (gen:=fun _ _ => None) (λ s readcount, readcount = 0 ∨ off + readcount ≤ length i)%nat;
-  let resbuf := take readcount (drop off i) in
-  let reseof := if ge_dec (off + readcount) (length i) then true else false in
+  let off := uint.Z off in
+  readcount <- suchThat (gen:=fun _ _ => None) (λ s readcount, readcount = 0 ∨ (0 ≤ readcount ∧
+                                                           off + readcount ≤ length i));
+  let resbuf := take (Z.to_nat readcount) (drop (Z.to_nat off) i) in
+  let reseof := if Z.ge_dec (off + readcount) (length i) then true else false in
   ret (reseof, resbuf).
 
 Definition write (f : fh) (off : u64) (data : buf) (i : buf) : transition State u32 :=
-  let off := uint.nat off in
-  _ <- check (off ≤ length i);
-  let i' := i[:off] ++ data ++ i[off + length data :] in
+  let off := uint.Z off in
+  _ <- check (off ≤ Z.of_nat $ length i);
+  let i' := i[:Z.to_nat off] ++ data ++ i[Z.to_nat (off + (Z.of_nat $ length data)) :] in
   _ <- modify (fun s => insert f i' s);
   ret (W32 (length data)).
 

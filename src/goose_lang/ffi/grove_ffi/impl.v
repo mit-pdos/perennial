@@ -157,7 +157,7 @@ Section grove.
       err_early ← any bool;
       if err_early is true then ret $ Val $ (*err*)#true else
       data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            length data = uint.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
+            Z.of_nat (length data) = uint.Z len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
@@ -191,7 +191,7 @@ Section grove.
       err_early ← any bool;
       if err_early is true then ret $ Val $ (*err*)#true else
       new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            length data = uint.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
+            Z.of_nat (length data) = uint.Z len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False
@@ -204,7 +204,7 @@ Section grove.
       err_early ← any bool;
       if err_early is true then ret $ Val $ (*err*)#true else
       new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            length data = uint.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
+            Z.of_nat (length data) = uint.Z len ∧ forall (i:Z), 0 <= i -> i < length data ->
                 match σ.(heap) !! (l +ₗ i) with
                 | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
                 | _ => False

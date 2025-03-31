@@ -135,7 +135,6 @@ Proof. apply _. Qed.
 
 Module uint.
   Notation Z := word.unsigned.
-
   Notation nat x := (Z.to_nat (Z x)).
 End uint.
 
@@ -189,7 +188,7 @@ Instance word_finite `(word: Interface.word width) {word_ok: word.ok word} :
   Finite word.
 Proof.
   apply (enc_finite
-    (λ w, uint.nat w)
+    (λ w, Z.to_nat $ uint.Z w)
     (λ n, word.of_Z (Z.of_nat n))
     (Z.to_nat (2^width))).
   - intros w. pose proof (word.unsigned_range w).
