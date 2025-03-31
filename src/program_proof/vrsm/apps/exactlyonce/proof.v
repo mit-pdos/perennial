@@ -604,19 +604,6 @@ Notation esm_is_InMemory_setStateFn := (is_InMemory_setStateFn (sm_record:=esm_r
 Notation esm_is_InMemory_getStateFn := (is_InMemory_getStateFn (sm_record:=esm_record)).
 Notation esm_is_InMemory_applyReadonlyFn := (is_InMemory_applyReadonlyFn (sm_record:=esm_record)).
 
-Lemma u64_plus_1_le_no_overflow (y: u64) (n : nat) :
-  n + 1 = uint.nat (word.add n 1) →
-  W64 (n + 1)%Z ≠ y →
-  uint.nat y ≤ n + 1 →
-  uint.nat y ≤ n.
-Proof.
-  intros ? Hplus_1_neq Hle.
-  cut (uint.nat y ≠ n + 1); first by lia.
-  intros Heq.
-  apply Hplus_1_neq.
-  word.
-Qed.
-
 Lemma ghost_no_low_changes γst ops latestVnum o l :
   (length ops + 1 = uint.nat (word.add (length ops) 1))%nat →
   (compute_state ops).(lowops) = l →
@@ -651,10 +638,8 @@ Proof.
     {
       iModIntro. iIntros (???) "H %".
       rewrite length_app /= in H1.
-      assert (uint.nat y <= length ops).
-      { apply u64_plus_1_le_no_overflow; auto. }
       iDestruct ("H" with "[%]") as "[$|H]".
-      { done. }
+      { word. }
       iRight.
       rewrite take_app_le.
       { done. }
@@ -670,10 +655,7 @@ Proof.
     unfold is_state.
     repeat f_equal.
     rewrite length_app /= in H.
-    replace (Z.of_nat (length ops) + 1)%Z with (Z.of_nat (length ops + 1)) by
-      lia.
-    rewrite HnoOverflow.
-    rewrite u64_Z_through_nat u64_Z //.
+    word.
   }
   iModIntro.
   iApply (big_sepS_impl with "HlatestVersion").
@@ -687,23 +669,9 @@ Proof.
       iFrame "HH". }
     {
       rewrite Heq1 Heq2.
-      iApply "H".
-      { iPureIntro. apply u64_plus_1_le_no_overflow; auto.
-        replace (Z.of_nat (length ops) + 1)%Z with (Z.of_nat (length ops + 1)) by
-          lia.
-        rewrite HnoOverflow.
-        rewrite u64_Z_through_nat u64_Z //.
-      }
-      { word. }
+      iApply "H"; word.
     }
   }
-Qed.
-
-Instance int_nat_u64_inj: Inj eq eq (fun z : u64 => Z.to_nat (uint.Z z)).
-Proof.
-  intros u1 u2 Heq.
-  apply: int_Z_inj.
-  apply Z2Nat.inj; auto using encoding.unsigned_64_nonneg.
 Qed.
 
 Lemma ghost_low_newop γst ops latestVnum op lowop l :
@@ -746,10 +714,8 @@ Proof.
       {
         iModIntro. iIntros (???) "H %".
         rewrite length_app /= in H4.
-        assert (uint.nat y <= length ops).
-        { apply u64_plus_1_le_no_overflow; auto. }
         iDestruct ("H" with "[%]") as "[$|H]".
-        { done. }
+        { word. }
         iRight.
         rewrite take_app_le.
         { done. }
@@ -764,12 +730,7 @@ Proof.
         iExactEq "HH".
         unfold is_state.
         repeat f_equal.
-        1:{ rewrite length_app /= in H2.
-            replace (Z.of_nat (length ops) + 1)%Z with (Z.of_nat (length ops + 1)) by
-              lia.
-            rewrite HnoOverflow.
-            rewrite u64_Z_through_nat u64_Z //.
-        }
+        rewrite length_app /= in H2. word.
       }
     }
     iApply (big_sepS_impl with "HlatestVersion").
@@ -778,16 +739,10 @@ Proof.
       iModIntro.
       iIntros.
       rewrite length_app /= in H4.
-      assert (x = (word.add (length ops) 1)).
-      { rewrite length_app /= in H3.
-        apply int_nat_u64_inj.
-        rewrite HnoOverflow in H4.
-        rewrite u64_Z_through_nat in H4.
-        rewrite u64_Z in H4.
-        word.
-      }
-      subst x. rewrite H0 H1.
-      iFrame "HH".
+      unfold is_state. iExactEq "HH".
+      f_equal.
+      { rewrite length_app /= in H3. word. }
+      rewrite H1 //.
     }
   }
   iSplitL.
@@ -795,9 +750,7 @@ Proof.
     rewrite length_app /=.
     iExactEq "HH".
     unfold is_state.
-    repeat f_equal. rewrite HnoOverflow.
-    rewrite u64_Z_through_nat.
-    rewrite u64_Z //.
+    repeat f_equal. word.
   }
   {
     iIntros.
@@ -805,19 +758,7 @@ Proof.
     { set_solver. }
     rewrite H0.
     rewrite length_app /= in H3.
-    replace (uint.nat (length ops + 1)) with (length ops + 1) in H3.
-    2:{
-      rewrite word.unsigned_add in HnoOverflow.
-      rewrite HnoOverflow.
-      f_equal.
-      symmetry.
-      rewrite unsigned_U64.
-      rewrite Z2Nat.id; last by lia.
-      rewrite encoding.word_wrap_wrap; auto; lia.
-    }
-    iApply "H".
-    { iPureIntro.  word. }
-    { iPureIntro.  word. }
+    iApply "H"; word.
   }
 Qed.
 
