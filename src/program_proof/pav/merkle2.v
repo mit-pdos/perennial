@@ -1,5 +1,7 @@
 From iris.bi.lib Require Import fractional fixpoint_mono.
 From Perennial.program_proof Require Import grove_prelude.
+From Perennial.goose_lang.lib Require Import encoding.
+(* for sealed. *)
 From Perennial Require Import base.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
 
@@ -15,31 +17,32 @@ Module MerkleProof.
 Record t :=
   mk {
     Siblings: list w8;
-    d0: dfrac;
+    FoundOtherLeaf: bool;
     LeafLabel: list w8;
-    d1: dfrac;
     LeafVal: list w8;
-    d2: dfrac;
   }.
 Definition encodes (obj : t) : list w8 :=
   u64_le (length obj.(Siblings)) ++ obj.(Siblings) ++
+  [(if obj.(FoundOtherLeaf) then W8 1 else W8 0)] ++
   u64_le (length obj.(LeafLabel)) ++ obj.(LeafLabel) ++
   u64_le (length obj.(LeafVal)) ++ obj.(LeafVal).
 
 Section defs.
 Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
+Definition own ptr obj d : iProp Σ :=
   ∃ sl_sibs sl_leaf_label sl_leaf_val,
-  "Hsl_sibs" ∷ own_slice_small sl_sibs byteT obj.(d0) obj.(Siblings) ∗
-  "Hptr_sibs" ∷ ptr ↦[MerkleProof :: "Siblings"] (slice_val sl_sibs) ∗
-  "Hsl_leaf_label" ∷ own_slice_small sl_leaf_label byteT obj.(d1) obj.(LeafLabel) ∗
-  "Hptr_leaf_label" ∷ ptr ↦[MerkleProof :: "LeafLabel"] (slice_val sl_leaf_label) ∗
-  "Hsl_leaf_val" ∷ own_slice_small sl_leaf_val byteT obj.(d2) obj.(LeafVal) ∗
-  "Hptr_leaf_val" ∷ ptr ↦[MerkleProof :: "LeafVal"] (slice_val sl_leaf_val).
+  "Hsl_sibs" ∷ own_slice_small sl_sibs byteT d obj.(Siblings) ∗
+  "Hptr_sibs" ∷ ptr ↦[MerkleProof :: "Siblings"]{d} (slice_val sl_sibs) ∗
+  "Hptr_found_other_leaf" ∷
+    ptr ↦[MerkleProof :: "FoundOtherLeaf"]{d} #obj.(FoundOtherLeaf) ∗
+  "Hsl_leaf_label" ∷ own_slice_small sl_leaf_label byteT d obj.(LeafLabel) ∗
+  "Hptr_leaf_label" ∷ ptr ↦[MerkleProof :: "LeafLabel"]{d} (slice_val sl_leaf_label) ∗
+  "Hsl_leaf_val" ∷ own_slice_small sl_leaf_val byteT d obj.(LeafVal) ∗
+  "Hptr_leaf_val" ∷ ptr ↦[MerkleProof :: "LeafVal"]{d} (slice_val sl_leaf_val).
 
-Lemma wp_dec sl_enc d0 enc :
+Lemma wp_dec sl_enc d enc :
   {{{
-    "Hsl_enc" ∷ own_slice_small sl_enc byteT d0 enc
+    "Hsl_enc" ∷ own_slice_small sl_enc byteT d enc
   }}}
   MerkleProofDecode (slice_val sl_enc)
   {{{
@@ -52,8 +55,8 @@ Lemma wp_dec sl_enc d0 enc :
       (∀ obj tail,
       "%Henc_obj" ∷ ⌜ enc = encodes obj ++ tail ⌝
       -∗
-      "Hown_obj" ∷ own ptr_obj obj ∗
-      "Hsl_tail" ∷ own_slice_small sl_tail byteT d0 tail)
+      "Hown_obj" ∷ own ptr_obj obj d ∗
+      "Hsl_tail" ∷ own_slice_small sl_tail byteT d tail)
   }}}.
 Proof. Admitted.
 
@@ -131,14 +134,19 @@ Definition u64_le_unseal : u64_le_seal = _ := seal_eq _.
 Lemma u64_le_seal_len x :
   length $ u64_le_seal x = 8%nat.
 Proof. Admitted.
+Global Instance u64_le_seal_inj : Inj eq eq u64_le_seal.
+Proof. Admitted.
 
 Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
   match t with
   | Empty =>
     "#His_hash" ∷ is_hash [empty_node_tag] h
   | Leaf label val =>
-    "%Hlen_label" ∷ ⌜ length label = hash_len ⌝ ∗
-    "#His_hash" ∷ is_hash ([leaf_node_tag] ++ label ++ (u64_le_seal $ length val) ++ val) h
+    "%Hinb_label" ∷ ⌜ uint.Z (W64 (length label)) = length label ⌝ ∗
+    "#His_hash" ∷
+      is_hash ([leaf_node_tag] ++
+        (u64_le_seal $ length label) ++ label ++
+        (u64_le_seal $ length val) ++ val) h
   | Inner child0 child1 =>
     ∃ hl hr,
     "#Hleft_hash" ∷ is_tree_hash child0 hl ∗
@@ -181,28 +189,35 @@ Definition is_merkle_nonmemb (label: list w8) (h: list w8) : iProp Σ :=
   "#His_found" ∷ is_merkle_found label found h ∗
   "%Heq_nonmemb" ∷ ⌜ found_nonmemb label found ⌝.
 
-Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth: nat)
-    (proof: list $ list w8) : iProp Σ :=
+Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth : w64)
+    (proof: list w8) : iProp Σ :=
   match t with
-  | Empty => ⌜proof = []⌝
-  | Leaf found_label found_val => ⌜proof = []⌝
+  | Empty =>
+    "%Heq_proof" ∷ ⌜proof = []⌝
+  | Leaf found_label found_val =>
+    "%Heq_proof" ∷ ⌜proof = []⌝
   | Inner child0 child1 =>
     ∃ sibhash proof',
-    ⌜proof = sibhash :: proof'⌝ ∗
-    match get_bit label depth with
-    | false => tree_sibs_proof child0 label (depth+1) proof' ∗ is_tree_hash child1 sibhash
-    | true  => tree_sibs_proof child1 label (depth+1) proof' ∗ is_tree_hash child0 sibhash
-    end
+    "%Heq_proof" ∷ ⌜proof = proof' ++ sibhash ⌝ ∗
+    "Hrecur" ∷
+      match get_bit label depth with
+      | false =>
+        "Hrecur_proof" ∷ tree_sibs_proof child0 label (word.add depth (W64 1)) proof' ∗
+        "#Htree_hash" ∷ is_tree_hash child1 sibhash
+      | true =>
+        "Hrecur_proof" ∷ tree_sibs_proof child1 label (word.add depth (W64 1)) proof' ∗
+        "#Htree_hash" ∷ is_tree_hash child0 sibhash
+      end
   | Cut _ => False
   end.
 
 Definition is_merkle_proof (label: list w8)
-    (found: option ((list w8) * (list w8)%type)) (proof: list $ list w8)
+    (found: option ((list w8) * (list w8)%type)) (proof: list w8)
     (h: list w8) : iProp Σ :=
   ∃ t,
-  is_tree_hash t h ∗
-  tree_sibs_proof t label 0 proof ∗
-  ⌜tree_path t label 0 found⌝.
+  "#Hhash" ∷ is_tree_hash t h ∗
+  "Hproof" ∷ tree_sibs_proof t label (W64 0) proof ∗
+  "%Hpath" ∷ ⌜tree_path t label (W64 0) found⌝.
 
 Fixpoint own_merkle_tree ptr t d : iProp Σ :=
   ∃ hash,
@@ -264,7 +279,13 @@ Proof.
 
   (* both leaves. use leaf encoding. *)
   - iPureIntro. list_simplifier.
-    apply app_inj_1 in H0; [naive_solver|].
+    apply app_inj_1 in H as [Heq_len_label H].
+    2: { by rewrite !u64_le_seal_len. }
+    apply (inj u64_le_seal) in Heq_len_label.
+    assert (length label0 = length label1) as ?.
+    { rewrite Heq_len_label in Hinb_label0. word. }
+    list_simplifier.
+    apply app_inj_1 in H1; [naive_solver|].
     by rewrite !u64_le_seal_len.
   (* both inner. use inner encoding and next_pos same to get
   the same next_hash. then apply IH. *)
@@ -365,11 +386,7 @@ Qed.
 Lemma is_merkle_proof_to_is_merkle_found label found proof h:
   is_merkle_proof label found proof h -∗
   is_merkle_found label found h.
-Proof.
-  iIntros "H".
-  iDestruct "H" as (?) "(Ht & Hsib & %)".
-  iExists _; iFrame. done.
-Qed.
+Proof. iNamed 1. iFrame "#%". Qed.
 
 Lemma is_merkle_found_agree label found0 found1 h:
   is_merkle_found label found0 h -∗
@@ -561,6 +578,45 @@ Proof.
   destruct t; [done|..]; iNamed "Hown_tree"; [..|done]; iNamed "Hown_tree";
     by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
 Qed.
+
+Definition own_Tree ptr elems d : iProp Σ :=
+  ∃ ptr_ctx ptr_map,
+  "Hown_ctx" ∷ own_context ptr_ctx d ∗
+  "Hptr_ctx" ∷ ptr ↦[Tree :: "ctx"]{d} #ptr_ctx ∗
+  "Hown_map" ∷ own_merkle_map ptr_map elems d ∗
+  "Hptr_root" ∷ ptr ↦[Tree :: "root"]{d} #ptr_map.
+
+Lemma wp_find sl_label d0 (label : list w8) ptr_ctx d1 ptr_n tr (get_proof : bool) (depth : w64) :
+  {{{
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hown_ctx" ∷ own_context ptr_ctx d1 ∗
+    "Hown_node" ∷ own_merkle_tree ptr_n tr d1
+  }}}
+  find (slice_val sl_label) #get_proof #ptr_ctx #ptr_n #depth
+  {{{
+    (found : bool) sl_fd_label sl_fd_val fd_label fd_val sl_proof proof,
+    RET (#found, slice_val sl_fd_label, slice_val sl_fd_val, slice_val sl_proof);
+    "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
+    "Hown_ctx" ∷ own_context ptr_ctx d1 ∗
+    "Hown_node" ∷ own_merkle_tree ptr_n tr d1 ∗
+    "Hsl_fd_label" ∷ own_slice_small sl_fd_label byteT DfracDiscarded fd_label ∗
+    "Hsl_fd_val" ∷ own_slice_small sl_fd_val byteT DfracDiscarded fd_val ∗
+
+    "%Hpath" ∷ ⌜ tree_path tr label depth
+      (if found then (Some (fd_label, fd_val)) else None) ⌝ ∗
+    "Hproof" ∷ (if negb get_proof then True else
+      ∃ x sibs,
+      "%Henc_proof" ∷ ⌜ proof = x ++ sibs ⌝ ∗
+      "%Hlen_x" ∷ ⌜ length x = 8%nat ⌝ ∗
+      "Hsibs_proof" ∷ tree_sibs_proof tr label depth sibs)
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_if_destruct.
+  { (* empty node. *)
+    wp_apply wp_ref_of_zero; [done|].
+    iIntros "* Hptr_proof".
+Admitted.
 
 Lemma wp_put n0 ptr_n (depth : w64) elems sl_label sl_val (label val : list w8) ptr_ctx :
   {{{
@@ -871,13 +927,6 @@ Proof.
         intros ?. opose proof (Hbit_t1 label' _) as ?; [set_solver|done].
       + iFrame "∗#". naive_solver. }
 Qed.
-
-Definition own_Tree ptr elems d : iProp Σ :=
-  ∃ ptr_ctx ptr_map,
-  "Hown_ctx" ∷ own_context ptr_ctx d ∗
-  "Hptr_ctx" ∷ ptr ↦[Tree :: "ctx"]{d} #ptr_ctx ∗
-  "Hown_map" ∷ own_merkle_map ptr_map elems d ∗
-  "Hptr_root" ∷ ptr ↦[Tree :: "root"]{d} #ptr_map.
 
 Lemma wp_Put ptr_tr elems sl_label sl_val (label val : list w8) :
   {{{
