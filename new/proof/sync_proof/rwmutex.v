@@ -98,7 +98,7 @@ Proof.
   { destruct decide; last (exfalso; word).
     iExists _; iSplitR; first done. iFrame. iFrame. iExists (word.add pos_reader_count (W32 1)).
     iSplitL "Hrlocks". { iApply to_named. iExactEq "Hrlocks". f_equal. word. }
-    Time word. }
+    word. }
   all: destruct decide; [exfalso; word | ];
     iFrame; iFrame; iExists (word.add pos_reader_count (W32 1));
     iSplitL "Hrlocks"; [iApply to_named; iExactEq "Hrlocks"; f_equal; word| ];
