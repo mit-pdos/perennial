@@ -46,10 +46,10 @@ ignores the extra capacity; it allows for weaker preconditions for code which
 doesn't make use of capacity *)
 Definition own_slice_small (s: Slice.t) (t:ty) (dq:dfrac) (vs: list val): iProp Σ :=
   s.(Slice.ptr) ↦∗[t]{dq} vs ∗
-  ⌜length vs = uint.nat s.(Slice.sz) ∧ uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap)⌝.
+  ⌜ Z.of_nat $ length vs = uint.Z s.(Slice.sz) ∧ uint.Z s.(Slice.sz) ≤ uint.Z s.(Slice.cap) ⌝.
 
 Definition own_slice_cap (s: Slice.t) (t:ty): iProp Σ :=
-  (∃ extra, ⌜Z.of_nat (length extra) = Slice.extra s⌝ ∗
+  (∃ extra, ⌜ Z.of_nat (length extra) = Slice.extra s ⌝ ∗
             (s.(Slice.ptr) +ₗ[t] uint.Z s.(Slice.sz)) ↦∗[t] extra).
 
 #[global] Instance own_slice_cap_timeless : `(Timeless (own_slice_cap s t)).
@@ -104,13 +104,13 @@ Proof.
 Qed.
 
 Lemma own_slice_small_sz s t q vs :
-  own_slice_small s t q vs -∗ ⌜length vs = uint.nat s.(Slice.sz)⌝.
+  own_slice_small s t q vs -∗ ⌜ Z.of_nat $ length vs = uint.Z s.(Slice.sz)⌝.
 Proof.
   iIntros "(_&[%%]) !% //".
 Qed.
 
 Lemma own_slice_sz s t q vs :
-  own_slice s t q vs -∗ ⌜length vs = uint.nat s.(Slice.sz)⌝.
+  own_slice s t q vs -∗ ⌜ Z.of_nat $ length vs = uint.Z s.(Slice.sz)⌝.
 Proof.
   iIntros "((_&[%%])&_) !% //".
 Qed.
@@ -138,7 +138,7 @@ Lemma replicate_0 A (x:A) : replicate 0 x = [].
 Proof. reflexivity. Qed.
 
 Lemma own_slice_intro l t q (sz: u64) vs :
-  l ↦∗[t]{q} vs -∗ ⌜length vs = uint.nat sz⌝ -∗
+  l ↦∗[t]{q} vs -∗ ⌜Z.of_nat $ length vs = uint.Z sz⌝ -∗
   own_slice (Slice.mk l sz sz) t q vs.
 Proof.
   iIntros "H1 H2".
@@ -147,7 +147,7 @@ Proof.
 Qed.
 
 Theorem own_slice_elim s t q vs :
-  own_slice s t q vs -∗ s.(Slice.ptr) ↦∗[t]{q} vs ∗ ⌜length vs = uint.nat s.(Slice.sz)⌝.
+  own_slice s t q vs -∗ s.(Slice.ptr) ↦∗[t]{q} vs ∗ ⌜Z.of_nat $ length vs = uint.Z s.(Slice.sz)⌝.
 Proof.
   rewrite /own_slice.
   iIntros "[[Hs [%%]] _]".
@@ -172,8 +172,7 @@ Theorem own_slice_small_agree s t q1 q2 vs1 vs2 :
   ⌜vs1 = vs2⌝.
 Proof.
   iIntros "[Hs1 [%%]] [Hs2 [%%]]".
-  assert (length vs1 = length vs2) by congruence.
-  iDestruct (array_agree with "Hs1 Hs2") as %->; auto.
+  iDestruct (array_agree with "Hs1 Hs2") as %->; auto. word.
 Qed.
 
 Global Instance own_slice_small_persistent s t vs : Persistent (own_slice_small s t DfracDiscarded vs).
@@ -277,7 +276,7 @@ Proof.
 Qed.
 
 Lemma wp_raw_slice stk E l vs (sz: u64) t :
-  {{{ l ↦∗[t] vs ∗ ⌜length vs = uint.nat sz⌝ }}}
+  {{{ l ↦∗[t] vs ∗ ⌜Z.of_nat $ length vs = uint.Z sz⌝ }}}
     raw_slice t #l #sz @ stk; E
   {{{ sl, RET slice_val sl; own_slice sl t (DfracOwn 1) vs }}}.
 Proof.
@@ -368,13 +367,15 @@ Proof.
   congruence.
 Qed.
 
-Lemma array_replicate_split (n1 n2 n: nat) l t v :
-  (n1 + n2 = n)%nat ->
-  l ↦∗[t] replicate n v -∗
-    l ↦∗[t] replicate n1 v ∗
-    (l +ₗ[t] n1) ↦∗[t] replicate n2 v.
+Lemma array_replicate_split (n1 n2 n : Z) l t v :
+  0 ≤ n1 →
+  0 ≤ n2 →
+  (n1 + n2 = n) ->
+  l ↦∗[t] replicate (Z.to_nat n) v -∗
+    l ↦∗[t] replicate (Z.to_nat n1) v ∗
+    (l +ₗ[t] n1) ↦∗[t] replicate (Z.to_nat n2) v.
 Proof.
-  iIntros (<-) "Ha".
+  iIntros (?? <-) "Ha".
   iDestruct (array_split n1 with "Ha") as "[Ha1 Ha2]".
   { word. }
   { rewrite length_replicate.
@@ -382,9 +383,7 @@ Proof.
   rewrite take_replicate drop_replicate.
   rewrite -> Nat.min_l by word.
   iFrame.
-  iSplitL "Ha1".
-  - iExactEq "Ha1"; repeat (f_equal; try word).
-  - iExactEq "Ha2"; repeat (f_equal; try word).
+  iExactEq "Ha2"; repeat (f_equal; try word).
 Qed.
 
 Ltac word_eq :=
@@ -394,7 +393,7 @@ Lemma wp_new_slice s E t (sz: u64) :
   has_zero t ->
   {{{ True }}}
     NewSlice t #sz @ s; E
-  {{{ sl, RET slice_val sl; own_slice sl t (DfracOwn 1) (replicate (uint.nat sz) (zero_val t)) }}}.
+  {{{ sl, RET slice_val sl; own_slice sl t (DfracOwn 1) (replicate (Z.to_nat (uint.Z sz)) (zero_val t)) }}}.
 Proof.
   iIntros (Hzero Φ) "_ HΦ".
   wp_rec. wp_pures.
@@ -411,20 +410,13 @@ Proof.
   iIntros (l) "Hl".
   wp_pures.
   rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
-  iDestruct (array_replicate_split (uint.nat sz) (uint.nat cap - uint.nat sz) with "Hl") as "[Hsz Hextra]";
+  iDestruct (array_replicate_split (uint.Z sz) (uint.Z cap - uint.Z sz) with "Hl") as "[Hsz Hextra]";
     first by word.
+  { word. }
+  { word. }
   rewrite length_replicate.
   iFrame.
-  iSplitR.
-  { iPureIntro. split; word. }
-  iExists (replicate (uint.nat cap - uint.nat sz) (zero_val t)); iFrame.
-  iSplitR.
-  { iPureIntro.
-    rewrite length_replicate.
-    simpl.
-    word. }
-  simpl. iModIntro.
-  iExactEq "Hextra"; word_eq.
+  rewrite length_replicate /=. word.
 Qed.
 
 Lemma wp_new_slice_cap s E t (sz cap: u64) :
@@ -432,7 +424,7 @@ Lemma wp_new_slice_cap s E t (sz cap: u64) :
   uint.Z sz ≤ uint.Z cap →
   {{{ True }}}
     NewSliceWithCap t #sz #cap @ s; E
-  {{{ ptr, RET slice_val (Slice.mk ptr sz cap) ; own_slice (Slice.mk ptr sz cap) t (DfracOwn 1) (replicate (uint.nat sz) (zero_val t)) }}}.
+  {{{ ptr, RET slice_val (Slice.mk ptr sz cap) ; own_slice (Slice.mk ptr sz cap) t (DfracOwn 1) (replicate (Z.to_nat (uint.Z sz)) (zero_val t)) }}}.
 Proof.
   iIntros (Hzero Hsz Φ) "_ HΦ".
   wp_rec. wp_pures.
@@ -448,20 +440,11 @@ Proof.
   iIntros (l) "Hl".
   wp_pures.
   rewrite slice_val_fold. iApply "HΦ". rewrite /own_slice /own_slice_small /=.
-  iDestruct (array_replicate_split (uint.nat sz) (uint.nat cap - uint.nat sz) with "Hl") as "[Hsz Hextra]";
-    first by word.
+  iDestruct (array_replicate_split (uint.Z sz) (uint.Z cap - uint.Z sz) with "Hl") as "[Hsz Hextra]";
+    try word.
   rewrite length_replicate.
   iFrame.
-  iSplitR.
-  { iPureIntro. split; word. }
-  iExists (replicate (uint.nat cap - uint.nat sz) (zero_val t)); iFrame.
-  iSplitR.
-  { iPureIntro.
-    rewrite length_replicate.
-    simpl.
-    word. }
-  simpl. iModIntro.
-  iExactEq "Hextra"; word_eq.
+  rewrite length_replicate /=. word.
 Qed.
 
 Theorem wp_SliceSingleton stk E t x :
@@ -474,7 +457,7 @@ Proof.
   wp_rec. wp_pures.
   wp_apply (wp_allocN t); eauto.
   { word. }
-  change (replicate (uint.nat 1) x) with [x].
+  change (replicate (Z.to_nat (uint.Z 1)) x) with [x].
   iIntros (l) "Hl".
   wp_pures.
   rewrite slice_val_fold. iApply "HΦ".
@@ -516,22 +499,21 @@ Local Ltac simplify_nonlinear :=
 Theorem own_slice_take_cap s t vs n :
   uint.Z n <= length vs ->
   own_slice s t (DfracOwn 1) vs -∗
-  own_slice (slice_take s n) t (DfracOwn 1) (take (uint.nat n) vs).
+  own_slice (slice_take s n) t (DfracOwn 1) (take (Z.to_nat (uint.Z n)) vs).
 Proof.
   intros.
   rewrite /own_slice /own_slice_small /own_slice_cap /slice_take /=.
   rewrite -> firstn_length_le by lia.
   iIntros "[[Hsmall %] Hcap]".
   iDestruct "Hcap" as (extra) "[% Hcap]".
-  iDestruct (array_split (uint.nat n) with "Hsmall") as "[Hsmall0 Hsmall1]"; try lia.
-  nat_cleanup.
+  iDestruct (array_split (uint.Z n) with "Hsmall") as "[Hsmall0 Hsmall1]"; try word.
   iSplitL "Hsmall0".
   - iFrame. word.
   - iExists _. iSplitR.
     2: {
       iApply array_app.
       iFrame "Hsmall1".
-      replace (uint.Z (Slice.sz s)) with (uint.Z n + length (drop (uint.nat n) vs)).
+      replace (uint.Z (Slice.sz s)) with (uint.Z n + length (drop (Z.to_nat (uint.Z n)) vs)).
       2: { rewrite length_drop. word. }
       rewrite loc_add_assoc. simplify_nonlinear.
       iFrame.
@@ -542,12 +524,12 @@ Qed.
 
 Lemma slice_small_split s (n: u64) t q vs :
   uint.Z n <= length vs →
-  own_slice_small s t q vs -∗ own_slice_small (slice_take s n) t q (take (uint.nat n) vs) ∗
-           own_slice_small (slice_skip s t n) t q (drop (uint.nat n) vs).
+  own_slice_small s t q vs -∗ own_slice_small (slice_take s n) t q (take (Z.to_nat (uint.Z n)) vs) ∗
+           own_slice_small (slice_skip s t n) t q (drop (Z.to_nat (uint.Z n)) vs).
 Proof.
   iIntros (Hbounds) "Hs".
   iDestruct "Hs" as "[Ha %]".
-  iDestruct (array_split (uint.nat n) with "Ha") as "[Ha1 Ha2]"; try lia.
+  iDestruct (array_split (Z.to_nat (uint.Z n)) with "Ha") as "[Ha1 Ha2]"; try lia.
   iSplitL "Ha1".
   - iSplit; simpl.
     + iExactEq "Ha1".
@@ -564,9 +546,9 @@ Proof.
 Qed.
 
 Theorem own_slice_small_take_drop s t q n vs :
-  (uint.nat n <= uint.nat s.(Slice.sz))%nat ->
-   own_slice_small (slice_skip s t n) t q (drop (uint.nat n) vs) ∗
-   own_slice_small (slice_take s n) t q (take (uint.nat n) vs) ⊣⊢
+  uint.Z n <= uint.Z s.(Slice.sz) ->
+  own_slice_small (slice_skip s t n) t q (drop (uint.nat n) vs) ∗
+  own_slice_small (slice_take s n) t q (take (uint.nat n) vs) ⊣⊢
   own_slice_small s t q vs.
 Proof.
   intros Hbound.
@@ -592,7 +574,7 @@ Proof.
 Qed.
 
 Theorem own_slice_small_take_drop_1 s t q n vs :
-  (uint.nat n <= uint.nat s.(Slice.sz))%nat ->
+  uint.Z n <= uint.Z s.(Slice.sz) ->
   own_slice_small (slice_skip s t n) t q (drop (uint.nat n) vs) ∗
                   own_slice_small (slice_take s n) t q (take (uint.nat n) vs) -∗
   own_slice_small s t q vs.
@@ -602,7 +584,7 @@ Proof.
 Qed.
 
 Theorem own_slice_combine s t q n vs1 vs2 :
-  (uint.nat n ≤ uint.nat s.(Slice.sz))%nat →
+  uint.Z n ≤ uint.Z s.(Slice.sz) →
   own_slice_small (slice_take s n) t q vs1 ⊢@{_}
   own_slice_small (slice_skip s t n) t q vs2 -∗
   own_slice_small s t q (vs1 ++ vs2).

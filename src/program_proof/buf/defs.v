@@ -109,7 +109,7 @@ Qed.
 
 Arguments bufDataT K.
 
-Definition bufSz K : nat :=
+Definition bufSz K : Z :=
   match K with
   | KindBit => 1
   | KindInode => inode_bytes*8

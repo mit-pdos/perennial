@@ -64,14 +64,14 @@ Section proof.
       ⌜wg = (lk, #vptr)%V⌝ ∗
       is_lock N lk (
         ∃ (remaining:gset u64) (total:u64),
-          "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → uint.nat r < uint.nat total)⌝ ∗
+          "%Hremaining" ∷ ⌜(∀ r, r ∈ remaining → uint.Z r < uint.Z total)⌝ ∗
           "Htotal" ∷ ghost_var γ.(total_gn) (1/2) total ∗
           "Hv" ∷ vptr ↦[uint64T] #(size remaining) ∗
           "Htoks" ∷ ([∗ set] i ∈ (fin_to_set u64), ⌜i ∈ remaining⌝ ∨ own_WaitGroup_token γ i) ∗
           "HP" ∷ (own γ.(done_gn) (Excl ())
                   (* If this done token in this invariant, then the user has
                      called Wait() once and lacks the resources to do so again. *)
-                  ∨ [∗ set] i ∈ (fin_to_set u64), ⌜ uint.nat total ≤ uint.nat i ⌝ ∨ ⌜i ∈ remaining⌝ ∨ (P i))
+                  ∨ [∗ set] i ∈ (fin_to_set u64), ⌜ uint.Z total ≤ uint.Z i ⌝ ∨ ⌜i ∈ remaining⌝ ∨ (P i))
 
       ).
 
@@ -186,30 +186,23 @@ Qed.
 
 Local Opaque load_ty store_ty.
 
-Lemma u64_set_size_all_lt (W : gset u64) (n : nat) :
- (∀ s : u64, s ∈ W → uint.nat s < n)%Z → (size W ≤ n)%Z.
+Lemma u64_set_size_all_lt (W : gset u64) (n : Z) :
+  0 ≤ n →
+ (∀ s : u64, s ∈ W → uint.Z s < n)%Z → (size W ≤ n)%Z.
 Proof.
-  revert W.
-  induction n as [| n IHn] => W Hvalid.
-  - destruct W as [| x W] using set_ind_L; auto.
+  intros Hn. revert W. pattern n. apply natlike_ind; try lia.
+  - intros W Hvalid. destruct W as [| x W] using set_ind_L; auto.
     { rewrite size_empty. lia. }
-    exfalso. opose proof (Hvalid x _); first by set_solver. lia.
-  - transitivity (size ({[W64 n]} ∪ (W ∖ {[W64 n]}))).
+    exfalso. opose proof (Hvalid x _); first by set_solver. word.
+  - clear Hn n. intros n Hn IH W Hvalid. transitivity (size ({[W64 n]} ∪ (W ∖ {[W64 n]}))).
     { apply Nat2Z.inj_le. apply subseteq_size. set_unfold. intros x. destruct (decide (x = W64 n)); auto. }
     rewrite size_union ?size_singleton; last by set_solver.
-    refine (_ (IHn (W ∖ {[W64 n]}) _)); first lia.
-    { set_unfold. intros x (Hin&Hneq). opose proof (Hvalid x _); auto.
-      cut (uint.nat x ≠ n); first lia.
-      intros Heq.
-      move: Hneq.
-      rewrite -Heq.
-      rewrite Z2Nat.id; last by word.
-      rewrite /W64 word.of_Z_unsigned. auto.
-    }
+    refine (_ (IH (W ∖ {[W64 n]}) _)); first lia.
+    { set_unfold. intros x (Hin&Hneq). opose proof (Hvalid x _); auto. word. }
 Qed.
 
 Lemma wp_WaitGroup__Add wg γ n P :
-uint.nat (word.add n 1) > uint.nat n →
+uint.Z (word.add n 1) > uint.Z n →
   {{{
       own_WaitGroup wg γ n P
   }}}
@@ -267,7 +260,7 @@ Proof.
         rewrite size_union; last first.
         { set_unfold. intros x' Hin Heq. specialize (Hremaining x' Hin). subst. lia. }
         rewrite size_singleton.
-        apply u64_set_size_all_lt in Hremaining. word.
+        apply u64_set_size_all_lt in Hremaining; word.
       }
       done.
     }
@@ -297,7 +290,7 @@ Proof.
     iModIntro.
     iIntros (??) "[%H1|[%H2|H3]]".
     {
-      destruct (decide (uint.nat total = uint.nat x)).
+      destruct (decide (uint.Z total = uint.Z x)).
       {
         replace (x) with (total) by word.
         iRight. iLeft. iPureIntro. set_solver.
@@ -362,7 +355,7 @@ Proof.
     {
       rewrite /named; iExactEq "Hv"; do 3 f_equal.
       rewrite size_difference ?size_singleton; last by set_solver.
-      eapply u64_set_size_all_lt in Hremaining.
+      eapply u64_set_size_all_lt in Hremaining; last word.
       cut (size remaining ≠ 0%nat).
       { intros. word. }
       intros Heq0.
@@ -405,7 +398,7 @@ Lemma wp_WaitGroup__Wait wg γ P n :
   }}}
     waitgroup.Wait wg
   {{{
-        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜ uint.nat n ≤ uint.nat i ⌝ ∨ (P i)
+        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜ uint.Z n ≤ uint.Z i ⌝ ∨ (P i)
   }}}.
 Proof.
   iIntros (Φ) "(Hdone&Htotal'&#Hwg) HΦ".
@@ -442,7 +435,7 @@ Proof.
     iModIntro. iIntros (x Hin) "[%Hge|[%Hinx|HPx]]".
     { auto. }
     { exfalso.
-      eapply u64_set_size_all_lt in Hremaining.
+      eapply u64_set_size_all_lt in Hremaining; last word.
       assert (size remaining = 0%nat) as Hzero.
       { apply word.of_Z_inj_small in Hsize; try lia.
         word. }

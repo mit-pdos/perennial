@@ -231,32 +231,39 @@ Proof.
 Qed.
 
 Lemma pointsto_seq_struct_array l v t n :
-  ([∗ list] i ∈ seq 0 n, (l +ₗ[t] (i:nat)) ↦[t] v) -∗
-  l ↦∗[t] replicate n v.
+  0 ≤ n →
+  ([∗ list] i ∈ seqZ 0 n, (l +ₗ[t] i) ↦[t] v) -∗
+  l ↦∗[t] replicate (Z.to_nat n) v.
 Proof.
-  rewrite /array. iInduction n as [|n'] "IH" forall (l); simpl.
-  { done. }
-  rewrite Z.mul_0_r loc_add_0.
-  iIntros "[$ Hl]". rewrite -fmap_S_seq big_sepL_fmap.
-  setoid_rewrite Zmul_S_r.
-  setoid_rewrite <-loc_add_assoc.
-  by iApply "IH".
+  intros Hn. rewrite /array. pattern n. apply natlike_ind; try lia.
+  { simpl. iIntros "$". }
+  intros ?? IH. iIntros "Hl".
+  rewrite seqZ_succ_r //. iDestruct "Hl" as "[Hl Hv]".
+  iDestruct (IH with "Hl") as "Hl".
+  rewrite Z2Nat.inj_succ //.
+  rewrite replicate_S_end. iFrame.
+  simpl. rewrite length_replicate.
+  replace (Z.of_nat (Nat.add (Z.to_nat x) _)) with (0 + x) by word. iFrame.
 Qed.
 
 Lemma wp_allocN t s E v (n: u64) :
-  (0 < uint.Z n)%Z →
+  0 < uint.Z n →
   val_ty v t ->
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); l ↦∗[t] replicate (uint.nat n) v }}}.
+  {{{ l, RET LitV (LitLoc l); l ↦∗[t] replicate (Z.to_nat (uint.Z n)) v }}}.
 Proof.
   iIntros (Hsz Hty Φ) "_ HΦ". wp_apply wp_allocN_seq; [done..|].
   iIntros (l) "Hlm". iApply "HΦ".
-  iApply pointsto_seq_struct_array.
+  iApply pointsto_seq_struct_array; first lia.
   iApply (big_sepL_mono with "Hlm").
   iIntros (k y Heq) "Hvals".
-  rewrite (nat_scaled_offset_to_Z Hty).
-  rewrite struct_pointsto_eq /struct_pointsto_def.
-  iSplitL; auto.
+  replace (l +ₗ length (flatten_struct v) * y) with
+    (l +ₗ[t] y).
+  2:{
+    f_equal. rewrite (val_ty_len Hty). f_equal. pose proof (ty_size_ge_0 t).
+    lia.
+  }
+  rewrite struct_pointsto_eq /struct_pointsto_def. iFrame; auto.
 Qed.
 
 Lemma wp_load_offset s E l q off t vs v :

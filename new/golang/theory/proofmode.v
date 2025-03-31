@@ -332,7 +332,7 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 (* string lookup ops *)
 
 Global Instance wp_StringGet_w64 (s : go_string) (i : w64) (v : w8) :
-  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
+  PureWp (s !! (Z.to_nat (uint.Z i)) = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
   - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
@@ -340,7 +340,7 @@ Proof.
 Qed.
 
 Global Instance wp_StringGet_w32 (s : go_string) (i : w32) (v : w8) :
-  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
+  PureWp (s !! (Z.to_nat (uint.Z i)) = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
   - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.
@@ -348,7 +348,7 @@ Proof.
 Qed.
 
 Global Instance wp_StringGet_w8 (s : go_string) (i : w8) (v : w8) :
-  PureWp (s !! uint.nat i = Some v) (StringGet #s #i) #v.
+  PureWp (s !! Z.to_nat (uint.Z i) = Some v) (StringGet #s #i) #v.
 Proof.
   rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec.
   - rewrite /bin_op_eval /= H /=. Transitions.monad_simpl.

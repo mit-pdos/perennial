@@ -951,17 +951,21 @@ Qed.
 (** Heap *)
 (** The "proper" [allocN] are derived in [array]. *)
 
-Theorem concat_replicate_S A n (vs: list A) :
-  concat_replicate (S n) vs = vs ++ concat_replicate n vs.
+Theorem concat_replicate_succ_end A n (vs: list A) :
+  0 ≤ n →
+  concat_replicate (Z.succ n) vs = concat_replicate n vs ++ vs.
 Proof.
-  reflexivity.
+  intros. rewrite /concat_replicate. rewrite Z2Nat.inj_succ //.
+  rewrite replicate_S_end // concat_app //= app_nil_r //.
 Qed.
 
-Theorem concat_replicate_length A n (vs: list A) :
-  length (concat_replicate n vs) = (n * length vs)%nat.
+Theorem concat_replicate_length A (n : Z) (vs: list A) :
+  0 ≤ n →
+  Z.of_nat $ length (concat_replicate n vs) = (n * length vs).
 Proof.
-  induction n; simpl; auto.
-  rewrite concat_replicate_S length_app IHn //.
+  intros. pattern n. apply natlike_ind; simpl; auto.
+  intros ?? IH.
+  rewrite concat_replicate_succ_end //. rewrite length_app. lia.
 Qed.
 
 Lemma heap_array_to_seq_pointsto l vs (P: loc → val → iProp Σ) :
@@ -1034,32 +1038,39 @@ Lemma Zmul_nat_add1_r (x k:nat) :
   (x + 1)%nat * k = k + x * k.
 Proof. lia. Qed.
 
-Lemma heap_seq_replicate_to_nested_pointsto l vs (n : nat) (P: loc → val → iProp Σ) :
-  ([∗ list] j ↦ v ∈ concat_replicate n vs, P (l +ₗ j) v )-∗
-  [∗ list] i ∈ seq 0 n, [∗ list] j ↦ v ∈ vs, P (l +ₗ ((i : nat) * Z.of_nat (length vs)) +ₗ j)%nat v.
+
+Lemma seqZ_succ_r n m :
+  0 ≤ m →
+  seqZ n (Z.succ m) = seqZ n m ++ [n + m].
 Proof.
-  iIntros "Hvs".
-  iInduction n as [|n] "IH" forall (l); simpl.
-  { done. }
-  rewrite concat_replicate_S.
-  iDestruct (big_sepL_app with "Hvs") as "[Hvs Hconcat]".
-  iSplitL "Hvs".
-  - rewrite loc_add_0.
-    iFrame.
-  - setoid_rewrite Nat2Z.inj_add.
-    setoid_rewrite <- loc_add_assoc.
-    iDestruct ("IH" with "Hconcat") as "Hseq".
-    rewrite (big_sepL_offset _ 1%nat).
-    setoid_rewrite Zmul_nat_add1_r.
-    setoid_rewrite <- loc_add_assoc.
-    iExact "Hseq".
+  intros. unfold seqZ. rewrite Z2Nat.inj_succ // seq_S.
+  rewrite fmap_app. simpl. f_equal. f_equal. lia.
+Qed.
+
+Lemma heap_seq_replicate_to_nested_pointsto l vs (n : Z) (P: loc → val → iProp Σ) :
+  0 ≤ n →
+  ([∗ list] j ↦ v ∈ concat_replicate n vs, P (l +ₗ j) v )-∗
+  [∗ list] i ∈ seqZ 0 n, [∗ list] j ↦ v ∈ vs, P (l +ₗ (i * Z.of_nat (length vs)) +ₗ j) v.
+Proof.
+  iIntros (?) "Hvs". iStopProof.
+  revert l. pattern n. apply natlike_ind; simpl; auto. clear n H. intros n ?.
+  intros IH. iIntros (l) "Hvs".
+  rewrite concat_replicate_succ_end //.
+  iDestruct (big_sepL_app with "Hvs") as "[Hconcat Hvs]".
+  rewrite seqZ_succ_r //.
+  iSplitR "Hvs".
+  - by iApply IH.
+  - rewrite /= right_id. setoid_rewrite loc_add_assoc.
+    replace (0 + n) with n by lia.
+    setoid_rewrite Nat2Z.inj_add.
+    rewrite concat_replicate_length //.
 Qed.
 
 Lemma alloc_list_loc_not_null:
   ∀ v (n : u64) σg1 l,
     isFresh σg1 l
     → ∀ l0 (x : val),
-      heap_array l (concat_replicate (uint.nat n) (flatten_struct v)) !! l0 = Some x
+      heap_array l (concat_replicate (uint.Z n) (flatten_struct v)) !! l0 = Some x
       → l0 ≠ null.
 Proof.
   intros v n σg1 l H l0 x Heq.
@@ -1072,7 +1083,7 @@ Lemma allocN_loc_not_null:
   ∀ v (n : u64) σg1 l,
     isFresh σg1 l
     → ∀ l0 (x : val),
-      heap_array l (concat_replicate (uint.nat n) (flatten_struct v)) !! l0 = Some x
+      heap_array l (concat_replicate (uint.Z n) (flatten_struct v)) !! l0 = Some x
       → l0 ≠ null.
 Proof.
   intros v n σg1 l H l0 x Heq.
@@ -1111,9 +1122,9 @@ Lemma wp_allocN_seq_sized_meta s E v (n: u64) :
   (0 < uint.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
   {{{ l, RET LitV (LitLoc l); ⌜ l ≠ null ∧ addr_offset l = 0%Z ⌝ ∗
-                              na_block_size l (uint.nat n * length (flatten_struct v))%nat ∗
-                              [∗ list] i ∈ seq 0 (uint.nat n),
-                              (pointsto_vals_toks (l +ₗ (length (flatten_struct v) * Z.of_nat i)) (DfracOwn 1)
+                              na_block_size l (uint.Z n * length (flatten_struct v)) ∗
+                              [∗ list] i ∈ seqZ 0 (uint.Z n),
+                              (pointsto_vals_toks (l +ₗ (length (flatten_struct v) * i)) (DfracOwn 1)
                                                 (flatten_struct v))
                               }}}.
 Proof.
@@ -1121,11 +1132,10 @@ Proof.
   iIntros (σ1 g1 ns mj D κ κs k) "[Hσ ?] Hg !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
   iMod (na_heap_alloc_list tls (heap σ1) l
-                           (concat_replicate (uint.nat n) (flatten_struct v))
+                           (concat_replicate (uint.Z n) (flatten_struct v))
                            (Reading O) with "Hσ")
     as "(Hσ & Hblock & Hl)".
-  { rewrite concat_replicate_length. cut (0 < uint.nat n)%nat; first by lia.
-    word. }
+  { zify. rewrite -> concat_replicate_length by lia. word. }
   { destruct H as (?&?); eauto. }
   { destruct H as (H'&?); eauto. eapply H'. }
   { destruct H as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
@@ -1138,10 +1148,11 @@ Proof.
   iFrame.
   iApply "HΦ".
   unfold pointsto_vals.
-  rewrite concat_replicate_length. iFrame.
-  iDestruct (heap_seq_replicate_to_nested_pointsto l (flatten_struct v) (uint.nat n)
+  rewrite -> concat_replicate_length by lia. iFrame.
+  iDestruct (heap_seq_replicate_to_nested_pointsto l (flatten_struct v) (uint.Z n)
                                                  (λ l v, l ↦ v ∗ meta_token l ⊤)%I
                with "[Hl]") as "Hl".
+  { lia. }
   {
     iApply (big_sepL_mono with "Hl").
     iIntros (l0 x Heq) "(Hli&$)".
@@ -1167,8 +1178,8 @@ Proof.
   iIntros (σ1 g1 ns mj D κ κs k) "[Hσ ?] Hg !>"; iSplit; first by auto with lia.
   iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
   rewrite /state_interp/=.
-  assert (concat_replicate (uint.nat n) (flatten_struct v) = []) as ->.
-  { apply nil_length_inv. rewrite concat_replicate_length. lia. }
+  assert (concat_replicate (uint.Z n) (flatten_struct v) = []) as ->.
+  { apply nil_length_inv. zify. rewrite concat_replicate_length; lia. }
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
   rewrite fmap_nil //= left_id. iFrame. iSplitL ""; eauto. by iApply "HΦ".
@@ -1180,15 +1191,15 @@ Qed.
 Lemma wp_allocN_seq s E v (n: u64) :
   (0 < uint.Z n)%Z →
   {{{ True }}} AllocN (Val $ LitV $ LitInt $ n) (Val v) @ s; E
-  {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seq 0 (uint.nat n),
-                              (pointsto_vals (l +ₗ (length (flatten_struct v) * Z.of_nat i)) (DfracOwn 1) (flatten_struct v)) }}}.
+  {{{ l, RET LitV (LitLoc l); [∗ list] i ∈ seqZ 0 (uint.Z n),
+                              (pointsto_vals (l +ₗ (length (flatten_struct v) * i)) (DfracOwn 1) (flatten_struct v)) }}}.
 Proof.
   iIntros (??) "_ HΦ".
   destruct (length (flatten_struct v)) eqn:Hlen.
   - iApply wp_allocN_seq0; auto. iNext. iIntros (l) "_". iApply "HΦ".
     apply nil_length_inv in Hlen. rewrite Hlen //=.
     rewrite /pointsto_vals. setoid_rewrite big_sepL_nil.
-    iInduction (seq 0 (uint.nat n)) as [| ??] "IH"; eauto => //=.
+    iInduction (seqZ 0 (uint.Z n)) as [| ??] "IH"; eauto => //=.
   - iApply wp_allocN_seq_sized_meta; auto.
     { lia. }
     iNext. iIntros (?) "(_&_&H)". iApply "HΦ".
@@ -1204,9 +1215,9 @@ Proof.
   assert (0 < uint.Z (W64 1)) by (change (uint.Z 1) with 1; lia).
   iIntros (Hflat ?) "_ HΦ". iApply wp_allocN_seq; auto.
   iNext. iIntros (?) "H". iApply "HΦ".
-  change (uint.nat 1) with 1%nat; simpl.
+  change (uint.Z (W64 1)) with 1; simpl.
   rewrite /pointsto_vals Hflat big_sepL_singleton //=.
-  replace (1% nat * 0%nat)%Z with 0 by lia.
+  replace (1 * _)%Z with 0 by lia.
   rewrite !loc_add_0 right_id. eauto.
 Qed.
 
@@ -1361,17 +1372,15 @@ Qed.
 Lemma na_heap_valid_map (σ: gmap _ _) l q vs :
   na_heap_ctx tls σ -∗
               ([∗ map] l↦v ∈ heap_array l vs, l ↦{q} v) -∗
-              ⌜forall i, (i < (length vs))%nat -> is_Some (σ !! (l +ₗ i))⌝.
+              ⌜forall i, (0 ≤ i < (length vs)) -> is_Some (σ !! (l +ₗ i))⌝.
 Proof.
   iIntros "Hctx Hmap".
   iIntros (i Hi).
-  apply lookup_lt_is_Some_2 in Hi.
-  destruct Hi as [v ?].
+  opose proof (lookup_lt_is_Some_2 vs (Z.to_nat i) ltac:(lia)) as Hi'.
+  destruct Hi' as [v ?].
   assert (heap_array l vs !! (l +ₗ i) = Some v).
   { apply heap_array_lookup.
-    exists (Z.of_nat i).
-    rewrite Nat2Z.id; intuition eauto.
-    lia. }
+    exists i. intuition eauto. }
   iDestruct (big_sepM_lookup _ _ _ _ H0 with "Hmap") as "H".
   iDestruct (na_heap_read with "Hctx [H]") as %(?&?&?&?).
   { iDestruct (heap_pointsto_na_acc with "H") as "[$ _]". }

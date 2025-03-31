@@ -3,7 +3,7 @@ From coqutil.Word Require Import Interface Properties.
 From Perennial.Helpers.Word Require Import Integers Automation.
 
 (* should maybe convert this into an explicit match on ints at some point *)
-Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (uint.nat x).
+Definition u8_to_ascii (x:byte) : Ascii.ascii := Ascii.ascii_of_nat (Z.to_nat $ uint.Z x).
 
 (* conversion to string *)
 Definition u8_to_string (x:byte) : String.string := String.String (u8_to_ascii x) String.EmptyString.
@@ -20,7 +20,7 @@ Proof.
   setoid_rewrite elem_of_seqZ. intros; word.
 Qed.
 
-Lemma w64_to_nat_id x : W64 (Z.of_nat (uint.nat x)) = x.
+Lemma w64_to_nat_id x : W64 (Z.of_nat (Z.to_nat (uint.Z x))) = x.
 Proof. word. Qed.
 
 (* FIXME:(stdpp) These are missing from stdpp numbers.v *)
