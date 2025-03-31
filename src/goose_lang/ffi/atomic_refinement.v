@@ -520,7 +520,7 @@ Section go_refinement.
       destruct iv1 => //=;
         inversion 1; eauto; subst; destruct iv2; inversion 1;
         subst; destruct l => //=; destruct l0 => //=;
-        destruct (s !! (Z.to_nat (uint.Z n))) => //=; eauto.
+        destruct (s !! (uint.nat n)) => //=; eauto.
     }
 
     rewrite /bin_op_eval /bin_op_eval_eq /=.
@@ -648,15 +648,14 @@ Section go_refinement.
   Qed.
 
   Lemma is_Some_free_concat_look {A B} (v1 : list A) (v2 : list B) n m :
-    0 ≤ n →
-    length v1 = length v2 →
+    (length v1 = length v2)%nat →
     is_Some ((Free <$> concat_replicate n v1) !! m) →
     is_Some ((Free <$> concat_replicate n v2) !! m).
   Proof.
     intros Hlen.
     rewrite ?list_lookup_fmap ?fmap_is_Some ?lookup_lt_is_Some.
-    zify. rewrite lifting.concat_replicate_length; try lia.
-    rewrite lifting.concat_replicate_length in H0; try lia.
+    rewrite ?lifting.concat_replicate_length.
+    lia.
   Qed.
 
   Lemma val_relation_flatten_length sv iv :
@@ -680,12 +679,11 @@ Section go_refinement.
   Qed.
 
   Lemma heap_array_lookup_none2_if {A B} l n (v1 : list A) (v2 : list B) l' :
-    0 ≤ n →
     length v1 = length v2 →
     heap_array l (Free <$> concat_replicate n v1) !! l' = None →
     heap_array l (Free <$> concat_replicate n v2) !! l' = None.
   Proof.
-    intros Hn Hlength.
+    intros Hlength.
     destruct (heap_array l (Free <$> concat_replicate n v1) !! l') as [|] eqn:Hlook1; first congruence.
     destruct (heap_array l (Free <$> concat_replicate n v2) !! l') as [|] eqn:Hlook2; auto.
     apply mk_is_Some in Hlook2.
@@ -693,7 +691,6 @@ Section go_refinement.
     edestruct Hlook2 as (?&?&?&Hlookfmap).
     symmetry in Hlength.
     eapply (@is_Some_free_concat_look) in Hlookfmap; last by eapply Hlength.
-    2:{ lia. }
     apply eq_None_not_Some in Hlook1. exfalso. apply Hlook1.
     eapply heap_array_lookup_is_Some; eauto.
   Qed.
@@ -711,23 +708,19 @@ Section go_refinement.
   Qed.
 
    Lemma concat_replicate2_Forall2 {A B} n (l1 : list A) (l2 : list B) R z x y:
-     0 ≤ n →
      Forall2 R l1 l2 →
      concat_replicate n l1 !! z = Some x →
      concat_replicate n l2 !! z = Some y →
      R x y.
    Proof.
-     intros Hn. revert z. pattern n. apply natlike_ind; auto.
-     { replace (concat_replicate _ _) with (@nil A) by done.
-       replace (concat_replicate _ _) with (@nil B) by done. done. }
-     clear n Hn. intros n Hn IH z HFR.
-     rewrite ?lifting.concat_replicate_succ_end //.
+     revert z.
+     induction n => //= z.
+     intros HFR.
+     rewrite ?lifting.concat_replicate_S.
      rewrite ?lookup_app_Some. intros Hl1 Hl2.
      destruct Hl1 as [Hl1|(?&Hl1)].
      - destruct Hl2 as [Hl2|(Hlen&Hl2)]; last first.
-       { apply lookup_lt_Some in Hl1. apply Forall2_length in HFR.
-         Search concat_replicate length.
-         lia. }
+       { apply lookup_lt_Some in Hl1. apply Forall2_length in HFR. lia. }
        eapply Forall2_lookup_lr; eauto.
      - destruct Hl2 as [Hl2|(Hlen&Hl2)].
        { apply lookup_lt_Some in Hl2. apply Forall2_length in HFR. lia. }
@@ -874,13 +867,12 @@ Section go_refinement.
   Qed.
 
   Lemma Forall_concat_replicate {A} n (l: list A) (P: A → Prop):
-    0 < n →
+    (0 < n)%nat →
     Forall P (concat_replicate n l) →
     Forall P l.
   Proof.
-    intros H. replace (n) with (1 + (n - 1)) by lia.
-    unfold concat_replicate. rewrite -> Z2Nat.inj_add by lia.
-    simpl. rewrite Forall_app. intuition.
+    intros Hlt. destruct n; first lia.
+    rewrite lifting.concat_replicate_S Forall_app. intuition.
   Qed.
 
   Lemma val_impl_compare_safe sv1 sv2 iv1 iv2:
@@ -1151,10 +1143,10 @@ Section go_refinement.
            simpl in Hstep.
            apply foheap_union_inv_l in Hstep.
            rewrite /foheap in Hstep.
-           assert (Hforall: Forall foval (concat_replicate (uint.Z n) (flatten_struct v0))).
+           assert (Hforall: Forall foval (concat_replicate (uint.nat n) (flatten_struct v0))).
            { eapply (heap_array_forall _ l0). intros. eapply Hstep.
              rewrite -heap_array_fmap. rewrite lookup_fmap fmap_Some. eauto. }
-           apply Forall_concat_replicate in Hforall; auto.
+           apply Forall_concat_replicate in Hforall; auto. lia.
         ** exfalso; eauto.
       * inv_expr_impl; inv_base_step. monad_inv.
         destruct (decide (is_Writing (heap iσ1 !! l))); monad_inv.
@@ -1204,7 +1196,7 @@ Section go_refinement.
       destruct (decide (vals_compare_safe vold v)); monad_inv; try inv_monad_false; last by (exfalso; auto).
       destruct (decide (vold = v)) as [Heqold|Hneqold].
       * subst. inv_base_step; monad_inv.
-        destruct (decide ((Z.of_nat n) = 0)); inv_base_step; monad_inv; last first.
+        destruct (decide (n = O)); inv_base_step; monad_inv; last first.
         { exfalso; eauto. }
         inv_expr_impl.
         let sσ2 := fresh "sσ2" in evar (sσ2:sstate).
@@ -1221,7 +1213,7 @@ Section go_refinement.
           { symmetry. eapply val_relation_val_impl_inj; eauto. }
           subst.
           repeat econstructor; eauto.
-          { rewrite /when. rewrite ifThenElse_if //. replace (n) with O by lia. repeat econstructor. }
+          { rewrite /when. rewrite ifThenElse_if //. repeat econstructor. }
           { rewrite bool_decide_true //. }
         }
         do 4 eexists.
@@ -1463,9 +1455,8 @@ Section go_refinement.
       destruct (decide (vals_compare_safe vold v)); monad_inv; try inv_monad_false; last by (exfalso; auto).
       destruct (decide (vold = v)) as [Heqold|Hneqold].
       * subst. inv_base_step; monad_inv.
-        destruct (decide (Z.of_nat n = 0)); inv_base_step; monad_inv; last first.
+        destruct (decide (n = O)); inv_base_step; monad_inv; last first.
         { exfalso; eauto. }
-        replace (n) with O in * by lia.
         inv_expr_impl.
         let iσ2 := fresh "iσ2" in evar (iσ2:istate).
         let ig2 := fresh "ig2" in evar (ig2:igstate).

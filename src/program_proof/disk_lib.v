@@ -131,7 +131,7 @@ Proof.
 Qed.
 
 Lemma block_array_to_slice_raw l q b :
-  pointsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜Z.of_nat $ length (Block_to_vals b) = uint.Z 4096⌝.
+  pointsto_block l q b -∗ l ↦∗[byteT]{q} Block_to_vals b ∗ ⌜length (Block_to_vals b) = uint.nat 4096⌝.
 Proof.
   iIntros "Hm".
   rewrite /own_slice_small.
@@ -244,9 +244,9 @@ Proof.
   wp_apply (wp_ReadOp with "Hda").
   iIntros (l) "(Hda&Hl)".
   iMod ("Hupd" with "Hda") as "HQ"; iModIntro.
-  iDestruct (block_array_to_slice_raw with "Hl") as "[Hs %]".
+  iDestruct (block_array_to_slice_raw with "Hl") as "Hs".
   wp_pures.
-  wp_apply (wp_raw_slice with "[$Hs]"); first word.
+  wp_apply (wp_raw_slice with "Hs").
   iIntros (s) "Hs".
   iApply "HQ"; iFrame.
 Qed.
@@ -280,9 +280,11 @@ Proof.
   wp_apply (wp_MemCpy_rec with "[Hs Hl]").
   { iFrame.
     iDestruct (array_to_block_array with "Hl") as "$".
-    iPureIntro. rewrite !length_Block_to_vals.
-    word.
-    rewrite /block_bytes. word.
+    iPureIntro.
+    rewrite !length_Block_to_vals.
+    rewrite /block_bytes.
+    split; [ reflexivity | ].
+    cbv; congruence.
   }
   rewrite take_ge; last first.
   { rewrite length_Block_to_vals.
