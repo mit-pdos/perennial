@@ -231,9 +231,9 @@ Fixpoint own_merkle_tree ptr t d : iProp Σ :=
     "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
     "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #null ∗
     "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #null ∗
-    "Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
+    "#Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
     "Hptr_label" ∷ ptr ↦[node :: "label"]{d} (slice_val sl_label) ∗
-    "Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
+    "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
     "Hptr_val" ∷ ptr ↦[node :: "val"]{d} (slice_val sl_val)
   | Inner child0 child1 =>
     ∃ sl_hash ptr_child0 ptr_child1,
@@ -586,37 +586,176 @@ Definition own_Tree ptr elems d : iProp Σ :=
   "Hown_map" ∷ own_merkle_map ptr_map elems d ∗
   "Hptr_root" ∷ ptr ↦[Tree :: "root"]{d} #ptr_map.
 
-Lemma wp_find sl_label d0 (label : list w8) ptr_ctx d1 ptr_n tr (get_proof : bool) (depth : w64) :
+Lemma wp_getProofLen (depth : w64) :
+  {{{ True }}}
+  getProofLen #depth
+  {{{
+    (len : w64), RET #len;
+    "%Hlt_len" ∷ ⌜ 8 <= uint.Z len ⌝
+  }}}.
+Proof. iIntros (Φ) "_ HΦ". wp_rec. wp_pures. iApply "HΦ". word. Qed.
+
+Lemma wp_find sl_label d0 (label : list w8) ptr_ctx d1 ptr_n t (get_proof : bool) (depth : w64) :
   {{{
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
     "Hown_ctx" ∷ own_context ptr_ctx d1 ∗
-    "Hown_node" ∷ own_merkle_tree ptr_n tr d1
+    "Hown_tree" ∷ own_merkle_tree ptr_n t d1
   }}}
   find (slice_val sl_label) #get_proof #ptr_ctx #ptr_n #depth
   {{{
-    (found : bool) sl_fd_label sl_fd_val fd_label fd_val sl_proof proof,
+    sl_fd_label sl_fd_val sl_proof (found : bool) fd_label fd_val proof,
     RET (#found, slice_val sl_fd_label, slice_val sl_fd_val, slice_val sl_proof);
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
     "Hown_ctx" ∷ own_context ptr_ctx d1 ∗
-    "Hown_node" ∷ own_merkle_tree ptr_n tr d1 ∗
+    "Hown_tree" ∷ own_merkle_tree ptr_n t d1 ∗
     "Hsl_fd_label" ∷ own_slice_small sl_fd_label byteT DfracDiscarded fd_label ∗
     "Hsl_fd_val" ∷ own_slice_small sl_fd_val byteT DfracDiscarded fd_val ∗
+    "Hsl_proof" ∷ own_slice sl_proof byteT (DfracOwn 1) proof ∗
 
-    "%Hpath" ∷ ⌜ tree_path tr label depth
+    "%Hpath" ∷ ⌜ tree_path t label depth
       (if found then (Some (fd_label, fd_val)) else None) ⌝ ∗
     "Hproof" ∷ (if negb get_proof then True else
       ∃ x sibs,
       "%Henc_proof" ∷ ⌜ proof = x ++ sibs ⌝ ∗
       "%Hlen_x" ∷ ⌜ length x = 8%nat ⌝ ∗
-      "Hsibs_proof" ∷ tree_sibs_proof tr label depth sibs)
+      "Hsibs_proof" ∷ tree_sibs_proof t label depth sibs)
   }}}.
 Proof.
+  iLöb as "IH" forall (ptr_n t depth).
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_if_destruct.
   { (* empty node. *)
+    iDestruct (own_empty_tree with "Hown_tree") as %->.
     wp_apply wp_ref_of_zero; [done|].
     iIntros "* Hptr_proof".
-Admitted.
+    wp_if_destruct.
+    - wp_apply wp_getProofLen. iIntros "*". iNamed 1.
+      wp_apply wp_NewSliceWithCap; [word|].
+      iIntros "* Hsl_proof". wp_store. wp_load.
+      iDestruct (own_slice_zero _ (DfracOwn 1)) as "H0".
+      iDestruct (own_slice_to_small with "H0") as "H1".
+      iPersist "H1".
+
+      wp_pures. iApply ("HΦ" $! Slice.nil Slice.nil).
+      iFrame "∗#". iIntros "!>". iSplit; [done|].
+      iExists _, [].
+      iSplit; [by list_simplifier|].
+      iSplit; [by rewrite length_replicate|done].
+
+    - iDestruct own_slice_zero as "H0".
+      iDestruct (own_slice_to_small with "H0") as "H1".
+      iPersist "H1".
+      wp_load. wp_pures. iApply ("HΦ" $! Slice.nil Slice.nil Slice.nil).
+      by iFrame "∗#". }
+
+  iRename "Hsl_label" into "Hsl_label_find".
+  destruct t; iNamed "Hown_tree"; [done|..|done];
+    iNamed "Hown_tree"; fold own_merkle_tree.
+  { (* leaf node. *)
+    wp_bind (If _ _ #false).
+    wp_apply (wp_wand _ _ _
+      (λ ret,
+      "->" ∷ ⌜ ret = #true ⌝ ∗
+      "Hptr_child0" ∷ ptr_n ↦[node::"child0"]{d1} #null ∗
+      "Hptr_child1" ∷ ptr_n ↦[node::"child1"]{d1} #null
+      )%I
+      with "[Hptr_child0 Hptr_child1]"
+    ).
+    { do 2 wp_loadField. wp_pures. by iFrame. }
+    iIntros "*". iNamed 1.
+    wp_pures.
+
+    wp_apply wp_ref_of_zero; [done|].
+    iIntros "* Hptr_proof".
+    wp_if_destruct.
+    - wp_apply wp_getProofLen. iIntros "*". iNamed 1.
+      wp_apply wp_NewSliceWithCap; [word|].
+      iIntros "* Hsl_proof". wp_store. do 2 wp_loadField. wp_load.
+
+      wp_pures. iApply "HΦ".
+      iFrame "Hown_ctx ∗#". iIntros "!>". iSplit; [done|].
+      iExists _, [].
+      iSplit; [by list_simplifier|].
+      iSplit; [by rewrite length_replicate|done].
+
+    - iDestruct own_slice_zero as "H0".
+      do 2 wp_loadField. wp_load.
+      wp_pures. iApply ("HΦ" $! _ _ Slice.nil).
+      by iFrame "∗#". }
+
+  (* inner node. *)
+  wp_bind (If _ _ #false).
+  wp_apply (wp_wand _ _ _
+    (λ ret,
+    "->" ∷ ⌜ ret = #false ⌝ ∗
+    "Hptr_child0" ∷ ptr_n ↦[node::"child0"]{d1} #ptr_child0 ∗
+    "Hptr_child1" ∷ ptr_n ↦[node::"child1"]{d1} #ptr_child1
+    )%I
+    with "[Hptr_child0 Hptr_child1]"
+  ).
+  { wp_loadField. wp_if_destruct.
+    - wp_loadField. wp_pures. iFrame. iPureIntro.
+      case_bool_decide; naive_solver.
+    - by iFrame. }
+  iIntros "*". iNamed 1. wp_pures.
+  wp_apply (wp_getChild with "[$Hptr_child0 $Hptr_child1 $Hsl_label_find]").
+  iIntros "* H". wp_pures.
+
+  destruct (get_bit _ _) eqn:Heq_bit; iNamed "H".
+  - wp_load.
+    wp_apply ("IH" with "[$Hsl_label $Hown_ctx $Hown_child1]").
+    iIntros "*". iNamedSuffix 1 "1".
+    wp_apply wp_ref_to; [done|]. iIntros "* Hptr_proof".
+    wp_if_destruct.
+    + iNamed "Hproof1".
+      wp_apply (wp_getNodeHash with "[$Hown_child0 $Hown_ctx1]").
+      iIntros "*". iNamedSuffix 1 "0". wp_load.
+      wp_apply (wp_SliceAppendSlice with "[$Hsl_proof1 $Hsl_hash0]"); [done|].
+      iIntros "* [Hsl_proof _]". wp_store. wp_load.
+      iDestruct ("Hclose_child1" with "Hptr2_child1") as "Hptr_child1".
+      wp_pures. iApply "HΦ". iFrame "Hown_ctx0 ∗ Htree_hash".
+      iIntros "!>". iSplit; [done|].
+      iSplit. { simpl. by rewrite Heq_bit. }
+      iExists x, (sibs ++ hash0).
+      iSplit; [by list_simplifier|].
+      iSplit; [done|].
+      iExists _, _. fold tree_sibs_proof.
+      iSplit; [done|].
+      rewrite Heq_bit. naive_solver.
+
+    + wp_load.
+      iDestruct ("Hclose_child1" with "Hptr2_child1") as "Hptr_child1".
+      wp_pures. iApply "HΦ". iFrame "Hown_ctx1 ∗ Htree_hash".
+      iIntros "!>". iSplit; [done|].
+      simpl. by rewrite Heq_bit.
+
+  - wp_load.
+    wp_apply ("IH" with "[$Hsl_label $Hown_ctx $Hown_child0]").
+    iIntros "*". iNamedSuffix 1 "0".
+    wp_apply wp_ref_to; [done|]. iIntros "* Hptr_proof".
+    wp_if_destruct.
+    + iNamed "Hproof0".
+      wp_apply (wp_getNodeHash with "[$Hown_child1 $Hown_ctx0]").
+      iIntros "*". iNamedSuffix 1 "1". wp_load.
+      wp_apply (wp_SliceAppendSlice with "[$Hsl_proof0 $Hsl_hash1]"); [done|].
+      iIntros "* [Hsl_proof _]". wp_store. wp_load.
+      iDestruct ("Hclose_child0" with "Hptr2_child0") as "Hptr_child0".
+      wp_pures. iApply "HΦ". iFrame "Hown_ctx1 ∗ Htree_hash".
+      iIntros "!>". iSplit; [done|].
+      iSplit. { simpl. by rewrite Heq_bit. }
+      iExists x, (sibs ++ hash0).
+      iSplit; [by list_simplifier|].
+      iSplit; [done|].
+      iExists _, _. fold tree_sibs_proof.
+      iSplit; [done|].
+      rewrite Heq_bit. naive_solver.
+
+    + wp_load.
+      iDestruct ("Hclose_child0" with "Hptr2_child0") as "Hptr_child0".
+      wp_pures. iApply "HΦ". iFrame "Hown_ctx0 ∗ Htree_hash".
+      iIntros "!>". iSplit; [done|].
+      simpl. by rewrite Heq_bit.
+Qed.
 
 Lemma wp_put n0 ptr_n (depth : w64) elems sl_label sl_val (label val : list w8) ptr_ctx :
   {{{
