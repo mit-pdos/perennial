@@ -13,9 +13,9 @@ Context `{ext_ty: ext_types}.
 
 Definition emptyNodeTag : expr := #(U8 0).
 
-Definition innerNodeTag : expr := #(U8 1).
+Definition leafNodeTag : expr := #(U8 1).
 
-Definition leafNodeTag : expr := #(U8 2).
+Definition innerNodeTag : expr := #(U8 2).
 
 Definition Tree := struct.decl [
   "ctx" :: ptrT;
@@ -24,8 +24,8 @@ Definition Tree := struct.decl [
 
 (* node contains the union of different node types, which distinguish as:
     1. empty node. if node ptr is nil.
-    2. inner node. if either child0 or child1 not nil. has hash.
-    3. leaf node. else. has hash, full label, and val. *)
+    2. leaf node. if child0 and child1 nil. has hash, label, and val.
+    3. inner node. else. has hash. *)
 Definition node := struct.decl [
   "hash" :: slice.T byteT;
   "child0" :: ptrT;
@@ -40,11 +40,11 @@ Definition context := struct.decl [
 
 Definition compLeafHash: val :=
   rec: "compLeafHash" "label" "val" :=
-    let: "valLen" := slice.len "val" in
     let: "hr" := cryptoffi.NewHasher #() in
     cryptoffi.Hasher__Write "hr" (SliceSingleton leafNodeTag);;
+    cryptoffi.Hasher__Write "hr" (marshal.WriteInt slice.nil (slice.len "label"));;
     cryptoffi.Hasher__Write "hr" "label";;
-    cryptoffi.Hasher__Write "hr" (marshal.WriteInt slice.nil "valLen");;
+    cryptoffi.Hasher__Write "hr" (marshal.WriteInt slice.nil (slice.len "val"));;
     cryptoffi.Hasher__Write "hr" "val";;
     cryptoffi.Hasher__Sum "hr" slice.nil.
 
@@ -53,12 +53,19 @@ Definition setLeafHash: val :=
     struct.storeF node "hash" "n" (compLeafHash (struct.loadF node "label" "n") (struct.loadF node "val" "n"));;
     #().
 
+(* getBit returns false if the nth bit of b is 0.
+   if n exceeds b, it returns false.
+   this is fine as long as the code consistently treats labels as
+   having variable length. *)
 Definition getBit: val :=
   rec: "getBit" "b" "n" :=
     let: "slot" := "n" `quot` #8 in
-    let: "off" := "n" `rem` #8 in
-    let: "x" := SliceGet byteT "b" "slot" in
-    ("x" `and` (#(U8 1) ≪ "off")) ≠ #(U8 0).
+    (if: "slot" < (slice.len "b")
+    then
+      let: "off" := "n" `rem` #8 in
+      let: "x" := SliceGet byteT "b" "slot" in
+      ("x" `and` (#(U8 1) ≪ "off")) ≠ #(U8 0)
+    else #false).
 
 (* getChild returns a child and its sibling child,
    relative to the bit referenced by label and depth. *)
@@ -125,8 +132,9 @@ Definition put: val :=
         setInnerHash "n" "ctx";;
         #())).
 
-(* Put adds (label, val) to the tree and errors if label isn't a hash.
-   it consumes both label and val. *)
+(* Put adds (label, val) to the tree, storing immutable references to both.
+   for liveness (not safety) reasons, it returns an error
+   if the label does not have a fixed length. *)
 Definition Tree__Put: val :=
   rec: "Tree__Put" "t" "label" "val" :=
     (if: (slice.len "label") ≠ cryptoffi.HashLen
@@ -135,84 +143,94 @@ Definition Tree__Put: val :=
       put (struct.fieldRef Tree "root" "t") #0 "label" "val" (struct.loadF Tree "ctx" "t");;
       #false).
 
-Definition Tree__prove: val :=
-  rec: "Tree__prove" "t" "label" "prove" :=
-    (if: (slice.len "label") ≠ cryptoffi.HashLen
-    then (#false, slice.nil, slice.nil, #true)
-    else
-      let: "n" := ref_to ptrT (struct.loadF Tree "root" "t") in
+Definition getProofLen: val :=
+  rec: "getProofLen" "depth" :=
+    (((((#8 + ("depth" * cryptoffi.HashLen)) + #1) + #8) + cryptoffi.HashLen) + #8) + #32.
+
+(* find returns whether label path was found (and if so, the found label and val)
+   and the sibling proof. *)
+Definition find: val :=
+  rec: "find" "label" "getProof" "ctx" "n" "depth" :=
+    (if: "n" = #null
+    then
       let: "proof" := ref (zero_val (slice.T byteT)) in
-      (if: "prove"
-      then
-        let: "valLen" := #32 in
-        "proof" <-[slice.T byteT] (NewSliceWithCap byteT #8 (((((#8 + (#30 * cryptoffi.HashLen)) + #8) + cryptoffi.HashLen) + #8) + "valLen"))
+      (if: "getProof"
+      then "proof" <-[slice.T byteT] (NewSliceWithCap byteT #8 (getProofLen "depth"))
       else #());;
-      let: "depth" := ref (zero_val uint64T) in
-      Skip;;
-      (for: (λ: <>, (![uint64T] "depth") < (cryptoffi.HashLen * #8)); (λ: <>, "depth" <-[uint64T] ((![uint64T] "depth") + #1)) := λ: <>,
-        (if: (![ptrT] "n") = #null
-        then Break
-        else
-          (if: ((struct.loadF node "child0" (![ptrT] "n")) = #null) && ((struct.loadF node "child1" (![ptrT] "n")) = #null)
-          then Break
-          else
-            let: ("child", "sib") := getChild (![ptrT] "n") "label" (![uint64T] "depth") in
-            (if: "prove"
-            then "proof" <-[slice.T byteT] (SliceAppendSlice byteT (![slice.T byteT] "proof") (getNodeHash "sib" (struct.loadF Tree "ctx" "t")))
-            else #());;
-            "n" <-[ptrT] (![ptrT] "child");;
-            Continue)));;
-      (if: "prove"
-      then UInt64Put (![slice.T byteT] "proof") ((slice.len (![slice.T byteT] "proof")) - #8)
-      else #());;
-      (if: (![ptrT] "n") = #null
+      (#false, slice.nil, slice.nil, ![slice.T byteT] "proof")
+    else
+      (if: ((struct.loadF node "child0" "n") = #null) && ((struct.loadF node "child1" "n") = #null)
       then
-        (if: "prove"
+        let: "proof" := ref (zero_val (slice.T byteT)) in
+        (if: "getProof"
+        then "proof" <-[slice.T byteT] (NewSliceWithCap byteT #8 (getProofLen "depth"))
+        else #());;
+        (#true, struct.loadF node "label" "n", struct.loadF node "val" "n", ![slice.T byteT] "proof")
+      else
+        let: ("child", "sib") := getChild "n" "label" "depth" in
+        let: ((("f", "fl"), "fv"), "proof0") := "find" "label" "getProof" "ctx" (![ptrT] "child") ("depth" + #1) in
+        let: "proof" := ref_to (slice.T byteT) "proof0" in
+        (if: "getProof"
+        then "proof" <-[slice.T byteT] (SliceAppendSlice byteT (![slice.T byteT] "proof") (getNodeHash "sib" "ctx"))
+        else #());;
+        ("f", "fl", "fv", ![slice.T byteT] "proof"))).
+
+Definition Tree__prove: val :=
+  rec: "Tree__prove" "t" "label" "getProof" :=
+    let: ((("found", "foundLabel"), "foundVal"), "proof0") := find "label" "getProof" (struct.loadF Tree "ctx" "t") (struct.loadF Tree "root" "t") #0 in
+    let: "proof" := ref_to (slice.T byteT) "proof0" in
+    (if: "getProof"
+    then UInt64Put (![slice.T byteT] "proof") ((slice.len (![slice.T byteT] "proof")) - #8)
+    else #());;
+    (if: (~ "found")
+    then
+      (if: "getProof"
+      then
+        "proof" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "proof") #false);;
+        "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0);;
+        "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0)
+      else #());;
+      (#false, slice.nil, ![slice.T byteT] "proof")
+    else
+      (if: (~ (std.BytesEqual "foundLabel" "label"))
+      then
+        (if: "getProof"
         then
+          "proof" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "proof") #true);;
+          "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") (slice.len "foundLabel"));;
+          "proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") "foundLabel");;
+          "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") (slice.len "foundVal"));;
+          "proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") "foundVal")
+        else #());;
+        (#false, slice.nil, ![slice.T byteT] "proof")
+      else
+        (if: "getProof"
+        then
+          "proof" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "proof") #false);;
           "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0);;
           "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0)
         else #());;
-        (#false, slice.nil, ![slice.T byteT] "proof", #false)
-      else
-        std.Assert (((struct.loadF node "child0" (![ptrT] "n")) = #null) && ((struct.loadF node "child1" (![ptrT] "n")) = #null));;
-        (if: (~ (std.BytesEqual (struct.loadF node "label" (![ptrT] "n")) "label"))
-        then
-          (if: "prove"
-          then
-            "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") (slice.len (struct.loadF node "label" (![ptrT] "n"))));;
-            "proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (struct.loadF node "label" (![ptrT] "n")));;
-            "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") (slice.len (struct.loadF node "val" (![ptrT] "n"))));;
-            "proof" <-[slice.T byteT] (marshal.WriteBytes (![slice.T byteT] "proof") (struct.loadF node "val" (![ptrT] "n")))
-          else #());;
-          (#false, slice.nil, ![slice.T byteT] "proof", #false)
-        else
-          (if: "prove"
-          then
-            "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0);;
-            "proof" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "proof") #0)
-          else #());;
-          (#true, struct.loadF node "val" (![ptrT] "n"), ![slice.T byteT] "proof", #false)))).
+        (#true, "foundVal", ![slice.T byteT] "proof"))).
 
-(* Get returns if label is in the tree and, if so, the val.
-   it errors if label isn't a hash. *)
+(* Get returns if label is in the tree and if so, the val. *)
 Definition Tree__Get: val :=
   rec: "Tree__Get" "t" "label" :=
-    let: ((("inTree", "val"), <>), "err") := Tree__prove "t" "label" #false in
-    ("inTree", "val", "err").
+    let: (("in", "val"), <>) := Tree__prove "t" "label" #false in
+    ("in", "val").
 
-(* Prove returns (1) if label is in the tree and, if so, (2) the val.
-   it gives a (3) cryptographic proof of this.
-   it (4) errors if label isn't a hash. *)
+(* Prove returns if label is in tree (and if so, the val) and
+   a cryptographic proof of this. *)
 Definition Tree__Prove: val :=
   rec: "Tree__Prove" "t" "label" :=
     Tree__prove "t" "label" #true.
 
 (* MerkleProof from serde.go *)
 
-(* Proof has non-nil leaf data for non-membership proofs
+(* MerkleProof has non-nil leaf data for non-membership proofs
    that terminate in a different leaf. *)
 Definition MerkleProof := struct.decl [
   "Siblings" :: slice.T byteT;
+  "FoundOtherLeaf" :: boolT;
   "LeafLabel" :: slice.T byteT;
   "LeafVal" :: slice.T byteT
 ].
@@ -225,7 +243,7 @@ Definition MerkleProofDecode: val :=
     (if: "err1"
     then (slice.nil, slice.nil, #true)
     else
-      let: (("a2", "b2"), "err2") := marshalutil.ReadSlice1D "b1" in
+      let: (("a2", "b2"), "err2") := marshalutil.ReadBool "b1" in
       (if: "err2"
       then (slice.nil, slice.nil, #true)
       else
@@ -233,11 +251,16 @@ Definition MerkleProofDecode: val :=
         (if: "err3"
         then (slice.nil, slice.nil, #true)
         else
-          (struct.new MerkleProof [
-             "Siblings" ::= "a1";
-             "LeafLabel" ::= "a2";
-             "LeafVal" ::= "a3"
-           ], "b3", #false)))).
+          let: (("a4", "b4"), "err4") := marshalutil.ReadSlice1D "b3" in
+          (if: "err4"
+          then (slice.nil, slice.nil, #true)
+          else
+            (struct.new MerkleProof [
+               "Siblings" ::= "a1";
+               "FoundOtherLeaf" ::= "a2";
+               "LeafLabel" ::= "a3";
+               "LeafVal" ::= "a4"
+             ], "b4", #false))))).
 
 (* compEmptyHash from merkle.go *)
 
@@ -245,53 +268,52 @@ Definition compEmptyHash: val :=
   rec: "compEmptyHash" <> :=
     cryptoutil.Hash (SliceSingleton emptyNodeTag).
 
+Definition verifySiblings: val :=
+  rec: "verifySiblings" "label" "lastHash" "siblings" "dig" :=
+    let: "sibsLen" := slice.len "siblings" in
+    (if: ("sibsLen" `rem` cryptoffi.HashLen) ≠ #0
+    then #true
+    else
+      let: "currHash" := ref_to (slice.T byteT) "lastHash" in
+      let: "hashOut" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 cryptoffi.HashLen) in
+      let: "maxDepth" := "sibsLen" `quot` cryptoffi.HashLen in
+      let: "depthInv" := ref (zero_val uint64T) in
+      Skip;;
+      (for: (λ: <>, (![uint64T] "depthInv") < "maxDepth"); (λ: <>, "depthInv" <-[uint64T] ((![uint64T] "depthInv") + #1)) := λ: <>,
+        let: "begin" := (![uint64T] "depthInv") * cryptoffi.HashLen in
+        let: "end" := ((![uint64T] "depthInv") + #1) * cryptoffi.HashLen in
+        let: "sib" := SliceSubslice byteT "siblings" "begin" "end" in
+        let: "depth" := ("maxDepth" - (![uint64T] "depthInv")) - #1 in
+        (if: (~ (getBit "label" "depth"))
+        then "hashOut" <-[slice.T byteT] (compInnerHash (![slice.T byteT] "currHash") "sib" (![slice.T byteT] "hashOut"))
+        else "hashOut" <-[slice.T byteT] (compInnerHash "sib" (![slice.T byteT] "currHash") (![slice.T byteT] "hashOut")));;
+        "currHash" <-[slice.T byteT] (SliceAppendSlice byteT (SliceTake (![slice.T byteT] "currHash") #0) (![slice.T byteT] "hashOut"));;
+        "hashOut" <-[slice.T byteT] (SliceTake (![slice.T byteT] "hashOut") #0);;
+        Continue);;
+      (~ (std.BytesEqual (![slice.T byteT] "currHash") "dig"))).
+
 (* Verify verifies proof against the tree rooted at dig
    and returns an error upon failure.
-   there are two types of inputs.
+   there are two types of inputs:
    if inTree, (label, val) should be in the tree.
    if !inTree, label should not be in the tree. *)
 Definition Verify: val :=
   rec: "Verify" "inTree" "label" "val" "proof" "dig" :=
-    (if: (slice.len "label") ≠ cryptoffi.HashLen
+    let: (("proofDec", <>), "err0") := MerkleProofDecode "proof" in
+    (if: "err0"
     then #true
     else
-      let: (("proofDec", <>), "err0") := MerkleProofDecode "proof" in
-      (if: "err0"
+      (if: (struct.loadF MerkleProof "FoundOtherLeaf" "proofDec") && (std.BytesEqual "label" (struct.loadF MerkleProof "LeafLabel" "proofDec"))
       then #true
       else
-        let: "sibsLen" := slice.len (struct.loadF MerkleProof "Siblings" "proofDec") in
-        (if: ("sibsLen" `rem` cryptoffi.HashLen) ≠ #0
-        then #true
+        let: "lastHash" := ref (zero_val (slice.T byteT)) in
+        (if: "inTree"
+        then "lastHash" <-[slice.T byteT] (compLeafHash "label" "val")
         else
-          let: "maxDepth" := "sibsLen" `quot` cryptoffi.HashLen in
-          (if: "maxDepth" > (cryptoffi.HashLen * #8)
-          then #true
-          else
-            (if: std.BytesEqual "label" (struct.loadF MerkleProof "LeafLabel" "proofDec")
-            then #true
-            else
-              let: "currHash" := ref (zero_val (slice.T byteT)) in
-              (if: "inTree"
-              then "currHash" <-[slice.T byteT] (compLeafHash "label" "val")
-              else
-                (if: (slice.len (struct.loadF MerkleProof "LeafLabel" "proofDec")) = cryptoffi.HashLen
-                then "currHash" <-[slice.T byteT] (compLeafHash (struct.loadF MerkleProof "LeafLabel" "proofDec") (struct.loadF MerkleProof "LeafVal" "proofDec"))
-                else "currHash" <-[slice.T byteT] (compEmptyHash #())));;
-              let: "hashOut" := ref_to (slice.T byteT) (NewSliceWithCap byteT #0 cryptoffi.HashLen) in
-              let: "depth" := ref_to uint64T "maxDepth" in
-              Skip;;
-              (for: (λ: <>, (![uint64T] "depth") ≥ #1); (λ: <>, Skip) := λ: <>,
-                let: "begin" := ((![uint64T] "depth") - #1) * cryptoffi.HashLen in
-                let: "end" := (![uint64T] "depth") * cryptoffi.HashLen in
-                let: "sib" := SliceSubslice byteT (struct.loadF MerkleProof "Siblings" "proofDec") "begin" "end" in
-                (if: (~ (getBit "label" ((![uint64T] "depth") - #1)))
-                then "hashOut" <-[slice.T byteT] (compInnerHash (![slice.T byteT] "currHash") "sib" (![slice.T byteT] "hashOut"))
-                else "hashOut" <-[slice.T byteT] (compInnerHash "sib" (![slice.T byteT] "currHash") (![slice.T byteT] "hashOut")));;
-                "currHash" <-[slice.T byteT] (SliceAppendSlice byteT (SliceTake (![slice.T byteT] "currHash") #0) (![slice.T byteT] "hashOut"));;
-                "hashOut" <-[slice.T byteT] (SliceTake (![slice.T byteT] "hashOut") #0);;
-                "depth" <-[uint64T] ((![uint64T] "depth") - #1);;
-                Continue);;
-              (~ (std.BytesEqual (![slice.T byteT] "currHash") "dig"))))))).
+          (if: struct.loadF MerkleProof "FoundOtherLeaf" "proofDec"
+          then "lastHash" <-[slice.T byteT] (compLeafHash (struct.loadF MerkleProof "LeafLabel" "proofDec") (struct.loadF MerkleProof "LeafVal" "proofDec"))
+          else "lastHash" <-[slice.T byteT] (compEmptyHash #())));;
+        verifySiblings "label" (![slice.T byteT] "lastHash") (struct.loadF MerkleProof "Siblings" "proofDec") "dig")).
 
 Definition Tree__Digest: val :=
   rec: "Tree__Digest" "t" :=
@@ -317,6 +339,7 @@ Definition MerkleProofEncode: val :=
   rec: "MerkleProofEncode" "b0" "o" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MerkleProof "Siblings" "o"));;
+    "b" <-[slice.T byteT] (marshal.WriteBool (![slice.T byteT] "b") (struct.loadF MerkleProof "FoundOtherLeaf" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MerkleProof "LeafLabel" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MerkleProof "LeafVal" "o"));;
     ![slice.T byteT] "b".

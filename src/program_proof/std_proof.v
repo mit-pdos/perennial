@@ -163,7 +163,7 @@ Proof.
     iApply "HΦ".
     inversion Heqb0.
     apply (f_equal uint.Z) in H1.
-    iPoseProof (slice.own_slice_small_nil _ (DfracOwn 1)) as "Hsl_b'"; [done|].
+    iDestruct (own_slice_small_nil _ (DfracOwn 1)) as "Hsl_b'"; [done|].
     iDestruct (own_slice_small_agree with "[$Hsl_b] [$Hsl_b']") as %Heq.
     destruct b; [|done].
     iApply own_slice_to_small.

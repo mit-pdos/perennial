@@ -154,26 +154,19 @@ Proof.
   replace (Z.to_nat (sint.Z (W32 2))) with (2%nat) by done.
   iEval (simpl) in "H".
   iDestruct "H" as "[Hwg_done1 Hwg_done2]".
-  wp_bind (Fork _).
-  iApply (wp_fork with "[Hwg_done1 session_monitor]").
+  wp_apply (wp_fork with "[Hwg_done1 session_monitor]").
   {
-    iNext. wp_auto.
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
     (* TODO: wp_monitorSession. *)
     admit.
   }
-  iNext. wp_auto.
-  wp_bind (Fork _).
-  iApply (wp_fork with "[Hwg_done2]").
+  wp_apply (wp_fork with "[Hwg_done2]").
   {
-    iNext. wp_auto.
     (* TODO: wp_clearOldRevokes. *)
     admit.
   }
-  iNext.
-  wp_auto.
   (* TODO: wp_waitSession. *)
   admit.
 Admitted.

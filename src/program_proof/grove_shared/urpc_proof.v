@@ -664,12 +664,11 @@ Proof.
   }
   iMod (inv_alloc urpc_clientN _ (reply_chan_inner Γ client) with "[Hr]") as "#Hchan_inv".
   { iNext. iExists ∅. iFrame. rewrite big_sepS_empty //. }
-  wp_bind (Fork _).
-  iApply wp_fork.
-  { iNext. wp_pures. iApply wp_Client__replyThread. repeat iExists _.
+  wp_apply wp_fork.
+  { iApply wp_Client__replyThread. repeat iExists _.
     iSplit. 1:iFrame "mu conn pending".
     iSplit; done. }
-  iNext. wp_pures. iModIntro. iApply "HΦ".
+  wp_pures. iModIntro. iApply "HΦ".
   iExists _, _, _, _. iSplit; first by iFrame "#". iSplit; done.
 Qed.
 

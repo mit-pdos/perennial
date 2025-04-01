@@ -2,7 +2,7 @@ From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
 From iris.algebra Require Import dfrac.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Export list mem exception loop typing auto.
+From New.golang.theory Require Export list mem exception loop typing primitive auto.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
@@ -266,11 +266,8 @@ Proof.
     [apply bool_decide_eq_true_1 in Hlt2|apply bool_decide_eq_false_1 in Hlt2];
     wp_pures.
   {
-    wp_bind ArbitraryInt.
-    iApply (wp_ArbitraryInt with "[//]"). iNext.
-    iIntros (?) "_".
-    replace (LitV x) with (#x).
-    2:{ rewrite to_val_unseal //. }
+    wp_apply (wp_ArbitraryInt).
+    iIntros (?).
     wp_pures.
     rewrite slice_val_fold.
     iApply "HΦ".
@@ -604,12 +601,8 @@ Proof.
       destruct (bool_decide_reflect P); wp_auto
   end.
   - admit. (* TODO: slice.slice reasoning, going into capacity *)
-  - wp_bind (ArbitraryInt).
-    iApply (wp_ArbitraryInt with "[//]").
-    iIntros "!>" (x) "_". wp_auto.
-    replace (LitV x) with (#x).
-    2:{ rewrite to_val_unseal //. }
-    wp_auto.
+  - wp_apply (wp_ArbitraryInt).
+    iIntros (x). wp_auto.
     wp_apply wp_slice_make2. iIntros (s') "[Hs_new Hnew_cap]".
     wp_auto.
     admit. (* TODO: need wp for slice.copy *)

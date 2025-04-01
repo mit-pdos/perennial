@@ -105,7 +105,7 @@ Section definitions.
 
   Definition na_heap_pointsto_st (st : lock_state)
              (l : L) (dq : dfrac) (v: V) : iProp Σ :=
-    own (na_heap_name hG) (@gmap_view_frag L _ _ (na_heap_cmra V) l dq (to_lock_stateR st, to_agree v)).
+    own (na_heap_name hG) (@gmap_view_frag _ L _ _ (na_heap_cmra V) l dq (to_lock_stateR st, to_agree v)).
 
   Definition na_heap_pointsto_def (l : L) (dq : dfrac) (v: V) : iProp Σ :=
     na_heap_pointsto_st (RSt 0) l dq v.
@@ -141,7 +141,7 @@ Section definitions.
 
   Definition na_heap_ctx (σ:gmap L (LK * V)) : iProp Σ := (∃ (m : gmap L (agreeR gnameO)) (sz: gmap Z Z),
     ⌜ dom m ⊆ dom σ ⌝ ∧
-     own (na_heap_name hG) (@gmap_view_auth _ _ _ (na_heap_cmra V) (DfracOwn 1) (to_na_heap tls σ)) ∗
+     own (na_heap_name hG) (@gmap_view_auth _ _ _ _ (na_heap_cmra V) (DfracOwn 1) (to_na_heap tls σ)) ∗
      own (na_meta_name hG) (gmap_view_auth (DfracOwn 1) m) ∗
      own (na_size_name hG) (● to_na_size sz) ∗
      ⌜ block_sizes_wf σ sz ⌝ )%I.
@@ -667,7 +667,7 @@ Section na_heap.
 
   Lemma na_heap_pointsto_lookup tls σ l lk (q: dfrac) v :
     own (na_heap_name hG) (gmap_view_auth (DfracOwn 1) (to_na_heap tls σ)) -∗
-    own (na_heap_name hG) (@gmap_view_frag L _ _ (na_heap_cmra V) l q (to_lock_stateR lk, to_agree v)) -∗
+    own (na_heap_name hG) (@gmap_view_frag _ L _ _ (na_heap_cmra V) l q (to_lock_stateR lk, to_agree v)) -∗
     ⌜∃ ls' (n' : nat),
                 σ !! l = Some (ls', v) ∧
                 tls ls' = match lk with
@@ -707,7 +707,7 @@ Section na_heap.
 
   Lemma na_heap_pointsto_lookup_1 tls σ l lk v :
     own (na_heap_name hG) (gmap_view_auth (DfracOwn 1) (to_na_heap tls σ)) -∗
-    own (na_heap_name hG) (@gmap_view_frag L _ _ (na_heap_cmra V) l (DfracOwn 1) (to_lock_stateR lk, to_agree v)) -∗
+    own (na_heap_name hG) (@gmap_view_frag _ L _ _ (na_heap_cmra V) l (DfracOwn 1) (to_lock_stateR lk, to_agree v)) -∗
     ⌜∃ ls', σ !! l = Some (ls', v) ∧ tls ls' = lk⌝.
   Proof.
     iIntros "H● H◯".
