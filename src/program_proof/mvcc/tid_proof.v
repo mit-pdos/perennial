@@ -180,6 +180,8 @@ Proof.
   - iApply "HAU". done.
 Qed.
 
+Local Hint Unfold u64_round_up : word.
+
 (**
  * [uint.nat tid = ts] means no overflow, which we would have to assume.
  * It takes around 120 years for TSC to overflow on a 4-GHz CPU.
@@ -222,26 +224,12 @@ Proof.
   iMod "Hclose2" as "_".
   set inbounds := bool_decide (uint.Z clock2 + 32 < 2^64).
   set clock2_boundsafe := if inbounds then clock2 else 0.
-  opose proof (u64_round_up_spec clock2_boundsafe (W64 32) _ _) as H.
-  { subst clock2_boundsafe inbounds. case_bool_decide; word. }
-  { word. }
-  move:H.
   set rounded_ts := u64_round_up clock2_boundsafe (W64 32).
-  intros (Hmod & Hbound1 & Hbound2).
   set reserved_ts := word.add rounded_ts sid.
   assert ((uint.Z rounded_ts + uint.Z sid) `mod` 32 = uint.Z sid) as Hsidmod.
-  { rewrite Z.add_mod. 2:lia.
-    rewrite Hmod. rewrite [uint.Z sid `mod` _]Z.mod_small. 2:split;[word|done].
-    rewrite Z.mod_small. 1:lia. split;[word|done]. }
+  { subst rounded_ts reserved_ts. word. }
   assert (uint.Z (sid_of reserved_ts) = uint.Z sid) as Hsid_of.
-  { rewrite /sid_of /reserved_ts.
-    rewrite word.unsigned_modu. 2:done.
-    rewrite word.unsigned_add. rewrite (wrap_small (_+_)). 2:word.
-    rewrite wrap_small. 1:done.
-    split.
-    - apply Z_mod_nonneg_nonneg. all:try word. all:done.
-    - trans (uint.Z N_TXN_SITES). 2:done. apply Z.mod_pos_bound. done.
-  }
+  { rewrite /sid_of /reserved_ts. word. }
   iMod ("Hcont" $! reserved_ts with "[]") as "[Hreserved Hgentid]".
   { iPureIntro. rewrite /sid_of /reserved_ts. apply word.unsigned_inj. done. }
   iMod ("Hclose" with "[Hgentid]") as "_".
@@ -260,9 +248,8 @@ Proof.
   assert (inbounds = true) as ->.
   { subst inbounds. rewrite bool_decide_true; first done. word. }
   subst clock2_boundsafe.
-  rewrite u64_Z_through_nat in Hclock.
   rewrite bool_decide_true.
-  2:{ subst reserved_ts. word. }
+  2:{ subst reserved_ts rounded_ts. word. }
   iDestruct "Hreserved" as (γr) "Hreserved".
 
   set tid := (word.add _ _).

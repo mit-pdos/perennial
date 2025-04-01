@@ -67,7 +67,8 @@ Proof using ghost_mapG0.
     rewrite dom_gset_to_gmap.
     rewrite size_list_to_set.
     2:{ apply NoDup_seq. }
-    rewrite length_seq. word.
+    rewrite length_seq.
+    subst n. word.
   }
   iModIntro.
   rewrite <- (seq_replicate_fmap 0).
@@ -92,28 +93,16 @@ Proof using ghost_mapG0.
   iSplitR.
   { word. }
   iSplitR.
-  { iLeft. iPureIntro. intros Hbad. subst.
-    (* FIXME: word. *)
-    replace (sint.Z (W32 0)) with 0 in g by done. done. }
+  { iLeft. word. }
   iIntros "_ Hctr". iMod "Hmask" as "_".
   iMod (ghost_map_delete with "[$] [$]") as "Hm".
   iMod ("Hclose" with "[-]").
   {
     iFrame. iPureIntro.
-    split.
-    { rewrite dom_delete.
-      rewrite size_difference.
-      2:{ rewrite singleton_subseteq_l elem_of_dom //. }
-      rewrite size_singleton.
-      rewrite Hm.
-      (* FIXME: word. *)
-      rewrite -(Z2Nat.inj_sub _ 1) //.
-      f_equal.
-      rewrite word.signed_sub.
-      replace (sint.Z (W32 1)) with 1 by done.
-      unfold word.swrap. word.
-    }
-    { word. }
+    rewrite dom_delete.
+    rewrite size_difference.
+    2:{ rewrite singleton_subseteq_l elem_of_dom //. }
+    rewrite size_singleton. word.
   }
   done.
 Qed.
@@ -135,7 +124,7 @@ Proof.
   wp_apply (wp_WithCancel with "[$]").
   iIntros "* #(Hctx' & Hcancel_spec & Hctx_done)".
   wp_auto.
-  unshelve wp_apply wp_map_make as "%revokes Hrevokes"; try tc_solve.
+  unshelve wp_apply wp_map_make as "%revokes Hrevokes"; try tc_solve; try tc_solve.
   { done. }
   unshelve wp_apply wp_chan_make as "* ?"; try tc_solve.
   wp_alloc lkv as "Hlkv".
@@ -150,12 +139,12 @@ Proof.
   iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
   iFrame "Hwg_ctr Hwg_wait".
   iSplitR.
-  { iPureIntro. admit. (* FIXME: word. *) }
+  { word. }
   iIntros "[%Hbad|Hwg_wait] Hwg_ctr".
   { by exfalso. }
   iMod "Hmask" as "_". iModIntro.
   wp_auto.
-  replace (word.add _ (W32 (uint.Z (W64 2)))) with (W32 2) by word. (* FIXME: word_simplify? *)
+  replace (word.add _ (W32 (uint.Z (W64 2)))) with (W32 2) by word.
 
   (* monitorSession is the only thread that modifies `lkv.session`. *)
   iDestruct "Hsession" as "[session session_monitor]".

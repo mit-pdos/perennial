@@ -189,7 +189,7 @@ Proof.
     1: {
       rewrite length_take.
       rewrite length_vec_to_list.
-      revert fin. word_cleanup.
+      revert fin. word.
     }
     rewrite -> Hoff at 1.
     rewrite insert_app_r.

@@ -339,7 +339,7 @@ Proof.
     }
     iIntros "wr".
     subst key.
-    word_cleanup.
+    nat_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (uint.Z pos)).
     set ent' := (ent.1.1.1, val, true, ent.2).
     iDestruct (struct_fields_split entR (DfracOwn 1) WrEnt (wrent_to_val ent')
@@ -488,7 +488,7 @@ Proof.
     }
     iIntros "wr".
     subst key.
-    word_cleanup.
+    nat_cleanup.
     set entR := (entsS.(Slice.ptr) +ₗ[_] (uint.Z pos)).
     set ent' := (ent.1.1.1, ent.1.1.2, false, ent.2).
     iDestruct (struct_fields_split entR (DfracOwn 1) WrEnt (wrent_to_val ent')

@@ -509,6 +509,10 @@ Lemma slice_split s (n: u64) t q vs :
            own_slice (slice_skip s t n) t q (drop (uint.nat n) vs).
  *)
 
+(* Handle nonlinearity. *)
+Local Ltac simplify_nonlinear :=
+  rewrite -?Z.mul_add_distr_l ?Zred_factor3.
+
 Theorem own_slice_take_cap s t vs n :
   uint.Z n <= length vs ->
   own_slice s t (DfracOwn 1) vs -∗
@@ -520,18 +524,20 @@ Proof.
   iIntros "[[Hsmall %] Hcap]".
   iDestruct "Hcap" as (extra) "[% Hcap]".
   iDestruct (array_split (uint.nat n) with "Hsmall") as "[Hsmall0 Hsmall1]"; try lia.
-  word_cleanup.
+  nat_cleanup.
   iSplitL "Hsmall0".
-  - iFrame. iPureIntro. split; word.
+  - iFrame. word.
   - iExists _. iSplitR.
     2: {
-      iApply array_app. iFrame "Hsmall1".
+      iApply array_app.
+      iFrame "Hsmall1".
       replace (uint.Z (Slice.sz s)) with (uint.Z n + length (drop (uint.nat n) vs)).
-      2: { rewrite length_drop. lia. }
-      rewrite Z.mul_add_distr_l -loc_add_assoc //.
+      2: { rewrite length_drop. word. }
+      rewrite loc_add_assoc. simplify_nonlinear.
+      iFrame.
     }
     iPureIntro.
-    rewrite length_app length_drop. lia.
+    rewrite length_app length_drop. word.
 Qed.
 
 Lemma slice_small_split s (n: u64) t q vs :
@@ -570,6 +576,8 @@ Proof.
     iDestruct "Hs2" as "[Ha2 %Hlen2]".
     rewrite length_drop /= in Hlen1.
     rewrite length_take /= in Hlen2.
+    Import Ltac2.
+    Set Default Proof Mode "Classic".
     iDestruct (array_split with "[$Ha1 $Ha2]") as "Ha"; try word.
     iFrame.
     iPureIntro.
@@ -650,6 +658,8 @@ Proof.
   f_equal; try word.
   rewrite !loc_add_assoc.
   f_equal.
+  simplify_nonlinear.
+  f_equal.
   word.
 Qed.
 
@@ -666,7 +676,7 @@ Proof.
     word. }
   iExactEq "Hextra".
   rewrite loc_add_assoc.
-  rewrite -Z.mul_add_distr_l.
+  simplify_nonlinear.
   repeat (f_equal; try word).
 Qed.
 
@@ -781,7 +791,7 @@ Proof.
   rewrite loc_add_assoc.
   f_equal.
   f_equal.
-  rewrite -Z.mul_add_distr_l.
+  simplify_nonlinear.
   f_equal.
   word.
 Qed.
@@ -819,7 +829,7 @@ Proof.
       rewrite loc_add_assoc. f_equal.
       rewrite length_take /slice_take /=.
       rewrite ->Nat.min_l by word.
-      rewrite -Z.mul_add_distr_l. f_equal. word.
+      simplify_nonlinear. f_equal. word.
     + iPureIntro. rewrite length_drop /slice_take /=. word.
 Qed.
 
@@ -933,7 +943,7 @@ Proof.
   repeat wp_rec. wp_pures.
   iDestruct (array_elem_acc H with "Hsl") as "[Hi Hsl']".
   pose proof (word.unsigned_range i).
-  word_cleanup.
+  nat_cleanup.
   iDestruct (struct_pointsto_ty with "Hi") as %Hty.
   wp_load.
   iSpecialize ("Hsl'" with "Hi").
@@ -1132,16 +1142,6 @@ Proof.
   rewrite -Hlen skipn_all firstn_all /=.
   iIntros "[(Hq & _ & Hi) Hs]".
   iApply "HΦ"; iFrame.
-Qed.
-
-Lemma u64_nat_0 (n: u64) : 0%nat = uint.nat n -> n = W64 0.
-Proof.
-  intros.
-  apply (f_equal Z.of_nat) in H.
-  rewrite u64_Z_through_nat in H.
-  apply word.unsigned_inj.
-  rewrite <- H.
-  reflexivity.
 Qed.
 
 Lemma wp_MemCpy_rec s E t q dst vs1 src vs2 (n: u64) :
@@ -1378,7 +1378,7 @@ Proof.
     wp_rec. wp_pures.
     wp_pures.
     rewrite loc_add_assoc.
-    rewrite -Z.mul_add_distr_l.
+    simplify_nonlinear.
     replace (uint.Z n + uint.Z (word.sub (Slice.sz s) n))
       with (uint.Z (Slice.sz s)) by word.
     wp_apply (wp_StoreAt with "Hnew"); [ auto | iIntros "Hnew" ].
@@ -1389,7 +1389,7 @@ Proof.
     { rewrite array_singleton.
       rewrite Hlen.
       rewrite loc_add_assoc.
-      rewrite -Z.mul_add_distr_l.
+      simplify_nonlinear.
       replace (uint.Z n + uint.nat (word.sub (Slice.sz s) n))
         with (uint.Z (Slice.sz s)) by word.
       iExactEq "Hnew"; f_equal.
@@ -1411,8 +1411,11 @@ Proof.
       revert Hextralen. word.
     }
     rewrite ?loc_add_assoc. iModIntro.
-    iExactEq "Hfree". repeat (f_equal; try word).
-
+    iExactEq "Hfree".
+    f_equal.
+    f_equal.
+    simplify_nonlinear.
+    f_equal. word.
   - wp_apply wp_make_cap.
     iIntros (cap Hcapgt).
     rewrite word.unsigned_add in Hcapgt.
@@ -1483,7 +1486,7 @@ Proof.
         replace (uint.Z n) with (uint.nat n : Z) by word.
         replace (uint.nat n) with (length vs1) by done.
         rewrite Hlen Hlen'.
-        rewrite /slice_take /slice_skip /=. word.
+        rewrite /slice_take /slice_skip /=. simplify_nonlinear. f_equal. word.
       * iPureIntro.
         rewrite length_app /=.
         rewrite Hlen /slice_skip /=.
@@ -1504,10 +1507,7 @@ Proof.
     replace (uint.nat n) with (length vs1) by done.
     rewrite Hlen'.
     rewrite /slice_take /=.
-    word_cleanup.
-    replace (ty_size t * uint.Z n + ty_size t * (uint.Z (Slice.sz s) + 1 - uint.Z n))
-       with (ty_size t * ( uint.Z n + ( (uint.Z (Slice.sz s) + 1 - uint.Z n) ) ) ) by lia.
-    word_eq.
+    simplify_nonlinear. f_equal. word.
 Qed.
 
 Lemma wp_SliceAppend' stk E s t vs x :
@@ -1526,8 +1526,10 @@ Proof.
     replace (word.sub (Slice.sz s) 0) with (Slice.sz s) by word.
     replace (word.sub (Slice.cap s) 0) with (Slice.cap s) by word.
     iSplitR "Hs".
-    2: { iExactEq "Hs". f_equal. destruct s; simpl; f_equal. replace (ty_size t * uint.Z 0) with 0 by word.
-      rewrite loc_add_0. done. }
+    2: { iExactEq "Hs". f_equal.
+         destruct s; simpl; f_equal.
+         replace (uint.Z 0) with 0 by word.
+         rewrite Z.mul_0_r loc_add_0. done. }
     rewrite /own_slice_small /=.
     rewrite array_nil. word.
   }
@@ -1539,8 +1541,8 @@ Proof.
   replace (word.sub (Slice.cap s') 0) with (Slice.cap s') by word.
   iApply "HΦ".
   iExactEq "Hs". f_equal. destruct s'; simpl; f_equal.
-  replace (ty_size t * uint.Z 0) with 0 by word.
-  rewrite loc_add_0. done.
+  replace (uint.Z 0) with 0 by word.
+  rewrite Z.mul_0_r loc_add_0. done.
 Qed.
 
 Lemma wp_SliceAppend stk E s t vs x :

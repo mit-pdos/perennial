@@ -134,8 +134,7 @@ Proof.
     iExactEq "Hret".
     repeat f_equal.
     apply bool_decide_ext.
-    word_cleanup.
-    replace (Z.to_nat (uint.Z i + 1)) with (S (uint.nat i)) by word.
+    replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
     erewrite take_S_r by eauto.
     erewrite take_S_r by eauto.
     split; [ congruence | ].

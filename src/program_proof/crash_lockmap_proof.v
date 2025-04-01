@@ -564,6 +564,9 @@ Definition NSHARD_eq : @NSHARD = @NSHARD_def := NSHARD_aux.(seal_eq).
 
 Ltac unseal_nshard := rewrite NSHARD_eq /NSHARD_def.
 
+Lemma NSHARD_pos : (0 < uint.Z NSHARD)%Z.
+Proof. unseal_nshard. word. Qed.
+
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Definition covered_by_shard (shardnum : Z) (covered: gset u64) : gset u64 :=
@@ -656,11 +659,7 @@ Proof.
       apply elem_of_singleton.
       revert Heq.
       unseal_nshard.
-      word_cleanup.
-
-      intros.
-      apply int_Z_inj; first by apply _.
-      word.
+      intros. word.
 Qed.
 
 Lemma covered_by_shard_join (P : u64 -> iProp Σ) covered :
@@ -706,11 +705,7 @@ Proof.
     apply elem_of_singleton.
     revert Heq.
     unseal_nshard.
-    word_cleanup.
-
-    intros.
-    apply int_Z_inj; first by apply _.
-    word.
+    intros. word.
 Qed.
 
 Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P Pc: u64 -> iProp Σ) : iProp Σ :=
@@ -951,7 +946,7 @@ Proof.
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
 
   iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
-
+  pose proof NSHARD_pos as Hnshard_pos.
   list_elem shards (uint.nat (word.modu addr NSHARD)) as shard.
   { revert Hlen. unseal_nshard. word. }
   list_elem ghs (uint.nat (word.modu addr NSHARD)) as gh.
@@ -990,6 +985,7 @@ Proof.
 
   iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
 
+  pose proof NSHARD_pos as Hnshard_pos.
   list_elem shards (uint.nat (word.modu addr NSHARD)) as shard.
   { revert Hlen. unseal_nshard. word. }
 

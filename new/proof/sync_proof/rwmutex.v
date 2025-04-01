@@ -1,8 +1,11 @@
 From iris.proofmode Require Import environments.
 From New.proof.sync_proof Require Import base mutex sema.
 
-Import syncword.
 Section proof.
+
+Local Tactic Notation "word" :=
+  unfold sync.rwmutexMaxReaders in *; word.
+
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 Context `{!syncG Σ}.
@@ -78,10 +81,6 @@ Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count re
 
 #[global] Instance own_RWMutex_invariant_timeless a b c d e f : Timeless (own_RWMutex_invariant a b c d e f) := _.
 
-Local Ltac rwauto :=
-  solve [repeat first [eexists || intuition || subst || done || split ||
-                               simplify_eq || destruct decide || unfold sync.rwmutexMaxReaders in * || word ]].
-
 Lemma step_RLock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait state :
   own_toks γ.(rlock_overflow_gn) 1 ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
@@ -96,14 +95,14 @@ Proof.
   iCombine "Hrlock Hrlocks" as "Hrlocks".
   iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
   destruct state, wl; iNamed "Hinv"; try done.
-  { destruct decide; last (exfalso; rwauto).
+  { destruct decide; last (exfalso; word).
     iExists _; iSplitR; first done. iFrame. iFrame. iExists (word.add pos_reader_count (W32 1)).
-    iSplitL "Hrlocks". { iApply to_named. iExactEq "Hrlocks". f_equal. rwauto. }
-    iPureIntro. rwauto. }
-  all: destruct decide; [exfalso; rwauto| ];
+    iSplitL "Hrlocks". { iApply to_named. iExactEq "Hrlocks". f_equal. word. }
+    word. }
+  all: destruct decide; [exfalso; word | ];
     iFrame; iFrame; iExists (word.add pos_reader_count (W32 1));
-    iSplitL "Hrlocks"; [iApply to_named; iExactEq "Hrlocks"; f_equal; rwauto| ];
-    iPureIntro; rwauto.
+    iSplitL "Hrlocks"; [iApply to_named; iExactEq "Hrlocks"; f_equal; word| ];
+    iPureIntro; word.
 Qed.
 
 Lemma step_RLock_readerSem_Semacquire γ writer_sem reader_sem reader_count reader_wait state :
@@ -114,8 +113,8 @@ Lemma step_RLock_readerSem_Semacquire γ writer_sem reader_sem reader_count read
     "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem (word.sub reader_sem (W32 1)) reader_count reader_wait (RLocked (S num_readers)).
 Proof.
   iIntros "%Hsem_acq Hinv". iNamed "Hinv". destruct state, wl; iNamed "Hinv"; try done.
-  1-3: try (iExists _; iSplitR; first done); iFrame; iFrame; iPureIntro; rwauto.
-  { rwauto. }
+  1-3: try (iExists _; iSplitR; first done); iFrame; iFrame; iPureIntro; word.
+  { word. }
 Qed.
 
 Lemma step_TryRLock_readerCount_CompareAndSwap γ writer_sem reader_sem reader_count reader_wait state :
@@ -131,11 +130,11 @@ Proof.
   iCombine "Hrlock Hrlocks" as "Hrlocks".
   iCombine "Hrlock_overflow Hrlocks" gives %Hoverflow.
   destruct state, wl; iNamed "Hinv"; try done.
-  2-4: exfalso; rwauto.
+  2-4: exfalso; word.
   iFrame. iFrame. iExists _; iSplitR; first done.
   iExists (word.add pos_reader_count (W32 1)). iFrame.
-  iSplitL "Hrlocks". { iApply to_named. iExactEq "Hrlocks". f_equal. rwauto. }
-  iPureIntro. rwauto.
+  iSplitL "Hrlocks". { iApply to_named. iExactEq "Hrlocks". f_equal. word. }
+  iPureIntro. word.
 Qed.
 
 Lemma step_RUnlock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait num_readers :
@@ -152,15 +151,15 @@ Proof.
   replace (Z.to_nat (1 + _))%nat with (1 + Z.to_nat (1 + sint.Z (word.sub pos_reader_count (W32 1))))%nat by word.
   iDestruct (own_toks_plus with "Hrlocks") as "[Hr Hrlocks]".
   destruct wl; iNamed "Hinv"; try done.
-  - destruct decide. { exfalso. rwauto. } iFrame. iFrame. iPureIntro. rwauto.
+  - destruct decide. { exfalso. word. } iFrame. iFrame. iPureIntro. word.
   - destruct decide.
     * iMod (own_tok_auth_plus 1 with "Houtstanding") as "[Houtstanding $]".
-      iFrame. iFrame. iPureIntro. rwauto.
-    * exfalso. rwauto.
+      iFrame. iFrame. iPureIntro. word.
+    * exfalso. word.
   - destruct decide.
     * iMod (own_tok_auth_plus 1 with "Houtstanding") as "[Houtstanding $]".
-      iFrame. iFrame. iPureIntro. rwauto.
-    * exfalso. rwauto.
+      iFrame. iFrame. iPureIntro. word.
+    * exfalso. word.
 Qed.
 
 Lemma step_rUnlockSlow_readerWait_Add γ writer_sem reader_sem reader_count reader_wait state :
@@ -174,25 +173,25 @@ Proof.
   iIntros "[Hwait_tok Hinv]". iNamed "Hinv".
   iCombine "Houtstanding Hwait_tok" gives %Hle.
   destruct state, wl; iNamed "Hinv"; try done.
-  - rwauto.
-  - destruct outstanding_reader_wait; first rwauto.
+  - word.
+  - destruct outstanding_reader_wait; first word.
     iMod (own_tok_auth_delete_S with "Houtstanding [$]") as "Houtstanding".
     iFrame.
     destruct decide.
-    * exfalso. rwauto.
-    * iFrame. iPureIntro. rwauto.
-  - destruct outstanding_reader_wait; first rwauto.
+    * exfalso. word.
+    * iFrame. iPureIntro. word.
+  - destruct outstanding_reader_wait; first word.
     iMod (own_tok_auth_delete_S with "Houtstanding [$]") as "Houtstanding".
     iModIntro. iFrame.
     iDestruct "Hwriter" as "[[Hwriter Hwriter2]|[_ %Hbad]]".
-    2:{ exfalso. rwauto. }
+    2:{ exfalso. word. }
     destruct decide.
     * iSplitR "Hwriter2"; last by iFrame.
-      repeat (iSplitR; first by iPureIntro; rwauto).
-      iSplitL. { iRight. iFrame. iPureIntro. rwauto. }
-      iPureIntro. rwauto.
-    * iFrame. iPureIntro. rwauto.
-  - rwauto.
+      repeat (iSplitR; first by iPureIntro; word).
+      iSplitL. { iRight. iFrame. iPureIntro. word. }
+      iPureIntro. word.
+    * iFrame. iPureIntro. word.
+  - word.
 Qed.
 
 Lemma step_rUnlockSlow_writerSem_Semrelease γ writer_sem reader_sem reader_count reader_wait state :
@@ -208,8 +207,8 @@ Proof.
   iCombine "Hwriter Hwriter_tok" as "Hwriter".
   iFrame. iFrame. iPureIntro.
   intuition; subst.
-  { right. rwauto. }
-  { right. rwauto. }
+  { right. word. }
+  { right. word. }
 Qed.
 
 Lemma step_Lock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait state :
@@ -233,12 +232,12 @@ Proof.
   - iMod (ghost_var_update_2 IsLocked with "Hwl Hwl_in") as "[Hwl Hwl_in]".
     { apply Qp.half_half. }
     destruct num_readers.
-    2:{ exfalso. rwauto. }
+    2:{ exfalso. word. }
     iModIntro. iSplitR; first done.
-    iFrame. iPureIntro. rwauto.
+    iFrame. iPureIntro. word.
   - iMod (ghost_var_update_2 (SignalingReaders _) with "Hwl Hwl_in") as "[Hwl Hwl_in]".
     { apply Qp.half_half. }
-    iFrame. iPureIntro. rwauto.
+    iFrame. iPureIntro. simplify_eq. word.
 Qed.
 
 Lemma step_Lock_readerWait_Add γ r writer_sem reader_sem reader_count reader_wait state :
@@ -258,10 +257,12 @@ Proof.
   destruct decide.
   - iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
     { apply Qp.half_half. }
-    iFrame. iPureIntro. destruct num_readers; rwauto.
+    iFrame. iPureIntro. destruct num_readers.
+    { split; first done. word. }
+    { word. }
   - iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
     { apply Qp.half_half. }
-    iFrame. iPureIntro. rwauto.
+    iFrame. iPureIntro. word.
 Qed.
 
 Lemma step_Lock_writerSem_Semacquire γ writer_sem reader_sem reader_count reader_wait state :
@@ -276,11 +277,11 @@ Proof.
   destruct wl, state; iNamed "Hinv"; try done.
   iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
   { apply Qp.half_half. }
-  destruct num_readers. 2:{ exfalso. rwauto. }
+  destruct num_readers. 2:{ exfalso. word. }
   iSplitR; first done. iModIntro.
   iFrame. iDestruct "Hwriter" as "[?|[_ %]]".
-  2:{ exfalso. rwauto. }
-  iFrame. iPureIntro. rwauto.
+  2:{ exfalso. word. }
+  iFrame. iPureIntro. word.
 Qed.
 
 Lemma step_TryLock_readerCount_CompareAndSwap γ writer_sem reader_sem reader_count reader_wait state :
@@ -296,7 +297,8 @@ Proof.
   destruct wl, state; iNamed "Hinv"; try done.
   iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
   { apply Qp.half_half. }
-  iFrame. iPureIntro. destruct num_readers; rwauto.
+  iFrame. iPureIntro.
+  destruct num_readers; last word. split; first done; word.
 Qed.
 
 Lemma step_Unlock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait :
@@ -311,7 +313,7 @@ Proof.
   destruct wl; iNamed "Hinv"; try done.
   iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
   { apply Qp.half_half. }
-  iFrame. iPureIntro. rwauto.
+  iFrame. iPureIntro. word.
 Qed.
 
 Lemma step_Unlock_readerSem_Semrelease γ writer_sem reader_sem reader_count reader_wait r state :
@@ -325,7 +327,7 @@ Proof.
   destruct wl, state; iNamed "Hinv"; try done.
   iMod (ghost_var_update_2 with "Hwl Hwl_in") as "[Hwl Hwl_in]".
   { apply Qp.half_half. }
-  iFrame. iPureIntro. rwauto.
+  iFrame. iPureIntro. simplify_eq. word.
 Qed.
 End protocol.
 
@@ -476,7 +478,9 @@ Proof.
     wp_auto. rewrite bool_decide_true //. wp_auto.
     wp_method_call. wp_call. iClear "rw r". clear r_ptr rw_ptr.
     wp_auto. rewrite bool_decide_decide. destruct decide. { exfalso. word. }
-    wp_auto. rewrite bool_decide_decide. destruct decide. { exfalso. word. }
+    wp_auto. rewrite bool_decide_decide. destruct decide. { exfalso.
+                                                            unfold sync.rwmutexMaxReaders in *.
+                                                            word. }
     wp_auto. wp_apply wp_Int32__Add.
     rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
     rwStep step_rUnlockSlow_readerWait_Add; rwInvEnd.
@@ -508,8 +512,7 @@ Proof.
     rwLinearize. iRename "Hlocked" into "Hlocked2_inv". rwInvEnd.
     wp_auto. iFrame.
   - (* slow path *)
-    rwInvEnd. wp_auto. rewrite bool_decide_false.
-    2:{ intros H. word. } (* FIXME: word. *)
+    rwInvEnd. wp_auto. rewrite -> bool_decide_false by word.
     wp_auto. wp_apply wp_Int32__Add.
     rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv". rwAtomicEnd.
     rwStep step_Lock_readerWait_Add.
@@ -517,8 +520,7 @@ Proof.
       rwLinearize. iRename "Hlocked" into "Hlocked2_inv". rwInvEnd.
       wp_auto. rewrite -> bool_decide_true by word. wp_auto. iFrame.
     * (* Wait for remaining readers *)
-      rwInvEnd. wp_auto. rewrite -> bool_decide_false.
-      2:{ intros ?. word. } (* FIXME: word *)
+      rwInvEnd. wp_auto. rewrite -> bool_decide_false by word.
       wp_auto. wp_apply wp_runtime_SemacquireRWMutex.
       { iFrame "#". }
       rwInvStart. rwAtomicStart. iFrame. iIntros "%Hpos H1_inv". rwAtomicEnd.
@@ -584,32 +586,17 @@ Proof.
     wp_auto. wp_apply wp_runtime_Semrelease. { iFrame "#". }
     rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv".
     iMod (step_Unlock_readerSem_Semrelease with "[$]") as "Hprot_inv".
-    {
-      rewrite Hr'. clear dependent r'.
-      enough (sint.Z (W64 (uint.Z r)) = sint.Z r) by word.
-      clear -H H0.
-      unfold W64.
-      generalize dependent r. intros.
-      rewrite !word.signed_of_Z.
-      rewrite word.signed_eq_swrap_unsigned.
-      rewrite word.signed_eq_swrap_unsigned in H H0.
-      unfold word.swrap in *.
-      unfold sync.rwmutexMaxReaders in H0.
-      word.
-      (* FIXME: word. *)
-    }
+    { word. }
     iNamed "Hprot_inv". rwAtomicEnd. rwInvEnd.
     wp_auto. wp_for_post.
     iFrame. iPureIntro. split.
-    { assert (sint.Z (word.add i (W64 1)) = sint.Z i + 1) by word.
-      rewrite H1. admit. (* FIXME: signed cast seems to be incorrect. *) }
     { word. }
-  - wp_auto. replace (r') with (W32 0).
-    2:{ admit. } (* FIXME: word. *)
+    { word. }
+  - wp_auto.
     wp_apply (wp_Mutex__Unlock with "[Hlocked Hwl]").
-    { iFrame "#". iFrame. }
+    { iFrame "#". iFrame. replace (r') with (W32 0) by word. iFrame. }
     iFrame.
-Admitted.
+Qed.
 
 End wps.
 End proof.

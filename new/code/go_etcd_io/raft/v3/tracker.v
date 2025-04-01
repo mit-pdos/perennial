@@ -311,7 +311,7 @@ Definition Progress__SentEntries : val :=
     then
       (if: int_gt (![intT] "entries") #(W64 0)
       then
-        do:  ((struct.field_ref Progress "Next" (![ptrT] "pr")) <-[uint64T] ((![uint64T] (struct.field_ref Progress "Next" (![ptrT] "pr"))) + (![intT] "entries")));;;
+        do:  ((struct.field_ref Progress "Next" (![ptrT] "pr")) <-[uint64T] ((![uint64T] (struct.field_ref Progress "Next" (![ptrT] "pr"))) + (s_to_w64 (![intT] "entries"))));;;
         do:  (let: "$a0" := ((![uint64T] (struct.field_ref Progress "Next" (![ptrT] "pr"))) - #(W64 1)) in
         let: "$a1" := (![uint64T] "bytes") in
         (method_call #tracker.tracker #"Inflights'ptr" #"Add" (![ptrT] (struct.field_ref Progress "Inflights" (![ptrT] "pr")))) "$a0" "$a1")

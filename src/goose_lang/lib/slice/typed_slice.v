@@ -462,6 +462,9 @@ Qed.
 
 Opaque SliceAppendSlice.
 
+Local Ltac simplify_nonlinear :=
+  rewrite -?Z.mul_add_distr_l ?Zred_factor3.
+
 (** Only works with the full fraction since some of the ownership is moved from
 the slice part to the extra part *)
 Lemma wp_SliceSubslice_full {stk E} s t `{!IntoVal V} (vs: list V) (n m: u64) :
@@ -494,7 +497,7 @@ Proof.
       subst vs'; rewrite length_fmap. rewrite !length_take.
       rewrite //=.
       rewrite min_l; last word.
-      rewrite u64_Z_through_nat. eauto.
+      nat_cleanup. eauto.
     - iPureIntro. rewrite length_fmap /=.
       split; last word.
       subst vs'. rewrite length_drop length_take. word.
@@ -507,7 +510,8 @@ Proof.
   - iApply array.array_app.
     rewrite loc_add_assoc.
     replace (ty_size t * uint.Z n + ty_size t * uint.Z (word.sub m n)) with
-      (ty_size t * uint.nat m) by word.
+      (ty_size t * uint.nat m).
+    2:{ simplify_nonlinear. f_equal. word. }
     iFrame "Htail".
     iExactEq "Htail2". f_equal.
     rewrite length_fmap length_drop.
@@ -609,7 +613,7 @@ Lemma wp_SliceCopy_full stk E sl t q vs dst vs' :
 Proof.
   iIntros (Φ) "(Hsrc & Hdst & %Hlen) HΦ".
   iDestruct (own_slice_small_sz with "Hsrc") as %Hsz.
-  wp_apply (wp_SliceCopy with "[$Hsrc $Hdst]"); [word|].
+  wp_apply (wp_SliceCopy with "[$Hsrc $Hdst]"); [lia|].
   iIntros "(? & ?)".
   rewrite Hlen.
   rewrite drop_all.

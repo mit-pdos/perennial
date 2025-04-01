@@ -34,6 +34,8 @@ Section proof.
 
   Hint Unfold num_readers remaining_readers : word.
 
+  Local Tactic Notation "word" :=
+      unfold remaining_readers, num_readers in *; word.
   Lemma remaining_frac_read_acquire n :
     1 ≤ uint.Z n →
     uint.Z n < uint.Z (word.add n 1) →
@@ -43,7 +45,8 @@ Section proof.
     intros.
     rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
     assert (Heq1: Qc_of_Z (1 `max` remaining_readers n) = Qc_of_Z (remaining_readers n)).
-    { f_equal. word.
+    { f_equal.
+      word.
     }
     assert (Heq2: Qc_of_Z (1 `max` remaining_readers (word.add n 1)) =
                   Qc_of_Z (remaining_readers (word.add n 1))).

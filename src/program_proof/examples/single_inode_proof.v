@@ -229,7 +229,7 @@ Section goose.
     wpc_frame_seq.
     iApply (wp_newAllocator s_alloc with "Hused").
     { word. }
-    { word_cleanup; auto. }
+    { rewrite /alloc.domain Halloc_dom. f_equal. word. }
     { congruence. }
     { auto. }
     iIntros "!>" (alloc_ref) "Halloc_mem".

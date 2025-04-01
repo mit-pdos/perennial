@@ -217,7 +217,7 @@ Section program.
       iNamed "HP".
       wp_apply (wp_Replica__replay with "Hinv Hidx Htxnlog Hrp").
       { apply Hgid. }
-      { apply (Forall_impl _ _ _ Hlsnx). clear -Hge. word. }
+      { apply (Forall_impl _ _ _ Hlsnx). clear -Hge. intros. word. }
       iIntros "Hrp".
       wp_pures.
       iApply "HΦ".
@@ -483,7 +483,7 @@ Section program.
         split.
         { apply Forall_app.
           split.
-          { apply (Forall_impl _ _ _ Hlelsnx). clear -Hlsnxle. lia. }
+          { apply (Forall_impl _ _ _ Hlelsnx). clear -Hlsnxle. intros. lia. }
           rewrite Forall_singleton. clear -Hvlsn. word.
         }
         by rewrite -app_assoc /= Hilogar.
@@ -549,7 +549,7 @@ Section program.
         split.
         { apply Forall_app.
           split.
-          { apply (Forall_impl _ _ _ Hlelsnx). clear -Hlsnxle. lia. }
+          { apply (Forall_impl _ _ _ Hlelsnx). clear -Hlsnxle. intros. lia. }
           rewrite Forall_singleton. clear -Hvlsn. word.
         }
         by rewrite -app_assoc /= Hilogar.
@@ -602,7 +602,7 @@ Section program.
         split.
         { apply Forall_app.
           split.
-          { apply (Forall_impl _ _ _ Hlelsnx). clear -Hlsnxle. lia. }
+          { apply (Forall_impl _ _ _ Hlelsnx). clear -Hlsnxle. intros. lia. }
           rewrite Forall_singleton. clear -Hvlsn. word.
         }
         by rewrite -app_assoc /= Hilogar.
@@ -662,7 +662,7 @@ Section program.
         split.
         { apply Forall_app.
           split.
-          { apply (Forall_impl _ _ _ Hlelsnx). clear -Hlsnxle. lia. }
+          { apply (Forall_impl _ _ _ Hlelsnx). clear -Hlsnxle. intros. lia. }
           rewrite Forall_singleton. clear -Hvlsn. word.
         }
         by rewrite -app_assoc /= Hilogar.
