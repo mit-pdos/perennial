@@ -125,7 +125,7 @@ Definition own_WaitGroup γ (counter : w32) : iProp Σ :=
 #[local] Transparent own_WaitGroup.
 #[global] Instance own_WaitGroup_timeless γ counter : Timeless (own_WaitGroup γ counter) := _.
 
-Lemma start_WaitGroup N wg_ptr :
+Lemma init_WaitGroup N wg_ptr :
   wg_ptr ↦ (default_val sync.WaitGroup.t) ={⊤}=∗
   ∃ γ,
   is_WaitGroup wg_ptr γ N ∗ own_WaitGroup γ (W32 0) ∗ own_WaitGroup_waiters γ (W32 0).
@@ -135,7 +135,7 @@ Proof.
   iNamed "H". simpl.
 
   iMod (ghost_var_alloc (W32 0)) as "[%counter_gn [Hctr1 Hctr2]]".
-  iMod (start_sema with "[$Hsema]") as "[%sema_gn [Hs1 Hs2]]".
+  iMod (init_sema with "[$Hsema]") as "[%sema_gn [Hs1 Hs2]]".
   iMod (own_tok_auth_alloc) as "[%waiter_gn [Hwaiters Hw2]]".
   iMod (own_tok_auth_alloc) as "[%zerostate_gn Hzerostate]".
 
