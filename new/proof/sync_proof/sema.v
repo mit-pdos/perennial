@@ -17,7 +17,7 @@ Definition own_sema γ (v : w32) : iProp Σ := ghost_var γ (1/2) v.
 #[local] Transparent own_sema.
 Global Instance own_sema_timeless  γ v : Timeless (own_sema γ v) := _.
 
-Lemma start_sema {E} N sema v :
+Lemma init_sema {E} N sema v :
   sema ↦ v ={E}=∗ ∃ γ, is_sema sema γ N ∗ own_sema γ v.
 Proof.
   iIntros "Hs".
