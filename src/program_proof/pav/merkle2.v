@@ -13,6 +13,15 @@ Notation empty_node_tag := (W8 0) (only parsing).
 Notation leaf_node_tag := (W8 1) (only parsing).
 Notation inner_node_tag := (W8 2) (only parsing).
 
+(* TODO: rm once seal merged in. *)
+Program Definition u64_le_seal := sealed @u64_le.
+Definition u64_le_unseal : u64_le_seal = _ := seal_eq _.
+Lemma u64_le_seal_len x :
+  length $ u64_le_seal x = 8%nat.
+Proof. Admitted.
+Global Instance u64_le_seal_inj : Inj eq eq u64_le_seal.
+Proof. Admitted.
+
 Module MerkleProof.
 Record t :=
   mk {
@@ -127,15 +136,6 @@ Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
     end
   | Cut _ => False
   end.
-
-(* TODO: rm once seal merged in. *)
-Program Definition u64_le_seal := sealed @u64_le.
-Definition u64_le_unseal : u64_le_seal = _ := seal_eq _.
-Lemma u64_le_seal_len x :
-  length $ u64_le_seal x = 8%nat.
-Proof. Admitted.
-Global Instance u64_le_seal_inj : Inj eq eq u64_le_seal.
-Proof. Admitted.
 
 Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
   match t with
@@ -448,7 +448,9 @@ Lemma wp_compLeafHash sl_label sl_val d0 d1 (label val : list w8) :
     "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
     "Hsl_hash" ∷ own_slice sl_hash byteT (DfracOwn 1) hash ∗
     "#His_hash" ∷ is_hash
-      (leaf_node_tag :: label ++ (u64_le_seal $ length val) ++ val) hash
+      (leaf_node_tag ::
+      (u64_le_seal $ length label) ++ label ++
+      (u64_le_seal $ length val) ++ val) hash
   }}}.
 Proof. Admitted.
 
@@ -902,8 +904,8 @@ Proof.
       iIntros "* Hsl". wp_store. wp_load.
       wp_apply (wp_WriteBytes with "[$Hsl $Hsl_fd_val]").
       iIntros "* [Hsl_proof _]". wp_store. wp_load.
-      iDestruct (own_slice_small_sz with "Hsl_fd_label") as %?.
-      iDestruct (own_slice_small_sz with "Hsl_fd_val") as %?.
+      iDestruct (own_slice_small_sz with "Hsl_fd_label") as %Hlen_label.
+      iDestruct (own_slice_small_sz with "Hsl_fd_val") as %Hlen_val.
 
       iDestruct (own_slice_to_small with "Hsl_proof") as "Hsl_proof".
       iDestruct (own_slice_zero _ (DfracOwn 1)) as "H0".
@@ -916,8 +918,9 @@ Proof.
       iFrame "∗#%". iIntros "!>". do 3 (iSplit; [done|]).
       iExists (MerkleProof.mk _ true fd_label fd_val). simpl.
       iFrame "#". iSplit; [|done].
-      assert (sl_fd_label.(Slice.sz) = W64 (length fd_label)) as -> by word.
-      assert (sl_fd_val.(Slice.sz) = W64 (length fd_val)) as -> by word.
+      apply (f_equal (λ x : nat, W64 x)) in Hlen_label, Hlen_val.
+      rewrite !w64_to_nat_id in Hlen_label Hlen_val.
+      rewrite -Hlen_label -Hlen_val.
       by list_simplifier.
     - wp_load.
 
@@ -1020,7 +1023,6 @@ Lemma wp_put n0 ptr_n (depth : w64) elems sl_label sl_val (label val : list w8) 
     "Hown_merkle" ∷ own_merkle_map_aux ptr_n elems depth (DfracOwn 1) ∗
     "Hptr_n0" ∷ n0 ↦[ptrT] #ptr_n ∗
     "Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
-    "%Hlen_label" ∷ ⌜ length label = hash_len ⌝ ∗
     "Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
     "Hown_ctx" ∷ own_context ptr_ctx (DfracOwn 1)
   }}}
@@ -1050,13 +1052,14 @@ Proof.
     wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Hptr_leaf".
     iDestruct (struct_fields_split with "Hptr_leaf") as "H". iNamed "H".
     wp_store. wp_rec. do 2 wp_loadField.
-    wp_apply (wp_compLeafHash with "[$Hsl_label $Hsl_val]").
+    wp_apply (wp_compLeafHash sl_label sl_val with "[$Hsl_label $Hsl_val]").
     iIntros "*". iNamed 1.
     iDestruct (own_slice_to_small with "Hsl_hash") as "Hsl_hash".
     wp_storeField.
     wp_pures. iApply "HΦ".
+    iDestruct (own_slice_small_sz with "Hsl_label") as %?.
     iFrame "Hown_ctx ∗". iExists (Leaf label val).
-    iFrame "∗#%". naive_solver. }
+    iFrame "∗#". iIntros "!>". iSplit; [naive_solver|word]. }
 
   iNamed "Hown_merkle".
   iRename "Hsl_label" into "Hsl_label_put".
@@ -1075,6 +1078,8 @@ Proof.
     ).
     { do 2 wp_loadField. wp_pures. by iFrame. }
     iIntros "*". iNamed 1. subst. wp_loadField.
+    iDestruct "Hsl_label" as "-#Hsl_label".
+    iDestruct "Hsl_val" as "-#Hsl_val".
     wp_apply (wp_BytesEqual with "[$Hsl_label $Hsl_label_put]").
     iIntros "[Hsl_label Hsl_label_put]".
     wp_if_destruct.
@@ -1082,10 +1087,11 @@ Proof.
       wp_apply (wp_compLeafHash with "[$Hsl_label $Hsl_val_put]").
       iIntros "*". iNamedSuffix 1 "_n".
       iDestruct (own_slice_to_small with "Hsl_hash_n") as "Hsl_hash_out".
+      iDestruct (own_slice_small_sz with "Hsl_label_put") as %?.
       wp_storeField. wp_pures. iApply "HΦ". iFrame "Hown_ctx ∗".
       iIntros "!>". iExists (Leaf label val). iSplit; [|iSplit]; try done.
       - by rewrite insert_singleton.
-      - iFrame "∗#%". }
+      - iFrame "∗#%". word. }
 
     wp_apply wp_allocStruct; [val_ty|].
     iIntros (?) "H".
@@ -1354,7 +1360,7 @@ Proof.
   wp_loadField.
   wp_apply (wp_struct_fieldRef_pointsto with "[$Hptr_root]"); [done|].
   iIntros "* [%Hclose Hptr2_root]".
-  wp_apply (wp_put with "[$Hown_ctx $Hown_map $Hsl_label $Hsl_val $Hptr2_root]"); [word|].
+  wp_apply (wp_put with "[$Hown_ctx $Hown_map $Hsl_label $Hsl_val $Hptr2_root]").
   iIntros "*". iNamed 1.
   wp_pures. iApply "HΦ". iIntros "!>". iSplit.
   - iSplit; [word|done].
