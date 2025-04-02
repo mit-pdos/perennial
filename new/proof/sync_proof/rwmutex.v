@@ -345,6 +345,7 @@ Definition own_RWMutex γ (state : rwmutex) : iProp Σ :=
   ghost_var γ.(prot_gn).(state_gn) (1/2) state.
 #[global] Opaque own_RWMutex.
 #[local] Transparent own_RWMutex.
+Global Instance own_RWMutex_timeless γ state : Timeless (own_RWMutex γ state) :=  _.
 
 Definition own_RLock_token γ : iProp Σ :=
   own_toks γ.(prot_gn).(rlock_overflow_gn) 1.
@@ -378,7 +379,7 @@ Definition is_RWMutex (rw : loc) γ N : iProp Σ :=
     ).
 #[global] Opaque is_RWMutex.
 #[local] Transparent is_RWMutex.
-Instance is_RWMutex_pers rw γ N : Persistent (is_RWMutex rw γ N) := _.
+Global Instance is_RWMutex_pers rw γ N : Persistent (is_RWMutex rw γ N) := _.
 
 Import Ltac2.
 Set Default Proof Mode "Classic".
@@ -413,7 +414,7 @@ Ltac rwAtomicEnd := iMod "Hmask" as "_".
 Lemma wp_RWMutex__RLock γ rw N :
   ∀ Φ,
   is_pkg_init sync ∗ is_RWMutex rw γ N ∗ own_RLock_token γ -∗
-  (|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
+  ▷(|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
      (∀ num_readers, ⌜ state = RLocked num_readers ⌝ → own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP rw @ sync @ "RWMutex'ptr" @ "RLock" #() {{ Φ }}.
 Proof.
@@ -435,7 +436,7 @@ Qed.
 Lemma wp_RWMutex__TryRLock γ rw N :
   ∀ Φ,
   is_pkg_init sync ∗ is_RWMutex rw γ N ∗ own_RLock_token γ -∗
-  ((|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
+  ▷((|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
       (∀ num_readers, ⌜ state = RLocked num_readers ⌝ →
                       own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #true)) ∧
    Φ #false)
@@ -464,7 +465,7 @@ Qed.
 Lemma wp_RWMutex__RUnlock γ rw N :
   ∀ Φ,
   is_pkg_init sync ∗ is_RWMutex rw γ N -∗
-  (|={⊤∖↑N,∅}=> ∃ num_readers,
+  ▷(|={⊤∖↑N,∅}=> ∃ num_readers,
      own_RWMutex γ (RLocked (S num_readers)) ∗
      (own_RWMutex γ (RLocked num_readers) ∗ own_RLock_token γ ={∅,⊤∖↑N}=∗
       Φ #())) -∗
@@ -498,7 +499,7 @@ Qed.
 Lemma wp_RWMutex__Lock γ rw N :
   ∀ Φ,
   is_pkg_init sync ∗ is_RWMutex rw γ N -∗
-  (|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
+  ▷(|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
      (⌜ state = RLocked 0 ⌝ → own_RWMutex γ Locked ={∅,⊤∖↑N}=∗ Φ #())) -∗
   WP rw @ sync @ "RWMutex'ptr" @ "Lock" #() {{ Φ }}.
 Proof.
@@ -533,7 +534,7 @@ Qed.
 Lemma wp_RWMutex__TryLock γ rw N :
   ∀ Φ,
   is_pkg_init sync ∗ is_RWMutex rw γ N -∗
-  ((|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
+  ▷((|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
     (⌜ state = RLocked 0 ⌝ → own_RWMutex γ Locked ={∅,⊤∖↑N}=∗ Φ #true)) ∧
      Φ #false) -∗
   WP rw @ sync @ "RWMutex'ptr" @ "TryLock" #() {{ Φ }}.
@@ -564,7 +565,7 @@ Local Hint Unfold sync.rwmutexMaxReaders actualMaxReaders : word.
 Lemma wp_RWMutex__Unlock γ rw N :
   ∀ Φ,
   is_pkg_init sync ∗ is_RWMutex rw γ N -∗
-  (|={⊤∖↑N,∅}=> own_RWMutex γ Locked ∗
+  ▷(|={⊤∖↑N,∅}=> own_RWMutex γ Locked ∗
     (own_RWMutex γ (RLocked 0) ={∅,⊤∖↑N}=∗ Φ #())
   ) -∗
   WP rw @ sync @ "RWMutex'ptr" @ "Unlock" #() {{ Φ }}.
@@ -614,7 +615,6 @@ Proof.
   iNamed "H".
 
   (* alloc protocol resources *)
-  Print RWMutex_protocol_names.
   iMod (own_tok_auth_alloc) as (γread_wait_gn) "Hread_wait".
 
   iMod (own_tok_auth_alloc) as (γrlock_overflow_gn) "Hrlock".
