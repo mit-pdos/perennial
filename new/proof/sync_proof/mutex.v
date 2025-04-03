@@ -7,13 +7,13 @@ Context `{!syncG Σ}.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
-  "#Hi" ∷ is_pkg_init sync ∗
   "#Hinv" ∷ inv nroot (
         ∃ b : bool,
           (m ↦s[ sync.Mutex :: "state" ]{# 1/4} b) ∗
                   if b then True else
                     m ↦s[sync.Mutex :: "state"]{# 3/4} b ∗ R
-        ).
+        ) ∗
+  "_" ∷ True.
 #[global] Opaque is_Mutex.
 #[local] Transparent is_Mutex.
 
@@ -54,9 +54,9 @@ Lemma flatten_struct_tt :
   flatten_struct (# ()%V) = [].
 Proof. rewrite to_val_unseal //=. Qed.
 
-Theorem init_Mutex R E m : is_pkg_init sync -∗ m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
-  iIntros "#Hi Hl HR".
+  iIntros "Hl HR".
   simpl.
   iDestruct (struct_fields_split with "Hl") as "Hl".
   iNamed "Hl".
@@ -71,7 +71,7 @@ Proof.
 Qed.
 
 Lemma wp_Mutex__TryLock m R :
-  {{{ is_Mutex m R }}}
+  {{{ is_pkg_init sync ∗ is_Mutex m R }}}
     m @ sync @ "Mutex'ptr" @ "TryLock" #()
   {{{ (locked : bool), RET #locked; if locked then own_Mutex m ∗ R else True }}}.
 Proof.
@@ -79,7 +79,6 @@ Proof.
      interactive feedback. Seems to have copied the Lock() proof, except for
      dropping iLöb! *)
   wp_start as "H". iNamed "H".
-  wp_method_call. wp_call.
   wp_bind (CmpXchg _ _ _).
   iInv nroot as ([]) "[Hl HR]".
   - wp_bind (CmpXchg _ _ _).
@@ -109,13 +108,12 @@ Proof.
 Qed.
 
 Lemma wp_Mutex__Lock m R :
-  {{{ is_Mutex m R }}}
+  {{{ is_pkg_init sync ∗ is_Mutex m R }}}
     m @ sync @ "Mutex'ptr" @ "Lock" #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
-  wp_start as "H". iNamed "H".
   iLöb as "IH".
-  wp_method_call. wp_call.
+  wp_start as "H". iNamed "H".
   wp_bind (CmpXchg _ _ _).
   iInv nroot as ([]) "[Hl HR]".
   - wp_bind (CmpXchg _ _ _).
@@ -126,7 +124,7 @@ Proof.
     iIntros "Hl".
     iModIntro. iSplitL "Hl"; first (iNext; iExists true; eauto).
     wp_auto.
-    by iApply "IH".
+    wp_apply "IH"; [iFrame "#" | iFrame].
   - iDestruct "HR" as "[Hl2 HR]".
     iCombine "Hl Hl2" as "Hl".
     rewrite Qp.quarter_three_quarter.
@@ -177,10 +175,11 @@ Definition is_Locker (i : interface.t) (P : iProp Σ) : iProp Σ :=
 Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 
 Lemma Mutex_is_Locker (m : loc) R :
+  is_pkg_init sync -∗
   is_Mutex m R -∗
   is_Locker (interface.mk sync "Mutex'ptr"%go #m) (own_Mutex m ∗ R).
 Proof.
-  iIntros "#[? ?]".
+  iIntros "#? #[? ?]".
   iSplitL.
   - iIntros (?) "!# _ HΦ".
     wp_auto.
