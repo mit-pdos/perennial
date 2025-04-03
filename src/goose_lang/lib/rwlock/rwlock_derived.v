@@ -3,7 +3,6 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl.
 From Perennial.base_logic.lib Require Import invariants.
 From Perennial.program_logic Require Export weakestpre.
-From Perennial.Helpers Require Import Qextra.
 
 From Perennial.goose_lang Require Export lang typing.
 From Perennial.goose_lang Require Import proofmode wpc_proofmode notation crash_borrow.
@@ -11,8 +10,6 @@ From Perennial.goose_lang Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Import typed_mem.
 From Perennial.goose_lang.lib Require Export rwlock.impl.
 From Perennial.goose_lang.lib Require Export rwlock.rwlock_noncrash.
-Require Import Field.
-Add Field Qcfield : Qcanon.Qcft.
 Set Default Proof Using "Type".
 
 Section goose_lang.
@@ -23,9 +20,6 @@ Context {ext_tys: ext_types ext}.
 Section proof.
   Context `{!heapGS Σ} (N : namespace).
   Context `{!stagedG Σ}.
-
-  Definition rfrac: Qp :=
-    (Qp.inv (Qp_of_Z (2^64)))%Qp.
 
   Definition is_crash_rwlock lk R Rc :=
     is_rwlock N lk (λ q, crash_borrow (R q) (Rc q)).
