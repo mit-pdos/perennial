@@ -70,10 +70,12 @@ Definition copy t : val :=
 Definition append t : val :=
   λ: "s" "x",
   let: "new_len" := sum_assume_no_overflow (len "s") (len "x") in
-  if: (cap "s") > "new_len" then
-    (* copy "x" directly into "s"'s capacity *)
-    copy t (slice t "s" (len "s") "new_len") "x";;
-    slice t "s" "new_len"
+  if: (cap "s") ≥ "new_len" then
+    (* "grow" s to include its capacity *)
+    let: "s_new" := slice t "s" #(W64 0) "new_len" in
+    (* copy "x" past the original "s" *)
+    copy t (slice t "s_new" (len "s") "new_len") "x";;
+    "s_new"
   else
     let: "extra" := ArbitraryInt in
     let: "new_cap" := sum_assume_no_overflow "new_len" "extra" in

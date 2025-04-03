@@ -42,6 +42,12 @@ Context `{!IntoValTyped V t}.
 Implicit Type (vs : list V).
 Definition own_slice_cap_def (s : slice.t) : iProp Σ :=
   ⌜ uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) ⌝ ∗
+(* Two notes about this definition. First, it is written using [own_slice] to
+get some reuse, though an intermediate array points-to would be more useful
+here. Second, the capacity has arbitrary values, which is often desirable,
+but there are some niche cases where code could be aware of the contents of the
+capacity (for example, when sub-slicing from a larger slice) - actually taking
+advantage of that seems questionable though. *)
   ∃ (vs: list V), own_slice
                     (slice.mk
                        (s.(slice.ptr_f) +ₗ[t] uint.Z s.(slice.len_f))
@@ -213,6 +219,12 @@ Lemma own_slice_trivial_slice_f s dq (vs: list V) :
   own_slice s dq vs ⊣⊢ own_slice (slice.slice_f s t (W64 0) (slice.len_f s)) dq vs.
 Proof.
   rewrite -slice_slice_trivial //.
+Qed.
+
+Lemma own_slice_trivial_slice_f_2 s dq (vs: list V) :
+  own_slice (slice.slice_f s t (W64 0) (slice.len_f s)) dq vs ⊢ own_slice s dq vs.
+Proof.
+  rewrite -own_slice_trivial_slice_f //.
 Qed.
 
 Lemma slice_f_slice_f s n m n' m' :
@@ -527,6 +539,21 @@ Proof.
     move: Hwf1 Hwf2; word.
 Qed.
 
+Lemma own_slice_combine k s dq (vs1 vs2: list V) n m :
+  length vs1 = (uint.nat k - uint.nat n)%nat ∧
+  uint.Z n ≤ uint.Z k ≤ uint.Z m →
+  slice.slice_f s t n k ↦*{dq} vs1 -∗
+  slice.slice_f s t k m ↦*{dq} vs2 -∗
+  slice.slice_f s t n m ↦*{dq} (vs1 ++ vs2).
+Proof.
+  iIntros (Hwf) "Hs1 Hs2".
+  iApply (own_slice_split k).
+  { lia. }
+  rewrite -> take_app_le, take_ge by lia.
+  rewrite -> drop_app_le, drop_ge, app_nil_l by lia.
+  iFrame.
+Qed.
+
 Lemma own_slice_split_all k s dq (vs: list V) :
   uint.Z k ≤ uint.Z s.(slice.len_f) →
   s ↦*{dq} vs ⊣⊢
@@ -589,6 +616,29 @@ Proof.
   [own_slice_slice_absorb_capacity] *)
 Admitted.
 
+(* [own_slice_cap] is essentially independent of the start of the slice *)
+Lemma own_slice_cap_slice_f_change_first s n n' m :
+  uint.Z m ≤ uint.Z s.(slice.cap_f) ∧
+  uint.Z n ≤ uint.Z m ∧ uint.Z n' ≤ uint.Z m →
+  own_slice_cap V (slice.slice_f s t n m) ⊣⊢ own_slice_cap V (slice.slice_f s t n' m).
+Proof.
+  intros Hbound.
+  rewrite own_slice_cap_unseal /own_slice_cap_def /=.
+  iSplit.
+  - iIntros "[%Hle [%vs Hs]]".
+    iSplit; [ word | ].
+    iExists (vs).
+    rewrite !loc_add_assoc -!Z.mul_add_distr_l.
+    iExactEq "Hs".
+    repeat (f_equal; try word).
+  - iIntros "[%Hle [%vs Hs]]".
+    iSplit; [ word | ].
+    iExists (vs).
+    rewrite !loc_add_assoc -!Z.mul_add_distr_l.
+    iExactEq "Hs".
+    repeat (f_equal; try word).
+Qed.
+
 Lemma wp_slice_slice s dq (vs: list V) (n m : w64) :
   {{{ s ↦*{dq} vs ∗ ⌜uint.Z n ≤ uint.Z m ≤ Z.of_nat (length vs)⌝ }}}
     slice.slice t #s #n #m
@@ -610,6 +660,20 @@ Proof.
   iApply own_slice_f; auto.
 Qed.
 
+Lemma wp_slice_slice_with_cap s dq (vs: list V) (n m : w64) :
+  {{{ s ↦*{dq} vs ∗ own_slice_cap V s ∗
+            ⌜uint.Z n ≤ uint.Z m ≤ Z.of_nat (length vs)⌝ }}}
+    slice.slice t #s #n #m
+  {{{ RET #(slice.slice_f s t n m);
+      (* before the sliced part *)
+      (slice.slice_f s t (W64 0) n) ↦*{dq} (take (uint.nat n) vs) ∗
+      (slice.slice_f s t n m) ↦*{dq} (subslice (uint.nat n) (uint.nat m) vs) ∗
+      (* after the sliced part becomes part of this capacity *)
+      own_slice_cap V (slice.slice_f s t n m)
+  }}}.
+Proof.
+Admitted.
+
 Lemma own_slice_valid s dq (vs: list V) :
   go_type_size t > 0 →
   s ↦*{dq} vs ⊢ ⌜✓dq ∨ vs = []⌝.
@@ -625,6 +689,7 @@ Proof.
   auto.
 Qed.
 
+(* this ended up not being useful *)
 #[local]
 Lemma own_slice_to_dfrac dq s (vs: list V) :
   ✓dq →
@@ -650,13 +715,11 @@ Proof.
     iModIntro.
     (* TODO: need to split on dfrac's op, not Qp +; the easiest way to get this
     is probably to add a DFractional and AsDFractional *)
-Admitted.
+Abort.
 
-(* NOTE: doesn't support a fraction on [s ↦* vs] for a subtle reason: we need
-that fraction to be valid in order to move ownership from the capacity into the
-↦* in the postcondition, but if [vs = nil] the fraction could be anything.
-Rather than separately requiring ✓dq we just give up. (This spec is currently
-only used for slice.append anyway.) *)
+(* Requires [s ↦* vs] (full ownership). It might be possible to lift this
+limitation, but importantly the resulting slice would have read-only and
+arbitrary values from the capacity, which doesn't seem useful. *)
 Lemma wp_slice_slice_into_capacity s (vs: list V) (n m : w64) :
   {{{ s ↦* vs ∗ own_slice_cap V s ∗
             ⌜uint.Z n ≤ uint.Z s.(slice.len_f) ≤ uint.Z m ≤ uint.Z s.(slice.cap_f)⌝ }}}
@@ -1168,19 +1231,84 @@ Proof.
   | |- context[bool_decide ?P] =>
       destruct (bool_decide_reflect P); wp_auto
   end.
-  - wp_apply (wp_slice_slice_only_capacity with "[$Hs $Hcap]").
+  - wp_apply (wp_slice_slice_into_capacity with "[$Hs $Hcap]").
     { iPureIntro. move: l; word. }
     iIntros (vs'') "(Hs & Hs_new & Hcap)".
-    (* TODO: need wp for slice.copy *)
-    admit.
+    rewrite take_0 drop_0.
+    wp_pures.
+    iClear "Hs". (* empty *)
+    iDestruct (own_slice_len with "Hs_new") as %Hlen.
+    simpl in Hlen; autorewrite with len in Hlen.
+    assert (length vs'' = uint.nat s2.(slice.len_f)) by (move: Hlen; word).
+    wp_apply (wp_slice_slice_with_cap with "[$Hs_new $Hcap]").
+    { iPureIntro; by len. }
+    iIntros "(Hs_new1 & Hs_new2 & Hs_new_cap)".
+    rewrite -> !slice_f_slice_f by word.
+    rewrite !word.add_0_l.
+    wp_apply (wp_slice_copy_overwrite with "[$Hs_new2 $Hs2]").
+    { iPureIntro. len. }
+    iIntros "[Hs_new2 Hs2]".
+    autorewrite with len.
+    rewrite -> !Nat.min_l by word.
+    wp_pures.
+    iApply "HΦ".
+    iFrame "Hs2".
+    iSplitL "Hs_new1 Hs_new2".
+    { iDestruct (own_slice_combine s.(slice.len_f) with "Hs_new1 Hs_new2") as "Hs_new".
+      { len. }
+      rewrite -> !take_app_le, !take_ge by word.
+      iFrame "Hs_new".
+    }
+    iApply (own_slice_cap_slice_f_change_first with "Hs_new_cap").
+    move: l; word.
   - wp_apply (wp_ArbitraryInt) as "%x".
     wp_apply wp_sum_assume_no_overflow as "%Hoverflow2".
     wp_apply wp_slice_make3.
     { move: Hoverflow2; word. }
     iIntros (sl) "(Hnew & Hnew_cap & %Hcap)".
+    iDestruct (own_slice_wf with "Hnew") as %Hsl_wf.
+    iDestruct (own_slice_len with "Hnew") as %Hsl_len.
+    autorewrite with len in Hsl_len.
+    assert (word.add (slice.len_f s) (slice.len_f s2) = slice.len_f sl) as Hsl_len'.
+    { apply word.unsigned_inj.
+      move: Hsl_len; word. }
     wp_pures.
-    (* TODO: need wp for slice.copy *)
-Admitted.
+    wp_apply (wp_slice_copy_partial with "[$Hnew $Hs]").
+    { len. }
+    iIntros "[Hnew Hs]".
+    rewrite drop_replicate.
+    wp_pures.
+    wp_apply (wp_slice_slice_with_cap with "[$Hnew $Hnew_cap]").
+    { len. }
+    iIntros "(Hnew1 & Hnew2 & Hnew_cap)".
+    wp_apply (wp_slice_copy_overwrite with "[$Hnew2 $Hs2]").
+    { len. }
+    iIntros "(Hnew2 & Hs2)".
+    autorewrite with len.
+    rewrite -> !Nat.min_l by word.
+    rewrite -> !take_app_le, !take_ge by word.
+    wp_pures.
+    iApply "HΦ".
+    iFrame "Hs2".
+    iSplitL "Hnew1 Hnew2".
+    {
+      iDestruct (own_slice_combine with "Hnew1 Hnew2") as "Hnew".
+      { len. }
+      iDestruct (own_slice_len with "Hnew") as %Hlen.
+      simpl in Hlen.
+      autorewrite with len in Hlen.
+      iExactEq "Hnew".
+      f_equal.
+      rewrite {2}(slice_slice_trivial sl (t:=t)).
+      f_equal.
+      apply word.unsigned_inj. (* TODO: word limitation *)
+      move: Hsl_len; word.
+    }
+    iEval (rewrite (slice_slice_trivial sl (t:=t))).
+    rewrite Hsl_len'.
+    iApply (own_slice_cap_slice_f_change_first with "Hnew_cap").
+    word.
+Qed.
 
 End wps.
 
