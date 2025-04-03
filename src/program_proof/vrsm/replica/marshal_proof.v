@@ -710,9 +710,8 @@ Proof.
     { iPureIntro.
       rewrite Hreplicas_prefix.
       rewrite word.unsigned_of_Z_nowrap; last first.
-      { word_cleanup. rewrite length_app. rewrite length_app length_replicate in Hreplicas_sz'.
-        lia. }
-      rewrite Nat2Z.id.
+      { rewrite length_app. rewrite length_app length_replicate in Hreplicas_sz'. word. }
+      nat_cleanup.
       rewrite length_app replicate_add.
       rewrite lookup_app_r; last first.
       { rewrite Hreplicas_len. rewrite length_replicate. reflexivity. }

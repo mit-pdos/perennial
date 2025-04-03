@@ -294,8 +294,8 @@ Definition encodeEnterNewEpochReply : val :=
   rec: "encodeEnterNewEpochReply" "o" :=
     exception_do (let: "o" := (ref_ty ptrT "o") in
     let: "enc" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 ((8 + 8) + 8)) + (let: "$a0" := (![sliceT] (struct.field_ref enterNewEpochReply "state" (![ptrT] "o"))) in
-    slice.len "$a0"))) in
+    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 ((8 + 8) + 8)) + (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref enterNewEpochReply "state" (![ptrT] "o"))) in
+    slice.len "$a0")))) in
     do:  ("enc" <-[sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
     let: "$a1" := (![Error] (struct.field_ref enterNewEpochReply "err" (![ptrT] "o"))) in
@@ -325,8 +325,8 @@ Definition encodeApplyReply : val :=
   rec: "encodeApplyReply" "o" :=
     exception_do (let: "o" := (ref_ty ptrT "o") in
     let: "enc" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![sliceT] (struct.field_ref applyReply "ret" (![ptrT] "o"))) in
-    slice.len "$a0"))) in
+    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 8) + (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref applyReply "ret" (![ptrT] "o"))) in
+    slice.len "$a0")))) in
     do:  ("enc" <-[sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
     let: "$a1" := (![Error] (struct.field_ref applyReply "err" (![ptrT] "o"))) in
@@ -576,8 +576,8 @@ Definition Server__TryBecomeLeader : val :=
     let: "$r0" := #(W64 0) in
     do:  ("numReplies" <-[uint64T] "$r0");;;
     let: "replies" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 ptrT (let: "$a0" := (![sliceT] "clerks") in
-    slice.len "$a0")) in
+    let: "$r0" := (slice.make2 ptrT (s_to_w64 (let: "$a0" := (![sliceT] "clerks") in
+    slice.len "$a0"))) in
     do:  ("replies" <-[sliceT] "$r0");;;
     let: "mu" := (ref_ty ptrT (zero_val ptrT)) in
     let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
@@ -587,8 +587,8 @@ Definition Server__TryBecomeLeader : val :=
     (func_call #sync #"NewCond"%go) "$a0") in
     do:  ("numReplies_cond" <-[ptrT] "$r0");;;
     let: "n" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "clerks") in
-    slice.len "$a0") in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] "clerks") in
+    slice.len "$a0")) in
     do:  ("n" <-[uint64T] "$r0");;;
     let: "$range" := (![sliceT] "clerks") in
     (let: "ck" := (ref_ty intT (zero_val intT)) in
@@ -718,8 +718,8 @@ Definition Server__TryAcquire : val :=
       let: "$r0" := #(W64 0) in
       do:  ("numReplies" <-[uint64T] "$r0");;;
       let: "replies" := (ref_ty sliceT (zero_val sliceT)) in
-      let: "$r0" := (slice.make2 ptrT (let: "$a0" := (![sliceT] "clerks") in
-      slice.len "$a0")) in
+      let: "$r0" := (slice.make2 ptrT (s_to_w64 (let: "$a0" := (![sliceT] "clerks") in
+      slice.len "$a0"))) in
       do:  ("replies" <-[sliceT] "$r0");;;
       let: "mu" := (ref_ty ptrT (zero_val ptrT)) in
       let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
@@ -729,8 +729,8 @@ Definition Server__TryAcquire : val :=
       (func_call #sync #"NewCond"%go) "$a0") in
       do:  ("numReplies_cond" <-[ptrT] "$r0");;;
       let: "n" := (ref_ty uint64T (zero_val uint64T)) in
-      let: "$r0" := (let: "$a0" := (![sliceT] "clerks") in
-      slice.len "$a0") in
+      let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] "clerks") in
+      slice.len "$a0")) in
       do:  ("n" <-[uint64T] "$r0");;;
       let: "$range" := (![sliceT] "clerks") in
       (let: "ck" := (ref_ty intT (zero_val intT)) in

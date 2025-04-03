@@ -889,9 +889,6 @@ Proof.
   wp_pures.
   change (word.divu (word.sub 4096 8) 8) with (W64 LogSz).
   wp_apply (wp_Write_atomic with "Hi").
-  word_cleanup.
-  rewrite wrap_small_log_addr'.
-  word_cleanup.
 
   iInv "Hcirc" as "HcircI" "Hclose".
   iDestruct "HcircI" as (σ) "[>Hσ HP]".
@@ -910,6 +907,9 @@ Proof.
   assert (length (circ_proof.upds σ ++ upds) ≤ LogSz ∧
           uint.Z endpos = circΣ.diskEnd σ ∧
           uint.Z endpos + Z.of_nat (length upds) < 2^64) by len.
+
+  replace (uint.Z (word.add (W64 2) (word.modu (word.add endpos i) (W64 LogSz)))) with
+    (2 + (uint.Z endpos + uint.Z i) `mod` LogSz) by word.
 
   iFrame "Hdi".
   iApply ncfupd_mask_intro; first set_solver+.
@@ -948,23 +948,21 @@ Proof.
     rewrite list_lookup_fmap.
     apply fmap_is_Some.
     change (word.divu (word.sub 4096 8) 8) with (W64 511).
-    word_cleanup.
     apply lookup_lt_is_Some_2; len.
   }
   iIntros "Haddrs".
   iApply "HΦ".
   change (word.divu (word.sub 4096 8) 8) with (W64 511).
-  word_cleanup.
   iFrame.
-  iSplitL "Hγblocks".
-  { replace (Z.to_nat (uint.Z i + 1)) with (S (uint.nat i)) by lia.
-    erewrite update_blocks_take_S; eauto. }
+  replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
+  erewrite update_blocks_take_S; eauto.
+  iFrame.
   iSplitL "Haddrs".
-  { replace (Z.to_nat (uint.Z i + 1)) with (S (uint.nat i)) by lia.
+  {
     erewrite update_addrs_take_S; eauto.
-    replace (uint.Z (word.add endpos i)) with (uint.Z endpos + uint.Z i) by word.
     rewrite /own_slice_small /list.untype.
     rewrite list_fmap_insert //.
+    iExactEq "Haddrs". f_equal. f_equal. word.
   }
   iApply "Hbks".
   iFrame. eauto.

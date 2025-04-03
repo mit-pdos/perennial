@@ -297,15 +297,7 @@ Proof using Type*.
 
     iDestruct (big_sepS_elem_of_acc_impl req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]"; first by apply elem_of_fin_to_set.
     iMod (fmcounter_map_update (uint.nat req.(Req_Seq)) with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
-    {
-      rename select (_ < _) into Hlt.
-      simpl in Hlt.
-      rewrite -u64_Z_through_nat in Hlt.
-      replace (uint.Z req.(Req_Seq)%Z) with (uint.nat req.(Req_Seq):Z) in Hlt; last first.
-      { rewrite u64_Z_through_nat. done. }
-      apply Nat2Z.inj_lt in Hlt.
-      lia.
-    }
+    { simpl in *. word. }
     iMod ("HMClose" with "[Hpost]") as "_".
     { iNext. iFrame "#". iRight. by iRight. }
     iModIntro.
@@ -345,10 +337,7 @@ Proof.
   iDestruct (ghost_map_lookup with "Hrcctx Hptstoro") as %HinReplyHistory.
   iDestruct (big_sepM_delete with "Hcseq_lb") as "[Hcseq_lb_one _] /="; eauto.
   iDestruct (fmcounter_map_mono_lb (uint.nat req.(Req_Seq) + 2) with "Hcseq_lb_one") as "#HStaleFact".
-  { replace (uint.Z req.(Req_Seq)) with (Z.of_nat (uint.nat req.(Req_Seq))) in Hineq; last by apply u64_Z_through_nat.
-    simpl.
-    lia.
-  }
+  { simpl. word. }
   iMod ("HNclose" with "[Hrcctx]") as "_".
   {
     iNext. iExists _; iFrame; iFrame "#".
@@ -452,14 +441,7 @@ Proof.
     iDestruct (big_sepS_elem_of_acc_impl req.(Req_CID) with "Hlseq_own") as "[Hlseq_one Hlseq_own]";
       first by apply elem_of_fin_to_set.
     iMod (fmcounter_map_update (uint.nat req.(Req_Seq)) with "Hlseq_one") as "[Hlseq_one #Hlseq_new_lb]".
-    {
-      simpl in Hrseq.
-      replace (uint.Z req.(Req_Seq)%Z) with (uint.nat req.(Req_Seq):Z) in Hrseq; last first.
-      { rewrite u64_Z_through_nat. done. }
-      rewrite -u64_Z_through_nat in Hrseq.
-      apply Nat2Z.inj_lt in Hrseq.
-      lia.
-    }
+    { simpl in *. word. }
 
     (* COMMIT POINT *)
     iMod ("Hfupd" with "HP Hproc_tok Hlseq_new_lb Hctx") as "(Hpost & Hγproc & Hctx')".

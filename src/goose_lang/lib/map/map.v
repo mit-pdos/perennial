@@ -372,24 +372,8 @@ Proof using IntoValComparable0.
     }
 
     simpl in *.
-    replace (word.add 1 s) with (word.add s 1) by ring.
-    replace (word.add s 1) with (word.add (uint.nat s) 1); last first.
-    { by rewrite -HsizeConversion. }
-    rewrite u64_Z_through_nat.
-    replace (word.add (uint.Z s) 1%Z) with (uint.Z (s + 1):u64); last first.
-    { word. }
-    replace (S s) with (s + 1)%nat in *; last lia.
-
-    assert (Z.of_nat (s + 1) = (uint.Z (s + 1))).
-    {
-      rewrite -u64_Z_through_nat.
-      word.
-    }
-    rewrite -H0.
-    iApply "HΦ".
-    rewrite -u64_Z_through_nat in H0.
-    iPureIntro.
-    word.
+    replace (word.add _ _) with (W64 (S s)) by word.
+    iApply "HΦ". word.
 Qed.
 
 Theorem wp_MapLen stk E mref q m :

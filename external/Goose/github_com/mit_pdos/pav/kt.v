@@ -49,10 +49,10 @@ Definition MapValPreDecode: val :=
 (* checkOneUpd checks that an update is safe to apply, and errs on fail. *)
 Definition checkOneUpd: val :=
   rec: "checkOneUpd" "keys" "nextEp" "mapLabel" "mapVal" :=
-    let: (("inTree", <>), "err0") := merkle.Tree__Get "keys" "mapLabel" in
-    (if: "err0"
+    (if: (slice.len "mapLabel") ≠ cryptoffi.HashLen
     then #true
     else
+      let: ("inTree", <>) := merkle.Tree__Get "keys" "mapLabel" in
       (if: "inTree"
       then #true
       else
@@ -1186,8 +1186,7 @@ Definition getHist: val :=
       let: "ver" := ref_to uint64T #0 in
       (for: (λ: <>, (![uint64T] "ver") < ("numVers" - #1)); (λ: <>, "ver" <-[uint64T] ((![uint64T] "ver") + #1)) := λ: <>,
         let: ("label", "labelProof") := compMapLabel "uid" (![uint64T] "ver") "vrfSk" in
-        let: ((("inMap", "mapVal"), "mapProof"), "err0") := merkle.Tree__Prove "keyMap" "label" in
-        std.Assert (~ "err0");;
+        let: (("inMap", "mapVal"), "mapProof") := merkle.Tree__Prove "keyMap" "label" in
         std.Assert "inMap";;
         "hist" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "hist") (struct.new MembHide [
           "LabelProof" ::= "labelProof";
@@ -1216,8 +1215,7 @@ Definition getLatest: val :=
        ])
     else
       let: ("label", "labelProof") := compMapLabel "uid" ("numVers" - #1) "vrfSk" in
-      let: ((("inMap", "mapVal"), "mapProof"), "err0") := merkle.Tree__Prove "keyMap" "label" in
-      std.Assert (~ "err0");;
+      let: (("inMap", "mapVal"), "mapProof") := merkle.Tree__Prove "keyMap" "label" in
       std.Assert "inMap";;
       let: (("valPre", <>), "err1") := MapValPreDecode "mapVal" in
       std.Assert (~ "err1");;
@@ -1237,8 +1235,7 @@ Definition getLatest: val :=
 Definition getBound: val :=
   rec: "getBound" "keyMap" "uid" "numVers" "vrfSk" :=
     let: ("label", "labelProof") := compMapLabel "uid" "numVers" "vrfSk" in
-    let: ((("inMap", <>), "mapProof"), "err0") := merkle.Tree__Prove "keyMap" "label" in
-    std.Assert (~ "err0");;
+    let: (("inMap", <>), "mapProof") := merkle.Tree__Prove "keyMap" "label" in
     std.Assert (~ "inMap");;
     struct.new NonMemb [
       "LabelProof" ::= "labelProof";
@@ -1784,11 +1781,9 @@ Definition updEpochHist: val :=
 (* mapper1 computes merkle proofs and assembles full response. *)
 Definition Server__mapper1: val :=
   rec: "Server__mapper1" "s" "in" "out" :=
-    let: ((("latIn", <>), "latMerk"), "err0") := merkle.Tree__Prove (struct.loadF Server "keyMap" "s") (struct.loadF mapper0Out "latestVrfHash" "in") in
-    std.Assert (~ "err0");;
+    let: (("latIn", <>), "latMerk") := merkle.Tree__Prove (struct.loadF Server "keyMap" "s") (struct.loadF mapper0Out "latestVrfHash" "in") in
     std.Assert "latIn";;
-    let: ((("boundIn", <>), "boundMerk"), "err1") := merkle.Tree__Prove (struct.loadF Server "keyMap" "s") (struct.loadF mapper0Out "boundVrfHash" "in") in
-    std.Assert (~ "err1");;
+    let: (("boundIn", <>), "boundMerk") := merkle.Tree__Prove (struct.loadF Server "keyMap" "s") (struct.loadF mapper0Out "boundVrfHash" "in") in
     std.Assert (~ "boundIn");;
     struct.storeF WQResp "Dig" "out" (getDig (struct.loadF Server "epochHist" "s"));;
     struct.storeF WQResp "Lat" "out" (struct.new Memb [

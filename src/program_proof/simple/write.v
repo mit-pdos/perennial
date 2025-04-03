@@ -208,20 +208,9 @@ Proof using Ptimeless.
               `max` (uint.Z offset + uint.Z (W64 $ uint.Z (W32 (length databuf)))))%Z
       with (length (take (uint.nat offset) state ++
                     databuf ++ drop (uint.nat offset + length databuf) state) : Z).
-    2: {
-      word_cleanup.
-      destruct (decide (uint.Z offset + length databuf ≤ length state)%Z).
-      { rewrite Z.max_l; last by lia.
-        rewrite !length_app. rewrite length_drop.
-        rewrite length_take_le; lia. }
-      { rewrite Z.max_r; last by lia.
-        rewrite !length_app. rewrite length_drop.
-        rewrite length_take_le; try lia.
-        revert H3. word. }
-    }
-    word_cleanup.
-    rewrite (firstn_all2 databuf); last by lia.
-    replace (Z.to_nat (length databuf)) with (length databuf) by lia.
+    2: { rewrite !length_app length_drop length_take_le; word. }
+    rewrite (firstn_all2 databuf); last by word.
+    replace (Z.to_nat (length databuf)) with (length databuf) by word.
 
     wpc_apply (wpc_Op__CommitWait with "[$Hjrnl $Htxncrash Hinode_enc Hinode_data]").
     5: { (* XXX is there a clean version of this? *) generalize (jrnl_maps_to γtxn). intros. iAccu. }
@@ -269,6 +258,7 @@ Proof using Ptimeless.
       iModIntro. iSplit; first by done.
       iIntros "? !>".
       iApply is_inode_crash_next. iFrame "Hinode_state". iRight. iFrame.
+      iExactEq "H1". f_equal. f_equal. f_equal. f_equal. word.
     }
 
     iModIntro.
@@ -311,6 +301,7 @@ Proof using Ptimeless.
       }
       iModIntro.
 
+      replace (uint.nat (W64 (uint.Z (W32 (length databuf))))) with (length databuf) by word.
       wpc_frame "Hinode_state Hcommit".
       { iMod (is_inode_crash_prev_own with "Htxncrash [$Hinode_state $Hcommit]") as "H".
         iModIntro. iSplit; try (iIntros "? !>"); done. }
@@ -341,7 +332,7 @@ Proof using Ptimeless.
       iSplit; first done.
       iSplit; first done.
       iExactEq "HQ".
-      f_equal.
+      f_equal. f_equal. word.
     }
 
     { (* Simulate to get Q *)
@@ -393,8 +384,7 @@ Proof using Ptimeless.
       iApply "HΦ". iRight.
       iExists _.
       iSplit; first done.
-      iFrame.
-      iPureIntro. lia.
+      iFrame. word.
     }
   }
 
@@ -453,8 +443,7 @@ Proof using Ptimeless.
     iApply "HΦ". iRight.
     iExists _.
     iSplit; first done.
-    iFrame.
-    iPureIntro. lia.
+    iFrame. word.
   }
 
 Unshelve.

@@ -102,8 +102,7 @@ Proof.
         rewrite ?list_lookup_insert_ne //.
         iDestruct "H" as (hid ?) "H". iExists hid; iSplit; first eauto.
         iDestruct "H" as "[%Hzero|H2]".
-        { iLeft. iPureIntro. destruct Hzero as (?&?); split; first auto.
-          word_cleanup. }
+        { iLeft. iPureIntro. destruct Hzero as (?&?); split; first auto. word. }
         { eauto. }
       }
     }
@@ -165,28 +164,18 @@ Proof.
         - rewrite Heq_uNSHARD /uNSHARD. lia.
         - split.
           * apply encoding.unsigned_64_nonneg.
-          * apply lookup_lt_Some in Hlookup.
-            rewrite Z_u64.
-            ** lia.
-            ** split; try lia. rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping. lia.
+          * apply lookup_lt_Some in Hlookup. word.
       }
       iDestruct "H" as (? Hlookup2) "[%Hbad|H]".
       { destruct Hbad as (_&Hle). exfalso.
         apply lookup_lt_Some in Hlookup.
         rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping.
-        word_cleanup.
-        rewrite -Hlen_shardMapping in Hle.
         word.
       }
       iDestruct "H" as (??) "H". iExists _.
       assert (host = hid) as ->.
-      {
-        assert (uint.nat (W64 (Z.of_nat sid)) = sid) as Hcoerce.
-        { apply lookup_lt_Some in Hlookup.
-          rewrite Heq_uNSHARD /uNSHARD in Hlen_shardMapping.
-          word.
-        }
-        { rewrite Hcoerce in Hlookup2. congruence. }
+      { replace (sid) with (uint.nat (W64 sid)) in Hlookup; first congruence.
+        apply lookup_lt_Some in Hlookup. unfold uNSHARD in *. word.
       }
       iFrame. eauto.
     }

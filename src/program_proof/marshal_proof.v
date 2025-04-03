@@ -182,7 +182,7 @@ Proof.
   wp_apply (wp_NewSlice (V:=u8)).
   iIntros (s) "Hs".
   wp_apply (wp_new_enc_from_slice with "Hs").
-  rewrite length_replicate. word_cleanup.
+  rewrite length_replicate. nat_cleanup.
   iIntros (enc_v) "Henc".
   iApply ("HΦ" with "Henc").
 Qed.

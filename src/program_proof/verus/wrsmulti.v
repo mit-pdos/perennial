@@ -105,46 +105,45 @@ Proof.
   rewrite length_fmap in Hslicesz.
   wpc_if_destruct.
   - wpc_pures.
-    rewrite Z_u64 in Heqb; last by lia.
-    edestruct (list_lookup_lt bslices (Z.to_nat idx)); first by lia.
+    edestruct (list_lookup_lt bslices (Z.to_nat idx)); first by word.
     wpc_bind (SliceGet _ _ _). wpc_frame. wp_load.
     wp_apply (wp_SliceGet with "[$Hss]").
-    { iPureIntro. rewrite list_lookup_fmap. rewrite Z_u64; last by lia. rewrite H. done. }
+    { iPureIntro. rewrite list_lookup_fmap. replace (uint.nat (W64 idx)) with (Z.to_nat idx) by word. rewrite H //. }
     iIntros "[Hss %Hvalty]". iNamed 1.
     wpc_bind (load_ty _ _). wpc_frame. wp_load. iModIntro. iNamed 1.
     wpc_pures.
     wpc_bind (std.SumAssumeNoOverflow _ _). wpc_frame.
     wp_apply (wp_SumAssumeNoOverflow). iIntros "%Hoverflow". iNamed 1.
 
-    edestruct (list_lookup_lt bs (Z.to_nat idx)); first by lia.
+    edestruct (list_lookup_lt bs (Z.to_nat idx)); first by word.
     edestruct (list_lookup_lt (take (Z.to_nat idx) bs ++ drop (Z.to_nat idx) bs0) (Z.to_nat idx)).
-    { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. lia. }
+    { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. word. }
     iDestruct (big_sepL2_lookup_acc with "Hs") as "[Hblk Hs]"; eauto.
     iDestruct (big_sepL_insert_acc with "[Hdisk]") as "[Hdiskblk Hdisk]"; eauto.
 
     wpc_apply (wpc_Write with "[Hblk Hdiskblk]").
-    { word_cleanup. iFrame. }
+    { nat_cleanup. replace (uint.Z (word.add _ _)) with (uint.Z a + idx) by word. iFrame. }
     rewrite Hoverflow.
 
     iSplit.
     { iIntros "Hdiskblk". iLeft in "HΦ". iApply "HΦ".
       iDestruct "Hdiskblk" as "[Hdiskblk | Hdiskblk]".
       + iDestruct ("Hdisk" with "[Hdiskblk]") as "Hdisk".
-        { word_cleanup. iFrame. }
+        { iExactEq "Hdiskblk". f_equal. word. }
         rewrite list_insert_id; eauto.
       + iDestruct ("Hdisk" with "[Hdiskblk]") as "Hdisk".
-        { word_cleanup. iFrame. }
+        { iExactEq "Hdiskblk". f_equal. word. }
         iExists (Z.to_nat idx + 1)%nat.
         iExactEq "Hdisk". f_equal.
         rewrite insert_take_drop.
-        2: { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. lia. }
+        2: { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. word. }
         rewrite take_app_le.
-        2: { rewrite length_take. lia. }
+        2: { rewrite length_take. word. }
         rewrite take_idemp.
         rewrite drop_app_ge.
-        2: { rewrite length_take. lia. }
+        2: { rewrite length_take. word. }
         rewrite length_take_le.
-        2: { lia. }
+        2: { word. }
         rewrite drop_drop.
         rewrite cons_middle.
         rewrite app_assoc. f_equal.
@@ -155,21 +154,21 @@ Proof.
 
     iModIntro. iIntros "[Hdiskblk Hblk]".
     iDestruct ("Hdisk" with "[Hdiskblk]") as "Hdisk".
-    { word_cleanup. iFrame. }
+    { iExactEq "Hdiskblk"; f_equal; word. }
 
     iCache with "HΦ Hdisk".
     { crash_case.
         iExists (Z.to_nat idx + 1)%nat.
         iExactEq "Hdisk". f_equal.
         rewrite insert_take_drop.
-        2: { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. lia. }
+        2: { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. word. }
         rewrite take_app_le.
-        2: { rewrite length_take. lia. }
+        2: { rewrite length_take. word. }
         rewrite take_idemp.
         rewrite drop_app_ge.
         2: { rewrite length_take. lia. }
         rewrite length_take_le.
-        2: { lia. }
+        2: { word. }
         rewrite drop_drop.
         rewrite cons_middle.
         rewrite app_assoc. f_equal.
@@ -190,14 +189,14 @@ Proof.
 
         iExactEq "Hdisk". f_equal.
         rewrite insert_take_drop.
-        2: { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. lia. }
+        2: { rewrite length_app length_drop -Hlen -length_drop -length_app take_drop. word. }
         rewrite take_app_le.
-        2: { rewrite length_take. lia. }
+        2: { rewrite length_take. word. }
         rewrite take_idemp.
         rewrite drop_app_ge.
         2: { rewrite length_take. lia. }
         rewrite length_take_le.
-        2: { lia. }
+        2: { word. }
         rewrite drop_drop.
         rewrite cons_middle.
         rewrite app_assoc. f_equal.

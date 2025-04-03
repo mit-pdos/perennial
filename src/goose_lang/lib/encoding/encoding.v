@@ -87,7 +87,7 @@ Proof.
   unfold W8.
   autorewrite with word.
   rewrite word.unsigned_sru;
-    rewrite unsigned_U32.
+    rewrite word.unsigned_of_Z.
   { rewrite word_wrap_wrap; last lia.
     rewrite [word.wrap (k * _)]wrap_small; last lia.
     reflexivity.
@@ -104,7 +104,7 @@ Proof.
   unfold W8.
   autorewrite with word.
   rewrite word.unsigned_sru;
-    rewrite unsigned_U64.
+    rewrite word.unsigned_of_Z.
   { rewrite word_wrap_wrap; last lia.
     rewrite [word.wrap (k * _)]wrap_small; last lia.
     reflexivity.
@@ -334,13 +334,13 @@ Ltac eval_term t :=
 Ltac eval_u32 :=
   match goal with
   | |- context[uint.Z (W32 ?z)] =>
-    rewrite  (Z_u32 z ltac:(lia))
+      change (uint.Z (W32 z)) with z
   end.
 
 Ltac eval_u64 :=
   match goal with
   | |- context[uint.Z (W64 ?z)] =>
-    rewrite  (Z_u64 z ltac:(lia))
+      change (uint.Z (W64 z)) with z
   end.
 
 Theorem u8_to_from_u32 (x:w32) :
@@ -588,7 +588,7 @@ Proof.
   rewrite ?word.unsigned_of_Z.
   repeat ( rewrite word_wrap_wrap'; last by lia ).
   repeat (( rewrite -> word_wrap_64_Zlor by intuition bit_bound ) ||
-          ( rewrite -> word_wrap_64_Zshiftl by intuition bit_bound )).
+     ( rewrite -> word_wrap_64_Zshiftl by intuition bit_bound )).
   reflexivity.
 Qed.
 

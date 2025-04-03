@@ -212,7 +212,8 @@ Proof.
   iSplitL "Helt".
   {
     unfold own_slice_elt.
-    replace (ty_size typ * uint.Z 0%nat)%Z with (0%Z) by word.
+    replace (uint.Z 0%nat) with (0%Z) by word.
+    replace (ty_size typ * 0)%Z with (0%Z) by lia.
     rewrite loc_add_0.
     iFrame.
   }

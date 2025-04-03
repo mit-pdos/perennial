@@ -717,15 +717,7 @@ Proof.
     { eapply map_disjoint_Some_l; eauto.
       simpl. apply lookup_insert. }
     replace (word.add (size mdone') 1) with (uint.Z (size mdone') + 1:u64) by word.
-    rewrite Z_u64; last first.
-    { split; first lia.
-      assert (size mdone' ≤ size m)%nat.
-      { rewrite -Hunion.
-        rewrite ?Map.map_size_dom.
-        apply subseteq_size. set_solver. }
-      word.
-    }
-    replace (Z.of_nat (S (size mdone'))) with (size mdone' + 1)%Z by lia.
+    replace (W64 (_)) with (W64 (S (size mdone'))) by word.
     iFrame.
     rewrite /own_slicemap_rep.
     iNamed "Hslicemap".

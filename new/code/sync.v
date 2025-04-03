@@ -257,7 +257,7 @@ Definition RWMutex__Unlock : val :=
     (let: "i" := (ref_ty intT (zero_val intT)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[intT] "$r0");;;
-    (for: (λ: <>, int_lt (![intT] "i") (to_u64 (![int32T] "r"))); (λ: <>, do:  ("i" <-[intT] ((![intT] "i") + #(W64 1)))) := λ: <>,
+    (for: (λ: <>, int_lt (![intT] "i") (s_to_w64 (![int32T] "r"))); (λ: <>, do:  ("i" <-[intT] ((![intT] "i") + #(W64 1)))) := λ: <>,
       do:  (let: "$a0" := (struct.field_ref RWMutex "readerSem" (![ptrT] "rw")) in
       let: "$a1" := #false in
       let: "$a2" := #(W64 0) in
@@ -308,16 +308,16 @@ Definition WaitGroup__Add : val :=
         )))
     else do:  #());;;
     let: "state" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := ((![intT] "delta") ≪ #(W64 32)) in
+    let: "$r0" := (let: "$a0" := ((s_to_w64 (![intT] "delta")) ≪ #(W64 32)) in
     (method_call #atomic #"Uint64'ptr" #"Add" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) "$a0") in
     do:  ("state" <-[uint64T] "$r0");;;
     let: "v" := (ref_ty int32T (zero_val int32T)) in
-    let: "$r0" := (to_u32 ((![uint64T] "state") ≫ #(W64 32))) in
+    let: "$r0" := (u_to_w32 ((![uint64T] "state") ≫ #(W64 32))) in
     do:  ("v" <-[int32T] "$r0");;;
     let: "w" := (ref_ty uint32T (zero_val uint32T)) in
-    let: "$r0" := (to_u32 (![uint64T] "state")) in
+    let: "$r0" := (u_to_w32 (![uint64T] "state")) in
     do:  ("w" <-[uint32T] "$r0");;;
-    (if: (race.Enabled && (int_gt (![intT] "delta") #(W64 0))) && ((![int32T] "v") = (to_u32 (![intT] "delta")))
+    (if: (race.Enabled && (int_gt (![intT] "delta") #(W64 0))) && ((![int32T] "v") = (s_to_w32 (![intT] "delta")))
     then
       do:  (let: "$a0" := (struct.field_ref WaitGroup "sema" (![ptrT] "wg")) in
       (func_call #race #"Read"%go) "$a0")
@@ -327,7 +327,7 @@ Definition WaitGroup__Add : val :=
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: negative WaitGroup counter"%go) in
       Panic "$a0")
     else do:  #());;;
-    (if: (((![uint32T] "w") ≠ #(W32 0)) && (int_gt (![intT] "delta") #(W64 0))) && ((![int32T] "v") = (to_u32 (![intT] "delta")))
+    (if: (((![uint32T] "w") ≠ #(W32 0)) && (int_gt (![intT] "delta") #(W64 0))) && ((![int32T] "v") = (s_to_w32 (![intT] "delta")))
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       Panic "$a0")
@@ -371,10 +371,10 @@ Definition WaitGroup__Wait : val :=
       let: "$r0" := ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref WaitGroup "state" (![ptrT] "wg"))) #()) in
       do:  ("state" <-[uint64T] "$r0");;;
       let: "v" := (ref_ty int32T (zero_val int32T)) in
-      let: "$r0" := (to_u32 ((![uint64T] "state") ≫ #(W64 32))) in
+      let: "$r0" := (u_to_w32 ((![uint64T] "state") ≫ #(W64 32))) in
       do:  ("v" <-[int32T] "$r0");;;
       let: "w" := (ref_ty uint32T (zero_val uint32T)) in
-      let: "$r0" := (to_u32 (![uint64T] "state")) in
+      let: "$r0" := (u_to_w32 (![uint64T] "state")) in
       do:  ("w" <-[uint32T] "$r0");;;
       (if: (![int32T] "v") = #(W32 0)
       then

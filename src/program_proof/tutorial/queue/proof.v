@@ -74,11 +74,7 @@ Proof.
       rewrite take_insert.
       { done. }
       word.
-    + word_cleanup.
-      (* Search (_ `mod` _ = _). *)
-      rewrite Z.mod_small.
-      { done. }
-      word.
+    + rewrite Z.mod_small; word.
   - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
     + epose proof (subslice_split_r (uint.nat first0) (length slice) _ (_ ++ _)).
       rewrite H4.
@@ -118,7 +114,7 @@ Proof.
           rewrite firstn_all.
           rewrite drop_insert_gt. 
           {done. }
-          word_cleanup.
+          word.
         }
       rewrite H6.
       rewrite app_inv_head_iff.
@@ -137,8 +133,8 @@ Proof.
       rewrite drop_app_length.
       rewrite take_insert.
       { eauto. }
-      word_cleanup.
-    + (* FIXME: would be cool if [word] could handle this style of reasoning. *)
+      word.
+    + (* NOTE: would be cool if [word] could handle this style of reasoning. *)
       rewrite -(Z_mod_plus_full _ (-1)).
       rewrite Z.mod_small; word.
   Unshelve.
@@ -176,7 +172,7 @@ Proof.
       2: { word. }
       assert ((uint.nat (uint.nat first0 + uint.nat count0)%Z -
       (uint.nat first0 + uint.nat count0))%nat = uint.nat 0).
-      { word_cleanup. }
+      { word. }
       rewrite H4.
       match goal with
         | |- context [take ?n _] => replace n with 1%nat
@@ -192,7 +188,7 @@ Proof.
         word.
       }
       word.
-    + (* FIXME: would be cool if [word] could handle this style of reasoning. *)
+    + (* NOTE: would be cool if [word] could handle this style of reasoning. *)
       rewrite Z.mod_small; word.
   - replace (Z.to_nat(uint.Z (word.add first0 count0) `mod` length slice)) with (uint.nat(uint.nat first0 + uint.nat count0 - length slice)).
     + rewrite subslice_comm.
@@ -203,7 +199,7 @@ Proof.
       2: { word. }
       assert ((uint.nat (uint.nat first0 + uint.nat count0 - length slice)%Z -
       (uint.nat first0 + uint.nat count0 - length slice))%nat = uint.nat 0).
-      { word_cleanup. }
+      { word. }
       rewrite H4.
       match goal with
         | |- context [take ?n _] => replace n with 1%nat
@@ -219,7 +215,7 @@ Proof.
         word.
       }
       word.
-    + (* FIXME: would be cool if [word] could handle this style of reasoning. *)
+    + (* NOTE: would be cool if [word] could handle this style of reasoning. *)
       rewrite -(Z_mod_plus_full _ (-1)).
       rewrite Z.mod_small; word.
 Qed.
@@ -237,8 +233,9 @@ Proof.
   (* NOTE: needs to carefully do what the old [word_cleanup] would do, so that
   the statements of [add_one_lemma_1] and [add_one_lemma_2] apply. *)
   rewrite -> ?word.unsigned_add, ?word.unsigned_sub,
-    ?word.unsigned_modu_nowrap, ?unsigned_U64; [ | word .. ].
+    ?word.unsigned_modu_nowrap, ?word.unsigned_of_Z; [ | word .. ].
   rewrite -> !wrap_small by word.
+  replace (uint.Z (W64 (length _))) with (Z.of_nat (length slice)) by word.
   rewrite (subslice_split_r (uint.nat first0) (uint.nat first0 + uint.nat count0) _ (_ ++ _)).
   - rewrite add_one_lemma_1; eauto.
     rewrite app_inv_head_iff.
@@ -298,7 +295,7 @@ Proof.
     replace (word.unsigned (word.add first0 1)) with (uint.Z (length slice)).
     2: word.
     replace ((uint.Z (length slice) `mod` length slice)) with 0.
-    2: { rewrite Z_u64. { rewrite Z_mod_same. { done. } word. } word. }
+    2: { replace (uint.Z _) with (Z.of_nat (length slice)) by word. rewrite Z_mod_same //. word. }
     rewrite subslice_comm.
     rewrite drop_app_length.
     rewrite subslice_comm.
@@ -322,6 +319,7 @@ Proof.
   rewrite -> ?word.unsigned_add, ?word.unsigned_sub,
     ?word.unsigned_modu_nowrap, ?unsigned_U64; [ | word .. ].
   rewrite -> !wrap_small by word.
+  replace (uint.Z (W64 (length slice))) with (Z.of_nat (length slice)) by word.
   rewrite (subslice_split_r (uint.nat first0) (uint.nat first0 + 1) _ (_++_)).
   - rewrite (remove_one_lemma_1 slice first0 e); eauto.
     rewrite app_inv_head_iff.
@@ -610,7 +608,8 @@ Proof.
       { 
         word.
       }
-      iExactEq "Helem". unfold named. rewrite H0. f_equal. f_equal. word.
+      iExactEq "Helem". unfold named. rewrite H0. f_equal. f_equal.
+      nat_cleanup. unfold W64. rewrite word.of_Z_unsigned. word.
     }
     wp_pures.
     wp_loadField.

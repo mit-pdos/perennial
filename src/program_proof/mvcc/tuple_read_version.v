@@ -88,26 +88,10 @@ Proof.
     (* apply Znot_le_gt in Heqb. *)
     destruct (list_lookup_lt vers (length vers - S (uint.nat idx))%nat) as [ver' Hver']; first word.
     wp_apply (wp_SliceGet with "[HversS]").
-    { iFrame.
-      iPureIntro.
-      set x := versS.(Slice.sz).
-      (**
-       * Notes on rewriting between [word.sub] and [Z.sub].
-       * 1. In general, to rewrite from [uint.Z (word.sub x y)] to [uint.Z x - uint.Z y],
-       * we need to have [uint.Z x ≥ uint.Z y] in the context.
-       * 2. For nested [word.sub], e.g., [uint.Z (word.sub (word.sub x y) z)], we can
-       * first prove that [uint.Z (word.sub x y) ≥ uint.Z z], and then replace
-       * [uint.Z (word.sub (word.sub x y) z)] with [uint.Z x - uint.Z y - uint.Z z].
-       *)
-      assert (H : Z.ge (uint.Z (word.sub x idx)) 1).
-      { subst x. word. }
-      replace (uint.Z (word.sub _ (W64 1))) with (uint.Z versS.(Slice.sz) - uint.Z idx - 1); last first.
-      { subst x. word. }
-      replace (Z.to_nat _) with ((length vers) - (S (uint.nat idx)))%nat; last first.
-      { rewrite HversLen. word. }
+    { iFrame. iPureIntro. instantiate(1:=(ver_to_val ver')).
       rewrite list_lookup_fmap.
-      rewrite Hver'.
-      by apply fmap_Some_2.
+      apply fmap_Some_2. rewrite -Hver'.
+      fold pver in *. f_equal. word.
     }
     iIntros "[HversS %Hvalty]".
     wp_store.
@@ -419,7 +403,7 @@ Proof.
         split.
         { (* Prove [Hwellformed]. *)
           split; last done.
-          apply (Forall_impl _ _ _ HtidlastGt).
+          apply (Forall_impl _ _ _ HtidlastGt). intros.
           word.
         }
         { (* Prove [HtupleAbs]. *)

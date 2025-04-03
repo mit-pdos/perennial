@@ -991,7 +991,7 @@ Definition NewSession : val :=
       let: "err" := (ref_ty error (zero_val error)) in
       let: "resp" := (ref_ty ptrT (zero_val ptrT)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] (struct.field_ref sessionOptions "ctx" (![ptrT] "ops"))) in
-      let: "$a1" := (![intT] (struct.field_ref sessionOptions "ttl" (![ptrT] "ops"))) in
+      let: "$a1" := (s_to_w64 (![intT] (struct.field_ref sessionOptions "ttl" (![ptrT] "ops")))) in
       (method_call #clientv3 #"Client'ptr" #"Grant" (![ptrT] "client")) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -1125,7 +1125,7 @@ Definition Session__Close : val :=
     let: "cancel" := (ref_ty context.CancelFunc (zero_val context.CancelFunc)) in
     let: "ctx" := (ref_ty context.Context (zero_val context.Context)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] (struct.field_ref sessionOptions "ctx" (![ptrT] (struct.field_ref Session "opts" (![ptrT] "s"))))) in
-    let: "$a1" := ((![intT] (struct.field_ref sessionOptions "ttl" (![ptrT] (struct.field_ref Session "opts" (![ptrT] "s"))))) * time.Second) in
+    let: "$a1" := ((s_to_w64 (![intT] (struct.field_ref sessionOptions "ttl" (![ptrT] (struct.field_ref Session "opts" (![ptrT] "s")))))) * time.Second) in
     (func_call #context #"WithTimeout"%go) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1159,7 +1159,7 @@ Definition WithTTL : val :=
        else
          do:  (let: "$a0" := #"WithTTL(): TTL should be > 0, preserving current TTL"%go in
          let: "$a1" := ((let: "$sl0" := (let: "$a0" := #"current-session-ttl"%go in
-         let: "$a1" := (![intT] (struct.field_ref sessionOptions "ttl" (![ptrT] "so"))) in
+         let: "$a1" := (s_to_w64 (![intT] (struct.field_ref sessionOptions "ttl" (![ptrT] "so")))) in
          (func_call #zap #"Int64"%go) "$a0" "$a1") in
          slice.literal zapcore.Field ["$sl0"])) in
          (method_call #zap #"Logger'ptr" #"Warn" (![ptrT] "lg")) "$a0" "$a1")))

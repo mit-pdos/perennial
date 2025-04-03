@@ -1152,11 +1152,7 @@ Proof.
         iDestruct (own_latest_epoch_combine with "Hlatest2 HghostLatestEpoch") as "[Hlatest %Heq]".
         rewrite Heq.
         iDestruct (own_latest_epoch_split with "Hlatest") as "[Hlatest Hlatest2]".
-        replace (latestEpoch) with (e); last first.
-        {
-          rewrite Heq in n.
-          word_cleanup.
-        }
+        replace latestEpoch with e by word.
         iMod ("Hupd" with "Hlatest2") as "Hupd".
         iFrame.
         by iMod "Hmask".

@@ -33,7 +33,7 @@ Section program.
     set x := length key.
     set y := size gids_all.
     apply valid_key_length in Hvk.
-    word.
+    word with (rewrite -> !wrap_small in H by word).
   Qed.
 
 End program.

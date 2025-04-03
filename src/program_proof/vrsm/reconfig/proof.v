@@ -602,7 +602,7 @@ Proof using waitgroupG0.
     destruct (decide (_)); last first.
     { done. }
     iIntros.
-    exfalso. replace (uint.nat 0%Z) with 0 in H by word.
+    exfalso.
     word.
   }
 
@@ -722,19 +722,6 @@ Proof using waitgroupG0.
   { iNamedAccu. }
   iDestruct (big_sepL2_length with "Hhost") as %Hserver_len_eq.
 
-  assert (length servers > 0) as Hserver_nz.
-  {
-    assert (length servers ≠ 0 ∨ length servers = 0) as [|Hbad] by word.
-    { word. }
-    {
-      exfalso.
-      rewrite Hbad in Hservers_sz.
-      apply u64_nat_0 in Hservers_sz.
-      rewrite Hservers_sz in Heqb.
-      done.
-    }
-  }
-
   iMod (readonly_alloc_1 with "Hservers_sl") as "#Hservers_sl".
   wp_apply (wp_Clerk__WriteConfig2 with "Hck Hservers_sl [$Hconf_prop] Hres Hhost").
   {
@@ -754,10 +741,6 @@ Proof using waitgroupG0.
       apply lookup_lt_is_Some_1.
       eexists. done.
     }
-    replace (length clerks) with (length server_γs) in * by word.
-    assert (uint.nat i = i) as Hi.
-    { word. }
-
     iDestruct "HH" as "[%Hbad|HP]".
     {
       exfalso.
@@ -767,14 +750,15 @@ Proof using waitgroupG0.
     iDestruct "HP" as (??) "(%Hlookup2 & _ & Hpost)".
     assert (γsrv = γsrv'.(r_pb)).
     {
-      rewrite Hi in Hlookup2.
       rewrite list_lookup_fmap in Hlookup.
+      replace (uint.nat i) with i in Hlookup2.
+      2:{ clear -H Hserver_len_eq Hservers_sz. word. }
       rewrite Hlookup2 in Hlookup.
       by inversion Hlookup.
     }
     subst.
     iSpecialize ("Hrest" $! i γsrv' with "[%] [%]").
-    { rewrite Hi. done. }
+    { word. }
     { done. }
     iFrame "Hrest".
   }

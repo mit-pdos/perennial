@@ -66,8 +66,6 @@ Section program.
       iNamed "HP".
       wp_load.
       wp_pures.
-      rewrite Z_u64; last first.
-      { clear -Hlenstrs. lia. }
       set b := bool_decide _.
       destruct b eqn:Hb; wp_pures; last first.
       { iApply "HΦ".
@@ -76,7 +74,7 @@ Section program.
         subst b.
         case_bool_decide as Hi; first done.
         apply bool_decide_pack.
-        lia.
+        word.
       }
       wp_load.
       subst b. apply bool_decide_eq_true_1 in Hb.

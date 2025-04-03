@@ -220,8 +220,7 @@ Proof using Ptimeless.
           iDestruct (map_valid with "Hsrcheap Hinode_state") as "%Hsrc_fh".
           iDestruct (big_sepM_lookup with "Hnooverflow") as %Hnooverflow; eauto.
           exfalso.
-          revert Heqb. word_cleanup. intros.
-          revert H0 Heqb0. word.
+          revert Heqb. word.
         }
 
         {
@@ -279,21 +278,17 @@ Proof using Ptimeless.
             iExists _. iFrame. iExists _.
 
             assert (length state < uint.Z w)%Z by (revert Heqb; word).
-            rewrite -> Z.max_r in Heqb0 by word.
-            rewrite -Heqb0. word_cleanup.
             rewrite -> Z.max_r by word.
-            rewrite !length_app !length_replicate length_take_ge.
-            2: word.
-            replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
-            replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
-            replace (length state + (uint.nat w - length state)) with (uint.nat w) by lia.
-            replace (W64 (uint.nat w)) with (W64 (uint.Z w)) by word. iFrame.
-            replace (Z.to_nat (length state)) with (length state) by lia.
-            rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
-            rewrite drop_ge; last by lia. rewrite app_nil_r.
+            rewrite !length_app !length_replicate length_take_ge; last word.
+            iSplitL "H0".
+            { iApply to_named. iExactEq "H0". instantiate (1:=blk). f_equal. word. }
+            iApply to_named. iExactEq "H1".
+            f_equal.
+            { word. }
+            rewrite firstn_all2; last by word. rewrite (firstn_all2 state); last by lia.
+            rewrite drop_ge; last by word. rewrite app_nil_r.
             rewrite firstn_all2. 2: rewrite length_replicate; lia.
-            replace (Z.to_nat (uint.Z w - length state)) with (uint.nat w - length state) by lia.
-            iFrame.
+            f_equal. f_equal. word.
           }
 
           iModIntro.
@@ -344,22 +339,15 @@ Proof using Ptimeless.
               2: { iModIntro. iSplit; try (iIntros "? !>"); done. }
 
               iRight.
-              assert (length state < uint.Z w)%Z by (revert Heqb; word).
-              rewrite -> Z.max_r in Heqb0 by word.
-              rewrite -Heqb0. word_cleanup.
-              rewrite -> Z.max_r by word.
-              rewrite !length_app !length_replicate length_take_ge.
-              2: word.
-              replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
-              replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
-              replace (length state + (uint.nat w - length state)) with (uint.nat w) by lia.
-              replace (W64 (uint.nat w)) with (W64 (uint.Z w)) by word. iFrame.
-              replace (Z.to_nat (length state)) with (length state) by lia.
-              rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
-              rewrite drop_ge; last by lia. rewrite app_nil_r.
+              rewrite !length_app !length_replicate length_take_ge; last word.
+              iSplitL "Hinode_enc".
+              { iExactEq "Hinode_enc". instantiate (1:=blk). f_equal. word. }
+              iExactEq "Hinode_data". f_equal.
+              { word. }
+              rewrite firstn_all2; last by word. rewrite (firstn_all2 state); last by word.
+              rewrite drop_ge; last by word. rewrite app_nil_r.
               rewrite firstn_all2. 2: rewrite length_replicate; lia.
-              replace (Z.to_nat (uint.Z w - length state)) with (uint.nat w - length state) by lia.
-              iFrame. }
+              do 2 f_equal. word. }
 
             iDestruct (struct_fields_split with "Hreply") as "Hreply". iNamed "Hreply".
             wp_pures.
@@ -372,22 +360,15 @@ Proof using Ptimeless.
             2: {
               iExists _. iFrame "Hinode_state".
               iExists _.
-              assert (length state < uint.Z w)%Z by (revert Heqb; word).
-              rewrite -> Z.max_r in Heqb0 by word.
-              rewrite -Heqb0. word_cleanup.
-              rewrite -> Z.max_r by word.
-              rewrite !length_app !length_replicate length_take_ge.
-              2: word.
-              replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
-              replace (length state + (uint.Z w - length state))%Z with (uint.Z w) by lia.
-              replace (length state + (uint.nat w - length state)) with (uint.nat w) by lia.
-              replace (W64 (uint.nat w)) with (W64 (uint.Z w)) by word. iFrame.
-              replace (Z.to_nat (length state)) with (length state) by lia.
-              rewrite firstn_all. rewrite (firstn_all2 state); last by lia.
-              rewrite drop_ge; last by lia. rewrite app_nil_r.
+              rewrite !length_app !length_replicate length_take_ge; last word.
+              iSplitL "Hinode_enc".
+              { iApply to_named. iExactEq "Hinode_enc". instantiate (1:=blk). f_equal. word. }
+              iApply to_named. iExactEq "Hinode_data". f_equal.
+              { word. }
+              rewrite firstn_all2; last by word. rewrite (firstn_all2 state); last by word.
+              rewrite drop_ge; last by word. rewrite app_nil_r.
               rewrite firstn_all2. 2: rewrite length_replicate; lia.
-              replace (Z.to_nat (uint.Z w - length state)) with (uint.nat w - length state) by lia.
-              iFrame. }
+              do 2 f_equal. word. }
 
             iIntros "Hcrashlocked".
             iSplit.

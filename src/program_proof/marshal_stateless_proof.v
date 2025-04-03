@@ -299,13 +299,13 @@ Proof.
   iDestruct (slice.own_slice_split_acc s.(Slice.sz) with "Hsl") as "[Hsl Hclose]".
   { len. }
   wp_apply (wp_UInt64Put with "Hsl").
-  { len. rewrite Hex. word. }
+  { len. }
   iIntros "Hsl". iDestruct ("Hclose" with "Hsl") as "Hsl".
   wp_pures. iApply "HΦ". iModIntro.
   rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
   rewrite /list.untype fmap_app. f_equal.
   { rewrite take_app_length' //. len. }
-  rewrite drop_ge //. len. rewrite Hex. word.
+  rewrite drop_ge //. len.
 Qed.
 
 Theorem wp_WriteInt32 s x (vs : list u8) :
@@ -327,13 +327,13 @@ Proof.
   iDestruct (slice.own_slice_split_acc s.(Slice.sz) with "Hsl") as "[Hsl Hclose]".
   { len. }
   wp_apply (wp_UInt32Put with "Hsl").
-  { len. rewrite Hex. word. }
+  { len. }
   iIntros "Hsl". iDestruct ("Hclose" with "Hsl") as "Hsl".
   wp_pures. iApply "HΦ". iModIntro.
   rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
   rewrite /list.untype fmap_app. f_equal.
   { rewrite take_app_length' //. len. }
-  rewrite drop_ge //. len. rewrite Hex. word.
+  rewrite drop_ge //. len.
 Qed.
 
 Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :

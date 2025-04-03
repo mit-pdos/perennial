@@ -64,12 +64,7 @@ Proof.
     unshelve iApply (wp_typed_cmpxchg_suc with "[$]"); try tc_solve; try done.
     iNext. iIntros "Hs".
     iMod ("HΦ" with "[] [$]") as "HΦ".
-    { iPureIntro.
-      (* FIXME: word *)
-      assert (uint.nat v0 ≠ O).
-      { intros ?. apply Hnz. word. }
-      word.
-    }
+    { word. }
     iModIntro.
     iMod ("Hclose" with "[$]") as "_".
     iModIntro.

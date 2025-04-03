@@ -356,14 +356,7 @@ Proof.
           wp_store.
           replace (W) with (∅:gset nat); last first.
           {
-            assert (size W = 0) as Hsz.
-            {
-              apply (f_equal uint.Z) in Heqb3.
-              rewrite Z_u64 in Heqb3.
-              2:{ word. }
-              replace (uint.Z (W64 0)) with (0%Z) in Heqb3 by word.
-              word.
-            }
+            assert (size W = 0) as Hsz by word.
             apply size_empty_inv in Hsz.
             by apply leibniz_equiv.
           }
@@ -400,14 +393,11 @@ Proof.
               iIntros (??????) "Hwand".
               iIntros (?).
               iApply "Hwand".
-              iPureIntro.
-              replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in * by word.
               word.
             }
             {
               iIntros.
               exfalso.
-              replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in * by word.
               word.
             }
           }
@@ -512,14 +502,11 @@ Proof.
                 iIntros (??????) "Hwand".
                 iIntros (?).
                 iApply "Hwand".
-                iPureIntro.
-                replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
                 word.
               }
               {
                 iIntros.
                 exfalso.
-                replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
                 word.
               }
             }
@@ -654,14 +641,11 @@ Proof.
                     iIntros (??????) "Hwand".
                     iIntros (?).
                     iApply "Hwand".
-                    iPureIntro.
-                    replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
                     word.
                   }
                   {
                     iIntros.
                     exfalso.
-                    replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
                     word.
                   }
                 }
@@ -782,14 +766,11 @@ Proof.
                     iIntros (??????) "Hwand".
                     iIntros (?).
                     iApply "Hwand".
-                    iPureIntro.
-                    replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
                     word.
                   }
                   {
                     iIntros.
                     exfalso.
-                    replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
                     word.
                   }
                 }
@@ -919,14 +900,11 @@ Proof.
                 iIntros (??????) "Hwand".
                 iIntros (?).
                 iApply "Hwand".
-                iPureIntro.
-                replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
                 word.
               }
               {
                 iIntros.
                 exfalso.
-                replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
                 word.
               }
             }
@@ -1035,14 +1013,11 @@ Proof.
           iIntros (??????) "Hwand".
           iIntros (?).
           iApply "Hwand".
-          iPureIntro.
-          replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H2 by word.
           word.
         }
         {
           iIntros.
           exfalso.
-          replace (uint.nat (word.add i 1%Z)) with (uint.nat i + 1) in H by word.
           word.
         }
       }

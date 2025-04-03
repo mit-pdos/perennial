@@ -811,6 +811,7 @@ Proof.
   wp_rec. wp_pures.
   iApply "HΦ".
   iPureIntro.
+  autounfold with word.
   word.
 Qed.
 
