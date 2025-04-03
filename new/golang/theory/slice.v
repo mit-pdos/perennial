@@ -1109,22 +1109,28 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_slice_copy_overwrite (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
-  {{{ s ↦* vs ∗ s2 ↦*{dq} vs' ∗ ⌜length vs ≤ length vs'⌝ }}}
+(** slice.copy copies as much as possible (the smaller of s and s2). This is a
+unified spec that handles both cases; there are derived specs that cover each
+case individually which are each slightly nicer, for the common case where the
+code knows which slice is shorter. *)
+Lemma wp_slice_copy_general (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
+  {{{ s ↦* vs ∗ s2 ↦*{dq} vs' }}}
     slice.copy t #s #s2
-  {{{ RET #s.(slice.len_f); s ↦* take (length vs) vs' ∗ s2 ↦*{dq} vs' }}}.
+  {{{ (n: w64), RET #n; ⌜(length vs ≤ length vs' ∧ uint.nat n = length vs) ∨
+                         (length vs' < length vs ∧ uint.nat n = length vs')⌝ ∗
+                          s ↦* (take (length vs) vs' ++ drop (length vs') vs) ∗
+                          s2 ↦*{dq} vs' }}}.
 Proof.
-  wp_start as "(Hs1 & Hs2 & %Hlen)".
+  wp_start as "(Hs1 & Hs2)".
   wp_call.
   wp_auto.
   iDestruct (own_slice_len with "Hs1") as %Hlen1.
   iDestruct (own_slice_len with "Hs2") as %Hlen2.
-  assert (uint.Z (slice.len_f s) ≤ uint.Z (slice.len_f s2)) by word.
   iAssert (∃ (i:w64),
       "Hs1" ∷ s ↦* (take (uint.nat i) vs' ++ drop (uint.nat i) vs) ∗
       "Hs2" ∷ s2 ↦*{dq} vs' ∗
       "i" ∷ i_ptr ↦ i ∗
-      "%" ∷ ⌜uint.Z i ≤ uint.Z (slice.len_f s)⌝
+      "%" ∷ ⌜uint.Z i ≤ Z.min (uint.Z s.(slice.len_f)) (uint.Z s2.(slice.len_f))⌝
     )%I with "[Hs1 Hs2 i]" as "IH".
   { iFrame. word. }
   wp_for "IH".
@@ -1163,18 +1169,41 @@ Proof.
       word. }
     rewrite decide_False.
     2: { inv 1. }
-    exfalso.
-    word.
+    rewrite decide_True //.
+    wp_auto.
+    assert (i = slice.len_f s2) by word; subst i.
+    iApply "HΦ".
+    iSplit; [ word | ].
+    iFrame "Hs2".
+    rewrite -> !take_ge by word.
+    iExactEq "Hs1".
+    repeat (f_equal; try word).
   - rewrite decide_False.
     2: { inv 1. }
     rewrite decide_True //.
     wp_auto.
     assert (i = slice.len_f s) by word; subst i.
     iApply "HΦ".
+    iSplit; [ word | ].
     iFrame "Hs2".
-    rewrite -> drop_ge, app_nil_r by word.
+    rewrite -> !drop_ge, !app_nil_r by word.
     iExactEq "Hs1".
     repeat (f_equal; try word).
+Qed.
+
+Lemma wp_slice_copy_overwrite (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
+  {{{ s ↦* vs ∗ s2 ↦*{dq} vs' ∗ ⌜length vs ≤ length vs'⌝ }}}
+    slice.copy t #s #s2
+  {{{ RET #s.(slice.len_f); s ↦* take (length vs) vs' ∗ s2 ↦*{dq} vs' }}}.
+Proof.
+  iIntros (Φ) "(Hs1 & Hs2 & %) HΦ".
+  iDestruct (own_slice_len with "Hs1") as %Hlen.
+  wp_apply (wp_slice_copy_general with "[$Hs1 $Hs2]").
+  iIntros (n) "(% & Hs1 & Hs2)".
+  assert (n = s.(slice.len_f)) by word; subst.
+  iApply "HΦ".
+  rewrite -> drop_ge, app_nil_r by lia.
+  iFrame.
 Qed.
 
 Lemma wp_slice_copy_partial (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
@@ -1182,73 +1211,14 @@ Lemma wp_slice_copy_partial (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V
     slice.copy t #s #s2
   {{{ RET #s2.(slice.len_f); s ↦* (vs' ++ drop (length vs') vs) ∗ s2 ↦*{dq} vs' }}}.
 Proof.
-  wp_start as "(Hs1 & Hs2 & %Hlen)".
-  wp_call.
-  wp_auto.
-  iDestruct (own_slice_len with "Hs1") as %Hlen1.
-  iDestruct (own_slice_len with "Hs2") as %Hlen2.
-  assert (uint.Z (slice.len_f s2) ≤ uint.Z (slice.len_f s)) by word.
-  iAssert (∃ (i:w64),
-      "Hs1" ∷ s ↦* (take (uint.nat i) vs' ++ drop (uint.nat i) vs) ∗
-      "Hs2" ∷ s2 ↦*{dq} vs' ∗
-      "i" ∷ i_ptr ↦ i ∗
-      "%" ∷ ⌜uint.Z i ≤ uint.Z (slice.len_f s2)⌝
-    )%I with "[Hs1 Hs2 i]" as "IH".
-  { iFrame. word. }
-  wp_for "IH".
-  match goal with
-  | |- context[bool_decide ?P] => destruct (bool_decide_reflect P); wp_auto
-  end.
-  - match goal with
-    | |- context[bool_decide ?P] => destruct (bool_decide_reflect P)
-    end.
-    { rewrite decide_True //; wp_auto.
-      list_elem vs' i as y.
-      wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2".
-      { eauto. }
-      wp_apply (wp_store_slice_elem with "[$Hs1]") as "Hs1".
-      { len. }
-      wp_for_post.
-      iFrame.
-      replace (uint.nat (word.add i (W64 1))) with
-        (S (uint.nat i)) by word.
-      iSplit; [ | word ].
-      iExactEq "Hs1".
-      rewrite /named.
-      f_equal.
-      rewrite insert_take_drop /=; [ | by len ].
-      rewrite -> take_app_le by len.
-      rewrite -> drop_app_ge by len.
-      rewrite take_take.
-      rewrite -> Nat.min_l by auto.
-      erewrite take_S_r; eauto.
-      rewrite -app_assoc /=.
-      rewrite -> length_take_le by word.
-      rewrite drop_drop.
-      f_equal.
-      f_equal.
-      f_equal.
-      word. }
-    rewrite decide_False.
-    2: { inv 1. }
-    rewrite decide_True //.
-    wp_auto.
-    assert (i = slice.len_f s2) by word; subst i.
-    iApply "HΦ".
-    iFrame "Hs2".
-    rewrite -> take_ge by word.
-    iExactEq "Hs1".
-    repeat (f_equal; try word).
-  - rewrite decide_False.
-    2: { inv 1. }
-    rewrite decide_True //.
-    wp_auto.
-    assert (i = slice.len_f s2) by word; subst i.
-    iApply "HΦ".
-    iFrame "Hs2".
-    rewrite -> take_ge by word.
-    iExactEq "Hs1".
-    repeat (f_equal; try word).
+  iIntros (Φ) "(Hs1 & Hs2 & %) HΦ".
+  iDestruct (own_slice_len with "Hs2") as %Hlen.
+  wp_apply (wp_slice_copy_general with "[$Hs1 $Hs2]").
+  iIntros (n) "(% & Hs1 & Hs2)".
+  assert (n = s2.(slice.len_f)) by word; subst.
+  iApply "HΦ".
+  rewrite -> take_ge by lia.
+  iFrame.
 Qed.
 
 Lemma wp_slice_append (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
