@@ -2,6 +2,7 @@ From iris.algebra Require Import numbers auth.
 From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import proofmode.
+From Perennial.goose_lang Require Import ipersist.
 From Perennial Require Import base.
 
 Class tok_setG Σ := {
@@ -61,6 +62,14 @@ Proof.
   intuition.
 Qed.
 
+Global Instance own_tok_auth_dfrac_update_to_persistent γ dq n :
+  UpdateIntoPersistently (own_tok_auth_dfrac γ dq n) (own_tok_auth_dfrac γ DfracDiscarded n).
+Proof.
+  unseal. unfold UpdateIntoPersistently.
+  iIntros "H". iMod (own_update with "H") as "H".
+  { apply auth_update_auth_persist. }
+  iDestruct "H" as "#H". done.
+Qed.
 
 Lemma own_tok_auth_alloc :
   ⊢ |==> ∃ γ, own_tok_auth γ O.
