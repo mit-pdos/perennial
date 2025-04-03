@@ -238,7 +238,7 @@ Proof.
   rewrite !loc_add_assoc.
   f_equal; try word.
   rewrite -Z.mul_add_distr_l.
-  f_equal; word.
+  repeat (f_equal; try word).
 Qed.
 
 Lemma own_slice_elem_acc i v s dq vs :
