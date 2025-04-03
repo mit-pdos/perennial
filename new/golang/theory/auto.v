@@ -36,7 +36,9 @@ Ltac destruct_pkg_init H :=
         end
     end.
 
-Tactic Notation "wp_start" "as" constr(pat) :=
+(* This doesn't unfold the function being called; convenient for proving specs
+   that wrap another spec. *)
+Tactic Notation "wp_start_folded" "as" constr(pat) :=
   (* Sometimes a Hoare triple is used in the logic, which is an iProp with a
   persistently modality in front, unlike the top-level Hoare triple notation
   which does not require the modality.
@@ -51,7 +53,10 @@ Tactic Notation "wp_start" "as" constr(pat) :=
   try clear x;
   iIntros (Φ) "Hpre HΦ";
   destruct_pkg_init "Hpre";
-  iDestruct "Hpre" as pat;
+  iDestruct "Hpre" as pat.
+
+Tactic Notation "wp_start" "as" constr(pat) :=
+  wp_start_folded as pat;
   (* only do this if it produces a single goal *)
   try (first [ wp_func_call | wp_method_call ]; wp_call; [idtac]).
 

@@ -133,7 +133,7 @@ Proof.
   iEval (simpl) in "Hl".
   iRename "Hcl" into "#Hcl_in".
   iNamed "Hl".
-  iMod (start_WaitGroup (nroot .@ "wg") with "[$]") as (γwg) "(#Hwg_is & Hwg_ctr & Hwg_wait)".
+  iMod (init_WaitGroup (nroot .@ "wg") with "[$]") as (γwg) "(#Hwg_is & Hwg_ctr & Hwg_wait)".
   wp_apply (wp_WaitGroup__Add with "[]").
   { iFrame "#". }
   iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].

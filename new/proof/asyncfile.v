@@ -210,8 +210,9 @@ Proof.
   wp_apply wp_with_defer as "%defer defer".
   simpl subst.
   wp_auto.
-  iDestruct (Mutex_is_Locker with "[$]") as "#Hlk".
-  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]".
+  iDestruct (Mutex_is_Locker with "[] [$]") as "#Hlk".
+  { iPkgInit. }
+  wp_apply (wp_Mutex__Lock with "[$HmuInv]") as "[Hlocked Hown]".
   wp_for "Hown".
   destruct bool_decide eqn:?.
   { (* case: wait *)
@@ -312,11 +313,7 @@ Proof.
     {
       replace (x) with (word.add idx 1).
       { iFrame "#". }
-      {
-        assert (uint.Z (word.add idx 1) = uint.Z x) by word.
-        apply int_Z_inj in H1; first done.
-        apply _. (* FIXME: why is this typeclass left? *)
-      }
+      { word. }
     }
     { done. }
   }
@@ -332,11 +329,7 @@ Proof.
   {
     replace (x) with (word.add idx 1).
     { iFrame "#". }
-    {
-      assert (uint.Z (word.add idx 1) = uint.Z x) by word.
-      apply int_Z_inj in H1; first done.
-      apply _. (* FIXME: why is this typeclass left? *)
-    }
+    { word. }
   }
   { done. }
 Qed.
@@ -361,7 +354,7 @@ Proof.
   iNamed "His2".
   wp_apply wp_with_defer as "%defer Hdefer".
   simpl subst. wp_auto.
-  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]".
+  wp_apply (wp_Mutex__Lock with "[$HmuInv]") as "[Hlocked Hown]".
   iNamed "Hown".
   wp_auto.
   wp_apply wp_SumAssumeNoOverflow as "%Hno_overflow".
@@ -478,7 +471,8 @@ Proof.
     wp_apply (wp_Cond__Wait with "[-HΦ HH s]").
     {
       iFrame "HindexCond_is".
-      iDestruct (Mutex_is_Locker with "[]") as "$".
+      iDestruct (Mutex_is_Locker with "[] []") as "$".
+      { iPkgInit. }
       { iFrame "#". }
       iFrame "∗#%". done.
     }
@@ -525,7 +519,7 @@ Proof.
   iModIntro.
   iIntros "Hfile".
   wp_auto.
-  wp_apply (wp_Mutex__Lock with "[$]") as "[Hlocked Hown]".
+  wp_apply (wp_Mutex__Lock with "[$HmuInv]") as "[Hlocked Hown]".
   iClear "Hfilename Hdata HindexCond_is HdurableIndexCond_is".
   iNamed "Hown".
   wp_auto.
@@ -647,8 +641,7 @@ Proof.
   iNamed "H".
   iAssert (|={⊤}=> is_AsyncFile N l γ P)%I with "[-HpreIdx HpreData HdurIdx Hfile HΦ Hvol_data Hnotclosed data s]" as ">#His".
   {
-    iMod (init_Mutex with "[] [$] [-]") as "$"; last by iFrame "#".
-    { iPkgInit. }
+    iMod (init_Mutex with "[$] [-]") as "$"; last by iFrame "#".
     iNext. by iFrame "∗#".
   }
 
