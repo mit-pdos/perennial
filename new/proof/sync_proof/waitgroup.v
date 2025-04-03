@@ -107,7 +107,7 @@ Proof.
   iInv "Hinv" as ">Hi". iNamed "Hi".
   iCombine "Hwaiters_bounded H" gives %[_ ->].
   iCombine "Hwaiters_bounded H" as "H". rewrite dfrac_op_own Qp.half_half.
-  iMod (own_tok_auth_plus 1 with "H") as "[H Htok]".
+  iMod (own_tok_auth_add 1 with "H") as "[H Htok]".
   iModIntro. rewrite <- (Z2Nat.inj_add _ 1) by word. rewrite -H.
   iDestruct "H" as "[H1 H2]". iSplitR "Htok H2"; by iFrame.
 Qed.
@@ -337,7 +337,7 @@ Proof.
   iCombine "Hzeroauth_wg Hsema_zerotoks_wg" gives %Hs.
   replace (sema) with (W32 0) by word.
   clear Huf Hs unfinished_waiters sema.
-  iMod (own_tok_auth_plus (uint.nat waiters) with "[$Hzeroauth_wg]") as "[Hzeroauth_wg Hzerotoks_wg]".
+  iMod (own_tok_auth_add (uint.nat waiters) with "[$Hzeroauth_wg]") as "[Hzeroauth_wg Hzerotoks_wg]".
   iEval (rewrite enc_0) in "Hptsto".
   iDestruct "Hptsto" as "[Hptsto1_wg Hptsto2_wg]".
   destruct Hwake as [Hwake1 Hwake2].
@@ -381,7 +381,7 @@ Proof.
   iIntros "Hsema_wg".
   iMod "Hmask" as "_".
   replace (uint.nat wrem)%nat with (1+(uint.nat (word.sub wrem (W32 1))))%nat by word.
-  iDestruct (own_toks_plus with "Hzerotoks") as "[Hzerotok Hzerotoks]".
+  iDestruct (own_toks_add with "Hzerotoks") as "[Hzerotok Hzerotoks]".
   iCombine "Hsema_zerotoks_wg Hzerotok" as "Hsema_zerotok_wg".
   iCombine "Hzeroauth_wg Hsema_zerotok_wg" gives %Hbound.
   iCombineNamed "*_wg" as "Hi".
@@ -471,7 +471,7 @@ Proof.
 
   iCombine "HR_in Hwait_toks_wg" as "Hwait_toks'_wg".
   iCombine "Hwaiters_bounded_wg Hwait_toks'_wg" gives %HwaitersLe.
-  iDestruct (own_toks_plus with "Hwait_toks'_wg") as "[HR_in Hwait_toks_wg]".
+  iDestruct (own_toks_add with "Hwait_toks'_wg") as "[HR_in Hwait_toks_wg]".
   iCombineNamed "*_wg" as "Hi".
   iMod ("Hclose" with "[Hi]").
   { iNamed "Hi". by iFrame. }
@@ -526,7 +526,7 @@ Proof.
     destruct (uint.nat sema) eqn:Hsema.
     { exfalso. lia. }
     replace (S n) with (1 + n)%nat by done.
-    iDestruct (own_toks_plus with "Hsema_zerotoks_wg") as "[Hzerotok Hsema_zerotoks_wg]".
+    iDestruct (own_toks_add with "Hsema_zerotoks_wg") as "[Hzerotok Hsema_zerotoks_wg]".
     iMod "Hmask" as "_".
     iCombineNamed "*_wg" as "Hi".
     iMod ("Hclose" with "[Hi]") as "_".
@@ -555,7 +555,7 @@ Proof.
     destruct unfinished_waiters; first by (exfalso; lia).
     iMod (own_tok_auth_delete_S with "Hzeroauth_wg Hzerotok") as "Hzeroauth_wg".
     replace (S _) with (1 + unfinished_waiters)%nat by done.
-    iDestruct (own_toks_plus with "Hunfinished_wait_toks_wg") as "[HR Hunfinished_wait_toks_wg]".
+    iDestruct (own_toks_add with "Hunfinished_wait_toks_wg") as "[HR Hunfinished_wait_toks_wg]".
     iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "HΦ" as (?) "[Hwg HΦ]".
     { solve_ndisj. }
     iCombine "Hwg Hctr_wg" gives %[_ ->].

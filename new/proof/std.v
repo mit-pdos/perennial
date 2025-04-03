@@ -8,36 +8,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 Context `{!std.GlobalAddrs}.
 
-(** NOTE:
-  The discipline followed by other proofs so far has been to define
-  [is_initialized] to require [is_defined] of the current package, but the
-  [is_initialized] of all the imported packages (as opposed to [primitive.is_defined],
-  it would be [primitive.is_initialized]).
-
-  A package's [is_initialized] predicate is meant to include not only the
-  systematic [is_defined] predicate, but also custom logical facts written by
-  the proof developer (e.g. some packages initialize global variables to hold a
-  read-only error value that gets used by functions in the package).
-
-  [is_initialized] is intended to cover the entire precondition relating to
-  all package initialization (e.g. the [sync.is_defined ∗
-  atomic.is_initialized] in [wp_JoinHandle__finish] below should be part of
-  [is_initialized]).
-
-  Another pattern in the other proofs is to include [is_initialized] in the
-  predicate associated to every object in this package. E.g. [is_JoinHandle]
-  could have [is_initialized] in it, so [wp_JoinHandle__finish] doesn't even need
-  to mention [is_initialized]. Explicit [is_initialized] would only be needed
-  for specs that don't have a package object in the precondition. This might not
-  be that great, since it increases the "entropy" of specs (sometimes you write
-  [is_initialized], and sometimes you don't).
-
-  We should eventually make all the proofs follow the same discipline for
-  initialization-related predicates, whether it's more like this proof or the
-  other proofs. It would be even nicer if the framework could enforce the
-  discipline somehow (e.g. maybe the imported packages' [is_initialized] gets
-  automatically included here).
- *)
 #[global]
 Program Instance : IsPkgInit std :=
   ltac2:(build_pkg_init ()).
@@ -107,11 +77,7 @@ Proof.
   iMod (init_Mutex (∃ (done_b: bool),
          "done_b" ∷ jh_l ↦s[std.JoinHandle :: "done"] done_b ∗
          "HP" ∷ if done_b then P else True)
-         with "[] [$] [Hdone]") as "Hlock".
-  { iPkgInit. }
-  { iNext.
-    iFrame.
-  }
+         with "[$] [$]") as "Hlock".
   wp_auto.
   iApply "HΦ".
   rewrite /is_JoinHandle.
@@ -126,7 +92,7 @@ Proof.
   wp_start as "[Hhandle P]".
   iNamed "Hhandle".
   wp_auto.
-  wp_apply (wp_Mutex__Lock with "Hlock") as "[locked Hinv]".
+  wp_apply (wp_Mutex__Lock with "[$Hlock]") as "[locked Hinv]".
   iNamed "Hinv".
   wp_auto.
   wp_apply (wp_Cond__Signal with "[$Hcond]").
@@ -165,7 +131,7 @@ Lemma wp_JoinHandle__Join l P :
 Proof.
   wp_start as "Hjh". iNamed "Hjh".
   wp_auto.
-  wp_apply (wp_Mutex__Lock with "Hlock").
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
   wp_auto.
 
@@ -181,7 +147,7 @@ Proof.
     iApply "HΦ". done.
   - wp_apply (wp_Cond__Wait with "[$Hcond locked done HP]") as "H".
     { iSplit.
-      - iApply (Mutex_is_Locker with "Hlock").
+      - iApply (Mutex_is_Locker with "[] Hlock"). iPkgInit.
       - iFrame. }
     iDestruct "H" as "[Hlocked Hlinv]". iNamed "Hlinv".
     wp_for_post.

@@ -150,15 +150,15 @@ Lemma step_RUnlock_readerCount_Add γ writer_sem reader_sem reader_count reader_
 Proof.
   iIntros "Hinv". iNamed "Hinv".
   replace (Z.to_nat (sint.Z pos_reader_count))%nat with (1 + Z.to_nat (sint.Z (word.sub pos_reader_count (W32 1))))%nat by word.
-  iDestruct (own_toks_plus with "Hrlocks") as "[Hr Hrlocks]".
+  iDestruct (own_toks_add with "Hrlocks") as "[Hr Hrlocks]".
   destruct wl; iNamed "Hinv"; try done.
   - destruct decide. { exfalso. word. } iFrame. iFrame. iPureIntro. word.
   - destruct decide.
-    * iMod (own_tok_auth_plus 1 with "Houtstanding") as "[Houtstanding $]".
+    * iMod (own_tok_auth_add 1 with "Houtstanding") as "[Houtstanding $]".
       iFrame. iFrame. iPureIntro. word.
     * exfalso. word.
   - destruct decide.
-    * iMod (own_tok_auth_plus 1 with "Houtstanding") as "[Houtstanding $]".
+    * iMod (own_tok_auth_add 1 with "Houtstanding") as "[Houtstanding $]".
       iFrame. iFrame. iPureIntro. word.
     * exfalso. word.
 Qed.
@@ -618,7 +618,7 @@ Proof.
   iMod (own_tok_auth_alloc) as (γread_wait_gn) "Hread_wait".
 
   iMod (own_tok_auth_alloc) as (γrlock_overflow_gn) "Hrlock".
-  iMod (own_tok_auth_plus (Z.to_nat actualMaxReaders) with "Hrlock") as "[Hrlock Htoks]".
+  iMod (own_tok_auth_add (Z.to_nat actualMaxReaders) with "Hrlock") as "[Hrlock Htoks]".
   iMod (ghost_var_alloc (NotLocked (W32 0))) as (γwlock_gn) "[Hwl Hwl_inv]".
 
   iMod (ghost_var_alloc (RLocked 0)) as (γstate_gn) "[Hstate Hstate_inv]".
@@ -647,7 +647,7 @@ Proof.
   iModIntro. generalize (Z.to_nat (actualMaxReaders)).
   intros n. iClear "#". iInduction n as [|].
   { done. }
-  iDestruct (own_toks_plus _ _ 1 with "Htoks") as "[? ?]". iFrame.
+  iDestruct (own_toks_add _ 1 with "Htoks") as "[? ?]". iFrame.
   by iApply "IHn".
 Qed.
 
