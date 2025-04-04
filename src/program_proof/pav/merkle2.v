@@ -574,6 +574,74 @@ Proof.
       by iDestruct (is_hash_det with "His_hash0 His_hash1") as %->.
 Qed.
 
+Lemma tree_to_map_det {t0 t1} :
+  tree_to_map t0 = tree_to_map t1 →
+  sorted_tree t0 (W64 0) →
+  sorted_tree t1 (W64 0) →
+  cutless_tree t0 →
+  cutless_tree t1 →
+  t0 = t1.
+Proof.
+  revert t1.
+  induction t0 as [| ? | ? IH0 ? IH1 | ?];
+    destruct t1; intros ?????; try done.
+  (* TODO: not provable.
+  (Inner (Leaf x) Empty) and (Leaf x) both have maps {x}.
+  need another invariant that tree is "minimal". *)
+Admitted.
+
+Lemma is_merkle_map_det m dig0 dig1 :
+  is_merkle_map m dig0 -∗
+  is_merkle_map m dig1 -∗
+  ⌜ dig0 = dig1 ⌝.
+Proof.
+  iNamedSuffix 1 "0". iNamedSuffix 1 "1". subst.
+  opose proof (tree_to_map_det Heq_tree_map1 _ _ _ _) as ->; [done..|].
+  by iDestruct (is_tree_hash_det with "Htree_hash0 Htree_hash1") as %?.
+Qed.
+
+(* Program proof defs. *)
+
+Definition own_context ptr d : iProp Σ :=
+  ∃ sl_empty_hash empty_hash,
+  "Hptr_empty_hash" ∷ ptr ↦[context :: "emptyHash"]{d} (slice_val sl_empty_hash) ∗
+  "#Hsl_empty_hash" ∷ own_slice_small sl_empty_hash byteT DfracDiscarded empty_hash ∗
+  "#His_empty_hash" ∷ is_hash [empty_node_tag] empty_hash.
+
+Global Instance own_context_fractional ptr :
+  Fractional (λ q, own_context ptr (DfracOwn q)).
+Proof.
+  intros ??. iSplit.
+  - iNamed 1.
+    iDestruct "Hptr_empty_hash" as "[H0 H1]".
+    iSplitL "H0"; iFrame "∗#".
+  - iIntros "[H0 H1]". iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
+
+    iDestruct (struct_field_pointsto_agree with "Hptr_empty_hash0 Hptr_empty_hash1") as %Heq.
+    destruct sl_empty_hash, sl_empty_hash0. simplify_eq/=.
+    iCombine "Hptr_empty_hash0 Hptr_empty_hash1" as "H0".
+
+    iDestruct (own_slice_small_agree with "Hsl_empty_hash0 Hsl_empty_hash1") as %->.
+
+    iFrame "∗#".
+Qed.
+
+Global Instance own_context_as_fractional ptr q :
+  AsFractional (own_context ptr (DfracOwn q)) (λ q, own_context ptr (DfracOwn q)) q.
+Proof. split; [auto|apply _]. Qed.
+
+Lemma own_context_to_null_tree ptr_ctx d0 :
+  own_context ptr_ctx d0 -∗
+  (own_context ptr_ctx d0 ∗ own_merkle_tree null Empty (DfracOwn 1)).
+Proof. iNamed 1. by iFrame "∗#". Qed.
+
+Definition own_Tree ptr elems d : iProp Σ :=
+  ∃ ptr_ctx ptr_map,
+  "Hown_ctx" ∷ own_context ptr_ctx d ∗
+  "Hptr_ctx" ∷ ptr ↦[Tree :: "ctx"]{d} #ptr_ctx ∗
+  "Hown_map" ∷ own_merkle_map ptr_map elems d ∗
+  "Hptr_root" ∷ ptr ↦[Tree :: "root"]{d} #ptr_map.
+
 (* Program proofs. *)
 
 Lemma wp_compEmptyHash :
@@ -585,6 +653,64 @@ Lemma wp_compEmptyHash :
     "#His_hash" ∷ is_hash [empty_node_tag] hash
   }}}.
 Proof. Admitted.
+
+Lemma wp_getNodeHash ptr_tr t d0 ptr_ctx d1 :
+  {{{
+    "Hown_tree" ∷ own_merkle_tree ptr_tr t d0 ∗
+    "Hown_ctx" ∷ own_context ptr_ctx d1
+  }}}
+  getNodeHash #ptr_tr #ptr_ctx
+  {{{
+    sl_hash hash, RET (slice_val sl_hash);
+    "Hown_tree" ∷ own_merkle_tree ptr_tr t d0 ∗
+    "Hown_ctx" ∷ own_context ptr_ctx d1 ∗
+    "#Hsl_hash" ∷ own_slice_small sl_hash byteT DfracDiscarded hash ∗
+    "#Htree_hash" ∷ is_tree_hash t hash
+  }}}.
+Proof. Admitted.
+
+Lemma wp_NewTree :
+  {{{ True }}}
+  NewTree #()
+  {{{
+    ptr, RET #ptr;
+    "Hown_Tree" ∷ own_Tree ptr ∅ (DfracOwn 1)
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ". wp_rec.
+  wp_apply wp_compEmptyHash.
+  iIntros "*". iNamed 1.
+  iDestruct (own_slice_to_small with "Hsl_hash") as "Hsl_hash".
+  iPersist "Hsl_hash".
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros "* Hptr_ctx".
+  iDestruct (struct_fields_split with "Hptr_ctx") as "H". iNamed "H".
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros "* Hptr_Tree".
+  iDestruct (struct_fields_split with "Hptr_Tree") as "H". iNamed "H".
+  iApply "HΦ". iFrame "∗#".
+  iExists Empty. repeat iSplit; try done. by iFrame "#".
+Qed.
+
+Lemma wp_Tree__Digest ptr elems d0 :
+  {{{
+    "Hown_Tree" ∷ own_Tree ptr elems d0
+  }}}
+  Tree__Digest #ptr
+  {{{
+    sl_dig dig, RET (slice_val sl_dig);
+    "Hown_Tree" ∷ own_Tree ptr elems d0 ∗
+    "#His_dig" ∷ is_merkle_map elems dig
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  iNamed "Hown_Tree". iNamed "Hown_map".
+  do 2 wp_loadField.
+  wp_apply (wp_getNodeHash with "[$Hown_tree $Hown_ctx]").
+  iIntros "*". iNamed 1.
+  iDestruct (own_merkle_tree_cutless with "Hown_tree") as %?.
+  iApply "HΦ". iFrame "∗#%".
+Qed.
 
 Lemma wp_compLeafHash sl_label sl_val d0 d1 (label val : list w8) :
   {{{
@@ -631,34 +757,6 @@ Lemma wp_getBit sl_b d0 (b : list w8) (n : w64) :
   }}}.
 Proof. Admitted.
 
-Definition own_context ptr d : iProp Σ :=
-  ∃ sl_empty_hash empty_hash,
-  "Hptr_empty_hash" ∷ ptr ↦[context :: "emptyHash"]{d} (slice_val sl_empty_hash) ∗
-  "#Hsl_empty_hash" ∷ own_slice_small sl_empty_hash byteT DfracDiscarded empty_hash ∗
-  "#His_empty_hash" ∷ is_hash [empty_node_tag] empty_hash.
-
-Global Instance own_context_fractional ptr :
-  Fractional (λ q, own_context ptr (DfracOwn q)).
-Proof.
-  intros ??. iSplit.
-  - iNamed 1.
-    iDestruct "Hptr_empty_hash" as "[H0 H1]".
-    iSplitL "H0"; iFrame "∗#".
-  - iIntros "[H0 H1]". iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
-
-    iDestruct (struct_field_pointsto_agree with "Hptr_empty_hash0 Hptr_empty_hash1") as %Heq.
-    destruct sl_empty_hash, sl_empty_hash0. simplify_eq/=.
-    iCombine "Hptr_empty_hash0 Hptr_empty_hash1" as "H0".
-
-    iDestruct (own_slice_small_agree with "Hsl_empty_hash0 Hsl_empty_hash1") as %->.
-
-    iFrame "∗#".
-Qed.
-
-Global Instance own_context_as_fractional ptr q :
-  AsFractional (own_context ptr (DfracOwn q)) (λ q, own_context ptr (DfracOwn q)) q.
-Proof. split; [auto|apply _]. Qed.
-
 Lemma wp_getChild n d0 ptr_child0 ptr_child1 sl_label d1 (label : list w8) (depth : w64) :
   {{{
     "Hptr_child0" ∷ n ↦[node :: "child0"]{d0} #ptr_child0 ∗
@@ -698,33 +796,6 @@ Proof.
     iIntros (v) "H". specialize (Hclose #v).
     by iApply Hclose.
 Qed.
-
-Lemma wp_getNodeHash ptr_tr t d0 ptr_ctx d1 :
-  {{{
-    "Hown_tree" ∷ own_merkle_tree ptr_tr t d0 ∗
-    "Hown_ctx" ∷ own_context ptr_ctx d1
-  }}}
-  getNodeHash #ptr_tr #ptr_ctx
-  {{{
-    sl_hash hash, RET (slice_val sl_hash);
-    "Hown_tree" ∷ own_merkle_tree ptr_tr t d0 ∗
-    "Hown_ctx" ∷ own_context ptr_ctx d1 ∗
-    "#Hsl_hash" ∷ own_slice_small sl_hash byteT DfracDiscarded hash ∗
-    "#Htree_hash" ∷ is_tree_hash t hash
-  }}}.
-Proof. Admitted.
-
-Lemma own_context_to_null_tree ptr_ctx d0 :
-  own_context ptr_ctx d0 -∗
-  (own_context ptr_ctx d0 ∗ own_merkle_tree null Empty (DfracOwn 1)).
-Proof. iNamed 1. by iFrame "∗#". Qed.
-
-Definition own_Tree ptr elems d : iProp Σ :=
-  ∃ ptr_ctx ptr_map,
-  "Hown_ctx" ∷ own_context ptr_ctx d ∗
-  "Hptr_ctx" ∷ ptr ↦[Tree :: "ctx"]{d} #ptr_ctx ∗
-  "Hown_map" ∷ own_merkle_map ptr_map elems d ∗
-  "Hptr_root" ∷ ptr ↦[Tree :: "root"]{d} #ptr_map.
 
 Lemma wp_getProofLen (depth : w64) :
   {{{ True }}}
@@ -941,7 +1012,6 @@ Lemma wp_Tree__prove sl_label d0 (label : list w8) ptr_t elems d1 (get_proof : b
     "Hown_Tree" ∷ own_Tree ptr_t elems d1 ∗
     "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
     "Hsl_proof" ∷ own_slice_small sl_proof byteT (DfracOwn 1) proof ∗
-    (* TODO: prove is_merkle_map_det. *)
     "#His_dig" ∷ is_merkle_map elems dig ∗
     "#Hmemb" ∷
       (if in_tree
