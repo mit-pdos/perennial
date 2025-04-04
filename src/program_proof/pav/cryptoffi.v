@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import cryptoffi.
 
-Notation hash_len := (32%nat) (only parsing).
+Notation hash_len := 32 (only parsing).
 
 Section proof.
 Context `{!heapGS Σ}.
@@ -26,7 +26,7 @@ Lemma is_hash_inj d1 d2 h :
 Proof. Admitted.
 
 Lemma is_hash_len d h :
-  is_hash d h -∗ ⌜length h = hash_len⌝.
+  is_hash d h -∗ ⌜ Z.of_nat (length h) = hash_len ⌝.
 Proof. Admitted.
 
 Definition own_hasher (ptr : loc) (data : list w8) : iProp Σ. Admitted.
@@ -194,7 +194,7 @@ Lemma is_vrf_det pk d o1 o2 :
 Proof. Admitted.
 
 Lemma is_vrf_len pk d o :
-  is_vrf pk d o -∗ ⌜ length o = hash_len ⌝.
+  is_vrf pk d o -∗ ⌜ Z.of_nat (length o) = hash_len ⌝.
 Proof. Admitted.
 
 Lemma wp_VrfGenerateKey :

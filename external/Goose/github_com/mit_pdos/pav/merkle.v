@@ -303,17 +303,21 @@ Definition Verify: val :=
     (if: "err0"
     then #true
     else
-      (if: (struct.loadF MerkleProof "FoundOtherLeaf" "proofDec") && (std.BytesEqual "label" (struct.loadF MerkleProof "LeafLabel" "proofDec"))
-      then #true
+      let: "lastHash" := ref (zero_val (slice.T byteT)) in
+      let: "err1" := ref (zero_val boolT) in
+      (if: "inTree"
+      then "lastHash" <-[slice.T byteT] (compLeafHash "label" "val")
       else
-        let: "lastHash" := ref (zero_val (slice.T byteT)) in
-        (if: "inTree"
-        then "lastHash" <-[slice.T byteT] (compLeafHash "label" "val")
-        else
-          (if: struct.loadF MerkleProof "FoundOtherLeaf" "proofDec"
-          then "lastHash" <-[slice.T byteT] (compLeafHash (struct.loadF MerkleProof "LeafLabel" "proofDec") (struct.loadF MerkleProof "LeafVal" "proofDec"))
-          else "lastHash" <-[slice.T byteT] (compEmptyHash #())));;
-        verifySiblings "label" (![slice.T byteT] "lastHash") (struct.loadF MerkleProof "Siblings" "proofDec") "dig")).
+        (if: struct.loadF MerkleProof "FoundOtherLeaf" "proofDec"
+        then
+          "lastHash" <-[slice.T byteT] (compLeafHash (struct.loadF MerkleProof "LeafLabel" "proofDec") (struct.loadF MerkleProof "LeafVal" "proofDec"));;
+          (if: std.BytesEqual "label" (struct.loadF MerkleProof "LeafLabel" "proofDec")
+          then "err1" <-[boolT] #true
+          else #())
+        else "lastHash" <-[slice.T byteT] (compEmptyHash #())));;
+      (if: ![boolT] "err1"
+      then #true
+      else verifySiblings "label" (![slice.T byteT] "lastHash") (struct.loadF MerkleProof "Siblings" "proofDec") "dig")).
 
 Definition Tree__Digest: val :=
   rec: "Tree__Digest" "t" :=
