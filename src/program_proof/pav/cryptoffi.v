@@ -21,8 +21,12 @@ Proof. Admitted.
 Instance is_hash_timeless data hash : Timeless (is_hash data hash).
 Proof. Admitted.
 
-Lemma is_hash_inj d1 d2 h :
-  is_hash d1 h -∗ is_hash d2 h -∗ ⌜d1 = d2⌝.
+Lemma is_hash_det d h0 h1 :
+  is_hash d h0 -∗ is_hash d h1 -∗ ⌜ h0 = h1 ⌝.
+Proof. Admitted.
+
+Lemma is_hash_inj d0 d1 h :
+  is_hash d0 h -∗ is_hash d1 h -∗ ⌜ d0 = d1⌝.
 Proof. Admitted.
 
 Lemma is_hash_len d h :

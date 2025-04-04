@@ -329,7 +329,7 @@ Proof.
   the same next_hash. then apply IH. *)
   - iDestruct (is_tree_hash_len with "Hleft_hash0") as %?.
     iDestruct (is_tree_hash_len with "Hleft_hash1") as %?.
-    list_simplifier. apply app_inj_1 in H as [-> ->]; [|word].
+    list_simplifier. apply app_inj_1 in H as [-> ->]; [|lia].
     case_match.
     + by iApply "IH1".
     + by iApply "IH0".
@@ -1404,7 +1404,6 @@ Proof.
 Qed.
 *)
 
-
 Lemma tree_sibs_proof_len t label depth proof :
   tree_sibs_proof t label depth proof -∗
   ⌜ Z.of_nat (length proof) `mod` hash_len = 0 ⌝.
@@ -1417,6 +1416,85 @@ Proof.
   - iDestruct ("IH0" with "Hrecur_proof") as %?. word.
 Qed.
 
+Lemma is_tree_hash_det t h0 h1 :
+  is_tree_hash t h0 -∗
+  is_tree_hash t h1 -∗
+  ⌜ h0 = h1 ⌝.
+Proof.
+  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (h0 h1);
+    simpl; iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
+  - by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - iDestruct ("IH0" with "Hleft_hash0 Hleft_hash1") as %->.
+    iDestruct ("IH1" with "Hright_hash0 Hright_hash1") as %->.
+    by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - naive_solver.
+Qed.
+
+Lemma is_merkle_proof_eq_dig label found proof hash0 hash1 :
+  is_merkle_proof label found proof hash0 -∗
+  is_merkle_proof label found proof hash1 -∗
+  ⌜ hash0 = hash1 ⌝.
+Proof.
+  iNamedSuffix 1 "0". iNamedSuffix 1 "1".
+  iRevert "Hhash0 Hproof0 Hhash1 Hproof1".
+  remember (W64 0) as depth. clear Heqdepth.
+  iInduction t as [| ? | ? IH0 ? IH1 | ?]
+    forall (depth t0 hash0 hash1 proof Hpath0 Hpath1);
+    destruct t0; try done;
+    simpl in *; iIntros "#H0 #H1 #H2 #H3";
+    iNamedSuffix "H0" "0"; iNamedSuffix "H1" "0";
+    iNamedSuffix "H2" "1"; iNamedSuffix "H3" "1".
+
+  - by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - naive_solver.
+  - apply (f_equal length) in Heq_proof1.
+    rewrite length_app in Heq_proof1.
+    case_match; iNamed "Hrecur1";
+      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      list_simplifier; word.
+  - naive_solver.
+  - simplify_eq/=.
+    by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - apply (f_equal length) in Heq_proof1.
+    rewrite length_app in Heq_proof1.
+    case_match; iNamed "Hrecur1";
+      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      list_simplifier; word.
+  - apply (f_equal length) in Heq_proof0.
+    rewrite length_app in Heq_proof0.
+    case_match; iNamed "Hrecur0";
+      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      list_simplifier; word.
+  - apply (f_equal length) in Heq_proof0.
+    rewrite length_app in Heq_proof0.
+    case_match; iNamed "Hrecur0";
+      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      list_simplifier; word.
+  - case_match;
+      iNamedSuffix "Hrecur0" "0"; iNamedSuffix "Hrecur1" "1".
+    + (* equal sib hashes. *)
+      iDestruct (is_tree_hash_len with "Htree_hash0") as %?.
+      iDestruct (is_tree_hash_len with "Htree_hash1") as %?.
+      subst. apply app_inj_2 in Heq_proof1 as [-> ->]; [|lia].
+      iDestruct (is_tree_hash_det with "Hleft_hash0 Htree_hash0") as %->.
+      iDestruct (is_tree_hash_det with "Hleft_hash1 Htree_hash1") as %->.
+      (* equal child hashes. *)
+      iDestruct ("IH1" with "[] [] Hright_hash0 Hrecur_proof0
+        Hright_hash1 Hrecur_proof1") as %->; [done..|].
+      by iDestruct (is_hash_det with "His_hash0 His_hash1") as %->.
+    + (* equal sib hashes. *)
+      iDestruct (is_tree_hash_len with "Htree_hash0") as %?.
+      iDestruct (is_tree_hash_len with "Htree_hash1") as %?.
+      subst. apply app_inj_2 in Heq_proof1 as [-> ->]; [|lia].
+      iDestruct (is_tree_hash_det with "Hright_hash0 Htree_hash0") as %->.
+      iDestruct (is_tree_hash_det with "Hright_hash1 Htree_hash1") as %->.
+      (* equal child hashes. *)
+      iDestruct ("IH0" with "[] [] Hleft_hash0 Hrecur_proof0
+        Hleft_hash1 Hrecur_proof1") as %->; [done..|].
+      by iDestruct (is_hash_det with "His_hash0 His_hash1") as %->.
+Qed.
+
 Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
     d0 d1 d2 (label last_hash sibs dig : list w8) last_node found :
   {{{
@@ -1426,7 +1504,8 @@ Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
     "Hsl_dig" ∷ own_slice_small sl_dig byteT d2 dig ∗
 
     "#Hlast_hash" ∷ is_tree_hash last_node last_hash ∗
-    "%Hlast_path" ∷ ⌜ ∀ depth, tree_path last_node label depth found ⌝
+    "%Hlast_path" ∷ ⌜ ∀ depth, tree_path last_node label depth found ⌝ ∗
+    "#Hlast_proof" ∷ (∀ depth, tree_sibs_proof last_node label depth [])
   }}}
   verifySiblings (slice_val sl_label) (slice_val sl_last_hash)
     (slice_val sl_sibs) (slice_val sl_dig)
@@ -1462,34 +1541,41 @@ Proof.
     "Hptr_hash_out" ∷ ptr_hash_out ↦[slice.T byteT] sl_hash_out ∗
 
     "#Htree_hash" ∷ is_tree_hash tr curr_hash ∗
-    "%Htree_path" ∷ ⌜ tree_path tr label (word.sub max_depth depth_inv) found ⌝
+    "%Htree_path" ∷ ⌜ tree_path tr label (word.sub max_depth depth_inv) found ⌝ ∗
+    "#Htree_proof" ∷ tree_sibs_proof tr label (word.sub max_depth depth_inv)
+      (take (Z.to_nat (uint.Z depth_inv * hash_len)%Z) sibs)
     )%I
     with "[] [Hptr_depth_inv Hsl_label Hsl_last_hash Hptr_curr_hash
       Hsl_hash_out Hptr_hash_out]"
   ).
   3: { specialize (Hlast_path max_depth).
+    iSpecialize ("Hlast_proof" $! max_depth).
     iFrame "Hptr_curr_hash Hptr_hash_out ∗#".
     replace (word.sub _ _) with (max_depth) by word.
-    iFrame "%". }
+    change (Z.to_nat _) with (0%nat). rewrite take_0.
+    iFrame "%#". }
   { word. }
 
   (* return. *)
-  2: { iIntros "[H Hptr_depth_inv]". iNamed "H". wp_load.
+  2: { iClear "Hlast_hash Hlast_proof".
+    iIntros "[H Hptr_depth_inv]". iNamed "H". wp_load.
     iDestruct (own_slice_to_small with "Hsl_curr_hash") as "Hsl_curr_hash".
     wp_apply (wp_BytesEqual with "[$Hsl_curr_hash $Hsl_dig]").
     iIntros "[_ Hsl_dig]".
+    replace (word.sub _ _) with (W64 0) in *; [|word].
+    iDestruct (own_slice_small_sz with "Hsl_sibs") as %?.
+    rewrite take_ge; [|word].
     case_bool_decide; wp_pures.
-    2: { iApply "HΦ". iFrame. iIntros "!>". iSplit. { by iIntros (?). }
+    2: { (* wish says we have valid is_proof to dig.
+      therefore, program is_proof must also talk about dig. *)
+      iApply "HΦ". iFrame. iIntros "!>". iSplit. { by iIntros (?). }
       iNamed 1.
-      (* NOTE: from genie: have proof for found at dig.
-      from code: have proof for found at curr_hash.
-      both proofs use same sibs.
-      should be able to derive that digs equal,
-      which contradicts dig ≠ curr_hash. *)
-      admit. }
+      iDestruct (is_merkle_proof_eq_dig _ _ _ _ curr_hash with "His_proof []") as %?.
+      { iFrame "#%". }
+      done. }
     iApply "HΦ". subst. iFrame "∗#".
-    replace (word.sub _ _) with (W64 0) in Htree_path; [|word].
-    iFrame "%". admit. }
+    iIntros "!>". iSplit; [|naive_solver].
+    iIntros (_). iFrame "#%". }
 
   (* loop body. *)
   iIntros (depth_inv Φ2) "!> (H & Hptr_depth_inv & %Hlt_depth) HΦ2". iNamed "H".
@@ -1554,20 +1640,38 @@ Proof.
   wp_apply (wp_SliceTake_full with "[$Hsl_hash_out]"); [word|].
   iIntros "Hsl_hash_out". rewrite take_0. wp_store.
   iApply "HΦ2". iFrame "Hptr_curr_hash Hptr_hash_out ∗".
-  iIntros "!>". case_match.
+
+  replace (word.sub _ (word.add _ _)) with (depth); [|word].
+  assert (Z.of_nat (length sibs_sub) = hash_len).
+  { rewrite subslice_length; word. }
+  case_match.
   - iExists (Inner (Cut sibs_sub) tr).
-    iFrame "#". repeat iSplit; [done|..].
-    + rewrite subslice_length; word.
-    + simpl. replace (word.sub max_depth _) with (depth); [|word].
-      rewrite H0.
-      replace (word.add depth _) with (word.sub max_depth depth_inv); [done|word].
+    simpl. rewrite H1.
+    replace (word.add depth _) with (word.sub max_depth depth_inv); [|word].
+    iFrame "#%". iPureIntro. repeat split.
+    (* FIXME(word): word has bad perf with lots of things in context. *)
+    clear -Hlt_depth Hnoof. subst sibs_sub.
+    replace (uint.Z (word.mul (word.add _ _) (W64 32))) with
+        (uint.Z (word.add depth_inv (W64 1)) * 32); [|word].
+    replace (Z.to_nat _) with (uint.nat depth_inv * 32 + 32)%nat; [|word].
+    replace (uint.nat (word.mul depth_inv (W64 32))) with (uint.nat depth_inv * 32)%nat; [|word].
+    replace (Z.to_nat (uint.Z depth_inv * 32)) with (uint.nat depth_inv * 32)%nat; [|word].
+    rewrite -subslice_take_drop'.
+    by rewrite take_take_drop.
   - iExists (Inner tr (Cut sibs_sub)).
-    iFrame "#". repeat iSplit; [done|..].
-    + rewrite subslice_length; word.
-    + simpl. replace (word.sub max_depth _) with (depth); [|word].
-      rewrite H0.
-      replace (word.add depth _) with (word.sub max_depth depth_inv); [done|word].
-Admitted.
+    simpl. rewrite H1.
+    replace (word.add depth _) with (word.sub max_depth depth_inv); [|word].
+    iFrame "#%". iPureIntro. repeat split.
+    (* FIXME(word): word has bad perf with lots of things in context. *)
+    clear -Hlt_depth Hnoof. subst sibs_sub.
+    replace (uint.Z (word.mul (word.add _ _) (W64 32))) with
+        (uint.Z (word.add depth_inv (W64 1)) * 32); [|word].
+    replace (Z.to_nat _) with (uint.nat depth_inv * 32 + 32)%nat; [|word].
+    replace (uint.nat (word.mul depth_inv (W64 32))) with (uint.nat depth_inv * 32)%nat; [|word].
+    replace (Z.to_nat (uint.Z depth_inv * 32)) with (uint.nat depth_inv * 32)%nat; [|word].
+    rewrite -subslice_take_drop'.
+    by rewrite take_take_drop.
+Qed.
 
 Lemma wp_Verify sl_label sl_val sl_proof sl_dig (in_tree : bool)
     d0 d1 d2 d3 (label val proof dig : list w8) :
@@ -1632,6 +1736,7 @@ Proof.
 
     "#Htree_hash" ∷ is_tree_hash last_node last_hash ∗
     "%Htree_path" ∷ ⌜ ∀ depth, tree_path last_node label depth found ⌝ ∗
+    "#Htree_proof" ∷ (∀ depth, tree_sibs_proof last_node label depth []) ∗
     "%Heq_found" ∷
       ⌜if in_tree
       then found = Some (label, val)
