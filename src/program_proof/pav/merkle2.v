@@ -456,6 +456,121 @@ Proof.
     naive_solver.
 Qed.
 
+Lemma own_empty_tree t d :
+  own_merkle_tree null t d -∗
+  ⌜ t = Empty ⌝.
+Proof.
+  iIntros "H". destruct t; [done|..];
+    iNamed "H"; [..|done]; iNamed "H";
+    by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
+Qed.
+
+Lemma own_merkle_map_not_nil ptr elems depth d :
+  elems ≠ ∅ →
+  own_merkle_map_aux ptr elems depth d -∗
+  ⌜ ptr ≠ null ⌝.
+Proof.
+  intros ?. iNamed 1.
+  destruct t; [done|..]; iNamed "Hown_tree"; [..|done]; iNamed "Hown_tree";
+    by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
+Qed.
+
+Lemma own_merkle_tree_to_hash ptr t d :
+  own_merkle_tree ptr t d -∗
+  ∃ dig, is_tree_hash t dig.
+Proof. destruct t; iNamed 1; iFrame "#". Qed.
+
+Lemma tree_sibs_proof_len t label depth proof :
+  tree_sibs_proof t label depth proof -∗
+  ⌜ Z.of_nat (length proof) `mod` hash_len = 0 ⌝.
+Proof.
+  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (depth proof);
+    simpl; iNamed 1; subst; simpl; [word..|idtac|done].
+  rewrite length_app. case_match; iNamed "Hrecur";
+    iDestruct (is_tree_hash_len with "Htree_hash") as %?.
+  - iDestruct ("IH1" with "Hrecur_proof") as %?. word.
+  - iDestruct ("IH0" with "Hrecur_proof") as %?. word.
+Qed.
+
+Lemma is_tree_hash_det t h0 h1 :
+  is_tree_hash t h0 -∗
+  is_tree_hash t h1 -∗
+  ⌜ h0 = h1 ⌝.
+Proof.
+  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (h0 h1);
+    simpl; iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
+  - by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - iDestruct ("IH0" with "Hleft_hash0 Hleft_hash1") as %->.
+    iDestruct ("IH1" with "Hright_hash0 Hright_hash1") as %->.
+    by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - naive_solver.
+Qed.
+
+Lemma is_merkle_proof_eq_dig label found proof hash0 hash1 :
+  is_merkle_proof label found proof hash0 -∗
+  is_merkle_proof label found proof hash1 -∗
+  ⌜ hash0 = hash1 ⌝.
+Proof.
+  iNamedSuffix 1 "0". iNamedSuffix 1 "1".
+  iRevert "Hhash0 Hproof0 Hhash1 Hproof1".
+  remember (W64 0) as depth. clear Heqdepth.
+  iInduction t as [| ? | ? IH0 ? IH1 | ?]
+    forall (depth t0 hash0 hash1 proof Hpath0 Hpath1);
+    destruct t0; try done;
+    simpl in *; iIntros "#H0 #H1 #H2 #H3";
+    iNamedSuffix "H0" "0"; iNamedSuffix "H1" "0";
+    iNamedSuffix "H2" "1"; iNamedSuffix "H3" "1".
+
+  - by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - naive_solver.
+  - apply (f_equal length) in Heq_proof1.
+    rewrite length_app in Heq_proof1.
+    case_match; iNamed "Hrecur1";
+      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      list_simplifier; word.
+  - naive_solver.
+  - simplify_eq/=.
+    by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
+  - apply (f_equal length) in Heq_proof1.
+    rewrite length_app in Heq_proof1.
+    case_match; iNamed "Hrecur1";
+      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      list_simplifier; word.
+  - apply (f_equal length) in Heq_proof0.
+    rewrite length_app in Heq_proof0.
+    case_match; iNamed "Hrecur0";
+      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      list_simplifier; word.
+  - apply (f_equal length) in Heq_proof0.
+    rewrite length_app in Heq_proof0.
+    case_match; iNamed "Hrecur0";
+      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      list_simplifier; word.
+  - case_match;
+      iNamedSuffix "Hrecur0" "0"; iNamedSuffix "Hrecur1" "1".
+    + (* equal sib hashes. *)
+      iDestruct (is_tree_hash_len with "Htree_hash0") as %?.
+      iDestruct (is_tree_hash_len with "Htree_hash1") as %?.
+      subst. apply app_inj_2 in Heq_proof1 as [-> ->]; [|lia].
+      iDestruct (is_tree_hash_det with "Hleft_hash0 Htree_hash0") as %->.
+      iDestruct (is_tree_hash_det with "Hleft_hash1 Htree_hash1") as %->.
+      (* equal child hashes. *)
+      iDestruct ("IH1" with "[] [] Hright_hash0 Hrecur_proof0
+        Hright_hash1 Hrecur_proof1") as %->; [done..|].
+      by iDestruct (is_hash_det with "His_hash0 His_hash1") as %->.
+    + (* equal sib hashes. *)
+      iDestruct (is_tree_hash_len with "Htree_hash0") as %?.
+      iDestruct (is_tree_hash_len with "Htree_hash1") as %?.
+      subst. apply app_inj_2 in Heq_proof1 as [-> ->]; [|lia].
+      iDestruct (is_tree_hash_det with "Hright_hash0 Htree_hash0") as %->.
+      iDestruct (is_tree_hash_det with "Hright_hash1 Htree_hash1") as %->.
+      (* equal child hashes. *)
+      iDestruct ("IH0" with "[] [] Hleft_hash0 Hrecur_proof0
+        Hleft_hash1 Hrecur_proof1") as %->; [done..|].
+      by iDestruct (is_hash_det with "His_hash0 His_hash1") as %->.
+Qed.
+
 (* Program proofs. *)
 
 Lemma wp_compEmptyHash :
@@ -541,15 +656,6 @@ Global Instance own_context_as_fractional ptr q :
   AsFractional (own_context ptr (DfracOwn q)) (λ q, own_context ptr (DfracOwn q)) q.
 Proof. split; [auto|apply _]. Qed.
 
-Lemma own_empty_tree t d :
-  own_merkle_tree null t d -∗
-  ⌜ t = Empty ⌝.
-Proof.
-  iIntros "H". destruct t; [done|..];
-    iNamed "H"; [..|done]; iNamed "H";
-    by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
-Qed.
-
 Lemma wp_getChild n d0 ptr_child0 ptr_child1 sl_label d1 (label : list w8) (depth : w64) :
   {{{
     "Hptr_child0" ∷ n ↦[node :: "child0"]{d0} #ptr_child0 ∗
@@ -609,16 +715,6 @@ Lemma own_context_to_null_tree ptr_ctx d0 :
   own_context ptr_ctx d0 -∗
   (own_context ptr_ctx d0 ∗ own_merkle_tree null Empty (DfracOwn 1)).
 Proof. iNamed 1. by iFrame "∗#". Qed.
-
-Lemma own_merkle_map_not_nil ptr elems depth d :
-  elems ≠ ∅ →
-  own_merkle_map_aux ptr elems depth d -∗
-  ⌜ ptr ≠ null ⌝.
-Proof.
-  intros ?. iNamed 1.
-  destruct t; [done|..]; iNamed "Hown_tree"; [..|done]; iNamed "Hown_tree";
-    by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
-Qed.
 
 Definition own_Tree ptr elems d : iProp Σ :=
   ∃ ptr_ctx ptr_map,
@@ -798,11 +894,6 @@ Proof.
       iIntros "!>". iSplit; [done|].
       simpl. by rewrite Heq_bit.
 Qed.
-
-Lemma own_merkle_tree_to_hash ptr t d :
-  own_merkle_tree ptr t d -∗
-  ∃ dig, is_tree_hash t dig.
-Proof. destruct t; iNamed 1; iFrame "#". Qed.
 
 Lemma wp_UInt64Put' s x vs :
   length vs >= w64_bytes →
@@ -1403,97 +1494,6 @@ Proof.
     iFrame.
 Qed.
 *)
-
-Lemma tree_sibs_proof_len t label depth proof :
-  tree_sibs_proof t label depth proof -∗
-  ⌜ Z.of_nat (length proof) `mod` hash_len = 0 ⌝.
-Proof.
-  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (depth proof);
-    simpl; iNamed 1; subst; simpl; [word..|idtac|done].
-  rewrite length_app. case_match; iNamed "Hrecur";
-    iDestruct (is_tree_hash_len with "Htree_hash") as %?.
-  - iDestruct ("IH1" with "Hrecur_proof") as %?. word.
-  - iDestruct ("IH0" with "Hrecur_proof") as %?. word.
-Qed.
-
-Lemma is_tree_hash_det t h0 h1 :
-  is_tree_hash t h0 -∗
-  is_tree_hash t h1 -∗
-  ⌜ h0 = h1 ⌝.
-Proof.
-  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (h0 h1);
-    simpl; iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
-  - by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
-  - by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
-  - iDestruct ("IH0" with "Hleft_hash0 Hleft_hash1") as %->.
-    iDestruct ("IH1" with "Hright_hash0 Hright_hash1") as %->.
-    by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
-  - naive_solver.
-Qed.
-
-Lemma is_merkle_proof_eq_dig label found proof hash0 hash1 :
-  is_merkle_proof label found proof hash0 -∗
-  is_merkle_proof label found proof hash1 -∗
-  ⌜ hash0 = hash1 ⌝.
-Proof.
-  iNamedSuffix 1 "0". iNamedSuffix 1 "1".
-  iRevert "Hhash0 Hproof0 Hhash1 Hproof1".
-  remember (W64 0) as depth. clear Heqdepth.
-  iInduction t as [| ? | ? IH0 ? IH1 | ?]
-    forall (depth t0 hash0 hash1 proof Hpath0 Hpath1);
-    destruct t0; try done;
-    simpl in *; iIntros "#H0 #H1 #H2 #H3";
-    iNamedSuffix "H0" "0"; iNamedSuffix "H1" "0";
-    iNamedSuffix "H2" "1"; iNamedSuffix "H3" "1".
-
-  - by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
-  - naive_solver.
-  - apply (f_equal length) in Heq_proof1.
-    rewrite length_app in Heq_proof1.
-    case_match; iNamed "Hrecur1";
-      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
-      list_simplifier; word.
-  - naive_solver.
-  - simplify_eq/=.
-    by iDestruct (is_hash_det with "His_hash0 His_hash1") as %?.
-  - apply (f_equal length) in Heq_proof1.
-    rewrite length_app in Heq_proof1.
-    case_match; iNamed "Hrecur1";
-      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
-      list_simplifier; word.
-  - apply (f_equal length) in Heq_proof0.
-    rewrite length_app in Heq_proof0.
-    case_match; iNamed "Hrecur0";
-      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
-      list_simplifier; word.
-  - apply (f_equal length) in Heq_proof0.
-    rewrite length_app in Heq_proof0.
-    case_match; iNamed "Hrecur0";
-      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
-      list_simplifier; word.
-  - case_match;
-      iNamedSuffix "Hrecur0" "0"; iNamedSuffix "Hrecur1" "1".
-    + (* equal sib hashes. *)
-      iDestruct (is_tree_hash_len with "Htree_hash0") as %?.
-      iDestruct (is_tree_hash_len with "Htree_hash1") as %?.
-      subst. apply app_inj_2 in Heq_proof1 as [-> ->]; [|lia].
-      iDestruct (is_tree_hash_det with "Hleft_hash0 Htree_hash0") as %->.
-      iDestruct (is_tree_hash_det with "Hleft_hash1 Htree_hash1") as %->.
-      (* equal child hashes. *)
-      iDestruct ("IH1" with "[] [] Hright_hash0 Hrecur_proof0
-        Hright_hash1 Hrecur_proof1") as %->; [done..|].
-      by iDestruct (is_hash_det with "His_hash0 His_hash1") as %->.
-    + (* equal sib hashes. *)
-      iDestruct (is_tree_hash_len with "Htree_hash0") as %?.
-      iDestruct (is_tree_hash_len with "Htree_hash1") as %?.
-      subst. apply app_inj_2 in Heq_proof1 as [-> ->]; [|lia].
-      iDestruct (is_tree_hash_det with "Hright_hash0 Htree_hash0") as %->.
-      iDestruct (is_tree_hash_det with "Hright_hash1 Htree_hash1") as %->.
-      (* equal child hashes. *)
-      iDestruct ("IH0" with "[] [] Hleft_hash0 Hrecur_proof0
-        Hleft_hash1 Hrecur_proof1") as %->; [done..|].
-      by iDestruct (is_hash_det with "His_hash0 His_hash1") as %->.
-Qed.
 
 Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
     d0 d1 d2 (label last_hash sibs dig : list w8) last_node found :
