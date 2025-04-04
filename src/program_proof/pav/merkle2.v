@@ -21,6 +21,9 @@ Lemma u64_le_seal_len x :
 Proof. Admitted.
 Global Instance u64_le_seal_inj : Inj eq eq u64_le_seal.
 Proof. Admitted.
+Lemma u64_le_eq_seal x :
+  u64_le x = u64_le_seal x.
+Proof. Admitted.
 
 Module MerkleProof.
 Record t :=
@@ -732,7 +735,6 @@ Lemma wp_getProofLen (depth : w64) :
   }}}.
 Proof. iIntros (Φ) "_ HΦ". wp_rec. wp_pures. iApply "HΦ". word. Qed.
 
-(*
 Lemma wp_find sl_label d0 (label : list w8) ptr_ctx d1 ptr_n t (get_proof : bool) (depth : w64) :
   {{{
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
@@ -913,6 +915,19 @@ Proof.
   by rewrite /own_slice_small list_untype_app list_untype_drop.
 Qed.
 
+Definition Verify_wish (in_tree : bool) label val proof dig : iProp Σ :=
+  ∃ found proof_obj proof' tail,
+  "%Henc" ∷ ⌜ MerkleProof.encodes proof_obj proof' ⌝ ∗
+  "%Heq_tail" ∷ ⌜ proof = proof' ++ tail ⌝ ∗
+  "%Heq_found" ∷
+    ⌜if in_tree
+    then found = Some (label, val)
+    else if proof_obj.(MerkleProof.FoundOtherLeaf)
+      then found = Some (proof_obj.(MerkleProof.LeafLabel), proof_obj.(MerkleProof.LeafVal)) ∧
+        label ≠ proof_obj.(MerkleProof.LeafLabel)
+      else found = None ⌝ ∗
+  "#His_proof" ∷ is_merkle_proof label found proof_obj.(MerkleProof.Siblings) dig.
+
 Lemma wp_Tree__prove sl_label d0 (label : list w8) ptr_t elems d1 (get_proof : bool) :
   {{{
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
@@ -926,22 +941,13 @@ Lemma wp_Tree__prove sl_label d0 (label : list w8) ptr_t elems d1 (get_proof : b
     "Hown_Tree" ∷ own_Tree ptr_t elems d1 ∗
     "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
     "Hsl_proof" ∷ own_slice_small sl_proof byteT (DfracOwn 1) proof ∗
+    (* TODO: prove is_merkle_map_det. *)
     "#His_dig" ∷ is_merkle_map elems dig ∗
     "#Hmemb" ∷
       (if in_tree
       then is_merkle_memb label val dig
       else is_merkle_nonmemb label dig) ∗
-    "Hproof" ∷
-      (if negb get_proof then True else
-      ∃ proof_obj found,
-      "->" ∷ ⌜ proof = MerkleProof.encodes proof_obj ⌝ ∗
-      "%Heq_found" ∷
-        ⌜ in_tree = false →
-        found =
-          if proof_obj.(MerkleProof.FoundOtherLeaf)
-          then Some (proof_obj.(MerkleProof.LeafLabel), proof_obj.(MerkleProof.LeafVal))
-          else None ⌝ ∗
-      "#His_proof" ∷ is_merkle_proof label found proof_obj.(MerkleProof.Siblings) dig)
+    "#Hwish" ∷ (if negb get_proof then True else Verify_wish in_tree label val proof dig)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -991,6 +997,7 @@ Proof.
       iIntros "* Hsl_proof". wp_store. wp_load.
 
       iDestruct (own_slice_to_small with "Hsl_proof") as "Hsl_proof".
+      iDestruct (own_slice_small_sz with "Hsl_proof") as %Hlen_proof.
       iDestruct (own_slice_zero _ (DfracOwn 1)) as "H0".
       iDestruct (own_slice_to_small with "H0") as "H1".
       iPersist "H1".
@@ -999,18 +1006,21 @@ Proof.
 
       wp_pures. iApply ("HΦ" $! Slice.nil). iFrame "∗#%".
       iIntros "!>". do 2 (iSplit; [done|]).
-      iExists (MerkleProof.mk _ false [] []). simpl.
-      iFrame "#". iSplit; [|done].
+      iExists (MerkleProof.mk _ false [] []), _, []. simpl.
+      iFrame "#". iPureIntro. split; [|by list_simplifier].
+      rewrite /MerkleProof.encodes. simpl.
+      apply (f_equal length) in Henc_proof.
+      rewrite !u64_le_eq_seal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
+      repeat split; [word|].
       by list_simplifier.
-    - wp_load.
 
+    - wp_load.
       iDestruct (own_slice_to_small with "Hsl_proof") as "Hsl_proof".
       iDestruct (own_slice_zero _ (DfracOwn 1)) as "H0".
       iDestruct (own_slice_to_small with "H0") as "H1".
       iPersist "H1".
       iDestruct (own_merkle_tree_to_hash with "Hown_tree") as "[% #Htree_hash]".
       iDestruct (own_merkle_tree_cutless with "Hown_tree") as %Hcutless.
-
       wp_pures. iApply ("HΦ" $! Slice.nil). by iFrame "∗#%". }
 
   wp_apply (wp_BytesEqual sl_fd_label sl_label with "[$Hsl_fd_label $Hsl_label]").
@@ -1032,29 +1042,33 @@ Proof.
       iDestruct (own_slice_small_sz with "Hsl_fd_val") as %Hlen_val.
 
       iDestruct (own_slice_to_small with "Hsl_proof") as "Hsl_proof".
+      iDestruct (own_slice_small_sz with "Hsl_proof") as %Hlen_proof.
       iDestruct (own_slice_zero _ (DfracOwn 1)) as "H0".
       iDestruct (own_slice_to_small with "H0") as "H1".
       iPersist "H1".
       iDestruct (own_merkle_tree_to_hash with "Hown_tree") as "[% #Htree_hash]".
       iDestruct (own_merkle_tree_cutless with "Hown_tree") as %Hcutless.
 
-      wp_pures. iApply ("HΦ" $! Slice.nil).
-      iFrame "∗#%". iIntros "!>". do 3 (iSplit; [done|]).
-      iExists (MerkleProof.mk _ true fd_label fd_val). simpl.
-      iFrame "#". iSplit; [|done].
+      wp_pures. iApply ("HΦ" $! Slice.nil). iFrame "∗#%".
+      iIntros "!>". do 3 (iSplit; [done|]).
+      iExists (MerkleProof.mk _ true fd_label fd_val), _, []. simpl.
+      iFrame "#". iPureIntro. split; [|by list_simplifier].
+      rewrite /MerkleProof.encodes. simpl.
+      apply (f_equal length) in Henc_proof.
+      rewrite !u64_le_eq_seal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
+      repeat split; [word..|].
       apply (f_equal (λ x : nat, W64 x)) in Hlen_label, Hlen_val.
       rewrite !w64_to_nat_id in Hlen_label Hlen_val.
       rewrite -Hlen_label -Hlen_val.
       by list_simplifier.
-    - wp_load.
 
+    - wp_load.
       iDestruct (own_slice_to_small with "Hsl_proof") as "Hsl_proof".
       iDestruct (own_slice_zero _ (DfracOwn 1)) as "H0".
       iDestruct (own_slice_to_small with "H0") as "H1".
       iPersist "H1".
       iDestruct (own_merkle_tree_to_hash with "Hown_tree") as "[% #Htree_hash]".
       iDestruct (own_merkle_tree_cutless with "Hown_tree") as %Hcutless.
-
       wp_pures. iApply ("HΦ" $! Slice.nil). by iFrame "∗#%". }
 
   subst. wp_if_destruct.
@@ -1067,13 +1081,18 @@ Proof.
     iIntros "* Hsl_proof". wp_store. wp_load.
 
     iDestruct (own_slice_to_small with "Hsl_proof") as "Hsl_proof".
+    iDestruct (own_slice_small_sz with "Hsl_proof") as %Hlen_proof.
     iDestruct (own_merkle_tree_to_hash with "Hown_tree") as "[% #Htree_hash]".
     iDestruct (own_merkle_tree_cutless with "Hown_tree") as %Hcutless.
 
     wp_pures. iApply "HΦ". iFrame "∗#%".
     iIntros "!>". do 2 (iSplit; [done|]).
-    iExists (MerkleProof.mk _ false [] []). simpl.
-    iFrame "#". iSplit; [|done].
+    iExists (MerkleProof.mk _ false [] []), _, []. simpl.
+    iFrame "#". iPureIntro. split; [|by list_simplifier].
+    rewrite /MerkleProof.encodes. simpl.
+    apply (f_equal length) in Henc_proof.
+    rewrite !u64_le_eq_seal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
+    repeat split; [word|].
     by list_simplifier. }
 
   iDestruct (own_slice_to_small with "Hsl_proof") as "Hsl_proof".
@@ -1090,22 +1109,26 @@ Lemma wp_Tree__Get sl_label d0 (label : list w8) ptr_t elems d1 :
   }}}
   Tree__Get #ptr_t (slice_val sl_label)
   {{{
-    sl_val (in_tree : bool) (val : list w8) dig,
+    sl_val (in_tree : bool) (val : list w8),
     RET (#in_tree, slice_val sl_val);
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
     "Hown_Tree" ∷ own_Tree ptr_t elems d1 ∗
     "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
-    "#His_dig" ∷ is_merkle_map elems dig ∗
-    "#Hmemb" ∷
-      (if in_tree
-      then is_merkle_memb label val dig
-      else is_merkle_nonmemb label dig)
+
+    "%Hlook_elems" ∷ ⌜ elems !! label = (if in_tree then Some val else None) ⌝
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_apply (wp_Tree__prove with "[$Hsl_label $Hown_Tree]").
   iIntros "*". iNamed 1.
-  wp_pures. iApply "HΦ". by iFrame "∗#".
+  wp_pures. iApply "HΦ". iFrame "∗#".
+  case_match; iNamed "Hmemb".
+  - iDestruct (is_merkle_map_agree_is_merkle_found with "His_dig []") as %?.
+    { iFrame "#%". }
+    case_match; naive_solver.
+  - iDestruct (is_merkle_map_agree_is_merkle_found with "His_dig []") as %?.
+    { iFrame "#%". }
+    case_match; naive_solver.
 Qed.
 
 Lemma wp_Tree__Prove sl_label d0 (label : list w8) ptr_t elems d1 :
@@ -1115,31 +1138,29 @@ Lemma wp_Tree__Prove sl_label d0 (label : list w8) ptr_t elems d1 :
   }}}
   Tree__Prove #ptr_t (slice_val sl_label)
   {{{
-    sl_val sl_proof (in_tree : bool) (val : list w8) dig proof_obj found,
+    sl_val sl_proof (in_tree : bool) (val : list w8) proof dig,
     RET (#in_tree, slice_val sl_val, slice_val sl_proof);
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
     "Hown_Tree" ∷ own_Tree ptr_t elems d1 ∗
     "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
-    "Hsl_proof" ∷ own_slice_small sl_proof byteT (DfracOwn 1)
-      (MerkleProof.encodes proof_obj) ∗
+    "Hsl_proof" ∷ own_slice_small sl_proof byteT (DfracOwn 1) proof ∗
+
     "#His_dig" ∷ is_merkle_map elems dig ∗
-    "#Hmemb" ∷
-      (if in_tree
-      then is_merkle_memb label val dig
-      else is_merkle_nonmemb label dig) ∗
-    "%Heq_found" ∷
-      ⌜ in_tree = false →
-      found =
-        if proof_obj.(MerkleProof.FoundOtherLeaf)
-        then Some (proof_obj.(MerkleProof.LeafLabel), proof_obj.(MerkleProof.LeafVal))
-        else None ⌝ ∗
-    "#His_proof" ∷ is_merkle_proof label found proof_obj.(MerkleProof.Siblings) dig
+    "%Hlook_elems" ∷ ⌜ elems !! label = (if in_tree then Some val else None) ⌝ ∗
+    "#Hwish" ∷ Verify_wish in_tree label val proof dig
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_apply (wp_Tree__prove with "[$Hsl_label $Hown_Tree]").
-  iIntros "*". iNamed 1. iNamed "Hproof".
-  iApply "HΦ". by iFrame "∗#".
+  iIntros "*". iNamed 1.
+  wp_pures. iApply "HΦ". iFrame "∗#".
+  case_match; iNamed "Hmemb".
+  - iDestruct (is_merkle_map_agree_is_merkle_found with "His_dig []") as %?.
+    { iFrame "#%". }
+    case_match; naive_solver.
+  - iDestruct (is_merkle_map_agree_is_merkle_found with "His_dig []") as %?.
+    { iFrame "#%". }
+    case_match; naive_solver.
 Qed.
 
 Lemma wp_put n0 ptr_n (depth : w64) elems sl_label sl_val (label val : list w8) ptr_ctx :
@@ -1493,7 +1514,6 @@ Proof.
     iDestruct (Hclose with "Hptr_n0") as "Hptr_root".
     iFrame.
 Qed.
-*)
 
 Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
     d0 d1 d2 (label last_hash sibs dig : list w8) last_node found :
@@ -1656,8 +1676,7 @@ Proof.
     replace (Z.to_nat _) with (uint.nat depth_inv * 32 + 32)%nat; [|word].
     replace (uint.nat (word.mul depth_inv (W64 32))) with (uint.nat depth_inv * 32)%nat; [|word].
     replace (Z.to_nat (uint.Z depth_inv * 32)) with (uint.nat depth_inv * 32)%nat; [|word].
-    rewrite -subslice_take_drop'.
-    by rewrite take_take_drop.
+    by rewrite -subslice_take_drop' take_take_drop.
   - iExists (Inner tr (Cut sibs_sub)).
     simpl. rewrite H1.
     replace (word.add depth _) with (word.sub max_depth depth_inv); [|word].
@@ -1669,8 +1688,7 @@ Proof.
     replace (Z.to_nat _) with (uint.nat depth_inv * 32 + 32)%nat; [|word].
     replace (uint.nat (word.mul depth_inv (W64 32))) with (uint.nat depth_inv * 32)%nat; [|word].
     replace (Z.to_nat (uint.Z depth_inv * 32)) with (uint.nat depth_inv * 32)%nat; [|word].
-    rewrite -subslice_take_drop'.
-    by rewrite take_take_drop.
+    by rewrite -subslice_take_drop' take_take_drop.
 Qed.
 
 Lemma wp_Verify sl_label sl_val sl_proof sl_dig (in_tree : bool)
@@ -1689,18 +1707,7 @@ Lemma wp_Verify sl_label sl_val sl_proof sl_dig (in_tree : bool)
     "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
     "Hsl_dig" ∷ own_slice_small sl_dig byteT d3 dig ∗
     "Hgenie" ∷
-      (⌜ err = false ⌝ ∗-∗
-      ∃ found proof_obj proof' tail,
-      "%Henc" ∷ ⌜ MerkleProof.encodes proof_obj proof' ⌝ ∗
-      "%Heq_tail" ∷ ⌜ proof = proof' ++ tail ⌝ ∗
-      "%Heq_found" ∷
-        ⌜if in_tree
-        then found = Some (label, val)
-        else if proof_obj.(MerkleProof.FoundOtherLeaf)
-          then found = Some (proof_obj.(MerkleProof.LeafLabel), proof_obj.(MerkleProof.LeafVal)) ∧
-            label ≠ proof_obj.(MerkleProof.LeafLabel)
-          else found = None ⌝ ∗
-      "#His_proof" ∷ is_merkle_proof label found proof_obj.(MerkleProof.Siblings) dig)
+      (⌜ err = false ⌝ ∗-∗ Verify_wish in_tree label val proof dig)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
