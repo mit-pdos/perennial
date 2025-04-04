@@ -245,6 +245,7 @@ Section interpreter.
     | ExtV ev => "ExtV(_)"
     end.
   Instance pretty_val : Pretty val := print_val.
+  Instance pretty_byte_string : Pretty byte_string := quoted.
 
   (* Given a location l, reads n places from the heap starting at l
    and returns a vec.
@@ -470,7 +471,18 @@ Section interpreter.
                 end
             | _ => mfail_bt ("Attempted FinishReadOp with non-location argument of type " ++ (pretty addrv))
             end
-        | GlobalGetOp => mfail_bt "GlobalGetOp Unsupported"
+        | GlobalGetOp =>
+          addrv <- interpret n e;
+            match addrv with
+            | LitV (LitString n) =>
+              sbt <- mget;
+              let '(s,g) := fst sbt in
+              mret (match s.(globals) !! n with
+                    | Some v => SOMEV v
+                    | None => NONEV
+                    end)
+            | _ => mfail_bt ("Attempted GlobalGetOp with non-string argument of type " ++ (pretty addrv))
+            end
         end
       | Primitive2 p e1 e2 =>
           v1 <- interpret n e1;
@@ -840,7 +852,11 @@ Ltac runStateT_inv :=
         single_step.
       }
       {
-        done.
+        run_next_interpret IHn.
+        runStateT_inv.
+        do 2 eexists.
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive1Ctx GlobalGetOp)])|].
+        single_step.
       }
     }
 
