@@ -33,7 +33,6 @@ Section dfractional.
   Implicit Types q : Qp.
   Implicit Types dq : dfrac.
 
-  (* TODO: not sure if this can be an instance *)
   Lemma fractional_of_dfractional Φ : DFractional Φ → Fractional (λ q, Φ (DfracOwn q)).
   Proof.
     intros ?.
@@ -42,8 +41,11 @@ Section dfractional.
     rewrite -dfrac_op_own dfractional //.
   Qed.
 
-  (* TODO: not sure if this can be an instance *)
-  Lemma as_fractional_of_as_dfractional P Φ q :
+  (* TODO: not sure if this is a good instance to have. It doesn't allow proving
+  Fractional directly, and it's hard to do that with typeclass search due to
+  higher-order unification struggling to go from a predicate over Qp to one
+  over dfrac. *)
+  Global Instance as_fractional_of_as_dfractional P Φ q :
     AsDFractional P Φ (DfracOwn q) → AsFractional P (λ q, Φ (DfracOwn q)) q.
   Proof.
     intros [Heq ?].
