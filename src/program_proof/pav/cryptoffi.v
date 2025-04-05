@@ -21,16 +21,16 @@ Proof. Admitted.
 Instance is_hash_timeless data hash : Timeless (is_hash data hash).
 Proof. Admitted.
 
-Lemma is_hash_det d h0 h1 :
-  is_hash d h0 -∗ is_hash d h1 -∗ ⌜ h0 = h1 ⌝.
+Lemma is_hash_det data hash0 hash1 :
+  is_hash data hash0 -∗ is_hash data hash1 -∗ ⌜ hash0 = hash1 ⌝.
 Proof. Admitted.
 
-Lemma is_hash_inj d0 d1 h :
-  is_hash d0 h -∗ is_hash d1 h -∗ ⌜ d0 = d1⌝.
+Lemma is_hash_inj data0 data1 hash :
+  is_hash data0 hash -∗ is_hash data1 hash -∗ ⌜ data0 = data1⌝.
 Proof. Admitted.
 
-Lemma is_hash_len d h :
-  is_hash d h -∗ ⌜ Z.of_nat (length h) = hash_len ⌝.
+Lemma is_hash_len data hash :
+  is_hash data hash -∗ ⌜ Z.of_nat (length hash) = hash_len ⌝.
 Proof. Admitted.
 
 Definition own_hasher (ptr : loc) (data : list w8) : iProp Σ. Admitted.
@@ -156,13 +156,13 @@ Lemma wp_SigPublicKey__Verify sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
     "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
     "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg ∗
-    "Hgenie" ∷ (is_sig pk msg sig -∗ ⌜ err = false ⌝) ∗
-    "Herr" ∷ (⌜ err = false ⌝ -∗ is_sig pk msg sig)
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ is_sig pk msg sig)
   }}}.
 Proof. Admitted.
 
 (* Verifiable Random Functions (VRFs).
-we model "Full Uniqueness" (from the IETF spec) and correctness.
+IETF spec: https://www.rfc-editor.org/rfc/rfc9381.html.
+we model correctness (is_vrf_proof) and "Full Uniqueness" (is_vrf_out_det).
 we omit "Full Collision Resistance", since it's not needed in KT. *)
 
 (* is_vrf_sk provides ownership of an sk from the VrfGenerateKey function. *)
@@ -183,22 +183,32 @@ Admitted.
 Instance is_vrf_pk_persistent ptr_pk pk : Persistent (is_vrf_pk ptr_pk pk).
 Proof. Admitted.
 
-(* is_vrf says that for a particular pk, data and out are tied together,
-through the Verify function. *)
-Definition is_vrf (pk : list w8) (data : list w8) (out : list w8) : iProp Σ.
+(* is_vrf_proof helps model correctness.
+i.e., a caller gets this from Prove / Verify,
+and uses it to prove that Verify should not return an error. *)
+Definition is_vrf_proof (pk : list w8) (data : list w8) (proof : list w8) : iProp Σ.
 Admitted.
 
 #[global]
-Instance is_vrf_persistent pk data out : Persistent (is_vrf pk data out).
+Instance is_vrf_proof_persistent pk data proof : Persistent (is_vrf_proof pk data proof).
 Proof. Admitted.
 
-(* VRFs give deterministic outputs, aka, "Full Uniqueness" from IETF spec. *)
-Lemma is_vrf_det pk d o1 o2 :
-  is_vrf pk d o1 -∗ is_vrf pk d o2 -∗ ⌜o1 = o2⌝.
+(* is_vrf_out helps model "Full Uniqueness" (is_vrf_out_det).
+i.e., it's impossible to have the same pk and data that
+map thru Prove / Verify to diff outs. *)
+Definition is_vrf_out (pk : list w8) (data : list w8) (out : list w8) : iProp Σ.
+Admitted.
+
+#[global]
+Instance is_vrf_out_persistent pk data out : Persistent (is_vrf_out pk data out).
 Proof. Admitted.
 
-Lemma is_vrf_len pk d o :
-  is_vrf pk d o -∗ ⌜ Z.of_nat (length o) = hash_len ⌝.
+Lemma is_vrf_out_det pk data out0 out1 :
+  is_vrf_out pk data out0 -∗ is_vrf_out pk data out1 -∗ ⌜ out0 = out1⌝.
+Proof. Admitted.
+
+Lemma is_vrf_out_len pk data out :
+  is_vrf_out pk data out -∗ ⌜ Z.of_nat (length out) = hash_len ⌝.
 Proof. Admitted.
 
 Lemma wp_VrfGenerateKey :
@@ -222,7 +232,8 @@ Lemma wp_VrfPrivateKey__Prove ptr_sk pk sl_data (data : list w8) d0 :
     "Hsl_data" ∷ own_slice_small sl_data byteT d0 data ∗
     "Hsl_out" ∷ own_slice_small sl_out byteT (DfracOwn 1) out ∗
     "Hsl_proof" ∷ own_slice_small sl_proof byteT (DfracOwn 1) proof ∗
-    "#His_vrf" ∷ is_vrf pk data out
+    "#His_vrf_proof" ∷ is_vrf_proof pk data proof ∗
+    "#His_vrf_out" ∷ is_vrf_out pk data out
   }}}.
 Proof. Admitted.
 
@@ -238,8 +249,8 @@ Lemma wp_VrfPublicKey__Verify ptr_pk pk sl_data sl_proof (data proof : list w8) 
     "Hsl_data" ∷ own_slice_small sl_data byteT d0 data ∗
     "Hsl_proof" ∷ own_slice_small sl_proof byteT d1 proof ∗
     "Hsl_out" ∷ own_slice_small sl_out byteT (DfracOwn 1) out ∗
-    "Hgenie" ∷ (is_vrf pk data out -∗ ⌜ err = false ⌝) ∗
-    "Herr" ∷ (⌜ err = false ⌝ -∗ is_vrf pk data out)
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ is_vrf_proof pk data proof) ∗
+    "Herr" ∷ (is_vrf_proof pk data proof -∗ is_vrf_out pk data out)
   }}}.
 Proof. Admitted.
 
