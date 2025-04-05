@@ -2,6 +2,7 @@ From iris.proofmode Require Import coq_tactics reduction.
 From iris.proofmode Require Import tactics.
 From iris.proofmode Require Import environments.
 From Perennial.program_logic Require Import weakestpre.
+From Perennial.iris_lib Require Import dfractional.
 From Perennial.goose_lang Require Import proofmode.
 From Perennial.goose_lang Require Export typing.
 From Perennial.goose_lang.lib Require Import persistent_readonly.
@@ -48,11 +49,16 @@ Section goose_lang.
   Global Instance struct_pointsto_timeless l t q v: Timeless (l ↦[t]{q} v).
   Proof. unseal. apply _. Qed.
 
+  Global Instance struct_pointsto_dfractional l t v: DFractional (λ dq, l ↦[t]{dq} v)%I.
+  Proof. unseal. apply _. Qed.
+  Global Instance struct_pointsto_as_dfractional l t dq v: AsDFractional (l ↦[t]{dq} v) (λ dq, l ↦[t]{dq} v)%I dq.
+  Proof. auto. Qed.
+
   Global Instance struct_pointsto_fractional l t v: fractional.Fractional (λ q, l ↦[t]{#q} v)%I.
   Proof. unseal. apply _. Qed.
 
   Global Instance struct_pointsto_as_fractional l t q v: fractional.AsFractional (l ↦[t]{#q} v) (λ q, l ↦[t]{#q} v)%I q.
-  Proof. split; [ auto | apply _ ]. Qed.
+  Proof. auto. Qed.
 
   Theorem struct_pointsto_singleton l q t v v0 :
     flatten_struct v = [v0] ->
@@ -145,13 +151,7 @@ Section goose_lang.
   Lemma struct_pointsto_persist l dq t v:
     l ↦[t]{dq} v ==∗ l ↦[t]□ v.
   Proof.
-    rewrite struct_pointsto_eq /struct_pointsto_def.
-    iIntros "[Ha %Ht]".
-    iDestruct (big_sepL_mono with "Ha") as "Ha".
-    2: iMod (big_sepL_bupd with "Ha") as "Ha".
-    { iIntros (???) "H".
-      iMod (heap_pointsto_persist with "H") as "H". iModIntro. iExact "H". }
-    iModIntro. iFrame "Ha". done.
+    iIntros "H". iPersist "H". done.
   Qed.
 
   Lemma byte_pointsto_untype l q (x: u8) :

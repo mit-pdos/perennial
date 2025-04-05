@@ -2,6 +2,7 @@ From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import lib.frac_auth auth numbers gmap excl dfrac_agree.
 From iris.bi Require Import fractional.
+From Perennial.iris_lib Require Import dfractional.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
@@ -32,29 +33,6 @@ Section definitions.
   Definition heap_pointsto_eq : @heap_pointsto = @heap_pointsto_def :=
     seal_eq heap_pointsto_aux.
 
-  Global Instance heap_pointsto_fractional l v: Fractional (λ q, heap_pointsto l (DfracOwn q) v)%I.
-  Proof.
-    intros p q.
-    rewrite heap_pointsto_eq /heap_pointsto_def.
-    rewrite na_heap_pointsto_fractional.
-    iSplit.
-    - by iIntros "(%&$&$)".
-    - by iIntros "[[% $] [% $]]".
-  Qed.
-  Global Instance heap_pointsto_as_fractional l q v:
-    AsFractional (heap_pointsto l (DfracOwn q) v) (λ q, heap_pointsto l (DfracOwn q) v)%I q.
-  Proof. rewrite heap_pointsto_eq /heap_pointsto_def.
-         econstructor; eauto.
-         apply _.
-  Qed.
-  Global Instance heap_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
-    CombineSepGives (heap_pointsto l dq1 v1)%I (heap_pointsto l dq2 v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
-  Proof. rewrite heap_pointsto_eq /CombineSepGives. iIntros "[[?H1] [?H2]]".
-         iCombine "H1 H2" gives %?. iModIntro. iPureIntro. done. Qed.
-
-  Lemma heap_pointsto_agree l q1 q2 v1 v2 : heap_pointsto l q1 v1 ∗ heap_pointsto l q2 v2 -∗ ⌜v1 = v2⌝.
-  Proof. iIntros "[H1 H2]". iCombine "H1 H2" gives %[? ?]. done. Qed.
-
   Global Instance heap_pointsto_persistent l v : Persistent (heap_pointsto l DfracDiscarded v).
   Proof. rewrite heap_pointsto_eq. apply _. Qed.
 
@@ -67,6 +45,35 @@ Section definitions.
     iModIntro.
     iFrame. done.
   Qed.
+
+  Global Instance heap_pointsto_dfractional l v: DFractional (λ dq, heap_pointsto l dq v).
+  Proof.
+    split; intros.
+    - rewrite heap_pointsto_eq /heap_pointsto_def.
+      rewrite (dfractional (DFractional:=na_heap_pointsto_dfractional _ _)).
+      iSplit.
+      + by iIntros "(%&$&$)".
+      + by iIntros "[[% $] [% $]]".
+    - apply _.
+    - iIntros "H". iMod (heap_pointsto_persist with "H") as "$". done.
+  Qed.
+  Global Instance heap_pointsto_as_dfractional l dq v: AsDFractional (heap_pointsto l dq v) (λ dq, heap_pointsto l dq v) dq.
+  Proof. auto. Qed.
+
+  Global Instance heap_pointsto_fractional l v: Fractional (λ q, heap_pointsto l (DfracOwn q) v)%I.
+  Proof.
+    apply (fractional_of_dfractional (λ dq, heap_pointsto l dq v)).
+  Qed.
+  Global Instance heap_pointsto_as_fractional l q v:
+    AsFractional (heap_pointsto l (DfracOwn q) v) (λ q, heap_pointsto l (DfracOwn q) v)%I q.
+  Proof. constructor; [ done | apply _ ]. Qed.
+  Global Instance heap_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
+    CombineSepGives (heap_pointsto l dq1 v1)%I (heap_pointsto l dq2 v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
+  Proof. rewrite heap_pointsto_eq /CombineSepGives. iIntros "[[?H1] [?H2]]".
+         iCombine "H1 H2" gives %?. iModIntro. iPureIntro. done. Qed.
+
+  Lemma heap_pointsto_agree l q1 q2 v1 v2 : heap_pointsto l q1 v1 ∗ heap_pointsto l q2 v2 -∗ ⌜v1 = v2⌝.
+  Proof. iIntros "[H1 H2]". iCombine "H1 H2" gives %[? ?]. done. Qed.
 
   Theorem na_pointsto_to_heap l q v :
     l ≠ null ->
