@@ -585,19 +585,85 @@ Proof.
       by iDestruct (is_hash_det with "His_hash0 His_hash1") as %->.
 Qed.
 
-Lemma tree_to_map_inner_eq {c0_0 c0_1 c1_0 c1_1 depth} :
-  let t0 := Inner c0_0 c0_1 in
-  let t1 := Inner c1_0 c1_1 in
+Lemma map_union_dom_pair_eq (m0 m1 m2 m3 : gmap (list w8) (list w8)) :
+  m0 ∪ m1 = m2 ∪ m3 →
+  m0 ##ₘ m1 →
+  m2 ##ₘ m3 →
+  dom m0 = dom m2 →
+  dom m1 = dom m3 →
+  m0 = m2 ∧ m1 = m3.
+Proof.
+  intros. split; apply map_eq; intros ?;
+    opose proof (proj1 (map_eq_iff _ _) H i).
+  - destruct (m0 !! i) eqn:?.
+    + erewrite lookup_union_Some_l in H4; [|done].
+      destruct (m2 !! i) eqn:?; [by simpl_map|].
+      apply elem_of_dom_2 in Heqo.
+      apply not_elem_of_dom in Heqo0.
+      set_solver.
+    + erewrite lookup_union_r in H4; [|done].
+      destruct (m2 !! i) eqn:?; [|done].
+      apply elem_of_dom_2 in Heqo0.
+      apply not_elem_of_dom in Heqo.
+      set_solver.
+  - destruct (m1 !! i) eqn:?.
+    + erewrite lookup_union_Some_r in H4; [|done..].
+      destruct (m3 !! i) eqn:?; [by simpl_map|].
+      apply elem_of_dom_2 in Heqo.
+      apply not_elem_of_dom in Heqo0.
+      set_solver.
+    + erewrite lookup_union_l in H4; [|done].
+      destruct (m3 !! i) eqn:?; [|done].
+      apply elem_of_dom_2 in Heqo0.
+      apply not_elem_of_dom in Heqo.
+      set_solver.
+Qed.
+
+Lemma sorted_tree_pair_dom_eq {l0 l1 r0 r1 depth} :
+  let t0 := Inner l0 l1 in
+  let t1 := Inner r0 r1 in
   tree_to_map t0 = tree_to_map t1 →
   sorted_tree t0 depth →
   sorted_tree t1 depth →
-  tree_to_map c0_0 = tree_to_map c1_0 ∧ tree_to_map c0_1 = tree_to_map c1_1.
+  dom (tree_to_map l0) = dom (tree_to_map r0)
+    ∧ dom (tree_to_map l1) = dom (tree_to_map r1).
 Proof.
-  intros. subst t0 t1. simpl in *. intuition.
-  - opose proof (tree_labels_have_bit_disjoint c0_1 c0_0 _ _ _); [done..|].
-    opose proof (tree_labels_have_bit_disjoint c1_1 c1_0 _ _ _); [done..|].
-    Search (?a ∪ ?b = ?c ∪ ?d).
-Admitted.
+  intros. subst t0 t1. simpl in *.
+  apply (f_equal dom) in H.
+  rewrite !dom_union_L in H.
+  opose proof (proj1 (set_eq _ _) H).
+  intuition; apply set_eq; intros.
+  - split; intros.
+    + opose proof (proj1 (H2 x) _); [set_solver|].
+      apply elem_of_union in H10. intuition.
+      apply H1 in H7. apply H9 in H11. congruence.
+    + opose proof (proj2 (H2 x) _); [set_solver|].
+      apply elem_of_union in H10. intuition.
+      apply H4 in H7. apply H8 in H11. congruence.
+  - split; intros.
+    + opose proof (proj1 (H2 x) _); [set_solver|].
+      apply elem_of_union in H10. intuition.
+      apply H8 in H7. apply H4 in H11. congruence.
+    + opose proof (proj2 (H2 x) _); [set_solver|].
+      apply elem_of_union in H10. intuition.
+      apply H9 in H7. apply H1 in H11. congruence.
+Qed.
+
+Lemma tree_to_map_inner_eq {l0 l1 r0 r1 depth} :
+  let t0 := Inner l0 l1 in
+  let t1 := Inner r0 r1 in
+  tree_to_map t0 = tree_to_map t1 →
+  sorted_tree t0 depth →
+  sorted_tree t1 depth →
+  tree_to_map l0 = tree_to_map r0 ∧ tree_to_map l1 = tree_to_map r1.
+Proof.
+  intros. subst t0 t1. simpl in *. destruct_and?.
+  opose proof (tree_labels_have_bit_disjoint l1 l0 _ _ _); [done..|].
+  opose proof (tree_labels_have_bit_disjoint r1 r0 _ _ _); [done..|].
+  apply map_disjoint_dom in H7, H9.
+  opose proof (sorted_tree_pair_dom_eq H _ _); [done..|]. destruct_and?.
+  by eapply map_union_dom_pair_eq.
+Qed.
 
 Lemma tree_to_map_det {t0 t1 depth} :
   tree_to_map t0 = tree_to_map t1 →
@@ -629,7 +695,7 @@ Lemma is_merkle_map_det m dig0 dig1 :
   ⌜ dig0 = dig1 ⌝.
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1". subst.
-  opose proof (tree_to_map_det _ _ _ _ _) as ->; [done..|].
+  opose proof (tree_to_map_det _ _ _ _ _ _ _) as ->; [done..|].
   by iDestruct (is_tree_hash_det with "Htree_hash0 Htree_hash1") as %?.
 Qed.
 
