@@ -147,14 +147,24 @@ Fixpoint sorted_tree t depth : Prop :=
   | _ => True
   end.
 
-Inductive cutless_tree : ∀ (t: tree), Prop :=
-  | CutlessEmpty : cutless_tree Empty
-  | CutlessLeaf : ∀ label val, cutless_tree (Leaf label val)
-  | CutlessInner :
-    ∀ child0 child1,
-    cutless_tree child0 →
-    cutless_tree child1 →
-    cutless_tree (Inner child0 child1).
+Fixpoint cutless_tree t : Prop :=
+  match t with
+  | Inner child0 child1 => cutless_tree child0 ∧ cutless_tree child1
+  | Cut _ => False
+  | _ => True
+  end.
+
+Fixpoint minimal_tree t : Prop :=
+  match t with
+  | Inner child0 child1 =>
+    minimal_tree child0 ∧
+    minimal_tree child1 ∧
+    size (tree_to_map t) > 1
+    (* alternate rules for (child0, child1):
+    disallow: (Empty, Empty); (Empty, Leaf).
+    allow: (Empty, Inner); (Leaf, Leaf); (Leaf, Inner); (Inner, Inner). *)
+  | _ => True
+  end.
 
 Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
     (result: option (list w8 * list w8)%type) : Prop :=
@@ -200,6 +210,7 @@ Definition is_merkle_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :
   "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
   "%Hsorted" ∷ ⌜ sorted_tree t 0 ⌝ ∗
   "%Hcutless" ∷ ⌜ cutless_tree t ⌝ ∗
+  "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
   "#Htree_hash" ∷ is_tree_hash t h.
 
 Definition is_merkle_found (label: list w8)
@@ -258,7 +269,7 @@ Definition is_merkle_proof (label: list w8)
   ∃ t,
   "#Hhash" ∷ is_tree_hash t h ∗
   "#Hproof" ∷ tree_sibs_proof t label (W64 0) proof ∗
-  "%Hpath" ∷ ⌜tree_path t label (W64 0) found⌝.
+  "%Hpath" ∷ ⌜ tree_path t label (W64 0) found ⌝.
 
 Fixpoint own_merkle_tree ptr t d : iProp Σ :=
   ∃ hash,
@@ -292,6 +303,7 @@ Definition own_merkle_map_aux ptr m depth d : iProp Σ :=
   ∃ t,
   "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
   "%Hsorted" ∷ ⌜ sorted_tree t depth ⌝ ∗
+  "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
   "Hown_tree" ∷ own_merkle_tree ptr t d.
 
 Definition own_merkle_map ptr m d : iProp Σ :=
@@ -338,10 +350,10 @@ Proof.
     + by iApply "IH0".
 Qed.
 
-Lemma tree_labels_have_bit_disjoint t0 t1 depth:
-  tree_labels_have_bit t0 depth true ->
-  tree_labels_have_bit t1 depth false ->
-  disjoint (dom (tree_to_map t0)) (dom (tree_to_map t1)).
+Lemma tree_labels_have_bit_disjoint t0 t1 depth :
+  tree_labels_have_bit t0 depth true →
+  tree_labels_have_bit t1 depth false →
+  dom (tree_to_map t0) ## dom (tree_to_map t1).
 Proof.
   intros.
   apply elem_of_disjoint; intros.
@@ -351,8 +363,8 @@ Proof.
 Qed.
 
 Lemma tree_to_map_lookup_None label depth bit t:
-  get_bit label depth = (negb bit) ->
-  tree_labels_have_bit t depth bit ->
+  get_bit label depth = (negb bit) →
+  tree_labels_have_bit t depth bit →
   tree_to_map t !! label = None.
 Proof.
   intros.
@@ -363,8 +375,8 @@ Proof.
 Qed.
 
 Lemma tree_to_map_Some t label depth val:
-  tree_to_map t !! label = Some val ->
-  sorted_tree t depth ->
+  tree_to_map t !! label = Some val →
+  sorted_tree t depth →
   tree_path t label depth (Some (label, val)).
 Proof.
   revert depth.
@@ -384,9 +396,9 @@ Proof.
 Qed.
 
 Lemma tree_to_map_None t label depth:
-  tree_to_map t !! label = None ->
-  sorted_tree t depth ->
-  cutless_tree t ->
+  tree_to_map t !! label = None →
+  sorted_tree t depth →
+  cutless_tree t →
   ∃ found,
     tree_path t label depth found ∧
     found_nonmemb label found.
@@ -395,8 +407,7 @@ Proof.
   induction t; simpl; intros.
   - rewrite lookup_empty in H. eexists; eauto.
   - apply lookup_singleton_None in H. eexists. split; eauto. simpl; congruence.
-  - apply lookup_union_None in H; intuition.
-    inversion H1; subst.
+  - apply lookup_union_None in H. intuition.
     destruct (get_bit label depth); eauto.
   - inversion H1.
 Qed.
@@ -574,21 +585,43 @@ Proof.
       by iDestruct (is_hash_det with "His_hash0 His_hash1") as %->.
 Qed.
 
-Lemma tree_to_map_det {t0 t1} :
+Lemma tree_to_map_inner_eq {c0_0 c0_1 c1_0 c1_1 depth} :
+  let t0 := Inner c0_0 c0_1 in
+  let t1 := Inner c1_0 c1_1 in
   tree_to_map t0 = tree_to_map t1 →
-  sorted_tree t0 (W64 0) →
-  sorted_tree t1 (W64 0) →
+  sorted_tree t0 depth →
+  sorted_tree t1 depth →
+  tree_to_map c0_0 = tree_to_map c1_0 ∧ tree_to_map c0_1 = tree_to_map c1_1.
+Proof.
+  intros. subst t0 t1. simpl in *. intuition.
+  - opose proof (tree_labels_have_bit_disjoint c0_1 c0_0 _ _ _); [done..|].
+    opose proof (tree_labels_have_bit_disjoint c1_1 c1_0 _ _ _); [done..|].
+    Search (?a ∪ ?b = ?c ∪ ?d).
+Admitted.
+
+Lemma tree_to_map_det {t0 t1 depth} :
+  tree_to_map t0 = tree_to_map t1 →
+  sorted_tree t0 depth →
+  sorted_tree t1 depth →
   cutless_tree t0 →
   cutless_tree t1 →
+  minimal_tree t0 →
+  minimal_tree t1 →
   t0 = t1.
 Proof.
-  revert t1.
+  revert t1 depth.
   induction t0 as [| ? | ? IH0 ? IH1 | ?];
-    destruct t1; intros ?????; try done.
-  (* TODO: not provable.
-  (Inner (Leaf x) Empty) and (Leaf x) both have maps {x}.
-  need another invariant that tree is "minimal". *)
-Admitted.
+    destruct t1; intros; try done; simpl in *.
+  - apply (f_equal size) in H. rewrite map_size_empty in H. lia.
+  - naive_solver.
+  - apply (f_equal size) in H. rewrite map_size_singleton in H. lia.
+  - apply (f_equal size) in H. rewrite map_size_empty in H. lia.
+  - apply (f_equal size) in H. rewrite map_size_singleton in H. lia.
+  - intuition.
+    opose proof (tree_to_map_inner_eq _ _ _); [done..|intuition].
+    opose proof (IH0 t1_1 _ _ _ _ _ _) as ->; try done.
+    opose proof (IH1 t1_2 _ _ _ _ _ _) as ->; try done.
+Qed.
 
 Lemma is_merkle_map_det m dig0 dig1 :
   is_merkle_map m dig0 -∗
@@ -596,7 +629,7 @@ Lemma is_merkle_map_det m dig0 dig1 :
   ⌜ dig0 = dig1 ⌝.
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1". subst.
-  opose proof (tree_to_map_det Heq_tree_map1 _ _ _ _) as ->; [done..|].
+  opose proof (tree_to_map_det _ _ _ _ _) as ->; [done..|].
   by iDestruct (is_tree_hash_det with "Htree_hash0 Htree_hash1") as %?.
 Qed.
 
@@ -641,6 +674,14 @@ Definition own_Tree ptr elems d : iProp Σ :=
   "Hptr_ctx" ∷ ptr ↦[Tree :: "ctx"]{d} #ptr_ctx ∗
   "Hown_map" ∷ own_merkle_map ptr_map elems d ∗
   "Hptr_root" ∷ ptr ↦[Tree :: "root"]{d} #ptr_map.
+
+Global Instance own_Tree_fractional ptr elems :
+  Fractional (λ q, own_Tree ptr elems (DfracOwn q)).
+Proof. Admitted.
+
+Global Instance own_Tree_as_fractional ptr elems q :
+  AsFractional (own_Tree ptr elems (DfracOwn q)) (λ q, own_Tree ptr elems (DfracOwn q)) q.
+Proof. split; [auto|apply _]. Qed.
 
 (* Program proofs. *)
 
