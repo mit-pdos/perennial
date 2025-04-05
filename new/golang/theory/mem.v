@@ -37,13 +37,20 @@ Section goose_lang.
   Global Instance typed_pointsto_persistent l v : Persistent (l ↦□ v).
   Proof. unseal. apply _. Qed.
 
+  Global Instance typed_pointsto_dfractional l v : DFractional (λ dq, l ↦{dq} v)%I.
+  Proof. unseal. apply _. Qed.
+  Global Instance typed_pointsto_as_dfractional l v dq : AsDFractional
+                                                     (l ↦{dq} v)
+                                                     (λ dq, l ↦{dq} v)%I dq.
+  Proof. auto. Qed.
+
   Global Instance typed_pointsto_fractional l v : Fractional (λ q, l ↦{#q} v)%I.
   Proof. unseal. apply _. Qed.
 
   Global Instance typed_pointsto_as_fractional l v q : AsFractional
                                                      (l ↦{#q} v)
                                                      (λ q, l ↦{#q} v)%I q.
-  Proof. constructor; auto. apply _. Qed.
+  Proof. auto. Qed.
 
   Lemma alist_val_inj a b :
     alist_val a = alist_val b →
@@ -173,23 +180,13 @@ Section goose_lang.
   Lemma typed_pointsto_persist l dq v :
     l ↦{dq} v ==∗ l ↦□ v.
   Proof.
-    unseal. iIntros "?".
-    iApply big_sepL_bupd.
-    iApply (big_sepL_impl with "[$]").
-    iModIntro. iIntros.
-    iApply (heap_pointsto_persist with "[$]").
+    iIntros "H". iPersist "H". done.
   Qed.
 
   #[global]
   Instance typed_pointsto_update_persist l dq v :
     UpdateIntoPersistently (l ↦{dq} v) (l ↦□ v).
-  Proof.
-    rewrite /UpdateIntoPersistently.
-    iIntros "H".
-    iMod (typed_pointsto_persist with "H") as "#H".
-    iFrame "H".
-    done.
-  Qed.
+  Proof. apply _. Qed.
 
   Lemma typed_pointsto_not_null l dq v :
     go_type_size t > 0 →

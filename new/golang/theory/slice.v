@@ -1,5 +1,6 @@
 From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
 From iris.algebra Require Import dfrac.
+From Perennial.iris_lib Require Import dfractional.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export list mem exception loop typing primitive auto.
@@ -65,6 +66,15 @@ Qed.
 Lemma replicate_0 A (x:A) : replicate 0 x = [].
 Proof. reflexivity. Qed.
 
+#[global]
+Instance own_slice_dfractional s vs :
+  DFractional (λ dq, s ↦*{dq} vs).
+Proof. unseal; apply _. Qed.
+#[global]
+Instance own_slice_as_dfractional s dq vs :
+  AsDFractional (s ↦*{dq} vs) (λ dq, s ↦*{dq} vs) dq.
+Proof. auto. Qed.
+
 Instance own_slice_fractional s vs :
   fractional.Fractional (λ q, s ↦*{#q} vs).
 Proof. unseal; apply _. Qed.
@@ -114,24 +124,13 @@ Proof. unseal; apply _. Qed.
 Lemma own_slice_persist s dq vs:
   s ↦*{dq} vs ==∗ s ↦*□ vs.
 Proof.
-  unseal.
-  iIntros "[Hs %Hl]".
-  iSplitL; last done.
-  iApply big_sepL_bupd.
-  iApply (big_sepL_impl with "Hs").
-  iModIntro. iIntros "* % ?".
-  iApply (typed_pointsto_persist with "[$]").
+  iIntros "H". iPersist "H". done.
 Qed.
 
 #[global]
 Instance own_slice_update_to_persistent s dq vs :
   UpdateIntoPersistently (s ↦*{dq} vs) (s ↦*□ vs).
-Proof.
-  red.
-  iIntros "H".
-  iMod (own_slice_persist with "H") as "#H".
-  iModIntro. iFrame "H".
-Qed.
+Proof. apply _. Qed.
 
 Global Instance own_slice_timeless s dq vs : Timeless (s ↦*{dq} vs).
 Proof. unseal; apply _. Qed.
