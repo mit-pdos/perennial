@@ -623,7 +623,7 @@ Fixpoint own_merkle_tree ptr t d : iProp Σ :=
     "%Heq_ptr" ∷ ⌜ ptr = null ⌝
   | Leaf label val =>
     ∃ sl_hash sl_label sl_val,
-    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash ∗
+    "#Hsl_hash" ∷ own_slice_small sl_hash byteT DfracDiscarded hash ∗
     "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
     "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #null ∗
     "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #null ∗
@@ -633,7 +633,7 @@ Fixpoint own_merkle_tree ptr t d : iProp Σ :=
     "Hptr_val" ∷ ptr ↦[node :: "val"]{d} (slice_val sl_val)
   | Inner child0 child1 =>
     ∃ sl_hash ptr_child0 ptr_child1,
-    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash ∗
+    "#Hsl_hash" ∷ own_slice_small sl_hash byteT DfracDiscarded hash ∗
     "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
     "Hown_child0" ∷ own_merkle_tree ptr_child0 child0 d ∗
     "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #ptr_child0 ∗
@@ -652,21 +652,19 @@ Proof.
       iNamed "H"; [..|done].
     + iNamed "Htree_hash". iFrame "#%".
     + iNamed "H".
-      iDestruct "Hsl_hash" as "[H0 H1]".
       iDestruct "Hptr_hash" as "[H2 H3]".
       iDestruct "Hptr_child0" as "[H4 H5]".
       iDestruct "Hptr_child1" as "[H6 H7]".
       iDestruct "Hptr_label" as "[H8 H9]".
       iDestruct "Hptr_val" as "[H10 H11]".
-      iSplitL "H0 H2 H4 H6 H8 H10"; iFrame "∗#".
+      iSplitL "H2 H4 H6 H8 H10"; iFrame "∗#".
     + fold own_merkle_tree. iNamed "H".
-      iDestruct "Hsl_hash" as "[H0 H1]".
       iDestruct "Hptr_hash" as "[H2 H3]".
       iDestruct "Hptr_child0" as "[H4 H5]".
       iDestruct "Hptr_child1" as "[H6 H7]".
       iDestruct ("IH0" with "Hown_child0") as "[H8 H9]".
       iDestruct ("IH1" with "Hown_child1") as "[H10 H11]".
-      iSplitL "H0 H2 H4 H6 H8 H10"; iFrame "∗#%".
+      iSplitL "H2 H4 H6 H8 H10"; iFrame "∗#%".
   - iIntros "[H0 H1]".
     iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (ptr);
       iNamedSuffix "H0" "0"; iNamedSuffix "H1" "1"; [..|done].
@@ -681,7 +679,6 @@ Proof.
       destruct sl_hash, sl_hash0, sl_label, sl_label0, sl_val, sl_val0.
       simplify_eq/=.
       iDestruct (own_slice_small_agree with "Hsl_hash0 Hsl_hash1") as %->.
-      iCombine "Hsl_hash0 Hsl_hash1" as "H0".
       iCombine "Hptr_hash0 Hptr_hash1" as "H1".
       iCombine "Hptr_child00 Hptr_child01" as "H2".
       iCombine "Hptr_child10 Hptr_child11" as "H3".
@@ -699,7 +696,6 @@ Proof.
       destruct sl_hash, sl_hash0, ptr_child0, ptr_child2, ptr_child1, ptr_child3.
       simplify_eq/=.
       iDestruct (own_slice_small_agree with "Hsl_hash0 Hsl_hash1") as %->.
-      iCombine "Hsl_hash0 Hsl_hash1" as "H0".
       iCombine "Hptr_hash0 Hptr_hash1" as "H1".
       iCombine "Hptr_child00 Hptr_child01" as "H2".
       iCombine "Hptr_child10 Hptr_child11" as "H3".
@@ -856,7 +852,15 @@ Lemma wp_compEmptyHash :
     "Hsl_hash" ∷ own_slice sl_hash byteT (DfracOwn 1) hash ∗
     "#His_hash" ∷ is_hash [empty_node_tag] hash
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "_ HΦ". wp_rec.
+  wp_apply (wp_SliceSingleton _ _ _ (W8 _)).
+  iIntros "* H".
+  iDestruct (own_slice_to_small with "H") as "H".
+  wp_apply (wp_Hash with "[$H]").
+  iIntros "*". iNamed 1.
+  iApply "HΦ". iFrame "∗#".
+Qed.
 
 Lemma wp_getNodeHash ptr_tr t d0 ptr_ctx d1 :
   {{{
@@ -871,7 +875,19 @@ Lemma wp_getNodeHash ptr_tr t d0 ptr_ctx d1 :
     "#Hsl_hash" ∷ own_slice_small sl_hash byteT DfracDiscarded hash ∗
     "#Htree_hash" ∷ is_tree_hash t hash
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  iNamed "Hown_ctx".
+  wp_if_destruct.
+  { wp_loadField.
+    iDestruct (own_empty_tree with "Hown_tree") as %->.
+    iApply "HΦ". iFrame "∗#". }
+  destruct t; iNamed "Hown_tree"; [done|..|done].
+  - iNamed "Hown_tree". wp_loadField.
+    iApply "HΦ". iFrame "∗#".
+  - fold own_merkle_tree. iNamed "Hown_tree". wp_loadField.
+    iApply "HΦ". iFrame "∗#%".
+Qed.
 
 Lemma wp_NewTree :
   {{{ True }}}
@@ -932,7 +948,42 @@ Lemma wp_compLeafHash sl_label sl_val d0 d1 (label val : list w8) :
       (u64_le_seal $ length label) ++ label ++
       (u64_le_seal $ length val) ++ val) hash
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  iDestruct (own_slice_small_sz with "Hsl_label") as %?.
+  iDestruct (own_slice_small_sz with "Hsl_val") as %?.
+  wp_apply wp_NewHasher.
+  iIntros "*". iNamed 1.
+  wp_apply (wp_SliceSingleton _ _ _ (W8 _)).
+  iIntros "* H".
+  iDestruct (own_slice_to_small with "H") as "H".
+  wp_apply (wp_Hasher__Write with "[$Hown_hr $H]").
+  iNamedSuffix 1 "0". wp_apply wp_slice_len.
+  wp_apply (wp_WriteInt Slice.nil with "[]").
+  { iApply own_slice_zero. }
+  iIntros "* H".
+  iDestruct (own_slice_to_small with "H") as "H".
+  wp_apply (wp_Hasher__Write with "[$Hown_hr0 $H]").
+  iNamedSuffix 1 "1".
+  wp_apply (wp_Hasher__Write with "[$Hown_hr1 $Hsl_label]").
+  iNamedSuffix 1 "2". wp_apply wp_slice_len.
+  wp_apply (wp_WriteInt Slice.nil with "[]").
+  { iApply own_slice_zero. }
+  iIntros "* H".
+  iDestruct (own_slice_to_small with "H") as "H".
+  wp_apply (wp_Hasher__Write with "[$Hown_hr2 $H]").
+  iNamedSuffix 1 "3".
+  wp_apply (wp_Hasher__Write with "[$Hown_hr3 $Hsl_val]").
+  iNamedSuffix 1 "4".
+  wp_apply (wp_Hasher__Sum Slice.nil with "[$Hown_hr4]").
+  { iApply own_slice_zero. }
+  iIntros "*". iNamedSuffix 1 "5".
+  iApply "HΦ". iFrame.
+  list_simplifier. rewrite !u64_le_eq_seal.
+  apply (f_equal (λ x : nat, W64 x)) in H, H0.
+  rewrite !w64_to_nat_id in H H0. rewrite -H -H0.
+  iFrame "#".
+Qed.
 
 Lemma wp_compInnerHash sl_child0 sl_child1 sl_hash_in d0 d1 (child0 child1 : list w8) :
   {{{
@@ -948,7 +999,24 @@ Lemma wp_compInnerHash sl_child0 sl_child1 sl_hash_in d0 d1 (child0 child1 : lis
     "Hsl_hash_out" ∷ own_slice sl_hash_out byteT (DfracOwn 1) hash ∗
     "#His_hash" ∷ is_hash (inner_node_tag :: child0 ++ child1) hash
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_apply wp_NewHasher.
+  iIntros "*". iNamed 1.
+  wp_apply (wp_SliceSingleton _ _ _ (W8 _)).
+  iIntros "* H".
+  iDestruct (own_slice_to_small with "H") as "H".
+  wp_apply (wp_Hasher__Write with "[$Hown_hr $H]").
+  iNamedSuffix 1 "0".
+  wp_apply (wp_Hasher__Write with "[$Hown_hr0 $Hsl_child0]").
+  iNamedSuffix 1 "1".
+  wp_apply (wp_Hasher__Write with "[$Hown_hr1 $Hsl_child1]").
+  iNamedSuffix 1 "2".
+  wp_apply (wp_Hasher__Sum with "[$Hown_hr2 $Hsl_hash_in]").
+  iIntros "*". iNamed 1.
+  list_simplifier.
+  iApply "HΦ". iFrame "∗#".
+Qed.
 
 Lemma wp_getBit sl_b d0 (b : list w8) (n : w64) :
   {{{
@@ -956,12 +1024,34 @@ Lemma wp_getBit sl_b d0 (b : list w8) (n : w64) :
   }}}
   getBit (slice_val sl_b) #n
   {{{
-    RET #(get_bit b n);
-    "Hsl_b" ∷ own_slice_small sl_b byteT d0 b
+    (bit : bool), RET #bit;
+    "Hsl_b" ∷ own_slice_small sl_b byteT d0 b ∗
+    "->" ∷ ⌜ bit = get_bit b n ⌝
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  iDestruct (own_slice_small_sz with "Hsl_b") as %?.
+  wp_apply wp_slice_len. wp_if_destruct.
+  - list_elem b (uint.nat (word.divu n (W64 8))) as byt.
+    wp_apply (wp_SliceGet with "[$Hsl_b //]").
+    iIntros "Hsl_b". wp_pures. iApply "HΦ". iFrame. iPureIntro.
+    opose proof (lookup_lt_is_Some_2 (bytes_to_bits b) (uint.nat n) _) as [? ?].
+    { rewrite length_join (sum_list_fmap_same 8).
+      2: { by apply Forall_fmap, Forall_true. }
+      rewrite length_fmap. word. }
+    rewrite /get_bit H0.
+    (* TODO: have to reason about bytes_to_bits indexing the
+    right byte and the right bit. *)
+    admit.
+  - iApply "HΦ". iFrame. iPureIntro.
+    rewrite /get_bit lookup_ge_None_2; [done|].
+    rewrite length_join (sum_list_fmap_same 8).
+    2: { by apply Forall_fmap, Forall_true. }
+    rewrite length_fmap. word.
+Admitted.
 
-Lemma wp_getChild n d0 ptr_child0 ptr_child1 sl_label d1 (label : list w8) (depth : w64) :
+Lemma wp_getChild n d0 ptr_child0 ptr_child1 sl_label d1
+    (label : list w8) (depth : w64) :
   {{{
     "Hptr_child0" ∷ n ↦[node :: "child0"]{d0} #ptr_child0 ∗
     "Hptr_child1" ∷ n ↦[node :: "child1"]{d0} #ptr_child1 ∗
