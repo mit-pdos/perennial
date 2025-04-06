@@ -271,44 +271,6 @@ Definition is_merkle_proof (label: list w8)
   "#Hproof" ∷ tree_sibs_proof t label (W64 0) proof ∗
   "%Hpath" ∷ ⌜ tree_path t label (W64 0) found ⌝.
 
-Fixpoint own_merkle_tree ptr t d : iProp Σ :=
-  ∃ hash,
-  "#Htree_hash" ∷ is_tree_hash t hash ∗
-  match t with
-  | Empty =>
-    "%Heq_ptr" ∷ ⌜ ptr = null ⌝
-  | Leaf label val =>
-    ∃ sl_hash sl_label sl_val,
-    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash ∗
-    "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
-    "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #null ∗
-    "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #null ∗
-    "#Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
-    "Hptr_label" ∷ ptr ↦[node :: "label"]{d} (slice_val sl_label) ∗
-    "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
-    "Hptr_val" ∷ ptr ↦[node :: "val"]{d} (slice_val sl_val)
-  | Inner child0 child1 =>
-    ∃ sl_hash ptr_child0 ptr_child1,
-    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash ∗
-    "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
-    "Hown_child0" ∷ own_merkle_tree ptr_child0 child0 d ∗
-    "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #ptr_child0 ∗
-    "Hown_child1" ∷ own_merkle_tree ptr_child1 child1 d ∗
-    "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #ptr_child1 ∗
-    "%Heq_children" ∷ ⌜ ptr_child0 ≠ null ∨ ptr_child1 ≠ null ⌝
-  | Cut _ => False
-  end.
-
-Definition own_merkle_map_aux ptr m depth d : iProp Σ :=
-  ∃ t,
-  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
-  "%Hsorted" ∷ ⌜ sorted_tree t depth ⌝ ∗
-  "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
-  "Hown_tree" ∷ own_merkle_tree ptr t d.
-
-Definition own_merkle_map ptr m d : iProp Σ :=
-  own_merkle_map_aux ptr m (W64 0) d.
-
 (* Derived facts. *)
 
 Lemma is_tree_hash_len t h:
@@ -412,30 +374,6 @@ Proof.
   - inversion H1.
 Qed.
 
-Lemma own_merkle_tree_cutless ptr t d :
-  own_merkle_tree ptr t d -∗
-  ⌜ cutless_tree t ⌝.
-Proof.
-  iIntros "H".
-  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (ptr); iNamed "H"; [..|done].
-  - iPureIntro. constructor.
-  - iPureIntro. constructor.
-  - fold own_merkle_tree. iNamed "H".
-    iDestruct ("IH0" with "Hown_child0") as %?.
-    iDestruct ("IH1" with "Hown_child1") as %?.
-    iPureIntro. by constructor.
-Qed.
-
-Lemma own_merkle_map_to_is_merkle_map ptr m d:
-  own_merkle_map ptr m d -∗
-  ∃ h,
-  is_merkle_map m h.
-Proof.
-  iNamed 1. destruct t;
-    iDestruct (own_merkle_tree_cutless with "Hown_tree") as %?;
-    iNamed "Hown_tree"; [..|done]; iFrame "%#".
-Qed.
-
 Lemma is_merkle_proof_to_is_merkle_found label found proof h:
   is_merkle_proof label found proof h -∗
   is_merkle_found label found h.
@@ -469,30 +407,6 @@ Proof.
     iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree"; eauto.
     naive_solver.
 Qed.
-
-Lemma own_empty_tree t d :
-  own_merkle_tree null t d -∗
-  ⌜ t = Empty ⌝.
-Proof.
-  iIntros "H". destruct t; [done|..];
-    iNamed "H"; [..|done]; iNamed "H";
-    by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
-Qed.
-
-Lemma own_merkle_map_not_nil ptr elems depth d :
-  elems ≠ ∅ →
-  own_merkle_map_aux ptr elems depth d -∗
-  ⌜ ptr ≠ null ⌝.
-Proof.
-  intros ?. iNamed 1.
-  destruct t; [done|..]; iNamed "Hown_tree"; [..|done]; iNamed "Hown_tree";
-    by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
-Qed.
-
-Lemma own_merkle_tree_to_hash ptr t d :
-  own_merkle_tree ptr t d -∗
-  ∃ dig, is_tree_hash t dig.
-Proof. destruct t; iNamed 1; iFrame "#". Qed.
 
 Lemma tree_sibs_proof_len t label depth proof :
   tree_sibs_proof t label depth proof -∗
@@ -701,6 +615,162 @@ Qed.
 
 (* Program proof defs. *)
 
+Fixpoint own_merkle_tree ptr t d : iProp Σ :=
+  ∃ hash,
+  "#Htree_hash" ∷ is_tree_hash t hash ∗
+  match t with
+  | Empty =>
+    "%Heq_ptr" ∷ ⌜ ptr = null ⌝
+  | Leaf label val =>
+    ∃ sl_hash sl_label sl_val,
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash ∗
+    "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
+    "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #null ∗
+    "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #null ∗
+    "#Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
+    "Hptr_label" ∷ ptr ↦[node :: "label"]{d} (slice_val sl_label) ∗
+    "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
+    "Hptr_val" ∷ ptr ↦[node :: "val"]{d} (slice_val sl_val)
+  | Inner child0 child1 =>
+    ∃ sl_hash ptr_child0 ptr_child1,
+    "Hsl_hash" ∷ own_slice_small sl_hash byteT d hash ∗
+    "Hptr_hash" ∷ ptr ↦[node :: "hash"]{d} (slice_val sl_hash) ∗
+    "Hown_child0" ∷ own_merkle_tree ptr_child0 child0 d ∗
+    "Hptr_child0" ∷ ptr ↦[node :: "child0"]{d} #ptr_child0 ∗
+    "Hown_child1" ∷ own_merkle_tree ptr_child1 child1 d ∗
+    "Hptr_child1" ∷ ptr ↦[node :: "child1"]{d} #ptr_child1 ∗
+    "%Heq_children" ∷ ⌜ ptr_child0 ≠ null ∨ ptr_child1 ≠ null ⌝
+  | Cut _ => False
+  end.
+
+Global Instance own_merkle_tree_fractional ptr t :
+  Fractional (λ q, own_merkle_tree ptr t (DfracOwn q)).
+Proof.
+  intros ??. iSplit.
+  - iIntros "H".
+    iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (ptr);
+      iNamed "H"; [..|done].
+    + iNamed "Htree_hash". iFrame "#%".
+    + iNamed "H".
+      iDestruct "Hsl_hash" as "[H0 H1]".
+      iDestruct "Hptr_hash" as "[H2 H3]".
+      iDestruct "Hptr_child0" as "[H4 H5]".
+      iDestruct "Hptr_child1" as "[H6 H7]".
+      iDestruct "Hptr_label" as "[H8 H9]".
+      iDestruct "Hptr_val" as "[H10 H11]".
+      iSplitL "H0 H2 H4 H6 H8 H10"; iFrame "∗#".
+    + fold own_merkle_tree. iNamed "H".
+      iDestruct "Hsl_hash" as "[H0 H1]".
+      iDestruct "Hptr_hash" as "[H2 H3]".
+      iDestruct "Hptr_child0" as "[H4 H5]".
+      iDestruct "Hptr_child1" as "[H6 H7]".
+      iDestruct ("IH0" with "Hown_child0") as "[H8 H9]".
+      iDestruct ("IH1" with "Hown_child1") as "[H10 H11]".
+      iSplitL "H0 H2 H4 H6 H8 H10"; iFrame "∗#%".
+  - iIntros "[H0 H1]".
+    iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (ptr);
+      iNamedSuffix "H0" "0"; iNamedSuffix "H1" "1"; [..|done].
+    + iFrame "#%".
+    + iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
+      iDestruct (struct_field_pointsto_agree with
+        "Hptr_hash0 Hptr_hash1") as %?.
+      iDestruct (struct_field_pointsto_agree with
+        "Hptr_label0 Hptr_label1") as %?.
+      iDestruct (struct_field_pointsto_agree with
+        "Hptr_val0 Hptr_val1") as %?.
+      destruct sl_hash, sl_hash0, sl_label, sl_label0, sl_val, sl_val0.
+      simplify_eq/=.
+      iDestruct (own_slice_small_agree with "Hsl_hash0 Hsl_hash1") as %->.
+      iCombine "Hsl_hash0 Hsl_hash1" as "H0".
+      iCombine "Hptr_hash0 Hptr_hash1" as "H1".
+      iCombine "Hptr_child00 Hptr_child01" as "H2".
+      iCombine "Hptr_child10 Hptr_child11" as "H3".
+      iCombine "Hptr_label0 Hptr_label1" as "H4".
+      iCombine "Hptr_val0 Hptr_val1" as "H5".
+      iFrame "∗#%".
+    + fold own_merkle_tree.
+      iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
+      iDestruct (struct_field_pointsto_agree with
+        "Hptr_hash0 Hptr_hash1") as %?.
+      iDestruct (struct_field_pointsto_agree with
+        "Hptr_child00 Hptr_child01") as %?.
+      iDestruct (struct_field_pointsto_agree with
+        "Hptr_child10 Hptr_child11") as %?.
+      destruct sl_hash, sl_hash0, ptr_child0, ptr_child2, ptr_child1, ptr_child3.
+      simplify_eq/=.
+      iDestruct (own_slice_small_agree with "Hsl_hash0 Hsl_hash1") as %->.
+      iCombine "Hsl_hash0 Hsl_hash1" as "H0".
+      iCombine "Hptr_hash0 Hptr_hash1" as "H1".
+      iCombine "Hptr_child00 Hptr_child01" as "H2".
+      iCombine "Hptr_child10 Hptr_child11" as "H3".
+      iDestruct ("IH0" with "Hown_child00 Hown_child01") as "H4".
+      iDestruct ("IH1" with "Hown_child10 Hown_child11") as "H5".
+      iFrame "∗#%".
+Qed.
+
+Global Instance own_merkle_tree_as_fractional ptr t q :
+  AsFractional (own_merkle_tree ptr t (DfracOwn q))
+    (λ q, own_merkle_tree ptr t (DfracOwn q)) q.
+Proof. split; [auto|apply _]. Qed.
+
+Definition own_merkle_map_aux ptr m depth d : iProp Σ :=
+  ∃ t,
+  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
+  "%Hsorted" ∷ ⌜ sorted_tree t depth ⌝ ∗
+  "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
+  "Hown_tree" ∷ own_merkle_tree ptr t d.
+
+Definition own_merkle_map ptr m d : iProp Σ :=
+  own_merkle_map_aux ptr m (W64 0) d.
+
+Lemma own_merkle_tree_cutless ptr t d :
+  own_merkle_tree ptr t d -∗
+  ⌜ cutless_tree t ⌝.
+Proof.
+  iIntros "H".
+  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (ptr); iNamed "H"; [..|done].
+  - iPureIntro. constructor.
+  - iPureIntro. constructor.
+  - fold own_merkle_tree. iNamed "H".
+    iDestruct ("IH0" with "Hown_child0") as %?.
+    iDestruct ("IH1" with "Hown_child1") as %?.
+    iPureIntro. by constructor.
+Qed.
+
+Lemma own_merkle_map_to_is_merkle_map ptr m d:
+  own_merkle_map ptr m d -∗
+  ∃ h,
+  is_merkle_map m h.
+Proof.
+  iNamed 1. destruct t;
+    iDestruct (own_merkle_tree_cutless with "Hown_tree") as %?;
+    iNamed "Hown_tree"; [..|done]; iFrame "%#".
+Qed.
+
+Lemma own_empty_tree t d :
+  own_merkle_tree null t d -∗
+  ⌜ t = Empty ⌝.
+Proof.
+  iIntros "H". destruct t; [done|..];
+    iNamed "H"; [..|done]; iNamed "H";
+    by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
+Qed.
+
+Lemma own_merkle_map_not_nil ptr elems depth d :
+  elems ≠ ∅ →
+  own_merkle_map_aux ptr elems depth d -∗
+  ⌜ ptr ≠ null ⌝.
+Proof.
+  intros ?. iNamed 1.
+  destruct t; [done|..]; iNamed "Hown_tree"; [..|done]; iNamed "Hown_tree";
+    by iDestruct (struct_field_pointsto_not_null with "Hptr_hash") as %?.
+Qed.
+
+Lemma own_merkle_tree_to_hash ptr t d :
+  own_merkle_tree ptr t d -∗
+  ∃ dig, is_tree_hash t dig.
+Proof. destruct t; iNamed 1; iFrame "#". Qed.
+
 Definition own_context ptr d : iProp Σ :=
   ∃ sl_empty_hash empty_hash,
   "Hptr_empty_hash" ∷ ptr ↦[context :: "emptyHash"]{d} (slice_val sl_empty_hash) ∗
@@ -715,13 +785,11 @@ Proof.
     iDestruct "Hptr_empty_hash" as "[H0 H1]".
     iSplitL "H0"; iFrame "∗#".
   - iIntros "[H0 H1]". iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
-
-    iDestruct (struct_field_pointsto_agree with "Hptr_empty_hash0 Hptr_empty_hash1") as %Heq.
+    iDestruct (struct_field_pointsto_agree with
+      "Hptr_empty_hash0 Hptr_empty_hash1") as %Heq.
     destruct sl_empty_hash, sl_empty_hash0. simplify_eq/=.
     iCombine "Hptr_empty_hash0 Hptr_empty_hash1" as "H0".
-
     iDestruct (own_slice_small_agree with "Hsl_empty_hash0 Hsl_empty_hash1") as %->.
-
     iFrame "∗#".
 Qed.
 
@@ -743,10 +811,39 @@ Definition own_Tree ptr elems d : iProp Σ :=
 
 Global Instance own_Tree_fractional ptr elems :
   Fractional (λ q, own_Tree ptr elems (DfracOwn q)).
-Proof. Admitted.
+Proof.
+  intros ??. iSplit.
+  - iNamed 1.
+    iDestruct "Hown_ctx" as "[H0 H1]".
+    iDestruct "Hptr_ctx" as "[H2 H3]".
+    iNamed "Hown_map".
+    iDestruct "Hown_tree" as "[H4 H5]".
+    iDestruct "Hptr_root" as "[H6 H7]".
+    iSplitL "H0 H2 H4 H6"; iFrame "∗%".
+  - iIntros "[H0 H1]".
+    iNamedSuffix "H0" "0". iNamedSuffix "H1" "1".
+    iDestruct (struct_field_pointsto_agree with
+      "Hptr_ctx0 Hptr_ctx1") as %?.
+    iDestruct (struct_field_pointsto_agree with
+      "Hptr_root0 Hptr_root1") as %?.
+    destruct ptr_ctx, ptr_ctx0, ptr_map, ptr_map0.
+    simplify_eq/=.
+    iCombine "Hown_ctx0 Hown_ctx1" as "H0".
+    iCombine "Hptr_ctx0 Hptr_ctx1" as "H1".
+    iCombine "Hptr_root0 Hptr_root1" as "H2".
+    iNamedSuffix "Hown_map0" "0".
+    iNamedSuffix "Hown_map1" "1".
+    iDestruct (own_merkle_tree_cutless with "Hown_tree0") as %?.
+    iDestruct (own_merkle_tree_cutless with "Hown_tree1") as %?.
+    subst.
+    opose proof (tree_to_map_det Heq_tree_map1 _ _ _ _ _ _) as ->; [done..|].
+    iCombine "Hown_tree0 Hown_tree1" as "H3".
+    iFrame "∗%".
+Qed.
 
 Global Instance own_Tree_as_fractional ptr elems q :
-  AsFractional (own_Tree ptr elems (DfracOwn q)) (λ q, own_Tree ptr elems (DfracOwn q)) q.
+  AsFractional (own_Tree ptr elems (DfracOwn q))
+    (λ q, own_Tree ptr elems (DfracOwn q)) q.
 Proof. split; [auto|apply _]. Qed.
 
 (* Program proofs. *)
