@@ -16,6 +16,15 @@ Section list.
     intros ->. rewrite drop_0 //.
   Qed.
 
+  Lemma replicate_0 (x: A) :
+    replicate 0 x = [].
+  Proof. reflexivity. Qed.
+
+  Lemma replicate_eq_0 (n: nat) (x: A) :
+    n = 0 →
+    replicate n x = [].
+  Proof. intros ->. reflexivity. Qed.
+
   Lemma list_filter_singleton (P : A → Prop)
       `{!∀ x, Decision (P x)} x :
     (filter P [x] = [] ∧ ¬ P x) ∨ (filter P [x] = [x] ∧ P x).
