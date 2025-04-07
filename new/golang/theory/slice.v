@@ -1103,15 +1103,15 @@ Proof.
   iFrame.
 Qed.
 
-(** slice.copy copies as much as possible (the smaller of s and s2). This is a
-unified spec that handles both cases; there are derived specs that cover each
-case individually which are each slightly nicer, for the common case where the
-code knows which slice is shorter. *)
-Lemma wp_slice_copy_general (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
+(** slice.copy copies as much as possible (the smaller of len(s) and len(s2)) and returns
+the number of bytes copied. See https://pkg.go.dev/builtin#copy.
+
+Use [take_ge] and [drop_ge] to simplify the resulting list expression.
+ *)
+Lemma wp_slice_copy (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦* vs ∗ s2 ↦*{dq} vs' }}}
     slice.copy t #s #s2
-  {{{ (n: w64), RET #n; ⌜(length vs ≤ length vs' ∧ uint.nat n = length vs) ∨
-                         (length vs' < length vs ∧ uint.nat n = length vs')⌝ ∗
+  {{{ (n: w64), RET #n; ⌜uint.nat n = Nat.min (length vs) (length vs')⌝ ∗
                           s ↦* (take (length vs) vs' ++ drop (length vs') vs) ∗
                           s2 ↦*{dq} vs' }}}.
 Proof.
@@ -1185,36 +1185,6 @@ Proof.
     repeat (f_equal; try word).
 Qed.
 
-Lemma wp_slice_copy_overwrite (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
-  {{{ s ↦* vs ∗ s2 ↦*{dq} vs' ∗ ⌜length vs ≤ length vs'⌝ }}}
-    slice.copy t #s #s2
-  {{{ RET #s.(slice.len_f); s ↦* take (length vs) vs' ∗ s2 ↦*{dq} vs' }}}.
-Proof.
-  iIntros (Φ) "(Hs1 & Hs2 & %) HΦ".
-  iDestruct (own_slice_len with "Hs1") as %Hlen.
-  wp_apply (wp_slice_copy_general with "[$Hs1 $Hs2]").
-  iIntros (n) "(% & Hs1 & Hs2)".
-  assert (n = s.(slice.len_f)) by word; subst.
-  iApply "HΦ".
-  rewrite -> drop_ge, app_nil_r by lia.
-  iFrame.
-Qed.
-
-Lemma wp_slice_copy_partial (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
-  {{{ s ↦* vs ∗ s2 ↦*{dq} vs' ∗ ⌜length vs' ≤ length vs⌝ }}}
-    slice.copy t #s #s2
-  {{{ RET #s2.(slice.len_f); s ↦* (vs' ++ drop (length vs') vs) ∗ s2 ↦*{dq} vs' }}}.
-Proof.
-  iIntros (Φ) "(Hs1 & Hs2 & %) HΦ".
-  iDestruct (own_slice_len with "Hs2") as %Hlen.
-  wp_apply (wp_slice_copy_general with "[$Hs1 $Hs2]").
-  iIntros (n) "(% & Hs1 & Hs2)".
-  assert (n = s2.(slice.len_f)) by word; subst.
-  iApply "HΦ".
-  rewrite -> take_ge by lia.
-  iFrame.
-Qed.
-
 Lemma wp_slice_append (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦* vs ∗ own_slice_cap V s ∗ s2 ↦*{dq} vs' }}}
     slice.append t #s #s2
@@ -1246,11 +1216,11 @@ Proof.
     iIntros "(Hs_new1 & Hs_new2 & Hs_new_cap)".
     rewrite -> !slice_f_slice_f by word.
     rewrite !word.add_0_l.
-    wp_apply (wp_slice_copy_overwrite with "[$Hs_new2 $Hs2]").
-    { iPureIntro. len. }
-    iIntros "[Hs_new2 Hs2]".
+    wp_apply (wp_slice_copy with "[$Hs_new2 $Hs2]").
     autorewrite with len.
     rewrite -> !Nat.min_l by word.
+    iIntros (n) "(%Hn & Hs_new2 & Hs2)".
+    rewrite -> drop_ge, app_nil_r by len.
     wp_pures.
     iApply "HΦ".
     iFrame "Hs2".
@@ -1274,19 +1244,21 @@ Proof.
     { apply word.unsigned_inj.
       move: Hsl_len; word. }
     wp_pures.
-    wp_apply (wp_slice_copy_partial with "[$Hnew $Hs]").
-    { len. }
-    iIntros "[Hnew Hs]".
+    wp_apply (wp_slice_copy with "[$Hnew $Hs]").
+    autorewrite with len.
+    rewrite -> !Nat.min_r by word.
+    iIntros (n') "(%Hn' & Hnew & Hs)".
+    rewrite -> take_ge by len.
     rewrite drop_replicate.
     wp_pures.
     wp_apply (wp_slice_slice_with_cap with "[$Hnew $Hnew_cap]").
     { len. }
     iIntros "(Hnew1 & Hnew2 & Hnew_cap)".
-    wp_apply (wp_slice_copy_overwrite with "[$Hnew2 $Hs2]").
-    { len. }
-    iIntros "(Hnew2 & Hs2)".
+    wp_apply (wp_slice_copy with "[$Hnew2 $Hs2]").
     autorewrite with len.
-    rewrite -> !Nat.min_l by word.
+    rewrite -> !Nat.min_r by word.
+    iIntros (n'') "(%Hn'' & Hnew2 & Hs2)".
+    rewrite -> !drop_ge, app_nil_r by len.
     rewrite -> !take_app_le, !take_ge by word.
     wp_pures.
     iApply "HΦ".
@@ -1302,8 +1274,7 @@ Proof.
       f_equal.
       rewrite {2}(slice_slice_trivial sl (t:=t)).
       f_equal.
-      apply word.unsigned_inj. (* TODO: word limitation *)
-      move: Hsl_len; word.
+      word.
     }
     iEval (rewrite (slice_slice_trivial sl (t:=t))).
     rewrite Hsl_len'.
