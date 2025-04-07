@@ -1078,7 +1078,7 @@ Lemma wp_load_slice_elem s (i: w64) (vs: list V) dq v :
     ![t] #(slice.elem_ref_f s t i)
   {{{ RET #v; s ↦*{dq} vs }}}.
 Proof.
-  iIntros (Φ) "[Hs %Hlookup] HΦ".
+  wp_start_folded as "[Hs %Hlookup]".
   iDestruct (own_slice_elem_acc with "Hs") as "[Hv Hs]"; [ by eauto | ].
   (* NOTE: cannot use [wp_load] because we need to strip a later *)
   wp_apply (wp_load_ty with "Hv"). iIntros "Hv".
@@ -1093,7 +1093,7 @@ Lemma wp_store_slice_elem s (i: w64) (vs: list V) (v': V) :
     store_ty t #(slice.elem_ref_f s t i) #v'
   {{{ RET #(); s ↦* (<[uint.nat i := v']> vs) }}}.
 Proof.
-  iIntros (Φ) "[Hs %bound] HΦ".
+  wp_start_folded as "[Hs %bound]".
   list_elem vs i as v.
   iDestruct (own_slice_elem_acc with "Hs") as "[Hv Hs]"; [ by eauto | ].
   (* NOTE: cannot use [wp_store] because we need to strip a later *)
@@ -1148,19 +1148,15 @@ Proof.
       iExactEq "Hs1".
       rewrite /named.
       f_equal.
-      rewrite insert_take_drop /=; [ | by len ].
-      rewrite -> take_app_le by len.
-      rewrite -> drop_app_ge by len.
-      rewrite take_take.
+      (* TODO: automate list simplification for take/drop/app? *)
+      rewrite -> insert_take_drop by len.
+      rewrite -> take_app_le, -> drop_app_ge by len.
+      rewrite take_take drop_drop.
       rewrite -> Nat.min_l by auto.
       erewrite take_S_r; eauto.
       rewrite -app_assoc /=.
       rewrite -> length_take_le by word.
-      rewrite drop_drop.
-      f_equal.
-      f_equal.
-      f_equal.
-      word. }
+      repeat (f_equal; try word). }
     rewrite decide_False.
     2: { inv 1. }
     rewrite decide_True //.
