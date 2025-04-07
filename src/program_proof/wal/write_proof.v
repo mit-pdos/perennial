@@ -770,7 +770,7 @@ Proof.
         by iDestruct "Hsim" as "[_ $]". }
       wp_apply wp_slice_len.
       wp_apply (wp_WalogState__memLogHasSpace with "Hfields").
-      { revert Heqb0; word. }
+      { word. }
       iIntros (?) "[-> Hfields]".
       wp_if_destruct.
       - iNamed "Hfields". iNamed "Hfield_ptsto".
