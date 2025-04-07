@@ -165,7 +165,7 @@ Section proof.
   Qed.
 
   Lemma wp_new_free_lock:
-    {{{ True }}} rwlock.new #() {{{ lk, RET #lk; is_free_lock lk }}}.
+    {{{ True }}} newRWMutex #() {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
     wp_rec. wp_pures.
@@ -193,7 +193,7 @@ Section proof.
 
   Lemma try_read_wp_Mutex__Lock E lk R :
     ↑N ⊆ E →
-    {{{ is_rwlock lk R }}} rwlock.try_read_acquire lk @ E
+    {{{ is_rwlock lk R }}} RWMutex__TryRLock lk @ E
     {{{ b, RET #b; if b is true then (R rfrac) else True }}}.
   Proof.
     iIntros (? Φ) "(#Hwand1&#Hwand2&#Hl) HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -243,7 +243,7 @@ Section proof.
   Qed.
 
   Lemma read_wp_Mutex__Lock lk R :
-    {{{ is_rwlock lk R }}} rwlock.read_acquire lk {{{ RET #(); R rfrac }}}.
+    {{{ is_rwlock lk R }}} RWMutex__RLock lk {{{ RET #(); R rfrac }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_read_wp_Mutex__Lock with "Hl"); auto. iIntros ([]).
@@ -252,7 +252,7 @@ Section proof.
   Qed.
 
   Lemma try_read_wp_Mutex__Unlock lk R :
-    {{{ is_rwlock lk R ∗ (R rfrac) }}} rwlock.try_read_release lk
+    {{{ is_rwlock lk R ∗ (R rfrac) }}} RWMutex__TryRUnlock lk
     {{{ b, RET #b; if b is false then (R rfrac) else True }}}.
   Proof.
     iIntros (Φ) "((#Hwand1&#Hwand2&#Hl)&Hborrow) HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -324,7 +324,7 @@ Section proof.
   Qed.
 
   Lemma read_wp_Mutex__Unlock lk R :
-    {{{ is_rwlock lk R ∗ (R rfrac) }}} rwlock.read_release lk {{{ RET #(); True }}}.
+    {{{ is_rwlock lk R ∗ (R rfrac) }}} RWMutex__RUnlock lk {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(#Hl&Hcb) HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_read_wp_Mutex__Unlock with "[$Hl $Hcb]"); auto. iIntros ([]).
@@ -333,7 +333,7 @@ Section proof.
   Qed.
 
   Lemma try_write_wp_Mutex__Lock lk R :
-    {{{ is_rwlock lk R }}} rwlock.try_write_acquire lk
+    {{{ is_rwlock lk R }}} RWMutex__TryLock lk
     {{{ b, RET #b; if b is true then wlocked lk ∗ (R 1%Qp) else True }}}.
   Proof.
     iIntros (Φ) "(#Hwand1&#Hwand2&Hl) HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -365,7 +365,7 @@ Section proof.
 
   Lemma write_wp_Mutex__Lock lk R :
     {{{ is_rwlock lk R }}}
-      rwlock.write_acquire lk
+      RWMutex__Lock lk
     {{{ RET #(); wlocked lk ∗ (R 1%Qp)}}}.
   Proof.
     iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
@@ -376,7 +376,7 @@ Section proof.
 
   Lemma wp_Mutex__Unlock lk R :
     {{{ is_rwlock lk R ∗ wlocked lk ∗ (R 1%Qp) }}}
-      rwlock.write_release lk
+      RWMutex__Unlock lk
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "((#Hwand1&#Hwand2&#Hl)&Hlocked&Hborrow) HΦ". iDestruct "Hl" as (l ->) "#Hinv".
