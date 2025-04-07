@@ -14,7 +14,7 @@ Lemma wp_Hash sl_b b d0 :
   {{{
     sl_hash hash, RET (slice_val sl_hash);
     "Hsl_b" ∷ own_slice_small sl_b byteT d0 b ∗
-    "Hhash" ∷ own_slice_small sl_hash byteT (DfracOwn 1) hash ∗
+    "Hsl_hash" ∷ own_slice sl_hash byteT (DfracOwn 1) hash ∗
     "#His_hash" ∷ is_hash b hash
   }}}.
 Proof.
@@ -24,7 +24,6 @@ Proof.
   wp_apply (wp_Hasher__Sum Slice.nil with "[$Hown_hr]").
   { iApply own_slice_zero. }
   iIntros (??). iNamed 1.
-  iDestruct (own_slice_to_small with "Hsl_b_out") as "Hsl_b_out".
   iApply "HΦ". iFrame "∗#".
 Qed.
 

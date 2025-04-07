@@ -63,7 +63,7 @@ Section proof.
   Qed.
 
   Lemma wp_new_free_lock:
-    {{{ True }}} rwlock.new #() {{{ lk, RET #lk; is_free_lock lk }}}.
+    {{{ True }}} newRWMutex #() {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
     wp_rec. wp_pures.
@@ -95,7 +95,7 @@ Section proof.
 
 
   Lemma read_wp_Mutex__Lock lk R Rc :
-    {{{ is_crash_rwlock lk R Rc }}} rwlock.read_acquire lk {{{ RET #(); crash_borrow (R rfrac) (Rc rfrac) }}}.
+    {{{ is_crash_rwlock lk R Rc }}} RWMutex__RLock lk {{{ RET #(); crash_borrow (R rfrac) (Rc rfrac) }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ".
     wp_apply (read_wp_Mutex__Lock with "[$]").
@@ -104,7 +104,7 @@ Section proof.
 
   Lemma read_wp_Mutex__Unlock lk R Rc :
     {{{ is_crash_rwlock lk R Rc ∗ crash_borrow (R rfrac) (Rc rfrac) }}}
-      rwlock.read_release lk
+      RWMutex__RUnlock lk
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(Hlock&Hborrow) HΦ".
@@ -114,7 +114,7 @@ Section proof.
 
   Lemma write_wp_Mutex__Lock lk R Rc :
     {{{ is_crash_rwlock lk R Rc }}}
-      rwlock.write_acquire lk
+      RWMutex__Lock lk
     {{{ RET #(); wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}.
   Proof.
     iIntros (Φ) "Hlock HΦ".
@@ -124,7 +124,7 @@ Section proof.
 
   Lemma wp_Mutex__Unlock lk R Rc :
     {{{ is_crash_rwlock lk R Rc ∗ wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}
-      rwlock.write_release lk
+      RWMutex__Unlock lk
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(Hlock&Hborrow) HΦ".
