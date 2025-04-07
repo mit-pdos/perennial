@@ -3,9 +3,9 @@ Goose compatible Go i.e. the channel model. *)
 From Perennial.goose_lang Require Export lang notation typing.
 From Perennial.goose_lang.lib Require Export
      typed_mem.impl struct.impl loop.impl
-     encoding.impl map.impl slice.impl lock.impl
+     encoding.impl map.impl slice.impl lock.impl rwlock.impl
      time.impl rand.impl proph.impl waitgroup.impl
-     string.impl atomic.impl rwlock.impl.
+     string.impl atomic.impl.
 
 (* We provide stubs here for primitive operations to make the Goose unit tests
    compile. *)
