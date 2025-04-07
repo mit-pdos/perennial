@@ -1147,6 +1147,40 @@ Proof.
     repeat (f_equal; try word).
 Qed.
 
+Lemma own_slice_update_to_dfrac dq (s: slice.t) (vs: list V) :
+  ✓dq →
+  s ↦* vs ⊢ |==> s ↦*{dq} vs.
+Proof.
+  iIntros (Hvalid) "Hs".
+  iMod (dfractional_update_to_dfrac (λ dq, s ↦*{dq} vs) with "Hs") as "$"; auto.
+Qed.
+
+Lemma own_slice_zero_size (s: slice.t) (vs: list V) dq :
+  go_type_size t = 0%nat →
+  length vs = uint.nat (slice.len_f s) →
+  uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) →
+  ⊢ s ↦*{dq} vs.
+Proof using IntoValTyped0.
+  intros Hz Hlen Hwf.
+  rewrite own_slice_unseal /own_slice_def.
+  iSplit; [ | auto ].
+  iApply big_sepL_intro.
+  iIntros "!> % % %Hget".
+  iApply (typed_pointsto_zero_size (t:=t)); auto.
+Qed.
+
+Lemma own_slice_cap_zero_size (s: slice.t) :
+  go_type_size t = 0%nat →
+  uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) →
+  ⊢ own_slice_cap V s.
+Proof using IntoValTyped0.
+  intros Hz Hwf.
+  rewrite own_slice_cap_unseal /own_slice_cap_def.
+  iSplit; [ auto | ].
+  iExists (replicate (uint.nat (word.sub (slice.cap_f s) (slice.len_f s))) (default_val V)).
+  iApply own_slice_zero_size; simpl; auto; len.
+Qed.
+
 Lemma wp_slice_append (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦* vs ∗ own_slice_cap V s ∗ s2 ↦*{dq} vs' }}}
     slice.append t #s #s2
@@ -1178,7 +1212,7 @@ Proof.
     simpl in Hlen; autorewrite with len in Hlen.
     assert (length vs'' = uint.nat s2.(slice.len_f)) by (move: Hlen; word).
     wp_apply (wp_slice_slice_with_cap with "[$Hs_new $Hcap]").
-    { iPureIntro; by len. }
+    { iPureIntro; simpl; by len. }
     iIntros "(Hs_new1 & Hs_new2 & Hs_new_cap)".
     rewrite -> !slice_f_slice_f by word.
     rewrite !word.add_0_l.

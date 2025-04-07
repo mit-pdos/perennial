@@ -126,6 +126,19 @@ Section goose_lang.
     }
   Qed.
 
+  Lemma typed_pointsto_zero_size l dq v :
+    go_type_size t = 0%nat →
+    ⊢ l ↦{dq} v.
+  Proof using IntoValTyped0.
+    unseal.
+    intros Hz.
+    pose proof (to_val_has_go_type (V:=V) v) as Hlen%has_go_type_len.
+    rewrite Hz in Hlen.
+    apply length_zero_iff_nil in Hlen.
+    rewrite Hlen /=.
+    auto.
+  Qed.
+
   Lemma typed_pointsto_valid l dq v :
     l ↦{dq} v ⊢ ⌜go_type_size t > 0 → ✓dq⌝.
   Proof using IntoValTyped0.
