@@ -1782,102 +1782,101 @@ Proof.
           by rewrite map_size_singleton.
         * iFrame "Hown_tree_ch0 Hown_tree_ch1 hash ∗#". naive_solver. }
 
-  { (* inner node. *)
-    wp_bind (If _ _ #false).
-    wp_apply (wp_wand _ _ _
-      (λ ret,
-      "%Hret" ∷ ⌜ ret = #false ⌝ ∗
-      "Hptr_child0" ∷ ptr_n ↦[node::"child0"] #ptr_child0 ∗
-      "Hptr_child1" ∷ ptr_n ↦[node::"child1"] #ptr_child1
-      )%I
-      with "[Hptr_child0 Hptr_child1]"
-    ).
-    { wp_loadField. wp_if_destruct.
-      - wp_loadField. wp_pures. iFrame. iPureIntro.
-        case_bool_decide; naive_solver.
-      - by iFrame. }
-    iIntros "*". iNamed 1. subst.
-    wp_apply (wp_getChild with "[$Hptr_child0 $Hptr_child1 $Hsl_label_put]").
-    iIntros "* H". wp_pures.
+  (* inner node. *)
+  wp_bind (If _ _ #false).
+  wp_apply (wp_wand _ _ _
+    (λ ret,
+    "%Hret" ∷ ⌜ ret = #false ⌝ ∗
+    "Hptr_child0" ∷ ptr_n ↦[node::"child0"] #ptr_child0 ∗
+    "Hptr_child1" ∷ ptr_n ↦[node::"child1"] #ptr_child1
+    )%I
+    with "[Hptr_child0 Hptr_child1]"
+  ).
+  { wp_loadField. wp_if_destruct.
+    - wp_loadField. wp_pures. iFrame. iPureIntro.
+      case_bool_decide; naive_solver.
+    - by iFrame. }
+  iIntros "*". iNamed 1. subst.
+  wp_apply (wp_getChild with "[$Hptr_child0 $Hptr_child1 $Hsl_label_put]").
+  iIntros "* H". wp_pures.
 
-    case_match; iNamed "H".
-    - wp_apply ("IH" with "[Hown_child1 $Hptr2_child1
-        $Hsl_label $Hsl_val_put $Hown_ctx]").
-      { iFrame "∗%". naive_solver. }
-      iIntros "* H". iNamedSuffix "H" "_ch1".
-      iDestruct (own_merkle_map_not_nil with "Hown_merkle_ch1") as %?.
-      { intros Heq. apply (f_equal dom) in Heq. set_solver. }
-      iDestruct ("Hclose_child1" with "Hptr_n0_ch1") as "Hptr_child1".
-      wp_pures. wp_rec. wp_loadField.
-      wp_apply (wp_getNodeHash with "[$Hown_child0 $Hown_ctx_ch1]").
-      iIntros "*". iNamedSuffix 1 "0". wp_loadField.
-      iNamedSuffix "Hown_merkle_ch1" "1".
-      wp_apply (wp_getNodeHash with "[$Hown_tree1 $Hown_ctx0]").
-      iIntros "*". iNamedSuffix 1 "1".
-      wp_apply (wp_compInnerHash sl_hash0 sl_hash1 Slice.nil).
-      { iFrame "#". iApply own_slice_zero. }
-      iIntros "*". iNamed 1.
-      iDestruct (own_slice_to_small with "Hsl_hash_out") as "Hsl_hash_out".
-      iPersist "Hsl_hash_out".
-      wp_storeField.
+  case_match; iNamed "H".
+  - wp_apply ("IH" with "[Hown_child1 $Hptr2_child1
+      $Hsl_label $Hsl_val_put $Hown_ctx]").
+    { iFrame "∗%". naive_solver. }
+    iIntros "* H". iNamedSuffix "H" "_ch1".
+    iDestruct (own_merkle_map_not_nil with "Hown_merkle_ch1") as %?.
+    { intros Heq. apply (f_equal dom) in Heq. set_solver. }
+    iDestruct ("Hclose_child1" with "Hptr_n0_ch1") as "Hptr_child1".
+    wp_pures. wp_rec. wp_loadField.
+    wp_apply (wp_getNodeHash with "[$Hown_child0 $Hown_ctx_ch1]").
+    iIntros "*". iNamedSuffix 1 "0". wp_loadField.
+    iNamedSuffix "Hown_merkle_ch1" "1".
+    wp_apply (wp_getNodeHash with "[$Hown_tree1 $Hown_ctx0]").
+    iIntros "*". iNamedSuffix 1 "1".
+    wp_apply (wp_compInnerHash sl_hash0 sl_hash1 Slice.nil).
+    { iFrame "#". iApply own_slice_zero. }
+    iIntros "*". iNamed 1.
+    iDestruct (own_slice_to_small with "Hsl_hash_out") as "Hsl_hash_out".
+    iPersist "Hsl_hash_out".
+    wp_storeField.
 
-      wp_pures. iApply "HΦ". iFrame "Hown_ctx1 Hptr_n0".
-      iExists (Inner t1 t). iIntros "!>".
-      destruct Hsorted as (? & Hbit_t1 & ? & Hbit_t2).
-      iSplit; [|iSplit; [|iSplit]]; [iPureIntro..|].
-      + simpl. rewrite -Heq_tree_map1.
-        opose proof (tree_to_map_lookup_None _ _ _ _ _ Hbit_t1) as ?; [done|].
-        by rewrite insert_union_r.
-      + repeat split; try done.
-        unfold tree_labels_have_bit in *. rewrite -Heq_tree_map1.
-        intros label'. destruct (decide (label = label')); subst; [done|].
-        intros ?. opose proof (Hbit_t2 label' _) as ?; [set_solver|done].
-      + simpl in *. destruct_and?.
-        repeat split; [done..|].
-        rewrite -Heq_tree_map1.
-        opose proof (tree_to_map_lookup_None _ _ _ _ _ Hbit_t1) as ?; [done|].
-        rewrite -insert_union_r; [|done].
-        rewrite map_size_insert. case_match; eauto with lia.
-      + iFrame "Hown_tree0 Hown_tree1 Hptr_hash ∗#". naive_solver.
+    wp_pures. iApply "HΦ". iFrame "Hown_ctx1 Hptr_n0".
+    iExists (Inner t1 t). iIntros "!>".
+    destruct Hsorted as (? & Hbit_t1 & ? & Hbit_t2).
+    iSplit; [|iSplit; [|iSplit]]; [iPureIntro..|].
+    + simpl. rewrite -Heq_tree_map1.
+      opose proof (tree_to_map_lookup_None _ _ _ _ _ Hbit_t1) as ?; [done|].
+      by rewrite insert_union_r.
+    + repeat split; try done.
+      unfold tree_labels_have_bit in *. rewrite -Heq_tree_map1.
+      intros label'. destruct (decide (label = label')); subst; [done|].
+      intros ?. opose proof (Hbit_t2 label' _) as ?; [set_solver|done].
+    + simpl in *. destruct_and?.
+      repeat split; [done..|].
+      rewrite -Heq_tree_map1.
+      opose proof (tree_to_map_lookup_None _ _ _ _ _ Hbit_t1) as ?; [done|].
+      rewrite -insert_union_r; [|done].
+      rewrite map_size_insert. case_match; eauto with lia.
+    + iFrame "Hown_tree0 Hown_tree1 Hptr_hash ∗#". naive_solver.
 
-    - wp_apply ("IH" with "[Hown_child0 $Hptr2_child0
-        $Hsl_label $Hsl_val_put $Hown_ctx]").
-      { iFrame "∗%". naive_solver. }
-      iIntros "* H". iNamedSuffix "H" "0".
-      iDestruct (own_merkle_map_not_nil with "Hown_merkle0") as %?.
-      { intros Heq. apply (f_equal dom) in Heq. set_solver. }
-      iDestruct ("Hclose_child0" with "Hptr_n00") as "Hptr_child0".
-      wp_pures. wp_rec. wp_loadField.
-      iNamedSuffix "Hown_merkle0" "0".
-      wp_apply (wp_getNodeHash with "[$Hown_tree0 $Hown_ctx0]").
-      iIntros "*". iNamedSuffix 1 "0". wp_loadField.
-      wp_apply (wp_getNodeHash with "[$Hown_child1 $Hown_ctx0]").
-      iIntros "*". iNamedSuffix 1 "1".
-      wp_apply (wp_compInnerHash sl_hash0 sl_hash1 Slice.nil).
-      { iFrame "#". iApply own_slice_zero. }
-      iIntros "*". iNamed 1.
-      iDestruct (own_slice_to_small with "Hsl_hash_out") as "Hsl_hash_out".
-      iPersist "Hsl_hash_out".
-      wp_storeField.
+  - wp_apply ("IH" with "[Hown_child0 $Hptr2_child0
+      $Hsl_label $Hsl_val_put $Hown_ctx]").
+    { iFrame "∗%". naive_solver. }
+    iIntros "* H". iNamedSuffix "H" "0".
+    iDestruct (own_merkle_map_not_nil with "Hown_merkle0") as %?.
+    { intros Heq. apply (f_equal dom) in Heq. set_solver. }
+    iDestruct ("Hclose_child0" with "Hptr_n00") as "Hptr_child0".
+    wp_pures. wp_rec. wp_loadField.
+    iNamedSuffix "Hown_merkle0" "0".
+    wp_apply (wp_getNodeHash with "[$Hown_tree0 $Hown_ctx0]").
+    iIntros "*". iNamedSuffix 1 "0". wp_loadField.
+    wp_apply (wp_getNodeHash with "[$Hown_child1 $Hown_ctx0]").
+    iIntros "*". iNamedSuffix 1 "1".
+    wp_apply (wp_compInnerHash sl_hash0 sl_hash1 Slice.nil).
+    { iFrame "#". iApply own_slice_zero. }
+    iIntros "*". iNamed 1.
+    iDestruct (own_slice_to_small with "Hsl_hash_out") as "Hsl_hash_out".
+    iPersist "Hsl_hash_out".
+    wp_storeField.
 
-      wp_pures. iApply "HΦ". iFrame "Hown_ctx1 Hptr_n0".
-      iExists (Inner t t2). iIntros "!>".
-      destruct Hsorted as (? & Hbit_t1 & ? & Hbit_t2).
-      iSplit; [|iSplit; [|iSplit]]; [iPureIntro..|].
-      + simpl. by rewrite -Heq_tree_map0 insert_union_l.
-      + repeat split; try done.
-        unfold tree_labels_have_bit in *. rewrite -Heq_tree_map0.
-        intros label'. destruct (decide (label = label')); subst; [done|].
-        intros ?. opose proof (Hbit_t1 label' _) as ?; [set_solver|done].
-      + simpl in *. destruct_and?.
-        repeat split; [done..|].
-        rewrite -Heq_tree_map0.
-        opose proof (tree_to_map_lookup_None _ _ _ _ _ Hbit_t2) as ?; [done|].
-        rewrite -insert_union_l.
-        rewrite map_size_insert. case_match; eauto with lia.
-      + iFrame "Hown_tree0 Hown_tree1 Hptr_hash ∗#". naive_solver.
-(* TODO: rocq somehow not letting me Qed here. *)
-Admitted.
+    wp_pures. iApply "HΦ". iFrame "Hown_ctx1 Hptr_n0".
+    iExists (Inner t t2). iIntros "!>".
+    destruct Hsorted as (? & Hbit_t1 & ? & Hbit_t2).
+    iSplit; [|iSplit; [|iSplit]]; [iPureIntro..|].
+    + simpl. by rewrite -Heq_tree_map0 insert_union_l.
+    + repeat split; try done.
+      unfold tree_labels_have_bit in *. rewrite -Heq_tree_map0.
+      intros label'. destruct (decide (label = label')); subst; [done|].
+      intros ?. opose proof (Hbit_t1 label' _) as ?; [set_solver|done].
+    + simpl in *. destruct_and?.
+      repeat split; [done..|].
+      rewrite -Heq_tree_map0.
+      opose proof (tree_to_map_lookup_None _ _ _ _ _ Hbit_t2) as ?; [done|].
+      rewrite -insert_union_l.
+      rewrite map_size_insert. case_match; eauto with lia.
+    + iFrame "Hown_tree0 Hown_tree1 Hptr_hash ∗#". naive_solver.
+Qed.
 
 Lemma wp_Tree__Put ptr_tr elems sl_label sl_val (label val : list w8) :
   {{{
