@@ -116,3 +116,4 @@ sp.run(
 
 print("\nSeeing if anything is out of sync")
 sp.run(["git", "diff", "--exit-code"], check=True)
+print("\nSuccess!")
