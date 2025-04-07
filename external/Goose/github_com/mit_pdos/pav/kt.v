@@ -1247,7 +1247,7 @@ Definition getBound: val :=
    for the latest version. *)
 Definition Server__Get: val :=
   rec: "Server__Get" "s" "uid" :=
-    sync.RWMutex__RLock (struct.loadF Server "mu" "s");;
+    RWMutex__RLock (struct.loadF Server "mu" "s");;
     let: "user" := Fst (MapGet (struct.loadF Server "userInfo" "s") "uid") in
     let: "numVers" := ref (zero_val uint64T) in
     let: "plainPk" := ref (zero_val (slice.T byteT)) in
@@ -1260,7 +1260,7 @@ Definition Server__Get: val :=
     let: "hist" := getHist (struct.loadF Server "keyMap" "s") "uid" (![uint64T] "numVers") (struct.loadF Server "vrfSk" "s") in
     let: ("isReg", "latest") := getLatest (struct.loadF Server "keyMap" "s") "uid" (![uint64T] "numVers") (struct.loadF Server "vrfSk" "s") (struct.loadF Server "commitSecret" "s") (![slice.T byteT] "plainPk") in
     let: "bound" := getBound (struct.loadF Server "keyMap" "s") "uid" (![uint64T] "numVers") (struct.loadF Server "vrfSk" "s") in
-    sync.RWMutex__RUnlock (struct.loadF Server "mu" "s");;
+    RWMutex__RUnlock (struct.loadF Server "mu" "s");;
     ("dig", "hist", "isReg", "latest", "bound").
 
 (* MembHideEncode from serde.out.go *)
@@ -1309,7 +1309,7 @@ Definition ServerSelfMonArgDecode: val :=
 
 Definition Server__SelfMon: val :=
   rec: "Server__SelfMon" "s" "uid" :=
-    sync.RWMutex__RLock (struct.loadF Server "mu" "s");;
+    RWMutex__RLock (struct.loadF Server "mu" "s");;
     let: "user" := Fst (MapGet (struct.loadF Server "userInfo" "s") "uid") in
     let: "numVers" := ref (zero_val uint64T) in
     (if: "user" ≠ #null
@@ -1317,7 +1317,7 @@ Definition Server__SelfMon: val :=
     else #());;
     let: "dig" := getDig (struct.loadF Server "epochHist" "s") in
     let: "bound" := getBound (struct.loadF Server "keyMap" "s") "uid" (![uint64T] "numVers") (struct.loadF Server "vrfSk" "s") in
-    sync.RWMutex__RUnlock (struct.loadF Server "mu" "s");;
+    RWMutex__RUnlock (struct.loadF Server "mu" "s");;
     ("dig", "bound").
 
 (* ServerSelfMonReplyEncode from serde.out.go *)
@@ -1352,16 +1352,16 @@ Definition ServerAuditArgDecode: val :=
 (* Audit returns an err on fail. *)
 Definition Server__Audit: val :=
   rec: "Server__Audit" "s" "epoch" :=
-    sync.RWMutex__RLock (struct.loadF Server "mu" "s");;
+    RWMutex__RLock (struct.loadF Server "mu" "s");;
     (if: "epoch" ≥ (slice.len (struct.loadF Server "epochHist" "s"))
     then
-      sync.RWMutex__RUnlock (struct.loadF Server "mu" "s");;
+      RWMutex__RUnlock (struct.loadF Server "mu" "s");;
       (struct.new UpdateProof [
          "Updates" ::= NewMap stringT (slice.T byteT) #()
        ], #true)
     else
       let: "info" := SliceGet ptrT (struct.loadF Server "epochHist" "s") "epoch" in
-      sync.RWMutex__RUnlock (struct.loadF Server "mu" "s");;
+      RWMutex__RUnlock (struct.loadF Server "mu" "s");;
       (struct.new UpdateProof [
          "Updates" ::= struct.loadF servEpochInfo "updates" "info";
          "Sig" ::= struct.loadF servEpochInfo "sig" "info"
@@ -1830,7 +1830,6 @@ Definition Server__Worker: val :=
       else MapInsert "uidSet" "uid" #false));;
     let: "outs0" := NewSlice ptrT (slice.len "work") in
     let: "wg" := ref_to ptrT (waitgroup.New #()) in
-    sync.RWMutex__RLock (struct.loadF Server "mu" "s");;
     let: "i" := ref (zero_val uint64T) in
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
@@ -1847,8 +1846,7 @@ Definition Server__Worker: val :=
         Continue
       else Continue));;
     waitgroup.Wait (![ptrT] "wg");;
-    sync.RWMutex__RUnlock (struct.loadF Server "mu" "s");;
-    sync.RWMutex__Lock (struct.loadF Server "mu" "s");;
+    RWMutex__Lock (struct.loadF Server "mu" "s");;
     let: "upd" := NewMap stringT (slice.T byteT) #() in
     "i" <-[uint64T] #0;;
     Skip;;
@@ -1874,9 +1872,8 @@ Definition Server__Worker: val :=
         Continue
       else Continue));;
     updEpochHist (struct.fieldRef Server "epochHist" "s") "upd" (merkle.Tree__Digest (struct.loadF Server "keyMap" "s")) (struct.loadF Server "sigSk" "s");;
-    sync.RWMutex__Unlock (struct.loadF Server "mu" "s");;
+    RWMutex__Unlock (struct.loadF Server "mu" "s");;
     "wg" <-[ptrT] (waitgroup.New #());;
-    sync.RWMutex__RLock (struct.loadF Server "mu" "s");;
     "i" <-[uint64T] #0;;
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
@@ -1890,7 +1887,6 @@ Definition Server__Worker: val :=
         Continue
       else Continue));;
     waitgroup.Wait (![ptrT] "wg");;
-    sync.RWMutex__RUnlock (struct.loadF Server "mu" "s");;
     WorkQ__Finish (struct.loadF Server "workQ" "s") "work";;
     #().
 
@@ -1907,7 +1903,7 @@ Definition NewWorkQ: val :=
 
 Definition NewServer: val :=
   rec: "NewServer" <> :=
-    let: "mu" := struct.alloc sync.RWMutex (zero_val (struct.t sync.RWMutex)) in
+    let: "mu" := newRWMutex #() in
     let: ("sigPk", "sigSk") := cryptoffi.SigGenerateKey #() in
     let: ("vrfPk", "vrfSk") := cryptoffi.VrfGenerateKey #() in
     let: "sec" := cryptoffi.RandBytes cryptoffi.HashLen in
