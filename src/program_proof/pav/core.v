@@ -1,6 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.pav Require Import classes cryptoffi serde.
 
+(* TODO: split out joint imports (if needed) from msv theory. *)
 From RecordUpdate Require Export RecordSet.
 From iris.unstable.base_logic Require Export mono_list.
 From Perennial.base_logic.lib Require Export ghost_map.
@@ -36,7 +37,7 @@ Class pavG Σ :=
 Context `{!heapGS Σ}.
 
 Definition is_map_label pk uid ver label : iProp Σ :=
-  is_vrf pk (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) label.
+  is_vrf_out pk (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) label.
 
 Definition is_commit (val : pk_ty) (commit : commit_ty) : iProp Σ :=
   ∃ rand, is_hash (CommitOpen.encodesF $ CommitOpen.mk DfracDiscarded val rand) commit.
@@ -74,7 +75,7 @@ Proof.
   list_elem vals1 (length vals0) as val.
   iDestruct (big_sepL_lookup with "Hhist1") as "H"; [exact Hval_lookup|].
   iNamed "H".
-  iDestruct (is_vrf_det with "His_label0 His_label") as %->. naive_solver.
+  iDestruct (is_vrf_out_det with "His_label0 His_label") as %->. naive_solver.
 Qed.
 
 Lemma msv_core_len_agree m uid vals0 vals1 pk :
@@ -100,7 +101,7 @@ Proof.
   iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
   iApply (big_sepL_func_eq with "Hhist0 Hhist1"); [|done].
   rewrite /Func. iIntros "*". iNamedSuffix 1 "0". iNamedSuffix 1 "1".
-  iDestruct (is_vrf_det with "His_label0 His_label1") as %->. naive_solver.
+  iDestruct (is_vrf_out_det with "His_label0 His_label1") as %->. naive_solver.
 Qed.
 
 End msv_core.
