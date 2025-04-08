@@ -1281,6 +1281,7 @@ Proof.
   by rewrite /own_slice_small list_untype_app list_untype_drop.
 Qed.
 
+(* TODO: rename or scope the name to make this more unique. *)
 Definition Verify_wish (in_tree : bool) label val proof dig : iProp Σ :=
   ∃ found proof_obj proof' tail,
   "%Henc" ∷ ⌜ MerkleProof.encodes proof_obj proof' ⌝ ∗
