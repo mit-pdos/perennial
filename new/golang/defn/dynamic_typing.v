@@ -10,16 +10,17 @@ Context `{ffi_syntax}.
 
 (** Encode [go_type] into [val] for use within GooseLang. The encoding is injective.
 
-The output of this roughly has type [μt. uint64 + (uint64 * t + (list (string *
-t) + void))] (where μt allows us to describe this type recursively); keep in
-mind that this is type in some type system we haven't formalized, unrelated to
-`go_type`, and in fact is too sophisticated to represent as a `go_type`. The left
-branch encodes all of the "base types" using a unique index. The right branch is
-used for arrays (encoded as `uint64 * t` for the length and element type) and
-structs (encoded as a list of field names and field types).
+The output of this roughly has type [Ty = uint64 + (uint64 * Ty + (list (string
+* Ty) + void))]; keep in mind that this is type in some type system we haven't
+formalized, unrelated to `go_type`, and in fact we can't even represent
+recursive types in `go_type`. The left branch encodes all of the "base types"
+using a unique index. The right branch is used for arrays (encoded as `uint64 *
+t` for the length and element type) and structs (encoded as a list of field
+names and field types). There's an unused position where the "void" is in case
+we want to change something.
 
 The list type used here is the same as the golang/defn/list library, [list a =
-μl. unit + (a * l)].
+unit + (a * list a)].
 
 *)
 Fixpoint type_to_val (t: go_type): val :=
