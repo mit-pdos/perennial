@@ -1,4 +1,4 @@
-From Perennial.goose_lang Require Export notation typing.
+From Perennial.goose_lang Require Import notation typing.
 
 Section goose_lang.
   Context {ext:ffi_syntax}.
