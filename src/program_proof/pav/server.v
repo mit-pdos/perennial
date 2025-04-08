@@ -46,6 +46,17 @@ Definition own ptr x : iProp Σ :=
 End defs.
 End servEpochInfo.
 
+Module Server.
+Record t :=
+  mk {
+    sig_pk: list w8;
+    vrf_pk: list w8;
+    γepoch: gname;
+    γdigs: gname;
+    γmap: gname;
+  }.
+End Server.
+
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
 
@@ -59,29 +70,84 @@ Definition own_Server (ptr : loc) (d : dfrac) : iProp Σ :=
   ∃ ptr_key_map key_map ptr_user_info
     (ptr2_user_info : gmap w64 _) user_info
     sl_epoch_hist ptr2_epoch_hist epoch_hist,
-  "Hkey_map" ∷ own_Tree ptr_key_map key_map d ∗
-  "#Hptr_key_map" ∷ ptr ↦[Server :: "keyMap"]□ #ptr_key_map ∗
-  "Huser_info" ∷ ([∗ map] l;x ∈ ptr2_user_info;user_info, userState.own l x d) ∗
-  "Hptr2_user_info" ∷ own_map ptr_user_info d ptr2_user_info ∗
-  "#Hptr_user_info" ∷ ptr ↦[Server :: "userInfo"]□ #ptr_user_info ∗
-  "#Hepoch_hist" ∷ ([∗ list] l;x ∈ ptr2_epoch_hist;epoch_hist, servEpochInfo.own l x) ∗
-  "Hptr2_epoch_hist" ∷ own_slice sl_epoch_hist ptrT d ptr2_epoch_hist ∗
-  "Hptr_epoch_hist" ∷ ptr ↦[Server :: "epochHist"]{d} (slice_val sl_epoch_hist).
+  "HkeyM" ∷ own_Tree ptr_key_map key_map d ∗
+  "#Hptr_keyM" ∷ ptr ↦[Server :: "keyMap"]□ #ptr_key_map ∗
+  "Huinfo" ∷ ([∗ map] l;x ∈ ptr2_user_info;user_info, userState.own l x d) ∗
+  "Hptr2_uinfo" ∷ own_map ptr_user_info d ptr2_user_info ∗
+  "#Hptr_uinfo" ∷ ptr ↦[Server :: "userInfo"]□ #ptr_user_info ∗
+  "#Hep_hist" ∷ ([∗ list] l;x ∈ ptr2_epoch_hist;epoch_hist, servEpochInfo.own l x) ∗
+  "Hptr2_ep_hist" ∷ own_slice sl_epoch_hist ptrT d ptr2_epoch_hist ∗
+  "Hptr_ep_hist" ∷ ptr ↦[Server :: "epochHist"]{d} (slice_val sl_epoch_hist).
 
-Definition is_Server ptr : iProp Σ :=
-  ∃ mu ptr_sig_sk sig_pk γ ptr_vrf_sk vrf_pk
+Definition is_Server ptr serv : iProp Σ :=
+  ∃ mu ptr_sig_sk sig_pk γ ptr_vrf_sk
     sl_commit_secret (commit_secret : list w8) ptr_workq,
   "#HmuR" ∷ is_rwlock nroot #mu (λ q, own_Server ptr (DfracOwn (q / 2))) ∗
   "#Hptr_mu" ∷ ptr ↦[Server :: "mu"]□ #mu ∗
-  "#His_sig_sk" ∷ is_sig_sk ptr_sig_sk sig_pk (serv_sigpred γ) ∗
+  "#Hsig_sk" ∷ is_sig_sk ptr_sig_sk sig_pk (serv_sigpred γ) ∗
   "#Hptr_sig_sk" ∷ ptr ↦[Server :: "sigSk"]□ #ptr_sig_sk ∗
-  "#His_vrf_sk" ∷ is_vrf_sk ptr_vrf_sk vrf_pk ∗
+  "#Hvrf_sk" ∷ is_vrf_sk ptr_vrf_sk serv.(Server.vrf_pk) ∗
   "#Hptr_vrf_sk" ∷ ptr ↦[Server :: "vrfSk"]□ #ptr_vrf_sk ∗
-  "#Hsl_commit_secret" ∷ own_slice_small sl_commit_secret byteT DfracDiscarded commit_secret ∗
-  "#Hptr_commit_secret" ∷ ptr ↦[Server :: "commitSecret"]□ (slice_val sl_commit_secret) ∗
-  "#His_workq" ∷ is_WorkQ ptr_workq ∗
+  "#Hsl_sec" ∷ own_slice_small sl_commit_secret byteT DfracDiscarded commit_secret ∗
+  "#Hptr_sec" ∷ ptr ↦[Server :: "commitSecret"]□ (slice_val sl_commit_secret) ∗
+  "#Hworkq" ∷ is_WorkQ ptr_workq ∗
   "#Hptr_workq" ∷ ptr ↦[Server :: "workQ"]□ #ptr_workq.
 
+Definition wish_memb vrf_pk uid ver sigdig memb : iProp Σ :=
+  ∃ label map_val,
+  let label_pre := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) in
+  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk label_pre memb.(Memb.LabelProof) ∗
+  "#Hvrf_out" ∷ is_vrf_out vrf_pk label_pre label ∗
+  "#Hmap_val" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) map_val ∗
+  "#Hmerk" ∷ Verify_wish true label map_val memb.(Memb.MerkleProof) sigdig.(SigDig.Dig).
+
+Definition wish_nonmemb vrf_pk uid ver sigdig nonmemb : iProp Σ :=
+  ∃ label,
+  let label_pre := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) in
+  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk label_pre nonmemb.(NonMemb.LabelProof) ∗
+  "#Hvrf_out" ∷ is_vrf_out vrf_pk label_pre label ∗
+  "#Hmerk" ∷ Verify_wish false label [] nonmemb.(NonMemb.MerkleProof)
+    sigdig.(SigDig.Dig).
+
+(* TODO: server correctness not just that all client fns
+(including audit) will not error.
+also that without even talking to auditor, clients can have agreement.
+for that, the server needs to guarantee that put / get elems
+are actually in server ghost state, and that ghost state
+satisfies certain invs, similar to auditor. *)
+
+Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
+  {{{
+    "#Hserv" ∷ is_Server ptr serv ∗
+    "Hpks" ∷ uid ↪[serv.(Server.γmap)] nVers ∗
+    "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
+    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) cli_ep
+  }}}
+  Server__Put #ptr #uid (slice_val sl_pk)
+  {{{
+    ptr_sigdig sigdig ptr_memb memb ptr_nonmemb nonmemb err,
+    RET (#ptr_sigdig, #ptr_memb, #ptr_nonmemb, #err);
+    "Hpks" ∷ uid ↪[serv.(Server.γmap)] (nVers + 1) ∗
+    "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = memb.(Memb.EpochAdded) ⌝ ∗
+    "%Heq_pk" ∷ ⌜ pk = memb.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
+    "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
+    (* currently, sigpred can just be:
+    (global digs) !! sigdig.Epoch = sigdig.Dig *)
+    "#Hsig" ∷ is_sig serv.(Server.sig_pk)
+      (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
+      sigdig.(SigDig.Sig) ∗
+    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat sigdig.(SigDig.Epoch)) ∗
+    "%Hlt_ep" ∷ ⌜ Z.of_nat cli_ep < uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
+    "Hmemb" ∷ Memb.own ptr_memb memb (DfracOwn 1) ∗
+    "#Hwish_memb" ∷ wish_memb serv.(Server.vrf_pk) uid (W64 $ nVers) sigdig memb ∗
+    "Hnonmemb" ∷ NonMemb.own ptr_nonmemb nonmemb (DfracOwn 1) ∗
+    "#Hwish_nonmemb" ∷ wish_nonmemb serv.(Server.vrf_pk)
+      uid (W64 $ (nVers + 1)) sigdig nonmemb ∗
+    "%Herr" ∷ ⌜ err = false ⌝
+  }}}.
+Proof. Admitted.
+
+(*
 Lemma wp_compMapVal (epoch : w64) ptr_pk_open pk_open :
   {{{
     "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open pk_open
@@ -115,5 +181,6 @@ Proof.
   iDestruct (own_slice_to_small with "Hsl_enc_mapval") as "Hsl_enc_mapval".
   iApply "HΦ". iFrame "∗#".
 Qed.
+*)
 
 End proof.

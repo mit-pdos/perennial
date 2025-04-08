@@ -3,6 +3,7 @@ From Perennial.program_proof.pav Require Import classes cryptoffi serde.
 
 (* TODO: split out joint imports (if needed) from msv theory. *)
 From RecordUpdate Require Export RecordSet.
+From iris.base_logic.lib Require Export mono_nat.
 From iris.unstable.base_logic Require Export mono_list.
 From Perennial.base_logic.lib Require Export ghost_map.
 From Perennial.Helpers Require Export Integers.
@@ -30,7 +31,12 @@ Notation lat_opaque_val_ty := (option opaque_map_val_ty) (only parsing).
 Section misc.
 Class pavG Σ :=
   {
-    #[global] pavG_adtr :: mono_listG ((gmap opaque_label_ty (epoch_ty * commit_ty)) * dig_ty) Σ;
+    #[global] pavG_serv_ep :: mono_natG Σ;
+    #[global] pavG_serv_digs ::
+      mono_listG ((gmap (list w8) (w64 * list w8)) * list w8) Σ;
+    #[global] pavG_serv_map :: ghost_mapG Σ w64 Z;
+    #[global] pavG_adtr ::
+      mono_listG ((gmap opaque_label_ty (epoch_ty * commit_ty)) * dig_ty) Σ;
     #[global] pavG_cli :: mono_listG (option dig_ty) Σ;
   }.
 
@@ -40,7 +46,7 @@ Definition is_map_label pk uid ver label : iProp Σ :=
   is_vrf_out pk (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) label.
 
 Definition is_commit (val : pk_ty) (commit : commit_ty) : iProp Σ :=
-  ∃ rand, is_hash (CommitOpen.encodesF $ CommitOpen.mk DfracDiscarded val rand) commit.
+  ∃ rand, is_hash (CommitOpen.encodesF $ CommitOpen.mk val rand) commit.
 
 Lemma is_commit_inj val0 val1 commit :
   is_commit val0 commit -∗ is_commit val1 commit -∗ ⌜ val0 = val1 ⌝.
