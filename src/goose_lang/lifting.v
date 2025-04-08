@@ -93,6 +93,15 @@ Section definitions.
     by iFrame.
   Qed.
 
+  Theorem heap_pointsto_valid l dq v:
+     heap_pointsto l dq v -∗ ⌜✓dq⌝.
+  Proof.
+    iIntros "H".
+    iDestruct (heap_pointsto_na_acc with "H") as "(Hna&_)".
+    iDestruct (na_heap_pointsto_valid with "Hna") as %Hvalid.
+    done.
+  Qed.
+
   Theorem heap_pointsto_frac_valid l q v:
      heap_pointsto l (DfracOwn q) v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof.

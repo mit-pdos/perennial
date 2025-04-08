@@ -1,4 +1,4 @@
-From New.golang.defn Require Export mem loop exception typing list.
+From New.golang.defn Require Export mem loop assume exception typing list.
 
 Module slice.
 (* FIXME: seal these functions *)
@@ -33,17 +33,19 @@ Definition elem_ref t : val :=
               then (ptr "s" +ₗ[t] "i")
               else Panic "slice index out-of-bounds".
 
+(* s[a:b], as well as s[a:] = s[a:len(s)] and s[:b] = s[0:b] *)
 Definition slice t : val :=
-  λ: "a" "low" "high",
-  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ cap "a") then
-    (ptr "s" +ₗ[t] "low", "high" - "low", cap "s" - "low")
+  λ: "s" "low" "high",
+  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ cap "s") then
+    InjL (ptr "s" +ₗ[t] "low", "high" - "low", cap "s" - "low")
   else Panic "slice indices out of order"
 .
 
+(* s[a:b:c] (picking a specific capacity c) *)
 Definition full_slice t : val :=
-  λ: "a" "low" "high" "max",
-  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ "max") && ("max" ≤ cap "a") then
-    (ptr "s" +ₗ[t] "low", "high" - "low", "max" - "low")
+  λ: "s" "low" "high" "max",
+  if: (#(W64 0) ≤ "low") && ("low" ≤ "high") && ("high" ≤ "max") && ("max" ≤ cap "s") then
+    InjL (ptr "s" +ₗ[t] "low", "high" - "low", "max" - "low")
   else Panic "slice indices out of order"
 .
 
@@ -57,23 +59,30 @@ Definition for_range t : val :=
 Definition copy t : val :=
   λ: "dst" "src",
   let: "i" := ref_ty uint64T (zero_val uint64T) in
-  (for: (![uint64T] "i" < (len "dst")) && (![uint64T] "i" < (len "src")) ; Skip :=
-   elem_ref t "dst" <-[t] ! (elem_ref t "src")) ;;
+  (for: (λ: <>, (![uint64T] "i" < len "dst") && (![uint64T] "i" < (len "src"))) ; (λ: <>, Skip) :=
+    (λ: <>,
+    do: (let: "i_val" := ![uint64T] "i" in
+      elem_ref t "dst" "i_val" <-[t] ![t] (elem_ref t "src" "i_val");;
+      "i" <-[uint64T] "i_val" + #(W64 1))));;
   ![uint64T] "i"
 .
 
 Definition append t : val :=
   λ: "s" "x",
-  let: "s_new" := (if: (cap "s") > (len "s" + len "x") then
-                     (slice t "s" #(W64 0) (len "s" + len "x"))
-                   else
-                     let: "extra" := ArbitraryInt in
-                     let: "s_new" := make2 t (len "s" + len "x" + "extra") in
-                     copy t "s_new" "s" ;;
-                     "s_new"
-                  ) in
-  copy t (slice t "s_new" (len "s") (len "s_new")) "x" ;;
-  "s_new".
+  let: "new_len" := sum_assume_no_overflow (len "s") (len "x") in
+  if: (cap "s") ≥ "new_len" then
+    (* "grow" s to include its capacity *)
+    let: "s_new" := slice t "s" #(W64 0) "new_len" in
+    (* copy "x" past the original "s" *)
+    copy t (slice t "s_new" (len "s") "new_len") "x";;
+    "s_new"
+  else
+    let: "extra" := ArbitraryInt in
+    let: "new_cap" := sum_assume_no_overflow "new_len" "extra" in
+    let: "s_new" := make3 t "new_len" "new_cap" in
+    copy t "s_new" "s" ;;
+    copy t (slice t "s_new" (len "s") "new_len") "x" ;;
+    "s_new".
 
 (* Takes in a list as input, and turns it into a heap-allocated slice. *)
 Definition literal t : val :=
