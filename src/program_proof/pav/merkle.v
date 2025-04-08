@@ -1,4 +1,4 @@
-From iris.bi.lib Require Import fractional fixpoint_mono.
+From iris.bi.lib Require Import fractional.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.goose_lang.lib Require Import encoding.
 (* for sealed. *)
