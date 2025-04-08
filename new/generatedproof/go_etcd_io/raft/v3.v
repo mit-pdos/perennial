@@ -1835,7 +1835,7 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrStopped" ∷ ErrStopped ↦ (default_val error.t) ∗
   "HErrProposalDropped" ∷ ErrProposalDropped ↦ (default_val error.t) ∗
   "HglobalRand" ∷ globalRand ↦ (default_val loc) ∗
-  "Hstmap" ∷ stmap ↦ (default_val (vec go_string 4)) ∗
+  "Hstmap" ∷ stmap ↦ (default_val (vec go_string (uint.nat (W64 4)))) ∗
   "HerrBreak" ∷ errBreak ↦ (default_val error.t) ∗
   "HErrStepLocalMsg" ∷ ErrStepLocalMsg ↦ (default_val error.t) ∗
   "HErrStepPeerNotFound" ∷ ErrStepPeerNotFound ↦ (default_val error.t) ∗
@@ -1843,8 +1843,8 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrSnapOutOfDate" ∷ ErrSnapOutOfDate ↦ (default_val error.t) ∗
   "HErrUnavailable" ∷ ErrUnavailable ↦ (default_val error.t) ∗
   "HErrSnapshotTemporarilyUnavailable" ∷ ErrSnapshotTemporarilyUnavailable ↦ (default_val error.t) ∗
-  "HisLocalMsg" ∷ isLocalMsg ↦ (default_val (vec bool 23)) ∗
-  "HisResponseMsg" ∷ isResponseMsg ↦ (default_val (vec bool 23)).
+  "HisLocalMsg" ∷ isLocalMsg ↦ (default_val (vec bool (uint.nat (W64 23)))) ∗
+  "HisResponseMsg" ∷ isResponseMsg ↦ (default_val (vec bool (uint.nat (W64 23)))).
 
 Global Instance wp_globals_get_defaultLogger : 
   WpGlobalsGet raft "defaultLogger" defaultLogger (is_pkg_defined raft).

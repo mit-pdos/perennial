@@ -105,15 +105,16 @@ Section goose_lang.
     {
       (* XXX: need to reorder hyps to avoid an error in [dependent induction].... *)
       move a after a0.
-      dependent induction a generalizing a0.
-      { dependent destruction a0. done. }
-      dependent destruction a0.
+      generalize dependent (uint.nat n); intros n' ??.
+      dependent induction a generalizing a0; simpl in *; subst; simpl in *.
+      { destruct a0; done. }
+      destruct a0; try done.
       simpl in Heq.
       apply app_inj_1 in Heq as [? ?].
       2:{ by do 2 erewrite has_go_type_len by naive_solver. }
       simpl. f_equal.
       + apply H; naive_solver.
-      + apply IHa; naive_solver.
+      + eapply IHa; naive_solver.
     }
     {
       induction d as [|[]d]; repeat ltac2:(step ()).
@@ -230,12 +231,12 @@ Section goose_lang.
         try (iApply heap_pointsto_non_null; by iFrame).
     - (* array *)
       rewrite go_type_size_unseal /= in Hlen.
-      destruct a as [|].
+      destruct a as [|v a'].
       { exfalso. simpl in *. lia. }
       destruct (decide (go_type_size_def elem = O)).
       { exfalso. rewrite e in Hlen. simpl in *. lia. }
       iDestruct select ([∗ list] _ ↦ _ ∈ _, _)%I as "[? _]".
-      iApply ("IH" $! h with "").
+      iApply ("IH" $! v with "").
       + naive_solver.
       + iPureIntro. rewrite go_type_size_unseal. lia.
       + iFrame.
@@ -306,9 +307,13 @@ Section goose_lang.
     all: rewrite ?to_val_unseal /= /= ?loc_add_0 ?right_id; wp_pures.
     all: try (iApply (wp_load with "[$]"); done).
     - (* case arrayT *)
-      subst.
-      iInduction a as [|] "IH2" forall (l' Φ).
-      { simpl. wp_pures. rewrite to_val_unseal. iApply "HΦ". by iFrame. }
+      rewrite -Hlen.
+      generalize dependent (uint.nat n); intros n' ?.
+      subst n'.
+      iInduction a as [|v a'] "IH2" forall (l' Φ).
+      { simpl.
+        wp_pures.
+        rewrite to_val_unseal. iApply "HΦ". by iFrame. }
       wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
       fold flatten_struct.
@@ -412,16 +417,19 @@ Section goose_lang.
     all: try (wp_apply (wp_store with "[$]"); iIntros "H"; iApply "HΦ"; iFrame).
     - (* array *)
       rename a0 into a'.
-      iInduction a as [|] "IH2" forall (l' a' Helems0).
-      { wp_pures. rewrite ?to_val_unseal. iApply "HΦ".
-        dependent destruction a'. done. }
-      wp_pures.
+      rewrite -Hlen.
+      generalize dependent (uint.nat n); intros n' ??.
+      subst n'.
+      iInduction a as [|v a] "IH2" forall (l' a' Hlen0 Helems0).
+      { simpl. wp_pures. rewrite ?to_val_unseal. iApply "HΦ".
+        dependent destruction a'; done. }
+      simpl. wp_pures.
       iDestruct "Hl" as "[Hf Hl]".
       fold flatten_struct.
       erewrite has_go_type_len.
       2:{ eapply Helems. by left. }
       setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.
-      dependent destruction a'.
+      destruct a' as [|v'' a']; [ done | ].
       simpl.
       wp_pures.
       wp_apply ("IH" with "[] [] [$Hf]").
@@ -432,8 +440,9 @@ Section goose_lang.
       2:{ rewrite to_val_unseal //. }
       wp_pures.
       rewrite [in (to_val (l' +ₗ _))]to_val_unseal.
-      wp_apply ("IH2" with "[] [] [] [Hl]").
+      wp_apply ("IH2" with "[] [] [] [] [Hl]").
       { iPureIntro. intros. apply Helems. by right. }
+      { simpl in *; iPureIntro; lia. }
       { iPureIntro. intros. apply Helems0. by right. }
       { iModIntro. iIntros. wp_apply ("IH" with "[] [//] [$] [$]"). iPureIntro. by right. }
       { rewrite ?right_id. iFrame. }

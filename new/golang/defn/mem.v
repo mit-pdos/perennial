@@ -22,7 +22,7 @@ Section go_lang.
           match n with
           | O => (λ: <>, #())%V
           | S n => (λ: "l", (load_ty_def t "l", load_ty_array n ("l" +ₗ[t] #(W64 1))))%V
-          end) n
+          end) (uint.nat n)
     | _ => (λ: "l", !(Var "l"))%V
     end.
   Program Definition load_ty := sealed @load_ty_def.
@@ -46,7 +46,7 @@ Section go_lang.
           | S n => (λ: "p" "v",
                             store_ty_def t "p" (Fst "v");;
                             store_ty_array n (BinOp (OffsetOp (go_type_size t)) "p" #(W64 1)) (Snd "v"))%V
-          end) n
+          end) (uint.nat n)
     | _ => (λ: "p" "v", "p" <- "v")%V
     end.
   Program Definition store_ty := sealed @store_ty_def.

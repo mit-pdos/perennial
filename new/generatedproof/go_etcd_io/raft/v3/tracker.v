@@ -409,7 +409,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined tracker :=
 |}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
-  "Hprstmap" ∷ prstmap ↦ (default_val (vec go_string 3)).
+  "Hprstmap" ∷ prstmap ↦ (default_val (vec go_string (uint.nat (W64 3)))).
 
 Global Instance wp_globals_get_prstmap : 
   WpGlobalsGet tracker "prstmap" prstmap (is_pkg_defined tracker).

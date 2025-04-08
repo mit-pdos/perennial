@@ -4,6 +4,8 @@ From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Export typing.
 
+Set Default Proof Using "Type".
+
 Section alist.
 
 Fixpoint alist_lookup_f {A} (f : go_string) (l : list (go_string * A)) : option A :=
@@ -45,7 +47,7 @@ Section typing.
 
 Program Definition go_type_ind :=
   λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
-    (f3 : P uint64T) (f4 : P stringT) (f5 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
+    (f3 : P uint64T) (f4 : P stringT) (f5 : ∀ (n : w64) (elem : go_type), P elem → P (arrayT n elem))
     (f6 : P sliceT) (f7 : P interfaceT)
     (f8 : ∀ (decls : list (go_string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
     (f9 : P ptrT) (f10 : P funcT),
@@ -91,9 +93,9 @@ destruct a. apply Forall_cons. split.
   | has_go_type_slice (s : slice.t) : has_go_type (#s) sliceT
   | has_go_type_interface (i : interface.t) : has_go_type (#i) interfaceT
 
-  | has_go_type_array n elem (a : vec val n)
+  | has_go_type_array (n: w64) elem (a : list val) (Hlen: length a = uint.nat n)
                       (Helems : ∀ v, In v a → has_go_type v elem)
-    : has_go_type (Vector.fold_right PairV a #()) (arrayT n elem)
+    : has_go_type (fold_right PairV #() a) (arrayT n elem)
 
   | has_go_type_struct
       (d : struct.descriptor) fvs
@@ -108,11 +110,15 @@ destruct a. apply Forall_cons. split.
     has_go_type (zero_val t) t.
   Proof.
     induction t using go_type_ind; rewrite zero_val_unseal /to_val; try econstructor.
-    { intros. fold zero_val_def in H.
+    {
+      rewrite length_replicate //.
+    }
+    { (* arrayT *)
+      simpl.
+      intros. fold zero_val_def in H.
       rewrite -elem_of_list_In in H.
-      rewrite elem_of_vlookup in H.
-      destruct H as [??].
-      rewrite vlookup_replicate in H. subst.
+      apply elem_of_list_lookup in H as [? Hget%lookup_replicate].
+      intuition subst.
       by rewrite -zero_val_unseal.
     }
     { (* structT *)
@@ -144,10 +150,11 @@ destruct a. apply Forall_cons. split.
     induction 1; simpl; rewrite ?to_val_unseal /=; auto.
     - destruct i; done.
     - simpl.
-      dependent induction a.
-      + simpl in *. subst. done.
-      + simpl.
-        unshelve epose proof (IHa _ _) as IHa.
+      generalize dependent (uint.nat n). clear n.
+      intros; subst.
+      dependent induction a; simpl in *.
+      + done.
+      + unshelve epose proof (IHa _ _) as IHa.
         { intros. apply Helems. by right. }
         { intros. apply H. by right. }
         rewrite length_app.
@@ -175,7 +182,7 @@ destruct a. apply Forall_cons. split.
     | uint64T => #(W64 0)
 
     | stringT => #("")
-    | arrayT n elem => Vector.fold_right PairV (vreplicate n (zero_val_def elem)) #()
+    | arrayT n elem => fold_right PairV #() (replicate (uint.nat n) (zero_val_def elem))
     | sliceT => #slice.nil
     | structT decls => struct.val_aux t []
     | ptrT => #null
@@ -286,6 +293,8 @@ Proof.
   induction Hty; try rewrite to_val_unseal /= //.
   - repeat constructor; rewrite to_val_unseal //.
   - clear Helems. simpl in Hcomp.
+    generalize dependent (uint.nat n).
+    intros ??; subst.
     induction a.
     + done.
     + rewrite /=. split.
@@ -368,24 +377,43 @@ Next Obligation. rewrite to_val_unseal. move => [???][???] [=].
                  repeat intros [=->%to_val_inj]. done.
 Qed.
 
-Program Global Instance into_val_typed_array `{!IntoVal V} `{!IntoValTyped V t} n :
-  IntoValTyped (vec V n) (arrayT n t) :=
-{| default_val := vreplicate n (default_val _) |}.
+Program Global Instance into_val_typed_array `{!IntoVal V} `{!IntoValTyped V t} (n: w64) :
+  IntoValTyped (vec V (uint.nat n)) (arrayT n t) :=
+{| default_val := vreplicate (uint.nat n) (default_val _) |}.
 Next Obligation.
   rewrite to_val_unseal /=.
   solve_has_go_type.
-  induction v as [|].
-  - by exfalso.
-  - simpl in *. destruct H0.
-    + subst. apply to_val_has_go_type.
-    + by apply IHv.
+  assert (n = W64 (uint.nat n)) as Hn by word.
+  assert (Z.of_nat (uint.nat n) < 2^64) by word.
+  rewrite {3}Hn.
+  generalize dependent (uint.nat n); intros n' v ??.
+  clear Hn n.
+  rewrite VectorSpec.to_list_fold_right.
+  apply has_go_type_array.
+  { rewrite VectorSpec.length_to_list.
+    word. }
+  intros v' Hin.
+  apply VectorSpec.to_list_In in Hin.
+  apply VectorSpec.to_list_In in Hin.
+  rewrite VectorSpec.to_list_map in Hin.
+  apply in_map_iff in Hin as [x [<- Hin]].
+  apply to_val_has_go_type.
 Qed.
 Next Obligation.
   rewrite to_val_unseal zero_val_eq /= to_val_unseal //.
   intros.
-  setoid_rewrite vmap_replicate.
   rewrite -zero_val_unseal.
-  rewrite -default_val_eq_zero_val to_val_unseal //.
+  rewrite -default_val_eq_zero_val -to_val_unseal //.
+  setoid_rewrite vmap_replicate.
+  rewrite VectorSpec.to_list_fold_right.
+  f_equal.
+
+  (* TODO: a VectorSpec theorem about vreplicate/replicate is missing *)
+  generalize dependent (uint.nat n); intros n'.
+  induction n'; simpl.
+  { reflexivity. }
+  rewrite VectorSpec.to_list_cons.
+  rewrite IHn' //.
 Qed.
 Final Obligation.
 rewrite to_val_unseal.
