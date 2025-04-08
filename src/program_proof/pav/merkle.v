@@ -18,12 +18,9 @@ Program Definition u64_le_seal := sealed @u64_le.
 Definition u64_le_unseal : u64_le_seal = _ := seal_eq _.
 Lemma u64_le_seal_len x :
   length $ u64_le_seal x = 8%nat.
-Proof. Admitted.
+Proof. rewrite u64_le_unseal. done. Qed.
 Global Instance u64_le_seal_inj : Inj eq eq u64_le_seal.
-Proof. Admitted.
-Lemma u64_le_eq_seal x :
-  u64_le x = u64_le_seal x.
-Proof. Admitted.
+Proof. rewrite u64_le_unseal. apply _. Qed.
 
 Module MerkleProof.
 Record t :=
@@ -109,7 +106,7 @@ End MerkleProof.
 Section proof.
 Context `{!heapGS Σ}.
 
-Definition bytes_to_bits l := mjoin (byte_to_bits <$> l).
+Definition bytes_to_bits l := concat (byte_to_bits <$> l).
 
 (* get_bit returns false if bit n of l is 0 (or the bit is past the length of l). *)
 Definition get_bit l (n : w64) : bool :=
@@ -979,7 +976,7 @@ Proof.
   { iApply own_slice_zero. }
   iIntros "*". iNamedSuffix 1 "5".
   iApply "HΦ". iFrame.
-  list_simplifier. rewrite !u64_le_eq_seal.
+  list_simplifier. rewrite u64_le_unseal.
   apply (f_equal (λ x : nat, W64 x)) in H, H0.
   rewrite !w64_to_nat_id in H H0. rewrite -H -H0.
   iFrame "#".
@@ -1018,6 +1015,30 @@ Proof.
   iApply "HΦ". iFrame "∗#".
 Qed.
 
+Lemma length_bytes_to_bits b :
+  length (bytes_to_bits b) = (8 * length b) % nat.
+Proof.
+  induction b; [done|].
+  rewrite /= IHb. lia.
+Qed.
+
+Lemma bytes_to_bits_app a b : bytes_to_bits (a ++ b) = bytes_to_bits a ++ bytes_to_bits b.
+Proof. rewrite /bytes_to_bits !fmap_app concat_app //. Qed.
+
+Lemma LitByte_inv a b :
+  LitByte a = LitByte b → a = b.
+Proof. inversion 1. done. Qed.
+
+Lemma bool_decide_w8_eq (a b : w8) :
+  bool_decide (#a = #b) =
+  bool_decide (uint.Z a = uint.Z b).
+Proof.
+  rewrite !bool_decide_decide.
+  destruct decide.
+  { rewrite decide_True //. naive_solver. }
+  { rewrite decide_False //. naive_solver. }
+Qed.
+
 Lemma wp_getBit sl_b d0 (b : list w8) (n : w64) :
   {{{
     "Hsl_b" ∷ own_slice_small sl_b byteT d0 b
@@ -1036,19 +1057,68 @@ Proof.
     wp_apply (wp_SliceGet with "[$Hsl_b //]").
     iIntros "Hsl_b". wp_pures. iApply "HΦ". iFrame. iPureIntro.
     opose proof (lookup_lt_is_Some_2 (bytes_to_bits b) (uint.nat n) _) as [? ?].
-    { rewrite length_join (sum_list_fmap_same 8).
-      2: { by apply Forall_fmap, Forall_true. }
-      rewrite length_fmap. word. }
+    { rewrite length_bytes_to_bits. word. }
     rewrite /get_bit H0.
-    (* TODO: have to reason about bytes_to_bits indexing the
-    right byte and the right bit. *)
-    admit.
+    clear -H0 Hbyt_lookup.
+    (* XXX: could be a separate lemma. *)
+    rename H0 into Hbit_lookup.
+    pose proof (lookup_lt_Some _ _ _ Hbyt_lookup) as Hn.
+    apply take_drop_middle in Hbyt_lookup.
+    rewrite -Hbyt_lookup in Hbit_lookup.
+    rewrite !bytes_to_bits_app in Hbit_lookup.
+    rewrite lookup_app_r in Hbit_lookup.
+    2:{ rewrite length_bytes_to_bits length_take. word. }
+    rewrite length_bytes_to_bits length_take in Hbit_lookup.
+    rewrite Nat.min_l in Hbit_lookup.
+    2:{ word. }
+    rewrite lookup_app_l in Hbit_lookup.
+    2:{ simpl. word. }
+    replace (uint.nat n - 8 * (uint.nat _))%nat with
+      (uint.nat n `mod` 8)%nat in Hbit_lookup.
+    2:{
+      rewrite -> word.unsigned_divu_nowrap in * by word.
+      rewrite -> (Nat.div_mod_eq (uint.nat n) 8) at 2.
+      rewrite -> Z2Nat.inj_div by word.
+      replace (uint.nat (W64 8)) with 8%nat by word.
+      lia.
+    }
+    rewrite /byte_to_bits list_lookup_fmap in Hbit_lookup.
+    rewrite lookup_seqZ_lt in Hbit_lookup.
+    2:{
+      replace 8 with (Z.of_nat 8%nat) by done.
+      rewrite <- Nat2Z.inj_lt.
+      by apply Nat.mod_upper_bound.
+    }
+    rewrite Nat2Z.inj_mod left_id /= in Hbit_lookup.
+    injection Hbit_lookup as ?. subst.
+    replace (uint.nat n `mod` 8%nat) with (uint.Z n `mod` 8) by word.
+    rewrite bool_decide_w8_eq.
+    rewrite -> word.unsigned_and_nowrap, word.unsigned_modu_nowrap, Automation.word.unsigned_slu' by word.
+    rewrite left_id.
+    replace (2^_) with (2^(uint.Z n `mod` 8)).
+    2:{ f_equal. word. }
+    rewrite wrap_small.
+    2:{ split; first lia. apply Z.pow_lt_mono_r; word. }
+    rewrite bool_decide_decide. destruct decide as [H|H].
+    + apply (f_equal (λ x, Z.testbit x (uint.Z n `mod` 8))) in H.
+      rewrite Z.land_spec Z.bits_0 /= in H.
+      rewrite -> Z.pow2_bits_true in H by word.
+      rewrite andb_true_r // in H.
+    + simpl. apply Automation.word.decision_assume_opposite.
+      intros H2. apply H. clear H. rename H2 into H.
+      apply Z.bits_inj_iff. intros p.
+      rewrite Z.land_spec Z.bits_0 /=.
+      destruct (decide (p = (uint.Z n `mod` 8))).
+      {
+        subst. rewrite -> Z.pow2_bits_true by word. rewrite andb_true_r.
+        destruct Z.testbit; done.
+      }
+      rewrite -> Z.pow2_bits_false by word.
+      rewrite andb_false_r. done.
   - iApply "HΦ". iFrame. iPureIntro.
     rewrite /get_bit lookup_ge_None_2; [done|].
-    rewrite length_join (sum_list_fmap_same 8).
-    2: { by apply Forall_fmap, Forall_true. }
-    rewrite length_fmap. word.
-Admitted.
+    rewrite length_bytes_to_bits. word.
+Qed.
 
 Lemma wp_getChild n d0 ptr_child0 ptr_child1 sl_label d1
     (label : list w8) (depth : w64) :
