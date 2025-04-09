@@ -5,6 +5,7 @@ From Perennial Require Import base.
 
 Set Default Proof Using "Type".
 
+Module type.
 Section defn.
 Context `{ffi_syntax}.
 
@@ -54,4 +55,56 @@ Fixpoint type_to_val (t: go_type): val :=
 Instance go_type_into_val : IntoVal go_type :=
   { to_val_def := type_to_val; }.
 
+Definition Match_def : val :=
+  λ: "t" "baseCase" "arrayCase" "structCase",
+    match: "t" with
+      InjL "x" => "baseCase" (InjL "x")
+    | InjR "x" => match: "x" with
+        InjL "arr" => let: ("n", "t") := "arr" in
+                    "arrayCase" "n" "t"
+      | InjR "x" => match: "x" with
+          InjL "decls" => "structCase" "decls"
+        | InjR <> => #() (* unreachable *)
+         end
+      end
+    end.
+Program Definition Match := sealed @Match_def.
+Definition Match_unseal : Match = _ := seal_eq _.
+
+Definition go_type_size_e_def: val :=
+  rec: "go_type_size" "t" :=
+    Match "t"
+      (λ: <>, #(W64 1))
+      (λ: "n" "t", "n" * "go_type_size" "t")
+      (λ: "decls",
+        (rec: "struct_size" "decls" :=
+           list.Match "decls"
+                      (λ: <>, #(W64 0))
+                      (λ: "hd" "decls", let: ("d", "t") := "hd" in
+                          "go_type_size" "t" + "struct_size" "decls")
+        ) "decls").
+Program Definition go_type_size_e := sealed @go_type_size_e_def.
+Definition go_type_size_e_unseal : @go_type_size_e = _ := seal_eq _.
+
+Definition load_ty_e_def: val :=
+  rec: "go" "t" "l" :=
+    Match "t"
+      (λ: <>, !"l")
+      (λ: "n" "t",
+        (rec: "go_arr" "n" "l" :=
+           if: "n" = #(W64 0) then #()
+           else ("go" "t" "l", "go_arr" ("n" - #(W64 1)) ("l" +ₗ go_type_size_e "t"))
+        ) "n" "l")
+      (λ: "decls",
+        (rec: "go_struct" "decls" "l" :=
+           list.Match "decls"
+                      (λ: <>, #())
+                      (λ: "hd" "decls", let: ("d", "t") := "hd" in
+                          ("go" "t" "l", "go_struct" "decls" ("l" +ₗ go_type_size_e "t")))
+        ) "decls" "l")
+      .
+Program Definition load_ty_e := sealed @load_ty_e_def.
+Definition load_ty_e_unseal : @load_ty_e = _ := seal_eq _.
+
 End defn.
+End type.
