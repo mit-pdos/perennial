@@ -66,6 +66,21 @@ Definition SumAssumeNoOverflow: val :=
     control.impl.Assume (SumNoOverflow "x" "y");;
     "x" + "y".
 
+(* MulNoOverflow returns true if x * y does not overflow *)
+Definition MulNoOverflow: val :=
+  rec: "MulNoOverflow" "x" "y" :=
+    (if: ("x" = #0) || ("y" = #0)
+    then #true
+    else "x" ≤ (((#1 ≪ #64) - #1) `quot` "y")).
+
+(* MulAssumeNoOverflow returns x * y, `Assume`ing that this does not overflow.
+
+   *Use with care* - if the assumption is violated this function will panic. *)
+Definition MulAssumeNoOverflow: val :=
+  rec: "MulAssumeNoOverflow" "x" "y" :=
+    control.impl.Assume (MulNoOverflow "x" "y");;
+    "x" * "y".
+
 (* JoinHandle is a mechanism to wait for a goroutine to finish. Calling `Join()`
    on the handle returned by `Spawn(f)` will wait for f to finish. *)
 Definition JoinHandle := struct.decl [
