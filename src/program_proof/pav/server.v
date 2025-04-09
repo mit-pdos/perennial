@@ -146,14 +146,12 @@ Definition own_Server ptr serv q : iProp Σ :=
       commit ∗
     "%Hlook_map" ∷ ⌜ key_map !! label =
       Some (MapValPre.encodesF $ MapValPre.mk ep commit) ⌝) ∗
-  (* for audit on epoch 0. *)
-  "%Heq_hist0" ∷ ⌜ ∃ x, epoch_hist !! 0%nat = Some x ∧ x.(servEpochInfo.updates) = ∅ ⌝ ∗
 
   (* physical-ghost reln. *)
   "%Heq_dig_hist" ∷ ⌜ gs_hist.*2 = servEpochInfo.dig <$> epoch_hist ⌝ ∗
   "%Heq_vers" ∷ ⌜ gs_vers = userState.numVers <$> user_info ⌝ ∗
   "%Heq_keyM" ∷ ⌜ key_map = lower_map (default ∅ (last gs_hist.*1)) ⌝ ∗
-  "%Heq_map_hist" ∷ ([∗ list] ep ↦ x ∈ (drop 1 epoch_hist),
+  "%Heq_map_hist" ∷ ([∗ list] ep ↦ x ∈ epoch_hist,
     ∃ prevM nextM,
     "%Hlook_prevM" ∷ ⌜ gs_hist.*1 !! (pred ep) = Some prevM ⌝ ∗
     "%Hlook_nextM" ∷ ⌜ gs_hist.*1 !! ep = Some nextM ⌝ ∗
@@ -292,22 +290,17 @@ Lemma wp_Server__Audit ptr serv (ep : w64) :
     ptr_upd upd upd_dec err, RET (#ptr_upd, #err);
     "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ wish) ∗
     "Herr" ∷ (wish -∗
-      ∃ gs_hist nextH,
+      ∃ gs_hist prevH nextH,
       "#Hupd" ∷ UpdateProof.own ptr_upd upd DfracDiscarded ∗
       "%Heq_upd_dec" ∷ ⌜ upd.(UpdateProof.Updates) =
         (λ x, MapValPre.encodesF $ MapValPre.mk x.1 x.2) <$> upd_dec ⌝ ∗
       "#Hlb_hist" ∷ mono_list_lb_own serv.(Server.γhist) gs_hist ∗
+      "%Hlook_prevH" ∷ ⌜ gs_hist !! (pred $ uint.nat ep) = Some prevH ⌝ ∗
       "%Hlook_nextH" ∷ ⌜ gs_hist !! (uint.nat ep) = Some nextH ⌝ ∗
       "#Hsig" ∷ is_sig serv.(Server.sig_pk)
         (PreSigDig.encodesF $ PreSigDig.mk ep nextH.2)
         upd.(UpdateProof.Sig) ∗
-      "Hok_upd" ∷ (if bool_decide (ep = W64 0)
-        then
-          "%HupdM" ∷ ⌜ upd_dec = ∅ ⌝
-        else
-          ∃ prevH,
-          "%Hlook_prevH" ∷ ⌜ gs_hist !! (pred $ uint.nat ep) = Some prevH ⌝ ∗
-          "%HupdM" ∷ ⌜ nextH.1 = upd_dec ∪ prevH.1 ⌝))
+      "%HupdM" ∷ ⌜ nextH.1 = upd_dec ∪ prevH.1 ⌝)
   }}}.
 Proof. Admitted.
 
