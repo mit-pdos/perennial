@@ -258,4 +258,11 @@ Proof.
     admit.
 Admitted.
 
+Lemma wp_store_ty l (v0 v: V) :
+  {{{ ▷l ↦ v0 }}}
+    type.store_ty_e #t #l #v
+  {{{ RET #(); l ↦ v }}}.
+Proof.
+Admitted.
+
 End goose_lang.

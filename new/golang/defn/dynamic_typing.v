@@ -80,7 +80,7 @@ Definition go_type_size_e_def: val :=
         (rec: "struct_size" "decls" :=
            list.Match "decls"
                       (λ: <>, #(W64 0))
-                      (λ: "hd" "decls", let: ("d", "t") := "hd" in
+                      (λ: "hd" "decls", let: ("f", "t") := "hd" in
                           "go_type_size" "t" + "struct_size" "decls")
         ) "decls").
 Program Definition go_type_size_e := sealed @go_type_size_e_def.
@@ -101,12 +101,35 @@ Definition load_ty_e_def: val :=
         (rec: "go_struct" "decls" "l" :=
            list.Match "decls"
                       (λ: <>, #())
-                      (λ: "hd" "decls", let: ("d", "t") := "hd" in
+                      (λ: "hd" "decls", let: ("f", "t") := "hd" in
                           ("go" "t" "l", "go_struct" "decls" ("l" +ₗ go_type_size_e "t")))
         ) "decls" "l")
       .
 Program Definition load_ty_e := sealed @load_ty_e_def.
 Definition load_ty_e_unseal : @load_ty_e = _ := seal_eq _.
+
+Definition store_ty_e_def: val :=
+  rec: "go" "t" "l" "v" :=
+    Match "t"
+      (λ: <>, "l" <- "v")
+      (λ: "n" "t",
+        let: "size" := go_type_size_e "t" in
+        (rec: "go_arr" "n" "l" "v" :=
+           let: "l_new" := "l" +ₗ "size" in
+           if: "n" = #(W64 0) then #()
+           else "go" "t" "l" (Fst "v");; "go_arr" ("n" - #(W64 1)) "l_new" (Snd "v")
+        ) "n" "l" "v")
+      (λ: "decls",
+        (rec: "go_struct" "decls" "l" "v" :=
+           list.Match "decls"
+                      (λ: <>, #())
+                      (λ: "hd" "decls", let: ("f", "t") := "hd" in
+                          "go" "t" "l" (Fst "v");;
+                          "go_struct" "decls" ("l" +ₗ go_type_size_e "t") (Snd "v"))
+        ) "decls" "l" "v")
+      .
+Program Definition store_ty_e := sealed @store_ty_e_def.
+Definition store_ty_e_unseal : @store_ty_e = _ := seal_eq _.
 
 End defn.
 End type.
