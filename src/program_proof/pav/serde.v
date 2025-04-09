@@ -211,7 +211,7 @@ End MapLabelPre.
 Module UpdateProof.
 Record t : Type :=
   mk {
-    Updates : gmap byte_string (list w8);
+    Updates : gmap (list w8) (list w8);
     Sig: list w8
   }.
 Section defs.
@@ -221,10 +221,9 @@ Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   "Hptr_updates" ∷ ptr ↦[UpdateProof :: "Updates"]{d} #updates_mref ∗
   "Hptr_sig" ∷ ptr ↦[UpdateProof :: "Sig"]{d} (slice_val sl_sig) ∗
   "HUpdatesM" ∷ own_map updates_mref d updatesM ∗
-  "HUpdatesMSl" ∷ ([∗ map] k ↦ sl; upd ∈ updatesM; obj.(Updates),
-                     own_slice_small sl byteT d upd) ∗
-  "Hsl_sig" ∷ own_slice_small sl_sig byteT d obj.(Sig)
-.
+  "HUpdatesMSl" ∷ ([∗ map] k ↦ sl;y ∈ updatesM;obj.(Updates),
+    own_slice_small sl byteT d y) ∗
+  "Hsl_sig" ∷ own_slice_small sl_sig byteT d obj.(Sig).
 
 End defs.
 End UpdateProof.

@@ -53,8 +53,8 @@ Record t :=
     sig_pk: list w8;
     vrf_pk: list w8;
     γepoch: gname;
-    γsig: gname;
-    γcli: gname;
+    γhist: gname;
+    γvers: gname;
   }.
 End Server.
 
@@ -63,11 +63,11 @@ Context `{!heapGS Σ, !pavG Σ}.
 
 (* serv_sigpred is more simple than adtr_sigpred bc more things
 are moved to inv_gs. *)
-Definition serv_sigpred (γsig : gname) : (list w8 → iProp Σ) :=
+Definition serv_sigpred (γhist : gname) : (list w8 → iProp Σ) :=
   λ preByt,
   (∃ pre gs_hist,
   "%Henc" ∷ ⌜ PreSigDig.encodes preByt pre ⌝ ∗
-  "#Hlb_hist" ∷ mono_list_lb_own γsig gs_hist ∗
+  "#Hlb_hist" ∷ mono_list_lb_own γhist gs_hist ∗
   "%Hlook_dig" ∷ ⌜ gs_hist.*2 !! uint.nat pre.(PreSigDig.Epoch) =
     Some pre.(PreSigDig.Dig) ⌝)%I.
 
@@ -94,8 +94,8 @@ and learn that their own key is fresh even in latest epoch. *)
 Definition inv_gs serv : iProp Σ :=
   ∃ gs_hist gs_vers,
   "Hgs_ep" ∷ mono_nat_auth_own serv.(Server.γepoch) (1/2) (length gs_hist) ∗
-  "Hgs_sig" ∷ mono_list_auth_own serv.(Server.γsig) (1/2) gs_hist ∗
-  "Hgs_cli" ∷ ghost_map_auth serv.(Server.γcli) (1/2) gs_vers ∗
+  "Hgs_hist" ∷ mono_list_auth_own serv.(Server.γhist) (1/2) gs_hist ∗
+  "Hgs_vers" ∷ ghost_map_auth serv.(Server.γvers) (1/2) gs_vers ∗
 
   "%Hmono_maps" ∷ ⌜ maps_mono gs_hist.*1 ⌝ ∗
   "%Hok_epochs" ∷ ⌜ epochs_ok gs_hist.*1 ⌝ ∗
@@ -113,8 +113,8 @@ Definition own_Server ptr serv q : iProp Σ :=
 
   (* ghost ownership. the other 1/2 is in the inv. *)
   "Hgs_ep" ∷ mono_nat_auth_own serv.(Server.γepoch) (q/2) (length gs_hist) ∗
-  "Hgs_sig" ∷ mono_list_auth_own serv.(Server.γsig) (q/2) gs_hist ∗
-  "Hgs_cli" ∷ ghost_map_auth serv.(Server.γcli) (q/2) gs_vers ∗
+  "Hgs_hist" ∷ mono_list_auth_own serv.(Server.γhist) (q/2) gs_hist ∗
+  "Hgs_vers" ∷ ghost_map_auth serv.(Server.γvers) (q/2) gs_vers ∗
 
   (* physical ownership. *)
   "HkeyM" ∷ own_Tree ptr_key_map key_map (DfracOwn q) ∗
@@ -146,6 +146,8 @@ Definition own_Server ptr serv q : iProp Σ :=
       commit ∗
     "%Hlook_map" ∷ ⌜ key_map !! label =
       Some (MapValPre.encodesF $ MapValPre.mk ep commit) ⌝) ∗
+  (* for audit on epoch 0. *)
+  "%Heq_hist0" ∷ ⌜ ∃ x, epoch_hist !! 0%nat = Some x ∧ x.(servEpochInfo.updates) = ∅ ⌝ ∗
 
   (* physical-ghost reln. *)
   "%Heq_dig_hist" ∷ ⌜ gs_hist.*2 = servEpochInfo.dig <$> epoch_hist ⌝ ∗
@@ -199,7 +201,7 @@ Definition wish_nonmemb vrf_pk uid ver sigdig nonmemb : iProp Σ :=
 Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
   {{{
     "#Hserv" ∷ is_Server ptr serv ∗
-    "Hvers" ∷ uid ↪[serv.(Server.γcli)] nVers ∗
+    "Hvers" ∷ uid ↪[serv.(Server.γvers)] nVers ∗
     "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
     "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) cli_ep
   }}}
@@ -207,7 +209,7 @@ Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
   {{{
     ptr_sigdig sigdig ptr_lat lat ptr_bound bound err,
     RET (#ptr_sigdig, #ptr_lat, #ptr_bound, #err);
-    "Hvers" ∷ uid ↪[serv.(Server.γcli)] (word.add nVers (W64 1)) ∗
+    "Hvers" ∷ uid ↪[serv.(Server.γvers)] (word.add nVers (W64 1)) ∗
     "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
     "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
     "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat sigdig.(SigDig.Epoch)) ∗
@@ -259,14 +261,14 @@ Proof. Admitted.
 Lemma wp_Server__SelfMon ptr serv uid nVers cli_ep :
   {{{
     "#Hserv" ∷ is_Server ptr serv ∗
-    "Hvers" ∷ uid ↪[serv.(Server.γcli)] nVers ∗
+    "Hvers" ∷ uid ↪[serv.(Server.γvers)] nVers ∗
     "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) cli_ep
   }}}
   Server__SelfMon #ptr #uid
   {{{
     ptr_sigdig sigdig ptr_bound bound,
     RET (#ptr_sigdig, #ptr_bound);
-    "Hvers" ∷ uid ↪[serv.(Server.γcli)] nVers ∗
+    "Hvers" ∷ uid ↪[serv.(Server.γvers)] nVers ∗
     "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat sigdig.(SigDig.Epoch)) ∗
     "%Hlt_ep" ∷ ⌜ Z.of_nat cli_ep ≤ uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
     "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
@@ -275,6 +277,37 @@ Lemma wp_Server__SelfMon ptr serv uid nVers cli_ep :
       sigdig.(SigDig.Sig) ∗
     "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
     "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk) uid nVers sigdig bound
+  }}}.
+Proof. Admitted.
+
+(* NOTE: hard to prove that client.Audit never errors,
+unless assume that Auditor up-to-date thru client's epoch. *)
+Lemma wp_Server__Audit ptr serv (ep : w64) :
+  let wish := (mono_nat_lb_own serv.(Server.γepoch) (uint.nat ep) : iProp Σ) in
+  {{{
+    "#Hserv" ∷ is_Server ptr serv
+  }}}
+  Server__Audit #ptr #ep
+  {{{
+    ptr_upd upd upd_dec err, RET (#ptr_upd, #err);
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ wish) ∗
+    "Herr" ∷ (wish -∗
+      ∃ gs_hist nextH,
+      "#Hupd" ∷ UpdateProof.own ptr_upd upd DfracDiscarded ∗
+      "%Heq_upd_dec" ∷ ⌜ upd.(UpdateProof.Updates) =
+        (λ x, MapValPre.encodesF $ MapValPre.mk x.1 x.2) <$> upd_dec ⌝ ∗
+      "#Hlb_hist" ∷ mono_list_lb_own serv.(Server.γhist) gs_hist ∗
+      "%Hlook_nextH" ∷ ⌜ gs_hist !! (uint.nat ep) = Some nextH ⌝ ∗
+      "#Hsig" ∷ is_sig serv.(Server.sig_pk)
+        (PreSigDig.encodesF $ PreSigDig.mk ep nextH.2)
+        upd.(UpdateProof.Sig) ∗
+      "Hok_upd" ∷ (if bool_decide (ep = W64 0)
+        then
+          "%HupdM" ∷ ⌜ upd_dec = ∅ ⌝
+        else
+          ∃ prevH,
+          "%Hlook_prevH" ∷ ⌜ gs_hist !! (pred $ uint.nat ep) = Some prevH ⌝ ∗
+          "%HupdM" ∷ ⌜ nextH.1 = upd_dec ∪ prevH.1 ⌝))
   }}}.
 Proof. Admitted.
 
