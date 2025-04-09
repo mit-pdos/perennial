@@ -133,20 +133,41 @@ Proof.
   generalize dependent (# v). clear dependent V.
   intros v Hty.
   rename l into l'.
-  iInduction Hty as [] "IH" forall (l' Φ) "HΦ";
-    rewrite /type.load_ty_e_def.
+  iInduction Hty as [] "IH" forall (l' Φ) "HΦ".
   all: try destruct i.
   all: rewrite ?[in flatten_struct _]to_val_unseal /= /= ?loc_add_0 ?right_id; wp_pures.
   all:
-    try solve [ rewrite !to_val_unseal /=;
-      iApply (wp_load with "[$]");
-    iIntros "!> H"; iApply "HΦ"; done
+    try solve [ wp_call; rewrite !to_val_unseal /=;
+                           iApply (wp_load with "[$]");
+                iIntros "!> H"; rewrite ?to_val_unseal /=; iApply "HΦ"; done
       ].
-  all: try (iApply (wp_load with "[$]"); done).
+
   {
-    rewrite !to_val_unseal /=;
-      iApply (wp_load with "[$]");
-      iIntros "!> H"; iApply "HΦ"; done.
+    wp_call.
+    replace n with (W64 (uint.nat n)) in * by word.
+    assert (Z.of_nat (uint.nat n) < 2^64) by word.
+    generalize dependent (uint.nat n); clear n; intros n Hty Hbound.
+    clear Hty.
+    iInduction n as [|n] "IHn" forall (l' a Φ).
+    - admit.
+    - rewrite (bool_decide_eq_false_2 (W64 (S n) = W64 0)); [ wp_pures | word ].
+      destruct a as [|t' a']; simpl in *; [ word | ].
+      iDestruct (big_sepL_app with "Hl") as "[Hl1 Hl2]".
+      wp_apply ("IH" with "[] [$Hl1]").
+      { naive_solver. }
+      iIntros "Hl1".
+      wp_pures.
+      replace (word.sub (W64 (S n)) (W64 1)) with (W64 n) by word.
+      wp_bind (If _ _ _).
+      rewrite Z.mul_1_l.
+      iApply "IHn".
+      iApply ("IH" $! _ _ (foldr PairV (#()) a') with "[] [] [Hl2]").
+      { iPureIntro. apply has_go_type_array.
+        - word.
+        - naive_solver. }
+      {
+        iPureIntro. rewrite app_length in Hlen.
+        apply has_go_type_len in H.
   }
    *)
 
@@ -154,10 +175,9 @@ Proof.
   rewrite typed_pointsto_unseal /typed_pointsto_def.
   pose proof (to_val_has_go_type v) as Hty.
   generalize dependent (# v). clear dependent V.
-
   generalize dependent l.
   induction t using go_type_ind;
-    iIntros (l v Hty Φ) "Hl HΦ";
+    iIntros (l v Hty Φ) ">Hl HΦ";
     try solve [
         wp_call;
         inv Hty;
@@ -176,10 +196,22 @@ Proof.
       rewrite to_val_unseal /=.
       iApply "HΦ". iFrame.
     + rewrite (bool_decide_eq_false_2 (W64 (S n) = W64 0)); [ wp_pures | word ].
+      assert (length (flatten_struct v) = (S n * go_type_size g)%nat) as Hlen.
+      {
+        apply has_go_type_len in Hty.
+        rewrite Hty.
+        rewrite go_type_size_unseal /=.
+        rewrite -go_type_size_unseal.
+        replace (uint.nat (W64 (S n))) with (S n) by word.
+        reflexivity.
+      }
       pose proof Hty as Hty'.
       inv Hty.
       destruct a as [|t' a']; simpl in *; [ word | ].
-      assert (has_go_type t' g) by naive_solver.
+      rewrite length_app in Hlen.
+      assert (has_go_type t' g) as Ht' by naive_solver.
+      pose proof Ht' as Hlen'. apply has_go_type_len in Hlen'.
+      rewrite Hlen' in Hlen.
       iDestruct (big_sepL_app with "Hl") as "[Hl1 Hl2]".
       wp_apply (IHg with "[$Hl1]").
       { auto. }
@@ -192,13 +224,16 @@ Proof.
       { iPureIntro. apply has_go_type_array.
         - word.
         - naive_solver. }
-      { apply has_go_type_len in H.
-        rewrite H.
+      { rewrite Hlen'.
+        (*
+        replace (uint.Z (W64 (go_type_size g))) with (Z.of_nat (go_type_size g)) by word.
+         *)
         iApply (big_sepL_impl with "Hl2").
         iIntros "!>" (???) "H".
         iExactEq "H".
         rewrite loc_add_assoc.
         repeat f_equal.
+        replace (uint.nat (W64 (S n))) with (S n) in * by word.
         apply has_go_type_len in Hty'.
         rewrite go_type_size_unseal /= length_app in Hty'.
         replace (uint.nat (W64 (S n))) with (S n) in Hty' by word.
@@ -209,7 +244,8 @@ Proof.
       wp_pures.
       iApply "HΦ".
       rewrite big_sepL_app.
-      iFrame.
+      rewrite Hlen'.
+      iFrame "Hl1".
       admit.
   - inv Hty.
     wp_call.
