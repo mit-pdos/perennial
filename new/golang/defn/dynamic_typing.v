@@ -87,7 +87,7 @@ Definition go_type_size_e_def: val :=
 Program Definition go_type_size_e := sealed @go_type_size_e_def.
 Definition go_type_size_e_unseal : @go_type_size_e = _ := seal_eq _.
 
-Definition load_ty_e_def: val :=
+Definition load_ty_def: val :=
   rec: "go" "t" "l" :=
     Match "t"
       (λ: <>, !"l")
@@ -106,10 +106,10 @@ Definition load_ty_e_def: val :=
                           ("go" "t" "l", "go_struct" "decls" ("l" +ₗ go_type_size_e "t")))
         ) "decls" "l")
       .
-Program Definition load_ty_e := sealed @load_ty_e_def.
-Definition load_ty_e_unseal : @load_ty_e = _ := seal_eq _.
+Program Definition load_ty := sealed @load_ty_def.
+Definition load_ty_unseal : @load_ty = _ := seal_eq _.
 
-Definition store_ty_e_def: val :=
+Definition store_ty_def: val :=
   rec: "go" "t" "l" "v" :=
     Match "t"
       (λ: <>, "l" <- "v")
@@ -129,8 +129,8 @@ Definition store_ty_e_def: val :=
                           "go_struct" "decls" ("l" +ₗ go_type_size_e "t") (Snd "v"))
         ) "decls" "l" "v")
       .
-Program Definition store_ty_e := sealed @store_ty_e_def.
-Definition store_ty_e_unseal : @store_ty_e = _ := seal_eq _.
+Program Definition store_ty := sealed @store_ty_def.
+Definition store_ty_unseal : @store_ty = _ := seal_eq _.
 
 End defn.
 End type.

@@ -132,12 +132,12 @@ Context `{!IntoValTyped V t}.
 
 Lemma wp_load_ty l (v: V) q :
   {{{ ▷ l ↦{q} v }}}
-    type.load_ty_e #t #l
+    type.load_ty #t #l
   {{{ RET #v; l ↦{q} v }}}.
 Proof.
   (*
   iIntros (Φ) ">Hl HΦ".
-  rewrite type.load_ty_e_unseal /=.
+  rewrite type.load_ty_unseal /=.
   rewrite typed_pointsto_unseal /typed_pointsto_def.
   pose proof (to_val_has_go_type v) as Hty.
   generalize dependent (# v). clear dependent V.
@@ -181,7 +181,7 @@ Proof.
   }
    *)
 
-  rewrite type.load_ty_e_unseal /=.
+  rewrite type.load_ty_unseal /=.
   rewrite typed_pointsto_unseal /typed_pointsto_def.
   pose proof (to_val_has_go_type v) as Hty.
   generalize dependent (# v). clear dependent V.
@@ -265,7 +265,7 @@ Admitted.
 
 Lemma wp_store_ty l (v0 v: V) :
   {{{ ▷l ↦ v0 }}}
-    type.store_ty_e #t #l #v
+    type.store_ty #t #l #v
   {{{ RET #(); l ↦ v }}}.
 Proof.
 Admitted.
