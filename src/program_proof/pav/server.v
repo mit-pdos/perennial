@@ -61,9 +61,15 @@ End Server.
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition serv_sigpred (γ : gname) : (list w8 → iProp Σ) :=
-  (* TODO: fill in. *)
-  λ data, True%I.
+(* serv_sigpred is more simple than adtr_sigpred bc more things
+are moved to inv_gs. *)
+Definition serv_sigpred (γsig : gname) : (list w8 → iProp Σ) :=
+  λ preByt,
+  (∃ pre gs_hist,
+  "%Henc" ∷ ⌜ PreSigDig.encodes preByt pre ⌝ ∗
+  "#Hlb_hist" ∷ mono_list_lb_own γsig gs_hist ∗
+  "%Hlook_dig" ∷ ⌜ gs_hist.*2 !! uint.nat pre.(PreSigDig.Epoch) =
+    Some pre.(PreSigDig.Dig) ⌝)%I.
 
 Definition is_WorkQ (ptr : loc) : iProp Σ. Admitted.
 
