@@ -111,6 +111,14 @@ Global Instance wp_func_call_SumAssumeNoOverflow :
   WpFuncCall std "SumAssumeNoOverflow" _ (is_pkg_defined std) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_MulNoOverflow :
+  WpFuncCall std "MulNoOverflow" _ (is_pkg_defined std) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_MulAssumeNoOverflow :
+  WpFuncCall std "MulAssumeNoOverflow" _ (is_pkg_defined std) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_newJoinHandle :
   WpFuncCall std "newJoinHandle" _ (is_pkg_defined std) :=
   ltac:(apply wp_func_call'; reflexivity).
