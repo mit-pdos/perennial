@@ -3,9 +3,8 @@ From Perennial.program_proof.pav Require Import classes cryptoffi serde.
 
 (* TODO: split out joint imports (if needed) from msv theory. *)
 From RecordUpdate Require Export RecordSet.
-From iris.base_logic.lib Require Export mono_nat.
+From iris.base_logic.lib Require Export mono_nat ghost_map.
 From iris.unstable.base_logic Require Export mono_list.
-From Perennial.base_logic.lib Require Export ghost_map.
 From Perennial.Helpers Require Export Integers.
 
 (* TODO: for same reason not using alias's in go code,
@@ -34,7 +33,7 @@ Class pavG Σ :=
     #[global] pavG_serv_ep :: mono_natG Σ;
     #[global] pavG_serv_digs ::
       mono_listG ((gmap (list w8) (w64 * list w8)) * list w8) Σ;
-    #[global] pavG_serv_map :: ghost_mapG Σ w64 Z;
+    #[global] pavG_serv_map :: ghost_mapG Σ w64 w64;
     #[global] pavG_adtr ::
       mono_listG ((gmap opaque_label_ty (epoch_ty * commit_ty)) * dig_ty) Σ;
     #[global] pavG_cli :: mono_listG (option dig_ty) Σ;
