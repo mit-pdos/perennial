@@ -38,6 +38,19 @@ Proof.
   move: H; word.
 Qed.
 
+Lemma wp_sum_assume_no_overflow (x y: w64) Φ :
+  (⌜uint.Z x + uint.Z y < 2^64⌝ -∗ Φ #(word.add x y)) -∗
+  WP sum_assume_no_overflow #x #y {{ Φ }}.
+Proof.
+  iIntros "HΦ".
+  wp_call.
+  wp_apply wp_assume_sum_no_overflow.
+  iIntros (H).
+  wp_pures.
+  iApply "HΦ".
+  auto.
+Qed.
+
 Lemma wp_mul_overflows (x y: w64) Φ :
   (Φ #(bool_decide (2^64 ≤ uint.Z x * uint.Z y))) -∗
   WP mul_overflows #x #y {{ Φ }}.
