@@ -111,10 +111,10 @@ Definition own_Server ptr serv q : iProp Σ :=
     sl_epoch_hist ptr2_epoch_hist epoch_hist
     gs_hist gs_vers,
 
-  (* ghost ownership. the other 1/2 is in the invariant. *)
-  "Hgs_ep" ∷ mono_nat_auth_own serv.(Server.γepoch) (1/2) (length gs_hist) ∗
-  "Hgs_sig" ∷ mono_list_auth_own serv.(Server.γsig) (1/2) gs_hist ∗
-  "Hgs_cli" ∷ ghost_map_auth serv.(Server.γcli) (1/2) gs_vers ∗
+  (* ghost ownership. the other 1/2 is in the inv. *)
+  "Hgs_ep" ∷ mono_nat_auth_own serv.(Server.γepoch) (q/2) (length gs_hist) ∗
+  "Hgs_sig" ∷ mono_list_auth_own serv.(Server.γsig) (q/2) gs_hist ∗
+  "Hgs_cli" ∷ ghost_map_auth serv.(Server.γcli) (q/2) gs_vers ∗
 
   (* physical ownership. *)
   "HkeyM" ∷ own_Tree ptr_key_map key_map (DfracOwn q) ∗
@@ -155,11 +155,12 @@ Definition own_Server ptr serv q : iProp Σ :=
     ∃ prevM nextM,
     "%Hlook_prevM" ∷ ⌜ gs_hist.*1 !! (pred ep) = Some prevM ⌝ ∗
     "%Hlook_nextM" ∷ ⌜ gs_hist.*1 !! ep = Some nextM ⌝ ∗
-    "%Hupd" ∷ ⌜ nextM = x.(servEpochInfo.updates) ∪ prevM ⌝).
+    "%HupdM" ∷ ⌜ nextM = x.(servEpochInfo.updates) ∪ prevM ⌝).
 
 Definition is_Server ptr serv : iProp Σ :=
   ∃ mu ptr_sig_sk sig_pk γ ptr_vrf_sk ptr_workq,
   "#Hinv_gs" ∷ inv nroot (inv_gs serv) ∗
+  (* rwmutex has 1/2 physical ownership. other 1/2 owned by worker thread. *)
   "#HmuR" ∷ is_rwlock nroot #mu (λ q, own_Server ptr serv (q / 2)) ∗
   "#Hptr_mu" ∷ ptr ↦[Server :: "mu"]□ #mu ∗
   "#Hsig_sk" ∷ is_sig_sk ptr_sig_sk sig_pk (serv_sigpred γ) ∗
@@ -202,8 +203,6 @@ Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
     "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = memb.(Memb.EpochAdded) ⌝ ∗
     "%Heq_pk" ∷ ⌜ pk = memb.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
     "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
-    (* currently, sigpred can just be:
-    (global digs) !! sigdig.Epoch = sigdig.Dig *)
     "#Hsig" ∷ is_sig serv.(Server.sig_pk)
       (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
       sigdig.(SigDig.Sig) ∗
