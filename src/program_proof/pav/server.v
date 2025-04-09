@@ -170,6 +170,14 @@ Definition is_Server ptr serv : iProp Σ :=
   "#Hworkq" ∷ is_WorkQ ptr_workq ∗
   "#Hptr_workq" ∷ ptr ↦[Server :: "workQ"]□ #ptr_workq.
 
+Definition wish_memb_hide vrf_pk uid ver sigdig memb_hide : iProp Σ :=
+  ∃ label,
+  let label_pre := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) in
+  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk label_pre memb_hide.(MembHide.LabelProof) ∗
+  "#Hvrf_out" ∷ is_vrf_out vrf_pk label_pre label ∗
+  "#Hmerk" ∷ Verify_wish true label memb_hide.(MembHide.MapVal)
+    memb_hide.(MembHide.MerkleProof) sigdig.(SigDig.Dig).
+
 Definition wish_memb vrf_pk uid ver sigdig memb : iProp Σ :=
   ∃ label commit,
   let label_pre := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) in
@@ -191,29 +199,82 @@ Definition wish_nonmemb vrf_pk uid ver sigdig nonmemb : iProp Σ :=
 Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
   {{{
     "#Hserv" ∷ is_Server ptr serv ∗
-    "Hpks" ∷ uid ↪[serv.(Server.γcli)] nVers ∗
+    "Hvers" ∷ uid ↪[serv.(Server.γcli)] nVers ∗
     "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
     "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) cli_ep
   }}}
   Server__Put #ptr #uid (slice_val sl_pk)
   {{{
-    ptr_sigdig sigdig ptr_memb memb ptr_nonmemb nonmemb err,
-    RET (#ptr_sigdig, #ptr_memb, #ptr_nonmemb, #err);
-    "Hpks" ∷ uid ↪[serv.(Server.γcli)] (word.add nVers (W64 1)) ∗
-    "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = memb.(Memb.EpochAdded) ⌝ ∗
-    "%Heq_pk" ∷ ⌜ pk = memb.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
+    ptr_sigdig sigdig ptr_lat lat ptr_bound bound err,
+    RET (#ptr_sigdig, #ptr_lat, #ptr_bound, #err);
+    "Hvers" ∷ uid ↪[serv.(Server.γcli)] (word.add nVers (W64 1)) ∗
+    "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
+    "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
+    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat sigdig.(SigDig.Epoch)) ∗
+    "%Hlt_ep" ∷ ⌜ Z.of_nat cli_ep < uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
     "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
     "#Hsig" ∷ is_sig serv.(Server.sig_pk)
       (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
       sigdig.(SigDig.Sig) ∗
+    "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
+    "#Hwish_lat" ∷ wish_memb serv.(Server.vrf_pk) uid nVers sigdig lat ∗
+    "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
+    "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk)
+      uid (word.add nVers (W64 1)) sigdig bound ∗
+    "->" ∷ ⌜ err = false ⌝
+  }}}.
+Proof. Admitted.
+
+Lemma wp_Server__Get ptr serv uid cli_ep :
+  {{{
+    "#Hserv" ∷ is_Server ptr serv ∗
+    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) cli_ep
+  }}}
+  Server__Get #ptr #uid
+  {{{
+    ptr_sigdig sigdig sl_hist ptr2_hist hist
+    is_reg ptr_lat lat ptr_bound bound (nVers : w64),
+    RET (#ptr_sigdig, slice_val sl_hist, #ptr_lat, #ptr_bound);
     "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat sigdig.(SigDig.Epoch)) ∗
-    "%Hlt_ep" ∷ ⌜ Z.of_nat cli_ep < uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
-    "Hmemb" ∷ Memb.own ptr_memb memb (DfracOwn 1) ∗
-    "#Hwish_memb" ∷ wish_memb serv.(Server.vrf_pk) uid nVers sigdig memb ∗
-    "Hnonmemb" ∷ NonMemb.own ptr_nonmemb nonmemb (DfracOwn 1) ∗
-    "#Hwish_nonmemb" ∷ wish_nonmemb serv.(Server.vrf_pk)
-      uid (word.add nVers (W64 1)) sigdig nonmemb ∗
-    "%Herr" ∷ ⌜ err = false ⌝
+    "%Hlt_ep" ∷ ⌜ Z.of_nat cli_ep ≤ uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
+    "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
+    "#Hsig" ∷ is_sig serv.(Server.sig_pk)
+      (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
+      sigdig.(SigDig.Sig) ∗
+    "%Hlen_hist" ∷ ⌜ length hist = pred (uint.nat nVers) ⌝ ∗
+    "Hhist" ∷ ([∗ list] l;x ∈ ptr2_hist;hist,
+      MembHide.own l x (DfracOwn 1)) ∗
+    "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) ptr2_hist ∗
+    "#Hwish_hist" ∷ ([∗ list] ver ↦ x ∈ hist,
+      wish_memb_hide serv.(Server.vrf_pk) uid (W64 ver) sigdig x) ∗
+    "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
+    "%Heq_is_reg" ∷ ⌜ is_reg = negb $ bool_decide (nVers = (W64 0)) ⌝ ∗
+    "#Hwish_lat" ∷ (if negb is_reg then True else
+      wish_memb serv.(Server.vrf_pk) uid (word.sub nVers (W64 1)) sigdig lat) ∗
+    "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
+    "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk) uid nVers sigdig bound
+  }}}.
+Proof. Admitted.
+
+Lemma wp_Server__SelfMon ptr serv uid nVers cli_ep :
+  {{{
+    "#Hserv" ∷ is_Server ptr serv ∗
+    "Hvers" ∷ uid ↪[serv.(Server.γcli)] nVers ∗
+    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) cli_ep
+  }}}
+  Server__SelfMon #ptr #uid
+  {{{
+    ptr_sigdig sigdig ptr_bound bound,
+    RET (#ptr_sigdig, #ptr_bound);
+    "Hvers" ∷ uid ↪[serv.(Server.γcli)] nVers ∗
+    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat sigdig.(SigDig.Epoch)) ∗
+    "%Hlt_ep" ∷ ⌜ Z.of_nat cli_ep ≤ uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
+    "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
+    "#Hsig" ∷ is_sig serv.(Server.sig_pk)
+      (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
+      sigdig.(SigDig.Sig) ∗
+    "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
+    "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk) uid nVers sigdig bound
   }}}.
 Proof. Admitted.
 
