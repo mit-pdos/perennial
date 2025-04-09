@@ -1,4 +1,4 @@
-From Stdlib Require Import ZArith.
+From Coq Require Import ZArith.
 From stdpp Require Import base numbers.
 From Perennial.Helpers.Word Require Import Integers Automation.
 
