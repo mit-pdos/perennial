@@ -3,7 +3,7 @@ From Coq Require Import Program.Equality.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Export dynamic_typing.
-From New.golang.theory Require Import typing list mem.
+From New.golang.theory Require Import typing assume list mem.
 From New.golang.theory Require Import proofmode.
 
 Set Default Proof Using "Type".
@@ -77,44 +77,54 @@ Proof.
     congruence.
 Qed.
 
-Lemma wp_type_size' (t: go_type) stk E :
+Lemma wp_type_size (t: go_type) stk E :
   {{{ True }}}
     type.go_type_size_e #t @ stk; E
-  {{{ RET (#(W64 (Z.of_nat (go_type_size t)))); £1 }}}.
+  {{{ RET (#(W64 (Z.of_nat (go_type_size t)))); £1 ∗ ⌜Z.of_nat (go_type_size t) < 2^64⌝ }}}.
 Proof.
   rewrite type.go_type_size_e_unseal.
   rewrite go_type_size_unseal.
 
   induction t using go_type_ind; iIntros (Φ) "_ HΦ"; wp_call_lc "Hlc";
-    try iApply ("HΦ" with "Hlc").
+    try solve [ iApply ("HΦ" with "[$Hlc]"); simpl; word ].
 
-  - wp_apply IHt. iIntros "_". wp_pures.
-    iSpecialize ("HΦ" with "Hlc"). iExactEq "HΦ".
+  - wp_apply IHt. iIntros "_".
+    wp_apply wp_assume_mul_no_overflow. iIntros (Hoverflow).
+    wp_pures.
+    wp_apply IHt. iIntros "[_ %]".
+    wp_pures.
+    iSpecialize ("HΦ" with "[$Hlc]").
+    { iPureIntro. move: Hoverflow. simpl. word. }
+    iExactEq "HΦ".
     repeat f_equal.
     simpl; word.
-  - iSpecialize ("HΦ" with "Hlc").
-    iInduction decls as [| [d t] decls ] forall (Φ); wp_pures.
-    + auto.
+  - iInduction decls as [| [d t] decls ] forall (Φ); wp_pures.
+    + iApply "HΦ"; iFrame. auto.
     + rewrite [in #(d :: t)%struct]to_val_unseal /=.
       wp_pures.
+      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
+      iApply ("IHdecls" with "[] [HΦ] [$Hlc]").
+      { iPureIntro. naive_solver. }
+      iIntros "[Hlc %]".
       wp_apply Hfields.
       { naive_solver. }
-      iIntros "_". wp_pures.
-      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
-      iApply ("IHdecls" with "[] [HΦ]").
-      { iPureIntro. naive_solver. }
-      wp_pures.
+      iIntros "[_ %]".
+      wp_apply wp_sum_assume_no_overflow.
+      iIntros "%". wp_pures.
+      iDestruct ("HΦ" with "[$Hlc]") as "HΦ".
+      { iPureIntro. word. }
       iExactEq "HΦ".
       repeat f_equal. word.
 Qed.
 
-Global Instance wp_type_size (t: go_type) :
+(* note: not an instance to take advantage of overflow assumption *)
+Lemma wp_type_size_pure_wp (t: go_type) :
   PureWp True
          (type.go_type_size_e #t)
          (#(W64 (Z.of_nat (go_type_size t)))).
 Proof.
   intros ?????; iIntros "Hwp".
-  wp_apply wp_type_size'. iIntros "?".
+  wp_apply wp_type_size. iIntros "[? %]".
   iApply ("Hwp" with "[$]").
 Qed.
 
@@ -189,6 +199,7 @@ Proof.
     replace n with (W64 (uint.nat n)) in * by word.
     assert (Z.of_nat (uint.nat n) < 2^64) by word.
     generalize dependent (uint.nat n); clear n; intros n Hty Hbound.
+    wp_apply wp_type_size. iIntros "[_ %Hsz]". wp_pures.
     iInduction n as [|n] "IH" forall (l v Hty Φ).
     + rewrite bool_decide_eq_true_2; [ wp_pures | word ].
       inv Hty.
@@ -225,28 +236,22 @@ Proof.
         - word.
         - naive_solver. }
       { rewrite Hlen'.
-        (*
-        replace (uint.Z (W64 (go_type_size g))) with (Z.of_nat (go_type_size g)) by word.
-         *)
         iApply (big_sepL_impl with "Hl2").
         iIntros "!>" (???) "H".
         iExactEq "H".
         rewrite loc_add_assoc.
-        repeat f_equal.
-        replace (uint.nat (W64 (S n))) with (S n) in * by word.
-        apply has_go_type_len in Hty'.
-        rewrite go_type_size_unseal /= length_app in Hty'.
-        replace (uint.nat (W64 (S n))) with (S n) in Hty' by word.
-        rewrite Nat.mul_succ_l in Hty'.
-        assert (length a' = n) by word; subst.
-        admit. }
+        repeat (f_equal; try word). }
       iIntros "Hl2".
       wp_pures.
       iApply "HΦ".
       rewrite big_sepL_app.
       rewrite Hlen'.
       iFrame "Hl1".
-      admit.
+      iApply (big_sepL_impl with "Hl2").
+      iIntros "!>" (???) "H".
+      iExactEq "H".
+      rewrite loc_add_assoc.
+      repeat (f_equal; try word).
   - inv Hty.
     wp_call.
     destruct i;

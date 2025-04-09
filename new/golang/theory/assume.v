@@ -9,9 +9,9 @@ Section wps.
 
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Lemma wp_assume (b: bool) Φ :
+Lemma wp_assume (b: bool) stk E Φ :
   (⌜b = true⌝ -∗ Φ #()) -∗
-  WP assume #b {{ Φ }}.
+  WP assume #b @ stk; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
@@ -23,9 +23,9 @@ Proof.
     iApply "IH".
 Qed.
 
-Lemma wp_assume_sum_no_overflow (x y: w64) Φ :
+Lemma wp_assume_sum_no_overflow (x y: w64) stk E Φ :
   (⌜uint.Z x + uint.Z y < 2^64⌝ -∗ Φ #()) -∗
-  WP assume_sum_no_overflow #x #y {{ Φ }}.
+  WP assume_sum_no_overflow #x #y @ stk; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
@@ -38,9 +38,9 @@ Proof.
   move: H; word.
 Qed.
 
-Lemma wp_sum_assume_no_overflow (x y: w64) Φ :
+Lemma wp_sum_assume_no_overflow (x y: w64) stk E Φ :
   (⌜uint.Z x + uint.Z y < 2^64⌝ -∗ Φ #(word.add x y)) -∗
-  WP sum_assume_no_overflow #x #y {{ Φ }}.
+  WP sum_assume_no_overflow #x #y @ stk; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
@@ -82,9 +82,9 @@ Proof.
     word.
 Qed.
 
-Lemma wp_mul_overflows (x y: w64) Φ :
+Lemma wp_mul_overflows (x y: w64) stk E Φ :
   (Φ #(bool_decide (2^64 ≤ uint.Z x * uint.Z y))) -∗
-  WP mul_overflows #x #y {{ Φ }}.
+  WP mul_overflows #x #y @ stk; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
@@ -113,9 +113,9 @@ Proof.
   word.
 Qed.
 
-Lemma wp_assume_mul_no_overflow (x y: w64) Φ :
+Lemma wp_assume_mul_no_overflow (x y: w64) stk E Φ :
   (⌜uint.Z x * uint.Z y < 2^64⌝ → Φ #()) -∗
-  WP assume_mul_no_overflow #x #y {{ Φ }}.
+  WP assume_mul_no_overflow #x #y @ stk; E {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.

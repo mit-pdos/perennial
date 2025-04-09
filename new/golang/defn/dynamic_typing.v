@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import lang notation.
+From New.golang.defn Require Import assume list.
 From New.golang.defn Require Export typing.
-From New.golang.defn Require Import list.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
@@ -75,13 +75,14 @@ Definition go_type_size_e_def: val :=
   rec: "go_type_size" "t" :=
     Match "t"
       (λ: <>, #(W64 1))
-      (λ: "n" "t", "n" * "go_type_size" "t")
+      (λ: "n" "t", assume_mul_no_overflow "n" ("go_type_size" "t");;
+                   "n" * "go_type_size" "t")
       (λ: "decls",
         (rec: "struct_size" "decls" :=
            list.Match "decls"
                       (λ: <>, #(W64 0))
                       (λ: "hd" "decls", let: ("f", "t") := "hd" in
-                          "go_type_size" "t" + "struct_size" "decls")
+                          sum_assume_no_overflow ("go_type_size" "t") ("struct_size" "decls"))
         ) "decls").
 Program Definition go_type_size_e := sealed @go_type_size_e_def.
 Definition go_type_size_e_unseal : @go_type_size_e = _ := seal_eq _.
