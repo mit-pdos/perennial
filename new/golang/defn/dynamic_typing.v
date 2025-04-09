@@ -91,9 +91,11 @@ Definition load_ty_e_def: val :=
     Match "t"
       (λ: <>, !"l")
       (λ: "n" "t",
+        let: "size" := go_type_size_e "t" in
         (rec: "go_arr" "n" "l" :=
+           let: "l_new" := "l" +ₗ "size" in
            if: "n" = #(W64 0) then #()
-           else ("go" "t" "l", "go_arr" ("n" - #(W64 1)) ("l" +ₗ go_type_size_e "t"))
+           else ("go" "t" "l", "go_arr" ("n" - #(W64 1)) "l_new")
         ) "n" "l")
       (λ: "decls",
         (rec: "go_struct" "decls" "l" :=

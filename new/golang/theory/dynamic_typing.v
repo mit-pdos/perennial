@@ -125,44 +125,100 @@ Lemma wp_load_ty l (v: V) q :
     type.load_ty_e #t #l
   {{{ RET #v; l ↦{q} v }}}.
 Proof.
+  (*
+  iIntros (Φ) ">Hl HΦ".
   rewrite type.load_ty_e_unseal /=.
   rewrite typed_pointsto_unseal /typed_pointsto_def.
   pose proof (to_val_has_go_type v) as Hty.
   generalize dependent (# v). clear dependent V.
+  intros v Hty.
+  rename l into l'.
+  iInduction Hty as [] "IH" forall (l' Φ) "HΦ";
+    rewrite /type.load_ty_e_def.
+  all: try destruct i.
+  all: rewrite ?[in flatten_struct _]to_val_unseal /= /= ?loc_add_0 ?right_id; wp_pures.
+  all:
+    try solve [ rewrite !to_val_unseal /=;
+      iApply (wp_load with "[$]");
+    iIntros "!> H"; iApply "HΦ"; done
+      ].
+  all: try (iApply (wp_load with "[$]"); done).
+  {
+    rewrite !to_val_unseal /=;
+      iApply (wp_load with "[$]");
+      iIntros "!> H"; iApply "HΦ"; done.
+  }
+   *)
+
+  rewrite type.load_ty_e_unseal /=.
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  pose proof (to_val_has_go_type v) as Hty.
+  generalize dependent (# v). clear dependent V.
+
+  generalize dependent l.
   induction t using go_type_ind;
-    iIntros (v Hty Φ) "Hl HΦ";
-    wp_call;
+    iIntros (l v Hty Φ) "Hl HΦ";
     try solve [
+        wp_call;
         inv Hty;
         rewrite to_val_unseal /= ?loc_add_0 ?right_id;
         iApply (wp_load with "[$Hl]");
         iFrame
       ].
-  - destruct (decide (uint.Z n = 0)).
+  - wp_call.
+    replace n with (W64 (uint.nat n)) in * by word.
+    assert (Z.of_nat (uint.nat n) < 2^64) by word.
+    generalize dependent (uint.nat n); clear n; intros n Hty Hbound.
+    iInduction n as [|n] "IH" forall (l v Hty Φ).
     + rewrite bool_decide_eq_true_2; [ wp_pures | word ].
-      assert (n = W64 0) by word; subst.
-      inv Hty; simpl.
+      inv Hty.
       assert (a = []) by (destruct a; naive_solver); subst; simpl.
       rewrite to_val_unseal /=.
       iApply "HΦ". iFrame.
-    + (* TODO: some sort of induction over uint.nat n needs to be started *)
-      rewrite bool_decide_eq_false_2; [ wp_pures | word ].
+    + rewrite (bool_decide_eq_false_2 (W64 (S n) = W64 0)); [ wp_pures | word ].
+      pose proof Hty as Hty'.
       inv Hty.
       destruct a as [|t' a']; simpl in *; [ word | ].
       assert (has_go_type t' g) by naive_solver.
-      rewrite big_sepL_app.
-      iDestruct "Hl" as "[Hl1 Hl2]".
+      iDestruct (big_sepL_app with "Hl") as "[Hl1 Hl2]".
       wp_apply (IHg with "[$Hl1]").
       { auto. }
       iIntros "Hl1".
       wp_pures.
+      replace (word.sub (W64 (S n)) (W64 1)) with (W64 n) by word.
+      wp_bind (If _ _ _).
+      rewrite Z.mul_1_l.
+      iApply ("IH" $! _ _ (foldr PairV (#()) a') with "[] [Hl2]").
+      { iPureIntro. apply has_go_type_array.
+        - word.
+        - naive_solver. }
+      { apply has_go_type_len in H.
+        rewrite H.
+        iApply (big_sepL_impl with "Hl2").
+        iIntros "!>" (???) "H".
+        iExactEq "H".
+        rewrite loc_add_assoc.
+        repeat f_equal.
+        apply has_go_type_len in Hty'.
+        rewrite go_type_size_unseal /= length_app in Hty'.
+        replace (uint.nat (W64 (S n))) with (S n) in Hty' by word.
+        rewrite Nat.mul_succ_l in Hty'.
+        assert (length a' = n) by word; subst.
+        admit. }
+      iIntros "Hl2".
+      wp_pures.
+      iApply "HΦ".
+      rewrite big_sepL_app.
+      iFrame.
       admit.
   - inv Hty.
+    wp_call.
     destruct i;
       rewrite to_val_unseal /= ?loc_add_0 ?right_id;
       iApply (wp_load with "[$Hl]");
       iFrame.
   - (* structT *)
+    wp_call.
     admit.
 Admitted.
 
