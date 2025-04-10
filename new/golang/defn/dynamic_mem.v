@@ -60,3 +60,8 @@ Program Definition store_ty := sealed @store_ty_def.
 Definition store_ty_unseal : @store_ty = _ := seal_eq _.
 
 End defn.
+
+Reserved Notation "![ t ] e" (at level 9, right associativity, format "![ t ]  e").
+Notation "![ t ] e" := (load_ty t%E e%E) : expr_scope.
+Reserved Notation "e1 <-[ t ] e2" (at level 80, format "e1  <-[ t ]  e2").
+Notation "e1 <-[ t ] e2" := (store_ty t%E e1%E e2%E) : expr_scope.
