@@ -150,6 +150,9 @@ Definition own_Server ptr serv q : iProp Σ :=
       commit ∗
     "%Hlook_map" ∷ ⌜ keyMap !! label =
       Some (MapValPre.encodesF $ MapValPre.mk ep commit) ⌝) ∗
+  (* TODO: something here needs to tie the versions in userInfo_phys to keyMap.
+  this will allow the getHist, etc. helper fns to prove that they got
+  memb / non-memb proofs. *)
 
   (* ghost ownership. the other 1/2 is in the inv. *)
   "Hgs_ep" ∷ mono_nat_auth_own serv.(Server.γepoch) (q/2) (length gs_hist) ∗
