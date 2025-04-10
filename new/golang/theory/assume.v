@@ -51,7 +51,7 @@ Proof.
   auto.
 Qed.
 
-Lemma wp_mul_overflows (x y: w64) Φ :
+Lemma wp_mul_overflows (x y: w64) stk E Φ :
   (Φ #(bool_decide (2^64 ≤ uint.Z x * uint.Z y))) -∗
   WP mul_overflows #x #y @ stk; E {{ Φ }}.
 Proof.
@@ -78,7 +78,7 @@ Proof.
   apply bool_decide_ext.
   rewrite word.unsigned_divu_nowrap; [ | word ].
   change (uint.Z (W64 (2^64-1))) with (2^64-1).
-  pose proof (mul_overflow_check_correct x y n n0).
+  pose proof (mul_overflow_check_correct x y ltac:(word)).
   word.
 Qed.
 
