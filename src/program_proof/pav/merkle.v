@@ -268,6 +268,19 @@ Definition is_merkle_proof (label: list w8)
   "#Hproof" ∷ tree_sibs_proof t label (W64 0) proof ∗
   "%Hpath" ∷ ⌜ tree_path t label (W64 0) found ⌝.
 
+Definition wish_merkle_Verify (in_tree : bool) label val proof dig : iProp Σ :=
+  ∃ found proof_obj proof' tail,
+  "%Henc" ∷ ⌜ MerkleProof.encodes proof_obj proof' ⌝ ∗
+  "%Heq_tail" ∷ ⌜ proof = proof' ++ tail ⌝ ∗
+  "%Heq_found" ∷
+    ⌜if in_tree
+    then found = Some (label, val)
+    else if proof_obj.(MerkleProof.FoundOtherLeaf)
+      then found = Some (proof_obj.(MerkleProof.LeafLabel), proof_obj.(MerkleProof.LeafVal)) ∧
+        label ≠ proof_obj.(MerkleProof.LeafLabel)
+      else found = None ⌝ ∗
+  "#His_proof" ∷ is_merkle_proof label found proof_obj.(MerkleProof.Siblings) dig.
+
 (* Derived facts. *)
 
 Lemma is_tree_hash_len t h:
@@ -1351,20 +1364,6 @@ Proof.
   by rewrite /own_slice_small list_untype_app list_untype_drop.
 Qed.
 
-(* TODO: rename or scope the name to make this more unique. *)
-Definition Verify_wish (in_tree : bool) label val proof dig : iProp Σ :=
-  ∃ found proof_obj proof' tail,
-  "%Henc" ∷ ⌜ MerkleProof.encodes proof_obj proof' ⌝ ∗
-  "%Heq_tail" ∷ ⌜ proof = proof' ++ tail ⌝ ∗
-  "%Heq_found" ∷
-    ⌜if in_tree
-    then found = Some (label, val)
-    else if proof_obj.(MerkleProof.FoundOtherLeaf)
-      then found = Some (proof_obj.(MerkleProof.LeafLabel), proof_obj.(MerkleProof.LeafVal)) ∧
-        label ≠ proof_obj.(MerkleProof.LeafLabel)
-      else found = None ⌝ ∗
-  "#His_proof" ∷ is_merkle_proof label found proof_obj.(MerkleProof.Siblings) dig.
-
 Lemma wp_Tree__prove sl_label d0 (label : list w8) ptr_t elems d1 (get_proof : bool) :
   {{{
     "Hsl_label" ∷ own_slice_small sl_label byteT d0 label ∗
@@ -1383,7 +1382,7 @@ Lemma wp_Tree__prove sl_label d0 (label : list w8) ptr_t elems d1 (get_proof : b
       (if in_tree
       then is_merkle_memb label val dig
       else is_merkle_nonmemb label dig) ∗
-    "#Hwish" ∷ (if negb get_proof then True else Verify_wish in_tree label val proof dig)
+    "#Hwish" ∷ (if negb get_proof then True else wish_merkle_Verify in_tree label val proof dig)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -1446,7 +1445,7 @@ Proof.
       iFrame "#". iPureIntro. split; [|by list_simplifier].
       rewrite /MerkleProof.encodes. simpl.
       apply (f_equal length) in Henc_proof.
-      rewrite !u64_le_eq_seal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
+      rewrite -!u64_le_unseal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
       repeat split; [word|].
       by list_simplifier.
 
@@ -1491,7 +1490,7 @@ Proof.
       iFrame "#". iPureIntro. split; [|by list_simplifier].
       rewrite /MerkleProof.encodes. simpl.
       apply (f_equal length) in Henc_proof.
-      rewrite !u64_le_eq_seal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
+      rewrite -!u64_le_unseal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
       repeat split; [word..|].
       apply (f_equal (λ x : nat, W64 x)) in Hlen_label, Hlen_val.
       rewrite !w64_to_nat_id in Hlen_label Hlen_val.
@@ -1527,7 +1526,7 @@ Proof.
     iFrame "#". iPureIntro. split; [|by list_simplifier].
     rewrite /MerkleProof.encodes. simpl.
     apply (f_equal length) in Henc_proof.
-    rewrite !u64_le_eq_seal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
+    rewrite -!u64_le_unseal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
     repeat split; [word|].
     by list_simplifier. }
 
@@ -1583,7 +1582,7 @@ Lemma wp_Tree__Prove sl_label d0 (label : list w8) ptr_t elems d1 :
 
     "#His_dig" ∷ is_merkle_map elems dig ∗
     "%Hlook_elems" ∷ ⌜ elems !! label = (if in_tree then Some val else None) ⌝ ∗
-    "#Hwish" ∷ Verify_wish in_tree label val proof dig
+    "#Hwish" ∷ wish_merkle_Verify in_tree label val proof dig
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -2180,7 +2179,7 @@ Lemma wp_Verify sl_label sl_val sl_proof sl_dig (in_tree : bool)
     "Hsl_val" ∷ own_slice_small sl_val byteT d1 val ∗
     "Hsl_dig" ∷ own_slice_small sl_dig byteT d3 dig ∗
     "Hgenie" ∷
-      (⌜ err = false ⌝ ∗-∗ Verify_wish in_tree label val proof dig)
+      (⌜ err = false ⌝ ∗-∗ wish_merkle_Verify in_tree label val proof dig)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.

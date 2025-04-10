@@ -284,7 +284,7 @@ Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   "Hpk_open" ∷ CommitOpen.own ptr_pk_open obj.(PkOpen) d ∗
   "Hptr_pk_open" ∷ ptr ↦[Memb :: "PkOpen"]{d} #ptr_pk_open ∗
   "Hsl_merkP" ∷ own_slice_small sl_merk_proof byteT d obj.(MerkleProof) ∗
-  "Hptr_merkP" ∷ ptr ↦[Memb :: "MerkProof"]{d} (slice_val sl_merk_proof).
+  "Hptr_merkP" ∷ ptr ↦[Memb :: "MerkleProof"]{d} (slice_val sl_merk_proof).
 End defs.
 End Memb.
 
@@ -304,7 +304,7 @@ Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   "Hsl_map_val" ∷ own_slice_small sl_map_val byteT d obj.(MapVal) ∗
   "Hptr_map_val" ∷ ptr ↦[MembHide :: "MapVal"]{d} (slice_val sl_map_val) ∗
   "Hsl_merkP" ∷ own_slice_small sl_merk_proof byteT d obj.(MerkleProof) ∗
-  "Hptr_merkP" ∷ ptr ↦[MembHide :: "MerkProof"]{d} (slice_val sl_merk_proof).
+  "Hptr_merkP" ∷ ptr ↦[MembHide :: "MerkleProof"]{d} (slice_val sl_merk_proof).
 End defs.
 End MembHide.
 
@@ -321,6 +321,6 @@ Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   "Hsl_labelP" ∷ own_slice_small sl_label_proof byteT d obj.(LabelProof) ∗
   "Hptr_labelP" ∷ ptr ↦[NonMemb :: "LabelProof"]{d} (slice_val sl_label_proof) ∗
   "Hsl_merkP" ∷ own_slice_small sl_merk_proof byteT d obj.(MerkleProof) ∗
-  "Hptr_merkP" ∷ ptr ↦[NonMemb :: "MerkProof"]{d} (slice_val sl_merk_proof).
+  "Hptr_merkP" ∷ ptr ↦[NonMemb :: "MerkleProof"]{d} (slice_val sl_merk_proof).
 End defs.
 End NonMemb.

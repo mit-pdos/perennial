@@ -184,7 +184,7 @@ Definition wish_memb_hide vrf_pk uid ver sigdig memb_hide : iProp Σ :=
   let label_pre := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) in
   "#Hvrf_proof" ∷ is_vrf_proof vrf_pk label_pre memb_hide.(MembHide.LabelProof) ∗
   "#Hvrf_out" ∷ is_vrf_out vrf_pk label_pre label ∗
-  "#Hmerk" ∷ Verify_wish true label memb_hide.(MembHide.MapVal)
+  "#Hmerk" ∷ wish_merkle_Verify true label memb_hide.(MembHide.MapVal)
     memb_hide.(MembHide.MerkleProof) sigdig.(SigDig.Dig).
 
 Definition wish_memb vrf_pk uid ver sigdig memb : iProp Σ :=
@@ -193,7 +193,7 @@ Definition wish_memb vrf_pk uid ver sigdig memb : iProp Σ :=
   "#Hvrf_proof" ∷ is_vrf_proof vrf_pk label_pre memb.(Memb.LabelProof) ∗
   "#Hvrf_out" ∷ is_vrf_out vrf_pk label_pre label ∗
   "#Hcommit" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) commit ∗
-  "#Hmerk" ∷ Verify_wish true label
+  "#Hmerk" ∷ wish_merkle_Verify true label
     (MapValPre.encodesF $ MapValPre.mk sigdig.(SigDig.Epoch) commit)
     memb.(Memb.MerkleProof) sigdig.(SigDig.Dig).
 
@@ -202,7 +202,7 @@ Definition wish_nonmemb vrf_pk uid ver sigdig nonmemb : iProp Σ :=
   let label_pre := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) in
   "#Hvrf_proof" ∷ is_vrf_proof vrf_pk label_pre nonmemb.(NonMemb.LabelProof) ∗
   "#Hvrf_out" ∷ is_vrf_out vrf_pk label_pre label ∗
-  "#Hmerk" ∷ Verify_wish false label [] nonmemb.(NonMemb.MerkleProof)
+  "#Hmerk" ∷ wish_merkle_Verify false label [] nonmemb.(NonMemb.MerkleProof)
     sigdig.(SigDig.Dig).
 
 Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
@@ -393,18 +393,17 @@ Lemma wp_Server__Audit ptr serv (ep : w64) :
   }}}.
 Proof. Admitted.
 
-(*
-Lemma wp_compMapVal (epoch : w64) ptr_pk_open pk_open :
+Lemma wp_compMapVal (epoch : w64) ptr_pk_open pk_open d0 :
   {{{
-    "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open pk_open
+    "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open pk_open d0
   }}}
   compMapVal #epoch #ptr_pk_open
   {{{
     sl_map_val commit, RET (slice_val sl_map_val);
-    "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open pk_open ∗
-    "#His_commit" ∷ is_commit pk_open.(CommitOpen.Val) commit ∗
+    "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open pk_open d0 ∗
+    "#Hcommit" ∷ is_hash (CommitOpen.encodesF pk_open) commit ∗
     "Hsl_map_val" ∷ own_slice_small sl_map_val byteT (DfracOwn 1)
-      (MapValPre.encodesF (MapValPre.mk epoch commit))
+      (enc_val epoch commit)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -412,7 +411,7 @@ Proof.
   wp_apply wp_slice_len.
   wp_apply wp_NewSliceWithCap; [word|]. iIntros "* Hsl_enc".
   destruct pk_open. simpl.
-  wp_apply (CommitOpen.wp_enc _ _ _ (CommitOpen.mk _ _ _)
+  wp_apply (CommitOpen.wp_enc _ _ _ (CommitOpen.mk _ _)
     with "[$Hsl_enc $Hsl_val $Hptr_val $Hsl_rand $Hptr_rand]").
   iIntros "*". iNamedSuffix 1 "_open". simpl.
   iDestruct (own_slice_to_small with "Hsl_enc_open") as "Hsl_enc_open".
@@ -421,12 +420,12 @@ Proof.
   iDestruct (struct_fields_split with "H") as "H". iNamed "H".
   wp_apply wp_NewSliceWithCap; [word|]. iIntros "* Hsl_enc".
   iDestruct (own_slice_to_small with "Hsl_hash") as "Hsl_hash".
-  iPersist "Hsl_hash".
   wp_apply (MapValPre.wp_enc (MapValPre.mk _ _) with "[$Hsl_enc $Epoch $PkCommit $Hsl_hash]").
   iIntros "*". iNamedSuffix 1 "_mapval". simpl.
-  iDestruct (own_slice_to_small with "Hsl_enc_mapval") as "Hsl_enc_mapval".
+  iDestruct (own_slice_to_small with "Hsl_b_mapval") as "Hsl_b_mapval".
+  replace (uint.nat (W64 0)) with (0%nat); [|word].
+  destruct Henc_mapval. subst.
   iApply "HΦ". iFrame "∗#".
 Qed.
-*)
 
 End proof.
