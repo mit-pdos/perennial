@@ -1,6 +1,6 @@
-From iris.proofmode Require Import environments string_ident.
-From Perennial.Helpers Require Export ipm NamedProps.
 From stdpp Require Import base.
+From iris.proofmode Require Import environments string_ident.
+From Perennial.Helpers Require Export ipm NamedProps Integers.
 Import Ltac2.
 Set Default Proof Mode "Classic".
 Ltac2 is_glob_identifier_char (x : char) : bool :=

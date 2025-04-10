@@ -109,7 +109,7 @@ Definition inv_gs serv : iProp Σ :=
       (MapLabelPre.encodesF $ MapLabelPre.mk uid nVers) label ∗
     "%Hlook_map" ∷ ⌜ (default ∅ (last gs_hist.*1)) !! label = None ⌝).
 
-About servEpochInfo.own.
+(* TODO: lemma like hist_extend_selfmon. *)
 
 Definition own_epoch_hist (hist_sl : Slice.t) (hist : list servEpochInfo.t) : iProp Σ :=
   ∃ hist_ptrs,
@@ -338,8 +338,12 @@ Proof.
   iCombineNamed "*_uinfo" as "Huinfo".
   iDestruct ("Huinfo_own" with "[Huinfo]") as "Huinfo_own".
   { iNamed "Huinfo". iFrame "∗#". }
-  wp_loadField. (* TODO: wp_getDig *)
-Admitted.
+  wp_loadField. wp_apply (wp_getDig with "[$]").
+  { admit. } (* FIXME: maintain that epochHistory is non-empty *)
+  iIntros (?) "[H2_own #?]". wp_pures.
+  wp_loadField. wp_load. wp_loadField.
+  (* TODO: wp_getHist *)
+Qed.
 
 Lemma wp_Server__SelfMon ptr serv uid nVers cli_ep :
   {{{
