@@ -13,9 +13,27 @@ Context `{!IntoVal V}.
 
 Context `{!IntoValTyped V t}.
 
-Lemma wp_load_ty l (v: V) q :
+Lemma wp_ref_ty (v : V) stk E :
+  {{{ True }}}
+    ref_ty #t (# v) @ stk; E
+  {{{ l, RET #l; l ↦ v }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  rewrite ref_ty_unseal.
+  wp_call.
+  iApply (wp_allocN_seq with "[//]"); first by word. iNext.
+  change (uint.nat 1) with 1%nat; simpl.
+  iIntros (l) "[Hl _]".
+  rewrite to_val_unseal /= -to_val_unseal.
+  iApply "HΦ".
+  rewrite typed_pointsto_unseal /typed_pointsto_def /pointsto_vals.
+  rewrite Z.mul_0_r loc_add_0.
+  iFrame.
+Qed.
+
+Lemma wp_load_ty l (v: V) q stk E :
   {{{ ▷ l ↦{q} v }}}
-    load_ty #t #l
+    load_ty #t #l @ stk; E
   {{{ RET #v; l ↦{q} v }}}.
 Proof.
   (*
@@ -146,9 +164,9 @@ Proof.
     admit.
 Admitted.
 
-Lemma wp_store_ty l (v0 v: V) :
+Lemma wp_store_ty l (v0 v: V) stk E :
   {{{ ▷l ↦ v0 }}}
-    store_ty #t #l #v
+    store_ty #t #l #v @ stk; E
   {{{ RET #(); l ↦ v }}}.
 Proof.
 Admitted.

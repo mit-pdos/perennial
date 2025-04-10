@@ -7,6 +7,13 @@ From Perennial Require Import base.
 Section defn.
 Context `{ffi_syntax}.
 
+(* note this takes a type to make it syntactically part of the code, but it is
+not needed at runtime (same as the mem.v version, except that we take the
+type as a GooseLang argument rather than a Gallina argument) *)
+Definition ref_ty_def : val := λ: "t" "v", ref (Var "v").
+Program Definition ref_ty := sealed @ref_ty_def.
+Definition ref_ty_unseal : ref_ty = _ := seal_eq _.
+
 Definition load_ty_def: val :=
   rec: "go" "t" "l" :=
     type.Match "t"
