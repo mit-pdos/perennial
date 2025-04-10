@@ -12,35 +12,39 @@ Record t :=
     uid: uid_ty;
     next_ver: ver_ty;
     next_epoch: epoch_ty;
-    serv_sig_pk: list w8;
-    serv_vrf_pk: list w8;
+    serv: Server.t;
   }.
 Global Instance eta : Settable _ :=
-  settable! mk <γ; uid; next_ver; next_epoch; serv_sig_pk; serv_vrf_pk>.
+  settable! mk <γ; uid; next_ver; next_epoch; serv>.
 
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ digs ptr_sd sd_refs sd ptr_serv_cli serv_cli sl_serv_sig_pk ptr_vrf_pk,
+
   (* seenDigs (sd). *)
   "Hown_sd_refs" ∷ own_map ptr_sd (DfracOwn 1) sd_refs ∗
   "#Hptr_sd" ∷ ptr ↦[Client :: "seenDigs"]□ #ptr_sd ∗
-  "#Hown_sd" ∷ ([∗ map] l;x ∈ sd_refs;sd, SigDig.own l x) ∗
+  "#Hown_sd" ∷ ([∗ map] l;x ∈ sd_refs;sd, SigDig.own l x DfracDiscarded) ∗
   "#His_sd" ∷ ([∗ map] ep ↦ x ∈ sd,
     "%Heq_ep" ∷ ⌜ ep = x.(SigDig.Epoch) ⌝ ∗
-    "#His_sigdig" ∷ is_SigDig x obj.(serv_sig_pk)) ∗
+    "#His_sigdig" ∷ is_SigDig x obj.(serv).(Server.sig_pk)) ∗
+
   (* uid, next_ver, next_epoch. *)
   "#Hptr_uid" ∷ ptr ↦[Client :: "uid"]□ #obj.(uid) ∗
   "Hptr_nextVer" ∷ ptr ↦[Client :: "nextVer"] #obj.(next_ver) ∗
   "Hptr_nextEpoch" ∷ ptr ↦[Client :: "nextEpoch"] #obj.(next_epoch) ∗
+
   (* server info. *)
   "Hown_servCli" ∷ advrpc.Client.own ptr_serv_cli serv_cli ∗
   "#Hptr_servCli" ∷ ptr ↦[Client :: "servCli"]□ #ptr_serv_cli ∗
   "#Hptr_servSigPk" ∷ ptr ↦[Client :: "servSigPk"]□ (slice_val sl_serv_sig_pk) ∗
-  "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded obj.(serv_sig_pk) ∗
-  "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk obj.(serv_vrf_pk) ∗
+  "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT
+    DfracDiscarded obj.(serv).(Server.sig_pk) ∗
+  "Hvrf_pk" ∷ is_vrf_pk ptr_vrf_pk obj.(serv).(Server.vrf_pk) ∗
   "#Hptr_servVrfPk" ∷ ptr ↦[Client :: "servVrfPk"]□ #ptr_vrf_pk ∗
+
   (* digs ghost state. *)
   "Hown_digs" ∷ mono_list_auth_own obj.(γ) 1 digs ∗
   "%Hagree_digs_sd" ∷ ⌜ ∀ (ep : w64) dig, digs !! (uint.nat ep) = Some (Some dig) →
@@ -65,7 +69,7 @@ Definition own (ptr : loc) (obj : t) (pk : list w8) : iProp Σ :=
   "Hptr_err" ∷ ptr ↦[ClientErr :: "Err"] #obj.(Err) ∗
   "Hevid" ∷ match obj.(Evid) with
   | Some e =>
-    "Hown_evid" ∷ Evid.own ptr_evid e ∗
+    "#Hown_evid" ∷ Evid.own ptr_evid e DfracDiscarded ∗
     "#His_evid" ∷ is_Evid e pk
   | None => True
   end.
@@ -76,41 +80,45 @@ Section wps.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Lemma wp_checkDig sl_sig_pk (sig_pk : list w8) ptr_sd (sd_refs : gmap w64 loc) sd ptr_dig dig :
+  let wish := (
+    "#His_dig" ∷ is_SigDig dig sig_pk ∗
+    "%Hnoof_ep" ∷ ⌜ uint.Z (word.add dig.(SigDig.Epoch) (W64 1)) =
+      (uint.Z dig.(SigDig.Epoch) + 1)%Z ⌝ ∗
+    "%Heq_old" ∷ ⌜ ∀ old, sd !! dig.(SigDig.Epoch) = Some old →
+      dig.(SigDig.Dig) = old.(SigDig.Dig) ⌝)%I in
   {{{
     "#Hsl_sig_pk" ∷ own_slice_small sl_sig_pk byteT DfracDiscarded sig_pk ∗
-    "#Hown_sd" ∷ ([∗ map] l;x ∈ sd_refs;sd, SigDig.own l x) ∗
+    "#Hown_sd" ∷ ([∗ map] l;x ∈ sd_refs;sd, SigDig.own l x DfracDiscarded) ∗
     "Hown_sd_refs" ∷ own_map ptr_sd (DfracOwn 1) sd_refs ∗
     "#His_sd" ∷ ([∗ map] ep ↦ x ∈ sd,
       "%Heq_ep" ∷ ⌜ ep = x.(SigDig.Epoch) ⌝ ∗
       "#His_sigdig" ∷ is_SigDig x sig_pk) ∗
-    "#Hown_dig" ∷ SigDig.own ptr_dig dig
+    "#Hown_dig" ∷ SigDig.own ptr_dig dig DfracDiscarded
   }}}
   checkDig (slice_val sl_sig_pk) #ptr_sd #ptr_dig
   {{{
     err ptr_err, RET #ptr_err;
     "Hown_sd_refs" ∷ own_map ptr_sd (DfracOwn 1) sd_refs ∗
     "Hown_err" ∷ ClientErr.own ptr_err err sig_pk ∗
-    "Herr" ∷ (if err.(ClientErr.Err) then True else
-      "#His_dig" ∷ is_SigDig dig sig_pk ∗
-      "%Hnoof_ep" ∷ ⌜ uint.Z (word.add dig.(SigDig.Epoch) (W64 1)) =
-        (uint.Z dig.(SigDig.Epoch) + 1)%Z ⌝ ∗
-      "%Heq_old" ∷ ⌜ ∀ old, sd !! dig.(SigDig.Epoch) = Some old →
-        dig.(SigDig.Dig) = old.(SigDig.Dig) ⌝)
+    "Hgenie" ∷ (⌜ err.(ClientErr.Err) = false ⌝ ∗-∗ wish)
   }}}.
 Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  simpl. iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) sig_pk) with "[H]" as "Hown_std_err".
   { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
   wp_apply (wp_CheckSigDig with "[$Hown_dig $Hsl_sig_pk]").
   iIntros "*". iNamedSuffix 1 "_sigdig".
   wp_if_destruct.
-  { iApply "HΦ". by iFrame. }
-  iDestruct "Hgenie_sigdig" as "[_ H]".
+  { iApply "HΦ". iFrame. iIntros "!>". iSplit. { by iIntros (?). }
+    iNamed 1. iDestruct "Hgenie_sigdig" as "[_ Hgenie]".
+    by iDestruct ("Hgenie" with "His_dig") as %?. }
+  iDestruct "Hgenie_sigdig" as "[H _]".
   iDestruct ("H" with "[//]") as "#His_sigdig".
   iPoseProof "Hown_dig" as "H". iNamed "H".
   wp_loadField. wp_apply wp_SumNoOverflow. wp_if_destruct.
-  { iApply "HΦ". by iFrame. }
+  { iApply "HΦ". iFrame. iIntros "!>". iSplit. { by iIntros (?). }
+    iNamed 1. word. }
   wp_loadField. wp_apply (wp_MapGet with "Hown_sd_refs").
   iIntros "* [%Hlook_sd_refs Hown_sd_refs]". destruct ok.
   { apply map_get_true in Hlook_sd_refs.
@@ -125,22 +133,25 @@ Proof.
     do 2 wp_loadField.
     wp_apply (wp_BytesEqual sl_Dig0 sl_Dig with "[$Hsl_Dig $Hsl_Dig_old]").
     iIntros "_". iClear "Hown_std_err". wp_if_destruct.
-    - wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
-      iDestruct (struct_fields_split with "H") as "H". iNamed "H".
+    - wp_apply wp_allocStruct; [val_ty|]. iIntros "* H". iPersist "H".
+      iDestruct (struct_fields_split with "H") as "{H} H". iNamed "H".
       wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
       iDestruct (struct_fields_split with "H") as "H". iNamed "H".
       iApply ("HΦ" $! (ClientErr.mk (Some (Evid.mk _ _)) true)).
-      by iFrame "∗ Hown_dig Hown_dig_old His_sigdig His_sigdig_old".
+      iFrame "∗#". simpl. iSplit; [done|]. iSplit. { by iIntros (?). }
+      iNamed 1. naive_solver.
     - wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
       iDestruct (struct_fields_split with "H") as "H". iNamed "H".
-      iApply ("HΦ" $! (ClientErr.mk None false)). iFrame "∗#%".
+      iApply ("HΦ" $! (ClientErr.mk None false)).
+      iFrame "∗#%". iSplit; [|naive_solver]. iIntros "_".
       iPureIntro. naive_solver. }
   apply map_get_false in Hlook_sd_refs as [Hlook_sd_refs _].
   iDestruct (big_sepM2_lookup_l_none with "Hown_sd") as %Hlook_sd;
     [exact Hlook_sd_refs|].
   iClear "Hown_std_err". wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
   iDestruct (struct_fields_split with "H") as "H". iNamed "H".
-  iApply ("HΦ" $! (ClientErr.mk None false)). iFrame "∗#%".
+  iApply ("HΦ" $! (ClientErr.mk None false)).
+  iFrame "∗#%". iSplit; [|naive_solver]. iIntros (_).
   iPureIntro. naive_solver.
 Qed.
 
