@@ -34,7 +34,7 @@ Record t :=
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition own ptr x : iProp Σ :=
+Definition is_own ptr x : iProp Σ :=
   ∃ ptr2_upd ptr_upd sl_dig sl_sig,
   "#Hupd" ∷ ([∗ map] sl;y ∈ ptr2_upd;x.(updates),
     own_slice_small sl byteT DfracDiscarded
@@ -45,7 +45,10 @@ Definition own ptr x : iProp Σ :=
   "#Hptr_dig" ∷ ptr ↦[servEpochInfo :: "dig"]□ (slice_val sl_dig) ∗
   "#Hsl_sig" ∷ own_slice_small sl_sig byteT DfracDiscarded x.(sig) ∗
   "#Hptr_sig" ∷ ptr ↦[servEpochInfo :: "sig"]□ (slice_val sl_sig).
+
+Global Instance pers ptr x : Persistent (is_own ptr x) := _.
 End defs.
+
 End servEpochInfo.
 
 Module Server.
@@ -106,70 +109,75 @@ Definition inv_gs serv : iProp Σ :=
       (MapLabelPre.encodesF $ MapLabelPre.mk uid nVers) label ∗
     "%Hlook_map" ∷ ⌜ (default ∅ (last gs_hist.*1)) !! label = None ⌝).
 
+About servEpochInfo.own.
+
+Definition own_epoch_hist (hist_sl : Slice.t) (hist : list servEpochInfo.t) : iProp Σ :=
+  ∃ hist_ptrs,
+  "Hsl" ∷ own_slice_small hist_sl byteT (DfracOwn 1) hist_ptrs ∗
+  "#His" ∷ [∗ list] ptr;info ∈ hist_ptrs;hist, servEpochInfo.is_own ptr info.
+
 Definition own_Server ptr serv q : iProp Σ :=
-  ∃ ptr_key_map key_map ptr_user_info
-    ptr2_user_info user_info sl_commit_secret commit_secret
-    sl_epoch_hist ptr2_epoch_hist epoch_hist
+  ∃ (keyMap_ptr userInfo_ptr : loc) userInfo_phys commitSecret_sl epochHist_sl
+    epochHist_ptrs
+    keyMap userInfo commitSecret epochHist
     gs_hist gs_vers,
 
-  (* ghost ownership. the other 1/2 is in the inv. *)
-  "Hgs_ep" ∷ mono_nat_auth_own serv.(Server.γepoch) (q/2) (length gs_hist) ∗
-  "Hgs_hist" ∷ mono_list_auth_own serv.(Server.γhist) (q/2) gs_hist ∗
-  "Hgs_vers" ∷ ghost_map_auth serv.(Server.γvers) (q/2) gs_vers ∗
-
   (* physical ownership. *)
-  "HkeyM" ∷ own_Tree ptr_key_map key_map (DfracOwn q) ∗
-  "#Hptr_keyM" ∷ ptr ↦[Server :: "keyMap"]□ #ptr_key_map ∗
-  "Huinfo" ∷ ([∗ map] l;x ∈ ptr2_user_info;user_info,
-    userState.own l x (DfracOwn q)) ∗
-  "Hptr2_uinfo" ∷ own_map ptr_user_info (DfracOwn q) ptr2_user_info ∗
-  "#Hptr_uinfo" ∷ ptr ↦[Server :: "userInfo"]□ #ptr_user_info ∗
-  "#Hep_hist" ∷ ([∗ list] l;x ∈ ptr2_epoch_hist;epoch_hist,
-    servEpochInfo.own l x) ∗
-  "Hptr2_ep_hist" ∷ own_slice sl_epoch_hist ptrT (DfracOwn q) ptr2_epoch_hist ∗
-  "Hptr_ep_hist" ∷ ptr ↦[Server :: "epochHist"]{DfracOwn q} (slice_val sl_epoch_hist) ∗
-  "#Hsl_sec" ∷ own_slice_small sl_commit_secret byteT DfracDiscarded commit_secret ∗
-  "#Hptr_sec" ∷ ptr ↦[Server :: "commitSecret"]□ (slice_val sl_commit_secret) ∗
+  "epochHist" ∷ ptr ↦[Server :: "epochHist"]{DfracOwn q} (slice_val epochHist_sl) ∗
+  "#userInfo" ∷ ptr ↦[Server :: "userInfo"]□ #userInfo_ptr ∗
+  "#keyMap" ∷ ptr ↦[Server :: "keyMap"]□ #keyMap_ptr ∗
+  "#commitSecret" ∷ ptr ↦[Server :: "commitSecret"]□ (slice_val commitSecret_sl) ∗
+  "HkeyMap" ∷ own_Tree keyMap_ptr keyMap (DfracOwn q) ∗
+  "HuserInfo_map" ∷ own_map userInfo_ptr (DfracOwn q) userInfo_phys ∗
+  "HuserInfo_own" ∷ ([∗ map] l;x ∈ userInfo_phys; userInfo, userState.own l x (DfracOwn q)) ∗
+  "HepochHist_sl" ∷ own_slice epochHist_sl ptrT (DfracOwn q) epochHist_ptrs ∗
+  "#HepochHist_own" ∷ ([∗ list] l;x ∈ epochHist_ptrs;epochHist, servEpochInfo.is_own l x) ∗
+  "#HcommitSecret" ∷ own_slice_small commitSecret_sl byteT DfracDiscarded commitSecret ∗
 
   (* physical invariants. *)
-  "#Hsig_hist" ∷ ([∗ list] ep ↦ x ∈ epoch_hist,
+  "#Hsig_hist" ∷ ([∗ list] ep ↦ x ∈ epochHist,
     is_sig serv.(Server.sig_pk)
       (PreSigDig.encodesF $ PreSigDig.mk (W64 ep) x.(servEpochInfo.dig))
       x.(servEpochInfo.sig)) ∗
-  "Hplain_pk" ∷ ([∗ map] uid ↦ x ∈ user_info,
+  "Hplain_pk" ∷ ([∗ map] uid ↦ x ∈ userInfo,
     ∃ label commit ep,
     "#Hvrf_out" ∷ is_vrf_out serv.(Server.vrf_pk)
       (MapLabelPre.encodesF $
         MapLabelPre.mk uid (word.sub x.(userState.numVers) (W64 1)))
       label ∗
     "#Hcommit" ∷ is_hash (CommitOpen.encodesF $
-      CommitOpen.mk x.(userState.plainPk) commit_secret)
+      CommitOpen.mk x.(userState.plainPk) commitSecret)
       commit ∗
-    "%Hlook_map" ∷ ⌜ key_map !! label =
+    "%Hlook_map" ∷ ⌜ keyMap !! label =
       Some (MapValPre.encodesF $ MapValPre.mk ep commit) ⌝) ∗
 
+  (* ghost ownership. the other 1/2 is in the inv. *)
+  "Hgs_ep" ∷ mono_nat_auth_own serv.(Server.γepoch) (q/2) (length gs_hist) ∗
+  "Hgs_hist" ∷ mono_list_auth_own serv.(Server.γhist) (q/2) gs_hist ∗
+  "Hgs_vers" ∷ ghost_map_auth serv.(Server.γvers) (q/2) gs_vers ∗
+
   (* physical-ghost reln. *)
-  "%Heq_dig_hist" ∷ ⌜ gs_hist.*2 = servEpochInfo.dig <$> epoch_hist ⌝ ∗
-  "%Heq_vers" ∷ ⌜ gs_vers = userState.numVers <$> user_info ⌝ ∗
-  "%Heq_keyM" ∷ ⌜ key_map = lower_map (default ∅ (last gs_hist.*1)) ⌝ ∗
-  "%Heq_map_hist" ∷ ([∗ list] ep ↦ x ∈ epoch_hist,
+  "%Heq_dig_hist" ∷ ⌜ gs_hist.*2 = servEpochInfo.dig <$> epochHist ⌝ ∗
+  "%Heq_vers" ∷ ⌜ gs_vers = userState.numVers <$> userInfo ⌝ ∗
+  "%Heq_keyM" ∷ ⌜ keyMap = lower_map (default ∅ (last gs_hist.*1)) ⌝ ∗
+  "%Heq_map_hist" ∷ ([∗ list] ep ↦ x ∈ epochHist,
     ∃ prevM nextM,
     "%Hlook_prevM" ∷ ⌜ gs_hist.*1 !! (pred ep) = Some prevM ⌝ ∗
     "%Hlook_nextM" ∷ ⌜ gs_hist.*1 !! ep = Some nextM ⌝ ∗
     "%HupdM" ∷ ⌜ nextM = x.(servEpochInfo.updates) ∪ prevM ⌝).
 
 Definition is_Server ptr serv : iProp Σ :=
-  ∃ mu ptr_sig_sk sig_pk γ ptr_vrf_sk ptr_workq,
+  ∃ mu (sigSk_ptr vrfSk_ptr workQ : loc) sig_pk γ,
   "#Hinv_gs" ∷ inv nroot (inv_gs serv) ∗
   (* rwmutex has 1/2 physical ownership. other 1/2 owned by worker thread. *)
-  "#HmuR" ∷ is_rwlock nroot #mu (λ q, own_Server ptr serv (q / 2)) ∗
-  "#Hptr_mu" ∷ ptr ↦[Server :: "mu"]□ #mu ∗
-  "#Hsig_sk" ∷ is_sig_sk ptr_sig_sk sig_pk (serv_sigpred γ) ∗
-  "#Hptr_sig_sk" ∷ ptr ↦[Server :: "sigSk"]□ #ptr_sig_sk ∗
-  "#Hvrf_sk" ∷ is_vrf_sk ptr_vrf_sk serv.(Server.vrf_pk) ∗
-  "#Hptr_vrf_sk" ∷ ptr ↦[Server :: "vrfSk"]□ #ptr_vrf_sk ∗
-  "#Hworkq" ∷ is_WorkQ ptr_workq ∗
-  "#Hptr_workq" ∷ ptr ↦[Server :: "workQ"]□ #ptr_workq.
+  "#mu" ∷ ptr ↦[Server :: "mu"]□ #mu ∗
+  "#Hmu" ∷ is_rwlock nroot #mu (λ q, own_Server ptr serv (q / 2)) ∗
+  "#sigSk" ∷ ptr ↦[Server :: "sigSk"]□ #sigSk_ptr ∗
+  "#HsigSk" ∷ is_sig_sk sigSk_ptr sig_pk (serv_sigpred γ) ∗
+  "#vrfSk" ∷ ptr ↦[Server :: "vrfSk"]□ #vrfSk_ptr ∗
+  "#HvrfSk" ∷ is_vrf_sk vrfSk_ptr serv.(Server.vrf_pk) ∗
+  "#Hptr_workq" ∷ ptr ↦[Server :: "workQ"]□ #workQ ∗
+  "#workQ" ∷ is_WorkQ workQ.
 
 Definition wish_memb_hide vrf_pk uid ver sigdig memb_hide : iProp Σ :=
   ∃ label,
@@ -230,6 +238,50 @@ Proof.
   iIntros (work_ptr) "work". wp_pures. iNamed "Hserv". wp_loadField.
   (* TODO: WorkQ spec *)
 Admitted.
+
+Lemma wp_getDig epochHist_sl epochHist_ptrs epochHist info q :
+  last epochHist = Some info →
+  {{{
+        "HepochHist_sl" ∷ own_slice epochHist_sl ptrT (DfracOwn q) epochHist_ptrs ∗
+        "#HepochHist_own" ∷ ([∗ list] l;x ∈ epochHist_ptrs;epochHist, servEpochInfo.is_own l x)
+  }}}
+    getDig (slice_val epochHist_sl)
+  {{{
+      (sigdig_ptr : loc), RET #sigdig_ptr;
+        own_slice epochHist_sl ptrT (DfracOwn q) epochHist_ptrs ∗
+        SigDig.own sigdig_ptr (SigDig.mk (W64 (length epochHist - 1))
+                                 info.(servEpochInfo.dig)
+                                 info.(servEpochInfo.sig))
+          DfracDiscarded (* because of the slices *)
+  }}}.
+Proof.
+  intros Hlast. iIntros (?) "Hpre HΦ". iNamed "Hpre".
+  wp_rec. wp_apply wp_slice_len. iDestruct (own_slice_sz with "[$]") as %Hsz.
+  wp_pures. iDestruct (own_slice_split_1 with "[$]") as "[Hsl ?]".
+  iDestruct (big_sepL2_length with "[$]") as %Hlen_eq.
+  rewrite last_lookup in Hlast.
+  opose proof (lookup_lt_Some _ _ _ Hlast).
+  iDestruct (big_sepL2_lookup_2_some with "[$]") as %[ptr Hlookup2]; [done|].
+
+  wp_apply (wp_SliceGet with "[$Hsl]").
+  { iPureIntro. replace (uint.nat _) with (Init.Nat.pred (length epochHist)) by word.
+    eassumption. }
+  iIntros "Hsl". wp_pures.
+  iDestruct (big_sepL2_lookup with "[$]") as "H"; [eassumption.. | ].
+  iNamed "H".
+  wp_loadField. wp_loadField.
+  iApply wp_fupd.
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros "* Hl". iApply "HΦ".
+  iDestruct (struct_fields_split with "Hl") as "H". iNamed "H".
+  iMod (struct_field_pointsto_persist with "Dig") as "#Dig".
+  iMod (struct_field_pointsto_persist with "Sig") as "#Sig".
+  iMod (struct_field_pointsto_persist with "Epoch") as "#Epoch".
+  iModIntro.
+  replace (w64_word_instance.(word.sub) epochHist_sl.(Slice.sz) (W64 1)) with
+    (W64 (length epochHist - 1)) by word.
+  iFrame "∗#".
+Qed.
 
 Lemma wp_Server__Get ptr serv uid cli_ep :
   {{{
