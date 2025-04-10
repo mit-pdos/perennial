@@ -50,6 +50,40 @@ Proof.
   iApply "HΦ". iPureIntro. done.
 Qed.
 
+Lemma wp_MulNoOverflow (x y : u64) :
+  {{{ is_pkg_init std }}}
+    std @ "MulNoOverflow" #x #y
+  {{{ RET #(bool_decide (uint.Z (word.mul x y) = (uint.Z x * uint.Z y)%Z)); True }}}.
+Proof.
+  wp_start as "_".
+  wp_auto.
+  destruct (bool_decide_reflect (x = W64 0)); wp_auto.
+  { subst. rewrite -> bool_decide_eq_true_2 by word.
+    iApply "HΦ"; auto. }
+  destruct (bool_decide_reflect (y = W64 0)); wp_auto.
+  { subst. rewrite -> bool_decide_eq_true_2 by word.
+    iApply "HΦ"; auto. }
+  iSpecialize ("HΦ" with "[$]").
+  iExactEq "HΦ".
+  repeat f_equal.
+  apply bool_decide_ext.
+  pose proof (mul_overflow_check_correct x y ltac:(word) ltac:(word)).
+  word.
+Qed.
+
+Lemma wp_MulAssumeNoOverflow (x y : u64) :
+  {{{ is_pkg_init std }}}
+    std @ "MulAssumeNoOverflow" #x #y
+  {{{ RET #(word.mul x y); ⌜uint.Z (word.mul x y) = (uint.Z x * uint.Z y)%Z⌝ }}}.
+Proof.
+  wp_start as "_".
+  wp_auto.
+  wp_apply wp_MulNoOverflow.
+  wp_apply wp_Assume as "%Hassume".
+  rewrite bool_decide_eq_true in Hassume.
+  iApply "HΦ". iPureIntro. done.
+Qed.
+
 Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
   ∃ (mu_l cond_l: loc),
   "#mu" ∷ l ↦s[std.JoinHandle :: "mu"]□ mu_l ∗

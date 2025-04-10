@@ -110,13 +110,40 @@ Definition SumAssumeNoOverflow : val :=
     (func_call #primitive #"Assume"%go) "$a0");;;
     return: ((![uint64T] "x") + (![uint64T] "y"))).
 
+(* MulNoOverflow returns true if x * y does not overflow
+
+   go: goose_std.go:73:6 *)
+Definition MulNoOverflow : val :=
+  rec: "MulNoOverflow" "x" "y" :=
+    exception_do (let: "y" := (ref_ty uint64T "y") in
+    let: "x" := (ref_ty uint64T "x") in
+    (if: ((![uint64T] "x") = #(W64 0)) || ((![uint64T] "y") = #(W64 0))
+    then return: (#true)
+    else do:  #());;;
+    return: ((![uint64T] "x") ≤ (#(W64 (18446744073709551616 - 1)) `quot` (![uint64T] "y")))).
+
+(* MulAssumeNoOverflow returns x * y, `Assume`ing that this does not overflow.
+
+   *Use with care* - if the assumption is violated this function will panic.
+
+   go: goose_std.go:83:6 *)
+Definition MulAssumeNoOverflow : val :=
+  rec: "MulAssumeNoOverflow" "x" "y" :=
+    exception_do (let: "y" := (ref_ty uint64T "y") in
+    let: "x" := (ref_ty uint64T "x") in
+    do:  (let: "$a0" := (let: "$a0" := (![uint64T] "x") in
+    let: "$a1" := (![uint64T] "y") in
+    (func_call #std.std #"MulNoOverflow"%go) "$a0" "$a1") in
+    (func_call #primitive #"Assume"%go) "$a0");;;
+    return: ((![uint64T] "x") * (![uint64T] "y"))).
+
 Definition JoinHandle : go_type := structT [
   "mu" :: ptrT;
   "done" :: boolT;
   "cond" :: ptrT
 ].
 
-(* go: goose_std.go:80:6 *)
+(* go: goose_std.go:96:6 *)
 Definition newJoinHandle : val :=
   rec: "newJoinHandle" <> :=
     exception_do (let: "mu" := (ref_ty ptrT (zero_val ptrT)) in
@@ -135,7 +162,7 @@ Definition newJoinHandle : val :=
        "cond" ::= "$cond"
      }]))).
 
-(* go: goose_std.go:90:22 *)
+(* go: goose_std.go:106:22 *)
 Definition JoinHandle__finish : val :=
   rec: "JoinHandle__finish" "h" <> :=
     exception_do (let: "h" := (ref_ty ptrT "h") in
@@ -153,7 +180,7 @@ Definition JoinHandle__finish : val :=
    essentially the same implementation, replacing `done` with a pointer to the
    result value.
 
-   go: goose_std.go:104:6 *)
+   go: goose_std.go:120:6 *)
 Definition Spawn : val :=
   rec: "Spawn" "f" :=
     exception_do (let: "f" := (ref_ty funcT "f") in
@@ -167,7 +194,7 @@ Definition Spawn : val :=
     do:  (Fork ("$go" #()));;;
     return: (![ptrT] "h")).
 
-(* go: goose_std.go:113:22 *)
+(* go: goose_std.go:129:22 *)
 Definition JoinHandle__Join : val :=
   rec: "JoinHandle__Join" "h" <> :=
     exception_do (let: "h" := (ref_ty ptrT "h") in
@@ -188,7 +215,7 @@ Definition JoinHandle__Join : val :=
    pattern in Go) because this is not supported by Goose. Instead uses mutexes
    and condition variables since these are modeled in Goose
 
-   go: goose_std.go:132:6 *)
+   go: goose_std.go:148:6 *)
 Definition Multipar : val :=
   rec: "Multipar" "num" "op" :=
     exception_do (let: "op" := (ref_ty funcT "op") in
@@ -232,14 +259,14 @@ Definition Multipar : val :=
    is a simple way to do so - the model always requires one step to reduce this
    application to a value.
 
-   go: goose_std.go:163:6 *)
+   go: goose_std.go:179:6 *)
 Definition Skip : val :=
   rec: "Skip" <> :=
     exception_do (do:  #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Assert"%go, Assert); ("BytesEqual"%go, BytesEqual); ("BytesClone"%go, BytesClone); ("SliceSplit"%go, SliceSplit); ("SumNoOverflow"%go, SumNoOverflow); ("SumAssumeNoOverflow"%go, SumAssumeNoOverflow); ("newJoinHandle"%go, newJoinHandle); ("Spawn"%go, Spawn); ("Multipar"%go, Multipar); ("Skip"%go, Skip)].
+Definition functions' : list (go_string * val) := [("Assert"%go, Assert); ("BytesEqual"%go, BytesEqual); ("BytesClone"%go, BytesClone); ("SliceSplit"%go, SliceSplit); ("SumNoOverflow"%go, SumNoOverflow); ("SumAssumeNoOverflow"%go, SumAssumeNoOverflow); ("MulNoOverflow"%go, MulNoOverflow); ("MulAssumeNoOverflow"%go, MulAssumeNoOverflow); ("newJoinHandle"%go, newJoinHandle); ("Spawn"%go, Spawn); ("Multipar"%go, Multipar); ("Skip"%go, Skip)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("JoinHandle"%go, []); ("JoinHandle'ptr"%go, [("Join"%go, JoinHandle__Join); ("finish"%go, JoinHandle__finish)])].
 
