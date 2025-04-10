@@ -1,3 +1,4 @@
+From New.experiments Require Import glob.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
@@ -71,7 +72,7 @@ Definition serv_sigpred (γhist : gname) : (list w8 → iProp Σ) :=
   "%Hlook_dig" ∷ ⌜ gs_hist.*2 !! uint.nat pre.(PreSigDig.Epoch) =
     Some pre.(PreSigDig.Dig) ⌝)%I.
 
-Definition is_WorkQ (ptr : loc) : iProp Σ. Admitted.
+Definition is_WorkQ (ptr : loc) : iProp Σ := True.
 
 Definition maps_mono (ms : list adtr_map_ty) :=
   ∀ (i j : w64) mi mj,
@@ -205,8 +206,8 @@ Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
   }}}
   Server__Put #ptr #uid (slice_val sl_pk)
   {{{
-    ptr_sigdig sigdig ptr_lat lat ptr_bound bound err,
-    RET (#ptr_sigdig, #ptr_lat, #ptr_bound, #err);
+    ptr_sigdig sigdig ptr_lat lat ptr_bound bound,
+    RET (#ptr_sigdig, #ptr_lat, #ptr_bound, #false);
     "Hvers" ∷ uid ↪[serv.(Server.γvers)] (word.add nVers (W64 1)) ∗
     "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
     "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
@@ -220,10 +221,15 @@ Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
     "#Hwish_lat" ∷ wish_memb serv.(Server.vrf_pk) uid nVers sigdig lat ∗
     "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
     "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk)
-      uid (word.add nVers (W64 1)) sigdig bound ∗
-    "->" ∷ ⌜ err = false ⌝
+      uid (word.add nVers (W64 1)) sigdig bound
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (?) "Hpre HΦ". iNamed "Hpre".
+  wp_rec. wp_pures. wp_apply wp_allocStruct; [val_ty | ].
+  iIntros (wq_ptr) "wq". wp_apply wp_allocStruct; [val_ty | ].
+  iIntros (work_ptr) "work". wp_pures. iNamed "Hserv". wp_loadField.
+  (* TODO: WorkQ spec *)
+Admitted.
 
 Lemma wp_Server__Get ptr serv uid cli_ep :
   {{{
@@ -254,7 +260,34 @@ Lemma wp_Server__Get ptr serv uid cli_ep :
     "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
     "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk) uid nVers sigdig bound
   }}}.
-Proof. Admitted.
+Proof.
+  iIntros (?) "Hpre HΦ". iNamed "Hpre". iNamed "Hserv".
+  wp_rec. wp_pures. wp_loadField. wp_apply (read_wp_Mutex__Lock with "[$]").
+  iIntros "Hown". iNamedSuffix "Hown" "_own". wp_pures.
+  wp_loadField. wp_apply (wp_MapGet with "[$]"). iIntros "%userState_ptr %ok [%Hlookup H1_own]".
+  wp_pures. wp_apply wp_ref_of_zero; [done | ]. iIntros "%numVers_ptr numVers".
+  wp_pures. wp_apply wp_ref_of_zero; [done | ]. iIntros "%plainPk plainPk".
+  wp_pures.
+  (* TODO: optional if. *)
+  wp_if_destruct.
+  2:{
+    admit.
+  }
+  destruct ok.
+  2:{ exfalso. apply map_get_false in Hlookup. naive_solver. }
+  apply map_get_true in Hlookup.
+  iDestruct (big_sepM2_lookup_l_some with "[$]") as "%H".
+  { eassumption. }
+  destruct H as [userState Hlookup2].
+  iDestruct (big_sepM2_lookup_acc with "[$]") as "[Huinfo Huinfo_own]"; [eassumption.. | ].
+  iNamedSuffix "Huinfo" "_uinfo".
+  wp_loadField. wp_store. wp_loadField. wp_store.
+  wp_pures.
+  iCombineNamed "*_uinfo" as "Huinfo".
+  iDestruct ("Huinfo_own" with "[Huinfo]") as "Huinfo_own".
+  { iNamed "Huinfo". iFrame "∗#". }
+  wp_loadField. (* TODO: wp_getDig *)
+Admitted.
 
 Lemma wp_Server__SelfMon ptr serv uid nVers cli_ep :
   {{{

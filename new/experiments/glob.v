@@ -1,5 +1,5 @@
 From iris.proofmode Require Import environments string_ident.
-From New.proof Require Import proof_prelude.
+From Perennial.Helpers Require Export ipm NamedProps.
 From stdpp Require Import base.
 Import Ltac2.
 Set Default Proof Mode "Classic".
