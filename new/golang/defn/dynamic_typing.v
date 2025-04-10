@@ -3,8 +3,6 @@ From New.golang.defn Require Import assume list.
 From New.golang.defn Require Export typing.
 From Perennial Require Import base.
 
-Set Default Proof Using "Type".
-
 Module type.
 Section defn.
 Context `{ffi_syntax}.
@@ -71,7 +69,9 @@ Definition Match_def : val :=
 Program Definition Match := sealed @Match_def.
 Definition Match_unseal : Match = _ := seal_eq _.
 
-Definition go_type_size_e_def: val :=
+(* would shadow [go_type_size] Gallina definition, intended to be used qualified
+with module name *)
+Definition go_type_size_def: val :=
   rec: "go_type_size" "t" :=
     Match "t"
       (λ: <>, #(W64 1))
@@ -84,53 +84,8 @@ Definition go_type_size_e_def: val :=
                       (λ: "hd" "decls", let: ("f", "t") := "hd" in
                           sum_assume_no_overflow ("go_type_size" "t") ("struct_size" "decls"))
         ) "decls").
-Program Definition go_type_size_e := sealed @go_type_size_e_def.
-Definition go_type_size_e_unseal : @go_type_size_e = _ := seal_eq _.
-
-Definition load_ty_def: val :=
-  rec: "go" "t" "l" :=
-    Match "t"
-      (λ: <>, !"l")
-      (λ: "n" "t",
-        let: "size" := go_type_size_e "t" in
-        (rec: "go_arr" "n" "l" :=
-           let: "l_new" := "l" +ₗ "size" in
-           if: "n" = #(W64 0) then #()
-           else ("go" "t" "l", "go_arr" ("n" - #(W64 1)) "l_new")
-        ) "n" "l")
-      (λ: "decls",
-        (rec: "go_struct" "decls" "l" :=
-           list.Match "decls"
-                      (λ: <>, #())
-                      (λ: "hd" "decls", let: ("f", "t") := "hd" in
-                          ("go" "t" "l", "go_struct" "decls" ("l" +ₗ go_type_size_e "t")))
-        ) "decls" "l")
-      .
-Program Definition load_ty := sealed @load_ty_def.
-Definition load_ty_unseal : @load_ty = _ := seal_eq _.
-
-Definition store_ty_def: val :=
-  rec: "go" "t" "l" "v" :=
-    Match "t"
-      (λ: <>, "l" <- "v")
-      (λ: "n" "t",
-        let: "size" := go_type_size_e "t" in
-        (rec: "go_arr" "n" "l" "v" :=
-           let: "l_new" := "l" +ₗ "size" in
-           if: "n" = #(W64 0) then #()
-           else "go" "t" "l" (Fst "v");; "go_arr" ("n" - #(W64 1)) "l_new" (Snd "v")
-        ) "n" "l" "v")
-      (λ: "decls",
-        (rec: "go_struct" "decls" "l" "v" :=
-           list.Match "decls"
-                      (λ: <>, #())
-                      (λ: "hd" "decls", let: ("f", "t") := "hd" in
-                          "go" "t" "l" (Fst "v");;
-                          "go_struct" "decls" ("l" +ₗ go_type_size_e "t") (Snd "v"))
-        ) "decls" "l" "v")
-      .
-Program Definition store_ty := sealed @store_ty_def.
-Definition store_ty_unseal : @store_ty = _ := seal_eq _.
+Program Definition go_type_size := sealed @go_type_size_def.
+Definition go_type_size_unseal : @go_type_size = _ := seal_eq _.
 
 End defn.
 End type.

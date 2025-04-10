@@ -188,6 +188,7 @@ Section val_types.
   Program Definition zero_val := sealed @zero_val_def.
   Definition zero_val_unseal : zero_val = _ := seal_eq _.
 
+  (* TODO: could this be a Z instead of nat? *)
   Fixpoint go_type_size_def (t : go_type) : nat :=
     match t with
     | structT d =>
