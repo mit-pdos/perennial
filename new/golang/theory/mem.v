@@ -277,13 +277,11 @@ Section goose_lang.
     iIntros (Φ) "_ HΦ".
     rewrite ref_ty_unseal.
     wp_call.
-    iApply (wp_allocN_seq with "[//]"); first by word. iNext.
-    change (uint.nat 1) with 1%nat; simpl.
-    iIntros (l) "[Hl _]".
+    iApply (wp_alloc1_seq with "[//]"). iNext.
+    iIntros (l) "Hl".
     rewrite to_val_unseal /= -to_val_unseal.
     iApply "HΦ".
     unseal.
-    rewrite Z.mul_0_r loc_add_0.
     iFrame.
   Qed.
 

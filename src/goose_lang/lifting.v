@@ -1212,6 +1212,22 @@ Proof.
     iApply (big_sepL_mono); intros. iIntros "(?&?)". rewrite -Hlen. iFrame.
 Qed.
 
+Lemma wp_alloc1_seq s E v :
+  {{{ True }}} AllocN (Val $ LitV $ LitInt $ W64 1) (Val v) @ s; E
+  {{{ l, RET LitV (LitLoc l);
+      (pointsto_vals l (DfracOwn 1) (flatten_struct v)) }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iApply wp_allocN_seq.
+  { word. }
+  { auto. }
+  iModIntro.
+  iIntros (l) "H".
+  change (uint.nat (W64 1)) with 1%nat. simpl.
+  rewrite Z.mul_0_r loc_add_0 right_id.
+  iApply "HΦ". done.
+Qed.
+
 Lemma wp_alloc_untyped stk E v v0 :
   flatten_struct v = [v0] ->
   {{{ True }}} ref (Val v) @ stk; E
