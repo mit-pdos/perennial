@@ -1184,7 +1184,8 @@ Definition getHist: val :=
     else
       let: "hist" := ref_to (slice.T ptrT) (NewSliceWithCap ptrT #0 ("numVers" - #1)) in
       let: "ver" := ref_to uint64T #0 in
-      (for: (λ: <>, (![uint64T] "ver") < ("numVers" - #1)); (λ: <>, "ver" <-[uint64T] ((![uint64T] "ver") + #1)) := λ: <>,
+      Skip;;
+      (for: (λ: <>, (![uint64T] "ver") < ("numVers" - #1)); (λ: <>, Skip) := λ: <>,
         let: ("label", "labelProof") := compMapLabel "uid" (![uint64T] "ver") "vrfSk" in
         let: (("inMap", "mapVal"), "mapProof") := merkle.Tree__Prove "keyMap" "label" in
         std.Assert "inMap";;
@@ -1193,6 +1194,7 @@ Definition getHist: val :=
           "MapVal" ::= "mapVal";
           "MerkleProof" ::= "mapProof"
         ]));;
+        "ver" <-[uint64T] ((![uint64T] "ver") + #1);;
         Continue);;
       ![slice.T ptrT] "hist").
 
