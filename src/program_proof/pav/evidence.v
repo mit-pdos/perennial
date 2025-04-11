@@ -39,16 +39,15 @@ End defs.
 Section wps.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Lemma wp_CheckSigDig ptr obj sl_pk pk d0 :
+Lemma wp_CheckSigDig ptr obj sl_pk pk :
   {{{
-    "Hown_SigDig" ∷ SigDig.own ptr obj d0 ∗
+    "#Hsigdig" ∷ SigDig.own ptr obj DfracDiscarded ∗
     "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk
   }}}
   CheckSigDig #ptr (slice_val sl_pk)
   {{{
     (err : bool), RET #err;
-    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ is_SigDig obj pk) ∗
-    "Hown_SigDig" ∷ SigDig.own ptr obj d0
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ is_SigDig obj pk)
   }}}.
 Proof. Admitted.
 
