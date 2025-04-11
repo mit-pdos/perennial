@@ -249,100 +249,121 @@ Proof.
     iFrame "∗#".
 Qed.
 
-Lemma wp_checkMembHide ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_memb_hide memb_hide :
-  let wish := (λ label commit,
-    "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb.(Memb.LabelProof) ∗
-    "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
-    "#Hcommit" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) commit ∗
-    "#Hmerk" ∷ wish_merkle_Verify true label
-      (enc_val memb.(Memb.EpochAdded) commit)
-      memb.(Memb.MerkleProof) dig)%I in
+(* TODO: merge these with wishes in server. *)
+Definition wish_checkMembHide vrf_pk uid ver dig memb_hide label : iProp Σ :=
+  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb_hide.(MembHide.LabelProof) ∗
+  "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
+  "#Hmerk" ∷ wish_merkle_Verify true label
+    memb_hide.(MembHide.MapVal) memb_hide.(MembHide.MerkleProof) dig.
+
+Lemma wp_checkMembHide ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_memb_hide memb_hide d0 :
   {{{
     "#Hvrf_pk" ∷ is_vrf_pk ptr_vrf_pk vrf_pk ∗
     "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
-    "#Hown_memb_hide" ∷ MembHide.own ptr_memb_hide memb_hide DfracDiscarded
+    "Hmemb_hide" ∷ MembHide.own ptr_memb_hide memb_hide d0
   }}}
   checkMembHide #ptr_vrf_pk #uid #ver (slice_val sl_dig) #ptr_memb_hide
   {{{
     (err : bool), RET #err;
-    "Herr" ∷ (if err then True else
-      ∃ label,
-      "#His_label" ∷ is_map_label vrf_pk uid ver label ∗
-      "#Hhas_merk_proof" ∷ is_merkle_entry label (Some memb_hide.(MembHide.MapVal)) dig)
+    "Hmemb_hide" ∷ MembHide.own ptr_memb_hide memb_hide d0 ∗
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗
+      ∃ label, wish_checkMembHide vrf_pk uid ver dig memb_hide label)
   }}}.
 Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
-  iNamed "Hown_memb_hide". wp_loadField.
-  wp_apply (wp_checkLabel with "[$Hown_vrf_pk $Hsl_label_proof]").
+  simpl. iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  iNamed "Hmemb_hide". wp_loadField.
+  wp_apply (wp_checkLabel with "[$Hvrf_pk $Hsl_labelP]").
   iIntros "*". iNamed 1. wp_if_destruct.
-  { iApply "HΦ". by iFrame "∗#". }
-  iDestruct "Herr" as "#His_label". do 2 wp_loadField.
-  wp_apply (wp_CheckProof _ sl_map_val sl_dig with "[$His_merk_proof $Hsl_label $Hsl_map_val $Hsl_dig]").
-  iClear "Hsl_map_val Hsl_dig". iIntros (err0). iNamed 1.
-  iApply "HΦ". iFrame "∗#". destruct err0; [done|].
-  iDestruct (is_merkle_proof_to_entry with "Hgenie") as "#Hhas_merk_proof".
-  iFrame "∗#".
+  { iApply "HΦ". iFrame "∗#". iIntros "!>". iSplit. { by iIntros (?). }
+    iNamed 1. iDestruct "Hgenie" as "[_ Hgenie]".
+    iApply "Hgenie". iFrame "#". }
+  iDestruct "Hgenie" as "[Hgenie _]".
+  iDestruct ("Hgenie" with "[//]") as "H". iNamed "H".
+  iDestruct ("Herr" with "[$]") as "H". iNamed "H".
+  do 2 wp_loadField.
+  wp_apply (wp_Verify with "[$Hsl_label $Hsl_map_val]").
+  { iFrame "#". }
+  iIntros (err0) "{Hsl_dig}". iNamed 1.
+  iApply "HΦ". iFrame "∗#". destruct err0.
+  - iSplit. { by iIntros (?). }
+    iNamedSuffix 1 "0". iDestruct "Hgenie" as "[_ Hgenie]".
+    iApply "Hgenie".
+    by iDestruct (is_vrf_out_det with "Hvrf_out Hvrf_out0") as %->.
+  - iSplit; [|naive_solver]. iIntros (_).
+    iDestruct "Hgenie" as "[Hgenie _]".
+    iDestruct ("Hgenie" with "[//]") as "#Hmerk".
+    iFrame "∗#".
 Qed.
 
-Lemma wp_checkHist ptr_vrf_pk vrf_pk (uid : w64) sl_dig (dig : list w8) sl_hist (histref : list loc) hist :
+Lemma wp_checkHist ptr_vrf_pk vrf_pk (uid : w64) sl_dig (dig : list w8) sl_hist (histref : list loc) hist d0 :
+  let wish := (
+    "#Hwish_hist" ∷ ([∗ list] ver ↦ x ∈ hist,
+      ∃ label,
+      wish_checkMembHide vrf_pk uid (W64 ver) dig x label))%I in
   {{{
-    "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
+    "#Hvrf_pk" ∷ is_vrf_pk ptr_vrf_pk vrf_pk ∗
     "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
     "#Hsl_hist" ∷ own_slice_small sl_hist ptrT DfracDiscarded histref ∗
     "Hown_hist" ∷ ([∗ list] ptr_memb_hide;memb_hide ∈ histref;hist,
-      MembHide.own ptr_memb_hide memb_hide)
+      MembHide.own ptr_memb_hide memb_hide d0)
   }}}
   checkHist #ptr_vrf_pk #uid (slice_val sl_dig) (slice_val sl_hist)
   {{{
     (err : bool), RET #err;
-    "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
     "Hown_hist" ∷ ([∗ list] ptr_memb_hide;memb_hide ∈ histref;hist,
-      MembHide.own ptr_memb_hide memb_hide) ∗
-    "Herr" ∷ (if err then True else
-      ([∗ list] ver ↦ val ∈ (MembHide.MapVal <$> hist),
-        ∃ label,
-        "#His_label" ∷ is_map_label vrf_pk uid (W64 ver) label ∗
-        "#Hhas_merk_proof" ∷ is_merkle_entry label (Some val) dig))
+      MembHide.own ptr_memb_hide memb_hide d0) ∗
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ wish)
   }}}.
 Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  simpl. iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_err0) "Hptr_err0".
   wp_apply (wp_forSlice
     (λ i,
     ∃ (err0 : bool),
-    "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
     "Hown_hist" ∷ ([∗ list] ptr_memb_hide;memb_hide ∈ histref;hist,
-      MembHide.own ptr_memb_hide memb_hide) ∗
+      MembHide.own ptr_memb_hide memb_hide d0) ∗
     "Hptr_err0" ∷ ptr_err0 ↦[boolT] #err0 ∗
-    "Hloop_err" ∷ (if err0 then True else
-      ([∗ list] ver ↦ val ∈ (take (uint.nat i) (MembHide.MapVal <$> hist)),
+    "Hloop_err" ∷ (⌜ err0 = false ⌝ ∗-∗
+      "#Hwish_hist" ∷
+        ([∗ list] ver ↦ x ∈ take (uint.nat i) hist,
         ∃ label,
-        "#His_label" ∷ is_map_label vrf_pk uid (W64 ver) label ∗
-        "#Hhas_merk_proof" ∷ is_merkle_entry label (Some val) dig)))%I
-    with "[] [$Hown_vrf_pk $Hown_hist $Hptr_err0 $Hsl_hist]").
+        wish_checkMembHide vrf_pk uid (W64 ver) dig x label)))%I
+    with "[] [$Hown_hist $Hptr_err0 $Hsl_hist]").
   { clear. iIntros "*". iIntros (Φ) "!> (H&%&%Hlook_histref) HΦ". iNamed "H".
     iDestruct (big_sepL2_lookup_1_some with "Hown_hist") as %[? Hlook_hist];
       [exact Hlook_histref|].
     iDestruct (big_sepL2_lookup_acc with "Hown_hist") as "[Hown_memb_hide Hacc]";
       [exact Hlook_histref|exact Hlook_hist|].
-    wp_apply (wp_checkMembHide with "[$Hown_vrf_pk $Hsl_dig $Hown_memb_hide]").
+    wp_apply (wp_checkMembHide with "[$Hvrf_pk $Hsl_dig $Hown_memb_hide]").
     iIntros "*". iNamed 1.
-    iDestruct ("Hacc" with "Hown_memb_hide") as "Hown_hist". wp_if_destruct.
-    { wp_store. iApply "HΦ". by iFrame "∗#". }
-    iNamed "Herr". destruct err0.
-    { iApply "HΦ". by iFrame "∗#". }
-    iApply "HΦ". iFrame "∗#".
+    iDestruct ("Hacc" with "Hmemb_hide") as "Hown_hist". wp_if_destruct.
+    { wp_store. iApply "HΦ". iFrame "∗#".
+      iIntros "!>". iSplit. { by iIntros (?). }
+      iNamed 1. iDestruct "Hgenie" as "[_ Hgenie]". iApply "Hgenie".
+      iDestruct (big_sepL_lookup_acc _ _ (uint.nat i) x0 with "Hwish_hist") as "[Hcontr _]".
+      { rewrite lookup_take; [done|word]. }
+      by rewrite w64_to_nat_id. }
+    iDestruct "Hgenie" as "[Hgenie _]".
+    iDestruct ("Hgenie" with "[//]") as "H".
+    iDestruct "H" as (?) "#Hmerk".
     replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
-    rewrite -!fmap_take (take_S_r _ _ _ Hlook_hist) fmap_app. iFrame.
-    rewrite length_fmap length_take_le.
-    2: { apply lookup_lt_Some in Hlook_hist. lia. }
-    simpl. replace (uint.nat i + 0)%nat with (uint.nat i) by lia.
-    rewrite w64_to_nat_id. by iFrame "#". }
+    rewrite (take_S_r _ _ x0); [|done].
+    iApply "HΦ". iFrame. iIntros "!>". destruct err0.
+    - iSplit. { by iIntros (?). }
+      iNamed 1. iDestruct "Hloop_err" as "[_ Hcontr]". iApply "Hcontr".
+      iDestruct (big_sepL_snoc with "Hwish_hist") as "[$ _]".
+    - iSplit; [|naive_solver]. iIntros (_).
+      iDestruct "Hloop_err" as "[Hloop_err _]".
+      iDestruct ("Hloop_err" with "[//]") as "H". iNamed "H".
+      iApply big_sepL_snoc.
+      replace (W64 (length _)) with (i).
+      2: { rewrite length_take. apply lookup_lt_Some in Hlook_hist. word. }
+      iFrame "#". }
   { naive_solver. }
   iIntros "(H&_)". iNamed "H". wp_load.
   iDestruct (big_sepL2_length with "Hown_hist") as %?.
   iDestruct (own_slice_small_sz with "Hsl_hist") as %?.
-  rewrite take_ge. 2: { rewrite length_fmap. lia. }
+  rewrite take_ge; [|lia].
   iApply "HΦ". by iFrame.
 Qed.
 
