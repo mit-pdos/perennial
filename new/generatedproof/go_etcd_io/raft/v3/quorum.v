@@ -21,7 +21,7 @@ End MajorityConfig.
 Module JointConfig.
 Section def.
 Context `{ffi_syntax}.
-Definition t := (vec MajorityConfig.t 2).
+Definition t := (vec MajorityConfig.t (uint.nat (W64 2))).
 End def.
 End JointConfig.
 
@@ -74,7 +74,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined quorum :=
 |}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
-  "H_VoteResult_index" ∷ _VoteResult_index ↦ (default_val (vec w8 4)).
+  "H_VoteResult_index" ∷ _VoteResult_index ↦ (default_val (vec w8 (uint.nat (W64 4)))).
 
 Global Instance wp_globals_get__VoteResult_index : 
   WpGlobalsGet quorum "_VoteResult_index" _VoteResult_index (is_pkg_defined quorum).

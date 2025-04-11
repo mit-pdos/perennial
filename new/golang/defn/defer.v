@@ -1,4 +1,4 @@
-From New.golang.defn Require Import exception mem.
+From New.golang.defn Require Import exception dynamic_mem.
 From Perennial Require Import base.
 
 Section defn.
@@ -6,9 +6,9 @@ Context `{!ffi_syntax}.
 
 Definition wrap_defer : val :=
   λ: "body",
-    let: "$defer" := (ref_ty funcT #(func.mk <> <> #())) in
+    let: "$defer" := (alloc #(func.mk <> <> #())) in
     let: "$func_ret" := exception_do ("body" "$defer") in
-    (![funcT] "$defer") #();;
+    (![#funcT] "$defer") #();;
     "$func_ret".
 
 End defn.

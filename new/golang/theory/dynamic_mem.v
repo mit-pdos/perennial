@@ -7,6 +7,7 @@ From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 From New.golang.theory Require Import typing assume list mem dynamic_typing.
 From New.golang.defn Require Export dynamic_mem.
+From Perennial Require Export base.
 
 Set Default Proof Using "Type".
 

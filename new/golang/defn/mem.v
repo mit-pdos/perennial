@@ -1,7 +1,15 @@
 From New.golang.defn Require Export typing.
 From Perennial Require Import base.
 
-(** * Memory load, store, and allocation with type annotations. *)
+(** * High-level typed memory load and store.
+
+This is a "static" version where types are provided in Gallina and direct a
+GoLang expression. This is mostly superceded by dynamic_mem where the type is
+provided dynamically in GooseLang, but we still need this library in a handful
+of places.
+
+*)
+
 Section go_lang.
   Context `{ffi_syntax}.
 
