@@ -306,6 +306,30 @@ Proof.
   (* TODO: wp_getHist *)
 Admitted.
 
+Lemma wp_compMapLabel (uid ver : w64) (sk_ptr : loc) pk :
+  {{{ is_vrf_sk sk_ptr pk }}}
+    compMapLabel #uid #ver #sk_ptr
+  {{{
+      out out_sl proof proof_sl, RET (slice_val out_sl, slice_val proof_sl);
+      own_slice_small out_sl byteT (DfracOwn 1) out ∗
+      own_slice_small proof_sl byteT (DfracOwn 1) proof ∗
+      is_vrf_out pk (enc_label_pre uid ver) out ∗
+      is_vrf_proof pk (enc_label_pre uid ver) proof
+  }}}.
+Proof.
+  iIntros (?) "Hsk HΦ". wp_rec. wp_pures.
+  wp_apply wp_allocStruct; [val_ty | ].
+  iIntros (?) "Hl". iDestruct (struct_fields_split with "Hl") as "Hl".
+  iNamed "Hl". wp_pures. wp_apply wp_NewSliceWithCap; [word | ].
+  iIntros (?) "Hsl". wp_apply (MapLabelPre.wp_enc with "[$Hsl Uid Ver]").
+  { instantiate (2:=ltac:(econstructor)). iFrame. }
+  iIntros "*". iNamed 1. wp_pures.
+  iDestruct (own_slice_to_small with "[$]") as "?".
+  wp_apply (wp_VrfPrivateKey__Prove with "[$]").
+  iIntros "*". iNamed 1. iApply "HΦ". rewrite replicate_0. iFrame "∗#".
+  rewrite Henc. simpl. iFrame "#".
+Qed.
+
 Lemma wp_getHist γ keyMap keyMap_ptr uid (numVers : w64) vrfSk :
   {{{
       own_Tree keyMap_ptr keyMap (DfracOwn 1)
@@ -361,10 +385,14 @@ Proof.
     rewrite big_sepL2_nil. iSplit; first done.
     iSplit; first done. iIntros (?) "?". done.
   }
-  wp_apply wp_forUpto.
-  Search For.
-  Locate "for:".
   wp_forBreak_cond.
+  clear ptr.
+  iNamed "Hloop".
+  wp_load. wp_pures. wp_if_destruct.
+  { (* run a loop iteration *)
+    wp_pures. wp_load.
+    Search compMapLabel.
+  }
 Qed.
 
 End proof.
