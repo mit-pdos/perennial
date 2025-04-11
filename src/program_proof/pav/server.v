@@ -182,31 +182,26 @@ Definition is_Server ptr serv : iProp Σ :=
   "#Hptr_workq" ∷ ptr ↦[Server :: "workQ"]□ #workQ ∗
   "#workQ" ∷ is_WorkQ workQ.
 
-Definition wish_memb_hide vrf_pk uid ver sigdig memb_hide : iProp Σ :=
-  ∃ label,
-  let label_pre := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) in
-  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk label_pre memb_hide.(MembHide.LabelProof) ∗
-  "#Hvrf_out" ∷ is_vrf_out vrf_pk label_pre label ∗
-  "#Hmerk" ∷ wish_merkle_Verify true label memb_hide.(MembHide.MapVal)
-    memb_hide.(MembHide.MerkleProof) sigdig.(SigDig.Dig).
+Definition wish_checkMembHide vrf_pk uid ver dig memb_hide label : iProp Σ :=
+  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb_hide.(MembHide.LabelProof) ∗
+  "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
+  "#Hmerk" ∷ wish_merkle_Verify true label
+    memb_hide.(MembHide.MapVal) memb_hide.(MembHide.MerkleProof) dig.
 
-Definition wish_memb vrf_pk uid ver sigdig memb : iProp Σ :=
-  ∃ label commit,
-  let label_pre := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) in
-  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk label_pre memb.(Memb.LabelProof) ∗
-  "#Hvrf_out" ∷ is_vrf_out vrf_pk label_pre label ∗
+Definition wish_checkMemb vrf_pk uid ver dig memb label commit : iProp Σ :=
+  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb.(Memb.LabelProof) ∗
+  "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
   "#Hcommit" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) commit ∗
   "#Hmerk" ∷ wish_merkle_Verify true label
-    (MapValPre.encodesF $ MapValPre.mk sigdig.(SigDig.Epoch) commit)
-    memb.(Memb.MerkleProof) sigdig.(SigDig.Dig).
+    (enc_val memb.(Memb.EpochAdded) commit)
+    memb.(Memb.MerkleProof) dig.
 
-Definition wish_nonmemb vrf_pk uid ver sigdig nonmemb : iProp Σ :=
+Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
   ∃ label,
-  let label_pre := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) in
-  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk label_pre nonmemb.(NonMemb.LabelProof) ∗
-  "#Hvrf_out" ∷ is_vrf_out vrf_pk label_pre label ∗
-  "#Hmerk" ∷ wish_merkle_Verify false label [] nonmemb.(NonMemb.MerkleProof)
-    sigdig.(SigDig.Dig).
+  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) non_memb.(NonMemb.LabelProof) ∗
+  "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
+  "#Hmerk" ∷ wish_merkle_Verify false label []
+    non_memb.(NonMemb.MerkleProof) dig.
 
 Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
   {{{
@@ -217,7 +212,7 @@ Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
   }}}
   Server__Put #ptr #uid (slice_val sl_pk)
   {{{
-    ptr_sigdig sigdig ptr_lat lat ptr_bound bound,
+    ptr_sigdig sigdig ptr_lat lat ptr_bound bound label commit,
     RET (#ptr_sigdig, #ptr_lat, #ptr_bound, #false);
     "Hvers" ∷ uid ↪[serv.(Server.γvers)] (word.add nVers (W64 1)) ∗
     "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
@@ -229,10 +224,11 @@ Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
       (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
       sigdig.(SigDig.Sig) ∗
     "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
-    "#Hwish_lat" ∷ wish_memb serv.(Server.vrf_pk) uid nVers sigdig lat ∗
+    "#Hwish_lat" ∷ wish_checkMemb serv.(Server.vrf_pk) uid nVers
+      sigdig.(SigDig.Dig) lat label commit ∗
     "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
-    "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk)
-      uid (word.add nVers (W64 1)) sigdig bound
+    "#Hwish_bound" ∷ wish_checkNonMemb serv.(Server.vrf_pk)
+      uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
   }}}.
 Proof.
   iIntros (?) "Hpre HΦ". iNamed "Hpre".
@@ -307,13 +303,18 @@ Lemma wp_Server__Get ptr serv uid cli_ep :
       MembHide.own l x (DfracOwn 1)) ∗
     "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) ptr2_hist ∗
     "#Hwish_hist" ∷ ([∗ list] ver ↦ x ∈ hist,
-      wish_memb_hide serv.(Server.vrf_pk) uid (W64 ver) sigdig x) ∗
+      ∃ label,
+      wish_checkMembHide serv.(Server.vrf_pk) uid (W64 ver)
+        sigdig.(SigDig.Dig) x label) ∗
     "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
     "%Heq_is_reg" ∷ ⌜ is_reg = negb $ bool_decide (nVers = (W64 0)) ⌝ ∗
     "#Hwish_lat" ∷ (if negb is_reg then True else
-      wish_memb serv.(Server.vrf_pk) uid (word.sub nVers (W64 1)) sigdig lat) ∗
+      ∃ label commit,
+      wish_checkMemb serv.(Server.vrf_pk) uid (word.sub nVers (W64 1))
+        sigdig.(SigDig.Dig) lat label commit) ∗
     "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
-    "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk) uid nVers sigdig bound
+    "#Hwish_bound" ∷ wish_checkNonMemb serv.(Server.vrf_pk) uid nVers
+      sigdig.(SigDig.Dig) bound
   }}}.
 Proof.
   iIntros (?) "Hpre HΦ". iNamed "Hpre". iNamed "Hserv".
@@ -346,7 +347,7 @@ Proof.
   iIntros (?) "[H2_own #?]". wp_pures.
   wp_loadField. wp_load. wp_loadField.
   (* TODO: wp_getHist *)
-Qed.
+Admitted.
 
 Lemma wp_Server__SelfMon ptr serv uid nVers cli_ep :
   {{{
@@ -366,7 +367,8 @@ Lemma wp_Server__SelfMon ptr serv uid nVers cli_ep :
       (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
       sigdig.(SigDig.Sig) ∗
     "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
-    "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk) uid nVers sigdig bound
+    "#Hwish_bound" ∷ wish_checkNonMemb serv.(Server.vrf_pk) uid nVers
+      sigdig.(SigDig.Dig) bound
   }}}.
 Proof. Admitted.
 

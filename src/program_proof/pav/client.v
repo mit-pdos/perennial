@@ -201,14 +201,6 @@ Proof.
     + iIntros (?). iNamedSuffix 1 "0". by iApply is_vrf_out_det.
 Qed.
 
-Definition wish_checkMemb vrf_pk uid ver dig memb label commit : iProp Σ :=
-  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb.(Memb.LabelProof) ∗
-  "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
-  "#Hcommit" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) commit ∗
-  "#Hmerk" ∷ wish_merkle_Verify true label
-    (enc_val memb.(Memb.EpochAdded) commit)
-    memb.(Memb.MerkleProof) dig.
-
 Lemma wp_checkMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_memb memb d0 :
   {{{
     "#Hvrf_pk" ∷ is_vrf_pk ptr_vrf_pk vrf_pk ∗
@@ -250,13 +242,6 @@ Proof.
     iDestruct ("Hgenie" with "[//]") as "#Hmerk".
     iFrame "∗#".
 Qed.
-
-(* TODO: merge these with wishes in server. *)
-Definition wish_checkMembHide vrf_pk uid ver dig memb_hide label : iProp Σ :=
-  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb_hide.(MembHide.LabelProof) ∗
-  "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
-  "#Hmerk" ∷ wish_merkle_Verify true label
-    memb_hide.(MembHide.MapVal) memb_hide.(MembHide.MerkleProof) dig.
 
 Lemma wp_checkMembHide ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_memb_hide memb_hide d0 :
   {{{
@@ -368,13 +353,6 @@ Proof.
   rewrite take_ge; [|lia].
   iApply "HΦ". by iFrame.
 Qed.
-
-Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
-  ∃ label,
-  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) non_memb.(NonMemb.LabelProof) ∗
-  "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
-  "#Hmerk" ∷ wish_merkle_Verify false label []
-    non_memb.(NonMemb.MerkleProof) dig.
 
 Lemma wp_checkNonMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_non_memb non_memb d0 :
   {{{
