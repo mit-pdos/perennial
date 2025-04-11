@@ -13,16 +13,17 @@ Record t :=
     next_ver: ver_ty;
     next_epoch: epoch_ty;
     serv: Server.t;
+    serv_addr: w64;
     serv_is_good: bool;
   }.
 Global Instance eta : Settable _ :=
-  settable! mk <γ; uid; next_ver; next_epoch; serv; serv_is_good>.
+  settable! mk <γ; uid; next_ver; next_epoch; serv; serv_addr; serv_is_good>.
 
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ digs ptr_sd sd_refs sd ptr_serv_cli serv_addr sl_serv_sig_pk ptr_vrf_pk,
+  ∃ digs ptr_sd sd_refs sd ptr_serv_cli sl_serv_sig_pk ptr_vrf_pk,
 
   (* seenDigs (sd). *)
   "Hown_sd_refs" ∷ own_map ptr_sd (DfracOwn 1) sd_refs ∗
@@ -39,7 +40,7 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
 
   (* server info. *)
   "Huid" ∷ obj.(uid) ↪[obj.(serv).(Server.γvers)] obj.(next_ver) ∗
-  "Hown_servCli" ∷ advrpc.own_Client ptr_serv_cli serv_addr obj.(serv_is_good) ∗
+  "Hown_servCli" ∷ advrpc.own_Client ptr_serv_cli obj.(serv_addr) obj.(serv_is_good) ∗
   "#Hserv_sig_pk" ∷ (if negb obj.(serv_is_good) then True else
     is_sig_pk obj.(serv).(Server.sig_pk) (serv_sigpred obj.(serv).(Server.γhist))) ∗
   "#Hptr_servCli" ∷ ptr ↦[Client :: "servCli"]□ #ptr_serv_cli ∗
@@ -89,14 +90,13 @@ Lemma wp_NewClient uid serv_addr sl_serv_sig_pk sl_serv_vrf_pk serv serv_is_good
     "#Hsl_serv_sig_pk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded serv.(Server.sig_pk) ∗
     "#Hsl_serv_vrf_pk" ∷ own_slice_small sl_serv_vrf_pk byteT DfracDiscarded serv.(Server.vrf_pk) ∗
     "#His_good" ∷ (if negb serv_is_good then True else
-      is_sig_pk serv.(Server.sig_pk) (serv_sigpred serv.(Server.γhist))) ∗
-    "%Heq_addr" ∷ ⌜ serv_addr = serv.(Server.addr) ⌝
+      is_sig_pk serv.(Server.sig_pk) (serv_sigpred serv.(Server.γhist)))
   }}}
   NewClient #uid #serv_addr (slice_val sl_serv_sig_pk) (slice_val sl_serv_vrf_pk)
   {{{
     ptr_c γ, RET #ptr_c;
     "Hown_cli" ∷ Client.own ptr_c
-      (Client.mk γ uid (W64 0) (W64 0) serv serv_is_good)
+      (Client.mk γ uid (W64 0) (W64 0) serv serv_addr serv_is_good)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
