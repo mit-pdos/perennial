@@ -10,17 +10,9 @@ Definition own (ptr : loc) (obj : t) : iProp Σ. Admitted.
 End defs.
 End Server.
 
-Module Client.
-Definition t : Type. Admitted.
-
-Section defs.
-Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ. Admitted.
-End defs.
-End Client.
-
 Section specs.
 Context `{!heapGS Σ}.
+
 Lemma wp_NewServer (handlers : loc) :
   {{{ True }}}
   NewServer #handlers
@@ -38,12 +30,14 @@ Lemma wp_Server__Serve ptr_serv serv (addr : w64) :
   {{{ RET #(); True }}}.
 Proof. Admitted.
 
-Lemma wp_Dial (addr : w64) :
+Definition own_Client (ptr : loc) (addr : w64) (is_good : bool) : iProp Σ. Admitted.
+
+Lemma wp_Dial (addr : w64) (is_good : bool) :
   {{{ True }}}
   Dial #addr
   {{{
-    ptr_cli cli, RET #ptr_cli;
-    "Hown_cli" ∷ Client.own ptr_cli cli
+    ptr_cli, RET #ptr_cli;
+    "Hrpc_cli" ∷ own_Client ptr_cli addr is_good
   }}}.
 Proof. Admitted.
 
