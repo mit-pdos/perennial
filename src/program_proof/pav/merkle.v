@@ -216,9 +216,6 @@ Definition is_merkle_found (label: list w8)
   "%Htree_path" ∷ ⌜ tree_path t label 0 found ⌝ ∗
   "#Htree_hash" ∷ is_tree_hash t h.
 
-Definition is_merkle_memb (label: list w8) (val: list w8) (h: list w8) : iProp Σ :=
-  "#His_found" ∷ is_merkle_found label (Some (label, val)) h.
-
 Definition found_nonmemb (label: list w8)
     (found: option ((list w8) * (list w8))%type) :=
   match found with
@@ -226,10 +223,19 @@ Definition found_nonmemb (label: list w8)
   | Some (found_label, _) => label ≠ found_label
   end.
 
-Definition is_merkle_nonmemb (label: list w8) (h: list w8) : iProp Σ :=
-  ∃ found,
-  "#His_found" ∷ is_merkle_found label found h ∗
-  "%Heq_nonmemb" ∷ ⌜ found_nonmemb label found ⌝.
+(* is_merkle_entry represents memb and nonmemb proofs
+as Some and None option vals, providing a unified way of expressing them
+that directly corresponds to a map entry. *)
+Definition is_merkle_entry (label : list w8) (val : option $ list w8)
+    (dig : list w8) : iProp Σ :=
+  match val with
+  | Some v =>
+    "#Hfound" ∷ is_merkle_found label (Some (label, v)) dig
+  | None =>
+    ∃ found,
+    "#Hfound" ∷ is_merkle_found label found dig ∗
+    "%Hnonmemb" ∷ ⌜ found_nonmemb label found ⌝
+  end.
 
 Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth : w64)
     (proof: list w8) : iProp Σ :=
@@ -280,6 +286,14 @@ Definition wish_merkle_Verify (in_tree : bool) label val proof dig : iProp Σ :=
         label ≠ proof_obj.(MerkleProof.LeafLabel)
       else found = None ⌝ ∗
   "#His_proof" ∷ is_merkle_proof label found proof_obj.(MerkleProof.Siblings) dig.
+
+Lemma wish_merkle_Verify_to_entry in_tree label val proof dig :
+  wish_merkle_Verify in_tree label val proof dig -∗
+  is_merkle_entry label (if in_tree then Some val else None) dig.
+Proof.
+  iNamed 1. iNamed "His_proof".
+  repeat case_match; intuition; subst; by iFrame "#%".
+Qed.
 
 (* Derived facts. *)
 
@@ -400,22 +414,21 @@ Proof.
   iApply (tree_path_agree with "H0 H1"); eauto.
 Qed.
 
-Lemma is_merkle_map_agree_is_merkle_found m h label found:
+Lemma is_merkle_map_agree_entry m h label val :
   is_merkle_map m h -∗
-  is_merkle_found label found h -∗
-  ⌜ match m !! label with
-  | None => found_nonmemb label found
-  | Some val => found = Some (label, val)
-  end ⌝.
+  is_merkle_entry label val h -∗
+  ⌜ m !! label = val ⌝.
 Proof.
-  iNamedSuffix 1 "0". iNamedSuffix 1 "1". subst.
+  iNamedSuffix 1 "0". subst.
   destruct (tree_to_map t !! label) eqn:He.
   - eapply tree_to_map_Some in He; eauto.
-    iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree"; eauto.
-  - eapply tree_to_map_None in He; eauto.
-    destruct He as [? [? ?]].
-    iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree"; eauto.
-    naive_solver.
+    destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
+      iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree";
+      try done; naive_solver.
+  - eapply tree_to_map_None in He as [? [? ?]]; eauto.
+    destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
+      iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree";
+      try done; naive_solver.
 Qed.
 
 Lemma tree_sibs_proof_len t label depth proof :
@@ -1378,10 +1391,7 @@ Lemma wp_Tree__prove sl_label d0 (label : list w8) ptr_t elems d1 (get_proof : b
     "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
     "Hsl_proof" ∷ own_slice_small sl_proof byteT (DfracOwn 1) proof ∗
     "#His_dig" ∷ is_merkle_map elems dig ∗
-    "#Hmemb" ∷
-      (if in_tree
-      then is_merkle_memb label val dig
-      else is_merkle_nonmemb label dig) ∗
+    "#Hmemb" ∷ is_merkle_entry label (if in_tree then Some val else None) dig ∗
     "#Hwish" ∷ (if negb get_proof then True else wish_merkle_Verify in_tree label val proof dig)
   }}}.
 Proof.
@@ -1557,13 +1567,8 @@ Proof.
   wp_apply (wp_Tree__prove with "[$Hsl_label $Hown_Tree]").
   iIntros "*". iNamed 1.
   wp_pures. iApply "HΦ". iFrame "∗#".
-  case_match; iNamed "Hmemb".
-  - iDestruct (is_merkle_map_agree_is_merkle_found with "His_dig []") as %?.
-    { iFrame "#%". }
-    case_match; naive_solver.
-  - iDestruct (is_merkle_map_agree_is_merkle_found with "His_dig []") as %?.
-    { iFrame "#%". }
-    case_match; naive_solver.
+  case_match;
+    by iDestruct (is_merkle_map_agree_entry with "His_dig Hmemb") as %?.
 Qed.
 
 Lemma wp_Tree__Prove sl_label d0 (label : list w8) ptr_t elems d1 :
@@ -1589,13 +1594,8 @@ Proof.
   wp_apply (wp_Tree__prove with "[$Hsl_label $Hown_Tree]").
   iIntros "*". iNamed 1.
   wp_pures. iApply "HΦ". iFrame "∗#".
-  case_match; iNamed "Hmemb".
-  - iDestruct (is_merkle_map_agree_is_merkle_found with "His_dig []") as %?.
-    { iFrame "#%". }
-    case_match; naive_solver.
-  - iDestruct (is_merkle_map_agree_is_merkle_found with "His_dig []") as %?.
-    { iFrame "#%". }
-    case_match; naive_solver.
+  case_match;
+    by iDestruct (is_merkle_map_agree_entry with "His_dig Hmemb") as %?.
 Qed.
 
 Lemma wp_put n0 ptr_n (depth : w64) elems sl_label sl_val (label val : list w8) ptr_ctx :
