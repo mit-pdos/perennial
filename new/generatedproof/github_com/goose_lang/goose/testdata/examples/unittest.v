@@ -15,7 +15,7 @@ Axiom falso : False.
 Module Foo.
 Section def.
 Context `{ffi_syntax}.
-Definition t := (vec w64 10).
+Definition t := (vec w64 (uint.nat (W64 10))).
 End def.
 End Foo.
 Module importantStruct.

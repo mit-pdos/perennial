@@ -17,11 +17,12 @@ Proof.
 Qed.
 
 Lemma mul_overflow_check_correct (x y: w64) :
-  uint.Z x ≠ 0 →
   uint.Z y ≠ 0 →
   2 ^ 64 - 1 < uint.Z x * uint.Z y ↔ (2 ^ 64 - 1) `div` uint.Z y < uint.Z x.
 Proof.
-  intros Hnz1 Hnz2.
+  intros Hnz1.
+  destruct (decide (uint.Z x = 0)).
+  { word. }
   set (u64_max := 2^64-1).
   split.
   - subst u64_max.

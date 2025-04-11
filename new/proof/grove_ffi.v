@@ -6,6 +6,7 @@ From New.proof Require Export proof_prelude own_crash.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi.
 From New.code.github_com.mit_pdos.gokv Require Import grove_ffi.
 Require Import New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
+From Perennial Require Import base.
 
 Set Default Proof Using "Type".
 

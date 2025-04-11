@@ -1,4 +1,4 @@
-From New.golang.defn Require Export loop typing list.
+From New.golang.defn Require Import loop typing list.
 
 Module map.
 (* FIXME: seal these functions *)

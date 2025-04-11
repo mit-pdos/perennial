@@ -1,6 +1,6 @@
 From New Require Export notation.
 From New.golang.defn Require Export builtin.
-From New.golang.theory Require Export typing proofmode.
+From New.golang.theory Require Import typing proofmode.
 From Perennial Require Import base.
 
 Module error.
