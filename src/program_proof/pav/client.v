@@ -93,7 +93,7 @@ Lemma wp_checkDig sl_sig_pk (sig_pk : list w8) ptr_sd (sd_refs : gmap w64 loc) s
     "#His_sd" ∷ ([∗ map] ep ↦ x ∈ sd,
       "%Heq_ep" ∷ ⌜ ep = x.(SigDig.Epoch) ⌝ ∗
       "#His_sigdig" ∷ is_SigDig x sig_pk) ∗
-    "#Hown_dig" ∷ SigDig.own ptr_dig dig DfracDiscarded
+    "#Hsigdig" ∷ SigDig.own ptr_dig dig DfracDiscarded
   }}}
   checkDig (slice_val sl_sig_pk) #ptr_sd #ptr_dig
   {{{
@@ -107,15 +107,15 @@ Proof.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) sig_pk) with "[H]" as "Hown_std_err".
   { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
-  wp_apply (wp_CheckSigDig with "[$Hown_dig $Hsl_sig_pk]").
-  iIntros "*". iNamedSuffix 1 "_sigdig".
+  wp_apply (wp_CheckSigDig with "[$Hsigdig $Hsl_sig_pk]").
+  iIntros "*". iNamed 1.
   wp_if_destruct.
   { iApply "HΦ". iFrame. iIntros "!>". iSplit. { by iIntros (?). }
-    iNamed 1. iDestruct "Hgenie_sigdig" as "[_ Hgenie]".
+    iNamed 1. iDestruct "Hgenie" as "[_ Hgenie]".
     by iDestruct ("Hgenie" with "His_dig") as %?. }
-  iDestruct "Hgenie_sigdig" as "[H _]".
+  iDestruct "Hgenie" as "[H _]".
   iDestruct ("H" with "[//]") as "#His_sigdig".
-  iPoseProof "Hown_dig" as "H". iNamed "H".
+  iNamed "Hsigdig".
   wp_loadField. wp_apply wp_SumNoOverflow. wp_if_destruct.
   { iApply "HΦ". iFrame. iIntros "!>". iSplit. { by iIntros (?). }
     iNamed 1. word. }
@@ -137,7 +137,7 @@ Proof.
       iDestruct (struct_fields_split with "H") as "{H} H". iNamed "H".
       wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
       iDestruct (struct_fields_split with "H") as "H". iNamed "H".
-      iApply ("HΦ" $! (ClientErr.mk (Some (Evid.mk _ _)) true)).
+      iApply ("HΦ" $! (ClientErr.mk (Some (Evid.mk dig x)) true)).
       iFrame "∗#". simpl. iSplit; [done|]. iSplit. { by iIntros (?). }
       iNamed 1. naive_solver.
     - wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
@@ -211,13 +211,13 @@ Lemma wp_checkMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_
       memb.(Memb.MerkleProof) dig)%I in
   {{{
     "#Hvrf_pk" ∷ is_vrf_pk ptr_vrf_pk vrf_pk ∗
-    "Hsl_dig" ∷ own_slice_small sl_dig byteT d0 dig ∗
-    "#Hown_memb" ∷ Memb.own ptr_memb memb DfracDiscarded
+    "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
+    "Hown_memb" ∷ Memb.own ptr_memb memb d0
   }}}
   checkMemb #ptr_vrf_pk #uid #ver (slice_val sl_dig) #ptr_memb
   {{{
     (err : bool), RET #err;
-    "Hsl_dig" ∷ own_slice_small sl_dig byteT d0 dig ∗
+    "Hown_memb" ∷ Memb.own ptr_memb memb d0 ∗
     "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ ∃ label commit, wish label commit)
   }}}.
 Proof.
@@ -225,7 +225,7 @@ Proof.
   iNamed "Hown_memb". wp_loadField.
   wp_apply (wp_checkLabel with "[$Hvrf_pk $Hsl_labelP]").
   iIntros "*". iNamed 1. wp_if_destruct.
-  { iApply "HΦ". iFrame. iIntros "!>". iSplit. { by iIntros (?). }
+  { iApply "HΦ". iFrame "∗#". iIntros "!>". iSplit. { by iIntros (?). }
     iNamed 1. iDestruct "Hgenie" as "[_ Hgenie]".
     iApply "Hgenie". iFrame "#". }
   iDestruct "Hgenie" as "[Hgenie _]".
@@ -234,9 +234,9 @@ Proof.
   do 2 wp_loadField.
   wp_apply (wp_compMapVal with "[$Hpk_open]"). iIntros "*". iNamed 1.
   wp_loadField.
-  wp_apply (wp_Verify with "[Hsl_label Hsl_map_val Hsl_dig]").
-  { iFrame "∗#". }
-  iIntros (err0). iNamed 1.
+  wp_apply (wp_Verify with "[$Hsl_label $Hsl_map_val]").
+  { iFrame "#". }
+  iIntros (err0) "{Hsl_dig}". iNamed 1.
   iApply "HΦ". iFrame "∗#". destruct err0.
   - iSplit. { by iIntros (?). }
     iNamedSuffix 1 "0". iDestruct "Hgenie" as "[_ Hgenie]".
@@ -250,16 +250,21 @@ Proof.
 Qed.
 
 Lemma wp_checkMembHide ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_memb_hide memb_hide :
+  let wish := (λ label commit,
+    "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb.(Memb.LabelProof) ∗
+    "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
+    "#Hcommit" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) commit ∗
+    "#Hmerk" ∷ wish_merkle_Verify true label
+      (enc_val memb.(Memb.EpochAdded) commit)
+      memb.(Memb.MerkleProof) dig)%I in
   {{{
-    "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
+    "#Hvrf_pk" ∷ is_vrf_pk ptr_vrf_pk vrf_pk ∗
     "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
-    "Hown_memb_hide" ∷ MembHide.own ptr_memb_hide memb_hide
+    "#Hown_memb_hide" ∷ MembHide.own ptr_memb_hide memb_hide DfracDiscarded
   }}}
   checkMembHide #ptr_vrf_pk #uid #ver (slice_val sl_dig) #ptr_memb_hide
   {{{
     (err : bool), RET #err;
-    "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
-    "Hown_memb_hide" ∷ MembHide.own ptr_memb_hide memb_hide ∗
     "Herr" ∷ (if err then True else
       ∃ label,
       "#His_label" ∷ is_map_label vrf_pk uid ver label ∗
