@@ -1,4 +1,5 @@
-From New.golang.defn Require Export mem loop assume exception typing list.
+From New.golang.defn Require Import mem loop assume exception typing list.
+From Perennial Require Import base.
 
 Module slice.
 (* FIXME: seal these functions *)

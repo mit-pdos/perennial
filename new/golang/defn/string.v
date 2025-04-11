@@ -1,5 +1,5 @@
-From New.golang.defn Require Export notation.
-From New.golang.defn Require Export typing slice.
+From New.golang.defn Require Import notation.
+From New.golang.defn Require Import mem typing slice.
 From Perennial Require Import base.
 
 Section defn.

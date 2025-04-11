@@ -1,4 +1,4 @@
-From New.golang.defn Require Export mem typing list pkg.
+From New.golang.defn Require Import mem typing list pkg.
 From Perennial Require Import base.
 
 Module globals.

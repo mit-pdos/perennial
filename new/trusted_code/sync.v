@@ -28,10 +28,10 @@ Definition Cond : go_type := structT [
     "L" :: interfaceT
   ].
 
-Definition NewCond : val := λ: "m", ref_ty Cond (struct.make Cond [{ (#"L", "m") }]).
+Definition NewCond : val := λ: "m", alloc (struct.make Cond [{ (#"L", "m") }]).
 Definition Cond__Wait : val := λ: "c" <>, exception_do (
-                                 do: interface.get #"Unlock"%go (![interfaceT] (struct.field_ref Cond "L" "c")) #() ;;;
-                                 do: interface.get #"Lock"%go (![interfaceT] (struct.field_ref Cond "L" "c")) #()
+                                 do: interface.get #"Unlock"%go (![#interfaceT] (struct.field_ref Cond "L" "c")) #() ;;;
+                                 do: interface.get #"Lock"%go (![#interfaceT] (struct.field_ref Cond "L" "c")) #()
                                ).
 Definition Cond__Broadcast : val := λ: "c" <>, #().
 Definition Cond__Signal : val := λ: "c" <>, #().

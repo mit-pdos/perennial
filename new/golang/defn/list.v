@@ -1,5 +1,5 @@
 From New Require Import notation.
-From New.golang.defn Require Import typing.
+From New.golang.defn Require Export typing.
 From Perennial Require Import base.
 
 Module list.

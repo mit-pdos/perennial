@@ -1,4 +1,5 @@
-From New.golang.defn Require Export exception mem.
+From New.golang.defn Require Import exception mem.
+From Perennial Require Import base.
 
 Section defn.
 Context `{!ffi_syntax}.
