@@ -62,7 +62,12 @@ Section go_lang.
 
 End go_lang.
 
+(* dynamic_mem is preferred so these notations aren't provided; we use
+mem.load_ty and mem.store_ty in the few cases where these operations are
+needed *)
+(*
 Reserved Notation "![ t ] e" (at level 9, right associativity, format "![ t ]  e").
 Notation "![ t ] e" := (load_ty t e%E) : expr_scope.
 Reserved Notation "e1 <-[ t ] e2" (at level 80, format "e1  <-[ t ]  e2").
 Notation "e1 <-[ t ] e2" := (store_ty t e1%E e2%E) : expr_scope.
+*)

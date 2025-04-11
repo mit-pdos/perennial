@@ -395,7 +395,7 @@ Section goose_lang.
 
   Lemma wp_store_ty stk E l v v' :
     {{{ ▷ l ↦ v }}}
-      (#l <-[t] #v')%V @ stk; E
+      store_ty t #l #v' @ stk; E
     {{{ RET #(); l ↦ v' }}}.
   Proof using IntoValTyped0.
     iIntros (Φ) ">Hl HΦ".

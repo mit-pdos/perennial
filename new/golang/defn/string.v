@@ -1,5 +1,5 @@
 From New.golang.defn Require Import notation.
-From New.golang.defn Require Import mem typing slice.
+From New.golang.defn Require Import dynamic_mem typing slice.
 From Perennial Require Import base.
 
 Section defn.
@@ -33,7 +33,7 @@ Section defn.
     (rec: "from_bytes" "b" :=
        if: (slice.len "b") = #(W64 0)
        then (# "")
-       else (to_string ![byteT] (slice.elem_ref byteT "b" #(W64 0))) +
+       else (to_string ![#byteT] (slice.elem_ref byteT "b" #(W64 0))) +
               ("from_bytes" (slice.slice byteT "b" #(W64 1) (slice.len "b")))).
 
   Definition slice : val :=
