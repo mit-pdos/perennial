@@ -238,7 +238,7 @@ Section tac_lemmas.
 End tac_lemmas.
 
 Ltac2 wp_load_visit e k :=
-  Control.once_plus (fun () => Std.unify e '(load_ty (Val _) (Val _)))
+  Control.once_plus (fun () => Std.unify e '(load_ty _ (Val _)))
          (fun _ => Control.zero Walk_expr_more);
   Control.once_plus (fun _ => eapply (tac_wp_load_ty $k) > [tc_solve_many ()| ltac1:(iAssumptionCore) | ectx_simpl ()])
     (fun _ => Control.backtrack_tactic_failure "wp_load: could not find a points-to in context covering the address")

@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem loop assume exception typing list.
+From New.golang.defn Require Import mem dynamic_mem loop assume exception typing list.
 From Perennial Require Import base.
 
 Module slice.
@@ -15,6 +15,8 @@ Definition len : val := λ: "s",
 Definition cap : val := λ: "s",
                           let: "s" := (match: "s" with InjL "s" => "s" | InjR <> => #() end) in
                           Snd "s".
+
+(* TODO: take element type dynamically below *)
 
 (* XXX: this computes a nondeterministic unallocated address by using
    "(Loc 1 0) +ₗ ArbiraryInt"*)
@@ -50,25 +52,25 @@ Definition full_slice t : val :=
   else Panic "slice indices out of order"
 .
 
-Definition for_range t : val :=
+Definition for_range (t: go_type) : val :=
   λ: "s" "body",
-  let: "i" := ref_ty uint64T #(W64 0) in
-  for: (λ: <>, ![uint64T] "i" < len "s") ; (λ: <>, "i" <-[uint64T] (![uint64T] "i") + #(W64 1)) :=
-    (λ: <>, "body" (![uint64T] "i") (![t] (elem_ref t "s" (![uint64T] "i"))))
+  let: "i" := alloc #(W64 0) in
+  for: (λ: <>, ![#uint64T] "i" < len "s") ; (λ: <>, "i" <-[#uint64T] (![#uint64T] "i") + #(W64 1)) :=
+    (λ: <>, "body" (![#uint64T] "i") (![#t] (elem_ref t "s" (![#uint64T] "i"))))
 .
 
-Definition copy t : val :=
+Definition copy (t: go_type) : val :=
   λ: "dst" "src",
-  let: "i" := ref_ty uint64T (zero_val uint64T) in
-  (for: (λ: <>, (![uint64T] "i" < len "dst") && (![uint64T] "i" < (len "src"))) ; (λ: <>, Skip) :=
+  let: "i" := alloc (zero_val uint64T) in
+  (for: (λ: <>, (![#uint64T] "i" < len "dst") && (![#uint64T] "i" < (len "src"))) ; (λ: <>, Skip) :=
     (λ: <>,
-    do: (let: "i_val" := ![uint64T] "i" in
-      elem_ref t "dst" "i_val" <-[t] ![t] (elem_ref t "src" "i_val");;
-      "i" <-[uint64T] "i_val" + #(W64 1))));;
-  ![uint64T] "i"
+    do: (let: "i_val" := ![#uint64T] "i" in
+      mem.store_ty t (elem_ref t "dst" "i_val") (mem.load_ty t (elem_ref t "src" "i_val"));;
+      "i" <-[#uint64T] "i_val" + #(W64 1))));;
+  ![#uint64T] "i"
 .
 
-Definition append t : val :=
+Definition append (t: go_type) : val :=
   λ: "s" "x",
   let: "new_len" := sum_assume_no_overflow (len "s") (len "x") in
   if: (cap "s") ≥ "new_len" then
@@ -86,18 +88,18 @@ Definition append t : val :=
     "s_new".
 
 (* Takes in a list as input, and turns it into a heap-allocated slice. *)
-Definition literal t : val :=
+Definition literal (t: go_type) : val :=
   λ: "elems",
   let: "len" := list.Length "elems" in
   let: "s" := make2 t "len" in
   let: "l" := ref "elems" in
-  let: "i" := ref_ty uint64T (zero_val uint64T) in
-  (for: (λ: <>, ![uint64T] "i" < "len") ; (λ: <>, "i" <-[uint64T] ![uint64T] "i" + #(W64 1)) :=
+  let: "i" := alloc (zero_val uint64T) in
+  (for: (λ: <>, ![#uint64T] "i" < "len") ; (λ: <>, "i" <-[#uint64T] ![#uint64T] "i" + #(W64 1)) :=
      (λ: <>,
         do: (list.Match !"l" (λ: <>, #())
                (λ: "elem" "l_tail",
                   "l" <- "l_tail" ;;
-                  (elem_ref t "s" (![uint64T] "i")) <-[t] "elem")))) ;;
+                  mem.store_ty t (elem_ref t "s" (![#uint64T] "i")) "elem")))) ;;
   "s"
 .
 

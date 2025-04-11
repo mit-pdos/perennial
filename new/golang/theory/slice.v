@@ -4,6 +4,7 @@ From Perennial.iris_lib Require Import dfractional.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Export list mem assume exception loop typing primitive auto.
+From New.golang.theory Require Export dynamic_mem.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
@@ -871,8 +872,7 @@ Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
 Proof.
   iIntros "Hsl HΦ".
   wp_call.
-  wp_apply wp_ref_ty.
-  iIntros (j_ptr) "Hi".
+  wp_alloc j_ptr as "Hi".
   wp_pures.
   iAssert (
       ∃ (j : u64),
@@ -981,7 +981,7 @@ Proof.
       split; first done.
       word.
     }
-    wp_store.
+    ltac2:(Control.enter mem.wp_store).
     wp_pures.
     wp_for_post.
     iFrame.
@@ -1041,7 +1041,7 @@ Qed.
 
 Lemma wp_load_slice_elem s (i: w64) (vs: list V) dq v :
   {{{ s ↦*{dq} vs ∗ ⌜vs !! (uint.nat i) = Some v⌝ }}}
-    ![t] #(slice.elem_ref_f s t i)
+    ![#t] #(slice.elem_ref_f s t i)
   {{{ RET #v; s ↦*{dq} vs }}}.
 Proof.
   wp_start_folded as "[Hs %Hlookup]".
@@ -1054,9 +1054,24 @@ Proof.
   iFrame.
 Qed.
 
+Lemma wp_static_load_slice_elem s (i: w64) (vs: list V) dq v :
+  {{{ s ↦*{dq} vs ∗ ⌜vs !! (uint.nat i) = Some v⌝ }}}
+    mem.load_ty t #(slice.elem_ref_f s t i)
+  {{{ RET #v; s ↦*{dq} vs }}}.
+Proof.
+  wp_start_folded as "[Hs %Hlookup]".
+  iDestruct (own_slice_elem_acc with "Hs") as "[Hv Hs]"; [ by eauto | ].
+  (* NOTE: cannot use [wp_load] because we need to strip a later *)
+  wp_apply (mem.wp_load_ty with "Hv"). iIntros "Hv".
+  iApply "HΦ".
+  iDestruct ("Hs" with "Hv") as "Hs".
+  rewrite -> list_insert_id by auto.
+  iFrame.
+Qed.
+
 Lemma wp_store_slice_elem s (i: w64) (vs: list V) (v': V) :
   {{{ s ↦* vs ∗ ⌜uint.Z i < Z.of_nat (length vs)⌝ }}}
-    store_ty t #(slice.elem_ref_f s t i) #v'
+    #(slice.elem_ref_f s t i) <-[#t] #v'
   {{{ RET #(); s ↦* (<[uint.nat i := v']> vs) }}}.
 Proof.
   wp_start_folded as "[Hs %bound]".
@@ -1064,6 +1079,21 @@ Proof.
   iDestruct (own_slice_elem_acc with "Hs") as "[Hv Hs]"; [ by eauto | ].
   (* NOTE: cannot use [wp_store] because we need to strip a later *)
   wp_apply (wp_store_ty with "Hv"). iIntros "Hv".
+  iApply "HΦ".
+  iDestruct ("Hs" with "Hv") as "Hs".
+  iFrame.
+Qed.
+
+Lemma wp_static_store_slice_elem s (i: w64) (vs: list V) (v': V) :
+  {{{ s ↦* vs ∗ ⌜uint.Z i < Z.of_nat (length vs)⌝ }}}
+    mem.store_ty t #(slice.elem_ref_f s t i) #v'
+  {{{ RET #(); s ↦* (<[uint.nat i := v']> vs) }}}.
+Proof.
+  wp_start_folded as "[Hs %bound]".
+  list_elem vs i as v.
+  iDestruct (own_slice_elem_acc with "Hs") as "[Hv Hs]"; [ by eauto | ].
+  (* NOTE: cannot use [wp_store] because we need to strip a later *)
+  wp_apply (mem.wp_store_ty with "Hv"). iIntros "Hv".
   iApply "HΦ".
   iDestruct ("Hs" with "Hv") as "Hs".
   iFrame.
@@ -1102,9 +1132,9 @@ Proof.
     end.
     { rewrite decide_True //; wp_auto.
       list_elem vs' i as y.
-      wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2".
+      wp_apply (wp_static_load_slice_elem with "[$Hs2]") as "Hs2".
       { eauto. }
-      wp_apply (wp_store_slice_elem with "[$Hs1]") as "Hs1".
+      wp_apply (wp_static_store_slice_elem with "[$Hs1]") as "Hs1".
       { len. }
       wp_for_post.
       iFrame.
