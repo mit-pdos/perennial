@@ -13,15 +13,16 @@ Record t :=
     next_ver: ver_ty;
     next_epoch: epoch_ty;
     serv: Server.t;
+    serv_is_good: bool;
   }.
 Global Instance eta : Settable _ :=
-  settable! mk <γ; uid; next_ver; next_epoch; serv>.
+  settable! mk <γ; uid; next_ver; next_epoch; serv; serv_is_good>.
 
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ digs ptr_sd sd_refs sd ptr_serv_cli serv_cli sl_serv_sig_pk ptr_vrf_pk,
+  ∃ digs ptr_sd sd_refs sd ptr_serv_cli serv_addr sl_serv_sig_pk ptr_vrf_pk,
 
   (* seenDigs (sd). *)
   "Hown_sd_refs" ∷ own_map ptr_sd (DfracOwn 1) sd_refs ∗
@@ -37,12 +38,15 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
   "Hptr_nextEpoch" ∷ ptr ↦[Client :: "nextEpoch"] #obj.(next_epoch) ∗
 
   (* server info. *)
-  "Hown_servCli" ∷ advrpc.Client.own ptr_serv_cli serv_cli ∗
+  "Huid" ∷ obj.(uid) ↪[obj.(serv).(Server.γvers)] obj.(next_ver) ∗
+  "Hown_servCli" ∷ advrpc.own_Client ptr_serv_cli serv_addr obj.(serv_is_good) ∗
+  "#Hserv_sig_pk" ∷ (if negb obj.(serv_is_good) then True else
+    is_sig_pk obj.(serv).(Server.sig_pk) (serv_sigpred obj.(serv).(Server.γhist))) ∗
   "#Hptr_servCli" ∷ ptr ↦[Client :: "servCli"]□ #ptr_serv_cli ∗
   "#Hptr_servSigPk" ∷ ptr ↦[Client :: "servSigPk"]□ (slice_val sl_serv_sig_pk) ∗
   "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT
     DfracDiscarded obj.(serv).(Server.sig_pk) ∗
-  "Hvrf_pk" ∷ is_vrf_pk ptr_vrf_pk obj.(serv).(Server.vrf_pk) ∗
+  "#Hserv_vrf_pk" ∷ is_vrf_pk ptr_vrf_pk obj.(serv).(Server.vrf_pk) ∗
   "#Hptr_servVrfPk" ∷ ptr ↦[Client :: "servVrfPk"]□ #ptr_vrf_pk ∗
 
   (* digs ghost state. *)
@@ -78,6 +82,38 @@ End ClientErr.
 
 Section wps.
 Context `{!heapGS Σ, !pavG Σ}.
+
+Lemma wp_NewClient uid serv_addr sl_serv_sig_pk sl_serv_vrf_pk serv serv_is_good :
+  {{{
+    "Huid" ∷ uid ↪[serv.(Server.γvers)] (W64 0) ∗
+    "#Hsl_serv_sig_pk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded serv.(Server.sig_pk) ∗
+    "#Hsl_serv_vrf_pk" ∷ own_slice_small sl_serv_vrf_pk byteT DfracDiscarded serv.(Server.vrf_pk) ∗
+    "#His_good" ∷ (if negb serv_is_good then True else
+      is_sig_pk serv.(Server.sig_pk) (serv_sigpred serv.(Server.γhist))) ∗
+    "%Heq_addr" ∷ ⌜ serv_addr = serv.(Server.addr) ⌝
+  }}}
+  NewClient #uid #serv_addr (slice_val sl_serv_sig_pk) (slice_val sl_serv_vrf_pk)
+  {{{
+    ptr_c γ, RET #ptr_c;
+    "Hown_cli" ∷ Client.own ptr_c
+      (Client.mk γ uid (W64 0) (W64 0) serv serv_is_good)
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  wp_apply (wp_Dial _ serv_is_good). iIntros "*". iNamed 1.
+  wp_apply (wp_VrfPublicKeyDecode with "[$Hsl_serv_vrf_pk]").
+  iClear "Hsl_serv_vrf_pk". iIntros "*". iNamed 1.
+  wp_apply wp_NewMap. iIntros "* Hown_sd_refs". wp_apply wp_fupd.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
+  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
+  iMod (struct_field_pointsto_persist with "uid") as "#uid".
+  iMod (struct_field_pointsto_persist with "servCli") as "#servCli".
+  iMod (struct_field_pointsto_persist with "servSigPk") as "#servSigPk".
+  iMod (struct_field_pointsto_persist with "servVrfPk") as "#servVrfPk".
+  iMod (struct_field_pointsto_persist with "seenDigs") as "#seenDigs".
+  iMod (mono_list_own_alloc []) as (?) "[Hown_digs _]".
+  iApply "HΦ". iFrame "∗#". iExists ∅. iModIntro. naive_solver.
+Qed.
 
 Lemma wp_checkDig sl_sig_pk (sig_pk : list w8) ptr_sd (sd_refs : gmap w64 loc) sd ptr_dig dig :
   let wish := (
@@ -396,14 +432,13 @@ Qed.
 Definition is_cli_entry cli_γ serv_vrf_pk (ep : w64) uid ver val : iProp Σ :=
   ∃ dig label,
   "#His_dig" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some dig) ∗
-  "#His_label" ∷ is_map_label serv_vrf_pk uid ver label ∗
-  "#Hhas_merk_proof" ∷ is_merkle_entry label val dig.
+  "#Hvrf_out" ∷ is_vrf_out serv_vrf_pk (enc_label_pre uid ver) label ∗
+  "#Hmerk_entry" ∷ is_merkle_entry label val dig.
 
 Definition is_put_post cli_γ serv_vrf_pk uid ver ep pk : iProp Σ :=
   ∃ commit,
   "#Hcommit" ∷ is_commit pk commit ∗
-  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver
-    (Some (MapValPre.encodesF (MapValPre.mk ep commit))) ∗
+  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver (Some $ enc_val ep commit) ∗
   "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (word.add ver (W64 1)) None.
 
 Lemma wp_Client__Put ptr_c c sl_pk d0 (pk : list w8) :
@@ -1027,33 +1062,6 @@ Proof.
   apply lookup_take_Some in Hlook_adtr as [Hlook_adtr _].
   opose proof (prefix_lookup_agree _ _ _ _ _ Hpref Hlook_adtr Hlook_dig) as ?.
   rewrite lookup_fmap in Hlook_final. simplify_eq/=. naive_solver.
-Qed.
-
-Lemma wp_NewClient sl_serv_sig_pk sl_serv_vrf_pk (uid serv_addr : w64) (serv_sig_pk serv_vrf_pk : list w8) :
-  {{{
-    "#Hsl_serv_sig_pk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded serv_sig_pk ∗
-    "#Hsl_serv_vrf_pk" ∷ own_slice_small sl_serv_vrf_pk byteT DfracDiscarded serv_vrf_pk
-  }}}
-  NewClient #uid #serv_addr (slice_val sl_serv_sig_pk) (slice_val sl_serv_vrf_pk)
-  {{{
-    ptr_c γ, RET #ptr_c;
-    "Hown_cli" ∷ Client.own ptr_c (Client.mk γ uid (W64 0) (W64 0) serv_sig_pk serv_vrf_pk)
-  }}}.
-Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
-  wp_apply wp_Dial. iIntros "*". iNamed 1.
-  wp_apply (wp_VrfPublicKeyDecode with "[$Hsl_serv_vrf_pk]").
-  iClear "Hsl_serv_vrf_pk". iIntros "*". iNamed 1.
-  wp_apply wp_NewMap. iIntros "* Hown_sd_refs". wp_apply wp_fupd.
-  wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
-  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
-  iMod (struct_field_pointsto_persist with "uid") as "#uid".
-  iMod (struct_field_pointsto_persist with "servCli") as "#servCli".
-  iMod (struct_field_pointsto_persist with "servSigPk") as "#servSigPk".
-  iMod (struct_field_pointsto_persist with "servVrfPk") as "#servVrfPk".
-  iMod (struct_field_pointsto_persist with "seenDigs") as "#seenDigs".
-  iMod (mono_list_own_alloc []) as (?) "[Hown_digs _]".
-  iApply "HΦ". iFrame "∗#". iExists ∅. iModIntro. naive_solver.
 Qed.
 
 End wps.

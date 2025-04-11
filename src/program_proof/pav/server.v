@@ -59,6 +59,7 @@ Record t :=
     γepoch: gname;
     γhist: gname;
     γvers: gname;
+    addr: w64;
   }.
 End Server.
 
