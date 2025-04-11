@@ -45,7 +45,8 @@ Lemma wp_CallServPut ptr_cli cli (uid : w64) sl_pk d0 (pk : list w8) :
   }}}.
 Proof. Admitted.
 
-(* TODO: properly bind serv record to rpc cli. *)
+(* TODO: this is a direct copy of the Server__Put spec.
+later, need to properly bind these two. *)
 Lemma wp_CallServPut_good ptr_cli cli serv uid nVers sl_pk d0 (pk : list w8) cli_ep :
   {{{
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
@@ -55,7 +56,7 @@ Lemma wp_CallServPut_good ptr_cli cli serv uid nVers sl_pk d0 (pk : list w8) cli
   }}}
   CallServPut #ptr_cli #uid (slice_val sl_pk)
   {{{
-    ptr_sigdig sigdig ptr_lat lat ptr_bound bound err,
+    ptr_sigdig sigdig ptr_lat lat ptr_bound bound err label commit,
     RET (#ptr_sigdig, #ptr_lat, #ptr_bound, #err);
     "Hown_cli" ∷ advrpc.Client.own ptr_cli cli ∗
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
@@ -70,10 +71,11 @@ Lemma wp_CallServPut_good ptr_cli cli serv uid nVers sl_pk d0 (pk : list w8) cli
       (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
       sigdig.(SigDig.Sig) ∗
     "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
-    "#Hwish_lat" ∷ wish_memb serv.(Server.vrf_pk) uid nVers sigdig lat ∗
+    "#Hwish_lat" ∷ wish_checkMemb serv.(Server.vrf_pk) uid nVers
+      sigdig.(SigDig.Dig) lat label commit ∗
     "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
-    "#Hwish_bound" ∷ wish_nonmemb serv.(Server.vrf_pk)
-      uid (word.add nVers (W64 1)) sigdig bound ∗
+    "#Hwish_bound" ∷ wish_checkNonMemb serv.(Server.vrf_pk)
+      uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound ∗
     "->" ∷ ⌜ err = false ⌝
   }}}.
 Proof. Admitted.
