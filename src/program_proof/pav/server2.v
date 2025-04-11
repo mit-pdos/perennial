@@ -332,7 +332,8 @@ Qed.
 
 Lemma wp_getHist γ keyMap keyMap_ptr uid (numVers : w64) vrfSk :
   {{{
-      own_Tree keyMap_ptr keyMap (DfracOwn 1)
+      "Htree" ∷ own_Tree keyMap_ptr keyMap (DfracOwn 1) ∗
+      "#HvrfSk" ∷ is_vrf_sk vrfSk γ.(vrf_pk)
   }}}
     getHist #keyMap_ptr #uid #numVers #vrfSk
   {{{
@@ -346,7 +347,7 @@ Lemma wp_getHist γ keyMap keyMap_ptr uid (numVers : w64) vrfSk :
                    ∃ label, wish_checkMembHide γ.(vrf_pk) uid (W64 ver) dig x label))
   }}}.
 Proof.
-  iIntros (?) "Hpre HΦ".
+  iIntros (?) "Hpre HΦ". iNamed "Hpre".
   wp_rec. wp_pures. wp_if_destruct.
   { (* numVers = 0 *)
     replace (slice.nil) with (slice_val Slice.nil) by done. iApply "HΦ".
@@ -391,8 +392,13 @@ Proof.
   wp_load. wp_pures. wp_if_destruct.
   { (* run a loop iteration *)
     wp_pures. wp_load.
-    Search compMapLabel.
+    wp_apply (wp_compMapLabel with "[$]").
+    iIntros "* (Hout_sl & Hproof_sl & Hvrf_out & Hvrf_proof)".
+    wp_pures.
+    wp_apply (wp_Tree__Prove with "[$Htree $Hout_sl]").
+    iIntros "*". iNamed 1. wp_pures.
+    admit.
   }
-Qed.
+Admitted.
 
 End proof.
