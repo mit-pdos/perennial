@@ -201,14 +201,15 @@ Proof.
     + iIntros (?). iNamedSuffix 1 "0". by iApply is_vrf_out_det.
 Qed.
 
+Definition wish_checkMemb vrf_pk uid ver dig memb label commit : iProp Σ :=
+  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb.(Memb.LabelProof) ∗
+  "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
+  "#Hcommit" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) commit ∗
+  "#Hmerk" ∷ wish_merkle_Verify true label
+    (enc_val memb.(Memb.EpochAdded) commit)
+    memb.(Memb.MerkleProof) dig.
+
 Lemma wp_checkMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_memb memb d0 :
-  let wish := (λ label commit,
-    "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb.(Memb.LabelProof) ∗
-    "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
-    "#Hcommit" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) commit ∗
-    "#Hmerk" ∷ wish_merkle_Verify true label
-      (enc_val memb.(Memb.EpochAdded) commit)
-      memb.(Memb.MerkleProof) dig)%I in
   {{{
     "#Hvrf_pk" ∷ is_vrf_pk ptr_vrf_pk vrf_pk ∗
     "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
@@ -218,7 +219,8 @@ Lemma wp_checkMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_
   {{{
     (err : bool), RET #err;
     "Hown_memb" ∷ Memb.own ptr_memb memb d0 ∗
-    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ ∃ label commit, wish label commit)
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗
+      ∃ label commit, wish_checkMemb vrf_pk uid ver dig memb label commit)
   }}}.
 Proof.
   simpl. iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -367,36 +369,50 @@ Proof.
   iApply "HΦ". by iFrame.
 Qed.
 
-Lemma wp_checkNonMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_non_memb non_memb :
+Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
+  ∃ label,
+  "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) non_memb.(NonMemb.LabelProof) ∗
+  "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
+  "#Hmerk" ∷ wish_merkle_Verify false label []
+    non_memb.(NonMemb.MerkleProof) dig.
+
+Lemma wp_checkNonMemb ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_non_memb non_memb d0 :
   {{{
-    "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
+    "#Hvrf_pk" ∷ is_vrf_pk ptr_vrf_pk vrf_pk ∗
     "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig ∗
-    "Hown_non_memb" ∷ NonMemb.own ptr_non_memb non_memb
+    "Hown_non_memb" ∷ NonMemb.own ptr_non_memb non_memb d0
   }}}
   checkNonMemb #ptr_vrf_pk #uid #ver (slice_val sl_dig) #ptr_non_memb
   {{{
     (err : bool), RET #err;
-    "Hown_vrf_pk" ∷ own_vrf_pk ptr_vrf_pk vrf_pk ∗
-    "Hown_non_memb" ∷ NonMemb.own ptr_non_memb non_memb ∗
-    "Herr" ∷ (if err then True else
-      ∃ label,
-      "#His_label" ∷ is_map_label vrf_pk uid ver label ∗
-      "#Hhas_merk_proof" ∷ is_merkle_entry label None dig)
+    "Hown_non_memb" ∷ NonMemb.own ptr_non_memb non_memb d0 ∗
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ wish_checkNonMemb vrf_pk uid ver dig non_memb)
   }}}.
 Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  simpl. iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   iNamed "Hown_non_memb". wp_loadField.
-  wp_apply (wp_checkLabel with "[$Hown_vrf_pk $Hsl_label_proof]").
+  wp_apply (wp_checkLabel with "[$Hvrf_pk $Hsl_labelP]").
   iIntros "*". iNamed 1. wp_if_destruct.
-  { iApply "HΦ". by iFrame "∗#". }
-  iDestruct "Herr" as "#His_label".
+  { iApply "HΦ". iFrame "∗#". iIntros "!>". iSplit. { by iIntros (?). }
+    iNamed 1. iDestruct "Hgenie" as "[_ Hgenie]".
+    iApply "Hgenie". iFrame "#". }
+  iDestruct "Hgenie" as "[Hgenie _]".
+  iDestruct ("Hgenie" with "[//]") as "H". iNamed "H".
+  iDestruct ("Herr" with "[$]") as "H". iNamed "H".
   wp_loadField.
-  wp_apply (wp_CheckProof _ Slice.nil sl_dig with "[$His_merk_proof $Hsl_label $Hsl_dig]").
-  { iApply own_slice_to_small. iApply (own_slice_zero _ (DfracOwn 1)). }
-  iClear "Hsl_dig". iIntros (err0). iNamed 1.
-  iApply "HΦ". iFrame "∗#". destruct err0; [done|].
-  iDestruct (is_merkle_proof_to_entry with "Hgenie") as "#Hhas_merk_proof".
-  iFrame "∗#".
+  wp_apply (wp_Verify _ Slice.nil with "[$Hsl_label]").
+  { iFrame "#".
+    iApply own_slice_to_small. iApply (own_slice_zero _ DfracDiscarded). }
+  iIntros (err0) "{Hsl_dig}". iNamed 1.
+  iApply "HΦ". iFrame "∗#". destruct err0.
+  - iSplit. { by iIntros (?). }
+    iNamedSuffix 1 "0". iDestruct "Hgenie" as "[_ Hgenie]".
+    iApply "Hgenie".
+    by iDestruct (is_vrf_out_det with "Hvrf_out Hvrf_out0") as %->.
+  - iSplit; [|naive_solver]. iIntros (_).
+    iDestruct "Hgenie" as "[Hgenie _]".
+    iDestruct ("Hgenie" with "[//]") as "#Hmerk".
+    iFrame "∗#".
 Qed.
 
 Definition is_cli_entry cli_γ serv_vrf_pk (ep : w64) uid ver val : iProp Σ :=
