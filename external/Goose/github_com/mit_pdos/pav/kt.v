@@ -175,11 +175,11 @@ Definition NewAuditor: val :=
 Definition Client := struct.decl [
   "uid" :: uint64T;
   "nextVer" :: uint64T;
+  "seenDigs" :: mapT ptrT;
+  "nextEpoch" :: uint64T;
   "servCli" :: ptrT;
   "servSigPk" :: cryptoffi.SigPublicKey;
-  "servVrfPk" :: ptrT;
-  "seenDigs" :: mapT ptrT;
-  "nextEpoch" :: uint64T
+  "servVrfPk" :: ptrT
 ].
 
 (* ClientErr abstracts errors that potentially have irrefutable evidence. *)
@@ -716,7 +716,7 @@ Definition Client__Get: val :=
       (if: struct.loadF ClientErr "Err" "err1"
       then (#false, slice.nil, #0, "err1")
       else
-        (if: ((struct.loadF Client "nextEpoch" "c") ≠ #0) && ((struct.loadF SigDig "Epoch" "dig") < ((struct.loadF Client "nextEpoch" "c") - #1))
+        (if: ((struct.loadF SigDig "Epoch" "dig") + #1) < (struct.loadF Client "nextEpoch" "c")
         then (#false, slice.nil, #0, "stdErr")
         else
           (if: checkHist (struct.loadF Client "servVrfPk" "c") "uid" (struct.loadF SigDig "Dig" "dig") "hist"
@@ -813,7 +813,7 @@ Definition Client__SelfMon: val :=
       (if: struct.loadF ClientErr "Err" "err1"
       then (#0, "err1")
       else
-        (if: ((struct.loadF Client "nextEpoch" "c") ≠ #0) && ((struct.loadF SigDig "Epoch" "dig") < ((struct.loadF Client "nextEpoch" "c") - #1))
+        (if: ((struct.loadF SigDig "Epoch" "dig") + #1) < (struct.loadF Client "nextEpoch" "c")
         then (#0, "stdErr")
         else
           (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "bound"

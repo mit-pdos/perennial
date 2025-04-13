@@ -69,11 +69,10 @@ Context `{!heapGS Σ, !pavG Σ}.
 are moved to inv_gs. *)
 Definition serv_sigpred (γhist : gname) : (list w8 → iProp Σ) :=
   λ preByt,
-  (∃ pre gs_hist,
+  (∃ pre m,
   "%Henc" ∷ ⌜ PreSigDig.encodes preByt pre ⌝ ∗
-  "#Hlb_hist" ∷ mono_list_lb_own γhist gs_hist ∗
-  "%Hlook_dig" ∷ ⌜ gs_hist.*2 !! uint.nat pre.(PreSigDig.Epoch) =
-    Some pre.(PreSigDig.Dig) ⌝)%I.
+  "#Hlook_dig" ∷ mono_list_idx_own γhist (uint.nat pre.(PreSigDig.Epoch))
+    (m, pre.(PreSigDig.Dig)))%I.
 
 Definition is_WorkQ (ptr : loc) : iProp Σ := True.
 
@@ -97,6 +96,7 @@ Definition lower_map (m : adtr_map_ty) : merkle_map_ty :=
 and learn that their own key is fresh even in latest epoch. *)
 Definition inv_gs serv : iProp Σ :=
   ∃ gs_hist gs_vers,
+  (* NOTE: stores the `number` of epochs. *)
   "Hgs_ep" ∷ mono_nat_auth_own serv.(Server.γepoch) (1/2) (length gs_hist) ∗
   "Hgs_hist" ∷ mono_list_auth_own serv.(Server.γhist) (1/2) gs_hist ∗
   "Hgs_vers" ∷ ghost_map_auth serv.(Server.γvers) (1/2) gs_vers ∗
@@ -203,29 +203,36 @@ Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
   "#Hmerk" ∷ wish_merkle_Verify false label []
     non_memb.(NonMemb.MerkleProof) dig.
 
-Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_ep :
+Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_next_ep :
   {{{
     "#Hserv" ∷ is_Server ptr serv ∗
     "Hvers" ∷ uid ↪[serv.(Server.γvers)] nVers ∗
     "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
-    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) cli_ep
+    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) cli_next_ep
   }}}
   Server__Put #ptr #uid (slice_val sl_pk)
   {{{
     ptr_sigdig sigdig ptr_lat lat ptr_bound bound label commit,
     RET (#ptr_sigdig, #ptr_lat, #ptr_bound, #false);
+    let new_next_ep := word.add sigdig.(SigDig.Epoch) (W64 1) in
     "Hvers" ∷ uid ↪[serv.(Server.γvers)] (word.add nVers (W64 1)) ∗
+
     "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
     "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
-    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat sigdig.(SigDig.Epoch)) ∗
-    "%Hlt_ep" ∷ ⌜ Z.of_nat cli_ep < uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
+    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat new_next_ep) ∗
+    "%Hlt_ep" ∷ ⌜ Z.of_nat cli_next_ep < uint.Z new_next_ep ⌝ ∗
+    (* provable from new_next_ep = the w64 size of epochHist slice. *)
+    "%Hnoof_ep" ∷ ⌜ uint.Z new_next_ep = (uint.Z sigdig.(SigDig.Epoch) + 1)%Z ⌝ ∗
+
     "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
     "#Hsig" ∷ is_sig serv.(Server.sig_pk)
       (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
       sigdig.(SigDig.Sig) ∗
+
     "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
     "#Hwish_lat" ∷ wish_checkMemb serv.(Server.vrf_pk) uid nVers
       sigdig.(SigDig.Dig) lat label commit ∗
+
     "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
     "#Hwish_bound" ∷ wish_checkNonMemb serv.(Server.vrf_pk)
       uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
