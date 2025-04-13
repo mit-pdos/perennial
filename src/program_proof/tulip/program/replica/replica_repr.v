@@ -94,8 +94,6 @@ Section repr.
       apply elem_of_dom. by destruct (sptsmM !! k).
   Qed.
 
-  Definition ppsl_to_nat_bool (psl : ppsl) := (uint.nat psl.1, psl.2).
-
   Definition own_replica_psm_rkm
     (rp : loc) (psm : gmap nat (nat * bool)) (rkm : gmap nat nat) : iProp Σ :=
     ∃ (pstblP : loc) (rktblP : loc) (pstbl : gmap u64 ppsl) (rktbl : gmap u64 u64),

@@ -85,6 +85,8 @@ Instance ppsl_into_val_for_type :
   IntoValForType ppsl (uint64T * (boolT * unitT)%ht).
 Proof. by constructor; [| | intros [r d]; auto 10]. Defined.
 
+Definition ppsl_to_nat_bool (psl : ppsl) := (uint.nat psl.1, psl.2).
+
 Definition dbpver_to_val (x : u64 * dbval) : val := (#x.1, (dbval_to_val x.2, #())).
 
 Definition dbpver_from_val (v : val) : option dbpver :=
@@ -126,6 +128,11 @@ Inductive txnphase :=
 | TxnPrepared
 | TxnCommitted
 | TxnAborted.
+
+#[global]
+Instance txnphase_eq_decision :
+  EqDecision txnphase.
+Proof. solve_decision. Qed.
 
 Definition txnphase_to_u64 (p : txnphase) :=
   match p with
