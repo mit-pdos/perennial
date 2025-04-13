@@ -23,9 +23,12 @@ End Evid.
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 
+(* is_SigDig talks about proper encoding as well,
+since dealing with the sigpred often requires this. *)
 Definition is_SigDig obj pk : iProp Σ :=
-  is_sig pk (PreSigDig.encodesF
-    (PreSigDig.mk obj.(SigDig.Epoch) obj.(SigDig.Dig))) obj.(SigDig.Sig).
+  ∃ pre_sig,
+  "%Henc" ∷ ⌜ PreSigDig.encodes pre_sig (PreSigDig.mk obj.(SigDig.Epoch) obj.(SigDig.Dig)) ⌝ ∗
+  "#Hsig" ∷ is_sig pk pre_sig obj.(SigDig.Sig).
 
 Definition is_Evid obj pk : iProp Σ :=
   "#His_sigDig0" ∷ is_SigDig obj.(Evid.sigDig0) pk ∗
