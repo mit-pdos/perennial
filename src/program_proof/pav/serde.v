@@ -246,7 +246,7 @@ Context `{!heapGS Σ}.
 
 Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_val sl_rand,
-  "Hsl_val" ∷ own_slice_small sl_val byteT d obj.(Val) ∗
+  "Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded obj.(Val) ∗
   "Hptr_val" ∷ ptr ↦[CommitOpen :: "Val"]{d} (slice_val sl_val) ∗
   "Hsl_rand" ∷ own_slice_small sl_rand byteT d obj.(Rand) ∗
   "Hptr_rand" ∷ ptr ↦[CommitOpen :: "Rand"]{d} (slice_val sl_rand).
