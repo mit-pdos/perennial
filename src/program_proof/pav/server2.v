@@ -123,7 +123,11 @@ Context `{!epoch_versioned_mapG Σ}.
 
 (** Invariants and cryptographic knowledge related to mutable Server state. *)
 Definition is_Server_crypto γ st : iProp Σ :=
-  ∃ openKeyMap,
+  ∃ openKeyMap last_info,
+
+  (* logically maintain the digest *)
+  "#Hdig" ∷ is_merkle_map st.(Server.keyMap) last_info.(servEpochInfo.dig) ∗
+
   (* abstract away the cryptographically private aspect of keyMap *)
   "#HkeyMap" ∷ is_map_relation γ st.(Server.keyMap) openKeyMap ∗
   "%HkeyMapLatest" ∷ (⌜ ∀ uid,
@@ -150,7 +154,7 @@ Definition is_Server_crypto γ st : iProp Σ :=
                                (servEpochInfo.updates <$> st.(Server.epochHist)))
                             ⌝) ∗
 
-  "%HepochHistLast" ∷ ⌜ is_Some (last st.(Server.epochHist)) ⌝
+  "%HepochHistLast" ∷ ⌜ last st.(Server.epochHist) = Some last_info ⌝
 .
 
 (** Proposition guarded by RWMutex. *)
@@ -191,32 +195,37 @@ Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
   "#Hmerk" ∷ wish_merkle_Verify false label []
     non_memb.(NonMemb.MerkleProof) dig.
 
-Lemma wp_getDig epochHist_sl epochHist_ptrs epochHist info q :
+Lemma wp_getDig γ st epochHist_sl epochHist_ptrs q :
+  let info := last st.(Server.epochHist) in
   {{{
         "HepochHist_sl" ∷ own_slice epochHist_sl ptrT (DfracOwn q) epochHist_ptrs ∗
-        "#HepochHist_own" ∷ ([∗ list] l;x ∈ epochHist_ptrs;epochHist, servEpochInfo.is_own l x) ∗
-        "%Hlast" ∷ ⌜ last epochHist = Some info ⌝
+        "#HepochHist_own" ∷ ([∗ list] l;x ∈ epochHist_ptrs; st.(Server.epochHist), servEpochInfo.is_own l x) ∗
+        "Hcrypto" ∷ is_Server_crypto γ st
   }}}
     getDig (slice_val epochHist_sl)
   {{{
       (sigdig_ptr : loc), RET #sigdig_ptr;
-        own_slice epochHist_sl ptrT (DfracOwn q) epochHist_ptrs ∗
-        SigDig.own sigdig_ptr (SigDig.mk (W64 (length epochHist - 1))
-                                 info.(servEpochInfo.dig)
-                                 info.(servEpochInfo.sig))
-          DfracDiscarded (* because of the slices *)
+        let sigdig := (SigDig.mk (W64 (length st.(Server.epochHist) - 1))
+                                 (default [] (servEpochInfo.dig <$> info))
+                                 (default [] (servEpochInfo.sig <$> info))) in
+        "HepochHist_sl" ∷ own_slice epochHist_sl ptrT (DfracOwn q) epochHist_ptrs ∗
+        "Hsigdig" ∷ SigDig.own sigdig_ptr sigdig DfracDiscarded (* because of the slices *) ∗
+        "#Hsig" ∷ is_sig γ.(sig_pk) (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
+          sigdig.(SigDig.Sig)
   }}}.
 Proof.
-  iIntros (?) "Hpre HΦ". iNamed "Hpre".
+  intros ?. subst info. iIntros (?) "Hpre HΦ". iNamed "Hpre".
   wp_rec. wp_apply wp_slice_len. iDestruct (own_slice_sz with "[$]") as %Hsz.
   wp_pures. iDestruct (own_slice_split_1 with "[$]") as "[Hsl ?]".
   iDestruct (big_sepL2_length with "[$]") as %Hlen_eq.
-  rewrite last_lookup in Hlast.
-  opose proof (lookup_lt_Some _ _ _ Hlast).
+  iNamed "Hcrypto".
+  rewrite HepochHistLast.
+  rewrite last_lookup in HepochHistLast.
+  opose proof (lookup_lt_Some _ _ _ HepochHistLast).
   iDestruct (big_sepL2_lookup_2_some with "[$]") as %[ptr Hlookup2]; [done|].
 
   wp_apply (wp_SliceGet with "[$Hsl]").
-  { iPureIntro. replace (uint.nat _) with (Init.Nat.pred (length epochHist)) by word.
+  { iPureIntro. replace (uint.nat _) with (Init.Nat.pred (length st.(Server.epochHist))) by word.
     eassumption. }
   iIntros "Hsl". wp_pures.
   iDestruct (big_sepL2_lookup with "[$]") as "H"; [eassumption.. | ].
@@ -231,8 +240,9 @@ Proof.
   iMod (struct_field_pointsto_persist with "Epoch") as "#Epoch".
   iModIntro.
   replace (w64_word_instance.(word.sub) epochHist_sl.(Slice.sz) (W64 1)) with
-    (W64 (length epochHist - 1)) by word.
-  iFrame "∗#".
+    (W64 (length st.(Server.epochHist) - 1)) by word.
+  iFrame "∗#". iApply "HepochHist". iPureIntro. simpl.
+  rewrite -HepochHistLast. f_equal. word.
 Qed.
 
 Lemma wp_compMapLabel (uid ver : w64) (sk_ptr : loc) pk :
@@ -274,12 +284,13 @@ Lemma wp_getHist γ st keyMap_ptr dq uid (numVers : w64) vrfSk :
       "Hhist" ∷ ([∗ list] l; mh ∈ hist_ptrs; hist, MembHide.own l mh (DfracOwn 1)) ∗
       "%Hlen_hist" ∷ ⌜ length hist = pred (uint.nat numVers) ⌝ ∗
       "#Hwish_hist" ∷
-        (∀ dig, is_merkle_map st.(Server.keyMap) dig -∗
-                ([∗ list] ver ↦ x ∈ hist,
-                   ∃ label, wish_checkMembHide γ.(vrf_pk) uid (W64 ver) dig x label))
+        ([∗ list] ver ↦ x ∈ hist,
+           ∃ label, wish_checkMembHide γ.(vrf_pk) uid (W64 ver)
+                      (default [] (servEpochInfo.dig <$> last st.(Server.epochHist))) x label)
   }}}.
 Proof.
   iIntros (?) "Hpre HΦ". iNamed "Hpre". subst. iNamed "Hcrypto".
+  rewrite HepochHistLast /=.
   wp_rec. wp_pures. wp_if_destruct.
   { (* numVers = 0 *)
     rewrite Heqb.
@@ -291,7 +302,7 @@ Proof.
     rewrite big_sepL2_nil.
     iSplitR; first done.
     iSplitR; first done.
-    iModIntro. iIntros (?) "?". done.
+    iModIntro. rewrite big_sepL_nil. done.
   }
   wp_pures.
   wp_apply wp_NewSliceWithCap.
@@ -317,19 +328,21 @@ Proof.
         "%Hlen_hist" ∷ ⌜ length hist = (uint.nat ver) ⌝ ∗
         "%Hver_le" ∷ ⌜ (uint.Z ver ≤ uint.Z numVers - 1) ⌝ ∗
         "#Hwish_hist" ∷
-          □(∀ dig, is_merkle_map st.(Server.keyMap) dig -∗
-                  ([∗ list] ver ↦ x ∈ hist,
-                     ∃ label, wish_checkMembHide γ.(vrf_pk) uid (W64 ver) dig x label))
+          □ ([∗ list] ver ↦ x ∈ hist,
+              ∃ label, wish_checkMembHide γ.(vrf_pk) uid (W64 ver)
+                                              (default [] (servEpochInfo.dig <$> last st.(Server.epochHist)))
+                                              x label)
     )%I with "[Hhist_sl ver_ptr hist_ptr]" as "Hloop".
   {
     rewrite replicate_0.
     iFrame. iExists [].
     rewrite big_sepL2_nil. iSplit; first done.
-    iSplit; first done. iSplit; first word. iModIntro. iIntros (?) "?". done.
+    iSplit; first done. iSplit; first word. iModIntro. done.
   }
   wp_forBreak_cond.
   clear ptr.
   iNamed "Hloop".
+  rewrite HepochHistLast /=.
   wp_load. wp_pures. rewrite Hlookup2 /=. wp_if_destruct.
   { (* run a loop iteration *)
     wp_pures. wp_load.
@@ -370,13 +383,11 @@ Proof.
     iSplitR; first iPureIntro.
     { rewrite length_app. simpl. word. }
     iSplitR; first word.
-    iModIntro. iIntros (?) "Hdig".
-    iDestruct (is_merkle_map_det with "Hdig [$]") as %Heq. subst.
-    iSpecialize ("Hwish_hist" with "[$]").
-    rewrite big_sepL_app. iFrame.
+    iDestruct (is_merkle_map_det with "His_dig Hdig") as %Heq. subst.
+    iModIntro.
+    rewrite big_sepL_app. iFrame "Hwish_hist".
     simpl. iSplitL; last done. iExists _. iFrame.
-    unfold wish_checkMembHide.
-    simpl.
+    unfold wish_checkMembHide. simpl.
     rewrite Nat.add_0_r.
     replace (W64 (length hist)) with ver by word.
     iFrame "#".
@@ -432,13 +443,14 @@ Lemma wp_getLatest γ keyMap_ptr st dq uid vrfSk commitSecret_sl dqc pk_sl :
         (isRegistered : bool) (latest_ptr : loc) latest, RET (#isRegistered, #latest_ptr);
         "Htree" ∷ own_Tree keyMap_ptr st.(Server.keyMap) dq ∗
         "Hlat" ∷ Memb.own latest_ptr latest (DfracOwn 1) ∗
-        "#Hwish_lat" ∷ (∀ dig, is_merkle_map st.(Server.keyMap) dig -∗
-                          if negb isRegistered then True else
-                          ∃ label commit,
-                            wish_checkMemb γ.(vrf_pk) uid (word.sub
-                                                             (default (W64 0) (userState.numVers <$> userState))
-                                                             (W64 1))
-                                               dig latest label commit)
+        "%Heq_is_reg" ∷ ⌜ isRegistered = negb $ bool_decide ((default (W64 0) (userState.numVers <$> userState)) = (W64 0)) ⌝ ∗
+        "#Hwish_lat" ∷ if negb isRegistered then True else
+            ∃ label commit,
+              wish_checkMemb γ.(vrf_pk) uid (word.sub
+                                               (default (W64 0) (userState.numVers <$> userState))
+                                               (W64 1))
+                                 (default [] (servEpochInfo.dig <$> last st.(Server.epochHist)))
+                                 latest label commit
   }}}.
 Proof.
   intros ?. iIntros (?) "H HΦ". iNamed "H".
@@ -454,7 +466,7 @@ Proof.
     instantiate (2:=ltac:(econstructor)). simpl.
     iDestruct (own_slice_small_nil) as "$"; [done|].
     iDestruct (own_slice_small_nil) as "$"; [done|].
-    iModIntro. iIntros (?) "?". done.
+    iPureIntro. rewrite bool_decide_true //.
   }
   wp_apply (wp_compMapLabel with "[$]").
   iIntros "* (Hout_sl & Hproof_sl & #Hvrf_out & #Hvrf_proof)".
@@ -523,10 +535,9 @@ Proof.
   iFrame. simpl. instantiate (2:=ltac:(econstructor)). simpl.
   iFrame. iFrame "Hpk". iPersist "Hsl_proof".
   iFrame "Hsl_proof". iModIntro.
-  iIntros (?) "His_dig2".
-  iDestruct (is_merkle_map_det with "His_dig [$]") as %Heq. subst.
+  iDestruct (is_merkle_map_det with "His_dig Hdig") as %Heq. subst.
   iDestruct (is_hash_det with "Hrand Hhash") as %Heq. subst.
-  rewrite /wish_checkMemb /=. iFrame "#".
+  rewrite HepochHistLast /=. iFrame "#". iPureIntro. rewrite bool_decide_false //.
 Qed.
 
 Lemma wp_getBound γ st keyMap_ptr (uid : w64) vrfSk dq :
@@ -541,10 +552,10 @@ Lemma wp_getBound γ st keyMap_ptr (uid : w64) vrfSk dq :
         "Htree" ∷ own_Tree keyMap_ptr st.(Server.keyMap) dq ∗
         "Hbound" ∷ NonMemb.own bound_ptr bound (DfracOwn 1) ∗
         "#Hwish_bound" ∷
-          (∀ dig, is_merkle_map st.(Server.keyMap) dig -∗
-                  wish_checkNonMemb γ.(vrf_pk) uid
-                        (default (W64 0) (userState.numVers <$> (st.(Server.userInfo) !! uid)))
-                        dig bound)
+          wish_checkNonMemb γ.(vrf_pk) uid
+            (default (W64 0) (userState.numVers <$> (st.(Server.userInfo) !! uid)))
+            (default [] (servEpochInfo.dig <$> last st.(Server.epochHist)))
+            bound
   }}}.
 Proof.
   iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
@@ -580,8 +591,9 @@ Proof.
   wp_pures. wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Hnm".
   iApply "HΦ". iDestruct (struct_fields_split with "Hnm") as "H". iNamed "H".
   iFrame. instantiate (1:=ltac:(econstructor)). simpl. iFrame "∗ Hsl_proof".
-  iIntros (?) "His_dig2". iDestruct (is_merkle_map_det with "His_dig His_dig2") as %Heq. subst.
-  iFrame "#".
+  iNamed "Hcrypto".
+  iDestruct (is_merkle_map_det with "His_dig Hdig") as %Heq. subst.
+  rewrite HepochHistLast /=. iFrame "#".
 Qed.
 
 Lemma wp_Server__Get γ ptr uid cli_ep :
@@ -662,14 +674,10 @@ Proof.
   }
   iIntros (?). iNamed 1.
   wp_pures. clear v.
-  iAssert (∃ last_info, "%Hlast" ∷ ⌜last st.(Server.epochHist) = Some last_info ⌝)%I with "[]" as "H".
-  { iNamed "Hcrypto". destruct HepochHistLast. iFrame "%". }
-  iNamed "H".
   wp_loadField. wp_apply (wp_getDig with "[$HepochHist_sl_own]").
   { iFrame "#%". }
-  iIntros (?) "[H2_own #?]". wp_pures.
-  wp_loadField. wp_load. wp_loadField.
-
+  iIntros "*". iNamed 1. iRename "HepochHist_sl" into "HepochHist_sl_own".
+  wp_pures. wp_loadField. wp_load. wp_loadField.
   wp_apply (wp_getHist with "[$HkeyMap_own]").
   { iFrame "#". done. }
   iIntros "*". iNamed 1.
@@ -690,7 +698,8 @@ Proof.
   iApply "HΦ".
   iSplitR; first admit. (* TODO: ghost *)
   iSplitR; first admit. (* TODO: ghost *)
-  iFrame.
-Admitted.
+  instantiate (2:=ltac:(econstructor)). simpl.
+  iFrame "∗#%".  done.
+Admitted. (* TODO: ghost state *)
 
 End proof.
