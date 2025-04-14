@@ -325,12 +325,14 @@ Ltac2 normalize tac :=
   simplify_Z_constants () (* FIXME: should probably simplify Z constants after zify *)
 .
 
+Module Export SetSolveUnsafe.
 Ltac2 Set solve_unsafe as old :=
   (fun () => normalize (fun () => ());
          set_all ();
          ltac1:(zify; Z.div_mod_to_equations);
          subst_all ();
          ltac1:(lia)).
+End SetSolveUnsafe.
 
 Ltac2 solve_unsafe_with tac :=
   normalize tac;
@@ -355,6 +357,8 @@ Proof.
 Qed.
 
 End word.
+
+Export word.SetSolveUnsafe.
 
 Tactic Notation "word" :=
   try iPureIntro; ltac2:(Control.enter word.solve_unsafe).
