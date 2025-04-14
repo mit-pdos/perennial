@@ -43,7 +43,7 @@ Definition Int32__Store : val :=
    go: type.go:83:17 *)
 Definition Int32__CompareAndSwap : val :=
   rec: "Int32__CompareAndSwap" "x" "old" "new" :=
-    exception_do (let: "swapped" := (alloc (zero_val boolT)) in
+    exception_do (let: "swapped" := (alloc (type.zero_val #boolT)) in
     let: "x" := (alloc "x") in
     let: "new" := (alloc "new") in
     let: "old" := (alloc "old") in
@@ -57,7 +57,7 @@ Definition Int32__CompareAndSwap : val :=
    go: type.go:88:17 *)
 Definition Int32__Add : val :=
   rec: "Int32__Add" "x" "delta" :=
-    exception_do (let: "new" := (alloc (zero_val int32T)) in
+    exception_do (let: "new" := (alloc (type.zero_val #int32T)) in
     let: "x" := (alloc "x") in
     let: "delta" := (alloc "delta") in
     return: (let: "$a0" := (struct.field_ref Int32 "v" (![#ptrT] "x")) in
@@ -98,7 +98,7 @@ Definition Uint64__Store : val :=
    go: type.go:178:18 *)
 Definition Uint64__CompareAndSwap : val :=
   rec: "Uint64__CompareAndSwap" "x" "old" "new" :=
-    exception_do (let: "swapped" := (alloc (zero_val boolT)) in
+    exception_do (let: "swapped" := (alloc (type.zero_val #boolT)) in
     let: "x" := (alloc "x") in
     let: "new" := (alloc "new") in
     let: "old" := (alloc "old") in
@@ -112,7 +112,7 @@ Definition Uint64__CompareAndSwap : val :=
    go: type.go:183:18 *)
 Definition Uint64__Add : val :=
   rec: "Uint64__Add" "x" "delta" :=
-    exception_do (let: "new" := (alloc (zero_val uint64T)) in
+    exception_do (let: "new" := (alloc (type.zero_val #uint64T)) in
     let: "x" := (alloc "x") in
     let: "delta" := (alloc "delta") in
     return: (let: "$a0" := (struct.field_ref Uint64 "v" (![#ptrT] "x")) in

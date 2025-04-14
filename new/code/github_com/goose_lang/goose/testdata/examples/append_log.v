@@ -21,7 +21,7 @@ Definition Log : go_type := structT [
 Definition Log__mkHdr : val :=
   rec: "Log__mkHdr" "log" <> :=
     exception_do (let: "log" := (alloc "log") in
-    let: "enc" := (alloc (zero_val marshal.Enc)) in
+    let: "enc" := (alloc (type.zero_val #marshal.Enc)) in
     let: "$r0" := (let: "$a0" := disk.BlockSize in
     (func_call #marshal #"NewEnc"%go) "$a0") in
     do:  ("enc" <-[#marshal.Enc] "$r0");;;
@@ -45,7 +45,7 @@ Definition Init : val :=
     exception_do (let: "diskSz" := (alloc "diskSz") in
     (if: (![#uint64T] "diskSz") < #(W64 1)
     then
-      return: (alloc (let: "$m" := (alloc (zero_val sync.Mutex)) in
+      return: (alloc (let: "$m" := (alloc (type.zero_val #sync.Mutex)) in
        let: "$sz" := #(W64 0) in
        let: "$diskSz" := #(W64 0) in
        struct.make Log [{
@@ -54,8 +54,8 @@ Definition Init : val :=
          "diskSz" ::= "$diskSz"
        }]), #false)
     else do:  #());;;
-    let: "log" := (alloc (zero_val ptrT)) in
-    let: "$r0" := (alloc (let: "$m" := (alloc (zero_val sync.Mutex)) in
+    let: "log" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$m" := (alloc (type.zero_val #sync.Mutex)) in
     let: "$sz" := #(W64 0) in
     let: "$diskSz" := (![#uint64T] "diskSz") in
     struct.make Log [{
@@ -70,21 +70,21 @@ Definition Init : val :=
 (* go: append_log.go:42:6 *)
 Definition Open : val :=
   rec: "Open" <> :=
-    exception_do (let: "hdr" := (alloc (zero_val sliceT)) in
+    exception_do (let: "hdr" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (func_call #disk #"Read"%go) "$a0") in
     do:  ("hdr" <-[#sliceT] "$r0");;;
-    let: "dec" := (alloc (zero_val marshal.Dec)) in
+    let: "dec" := (alloc (type.zero_val #marshal.Dec)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "hdr") in
     (func_call #marshal #"NewDec"%go) "$a0") in
     do:  ("dec" <-[#marshal.Dec] "$r0");;;
-    let: "sz" := (alloc (zero_val uint64T)) in
+    let: "sz" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((method_call #marshal #"Dec" #"GetInt" (![#marshal.Dec] "dec")) #()) in
     do:  ("sz" <-[#uint64T] "$r0");;;
-    let: "diskSz" := (alloc (zero_val uint64T)) in
+    let: "diskSz" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((method_call #marshal #"Dec" #"GetInt" (![#marshal.Dec] "dec")) #()) in
     do:  ("diskSz" <-[#uint64T] "$r0");;;
-    return: (alloc (let: "$m" := (alloc (zero_val sync.Mutex)) in
+    return: (alloc (let: "$m" := (alloc (type.zero_val #sync.Mutex)) in
      let: "$sz" := (![#uint64T] "sz") in
      let: "$diskSz" := (![#uint64T] "diskSz") in
      struct.make Log [{
@@ -98,7 +98,7 @@ Definition Log__get : val :=
   rec: "Log__get" "log" "i" :=
     exception_do (let: "log" := (alloc "log") in
     let: "i" := (alloc "i") in
-    let: "sz" := (alloc (zero_val uint64T)) in
+    let: "sz" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref Log "sz" (![#ptrT] "log"))) in
     do:  ("sz" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "i") < (![#uint64T] "sz")
@@ -114,8 +114,8 @@ Definition Log__Get : val :=
     exception_do (let: "log" := (alloc "log") in
     let: "i" := (alloc "i") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref Log "m" (![#ptrT] "log")))) #());;;
-    let: "b" := (alloc (zero_val boolT)) in
-    let: "v" := (alloc (zero_val sliceT)) in
+    let: "b" := (alloc (type.zero_val #boolT)) in
+    let: "v" := (alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "i") in
     (method_call #append_log.append_log #"Log'ptr" #"get" (![#ptrT] "log")) "$a0") in
     let: "$r0" := "$ret0" in
@@ -131,8 +131,8 @@ Definition writeAll : val :=
     exception_do (let: "off" := (alloc "off") in
     let: "bks" := (alloc "bks") in
     let: "$range" := (![#sliceT] "bks") in
-    (let: "bk" := (alloc (zero_val intT)) in
-    let: "i" := (alloc (zero_val intT)) in
+    (let: "bk" := (alloc (type.zero_val #intT)) in
+    let: "i" := (alloc (type.zero_val #intT)) in
     slice.for_range #sliceT "$range" (λ: "$key" "$value",
       do:  ("bk" <-[#sliceT] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
@@ -145,7 +145,7 @@ Definition Log__append : val :=
   rec: "Log__append" "log" "bks" :=
     exception_do (let: "log" := (alloc "log") in
     let: "bks" := (alloc "bks") in
-    let: "sz" := (alloc (zero_val uint64T)) in
+    let: "sz" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref Log "sz" (![#ptrT] "log"))) in
     do:  ("sz" <-[#uint64T] "$r0");;;
     (if: (s_to_w64 (let: "$a0" := (![#sliceT] "bks") in
@@ -166,7 +166,7 @@ Definition Log__Append : val :=
     exception_do (let: "log" := (alloc "log") in
     let: "bks" := (alloc "bks") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref Log "m" (![#ptrT] "log")))) #());;;
-    let: "b" := (alloc (zero_val boolT)) in
+    let: "b" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "bks") in
     (method_call #append_log.append_log #"Log'ptr" #"append" (![#ptrT] "log")) "$a0") in
     do:  ("b" <-[#boolT] "$r0");;;

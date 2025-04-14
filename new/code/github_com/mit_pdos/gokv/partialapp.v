@@ -41,7 +41,7 @@ Definition Foo__someMethodWithArgs : val :=
 (* go: examples.go:18:6 *)
 Definition main : val :=
   rec: "main" <> :=
-    with_defer: (let: "x" := (alloc (zero_val funcT)) in
+    with_defer: (let: "x" := (alloc (type.zero_val #funcT)) in
     let: "$r0" := (func_call #partialapp.main #"partiallyApplyMe"%go) in
     do:  ("x" <-[#funcT] "$r0");;;
     do:  (let: "$a0" := #"blah"%go in
@@ -63,7 +63,7 @@ Definition main : val :=
       "$f" "$a0" "$a1";;
       "$oldf" #()
       )));;;
-    let: "f" := (alloc (zero_val Foo)) in
+    let: "f" := (alloc (type.zero_val #Foo)) in
     let: "$r0" := #"a"%go in
     do:  ("f" <-[#Foo] "$r0");;;
     do:  ((method_call #partialapp.main #"Foo" #"someMethod" (![#Foo] "f")) #());;;

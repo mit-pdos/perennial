@@ -528,6 +528,7 @@ Ltac2 wp_alloc_visit e k :=
 .
 
 Ltac2 wp_alloc () :=
+  ltac1:(rewrite <- ?default_val_eq_zero_val);
   lazy_match! goal with
   | [ |- envs_entails _ (wp _ _ ?e _) ] => wp_walk_unwrap (fun () => walk_expr e wp_alloc_visit)
                                                         "wp_alloc: could not find ref_ty"
@@ -543,7 +544,7 @@ Ltac2 wp_alloc_auto_visit e k :=
       let ptr_name := Std.eval_vm None constr:($var_name +:+ "_ptr") in
       let k := constr:(@AppRCtx _ $let_expr1 :: $k) in
       Control.once_plus (fun _ => eapply (tac_wp_alloc $k); ectx_simpl ())
-        (fun _ => Control.backtrack_tactic_failure "wp_alloc_auto: failed to apply tac_wp_ref_ty");
+        (fun _ => Control.backtrack_tactic_failure "wp_alloc_auto: failed to apply tac_wp_alloc");
       let i :=
         orelse (fun () => Option.get_bt (Ident.of_string (StringToIdent.coq_string_to_string ptr_name)))
           (fun _ => Control.backtrack_tactic_failure "wp_alloc_auto: could not convert to ident") in
@@ -553,6 +554,10 @@ Ltac2 wp_alloc_auto_visit e k :=
   end.
 
 Ltac2 wp_alloc_auto () :=
+  (* XXX: the zero_val pure expression appears after the PureWp reduction of
+  type.zero_val, but there's currently no way to put that simplification after
+  that specific reduction *)
+  ltac1:(rewrite <- ?default_val_eq_zero_val);
   lazy_match! goal with
   | [ |- envs_entails _ (wp _ _ ?e _) ] => wp_walk_unwrap (fun () => walk_expr e wp_alloc_auto_visit)
                                                         "wp_alloc_auto: could not find ref_ty"

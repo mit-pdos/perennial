@@ -37,8 +37,8 @@ Definition Error : val :=
     (if: interface.eq (![#error] "err") #interface.nil
     then return: (#interface.nil)
     else do:  #());;;
-    let: "ok" := (alloc (zero_val boolT)) in
-    let: "verr" := (alloc (zero_val error)) in
+    let: "ok" := (alloc (type.zero_val #boolT)) in
+    let: "verr" := (alloc (type.zero_val #error)) in
     let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT error)] (globals.get #rpctypes.rpctypes #"errStringToError"%go)) (let: "$a0" := (![#error] "err") in
     (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0")) in
     let: "$r0" := "$ret0" in
@@ -48,14 +48,14 @@ Definition Error : val :=
     (if: (~ (![#boolT] "ok"))
     then return: (![#error] "err")
     else do:  #());;;
-    let: "ev" := (alloc (zero_val ptrT)) in
+    let: "ev" := (alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#error] "verr") in
     (func_call #status #"FromError"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("ev" <-[#ptrT] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
-    let: "desc" := (alloc (zero_val stringT)) in
+    let: "desc" := (alloc (type.zero_val #stringT)) in
     (if: ![#boolT] "ok"
     then
       let: "$r0" := ((method_call #status #"Status'ptr" #"Message" (![#ptrT] "ev")) #()) in
@@ -74,8 +74,8 @@ Definition Error : val :=
 Definition ErrorDesc : val :=
   rec: "ErrorDesc" "err" :=
     exception_do (let: "err" := (alloc "err") in
-    (let: "ok" := (alloc (zero_val boolT)) in
-    let: "s" := (alloc (zero_val ptrT)) in
+    (let: "ok" := (alloc (type.zero_val #boolT)) in
+    let: "s" := (alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#error] "err") in
     (func_call #status #"FromError"%go) "$a0") in
     let: "$r0" := "$ret0" in

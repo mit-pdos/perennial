@@ -29,7 +29,7 @@ Definition BytesEqual : val :=
   rec: "BytesEqual" "x" "y" :=
     exception_do (let: "y" := (alloc "y") in
     let: "x" := (alloc "x") in
-    let: "xlen" := (alloc (zero_val intT)) in
+    let: "xlen" := (alloc (type.zero_val #intT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "x") in
     slice.len "$a0") in
     do:  ("xlen" <-[#intT] "$r0");;;
@@ -37,10 +37,10 @@ Definition BytesEqual : val :=
     slice.len "$a0")
     then return: (#false)
     else do:  #());;;
-    let: "i" := (alloc (zero_val uint64T)) in
+    let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    let: "retval" := (alloc (zero_val boolT)) in
+    let: "retval" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
     do:  ("retval" <-[#boolT] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (![#intT] "xlen"))); (λ: <>, Skip) := λ: <>,
@@ -146,10 +146,10 @@ Definition JoinHandle : go_type := structT [
 (* go: goose_std.go:96:6 *)
 Definition newJoinHandle : val :=
   rec: "newJoinHandle" <> :=
-    exception_do (let: "mu" := (alloc (zero_val ptrT)) in
-    let: "$r0" := (alloc (zero_val sync.Mutex)) in
+    exception_do (let: "mu" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
     do:  ("mu" <-[#ptrT] "$r0");;;
-    let: "cond" := (alloc (zero_val ptrT)) in
+    let: "cond" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "mu")) in
     (func_call #sync #"NewCond"%go) "$a0") in
     do:  ("cond" <-[#ptrT] "$r0");;;
@@ -184,7 +184,7 @@ Definition JoinHandle__finish : val :=
 Definition Spawn : val :=
   rec: "Spawn" "f" :=
     exception_do (let: "f" := (alloc "f") in
-    let: "h" := (alloc (zero_val ptrT)) in
+    let: "h" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((func_call #std.std #"newJoinHandle"%go) #()) in
     do:  ("h" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
@@ -220,21 +220,21 @@ Definition Multipar : val :=
   rec: "Multipar" "num" "op" :=
     exception_do (let: "op" := (alloc "op") in
     let: "num" := (alloc "num") in
-    let: "num_left" := (alloc (zero_val uint64T)) in
+    let: "num_left" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] "num") in
     do:  ("num_left" <-[#uint64T] "$r0");;;
-    let: "num_left_mu" := (alloc (zero_val ptrT)) in
-    let: "$r0" := (alloc (zero_val sync.Mutex)) in
+    let: "num_left_mu" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
     do:  ("num_left_mu" <-[#ptrT] "$r0");;;
-    let: "num_left_cond" := (alloc (zero_val ptrT)) in
+    let: "num_left_cond" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "num_left_mu")) in
     (func_call #sync #"NewCond"%go) "$a0") in
     do:  ("num_left_cond" <-[#ptrT] "$r0");;;
-    (let: "i" := (alloc (zero_val uint64T)) in
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "num")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "i" := (alloc (zero_val uint64T)) in
+      let: "i" := (alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] "i") in
       do:  ("i" <-[#uint64T] "$r0");;;
       let: "$go" := (λ: <>,
