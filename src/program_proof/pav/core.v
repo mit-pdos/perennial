@@ -27,6 +27,9 @@ Notation cli_map_ty := (gmap map_label_ty cli_map_val_ty) (only parsing).
 Notation lat_val_ty := (option map_val_ty) (only parsing).
 Notation lat_opaque_val_ty := (option opaque_map_val_ty) (only parsing).
 
+Notation enc_label_pre uid ver := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver).
+Notation enc_val ep commit := (MapValPre.encodesF $ MapValPre.mk ep commit).
+
 Section misc.
 Class pavG Σ :=
   {

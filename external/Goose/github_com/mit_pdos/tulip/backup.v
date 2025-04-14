@@ -39,6 +39,18 @@ Definition BGPP_ABORTED : expr := #6.
 
 Definition BGPP_STOPPED : expr := #7.
 
+Definition mkBackupGroupPreparer: val :=
+  rec: "mkBackupGroupPreparer" "nrps" :=
+    let: "gpp" := struct.new BackupGroupPreparer [
+      "nrps" ::= "nrps";
+      "phase" ::= BGPP_INQUIRING;
+      "pwrsok" ::= #false;
+      "pps" ::= NewMap uint64T (struct.t tulip.PrepareProposal) #();
+      "vdm" ::= NewMap uint64T boolT #();
+      "srespm" ::= NewMap uint64T boolT #()
+    ] in
+    "gpp".
+
 Definition BGPP_INQUIRE : expr := #0.
 
 Definition BGPP_VALIDATE : expr := #1.
@@ -277,20 +289,33 @@ Definition BackupGroupPreparer__getPhase: val :=
     struct.loadF BackupGroupPreparer "phase" "gpp".
 
 Definition BackupGroupCoordinator := struct.decl [
-  "rps" :: mapT uint64T;
+  "rps" :: slice.T uint64T;
+  "addrm" :: mapT uint64T;
   "mu" :: ptrT;
   "cv" :: ptrT;
-  "leader" :: uint64T;
+  "idxleader" :: uint64T;
   "gpp" :: ptrT;
   "conns" :: mapT grove_ffi.Connection
 ].
 
-Definition BackupGroupCoordinator__NextPrepareAction: val :=
-  rec: "BackupGroupCoordinator__NextPrepareAction" "gcoord" "rid" :=
-    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    let: "a" := BackupGroupPreparer__action (struct.loadF BackupGroupCoordinator "gpp" "gcoord") "rid" in
-    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    "a".
+Definition mkBackupGroupCoordinator: val :=
+  rec: "mkBackupGroupCoordinator" "addrm" :=
+    let: "mu" := newMutex #() in
+    let: "cv" := NewCond "mu" in
+    let: "nrps" := MapLen "addrm" in
+    let: "rps" := ref_to (slice.T uint64T) (NewSlice uint64T #0) in
+    MapIter "addrm" (λ: "rid" <>,
+      "rps" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "rps") "rid"));;
+    let: "gcoord" := struct.new BackupGroupCoordinator [
+      "rps" ::= ![slice.T uint64T] "rps";
+      "addrm" ::= "addrm";
+      "mu" ::= "mu";
+      "cv" ::= "cv";
+      "idxleader" ::= #0;
+      "gpp" ::= mkBackupGroupPreparer "nrps";
+      "conns" ::= NewMap uint64T grove_ffi.Connection #()
+    ] in
+    "gcoord".
 
 Definition BackupGroupCoordinator__Finalized: val :=
   rec: "BackupGroupCoordinator__Finalized" "gcoord" :=
@@ -298,6 +323,13 @@ Definition BackupGroupCoordinator__Finalized: val :=
     let: "done" := BackupGroupPreparer__finalized (struct.loadF BackupGroupCoordinator "gpp" "gcoord") in
     Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
     "done".
+
+Definition BackupGroupCoordinator__NextPrepareAction: val :=
+  rec: "BackupGroupCoordinator__NextPrepareAction" "gcoord" "rid" :=
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    let: "a" := BackupGroupPreparer__action (struct.loadF BackupGroupCoordinator "gpp" "gcoord") "rid" in
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    "a".
 
 Definition BackupGroupCoordinator__GetConnection: val :=
   rec: "BackupGroupCoordinator__GetConnection" "gcoord" "rid" :=
@@ -308,7 +340,7 @@ Definition BackupGroupCoordinator__GetConnection: val :=
 
 Definition BackupGroupCoordinator__Connect: val :=
   rec: "BackupGroupCoordinator__Connect" "gcoord" "rid" :=
-    let: "addr" := Fst (MapGet (struct.loadF BackupGroupCoordinator "rps" "gcoord") "rid") in
+    let: "addr" := SliceGet uint64T (struct.loadF BackupGroupCoordinator "rps" "gcoord") "rid" in
     let: "ret" := grove_ffi.Connect "addr" in
     (if: (~ (struct.get grove_ffi.ConnectRet "Err" "ret"))
     then
@@ -372,31 +404,35 @@ Definition BackupGroupCoordinator__SendRefresh: val :=
 
 Definition BackupGroupCoordinator__PrepareSession: val :=
   rec: "BackupGroupCoordinator__PrepareSession" "gcoord" "rid" "ts" "rank" "ptgs" :=
-    let: "act" := ref_to uint64T (BackupGroupCoordinator__NextPrepareAction "gcoord" "rid") in
     Skip;;
     (for: (λ: <>, (~ (BackupGroupCoordinator__Finalized "gcoord"))); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "act") = BGPP_INQUIRE
+      let: "act" := BackupGroupCoordinator__NextPrepareAction "gcoord" "rid" in
+      (if: "act" = BGPP_INQUIRE
       then BackupGroupCoordinator__SendInquire "gcoord" "rid" "ts" "rank"
       else
-        (if: (![uint64T] "act") = BGPP_VALIDATE
+        (if: "act" = BGPP_VALIDATE
         then
-          let: ("pwrs", <>) := BackupGroupCoordinator__GetPwrs "gcoord" in
-          BackupGroupCoordinator__SendValidate "gcoord" "rid" "ts" "rank" "pwrs" "ptgs"
+          let: ("pwrs", "ok") := BackupGroupCoordinator__GetPwrs "gcoord" in
+          (if: "ok"
+          then BackupGroupCoordinator__SendValidate "gcoord" "rid" "ts" "rank" "pwrs" "ptgs"
+          else #())
         else
-          (if: (![uint64T] "act") = BGPP_PREPARE
+          (if: "act" = BGPP_PREPARE
           then BackupGroupCoordinator__SendPrepare "gcoord" "rid" "ts" "rank"
           else
-            (if: (![uint64T] "act") = BGPP_UNPREPARE
+            (if: "act" = BGPP_UNPREPARE
             then BackupGroupCoordinator__SendUnprepare "gcoord" "rid" "ts" "rank"
             else
-              (if: (![uint64T] "act") = BGPP_REFRESH
+              (if: "act" = BGPP_REFRESH
               then BackupGroupCoordinator__SendRefresh "gcoord" "rid" "ts" "rank"
               else #())))));;
-      (if: (![uint64T] "act") = BGPP_REFRESH
-      then time.Sleep params.NS_SEND_REFRESH
-      else time.Sleep params.NS_RESEND_PREPARE);;
-      "act" <-[uint64T] (BackupGroupCoordinator__NextPrepareAction "gcoord" "rid");;
-      Continue);;
+      (if: "act" = BGPP_REFRESH
+      then
+        time.Sleep params.NS_SEND_REFRESH;;
+        Continue
+      else
+        time.Sleep params.NS_RESEND_PREPARE;;
+        Continue));;
     #().
 
 Definition BackupGroupCoordinator__WaitUntilPrepareDone: val :=
@@ -430,7 +466,7 @@ Definition BackupGroupCoordinator__WaitUntilPrepareDone: val :=
    aborted) is made, or a higher-ranked backup coordinator is up. *)
 Definition BackupGroupCoordinator__Prepare: val :=
   rec: "BackupGroupCoordinator__Prepare" "gcoord" "ts" "rank" "ptgs" :=
-    MapIter (struct.loadF BackupGroupCoordinator "rps" "gcoord") (λ: "ridloop" <>,
+    MapIter (struct.loadF BackupGroupCoordinator "addrm" "gcoord") (λ: "ridloop" <>,
       let: "rid" := "ridloop" in
       Fork (BackupGroupCoordinator__PrepareSession "gcoord" "rid" "ts" "rank" "ptgs"));;
     let: ("status", "valid") := BackupGroupCoordinator__WaitUntilPrepareDone "gcoord" in
@@ -439,9 +475,9 @@ Definition BackupGroupCoordinator__Prepare: val :=
 Definition BackupGroupCoordinator__GetLeader: val :=
   rec: "BackupGroupCoordinator__GetLeader" "gcoord" :=
     Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    let: "leader" := struct.loadF BackupGroupCoordinator "leader" "gcoord" in
+    let: "idxleader" := struct.loadF BackupGroupCoordinator "idxleader" "gcoord" in
     Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    "leader".
+    SliceGet uint64T (struct.loadF BackupGroupCoordinator "rps" "gcoord") "idxleader".
 
 Definition BackupGroupCoordinator__SendCommit: val :=
   rec: "BackupGroupCoordinator__SendCommit" "gcoord" "rid" "ts" "pwrs" :=
@@ -452,10 +488,10 @@ Definition BackupGroupCoordinator__SendCommit: val :=
 Definition BackupGroupCoordinator__ChangeLeader: val :=
   rec: "BackupGroupCoordinator__ChangeLeader" "gcoord" :=
     Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    let: "leader" := ((struct.loadF BackupGroupCoordinator "leader" "gcoord") + #1) `rem` (MapLen (struct.loadF BackupGroupCoordinator "rps" "gcoord")) in
-    struct.storeF BackupGroupCoordinator "leader" "gcoord" "leader";;
+    let: "idxleader" := ((struct.loadF BackupGroupCoordinator "idxleader" "gcoord") + #1) `rem` (slice.len (struct.loadF BackupGroupCoordinator "rps" "gcoord")) in
+    struct.storeF BackupGroupCoordinator "idxleader" "gcoord" "idxleader";;
     Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    "leader".
+    SliceGet uint64T (struct.loadF BackupGroupCoordinator "rps" "gcoord") "idxleader".
 
 Definition BackupGroupCoordinator__Commit: val :=
   rec: "BackupGroupCoordinator__Commit" "gcoord" "ts" :=
@@ -552,8 +588,8 @@ Definition BackupGroupCoordinator__ResponseSession: val :=
 
 Definition BackupGroupCoordinator__ConnectAll: val :=
   rec: "BackupGroupCoordinator__ConnectAll" "gcoord" :=
-    MapIter (struct.loadF BackupGroupCoordinator "rps" "gcoord") (λ: <> "rid",
-      BackupGroupCoordinator__Connect "gcoord" "rid");;
+    ForSlice uint64T <> "rid" (struct.loadF BackupGroupCoordinator "rps" "gcoord")
+      (BackupGroupCoordinator__Connect "gcoord" "rid");;
     #().
 
 Definition BackupTxnCoordinator := struct.decl [
@@ -569,24 +605,7 @@ Definition MkBackupTxnCoordinator: val :=
     let: "gcoords" := NewMap uint64T ptrT #() in
     ForSlice uint64T <> "gid" "ptgs"
       (let: "addrm" := Fst (MapGet "gaddrm" "gid") in
-      let: "gpp" := struct.new BackupGroupPreparer [
-        "nrps" ::= MapLen "addrm";
-        "phase" ::= BGPP_INQUIRING;
-        "pwrsok" ::= #false;
-        "pps" ::= NewMap uint64T (struct.t tulip.PrepareProposal) #();
-        "vdm" ::= NewMap uint64T boolT #();
-        "srespm" ::= NewMap uint64T boolT #()
-      ] in
-      let: "mu" := newMutex #() in
-      let: "cv" := NewCond "mu" in
-      let: "gcoord" := struct.new BackupGroupCoordinator [
-        "rps" ::= "addrm";
-        "mu" ::= "mu";
-        "cv" ::= "cv";
-        "leader" ::= "leader";
-        "gpp" ::= "gpp";
-        "conns" ::= NewMap uint64T grove_ffi.Connection #()
-      ] in
+      let: "gcoord" := mkBackupGroupCoordinator "addrm" in
       MapInsert "gcoords" "gid" "gcoord");;
     let: "tcoord" := struct.new BackupTxnCoordinator [
       "ts" ::= "ts";
@@ -615,8 +634,8 @@ Definition BackupTxnCoordinator__stabilize: val :=
     let: "np" := ref_to uint64T #0 in
     let: "st" := ref_to uint64T tulip.TXN_PREPARED in
     let: "vd" := ref_to boolT #true in
-    MapIter (struct.loadF BackupTxnCoordinator "gcoords" "tcoord") (λ: <> "gcoordloop",
-      let: "gcoord" := "gcoordloop" in
+    ForSlice uint64T <> "gid" "ptgs"
+      (let: "gcoord" := Fst (MapGet (struct.loadF BackupTxnCoordinator "gcoords" "tcoord") "gid") in
       Fork (let: ("stg", "vdg") := BackupGroupCoordinator__Prepare "gcoord" "ts" "rank" "ptgs" in
             Mutex__Lock "mu";;
             "nr" <-[uint64T] ((![uint64T] "nr") + #1);;
@@ -630,7 +649,7 @@ Definition BackupTxnCoordinator__stabilize: val :=
             Cond__Signal "cv"));;
     Mutex__Lock "mu";;
     Skip;;
-    (for: (λ: <>, (![boolT] "vd") && ((![uint64T] "nr") ≠ (MapLen (struct.loadF BackupTxnCoordinator "gcoords" "tcoord")))); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (![boolT] "vd") && ((![uint64T] "nr") ≠ (slice.len "ptgs"))); (λ: <>, Skip) := λ: <>,
       Cond__Wait "cv";;
       Continue);;
     let: "status" := ![uint64T] "st" in
