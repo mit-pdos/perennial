@@ -497,7 +497,7 @@ Lemma wp_Client__Put_good ptr_c c sl_pk d0 (pk : list w8) :
       (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
     "Hown_err" ∷ ClientErr.own ptr_err err c.(Client.serv).(Server.sig_pk) ∗
-    "Herr" ∷ ⌜ err.(ClientErr.Err) = false ⌝ ∗
+    "%Herr" ∷ ⌜ err.(ClientErr.Err) = false ⌝ ∗
 
     "Hown_cli" ∷ Client.own ptr_c new_c ∗
     (* TODO: prove wrapper client history spec, which will remove having

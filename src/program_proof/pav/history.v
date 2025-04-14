@@ -18,7 +18,7 @@ Definition is_hist_ep cli_γ serv_vrf_pk (uid ep : w64)
 
   (* prior vers exist in prior or this map. *)
   "#Hhist" ∷ ([∗ list] ver ↦ '(prior, commit) ∈ vals,
-    is_cli_entry cli_γ serv_vrf_pk prior uid ver (Some commit)) ∗
+    is_cli_entry cli_γ serv_vrf_pk prior uid ver (Some $ enc_val prior commit)) ∗
 
   "#Hbound" ∷ (∃ bound : w64,
     "%Hlt_valid" ∷ ⌜ uint.Z bound < uint.Z valid ⌝ ∗
@@ -29,7 +29,7 @@ Definition is_hist_ep cli_γ serv_vrf_pk (uid ep : w64)
     (* next ver exists in later map. *)
     (∃ commit,
     "%Hlt_ep" ∷ ⌜ uint.Z ep < uint.Z bound ⌝ ∗
-    "#Hentry_bound" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) (Some commit)))).
+    "#Hentry_bound" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) (Some $ enc_val bound commit)))).
 
 (* is_hist says a history is okay up to valid. *)
 Definition is_hist cli_γ serv_vrf_pk (uid : w64)
@@ -44,23 +44,24 @@ End hist.
 Section hist_derived.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Lemma hist_val_extend_valid γ uid ep hist valid new_valid :
+Lemma hist_val_extend_valid γ vrf_pk uid ep hist valid new_valid :
   uint.Z valid ≤ uint.Z new_valid →
-  is_hist_ep γ uid ep hist valid -∗
-  is_hist_ep γ uid ep hist new_valid.
+  is_hist_ep γ vrf_pk uid ep hist valid -∗
+  is_hist_ep γ vrf_pk uid ep hist new_valid.
 Proof.
   intros ?. iNamed 1. iNamed "Hbound". iExists vals. iFrame "#".
   iDestruct "Hbound" as "[H|H]"; iNamed "H"; word.
 Qed.
 
-Lemma hist_nil γ uid hist :
-  is_hist γ uid hist (W64 0) -∗
+Lemma hist_nil γ vrf_pk uid hist :
+  is_hist γ vrf_pk uid hist (W64 0) -∗
   ⌜ hist = [] ⌝.
 Proof.
   iNamed 1. destruct hist; [done|].
   ospecialize (Hhist_valid 0%nat _ _); [done|word].
 Qed.
 
+(*
 Lemma hist_extend_selfmon cli_γ uid hist valid new_valid :
   uint.Z valid ≤ uint.Z (word.add new_valid (W64 1)) →
   uint.Z (word.add new_valid (W64 1)) = uint.Z new_valid + uint.Z 1 →
@@ -97,13 +98,15 @@ Proof.
     iNamed "His_selfmon_post". rewrite Hlen_vals. iFrame "#".
     iSplit; [word|]. iLeft. word.
 Qed.
+*)
 
-Lemma hist_extend_put cli_γ uid hist valid new_valid pk :
+(* in this lemma, new_valid is inclusive bound. *)
+Lemma hist_extend_put cli_γ vrf_pk uid hist valid new_valid pk :
   uint.Z valid ≤ uint.Z (word.add new_valid (W64 1)) →
   uint.Z (word.add new_valid (W64 1)) = uint.Z new_valid + uint.Z 1 →
-  ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
-  "#His_put_post" ∷ is_put_post cli_γ uid (W64 $ length hist) new_valid pk) -∗
-  is_hist cli_γ uid (hist ++ [(new_valid, pk)]) (word.add new_valid (W64 1)).
+  ("#His_hist" ∷ is_hist cli_γ vrf_pk uid hist valid ∗
+  "#His_put_post" ∷ is_put_post cli_γ vrf_pk uid (W64 $ length hist) new_valid pk) -∗
+  is_hist cli_γ vrf_pk uid (hist ++ [(new_valid, pk)]) (word.add new_valid (W64 1)).
 Proof.
   intros ??. iNamed 1. iNamed "His_hist". iSplit.
   { iApply big_sepL_forall. iPureIntro. simpl. intros * Hlook.
@@ -165,13 +168,14 @@ Proof.
       * simpl. by iFrame "#".
     + iApply big_sepL_snoc. iFrame "#".
     + rewrite length_app. simpl.
-      replace (W64 (length vals + 1)%nat) with (word.add (W64 1) (W64 $ length vals)) by word.
+      replace (W64 (length vals + 1)%nat) with (word.add (W64 $ length vals) (W64 1)) by word.
       iFrame "#". iSplit; [word|]. iLeft. word.
 Qed.
 
 Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
   last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist.
 
+(*
 Lemma hist_audit_msv (ep : w64) cli_γ uid hist valid adtr_γ aud_ep :
   uint.Z ep < uint.Z valid →
   uint.Z valid ≤ uint.Z aud_ep →
@@ -225,9 +229,11 @@ Proof.
     opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
     opose proof ((proj2 Hinv_adtr) _ _ _ _ _ Hm_lookup Hlook_mkey) as ?. word.
 Qed.
+*)
 
 End hist_derived.
 
+(*
 Section wps.
 Context `{!heapGS Σ, !pavG Σ}.
 
@@ -335,3 +341,4 @@ Proof.
 Qed.
 
 End wps.
+*)
