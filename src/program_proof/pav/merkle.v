@@ -830,6 +830,8 @@ Definition own_Tree ptr elems d : iProp Σ :=
   "Hptr_ctx" ∷ ptr ↦[Tree :: "ctx"]{d} #ptr_ctx ∗
   "Hown_map" ∷ own_merkle_map ptr_map elems d ∗
   "Hptr_root" ∷ ptr ↦[Tree :: "root"]{d} #ptr_map.
+Global Opaque own_Tree.
+Local Transparent own_Tree.
 
 Global Instance own_Tree_fractional ptr elems :
   Fractional (λ q, own_Tree ptr elems (DfracOwn q)).
