@@ -192,6 +192,24 @@ destruct a. apply Forall_cons. split.
     naive_solver.
   Qed.
 
+  Lemma has_go_type_array_S_inv (v: val) (n: nat) et :
+    (Z.of_nat (S n) < 2^64)%Z →
+    has_go_type v (arrayT (W64 (S n)) et) →
+    ∃ v0 v', v = (v0, v')%V ∧
+              has_go_type v0 et ∧
+              has_go_type v' (arrayT (W64 n) et).
+  Proof.
+    intros Hbound Hty.
+    inv Hty.
+    destruct a as [|v0 a'].
+    { exfalso; simpl in *; word. }
+    simpl.
+    eexists _, _; split; [ eauto | ].
+    split; [ naive_solver | ].
+    apply has_go_type_array; [ | naive_solver ].
+    simpl in *; word.
+  Qed.
+
   Definition zero_val' (t : go_type) : val :=
     match t with
     | boolT => #false
