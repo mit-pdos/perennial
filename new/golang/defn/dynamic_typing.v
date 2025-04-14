@@ -62,7 +62,7 @@ Definition Match_def : val :=
                     "arrayCase" "n" "t"
       | InjR "x" => match: "x" with
           InjL "decls" => "structCase" "decls"
-        | InjR <> => #() (* unreachable *)
+        | InjR <> => Panic "dynamic_typing.Match: unreachable"
          end
       end
     end.
