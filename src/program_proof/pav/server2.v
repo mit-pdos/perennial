@@ -2,7 +2,7 @@ From New.experiments Require Import glob.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import core cryptoffi cryptoutil serde merkle.
+From Perennial.program_proof.pav Require Import core cryptoffi cryptoutil serde merkle auditor.
 From Perennial.goose_lang.lib.rwlock Require Import rwlock_noncrash.
 
 Module userState.
@@ -84,7 +84,6 @@ Record Server_names :=
     sig_pk : list w8;
     vrf_pk : list w8;
     commitSecret : list w8;
-    epoch_gn : gname;
   }.
 
 Implicit Types γ : Server_names.
@@ -117,9 +116,15 @@ Instance is_map_relation_pers γ mₗ mₕ : Persistent (is_map_relation γ mₗ
 
 Context `{!epoch_versioned_mapG Σ}.
 
-(* TODO: server should own [numVers] auth to ensure cryptographic correctness. *)
 
-(* TODO: separate invariant for "ghost auditor" inside of server. *)
+Definition own_Server_ghost γ st : iProp Σ :=
+  ∃ gs, (* TODO: rename to something better than [gs]. *)
+  "Hauditor" ∷ mono_list_auth_own γ.(auditor_gn) 1 gs ∗
+  "#Hinv_gs" ∷ gs_inv gs ∗
+  "%HkeyMap_ghost" ∷ ⌜ st.(Server.keyMap) = lower_map (default ∅ (last gs.*1)) ⌝ ∗
+  "%Hdigs_gs" ∷ ⌜ gs.*2 = servEpochInfo.dig <$> st.(Server.epochHist) ⌝
+  (* TODO: server should own [numVers] auth to ensure cryptographic correctness. *)
+.
 
 (** Invariants and cryptographic knowledge related to mutable Server state. *)
 Definition is_Server_crypto γ st : iProp Σ :=
@@ -161,7 +166,8 @@ Definition is_Server_crypto γ st : iProp Σ :=
 Definition own_Server γ s q : iProp Σ :=
   ∃ (st : Server.t),
     "Hphys" ∷ Server.own_phys s (q/2) st ∗
-    "#Hcrypto" ∷ is_Server_crypto γ st.
+    "#Hcrypto" ∷ is_Server_crypto γ st ∗
+    "Hghost" ∷ own_Server_ghost γ st.
 
 Definition is_Server γ s : iProp Σ :=
   ∃ commitSecret_sl (mu vrfSk_ptr : loc),
@@ -171,8 +177,7 @@ Definition is_Server γ s : iProp Σ :=
   "#Hmu" ∷ is_rwlock nroot #mu (λ q, own_Server γ s (q / 2)) ∗
   "#vrfSk" ∷ s ↦[Server :: "vrfSk"]□ #vrfSk_ptr ∗
   "#HvrfSk" ∷ is_vrf_sk vrfSk_ptr γ.(vrf_pk) ∗
-  "_" ∷ True
-.
+  "_" ∷ True.
 
 Definition wish_checkMembHide vrf_pk uid ver dig memb_hide label : iProp Σ :=
   "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb_hide.(MembHide.LabelProof) ∗
@@ -596,18 +601,31 @@ Proof.
   rewrite HepochHistLast /=. iFrame "#".
 Qed.
 
+Definition is_epoch_lb γ (epoch : w64) : iProp Σ :=
+  ∃ history, mono_list_lb_own γ.(auditor_gn) history ∗ ⌜ uint.nat epoch ≤ length history ⌝.
+
+Lemma ghost_latest_epoch γ st cli_ep :
+  let latest_epoch := (W64 (length st.(Server.epochHist) - 1)) in
+  is_epoch_lb γ cli_ep ∗
+  own_Server_ghost γ st
+  -∗
+  "#Hlb_ep" ∷ is_epoch_lb γ latest_epoch ∗
+  "%Hlt_ep" ∷ ⌜ uint.Z cli_ep ≤ uint.Z latest_epoch ⌝.
+Proof.
+Admitted.
+
 Lemma wp_Server__Get γ ptr uid cli_ep :
   {{{
     "#Hserv" ∷ is_Server γ ptr ∗
-    "#Hlb_ep" ∷ mono_nat_lb_own γ.(epoch_gn) cli_ep
+    "#Hlb_ep" ∷ is_epoch_lb γ cli_ep
   }}}
   Server__Get #ptr #uid
   {{{
     ptr_sigdig sigdig sl_hist ptr2_hist hist
     is_reg ptr_lat lat ptr_bound bound (nVers : w64),
     RET (#ptr_sigdig, slice_val sl_hist, #is_reg, #ptr_lat, #ptr_bound);
-    "#Hlb_ep" ∷ mono_nat_lb_own γ.(epoch_gn) (uint.nat sigdig.(SigDig.Epoch)) ∗
-    "%Hlt_ep" ∷ ⌜ Z.of_nat cli_ep ≤ uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
+    "#Hlb_ep" ∷ is_epoch_lb γ sigdig.(SigDig.Epoch) ∗
+    "%Hlt_ep" ∷ ⌜ uint.Z cli_ep ≤ uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
     "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
     "#Hsig" ∷ is_sig γ.(sig_pk)
       (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
@@ -690,16 +708,18 @@ Proof.
   { iFrame "#". }
   iIntros "*". iNamed 1. wp_pures.
   wp_loadField.
+
+  iDestruct (ghost_latest_epoch with "[$]") as "#H".
+  iClear "Hlb_ep". iNamed "H".
+
   iRename "Htree" into "Htree_own".
   iCombineNamed "*_own" as "Hown".
-  wp_apply (read_wp_Mutex__Unlock with "[$Hmu Hown]").
+  wp_apply (read_wp_Mutex__Unlock with "[$Hmu Hown Hghost]").
   { iNamed "Hown". iFrame "∗#". }
   wp_pures.
   iApply "HΦ".
-  iSplitR; first admit. (* TODO: ghost *)
-  iSplitR; first admit. (* TODO: ghost *)
   instantiate (2:=ltac:(econstructor)). simpl.
-  iFrame "∗#%".  done.
-Admitted. (* TODO: ghost state *)
+  iFrame "∗#%". done.
+Qed.
 
 End proof.
