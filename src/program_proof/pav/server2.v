@@ -96,15 +96,22 @@ Definition encode_uid_ver uid_ver :=
    labels and pks) and a map from (uid,ver) pairs to (epoch,pk). *)
 Definition is_map_relation γ (mₗ : gmap (list w8) (list w8))
   (mₕ : gmap (uid_ty * ver_ty) (epoch_ty * pk_ty)) : iProp Σ :=
-  (* A (uid_er, epoch_pk) pair is in the abstract map iff a corresponding
+  (* A (uid_ver, epoch_pk) pair is in the abstract map iff a corresponding
      hidden element is in the physical map *)
-  □(∀ uid_ver epoch_pk,
-     ⌜ mₕ !! uid_ver = Some epoch_pk ⌝ ∗-∗
-     ∃ label rand commit,
-       is_vrf_out γ.(vrf_pk) (encode_uid_ver uid_ver) label ∗
-       is_hash (γ.(commitSecret) ++ label) rand ∗
-       is_hash (CommitOpen.encodesF (CommitOpen.mk epoch_pk.2 rand)) commit ∗
-       ⌜ mₗ !! label = Some (MapValPre.encodesF $ MapValPre.mk epoch_pk.1 commit) ⌝).
+  □(∀ uid_ver o_epoch_pk,
+      ⌜ mₕ !! uid_ver = o_epoch_pk ⌝ -∗
+      ∃ label,
+        is_vrf_out γ.(vrf_pk) (encode_uid_ver uid_ver) label ∗
+        match o_epoch_pk with
+        | Some epoch_pk =>
+            (∃ rand commit,
+                is_hash (γ.(commitSecret) ++ label) rand ∗
+                is_hash (CommitOpen.encodesF (CommitOpen.mk epoch_pk.2 rand)) commit ∗
+                ⌜ mₗ !! label = Some (MapValPre.encodesF $ MapValPre.mk epoch_pk.1 commit) ⌝)
+        | None => ⌜ mₗ !! label = None ⌝
+        end
+    ).
+
 
 Instance is_map_relation_pers γ mₗ mₕ : Persistent (is_map_relation γ mₗ mₕ) := _.
 
@@ -338,9 +345,8 @@ Proof.
       specialize (Hintree ltac:(word)).
       rewrite elem_of_dom in Hintree.
       destruct Hintree as [epoch_pk Hintree].
-      iSpecialize ("HkeyMap" $! (uid, ver) epoch_pk).
-      iLeft in "HkeyMap".
-      iDestruct ("HkeyMap" with "[//]") as (???) "(#Hvrf & Hrand & Hcommit & %Hlookup)".
+      iSpecialize ("HkeyMap" $! (uid, ver) (Some epoch_pk)).
+      iDestruct ("HkeyMap" with "[//]") as (?) "(#Hvrf & (% & % & Hrand & Hcommit & %Hlookup))".
       iDestruct (is_vrf_out_det with "Hvrf Hvrf_out") as "%". subst.
       rewrite Hlook_elems in Hlookup. discriminate Hlookup.
     }
@@ -424,6 +430,7 @@ Lemma wp_getLatest γ keyMap_ptr st dq uid vrfSk commitSecret_sl dqc pk_sl :
     #vrfSk (slice_val commitSecret_sl) (slice_val pk_sl)
   {{{
         (isRegistered : bool) (latest_ptr : loc) latest, RET (#isRegistered, #latest_ptr);
+        "Htree" ∷ own_Tree keyMap_ptr st.(Server.keyMap) dq ∗
         "Hlat" ∷ Memb.own latest_ptr latest (DfracOwn 1) ∗
         "#Hwish_lat" ∷ (∀ dig, is_merkle_map st.(Server.keyMap) dig -∗
                           if negb isRegistered then True else
@@ -464,9 +471,9 @@ Proof.
   destruct lookup eqn:Hlookup2 in HkeyMapLatest.
   2:{ simpl in *. exfalso. done. }
   destruct p. simpl in *. subst.
-  iDestruct ("HkeyMap" $! (uid, _) _) as "[HkeyMap2 _]".
+  iDestruct ("HkeyMap" $! (uid, _) _) as "HkeyMap2".
   iSpecialize ("HkeyMap2" with "[//]").
-  iDestruct "HkeyMap2" as (???) "(#Hlabel & #Hrand & #Hcommit & %)".
+  iDestruct "HkeyMap2" as (?) "(#Hlabel & (% & % & #Hrand & #Hcommit & %))".
   rewrite Hlookup.
   iDestruct (is_vrf_out_det with "Hlabel Hvrf_out") as "%". subst.
 
@@ -522,6 +529,61 @@ Proof.
   rewrite /wish_checkMemb /=. iFrame "#".
 Qed.
 
+Lemma wp_getBound γ st keyMap_ptr (uid : w64) vrfSk dq :
+  {{{
+      "Htree" ∷ own_Tree keyMap_ptr st.(Server.keyMap) dq ∗
+      "#HvrfSk" ∷ is_vrf_sk vrfSk γ.(vrf_pk) ∗
+      "#Hcrypto" ∷ is_Server_crypto γ st
+  }}}
+    getBound #keyMap_ptr #uid #(default (W64 0) (userState.numVers <$> (st.(Server.userInfo) !! uid))) #vrfSk
+  {{{
+      (bound_ptr : loc) bound, RET #bound_ptr;
+        "Htree" ∷ own_Tree keyMap_ptr st.(Server.keyMap) dq ∗
+        "Hbound" ∷ NonMemb.own bound_ptr bound (DfracOwn 1) ∗
+        "#Hwish_bound" ∷
+          (∀ dig, is_merkle_map st.(Server.keyMap) dig -∗
+                  wish_checkNonMemb γ.(vrf_pk) uid
+                        (default (W64 0) (userState.numVers <$> (st.(Server.userInfo) !! uid)))
+                        dig bound)
+  }}}.
+Proof.
+  iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
+  wp_apply (wp_compMapLabel with "[$]").
+  iIntros "* (Hout_sl & Hproof_sl & #Hvrf_out & #Hvrf_proof)".
+  wp_pures. wp_apply (wp_Tree__Prove with "[$Htree $Hout_sl]").
+  iIntros "*". iNamed 1. wp_pures.
+  destruct in_tree.
+  {
+    iExFalso. iNamed "Hcrypto".
+    unfold is_map_relation. iDestruct "HkeyMap" as "#HkeyMap".
+    specialize (HkeyMapLatest uid).
+    destruct lookup eqn:Hlookup in HkeyMapLatest.
+    - destruct t as [??]. rewrite Hlookup. simpl.
+      iSpecialize ("HkeyMap" $! (uid, numVers) None with "[]").
+      {
+        iPureIntro. destruct HkeyMapLatest as [_ HkeyMapLatest].
+        specialize (HkeyMapLatest numVers) as [HkeyMapLatest _].
+        apply not_elem_of_dom_1.
+        intros H. apply HkeyMapLatest in H. lia.
+      }
+      iDestruct "HkeyMap" as (?) "(Hvrf & %Hnone)".
+      iDestruct (is_vrf_out_det with "Hvrf Hvrf_out") as %Heq. subst. exfalso.
+      naive_solver.
+    - rewrite Hlookup /=. iSpecialize ("HkeyMap" $! (uid, W64 0) None with "[]").
+      { iPureIntro. by apply not_elem_of_dom_1. }
+      iDestruct "HkeyMap" as (?) "(Hvrf & %Hnone)".
+      iDestruct (is_vrf_out_det with "Hvrf Hvrf_out") as %Heq. subst. exfalso.
+      naive_solver.
+  }
+  iPersist "Hsl_proof".
+  wp_apply std_proof.wp_Assert; [done|].
+  wp_pures. wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Hnm".
+  iApply "HΦ". iDestruct (struct_fields_split with "Hnm") as "H". iNamed "H".
+  iFrame. instantiate (1:=ltac:(econstructor)). simpl. iFrame "∗ Hsl_proof".
+  iIntros (?) "His_dig2". iDestruct (is_merkle_map_det with "His_dig His_dig2") as %Heq. subst.
+  iFrame "#".
+Qed.
+
 Lemma wp_Server__Get γ ptr uid cli_ep :
   {{{
     "#Hserv" ∷ is_Server γ ptr ∗
@@ -531,7 +593,7 @@ Lemma wp_Server__Get γ ptr uid cli_ep :
   {{{
     ptr_sigdig sigdig sl_hist ptr2_hist hist
     is_reg ptr_lat lat ptr_bound bound (nVers : w64),
-    RET (#ptr_sigdig, slice_val sl_hist, #ptr_lat, #ptr_bound);
+    RET (#ptr_sigdig, slice_val sl_hist, #is_reg, #ptr_lat, #ptr_bound);
     "#Hlb_ep" ∷ mono_nat_lb_own γ.(epoch_gn) (uint.nat sigdig.(SigDig.Epoch)) ∗
     "%Hlt_ep" ∷ ⌜ Z.of_nat cli_ep ≤ uint.Z sigdig.(SigDig.Epoch) ⌝ ∗
     "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
@@ -616,8 +678,19 @@ Proof.
   { iFrame "#". }
   iIntros "*". iNamed 1.
   wp_pures. wp_loadField. wp_load. wp_loadField.
-  (* TODO: getBound *)
-
+  wp_apply (wp_getBound with "[$Htree]").
+  { iFrame "#". }
+  iIntros "*". iNamed 1. wp_pures.
+  wp_loadField.
+  iRename "Htree" into "Htree_own".
+  iCombineNamed "*_own" as "Hown".
+  wp_apply (read_wp_Mutex__Unlock with "[$Hmu Hown]").
+  { iNamed "Hown". iFrame "∗#". }
+  wp_pures.
+  iApply "HΦ".
+  iSplitR; first admit. (* TODO: ghost *)
+  iSplitR; first admit. (* TODO: ghost *)
+  iFrame.
 Admitted.
 
 End proof.
