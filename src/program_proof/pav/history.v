@@ -7,36 +7,37 @@ Section hist.
 (* logical history. *)
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition is_hist_ep cli_γ (uid ep : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
+Definition is_hist_ep cli_γ serv_vrf_pk (uid ep : w64)
+    (hist : list map_val_ty) (valid : w64) : iProp Σ :=
+  (* msv talks about opaque map vals, so expose those here. *)
   ∃ (vals : list opaque_map_val_ty),
-  "#Hpk_comm_reln" ∷
-    ([∗ list] pk_val;comm_val ∈ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist;vals,
-    "%Heq_ep" ∷ ⌜ pk_val.1 = comm_val.1 ⌝ ∗
-    "#Hcomm" ∷ is_comm pk_val.2 comm_val.2) ∗
+  "#Hpk_commit_reln" ∷
+    ([∗ list] pk_val;commit_val ∈ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist;vals,
+    "%Heq_ep" ∷ ⌜ pk_val.1 = commit_val.1 ⌝ ∗
+    "#Hcommit" ∷ is_commit pk_val.2 commit_val.2) ∗
+
   (* prior vers exist in prior or this map. *)
-  "#Hhist" ∷
-    ([∗ list] ver ↦ '(prior, comm) ∈ vals,
-    ∃ m_γ dig label,
-    "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat prior) (Some (m_γ, dig)) ∗
-    "#Hin_prior" ∷ (uid, W64 ver) ↪[m_γ]□ Some (prior, comm))
-  "#Hbound" ∷
-    (∃ (bound : w64) m_γ dig label,
-    "#Hsubmap" ∷ mono_list_idx_own cli_γ (uint.nat bound) (Some (m_γ, dig)) ∗
-    "%Hlt_bound" ∷ ⌜ uint.Z bound < uint.Z valid ⌝ ∗
+  "#Hhist" ∷ ([∗ list] ver ↦ '(prior, commit) ∈ vals,
+    is_cli_entry cli_γ serv_vrf_pk prior uid ver (Some commit)) ∗
+
+  "#Hbound" ∷ (∃ bound : w64,
+    "%Hlt_valid" ∷ ⌜ uint.Z bound < uint.Z valid ⌝ ∗
     (* next ver doesn't exist in this or later map. *)
-    (("%Hgt_bound" ∷ ⌜ uint.Z ep ≤ uint.Z bound ⌝ ∗
-    "#Hin_bound" ∷ (uid, W64 $ length vals) ↪[m_γ]□ None)
+    (("%Hlt_ep" ∷ ⌜ uint.Z ep ≤ uint.Z bound ⌝ ∗
+    "#Hentry_bound" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) None)
     ∨
     (* next ver exists in later map. *)
-    (∃ comm,
-    "%Hgt_bound" ∷ ⌜ uint.Z ep < uint.Z bound ⌝ ∗
-    "#Hin_bound" ∷ (uid, W64 $ length vals) ↪[m_γ]□ Some (bound, comm)))).
+    (∃ commit,
+    "%Hlt_ep" ∷ ⌜ uint.Z ep < uint.Z bound ⌝ ∗
+    "#Hentry_bound" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) (Some commit)))).
 
 (* is_hist says a history is okay up to valid. *)
-Definition is_hist cli_γ (uid : w64) (hist : list map_val_ty) (valid : w64) : iProp Σ :=
+Definition is_hist cli_γ serv_vrf_pk (uid : w64)
+    (hist : list map_val_ty) (valid : w64) : iProp Σ :=
   "%Hhist_valid" ∷ ([∗ list] x ∈ hist, ⌜ uint.Z x.1 < uint.Z valid ⌝) ∗
-  "#Hknow_eps" ∷ (∀ (ep : w64), ⌜ uint.Z ep < uint.Z valid ⌝ -∗
-    is_hist_ep cli_γ uid ep hist valid).
+  "#Hknow_eps" ∷ (∀ ep : w64,
+    ⌜ uint.Z ep < uint.Z valid ⌝ -∗
+    is_hist_ep cli_γ serv_vrf_pk uid ep hist valid).
 
 End hist.
 
@@ -90,7 +91,7 @@ Proof.
     intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). naive_solver word.
   - iFrame "#".
   - iClear "Hhist Hbound".
-    iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
+    iDestruct (big_sepL2_length with "Hpk_commit_reln") as %Hlen_vals.
     rewrite list_filter_all in Hlen_vals; last first.
     { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). simpl in *. word. }
     iNamed "His_selfmon_post". rewrite Hlen_vals. iFrame "#".
@@ -132,7 +133,7 @@ Proof.
           (λ x, uint.Z x.1 ≤ uint.Z (word.sub valid (W64 1))) hist); [iFrame "#"|].
         intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). naive_solver word.
       - iNamed "His_put_post". iFrame "#".
-        iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
+        iDestruct (big_sepL2_length with "Hpk_commit_reln") as %Hlen_vals.
         rewrite list_filter_all in Hlen_vals; last first.
         { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook).
           simpl in *. word. }
@@ -144,15 +145,15 @@ Proof.
   destruct (decide (valid = 0)) as [->|].
   (* case 2.1: valid = 0. *)
   { iDestruct (hist_nil with "[$Hknow_eps //]") as %->. iNamed "His_put_post".
-    iExists [(new_valid, comm)]. iSplit; [|iSplit].
+    iExists [(new_valid, commit)]. iSplit; [|iSplit].
     - simpl. by iFrame "#".
     - simpl. iFrame "#".
     - iFrame "#". iSplit; [word|]. iLeft. word. }
   (* case 2.2: valid != 0. *)
   - iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]"); [word|].
     iNamed "Hknow_eps". iNamed "His_put_post".
-    iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
-    iExists (vals ++ [(new_valid, comm)]).
+    iDestruct (big_sepL2_length with "Hpk_commit_reln") as %Hlen_vals.
+    iExists (vals ++ [(new_valid, commit)]).
     rewrite list_filter_all in Hlen_vals; last first.
     { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). simpl in *. word. }
     rewrite Hlen_vals. iSplit; [|iSplit].
@@ -184,15 +185,15 @@ Proof.
   iDestruct (mono_list_idx_own_get _ _ Hm_lookup with "Hadtr_maps") as "Hadtr_map".
   iFrame "Hadtr_map". iNamed "Hknow_eps". iExists vals. iSplit.
   { iClear "Hhist Hbound".
-    iDestruct (big_sepL2_length with "Hpk_comm_reln") as %Hlen_vals.
+    iDestruct (big_sepL2_length with "Hpk_commit_reln") as %Hlen_vals.
     destruct (get_lat hist ep) as [[??]|] eqn:Hlat_pk, (last vals) as [[??]|]
-      eqn:Hlat_comm; [|exfalso..|done];
-      rewrite /get_lat last_lookup in Hlat_pk; rewrite last_lookup in Hlat_comm.
+      eqn:Hlat_commit; [|exfalso..|done];
+      rewrite /get_lat last_lookup in Hlat_pk; rewrite last_lookup in Hlat_commit.
     + rewrite Hlen_vals in Hlat_pk.
-      iDestruct (big_sepL2_lookup with "Hpk_comm_reln") as "?"; [exact Hlat_pk|exact Hlat_comm|].
+      iDestruct (big_sepL2_lookup with "Hpk_commit_reln") as "?"; [exact Hlat_pk|exact Hlat_commit|].
       iFrame "#".
-    + apply lookup_lt_Some in Hlat_pk. apply lookup_ge_None in Hlat_comm. lia.
-    + apply lookup_ge_None in Hlat_pk. apply lookup_lt_Some in Hlat_comm. lia. }
+    + apply lookup_lt_Some in Hlat_pk. apply lookup_ge_None in Hlat_commit. lia.
+    + apply lookup_ge_None in Hlat_pk. apply lookup_lt_Some in Hlat_commit. lia. }
   iNamedSuffix "Hbound" "_bnd". iFrame "#".
   list_elem ms (uint.nat bound) as mbound.
   iSplit; [|iClear "Hhist"; iDestruct "Hbound" as "[H|H]"; iNamed "H"].
@@ -200,8 +201,8 @@ Proof.
     iIntros (?[prior ?]) "!> %Hlook_vals". iNamed 1. iFrame "#".
     (* tedious: need prior ep < adtr_bound to get prior adtr map for map transf.
     get that by tracing val back to filtered hist and using hist validity. *)
-    iDestruct (big_sepL2_lookup_2_some with "Hpk_comm_reln") as %[[??] Hlook_hist]; [exact Hlook_vals|].
-    iDestruct (big_sepL2_lookup with "Hpk_comm_reln") as "H"; [exact Hlook_hist|exact Hlook_vals|].
+    iDestruct (big_sepL2_lookup_2_some with "Hpk_commit_reln") as %[[??] Hlook_hist]; [exact Hlook_vals|].
+    iDestruct (big_sepL2_lookup with "Hpk_commit_reln") as "H"; [exact Hlook_hist|exact Hlook_vals|].
     iNamed "H". opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
     { eapply elem_of_list_lookup. eauto using Hlook_hist. }
     simpl in *. list_elem ms (uint.nat prior) as mprior.
