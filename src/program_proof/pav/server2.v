@@ -75,14 +75,6 @@ Definition own_phys ptr q s : iProp Σ :=
 End defs.
 End Server.
 
-(* FIXME: remove *)
-Section auditor_defs.
-Context `{!heapGS Σ, !pavG Σ}.
-Definition audit_epoch_post (γauditor : gname) (seen_dig : list w8) : iProp Σ.
-Admitted.
-
-End auditor_defs.
-
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
 
@@ -100,9 +92,6 @@ Implicit Types γ : Server_names.
 Definition encode_uid_ver uid_ver :=
   (MapLabelPre.encodesF $ MapLabelPre.mk uid_ver.1 uid_ver.2).
 
-Definition encode_pk γ pk :=
-  (CommitOpen.encodesF $ CommitOpen.mk pk γ.(commitSecret)).
-
 (* Abstraction relation between the map in the merkle tree (which has hidden
    labels and pks) and a map from (uid,ver) pairs to (epoch,pk). *)
 Definition is_map_relation γ (mₗ : gmap (list w8) (list w8))
@@ -111,9 +100,10 @@ Definition is_map_relation γ (mₗ : gmap (list w8) (list w8))
      hidden element is in the physical map *)
   □(∀ uid_ver epoch_pk,
      ⌜ mₕ !! uid_ver = Some epoch_pk ⌝ ∗-∗
-     ∃ label commit,
+     ∃ label rand commit,
        is_vrf_out γ.(vrf_pk) (encode_uid_ver uid_ver) label ∗
-       is_hash (encode_pk γ epoch_pk.2) commit ∗
+       is_hash (γ.(commitSecret) ++ label) rand ∗
+       is_hash (CommitOpen.encodesF (CommitOpen.mk epoch_pk.2 rand)) commit ∗
        ⌜ mₗ !! label = Some (MapValPre.encodesF $ MapValPre.mk epoch_pk.1 commit) ⌝).
 
 Instance is_map_relation_pers γ mₗ mₕ : Persistent (is_map_relation γ mₗ mₕ) := _.
@@ -350,7 +340,7 @@ Proof.
       destruct Hintree as [epoch_pk Hintree].
       iSpecialize ("HkeyMap" $! (uid, ver) epoch_pk).
       iLeft in "HkeyMap".
-      iDestruct ("HkeyMap" with "[//]") as (??) "(#Hvrf & Hcmmit & %Hlookup)".
+      iDestruct ("HkeyMap" with "[//]") as (???) "(#Hvrf & Hrand & Hcommit & %Hlookup)".
       iDestruct (is_vrf_out_det with "Hvrf Hvrf_out") as "%". subst.
       rewrite Hlook_elems in Hlookup. discriminate Hlookup.
     }
@@ -395,13 +385,39 @@ Qed.
 
 Typeclasses Opaque is_map_relation.
 
-Lemma wp_getLatest γ keyMap_ptr st dq uid vrfSk commitSecret_sl dqc pk_sl dqp :
+Lemma wp_compCommitOpen secret_sl label_sl (secret label : list w8) dqs dql :
+  {{{
+        "Hsecret" ∷ own_slice_small secret_sl byteT dqs secret ∗
+        "Hlabel" ∷ own_slice_small label_sl byteT dql label
+  }}}
+    compCommitOpen (slice_val secret_sl) (slice_val label_sl)
+  {{{ commit_sl (commit : list w8), RET (slice_val commit_sl);
+      own_slice_small commit_sl byteT (DfracOwn 1) commit ∗
+      own_slice_small secret_sl byteT dqs secret ∗
+      own_slice_small label_sl byteT dql label ∗
+      is_hash (secret ++ label) commit
+  }}}.
+Proof.
+  iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec.
+  wp_pures. wp_apply wp_NewSliceWithCap; [word |] .
+  iIntros (?) "Hsl". wp_apply wp_ref_to; [val_ty|].
+  iIntros. wp_pures. wp_load. wp_apply (wp_SliceAppendSlice with "[$Hsl $Hsecret]"); first done.
+  iIntros (?) "[Hsl Hsecret]". wp_pures. wp_store. wp_load.
+  wp_apply (wp_SliceAppendSlice with "[$Hsl $Hlabel]"); first done.
+  iIntros (?) "[Hsl Hlabel]". wp_pures. wp_store. wp_load.
+  iDestruct (own_slice_to_small with "Hsl") as "H".
+  wp_apply (wp_Hash with "[$]"). iIntros "*". iNamed 1.
+  iDestruct (own_slice_to_small with "Hsl_hash") as "Hsl_hash".
+  iApply "HΦ". rewrite replicate_0. iFrame "∗#".
+Qed.
+
+Lemma wp_getLatest γ keyMap_ptr st dq uid vrfSk commitSecret_sl dqc pk_sl :
   let userState := (st.(Server.userInfo) !! uid) in
   {{{
       "Htree" ∷ own_Tree keyMap_ptr st.(Server.keyMap) dq ∗
       "#HvrfSk" ∷ is_vrf_sk vrfSk γ.(vrf_pk) ∗
       "HcommitSecret" ∷ own_slice_small commitSecret_sl byteT dqc γ.(commitSecret) ∗
-      "Hpk" ∷ own_slice_small pk_sl byteT dqp (default [] $ userState.plainPk <$> userState) ∗
+      "#Hpk" ∷ own_slice_small pk_sl byteT DfracDiscarded (default [] $ userState.plainPk <$> userState) ∗
       "#Hcrypto" ∷ is_Server_crypto γ st
   }}}
     getLatest #keyMap_ptr #uid #(default (W64 0) (userState.numVers <$> userState))
@@ -450,7 +466,7 @@ Proof.
   destruct p. simpl in *. subst.
   iDestruct ("HkeyMap" $! (uid, _) _) as "[HkeyMap2 _]".
   iSpecialize ("HkeyMap2" with "[//]").
-  iDestruct "HkeyMap2" as (??) "(#Hlabel & #Hcommit & %)".
+  iDestruct "HkeyMap2" as (???) "(#Hlabel & #Hrand & #Hcommit & %)".
   rewrite Hlookup.
   iDestruct (is_vrf_out_det with "Hlabel Hvrf_out") as "%". subst.
 
@@ -470,16 +486,41 @@ Proof.
     simpl. iExists (enc_val _ _), _, [].
     iSplitL. 2:rewrite app_nil_r //.
     iPureIntro. unfold MapValPre.encodes.
-    split; last done.
-    simpl.
+    split; last done. simpl.
+    unfold enc_val in Hsz. rewrite /= in Hsz.
+    rewrite !length_app in Hsz.
+    word.
+  }
+  iSpecialize ("Herr" with "[]").
+  {
+    simpl. instantiate (1:=[]).
+    iSplitL. 2:rewrite app_nil_r //.
+    iPureIntro. unfold MapValPre.encodes.
+    split; last done. simpl.
     unfold enc_val in Hsz. rewrite /= in Hsz.
     rewrite !length_app in Hsz.
     word.
   }
   subst. wp_apply std_proof.wp_Assert; [done | ].
-  wp_pures.
-  (* TODO: wp_compCommitOpen *)
-Admitted.
+  wp_apply (wp_compCommitOpen with "[$HcommitSecret $Hsl_label]").
+  iIntros "* (Hcommit_sl & HcommitSecret & Hsl_label & #Hhash)".
+  wp_pures. wp_apply wp_allocStruct; [val_ty | ].
+  iIntros (open_ptr) "Hopen".
+  wp_pures. iNamed "Herr". iNamed "Hown_obj".
+  wp_loadField. wp_apply wp_allocStruct; [val_ty | ].
+  iIntros (m_ptr) "Hm". wp_pures.
+  iApply "HΦ".
+  iDestruct (struct_fields_split with "Hm") as "H". iNamed "H".
+  iDestruct (struct_fields_split with "Hopen") as "H". iNamed "H".
+  instantiate (1:=ltac:(econstructor)). simpl.
+  iFrame. simpl. instantiate (2:=ltac:(econstructor)). simpl.
+  iFrame. iFrame "Hpk". iPersist "Hsl_proof".
+  iFrame "Hsl_proof". iModIntro.
+  iIntros (?) "His_dig2".
+  iDestruct (is_merkle_map_det with "His_dig [$]") as %Heq. subst.
+  iDestruct (is_hash_det with "Hrand Hhash") as %Heq. subst.
+  rewrite /wish_checkMemb /=. iFrame "#".
+Qed.
 
 Lemma wp_Server__Get γ ptr uid cli_ep :
   {{{
@@ -578,8 +619,5 @@ Proof.
   (* TODO: getBound *)
 
 Admitted.
-
-Lemma wp_getLatest :
-  {{{ own_Tree }}}
 
 End proof.
