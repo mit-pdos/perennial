@@ -171,6 +171,27 @@ destruct a. apply Forall_cons. split.
       { intros. apply H. simpl. by right. }
   Qed.
 
+  Lemma has_go_type_struct_pair_inv f ft fvs decls :
+    has_go_type (struct.val_aux (structT ((f :: ft)%struct :: decls)) fvs)
+      (structT ((f :: ft)%struct :: decls)) →
+    has_go_type (default (zero_val ft) (alist_lookup_f f fvs)) ft ∧
+    has_go_type (struct.val_aux (structT decls) fvs)
+      (structT decls).
+  Proof.
+    inv 1.
+    rewrite struct.val_aux_unseal /= in H1.
+    inv H1.
+    split.
+    { naive_solver. }
+    fold (struct.val_aux_def (structT decls) fvs0) in H2.
+    fold (struct.val_aux_def (structT decls) fvs) in H2.
+    rewrite struct.val_aux_unseal.
+    rewrite -H2.
+    rewrite -struct.val_aux_unseal.
+    apply has_go_type_struct.
+    naive_solver.
+  Qed.
+
   Definition zero_val' (t : go_type) : val :=
     match t with
     | boolT => #false

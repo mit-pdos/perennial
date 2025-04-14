@@ -375,7 +375,6 @@ Section goose_lang.
       wp_pures.
       iApply "HΦ".
       iFrame.
-      fold flatten_struct.
       erewrite has_go_type_len.
       2:{ eapply Hfields. by left. }
       rewrite right_id. setoid_rewrite Nat2Z.inj_add. setoid_rewrite <- loc_add_assoc.

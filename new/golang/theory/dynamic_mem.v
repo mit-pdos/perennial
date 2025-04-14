@@ -37,59 +37,13 @@ Lemma wp_load_ty l (v: V) q stk E :
   {{{ ▷ l ↦{q} v }}}
     load_ty #t #l @ stk; E
   {{{ RET #v; l ↦{q} v }}}.
-Proof.
-  (*
-  iIntros (Φ) ">Hl HΦ".
-  rewrite type.load_ty_unseal /=.
-  rewrite typed_pointsto_unseal /typed_pointsto_def.
-  pose proof (to_val_has_go_type v) as Hty.
-  generalize dependent (# v). clear dependent V.
-  intros v Hty.
-  rename l into l'.
-  iInduction Hty as [] "IH" forall (l' Φ) "HΦ".
-  all: try destruct i.
-  all: rewrite ?[in flatten_struct _]to_val_unseal /= /= ?loc_add_0 ?right_id; wp_pures.
-  all:
-    try solve [ wp_call; rewrite !to_val_unseal /=;
-                           iApply (wp_load with "[$]");
-                iIntros "!> H"; rewrite ?to_val_unseal /=; iApply "HΦ"; done
-      ].
-
-  {
-    wp_call.
-    replace n with (W64 (uint.nat n)) in * by word.
-    assert (Z.of_nat (uint.nat n) < 2^64) by word.
-    generalize dependent (uint.nat n); clear n; intros n Hty Hbound.
-    clear Hty.
-    iInduction n as [|n] "IHn" forall (l' a Φ).
-    - admit.
-    - rewrite (bool_decide_eq_false_2 (W64 (S n) = W64 0)); [ wp_pures | word ].
-      destruct a as [|t' a']; simpl in *; [ word | ].
-      iDestruct (big_sepL_app with "Hl") as "[Hl1 Hl2]".
-      wp_apply ("IH" with "[] [$Hl1]").
-      { naive_solver. }
-      iIntros "Hl1".
-      wp_pures.
-      replace (word.sub (W64 (S n)) (W64 1)) with (W64 n) by word.
-      wp_bind (If _ _ _).
-      rewrite Z.mul_1_l.
-      iApply "IHn".
-      iApply ("IH" $! _ _ (foldr PairV (#()) a') with "[] [] [Hl2]").
-      { iPureIntro. apply has_go_type_array.
-        - word.
-        - naive_solver. }
-      {
-        iPureIntro. rewrite app_length in Hlen.
-        apply has_go_type_len in H.
-  }
-   *)
-
+Proof using IntoValTyped0.
   rewrite load_ty_unseal /=.
   rewrite typed_pointsto_unseal /typed_pointsto_def.
   pose proof (to_val_has_go_type v) as Hty.
   generalize dependent (# v). clear dependent V.
   generalize dependent l.
-  induction t using go_type_ind;
+  induction t using typing.go_type_ind;
     iIntros (l v Hty Φ) ">Hl HΦ";
     try solve [
         wp_call;
@@ -98,12 +52,13 @@ Proof.
         iApply (wp_load with "[$Hl]");
         iFrame
       ].
-  - wp_call.
+  - (* arrayT *)
+    wp_call.
     replace n with (W64 (uint.nat n)) in * by word.
     assert (Z.of_nat (uint.nat n) < 2^64) by word.
     generalize dependent (uint.nat n); clear n; intros n Hty Hbound.
     wp_apply wp_type_size. iIntros "[_ %Hsz]". wp_pures.
-    iInduction n as [|n] "IH" forall (l v Hty Φ).
+    iInduction n as [|n] "IH" forall (l v Hbound Hty Φ).
     + rewrite bool_decide_eq_true_2; [ wp_pures | word ].
       inv Hty.
       assert (a = []) by (destruct a; naive_solver); subst; simpl.
@@ -134,7 +89,8 @@ Proof.
       replace (word.sub (W64 (S n)) (W64 1)) with (W64 n) by word.
       wp_bind (If _ _ _).
       rewrite Z.mul_1_l.
-      iApply ("IH" $! _ _ (foldr PairV (#()) a') with "[] [Hl2]").
+      iApply ("IH" $! _ (foldr PairV (#()) a') with "[] [] [Hl2]").
+      { word. }
       { iPureIntro. apply has_go_type_array.
         - word.
         - naive_solver. }
@@ -155,7 +111,8 @@ Proof.
       iExactEq "H".
       rewrite loc_add_assoc.
       repeat (f_equal; try word).
-  - inv Hty.
+  - (* interfaceT *)
+    inv Hty.
     wp_call.
     destruct i;
       rewrite to_val_unseal /= ?loc_add_0 ?right_id;
@@ -163,14 +120,71 @@ Proof.
       iFrame.
   - (* structT *)
     wp_call.
-    admit.
-Admitted.
+    rewrite -load_ty_unseal.
+    iInduction decls as [|[f ft] decls] forall (l Φ v Hty).
+    + wp_pures.
+      inv Hty.
+      rewrite struct.val_aux_unseal /=.
+      rewrite to_val_unseal /=.
+      by iApply "HΦ".
+    + (* make the goal readable *)
+      match goal with
+      | |- context[Esnoc _ (INamed "IHdecls") ?P] =>
+          set (IHdeclsP := P)
+      end.
+      wp_pures.
+      rewrite [in # (f :: ft)%struct]to_val_unseal /=.
+      wp_pures.
+      pose proof Hty as Hty'.
+      inv Hty.
+      apply has_go_type_struct_pair_inv in Hty' as [Hty1 Hty2].
+      rewrite struct.val_aux_unseal /=.
+      iDestruct (big_sepL_app with "Hl") as "[Hv Hl]".
+      rewrite load_ty_unseal.
+      wp_apply (Hfields with "[$Hv]").
+      { naive_solver. }
+      { naive_solver. }
+      iIntros "Hv".
+      wp_pures.
+      wp_apply wp_type_size.
+      iIntros "[_ %]".
+      wp_pures.
+      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
+      rewrite !Z.mul_1_l.
+      replace (uint.Z (W64 (go_type_size ft))) with
+        (Z.of_nat (go_type_size ft)) by word.
+      rewrite -load_ty_unseal.
+      iApply ("IHdecls" with "[] [] [Hl]").
+      { iPureIntro.
+        naive_solver. }
+      {
+        iPureIntro.
+        eauto.
+      }
+      {
+        rewrite struct.val_aux_unseal.
+        erewrite -> has_go_type_len by eauto.
+        setoid_rewrite Nat2Z.inj_add.
+        setoid_rewrite loc_add_assoc.
+        iFrame "Hl".
+      }
+      iIntros "Hl".
+      wp_pures.
+      rewrite struct.val_aux_unseal.
+      iApply "HΦ".
+      iApply big_sepL_app.
+      iFrame "Hv".
+      erewrite -> has_go_type_len by eauto.
+      setoid_rewrite Nat2Z.inj_add.
+      setoid_rewrite loc_add_assoc.
+      iFrame "Hl".
+Qed.
 
 Lemma wp_store_ty l (v0 v: V) stk E :
   {{{ ▷l ↦ v0 }}}
     store_ty #t #l #v @ stk; E
   {{{ RET #(); l ↦ v }}}.
-Proof.
+Proof using IntoValTyped0.
 Admitted.
 
 End goose_lang.
@@ -184,18 +198,18 @@ Section tac_lemmas.
     envs_lookup i Δ = Some (is_pers, P)%I →
     envs_entails Δ (WP (fill K (Val #v)) @ s; E {{ Φ }}) →
     envs_entails Δ (WP (fill K (load_ty #t #l)) @ s; E {{ Φ }}).
-  Proof using Type*.
+  Proof.
     rewrite envs_entails_unseal => ? HΦ.
     rewrite envs_lookup_split //.
     iIntros "[H Henv]".
     destruct is_pers; simpl.
     - iDestruct "H" as "#H".
       iDestruct (points_to_acc with "H") as "[H' _]".
-      wp_apply (wp_load_ty with "[$]").
+      wp_apply (@wp_load_ty with "[$]").
       iIntros "?".
       iApply HΦ. iApply "Henv". iFrame "#".
     - iDestruct (points_to_acc with "H") as "[H Hclose]".
-      wp_apply (wp_load_ty with "[$]").
+      wp_apply (@wp_load_ty with "[$]").
       iIntros "?".
       iApply HΦ. iApply "Henv".
       iSpecialize ("Hclose" with "[$]").
@@ -214,7 +228,7 @@ Section tac_lemmas.
     rewrite envs_simple_replace_sound // /=.
     iIntros "[H Henv]".
     iDestruct (points_to_acc with "H") as "[H Hclose]".
-    wp_apply (wp_store_ty with "[$]").
+    wp_apply (@wp_store_ty with "[$]").
     iIntros "H". iSpecialize ("Hclose" with "[$]").
     iApply HΦ.
     iApply "Henv". iFrame.
