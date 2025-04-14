@@ -302,7 +302,7 @@ Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_label_proof sl_map_val sl_merk_proof,
   "Hsl_labelP" ∷ own_slice_small sl_label_proof byteT d obj.(LabelProof) ∗
   "Hptr_labelP" ∷ ptr ↦[MembHide :: "LabelProof"]{d} (slice_val sl_label_proof) ∗
-  "Hsl_map_val" ∷ own_slice_small sl_map_val byteT d obj.(MapVal) ∗
+  "Hsl_map_val" ∷ own_slice_small sl_map_val byteT DfracDiscarded obj.(MapVal) ∗
   "Hptr_map_val" ∷ ptr ↦[MembHide :: "MapVal"]{d} (slice_val sl_map_val) ∗
   "#Hsl_merkP" ∷ own_slice_small sl_merk_proof byteT DfracDiscarded obj.(MerkleProof) ∗
   "Hptr_merkP" ∷ ptr ↦[MembHide :: "MerkleProof"]{d} (slice_val sl_merk_proof).
