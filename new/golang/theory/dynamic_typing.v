@@ -127,4 +127,67 @@ Proof.
   iApply ("Hwp" with "[$]").
 Qed.
 
+Lemma wp_zero_val (t: go_type) stk E :
+  {{{ True }}}
+    type.zero_val #t @ stk; E
+  {{{ RET (zero_val t); £1 }}}.
+Proof.
+  rewrite type.zero_val_unseal.
+  rewrite zero_val_unseal.
+  induction t using go_type_ind; iIntros (Φ) "_ HΦ"; wp_call_lc "Hlc";
+    try solve [
+        rewrite [in (Match _ _ _ _ _)%E]to_val_unseal /=; wp_pures;
+        iApply "HΦ"; done
+      ].
+  - iDestruct ("HΦ" with "[$Hlc]") as "HΦ".
+    replace n with (W64 (uint.nat n)) by word.
+    assert (Z.of_nat (uint.nat n) < 2^64) by word.
+    generalize dependent (uint.nat n); clear n; intros n Hbound.
+    iInduction n as [|n] forall (Hbound Φ).
+    + rewrite bool_decide_eq_true_2; [ | auto ].
+      wp_pures.
+      iApply "HΦ"; done.
+    + rewrite (bool_decide_eq_false_2 (W64 (S n) = _)); [ | word ].
+      wp_pures.
+      wp_apply IHt; iIntros "_".
+      wp_pures.
+      replace (word.sub (W64 (S n)) (W64 1)) with (W64 n) by word.
+      wp_bind (If _ _ _)%E.
+      iApply "IHn".
+      { word. }
+      wp_pures.
+      iExactEq "HΦ".
+      f_equal.
+      simpl.
+      replace (uint.nat (W64 (S n))) with (S (uint.nat n)) by word.
+      simpl.
+      reflexivity.
+  - iDestruct ("HΦ" with "[$Hlc]") as "HΦ".
+    iInduction decls as [|[f ft] decls] forall (Φ).
+    + wp_pures.
+      iApply "HΦ".
+    + wp_pures.
+      rewrite [in # (_ :: _)%struct]to_val_unseal.
+      wp_pures.
+      wp_apply Hfields.
+      { naive_solver. }
+      iIntros "_".
+      wp_pures.
+      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
+      iApply "IHdecls".
+      { iPureIntro; naive_solver. }
+      wp_pures.
+      iApply "HΦ".
+Qed.
+
+#[global] Instance wp_zero_val_pure_wp (t: go_type) :
+  PureWp True
+         (type.zero_val #t)
+         (zero_val t).
+Proof.
+  intros ?????; iIntros "Hwp".
+  wp_apply wp_zero_val. iIntros "?".
+  iApply ("Hwp" with "[$]").
+Qed.
+
 End goose_lang.

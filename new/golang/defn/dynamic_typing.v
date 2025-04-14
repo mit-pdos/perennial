@@ -87,5 +87,47 @@ Definition go_type_size_def: val :=
 Program Definition go_type_size := sealed @go_type_size_def.
 Definition go_type_size_unseal : @go_type_size = _ := seal_eq _.
 
+Definition zero_val_def: val :=
+  rec: "zero_val" "t" :=
+    Match "t"
+          (λ: "x",
+            let: "n" := (match: "x" with InjL "n" => "n" | InjR <> => Panic "zero_val: unreachable" end) in
+            if: "n" = #(W64 0) then
+              #false
+            else if: "n" = #(W64 1) then
+                 #"000"%go_byte
+            else if: "n" = #(W64 2) then
+                #null (* uint16 *)
+            else if: "n" = #(W64 3) then
+                 #(W32 0)
+            else if: "n" = #(W64 4) then
+                 #(W64 0)
+            else if: "n" = #(W64 5) then
+                   #""%go
+            else if: "n" = #(W64 6) then
+                   #slice.nil
+            else if: "n" = #(W64 7) then
+                   #interface.nil
+            else if: "n" = #(W64 9) then
+                   #func.nil
+            else #null (* catch-all and pointer (n = 8) case *)
+          )
+          (λ: "n" "elem",
+            (rec: "go" "n" :=
+               if: "n" = #(W64 0) then #()
+               else ("zero_val" "elem", "go" ("n" - #(W64 1)))
+            ) "n")
+          (λ: "decls",
+            (rec: "go" "decls" :=
+               list.Match "decls"
+                          (λ: <>, #())
+                          (λ: "hd" "decls", let: ("f", "ft") := "hd" in
+                              ("zero_val" "ft", "go" "decls"))
+            ) "decls"
+          ).
+Program Definition zero_val := sealed @zero_val_def.
+Definition zero_val_unseal : @zero_val = _ := seal_eq _.
+
+
 End defn.
 End type.
