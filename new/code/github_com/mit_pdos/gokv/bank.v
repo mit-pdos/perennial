@@ -139,8 +139,8 @@ Definition BankClerk__SimpleTransfer : val :=
       slice.len "$a0"))) && ((![#uint64T] "dst") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) in
       slice.len "$a0")))) && ((![#uint64T] "src") ≠ (![#uint64T] "dst"))
       then
-        do:  (let: "$a0" := (![#stringT] (slice.elem_ref stringT (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) (![#uint64T] "src"))) in
-        let: "$a1" := (![#stringT] (slice.elem_ref stringT (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) (![#uint64T] "dst"))) in
+        do:  (let: "$a0" := (![#stringT] (slice.elem_ref #stringT (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) (![#uint64T] "src"))) in
+        let: "$a1" := (![#stringT] (slice.elem_ref #stringT (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) (![#uint64T] "dst"))) in
         let: "$a2" := (![#uint64T] "amount") in
         (method_call #bank.bank #"BankClerk'ptr" #"transfer_internal" (![#ptrT] "bck")) "$a0" "$a1" "$a2")
       else do:  #()))).
@@ -152,7 +152,7 @@ Definition BankClerk__get_total : val :=
     let: "sum" := (alloc (zero_val uint64T)) in
     let: "$range" := (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) in
     (let: "acct" := (alloc (zero_val intT)) in
-    slice.for_range stringT "$range" (λ: "$key" "$value",
+    slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![#stringT] "acct") in
@@ -163,7 +163,7 @@ Definition BankClerk__get_total : val :=
       do:  ("sum" <-[#uint64T] "$r0")));;;
     let: "$range" := (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) in
     (let: "acct" := (alloc (zero_val intT)) in
-    slice.for_range stringT "$range" (λ: "$key" "$value",
+    slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![#stringT] "acct") in
@@ -202,14 +202,14 @@ Definition MakeBankClerkSlice : val :=
     (if: (let: "$a0" := (![#stringT] "init_flag") in
     (interface.get #"Get"%go (![#kv.Kv] (struct.field_ref BankClerk "kvck" (![#ptrT] "bck")))) "$a0") = #""%go
     then
-      do:  (let: "$a0" := (![#stringT] (slice.elem_ref stringT (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) #(W64 0))) in
+      do:  (let: "$a0" := (![#stringT] (slice.elem_ref #stringT (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) #(W64 0))) in
       let: "$a1" := (let: "$a0" := BAL_TOTAL in
       (func_call #bank.bank #"encodeInt"%go) "$a0") in
       (interface.get #"Put"%go (![#kv.Kv] (struct.field_ref BankClerk "kvck" (![#ptrT] "bck")))) "$a0" "$a1");;;
       let: "$range" := (let: "$s" := (![#sliceT] (struct.field_ref BankClerk "accts" (![#ptrT] "bck"))) in
-      slice.slice stringT "$s" #(W64 1) (slice.len "$s")) in
+      slice.slice #stringT "$s" #(W64 1) (slice.len "$s")) in
       (let: "acct" := (alloc (zero_val intT)) in
-      slice.for_range stringT "$range" (λ: "$key" "$value",
+      slice.for_range #stringT "$range" (λ: "$key" "$value",
         do:  ("acct" <-[#stringT] "$value");;;
         do:  "$key";;;
         do:  (let: "$a0" := (![#stringT] "acct") in
@@ -235,13 +235,13 @@ Definition MakeBankClerk : val :=
     let: "accts" := (alloc (zero_val sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "accts") in
     let: "$a1" := ((let: "$sl0" := (![#stringT] "acc1") in
-    slice.literal stringT ["$sl0"])) in
-    (slice.append stringT) "$a0" "$a1") in
+    slice.literal #stringT ["$sl0"])) in
+    (slice.append #stringT) "$a0" "$a1") in
     do:  ("accts" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "accts") in
     let: "$a1" := ((let: "$sl0" := (![#stringT] "acc2") in
-    slice.literal stringT ["$sl0"])) in
-    (slice.append stringT) "$a0" "$a1") in
+    slice.literal #stringT ["$sl0"])) in
+    (slice.append #stringT) "$a0" "$a1") in
     do:  ("accts" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#ptrT] "lck") in
      let: "$a1" := (![#kv.Kv] "kv") in

@@ -36,7 +36,7 @@ Definition Server__rpcHandle : val :=
     let: "$a1" := (![#ptrT] "replyData") in
     (![#funcT] "f") "$a0" "$a1");;;
     let: "data1" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![#sliceT] (![#ptrT] "replyData")) in
+    let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![#sliceT] (![#ptrT] "replyData")) in
     slice.len "$a0"))) in
     do:  ("data1" <-[#sliceT] "$r0");;;
     let: "data2" := (alloc (zero_val sliceT)) in
@@ -255,7 +255,7 @@ Definition MakeClient : val :=
       do:  (let: "$a0" := #"Unable to connect to %s"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![#uint64T] "host_name") in
       (func_call #grove_ffi #"AddressToStr"%go) "$a0")) in
-      slice.literal interfaceT ["$sl0"])) in
+      slice.literal #interfaceT ["$sl0"])) in
       (func_call #log #"Printf"%go) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := ((![#uint64T] "err") = #(W64 0)) in
@@ -304,7 +304,7 @@ Definition Client__CallStart : val :=
     do:  (map.insert (![#(mapT uint64T ptrT)] (struct.field_ref Client "pending" (![#ptrT] "cl"))) (![#uint64T] "seqno") "$r0");;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref Client "mu" (![#ptrT] "cl")))) #());;;
     let: "data1" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![#sliceT] "args") in
+    let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![#sliceT] "args") in
     slice.len "$a0"))) in
     do:  ("data1" <-[#sliceT] "$r0");;;
     let: "data2" := (alloc (zero_val sliceT)) in

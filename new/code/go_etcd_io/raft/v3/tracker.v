@@ -60,7 +60,7 @@ Definition Inflights__Clone : val :=
     do:  ("ins" <-[#Inflights] "$r0");;;
     let: "$r0" := (let: "$a0" := #slice.nil in
     let: "$a1" := (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) in
-    (slice.append inflight) "$a0" "$a1") in
+    (slice.append #inflight) "$a0" "$a1") in
     do:  ((struct.field_ref Inflights "buffer" "ins") <-[#sliceT] "$r0");;;
     return: ("ins")).
 
@@ -99,7 +99,7 @@ Definition Inflights__Add : val :=
       "index" ::= "$index";
       "bytes" ::= "$bytes"
     }]) in
-    do:  ((slice.elem_ref inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] "next")) <-[#inflight] "$r0");;;
+    do:  ((slice.elem_ref #inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] "next")) <-[#inflight] "$r0");;;
     do:  ((struct.field_ref Inflights "count" (![#ptrT] "in")) <-[#intT] ((![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in"))) + #(W64 1)));;;
     do:  ((struct.field_ref Inflights "bytes" (![#ptrT] "in")) <-[#uint64T] ((![#uint64T] (struct.field_ref Inflights "bytes" (![#ptrT] "in"))) + (![#uint64T] "bytes")))).
 
@@ -126,11 +126,11 @@ Definition Inflights__grow : val :=
         do:  ("newSize" <-[#intT] "$r0")
       else do:  #()));;;
     let: "newBuffer" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 inflight (![#intT] "newSize")) in
+    let: "$r0" := (slice.make2 #inflight (![#intT] "newSize")) in
     do:  ("newBuffer" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "newBuffer") in
     let: "$a1" := (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) in
-    (slice.copy inflight) "$a0" "$a1");;;
+    (slice.copy #inflight) "$a0" "$a1");;;
     let: "$r0" := (![#sliceT] "newBuffer") in
     do:  ((struct.field_ref Inflights "buffer" (![#ptrT] "in")) <-[#sliceT] "$r0")).
 
@@ -141,7 +141,7 @@ Definition Inflights__FreeLE : val :=
   rec: "Inflights__FreeLE" "in" "to" :=
     exception_do (let: "in" := (alloc "in") in
     let: "to" := (alloc "to") in
-    (if: ((![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in"))) = #(W64 0)) || ((![#uint64T] "to") < (![#uint64T] (struct.field_ref inflight "index" (slice.elem_ref inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] (struct.field_ref Inflights "start" (![#ptrT] "in")))))))
+    (if: ((![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in"))) = #(W64 0)) || ((![#uint64T] "to") < (![#uint64T] (struct.field_ref inflight "index" (slice.elem_ref #inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] (struct.field_ref Inflights "start" (![#ptrT] "in")))))))
     then return: (#())
     else do:  #());;;
     let: "idx" := (alloc (zero_val intT)) in
@@ -152,10 +152,10 @@ Definition Inflights__FreeLE : val :=
     (let: "$r0" := #(W64 0) in
     do:  ("i" <-[#intT] "$r0");;;
     (for: (λ: <>, int_lt (![#intT] "i") (![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in")))); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
-      (if: (![#uint64T] "to") < (![#uint64T] (struct.field_ref inflight "index" (slice.elem_ref inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] "idx"))))
+      (if: (![#uint64T] "to") < (![#uint64T] (struct.field_ref inflight "index" (slice.elem_ref #inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] "idx"))))
       then break: #()
       else do:  #());;;
-      do:  ("bytes" <-[#uint64T] ((![#uint64T] "bytes") + (![#uint64T] (struct.field_ref inflight "bytes" (slice.elem_ref inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] "idx"))))));;;
+      do:  ("bytes" <-[#uint64T] ((![#uint64T] "bytes") + (![#uint64T] (struct.field_ref inflight "bytes" (slice.elem_ref #inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] "idx"))))));;;
       let: "size" := (alloc (zero_val intT)) in
       let: "$r0" := (![#intT] (struct.field_ref Inflights "size" (![#ptrT] "in"))) in
       do:  ("size" <-[#intT] "$r0");;;
@@ -329,7 +329,7 @@ Definition Progress__SentEntries : val :=
       else
         do:  (let: "$a0" := (interface.make #""%go #"string"%go (let: "$a0" := #"sending append in unhandled state %s"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make #tracker.tracker #"StateType" (![#StateType] (struct.field_ref Progress "State" (![#ptrT] "pr")))) in
-        slice.literal interfaceT ["$sl0"])) in
+        slice.literal #interfaceT ["$sl0"])) in
         (func_call #fmt #"Sprintf"%go) "$a0" "$a1")) in
         Panic "$a0")))).
 
@@ -457,20 +457,20 @@ Definition Progress__String : val :=
     let: "$a2" := ((let: "$sl0" := (interface.make #tracker.tracker #"StateType" (![#StateType] (struct.field_ref Progress "State" (![#ptrT] "pr")))) in
     let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr")))) in
     let: "$sl2" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr")))) in
-    slice.literal interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
+    slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
     (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
     (if: ![#boolT] (struct.field_ref Progress "IsLearner" (![#ptrT] "pr"))
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #" learner"%go) in
-      slice.literal interfaceT ["$sl0"])) in
+      slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprint"%go) "$a0" "$a1")
     else do:  #());;;
     (if: (method_call #tracker.tracker #"Progress'ptr" #"IsPaused" (![#ptrT] "pr")) #()
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #" paused"%go) in
-      slice.literal interfaceT ["$sl0"])) in
+      slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprint"%go) "$a0" "$a1")
     else do:  #());;;
     (if: (![#uint64T] (struct.field_ref Progress "PendingSnapshot" (![#ptrT] "pr"))) > #(W64 0)
@@ -478,14 +478,14 @@ Definition Progress__String : val :=
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #" pendingSnap=%d"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref Progress "PendingSnapshot" (![#ptrT] "pr")))) in
-      slice.literal interfaceT ["$sl0"])) in
+      slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: (~ (![#boolT] (struct.field_ref Progress "RecentActive" (![#ptrT] "pr"))))
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #" inactive"%go) in
-      slice.literal interfaceT ["$sl0"])) in
+      slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprint"%go) "$a0" "$a1")
     else do:  #());;;
     (let: "n" := (alloc (zero_val intT)) in
@@ -496,13 +496,13 @@ Definition Progress__String : val :=
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #" inflight=%d"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"int"%go (![#intT] "n")) in
-      slice.literal interfaceT ["$sl0"])) in
+      slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
       (if: (method_call #tracker.tracker #"Inflights'ptr" #"Full" (![#ptrT] (struct.field_ref Progress "Inflights" (![#ptrT] "pr")))) #()
       then
         do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"[full]"%go) in
-        slice.literal interfaceT ["$sl0"])) in
+        slice.literal #interfaceT ["$sl0"])) in
         (func_call #fmt #"Fprint"%go) "$a0" "$a1")
       else do:  #())
     else do:  #()));;;
@@ -517,7 +517,7 @@ Definition ProgressMap__String : val :=
   rec: "ProgressMap__String" "m" <> :=
     exception_do (let: "m" := (alloc "m") in
     let: "ids" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 uint64T #(W64 0) (let: "$a0" := (![#ProgressMap] "m") in
+    let: "$r0" := (slice.make3 #uint64T #(W64 0) (let: "$a0" := (![#ProgressMap] "m") in
     map.len "$a0")) in
     do:  ("ids" <-[#sliceT] "$r0");;;
     let: "$range" := (![#ProgressMap] "m") in
@@ -526,15 +526,15 @@ Definition ProgressMap__String : val :=
       do:  ("k" <-[#uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "ids") in
       let: "$a1" := ((let: "$sl0" := (![#uint64T] "k") in
-      slice.literal uint64T ["$sl0"])) in
-      (slice.append uint64T) "$a0" "$a1") in
+      slice.literal #uint64T ["$sl0"])) in
+      (slice.append #uint64T) "$a0" "$a1") in
       do:  ("ids" <-[#sliceT] "$r0")));;;
     do:  (let: "$a0" := (![#sliceT] "ids") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
     let: "buf" := (alloc (zero_val strings.Builder)) in
     let: "$range" := (![#sliceT] "ids") in
     (let: "id" := (alloc (zero_val intT)) in
-    slice.for_range uint64T "$range" (λ: "$key" "$value",
+    slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("id" <-[#uint64T] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
@@ -542,7 +542,7 @@ Definition ProgressMap__String : val :=
       "%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "id")) in
       let: "$sl1" := (interface.make #tracker.tracker #"Progress'ptr" (Fst (map.get (![#ProgressMap] "m") (![#uint64T] "id")))) in
-      slice.literal interfaceT ["$sl0"; "$sl1"])) in
+      slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")));;;
     return: ((method_call #strings #"Builder'ptr" #"String" "buf") #())).
 
@@ -569,7 +569,7 @@ Definition Config__String : val :=
     do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
     let: "$a1" := #"voters=%s"%go in
     let: "$a2" := ((let: "$sl0" := (interface.make #quorum #"JointConfig" (![#quorum.JointConfig] (struct.field_ref Config "Voters" "c"))) in
-    slice.literal interfaceT ["$sl0"])) in
+    slice.literal #interfaceT ["$sl0"])) in
     (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
     (if: (![#(mapT uint64T (structT [
     ]))] (struct.field_ref Config "Learners" "c")) ≠ #null
@@ -578,7 +578,7 @@ Definition Config__String : val :=
       let: "$a1" := #" learners=%s"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #quorum #"MajorityConfig" #"String" (![#(mapT uint64T (structT [
       ]))] (struct.field_ref Config "Learners" "c"))) #())) in
-      slice.literal interfaceT ["$sl0"])) in
+      slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: (![#(mapT uint64T (structT [
@@ -588,14 +588,14 @@ Definition Config__String : val :=
       let: "$a1" := #" learners_next=%s"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #quorum #"MajorityConfig" #"String" (![#(mapT uint64T (structT [
       ]))] (struct.field_ref Config "LearnersNext" "c"))) #())) in
-      slice.literal interfaceT ["$sl0"])) in
+      slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: ![#boolT] (struct.field_ref Config "AutoLeave" "c")
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #" autoleave"%go) in
-      slice.literal interfaceT ["$sl0"])) in
+      slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprint"%go) "$a0" "$a1")
     else do:  #());;;
     return: ((method_call #strings #"Builder'ptr" #"String" "buf") #())).
@@ -775,7 +775,7 @@ Definition ProgressTracker__Visit : val :=
       array.slice "$a" #(W64 0) (![#intT] "n")) in
       do:  ("ids" <-[#sliceT] "$r0")
     else
-      let: "$r0" := (slice.make2 uint64T (![#intT] "n")) in
+      let: "$r0" := (slice.make2 #uint64T (![#intT] "n")) in
       do:  ("ids" <-[#sliceT] "$r0"));;;
     let: "$range" := (![#ProgressMap] (struct.field_ref ProgressTracker "Progress" (![#ptrT] "p"))) in
     (let: "id" := (alloc (zero_val uint64T)) in
@@ -783,12 +783,12 @@ Definition ProgressTracker__Visit : val :=
       do:  ("id" <-[#uint64T] "$key");;;
       do:  ("n" <-[#intT] ((![#intT] "n") - #(W64 1)));;;
       let: "$r0" := (![#uint64T] "id") in
-      do:  ((slice.elem_ref uint64T (![#sliceT] "ids") (![#intT] "n")) <-[#uint64T] "$r0")));;;
+      do:  ((slice.elem_ref #uint64T (![#sliceT] "ids") (![#intT] "n")) <-[#uint64T] "$r0")));;;
     do:  (let: "$a0" := (![#sliceT] "ids") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
     let: "$range" := (![#sliceT] "ids") in
     (let: "id" := (alloc (zero_val intT)) in
-    slice.for_range uint64T "$range" (λ: "$key" "$value",
+    slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("id" <-[#uint64T] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![#uint64T] "id") in
@@ -830,7 +830,7 @@ Definition ProgressTracker__VoterNodes : val :=
     do:  ("m" <-[#(mapT uint64T (structT [
     ]))] "$r0");;;
     let: "nodes" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 uint64T #(W64 0) (let: "$a0" := (![#(mapT uint64T (structT [
+    let: "$r0" := (slice.make3 #uint64T #(W64 0) (let: "$a0" := (![#(mapT uint64T (structT [
     ]))] "m") in
     map.len "$a0")) in
     do:  ("nodes" <-[#sliceT] "$r0");;;
@@ -841,8 +841,8 @@ Definition ProgressTracker__VoterNodes : val :=
       do:  ("id" <-[#uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "nodes") in
       let: "$a1" := ((let: "$sl0" := (![#uint64T] "id") in
-      slice.literal uint64T ["$sl0"])) in
-      (slice.append uint64T) "$a0" "$a1") in
+      slice.literal #uint64T ["$sl0"])) in
+      (slice.append #uint64T) "$a0" "$a1") in
       do:  ("nodes" <-[#sliceT] "$r0")));;;
     do:  (let: "$a0" := (![#sliceT] "nodes") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
@@ -860,7 +860,7 @@ Definition ProgressTracker__LearnerNodes : val :=
     then return: (#slice.nil)
     else do:  #());;;
     let: "nodes" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 uint64T #(W64 0) (let: "$a0" := (![#(mapT uint64T (structT [
+    let: "$r0" := (slice.make3 #uint64T #(W64 0) (let: "$a0" := (![#(mapT uint64T (structT [
     ]))] (struct.field_ref Config "Learners" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p")))) in
     map.len "$a0")) in
     do:  ("nodes" <-[#sliceT] "$r0");;;
@@ -871,8 +871,8 @@ Definition ProgressTracker__LearnerNodes : val :=
       do:  ("id" <-[#uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "nodes") in
       let: "$a1" := ((let: "$sl0" := (![#uint64T] "id") in
-      slice.literal uint64T ["$sl0"])) in
-      (slice.append uint64T) "$a0" "$a1") in
+      slice.literal #uint64T ["$sl0"])) in
+      (slice.append #uint64T) "$a0" "$a1") in
       do:  ("nodes" <-[#sliceT] "$r0")));;;
     do:  (let: "$a0" := (![#sliceT] "nodes") in
     (func_call #slices #"SortUint64"%go) "$a0");;;

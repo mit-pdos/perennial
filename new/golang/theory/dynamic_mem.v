@@ -17,6 +17,27 @@ Context `{!IntoVal V}.
 
 Context `{!IntoValTyped V t}.
 
+Lemma wp_array_loc_add (l: loc) (i: w64) stk E :
+  {{{ True }}}
+    array_loc_add #t #l #i @ stk; E
+  {{{ RET #(l +ₗ[t] (uint.Z i)); £1 ∗ ⌜go_type_size t < 2^64⌝ }}}.
+Proof.
+  rewrite array_loc_add_unseal.
+  iIntros (Φ) "_ HΦ".
+  wp_call_lc "Hlc".
+  wp_apply wp_type_size.
+  iIntros "[_ %]".
+  wp_pures.
+  wp_apply wp_assume_mul_no_overflow.
+  iIntros "%".
+  wp_pures.
+  iDestruct ("HΦ" with "[$Hlc]") as "HΦ".
+  { word. }
+  iExactEq "HΦ".
+  rewrite word.unsigned_mul_nowrap; [ | word ].
+  repeat (f_equal; try word).
+Qed.
+
 Lemma wp_alloc (v : V) stk E :
   {{{ True }}}
     alloc (# v) @ stk; E

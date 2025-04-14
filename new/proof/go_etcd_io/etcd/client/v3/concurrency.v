@@ -108,6 +108,7 @@ Proof.
   wp_alloc s as "Hs".
   wp_auto.
   iPersist "cancel donec keepAlive".
+  rewrite -wp_fupd.
   wp_apply (wp_fork with "[Hdonec Hcancel]").
   {
     wp_apply wp_with_defer as "%defer defer".
@@ -152,7 +153,7 @@ Proof.
   iDestruct (struct_fields_split with "Hs") as "hs".
   simpl. iClear "Hctx". iNamed "hs".
   iPersist "Hclient Hid".
-  wp_auto.
+  iModIntro.
   iApply "HΦ".
   rewrite decide_True //.
   iFrame "#".

@@ -330,14 +330,14 @@ Definition byteSliceToString : val :=
 Definition testByteSliceToString : val :=
   rec: "testByteSliceToString" <> :=
     exception_do (let: "x" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 3)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 3)) in
     do:  ("x" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W8 65) in
-    do:  ((slice.elem_ref byteT (![#sliceT] "x") #(W64 0)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 0)) <-[#byteT] "$r0");;;
     let: "$r0" := #(W8 66) in
-    do:  ((slice.elem_ref byteT (![#sliceT] "x") #(W64 1)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 1)) <-[#byteT] "$r0");;;
     let: "$r0" := #(W8 67) in
-    do:  ((slice.elem_ref byteT (![#sliceT] "x") #(W64 2)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 2)) <-[#byteT] "$r0");;;
     return: ((let: "$a0" := (![#sliceT] "x") in
      (func_call #semantics.semantics #"byteSliceToString"%go) "$a0") = #"ABC"%go)).
 
@@ -345,57 +345,57 @@ Definition testByteSliceToString : val :=
 Definition testCopySimple : val :=
   rec: "testCopySimple" <> :=
     exception_do (let: "x" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 10)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
     do:  ("x" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W8 1) in
-    do:  ((slice.elem_ref byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
     let: "y" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 10)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
     do:  ("y" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "y") in
     let: "$a1" := (![#sliceT] "x") in
-    (slice.copy byteT) "$a0" "$a1");;;
-    return: ((![#byteT] (slice.elem_ref byteT (![#sliceT] "y") #(W64 3))) = #(W8 1))).
+    (slice.copy #byteT) "$a0" "$a1");;;
+    return: ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 3))) = #(W8 1))).
 
 (* go: copy.go:11:6 *)
 Definition testCopyShorterDst : val :=
   rec: "testCopyShorterDst" <> :=
     exception_do (let: "x" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 15)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 15)) in
     do:  ("x" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W8 1) in
-    do:  ((slice.elem_ref byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
     let: "$r0" := #(W8 2) in
-    do:  ((slice.elem_ref byteT (![#sliceT] "x") #(W64 12)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 12)) <-[#byteT] "$r0");;;
     let: "y" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 10)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
     do:  ("y" <-[#sliceT] "$r0");;;
     let: "n" := (alloc (zero_val uint64T)) in
     let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "y") in
     let: "$a1" := (![#sliceT] "x") in
-    (slice.copy byteT) "$a0" "$a1")) in
+    (slice.copy #byteT) "$a0" "$a1")) in
     do:  ("n" <-[#uint64T] "$r0");;;
-    return: (((![#uint64T] "n") = #(W64 10)) && ((![#byteT] (slice.elem_ref byteT (![#sliceT] "y") #(W64 3))) = #(W8 1)))).
+    return: (((![#uint64T] "n") = #(W64 10)) && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 3))) = #(W8 1)))).
 
 (* go: copy.go:20:6 *)
 Definition testCopyShorterSrc : val :=
   rec: "testCopyShorterSrc" <> :=
     exception_do (let: "x" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 10)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
     do:  ("x" <-[#sliceT] "$r0");;;
     let: "y" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 15)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 15)) in
     do:  ("y" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W8 1) in
-    do:  ((slice.elem_ref byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
     let: "$r0" := #(W8 2) in
-    do:  ((slice.elem_ref byteT (![#sliceT] "y") #(W64 12)) <-[#byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "y") #(W64 12)) <-[#byteT] "$r0");;;
     let: "n" := (alloc (zero_val uint64T)) in
     let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "y") in
     let: "$a1" := (![#sliceT] "x") in
-    (slice.copy byteT) "$a0" "$a1")) in
+    (slice.copy #byteT) "$a0" "$a1")) in
     do:  ("n" <-[#uint64T] "$r0");;;
-    return: ((((![#uint64T] "n") = #(W64 10)) && ((![#byteT] (slice.elem_ref byteT (![#sliceT] "y") #(W64 3))) = #(W8 1))) && ((![#byteT] (slice.elem_ref byteT (![#sliceT] "y") #(W64 12))) = #(W8 2)))).
+    return: ((((![#uint64T] "n") = #(W64 10)) && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 3))) = #(W8 1))) && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 12))) = #(W8 2)))).
 
 (* go: defer.go:3:6 *)
 Definition deferSimple : val :=
@@ -454,10 +454,10 @@ Definition Enc__consume : val :=
     let: "n" := (alloc "n") in
     let: "b" := (alloc (zero_val sliceT)) in
     let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Enc "p" (![#ptrT] "e"))) in
-    slice.slice byteT "$s" #(W64 0) (![#uint64T] "n")) in
+    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n")) in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Enc "p" (![#ptrT] "e"))) in
-    slice.slice byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
+    slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
     do:  ((struct.field_ref Enc "p" (![#ptrT] "e")) <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
@@ -472,10 +472,10 @@ Definition Dec__consume : val :=
     let: "n" := (alloc "n") in
     let: "b" := (alloc (zero_val sliceT)) in
     let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Dec "p" (![#ptrT] "d"))) in
-    slice.slice byteT "$s" #(W64 0) (![#uint64T] "n")) in
+    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n")) in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Dec "p" (![#ptrT] "d"))) in
-    slice.slice byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
+    slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
     do:  ((struct.field_ref Dec "p" (![#ptrT] "d")) <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
@@ -484,7 +484,7 @@ Definition roundtripEncDec32 : val :=
   rec: "roundtripEncDec32" "x" :=
     exception_do (let: "x" := (alloc "x") in
     let: "r" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 4)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 4)) in
     do:  ("r" <-[#sliceT] "$r0");;;
     let: "e" := (alloc (zero_val ptrT)) in
     let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
@@ -511,7 +511,7 @@ Definition roundtripEncDec64 : val :=
   rec: "roundtripEncDec64" "x" :=
     exception_do (let: "x" := (alloc "x") in
     let: "r" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 8)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 8)) in
     do:  ("r" <-[#sliceT] "$r0");;;
     let: "e" := (alloc (zero_val ptrT)) in
     let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
@@ -665,11 +665,11 @@ Definition Editor__AdvanceReturn : val :=
     let: "$r0" := (![#uint64T] (struct.field_ref Editor "next_val" (![#ptrT] "e"))) in
     do:  ("tmp" <-[#uint64T] "$r0");;;
     let: "$r0" := (![#uint64T] "tmp") in
-    do:  ((slice.elem_ref uint64T (![#sliceT] (struct.field_ref Editor "s" (![#ptrT] "e"))) #(W64 0)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref Editor "s" (![#ptrT] "e"))) #(W64 0)) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#uint64T] "next") in
     do:  ((struct.field_ref Editor "next_val" (![#ptrT] "e")) <-[#uint64T] "$r0");;;
     let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Editor "s" (![#ptrT] "e"))) in
-    slice.slice uint64T "$s" #(W64 1) (slice.len "$s")) in
+    slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
     do:  ((struct.field_ref Editor "s" (![#ptrT] "e")) <-[#sliceT] "$r0");;;
     return: (![#uint64T] "tmp")).
 
@@ -696,11 +696,11 @@ Definition Pair : go_type := structT [
 Definition failing_testFunctionOrdering : val :=
   rec: "failing_testFunctionOrdering" <> :=
     exception_do (let: "arr" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 5)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 5)) in
     do:  ("arr" <-[#sliceT] "$r0");;;
     let: "e1" := (alloc (zero_val Editor)) in
     let: "$r0" := (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
-    slice.slice uint64T "$s" #(W64 0) (slice.len "$s")) in
+    slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 1) in
     struct.make Editor [{
       "s" ::= "$s";
@@ -709,7 +709,7 @@ Definition failing_testFunctionOrdering : val :=
     do:  ("e1" <-[#Editor] "$r0");;;
     let: "e2" := (alloc (zero_val Editor)) in
     let: "$r0" := (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
-    slice.slice uint64T "$s" #(W64 0) (slice.len "$s")) in
+    slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 101) in
     struct.make Editor [{
       "s" ::= "$s";
@@ -721,7 +721,7 @@ Definition failing_testFunctionOrdering : val :=
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0")) ≠ #(W64 102)
     then return: (#false)
     else do:  #());;;
-    (if: (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 0))) ≠ #(W64 101)
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) ≠ #(W64 101)
     then return: (#false)
     else do:  #());;;
     (if: (let: "$a0" := (let: "$a0" := #(W64 3) in
@@ -735,10 +735,10 @@ Definition failing_testFunctionOrdering : val :=
     (func_call #semantics.semantics #"addFour64"%go) "$a0" "$a1" "$a2" "$a3") ≠ #(W64 210)
     then return: (#false)
     else do:  #());;;
-    (if: (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 1))) ≠ #(W64 102)
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1))) ≠ #(W64 102)
     then return: (#false)
     else do:  #());;;
-    (if: (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 2))) ≠ #(W64 3)
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2))) ≠ #(W64 3)
     then return: (#false)
     else do:  #());;;
     let: "p" := (alloc (zero_val Pair)) in
@@ -751,7 +751,7 @@ Definition failing_testFunctionOrdering : val :=
       "y" ::= "$y"
     }]) in
     do:  ("p" <-[#Pair] "$r0");;;
-    (if: (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 3))) ≠ #(W64 104)
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3))) ≠ #(W64 104)
     then return: (#false)
     else do:  #());;;
     let: "q" := (alloc (zero_val Pair)) in
@@ -764,7 +764,7 @@ Definition failing_testFunctionOrdering : val :=
       "y" ::= "$y"
     }]) in
     do:  ("q" <-[#Pair] "$r0");;;
-    (if: (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 4))) ≠ #(W64 105)
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 4))) ≠ #(W64 105)
     then return: (#false)
     else do:  #());;;
     return: (((![#uint64T] (struct.field_ref Pair "x" "p")) + (![#uint64T] (struct.field_ref Pair "x" "q"))) = #(W64 109))).
@@ -827,7 +827,7 @@ Definition testU64ToU32 : val :=
 Definition testU32Len : val :=
   rec: "testU32Len" <> :=
     exception_do (let: "s" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 100)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 100)) in
     do:  ("s" <-[#sliceT] "$r0");;;
     return: ((s_to_w32 (let: "$a0" := (![#sliceT] "s") in
      slice.len "$a0")) = #(W32 100))).
@@ -840,7 +840,7 @@ Definition Uint32 : go_type := uint32T.
 Definition failing_testU32NewtypeLen : val :=
   rec: "failing_testU32NewtypeLen" <> :=
     exception_do (let: "s" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 20)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 20)) in
     do:  ("s" <-[#sliceT] "$r0");;;
     return: ((s_to_w32 (let: "$a0" := (![#sliceT] "s") in
      slice.len "$a0")) = #(W32 20))).
@@ -998,7 +998,7 @@ Definition standardForLoop : val :=
         let: "$r0" := (![#uint64T] (![#ptrT] "sumPtr")) in
         do:  ("sum" <-[#uint64T] "$r0");;;
         let: "x" := (alloc (zero_val uint64T)) in
-        let: "$r0" := (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "s") (![#uint64T] "i"))) in
+        let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "s") (![#uint64T] "i"))) in
         do:  ("x" <-[#uint64T] "$r0");;;
         let: "$r0" := ((![#uint64T] "sum") + (![#uint64T] "x")) in
         do:  ((![#ptrT] "sumPtr") <-[#uint64T] "$r0");;;
@@ -1038,12 +1038,12 @@ Definition LoopStruct__forLoopWait : val :=
 Definition testStandardForLoop : val :=
   rec: "testStandardForLoop" <> :=
     exception_do (let: "arr" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 4)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 4)) in
     do:  ("arr" <-[#sliceT] "$r0");;;
-    do:  ((slice.elem_ref uint64T (![#sliceT] "arr") #(W64 0)) <-[#uint64T] ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 0))) + #(W64 1)));;;
-    do:  ((slice.elem_ref uint64T (![#sliceT] "arr") #(W64 1)) <-[#uint64T] ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 1))) + #(W64 3)));;;
-    do:  ((slice.elem_ref uint64T (![#sliceT] "arr") #(W64 2)) <-[#uint64T] ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 2))) + #(W64 5)));;;
-    do:  ((slice.elem_ref uint64T (![#sliceT] "arr") #(W64 3)) <-[#uint64T] ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 3))) + #(W64 7)));;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + #(W64 1)));;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1))) + #(W64 3)));;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2))) + #(W64 5)));;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3))) + #(W64 7)));;;
     return: ((let: "$a0" := (![#sliceT] "arr") in
      (func_call #semantics.semantics #"standardForLoop"%go) "$a0") = #(W64 16))).
 
@@ -1428,7 +1428,7 @@ Definition testReturnFour : val :=
 Definition failing_testCompareSliceToNil : val :=
   rec: "failing_testCompareSliceToNil" <> :=
     exception_do (let: "s" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 0)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 0)) in
     do:  ("s" <-[#sliceT] "$r0");;;
     return: ((![#sliceT] "s") ≠ #slice.nil)).
 
@@ -1452,7 +1452,7 @@ Definition testCompareNilToNil : val :=
 Definition testComparePointerWrappedToNil : val :=
   rec: "testComparePointerWrappedToNil" <> :=
     exception_do (let: "s" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 1)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 1)) in
     do:  ("s" <-[#sliceT] "$r0");;;
     return: ((![#sliceT] "s") ≠ #slice.nil)).
 
@@ -1887,13 +1887,13 @@ Definition ArrayEditor__Advance : val :=
     exception_do (let: "ae" := (alloc "ae") in
     let: "next" := (alloc "next") in
     let: "arr" := (alloc "arr") in
-    do:  ((slice.elem_ref uint64T (![#sliceT] "arr") #(W64 0)) <-[#uint64T] ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 0))) + #(W64 1)));;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + #(W64 1)));;;
     let: "$r0" := (![#uint64T] (struct.field_ref ArrayEditor "next_val" (![#ptrT] "ae"))) in
-    do:  ((slice.elem_ref uint64T (![#sliceT] (struct.field_ref ArrayEditor "s" (![#ptrT] "ae"))) #(W64 0)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref ArrayEditor "s" (![#ptrT] "ae"))) #(W64 0)) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#uint64T] "next") in
     do:  ((struct.field_ref ArrayEditor "next_val" (![#ptrT] "ae")) <-[#uint64T] "$r0");;;
     let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref ArrayEditor "s" (![#ptrT] "ae"))) in
-    slice.slice uint64T "$s" #(W64 1) (slice.len "$s")) in
+    slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
     do:  ((struct.field_ref ArrayEditor "s" (![#ptrT] "ae")) <-[#sliceT] "$r0")).
 
 (* tests
@@ -1902,43 +1902,43 @@ Definition ArrayEditor__Advance : val :=
 Definition testSliceOps : val :=
   rec: "testSliceOps" <> :=
     exception_do (let: "x" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 10)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 10)) in
     do:  ("x" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((slice.elem_ref uint64T (![#sliceT] "x") #(W64 1)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 1)) <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 10) in
-    do:  ((slice.elem_ref uint64T (![#sliceT] "x") #(W64 2)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 2)) <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 15) in
-    do:  ((slice.elem_ref uint64T (![#sliceT] "x") #(W64 3)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 3)) <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 20) in
-    do:  ((slice.elem_ref uint64T (![#sliceT] "x") #(W64 4)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 4)) <-[#uint64T] "$r0");;;
     let: "v1" := (alloc (zero_val uint64T)) in
-    let: "$r0" := (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "x") #(W64 2))) in
+    let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "x") #(W64 2))) in
     do:  ("v1" <-[#uint64T] "$r0");;;
     let: "v2" := (alloc (zero_val sliceT)) in
     let: "$r0" := (let: "$s" := (![#sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 2) #(W64 3)) in
+    slice.slice #uint64T "$s" #(W64 2) #(W64 3)) in
     do:  ("v2" <-[#sliceT] "$r0");;;
     let: "v3" := (alloc (zero_val sliceT)) in
     let: "$r0" := (let: "$s" := (![#sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 0) #(W64 3)) in
+    slice.slice #uint64T "$s" #(W64 0) #(W64 3)) in
     do:  ("v3" <-[#sliceT] "$r0");;;
     let: "v4" := (alloc (zero_val ptrT)) in
-    let: "$r0" := (slice.elem_ref uint64T (![#sliceT] "x") #(W64 2)) in
+    let: "$r0" := (slice.elem_ref #uint64T (![#sliceT] "x") #(W64 2)) in
     do:  ("v4" <-[#ptrT] "$r0");;;
     let: "ok" := (alloc (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "v1") = #(W64 10))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "v2") #(W64 0))) = #(W64 10))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "v2") #(W64 0))) = #(W64 10))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "v2") in
     slice.len "$a0") = #(W64 1))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "v3") #(W64 1))) = #(W64 5))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "v3") #(W64 1))) = #(W64 5))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "v3") #(W64 2))) = #(W64 10))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "v3") #(W64 2))) = #(W64 10))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "v3") in
     slice.len "$a0") = #(W64 3))) in
@@ -1951,20 +1951,20 @@ Definition testSliceOps : val :=
 Definition testSliceCapacityOps : val :=
   rec: "testSliceCapacityOps" <> :=
     exception_do (let: "x" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 uint64T #(W64 0) #(W64 10)) in
+    let: "$r0" := (slice.make3 #uint64T #(W64 0) #(W64 10)) in
     do:  ("x" <-[#sliceT] "$r0");;;
     let: "sub1" := (alloc (zero_val sliceT)) in
     let: "$r0" := (let: "$s" := (![#sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 0) #(W64 6)) in
+    slice.slice #uint64T "$s" #(W64 0) #(W64 6)) in
     do:  ("sub1" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  ((slice.elem_ref uint64T (![#sliceT] "sub1") #(W64 0)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "sub1") #(W64 0)) <-[#uint64T] "$r0");;;
     let: "sub2" := (alloc (zero_val sliceT)) in
     let: "$r0" := (let: "$s" := (![#sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 2) #(W64 4)) in
+    slice.slice #uint64T "$s" #(W64 2) #(W64 4)) in
     do:  ("sub2" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  ((slice.elem_ref uint64T (![#sliceT] "sub2") #(W64 0)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "sub2") #(W64 0)) <-[#uint64T] "$r0");;;
     let: "ok" := (alloc (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[#boolT] "$r0");;;
@@ -1974,8 +1974,8 @@ Definition testSliceCapacityOps : val :=
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub1") in
     slice.cap "$a0") = #(W64 10))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref uint64T (let: "$s" := (![#sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 0) #(W64 10)) #(W64 0))) = #(W64 1))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (let: "$s" := (![#sliceT] "x") in
+    slice.slice #uint64T "$s" #(W64 0) #(W64 10)) #(W64 0))) = #(W64 1))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub2") in
     slice.len "$a0") = #(W64 2))) in
@@ -1983,8 +1983,8 @@ Definition testSliceCapacityOps : val :=
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub2") in
     slice.cap "$a0") = #(W64 8))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref uint64T (let: "$s" := (![#sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 0) #(W64 10)) #(W64 2))) = #(W64 2))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (let: "$s" := (![#sliceT] "x") in
+    slice.slice #uint64T "$s" #(W64 0) #(W64 10)) #(W64 2))) = #(W64 2))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
 
@@ -1992,11 +1992,11 @@ Definition testSliceCapacityOps : val :=
 Definition testOverwriteArray : val :=
   rec: "testOverwriteArray" <> :=
     exception_do (let: "arr" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 4)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 4)) in
     do:  ("arr" <-[#sliceT] "$r0");;;
     let: "ae1" := (alloc (zero_val ptrT)) in
     let: "$r0" := (alloc (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
-    slice.slice uint64T "$s" #(W64 0) (slice.len "$s")) in
+    slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 1) in
     struct.make ArrayEditor [{
       "s" ::= "$s";
@@ -2005,7 +2005,7 @@ Definition testOverwriteArray : val :=
     do:  ("ae1" <-[#ptrT] "$r0");;;
     let: "ae2" := (alloc (zero_val ptrT)) in
     let: "$r0" := (alloc (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
-    slice.slice uint64T "$s" #(W64 1) (slice.len "$s")) in
+    slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
     let: "$next_val" := #(W64 102) in
     struct.make ArrayEditor [{
       "s" ::= "$s";
@@ -2033,10 +2033,10 @@ Definition testOverwriteArray : val :=
     do:  (let: "$a0" := (![#sliceT] "arr") in
     let: "$a1" := #(W64 5) in
     (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![#ptrT] "ae1")) "$a0" "$a1");;;
-    (if: ((((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 0))) + (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 1)))) + (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 2)))) + (![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 3)))) ≥ #(W64 100)
+    (if: ((((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1)))) + (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2)))) + (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3)))) ≥ #(W64 100)
     then return: (#false)
     else do:  #());;;
-    return: (((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 3))) = #(W64 4)) && ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "arr") #(W64 0))) = #(W64 4)))).
+    return: (((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3))) = #(W64 4)) && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) = #(W64 4)))).
 
 (* go: slices.go:80:6 *)
 Definition testSliceLiteral : val :=
@@ -2044,20 +2044,20 @@ Definition testSliceLiteral : val :=
     exception_do (let: "bytes" := (alloc (zero_val sliceT)) in
     let: "$r0" := ((let: "$sl0" := #(W8 1) in
     let: "$sl1" := #(W8 2) in
-    slice.literal byteT ["$sl0"; "$sl1"])) in
+    slice.literal #byteT ["$sl0"; "$sl1"])) in
     do:  ("bytes" <-[#sliceT] "$r0");;;
     let: "ok" := (alloc (zero_val boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#byteT] (slice.elem_ref byteT (![#sliceT] "bytes") #(W64 0))) = #(W8 1))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "bytes") #(W64 0))) = #(W8 1))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "ints" := (alloc (zero_val sliceT)) in
     let: "$r0" := ((let: "$sl0" := #(W64 1) in
     let: "$sl1" := #(W64 2) in
     let: "$sl2" := #(W64 3) in
-    slice.literal uint64T ["$sl0"; "$sl1"; "$sl2"])) in
+    slice.literal #uint64T ["$sl0"; "$sl1"; "$sl2"])) in
     do:  ("ints" <-[#sliceT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref uint64T (![#sliceT] "ints") #(W64 1))) = #(W64 2))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "ints") #(W64 1))) = #(W64 2))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
 
@@ -2068,26 +2068,26 @@ Definition testSliceAppend : val :=
     let: "$r0" := #true in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "bytes" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 0)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 0)) in
     do:  ("bytes" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "bytes") in
     let: "$a1" := ((let: "$sl0" := #(W8 1) in
-    slice.literal byteT ["$sl0"])) in
-    (slice.append byteT) "$a0" "$a1") in
+    slice.literal #byteT ["$sl0"])) in
+    (slice.append #byteT) "$a0" "$a1") in
     do:  ("bytes" <-[#sliceT] "$r0");;;
     let: "newBytes" := (alloc (zero_val sliceT)) in
     let: "$r0" := ((let: "$sl0" := #(W8 2) in
     let: "$sl1" := #(W8 3) in
-    slice.literal byteT ["$sl0"; "$sl1"])) in
+    slice.literal #byteT ["$sl0"; "$sl1"])) in
     do:  ("newBytes" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "bytes") in
     let: "$a1" := (![#sliceT] "newBytes") in
-    (slice.append byteT) "$a0" "$a1") in
+    (slice.append #byteT) "$a0" "$a1") in
     do:  ("bytes" <-[#sliceT] "$r0");;;
     let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![#sliceT] "bytes") in
     slice.len "$a0")) = #(W64 3))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#byteT] (slice.elem_ref byteT (![#sliceT] "bytes") #(W64 2))) = #(W8 3))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "bytes") #(W64 2))) = #(W8 3))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
 
@@ -2386,7 +2386,7 @@ Definition testStoreSlice : val :=
     let: "$r0" := (alloc (zero_val sliceT)) in
     do:  ("p" <-[#ptrT] "$r0");;;
     let: "s" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 3)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 3)) in
     do:  ("s" <-[#sliceT] "$r0");;;
     let: "$r0" := (![#sliceT] "s") in
     do:  ((![#ptrT] "p") <-[#sliceT] "$r0");;;
@@ -2530,7 +2530,7 @@ Definition intToBlock : val :=
   rec: "intToBlock" "a" :=
     exception_do (let: "a" := (alloc "a") in
     let: "b" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT disk.BlockSize) in
+    let: "$r0" := (slice.make2 #byteT disk.BlockSize) in
     do:  ("b" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#uint64T] "a") in

@@ -106,7 +106,7 @@ Definition Election__Campaign : val :=
     let: "$r0" := (let: "$a0" := #"%s%x"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![#stringT] (struct.field_ref Election "keyPrefix" (![#ptrT] "e")))) in
     let: "$sl1" := (interface.make #clientv3 #"LeaseID" ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #())) in
-    slice.literal interfaceT ["$sl0"; "$sl1"])) in
+    slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ("k" <-[#stringT] "$r0");;;
     let: "txn" := (alloc (zero_val clientv3.Txn)) in
@@ -115,7 +115,7 @@ Definition Election__Campaign : val :=
     let: "$a1" := #"="%go in
     let: "$a2" := (interface.make #""%go #"int"%go #(W64 0)) in
     (func_call #clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
-    slice.literal clientv3.Cmp ["$sl0"])) in
+    slice.literal #clientv3.Cmp ["$sl0"])) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] "ctx") in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![#ptrT] "client")) "$a0")) "$a0") in
     do:  ("txn" <-[#clientv3.Txn] "$r0");;;
@@ -123,15 +123,15 @@ Definition Election__Campaign : val :=
     let: "$a1" := (![#stringT] "val") in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #()) in
     (func_call #clientv3 #"WithLease"%go) "$a0") in
-    slice.literal clientv3.OpOption ["$sl0"])) in
+    slice.literal #clientv3.OpOption ["$sl0"])) in
     (func_call #clientv3 #"OpPut"%go) "$a0" "$a1" "$a2") in
-    slice.literal clientv3.Op ["$sl0"])) in
+    slice.literal #clientv3.Op ["$sl0"])) in
     (interface.get #"Then"%go (![#clientv3.Txn] "txn")) "$a0") in
     do:  ("txn" <-[#clientv3.Txn] "$r0");;;
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![#stringT] "k") in
     let: "$a1" := #slice.nil in
     (func_call #clientv3 #"OpGet"%go) "$a0" "$a1") in
-    slice.literal clientv3.Op ["$sl0"])) in
+    slice.literal #clientv3.Op ["$sl0"])) in
     (interface.get #"Else"%go (![#clientv3.Txn] "txn")) "$a0") in
     do:  ("txn" <-[#clientv3.Txn] "$r0");;;
     let: "err" := (alloc (zero_val error)) in
@@ -153,7 +153,7 @@ Definition Election__Campaign : val :=
     (if: (~ (![#boolT] (struct.field_ref clientv3.TxnResponse "Succeeded" (![#ptrT] "resp"))))
     then
       let: "kv" := (alloc (zero_val ptrT)) in
-      let: "$r0" := (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref etcdserverpb.RangeResponse "Kvs" ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "resp"))) #(W64 0)))) #()))) #(W64 0))) in
+      let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref etcdserverpb.RangeResponse "Kvs" ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "resp"))) #(W64 0)))) #()))) #(W64 0))) in
       do:  ("kv" <-[#ptrT] "$r0");;;
       let: "$r0" := (![#int64T] (struct.field_ref mvccpb.KeyValue "CreateRevision" (![#ptrT] "kv"))) in
       do:  ((struct.field_ref Election "leaderRev" (![#ptrT] "e")) <-[#int64T] "$r0");;;
@@ -215,7 +215,7 @@ Definition Election__Proclaim : val :=
     do:  ("cmp" <-[#clientv3.Cmp] "$r0");;;
     let: "txn" := (alloc (zero_val clientv3.Txn)) in
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (![#clientv3.Cmp] "cmp") in
-    slice.literal clientv3.Cmp ["$sl0"])) in
+    slice.literal #clientv3.Cmp ["$sl0"])) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] "ctx") in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![#ptrT] "client")) "$a0")) "$a0") in
     do:  ("txn" <-[#clientv3.Txn] "$r0");;;
@@ -223,9 +223,9 @@ Definition Election__Proclaim : val :=
     let: "$a1" := (![#stringT] "val") in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] (struct.field_ref Election "leaderSession" (![#ptrT] "e")))) #()) in
     (func_call #clientv3 #"WithLease"%go) "$a0") in
-    slice.literal clientv3.OpOption ["$sl0"])) in
+    slice.literal #clientv3.OpOption ["$sl0"])) in
     (func_call #clientv3 #"OpPut"%go) "$a0" "$a1" "$a2") in
-    slice.literal clientv3.Op ["$sl0"])) in
+    slice.literal #clientv3.Op ["$sl0"])) in
     (interface.get #"Then"%go (![#clientv3.Txn] "txn")) "$a0") in
     do:  ("txn" <-[#clientv3.Txn] "$r0");;;
     let: "terr" := (alloc (zero_val error)) in
@@ -273,9 +273,9 @@ Definition Election__Resign : val :=
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![#stringT] (struct.field_ref Election "leaderKey" (![#ptrT] "e"))) in
     let: "$a1" := #slice.nil in
     (func_call #clientv3 #"OpDelete"%go) "$a0" "$a1") in
-    slice.literal clientv3.Op ["$sl0"])) in
+    slice.literal #clientv3.Op ["$sl0"])) in
     (interface.get #"Then"%go (let: "$a0" := ((let: "$sl0" := (![#clientv3.Cmp] "cmp") in
-    slice.literal clientv3.Cmp ["$sl0"])) in
+    slice.literal #clientv3.Cmp ["$sl0"])) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] "ctx") in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![#ptrT] "client")) "$a0")) "$a0")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
@@ -391,7 +391,7 @@ Definition Election__observe : val :=
         let: "$r0" := ((let: "$sl0" := (let: "$a0" := (![#int64T] (struct.field_ref etcdserverpb.ResponseHeader "Revision" (![#ptrT] (struct.field_ref clientv3.GetResponse "Header" (![#ptrT] "resp"))))) in
         (func_call #clientv3 #"WithRev"%go) "$a0") in
         let: "$sl1" := ((func_call #clientv3 #"WithPrefix"%go) #()) in
-        slice.literal clientv3.OpOption ["$sl0"; "$sl1"])) in
+        slice.literal #clientv3.OpOption ["$sl0"; "$sl1"])) in
         do:  ("opts" <-[#sliceT] "$r0");;;
         let: "wch" := (alloc (zero_val clientv3.WatchChan)) in
         let: "$r0" := (let: "$a0" := (![#context.Context] "cctx") in
@@ -414,7 +414,7 @@ Definition Election__observe : val :=
           else do:  #());;;
           let: "$range" := (![#sliceT] (struct.field_ref clientv3.WatchResponse "Events" "wr")) in
           (let: "ev" := (alloc (zero_val intT)) in
-          slice.for_range ptrT "$range" (λ: "$key" "$value",
+          slice.for_range #ptrT "$range" (λ: "$key" "$value",
             do:  ("ev" <-[#ptrT] "$value");;;
             do:  "$key";;;
             (if: (![#mvccpb.Event_EventType] (struct.field_ref clientv3.Event "Type" (![#ptrT] "ev"))) = mvccpb.PUT
@@ -430,7 +430,7 @@ Definition Election__observe : val :=
         do:  ((![#context.CancelFunc] "cancel") #())
       else
         let: "$r0" := (![#ptrT] (struct.field_ref clientv3.GetResponse "Header" (![#ptrT] "resp"))) in
-        let: "$r1" := (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp"))) #(W64 0))) in
+        let: "$r1" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp"))) #(W64 0))) in
         do:  ("hdr" <-[#ptrT] "$r0");;;
         do:  ("kv" <-[#ptrT] "$r1"));;;
       do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
@@ -451,7 +451,7 @@ Definition Election__observe : val :=
       let: "$a1" := (string.from_bytes (![#sliceT] (struct.field_ref mvccpb.KeyValue "Key" (![#ptrT] "kv")))) in
       let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((![#int64T] (struct.field_ref etcdserverpb.ResponseHeader "Revision" (![#ptrT] "hdr"))) + #(W64 1)) in
       (func_call #clientv3 #"WithRev"%go) "$a0") in
-      slice.literal clientv3.OpOption ["$sl0"])) in
+      slice.literal #clientv3.OpOption ["$sl0"])) in
       (method_call #clientv3 #"Client'ptr" #"Watch" (![#ptrT] "client")) "$a0" "$a1" "$a2") in
       do:  ("wch" <-[#clientv3.WatchChan] "$r0");;;
       let: "keyDeleted" := (alloc (zero_val boolT)) in
@@ -472,7 +472,7 @@ Definition Election__observe : val :=
         else do:  #());;;
         let: "$range" := (![#sliceT] (struct.field_ref clientv3.WatchResponse "Events" "wr")) in
         (let: "ev" := (alloc (zero_val intT)) in
-        slice.for_range ptrT "$range" (λ: "$key" "$value",
+        slice.for_range #ptrT "$range" (λ: "$key" "$value",
           do:  ("ev" <-[#ptrT] "$value");;;
           do:  "$key";;;
           (if: (![#mvccpb.Event_EventType] (struct.field_ref clientv3.Event "Type" (![#ptrT] "ev"))) = mvccpb.DELETE
@@ -484,7 +484,7 @@ Definition Election__observe : val :=
           let: "$r0" := (struct.field_ref clientv3.WatchResponse "Header" "wr") in
           do:  ((struct.field_ref clientv3.GetResponse "Header" (![#ptrT] "resp")) <-[#ptrT] "$r0");;;
           let: "$r0" := ((let: "$sl0" := (![#ptrT] (struct.field_ref clientv3.Event "Kv" (![#ptrT] "ev"))) in
-          slice.literal ptrT ["$sl0"])) in
+          slice.literal #ptrT ["$sl0"])) in
           do:  ((struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp")) <-[#sliceT] "$r0");;;
           do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
               do:  #()
@@ -545,7 +545,7 @@ Definition waitDelete : val :=
     let: "$a1" := (![#stringT] "key") in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := (![#int64T] "rev") in
     (func_call #clientv3 #"WithRev"%go) "$a0") in
-    slice.literal clientv3.OpOption ["$sl0"])) in
+    slice.literal #clientv3.OpOption ["$sl0"])) in
     (method_call #clientv3 #"Client'ptr" #"Watch" (![#ptrT] "client")) "$a0" "$a1" "$a2") in
     do:  ("wch" <-[#clientv3.WatchChan] "$r0");;;
     let: "$range" := (![#clientv3.WatchChan] "wch") in
@@ -553,7 +553,7 @@ Definition waitDelete : val :=
       do:  ("wr" <-[#clientv3.WatchResponse] "$key");;;
       let: "$range" := (![#sliceT] (struct.field_ref clientv3.WatchResponse "Events" "wr")) in
       (let: "ev" := (alloc (zero_val intT)) in
-      slice.for_range ptrT "$range" (λ: "$key" "$value",
+      slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("ev" <-[#ptrT] "$value");;;
         do:  "$key";;;
         (if: (![#mvccpb.Event_EventType] (struct.field_ref clientv3.Event "Type" (![#ptrT] "ev"))) = mvccpb.DELETE
@@ -588,8 +588,8 @@ Definition waitDeletes : val :=
     let: "$r0" := (let: "$a0" := ((func_call #clientv3 #"WithLastCreate"%go) #()) in
     let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![#int64T] "maxCreateRev") in
     (func_call #clientv3 #"WithMaxCreateRev"%go) "$a0") in
-    slice.literal clientv3.OpOption ["$sl0"])) in
-    (slice.append clientv3.OpOption) "$a0" "$a1") in
+    slice.literal #clientv3.OpOption ["$sl0"])) in
+    (slice.append #clientv3.OpOption) "$a0" "$a1") in
     do:  ("getOpts" <-[#sliceT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "err" := (alloc (zero_val error)) in
@@ -610,7 +610,7 @@ Definition waitDeletes : val :=
       then return: (#interface.nil)
       else do:  #());;;
       let: "lastKey" := (alloc (zero_val stringT)) in
-      let: "$r0" := (string.from_bytes (![#sliceT] (struct.field_ref mvccpb.KeyValue "Key" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp"))) #(W64 0)))))) in
+      let: "$r0" := (string.from_bytes (![#sliceT] (struct.field_ref mvccpb.KeyValue "Key" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp"))) #(W64 0)))))) in
       do:  ("lastKey" <-[#stringT] "$r0");;;
       (let: "$r0" := (let: "$a0" := (![#context.Context] "ctx") in
       let: "$a1" := (![#ptrT] "client") in
@@ -664,10 +664,10 @@ Definition Mutex__TryLock : val :=
     then return: (![#error] "err")
     else do:  #());;;
     let: "ownerKey" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (![#sliceT] (struct.field_ref etcdserverpb.RangeResponse "Kvs" ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "resp"))) #(W64 1)))) #()))) in
+    let: "$r0" := (![#sliceT] (struct.field_ref etcdserverpb.RangeResponse "Kvs" ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "resp"))) #(W64 1)))) #()))) in
     do:  ("ownerKey" <-[#sliceT] "$r0");;;
     (if: ((let: "$a0" := (![#sliceT] "ownerKey") in
-    slice.len "$a0") = #(W64 0)) || ((![#int64T] (struct.field_ref mvccpb.KeyValue "CreateRevision" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] "ownerKey") #(W64 0))))) = (![#int64T] (struct.field_ref Mutex "myRev" (![#ptrT] "m"))))
+    slice.len "$a0") = #(W64 0)) || ((![#int64T] (struct.field_ref mvccpb.KeyValue "CreateRevision" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "ownerKey") #(W64 0))))) = (![#int64T] (struct.field_ref Mutex "myRev" (![#ptrT] "m"))))
     then
       let: "$r0" := (![#ptrT] (struct.field_ref clientv3.TxnResponse "Header" (![#ptrT] "resp"))) in
       do:  ((struct.field_ref Mutex "hdr" (![#ptrT] "m")) <-[#ptrT] "$r0");;;
@@ -714,10 +714,10 @@ Definition Mutex__Lock : val :=
     then return: (![#error] "err")
     else do:  #());;;
     let: "ownerKey" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (![#sliceT] (struct.field_ref etcdserverpb.RangeResponse "Kvs" ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "resp"))) #(W64 1)))) #()))) in
+    let: "$r0" := (![#sliceT] (struct.field_ref etcdserverpb.RangeResponse "Kvs" ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "resp"))) #(W64 1)))) #()))) in
     do:  ("ownerKey" <-[#sliceT] "$r0");;;
     (if: ((let: "$a0" := (![#sliceT] "ownerKey") in
-    slice.len "$a0") = #(W64 0)) || ((![#int64T] (struct.field_ref mvccpb.KeyValue "CreateRevision" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] "ownerKey") #(W64 0))))) = (![#int64T] (struct.field_ref Mutex "myRev" (![#ptrT] "m"))))
+    slice.len "$a0") = #(W64 0)) || ((![#int64T] (struct.field_ref mvccpb.KeyValue "CreateRevision" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "ownerKey") #(W64 0))))) = (![#int64T] (struct.field_ref Mutex "myRev" (![#ptrT] "m"))))
     then
       let: "$r0" := (![#ptrT] (struct.field_ref clientv3.TxnResponse "Header" (![#ptrT] "resp"))) in
       do:  ((struct.field_ref Mutex "hdr" (![#ptrT] "m")) <-[#ptrT] "$r0");;;
@@ -776,7 +776,7 @@ Definition Mutex__tryAcquire : val :=
     let: "$r0" := (let: "$a0" := #"%s%x"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![#stringT] (struct.field_ref Mutex "pfx" (![#ptrT] "m")))) in
     let: "$sl1" := (interface.make #clientv3 #"LeaseID" ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #())) in
-    slice.literal interfaceT ["$sl0"; "$sl1"])) in
+    slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ((struct.field_ref Mutex "myKey" (![#ptrT] "m")) <-[#stringT] "$r0");;;
     let: "cmp" := (alloc (zero_val clientv3.Cmp)) in
@@ -791,7 +791,7 @@ Definition Mutex__tryAcquire : val :=
     let: "$a1" := #""%go in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #()) in
     (func_call #clientv3 #"WithLease"%go) "$a0") in
-    slice.literal clientv3.OpOption ["$sl0"])) in
+    slice.literal #clientv3.OpOption ["$sl0"])) in
     (func_call #clientv3 #"OpPut"%go) "$a0" "$a1" "$a2") in
     do:  ("put" <-[#clientv3.Op] "$r0");;;
     let: "get" := (alloc (zero_val clientv3.Op)) in
@@ -808,12 +808,12 @@ Definition Mutex__tryAcquire : val :=
     let: "resp" := (alloc (zero_val ptrT)) in
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((let: "$sl0" := (![#clientv3.Op] "get") in
     let: "$sl1" := (![#clientv3.Op] "getOwner") in
-    slice.literal clientv3.Op ["$sl0"; "$sl1"])) in
+    slice.literal #clientv3.Op ["$sl0"; "$sl1"])) in
     (interface.get #"Else"%go (let: "$a0" := ((let: "$sl0" := (![#clientv3.Op] "put") in
     let: "$sl1" := (![#clientv3.Op] "getOwner") in
-    slice.literal clientv3.Op ["$sl0"; "$sl1"])) in
+    slice.literal #clientv3.Op ["$sl0"; "$sl1"])) in
     (interface.get #"Then"%go (let: "$a0" := ((let: "$sl0" := (![#clientv3.Cmp] "cmp") in
-    slice.literal clientv3.Cmp ["$sl0"])) in
+    slice.literal #clientv3.Cmp ["$sl0"])) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] "ctx") in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![#ptrT] "client")) "$a0")) "$a0")) "$a0")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
@@ -827,7 +827,7 @@ Definition Mutex__tryAcquire : val :=
     do:  ((struct.field_ref Mutex "myRev" (![#ptrT] "m")) <-[#int64T] "$r0");;;
     (if: (~ (![#boolT] (struct.field_ref clientv3.TxnResponse "Succeeded" (![#ptrT] "resp"))))
     then
-      let: "$r0" := (![#int64T] (struct.field_ref mvccpb.KeyValue "CreateRevision" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref etcdserverpb.RangeResponse "Kvs" ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "resp"))) #(W64 0)))) #()))) #(W64 0))))) in
+      let: "$r0" := (![#int64T] (struct.field_ref mvccpb.KeyValue "CreateRevision" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref etcdserverpb.RangeResponse "Kvs" ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "resp"))) #(W64 0)))) #()))) #(W64 0))))) in
       do:  ((struct.field_ref Mutex "myRev" (![#ptrT] "m")) <-[#int64T] "$r0")
     else do:  #());;;
     return: (![#ptrT] "resp", #interface.nil)).
@@ -847,7 +847,7 @@ Definition Mutex__Unlock : val :=
       return: (let: "$a0" := #"invalid key %q, it should have prefix %q"%go in
        let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![#stringT] (struct.field_ref Mutex "myKey" (![#ptrT] "m")))) in
        let: "$sl1" := (interface.make #""%go #"string"%go (![#stringT] (struct.field_ref Mutex "pfx" (![#ptrT] "m")))) in
-       slice.literal interfaceT ["$sl0"; "$sl1"])) in
+       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
        (func_call #fmt #"Errorf"%go) "$a0" "$a1")
     else do:  #());;;
     let: "client" := (alloc (zero_val ptrT)) in
@@ -977,7 +977,7 @@ Definition NewSession : val :=
     do:  ("ops" <-[#ptrT] "$r0");;;
     let: "$range" := (![#sliceT] "opts") in
     (let: "opt" := (alloc (zero_val intT)) in
-    slice.for_range SessionOption "$range" (λ: "$key" "$value",
+    slice.for_range #SessionOption "$range" (λ: "$key" "$value",
       do:  ("opt" <-[#SessionOption] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![#ptrT] "ops") in
@@ -1160,7 +1160,7 @@ Definition WithTTL : val :=
          let: "$a1" := ((let: "$sl0" := (let: "$a0" := #"current-session-ttl"%go in
          let: "$a1" := (s_to_w64 (![#intT] (struct.field_ref sessionOptions "ttl" (![#ptrT] "so")))) in
          (func_call #zap #"Int64"%go) "$a0" "$a1") in
-         slice.literal zapcore.Field ["$sl0"])) in
+         slice.literal #zapcore.Field ["$sl0"])) in
          (method_call #zap #"Logger'ptr" #"Warn" (![#ptrT] "lg")) "$a0" "$a1")))
        ))).
 
@@ -1257,7 +1257,7 @@ Definition WithPrefetch : val :=
        exception_do (let: "so" := (alloc "so") in
        let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref stmOptions "prefetch" (![#ptrT] "so"))) in
        let: "$a1" := (![#sliceT] "keys") in
-       (slice.append stringT) "$a0" "$a1") in
+       (slice.append #stringT) "$a0" "$a1") in
        do:  ((struct.field_ref stmOptions "prefetch" (![#ptrT] "so")) <-[#sliceT] "$r0"))
        ))).
 
@@ -1279,7 +1279,7 @@ Definition NewSTM : val :=
     do:  ("opts" <-[#ptrT] "$r0");;;
     let: "$range" := (![#sliceT] "so") in
     (let: "f" := (alloc (zero_val intT)) in
-    slice.for_range stmOption "$range" (λ: "$key" "$value",
+    slice.for_range #stmOption "$range" (λ: "$key" "$value",
       do:  ("f" <-[#stmOption] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![#ptrT] "opts") in
@@ -1358,7 +1358,7 @@ Definition mkSTM : val :=
         exception_do (return: (let: "$a0" := ((method_call #concurrency.concurrency #"readSet" #"cmps" (![#readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![#ptrT] "s"))))) #()) in
          let: "$a1" := (let: "$a0" := (((method_call #concurrency.concurrency #"readSet" #"first" (![#readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![#ptrT] "s"))))) #()) + #(W64 1)) in
          (method_call #concurrency.concurrency #"writeSet" #"cmps" (![#writeSet] (struct.field_ref stm "wset" (struct.field_ref stmSerializable "stm" (![#ptrT] "s"))))) "$a0") in
-         (slice.append clientv3.Cmp) "$a0" "$a1"))
+         (slice.append #clientv3.Cmp) "$a0" "$a1"))
         ) in
       do:  ((struct.field_ref stm "conflicts" (struct.field_ref stmSerializable "stm" (![#ptrT] "s"))) <-[#funcT] "$r0");;;
       return: (interface.make #concurrency.concurrency #"stmSerializable'ptr" (![#ptrT] "s"))
@@ -1394,7 +1394,7 @@ Definition mkSTM : val :=
           let: "$r0" := (alloc (let: "$client" := (![#ptrT] "c") in
           let: "$ctx" := (![#context.Context] (struct.field_ref stmOptions "ctx" (![#ptrT] "opts"))) in
           let: "$getOpts" := ((let: "$sl0" := ((func_call #clientv3 #"WithSerializable"%go) #()) in
-          slice.literal clientv3.OpOption ["$sl0"])) in
+          slice.literal #clientv3.OpOption ["$sl0"])) in
           struct.make stm [{
             "client" ::= "$client";
             "ctx" ::= "$ctx";
@@ -1416,7 +1416,7 @@ Definition mkSTM : val :=
             let: "$r0" := (alloc (let: "$client" := (![#ptrT] "c") in
             let: "$ctx" := (![#context.Context] (struct.field_ref stmOptions "ctx" (![#ptrT] "opts"))) in
             let: "$getOpts" := ((let: "$sl0" := ((func_call #clientv3 #"WithSerializable"%go) #()) in
-            slice.literal clientv3.OpOption ["$sl0"])) in
+            slice.literal #clientv3.OpOption ["$sl0"])) in
             struct.make stm [{
               "client" ::= "$client";
               "ctx" ::= "$ctx";
@@ -1513,11 +1513,11 @@ Definition readSet__add : val :=
     let: "$range" := (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "txnresp"))) in
     (let: "resp" := (alloc (zero_val intT)) in
     let: "i" := (alloc (zero_val intT)) in
-    slice.for_range ptrT "$range" (λ: "$key" "$value",
+    slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("resp" <-[#ptrT] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
       let: "$r0" := ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] "resp")) #()) in
-      do:  (map.insert (![#readSet] "rs") (![#stringT] (slice.elem_ref stringT (![#sliceT] "keys") (![#intT] "i"))) "$r0")))).
+      do:  (map.insert (![#readSet] "rs") (![#stringT] (slice.elem_ref #stringT (![#sliceT] "keys") (![#intT] "i"))) "$r0")))).
 
 (* first returns the store revision from the first fetch
 
@@ -1550,7 +1550,7 @@ Definition readSet__cmps : val :=
   rec: "readSet__cmps" "rs" <> :=
     exception_do (let: "rs" := (alloc "rs") in
     let: "cmps" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 clientv3.Cmp #(W64 0) (let: "$a0" := (![#readSet] "rs") in
+    let: "$r0" := (slice.make3 #clientv3.Cmp #(W64 0) (let: "$a0" := (![#readSet] "rs") in
     map.len "$a0")) in
     do:  ("cmps" <-[#sliceT] "$r0");;;
     let: "$range" := (![#readSet] "rs") in
@@ -1563,8 +1563,8 @@ Definition readSet__cmps : val :=
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![#stringT] "k") in
       let: "$a1" := (![#ptrT] "rk") in
       (func_call #concurrency.concurrency #"isKeyCurrent"%go) "$a0" "$a1") in
-      slice.literal clientv3.Cmp ["$sl0"])) in
-      (slice.append clientv3.Cmp) "$a0" "$a1") in
+      slice.literal #clientv3.Cmp ["$sl0"])) in
+      (slice.append #clientv3.Cmp) "$a0" "$a1") in
       do:  ("cmps" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "cmps")).
 
@@ -1575,7 +1575,7 @@ Definition writeSet__get : val :=
     let: "keys" := (alloc "keys") in
     let: "$range" := (![#sliceT] "keys") in
     (let: "key" := (alloc (zero_val intT)) in
-    slice.for_range stringT "$range" (λ: "$key" "$value",
+    slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[#stringT] "$value");;;
       do:  "$key";;;
       (let: "ok" := (alloc (zero_val boolT)) in
@@ -1598,7 +1598,7 @@ Definition writeSet__cmps : val :=
     exception_do (let: "ws" := (alloc "ws") in
     let: "rev" := (alloc "rev") in
     let: "cmps" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 clientv3.Cmp #(W64 0) (let: "$a0" := (![#writeSet] "ws") in
+    let: "$r0" := (slice.make3 #clientv3.Cmp #(W64 0) (let: "$a0" := (![#writeSet] "ws") in
     map.len "$a0")) in
     do:  ("cmps" <-[#sliceT] "$r0");;;
     let: "$range" := (![#writeSet] "ws") in
@@ -1611,8 +1611,8 @@ Definition writeSet__cmps : val :=
       let: "$a1" := #"<"%go in
       let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] "rev")) in
       (func_call #clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
-      slice.literal clientv3.Cmp ["$sl0"])) in
-      (slice.append clientv3.Cmp) "$a0" "$a1") in
+      slice.literal #clientv3.Cmp ["$sl0"])) in
+      (slice.append #clientv3.Cmp) "$a0" "$a1") in
       do:  ("cmps" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "cmps")).
 
@@ -1623,7 +1623,7 @@ Definition writeSet__puts : val :=
   rec: "writeSet__puts" "ws" <> :=
     exception_do (let: "ws" := (alloc "ws") in
     let: "puts" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 clientv3.Op #(W64 0) (let: "$a0" := (![#writeSet] "ws") in
+    let: "$r0" := (slice.make3 #clientv3.Op #(W64 0) (let: "$a0" := (![#writeSet] "ws") in
     map.len "$a0")) in
     do:  ("puts" <-[#sliceT] "$r0");;;
     let: "$range" := (![#writeSet] "ws") in
@@ -1633,8 +1633,8 @@ Definition writeSet__puts : val :=
       do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "puts") in
       let: "$a1" := ((let: "$sl0" := (![#clientv3.Op] (struct.field_ref stmPut "op" "v")) in
-      slice.literal clientv3.Op ["$sl0"])) in
-      (slice.append clientv3.Op) "$a0" "$a1") in
+      slice.literal #clientv3.Op ["$sl0"])) in
+      (slice.append #clientv3.Op) "$a0" "$a1") in
       do:  ("puts" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "puts")).
 
@@ -1690,12 +1690,12 @@ Definition stm__Rev : val :=
     let: "key" := (alloc "key") in
     (let: "resp" := (alloc (zero_val ptrT)) in
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (![#stringT] "key") in
-    slice.literal stringT ["$sl0"])) in
+    slice.literal #stringT ["$sl0"])) in
     (method_call #concurrency.concurrency #"stm'ptr" #"fetch" (![#ptrT] "s")) "$a0") in
     do:  ("resp" <-[#ptrT] "$r0");;;
     (if: ((![#ptrT] "resp") ≠ #null) && ((let: "$a0" := (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp"))) in
     slice.len "$a0") ≠ #(W64 0))
-    then return: (![#int64T] (struct.field_ref mvccpb.KeyValue "ModRevision" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp"))) #(W64 0)))))
+    then return: (![#int64T] (struct.field_ref mvccpb.KeyValue "ModRevision" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp"))) #(W64 0)))))
     else do:  #()));;;
     return: (#(W64 0))).
 
@@ -1735,13 +1735,13 @@ Definition stm__fetch : val :=
     then return: (#null)
     else do:  #());;;
     let: "ops" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 clientv3.Op (let: "$a0" := (![#sliceT] "keys") in
+    let: "$r0" := (slice.make2 #clientv3.Op (let: "$a0" := (![#sliceT] "keys") in
     slice.len "$a0")) in
     do:  ("ops" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "keys") in
     (let: "key" := (alloc (zero_val intT)) in
     let: "i" := (alloc (zero_val intT)) in
-    slice.for_range stringT "$range" (λ: "$key" "$value",
+    slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[#stringT] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
       (let: "ok" := (alloc (zero_val boolT)) in
@@ -1757,7 +1757,7 @@ Definition stm__fetch : val :=
       let: "$r0" := (let: "$a0" := (![#stringT] "key") in
       let: "$a1" := (![#sliceT] (struct.field_ref stm "getOpts" (![#ptrT] "s"))) in
       (func_call #clientv3 #"OpGet"%go) "$a0" "$a1") in
-      do:  ((slice.elem_ref clientv3.Op (![#sliceT] "ops") (![#intT] "i")) <-[#clientv3.Op] "$r0")));;;
+      do:  ((slice.elem_ref #clientv3.Op (![#sliceT] "ops") (![#intT] "i")) <-[#clientv3.Op] "$r0")));;;
     let: "err" := (alloc (zero_val error)) in
     let: "txnresp" := (alloc (zero_val ptrT)) in
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := (![#sliceT] "ops") in
@@ -1777,7 +1777,7 @@ Definition stm__fetch : val :=
     do:  (let: "$a0" := (![#sliceT] "keys") in
     let: "$a1" := (![#ptrT] "txnresp") in
     (method_call #concurrency.concurrency #"readSet" #"add" (![#readSet] (struct.field_ref stm "rset" (![#ptrT] "s")))) "$a0" "$a1");;;
-    return: ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "txnresp"))) #(W64 0)))) #())).
+    return: ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.TxnResponse "Responses" (![#ptrT] "txnresp"))) #(W64 0)))) #())).
 
 (* go: stm.go:295:15 *)
 Definition stm__reset : val :=
@@ -1810,7 +1810,7 @@ Definition stmSerializable__Get : val :=
     do:  ("firstRead" <-[#boolT] "$r0");;;
     let: "$range" := (![#sliceT] "keys") in
     (let: "key" := (alloc (zero_val intT)) in
-    slice.for_range stringT "$range" (λ: "$key" "$value",
+    slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[#stringT] "$value");;;
       do:  "$key";;;
       (let: "ok" := (alloc (zero_val boolT)) in
@@ -1837,7 +1837,7 @@ Definition stmSerializable__Get : val :=
       let: "$r0" := ((let: "$sl0" := (let: "$a0" := (![#int64T] (struct.field_ref etcdserverpb.ResponseHeader "Revision" (![#ptrT] (struct.field_ref clientv3.GetResponse "Header" (![#ptrT] "resp"))))) in
       (func_call #clientv3 #"WithRev"%go) "$a0") in
       let: "$sl1" := ((func_call #clientv3 #"WithSerializable"%go) #()) in
-      slice.literal clientv3.OpOption ["$sl0"; "$sl1"])) in
+      slice.literal #clientv3.OpOption ["$sl0"; "$sl1"])) in
       do:  ((struct.field_ref stm "getOpts" (struct.field_ref stmSerializable "stm" (![#ptrT] "s"))) <-[#sliceT] "$r0")
     else do:  #());;;
     return: (let: "$a0" := (![#ptrT] "resp") in
@@ -1849,7 +1849,7 @@ Definition stmSerializable__Rev : val :=
     exception_do (let: "s" := (alloc "s") in
     let: "key" := (alloc "key") in
     do:  (let: "$a0" := ((let: "$sl0" := (![#stringT] "key") in
-    slice.literal stringT ["$sl0"])) in
+    slice.literal #stringT ["$sl0"])) in
     (method_call #concurrency.concurrency #"stmSerializable'ptr" #"Get" (![#ptrT] "s")) "$a0");;;
     return: (let: "$a0" := (![#stringT] "key") in
      (method_call #concurrency.concurrency #"stm'ptr" #"Rev" (struct.field_ref stmSerializable "stm" (![#ptrT] "s"))) "$a0")).
@@ -1859,11 +1859,11 @@ Definition stmSerializable__gets : val :=
   rec: "stmSerializable__gets" "s" <> :=
     exception_do (let: "s" := (alloc "s") in
     let: "keys" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 stringT #(W64 0) (let: "$a0" := (![#readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![#ptrT] "s")))) in
+    let: "$r0" := (slice.make3 #stringT #(W64 0) (let: "$a0" := (![#readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![#ptrT] "s")))) in
     map.len "$a0")) in
     do:  ("keys" <-[#sliceT] "$r0");;;
     let: "ops" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 clientv3.Op #(W64 0) (let: "$a0" := (![#readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![#ptrT] "s")))) in
+    let: "$r0" := (slice.make3 #clientv3.Op #(W64 0) (let: "$a0" := (![#readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![#ptrT] "s")))) in
     map.len "$a0")) in
     do:  ("ops" <-[#sliceT] "$r0");;;
     let: "$range" := (![#readSet] (struct.field_ref stm "rset" (struct.field_ref stmSerializable "stm" (![#ptrT] "s")))) in
@@ -1872,15 +1872,15 @@ Definition stmSerializable__gets : val :=
       do:  ("k" <-[#stringT] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "keys") in
       let: "$a1" := ((let: "$sl0" := (![#stringT] "k") in
-      slice.literal stringT ["$sl0"])) in
-      (slice.append stringT) "$a0" "$a1") in
+      slice.literal #stringT ["$sl0"])) in
+      (slice.append #stringT) "$a0" "$a1") in
       do:  ("keys" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "ops") in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![#stringT] "k") in
       let: "$a1" := #slice.nil in
       (func_call #clientv3 #"OpGet"%go) "$a0" "$a1") in
-      slice.literal clientv3.Op ["$sl0"])) in
-      (slice.append clientv3.Op) "$a0" "$a1") in
+      slice.literal #clientv3.Op ["$sl0"])) in
+      (slice.append #clientv3.Op) "$a0" "$a1") in
       do:  ("ops" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "keys", ![#sliceT] "ops")).
 
@@ -1939,7 +1939,7 @@ Definition isKeyCurrent : val :=
       return: (let: "$a0" := (let: "$a0" := (![#stringT] "k") in
        (func_call #clientv3 #"ModRevision"%go) "$a0") in
        let: "$a1" := #"="%go in
-       let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] (struct.field_ref mvccpb.KeyValue "ModRevision" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "r"))) #(W64 0)))))) in
+       let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] (struct.field_ref mvccpb.KeyValue "ModRevision" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "r"))) #(W64 0)))))) in
        (func_call #clientv3 #"Compare"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     return: (let: "$a0" := (let: "$a0" := (![#stringT] "k") in
@@ -1956,7 +1956,7 @@ Definition respToValue : val :=
     slice.len "$a0") = #(W64 0))
     then return: (#""%go)
     else do:  #());;;
-    return: (string.from_bytes (![#sliceT] (struct.field_ref mvccpb.KeyValue "Value" (![#ptrT] (slice.elem_ref ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp"))) #(W64 0))))))).
+    return: (string.from_bytes (![#sliceT] (struct.field_ref mvccpb.KeyValue "Value" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref clientv3.GetResponse "Kvs" (![#ptrT] "resp"))) #(W64 0))))))).
 
 (* NewSTMRepeatable is deprecated.
 
@@ -1972,7 +1972,7 @@ Definition NewSTMRepeatable : val :=
     (func_call #concurrency.concurrency #"WithAbortContext"%go) "$a0") in
     let: "$sl1" := (let: "$a0" := RepeatableReads in
     (func_call #concurrency.concurrency #"WithIsolation"%go) "$a0") in
-    slice.literal stmOption ["$sl0"; "$sl1"])) in
+    slice.literal #stmOption ["$sl0"; "$sl1"])) in
     (func_call #concurrency.concurrency #"NewSTM"%go) "$a0" "$a1" "$a2")) in
     return: ("$ret0", "$ret1")).
 
@@ -1990,7 +1990,7 @@ Definition NewSTMSerializable : val :=
     (func_call #concurrency.concurrency #"WithAbortContext"%go) "$a0") in
     let: "$sl1" := (let: "$a0" := Serializable in
     (func_call #concurrency.concurrency #"WithIsolation"%go) "$a0") in
-    slice.literal stmOption ["$sl0"; "$sl1"])) in
+    slice.literal #stmOption ["$sl0"; "$sl1"])) in
     (func_call #concurrency.concurrency #"NewSTM"%go) "$a0" "$a1" "$a2")) in
     return: ("$ret0", "$ret1")).
 
@@ -2008,7 +2008,7 @@ Definition NewSTMReadCommitted : val :=
     (func_call #concurrency.concurrency #"WithAbortContext"%go) "$a0") in
     let: "$sl1" := (let: "$a0" := ReadCommitted in
     (func_call #concurrency.concurrency #"WithIsolation"%go) "$a0") in
-    slice.literal stmOption ["$sl0"; "$sl1"])) in
+    slice.literal #stmOption ["$sl0"; "$sl1"])) in
     (func_call #concurrency.concurrency #"NewSTM"%go) "$a0" "$a1" "$a2")) in
     return: ("$ret0", "$ret1")).
 

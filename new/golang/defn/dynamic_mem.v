@@ -7,6 +7,15 @@ From Perennial Require Import base.
 Section defn.
 Context `{ffi_syntax}.
 
+(* l +ₗ[t] i, but with a dynamic type. This is not provided as a notation. *)
+Definition array_loc_add_def : val :=
+  λ: "t" "l" "i",
+    let: "sz" := type.go_type_size "t" in
+    assume_mul_no_overflow "sz" "i";;
+    "l" +ₗ ("sz" * "i").
+Program Definition array_loc_add := sealed @array_loc_add_def.
+Definition array_loc_add_unseal : array_loc_add = _ := seal_eq _.
+
 Definition alloc_def : val := λ: "v", ref (Var "v").
 Program Definition alloc := sealed @alloc_def.
 Definition alloc_unseal : alloc = _ := seal_eq _.

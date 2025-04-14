@@ -75,7 +75,7 @@ Section goose_lang.
     intros Hty1 Hty2 Heq.
     clear dependent V.
     dependent induction Hty1 generalizing v2.
-    Ltac2 step () :=
+    #[local] Ltac2 step () :=
       match! goal with
       | [ v : slice.t |- _ ] => let v := Control.hyp v in destruct $v
       | [ v : interface.t |- _ ] => let v := Control.hyp v in destruct $v

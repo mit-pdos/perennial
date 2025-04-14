@@ -133,7 +133,7 @@ Definition writeAll : val :=
     let: "$range" := (![#sliceT] "bks") in
     (let: "bk" := (alloc (zero_val intT)) in
     let: "i" := (alloc (zero_val intT)) in
-    slice.for_range sliceT "$range" (λ: "$key" "$value",
+    slice.for_range #sliceT "$range" (λ: "$key" "$value",
       do:  ("bk" <-[#sliceT] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
       do:  (let: "$a0" := ((![#uint64T] "off") + (s_to_w64 (![#intT] "i"))) in

@@ -50,7 +50,7 @@ Definition EncodeValue : val :=
   rec: "EncodeValue" "c" :=
     exception_do (let: "c" := (alloc "c") in
     let: "e" := (alloc (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 0)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 0)) in
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
     let: "$a1" := (![#uint64T] (struct.field_ref cacheValue "l" "c")) in

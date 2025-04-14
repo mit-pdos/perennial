@@ -314,7 +314,7 @@ Context `{!IntoValTyped V t}.
 Lemma wp_slice_make3 stk E (len cap : w64) :
   uint.nat len ≤ uint.nat cap →
   {{{ True }}}
-    slice.make3 t #len #cap @ stk; E
+    slice.make3 #t #len #cap @ stk; E
   {{{ sl, RET #sl;
       sl ↦* (replicate (uint.nat len) (default_val V)) ∗
       own_slice_cap V sl ∗
@@ -383,7 +383,6 @@ Proof.
     rewrite /own_slice_cap_def /=.
     iSplitR; first iPureIntro.
     { word. }
-    rewrite default_val_eq_zero_val.
     erewrite has_go_type_len.
     2:{ apply zero_val_has_go_type. }
     iExists (replicate (uint.nat cap - uint.nat len)%nat (default_val V)).
@@ -405,7 +404,7 @@ Qed.
 
 Lemma wp_slice_make2 stk E (len : u64) :
   {{{ True }}}
-    slice.make2 t #len @ stk; E
+    slice.make2 #t #len @ stk; E
   {{{ sl, RET #sl;
       sl ↦* (replicate (uint.nat len) (default_val V)) ∗
       own_slice_cap V sl
@@ -445,18 +444,19 @@ Proof.
 Qed.
 
 Global Instance pure_elem_ref s (i : w64) :
-  PureWp (uint.Z i < uint.Z s.(slice.len_f)) (slice.elem_ref t #s #i)
+  PureWp (uint.Z i < uint.Z s.(slice.len_f)) (slice.elem_ref #t #s #i)
     #(slice.elem_ref_f s t i).
 Proof.
   iIntros (?????) "HΦ".
   wp_call_lc "?".
   rewrite bool_decide_true; last done.
-  wp_pures. by iApply "HΦ".
+  wp_pures. wp_apply wp_array_loc_add. iIntros "_".
+  by iApply "HΦ".
 Qed.
 
 Global Instance pure_slice_slice s (n m : w64) :
   PureWp (uint.Z n ≤ uint.Z m ≤ uint.Z (slice.cap_f s) ∧
-          uint.Z (slice.len_f s) ≤ uint.Z (slice.cap_f s)) (slice.slice t #s #n #m)
+          uint.Z (slice.len_f s) ≤ uint.Z (slice.cap_f s)) (slice.slice #t #s #n #m)
     #(slice.slice_f s t n m).
 Proof.
   iIntros (?????) "HΦ".
@@ -468,9 +468,10 @@ Proof.
   rewrite bool_decide_true; last word.
   wp_pures.
   iDestruct ("HΦ" with "[$]") as "HΦ".
+  wp_apply wp_array_loc_add. iIntros "_".
+  wp_pures.
   iExactEq "HΦ".
   repeat f_equal.
-  rewrite /slice.slice_f.
   rewrite !to_val_unseal /=.
   rewrite !to_val_unseal /=.
   reflexivity.
@@ -478,7 +479,7 @@ Qed.
 
 Global Instance pure_full_slice s (n m c : w64) :
   PureWp (uint.Z n ≤ uint.Z m ≤ uint.Z c ∧
-          uint.Z c ≤ uint.Z (slice.cap_f s)) (slice.full_slice t #s #n #m #c)
+          uint.Z c ≤ uint.Z (slice.cap_f s)) (slice.full_slice #t #s #n #m #c)
     #(slice.full_slice_f s t n m c).
 Proof.
   iIntros (?????) "HΦ".
@@ -492,6 +493,7 @@ Proof.
   rewrite bool_decide_true; last word.
   wp_pures.
   iDestruct ("HΦ" with "[$]") as "HΦ".
+  wp_apply wp_array_loc_add. iIntros "_". wp_pures.
   iExactEq "HΦ".
   repeat f_equal.
   rewrite /slice.full_slice_f.
@@ -508,7 +510,7 @@ this lemma would be pretty much unnecessary.
 Lemma wp_slice_slice_pure s (n m: w64) :
   {{{ ⌜uint.Z n ≤ uint.Z m ≤ uint.Z s.(slice.cap_f) ∧
         uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f)⌝ }}}
-    slice.slice t #s #n #m
+    slice.slice #t #s #n #m
   {{{ RET #(slice.slice_f s t n m); True }}}.
 Proof.
   wp_start as "%".
@@ -703,7 +705,7 @@ instead
 *)
 Lemma wp_slice_slice s dq (vs: list V) (n m : w64) :
   {{{ s ↦*{dq} vs ∗ ⌜uint.Z n ≤ uint.Z m ≤ uint.Z s.(slice.len_f)⌝ }}}
-    slice.slice t #s #n #m
+    slice.slice #t #s #n #m
   {{{ RET #(slice.slice_f s t n m);
       (* before the sliced part *)
       (slice.slice_f s t (W64 0) n) ↦*{dq} (take (uint.nat n) vs) ∗
@@ -730,7 +732,7 @@ instead
 Lemma wp_slice_slice_with_cap s (vs: list V) (n m : w64) :
   {{{ s ↦* vs ∗ own_slice_cap V s ∗
             ⌜uint.Z n ≤ uint.Z m ≤ uint.Z s.(slice.len_f)⌝ }}}
-    slice.slice t #s #n #m
+    slice.slice #t #s #n #m
   {{{ RET #(slice.slice_f s t n m);
       (* before the sliced part *)
       (slice.slice_f s t (W64 0) n) ↦* (take (uint.nat n) vs) ∗
@@ -867,7 +869,7 @@ Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
                  WP body #i #v @ stk ; E {{ v', ⌜ v' = execute_val #()%V ⌝ ∗ P (word.add i 1) }})
     (λ (_ : w64), sl ↦*{dq} vs -∗ Φ (execute_val #()))
     vs) (W64 0) -∗
-  WP slice.for_range t #sl body @ stk ; E {{ Φ }}
+  WP slice.for_range #t #sl body @ stk ; E {{ Φ }}
 .
 Proof.
   iIntros "Hsl HΦ".
@@ -909,7 +911,7 @@ Qed.
 
 Lemma wp_slice_literal {stk E} (l : list V) :
   {{{ True }}}
-    slice.literal t #l @ stk ; E
+    slice.literal #t #l @ stk ; E
   {{{ sl, RET #sl; sl ↦* l }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -981,7 +983,7 @@ Proof.
       split; first done.
       word.
     }
-    ltac2:(Control.enter mem.wp_store).
+    wp_store.
     wp_pures.
     wp_for_post.
     iFrame.
@@ -1054,21 +1056,6 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_static_load_slice_elem s (i: w64) (vs: list V) dq v :
-  {{{ s ↦*{dq} vs ∗ ⌜vs !! (uint.nat i) = Some v⌝ }}}
-    mem.load_ty t #(slice.elem_ref_f s t i)
-  {{{ RET #v; s ↦*{dq} vs }}}.
-Proof.
-  wp_start_folded as "[Hs %Hlookup]".
-  iDestruct (own_slice_elem_acc with "Hs") as "[Hv Hs]"; [ by eauto | ].
-  (* NOTE: cannot use [wp_load] because we need to strip a later *)
-  wp_apply (mem.wp_load_ty with "Hv"). iIntros "Hv".
-  iApply "HΦ".
-  iDestruct ("Hs" with "Hv") as "Hs".
-  rewrite -> list_insert_id by auto.
-  iFrame.
-Qed.
-
 Lemma wp_store_slice_elem s (i: w64) (vs: list V) (v': V) :
   {{{ s ↦* vs ∗ ⌜uint.Z i < Z.of_nat (length vs)⌝ }}}
     #(slice.elem_ref_f s t i) <-[#t] #v'
@@ -1084,21 +1071,6 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_static_store_slice_elem s (i: w64) (vs: list V) (v': V) :
-  {{{ s ↦* vs ∗ ⌜uint.Z i < Z.of_nat (length vs)⌝ }}}
-    mem.store_ty t #(slice.elem_ref_f s t i) #v'
-  {{{ RET #(); s ↦* (<[uint.nat i := v']> vs) }}}.
-Proof.
-  wp_start_folded as "[Hs %bound]".
-  list_elem vs i as v.
-  iDestruct (own_slice_elem_acc with "Hs") as "[Hv Hs]"; [ by eauto | ].
-  (* NOTE: cannot use [wp_store] because we need to strip a later *)
-  wp_apply (mem.wp_store_ty with "Hv"). iIntros "Hv".
-  iApply "HΦ".
-  iDestruct ("Hs" with "Hv") as "Hs".
-  iFrame.
-Qed.
-
 (** slice.copy copies as much as possible (the smaller of len(s) and len(s2)) and returns
 the number of bytes copied. See https://pkg.go.dev/builtin#copy.
 
@@ -1106,7 +1078,7 @@ Use [take_ge] and [drop_ge] to simplify the resulting list expression.
  *)
 Lemma wp_slice_copy (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦* vs ∗ s2 ↦*{dq} vs' }}}
-    slice.copy t #s #s2
+    slice.copy #t #s #s2
   {{{ (n: w64), RET #n; ⌜uint.nat n = Nat.min (length vs) (length vs')⌝ ∗
                           s ↦* (take (length vs) vs' ++ drop (length vs') vs) ∗
                           s2 ↦*{dq} vs' }}}.
@@ -1132,9 +1104,9 @@ Proof.
     end.
     { rewrite decide_True //; wp_auto.
       list_elem vs' i as y.
-      wp_apply (wp_static_load_slice_elem with "[$Hs2]") as "Hs2".
+      wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2".
       { eauto. }
-      wp_apply (wp_static_store_slice_elem with "[$Hs1]") as "Hs1".
+      wp_apply (wp_store_slice_elem with "[$Hs1]") as "Hs1".
       { len. }
       wp_for_post.
       iFrame.
@@ -1213,7 +1185,7 @@ Qed.
 
 Lemma wp_slice_append (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦* vs ∗ own_slice_cap V s ∗ s2 ↦*{dq} vs' }}}
-    slice.append t #s #s2
+    slice.append #t #s #s2
   {{{ (s': slice.t), RET #s';
       s' ↦* (vs ++ vs') ∗ own_slice_cap V s' ∗ s2 ↦*{dq} vs' }}}.
 Proof.

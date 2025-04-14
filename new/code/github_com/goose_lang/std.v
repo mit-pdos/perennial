@@ -44,7 +44,7 @@ Definition BytesEqual : val :=
     let: "$r0" := #true in
     do:  ("retval" <-[#boolT] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (![#intT] "xlen"))); (λ: <>, Skip) := λ: <>,
-      (if: (![#byteT] (slice.elem_ref byteT (![#sliceT] "x") (![#uint64T] "i"))) ≠ (![#byteT] (slice.elem_ref byteT (![#sliceT] "y") (![#uint64T] "i")))
+      (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "x") (![#uint64T] "i"))) ≠ (![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") (![#uint64T] "i")))
       then
         let: "$r0" := #false in
         do:  ("retval" <-[#boolT] "$r0");;;
@@ -67,7 +67,7 @@ Definition BytesClone : val :=
     else do:  #());;;
     return: (let: "$a0" := #slice.nil in
      let: "$a1" := (![#sliceT] "b") in
-     (slice.append byteT) "$a0" "$a1")).
+     (slice.append #byteT) "$a0" "$a1")).
 
 (* SliceSplit splits xs at n into two slices.
 
@@ -83,8 +83,8 @@ Definition SliceSplit : val :=
     exception_do (let: "n" := (alloc "n") in
     let: "xs" := (alloc "xs") in
     return: (let: "$s" := (![#sliceT] "xs") in
-     slice.slice byteT "$s" #(W64 0) (![#uint64T] "n"), let: "$s" := (![#sliceT] "xs") in
-     slice.slice byteT "$s" (![#uint64T] "n") (slice.len "$s"))).
+     slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n"), let: "$s" := (![#sliceT] "xs") in
+     slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s"))).
 
 (* Returns true if x + y does not overflow
 
