@@ -119,10 +119,13 @@ Context `{!epoch_versioned_mapG Σ}.
 
 Definition own_Server_ghost γ st : iProp Σ :=
   ∃ gs, (* TODO: rename to something better than [gs]. *)
+  (* Copied from auditor.v *)
   "Hauditor" ∷ mono_list_auth_own γ.(auditor_gn) 1 gs ∗
   "#Hinv_gs" ∷ gs_inv gs ∗
   "%HkeyMap_ghost" ∷ ⌜ st.(Server.keyMap) = lower_map (default ∅ (last gs.*1)) ⌝ ∗
-  "%Hdigs_gs" ∷ ⌜ gs.*2 = servEpochInfo.dig <$> st.(Server.epochHist) ⌝
+  "%Hdigs_gs" ∷ ⌜ gs.*2 = servEpochInfo.dig <$> st.(Server.epochHist) ⌝ ∗
+
+  "%HepochHistNoOverflow" ∷ ⌜ length st.(Server.epochHist) = uint.nat (length st.(Server.epochHist)) ⌝
   (* TODO: server should own [numVers] auth to ensure cryptographic correctness. *)
 .
 
@@ -602,7 +605,8 @@ Proof.
 Qed.
 
 Definition is_epoch_lb γ (epoch : w64) : iProp Σ :=
-  ∃ history, mono_list_lb_own γ.(auditor_gn) history ∗ ⌜ uint.nat epoch ≤ length history ⌝.
+  ∃ (gs : list (gmap (list w8) (w64 * list w8) * list w8)),
+    mono_list_lb_own γ.(auditor_gn) gs ∗ ⌜ uint.nat epoch + 1 ≤ length gs ⌝.
 
 Lemma ghost_latest_epoch γ st cli_ep :
   let latest_epoch := (W64 (length st.(Server.epochHist) - 1)) in
@@ -612,7 +616,17 @@ Lemma ghost_latest_epoch γ st cli_ep :
   "#Hlb_ep" ∷ is_epoch_lb γ latest_epoch ∗
   "%Hlt_ep" ∷ ⌜ uint.Z cli_ep ≤ uint.Z latest_epoch ⌝.
 Proof.
-Admitted.
+  intros ?. iIntros "((% & Hlb & %) & Hghost)".
+  iNamed "Hghost".
+  (* FIXME: combine gives instances for mono_list_auth *)
+  iDestruct (mono_list_auth_lb_valid with "Hauditor Hlb") as %[_ Hprefix].
+  iClear "Hlb".
+  iDestruct (mono_list_lb_own_get with "Hauditor") as "#Hlb".
+  iFrame "#". iPureIntro.
+  apply prefix_length in Hprefix. subst latest_epoch.
+  apply (f_equal length) in Hdigs_gs. rewrite !length_fmap in Hdigs_gs.
+  word.
+Qed.
 
 Lemma wp_Server__Get γ ptr uid cli_ep :
   {{{
