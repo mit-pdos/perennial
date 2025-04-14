@@ -263,6 +263,17 @@ Section goose_lang.
       }
   Qed.
 
+  Lemma wp_store stk E l (v v' : val) :
+    {{{ ▷ heap_pointsto l (DfracOwn 1) v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
+    {{{ RET LitV LitUnit; heap_pointsto l (DfracOwn 1) v }}}.
+  Proof.
+    iIntros (Φ) "Hl HΦ". wp_call.
+    wp_bind (PrepareWrite _).
+    iApply (wp_prepare_write with "Hl"); iNext; iIntros "[Hl Hl']".
+    wp_pures.
+    by iApply (wp_finish_store with "[$Hl $Hl']").
+  Qed.
+
 End goose_lang.
 
 Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
@@ -284,3 +295,7 @@ Section tac_lemmas.
   Proof. constructor; [eauto with iFrame|done]. Qed.
 
 End tac_lemmas.
+
+(* TODO: move somewhere better *)
+Ltac2 tc_solve_many () := solve [ltac1:(typeclasses eauto)].
+Ltac2 ectx_simpl () := cbv [fill flip foldl ectxi_language.fill_item goose_ectxi_lang fill_item].

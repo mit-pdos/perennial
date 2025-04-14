@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem loop typing.
+From New.golang.defn Require Import dynamic_mem loop typing.
 
 Module chan.
 Section defns.

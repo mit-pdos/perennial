@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem list.
+From New.golang.defn Require Import list.
 From Perennial Require Import base.
 
 (* cannot be export *)

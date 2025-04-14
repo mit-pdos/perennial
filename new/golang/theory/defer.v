@@ -1,4 +1,4 @@
-From New.golang.theory Require Import exception mem dynamic_mem.
+From New.golang.theory Require Import exception dynamic_mem.
 From New.golang.defn Require Export defer.
 
 Section proof.

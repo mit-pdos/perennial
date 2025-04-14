@@ -2,7 +2,7 @@ From Coq Require Import Program.Equality.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Export dynamic_typing.
-From New.golang.theory Require Import typing assume list mem.
+From New.golang.theory Require Import typing assume list.
 From New.golang.theory Require Import proofmode.
 
 Set Default Proof Using "Type".

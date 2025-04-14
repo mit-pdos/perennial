@@ -1,4 +1,4 @@
-From New.golang.theory Require Import exception mem dynamic_mem typing list.
+From New.golang.theory Require Import exception dynamic_mem typing list.
 From New.golang.defn Require Import pkg.
 From New.golang.defn Require Export globals.
 From iris.base_logic.lib Require Import ghost_map ghost_var.

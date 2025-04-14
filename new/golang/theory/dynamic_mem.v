@@ -5,7 +5,9 @@ From New.golang.theory Require Import proofmode.
 From iris.proofmode Require Import string_ident.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
-From New.golang.theory Require Import typing assume list mem dynamic_typing.
+From New.golang.theory Require Import typing assume list dynamic_typing.
+(* re-export this theory since it provides ↦ notation *)
+From New.golang.theory Require Export typed_pointsto.
 From New.golang.defn Require Export dynamic_mem.
 From Perennial Require Export base.
 
@@ -327,6 +329,101 @@ Proof using IntoValTyped0.
       setoid_rewrite Nat2Z.inj_add.
       setoid_rewrite loc_add_assoc.
       iFrame "Hl".
+Qed.
+
+Definition is_primitive_type (t : go_type) : Prop :=
+  match t with
+  | structT d => False
+  | arrayT n t => False
+  | funcT => False
+  | sliceT => False
+  | interfaceT => False
+  | _ => True
+  end.
+
+Lemma wp_typed_cmpxchg_fail l dq (v' v1 v2: V) s E :
+  is_primitive_type t →
+  #v' ≠ #v1 →
+  {{{ ▷ l ↦{dq} v' }}} CmpXchg (Val # l) #v1 #v2 @ s; E
+  {{{ RET (#v', #false); l ↦{dq} v' }}}.
+Proof using Type*.
+  pose proof (to_val_has_go_type v') as Hty_old.
+  pose proof (to_val_has_go_type v1) as Hty.
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  generalize dependent (to_val v1). generalize dependent (to_val v'). generalize dependent (to_val v2).
+  intros.
+  clear dependent V.
+  rewrite to_val_unseal.
+  iIntros "Hl HΦ".
+  destruct t; try by exfalso.
+  all: inversion Hty_old; subst; inversion Hty; subst;
+    simpl; rewrite to_val_unseal /= in H0 |- *;
+    rewrite loc_add_0 right_id;
+    iApply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
+    iIntros; iApply "HΦ"; iFrame; done.
+Qed.
+
+Lemma wp_typed_cmpxchg_suc l (v' v1 v2: V) s E :
+  is_primitive_type t →
+  #v' = #v1 →
+  {{{ ▷ l ↦ v' }}} CmpXchg #l #v1 #v2 @ s; E
+  {{{ RET (#v', #true); l ↦ v2 }}}.
+Proof using Type*.
+  intros Hprim Heq.
+  pose proof (to_val_has_go_type v') as Hty_old.
+  pose proof (to_val_has_go_type v2) as Hty.
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  generalize dependent (#v1). generalize dependent (#v'). generalize dependent (#v2).
+  clear dependent V.
+  intros.
+  iIntros "Hl HΦ".
+  destruct t; try by exfalso.
+  all: inversion Hty_old; subst;
+    inversion Hty; subst;
+    simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
+    iApply (wp_cmpxchg_suc with "[$Hl]"); first done; first (by econstructor);
+    iIntros; iApply "HΦ"; iFrame; done.
+Qed.
+
+Lemma wp_typed_Load (l : loc) (v : V) dq s E :
+  is_primitive_type t →
+  {{{ l ↦{dq} v }}}
+    ! #l @ s ; E
+  {{{ RET #v; l ↦{dq} v }}}.
+Proof using Type*.
+  intros Hprim.
+  pose proof (to_val_has_go_type v) as Hty.
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  generalize dependent (#v).
+  clear dependent V.
+  intros.
+  iIntros "Hl HΦ".
+  destruct t; try by exfalso.
+  all: inversion Hty; subst;
+    inversion Hty; subst;
+    simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
+    iApply (wp_load with "[$Hl]"); iFrame.
+Qed.
+
+Lemma wp_typed_AtomicStore s E (l : loc) (v v' : V) :
+  is_primitive_type t →
+  {{{ l ↦ v }}}
+    AtomicStore #l #v' @ s ; E
+  {{{ RET #(); l ↦ v' }}}.
+Proof using Type*.
+  intros Hprim.
+  pose proof (to_val_has_go_type v) as Hty_old.
+  pose proof (to_val_has_go_type v') as Hty.
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  generalize dependent (#v). generalize dependent (#v').
+  clear dependent V.
+  intros.
+  iIntros "Hl HΦ".
+  destruct t; try by exfalso.
+  all: inversion Hty; subst;
+    inversion Hty_old; inversion Hty; subst;
+    simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
+    iApply (wp_atomic_store with "[$Hl]"); iFrame.
 Qed.
 
 End goose_lang.

@@ -8,6 +8,11 @@ From New.golang.theory Require Import proofmode list typing typed_pointsto.
 From iris.proofmode Require Import string_ident.
 Require Import Coq.Program.Equality.
 
+
+(** High-level memory (deprecated: replaced with memory based on dynamic types).
+
+TODO: port atomic operation proofs to dynamic_mem.v *)
+
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 
@@ -131,17 +136,6 @@ Section goose_lang.
       by iFrame.
   Qed.
 
-  Lemma wp_store stk E l (v v' : val) :
-    {{{ ▷ heap_pointsto l (DfracOwn 1) v' }}} Store (Val $ LitV (LitLoc l)) (Val v) @ stk; E
-    {{{ RET LitV LitUnit; heap_pointsto l (DfracOwn 1) v }}}.
-  Proof.
-    iIntros (Φ) "Hl HΦ". wp_call.
-    wp_bind (PrepareWrite _).
-    iApply (wp_prepare_write with "Hl"); iNext; iIntros "[Hl Hl']".
-    wp_pures.
-    by iApply (wp_finish_store with "[$Hl $Hl']").
-  Qed.
-
   Lemma wp_store_ty stk E l v v' :
     {{{ ▷ l ↦ v }}}
       store_ty t #l #v' @ stk; E
@@ -236,101 +230,6 @@ Section goose_lang.
       rewrite ?right_id. iFrame.
   Qed.
 
-  Definition is_primitive_type (t : go_type) : Prop :=
-    match t with
-    | structT d => False
-    | arrayT n t => False
-    | funcT => False
-    | sliceT => False
-    | interfaceT => False
-    | _ => True
-    end.
-
-  Lemma wp_typed_cmpxchg_fail s E l dq v' v1 v2 :
-    is_primitive_type t →
-    #v' ≠ #v1 →
-    {{{ ▷ l ↦{dq} v' }}} CmpXchg (Val # l) #v1 #v2 @ s; E
-    {{{ RET (#v', #false); l ↦{dq} v' }}}.
-  Proof using Type*.
-    pose proof (to_val_has_go_type v') as Hty_old.
-    pose proof (to_val_has_go_type v1) as Hty.
-    rewrite typed_pointsto_unseal /typed_pointsto_def.
-    generalize dependent (to_val v1). generalize dependent (to_val v'). generalize dependent (to_val v2).
-    intros.
-    clear dependent V.
-    rewrite to_val_unseal.
-    iIntros "Hl HΦ".
-    destruct t; try by exfalso.
-    all: inversion Hty_old; subst; inversion Hty; subst;
-      simpl; rewrite to_val_unseal /= in H0 |- *;
-      rewrite loc_add_0 right_id;
-      iApply (wp_cmpxchg_fail with "[$]"); first done; first (by econstructor);
-      iIntros; iApply "HΦ"; iFrame; done.
-  Qed.
-
-  Lemma wp_typed_cmpxchg_suc s E l v' v1 v2 :
-    is_primitive_type t →
-    #v' = #v1 →
-    {{{ ▷ l ↦ v' }}} CmpXchg #l #v1 #v2 @ s; E
-    {{{ RET (#v', #true); l ↦ v2 }}}.
-  Proof using Type*.
-    intros Hprim Heq.
-    pose proof (to_val_has_go_type v') as Hty_old.
-    pose proof (to_val_has_go_type v2) as Hty.
-    rewrite typed_pointsto_unseal /typed_pointsto_def.
-    generalize dependent (#v1). generalize dependent (#v'). generalize dependent (#v2).
-    clear dependent V.
-    intros.
-    iIntros "Hl HΦ".
-    destruct t; try by exfalso.
-    all: inversion Hty_old; subst;
-      inversion Hty; subst;
-      simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
-      iApply (wp_cmpxchg_suc with "[$Hl]"); first done; first (by econstructor);
-      iIntros; iApply "HΦ"; iFrame; done.
-  Qed.
-
-  Lemma wp_typed_Load s E (l : loc) (v : V) dq :
-    is_primitive_type t →
-    {{{ l ↦{dq} v }}}
-      ! #l @ s ; E
-    {{{ RET #v; l ↦{dq} v }}}.
-  Proof using Type*.
-    intros Hprim.
-    pose proof (to_val_has_go_type v) as Hty.
-    rewrite typed_pointsto_unseal /typed_pointsto_def.
-    generalize dependent (#v).
-    clear dependent V.
-    intros.
-    iIntros "Hl HΦ".
-    destruct t; try by exfalso.
-    all: inversion Hty; subst;
-      inversion Hty; subst;
-      simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
-      iApply (wp_load with "[$Hl]"); iFrame.
-  Qed.
-
-  Lemma wp_typed_AtomicStore s E (l : loc) (v v' : V) :
-    is_primitive_type t →
-    {{{ l ↦ v }}}
-      AtomicStore #l #v' @ s ; E
-    {{{ RET #(); l ↦ v' }}}.
-  Proof using Type*.
-    intros Hprim.
-    pose proof (to_val_has_go_type v) as Hty_old.
-    pose proof (to_val_has_go_type v') as Hty.
-    rewrite typed_pointsto_unseal /typed_pointsto_def.
-    generalize dependent (#v). generalize dependent (#v').
-    clear dependent V.
-    intros.
-    iIntros "Hl HΦ".
-    destruct t; try by exfalso.
-    all: inversion Hty; subst;
-      inversion Hty_old; inversion Hty; subst;
-      simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
-      iApply (wp_atomic_store with "[$Hl]"); iFrame.
-  Qed.
-
 End goose_lang.
 
 Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
@@ -395,10 +294,6 @@ Section tac_lemmas.
   Qed.
 
 End tac_lemmas.
-
-Ltac2 tc_solve_many () := solve [ltac1:(typeclasses eauto)].
-
-Ltac2 ectx_simpl () := cbv [fill flip foldl ectxi_language.fill_item goose_ectxi_lang fill_item].
 
 Ltac2 wp_load_visit e k :=
   Control.once_plus (fun () => Std.unify e '(load_ty _ (Val _)))
