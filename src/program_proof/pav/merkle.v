@@ -209,6 +209,9 @@ Definition is_merkle_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :
   "%Hcutless" ∷ ⌜ cutless_tree t ⌝ ∗
   "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
   "#Htree_hash" ∷ is_tree_hash t h.
+Global Opaque is_merkle_map.
+Local Transparent is_merkle_map.
+Global Instance is_merkle_map_pers m h : Persistent (is_merkle_map m h) := _.
 
 Definition is_merkle_found (label: list w8)
     (found: option ((list w8) * (list w8))%type) (h: list w8) : iProp Σ :=
