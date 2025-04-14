@@ -1031,38 +1031,37 @@ Definition ServerPutArgDecode: val :=
 (* Work from workq.go *)
 
 Definition Work := struct.decl [
+  "mu" :: ptrT;
+  "cond" :: ptrT;
   "done" :: boolT;
   "Req" :: ptrT;
   "Resp" :: ptrT
 ].
 
-(* WQReq from server.go *)
-
-Definition WQReq := struct.decl [
-  "Uid" :: uint64T;
-  "Pk" :: slice.T byteT
-].
-
-(* WorkQ from workq.go *)
-
 Definition WorkQ := struct.decl [
   "mu" :: ptrT;
   "work" :: slice.T ptrT;
-  "condCli" :: ptrT;
-  "condWorker" :: ptrT
+  "cond" :: ptrT
 ].
 
 Definition WorkQ__Do: val :=
-  rec: "WorkQ__Do" "wq" "r" :=
+  rec: "WorkQ__Do" "wq" "req" :=
+    let: "w" := struct.new Work [
+      "mu" ::= newMutex #();
+      "Req" ::= "req"
+    ] in
+    struct.storeF Work "cond" "w" (NewCond (struct.loadF Work "mu" "w"));;
     Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
-    struct.storeF WorkQ "work" "wq" (SliceAppend ptrT (struct.loadF WorkQ "work" "wq") "r");;
-    Cond__Signal (struct.loadF WorkQ "condWorker" "wq");;
-    Skip;;
-    (for: (λ: <>, (~ (struct.loadF Work "done" "r"))); (λ: <>, Skip) := λ: <>,
-      Cond__Wait (struct.loadF WorkQ "condCli" "wq");;
-      Continue);;
+    struct.storeF WorkQ "work" "wq" (SliceAppend ptrT (struct.loadF WorkQ "work" "wq") "w");;
+    Cond__Signal (struct.loadF WorkQ "cond" "wq");;
     Mutex__Unlock (struct.loadF WorkQ "mu" "wq");;
-    #().
+    Mutex__Lock (struct.loadF Work "mu" "w");;
+    Skip;;
+    (for: (λ: <>, (~ (struct.loadF Work "done" "w"))); (λ: <>, Skip) := λ: <>,
+      Cond__Wait (struct.loadF Work "cond" "w");;
+      Continue);;
+    Mutex__Unlock (struct.loadF Work "mu" "w");;
+    struct.loadF Work "Resp" "w".
 
 (* Server from server.go *)
 
@@ -1077,6 +1076,11 @@ Definition Server := struct.decl [
   "workQ" :: ptrT
 ].
 
+Definition WQReq := struct.decl [
+  "Uid" :: uint64T;
+  "Pk" :: slice.T byteT
+].
+
 Definition WQResp := struct.decl [
   "Dig" :: ptrT;
   "Lat" :: ptrT;
@@ -1087,14 +1091,10 @@ Definition WQResp := struct.decl [
 (* Put errors iff there's a put of the same uid at the same time. *)
 Definition Server__Put: val :=
   rec: "Server__Put" "s" "uid" "pk" :=
-    let: "work" := struct.new Work [
-      "Req" ::= struct.new WQReq [
-        "Uid" ::= "uid";
-        "Pk" ::= "pk"
-      ]
-    ] in
-    WorkQ__Do (struct.loadF Server "workQ" "s") "work";;
-    let: "resp" := struct.loadF Work "Resp" "work" in
+    let: "resp" := WorkQ__Do (struct.loadF Server "workQ" "s") (struct.new WQReq [
+      "Uid" ::= "uid";
+      "Pk" ::= "pk"
+    ]) in
     (struct.loadF WQResp "Dig" "resp", struct.loadF WQResp "Lat" "resp", struct.loadF WQResp "Bound" "resp", struct.loadF WQResp "Err" "resp").
 
 (* SigDigEncode from serde.out.go *)
@@ -1728,7 +1728,7 @@ Definition WorkQ__Get: val :=
     Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
     Skip;;
     (for: (λ: <>, (struct.loadF WorkQ "work" "wq") = slice.nil); (λ: <>, Skip) := λ: <>,
-      Cond__Wait (struct.loadF WorkQ "condWorker" "wq");;
+      Cond__Wait (struct.loadF WorkQ "cond" "wq");;
       Continue);;
     let: "work" := struct.loadF WorkQ "work" "wq" in
     struct.storeF WorkQ "work" "wq" slice.nil;;
@@ -1800,15 +1800,14 @@ Definition Server__mapper1: val :=
     ]);;
     #().
 
-(* WorkQ__Finish from workq.go *)
+(* Work__Finish from workq.go *)
 
-Definition WorkQ__Finish: val :=
-  rec: "WorkQ__Finish" "wq" "work" :=
-    Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
-    ForSlice ptrT <> "x" "work"
-      (struct.storeF Work "done" "x" #true);;
-    Mutex__Unlock (struct.loadF WorkQ "mu" "wq");;
-    Cond__Broadcast (struct.loadF WorkQ "condCli" "wq");;
+Definition Work__Finish: val :=
+  rec: "Work__Finish" "w" :=
+    Mutex__Lock (struct.loadF Work "mu" "w");;
+    struct.storeF Work "done" "w" #true;;
+    Cond__Signal (struct.loadF Work "cond" "w");;
+    Mutex__Unlock (struct.loadF Work "mu" "w");;
     #().
 
 Definition Server__Worker: val :=
@@ -1889,18 +1888,17 @@ Definition Server__Worker: val :=
         Continue
       else Continue));;
     waitgroup.Wait (![ptrT] "wg");;
-    WorkQ__Finish (struct.loadF Server "workQ" "s") "work";;
+    ForSlice ptrT <> "w" "work"
+      (Work__Finish "w");;
     #().
 
 Definition NewWorkQ: val :=
   rec: "NewWorkQ" <> :=
     let: "mu" := newMutex #() in
-    let: "condCli" := NewCond "mu" in
-    let: "condWork" := NewCond "mu" in
+    let: "cond" := NewCond "mu" in
     struct.new WorkQ [
       "mu" ::= "mu";
-      "condCli" ::= "condCli";
-      "condWorker" ::= "condWork"
+      "cond" ::= "cond"
     ].
 
 Definition NewServer: val :=
@@ -1935,16 +1933,29 @@ Definition NewServer: val :=
 (* DoBatch is unverified. it's only used as a benchmark helper for
    unmeasured batch puts. *)
 Definition WorkQ__DoBatch: val :=
-  rec: "WorkQ__DoBatch" "wq" "r" :=
+  rec: "WorkQ__DoBatch" "wq" "reqs" :=
+    let: "works" := NewSlice ptrT (slice.len "reqs") in
+    ForSlice ptrT "i" "req" "reqs"
+      (SliceSet ptrT "works" "i" (struct.new Work [
+        "mu" ::= newMutex #();
+        "Req" ::= "req"
+      ]);;
+      struct.storeF Work "cond" (SliceGet ptrT "works" "i") (NewCond (struct.loadF Work "mu" (SliceGet ptrT "works" "i"))));;
     Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
-    struct.storeF WorkQ "work" "wq" (SliceAppendSlice ptrT (struct.loadF WorkQ "work" "wq") "r");;
-    Cond__Signal (struct.loadF WorkQ "condWorker" "wq");;
-    let: "rLen" := slice.len "r" in
-    Skip;;
-    (for: (λ: <>, (~ (struct.loadF Work "done" (SliceGet ptrT "r" ("rLen" - #1))))); (λ: <>, Skip) := λ: <>,
-      Cond__Wait (struct.loadF WorkQ "condCli" "wq");;
-      Continue);;
+    struct.storeF WorkQ "work" "wq" (SliceAppendSlice ptrT (struct.loadF WorkQ "work" "wq") "works");;
+    Cond__Signal (struct.loadF WorkQ "cond" "wq");;
     Mutex__Unlock (struct.loadF WorkQ "mu" "wq");;
+    let: "n" := slice.len "works" in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      let: "w" := SliceGet ptrT "works" (("n" - #1) - (![uint64T] "i")) in
+      Mutex__Lock (struct.loadF Work "mu" "w");;
+      Skip;;
+      (for: (λ: <>, (~ (struct.loadF Work "done" "w"))); (λ: <>, Skip) := λ: <>,
+        Cond__Wait (struct.loadF Work "cond" "w");;
+        Continue);;
+      Mutex__Unlock (struct.loadF Work "mu" "w");;
+      Continue);;
     #().
 
 End code.
