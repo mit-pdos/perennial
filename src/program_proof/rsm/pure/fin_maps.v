@@ -70,8 +70,16 @@ Section lemmas.
     map_Forall2 (λ k x y, P (k, x) ↔ Q (k, y)) m1 m2 ->
     size (filter (λ kx, P kx) m1) = size (filter (λ ky, Q ky) m2).
   Proof.
-  Admitted.
-
+    revert m1 m2.
+    induction m1 as [| k1 x1 m1' ? IH] using map_ind.
+    - intros m2 ->%map_Forall2_empty_inv_l. rewrite !map_filter_empty !map_size_empty //.
+    - intros m2 Hins%map_Forall2_insert_inv_l; last done.
+      destruct Hins as (x2&m2'&->&Hnone&Hiff&Hforall).
+      rewrite ?map_filter_insert.
+      destruct (decide (P (k1, x1))); destruct (decide (Q (k1, x2))); try intuition.
+      * rewrite ?map_size_insert_None ?IH ?map_lookup_filter_None; eauto.
+      * rewrite ?delete_notin //; eauto.
+  Qed.
 
 End lemmas.
 
