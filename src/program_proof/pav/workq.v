@@ -23,47 +23,45 @@ Definition own l x : iProp Σ :=
 End defn.
 End Work.
 
-Class workQG (Σ : gFunctors) := {
-    work_mlistG :: mono_listG loc Σ
-  }.
-
-Inductive started_work_status :=
-| WorkStarted
-| WorkDone (resp : loc).
-
-Record workQ :=
-  mk {
-      started_work : list started_work_status;
-      new_reqs: list loc;
-    }.
-
 Section proof.
 Context `{!heapGS Σ}.
-Context `{!workQG Σ}.
 
-Definition own_WorkQ wq (st : workQ) : iProp Σ :=
+Definition is_Work w Ψ : iProp Σ :=
+  ∃ (mu cond : loc),
+  "#mu" ∷ w ↦[Work::"mu"] #mu ∗
+  "#Hmu" ∷ is_lock nroot #mu (
+      ∃ (done : bool),
+        "done" ∷ w ↦[Work::"done"] #done ∗
+        "Hdone" ∷ if done then
+            ∃ (Resp : loc),
+            "#Resp" ∷ w ↦[Work::"Resp"]□ #Resp ∗
+            "HΨ" ∷ Ψ Resp
+          else
+            True
+    ) ∗
+  "#cond" ∷ w ↦[Work::"cond"] #cond ∗
+  "#Hcond" ∷ is_cond cond #mu.
+
+(* authority to read [Req] and write [Resp] *)
+Definition own_Work (w : loc) (spec : loc → (loc → iProp Σ) → iProp Σ) : iProp Σ :=
+  ∃ Ψ (Req : loc),
+  "#Req" ∷ w ↦[Work::"Req"] #Req ∗
+  "Resp" ∷ w ↦[Work::"Resp"] #null ∗
+  "Hspec" ∷ (spec Req Ψ) ∗
+  "#His" ∷ is_Work w Ψ.
+
+Definition own_WorkQ wq spec : iProp Σ :=
   ∃ work_sl (work_ptr : list loc),
     "work" ∷ wq ↦[WorkQ::"work"] (slice_val work_sl) ∗
     "Hwork_sl" ∷ own_slice work_sl ptrT (DfracOwn 1) work_ptr ∗
-    "Hwork" ∷ ([∗ list] l; req ∈ work_ptr; st.(new_reqs), Work.own l (Work.mk false req null))
-    "Hpast_work" ∷ ([∗ list] l; done ∈ past_work_ptrs; past_done,
-                      l ↦[Work::"done"]{#1/2} #(LitBool done)
-      ).
-
-Definition own_WorkQ_ghost γ past_work_ptrs past_done reqs : iProp Σ :=
-  mono_list_auth_own γ 1 past_work_ptrs ∗
-  [∗ list] done ∈ past_done,
+    "Hwork" ∷ ([∗ list] w ∈ work_ptr, own_Work w spec)
 .
 
-Definition is_WorkQ wq γ : iProp Σ :=
-  ∃ (mu condCli condWorker : loc),
+Definition is_WorkQ wq spec : iProp Σ :=
+  ∃ (mu cond : loc),
   "#mu" ∷ wq ↦[WorkQ::"mu"] #mu ∗
-  "#Hmu" ∷ is_lock nroot #mu (∃ work, "Hown" ∷ own_WorkQ wq work ∗
-                                      "Hghost" ∷ own_WorkQ_ghost γ work) ∗
-  "#condCli" ∷ wq ↦[WorkQ::"condCli"] #condCli ∗
-  "#HcondCli" ∷ is_cond condCli #mu ∗
-  "#condWorker" ∷ wq ↦[WorkQ::"condWorker"] #condWorker ∗
-  "#HcondWorker" ∷ is_cond condWorker #mu
-.
+  "#Hmu" ∷ is_lock nroot #mu (own_WorkQ wq spec) ∗
+  "#condCli" ∷ wq ↦[WorkQ::"cond"] #cond ∗
+  "#HcondCli" ∷ is_cond cond #mu.
 
 End proof.

@@ -1038,6 +1038,15 @@ Definition Work := struct.decl [
   "Resp" :: ptrT
 ].
 
+Definition NewWork: val :=
+  rec: "NewWork" "req" :=
+    let: "w" := struct.new Work [
+      "mu" ::= newMutex #();
+      "Req" ::= "req"
+    ] in
+    struct.storeF Work "cond" "w" (NewCond (struct.loadF Work "mu" "w"));;
+    "w".
+
 Definition WorkQ := struct.decl [
   "mu" :: ptrT;
   "work" :: slice.T ptrT;
@@ -1046,11 +1055,7 @@ Definition WorkQ := struct.decl [
 
 Definition WorkQ__Do: val :=
   rec: "WorkQ__Do" "wq" "req" :=
-    let: "w" := struct.new Work [
-      "mu" ::= newMutex #();
-      "Req" ::= "req"
-    ] in
-    struct.storeF Work "cond" "w" (NewCond (struct.loadF Work "mu" "w"));;
+    let: "w" := NewWork "req" in
     Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
     struct.storeF WorkQ "work" "wq" (SliceAppend ptrT (struct.loadF WorkQ "work" "wq") "w");;
     Cond__Signal (struct.loadF WorkQ "cond" "wq");;
@@ -1936,11 +1941,7 @@ Definition WorkQ__DoBatch: val :=
   rec: "WorkQ__DoBatch" "wq" "reqs" :=
     let: "works" := NewSlice ptrT (slice.len "reqs") in
     ForSlice ptrT "i" "req" "reqs"
-      (SliceSet ptrT "works" "i" (struct.new Work [
-        "mu" ::= newMutex #();
-        "Req" ::= "req"
-      ]);;
-      struct.storeF Work "cond" (SliceGet ptrT "works" "i") (NewCond (struct.loadF Work "mu" (SliceGet ptrT "works" "i"))));;
+      (SliceSet ptrT "works" "i" (NewWork "req"));;
     Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
     struct.storeF WorkQ "work" "wq" (SliceAppendSlice ptrT (struct.loadF WorkQ "work" "wq") "works");;
     Cond__Signal (struct.loadF WorkQ "cond" "wq");;

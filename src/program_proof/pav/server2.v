@@ -114,9 +114,6 @@ Definition is_map_relation γ (mₗ : gmap (list w8) (list w8))
 
 Instance is_map_relation_pers γ mₗ mₕ : Persistent (is_map_relation γ mₗ mₕ) := _.
 
-Context `{!epoch_versioned_mapG Σ}.
-
-
 Definition own_Server_ghost γ st : iProp Σ :=
   ∃ gs, (* TODO: rename to something better than [gs]. *)
   (* Copied from auditor.v *)
