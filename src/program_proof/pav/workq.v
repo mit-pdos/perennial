@@ -169,4 +169,22 @@ Proof.
   by iFrame.
 Qed.
 
+Lemma wp_NewWorkQ spec :
+  {{{ True }}}
+    NewWorkQ #()
+  {{{ wq, RET #wq; is_WorkQ wq spec }}}.
+Proof.
+  iIntros (?) "Hpre HΦ". iApply wp_fupd. wp_rec. wp_apply wp_new_free_lock.
+  iIntros (mu) "Hmu". wp_pures. wp_apply (wp_newCond' with "[$]").
+  iIntros (cond) "[Hmu #Hcond]". wp_pures. wp_apply wp_allocStruct; [val_ty | ].
+  iIntros (wq) "Hwq". iDestruct (struct_fields_split with "Hwq") as "H". iNamed "H".
+  iApply "HΦ".
+  iMod (struct_field_pointsto_persist with "mu") as "#mu".
+  iMod (struct_field_pointsto_persist with "cond") as "#cond".
+  iMod (alloc_lock with "Hmu [-]") as "$".
+  { rewrite zero_slice_val. iFrame. iDestruct own_slice_zero as "$".
+    rewrite big_sepL_nil //. }
+  by iFrame "#".
+Qed.
+
 End proof.
