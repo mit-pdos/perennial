@@ -24,7 +24,7 @@ Definition Int32 : go_type := structT [
 Definition Int32__Load : val :=
   rec: "Int32__Load" "x" <> :=
     exception_do (let: "x" := (alloc "x") in
-    return: (let: "$a0" := (struct.field_ref Int32 "v" (![#ptrT] "x")) in
+    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
      (func_call #atomic.atomic #"LoadInt32"%go) "$a0")).
 
 (* Store atomically stores val into x.
@@ -34,7 +34,7 @@ Definition Int32__Store : val :=
   rec: "Int32__Store" "x" "val" :=
     exception_do (let: "x" := (alloc "x") in
     let: "val" := (alloc "val") in
-    do:  (let: "$a0" := (struct.field_ref Int32 "v" (![#ptrT] "x")) in
+    do:  (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
     let: "$a1" := (![#int32T] "val") in
     (func_call #atomic.atomic #"StoreInt32"%go) "$a0" "$a1")).
 
@@ -47,7 +47,7 @@ Definition Int32__CompareAndSwap : val :=
     let: "x" := (alloc "x") in
     let: "new" := (alloc "new") in
     let: "old" := (alloc "old") in
-    return: (let: "$a0" := (struct.field_ref Int32 "v" (![#ptrT] "x")) in
+    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#int32T] "old") in
      let: "$a2" := (![#int32T] "new") in
      (func_call #atomic.atomic #"CompareAndSwapInt32"%go) "$a0" "$a1" "$a2")).
@@ -60,7 +60,7 @@ Definition Int32__Add : val :=
     exception_do (let: "new" := (alloc (type.zero_val #int32T)) in
     let: "x" := (alloc "x") in
     let: "delta" := (alloc "delta") in
-    return: (let: "$a0" := (struct.field_ref Int32 "v" (![#ptrT] "x")) in
+    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#int32T] "delta") in
      (func_call #atomic.atomic #"AddInt32"%go) "$a0" "$a1")).
 
@@ -79,7 +79,7 @@ Definition Uint64 : go_type := structT [
 Definition Uint64__Load : val :=
   rec: "Uint64__Load" "x" <> :=
     exception_do (let: "x" := (alloc "x") in
-    return: (let: "$a0" := (struct.field_ref Uint64 "v" (![#ptrT] "x")) in
+    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
      (func_call #atomic.atomic #"LoadUint64"%go) "$a0")).
 
 (* Store atomically stores val into x.
@@ -89,7 +89,7 @@ Definition Uint64__Store : val :=
   rec: "Uint64__Store" "x" "val" :=
     exception_do (let: "x" := (alloc "x") in
     let: "val" := (alloc "val") in
-    do:  (let: "$a0" := (struct.field_ref Uint64 "v" (![#ptrT] "x")) in
+    do:  (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
     let: "$a1" := (![#uint64T] "val") in
     (func_call #atomic.atomic #"StoreUint64"%go) "$a0" "$a1")).
 
@@ -102,7 +102,7 @@ Definition Uint64__CompareAndSwap : val :=
     let: "x" := (alloc "x") in
     let: "new" := (alloc "new") in
     let: "old" := (alloc "old") in
-    return: (let: "$a0" := (struct.field_ref Uint64 "v" (![#ptrT] "x")) in
+    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#uint64T] "old") in
      let: "$a2" := (![#uint64T] "new") in
      (func_call #atomic.atomic #"CompareAndSwapUint64"%go) "$a0" "$a1" "$a2")).
@@ -115,7 +115,7 @@ Definition Uint64__Add : val :=
     exception_do (let: "new" := (alloc (type.zero_val #uint64T)) in
     let: "x" := (alloc "x") in
     let: "delta" := (alloc "delta") in
-    return: (let: "$a0" := (struct.field_ref Uint64 "v" (![#ptrT] "x")) in
+    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#uint64T] "delta") in
      (func_call #atomic.atomic #"AddUint64"%go) "$a0" "$a1")).
 

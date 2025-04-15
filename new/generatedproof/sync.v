@@ -33,7 +33,7 @@ Global Instance into_val_typed_noCopy `{ffi_syntax} : IntoValTyped noCopy.t sync
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_noCopy `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make sync.noCopy (alist_val [
+    (struct.make #sync.noCopy (alist_val [
     ]))%struct
     #(noCopy.mk).
 Admitted.
@@ -88,7 +88,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_RWMutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} w' writerSem' readerSem' readerCount' readerWait':
   PureWp True
-    (struct.make sync.RWMutex (alist_val [
+    (struct.make #sync.RWMutex (alist_val [
       "w" ::= #w';
       "writerSem" ::= #writerSem';
       "readerSem" ::= #readerSem';
@@ -150,7 +150,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_WaitGroup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} noCopy' state' sema':
   PureWp True
-    (struct.make sync.WaitGroup (alist_val [
+    (struct.make #sync.WaitGroup (alist_val [
       "noCopy" ::= #noCopy';
       "state" ::= #state';
       "sema" ::= #sema'

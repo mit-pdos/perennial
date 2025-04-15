@@ -43,7 +43,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_EtcdError `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} code' desc':
   PureWp True
-    (struct.make rpctypes.EtcdError (alist_val [
+    (struct.make #rpctypes.EtcdError (alist_val [
       "code" ::= #code';
       "desc" ::= #desc'
     ]))%struct
@@ -84,7 +84,7 @@ Global Instance into_val_typed_TokenFieldNameGRPCKey `{ffi_syntax} : IntoValType
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_TokenFieldNameGRPCKey `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make rpctypes.TokenFieldNameGRPCKey (alist_val [
+    (struct.make #rpctypes.TokenFieldNameGRPCKey (alist_val [
     ]))%struct
     #(TokenFieldNameGRPCKey.mk).
 Admitted.

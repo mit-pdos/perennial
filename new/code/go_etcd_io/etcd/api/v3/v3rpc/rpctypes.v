@@ -22,13 +22,13 @@ Definition EtcdError : go_type := structT [
 Definition EtcdError__Code : val :=
   rec: "EtcdError__Code" "e" <> :=
     exception_do (let: "e" := (alloc "e") in
-    return: (![#codes.Code] (struct.field_ref EtcdError "code" "e"))).
+    return: (![#codes.Code] (struct.field_ref #EtcdError #"code"%go "e"))).
 
 (* go: error.go:252:20 *)
 Definition EtcdError__Error : val :=
   rec: "EtcdError__Error" "e" <> :=
     exception_do (let: "e" := (alloc "e") in
-    return: (![#stringT] (struct.field_ref EtcdError "desc" "e"))).
+    return: (![#stringT] (struct.field_ref #EtcdError #"desc"%go "e"))).
 
 (* go: error.go:256:6 *)
 Definition Error : val :=
@@ -65,7 +65,7 @@ Definition Error : val :=
       do:  ("desc" <-[#stringT] "$r0"));;;
     return: (interface.make #rpctypes.rpctypes #"EtcdError" (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![#ptrT] "ev")) #()) in
      let: "$desc" := (![#stringT] "desc") in
-     struct.make EtcdError [{
+     struct.make #EtcdError [{
        "code" ::= "$code";
        "desc" ::= "$desc"
      }]))).

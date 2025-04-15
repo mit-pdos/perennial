@@ -31,7 +31,7 @@ Global Instance into_val_typed_noCopy `{ffi_syntax} : IntoValTyped noCopy.t atom
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_noCopy `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make atomic.noCopy (alist_val [
+    (struct.make #atomic.noCopy (alist_val [
     ]))%struct
     #(noCopy.mk).
 Admitted.
@@ -74,7 +74,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Int32 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} _0' v':
   PureWp True
-    (struct.make atomic.Int32 (alist_val [
+    (struct.make #atomic.Int32 (alist_val [
       "_0" ::= #_0';
       "v" ::= #v'
     ]))%struct
@@ -115,7 +115,7 @@ Global Instance into_val_typed_align64 `{ffi_syntax} : IntoValTyped align64.t at
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_align64 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make atomic.align64 (alist_val [
+    (struct.make #atomic.align64 (alist_val [
     ]))%struct
     #(align64.mk).
 Admitted.
@@ -162,7 +162,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Uint64 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} _0' _1' v':
   PureWp True
-    (struct.make atomic.Uint64 (alist_val [
+    (struct.make #atomic.Uint64 (alist_val [
       "_0" ::= #_0';
       "_1" ::= #_1';
       "v" ::= #v'

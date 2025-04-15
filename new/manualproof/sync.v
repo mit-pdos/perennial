@@ -38,7 +38,7 @@ Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 
 Global Instance wp_struct_make_Mutex (state : bool) :
   PureWp True
-    (struct.make sync.Mutex (alist_val [
+    (struct.make #sync.Mutex (alist_val [
       "state" ::= #state
     ]))%struct
     #(Mutex.mk state).
@@ -121,7 +121,7 @@ Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 
 Global Instance wp_struct_make_Cond L :
   PureWp True
-    (struct.make sync.Cond (alist_val [
+    (struct.make #sync.Cond (alist_val [
       "L" ::= #L
     ]))%struct
     #(Cond.mk L).

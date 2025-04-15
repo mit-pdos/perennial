@@ -76,7 +76,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_KeyValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
-    (struct.make mvccpb.KeyValue (alist_val [
+    (struct.make #mvccpb.KeyValue (alist_val [
       "Key" ::= #Key';
       "CreateRevision" ::= #CreateRevision';
       "ModRevision" ::= #ModRevision';
@@ -158,7 +158,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Event `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' Kv' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
-    (struct.make mvccpb.Event (alist_val [
+    (struct.make #mvccpb.Event (alist_val [
       "Type" ::= #Type';
       "Kv" ::= #Kv';
       "PrevKv" ::= #PrevKv';

@@ -40,7 +40,7 @@ Definition DecodeValue : val :=
     do:  ("vBytes" <-[#sliceT] "$r1");;;
     return: (let: "$l" := (![#uint64T] "l") in
      let: "$v" := (string.from_bytes (![#sliceT] "vBytes")) in
-     struct.make cacheValue [{
+     struct.make #cacheValue [{
        "v" ::= "$v";
        "l" ::= "$l"
      }])).
@@ -53,11 +53,11 @@ Definition EncodeValue : val :=
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
-    let: "$a1" := (![#uint64T] (struct.field_ref cacheValue "l" "c")) in
+    let: "$a1" := (![#uint64T] (struct.field_ref #cacheValue #"l"%go "c")) in
     (func_call #marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref cacheValue "v" "c"))) in
+    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #cacheValue #"v"%go "c"))) in
     (func_call #marshal #"WriteBytes"%go) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     return: (string.from_bytes (![#sliceT] "e"))).
@@ -79,7 +79,7 @@ Definition Make : val :=
     return: (alloc (let: "$kv" := (![#kv.KvCput] "kv") in
      let: "$mu" := (alloc (type.zero_val #sync.Mutex)) in
      let: "$cache" := (map.make stringT cacheValue #()) in
-     struct.make CacheKv [{
+     struct.make #CacheKv [{
        "kv" ::= "$kv";
        "mu" ::= "$mu";
        "cache" ::= "$cache"
@@ -90,10 +90,10 @@ Definition CacheKv__Get : val :=
   rec: "CacheKv__Get" "k" "key" :=
     exception_do (let: "k" := (alloc "k") in
     let: "key" := (alloc "key") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref CacheKv "mu" (![#ptrT] "k")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
     let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "cv" := (alloc (type.zero_val #cacheValue)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT cacheValue)] (struct.field_ref CacheKv "cache" (![#ptrT] "k"))) (![#stringT] "key")) in
+    let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT cacheValue)] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("cv" <-[#cacheValue] "$r0");;;
@@ -104,17 +104,17 @@ Definition CacheKv__Get : val :=
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("high" <-[#uint64T] "$r1");;;
-    (if: (![#boolT] "ok") && ((![#uint64T] "high") < (![#uint64T] (struct.field_ref cacheValue "l" "cv")))
+    (if: (![#boolT] "ok") && ((![#uint64T] "high") < (![#uint64T] (struct.field_ref #cacheValue #"l"%go "cv")))
     then
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref CacheKv "mu" (![#ptrT] "k")))) #());;;
-      return: (![#stringT] (struct.field_ref cacheValue "v" "cv"))
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
+      return: (![#stringT] (struct.field_ref #cacheValue #"v"%go "cv"))
     else do:  #());;;
-    do:  (let: "$a0" := (![#(mapT stringT cacheValue)] (struct.field_ref CacheKv "cache" (![#ptrT] "k"))) in
+    do:  (let: "$a0" := (![#(mapT stringT cacheValue)] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) in
     let: "$a1" := (![#stringT] "key") in
     map.delete "$a0" "$a1");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref CacheKv "mu" (![#ptrT] "k")))) #());;;
-    return: (struct.field_get cacheValue "v" (let: "$a0" := (let: "$a0" := (![#stringT] "key") in
-     (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref CacheKv "kv" (![#ptrT] "k")))) "$a0") in
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
+    return: (struct.field_get #cacheValue "v" (let: "$a0" := (let: "$a0" := (![#stringT] "key") in
+     (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0") in
      (func_call #cachekv.cachekv #"DecodeValue"%go) "$a0"))).
 
 (* go: clerk.go:69:19 *)
@@ -126,7 +126,7 @@ Definition CacheKv__GetAndCache : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "enc" := (alloc (type.zero_val #stringT)) in
       let: "$r0" := (let: "$a0" := (![#stringT] "key") in
-      (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref CacheKv "kv" (![#ptrT] "k")))) "$a0") in
+      (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0") in
       do:  ("enc" <-[#stringT] "$r0");;;
       let: "old" := (alloc (type.zero_val #cacheValue)) in
       let: "$r0" := (let: "$a0" := (![#stringT] "enc") in
@@ -140,37 +140,37 @@ Definition CacheKv__GetAndCache : val :=
       do:  ("latest" <-[#uint64T] "$r1");;;
       let: "newLeaseExpiration" := (alloc (type.zero_val #uint64T)) in
       let: "$r0" := (let: "$a0" := ((![#uint64T] "latest") + (![#uint64T] "cachetime")) in
-      let: "$a1" := (![#uint64T] (struct.field_ref cacheValue "l" "old")) in
+      let: "$a1" := (![#uint64T] (struct.field_ref #cacheValue #"l"%go "old")) in
       (func_call #cachekv.cachekv #"max"%go) "$a0" "$a1") in
       do:  ("newLeaseExpiration" <-[#uint64T] "$r0");;;
       let: "resp" := (alloc (type.zero_val #stringT)) in
       let: "$r0" := (let: "$a0" := (![#stringT] "key") in
       let: "$a1" := (![#stringT] "enc") in
-      let: "$a2" := (let: "$a0" := (let: "$v" := (![#stringT] (struct.field_ref cacheValue "v" "old")) in
+      let: "$a2" := (let: "$a0" := (let: "$v" := (![#stringT] (struct.field_ref #cacheValue #"v"%go "old")) in
       let: "$l" := (![#uint64T] "newLeaseExpiration") in
-      struct.make cacheValue [{
+      struct.make #cacheValue [{
         "v" ::= "$v";
         "l" ::= "$l"
       }]) in
       (func_call #cachekv.cachekv #"EncodeValue"%go) "$a0") in
-      (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref CacheKv "kv" (![#ptrT] "k")))) "$a0" "$a1" "$a2") in
+      (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[#stringT] "$r0");;;
       (if: (![#stringT] "resp") = #"ok"%go
       then
-        do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref CacheKv "mu" (![#ptrT] "k")))) #());;;
-        let: "$r0" := (let: "$v" := (![#stringT] (struct.field_ref cacheValue "v" "old")) in
+        do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
+        let: "$r0" := (let: "$v" := (![#stringT] (struct.field_ref #cacheValue #"v"%go "old")) in
         let: "$l" := (![#uint64T] "newLeaseExpiration") in
-        struct.make cacheValue [{
+        struct.make #cacheValue [{
           "v" ::= "$v";
           "l" ::= "$l"
         }]) in
-        do:  (map.insert (![#(mapT stringT cacheValue)] (struct.field_ref CacheKv "cache" (![#ptrT] "k"))) (![#stringT] "key") "$r0");;;
+        do:  (map.insert (![#(mapT stringT cacheValue)] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key") "$r0");;;
         break: #()
       else do:  #()));;;
     let: "ret" := (alloc (type.zero_val #stringT)) in
-    let: "$r0" := (struct.field_get cacheValue "v" (Fst (map.get (![#(mapT stringT cacheValue)] (struct.field_ref CacheKv "cache" (![#ptrT] "k"))) (![#stringT] "key")))) in
+    let: "$r0" := (struct.field_get #cacheValue "v" (Fst (map.get (![#(mapT stringT cacheValue)] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key")))) in
     do:  ("ret" <-[#stringT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref CacheKv "mu" (![#ptrT] "k")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
     return: (![#stringT] "ret")).
 
 (* go: clerk.go:90:19 *)
@@ -182,10 +182,10 @@ Definition CacheKv__Put : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "enc" := (alloc (type.zero_val #stringT)) in
       let: "$r0" := (let: "$a0" := (![#stringT] "key") in
-      (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref CacheKv "kv" (![#ptrT] "k")))) "$a0") in
+      (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0") in
       do:  ("enc" <-[#stringT] "$r0");;;
       let: "leaseExpiration" := (alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (struct.field_get cacheValue "l" (let: "$a0" := (![#stringT] "enc") in
+      let: "$r0" := (struct.field_get #cacheValue "l" (let: "$a0" := (![#stringT] "enc") in
       (func_call #cachekv.cachekv #"DecodeValue"%go) "$a0")) in
       do:  ("leaseExpiration" <-[#uint64T] "$r0");;;
       let: "earliest" := (alloc (type.zero_val #uint64T)) in
@@ -202,12 +202,12 @@ Definition CacheKv__Put : val :=
       let: "$a1" := (![#stringT] "enc") in
       let: "$a2" := (let: "$a0" := (let: "$v" := (![#stringT] "val") in
       let: "$l" := #(W64 0) in
-      struct.make cacheValue [{
+      struct.make #cacheValue [{
         "v" ::= "$v";
         "l" ::= "$l"
       }]) in
       (func_call #cachekv.cachekv #"EncodeValue"%go) "$a0") in
-      (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref CacheKv "kv" (![#ptrT] "k")))) "$a0" "$a1" "$a2") in
+      (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[#stringT] "$r0");;;
       (if: (![#stringT] "resp") = #"ok"%go
       then break: #()

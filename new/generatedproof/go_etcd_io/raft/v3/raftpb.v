@@ -84,7 +84,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Entry `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Term' Index' Type' Data':
   PureWp True
-    (struct.make raftpb.Entry (alist_val [
+    (struct.make #raftpb.Entry (alist_val [
       "Term" ::= #Term';
       "Index" ::= #Index';
       "Type" ::= #Type';
@@ -152,7 +152,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ConfState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Voters' Learners' VotersOutgoing' LearnersNext' AutoLeave':
   PureWp True
-    (struct.make raftpb.ConfState (alist_val [
+    (struct.make #raftpb.ConfState (alist_val [
       "Voters" ::= #Voters';
       "Learners" ::= #Learners';
       "VotersOutgoing" ::= #VotersOutgoing';
@@ -214,7 +214,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_SnapshotMetadata `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ConfState' Index' Term':
   PureWp True
-    (struct.make raftpb.SnapshotMetadata (alist_val [
+    (struct.make #raftpb.SnapshotMetadata (alist_val [
       "ConfState" ::= #ConfState';
       "Index" ::= #Index';
       "Term" ::= #Term'
@@ -268,7 +268,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Snapshot `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Data' Metadata':
   PureWp True
-    (struct.make raftpb.Snapshot (alist_val [
+    (struct.make #raftpb.Snapshot (alist_val [
       "Data" ::= #Data';
       "Metadata" ::= #Metadata'
     ]))%struct
@@ -336,7 +336,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_HardState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Term' Vote' Commit':
   PureWp True
-    (struct.make raftpb.HardState (alist_val [
+    (struct.make #raftpb.HardState (alist_val [
       "Term" ::= #Term';
       "Vote" ::= #Vote';
       "Commit" ::= #Commit'
@@ -398,7 +398,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ConfChange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' NodeID' Context' ID':
   PureWp True
-    (struct.make raftpb.ConfChange (alist_val [
+    (struct.make #raftpb.ConfChange (alist_val [
       "Type" ::= #Type';
       "NodeID" ::= #NodeID';
       "Context" ::= #Context';
@@ -458,7 +458,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ConfChangeV2 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Transition' Changes' Context':
   PureWp True
-    (struct.make raftpb.ConfChangeV2 (alist_val [
+    (struct.make #raftpb.ConfChangeV2 (alist_val [
       "Transition" ::= #Transition';
       "Changes" ::= #Changes';
       "Context" ::= #Context'

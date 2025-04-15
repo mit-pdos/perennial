@@ -48,7 +48,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} m' sz' diskSz':
   PureWp True
-    (struct.make append_log.Log (alist_val [
+    (struct.make #append_log.Log (alist_val [
       "m" ::= #m';
       "sz" ::= #sz';
       "diskSz" ::= #diskSz'

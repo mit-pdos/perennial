@@ -112,7 +112,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_OpResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} put' get' del' txn':
   PureWp True
-    (struct.make clientv3.OpResponse (alist_val [
+    (struct.make #clientv3.OpResponse (alist_val [
       "put" ::= #put';
       "get" ::= #get';
       "del" ::= #del';
@@ -183,7 +183,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_LeaseGrantResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseHeader' ID' TTL' Error':
   PureWp True
-    (struct.make clientv3.LeaseGrantResponse (alist_val [
+    (struct.make #clientv3.LeaseGrantResponse (alist_val [
       "ResponseHeader" ::= #ResponseHeader';
       "ID" ::= #ID';
       "TTL" ::= #TTL';
@@ -313,7 +313,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_WatchResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Events' CompactRevision' Canceled' Created' closeErr' cancelReason':
   PureWp True
-    (struct.make clientv3.WatchResponse (alist_val [
+    (struct.make #clientv3.WatchResponse (alist_val [
       "Header" ::= #Header';
       "Events" ::= #Events';
       "CompactRevision" ::= #CompactRevision';

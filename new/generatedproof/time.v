@@ -45,7 +45,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Time `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} wall' ext' loc':
   PureWp True
-    (struct.make time.Time (alist_val [
+    (struct.make #time.Time (alist_val [
       "wall" ::= #wall';
       "ext" ::= #ext';
       "loc" ::= #loc'

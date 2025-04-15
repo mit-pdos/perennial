@@ -49,7 +49,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Tup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Idx' Ok' Bar':
   PureWp True
-    (struct.make slices.Tup (alist_val [
+    (struct.make #slices.Tup (alist_val [
       "ID" ::= #ID';
       "Idx" ::= #Idx';
       "Ok" ::= #Ok';

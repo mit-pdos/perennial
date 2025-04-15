@@ -39,7 +39,7 @@ Definition NewInflights : val :=
     let: "size" := (alloc "size") in
     return: (alloc (let: "$size" := (![#intT] "size") in
      let: "$maxBytes" := (![#uint64T] "maxBytes") in
-     struct.make Inflights [{
+     struct.make #Inflights [{
        "start" ::= type.zero_val #intT;
        "count" ::= type.zero_val #intT;
        "bytes" ::= type.zero_val #uint64T;
@@ -59,9 +59,9 @@ Definition Inflights__Clone : val :=
     let: "$r0" := (![#Inflights] (![#ptrT] "in")) in
     do:  ("ins" <-[#Inflights] "$r0");;;
     let: "$r0" := (let: "$a0" := #slice.nil in
-    let: "$a1" := (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) in
+    let: "$a1" := (![#sliceT] (struct.field_ref #Inflights #"buffer"%go (![#ptrT] "in"))) in
     (slice.append #inflight) "$a0" "$a1") in
-    do:  ((struct.field_ref Inflights "buffer" "ins") <-[#sliceT] "$r0");;;
+    do:  ((struct.field_ref #Inflights #"buffer"%go "ins") <-[#sliceT] "$r0");;;
     return: ("ins")).
 
 (* Add notifies the Inflights that a new message with the given index and byte
@@ -81,27 +81,27 @@ Definition Inflights__Add : val :=
       Panic "$a0")
     else do:  #());;;
     let: "next" := (alloc (type.zero_val #intT)) in
-    let: "$r0" := ((![#intT] (struct.field_ref Inflights "start" (![#ptrT] "in"))) + (![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in")))) in
+    let: "$r0" := ((![#intT] (struct.field_ref #Inflights #"start"%go (![#ptrT] "in"))) + (![#intT] (struct.field_ref #Inflights #"count"%go (![#ptrT] "in")))) in
     do:  ("next" <-[#intT] "$r0");;;
     let: "size" := (alloc (type.zero_val #intT)) in
-    let: "$r0" := (![#intT] (struct.field_ref Inflights "size" (![#ptrT] "in"))) in
+    let: "$r0" := (![#intT] (struct.field_ref #Inflights #"size"%go (![#ptrT] "in"))) in
     do:  ("size" <-[#intT] "$r0");;;
     (if: int_geq (![#intT] "next") (![#intT] "size")
     then do:  ("next" <-[#intT] ((![#intT] "next") - (![#intT] "size")))
     else do:  #());;;
-    (if: int_geq (![#intT] "next") (let: "$a0" := (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) in
+    (if: int_geq (![#intT] "next") (let: "$a0" := (![#sliceT] (struct.field_ref #Inflights #"buffer"%go (![#ptrT] "in"))) in
     slice.len "$a0")
     then do:  ((method_call #tracker.tracker #"Inflights'ptr" #"grow" (![#ptrT] "in")) #())
     else do:  #());;;
     let: "$r0" := (let: "$index" := (![#uint64T] "index") in
     let: "$bytes" := (![#uint64T] "bytes") in
-    struct.make inflight [{
+    struct.make #inflight [{
       "index" ::= "$index";
       "bytes" ::= "$bytes"
     }]) in
-    do:  ((slice.elem_ref #inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] "next")) <-[#inflight] "$r0");;;
-    do:  ((struct.field_ref Inflights "count" (![#ptrT] "in")) <-[#intT] ((![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in"))) + #(W64 1)));;;
-    do:  ((struct.field_ref Inflights "bytes" (![#ptrT] "in")) <-[#uint64T] ((![#uint64T] (struct.field_ref Inflights "bytes" (![#ptrT] "in"))) + (![#uint64T] "bytes")))).
+    do:  ((slice.elem_ref #inflight (![#sliceT] (struct.field_ref #Inflights #"buffer"%go (![#ptrT] "in"))) (![#intT] "next")) <-[#inflight] "$r0");;;
+    do:  ((struct.field_ref #Inflights #"count"%go (![#ptrT] "in")) <-[#intT] ((![#intT] (struct.field_ref #Inflights #"count"%go (![#ptrT] "in"))) + #(W64 1)));;;
+    do:  ((struct.field_ref #Inflights #"bytes"%go (![#ptrT] "in")) <-[#uint64T] ((![#uint64T] (struct.field_ref #Inflights #"bytes"%go (![#ptrT] "in"))) + (![#uint64T] "bytes")))).
 
 (* grow the inflight buffer by doubling up to inflights.size. We grow on demand
    instead of preallocating to inflights.size to handle systems which have
@@ -112,7 +112,7 @@ Definition Inflights__grow : val :=
   rec: "Inflights__grow" "in" <> :=
     exception_do (let: "in" := (alloc "in") in
     let: "newSize" := (alloc (type.zero_val #intT)) in
-    let: "$r0" := ((let: "$a0" := (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) in
+    let: "$r0" := ((let: "$a0" := (![#sliceT] (struct.field_ref #Inflights #"buffer"%go (![#ptrT] "in"))) in
     slice.len "$a0") * #(W64 2)) in
     do:  ("newSize" <-[#intT] "$r0");;;
     (if: (![#intT] "newSize") = #(W64 0)
@@ -120,19 +120,19 @@ Definition Inflights__grow : val :=
       let: "$r0" := #(W64 1) in
       do:  ("newSize" <-[#intT] "$r0")
     else
-      (if: int_gt (![#intT] "newSize") (![#intT] (struct.field_ref Inflights "size" (![#ptrT] "in")))
+      (if: int_gt (![#intT] "newSize") (![#intT] (struct.field_ref #Inflights #"size"%go (![#ptrT] "in")))
       then
-        let: "$r0" := (![#intT] (struct.field_ref Inflights "size" (![#ptrT] "in"))) in
+        let: "$r0" := (![#intT] (struct.field_ref #Inflights #"size"%go (![#ptrT] "in"))) in
         do:  ("newSize" <-[#intT] "$r0")
       else do:  #()));;;
     let: "newBuffer" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #inflight (![#intT] "newSize")) in
     do:  ("newBuffer" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "newBuffer") in
-    let: "$a1" := (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) in
+    let: "$a1" := (![#sliceT] (struct.field_ref #Inflights #"buffer"%go (![#ptrT] "in"))) in
     (slice.copy #inflight) "$a0" "$a1");;;
     let: "$r0" := (![#sliceT] "newBuffer") in
-    do:  ((struct.field_ref Inflights "buffer" (![#ptrT] "in")) <-[#sliceT] "$r0")).
+    do:  ((struct.field_ref #Inflights #"buffer"%go (![#ptrT] "in")) <-[#sliceT] "$r0")).
 
 (* FreeLE frees the inflights smaller or equal to the given `to` flight.
 
@@ -141,36 +141,36 @@ Definition Inflights__FreeLE : val :=
   rec: "Inflights__FreeLE" "in" "to" :=
     exception_do (let: "in" := (alloc "in") in
     let: "to" := (alloc "to") in
-    (if: ((![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in"))) = #(W64 0)) || ((![#uint64T] "to") < (![#uint64T] (struct.field_ref inflight "index" (slice.elem_ref #inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] (struct.field_ref Inflights "start" (![#ptrT] "in")))))))
+    (if: ((![#intT] (struct.field_ref #Inflights #"count"%go (![#ptrT] "in"))) = #(W64 0)) || ((![#uint64T] "to") < (![#uint64T] (struct.field_ref #inflight #"index"%go (slice.elem_ref #inflight (![#sliceT] (struct.field_ref #Inflights #"buffer"%go (![#ptrT] "in"))) (![#intT] (struct.field_ref #Inflights #"start"%go (![#ptrT] "in")))))))
     then return: (#())
     else do:  #());;;
     let: "idx" := (alloc (type.zero_val #intT)) in
-    let: "$r0" := (![#intT] (struct.field_ref Inflights "start" (![#ptrT] "in"))) in
+    let: "$r0" := (![#intT] (struct.field_ref #Inflights #"start"%go (![#ptrT] "in"))) in
     do:  ("idx" <-[#intT] "$r0");;;
     let: "i" := (alloc (type.zero_val #intT)) in
     let: "bytes" := (alloc (type.zero_val #uint64T)) in
     (let: "$r0" := #(W64 0) in
     do:  ("i" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_lt (![#intT] "i") (![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in")))); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
-      (if: (![#uint64T] "to") < (![#uint64T] (struct.field_ref inflight "index" (slice.elem_ref #inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] "idx"))))
+    (for: (λ: <>, int_lt (![#intT] "i") (![#intT] (struct.field_ref #Inflights #"count"%go (![#ptrT] "in")))); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
+      (if: (![#uint64T] "to") < (![#uint64T] (struct.field_ref #inflight #"index"%go (slice.elem_ref #inflight (![#sliceT] (struct.field_ref #Inflights #"buffer"%go (![#ptrT] "in"))) (![#intT] "idx"))))
       then break: #()
       else do:  #());;;
-      do:  ("bytes" <-[#uint64T] ((![#uint64T] "bytes") + (![#uint64T] (struct.field_ref inflight "bytes" (slice.elem_ref #inflight (![#sliceT] (struct.field_ref Inflights "buffer" (![#ptrT] "in"))) (![#intT] "idx"))))));;;
+      do:  ("bytes" <-[#uint64T] ((![#uint64T] "bytes") + (![#uint64T] (struct.field_ref #inflight #"bytes"%go (slice.elem_ref #inflight (![#sliceT] (struct.field_ref #Inflights #"buffer"%go (![#ptrT] "in"))) (![#intT] "idx"))))));;;
       let: "size" := (alloc (type.zero_val #intT)) in
-      let: "$r0" := (![#intT] (struct.field_ref Inflights "size" (![#ptrT] "in"))) in
+      let: "$r0" := (![#intT] (struct.field_ref #Inflights #"size"%go (![#ptrT] "in"))) in
       do:  ("size" <-[#intT] "$r0");;;
       (do:  ("idx" <-[#intT] ((![#intT] "idx") + #(W64 1)));;;
       (if: int_geq (![#intT] "idx") (![#intT] "size")
       then do:  ("idx" <-[#intT] ((![#intT] "idx") - (![#intT] "size")))
       else do:  #()))));;;
-    do:  ((struct.field_ref Inflights "count" (![#ptrT] "in")) <-[#intT] ((![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in"))) - (![#intT] "i")));;;
-    do:  ((struct.field_ref Inflights "bytes" (![#ptrT] "in")) <-[#uint64T] ((![#uint64T] (struct.field_ref Inflights "bytes" (![#ptrT] "in"))) - (![#uint64T] "bytes")));;;
+    do:  ((struct.field_ref #Inflights #"count"%go (![#ptrT] "in")) <-[#intT] ((![#intT] (struct.field_ref #Inflights #"count"%go (![#ptrT] "in"))) - (![#intT] "i")));;;
+    do:  ((struct.field_ref #Inflights #"bytes"%go (![#ptrT] "in")) <-[#uint64T] ((![#uint64T] (struct.field_ref #Inflights #"bytes"%go (![#ptrT] "in"))) - (![#uint64T] "bytes")));;;
     let: "$r0" := (![#intT] "idx") in
-    do:  ((struct.field_ref Inflights "start" (![#ptrT] "in")) <-[#intT] "$r0");;;
-    (if: (![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in"))) = #(W64 0)
+    do:  ((struct.field_ref #Inflights #"start"%go (![#ptrT] "in")) <-[#intT] "$r0");;;
+    (if: (![#intT] (struct.field_ref #Inflights #"count"%go (![#ptrT] "in"))) = #(W64 0)
     then
       let: "$r0" := #(W64 0) in
-      do:  ((struct.field_ref Inflights "start" (![#ptrT] "in")) <-[#intT] "$r0")
+      do:  ((struct.field_ref #Inflights #"start"%go (![#ptrT] "in")) <-[#intT] "$r0")
     else do:  #())).
 
 (* Full returns true if no more messages can be sent at the moment.
@@ -179,7 +179,7 @@ Definition Inflights__FreeLE : val :=
 Definition Inflights__Full : val :=
   rec: "Inflights__Full" "in" <> :=
     exception_do (let: "in" := (alloc "in") in
-    return: (((![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in"))) = (![#intT] (struct.field_ref Inflights "size" (![#ptrT] "in")))) || (((![#uint64T] (struct.field_ref Inflights "maxBytes" (![#ptrT] "in"))) ≠ #(W64 0)) && ((![#uint64T] (struct.field_ref Inflights "bytes" (![#ptrT] "in"))) ≥ (![#uint64T] (struct.field_ref Inflights "maxBytes" (![#ptrT] "in"))))))).
+    return: (((![#intT] (struct.field_ref #Inflights #"count"%go (![#ptrT] "in"))) = (![#intT] (struct.field_ref #Inflights #"size"%go (![#ptrT] "in")))) || (((![#uint64T] (struct.field_ref #Inflights #"maxBytes"%go (![#ptrT] "in"))) ≠ #(W64 0)) && ((![#uint64T] (struct.field_ref #Inflights #"bytes"%go (![#ptrT] "in"))) ≥ (![#uint64T] (struct.field_ref #Inflights #"maxBytes"%go (![#ptrT] "in"))))))).
 
 (* Count returns the number of inflight messages.
 
@@ -187,7 +187,7 @@ Definition Inflights__Full : val :=
 Definition Inflights__Count : val :=
   rec: "Inflights__Count" "in" <> :=
     exception_do (let: "in" := (alloc "in") in
-    return: (![#intT] (struct.field_ref Inflights "count" (![#ptrT] "in")))).
+    return: (![#intT] (struct.field_ref #Inflights #"count"%go (![#ptrT] "in")))).
 
 (* reset frees all inflights.
 
@@ -196,11 +196,11 @@ Definition Inflights__reset : val :=
   rec: "Inflights__reset" "in" <> :=
     exception_do (let: "in" := (alloc "in") in
     let: "$r0" := #(W64 0) in
-    do:  ((struct.field_ref Inflights "start" (![#ptrT] "in")) <-[#intT] "$r0");;;
+    do:  ((struct.field_ref #Inflights #"start"%go (![#ptrT] "in")) <-[#intT] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((struct.field_ref Inflights "count" (![#ptrT] "in")) <-[#intT] "$r0");;;
+    do:  ((struct.field_ref #Inflights #"count"%go (![#ptrT] "in")) <-[#intT] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((struct.field_ref Inflights "bytes" (![#ptrT] "in")) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #Inflights #"bytes"%go (![#ptrT] "in")) <-[#uint64T] "$r0")).
 
 Definition StateType : go_type := uint64T.
 
@@ -225,12 +225,12 @@ Definition Progress__ResetState : val :=
     exception_do (let: "pr" := (alloc "pr") in
     let: "state" := (alloc "state") in
     let: "$r0" := #false in
-    do:  ((struct.field_ref Progress "MsgAppFlowPaused" (![#ptrT] "pr")) <-[#boolT] "$r0");;;
+    do:  ((struct.field_ref #Progress #"MsgAppFlowPaused"%go (![#ptrT] "pr")) <-[#boolT] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((struct.field_ref Progress "PendingSnapshot" (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref #Progress #"PendingSnapshot"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#StateType] "state") in
-    do:  ((struct.field_ref Progress "State" (![#ptrT] "pr")) <-[#StateType] "$r0");;;
-    do:  ((method_call #tracker.tracker #"Inflights'ptr" #"reset" (![#ptrT] (struct.field_ref Progress "Inflights" (![#ptrT] "pr")))) #())).
+    do:  ((struct.field_ref #Progress #"State"%go (![#ptrT] "pr")) <-[#StateType] "$r0");;;
+    do:  ((method_call #tracker.tracker #"Inflights'ptr" #"reset" (![#ptrT] (struct.field_ref #Progress #"Inflights"%go (![#ptrT] "pr")))) #())).
 
 Definition StateProbe : expr := #(W64 0).
 
@@ -243,26 +243,26 @@ Definition StateSnapshot : expr := #(W64 2).
 Definition Progress__BecomeProbe : val :=
   rec: "Progress__BecomeProbe" "pr" <> :=
     exception_do (let: "pr" := (alloc "pr") in
-    (if: (![#StateType] (struct.field_ref Progress "State" (![#ptrT] "pr"))) = StateSnapshot
+    (if: (![#StateType] (struct.field_ref #Progress #"State"%go (![#ptrT] "pr"))) = StateSnapshot
     then
       let: "pendingSnapshot" := (alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (![#uint64T] (struct.field_ref Progress "PendingSnapshot" (![#ptrT] "pr"))) in
+      let: "$r0" := (![#uint64T] (struct.field_ref #Progress #"PendingSnapshot"%go (![#ptrT] "pr"))) in
       do:  ("pendingSnapshot" <-[#uint64T] "$r0");;;
       do:  (let: "$a0" := StateProbe in
       (method_call #tracker.tracker #"Progress'ptr" #"ResetState" (![#ptrT] "pr")) "$a0");;;
-      let: "$r0" := (let: "$a0" := ((![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr"))) + #(W64 1)) in
+      let: "$r0" := (let: "$a0" := ((![#uint64T] (struct.field_ref #Progress #"Match"%go (![#ptrT] "pr"))) + #(W64 1)) in
       let: "$a1" := ((![#uint64T] "pendingSnapshot") + #(W64 1)) in
       (maxUint64 2) "$a0" "$a1") in
-      do:  ((struct.field_ref Progress "Next" (![#ptrT] "pr")) <-[#uint64T] "$r0")
+      do:  ((struct.field_ref #Progress #"Next"%go (![#ptrT] "pr")) <-[#uint64T] "$r0")
     else
       do:  (let: "$a0" := StateProbe in
       (method_call #tracker.tracker #"Progress'ptr" #"ResetState" (![#ptrT] "pr")) "$a0");;;
-      let: "$r0" := ((![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr"))) + #(W64 1)) in
-      do:  ((struct.field_ref Progress "Next" (![#ptrT] "pr")) <-[#uint64T] "$r0"));;;
-    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref Progress "sentCommit" (![#ptrT] "pr"))) in
-    let: "$a1" := ((![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr"))) - #(W64 1)) in
+      let: "$r0" := ((![#uint64T] (struct.field_ref #Progress #"Match"%go (![#ptrT] "pr"))) + #(W64 1)) in
+      do:  ((struct.field_ref #Progress #"Next"%go (![#ptrT] "pr")) <-[#uint64T] "$r0"));;;
+    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr"))) in
+    let: "$a1" := ((![#uint64T] (struct.field_ref #Progress #"Next"%go (![#ptrT] "pr"))) - #(W64 1)) in
     (minUint64 2) "$a0" "$a1") in
-    do:  ((struct.field_ref Progress "sentCommit" (![#ptrT] "pr")) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr")) <-[#uint64T] "$r0")).
 
 Definition StateReplicate : expr := #(W64 1).
 
@@ -274,8 +274,8 @@ Definition Progress__BecomeReplicate : val :=
     exception_do (let: "pr" := (alloc "pr") in
     do:  (let: "$a0" := StateReplicate in
     (method_call #tracker.tracker #"Progress'ptr" #"ResetState" (![#ptrT] "pr")) "$a0");;;
-    let: "$r0" := ((![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr"))) + #(W64 1)) in
-    do:  ((struct.field_ref Progress "Next" (![#ptrT] "pr")) <-[#uint64T] "$r0")).
+    let: "$r0" := ((![#uint64T] (struct.field_ref #Progress #"Match"%go (![#ptrT] "pr"))) + #(W64 1)) in
+    do:  ((struct.field_ref #Progress #"Next"%go (![#ptrT] "pr")) <-[#uint64T] "$r0")).
 
 (* BecomeSnapshot moves the Progress to StateSnapshot with the specified pending
    snapshot index.
@@ -288,11 +288,11 @@ Definition Progress__BecomeSnapshot : val :=
     do:  (let: "$a0" := StateSnapshot in
     (method_call #tracker.tracker #"Progress'ptr" #"ResetState" (![#ptrT] "pr")) "$a0");;;
     let: "$r0" := (![#uint64T] "snapshoti") in
-    do:  ((struct.field_ref Progress "PendingSnapshot" (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref #Progress #"PendingSnapshot"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
     let: "$r0" := ((![#uint64T] "snapshoti") + #(W64 1)) in
-    do:  ((struct.field_ref Progress "Next" (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref #Progress #"Next"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#uint64T] "snapshoti") in
-    do:  ((struct.field_ref Progress "sentCommit" (![#ptrT] "pr")) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr")) <-[#uint64T] "$r0")).
 
 (* SentEntries updates the progress on the given number of consecutive entries
    being sent in a MsgApp, with the given total bytes size, appended at log
@@ -306,29 +306,29 @@ Definition Progress__SentEntries : val :=
     exception_do (let: "pr" := (alloc "pr") in
     let: "bytes" := (alloc "bytes") in
     let: "entries" := (alloc "entries") in
-    let: "$sw" := (![#StateType] (struct.field_ref Progress "State" (![#ptrT] "pr"))) in
+    let: "$sw" := (![#StateType] (struct.field_ref #Progress #"State"%go (![#ptrT] "pr"))) in
     (if: "$sw" = StateReplicate
     then
       (if: int_gt (![#intT] "entries") #(W64 0)
       then
-        do:  ((struct.field_ref Progress "Next" (![#ptrT] "pr")) <-[#uint64T] ((![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr"))) + (s_to_w64 (![#intT] "entries"))));;;
-        do:  (let: "$a0" := ((![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr"))) - #(W64 1)) in
+        do:  ((struct.field_ref #Progress #"Next"%go (![#ptrT] "pr")) <-[#uint64T] ((![#uint64T] (struct.field_ref #Progress #"Next"%go (![#ptrT] "pr"))) + (s_to_w64 (![#intT] "entries"))));;;
+        do:  (let: "$a0" := ((![#uint64T] (struct.field_ref #Progress #"Next"%go (![#ptrT] "pr"))) - #(W64 1)) in
         let: "$a1" := (![#uint64T] "bytes") in
-        (method_call #tracker.tracker #"Inflights'ptr" #"Add" (![#ptrT] (struct.field_ref Progress "Inflights" (![#ptrT] "pr")))) "$a0" "$a1")
+        (method_call #tracker.tracker #"Inflights'ptr" #"Add" (![#ptrT] (struct.field_ref #Progress #"Inflights"%go (![#ptrT] "pr")))) "$a0" "$a1")
       else do:  #());;;
-      let: "$r0" := ((method_call #tracker.tracker #"Inflights'ptr" #"Full" (![#ptrT] (struct.field_ref Progress "Inflights" (![#ptrT] "pr")))) #()) in
-      do:  ((struct.field_ref Progress "MsgAppFlowPaused" (![#ptrT] "pr")) <-[#boolT] "$r0")
+      let: "$r0" := ((method_call #tracker.tracker #"Inflights'ptr" #"Full" (![#ptrT] (struct.field_ref #Progress #"Inflights"%go (![#ptrT] "pr")))) #()) in
+      do:  ((struct.field_ref #Progress #"MsgAppFlowPaused"%go (![#ptrT] "pr")) <-[#boolT] "$r0")
     else
       (if: "$sw" = StateProbe
       then
         (if: int_gt (![#intT] "entries") #(W64 0)
         then
           let: "$r0" := #true in
-          do:  ((struct.field_ref Progress "MsgAppFlowPaused" (![#ptrT] "pr")) <-[#boolT] "$r0")
+          do:  ((struct.field_ref #Progress #"MsgAppFlowPaused"%go (![#ptrT] "pr")) <-[#boolT] "$r0")
         else do:  #())
       else
         do:  (let: "$a0" := (interface.make #""%go #"string"%go (let: "$a0" := #"sending append in unhandled state %s"%go in
-        let: "$a1" := ((let: "$sl0" := (interface.make #tracker.tracker #"StateType" (![#StateType] (struct.field_ref Progress "State" (![#ptrT] "pr")))) in
+        let: "$a1" := ((let: "$sl0" := (interface.make #tracker.tracker #"StateType" (![#StateType] (struct.field_ref #Progress #"State"%go (![#ptrT] "pr")))) in
         slice.literal #interfaceT ["$sl0"])) in
         (func_call #fmt #"Sprintf"%go) "$a0" "$a1")) in
         Panic "$a0")))).
@@ -341,7 +341,7 @@ Definition Progress__CanBumpCommit : val :=
   rec: "Progress__CanBumpCommit" "pr" "index" :=
     exception_do (let: "pr" := (alloc "pr") in
     let: "index" := (alloc "index") in
-    return: (((![#uint64T] "index") > (![#uint64T] (struct.field_ref Progress "sentCommit" (![#ptrT] "pr")))) && ((![#uint64T] (struct.field_ref Progress "sentCommit" (![#ptrT] "pr"))) < ((![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr"))) - #(W64 1))))).
+    return: (((![#uint64T] "index") > (![#uint64T] (struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr")))) && ((![#uint64T] (struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr"))) < ((![#uint64T] (struct.field_ref #Progress #"Next"%go (![#ptrT] "pr"))) - #(W64 1))))).
 
 (* SentCommit updates the sentCommit.
 
@@ -351,7 +351,7 @@ Definition Progress__SentCommit : val :=
     exception_do (let: "pr" := (alloc "pr") in
     let: "commit" := (alloc "commit") in
     let: "$r0" := (![#uint64T] "commit") in
-    do:  ((struct.field_ref Progress "sentCommit" (![#ptrT] "pr")) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr")) <-[#uint64T] "$r0")).
 
 (* MaybeUpdate is called when an MsgAppResp arrives from the follower, with the
    index acked by it. The method returns false if the given n index comes from
@@ -362,17 +362,17 @@ Definition Progress__MaybeUpdate : val :=
   rec: "Progress__MaybeUpdate" "pr" "n" :=
     exception_do (let: "pr" := (alloc "pr") in
     let: "n" := (alloc "n") in
-    (if: (![#uint64T] "n") ≤ (![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr")))
+    (if: (![#uint64T] "n") ≤ (![#uint64T] (struct.field_ref #Progress #"Match"%go (![#ptrT] "pr")))
     then return: (#false)
     else do:  #());;;
     let: "$r0" := (![#uint64T] "n") in
-    do:  ((struct.field_ref Progress "Match" (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr"))) in
+    do:  ((struct.field_ref #Progress #"Match"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #Progress #"Next"%go (![#ptrT] "pr"))) in
     let: "$a1" := ((![#uint64T] "n") + #(W64 1)) in
     (maxUint64 2) "$a0" "$a1") in
-    do:  ((struct.field_ref Progress "Next" (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref #Progress #"Next"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
     let: "$r0" := #false in
-    do:  ((struct.field_ref Progress "MsgAppFlowPaused" (![#ptrT] "pr")) <-[#boolT] "$r0");;;
+    do:  ((struct.field_ref #Progress #"MsgAppFlowPaused"%go (![#ptrT] "pr")) <-[#boolT] "$r0");;;
     return: (#true)).
 
 (* MaybeDecrTo adjusts the Progress to the receipt of a MsgApp rejection. The
@@ -393,34 +393,34 @@ Definition Progress__MaybeDecrTo : val :=
     exception_do (let: "pr" := (alloc "pr") in
     let: "matchHint" := (alloc "matchHint") in
     let: "rejected" := (alloc "rejected") in
-    (if: (![#StateType] (struct.field_ref Progress "State" (![#ptrT] "pr"))) = StateReplicate
+    (if: (![#StateType] (struct.field_ref #Progress #"State"%go (![#ptrT] "pr"))) = StateReplicate
     then
-      (if: (![#uint64T] "rejected") ≤ (![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr")))
+      (if: (![#uint64T] "rejected") ≤ (![#uint64T] (struct.field_ref #Progress #"Match"%go (![#ptrT] "pr")))
       then return: (#false)
       else do:  #());;;
-      let: "$r0" := ((![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr"))) + #(W64 1)) in
-      do:  ((struct.field_ref Progress "Next" (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref Progress "sentCommit" (![#ptrT] "pr"))) in
-      let: "$a1" := ((![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr"))) - #(W64 1)) in
+      let: "$r0" := ((![#uint64T] (struct.field_ref #Progress #"Match"%go (![#ptrT] "pr"))) + #(W64 1)) in
+      do:  ((struct.field_ref #Progress #"Next"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr"))) in
+      let: "$a1" := ((![#uint64T] (struct.field_ref #Progress #"Next"%go (![#ptrT] "pr"))) - #(W64 1)) in
       (minUint64 2) "$a0" "$a1") in
-      do:  ((struct.field_ref Progress "sentCommit" (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
+      do:  ((struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
       return: (#true)
     else do:  #());;;
-    (if: ((![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr"))) - #(W64 1)) ≠ (![#uint64T] "rejected")
+    (if: ((![#uint64T] (struct.field_ref #Progress #"Next"%go (![#ptrT] "pr"))) - #(W64 1)) ≠ (![#uint64T] "rejected")
     then return: (#false)
     else do:  #());;;
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#uint64T] "rejected") in
     let: "$a1" := ((![#uint64T] "matchHint") + #(W64 1)) in
     (minUint64 2) "$a0" "$a1") in
-    let: "$a1" := ((![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr"))) + #(W64 1)) in
+    let: "$a1" := ((![#uint64T] (struct.field_ref #Progress #"Match"%go (![#ptrT] "pr"))) + #(W64 1)) in
     (maxUint64 2) "$a0" "$a1") in
-    do:  ((struct.field_ref Progress "Next" (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref Progress "sentCommit" (![#ptrT] "pr"))) in
-    let: "$a1" := ((![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr"))) - #(W64 1)) in
+    do:  ((struct.field_ref #Progress #"Next"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr"))) in
+    let: "$a1" := ((![#uint64T] (struct.field_ref #Progress #"Next"%go (![#ptrT] "pr"))) - #(W64 1)) in
     (minUint64 2) "$a0" "$a1") in
-    do:  ((struct.field_ref Progress "sentCommit" (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref #Progress #"sentCommit"%go (![#ptrT] "pr")) <-[#uint64T] "$r0");;;
     let: "$r0" := #false in
-    do:  ((struct.field_ref Progress "MsgAppFlowPaused" (![#ptrT] "pr")) <-[#boolT] "$r0");;;
+    do:  ((struct.field_ref #Progress #"MsgAppFlowPaused"%go (![#ptrT] "pr")) <-[#boolT] "$r0");;;
     return: (#true)).
 
 (* IsPaused returns whether sending log entries to this node has been throttled.
@@ -434,12 +434,12 @@ Definition Progress__MaybeDecrTo : val :=
 Definition Progress__IsPaused : val :=
   rec: "Progress__IsPaused" "pr" <> :=
     exception_do (let: "pr" := (alloc "pr") in
-    let: "$sw" := (![#StateType] (struct.field_ref Progress "State" (![#ptrT] "pr"))) in
+    let: "$sw" := (![#StateType] (struct.field_ref #Progress #"State"%go (![#ptrT] "pr"))) in
     (if: "$sw" = StateProbe
-    then return: (![#boolT] (struct.field_ref Progress "MsgAppFlowPaused" (![#ptrT] "pr")))
+    then return: (![#boolT] (struct.field_ref #Progress #"MsgAppFlowPaused"%go (![#ptrT] "pr")))
     else
       (if: "$sw" = StateReplicate
-      then return: (![#boolT] (struct.field_ref Progress "MsgAppFlowPaused" (![#ptrT] "pr")))
+      then return: (![#boolT] (struct.field_ref #Progress #"MsgAppFlowPaused"%go (![#ptrT] "pr")))
       else
         (if: "$sw" = StateSnapshot
         then return: (#true)
@@ -454,12 +454,12 @@ Definition Progress__String : val :=
     let: "buf" := (alloc (type.zero_val #strings.Builder)) in
     do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
     let: "$a1" := #"%s match=%d next=%d"%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #tracker.tracker #"StateType" (![#StateType] (struct.field_ref Progress "State" (![#ptrT] "pr")))) in
-    let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr")))) in
-    let: "$sl2" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref Progress "Next" (![#ptrT] "pr")))) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #tracker.tracker #"StateType" (![#StateType] (struct.field_ref #Progress #"State"%go (![#ptrT] "pr")))) in
+    let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Progress #"Match"%go (![#ptrT] "pr")))) in
+    let: "$sl2" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Progress #"Next"%go (![#ptrT] "pr")))) in
     slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
     (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
-    (if: ![#boolT] (struct.field_ref Progress "IsLearner" (![#ptrT] "pr"))
+    (if: ![#boolT] (struct.field_ref #Progress #"IsLearner"%go (![#ptrT] "pr"))
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #" learner"%go) in
@@ -473,15 +473,15 @@ Definition Progress__String : val :=
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprint"%go) "$a0" "$a1")
     else do:  #());;;
-    (if: (![#uint64T] (struct.field_ref Progress "PendingSnapshot" (![#ptrT] "pr"))) > #(W64 0)
+    (if: (![#uint64T] (struct.field_ref #Progress #"PendingSnapshot"%go (![#ptrT] "pr"))) > #(W64 0)
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #" pendingSnap=%d"%go in
-      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref Progress "PendingSnapshot" (![#ptrT] "pr")))) in
+      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Progress #"PendingSnapshot"%go (![#ptrT] "pr")))) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
-    (if: (~ (![#boolT] (struct.field_ref Progress "RecentActive" (![#ptrT] "pr"))))
+    (if: (~ (![#boolT] (struct.field_ref #Progress #"RecentActive"%go (![#ptrT] "pr"))))
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #" inactive"%go) in
@@ -489,7 +489,7 @@ Definition Progress__String : val :=
       (func_call #fmt #"Fprint"%go) "$a0" "$a1")
     else do:  #());;;
     (let: "n" := (alloc (type.zero_val #intT)) in
-    let: "$r0" := ((method_call #tracker.tracker #"Inflights'ptr" #"Count" (![#ptrT] (struct.field_ref Progress "Inflights" (![#ptrT] "pr")))) #()) in
+    let: "$r0" := ((method_call #tracker.tracker #"Inflights'ptr" #"Count" (![#ptrT] (struct.field_ref #Progress #"Inflights"%go (![#ptrT] "pr")))) #()) in
     do:  ("n" <-[#intT] "$r0");;;
     (if: int_gt (![#intT] "n") #(W64 0)
     then
@@ -498,7 +498,7 @@ Definition Progress__String : val :=
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"int"%go (![#intT] "n")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
-      (if: (method_call #tracker.tracker #"Inflights'ptr" #"Full" (![#ptrT] (struct.field_ref Progress "Inflights" (![#ptrT] "pr")))) #()
+      (if: (method_call #tracker.tracker #"Inflights'ptr" #"Full" (![#ptrT] (struct.field_ref #Progress #"Inflights"%go (![#ptrT] "pr")))) #()
       then
         do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"[full]"%go) in
@@ -568,30 +568,30 @@ Definition Config__String : val :=
     let: "buf" := (alloc (type.zero_val #strings.Builder)) in
     do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
     let: "$a1" := #"voters=%s"%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #quorum #"JointConfig" (![#quorum.JointConfig] (struct.field_ref Config "Voters" "c"))) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #quorum #"JointConfig" (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go "c"))) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
     (if: (![#(mapT uint64T (structT [
-    ]))] (struct.field_ref Config "Learners" "c")) ≠ #null
+    ]))] (struct.field_ref #Config #"Learners"%go "c")) ≠ #null
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #" learners=%s"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #quorum #"MajorityConfig" #"String" (![#(mapT uint64T (structT [
-      ]))] (struct.field_ref Config "Learners" "c"))) #())) in
+      ]))] (struct.field_ref #Config #"Learners"%go "c"))) #())) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     (if: (![#(mapT uint64T (structT [
-    ]))] (struct.field_ref Config "LearnersNext" "c")) ≠ #null
+    ]))] (struct.field_ref #Config #"LearnersNext"%go "c")) ≠ #null
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #" learners_next=%s"%go in
       let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #quorum #"MajorityConfig" #"String" (![#(mapT uint64T (structT [
-      ]))] (struct.field_ref Config "LearnersNext" "c"))) #())) in
+      ]))] (struct.field_ref #Config #"LearnersNext"%go "c"))) #())) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
-    (if: ![#boolT] (struct.field_ref Config "AutoLeave" "c")
+    (if: ![#boolT] (struct.field_ref #Config #"AutoLeave"%go "c")
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go #" autoleave"%go) in
@@ -624,7 +624,7 @@ Definition Config__Clone : val :=
       (let: "k" := (alloc (type.zero_val #uint64T)) in
       map.for_range "$range" (λ: "$key" "value",
         do:  ("k" <-[#uint64T] "$key");;;
-        let: "$r0" := (struct.make (structT [
+        let: "$r0" := (struct.make #(structT [
         ]) [{
         }]) in
         do:  (map.insert (![#(mapT uint64T (structT [
@@ -633,18 +633,18 @@ Definition Config__Clone : val :=
        ]))] "mm"))
       ) in
     do:  ("clone" <-[#funcT] "$r0");;;
-    return: (let: "$Voters" := ((let: "$ar0" := (let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref Config "Voters" (![#ptrT] "c"))) #(W64 0))) in
+    return: (let: "$Voters" := ((let: "$ar0" := (let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (![#ptrT] "c"))) #(W64 0))) in
      (![#funcT] "clone") "$a0") in
-     let: "$ar1" := (let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref Config "Voters" (![#ptrT] "c"))) #(W64 1))) in
+     let: "$ar1" := (let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (![#ptrT] "c"))) #(W64 1))) in
      (![#funcT] "clone") "$a0") in
      array.literal ["$ar0"; "$ar1"])) in
      let: "$Learners" := (let: "$a0" := (![#(mapT uint64T (structT [
-     ]))] (struct.field_ref Config "Learners" (![#ptrT] "c"))) in
+     ]))] (struct.field_ref #Config #"Learners"%go (![#ptrT] "c"))) in
      (![#funcT] "clone") "$a0") in
      let: "$LearnersNext" := (let: "$a0" := (![#(mapT uint64T (structT [
-     ]))] (struct.field_ref Config "LearnersNext" (![#ptrT] "c"))) in
+     ]))] (struct.field_ref #Config #"LearnersNext"%go (![#ptrT] "c"))) in
      (![#funcT] "clone") "$a0") in
-     struct.make Config [{
+     struct.make #Config [{
        "Voters" ::= "$Voters";
        "AutoLeave" ::= type.zero_val #boolT;
        "Learners" ::= "$Learners";
@@ -675,7 +675,7 @@ Definition MakeProgressTracker : val :=
     array.literal ["$ar0"; "$ar1"])) in
     let: "$Learners" := #null in
     let: "$LearnersNext" := #null in
-    struct.make Config [{
+    struct.make #Config [{
       "Voters" ::= "$Voters";
       "AutoLeave" ::= type.zero_val #boolT;
       "Learners" ::= "$Learners";
@@ -683,7 +683,7 @@ Definition MakeProgressTracker : val :=
     }]) in
     let: "$Votes" := ((map.literal boolT [])) in
     let: "$Progress" := ((map.literal ptrT [])) in
-    struct.make ProgressTracker [{
+    struct.make #ProgressTracker [{
       "Config" ::= "$Config";
       "Progress" ::= "$Progress";
       "Votes" ::= "$Votes";
@@ -699,14 +699,14 @@ Definition MakeProgressTracker : val :=
 Definition ProgressTracker__ConfState : val :=
   rec: "ProgressTracker__ConfState" "p" <> :=
     exception_do (let: "p" := (alloc "p") in
-    return: (let: "$Voters" := ((method_call #quorum #"MajorityConfig" #"Slice" (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p")))) #(W64 0)))) #()) in
-     let: "$VotersOutgoing" := ((method_call #quorum #"MajorityConfig" #"Slice" (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p")))) #(W64 1)))) #()) in
+    return: (let: "$Voters" := ((method_call #quorum #"MajorityConfig" #"Slice" (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) #(W64 0)))) #()) in
+     let: "$VotersOutgoing" := ((method_call #quorum #"MajorityConfig" #"Slice" (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) #(W64 1)))) #()) in
      let: "$Learners" := ((method_call #quorum #"MajorityConfig" #"Slice" (![#(mapT uint64T (structT [
-     ]))] (struct.field_ref Config "Learners" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p"))))) #()) in
+     ]))] (struct.field_ref #Config #"Learners"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) #()) in
      let: "$LearnersNext" := ((method_call #quorum #"MajorityConfig" #"Slice" (![#(mapT uint64T (structT [
-     ]))] (struct.field_ref Config "LearnersNext" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p"))))) #()) in
-     let: "$AutoLeave" := (![#boolT] (struct.field_ref Config "AutoLeave" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p")))) in
-     struct.make raftpb.ConfState [{
+     ]))] (struct.field_ref #Config #"LearnersNext"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) #()) in
+     let: "$AutoLeave" := (![#boolT] (struct.field_ref #Config #"AutoLeave"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) in
+     struct.make #raftpb.ConfState [{
        "Voters" ::= "$Voters";
        "Learners" ::= "$Learners";
        "VotersOutgoing" ::= "$VotersOutgoing";
@@ -721,8 +721,8 @@ Definition ProgressTracker__ConfState : val :=
 Definition ProgressTracker__IsSingleton : val :=
   rec: "ProgressTracker__IsSingleton" "p" <> :=
     exception_do (let: "p" := (alloc "p") in
-    return: (((let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p")))) #(W64 0))) in
-     map.len "$a0") = #(W64 1)) && ((let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p")))) #(W64 1))) in
+    return: (((let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) #(W64 0))) in
+     map.len "$a0") = #(W64 1)) && ((let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) #(W64 1))) in
      map.len "$a0") = #(W64 0)))).
 
 Definition matchAckIndexer : go_type := mapT uint64T ptrT.
@@ -744,7 +744,7 @@ Definition matchAckIndexer__AckedIndex : val :=
     (if: (~ (![#boolT] "ok"))
     then return: (#(W64 0), #false)
     else do:  #());;;
-    return: (![#uint64T] (struct.field_ref Progress "Match" (![#ptrT] "pr")), #true)).
+    return: (![#uint64T] (struct.field_ref #Progress #"Match"%go (![#ptrT] "pr")), #true)).
 
 (* Committed returns the largest log index known to be committed based on what
    the voting members of the group have acknowledged.
@@ -753,8 +753,8 @@ Definition matchAckIndexer__AckedIndex : val :=
 Definition ProgressTracker__Committed : val :=
   rec: "ProgressTracker__Committed" "p" <> :=
     exception_do (let: "p" := (alloc "p") in
-    return: (let: "$a0" := (interface.make #tracker.tracker #"matchAckIndexer" (![#ProgressMap] (struct.field_ref ProgressTracker "Progress" (![#ptrT] "p")))) in
-     (method_call #quorum #"JointConfig" #"CommittedIndex" (![#quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p"))))) "$a0")).
+    return: (let: "$a0" := (interface.make #tracker.tracker #"matchAckIndexer" (![#ProgressMap] (struct.field_ref #ProgressTracker #"Progress"%go (![#ptrT] "p")))) in
+     (method_call #quorum #"JointConfig" #"CommittedIndex" (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) "$a0")).
 
 (* Visit invokes the supplied closure for all tracked progresses in stable order.
 
@@ -764,7 +764,7 @@ Definition ProgressTracker__Visit : val :=
     exception_do (let: "p" := (alloc "p") in
     let: "f" := (alloc "f") in
     let: "n" := (alloc (type.zero_val #intT)) in
-    let: "$r0" := (let: "$a0" := (![#ProgressMap] (struct.field_ref ProgressTracker "Progress" (![#ptrT] "p"))) in
+    let: "$r0" := (let: "$a0" := (![#ProgressMap] (struct.field_ref #ProgressTracker #"Progress"%go (![#ptrT] "p"))) in
     map.len "$a0") in
     do:  ("n" <-[#intT] "$r0");;;
     let: "sl" := (alloc (type.zero_val #(arrayT 7 uint64T))) in
@@ -777,7 +777,7 @@ Definition ProgressTracker__Visit : val :=
     else
       let: "$r0" := (slice.make2 #uint64T (![#intT] "n")) in
       do:  ("ids" <-[#sliceT] "$r0"));;;
-    let: "$range" := (![#ProgressMap] (struct.field_ref ProgressTracker "Progress" (![#ptrT] "p"))) in
+    let: "$range" := (![#ProgressMap] (struct.field_ref #ProgressTracker #"Progress"%go (![#ptrT] "p"))) in
     (let: "id" := (alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[#uint64T] "$key");;;
@@ -792,7 +792,7 @@ Definition ProgressTracker__Visit : val :=
       do:  ("id" <-[#uint64T] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![#uint64T] "id") in
-      let: "$a1" := (Fst (map.get (![#ProgressMap] (struct.field_ref ProgressTracker "Progress" (![#ptrT] "p"))) (![#uint64T] "id"))) in
+      let: "$a1" := (Fst (map.get (![#ProgressMap] (struct.field_ref #ProgressTracker #"Progress"%go (![#ptrT] "p"))) (![#uint64T] "id"))) in
       (![#funcT] "f") "$a0" "$a1")))).
 
 (* QuorumActive returns true if the quorum is active from the view of the local
@@ -808,15 +808,15 @@ Definition ProgressTracker__QuorumActive : val :=
     do:  (let: "$a0" := (λ: "id" "pr",
       exception_do (let: "pr" := (alloc "pr") in
       let: "id" := (alloc "id") in
-      (if: ![#boolT] (struct.field_ref Progress "IsLearner" (![#ptrT] "pr"))
+      (if: ![#boolT] (struct.field_ref #Progress #"IsLearner"%go (![#ptrT] "pr"))
       then return: (#())
       else do:  #());;;
-      let: "$r0" := (![#boolT] (struct.field_ref Progress "RecentActive" (![#ptrT] "pr"))) in
+      let: "$r0" := (![#boolT] (struct.field_ref #Progress #"RecentActive"%go (![#ptrT] "pr"))) in
       do:  (map.insert (![#(mapT uint64T boolT)] "votes") (![#uint64T] "id") "$r0"))
       ) in
     (method_call #tracker.tracker #"ProgressTracker'ptr" #"Visit" (![#ptrT] "p")) "$a0");;;
     return: ((let: "$a0" := (![#(mapT uint64T boolT)] "votes") in
-     (method_call #quorum #"JointConfig" #"VoteResult" (![#quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p"))))) "$a0") = quorum.VoteWon)).
+     (method_call #quorum #"JointConfig" #"VoteResult" (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) "$a0") = quorum.VoteWon)).
 
 (* VoterNodes returns a sorted slice of voters.
 
@@ -826,7 +826,7 @@ Definition ProgressTracker__VoterNodes : val :=
     exception_do (let: "p" := (alloc "p") in
     let: "m" := (alloc (type.zero_val #(mapT uint64T (structT [
     ])))) in
-    let: "$r0" := ((method_call #quorum #"JointConfig" #"IDs" (![#quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p"))))) #()) in
+    let: "$r0" := ((method_call #quorum #"JointConfig" #"IDs" (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) #()) in
     do:  ("m" <-[#(mapT uint64T (structT [
     ]))] "$r0");;;
     let: "nodes" := (alloc (type.zero_val #sliceT)) in
@@ -855,17 +855,17 @@ Definition ProgressTracker__LearnerNodes : val :=
   rec: "ProgressTracker__LearnerNodes" "p" <> :=
     exception_do (let: "p" := (alloc "p") in
     (if: (let: "$a0" := (![#(mapT uint64T (structT [
-    ]))] (struct.field_ref Config "Learners" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p")))) in
+    ]))] (struct.field_ref #Config #"Learners"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) in
     map.len "$a0") = #(W64 0)
     then return: (#slice.nil)
     else do:  #());;;
     let: "nodes" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #uint64T #(W64 0) (let: "$a0" := (![#(mapT uint64T (structT [
-    ]))] (struct.field_ref Config "Learners" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p")))) in
+    ]))] (struct.field_ref #Config #"Learners"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) in
     map.len "$a0")) in
     do:  ("nodes" <-[#sliceT] "$r0");;;
     let: "$range" := (![#(mapT uint64T (structT [
-    ]))] (struct.field_ref Config "Learners" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p")))) in
+    ]))] (struct.field_ref #Config #"Learners"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p")))) in
     (let: "id" := (alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[#uint64T] "$key");;;
@@ -885,7 +885,7 @@ Definition ProgressTracker__ResetVotes : val :=
   rec: "ProgressTracker__ResetVotes" "p" <> :=
     exception_do (let: "p" := (alloc "p") in
     let: "$r0" := ((map.literal boolT [])) in
-    do:  ((struct.field_ref ProgressTracker "Votes" (![#ptrT] "p")) <-[#(mapT uint64T boolT)] "$r0")).
+    do:  ((struct.field_ref #ProgressTracker #"Votes"%go (![#ptrT] "p")) <-[#(mapT uint64T boolT)] "$r0")).
 
 (* RecordVote records that the node with the given id voted for this Raft
    instance if v == true (and declined it otherwise).
@@ -897,7 +897,7 @@ Definition ProgressTracker__RecordVote : val :=
     let: "v" := (alloc "v") in
     let: "id" := (alloc "id") in
     let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T boolT)] (struct.field_ref ProgressTracker "Votes" (![#ptrT] "p"))) (![#uint64T] "id")) in
+    let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T boolT)] (struct.field_ref #ProgressTracker #"Votes"%go (![#ptrT] "p"))) (![#uint64T] "id")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
@@ -905,7 +905,7 @@ Definition ProgressTracker__RecordVote : val :=
     (if: (~ (![#boolT] "ok"))
     then
       let: "$r0" := (![#boolT] "v") in
-      do:  (map.insert (![#(mapT uint64T boolT)] (struct.field_ref ProgressTracker "Votes" (![#ptrT] "p"))) (![#uint64T] "id") "$r0")
+      do:  (map.insert (![#(mapT uint64T boolT)] (struct.field_ref #ProgressTracker #"Votes"%go (![#ptrT] "p"))) (![#uint64T] "id") "$r0")
     else do:  #())).
 
 (* TallyVotes returns the number of granted and rejected Votes, and whether the
@@ -918,18 +918,18 @@ Definition ProgressTracker__TallyVotes : val :=
     let: "rejected" := (alloc (type.zero_val #intT)) in
     let: "granted" := (alloc (type.zero_val #intT)) in
     let: "p" := (alloc "p") in
-    let: "$range" := (![#ProgressMap] (struct.field_ref ProgressTracker "Progress" (![#ptrT] "p"))) in
+    let: "$range" := (![#ProgressMap] (struct.field_ref #ProgressTracker #"Progress"%go (![#ptrT] "p"))) in
     (let: "pr" := (alloc (type.zero_val #uint64T)) in
     let: "id" := (alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("pr" <-[#ptrT] "$value");;;
       do:  ("id" <-[#uint64T] "$key");;;
-      (if: ![#boolT] (struct.field_ref Progress "IsLearner" (![#ptrT] "pr"))
+      (if: ![#boolT] (struct.field_ref #Progress #"IsLearner"%go (![#ptrT] "pr"))
       then continue: #()
       else do:  #());;;
       let: "voted" := (alloc (type.zero_val #boolT)) in
       let: "v" := (alloc (type.zero_val #boolT)) in
-      let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T boolT)] (struct.field_ref ProgressTracker "Votes" (![#ptrT] "p"))) (![#uint64T] "id")) in
+      let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T boolT)] (struct.field_ref #ProgressTracker #"Votes"%go (![#ptrT] "p"))) (![#uint64T] "id")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("v" <-[#boolT] "$r0");;;
@@ -941,8 +941,8 @@ Definition ProgressTracker__TallyVotes : val :=
       then do:  ("granted" <-[#intT] ((![#intT] "granted") + #(W64 1)))
       else do:  ("rejected" <-[#intT] ((![#intT] "rejected") + #(W64 1))))));;;
     let: "result" := (alloc (type.zero_val #quorum.VoteResult)) in
-    let: "$r0" := (let: "$a0" := (![#(mapT uint64T boolT)] (struct.field_ref ProgressTracker "Votes" (![#ptrT] "p"))) in
-    (method_call #quorum #"JointConfig" #"VoteResult" (![#quorum.JointConfig] (struct.field_ref Config "Voters" (struct.field_ref ProgressTracker "Config" (![#ptrT] "p"))))) "$a0") in
+    let: "$r0" := (let: "$a0" := (![#(mapT uint64T boolT)] (struct.field_ref #ProgressTracker #"Votes"%go (![#ptrT] "p"))) in
+    (method_call #quorum #"JointConfig" #"VoteResult" (![#quorum.JointConfig] (struct.field_ref #Config #"Voters"%go (struct.field_ref #ProgressTracker #"Config"%go (![#ptrT] "p"))))) "$a0") in
     do:  ("result" <-[#quorum.VoteResult] "$r0");;;
     return: (![#intT] "granted", ![#intT] "rejected", ![#quorum.VoteResult] "result")).
 
@@ -957,11 +957,11 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("inflight"%
                  )%V)]); ("Config"%go, [("String"%go, Config__String)]); ("Config'ptr"%go, [("Clone"%go, Config__Clone); ("String"%go, (λ: "$recvAddr",
                  method_call #tracker.tracker #"Config" #"String" (![#Config] "$recvAddr")
                  )%V)]); ("ProgressTracker"%go, [("String"%go, (λ: "$recv",
-                 method_call #tracker.tracker #"Config" #"String" "String" #() (struct.field_get ProgressTracker "Config" "$recv")
+                 method_call #tracker.tracker #"Config" #"String" "String" #() (struct.field_get #ProgressTracker "Config" "$recv")
                  )%V)]); ("ProgressTracker'ptr"%go, [("Clone"%go, (λ: "$recvAddr",
-                 method_call #tracker.tracker #"Config'ptr" #"Clone" (struct.field_ref ProgressTracker "Config" "$recvAddr")
+                 method_call #tracker.tracker #"Config'ptr" #"Clone" (struct.field_ref #ProgressTracker #"Config"%go "$recvAddr")
                  )%V); ("Committed"%go, ProgressTracker__Committed); ("ConfState"%go, ProgressTracker__ConfState); ("IsSingleton"%go, ProgressTracker__IsSingleton); ("LearnerNodes"%go, ProgressTracker__LearnerNodes); ("QuorumActive"%go, ProgressTracker__QuorumActive); ("RecordVote"%go, ProgressTracker__RecordVote); ("ResetVotes"%go, ProgressTracker__ResetVotes); ("String"%go, (λ: "$recvAddr",
-                 method_call #tracker.tracker #"Config" #"String" (![#Config] (struct.field_ref ProgressTracker "Config" "$recvAddr"))
+                 method_call #tracker.tracker #"Config" #"String" (![#Config] (struct.field_ref #ProgressTracker #"Config"%go "$recvAddr"))
                  )%V); ("TallyVotes"%go, ProgressTracker__TallyVotes); ("Visit"%go, ProgressTracker__Visit); ("VoterNodes"%go, ProgressTracker__VoterNodes)]); ("matchAckIndexer"%go, [("AckedIndex"%go, matchAckIndexer__AckedIndex)]); ("matchAckIndexer'ptr"%go, [("AckedIndex"%go, (λ: "$recvAddr",
                  method_call #tracker.tracker #"matchAckIndexer" #"AckedIndex" (![#matchAckIndexer] "$recvAddr")
                  )%V)])].

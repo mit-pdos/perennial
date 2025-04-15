@@ -75,7 +75,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ResponseHeader `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ClusterId' MemberId' Revision' RaftTerm' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
-    (struct.make etcdserverpb.ResponseHeader (alist_val [
+    (struct.make #etcdserverpb.ResponseHeader (alist_val [
       "ClusterId" ::= #ClusterId';
       "MemberId" ::= #MemberId';
       "Revision" ::= #Revision';
@@ -157,7 +157,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_RangeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Kvs' More' Count' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
-    (struct.make etcdserverpb.RangeResponse (alist_val [
+    (struct.make #etcdserverpb.RangeResponse (alist_val [
       "Header" ::= #Header';
       "Kvs" ::= #Kvs';
       "More" ::= #More';
@@ -231,7 +231,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_PutResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
-    (struct.make etcdserverpb.PutResponse (alist_val [
+    (struct.make #etcdserverpb.PutResponse (alist_val [
       "Header" ::= #Header';
       "PrevKv" ::= #PrevKv';
       "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
@@ -305,7 +305,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_DeleteRangeResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Deleted' PrevKvs' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
-    (struct.make etcdserverpb.DeleteRangeResponse (alist_val [
+    (struct.make #etcdserverpb.DeleteRangeResponse (alist_val [
       "Header" ::= #Header';
       "Deleted" ::= #Deleted';
       "PrevKvs" ::= #PrevKvs';
@@ -380,7 +380,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ResponseOp `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Response' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
-    (struct.make etcdserverpb.ResponseOp (alist_val [
+    (struct.make #etcdserverpb.ResponseOp (alist_val [
       "Response" ::= #Response';
       "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
       "XXX_unrecognized" ::= #XXX_unrecognized';
@@ -432,7 +432,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ResponseOp_ResponseRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseRange':
   PureWp True
-    (struct.make etcdserverpb.ResponseOp_ResponseRange (alist_val [
+    (struct.make #etcdserverpb.ResponseOp_ResponseRange (alist_val [
       "ResponseRange" ::= #ResponseRange'
     ]))%struct
     #(ResponseOp_ResponseRange.mk ResponseRange').
@@ -478,7 +478,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ResponseOp_ResponsePut `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponsePut':
   PureWp True
-    (struct.make etcdserverpb.ResponseOp_ResponsePut (alist_val [
+    (struct.make #etcdserverpb.ResponseOp_ResponsePut (alist_val [
       "ResponsePut" ::= #ResponsePut'
     ]))%struct
     #(ResponseOp_ResponsePut.mk ResponsePut').
@@ -524,7 +524,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ResponseOp_ResponseDeleteRange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseDeleteRange':
   PureWp True
-    (struct.make etcdserverpb.ResponseOp_ResponseDeleteRange (alist_val [
+    (struct.make #etcdserverpb.ResponseOp_ResponseDeleteRange (alist_val [
       "ResponseDeleteRange" ::= #ResponseDeleteRange'
     ]))%struct
     #(ResponseOp_ResponseDeleteRange.mk ResponseDeleteRange').
@@ -570,7 +570,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ResponseOp_ResponseTxn `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ResponseTxn':
   PureWp True
-    (struct.make etcdserverpb.ResponseOp_ResponseTxn (alist_val [
+    (struct.make #etcdserverpb.ResponseOp_ResponseTxn (alist_val [
       "ResponseTxn" ::= #ResponseTxn'
     ]))%struct
     #(ResponseOp_ResponseTxn.mk ResponseTxn').
@@ -651,7 +651,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Compare `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Result' Target' Key' TargetUnion' RangeEnd' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
-    (struct.make etcdserverpb.Compare (alist_val [
+    (struct.make #etcdserverpb.Compare (alist_val [
       "Result" ::= #Result';
       "Target" ::= #Target';
       "Key" ::= #Key';
@@ -711,7 +711,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Compare_Version `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Version':
   PureWp True
-    (struct.make etcdserverpb.Compare_Version (alist_val [
+    (struct.make #etcdserverpb.Compare_Version (alist_val [
       "Version" ::= #Version'
     ]))%struct
     #(Compare_Version.mk Version').
@@ -757,7 +757,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Compare_CreateRevision `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} CreateRevision':
   PureWp True
-    (struct.make etcdserverpb.Compare_CreateRevision (alist_val [
+    (struct.make #etcdserverpb.Compare_CreateRevision (alist_val [
       "CreateRevision" ::= #CreateRevision'
     ]))%struct
     #(Compare_CreateRevision.mk CreateRevision').
@@ -803,7 +803,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Compare_ModRevision `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ModRevision':
   PureWp True
-    (struct.make etcdserverpb.Compare_ModRevision (alist_val [
+    (struct.make #etcdserverpb.Compare_ModRevision (alist_val [
       "ModRevision" ::= #ModRevision'
     ]))%struct
     #(Compare_ModRevision.mk ModRevision').
@@ -849,7 +849,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Compare_Value `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Value':
   PureWp True
-    (struct.make etcdserverpb.Compare_Value (alist_val [
+    (struct.make #etcdserverpb.Compare_Value (alist_val [
       "Value" ::= #Value'
     ]))%struct
     #(Compare_Value.mk Value').
@@ -895,7 +895,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Compare_Lease `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Lease':
   PureWp True
-    (struct.make etcdserverpb.Compare_Lease (alist_val [
+    (struct.make #etcdserverpb.Compare_Lease (alist_val [
       "Lease" ::= #Lease'
     ]))%struct
     #(Compare_Lease.mk Lease').
@@ -961,7 +961,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_TxnResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Header' Succeeded' Responses' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
-    (struct.make etcdserverpb.TxnResponse (alist_val [
+    (struct.make #etcdserverpb.TxnResponse (alist_val [
       "Header" ::= #Header';
       "Succeeded" ::= #Succeeded';
       "Responses" ::= #Responses';

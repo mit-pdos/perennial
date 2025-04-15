@@ -156,7 +156,7 @@ Definition newJoinHandle : val :=
     return: (alloc (let: "$mu" := (![#ptrT] "mu") in
      let: "$done" := #false in
      let: "$cond" := (![#ptrT] "cond") in
-     struct.make JoinHandle [{
+     struct.make #JoinHandle [{
        "mu" ::= "$mu";
        "done" ::= "$done";
        "cond" ::= "$cond"
@@ -166,11 +166,11 @@ Definition newJoinHandle : val :=
 Definition JoinHandle__finish : val :=
   rec: "JoinHandle__finish" "h" <> :=
     exception_do (let: "h" := (alloc "h") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref JoinHandle "mu" (![#ptrT] "h")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
     let: "$r0" := #true in
-    do:  ((struct.field_ref JoinHandle "done" (![#ptrT] "h")) <-[#boolT] "$r0");;;
-    do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref JoinHandle "cond" (![#ptrT] "h")))) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref JoinHandle "mu" (![#ptrT] "h")))) #())).
+    do:  ((struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h")) <-[#boolT] "$r0");;;
+    do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #())).
 
 (* Spawn runs `f` in a parallel goroutine and returns a handle to wait for
    it to finish.
@@ -198,16 +198,16 @@ Definition Spawn : val :=
 Definition JoinHandle__Join : val :=
   rec: "JoinHandle__Join" "h" <> :=
     exception_do (let: "h" := (alloc "h") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref JoinHandle "mu" (![#ptrT] "h")))) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![#boolT] (struct.field_ref JoinHandle "done" (![#ptrT] "h"))
+      (if: ![#boolT] (struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h"))
       then
         let: "$r0" := #false in
-        do:  ((struct.field_ref JoinHandle "done" (![#ptrT] "h")) <-[#boolT] "$r0");;;
+        do:  ((struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h")) <-[#boolT] "$r0");;;
         break: #()
       else do:  #());;;
-      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref JoinHandle "cond" (![#ptrT] "h")))) #()));;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref JoinHandle "mu" (![#ptrT] "h")))) #())).
+      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #()));;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #())).
 
 (* Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
 

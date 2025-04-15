@@ -65,7 +65,7 @@ Definition freeRange : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "sz")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (struct.make unit [{
+      let: "$r0" := (struct.make #unit [{
       }]) in
       do:  (map.insert (![#(mapT uint64T unit)] "m") (![#uint64T] "i") "$r0")));;;
     return: (![#(mapT uint64T unit)] "m")).
@@ -453,12 +453,12 @@ Definition Enc__consume : val :=
     exception_do (let: "e" := (alloc "e") in
     let: "n" := (alloc "n") in
     let: "b" := (alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Enc "p" (![#ptrT] "e"))) in
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Enc #"p"%go (![#ptrT] "e"))) in
     slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n")) in
     do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Enc "p" (![#ptrT] "e"))) in
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Enc #"p"%go (![#ptrT] "e"))) in
     slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
-    do:  ((struct.field_ref Enc "p" (![#ptrT] "e")) <-[#sliceT] "$r0");;;
+    do:  ((struct.field_ref #Enc #"p"%go (![#ptrT] "e")) <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
 Definition Dec : go_type := structT [
@@ -471,12 +471,12 @@ Definition Dec__consume : val :=
     exception_do (let: "d" := (alloc "d") in
     let: "n" := (alloc "n") in
     let: "b" := (alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Dec "p" (![#ptrT] "d"))) in
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Dec #"p"%go (![#ptrT] "d"))) in
     slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n")) in
     do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Dec "p" (![#ptrT] "d"))) in
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Dec #"p"%go (![#ptrT] "d"))) in
     slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
-    do:  ((struct.field_ref Dec "p" (![#ptrT] "d")) <-[#sliceT] "$r0");;;
+    do:  ((struct.field_ref #Dec #"p"%go (![#ptrT] "d")) <-[#sliceT] "$r0");;;
     return: (![#sliceT] "b")).
 
 (* go: encoding.go:26:6 *)
@@ -488,13 +488,13 @@ Definition roundtripEncDec32 : val :=
     do:  ("r" <-[#sliceT] "$r0");;;
     let: "e" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
-    struct.make Enc [{
+    struct.make #Enc [{
       "p" ::= "$p"
     }])) in
     do:  ("e" <-[#ptrT] "$r0");;;
     let: "d" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
-    struct.make Dec [{
+    struct.make #Dec [{
       "p" ::= "$p"
     }])) in
     do:  ("d" <-[#ptrT] "$r0");;;
@@ -515,13 +515,13 @@ Definition roundtripEncDec64 : val :=
     do:  ("r" <-[#sliceT] "$r0");;;
     let: "e" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
-    struct.make Enc [{
+    struct.make #Enc [{
       "p" ::= "$p"
     }])) in
     do:  ("e" <-[#ptrT] "$r0");;;
     let: "d" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
-    struct.make Dec [{
+    struct.make #Dec [{
       "p" ::= "$p"
     }])) in
     do:  ("d" <-[#ptrT] "$r0");;;
@@ -662,15 +662,15 @@ Definition Editor__AdvanceReturn : val :=
     exception_do (let: "e" := (alloc "e") in
     let: "next" := (alloc "next") in
     let: "tmp" := (alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (struct.field_ref Editor "next_val" (![#ptrT] "e"))) in
+    let: "$r0" := (![#uint64T] (struct.field_ref #Editor #"next_val"%go (![#ptrT] "e"))) in
     do:  ("tmp" <-[#uint64T] "$r0");;;
     let: "$r0" := (![#uint64T] "tmp") in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref Editor "s" (![#ptrT] "e"))) #(W64 0)) <-[#uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref #Editor #"s"%go (![#ptrT] "e"))) #(W64 0)) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#uint64T] "next") in
-    do:  ((struct.field_ref Editor "next_val" (![#ptrT] "e")) <-[#uint64T] "$r0");;;
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref Editor "s" (![#ptrT] "e"))) in
+    do:  ((struct.field_ref #Editor #"next_val"%go (![#ptrT] "e")) <-[#uint64T] "$r0");;;
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Editor #"s"%go (![#ptrT] "e"))) in
     slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
-    do:  ((struct.field_ref Editor "s" (![#ptrT] "e")) <-[#sliceT] "$r0");;;
+    do:  ((struct.field_ref #Editor #"s"%go (![#ptrT] "e")) <-[#sliceT] "$r0");;;
     return: (![#uint64T] "tmp")).
 
 (* we call this function with side-effectful function calls as arguments,
@@ -702,7 +702,7 @@ Definition failing_testFunctionOrdering : val :=
     let: "$r0" := (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
     slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 1) in
-    struct.make Editor [{
+    struct.make #Editor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }]) in
@@ -711,7 +711,7 @@ Definition failing_testFunctionOrdering : val :=
     let: "$r0" := (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
     slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 101) in
-    struct.make Editor [{
+    struct.make #Editor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }]) in
@@ -746,7 +746,7 @@ Definition failing_testFunctionOrdering : val :=
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
     let: "$y" := (let: "$a0" := #(W64 105) in
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
-    struct.make Pair [{
+    struct.make #Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
@@ -759,7 +759,7 @@ Definition failing_testFunctionOrdering : val :=
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
     let: "$x" := (let: "$a0" := #(W64 106) in
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
-    struct.make Pair [{
+    struct.make #Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
@@ -767,7 +767,7 @@ Definition failing_testFunctionOrdering : val :=
     (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 4))) ≠ #(W64 105)
     then return: (#false)
     else do:  #());;;
-    return: (((![#uint64T] (struct.field_ref Pair "x" "p")) + (![#uint64T] (struct.field_ref Pair "x" "q"))) = #(W64 109))).
+    return: (((![#uint64T] (struct.field_ref #Pair #"x"%go "p")) + (![#uint64T] (struct.field_ref #Pair #"x"%go "q"))) = #(W64 109))).
 
 (* go: function_ordering.go:74:6 *)
 Definition storeAndReturn : val :=
@@ -875,20 +875,20 @@ Definition SquareStruct : go_type := structT [
 Definition SquareStruct__Square : val :=
   rec: "SquareStruct__Square" "t" <> :=
     exception_do (let: "t" := (alloc "t") in
-    return: ((![#uint64T] (struct.field_ref SquareStruct "Side" "t")) * (![#uint64T] (struct.field_ref SquareStruct "Side" "t")))).
+    return: ((![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")) * (![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")))).
 
 (* go: interfaces.go:32:23 *)
 Definition SquareStruct__Volume : val :=
   rec: "SquareStruct__Volume" "t" <> :=
     exception_do (let: "t" := (alloc "t") in
-    return: (((![#uint64T] (struct.field_ref SquareStruct "Side" "t")) * (![#uint64T] (struct.field_ref SquareStruct "Side" "t"))) * (![#uint64T] (struct.field_ref SquareStruct "Side" "t")))).
+    return: (((![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")) * (![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t"))) * (![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")))).
 
 (* go: interfaces.go:40:6 *)
 Definition testBasicInterface : val :=
   rec: "testBasicInterface" <> :=
     exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 2) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
@@ -900,7 +900,7 @@ Definition testAssignInterface : val :=
   rec: "testAssignInterface" <> :=
     exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
@@ -915,7 +915,7 @@ Definition testMultipleInterface : val :=
   rec: "testMultipleInterface" <> :=
     exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
@@ -934,7 +934,7 @@ Definition testBinaryExprInterface : val :=
   rec: "testBinaryExprInterface" <> :=
     exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
@@ -955,7 +955,7 @@ Definition testIfStmtInterface : val :=
   rec: "testIfStmtInterface" <> :=
     exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
@@ -1023,13 +1023,13 @@ Definition LoopStruct__forLoopWait : val :=
     let: "i" := (alloc "i") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "nxt" := (alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (![#ptrT] (struct.field_ref LoopStruct "loopNext" "ls")) in
+      let: "$r0" := (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls")) in
       do:  ("nxt" <-[#ptrT] "$r0");;;
       (if: (![#uint64T] "i") < (![#uint64T] (![#ptrT] "nxt"))
       then break: #()
       else do:  #());;;
-      let: "$r0" := ((![#uint64T] (![#ptrT] (struct.field_ref LoopStruct "loopNext" "ls"))) + #(W64 1)) in
-      do:  ((![#ptrT] (struct.field_ref LoopStruct "loopNext" "ls")) <-[#uint64T] "$r0");;;
+      let: "$r0" := ((![#uint64T] (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls"))) + #(W64 1)) in
+      do:  ((![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls")) <-[#uint64T] "$r0");;;
       continue: #())).
 
 (* tests
@@ -1052,13 +1052,13 @@ Definition testForLoopWait : val :=
   rec: "testForLoopWait" <> :=
     exception_do (let: "ls" := (alloc (type.zero_val #LoopStruct)) in
     let: "$r0" := (let: "$loopNext" := (alloc (type.zero_val #uint64T)) in
-    struct.make LoopStruct [{
+    struct.make #LoopStruct [{
       "loopNext" ::= "$loopNext"
     }]) in
     do:  ("ls" <-[#LoopStruct] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
     (method_call #semantics.semantics #"LoopStruct" #"forLoopWait" (![#LoopStruct] "ls")) "$a0");;;
-    return: ((![#uint64T] (![#ptrT] (struct.field_ref LoopStruct "loopNext" "ls"))) = #(W64 4))).
+    return: ((![#uint64T] (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls"))) = #(W64 4))).
 
 (* go: loops.go:59:6 *)
 Definition testBreakFromLoopWithContinue : val :=
@@ -1776,15 +1776,15 @@ Definition BoolTest : go_type := structT [
 Definition CheckTrue : val :=
   rec: "CheckTrue" "b" :=
     exception_do (let: "b" := (alloc "b") in
-    do:  ((struct.field_ref BoolTest "tc" (![#ptrT] "b")) <-[#uint64T] ((![#uint64T] (struct.field_ref BoolTest "tc" (![#ptrT] "b"))) + #(W64 1)));;;
-    return: (![#boolT] (struct.field_ref BoolTest "t" (![#ptrT] "b")))).
+    do:  ((struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b")) <-[#uint64T] ((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) + #(W64 1)));;;
+    return: (![#boolT] (struct.field_ref #BoolTest #"t"%go (![#ptrT] "b")))).
 
 (* go: shortcircuiting.go:16:6 *)
 Definition CheckFalse : val :=
   rec: "CheckFalse" "b" :=
     exception_do (let: "b" := (alloc "b") in
-    do:  ((struct.field_ref BoolTest "fc" (![#ptrT] "b")) <-[#uint64T] ((![#uint64T] (struct.field_ref BoolTest "fc" (![#ptrT] "b"))) + #(W64 1)));;;
-    return: (![#boolT] (struct.field_ref BoolTest "f" (![#ptrT] "b")))).
+    do:  ((struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b")) <-[#uint64T] ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) + #(W64 1)));;;
+    return: (![#boolT] (struct.field_ref #BoolTest #"f"%go (![#ptrT] "b")))).
 
 (* tests
 
@@ -1796,7 +1796,7 @@ Definition testShortcircuitAndTF : val :=
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make BoolTest [{
+    struct.make #BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
@@ -1808,7 +1808,7 @@ Definition testShortcircuitAndTF : val :=
     (func_call #semantics.semantics #"CheckFalse"%go) "$a0")
     then return: (#false)
     else do:  #());;;
-    return: (((![#uint64T] (struct.field_ref BoolTest "tc" (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref BoolTest "fc" (![#ptrT] "b"))) = #(W64 1)))).
+    return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 1)))).
 
 (* go: shortcircuiting.go:31:6 *)
 Definition testShortcircuitAndFT : val :=
@@ -1818,7 +1818,7 @@ Definition testShortcircuitAndFT : val :=
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make BoolTest [{
+    struct.make #BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
@@ -1830,7 +1830,7 @@ Definition testShortcircuitAndFT : val :=
     (func_call #semantics.semantics #"CheckTrue"%go) "$a0")
     then return: (#false)
     else do:  #());;;
-    return: (((![#uint64T] (struct.field_ref BoolTest "tc" (![#ptrT] "b"))) = #(W64 0)) && ((![#uint64T] (struct.field_ref BoolTest "fc" (![#ptrT] "b"))) = #(W64 1)))).
+    return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 0)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 1)))).
 
 (* go: shortcircuiting.go:40:6 *)
 Definition testShortcircuitOrTF : val :=
@@ -1840,7 +1840,7 @@ Definition testShortcircuitOrTF : val :=
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make BoolTest [{
+    struct.make #BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
@@ -1850,7 +1850,7 @@ Definition testShortcircuitOrTF : val :=
     (if: (let: "$a0" := (![#ptrT] "b") in
     (func_call #semantics.semantics #"CheckTrue"%go) "$a0") || (let: "$a0" := (![#ptrT] "b") in
     (func_call #semantics.semantics #"CheckFalse"%go) "$a0")
-    then return: (((![#uint64T] (struct.field_ref BoolTest "tc" (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref BoolTest "fc" (![#ptrT] "b"))) = #(W64 0)))
+    then return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 0)))
     else do:  #());;;
     return: (#false)).
 
@@ -1862,7 +1862,7 @@ Definition testShortcircuitOrFT : val :=
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make BoolTest [{
+    struct.make #BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
@@ -1872,7 +1872,7 @@ Definition testShortcircuitOrFT : val :=
     (if: (let: "$a0" := (![#ptrT] "b") in
     (func_call #semantics.semantics #"CheckFalse"%go) "$a0") || (let: "$a0" := (![#ptrT] "b") in
     (func_call #semantics.semantics #"CheckTrue"%go) "$a0")
-    then return: (((![#uint64T] (struct.field_ref BoolTest "tc" (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref BoolTest "fc" (![#ptrT] "b"))) = #(W64 1)))
+    then return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 1)))
     else do:  #());;;
     return: (#false)).
 
@@ -1888,13 +1888,13 @@ Definition ArrayEditor__Advance : val :=
     let: "next" := (alloc "next") in
     let: "arr" := (alloc "arr") in
     do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + #(W64 1)));;;
-    let: "$r0" := (![#uint64T] (struct.field_ref ArrayEditor "next_val" (![#ptrT] "ae"))) in
-    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref ArrayEditor "s" (![#ptrT] "ae"))) #(W64 0)) <-[#uint64T] "$r0");;;
+    let: "$r0" := (![#uint64T] (struct.field_ref #ArrayEditor #"next_val"%go (![#ptrT] "ae"))) in
+    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae"))) #(W64 0)) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#uint64T] "next") in
-    do:  ((struct.field_ref ArrayEditor "next_val" (![#ptrT] "ae")) <-[#uint64T] "$r0");;;
-    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref ArrayEditor "s" (![#ptrT] "ae"))) in
+    do:  ((struct.field_ref #ArrayEditor #"next_val"%go (![#ptrT] "ae")) <-[#uint64T] "$r0");;;
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae"))) in
     slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
-    do:  ((struct.field_ref ArrayEditor "s" (![#ptrT] "ae")) <-[#sliceT] "$r0")).
+    do:  ((struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae")) <-[#sliceT] "$r0")).
 
 (* tests
 
@@ -1998,7 +1998,7 @@ Definition testOverwriteArray : val :=
     let: "$r0" := (alloc (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
     slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 1) in
-    struct.make ArrayEditor [{
+    struct.make #ArrayEditor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }])) in
@@ -2007,7 +2007,7 @@ Definition testOverwriteArray : val :=
     let: "$r0" := (alloc (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
     slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
     let: "$next_val" := #(W64 102) in
-    struct.make ArrayEditor [{
+    struct.make #ArrayEditor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }])) in
@@ -2105,15 +2105,15 @@ Definition Bar__mutate : val :=
   rec: "Bar__mutate" "bar" <> :=
     exception_do (let: "bar" := (alloc "bar") in
     let: "$r0" := #(W64 2) in
-    do:  ((struct.field_ref Bar "a" (![#ptrT] "bar")) <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref #Bar #"a"%go (![#ptrT] "bar")) <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  ((struct.field_ref Bar "b" (![#ptrT] "bar")) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #Bar #"b"%go (![#ptrT] "bar")) <-[#uint64T] "$r0")).
 
 (* go: struct_pointers.go:19:17 *)
 Definition Foo__mutateBar : val :=
   rec: "Foo__mutateBar" "foo" <> :=
     exception_do (let: "foo" := (alloc "foo") in
-    do:  ((method_call #semantics.semantics #"Bar'ptr" #"mutate" (struct.field_ref Foo "bar" (![#ptrT] "foo"))) #())).
+    do:  ((method_call #semantics.semantics #"Bar'ptr" #"mutate" (struct.field_ref #Foo #"bar"%go (![#ptrT] "foo"))) #())).
 
 (* go: struct_pointers.go:23:6 *)
 Definition testFooBarMutation : val :=
@@ -2121,16 +2121,16 @@ Definition testFooBarMutation : val :=
     exception_do (let: "x" := (alloc (type.zero_val #Foo)) in
     let: "$r0" := (let: "$bar" := (let: "$a" := #(W64 0) in
     let: "$b" := #(W64 0) in
-    struct.make Bar [{
+    struct.make #Bar [{
       "a" ::= "$a";
       "b" ::= "$b"
     }]) in
-    struct.make Foo [{
+    struct.make #Foo [{
       "bar" ::= "$bar"
     }]) in
     do:  ("x" <-[#Foo] "$r0");;;
     do:  ((method_call #semantics.semantics #"Foo'ptr" #"mutateBar" "x") #());;;
-    return: ((![#uint64T] (struct.field_ref Bar "a" (struct.field_ref Foo "bar" "x"))) = #(W64 2))).
+    return: ((![#uint64T] (struct.field_ref #Bar #"a"%go (struct.field_ref #Foo #"bar"%go "x"))) = #(W64 2))).
 
 Definition TwoInts : go_type := structT [
   "x" :: uint64T;
@@ -2149,12 +2149,12 @@ Definition NewS : val :=
     exception_do (return: (alloc (let: "$a" := #(W64 2) in
      let: "$b" := (let: "$x" := #(W64 1) in
      let: "$y" := #(W64 2) in
-     struct.make TwoInts [{
+     struct.make #TwoInts [{
        "x" ::= "$x";
        "y" ::= "$y"
      }]) in
      let: "$c" := #true in
-     struct.make S [{
+     struct.make #S [{
        "a" ::= "$a";
        "b" ::= "$b";
        "c" ::= "$c"
@@ -2164,19 +2164,19 @@ Definition NewS : val :=
 Definition S__readA : val :=
   rec: "S__readA" "s" <> :=
     exception_do (let: "s" := (alloc "s") in
-    return: (![#uint64T] (struct.field_ref S "a" (![#ptrT] "s")))).
+    return: (![#uint64T] (struct.field_ref #S #"a"%go (![#ptrT] "s")))).
 
 (* go: structs.go:26:13 *)
 Definition S__readB : val :=
   rec: "S__readB" "s" <> :=
     exception_do (let: "s" := (alloc "s") in
-    return: (![#TwoInts] (struct.field_ref S "b" (![#ptrT] "s")))).
+    return: (![#TwoInts] (struct.field_ref #S #"b"%go (![#ptrT] "s")))).
 
 (* go: structs.go:30:12 *)
 Definition S__readBVal : val :=
   rec: "S__readBVal" "s" <> :=
     exception_do (let: "s" := (alloc "s") in
-    return: (![#TwoInts] (struct.field_ref S "b" "s"))).
+    return: (![#TwoInts] (struct.field_ref #S #"b"%go "s"))).
 
 (* go: structs.go:34:13 *)
 Definition S__updateBValX : val :=
@@ -2184,14 +2184,14 @@ Definition S__updateBValX : val :=
     exception_do (let: "s" := (alloc "s") in
     let: "i" := (alloc "i") in
     let: "$r0" := (![#uint64T] "i") in
-    do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![#ptrT] "s"))) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "s"))) <-[#uint64T] "$r0")).
 
 (* go: structs.go:38:13 *)
 Definition S__negateC : val :=
   rec: "S__negateC" "s" <> :=
     exception_do (let: "s" := (alloc "s") in
-    let: "$r0" := (~ (![#boolT] (struct.field_ref S "c" (![#ptrT] "s")))) in
-    do:  ((struct.field_ref S "c" (![#ptrT] "s")) <-[#boolT] "$r0")).
+    let: "$r0" := (~ (![#boolT] (struct.field_ref #S #"c"%go (![#ptrT] "s")))) in
+    do:  ((struct.field_ref #S #"c"%go (![#ptrT] "s")) <-[#boolT] "$r0")).
 
 (* go: structs.go:42:6 *)
 Definition testStructUpdates : val :=
@@ -2207,26 +2207,26 @@ Definition testStructUpdates : val :=
     let: "b1" := (alloc (type.zero_val #TwoInts)) in
     let: "$r0" := ((method_call #semantics.semantics #"S'ptr" #"readB" (![#ptrT] "ns")) #()) in
     do:  ("b1" <-[#TwoInts] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref TwoInts "x" "b1")) = #(W64 1))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go "b1")) = #(W64 1))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     do:  ((method_call #semantics.semantics #"S'ptr" #"negateC" (![#ptrT] "ns")) #());;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#boolT] (struct.field_ref S "c" (![#ptrT] "ns"))) = #false)) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#boolT] (struct.field_ref #S #"c"%go (![#ptrT] "ns"))) = #false)) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  ((struct.field_ref TwoInts "x" "b1") <-[#uint64T] "$r0");;;
+    do:  ((struct.field_ref #TwoInts #"x"%go "b1") <-[#uint64T] "$r0");;;
     let: "b2" := (alloc (type.zero_val #TwoInts)) in
     let: "$r0" := ((method_call #semantics.semantics #"S'ptr" #"readB" (![#ptrT] "ns")) #()) in
     do:  ("b2" <-[#TwoInts] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref TwoInts "x" "b2")) = #(W64 1))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go "b2")) = #(W64 1))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "b3" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (struct.field_ref S "b" (![#ptrT] "ns")) in
+    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
     do:  ("b3" <-[#ptrT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref TwoInts "x" (![#ptrT] "b3"))) = #(W64 1))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (![#ptrT] "b3"))) = #(W64 1))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     do:  (let: "$a0" := #(W64 4) in
     (method_call #semantics.semantics #"S'ptr" #"updateBValX" (![#ptrT] "ns")) "$a0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((struct.field_get TwoInts "x" ((method_call #semantics.semantics #"S'ptr" #"readBVal" (![#ptrT] "ns")) #())) = #(W64 4))) in
+    let: "$r0" := ((![#boolT] "ok") && ((struct.field_get #TwoInts "x" ((method_call #semantics.semantics #"S'ptr" #"readBVal" (![#ptrT] "ns")) #())) = #(W64 4))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
 
@@ -2240,33 +2240,33 @@ Definition testNestedStructUpdates : val :=
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
     do:  ("ns" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" (![#ptrT] "ns")))) = #(W64 5))) in
+    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns")))) = #(W64 5))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
     do:  ("ns" <-[#ptrT] "$r0");;;
     let: "p" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (struct.field_ref S "b" (![#ptrT] "ns")) in
+    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
     do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref TwoInts "x" (![#ptrT] "p")) <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" (![#ptrT] "ns")))) = #(W64 5))) in
+    do:  ((struct.field_ref #TwoInts #"x"%go (![#ptrT] "p")) <-[#uint64T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns")))) = #(W64 5))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
     do:  ("ns" <-[#ptrT] "$r0");;;
-    let: "$r0" := (struct.field_ref S "b" (![#ptrT] "ns")) in
+    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
     do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref TwoInts "x" (![#ptrT] "p"))) = #(W64 5))) in
+    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (![#ptrT] "p"))) = #(W64 5))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
     do:  ("ns" <-[#ptrT] "$r0");;;
-    let: "$r0" := (struct.field_ref S "b" (![#ptrT] "ns")) in
+    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
     do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref TwoInts "x" (![#ptrT] "p"))) = #(W64 5))) in
+    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (![#ptrT] "p"))) = #(W64 5))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
 
@@ -2281,7 +2281,7 @@ Definition testStructConstructions : val :=
     let: "p3" := (alloc (type.zero_val #TwoInts)) in
     let: "$r0" := (let: "$y" := #(W64 0) in
     let: "$x" := #(W64 0) in
-    struct.make TwoInts [{
+    struct.make #TwoInts [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
@@ -2289,7 +2289,7 @@ Definition testStructConstructions : val :=
     let: "p4" := (alloc (type.zero_val #TwoInts)) in
     let: "$r0" := (let: "$x" := #(W64 0) in
     let: "$y" := #(W64 0) in
-    struct.make TwoInts [{
+    struct.make #TwoInts [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
@@ -2316,24 +2316,24 @@ Definition testIncompleteStruct : val :=
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "p1" := (alloc (type.zero_val #TwoInts)) in
     let: "$r0" := (let: "$x" := #(W64 0) in
-    struct.make TwoInts [{
+    struct.make #TwoInts [{
       "x" ::= "$x";
       "y" ::= type.zero_val #uint64T
     }]) in
     do:  ("p1" <-[#TwoInts] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref TwoInts "y" "p1")) = #(W64 0))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"y"%go "p1")) = #(W64 0))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "p2" := (alloc (type.zero_val #S)) in
     let: "$r0" := (let: "$a" := #(W64 2) in
-    struct.make S [{
+    struct.make #S [{
       "a" ::= "$a";
       "b" ::= type.zero_val #TwoInts;
       "c" ::= type.zero_val #boolT
     }]) in
     do:  ("p2" <-[#S] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" "p2"))) = #(W64 0))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go "p2"))) = #(W64 0))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#boolT] (struct.field_ref S "c" "p2")) = #false)) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#boolT] (struct.field_ref #S #"c"%go "p2")) = #false)) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
 
@@ -2346,13 +2346,13 @@ Definition testStoreInStructVar : val :=
   rec: "testStoreInStructVar" <> :=
     exception_do (let: "p" := (alloc (type.zero_val #StructWrap)) in
     let: "$r0" := (let: "$i" := #(W64 0) in
-    struct.make StructWrap [{
+    struct.make #StructWrap [{
       "i" ::= "$i"
     }]) in
     do:  ("p" <-[#StructWrap] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref StructWrap "i" "p") <-[#uint64T] "$r0");;;
-    return: ((![#uint64T] (struct.field_ref StructWrap "i" "p")) = #(W64 5))).
+    do:  ((struct.field_ref #StructWrap #"i"%go "p") <-[#uint64T] "$r0");;;
+    return: ((![#uint64T] (struct.field_ref #StructWrap #"i"%go "p")) = #(W64 5))).
 
 (* go: structs.go:132:6 *)
 Definition testStoreInStructPointerVar : val :=
@@ -2361,8 +2361,8 @@ Definition testStoreInStructPointerVar : val :=
     let: "$r0" := (alloc (type.zero_val #StructWrap)) in
     do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref StructWrap "i" (![#ptrT] "p")) <-[#uint64T] "$r0");;;
-    return: ((![#uint64T] (struct.field_ref StructWrap "i" (![#ptrT] "p"))) = #(W64 5))).
+    do:  ((struct.field_ref #StructWrap #"i"%go (![#ptrT] "p")) <-[#uint64T] "$r0");;;
+    return: ((![#uint64T] (struct.field_ref #StructWrap #"i"%go (![#ptrT] "p"))) = #(W64 5))).
 
 (* go: structs.go:138:6 *)
 Definition testStoreComposite : val :=
@@ -2372,12 +2372,12 @@ Definition testStoreComposite : val :=
     do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$x" := #(W64 3) in
     let: "$y" := #(W64 4) in
-    struct.make TwoInts [{
+    struct.make #TwoInts [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
     do:  ((![#ptrT] "p") <-[#TwoInts] "$r0");;;
-    return: ((![#uint64T] (struct.field_ref TwoInts "y" (![#ptrT] "p"))) = #(W64 4))).
+    return: ((![#uint64T] (struct.field_ref #TwoInts #"y"%go (![#ptrT] "p"))) = #(W64 4))).
 
 (* go: structs.go:144:6 *)
 Definition testStoreSlice : val :=
@@ -2407,9 +2407,9 @@ Definition testStructFieldFunc : val :=
       exception_do (let: "arg" := (alloc "arg") in
       return: ((![#uint64T] "arg") * #(W64 2)))
       ) in
-    do:  ((struct.field_ref StructWithFunc "fn" (![#ptrT] "a")) <-[#funcT] "$r0");;;
+    do:  ((struct.field_ref #StructWithFunc #"fn"%go (![#ptrT] "a")) <-[#funcT] "$r0");;;
     return: ((let: "$a0" := #(W64 10) in
-     (![#funcT] (struct.field_ref StructWithFunc "fn" (![#ptrT] "a"))) "$a0") = #(W64 20))).
+     (![#funcT] (struct.field_ref #StructWithFunc #"fn"%go (![#ptrT] "a"))) "$a0") = #(W64 20))).
 
 (* go: switch.go:3:6 *)
 Definition testSwitchVal : val :=
@@ -2469,7 +2469,7 @@ Definition switchConcrete__marker : val :=
 Definition testSwitchConversion : val :=
   rec: "testSwitchConversion" <> :=
     exception_do (let: "v" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (struct.make switchConcrete [{
+    let: "$r0" := (alloc (struct.make #switchConcrete [{
     }])) in
     do:  ("v" <-[#ptrT] "$r0");;;
     let: "x" := (alloc (type.zero_val #switchInterface)) in
@@ -2585,7 +2585,7 @@ Definition New : val :=
      let: "$cache" := (![#(mapT uint64T sliceT)] "cache") in
      let: "$length" := (![#ptrT] "lengthPtr") in
      let: "$l" := (![#ptrT] "l") in
-     struct.make Log [{
+     struct.make #Log [{
        "d" ::= "$d";
        "l" ::= "$l";
        "cache" ::= "$cache";
@@ -2596,13 +2596,13 @@ Definition New : val :=
 Definition Log__lock : val :=
   rec: "Log__lock" "l" <> :=
     exception_do (let: "l" := (alloc "l") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref Log "l" "l"))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #())).
 
 (* go: wal.go:56:14 *)
 Definition Log__unlock : val :=
   rec: "Log__unlock" "l" <> :=
     exception_do (let: "l" := (alloc "l") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref Log "l" "l"))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #())).
 
 (* BeginTxn allocates space for a new transaction in the log.
 
@@ -2614,7 +2614,7 @@ Definition Log__BeginTxn : val :=
     exception_do (let: "l" := (alloc "l") in
     do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
     let: "length" := (alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref Log "length" "l"))) in
+    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
     do:  ("length" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "length") = #(W64 0)
     then
@@ -2636,7 +2636,7 @@ Definition Log__Read : val :=
     do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
     let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "v" := (alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T sliceT)] (struct.field_ref Log "cache" "l")) (![#uint64T] "a")) in
+    let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T sliceT)] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[#sliceT] "$r0");;;
@@ -2649,7 +2649,7 @@ Definition Log__Read : val :=
     do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #());;;
     let: "dv" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (logLength + (![#uint64T] "a")) in
-    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref Log "d" "l"))) "$a0") in
+    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0") in
     do:  ("dv" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "dv")).
 
@@ -2658,7 +2658,7 @@ Definition Log__Size : val :=
   rec: "Log__Size" "l" <> :=
     exception_do (let: "l" := (alloc "l") in
     let: "sz" := (alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((interface.get #"Size"%go (![#disk.Disk] (struct.field_ref Log "d" "l"))) #()) in
+    let: "$r0" := ((interface.get #"Size"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) #()) in
     do:  ("sz" <-[#uint64T] "$r0");;;
     return: ((![#uint64T] "sz") - logLength)).
 
@@ -2672,7 +2672,7 @@ Definition Log__Write : val :=
     let: "a" := (alloc "a") in
     do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
     let: "length" := (alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref Log "length" "l"))) in
+    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
     do:  ("length" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "length") ≥ MaxTxnWrites
     then
@@ -2688,14 +2688,14 @@ Definition Log__Write : val :=
     do:  ("nextAddr" <-[#uint64T] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "nextAddr") in
     let: "$a1" := (![#sliceT] "aBlock") in
-    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref Log "d" "l"))) "$a0" "$a1");;;
+    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1");;;
     do:  (let: "$a0" := ((![#uint64T] "nextAddr") + #(W64 1)) in
     let: "$a1" := (![#sliceT] "v") in
-    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref Log "d" "l"))) "$a0" "$a1");;;
+    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1");;;
     let: "$r0" := (![#sliceT] "v") in
-    do:  (map.insert (![#(mapT uint64T sliceT)] (struct.field_ref Log "cache" "l")) (![#uint64T] "a") "$r0");;;
+    do:  (map.insert (![#(mapT uint64T sliceT)] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a") "$r0");;;
     let: "$r0" := ((![#uint64T] "length") + #(W64 1)) in
-    do:  ((![#ptrT] (struct.field_ref Log "length" "l")) <-[#uint64T] "$r0");;;
+    do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
     do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #())).
 
 (* Commit the current transaction.
@@ -2706,7 +2706,7 @@ Definition Log__Commit : val :=
     exception_do (let: "l" := (alloc "l") in
     do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
     let: "length" := (alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref Log "length" "l"))) in
+    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
     do:  ("length" <-[#uint64T] "$r0");;;
     do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #());;;
     let: "header" := (alloc (type.zero_val #sliceT)) in
@@ -2715,7 +2715,7 @@ Definition Log__Commit : val :=
     do:  ("header" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![#sliceT] "header") in
-    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref Log "d" "l"))) "$a0" "$a1")).
+    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1")).
 
 (* go: wal.go:122:6 *)
 Definition getLogEntry : val :=
@@ -2792,15 +2792,15 @@ Definition Log__Apply : val :=
     exception_do (let: "l" := (alloc "l") in
     do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
     let: "length" := (alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref Log "length" "l"))) in
+    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
     do:  ("length" <-[#uint64T] "$r0");;;
-    do:  (let: "$a0" := (![#disk.Disk] (struct.field_ref Log "d" "l")) in
+    do:  (let: "$a0" := (![#disk.Disk] (struct.field_ref #Log #"d"%go "l")) in
     let: "$a1" := (![#uint64T] "length") in
     (func_call #semantics.semantics #"applyLog"%go) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![#disk.Disk] (struct.field_ref Log "d" "l")) in
+    do:  (let: "$a0" := (![#disk.Disk] (struct.field_ref #Log #"d"%go "l")) in
     (func_call #semantics.semantics #"clearLog"%go) "$a0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((![#ptrT] (struct.field_ref Log "length" "l")) <-[#uint64T] "$r0");;;
+    do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
     do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #())).
 
 (* Open recovers the log following a crash or shutdown
@@ -2839,7 +2839,7 @@ Definition Open : val :=
      let: "$cache" := (![#(mapT uint64T sliceT)] "cache") in
      let: "$length" := (![#ptrT] "lengthPtr") in
      let: "$l" := (![#ptrT] "l") in
-     struct.make Log [{
+     struct.make #Log [{
        "d" ::= "$d";
        "l" ::= "$l";
        "cache" ::= "$cache";
@@ -2869,16 +2869,16 @@ Definition disabled_testWal : val :=
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") = #(W64 11))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
-    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref Log "d" "lg"))) "$a0") in
+    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "lg"))) "$a0") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") = #(W64 0))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     do:  ((method_call #semantics.semantics #"Log" #"Commit" (![#Log] "lg")) #());;;
     let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
-    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref Log "d" "lg"))) "$a0") in
+    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "lg"))) "$a0") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") = #(W64 1))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     do:  ((method_call #semantics.semantics #"Log" #"Apply" (![#Log] "lg")) #());;;
-    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (![#ptrT] (struct.field_ref Log "length" "lg"))) = #(W64 0))) in
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "lg"))) = #(W64 0))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
 
