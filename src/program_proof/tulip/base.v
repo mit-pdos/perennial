@@ -305,6 +305,8 @@ Definition valid_wrs (wrs : dbmap) := dom wrs ⊆ keys_all.
 
 Definition valid_key (key : dbkey) := key ∈ keys_all.
 
+Definition valid_backup_rank (rank : nat) := 1 < rank < 2 ^ 64.
+
 Lemma valid_key_length key :
   valid_key key ->
   length key < 2 ^ 64.

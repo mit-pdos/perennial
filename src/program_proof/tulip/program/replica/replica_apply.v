@@ -17,7 +17,6 @@ Section program.
     }}}
       Replica__apply #rp (ccommand_to_val pwrsS cmd)
     {{{ RET #();
-        own_pwrs_slice pwrsS cmd ∗
         own_replica_replaying rp clog' ilog α
     }}}.
   Proof.
@@ -35,13 +34,13 @@ Section program.
     wp_pures.
     destruct cmd eqn:Hcmd; wp_pures.
     { (* Case: CmdCommit. *)
-      destruct Hvcmd as [Hvts Hvpwrs].
-      iDestruct "Hpwrs" as (pwrsL) "Hpwrs".
-      wp_apply (wp_Replica__applyCommit__replaying with "[Hsafe] Hidx [$Hpwrs $Hrp]").
+      destruct Hvcmd as [Hvts Hvpwrs]. simpl.
+      iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
+      wp_apply (wp_Replica__applyCommit__replaying with "[Hsafe] Hidx Hpwrs Hrp").
       { apply Hvicmds. }
       { apply Hvpwrs. }
       { rewrite uint_nat_W64_of_nat; first done. rewrite /valid_ts in Hvts. word. }
-      iIntros "[Hpwrs Hrp]".
+      iIntros "Hrp".
       wp_pures.
       iApply "HΦ".
       rewrite uint_nat_W64_of_nat; last first.
@@ -76,7 +75,6 @@ Section program.
     }}}
       Replica__apply #rp (ccommand_to_val pwrsS cmd)
     {{{ RET #();
-        own_pwrs_slice pwrsS cmd ∗ 
         own_replica_with_cloga_no_lsna rp cloga' gid rid γ α
     }}}.
   Proof.
@@ -94,13 +92,13 @@ Section program.
     wp_pures.
     destruct cmd eqn:Hcmd; wp_pures.
     { (* Case: CmdCommit. *)
-      destruct Hvcmd as [Hvts Hvpwrs].
-      iDestruct "Hpwrs" as (pwrsL) "Hpwrs".
-      wp_apply (wp_Replica__applyCommit with "[Hsafe] [Hlb'] Hidx [$Hpwrs $Hrp]").
+      destruct Hvcmd as [Hvts Hvpwrs]. simpl.
+      iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
+      wp_apply (wp_Replica__applyCommit with "[Hsafe] [Hlb'] Hidx Hpwrs Hrp").
       { apply Hvpwrs. }
       { rewrite uint_nat_W64_of_nat; first done. rewrite /valid_ts in Hvts. word. }
       { rewrite uint_nat_W64_of_nat; first done. rewrite /valid_ts in Hvts. word. }
-      iIntros "[Hpwrs Hrp]".
+      iIntros "Hrp".
       wp_pures.
       iApply "HΦ".
       rewrite uint_nat_W64_of_nat; last first.

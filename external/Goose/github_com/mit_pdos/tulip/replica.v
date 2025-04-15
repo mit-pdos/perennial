@@ -431,6 +431,21 @@ Definition Replica__advance: val :=
       #()
     else #()).
 
+Definition Replica__validated: val :=
+  rec: "Replica__validated" "rp" "ts" :=
+    let: ("pwrs", "ok") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
+    ("pwrs", "ok").
+
+Definition logAdvance: val :=
+  rec: "logAdvance" "fname" "lsn" "ts" "rank" :=
+    let: "bs" := NewSliceWithCap byteT #0 #32 in
+    let: "bs0" := marshal.WriteInt "bs" "lsn" in
+    let: "bs1" := marshal.WriteInt "bs0" CMD_ADVANCE in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := marshal.WriteInt "bs2" "rank" in
+    grove_ffi.FileAppend "fname" "bs3";;
+    #().
+
 Definition Replica__inquire: val :=
   rec: "Replica__inquire" "rp" "ts" "rank" :=
     let: ("res", "done") := Replica__finalized "rp" "ts" in
@@ -445,9 +460,14 @@ Definition Replica__inquire: val :=
         (struct.mk tulip.PrepareProposal [
          ], #false, slice.nil, tulip.REPLICA_STALE_COORDINATOR)
       else
-        let: "pp" := Fst (MapGet (struct.loadF Replica "pstbl" "rp") "ts") in
+        let: (("ranka", "pdec"), <>) := Replica__lastProposal "rp" "ts" in
+        let: "pp" := struct.mk tulip.PrepareProposal [
+          "Rank" ::= "ranka";
+          "Prepared" ::= "pdec"
+        ] in
         Replica__advance "rp" "ts" "rank";;
-        let: ("pwrs", "vd") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
+        logAdvance (struct.loadF Replica "fname" "rp") (struct.loadF Replica "lsna" "rp") "ts" "rank";;
+        let: ("pwrs", "vd") := Replica__validated "rp" "ts" in
         ("pp", "vd", "pwrs", tulip.REPLICA_OK))).
 
 Definition Replica__Inquire: val :=

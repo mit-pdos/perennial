@@ -178,6 +178,42 @@ Section def.
     ∃ l : list dbmod,
       own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
 
+  Definition own_dbmap_in_slice_frac s (m : dbmap) : iProp Σ :=
+    ∃ (l : list dbmod) (q : dfrac),
+      own_slice_small s (struct.t WriteEntry) q l ∗
+      ⌜map_to_list m ≡ₚ l⌝.
+
+  Definition is_dbmap_in_slice s (m : dbmap) : iProp Σ :=
+    ∃ l : list dbmod,
+      readonly (own_slice_small s (struct.t WriteEntry) (DfracOwn 1) l) ∗
+      ⌜map_to_list m ≡ₚ l⌝.
+
+  #[global]
+  Instance is_dbmap_in_slice_persistent s m :
+    Persistent (is_dbmap_in_slice s m).
+  Proof. apply _. Defined.
+
+  Lemma is_dbmap_in_slice_unpersist s m E :
+    is_dbmap_in_slice s m ={E}=∗
+    own_dbmap_in_slice_frac s m.
+  Proof.
+    iIntros "Hm".
+    iDestruct "Hm" as (l) "[Hl %Hl]".
+    iMod (readonly_load with "Hl") as (q) "Hl".
+    by iFrame "∗ %".
+  Qed.
+
+  Lemma own_dbmap_in_slice_persist s m E :
+    own_dbmap_in_slice s m ={E}=∗
+    is_dbmap_in_slice s m.
+  Proof.
+    iIntros "Hm".
+    iDestruct "Hm" as (l) "[Hl %Hl]".
+    iDestruct (own_slice_to_small with "Hl") as "Hl".
+    iMod (readonly_alloc_1 with "Hl") as "Hl".
+    by iFrame "∗ %".
+  Qed.
+
   Definition is_txnptgs_in_slice s (g : txnptgs) : iProp Σ :=
     ∃ l : list u64,
       readonly (own_slice_small s uint64T (DfracOwn 1) l) ∗ ⌜list_to_set l = g⌝.

@@ -77,15 +77,13 @@ Section program.
       iDestruct (big_sepM2_lookup_acc with "Hprepm") as "[Hpwrs HprepmC]".
       { apply Hprepared. }
       { apply Hpwrs. }
-      iDestruct "Hpwrs" as (pwrsL) "Hpwrs".
-      wp_apply (wp_Replica__release with "[$Hpwrs $Hptsmsptsm]").
+      wp_apply (wp_Replica__release with "Hpwrs Hptsmsptsm").
       { symmetry in Hcpmabs.
         pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hcpmabs Hpwrs) as (ts' & Hts' & Hcpmts).
         assert (ts' = ts) as -> by word.
         by specialize (Hvcpm _ _ Hcpmts).
       }
-      iIntros "[Hpwrs Hptsmsptsm]".
-      iDestruct ("HprepmC" with "Hpwrs") as "Hprepm".
+      iIntros "Hptsmsptsm".
       iAssert (own_replica_cpm rp cpm)%I with "[$HprepmP $HprepmS $Hprepm]" as "Hcpm".
       { done. }
       wp_apply (wp_Replica__erase with "[$Hcpm $Hpgm]").
@@ -203,15 +201,13 @@ Section program.
       iDestruct (big_sepM2_lookup_acc with "Hprepm") as "[Hpwrs HprepmC]".
       { apply Hprepared. }
       { apply Hpwrs. }
-      iDestruct "Hpwrs" as (pwrsL) "Hpwrs".
-      wp_apply (wp_Replica__release with "[$Hpwrs $Hptsmsptsm]").
+      wp_apply (wp_Replica__release with "Hpwrs Hptsmsptsm").
       { symmetry in Hcpmabs.
         pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hcpmabs Hpwrs) as (ts' & Hts' & Hcpmts).
         assert (ts' = ts) as -> by word.
         by specialize (Hvcpm _ _ Hcpmts).
       }
-      iIntros "[Hpwrs Hptsmsptsm]".
-      iDestruct ("HprepmC" with "Hpwrs") as "Hprepm".
+      iIntros "Hptsmsptsm".
       iAssert (own_replica_cpm rp cpm)%I with "[$HprepmP $HprepmS $Hprepm]" as "Hcpm".
       { done. }
       wp_apply (wp_Replica__erase with "[$Hcpm $Hpgm]").
@@ -226,6 +222,14 @@ Section program.
         pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hcpmabs Hpwrs) as (ts' & Hts' & Hcpmts).
         assert (ts' = ts) as -> by word.
         by apply elem_of_dom.
+      }
+      iAssert ([∗ map] t ↦ w ∈ delete ts cpm, safe_txn_pwrs γ gid t w)%I
+        as "#Hsafetpwrs'".
+      { iDestruct (big_sepM_delete _ _ ts with "Hsafetpwrs") as "[_ ?]"; last done.
+        symmetry in Hcpmabs.
+        pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hcpmabs Hpwrs) as (ts' & Hts' & Hcpmts).
+        assert (ts' = ts) as -> by word.
+        apply Hcpmts.
       }
       iClear "Hrpvds".
       iFrame "∗ # %".

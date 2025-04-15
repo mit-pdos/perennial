@@ -74,7 +74,7 @@ Section decode.
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnFastPrepareRequest (to_val bsP)
     {{{ (pwrsP ptgsP : Slice.t), RET (txnreq_to_val (FastPrepareReq ts pwrs ptgs) pwrsP ptgsP);
-        own_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
+        is_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
     }}}.
   Proof.
     iIntros (Henc Φ) "Hbs HΦ".
@@ -103,6 +103,7 @@ Section decode.
     iIntros (ptgsP dataP) "[Hptgs Hbs]".
     wp_pures.
     iApply "HΦ".
+    iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
     by iFrame.
   Qed.
 
@@ -111,7 +112,7 @@ Section decode.
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnValidateRequest (to_val bsP)
     {{{ (pwrsP ptgsP: Slice.t), RET (txnreq_to_val (ValidateReq ts rank pwrs ptgs) pwrsP ptgsP);
-        own_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
+        is_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
     }}}.
   Proof.
     iIntros (Henc Φ) "Hbs HΦ".
@@ -144,6 +145,7 @@ Section decode.
     iIntros (ptgsP dataP) "[Hptgs Hbs]".
     wp_pures.
     iApply "HΦ".
+    iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
     by iFrame.
   Qed.
 
@@ -256,7 +258,7 @@ Section decode.
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnCommitRequest (to_val bsP)
     {{{ (pwrsP : Slice.t), RET (txnreq_to_val (CommitReq ts pwrs) pwrsP Slice.nil);
-        own_dbmap_in_slice pwrsP pwrs
+        is_dbmap_in_slice pwrsP pwrs
     }}}.
   Proof.
     iIntros (Henc Φ) "Hbs HΦ".
@@ -279,6 +281,7 @@ Section decode.
     { apply Hreqdata. }
     iIntros (pwrsP dataP) "[Hpwrs Hdata]".
     wp_pures.
+    iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
     by iApply "HΦ".
   Qed.
 
@@ -311,10 +314,10 @@ Section decode.
     {{{ (pwrsP ptgsP : Slice.t), RET (txnreq_to_val req pwrsP ptgsP);
         match req with
         | FastPrepareReq _ pwrs ptgs =>
-            own_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
+            is_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
         | ValidateReq _ _ pwrs ptgs =>
-            own_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
-        | CommitReq _ pwrs => own_dbmap_in_slice pwrsP pwrs
+            is_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
+        | CommitReq _ pwrs => is_dbmap_in_slice pwrsP pwrs
         | _ => True
         end
     }}}.

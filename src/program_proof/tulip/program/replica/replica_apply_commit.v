@@ -13,17 +13,15 @@ Section program.
     valid_pwrs gid pwrs ->
     group_histm_lbs_from_log γ gid clog' -∗
     is_replica_idx rp γ α -∗
-    {{{ own_dbmap_in_slice pwrsS pwrs ∗
-        own_replica_replaying rp clog ilog α
-    }}}
+    is_dbmap_in_slice pwrsS pwrs -∗
+    {{{ own_replica_replaying rp clog ilog α }}}
       Replica__applyCommit #rp #tsW (to_val pwrsS)
     {{{ RET #(); 
-        own_dbmap_in_slice pwrsS pwrs ∗ 
         own_replica_replaying rp clog' ilog α
     }}}.
   Proof.
-    iIntros (ts clog' Hvicmds Hvpwrs) "#Hhistmlb #Hidx".
-    iIntros (Φ) "!> [Hpwrs Hrp] HΦ".
+    iIntros (ts clog' Hvicmds Hvpwrs) "#Hhistmlb #Hidx #Hpwrs".
+    iIntros (Φ) "!> Hrp HΦ".
     wp_rec.
     (* First establish that applying this commit results does not get stuck. *)
     rewrite /group_histm_lbs_from_log.
@@ -61,11 +59,11 @@ Section program.
 
     (*@     rp.multiwrite(ts, pwrs)                                             @*)
     (*@                                                                         @*)
-    wp_apply (wp_Replica__multiwrite with "Hhistmlb Hidx [$Hpwrs $Hhistm]").
+    wp_apply (wp_Replica__multiwrite with "Hhistmlb Hidx Hpwrs Hhistm").
     { apply Hvpwrs. }
     { by eapply apply_cmds_dom. }
     { apply Hsafeext. }
-    iIntros "[Hpwrs Hhistm]".
+    iIntros "Hhistm".
 
     (*@     rp.txntbl[ts] = true                                                @*)
     (*@                                                                         @*)
@@ -91,9 +89,9 @@ Section program.
     (*@ }                                                                       @*)
     iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
     destruct prepared; wp_pures.
-    { wp_apply (wp_Replica__release with "[$Hpwrs $Hptsmsptsm]").
+    { wp_apply (wp_Replica__release with "Hpwrs Hptsmsptsm").
       { clear -Hvpwrs. set_solver. }
-      iIntros "[Hpwrs Hptsmsptsm]".
+      iIntros "Hptsmsptsm".
       iAssert (own_replica_cpm rp cpm)%I with "[$HprepmP $HprepmS $Hprepm]" as "Hcpm".
       { done. }
       wp_apply (wp_Replica__erase with "[$Hcpm $Hpgm]").
@@ -144,17 +142,15 @@ Section program.
     group_histm_lbs_from_log γ gid cloga' -∗
     is_txn_log_lb γ gid cloga' -∗
     is_replica_idx rp γ α -∗
-    {{{ own_dbmap_in_slice pwrsS pwrs ∗
-        own_replica_with_cloga_no_lsna rp cloga gid rid γ α
-    }}}
+    is_dbmap_in_slice pwrsS pwrs -∗
+    {{{ own_replica_with_cloga_no_lsna rp cloga gid rid γ α }}}
       Replica__applyCommit #rp #tsW (to_val pwrsS)
     {{{ RET #(); 
-        own_dbmap_in_slice pwrsS pwrs ∗ 
         own_replica_with_cloga_no_lsna rp cloga' gid rid γ α
     }}}.
   Proof.
-    iIntros (ts cloga' Hvpwrs) "#Hhistmlb #Hlb' #Hidx".
-    iIntros (Φ) "!> [Hpwrs Hrp] HΦ".
+    iIntros (ts cloga' Hvpwrs) "#Hhistmlb #Hlb' #Hidx #Hpwrs".
+    iIntros (Φ) "!> Hrp HΦ".
     wp_rec.
     (* First establish that applying this commit results does not get stuck. *)
     rewrite /group_histm_lbs_from_log.
@@ -200,11 +196,11 @@ Section program.
 
     (*@     rp.multiwrite(ts, pwrs)                                             @*)
     (*@                                                                         @*)
-    wp_apply (wp_Replica__multiwrite with "Hhistmlb Hidx [$Hpwrs $Hhistm]").
+    wp_apply (wp_Replica__multiwrite with "Hhistmlb Hidx Hpwrs Hhistm").
     { apply Hvpwrs. }
     { by eapply apply_cmds_dom. }
     { apply Hsafeext. }
-    iIntros "[Hpwrs Hhistm]".
+    iIntros "Hhistm".
 
     (*@     rp.txntbl[ts] = true                                                @*)
     (*@                                                                         @*)
@@ -230,9 +226,9 @@ Section program.
     (*@ }                                                                       @*)
     iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
     destruct prepared; wp_pures.
-    { wp_apply (wp_Replica__release with "[$Hpwrs $Hptsmsptsm]").
+    { wp_apply (wp_Replica__release with "Hpwrs Hptsmsptsm").
       { clear -Hvpwrs. set_solver. }
-      iIntros "[Hpwrs Hptsmsptsm]".
+      iIntros "Hptsmsptsm".
       iAssert (own_replica_cpm rp cpm)%I with "[$HprepmP $HprepmS $Hprepm]" as "Hcpm".
       { done. }
       wp_apply (wp_Replica__erase with "[$Hcpm $Hpgm]").
@@ -250,6 +246,11 @@ Section program.
       { rewrite dom_delete_L.
         iDestruct (big_sepS_delete _ _ ts with "Hrpvds") as "[_ ?]"; last done.
         by apply elem_of_dom.
+      }
+      iAssert ([∗ map] t ↦ w ∈ delete ts cpm, safe_txn_pwrs γ gid t w)%I
+        as "#Hsafetpwrs'".
+      { iDestruct (big_sepM_delete _ _ ts with "Hsafetpwrs") as "[_ ?]"; last done.
+        apply Hcpmts.
       }
       iClear "Hrpvds".
       iFrame "∗ # %".

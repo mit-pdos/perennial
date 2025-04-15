@@ -171,7 +171,7 @@ Section program.
     { rewrite Hlenclog. apply Hlsn. }
     { apply Hvcmd. }
     { iFrame "Hhistm". }
-    iIntros "[Hpwrs Hrp]".
+    iIntros "Hrp".
     wp_pures.
     iApply "HΦ".
     iFrame "∗ #".
@@ -514,10 +514,11 @@ Section program.
         assert (Hvpwrs : valid_wrs pwrs).
         { rewrite /= in Hvicmd. by destruct Hvicmd as [_ ?]. }
         do 2 iNamed "Hrp". rename clog0 into cloga.
-        wp_apply (wp_Replica__acquire with "[$Hpwrs $Hptsmsptsm]").
+        iMod (own_dbmap_in_slice_persist with "Hpwrs") as "#Hpwrs".
+        wp_apply (wp_Replica__acquire with "Hpwrs Hptsmsptsm").
         { apply Hvpwrs. }
-        iIntros "[Hpwrs Hptsmsptsm]".
-        wp_apply (wp_Replica__memorize with "Hptgs [$Hpwrs $Hcpm $Hpgm]").
+        iIntros "Hptsmsptsm".
+        wp_apply (wp_Replica__memorize with "Hpwrs Hptgs [$Hcpm $Hpgm]").
         iIntros "[Hcpm Hpgm]".
         wp_pures.
         iApply "HΦ".

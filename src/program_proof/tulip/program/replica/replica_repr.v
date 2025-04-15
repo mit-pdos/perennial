@@ -53,7 +53,7 @@ Section repr.
     ∃ (prepmP : loc) (prepmS : gmap u64 Slice.t) (prepm : gmap u64 dbmap),
       "HprepmP"  ∷ rp ↦[Replica :: "prepm"] #prepmP ∗
       "HprepmS"  ∷ own_map prepmP (DfracOwn 1) prepmS ∗
-      "Hprepm"   ∷ ([∗ map] s; m ∈ prepmS; prepm, own_dbmap_in_slice s m) ∗
+      "#Hprepm"  ∷ ([∗ map] s; m ∈ prepmS; prepm, is_dbmap_in_slice s m) ∗
       "%Hcpmabs" ∷ ⌜(kmap Z.of_nat cpm : gmap Z dbmap) = kmap uint.Z prepm⌝.
 
   Definition own_replica_pgm (rp : loc) (pgm : gmap nat txnptgs) : iProp Σ :=
@@ -129,6 +129,7 @@ Section repr.
       "Hdurable"    ∷ own_crash_ex rpcrashNS (own_replica_durable γ gid rid) dst ∗
       "#Hfname"     ∷ is_replica_fname rp gid rid γ ∗
       "#Hrpvds"     ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
+      "#Hsafetpwrs" ∷ ([∗ map] t ↦ pwrs ∈ cpm, safe_txn_pwrs γ gid t pwrs) ∗
       "#Hfpw"       ∷ ([∗ map] t ↦ ps ∈ psm, fast_proposal_witness γ gid rid t ps) ∗
       "#Hclogalb"   ∷ is_txn_log_lb γ gid cloga ∗
       "%Hdompsmrkm" ∷ ⌜dom psm = dom rkm⌝ ∗

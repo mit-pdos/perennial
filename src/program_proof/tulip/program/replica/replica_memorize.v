@@ -7,9 +7,9 @@ Section program.
     rp (tsW : u64) pwrsS pwrs ptgsS ptgs
     (cpm : gmap nat dbmap) (pgm : gmap nat txnptgs) :
     let ts := uint.nat tsW in
+    is_dbmap_in_slice pwrsS pwrs -∗
     is_txnptgs_in_slice ptgsS ptgs -∗
-    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica_cpm rp cpm ∗
-        own_replica_pgm rp pgm
+    {{{ own_replica_cpm rp cpm ∗ own_replica_pgm rp pgm
     }}}
       Replica__memorize #rp #tsW (to_val pwrsS) (to_val ptgsS)
     {{{ RET #(); 
@@ -17,8 +17,8 @@ Section program.
         own_replica_pgm rp (<[ts := ptgs]> pgm)
     }}}.
   Proof.
-    iIntros (t) "#Hptgs".
-    iIntros (Φ) "!> (Hpwrs & Hcpm & Hpgm) HΦ".
+    iIntros (t) "#Hpwrs #Hptgs".
+    iIntros (Φ) "!> [Hcpm Hpgm] HΦ".
     wp_rec.
 
     (*@ func (rp *Replica) memorize(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)
@@ -35,12 +35,11 @@ Section program.
     iIntros "HptgsmS".
     wp_pures.
     iApply "HΦ".
-    iDestruct (big_sepM2_insert_2 _ _ _ tsW with "[Hpwrs] Hprepm") as "Hprepm".
+    iDestruct (big_sepM2_insert_2 _ _ _ tsW with "[Hpwrs] Hprepm") as "Hprepm'".
     { iFrame "Hpwrs". }
     iDestruct (big_sepM2_insert_2 _ _ _ tsW with "[Hptgs] Hptgsm") as "Hptgsm'".
     { iFrame "Hptgs". }
-    iClear "Hptgsm".
-    iFrame "∗ #".
+    iFrame "HprepmP HptgsmP ∗ #".
     iPureIntro.
     rewrite !kmap_insert.
     split.

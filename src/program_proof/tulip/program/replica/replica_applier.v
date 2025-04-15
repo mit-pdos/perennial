@@ -147,7 +147,7 @@ Section program.
       apply Hvc.
       by apply elem_of_list_lookup_2 in Hcmd.
     }
-    iIntros "[HpwrsS Hrp]".
+    iIntros "Hrp".
 
 
     (*@         rp.lsna = std.SumAssumeNoOverflow(rp.lsna, 1)                   @*)
