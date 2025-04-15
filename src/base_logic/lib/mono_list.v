@@ -164,4 +164,8 @@ Section mono_list_own.
     mono_list_auth_own γ 1 l ==∗
     mono_list_auth_own γ 1 (l ++ l') ∗ mono_list_lb_own γ (l ++ l').
   Proof. by apply mono_list_auth_own_update, prefix_app_r. Qed.
+
+  Lemma mono_list_lb_own_nil γ :
+    ⊢ |==> mono_list_lb_own γ [].
+  Proof. unseal. iApply own_unit. Qed.
 End mono_list_own.
