@@ -4,7 +4,7 @@ From Perennial.iris_lib Require Import dfractional.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export slice.
 From New.golang.theory Require Import list assume exception loop typing primitive auto.
-From New.golang.theory Require Import dynamic_mem.
+From New.golang.theory Require Import mem.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".

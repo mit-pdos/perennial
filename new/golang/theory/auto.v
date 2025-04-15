@@ -1,7 +1,7 @@
 From Perennial.goose_lang Require Import notation.
 Import Ltac2.
 From New.golang.theory Require Import proofmode globals pkg loop chan.
-From New.golang.theory Require Import dynamic_mem.
+From New.golang.theory Require Import mem.
 From Coq Require Import Strings.Ascii.
 
 (* TODO: iFrame # is only for backwards compatibility *)

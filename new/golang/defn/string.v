@@ -1,5 +1,5 @@
 From New.golang.defn Require Import notation.
-From New.golang.defn Require Import dynamic_mem typing slice.
+From New.golang.defn Require Import mem typing slice.
 From Perennial Require Import base.
 
 Section defn.

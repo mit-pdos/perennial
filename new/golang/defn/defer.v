@@ -1,4 +1,4 @@
-From New.golang.defn Require Import exception dynamic_mem.
+From New.golang.defn Require Import exception mem.
 From Perennial Require Import base.
 
 Section defn.
