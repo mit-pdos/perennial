@@ -218,7 +218,7 @@ Definition BackupGroupPreparer__latestProposal: val :=
   rec: "BackupGroupPreparer__latestProposal" "gpp" :=
     let: "latest" := ref (zero_val (struct.t tulip.PrepareProposal)) in
     MapIter (struct.loadF BackupGroupPreparer "pps" "gpp") (λ: <> "pp",
-      (if: (struct.get tulip.PrepareProposal "Rank" (![struct.t tulip.PrepareProposal] "latest")) < (struct.get tulip.PrepareProposal "Rank" "pp")
+      (if: (struct.get tulip.PrepareProposal "Rank" (![struct.t tulip.PrepareProposal] "latest")) ≤ (struct.get tulip.PrepareProposal "Rank" "pp")
       then "latest" <-[struct.t tulip.PrepareProposal] "pp"
       else #()));;
     ![struct.t tulip.PrepareProposal] "latest".
