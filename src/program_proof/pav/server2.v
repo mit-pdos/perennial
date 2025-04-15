@@ -2,7 +2,7 @@ From New.experiments Require Import glob.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import core cryptoffi cryptoutil serde merkle auditor.
+From Perennial.program_proof.pav Require Import prelude core cryptoffi cryptoutil serde merkle auditor workq.
 From Perennial.goose_lang.lib.rwlock Require Import rwlock_noncrash.
 
 Module userState.
@@ -81,10 +81,14 @@ Context `{!heapGS Σ, !pavG Σ}.
 Record Server_names :=
   {
     auditor_gn : gname;
+    ver_gn : gname;
     sig_pk : list w8;
     vrf_pk : list w8;
     commitSecret : list w8;
   }.
+
+Definition own_num_vers γ (uid : w64) (num_vers : w64) : iProp Σ :=
+  uid ↪[γ.(ver_gn)] num_vers.
 
 Implicit Types γ : Server_names.
 
@@ -162,23 +166,6 @@ Definition is_Server_crypto γ st : iProp Σ :=
   "%HepochHistLast" ∷ ⌜ last st.(Server.epochHist) = Some last_info ⌝
 .
 
-(** Proposition guarded by RWMutex. *)
-Definition own_Server γ s q : iProp Σ :=
-  ∃ (st : Server.t),
-    "Hphys" ∷ Server.own_phys s (q/2) st ∗
-    "#Hcrypto" ∷ is_Server_crypto γ st ∗
-    "Hghost" ∷ own_Server_ghost γ st.
-
-Definition is_Server γ s : iProp Σ :=
-  ∃ commitSecret_sl (mu vrfSk_ptr : loc),
-  "#commitSecret" ∷ s ↦[Server :: "commitSecret"]□ (slice_val commitSecret_sl) ∗
-  "#commitSecret_sl" ∷ own_slice_small commitSecret_sl byteT DfracDiscarded γ.(commitSecret) ∗
-  "#mu" ∷ s ↦[Server :: "mu"]□ #mu ∗
-  "#Hmu" ∷ is_rwlock nroot #mu (λ q, own_Server γ s (q / 2)) ∗
-  "#vrfSk" ∷ s ↦[Server :: "vrfSk"]□ #vrfSk_ptr ∗
-  "#HvrfSk" ∷ is_vrf_sk vrfSk_ptr γ.(vrf_pk) ∗
-  "_" ∷ True.
-
 Definition wish_checkMembHide vrf_pk uid ver dig memb_hide label : iProp Σ :=
   "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb_hide.(MembHide.LabelProof) ∗
   "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
@@ -199,6 +186,68 @@ Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
   "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
   "#Hmerk" ∷ wish_merkle_Verify false label []
     non_memb.(NonMemb.MerkleProof) dig.
+
+(** Proposition guarded by RWMutex. *)
+Definition own_Server γ s q : iProp Σ :=
+  ∃ (st : Server.t),
+    "Hphys" ∷ Server.own_phys s (q/2) st ∗
+    "#Hcrypto" ∷ is_Server_crypto γ st ∗
+    "Hghost" ∷ own_Server_ghost γ st.
+
+Definition is_epoch_lb γ (epoch : w64) : iProp Σ :=
+  ∃ (gs : list (gmap (list w8) (w64 * list w8) * list w8)),
+    mono_list_lb_own γ.(auditor_gn) gs ∗ ⌜ uint.nat epoch + 1 ≤ length gs ⌝.
+
+Definition wq_spec (req : loc) (Φ : loc → iProp Σ) : iProp Σ :=
+  ∃ γ (uid : w64) (pk : list w8) nVers cli_next_ep sl_pk,
+    ("#uid" ∷ req ↦[WQReq::"Uid"]□ #uid ∗
+     "#pk" ∷ req ↦[WQReq::"Pk"]□ (slice_val sl_pk) ∗
+     "Hvers" ∷ own_num_vers γ uid nVers ∗
+     "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
+     "#Hlb_ep" ∷ is_epoch_lb γ cli_next_ep) ∗
+    (∀ (resp ptr_sigdig : loc) sigdig (ptr_lat : loc) lat (ptr_bound : loc) bound label commit,
+       let new_next_ep := word.add sigdig.(SigDig.Epoch) (W64 1) in
+       ("Dig" ∷ resp ↦[WQResp::"Dig"] #ptr_sigdig ∗
+        "Lat" ∷ resp ↦[WQResp::"Lat"] #ptr_lat ∗
+        "Bound" ∷ resp ↦[WQResp::"Bound"] #ptr_bound ∗
+        "Err" ∷ resp ↦[WQResp::"Err"] #false ∗
+        "Hvers" ∷ own_num_vers γ uid (word.add nVers (W64 1)) ∗
+
+        "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
+        "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
+        "#Hlb_ep" ∷ is_epoch_lb γ new_next_ep ∗
+        "%Hlt_ep" ∷ ⌜ uint.Z cli_next_ep < uint.Z new_next_ep ⌝ ∗
+        (* provable from new_next_ep = the w64 size of epochHist slice. *)
+        "%Hnoof_ep" ∷ ⌜ uint.Z new_next_ep = (uint.Z sigdig.(SigDig.Epoch) + 1)%Z ⌝ ∗
+
+        "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
+        "#Hsig" ∷ is_sig γ.(sig_pk)
+                             (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
+                             sigdig.(SigDig.Sig) ∗
+
+        "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
+        "#Hwish_lat" ∷ wish_checkMemb γ.(vrf_pk) uid nVers
+                                          sigdig.(SigDig.Dig) lat label commit ∗
+
+        "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
+        "#Hwish_bound" ∷ wish_checkNonMemb γ.(vrf_pk) uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
+       )
+       -∗ Φ resp
+    ).
+
+(* FIXME: for workqG *)
+Context `{!ghost_varG Σ unit}.
+Definition is_Server γ s : iProp Σ :=
+  ∃ commitSecret_sl (mu vrfSk_ptr workQ : loc),
+  "#commitSecret" ∷ s ↦[Server :: "commitSecret"]□ (slice_val commitSecret_sl) ∗
+  "#commitSecret_sl" ∷ own_slice_small commitSecret_sl byteT DfracDiscarded γ.(commitSecret) ∗
+  "#mu" ∷ s ↦[Server :: "mu"]□ #mu ∗
+  "#Hmu" ∷ is_rwlock nroot #mu (λ q, own_Server γ s (q / 2)) ∗
+  "#vrfSk" ∷ s ↦[Server :: "vrfSk"]□ #vrfSk_ptr ∗
+  "#HvrfSk" ∷ is_vrf_sk vrfSk_ptr γ.(vrf_pk) ∗
+  "#workQ" ∷ s ↦[Server :: "workQ"]□ #workQ ∗
+  "#HworkQ" ∷ is_WorkQ workQ wq_spec ∗
+  "_" ∷ True.
 
 Lemma wp_getDig γ st epochHist_sl epochHist_ptrs q :
   let info := last st.(Server.epochHist) in
@@ -601,10 +650,6 @@ Proof.
   rewrite HepochHistLast /=. iFrame "#".
 Qed.
 
-Definition is_epoch_lb γ (epoch : w64) : iProp Σ :=
-  ∃ (gs : list (gmap (list w8) (w64 * list w8) * list w8)),
-    mono_list_lb_own γ.(auditor_gn) gs ∗ ⌜ uint.nat epoch + 1 ≤ length gs ⌝.
-
 Lemma ghost_latest_epoch γ st cli_ep :
   let latest_epoch := (W64 (length st.(Server.epochHist) - 1)) in
   is_epoch_lb γ cli_ep ∗
@@ -731,6 +776,55 @@ Proof.
   iApply "HΦ".
   instantiate (2:=ltac:(econstructor)). simpl.
   iFrame "∗#%". done.
+Qed.
+
+Lemma wp_Server__Put γ ptr uid nVers sl_pk (pk : list w8) cli_next_ep :
+  {{{
+    "#Hserv" ∷ is_Server γ ptr ∗
+    "Hvers" ∷ own_num_vers γ uid nVers ∗
+    "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
+    "#Hlb_ep" ∷ is_epoch_lb γ cli_next_ep
+  }}}
+  Server__Put #ptr #uid (slice_val sl_pk)
+  {{{
+    ptr_sigdig sigdig ptr_lat lat ptr_bound bound label commit,
+    RET (#ptr_sigdig, #ptr_lat, #ptr_bound, #false);
+    let new_next_ep := word.add sigdig.(SigDig.Epoch) (W64 1) in
+    "Hvers" ∷ own_num_vers γ uid (word.add nVers (W64 1)) ∗
+
+    "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
+    "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
+    "#Hlb_ep" ∷ is_epoch_lb γ new_next_ep ∗
+    "%Hlt_ep" ∷ ⌜ uint.Z cli_next_ep < uint.Z new_next_ep ⌝ ∗
+    (* provable from new_next_ep = the w64 size of epochHist slice. *)
+    "%Hnoof_ep" ∷ ⌜ uint.Z new_next_ep = (uint.Z sigdig.(SigDig.Epoch) + 1)%Z ⌝ ∗
+
+    "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
+    "#Hsig" ∷ is_sig γ.(sig_pk)
+      (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
+      sigdig.(SigDig.Sig) ∗
+
+    "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
+    "#Hwish_lat" ∷ wish_checkMemb γ.(vrf_pk) uid nVers
+      sigdig.(SigDig.Dig) lat label commit ∗
+
+    "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
+    "#Hwish_bound" ∷ wish_checkNonMemb γ.(vrf_pk)
+      uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
+  }}}.
+Proof.
+  iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (req) "Hreq".
+  iNamed "Hserv". wp_loadField.
+  iMod (struct_pointsto_persist with "Hreq") as "#Hreq".
+  iDestruct (struct_fields_split with "Hreq") as "H". iNamed "H".
+  wp_apply (wp_WorkQ__Do with "[$]").
+  repeat iExists _. iSplitR "HΦ".
+  { iFrame "∗#". }
+  iClear "Hlb_ep".
+  iIntros "*". iNamed 1. wp_pures. wp_loadField.
+  wp_loadField. wp_loadField. wp_loadField. wp_pures.
+  iApply "HΦ". iFrame "∗#%". done.
 Qed.
 
 End proof.

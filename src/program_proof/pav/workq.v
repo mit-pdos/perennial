@@ -6,23 +6,6 @@ From iris.unstable.base_logic Require Import mono_list.
 (* Even though the Go code is not generic, this proof is sorta generic by
    treating [Work] as having an opaque pointer for its [Req] and [Resp]. *)
 
-Module Work.
-Record t :=
-  mk {
-      done : bool;
-      Req : loc;
-      Resp : loc;
-    }.
-Section defn.
-Context `{!heapGS Σ}.
-Definition own l x : iProp Σ :=
-  "done" ∷ l ↦[Work::"done"]{#1/2} #x.(done) ∗
-  "Req" ∷ l ↦[Work::"Req"] #x.(Req) ∗
-  "Resp" ∷ l ↦[Work::"Resp"] #x.(Resp)
-.
-End defn.
-End Work.
-
 Section proof.
 Context `{!heapGS Σ}.
 Context `{!ghost_varG Σ unit}.
