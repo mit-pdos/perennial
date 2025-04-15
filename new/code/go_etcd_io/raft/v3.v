@@ -2643,7 +2643,7 @@ Definition CampaignType : go_type := stringT.
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
     exception_do (let: "st" := (alloc "st") in
-    return: (![#stringT] (array.elem_ref stringT (![#(arrayT 4 stringT)] (globals.get #v3.raft #"stmap"%go)) (![#StateType] "st")))).
+    return: (![#stringT] (array.elem_ref #stringT (![#(arrayT 4 stringT)] (globals.get #v3.raft #"stmap"%go)) (![#StateType] "st")))).
 
 (* go: raft.go:291:18 *)
 Definition Config__validate : val :=
@@ -4378,7 +4378,7 @@ Definition stepLeader : val :=
               let: "$r0" := ((![#uint64T] (struct.field_ref #raft #"pendingConfIndex"%go (![#ptrT] "r"))) > (![#uint64T] (struct.field_ref #raftLog #"applied"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))))) in
               do:  ("alreadyPending" <-[#boolT] "$r0");;;
               let: "alreadyJoint" := (alloc (type.zero_val #boolT)) in
-              let: "$r0" := (int_gt (let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))))) #(W64 1))) in
+              let: "$r0" := (int_gt (let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref #quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))))) #(W64 1))) in
               map.len "$a0") #(W64 0)) in
               do:  ("alreadyJoint" <-[#boolT] "$r0");;;
               let: "wantsLeaveJoint" := (alloc (type.zero_val #boolT)) in
@@ -7563,7 +7563,7 @@ Definition IsLocalMsg : val :=
     exception_do (let: "msgt" := (alloc "msgt") in
     return: (let: "$a0" := (![#raftpb.MessageType] "msgt") in
      let: "$a1" := (let: "$a" := (globals.get #v3.raft #"isLocalMsg"%go) in
-     array.slice "$a" #(W64 0) (array.len (arrayT 23 boolT))) in
+     array.slice #boolT "$a" #(W64 0) (array.len #boolT)) in
      (func_call #v3.raft #"isMsgInArray"%go) "$a0" "$a1")).
 
 (* go: util.go:61:6 *)
@@ -7572,7 +7572,7 @@ Definition IsResponseMsg : val :=
     exception_do (let: "msgt" := (alloc "msgt") in
     return: (let: "$a0" := (![#raftpb.MessageType] "msgt") in
      let: "$a1" := (let: "$a" := (globals.get #v3.raft #"isResponseMsg"%go) in
-     array.slice "$a" #(W64 0) (array.len (arrayT 23 boolT))) in
+     array.slice #boolT "$a" #(W64 0) (array.len #boolT)) in
      (func_call #v3.raft #"isMsgInArray"%go) "$a0" "$a1")).
 
 (* go: util.go:65:6 *)

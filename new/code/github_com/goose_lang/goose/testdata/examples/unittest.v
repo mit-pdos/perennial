@@ -20,7 +20,7 @@ Definition Foo : go_type := arrayT 10 uint64T.
 Definition takesArray : val :=
   rec: "takesArray" "x" :=
     exception_do (let: "x" := (alloc "x") in
-    return: (![#stringT] (array.elem_ref stringT (![#(arrayT 13 stringT)] "x") #(W64 3)))).
+    return: (![#stringT] (array.elem_ref #stringT (![#(arrayT 13 stringT)] "x") #(W64 3)))).
 
 (* go: array.go:9:6 *)
 Definition takesPtr : val :=
@@ -37,8 +37,8 @@ Definition usesArrayElemRef : val :=
     array.literal ["$ar0"; "$ar1"])) in
     do:  ("x" <-[#(arrayT 2 stringT)] "$r0");;;
     let: "$r0" := #"c"%go in
-    do:  ((array.elem_ref stringT (![#(arrayT 2 stringT)] "x") #(W64 1)) <-[#stringT] "$r0");;;
-    do:  (let: "$a0" := (array.elem_ref stringT (![#(arrayT 2 stringT)] "x") #(W64 1)) in
+    do:  ((array.elem_ref #stringT (![#(arrayT 2 stringT)] "x") #(W64 1)) <-[#stringT] "$r0");;;
+    do:  (let: "$a0" := (array.elem_ref #stringT (![#(arrayT 2 stringT)] "x") #(W64 1)) in
     (func_call #unittest.unittest #"takesPtr"%go) "$a0")).
 
 (* go: array.go:22:6 *)
@@ -51,9 +51,9 @@ Definition sum : val :=
     (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (array.len (arrayT 100 uint64T)))); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (![#uint64T] (array.elem_ref uint64T (![#(arrayT 100 uint64T)] "x") (![#uint64T] "i")))))));;;
-    do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (s_to_w64 (array.cap (arrayT 100 uint64T)))));;;
+    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (array.len #(arrayT 100 uint64T)))); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (![#uint64T] (array.elem_ref #uint64T (![#(arrayT 100 uint64T)] "x") (![#uint64T] "i")))))));;;
+    do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (s_to_w64 (array.cap #(arrayT 100 uint64T)))));;;
     return: (![#uint64T] "sum")).
 
 (* go: array.go:31:6 *)
@@ -65,7 +65,7 @@ Definition arrayToSlice : val :=
     array.literal ["$ar0"; "$ar1"])) in
     do:  ("x" <-[#(arrayT 2 stringT)] "$r0");;;
     return: (let: "$a" := "x" in
-     array.slice "$a" #(W64 0) (array.len (arrayT 2 stringT)))).
+     array.slice #stringT "$a" #(W64 0) (array.len #stringT))).
 
 Definition arrayA : Z := 0.
 
@@ -90,7 +90,7 @@ Definition arrayLiteralKeyed : val :=
     let: "$ar12" := #"2"%go in
     array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"; "$ar4"; "$ar5"; "$ar6"; "$ar7"; "$ar8"; "$ar9"; "$ar10"; "$ar11"; "$ar12"])) in
     do:  ("x" <-[#(arrayT 13 stringT)] "$r0");;;
-    return: (![#stringT] (array.elem_ref stringT (![#(arrayT 13 stringT)] "x") #(W64 0)))).
+    return: (![#stringT] (array.elem_ref #stringT (![#(arrayT 13 stringT)] "x") #(W64 0)))).
 
 (* go: chan.go:5:6 *)
 Definition chanBasic : val :=
