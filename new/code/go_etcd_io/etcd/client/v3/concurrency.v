@@ -1348,7 +1348,7 @@ Definition mkSTM : val :=
         "getOpts" ::= type.zero_val #sliceT;
         "conflicts" ::= type.zero_val #funcT
       }]) in
-      let: "$prefetch" := (map.make stringT ptrT #()) in
+      let: "$prefetch" := (map.make #ptrT) in
       struct.make #stmSerializable [{
         "stm" ::= "$stm";
         "prefetch" ::= "$prefetch"
@@ -1376,7 +1376,7 @@ Definition mkSTM : val :=
           "getOpts" ::= type.zero_val #sliceT;
           "conflicts" ::= type.zero_val #funcT
         }]) in
-        let: "$prefetch" := (map.make stringT ptrT #()) in
+        let: "$prefetch" := (map.make #ptrT) in
         struct.make #stmSerializable [{
           "stm" ::= "$stm";
           "prefetch" ::= "$prefetch"
@@ -1783,9 +1783,9 @@ Definition stm__fetch : val :=
 Definition stm__reset : val :=
   rec: "stm__reset" "s" <> :=
     exception_do (let: "s" := (alloc "s") in
-    let: "$r0" := (map.make stringT ptrT #()) in
+    let: "$r0" := (map.make #ptrT) in
     do:  ((struct.field_ref #stm #"rset"%go (![#ptrT] "s")) <-[#readSet] "$r0");;;
-    let: "$r0" := (map.make stringT stmPut #()) in
+    let: "$r0" := (map.make #stmPut) in
     do:  ((struct.field_ref #stm #"wset"%go (![#ptrT] "s")) <-[#writeSet] "$r0")).
 
 (* go: stm.go:305:27 *)

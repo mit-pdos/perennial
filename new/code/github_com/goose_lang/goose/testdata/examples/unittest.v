@@ -549,7 +549,7 @@ Definition useSliceIndexing : val :=
 Definition useMap : val :=
   rec: "useMap" <> :=
     exception_do (let: "m" := (alloc (type.zero_val #(mapT uint64T sliceT))) in
-    let: "$r0" := (map.make uint64T sliceT #()) in
+    let: "$r0" := (map.make #sliceT) in
     do:  ("m" <-[#(mapT uint64T sliceT)] "$r0");;;
     let: "$r0" := #slice.nil in
     do:  (map.insert (![#(mapT uint64T sliceT)] "m") #(W64 1) "$r0");;;
@@ -961,7 +961,7 @@ Definition testPassConcreteToInterfaceArgSpecial : val :=
     slice.literal #Fooer ["$sl0"; "$sl1"])) in
     do:  ("l" <-[#sliceT] "$r0");;;
     let: "m" := (alloc (type.zero_val #(mapT uint64T Fooer))) in
-    let: "$r0" := (map.make uint64T Fooer #()) in
+    let: "$r0" := (map.make #Fooer) in
     do:  ("m" <-[#(mapT uint64T Fooer)] "$r0");;;
     let: "$r0" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![#ptrT] "c1")) in
     do:  (map.insert (![#(mapT uint64T Fooer)] "m") #(W64 10) "$r0");;;
@@ -1470,7 +1470,7 @@ Definition mapElem : go_type := structT [
 Definition mapUpdateField : val :=
   rec: "mapUpdateField" <> :=
     exception_do (let: "x" := (alloc (type.zero_val #(mapT uint64T ptrT))) in
-    let: "$r0" := (map.make uint64T ptrT #()) in
+    let: "$r0" := (map.make #ptrT) in
     do:  ("x" <-[#(mapT uint64T ptrT)] "$r0");;;
     let: "$r0" := #(W64 10) in
     do:  ((struct.field_ref #mapElem #"a"%go (Fst (map.get (![#(mapT uint64T ptrT)] "x") #(W64 0)))) <-[#uint64T] "$r0")).
@@ -2344,11 +2344,11 @@ Definition initialize' : val :=
       let: "$r0" := ((func_call #unittest.unittest #"foo"%go) #()) in
       let: "$r0" := ((let: "$v0" := #(W64 10) in
       let: "$k0" := #"a"%go in
-      map.literal uint64T [("$k0", "$v0")])) in
+      map.literal #uint64T [("$k0", "$v0")])) in
       do:  ((globals.get #unittest.unittest #"mapLiteral"%go) <-[#(mapT stringT uint64T)] "$r0");;;
       let: "$r0" := ((let: "$v0" := (interface.make #""%go #"int"%go #(W64 10)) in
       let: "$k0" := (interface.make #""%go #"string"%go #"a"%go) in
-      map.literal interfaceT [("$k0", "$v0")])) in
+      map.literal #interfaceT [("$k0", "$v0")])) in
       do:  ((globals.get #unittest.unittest #"mapLiteralWithConversion"%go) <-[#(mapT interfaceT interfaceT)] "$r0");;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := (![#uint64T] (globals.get #unittest.unittest #"GlobalX"%go)) in

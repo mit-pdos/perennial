@@ -857,7 +857,7 @@ Definition StartServer : val :=
     (func_call #paxos.paxos #"makeServer"%go) "$a0" "$a1" "$a2") in
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "handlers" := (alloc (type.zero_val #(mapT uint64T funcT))) in
-    let: "$r0" := (map.make uint64T funcT #()) in
+    let: "$r0" := (map.make #funcT) in
     do:  ("handlers" <-[#(mapT uint64T funcT)] "$r0");;;
     let: "$r0" := (λ: "raw_args" "raw_reply",
       exception_do (let: "raw_reply" := (alloc "raw_reply") in
