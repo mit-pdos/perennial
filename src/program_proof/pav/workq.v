@@ -139,4 +139,34 @@ Proof.
   }
 Qed.
 
+Lemma wp_WorkQ__Get wq spec :
+  {{{ "Hwq" ∷ is_WorkQ wq spec }}}
+    WorkQ__Get #wq
+  {{{
+      work_sl (work : list loc), RET (slice_val work_sl);
+        own_slice_small work_sl ptrT (DfracOwn 1) work ∗
+        [∗ list] w ∈ work, ∃ req : loc, own_Work w req spec
+  }}}.
+Proof.
+  iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec. iNamed "Hwq".
+  wp_loadField. wp_apply (wp_Mutex__Lock with "[$]"). iIntros "[Hlocked Hown]".
+  wp_pures. wp_forBreak_cond.
+  iNamed "Hown".
+  wp_loadField. wp_pures.
+  wp_pure; [done|].
+  wp_if_destruct.
+  {
+    wp_loadField. wp_apply (wp_Cond__Wait with "[-HΦ]").
+    { iFrame "#∗#". } iIntros "[? ?]". wp_pures. iLeft.
+    iFrame. done.
+  }
+  iModIntro. iRight. iSplitR; first done.
+  wp_pures. wp_loadField. wp_pures. wp_storeField.
+  replace (slice.nil) with (slice_val Slice.nil) by done.
+  wp_loadField. wp_apply (wp_Mutex__Unlock with "[-HΦ Hwork_sl Hwork]").
+  { iFrame "#∗#". iDestruct (own_slice_zero) as "$". rewrite big_sepL_nil //. }
+  wp_pures. iApply "HΦ". iDestruct (own_slice_to_small with "[$]") as "$".
+  by iFrame.
+Qed.
+
 End proof.
