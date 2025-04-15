@@ -25,8 +25,9 @@ End Work.
 
 Section proof.
 Context `{!heapGS Σ}.
+Context `{!ghost_varG Σ unit}.
 
-Definition is_Work w Ψ : iProp Σ :=
+Definition is_Work w γ Ψ : iProp Σ :=
   ∃ (mu cond : loc),
   "#mu" ∷ w ↦[Work::"mu"]□ #mu ∗
   "#Hmu" ∷ is_lock nroot #mu (
@@ -35,7 +36,7 @@ Definition is_Work w Ψ : iProp Σ :=
         "Hdone" ∷ if done then
             ∃ (Resp : loc),
             "#Resp" ∷ w ↦[Work::"Resp"]□ #Resp ∗
-            "HΨ" ∷ Ψ Resp
+            "HΨ" ∷ (ghost_var γ 1 () ∨ Ψ Resp)
           else
             True
     ) ∗
@@ -44,11 +45,11 @@ Definition is_Work w Ψ : iProp Σ :=
 
 (* authority to read [Req] and write [Resp] *)
 Definition own_Work (w req : loc) (spec : loc → (loc → iProp Σ) → iProp Σ) : iProp Σ :=
-  ∃ Ψ,
+  ∃ Ψ γ,
   "Resp" ∷ w ↦[Work::"Resp"] #null ∗
   "#Req" ∷ w ↦[Work::"Req"]□ #req ∗
   "Hspec" ∷ (spec req Ψ) ∗
-  "#His" ∷ is_Work w Ψ.
+  "#His" ∷ is_Work w γ Ψ.
 
 Definition own_WorkQ wq spec : iProp Σ :=
   ∃ work_sl (work_ptr : list loc),
@@ -59,22 +60,23 @@ Definition own_WorkQ wq spec : iProp Σ :=
 
 Definition is_WorkQ wq spec : iProp Σ :=
   ∃ (mu cond : loc),
-  "#mu" ∷ wq ↦[WorkQ::"mu"] #mu ∗
+  "#mu" ∷ wq ↦[WorkQ::"mu"]□ #mu ∗
   "#Hmu" ∷ is_lock nroot #mu (own_WorkQ wq spec) ∗
-  "#condCli" ∷ wq ↦[WorkQ::"cond"] #cond ∗
-  "#HcondCli" ∷ is_cond cond #mu.
+  "#cond" ∷ wq ↦[WorkQ::"cond"]□ #cond ∗
+  "#Hcond" ∷ is_cond cond #mu.
 
 Lemma wp_NewWork spec (req : loc) Ψ :
   {{{ spec req Ψ }}}
     NewWork #req
-  {{{ w, RET #w; own_Work w req spec ∗ is_Work w Ψ }}}.
+  {{{ w γ, RET #w; own_Work w req spec ∗ ghost_var γ 1 () ∗ is_Work w γ Ψ }}}.
 Proof.
   iIntros (?) "Hpre HΦ". wp_rec. wp_apply wp_new_free_lock.
   iIntros (mu) "Hmu". wp_pures. wp_apply wp_allocStruct; [val_ty|].
   iIntros (w) "Hw". wp_pures. iDestruct (struct_fields_split with "Hw") as "H".
   iNamed "H". wp_loadField. wp_apply (wp_newCond' with "[$]").
   iIntros (?) "[Hmu #Hcond]". wp_storeField.
-  iApply "HΦ".
+  iMod (ghost_var_alloc ()) as (γ) "Htok".
+  iApply "HΦ". iFrame "Htok".
   iMod (struct_field_pointsto_persist with "Req") as "#Req".
   iMod (struct_field_pointsto_persist with "mu") as "#mu".
   iMod (struct_field_pointsto_persist with "cond") as "#cond".
@@ -83,9 +85,9 @@ Proof.
   iNext. iFrame.
 Qed.
 
-Lemma wp_Work__Finish Ψ w (resp : loc) :
+Lemma wp_Work__Finish Ψ γ w (resp : loc) :
   {{{
-      "Hw" ∷ is_Work w Ψ ∗
+      "Hw" ∷ is_Work w γ Ψ ∗
       "Resp" ∷ w ↦[Work::"Resp"] #resp ∗
       "Hpost" ∷ Ψ resp
   }}}
@@ -99,6 +101,42 @@ Proof.
   wp_loadField. iClear "Hdone". iMod (struct_field_pointsto_persist with "Resp") as "#Resp".
   wp_apply (wp_Mutex__Unlock with "[-HΦ]"). { iFrame "#∗#". }
   wp_pures. by iApply "HΦ".
+Qed.
+
+Lemma wp_WorkQ__Do wq spec req :
+  ∀ Φ,
+  is_WorkQ wq spec -∗
+  (spec req (λ resp, Φ #resp)) -∗
+  WP WorkQ__Do #wq #req {{ Φ }}.
+Proof.
+  iIntros (?) "Hpre HΦ". wp_rec. wp_pures. iNamedSuffix "Hpre" "_wq".
+  wp_apply (wp_NewWork with "HΦ"). iIntros "* (Hw & Htok & #His_w)".
+  wp_pures. wp_loadField. wp_apply (wp_Mutex__Lock with "[$]").
+  iIntros "[Hlocked Hown]". iNamed "Hown". wp_pures.
+  wp_loadField. wp_apply (wp_SliceAppend with "[$Hwork_sl]").
+  iIntros (work_sl') "Hwork_sl". wp_storeField. wp_loadField.
+  wp_apply (wp_Cond__Signal with "[$]"). wp_pures. wp_loadField.
+  wp_apply (wp_Mutex__Unlock with "[-Htok]").
+  { iFrame "#∗#". rewrite big_sepL_nil //. }
+  (* FIXME: iCombineNamed for persistent props. *)
+  iClear "mu_wq Hmu_wq cond_wq Hcond_wq". clear work_sl work_ptr work_sl' mu cond.
+  wp_pures. iNamed "His_w". wp_loadField. wp_apply (wp_Mutex__Lock with "[$]").
+  iIntros "[? Hown]". wp_pures. wp_forBreak_cond.
+  iNamed "Hown". wp_loadField. wp_pures. destruct done.
+  {
+    wp_pures. iRight. iModIntro. iSplitR; first done.
+    wp_pures. wp_loadField. iNamed "Hdone".
+    iDestruct "HΨ" as "[Hbad | HΦ]".
+    { iCombine "Htok Hbad" gives %[Hbad _]. by apply Qp.not_add_le_l in Hbad. }
+    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    { iFrame "#∗#". }
+    wp_pures. wp_loadField. iFrame.
+  }
+  {
+    wp_pures. wp_loadField. wp_apply (wp_Cond__Wait with "[-Htok]").
+    { iFrame "#∗#". }
+    iIntros "[? Hown]". wp_pures. iLeft. iFrame. done.
+  }
 Qed.
 
 End proof.
