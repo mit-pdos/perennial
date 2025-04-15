@@ -8,7 +8,7 @@ Section program.
     pps ≠ ∅ ->
     {{{ own_backup_gpreparer_pps gpp pps rk ts cid gid γ }}}
       BackupGroupPreparer__latestProposal #gpp
-    {{{ (p : ppsl), RET (ppsl_to_val p); 
+    {{{ (p : ppsl), RET (ppsl_to_val p);
         own_backup_gpreparer_pps gpp pps rk ts cid gid γ ∗
         ⌜p ∈ (map_img pps : gset ppsl)⌝ ∧
         ⌜map_Forall (λ _ x, (uint.nat x.1 ≤ uint.nat p.1)%nat) pps⌝
@@ -25,6 +25,57 @@ Section program.
     (*@                                                                         @*)
     (*@     return latest                                                       @*)
     (*@ }                                                                       @*)
+    iIntros (Hps Φ) "Hown HΦ".
+    wp_rec.
+    wp_apply (typed_mem.wp_AllocAt); [val_ty|].
+    iIntros (l) "(Hl&Htok)".
+    iEval (rewrite /own_backup_gpreparer_pps) in "Hown"; iNamed "Hown".
+    wp_pures.
+    wp_loadField.
+    wp_apply (wp_MapIter_fold _ _ _ (λ (m : gmap w64 ppsl),
+                                            ∃ p, l ↦[uint64T * (boolT * unitT)%ht] (ppsl_to_val p) ∗
+                                                   (⌜ p ∈ (map_img m : gset ppsl) ∨ m = ∅ ⌝) ∗
+                                                   ⌜ map_Forall (λ _ x, (uint.nat x.1 ≤ uint.nat p.1)%nat) m⌝)%I
+                              pps
+               with "Hpps [Hl]").
+    { rewrite /zero_val//=. iExists (W64 0, false). iFrame "Hl".
+      iPureIntro; split.
+      - right; eauto.
+      - apply map_Forall_empty. }
+    { iIntros (m0 k v).
+      iIntros (Φ') "!> H HΦ'".
+      iDestruct "H" as "(Hpred&%Hlook)".
+      iDestruct "Hpred" as (p) "(Hl&%Hm&%Hforall)".
+      wp_pures. wp_load. wp_pures. wp_if_destruct.
+      - wp_store. iApply "HΦ'".
+        iModIntro. iExists _. iFrame. iPureIntro.
+        split.
+        * left. apply elem_of_map_img_insert.
+        * apply map_Forall_insert; first by intuition eauto.
+          split; auto.
+          eapply map_Forall_impl; eauto. simpl. intros. lia.
+      - iApply "HΦ'".
+        iModIntro. iExists _. iFrame. iPureIntro.
+        split.
+        * left. apply elem_of_map_img.
+
+          (* TODO: we're stuck at this point it's possible latest is
+             never updated to an element of gpp, would need to argue
+             in that case that (0, False) is in pps.
+
+             Maybe the conditional should be latest.Rank <= pp.Rank instead of < *)
+          admit.
+        * apply map_Forall_insert; first by intuition eauto.
+          split; auto.
+          word.
+    }
+    iIntros "(Hown&Hp)". iDestruct "Hp" as (p) "(Hl&%Hin&%Hforall)".
+    wp_pures. wp_load.
+    iModIntro. iApply"HΦ".
+    iSplitR "".
+    { iExists _, _. iFrame "∗ # %". }
+    iPureIntro; split; auto.
+    intuition.
   Admitted.
 
 End program.
