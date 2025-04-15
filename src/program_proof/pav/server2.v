@@ -198,42 +198,43 @@ Definition is_epoch_lb γ (epoch : w64) : iProp Σ :=
   ∃ (gs : list (gmap (list w8) (w64 * list w8) * list w8)),
     mono_list_lb_own γ.(auditor_gn) gs ∗ ⌜ uint.nat epoch + 1 ≤ length gs ⌝.
 
-Definition wq_spec (req : loc) (Φ : loc → iProp Σ) : iProp Σ :=
-  ∃ γ (uid : w64) (pk : list w8) nVers cli_next_ep sl_pk,
-    ("#uid" ∷ req ↦[WQReq::"Uid"]□ #uid ∗
-     "#pk" ∷ req ↦[WQReq::"Pk"]□ (slice_val sl_pk) ∗
-     "Hvers" ∷ own_num_vers γ uid nVers ∗
-     "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
-     "#Hlb_ep" ∷ is_epoch_lb γ cli_next_ep) ∗
-    (∀ (resp ptr_sigdig : loc) sigdig (ptr_lat : loc) lat (ptr_bound : loc) bound label commit,
-       let new_next_ep := word.add sigdig.(SigDig.Epoch) (W64 1) in
-       ("Dig" ∷ resp ↦[WQResp::"Dig"] #ptr_sigdig ∗
-        "Lat" ∷ resp ↦[WQResp::"Lat"] #ptr_lat ∗
-        "Bound" ∷ resp ↦[WQResp::"Bound"] #ptr_bound ∗
-        "Err" ∷ resp ↦[WQResp::"Err"] #false ∗
-        "Hvers" ∷ own_num_vers γ uid (word.add nVers (W64 1)) ∗
+Definition wq_spec γ (req : loc) (Φ : loc → iProp Σ) : iProp Σ :=
+  ∃ (uid : w64) (pk : list w8) nVers cli_next_ep sl_pk,
+    "#uid" ∷ req ↦[WQReq::"Uid"]□ #uid ∗
+    "#pk" ∷ req ↦[WQReq::"Pk"]□ (slice_val sl_pk) ∗
+    "Hvers" ∷ own_num_vers γ uid nVers ∗
+    "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
+    "#Hlb_ep" ∷ is_epoch_lb γ cli_next_ep ∗
+    "HΨ" ∷
+      (∀ (resp ptr_sigdig : loc) sigdig (ptr_lat : loc) lat (ptr_bound : loc) bound label commit,
+         let new_next_ep := word.add sigdig.(SigDig.Epoch) (W64 1) in
+         ("Dig" ∷ resp ↦[WQResp::"Dig"] #ptr_sigdig ∗
+          "Lat" ∷ resp ↦[WQResp::"Lat"] #ptr_lat ∗
+          "Bound" ∷ resp ↦[WQResp::"Bound"] #ptr_bound ∗
+          "Err" ∷ resp ↦[WQResp::"Err"] #false ∗
+          "Hvers" ∷ own_num_vers γ uid (word.add nVers (W64 1)) ∗
 
-        "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
-        "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
-        "#Hlb_ep" ∷ is_epoch_lb γ new_next_ep ∗
-        "%Hlt_ep" ∷ ⌜ uint.Z cli_next_ep < uint.Z new_next_ep ⌝ ∗
-        (* provable from new_next_ep = the w64 size of epochHist slice. *)
-        "%Hnoof_ep" ∷ ⌜ uint.Z new_next_ep = (uint.Z sigdig.(SigDig.Epoch) + 1)%Z ⌝ ∗
+          "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
+          "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
+          "#Hlb_ep" ∷ is_epoch_lb γ new_next_ep ∗
+          "%Hlt_ep" ∷ ⌜ uint.Z cli_next_ep < uint.Z new_next_ep ⌝ ∗
+          (* provable from new_next_ep = the w64 size of epochHist slice. *)
+          "%Hnoof_ep" ∷ ⌜ uint.Z new_next_ep = (uint.Z sigdig.(SigDig.Epoch) + 1)%Z ⌝ ∗
 
-        "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
-        "#Hsig" ∷ is_sig γ.(sig_pk)
-                             (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
-                             sigdig.(SigDig.Sig) ∗
+          "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
+          "#Hsig" ∷ is_sig γ.(sig_pk)
+                               (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
+                               sigdig.(SigDig.Sig) ∗
 
-        "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
-        "#Hwish_lat" ∷ wish_checkMemb γ.(vrf_pk) uid nVers
-                                          sigdig.(SigDig.Dig) lat label commit ∗
+          "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
+          "#Hwish_lat" ∷ wish_checkMemb γ.(vrf_pk) uid nVers
+                                            sigdig.(SigDig.Dig) lat label commit ∗
 
-        "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
-        "#Hwish_bound" ∷ wish_checkNonMemb γ.(vrf_pk) uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
-       )
-       -∗ Φ resp
-    ).
+          "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
+          "#Hwish_bound" ∷ wish_checkNonMemb γ.(vrf_pk) uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
+         )
+         -∗ Φ resp
+      ).
 
 (* FIXME: for workqG *)
 Context `{!ghost_varG Σ unit}.
@@ -246,7 +247,7 @@ Definition is_Server γ s : iProp Σ :=
   "#vrfSk" ∷ s ↦[Server :: "vrfSk"]□ #vrfSk_ptr ∗
   "#HvrfSk" ∷ is_vrf_sk vrfSk_ptr γ.(vrf_pk) ∗
   "#workQ" ∷ s ↦[Server :: "workQ"]□ #workQ ∗
-  "#HworkQ" ∷ is_WorkQ workQ wq_spec ∗
+  "#HworkQ" ∷ is_WorkQ workQ (wq_spec γ) ∗
   "_" ∷ True.
 
 Lemma wp_getDig γ st epochHist_sl epochHist_ptrs q :
@@ -819,12 +820,79 @@ Proof.
   iMod (struct_pointsto_persist with "Hreq") as "#Hreq".
   iDestruct (struct_fields_split with "Hreq") as "H". iNamed "H".
   wp_apply (wp_WorkQ__Do with "[$]").
-  repeat iExists _. iSplitR "HΦ".
-  { iFrame "∗#". }
-  iClear "Hlb_ep".
-  iIntros "*". iNamed 1. wp_pures. wp_loadField.
+  repeat iExists _. iFrame "Uid Pk Hvers Hsl_pk Hlb_ep". iClear "Hlb_ep".
+  iApply to_named. iIntros "*". iNamed 1. wp_pures. wp_loadField.
   wp_loadField. wp_loadField. wp_loadField. wp_pures.
   iApply "HΦ". iFrame "∗#%". done.
 Qed.
+
+Lemma wp_Server__Worker γ s:
+  {{{
+        "#His" ∷ is_Server γ s ∗
+        "Hown" ∷ own_Server γ s (1/2)
+  }}}
+    Server__Worker #s
+  {{{
+       RET #(); own_Server γ s (1/2)
+  }}}.
+Proof.
+  iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec. iNamed "His".
+  wp_loadField. wp_apply (wp_WorkQ__Get with "[$]").
+  iIntros "* [work Hwork]". wp_pures.
+  wp_apply (wp_NewMap w64 bool). iIntros (uidSet_ptr) "uidSet".
+  wp_pures. iDestruct (own_slice_small_sz with "work") as %Hwork_sz.
+  wp_apply (wp_forSlice
+              (λ i,
+                 ∃ (uidSet : gmap w64 bool),
+                 "Hwork" ∷ ([∗ list] w ∈ (drop (uint.nat i) work), ∃ req : loc, own_Work w req (wq_spec γ)) ∗
+                 "uidSet" ∷ own_map uidSet_ptr (DfracOwn 1) uidSet ∗
+                 "HuidSet" ∷ (([∗ set] uid ∈ dom uidSet, ∃ n, own_num_vers γ uid n) ∧
+                              ([∗ list] w ∈ (take (uint.nat i) work), _))
+              )%I
+             with
+             "[] [$work]"
+           ).
+  {
+    clear Φ. iIntros "* % !# [Hpre [%Hlt %Hlookup]] HΦ". wp_pures.
+    iNamed "Hpre". erewrite drop_S; last done.
+    iDestruct "Hwork" as "[Hw Hwork]". iNamed "Hw".
+    wp_apply wp_allocStruct; [val_ty|]. iIntros (resp) "Hresp".
+    wp_storeField. wp_loadField.
+    iNamed "Hspec". wp_loadField. wp_pures. wp_apply (wp_MapGet with "[$]").
+    iIntros "* [%Huid_lookup uidSet]". wp_pures. destruct ok.
+    { (* impossible given the precondition *)
+      iExFalso. apply map_get_true in Huid_lookup.
+      iLeft in "HuidSet".
+      iDestruct (big_sepS_elem_of _ _ uid with "HuidSet") as (?) "Hbad".
+      { by eapply elem_of_dom_2. }
+      iCombine "Hbad Hvers" gives %Hbad. exfalso.
+      naive_solver.
+    }
+    apply map_get_false in Huid_lookup as [Huid_lookup ->].
+    wp_pures.
+    wp_apply (wp_MapInsert with "[$]"); first done.
+    iIntros "uidSet".
+    iApply "HΦ". iFrame.
+    replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
+    iFrame. iSplit.
+    - (* uidSet *) unfold typed_map.map_insert.
+      iLeft in "HuidSet". rewrite dom_insert_L.
+      rewrite big_sepS_union.
+      2:{ rewrite -not_elem_of_dom in Huid_lookup. set_solver. }
+      rewrite big_sepS_singleton. iFrame.
+    - iRight in "HuidSet".
+      erewrite take_S_r; last done.
+      iApply big_sepL_app. iFrame. rewrite big_sepL_singleton.
+      Unshelve.
+      2:{
+        intros ?. clear H. clear Hwork_sz commitSecret_sl mu vrfSk_ptr workQ work_sl work uidSet_ptr.
+        shelve.
+      }
+      simpl.
+      iDestruct "Req" as "-#Req".
+      iCombineNamed "*" as "H".
+      admit. (* TODO: higher order unification *)
+  }
+Admitted.
 
 End proof.
