@@ -34,7 +34,7 @@ Section program.
     wp_loadField.
     wp_apply (wp_MapIter_fold _ _ _ (λ (m : gmap w64 ppsl),
                                             ∃ p, l ↦[uint64T * (boolT * unitT)%ht] (ppsl_to_val p) ∗
-                                                   (⌜ p ∈ (map_img m : gset ppsl) ∨ m = ∅ ⌝) ∗
+                                                   (⌜ p ∈ (map_img m : gset ppsl) ∨ (m = ∅ ∧ p.1 = (W64 0))⌝) ∗
                                                    ⌜ map_Forall (λ _ x, (uint.nat x.1 ≤ uint.nat p.1)%nat) m⌝)%I
                               pps
                with "Hpps [Hl]").
@@ -45,6 +45,7 @@ Section program.
     { iIntros (m0 k v).
       iIntros (Φ') "!> H HΦ'".
       iDestruct "H" as "(Hpred&%Hlook)".
+      destruct Hlook as (Hlook1&Hlook2).
       iDestruct "Hpred" as (p) "(Hl&%Hm&%Hforall)".
       wp_pures. wp_load. wp_pures. wp_if_destruct.
       - wp_store. iApply "HΦ'".
@@ -58,13 +59,10 @@ Section program.
         iModIntro. iExists _. iFrame. iPureIntro.
         split.
         * left. apply elem_of_map_img.
-
-          (* TODO: we're stuck at this point it's possible latest is
-             never updated to an element of gpp, would need to argue
-             in that case that (0, False) is in pps.
-
-             Maybe the conditional should be latest.Rank <= pp.Rank instead of < *)
-          admit.
+          destruct Hm as [Hin|Hemp]; last first.
+          { destruct Hemp as (?&Heq). rewrite Heq in Heqb. word. }
+          apply elem_of_map_img in Hin as (i&Hin).
+          exists i. rewrite lookup_insert_ne //; congruence.
         * apply map_Forall_insert; first by intuition eauto.
           split; auto.
           word.
@@ -76,6 +74,6 @@ Section program.
     { iExists _, _. iFrame "∗ # %". }
     iPureIntro; split; auto.
     intuition.
-  Admitted.
+  Qed.
 
 End program.
