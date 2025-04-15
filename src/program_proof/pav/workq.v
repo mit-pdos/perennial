@@ -83,4 +83,22 @@ Proof.
   iNext. iFrame.
 Qed.
 
+Lemma wp_Work__Finish Ψ w (resp : loc) :
+  {{{
+      "Hw" ∷ is_Work w Ψ ∗
+      "Resp" ∷ w ↦[Work::"Resp"] #resp ∗
+      "Hpost" ∷ Ψ resp
+  }}}
+    Work__Finish #w
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec.
+  iNamed "Hw". wp_loadField. wp_apply (wp_Mutex__Lock with "Hmu").
+  iIntros "[Hlocked Hown]". iNamed "Hown". wp_pures. wp_storeField.
+  wp_loadField. wp_apply (wp_Cond__Signal with "[$]"). wp_pures.
+  wp_loadField. iClear "Hdone". iMod (struct_field_pointsto_persist with "Resp") as "#Resp".
+  wp_apply (wp_Mutex__Unlock with "[-HΦ]"). { iFrame "#∗#". }
+  wp_pures. by iApply "HΦ".
+Qed.
+
 End proof.
