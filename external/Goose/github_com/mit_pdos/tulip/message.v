@@ -309,7 +309,7 @@ Definition DecodeTxnQueryResponse: val :=
 Definition EncodeTxnInquireRequest: val :=
   rec: "EncodeTxnInquireRequest" "ts" "rank" :=
     let: "bs" := NewSliceWithCap byteT #0 #24 in
-    let: "bs1" := marshal.WriteInt "bs" MSG_TXN_QUERY in
+    let: "bs1" := marshal.WriteInt "bs" MSG_TXN_INQUIRE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "data" := marshal.WriteInt "bs2" "rank" in
     "data".

@@ -8,6 +8,7 @@ Inductive txnreq :=
 | PrepareReq     (ts : u64) (rank : u64)
 | UnprepareReq   (ts : u64) (rank : u64)
 | QueryReq       (ts : u64) (rank : u64)
+| InquireReq     (ts : u64) (rank : u64)
 | RefreshReq     (ts : u64) (rank : u64)
 | CommitReq      (ts : u64) (pwrs : dbmap)
 | AbortReq       (ts : u64).
@@ -31,12 +32,14 @@ Proof.
                       inr (inr (inr (inr (inl (ts, rank)))))
                   | QueryReq ts rank =>
                       inr (inr (inr (inr (inr (inl (ts, rank))))))
-                  | RefreshReq ts rank =>
+                  | InquireReq ts rank =>
                       inr (inr (inr (inr (inr (inr (inl (ts, rank)))))))
+                  | RefreshReq ts rank =>
+                      inr (inr (inr (inr (inr (inr (inr (inl (ts, rank))))))))
                   | CommitReq ts pwrs =>
-                      inr (inr (inr (inr (inr (inr (inr (inl (ts, pwrs))))))))
+                      inr (inr (inr (inr (inr (inr (inr (inr (inl (ts, pwrs)))))))))
                   | AbortReq ts =>
-                      inr (inr (inr (inr (inr (inr (inr (inr ts)))))))
+                      inr (inr (inr (inr (inr (inr (inr (inr (inr ts))))))))
                   end)
             (λ x, match x with
                   | inl (ts, key) => ReadReq ts key
@@ -47,14 +50,16 @@ Proof.
                   | inr (inr (inr (inr (inr (inl (ts, rank)))))) =>
                       QueryReq ts rank
                   | inr (inr (inr (inr (inr (inr (inl (ts, rank))))))) =>
+                      InquireReq ts rank
+                  | inr (inr (inr (inr (inr (inr (inr (inl (ts, rank)))))))) =>
                       RefreshReq ts rank
-                  | inr (inr (inr (inr (inr (inr (inr (inl (ts, pwrs)))))))) =>
+                  | inr (inr (inr (inr (inr (inr (inr (inr (inl (ts, pwrs))))))))) =>
                       CommitReq ts pwrs
-                  | inr (inr (inr (inr (inr (inr (inr (inr ts))))))) =>
+                  | inr (inr (inr (inr (inr (inr (inr (inr (inr ts)))))))) =>
                       AbortReq ts
                   end)
             _).
-  intros [| | | | | | | |] => //=.
+  intros [| | | | | | | | |] => //=.
 Qed.
 
 Definition encode_read_req_xkind (ts : u64) (key : byte_string) :=
@@ -107,6 +112,7 @@ Definition encode_txnreq (req : txnreq) (data : list u8) :=
   | PrepareReq ts rank => encode_txnreq_of_ts_rank (U64 203) ts rank data
   | UnprepareReq ts rank => encode_txnreq_of_ts_rank (U64 204) ts rank data
   | QueryReq ts rank => encode_txnreq_of_ts_rank (U64 205) ts rank data
+  | InquireReq ts rank => encode_txnreq_of_ts_rank (U64 206) ts rank data
   | RefreshReq ts rank => encode_txnreq_of_ts_rank (U64 210) ts rank data
   | CommitReq ts pwrs => encode_commit_req ts pwrs data
   | AbortReq ts => encode_abort_req ts data

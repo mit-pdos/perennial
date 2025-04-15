@@ -25,6 +25,9 @@ Definition txnreq_to_val (req : txnreq) (pwrsP ptgsP : Slice.t) : val :=
   | QueryReq ts rank =>
       struct.mk_f TxnRequest [
           ("Kind", #(U64 205)); ("Timestamp", #ts); ("Rank", #rank)]
+  | InquireReq ts rank =>
+      struct.mk_f TxnRequest [
+          ("Kind", #(U64 206)); ("Timestamp", #ts); ("Rank", #rank)]
   | RefreshReq ts rank =>
       struct.mk_f TxnRequest [
           ("Kind", #(U64 210)); ("Timestamp", #ts); ("Rank", #rank)]

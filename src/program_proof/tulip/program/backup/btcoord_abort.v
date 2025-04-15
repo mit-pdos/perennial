@@ -18,6 +18,8 @@ Section program.
     (*@         }()                                                             @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
+    iIntros "#Habort" (Φ) "!> HHΦ".
+    wp_rec.
   Admitted.
 
 End program.
