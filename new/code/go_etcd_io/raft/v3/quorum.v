@@ -37,7 +37,7 @@ Definition JointConfig__IDs : val :=
     exception_do (let: "c" := (alloc "c") in
     let: "m" := (alloc (type.zero_val #(mapT uint64T (structT [
     ])))) in
-    let: "$r0" := ((map.literal #(structT [
+    let: "$r0" := ((map.literal #uint64T #(structT [
     ]) [])) in
     do:  ("m" <-[#(mapT uint64T (structT [
     ]))] "$r0");;;

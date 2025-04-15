@@ -224,7 +224,7 @@ Definition TryMakeClient : val :=
     let: "$r0" := (alloc (let: "$conn" := (![#grove_ffi.Connection] (struct.field_ref #grove_ffi.ConnectRet #"Connection"%go "a")) in
     let: "$mu" := (alloc (type.zero_val #sync.Mutex)) in
     let: "$seq" := #(W64 1) in
-    let: "$pending" := (map.make #ptrT) in
+    let: "$pending" := (map.make #uint64T #ptrT) in
     struct.make #Client [{
       "mu" ::= "$mu";
       "conn" ::= "$conn";

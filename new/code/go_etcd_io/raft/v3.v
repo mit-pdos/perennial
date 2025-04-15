@@ -6708,7 +6708,7 @@ Definition newReadOnly : val :=
   rec: "newReadOnly" "option" :=
     exception_do (let: "option" := (alloc "option") in
     return: (alloc (let: "$option" := (![#ReadOnlyOption] "option") in
-     let: "$pendingReadIndex" := (map.make #ptrT) in
+     let: "$pendingReadIndex" := (map.make #stringT #ptrT) in
      struct.make #readOnly [{
        "option" ::= "$option";
        "pendingReadIndex" ::= "$pendingReadIndex";
@@ -6740,7 +6740,7 @@ Definition readOnly__addRequest : val :=
     else do:  #()));;;
     let: "$r0" := (alloc (let: "$index" := (![#uint64T] "index") in
     let: "$req" := (![#raftpb.Message] "m") in
-    let: "$acks" := (map.make #boolT) in
+    let: "$acks" := (map.make #uint64T #boolT) in
     struct.make #readIndexStatus [{
       "req" ::= "$req";
       "index" ::= "$index";
@@ -6933,7 +6933,7 @@ Definition getProgressCopy : val :=
   rec: "getProgressCopy" "r" :=
     exception_do (let: "r" := (alloc "r") in
     let: "m" := (alloc (type.zero_val #(mapT uint64T tracker.Progress))) in
-    let: "$r0" := (map.make #tracker.Progress) in
+    let: "$r0" := (map.make #uint64T #tracker.Progress) in
     do:  ("m" <-[#(mapT uint64T tracker.Progress)] "$r0");;;
     do:  (let: "$a0" := (λ: "id" "pr",
       exception_do (let: "pr" := (alloc "pr") in

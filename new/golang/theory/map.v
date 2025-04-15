@@ -133,7 +133,7 @@ Qed.
 Lemma wp_map_make :
   is_comparable_go_type kt = true →
   {{{ True }}}
-    map.make #vt
+    map.make #kt #vt
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof.
   rewrite own_map_unseal.

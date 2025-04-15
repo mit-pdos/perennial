@@ -59,7 +59,7 @@ Definition freeRange : val :=
   rec: "freeRange" "sz" :=
     exception_do (let: "sz" := (alloc "sz") in
     let: "m" := (alloc (type.zero_val #(mapT uint64T unit))) in
-    let: "$r0" := (map.make #unit) in
+    let: "$r0" := (map.make #uint64T #unit) in
     do:  ("m" <-[#(mapT uint64T unit)] "$r0");;;
     (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
@@ -1251,7 +1251,7 @@ Definition testIterateMap : val :=
     let: "$r0" := #true in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "m" := (alloc (type.zero_val #(mapT uint64T uint64T))) in
-    let: "$r0" := (map.make #uint64T) in
+    let: "$r0" := (map.make #uint64T #uint64T) in
     do:  ("m" <-[#(mapT uint64T uint64T)] "$r0");;;
     let: "$r0" := #(W64 1) in
     do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 0) "$r0");;;
@@ -1274,7 +1274,7 @@ Definition testMapSize : val :=
     let: "$r0" := #true in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "m" := (alloc (type.zero_val #(mapT uint64T uint64T))) in
-    let: "$r0" := (map.make #uint64T) in
+    let: "$r0" := (map.make #uint64T #uint64T) in
     do:  ("m" <-[#(mapT uint64T uint64T)] "$r0");;;
     let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![#(mapT uint64T uint64T)] "m") in
     map.len "$a0")) = #(W64 0))) in
@@ -1344,7 +1344,7 @@ Definition testMultipleAssignToMap : val :=
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[#uint64T] "$r0");;;
     let: "m" := (alloc (type.zero_val #(mapT uint64T uint64T))) in
-    let: "$r0" := (map.make #uint64T) in
+    let: "$r0" := (map.make #uint64T #uint64T) in
     do:  ("m" <-[#(mapT uint64T uint64T)] "$r0");;;
     let: ("$ret0", "$ret1") := ((func_call #semantics.semantics #"multReturnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
@@ -2564,7 +2564,7 @@ Definition New : val :=
       Panic "$a0")
     else do:  #());;;
     let: "cache" := (alloc (type.zero_val #(mapT uint64T sliceT))) in
-    let: "$r0" := (map.make #sliceT) in
+    let: "$r0" := (map.make #uint64T #sliceT) in
     do:  ("cache" <-[#(mapT uint64T sliceT)] "$r0");;;
     let: "header" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
@@ -2825,7 +2825,7 @@ Definition Open : val :=
     do:  (let: "$a0" := (![#disk.Disk] "d") in
     (func_call #semantics.semantics #"clearLog"%go) "$a0");;;
     let: "cache" := (alloc (type.zero_val #(mapT uint64T sliceT))) in
-    let: "$r0" := (map.make #sliceT) in
+    let: "$r0" := (map.make #uint64T #sliceT) in
     do:  ("cache" <-[#(mapT uint64T sliceT)] "$r0");;;
     let: "lengthPtr" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := (alloc (type.zero_val #uint64T)) in

@@ -61,8 +61,6 @@ Proof.
   wp_auto.
   wp_apply (wp_Client__GetLogger with "[$]") as "% _".
   wp_apply (wp_Client__Ctx with "[$]") as "% _".
-  rewrite -default_val_eq_zero_val. (* TODO: want this to happen automatically to enable struct.make reduction *)
-  wp_pures.
   wp_alloc ops as "Hops".
   wp_auto.
   (* only consider nil options *)

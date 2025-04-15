@@ -78,7 +78,7 @@ Definition Make : val :=
     exception_do (let: "kv" := (alloc "kv") in
     return: (alloc (let: "$kv" := (![#kv.KvCput] "kv") in
      let: "$mu" := (alloc (type.zero_val #sync.Mutex)) in
-     let: "$cache" := (map.make #cacheValue) in
+     let: "$cache" := (map.make #stringT #cacheValue) in
      struct.make #CacheKv [{
        "kv" ::= "$kv";
        "mu" ::= "$mu";

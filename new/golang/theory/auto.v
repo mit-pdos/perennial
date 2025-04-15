@@ -74,7 +74,8 @@ Ltac2 wp_auto_lc (num_lc_wanted : int) :=
       repeat (first [ wp_pure_maybe_lc ()
                     | wp_load ()
                     | wp_store ()
-                    | wp_alloc_auto ()]);
+                    | wp_alloc_auto ()
+                    | ltac1:(rewrite <- ?default_val_eq_zero_val) ]);
       if (Int.gt (Ref.get num_lc_wanted) 0) then
         Control.backtrack_tactic_failure "wp_auto_lc: unable to generate enough later credits"
       else

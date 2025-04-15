@@ -65,12 +65,13 @@ Definition len : val :=
                        (for: (!"len" < #(W64 (2^64-1))) ; Skip := #())) ;;
     !"len".
 
+(* key type is also supplied to supply a type to the wp lemma *)
 Definition make : val :=
-  λ: "vt", Alloc (InjL (type.zero_val "vt")).
+  λ: "kt" "vt", Alloc (InjL (type.zero_val "vt")).
 
 (* TODO: this produces a map value and doesn't allocate a reference *)
 Definition literal : val :=
-  λ: "vt",
+  λ: "kt" "vt",
   rec: "literal" "alist" :=
     list.Match "alist"
       (λ: <>, InjL (type.zero_val "vt"))

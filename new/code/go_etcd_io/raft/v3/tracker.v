@@ -615,7 +615,7 @@ Definition Config__Clone : val :=
       else do:  #());;;
       let: "mm" := (alloc (type.zero_val #(mapT uint64T (structT [
       ])))) in
-      let: "$r0" := (map.make #(structT [
+      let: "$r0" := (map.make #uint64T #(structT [
       ])) in
       do:  ("mm" <-[#(mapT uint64T (structT [
       ]))] "$r0");;;
@@ -669,7 +669,7 @@ Definition MakeProgressTracker : val :=
     let: "p" := (alloc (type.zero_val #ProgressTracker)) in
     let: "$r0" := (let: "$MaxInflight" := (![#intT] "maxInflight") in
     let: "$MaxInflightBytes" := (![#uint64T] "maxBytes") in
-    let: "$Config" := (let: "$Voters" := ((let: "$ar0" := ((map.literal #(structT [
+    let: "$Config" := (let: "$Voters" := ((let: "$ar0" := ((map.literal #uint64T #(structT [
     ]) [])) in
     let: "$ar1" := #null in
     array.literal ["$ar0"; "$ar1"])) in
@@ -681,8 +681,8 @@ Definition MakeProgressTracker : val :=
       "Learners" ::= "$Learners";
       "LearnersNext" ::= "$LearnersNext"
     }]) in
-    let: "$Votes" := ((map.literal #boolT [])) in
-    let: "$Progress" := ((map.literal #ptrT [])) in
+    let: "$Votes" := ((map.literal #uint64T #boolT [])) in
+    let: "$Progress" := ((map.literal #uint64T #ptrT [])) in
     struct.make #ProgressTracker [{
       "Config" ::= "$Config";
       "Progress" ::= "$Progress";
@@ -803,7 +803,7 @@ Definition ProgressTracker__QuorumActive : val :=
   rec: "ProgressTracker__QuorumActive" "p" <> :=
     exception_do (let: "p" := (alloc "p") in
     let: "votes" := (alloc (type.zero_val #(mapT uint64T boolT))) in
-    let: "$r0" := ((map.literal #boolT [])) in
+    let: "$r0" := ((map.literal #uint64T #boolT [])) in
     do:  ("votes" <-[#(mapT uint64T boolT)] "$r0");;;
     do:  (let: "$a0" := (λ: "id" "pr",
       exception_do (let: "pr" := (alloc "pr") in
@@ -884,7 +884,7 @@ Definition ProgressTracker__LearnerNodes : val :=
 Definition ProgressTracker__ResetVotes : val :=
   rec: "ProgressTracker__ResetVotes" "p" <> :=
     exception_do (let: "p" := (alloc "p") in
-    let: "$r0" := ((map.literal #boolT [])) in
+    let: "$r0" := ((map.literal #uint64T #boolT [])) in
     do:  ((struct.field_ref #ProgressTracker #"Votes"%go (![#ptrT] "p")) <-[#(mapT uint64T boolT)] "$r0")).
 
 (* RecordVote records that the node with the given id voted for this Raft
