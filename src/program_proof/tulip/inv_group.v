@@ -88,6 +88,11 @@ Section inv.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
 
+  Definition quorum_voted γ (gid : u64) (ts rk : nat) (cid : coordid) : iProp Σ :=
+    ∃ (ridsq : gset u64),
+      ([∗ set] rid ∈ ridsq, is_replica_backup_vote γ gid rid ts rk cid) ∧
+      ⌜cquorum rids_all ridsq⌝.
+  
   Definition quorum_validated γ (gid : u64) (ts : nat) : iProp Σ :=
     ∃ (ridsq : gset u64),
       ([∗ set] rid ∈ ridsq, is_replica_validated_ts γ gid rid ts) ∧
@@ -244,6 +249,11 @@ Section inv.
     Persistent (is_group_prepare_proposal_if_classic γ gid ts rk p).
   Proof. rewrite /is_group_prepare_proposal_if_classic. case_decide; apply _. Defined.
 
+  #[global]
+  Instance is_group_prepare_proposal_if_classic_timeless γ gid ts rk p :
+    Timeless (is_group_prepare_proposal_if_classic γ gid ts rk p).
+  Proof. rewrite /is_group_prepare_proposal_if_classic. case_decide; apply _. Defined.
+
   (* NB: [safe_proposal] seems unnecessarily strong in that it always requires a
   classic quorum of responses, while sometimes a prepare proposal can be made
   even without a classic quorum (e.g., in a 3-node cluster, a transaction client
@@ -373,19 +383,11 @@ Section inv.
     - rewrite /group_inv_proposals_map.
       repeat (apply exist_timeless => ?).
       repeat (apply sep_timeless; try apply _).
-      * apply big_sepM_timeless. intros ???.
-        rewrite /exclusive_proposals.
-        apply big_sepS_timeless. intros y Hin.
-        rewrite /exclusive_proposal.
-        destruct (decide _); apply _.
-      * apply big_sepM_timeless. intros ???.
-        rewrite /safe_proposals.
-        apply big_sepM_timeless. intros y b Hlook.
-        rewrite /safe_proposal.
-        repeat (apply exist_timeless => ?).
-        repeat (apply sep_timeless; try apply _).
-        rewrite /is_group_prepare_proposal_if_classic.
-        destruct (decide _); apply _.
+      apply big_sepM_timeless. intros ???.
+      rewrite /exclusive_proposals.
+      apply big_sepS_timeless. intros y Hin.
+      rewrite /exclusive_proposal.
+      destruct (decide _); apply _.
     - apply big_sepM_timeless. intros x ??.
       rewrite /safe_txnst.
       destruct x; try apply _.

@@ -1,7 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps serialize.
-From Perennial.program_proof.tulip Require Import base res cmd msg big_sep.
+From Perennial.program_proof.tulip Require Import
+  base res cmd msg big_sep stability.
 From Perennial.program_proof.tulip Require Export
   inv_txnsys inv_key inv_group inv_replica.
 
@@ -150,6 +151,53 @@ Section def.
   #[global]
   Instance query_outcome_timeless γ ts res :
     Timeless (query_outcome γ ts res).
+  Proof. destruct res; apply _. Defined.
+
+  Definition latest_proposal_replica γ gid rid ts rk rkl p : iProp Σ :=
+    ∃ (lb : ballot),
+      "#Hlb"   ∷ is_replica_ballot_lb γ gid rid ts lb ∗
+      (* We can deduce this from [Hlb] and replica inv, but it's convenient to have it here. *)
+      "#Hgpsl" ∷ is_group_prepare_proposal_if_classic γ gid ts rkl p ∗
+      "%Hp"    ∷ ⌜lb !! rkl = Some (Accept p)⌝ ∗
+      "%Hrk"   ∷ ⌜length lb = rk⌝ ∗
+      "%Hrkl"  ∷ ⌜latest_term lb = rkl⌝.
+
+  Definition inquire_positive_outcome
+    γ gid rid cid ts rk rkl p (vd : bool) pwrs : iProp Σ :=
+    "#Hvote"     ∷ is_replica_backup_vote γ gid rid ts rk cid ∗
+    "#Hlb"       ∷ latest_proposal_replica γ gid rid ts rk rkl p ∗
+    "#Hvd"       ∷ (if vd then is_replica_validated_ts γ gid rid ts else True) ∗
+    "#Hsafepwrs" ∷ (if vd then safe_txn_pwrs γ gid ts pwrs else True).
+
+  #[global]
+  Instance inquire_outcome_positive_persistent γ gid rid cid ts rk rkl p vd pwrs :
+    Persistent (inquire_positive_outcome γ gid rid cid ts rk rkl p vd pwrs).
+  Proof. destruct vd; apply _. Defined.
+
+  #[global]
+  Instance inquire_outcome_positive_timeless γ gid rid cid ts rk rkl p vd pwrs :
+    Timeless (inquire_positive_outcome γ gid rid cid ts rk rkl p vd pwrs).
+  Proof. destruct vd; apply _. Defined.
+  
+  Definition inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res : iProp Σ :=
+    match res with
+    | ReplicaOK => inquire_positive_outcome γ gid rid cid ts rk rkl p vd pwrs
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => False
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance inquire_outcome_persistent γ gid rid cid ts rk rkl p vd pwrs res :
+    Persistent (inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res).
+  Proof. destruct res; apply _. Defined.
+
+  #[global]
+  Instance inquire_outcome_timeless γ gid rid cid ts rk rkl p vd pwrs res :
+    Timeless (inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res).
   Proof. destruct res; apply _. Defined.
 
 End def.

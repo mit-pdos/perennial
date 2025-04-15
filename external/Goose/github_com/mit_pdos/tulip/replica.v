@@ -13,6 +13,7 @@ From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition Replica := struct.decl [
   "mu" :: ptrT;
+  "gid" :: uint64T;
   "rid" :: uint64T;
   "addr" :: uint64T;
   "fname" :: stringT;
@@ -442,7 +443,7 @@ Definition Replica__inquire: val :=
       (if: "ok" && ("rank" ≤ "rankl")
       then
         (struct.mk tulip.PrepareProposal [
-         ], #false, slice.nil, tulip.REPLICA_INVALID_RANK)
+         ], #false, slice.nil, tulip.REPLICA_STALE_COORDINATOR)
       else
         let: "pp" := Fst (MapGet (struct.loadF Replica "pstbl" "rp") "ts") in
         Replica__advance "rp" "ts" "rank";;
@@ -573,7 +574,11 @@ Definition Replica__StartBackupTxnCoordinator: val :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "rank" := (Fst (MapGet (struct.loadF Replica "rktbl" "rp") "ts")) + #1 in
     let: "ptgs" := Fst (MapGet (struct.loadF Replica "ptgsm" "rp") "ts") in
-    let: "tcoord" := backup.MkBackupTxnCoordinator "ts" "rank" "ptgs" (struct.loadF Replica "gaddrm" "rp") (struct.loadF Replica "leader" "rp") in
+    let: "cid" := struct.mk tulip.CoordID [
+      "GroupID" ::= struct.loadF Replica "gid" "rp";
+      "ReplicaID" ::= struct.loadF Replica "rid" "rp"
+    ] in
+    let: "tcoord" := backup.MkBackupTxnCoordinator "ts" "rank" "cid" "ptgs" (struct.loadF Replica "gaddrm" "rp") (struct.loadF Replica "leader" "rp") in
     backup.BackupTxnCoordinator__ConnectAll "tcoord";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     backup.BackupTxnCoordinator__Finalize "tcoord";;

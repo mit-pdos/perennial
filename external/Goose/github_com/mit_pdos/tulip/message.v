@@ -26,7 +26,8 @@ Definition TxnResponse := struct.decl [
   "Prepared" :: boolT;
   "Validated" :: boolT;
   "Slow" :: boolT;
-  "PartialWrites" :: tulip.KVMap
+  "PartialWrites" :: tulip.KVMap;
+  "CooordID" :: struct.t tulip.CoordID
 ].
 
 Definition MSG_TXN_READ : expr := #100.

@@ -118,6 +118,31 @@ Proof.
   intros [t [v |]]; by auto 10.
 Defined.
 
+Definition coordid_to_val (v : coordid) : val := (#v.1, (#v.2, #())).
+
+Definition coordid_from_val (v : val) : option coordid :=
+  match v with
+  | (#(LitInt g), (#(LitInt r), #()))%V => Some (g, r)
+  | _ => None
+  end.
+
+#[global]
+Instance coordid_into_val : IntoVal coordid.
+Proof.
+  refine {|
+      to_val := coordid_to_val;
+      from_val := coordid_from_val;
+      IntoVal_def := (W64 0, W64 0);
+    |}.
+  intros v.
+  by destruct v.
+Defined.
+
+#[global]
+Instance coordid_into_val_for_type :
+  IntoValForType coordid (uint64T * (uint64T * unitT)%ht).
+Proof. by constructor; [| | intros [r d]; auto 10]. Defined.
+
 Definition ccommand_to_val (pwrsS : Slice.t) (c : ccommand) : val :=
   match c with
   | CmdAbort ts => (#(U64 0), (#(U64 ts), (Slice.nil, #())))

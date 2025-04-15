@@ -63,6 +63,16 @@ Section lemmas.
     by rewrite Hx1 in Heq1.
   Qed.
 
+  Lemma map_Forall2_size_filter
+    {A B : Type}
+    (P : K * A -> Prop) (Q : K * B -> Prop) `{!∀ kx, Decision (P kx)} `{!∀ ky, Decision (Q ky)}
+    (m1 : M A) (m2 : M B) :
+    map_Forall2 (λ k x y, P (k, x) ↔ Q (k, y)) m1 m2 ->
+    size (filter (λ kx, P kx) m1) = size (filter (λ ky, Q ky) m2).
+  Proof.
+  Admitted.
+
+
 End lemmas.
 
 Section lemmas.
