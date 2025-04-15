@@ -1838,7 +1838,7 @@ Definition Server__Worker: val :=
     let: "wg" := ref_to ptrT (waitgroup.New #()) in
     let: "i" := ref (zero_val uint64T) in
     Skip;;
-    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
       let: "resp" := struct.loadF Work "Resp" (SliceGet ptrT "work" (![uint64T] "i")) in
       (if: (~ (struct.loadF WQResp "Err" "resp"))
       then
@@ -1848,15 +1848,16 @@ Definition Server__Worker: val :=
         SliceSet ptrT "outs0" (![uint64T] "i") "out0";;
         waitgroup.Add (![ptrT] "wg") #1;;
         Fork (Server__mapper0 "s" "req" "out0";;
-              waitgroup.Done (![ptrT] "wg"));;
-        Continue
-      else Continue));;
+              waitgroup.Done (![ptrT] "wg"))
+      else #());;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
     waitgroup.Wait (![ptrT] "wg");;
     RWMutex__Lock (struct.loadF Server "mu" "s");;
     let: "upd" := NewMap stringT (slice.T byteT) #() in
     "i" <-[uint64T] #0;;
     Skip;;
-    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
       let: "resp" := struct.loadF Work "Resp" (SliceGet ptrT "work" (![uint64T] "i")) in
       (if: (~ (struct.loadF WQResp "Err" "resp"))
       then
@@ -1874,24 +1875,26 @@ Definition Server__Worker: val :=
         else #());;
         struct.storeF userState "numVers" (![ptrT] "user") ((struct.loadF userState "numVers" (![ptrT] "user")) + #1);;
         struct.storeF userState "plainPk" (![ptrT] "user") (struct.loadF WQReq "Pk" "req");;
-        MapInsert (struct.loadF Server "userInfo" "s") (struct.loadF WQReq "Uid" "req") (![ptrT] "user");;
-        Continue
-      else Continue));;
+        MapInsert (struct.loadF Server "userInfo" "s") (struct.loadF WQReq "Uid" "req") (![ptrT] "user")
+      else #());;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
     updEpochHist (struct.fieldRef Server "epochHist" "s") "upd" (merkle.Tree__Digest (struct.loadF Server "keyMap" "s")) (struct.loadF Server "sigSk" "s");;
     RWMutex__Unlock (struct.loadF Server "mu" "s");;
     "wg" <-[ptrT] (waitgroup.New #());;
     "i" <-[uint64T] #0;;
     Skip;;
-    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
       let: "resp" := struct.loadF Work "Resp" (SliceGet ptrT "work" (![uint64T] "i")) in
       (if: (~ (struct.loadF WQResp "Err" "resp"))
       then
         let: "out0" := SliceGet ptrT "outs0" (![uint64T] "i") in
         waitgroup.Add (![ptrT] "wg") #1;;
         Fork (Server__mapper1 "s" "out0" "resp";;
-              waitgroup.Done (![ptrT] "wg"));;
-        Continue
-      else Continue));;
+              waitgroup.Done (![ptrT] "wg"))
+      else #());;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
     waitgroup.Wait (![ptrT] "wg");;
     ForSlice ptrT <> "w" "work"
       (Work__Finish "w");;

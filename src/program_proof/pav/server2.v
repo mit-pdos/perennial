@@ -2,6 +2,7 @@ From New.experiments Require Import glob.
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
+From Perennial.goose_lang.lib Require Import waitgroup.waitgroup.
 From Perennial.program_proof.pav Require Import prelude core cryptoffi cryptoutil serde merkle auditor workq.
 From Perennial.goose_lang.lib.rwlock Require Import rwlock_noncrash.
 
@@ -826,6 +827,7 @@ Proof.
   iApply "HΦ". iFrame "∗#%". done.
 Qed.
 
+Context `{!waitgroupG Σ}.
 Lemma wp_Server__Worker γ s:
   {{{
         "#His" ∷ is_Server γ s ∗
@@ -841,18 +843,22 @@ Proof.
   iIntros "* [work Hwork]". wp_pures.
   wp_apply (wp_NewMap w64 bool). iIntros (uidSet_ptr) "uidSet".
   wp_pures. iDestruct (own_slice_small_sz with "work") as %Hwork_sz.
+  evar (prop : loc → iProp Σ).
+  Opaque w64.
   wp_apply (wp_forSlice
               (λ i,
                  ∃ (uidSet : gmap w64 bool),
                  "Hwork" ∷ ([∗ list] w ∈ (drop (uint.nat i) work), ∃ req : loc, own_Work w req (wq_spec γ)) ∗
                  "uidSet" ∷ own_map uidSet_ptr (DfracOwn 1) uidSet ∗
                  "HuidSet" ∷ (([∗ set] uid ∈ dom uidSet, ∃ n, own_num_vers γ uid n) ∧
-                              ([∗ list] w ∈ (take (uint.nat i) work), _))
+                              ([∗ list] w ∈ (take (uint.nat i) work), prop w))
               )%I
              with
-             "[] [$work]"
+             "[] [uidSet Hwork $work]"
            ).
   {
+    Transparent w64.
+    subst prop.
     clear Φ. iIntros "* % !# [Hpre [%Hlt %Hlookup]] HΦ". wp_pures.
     iNamed "Hpre". erewrite drop_S; last done.
     iDestruct "Hwork" as "[Hw Hwork]". iNamed "Hw".
@@ -882,17 +888,91 @@ Proof.
       rewrite big_sepS_singleton. iFrame.
     - iRight in "HuidSet".
       erewrite take_S_r; last done.
-      iApply big_sepL_app. iFrame. rewrite big_sepL_singleton.
+      rewrite big_sepL_app. iFrame. rewrite big_sepL_singleton.
       Unshelve.
       2:{
-        intros ?. clear H. clear Hwork_sz commitSecret_sl mu vrfSk_ptr workQ work_sl work uidSet_ptr.
+        clear Hwork_sz commitSecret_sl mu vrfSk_ptr workQ work_sl work uidSet_ptr.
         shelve.
       }
-      simpl.
+      (* Setting things up for higher-order unification to succeed. *)
       iDestruct "Req" as "-#Req".
+      iDestruct "uid" as "-#Uid".
+      iDestruct "pk" as "-#Pk".
+      iDestruct "Hsl_pk" as "-#Hsl_pk".
+      iDestruct "Hlb_ep" as "-#Hlb_ep".
+      iDestruct "His" as "-#His".
+      iClear "HworkQ".
+      clear dependent uidSet.
       iCombineNamed "*" as "H".
-      admit. (* TODO: higher order unification *)
+      iRevert "H".
+      iForallRevert req. iForallRevert sl_pk. iForallRevert pk.
+      iForallRevert uid. iForallRevert resp. iForallRevert nVers.
+      iForallRevert cli_next_ep. iForallRevert Ψ. iForallRevert γ0.
+      do 9 setoid_rewrite <- exist_wand_forall.
+      iIntros "H".
+      iExactEq "H".
+      reflexivity.
   }
+  {
+    iFrame. rewrite dom_empty_L big_sepS_empty take_0 big_sepL_nil //.
+  }
+  iIntros "[H work]".
+  iNamed "H". iRight in "HuidSet". iRename "HuidSet" into "Hprops". iClear "Hwork".
+  rewrite -> take_ge by word.
+  wp_pures. wp_apply wp_slice_len. wp_pures. wp_apply wp_NewSlice.
+  iIntros (outs0_sl) "outs0". wp_pures. iDestruct (own_slice_to_small with "outs0") as "outs0".
+  evar (waitP : w64 → iProp Σ).
+  wp_apply (wp_NewWaitGroup nroot waitP). iIntros (wg γwg) "Hwg".
+  wp_apply wp_ref_to.
+  { admit. } (* TODO: waitgroup exposes a val instead of the loc.... Maybe add a lemma to prove val_ty? *)
+  iIntros (wg_ptr) "wg".
+  wp_pures. wp_apply wp_ref_of_zero; [done|].
+  iIntros (i_ptr) "i". wp_pures.
+  iAssert (∃ (i : w64) outs0,
+              "i" ∷ i_ptr ↦[uint64T] #i ∗
+              "%Hi" ∷ ⌜ uint.Z i ≤ length work ⌝ ∗
+              "Hprops" ∷ ([∗ list] w ∈ (drop (uint.nat i) work), prop w) ∗
+              "outs0" ∷ own_slice_small outs0_sl ptrT (DfracOwn 1) (outs0 ++ (replicate (length work - uint.nat i) null)) ∗
+              "%Houts0" ∷ ⌜ length outs0 = uint.nat i ⌝ ∗
+              "Hwg" ∷ own_WaitGroup nroot wg γwg i waitP ∗
+              "_" ∷ True
+          )%I with "[i Hprops Hwg outs0]" as "H".
+  { rewrite /zero_val /=. iFrame "i". iFrame. iExists [].
+    iSplitR; first word. rewrite Nat.sub_0_r app_nil_l.
+    replace (uint.nat _) with (length work) by word. iFrame. simpl. word. }
+  wp_forBreak_cond.
+  iNamed "H".
+  wp_load. wp_apply wp_slice_len. wp_pures. wp_if_destruct.
+  { (* not done with loop *)
+    wp_pures. wp_load.
+    opose proof (list_lookup_lt work (uint.nat i) ltac:(word)) as [w Hlookup].
+    wp_apply (wp_SliceGet with "[$work]"); first done.
+    iIntros "work". wp_pures. erewrite drop_S; last done.
+    iDestruct "Hprops" as "[Hprop Hprops]".
+    iNamed "Hprop".
+    wp_loadField. wp_pures.
+    iDestruct (struct_fields_split with "Hresp") as "H". iNamed "H".
+    wp_loadField. wp_pures.
+    wp_load. wp_apply (wp_SliceGet with "[$work]"); first done.
+    iIntros "work". wp_loadField. wp_pures.
+    wp_apply wp_allocStruct; [val_ty|].
+    iIntros (out0_ptr) "out0". wp_pures.
+    wp_load. wp_apply (wp_SliceSet (V:=loc) with "[outs0]").
+    { iFrame. iPureIntro.
+      apply lookup_lt_is_Some. rewrite length_app length_replicate.
+      word. }
+    iIntros "outs0".
+    wp_pures. wp_load.
+    wp_apply (wp_WaitGroup__Add with "[$]").
+    { word. }
+    iIntros "[Hwg Hwg_tok]". wp_pures.
+    wp_apply (wp_fork with "[]").
+    {
+      admit. (* TODO: mapper0 *)
+    }
+    wp_pures. wp_load. wp_store. iLeft. iSplitR; first done.
+    iModIntro. iFrame.
+    replace (uint.nat (word.add i _)) with (S (uint.nat i)) by word.
 Admitted.
 
 End proof.
