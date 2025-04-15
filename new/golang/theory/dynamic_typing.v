@@ -2,7 +2,8 @@ From Coq Require Import Program.Equality.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Export dynamic_typing.
-From New.golang.theory Require Import typing assume list.
+From New.golang.theory Require Export typing.
+From New.golang.theory Require Import assume list.
 From New.golang.theory Require Import proofmode.
 
 Set Default Proof Using "Type".
@@ -52,6 +53,13 @@ Qed.
 
 #[global] Instance descriptor_into_val : IntoVal (go_string * go_type) :=
   { to_val_def := fun '(d, t) => (#d, #t)%V; }.
+
+Lemma desc_to_val_unfold (p: go_string * go_type) :
+  #p = (#p.1, #p.2)%V.
+Proof.
+  destruct p.
+  rewrite {1}to_val_unseal //.
+Qed.
 
 Global Instance wp_type_Match (t : go_type) (baseCase arrayCase structCase : val) :
   PureWp True
