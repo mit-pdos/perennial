@@ -1,9 +1,9 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.pav Require Import prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
 From Perennial.program_proof.pav Require Import
   advrpc auditor core classes client cryptoffi evidence
-  history merkle rpc serde server.
+  history logical_audit merkle rpc serde server.
 
 Module ClientHist.
 Record t :=
@@ -59,7 +59,7 @@ Proof.
   - wp_apply (wp_Client__Put_good with "[$Hcli $Hsl_pk //]").
     iIntros "*". iNamed 1. simpl in *.
     iApply "HΦ". iFrame. iSplit; [done|].
-    rewrite Herr. iSplit; simpl in *.
+    rewrite Heq_err. iSplit; simpl in *.
     { rewrite length_app. simpl.
       replace (W64 (_ + _)%nat) with
         (word.add (W64 $ length pks) (W64 1)); [|word].
@@ -77,13 +77,51 @@ Proof.
     iApply (hist_extend_put with "[$Hhist $His_put_post]"); word.
 Qed.
 
+(* written in this structure to elicit the pure gs_hist,
+into which the caller can transfer any is_cli_entry.
+the caller can then use the sigpred invariants to translate
+between different gs_hist map entries. *)
+Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ :=
+  ∃ gs,
+  "%Hlen_gs" ∷ ⌜ length gs = uint.nat bound ⌝ ∗
+  "#Hlb_gs" ∷ mono_list_lb_own γaudit gs ∗
+  "#Hinv_gs" ∷ sigpred_gs_inv gs ∗
+
+  "#Hmap_transf" ∷ (□ ∀ (ep : w64) m dig uid ver val,
+    ("%Hlook_adtr" ∷ ⌜ gs !! uint.nat ep = Some (m, dig) ⌝ ∗
+    "#Hentry" ∷ is_cli_entry γcli serv_vrf_pk ep uid ver val)
+    -∗
+
+    (∃ label audit_val,
+    "#His_label" ∷ is_map_label serv_vrf_pk uid ver label ∗
+    (* TODO: maybe change to `encodes` if not strong enough. *)
+    "%Henc_val" ∷ ⌜ val = (λ x, enc_val x.1 x.2) <$> audit_val ⌝ ∗
+    "%Hlook_adtr" ∷ ⌜ m !! label = audit_val ⌝)).
+
+Lemma do_serv_audit ptr_c c :
+  c.(Client.serv_is_good) = true →
+  Client.own ptr_c c -∗
+  logical_audit_post c.(Client.γ) c.(Client.serv).(Server.γhist)
+    c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch).
+Proof.
+  iIntros (Heq_good). iNamed 1.
+  destruct (decide (uint.Z c.(Client.next_epoch) = uint.Z 0)).
+  { iExists []. simpl.
+    iSplit; [word|].
+    admit. }
+Admitted.
+
 (* parallel with normal audit is hist_audit_msv. *)
 Lemma logical_audit (ep : w64) ptr_c c :
   c.(ClientHist.serv_is_good) = true →
   uint.Z ep < uint.Z c.(ClientHist.ep_valid) →
   ClientHist.own ptr_c c -∗
-  msv c.(ClientHist.serv).(Server.γhist) ep c.(ClientHist.uid)
-    (get_lat c.(ClientHist.pks) ep).
-Proof. Admitted.
+  msv c.(ClientHist.serv).(Server.γhist) c.(ClientHist.serv).(Server.vrf_pk)
+    ep c.(ClientHist.uid) (get_lat c.(ClientHist.pks) ep).
+Proof.
+  iIntros (Heq_good Hlt_valid). iNamed 1.
+  iNamed "Hhist". iSpecialize ("Hknow_eps" $! ep with "[//]").
+  iNamed "Hknow_eps". iNamed "Hbound".
+Admitted.
 
 End proof.

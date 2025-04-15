@@ -1,7 +1,9 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.pav Require Import prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import advrpc auditor core classes cryptoffi evidence merkle rpc serde server.
+From Perennial.program_proof.pav Require Import
+  advrpc auditor core classes cryptoffi evidence logical_audit
+  merkle rpc serde server.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.Helpers Require Import Map.
 
@@ -46,7 +48,7 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
     mono_nat_lb_own obj.(serv).(Server.γepoch) (uint.nat obj.(next_epoch))) ∗
   "Hown_servCli" ∷ advrpc.own_Client ptr_serv_cli serv_addr obj.(serv_is_good) ∗
   "#Hserv_sig_pk" ∷ (if negb obj.(serv_is_good) then True else
-    is_sig_pk obj.(serv).(Server.sig_pk) (serv_sigpred obj.(serv).(Server.γhist))) ∗
+    is_sig_pk obj.(serv).(Server.sig_pk) (sigpred obj.(serv).(Server.γhist))) ∗
   "#Hptr_servCli" ∷ ptr ↦[Client :: "servCli"]□ #ptr_serv_cli ∗
   "#Hptr_servSigPk" ∷ ptr ↦[Client :: "servSigPk"]□ (slice_val sl_serv_sig_pk) ∗
   "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT
@@ -98,7 +100,7 @@ Lemma wp_NewClient uid (serv_addr : w64) sl_serv_sig_pk sl_serv_vrf_pk serv serv
     "#Hsl_serv_sig_pk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded serv.(Server.sig_pk) ∗
     "#Hsl_serv_vrf_pk" ∷ own_slice_small sl_serv_vrf_pk byteT DfracDiscarded serv.(Server.vrf_pk) ∗
     "#His_good" ∷ (if negb serv_is_good then True else
-      is_sig_pk serv.(Server.sig_pk) (serv_sigpred serv.(Server.γhist)))
+      is_sig_pk serv.(Server.sig_pk) (sigpred serv.(Server.γhist)))
   }}}
   NewClient #uid #serv_addr (slice_val sl_serv_sig_pk) (slice_val sl_serv_vrf_pk)
   {{{
@@ -497,11 +499,9 @@ Lemma wp_Client__Put_good ptr_c c sl_pk d0 (pk : list w8) :
       (set Client.next_epoch (λ _, (word.add ep (W64 1))) c) in
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
     "Hown_err" ∷ ClientErr.own ptr_err err c.(Client.serv).(Server.sig_pk) ∗
-    "%Herr" ∷ ⌜ err.(ClientErr.Err) = false ⌝ ∗
+    "%Heq_err" ∷ ⌜ err.(ClientErr.Err) = false ⌝ ∗
 
     "Hown_cli" ∷ Client.own ptr_c new_c ∗
-    (* TODO: prove wrapper client history spec, which will remove having
-    to look at any of these sub-checks. *)
     "#His_put_post" ∷ is_put_post c.(Client.γ) c.(Client.serv).(Server.vrf_pk)
       c.(Client.uid) c.(Client.next_ver) ep pk ∗
     "%Hnoof_ver" ∷ ⌜ uint.Z (word.add c.(Client.next_ver) (W64 1)) =

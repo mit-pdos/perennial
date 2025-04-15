@@ -1,7 +1,8 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.pav Require Import prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import advrpc auditor core client cryptoffi history rpc serde server test_helpers.
+From Perennial.program_proof.pav Require Import
+  advrpc auditor core client cryptoffi history rpc serde server test_helpers.
 From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang.lib Require Import waitgroup.
 

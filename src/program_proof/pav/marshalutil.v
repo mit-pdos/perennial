@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.pav Require Import prelude.
 From Perennial Require Import base.
 From Goose.github_com.mit_pdos.pav Require Import marshalutil.
 

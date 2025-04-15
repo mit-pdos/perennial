@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.pav Require Import prelude.
 From Perennial.program_proof.pav Require Import core serde merkle.
 
 Section proof.

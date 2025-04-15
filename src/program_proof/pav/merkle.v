@@ -1,7 +1,9 @@
+From Perennial.program_proof.pav Require Import prelude.
 From iris.bi.lib Require Import fractional.
-From Perennial.program_proof Require Import grove_prelude.
 From Perennial.goose_lang.lib Require Import encoding.
-(* for sealed. *)
+(* for sealed.
+TODO: for some reason, this has to go after encoding,
+probably an indication of import ordering instability. *)
 From Perennial Require Import base.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
 

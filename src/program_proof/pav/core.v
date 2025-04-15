@@ -1,11 +1,5 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.pav Require Import prelude.
 From Perennial.program_proof.pav Require Import classes cryptoffi serde.
-
-(* TODO: split out joint imports (if needed) from msv theory. *)
-From RecordUpdate Require Export RecordSet.
-From iris.base_logic.lib Require Export mono_nat ghost_map.
-From iris.unstable.base_logic Require Export mono_list.
-From Perennial.Helpers Require Export Integers.
 
 (* TODO: for same reason not using alias's in go code,
 prob shouldn't define all these notations. *)
