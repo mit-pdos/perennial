@@ -91,8 +91,40 @@ Definition own (ptr : loc) (obj : t) (pk : list w8) : iProp Σ :=
 End defs.
 End ClientErr.
 
-Section wps.
+Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
+
+(* Defs. *)
+
+Definition is_cli_entry cli_γ serv_vrf_pk (ep : w64) uid ver val : iProp Σ :=
+  ∃ dig label,
+  "#Hlook_dig" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some dig) ∗
+  "#Hvrf_out" ∷ is_vrf_out serv_vrf_pk (enc_label_pre uid ver) label ∗
+  "#Hmerk_entry" ∷ is_merkle_entry label val dig.
+
+Definition is_put_post cli_γ serv_vrf_pk uid ver ep pk : iProp Σ :=
+  ∃ commit enc,
+  "#Hcommit" ∷ is_commit pk commit ∗
+  "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk ep commit) ⌝ ∗
+  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver (Some enc) ∗
+  "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (word.add ver (W64 1)) None.
+
+Definition is_selfmon_post cli_γ serv_vrf_pk uid ver (ep : w64) : iProp Σ :=
+  "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver None.
+
+Definition is_get_post_Some cli_γ serv_vrf_pk uid (ep : w64) pk : iProp Σ :=
+  ∃ hist ep' commit enc,
+  "#Hhist" ∷ ([∗ list] ver ↦ val ∈ hist,
+    is_cli_entry cli_γ serv_vrf_pk ep uid ver (Some val)) ∗
+  "#Hcommit" ∷ is_commit pk commit ∗
+  "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk ep' commit) ⌝ ∗
+  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (W64 $ length hist) (Some enc) ∗
+  "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (word.add (length hist) (W64 1)) None.
+
+Definition is_get_post_None cli_γ serv_vrf_pk uid (ep : w64) : iProp Σ :=
+  "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (W64 0) None.
+
+(* WPs. *)
 
 Lemma wp_NewClient uid (serv_addr : w64) sl_serv_sig_pk sl_serv_vrf_pk serv serv_is_good :
   {{{
@@ -443,18 +475,6 @@ Proof.
     iFrame "∗#".
 Qed.
 
-Definition is_cli_entry cli_γ serv_vrf_pk (ep : w64) uid ver val : iProp Σ :=
-  ∃ dig label,
-  "#Hlook_dig" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some dig) ∗
-  "#Hvrf_out" ∷ is_vrf_out serv_vrf_pk (enc_label_pre uid ver) label ∗
-  "#Hmerk_entry" ∷ is_merkle_entry label val dig.
-
-Definition is_put_post cli_γ serv_vrf_pk uid ver ep pk : iProp Σ :=
-  ∃ commit,
-  "#Hcommit" ∷ is_commit pk commit ∗
-  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver (Some $ enc_val ep commit) ∗
-  "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (word.add ver (W64 1)) None.
-
 Lemma is_sigdig_agree sd0 sd1 pk γ :
   sd0.(SigDig.Epoch) = sd1.(SigDig.Epoch) →
   is_sig_pk pk (sigpred γ) -∗
@@ -465,11 +485,14 @@ Proof.
   iIntros (Heq) "#Hpk". iNamedSuffix 1 "0". iNamedSuffix 1 "1".
   iDestruct (is_sig_to_pred with "Hpk Hsig0") as "H". iNamedSuffix "H" "0".
   iDestruct (is_sig_to_pred with "Hpk Hsig1") as "H". iNamedSuffix "H" "1".
-  (* learn about sigdig's existentially hidden by sigpred. *)
+  (* unify with sigdig existentially hidden by sigpred. *)
   opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc1 Henc3); eauto.
   opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc0 Henc2); eauto.
-  intuition. simplify_eq/=. rewrite Heq.
-  iDestruct (mono_list_idx_agree with "Hlook_dig0 Hlook_dig1") as %?.
+  intuition. simplify_eq/=.
+  iDestruct (mono_list_idx_own_get with "Hlb0") as "Hidx0"; [done|].
+  iDestruct (mono_list_idx_own_get with "Hlb1") as "Hidx1"; [done|].
+  rewrite Heq.
+  iDestruct (mono_list_idx_agree with "Hidx0 Hidx1") as %?.
   naive_solver.
 Qed.
 
@@ -588,12 +611,13 @@ Proof.
   iNamedSuffix "Hwish_bound" "_bound".
   iDestruct (wish_merkle_Verify_to_entry with "Hmerk_lat") as "Hentry_lat".
   iDestruct (wish_merkle_Verify_to_entry with "Hmerk_bound") as "Hentry_bound".
+  iDestruct (is_hash_len with "Hcommit_lat") as %?.
 
   rewrite -Heq_ep.
   iFrame "∗#".
   rewrite Hserv_good. simpl. iFrame "∗#".
   iIntros "!> !% //".
-  repeat try split; try word.
+  repeat try split; simpl in *; try word.
   - intros ep ? Hlook_digs.
     apply lookup_app_Some in Hlook_digs as [Hlook_digs|[? Hlook_digs]].
     { rewrite lookup_insert_ne. 2: { apply lookup_lt_Some in Hlook_digs. word. }
@@ -704,9 +728,6 @@ Proof. Admitted. (*
   - rewrite !length_app length_replicate. simpl. word.
 Qed.
 
-Definition is_selfmon_post cli_γ serv_vrf_pk uid ver (ep : w64) : iProp Σ :=
-  "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver None.
-
 Lemma wp_Client__SelfMon ptr_c c :
   {{{
     "Hown_cli" ∷ Client.own ptr_c c
@@ -812,18 +833,6 @@ Proof.
   - subst new_digs. rewrite app_assoc last_snoc. naive_solver.
   - rewrite !length_app length_replicate. simpl. word.
 Qed.
-
-Definition is_get_post_Some cli_γ serv_vrf_pk uid (ep : w64) pk : iProp Σ :=
-  ∃ hist ep' commit,
-  "#Hhist" ∷ ([∗ list] ver ↦ val ∈ hist,
-    is_cli_entry cli_γ serv_vrf_pk ep uid ver (Some val)) ∗
-  "#Hcommit" ∷ is_commit pk commit ∗
-  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (W64 $ length hist)
-    (Some (MapValPre.encodesF (MapValPre.mk ep' commit))) ∗
-  "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (word.add (length hist) (W64 1)) None.
-
-Definition is_get_post_None cli_γ serv_vrf_pk uid (ep : w64) : iProp Σ :=
-  "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (W64 0) None.
 
 Lemma wp_Client__Get ptr_c c uid :
   {{{
@@ -1084,22 +1093,6 @@ Proof.
   - opose proof (prefix_lookup_Some _ _ _ _ Hlook2 Hpref) as ?. by simplify_eq/=.
 Qed.
 
-(* is_audit says we've audited up *to* (not including) bound. *)
-Definition is_audit (cli_γ adtr_γ : gname) serv_vrf_pk (bound : w64) : iProp Σ :=
-  ∃ adtr_st,
-  "%Hlen_adtr" ∷ ⌜ length adtr_st = uint.nat bound ⌝ ∗
-  "#Hlb_adtr" ∷ mono_list_lb_own adtr_γ adtr_st ∗
-  "#Hdigs_adtr" ∷ ([∗ list] x ∈ adtr_st, is_dig (lower_adtr x.1) x.2) ∗
-  "%Hinv_adtr" ∷ ⌜ adtr_inv (fst <$> adtr_st) ⌝ ∗
-  "#Hmap_transf" ∷ (□ ∀ (ep : w64) m dig uid ver val,
-    ("%Hlook_adtr" ∷ ⌜ adtr_st !! uint.nat ep = Some (m, dig) ⌝ ∗
-    "#His_entry" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver val)
-    -∗
-    (∃ label adtr_val,
-    "#His_label" ∷ is_map_label serv_vrf_pk uid ver label ∗
-    "%Hin_adtr" ∷ ⌜ m !! label = adtr_val ⌝ ∗
-    "%Henc_val" ∷ ⌜ val = (λ x, MapValPre.encodesF (MapValPre.mk x.1 x.2)) <$> adtr_val ⌝)).
-
 Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtr_pk :
   uint.Z c.(Client.next_epoch) > 0 →
   {{{
@@ -1207,7 +1200,7 @@ Proof.
 Qed.
 
 *)
-End wps.
+End proof.
 
 (*
 Definition lemmas := (@wp_NewClient, @wp_Client__Audit, @wp_Client__Get, @wp_Client__SelfMon, @wp_Client__Put).
