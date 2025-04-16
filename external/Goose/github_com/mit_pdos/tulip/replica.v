@@ -28,7 +28,8 @@ Definition Replica := struct.decl [
   "sptsm" :: mapT uint64T;
   "idx" :: ptrT;
   "gaddrm" :: tulip.AddressMaps;
-  "leader" :: uint64T
+  "leader" :: uint64T;
+  "proph" :: ProphIdT
 ].
 
 (* Arguments:
@@ -598,7 +599,7 @@ Definition Replica__StartBackupTxnCoordinator: val :=
       "GroupID" ::= struct.loadF Replica "gid" "rp";
       "ReplicaID" ::= struct.loadF Replica "rid" "rp"
     ] in
-    let: "tcoord" := backup.MkBackupTxnCoordinator "ts" "rank" "cid" "ptgs" (struct.loadF Replica "gaddrm" "rp") (struct.loadF Replica "leader" "rp") in
+    let: "tcoord" := backup.MkBackupTxnCoordinator "ts" "rank" "cid" "ptgs" (struct.loadF Replica "gaddrm" "rp") (struct.loadF Replica "leader" "rp") (struct.loadF Replica "proph" "rp") in
     backup.BackupTxnCoordinator__ConnectAll "tcoord";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     backup.BackupTxnCoordinator__Finalize "tcoord";;
@@ -813,8 +814,8 @@ Definition Replica__resume: val :=
     struct.storeF Replica "lsna" "rp" (![uint64T] "lsnx");;
     #().
 
-Definition Start: val :=
-  rec: "Start" "rid" "addr" "fname" "addrmpx" "fnamepx" :=
+Definition start: val :=
+  rec: "start" "rid" "addr" "fname" "addrmpx" "fnamepx" "proph" :=
     let: "txnlog" := txnlog.Start "rid" "addrmpx" "fnamepx" in
     let: "rp" := struct.new Replica [
       "mu" ::= newMutex #();
@@ -830,9 +831,14 @@ Definition Start: val :=
       "txntbl" ::= NewMap uint64T boolT #();
       "ptsm" ::= NewMap stringT uint64T #();
       "sptsm" ::= NewMap stringT uint64T #();
-      "idx" ::= index.MkIndex #()
+      "idx" ::= index.MkIndex #();
+      "proph" ::= "proph"
     ] in
     Replica__resume "rp";;
     Fork (Replica__Serve "rp");;
     Fork (Replica__Applier "rp");;
     "rp".
+
+Definition Start: val :=
+  rec: "Start" "rid" "addr" "fname" "addrmpx" "fnamepx" :=
+    start "rid" "addr" "fname" "addrmpx" "fnamepx" (NewProph #()).

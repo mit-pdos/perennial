@@ -418,6 +418,13 @@ Section decode.
       by iApply "HΦ".
     }
     { rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (p) "Hbs".
+      wp_pures.
+      wp_apply (wp_DecodeTxnInquireRequest with "Hbs").
+      by iApply "HΦ".
+    }
+    { rewrite Henc.
 
       (*@     if kind == MSG_TXN_INQUIRE {                                        @*)
       (*@         return DecodeTxnInquireRequest(bs1)                             @*)

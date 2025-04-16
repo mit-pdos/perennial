@@ -5,13 +5,13 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_DecodeKVMapIntoSlice
+  Theorem wp_DecodeKVMap
     (bsP : Slice.t) (m : dbmap) (mdata : list u8) (bstail : list u8) :
     encode_dbmap m mdata ->
     {{{ own_slice_small bsP byteT (DfracOwn 1) (mdata ++ bstail) }}}
-      DecodeKVMapIntoSlice (to_val bsP)
-    {{{ (entsP : Slice.t) (dataP : Slice.t), RET (to_val entsP, to_val dataP);
-        own_dbmap_in_slice entsP m ∗
+      DecodeKVMap (to_val bsP)
+    {{{ (mP : loc) (dataP : Slice.t), RET (#mP, to_val dataP);
+        own_map mP (DfracOwn 1) m ∗
         own_slice_small dataP byteT (DfracOwn 1) bstail
     }}}.
   Proof.
@@ -27,7 +27,7 @@ Section program.
       word.
     }
 
-    (*@ func DecodeKVMapIntoSlice(bs []byte) ([]tulip.WriteEntry, []byte) {     @*)
+    (*@ func DecodeKVMap(bs []byte) (tulip.KVMap, []byte) {                     @*)
     (*@     n, bs1 := marshal.ReadInt(bs)                                       @*)
     (*@                                                                         @*)
     rewrite Hmdata /encode_dbmods -app_assoc.
@@ -35,19 +35,17 @@ Section program.
     iIntros (p) "Hxs".
 
     (*@     var data = bs1                                                      @*)
-    (*@     var ents = make([]tulip.WriteEntry, 0, n)                           @*)
+    (*@     m := make(map[string]tulip.Value)                                   @*)
     (*@                                                                         @*)
     wp_apply wp_ref_to; first done.
     iIntros (dataP) "HdataP".
-    wp_apply (wp_NewSliceWithCap (V:= dbmod)); first word.
-    iIntros (entsbaseP) "Hents".
-    wp_apply wp_ref_to; first done.
-    iIntros (entsP) "HentsP".
+    wp_apply (wp_NewMap dbkey dbval).
+    iIntros (mP) "Hm".
 
     (*@     var i uint64 = 0                                                    @*)
     (*@     for i < n {                                                         @*)
     (*@         x, bsloop := DecodeWriteEntry(data)                             @*)
-    (*@         ents = append(ents, x)                                          @*)
+    (*@         m[x.Key] = x.Value                                              @*)
     (*@         data = bsloop                                                   @*)
     (*@         i++                                                             @*)
     (*@     }                                                                   @*)
@@ -55,13 +53,12 @@ Section program.
     wp_apply wp_ref_to; first by auto.
     iIntros (iP) "HiP".
     wp_pures.
-    set P := (λ cont : bool, ∃ (i : u64) (p1 p2 : Slice.t),
+    set P := (λ cont : bool, ∃ (i : u64) (p1 : Slice.t),
                  let remaining := encode_dbmods_xlen (drop (uint.nat i) xs) ++ bstail in
                  "HdataP"  ∷ dataP ↦[slice.T byteT] p1 ∗
-                 "HentsP"  ∷ entsP ↦[slice.T (struct.t WriteEntry)] p2 ∗
+                 "Hm"      ∷ own_map mP (DfracOwn 1) (list_to_map (take (uint.nat i) xs)) ∗
                  "HiP"     ∷ iP ↦[uint64T] #i ∗
                  "Hxs"     ∷ own_slice_small p1 byteT (DfracOwn 1) remaining ∗
-                 "Hents"   ∷ own_slice p2 (struct.t WriteEntry) (DfracOwn 1) (take (uint.nat i) xs) ∗
                  "%Hbound" ∷ ⌜cont || bool_decide (length xs ≤ uint.nat i)%nat⌝)%I.
     wp_apply (wp_forBreak_cond P with "[] [-HΦ]"); last first; first 1 last.
     { by iFrame. }
@@ -87,27 +84,33 @@ Section program.
       rewrite (drop_S _ _ _ Hx) encode_dbmods_xlen_cons -app_assoc.
       wp_apply (wp_DecodeWriteEntry with "Hxs").
       iIntros (bsloopP) "Hbsloop".
-      wp_load.
-      wp_apply (wp_SliceAppend with "Hents").
-      iIntros (entsP') "Hents".
-      do 2 wp_store. wp_load. wp_store.
+      wp_pures.
+      wp_apply (wp_MapInsert with "Hm"); first done.
+      iIntros "Hm".
+      wp_store. wp_load. wp_store.
       iApply "HΦ".
       iFrame "∗ %".
       rewrite uint_nat_word_add_S; last word.
       rewrite (take_S_r _ _ _ Hx).
-      by iFrame.
+      iFrame.
+      destruct x as [t v].
+      rewrite list_to_map_snoc; first done.
+      clear -Hx Hxs.
+      admit.
     }
     iNamed 1.
     case_bool_decide as Hi; last done.
-    do 2 wp_load.
+    wp_load.
     wp_pures.
 
-    (*@     return ents, data                                                   @*)
+    (*@     return m, data                                                      @*)
     (*@ }                                                                       @*)
     iApply "HΦ".
     rewrite take_ge; last apply Hi.
     rewrite drop_ge; last apply Hi.
+    symmetry in Hxs. apply list_to_map_flip in Hxs.
+    rewrite -Hxs.
     by iFrame.
-  Qed.
+  Admitted.
 
 End program.

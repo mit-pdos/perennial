@@ -303,6 +303,12 @@ Section inv_network.
     "#Hsafe" ∷ validate_outcome γ gid rid ts res ∗
     "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
 
+  Definition safe_inquire_resp
+    γ (gid rid : u64) (cid : coordid) (ts rk rkl : nat) (p vd : bool) (pwrs : dbmap)
+    (res : rpres) : iProp Σ :=
+    "#Hsafe" ∷ inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res ∗
+    "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
+
   Definition safe_prepare_resp
     γ (gid rid : u64) (ts rank : nat) (res : rpres) : iProp Σ :=
     "#Hsafe" ∷ accept_outcome γ gid rid ts rank true res ∗
@@ -327,6 +333,8 @@ Section inv_network.
         safe_unprepare_resp γ gid rid (uint.nat ts) (uint.nat rank) res
     | QueryResp ts res =>
         query_outcome γ (uint.nat ts) res
+    | InquireResp ts rank pp vd pwrs rid cid res =>
+        safe_inquire_resp γ gid rid cid (uint.nat ts) (uint.nat rank) (uint.nat pp.1) pp.2 vd pwrs res
     | _ => True
     end.
 
@@ -353,7 +361,8 @@ Section inv_network.
     ∃ (resps : gset txnresp),
       "Hms"     ∷ trml c↦ ms ∗
       "#Hresps" ∷ ([∗ set] resp ∈ resps, safe_txnresp γ gid resp) ∗
-      "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnresp resps⌝.
+      "%Henc"    ∷ ⌜set_Forall (λ x, ∃ resp, resp ∈ resps ∧ encode_txnresp resp (msg_data x)) ms⌝.
+      (* "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnresp resps⌝. *)
 
   Definition tulip_network_inv
     γ (gid : u64) (addrm : gmap u64 chan) : iProp Σ :=

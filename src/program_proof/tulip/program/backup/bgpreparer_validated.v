@@ -10,10 +10,20 @@ Section program.
       BackupGroupPreparer__validated #gpp #rid
     {{{ (validated : bool), RET #validated; own_backup_gpreparer_vdm gpp ts gid γ }}}.
   Proof.
+    iIntros (Φ) "Hvdm HΦ".
+    wp_rec.
+
     (*@ func (gpp *BackupGroupPreparer) validated(rid uint64) bool {            @*)
     (*@     _, validated := gpp.vdm[rid]                                        @*)
     (*@     return validated                                                    @*)
     (*@ }                                                                       @*)
-  Admitted.
+    iNamed "Hvdm".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Hvdm").
+    iIntros (b ok) "[%Hget Hvdm]".
+    wp_pures.
+    iApply "HΦ".
+    by iFrame "∗ # %".
+  Qed.
 
 End program.

@@ -12,8 +12,9 @@ From Goose.github_com.mit_pdos.tulip Require Import replica.
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_Start
-    (rid : u64) (addr : chan) (fname : byte_string) (addrmpxP : loc) (fnamepx : byte_string)
+  Theorem wp_start
+    (rid : u64) (addr : chan) (fname : byte_string) (proph : proph_id)
+    (addrmpxP : loc) (fnamepx : byte_string)
     (termc : u64) (terml : u64) (lsnc : u64) (logpx : list byte_string) (addrmpx : gmap u64 chan)
     (clog : dblog) (ilog : list (nat * icommand)) (addrm : gmap u64 chan) gid γ π :
     let dstpx := PaxosDurable termc terml logpx lsnc in
@@ -30,7 +31,7 @@ Section program.
     (* txnlog atomic invariants *)
     know_tulip_txnlog_inv γ π gid -∗
     (* tulip atomic invariants *)
-    know_tulip_inv γ -∗
+    know_tulip_inv_with_proph γ proph -∗
     know_replica_file_inv γ gid rid -∗
     know_tulip_network_inv γ gid addrm -∗
     {{{ (* durable states passed to paxos *)
@@ -39,7 +40,7 @@ Section program.
         own_crash_ex (stagedG0 := tulip_ghostG0.(@tulip_stagedG Σ))
           rpcrashNS (own_replica_durable γ gid rid) dstrp
     }}}
-      Start #rid (to_val addr) #(LitString fname) #addrmpxP #(LitString fnamepx)
+      start #rid (to_val addr) #(LitString fname) #addrmpxP #(LitString fnamepx) #proph
     {{{ (rp : loc), RET #rp; is_replica rp gid rid γ }}}.
   Proof.
     iIntros (dstpx dstrp Hgid Hrid Haddr).
@@ -126,7 +127,7 @@ Section program.
     wp_apply (wp_MkIndex with "Hrepllb HphysmX").
     iIntros (idxP) "#Hidx".
     wp_apply (wp_allocStruct).
-    { by auto 20. }
+    { by auto 25. }
     iIntros (rp) "Hrp".
     iDestruct (struct_fields_split with "Hrp") as "Hrp".
     iNamed "Hrp".
@@ -167,7 +168,7 @@ Section program.
     iAssert (is_replica_idx rp γ α)%I with "[$HidxP $Hidx]" as "#Hidxrp".
     iAssert (is_replica_txnlog rp gid γ)%I with "[$HtxnlogP $Htxnlog]" as "Htxnlogrp".
     wp_apply (wp_Replica__resume with
-               "Hinv Hinvfile Hfname Hidxrp Htxnlogrp [$Hrp $Hlsna $Hdurable]").
+               "[$Hinv] Hinvfile Hfname Hidxrp Htxnlogrp [$Hrp $Hlsna $Hdurable]").
     { apply Hgid. }
     { apply Hrid. }
     iIntros "(Hrp & Hlsna & Hdurable)".
@@ -176,7 +177,6 @@ Section program.
       (* Open the crash and atomic replica invariants. *)
       iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
       { solve_ndisj. }
-      iDestruct "Hinv" as (proph) "Hinv".
       iInv "Hinv" as "> HinvO" "HinvC".
       iNamed "HinvO".
       iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]".

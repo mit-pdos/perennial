@@ -127,3 +127,6 @@ Definition encode_txnptgs (g : txnptgs) (data : list u8) :=
 
 Definition encode_dbpver (x : dbpver) : list u8 :=
   u64_le x.1 ++ encode_dbval x.2.
+
+Definition encode_ppsl (pp : ppsl) : list u8 :=
+  u64_le pp.1 ++ [if pp.2 then W8 1 else W8 0].

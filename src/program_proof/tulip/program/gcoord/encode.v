@@ -223,6 +223,38 @@ Section encode.
     by iFrame.
   Qed.
 
+  Theorem wp_EncodeTxnInquireRequest (ts : u64) (rank : u64) :
+    {{{ True }}}
+      EncodeTxnInquireRequest #ts #rank
+    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
+        own_slice dataP byteT (DfracOwn 1) data ∗
+        ⌜encode_txnreq (InquireReq ts rank) data⌝
+    }}}.
+  Proof.
+    iIntros (Φ) "_ HΦ".
+    wp_rec.
+
+    (*@ func EncodeTxnInquireRequest(ts, rank uint64) []byte {                  @*)
+    (*@     bs := make([]byte, 0, 24)                                           @*)
+    (*@     bs1 := marshal.WriteInt(bs, MSG_TXN_INQUIRE)                        @*)
+    (*@     bs2 := marshal.WriteInt(bs1, ts)                                    @*)
+    (*@     data := marshal.WriteInt(bs2, rank)                                 @*)
+    (*@     return data                                                         @*)
+    (*@ }                                                                       @*)
+    wp_apply wp_NewSliceWithCap; first word.
+    iIntros (p) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p1) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p2) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p3) "Hbs".
+    wp_pures.
+    rewrite uint_nat_W64_0 replicate_0 app_nil_l -app_assoc.
+    iApply "HΦ".
+    by iFrame.
+  Qed.
+
   Theorem wp_EncodeTxnRefreshRequest (ts : u64) (rank : u64) :
     {{{ True }}}
       EncodeTxnRefreshRequest #ts #rank
@@ -316,31 +348,6 @@ Section encode.
     iIntros (p2) "Hbs".
     wp_pures.
     rewrite uint_nat_W64_0 replicate_0 app_nil_l.
-    iApply "HΦ".
-    by iFrame.
-  Qed.
-
-  Theorem wp_EncodeTxnInquireRequest (ts : u64) (rank : u64) :
-    {{{ True }}}
-      EncodeTxnInquireRequest #ts #rank
-    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
-        own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜encode_txnreq (InquireReq ts rank) data⌝
-    }}}.
-  Proof.
-    iIntros (Φ) "_ HΦ".
-    wp_rec.
-
-    wp_apply wp_NewSliceWithCap; first word.
-    iIntros (p) "Hbs".
-    wp_apply (wp_WriteInt with "Hbs").
-    iIntros (p1) "Hbs".
-    wp_apply (wp_WriteInt with "Hbs").
-    iIntros (p2) "Hbs".
-    wp_apply (wp_WriteInt with "Hbs").
-    iIntros (p3) "Hbs".
-    wp_pures.
-    rewrite uint_nat_W64_0 replicate_0 app_nil_l -app_assoc.
     iApply "HΦ".
     by iFrame.
   Qed.

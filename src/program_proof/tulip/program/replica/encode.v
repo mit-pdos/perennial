@@ -12,7 +12,7 @@ Section encode.
       EncodeTxnReadResponse #ts #rid #(LitString key) (dbpver_to_val ver) #slow
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (ReadResp ts rid key ver slow)⌝
+        ⌜encode_txnresp (ReadResp ts rid key ver slow) data⌝
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
@@ -53,7 +53,7 @@ Section encode.
       EncodeTxnFastPrepareResponse #ts #rid #(rpres_to_u64 res)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (FastPrepareResp ts rid res)⌝
+        ⌜encode_txnresp (FastPrepareResp ts rid res) data⌝
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
@@ -88,7 +88,7 @@ Section encode.
       EncodeTxnValidateResponse #ts #rid #(rpres_to_u64 res)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (ValidateResp ts rid res)⌝
+        ⌜encode_txnresp (ValidateResp ts rid res) data⌝
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
@@ -123,7 +123,7 @@ Section encode.
       EncodeTxnPrepareResponse #ts #rank #rid #(rpres_to_u64 res)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (PrepareResp ts rank rid res)⌝
+        ⌜encode_txnresp (PrepareResp ts rank rid res) data⌝
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
@@ -161,7 +161,7 @@ Section encode.
       EncodeTxnUnprepareResponse #ts #rank #rid #(rpres_to_u64 res)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (UnprepareResp ts rank rid res)⌝
+        ⌜encode_txnresp (UnprepareResp ts rank rid res) data⌝
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
@@ -199,7 +199,7 @@ Section encode.
       EncodeTxnQueryResponse #ts #(rpres_to_u64 res)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (QueryResp ts res)⌝
+        ⌜encode_txnresp (QueryResp ts res) data⌝
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
@@ -231,7 +231,7 @@ Section encode.
       EncodeTxnCommitResponse #ts #(rpres_to_u64 res)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (CommitResp ts res)⌝
+        ⌜encode_txnresp (CommitResp ts res) data⌝
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
@@ -263,7 +263,7 @@ Section encode.
       EncodeTxnAbortResponse #ts #(rpres_to_u64 res)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜data = encode_txnresp (AbortResp ts res)⌝
+        ⌜encode_txnresp (AbortResp ts res) data⌝
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ".

@@ -125,7 +125,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -189,7 +188,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -254,7 +252,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -318,7 +315,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -382,7 +378,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -444,7 +439,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -461,6 +455,7 @@ Section program.
       by iApply "HΦ".
     }
     { (* Case: TxnRefresh. *) by iApply "HΦ". }
+    { (* Case: TxnInquire. *) by iApply "HΦ". }
     { (* Case: TxnCommit. *)
 
       (*@         } else if kind == message.MSG_TXN_COMMIT {                      @*)
@@ -513,7 +508,6 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
-          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".
@@ -562,7 +556,6 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
-          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".
@@ -630,7 +623,6 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
-          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".
@@ -679,7 +671,6 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
-          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".

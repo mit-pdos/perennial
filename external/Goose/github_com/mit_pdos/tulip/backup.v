@@ -371,6 +371,8 @@ Definition BackupGroupPreparer__finalized: val :=
 
 Definition BackupGroupCoordinator := struct.decl [
   "cid" :: struct.t tulip.CoordID;
+  "ts" :: uint64T;
+  "rank" :: uint64T;
   "rps" :: slice.T uint64T;
   "addrm" :: mapT uint64T;
   "mu" :: ptrT;
@@ -381,7 +383,7 @@ Definition BackupGroupCoordinator := struct.decl [
 ].
 
 Definition mkBackupGroupCoordinator: val :=
-  rec: "mkBackupGroupCoordinator" "addrm" "cid" :=
+  rec: "mkBackupGroupCoordinator" "addrm" "cid" "ts" :=
     let: "mu" := newMutex #() in
     let: "cv" := NewCond "mu" in
     let: "nrps" := MapLen "addrm" in
@@ -390,6 +392,7 @@ Definition mkBackupGroupCoordinator: val :=
       "rps" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "rps") "rid"));;
     let: "gcoord" := struct.new BackupGroupCoordinator [
       "cid" ::= "cid";
+      "ts" ::= "ts";
       "rps" ::= ![slice.T uint64T] "rps";
       "addrm" ::= "addrm";
       "mu" ::= "mu";
@@ -399,20 +402,6 @@ Definition mkBackupGroupCoordinator: val :=
       "conns" ::= NewMap uint64T grove_ffi.Connection #()
     ] in
     "gcoord".
-
-Definition BackupGroupCoordinator__Finalized: val :=
-  rec: "BackupGroupCoordinator__Finalized" "gcoord" :=
-    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    let: "done" := BackupGroupPreparer__finalized (struct.loadF BackupGroupCoordinator "gpp" "gcoord") in
-    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    "done".
-
-Definition BackupGroupCoordinator__NextPrepareAction: val :=
-  rec: "BackupGroupCoordinator__NextPrepareAction" "gcoord" "rid" :=
-    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    let: "a" := BackupGroupPreparer__action (struct.loadF BackupGroupCoordinator "gpp" "gcoord") "rid" in
-    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-    "a".
 
 Definition BackupGroupCoordinator__GetConnection: val :=
   rec: "BackupGroupCoordinator__GetConnection" "gcoord" "rid" :=
@@ -433,6 +422,97 @@ Definition BackupGroupCoordinator__Connect: val :=
       #true
     else #false).
 
+Definition BackupGroupCoordinator__Receive: val :=
+  rec: "BackupGroupCoordinator__Receive" "gcoord" "rid" :=
+    let: ("conn", "ok") := BackupGroupCoordinator__GetConnection "gcoord" "rid" in
+    (if: (~ "ok")
+    then
+      BackupGroupCoordinator__Connect "gcoord" "rid";;
+      (slice.nil, #false)
+    else
+      let: "ret" := grove_ffi.Receive "conn" in
+      (if: struct.get grove_ffi.ReceiveRet "Err" "ret"
+      then
+        BackupGroupCoordinator__Connect "gcoord" "rid";;
+        (slice.nil, #false)
+      else (struct.get grove_ffi.ReceiveRet "Data" "ret", #true))).
+
+Definition BackupGroupCoordinator__ResponseSession: val :=
+  rec: "BackupGroupCoordinator__ResponseSession" "gcoord" "rid" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      let: ("data", "ok") := BackupGroupCoordinator__Receive "gcoord" "rid" in
+      (if: (~ "ok")
+      then
+        time.Sleep params.NS_RECONNECT;;
+        Continue
+      else
+        let: "msg" := message.DecodeTxnResponse "data" in
+        let: "kind" := struct.get message.TxnResponse "Kind" "msg" in
+        (if: (struct.loadF BackupGroupCoordinator "ts" "gcoord") ≠ (struct.get message.TxnResponse "Timestamp" "msg")
+        then Continue
+        else
+          Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+          let: "gpp" := struct.loadF BackupGroupCoordinator "gpp" "gcoord" in
+          (if: "kind" = message.MSG_TXN_INQUIRE
+          then
+            (if: (((struct.get tulip.CoordID "GroupID" (struct.loadF BackupGroupCoordinator "cid" "gcoord")) = (struct.get tulip.CoordID "GroupID" (struct.get message.TxnResponse "CoordID" "msg"))) && ((struct.get tulip.CoordID "ReplicaID" (struct.loadF BackupGroupCoordinator "cid" "gcoord")) = (struct.get tulip.CoordID "ReplicaID" (struct.get message.TxnResponse "CoordID" "msg")))) && ((struct.loadF BackupGroupCoordinator "rank" "gcoord") = (struct.get message.TxnResponse "Rank" "msg"))
+            then
+              let: "pp" := struct.mk tulip.PrepareProposal [
+                "Rank" ::= struct.get message.TxnResponse "RankLast" "msg";
+                "Prepared" ::= struct.get message.TxnResponse "Prepared" "msg"
+              ] in
+              BackupGroupPreparer__processInquireResult "gpp" (struct.get message.TxnResponse "ReplicaID" "msg") "pp" (struct.get message.TxnResponse "Validated" "msg") (struct.get message.TxnResponse "PartialWrites" "msg") (struct.get message.TxnResponse "Result" "msg")
+            else #())
+          else
+            (if: "kind" = message.MSG_TXN_VALIDATE
+            then BackupGroupPreparer__processValidateResult "gpp" (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
+            else
+              (if: "kind" = message.MSG_TXN_PREPARE
+              then
+                (if: (struct.loadF BackupGroupCoordinator "rank" "gcoord") = (struct.get message.TxnResponse "Rank" "msg")
+                then BackupGroupPreparer__processPrepareResult "gpp" (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
+                else #())
+              else
+                (if: "kind" = message.MSG_TXN_UNPREPARE
+                then
+                  (if: (struct.loadF BackupGroupCoordinator "rank" "gcoord") = (struct.get message.TxnResponse "Rank" "msg")
+                  then BackupGroupPreparer__processUnprepareResult "gpp" (struct.get message.TxnResponse "ReplicaID" "msg") (struct.get message.TxnResponse "Result" "msg")
+                  else #())
+                else
+                  (if: "kind" = message.MSG_TXN_REFRESH
+                  then #()
+                  else
+                    (if: ("kind" = message.MSG_TXN_COMMIT) || ("kind" = message.MSG_TXN_ABORT)
+                    then BackupGroupPreparer__processFinalizationResult "gpp" (struct.get message.TxnResponse "Result" "msg")
+                    else #()))))));;
+          Cond__Signal (struct.loadF BackupGroupCoordinator "cv" "gcoord");;
+          Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+          Continue)));;
+    #().
+
+Definition Start: val :=
+  rec: "Start" "addrm" "cid" "ts" :=
+    let: "gcoord" := mkBackupGroupCoordinator "addrm" "cid" "ts" in
+    MapIter "addrm" (λ: "ridloop" <>,
+      let: "rid" := "ridloop" in
+      Fork (BackupGroupCoordinator__ResponseSession "gcoord" "rid"));;
+    "gcoord".
+
+Definition BackupGroupCoordinator__Finalized: val :=
+  rec: "BackupGroupCoordinator__Finalized" "gcoord" :=
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    let: "done" := BackupGroupPreparer__finalized (struct.loadF BackupGroupCoordinator "gpp" "gcoord") in
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    "done".
+
+Definition BackupGroupCoordinator__NextPrepareAction: val :=
+  rec: "BackupGroupCoordinator__NextPrepareAction" "gcoord" "rid" :=
+    Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    let: "a" := BackupGroupPreparer__action (struct.loadF BackupGroupCoordinator "gpp" "gcoord") "rid" in
+    Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
+    "a".
+
 Definition BackupGroupCoordinator__Send: val :=
   rec: "BackupGroupCoordinator__Send" "gcoord" "rid" "data" :=
     let: ("conn", "ok") := BackupGroupCoordinator__GetConnection "gcoord" "rid" in
@@ -449,8 +529,8 @@ Definition BackupGroupCoordinator__Send: val :=
       else #())).
 
 Definition BackupGroupCoordinator__SendInquire: val :=
-  rec: "BackupGroupCoordinator__SendInquire" "gcoord" "rid" "ts" "rank" :=
-    let: "data" := message.EncodeTxnInquireRequest "ts" "rank" in
+  rec: "BackupGroupCoordinator__SendInquire" "gcoord" "rid" "ts" "rank" "cid" :=
+    let: "data" := message.EncodeTxnInquireRequest "ts" "rank" "cid" in
     BackupGroupCoordinator__Send "gcoord" "rid" "data";;
     #().
 
@@ -491,7 +571,7 @@ Definition BackupGroupCoordinator__PrepareSession: val :=
     (for: (λ: <>, (~ (BackupGroupCoordinator__Finalized "gcoord"))); (λ: <>, Skip) := λ: <>,
       let: "act" := BackupGroupCoordinator__NextPrepareAction "gcoord" "rid" in
       (if: "act" = BGPP_INQUIRE
-      then BackupGroupCoordinator__SendInquire "gcoord" "rid" "ts" "rank"
+      then BackupGroupCoordinator__SendInquire "gcoord" "rid" "ts" "rank" (struct.loadF BackupGroupCoordinator "cid" "gcoord")
       else
         (if: "act" = BGPP_VALIDATE
         then
@@ -616,66 +696,6 @@ Definition BackupGroupCoordinator__matchCoordID: val :=
   rec: "BackupGroupCoordinator__matchCoordID" "gcoord" "cid" :=
     "cid" = (struct.loadF BackupGroupCoordinator "cid" "gcoord").
 
-Definition BackupGroupCoordinator__Receive: val :=
-  rec: "BackupGroupCoordinator__Receive" "gcoord" "rid" :=
-    let: ("conn", "ok") := BackupGroupCoordinator__GetConnection "gcoord" "rid" in
-    (if: (~ "ok")
-    then
-      BackupGroupCoordinator__Connect "gcoord" "rid";;
-      (slice.nil, #false)
-    else
-      let: "ret" := grove_ffi.Receive "conn" in
-      (if: struct.get grove_ffi.ReceiveRet "Err" "ret"
-      then
-        BackupGroupCoordinator__Connect "gcoord" "rid";;
-        (slice.nil, #false)
-      else (struct.get grove_ffi.ReceiveRet "Data" "ret", #true))).
-
-Definition BackupGroupCoordinator__ResponseSession: val :=
-  rec: "BackupGroupCoordinator__ResponseSession" "gcoord" "rid" :=
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: ("data", "ok") := BackupGroupCoordinator__Receive "gcoord" "rid" in
-      (if: (~ "ok")
-      then
-        time.Sleep params.NS_RECONNECT;;
-        Continue
-      else
-        let: "msg" := message.DecodeTxnResponse "data" in
-        let: "kind" := struct.get message.TxnResponse "Kind" "msg" in
-        Mutex__Lock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-        let: "gpp" := struct.loadF BackupGroupCoordinator "gpp" "gcoord" in
-        (if: "kind" = message.MSG_TXN_INQUIRE
-        then
-          (if: BackupGroupCoordinator__matchCoordID "gcoord" (struct.get message.TxnResponse "CooordID" "msg")
-          then
-            let: "pp" := struct.mk tulip.PrepareProposal [
-              "Rank" ::= struct.get message.TxnResponse "Rank" "msg";
-              "Prepared" ::= struct.get message.TxnResponse "Prepared" "msg"
-            ] in
-            BackupGroupPreparer__processInquireResult "gpp" "rid" "pp" (struct.get message.TxnResponse "Validated" "msg") (struct.get message.TxnResponse "PartialWrites" "msg") (struct.get message.TxnResponse "Result" "msg")
-          else #())
-        else
-          (if: "kind" = message.MSG_TXN_VALIDATE
-          then BackupGroupPreparer__processValidateResult "gpp" "rid" (struct.get message.TxnResponse "Result" "msg")
-          else
-            (if: "kind" = message.MSG_TXN_PREPARE
-            then BackupGroupPreparer__processPrepareResult "gpp" "rid" (struct.get message.TxnResponse "Result" "msg")
-            else
-              (if: "kind" = message.MSG_TXN_UNPREPARE
-              then BackupGroupPreparer__processUnprepareResult "gpp" "rid" (struct.get message.TxnResponse "Result" "msg")
-              else
-                (if: "kind" = message.MSG_TXN_REFRESH
-                then #()
-                else
-                  (if: ("kind" = message.MSG_TXN_COMMIT) || ("kind" = message.MSG_TXN_ABORT)
-                  then BackupGroupPreparer__processFinalizationResult "gpp" (struct.get message.TxnResponse "Result" "msg")
-                  else #()))))));;
-        Cond__Signal (struct.loadF BackupGroupCoordinator "cv" "gcoord");;
-        Mutex__Unlock (struct.loadF BackupGroupCoordinator "mu" "gcoord");;
-        Continue));;
-    #().
-
 Definition BackupGroupCoordinator__ConnectAll: val :=
   rec: "BackupGroupCoordinator__ConnectAll" "gcoord" :=
     ForSlice uint64T <> "rid" (struct.loadF BackupGroupCoordinator "rps" "gcoord")
@@ -691,11 +711,11 @@ Definition BackupTxnCoordinator := struct.decl [
 ].
 
 Definition MkBackupTxnCoordinator: val :=
-  rec: "MkBackupTxnCoordinator" "ts" "rank" "cid" "ptgs" "gaddrm" "leader" :=
+  rec: "MkBackupTxnCoordinator" "ts" "rank" "cid" "ptgs" "gaddrm" "leader" "proph" :=
     let: "gcoords" := NewMap uint64T ptrT #() in
     ForSlice uint64T <> "gid" "ptgs"
       (let: "addrm" := Fst (MapGet "gaddrm" "gid") in
-      let: "gcoord" := mkBackupGroupCoordinator "addrm" "cid" in
+      let: "gcoord" := mkBackupGroupCoordinator "addrm" "cid" "ts" in
       MapInsert "gcoords" "gid" "gcoord");;
     let: "tcoord" := struct.new BackupTxnCoordinator [
       "ts" ::= "ts";

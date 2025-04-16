@@ -18,7 +18,7 @@ Section program.
     (*@         }()                                                             @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    iIntros "#Habort" (Φ) "!> HHΦ".
+    iIntros "#Habort" (Φ) "!> Htcoord HΦ".
     wp_rec.
   Admitted.
 

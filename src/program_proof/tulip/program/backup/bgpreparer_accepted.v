@@ -10,10 +10,20 @@ Section program.
       BackupGroupPreparer__accepted #gpp #rid
     {{{ (accepted : bool), RET #accepted; own_backup_gpreparer_srespm gpp phase rk ts gid γ }}}.
   Proof.
+    iIntros (Φ) "Hsrespm HΦ".
+    wp_rec.
+
     (*@ func (gpp *BackupGroupPreparer) accepted(rid uint64) bool {             @*)
     (*@     _, accepted := gpp.srespm[rid]                                      @*)
     (*@     return accepted                                                     @*)
     (*@ }                                                                       @*)
-  Admitted.
+    iNamed "Hsrespm".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Hsrespm").
+    iIntros (b ok) "[%Hget Hsrespm]".
+    wp_pures.
+    iApply "HΦ".
+    by iFrame "∗ # %".
+  Qed.
 
 End program.

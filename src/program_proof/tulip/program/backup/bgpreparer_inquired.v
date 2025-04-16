@@ -10,10 +10,20 @@ Section program.
       BackupGroupPreparer__inquired #gpp #rid
     {{{ (inquired : bool), RET #inquired; own_backup_gpreparer_pps gpp pps rk ts cid gid γ }}}.
   Proof.
+    iIntros (Φ) "Hpps HΦ".
+    wp_rec.
+
     (*@ func (gpp *BackupGroupPreparer) inquired(rid uint64) bool {             @*)
     (*@     _, inquired := gpp.pps[rid]                                         @*)
     (*@     return inquired                                                     @*)
     (*@ }                                                                       @*)
-  Admitted.
+    iNamed "Hpps".
+    wp_loadField.
+    wp_apply (wp_MapGet with "Hpps").
+    iIntros (pp ok) "[%Hget Hpps]".
+    wp_pures.
+    iApply "HΦ".
+    by iFrame "∗ # %".
+  Qed.
 
 End program.

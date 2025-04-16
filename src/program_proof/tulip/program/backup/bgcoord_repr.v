@@ -49,17 +49,23 @@ Section repr.
       "%Hrps"      ∷ ⌜list_to_set rps = rids_all⌝ ∗
       "%Hnodup"    ∷ ⌜NoDup rps⌝.
 
+  (* TODO: build a better abstraction similarly to [is_gcoord_with_addrm] *)
   Definition is_backup_gcoord_with_addrm gcoord (addrm : gmap u64 chan) rk ts gid γ : iProp Σ :=
-    ∃ (muP : loc) (cvP : loc) (cid : coordid),
+    ∃ (muP : loc) (cvP : loc) (cid : coordid) (rankW tsW : u64),
       "#HmuP"    ∷ readonly (gcoord ↦[BackupGroupCoordinator :: "mu"] #muP) ∗
       "#Hlock"   ∷ is_lock tulipNS #muP (own_backup_gcoord gcoord addrm rk ts cid gid γ) ∗
       "#HcvP"    ∷ readonly (gcoord ↦[BackupGroupCoordinator :: "cv"] #cvP) ∗
       "#Hcv"     ∷ is_cond cvP #muP ∗
       "#HcidP"   ∷ readonly (gcoord ↦[BackupGroupCoordinator :: "cid"] (coordid_to_val cid)) ∗
+      "#HtsP"    ∷ readonly (gcoord ↦[BackupGroupCoordinator :: "ts"] #tsW) ∗
+      "#HrankP"  ∷ readonly (gcoord ↦[BackupGroupCoordinator :: "rank"] #rankW) ∗
       "#Hinv"    ∷ know_tulip_inv γ ∗
       "#Hinvnet" ∷ know_tulip_network_inv γ gid addrm ∗
       "#Haddrm"  ∷ is_backup_gcoord_addrm gcoord addrm ∗
-      "%Hgid"    ∷ ⌜gid ∈ gids_all⌝.
+      "%Hgid"    ∷ ⌜gid ∈ gids_all⌝ ∗
+      "%Hrk"     ∷ ⌜(1 < rk)%nat⌝ ∗
+      "%HtsW"    ∷ ⌜ts = uint.nat tsW⌝ ∗
+      "%rankW"   ∷ ⌜rk = uint.nat rankW⌝.
 
   Definition is_backup_gcoord gcoord rk ts gid γ : iProp Σ :=
     ∃ addrm, "Hgcoord" ∷ is_backup_gcoord_with_addrm gcoord addrm rk ts gid γ.

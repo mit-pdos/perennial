@@ -182,6 +182,7 @@ Inductive txnresp :=
 | PrepareResp     (ts : u64) (rank : u64) (rid : u64) (res : rpres)
 | UnprepareResp   (ts : u64) (rank : u64) (rid : u64) (res : rpres)
 | QueryResp       (ts : u64) (res : rpres)
+| InquireResp     (ts : u64) (rank : u64) (pp : ppsl) (vd : bool) (pwrs : dbmap) (rid : u64) (cid : coordid) (res : rpres)
 | CommitResp      (ts : u64) (res : rpres)
 | AbortResp       (ts : u64) (res : rpres).
 
@@ -204,10 +205,12 @@ Proof.
                       inr (inr (inr (inr (inl (ts, rank, rid, res)))))
                   | QueryResp ts res =>
                       inr (inr (inr (inr (inr (inl (ts, res))))))
+                  | InquireResp ts rank pp vd pwrs rid cid res =>
+                      inr (inr (inr (inr (inr (inr (inl (ts, rank, pp, vd, pwrs, rid, cid, res)))))))
                   | CommitResp ts res =>
-                      inr (inr (inr (inr (inr (inr (inl (ts, res)))))))
+                      inr (inr (inr (inr (inr (inr (inr (inl (ts, res))))))))
                   | AbortResp ts res =>
-                      inr (inr (inr (inr (inr (inr (inr (ts, res)))))))
+                      inr (inr (inr (inr (inr (inr (inr (inr (ts, res))))))))
                   end)
             (λ x, match x with
                   | inl (ts, rid, key, ver, slow) => ReadResp ts rid key ver slow
@@ -218,13 +221,15 @@ Proof.
                       UnprepareResp ts rank rid res
                   | inr (inr (inr (inr (inr (inl (ts, res)))))) =>
                       QueryResp ts res
-                  | inr (inr (inr (inr (inr (inr (inl (ts, res))))))) =>
+                  | inr (inr (inr (inr (inr (inr (inl (ts, rank, pp, vd, pwrs, rid, cid, res))))))) =>
+                      InquireResp ts rank pp vd pwrs rid cid res
+                  | inr (inr (inr (inr (inr (inr (inr (inl (ts, res)))))))) =>
                       CommitResp ts res
-                  | inr (inr (inr (inr (inr (inr (inr (ts, res))))))) =>
+                  | inr (inr (inr (inr (inr (inr (inr (inr (ts, res)))))))) =>
                       AbortResp ts res
                   end)
             _).
-  intros [| | | | | | |] => //=.
+  intros [| | | | | | | |] => //=.
 Qed.
 
 Definition encode_read_resp_xkind
@@ -260,20 +265,39 @@ Definition encode_ts_res (ts : u64) (res : rpres) :=
 Definition encode_query_resp (ts : u64) (res : rpres) :=
   u64_le (U64 205) ++ encode_ts_res ts res.
 
+Definition encode_inquire_resp_xkind
+  (ts : u64) (rank : u64) (pp : ppsl) (vd : bool) (pwrs : dbmap) (rid : u64) (cid : coordid)
+  (res : rpres) (data : list u8) :=
+  if vd
+  then ∃ mdata, data = u64_le ts ++ u64_le rid ++ u64_le rank ++ encode_ppsl pp ++
+                         [if vd then W8 1 else W8 0] ++
+                         u64_le cid.1 ++ u64_le cid.2 ++ u64_le (rpres_to_u64 res) ++ mdata ∧
+                encode_dbmap pwrs mdata
+  else data = u64_le ts ++ u64_le rid ++ u64_le rank ++ encode_ppsl pp ++
+                [if vd then W8 1 else W8 0] ++  u64_le cid.1 ++ u64_le cid.2 ++
+                u64_le (rpres_to_u64 res).
+
+Definition encode_inquire_resp
+  (ts : u64) (rank : u64) (pp : ppsl) (vd : bool) (pwrs : dbmap) (rid : u64) (cid : coordid)
+  (res : rpres) (data : list u8) :=
+  ∃ reqdata, data = u64_le (U64 206) ++ reqdata ∧
+             encode_inquire_resp_xkind ts rank pp vd pwrs rid cid res reqdata.
+
 Definition encode_commit_resp (ts : u64) (res : rpres) :=
   u64_le (U64 300) ++ encode_ts_res ts res.
 
 Definition encode_abort_resp (ts : u64) (res : rpres) :=
   u64_le (U64 301) ++ encode_ts_res ts res.
 
-Definition encode_txnresp (resp : txnresp) : list u8 :=
+Definition encode_txnresp (resp : txnresp) (data : list u8) :=
   match resp with
-  | ReadResp ts rid key ver slow => encode_read_resp ts rid key ver slow
-  | FastPrepareResp ts rid res => encode_fast_prepare_resp ts rid res
-  | ValidateResp ts rid res => encode_validate_resp ts rid res
-  | PrepareResp ts rank rid res => encode_prepare_resp ts rank rid res
-  | UnprepareResp ts rank rid res => encode_unprepare_resp ts rank rid res
-  | QueryResp ts res => encode_query_resp ts res
-  | CommitResp ts res => encode_commit_resp ts res
-  | AbortResp ts res => encode_abort_resp ts res
+  | ReadResp ts rid key ver slow => data = encode_read_resp ts rid key ver slow
+  | FastPrepareResp ts rid res => data = encode_fast_prepare_resp ts rid res
+  | ValidateResp ts rid res => data = encode_validate_resp ts rid res
+  | PrepareResp ts rank rid res => data = encode_prepare_resp ts rank rid res
+  | UnprepareResp ts rank rid res => data = encode_unprepare_resp ts rank rid res
+  | QueryResp ts res => data = encode_query_resp ts res
+  | InquireResp ts rank pp vd pwrs rid cid res => encode_inquire_resp ts rank pp vd pwrs rid cid res data
+  | CommitResp ts res => data = encode_commit_resp ts res
+  | AbortResp ts res => data = encode_abort_resp ts res
   end.
