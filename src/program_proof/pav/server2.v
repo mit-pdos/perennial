@@ -201,7 +201,7 @@ Definition own_Server_ghost γ st : iProp Σ :=
   (* Copied from auditor.v *)
   "Hauditor" ∷ mono_list_auth_own γ.(auditor_gn) 1 gs ∗
   "#Hinv_gs" ∷ audit_gs_inv gs ∗
-  "%HkeyMap_ghost" ∷ ⌜ st.(Server.keyMap) = lower_map (default ∅ (last gs.*1)) ⌝ ∗
+  "%HkeyMap_ghost" ∷ ⌜map_lower (default ∅ (last gs.*1)) st.(Server.keyMap) ⌝ ∗
   "%Hdigs_gs" ∷ ⌜ gs.*2 = servEpochInfo.dig <$> st.(Server.epochHist) ⌝ ∗
 
   "%HepochHistNoOverflow" ∷ ⌜ length st.(Server.epochHist) = uint.nat (length st.(Server.epochHist)) ⌝
@@ -276,43 +276,44 @@ Definition is_epoch_lb γ (epoch : w64) : iProp Σ :=
   ∃ (gs : list (gmap (list w8) (w64 * list w8) * list w8)),
     mono_list_lb_own γ.(auditor_gn) gs ∗ ⌜ uint.nat epoch + 1 ≤ length gs ⌝.
 
-Definition wq_spec γ (req : loc) (Φ : loc → iProp Σ) : iProp Σ :=
-  ∃ (uid : w64) (pk : list w8) nVers cli_next_ep sl_pk,
-    "#uid" ∷ req ↦[WQReq::"Uid"]□ #uid ∗
-    "#pk" ∷ req ↦[WQReq::"Pk"]□ (slice_val sl_pk) ∗
-    "Hvers" ∷ own_num_vers γ uid nVers ∗
-    "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
+Definition wq_post γ req (nVers cli_next_ep : w64) Φ : iProp Σ :=
+  (∀ (resp ptr_sigdig : loc) sigdig (ptr_lat : loc) lat (ptr_bound : loc) bound label commit,
+     let new_next_ep := word.add sigdig.(SigDig.Epoch) (W64 1) in
+     ("Dig" ∷ resp ↦[WQResp::"Dig"] #ptr_sigdig ∗
+      "Lat" ∷ resp ↦[WQResp::"Lat"] #ptr_lat ∗
+      "Bound" ∷ resp ↦[WQResp::"Bound"] #ptr_bound ∗
+      "Err" ∷ resp ↦[WQResp::"Err"] #false ∗
+      "Hvers" ∷ own_num_vers γ req.(WQReq.Uid) (word.add nVers (W64 1)) ∗
+
+      "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
+      "%Heq_pk" ∷ ⌜ lat.(Memb.PkOpen).(CommitOpen.Val) = req.(WQReq.Pk) ⌝ ∗
+      "#Hlb_ep" ∷ is_epoch_lb γ new_next_ep ∗
+      "%Hlt_ep" ∷ ⌜ uint.Z cli_next_ep < uint.Z new_next_ep ⌝ ∗
+      (* provable from new_next_ep = the w64 size of epochHist slice. *)
+      "%Hnoof_ep" ∷ ⌜ uint.Z new_next_ep = (uint.Z sigdig.(SigDig.Epoch) + 1)%Z ⌝ ∗
+
+      "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
+      "#Hsig" ∷ is_sig γ.(sig_pk)
+                           (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
+                           sigdig.(SigDig.Sig) ∗
+
+      "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
+      "#Hwish_lat" ∷ wish_checkMemb γ.(vrf_pk) req.(WQReq.Uid) nVers
+                                                     sigdig.(SigDig.Dig) lat label commit ∗
+
+      "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
+      "#Hwish_bound" ∷ wish_checkNonMemb γ.(vrf_pk) req.(WQReq.Uid) (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
+     )
+     -∗ Φ resp
+  ).
+
+Definition wq_spec γ (req_ptr : loc) (Φ : loc → iProp Σ) : iProp Σ :=
+  ∃ req,
+    "#Req" ∷ WQReq.is_own req_ptr req ∗
+    (∃ nVers cli_next_ep,
+    "Hvers" ∷ own_num_vers γ req.(WQReq.Uid) nVers ∗
     "#Hlb_ep" ∷ is_epoch_lb γ cli_next_ep ∗
-    "HΨ" ∷
-      (∀ (resp ptr_sigdig : loc) sigdig (ptr_lat : loc) lat (ptr_bound : loc) bound label commit,
-         let new_next_ep := word.add sigdig.(SigDig.Epoch) (W64 1) in
-         ("Dig" ∷ resp ↦[WQResp::"Dig"] #ptr_sigdig ∗
-          "Lat" ∷ resp ↦[WQResp::"Lat"] #ptr_lat ∗
-          "Bound" ∷ resp ↦[WQResp::"Bound"] #ptr_bound ∗
-          "Err" ∷ resp ↦[WQResp::"Err"] #false ∗
-          "Hvers" ∷ own_num_vers γ uid (word.add nVers (W64 1)) ∗
-
-          "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
-          "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
-          "#Hlb_ep" ∷ is_epoch_lb γ new_next_ep ∗
-          "%Hlt_ep" ∷ ⌜ uint.Z cli_next_ep < uint.Z new_next_ep ⌝ ∗
-          (* provable from new_next_ep = the w64 size of epochHist slice. *)
-          "%Hnoof_ep" ∷ ⌜ uint.Z new_next_ep = (uint.Z sigdig.(SigDig.Epoch) + 1)%Z ⌝ ∗
-
-          "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
-          "#Hsig" ∷ is_sig γ.(sig_pk)
-                               (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
-                               sigdig.(SigDig.Sig) ∗
-
-          "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
-          "#Hwish_lat" ∷ wish_checkMemb γ.(vrf_pk) uid nVers
-                                            sigdig.(SigDig.Dig) lat label commit ∗
-
-          "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
-          "#Hwish_bound" ∷ wish_checkNonMemb γ.(vrf_pk) uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
-         )
-         -∗ Φ resp
-      ).
+    "HΨ" ∷ wq_post γ req nVers cli_next_ep Φ).
 
 (* FIXME: for workqG *)
 Context `{!ghost_varG Σ unit}.
@@ -899,8 +900,9 @@ Proof.
   iMod (struct_pointsto_persist with "Hreq") as "#Hreq".
   iDestruct (struct_fields_split with "Hreq") as "H". iNamed "H".
   wp_apply (wp_WorkQ__Do with "[$]").
-  repeat iExists _. iFrame "Uid Pk Hvers Hsl_pk Hlb_ep". iClear "Hlb_ep".
-  iApply to_named. iIntros "*". iNamed 1. wp_pures. wp_loadField.
+  repeat iExists _. instantiate (1:=ltac:(econstructor)). simpl.
+  iFrame "Uid Pk Hvers Hsl_pk Hlb_ep". iClear "Hlb_ep".
+  iApply to_named. unfold wq_post. iIntros "*". iNamed 1. wp_pures. wp_loadField.
   wp_loadField. wp_loadField. wp_loadField. wp_pures.
   iApply "HΦ". iFrame "∗#%". done.
 Qed.
@@ -1051,7 +1053,15 @@ Proof.
   iIntros "* [work Hwork]". wp_pures.
   wp_apply (wp_NewMap w64 bool). iIntros (uidSet_ptr) "uidSet".
   wp_pures. iDestruct (own_slice_small_sz with "work") as %Hwork_sz.
-  evar (prop : loc → iProp Σ).
+  eset (prop :=
+         (λ (w : loc),
+            ∃ (req_ptr resp : loc) Ψ γtok,
+              "resp" ∷ resp ↦[struct.t WQResp] _ ∗
+              "#Resp" ∷ w ↦[Work::"Resp"]□ #resp ∗
+              "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
+              "Hspec" ∷ wq_spec γ req_ptr Ψ ∗
+              "#His" ∷ is_Work w γtok Ψ)%I
+         ).
   Opaque w64.
   wp_apply (wp_forSlice
               (λ i,
@@ -1064,62 +1074,44 @@ Proof.
              with
              "[] [uidSet Hwork $work]"
            ).
+  (* FIXME: there are multiple ways of establishing eqdec, countable, etc. *)
+  Transparent w64.
   {
-    Transparent w64.
     subst prop.
     clear Φ. iIntros "* % !# [Hpre [%Hlt %Hlookup]] HΦ". wp_pures.
     iNamed "Hpre". erewrite drop_S; last done.
     iDestruct "Hwork" as "[Hw Hwork]". iNamed "Hw".
     wp_apply wp_allocStruct; [val_ty|]. iIntros (resp) "Hresp".
     wp_storeField. wp_loadField.
-    iNamed "Hspec". wp_loadField. wp_pures. wp_apply (wp_MapGet with "[$]").
+    iRename "Req" into "Req'".
+    iNamed "Hspec". iNamed "Req".
+    wp_loadField. wp_pures. wp_apply (wp_MapGet with "[$]").
     iIntros "* [%Huid_lookup uidSet]". wp_pures. destruct ok.
     { (* impossible given the precondition *)
       iExFalso. apply map_get_true in Huid_lookup.
-      iLeft in "HuidSet".
-      iDestruct (big_sepS_elem_of _ _ uid with "HuidSet") as (?) "Hbad".
+      iNamed "Hspec". iLeft in "HuidSet".
+      iDestruct (big_sepS_elem_of _ _ _ with "HuidSet") as (?) "Hbad".
       { by eapply elem_of_dom_2. }
       iCombine "Hbad Hvers" gives %Hbad. exfalso.
       naive_solver.
     }
     apply map_get_false in Huid_lookup as [Huid_lookup ->].
     wp_pures.
+    iMod (struct_field_pointsto_persist with "Resp") as "#Resp".
     wp_apply (wp_MapInsert with "[$]"); first done.
     iIntros "uidSet".
     iApply "HΦ". iFrame.
     replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
     iFrame. iSplit.
-    - (* uidSet *) unfold typed_map.map_insert.
+    - (* uidSet *) unfold typed_map.map_insert. iNamed "Hspec".
       iLeft in "HuidSet". rewrite dom_insert_L.
       rewrite big_sepS_union.
       2:{ rewrite -not_elem_of_dom in Huid_lookup. set_solver. }
       rewrite big_sepS_singleton. iFrame.
     - iRight in "HuidSet".
       erewrite take_S_r; last done.
-      rewrite big_sepL_app. iFrame. rewrite big_sepL_singleton.
-      Unshelve.
-      2:{
-        clear Hwork_sz commitSecret_sl mu vrfSk_ptr workQ work_sl work uidSet_ptr.
-        shelve.
-      }
-      (* Setting things up for higher-order unification to succeed. *)
-      iDestruct "Req" as "-#Req".
-      iDestruct "uid" as "-#Uid".
-      iDestruct "pk" as "-#Pk".
-      iDestruct "Hsl_pk" as "-#Hsl_pk".
-      iDestruct "Hlb_ep" as "-#Hlb_ep".
-      iDestruct "His" as "-#His".
-      iClear "HworkQ".
-      clear dependent uidSet.
-      iCombineNamed "*" as "H".
-      iRevert "H".
-      iForallRevert req. iForallRevert sl_pk. iForallRevert pk.
-      iForallRevert uid. iForallRevert resp. iForallRevert nVers.
-      iForallRevert cli_next_ep. iForallRevert Ψ. iForallRevert γ0.
-      do 9 setoid_rewrite <- exist_wand_forall.
-      iIntros "H".
-      iExactEq "H".
-      reflexivity.
+      rewrite big_sepL_app. iFrame "HuidSet". rewrite big_sepL_singleton.
+      iFrame "∗#".
   }
   {
     iFrame. rewrite dom_empty_L big_sepS_empty take_0 big_sepL_nil //.
@@ -1129,7 +1121,23 @@ Proof.
   rewrite -> take_ge by word.
   wp_pures. wp_apply wp_slice_len. wp_pures. wp_apply wp_NewSlice.
   iIntros (outs0_sl) "outs0". wp_pures. iDestruct (own_slice_to_small with "outs0") as "outs0".
-  evar (waitP : w64 → iProp Σ).
+
+  (* allocate outs0 *)
+  wp_pures.
+  wp_apply wp_ref_of_zero; [done|].
+
+
+  eset (waitP:=
+          (λ (i : w64),
+             ∃ w,
+             "%Hw" ∷ ⌜ work !! (uint.nat i) = Some w ⌝ ∗
+             "resp" ∷ resp ↦[struct.t WQResp] (zero_val ptrT, (zero_val ptrT, (zero_val ptrT, (zero_val boolT, #())))) ∗
+             "#Resp" ∷ w ↦[Work::"Resp"]□ #resp ∗
+             "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
+             "Hspec" ∷ wq_spec γ req_ptr Ψ ∗
+             "#His" ∷ is_Work w γtok Ψ
+          )%I).
+
   wp_apply (wp_NewWaitGroup nroot waitP). iIntros (wg γwg) "Hwg".
   wp_apply wp_ref_to.
   { admit. } (* TODO: waitgroup exposes a val instead of the loc.... Maybe add a lemma to prove val_ty? *)
@@ -1142,6 +1150,14 @@ Proof.
               "Hprops" ∷ ([∗ list] w ∈ (drop (uint.nat i) work), prop w) ∗
               "outs0" ∷ own_slice_small outs0_sl ptrT (DfracOwn 1) (outs0 ++ (replicate (length work - uint.nat i) null)) ∗
               "%Houts0" ∷ ⌜ length outs0 = uint.nat i ⌝ ∗
+              "Houts0" ∷ ([∗ list] out; w ∈ outs0 ; take (length outs0) work,
+                            (∃ (req_ptr resp : loc) (Ψ : loc → iProp Σ) (γtok : gname),
+                                "resp" ∷ resp ↦[struct.t WQResp] (zero_val ptrT, (zero_val ptrT, (zero_val ptrT, (zero_val boolT, #())))) ∗
+                                "#Resp" ∷ w ↦[Work::"Resp"]□ #resp ∗
+                                "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
+                                "Hspec" ∷ wq_spec γ req_ptr Ψ ∗
+                                "#His" ∷ is_Work w γtok Ψ)%I
+                ) ∗
               "Hwg" ∷ own_WaitGroup nroot wg γwg i waitP ∗
               "_" ∷ True
           )%I with "[i Hprops Hwg outs0]" as "H".

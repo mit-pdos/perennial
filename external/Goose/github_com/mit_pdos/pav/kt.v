@@ -1835,17 +1835,21 @@ Definition Server__Worker: val :=
         ])
       else MapInsert "uidSet" "uid" #false));;
     let: "outs0" := NewSlice ptrT (slice.len "work") in
-    let: "wg" := ref_to ptrT (waitgroup.New #()) in
     let: "i" := ref (zero_val uint64T) in
+    Skip;;
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
+      SliceSet ptrT "outs0" (![uint64T] "i") (struct.new mapper0Out [
+      ]);;
+      Continue);;
+    let: "wg" := ref_to ptrT (waitgroup.New #()) in
+    "i" <-[uint64T] #0;;
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
       let: "resp" := struct.loadF Work "Resp" (SliceGet ptrT "work" (![uint64T] "i")) in
       (if: (~ (struct.loadF WQResp "Err" "resp"))
       then
         let: "req" := struct.loadF Work "Req" (SliceGet ptrT "work" (![uint64T] "i")) in
-        let: "out0" := struct.new mapper0Out [
-        ] in
-        SliceSet ptrT "outs0" (![uint64T] "i") "out0";;
+        let: "out0" := SliceGet ptrT "outs0" (![uint64T] "i") in
         waitgroup.Add (![ptrT] "wg") #1;;
         Fork (Server__mapper0 "s" "req" "out0";;
               waitgroup.Done (![ptrT] "wg"))
