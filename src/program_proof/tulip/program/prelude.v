@@ -216,7 +216,9 @@ Section def.
 
   Definition is_txnptgs_in_slice s (g : txnptgs) : iProp Σ :=
     ∃ l : list u64,
-      readonly (own_slice_small s uint64T (DfracOwn 1) l) ∗ ⌜list_to_set l = g⌝.
+      readonly (own_slice_small s uint64T (DfracOwn 1) l) ∗
+      ⌜list_to_set l = g⌝ ∗
+      ⌜NoDup l⌝.
 
   #[global]
   Instance is_txnptgs_in_slice_persistent s g :

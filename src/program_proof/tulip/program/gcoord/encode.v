@@ -223,12 +223,12 @@ Section encode.
     by iFrame.
   Qed.
 
-  Theorem wp_EncodeTxnInquireRequest (ts : u64) (rank : u64) :
+  Theorem wp_EncodeTxnInquireRequest (ts : u64) (rank : u64) (cid : coordid) :
     {{{ True }}}
-      EncodeTxnInquireRequest #ts #rank
+      EncodeTxnInquireRequest #ts #rank (coordid_to_val cid)
     {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) data ∗
-        ⌜encode_txnreq (InquireReq ts rank) data⌝
+        ⌜encode_txnreq (InquireReq ts rank cid) data⌝
     }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
@@ -249,6 +249,10 @@ Section encode.
     iIntros (p2) "Hbs".
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p3) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p4) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p5) "Hbs".
     wp_pures.
     rewrite uint_nat_W64_0 replicate_0 app_nil_l -app_assoc.
     iApply "HΦ".

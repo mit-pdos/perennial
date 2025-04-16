@@ -123,7 +123,7 @@ Definition encode_dbmap (m : dbmap) (data : list u8) :=
   ∃ xs, data = encode_dbmods xs ∧ xs ≡ₚ map_to_list m.
 
 Definition encode_txnptgs (g : txnptgs) (data : list u8) :=
-  ∃ ns, data = encode_u64s ns ∧ list_to_set ns = g.
+  ∃ ns, data = encode_u64s ns ∧ list_to_set ns = g ∧ NoDup ns.
 
 Definition encode_dbpver (x : dbpver) : list u8 :=
   u64_le x.1 ++ encode_dbval x.2.

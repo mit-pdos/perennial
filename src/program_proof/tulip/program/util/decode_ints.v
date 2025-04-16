@@ -123,7 +123,7 @@ Section program.
     iDestruct (own_slice_to_small with "Hns") as "Hns".
     iMod (readonly_alloc_1 with "Hns") as "#Hns'".
     iApply "HΦ".
-    by iFrame "∗ %".
+    by iFrame "∗ #".
   Qed.
 
 End program.

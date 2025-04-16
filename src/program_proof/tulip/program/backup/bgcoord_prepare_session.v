@@ -1,6 +1,6 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.backup Require Import
-  bgcoord_repr bgcoord_send bgcoord_finalized
+  bgcoord_repr bgpreparer_repr bgcoord_send bgcoord_finalized
   bgcoord_next_prepare_action bgcoord_get_pwrs.
 
 Section program.
@@ -44,7 +44,11 @@ Section program.
       (*@             gcoord.SendInquire(rid, ts, rank)                           @*)
       (*@                                                                         @*)
       case_bool_decide as Hinquire; wp_pures.
-      { wp_apply (wp_BackupGroupCoordinator__SendInquire with "Hgcoord").
+      { (* FIXME: ugly proof *)
+        iPoseProof "Hgcoord" as "Hgcoord'".
+        iNamed "Hgcoord'".
+        wp_loadField.
+        wp_apply (wp_BackupGroupCoordinator__SendInquire with "Hgcoord").
         { apply Hrid. }
         wp_pures.
         by case_bool_decide; wp_pures; wp_apply wp_Sleep; wp_pures; iApply "HΦ".

@@ -48,7 +48,10 @@ Section program.
     (*@                                                                         @*)
     wp_apply (wp_BackupTxnCoordinator__resolve with "Htcoord").
     { by destruct status. }
-    iIntros "[Htcoord #Hcmted]".
+    iIntros (ok) "[Htcoord #Hcmted]".
+    wp_pures.
+    destruct ok; wp_pures; last first.
+    { by iApply "HΦ". }
 
     (*@     tcoord.commit()                                                     @*)
     (*@ }                                                                       @*)

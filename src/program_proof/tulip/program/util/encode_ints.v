@@ -83,6 +83,7 @@ Section program.
     iApply "HΦ".
     iFrame "∗ %".
     iPureIntro.
+    destruct Hptgs as [Hptgs Hnd].
     by exists ns.
   Qed.
 

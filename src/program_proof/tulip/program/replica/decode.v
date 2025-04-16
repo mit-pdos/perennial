@@ -25,9 +25,10 @@ Definition txnreq_to_val (req : txnreq) (pwrsP ptgsP : Slice.t) : val :=
   | QueryReq ts rank =>
       struct.mk_f TxnRequest [
           ("Kind", #(U64 205)); ("Timestamp", #ts); ("Rank", #rank)]
-  | InquireReq ts rank =>
+  | InquireReq ts rank cid =>
       struct.mk_f TxnRequest [
-          ("Kind", #(U64 206)); ("Timestamp", #ts); ("Rank", #rank)]
+          ("Kind", #(U64 206)); ("Timestamp", #ts); ("Rank", #rank);
+          ("CoordID", coordid_to_val cid)]
   | RefreshReq ts rank =>
       struct.mk_f TxnRequest [
           ("Kind", #(U64 210)); ("Timestamp", #ts); ("Rank", #rank)]
@@ -225,11 +226,11 @@ Section decode.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_DecodeTxnInquireRequest (bsP : Slice.t) ts rank :
-    let bs := encode_ts_rank ts rank in
+  Theorem wp_DecodeTxnInquireRequest (bsP : Slice.t) ts rank cid :
+    let bs := encode_inquire_req_xkind ts rank cid in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnInquireRequest (to_val bsP)
-    {{{ RET (txnreq_to_val (InquireReq ts rank) Slice.nil Slice.nil); True }}}.
+    {{{ RET (txnreq_to_val (InquireReq ts rank cid) Slice.nil Slice.nil); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -238,6 +239,10 @@ Section decode.
     iIntros (bs1P) "Hbs".
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (bs2P) "Hbs".
+    wp_apply (wp_ReadInt with "Hbs").
+    iIntros (bs3P) "Hbs".
+    wp_apply (wp_ReadInt with "Hbs").
+    iIntros (bs4P) "Hbs".
     wp_pures.
     by iApply "HΦ".
   Qed.
@@ -328,10 +333,10 @@ Section decode.
     {{{ (pwrsP ptgsP : Slice.t), RET (txnreq_to_val req pwrsP ptgsP);
         match req with
         | FastPrepareReq _ pwrs ptgs =>
-            own_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
+            is_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
         | ValidateReq _ _ pwrs ptgs =>
-            own_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
-        | CommitReq _ pwrs => own_dbmap_in_slice pwrsP pwrs
+            is_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
+        | CommitReq _ pwrs => is_dbmap_in_slice pwrsP pwrs
         | _ => True
         end
     }}}.
@@ -363,10 +368,14 @@ Section decode.
       (*@                                                                         @*)
       wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
+      iApply wp_fupd.
       wp_pures.
       wp_apply (wp_DecodeTxnFastPrepareRequest with "Hbs").
       { apply Hreqdata. }
-      by iApply "HΦ".
+      iIntros (pwrsP ptgsP) "[Hpwrs Hptgs]".
+      iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
+      iApply "HΦ".
+      by iFrame.
     }
     { destruct Henc as (reqdata & -> & Hreqdata).
 
@@ -376,10 +385,14 @@ Section decode.
       (*@                                                                         @*)
       wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
+      iApply wp_fupd.
       wp_pures.
       wp_apply (wp_DecodeTxnValidateRequest with "Hbs").
       { apply Hreqdata. }
-      by iApply "HΦ".
+      iIntros (pwrsP ptgsP) "[Hpwrs Hptgs]".
+      iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
+      iApply "HΦ".
+      by iFrame.
     }
     { rewrite Henc.
 
@@ -418,13 +431,6 @@ Section decode.
       by iApply "HΦ".
     }
     { rewrite Henc.
-      wp_apply (wp_ReadInt with "Hbs").
-      iIntros (p) "Hbs".
-      wp_pures.
-      wp_apply (wp_DecodeTxnInquireRequest with "Hbs").
-      by iApply "HΦ".
-    }
-    { rewrite Henc.
 
       (*@     if kind == MSG_TXN_INQUIRE {                                        @*)
       (*@         return DecodeTxnInquireRequest(bs1)                             @*)
@@ -456,11 +462,14 @@ Section decode.
       (*@                                                                         @*)
       wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
+      iApply wp_fupd.
       wp_pures.
       wp_apply (wp_DecodeTxnCommitRequest with "Hbs").
       { apply Hreqdata. }
       iIntros (pwrsP) "Hpwrs".
-      by iApply "HΦ".
+      iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
+      iApply "HΦ".
+      by iFrame.
     }
     { rewrite Henc.
 
@@ -472,7 +481,8 @@ Section decode.
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnAbortRequest with "Hbs").
-      by iApply "HΦ".
+      iApply "HΦ".
+      by iFrame.
     }
 
     (*@     return TxnRequest{}                                                 @*)

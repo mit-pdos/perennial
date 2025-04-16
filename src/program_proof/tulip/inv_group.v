@@ -146,6 +146,9 @@ Section inv.
     ∃ wrs, is_txn_wrs γ ts wrs ∧
            ⌜valid_ts ts ∧ valid_wrs wrs ∧ pwrs ≠ ∅ ∧ pwrs = wrs_group gid wrs⌝.
 
+  Definition safe_txn_ptgs γ ts ptgs : iProp Σ :=
+    ∃ wrs, is_txn_wrs γ ts wrs ∧ ⌜ptgs = ptgroups (dom wrs)⌝.
+
   Lemma safe_txn_pwrs_impl_is_txn_pwrs γ gid ts pwrs :
     safe_txn_pwrs γ gid ts pwrs -∗
     is_txn_pwrs γ gid ts pwrs.

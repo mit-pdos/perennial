@@ -84,6 +84,7 @@ Section program.
 
     (*@     for _, gid := range(ptgs) {                                         @*)
     (*@                                                                         @*)
+    iDestruct "Hptgs" as (ptgsL) "(#HptgsL & %HptgsL & %Hnd)".
     set P := (λ (i : u64),
                 "Hgcoords" ∷ own_backup_tcoord_gcoords tcoord ptgs rk ts γ ∗
                 "Htks" ∷ [∗ set] gid ∈ list_to_set (drop (uint.nat i) ptgsL), local_gid_token α gid)%I.
@@ -103,9 +104,11 @@ Section program.
         clear -Hgid HptgsL.
         set_solver.
       }
+      iNamed "Hwrs".
       assert (Hin : gid ∈ gids_all).
       { pose proof (subseteq_ptgroups (dom wrs)) as Hdom.
-        clear -Hdom Hinptgs Hptgs.
+        rewrite -Hvptgs in Hdom.
+        clear -Hdom Hinptgs.
         set_solver.
       }
       wp_apply (wp_MapGet with "Hgcoords").
@@ -143,7 +146,7 @@ Section program.
           iFrame "Hwrs".
           iPureIntro.
           unshelve epose proof (elem_of_ptgroups_non_empty gid wrs _) as Hne.
-          { by rewrite -Hptgs. }
+          { by rewrite -Hvptgs. }
           done.
         }
 
@@ -219,7 +222,7 @@ Section program.
                 rewrite size_singleton Hsizegids.
                 assert (Hszgids : (size gids ≤ size gids_all)%nat).
                 { apply subseteq_size. etrans; first apply Hgidsincl.
-                  rewrite Hptgs.
+                  rewrite Hvptgs.
                   apply subseteq_ptgroups.
                 }
                 pose proof size_gids_all as Hszgidsall.
@@ -379,11 +382,12 @@ Section program.
     iFrame "∗ # %".
     destruct vd; last done.
     destruct st; [| done | done].
+    iNamed "Hwrs".
     iFrame "Hwrs".
     assert (gids = ptgroups (dom wrs)) as ->; last done.
     destruct Hcond as [Hcontra | Hnr]; first done.
     rewrite /= bool_decide_eq_true_2 in Hnpnr; last done. subst nr.
-    rewrite -Hptgs.
+    rewrite -Hvptgs.
     apply set_subseteq_size_eq; first apply Hgidsincl.
     rewrite -HptgsL size_list_to_set; last apply Hnd.
     clear -Hsizegids Hnr. lia.

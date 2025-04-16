@@ -6,19 +6,22 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_mkBackupGroupCoordinator
-    (addrmP : loc) (cid : coordid) (addrm : gmap u64 chan) rk ts gid γ :
+    (addrmP : loc) (cid : coordid) (tsW rkW : u64) (addrm : gmap u64 chan) gid γ :
+    let ts := uint.nat tsW in
+    let rk := uint.nat rkW in
+    (1 < rk)%nat ->
     gid ∈ gids_all ->
     dom addrm = rids_all ->
     own_map addrmP DfracDiscarded addrm -∗
     know_tulip_inv γ -∗
     know_tulip_network_inv γ gid addrm -∗
     {{{ own_replica_backup_token γ cid.1 cid.2 ts rk gid }}}
-      mkBackupGroupCoordinator #addrmP (coordid_to_val cid)
+      mkBackupGroupCoordinator #addrmP (coordid_to_val cid) #tsW #rkW
     {{{ (gcoord : loc), RET #gcoord; 
         is_backup_gcoord_with_addrm gcoord addrm rk ts gid γ
     }}}.
   Proof.
-    iIntros (Hgid Hdomaddrm) "#Haddrm #Hinv #Hinvnet".
+    iIntros (ts rk Hrk Hgid Hdomaddrm) "#Haddrm #Hinv #Hinvnet".
     iIntros (Φ) "!> Htoken HΦ".
     wp_rec.
 
@@ -120,6 +123,8 @@ Section program.
     iDestruct (own_slice_to_small with "Hrps") as "Hrps".
     iMod (readonly_alloc_1 with "Hrps") as "#Hrps".
     iMod (readonly_alloc_1 with "cid") as "#Hcid".
+    iMod (readonly_alloc_1 with "ts") as "#Hts".
+    iMod (readonly_alloc_1 with "rank") as "#Hrank".
     iFrame "# %".
     iPureIntro.
     by rewrite Hrps.

@@ -5,13 +5,13 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_BackupGroupCoordinator__SendInquire
-    (gcoord : loc) (rid : u64) (tsW : u64) (rankW : u64) addrm gid γ :
+    (gcoord : loc) (rid : u64) (tsW : u64) (rankW : u64) (cid : coordid) addrm gid γ :
     let ts := uint.nat tsW in
     let rank := uint.nat rankW in
     rid ∈ dom addrm ->
     is_backup_gcoord_with_addrm gcoord addrm rank ts gid γ -∗
     {{{ True }}}
-      BackupGroupCoordinator__SendInquire #gcoord #rid #tsW #rankW
+      BackupGroupCoordinator__SendInquire #gcoord #rid #tsW #rankW (coordid_to_val cid)
     {{{ RET #(); True }}}.
   Proof.
     (*@ func (gcoord *BackupGroupCoordinator) SendInquire(rid, ts, rank uint64) { @*)

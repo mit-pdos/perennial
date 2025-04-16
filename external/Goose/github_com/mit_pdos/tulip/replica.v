@@ -599,7 +599,7 @@ Definition Replica__StartBackupTxnCoordinator: val :=
       "GroupID" ::= struct.loadF Replica "gid" "rp";
       "ReplicaID" ::= struct.loadF Replica "rid" "rp"
     ] in
-    let: "tcoord" := backup.MkBackupTxnCoordinator "ts" "rank" "cid" "ptgs" (struct.loadF Replica "gaddrm" "rp") (struct.loadF Replica "leader" "rp") (struct.loadF Replica "proph" "rp") in
+    let: "tcoord" := backup.Start "ts" "rank" "cid" "ptgs" (struct.loadF Replica "gaddrm" "rp") (struct.loadF Replica "leader" "rp") (struct.loadF Replica "proph" "rp") in
     backup.BackupTxnCoordinator__ConnectAll "tcoord";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     backup.BackupTxnCoordinator__Finalize "tcoord";;

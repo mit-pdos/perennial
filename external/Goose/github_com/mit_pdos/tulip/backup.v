@@ -383,7 +383,7 @@ Definition BackupGroupCoordinator := struct.decl [
 ].
 
 Definition mkBackupGroupCoordinator: val :=
-  rec: "mkBackupGroupCoordinator" "addrm" "cid" "ts" :=
+  rec: "mkBackupGroupCoordinator" "addrm" "cid" "ts" "rank" :=
     let: "mu" := newMutex #() in
     let: "cv" := NewCond "mu" in
     let: "nrps" := MapLen "addrm" in
@@ -393,6 +393,7 @@ Definition mkBackupGroupCoordinator: val :=
     let: "gcoord" := struct.new BackupGroupCoordinator [
       "cid" ::= "cid";
       "ts" ::= "ts";
+      "rank" ::= "rank";
       "rps" ::= ![slice.T uint64T] "rps";
       "addrm" ::= "addrm";
       "mu" ::= "mu";
@@ -491,9 +492,15 @@ Definition BackupGroupCoordinator__ResponseSession: val :=
           Continue)));;
     #().
 
-Definition Start: val :=
-  rec: "Start" "addrm" "cid" "ts" :=
-    let: "gcoord" := mkBackupGroupCoordinator "addrm" "cid" "ts" in
+(* TODO: We probably don't need to remember @ts since it can be passsed directly
+   to @gcoord.ResponseSession and @gcoord.Prepare. We just need to maintain
+   logically the connection between those parameters and the gcoord
+   representation predicate. Remembering @cid and @rank makes sense since they
+   belong to the group coordinator, rather than the transaction
+   coordinator. This means we can remove @rank from @gcoord.Prepare and @gcoord.PrepareSession. *)
+Definition startBackupGroupCoordinator: val :=
+  rec: "startBackupGroupCoordinator" "addrm" "cid" "ts" "rank" :=
+    let: "gcoord" := mkBackupGroupCoordinator "addrm" "cid" "ts" "rank" in
     MapIter "addrm" (λ: "ridloop" <>,
       let: "rid" := "ridloop" in
       Fork (BackupGroupCoordinator__ResponseSession "gcoord" "rid"));;
@@ -692,10 +699,6 @@ Definition BackupGroupCoordinator__Abort: val :=
       Continue);;
     #().
 
-Definition BackupGroupCoordinator__matchCoordID: val :=
-  rec: "BackupGroupCoordinator__matchCoordID" "gcoord" "cid" :=
-    "cid" = (struct.loadF BackupGroupCoordinator "cid" "gcoord").
-
 Definition BackupGroupCoordinator__ConnectAll: val :=
   rec: "BackupGroupCoordinator__ConnectAll" "gcoord" :=
     ForSlice uint64T <> "rid" (struct.loadF BackupGroupCoordinator "rps" "gcoord")
@@ -710,18 +713,19 @@ Definition BackupTxnCoordinator := struct.decl [
   "proph" :: ProphIdT
 ].
 
-Definition MkBackupTxnCoordinator: val :=
-  rec: "MkBackupTxnCoordinator" "ts" "rank" "cid" "ptgs" "gaddrm" "leader" "proph" :=
+Definition Start: val :=
+  rec: "Start" "ts" "rank" "cid" "ptgs" "gaddrm" "leader" "proph" :=
     let: "gcoords" := NewMap uint64T ptrT #() in
     ForSlice uint64T <> "gid" "ptgs"
       (let: "addrm" := Fst (MapGet "gaddrm" "gid") in
-      let: "gcoord" := mkBackupGroupCoordinator "addrm" "cid" "ts" in
+      let: "gcoord" := startBackupGroupCoordinator "addrm" "cid" "ts" "rank" in
       MapInsert "gcoords" "gid" "gcoord");;
     let: "tcoord" := struct.new BackupTxnCoordinator [
       "ts" ::= "ts";
       "rank" ::= "rank";
       "ptgs" ::= "ptgs";
-      "gcoords" ::= "gcoords"
+      "gcoords" ::= "gcoords";
+      "proph" ::= "proph"
     ] in
     "tcoord".
 
@@ -767,24 +771,38 @@ Definition BackupTxnCoordinator__stabilize: val :=
     Mutex__Unlock "mu";;
     ("status", "valid").
 
+Definition mergeKVMap: val :=
+  rec: "mergeKVMap" "mw" "mr" :=
+    MapIter "mr" (λ: "k" "v",
+      MapInsert "mw" "k" "v");;
+    #().
+
 (* TODO: This function should go to a trusted package (but not trusted_proph
-   since that would create a circular dependency). *)
+   since that would create a circular dependency), and be implemented as a
+   "ghost function". *)
 Definition BackupTxnCoordinator__mergeWrites: val :=
   rec: "BackupTxnCoordinator__mergeWrites" "tcoord" :=
+    let: "valid" := ref_to boolT #true in
     let: "wrs" := NewMap stringT (struct.t tulip.Value) #() in
-    MapIter (struct.loadF BackupTxnCoordinator "gcoords" "tcoord") (λ: <> "gcoord",
-      let: ("pwrs", <>) := BackupGroupCoordinator__GetPwrs "gcoord" in
-      MapIter "pwrs" (λ: "k" "v",
-        MapInsert "wrs" "k" "v"));;
-    "wrs".
+    ForSlice uint64T <> "gid" (struct.loadF BackupTxnCoordinator "ptgs" "tcoord")
+      (let: "gcoord" := Fst (MapGet (struct.loadF BackupTxnCoordinator "gcoords" "tcoord") "gid") in
+      let: ("pwrs", "ok") := BackupGroupCoordinator__GetPwrs "gcoord" in
+      (if: "ok"
+      then mergeKVMap "wrs" "pwrs"
+      else "valid" <-[boolT] #false));;
+    ("wrs", ![boolT] "valid").
 
 Definition BackupTxnCoordinator__resolve: val :=
   rec: "BackupTxnCoordinator__resolve" "tcoord" "status" :=
-    (if: "status" = tulip.TXN_PREPARED
-    then
-      trusted_proph.ResolveCommit (struct.loadF BackupTxnCoordinator "proph" "tcoord") (struct.loadF BackupTxnCoordinator "ts" "tcoord") (BackupTxnCoordinator__mergeWrites "tcoord");;
-      #()
-    else #()).
+    (if: "status" = tulip.TXN_COMMITTED
+    then #true
+    else
+      let: ("wrs", "ok") := BackupTxnCoordinator__mergeWrites "tcoord" in
+      (if: (~ "ok")
+      then #false
+      else
+        trusted_proph.ResolveCommit (struct.loadF BackupTxnCoordinator "proph" "tcoord") (struct.loadF BackupTxnCoordinator "ts" "tcoord") "wrs";;
+        #true)).
 
 Definition BackupTxnCoordinator__commit: val :=
   rec: "BackupTxnCoordinator__commit" "tcoord" :=
@@ -812,6 +830,8 @@ Definition BackupTxnCoordinator__Finalize: val :=
         BackupTxnCoordinator__abort "tcoord";;
         #()
       else
-        BackupTxnCoordinator__resolve "tcoord" "status";;
-        BackupTxnCoordinator__commit "tcoord";;
-        #())).
+        (if: (~ (BackupTxnCoordinator__resolve "tcoord" "status"))
+        then #()
+        else
+          BackupTxnCoordinator__commit "tcoord";;
+          #()))).

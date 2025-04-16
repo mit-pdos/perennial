@@ -8,7 +8,7 @@ Inductive txnreq :=
 | PrepareReq     (ts : u64) (rank : u64)
 | UnprepareReq   (ts : u64) (rank : u64)
 | QueryReq       (ts : u64) (rank : u64)
-| InquireReq     (ts : u64) (rank : u64)
+| InquireReq     (ts : u64) (rank : u64) (cid : coordid)
 | RefreshReq     (ts : u64) (rank : u64)
 | CommitReq      (ts : u64) (pwrs : dbmap)
 | AbortReq       (ts : u64).
@@ -32,8 +32,8 @@ Proof.
                       inr (inr (inr (inr (inl (ts, rank)))))
                   | QueryReq ts rank =>
                       inr (inr (inr (inr (inr (inl (ts, rank))))))
-                  | InquireReq ts rank =>
-                      inr (inr (inr (inr (inr (inr (inl (ts, rank)))))))
+                  | InquireReq ts rank cid =>
+                      inr (inr (inr (inr (inr (inr (inl (ts, rank, cid)))))))
                   | RefreshReq ts rank =>
                       inr (inr (inr (inr (inr (inr (inr (inl (ts, rank))))))))
                   | CommitReq ts pwrs =>
@@ -49,8 +49,8 @@ Proof.
                   | inr (inr (inr (inr (inl (ts, rank))))) => UnprepareReq ts rank
                   | inr (inr (inr (inr (inr (inl (ts, rank)))))) =>
                       QueryReq ts rank
-                  | inr (inr (inr (inr (inr (inr (inl (ts, rank))))))) =>
-                      InquireReq ts rank
+                  | inr (inr (inr (inr (inr (inr (inl (ts, rank, cid))))))) =>
+                      InquireReq ts rank cid
                   | inr (inr (inr (inr (inr (inr (inr (inl (ts, rank)))))))) =>
                       RefreshReq ts rank
                   | inr (inr (inr (inr (inr (inr (inr (inr (inl (ts, pwrs))))))))) =>
@@ -93,6 +93,12 @@ Definition encode_ts_rank (ts rank : u64) := u64_le ts ++ u64_le rank.
 Definition encode_txnreq_of_ts_rank (kind : u64) (ts rank : u64) (data : list u8) :=
   data = u64_le kind ++ encode_ts_rank ts rank.
 
+Definition encode_inquire_req_xkind (ts rank : u64) (cid : coordid) :=
+  encode_ts_rank ts rank ++ u64_le cid.1 ++ u64_le cid.2.
+
+Definition encode_inquire_req (ts rank : u64) (cid : coordid) (data : list u8) :=
+  data = u64_le (U64 206) ++ encode_inquire_req_xkind ts rank cid.
+
 Definition encode_commit_req_xkind (ts : u64) (m : dbmap) (data : list u8) :=
   ∃ mdata, data = u64_le ts ++ mdata ∧ encode_dbmap m mdata.
 
@@ -112,7 +118,7 @@ Definition encode_txnreq (req : txnreq) (data : list u8) :=
   | PrepareReq ts rank => encode_txnreq_of_ts_rank (U64 203) ts rank data
   | UnprepareReq ts rank => encode_txnreq_of_ts_rank (U64 204) ts rank data
   | QueryReq ts rank => encode_txnreq_of_ts_rank (U64 205) ts rank data
-  | InquireReq ts rank => encode_txnreq_of_ts_rank (U64 206) ts rank data
+  | InquireReq ts rank cid => encode_inquire_req ts rank cid data
   | RefreshReq ts rank => encode_txnreq_of_ts_rank (U64 210) ts rank data
   | CommitReq ts pwrs => encode_commit_req ts pwrs data
   | AbortReq ts => encode_abort_req ts data

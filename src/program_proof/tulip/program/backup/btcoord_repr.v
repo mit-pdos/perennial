@@ -23,15 +23,13 @@ Section btcoord_repr.
 
   Definition own_backup_tcoord_rank tcoord (rk : nat) : iProp Σ :=
     ∃ (rkW : u64),
-      "HrankP"  ∷ tcoord ↦[BackupTxnCoordinator :: "rank"] #rkW ∗
-      "%HrkW" ∷ ⌜uint.nat rkW = rk⌝.
+      "HrankP" ∷ tcoord ↦[BackupTxnCoordinator :: "rank"] #rkW ∗
+      "%HrkW"  ∷ ⌜uint.nat rkW = rk⌝.
 
   Definition own_backup_tcoord_ptgs tcoord (ptgs : txnptgs) : iProp Σ :=
-    ∃ (ptgsS : Slice.t) (ptgsL : list u64),
+    ∃ (ptgsS : Slice.t),
       "HptgsS"  ∷ tcoord ↦[BackupTxnCoordinator :: "ptgs"] (to_val ptgsS) ∗
-      "#HptgsL" ∷ readonly (own_slice_small ptgsS uint64T (DfracOwn 1) ptgsL) ∗
-      "%HptgsL" ∷ ⌜list_to_set ptgsL = ptgs⌝ ∗
-      "%Hnd"    ∷ ⌜NoDup ptgsL⌝.
+      "#Hptgs"  ∷ is_txnptgs_in_slice ptgsS ptgs.
 
   Definition own_backup_tcoord_gcoords tcoord (ptgs : txnptgs) rk ts γ : iProp Σ :=
     ∃ (gcoordsP : loc) (gcoords : gmap u64 loc),
@@ -40,17 +38,21 @@ Section btcoord_repr.
       "#Hgcoordsabs" ∷ ([∗ map] gid ↦ gcoord ∈ gcoords, is_backup_gcoord gcoord rk ts gid γ) ∗
       "%Hdomgcoords" ∷ ⌜dom gcoords = ptgs⌝.
 
+  Definition safe_backup_txn γ ts ptgs : iProp Σ :=
+    ∃ wrs,
+      "#Hwrs"   ∷ is_txn_wrs γ ts wrs ∗
+      "%Hvts"   ∷ ⌜valid_ts ts⌝ ∗
+      "%Hvwrs"  ∷ ⌜valid_wrs wrs⌝ ∗
+      "%Hvptgs" ∷ ⌜ptgs = ptgroups (dom wrs)⌝.
+
   Definition own_backup_tcoord (tcoord : loc) (ts : nat) (γ : tulip_names) : iProp Σ :=
-    ∃ (rk : nat) (ptgs : txnptgs) (wrs : dbmap) (proph : proph_id),
+    ∃ (rk : nat) (ptgs : txnptgs) (proph : proph_id),
       "Hts"      ∷ own_backup_tcoord_ts tcoord ts ∗
       "Hrank"    ∷ own_backup_tcoord_rank tcoord rk ∗
       "Hptgs"    ∷ own_backup_tcoord_ptgs tcoord ptgs ∗
       "Hgcoords" ∷ own_backup_tcoord_gcoords tcoord ptgs rk ts γ ∗
       "Hproph"   ∷ tcoord ↦[BackupTxnCoordinator :: "proph"] #proph ∗
-      "#Hwrs"    ∷ is_txn_wrs γ ts wrs ∗
-      "#Hinv"    ∷ know_tulip_inv_with_proph γ proph ∗
-      "%Hvts"    ∷ ⌜valid_ts ts⌝ ∗
-      "%Hvw"     ∷ ⌜valid_wrs wrs⌝ ∗
-      "%Hptgs"   ∷ ⌜ptgs = ptgroups (dom wrs)⌝.
+      "#Hwrs"    ∷ safe_backup_txn γ ts ptgs ∗
+      "#Hinv"    ∷ know_tulip_inv_with_proph γ proph.
 
 End btcoord_repr.
