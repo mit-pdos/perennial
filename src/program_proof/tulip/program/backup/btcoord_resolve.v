@@ -1,7 +1,7 @@
 From Perennial.program_proof.tulip.invariance Require Import commit.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.txn Require Import proph.
-From Perennial.program_proof.tulip.program.backup Require Import btcoord_repr.
+From Perennial.program_proof.tulip.program.backup Require Import btcoord_repr bgcoord_get_pwrs.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -33,7 +33,8 @@ Section program.
     {{{ own_backup_tcoord tcoord ts γ }}}
       BackupTxnCoordinator__mergeWrites #tcoord
     {{{ (wrsP : loc) (valid : bool), RET (#wrsP, #valid);
-        own_backup_tcoord tcoord ts γ ∗ own_map wrsP (DfracOwn 1) wrs
+        own_backup_tcoord tcoord ts γ ∗
+        if valid then own_map wrsP (DfracOwn 1) wrs else True
     }}}.
   Proof.
     iIntros "#Hallprep" (Φ) "!> Htcoord HΦ".
@@ -64,6 +65,60 @@ Section program.
     (*@                                                                         @*)
     (*@     return wrs, valid                                                   @*)
     (*@ }                                                                       @*)
+
+    wp_apply wp_ref_to; first by auto.
+    iIntros (l) "Hl".
+    wp_pures.
+    wp_apply (wp_NewMap).
+    iIntros (wrsP) "HwrsP".
+    wp_pures.
+    wp_loadField.
+    wp_pures.
+    iNamed "Hptgs".
+    iDestruct "Hptgs" as "(#HptgsL&%Hlist&%Hnodup)". subst.
+    wp_apply (wp_forSlicePrefix (λ ldone ltodo, ∃ (mdone : dbmap) (valid : bool),
+                    own_backup_tcoord_gcoords tcoord (ptgroups (dom wrs)) rk ts γ ∗
+                    own_map wrsP (DfracOwn 1) mdone ∗
+                    l ↦[boolT] #valid ∗
+                    ⌜ if valid then mdone = ∅ else True ⌝
+                (* TODO: instead of ∅ should be union of the stuff from ldone *))%I
+                with "[] [$Hl $HptgsL $Hgcoords HwrsP]").
+    2:{ iExists ∅. by iFrame. }
+    { clear Φ.
+      iIntros (i x ldone ltodo Heq Φ) "!> H HΦ".
+      iDestruct "H" as (dbmap valid) "(Hgcoords&HwrsP&Hl&%Hvalid)".
+      wp_pures.
+      iNamed "Hgcoords".
+      wp_loadField.
+      wp_apply (wp_MapGet with "Hgcoords").
+      iIntros (? ok) "(%Hmap_get&Hgcoords)".
+      wp_pures.
+      assert (Hdomx: x ∈ dom gcoords).
+      { rewrite Hdomgcoords -Hlist. apply elem_of_list_to_set.
+        rewrite -Heq. apply elem_of_app. set_solver. }
+      apply elem_of_dom in Hdomx. destruct Hdomx as (v'&Heqv').
+      assert (v = v') as <-.
+      { replace v with (map_get gcoords x).1; last first.
+        { rewrite Hmap_get //. }
+        rewrite map_get_val Heqv' //. }
+      iDestruct (big_sepM_lookup with "[$]") as "Hgcoordv"; first eauto.
+      wp_apply (wp_BackupGroupCoordinator__GetPwrs with "[$]").
+      iIntros (pwrsP ok') "Hok'".
+      wp_pures.
+      wp_if_destruct.
+      - admit.
+      - wp_store. iModIntro.
+        iApply "HΦ".
+        iExists _, _. iFrame "∗ # %".
+    }
+    iFrame.
+    iIntros "(_&Hpost)".
+    iDestruct "Hpost" as (mdone valid) "(H1&H2&Hl&%Hvalid)".
+    wp_pures.
+    wp_load.
+    destruct valid.
+    - wp_pures. admit.
+    - wp_pures. iModIntro. iApply "HΦ". iFrame "∗ #". eauto.
   Admitted.
 
   Theorem wp_BackupTxnCoordinator__resolve tcoord status ts γ :

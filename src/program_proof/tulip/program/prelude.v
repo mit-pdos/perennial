@@ -216,7 +216,7 @@ Section def.
 
   Definition is_txnptgs_in_slice s (g : txnptgs) : iProp Σ :=
     ∃ l : list u64,
-      readonly (own_slice_small s uint64T (DfracOwn 1) l) ∗
+      own_slice_small s uint64T DfracDiscarded l ∗
       ⌜list_to_set l = g⌝ ∗
       ⌜NoDup l⌝.
 

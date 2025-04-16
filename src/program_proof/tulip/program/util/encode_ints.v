@@ -77,8 +77,7 @@ Section program.
     iIntros "#Hptgs".
     iIntros (Φ) "!> Hbs HΦ".
     iDestruct "Hptgs" as (ns) "[Hns %Hptgs]".
-    iMod (readonly_load with "Hns") as (q) "Hns'".
-    wp_apply (wp_EncodeInts with "[$Hbs $Hns']").
+    wp_apply (wp_EncodeInts with "[$Hbs $Hns]").
     iIntros (p) "[Hbs _]".
     iApply "HΦ".
     iFrame "∗ %".

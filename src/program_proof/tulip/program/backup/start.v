@@ -54,9 +54,8 @@ Section program.
                   "Htks" ∷ ([∗ set] gid ∈ list_to_set (drop (uint.nat i) ptgsL),
                               own_replica_backup_token γ cid.1 cid.2 ts rk gid) ∗
                   "%Hdomgc" ∷ ⌜dom gcoords = list_to_set (take (uint.nat i) ptgsL)⌝)%I.
-    iMod (readonly_load with "HptgsL") as (q) "HptgsR".
-    iDestruct (own_slice_small_sz with "HptgsR") as %Hlenptgs.
-    wp_apply (wp_forSlice P with "[] [$HptgsR $HgcoordsP Htokens]"); last first; first 1 last.
+    iDestruct (own_slice_small_sz with "HptgsL") as %Hlenptgs.
+    wp_apply (wp_forSlice P with "[] [$HptgsL $HgcoordsP Htokens]"); last first; first 1 last.
     { rewrite uint_nat_W64_0 drop_0 take_0 HptgsL dom_empty_L /=.
       iSplit; first by iApply big_sepM_empty.
       iSplit; last done.
