@@ -1,0 +1,12 @@
+## TODO: these have intended models (from old goose) and shouldn't just be
+## axiomatized
+axiomatize = [
+  "ActReadId",
+  "ActAbortId",
+  "ActCommitId",
+  "NewProph",
+  "ResolveRead",
+  "ResolveAbort",
+  "WrsToVal",
+  "ResolveCommit",
+]
