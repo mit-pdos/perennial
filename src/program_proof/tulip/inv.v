@@ -273,6 +273,7 @@ Section inv_network.
     | ValidateReq ts _ pwrs _ => safe_txn_pwrs γ gid (uint.nat ts) pwrs
     | PrepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) true
     | UnprepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) false
+    | InquireReq ts rank _ => ⌜valid_ts (uint.nat ts) ∧ valid_backup_rank (uint.nat rank)⌝
     | CommitReq ts pwrs => safe_commit γ gid (uint.nat ts) pwrs
     | AbortReq ts => safe_abort γ (uint.nat ts)
     | _ => True

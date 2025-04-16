@@ -693,44 +693,53 @@ Definition Replica__RequestSession: val :=
                     grove_ffi.Send "conn" "data";;
                     Continue
                   else
-                    (if: "kind" = message.MSG_TXN_COMMIT
+                    (if: "kind" = message.MSG_TXN_INQUIRE
                     then
-                      let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
-                      let: "ok" := Replica__Commit "rp" "ts" "pwrs" in
-                      (if: "ok"
-                      then
-                        let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_COMMITTED_TXN in
-                        grove_ffi.Send "conn" "data";;
-                        Continue
-                      else
-                        let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_WRONG_LEADER in
-                        grove_ffi.Send "conn" "data";;
-                        Continue)
+                      let: "rank" := struct.get message.TxnRequest "Rank" "req" in
+                      let: "cid" := struct.get message.TxnRequest "CoordID" "req" in
+                      let: ((("pp", "vd"), "pwrs"), "res") := Replica__Inquire "rp" "ts" "rank" in
+                      let: "data" := message.EncodeTxnInquireResponse "ts" "rank" (struct.loadF Replica "rid" "rp") "cid" "pp" "vd" "pwrs" "res" in
+                      grove_ffi.Send "conn" "data";;
+                      Continue
                     else
-                      (if: "kind" = message.MSG_TXN_ABORT
+                      (if: "kind" = message.MSG_TXN_COMMIT
                       then
-                        let: "ok" := Replica__Abort "rp" "ts" in
+                        let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
+                        let: "ok" := Replica__Commit "rp" "ts" "pwrs" in
                         (if: "ok"
                         then
-                          let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_ABORTED_TXN in
+                          let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_COMMITTED_TXN in
                           grove_ffi.Send "conn" "data";;
                           Continue
                         else
-                          let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_WRONG_LEADER in
+                          let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_WRONG_LEADER in
                           grove_ffi.Send "conn" "data";;
                           Continue)
                       else
-                        (if: "kind" = message.MSG_DUMP_STATE
+                        (if: "kind" = message.MSG_TXN_ABORT
                         then
-                          let: "gid" := struct.get message.TxnRequest "Timestamp" "req" in
-                          Replica__DumpState "rp" "gid";;
-                          Continue
-                        else
-                          (if: "kind" = message.MSG_FORCE_ELECTION
+                          let: "ok" := Replica__Abort "rp" "ts" in
+                          (if: "ok"
                           then
-                            Replica__ForceElection "rp";;
+                            let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_ABORTED_TXN in
+                            grove_ffi.Send "conn" "data";;
                             Continue
-                          else Continue))))))))))));;
+                          else
+                            let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_WRONG_LEADER in
+                            grove_ffi.Send "conn" "data";;
+                            Continue)
+                        else
+                          (if: "kind" = message.MSG_DUMP_STATE
+                          then
+                            let: "gid" := struct.get message.TxnRequest "Timestamp" "req" in
+                            Replica__DumpState "rp" "gid";;
+                            Continue
+                          else
+                            (if: "kind" = message.MSG_FORCE_ELECTION
+                            then
+                              Replica__ForceElection "rp";;
+                              Continue
+                            else Continue)))))))))))));;
     #().
 
 Definition Replica__Serve: val :=

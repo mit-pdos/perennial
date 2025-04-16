@@ -2,7 +2,7 @@ From Perennial.program_proof.tulip.invariance Require Import execute advance.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
   replica_repr replica_finalized replica_lowest_rank replica_validated
-  replica_last_proposal replica_advance replica_log.
+  replica_last_proposal replica_advance replica_log replica_refresh.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -271,6 +271,52 @@ Section program.
       rewrite Heq in Hp *.
       by iFrame "∗ # %".
     }
+  Qed.
+
+  Theorem wp_Replica__Inquire
+    (rp : loc) (tsW : u64) (rankW : u64) (cid : coordid) gid rid γ :
+    let ts := uint.nat tsW in
+    let rank := uint.nat rankW in
+    valid_ts ts ->
+    valid_backup_rank rank ->
+    is_replica rp gid rid γ -∗
+    {{{ True }}}
+      Replica__Inquire #rp #tsW #rankW
+    {{{ (pp : ppsl) (vd : bool) (pwrsP : Slice.t) (res : rpres) (pwrs : dbmap),
+          RET (ppsl_to_val pp, #vd, to_val pwrsP, #(rpres_to_u64 res)); 
+        inquire_outcome γ gid rid cid ts rank (uint.nat pp.1) pp.2 vd pwrs res ∗
+        if vd then is_dbmap_in_slice pwrsP pwrs else True
+    }}}.
+  Proof.
+    iIntros (ts rank Hvts Hvrank) "#Hrp".
+    iIntros (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func (rp *Replica) Inquire(ts uint64, rank uint64) (tulip.PrepareProposal, bool, []tulip.WriteEntry, uint64) { @*)
+    (*@     rp.mu.Lock()                                                        @*)
+    (*@     pp, vd, pwrs, res := rp.inquire(ts, rank)                           @*)
+    (*@     rp.refresh(ts, rank)                                                @*)
+    (*@     rp.mu.Unlock()                                                      @*)
+    (*@     return pp, vd, pwrs, res                                            @*)
+    (*@ }                                                                       @*)
+    iNamed "Hrp".
+    wp_loadField.
+    wp_apply (wp_Mutex__Lock with "Hlock").
+    iIntros "[Hlocked Hrp]".
+    wp_apply (wp_Replica__inquire with "Hinv Hinvfile Hrp").
+    { apply Hgid. }
+    { apply Hrid. }
+    { apply Hvts. }
+    { apply Hvrank. }
+    iIntros (pp vd pwrsP res pwrs) "[Hrp [#Hinq #Hpwrs]]".
+    wp_pures.
+    wp_apply (wp_Replica__refresh with "Hrp").
+    iIntros "Hrp".
+    wp_loadField.
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hrp]").
+    wp_pures.
+    iApply "HΦ".
+    by iFrame "#".
   Qed.
 
 End program.

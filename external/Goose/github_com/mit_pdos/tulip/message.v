@@ -336,21 +336,22 @@ Definition DecodeTxnInquireRequest: val :=
     ].
 
 Definition EncodeTxnInquireResponse: val :=
-  rec: "EncodeTxnInquireResponse" "ts" "rid" "cid" "rank" "pp" "vd" "pwrs" "res" :=
+  rec: "EncodeTxnInquireResponse" "ts" "rank" "rid" "cid" "pp" "vd" "pwrs" "res" :=
     let: "bs" := NewSliceWithCap byteT #0 #128 in
-    let: "bs1" := marshal.WriteInt "bs" "rid" in
+    let: "bs1" := marshal.WriteInt "bs" MSG_TXN_INQUIRE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
-    let: "bs3" := marshal.WriteInt "bs2" "rank" in
-    let: "bs4" := util.EncodePrepareProposal "bs3" "pp" in
-    let: "bs5" := marshal.WriteBool "bs4" "vd" in
-    let: "bs6" := marshal.WriteInt "bs5" (struct.get tulip.CoordID "GroupID" "cid") in
-    let: "bs7" := marshal.WriteInt "bs6" (struct.get tulip.CoordID "ReplicaID" "cid") in
-    let: "bs8" := marshal.WriteInt "bs7" "res" in
+    let: "bs3" := marshal.WriteInt "bs2" "rid" in
+    let: "bs4" := marshal.WriteInt "bs3" "rank" in
+    let: "bs5" := util.EncodePrepareProposal "bs4" "pp" in
+    let: "bs6" := marshal.WriteBool "bs5" "vd" in
+    let: "bs7" := marshal.WriteInt "bs6" (struct.get tulip.CoordID "GroupID" "cid") in
+    let: "bs8" := marshal.WriteInt "bs7" (struct.get tulip.CoordID "ReplicaID" "cid") in
+    let: "bs9" := marshal.WriteInt "bs8" "res" in
     (if: "vd"
     then
-      let: "data" := util.EncodeKVMapFromSlice "bs8" "pwrs" in
+      let: "data" := util.EncodeKVMapFromSlice "bs9" "pwrs" in
       "data"
-    else "bs8").
+    else "bs9").
 
 Definition DecodeTxnInquireResponse: val :=
   rec: "DecodeTxnInquireResponse" "bs" :=

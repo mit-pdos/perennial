@@ -4,7 +4,7 @@ From Perennial.program_proof Require Import marshal_stateless_proof.
 Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
-  Theorem wp_EncodeWriteEntry (bsP : Slice.t) (pp : ppsl) (bs : list u8) :
+  Theorem wp_EncodePrepareProposal (bsP : Slice.t) (pp : ppsl) (bs : list u8) :
     {{{ own_slice bsP byteT (DfracOwn 1) bs }}}
       EncodePrepareProposal (to_val bsP) (ppsl_to_val pp)
     {{{ (dataP : Slice.t), RET (to_val dataP);

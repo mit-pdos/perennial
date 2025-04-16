@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.util Require Import
-  encode_string encode_version.
+  encode_string encode_version encode_prepare_proposal encode_kvmap_from_slice.
 
 Section encode.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
@@ -224,6 +224,80 @@ Section encode.
     rewrite uint_nat_W64_0 replicate_0 app_nil_l -!app_assoc.
     iApply "HΦ".
     by iFrame.
+  Qed.
+
+  Theorem wp_EncodeTxnInquireResponse
+    (tsW : u64) (rankW : u64) (rid : u64) (cid : coordid) (pp : ppsl)
+    (vd : bool) (pwrsP : Slice.t) (res : rpres) (pwrs : dbmap) :
+    let ts := uint.nat tsW in
+    let rank := uint.nat rankW in
+    (if vd then is_dbmap_in_slice pwrsP pwrs else True) -∗
+    {{{ True }}}
+      EncodeTxnInquireResponse #tsW #rankW #rid (coordid_to_val cid)
+      (ppsl_to_val pp) #vd (to_val pwrsP) #(rpres_to_u64 res)
+    {{{ (dataP : Slice.t) (data : list u8), RET (to_val dataP);
+        own_slice dataP byteT (DfracOwn 1) data ∗
+        ⌜encode_txnresp (InquireResp tsW rankW pp vd pwrs rid cid res) data⌝
+    }}}.
+  Proof.
+    iIntros (ts rank) "#Hpwrs".
+    iIntros (Φ) "!> _ HΦ".
+    wp_rec.
+
+    (*@ func EncodeTxnInquireResponse(ts, rank uint64, rid uint64, cid tulip.CoordID,  pp tulip.PrepareProposal, vd bool, pwrs []tulip.WriteEntry, res uint64) []byte { @*)
+    (*@     bs  := make([]byte, 0, 128)                                         @*)
+    (*@     bs1 := marshal.WriteInt(bs, rid)                                    @*)
+    (*@     bs2 := marshal.WriteInt(bs1, ts)                                    @*)
+    (*@     bs3 := marshal.WriteInt(bs2, rank)                                  @*)
+    (*@     bs4 := util.EncodePrepareProposal(bs3, pp)                          @*)
+    (*@     bs5 := marshal.WriteBool(bs4, vd)                                   @*)
+    (*@     bs6 := marshal.WriteInt(bs5, cid.GroupID)                           @*)
+    (*@     bs7 := marshal.WriteInt(bs6, cid.ReplicaID)                         @*)
+    (*@     bs8 := marshal.WriteInt(bs7, res)                                   @*)
+    (*@     if vd {                                                             @*)
+    (*@         data := util.EncodeKVMapFromSlice(bs8, pwrs)                    @*)
+    (*@         return data                                                     @*)
+    (*@     }                                                                   @*)
+    (*@     return bs8                                                          @*)
+    (*@ }                                                                       @*)
+    wp_apply wp_NewSliceWithCap; first word.
+    iIntros (p) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p1) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p2) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p3) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p4) "Hbs".
+    wp_apply (wp_EncodePrepareProposal with "Hbs").
+    iIntros (p5) "Hbs".
+    wp_apply (wp_WriteBool with "Hbs").
+    iIntros (p6) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p7) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p8) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p9) "Hbs".
+    destruct vd; wp_pures.
+    { iMod (is_dbmap_in_slice_unpersist with "Hpwrs") as "HpwrsR".
+      wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $HpwrsR]").
+      iIntros (p10 mdata) "[Hbs [_ %Henc]]".
+      wp_pures.
+      rewrite uint_nat_W64_0 replicate_0 app_nil_l -!app_assoc.
+      iApply "HΦ".
+      iFrame.
+      iPureIntro.
+      rewrite /= /encode_inquire_resp /encode_inquire_resp_xkind.
+      by eauto.
+    }
+    rewrite uint_nat_W64_0 replicate_0 app_nil_l -!app_assoc.
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    rewrite /= /encode_inquire_resp /encode_inquire_resp_xkind.
+    by eauto.
   Qed.
 
   Theorem wp_EncodeTxnCommitResponse (ts : u64) (res : rpres) :
