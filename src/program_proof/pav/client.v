@@ -445,7 +445,7 @@ Qed.
 
 Definition is_cli_entry cli_γ serv_vrf_pk (ep : w64) uid ver val : iProp Σ :=
   ∃ dig label,
-  "#His_dig" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some dig) ∗
+  "#Hlook_dig" ∷ mono_list_idx_own cli_γ (uint.nat ep) (Some dig) ∗
   "#Hvrf_out" ∷ is_vrf_out serv_vrf_pk (enc_label_pre uid ver) label ∗
   "#Hmerk_entry" ∷ is_merkle_entry label val dig.
 
@@ -457,7 +457,7 @@ Definition is_put_post cli_γ serv_vrf_pk uid ver ep pk : iProp Σ :=
 
 Lemma is_sigdig_agree sd0 sd1 pk γ :
   sd0.(SigDig.Epoch) = sd1.(SigDig.Epoch) →
-  is_sig_pk pk (serv_sigpred γ) -∗
+  is_sig_pk pk (sigpred γ) -∗
   is_SigDig sd0 pk -∗
   is_SigDig sd1 pk -∗
   ⌜ sd0.(SigDig.Dig) = sd1.(SigDig.Dig) ⌝.
@@ -1070,31 +1070,6 @@ Proof.
   iFrame "∗#". iIntros (?) "!>". iNamed 1.
   iDestruct (is_sig_to_pred with "His_pk His_adtrSig") as "H".
   iNamed "H". apply PreSigDig.inj in Henc as <-. rewrite -Heqb2. iFrame "#%".
-Qed.
-
-Lemma mono_list_lb_idx_lookup γ l i a :
-  (i < length l)%nat →
-  mono_list_lb_own γ l -∗ mono_list_idx_own γ i a -∗ ⌜ l !! i = Some a ⌝.
-Proof.
-  iIntros (?) "Hlb0". iDestruct 1 as (??) "Hlb1".
-  iDestruct (mono_list_lb_valid with "Hlb0 Hlb1") as %[Hpre|Hpre].
-  - by rewrite (prefix_lookup_lt _ _ _ _ Hpre).
-  - iPureIntro. by eapply prefix_lookup_Some.
-Qed.
-
-Lemma adtr_inv_prefix {l} l' :
-  l' `prefix_of` l →
-  adtr_inv l →
-  adtr_inv l'.
-Proof.
-  intros Hpref [Hinv0 Hinv1]. split.
-  - intros ???? Hlook0 Hlook1 ?.
-    opose proof (prefix_lookup_Some _ _ _ _ Hlook0 Hpref) as Hlook0'.
-    opose proof (prefix_lookup_Some _ _ _ _ Hlook1 Hpref) as Hlook1'.
-    by apply (Hinv0 _ _ _ _ Hlook0' Hlook1').
-  - intros ????? Hlook0 Hlook1.
-    opose proof (prefix_lookup_Some _ _ _ _ Hlook0 Hpref) as Hlook0'.
-    by apply (Hinv1 _ _ _ _ _ Hlook0' Hlook1).
 Qed.
 
 Lemma prefix_lookup_agree {A} l1 l2 i (x1 x2 : A) :
