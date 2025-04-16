@@ -96,7 +96,7 @@ Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ
     (∃ label audit_val,
     "#Hvrf_out" ∷ is_vrf_out serv_vrf_pk (enc_label_pre uid ver) label ∗
     "#His_label" ∷ is_map_label serv_vrf_pk uid ver label ∗
-    (* convert audit_val to MapValPre, then state opt reln connecting it to val. *)
+    (* convert audit_val to MapValPre, then relate it to val. *)
     "%Henc_val" ∷ ⌜ option_Forall2 MapValPre.encodes val
       ((λ x, MapValPre.mk x.1 x.2) <$> audit_val) ⌝ ∗
     "%Hlook_adtr" ∷ ⌜ m !! label = audit_val ⌝)).
@@ -168,11 +168,9 @@ Proof.
   iNamed "Hmap".
   iDestruct (is_merkle_map_agree_entry with "His_map Hmerk_entry") as %Hlook_map.
   iPureIntro. clear -Hlower Hlook_map. simpl in *.
-  opose proof (Hlower label).
-  exists (m0 !! label).
-  split; [|done].
-  rewrite Hlook_map in H.
-  inversion H; constructor. done.
+  opose proof (Hlower label) as Hlower.
+  eexists _. split; [|done]. subst.
+  by rewrite -lookup_fmap.
 Qed.
 
 Lemma logical_audit_get_msv (ep : w64) ptr_c c γaudit :

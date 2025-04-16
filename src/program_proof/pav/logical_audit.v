@@ -18,8 +18,8 @@ Definition epochs_ok (ms : list adtr_map_ty) :=
   uint.Z ep' ≤ uint.Z ep.
 
 Definition map_lower (higher : adtr_map_ty) (lower : merkle_map_ty) :=
-  map_Forall2 (λ _ v0 v1, MapValPre.encodes v1 (MapValPre.mk v0.1 v0.2))
-    higher lower.
+  map_Forall2 (λ _ x y, MapValPre.encodes x y) lower
+    ((λ x, MapValPre.mk x.1 x.2) <$> higher).
 
 Definition audit_gs_inv (gs : list (adtr_map_ty * dig_ty)) : iProp Σ :=
   "#His_digs" ∷ ([∗ list] x ∈ gs,
