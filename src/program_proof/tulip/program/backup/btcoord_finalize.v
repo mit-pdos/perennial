@@ -46,7 +46,7 @@ Section program.
     (*@     // variable if @status == TXN_PREPARED.                             @*)
     (*@     tcoord.resolve(status)                                              @*)
     (*@                                                                         @*)
-    wp_apply (wp_BackupTxnCoordinator__resolve with "Htcoord").
+    wp_apply (wp_BackupTxnCoordinator__resolve with "Hphase Htcoord").
     { by destruct status. }
     iIntros (ok) "[Htcoord #Hcmted]".
     wp_pures.

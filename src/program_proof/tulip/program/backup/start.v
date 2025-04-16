@@ -16,6 +16,7 @@ Section program.
     (1 < rk)%nat ->
     dom gaddrm = gids_all ->
     map_Forall (λ _ addrm, dom addrm = rids_all) gaddrm ->
+    is_lnrz_tid γ ts -∗
     safe_backup_txn γ ts ptgs -∗
     is_txnptgs_in_slice ptgsP ptgs -∗
     own_map gaddrmPP DfracDiscarded gaddrmP -∗
@@ -26,7 +27,7 @@ Section program.
       Start #tsW #rkW (coordid_to_val cid) (to_val ptgsP) #gaddrmPP #leader #proph
     {{{ (tcoord : loc), RET #tcoord; own_backup_tcoord tcoord ts γ }}}.
   Proof.
-    iIntros (ts rk Hrk Hgids Hrids) "#Hsafebk #Hptgs #HgaddrmP #Hgaddrm #Hinv #Hinvnets".
+    iIntros (ts rk Hrk Hgids Hrids) "#Hlnrzed #Hsafebk #Hptgs #HgaddrmP #Hgaddrm #Hinv #Hinvnets".
     iIntros (Φ) "!> Htokens HΦ".
     wp_rec.
 

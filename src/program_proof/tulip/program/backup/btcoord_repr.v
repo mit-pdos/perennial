@@ -51,7 +51,8 @@ Section btcoord_repr.
       "Hrank"    ∷ own_backup_tcoord_rank tcoord rk ∗
       "Hptgs"    ∷ own_backup_tcoord_ptgs tcoord ptgs ∗
       "Hgcoords" ∷ own_backup_tcoord_gcoords tcoord ptgs rk ts γ ∗
-      "Hproph"   ∷ tcoord ↦[BackupTxnCoordinator :: "proph"] #proph ∗
+      "HprophP"  ∷ tcoord ↦[BackupTxnCoordinator :: "proph"] #proph ∗
+      "#Hlnrzed" ∷ is_lnrz_tid γ ts ∗
       "#Hwrs"    ∷ safe_backup_txn γ ts ptgs ∗
       "#Hinv"    ∷ know_tulip_inv_with_proph γ proph.
 
