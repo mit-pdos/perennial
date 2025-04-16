@@ -9,6 +9,25 @@ Section list.
   Notation list := (list A).
   Implicit Types l : list.
 
+  Lemma prefix_to_take (l0 l1 : list) :
+    l0 `prefix_of` l1 →
+    l0 = take (length l0) l1.
+  Proof.
+    intros [? Hpref].
+    apply (f_equal (take (length l0))) in Hpref.
+    by rewrite take_app_length in Hpref.
+  Qed.
+
+  Lemma prefix_fmap {B} (f : A → B) (l0 l1 : list) :
+    l0 `prefix_of` l1 →
+    f <$> l0 `prefix_of` f <$> l1.
+  Proof.
+    unfold prefix. intros [? Heq].
+    apply (f_equal (fmap f)) in Heq.
+    rewrite fmap_app in Heq.
+    naive_solver.
+  Qed.
+
   Lemma drop_eq_0 n l :
     n = 0 →
     drop n l = l.
