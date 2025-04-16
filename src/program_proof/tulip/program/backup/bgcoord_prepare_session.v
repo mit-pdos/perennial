@@ -11,6 +11,7 @@ Section program.
     (ptgs : txnptgs) addrm gid γ :
     let ts := uint.nat tsW in
     let rk := uint.nat rkW in
+    valid_ts ts ->
     rid ∈ dom addrm ->
     is_txnptgs_in_slice ptgsP ptgs -∗
     is_backup_gcoord_with_addrm gcoord addrm rk ts gid γ -∗
@@ -18,7 +19,7 @@ Section program.
       BackupGroupCoordinator__PrepareSession #gcoord #rid #tsW #rkW (to_val ptgsP)
     {{{ RET #(); True }}}.
   Proof.
-    iIntros (ts rank Hrid) "#Hptgs #Hgcoord".
+    iIntros (ts rank Hvts Hrid) "#Hptgs #Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
@@ -49,6 +50,7 @@ Section program.
         iNamed "Hgcoord'".
         wp_loadField.
         wp_apply (wp_BackupGroupCoordinator__SendInquire with "Hgcoord").
+        { apply Hvts. }
         { apply Hrid. }
         wp_pures.
         by case_bool_decide; wp_pures; wp_apply wp_Sleep; wp_pures; iApply "HΦ".

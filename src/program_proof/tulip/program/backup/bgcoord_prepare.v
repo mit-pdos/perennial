@@ -10,6 +10,7 @@ Section program.
     (ptgs : txnptgs) gid γ :
     let ts := uint.nat tsW in
     let rk := uint.nat rkW in
+    valid_ts ts ->
     is_txnptgs_in_slice ptgsP ptgs -∗
     is_backup_gcoord gcoord rk ts gid γ -∗
     {{{ True }}}
@@ -18,7 +19,7 @@ Section program.
         if valid then safe_group_txnphase γ ts gid phase else True
     }}}.
   Proof.
-    iIntros (ts rk) "#Hptgs #Hgcoord".
+    iIntros (ts rk Hvts) "#Hptgs #Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
@@ -43,6 +44,7 @@ Section program.
       { by iFrame "# %". }
       wp_apply wp_fork.
       { wp_apply (wp_BackupGroupCoordinator__PrepareSession with "Hptgs Hgcoord").
+        { apply Hvts. }
         { by apply elem_of_dom_2 in Hrid. }
         done.
       }

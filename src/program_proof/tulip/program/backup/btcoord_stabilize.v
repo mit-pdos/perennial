@@ -137,6 +137,7 @@ Section program.
         (*@                                                                         @*)
         iModIntro.
         wp_apply (wp_BackupGroupCoordinator__Prepare).
+        { rewrite HtsW. apply Hvts. }
         { by iFrame "# %". }
         { by rewrite HtsW HrkW. }
         iIntros (stg vdg) "#Hsafe".

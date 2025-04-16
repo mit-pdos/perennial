@@ -413,7 +413,7 @@ Definition BackupGroupCoordinator__GetConnection: val :=
 
 Definition BackupGroupCoordinator__Connect: val :=
   rec: "BackupGroupCoordinator__Connect" "gcoord" "rid" :=
-    let: "addr" := SliceGet uint64T (struct.loadF BackupGroupCoordinator "rps" "gcoord") "rid" in
+    let: "addr" := Fst (MapGet (struct.loadF BackupGroupCoordinator "addrm" "gcoord") "rid") in
     let: "ret" := grove_ffi.Connect "addr" in
     (if: (~ (struct.get grove_ffi.ConnectRet "Err" "ret"))
     then
