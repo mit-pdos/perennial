@@ -150,6 +150,19 @@ Definition own_phys ptr q s : iProp Σ :=
   "HuserInfo_own" ∷ ([∗ map] l;x ∈ userInfo_phys; s.(userInfo), userState.own l x (DfracOwn q)) ∗
   "HepochHist_sl" ∷ own_slice epochHist_sl ptrT (DfracOwn q) epochHist_ptrs ∗
   "#HepochHist_is" ∷ ([∗ list] l;x ∈ epochHist_ptrs; s.(epochHist), servEpochInfo.is_own l x).
+
+Lemma split q1 q2 ptr s :
+  own_phys ptr (q1 + q2) s -∗
+  own_phys ptr q1 s ∗
+  own_phys ptr q2 s.
+Proof.
+  iNamed 1. iFrame.
+  iDestruct "HkeyMap" as "[? ?]".
+  iDestruct "epochHist" as "[? ?]". iFrame.
+  iDestruct "HepochHist_sl" as "[? ?]".
+  (* FIXME: fractional own_map, userState.own, own_slice *)
+Admitted.
+
 End defs.
 End Server.
 
@@ -1040,15 +1053,16 @@ Qed.
 Context `{!waitgroupG Σ}.
 Lemma wp_Server__Worker γ s:
   {{{
-        "#His" ∷ is_Server γ s ∗
-        "Hown" ∷ own_Server γ s (1/2)
+        "#His_srv" ∷ is_Server γ s ∗
+        "Hown" ∷ own_Server γ s 1
   }}}
     Server__Worker #s
   {{{
-       RET #(); own_Server γ s (1/2)
+       RET #(); own_Server γ s 1
   }}}.
 Proof.
-  iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec. iNamed "His".
+  iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec.
+  iAssert _ with "His_srv" as "H". iNamed "H".
   wp_loadField. wp_apply (wp_WorkQ__Get with "[$]").
   iIntros "* [work Hwork]". wp_pures.
   wp_apply (wp_NewMap w64 bool). iIntros (uidSet_ptr) "uidSet".
@@ -1060,7 +1074,7 @@ Proof.
               "#Resp" ∷ w ↦[Work::"Resp"]□ #resp ∗
               "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
               "Hspec" ∷ wq_spec γ req_ptr Ψ ∗
-              "#His" ∷ is_Work w γtok Ψ)%I
+              "#His_work" ∷ is_Work w γtok Ψ)%I
          ).
   Opaque w64.
   wp_apply (wp_forSlice
@@ -1125,60 +1139,24 @@ Proof.
   (* allocate outs0 *)
   wp_pures.
   wp_apply wp_ref_of_zero; [done|].
-
-
-  eset (waitP:=
-          (λ (i : w64),
-             ∃ w,
-             "%Hw" ∷ ⌜ work !! (uint.nat i) = Some w ⌝ ∗
-             "resp" ∷ resp ↦[struct.t WQResp] (zero_val ptrT, (zero_val ptrT, (zero_val ptrT, (zero_val boolT, #())))) ∗
-             "#Resp" ∷ w ↦[Work::"Resp"]□ #resp ∗
-             "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
-             "Hspec" ∷ wq_spec γ req_ptr Ψ ∗
-             "#His" ∷ is_Work w γtok Ψ
-          )%I).
-
-  wp_apply (wp_NewWaitGroup nroot waitP). iIntros (wg γwg) "Hwg".
-  wp_apply wp_ref_to.
-  { admit. } (* TODO: waitgroup exposes a val instead of the loc.... Maybe add a lemma to prove val_ty? *)
-  iIntros (wg_ptr) "wg".
-  wp_pures. wp_apply wp_ref_of_zero; [done|].
   iIntros (i_ptr) "i". wp_pures.
-  iAssert (∃ (i : w64) outs0,
-              "i" ∷ i_ptr ↦[uint64T] #i ∗
-              "%Hi" ∷ ⌜ uint.Z i ≤ length work ⌝ ∗
-              "Hprops" ∷ ([∗ list] w ∈ (drop (uint.nat i) work), prop w) ∗
-              "outs0" ∷ own_slice_small outs0_sl ptrT (DfracOwn 1) (outs0 ++ (replicate (length work - uint.nat i) null)) ∗
-              "%Houts0" ∷ ⌜ length outs0 = uint.nat i ⌝ ∗
-              "Houts0" ∷ ([∗ list] out; w ∈ outs0 ; take (length outs0) work,
-                            (∃ (req_ptr resp : loc) (Ψ : loc → iProp Σ) (γtok : gname),
-                                "resp" ∷ resp ↦[struct.t WQResp] (zero_val ptrT, (zero_val ptrT, (zero_val ptrT, (zero_val boolT, #())))) ∗
-                                "#Resp" ∷ w ↦[Work::"Resp"]□ #resp ∗
-                                "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
-                                "Hspec" ∷ wq_spec γ req_ptr Ψ ∗
-                                "#His" ∷ is_Work w γtok Ψ)%I
-                ) ∗
-              "Hwg" ∷ own_WaitGroup nroot wg γwg i waitP ∗
-              "_" ∷ True
-          )%I with "[i Hprops Hwg outs0]" as "H".
-  { rewrite /zero_val /=. iFrame "i". iFrame. iExists [].
-    iSplitR; first word. rewrite Nat.sub_0_r app_nil_l.
-    replace (uint.nat _) with (length work) by word. iFrame. simpl. word. }
+  iAssert (
+      ∃ outs0 (i : w64),
+      "i" ∷ i_ptr ↦[uint64T] #i ∗
+      "%Hi" ∷ ⌜ uint.nat i ≤ length work ⌝ ∗
+      "outs0" ∷ own_slice_small outs0_sl ptrT (DfracOwn 1) (outs0 ++ (replicate (length work - uint.nat i) null)) ∗
+      "%Houts0" ∷ ⌜ length outs0 = uint.nat i ⌝ ∗
+      "Houts0" ∷ ([∗ list] out ∈ outs0, out ↦[struct.t mapper0Out] (zero_val (struct.t mapper0Out)))
+    )%I with "[i outs0]" as "H".
+  { iFrame. iExists []. replace (uint.nat _) with (length work) by word.
+    rewrite Nat.sub_0_r. iSplitR; first word. iFrame.
+    rewrite big_sepL_nil /=. done. }
+
   wp_forBreak_cond.
   iNamed "H".
   wp_load. wp_apply wp_slice_len. wp_pures. wp_if_destruct.
-  { (* not done with loop *)
-    wp_pures. wp_load.
-    opose proof (list_lookup_lt work (uint.nat i) ltac:(word)) as [w Hlookup].
-    wp_apply (wp_SliceGet with "[$work]"); first done.
-    iIntros "work". wp_pures. erewrite drop_S; last done.
-    iDestruct "Hprops" as "[Hprop Hprops]".
-    iNamed "Hprop".
-    wp_loadField. wp_pures.
-    iDestruct (struct_fields_split with "Hresp") as "H". iNamed "H".
-    wp_loadField. wp_pures.
-    wp_load. wp_apply (wp_SliceGet with "[$work]"); first done.
-    iIntros "work". wp_loadField. wp_pures.
+  { (* continue loop *)
+    wp_pures.
     wp_apply wp_allocStruct; [val_ty|].
     iIntros (out0_ptr) "out0". wp_pures.
     wp_load. wp_apply (wp_SliceSet (V:=loc) with "[outs0]").
@@ -1186,17 +1164,111 @@ Proof.
       apply lookup_lt_is_Some. rewrite length_app length_replicate.
       word. }
     iIntros "outs0".
+    wp_pures. wp_load. wp_store. iLeft. iSplitR; first done.
+    rewrite insert_app_r_alt; last word. rewrite Houts0. rewrite Nat.sub_diag.
+    rewrite insert_replicate_lt; last word. rewrite replicate_0. rewrite app_nil_l.
+    change (?x :: ?y) with ([x] ++ y).
+    rewrite app_assoc.
+    iDestruct (big_sepL_snoc _ _ out0_ptr with "[$Houts0 $out0]") as "H".
+    iFrame "∗". simpl. iSplitR; first word. iSplitL; last len.
+    iModIntro. iApply to_named. iExactEq "outs0". f_equal. f_equal. f_equal.
+    word.
+  }
+  (* done with loop *)
+  iModIntro. iRight. iSplitR; first done.
+  wp_pures.
+  replace (uint.nat i) with (length work) in Houts0 |- * by word.
+  rewrite Nat.sub_diag replicate_0 app_nil_r.
+  iNamed "Hown".
+  set (wfrac := ((1/2)/ pos_to_Qp (Pos.of_nat (1 + length work)))%Qp).
+  eset (waitP:=
+          (λ (i : w64),
+             ∃ w out0 mo (req_ptr : loc) req,
+             "%Hw" ∷ ⌜ work !! (uint.nat i) = Some w ⌝ ∗
+             "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
+             "#HReq" ∷ WQReq.is_own req_ptr req ∗
+             "%Hout0" ∷ ⌜ outs0 !! (uint.nat i) = Some out0 ⌝ ∗
+             "out0" ∷ mapper0Out.own out0 mo ∗
+             "#out0_crypto" ∷ is_mapper0Out_crypto γ st req mo ∗
+             "Hphys" ∷ Server.own_phys s wfrac st
+          )%I).
+
+  wp_apply (wp_NewWaitGroup nroot waitP). iIntros (wg γwg) "Hwg".
+  iDestruct (own_WaitGroup_to_is_WaitGroup with "[$]") as "#His_wg".
+  wp_pures. wp_store. clear dependent i.
+
+  wp_pures.
+  iAssert (∃ (i : w64),
+              "i" ∷ i_ptr ↦[uint64T] #i ∗
+              "%Hi" ∷ ⌜ uint.Z i ≤ length work ⌝ ∗
+              "Hprops" ∷ ([∗ list] w ∈ work, prop w) ∗
+              "Houts0" ∷ ([∗ list] out ∈ drop (uint.nat i) outs0, out ↦[struct.t mapper0Out] zero_val (struct.t mapper0Out)) ∗
+              "Hwg" ∷ own_WaitGroup nroot wg γwg i waitP ∗
+              "Hphys" ∷ Server.own_phys s (pos_to_Qp (Pos.of_nat (1 + length work - uint.nat i)) * wfrac) st ∗
+              "_" ∷ True
+          )%I with "[i Hprops Hwg Houts0 Hphys]" as "H".
+  { iFrame "i". rewrite drop_0 /wfrac Nat.sub_0_r Qp.mul_div_r. iFrame. word. }
+  wp_forBreak_cond.
+  iNamed "H".
+  wp_load. wp_apply wp_slice_len. wp_pures. wp_if_destruct.
+  { (* not done with loop *)
     wp_pures. wp_load.
+    opose proof (list_lookup_lt work (uint.nat i) ltac:(word)) as [w Hlookup].
+    wp_apply (wp_SliceGet with "[$work]"); first done.
+    iIntros "work". wp_pures.
+    iDestruct (big_sepL_lookup_acc with "Hprops") as "[Hprop Hprops]".
+    { done. }
+    iNamedSuffix "Hprop" "_prop". iNamedSuffix "Hspec_prop" "_2_prop".
+    wp_loadField. wp_pures.
+    iDestruct (struct_fields_split with "resp_prop") as "H". iNamedSuffix "H" "_prop".
+    wp_loadField. wp_pures.
+    iCombineNamed "*_prop" as "Hprop".
+    iSpecialize ("Hprops" with "[Hprop]").
+    { iNamed "Hprop". iFrame "∗#". iApply struct_fields_split. iFrame. done. }
+    wp_load. wp_apply (wp_SliceGet with "[$work]"); first done.
+    iIntros "work". wp_loadField. wp_pures.
+    opose proof (list_lookup_lt outs0 (uint.nat i) ltac:(word)) as [out0 Ho_lookup].
+    wp_load. wp_apply (wp_SliceGet with "[$outs0]"); first done.
+    iIntros "outs0". wp_pures.
     wp_apply (wp_WaitGroup__Add with "[$]").
     { word. }
     iIntros "[Hwg Hwg_tok]". wp_pures.
-    wp_apply (wp_fork with "[]").
+    replace (pos_to_Qp (Pos.of_nat _) * wfrac)%Qp with
+      (wfrac + (pos_to_Qp (Pos.of_nat (1 + length work - uint.nat (word.add i (W64 1)))) * wfrac))%Qp.
+    2:{
+      replace (uint.nat (word.add _ _)) with (uint.nat i + 1)%nat by word.
+      rewrite Nat.sub_add_distr.
+      replace (1 + _ - _ - 1)%nat with (length work - uint.nat i)%nat by lia.
+      rewrite <- Nat.add_sub_assoc by lia.
+      rewrite -> Nat2Pos.inj_add by word.
+      rewrite -pos_to_Qp_add.
+      change (Pos.of_nat 1) with 1%positive.
+      rewrite Qp.mul_add_distr_r left_id //.
+    }
+    iDestruct (Server.split with "Hphys") as "[Hphys2 Hphys]".
+    erewrite -> (drop_S _ _ (uint.nat i)); last done.
+    iDestruct "Houts0" as "[Hout0 Houts0]".
+    wp_apply (wp_fork with "[Hwg_tok Hphys2 Hout0]").
     {
-      admit. (* TODO: mapper0 *)
+      iNext. wp_apply (wp_Server__mapper0 with "[-Hwg_tok]").
+      { iFrame "∗#". }
+      iIntros "*". iNamed 1. wp_pures. wp_apply (wp_WaitGroup__Done with "[-]"); last done.
+      iFrame "His_wg". iFrame "∗#%".
     }
     wp_pures. wp_load. wp_store. iLeft. iSplitR; first done.
     iModIntro. iFrame.
+    iSplitR; first word.
     replace (uint.nat (word.add i _)) with (S (uint.nat i)) by word.
+    iFrame.
+  }
+  iModIntro. iRight. iSplitR; first done.
+  wp_apply (wp_WaitGroup__Wait with "[$]").
+  wp_pures. replace (uint.nat i) with (length work) by word.
+  iIntros "HwaitP". wp_pures. wp_loadField. wp_apply (write_wp_Mutex__Lock with "[$]").
+  iIntros "[Hlocked Hown2]". wp_pures. wp_apply (wp_NewMap string Slice.t).
+  iIntros (upd_ptr) "upd". wp_pures. wp_store. clear dependent i.
+  wp_pures.
+  (* FIXME: combine server ownership into 1%Qp. *)
 Admitted.
 
 End proof.

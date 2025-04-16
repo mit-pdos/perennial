@@ -1840,8 +1840,9 @@ Definition Server__Worker: val :=
     (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
       SliceSet ptrT "outs0" (![uint64T] "i") (struct.new mapper0Out [
       ]);;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
-    let: "wg" := ref_to ptrT (waitgroup.New #()) in
+    let: "wg" := waitgroup.New #() in
     "i" <-[uint64T] #0;;
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
@@ -1850,13 +1851,13 @@ Definition Server__Worker: val :=
       then
         let: "req" := struct.loadF Work "Req" (SliceGet ptrT "work" (![uint64T] "i")) in
         let: "out0" := SliceGet ptrT "outs0" (![uint64T] "i") in
-        waitgroup.Add (![ptrT] "wg") #1;;
+        waitgroup.Add "wg" #1;;
         Fork (Server__mapper0 "s" "req" "out0";;
-              waitgroup.Done (![ptrT] "wg"))
+              waitgroup.Done "wg")
       else #());;
       "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
-    waitgroup.Wait (![ptrT] "wg");;
+    waitgroup.Wait "wg";;
     RWMutex__Lock (struct.loadF Server "mu" "s");;
     let: "upd" := NewMap stringT (slice.T byteT) #() in
     "i" <-[uint64T] #0;;
@@ -1885,7 +1886,7 @@ Definition Server__Worker: val :=
       Continue);;
     updEpochHist (struct.fieldRef Server "epochHist" "s") "upd" (merkle.Tree__Digest (struct.loadF Server "keyMap" "s")) (struct.loadF Server "sigSk" "s");;
     RWMutex__Unlock (struct.loadF Server "mu" "s");;
-    "wg" <-[ptrT] (waitgroup.New #());;
+    let: "wg1" := waitgroup.New #() in
     "i" <-[uint64T] #0;;
     Skip;;
     (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
@@ -1893,13 +1894,13 @@ Definition Server__Worker: val :=
       (if: (~ (struct.loadF WQResp "Err" "resp"))
       then
         let: "out0" := SliceGet ptrT "outs0" (![uint64T] "i") in
-        waitgroup.Add (![ptrT] "wg") #1;;
+        waitgroup.Add "wg1" #1;;
         Fork (Server__mapper1 "s" "out0" "resp";;
-              waitgroup.Done (![ptrT] "wg"))
+              waitgroup.Done "wg1")
       else #());;
       "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
-    waitgroup.Wait (![ptrT] "wg");;
+    waitgroup.Wait "wg1";;
     ForSlice ptrT <> "w" "work"
       (Work__Finish "w");;
     #().
