@@ -3,3 +3,7 @@ translate = [
 "ReadInt", "ReadInt32", "ReadBytes", "ReadBytesCopy", "ReadBool", "ReadLenPrefixeBytes",
 "WriteInt", "WriteInt32", "WriteBytes", "WriteBool", "WriteLenPrefixedBytes",
 ]
+imports = [
+  "github.com/goose-lang/primitive",
+  "github.com/goose-lang/std",
+]
