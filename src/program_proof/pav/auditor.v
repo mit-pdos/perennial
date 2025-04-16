@@ -10,7 +10,7 @@ Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 (* This representation predicate existentially hides the state of the auditor. *)
 Definition own (ptr : loc) : iProp Σ :=
-  ∃  ptrs_hist hist gs γ pk (ptr_keys : loc) (ptr_sk : loc) sl_hist,
+  ∃  ptrs_hist hist gs γ pk (ptr_keys : loc) (ptr_sk : loc) sl_hist lower,
   (* Physical ownership. *)
   "Hptr_keys" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_keys ∗
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
@@ -25,7 +25,8 @@ Definition own (ptr : loc) : iProp Σ :=
   "#Hinv_gs" ∷ audit_gs_inv gs ∗
 
   (* Physical-ghost relation. *)
-  "Hown_keys" ∷ own_Tree ptr_keys (lower_map (default ∅ (last gs.*1))) (DfracOwn 1) ∗
+  "%Hlower" ∷ ⌜ map_lower (default ∅ (last gs.*1)) lower ⌝ ∗
+  "Hown_keys" ∷ own_Tree ptr_keys lower (DfracOwn 1) ∗
   "%Hdigs_gs" ∷ ⌜ gs.*2 = AdtrEpochInfo.Dig <$> hist ⌝.
 
 Definition valid (ptr : loc) : iProp Σ :=
@@ -133,14 +134,14 @@ Qed.
 
 Lemma wp_checkOneUpd ptr_keys keys nextEp sl_label dq label sl_val val :
   {{{
-    "Hown_keys" ∷ own_Tree ptr_keys (lower_map keys) (DfracOwn 1) ∗
+    "Hown_keys" ∷ own_Tree ptr_keys (map_lower keys) (DfracOwn 1) ∗
     "Hsl_label" ∷ own_slice_small sl_label byteT dq label ∗
     "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val
   }}}
   checkOneUpd #ptr_keys #nextEp (slice_val sl_label) (slice_val sl_val)
   {{{
     (err : bool), RET #err;
-    "Hown_keys" ∷ own_Tree ptr_keys (lower_map keys) (DfracOwn 1) ∗
+    "Hown_keys" ∷ own_Tree ptr_keys (map_lower keys) (DfracOwn 1) ∗
     "Hsl_label" ∷ own_slice_small sl_label byteT dq label ∗
     "Herr" ∷ (if err then True else
       ∃ comm,
@@ -178,13 +179,13 @@ Qed. *)
 
 Definition checkUpd_post keys nextEp upd upd_dec : iProp Σ :=
   "%Hlen_labels" ∷ ([∗ map] label ↦ _ ∈ upd, ⌜ length label = 32%nat ⌝) ∗
-  "%Hdecode" ∷ ⌜ upd = lower_map upd_dec ⌝ ∗
+  "%Hdecode" ∷ ⌜ upd = map_lower upd_dec ⌝ ∗
   "%Hok_epoch" ∷ ([∗ map] val ∈ upd_dec, ⌜ val.1 = nextEp ⌝) ∗
   "%Hdisj" ∷ ⌜ upd_dec ##ₘ keys ⌝.
 
 Lemma wp_checkUpd ptr_keys keys ptr_upd upd_refs upd nextEp :
   {{{
-    "Hown_keys" ∷ own_Tree ptr_keys (lower_map keys) (DfracOwn 1) ∗
+    "Hown_keys" ∷ own_Tree ptr_keys (map_lower keys) (DfracOwn 1) ∗
     "#Hown_upd_refs" ∷ own_map ptr_upd DfracDiscarded upd_refs ∗
     "#Hown_upd" ∷ ([∗ map] sl;v ∈ upd_refs;upd,
       own_slice_small sl byteT DfracDiscarded v)
@@ -192,7 +193,7 @@ Lemma wp_checkUpd ptr_keys keys ptr_upd upd_refs upd nextEp :
   checkUpd #ptr_keys #nextEp #ptr_upd
   {{{
     (err : bool), RET #err;
-    "Hown_keys" ∷ own_Tree ptr_keys (lower_map keys) (DfracOwn 1) ∗
+    "Hown_keys" ∷ own_Tree ptr_keys (map_lower keys) (DfracOwn 1) ∗
     "Herr" ∷ (if err then True else
       ∃ upd_dec, checkUpd_post keys nextEp upd upd_dec)
   }}}.
@@ -202,7 +203,7 @@ Proof. Admitted. (*
   wp_apply (wp_MapIter_fold _ _ _
     (λ upd_refs',
     ∃ (loopErr : bool),
-    "Hown_keys" ∷ own_merkle ptr_keys (lower_map keys) ∗
+    "Hown_keys" ∷ own_merkle ptr_keys (map_lower keys) ∗
     "Hptr_loopErr" ∷ ptr_loopErr ↦[boolT] #loopErr ∗
     "HloopErr" ∷ (if loopErr then True else
       ∃ upd' upd_dec',
@@ -232,7 +233,7 @@ Proof. Admitted. (*
     - set_solver.
     - by apply insert_subseteq_l.
     - by apply map_Forall_insert_2.
-    - rewrite Hdecode /lower_map fmap_insert Hdec_val //.
+    - rewrite Hdecode /map_lower fmap_insert Hdec_val //.
     - by apply map_Forall_insert_2.
     - by apply map_disjoint_insert_l_2. }
   iIntros "[_ H]". iNamed "H".
@@ -244,7 +245,7 @@ Qed. *)
 
 Lemma wp_applyUpd ptr_keys keys ptr_upd upd_refs upd :
   {{{
-    "Hown_keys" ∷ own_Tree ptr_keys (lower_map keys) (DfracOwn 1) ∗
+    "Hown_keys" ∷ own_Tree ptr_keys (map_lower keys) (DfracOwn 1) ∗
     "#Hown_upd_refs" ∷ own_map ptr_upd DfracDiscarded upd_refs ∗
     "#Hown_upd" ∷ ([∗ map] sl;v ∈ upd_refs;upd,
       own_slice_small sl byteT DfracDiscarded v) ∗
@@ -253,7 +254,7 @@ Lemma wp_applyUpd ptr_keys keys ptr_upd upd_refs upd :
   applyUpd #ptr_keys #ptr_upd
   {{{
     RET #();
-    "Hown_keys" ∷ own_Tree ptr_keys (upd ∪ lower_map keys) (DfracOwn 1)
+    "Hown_keys" ∷ own_Tree ptr_keys (upd ∪ map_lower keys) (DfracOwn 1)
   }}}.
 Proof. Admitted. (*
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -262,7 +263,7 @@ Proof. Admitted. (*
     ∃ upd',
     "%Hdom" ∷ ⌜ dom upd_refs' = dom upd' ⌝ ∗
     "%Hsub" ∷ ⌜ upd' ⊆ upd ⌝ ∗
-    "Hown_keys" ∷ own_merkle ptr_keys (upd' ∪ lower_map keys)
+    "Hown_keys" ∷ own_merkle ptr_keys (upd' ∪ map_lower keys)
     )%I with "Hown_upd_refs [Hown_keys]").
   { iExists ∅. rewrite map_empty_union. iFrame.
     iPureIntro. split; [done|]. eapply map_empty_subseteq. }

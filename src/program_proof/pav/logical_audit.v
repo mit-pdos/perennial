@@ -17,11 +17,15 @@ Definition epochs_ok (ms : list adtr_map_ty) :=
   m_ep !! k = Some (ep', comm) →
   uint.Z ep' ≤ uint.Z ep.
 
-Definition lower_map (m : adtr_map_ty) : merkle_map_ty :=
-  (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
+Definition map_lower (higher : adtr_map_ty) (lower : merkle_map_ty) :=
+  map_Forall2 (λ _ v0 v1, MapValPre.encodes v1 (MapValPre.mk v0.1 v0.2))
+    higher lower.
 
 Definition audit_gs_inv (gs : list (adtr_map_ty * dig_ty)) : iProp Σ :=
-  "#His_digs" ∷ ([∗ list] x ∈ gs, is_merkle_map (lower_map x.1) x.2) ∗
+  "#His_digs" ∷ ([∗ list] x ∈ gs,
+    ∃ lower,
+    "%Hlower" ∷ ⌜ map_lower x.1 lower ⌝ ∗
+    "#His_map" ∷ is_merkle_map lower x.2) ∗
   "%Hmono_maps" ∷ ⌜ maps_mono gs.*1 ⌝ ∗
   "%Hok_epochs" ∷ ⌜ epochs_ok gs.*1 ⌝.
 
@@ -33,18 +37,19 @@ Definition sigpred γ : (list w8 → iProp Σ) :=
   "%Hlook_dig" ∷ ⌜ gs !! uint.nat pre.(PreSigDig.Epoch) = Some (m, pre.(PreSigDig.Dig)) ⌝ ∗
   "#Hinv_gs" ∷ audit_gs_inv gs)%I.
 
-Lemma audit_gs_snoc gs upd dig :
+Lemma audit_gs_snoc gs upd lowered_new_map dig :
   let new_map := (upd ∪ (default ∅ (last gs.*1))) in
+  upd ##ₘ (default ∅ (last gs.*1)) →
+  map_lower new_map lowered_new_map →
+  map_Forall (λ _ v, v.1 = W64 (length gs)) upd →
   audit_gs_inv gs -∗
-  is_merkle_map (lower_map new_map) dig -∗
-  ⌜ upd ##ₘ (default ∅ (last gs.*1)) ⌝ -∗
-  ([∗ map] val ∈ upd, ⌜ val.1 = W64 (length gs) ⌝) -∗
+  is_merkle_map lowered_new_map dig -∗
   audit_gs_inv (gs ++ [(new_map, dig)]).
 Proof.
-  iIntros "* #Hold_inv #His_dig %Hdisj %Hok_epoch".
+  simpl. iIntros (Hdisj Hlower Hok_epoch) "#Hold_inv #His_dig".
   iNamedSuffix "Hold_inv" "_old".
-iSplit; [|iPureIntro; split].
-  - iApply big_sepL_snoc. iFrame "#".
+  iSplit; [|iPureIntro; split].
+  - iApply big_sepL_snoc. iFrame "#%".
   - unfold maps_mono in *. intros * Hlook_gsi Hlook_gsj Heq_ep.
     rewrite fmap_app in Hlook_gsi Hlook_gsj.
     destruct (decide (uint.Z i = uint.Z j)).

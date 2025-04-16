@@ -138,7 +138,7 @@ Definition own_Server ptr serv q : iProp Σ :=
   (* physical-ghost reln. *)
   "%Heq_dig_hist" ∷ ⌜ gs_hist.*2 = servEpochInfo.dig <$> epochHist ⌝ ∗
   "%Heq_vers" ∷ ⌜ gs_vers = userState.numVers <$> userInfo ⌝ ∗
-  "%Heq_keyM" ∷ ⌜ keyMap = lower_map (default ∅ (last gs_hist.*1)) ⌝ ∗
+  "%Heq_keyM" ∷ ⌜ map_lower (default ∅ (last gs_hist.*1)) keyMap ⌝ ∗
   "%Heq_map_hist" ∷ ([∗ list] ep ↦ x ∈ epochHist,
     ∃ prevM nextM,
     "%Hlook_prevM" ∷ ⌜ gs_hist.*1 !! (pred ep) = Some prevM ⌝ ∗

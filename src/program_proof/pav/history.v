@@ -1,7 +1,7 @@
 From Perennial.program_proof.pav Require Import prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import auditor client core.
+From Perennial.program_proof.pav Require Import auditor client core serde.
 
 Section hist.
 (* logical history. *)
@@ -18,18 +18,22 @@ Definition is_hist_ep cli_γ serv_vrf_pk (uid ep : w64)
 
   (* prior vers exist in prior or this map. *)
   "#Hhist" ∷ ([∗ list] ver ↦ '(prior, commit) ∈ vals,
-    is_cli_entry cli_γ serv_vrf_pk prior uid ver (Some $ enc_val prior commit)) ∗
+    ∃ enc,
+    "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk prior commit) ⌝ ∗
+    "#Hentry" ∷ is_cli_entry cli_γ serv_vrf_pk prior uid ver (Some enc)) ∗
 
   "#Hbound" ∷ (∃ bound : w64,
     "%Hlt_valid" ∷ ⌜ uint.Z bound < uint.Z valid ⌝ ∗
     (* next ver doesn't exist in this or later map. *)
     (("%Hlt_ep" ∷ ⌜ uint.Z ep ≤ uint.Z bound ⌝ ∗
-    "#Hentry_bound" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) None)
+    "#Hentry" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) None)
     ∨
     (* next ver exists in later map. *)
-    (∃ commit,
+    (∃ commit enc,
     "%Hlt_ep" ∷ ⌜ uint.Z ep < uint.Z bound ⌝ ∗
-    "#Hentry_bound" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) (Some $ enc_val bound commit)))).
+    (* bound epoch needs to be visible to apply epochs_ok from audit. *)
+    "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk bound commit) ⌝ ∗
+    "#Hentry" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) (Some enc)))).
 
 (* is_hist says a history is okay up to valid. *)
 Definition is_hist cli_γ serv_vrf_pk (uid : w64)

@@ -57,7 +57,7 @@ Proof.
   destruct c. simpl in *.
   destruct serv_is_good eqn:Heq_good.
   - wp_apply (wp_Client__Put_good with "[$Hcli $Hsl_pk //]").
-    iIntros "*". iNamed 1. simpl in *.
+   iIntros "*". iNamed 1. simpl in *.
     iApply "HΦ". iFrame. iSplit; [done|].
     rewrite Heq_err. iSplit; simpl in *.
     { rewrite length_app. simpl.
@@ -96,8 +96,9 @@ Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ
     (∃ label audit_val,
     "#Hvrf_out" ∷ is_vrf_out serv_vrf_pk (enc_label_pre uid ver) label ∗
     "#His_label" ∷ is_map_label serv_vrf_pk uid ver label ∗
-    (* TODO: maybe change to `encodes` if not strong enough. *)
-    "%Henc_val" ∷ ⌜ val = (λ x, enc_val x.1 x.2) <$> audit_val ⌝ ∗
+    (* convert audit_val to MapValPre, then state opt reln connecting it to val. *)
+    "%Henc_val" ∷ ⌜ option_Forall2 MapValPre.encodes val
+      ((λ x, MapValPre.mk x.1 x.2) <$> audit_val) ⌝ ∗
     "%Hlook_adtr" ∷ ⌜ m !! label = audit_val ⌝)).
 
 Lemma do_serv_audit ptr_c c :
@@ -164,8 +165,27 @@ Proof.
   (* use merkle entry to learn that cli_entry in adtr's map too. *)
   iNamed "Hinv_gs".
   iDestruct (big_sepL_lookup with "His_digs") as "Hmap"; [done|].
-  iDestruct (is_merkle_map_agree_entry with "Hmap Hmerk_entry") as %Hlook_map.
+  iNamed "Hmap".
+  iDestruct (is_merkle_map_agree_entry with "His_map Hmerk_entry") as %Hlook_map.
+  iPureIntro. clear -Hlower Hlook_map. simpl in *.
+  Search big_sepM2 "lookup".
+  opose proof (Hlower label).
+  exists (m0 !! label).
+  split; [|done].
+  rewrite Hlook_map in H.
+  naive_solver.
+
+  2: { exists None.
+    opose proof (map_Forall2_dom_L _ _ _ Hlower).
+    apply not_elem_of_dom in Hlook_map.
+    split; [constructor|].
+    apply not_elem_of_dom. set_solver. }
+  Search map_Forall2.
+
+  - admit.
+  -
   rewrite lookup_fmap in Hlook_map.
+  iPureIntro. simpl in *. eexists _. split; [|done].
   naive_solver.
 Qed.
 
@@ -205,7 +225,6 @@ Proof.
   (* bring history into curr epoch using maps_mono. *)
   - iClear "Hbound". iApply (big_sepL_impl with "Hhist").
     iIntros (?[prior ?]) "!> %Hlook_vals #Hcli_entry".
-    iPoseProof "Hcli_entry" as "H". iNamed "H". iFrame "#".
     (* tedious: need prior ep < adtr_bound to get prior adtr map for map transf.
     get that by tracing val back to filtered hist and using hist validity. *)
     iDestruct (big_sepL2_lookup_2_some with "Hpk_commit_reln") as %[[??] Hlook_hist];
@@ -217,17 +236,15 @@ Proof.
     simpl in *. list_elem gs (uint.nat prior) as mprior.
     destruct mprior as [prior_ep prior_dig].
     iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
-    iNamedSuffix "H" "0".
-    (* TODO: this can be done by is_audit_post. *)
-    iDestruct (is_vrf_out_det with "Hvrf_out Hvrf_out0") as %->.
-    iNamed "Hinv_gs".
+    iNamed "H". iFrame "#". iNamed "Hinv_gs".
     iPureIntro.
     apply (f_equal (fmap fst)) in Hmprior_lookup, Hm_lookup.
     rewrite -!list_lookup_fmap in Hmprior_lookup, Hm_lookup.
     simpl in *.
     opose proof (Hmono_maps _ _ _ _ Hmprior_lookup Hm_lookup _); [word|].
     eapply lookup_weaken; [|done].
-    clear -Henc_val0.
+    clear -Henc_val.
+    About enc_val.
     (* TODO: need map val encoding injectivity. *)
 
   (* bring None bound into curr epoch using maps_mono. *)
