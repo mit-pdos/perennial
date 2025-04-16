@@ -173,20 +173,7 @@ Proof.
   exists (m0 !! label).
   split; [|done].
   rewrite Hlook_map in H.
-  naive_solver.
-
-  2: { exists None.
-    opose proof (map_Forall2_dom_L _ _ _ Hlower).
-    apply not_elem_of_dom in Hlook_map.
-    split; [constructor|].
-    apply not_elem_of_dom. set_solver. }
-  Search map_Forall2.
-
-  - admit.
-  -
-  rewrite lookup_fmap in Hlook_map.
-  iPureIntro. simpl in *. eexists _. split; [|done].
-  naive_solver.
+  inversion H; constructor. done.
 Qed.
 
 Lemma logical_audit_get_msv (ep : w64) ptr_c c γaudit :
