@@ -2,7 +2,7 @@ From Perennial.program_proof.pav Require Import prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
 From Perennial.program_proof.pav Require Import
-  advrpc auditor core classes client cryptoffi evidence
+advrpc auditor core classes client cryptoffi evidence
   history logical_audit merkle rpc serde server.
 
 Module ClientHist.
@@ -169,17 +169,83 @@ Proof.
   naive_solver.
 Qed.
 
-(* parallel with normal audit is hist_audit_msv. *)
-Lemma logical_audit (ep : w64) ptr_c c :
-  c.(ClientHist.serv_is_good) = true →
+Lemma logical_audit_get_msv (ep : w64) ptr_c c γaudit :
   uint.Z ep < uint.Z c.(ClientHist.ep_valid) →
   ClientHist.own ptr_c c -∗
-  msv c.(ClientHist.serv).(Server.γhist) c.(ClientHist.serv).(Server.vrf_pk)
+  logical_audit_post c.(ClientHist.γ) γaudit
+    c.(ClientHist.serv).(Server.vrf_pk) c.(ClientHist.ep_valid) -∗
+  msv γaudit c.(ClientHist.serv).(Server.vrf_pk)
     ep c.(ClientHist.uid) (get_lat c.(ClientHist.pks) ep).
 Proof.
-  iIntros (Heq_good Hlt_valid). iNamed 1.
+  iIntros (Hlt_valid). iNamed 1. iClear "Hcli". iNamed 1.
+  list_elem gs (uint.nat ep) as m. destruct m as [m dig].
+  iDestruct (mono_list_idx_own_get with "Hlb_gs") as "Hidx"; [done|].
+  iFrame "Hidx".
   iNamed "Hhist". iSpecialize ("Hknow_eps" $! ep with "[//]").
-  iNamed "Hknow_eps". iNamed "Hbound".
+  iNamed "Hknow_eps". iExists vals. iSplit.
+
+  { (* get commitment from pk_commit_reln. *)
+    iClear "Hhist Hbound".
+    iDestruct (big_sepL2_length with "Hpk_commit_reln") as %Hlen_vals.
+    destruct (get_lat _ _) as [[??]|] eqn:Hlat_pk,
+      (last vals) as [[??]|] eqn:Hlat_commit; [|exfalso..|done];
+      rewrite /get_lat last_lookup in Hlat_pk;
+      rewrite last_lookup in Hlat_commit.
+    + rewrite Hlen_vals in Hlat_pk.
+      iDestruct (big_sepL2_lookup with "Hpk_commit_reln") as "?";
+        [exact Hlat_pk|exact Hlat_commit|].
+      iFrame "#".
+    + apply lookup_lt_Some in Hlat_pk. apply lookup_ge_None in Hlat_commit. lia.
+    + apply lookup_ge_None in Hlat_pk. apply lookup_lt_Some in Hlat_commit. lia. }
+  iNamedSuffix "Hbound" "_bnd". iFrame "#".
+  list_elem gs (uint.nat bound) as mbound.
+  iExists _.
+  iSplit; [|iClear "Hhist"; iDestruct "Hbound" as "[H|H]"; iNamed "H"].
+
+  (* bring history into curr epoch using maps_mono. *)
+  - iClear "Hbound". iApply (big_sepL_impl with "Hhist").
+    iIntros (?[prior ?]) "!> %Hlook_vals #Hcli_entry".
+    iPoseProof "Hcli_entry" as "H". iNamed "H". iFrame "#".
+    (* tedious: need prior ep < adtr_bound to get prior adtr map for map transf.
+    get that by tracing val back to filtered hist and using hist validity. *)
+    iDestruct (big_sepL2_lookup_2_some with "Hpk_commit_reln") as %[[??] Hlook_hist];
+      [exact Hlook_vals|].
+    iDestruct (big_sepL2_lookup with "Hpk_commit_reln") as "H";
+      [exact Hlook_hist|exact Hlook_vals|].
+    iNamed "H". opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
+    { eapply elem_of_list_lookup. eauto using Hlook_hist. }
+    simpl in *. list_elem gs (uint.nat prior) as mprior.
+    destruct mprior as [prior_ep prior_dig].
+    iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
+    iNamedSuffix "H" "0".
+    (* TODO: this can be done by is_audit_post. *)
+    iDestruct (is_vrf_out_det with "Hvrf_out Hvrf_out0") as %->.
+    iNamed "Hinv_gs".
+    iPureIntro.
+    apply (f_equal (fmap fst)) in Hmprior_lookup, Hm_lookup.
+    rewrite -!list_lookup_fmap in Hmprior_lookup, Hm_lookup.
+    simpl in *.
+    opose proof (Hmono_maps _ _ _ _ Hmprior_lookup Hm_lookup _); [word|].
+    eapply lookup_weaken; [|done].
+    clear -Henc_val0.
+    (* TODO: need map val encoding injectivity. *)
+
+  (* bring None bound into curr epoch using maps_mono. *)
+  - iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
+    { iPureIntro. exact Hmbound_lookup. }
+    iNamed "Hmap_transf". iPureIntro.
+    opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
+    by eapply lookup_weaken_None.
+
+  (* bring Some bound into curr epoch using epochs_ok and then maps_mono. *)
+  - iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
+    { iPureIntro. exact Hmbound_lookup. }
+    iNamed "Hmap_transf". iPureIntro.
+    destruct (decide $ is_Some $ m !! label) as [[? Hlook_mkey]|]; last first.
+    { by eapply eq_None_not_Some. }
+    opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
+    opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
+    opose proof ((proj2 Hinv_adtr) _ _ _ _ _ Hm_lookup Hlook_mkey) as ?. word.
 Admitted.
 
 End proof.
