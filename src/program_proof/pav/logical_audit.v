@@ -20,26 +20,26 @@ Definition epochs_ok (ms : list adtr_map_ty) :=
 Definition lower_map (m : adtr_map_ty) : merkle_map_ty :=
   (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
 
-Definition sigpred_gs_inv (gs : list (adtr_map_ty * dig_ty)) : iProp Σ :=
+Definition audit_gs_inv (gs : list (adtr_map_ty * dig_ty)) : iProp Σ :=
   "#His_digs" ∷ ([∗ list] x ∈ gs, is_merkle_map (lower_map x.1) x.2) ∗
   "%Hmono_maps" ∷ ⌜ maps_mono gs.*1 ⌝ ∗
   "%Hok_epochs" ∷ ⌜ epochs_ok gs.*1 ⌝.
 
 Definition sigpred γ : (list w8 → iProp Σ) :=
   λ preByt,
-  (∃ pre gs,
+  (∃ pre gs m,
   "%Henc" ∷ ⌜ PreSigDig.encodes preByt pre ⌝ ∗
   "#Hlb" ∷ mono_list_lb_own γ gs ∗
-  "%Hlook_dig" ∷ ⌜ gs.*2 !! uint.nat pre.(PreSigDig.Epoch) = Some pre.(PreSigDig.Dig) ⌝ ∗
-  "#Hinv_gs" ∷ sigpred_gs_inv gs)%I.
+  "%Hlook_dig" ∷ ⌜ gs !! uint.nat pre.(PreSigDig.Epoch) = Some (m, pre.(PreSigDig.Dig)) ⌝ ∗
+  "#Hinv_gs" ∷ audit_gs_inv gs)%I.
 
-Lemma sigpred_gs_snoc gs upd dig :
+Lemma audit_gs_snoc gs upd dig :
   let new_map := (upd ∪ (default ∅ (last gs.*1))) in
-  sigpred_gs_inv gs -∗
+  audit_gs_inv gs -∗
   is_merkle_map (lower_map new_map) dig -∗
   ⌜ upd ##ₘ (default ∅ (last gs.*1)) ⌝ -∗
   ([∗ map] val ∈ upd, ⌜ val.1 = W64 (length gs) ⌝) -∗
-  sigpred_gs_inv (gs ++ [(new_map, dig)]).
+  audit_gs_inv (gs ++ [(new_map, dig)]).
 Proof.
   iIntros "* #Hold_inv #His_dig %Hdisj %Hok_epoch".
   iNamedSuffix "Hold_inv" "_old".
@@ -88,6 +88,25 @@ iSplit; [|iPureIntro; split].
       (W64 (pred $ length gs)) _ _ _ _ _ Hlook_last) as ?; [|word].
     replace (uint.nat (W64 _)) with (pred $ length gs); [|word].
     by rewrite last_lookup length_fmap in Hlast.
+Qed.
+
+Lemma audit_gs_prefix l l' :
+  l' `prefix_of` l →
+  audit_gs_inv l -∗
+  audit_gs_inv l'.
+Proof.
+  iIntros (Hpref). iNamed 1. iSplit; [|iPureIntro; split].
+  - opose proof (prefix_to_take _ _ Hpref) as ->.
+    by iApply big_sepL_take.
+  - intros ???? Hlook0 Hlook1 ?.
+    apply (prefix_fmap fst) in Hpref.
+    opose proof (prefix_lookup_Some _ _ _ _ Hlook0 Hpref) as Hlook0'.
+    opose proof (prefix_lookup_Some _ _ _ _ Hlook1 Hpref) as Hlook1'.
+    by apply (Hmono_maps _ _ _ _ Hlook0' Hlook1').
+  - intros ????? Hlook0 Hlook1.
+    apply (prefix_fmap fst) in Hpref.
+    opose proof (prefix_lookup_Some _ _ _ _ Hlook0 Hpref) as Hlook0'.
+    by apply (Hok_epochs _ _ _ _ _ Hlook0' Hlook1).
 Qed.
 
 End proof.
