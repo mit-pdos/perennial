@@ -95,8 +95,11 @@ Section program.
       iFrame.
       destruct x as [t v].
       rewrite list_to_map_snoc; first done.
-      clear -Hx Hxs.
-      admit.
+      rewrite fmap_take.
+      apply not_elem_of_take.
+      { rewrite Hxs. apply NoDup_fst_map_to_list. }
+      apply list_lookup_fmap_Some.
+      eexists; split; eauto.
     }
     iNamed 1.
     case_bool_decide as Hi; last done.
@@ -111,6 +114,6 @@ Section program.
     symmetry in Hxs. apply list_to_map_flip in Hxs.
     rewrite -Hxs.
     by iFrame.
-  Admitted.
+  Qed.
 
 End program.
