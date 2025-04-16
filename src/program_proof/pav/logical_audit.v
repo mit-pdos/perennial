@@ -4,14 +4,14 @@ From Perennial.program_proof.pav Require Import core serde merkle.
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition maps_mono (ms : list adtr_map_ty) :=
+Definition mono_maps (ms : list adtr_map_ty) :=
   ∀ (i j : w64) mi mj,
   ms !! (uint.nat i) = Some mi →
   ms !! (uint.nat j) = Some mj →
   uint.Z i ≤ uint.Z j →
   mi ⊆ mj.
 
-Definition epochs_ok (ms : list adtr_map_ty) :=
+Definition ok_epochs (ms : list adtr_map_ty) :=
   ∀ (ep : w64) m_ep k ep' comm,
   ms !! (uint.nat ep) = Some m_ep →
   m_ep !! k = Some (ep', comm) →
@@ -26,8 +26,8 @@ Definition audit_gs_inv (gs : list (adtr_map_ty * dig_ty)) : iProp Σ :=
     ∃ lower,
     "%Hlower" ∷ ⌜ map_lower x.1 lower ⌝ ∗
     "#His_map" ∷ is_merkle_map lower x.2) ∗
-  "%Hmono_maps" ∷ ⌜ maps_mono gs.*1 ⌝ ∗
-  "%Hok_epochs" ∷ ⌜ epochs_ok gs.*1 ⌝.
+  "%Hmono_maps" ∷ ⌜ mono_maps gs.*1 ⌝ ∗
+  "%Hok_epochs" ∷ ⌜ ok_epochs gs.*1 ⌝.
 
 Definition sigpred γ : (list w8 → iProp Σ) :=
   λ preByt,
@@ -50,7 +50,7 @@ Proof.
   iNamedSuffix "Hold_inv" "_old".
   iSplit; [|iPureIntro; split].
   - iApply big_sepL_snoc. iFrame "#%".
-  - unfold maps_mono in *. intros * Hlook_gsi Hlook_gsj Heq_ep.
+  - unfold mono_maps in *. intros * Hlook_gsi Hlook_gsj Heq_ep.
     rewrite fmap_app in Hlook_gsi Hlook_gsj.
     destruct (decide (uint.Z i = uint.Z j)).
     { by simplify_eq/=. }
@@ -76,7 +76,7 @@ Proof.
       (W64 (pred $ length gs)) _ _ Hlook_gsi _ _); [|word].
     replace (uint.nat (W64 _)) with (pred $ length gs); [|word].
     by rewrite length_fmap in Hlast.
-  - unfold epochs_ok in *. intros * Hlook_gs Hlook_m.
+  - unfold ok_epochs in *. intros * Hlook_gs Hlook_m.
     rewrite fmap_app in Hlook_gs.
     destruct (decide (uint.Z ep < length gs)).
     { eapply Hok_epochs_old; [|done].

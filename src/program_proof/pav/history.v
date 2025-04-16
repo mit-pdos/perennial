@@ -20,20 +20,20 @@ Definition is_hist_ep cli_γ serv_vrf_pk (uid ep : w64)
   "#Hhist" ∷ ([∗ list] ver ↦ '(prior, commit) ∈ vals,
     ∃ enc,
     "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk prior commit) ⌝ ∗
-    "#Hentry" ∷ is_cli_entry cli_γ serv_vrf_pk prior uid ver (Some enc)) ∗
+    "#Hcli_entry" ∷ is_cli_entry cli_γ serv_vrf_pk prior uid ver (Some enc)) ∗
 
   "#Hbound" ∷ (∃ bound : w64,
     "%Hlt_valid" ∷ ⌜ uint.Z bound < uint.Z valid ⌝ ∗
     (* next ver doesn't exist in this or later map. *)
     (("%Hlt_ep" ∷ ⌜ uint.Z ep ≤ uint.Z bound ⌝ ∗
-    "#Hentry" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) None)
+    "#Hcli_entry" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) None)
     ∨
     (* next ver exists in later map. *)
     (∃ commit enc,
     "%Hlt_ep" ∷ ⌜ uint.Z ep < uint.Z bound ⌝ ∗
     (* bound epoch needs to be visible to apply epochs_ok from audit. *)
     "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk bound commit) ⌝ ∗
-    "#Hentry" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) (Some enc)))).
+    "#Hcli_entry" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) (Some enc)))).
 
 (* is_hist says a history is okay up to valid. *)
 Definition is_hist cli_γ serv_vrf_pk (uid : w64)

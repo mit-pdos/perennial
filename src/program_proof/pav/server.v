@@ -77,8 +77,8 @@ Definition inv_gs serv : iProp Σ :=
   "Hgs_hist" ∷ mono_list_auth_own serv.(Server.γhist) (1/2) gs_hist ∗
   "Hgs_vers" ∷ ghost_map_auth serv.(Server.γvers) (1/2) gs_vers ∗
 
-  "%Hmono_maps" ∷ ⌜ maps_mono gs_hist.*1 ⌝ ∗
-  "%Hok_epochs" ∷ ⌜ epochs_ok gs_hist.*1 ⌝ ∗
+  "%Hmono_maps" ∷ ⌜ mono_maps gs_hist.*1 ⌝ ∗
+  "%Hok_epochs" ∷ ⌜ ok_epochs gs_hist.*1 ⌝ ∗
   "#Hok_vers" ∷ ([∗ map] uid ↦ nVers ∈ gs_vers,
     ∃ label,
     "#Hvrf_out" ∷ is_vrf_out serv.(Server.vrf_pk)

@@ -59,13 +59,13 @@ Section msv_core.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Definition msv_core (m : adtr_map_ty) uid vals pk : iProp Σ :=
-  ∃ label,
   "#Hhist" ∷ ([∗ list] ver ↦ val ∈ vals,
     ∃ label,
     "#His_label" ∷ is_map_label pk uid (W64 ver) label ∗
     "%Hin_prev" ∷ ⌜ m !! label = Some val ⌝) ∗
+  (∃ label,
   "#His_label" ∷ is_map_label pk uid (W64 $ length vals) label ∗
-  "%Hnin_next" ∷ ⌜ m !! label = None ⌝.
+  "%Hnin_next" ∷ ⌜ m !! label = None ⌝).
 
 Lemma msv_core_len_agree_aux m uid vals0 vals1 pk :
   ("#Hmsv0" ∷ msv_core m uid vals0 pk ∗
@@ -73,7 +73,9 @@ Lemma msv_core_len_agree_aux m uid vals0 vals1 pk :
   "%Hlt_len" ∷ ⌜ length vals0 < length vals1 ⌝) -∗
   False.
 Proof.
-  iNamed 1. iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
+  iNamed 1.
+  iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
+  iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
   list_elem vals1 (length vals0) as val.
   iDestruct (big_sepL_lookup with "Hhist1") as "H"; [exact Hval_lookup|].
   iNamed "H".

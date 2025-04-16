@@ -90,7 +90,7 @@ Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ
   "#Hmap_transf" ∷ (□ ∀ (ep : w64) m dig uid ver val,
 
     ("%Hlook_adtr" ∷ ⌜ gs !! uint.nat ep = Some (m, dig) ⌝ ∗
-    "#Hentry" ∷ is_cli_entry γcli serv_vrf_pk ep uid ver val)
+    "#Hcli_entry" ∷ is_cli_entry γcli serv_vrf_pk ep uid ver val)
     -∗
 
     (∃ label audit_val,
@@ -145,7 +145,7 @@ Proof.
 
   (* prove transfer wand. *)
   iDestruct (mono_list_lb_own_get with "Hown_digs") as "#Hlb_digs".
-  iIntros "!> *". iNamed 1. iNamed "Hentry". iFrame "Hvrf_out".
+  iIntros "!> *". iNamed 1. iNamed "Hcli_entry". iFrame "Hvrf_out".
   (* learn that cli_entry uses dig that's also in adtr gs. *)
   pose proof Hlook_adtr as Hlt_ep.
   apply lookup_lt_Some in Hlt_ep.
@@ -184,7 +184,7 @@ Proof.
   iIntros (Hlt_valid). iNamed 1. iClear "Hcli". iNamed 1.
   list_elem gs (uint.nat ep) as m. destruct m as [m dig].
   iDestruct (mono_list_idx_own_get with "Hlb_gs") as "Hidx"; [done|].
-  iFrame "Hidx".
+  iFrame "Hidx". iClear "Hidx".
   iNamed "Hhist". iSpecialize ("Hknow_eps" $! ep with "[//]").
   iNamed "Hknow_eps". iExists vals. iSplit.
 
@@ -203,12 +203,12 @@ Proof.
     + apply lookup_ge_None in Hlat_pk. apply lookup_lt_Some in Hlat_commit. lia. }
   iNamedSuffix "Hbound" "_bnd". iFrame "#".
   list_elem gs (uint.nat bound) as mbound.
-  iExists _.
+  destruct mbound as [mbound dbound].
   iSplit; [|iClear "Hhist"; iDestruct "Hbound" as "[H|H]"; iNamed "H"].
 
-  (* bring history into curr epoch using maps_mono. *)
+  (* bring history into curr epoch using mono_maps. *)
   - iClear "Hbound". iApply (big_sepL_impl with "Hhist").
-    iIntros (?[prior ?]) "!> %Hlook_vals #Hcli_entry".
+    iIntros (?[prior ?]) "!> %Hlook_vals". iNamed 1.
     (* tedious: need prior ep < adtr_bound to get prior adtr map for map transf.
     get that by tracing val back to filtered hist and using hist validity. *)
     iDestruct (big_sepL2_lookup_2_some with "Hpk_commit_reln") as %[[??] Hlook_hist];
@@ -217,36 +217,55 @@ Proof.
       [exact Hlook_hist|exact Hlook_vals|].
     iNamed "H". opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
     { eapply elem_of_list_lookup. eauto using Hlook_hist. }
-    simpl in *. list_elem gs (uint.nat prior) as mprior.
+    simpl in *.
+    list_elem gs (uint.nat prior) as mprior.
     destruct mprior as [prior_ep prior_dig].
     iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
-    iNamed "H". iFrame "#". iNamed "Hinv_gs".
-    iPureIntro.
+    iNamed "H". iFrame "#". iNamed "Hinv_gs". iPureIntro.
     apply (f_equal (fmap fst)) in Hmprior_lookup, Hm_lookup.
     rewrite -!list_lookup_fmap in Hmprior_lookup, Hm_lookup.
     simpl in *.
     opose proof (Hmono_maps _ _ _ _ Hmprior_lookup Hm_lookup _); [word|].
     eapply lookup_weaken; [|done].
-    clear -Henc_val.
-    About enc_val.
-    (* TODO: need map val encoding injectivity. *)
+    (* encoding injectivity. *)
+    subst. clear -Henc Henc_val.
+    inv Henc_val.
+    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H1); [done|].
+    intuition. simplify_eq/=.
+    destruct (prior_ep !! label) as [[??]|]; [|done].
+    by simplify_eq/=.
 
-  (* bring None bound into curr epoch using maps_mono. *)
-  - iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
-    { iPureIntro. exact Hmbound_lookup. }
-    iNamed "Hmap_transf". iPureIntro.
-    opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
-    by eapply lookup_weaken_None.
+  (* bring None bound into curr epoch using mono_maps. *)
+  - iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
+    iNamed "H". iFrame "#". iNamed "Hinv_gs". iPureIntro.
+    apply (f_equal (fmap fst)) in Hmbound_lookup, Hm_lookup.
+    rewrite -!list_lookup_fmap in Hmbound_lookup, Hm_lookup.
+    simpl in *.
+    opose proof (Hmono_maps _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
+    eapply lookup_weaken_None; [|done].
+    inv Henc_val.
+    destruct (mbound !! label); [naive_solver|done].
 
-  (* bring Some bound into curr epoch using epochs_ok and then maps_mono. *)
-  - iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
-    { iPureIntro. exact Hmbound_lookup. }
-    iNamed "Hmap_transf". iPureIntro.
-    destruct (decide $ is_Some $ m !! label) as [[? Hlook_mkey]|]; last first.
-    { by eapply eq_None_not_Some. }
-    opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
+  (* bring Some bound into curr epoch using ok_epochs and then mono_maps. *)
+  - iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
+    iNamed "H". iFrame "#". iNamed "Hinv_gs". iPureIntro.
+    (* arg by contra.
+    if had Some x at ep, by ok_epochs, x.ep <= ep.
+    move x into bound_ep (with mono_maps) and unify with existing bound entry.
+    for that entry, already know that ep < x.ep. *)
+    destruct (decide $ is_Some $ m !! label) as [[[??] Hlook_mkey]|].
+    2: { by eapply eq_None_not_Some. }
+    apply (f_equal (fmap fst)) in Hmbound_lookup, Hm_lookup.
+    rewrite -!list_lookup_fmap in Hmbound_lookup, Hm_lookup.
+    simpl in *.
+    opose proof (Hok_epochs _ _ _ _ _ Hm_lookup Hlook_mkey) as ?.
+    opose proof (Hmono_maps _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
     opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
-    opose proof ((proj2 Hinv_adtr) _ _ _ _ _ Hm_lookup Hlook_mkey) as ?. word.
-Admitted.
+    inv Henc_val.
+    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H4); [done|].
+    intuition. simplify_eq/=.
+    destruct (mbound !! label) as [[??]|]; [|done].
+    simplify_eq/=. word.
+Qed.
 
 End proof.
