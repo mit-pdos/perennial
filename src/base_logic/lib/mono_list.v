@@ -168,4 +168,14 @@ Section mono_list_own.
   Lemma mono_list_lb_own_nil γ :
     ⊢ |==> mono_list_lb_own γ [].
   Proof. unseal. iApply own_unit. Qed.
+
+  Lemma mono_list_lb_idx_lookup γ l i a :
+    i < length l →
+    mono_list_lb_own γ l -∗ mono_list_idx_own γ i a -∗ ⌜ l !! i = Some a ⌝.
+  Proof.
+    iIntros (?) "Hlb0". iDestruct 1 as (??) "Hlb1".
+    iDestruct (mono_list_lb_valid with "Hlb0 Hlb1") as %[Hpre|Hpre].
+    - by rewrite (prefix_lookup_lt _ _ _ _ Hpre).
+    - iPureIntro. by eapply prefix_lookup_Some.
+  Qed.
 End mono_list_own.
