@@ -483,23 +483,26 @@ Definition DecodeTxnRequest: val :=
               (if: "kind" = MSG_TXN_QUERY
               then DecodeTxnQueryRequest "bs1"
               else
-                (if: "kind" = MSG_TXN_REFRESH
-                then DecodeTxnRefreshRequest "bs1"
+                (if: "kind" = MSG_TXN_INQUIRE
+                then DecodeTxnInquireRequest "bs1"
                 else
-                  (if: "kind" = MSG_TXN_COMMIT
-                  then DecodeTxnCommitRequest "bs1"
+                  (if: "kind" = MSG_TXN_REFRESH
+                  then DecodeTxnRefreshRequest "bs1"
                   else
-                    (if: "kind" = MSG_TXN_ABORT
-                    then DecodeTxnAbortRequest "bs1"
+                    (if: "kind" = MSG_TXN_COMMIT
+                    then DecodeTxnCommitRequest "bs1"
                     else
-                      (if: "kind" = MSG_DUMP_STATE
-                      then DecodeDumpStateRequest "bs1"
+                      (if: "kind" = MSG_TXN_ABORT
+                      then DecodeTxnAbortRequest "bs1"
                       else
-                        (if: "kind" = MSG_FORCE_ELECTION
-                        then DecodeForceElectionRequest #()
+                        (if: "kind" = MSG_DUMP_STATE
+                        then DecodeDumpStateRequest "bs1"
                         else
-                          struct.mk TxnRequest [
-                          ]))))))))))).
+                          (if: "kind" = MSG_FORCE_ELECTION
+                          then DecodeForceElectionRequest #()
+                          else
+                            struct.mk TxnRequest [
+                            ])))))))))))).
 
 Definition DecodeTxnResponse: val :=
   rec: "DecodeTxnResponse" "bs" :=
