@@ -11,12 +11,22 @@ Section program.
       mergeKVMap #mwP #mrP
     {{{ RET #(); own_map mwP (DfracOwn 1) (mr ∪ mw) ∗ own_map mrP q mr }}}.
   Proof.
-    (*@ func mergeKVMap(mw, mr tulip.KVMap) {                                   @*)
-    (*@     for k, v := range(mr) {                                             @*)
-    (*@         mw[k] = v                                                       @*)
-    (*@     }                                                                   @*)
-    (*@ }                                                                       @*)
-  Admitted.
+    iIntros (Φ) "(Hown1&Hown2) HΦ".
+    wp_rec.
+    wp_pures.
+    wp_apply (wp_MapIter_fold _ _ _ (λ (m : dbmap), own_map mwP (DfracOwn 1) (m ∪ mw))
+                with "Hown2 [Hown1]").
+    { rewrite left_id_L //. }
+    { clear Φ.
+      iIntros (m k v Φ) "!> (Hown&%&%) HΦ".
+      wp_pures.
+      wp_apply (wp_MapInsert _ dbval v _ _ _ _ k with "Hown").
+      { rewrite //=. }
+      rewrite /map_insert // insert_union_l //.
+    }
+    iIntros "(H1&H2)".
+    wp_pures. by iApply "HΦ"; iFrame.
+  Qed.
 
   Theorem wp_BackupTxnCoordinator__mergeWrites (tcoord : loc) ts wrs γ :
     all_prepared γ ts wrs -∗
