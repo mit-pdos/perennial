@@ -227,7 +227,10 @@ Proof.
     simpl in *.
     opose proof (Hmono_maps _ _ _ _ Hmprior_lookup Hm_lookup _); [word|].
     eapply lookup_weaken; [|done].
-    (* encoding injectivity. *)
+    (* is_hist_ep had encoding of relevant commit.
+    map transfer lemma over bytes, but gives back an encoding.
+    need to unify the encodings, to prove that the commit still there
+    in latest ep. *)
     subst. clear -Henc Henc_val.
     inv Henc_val.
     opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H1); [done|].
@@ -246,13 +249,13 @@ Proof.
     inv Henc_val.
     destruct (mbound !! label); [naive_solver|done].
 
-  (* bring Some bound into curr epoch using ok_epochs and then mono_maps. *)
+  (* bring Some bound into curr epoch. arg by contra:
+  if had Some x at ep, by ok_epochs, x.ep <= ep.
+  move x into bound_ep (with mono_maps) and use encoding inj
+  to unify with existing bound entry.
+  for that entry, already know that ep < x.ep. *)
   - iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
     iNamed "H". iFrame "#". iNamed "Hinv_gs". iPureIntro.
-    (* arg by contra.
-    if had Some x at ep, by ok_epochs, x.ep <= ep.
-    move x into bound_ep (with mono_maps) and unify with existing bound entry.
-    for that entry, already know that ep < x.ep. *)
     destruct (decide $ is_Some $ m !! label) as [[[??] Hlook_mkey]|].
     2: { by eapply eq_None_not_Some. }
     apply (f_equal (fmap fst)) in Hmbound_lookup, Hm_lookup.
