@@ -3,8 +3,85 @@ From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
 From Perennial.goose_lang.lib Require Import waitgroup.waitgroup.
-From Perennial.program_proof.pav Require Import prelude core cryptoffi cryptoutil serde merkle auditor workq.
+From Perennial.program_proof.pav Require Import prelude core cryptoffi cryptoutil serde merkle logical_audit workq.
 From Perennial.goose_lang.lib.rwlock Require Import rwlock_noncrash.
+
+Module WQReq.
+Record t :=
+  mk {
+      Uid : w64;
+      Pk : list w8;
+    }.
+
+Section defs.
+Context `{!heapGS Σ}.
+
+Definition is_own ptr x : iProp Σ :=
+  ∃ Pk_sl,
+  "Uid" ∷ ptr ↦[WQReq :: "Uid"]□ #x.(Uid) ∗
+  "Pk" ∷ ptr ↦[WQReq:: "Pk"]□ (slice_val Pk_sl) ∗
+  "Pk_sl" ∷ own_slice_small Pk_sl byteT DfracDiscarded x.(Pk).
+
+End defs.
+End WQReq.
+
+Module WQResp.
+Record t :=
+  mk {
+      Dig : SigDig.t;
+      Lat : Memb.t;
+      Bound : NonMemb.t;
+      Err : bool
+    }.
+
+Section defs.
+Context `{!heapGS Σ}.
+
+Definition is_own ptr x : iProp Σ :=
+  ∃ (dig_ptr lat_ptr bound_ptr : loc),
+    "Dig" ∷ ptr ↦[WQResp::"Dig"]□ #dig_ptr ∗
+    "HDig" ∷ SigDig.own dig_ptr x.(Dig) DfracDiscarded ∗
+    "Lat" ∷ ptr ↦[WQResp::"Lat"]□ #lat_ptr ∗
+    "HLat" ∷ Memb.own lat_ptr x.(Lat) DfracDiscarded ∗
+    "Bound" ∷ ptr ↦[WQResp::"Bound"]□ #bound_ptr ∗
+    "HBound" ∷ NonMemb.own bound_ptr x.(Bound) DfracDiscarded ∗
+    "Err" ∷ ptr ↦[WQResp::"Err"]□ #x.(Err).
+
+End defs.
+
+End WQResp.
+
+Module mapper0Out.
+Record t :=
+  mk {
+      latestVrfHash : list w8;
+      latestVrfProof : list w8;
+      boundVrfHash : list w8;
+      boundVrfProof : list w8;
+      mapVal : list w8;
+      pkOpen : CommitOpen.t;
+    }.
+
+Section defs.
+Context `{!heapGS Σ}.
+Definition own ptr x : iProp Σ :=
+  ∃ (latestVrfHash_sl latestVrfProof_sl boundVrfHash_sl boundVrfProof_sl mapVal_sl : Slice.t)
+    (pkOpen_ptr : loc),
+  "latestVrfHash" ∷ ptr ↦[mapper0Out::"latestVrfHash"] (slice_val latestVrfHash_sl) ∗
+  "#latestVrfHash_sl" ∷ own_slice_small latestVrfHash_sl byteT DfracDiscarded x.(latestVrfHash) ∗
+  "latestVrfProof" ∷ ptr ↦[mapper0Out::"latestVrfProof"] (slice_val latestVrfProof_sl) ∗
+  "#latestVrfProof_sl" ∷ own_slice_small latestVrfProof_sl byteT DfracDiscarded x.(latestVrfProof) ∗
+  "boundVrfHash" ∷ ptr ↦[mapper0Out::"boundVrfHash"] (slice_val boundVrfHash_sl) ∗
+  "#boundVrfHash_sl" ∷ own_slice_small boundVrfHash_sl byteT DfracDiscarded x.(boundVrfHash) ∗
+  "boundVrfProof" ∷ ptr ↦[mapper0Out::"boundVrfProof"] (slice_val boundVrfProof_sl) ∗
+  "#boundVrfProof_sl" ∷ own_slice_small boundVrfProof_sl byteT DfracDiscarded x.(boundVrfProof) ∗
+  "mapVal" ∷ ptr ↦[mapper0Out::"mapVal"] (slice_val mapVal_sl) ∗
+  "#mapVal_sl" ∷ own_slice_small mapVal_sl byteT DfracDiscarded x.(mapVal) ∗
+  "pkOpen" ∷ ptr ↦[mapper0Out::"pkOpen"] #pkOpen_ptr ∗
+  "HpkOpen" ∷ CommitOpen.own pkOpen_ptr x.(pkOpen) (DfracOwn 1).
+
+End defs.
+End mapper0Out.
 
 Module userState.
 Record t :=
@@ -123,7 +200,7 @@ Definition own_Server_ghost γ st : iProp Σ :=
   ∃ gs, (* TODO: rename to something better than [gs]. *)
   (* Copied from auditor.v *)
   "Hauditor" ∷ mono_list_auth_own γ.(auditor_gn) 1 gs ∗
-  "#Hinv_gs" ∷ gs_inv gs ∗
+  "#Hinv_gs" ∷ audit_gs_inv gs ∗
   "%HkeyMap_ghost" ∷ ⌜ st.(Server.keyMap) = lower_map (default ∅ (last gs.*1)) ⌝ ∗
   "%Hdigs_gs" ∷ ⌜ gs.*2 = servEpochInfo.dig <$> st.(Server.epochHist) ⌝ ∗
 
@@ -306,10 +383,10 @@ Lemma wp_compMapLabel (uid ver : w64) (sk_ptr : loc) pk :
     compMapLabel #uid #ver #sk_ptr
   {{{
       out out_sl proof proof_sl, RET (slice_val out_sl, slice_val proof_sl);
-      own_slice_small out_sl byteT (DfracOwn 1) out ∗
-      own_slice_small proof_sl byteT (DfracOwn 1) proof ∗
-      is_vrf_out pk (enc_label_pre uid ver) out ∗
-      is_vrf_proof pk (enc_label_pre uid ver) proof
+      "Hout_sl" ∷ own_slice_small out_sl byteT (DfracOwn 1) out ∗
+      "Hproof_sl" ∷ own_slice_small proof_sl byteT (DfracOwn 1) proof ∗
+      "#Hvrf_out" ∷ is_vrf_out pk (enc_label_pre uid ver) out ∗
+      "#Hvrf_proof" ∷ is_vrf_proof pk (enc_label_pre uid ver) proof
   }}}.
 Proof.
   iIntros (?) "Hsk HΦ". wp_rec. wp_pures.
@@ -403,7 +480,7 @@ Proof.
   { (* run a loop iteration *)
     wp_pures. wp_load.
     wp_apply (wp_compMapLabel with "[$]").
-    iIntros "* (Hout_sl & Hproof_sl & #Hvrf_out & #Hvrf_proof)".
+    iIntros "*". iNamed 1.
     wp_pures.
     wp_apply (wp_Tree__Prove with "[$Htree $Hout_sl]").
     iIntros "*". iNamed 1. wp_pures.
@@ -464,11 +541,12 @@ Lemma wp_compCommitOpen secret_sl label_sl (secret label : list w8) dqs dql :
         "Hlabel" ∷ own_slice_small label_sl byteT dql label
   }}}
     compCommitOpen (slice_val secret_sl) (slice_val label_sl)
-  {{{ commit_sl (commit : list w8), RET (slice_val commit_sl);
-      own_slice_small commit_sl byteT (DfracOwn 1) commit ∗
-      own_slice_small secret_sl byteT dqs secret ∗
-      own_slice_small label_sl byteT dql label ∗
-      is_hash (secret ++ label) commit
+  {{{
+      rand_sl (rand: list w8), RET (slice_val rand_sl);
+      "Hrand_sl" ∷ own_slice_small rand_sl byteT (DfracOwn 1) rand ∗
+      "Hsecret" ∷ own_slice_small secret_sl byteT dqs secret ∗
+      "Hsl_label" ∷ own_slice_small label_sl byteT dql label ∗
+      "#Hrand" ∷ is_hash (secret ++ label) rand
   }}}.
 Proof.
   iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec.
@@ -525,7 +603,7 @@ Proof.
     iPureIntro. rewrite bool_decide_true //.
   }
   wp_apply (wp_compMapLabel with "[$]").
-  iIntros "* (Hout_sl & Hproof_sl & #Hvrf_out & #Hvrf_proof)".
+  iIntros "*". iNamed 1.
   wp_pures. wp_apply (wp_Tree__Prove with "[$Htree $Hout_sl]").
   iIntros "*". iNamed 1. wp_pures.
   iNamed "Hcrypto".
@@ -578,7 +656,7 @@ Proof.
   }
   subst. wp_apply std_proof.wp_Assert; [done | ].
   wp_apply (wp_compCommitOpen with "[$HcommitSecret $Hsl_label]").
-  iIntros "* (Hcommit_sl & HcommitSecret & Hsl_label & #Hhash)".
+  iIntros "*". iRename "Hrand" into "Hrand2". iNamed 1.
   wp_pures. wp_apply wp_allocStruct; [val_ty | ].
   iIntros (open_ptr) "Hopen".
   wp_pures. iNamed "Herr". iNamed "Hown_obj".
@@ -592,7 +670,7 @@ Proof.
   iFrame. iFrame "Hpk". iPersist "Hsl_proof".
   iFrame "Hsl_proof". iModIntro.
   iDestruct (is_merkle_map_det with "His_dig Hdig") as %Heq. subst.
-  iDestruct (is_hash_det with "Hrand Hhash") as %Heq. subst.
+  iDestruct (is_hash_det with "Hrand Hrand2") as %Heq. subst.
   rewrite HepochHistLast /=. iFrame "#". iPureIntro. rewrite bool_decide_false //.
 Qed.
 
@@ -616,7 +694,7 @@ Lemma wp_getBound γ st keyMap_ptr (uid : w64) vrfSk dq :
 Proof.
   iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
   wp_apply (wp_compMapLabel with "[$]").
-  iIntros "* (Hout_sl & Hproof_sl & #Hvrf_out & #Hvrf_proof)".
+  iIntros "*". iNamed 1.
   wp_pures. wp_apply (wp_Tree__Prove with "[$Htree $Hout_sl]").
   iIntros "*". iNamed 1. wp_pures.
   destruct in_tree.
@@ -825,6 +903,136 @@ Proof.
   iApply to_named. iIntros "*". iNamed 1. wp_pures. wp_loadField.
   wp_loadField. wp_loadField. wp_loadField. wp_pures.
   iApply "HΦ". iFrame "∗#%". done.
+Qed.
+
+Lemma wp_compMapVal (epoch : w64) ptr_pk_open pk_open d0 :
+  {{{
+    "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open pk_open d0
+  }}}
+  compMapVal #epoch #ptr_pk_open
+  {{{
+    sl_map_val commit, RET (slice_val sl_map_val);
+    "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open pk_open d0 ∗
+    "#Hcommit" ∷ is_hash (CommitOpen.encodesF pk_open) commit ∗
+    "Hsl_map_val" ∷ own_slice_small sl_map_val byteT (DfracOwn 1)
+      (enc_val epoch commit)
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
+  iNamed"Hown_pk_open". wp_loadField.
+  wp_apply wp_slice_len.
+  wp_apply wp_NewSliceWithCap; [word|]. iIntros "* Hsl_enc".
+  destruct pk_open. simpl.
+  wp_apply (CommitOpen.wp_enc _ _ _ (CommitOpen.mk _ _)
+    with "[$Hsl_enc $Hsl_val $Hptr_val $Hsl_rand $Hptr_rand]").
+  iIntros "*". iNamedSuffix 1 "_open". simpl.
+  iDestruct (own_slice_to_small with "Hsl_enc_open") as "Hsl_enc_open".
+  wp_apply (wp_Hash with "[$Hsl_enc_open]"). iIntros "*". iNamed 1.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
+  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
+  wp_apply wp_NewSliceWithCap; [word|]. iIntros "* Hsl_enc".
+  iDestruct (own_slice_to_small with "Hsl_hash") as "Hsl_hash".
+  wp_apply (MapValPre.wp_enc (MapValPre.mk _ _) with "[$Hsl_enc $Epoch $PkCommit $Hsl_hash]").
+  iIntros "*". iNamedSuffix 1 "_mapval". simpl.
+  iDestruct (own_slice_to_small with "Hsl_b_mapval") as "Hsl_b_mapval".
+  replace (uint.nat (W64 0)) with (0%nat); [|word].
+  destruct Henc_mapval. subst.
+  iApply "HΦ". iFrame "∗#".
+Qed.
+
+Definition is_mapper0Out_crypto γ st req mo : iProp Σ :=
+  let latestVer := (default (W64 0) (userState.numVers <$> (st.(Server.userInfo) !! req.(WQReq.Uid)))) in
+  let boundVer := (word.add latestVer (W64 1)) in
+  ∃ commit,
+  "#HlatestVrfHash" ∷ is_vrf_out γ.(vrf_pk) (enc_label_pre req.(WQReq.Uid) latestVer) mo.(mapper0Out.latestVrfHash) ∗
+  "#HlatestVrfProof" ∷ is_vrf_proof γ.(vrf_pk) (enc_label_pre req.(WQReq.Uid) latestVer) mo.(mapper0Out.latestVrfProof) ∗
+  "#HboundVrfHash" ∷ is_vrf_out γ.(vrf_pk) (enc_label_pre req.(WQReq.Uid) boundVer) mo.(mapper0Out.boundVrfHash) ∗
+  "#HboundVrfProof" ∷ is_vrf_proof γ.(vrf_pk) (enc_label_pre req.(WQReq.Uid) boundVer) mo.(mapper0Out.boundVrfProof) ∗
+  "#Hrand" ∷ is_hash (γ.(commitSecret) ++ mo.(mapper0Out.latestVrfHash)) mo.(mapper0Out.pkOpen).(CommitOpen.Rand) ∗
+  "#Hcommit" ∷ is_hash (CommitOpen.encodesF mo.(mapper0Out.pkOpen)) commit ∗
+  "%HmapVal" ∷ ⌜ mo.(mapper0Out.mapVal) = enc_val (W64 $ length st.(Server.epochHist)) commit ⌝.
+
+Lemma wp_Server__mapper0 γ s st q (in' out : loc) req :
+  {{{
+    "#His" ∷ is_Server γ s ∗
+    "Hphys" ∷ Server.own_phys s q st ∗
+    "#Req" ∷ WQReq.is_own in' req ∗
+    "out" ∷ out ↦[struct.t mapper0Out] zero_val (struct.t mapper0Out)
+  }}}
+    Server__mapper0 #s #in' #out
+  {{{
+      mo, RET #();
+        "Hphys" ∷ Server.own_phys s q st ∗
+        "out" ∷ mapper0Out.own out mo ∗
+        "out_crypto" ∷ is_mapper0Out_crypto γ st req mo
+  }}}.
+Proof.
+  iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec. wp_pures.
+  (* XXX: destructing now because [struct.t mapper0Out] gets unfolded at some point. *)
+  iDestruct (struct_fields_split with "out") as "H". iNamed "H". simpl.
+  iNamedSuffix "Hphys" "_phys". iNamed "Req". wp_loadField. wp_loadField.
+  wp_apply (wp_MapGet with "[$]"). iIntros "* [%Hlookup HuserInfo_map_phys]".
+  wp_pures. wp_apply wp_ref_of_zero; [done|]. iIntros (numVers_ptr) "numVers".
+  wp_pures.
+  wp_bind (If _ _ _).
+  wp_apply (wp_wand _ _ _ (λ _,
+                             "numVers" ∷ numVers_ptr ↦[uint64T]
+                               #(default (W64 0) (userState.numVers <$> (st.(Server.userInfo) !!
+                                                                              req.(WQReq.Uid)))) ∗
+                             _
+              )%I with "[-]").
+  {
+    destruct ok.
+    - apply map_get_true in Hlookup.
+      iDestruct (big_sepM2_lookup_l_some with "HuserInfo_own_phys") as %[uinfo Hlookup2].
+      { done. }
+      iDestruct (big_sepM2_lookup_acc with "HuserInfo_own_phys") as "[H HuserInfo_own_phys]"; [done..|].
+      iNamedPrefix "H" "uinfo.".
+      iDestruct (struct_field_pointsto_not_null with "uinfo.numVers") as "%"; [done..|].
+      rewrite bool_decide_false //. 2: naive_solver. wp_pures.
+      wp_loadField. wp_store. rewrite Hlookup2. simpl.
+      iFrame. iModIntro.
+      (* FIXME: why does "uinfo.*" not work? Probably not included in the allowed character list. *)
+      iCombineNamed "uinfo*" as "Huinfo".
+      iSpecialize ("HuserInfo_own_phys" with "[Huinfo]").
+      { iNamed "Huinfo". iFrame "∗#". } iClear "uinfo.plainPk_sl".
+      Unshelve.
+      2:{ clear v0 ok numVers_ptr. shelve. }
+      iNamedAccu.
+    - apply map_get_false in Hlookup as [Hlookup ->].
+      rewrite bool_decide_true //. wp_pures.
+      iDestruct (big_sepM2_lookup_l_none with "HuserInfo_own_phys") as %Hlookup2.
+      { done. }
+      rewrite Hlookup2.
+      iModIntro. iFrame.
+  }
+  iIntros (v'). iNamed 1. wp_pures. clear v'.
+  iNamed "His". wp_loadField. wp_load. wp_loadField.
+  wp_apply (wp_compMapLabel with "[$]").
+  iIntros "*". iNamedSuffix 1 "_lat".
+  wp_pures. wp_loadField. wp_load. wp_loadField.
+  wp_apply (wp_compMapLabel with "[$]").
+  iIntros "*". iNamedSuffix 1 "_bound". wp_pures.
+  wp_loadField. wp_apply wp_slice_len. wp_pures. wp_loadField.
+  iDestruct (own_slice_sz with "HepochHist_sl_phys") as %H.
+  iDestruct (big_sepL2_length with "HepochHist_is_phys") as %Hlen.
+  wp_apply (wp_compCommitOpen with "[Hout_sl_lat]").
+  { iFrame "∗#". }
+  iIntros "*". iNamed 1. wp_pures. wp_loadField. wp_apply wp_allocStruct; [val_ty|].
+  iIntros (open_ptr) "Hopen". wp_pures.
+  wp_apply (wp_compMapVal with "[Hopen Pk_sl Hrand_sl]").
+  { iDestruct (struct_fields_split with "Hopen") as "H". iNamed "H".
+    iFrame. instantiate (1:=ltac:(econstructor)). simpl. iFrame "∗#". }
+  iIntros "*". iNamed 1. wp_pures.
+  wp_storeField. wp_storeField. wp_storeField. wp_storeField. wp_storeField.
+  wp_storeField. iPersist "Hsl_label".
+  iPersist "Hproof_sl_lat". iPersist "Hproof_sl_bound". iPersist "Hout_sl_bound".
+  iPersist "Hsl_map_val".
+  iApply "HΦ". iModIntro. iCombineNamed "*_phys" as "Hphys". iSplitL "Hphys".
+  { iNamed "Hphys". iFrame "∗#". }
+  iSplitL.
+  { iFrame. instantiate (1:=ltac:(econstructor)). simpl. iFrame "∗#". }
+  iFrame "#". simpl. iPureIntro. f_equal. f_equal. word.
 Qed.
 
 Context `{!waitgroupG Σ}.
