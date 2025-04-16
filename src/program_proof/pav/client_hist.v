@@ -168,7 +168,6 @@ Proof.
   iNamed "Hmap".
   iDestruct (is_merkle_map_agree_entry with "His_map Hmerk_entry") as %Hlook_map.
   iPureIntro. clear -Hlower Hlook_map. simpl in *.
-  Search big_sepM2 "lookup".
   opose proof (Hlower label).
   exists (m0 !! label).
   split; [|done].
