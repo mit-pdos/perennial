@@ -80,7 +80,7 @@ Section program.
                     own_backup_tcoord_gcoords tcoord (ptgroups (dom wrs)) rk ts γ ∗
                     own_map wrsP (DfracOwn 1) mdone ∗
                     l ↦[boolT] #valid ∗
-                    ⌜ if valid then mdone = ∅ else True ⌝
+                    ⌜ if valid then mdone = foldl (λ acc x, wrs_group x wrs ∪ acc) ∅ ldone else True ⌝
                 (* TODO: instead of ∅ should be union of the stuff from ldone *))%I
                 with "[] [$Hl $HptgsL $Hgcoords HwrsP]").
     2:{ iExists ∅. by iFrame. }
@@ -106,7 +106,17 @@ Section program.
       iIntros (pwrsP ok') "Hok'".
       wp_pures.
       wp_if_destruct.
-      - admit.
+      - iDestruct "Hok'" as (pwrs) "(Hown&Hsafe)".
+        wp_apply (wp_mergeKVMap with "[$]").
+        iIntros "(HwrsP&Hown)".
+        iApply "HΦ". iExists _, _. iFrame "∗ #".
+        iSplit; first eauto.
+        destruct valid; last done.
+        iNamed "Hsafe".
+        iDestruct "Hsafe" as "(Hsafe&%Hvalid')".
+        destruct Hvalid' as (?&?&?&->).
+        iDestruct (txn_wrs_agree with "Hwrs Hsafe") as %->.
+        rewrite foldl_snoc. iPureIntro; congruence.
       - wp_store. iModIntro.
         iApply "HΦ".
         iExists _, _. iFrame "∗ # %".
@@ -117,7 +127,14 @@ Section program.
     wp_pures.
     wp_load.
     destruct valid.
-    - wp_pures. admit.
+    - wp_pures.
+      iApply "HΦ".
+      iModIntro; iFrame "∗ #".
+      iSplit; first by eauto.
+      iExactEq "H2".
+      f_equal.
+      rewrite Hvalid.
+      admit.
     - wp_pures. iModIntro. iApply "HΦ". iFrame "∗ #". eauto.
   Admitted.
 
