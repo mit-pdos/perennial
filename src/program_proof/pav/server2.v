@@ -1190,6 +1190,11 @@ Proof.
   apply map_disjoint_dom_2. set_solver.
 Qed.
 
+
+Lemma map_lower_empty :
+  map_lower ∅ ∅.
+Proof. constructor. Qed.
+
 Lemma union_idemp B (x : gmap (list w8) B) :
   x ∪ x = x.
 Proof.
@@ -1643,11 +1648,12 @@ Proof.
     iDestruct (ghost_nvers_agree with "[$] [$]") as %Hagree. iFrame "∗#%".
   }
   iAssert (
-      ∃ (i : w64) upd_sl upd_pks openKeyMap userInfo,
-      let st' := (st <| Server.keyMap := upd ∪ st.(Server.keyMap) |> <| Server.userInfo := userInfo |>) in
+      ∃ (i : w64) upd upd_phys upd_sl openKeyMap userInfo,
+      let st' := (st <| Server.keyMap := upd_phys ∪ st.(Server.keyMap) |> <| Server.userInfo := userInfo |>) in
       "i" ∷ i_ptr ↦[uint64T] #i ∗
       "upd" ∷ own_map upd_ptr (DfracOwn 1) upd_sl ∗
-      "#Hupd" ∷ ([∗ map] u_sl; u ∈ upd_sl; upd, own_slice_small u_sl byteT DfracDiscarded u) ∗
+      "#Hupd" ∷ ([∗ map] u_sl; u ∈ upd_sl; upd_phys, own_slice_small u_sl byteT DfracDiscarded u) ∗
+      "%Hupd" ∷ ⌜ map_lower upd upd_phys ⌝ ∗
       "Hphys" ∷ Server.own_phys s 1 st' ∗
       "Hnvers" ∷ own_Server_nvers γ 1 st' ∗
       "Hprops" ∷ ([∗ list] w ∈ drop (uint.nat i) work, prop w) ∗
@@ -1662,7 +1668,8 @@ Proof.
                             end ⌝)
     )%I with "[i upd Hphys Hnvers Hprops]" as "H".
   { iFrame "i". rewrite drop_0 take_0. iExists ∅, ∅. rewrite left_id.
-    iNamed "Hcrypto". iFrame "∗#%". simpl. rewrite big_sepM2_empty //. }
+    iNamed "Hcrypto". iFrame "∗#%". simpl. rewrite big_sepM2_empty //.
+    iPureIntro. rewrite left_id right_id. apply map_lower_empty. }
   wp_forBreak_cond.
   iNamed "H".
   wp_load. wp_apply wp_slice_len. wp_if_destruct.
@@ -1708,7 +1715,7 @@ Proof.
     wp_loadField. wp_loadField. wp_apply (wp_MapGet with "[$HuserInfo_map]").
     iIntros "* [%Hulookup HuserInfo_map]". wp_pures. wp_apply wp_ref_to; [val_ty|].
     iIntros (user_ptr) "user". wp_pures. wp_load.
-    set (st' := (st <| Server.keyMap := upd ∪ st.(Server.keyMap) |> <| Server.userInfo := userInfo |>)) in *.
+    set (st' := (st <| Server.keyMap := upd_phys ∪ st.(Server.keyMap) |> <| Server.userInfo := userInfo |>)) in *.
     wp_bind (if: _ then _ else _)%E.
     set (post:=(
                  ∃ (user : loc),
@@ -1763,6 +1770,19 @@ Proof.
     replace (uint.nat (word.add _ _)) with (S (uint.nat i)) by word.
     iFrame. iExists _. iModIntro.
     iCombineNamed "*_uinfo" as "Huinfo".
+    iDestruct (is_hash_len with "Hcommit") as %Hcommit_len.
+    iExists _.
+    iSplitR.
+    {
+      iPureIntro.
+      instantiate (1:= <[_ := _]> _).
+      rewrite !insert_union_singleton_l.
+      apply map_lower_union; [done|].
+      rewrite /map_lower map_fmap_singleton.
+      apply map_Forall2_singleton.
+      instantiate (1:=ltac:(econstructor)). simpl.
+      split; last done. simpl. word.
+    }
     iSplitL "HuserInfo_own Huinfo".
     { iApply to_named.
       iDestruct (big_sepM2_insert _ _ _ req.(WQReq.Uid) with "[$HuserInfo_own Huinfo]") as "H".
@@ -1853,7 +1873,9 @@ Proof.
       + intros ?. set_solver.
   }
   iModIntro. iRight. iSplitR; first done.
-  wp_pures. iNamedSuffix "His_srv" "_srv".
+  wp_pures. wp_apply (wp_updEpochHist with "[$Hghost $Hphys $Hnvers $upd]").
+  { iFrame "#%". }
+Qed.
 Admitted.
 
 End proof.
