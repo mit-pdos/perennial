@@ -53,6 +53,7 @@ Section btcoord_repr.
       "Hgcoords" ∷ own_backup_tcoord_gcoords tcoord ptgs rk ts γ ∗
       "HprophP"  ∷ tcoord ↦[BackupTxnCoordinator :: "proph"] #proph ∗
       "#Hlnrzed" ∷ is_lnrz_tid γ ts ∗
+      (* FIXME: weird naming; wrs is hidden. *)
       "#Hwrs"    ∷ safe_backup_txn γ ts ptgs ∗
       "#Hinv"    ∷ know_tulip_inv_with_proph γ proph.
 

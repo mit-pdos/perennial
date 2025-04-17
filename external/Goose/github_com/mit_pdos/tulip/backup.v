@@ -806,16 +806,18 @@ Definition BackupTxnCoordinator__resolve: val :=
 
 Definition BackupTxnCoordinator__commit: val :=
   rec: "BackupTxnCoordinator__commit" "tcoord" :=
+    let: "ts" := struct.loadF BackupTxnCoordinator "ts" "tcoord" in
     MapIter (struct.loadF BackupTxnCoordinator "gcoords" "tcoord") (λ: <> "gcoordloop",
       let: "gcoord" := "gcoordloop" in
-      Fork (BackupGroupCoordinator__Commit "gcoord" (struct.loadF BackupTxnCoordinator "ts" "tcoord")));;
+      Fork (BackupGroupCoordinator__Commit "gcoord" "ts"));;
     #().
 
 Definition BackupTxnCoordinator__abort: val :=
   rec: "BackupTxnCoordinator__abort" "tcoord" :=
+    let: "ts" := struct.loadF BackupTxnCoordinator "ts" "tcoord" in
     MapIter (struct.loadF BackupTxnCoordinator "gcoords" "tcoord") (λ: <> "gcoordloop",
       let: "gcoord" := "gcoordloop" in
-      Fork (BackupGroupCoordinator__Abort "gcoord" (struct.loadF BackupTxnCoordinator "ts" "tcoord")));;
+      Fork (BackupGroupCoordinator__Abort "gcoord" "ts"));;
     #().
 
 (* Top-level method of backup transaction coordinator. *)

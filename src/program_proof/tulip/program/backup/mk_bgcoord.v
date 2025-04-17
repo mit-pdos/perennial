@@ -106,13 +106,15 @@ Section program.
     iApply "HΦ".
     iAssert (own_backup_gcoord_gpreparer gcoord rk ts cid gid γ)%I
       with "[$gpp $Hgpp]" as "Hgpp".
+    iAssert (own_backup_gcoord_leader gcoord (dom addrm))%I with "[$idxleader]" as "Hleader".
+    { iPureIntro. rewrite Hdomaddrm size_rids_all. word. }
     iAssert (own_backup_gcoord_comm gcoord addrm gid γ)%I with "[$conns Hconns]" as "Hcomm".
     { iExists ∅.
       rewrite fmap_empty big_sepM_empty.
       by iFrame.
     }
     iAssert (own_backup_gcoord gcoord addrm rk ts cid gid γ)%I
-      with "[$Hgpp $Hcomm]" as "Hgcoord".
+      with "[$Hgpp $Hleader $Hcomm]" as "Hgcoord".
     iMod (alloc_lock _ _ _ (own_backup_gcoord gcoord addrm rk ts cid gid γ)
            with "Hfree [$Hgcoord]") as "#Hlock".
     iMod (readonly_alloc_1 with "mu") as "#HmuP".

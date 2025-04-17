@@ -33,9 +33,15 @@ Section repr.
       "#Htrmls" ∷ ([∗ map] x ∈ conns, is_terminal γ gid x.1) ∗
       "%Haddrm" ∷ ⌜map_Forall (λ rid x, addrm !! rid = Some x.2) conns⌝.
 
+  Definition own_backup_gcoord_leader gcoord (rids : gset u64) : iProp Σ :=
+    ∃ (idxleader : u64),
+      "Hleader"    ∷ gcoord ↦[BackupGroupCoordinator :: "idxleader"] #idxleader ∗
+      "%Hleader"   ∷ ⌜(uint.nat idxleader < size rids)⌝.
+
   Definition own_backup_gcoord gcoord addrm rk ts cid gid γ : iProp Σ :=
-    "Hgpp"  ∷ own_backup_gcoord_gpreparer gcoord rk ts cid gid γ ∗
-    "Hcomm" ∷ own_backup_gcoord_comm gcoord addrm gid γ.
+    "Hgpp"    ∷ own_backup_gcoord_gpreparer gcoord rk ts cid gid γ ∗
+    "Hcomm"   ∷ own_backup_gcoord_comm gcoord addrm gid γ ∗
+    "Hleader" ∷ own_backup_gcoord_leader gcoord (dom addrm).
 
   Definition is_backup_gcoord_addrm gcoord (addrm : gmap u64 chan) : iProp Σ :=
     ∃ (addrmP : loc) (rpsP : Slice.t) (rps : list u64),

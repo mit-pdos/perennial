@@ -1,6 +1,6 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.backup Require Import
-  bgcoord_repr bgpreparer_repr bgcoord_send.
+  bgcoord_repr bgpreparer_repr bgcoord_get_connection bgcoord_connect.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -24,9 +24,18 @@ Section program.
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
+    (*@ func (gcoord *BackupGroupCoordinator) Receive(rid uint64) ([]byte, bool) { @*)
+    (*@     conn, ok := gcoord.GetConnection(rid)                               @*)
+    (*@     if !ok {                                                            @*)
+    (*@         gcoord.Connect(rid)                                             @*)
+    (*@         return nil, false                                               @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
+    wp_apply (wp_BackupGroupCoordinator__GetConnection with "[Hpx]").
+    { apply Haddr. }
+    { iFrame "#". }
+    iIntros (trml ok) "#Htrmlrcpt".
     wp_pures.
-    wp_apply (wp_BackupGroupCoordinator__GetConnection with "[$Hpx]"); first done.
-    iIntros (??) "Htrmlrcpt".
     destruct ok; wp_pures; last first.
     { wp_apply (wp_BackupGroupCoordinator__Connect with "[Hpx]").
       { apply Haddr. }
@@ -36,7 +45,12 @@ Section program.
       by iApply ("HΦ" $! Slice.nil false).
     }
 
-    wp_pures.
+    (*@     ret := grove_ffi.Receive(conn)                                      @*)
+    (*@     if ret.Err {                                                        @*)
+    (*@         gcoord.Connect(rid)                                             @*)
+    (*@         return nil, false                                               @*)
+    (*@     }                                                                   @*)
+    (*@                                                                         @*)
     wp_apply wp_Receive.
     iNamed "Hpx".
     iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
@@ -64,28 +78,14 @@ Section program.
       by iApply ("HΦ" $! Slice.nil false).
     }
 
+    (*@     return ret.Data, true                                               @*)
+    (*@ }                                                                       @*)
     iDestruct "Hmsg" as %Hmsg.
     specialize (Henc _ Hmsg). simpl in Henc.
     destruct Henc as (resp & Hinresps & Hresp).
     iDestruct (big_sepS_elem_of with "Hresps") as "Hresp"; first apply Hinresps.
     iApply "HΦ".
     by iFrame "∗ # %".
-
-    (*@ func (gcoord *BackupGroupCoordinator) Receive(rid uint64) ([]byte, bool) { @*)
-    (*@     conn, ok := gcoord.GetConnection(rid)                               @*)
-    (*@     if !ok {                                                            @*)
-    (*@         gcoord.Connect(rid)                                             @*)
-    (*@         return nil, false                                               @*)
-    (*@     }                                                                   @*)
-    (*@                                                                         @*)
-    (*@     ret := grove_ffi.Receive(conn)                                      @*)
-    (*@     if ret.Err {                                                        @*)
-    (*@         gcoord.Connect(rid)                                             @*)
-    (*@         return nil, false                                               @*)
-    (*@     }                                                                   @*)
-    (*@                                                                         @*)
-    (*@     return ret.Data, true                                               @*)
-    (*@ }                                                                       @*)
   Qed.
 
 End program.
