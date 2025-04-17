@@ -378,14 +378,15 @@ Definition CallServPut: val :=
     ] in
     let: "argByt" := ServerPutArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" ServerPutRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" ServerPutRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := ServerPutReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, slice.nil, slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := ServerPutReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, slice.nil, slice.nil, #true)
-      else (struct.loadF ServerPutReply "Dig" "reply", struct.loadF ServerPutReply "Latest" "reply", struct.loadF ServerPutReply "Bound" "reply", struct.loadF ServerPutReply "Err" "reply"))).
+    else (struct.loadF ServerPutReply "Dig" "reply", struct.loadF ServerPutReply "Latest" "reply", struct.loadF ServerPutReply "Bound" "reply", struct.loadF ServerPutReply "Err" "reply")).
 
 (* CheckSigDig from evidence.go *)
 
@@ -669,14 +670,15 @@ Definition CallServGet: val :=
     ] in
     let: "argByt" := ServerGetArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" ServerGetRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" ServerGetRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := ServerGetReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, slice.nil, #false, slice.nil, slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := ServerGetReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, slice.nil, #false, slice.nil, slice.nil, #true)
-      else (struct.loadF ServerGetReply "Dig" "reply", struct.loadF ServerGetReply "Hist" "reply", struct.loadF ServerGetReply "IsReg" "reply", struct.loadF ServerGetReply "Latest" "reply", struct.loadF ServerGetReply "Bound" "reply", #false))).
+    else (struct.loadF ServerGetReply "Dig" "reply", struct.loadF ServerGetReply "Hist" "reply", struct.loadF ServerGetReply "IsReg" "reply", struct.loadF ServerGetReply "Latest" "reply", struct.loadF ServerGetReply "Bound" "reply", #false)).
 
 (* checkMembHide from client.go *)
 
@@ -789,14 +791,15 @@ Definition CallServSelfMon: val :=
     ] in
     let: "argByt" := ServerSelfMonArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" ServerSelfMonRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" ServerSelfMonRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := ServerSelfMonReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := ServerSelfMonReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, slice.nil, #true)
-      else (struct.loadF ServerSelfMonReply "Dig" "reply", struct.loadF ServerSelfMonReply "Bound" "reply", #false))).
+    else (struct.loadF ServerSelfMonReply "Dig" "reply", struct.loadF ServerSelfMonReply "Bound" "reply", #false)).
 
 (* SelfMon self-monitors for the client's own key, and returns the epoch
    through which it succeeds, or evid / error on fail. *)
@@ -892,14 +895,15 @@ Definition CallAdtrGet: val :=
     ] in
     let: "argByt" := AdtrGetArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" AdtrGetRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" AdtrGetRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := AdtrGetReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := AdtrGetReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, #true)
-      else (struct.loadF AdtrGetReply "X" "reply", struct.loadF AdtrGetReply "Err" "reply"))).
+    else (struct.loadF AdtrGetReply "X" "reply", struct.loadF AdtrGetReply "Err" "reply")).
 
 (* auditEpoch from client.go *)
 
@@ -1635,14 +1639,15 @@ Definition CallServAudit: val :=
     ] in
     let: "argByt" := ServerAuditArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" ServerAuditRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" ServerAuditRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := ServerAuditReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := ServerAuditReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, #true)
-      else (struct.loadF ServerAuditReply "P" "reply", struct.loadF ServerAuditReply "Err" "reply"))).
+    else (struct.loadF ServerAuditReply "P" "reply", struct.loadF ServerAuditReply "Err" "reply")).
 
 Definition AdtrUpdateArgEncode: val :=
   rec: "AdtrUpdateArgEncode" "b0" "o" :=
@@ -1667,14 +1672,15 @@ Definition CallAdtrUpdate: val :=
     ] in
     let: "argByt" := AdtrUpdateArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" AdtrUpdateRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" AdtrUpdateRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := AdtrUpdateReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then #true
-    else
-      let: (("reply", <>), "err1") := AdtrUpdateReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then #true
-      else struct.loadF AdtrUpdateReply "Err" "reply")).
+    else struct.loadF AdtrUpdateReply "Err" "reply").
 
 (* serde.go *)
 
