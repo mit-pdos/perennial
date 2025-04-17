@@ -531,7 +531,7 @@ Lemma wp_Client__Put_good ptr_c c sl_pk d0 (pk : list w8) :
       (uint.Z c.(Client.next_ver) + 1)%Z ⌝ ∗
     (* TODO: there's some weird scope issues forcing us to Z scope here. *)
     "%Hnoof_ep" ∷ ⌜ uint.Z (word.add ep (W64 1)) = (uint.Z ep + 1)%Z ⌝ ∗
-    "%Hgt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) ≤ uint.Z ep ⌝
+    "%Hlt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) < uint.Z new_c.(Client.next_epoch) ⌝
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_cli". rewrite /Client__Put.
