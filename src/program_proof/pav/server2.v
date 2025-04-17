@@ -242,15 +242,16 @@ Definition own_Server_nvers γ q st : iProp Σ :=
 .
 
 Definition own_Server_hist γ q st : iProp Σ :=
-  ∃ gs, (* TODO: rename to something better than [gs]. *)
+  ∃ gs,
   (* Copied from auditor.v *)
   "Hauditor" ∷ mono_list_auth_own γ.(auditor_gn) q gs ∗
+  (* Technically could rely on [is_sig] and [is_sigpred] to conclude this. *)
   "#Hinv_gs" ∷ audit_gs_inv gs ∗
+
   "%HkeyMap_ghost" ∷ ⌜ map_lower (default ∅ (last gs.*1)) st.(Server.keyMap) ⌝ ∗
   "%Hdigs_gs" ∷ ⌜ gs.*2 = servEpochInfo.dig <$> st.(Server.epochHist) ⌝ ∗
 
-  "%HepochHistNoOverflow" ∷ ⌜ length st.(Server.epochHist) = uint.nat (length st.(Server.epochHist)) ⌝
-.
+  "%HepochHistNoOverflow" ∷ ⌜ length st.(Server.epochHist) = uint.nat (length st.(Server.epochHist)) ⌝.
 
 (** Invariants and cryptographic knowledge related to mutable Server state. *)
 Definition is_Server_crypto γ st : iProp Σ :=
@@ -1155,25 +1156,77 @@ Proof.
   replace (_ : nat) with (0)%nat by lia. done.
 Qed.
 
-Lemma ghost_hist_update upd userInfo γ st dig :
-  let upd_phys := (λ x, enc_val x.1 x.2) <$> upd in
-  let presigdig := {| PreSigDig.Epoch := (W64 $ length st.(Server.epochHist)); PreSigDig.Dig := dig |} in
-  is_merkle_map (upd_phys ∪ st.(Server.keyMap)) dig -∗
-  own_Server_hist γ 1 st ==∗
-  (∀ enc,
-     ⌜ PreSigDig.encodes enc presigdig ⌝ -∗
-     (sigpred γ.(auditor_gn) enc ∗
-      (∀ sig, is_sig γ.(sig_pk) enc sig -∗
-              let st' :=
-                (st <| Server.keyMap := upd_phys ∪ st.(Server.keyMap) |>
-                    <| Server.userInfo := userInfo |>
-                    <| Server.epochHist := st.(Server.epochHist) ++ [servEpochInfo.mk upd dig sig] |>
-                ) in
-              own_Server_hist γ 1 st'
-     ))
-  ).
+Lemma map_lower_union X Y X' Y' :
+  map_lower X Y →
+  map_lower X' Y' →
+  map_lower (X' ∪ X) (Y' ∪ Y).
+Proof.
+  intros H H'.
+  simpl. unfold map_lower in *.
+  unfold map_Forall2 in *.
+  intros uid. specialize (H uid). specialize (H' uid).
+  rewrite lookup_union. destruct (Y' !! uid).
+  + rewrite union_Some_l lookup_fmap.
+    inversion H'. subst x. rename H1 into Hlookup.
+    symmetry in Hlookup. rewrite lookup_fmap_Some in Hlookup. destruct Hlookup as (? & <- & Hlookup).
+    erewrite lookup_union_Some_l; last done. simpl. by constructor.
+  + rewrite left_id. inversion H'. rename H0 into Hlookup.
+    symmetry in Hlookup. rewrite lookup_fmap fmap_None in Hlookup.
+    rewrite lookup_fmap lookup_union_r //. rewrite lookup_fmap in H. done.
+Qed.
+
+Lemma map_lower_disj X Y X' Y' :
+  map_lower X Y →
+  map_lower X' Y' →
+  Y ##ₘ Y' →
+  X ##ₘ X'.
 Proof.
 Admitted.
+
+Lemma ghost_hist_update upd upd_phys userInfo γ st dig :
+  let presigdig := {| PreSigDig.Epoch := (W64 $ length st.(Server.epochHist)); PreSigDig.Dig := dig |} in
+  map_lower upd upd_phys →
+  map_Forall (λ _ v, v.1 = W64 (length st.(Server.epochHist))) upd →
+  upd_phys ##ₘ st.(Server.keyMap) →
+  (length st.(Server.epochHist) + 1)%nat = uint.nat (W64 (length st.(Server.epochHist) + 1)%nat) →
+  is_merkle_map (upd_phys ∪ st.(Server.keyMap)) dig -∗
+  own_Server_hist γ 1 st ==∗
+  (∀ enc, ⌜ PreSigDig.encodes enc presigdig ⌝ -∗ (sigpred γ.(auditor_gn) enc)) ∗
+  (∀ sig,
+     let st' :=
+       (st <| Server.keyMap := upd_phys ∪ st.(Server.keyMap) |>
+           <| Server.userInfo := userInfo |>
+           <| Server.epochHist := st.(Server.epochHist) ++ [servEpochInfo.mk upd dig sig] |>
+       ) in
+     own_Server_hist γ 1 st').
+Proof.
+  intros ? Hupd Hep Hdisj Hoverflow. iIntros "#Hdig". iNamed 1.
+  iMod (mono_list_auth_own_update (gs ++ [(upd ∪ (default ∅ (last gs.*1)), dig)]) with "Hauditor") as "[Hauth #Hlb]".
+  { by apply prefix_app_r. }
+  iModIntro.
+  iDestruct (audit_gs_snoc _ upd _ dig with "[$] [$]") as "#H".
+  { by eapply map_lower_disj. }
+  { by apply map_lower_union. }
+  { replace (length gs) with (length st.(Server.epochHist)); first done.
+    apply (f_equal length) in Hdigs_gs as Hlength.
+    rewrite !length_fmap in Hlength. word. }
+  iClear "Hinv_gs".
+  iSplitR.
+  {
+    iIntros "* %Henc". unfold sigpred. iFrame "#%".
+    subst presigdig. simpl.
+    replace (uint.nat (W64 _)) with (length gs).
+    { rewrite lookup_app_r // Nat.sub_diag //=. iPureIntro. by eexists. }
+    apply (f_equal length) in Hdigs_gs as Hlength.
+    rewrite !length_fmap in Hlength. word.
+  }
+  iIntros (?). iFrame "∗#%". simpl.
+  iSplitL.
+  { rewrite (fmap_last _ (gs ++ _)) last_snoc.
+    iPureIntro. by apply map_lower_union. }
+  rewrite !fmap_app Hdigs_gs /=. iSplitR; first done.
+  rewrite length_app /=. iPureIntro. word.
+Qed.
 
 (* updates: gmap (list w8) (w64 * list w8); *)
 Lemma wp_updEpochHist s γ st upd_ptr upd_sl upd userInfo openKeyMap :
