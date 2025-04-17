@@ -237,7 +237,7 @@ Section inv_file.
     match icmd with
     | CmdRead ts key => valid_ts ts ∧ valid_key key
     | CmdAcquire ts pwrs _ => Z.of_nat ts < 2 ^ 64 ∧ valid_wrs pwrs
-    | CmdAdvance ts rank => Z.of_nat ts < 2 ^ 64 ∧ Z.of_nat rank < 2 ^ 64
+    | CmdAdvance ts rank => Z.of_nat ts < 2 ^ 64 ∧ 0 < Z.of_nat rank < 2 ^ 64
     | CmdAccept ts rank _ => Z.of_nat ts < 2 ^ 64 ∧ Z.of_nat rank < 2 ^ 64
     end.
 

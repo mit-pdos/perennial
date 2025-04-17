@@ -572,6 +572,7 @@ Section program.
         wp_store.
         do 2 iNamed "Hrp". rename clog0 into cloga.
         wp_apply (wp_Replica__advance with "Hpsmrkm").
+        { simpl in Hvicmd. clear -Hvicmd. word. }
         iIntros "Hpsmrkm".
         wp_pures.
         iApply "HΦ".

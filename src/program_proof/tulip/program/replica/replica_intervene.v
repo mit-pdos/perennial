@@ -48,11 +48,17 @@ Section program.
     { wp_apply (wp_SumAssumeNoOverflow).
       iIntros "%Hnof".
       wp_store.
+      iAssert (⌜(0 < uint.nat rankl)%nat⌝)%I as %Hnz.
+      { iNamed "Hpsmrkm".
+        specialize (Hvrank _ _ Hrankl). simpl in Hvrank.
+        iPureIntro. apply Hvrank.
+      }
 
       (*@     rp.advance(ts, rank)                                                @*)
       (*@                                                                         @*)
       wp_load.
       wp_apply (wp_Replica__advance with "Hpsmrkm").
+      { clear -Hnof. word. }
       iIntros "Hpsmrkm".
       rewrite uint_nat_word_add_S; last first.
       { clear -Hnof. word. }
@@ -145,7 +151,7 @@ Section program.
       do 2 wp_loadField.
       wp_load.
       wp_apply (wp_Start _ _ (gid, rid) with "[] [] [] HgaddrmP Hgaddrm Hinv Hinvnets [Htokens]").
-      { (* rank > 1 *) admit. }
+      { (* rank > 1 *) clear -Hnof Hnz. word. }
       { apply Hdomgaddrm. }
       { apply Hdomaddrm. }
       { (* [is_lnrz_tid] *) admit. }
@@ -211,6 +217,7 @@ Section program.
       (*@                                                                         @*)
       wp_load.
       wp_apply (wp_Replica__advance with "Hpsmrkm").
+      { clear. word. }
       iIntros "Hpsmrkm".
 
       (*@     logAdvance(rp.fname, rp.lsna, ts, rank)                             @*)
@@ -298,7 +305,7 @@ Section program.
       do 2 wp_loadField.
       wp_load.
       wp_apply (wp_Start _ _ (gid, rid) with "[] [] [] HgaddrmP Hgaddrm Hinv Hinvnets [Htokens]").
-      { (* rank > 1 *) admit. }
+      { (* rank > 1 *) word. }
       { apply Hdomgaddrm. }
       { apply Hdomaddrm. }
       { (* [is_lnrz_tid] *) admit. }

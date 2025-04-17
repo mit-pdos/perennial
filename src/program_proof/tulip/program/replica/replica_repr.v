@@ -101,6 +101,7 @@ Section repr.
       "HrktblP"  ∷ rp ↦[Replica :: "rktbl"] #rktblP ∗
       "Hpstbl"   ∷ own_map pstblP (DfracOwn 1) pstbl ∗
       "Hrktbl"   ∷ own_map rktblP (DfracOwn 1) rktbl ∗
+      "%Hvrank"  ∷ ⌜map_Forall (λ _ rk, (0 < rk)%nat) rkm⌝ ∗
       "%Hpsmabs" ∷ ⌜(kmap Z.of_nat psm : gmap Z (nat * bool)) = kmap uint.Z (fmap ppsl_to_nat_bool pstbl)⌝ ∗
       "%Hrkmabs" ∷ ⌜(kmap Z.of_nat rkm : gmap Z nat) = kmap uint.Z (fmap (λ x, uint.nat x) rktbl)⌝.
 

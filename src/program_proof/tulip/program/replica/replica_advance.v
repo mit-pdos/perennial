@@ -7,11 +7,12 @@ Section program.
   Theorem wp_Replica__advance (rp : loc) (tsW : u64) (rankW : u64) psm rkm :
     let ts := uint.nat tsW in
     let rank := uint.nat rankW in
+    (0 < rank)%nat ->
     {{{ own_replica_psm_rkm rp psm rkm }}}
       Replica__advance #rp #tsW #rankW
     {{{ RET #(); own_replica_psm_rkm rp (init_psm ts psm) (<[ts := rank]> rkm) }}}.
   Proof.
-    iIntros (ts rank Φ) "Hrp HΦ".
+    iIntros (ts rank Hrank Φ) "Hrp HΦ".
     wp_rec.
 
     (*@ func (rp *Replica) advance(ts uint64, rank uint64) {                    @*)
@@ -48,6 +49,8 @@ Section program.
       iFrame "∗ %".
       iPureIntro.
       split.
+      { by apply map_Forall_insert_2. }
+      split.
       { rewrite /init_psm Hx fmap_insert 2!kmap_insert. f_equal; [word | done]. }
       { rewrite fmap_insert 2!kmap_insert. f_equal; [word | done]. }
     }
@@ -60,6 +63,8 @@ Section program.
     iApply "HΦ".
     iFrame "∗ %".
     iPureIntro.
+    split.
+    { by apply map_Forall_insert_2. }
     split.
     { by rewrite /init_psm Hx. }
     { rewrite fmap_insert 2!kmap_insert. f_equal; [word | done]. }

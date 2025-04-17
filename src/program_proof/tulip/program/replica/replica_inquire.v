@@ -90,6 +90,7 @@ Section program.
     (*@     rp.advance(ts, rank)                                                @*)
     (*@                                                                         @*)
     wp_apply (wp_Replica__advance with "Hpsmrkm").
+    { rewrite /valid_backup_rank in Hvrank. clear -Hvrank. word. }
     iIntros "Hpsmrkm".
 
     (*@     // Create an inconsistent log entry.                                @*)
@@ -167,7 +168,9 @@ Section program.
         simpl.
         split.
         { clear -Hlencloga HlsnaW. word. }
-        split; word.
+        split.
+        { rewrite /valid_ts in Hvts. clear -Hvts. word. }
+        { rewrite /valid_backup_rank in Hvrank. clear -Hvrank. word. }
       }
       { by rewrite Hlencloga -HlsnaW. }
     }
