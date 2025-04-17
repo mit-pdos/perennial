@@ -279,106 +279,10 @@ Definition Channel__ReceiveDiscardOk (T:ty): val :=
     "1_ret";;
     ![T] "return_val".
 
-(* This:
-
-   	for {
-   		selected, val, ok := ch.TryReceive()
-   		if !ok {
-   			break
-   		}
-   		if selected {
-   			<body>
-   		}
-   	}
-
-   is equivalent to:
-
-   	for v := <-ch {
-   			<body>
-   	}
-
-   This:
-
-   	selected, val, ok := c.TryReceive()
-   	if selected {
-   		<first case body>
-   	} else {
-   		selected = c.TrySend(0)
-   		if selected {
-   			<second case body>
-   		} else {
-   			<default block body>
-   		}
-   	}
-
-   is equivalent to:
-
-   	select {
-   		case <-c:
-   			<first case body>
-   		case c <- 0:
-   			<second case body>
-   		default:
-   			<default body>
-   		}
-
-   This:
-
-   	for {
-   		selected, val, ok := c.TryReceive()
-   		if selected {
-   			<first case body>
-   			break
-   		} else {
-   			selected = c.TrySend(0)
-   			if selected {
-   				<second case body>
-   				break
-   			}
-   		}
-   	}
-
-   is equivalent to:
-
-   	select {
-   		case <-c:
-   			<first case body>
-   		case c <- 0:
-   			<second case body>
-   		}
-
-   Note: Technically speaking, Go only compiles select statements to if/else blocks when there is 1
-   case statement with a default block. When there are multiple statements, the Go code will choose
-   a case statement with uniform probability among all "selectable" statements, meaning those that
-   have a waiting sender/receiver on the other end and receives on closed channels. Since threading
-   behavior means that it already can't be assumed with certainty which blocks are selected, the if/
-   else block translation should be equivalent from a correctness perspective. There is at least 1
-   notable unsound property with this approach:
-   1. Once a channel is closed, a receive case statement on said channel will always be selectable.
-   This means that after the channel is closed, this case statement will always be selected above
-   other statements below. This is considered an antipattern in the Go community and it is
-   recommended that if a select case permits a closed channel receive, the channel is set to nil so
-   that the statement will no longer be selectable. We can prevent this with the specfication by
-   forcing the receiver to renounce receive ownership after receiving on a closed channel.
-
-   One approach for making 1. sound would be to do the following for select statements:
-   1. Create a mutex guarded "winner_index" int
-   2. Launch a goroutine for each channel in the select with an index for the select cases
-   (For selects with multiple cases for a single channel, we still have just 1 goroutine)
-   3. Lock the associated channel in each goroutine
-   4. If there is a case for a channel that is "immediately selectable" i.e the channel is closed
-   or in the receiver/sender_ready state for the sender/receiver respectively, lock the
-   winner_index mutex and if not already set, set the winner_index to the goroutine's index
-   5. If winner_index was set, complete the exchange and run the case's body
-   6. Join the above goroutines and if no winner is selected, go through the if/else TryReceive/
-   TrySend sequence that we currently use.
-
-   This would make it so the race to setting winner_index simulates the randomness of
-   Go select statements where any selectable case has uniform probablity of being selected
-
-   Note: The above code technically makes it so the top block's expression variables
-   are in scope in all of the other blocks. This would error in the Go code before it is translated
-   so this shouldn't matter for practical purposes. *)
+(* A non-blocking receive operation. If there is not a sender available in an unbuffered channel,
+   we "offer" for a single program step by setting receiver_ready to true, unlocking, then
+   immediately locking, which is necessary when a potential matching party is using TrySend.
+   See the various <n>CaseSelect functions for a description of how this is used to model selects. *)
 Definition Channel__TryReceive (T:ty): val :=
   rec: "Channel__TryReceive" "c" :=
     let: "ret_val" := ref (zero_val T) in
@@ -458,7 +362,10 @@ Definition Channel__TryReceive (T:ty): val :=
           else #());;
           (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed_local")))))).
 
-(* See comment in TryReceive for how this is used to translate selects. *)
+(* A non-blocking send operation. If there is not a receiver available in an unbuffered channel,
+   we "offer" for a single program step by setting sender_ready to true, unlocking, then
+   immediately locking, which is necessary when a potential matching party is using TryReceive.
+   See the various <n>CaseSelect functions for a description of how this is used to model selects. *)
 Definition Channel__TrySend (T:ty): val :=
   rec: "Channel__TrySend" "c" "val" :=
     (if: "c" = #null
@@ -555,5 +462,183 @@ Definition Channel__Cap (T:ty): val :=
     (if: "c" = #null
     then #0
     else slice.len (struct.loadF (Channel T) "buffer" "c")).
+
+Definition SelectDir: ty := uint64T.
+
+(* case Chan <- Send *)
+Definition SelectSend : expr := #0.
+
+(* case <-Chan: *)
+Definition SelectRecv : expr := #1.
+
+(* default *)
+Definition SelectDefault : expr := #2.
+
+(* value is used for the value the sender will send and also used to return the received value by
+   reference. *)
+Definition SelectCase (T: ty) : descriptor := struct.decl [
+  "channel" :: ptrT;
+  "dir" :: SelectDir;
+  "Value" :: T;
+  "Ok" :: boolT
+].
+
+(* Simple knuth shuffle. *)
+Definition Shuffle: val :=
+  rec: "Shuffle" "n" :=
+    let: "order" := ref_to (slice.T uint64T) (NewSlice uint64T "n") in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      SliceSet uint64T (![slice.T uint64T] "order") (![uint64T] "i") (![uint64T] "i");;
+      Continue);;
+    let: "i" := ref_to uint64T ((slice.len (![slice.T uint64T] "order")) - #1) in
+    (for: (λ: <>, (![uint64T] "i") > #0); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") - #1)) := λ: <>,
+      let: "j" := ref_to uint64T ((rand.RandomUint64 #()) `rem` ((![uint64T] "i") + #1)) in
+      let: "temp" := ref_to uint64T (SliceGet uint64T (![slice.T uint64T] "order") (![uint64T] "i")) in
+      SliceSet uint64T (![slice.T uint64T] "order") (![uint64T] "i") (SliceGet uint64T (![slice.T uint64T] "order") (![uint64T] "j"));;
+      SliceSet uint64T (![slice.T uint64T] "order") (![uint64T] "j") (![uint64T] "temp");;
+      Continue);;
+    ![slice.T uint64T] "order".
+
+(* Uses the applicable Try<Operation> function on the select case's channel. Default is always
+   selectable so simply returns true. *)
+Definition TrySelect (T:ty): val :=
+  rec: "TrySelect" "select_case" :=
+    let: "channel" := ref_to ptrT (struct.loadF (SelectCase T) "channel" "select_case") in
+    (if: (struct.loadF (SelectCase T) "dir" "select_case") = SelectSend
+    then Channel__TrySend T (![ptrT] "channel") (struct.loadF (SelectCase T) "Value" "select_case")
+    else
+      (if: (struct.loadF (SelectCase T) "dir" "select_case") = SelectRecv
+      then
+        let: "item" := ref (zero_val T) in
+        let: "ok" := ref (zero_val boolT) in
+        let: "selected" := ref (zero_val boolT) in
+        let: (("0_ret", "1_ret"), "2_ret") := Channel__TryReceive T (![ptrT] "channel") in
+        "selected" <-[boolT] "0_ret";;
+        "item" <-[T] "1_ret";;
+        "ok" <-[boolT] "2_ret";;
+        struct.storeF (SelectCase T) "Value" "select_case" (![T] "item");;
+        struct.storeF (SelectCase T) "Ok" "select_case" (![boolT] "ok");;
+        ![boolT] "selected"
+      else
+        (if: (struct.loadF (SelectCase T) "dir" "select_case") = SelectDefault
+        then #true
+        else #false))).
+
+(* Models a 2 case select statement. Returns 0 if case 1 selected, 1 if case 2 selected.
+   Requires that case 1 not have dir = SelectDefault. If case_2 is a default, this will never block.
+   This is similar to the reflect package dynamic select statements and should give us a true to
+   runtime Go model with a fairly intuitive spec/translation.
+
+   	This:
+   	select {
+   		case c1 <- 0:
+   			<case 1 body>
+   		case v, ok := <-c2:
+   			<case 2 body>
+   	}
+
+   	Will be translated to:
+
+   case_1 := channel.NewSendCase(c1, 0)
+   case_2 := channel.NewRecvCase(c2)
+   var uint64 selected_case = TwoCaseSelect(case_1, case_2)
+
+   	if selected_case == 0 {
+   		<case 1 body>
+   	}
+   	if selected_case == 1 {
+   			var ok bool = case_2.ok
+   			var v uint64 = case_2.value
+   			<case 2 body>
+   		} *)
+Definition TwoCaseSelect (T1:ty) (T2:ty): val :=
+  rec: "TwoCaseSelect" "case_1" "case_2" :=
+    let: "selected_case" := ref_to uint64T #0 in
+    let: "selected" := ref_to boolT #false in
+    let: "order" := ref_to (slice.T uint64T) (Shuffle #2) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      ForSlice uint64T <> "i" (![slice.T uint64T] "order")
+        ((if: ("i" = #0) && (~ (![boolT] "selected"))
+        then
+          "selected" <-[boolT] (TrySelect T1 "case_1");;
+          (if: ![boolT] "selected"
+          then "selected_case" <-[uint64T] #0
+          else #())
+        else #());;
+        (if: (("i" = #1) && (~ (![boolT] "selected"))) && ((struct.loadF (SelectCase T2) "dir" "case_2") ≠ SelectDefault)
+        then
+          "selected" <-[boolT] (TrySelect T2 "case_2");;
+          (if: ![boolT] "selected"
+          then "selected_case" <-[uint64T] #1
+          else #())
+        else #()));;
+      (if: (~ (![boolT] "selected")) && ((struct.loadF (SelectCase T2) "dir" "case_2") = SelectDefault)
+      then Break
+      else
+        (if: ![boolT] "selected"
+        then Break
+        else Continue)));;
+    ![uint64T] "selected_case".
+
+Definition ThreeCaseSelect (T1:ty) (T2:ty) (T3:ty): val :=
+  rec: "ThreeCaseSelect" "case_1" "case_2" "case_3" :=
+    let: "selected_case" := ref_to uint64T #0 in
+    let: "selected" := ref_to boolT #false in
+    let: "order" := ref_to (slice.T uint64T) (Shuffle #3) in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      ForSlice uint64T <> "i" (![slice.T uint64T] "order")
+        ((if: ("i" = #0) && (~ (![boolT] "selected"))
+        then
+          "selected" <-[boolT] (TrySelect T1 "case_1");;
+          (if: ![boolT] "selected"
+          then "selected_case" <-[uint64T] #0
+          else #())
+        else #());;
+        (if: ("i" = #1) && (~ (![boolT] "selected"))
+        then
+          "selected" <-[boolT] (TrySelect T2 "case_2");;
+          (if: ![boolT] "selected"
+          then "selected_case" <-[uint64T] #1
+          else #())
+        else #());;
+        (if: (("i" = #2) && (~ (![boolT] "selected"))) && ((struct.loadF (SelectCase T3) "dir" "case_3") ≠ SelectDefault)
+        then
+          "selected" <-[boolT] (TrySelect T3 "case_3");;
+          (if: ![boolT] "selected"
+          then "selected_case" <-[uint64T] #2
+          else #())
+        else #()));;
+      (if: (~ (![boolT] "selected")) && ((struct.loadF (SelectCase T3) "dir" "case_3") = SelectDefault)
+      then Break
+      else
+        (if: ![boolT] "selected"
+        then Break
+        else Continue)));;
+    ![uint64T] "selected_case".
+
+Definition NewSendCase (T:ty): val :=
+  rec: "NewSendCase" "channel" "value" :=
+    struct.mk (SelectCase T) [
+      "channel" ::= "channel";
+      "dir" ::= SelectSend;
+      "Value" ::= "value"
+    ].
+
+Definition NewRecvCase (T:ty): val :=
+  rec: "NewRecvCase" "channel" :=
+    struct.mk (SelectCase T) [
+      "channel" ::= "channel";
+      "dir" ::= SelectRecv
+    ].
+
+(* The type does not matter here, picking a simple primitive. *)
+Definition NewDefaultCase: val :=
+  rec: "NewDefaultCase" <> :=
+    struct.mk (SelectCase uint64T) [
+      "dir" ::= SelectDefault
+    ].
 
 End code.
