@@ -1,6 +1,6 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.backup Require Import
-  bgcoord_repr bgpreparer_repr.
+  bgcoord_repr bgpreparer_repr bgcoord_send.
 
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
@@ -24,6 +24,53 @@ Section program.
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
+    wp_pures.
+    wp_apply (wp_BackupGroupCoordinator__GetConnection with "[$Hpx]"); first done.
+    iIntros (??) "Htrmlrcpt".
+    destruct ok; wp_pures; last first.
+    { wp_apply (wp_BackupGroupCoordinator__Connect with "[Hpx]").
+      { apply Haddr. }
+      { iFrame "#". }
+      iIntros (ok) "Hok".
+      wp_pures.
+      by iApply ("HΦ" $! Slice.nil false).
+    }
+
+    wp_pures.
+    wp_apply wp_Receive.
+    iNamed "Hpx".
+    iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+    iApply ncfupd_mask_intro; first solve_ndisj.
+    iIntros "Hmask".
+    iNamed "HinvnetO".
+    iDestruct (terminal_lookup with "Htrmlrcpt Hterminals") as %Htrml.
+    apply elem_of_dom in Htrml as [ms Hms].
+    iDestruct (big_sepM_lookup_acc with "Hconnects") as "[Htrml HconnectsC]".
+    { apply Hms. }
+    iNamed "Htrml".
+    iFrame "Hms".
+    iIntros (err data) "[Hms Hmsg]".
+    iDestruct ("HconnectsC" with "[$Hms]") as "Hconnects"; first iFrame "# %".
+    iMod "Hmask" as "_".
+    iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_"; first done.
+    iIntros "!>" (dataP) "Hdata".
+    wp_pures.
+    destruct err; wp_pures.
+    { wp_apply (wp_BackupGroupCoordinator__Connect with "[]").
+      { apply Haddr. }
+      { by iFrame "HcvP #". }
+      iIntros (ok) "Hok".
+      wp_pures.
+      by iApply ("HΦ" $! Slice.nil false).
+    }
+
+    iDestruct "Hmsg" as %Hmsg.
+    specialize (Henc _ Hmsg). simpl in Henc.
+    destruct Henc as (resp & Hinresps & Hresp).
+    iDestruct (big_sepS_elem_of with "Hresps") as "Hresp"; first apply Hinresps.
+    iApply "HΦ".
+    by iFrame "∗ # %".
+
     (*@ func (gcoord *BackupGroupCoordinator) Receive(rid uint64) ([]byte, bool) { @*)
     (*@     conn, ok := gcoord.GetConnection(rid)                               @*)
     (*@     if !ok {                                                            @*)
@@ -39,6 +86,6 @@ Section program.
     (*@                                                                         @*)
     (*@     return ret.Data, true                                               @*)
     (*@ }                                                                       @*)
-  Admitted.
+  Qed.
 
 End program.
