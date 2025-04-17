@@ -135,6 +135,14 @@ Global Instance wp_func_call_Skip :
   WpFuncCall std "Skip" _ (is_pkg_defined std) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_Shuffle :
+  WpFuncCall std "Shuffle" _ (is_pkg_defined std) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_Permutation :
+  WpFuncCall std "Permutation" _ (is_pkg_defined std) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_method_call_JoinHandle'ptr_Join :
   WpMethodCall std "JoinHandle'ptr" "Join" _ (is_pkg_defined std) :=
   ltac:(apply wp_method_call'; reflexivity).

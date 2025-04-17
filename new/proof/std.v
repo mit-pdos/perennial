@@ -188,4 +188,240 @@ Proof.
     iFrame.
 Qed.
 
+#[local] Unset Printing Projections.
+
+#[local]
+Lemma list_split2 {A} (l: list A) (i1 i2: nat) (x1 x2: A) :
+  (i1 < i2)%nat →
+  l !! i1 = Some x1 →
+  l !! i2 = Some x2 →
+  l = take i1 l ++ [x1] ++ subslice (S i1) i2 l ++ [x2] ++ drop (S i2) l.
+Proof.
+  intros Hlt Hget1 Hget2.
+  assert (i1 < i2 < length l)%nat.
+  { apply lookup_lt_Some in Hget1.
+    apply lookup_lt_Some in Hget2.
+    lia. }
+  trans (take i1 l ++ [x1] ++ drop (S i1) l).
+  {
+    rewrite -{1}(list_insert_id l i1 x1) //.
+    rewrite insert_take_drop; [ | lia ].
+    auto.
+  }
+  f_equal.
+  f_equal.
+  rewrite -{1}(list_insert_id l i2 x2) //.
+  rewrite drop_insert_le; [ | lia ].
+  rewrite -> insert_take_drop by len.
+  rewrite -> subslice_drop_take by lia.
+  simpl.
+  do 2 f_equal.
+  rewrite drop_drop.
+  f_equal; lia.
+Qed.
+
+Lemma list_insert_middle {A} (l1 l2: list A) i x1 x2 :
+  i = length l1 →
+  <[i := x2]> (l1 ++ [x1] ++ l2) = l1 ++ [x2] ++ l2.
+Proof.
+  intros; subst.
+  rewrite insert_app_r_alt; [ | lia ].
+  f_equal.
+  replace (length l1 - length l1)%nat with 0%nat by lia; auto.
+Qed.
+
+(** Special case of permutation where the indices are in the right order. Use
+Permutation_swap which generalizes this. *)
+#[local]
+Lemma Permutation_swap_ordered {A} (l: list A) (i1 i2: nat) (x1 x2: A) :
+  i1 < i2 →
+  l !! i1 = Some x1 →
+  l !! i2 = Some x2 →
+  <[i2 := x1]> (<[i1 := x2]> l) ≡ₚ l.
+Proof.
+  intros Hlt Hget1 Hget2.
+  assert (i1 < i2 < length l)%nat.
+  { apply lookup_lt_Some in Hget1.
+    apply lookup_lt_Some in Hget2.
+    lia. }
+  rewrite (list_split2 l i1 i2 x1 x2) //; [ | lia ].
+  rewrite -> list_insert_middle by len.
+  repeat rewrite -> insert_app_r_alt by len.
+  autorewrite with len.
+  replace (i2 - i1 `min` length l - 1 - (i2 `min` length l - S i1))%nat with 0%nat by lia.
+  simpl.
+  f_equiv.
+  rewrite !Permutation_middle.
+  f_equiv.
+  apply Permutation_swap.
+Qed.
+
+(* TODO: upstream to stdpp *)
+Lemma Permutation_swap {A} (l: list A) (i1 i2: nat) (x1 x2: A) :
+  l !! i1 = Some x1 →
+  l !! i2 = Some x2 →
+  <[i2 := x1]> (<[i1 := x2]> l) ≡ₚ l.
+Proof.
+  intros Hget1 Hget2.
+  destruct (decide (i1 = i2)); subst.
+  { rewrite list_insert_insert list_insert_id //. }
+  destruct (decide (i1 < i2)).
+  { apply Permutation_swap_ordered; auto. }
+  assert (i2 < i1) by lia.
+  rewrite list_insert_commute; [ | lia ].
+  apply Permutation_swap_ordered; auto.
+Qed.
+
+Lemma wp_Shuffle s (xs: list w64) :
+  {{{ is_pkg_init std ∗ s ↦* xs }}}
+    std @ "Shuffle" #s
+  {{{ xs', RET #(); ⌜Permutation xs xs'⌝ ∗
+                      s ↦* xs' }}}.
+Proof.
+  wp_start as "Hs".
+  wp_auto.
+  iPersist "xs".
+  iDestruct (own_slice_len with "Hs") as %Hlen.
+  destruct (bool_decide_reflect (slice.len_f s = W64 0)); wp_auto.
+  {
+    assert (xs = []); subst .
+    { destruct xs; auto; simpl in *; word.  }
+    iApply "HΦ".
+    iFrame. auto.
+  }
+  iAssert (∃ (i: w64) (xs': list w64),
+              "i" ∷ i_ptr ↦ i ∗
+              "%HI" ∷ ⌜0 ≤ uint.Z i < uint.Z (slice.len_f s)⌝ ∗
+              "Hs" ∷ s ↦* xs' ∗
+              "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝
+          )%I with "[$i $Hs]" as "IH".
+  { iPureIntro.
+    split.
+    - word.
+    - auto. }
+  wp_for "IH".
+  pose proof (Permutation_length Hperm) as Hleneq.
+  change (uint.Z (W64 0)) with 0.
+  destruct (bool_decide_reflect (0 < uint.Z i)).
+  - wp_auto.
+    wp_apply wp_RandomUint64.
+    iIntros (x) "_".
+    wp_auto.
+    wp_pure; first word.
+
+    list_elem xs' i as x_i.
+    wp_apply (wp_load_slice_elem with "[$Hs]").
+    { eauto. }
+    iIntros "Hs".
+    wp_auto.
+
+    list_elem xs' (uint.nat (word.modu x (word.add i (W64 1)))) as x_i'.
+    wp_pure; first word.
+    wp_apply (wp_load_slice_elem with "[$Hs]").
+    { eauto. }
+    iIntros "Hs".
+
+    wp_auto.
+    wp_pure; first word.
+    wp_apply (wp_store_slice_elem with "[$Hs]").
+    { word. }
+    iIntros "Hs".
+    wp_auto.
+    wp_pure; first word.
+    wp_apply (wp_store_slice_elem with "[$Hs]").
+    { len. }
+    iIntros "Hs".
+    wp_auto. wp_for_post.
+    iFrame.
+    iPureIntro.
+    split; [ word | ].
+    trans xs'; auto.
+    erewrite Permutation_swap; eauto.
+  - wp_auto.
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    auto.
+Qed.
+
+Lemma seqZ_plus_1 n m :
+  0 ≤ m →
+  seqZ n (m + 1) = seqZ n m ++ [n + m].
+Proof.
+  intros.
+  rewrite seqZ_app; try lia.
+  reflexivity.
+Qed.
+
+Lemma wp_Permutation (n: w64) :
+  {{{ is_pkg_init std }}}
+    std@ "Permutation" #n
+  {{{ xs s, RET #s;
+      ⌜xs ≡ₚ (W64 <$> seqZ 0 (uint.Z n))⌝ ∗
+      s ↦* xs
+  }}}.
+Proof.
+  wp_start as "_".
+  wp_auto.
+  wp_apply (wp_slice_make2 (V:=w64)). iIntros (s) "[Hs _]".
+  wp_auto.
+  iDestruct (own_slice_len with "Hs") as "%Hlen".
+  autorewrite with len in Hlen.
+  iPersist "n order".
+
+  iAssert (∃ (i: w64),
+              "Hs" ∷ s ↦* ((W64 <$> seqZ 0 (uint.Z i)) ++ replicate (uint.nat n - uint.nat i) (W64 0)) ∗
+              "i" ∷ i_ptr ↦ i ∗
+              "%Hi" ∷ ⌜uint.Z i ≤ uint.Z n⌝)%I
+    with "[$i Hs]" as "IH".
+  { iFrame.
+    iSplit; [ | word ].
+    iExactEq "Hs".
+    rewrite /named.
+    repeat f_equal.
+    rewrite seqZ_nil /=; [ | word ].
+    f_equal. word.
+  }
+  wp_for "IH".
+  destruct (bool_decide_reflect (uint.Z i < uint.Z n)); wp_auto.
+  - wp_pure; first word.
+    wp_apply (wp_store_slice_elem with "[$Hs]").
+    { len. }
+    iIntros "Hs".
+    wp_auto. wp_for_post.
+    iFrame.
+    iSplit; [ | word ].
+    rewrite /named.
+    iExactEq "Hs".
+    f_equal.
+    replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
+    replace (uint.Z (word.add i (W64 1))) with (uint.Z i + 1) by word.
+    rewrite insert_app_r_alt; [ | len ].
+    autorewrite with len.
+    replace (uint.nat i - uint.nat i)%nat with 0%nat by word.
+    replace (uint.nat n - uint.nat i)%nat with
+      (S (uint.nat n - uint.nat i - 1)%nat) by word.
+    rewrite replicate_S /=.
+    rewrite cons_middle.
+    rewrite app_assoc.
+    f_equal.
+    + rewrite seqZ_plus_1; [ | word ].
+      rewrite Z.add_0_l.
+      rewrite fmap_app /=.
+      repeat f_equal.
+      word.
+    + f_equal; word.
+  - wp_apply (wp_Shuffle with "[$Hs]").
+    iIntros (xs') "[%Hperm Hs]".
+    wp_auto.
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    rewrite -Hperm.
+    assert (i = n) by word; subst.
+    replace (uint.nat n - uint.nat n)%nat with 0%nat by word.
+    rewrite replicate_0 app_nil_r.
+    auto.
+Qed.
+
 End wps.
