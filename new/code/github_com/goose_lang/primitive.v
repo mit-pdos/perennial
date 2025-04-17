@@ -12,7 +12,7 @@ Context `{ffi_syntax}.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("UInt64Put"%go, UInt64Put); ("Assume"%go, Assume)].
+Definition functions' : list (go_string * val) := [("UInt64Put"%go, UInt64Put); ("RandomUint64"%go, RandomUint64); ("Assume"%go, Assume)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 

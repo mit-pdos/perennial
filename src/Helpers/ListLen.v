@@ -29,6 +29,7 @@ Hint Rewrite u64_le_length : len.
 #[global]
 Hint Rewrite u32_le_length : len.
 #[global]
+Hint Rewrite length_seqZ : len.
 
 Ltac len := autorewrite with len; try word; try lia.
 

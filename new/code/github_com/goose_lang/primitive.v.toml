@@ -1,5 +1,6 @@
 trusted = [
   "UInt64Put",
   "Assume",
+  "RandomUint64",
   # FIXME: add remaining functions
 ]

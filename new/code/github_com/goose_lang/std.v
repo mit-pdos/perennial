@@ -264,9 +264,55 @@ Definition Skip : val :=
   rec: "Skip" <> :=
     exception_do (do:  #()).
 
+(* Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle.
+
+   go: goose_std.go:182:6 *)
+Definition Shuffle : val :=
+  rec: "Shuffle" "xs" :=
+    exception_do (let: "xs" := (ref_ty sliceT "xs") in
+    (if: (let: "$a0" := (![sliceT] "xs") in
+    slice.len "$a0") = #(W64 0)
+    then return: (#())
+    else do:  #());;;
+    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := (s_to_w64 ((let: "$a0" := (![sliceT] "xs") in
+    slice.len "$a0") - #(W64 1))) in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") > #(W64 0)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") - #(W64 1)))) := λ: <>,
+      let: "j" := (ref_ty uint64T (zero_val uint64T)) in
+      let: "$r0" := (((func_call #primitive #"RandomUint64"%go) #()) `rem` ((![uint64T] "i") + #(W64 1))) in
+      do:  ("j" <-[uint64T] "$r0");;;
+      let: "temp" := (ref_ty uint64T (zero_val uint64T)) in
+      let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "i"))) in
+      do:  ("temp" <-[uint64T] "$r0");;;
+      let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "j"))) in
+      do:  ((slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "i")) <-[uint64T] "$r0");;;
+      let: "$r0" := (![uint64T] "temp") in
+      do:  ((slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "j")) <-[uint64T] "$r0")))).
+
+(* Permutation returns a random permutation of the integers 0, ..., n-1, using a
+   Fisher-Yates shuffle.
+
+   go: goose_std.go:196:6 *)
+Definition Permutation : val :=
+  rec: "Permutation" "n" :=
+    exception_do (let: "n" := (ref_ty uint64T "n") in
+    let: "order" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "$r0" := (slice.make2 uint64T (![uint64T] "n")) in
+    do:  ("order" <-[sliceT] "$r0");;;
+    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("i" <-[uint64T] "$r0");;;
+    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "n")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (![uint64T] "i") in
+      do:  ((slice.elem_ref uint64T (![sliceT] "order") (![uint64T] "i")) <-[uint64T] "$r0")));;;
+    do:  (let: "$a0" := (![sliceT] "order") in
+    (func_call #std.std #"Shuffle"%go) "$a0");;;
+    return: (![sliceT] "order")).
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Assert"%go, Assert); ("BytesEqual"%go, BytesEqual); ("BytesClone"%go, BytesClone); ("SliceSplit"%go, SliceSplit); ("SumNoOverflow"%go, SumNoOverflow); ("SumAssumeNoOverflow"%go, SumAssumeNoOverflow); ("MulNoOverflow"%go, MulNoOverflow); ("MulAssumeNoOverflow"%go, MulAssumeNoOverflow); ("newJoinHandle"%go, newJoinHandle); ("Spawn"%go, Spawn); ("Multipar"%go, Multipar); ("Skip"%go, Skip)].
+Definition functions' : list (go_string * val) := [("Assert"%go, Assert); ("BytesEqual"%go, BytesEqual); ("BytesClone"%go, BytesClone); ("SliceSplit"%go, SliceSplit); ("SumNoOverflow"%go, SumNoOverflow); ("SumAssumeNoOverflow"%go, SumAssumeNoOverflow); ("MulNoOverflow"%go, MulNoOverflow); ("MulAssumeNoOverflow"%go, MulAssumeNoOverflow); ("newJoinHandle"%go, newJoinHandle); ("Spawn"%go, Spawn); ("Multipar"%go, Multipar); ("Skip"%go, Skip); ("Shuffle"%go, Shuffle); ("Permutation"%go, Permutation)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("JoinHandle"%go, []); ("JoinHandle'ptr"%go, [("Join"%go, JoinHandle__Join); ("finish"%go, JoinHandle__finish)])].
 

@@ -3,6 +3,7 @@ From Perennial.Helpers Require Import List ModArith.
 From Goose.github_com.goose_lang Require Import std.
 
 From iris.algebra Require Import excl gset.
+From stdpp Require Import list_relations.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import typed_slice.
 
@@ -550,6 +551,93 @@ Proof.
   rewrite Hnotleft in Hsz.
   apply size_empty_inv in Hsz.
   set_solver.
+Qed.
+
+Lemma wp_Shuffle (s: Slice.t) (xs: list w64) :
+  {{{ own_slice_small s uint64T (DfracOwn 1) xs }}}
+    Shuffle (to_val s)
+  {{{ xs', RET #(); ⌜Permutation xs xs'⌝ ∗
+                      own_slice_small s uint64T (DfracOwn 1) xs' }}}.
+Proof.
+Admitted.
+
+Lemma seqZ_plus_1 n m :
+  0 ≤ m →
+  seqZ n (m + 1) = seqZ n m ++ [n + m].
+Proof.
+  intros.
+  rewrite seqZ_app; try lia.
+  reflexivity.
+Qed.
+
+Lemma wp_Permutation (n: w64) :
+  {{{ True }}}
+    std.Permutation #n
+  {{{ xs (s: Slice.t), RET (slice_val s);
+      ⌜Permutation xs (W64 <$> seqZ 0 (uint.Z n))⌝ ∗
+      own_slice_small s uint64T (DfracOwn 1) xs
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_rec. wp_apply wp_NewSlice.
+  iIntros (s) "Hs".
+  change (IntoVal_def w64) with (W64 0).
+  wp_apply wp_ref_to; [ val_ty | ].
+  iIntros (i_ptr) "i". wp_pures.
+  wp_apply (wp_forUpto (λ (i: w64),
+       own_slice_small s uint64T (DfracOwn 1) ((W64 <$> seqZ 0 (uint.Z i)) ++ replicate (uint.nat n - uint.nat i) (W64 0))
+     ) with "[] [Hs $i]").
+  { word. }
+  - iIntros (i) "!>".
+    clear Φ.
+    iIntros (Φ) "HI HΦ". iDestruct "HI" as "(Hs & i & %)".
+    wp_pures.
+    wp_load. wp_load.
+    wp_apply (wp_SliceSet with "[$Hs]").
+    {
+      iPureIntro.
+      apply lookup_lt_is_Some.
+      len.
+    }
+    iIntros "Hs".
+    wp_pures.
+    iModIntro.
+    iApply "HΦ". iFrame "i".
+    iExactEq "Hs".
+    f_equal.
+    replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
+    replace (uint.Z (word.add i (W64 1))) with (uint.Z i + 1) by word.
+    rewrite insert_app_r_alt; [ | len ].
+    autorewrite with len.
+    replace (uint.nat i - uint.nat i)%nat with 0%nat by word.
+    replace (uint.nat n - uint.nat i)%nat with
+      (S (uint.nat n - uint.nat i - 1)%nat) by word.
+    rewrite replicate_S /=.
+    rewrite cons_middle.
+    rewrite app_assoc.
+    f_equal.
+    + rewrite seqZ_plus_1; [ | word ].
+      rewrite Z.add_0_l.
+      rewrite fmap_app /=.
+      repeat f_equal.
+      word.
+    + f_equal; word.
+  - iApply own_slice_to_small in "Hs".
+    iExactEq "Hs".
+    f_equal.
+    rewrite seqZ_nil /=; [ | word ].
+    f_equal. word.
+  - iIntros "[Hs i]".
+    replace (uint.nat n - uint.nat n)%nat with 0%nat by word.
+    rewrite replicate_0 app_nil_r.
+    wp_pures.
+    wp_apply (wp_Shuffle with "Hs").
+    iIntros (xs) "[%Hperm Hs]".
+    wp_pures.
+    iModIntro.
+    iApply "HΦ".
+    iFrame.
+    auto.
 Qed.
 
 End goose_lang.
