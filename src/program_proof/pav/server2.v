@@ -1198,7 +1198,9 @@ Proof. constructor. Qed.
 Lemma union_idemp B (x : gmap (list w8) B) :
   x ∪ x = x.
 Proof.
-Admitted.
+  apply map_subseteq_union.
+  set_solver.
+Qed.
 
 Lemma ghost_hist_update upd userInfo upd_phys γ st dig :
   let presigdig := {| PreSigDig.Epoch := (W64 $ length st.(Server.epochHist)); PreSigDig.Dig := dig |} in
