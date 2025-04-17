@@ -202,10 +202,10 @@ Record Server_names :=
     commitSecret : list w8;
   }.
 
+Implicit Types γ : Server_names.
+
 Definition own_num_vers γ (uid : w64) (num_vers : w64) : iProp Σ :=
   uid ↪[γ.(ver_gn)] num_vers.
-
-Implicit Types γ : Server_names.
 
 Definition encode_uid_ver uid_ver :=
   (MapLabelPre.encodesF $ MapLabelPre.mk uid_ver.1 uid_ver.2).
@@ -281,7 +281,7 @@ Definition is_Server_crypto γ st : iProp Σ :=
   (* The current keyMap is computed from applying updates *)
   "%HepochHistUpdates" ∷ (⌜ st.(Server.keyMap) =
                           (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$>
-                            (foldl union (∅ : gmap _ _)
+                            (foldl (λ a b, union b a) (∅ : gmap _ _)
                                (servEpochInfo.updates <$> st.(Server.epochHist)))
                             ⌝) ∗
 
@@ -363,7 +363,7 @@ Definition wq_spec γ (req_ptr : loc) (Φ : loc → iProp Σ) : iProp Σ :=
 (* FIXME: for workqG *)
 Context `{!ghost_varG Σ unit}.
 Definition is_Server γ s : iProp Σ :=
-  ∃ commitSecret_sl (mu vrfSk_ptr workQ : loc),
+  ∃ commitSecret_sl (mu vrfSk_ptr workQ sigSk : loc),
   "#commitSecret" ∷ s ↦[Server :: "commitSecret"]□ (slice_val commitSecret_sl) ∗
   "#commitSecret_sl" ∷ own_slice_small commitSecret_sl byteT DfracDiscarded γ.(commitSecret) ∗
   "#mu" ∷ s ↦[Server :: "mu"]□ #mu ∗
@@ -372,6 +372,8 @@ Definition is_Server γ s : iProp Σ :=
   "#HvrfSk" ∷ is_vrf_sk vrfSk_ptr γ.(vrf_pk) ∗
   "#workQ" ∷ s ↦[Server :: "workQ"]□ #workQ ∗
   "#HworkQ" ∷ is_WorkQ workQ (wq_spec γ) ∗
+  "sigSk" ∷ s ↦[Server::"sigSk"]□ #sigSk ∗
+  "#HsigSk" ∷ is_sig_sk sigSk γ.(sig_pk) (sigpred γ.(auditor_gn)) ∗
   "_" ∷ True.
 
 Lemma wp_getDig γ st epochHist_sl epochHist_ptrs q :
@@ -537,8 +539,8 @@ Proof.
       specialize (Hintree ltac:(word)).
       rewrite elem_of_dom in Hintree.
       destruct Hintree as [epoch_pk Hintree].
-      iSpecialize ("HkeyMap" $! (uid, ver) (Some epoch_pk)).
-      iDestruct ("HkeyMap" with "[//]") as (?) "(#Hvrf & (% & % & Hrand & Hcommit & %Hlookup))".
+      iSpecialize ("HkeyMap" $! (uid, ver)). rewrite Hintree.
+      iDestruct "HkeyMap" as (???) "(#Hvrf & Hrand & Hcommit & %Hlookup)".
       iDestruct (is_vrf_out_det with "Hvrf Hvrf_out") as "%". subst.
       rewrite Hlook_elems in Hlookup. discriminate Hlookup.
     }
@@ -664,9 +666,8 @@ Proof.
   2:{ simpl in *. exfalso. done. }
   destruct p. simpl in *. subst.
   unfold is_map_relation.
-  iDestruct ("HkeyMap" $! (uid, _) _) as "HkeyMap2".
-  iSpecialize ("HkeyMap2" with "[//]").
-  iDestruct "HkeyMap2" as (?) "(#Hlabel & (% & % & #Hrand & #Hcommit & %))".
+  iDestruct ("HkeyMap" $! (uid, _)) as "#HkeyMap2". setoid_rewrite Hlookup2.
+  iDestruct "HkeyMap2" as (???) "(#Hlabel & #Hrand & #Hcommit & %)".
   rewrite Hlookup.
   iDestruct (is_vrf_out_det with "Hlabel Hvrf_out") as "%". subst.
 
@@ -1154,6 +1155,110 @@ Proof.
   replace (_ : nat) with (0)%nat by lia. done.
 Qed.
 
+Lemma ghost_hist_update upd userInfo γ st dig :
+  let upd_phys := (λ x, enc_val x.1 x.2) <$> upd in
+  let presigdig := {| PreSigDig.Epoch := (W64 $ length st.(Server.epochHist)); PreSigDig.Dig := dig |} in
+  is_merkle_map (upd_phys ∪ st.(Server.keyMap)) dig -∗
+  own_Server_hist γ 1 st ==∗
+  (∀ enc,
+     ⌜ PreSigDig.encodes enc presigdig ⌝ -∗
+     (sigpred γ.(auditor_gn) enc ∗
+      (∀ sig, is_sig γ.(sig_pk) enc sig -∗
+              let st' :=
+                (st <| Server.keyMap := upd_phys ∪ st.(Server.keyMap) |>
+                    <| Server.userInfo := userInfo |>
+                    <| Server.epochHist := st.(Server.epochHist) ++ [servEpochInfo.mk upd dig sig] |>
+                ) in
+              own_Server_hist γ 1 st'
+     ))
+  ).
+Proof.
+Admitted.
+
+(* updates: gmap (list w8) (w64 * list w8); *)
+Lemma wp_updEpochHist s γ st upd_ptr upd_sl upd userInfo openKeyMap :
+  let upd_phys := (λ x, enc_val x.1 x.2) <$> upd in
+  let st' := (st <| Server.keyMap := upd_phys ∪ st.(Server.keyMap) |> <| Server.userInfo := userInfo |>) in
+  {{{
+      "#His_srv" ∷ is_Server γ s ∗
+      "#Hcrypto" ∷ is_Server_crypto γ st ∗
+      "Hghost" ∷ own_Server_hist γ 1 st ∗
+      "Hnvers" ∷ own_Server_nvers γ 1 st' ∗
+      "Hphys" ∷ Server.own_phys s 1 st' ∗
+      "upd" ∷ own_map upd_ptr (DfracOwn 1) upd_sl ∗
+      "#Hupd" ∷ ([∗ map] u_sl; u ∈ upd_sl; upd, own_slice_small u_sl byteT DfracDiscarded (enc_val u.1 u.2)) ∗
+
+      "#HopenKeyMap" ∷ is_map_relation γ st'.(Server.keyMap) openKeyMap ∗
+      "%HkeyMapLatest" ∷ (⌜ ∀ uid,
+                            match st'.(Server.userInfo) !! uid with
+                            | Some (userState.mk numVers pk) =>
+                                snd <$> openKeyMap !! (uid, (word.sub numVers (W64 1))) = Some pk ∧
+                                (∀ ver, (uid, ver) ∈ dom openKeyMap ↔ uint.nat ver < uint.nat numVers)
+                            | None => (∀ ver, (uid, ver) ∉ dom openKeyMap)
+                            end ⌝)
+
+  }}}
+    Server__updEpochHist #s #upd_ptr
+  {{{
+        RET #(); own_Server γ s 1 ∗ (∃ st', Server.own_phys s (1/2) st')
+  }}}.
+Proof.
+  intros ??. subst upd_phys. iIntros (?) "Hpre HΦ". iNamed "Hpre". wp_rec.
+  iNamed "His_srv". iNamed "Hphys".
+  wp_pures. wp_loadField. wp_pures. wp_loadField.
+  wp_apply (wp_Tree__Digest with "[$HkeyMap]").
+  iIntros (dig_sl dig). iNamed 1. wp_pures. wp_loadField. wp_apply wp_slice_len.
+  iDestruct (own_slice_sz with "HepochHist_sl") as %Hsz. wp_pures.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (preSig_ptr) "preSig".
+  wp_pures.
+  wp_apply wp_NewSliceWithCap; [word|]. iIntros (?) "preSigByt_sl".
+  wp_apply (PreSigDig.wp_enc with "[preSig preSigByt_sl]").
+  { iFrame. iDestruct (struct_fields_split with "preSig") as "H". iNamed "H".
+    instantiate (2:=ltac:(econstructor)). iFrame "∗#". }
+  iIntros (preSigByt_sl enc). iNamed 1. wp_pures.
+  iMod (own_map_persist with "upd") as "#upd".
+  iMod (ghost_hist_update _ userInfo with "[$] Hghost") as "Hghost".
+  iDestruct (own_slice_to_small with "Hsl_b") as "Hsl".
+  rewrite replicate_0 app_nil_l.
+  iDestruct (big_sepL2_length with "HepochHist_is") as %Hlength.
+  rewrite /st' /= in Hlength.
+  iSpecialize ("Hghost" $! enc with "[%]").
+  { replace (W64 (length _)) with (epochHist_sl.(Slice.sz)) by word. done. }
+  iDestruct "Hghost" as "(#Hsigpred & Hghost)".
+  wp_apply (wp_SigPrivateKey__Sign with "[$HsigSk $Hsl $Hsigpred]").
+  iIntros "*". iNamed 1. iSpecialize ("Hghost" with "[$]").
+  wp_pures. wp_apply wp_allocStruct; [val_ty|].
+  iIntros (newInfo_ptr) "newInfo". wp_pures. wp_loadField.
+  wp_apply (wp_SliceAppend with "[$HepochHist_sl]").
+  iIntros (epochHist_sl') "HepochHist_sl". wp_storeField.
+  iApply "HΦ". iPersist "newInfo".
+  iDestruct (struct_fields_split with "newInfo") as "H". iNamed "H".
+  iPersist "Hsl_sig". iDestruct "HepochHist_is" as "-#H".
+  iDestruct (big_sepL2_snoc with "[$H]") as "#HepochHist_is".
+  { instantiate (1:=ltac:(econstructor)). iFrame "updates sig dig #". }
+  iClear "H".
+  iAssert (Server.own_phys s 1 ltac:(econstructor)) with "[-Hghost Hnvers]" as "Hphys".
+  { rewrite /Server.own_phys /=. iFrame "∗#". }
+  iEval (rewrite -Qp.half_half) in "Hphys".
+  iDestruct (Server.split with "Hphys") as "[$ $]".
+  iFrame "∗#". simpl. iExists {| servEpochInfo.updates := upd; servEpochInfo.dig := dig; servEpochInfo.sig := sig |}.
+  simpl. iFrame "#%". rewrite last_snoc.
+  iNamed "Hcrypto".
+  repeat iSplitR; last done.
+  - iIntros "!# !# * %Hlookup".
+    rewrite lookup_app in Hlookup.
+    destruct lookup eqn:? in Hlookup.
+    { iApply "HepochHist". iPureIntro. naive_solver. }
+    apply list_lookup_singleton_Some in Hlookup as [? H]. subst.
+    simpl. destruct Henc as [? ?]. subst.
+    replace (epoch) with epochHist_sl.(Slice.sz).
+    2:{ apply lookup_ge_None_1 in Heqo. word. }
+    iFrame "#".
+  - iPureIntro.
+    rewrite fmap_app foldl_snoc HepochHistUpdates /=.
+    rewrite map_fmap_union. done.
+Qed.
+
 Context `{!waitgroupG Σ}.
 Lemma wp_Server__Worker γ s st :
   {{{
@@ -1423,13 +1528,27 @@ Proof.
               "%HnVers" ∷ ⌜ nVers = default (W64 0) (userState.numVers <$> st.(Server.userInfo) !! req.(WQReq.Uid)) ⌝
          )%I).
 
+  eset (prop' :=
+         (λ (w : loc),
+            ∃ (req_ptr resp : loc) Ψ γtok req nVers cli_next_ep,
+              "resp" ∷ resp ↦[struct.t WQResp] _ ∗
+              "#Resp" ∷ w ↦[Work::"Resp"]□ #resp ∗
+              "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
+              "#HReq" ∷ WQReq.is_own req_ptr req ∗
+              "Hvers" ∷ own_num_vers γ req.(WQReq.Uid) (word.add nVers (W64 1))∗
+              "#Hlb_ep" ∷ is_epoch_lb γ cli_next_ep ∗
+              "HΨ" ∷ wq_post γ req nVers cli_next_ep Ψ ∗
+              "#His_work" ∷ is_Work w γtok Ψ ∗
+              "%HnVers" ∷ ⌜ nVers = default (W64 0) (userState.numVers <$> st.(Server.userInfo) !! req.(WQReq.Uid)) ⌝
+         )%I).
+
   iDestruct (big_sepL_iter _ _ (λ _ x, prop x) with "Hnvers Hprops []") as "[Hnvers Hprops]".
   {
     iApply big_sepL_forall_1. iIntros "!# * Hw Hnvers". iNamed 1.
     iDestruct (ghost_nvers_agree with "[$] [$]") as %Hagree. iFrame "∗#%".
   }
   iAssert (
-      ∃ (i : w64) upd_sl upd openKeyMap userInfo,
+      ∃ (i : w64) upd_sl upd_pks openKeyMap userInfo,
       let st' := (st <| Server.keyMap := upd ∪ st.(Server.keyMap) |> <| Server.userInfo := userInfo |>) in
       "i" ∷ i_ptr ↦[uint64T] #i ∗
       "upd" ∷ own_map upd_ptr (DfracOwn 1) upd_sl ∗
@@ -1437,6 +1556,7 @@ Proof.
       "Hphys" ∷ Server.own_phys s 1 st' ∗
       "Hnvers" ∷ own_Server_nvers γ 1 st' ∗
       "Hprops" ∷ ([∗ list] w ∈ drop (uint.nat i) work, prop w) ∗
+      "Hprops'" ∷ ([∗ list] w ∈ take (uint.nat i) work, prop' w) ∗
       "#HopenKeyMap" ∷ is_map_relation γ st'.(Server.keyMap) openKeyMap ∗
       "%HkeyMapLatest" ∷ (⌜ ∀ uid,
                             match st'.(Server.userInfo) !! uid with
@@ -1446,7 +1566,7 @@ Proof.
                             | None => (∀ ver, (uid, ver) ∉ dom openKeyMap)
                             end ⌝)
     )%I with "[i upd Hphys Hnvers Hprops]" as "H".
-  { iFrame "i". rewrite drop_0. iExists ∅, ∅. rewrite left_id.
+  { iFrame "i". rewrite drop_0 take_0. iExists ∅, ∅. rewrite left_id.
     iNamed "Hcrypto". iFrame "∗#%". simpl. rewrite big_sepM2_empty //. }
   wp_forBreak_cond.
   iNamed "H".
@@ -1536,6 +1656,13 @@ Proof.
     { simpl. iFrame "#". }
     iFrame "HΦ work outs0 Hlocked".
     iMod (ghost_nvers_put with "Hvers_prop Hnvers") as "(%HnversEq & Hvers_prop & Hnvers)".
+    iCombineNamed "*_prop" as "Hprop'".
+    iDestruct (big_sepL_snoc with "[$Hprops' Hprop']") as "Hprops'".
+    2: rewrite -take_S_r //.
+    1:{
+      iNamed "Hprop'". iFrame "∗#%". instantiate (1:=(zero_val (struct.t WQResp))).
+      iApply struct_fields_split. iFrame. done.
+    }
     iFrame "∗#". instantiate (1:=req.(WQReq.Pk)). simpl.
     rewrite insert_union_l.
     replace (uint.nat (word.add _ _)) with (S (uint.nat i)) by word.
@@ -1631,7 +1758,7 @@ Proof.
       + intros ?. set_solver.
   }
   iModIntro. iRight. iSplitR; first done.
-  wp_pures. iNamedSuffix "His_srv" "_srv". (* TODO: keep sigSk *)
+  wp_pures. iNamedSuffix "His_srv" "_srv".
 Admitted.
 
 End proof.

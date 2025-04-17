@@ -950,7 +950,8 @@ Lemma wp_Tree__Digest ptr elems d0 :
   {{{
     sl_dig dig, RET (slice_val sl_dig);
     "Hown_Tree" ∷ own_Tree ptr elems d0 ∗
-    "#His_dig" ∷ is_merkle_map elems dig
+    "#His_dig" ∷ is_merkle_map elems dig ∗
+    "#dig_sl" ∷ own_slice_small sl_dig byteT DfracDiscarded dig
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.

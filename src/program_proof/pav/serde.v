@@ -39,7 +39,7 @@ Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_Dig,
   "Hptr_Epoch" ∷ ptr ↦[PreSigDig :: "Epoch"]{d} #obj.(Epoch) ∗
   "Hptr_Dig" ∷ ptr ↦[PreSigDig :: "Dig"]{d} (slice_val sl_Dig) ∗
-  "Hsl_Dig" ∷ own_slice_small sl_Dig byteT d obj.(Dig).
+  "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig).
 
 Lemma wp_enc obj sl_b (b : list w8) ptr d :
   {{{

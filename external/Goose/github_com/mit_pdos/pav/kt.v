@@ -1774,9 +1774,11 @@ Definition Server__mapper0: val :=
     #().
 
 (* updEpochHist does a signed history update with some new entries. *)
-Definition updEpochHist: val :=
-  rec: "updEpochHist" "hist" "upd" "dig" "sk" :=
-    let: "epoch" := slice.len (![slice.T ptrT] "hist") in
+Definition Server__updEpochHist: val :=
+  rec: "Server__updEpochHist" "s" "upd" :=
+    let: "sk" := struct.loadF Server "sigSk" "s" in
+    let: "dig" := merkle.Tree__Digest (struct.loadF Server "keyMap" "s") in
+    let: "epoch" := slice.len (struct.loadF Server "epochHist" "s") in
     let: "preSig" := struct.new PreSigDig [
       "Epoch" ::= "epoch";
       "Dig" ::= "dig"
@@ -1788,7 +1790,7 @@ Definition updEpochHist: val :=
       "dig" ::= "dig";
       "sig" ::= "sig"
     ] in
-    "hist" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "hist") "newInfo");;
+    struct.storeF Server "epochHist" "s" (SliceAppend ptrT (struct.loadF Server "epochHist" "s") "newInfo");;
     #().
 
 (* mapper1 computes merkle proofs and assembles full response. *)
@@ -1890,7 +1892,7 @@ Definition Server__Worker: val :=
       else #());;
       "i" <-[uint64T] ((![uint64T] "i") + #1);;
       Continue);;
-    updEpochHist (struct.fieldRef Server "epochHist" "s") "upd" (merkle.Tree__Digest (struct.loadF Server "keyMap" "s")) (struct.loadF Server "sigSk" "s");;
+    Server__updEpochHist "s" "upd";;
     RWMutex__Unlock (struct.loadF Server "mu" "s");;
     let: "wg1" := waitgroup.New #() in
     "i" <-[uint64T] #0;;
@@ -1929,7 +1931,6 @@ Definition NewServer: val :=
     let: "keys" := merkle.NewTree #() in
     let: "users" := NewMap uint64T ptrT #() in
     let: "hist" := ref (zero_val (slice.T ptrT)) in
-    updEpochHist "hist" (NewMap stringT (slice.T byteT) #()) (merkle.Tree__Digest "keys") "sigSk";;
     let: "wq" := NewWorkQ #() in
     let: "s" := struct.new Server [
       "mu" ::= "mu";
@@ -1941,6 +1942,7 @@ Definition NewServer: val :=
       "epochHist" ::= ![slice.T ptrT] "hist";
       "workQ" ::= "wq"
     ] in
+    Server__updEpochHist "s" (NewMap stringT (slice.T byteT) #());;
     Fork (Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             Server__Worker "s";;
