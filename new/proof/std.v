@@ -190,6 +190,88 @@ Qed.
 
 #[local] Unset Printing Projections.
 
+#[local]
+Lemma list_split2 {A} (l: list A) (i1 i2: nat) (x1 x2: A) :
+  (i1 < i2)%nat →
+  l !! i1 = Some x1 →
+  l !! i2 = Some x2 →
+  l = take i1 l ++ [x1] ++ subslice (S i1) i2 l ++ [x2] ++ drop (S i2) l.
+Proof.
+  intros Hlt Hget1 Hget2.
+  assert (i1 < i2 < length l)%nat.
+  { apply lookup_lt_Some in Hget1.
+    apply lookup_lt_Some in Hget2.
+    lia. }
+  trans (take i1 l ++ [x1] ++ drop (S i1) l).
+  {
+    rewrite -{1}(list_insert_id l i1 x1) //.
+    rewrite insert_take_drop; [ | lia ].
+    auto.
+  }
+  f_equal.
+  f_equal.
+  rewrite -{1}(list_insert_id l i2 x2) //.
+  rewrite drop_insert_le; [ | lia ].
+  rewrite -> insert_take_drop by len.
+  rewrite -> subslice_drop_take by lia.
+  simpl.
+  do 2 f_equal.
+  rewrite drop_drop.
+  f_equal; lia.
+Qed.
+
+Lemma list_insert_middle {A} (l1 l2: list A) i x1 x2 :
+  i = length l1 →
+  <[i := x2]> (l1 ++ [x1] ++ l2) = l1 ++ [x2] ++ l2.
+Proof.
+  intros; subst.
+  rewrite insert_app_r_alt; [ | lia ].
+  f_equal.
+  replace (length l1 - length l1)%nat with 0%nat by lia; auto.
+Qed.
+
+(** Special case of permutation where the indices are in the right order. Use
+Permutation_swap which generalizes this. *)
+#[local]
+Lemma Permutation_swap_ordered {A} (l: list A) (i1 i2: nat) (x1 x2: A) :
+  i1 < i2 →
+  l !! i1 = Some x1 →
+  l !! i2 = Some x2 →
+  <[i2 := x1]> (<[i1 := x2]> l) ≡ₚ l.
+Proof.
+  intros Hlt Hget1 Hget2.
+  assert (i1 < i2 < length l)%nat.
+  { apply lookup_lt_Some in Hget1.
+    apply lookup_lt_Some in Hget2.
+    lia. }
+  rewrite (list_split2 l i1 i2 x1 x2) //; [ | lia ].
+  rewrite -> list_insert_middle by len.
+  repeat rewrite -> insert_app_r_alt by len.
+  autorewrite with len.
+  replace (i2 - i1 `min` length l - 1 - (i2 `min` length l - S i1))%nat with 0%nat by lia.
+  simpl.
+  f_equiv.
+  rewrite !Permutation_middle.
+  f_equiv.
+  apply Permutation_swap.
+Qed.
+
+(* TODO: upstream to stdpp *)
+Lemma Permutation_swap {A} (l: list A) (i1 i2: nat) (x1 x2: A) :
+  l !! i1 = Some x1 →
+  l !! i2 = Some x2 →
+  <[i2 := x1]> (<[i1 := x2]> l) ≡ₚ l.
+Proof.
+  intros Hget1 Hget2.
+  destruct (decide (i1 = i2)); subst.
+  { rewrite list_insert_insert list_insert_id //. }
+  destruct (decide (i1 < i2)).
+  { apply Permutation_swap_ordered; auto. }
+  assert (i2 < i1) by lia.
+  rewrite list_insert_commute; [ | lia ].
+  apply Permutation_swap_ordered; auto.
+Qed.
+
 Lemma wp_Shuffle s (xs: list w64) :
   {{{ is_pkg_init std ∗ s ↦* xs }}}
     std @ "Shuffle" #s
@@ -254,13 +336,13 @@ Proof.
     iPureIntro.
     split; [ word | ].
     trans xs'; auto.
-    admit. (* swap on list is a permutation *)
+    erewrite Permutation_swap; eauto.
   - wp_auto.
     iApply "HΦ".
     iFrame.
     iPureIntro.
     auto.
-Admitted.
+Qed.
 
 Lemma seqZ_plus_1 n m :
   0 ≤ m →
