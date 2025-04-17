@@ -219,12 +219,11 @@ Definition is_map_relation γ (mₗ : gmap (list w8) (list w8))
   □(∀ uid_ver,
       match mₕ !! uid_ver with
       | Some epoch_pk =>
-          (∃ label,
+          (∃ label rand commit,
               is_vrf_out γ.(vrf_pk) (encode_uid_ver uid_ver) label ∗
-              (∃ rand commit,
-                  is_hash (γ.(commitSecret) ++ label) rand ∗
-                  is_hash (CommitOpen.encodesF (CommitOpen.mk epoch_pk.2 rand)) commit ∗
-                  ⌜ mₗ !! label = Some (MapValPre.encodesF $ MapValPre.mk epoch_pk.1 commit) ⌝))
+              is_hash (γ.(commitSecret) ++ label) rand ∗
+              is_hash (CommitOpen.encodesF (CommitOpen.mk epoch_pk.2 rand)) commit ∗
+              ⌜ mₗ !! label = Some (MapValPre.encodesF $ MapValPre.mk epoch_pk.1 commit) ⌝)
       | None =>
           ∀ label, is_vrf_out γ.(vrf_pk) (encode_uid_ver uid_ver) label -∗
                    ⌜ mₗ !! label = None ⌝
@@ -1569,6 +1568,14 @@ Proof.
       - rewrite lookup_insert_ne; last naive_solver.
         iSpecialize ("HopenKeyMap" $! (uid, ver)).
         iDestruct "HopenKeyMap" as "#H".
+        destruct (openKeyMap !! _).
+        + iDestruct "H" as (???) "($ & $ & $ & %H)".
+          destruct (decide (label = mo.(mapper0Out.latestVrfHash))).
+          * iExFalso. subst. iDestruct "HlatestVrfHash" as "-#Hbad".
+            iDestruct (is_vrf_out_inj with "Hbad []") as "%Heq".
+          *
+        +
+        }
         admit.
     }
     admit.

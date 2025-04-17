@@ -207,6 +207,10 @@ Lemma is_vrf_out_det pk data out0 out1 :
   is_vrf_out pk data out0 -∗ is_vrf_out pk data out1 -∗ ⌜ out0 = out1⌝.
 Proof. Admitted.
 
+Lemma is_vrf_out_inj pk data0 data1 out :
+  is_vrf_out pk data0 out -∗ is_vrf_out pk data1 out -∗ ⌜ data0 = data1 ⌝.
+Proof. Admitted.
+
 Lemma is_vrf_out_len pk data out :
   is_vrf_out pk data out -∗ ⌜ Z.of_nat (length out) = hash_len ⌝.
 Proof. Admitted.
