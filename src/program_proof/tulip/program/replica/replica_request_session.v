@@ -63,6 +63,9 @@ Section program.
     iIntros (pwrsP ptgsP) "Hpwrsptgs".
     assert (Hrid : rid ∈ rids_all).
     { apply elem_of_dom_2 in Haddr. by rewrite Hdomaddrm in Haddr. }
+    iAssert (is_replica_gid_rid rp gid rid)%I as "Hgidrid".
+    { by do 2 iNamed "Hrp". }
+    iNamed "Hgidrid".
     destruct req; wp_pures.
     { (* Case: TxnRead. *)
 
@@ -150,8 +153,8 @@ Section program.
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
-      iNamed "Hrp".
       iDestruct "Hpwrsptgs" as "[Hpwrs Hptgs]".
+      iNamed "Hrp".
       wp_apply (wp_Replica__FastPrepare with "Hsafe Hpwrs Hptgs Hrp").
       iIntros (res) "#Houtcome".
       wp_loadField.
@@ -214,8 +217,8 @@ Section program.
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
-      iNamed "Hrp".
       iDestruct "Hpwrsptgs" as "[Hpwrs Hptgs]".
+      iNamed "Hrp".
       wp_apply (wp_Replica__Validate with "Hsafe Hpwrs Hptgs Hrp").
       iIntros (res) "#Houtcome".
       wp_loadField.

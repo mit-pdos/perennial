@@ -68,7 +68,7 @@ Section program.
         done.
       }
       iModIntro.
-      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $HconnsP $Hgpp Hconns]").
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $HconnsP $Hgpp $Hleader Hconns]").
       { iModIntro.
         iExists (<[rid := (trml, addr)]> conns).
         rewrite fmap_insert.

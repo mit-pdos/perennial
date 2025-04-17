@@ -33,10 +33,11 @@ Section program.
     set P := (λ (cont : bool), ∃ (phase' : bgppphase) (gppP' : loc),
                  "HgppP"   ∷ gcoord ↦[BackupGroupCoordinator :: "gpp"] #gppP' ∗
                  "Hgpp"    ∷ own_backup_gpreparer_with_phase gppP' phase' rk ts cid gid γ ∗
+                 "Hleader" ∷ own_backup_gcoord_leader gcoord (dom addrm) ∗
                  "Hcomm"   ∷ own_backup_gcoord_comm gcoord addrm gid γ ∗
                  "Hlocked" ∷ locked #muP ∗
                  "%Hready" ∷ ⌜if cont then True else bgpp_ready phase'⌝)%I.
-    wp_apply (wp_forBreak_cond P with "[] [HgppP Hgpp Hcomm Hlocked]"); last first; first 1 last.
+    wp_apply (wp_forBreak_cond P with "[] [HgppP Hgpp Hleader Hcomm Hlocked]"); last first; first 1 last.
     { by iFrame. }
     { clear Φ.
       iIntros (Φ) "!> HP HΦ".

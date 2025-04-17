@@ -52,6 +52,7 @@ Section program.
     iIntros "Hmask".
     iNamed "HinvO".
     (* Take the required group invariant. *)
+    iNamed "Hgidrid".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
     (* Separate out the ownership of the Paxos log from others. *)
     iDestruct (group_inv_extract_log_expose_cpool with "Hgroup") as (paxos cpool) "[Hpaxos Hgroup]".

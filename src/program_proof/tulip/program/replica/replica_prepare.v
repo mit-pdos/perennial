@@ -32,7 +32,8 @@ Section program.
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
-    wp_apply (wp_Replica__tryAccept with "Hppsl Hinv Hinvfile Hrp").
+    iNamed "Hgidrid".
+    wp_apply (wp_Replica__tryAccept with "Hppsl [$Hinv] Hinvfile Hrp").
     { apply Hgid. }
     { apply Hrid. }
     { apply Hranknz. }

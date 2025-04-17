@@ -5,7 +5,7 @@ From Perennial.program_proof.tulip.program.txnlog Require Import txnlog.
 From Perennial.program_proof.tulip.program.tuple Require Import res.
 From Perennial.program_proof.tulip.program.index Require Import index.
 From Perennial.program_proof.tulip.program.replica Require Import
-  replica_serve replica_applier.
+  replica_serve replica_applier replica_backup.
 From Perennial.program_proof.tulip.paxos Require Import prelude.
 From Goose.github_com.mit_pdos.tulip Require Import replica.
 
@@ -222,6 +222,8 @@ Section program.
       by pose proof (map_Forall2_dom_L _ _ _ Hbmrkm) as <-.
     }
     iMod (alloc_lock _ _ _ (own_replica rp gid rid γ α) with "Hfree [$Hrp]") as "#Hlock".
+    iAssert (is_replica rp gid rid γ)%I as "#Hrp".
+    { by iFrame "#". }
     iAssert (is_replica_plus_txnlog rp gid rid γ)%I as "#Hrptxnlog".
     { by iFrame "#". }
     iAssert (is_replica_plus_network rp addr gid rid γ)%I as "#Hrpnet".
@@ -244,7 +246,7 @@ Section program.
     wp_pures.
 
     wp_apply wp_fork.
-    { by wp_apply (wp_Replica__Backup with "Hrptxnlog"). }
+    { by wp_apply (wp_Replica__Backup with "Hrp"). }
     wp_pures.
 
     (*@     return rp                                                           @*)
