@@ -131,7 +131,7 @@ Proof.
     (* case 1.2: valid = 0. *)
     { iDestruct (hist_nil with "[$Hknow_eps //]") as %->.
       iExists []. iSplit; [|iSplit]; [naive_solver..|].
-      iNamed "His_put_post". iFrame "#". iSplit; [word|]. iRight. word. }
+      iNamed "His_put_post". iFrame "#%". word. }
     (* case 1.3: valid ≤ ep < new_valid. *)
     { iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]"); [word|].
       iNamed "Hknow_eps". iExists (vals). iFrame "#". iSplit.
@@ -144,7 +144,7 @@ Proof.
         rewrite list_filter_all in Hlen_vals; last first.
         { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook).
           simpl in *. word. }
-        rewrite Hlen_vals. iFrame "#". iSplit; [word|]. iRight. word. } }
+        rewrite Hlen_vals. iFrame "#%". word. } }
   (* case 2: ep = new_valid. *)
   iEval (rewrite /is_hist_ep). rewrite filter_app.
   opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
@@ -154,7 +154,7 @@ Proof.
   { iDestruct (hist_nil with "[$Hknow_eps //]") as %->. iNamed "His_put_post".
     iExists [(new_valid, commit)]. iSplit; [|iSplit].
     - simpl. by iFrame "#".
-    - simpl. iFrame "#".
+    - simpl. iFrame "#%".
     - iFrame "#". iSplit; [word|]. iLeft. word. }
   (* case 2.2: valid != 0. *)
   - iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]"); [word|].
@@ -170,7 +170,7 @@ Proof.
           (λ x, uint.Z x.1 ≤ uint.Z (word.sub valid (W64 1))) hist); [iFrame "#"|].
         intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). naive_solver word.
       * simpl. by iFrame "#".
-    + iApply big_sepL_snoc. iFrame "#".
+    + iApply big_sepL_snoc. iFrame "#%".
     + rewrite length_app. simpl.
       replace (W64 (length vals + 1)%nat) with (word.add (W64 $ length vals) (W64 1)) by word.
       iFrame "#". iSplit; [word|]. iLeft. word.
