@@ -162,8 +162,8 @@ Proof. Admitted.
 
 (* Verifiable Random Functions (VRFs).
 IETF spec: https://www.rfc-editor.org/rfc/rfc9381.html.
-we model correctness (is_vrf_proof) and "Full Uniqueness" (is_vrf_out_det).
-we omit "Full Collision Resistance", since it's not needed in KT. *)
+we model correctness (is_vrf_proof), "Full Uniqueness" (is_vrf_out_det),
+and "Full Collision Resistance" (is_vrf_out_inj). *)
 
 (* is_vrf_sk provides ownership of an sk from the VrfGenerateKey function. *)
 Definition is_vrf_sk (ptr_sk : loc) (pk : list w8) : iProp Σ.
@@ -193,9 +193,10 @@ Admitted.
 Instance is_vrf_proof_persistent pk data proof : Persistent (is_vrf_proof pk data proof).
 Proof. Admitted.
 
-(* is_vrf_out helps model "Full Uniqueness" (is_vrf_out_det).
-i.e., it's impossible to have the same pk and data that
-map thru Prove / Verify to diff outs. *)
+(* is_vrf_out gets returned from Prove / Verify and abstracts out
+the specific proof associated with a VRF computation.
+this is convenient because the spec does not rule out multiple proofs
+between the same pk, data, and output. *)
 Definition is_vrf_out (pk : list w8) (data : list w8) (out : list w8) : iProp Σ.
 Admitted.
 
@@ -203,10 +204,17 @@ Admitted.
 Instance is_vrf_out_persistent pk data out : Persistent (is_vrf_out pk data out).
 Proof. Admitted.
 
+(* is_vrf_out_det models "Full Uniqueness".
+this always holds for ECVRF. *)
 Lemma is_vrf_out_det pk data out0 out1 :
   is_vrf_out pk data out0 -∗ is_vrf_out pk data out1 -∗ ⌜ out0 = out1⌝.
 Proof. Admitted.
 
+(* is_vrf_out_inj models "Full Collision Resistance".
+"Full" (as opposed to "Trusted") holds for ECVRF as long
+as the `validate_key` parameter to `ECVRF_verify` is true.
+key validation is done when running `VrfPublicKeyDecode`
+on an adversarially-provided pk. *)
 Lemma is_vrf_out_inj pk data0 data1 out :
   is_vrf_out pk data0 out -∗ is_vrf_out pk data1 out -∗ ⌜ data0 = data1 ⌝.
 Proof. Admitted.
