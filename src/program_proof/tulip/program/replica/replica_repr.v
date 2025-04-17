@@ -176,16 +176,35 @@ Section repr.
       "#HidxP" ∷ readonly (rp ↦[Replica :: "idx"] #idx) ∗
       "#Hidx"  ∷ is_index idx γ α.
 
+  Definition is_replica_gid_rid (rp : loc) (gid rid : u64) : iProp Σ :=
+    "#HgidP" ∷ readonly (rp ↦[Replica :: "gid"] #gid) ∗
+    "#HridP" ∷ readonly (rp ↦[Replica :: "rid"] #rid) ∗
+    "%Hgid"  ∷ ⌜gid ∈ gids_all⌝ ∗
+    "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
+
+  Definition is_replica_proph (rp : loc) (proph : proph_id) : iProp Σ :=
+    "#HprophP" ∷ readonly (rp ↦[Replica :: "proph"] #proph).
+
+  Definition is_replica_gaddrm (rp : loc) γ : iProp Σ :=
+    ∃ (gaddrmPP : loc) (gaddrmP : gmap u64 loc) (gaddrm : gmap u64 (gmap u64 chan)),
+      "#HgaddrmPP"  ∷ readonly (rp ↦[Replica :: "gaddrm"] #gaddrmPP) ∗
+      "#HgaddrmP"   ∷ own_map gaddrmPP DfracDiscarded gaddrmP ∗
+      "#Hgaddrm"    ∷ ([∗ map] addrmP; addrm ∈ gaddrmP; gaddrm, own_map addrmP DfracDiscarded addrm) ∗
+      "#Hinvnets"   ∷ ([∗ map] gid ↦ addrm ∈ gaddrm, know_tulip_network_inv γ gid addrm) ∗
+      "%Hdomgaddrm" ∷ ⌜dom gaddrm = gids_all⌝ ∗
+      "%Hdomaddrm"  ∷ ⌜map_Forall (λ _ addrm, dom addrm = rids_all) gaddrm⌝.
+
   (* TODO: rename this to [is_replica_core] and the one below to just [is_replica]. *)
-  Definition is_replica (rp : loc) gid rid γ : iProp Σ :=
-    ∃ (mu : loc) α,
+  Definition is_replica (rp : loc) (gid rid : u64) γ : iProp Σ :=
+    ∃ (mu : loc) (proph : proph_id) α,
       "#HmuP"     ∷ readonly (rp ↦[Replica :: "mu"] #mu) ∗
       "#Hlock"    ∷ is_lock tulipNS #mu (own_replica rp gid rid γ α) ∗
       "#Hidx"     ∷ is_replica_idx rp γ α ∗
-      "#Hinv"     ∷ know_tulip_inv γ ∗
-      "#Hinvfile" ∷ know_replica_file_inv γ gid rid ∗
-      "%Hgid"     ∷ ⌜gid ∈ gids_all⌝ ∗
-      "%Hrid"     ∷ ⌜rid ∈ rids_all⌝.
+      "#Hgidrid"  ∷ is_replica_gid_rid rp gid rid ∗
+      "#Hgaddrm"  ∷ is_replica_gaddrm rp γ ∗
+      "#Hproph"   ∷ is_replica_proph rp proph ∗
+      "#Hinv"     ∷ know_tulip_inv_with_proph γ proph ∗
+      "#Hinvfile" ∷ know_replica_file_inv γ gid rid.
 
 End repr.
 
@@ -204,7 +223,6 @@ Section repr.
   Definition is_replica_plus_network (rp : loc) (addr : chan) (gid rid : u64) γ : iProp Σ :=
     ∃ (addrm : gmap u64 chan),
       "#HaddrP"  ∷ readonly (rp ↦[Replica :: "addr"] (to_val addr)) ∗
-      "#HridP"   ∷ readonly (rp ↦[Replica :: "rid"] #rid) ∗
       "#Hinvnet" ∷ know_tulip_network_inv γ gid addrm ∗
       "Hrp"      ∷ is_replica_plus_txnlog rp gid rid γ ∗
       "%Haddr"   ∷ ⌜addrm !! rid = Some addr⌝.

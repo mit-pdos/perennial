@@ -4,6 +4,7 @@ From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.tulip.backup.
 From Goose Require github_com.mit_pdos.tulip.index.
 From Goose Require github_com.mit_pdos.tulip.message.
+From Goose Require github_com.mit_pdos.tulip.params.
 From Goose Require github_com.mit_pdos.tulip.tulip.
 From Goose Require github_com.mit_pdos.tulip.txnlog.
 From Goose Require github_com.mit_pdos.tulip.util.
@@ -752,6 +753,38 @@ Definition Replica__Serve: val :=
       Continue);;
     #().
 
+Definition Replica__intervene: val :=
+  rec: "Replica__intervene" "rp" "ts" "ptgs" :=
+    let: "rank" := ref_to uint64T #2 in
+    let: ("rankl", "ok") := Replica__lowestRank "rp" "ts" in
+    (if: "ok"
+    then "rank" <-[uint64T] (std.SumAssumeNoOverflow "rankl" #1)
+    else #());;
+    Replica__advance "rp" "ts" (![uint64T] "rank");;
+    logAdvance (struct.loadF Replica "fname" "rp") (struct.loadF Replica "lsna" "rp") "ts" (![uint64T] "rank");;
+    let: "cid" := struct.mk tulip.CoordID [
+      "GroupID" ::= struct.loadF Replica "gid" "rp";
+      "ReplicaID" ::= struct.loadF Replica "rid" "rp"
+    ] in
+    let: "btcoord" := backup.Start "ts" (![uint64T] "rank") "cid" "ptgs" (struct.loadF Replica "gaddrm" "rp") #0 (struct.loadF Replica "proph" "rp") in
+    Fork (backup.BackupTxnCoordinator__Finalize "btcoord");;
+    #().
+
+Definition Replica__Backup: val :=
+  rec: "Replica__Backup" "rp" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      Mutex__Lock (struct.loadF Replica "mu" "rp");;
+      let: "ptgsm" := NewMap uint64T (slice.T uint64T) #() in
+      MapIter (struct.loadF Replica "ptgsm" "rp") (λ: "ts" "ptgs",
+        MapInsert "ptgsm" "ts" "ptgs");;
+      MapIter "ptgsm" (λ: "ts" "ptgs",
+        Replica__intervene "rp" "ts" "ptgs");;
+      Mutex__Unlock (struct.loadF Replica "mu" "rp");;
+      time.Sleep params.NS_BACKUP_INTERVAL;;
+      Continue);;
+    #().
+
 (* Argument:
    1. @lsn: LSN of consistent command to replay. *)
 Definition Replica__replay: val :=
@@ -824,10 +857,11 @@ Definition Replica__resume: val :=
     #().
 
 Definition start: val :=
-  rec: "start" "rid" "addr" "fname" "addrmpx" "fnamepx" "proph" :=
+  rec: "start" "gid" "rid" "addr" "fname" "addrmpx" "fnamepx" "gaddrm" "proph" :=
     let: "txnlog" := txnlog.Start "rid" "addrmpx" "fnamepx" in
     let: "rp" := struct.new Replica [
       "mu" ::= newMutex #();
+      "gid" ::= "gid";
       "rid" ::= "rid";
       "addr" ::= "addr";
       "fname" ::= "fname";
@@ -841,13 +875,15 @@ Definition start: val :=
       "ptsm" ::= NewMap stringT uint64T #();
       "sptsm" ::= NewMap stringT uint64T #();
       "idx" ::= index.MkIndex #();
+      "gaddrm" ::= "gaddrm";
       "proph" ::= "proph"
     ] in
     Replica__resume "rp";;
     Fork (Replica__Serve "rp");;
     Fork (Replica__Applier "rp");;
+    Fork (Replica__Backup "rp");;
     "rp".
 
 Definition Start: val :=
-  rec: "Start" "rid" "addr" "fname" "addrmpx" "fnamepx" :=
-    start "rid" "addr" "fname" "addrmpx" "fnamepx" (NewProph #()).
+  rec: "Start" "gid" "rid" "addr" "fname" "addrmpx" "fnamepx" "gaddrm" :=
+    start "gid" "rid" "addr" "fname" "addrmpx" "fnamepx" "gaddrm" (NewProph #()).

@@ -13,12 +13,6 @@ Section program.
     iIntros "#Hgcoord" (Φ) "!> _ HΦ".
     wp_rec.
 
-    (*@ func (gcoord *GroupCoordinator) GetLeader() uint64 {                    @*)
-    (*@     gcoord.mu.Lock()                                                    @*)
-    (*@     leader := gcoord.leader                                             @*)
-    (*@     gcoord.mu.Unlock()                                                  @*)
-    (*@     return leader                                                       @*)
-    (*@ }                                                                       @*)
     iNamed "Hgcoord".
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
