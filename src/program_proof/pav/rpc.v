@@ -48,62 +48,46 @@ Proof. Admitted.
 
 (* TODO: this is mostly a copy of the Server__Put spec.
 later, need to properly bind these two. *)
-Lemma wp_CallServPut_good ptr_cli addr serv uid nVers sl_pk d0 (pk : list w8) cli_next_ep :
+Lemma wp_CallServPut ptr_cli addr is_good serv uid nVers sl_pk d0 (pk : list w8) cli_next_ep :
   {{{
-    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr true ∗
-    "Hvers" ∷ uid ↪[serv.(Server.γvers)] nVers ∗
+    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr is_good ∗
+    "Hvers" ∷ (if negb is_good then True else uid ↪[serv.(Server.γvers)] nVers) ∗
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
-    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) cli_next_ep
+    "#Hlb_ep" ∷ (if negb is_good then True else mono_nat_lb_own serv.(Server.γepoch) cli_next_ep)
   }}}
   CallServPut #ptr_cli #uid (slice_val sl_pk)
   {{{
     ptr_sigdig sigdig ptr_lat lat ptr_bound bound err label commit,
     RET (#ptr_sigdig, #ptr_lat, #ptr_bound, #err);
     let new_next_ep := word.add sigdig.(SigDig.Epoch) (W64 1) in
-    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr true ∗
+    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr is_good ∗
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
-    "->" ∷ ⌜ err = false ⌝ ∗
+    "%Hgenie" ∷ ⌜ is_good = true → err = false ⌝ ∗
 
-    "Hvers" ∷ uid ↪[serv.(Server.γvers)] (word.add nVers (W64 1)) ∗
-
-    "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
-    "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
-    "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat new_next_ep) ∗
-    "%Hlt_ep" ∷ ⌜ Z.of_nat cli_next_ep < uint.Z new_next_ep ⌝ ∗
-    (* provable from new_next_ep = the w64 size of epochHist slice. *)
-    "%Hnoof_ep" ∷ ⌜ uint.Z new_next_ep = (uint.Z sigdig.(SigDig.Epoch) + 1)%Z ⌝ ∗
-
-    "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
-    "#Hsig" ∷ is_sig serv.(Server.sig_pk)
-      (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
-      sigdig.(SigDig.Sig) ∗
-
-    "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
-    "#Hwish_lat" ∷ wish_checkMemb serv.(Server.vrf_pk) uid nVers
-      sigdig.(SigDig.Dig) lat label commit ∗
-
-    "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1) ∗
-    "#Hwish_bound" ∷ wish_checkNonMemb serv.(Server.vrf_pk)
-      uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
-
-  }}}.
-Proof. Admitted.
-
-Lemma wp_CallServGet ptr_cli addr (uid : w64) :
-  {{{
-    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr false
-  }}}
-  CallServGet #ptr_cli #uid
-  {{{
-    (err is_reg : bool) ptr_dig dig sl_hist hist_ref hist ptr_memb memb ptr_nonmemb nonmemb,
-    RET (#ptr_dig, slice_val sl_hist, #is_reg, #ptr_memb, #ptr_nonmemb, #err);
-    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr false ∗
     "Herr" ∷ (if err then True else
-      "#Hown_dig" ∷ SigDig.own ptr_dig dig (DfracOwn 1) ∗
-      "Hsl_hist" ∷ own_slice_small sl_hist ptrT (DfracOwn 1) hist_ref ∗
-      "Hown_hist" ∷ ([∗ list] l;v ∈ hist_ref;hist, MembHide.own l v (DfracOwn 1)) ∗
-      "Hown_memb" ∷ Memb.own ptr_memb memb (DfracOwn 1) ∗
-      "Hown_nonmemb" ∷ NonMemb.own ptr_nonmemb nonmemb (DfracOwn 1))
+      "#Hsigdig" ∷ SigDig.own ptr_sigdig sigdig DfracDiscarded ∗
+      "Hlat" ∷ Memb.own ptr_lat lat (DfracOwn 1) ∗
+      "Hbound" ∷ NonMemb.own ptr_bound bound (DfracOwn 1)) ∗
+
+    "Hgood" ∷ (if negb is_good then True else
+      "Hvers" ∷ uid ↪[serv.(Server.γvers)] (word.add nVers (W64 1)) ∗
+
+      "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
+      "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
+      "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat new_next_ep) ∗
+      "%Hlt_ep" ∷ ⌜ Z.of_nat cli_next_ep < uint.Z new_next_ep ⌝ ∗
+      (* provable from new_next_ep = the w64 size of epochHist slice. *)
+      "%Hnoof_ep" ∷ ⌜ uint.Z new_next_ep = (uint.Z sigdig.(SigDig.Epoch) + 1)%Z ⌝ ∗
+
+      "#Hsig" ∷ is_sig serv.(Server.sig_pk)
+        (PreSigDig.encodesF $ PreSigDig.mk sigdig.(SigDig.Epoch) sigdig.(SigDig.Dig))
+        sigdig.(SigDig.Sig) ∗
+
+      "#Hwish_lat" ∷ wish_checkMemb serv.(Server.vrf_pk) uid nVers
+        sigdig.(SigDig.Dig) lat label commit ∗
+
+      "#Hwish_bound" ∷ wish_checkNonMemb serv.(Server.vrf_pk)
+        uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound)
   }}}.
 Proof. Admitted.
 

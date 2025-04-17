@@ -35,7 +35,7 @@ Definition is_hist_ep cli_γ serv_vrf_pk (uid ep : w64)
     "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk bound commit) ⌝ ∗
     "#Hcli_entry" ∷ is_cli_entry cli_γ serv_vrf_pk bound uid (W64 $ length vals) (Some enc)))).
 
-(* is_hist says a history is okay up to valid. *)
+(* is_hist says a history is okay up to exclusive valid. *)
 Definition is_hist cli_γ serv_vrf_pk (uid : w64)
     (hist : list map_val_ty) (valid : w64) : iProp Σ :=
   "%Hhist_valid" ∷ ([∗ list] x ∈ hist, ⌜ uint.Z x.1 < uint.Z valid ⌝) ∗
