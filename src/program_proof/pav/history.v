@@ -65,17 +65,16 @@ Proof.
   ospecialize (Hhist_valid 0%nat _ _); [done|word].
 Qed.
 
-(*
-Lemma hist_extend_selfmon cli_γ uid hist valid new_valid :
-  uint.Z valid ≤ new_valid →
-  uint.Z (word.add new_valid (W64 1)) = uint.Z new_valid + uint.Z 1 →
-  ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
-  "#His_selfmon_post" ∷ is_selfmon_post cli_γ uid (W64 $ length hist) new_valid) -∗
-  is_hist cli_γ uid hist (word.add new_valid (W64 1)).
+Lemma hist_extend_selfmon cli_γ vrf_pk uid hist valid selfmon_ep :
+  let new_valid := word.add selfmon_ep (W64 1) in
+  uint.Z valid ≤ uint.Z new_valid →
+  uint.Z new_valid = uint.Z selfmon_ep + uint.Z selfmon_ep + uint.Z 1 →
+  ("#His_hist" ∷ is_hist cli_γ vrf_pk uid hist valid ∗
+  "#His_selfmon_post" ∷ is_selfmon_post cli_γ vrf_pk uid (W64 $ length hist) selfmon_ep) -∗
+  is_hist cli_γ vrf_pk uid hist new_valid.
 Proof.
-  intros ??. iNamed 1. iNamed "His_hist".
-  (* FIXME: word should work without this. *)
-  set (word.add new_valid (W64 1)) in *. iSplit.
+  simpl. intros ??. iNamed 1. iNamed "His_hist".
+  iSplit.
   { iApply big_sepL_forall. iPureIntro. simpl. intros * Hlook.
     specialize (Hhist_valid _ _ Hlook). word. }
   iIntros (ep ?). destruct (decide (uint.Z ep < uint.Z valid)).
@@ -87,7 +86,7 @@ Proof.
   { iDestruct (hist_nil with "[$Hknow_eps //]") as %->.
     iExists []. iSplit; [|iSplit]; [naive_solver..|].
     iNamed "His_selfmon_post". iFrame "#". iSplit; [word|]. iLeft. word. }
-  (* case 3: valid ≤ ep < new_valid. *)
+  (* case 3: valid ≤ ep < selfmon_ep. *)
   iSpecialize ("Hknow_eps" $! (word.sub valid (W64 1)) with "[]"); [word|].
   iNamed "Hknow_eps". iExists vals. iSplit; [|iSplit].
   - rewrite (list_filter_iff_strong
@@ -99,10 +98,9 @@ Proof.
     iDestruct (big_sepL2_length with "Hpk_commit_reln") as %Hlen_vals.
     rewrite list_filter_all in Hlen_vals; last first.
     { intros ?[??] Hlook. ospecialize (Hhist_valid _ _ Hlook). simpl in *. word. }
-    iNamed "His_selfmon_post". rewrite Hlen_vals. iFrame "#".
+    iNamed "His_selfmon_post". rewrite Hlen_vals. iFrame "#%".
     iSplit; [word|]. iLeft. word.
 Qed.
-*)
 
 Lemma hist_extend_put cli_γ vrf_pk uid hist valid put_ep pk :
   let new_valid := word.add put_ep (W64 1) in
@@ -179,65 +177,8 @@ Qed.
 Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
   last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist.
 
-(*
-Lemma hist_audit_msv (ep : w64) cli_γ uid hist valid adtr_γ aud_ep :
-  uint.Z ep < uint.Z valid →
-  uint.Z valid ≤ uint.Z aud_ep →
-  ("#His_hist" ∷ is_hist cli_γ uid hist valid ∗
-  "#His_audit" ∷ is_audit cli_γ adtr_γ aud_ep) -∗
-  msv adtr_γ ep uid (get_lat hist ep).
-Proof.
-  intros ??. iNamed 1.
-  iNamed "His_hist". iSpecialize ("Hknow_eps" $! ep with "[//]").
-  iNamed "His_audit". list_elem ms (uint.nat ep) as m.
-  iDestruct (mono_list_idx_own_get _ _ Hm_lookup with "Hadtr_maps") as "Hadtr_map".
-  iFrame "Hadtr_map". iNamed "Hknow_eps". iExists vals. iSplit.
-  { iClear "Hhist Hbound".
-    iDestruct (big_sepL2_length with "Hpk_commit_reln") as %Hlen_vals.
-    destruct (get_lat hist ep) as [[??]|] eqn:Hlat_pk, (last vals) as [[??]|]
-      eqn:Hlat_commit; [|exfalso..|done];
-      rewrite /get_lat last_lookup in Hlat_pk; rewrite last_lookup in Hlat_commit.
-    + rewrite Hlen_vals in Hlat_pk.
-      iDestruct (big_sepL2_lookup with "Hpk_commit_reln") as "?"; [exact Hlat_pk|exact Hlat_commit|].
-      iFrame "#".
-    + apply lookup_lt_Some in Hlat_pk. apply lookup_ge_None in Hlat_commit. lia.
-    + apply lookup_ge_None in Hlat_pk. apply lookup_lt_Some in Hlat_commit. lia. }
-  iNamedSuffix "Hbound" "_bnd". iFrame "#".
-  list_elem ms (uint.nat bound) as mbound.
-  iSplit; [|iClear "Hhist"; iDestruct "Hbound" as "[H|H]"; iNamed "H"].
-  - iClear "Hbound". iApply (big_sepL_impl with "Hhist").
-    iIntros (?[prior ?]) "!> %Hlook_vals". iNamed 1. iFrame "#".
-    (* tedious: need prior ep < adtr_bound to get prior adtr map for map transf.
-    get that by tracing val back to filtered hist and using hist validity. *)
-    iDestruct (big_sepL2_lookup_2_some with "Hpk_commit_reln") as %[[??] Hlook_hist]; [exact Hlook_vals|].
-    iDestruct (big_sepL2_lookup with "Hpk_commit_reln") as "H"; [exact Hlook_hist|exact Hlook_vals|].
-    iNamed "H". opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
-    { eapply elem_of_list_lookup. eauto using Hlook_hist. }
-    simpl in *. list_elem ms (uint.nat prior) as mprior.
-    iDestruct ("Hmap_transf" with "[$Hsubmap $Hin_prior $His_label]") as "H".
-    { iPureIntro. exact Hmprior_lookup. }
-    iNamed "H". iPureIntro.
-    opose proof ((proj1 Hinv_adtr) _ _ _ _ Hmprior_lookup Hm_lookup _); [word|].
-    by eapply lookup_weaken.
-  - iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
-    { iPureIntro. exact Hmbound_lookup. }
-    iNamed "Hmap_transf". iPureIntro.
-    opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
-    by eapply lookup_weaken_None.
-  - iSpecialize ("Hmap_transf" with "[$Hsubmap_bnd $Hin_bound $His_label_bnd]").
-    { iPureIntro. exact Hmbound_lookup. }
-    iNamed "Hmap_transf". iPureIntro.
-    destruct (decide $ is_Some $ m !! label) as [[? Hlook_mkey]|]; last first.
-    { by eapply eq_None_not_Some. }
-    opose proof ((proj1 Hinv_adtr) _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
-    opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
-    opose proof ((proj2 Hinv_adtr) _ _ _ _ _ Hm_lookup Hlook_mkey) as ?. word.
-Qed.
-*)
-
 End hist_derived.
 
-(*
 Section wps.
 Context `{!heapGS Σ, !pavG Σ}.
 
@@ -247,49 +188,36 @@ Definition is_HistEntry (ptr : loc) (obj : map_val_ty) : iProp Σ :=
   "#Hptr_HistVal" ∷ ptr ↦[HistEntry :: "HistVal"]□ (slice_val sl_HistVal) ∗
   "#Hsl_HistVal" ∷ own_slice_small sl_HistVal byteT DfracDiscarded obj.2.
 
-Definition own_hist cli_γ uid sl_hist hist valid : iProp Σ :=
+Definition own_hist sl_hist hist : iProp Σ :=
   ∃ dim0_hist,
   "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
-  "#Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, is_HistEntry p o) ∗
-  "#His_hist" ∷ is_hist cli_γ uid hist valid.
+  "#Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, is_HistEntry p o).
 
-Lemma mk_hist cli_γ uid :
-  ⊢ own_hist cli_γ uid Slice.nil [] (W64 0).
-Proof.
-  iEval (rewrite /own_hist). iExists [].
-  iSplit. { iApply own_slice_zero. } iSplit; [|iSplit]; [naive_solver..|].
-  iIntros (??). word.
-Qed.
-
-Lemma wp_put_hist cli_γ uid sl_hist hist valid ptr_e ep pk  :
-  uint.Z valid ≤ uint.Z (word.add ep (W64 1)) →
-  uint.Z (word.add ep (W64 1)) = uint.Z ep + uint.Z 1 →
+Lemma wp_put_hist sl_hist hist ptr_e ep pk  :
   {{{
-    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist valid ∗
-    "#His_entry" ∷ is_HistEntry ptr_e (ep, pk) ∗
-    "#His_put_post" ∷ is_put_post cli_γ uid (W64 $ length hist) ep pk
+    "Hown_hist" ∷ own_hist sl_hist hist ∗
+    "#His_entry" ∷ is_HistEntry ptr_e (ep, pk)
   }}}
   SliceAppend ptrT (slice_val sl_hist) #ptr_e
   {{{
     sl_hist', RET (slice_val sl_hist');
-    "Hown_hist" ∷ own_hist cli_γ uid sl_hist' (hist ++ [(ep, pk)]) (word.add ep (W64 1))
+    "Hown_hist" ∷ own_hist sl_hist' (hist ++ [(ep, pk)])
   }}}.
 Proof.
-  intros ??. iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_hist".
+  iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_hist".
   wp_apply (wp_SliceAppend with "Hsl_hist"). iIntros (?) "Hsl_hist".
   iDestruct (big_sepL2_snoc with "[$Hdim0_hist $His_entry]") as "Hnew_dim0_hist".
-  iDestruct (hist_extend_put with "[$His_hist $His_put_post]") as "Hnew_is_hist"; [done..|].
   iApply "HΦ". iFrame "∗#".
 Qed.
 
-Lemma wp_GetHist cli_γ uid sl_hist hist valid (ep : w64) :
+Lemma wp_GetHist sl_hist hist (ep : w64) :
   {{{
-    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist valid
+    "Hown_hist" ∷ own_hist sl_hist hist
   }}}
   GetHist (slice_val sl_hist) #ep
   {{{
     (is_reg : bool) sl_pk pk, RET (#is_reg, slice_val sl_pk);
-    "Hown_hist" ∷ own_hist cli_γ uid sl_hist hist valid ∗
+    "Hown_hist" ∷ own_hist sl_hist hist ∗
     "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
     "%Heq_lat" ∷
       ⌜ match get_lat hist ep with
@@ -345,4 +273,3 @@ Proof.
 Qed.
 
 End wps.
-*)
