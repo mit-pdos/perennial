@@ -11,6 +11,8 @@ Section program.
     let ts := uint.nat tsW in
     let rk := uint.nat rkW in
     valid_ts ts ->
+    is_lnrz_tid γ ts -∗
+    safe_txn_ptgs γ ts ptgs -∗
     is_txnptgs_in_slice ptgsP ptgs -∗
     is_backup_gcoord gcoord rk ts gid γ -∗
     {{{ True }}}
@@ -19,7 +21,7 @@ Section program.
         if valid then safe_group_txnphase γ ts gid phase else True
     }}}.
   Proof.
-    iIntros (ts rk Hvts) "#Hptgs #Hgcoord".
+    iIntros (ts rk Hvts) "#Hlnrz #Hsafeptgs #Hptgs #Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
@@ -43,7 +45,7 @@ Section program.
       iAssert (is_backup_gcoord_with_addrm gcoord addrm rk ts gid γ)%I as "#Hgcoord".
       { by iFrame "# %". }
       wp_apply wp_fork.
-      { wp_apply (wp_BackupGroupCoordinator__PrepareSession with "Hptgs Hgcoord").
+      { wp_apply (wp_BackupGroupCoordinator__PrepareSession with "Hlnrz Hsafeptgs Hptgs Hgcoord").
         { apply Hvts. }
         { by apply elem_of_dom_2 in Hrid. }
         done.

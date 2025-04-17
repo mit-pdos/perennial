@@ -132,6 +132,8 @@ Section repr.
       "#Hrpvds"     ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
       "#Hsafetpwrs" ∷ ([∗ map] t ↦ pwrs ∈ cpm, safe_txn_pwrs γ gid t pwrs) ∗
       "#Hfpw"       ∷ ([∗ map] t ↦ ps ∈ psm, fast_proposal_witness γ gid rid t ps) ∗
+      "#Hlnrzs"     ∷ ([∗ set] t ∈ dom pgm, is_lnrz_tid γ t) ∗
+      "#Hsafebk"    ∷ ([∗ map] t ↦ g ∈ pgm, safe_backup_txn γ t g) ∗
       "#Hclogalb"   ∷ is_txn_log_lb γ gid cloga ∗
       "%Hdompsmrkm" ∷ ⌜dom psm = dom rkm⌝ ∗
       "%Hcloga"     ∷ ⌜prefix clog cloga⌝ ∗

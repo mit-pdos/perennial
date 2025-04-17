@@ -12,7 +12,9 @@ Section program.
     let ts := uint.nat tsW in
     gid ∈ gids_all ->
     rid ∈ rids_all ->
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
     is_dbmap_in_slice pwrsS pwrs -∗
     is_txnptgs_in_slice ptgsS ptgs -∗
     know_tulip_inv γ -∗
@@ -23,7 +25,7 @@ Section program.
         own_replica rp gid rid γ α ∗ fast_prepare_outcome γ gid rid ts res
     }}}.
   Proof.
-    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hpwrs #Hptgs #Hinv #Hinvfile".
+    iIntros (ts Hgid Hrid) "#Hlnrz #Hsafepwrs #Hsafeptgs #Hpwrs #Hptgs #Hinv #Hinvfile".
     iIntros (Φ) "!> Hrp HΦ".
     wp_rec.
 
@@ -284,7 +286,7 @@ Section program.
     iMod (replica_inv_execute with "Hclogalb Hclog Hilog Hgroup Hrp")
       as "(Hclog & Hilog & Hgroup & Hrp)".
     iDestruct (big_sepM2_dom with "Hprepm") as %Hdomprepm.
-    iMod (replica_inv_validate with "Hsafepwrs Hclog Hilog Hrp")
+    iMod (replica_inv_validate with "Hlnrz Hsafepwrs Hsafeptgs Hclog Hilog Hrp")
       as "(Hclog & Hilog & Hrp & #Hvd)".
     { apply Hexec. }
     { do 2 (split; first done).
@@ -369,6 +371,12 @@ Section program.
     iModIntro.
     iSplit.
     { by iApply big_sepM_insert_2. }
+    iSplit.
+    { rewrite !dom_insert_L. by iApply big_sepS_insert_2. }
+    iSplit.
+    { iApply big_sepM_insert_2; last done.
+      iApply (safe_txn_pwrs_ptgs_backup_txn with "Hsafepwrs Hsafeptgs").
+    }
     iPureIntro.
     split.
     { by rewrite 2!dom_insert_L Hdompsmrkm. }
@@ -397,7 +405,9 @@ Section program.
   Theorem wp_Replica__FastPrepare
     rp (tsW : u64) pwrsS pwrs ptgsS ptgs gid rid γ :
     let ts := uint.nat tsW in
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
     is_dbmap_in_slice pwrsS pwrs -∗
     is_txnptgs_in_slice ptgsS ptgs -∗
     is_replica rp gid rid γ -∗
@@ -407,7 +417,7 @@ Section program.
         fast_prepare_outcome γ gid rid ts res
     }}}.
   Proof.
-    iIntros (ts) "#Hsafepwrs #Hpwrs #Hptgs #Hrp".
+    iIntros (ts) "#Hlnrz #Hsafepwrs #Hsafeptgs #Hpwrs #Hptgs #Hrp".
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
@@ -423,7 +433,7 @@ Section program.
     wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
     iNamed "Hgidrid".
-    wp_apply (wp_Replica__fastPrepare with "Hsafepwrs Hpwrs Hptgs [$Hinv] Hinvfile Hrp").
+    wp_apply (wp_Replica__fastPrepare with "Hlnrz Hsafepwrs Hsafeptgs Hpwrs Hptgs [$Hinv] Hinvfile Hrp").
     { apply Hgid. }
     { apply Hrid. }
     iIntros (res) "[Hrp #Hfp]".

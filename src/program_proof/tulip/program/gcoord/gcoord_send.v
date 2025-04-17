@@ -157,14 +157,16 @@ Section program.
     addrm gid γ :
     let ts := uint.nat tsW in
     rid ∈ dom addrm ->
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
     is_txnptgs_in_slice ptgsP ptgs -∗
     is_gcoord_with_addrm gcoord gid addrm γ -∗
     {{{ own_map pwrsP q pwrs }}}
       GroupCoordinator__SendFastPrepare #gcoord #rid #tsW #pwrsP (to_val ptgsP)
     {{{ RET #(); True }}}.
   Proof.
-    iIntros (ts Hrid) "#Hsafepwrs #Hptgs #Hgcoord".
+    iIntros (ts Hrid) "#Hlnrz #Hsafepwrs #Hsafeptgs #Hptgs #Hgcoord".
     iIntros (Φ) "!> Hpwrs HΦ".
     wp_rec.
 
@@ -211,7 +213,7 @@ Section program.
         by iApply big_sepS_insert_2.
       }
       iSplit.
-      { iApply big_sepS_insert_2; [done | done]. }
+      { by iApply big_sepS_insert_2; first iFrame "#". }
       iPureIntro.
       apply set_Forall_union; last first.
       { apply (set_Forall_impl _ _ _ Henc). intros m Hm. clear -Hm. set_solver. }
@@ -238,14 +240,16 @@ Section program.
     q (pwrs : dbmap) (ptgs : txnptgs) addrm gid γ :
     let ts := uint.nat tsW in
     rid ∈ dom addrm ->
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
     is_txnptgs_in_slice ptgsP ptgs -∗
     is_gcoord_with_addrm gcoord gid addrm γ -∗
     {{{ own_map pwrsP q pwrs }}}
       GroupCoordinator__SendValidate #gcoord #rid #tsW #pwrsP (to_val ptgsP)
     {{{ RET #(); True }}}.
   Proof.
-    iIntros (ts Hrid) "#Hsafepwrs #Hptgs #Hgcoord".
+    iIntros (ts Hrid) "#Hlnrz #Hsafepwrs #Hsafeptgs #Hptgs #Hgcoord".
     iIntros (Φ) "!> Hpwrs HΦ".
     wp_rec.
 
@@ -293,7 +297,7 @@ Section program.
         by iApply big_sepS_insert_2.
       }
       iSplit.
-      { iApply big_sepS_insert_2; [done | done]. }
+      { by iApply big_sepS_insert_2; first iFrame "#". }
       iPureIntro.
       apply set_Forall_union; last first.
       { apply (set_Forall_impl _ _ _ Henc). intros m Hm. clear -Hm. set_solver. }

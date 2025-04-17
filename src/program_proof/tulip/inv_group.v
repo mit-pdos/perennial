@@ -149,6 +149,25 @@ Section inv.
   Definition safe_txn_ptgs γ ts ptgs : iProp Σ :=
     ∃ wrs, is_txn_wrs γ ts wrs ∧ ⌜ptgs = ptgroups (dom wrs)⌝.
 
+  Definition safe_backup_txn γ ts ptgs : iProp Σ :=
+    ∃ wrs,
+      "#Hwrs"   ∷ is_txn_wrs γ ts wrs ∗
+      "%Hvts"   ∷ ⌜valid_ts ts⌝ ∗
+      "%Hvwrs"  ∷ ⌜valid_wrs wrs⌝ ∗
+      "%Hvptgs" ∷ ⌜ptgs = ptgroups (dom wrs)⌝.
+
+  Lemma safe_txn_pwrs_ptgs_backup_txn γ gid ts pwrs ptgs :
+    safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
+    safe_backup_txn γ ts ptgs.
+  Proof.
+    iIntros "Hpwrs Hptgs".
+    iDestruct "Hpwrs" as (wrs1) "(Hwrs1 & %Hvt & %Hvw & _)".
+    iDestruct "Hptgs" as (wrs2) "[Hwrs2 %Hptgs]".
+    iDestruct (txn_wrs_agree with "Hwrs1 Hwrs2") as %->.
+    iFrame "∗ %".
+  Qed.
+
   Lemma safe_txn_pwrs_impl_is_txn_pwrs γ gid ts pwrs :
     safe_txn_pwrs γ gid ts pwrs -∗
     is_txn_pwrs γ gid ts pwrs.

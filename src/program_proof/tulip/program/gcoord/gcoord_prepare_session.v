@@ -37,7 +37,9 @@ Section program.
     (pwrs : dbmap) (ptgs : txnptgs) addrm gid γ :
     let ts := uint.nat tsW in
     rid ∈ dom addrm ->
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
     own_map pwrsP DfracDiscarded pwrs -∗
     is_txnptgs_in_slice ptgsP ptgs -∗
     is_gcoord_with_addrm gcoord gid addrm γ -∗
@@ -45,7 +47,7 @@ Section program.
       GroupCoordinator__PrepareSession #gcoord #rid #tsW (to_val ptgsP) #pwrsP
     {{{ RET #(); True }}}.
   Proof.
-    iIntros (ts Hrid) "#Hsafepwrs #Hpwrs #Hptgs #Hgcoord".
+    iIntros (ts Hrid) "#Hlnrz #Hsafepwrs #Hsafeptgs #Hpwrs #Hptgs #Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec. wp_pures.
 
@@ -100,7 +102,8 @@ Section program.
       (*@     }                                                                   @*)
       (*@                                                                         @*)
       case_bool_decide as Hfp; wp_pures.
-      { wp_apply (wp_GroupCoordinator__SendFastPrepare with "Hsafepwrs Hptgs Hgcoord Hpwrs").
+      { wp_apply (wp_GroupCoordinator__SendFastPrepare
+                   with "Hlnrz Hsafepwrs Hsafeptgs Hptgs Hgcoord Hpwrs").
         { apply Hrid. }
         wp_pures.
         rewrite Hfp /=.
@@ -110,7 +113,8 @@ Section program.
         by iApply "HΦ".
       }
       case_bool_decide as Hvd; wp_pures.
-      { wp_apply (wp_GroupCoordinator__SendValidate with "Hsafepwrs Hptgs Hgcoord Hpwrs").
+      { wp_apply (wp_GroupCoordinator__SendValidate
+                   with "Hlnrz Hsafepwrs Hsafeptgs Hptgs Hgcoord Hpwrs").
         { apply Hrid. }
         wp_pures.
         rewrite Hvd /=.

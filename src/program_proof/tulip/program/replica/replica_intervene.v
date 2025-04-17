@@ -10,8 +10,11 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Replica__intervene
-    (rp : loc) (tsW : u64) (ptgsP : Slice.t) rid gid proph γ α :
+    (rp : loc) (tsW : u64) (ptgsP : Slice.t) (ptgs : txnptgs) rid gid proph γ α :
     let ts := uint.nat tsW in
+    is_lnrz_tid γ ts -∗
+    is_txnptgs_in_slice ptgsP ptgs -∗
+    safe_backup_txn γ ts ptgs -∗
     is_replica_gid_rid rp gid rid -∗
     is_replica_gaddrm rp γ -∗
     is_replica_proph rp proph -∗
@@ -21,7 +24,7 @@ Section program.
       Replica__intervene #rp #tsW (to_val ptgsP)
     {{{ RET #(); own_replica rp gid rid γ α }}}.
   Proof.
-    iIntros (ts) "#Hgidrid #Hgaddrm #Hproph #Hinv #Hinvfile".
+    iIntros (ts) "#Hlnrzed #Hptgs #Hsafebk #Hgidrid #Hgaddrm #Hproph #Hinv #Hinvfile".
     iIntros (Φ) "!> Hrp HΦ".
     wp_rec.
 
@@ -37,6 +40,7 @@ Section program.
     (*@         rank = rankl + 1                                                @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
+    iRename "Hsafebk" into "Hsafebk'".
     do 2 iNamed "Hrp".
     wp_apply (wp_Replica__lowestRank with "Hpsmrkm").
     iIntros (rankl ok) "[Hpsmrkm %Hrankl]".
@@ -150,13 +154,11 @@ Section program.
       iNamed "Hgaddrm". iNamed "Hproph".
       do 2 wp_loadField.
       wp_load.
-      wp_apply (wp_Start _ _ (gid, rid) with "[] [] [] HgaddrmP Hgaddrm Hinv Hinvnets [Htokens]").
+      wp_apply (wp_Start _ _ (gid, rid) with
+                 "Hlnrzed Hsafebk' Hptgs HgaddrmP Hgaddrm Hinv Hinvnets [Htokens]").
       { (* rank > 1 *) clear -Hnof Hnz. word. }
       { apply Hdomgaddrm. }
       { apply Hdomaddrm. }
-      { (* [is_lnrz_tid] *) admit. }
-      { (* [safe_backup_txn] *) admit. }
-      { (* is_txnptgs_in_slice ptgsP *) admit. }
       { by rewrite uint_nat_word_add_S; last word. }
       iIntros (tcoord) "Htcoord".
       wp_pures.
@@ -304,13 +306,11 @@ Section program.
       iNamed "Hgaddrm". iNamed "Hproph".
       do 2 wp_loadField.
       wp_load.
-      wp_apply (wp_Start _ _ (gid, rid) with "[] [] [] HgaddrmP Hgaddrm Hinv Hinvnets [Htokens]").
+      wp_apply (wp_Start _ _ (gid, rid)
+                 with "Hlnrzed Hsafebk' Hptgs HgaddrmP Hgaddrm Hinv Hinvnets [Htokens]").
       { (* rank > 1 *) word. }
       { apply Hdomgaddrm. }
       { apply Hdomaddrm. }
-      { (* [is_lnrz_tid] *) admit. }
-      { (* [safe_backup_txn] *) admit. }
-      { (* is_txnptgs_in_slice ptgsP *) admit. }
       { simpl. by replace (uint.nat (W64 2)) with 2%nat by word. }
       iIntros (tcoord) "Htcoord".
       wp_pures.
@@ -367,6 +367,6 @@ Section program.
       }
       { by rewrite /execute_cmds foldl_snoc execute_cmds_unfold Hexec /=. }
     }
-  Admitted.
+  Qed.
 
 End program.

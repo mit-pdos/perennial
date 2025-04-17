@@ -181,6 +181,8 @@ Section inv.
       "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, safe_txn_pwrs γ gid ts pwrs) ∗
       "#Hrpvds"   ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
       "#Hfpw"     ∷ ([∗ map] t ↦ ps ∈ psm, fast_proposal_witness γ gid rid t ps) ∗
+      "#Hlnrzs"   ∷ ([∗ set] t ∈ dom ptgsm, is_lnrz_tid γ t) ∗
+      "#Hsafebk"  ∷ ([∗ map] t ↦ g ∈ ptgsm, safe_backup_txn γ t g) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
       "#Hcloglb"  ∷ is_txn_log_lb γ gid clog ∗

@@ -155,7 +155,8 @@ Section program.
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
       iDestruct "Hpwrsptgs" as "[Hpwrs Hptgs]".
       iNamed "Hrp".
-      wp_apply (wp_Replica__FastPrepare with "Hsafe Hpwrs Hptgs Hrp").
+      iDestruct "Hsafe" as "(#Hlnrz & #Hsafepwrs & #Hsafeptgs)".
+      wp_apply (wp_Replica__FastPrepare with "Hlnrz Hsafepwrs Hsafeptgs Hpwrs Hptgs Hrp").
       iIntros (res) "#Houtcome".
       wp_loadField.
       wp_apply (wp_EncodeTxnFastPrepareResponse).
@@ -219,7 +220,8 @@ Section program.
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
       iDestruct "Hpwrsptgs" as "[Hpwrs Hptgs]".
       iNamed "Hrp".
-      wp_apply (wp_Replica__Validate with "Hsafe Hpwrs Hptgs Hrp").
+      iDestruct "Hsafe" as "(#Hlnrz & #Hsafepwrs & #Hsafeptgs)".
+      wp_apply (wp_Replica__Validate with "Hlnrz Hsafepwrs Hsafeptgs Hpwrs Hptgs Hrp").
       iIntros (res) "#Houtcome".
       wp_loadField.
       wp_apply (wp_EncodeTxnValidateResponse).

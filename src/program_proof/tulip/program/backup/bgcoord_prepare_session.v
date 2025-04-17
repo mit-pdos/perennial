@@ -13,13 +13,15 @@ Section program.
     let rk := uint.nat rkW in
     valid_ts ts ->
     rid ∈ dom addrm ->
+    is_lnrz_tid γ ts -∗
+    safe_txn_ptgs γ ts ptgs -∗
     is_txnptgs_in_slice ptgsP ptgs -∗
     is_backup_gcoord_with_addrm gcoord addrm rk ts gid γ -∗
     {{{ True }}}
       BackupGroupCoordinator__PrepareSession #gcoord #rid #tsW #rkW (to_val ptgsP)
     {{{ RET #(); True }}}.
   Proof.
-    iIntros (ts rank Hvts Hrid) "#Hptgs #Hgcoord".
+    iIntros (ts rank Hvts Hrid) "#Hlnrz #Hsafeptgs #Hptgs #Hgcoord".
     iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
@@ -70,7 +72,8 @@ Section program.
         wp_pures.
         destruct ok; wp_pures.
         { iDestruct "Hpwrs" as (pwrs) "[#Hpwrs #Hsafepwrs]".
-          wp_apply (wp_BackupGroupCoordinator__SendValidate with "Hsafepwrs Hptgs Hgcoord Hpwrs").
+          wp_apply (wp_BackupGroupCoordinator__SendValidate
+                     with "Hlnrz Hsafepwrs Hsafeptgs Hptgs Hgcoord Hpwrs").
           { apply Hrid. }
           wp_pures.
           by case_bool_decide; wp_pures; wp_apply wp_Sleep; wp_pures; iApply "HΦ".

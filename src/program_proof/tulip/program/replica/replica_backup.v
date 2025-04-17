@@ -58,7 +58,21 @@ Section program.
     { clear Φ.
       iIntros (m t p Φ) "!> [Hrp [%Hnone %Hsome]] HΦ".
       wp_pures.
-      wp_apply (wp_Replica__intervene with "Hgidrid Hgaddrm Hproph Hinv Hinvfile Hrp").
+      iDestruct (big_sepM2_dom with "Hptgsm") as %Hdomeq.
+      symmetry in Hpgmabs.
+      assert (is_Some (ptgsm !! t)) as [g Hg].
+      { by rewrite -elem_of_dom -Hdomeq elem_of_dom. }
+      pose proof (lookup_kmap_eq_Some _ _ _ _ _ _ Hpgmabs Hg) as (tx & Htx & Hpgmtx).
+      iDestruct (big_sepS_elem_of with "Hlnrzs") as "Hlnrz".
+      { apply elem_of_dom_2 in Hpgmtx. apply Hpgmtx. }
+      iDestruct (big_sepM2_lookup with "Hptgsm") as "Hptgs".
+      { apply Hsome. }
+      { apply Hg. }
+      iDestruct (big_sepM_lookup with "Hsafebk") as "Hsafe".
+      { apply Hpgmtx. }
+      wp_apply (wp_Replica__intervene with "[] Hptgs [] Hgidrid Hgaddrm Hproph Hinv Hinvfile Hrp").
+      { by replace (uint.nat t) with tx by word. }
+      { by replace (uint.nat t) with tx by word. }
       iIntros "Hrp".
       by iApply "HΦ".
     }

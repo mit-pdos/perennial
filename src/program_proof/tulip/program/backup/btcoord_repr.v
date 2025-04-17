@@ -38,13 +38,6 @@ Section btcoord_repr.
       "#Hgcoordsabs" ∷ ([∗ map] gid ↦ gcoord ∈ gcoords, is_backup_gcoord gcoord rk ts gid γ) ∗
       "%Hdomgcoords" ∷ ⌜dom gcoords = ptgs⌝.
 
-  Definition safe_backup_txn γ ts ptgs : iProp Σ :=
-    ∃ wrs,
-      "#Hwrs"   ∷ is_txn_wrs γ ts wrs ∗
-      "%Hvts"   ∷ ⌜valid_ts ts⌝ ∗
-      "%Hvwrs"  ∷ ⌜valid_wrs wrs⌝ ∗
-      "%Hvptgs" ∷ ⌜ptgs = ptgroups (dom wrs)⌝.
-
   Definition own_backup_tcoord (tcoord : loc) (ts : nat) (γ : tulip_names) : iProp Σ :=
     ∃ (rk : nat) (ptgs : txnptgs) (proph : proph_id),
       "Hts"      ∷ own_backup_tcoord_ts tcoord ts ∗

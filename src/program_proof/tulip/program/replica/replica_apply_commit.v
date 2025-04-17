@@ -252,8 +252,11 @@ Section program.
       { iDestruct (big_sepM_delete _ _ ts with "Hsafetpwrs") as "[_ ?]"; last done.
         apply Hcpmts.
       }
-      iClear "Hrpvds".
+      iDestruct (big_sepS_delete_affine _ _ ts with "Hlnrzs") as "Hlnrzs'".
+      iDestruct (big_sepM_delete_affine _ _ ts with "Hsafebk") as "Hsafebk'".
+      iClear "Hrpvds Hlnrzs Hsafebk".
       iFrame "∗ # %".
+      rewrite !dom_delete_L. iFrame "#".
       iPureIntro. simpl.
       exists (<[ts := true]> cm).
       split.

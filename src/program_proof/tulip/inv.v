@@ -269,8 +269,14 @@ Section inv_network.
   Definition safe_txnreq γ (gid : u64) req : iProp Σ :=
     match req with
     | ReadReq ts key => ⌜safe_read_req gid (uint.nat ts) key⌝
-    | FastPrepareReq ts pwrs _ => safe_txn_pwrs γ gid (uint.nat ts) pwrs
-    | ValidateReq ts _ pwrs _ => safe_txn_pwrs γ gid (uint.nat ts) pwrs
+    | FastPrepareReq ts pwrs ptgs =>
+        is_lnrz_tid γ (uint.nat ts) ∗
+        safe_txn_pwrs γ gid (uint.nat ts) pwrs ∗
+        safe_txn_ptgs γ (uint.nat ts) ptgs
+    | ValidateReq ts _ pwrs ptgs =>
+        is_lnrz_tid γ (uint.nat ts) ∗
+        safe_txn_pwrs γ gid (uint.nat ts) pwrs ∗
+        safe_txn_ptgs γ (uint.nat ts) ptgs
     | PrepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) true
     | UnprepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) false
     | InquireReq ts rank _ => ⌜valid_ts (uint.nat ts) ∧ valid_backup_rank (uint.nat rank)⌝
@@ -618,7 +624,7 @@ Section alloc.
         do 2 (split; first done).
         split; apply map_Forall2_empty.
       }
-      do 4 (iSplit; first done).
+      do 6 (iSplit; first done).
       iSplit.
       { iIntros (k t).
         destruct (kvdm !! k) as [l |] eqn:Hl; rewrite Hl; last done.

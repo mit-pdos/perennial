@@ -171,7 +171,11 @@ Section program.
           rewrite -Hwrsg in Hne.
           done.
         }
-        wp_apply (wp_GroupCoordinator__Prepare with "[] Hpwrs [] Hgcoordabs").
+        iAssert (safe_txn_ptgs γ tid (ptgroups (dom wrs)))%I as "#Hsafeptgs".
+        { by iFrame "Htxnwrs". }
+        wp_apply (wp_GroupCoordinator__Prepare with "[] [] [] Hpwrs [] Hgcoordabs").
+        { by rewrite Htsword. }
+        { by rewrite Htsword. }
         { by rewrite Htsword. }
         { by iFrame "# %". }
         iIntros (stg ok) "#Hsafe".
