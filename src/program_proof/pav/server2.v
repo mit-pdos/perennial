@@ -1113,6 +1113,46 @@ Proof.
     rewrite lookup_fmap in Hgauge. done. }
 Qed.
 
+Lemma ghost_nvers_agree γ st uid numVers :
+  own_num_vers γ uid numVers -∗
+  own_Server_nvers γ 1 st -∗
+  ⌜ numVers = default (W64 0) (userState.numVers <$> (st.(Server.userInfo) !! uid)) ⌝.
+Proof.
+  iIntros "Hn". iNamed 1. simpl.
+  iCombine "Hn Hnvers" gives %Hlookup.
+  pose proof (Hgauge uid) as Heq. rewrite Hlookup /= in Heq.
+  subst. rewrite lookup_fmap //.
+Qed.
+
+(* FIXME: is there already a lemma like this? *)
+Lemma big_sepL_iter {PROP : bi} {A : Type} R (Φ Ψ : nat → A → PROP) (l : list A) :
+  R -∗
+  ([∗ list] k↦x ∈ l, Φ k x) -∗
+  ([∗ list] k↦x ∈ l, R -∗ Φ k x -∗ R ∗ Ψ k x) -∗
+  R ∗ ([∗ list] k↦x ∈ l, Ψ k x).
+Proof.
+  iIntros "HR H1 Hwand".
+  iInduction l as [|] using rev_ind.
+  { rewrite big_sepL_nil. by iFrame. }
+  rewrite !big_sepL_snoc. iDestruct "H1" as "[H1 Ha]". iDestruct "Hwand" as "[Hwand Hb]".
+  iDestruct ("IHl" with "[$] [$] [$]") as "[HR H]".
+  iDestruct ("Hb" with "[$] [$]") as "[? ?]". iFrame.
+Qed.
+
+Lemma big_sepL_forall_1 {PROP : bi} {A : Type} (Φ : nat → A → PROP) (l : list A) :
+  □(∀ (k : nat) (x : A), ⌜l !! k = Some x⌝ → Φ k x) -∗ ([∗ list] k↦x ∈ l, Φ k x).
+Proof.
+  iIntros "#H". iInduction l as [|] using rev_ind.
+  { rewrite big_sepL_nil //. }
+  iSpecialize ("IHl" with "[]").
+  { iIntros "!# * %". iApply "H". iPureIntro. rewrite lookup_app_l //.
+    eapply lookup_lt_Some. done. }
+  rewrite big_sepL_app. iFrame "IHl".
+  rewrite big_sepL_singleton. iApply "H". iPureIntro.
+  rewrite lookup_app_r; last lia.
+  replace (_ : nat) with (0)%nat by lia. done.
+Qed.
+
 Context `{!waitgroupG Σ}.
 Lemma wp_Server__Worker γ s st :
   {{{
@@ -1132,12 +1172,16 @@ Proof.
   wp_pures. iDestruct (own_slice_small_sz with "work") as %Hwork_sz.
   eset (prop :=
          (λ (w : loc),
-            ∃ (req_ptr resp : loc) Ψ γtok,
+            ∃ (req_ptr resp : loc) Ψ γtok req nVers cli_next_ep,
               "resp" ∷ resp ↦[struct.t WQResp] _ ∗
               "#Resp" ∷ w ↦[Work::"Resp"]□ #resp ∗
               "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
-              "Hspec" ∷ wq_spec γ req_ptr Ψ ∗
+              "#HReq" ∷ WQReq.is_own req_ptr req ∗
+              "Hvers" ∷ own_num_vers γ req.(WQReq.Uid) nVers ∗
+              "#Hlb_ep" ∷ is_epoch_lb γ cli_next_ep ∗
+              "HΨ" ∷ wq_post γ req nVers cli_next_ep Ψ ∗
               "#His_work" ∷ is_Work w γtok Ψ)%I
+
          ).
   Opaque w64.
   wp_apply (wp_forSlice
@@ -1188,7 +1232,7 @@ Proof.
     - iRight in "HuidSet".
       erewrite take_S_r; last done.
       rewrite big_sepL_app. iFrame "HuidSet". rewrite big_sepL_singleton.
-      iFrame "∗#".
+      iNamed "Hspec". iFrame "∗#".
   }
   {
     iFrame. rewrite dom_empty_L big_sepS_empty take_0 big_sepL_nil //.
@@ -1280,7 +1324,7 @@ Proof.
     iIntros "work". wp_pures.
     iDestruct (big_sepL_lookup_acc with "Hprops") as "[Hprop Hprops]".
     { done. }
-    iNamedSuffix "Hprop" "_prop". iNamedSuffix "Hspec_prop" "_2_prop".
+    iNamedSuffix "Hprop" "_prop".
     wp_loadField. wp_pures.
     iDestruct (struct_fields_split with "resp_prop") as "H". iNamedSuffix "H" "_prop".
     wp_loadField. wp_pures.
@@ -1363,6 +1407,26 @@ Proof.
   iNamed "H".
 
   iClear "Houts0 uidSet".
+  subst prop.
+  eset (prop :=
+         (λ (w : loc),
+            ∃ (req_ptr resp : loc) Ψ γtok req nVers cli_next_ep,
+              "resp" ∷ resp ↦[struct.t WQResp] _ ∗
+              "#Resp" ∷ w ↦[Work::"Resp"]□ #resp ∗
+              "#Req" ∷ w ↦[Work::"Req"]□ #req_ptr ∗
+              "#HReq" ∷ WQReq.is_own req_ptr req ∗
+              "Hvers" ∷ own_num_vers γ req.(WQReq.Uid) nVers ∗
+              "#Hlb_ep" ∷ is_epoch_lb γ cli_next_ep ∗
+              "HΨ" ∷ wq_post γ req nVers cli_next_ep Ψ ∗
+              "#His_work" ∷ is_Work w γtok Ψ ∗
+              "%HnVers" ∷ ⌜ nVers = default (W64 0) (userState.numVers <$> st.(Server.userInfo) !! req.(WQReq.Uid)) ⌝
+         )%I).
+
+  iDestruct (big_sepL_iter _ _ (λ _ x, prop x) with "Hnvers Hprops []") as "[Hnvers Hprops]".
+  {
+    iApply big_sepL_forall_1. iIntros "!# * Hw Hnvers". iNamed 1.
+    iDestruct (ghost_nvers_agree with "[$] [$]") as %Hagree. iFrame "∗#%".
+  }
   iAssert (
       ∃ (i : w64) upd_sl upd openKeyMap userInfo,
       let st' := (st <| Server.keyMap := upd ∪ st.(Server.keyMap) |> <| Server.userInfo := userInfo |>) in
@@ -1391,8 +1455,7 @@ Proof.
     opose proof (list_lookup_lt work (uint.nat i) ltac:(word)) as [w Hlookup].
     wp_apply (wp_SliceGet with "[$work]"); first done. iIntros "work".
     erewrite drop_S; last done. iDestruct "Hprops" as "[Hprop Hprops]".
-    iNamedSuffix "Hprop" "_prop". iNamedSuffix "Hspec_prop" "_2_prop".
-    wp_loadField. wp_pures.
+    iNamedSuffix "Hprop" "_prop". wp_loadField. wp_pures.
     iDestruct (struct_fields_split with "resp_prop") as "H". iNamedSuffix "H" "_prop".
     wp_loadField. wp_pures. wp_load.
     wp_apply (wp_SliceGet with "[$work]"); first done. iIntros "work".
@@ -1409,8 +1472,8 @@ Proof.
     replace (w0) with (w) by naive_solver. clear dependent w0 out1.
     iDestruct (struct_field_pointsto_agree with "Req_prop Req") as %Heq.
     replace req_ptr0 with req_ptr by naive_solver.
-    iDestruct (WQReq.inj with "HReq Req_2_prop") as %Heq2. subst.
-    clear dependent req_ptr0. iClear "Req_2_prop".
+    iDestruct (WQReq.inj with "HReq HReq_prop") as %Heq2. subst.
+    clear dependent req_ptr0. iClear "HReq".
     iNamed "out0".
     wp_loadField. wp_pures. wp_loadField. iNamed "Hphys". wp_loadField.
     wp_apply (wp_Tree__Put with "[$HkeyMap]").
@@ -1425,7 +1488,7 @@ Proof.
     { iFrame "#". }
     iIntros "_". wp_apply (wp_MapInsert byte_string Slice.t with "[$upd]").
     { done. }
-    iIntros "upd". wp_pures. iNamed "HReq".
+    iIntros "upd". wp_pures. iNamed "HReq_prop".
     wp_loadField. wp_loadField. wp_apply (wp_MapGet with "[$HuserInfo_map]").
     iIntros "* [%Hulookup HuserInfo_map]". wp_pures. wp_apply wp_ref_to; [val_ty|].
     iIntros (user_ptr) "user". wp_pures. wp_load.
@@ -1471,8 +1534,7 @@ Proof.
                  mo.(mapper0Out.latestVrfHash) _ mo.(mapper0Out.mapVal) with "[] Hupd") as "Hupd2".
     { simpl. iFrame "#". }
     iFrame "HΦ work outs0 Hlocked".
-    iNamed "Hspec_prop".
-    iMod (ghost_nvers_put with "Hvers Hnvers") as "(%HnversEq & Hvers & Hnvers)".
+    iMod (ghost_nvers_put with "Hvers_prop Hnvers") as "(%HnversEq & Hvers_prop & Hnvers)".
     iFrame "∗#". instantiate (1:=req.(WQReq.Pk)). simpl.
     rewrite insert_union_l.
     replace (uint.nat (word.add _ _)) with (S (uint.nat i)) by word.
@@ -1490,22 +1552,20 @@ Proof.
       }
       rewrite !insert_delete_insert. simpl.
       subst. iFrame. iExactEq "H".
-      f_equal. f_equal. f_equal. f_equal.
+      f_equal. f_equal. f_equal. f_equal. simpl.
+      rewrite -HnversEq.
       by destruct lookup in |- *.
     }
-    instantiate (1:=<[(req.(WQReq.Uid), nVers) := (_, _)]>openKeyMap).
+    instantiate (1:=<[(req.(WQReq.Uid), ?[nver]) := (_, _)]>openKeyMap).
     iSplitR.
     {
       unfold is_map_relation. clear Hlookup.
       iIntros "!# *".
       destruct uid_ver as [uid ver].
-      destruct (decide (uid = req.(WQReq.Uid) ∧ ver = nVers)) as [[? ?]|].
+      destruct (decide (uid = req.(WQReq.Uid) ∧ ver = ?nver)) as [[? ?]|].
       - subst uid ver. rewrite lookup_insert. iFrame "#".
-        unfold encode_uid_ver. simpl. iFrame "#".
-        (* FIXME: latestVrfHash's version number is computed from [st], whereas this is
-           computed from the totally unconstrained [userInfo].
-         *)
-        admit.
+        simpl. iPureIntro. rewrite -insert_union_l lookup_insert. simpl.
+        rewrite HmapVal. f_equal.
       - rewrite lookup_insert_ne; last naive_solver.
         iSpecialize ("HopenKeyMap" $! (uid, ver)).
         iDestruct "HopenKeyMap" as "#H".
