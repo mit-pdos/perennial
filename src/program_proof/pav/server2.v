@@ -996,7 +996,9 @@ Definition is_mapper0Out_crypto γ st req mo : iProp Σ :=
   "#HboundVrfProof" ∷ is_vrf_proof γ.(vrf_pk) (enc_label_pre req.(WQReq.Uid) boundVer) mo.(mapper0Out.boundVrfProof) ∗
   "#Hrand" ∷ is_hash (γ.(commitSecret) ++ mo.(mapper0Out.latestVrfHash)) mo.(mapper0Out.pkOpen).(CommitOpen.Rand) ∗
   "#Hcommit" ∷ is_hash (CommitOpen.encodesF mo.(mapper0Out.pkOpen)) commit ∗
-  "%HmapVal" ∷ ⌜ mo.(mapper0Out.mapVal) = enc_val (W64 $ length st.(Server.epochHist)) commit ⌝.
+  "%HmapVal" ∷ ⌜ mo.(mapper0Out.mapVal) = enc_val (W64 $ length st.(Server.epochHist)) commit ⌝ ∗
+  "%Hpk" ∷ ⌜ mo.(mapper0Out.pkOpen).(CommitOpen.Val) = req.(WQReq.Pk) ⌝
+.
 
 Lemma wp_Server__mapper0 γ s st q (in' out : loc) req :
   {{{
@@ -1086,7 +1088,7 @@ Proof.
   iClear "Hsecret".
   iSplitL.
   { iFrame "#". instantiate (1:=ltac:(econstructor)). simpl. iFrame "∗#". }
-  iFrame "#". simpl. iPureIntro. f_equal. f_equal. word.
+  iFrame "#". simpl. iPureIntro. split; last done. f_equal. f_equal. word.
 Qed.
 
 Lemma ghost_nvers_put γ st uid label numVers plainPk mapval upd userInfo :
@@ -1471,7 +1473,7 @@ Proof.
     replace (w0) with (w) by naive_solver. clear dependent w0 out1.
     iDestruct (struct_field_pointsto_agree with "Req_prop Req") as %Heq.
     replace req_ptr0 with req_ptr by naive_solver.
-    iDestruct (WQReq.inj with "HReq HReq_prop") as %Heq2. subst.
+    iDestruct (WQReq.inj with "HReq HReq_prop") as %->.
     clear dependent req_ptr0. iClear "HReq".
     iNamed "out0".
     wp_loadField. wp_pures. wp_loadField. iNamed "Hphys". wp_loadField.
@@ -1481,8 +1483,8 @@ Proof.
     iNamed "out0_crypto".
     iDestruct (is_vrf_out_len with "HlatestVrfHash") as %Hlen.
     iSpecialize ("Herr" with "[//]"). iNamed "Herr".
-    iRight in "Hgenie". iSpecialize ("Hgenie" with "[//]"). iDestruct "Hgenie" as %?.
-    subst. wp_apply std_proof.wp_Assert; [done|]. wp_pures.
+    iRight in "Hgenie". iSpecialize ("Hgenie" with "[//]"). iDestruct "Hgenie" as %->.
+    wp_apply std_proof.wp_Assert; [done|]. wp_pures.
     wp_loadField. wp_apply wp_StringFromBytes.
     { iFrame "#". }
     iIntros "_". wp_apply (wp_MapInsert byte_string Slice.t with "[$upd]").
@@ -1555,31 +1557,81 @@ Proof.
       rewrite -HnversEq.
       by destruct lookup in |- *.
     }
-    instantiate (1:=<[(req.(WQReq.Uid), ?[nver]) := (_, _)]>openKeyMap).
+    instantiate (1:=<[(req.(WQReq.Uid), nVers) := (_, _)]>openKeyMap).
     iSplitR.
     {
       unfold is_map_relation. clear Hlookup.
       iIntros "!# *".
       destruct uid_ver as [uid ver].
-      destruct (decide (uid = req.(WQReq.Uid) ∧ ver = ?nver)) as [[? ?]|].
-      - subst uid ver. rewrite lookup_insert. iFrame "#".
+      destruct (decide (uid = req.(WQReq.Uid) ∧ ver = nVers)) as [[? ?]|].
+      - subst uid ver nVers. rewrite lookup_insert. iFrame "#".
         simpl. iPureIntro. rewrite -insert_union_l lookup_insert. simpl.
         rewrite HmapVal. f_equal.
       - rewrite lookup_insert_ne; last naive_solver.
         iSpecialize ("HopenKeyMap" $! (uid, ver)).
         iDestruct "HopenKeyMap" as "#H".
-        destruct (openKeyMap !! _).
+        destruct (openKeyMap !! _) eqn:Hlookup.
         + iDestruct "H" as (???) "($ & $ & $ & %H)".
           destruct (decide (label = mo.(mapper0Out.latestVrfHash))).
           * iExFalso. subst. iDestruct "HlatestVrfHash" as "-#Hbad".
-            iDestruct (is_vrf_out_inj with "Hbad []") as "%Heq".
-          *
-        +
-        }
-        admit.
+            iDestruct (is_vrf_out_inj with "Hbad [$]") as "%Heq".
+            exfalso. rewrite /encode_uid_ver /= in Heq.
+            eassert (MapLabelPre.mk uid _ = MapLabelPre.mk req.(WQReq.Uid) _) as [=->].
+            { eapply MapLabelPre.inj; done. }
+            naive_solver.
+          * rewrite -insert_union_l lookup_insert_ne //.
+        + iIntros (?) "#Hbad". iSpecialize ("H" with "[$]").
+          destruct (decide (label = mo.(mapper0Out.latestVrfHash))).
+          * subst. iDestruct (is_vrf_out_inj with "Hbad HlatestVrfHash") as "%Heq".
+            exfalso. rewrite /encode_uid_ver /= in Heq.
+            eassert (MapLabelPre.mk uid _ = MapLabelPre.mk req.(WQReq.Uid) _) as [=->].
+            { eapply MapLabelPre.inj; done. }
+            naive_solver.
+          * rewrite -insert_union_l lookup_insert_ne //.
     }
-    admit.
+    iPureIntro.
+    assert (uint.nat nVers < uint.nat (word.add nVers (W64 1))) as HnoOverflow.
+    { admit. } (* FIXME: nver overflow *)
+    intros uid. specialize (HkeyMapLatest uid).
+    destruct (decide (uid = req.(WQReq.Uid))).
+    - subst uid. rewrite lookup_insert.
+      replace (word.sub _ _) with (nVers) by word.
+      rewrite lookup_insert /=. rewrite -Hpk. split; first done.
+      rewrite /st' /= in HkeyMapLatest.
+      intros ver. rewrite dom_insert.
+      rewrite elem_of_union. rewrite elem_of_singleton.
+      destruct (userInfo !! req.(WQReq.Uid)).
+      + destruct t. simpl in *. subst numVers.
+        destruct (decide (ver = nVers)).
+        *  subst ver. split.
+          { intros _. word. }
+          intros ?. by left.
+        * destruct HkeyMapLatest as [_ HkeyMapLatest].
+          split.
+          { intros [Hbad|?]; first naive_solver. apply HkeyMapLatest in H. word. }
+          intros ?.
+          right. apply HkeyMapLatest. word.
+      + simpl in HnversEq. subst. rewrite -HnversEq.
+        replace (uint.nat (word.add _ _)) with 1%nat by word.
+        destruct (decide (ver = (W64 0))).
+        * subst ver. split; first done.
+          intros _. by left.
+        * split.
+          { intros ?. destruct H as [Hbad|?]; first naive_solver.
+            apply HkeyMapLatest in H. word. }
+          intros ?. word.
+    - rewrite lookup_insert_ne //. clear Hlookup.
+      rewrite /st' /= in HkeyMapLatest.
+      destruct (userInfo !! uid) eqn:Hlookup.
+      + destruct t. rewrite lookup_insert_ne //; last naive_solver.
+        split; first naive_solver. intros ver. destruct HkeyMapLatest as [_ HkeyMapLatest].
+        rewrite dom_insert elem_of_union. split.
+        * intros ?. apply HkeyMapLatest. set_solver.
+        * intros ?. right. apply HkeyMapLatest. done.
+      + intros ?. set_solver.
   }
+  iModIntro. iRight. iSplitR; first done.
+  wp_pures. iNamedSuffix "His_srv" "_srv". (* TODO: keep sigSk *)
 Admitted.
 
 End proof.

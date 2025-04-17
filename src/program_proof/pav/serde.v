@@ -186,6 +186,15 @@ Definition encodesF (obj : t) : list w8 :=
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 
+Lemma inj obj0 obj1 enc :
+  encodes enc obj0 →
+  encodes enc obj1 →
+  obj0 = obj1.
+Proof.
+  unfold encodes. intros Henc ->. destruct obj0, obj1.
+  unfold encodesF in Henc.
+Admitted.
+
 Section defs.
 Context `{!heapGS Σ}.
 Definition own (ptr : loc) (obj : t) d : iProp Σ :=
