@@ -216,9 +216,8 @@ Definition is_map_relation γ (mₗ : gmap (list w8) (list w8))
   (mₕ : gmap (uid_ty * ver_ty) (epoch_ty * pk_ty)) : iProp Σ :=
   (* A (uid_ver, epoch_pk) pair is in the abstract map iff a corresponding
      hidden element is in the physical map *)
-  □(∀ uid_ver o_epoch_pk,
-      ⌜ mₕ !! uid_ver = o_epoch_pk ⌝ -∗
-      match o_epoch_pk with
+  □(∀ uid_ver,
+      match mₕ !! uid_ver with
       | Some epoch_pk =>
           (∃ label,
               is_vrf_out γ.(vrf_pk) (encode_uid_ver uid_ver) label ∗
@@ -1430,7 +1429,6 @@ Proof.
     wp_loadField. wp_loadField. wp_apply (wp_MapGet with "[$HuserInfo_map]").
     iIntros "* [%Hulookup HuserInfo_map]". wp_pures. wp_apply wp_ref_to; [val_ty|].
     iIntros (user_ptr) "user". wp_pures. wp_load.
-    (* XXX: could join here if helpful *)
     set (st' := (st <| Server.keyMap := upd ∪ st.(Server.keyMap) |> <| Server.userInfo := userInfo |>)) in *.
     wp_bind (if: _ then _ else _)%E.
     set (post:=(
@@ -1499,11 +1497,21 @@ Proof.
     iSplitR.
     {
       unfold is_map_relation. clear Hlookup.
-      iIntros "!# * %Hlookup".
-      iExists _. iFrame "#".
-
+      iIntros "!# *".
+      destruct uid_ver as [uid ver].
+      destruct (decide (uid = req.(WQReq.Uid) ∧ ver = nVers)) as [[? ?]|].
+      - subst uid ver. rewrite lookup_insert. iFrame "#".
+        unfold encode_uid_ver. simpl. iFrame "#".
+        (* FIXME: latestVrfHash's version number is computed from [st], whereas this is
+           computed from the totally unconstrained [userInfo].
+         *)
+        admit.
+      - rewrite lookup_insert_ne; last naive_solver.
+        iSpecialize ("HopenKeyMap" $! (uid, ver)).
+        iDestruct "HopenKeyMap" as "#H".
+        admit.
     }
-    iSplit
+    admit.
   }
 Admitted.
 
