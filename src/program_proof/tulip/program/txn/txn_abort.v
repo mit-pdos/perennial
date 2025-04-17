@@ -43,8 +43,7 @@ Section program.
     iNamed "Hptgs".
     do 2 wp_loadField.
     set P := (λ (_ : u64), own_txn_gcoords txn γ)%I.
-    iMod (readonly_load with "HptgsL") as (q) "HptgsL'".
-    wp_apply (wp_forSlice P with "[] [$HptgsL' $Hgcoords]").
+    wp_apply (wp_forSlice P with "[] [$HptgsL $Hgcoords]").
     { (* Loop body. *)
       clear Φ.
 

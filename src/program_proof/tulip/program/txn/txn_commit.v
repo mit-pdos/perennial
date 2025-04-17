@@ -63,8 +63,7 @@ Section program.
     set P := (λ (_ : u64),
                 "HpwrsmP" ∷ own_map wrsP (DfracOwn 1) pwrsmP ∗
                 "Hgcoords" ∷ own_txn_gcoords txn γ)%I.
-    iMod (readonly_load with "HptgsL") as (q) "HptgsL'".
-    wp_apply (wp_forSlice P with "[] [$HptgsL' $HpwrsmP $Hgcoords]").
+    wp_apply (wp_forSlice P with "[] [$HptgsL $HpwrsmP $Hgcoords]").
     { (* Loop body. *)
       clear Φ.
 
