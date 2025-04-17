@@ -174,4 +174,31 @@ Definition Skip: val :=
   rec: "Skip" <> :=
     #().
 
+(* Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle. *)
+Definition Shuffle: val :=
+  rec: "Shuffle" "xs" :=
+    (if: (slice.len "xs") = #0
+    then #()
+    else
+      let: "i" := ref_to uint64T ((slice.len "xs") - #1) in
+      (for: (λ: <>, (![uint64T] "i") > #0); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") - #1)) := λ: <>,
+        let: "j" := (rand.RandomUint64 #()) `rem` ((![uint64T] "i") + #1) in
+        let: "temp" := SliceGet uint64T "xs" (![uint64T] "i") in
+        SliceSet uint64T "xs" (![uint64T] "i") (SliceGet uint64T "xs" "j");;
+        SliceSet uint64T "xs" "j" "temp";;
+        Continue);;
+      #()).
+
+(* Permutation returns a random permutation of the integers 0, ..., n-1, using a
+   Fisher-Yates shuffle. *)
+Definition Permutation: val :=
+  rec: "Permutation" "n" :=
+    let: "order" := NewSlice uint64T "n" in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      SliceSet uint64T "order" (![uint64T] "i") (![uint64T] "i");;
+      Continue);;
+    Shuffle "order";;
+    "order".
+
 End code.
