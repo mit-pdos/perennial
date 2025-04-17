@@ -88,9 +88,8 @@ Section program.
     set P := (λ (i : u64),
                 "Hgcoords" ∷ own_backup_tcoord_gcoords tcoord ptgs rk ts γ ∗
                 "Htks" ∷ [∗ set] gid ∈ list_to_set (drop (uint.nat i) ptgsL), local_gid_token α gid)%I.
-    iMod (readonly_load with "HptgsL") as (q) "HptgsL'".
-    iDestruct (own_slice_small_sz with "HptgsL'") as %Hlenptgs.
-    wp_apply (wp_forSlice P with "[] [$HptgsL' $Hgcoords Htks]"); last first; first 1 last.
+    iDestruct (own_slice_small_sz with "HptgsL") as %Hlenptgs.
+    wp_apply (wp_forSlice P with "[] [$HptgsL $Hgcoords Htks]"); last first; first 1 last.
     { by rewrite uint_nat_W64_0 drop_0 HptgsL. }
     { clear Φ.
 

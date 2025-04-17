@@ -121,7 +121,7 @@ Section program.
     wp_apply (wp_DecodeInts with "Hbs").
     iIntros (nsP dataP) "[Hns Hdata]".
     iDestruct (own_slice_to_small with "Hns") as "Hns".
-    iMod (readonly_alloc_1 with "Hns") as "#Hns'".
+    iMod (own_slice_small_persist with "Hns") as "#Hns".
     iApply "HΦ".
     by iFrame "∗ #".
   Qed.

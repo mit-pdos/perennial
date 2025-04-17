@@ -38,7 +38,7 @@ Section repr.
   Definition own_txn_ptgs_fixed txn (ptgs : txnptgs) : iProp Σ :=
     ∃ (ptgsS : Slice.t) (ptgsL : list u64),
       "HptgsS"  ∷ txn ↦[Txn :: "ptgs"] (to_val ptgsS) ∗
-      "#HptgsL" ∷ readonly (own_slice_small ptgsS uint64T (DfracOwn 1) ptgsL) ∗
+      "#HptgsL" ∷ own_slice_small ptgsS uint64T DfracDiscarded ptgsL ∗
       "%HptgsL" ∷ ⌜list_to_set ptgsL = ptgs⌝ ∗
       "%Hnd"    ∷ ⌜NoDup ptgsL⌝.
 

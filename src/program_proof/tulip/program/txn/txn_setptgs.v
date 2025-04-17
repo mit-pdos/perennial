@@ -135,7 +135,7 @@ Section program.
     wp_load. wp_storeField.
     iApply "HΦ".
     iDestruct (own_slice_to_small with "Hptgs") as "Hptgs".
-    iMod (readonly_alloc_1 with "Hptgs") as "#Hptgs'".
+    iMod (own_slice_small_persist with "Hptgs") as "#Hptgs'".
     iFrame "∗ # %".
     iPureIntro.
     apply set_eq.
