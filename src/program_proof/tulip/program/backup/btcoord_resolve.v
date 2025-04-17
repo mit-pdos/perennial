@@ -6,6 +6,78 @@ From Perennial.program_proof.tulip.program.backup Require Import btcoord_repr bg
 Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
+  Lemma foldl_union_lookup_init wrs l0 init k :
+    (∀ x, x ∈ l0 → wrs_group x wrs !! k = None) →
+    foldl (λ (acc : dbmap) (x : w64), wrs_group x wrs ∪ acc) init l0 !! k = init !! k.
+  Proof.
+    revert init.
+    induction l0 as [| x l0 IH] => init Hall //=.
+    rewrite IH.
+    - rewrite lookup_union_r; auto. apply Hall; set_solver.
+    - intros. apply Hall. set_solver.
+  Qed.
+
+  Lemma foldl_union_lookup_None wrs l0 init k :
+    (init !! k = None) →
+    (∀ x, x ∈ l0 → wrs_group x wrs !! k = None) →
+    foldl (λ (acc : dbmap) (x : w64), wrs_group x wrs ∪ acc) init l0 !! k = None.
+  Proof. intros Hinit Hall. rewrite foldl_union_lookup_init //. Qed.
+
+  Lemma foldl_union_lookup_Some_1 wrs x l0 init k v :
+    wrs_group x wrs !! k = Some v →
+    NoDup l0 →
+    x ∈ l0 →
+    (init !! k = None) →
+    foldl (λ (acc : dbmap) (x : w64), wrs_group x wrs ∪ acc) init l0 !! k = Some v.
+  Proof.
+    revert init.
+    induction l0 as [| y l0 IH] => init Hlookup Hnodup Helem Hinit.
+    { set_solver. }
+    apply NoDup_cons in Hnodup as (?&?).
+    set_unfold in Helem. destruct Helem; subst.
+    - simpl. rewrite foldl_union_lookup_init.
+      { rewrite lookup_union_l //. }
+      intros x' Hin'.
+      apply lookup_wrs_group_Some in Hlookup as (?&Hkey).
+      apply lookup_wrs_group_None. right.
+      intros Heq. congruence.
+    - simpl. apply IH; eauto.
+      apply lookup_union_None; split; auto.
+      apply lookup_wrs_group_Some in Hlookup as (?&Hkey).
+      apply lookup_wrs_group_None. right.
+      intros Heq. congruence.
+  Qed.
+
+  Lemma wrs_lookup_Some_elem_ptgroups wrs k v:
+    valid_wrs wrs →
+    wrs !! k = Some v → key_to_group k ∈ ptgroups (dom wrs).
+  Proof.
+    intros Hval Hlook.
+    rewrite /key_to_group/ptgroups/key_to_group.
+    apply: (elem_of_map_2 _ _ k).
+    apply elem_of_dom; eauto.
+  Qed.
+
+  Lemma foldl_wrs_group wrs l0 :
+    NoDup l0 →
+    valid_wrs wrs →
+    list_to_set l0 = ptgroups (dom wrs) →
+    foldl (λ (acc : dbmap) (x : w64), wrs_group x wrs ∪ acc) ∅ l0 = wrs.
+  Proof.
+    intros HNoDup Hvalid Hlist.
+    apply map_leibniz => k.
+    destruct (wrs !! k) eqn:Hk; last first.
+    - rewrite Hk. rewrite foldl_union_lookup_None; auto.
+      intros x Hin.
+      apply lookup_wrs_group_None. auto.
+    - rewrite Hk. apply leibniz_equiv_iff.
+      apply (foldl_union_lookup_Some_1 _ (key_to_group k)); auto.
+      { apply lookup_wrs_group_Some; auto. }
+      { apply wrs_lookup_Some_elem_ptgroups in Hk; auto.
+        rewrite -Hlist in Hk.
+        apply elem_of_list_to_set in Hk. auto. }
+  Qed.
+
   Theorem wp_mergeKVMap (mwP mrP : loc) q (mw mr : dbmap) :
     {{{ own_map mwP (DfracOwn 1) mw ∗ own_map mrP q mr }}}
       mergeKVMap #mwP #mrP
@@ -134,9 +206,9 @@ Section program.
       iExactEq "H2".
       f_equal.
       rewrite Hvalid.
-      admit.
+      by apply foldl_wrs_group.
     - wp_pures. iModIntro. iApply "HΦ". iFrame "∗ #". eauto.
-  Admitted.
+  Qed.
 
   Theorem wp_BackupTxnCoordinator__resolve tcoord status ts γ :
     status ≠ TxnAborted ->
@@ -144,7 +216,7 @@ Section program.
     {{{ own_backup_tcoord tcoord ts γ }}}
       BackupTxnCoordinator__resolve #tcoord #(txnphase_to_u64 status)
     {{{ (ok : bool), RET #ok;
-        own_backup_tcoord tcoord ts γ ∗ 
+        own_backup_tcoord tcoord ts γ ∗
         if ok then is_txn_committed_ex γ ts else True
     }}}.
   Proof.
@@ -163,7 +235,7 @@ Section program.
       iApply "HΦ".
       by iFrame "∗ #".
     }
-    
+
     (*@     wrs, ok := tcoord.mergeWrites()                                     @*)
     (*@     if !ok {                                                            @*)
     (*@         return false                                                    @*)
