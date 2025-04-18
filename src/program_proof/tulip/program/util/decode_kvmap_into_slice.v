@@ -10,7 +10,7 @@ Section program.
     encode_dbmap m mdata ->
     {{{ own_slice_small bsP byteT (DfracOwn 1) (mdata ++ bstail) }}}
       DecodeKVMapIntoSlice (to_val bsP)
-    {{{ (entsP : Slice.t) (dataP : Slice.t), RET (to_val entsP, to_val dataP); 
+    {{{ (entsP : Slice.t) (dataP : Slice.t), RET (to_val entsP, to_val dataP);
         own_dbmap_in_slice entsP m ∗
         own_slice_small dataP byteT (DfracOwn 1) bstail
     }}}.

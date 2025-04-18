@@ -265,14 +265,15 @@ Section program.
 
   Theorem wp_TxnLog__SubmitCommit
     (log : loc) (ts : u64) (pwrsS : Slice.t) (pwrs : dbmap) (gid : u64) γ :
+    is_dbmap_in_slice pwrsS pwrs -∗
     is_txnlog log gid γ -∗
-    {{{ own_dbmap_in_slice pwrsS pwrs }}}
+    {{{ True }}}
     <<< ∀∀ vs, own_txn_cpool_half γ gid vs >>>
       TxnLog__SubmitCommit #log #ts (to_val pwrsS) @ ↑paxosNS ∪ ↑txnlogNS
     <<< own_txn_cpool_half γ gid ({[CmdCommit (uint.nat ts) pwrs]} ∪ vs) >>>
     {{{ (lsn : u64) (term : u64), RET (#lsn, #term); True }}}.
   Proof.
-    iIntros "#Htxnlog" (Φ) "!> Hpwrs HAU".
+    iIntros "#Hpwrs #Htxnlog" (Φ) "!> _ HAU".
     wp_rec.
 
     (*@ func (log *TxnLog) SubmitCommit(ts uint64, pwrs []tulip.WriteEntry) (uint64, uint64) { @*)
@@ -287,8 +288,9 @@ Section program.
     iIntros (p1) "Hbs".
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p2) "Hbs".
-    wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $Hpwrs]").
-    iIntros (dataP mdata) "(Hbs & Hpwrs & %Hpwrsenc)".
+    iMod (is_dbmap_in_slice_unpersist with "Hpwrs") as "HpwrsR".
+    wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $HpwrsR]").
+    iIntros (dataP mdata) "(Hbs & _ & %Hpwrsenc)".
 
     (*@     lsn, term := log.px.Submit(string(data))                            @*)
     (*@                                                                         @*)

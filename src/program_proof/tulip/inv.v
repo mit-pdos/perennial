@@ -1,7 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps serialize.
-From Perennial.program_proof.tulip Require Import base res cmd msg big_sep.
+From Perennial.program_proof.tulip Require Import
+  base res cmd msg big_sep stability.
 From Perennial.program_proof.tulip Require Export
   inv_txnsys inv_key inv_group inv_replica.
 
@@ -152,6 +153,53 @@ Section def.
     Timeless (query_outcome γ ts res).
   Proof. destruct res; apply _. Defined.
 
+  Definition latest_proposal_replica γ gid rid ts rk rkl p : iProp Σ :=
+    ∃ (lb : ballot),
+      "#Hlb"   ∷ is_replica_ballot_lb γ gid rid ts lb ∗
+      (* We can deduce this from [Hlb] and replica inv, but it's convenient to have it here. *)
+      "#Hgpsl" ∷ is_group_prepare_proposal_if_classic γ gid ts rkl p ∗
+      "%Hp"    ∷ ⌜lb !! rkl = Some (Accept p)⌝ ∗
+      "%Hrk"   ∷ ⌜length lb = rk⌝ ∗
+      "%Hrkl"  ∷ ⌜latest_term lb = rkl⌝.
+
+  Definition inquire_positive_outcome
+    γ gid rid cid ts rk rkl p (vd : bool) pwrs : iProp Σ :=
+    "#Hvote"     ∷ is_replica_backup_vote γ gid rid ts rk cid ∗
+    "#Hlb"       ∷ latest_proposal_replica γ gid rid ts rk rkl p ∗
+    "#Hvd"       ∷ (if vd then is_replica_validated_ts γ gid rid ts else True) ∗
+    "#Hsafepwrs" ∷ (if vd then safe_txn_pwrs γ gid ts pwrs else True).
+
+  #[global]
+  Instance inquire_outcome_positive_persistent γ gid rid cid ts rk rkl p vd pwrs :
+    Persistent (inquire_positive_outcome γ gid rid cid ts rk rkl p vd pwrs).
+  Proof. destruct vd; apply _. Defined.
+
+  #[global]
+  Instance inquire_outcome_positive_timeless γ gid rid cid ts rk rkl p vd pwrs :
+    Timeless (inquire_positive_outcome γ gid rid cid ts rk rkl p vd pwrs).
+  Proof. destruct vd; apply _. Defined.
+  
+  Definition inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res : iProp Σ :=
+    match res with
+    | ReplicaOK => inquire_positive_outcome γ gid rid cid ts rk rkl p vd pwrs
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => False
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance inquire_outcome_persistent γ gid rid cid ts rk rkl p vd pwrs res :
+    Persistent (inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res).
+  Proof. destruct res; apply _. Defined.
+
+  #[global]
+  Instance inquire_outcome_timeless γ gid rid cid ts rk rkl p vd pwrs res :
+    Timeless (inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res).
+  Proof. destruct res; apply _. Defined.
+
 End def.
 
 Section inv_file.
@@ -189,7 +237,7 @@ Section inv_file.
     match icmd with
     | CmdRead ts key => valid_ts ts ∧ valid_key key
     | CmdAcquire ts pwrs _ => Z.of_nat ts < 2 ^ 64 ∧ valid_wrs pwrs
-    | CmdAdvance ts rank => Z.of_nat ts < 2 ^ 64 ∧ Z.of_nat rank < 2 ^ 64
+    | CmdAdvance ts rank => Z.of_nat ts < 2 ^ 64 ∧ 0 < Z.of_nat rank < 2 ^ 64
     | CmdAccept ts rank _ => Z.of_nat ts < 2 ^ 64 ∧ Z.of_nat rank < 2 ^ 64
     end.
 
@@ -221,10 +269,17 @@ Section inv_network.
   Definition safe_txnreq γ (gid : u64) req : iProp Σ :=
     match req with
     | ReadReq ts key => ⌜safe_read_req gid (uint.nat ts) key⌝
-    | FastPrepareReq ts pwrs _ => safe_txn_pwrs γ gid (uint.nat ts) pwrs
-    | ValidateReq ts _ pwrs _ => safe_txn_pwrs γ gid (uint.nat ts) pwrs
+    | FastPrepareReq ts pwrs ptgs =>
+        is_lnrz_tid γ (uint.nat ts) ∗
+        safe_txn_pwrs γ gid (uint.nat ts) pwrs ∗
+        safe_txn_ptgs γ (uint.nat ts) ptgs
+    | ValidateReq ts _ pwrs ptgs =>
+        is_lnrz_tid γ (uint.nat ts) ∗
+        safe_txn_pwrs γ gid (uint.nat ts) pwrs ∗
+        safe_txn_ptgs γ (uint.nat ts) ptgs
     | PrepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) true
     | UnprepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) false
+    | InquireReq ts rank _ => ⌜valid_ts (uint.nat ts) ∧ valid_backup_rank (uint.nat rank)⌝
     | CommitReq ts pwrs => safe_commit γ gid (uint.nat ts) pwrs
     | AbortReq ts => safe_abort γ (uint.nat ts)
     | _ => True
@@ -255,6 +310,12 @@ Section inv_network.
     "#Hsafe" ∷ validate_outcome γ gid rid ts res ∗
     "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
 
+  Definition safe_inquire_resp
+    γ (gid rid : u64) (cid : coordid) (ts rk rkl : nat) (p vd : bool) (pwrs : dbmap)
+    (res : rpres) : iProp Σ :=
+    "#Hsafe" ∷ inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res ∗
+    "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
+
   Definition safe_prepare_resp
     γ (gid rid : u64) (ts rank : nat) (res : rpres) : iProp Σ :=
     "#Hsafe" ∷ accept_outcome γ gid rid ts rank true res ∗
@@ -279,6 +340,8 @@ Section inv_network.
         safe_unprepare_resp γ gid rid (uint.nat ts) (uint.nat rank) res
     | QueryResp ts res =>
         query_outcome γ (uint.nat ts) res
+    | InquireResp ts rank pp vd pwrs rid cid res =>
+        safe_inquire_resp γ gid rid cid (uint.nat ts) (uint.nat rank) (uint.nat pp.1) pp.2 vd pwrs res
     | _ => True
     end.
 
@@ -305,7 +368,8 @@ Section inv_network.
     ∃ (resps : gset txnresp),
       "Hms"     ∷ trml c↦ ms ∗
       "#Hresps" ∷ ([∗ set] resp ∈ resps, safe_txnresp γ gid resp) ∗
-      "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnresp resps⌝.
+      "%Henc"    ∷ ⌜set_Forall (λ x, ∃ resp, resp ∈ resps ∧ encode_txnresp resp (msg_data x)) ms⌝.
+      (* "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnresp resps⌝. *)
 
   Definition tulip_network_inv
     γ (gid : u64) (addrm : gmap u64 chan) : iProp Σ :=
@@ -560,7 +624,7 @@ Section alloc.
         do 2 (split; first done).
         split; apply map_Forall2_empty.
       }
-      do 4 (iSplit; first done).
+      do 6 (iSplit; first done).
       iSplit.
       { iIntros (k t).
         destruct (kvdm !! k) as [l |] eqn:Hl; rewrite Hl; last done.

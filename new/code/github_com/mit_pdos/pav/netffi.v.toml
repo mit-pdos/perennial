@@ -1,0 +1,9 @@
+axiomatize = [
+  "Conn",
+  "Dial",
+  "Conn.Send",
+  "Conn.Receive",
+  "Listener",
+  "Listen",
+  "Listen.Accept",
+]

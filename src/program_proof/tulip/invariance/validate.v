@@ -49,7 +49,9 @@ Section validate.
   Lemma replica_inv_validate {γ gid rid clog ilog st} ts pwrs ptgs :
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     validate_requirement st ts pwrs ->
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
     replica_inv_weak γ gid rid ==∗
@@ -58,7 +60,7 @@ Section validate.
     replica_inv γ gid rid ∗
     is_replica_validated_ts γ gid rid ts.
   Proof.
-    iIntros (Hst Hrequire) "#Hsafepwrs Hclogprog Hilogprog Hrp".
+    iIntros (Hst Hrequire) "#Hlnrz #Hsafepwrs #Hsafeptgs Hclogprog Hilogprog Hrp".
     iDestruct (safe_txn_pwrs_dom_pwrs with "Hsafepwrs") as %Hdompwrs.
     do 2 iNamed "Hrp".
     (* Agreement on the consistent and inconsistent logs. *)
@@ -134,6 +136,10 @@ Section validate.
     iDestruct (big_sepM_insert_2 _ _ ts pwrs with "Hsafepwrs Hsafep") as "#Hsafep'".
     (* Re-establish [validated_pwrs_of_txn] over [{[ts]} ∪ vtss]. *)
     iDestruct (big_sepS_insert_2 ts with "Hvkeys Hvpwrs") as "#Hvpwrs'".
+    iDestruct (big_sepS_insert_2 ts with "Hlnrz Hlnrzs") as "#Hlnrzs'".
+    iDestruct (safe_txn_pwrs_ptgs_backup_txn with "Hsafepwrs Hsafeptgs") as "#Hbk".
+    iDestruct (big_sepM_insert_2 _ _ ts ptgs with "Hbk Hsafebk") as "Hsafebk'".
+    iClear "Hlnrzs Hsafebk".
     (* Establish [eq_lsn_last_ilog (length clog) ilog'] with [ge_lsn_last_ilog ...]. *)
     assert (Heqlast' : eq_lsn_last_ilog (length clog) ilog').
     { by rewrite /eq_lsn_last_ilog last_snoc. }
@@ -146,6 +152,8 @@ Section validate.
     { rewrite dom_insert_L.
       by iApply big_sepS_insert_2.
     }
+    iSplit.
+    { by rewrite dom_insert_L. }
     iSplit.
     { iIntros (k t).
       subst kvdm'.

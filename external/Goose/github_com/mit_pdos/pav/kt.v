@@ -378,14 +378,15 @@ Definition CallServPut: val :=
     ] in
     let: "argByt" := ServerPutArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" ServerPutRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" ServerPutRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := ServerPutReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, slice.nil, slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := ServerPutReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, slice.nil, slice.nil, #true)
-      else (struct.loadF ServerPutReply "Dig" "reply", struct.loadF ServerPutReply "Latest" "reply", struct.loadF ServerPutReply "Bound" "reply", struct.loadF ServerPutReply "Err" "reply"))).
+    else (struct.loadF ServerPutReply "Dig" "reply", struct.loadF ServerPutReply "Latest" "reply", struct.loadF ServerPutReply "Bound" "reply", struct.loadF ServerPutReply "Err" "reply")).
 
 (* CheckSigDig from evidence.go *)
 
@@ -669,14 +670,15 @@ Definition CallServGet: val :=
     ] in
     let: "argByt" := ServerGetArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" ServerGetRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" ServerGetRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := ServerGetReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, slice.nil, #false, slice.nil, slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := ServerGetReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, slice.nil, #false, slice.nil, slice.nil, #true)
-      else (struct.loadF ServerGetReply "Dig" "reply", struct.loadF ServerGetReply "Hist" "reply", struct.loadF ServerGetReply "IsReg" "reply", struct.loadF ServerGetReply "Latest" "reply", struct.loadF ServerGetReply "Bound" "reply", #false))).
+    else (struct.loadF ServerGetReply "Dig" "reply", struct.loadF ServerGetReply "Hist" "reply", struct.loadF ServerGetReply "IsReg" "reply", struct.loadF ServerGetReply "Latest" "reply", struct.loadF ServerGetReply "Bound" "reply", #false)).
 
 (* checkMembHide from client.go *)
 
@@ -789,14 +791,15 @@ Definition CallServSelfMon: val :=
     ] in
     let: "argByt" := ServerSelfMonArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" ServerSelfMonRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" ServerSelfMonRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := ServerSelfMonReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := ServerSelfMonReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, slice.nil, #true)
-      else (struct.loadF ServerSelfMonReply "Dig" "reply", struct.loadF ServerSelfMonReply "Bound" "reply", #false))).
+    else (struct.loadF ServerSelfMonReply "Dig" "reply", struct.loadF ServerSelfMonReply "Bound" "reply", #false)).
 
 (* SelfMon self-monitors for the client's own key, and returns the epoch
    through which it succeeds, or evid / error on fail. *)
@@ -892,14 +895,15 @@ Definition CallAdtrGet: val :=
     ] in
     let: "argByt" := AdtrGetArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" AdtrGetRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" AdtrGetRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := AdtrGetReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := AdtrGetReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, #true)
-      else (struct.loadF AdtrGetReply "X" "reply", struct.loadF AdtrGetReply "Err" "reply"))).
+    else (struct.loadF AdtrGetReply "X" "reply", struct.loadF AdtrGetReply "Err" "reply")).
 
 (* auditEpoch from client.go *)
 
@@ -1031,38 +1035,42 @@ Definition ServerPutArgDecode: val :=
 (* Work from workq.go *)
 
 Definition Work := struct.decl [
+  "mu" :: ptrT;
+  "cond" :: ptrT;
   "done" :: boolT;
   "Req" :: ptrT;
   "Resp" :: ptrT
 ].
 
-(* WQReq from server.go *)
-
-Definition WQReq := struct.decl [
-  "Uid" :: uint64T;
-  "Pk" :: slice.T byteT
-].
-
-(* WorkQ from workq.go *)
+Definition NewWork: val :=
+  rec: "NewWork" "req" :=
+    let: "w" := struct.new Work [
+      "mu" ::= newMutex #();
+      "Req" ::= "req"
+    ] in
+    struct.storeF Work "cond" "w" (NewCond (struct.loadF Work "mu" "w"));;
+    "w".
 
 Definition WorkQ := struct.decl [
   "mu" :: ptrT;
   "work" :: slice.T ptrT;
-  "condCli" :: ptrT;
-  "condWorker" :: ptrT
+  "cond" :: ptrT
 ].
 
 Definition WorkQ__Do: val :=
-  rec: "WorkQ__Do" "wq" "r" :=
+  rec: "WorkQ__Do" "wq" "req" :=
+    let: "w" := NewWork "req" in
     Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
-    struct.storeF WorkQ "work" "wq" (SliceAppend ptrT (struct.loadF WorkQ "work" "wq") "r");;
-    Cond__Signal (struct.loadF WorkQ "condWorker" "wq");;
-    Skip;;
-    (for: (λ: <>, (~ (struct.loadF Work "done" "r"))); (λ: <>, Skip) := λ: <>,
-      Cond__Wait (struct.loadF WorkQ "condCli" "wq");;
-      Continue);;
+    struct.storeF WorkQ "work" "wq" (SliceAppend ptrT (struct.loadF WorkQ "work" "wq") "w");;
+    Cond__Signal (struct.loadF WorkQ "cond" "wq");;
     Mutex__Unlock (struct.loadF WorkQ "mu" "wq");;
-    #().
+    Mutex__Lock (struct.loadF Work "mu" "w");;
+    Skip;;
+    (for: (λ: <>, (~ (struct.loadF Work "done" "w"))); (λ: <>, Skip) := λ: <>,
+      Cond__Wait (struct.loadF Work "cond" "w");;
+      Continue);;
+    Mutex__Unlock (struct.loadF Work "mu" "w");;
+    struct.loadF Work "Resp" "w".
 
 (* Server from server.go *)
 
@@ -1077,6 +1085,11 @@ Definition Server := struct.decl [
   "workQ" :: ptrT
 ].
 
+Definition WQReq := struct.decl [
+  "Uid" :: uint64T;
+  "Pk" :: slice.T byteT
+].
+
 Definition WQResp := struct.decl [
   "Dig" :: ptrT;
   "Lat" :: ptrT;
@@ -1087,14 +1100,10 @@ Definition WQResp := struct.decl [
 (* Put errors iff there's a put of the same uid at the same time. *)
 Definition Server__Put: val :=
   rec: "Server__Put" "s" "uid" "pk" :=
-    let: "work" := struct.new Work [
-      "Req" ::= struct.new WQReq [
-        "Uid" ::= "uid";
-        "Pk" ::= "pk"
-      ]
-    ] in
-    WorkQ__Do (struct.loadF Server "workQ" "s") "work";;
-    let: "resp" := struct.loadF Work "Resp" "work" in
+    let: "resp" := WorkQ__Do (struct.loadF Server "workQ" "s") (struct.new WQReq [
+      "Uid" ::= "uid";
+      "Pk" ::= "pk"
+    ]) in
     (struct.loadF WQResp "Dig" "resp", struct.loadF WQResp "Lat" "resp", struct.loadF WQResp "Bound" "resp", struct.loadF WQResp "Err" "resp").
 
 (* SigDigEncode from serde.out.go *)
@@ -1630,14 +1639,15 @@ Definition CallServAudit: val :=
     ] in
     let: "argByt" := ServerAuditArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" ServerAuditRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" ServerAuditRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := ServerAuditReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then (slice.nil, #true)
-    else
-      let: (("reply", <>), "err1") := ServerAuditReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then (slice.nil, #true)
-      else (struct.loadF ServerAuditReply "P" "reply", struct.loadF ServerAuditReply "Err" "reply"))).
+    else (struct.loadF ServerAuditReply "P" "reply", struct.loadF ServerAuditReply "Err" "reply")).
 
 Definition AdtrUpdateArgEncode: val :=
   rec: "AdtrUpdateArgEncode" "b0" "o" :=
@@ -1662,14 +1672,15 @@ Definition CallAdtrUpdate: val :=
     ] in
     let: "argByt" := AdtrUpdateArgEncode (NewSlice byteT #0) "arg" in
     let: "replyByt" := ref (zero_val (slice.T byteT)) in
-    let: "err0" := advrpc.Client__Call "c" AdtrUpdateRpc "argByt" "replyByt" in
-    (if: "err0"
+    let: "err0" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err0"); (λ: <>, Skip) := λ: <>,
+      "err0" <-[boolT] (advrpc.Client__Call "c" AdtrUpdateRpc "argByt" "replyByt");;
+      Continue);;
+    let: (("reply", <>), "err1") := AdtrUpdateReplyDecode (![slice.T byteT] "replyByt") in
+    (if: "err1"
     then #true
-    else
-      let: (("reply", <>), "err1") := AdtrUpdateReplyDecode (![slice.T byteT] "replyByt") in
-      (if: "err1"
-      then #true
-      else struct.loadF AdtrUpdateReply "Err" "reply")).
+    else struct.loadF AdtrUpdateReply "Err" "reply").
 
 (* serde.go *)
 
@@ -1728,7 +1739,7 @@ Definition WorkQ__Get: val :=
     Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
     Skip;;
     (for: (λ: <>, (struct.loadF WorkQ "work" "wq") = slice.nil); (λ: <>, Skip) := λ: <>,
-      Cond__Wait (struct.loadF WorkQ "condWorker" "wq");;
+      Cond__Wait (struct.loadF WorkQ "cond" "wq");;
       Continue);;
     let: "work" := struct.loadF WorkQ "work" "wq" in
     struct.storeF WorkQ "work" "wq" slice.nil;;
@@ -1763,9 +1774,11 @@ Definition Server__mapper0: val :=
     #().
 
 (* updEpochHist does a signed history update with some new entries. *)
-Definition updEpochHist: val :=
-  rec: "updEpochHist" "hist" "upd" "dig" "sk" :=
-    let: "epoch" := slice.len (![slice.T ptrT] "hist") in
+Definition Server__updEpochHist: val :=
+  rec: "Server__updEpochHist" "s" "upd" :=
+    let: "sk" := struct.loadF Server "sigSk" "s" in
+    let: "dig" := merkle.Tree__Digest (struct.loadF Server "keyMap" "s") in
+    let: "epoch" := slice.len (struct.loadF Server "epochHist" "s") in
     let: "preSig" := struct.new PreSigDig [
       "Epoch" ::= "epoch";
       "Dig" ::= "dig"
@@ -1777,7 +1790,7 @@ Definition updEpochHist: val :=
       "dig" ::= "dig";
       "sig" ::= "sig"
     ] in
-    "hist" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "hist") "newInfo");;
+    struct.storeF Server "epochHist" "s" (SliceAppend ptrT (struct.loadF Server "epochHist" "s") "newInfo");;
     #().
 
 (* mapper1 computes merkle proofs and assembles full response. *)
@@ -1800,15 +1813,14 @@ Definition Server__mapper1: val :=
     ]);;
     #().
 
-(* WorkQ__Finish from workq.go *)
+(* Work__Finish from workq.go *)
 
-Definition WorkQ__Finish: val :=
-  rec: "WorkQ__Finish" "wq" "work" :=
-    Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
-    ForSlice ptrT <> "x" "work"
-      (struct.storeF Work "done" "x" #true);;
-    Mutex__Unlock (struct.loadF WorkQ "mu" "wq");;
-    Cond__Broadcast (struct.loadF WorkQ "condCli" "wq");;
+Definition Work__Finish: val :=
+  rec: "Work__Finish" "w" :=
+    Mutex__Lock (struct.loadF Work "mu" "w");;
+    struct.storeF Work "done" "w" #true;;
+    Cond__Signal (struct.loadF Work "cond" "w");;
+    Mutex__Unlock (struct.loadF Work "mu" "w");;
     #().
 
 Definition Server__Worker: val :=
@@ -1831,28 +1843,34 @@ Definition Server__Worker: val :=
         ])
       else MapInsert "uidSet" "uid" #false));;
     let: "outs0" := NewSlice ptrT (slice.len "work") in
-    let: "wg" := ref_to ptrT (waitgroup.New #()) in
     let: "i" := ref (zero_val uint64T) in
     Skip;;
-    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
+      SliceSet ptrT "outs0" (![uint64T] "i") (struct.new mapper0Out [
+      ]);;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
+    let: "wg" := waitgroup.New #() in
+    "i" <-[uint64T] #0;;
+    Skip;;
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
       let: "resp" := struct.loadF Work "Resp" (SliceGet ptrT "work" (![uint64T] "i")) in
       (if: (~ (struct.loadF WQResp "Err" "resp"))
       then
         let: "req" := struct.loadF Work "Req" (SliceGet ptrT "work" (![uint64T] "i")) in
-        let: "out0" := struct.new mapper0Out [
-        ] in
-        SliceSet ptrT "outs0" (![uint64T] "i") "out0";;
-        waitgroup.Add (![ptrT] "wg") #1;;
+        let: "out0" := SliceGet ptrT "outs0" (![uint64T] "i") in
+        waitgroup.Add "wg" #1;;
         Fork (Server__mapper0 "s" "req" "out0";;
-              waitgroup.Done (![ptrT] "wg"));;
-        Continue
-      else Continue));;
-    waitgroup.Wait (![ptrT] "wg");;
+              waitgroup.Done "wg")
+      else #());;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
+    waitgroup.Wait "wg";;
     RWMutex__Lock (struct.loadF Server "mu" "s");;
     let: "upd" := NewMap stringT (slice.T byteT) #() in
     "i" <-[uint64T] #0;;
     Skip;;
-    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
       let: "resp" := struct.loadF Work "Resp" (SliceGet ptrT "work" (![uint64T] "i")) in
       (if: (~ (struct.loadF WQResp "Err" "resp"))
       then
@@ -1870,37 +1888,38 @@ Definition Server__Worker: val :=
         else #());;
         struct.storeF userState "numVers" (![ptrT] "user") ((struct.loadF userState "numVers" (![ptrT] "user")) + #1);;
         struct.storeF userState "plainPk" (![ptrT] "user") (struct.loadF WQReq "Pk" "req");;
-        MapInsert (struct.loadF Server "userInfo" "s") (struct.loadF WQReq "Uid" "req") (![ptrT] "user");;
-        Continue
-      else Continue));;
-    updEpochHist (struct.fieldRef Server "epochHist" "s") "upd" (merkle.Tree__Digest (struct.loadF Server "keyMap" "s")) (struct.loadF Server "sigSk" "s");;
+        MapInsert (struct.loadF Server "userInfo" "s") (struct.loadF WQReq "Uid" "req") (![ptrT] "user")
+      else #());;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
+    Server__updEpochHist "s" "upd";;
     RWMutex__Unlock (struct.loadF Server "mu" "s");;
-    "wg" <-[ptrT] (waitgroup.New #());;
+    let: "wg1" := waitgroup.New #() in
     "i" <-[uint64T] #0;;
     Skip;;
-    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+    (for: (λ: <>, (![uint64T] "i") < (slice.len "work")); (λ: <>, Skip) := λ: <>,
       let: "resp" := struct.loadF Work "Resp" (SliceGet ptrT "work" (![uint64T] "i")) in
       (if: (~ (struct.loadF WQResp "Err" "resp"))
       then
         let: "out0" := SliceGet ptrT "outs0" (![uint64T] "i") in
-        waitgroup.Add (![ptrT] "wg") #1;;
+        waitgroup.Add "wg1" #1;;
         Fork (Server__mapper1 "s" "out0" "resp";;
-              waitgroup.Done (![ptrT] "wg"));;
-        Continue
-      else Continue));;
-    waitgroup.Wait (![ptrT] "wg");;
-    WorkQ__Finish (struct.loadF Server "workQ" "s") "work";;
+              waitgroup.Done "wg1")
+      else #());;
+      "i" <-[uint64T] ((![uint64T] "i") + #1);;
+      Continue);;
+    waitgroup.Wait "wg1";;
+    ForSlice ptrT <> "w" "work"
+      (Work__Finish "w");;
     #().
 
 Definition NewWorkQ: val :=
   rec: "NewWorkQ" <> :=
     let: "mu" := newMutex #() in
-    let: "condCli" := NewCond "mu" in
-    let: "condWork" := NewCond "mu" in
+    let: "cond" := NewCond "mu" in
     struct.new WorkQ [
       "mu" ::= "mu";
-      "condCli" ::= "condCli";
-      "condWorker" ::= "condWork"
+      "cond" ::= "cond"
     ].
 
 Definition NewServer: val :=
@@ -1912,7 +1931,6 @@ Definition NewServer: val :=
     let: "keys" := merkle.NewTree #() in
     let: "users" := NewMap uint64T ptrT #() in
     let: "hist" := ref (zero_val (slice.T ptrT)) in
-    updEpochHist "hist" (NewMap stringT (slice.T byteT) #()) (merkle.Tree__Digest "keys") "sigSk";;
     let: "wq" := NewWorkQ #() in
     let: "s" := struct.new Server [
       "mu" ::= "mu";
@@ -1924,6 +1942,7 @@ Definition NewServer: val :=
       "epochHist" ::= ![slice.T ptrT] "hist";
       "workQ" ::= "wq"
     ] in
+    Server__updEpochHist "s" (NewMap stringT (slice.T byteT) #());;
     Fork (Skip;;
           (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
             Server__Worker "s";;
@@ -1935,16 +1954,25 @@ Definition NewServer: val :=
 (* DoBatch is unverified. it's only used as a benchmark helper for
    unmeasured batch puts. *)
 Definition WorkQ__DoBatch: val :=
-  rec: "WorkQ__DoBatch" "wq" "r" :=
+  rec: "WorkQ__DoBatch" "wq" "reqs" :=
+    let: "works" := NewSlice ptrT (slice.len "reqs") in
+    ForSlice ptrT "i" "req" "reqs"
+      (SliceSet ptrT "works" "i" (NewWork "req"));;
     Mutex__Lock (struct.loadF WorkQ "mu" "wq");;
-    struct.storeF WorkQ "work" "wq" (SliceAppendSlice ptrT (struct.loadF WorkQ "work" "wq") "r");;
-    Cond__Signal (struct.loadF WorkQ "condWorker" "wq");;
-    let: "rLen" := slice.len "r" in
-    Skip;;
-    (for: (λ: <>, (~ (struct.loadF Work "done" (SliceGet ptrT "r" ("rLen" - #1))))); (λ: <>, Skip) := λ: <>,
-      Cond__Wait (struct.loadF WorkQ "condCli" "wq");;
-      Continue);;
+    struct.storeF WorkQ "work" "wq" (SliceAppendSlice ptrT (struct.loadF WorkQ "work" "wq") "works");;
+    Cond__Signal (struct.loadF WorkQ "cond" "wq");;
     Mutex__Unlock (struct.loadF WorkQ "mu" "wq");;
+    let: "n" := slice.len "works" in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      let: "w" := SliceGet ptrT "works" (("n" - #1) - (![uint64T] "i")) in
+      Mutex__Lock (struct.loadF Work "mu" "w");;
+      Skip;;
+      (for: (λ: <>, (~ (struct.loadF Work "done" "w"))); (λ: <>, Skip) := λ: <>,
+        Cond__Wait (struct.loadF Work "cond" "w");;
+        Continue);;
+      Mutex__Unlock (struct.loadF Work "mu" "w");;
+      Continue);;
     #().
 
 End code.

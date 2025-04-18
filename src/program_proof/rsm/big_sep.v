@@ -548,6 +548,29 @@ Section bi.
     by apply Hpart.
   Qed.
 
+  Lemma big_sepS_delete_affine `{Countable A} `{!BiAffine PROP}
+    (Φ : A -> PROP) (s : gset A) (x : A) :
+    ([∗ set] y ∈ s, Φ y) -∗
+    ([∗ set] y ∈ s ∖ {[x]}, Φ y).
+  Proof.
+    iIntros "Hs".
+    iApply (big_sepS_subseteq with "Hs").
+    set_solver.
+  Qed.
+
+  Lemma big_sepM_delete_affine `{Countable K} {A}
+    `{!BiAffine PROP} (Φ : K -> A -> PROP) (m : gmap K A) (k : K) :
+    ([∗ map] k↦x ∈ m, Φ k x) -∗
+    ([∗ map] k↦x ∈ (delete k m), Φ k x).
+  Proof.
+    iIntros "Hm".
+    destruct (m !! k) as [x |] eqn:Hm; last first.
+    { by rewrite delete_notin. }
+    iDestruct (big_sepM_delete with "Hm") as "[_ Hm]".
+    { apply Hm. }
+    done.
+  Qed.
+
   Lemma big_sepM2_delete_affine `{Countable K} {A B}
     `{!BiAffine PROP} (Φ : K -> A -> B -> PROP) (m1 : gmap K A) (m2 : gmap K B) (k : K) :
     ([∗ map] k↦x;y ∈ m1; m2, Φ k x y) -∗

@@ -7,16 +7,17 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Replica__acquire rp (tsW : u64) pwrsS pwrs ptsm sptsm :
-    valid_wrs pwrs ->
     let ts := uint.nat tsW in
-    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica_ptsm_sptsm rp ptsm sptsm }}}
+    valid_wrs pwrs ->
+    is_dbmap_in_slice pwrsS pwrs -∗
+    {{{ own_replica_ptsm_sptsm rp ptsm sptsm }}}
       Replica__acquire #rp #tsW (to_val pwrsS)
     {{{ RET #();
-        own_dbmap_in_slice pwrsS pwrs ∗
         own_replica_ptsm_sptsm rp (acquire ts pwrs ptsm) (acquire ts pwrs sptsm)
     }}}.
   Proof.
-    iIntros (Hvw ts Φ) "[Hpwrs Hrp] HΦ".
+    iIntros (ts Hvw) "#Hpwrs".
+    iIntros (Φ) "!> Hrp HΦ".
     iDestruct "Hpwrs" as (pwrsL) "[HpwrsS %HpwrsL]".
     wp_rec.
     iDestruct (own_replica_ptsm_sptsm_dom with "Hrp") as %[Hdomptsm Hdomsptsm].
@@ -26,12 +27,12 @@ Section program.
     (*@         rp.acquireKey(ts, ent.Key)                                      @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    iDestruct (own_slice_sz with "HpwrsS") as %Hlen.
-    iDestruct (own_slice_small_acc with "HpwrsS") as "[HpwrsS HpwrsC]".
+    iMod (readonly_load with "HpwrsS") as (q) "HpwrsR".
+    iDestruct (own_slice_small_sz with "HpwrsR") as %Hlen.
     set P := (λ (i : u64),
                 let pwrs' := list_to_map (take (uint.nat i) pwrsL) in
                 own_replica_ptsm_sptsm rp (acquire ts pwrs' ptsm) (acquire ts pwrs' sptsm))%I.
-    wp_apply (wp_forSlice P with "[] [$HpwrsS Hrp]"); last first; first 1 last.
+    wp_apply (wp_forSlice P with "[] [$HpwrsR Hrp]"); last first; first 1 last.
     { (* Loop entry. *)
       subst P. simpl.
       by rewrite uint_nat_W64_0 take_0 list_to_map_nil /acquire 2!setts_empty.
@@ -62,8 +63,7 @@ Section program.
       }
       done.
     }
-    iIntros "[HP HpwrsS]".
-    iDestruct ("HpwrsC" with "HpwrsS") as "HpwrsS".
+    iIntros "[HP _]".
     iNamed "HP". clear P.
     pose proof (list_to_map_flip _ _ HpwrsL) as Hltm.
     rewrite -Hlen firstn_all -Hltm in Hptsmabs, Hsptsmabs.

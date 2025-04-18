@@ -29,9 +29,9 @@ Section program.
     iIntros "HptgsmS".
     wp_pures.
     iApply "HΦ".
-    iDestruct (big_sepM2_delete_affine _ _ _ tsW with "Hprepm") as "Hprepm".
+    iDestruct (big_sepM2_delete_affine _ _ _ tsW with "Hprepm") as "Hprepm'".
     iDestruct (big_sepM2_delete_affine _ _ _ tsW with "Hptgsm") as "Hptgsm'".
-    iFrame "∗ Hptgsm'".
+    iFrame "HprepmP HptgsmP ∗ #".
     iPureIntro.
     split.
     { rewrite 2!kmap_delete. f_equal; [word | done]. }

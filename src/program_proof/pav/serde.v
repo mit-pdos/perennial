@@ -1,4 +1,4 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.pav Require Import prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 From Perennial.program_proof.pav Require Import misc.
 
@@ -39,7 +39,7 @@ Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_Dig,
   "Hptr_Epoch" ∷ ptr ↦[PreSigDig :: "Epoch"]{d} #obj.(Epoch) ∗
   "Hptr_Dig" ∷ ptr ↦[PreSigDig :: "Dig"]{d} (slice_val sl_Dig) ∗
-  "Hsl_Dig" ∷ own_slice_small sl_Dig byteT d obj.(Dig).
+  "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig).
 
 Lemma wp_enc obj sl_b (b : list w8) ptr d :
   {{{
@@ -185,6 +185,15 @@ Definition encodesF (obj : t) : list w8 :=
 
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
+
+Lemma inj obj0 obj1 enc :
+  encodes enc obj0 →
+  encodes enc obj1 →
+  obj0 = obj1.
+Proof.
+  unfold encodes. intros Henc ->. destruct obj0, obj1.
+  unfold encodesF in Henc.
+Admitted.
 
 Section defs.
 Context `{!heapGS Σ}.

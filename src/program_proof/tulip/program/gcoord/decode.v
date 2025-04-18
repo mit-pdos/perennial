@@ -1,10 +1,9 @@
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.util Require Import
-  decode_string decode_version.
+  decode_string decode_version decode_prepare_proposal decode_kvmap.
 
-
-Definition txnresp_to_val (resp : txnresp) (entsP : Slice.t) : val :=
+Definition txnresp_to_val (resp : txnresp) (pwrsP : loc) : val :=
   match resp with
   | ReadResp ts rid key ver slow =>
       struct.mk_f TxnResponse [
@@ -29,6 +28,12 @@ Definition txnresp_to_val (resp : txnresp) (entsP : Slice.t) : val :=
   | QueryResp ts res =>
       struct.mk_f TxnResponse [
           ("Kind", #(U64 205)); ("Timestamp", #ts); ("Result", #(rpres_to_u64 res))]
+  | InquireResp ts rank pp vd pwrs rid cid res =>
+      struct.mk_f TxnResponse [
+          ("Kind", #(U64 206)); ("Timestamp", #ts); ("ReplicaID", #rid);
+          ("Rank", #rank); ("RankLast", #pp.1); ("Prepared", #pp.2); ("Validated", #vd);
+          ("PartialWrites", #pwrsP); ("CoordID", coordid_to_val cid);
+          ("Result", #(rpres_to_u64 res))]
   | CommitResp ts res =>
       struct.mk_f TxnResponse [
           ("Kind", #(U64 300)); ("Timestamp", #ts); ("Result", #(rpres_to_u64 res))]
@@ -44,7 +49,7 @@ Section decode.
     let bs := encode_read_resp_xkind ts rid key ver slow in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnReadResponse (to_val bsP)
-    {{{ RET (txnresp_to_val (ReadResp ts rid key ver slow) Slice.nil); True }}}.
+    {{{ RET (txnresp_to_val (ReadResp ts rid key ver slow) null); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -83,7 +88,7 @@ Section decode.
     let bs := encode_ts_rid_res ts rid res in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnFastPrepareResponse (to_val bsP)
-    {{{ RET (txnresp_to_val (FastPrepareResp ts rid res) Slice.nil); True }}}.
+    {{{ RET (txnresp_to_val (FastPrepareResp ts rid res) null); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -113,7 +118,7 @@ Section decode.
     let bs := encode_ts_rid_res ts rid res in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnValidateResponse (to_val bsP)
-    {{{ RET (txnresp_to_val (ValidateResp ts rid res) Slice.nil); True }}}.
+    {{{ RET (txnresp_to_val (ValidateResp ts rid res) null); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -143,7 +148,7 @@ Section decode.
     let bs := encode_ts_rank_rid_res ts rank rid res in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnPrepareResponse (to_val bsP)
-    {{{ RET (txnresp_to_val (PrepareResp ts rank rid res) Slice.nil); True }}}.
+    {{{ RET (txnresp_to_val (PrepareResp ts rank rid res) null); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -177,7 +182,7 @@ Section decode.
     let bs := encode_ts_rank_rid_res ts rank rid res in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnUnprepareResponse (to_val bsP)
-    {{{ RET (txnresp_to_val (UnprepareResp ts rank rid res) Slice.nil); True }}}.
+    {{{ RET (txnresp_to_val (UnprepareResp ts rank rid res) null); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -211,7 +216,7 @@ Section decode.
     let bs := encode_ts_res ts res in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnQueryResponse (to_val bsP)
-    {{{ RET (txnresp_to_val (QueryResp ts res) Slice.nil); True }}}.
+    {{{ RET (txnresp_to_val (QueryResp ts res) null); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -233,11 +238,91 @@ Section decode.
     by iApply "HΦ".
   Qed.
 
+  Theorem wp_DecodeTxnInquireResponse (bsP : Slice.t) ts rank pp vd pwrs rid cid res bs :
+    encode_inquire_resp_xkind ts rank pp vd pwrs rid cid res bs ->
+    {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
+      DecodeTxnInquireResponse (to_val bsP)
+    {{{ (pwrsP : loc), RET (txnresp_to_val (InquireResp ts rank pp vd pwrs rid cid res) pwrsP);
+        if vd then own_map pwrsP (DfracOwn 1) pwrs else True
+    }}}.
+  Proof.
+    iIntros (Henc Φ) "Hbs HΦ".
+    wp_rec.
+
+    (*@ func DecodeTxnInquireResponse(bs []byte) TxnResponse {                  @*)
+    (*@     ts, bs1 := marshal.ReadInt(bs)                                      @*)
+    (*@     pp, bs2 := util.DecodePrepareProposal(bs1)                          @*)
+    (*@     vd, bs3 := marshal.ReadBool(bs2)                                    @*)
+    (*@     pwrs, bs4 := util.DecodeKVMap(bs3)                                  @*)
+    (*@     res, _ := marshal.ReadInt(bs4)                                      @*)
+    (*@     return TxnResponse{                                                 @*)
+    (*@         Kind          : MSG_TXN_INQUIRE,                                @*)
+    (*@         Timestamp     : ts,                                             @*)
+    (*@         Rank          : pp.Rank,                                        @*)
+    (*@         Prepared      : pp.Prepared,                                    @*)
+    (*@         Validated     : vd,                                             @*)
+    (*@         PartialWrites : pwrs,                                           @*)
+    (*@         Result        : res,                                            @*)
+    (*@     }                                                                   @*)
+    (*@ }                                                                       @*)
+    destruct vd.
+    { destruct Henc as (mdata & -> & Hmdata).
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs1P) "Hbs".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs2P) "Hbs".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs3P) "Hbs".
+      wp_apply (wp_DecodePrepareProposal with "Hbs").
+      iIntros (bs4P) "Hbs".
+      wp_apply (wp_ReadBool with "Hbs").
+      iIntros (b bs5P) "[%Hb Hbs]".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs6P) "Hbs".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs7P) "Hbs".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs8P) "Hbs".
+      wp_pures.
+      destruct b; wp_pures; last first.
+      { symmetry in Hb. rewrite bool_decide_eq_false in Hb. word. }
+      symmetry in Hb. rewrite bool_decide_eq_true in Hb.
+      rewrite -(app_nil_r mdata).
+      wp_apply (wp_DecodeKVMap with "Hbs").
+      { apply Hmdata. }
+      iIntros (pwrsP bs9P) "[HpwrsP Hbs]".
+      wp_pures.
+      by iApply "HΦ".
+    }
+    { simpl in Henc. rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs1P) "Hbs".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs2P) "Hbs".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs3P) "Hbs".
+      wp_apply (wp_DecodePrepareProposal with "Hbs").
+      iIntros (bs4P) "Hbs".
+      wp_apply (wp_ReadBool with "Hbs").
+      iIntros (b bs5P) "[%Hb Hbs]".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs6P) "Hbs".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs7P) "Hbs".
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (bs8P) "Hbs".
+      wp_pures.
+      destruct b; wp_pures.
+      { symmetry in Hb. rewrite bool_decide_eq_true in Hb. word. }
+      by iApply "HΦ".
+    }
+  Qed.
+
   Theorem wp_DecodeTxnCommitResponse (bsP : Slice.t) ts res :
     let bs := encode_ts_res ts res in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnCommitResponse (to_val bsP)
-    {{{ RET (txnresp_to_val (CommitResp ts res) Slice.nil); True }}}.
+    {{{ RET (txnresp_to_val (CommitResp ts res) null); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -263,7 +348,7 @@ Section decode.
     let bs := encode_ts_res ts res in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnAbortResponse (to_val bsP)
-    {{{ RET (txnresp_to_val (AbortResp ts res) Slice.nil); True }}}.
+    {{{ RET (txnresp_to_val (AbortResp ts res) null); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -285,18 +370,19 @@ Section decode.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_DecodeTxnResponse (bsP : Slice.t) (resp : txnresp) :
-    let bs := encode_txnresp resp in
+  Theorem wp_DecodeTxnResponse (bsP : Slice.t) (bs : list u8) (resp : txnresp) :
+    encode_txnresp resp bs ->
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnResponse (to_val bsP)
-    {{{ (entsP : Slice.t), RET (txnresp_to_val resp entsP);
-        (* TODO: this will be used after adding backup coordinator *)
+    {{{ (pwrsP : loc), RET (txnresp_to_val resp pwrsP);
         match resp with
+        | InquireResp _ _ _ vd pwrs _ _ _ =>
+            if vd then own_map pwrsP DfracDiscarded pwrs else True
         | _ => True
         end
     }}}.
   Proof.
-    iIntros (bs Φ) "Hbs HΦ".
+    iIntros (Henc Φ) "Hbs HΦ".
     wp_rec.
 
     (*@ func DecodeTxnResponse(bs []byte) TxnResponse {                         @*)
@@ -327,49 +413,69 @@ Section decode.
     (*@     }                                                                   @*)
     (*@                                                                         @*)
     destruct resp; wp_pures.
-    { wp_apply (wp_ReadInt with "Hbs").
+    { rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnReadResponse with "Hbs").
       by iApply "HΦ".
     }
-    { wp_apply (wp_ReadInt with "Hbs").
+    { rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnFastPrepareResponse with "Hbs").
       by iApply "HΦ".
     }
-    { wp_apply (wp_ReadInt with "Hbs").
+    { rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnValidateResponse with "Hbs").
       by iApply "HΦ".
     }
-    { wp_apply (wp_ReadInt with "Hbs").
+    { rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnPrepareResponse with "Hbs").
       by iApply "HΦ".
     }
-    { wp_apply (wp_ReadInt with "Hbs").
+    { rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnUnprepareResponse with "Hbs").
       by iApply "HΦ".
     }
-    { wp_apply (wp_ReadInt with "Hbs").
+    { rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnQueryResponse with "Hbs").
       by iApply "HΦ".
     }
-    { wp_apply (wp_ReadInt with "Hbs").
+    { destruct Henc as (reqdata & -> & Henc).
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (p) "Hbs".
+      iApply wp_fupd.
+      wp_pures.
+      wp_apply (wp_DecodeTxnInquireResponse with "Hbs").
+      { apply Henc. }
+      iIntros (pwrsP) "HpwrsP".
+      iApply "HΦ".
+      destruct vd; last done.
+      by iMod (own_map_persist with "HpwrsP") as "HpwrsP".
+    }
+    { rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnCommitResponse with "Hbs").
       by iApply "HΦ".
     }
-    { wp_apply (wp_ReadInt with "Hbs").
+    { rewrite Henc.
+      wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnAbortResponse with "Hbs").

@@ -105,9 +105,8 @@ Section program.
                 "HpwrsmP" ∷ own_map wrsP (DfracOwn 1) pwrsmP ∗
                 "Hgcoords" ∷ own_txn_gcoords txn γ ∗
                 "Htks" ∷ [∗ set] gid ∈ list_to_set (drop (uint.nat i) ptgsL), local_gid_token α gid)%I.
-    iMod (readonly_load with "HptgsL") as (q) "HptgsL'".
-    iDestruct (own_slice_small_sz with "HptgsL'") as %Hlenptgs.
-    wp_apply (wp_forSlice P with "[] [$HptgsL' $HpwrsmP $Hgcoords Htks]"); last first; first 1 last.
+    iDestruct (own_slice_small_sz with "HptgsL") as %Hlenptgs.
+    wp_apply (wp_forSlice P with "[] [$HptgsL $HpwrsmP $Hgcoords Htks]"); last first; first 1 last.
     { by rewrite uint_nat_W64_0 drop_0 HptgsL. }
     { clear Φ.
 
@@ -172,7 +171,11 @@ Section program.
           rewrite -Hwrsg in Hne.
           done.
         }
-        wp_apply (wp_GroupCoordinator__Prepare with "[] Hpwrs [] Hgcoordabs").
+        iAssert (safe_txn_ptgs γ tid (ptgroups (dom wrs)))%I as "#Hsafeptgs".
+        { by iFrame "Htxnwrs". }
+        wp_apply (wp_GroupCoordinator__Prepare with "[] [] [] Hpwrs [] Hgcoordabs").
+        { by rewrite Htsword. }
+        { by rewrite Htsword. }
         { by rewrite Htsword. }
         { by iFrame "# %". }
         iIntros (stg ok) "#Hsafe".

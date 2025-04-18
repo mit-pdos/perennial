@@ -1,8 +1,8 @@
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.replica Require Import
   replica_repr replica_read replica_fast_prepare replica_validate
-  replica_prepare replica_unprepare replica_query replica_commit replica_abort
-  encode decode.
+  replica_prepare replica_unprepare replica_query replica_inquire
+  replica_commit replica_abort encode decode.
 From Perennial.program_proof.tulip.paxos Require Import base.
 
 Section program.
@@ -63,6 +63,9 @@ Section program.
     iIntros (pwrsP ptgsP) "Hpwrsptgs".
     assert (Hrid : rid ∈ rids_all).
     { apply elem_of_dom_2 in Haddr. by rewrite Hdomaddrm in Haddr. }
+    iAssert (is_replica_gid_rid rp gid rid)%I as "Hgidrid".
+    { by do 2 iNamed "Hrp". }
+    iNamed "Hgidrid".
     destruct req; wp_pures.
     { (* Case: TxnRead. *)
 
@@ -125,7 +128,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -151,9 +153,10 @@ Section program.
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
-      iNamed "Hrp".
       iDestruct "Hpwrsptgs" as "[Hpwrs Hptgs]".
-      wp_apply (wp_Replica__FastPrepare with "Hsafe Hptgs Hrp Hpwrs").
+      iNamed "Hrp".
+      iDestruct "Hsafe" as "(#Hlnrz & #Hsafepwrs & #Hsafeptgs)".
+      wp_apply (wp_Replica__FastPrepare with "Hlnrz Hsafepwrs Hsafeptgs Hpwrs Hptgs Hrp").
       iIntros (res) "#Houtcome".
       wp_loadField.
       wp_apply (wp_EncodeTxnFastPrepareResponse).
@@ -189,7 +192,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -216,9 +218,10 @@ Section program.
       (*@             grove_ffi.Send(conn, data)                                  @*)
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
-      iNamed "Hrp".
       iDestruct "Hpwrsptgs" as "[Hpwrs Hptgs]".
-      wp_apply (wp_Replica__Validate with "Hsafe Hptgs Hrp Hpwrs").
+      iNamed "Hrp".
+      iDestruct "Hsafe" as "(#Hlnrz & #Hsafepwrs & #Hsafeptgs)".
+      wp_apply (wp_Replica__Validate with "Hlnrz Hsafepwrs Hsafeptgs Hpwrs Hptgs Hrp").
       iIntros (res) "#Houtcome".
       wp_loadField.
       wp_apply (wp_EncodeTxnValidateResponse).
@@ -254,7 +257,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -318,7 +320,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -382,7 +383,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -444,7 +444,6 @@ Section program.
         { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
         iPureIntro.
         clear -Henc Hdata.
-        rewrite 2!set_map_union 2!set_map_singleton.
         set_solver.
       }
       iCombine "Hconn Hconnects" as "Hconnects".
@@ -460,7 +459,66 @@ Section program.
       wp_pures.
       by iApply "HΦ".
     }
-    { (* Case: TxnRefresh. *) by iApply "HΦ". }
+    { (* Case: TxnInquire. *)
+      iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
+      iDestruct "Hsafe" as %[Hvts Hvrank].
+      iNamed "Hrp".
+      wp_apply (wp_Replica__Inquire with "Hrp").
+      { apply Hvts. }
+      { apply Hvrank. }
+      clear pwrsP.
+      iIntros (pp vd pwrsP res pwrs) "[#Houtcome #Hpwrs]".
+      wp_pures.
+      wp_loadField.
+      wp_apply (wp_EncodeTxnInquireResponse with "Hpwrs").
+      iIntros (dataP data) "[Hdata %Hdata]".
+      wp_pures.
+      (* Obtain [is_terminal γ trml] to respond to the sender. *)
+      assert (Htrml : trml ∈ (set_map msg_sender msl : gset chan)).
+      { rewrite elem_of_map. by exists (Message trml retdata). }
+      iDestruct (big_sepS_elem_of with "Hsender") as "Htrml"; first apply Htrml.
+      (* Now send the message. *)
+      iDestruct (own_slice_to_small with "Hdata") as "Hdata".
+      wp_apply (wp_Send with "Hdata").
+      clear Himgaddrm Hmsl Henc listens connects.
+      iInv "Hinvnet" as "> HinvnetO" "HinvnetC".
+      iApply ncfupd_mask_intro; first set_solver.
+      iIntros "Hmask".
+      iNamed "HinvnetO".
+      iDestruct (terminal_lookup with "Htrml Hterminals") as %Hsend.
+      apply elem_of_dom in Hsend as [msc Hmsc].
+      iDestruct (big_sepM_delete with "Hconnects") as "[Hconn Hconnects]".
+      { apply Hmsc. }
+      iNamed "Hconn".
+      iFrame "Hms".
+      iIntros (sent) "Hms".
+      set msc' := if sent then _ else _.
+      iAssert (connect_inv trml msc' gid γ)%I with "[Hms]" as "Hconn".
+      { iFrame "Hms".
+        set resp := InquireResp _ _ _ _ _ _ _ _ in Hdata.
+        destruct sent; last first.
+        { iExists resps. iFrame "# %". }
+        iExists ({[resp]} ∪ resps).
+        iSplit.
+        { iApply big_sepS_insert_2; [iFrame "# %" | done]. }
+        iPureIntro.
+        clear -Henc Hdata.
+        set_solver.
+      }
+      iCombine "Hconn Hconnects" as "Hconnects".
+      rewrite -(big_sepM_insert_delete _ _ trml msc').
+      iMod "Hmask" as "_".
+      iMod ("HinvnetC" with "[$Hlistens $Hconnects Hterminals]") as "_".
+      { rewrite dom_insert_L.
+        apply elem_of_dom_2 in Hmsc.
+        replace (_ ∪ dom connects) with (dom connects) by set_solver.
+        by iFrame "Hterminals".
+      }
+      iIntros "!>" (err) "Herr".
+      wp_pures.
+      by iApply "HΦ".
+    }
+    { (* Case: TxnInquire. *) by iApply "HΦ". }
     { (* Case: TxnCommit. *)
 
       (*@         } else if kind == message.MSG_TXN_COMMIT {                      @*)
@@ -476,7 +534,7 @@ Section program.
       (*@                                                                         @*)
       iDestruct (big_sepS_elem_of with "Hreqs") as "Hsafe"; first apply Hinreqs.
       iRename "Hpwrsptgs" into "Hpwrs".
-      wp_apply (wp_Replica__Commit with "Hsafe Hrp Hpwrs").
+      wp_apply (wp_Replica__Commit with "Hsafe Hpwrs Hrp").
       iIntros (ok) "_".
       wp_pures.
       destruct ok; wp_pures.
@@ -513,7 +571,6 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
-          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".
@@ -562,7 +619,6 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
-          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".
@@ -630,7 +686,6 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
-          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".
@@ -679,7 +734,6 @@ Section program.
           { by iApply big_sepS_insert_2. }
           iPureIntro.
           clear -Henc Hdata.
-          rewrite 2!set_map_union 2!set_map_singleton.
           set_solver.
         }
         iCombine "Hconn Hconnects" as "Hconnects".

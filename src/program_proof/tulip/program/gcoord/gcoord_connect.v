@@ -65,8 +65,7 @@ Section program.
         iExists ∅.
         iFrame.
         iSplit; first by rewrite big_sepS_empty.
-        iPureIntro.
-        by rewrite 2!set_map_empty.
+        done.
       }
       iModIntro.
       wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $HconnsP $Hgcoord Hconns]").

@@ -82,7 +82,8 @@ Section program.
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
-    wp_apply (wp_Replica__query with "Hinv Hrp").
+    iNamed "Hgidrid".
+    wp_apply (wp_Replica__query with "[$Hinv] Hrp").
     { apply Hgid. }
     iIntros (res) "[Hrp #Hp]".
     wp_apply (wp_Replica__refresh with "Hrp").

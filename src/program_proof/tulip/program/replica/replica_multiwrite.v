@@ -14,14 +14,13 @@ Section program.
     safe_extension ts pwrs histm ->
     ([∗ map] k ↦ h ∈ filter_group gid histm', is_repl_hist_lb γ k h) -∗
     is_replica_idx rp γ α -∗
-    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica_histm rp histm α }}}
+    is_dbmap_in_slice pwrsS pwrs -∗
+    {{{ own_replica_histm rp histm α }}}
       Replica__multiwrite #rp #tsW (to_val pwrsS)
-    {{{ RET #(); 
-        own_dbmap_in_slice pwrsS pwrs ∗ own_replica_histm rp histm' α
-    }}}.
+    {{{ RET #();  own_replica_histm rp histm' α }}}.
   Proof.
-    iIntros (ts histm' Hvw Hdomhistm Hlenhistm) "#Hrlbs #Hidx".
-    iIntros (Φ) "!> [Hpwrs Hhistm] HΦ".
+    iIntros (ts histm' Hvw Hdomhistm Hlenhistm) "#Hrlbs #Hidx #Hpwrs".
+    iIntros (Φ) "!> Hhistm HΦ".
     iDestruct "Hpwrs" as (pwrsL) "[HpwrsS %HpwrsL]".
     wp_rec.
 
@@ -37,12 +36,12 @@ Section program.
     (*@         }                                                               @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    iDestruct (own_slice_sz with "HpwrsS") as %Hlenpwrs.
-    iDestruct (own_slice_small_acc with "HpwrsS") as "[HpwrsS HpwrsC]".
+    iMod (readonly_load with "HpwrsS") as (q) "HpwrsR".
+    iDestruct (own_slice_small_sz with "HpwrsR") as %Hlenpwrs.
     set P := (λ (i : u64),
       let pwrs' := list_to_map (take (uint.nat i) pwrsL) in
       own_replica_histm rp (multiwrite ts pwrs' histm) α)%I.
-    wp_apply (wp_forSlice P with "[] [$HpwrsS Hhistm]"); last first; first 1 last.
+    wp_apply (wp_forSlice P with "[] [$HpwrsR Hhistm]"); last first; first 1 last.
     { (* Loop entry. *)
       subst P. simpl.
       rewrite uint_nat_W64_0 take_0 list_to_map_nil.
@@ -117,8 +116,7 @@ Section program.
         iFrame "∗ #".
       }
     }
-    iIntros "[Hhistm HpwrsS]". subst P. simpl.
-    iDestruct ("HpwrsC" with "HpwrsS") as "HpwrsS".
+    iIntros "[Hhistm _]". subst P. simpl.
     wp_pures.
     iApply "HΦ".
     pose proof (list_to_map_flip _ _ HpwrsL) as Hltm.

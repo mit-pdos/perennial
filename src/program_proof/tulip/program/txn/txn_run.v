@@ -87,7 +87,6 @@ Section program.
         by iFrame "∗ # %".
       }
 
-
       (*@     cmt := body(txn)                                                    @*)
       (*@                                                                         @*)
       wp_apply ("Hbody" with "[$Htxn $Htxnpts]"); first done.

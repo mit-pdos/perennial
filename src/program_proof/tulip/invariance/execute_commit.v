@@ -86,6 +86,9 @@ Section execute_commit.
       (* Extend history, set commit map to true, reset currently prepared map and release locks. *)
       iDestruct (big_sepM_delete _ _ ts with "Hsafep") as "[Hsafepwrs' Hsafep']".
       { apply Hcpm. }
+      iDestruct (big_sepS_delete_affine _ _ ts with "Hlnrzs") as "Hlnrzs'".
+      iDestruct (big_sepM_delete_affine _ _ ts with "Hsafebk") as "Hsafebk'".
+      iClear "Hlnrzs Hsafebk".
       (* Agree on [pwrs] and [pwrs']. *)
       iDestruct (safe_txn_pwrs_impl_is_txn_pwrs with "Hsafepwrs'") as "Hpwrs'".
       iDestruct (txn_pwrs_agree with "Hpwrs Hpwrs'") as %->.
@@ -151,6 +154,8 @@ Section execute_commit.
         iApply (big_sepS_subseteq with "Hrpvds").
         set_solver.
       }
+      iSplit.
+      { by rewrite dom_delete_L. }
       iPureIntro.
       split.
       { rewrite dom_insert_L dom_delete_L. clear -Hvtss.

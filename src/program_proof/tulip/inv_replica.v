@@ -181,6 +181,8 @@ Section inv.
       "#Hsafep"   ∷ ([∗ map] ts ↦ pwrs ∈ cpm, safe_txn_pwrs γ gid ts pwrs) ∗
       "#Hrpvds"   ∷ ([∗ set] t ∈ dom cpm, is_replica_validated_ts γ gid rid t) ∗
       "#Hfpw"     ∷ ([∗ map] t ↦ ps ∈ psm, fast_proposal_witness γ gid rid t ps) ∗
+      "#Hlnrzs"   ∷ ([∗ set] t ∈ dom ptgsm, is_lnrz_tid γ t) ∗
+      "#Hsafebk"  ∷ ([∗ map] t ↦ g ∈ ptgsm, safe_backup_txn γ t g) ∗
       "#Hvpwrs"   ∷ ([∗ set] ts ∈ vtss, validated_pwrs_of_txn γ gid rid ts) ∗
       "#Hgabt"    ∷ group_aborted_if_validated γ gid kvdm histm ptsm ∗
       "#Hcloglb"  ∷ is_txn_log_lb γ gid clog ∗
@@ -330,13 +332,13 @@ Section inv.
     by iDestruct (big_sepL_take_drop _ _ ub' with "Habtifp") as "[Htake Hdrop]".
   Qed.
 
-  Definition prepare_promise γ gid rid (ts : nat) (rk : nat) (p : bool) : iProp Σ :=
+  Definition prepare_promise γ gid rid (ts : nat) (rk rkl : nat) (p : bool) : iProp Σ :=
     ∃ lb : ballot,
-      let n := latest_term lb in
       "#Hlb"    ∷ is_replica_ballot_lb γ gid rid ts lb ∗
-      "#Hgpsl"  ∷ is_group_prepare_proposal_if_classic γ gid ts n p ∗
-      "%Hp"     ∷ ⌜lb !! n = Some (Accept p)⌝ ∗
-      "%Hlenlb" ∷ ⌜length lb = rk⌝.
+      "#Hgpsl"  ∷ is_group_prepare_proposal_if_classic γ gid ts rkl p ∗
+      "%Hp"     ∷ ⌜lb !! rkl = Some (Accept p)⌝ ∗
+      "%Hlenlb" ∷ ⌜length lb = rk⌝ ∗
+      "%Hrkl"   ∷ ⌜rkl = latest_term lb⌝.
 
   Lemma replica_inv_weaken_ballot_map γ gid rid :
     replica_inv γ gid rid -∗

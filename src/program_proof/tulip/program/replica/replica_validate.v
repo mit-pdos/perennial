@@ -12,20 +12,21 @@ Section program.
     let ts := uint.nat tsW in
     gid ∈ gids_all ->
     rid ∈ rids_all ->
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
+    is_dbmap_in_slice pwrsS pwrs -∗
     is_txnptgs_in_slice ptgsS ptgs -∗
     know_tulip_inv γ -∗
     know_replica_file_inv γ gid rid -∗
-    {{{ own_dbmap_in_slice pwrsS pwrs ∗
-        own_replica rp gid rid γ α
-    }}}
+    {{{ own_replica rp gid rid γ α }}}
       Replica__validate #rp #tsW (to_val pwrsS) (to_val ptgsS)
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         own_replica rp gid rid γ α ∗ validate_outcome γ gid rid ts res
     }}}.
   Proof.
-    iIntros (ts Hgid Hrid) "#Hsafepwrs #Hptgs #Hinv #Hinvfile".
-    iIntros (Φ) "!> [Hpwrs Hrp] HΦ".
+    iIntros (ts Hgid Hrid) "#Hlnrz #Hsafepwrs #Hsafeptgs #Hpwrs #Hptgs #Hinv #Hinvfile".
+    iIntros (Φ) "!> Hrp HΦ".
     wp_rec.
 
     (*@ func (rp *Replica) validate(ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) uint64 { @*)
@@ -79,9 +80,9 @@ Section program.
     (*@     }                                                                   @*)
     (*@                                                                         @*)
     iDestruct (safe_txn_pwrs_dom_pwrs with "Hsafepwrs") as %Hdompwrs.
-    wp_apply (wp_Replica__tryAcquire with "[$Hpwrs $Hptsmsptsm]").
+    wp_apply (wp_Replica__tryAcquire with "Hpwrs Hptsmsptsm").
     { apply Hdompwrs. }
-    iIntros (acquired) "[Hpwrs Hptsmsptsm]".
+    iIntros (acquired) "Hptsmsptsm".
     wp_pures.
     destruct acquired; wp_pures; last first.
     { iApply ("HΦ" $! ReplicaFailedValidation). by iFrame "∗ # %". }
@@ -99,7 +100,7 @@ Section program.
     wp_loadField.
     iNamed "Hfname".
     wp_loadField.
-    wp_apply (wp_logAcquire with "Hptgs Hpwrs").
+    wp_apply (wp_logAcquire with "Hpwrs Hptgs").
     (* Open the crash, replica, and file invariants. *)
     iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
     { solve_ndisj. }
@@ -125,7 +126,7 @@ Section program.
       iMod ("HinvC" with "HinvO") as "_".
       set dst := ReplicaDurable clog ilog.
       iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
-      by iIntros "!> [_ %Hcontra]".
+      by iIntros "!> %Hcontra".
     }
     (* Case: Write succeeded. Update the logical state and re-establish invariant. *)
     iDestruct "Hfile" as "[Hfile %Hencilog']".
@@ -139,7 +140,7 @@ Section program.
       as "(Hclog & Hilog & Hgroup & Hrp)".
     (* Then apply the validate transition. *)
     (* ∅ is a placeholder for participant groups. *)
-    iMod (replica_inv_validate with "Hsafepwrs Hclog Hilog Hrp")
+    iMod (replica_inv_validate with "Hlnrz Hsafepwrs Hsafeptgs Hclog Hilog Hrp")
       as "(Hclog & Hilog & Hrp & #Hvd)".
     { apply Hexec. }
     { do 2 (split; first done).
@@ -173,14 +174,14 @@ Section program.
     set ilog' := ilog ++ _.
     set dst := ReplicaDurable (clog ++ cmdsa) ilog'.
     iMod ("HdurableC" $! dst with "[$Hclog $Hilog]") as "Hdurable".
-    iIntros "!> [Hpwrs _]".
+    iIntros "!> _".
 
     (*@     // Record the write set and the participant groups.                 @*)
     (*@     rp.memorize(ts, pwrs, ptgs)                                         @*)
     (*@                                                                         @*)
     iAssert (own_replica_cpm rp cpm)%I with "[$HprepmP $HprepmS $Hprepm]" as "Hcpm".
     { done. }
-    wp_apply (wp_Replica__memorize with "Hptgs [$Hpwrs $Hcpm $Hpgm]").
+    wp_apply (wp_Replica__memorize with "Hpwrs Hptgs [$Hcpm $Hpgm]").
     iIntros "[Hcpm Hpgm]".
 
     (*@     return tulip.REPLICA_OK                                             @*)
@@ -196,6 +197,14 @@ Section program.
     iDestruct (safe_txn_pwrs_impl_valid_wrs with "Hsafepwrs") as %Hvw.
     iFrame "∗ # %".
     iModIntro.
+    iSplit.
+    { by iApply big_sepM_insert_2. }
+    iSplit.
+    { rewrite !dom_insert_L. by iApply big_sepS_insert_2. }
+    iSplit.
+    { iApply big_sepM_insert_2; last done.
+      iApply (safe_txn_pwrs_ptgs_backup_txn with "Hsafepwrs Hsafeptgs").
+    }
     iPureIntro.
     split; first done.
     rewrite merge_clog_ilog_snoc_ilog; last done.
@@ -215,17 +224,20 @@ Section program.
   Theorem wp_Replica__Validate
     rp (tsW rankW : u64) pwrsS pwrs ptgsS ptgs gid rid γ :
     let ts := uint.nat tsW in
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
+    is_dbmap_in_slice pwrsS pwrs -∗
     is_txnptgs_in_slice ptgsS ptgs -∗
     is_replica rp gid rid γ -∗
-    {{{ own_dbmap_in_slice pwrsS pwrs }}}
+    {{{ True }}}
       Replica__Validate #rp #tsW #rankW (to_val pwrsS) (to_val ptgsS)
     {{{ (res : rpres), RET #(rpres_to_u64 res);
         validate_outcome γ gid rid ts res
     }}}.
   Proof.
-    iIntros (ts) "#Hsafepwrs #Hptgs #Hrp".
-    iIntros (Φ) "!> Hpwrs HΦ".
+    iIntros (ts) "#Hlnrz #Hsafepwrs #Hsafeptgs #Hpwrs #Hptgs #Hrp".
+    iIntros (Φ) "!> _ HΦ".
     wp_rec.
 
     (*@ func (rp *Replica) Validate(ts uint64, rank uint64, pwrs []tulip.WriteEntry, ptgs []uint64) uint64 { @*)
@@ -239,7 +251,8 @@ Section program.
     wp_loadField.
     wp_apply (wp_Mutex__Lock with "Hlock").
     iIntros "[Hlocked Hrp]".
-    wp_apply (wp_Replica__validate with "Hsafepwrs Hptgs Hinv Hinvfile [$Hpwrs $Hrp]").
+    iNamed "Hgidrid".
+    wp_apply (wp_Replica__validate with "Hlnrz Hsafepwrs Hsafeptgs Hpwrs Hptgs [$Hinv] Hinvfile Hrp").
     { apply Hgid. }
     { apply Hrid. }
     iIntros (res) "[Hrp #Hfp]".

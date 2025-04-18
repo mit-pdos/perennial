@@ -158,6 +158,7 @@ Section program.
     (* Case: Write succeeded. Update the logical state and re-establish invariant. *)
     iDestruct "Hfile" as "[Hfile %Hencilog']".
     iNamed "HinvO".
+    iNamed "Hgidrid".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
     iDestruct (big_sepS_elem_of_acc with "Hrgs") as "[Hrg HrgsC]"; first apply Hgid.
     iDestruct (big_sepS_elem_of_acc with "Hrg") as "[Hrp HrgC]"; first apply Hrid.

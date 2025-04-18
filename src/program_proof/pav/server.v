@@ -1,8 +1,9 @@
 From New.experiments Require Import glob.
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.pav Require Import prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import core cryptoffi cryptoutil serde merkle.
+From Perennial.program_proof.pav Require Import
+  core cryptoffi cryptoutil serde logical_audit merkle.
 From Perennial.goose_lang.lib.rwlock Require Import rwlock_noncrash.
 
 Module userState.
@@ -65,32 +66,7 @@ End Server.
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
 
-(* serv_sigpred is more simple than adtr_sigpred bc more things
-are moved to inv_gs. *)
-Definition serv_sigpred (γhist : gname) : (list w8 → iProp Σ) :=
-  λ preByt,
-  (∃ pre m,
-  "%Henc" ∷ ⌜ PreSigDig.encodes preByt pre ⌝ ∗
-  "#Hlook_dig" ∷ mono_list_idx_own γhist (uint.nat pre.(PreSigDig.Epoch))
-    (m, pre.(PreSigDig.Dig)))%I.
-
 Definition is_WorkQ (ptr : loc) : iProp Σ := True.
-
-Definition maps_mono (ms : list adtr_map_ty) :=
-  ∀ (i j : w64) mi mj,
-  ms !! (uint.nat i) = Some mi →
-  ms !! (uint.nat j) = Some mj →
-  uint.Z i ≤ uint.Z j →
-  mi ⊆ mj.
-
-Definition epochs_ok (ms : list adtr_map_ty) :=
-  ∀ (ep : w64) m_ep k ep' comm,
-  ms !! (uint.nat ep) = Some m_ep →
-  m_ep !! k = Some (ep', comm) →
-  uint.Z ep' ≤ uint.Z ep.
-
-Definition lower_map (m : adtr_map_ty) : merkle_map_ty :=
-  (λ v, MapValPre.encodesF (MapValPre.mk v.1 v.2)) <$> m.
 
 (* inv_gs will be a proper iris invariant so that clients can access
 and learn that their own key is fresh even in latest epoch. *)
@@ -101,8 +77,8 @@ Definition inv_gs serv : iProp Σ :=
   "Hgs_hist" ∷ mono_list_auth_own serv.(Server.γhist) (1/2) gs_hist ∗
   "Hgs_vers" ∷ ghost_map_auth serv.(Server.γvers) (1/2) gs_vers ∗
 
-  "%Hmono_maps" ∷ ⌜ maps_mono gs_hist.*1 ⌝ ∗
-  "%Hok_epochs" ∷ ⌜ epochs_ok gs_hist.*1 ⌝ ∗
+  "%Hmono_maps" ∷ ⌜ mono_maps gs_hist.*1 ⌝ ∗
+  "%Hok_epochs" ∷ ⌜ ok_epochs gs_hist.*1 ⌝ ∗
   "#Hok_vers" ∷ ([∗ map] uid ↦ nVers ∈ gs_vers,
     ∃ label,
     "#Hvrf_out" ∷ is_vrf_out serv.(Server.vrf_pk)
@@ -162,7 +138,7 @@ Definition own_Server ptr serv q : iProp Σ :=
   (* physical-ghost reln. *)
   "%Heq_dig_hist" ∷ ⌜ gs_hist.*2 = servEpochInfo.dig <$> epochHist ⌝ ∗
   "%Heq_vers" ∷ ⌜ gs_vers = userState.numVers <$> userInfo ⌝ ∗
-  "%Heq_keyM" ∷ ⌜ keyMap = lower_map (default ∅ (last gs_hist.*1)) ⌝ ∗
+  "%Heq_keyM" ∷ ⌜ map_lower (default ∅ (last gs_hist.*1)) keyMap ⌝ ∗
   "%Heq_map_hist" ∷ ([∗ list] ep ↦ x ∈ epochHist,
     ∃ prevM nextM,
     "%Hlook_prevM" ∷ ⌜ gs_hist.*1 !! (pred ep) = Some prevM ⌝ ∗
@@ -176,7 +152,7 @@ Definition is_Server ptr serv : iProp Σ :=
   "#mu" ∷ ptr ↦[Server :: "mu"]□ #mu ∗
   "#Hmu" ∷ is_rwlock nroot #mu (λ q, own_Server ptr serv (q / 2)) ∗
   "#sigSk" ∷ ptr ↦[Server :: "sigSk"]□ #sigSk_ptr ∗
-  "#HsigSk" ∷ is_sig_sk sigSk_ptr sig_pk (serv_sigpred γ) ∗
+  "#HsigSk" ∷ is_sig_sk sigSk_ptr sig_pk (sigpred γ) ∗
   "#vrfSk" ∷ ptr ↦[Server :: "vrfSk"]□ #vrfSk_ptr ∗
   "#HvrfSk" ∷ is_vrf_sk vrfSk_ptr serv.(Server.vrf_pk) ∗
   "#Hptr_workq" ∷ ptr ↦[Server :: "workQ"]□ #workQ ∗

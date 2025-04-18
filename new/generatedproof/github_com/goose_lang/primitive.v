@@ -32,6 +32,10 @@ Global Instance wp_func_call_UInt64Put :
   WpFuncCall primitive "UInt64Put" _ (is_pkg_defined primitive) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_RandomUint64 :
+  WpFuncCall primitive "RandomUint64" _ (is_pkg_defined primitive) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_Assume :
   WpFuncCall primitive "Assume" _ (is_pkg_defined primitive) :=
   ltac:(apply wp_func_call'; reflexivity).

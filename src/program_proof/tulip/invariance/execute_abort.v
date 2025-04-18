@@ -91,6 +91,9 @@ Section execute_abort.
       (* Set commit map to false, reset currently prepared map and release locks. *)
       iDestruct (big_sepM_delete _ _ ts with "Hsafep") as "[Hpwrs Hsafep']".
       { apply Hcpm. }
+      iDestruct (big_sepS_delete_affine _ _ ts with "Hlnrzs") as "Hlnrzs'".
+      iDestruct (big_sepM_delete_affine _ _ ts with "Hsafebk") as "Hsafebk'".
+      iClear "Hlnrzs Hsafebk".
       iAssert (⌜dom pwrs ⊆ keys_all⌝)%I as %Hdompwrs.
       { iDestruct "Hpwrs" as (wrs) "(_ & _ & %Hvwrs & _ & %Hpwrs)".
         iPureIntro.
@@ -139,6 +142,8 @@ Section execute_abort.
         iApply (big_sepS_subseteq with "Hrpvds").
         set_solver.
       }
+      iSplit.
+      { by rewrite dom_delete_L. }
       iPureIntro.
       split.
       { rewrite dom_insert_L dom_delete_L. clear -Hvtss.

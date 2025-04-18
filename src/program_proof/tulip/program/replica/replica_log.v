@@ -126,8 +126,9 @@ Section program.
     (ptgsP : Slice.t) (ptgs : txnptgs) :
     let lsn := uint.nat lsnW in
     let ts := uint.nat tsW in
+    is_dbmap_in_slice pwrsP pwrs -∗
     is_txnptgs_in_slice ptgsP ptgs -∗
-    {{{ own_dbmap_in_slice pwrsP pwrs }}}
+    {{{ True }}}
     <<< ∀∀ bs ilog, fname f↦ bs ∗ ⌜encode_ilog ilog bs⌝ >>>
       logAcquire #(LitString fname) #lsnW #tsW (to_val pwrsP) (to_val ptgsP) @ ∅
     <<< ∃∃ bs' (failed : bool),
@@ -136,12 +137,10 @@ Section program.
             else fname f↦ bs' ∗
                  ⌜encode_ilog (ilog ++ [(lsn, CmdAcquire ts pwrs ptgs)]) bs'⌝
     >>>
-    {{{ RET #(); 
-        own_dbmap_in_slice pwrsP pwrs ∗ ⌜not failed⌝
-    }}}.
+    {{{ RET #(); ⌜not failed⌝ }}}.
   Proof.
-    iIntros (lsn ts) "#Hptgs".
-    iIntros (Φ) "!> Hpwrs HAU".
+    iIntros (lsn ts) "#Hpwrs #Hptgs".
+    iIntros (Φ) "!> _ HAU".
     wp_rec.
 
     (*@ func logAcquire(fname string, lsn, ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)
@@ -164,8 +163,9 @@ Section program.
     iIntros (p3) "Hbs".
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p4) "Hbs".
-    wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $Hpwrs]").
-    iIntros (p5 mdata) "[Hbs [Hpwrs %Hmdata]]".
+    iMod (is_dbmap_in_slice_unpersist with "Hpwrs") as "HpwrsR".
+    wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $HpwrsR]").
+    iIntros (p5 mdata) "[Hbs [_ %Hmdata]]".
     wp_apply (wp_EncodeInts__encode_txnptgs with "Hptgs Hbs").
     iIntros (p6 gdata) "[Hbs %Hgdata]".
     wp_pures.
@@ -229,8 +229,9 @@ Section program.
     let lsn := uint.nat lsnW in
     let ts := uint.nat tsW in
     let icmds := [(lsn, CmdAcquire ts pwrs ptgs); (lsn, CmdAccept ts O true)] in
+    is_dbmap_in_slice pwrsP pwrs -∗
     is_txnptgs_in_slice ptgsP ptgs -∗
-    {{{ own_dbmap_in_slice pwrsP pwrs }}}
+    {{{ True }}}
     <<< ∀∀ bs ilog, fname f↦ bs ∗ ⌜encode_ilog ilog bs⌝ >>>
       logFastPrepare #(LitString fname) #lsnW #tsW (to_val pwrsP) (to_val ptgsP) @ ∅
     <<< ∃∃ bs' (failed : bool),
@@ -239,12 +240,10 @@ Section program.
             else fname f↦ bs' ∗
                  ⌜encode_ilog (ilog ++ icmds) bs'⌝
     >>>
-    {{{ RET #(); 
-        own_dbmap_in_slice pwrsP pwrs ∗ ⌜not failed⌝ 
-    }}}.
+    {{{ RET #(); ⌜not failed⌝ }}}.
   Proof.
-    iIntros (lsn ts icmds) "#Hptgs".
-    iIntros (Φ) "!> Hpwrs HAU".
+    iIntros (lsn ts icmds) "#Hpwrs #Hptgs".
+    iIntros (Φ) "!> _ HAU".
     wp_rec.
 
     (*@ func logFastPrepare(fname string, lsn, ts uint64, pwrs []tulip.WriteEntry, ptgs []uint64) { @*)
@@ -272,8 +271,9 @@ Section program.
     iIntros (p3) "Hbs".
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p4) "Hbs".
-    wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $Hpwrs]").
-    iIntros (p5 mdata) "[Hbs [Hpwrs %Hmdata]]".
+    iMod (is_dbmap_in_slice_unpersist with "Hpwrs") as "HpwrsR".
+    wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $HpwrsR]").
+    iIntros (p5 mdata) "[Hbs [_ %Hmdata]]".
     wp_apply (wp_EncodeInts__encode_txnptgs with "Hptgs Hbs").
     iIntros (p6 gdata) "[Hbs %Hgdata]".
     wp_apply (wp_WriteInt with "Hbs").
@@ -437,6 +437,102 @@ Section program.
         apply Forall2_cons_2; last by apply Forall2_nil.
         simpl.
         exists (u64_le (U64 3) ++ u64_le ts ++ u64_le rank ++ [if dec then W8 1 else W8 0]).
+        subst frag.
+        assert (W64 lsn = lsnW) as -> by word.
+        assert (W64 ts = tsW) as -> by word.
+        by assert (W64 rank = rankW) as -> by word.
+      }
+      by rewrite serialize_snoc Hserial.
+    }
+    iModIntro.
+    wp_pures.
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    by auto.
+  Qed.
+
+  Theorem wp_logAdvance
+    (fname : byte_string) (lsnW tsW rankW : u64) :
+    let lsn := uint.nat lsnW in
+    let ts := uint.nat tsW in
+    let rank := uint.nat rankW in
+    ⊢
+    {{{ True }}}
+    <<< ∀∀ bs ilog, fname f↦ bs ∗ ⌜encode_ilog ilog bs⌝ >>>
+      logAdvance #(LitString fname) #lsnW #tsW #rankW @ ∅
+    <<< ∃∃ bs' (failed : bool),
+            if failed
+            then fname f↦ bs
+            else fname f↦ bs' ∗
+                 ⌜encode_ilog (ilog ++ [(lsn, CmdAdvance ts rank)]) bs'⌝
+    >>>
+    {{{ RET #(); ⌜not failed⌝ }}}.
+  Proof.
+    iIntros (lsn ts rank Φ) "!> _ HAU".
+    wp_rec.
+
+    (*@ func logAdvance(fname string, lsn, ts uint64, rank uint64) {            @*)
+    (*@     // Create an inconsistent log entry for accepting prepare decision @dec for @*)
+    (*@     // @ts in @rank.                                                    @*)
+    (*@     bs := make([]byte, 0, 32)                                           @*)
+    (*@                                                                         @*)
+    wp_apply wp_NewSliceWithCap; first word.
+    iIntros (p1) "Hbs".
+    rewrite uint_nat_W64_0 replicate_0.
+
+    (*@     bs0 := marshal.WriteInt(bs, lsn)                                    @*)
+    (*@     bs1 := marshal.WriteInt(bs0, CMD_ADVANCE)                           @*)
+    (*@     bs2 := marshal.WriteInt(bs1, ts)                                    @*)
+    (*@     bs3 := marshal.WriteInt(bs2, rank)                                  @*)
+    (*@                                                                         @*)
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p2) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p3) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p4) "Hbs".
+    wp_apply (wp_WriteInt with "Hbs").
+    iIntros (p5) "Hbs".
+    wp_pures.
+
+    (*@     grove_ffi.FileAppend(fname, bs3)                                    @*)
+    (*@ }                                                                       @*)
+    wp_rec. wp_pures.
+    wp_rec. wp_pures.
+    wp_rec. wp_pures.
+    wp_bind (ExternalOp _ _).
+    rewrite difference_empty_L.
+    iApply (wp_ncatomic _ _ ∅).
+    { solve_atomic2. }
+    iDestruct (own_slice_to_small with "Hbs") as "Hbs".
+    rewrite -!app_assoc app_nil_l.
+    set frag := _ ++ _.
+    iDestruct (own_slice_small_sz with "Hbs") as %Hszbs.
+    iMod "HAU" as (bs ilog) "[[Hfile %Henc] HAU]".
+    iModIntro.
+    wp_apply (wp_FileAppendOp with "[$Hfile Hbs]").
+    { apply Hszbs. }
+    { iApply (own_slice_small_byte_pointsto_vals with "Hbs"). }
+    iIntros (err) "[Hfile Hbs]".
+    destruct err eqn:Herr.
+    { (* Case: Write failed. *)
+      iMod ("HAU" $! bs true with "[$Hfile]") as "HΦ".
+      iModIntro.
+      wp_pures.
+      wp_apply wp_Exit. iIntros "[]".
+    }
+    (* Case: Write succeeded. *)
+    iMod ("HAU" $! _ false with "[$Hfile]") as "HΦ".
+    { iPureIntro.
+      rewrite /encode_ilog.
+      destruct Henc as (frags & Hencfrag & Hserial).
+      exists (frags ++ [frag]).
+      split.
+      { apply Forall2_app; first apply Hencfrag.
+        apply Forall2_cons_2; last by apply Forall2_nil.
+        simpl.
+        exists (u64_le (U64 2) ++ u64_le ts ++ u64_le rank).
         subst frag.
         assert (W64 lsn = lsnW) as -> by word.
         assert (W64 ts = tsW) as -> by word.

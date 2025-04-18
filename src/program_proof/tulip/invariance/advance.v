@@ -42,12 +42,12 @@ Definition advance_requirement st ts rk :=
   | _ => False
   end.
 
-Definition last_accepted_decision st ts p :=
+Definition last_accepted_decision st ts r p :=
   match st with
   | LocalState _ _ _ _ _ _ psm _ =>
       match psm !! ts with
-      | Some psl => p = psl.2
-      | None => p = false
+      | Some psl => r = psl.1 ∧ p = psl.2
+      | None => r = O ∧ p = false
       end
   | _ => False
   end.
@@ -59,7 +59,7 @@ Section advance.
   rid)]. For use when receiving an inquire message, still need to figure out how
   [cid] is obtained. Worst case is to include them physically in the message. *)
 
-  Lemma replica_inv_advance γ gid rid clog ilog st ts rk cid :
+  Lemma replica_inv_advance {γ gid rid clog ilog st} ts rk cid :
     execute_cmds (merge_clog_ilog clog ilog) = st ->
     advance_requirement st ts rk ->
     own_replica_clog_half γ gid rid clog -∗
@@ -70,8 +70,8 @@ Section advance.
     replica_inv γ gid rid ∗
     ([∗ set] tgid ∈ gids_all, own_replica_backup_token γ gid rid ts rk tgid) ∗
     is_replica_backup_vote γ gid rid ts rk cid ∗
-    ∃ p, prepare_promise γ gid rid ts rk p ∗
-         ⌜last_accepted_decision st ts p⌝.
+    ∃ r p, prepare_promise γ gid rid ts rk r p ∗
+           ⌜last_accepted_decision st ts r p⌝.
   Proof.
     iIntros (Hst Hrequire) "Hclogprog Hilogprog Hrp".
     do 2 iNamed "Hrp".
@@ -118,7 +118,7 @@ Section advance.
       (* Extract a witness that this replica accepts [false] at the fast rank. *)
       iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
       { by rewrite lookup_insert. }
-      iAssert (prepare_promise γ gid rid ts rk false)%I as "#Hpromise".
+      iAssert (prepare_promise γ gid rid ts rk O false)%I as "#Hpromise".
       { iFrame "Hlb".
         subst blt'.
         rewrite latest_term_extend_Reject latest_term_singleton.
@@ -222,7 +222,7 @@ Section advance.
     pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hbmts Hpsmts Hbmpsm) as [Hpsl1 Hpsl2].
     pose proof (map_Forall2_lookup_Some _ _ _ _ _ _ Hbmts Hrkmts Hbmrkm) as Hlenblt.
     simpl in Hlenblt. subst rl.
-    iAssert (prepare_promise γ gid rid ts rk psl.2)%I as "#Hpromise".
+    iAssert (prepare_promise γ gid rid ts rk psl.1 psl.2)%I as "#Hpromise".
     { iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
       { by rewrite lookup_insert. }
       iFrame "Hlb".
@@ -233,16 +233,18 @@ Section advance.
         case_decide as Hnz; first done.
         iDestruct (big_sepM_lookup with "Hsafebm") as "Hsafeblt"; first apply Hbmts.
         iSpecialize ("Hsafeblt" $! (latest_term blt)).
-        case_decide as Hnz'; first done.
+        case_decide as Hnz'.
+        { rewrite Hnz' in Hpsl1. clear -Hnz Hpsl1. word. }
         by rewrite Hpsl1 Hpsl2.
       }
       iPureIntro.
       split.
-      { rewrite lookup_extend_l; first by rewrite Hpsl1 Hpsl2.
+      { rewrite lookup_extend_l; first done.
+        rewrite -Hpsl1.
         apply latest_term_length_lt.
         by intros ->.
       }
-      { rewrite extend_length.
+      { rewrite extend_length Hpsl1.
         clear -Hrequire. lia.
       }
     }

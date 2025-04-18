@@ -9,6 +9,25 @@ Section list.
   Notation list := (list A).
   Implicit Types l : list.
 
+  Lemma prefix_to_take (l0 l1 : list) :
+    l0 `prefix_of` l1 →
+    l0 = take (length l0) l1.
+  Proof.
+    intros [? Hpref].
+    apply (f_equal (take (length l0))) in Hpref.
+    by rewrite take_app_length in Hpref.
+  Qed.
+
+  Lemma prefix_fmap {B} (f : A → B) (l0 l1 : list) :
+    l0 `prefix_of` l1 →
+    f <$> l0 `prefix_of` f <$> l1.
+  Proof.
+    unfold prefix. intros [? Heq].
+    apply (f_equal (fmap f)) in Heq.
+    rewrite fmap_app in Heq.
+    naive_solver.
+  Qed.
+
   Lemma drop_eq_0 n l :
     n = 0 →
     drop n l = l.
@@ -571,4 +590,85 @@ Lemma fmap_subslice {A B} (f: A → B) (l: list A) n m :
   f <$> subslice n m l = subslice n m (f <$> l).
 Proof.
   rewrite !subslice_take_drop fmap_drop fmap_take //.
+Qed.
+
+#[local]
+Lemma list_split2 {A} (l: list A) (i1 i2: nat) (x1 x2: A) :
+  (i1 < i2)%nat →
+  l !! i1 = Some x1 →
+  l !! i2 = Some x2 →
+  l = take i1 l ++ [x1] ++ subslice (S i1) i2 l ++ [x2] ++ drop (S i2) l.
+Proof.
+  intros Hlt Hget1 Hget2.
+  assert (i1 < i2 < length l)%nat.
+  { apply lookup_lt_Some in Hget1.
+    apply lookup_lt_Some in Hget2.
+    lia. }
+  trans (take i1 l ++ [x1] ++ drop (S i1) l).
+  {
+    rewrite -{1}(list_insert_id l i1 x1) //.
+    rewrite -> insert_take_drop by lia.
+    auto.
+  }
+  f_equal.
+  f_equal.
+  rewrite -{1}(list_insert_id l i2 x2) //.
+  rewrite -> drop_insert_le by lia.
+  rewrite -> insert_take_drop.
+  2: {
+    rewrite length_drop; lia.
+  }
+  rewrite -> subslice_drop_take by lia.
+  simpl.
+  do 2 f_equal.
+  rewrite drop_drop.
+  f_equal; lia.
+Qed.
+
+Lemma list_insert_middle {A} (l1 l2: list A) i x1 x2 :
+  i = length l1 →
+  <[i := x2]> (l1 ++ [x1] ++ l2) = l1 ++ [x2] ++ l2.
+Proof.
+  intros; subst.
+  rewrite -> insert_app_r_alt by lia.
+  f_equal.
+  replace (length l1 - length l1)%nat with 0%nat by lia; auto.
+Qed.
+
+Lemma Permutation_insert_swap {A} (l: list A) (i1 i2: nat) (x1 x2: A) :
+  l !! i1 = Some x1 →
+  l !! i2 = Some x2 →
+  <[i2 := x1]> (<[i1 := x2]> l) ≡ₚ l.
+Proof.
+  wlog: i1 i2 x1 x2 / i1 < i2.
+  {
+    intros Hordered Hget1 Hget2.
+    (* this case is exactly Hordered *)
+    destruct (decide (i1 < i2)).
+    { apply Hordered; auto. }
+    (* special case *)
+    destruct (decide (i1 = i2)); subst.
+    { rewrite list_insert_insert list_insert_id //. }
+    (* this is the symmetric case, by appeal to Hordered *)
+    assert (i2 < i1) by lia.
+    rewrite -> list_insert_commute by lia.
+    apply Hordered; auto.
+  }
+  intros Hlt Hget1 Hget2.
+  assert (i1 < i2 < length l)%nat.
+  { apply lookup_lt_Some in Hget1.
+    apply lookup_lt_Some in Hget2.
+    lia. }
+  rewrite -> (list_split2 l i1 i2 x1 x2) by auto.
+  rewrite list_insert_middle.
+  { rewrite length_take; lia. }
+  do 2 rewrite app_assoc.
+  rewrite list_insert_middle.
+  { rewrite !length_app ?length_take ?subslice_length' /=; lia. }
+  rewrite -!app_assoc.
+  f_equiv.
+  simpl.
+  rewrite !Permutation_middle.
+  f_equiv.
+  rewrite Permutation_swap //.
 Qed.

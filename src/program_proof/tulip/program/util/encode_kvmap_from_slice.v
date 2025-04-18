@@ -6,11 +6,11 @@ Section program.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Theorem wp_EncodeKVMapFromSlice (bsP : Slice.t) (xsP : Slice.t) (bs : list u8) (m : dbmap) :
-    {{{ own_slice bsP byteT (DfracOwn 1) bs ∗ own_dbmap_in_slice xsP m }}}
+    {{{ own_slice bsP byteT (DfracOwn 1) bs ∗ own_dbmap_in_slice_frac xsP m }}}
       EncodeKVMapFromSlice (to_val bsP) (to_val xsP)
     {{{ (dataP : Slice.t) (mdata : list u8), RET (to_val dataP);
         own_slice dataP byteT (DfracOwn 1) (bs ++ mdata) ∗
-        own_dbmap_in_slice xsP m ∗
+        own_dbmap_in_slice_frac xsP m ∗
         ⌜encode_dbmap m mdata⌝
     }}}.
   Proof.
@@ -30,8 +30,7 @@ Section program.
     (*@         data = EncodeWriteEntry(data, x)                                @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    iDestruct "Hm" as (xs) "[Hm %Hxs]".
-    iDestruct (own_slice_small_acc with "Hm") as "[Hm HmC]".
+    iDestruct "Hm" as (xs q) "[Hm %Hxs]".
     iDestruct (own_slice_small_sz with "Hm") as %Hlenm.
     set nW := xsP.(Slice.sz).
     set P := (λ (i : u64), ∃ (px : Slice.t),
@@ -58,7 +57,6 @@ Section program.
 
     (*@     return data                                                         @*)
     (*@ }                                                                       @*)
-    iDestruct ("HmC" with "Hm") as "Hm".
     iApply "HΦ".
     iFrame.
     iPureIntro.

@@ -7,12 +7,12 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Replica__tryAcquire rp (tsW : u64) pwrsS pwrs ptsm sptsm :
-    valid_wrs pwrs ->
     let ts := uint.nat tsW in
-    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica_ptsm_sptsm rp ptsm sptsm }}}
+    valid_wrs pwrs ->
+    is_dbmap_in_slice pwrsS pwrs -∗
+    {{{ own_replica_ptsm_sptsm rp ptsm sptsm }}}
       Replica__tryAcquire #rp #tsW (to_val pwrsS)
     {{{ (acquired : bool), RET #acquired;
-        own_dbmap_in_slice pwrsS pwrs ∗
         if acquired
         then own_replica_ptsm_sptsm rp (acquire ts pwrs ptsm) (acquire ts pwrs sptsm) ∗
              ⌜validated_ptsm ptsm pwrs⌝ ∗
@@ -20,7 +20,9 @@ Section program.
         else own_replica_ptsm_sptsm rp ptsm sptsm
     }}}.
   Proof.
-    iIntros (Hvw ts Φ) "[Hpwrs Hrp] HΦ".
+    iIntros (ts Hvw) "#Hpwrs".
+    iIntros (Φ) "!> Hrp HΦ".
+    iPoseProof "Hpwrs" as "Hpwrs'".
     iDestruct "Hpwrs" as (pwrsL) "[HpwrsS %HpwrsL]".
     wp_rec.
     iDestruct (own_replica_ptsm_sptsm_dom with "Hrp") as %[Hdomptsm Hdomsptsm].
@@ -42,16 +44,16 @@ Section program.
     (*@         pos++                                                           @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    iDestruct (own_slice_sz with "HpwrsS") as %Hlen.
-    iDestruct (own_slice_small_acc with "HpwrsS") as "[HpwrsS HpwrsC]".
+    iMod (readonly_load with "HpwrsS") as (q) "HpwrsR".
+    iDestruct (own_slice_small_sz with "HpwrsR") as %Hlen.
     set P := (λ (cont : bool), ∃ (pos : u64),
       let pwrs' := list_to_map (take (uint.nat pos) pwrsL) in
-      "HpwrsS"  ∷ own_slice_small pwrsS (struct.t WriteEntry) (DfracOwn 1) pwrsL ∗
+      "HpwrsR"  ∷ own_slice_small pwrsS (struct.t WriteEntry) (DfracOwn q) pwrsL ∗
       "HposP"   ∷ posP ↦[uint64T] #pos ∗
       "Hrp"     ∷ own_replica_ptsm_sptsm rp ptsm sptsm ∗
       "%Hptsm"  ∷ ⌜validated_ptsm ptsm pwrs'⌝ ∗
       "%Hsptsm" ∷ ⌜validated_sptsm sptsm ts pwrs'⌝)%I.
-    wp_apply (wp_forBreak_cond P with "[] [HpwrsS HposP Hrp]"); last first; first 1 last.
+    wp_apply (wp_forBreak_cond P with "[] [HpwrsR HposP Hrp]"); last first; first 1 last.
     { (* Loop entry. *)
       iExists (W64 0).
       rewrite uint_nat_W64_0 take_0 list_to_map_nil.
@@ -80,7 +82,7 @@ Section program.
       }
       wp_load.
       destruct (lookup_lt_is_Some_2 pwrsL (uint.nat pos)) as [[k v] Hwr]; first word.
-      wp_apply (wp_SliceGet with "[$HpwrsS]"); first done.
+      wp_apply (wp_SliceGet with "[$HpwrsR]"); first done.
       iIntros "HpwrsL".
       wp_pures.
       wp_apply (wp_Replica__writableKey with "Hrp").
@@ -139,8 +141,7 @@ Section program.
     wp_load.
     wp_apply wp_slice_len.
     wp_if_destruct.
-    { iDestruct ("HpwrsC" with "HpwrsS") as "HpwrsS".
-      iApply "HΦ".
+    { iApply "HΦ".
       by iFrame "∗ %".
     }
     rewrite take_ge in Hptsm, Hsptsm; last word.
@@ -150,12 +151,9 @@ Section program.
     (*@     // Acquire locks for each key.                                      @*)
     (*@     rp.acquire(ts, pwrs)                                                @*)
     (*@                                                                         @*)
-    iDestruct ("HpwrsC" with "HpwrsS") as "HpwrsS".
-    iAssert (own_dbmap_in_slice pwrsS pwrs)%I with "[$HpwrsS]" as "Hpwrs".
-    { done. }
-    wp_apply (wp_Replica__acquire with "[$Hpwrs $Hrp]").
+    wp_apply (wp_Replica__acquire with "Hpwrs' Hrp").
     { apply Hvw. }
-    iIntros "[Hpwrs Hrp]".
+    iIntros "Hrp".
 
     (*@     return true                                                         @*)
     (*@ }                                                                       @*)

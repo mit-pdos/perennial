@@ -23,6 +23,11 @@ Definition PrepareProposal := struct.decl [
   "Prepared" :: boolT
 ].
 
+Definition CoordID := struct.decl [
+  "GroupID" :: uint64T;
+  "ReplicaID" :: uint64T
+].
+
 Definition KVMap: ty := mapT (struct.t Value).
 
 Definition AddressMap: ty := mapT uint64T.
