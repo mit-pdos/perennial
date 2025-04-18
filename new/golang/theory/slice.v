@@ -322,15 +322,10 @@ Lemma wp_slice_make3 stk E (len cap : w64) :
 Proof.
   iIntros (? Φ) "_ HΦ".
   wp_call.
-
-  destruct bool_decide eqn:Hlt;
-    [apply bool_decide_eq_true_1 in Hlt|apply bool_decide_eq_false_1 in Hlt];
-    wp_pures.
+  wp_if_destruct.
   { exfalso. word. }
 
-  destruct bool_decide eqn:Hlt2;
-    [apply bool_decide_eq_true_1 in Hlt2|apply bool_decide_eq_false_1 in Hlt2];
-    wp_pures.
+  wp_if_destruct.
   {
     wp_apply (wp_ArbitraryInt).
     iIntros (?).
@@ -1094,13 +1089,9 @@ Proof.
     )%I with "[Hs1 Hs2 i]" as "IH".
   { iFrame. word. }
   wp_for "IH".
-  match goal with
-  | |- context[bool_decide ?P] => destruct (bool_decide_reflect P); wp_auto
-  end.
-  - match goal with
-    | |- context[bool_decide ?P] => destruct (bool_decide_reflect P)
-    end.
-    { rewrite decide_True //; wp_auto.
+  wp_if_destruct; try wp_auto.
+  - wp_if_destruct; try wp_auto.
+    {
       list_elem vs' i as y.
       wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2".
       { eauto. }
@@ -1194,10 +1185,7 @@ Proof.
   iDestruct (own_slice_wf with "Hs") as %Hwf1.
   iDestruct (own_slice_wf with "Hs2") as %Hwf2.
   wp_apply wp_sum_assume_no_overflow as "%Hoverflow".
-  match goal with
-  | |- context[bool_decide ?P] =>
-      destruct (bool_decide_reflect P); wp_auto
-  end.
+  wp_if_destruct; try wp_auto.
   - wp_pure.
     { word. }
     match goal with

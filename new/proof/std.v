@@ -31,9 +31,8 @@ Proof.
   wp_auto.
   iDestruct (own_slice_len with "Hs1") as "%".
   iDestruct (own_slice_len with "Hs2") as "%".
-  destruct (bool_decide_reflect (slice.len_f s1 = slice.len_f s2)).
+  wp_if_destruct; try wp_auto.
   {
-    cbn [base.negb]; wp_auto.
     assert (length xs1 = length xs2) by word.
     iAssert (∃ (i: w64),
                 "i" ∷ i_ptr ↦ i ∗
@@ -43,9 +42,8 @@ Proof.
       iPureIntro. intros. word.
     }
     wp_for "IH".
-    destruct (bool_decide_reflect (uint.Z i < uint.Z s1.(slice.len_f))).
-    - wp_auto.
-      list_elem xs1 i as x1_i.
+    wp_if_destruct; try wp_auto.
+    - list_elem xs1 i as x1_i.
       wp_apply (wp_load_slice_elem with "[$Hs1]") as "Hs1"; first by eauto.
       wp_pure; first by word.
       list_elem xs2 i as x2_i.
@@ -60,8 +58,7 @@ Proof.
       + wp_for_post.
         rewrite -> bool_decide_eq_false_2 by congruence.
         iApply "HΦ"; iFrame.
-    - wp_auto.
-      rewrite bool_decide_eq_true_2.
+    - rewrite bool_decide_eq_true_2.
       { iApply "HΦ"; iFrame. }
       eapply list_eq_same_length; eauto.
       { word. }
@@ -69,7 +66,6 @@ Proof.
       rewrite -> Hi in Hget1 by lia.
       congruence.
   }
-  cbn [base.negb]; wp_auto.
   rewrite bool_decide_eq_false_2.
   { iApply "HΦ". iFrame. }
   intros ?%(f_equal length).
@@ -111,11 +107,11 @@ Lemma wp_MulNoOverflow (x y : u64) :
 Proof.
   wp_start as "_".
   wp_auto.
-  destruct (bool_decide_reflect (x = W64 0)); wp_auto.
-  { subst. rewrite -> bool_decide_eq_true_2 by word.
+  wp_if_destruct.
+  { rewrite -> bool_decide_eq_true_2 by word.
     iApply "HΦ"; auto. }
-  destruct (bool_decide_reflect (y = W64 0)); wp_auto.
-  { subst. rewrite -> bool_decide_eq_true_2 by word.
+  wp_auto. wp_if_destruct; try wp_auto.
+  { rewrite -> bool_decide_eq_true_2 by word.
     iApply "HΦ"; auto. }
   iSpecialize ("HΦ" with "[$]").
   iExactEq "HΦ".
