@@ -22,6 +22,60 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+Lemma wp_BytesEqual s1 s2 (xs1 xs2: list w8) dq1 dq2 :
+  {{{ is_pkg_init std ∗ s1 ↦*{dq1} xs1 ∗ s2 ↦*{dq2} xs2 }}}
+    std @ "BytesEqual" #s1 #s2
+  {{{ RET #(bool_decide (xs1 = xs2)); s1 ↦*{dq1} xs1 ∗ s2 ↦*{dq2} xs2 }}}.
+Proof.
+  wp_start as "[Hs1 Hs2]".
+  wp_auto.
+  iDestruct (own_slice_len with "Hs1") as "%".
+  iDestruct (own_slice_len with "Hs2") as "%".
+  destruct (bool_decide_reflect (slice.len_f s1 = slice.len_f s2)).
+  {
+    cbn [base.negb]; wp_auto.
+    assert (length xs1 = length xs2) by word.
+    iAssert (∃ (i: w64),
+                "i" ∷ i_ptr ↦ i ∗
+                "%Hi" ∷ ⌜∀ (n: nat), (n < uint.nat i)%nat → xs1 !! n = xs2 !! n⌝
+            )%I with "[$i]" as "IH".
+    {
+      iPureIntro. intros. word.
+    }
+    wp_for "IH".
+    destruct (bool_decide_reflect (uint.Z i < uint.Z s1.(slice.len_f))).
+    - wp_auto.
+      list_elem xs1 i as x1_i.
+      wp_apply (wp_load_slice_elem with "[$Hs1]") as "Hs1"; first by eauto.
+      wp_pure; first by word.
+      list_elem xs2 i as x2_i.
+      wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2"; first by eauto.
+      destruct (bool_decide_reflect (x1_i = x2_i)); subst; wp_auto.
+      + wp_for_post.
+        iFrame.
+        iPureIntro; intros.
+        destruct (decide (n < uint.nat i)); eauto with lia.
+        assert (n = uint.nat i) by word; subst.
+        congruence.
+      + wp_for_post.
+        rewrite -> bool_decide_eq_false_2 by congruence.
+        iApply "HΦ"; iFrame.
+    - wp_auto.
+      rewrite bool_decide_eq_true_2.
+      { iApply "HΦ"; iFrame. }
+      eapply list_eq_same_length; eauto.
+      { word. }
+      intros ???? Hget1 Hget2.
+      rewrite -> Hi in Hget1 by lia.
+      congruence.
+  }
+  cbn [base.negb]; wp_auto.
+  rewrite bool_decide_eq_false_2.
+  { iApply "HΦ". iFrame. }
+  intros ?%(f_equal length).
+  word.
+Qed.
+
 Lemma wp_SumNoOverflow (x y : u64) :
   {{{ is_pkg_init std }}}
     std @ "SumNoOverflow" #x #y
