@@ -117,7 +117,7 @@ Proof.
   iExactEq "HΦ".
   repeat f_equal.
   apply bool_decide_ext.
-  pose proof (mul_overflow_check_correct x y ltac:(word) ltac:(word)).
+  pose proof (mul_overflow_check_correct x y ltac:(word)).
   word.
 Qed.
 

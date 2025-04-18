@@ -43,7 +43,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} handlers':
   PureWp True
-    (struct.make urpc.Server (alist_val [
+    (struct.make #urpc.Server (alist_val [
       "handlers" ::= #handlers'
     ]))%struct
     #(Server.mk handlers').
@@ -97,7 +97,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Callback `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} reply' state' cond':
   PureWp True
-    (struct.make urpc.Callback (alist_val [
+    (struct.make #urpc.Callback (alist_val [
       "reply" ::= #reply';
       "state" ::= #state';
       "cond" ::= #cond'
@@ -159,7 +159,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Client `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' conn' seq' pending':
   PureWp True
-    (struct.make urpc.Client (alist_val [
+    (struct.make #urpc.Client (alist_val [
       "mu" ::= #mu';
       "conn" ::= #conn';
       "seq" ::= #seq';

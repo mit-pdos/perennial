@@ -17,141 +17,141 @@ Definition unit : go_type := structT [
 (* go: allocator.go:7:6 *)
 Definition findKey : val :=
   rec: "findKey" "m" :=
-    exception_do (let: "m" := (ref_ty (mapT uint64T unit) "m") in
-    let: "found" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "m" := (alloc "m") in
+    let: "found" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("found" <-[uint64T] "$r0");;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    do:  ("found" <-[#uint64T] "$r0");;;
+    let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$range" := (![mapT uint64T unit] "m") in
-    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$range" := (![#(mapT uint64T unit)] "m") in
+    (let: "k" := (alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("k" <-[uint64T] "$key");;;
-      (if: (~ (![boolT] "ok"))
+      do:  ("k" <-[#uint64T] "$key");;;
+      (if: (~ (![#boolT] "ok"))
       then
-        let: "$r0" := (![uint64T] "k") in
-        do:  ("found" <-[uint64T] "$r0");;;
+        let: "$r0" := (![#uint64T] "k") in
+        do:  ("found" <-[#uint64T] "$r0");;;
         let: "$r0" := #true in
-        do:  ("ok" <-[boolT] "$r0")
+        do:  ("ok" <-[#boolT] "$r0")
       else do:  #())));;;
-    return: (![uint64T] "found", ![boolT] "ok")).
+    return: (![#uint64T] "found", ![#boolT] "ok")).
 
 (* go: allocator.go:20:6 *)
 Definition allocate : val :=
   rec: "allocate" "m" :=
-    exception_do (let: "m" := (ref_ty (mapT uint64T unit) "m") in
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
-    let: "k" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "m") in
+    exception_do (let: "m" := (alloc "m") in
+    let: "ok" := (alloc (type.zero_val #boolT)) in
+    let: "k" := (alloc (type.zero_val #uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "m") in
     (func_call #semantics.semantics #"findKey"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("k" <-[uint64T] "$r0");;;
-    do:  ("ok" <-[boolT] "$r1");;;
-    do:  (let: "$a0" := (![mapT uint64T unit] "m") in
-    let: "$a1" := (![uint64T] "k") in
+    do:  ("k" <-[#uint64T] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    do:  (let: "$a0" := (![#(mapT uint64T unit)] "m") in
+    let: "$a1" := (![#uint64T] "k") in
     map.delete "$a0" "$a1");;;
-    return: (![uint64T] "k", ![boolT] "ok")).
+    return: (![#uint64T] "k", ![#boolT] "ok")).
 
 (* go: allocator.go:26:6 *)
 Definition freeRange : val :=
   rec: "freeRange" "sz" :=
-    exception_do (let: "sz" := (ref_ty uint64T "sz") in
-    let: "m" := (ref_ty (mapT uint64T unit) (zero_val (mapT uint64T unit))) in
-    let: "$r0" := (map.make uint64T unit #()) in
-    do:  ("m" <-[mapT uint64T unit] "$r0");;;
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "sz" := (alloc "sz") in
+    let: "m" := (alloc (type.zero_val #(mapT uint64T unit))) in
+    let: "$r0" := (map.make #uint64T #unit) in
+    do:  ("m" <-[#(mapT uint64T unit)] "$r0");;;
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "sz")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (struct.make unit [{
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "sz")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (struct.make #unit [{
       }]) in
-      do:  (map.insert (![mapT uint64T unit] "m") (![uint64T] "i") "$r0")));;;
-    return: (![mapT uint64T unit] "m")).
+      do:  (map.insert (![#(mapT uint64T unit)] "m") (![#uint64T] "i") "$r0")));;;
+    return: (![#(mapT uint64T unit)] "m")).
 
 (* go: allocator.go:34:6 *)
 Definition testAllocateDistinct : val :=
   rec: "testAllocateDistinct" <> :=
-    exception_do (let: "free" := (ref_ty (mapT uint64T unit) (zero_val (mapT uint64T unit))) in
+    exception_do (let: "free" := (alloc (type.zero_val #(mapT uint64T unit))) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
     (func_call #semantics.semantics #"freeRange"%go) "$a0") in
-    do:  ("free" <-[mapT uint64T unit] "$r0");;;
-    let: "a1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
+    do:  ("free" <-[#(mapT uint64T unit)] "$r0");;;
+    let: "a1" := (alloc (type.zero_val #uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("a1" <-[uint64T] "$r0");;;
+    do:  ("a1" <-[#uint64T] "$r0");;;
     do:  "$r1";;;
-    let: "a2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
+    let: "a2" := (alloc (type.zero_val #uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("a2" <-[uint64T] "$r0");;;
+    do:  ("a2" <-[#uint64T] "$r0");;;
     do:  "$r1";;;
-    return: ((![uint64T] "a1") ≠ (![uint64T] "a2"))).
+    return: ((![#uint64T] "a1") ≠ (![#uint64T] "a2"))).
 
 (* go: allocator.go:41:6 *)
 Definition testAllocateFull : val :=
   rec: "testAllocateFull" <> :=
-    exception_do (let: "free" := (ref_ty (mapT uint64T unit) (zero_val (mapT uint64T unit))) in
+    exception_do (let: "free" := (alloc (type.zero_val #(mapT uint64T unit))) in
     let: "$r0" := (let: "$a0" := #(W64 2) in
     (func_call #semantics.semantics #"freeRange"%go) "$a0") in
-    do:  ("free" <-[mapT uint64T unit] "$r0");;;
-    let: "ok1" := (ref_ty boolT (zero_val boolT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
+    do:  ("free" <-[#(mapT uint64T unit)] "$r0");;;
+    let: "ok1" := (alloc (type.zero_val #boolT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("ok1" <-[boolT] "$r1");;;
-    let: "ok2" := (ref_ty boolT (zero_val boolT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
+    do:  ("ok1" <-[#boolT] "$r1");;;
+    let: "ok2" := (alloc (type.zero_val #boolT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("ok2" <-[boolT] "$r1");;;
-    let: "ok3" := (ref_ty boolT (zero_val boolT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![mapT uint64T unit] "free") in
+    do:  ("ok2" <-[#boolT] "$r1");;;
+    let: "ok3" := (alloc (type.zero_val #boolT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("ok3" <-[boolT] "$r1");;;
-    return: (((![boolT] "ok1") && (![boolT] "ok2")) && (~ (![boolT] "ok3")))).
+    do:  ("ok3" <-[#boolT] "$r1");;;
+    return: (((![#boolT] "ok1") && (![#boolT] "ok2")) && (~ (![#boolT] "ok3")))).
 
 (* go: block.go:3:6 *)
 Definition testExplicitBlockStmt : val :=
   rec: "testExplicitBlockStmt" <> :=
-    exception_do (let: "x" := (ref_ty intT (zero_val intT)) in
+    exception_do (let: "x" := (alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[intT] "$r0");;;
-    let: "x" := (ref_ty intT (zero_val intT)) in
+    do:  ("x" <-[#intT] "$r0");;;
+    let: "x" := (alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 11) in
-    do:  ("x" <-[intT] "$r0");;;
-    do:  ("x" <-[intT] ((![intT] "x") + #(W64 1)));;;
-    return: ((![intT] "x") = #(W64 10))).
+    do:  ("x" <-[#intT] "$r0");;;
+    do:  ("x" <-[#intT] ((![#intT] "x") + #(W64 1)));;;
+    return: ((![#intT] "x") = #(W64 10))).
 
 (* go: builtin.go:3:6 *)
 Definition testMinUint64 : val :=
   rec: "testMinUint64" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    return: ((let: "$a0" := (![uint64T] "x") in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    return: ((let: "$a0" := (![#uint64T] "x") in
      let: "$a1" := #(W64 1) in
      (minUint64 2) "$a0" "$a1") = #(W64 1))).
 
 (* go: builtin.go:8:6 *)
 Definition testMaxUint64 : val :=
   rec: "testMaxUint64" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    return: ((let: "$a0" := (![uint64T] "x") in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    return: ((let: "$a0" := (![#uint64T] "x") in
      let: "$a1" := #(W64 1) in
      (maxUint64 2) "$a0" "$a1") = #(W64 10))).
 
@@ -162,35 +162,35 @@ Definition MultipleArgsType : go_type := funcT.
 (* go: closures.go:6:6 *)
 Definition adder : val :=
   rec: "adder" <> :=
-    exception_do (let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "sum" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("sum" <-[uint64T] "$r0");;;
+    do:  ("sum" <-[#uint64T] "$r0");;;
     return: ((λ: "x",
-       exception_do (let: "x" := (ref_ty uint64T "x") in
-       do:  ("sum" <-[uint64T] ((![uint64T] "sum") + (![uint64T] "x")));;;
-       return: (![uint64T] "sum"))
+       exception_do (let: "x" := (alloc "x") in
+       do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (![#uint64T] "x")));;;
+       return: (![#uint64T] "sum"))
        ))).
 
 (* go: closures.go:14:6 *)
 Definition testClosureBasic : val :=
   rec: "testClosureBasic" <> :=
-    exception_do (let: "pos" := (ref_ty funcT (zero_val funcT)) in
+    exception_do (let: "pos" := (alloc (type.zero_val #funcT)) in
     let: "$r0" := ((func_call #semantics.semantics #"adder"%go) #()) in
-    do:  ("pos" <-[funcT] "$r0");;;
-    let: "doub" := (ref_ty funcT (zero_val funcT)) in
+    do:  ("pos" <-[#funcT] "$r0");;;
+    let: "doub" := (alloc (type.zero_val #funcT)) in
     let: "$r0" := ((func_call #semantics.semantics #"adder"%go) #()) in
-    do:  ("doub" <-[funcT] "$r0");;;
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("doub" <-[#funcT] "$r0");;;
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      do:  (let: "$a0" := (![uint64T] "i") in
-      (![funcT] "pos") "$a0");;;
-      do:  (let: "$a0" := (#(W64 2) * (![uint64T] "i")) in
-      (![funcT] "doub") "$a0")));;;
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      do:  (let: "$a0" := (![#uint64T] "i") in
+      (![#funcT] "pos") "$a0");;;
+      do:  (let: "$a0" := (#(W64 2) * (![#uint64T] "i")) in
+      (![#funcT] "doub") "$a0")));;;
     (if: ((let: "$a0" := #(W64 0) in
-    (![funcT] "pos") "$a0") = #(W64 45)) && ((let: "$a0" := #(W64 0) in
-    (![funcT] "doub") "$a0") = #(W64 90))
+    (![#funcT] "pos") "$a0") = #(W64 45)) && ((let: "$a0" := #(W64 0) in
+    (![#funcT] "doub") "$a0") = #(W64 90))
     then return: (#true)
     else do:  #());;;
     return: (#false)).
@@ -198,250 +198,250 @@ Definition testClosureBasic : val :=
 (* go: comparisons.go:3:6 *)
 Definition testCompareAll : val :=
   rec: "testCompareAll" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "nok" := (ref_ty boolT (zero_val boolT)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "nok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
-    do:  ("nok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(1 <? 2)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(2 <? 1)) in
-    do:  ("nok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(1 <=? 2)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(2 <=? 2)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(2 <=? 1)) in
-    do:  ("nok" <-[boolT] "$r0");;;
-    (if: ![boolT] "nok"
+    do:  ("nok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(1 <? 2)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(2 <? 1)) in
+    do:  ("nok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(1 <=? 2)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(2 <=? 2)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(2 <=? 1)) in
+    do:  ("nok" <-[#boolT] "$r0");;;
+    (if: ![#boolT] "nok"
     then return: (#false)
     else do:  #());;;
-    return: (![boolT] "ok")).
+    return: (![#boolT] "ok")).
 
 (* go: comparisons.go:20:6 *)
 Definition testCompareGT : val :=
   rec: "testCompareGT" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 4) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "y" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 5) in
-    do:  ("y" <-[uint64T] "$r0");;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    do:  ("y" <-[#uint64T] "$r0");;;
+    let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") > #(W64 4))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") > (![uint64T] "x"))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") > #(W64 4))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") > (![#uint64T] "x"))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: comparisons.go:31:6 *)
 Definition testCompareGE : val :=
   rec: "testCompareGE" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 4) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "y" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 5) in
-    do:  ("y" <-[uint64T] "$r0");;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    do:  ("y" <-[#uint64T] "$r0");;;
+    let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") ≥ #(W64 4))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") ≥ #(W64 5))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") ≥ (![uint64T] "x"))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    (if: (![uint64T] "y") > #(W64 5)
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≥ #(W64 4))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≥ #(W64 5))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≥ (![#uint64T] "x"))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    (if: (![#uint64T] "y") > #(W64 5)
     then return: (#false)
     else do:  #());;;
-    return: (![boolT] "ok")).
+    return: (![#boolT] "ok")).
 
 (* go: comparisons.go:47:6 *)
 Definition testCompareLT : val :=
   rec: "testCompareLT" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 4) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "y" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 5) in
-    do:  ("y" <-[uint64T] "$r0");;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    do:  ("y" <-[#uint64T] "$r0");;;
+    let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") < #(W64 6))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "x") < (![uint64T] "y"))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") < #(W64 6))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "x") < (![#uint64T] "y"))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: comparisons.go:58:6 *)
 Definition testCompareLE : val :=
   rec: "testCompareLE" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 4) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "y" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 5) in
-    do:  ("y" <-[uint64T] "$r0");;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    do:  ("y" <-[#uint64T] "$r0");;;
+    let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") ≤ #(W64 6))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "y") ≤ #(W64 5))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "x") ≤ (![uint64T] "y"))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    (if: (![uint64T] "y") < #(W64 5)
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≤ #(W64 6))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "y") ≤ #(W64 5))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "x") ≤ (![#uint64T] "y"))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    (if: (![#uint64T] "y") < #(W64 5)
     then return: (#false)
     else do:  #());;;
-    return: (![boolT] "ok")).
+    return: (![#boolT] "ok")).
 
 (* go: conversions.go:5:6 *)
 Definition literalCast : val :=
   rec: "literalCast" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 2) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    return: ((![uint64T] "x") + #(W64 2))).
+    do:  ("x" <-[#uint64T] "$r0");;;
+    return: ((![#uint64T] "x") + #(W64 2))).
 
 (* go: conversions.go:11:6 *)
 Definition stringToByteSlice : val :=
   rec: "stringToByteSlice" "s" :=
-    exception_do (let: "s" := (ref_ty stringT "s") in
-    let: "p" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (string.to_bytes (![stringT] "s")) in
-    do:  ("p" <-[sliceT] "$r0");;;
-    return: (![sliceT] "p")).
+    exception_do (let: "s" := (alloc "s") in
+    let: "p" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (string.to_bytes (![#stringT] "s")) in
+    do:  ("p" <-[#sliceT] "$r0");;;
+    return: (![#sliceT] "p")).
 
 (* go: conversions.go:17:6 *)
 Definition byteSliceToString : val :=
   rec: "byteSliceToString" "p" :=
-    exception_do (let: "p" := (ref_ty sliceT "p") in
-    return: (string.from_bytes (![sliceT] "p"))).
+    exception_do (let: "p" := (alloc "p") in
+    return: (string.from_bytes (![#sliceT] "p"))).
 
 (* tests
 
    go: conversions.go:23:6 *)
 Definition testByteSliceToString : val :=
   rec: "testByteSliceToString" <> :=
-    exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 3)) in
-    do:  ("x" <-[sliceT] "$r0");;;
+    exception_do (let: "x" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 3)) in
+    do:  ("x" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W8 65) in
-    do:  ((slice.elem_ref byteT (![sliceT] "x") #(W64 0)) <-[byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 0)) <-[#byteT] "$r0");;;
     let: "$r0" := #(W8 66) in
-    do:  ((slice.elem_ref byteT (![sliceT] "x") #(W64 1)) <-[byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 1)) <-[#byteT] "$r0");;;
     let: "$r0" := #(W8 67) in
-    do:  ((slice.elem_ref byteT (![sliceT] "x") #(W64 2)) <-[byteT] "$r0");;;
-    return: ((let: "$a0" := (![sliceT] "x") in
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 2)) <-[#byteT] "$r0");;;
+    return: ((let: "$a0" := (![#sliceT] "x") in
      (func_call #semantics.semantics #"byteSliceToString"%go) "$a0") = #"ABC"%go)).
 
 (* go: copy.go:3:6 *)
 Definition testCopySimple : val :=
   rec: "testCopySimple" <> :=
-    exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 10)) in
-    do:  ("x" <-[sliceT] "$r0");;;
+    exception_do (let: "x" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
+    do:  ("x" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W8 1) in
-    do:  ((slice.elem_ref byteT (![sliceT] "x") #(W64 3)) <-[byteT] "$r0");;;
-    let: "y" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 10)) in
-    do:  ("y" <-[sliceT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT] "y") in
-    let: "$a1" := (![sliceT] "x") in
-    (slice.copy byteT) "$a0" "$a1");;;
-    return: ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 3))) = #(W8 1))).
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
+    let: "y" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
+    do:  ("y" <-[#sliceT] "$r0");;;
+    do:  (let: "$a0" := (![#sliceT] "y") in
+    let: "$a1" := (![#sliceT] "x") in
+    (slice.copy #byteT) "$a0" "$a1");;;
+    return: ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 3))) = #(W8 1))).
 
 (* go: copy.go:11:6 *)
 Definition testCopyShorterDst : val :=
   rec: "testCopyShorterDst" <> :=
-    exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 15)) in
-    do:  ("x" <-[sliceT] "$r0");;;
+    exception_do (let: "x" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 15)) in
+    do:  ("x" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W8 1) in
-    do:  ((slice.elem_ref byteT (![sliceT] "x") #(W64 3)) <-[byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
     let: "$r0" := #(W8 2) in
-    do:  ((slice.elem_ref byteT (![sliceT] "x") #(W64 12)) <-[byteT] "$r0");;;
-    let: "y" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 10)) in
-    do:  ("y" <-[sliceT] "$r0");;;
-    let: "n" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] "y") in
-    let: "$a1" := (![sliceT] "x") in
-    (slice.copy byteT) "$a0" "$a1")) in
-    do:  ("n" <-[uint64T] "$r0");;;
-    return: (((![uint64T] "n") = #(W64 10)) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 3))) = #(W8 1)))).
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 12)) <-[#byteT] "$r0");;;
+    let: "y" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
+    do:  ("y" <-[#sliceT] "$r0");;;
+    let: "n" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "y") in
+    let: "$a1" := (![#sliceT] "x") in
+    (slice.copy #byteT) "$a0" "$a1")) in
+    do:  ("n" <-[#uint64T] "$r0");;;
+    return: (((![#uint64T] "n") = #(W64 10)) && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 3))) = #(W8 1)))).
 
 (* go: copy.go:20:6 *)
 Definition testCopyShorterSrc : val :=
   rec: "testCopyShorterSrc" <> :=
-    exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 10)) in
-    do:  ("x" <-[sliceT] "$r0");;;
-    let: "y" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 15)) in
-    do:  ("y" <-[sliceT] "$r0");;;
+    exception_do (let: "x" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 10)) in
+    do:  ("x" <-[#sliceT] "$r0");;;
+    let: "y" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 15)) in
+    do:  ("y" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W8 1) in
-    do:  ((slice.elem_ref byteT (![sliceT] "x") #(W64 3)) <-[byteT] "$r0");;;
+    do:  ((slice.elem_ref #byteT (![#sliceT] "x") #(W64 3)) <-[#byteT] "$r0");;;
     let: "$r0" := #(W8 2) in
-    do:  ((slice.elem_ref byteT (![sliceT] "y") #(W64 12)) <-[byteT] "$r0");;;
-    let: "n" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] "y") in
-    let: "$a1" := (![sliceT] "x") in
-    (slice.copy byteT) "$a0" "$a1")) in
-    do:  ("n" <-[uint64T] "$r0");;;
-    return: ((((![uint64T] "n") = #(W64 10)) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 3))) = #(W8 1))) && ((![byteT] (slice.elem_ref byteT (![sliceT] "y") #(W64 12))) = #(W8 2)))).
+    do:  ((slice.elem_ref #byteT (![#sliceT] "y") #(W64 12)) <-[#byteT] "$r0");;;
+    let: "n" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "y") in
+    let: "$a1" := (![#sliceT] "x") in
+    (slice.copy #byteT) "$a0" "$a1")) in
+    do:  ("n" <-[#uint64T] "$r0");;;
+    return: ((((![#uint64T] "n") = #(W64 10)) && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 3))) = #(W8 1))) && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "y") #(W64 12))) = #(W8 2)))).
 
 (* go: defer.go:3:6 *)
 Definition deferSimple : val :=
   rec: "deferSimple" <> :=
-    with_defer: (let: "x" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
-    do:  ("x" <-[ptrT] "$r0");;;
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    with_defer: (let: "x" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #uint64T)) in
+    do:  ("x" <-[#ptrT] "$r0");;;
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
       do:  (let: "$f" := (λ: <>,
-        exception_do (do:  ((![ptrT] "x") <-[uint64T] ((![uint64T] (![ptrT] "x")) + #(W64 1))))
+        exception_do (do:  ((![#ptrT] "x") <-[#uint64T] ((![#uint64T] (![#ptrT] "x")) + #(W64 1))))
         ) in
-      "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
+      "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
       (λ: <>,
         "$f" #();;
         "$oldf" #()
         )))));;;
-    return: (![ptrT] "x")).
+    return: (![#ptrT] "x")).
 
 (* go: defer.go:13:6 *)
 Definition testDefer : val :=
   rec: "testDefer" <> :=
-    exception_do (return: ((![uint64T] ((func_call #semantics.semantics #"deferSimple"%go) #())) = #(W64 10))).
+    exception_do (return: ((![#uint64T] ((func_call #semantics.semantics #"deferSimple"%go) #())) = #(W64 10))).
 
 (* go: defer.go:17:6 *)
 Definition testDeferFuncLit : val :=
   rec: "testDeferFuncLit" <> :=
-    exception_do (let: "x" := (ref_ty intT (zero_val intT)) in
+    exception_do (let: "x" := (alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[intT] "$r0");;;
-    let: "f" := (ref_ty funcT (zero_val funcT)) in
+    do:  ("x" <-[#intT] "$r0");;;
+    let: "f" := (alloc (type.zero_val #funcT)) in
     let: "$r0" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
-        exception_do (do:  ("x" <-[intT] ((![intT] "x") + #(W64 1))))
+        exception_do (do:  ("x" <-[#intT] ((![#intT] "x") + #(W64 1))))
         ) in
-      "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
+      "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
       (λ: <>,
         "$f" #();;
         "$oldf" #()
         ))))
       ) in
-    do:  ("f" <-[funcT] "$r0");;;
-    do:  ((![funcT] "f") #());;;
-    return: ((![intT] "x") = #(W64 11))).
+    do:  ("f" <-[#funcT] "$r0");;;
+    do:  ((![#funcT] "f") #());;;
+    return: ((![#intT] "x") = #(W64 11))).
 
 Definition Enc : go_type := structT [
   "p" :: sliceT
@@ -450,16 +450,16 @@ Definition Enc : go_type := structT [
 (* go: encoding.go:10:15 *)
 Definition Enc__consume : val :=
   rec: "Enc__consume" "e" "n" :=
-    exception_do (let: "e" := (ref_ty ptrT "e") in
-    let: "n" := (ref_ty uint64T "n") in
-    let: "b" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref Enc "p" (![ptrT] "e"))) in
-    slice.slice byteT "$s" #(W64 0) (![uint64T] "n")) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref Enc "p" (![ptrT] "e"))) in
-    slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s")) in
-    do:  ((struct.field_ref Enc "p" (![ptrT] "e")) <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "e" := (alloc "e") in
+    let: "n" := (alloc "n") in
+    let: "b" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Enc #"p"%go (![#ptrT] "e"))) in
+    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n")) in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Enc #"p"%go (![#ptrT] "e"))) in
+    slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
+    do:  ((struct.field_ref #Enc #"p"%go (![#ptrT] "e")) <-[#sliceT] "$r0");;;
+    return: (![#sliceT] "b")).
 
 Definition Dec : go_type := structT [
   "p" :: sliceT
@@ -468,69 +468,69 @@ Definition Dec : go_type := structT [
 (* go: encoding.go:20:15 *)
 Definition Dec__consume : val :=
   rec: "Dec__consume" "d" "n" :=
-    exception_do (let: "d" := (ref_ty ptrT "d") in
-    let: "n" := (ref_ty uint64T "n") in
-    let: "b" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref Dec "p" (![ptrT] "d"))) in
-    slice.slice byteT "$s" #(W64 0) (![uint64T] "n")) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref Dec "p" (![ptrT] "d"))) in
-    slice.slice byteT "$s" (![uint64T] "n") (slice.len "$s")) in
-    do:  ((struct.field_ref Dec "p" (![ptrT] "d")) <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "d" := (alloc "d") in
+    let: "n" := (alloc "n") in
+    let: "b" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Dec #"p"%go (![#ptrT] "d"))) in
+    slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n")) in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Dec #"p"%go (![#ptrT] "d"))) in
+    slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s")) in
+    do:  ((struct.field_ref #Dec #"p"%go (![#ptrT] "d")) <-[#sliceT] "$r0");;;
+    return: (![#sliceT] "b")).
 
 (* go: encoding.go:26:6 *)
 Definition roundtripEncDec32 : val :=
   rec: "roundtripEncDec32" "x" :=
-    exception_do (let: "x" := (ref_ty uint32T "x") in
-    let: "r" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 4)) in
-    do:  ("r" <-[sliceT] "$r0");;;
-    let: "e" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty Enc (let: "$p" := (![sliceT] "r") in
-    struct.make Enc [{
+    exception_do (let: "x" := (alloc "x") in
+    let: "r" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 4)) in
+    do:  ("r" <-[#sliceT] "$r0");;;
+    let: "e" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
+    struct.make #Enc [{
       "p" ::= "$p"
     }])) in
-    do:  ("e" <-[ptrT] "$r0");;;
-    let: "d" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty Dec (let: "$p" := (![sliceT] "r") in
-    struct.make Dec [{
+    do:  ("e" <-[#ptrT] "$r0");;;
+    let: "d" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
+    struct.make #Dec [{
       "p" ::= "$p"
     }])) in
-    do:  ("d" <-[ptrT] "$r0");;;
+    do:  ("d" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
-    (method_call #semantics.semantics #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
-    let: "$a1" := (![uint32T] "x") in
+    (method_call #semantics.semantics #"Enc'ptr" #"consume" (![#ptrT] "e")) "$a0") in
+    let: "$a1" := (![#uint32T] "x") in
     (func_call #primitive #"UInt32Put"%go) "$a0" "$a1");;;
     return: (let: "$a0" := (let: "$a0" := #(W64 4) in
-     (method_call #semantics.semantics #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
+     (method_call #semantics.semantics #"Dec'ptr" #"consume" (![#ptrT] "d")) "$a0") in
      (func_call #primitive #"UInt32Get"%go) "$a0")).
 
 (* go: encoding.go:34:6 *)
 Definition roundtripEncDec64 : val :=
   rec: "roundtripEncDec64" "x" :=
-    exception_do (let: "x" := (ref_ty uint64T "x") in
-    let: "r" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 8)) in
-    do:  ("r" <-[sliceT] "$r0");;;
-    let: "e" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty Enc (let: "$p" := (![sliceT] "r") in
-    struct.make Enc [{
+    exception_do (let: "x" := (alloc "x") in
+    let: "r" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 8)) in
+    do:  ("r" <-[#sliceT] "$r0");;;
+    let: "e" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
+    struct.make #Enc [{
       "p" ::= "$p"
     }])) in
-    do:  ("e" <-[ptrT] "$r0");;;
-    let: "d" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty Dec (let: "$p" := (![sliceT] "r") in
-    struct.make Dec [{
+    do:  ("e" <-[#ptrT] "$r0");;;
+    let: "d" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$p" := (![#sliceT] "r") in
+    struct.make #Dec [{
       "p" ::= "$p"
     }])) in
-    do:  ("d" <-[ptrT] "$r0");;;
+    do:  ("d" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
-    (method_call #semantics.semantics #"Enc'ptr" #"consume" (![ptrT] "e")) "$a0") in
-    let: "$a1" := (![uint64T] "x") in
+    (method_call #semantics.semantics #"Enc'ptr" #"consume" (![#ptrT] "e")) "$a0") in
+    let: "$a1" := (![#uint64T] "x") in
     (func_call #primitive #"UInt64Put"%go) "$a0" "$a1");;;
     return: (let: "$a0" := (let: "$a0" := #(W64 8) in
-     (method_call #semantics.semantics #"Dec'ptr" #"consume" (![ptrT] "d")) "$a0") in
+     (method_call #semantics.semantics #"Dec'ptr" #"consume" (![#ptrT] "d")) "$a0") in
      (func_call #primitive #"UInt64Get"%go) "$a0")).
 
 (* tests
@@ -538,108 +538,108 @@ Definition roundtripEncDec64 : val :=
    go: encoding.go:43:6 *)
 Definition testEncDec32Simple : val :=
   rec: "testEncDec32Simple" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 0) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 0) in
     (func_call #semantics.semantics #"roundtripEncDec32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1) in
     (func_call #semantics.semantics #"roundtripEncDec32"%go) "$a0") = #(W32 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1231234) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1231234) in
     (func_call #semantics.semantics #"roundtripEncDec32"%go) "$a0") = #(W32 1231234))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: encoding.go:51:6 *)
 Definition failing_testEncDec32 : val :=
   rec: "failing_testEncDec32" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 3434807466) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 3434807466) in
     (func_call #semantics.semantics #"roundtripEncDec32"%go) "$a0") = #(W32 3434807466))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1048576) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1048576) in
     (func_call #semantics.semantics #"roundtripEncDec32"%go) "$a0") = #(W32 1048576))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 262144) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 262144) in
     (func_call #semantics.semantics #"roundtripEncDec32"%go) "$a0") = #(W32 262144))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1024) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1024) in
     (func_call #semantics.semantics #"roundtripEncDec32"%go) "$a0") = #(W32 1024))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1) in
     (func_call #semantics.semantics #"roundtripEncDec32"%go) "$a0") = #(W32 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
     (func_call #semantics.semantics #"roundtripEncDec32"%go) "$a0") = #(W32 (4294967296 - 1)))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: encoding.go:62:6 *)
 Definition testEncDec64Simple : val :=
   rec: "testEncDec64Simple" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 0) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 0) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1231234) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1231234) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 1231234))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: encoding.go:70:6 *)
 Definition testEncDec64 : val :=
   rec: "testEncDec64" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 62206846038638762))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 9223372036854775808))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 140737488355328) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 140737488355328) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 140737488355328))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1048576) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1048576) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 1048576))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 262144) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 262144) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 262144))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1024) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1024) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 1024))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
     (func_call #semantics.semantics #"roundtripEncDec64"%go) "$a0") = #(W64 (18446744073709551616 - 1)))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: first_class_function.go:3:6 *)
 Definition FirstClassFunction : val :=
   rec: "FirstClassFunction" "a" :=
-    exception_do (let: "a" := (ref_ty uint64T "a") in
-    return: ((![uint64T] "a") + #(W64 10))).
+    exception_do (let: "a" := (alloc "a") in
+    return: ((![#uint64T] "a") + #(W64 10))).
 
 (* go: first_class_function.go:7:6 *)
 Definition ApplyF : val :=
   rec: "ApplyF" "a" "f" :=
-    exception_do (let: "f" := (ref_ty funcT "f") in
-    let: "a" := (ref_ty uint64T "a") in
-    return: (let: "$a0" := (![uint64T] "a") in
-     (![funcT] "f") "$a0")).
+    exception_do (let: "f" := (alloc "f") in
+    let: "a" := (alloc "a") in
+    return: (let: "$a0" := (![#uint64T] "a") in
+     (![#funcT] "f") "$a0")).
 
 (* go: first_class_function.go:11:6 *)
 Definition testFirstClassFunction : val :=
@@ -659,19 +659,19 @@ Definition Editor : go_type := structT [
    go: function_ordering.go:11:18 *)
 Definition Editor__AdvanceReturn : val :=
   rec: "Editor__AdvanceReturn" "e" "next" :=
-    exception_do (let: "e" := (ref_ty ptrT "e") in
-    let: "next" := (ref_ty uint64T "next") in
-    let: "tmp" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (struct.field_ref Editor "next_val" (![ptrT] "e"))) in
-    do:  ("tmp" <-[uint64T] "$r0");;;
-    let: "$r0" := (![uint64T] "tmp") in
-    do:  ((slice.elem_ref uint64T (![sliceT] (struct.field_ref Editor "s" (![ptrT] "e"))) #(W64 0)) <-[uint64T] "$r0");;;
-    let: "$r0" := (![uint64T] "next") in
-    do:  ((struct.field_ref Editor "next_val" (![ptrT] "e")) <-[uint64T] "$r0");;;
-    let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref Editor "s" (![ptrT] "e"))) in
-    slice.slice uint64T "$s" #(W64 1) (slice.len "$s")) in
-    do:  ((struct.field_ref Editor "s" (![ptrT] "e")) <-[sliceT] "$r0");;;
-    return: (![uint64T] "tmp")).
+    exception_do (let: "e" := (alloc "e") in
+    let: "next" := (alloc "next") in
+    let: "tmp" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (![#uint64T] (struct.field_ref #Editor #"next_val"%go (![#ptrT] "e"))) in
+    do:  ("tmp" <-[#uint64T] "$r0");;;
+    let: "$r0" := (![#uint64T] "tmp") in
+    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref #Editor #"s"%go (![#ptrT] "e"))) #(W64 0)) <-[#uint64T] "$r0");;;
+    let: "$r0" := (![#uint64T] "next") in
+    do:  ((struct.field_ref #Editor #"next_val"%go (![#ptrT] "e")) <-[#uint64T] "$r0");;;
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #Editor #"s"%go (![#ptrT] "e"))) in
+    slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
+    do:  ((struct.field_ref #Editor #"s"%go (![#ptrT] "e")) <-[#sliceT] "$r0");;;
+    return: (![#uint64T] "tmp")).
 
 (* we call this function with side-effectful function calls as arguments,
    its implementation is unimportant
@@ -679,11 +679,11 @@ Definition Editor__AdvanceReturn : val :=
    go: function_ordering.go:21:6 *)
 Definition addFour64 : val :=
   rec: "addFour64" "a" "b" "c" "d" :=
-    exception_do (let: "d" := (ref_ty uint64T "d") in
-    let: "c" := (ref_ty uint64T "c") in
-    let: "b" := (ref_ty uint64T "b") in
-    let: "a" := (ref_ty uint64T "a") in
-    return: ((((![uint64T] "a") + (![uint64T] "b")) + (![uint64T] "c")) + (![uint64T] "d"))).
+    exception_do (let: "d" := (alloc "d") in
+    let: "c" := (alloc "c") in
+    let: "b" := (alloc "b") in
+    let: "a" := (alloc "a") in
+    return: ((((![#uint64T] "a") + (![#uint64T] "b")) + (![#uint64T] "c")) + (![#uint64T] "d"))).
 
 Definition Pair : go_type := structT [
   "x" :: uint64T;
@@ -695,33 +695,33 @@ Definition Pair : go_type := structT [
    go: function_ordering.go:31:6 *)
 Definition failing_testFunctionOrdering : val :=
   rec: "failing_testFunctionOrdering" <> :=
-    exception_do (let: "arr" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 5)) in
-    do:  ("arr" <-[sliceT] "$r0");;;
-    let: "e1" := (ref_ty Editor (zero_val Editor)) in
-    let: "$r0" := (let: "$s" := (let: "$s" := (![sliceT] "arr") in
-    slice.slice uint64T "$s" #(W64 0) (slice.len "$s")) in
+    exception_do (let: "arr" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 5)) in
+    do:  ("arr" <-[#sliceT] "$r0");;;
+    let: "e1" := (alloc (type.zero_val #Editor)) in
+    let: "$r0" := (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
+    slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 1) in
-    struct.make Editor [{
+    struct.make #Editor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }]) in
-    do:  ("e1" <-[Editor] "$r0");;;
-    let: "e2" := (ref_ty Editor (zero_val Editor)) in
-    let: "$r0" := (let: "$s" := (let: "$s" := (![sliceT] "arr") in
-    slice.slice uint64T "$s" #(W64 0) (slice.len "$s")) in
+    do:  ("e1" <-[#Editor] "$r0");;;
+    let: "e2" := (alloc (type.zero_val #Editor)) in
+    let: "$r0" := (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
+    slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 101) in
-    struct.make Editor [{
+    struct.make #Editor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }]) in
-    do:  ("e2" <-[Editor] "$r0");;;
+    do:  ("e2" <-[#Editor] "$r0");;;
     (if: ((let: "$a0" := #(W64 2) in
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") + (let: "$a0" := #(W64 102) in
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0")) ≠ #(W64 102)
     then return: (#false)
     else do:  #());;;
-    (if: (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) ≠ #(W64 101)
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) ≠ #(W64 101)
     then return: (#false)
     else do:  #());;;
     (if: (let: "$a0" := (let: "$a0" := #(W64 3) in
@@ -735,48 +735,48 @@ Definition failing_testFunctionOrdering : val :=
     (func_call #semantics.semantics #"addFour64"%go) "$a0" "$a1" "$a2" "$a3") ≠ #(W64 210)
     then return: (#false)
     else do:  #());;;
-    (if: (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 1))) ≠ #(W64 102)
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1))) ≠ #(W64 102)
     then return: (#false)
     else do:  #());;;
-    (if: (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 2))) ≠ #(W64 3)
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2))) ≠ #(W64 3)
     then return: (#false)
     else do:  #());;;
-    let: "p" := (ref_ty Pair (zero_val Pair)) in
+    let: "p" := (alloc (type.zero_val #Pair)) in
     let: "$r0" := (let: "$x" := (let: "$a0" := #(W64 5) in
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
     let: "$y" := (let: "$a0" := #(W64 105) in
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
-    struct.make Pair [{
+    struct.make #Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ("p" <-[Pair] "$r0");;;
-    (if: (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 3))) ≠ #(W64 104)
+    do:  ("p" <-[#Pair] "$r0");;;
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3))) ≠ #(W64 104)
     then return: (#false)
     else do:  #());;;
-    let: "q" := (ref_ty Pair (zero_val Pair)) in
+    let: "q" := (alloc (type.zero_val #Pair)) in
     let: "$r0" := (let: "$y" := (let: "$a0" := #(W64 6) in
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e1") "$a0") in
     let: "$x" := (let: "$a0" := #(W64 106) in
     (method_call #semantics.semantics #"Editor'ptr" #"AdvanceReturn" "e2") "$a0") in
-    struct.make Pair [{
+    struct.make #Pair [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ("q" <-[Pair] "$r0");;;
-    (if: (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 4))) ≠ #(W64 105)
+    do:  ("q" <-[#Pair] "$r0");;;
+    (if: (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 4))) ≠ #(W64 105)
     then return: (#false)
     else do:  #());;;
-    return: (((![uint64T] (struct.field_ref Pair "x" "p")) + (![uint64T] (struct.field_ref Pair "x" "q"))) = #(W64 109))).
+    return: (((![#uint64T] (struct.field_ref #Pair #"x"%go "p")) + (![#uint64T] (struct.field_ref #Pair #"x"%go "q"))) = #(W64 109))).
 
 (* go: function_ordering.go:74:6 *)
 Definition storeAndReturn : val :=
   rec: "storeAndReturn" "x" "v" :=
-    exception_do (let: "v" := (ref_ty uint64T "v") in
-    let: "x" := (ref_ty ptrT "x") in
-    let: "$r0" := (![uint64T] "v") in
-    do:  ((![ptrT] "x") <-[uint64T] "$r0");;;
-    return: (![uint64T] "v")).
+    exception_do (let: "v" := (alloc "v") in
+    let: "x" := (alloc "x") in
+    let: "$r0" := (![#uint64T] "v") in
+    do:  ((![#ptrT] "x") <-[#uint64T] "$r0");;;
+    return: (![#uint64T] "v")).
 
 (* Goose has a right-to-left evaluation order for function arguments,
    which is incorrect.
@@ -784,9 +784,9 @@ Definition storeAndReturn : val :=
    go: function_ordering.go:81:6 *)
 Definition failing_testArgumentOrder : val :=
   rec: "failing_testArgumentOrder" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("x" <-[uint64T] "$r0");;;
+    do:  ("x" <-[#uint64T] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := "x" in
     let: "$a1" := #(W64 1) in
     (func_call #semantics.semantics #"storeAndReturn"%go) "$a0" "$a1") in
@@ -800,36 +800,36 @@ Definition failing_testArgumentOrder : val :=
     let: "$a1" := #(W64 4) in
     (func_call #semantics.semantics #"storeAndReturn"%go) "$a0" "$a1") in
     (func_call #semantics.semantics #"addFour64"%go) "$a0" "$a1" "$a2" "$a3");;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
-    let: "$r0" := ((![uint64T] "x") = #(W64 4)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    let: "ok" := (alloc (type.zero_val #boolT)) in
+    let: "$r0" := ((![#uint64T] "x") = #(W64 4)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: int_conversions.go:3:6 *)
 Definition testU64ToU32 : val :=
   rec: "testU64ToU32" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 1230) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "y" := (ref_ty uint32T (zero_val uint32T)) in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "y" := (alloc (type.zero_val #uint32T)) in
     let: "$r0" := #(W32 1230) in
-    do:  ("y" <-[uint32T] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((u_to_w32 (![uint64T] "x")) = (![uint32T] "y"))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((u_to_w64 (![uint32T] "y")) = (![uint64T] "x"))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("y" <-[#uint32T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((u_to_w32 (![#uint64T] "x")) = (![#uint32T] "y"))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((u_to_w64 (![#uint32T] "y")) = (![#uint64T] "x"))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: int_conversions.go:12:6 *)
 Definition testU32Len : val :=
   rec: "testU32Len" <> :=
-    exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 100)) in
-    do:  ("s" <-[sliceT] "$r0");;;
-    return: ((s_to_w32 (let: "$a0" := (![sliceT] "s") in
+    exception_do (let: "s" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 100)) in
+    do:  ("s" <-[#sliceT] "$r0");;;
+    return: ((s_to_w32 (let: "$a0" := (![#sliceT] "s") in
      slice.len "$a0")) = #(W32 100))).
 
 Definition Uint32 : go_type := uint32T.
@@ -839,10 +839,10 @@ Definition Uint32 : go_type := uint32T.
    go: int_conversions.go:20:6 *)
 Definition failing_testU32NewtypeLen : val :=
   rec: "failing_testU32NewtypeLen" <> :=
-    exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 20)) in
-    do:  ("s" <-[sliceT] "$r0");;;
-    return: ((s_to_w32 (let: "$a0" := (![sliceT] "s") in
+    exception_do (let: "s" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 20)) in
+    do:  ("s" <-[#sliceT] "$r0");;;
+    return: ((s_to_w32 (let: "$a0" := (![#sliceT] "s") in
      slice.len "$a0")) = #(W32 20))).
 
 Definition geometryInterface : go_type := interfaceT.
@@ -850,22 +850,22 @@ Definition geometryInterface : go_type := interfaceT.
 (* go: interfaces.go:12:6 *)
 Definition measureArea : val :=
   rec: "measureArea" "t" :=
-    exception_do (let: "t" := (ref_ty geometryInterface "t") in
-    return: ((interface.get #"Square"%go (![geometryInterface] "t")) #())).
+    exception_do (let: "t" := (alloc "t") in
+    return: ((interface.get #"Square"%go (![#geometryInterface] "t")) #())).
 
 (* go: interfaces.go:16:6 *)
 Definition measureVolumePlusNM : val :=
   rec: "measureVolumePlusNM" "t" "n" "m" :=
-    exception_do (let: "m" := (ref_ty uint64T "m") in
-    let: "n" := (ref_ty uint64T "n") in
-    let: "t" := (ref_ty geometryInterface "t") in
-    return: ((((interface.get #"Volume"%go (![geometryInterface] "t")) #()) + (![uint64T] "n")) + (![uint64T] "m"))).
+    exception_do (let: "m" := (alloc "m") in
+    let: "n" := (alloc "n") in
+    let: "t" := (alloc "t") in
+    return: ((((interface.get #"Volume"%go (![#geometryInterface] "t")) #()) + (![#uint64T] "n")) + (![#uint64T] "m"))).
 
 (* go: interfaces.go:20:6 *)
 Definition measureVolume : val :=
   rec: "measureVolume" "t" :=
-    exception_do (let: "t" := (ref_ty geometryInterface "t") in
-    return: ((interface.get #"Volume"%go (![geometryInterface] "t")) #())).
+    exception_do (let: "t" := (alloc "t") in
+    return: ((interface.get #"Volume"%go (![#geometryInterface] "t")) #())).
 
 Definition SquareStruct : go_type := structT [
   "Side" :: uint64T
@@ -874,92 +874,92 @@ Definition SquareStruct : go_type := structT [
 (* go: interfaces.go:28:23 *)
 Definition SquareStruct__Square : val :=
   rec: "SquareStruct__Square" "t" <> :=
-    exception_do (let: "t" := (ref_ty SquareStruct "t") in
-    return: ((![uint64T] (struct.field_ref SquareStruct "Side" "t")) * (![uint64T] (struct.field_ref SquareStruct "Side" "t")))).
+    exception_do (let: "t" := (alloc "t") in
+    return: ((![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")) * (![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")))).
 
 (* go: interfaces.go:32:23 *)
 Definition SquareStruct__Volume : val :=
   rec: "SquareStruct__Volume" "t" <> :=
-    exception_do (let: "t" := (ref_ty SquareStruct "t") in
-    return: (((![uint64T] (struct.field_ref SquareStruct "Side" "t")) * (![uint64T] (struct.field_ref SquareStruct "Side" "t"))) * (![uint64T] (struct.field_ref SquareStruct "Side" "t")))).
+    exception_do (let: "t" := (alloc "t") in
+    return: (((![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")) * (![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t"))) * (![#uint64T] (struct.field_ref #SquareStruct #"Side"%go "t")))).
 
 (* go: interfaces.go:40:6 *)
 Definition testBasicInterface : val :=
   rec: "testBasicInterface" <> :=
-    exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
+    exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 2) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[SquareStruct] "$r0");;;
-    return: ((let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
+    do:  ("s" <-[#SquareStruct] "$r0");;;
+    return: ((let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
      (func_call #semantics.semantics #"measureArea"%go) "$a0") = #(W64 4))).
 
 (* go: interfaces.go:47:6 *)
 Definition testAssignInterface : val :=
   rec: "testAssignInterface" <> :=
-    exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
+    exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[SquareStruct] "$r0");;;
-    let: "area" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
+    do:  ("s" <-[#SquareStruct] "$r0");;;
+    let: "area" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
-    do:  ("area" <-[uint64T] "$r0");;;
-    return: ((![uint64T] "area") = #(W64 9))).
+    do:  ("area" <-[#uint64T] "$r0");;;
+    return: ((![#uint64T] "area") = #(W64 9))).
 
 (* go: interfaces.go:55:6 *)
 Definition testMultipleInterface : val :=
   rec: "testMultipleInterface" <> :=
-    exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
+    exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[SquareStruct] "$r0");;;
-    let: "square1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
+    do:  ("s" <-[#SquareStruct] "$r0");;;
+    let: "square1" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
-    do:  ("square1" <-[uint64T] "$r0");;;
-    let: "square2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
+    do:  ("square1" <-[#uint64T] "$r0");;;
+    let: "square2" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
-    do:  ("square2" <-[uint64T] "$r0");;;
-    return: ((![uint64T] "square1") = (![uint64T] "square2"))).
+    do:  ("square2" <-[#uint64T] "$r0");;;
+    return: ((![#uint64T] "square1") = (![#uint64T] "square2"))).
 
 (* go: interfaces.go:64:6 *)
 Definition testBinaryExprInterface : val :=
   rec: "testBinaryExprInterface" <> :=
-    exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
+    exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[SquareStruct] "$r0");;;
-    let: "square1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
+    do:  ("s" <-[#SquareStruct] "$r0");;;
+    let: "square1" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
-    do:  ("square1" <-[uint64T] "$r0");;;
-    let: "square2" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
+    do:  ("square1" <-[#uint64T] "$r0");;;
+    let: "square2" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureVolume"%go) "$a0") in
-    do:  ("square2" <-[uint64T] "$r0");;;
-    return: (((![uint64T] "square1") = (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
-     (func_call #semantics.semantics #"measureArea"%go) "$a0")) && ((![uint64T] "square2") = (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
+    do:  ("square2" <-[#uint64T] "$r0");;;
+    return: (((![#uint64T] "square1") = (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
+     (func_call #semantics.semantics #"measureArea"%go) "$a0")) && ((![#uint64T] "square2") = (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
      (func_call #semantics.semantics #"measureVolume"%go) "$a0")))).
 
 (* go: interfaces.go:73:6 *)
 Definition testIfStmtInterface : val :=
   rec: "testIfStmtInterface" <> :=
-    exception_do (let: "s" := (ref_ty SquareStruct (zero_val SquareStruct)) in
+    exception_do (let: "s" := (alloc (type.zero_val #SquareStruct)) in
     let: "$r0" := (let: "$Side" := #(W64 3) in
-    struct.make SquareStruct [{
+    struct.make #SquareStruct [{
       "Side" ::= "$Side"
     }]) in
-    do:  ("s" <-[SquareStruct] "$r0");;;
-    (if: (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![SquareStruct] "s")) in
+    do:  ("s" <-[#SquareStruct] "$r0");;;
+    (if: (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") = #(W64 9)
     then return: (#true)
     else do:  #());;;
@@ -971,11 +971,11 @@ Definition testIfStmtInterface : val :=
    go: lock.go:7:6 *)
 Definition testsUseLocks : val :=
   rec: "testsUseLocks" <> :=
-    exception_do (let: "m" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
-    do:  ("m" <-[ptrT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] "m")) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] "m")) #());;;
+    exception_do (let: "m" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
+    do:  ("m" <-[#ptrT] "$r0");;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "m")) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "m")) #());;;
     return: (#true)).
 
 (* helpers
@@ -983,34 +983,34 @@ Definition testsUseLocks : val :=
    go: loops.go:4:6 *)
 Definition standardForLoop : val :=
   rec: "standardForLoop" "s" :=
-    exception_do (let: "s" := (ref_ty sliceT "s") in
-    let: "sumPtr" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
-    do:  ("sumPtr" <-[ptrT] "$r0");;;
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "s" := (alloc "s") in
+    let: "sumPtr" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #uint64T)) in
+    do:  ("sumPtr" <-[#ptrT] "$r0");;;
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
+    do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] "s") in
+      (if: (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "s") in
       slice.len "$a0"))
       then
-        let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
-        let: "$r0" := (![uint64T] (![ptrT] "sumPtr")) in
-        do:  ("sum" <-[uint64T] "$r0");;;
-        let: "x" := (ref_ty uint64T (zero_val uint64T)) in
-        let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "s") (![uint64T] "i"))) in
-        do:  ("x" <-[uint64T] "$r0");;;
-        let: "$r0" := ((![uint64T] "sum") + (![uint64T] "x")) in
-        do:  ((![ptrT] "sumPtr") <-[uint64T] "$r0");;;
-        let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[uint64T] "$r0");;;
+        let: "sum" := (alloc (type.zero_val #uint64T)) in
+        let: "$r0" := (![#uint64T] (![#ptrT] "sumPtr")) in
+        do:  ("sum" <-[#uint64T] "$r0");;;
+        let: "x" := (alloc (type.zero_val #uint64T)) in
+        let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "s") (![#uint64T] "i"))) in
+        do:  ("x" <-[#uint64T] "$r0");;;
+        let: "$r0" := ((![#uint64T] "sum") + (![#uint64T] "x")) in
+        do:  ((![#ptrT] "sumPtr") <-[#uint64T] "$r0");;;
+        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
+        do:  ("i" <-[#uint64T] "$r0");;;
         continue: #()
       else do:  #());;;
       break: #()));;;
-    let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (![ptrT] "sumPtr")) in
-    do:  ("sum" <-[uint64T] "$r0");;;
-    return: (![uint64T] "sum")).
+    let: "sum" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (![#uint64T] (![#ptrT] "sumPtr")) in
+    do:  ("sum" <-[#uint64T] "$r0");;;
+    return: (![#uint64T] "sum")).
 
 Definition LoopStruct : go_type := structT [
   "loopNext" :: ptrT
@@ -1019,17 +1019,17 @@ Definition LoopStruct : go_type := structT [
 (* go: loops.go:28:22 *)
 Definition LoopStruct__forLoopWait : val :=
   rec: "LoopStruct__forLoopWait" "ls" "i" :=
-    exception_do (let: "ls" := (ref_ty LoopStruct "ls") in
-    let: "i" := (ref_ty uint64T "i") in
+    exception_do (let: "ls" := (alloc "ls") in
+    let: "i" := (alloc "i") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "nxt" := (ref_ty ptrT (zero_val ptrT)) in
-      let: "$r0" := (![ptrT] (struct.field_ref LoopStruct "loopNext" "ls")) in
-      do:  ("nxt" <-[ptrT] "$r0");;;
-      (if: (![uint64T] "i") < (![uint64T] (![ptrT] "nxt"))
+      let: "nxt" := (alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls")) in
+      do:  ("nxt" <-[#ptrT] "$r0");;;
+      (if: (![#uint64T] "i") < (![#uint64T] (![#ptrT] "nxt"))
       then break: #()
       else do:  #());;;
-      let: "$r0" := ((![uint64T] (![ptrT] (struct.field_ref LoopStruct "loopNext" "ls"))) + #(W64 1)) in
-      do:  ((![ptrT] (struct.field_ref LoopStruct "loopNext" "ls")) <-[uint64T] "$r0");;;
+      let: "$r0" := ((![#uint64T] (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls"))) + #(W64 1)) in
+      do:  ((![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls")) <-[#uint64T] "$r0");;;
       continue: #())).
 
 (* tests
@@ -1037,258 +1037,258 @@ Definition LoopStruct__forLoopWait : val :=
    go: loops.go:40:6 *)
 Definition testStandardForLoop : val :=
   rec: "testStandardForLoop" <> :=
-    exception_do (let: "arr" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 4)) in
-    do:  ("arr" <-[sliceT] "$r0");;;
-    do:  ((slice.elem_ref uint64T (![sliceT] "arr") #(W64 0)) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) + #(W64 1)));;;
-    do:  ((slice.elem_ref uint64T (![sliceT] "arr") #(W64 1)) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 1))) + #(W64 3)));;;
-    do:  ((slice.elem_ref uint64T (![sliceT] "arr") #(W64 2)) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 2))) + #(W64 5)));;;
-    do:  ((slice.elem_ref uint64T (![sliceT] "arr") #(W64 3)) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 3))) + #(W64 7)));;;
-    return: ((let: "$a0" := (![sliceT] "arr") in
+    exception_do (let: "arr" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 4)) in
+    do:  ("arr" <-[#sliceT] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + #(W64 1)));;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1))) + #(W64 3)));;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2))) + #(W64 5)));;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3))) + #(W64 7)));;;
+    return: ((let: "$a0" := (![#sliceT] "arr") in
      (func_call #semantics.semantics #"standardForLoop"%go) "$a0") = #(W64 16))).
 
 (* go: loops.go:49:6 *)
 Definition testForLoopWait : val :=
   rec: "testForLoopWait" <> :=
-    exception_do (let: "ls" := (ref_ty LoopStruct (zero_val LoopStruct)) in
-    let: "$r0" := (let: "$loopNext" := (ref_ty uint64T (zero_val uint64T)) in
-    struct.make LoopStruct [{
+    exception_do (let: "ls" := (alloc (type.zero_val #LoopStruct)) in
+    let: "$r0" := (let: "$loopNext" := (alloc (type.zero_val #uint64T)) in
+    struct.make #LoopStruct [{
       "loopNext" ::= "$loopNext"
     }]) in
-    do:  ("ls" <-[LoopStruct] "$r0");;;
+    do:  ("ls" <-[#LoopStruct] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
-    (method_call #semantics.semantics #"LoopStruct" #"forLoopWait" (![LoopStruct] "ls")) "$a0");;;
-    return: ((![uint64T] (![ptrT] (struct.field_ref LoopStruct "loopNext" "ls"))) = #(W64 4))).
+    (method_call #semantics.semantics #"LoopStruct" #"forLoopWait" (![#LoopStruct] "ls")) "$a0");;;
+    return: ((![#uint64T] (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls"))) = #(W64 4))).
 
 (* go: loops.go:59:6 *)
 Definition testBreakFromLoopWithContinue : val :=
   rec: "testBreakFromLoopWithContinue" <> :=
-    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
+    do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: #true
       then
-        let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[uint64T] "$r0");;;
+        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
+        do:  ("i" <-[#uint64T] "$r0");;;
         break: #()
       else do:  #());;;
       continue: #());;;
-    return: ((![uint64T] "i") = #(W64 1))).
+    return: ((![#uint64T] "i") = #(W64 1))).
 
 (* go: loops.go:71:6 *)
 Definition testBreakFromLoopNoContinue : val :=
   rec: "testBreakFromLoopNoContinue" <> :=
-    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
       (if: #true
       then
-        let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[uint64T] "$r0");;;
+        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
+        do:  ("i" <-[#uint64T] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := ((![uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[uint64T] "$r0"));;;
-    return: ((![uint64T] "i") = #(W64 1))).
+      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
+      do:  ("i" <-[#uint64T] "$r0"));;;
+    return: ((![#uint64T] "i") = #(W64 1))).
 
 (* go: loops.go:83:6 *)
 Definition testBreakFromLoopNoContinueDouble : val :=
   rec: "testBreakFromLoopNoContinueDouble" <> :=
-    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") = #(W64 1)
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
+      (if: (![#uint64T] "i") = #(W64 1)
       then
-        let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[uint64T] "$r0");;;
+        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
+        do:  ("i" <-[#uint64T] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := ((![uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[uint64T] "$r0");;;
-      let: "$r0" := ((![uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[uint64T] "$r0"));;;
-    return: ((![uint64T] "i") = #(W64 4))).
+      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
+      do:  ("i" <-[#uint64T] "$r0");;;
+      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
+      do:  ("i" <-[#uint64T] "$r0"));;;
+    return: ((![#uint64T] "i") = #(W64 4))).
 
 (* go: loops.go:96:6 *)
 Definition testBreakFromLoopForOnly : val :=
   rec: "testBreakFromLoopForOnly" <> :=
-    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
-      let: "$r0" := ((![uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[uint64T] "$r0"));;;
-    return: ((![uint64T] "i") = #(W64 4))).
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
+      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
+      do:  ("i" <-[#uint64T] "$r0"));;;
+    return: ((![#uint64T] "i") = #(W64 4))).
 
 (* go: loops.go:104:6 *)
 Definition testBreakFromLoopAssignAndContinue : val :=
   rec: "testBreakFromLoopAssignAndContinue" <> :=
-    exception_do (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 3)); (λ: <>, Skip) := λ: <>,
       (if: #true
       then
-        let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[uint64T] "$r0");;;
+        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
+        do:  ("i" <-[#uint64T] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := ((![uint64T] "i") + #(W64 2)) in
-      do:  ("i" <-[uint64T] "$r0");;;
+      let: "$r0" := ((![#uint64T] "i") + #(W64 2)) in
+      do:  ("i" <-[#uint64T] "$r0");;;
       continue: #());;;
-    return: ((![uint64T] "i") = #(W64 1))).
+    return: ((![#uint64T] "i") = #(W64 1))).
 
 (* go: loops.go:117:6 *)
 Definition testNestedLoops : val :=
   rec: "testNestedLoops" <> :=
-    exception_do (let: "ok1" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok1" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
-    do:  ("ok1" <-[boolT] "$r0");;;
-    let: "ok2" := (ref_ty boolT (zero_val boolT)) in
+    do:  ("ok1" <-[#boolT] "$r0");;;
+    let: "ok2" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
-    do:  ("ok2" <-[boolT] "$r0");;;
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("ok2" <-[#boolT] "$r0");;;
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
+    do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (let: "j" := (ref_ty uint64T (zero_val uint64T)) in
+      (let: "j" := (alloc (type.zero_val #uint64T)) in
       let: "$r0" := #(W64 0) in
-      do:  ("j" <-[uint64T] "$r0");;;
+      do:  ("j" <-[#uint64T] "$r0");;;
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        (if: (![uint64T] "j") > #(W64 5)
+        (if: (![#uint64T] "j") > #(W64 5)
         then break: #()
         else do:  #());;;
-        let: "$r0" := ((![uint64T] "j") + #(W64 1)) in
-        do:  ("j" <-[uint64T] "$r0");;;
-        let: "$r0" := ((![uint64T] "j") = #(W64 6)) in
-        do:  ("ok1" <-[boolT] "$r0");;;
+        let: "$r0" := ((![#uint64T] "j") + #(W64 1)) in
+        do:  ("j" <-[#uint64T] "$r0");;;
+        let: "$r0" := ((![#uint64T] "j") = #(W64 6)) in
+        do:  ("ok1" <-[#boolT] "$r0");;;
         continue: #()));;;
-      let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
-      do:  ("i" <-[uint64T] "$r0");;;
-      let: "$r0" := ((![uint64T] "i") = #(W64 1)) in
-      do:  ("ok2" <-[boolT] "$r0");;;
+      let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
+      do:  ("i" <-[#uint64T] "$r0");;;
+      let: "$r0" := ((![#uint64T] "i") = #(W64 1)) in
+      do:  ("ok2" <-[#boolT] "$r0");;;
       break: #()));;;
-    return: ((![boolT] "ok1") && (![boolT] "ok2"))).
+    return: ((![#boolT] "ok1") && (![#boolT] "ok2"))).
 
 (* go: loops.go:136:6 *)
 Definition testNestedGoStyleLoops : val :=
   rec: "testNestedGoStyleLoops" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
-    do:  ("ok" <-[boolT] "$r0");;;
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      (let: "j" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      (let: "j" := (alloc (type.zero_val #uint64T)) in
       let: "$r0" := #(W64 0) in
-      do:  ("j" <-[uint64T] "$r0");;;
-      (for: (λ: <>, (![uint64T] "j") < (![uint64T] "i")); (λ: <>, do:  ("j" <-[uint64T] ((![uint64T] "j") + #(W64 1)))) := λ: <>,
+      do:  ("j" <-[#uint64T] "$r0");;;
+      (for: (λ: <>, (![#uint64T] "j") < (![#uint64T] "i")); (λ: <>, do:  ("j" <-[#uint64T] ((![#uint64T] "j") + #(W64 1)))) := λ: <>,
         (if: #true
         then break: #()
         else do:  #());;;
         continue: #()));;;
-      let: "$r0" := ((![uint64T] "i") = #(W64 9)) in
-      do:  ("ok" <-[boolT] "$r0")));;;
-    return: (![boolT] "ok")).
+      let: "$r0" := ((![#uint64T] "i") = #(W64 9)) in
+      do:  ("ok" <-[#boolT] "$r0")));;;
+    return: (![#boolT] "ok")).
 
 (* go: loops.go:150:6 *)
 Definition testNestedGoStyleLoopsNoComparison : val :=
   rec: "testNestedGoStyleLoopsNoComparison" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
-    do:  ("ok" <-[boolT] "$r0");;;
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      (let: "j" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      (let: "j" := (alloc (type.zero_val #uint64T)) in
       let: "$r0" := #(W64 0) in
-      do:  ("j" <-[uint64T] "$r0");;;
-      (for: (λ: <>, (![uint64T] "j") < (![uint64T] "i")); (λ: <>, do:  ("j" <-[uint64T] ((![uint64T] "j") + #(W64 1)))) := λ: <>,
+      do:  ("j" <-[#uint64T] "$r0");;;
+      (for: (λ: <>, (![#uint64T] "j") < (![#uint64T] "i")); (λ: <>, do:  ("j" <-[#uint64T] ((![#uint64T] "j") + #(W64 1)))) := λ: <>,
         (if: #true
         then break: #()
         else do:  #());;;
         continue: #()));;;
-      let: "$r0" := ((![uint64T] "i") = #(W64 9)) in
-      do:  ("ok" <-[boolT] "$r0")));;;
-    return: (![boolT] "ok")).
+      let: "$r0" := ((![#uint64T] "i") = #(W64 9)) in
+      do:  ("ok" <-[#boolT] "$r0")));;;
+    return: (![#boolT] "ok")).
 
 (* go: maps.go:3:6 *)
 Definition IterateMapKeys : val :=
   rec: "IterateMapKeys" "m" :=
-    exception_do (let: "m" := (ref_ty (mapT uint64T uint64T) "m") in
-    let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$range" := (![mapT uint64T uint64T] "m") in
-    (let: "k" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "m" := (alloc "m") in
+    let: "sum" := (alloc (type.zero_val #uint64T)) in
+    let: "$range" := (![#(mapT uint64T uint64T)] "m") in
+    (let: "k" := (alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("k" <-[uint64T] "$key");;;
-      let: "$r0" := ((![uint64T] "sum") + (![uint64T] "k")) in
-      do:  ("sum" <-[uint64T] "$r0")));;;
-    return: (![uint64T] "sum")).
+      do:  ("k" <-[#uint64T] "$key");;;
+      let: "$r0" := ((![#uint64T] "sum") + (![#uint64T] "k")) in
+      do:  ("sum" <-[#uint64T] "$r0")));;;
+    return: (![#uint64T] "sum")).
 
 (* go: maps.go:11:6 *)
 Definition IterateMapValues : val :=
   rec: "IterateMapValues" "m" :=
-    exception_do (let: "m" := (ref_ty (mapT uint64T uint64T) "m") in
-    let: "sum" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$range" := (![mapT uint64T uint64T] "m") in
-    (let: "v" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "m" := (alloc "m") in
+    let: "sum" := (alloc (type.zero_val #uint64T)) in
+    let: "$range" := (![#(mapT uint64T uint64T)] "m") in
+    (let: "v" := (alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
-      do:  ("v" <-[uint64T] "$value");;;
+      do:  ("v" <-[#uint64T] "$value");;;
       do:  "$key";;;
-      let: "$r0" := ((![uint64T] "sum") + (![uint64T] "v")) in
-      do:  ("sum" <-[uint64T] "$r0")));;;
-    return: (![uint64T] "sum")).
+      let: "$r0" := ((![#uint64T] "sum") + (![#uint64T] "v")) in
+      do:  ("sum" <-[#uint64T] "$r0")));;;
+    return: (![#uint64T] "sum")).
 
 (* go: maps.go:19:6 *)
 Definition testIterateMap : val :=
   rec: "testIterateMap" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "m" := (ref_ty (mapT uint64T uint64T) (zero_val (mapT uint64T uint64T))) in
-    let: "$r0" := (map.make uint64T uint64T #()) in
-    do:  ("m" <-[mapT uint64T uint64T] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "m" := (alloc (type.zero_val #(mapT uint64T uint64T))) in
+    let: "$r0" := (map.make #uint64T #uint64T) in
+    do:  ("m" <-[#(mapT uint64T uint64T)] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 0) "$r0");;;
+    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 0) "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 1) "$r0");;;
+    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 3) "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![mapT uint64T uint64T] "m") in
+    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 3) "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#(mapT uint64T uint64T)] "m") in
     (func_call #semantics.semantics #"IterateMapKeys"%go) "$a0") = #(W64 4))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![mapT uint64T uint64T] "m") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#(mapT uint64T uint64T)] "m") in
     (func_call #semantics.semantics #"IterateMapValues"%go) "$a0") = #(W64 7))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: maps.go:37:6 *)
 Definition testMapSize : val :=
   rec: "testMapSize" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "m" := (ref_ty (mapT uint64T uint64T) (zero_val (mapT uint64T uint64T))) in
-    let: "$r0" := (map.make uint64T uint64T #()) in
-    do:  ("m" <-[mapT uint64T uint64T] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((s_to_w64 (let: "$a0" := (![mapT uint64T uint64T] "m") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "m" := (alloc (type.zero_val #(mapT uint64T uint64T))) in
+    let: "$r0" := (map.make #uint64T #uint64T) in
+    do:  ("m" <-[#(mapT uint64T uint64T)] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![#(mapT uint64T uint64T)] "m") in
     map.len "$a0")) = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 0) "$r0");;;
+    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 0) "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 1) "$r0");;;
+    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 3) "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((s_to_w64 (let: "$a0" := (![mapT uint64T uint64T] "m") in
+    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 3) "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![#(mapT uint64T uint64T)] "m") in
     map.len "$a0")) = #(W64 3))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: multiple_assign.go:3:6 *)
 Definition multReturnTwo : val :=
@@ -1298,18 +1298,18 @@ Definition multReturnTwo : val :=
 (* go: multiple_assign.go:7:6 *)
 Definition testAssignTwo : val :=
   rec: "testAssignTwo" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "y" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 15) in
-    do:  ("y" <-[uint64T] "$r0");;;
+    do:  ("y" <-[#uint64T] "$r0");;;
     let: ("$ret0", "$ret1") := ((func_call #semantics.semantics #"multReturnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("x" <-[uint64T] "$r0");;;
-    do:  ("y" <-[uint64T] "$r1");;;
-    return: (((![uint64T] "x") = #(W64 2)) && ((![uint64T] "y") = #(W64 3)))).
+    do:  ("x" <-[#uint64T] "$r0");;;
+    do:  ("y" <-[#uint64T] "$r1");;;
+    return: (((![#uint64T] "x") = #(W64 2)) && ((![#uint64T] "y") = #(W64 3)))).
 
 (* go: multiple_assign.go:14:6 *)
 Definition multReturnThree : val :=
@@ -1319,39 +1319,39 @@ Definition multReturnThree : val :=
 (* go: multiple_assign.go:18:6 *)
 Definition testAssignThree : val :=
   rec: "testAssignThree" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "y" := (ref_ty boolT (zero_val boolT)) in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "y" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
-    do:  ("y" <-[boolT] "$r0");;;
-    let: "z" := (ref_ty uint32T (zero_val uint32T)) in
+    do:  ("y" <-[#boolT] "$r0");;;
+    let: "z" := (alloc (type.zero_val #uint32T)) in
     let: "$r0" := #(W32 15) in
-    do:  ("z" <-[uint32T] "$r0");;;
+    do:  ("z" <-[#uint32T] "$r0");;;
     let: (("$ret0", "$ret1"), "$ret2") := ((func_call #semantics.semantics #"multReturnThree"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("x" <-[uint64T] "$r0");;;
-    do:  ("y" <-[boolT] "$r1");;;
-    do:  ("z" <-[uint32T] "$r2");;;
-    return: ((((![uint64T] "x") = #(W64 2)) && ((![boolT] "y") = #true)) && ((![uint32T] "z") = #(W32 1)))).
+    do:  ("x" <-[#uint64T] "$r0");;;
+    do:  ("y" <-[#boolT] "$r1");;;
+    do:  ("z" <-[#uint32T] "$r2");;;
+    return: ((((![#uint64T] "x") = #(W64 2)) && ((![#boolT] "y") = #true)) && ((![#uint32T] "z") = #(W32 1)))).
 
 (* go: multiple_assign.go:26:6 *)
 Definition testMultipleAssignToMap : val :=
   rec: "testMultipleAssignToMap" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 10) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "m" := (ref_ty (mapT uint64T uint64T) (zero_val (mapT uint64T uint64T))) in
-    let: "$r0" := (map.make uint64T uint64T #()) in
-    do:  ("m" <-[mapT uint64T uint64T] "$r0");;;
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "m" := (alloc (type.zero_val #(mapT uint64T uint64T))) in
+    let: "$r0" := (map.make #uint64T #uint64T) in
+    do:  ("m" <-[#(mapT uint64T uint64T)] "$r0");;;
     let: ("$ret0", "$ret1") := ((func_call #semantics.semantics #"multReturnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("x" <-[uint64T] "$r0");;;
-    do:  (map.insert (![mapT uint64T uint64T] "m") #(W64 0) "$r1");;;
-    return: (((![uint64T] "x") = #(W64 2)) && ((Fst (map.get (![mapT uint64T uint64T] "m") #(W64 0))) = #(W64 3)))).
+    do:  ("x" <-[#uint64T] "$r0");;;
+    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 0) "$r1");;;
+    return: (((![#uint64T] "x") = #(W64 2)) && ((Fst (map.get (![#(mapT uint64T uint64T)] "m") #(W64 0))) = #(W64 3)))).
 
 (* go: multiple_return.go:3:6 *)
 Definition returnTwo : val :=
@@ -1361,25 +1361,25 @@ Definition returnTwo : val :=
 (* go: multiple_return.go:7:6 *)
 Definition testReturnTwo : val :=
   rec: "testReturnTwo" <> :=
-    exception_do (let: "y" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "y" := (alloc (type.zero_val #uint64T)) in
+    let: "x" := (alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((func_call #semantics.semantics #"returnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("x" <-[uint64T] "$r0");;;
-    do:  ("y" <-[uint64T] "$r1");;;
-    return: (((![uint64T] "x") = #(W64 2)) && ((![uint64T] "y") = #(W64 3)))).
+    do:  ("x" <-[#uint64T] "$r0");;;
+    do:  ("y" <-[#uint64T] "$r1");;;
+    return: (((![#uint64T] "x") = #(W64 2)) && ((![#uint64T] "y") = #(W64 3)))).
 
 (* go: multiple_return.go:12:6 *)
 Definition testAnonymousBinding : val :=
   rec: "testAnonymousBinding" <> :=
-    exception_do (let: "y" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "y" := (alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((func_call #semantics.semantics #"returnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
-    do:  ("y" <-[uint64T] "$r1");;;
-    return: ((![uint64T] "y") = #(W64 3))).
+    do:  ("y" <-[#uint64T] "$r1");;;
+    return: ((![#uint64T] "y") = #(W64 3))).
 
 (* go: multiple_return.go:17:6 *)
 Definition returnThree : val :=
@@ -1389,17 +1389,17 @@ Definition returnThree : val :=
 (* go: multiple_return.go:21:6 *)
 Definition testReturnThree : val :=
   rec: "testReturnThree" <> :=
-    exception_do (let: "z" := (ref_ty uint32T (zero_val uint32T)) in
-    let: "y" := (ref_ty boolT (zero_val boolT)) in
-    let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "z" := (alloc (type.zero_val #uint32T)) in
+    let: "y" := (alloc (type.zero_val #boolT)) in
+    let: "x" := (alloc (type.zero_val #uint64T)) in
     let: (("$ret0", "$ret1"), "$ret2") := ((func_call #semantics.semantics #"returnThree"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("x" <-[uint64T] "$r0");;;
-    do:  ("y" <-[boolT] "$r1");;;
-    do:  ("z" <-[uint32T] "$r2");;;
-    return: ((((![uint64T] "x") = #(W64 2)) && ((![boolT] "y") = #true)) && ((![uint32T] "z") = #(W32 1)))).
+    do:  ("x" <-[#uint64T] "$r0");;;
+    do:  ("y" <-[#boolT] "$r1");;;
+    do:  ("z" <-[#uint32T] "$r2");;;
+    return: ((((![#uint64T] "x") = #(W64 2)) && ((![#boolT] "y") = #true)) && ((![#uint32T] "z") = #(W32 1)))).
 
 (* go: multiple_return.go:26:6 *)
 Definition returnFour : val :=
@@ -1409,291 +1409,291 @@ Definition returnFour : val :=
 (* go: multiple_return.go:30:6 *)
 Definition testReturnFour : val :=
   rec: "testReturnFour" <> :=
-    exception_do (let: "w" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "z" := (ref_ty uint32T (zero_val uint32T)) in
-    let: "y" := (ref_ty boolT (zero_val boolT)) in
-    let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "w" := (alloc (type.zero_val #uint64T)) in
+    let: "z" := (alloc (type.zero_val #uint32T)) in
+    let: "y" := (alloc (type.zero_val #boolT)) in
+    let: "x" := (alloc (type.zero_val #uint64T)) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := ((func_call #semantics.semantics #"returnFour"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
     let: "$r3" := "$ret3" in
-    do:  ("x" <-[uint64T] "$r0");;;
-    do:  ("y" <-[boolT] "$r1");;;
-    do:  ("z" <-[uint32T] "$r2");;;
-    do:  ("w" <-[uint64T] "$r3");;;
-    return: (((((![uint64T] "x") = #(W64 2)) && ((![boolT] "y") = #true)) && ((![uint32T] "z") = #(W32 1))) && ((![uint64T] "w") = #(W64 7)))).
+    do:  ("x" <-[#uint64T] "$r0");;;
+    do:  ("y" <-[#boolT] "$r1");;;
+    do:  ("z" <-[#uint32T] "$r2");;;
+    do:  ("w" <-[#uint64T] "$r3");;;
+    return: (((((![#uint64T] "x") = #(W64 2)) && ((![#boolT] "y") = #true)) && ((![#uint32T] "z") = #(W32 1))) && ((![#uint64T] "w") = #(W64 7)))).
 
 (* go: nil.go:3:6 *)
 Definition failing_testCompareSliceToNil : val :=
   rec: "failing_testCompareSliceToNil" <> :=
-    exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 0)) in
-    do:  ("s" <-[sliceT] "$r0");;;
-    return: ((![sliceT] "s") ≠ #slice.nil)).
+    exception_do (let: "s" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 0)) in
+    do:  ("s" <-[#sliceT] "$r0");;;
+    return: ((![#sliceT] "s") ≠ #slice.nil)).
 
 (* go: nil.go:8:6 *)
 Definition testComparePointerToNil : val :=
   rec: "testComparePointerToNil" <> :=
-    exception_do (let: "s" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
-    do:  ("s" <-[ptrT] "$r0");;;
-    return: ((![ptrT] "s") ≠ #null)).
+    exception_do (let: "s" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #uint64T)) in
+    do:  ("s" <-[#ptrT] "$r0");;;
+    return: ((![#ptrT] "s") ≠ #null)).
 
 (* go: nil.go:13:6 *)
 Definition testCompareNilToNil : val :=
   rec: "testCompareNilToNil" <> :=
-    exception_do (let: "s" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty ptrT (zero_val ptrT)) in
-    do:  ("s" <-[ptrT] "$r0");;;
-    return: ((![ptrT] (![ptrT] "s")) = #null)).
+    exception_do (let: "s" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #ptrT)) in
+    do:  ("s" <-[#ptrT] "$r0");;;
+    return: ((![#ptrT] (![#ptrT] "s")) = #null)).
 
 (* go: nil.go:18:6 *)
 Definition testComparePointerWrappedToNil : val :=
   rec: "testComparePointerWrappedToNil" <> :=
-    exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 1)) in
-    do:  ("s" <-[sliceT] "$r0");;;
-    return: ((![sliceT] "s") ≠ #slice.nil)).
+    exception_do (let: "s" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 1)) in
+    do:  ("s" <-[#sliceT] "$r0");;;
+    return: ((![#sliceT] "s") ≠ #slice.nil)).
 
 (* go: nil.go:24:6 *)
 Definition testComparePointerWrappedDefaultToNil : val :=
   rec: "testComparePointerWrappedDefaultToNil" <> :=
-    exception_do (let: "s" := (ref_ty sliceT (zero_val sliceT)) in
-    return: ((![sliceT] "s") = #slice.nil)).
+    exception_do (let: "s" := (alloc (type.zero_val #sliceT)) in
+    return: ((![#sliceT] "s") = #slice.nil)).
 
 (* helpers
 
    go: operations.go:4:6 *)
 Definition reverseAssignOps64 : val :=
   rec: "reverseAssignOps64" "x" :=
-    exception_do (let: "x" := (ref_ty uint64T "x") in
-    let: "y" := (ref_ty uint64T (zero_val uint64T)) in
-    do:  ("y" <-[uint64T] ((![uint64T] "y") + (![uint64T] "x")));;;
-    do:  ("y" <-[uint64T] ((![uint64T] "y") - (![uint64T] "x")));;;
-    do:  ("y" <-[uint64T] ((![uint64T] "y") + #(W64 1)));;;
-    do:  ("y" <-[uint64T] ((![uint64T] "y") - #(W64 1)));;;
-    return: (![uint64T] "y")).
+    exception_do (let: "x" := (alloc "x") in
+    let: "y" := (alloc (type.zero_val #uint64T)) in
+    do:  ("y" <-[#uint64T] ((![#uint64T] "y") + (![#uint64T] "x")));;;
+    do:  ("y" <-[#uint64T] ((![#uint64T] "y") - (![#uint64T] "x")));;;
+    do:  ("y" <-[#uint64T] ((![#uint64T] "y") + #(W64 1)));;;
+    do:  ("y" <-[#uint64T] ((![#uint64T] "y") - #(W64 1)));;;
+    return: (![#uint64T] "y")).
 
 (* go: operations.go:13:6 *)
 Definition reverseAssignOps32 : val :=
   rec: "reverseAssignOps32" "x" :=
-    exception_do (let: "x" := (ref_ty uint32T "x") in
-    let: "y" := (ref_ty uint32T (zero_val uint32T)) in
-    do:  ("y" <-[uint32T] ((![uint32T] "y") + (![uint32T] "x")));;;
-    do:  ("y" <-[uint32T] ((![uint32T] "y") - (![uint32T] "x")));;;
-    do:  ("y" <-[uint32T] ((![uint32T] "y") + #(W32 1)));;;
-    do:  ("y" <-[uint32T] ((![uint32T] "y") - #(W32 1)));;;
-    return: (![uint32T] "y")).
+    exception_do (let: "x" := (alloc "x") in
+    let: "y" := (alloc (type.zero_val #uint32T)) in
+    do:  ("y" <-[#uint32T] ((![#uint32T] "y") + (![#uint32T] "x")));;;
+    do:  ("y" <-[#uint32T] ((![#uint32T] "y") - (![#uint32T] "x")));;;
+    do:  ("y" <-[#uint32T] ((![#uint32T] "y") + #(W32 1)));;;
+    do:  ("y" <-[#uint32T] ((![#uint32T] "y") - #(W32 1)));;;
+    return: (![#uint32T] "y")).
 
 (* go: operations.go:22:6 *)
 Definition add64Equals : val :=
   rec: "add64Equals" "x" "y" "z" :=
-    exception_do (let: "z" := (ref_ty uint64T "z") in
-    let: "y" := (ref_ty uint64T "y") in
-    let: "x" := (ref_ty uint64T "x") in
-    return: (((![uint64T] "x") + (![uint64T] "y")) = (![uint64T] "z"))).
+    exception_do (let: "z" := (alloc "z") in
+    let: "y" := (alloc "y") in
+    let: "x" := (alloc "x") in
+    return: (((![#uint64T] "x") + (![#uint64T] "y")) = (![#uint64T] "z"))).
 
 (* go: operations.go:26:6 *)
 Definition sub64Equals : val :=
   rec: "sub64Equals" "x" "y" "z" :=
-    exception_do (let: "z" := (ref_ty uint64T "z") in
-    let: "y" := (ref_ty uint64T "y") in
-    let: "x" := (ref_ty uint64T "x") in
-    return: (((![uint64T] "x") - (![uint64T] "y")) = (![uint64T] "z"))).
+    exception_do (let: "z" := (alloc "z") in
+    let: "y" := (alloc "y") in
+    let: "x" := (alloc "x") in
+    return: (((![#uint64T] "x") - (![#uint64T] "y")) = (![#uint64T] "z"))).
 
 (* tests
 
    go: operations.go:31:6 *)
 Definition testReverseAssignOps64 : val :=
   rec: "testReverseAssignOps64" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 0) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 0) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1231234) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1231234) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 9223372036854775808) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 140737488355328) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 140737488355328) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1048576) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1048576) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 262144) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 262144) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1024) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1024) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 1) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 1) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W64 (18446744073709551616 - 1)) in
     (func_call #semantics.semantics #"reverseAssignOps64"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: operations.go:47:6 *)
 Definition failing_testReverseAssignOps32 : val :=
   rec: "failing_testReverseAssignOps32" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 0) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 0) in
     (func_call #semantics.semantics #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1) in
     (func_call #semantics.semantics #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1231234) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1231234) in
     (func_call #semantics.semantics #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 3434807466) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 3434807466) in
     (func_call #semantics.semantics #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1048576) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1048576) in
     (func_call #semantics.semantics #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 262144) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 262144) in
     (func_call #semantics.semantics #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1024) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1024) in
     (func_call #semantics.semantics #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 1) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 1) in
     (func_call #semantics.semantics #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := #(W32 (4294967296 - 1)) in
     (func_call #semantics.semantics #"reverseAssignOps32"%go) "$a0") = #(W32 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: operations.go:61:6 *)
 Definition testAdd64Equals : val :=
   rec: "testAdd64Equals" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 2) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 2) in
     let: "$a1" := #(W64 3) in
     let: "$a2" := #(W64 5) in
     (func_call #semantics.semantics #"add64Equals"%go) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
     let: "$a1" := #(W64 1) in
     let: "$a2" := #(W64 0) in
     (func_call #semantics.semantics #"add64Equals"%go) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: operations.go:68:6 *)
 Definition testSub64Equals : val :=
   rec: "testSub64Equals" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 2) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 2) in
     let: "$a1" := #(W64 1) in
     let: "$a2" := #(W64 1) in
     (func_call #semantics.semantics #"sub64Equals"%go) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 (18446744073709551616 - 1)) in
     let: "$a1" := #(W64 9223372036854775808) in
     let: "$a2" := #(W64 (9223372036854775808 - 1)) in
     (func_call #semantics.semantics #"sub64Equals"%go) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && (let: "$a0" := #(W64 2) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && (let: "$a0" := #(W64 2) in
     let: "$a1" := #(W64 8) in
     let: "$a2" := #(W64 (18446744073709551616 - 6)) in
     (func_call #semantics.semantics #"sub64Equals"%go) "$a0" "$a1" "$a2")) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: operations.go:76:6 *)
 Definition testDivisionPrecedence : val :=
   rec: "testDivisionPrecedence" <> :=
-    exception_do (let: "blockSize" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "blockSize" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 4096) in
-    do:  ("blockSize" <-[uint64T] "$r0");;;
-    let: "hdrmeta" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("blockSize" <-[#uint64T] "$r0");;;
+    let: "hdrmeta" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 8) in
-    do:  ("hdrmeta" <-[uint64T] "$r0");;;
-    let: "hdraddrs" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (((![uint64T] "blockSize") - (![uint64T] "hdrmeta")) `quot` #(W64 8)) in
-    do:  ("hdraddrs" <-[uint64T] "$r0");;;
-    return: ((![uint64T] "hdraddrs") = #(W64 511))).
+    do:  ("hdrmeta" <-[#uint64T] "$r0");;;
+    let: "hdraddrs" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (((![#uint64T] "blockSize") - (![#uint64T] "hdrmeta")) `quot` #(W64 8)) in
+    do:  ("hdraddrs" <-[#uint64T] "$r0");;;
+    return: ((![#uint64T] "hdraddrs") = #(W64 511))).
 
 (* go: operations.go:83:6 *)
 Definition testModPrecedence : val :=
   rec: "testModPrecedence" <> :=
-    exception_do (let: "x1" := (ref_ty intT (zero_val intT)) in
+    exception_do (let: "x1" := (alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 (513 + (12 `rem` 8))) in
-    do:  ("x1" <-[intT] "$r0");;;
-    let: "x2" := (ref_ty intT (zero_val intT)) in
+    do:  ("x1" <-[#intT] "$r0");;;
+    let: "x2" := (alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 ((513 + 12) `rem` 8)) in
-    do:  ("x2" <-[intT] "$r0");;;
-    return: (((![intT] "x1") = #(W64 517)) && ((![intT] "x2") = #(W64 5)))).
+    do:  ("x2" <-[#intT] "$r0");;;
+    return: (((![#intT] "x1") = #(W64 517)) && ((![#intT] "x2") = #(W64 5)))).
 
 (* go: operations.go:89:6 *)
 Definition testBitwiseOpsPrecedence : val :=
   rec: "testBitwiseOpsPrecedence" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(479 =? 479)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(132 =? 132)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(828 =? 828)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(893 =? 893)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(461 =? 461)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(negb (479 =? 389))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(479 =? 479)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(132 =? 132)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(828 =? 828)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(893 =? 893)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(461 =? 461)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(negb (479 =? 389))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: operations.go:102:6 *)
 Definition testArithmeticShifts : val :=
   rec: "testArithmeticShifts" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(5376 =? 5376)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(1513209474796486656 =? 1513209474796486656)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(42 =? 42)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(0 =? 0)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && #(672 =? 672)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(5376 =? 5376)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(1513209474796486656 =? 1513209474796486656)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(42 =? 42)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(0 =? 0)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && #(672 =? 672)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: operations.go:114:6 *)
 Definition testBitAddAnd : val :=
   rec: "testBitAddAnd" <> :=
-    exception_do (let: "tid" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "tid" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 17) in
-    do:  ("tid" <-[uint64T] "$r0");;;
-    let: "n" := (ref_ty uint64T (zero_val uint64T)) in
+    do:  ("tid" <-[#uint64T] "$r0");;;
+    let: "n" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 16) in
-    do:  ("n" <-[uint64T] "$r0");;;
-    return: ((((![uint64T] "tid") + (![uint64T] "n")) `and` (~ ((![uint64T] "n") - #(W64 1)))) = #(W64 32))).
+    do:  ("n" <-[#uint64T] "$r0");;;
+    return: ((((![#uint64T] "tid") + (![#uint64T] "n")) `and` (~ ((![#uint64T] "n") - #(W64 1)))) = #(W64 32))).
 
 (* go: operations.go:120:6 *)
 Definition testManyParentheses : val :=
@@ -1716,38 +1716,38 @@ Definition testOrCompareSimple : val :=
 (* go: precedence.go:10:6 *)
 Definition testOrCompare : val :=
   rec: "testOrCompare" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r0");;;
     (if: (~ (#(3 >? 4) || #(4 >? 3)))
     then
       let: "$r0" := #false in
-      do:  ("ok" <-[boolT] "$r0")
+      do:  ("ok" <-[#boolT] "$r0")
     else do:  #());;;
     (if: #(4 <? 3) || #(2 >? 3)
     then
       let: "$r0" := #false in
-      do:  ("ok" <-[boolT] "$r0")
+      do:  ("ok" <-[#boolT] "$r0")
     else do:  #());;;
-    return: (![boolT] "ok")).
+    return: (![#boolT] "ok")).
 
 (* go: precedence.go:22:6 *)
 Definition testAndCompare : val :=
   rec: "testAndCompare" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r0");;;
     (if: #(3 >? 4) && #(4 >? 3)
     then
       let: "$r0" := #false in
-      do:  ("ok" <-[boolT] "$r0")
+      do:  ("ok" <-[#boolT] "$r0")
     else do:  #());;;
     (if: #(4 >? 3) || #(2 <? 3)
     then do:  #()
     else
       let: "$r0" := #false in
-      do:  ("ok" <-[boolT] "$r0"));;;
-    return: (![boolT] "ok")).
+      do:  ("ok" <-[#boolT] "$r0"));;;
+    return: (![#boolT] "ok")).
 
 (* go: precedence.go:34:6 *)
 Definition testShiftMod : val :=
@@ -1757,12 +1757,12 @@ Definition testShiftMod : val :=
 (* go: prims.go:9:6 *)
 Definition testLinearize : val :=
   rec: "testLinearize" <> :=
-    exception_do (let: "m" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
-    do:  ("m" <-[ptrT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] "m")) #());;;
+    exception_do (let: "m" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
+    do:  ("m" <-[#ptrT] "$r0");;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "m")) #());;;
     do:  ((func_call #primitive #"Linearize"%go) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] "m")) #());;;
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "m")) #());;;
     return: (#true)).
 
 Definition BoolTest : go_type := structT [
@@ -1775,104 +1775,104 @@ Definition BoolTest : go_type := structT [
 (* go: shortcircuiting.go:11:6 *)
 Definition CheckTrue : val :=
   rec: "CheckTrue" "b" :=
-    exception_do (let: "b" := (ref_ty ptrT "b") in
-    do:  ((struct.field_ref BoolTest "tc" (![ptrT] "b")) <-[uint64T] ((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) + #(W64 1)));;;
-    return: (![boolT] (struct.field_ref BoolTest "t" (![ptrT] "b")))).
+    exception_do (let: "b" := (alloc "b") in
+    do:  ((struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b")) <-[#uint64T] ((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) + #(W64 1)));;;
+    return: (![#boolT] (struct.field_ref #BoolTest #"t"%go (![#ptrT] "b")))).
 
 (* go: shortcircuiting.go:16:6 *)
 Definition CheckFalse : val :=
   rec: "CheckFalse" "b" :=
-    exception_do (let: "b" := (ref_ty ptrT "b") in
-    do:  ((struct.field_ref BoolTest "fc" (![ptrT] "b")) <-[uint64T] ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) + #(W64 1)));;;
-    return: (![boolT] (struct.field_ref BoolTest "f" (![ptrT] "b")))).
+    exception_do (let: "b" := (alloc "b") in
+    do:  ((struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b")) <-[#uint64T] ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) + #(W64 1)));;;
+    return: (![#boolT] (struct.field_ref #BoolTest #"f"%go (![#ptrT] "b")))).
 
 (* tests
 
    go: shortcircuiting.go:22:6 *)
 Definition testShortcircuitAndTF : val :=
   rec: "testShortcircuitAndTF" <> :=
-    exception_do (let: "b" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty BoolTest (let: "$t" := #true in
+    exception_do (let: "b" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$t" := #true in
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make BoolTest [{
+    struct.make #BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
       "fc" ::= "$fc"
     }])) in
-    do:  ("b" <-[ptrT] "$r0");;;
-    (if: (let: "$a0" := (![ptrT] "b") in
-    (func_call #semantics.semantics #"CheckTrue"%go) "$a0") && (let: "$a0" := (![ptrT] "b") in
+    do:  ("b" <-[#ptrT] "$r0");;;
+    (if: (let: "$a0" := (![#ptrT] "b") in
+    (func_call #semantics.semantics #"CheckTrue"%go) "$a0") && (let: "$a0" := (![#ptrT] "b") in
     (func_call #semantics.semantics #"CheckFalse"%go) "$a0")
     then return: (#false)
     else do:  #());;;
-    return: (((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) = #(W64 1)) && ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) = #(W64 1)))).
+    return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 1)))).
 
 (* go: shortcircuiting.go:31:6 *)
 Definition testShortcircuitAndFT : val :=
   rec: "testShortcircuitAndFT" <> :=
-    exception_do (let: "b" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty BoolTest (let: "$t" := #true in
+    exception_do (let: "b" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$t" := #true in
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make BoolTest [{
+    struct.make #BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
       "fc" ::= "$fc"
     }])) in
-    do:  ("b" <-[ptrT] "$r0");;;
-    (if: (let: "$a0" := (![ptrT] "b") in
-    (func_call #semantics.semantics #"CheckFalse"%go) "$a0") && (let: "$a0" := (![ptrT] "b") in
+    do:  ("b" <-[#ptrT] "$r0");;;
+    (if: (let: "$a0" := (![#ptrT] "b") in
+    (func_call #semantics.semantics #"CheckFalse"%go) "$a0") && (let: "$a0" := (![#ptrT] "b") in
     (func_call #semantics.semantics #"CheckTrue"%go) "$a0")
     then return: (#false)
     else do:  #());;;
-    return: (((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) = #(W64 0)) && ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) = #(W64 1)))).
+    return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 0)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 1)))).
 
 (* go: shortcircuiting.go:40:6 *)
 Definition testShortcircuitOrTF : val :=
   rec: "testShortcircuitOrTF" <> :=
-    exception_do (let: "b" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty BoolTest (let: "$t" := #true in
+    exception_do (let: "b" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$t" := #true in
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make BoolTest [{
+    struct.make #BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
       "fc" ::= "$fc"
     }])) in
-    do:  ("b" <-[ptrT] "$r0");;;
-    (if: (let: "$a0" := (![ptrT] "b") in
-    (func_call #semantics.semantics #"CheckTrue"%go) "$a0") || (let: "$a0" := (![ptrT] "b") in
+    do:  ("b" <-[#ptrT] "$r0");;;
+    (if: (let: "$a0" := (![#ptrT] "b") in
+    (func_call #semantics.semantics #"CheckTrue"%go) "$a0") || (let: "$a0" := (![#ptrT] "b") in
     (func_call #semantics.semantics #"CheckFalse"%go) "$a0")
-    then return: (((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) = #(W64 1)) && ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) = #(W64 0)))
+    then return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 0)))
     else do:  #());;;
     return: (#false)).
 
 (* go: shortcircuiting.go:48:6 *)
 Definition testShortcircuitOrFT : val :=
   rec: "testShortcircuitOrFT" <> :=
-    exception_do (let: "b" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty BoolTest (let: "$t" := #true in
+    exception_do (let: "b" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$t" := #true in
     let: "$f" := #false in
     let: "$tc" := #(W64 0) in
     let: "$fc" := #(W64 0) in
-    struct.make BoolTest [{
+    struct.make #BoolTest [{
       "t" ::= "$t";
       "f" ::= "$f";
       "tc" ::= "$tc";
       "fc" ::= "$fc"
     }])) in
-    do:  ("b" <-[ptrT] "$r0");;;
-    (if: (let: "$a0" := (![ptrT] "b") in
-    (func_call #semantics.semantics #"CheckFalse"%go) "$a0") || (let: "$a0" := (![ptrT] "b") in
+    do:  ("b" <-[#ptrT] "$r0");;;
+    (if: (let: "$a0" := (![#ptrT] "b") in
+    (func_call #semantics.semantics #"CheckFalse"%go) "$a0") || (let: "$a0" := (![#ptrT] "b") in
     (func_call #semantics.semantics #"CheckTrue"%go) "$a0")
-    then return: (((![uint64T] (struct.field_ref BoolTest "tc" (![ptrT] "b"))) = #(W64 1)) && ((![uint64T] (struct.field_ref BoolTest "fc" (![ptrT] "b"))) = #(W64 1)))
+    then return: (((![#uint64T] (struct.field_ref #BoolTest #"tc"%go (![#ptrT] "b"))) = #(W64 1)) && ((![#uint64T] (struct.field_ref #BoolTest #"fc"%go (![#ptrT] "b"))) = #(W64 1)))
     else do:  #());;;
     return: (#false)).
 
@@ -1884,212 +1884,212 @@ Definition ArrayEditor : go_type := structT [
 (* go: slices.go:9:24 *)
 Definition ArrayEditor__Advance : val :=
   rec: "ArrayEditor__Advance" "ae" "arr" "next" :=
-    exception_do (let: "ae" := (ref_ty ptrT "ae") in
-    let: "next" := (ref_ty uint64T "next") in
-    let: "arr" := (ref_ty sliceT "arr") in
-    do:  ((slice.elem_ref uint64T (![sliceT] "arr") #(W64 0)) <-[uint64T] ((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) + #(W64 1)));;;
-    let: "$r0" := (![uint64T] (struct.field_ref ArrayEditor "next_val" (![ptrT] "ae"))) in
-    do:  ((slice.elem_ref uint64T (![sliceT] (struct.field_ref ArrayEditor "s" (![ptrT] "ae"))) #(W64 0)) <-[uint64T] "$r0");;;
-    let: "$r0" := (![uint64T] "next") in
-    do:  ((struct.field_ref ArrayEditor "next_val" (![ptrT] "ae")) <-[uint64T] "$r0");;;
-    let: "$r0" := (let: "$s" := (![sliceT] (struct.field_ref ArrayEditor "s" (![ptrT] "ae"))) in
-    slice.slice uint64T "$s" #(W64 1) (slice.len "$s")) in
-    do:  ((struct.field_ref ArrayEditor "s" (![ptrT] "ae")) <-[sliceT] "$r0")).
+    exception_do (let: "ae" := (alloc "ae") in
+    let: "next" := (alloc "next") in
+    let: "arr" := (alloc "arr") in
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0)) <-[#uint64T] ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + #(W64 1)));;;
+    let: "$r0" := (![#uint64T] (struct.field_ref #ArrayEditor #"next_val"%go (![#ptrT] "ae"))) in
+    do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae"))) #(W64 0)) <-[#uint64T] "$r0");;;
+    let: "$r0" := (![#uint64T] "next") in
+    do:  ((struct.field_ref #ArrayEditor #"next_val"%go (![#ptrT] "ae")) <-[#uint64T] "$r0");;;
+    let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae"))) in
+    slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
+    do:  ((struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae")) <-[#sliceT] "$r0")).
 
 (* tests
 
    go: slices.go:17:6 *)
 Definition testSliceOps : val :=
   rec: "testSliceOps" <> :=
-    exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 10)) in
-    do:  ("x" <-[sliceT] "$r0");;;
+    exception_do (let: "x" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 10)) in
+    do:  ("x" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((slice.elem_ref uint64T (![sliceT] "x") #(W64 1)) <-[uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 1)) <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 10) in
-    do:  ((slice.elem_ref uint64T (![sliceT] "x") #(W64 2)) <-[uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 2)) <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 15) in
-    do:  ((slice.elem_ref uint64T (![sliceT] "x") #(W64 3)) <-[uint64T] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 3)) <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 20) in
-    do:  ((slice.elem_ref uint64T (![sliceT] "x") #(W64 4)) <-[uint64T] "$r0");;;
-    let: "v1" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "x") #(W64 2))) in
-    do:  ("v1" <-[uint64T] "$r0");;;
-    let: "v2" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$s" := (![sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 2) #(W64 3)) in
-    do:  ("v2" <-[sliceT] "$r0");;;
-    let: "v3" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$s" := (![sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 0) #(W64 3)) in
-    do:  ("v3" <-[sliceT] "$r0");;;
-    let: "v4" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (slice.elem_ref uint64T (![sliceT] "x") #(W64 2)) in
-    do:  ("v4" <-[ptrT] "$r0");;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "x") #(W64 4)) <-[#uint64T] "$r0");;;
+    let: "v1" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "x") #(W64 2))) in
+    do:  ("v1" <-[#uint64T] "$r0");;;
+    let: "v2" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$s" := (![#sliceT] "x") in
+    slice.slice #uint64T "$s" #(W64 2) #(W64 3)) in
+    do:  ("v2" <-[#sliceT] "$r0");;;
+    let: "v3" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$s" := (![#sliceT] "x") in
+    slice.slice #uint64T "$s" #(W64 0) #(W64 3)) in
+    do:  ("v3" <-[#sliceT] "$r0");;;
+    let: "v4" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (slice.elem_ref #uint64T (![#sliceT] "x") #(W64 2)) in
+    do:  ("v4" <-[#ptrT] "$r0");;;
+    let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] "v1") = #(W64 10))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (slice.elem_ref uint64T (![sliceT] "v2") #(W64 0))) = #(W64 10))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![sliceT] "v2") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] "v1") = #(W64 10))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "v2") #(W64 0))) = #(W64 10))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "v2") in
     slice.len "$a0") = #(W64 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (slice.elem_ref uint64T (![sliceT] "v3") #(W64 1))) = #(W64 5))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (slice.elem_ref uint64T (![sliceT] "v3") #(W64 2))) = #(W64 10))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![sliceT] "v3") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "v3") #(W64 1))) = #(W64 5))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "v3") #(W64 2))) = #(W64 10))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "v3") in
     slice.len "$a0") = #(W64 3))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (![ptrT] "v4")) = #(W64 10))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (![#ptrT] "v4")) = #(W64 10))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: slices.go:40:6 *)
 Definition testSliceCapacityOps : val :=
   rec: "testSliceCapacityOps" <> :=
-    exception_do (let: "x" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make3 uint64T #(W64 0) #(W64 10)) in
-    do:  ("x" <-[sliceT] "$r0");;;
-    let: "sub1" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$s" := (![sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 0) #(W64 6)) in
-    do:  ("sub1" <-[sliceT] "$r0");;;
+    exception_do (let: "x" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make3 #uint64T #(W64 0) #(W64 10)) in
+    do:  ("x" <-[#sliceT] "$r0");;;
+    let: "sub1" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$s" := (![#sliceT] "x") in
+    slice.slice #uint64T "$s" #(W64 0) #(W64 6)) in
+    do:  ("sub1" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  ((slice.elem_ref uint64T (![sliceT] "sub1") #(W64 0)) <-[uint64T] "$r0");;;
-    let: "sub2" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$s" := (![sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 2) #(W64 4)) in
-    do:  ("sub2" <-[sliceT] "$r0");;;
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "sub1") #(W64 0)) <-[#uint64T] "$r0");;;
+    let: "sub2" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$s" := (![#sliceT] "x") in
+    slice.slice #uint64T "$s" #(W64 2) #(W64 4)) in
+    do:  ("sub2" <-[#sliceT] "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  ((slice.elem_ref uint64T (![sliceT] "sub2") #(W64 0)) <-[uint64T] "$r0");;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    do:  ((slice.elem_ref #uint64T (![#sliceT] "sub2") #(W64 0)) <-[#uint64T] "$r0");;;
+    let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![sliceT] "sub1") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub1") in
     slice.len "$a0") = #(W64 6))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![sliceT] "sub1") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub1") in
     slice.cap "$a0") = #(W64 10))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (slice.elem_ref uint64T (let: "$s" := (![sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 0) #(W64 10)) #(W64 0))) = #(W64 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![sliceT] "sub2") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (let: "$s" := (![#sliceT] "x") in
+    slice.slice #uint64T "$s" #(W64 0) #(W64 10)) #(W64 0))) = #(W64 1))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub2") in
     slice.len "$a0") = #(W64 2))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (![sliceT] "sub2") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#sliceT] "sub2") in
     slice.cap "$a0") = #(W64 8))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (slice.elem_ref uint64T (let: "$s" := (![sliceT] "x") in
-    slice.slice uint64T "$s" #(W64 0) #(W64 10)) #(W64 2))) = #(W64 2))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (let: "$s" := (![#sliceT] "x") in
+    slice.slice #uint64T "$s" #(W64 0) #(W64 10)) #(W64 2))) = #(W64 2))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: slices.go:59:6 *)
 Definition testOverwriteArray : val :=
   rec: "testOverwriteArray" <> :=
-    exception_do (let: "arr" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 4)) in
-    do:  ("arr" <-[sliceT] "$r0");;;
-    let: "ae1" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty ArrayEditor (let: "$s" := (let: "$s" := (![sliceT] "arr") in
-    slice.slice uint64T "$s" #(W64 0) (slice.len "$s")) in
+    exception_do (let: "arr" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 4)) in
+    do:  ("arr" <-[#sliceT] "$r0");;;
+    let: "ae1" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
+    slice.slice #uint64T "$s" #(W64 0) (slice.len "$s")) in
     let: "$next_val" := #(W64 1) in
-    struct.make ArrayEditor [{
+    struct.make #ArrayEditor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }])) in
-    do:  ("ae1" <-[ptrT] "$r0");;;
-    let: "ae2" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty ArrayEditor (let: "$s" := (let: "$s" := (![sliceT] "arr") in
-    slice.slice uint64T "$s" #(W64 1) (slice.len "$s")) in
+    do:  ("ae1" <-[#ptrT] "$r0");;;
+    let: "ae2" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$s" := (let: "$s" := (![#sliceT] "arr") in
+    slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
     let: "$next_val" := #(W64 102) in
-    struct.make ArrayEditor [{
+    struct.make #ArrayEditor [{
       "s" ::= "$s";
       "next_val" ::= "$next_val"
     }])) in
-    do:  ("ae2" <-[ptrT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT] "arr") in
+    do:  ("ae2" <-[#ptrT] "$r0");;;
+    do:  (let: "$a0" := (![#sliceT] "arr") in
     let: "$a1" := #(W64 103) in
-    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae2")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![sliceT] "arr") in
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![#ptrT] "ae2")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![#sliceT] "arr") in
     let: "$a1" := #(W64 104) in
-    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae2")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![sliceT] "arr") in
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![#ptrT] "ae2")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![#sliceT] "arr") in
     let: "$a1" := #(W64 105) in
-    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae2")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![sliceT] "arr") in
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![#ptrT] "ae2")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![#sliceT] "arr") in
     let: "$a1" := #(W64 2) in
-    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![sliceT] "arr") in
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![#ptrT] "ae1")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![#sliceT] "arr") in
     let: "$a1" := #(W64 3) in
-    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![sliceT] "arr") in
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![#ptrT] "ae1")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![#sliceT] "arr") in
     let: "$a1" := #(W64 4) in
-    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![sliceT] "arr") in
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![#ptrT] "ae1")) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![#sliceT] "arr") in
     let: "$a1" := #(W64 5) in
-    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![ptrT] "ae1")) "$a0" "$a1");;;
-    (if: ((((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 1)))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 2)))) + (![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 3)))) ≥ #(W64 100)
+    (method_call #semantics.semantics #"ArrayEditor'ptr" #"Advance" (![#ptrT] "ae1")) "$a0" "$a1");;;
+    (if: ((((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) + (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 1)))) + (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 2)))) + (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3)))) ≥ #(W64 100)
     then return: (#false)
     else do:  #());;;
-    return: (((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 3))) = #(W64 4)) && ((![uint64T] (slice.elem_ref uint64T (![sliceT] "arr") #(W64 0))) = #(W64 4)))).
+    return: (((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 3))) = #(W64 4)) && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "arr") #(W64 0))) = #(W64 4)))).
 
 (* go: slices.go:80:6 *)
 Definition testSliceLiteral : val :=
   rec: "testSliceLiteral" <> :=
-    exception_do (let: "bytes" := (ref_ty sliceT (zero_val sliceT)) in
+    exception_do (let: "bytes" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((let: "$sl0" := #(W8 1) in
     let: "$sl1" := #(W8 2) in
-    slice.literal byteT ["$sl0"; "$sl1"])) in
-    do:  ("bytes" <-[sliceT] "$r0");;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    slice.literal #byteT ["$sl0"; "$sl1"])) in
+    do:  ("bytes" <-[#sliceT] "$r0");;;
+    let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![byteT] (slice.elem_ref byteT (![sliceT] "bytes") #(W64 0))) = #(W8 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "ints" := (ref_ty sliceT (zero_val sliceT)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "bytes") #(W64 0))) = #(W8 1))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "ints" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((let: "$sl0" := #(W64 1) in
     let: "$sl1" := #(W64 2) in
     let: "$sl2" := #(W64 3) in
-    slice.literal uint64T ["$sl0"; "$sl1"; "$sl2"])) in
-    do:  ("ints" <-[sliceT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (slice.elem_ref uint64T (![sliceT] "ints") #(W64 1))) = #(W64 2))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    slice.literal #uint64T ["$sl0"; "$sl1"; "$sl2"])) in
+    do:  ("ints" <-[#sliceT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "ints") #(W64 1))) = #(W64 2))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: slices.go:89:6 *)
 Definition testSliceAppend : val :=
   rec: "testSliceAppend" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "bytes" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 0)) in
-    do:  ("bytes" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "bytes") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "bytes" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT #(W64 0)) in
+    do:  ("bytes" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "bytes") in
     let: "$a1" := ((let: "$sl0" := #(W8 1) in
-    slice.literal byteT ["$sl0"])) in
-    (slice.append byteT) "$a0" "$a1") in
-    do:  ("bytes" <-[sliceT] "$r0");;;
-    let: "newBytes" := (ref_ty sliceT (zero_val sliceT)) in
+    slice.literal #byteT ["$sl0"])) in
+    (slice.append #byteT) "$a0" "$a1") in
+    do:  ("bytes" <-[#sliceT] "$r0");;;
+    let: "newBytes" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((let: "$sl0" := #(W8 2) in
     let: "$sl1" := #(W8 3) in
-    slice.literal byteT ["$sl0"; "$sl1"])) in
-    do:  ("newBytes" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "bytes") in
-    let: "$a1" := (![sliceT] "newBytes") in
-    (slice.append byteT) "$a0" "$a1") in
-    do:  ("bytes" <-[sliceT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((s_to_w64 (let: "$a0" := (![sliceT] "bytes") in
+    slice.literal #byteT ["$sl0"; "$sl1"])) in
+    do:  ("newBytes" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "bytes") in
+    let: "$a1" := (![#sliceT] "newBytes") in
+    (slice.append #byteT) "$a0" "$a1") in
+    do:  ("bytes" <-[#sliceT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![#sliceT] "bytes") in
     slice.len "$a0")) = #(W64 3))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![byteT] (slice.elem_ref byteT (![sliceT] "bytes") #(W64 2))) = #(W8 3))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#byteT] (slice.elem_ref #byteT (![#sliceT] "bytes") #(W64 2))) = #(W8 3))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 Definition Bar : go_type := structT [
   "a" :: uint64T;
@@ -2103,34 +2103,34 @@ Definition Foo : go_type := structT [
 (* go: struct_pointers.go:14:17 *)
 Definition Bar__mutate : val :=
   rec: "Bar__mutate" "bar" <> :=
-    exception_do (let: "bar" := (ref_ty ptrT "bar") in
+    exception_do (let: "bar" := (alloc "bar") in
     let: "$r0" := #(W64 2) in
-    do:  ((struct.field_ref Bar "a" (![ptrT] "bar")) <-[uint64T] "$r0");;;
+    do:  ((struct.field_ref #Bar #"a"%go (![#ptrT] "bar")) <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  ((struct.field_ref Bar "b" (![ptrT] "bar")) <-[uint64T] "$r0")).
+    do:  ((struct.field_ref #Bar #"b"%go (![#ptrT] "bar")) <-[#uint64T] "$r0")).
 
 (* go: struct_pointers.go:19:17 *)
 Definition Foo__mutateBar : val :=
   rec: "Foo__mutateBar" "foo" <> :=
-    exception_do (let: "foo" := (ref_ty ptrT "foo") in
-    do:  ((method_call #semantics.semantics #"Bar'ptr" #"mutate" (struct.field_ref Foo "bar" (![ptrT] "foo"))) #())).
+    exception_do (let: "foo" := (alloc "foo") in
+    do:  ((method_call #semantics.semantics #"Bar'ptr" #"mutate" (struct.field_ref #Foo #"bar"%go (![#ptrT] "foo"))) #())).
 
 (* go: struct_pointers.go:23:6 *)
 Definition testFooBarMutation : val :=
   rec: "testFooBarMutation" <> :=
-    exception_do (let: "x" := (ref_ty Foo (zero_val Foo)) in
+    exception_do (let: "x" := (alloc (type.zero_val #Foo)) in
     let: "$r0" := (let: "$bar" := (let: "$a" := #(W64 0) in
     let: "$b" := #(W64 0) in
-    struct.make Bar [{
+    struct.make #Bar [{
       "a" ::= "$a";
       "b" ::= "$b"
     }]) in
-    struct.make Foo [{
+    struct.make #Foo [{
       "bar" ::= "$bar"
     }]) in
-    do:  ("x" <-[Foo] "$r0");;;
+    do:  ("x" <-[#Foo] "$r0");;;
     do:  ((method_call #semantics.semantics #"Foo'ptr" #"mutateBar" "x") #());;;
-    return: ((![uint64T] (struct.field_ref Bar "a" (struct.field_ref Foo "bar" "x"))) = #(W64 2))).
+    return: ((![#uint64T] (struct.field_ref #Bar #"a"%go (struct.field_ref #Foo #"bar"%go "x"))) = #(W64 2))).
 
 Definition TwoInts : go_type := structT [
   "x" :: uint64T;
@@ -2146,15 +2146,15 @@ Definition S : go_type := structT [
 (* go: structs.go:14:6 *)
 Definition NewS : val :=
   rec: "NewS" <> :=
-    exception_do (return: (ref_ty S (let: "$a" := #(W64 2) in
+    exception_do (return: (alloc (let: "$a" := #(W64 2) in
      let: "$b" := (let: "$x" := #(W64 1) in
      let: "$y" := #(W64 2) in
-     struct.make TwoInts [{
+     struct.make #TwoInts [{
        "x" ::= "$x";
        "y" ::= "$y"
      }]) in
      let: "$c" := #true in
-     struct.make S [{
+     struct.make #S [{
        "a" ::= "$a";
        "b" ::= "$b";
        "c" ::= "$c"
@@ -2163,179 +2163,179 @@ Definition NewS : val :=
 (* go: structs.go:22:13 *)
 Definition S__readA : val :=
   rec: "S__readA" "s" <> :=
-    exception_do (let: "s" := (ref_ty ptrT "s") in
-    return: (![uint64T] (struct.field_ref S "a" (![ptrT] "s")))).
+    exception_do (let: "s" := (alloc "s") in
+    return: (![#uint64T] (struct.field_ref #S #"a"%go (![#ptrT] "s")))).
 
 (* go: structs.go:26:13 *)
 Definition S__readB : val :=
   rec: "S__readB" "s" <> :=
-    exception_do (let: "s" := (ref_ty ptrT "s") in
-    return: (![TwoInts] (struct.field_ref S "b" (![ptrT] "s")))).
+    exception_do (let: "s" := (alloc "s") in
+    return: (![#TwoInts] (struct.field_ref #S #"b"%go (![#ptrT] "s")))).
 
 (* go: structs.go:30:12 *)
 Definition S__readBVal : val :=
   rec: "S__readBVal" "s" <> :=
-    exception_do (let: "s" := (ref_ty S "s") in
-    return: (![TwoInts] (struct.field_ref S "b" "s"))).
+    exception_do (let: "s" := (alloc "s") in
+    return: (![#TwoInts] (struct.field_ref #S #"b"%go "s"))).
 
 (* go: structs.go:34:13 *)
 Definition S__updateBValX : val :=
   rec: "S__updateBValX" "s" "i" :=
-    exception_do (let: "s" := (ref_ty ptrT "s") in
-    let: "i" := (ref_ty uint64T "i") in
-    let: "$r0" := (![uint64T] "i") in
-    do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "s"))) <-[uint64T] "$r0")).
+    exception_do (let: "s" := (alloc "s") in
+    let: "i" := (alloc "i") in
+    let: "$r0" := (![#uint64T] "i") in
+    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "s"))) <-[#uint64T] "$r0")).
 
 (* go: structs.go:38:13 *)
 Definition S__negateC : val :=
   rec: "S__negateC" "s" <> :=
-    exception_do (let: "s" := (ref_ty ptrT "s") in
-    let: "$r0" := (~ (![boolT] (struct.field_ref S "c" (![ptrT] "s")))) in
-    do:  ((struct.field_ref S "c" (![ptrT] "s")) <-[boolT] "$r0")).
+    exception_do (let: "s" := (alloc "s") in
+    let: "$r0" := (~ (![#boolT] (struct.field_ref #S #"c"%go (![#ptrT] "s")))) in
+    do:  ((struct.field_ref #S #"c"%go (![#ptrT] "s")) <-[#boolT] "$r0")).
 
 (* go: structs.go:42:6 *)
 Definition testStructUpdates : val :=
   rec: "testStructUpdates" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "ns" := (ref_ty ptrT (zero_val ptrT)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "ns" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
-    do:  ("ns" <-[ptrT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && (((method_call #semantics.semantics #"S'ptr" #"readA" (![ptrT] "ns")) #()) = #(W64 2))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "b1" := (ref_ty TwoInts (zero_val TwoInts)) in
-    let: "$r0" := ((method_call #semantics.semantics #"S'ptr" #"readB" (![ptrT] "ns")) #()) in
-    do:  ("b1" <-[TwoInts] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" "b1")) = #(W64 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    do:  ((method_call #semantics.semantics #"S'ptr" #"negateC" (![ptrT] "ns")) #());;;
-    let: "$r0" := ((![boolT] "ok") && ((![boolT] (struct.field_ref S "c" (![ptrT] "ns"))) = #false)) in
-    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ("ns" <-[#ptrT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && (((method_call #semantics.semantics #"S'ptr" #"readA" (![#ptrT] "ns")) #()) = #(W64 2))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "b1" := (alloc (type.zero_val #TwoInts)) in
+    let: "$r0" := ((method_call #semantics.semantics #"S'ptr" #"readB" (![#ptrT] "ns")) #()) in
+    do:  ("b1" <-[#TwoInts] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go "b1")) = #(W64 1))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    do:  ((method_call #semantics.semantics #"S'ptr" #"negateC" (![#ptrT] "ns")) #());;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#boolT] (struct.field_ref #S #"c"%go (![#ptrT] "ns"))) = #false)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  ((struct.field_ref TwoInts "x" "b1") <-[uint64T] "$r0");;;
-    let: "b2" := (ref_ty TwoInts (zero_val TwoInts)) in
-    let: "$r0" := ((method_call #semantics.semantics #"S'ptr" #"readB" (![ptrT] "ns")) #()) in
-    do:  ("b2" <-[TwoInts] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" "b2")) = #(W64 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "b3" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (struct.field_ref S "b" (![ptrT] "ns")) in
-    do:  ("b3" <-[ptrT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (![ptrT] "b3"))) = #(W64 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ((struct.field_ref #TwoInts #"x"%go "b1") <-[#uint64T] "$r0");;;
+    let: "b2" := (alloc (type.zero_val #TwoInts)) in
+    let: "$r0" := ((method_call #semantics.semantics #"S'ptr" #"readB" (![#ptrT] "ns")) #()) in
+    do:  ("b2" <-[#TwoInts] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go "b2")) = #(W64 1))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "b3" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
+    do:  ("b3" <-[#ptrT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (![#ptrT] "b3"))) = #(W64 1))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
     do:  (let: "$a0" := #(W64 4) in
-    (method_call #semantics.semantics #"S'ptr" #"updateBValX" (![ptrT] "ns")) "$a0");;;
-    let: "$r0" := ((![boolT] "ok") && ((struct.field_get TwoInts "x" ((method_call #semantics.semantics #"S'ptr" #"readBVal" (![ptrT] "ns")) #())) = #(W64 4))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    (method_call #semantics.semantics #"S'ptr" #"updateBValX" (![#ptrT] "ns")) "$a0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((struct.field_get #TwoInts "x" ((method_call #semantics.semantics #"S'ptr" #"readBVal" (![#ptrT] "ns")) #())) = #(W64 4))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: structs.go:65:6 *)
 Definition testNestedStructUpdates : val :=
   rec: "testNestedStructUpdates" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "ns" := (ref_ty ptrT (zero_val ptrT)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "ns" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
-    do:  ("ns" <-[ptrT] "$r0");;;
+    do:  ("ns" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns"))) <-[uint64T] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns")))) = #(W64 5))) in
-    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns")))) = #(W64 5))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
-    do:  ("ns" <-[ptrT] "$r0");;;
-    let: "p" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (struct.field_ref S "b" (![ptrT] "ns")) in
-    do:  ("p" <-[ptrT] "$r0");;;
+    do:  ("ns" <-[#ptrT] "$r0");;;
+    let: "p" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
+    do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref TwoInts "x" (![ptrT] "p")) <-[uint64T] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns")))) = #(W64 5))) in
-    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ((struct.field_ref #TwoInts #"x"%go (![#ptrT] "p")) <-[#uint64T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns")))) = #(W64 5))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
-    do:  ("ns" <-[ptrT] "$r0");;;
-    let: "$r0" := (struct.field_ref S "b" (![ptrT] "ns")) in
-    do:  ("p" <-[ptrT] "$r0");;;
+    do:  ("ns" <-[#ptrT] "$r0");;;
+    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
+    do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns"))) <-[uint64T] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (![ptrT] "p"))) = #(W64 5))) in
-    do:  ("ok" <-[boolT] "$r0");;;
+    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (![#ptrT] "p"))) = #(W64 5))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := ((func_call #semantics.semantics #"NewS"%go) #()) in
-    do:  ("ns" <-[ptrT] "$r0");;;
-    let: "$r0" := (struct.field_ref S "b" (![ptrT] "ns")) in
-    do:  ("p" <-[ptrT] "$r0");;;
+    do:  ("ns" <-[#ptrT] "$r0");;;
+    let: "$r0" := (struct.field_ref #S #"b"%go (![#ptrT] "ns")) in
+    do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref TwoInts "x" (struct.field_ref S "b" (![ptrT] "ns"))) <-[uint64T] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (![ptrT] "p"))) = #(W64 5))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "ns"))) <-[#uint64T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (![#ptrT] "p"))) = #(W64 5))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: structs.go:90:6 *)
 Definition testStructConstructions : val :=
   rec: "testStructConstructions" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "p1" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "p2" := (ref_ty TwoInts (zero_val TwoInts)) in
-    let: "p3" := (ref_ty TwoInts (zero_val TwoInts)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "p1" := (alloc (type.zero_val #ptrT)) in
+    let: "p2" := (alloc (type.zero_val #TwoInts)) in
+    let: "p3" := (alloc (type.zero_val #TwoInts)) in
     let: "$r0" := (let: "$y" := #(W64 0) in
     let: "$x" := #(W64 0) in
-    struct.make TwoInts [{
+    struct.make #TwoInts [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ("p3" <-[TwoInts] "$r0");;;
-    let: "p4" := (ref_ty TwoInts (zero_val TwoInts)) in
+    do:  ("p3" <-[#TwoInts] "$r0");;;
+    let: "p4" := (alloc (type.zero_val #TwoInts)) in
     let: "$r0" := (let: "$x" := #(W64 0) in
     let: "$y" := #(W64 0) in
-    struct.make TwoInts [{
+    struct.make #TwoInts [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ("p4" <-[TwoInts] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![ptrT] "p1") = #null)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := (ref_ty TwoInts (zero_val TwoInts)) in
-    do:  ("p1" <-[ptrT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![TwoInts] "p2") = (![TwoInts] "p3"))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![TwoInts] "p3") = (![TwoInts] "p4"))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![TwoInts] "p4") = (![TwoInts] (![ptrT] "p1")))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ("p4" ≠ (![ptrT] "p1"))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("p4" <-[#TwoInts] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#ptrT] "p1") = #null)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := (alloc (type.zero_val #TwoInts)) in
+    do:  ("p1" <-[#ptrT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#TwoInts] "p2") = (![#TwoInts] "p3"))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#TwoInts] "p3") = (![#TwoInts] "p4"))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#TwoInts] "p4") = (![#TwoInts] (![#ptrT] "p1")))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ("p4" ≠ (![#ptrT] "p1"))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 (* go: structs.go:109:6 *)
 Definition testIncompleteStruct : val :=
   rec: "testIncompleteStruct" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "p1" := (ref_ty TwoInts (zero_val TwoInts)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "p1" := (alloc (type.zero_val #TwoInts)) in
     let: "$r0" := (let: "$x" := #(W64 0) in
-    struct.make TwoInts [{
+    struct.make #TwoInts [{
       "x" ::= "$x";
-      "y" ::= zero_val uint64T
+      "y" ::= type.zero_val #uint64T
     }]) in
-    do:  ("p1" <-[TwoInts] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "y" "p1")) = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "p2" := (ref_ty S (zero_val S)) in
+    do:  ("p1" <-[#TwoInts] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"y"%go "p1")) = #(W64 0))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "p2" := (alloc (type.zero_val #S)) in
     let: "$r0" := (let: "$a" := #(W64 2) in
-    struct.make S [{
+    struct.make #S [{
       "a" ::= "$a";
-      "b" ::= zero_val TwoInts;
-      "c" ::= zero_val boolT
+      "b" ::= type.zero_val #TwoInts;
+      "c" ::= type.zero_val #boolT
     }]) in
-    do:  ("p2" <-[S] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (struct.field_ref TwoInts "x" (struct.field_ref S "b" "p2"))) = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((![boolT] (struct.field_ref S "c" "p2")) = #false)) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("p2" <-[#S] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go "p2"))) = #(W64 0))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#boolT] (struct.field_ref #S #"c"%go "p2")) = #false)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 Definition StructWrap : go_type := structT [
   "i" :: uint64T
@@ -2344,53 +2344,53 @@ Definition StructWrap : go_type := structT [
 (* go: structs.go:126:6 *)
 Definition testStoreInStructVar : val :=
   rec: "testStoreInStructVar" <> :=
-    exception_do (let: "p" := (ref_ty StructWrap (zero_val StructWrap)) in
+    exception_do (let: "p" := (alloc (type.zero_val #StructWrap)) in
     let: "$r0" := (let: "$i" := #(W64 0) in
-    struct.make StructWrap [{
+    struct.make #StructWrap [{
       "i" ::= "$i"
     }]) in
-    do:  ("p" <-[StructWrap] "$r0");;;
+    do:  ("p" <-[#StructWrap] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref StructWrap "i" "p") <-[uint64T] "$r0");;;
-    return: ((![uint64T] (struct.field_ref StructWrap "i" "p")) = #(W64 5))).
+    do:  ((struct.field_ref #StructWrap #"i"%go "p") <-[#uint64T] "$r0");;;
+    return: ((![#uint64T] (struct.field_ref #StructWrap #"i"%go "p")) = #(W64 5))).
 
 (* go: structs.go:132:6 *)
 Definition testStoreInStructPointerVar : val :=
   rec: "testStoreInStructPointerVar" <> :=
-    exception_do (let: "p" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty StructWrap (zero_val StructWrap)) in
-    do:  ("p" <-[ptrT] "$r0");;;
+    exception_do (let: "p" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #StructWrap)) in
+    do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 5) in
-    do:  ((struct.field_ref StructWrap "i" (![ptrT] "p")) <-[uint64T] "$r0");;;
-    return: ((![uint64T] (struct.field_ref StructWrap "i" (![ptrT] "p"))) = #(W64 5))).
+    do:  ((struct.field_ref #StructWrap #"i"%go (![#ptrT] "p")) <-[#uint64T] "$r0");;;
+    return: ((![#uint64T] (struct.field_ref #StructWrap #"i"%go (![#ptrT] "p"))) = #(W64 5))).
 
 (* go: structs.go:138:6 *)
 Definition testStoreComposite : val :=
   rec: "testStoreComposite" <> :=
-    exception_do (let: "p" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty TwoInts (zero_val TwoInts)) in
-    do:  ("p" <-[ptrT] "$r0");;;
+    exception_do (let: "p" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #TwoInts)) in
+    do:  ("p" <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$x" := #(W64 3) in
     let: "$y" := #(W64 4) in
-    struct.make TwoInts [{
+    struct.make #TwoInts [{
       "x" ::= "$x";
       "y" ::= "$y"
     }]) in
-    do:  ((![ptrT] "p") <-[TwoInts] "$r0");;;
-    return: ((![uint64T] (struct.field_ref TwoInts "y" (![ptrT] "p"))) = #(W64 4))).
+    do:  ((![#ptrT] "p") <-[#TwoInts] "$r0");;;
+    return: ((![#uint64T] (struct.field_ref #TwoInts #"y"%go (![#ptrT] "p"))) = #(W64 4))).
 
 (* go: structs.go:144:6 *)
 Definition testStoreSlice : val :=
   rec: "testStoreSlice" <> :=
-    exception_do (let: "p" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty sliceT (zero_val sliceT)) in
-    do:  ("p" <-[ptrT] "$r0");;;
-    let: "s" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 3)) in
-    do:  ("s" <-[sliceT] "$r0");;;
-    let: "$r0" := (![sliceT] "s") in
-    do:  ((![ptrT] "p") <-[sliceT] "$r0");;;
-    return: ((s_to_w64 (let: "$a0" := (![sliceT] (![ptrT] "p")) in
+    exception_do (let: "p" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #sliceT)) in
+    do:  ("p" <-[#ptrT] "$r0");;;
+    let: "s" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #uint64T #(W64 3)) in
+    do:  ("s" <-[#sliceT] "$r0");;;
+    let: "$r0" := (![#sliceT] "s") in
+    do:  ((![#ptrT] "p") <-[#sliceT] "$r0");;;
+    return: ((s_to_w64 (let: "$a0" := (![#sliceT] (![#ptrT] "p")) in
      slice.len "$a0")) = #(W64 3))).
 
 Definition StructWithFunc : go_type := structT [
@@ -2400,24 +2400,24 @@ Definition StructWithFunc : go_type := structT [
 (* go: structs.go:155:6 *)
 Definition testStructFieldFunc : val :=
   rec: "testStructFieldFunc" <> :=
-    exception_do (let: "a" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty StructWithFunc (zero_val StructWithFunc)) in
-    do:  ("a" <-[ptrT] "$r0");;;
+    exception_do (let: "a" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #StructWithFunc)) in
+    do:  ("a" <-[#ptrT] "$r0");;;
     let: "$r0" := (λ: "arg",
-      exception_do (let: "arg" := (ref_ty uint64T "arg") in
-      return: ((![uint64T] "arg") * #(W64 2)))
+      exception_do (let: "arg" := (alloc "arg") in
+      return: ((![#uint64T] "arg") * #(W64 2)))
       ) in
-    do:  ((struct.field_ref StructWithFunc "fn" (![ptrT] "a")) <-[funcT] "$r0");;;
+    do:  ((struct.field_ref #StructWithFunc #"fn"%go (![#ptrT] "a")) <-[#funcT] "$r0");;;
     return: ((let: "$a0" := #(W64 10) in
-     (![funcT] (struct.field_ref StructWithFunc "fn" (![ptrT] "a"))) "$a0") = #(W64 20))).
+     (![#funcT] (struct.field_ref #StructWithFunc #"fn"%go (![#ptrT] "a"))) "$a0") = #(W64 20))).
 
 (* go: switch.go:3:6 *)
 Definition testSwitchVal : val :=
   rec: "testSwitchVal" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "$sw" := (![uint64T] "x") in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "$sw" := (![#uint64T] "x") in
     (if: "$sw" = #(W64 0)
     then return: (#true)
     else
@@ -2428,10 +2428,10 @@ Definition testSwitchVal : val :=
 (* go: switch.go:15:6 *)
 Definition testSwitchMultiple : val :=
   rec: "testSwitchMultiple" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("x" <-[uint64T] "$r0");;;
-    let: "$sw" := (![uint64T] "x") in
+    do:  ("x" <-[#uint64T] "$r0");;;
+    let: "$sw" := (![#uint64T] "x") in
     (if: ("$sw" = #(W64 1)) || ("$sw" = #(W64 10))
     then return: (#false)
     else
@@ -2443,14 +2443,14 @@ Definition testSwitchMultiple : val :=
 (* go: switch.go:26:6 *)
 Definition testSwitchDefaultTrue : val :=
   rec: "testSwitchDefaultTrue" <> :=
-    exception_do (let: "x" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "x" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 1) in
-    do:  ("x" <-[uint64T] "$r0");;;
+    do:  ("x" <-[#uint64T] "$r0");;;
     let: "$sw" := #true in
     (if: "$sw" = #false
     then return: (#false)
     else
-      (if: "$sw" = ((![uint64T] "x") = #(W64 2))
+      (if: "$sw" = ((![#uint64T] "x") = #(W64 2))
       then return: (#false)
       else return: (#true)))).
 
@@ -2462,25 +2462,25 @@ Definition switchInterface : go_type := interfaceT.
 (* go: switch.go:45:26 *)
 Definition switchConcrete__marker : val :=
   rec: "switchConcrete__marker" "c" <> :=
-    exception_do (let: "c" := (ref_ty ptrT "c") in
+    exception_do (let: "c" := (alloc "c") in
     do:  #()).
 
 (* go: switch.go:48:6 *)
 Definition testSwitchConversion : val :=
   rec: "testSwitchConversion" <> :=
-    exception_do (let: "v" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty switchConcrete (struct.make switchConcrete [{
+    exception_do (let: "v" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (struct.make #switchConcrete [{
     }])) in
-    do:  ("v" <-[ptrT] "$r0");;;
-    let: "x" := (ref_ty switchInterface (zero_val switchInterface)) in
-    let: "$r0" := (interface.make #semantics.semantics #"switchConcrete'ptr" (![ptrT] "v")) in
-    do:  ("x" <-[switchInterface] "$r0");;;
-    let: "$sw" := (![switchInterface] "x") in
-    (if: "$sw" = (interface.make #semantics.semantics #"switchConcrete'ptr" (![ptrT] "v"))
+    do:  ("v" <-[#ptrT] "$r0");;;
+    let: "x" := (alloc (type.zero_val #switchInterface)) in
+    let: "$r0" := (interface.make #semantics.semantics #"switchConcrete'ptr" (![#ptrT] "v")) in
+    do:  ("x" <-[#switchInterface] "$r0");;;
+    let: "$sw" := (![#switchInterface] "x") in
+    (if: "$sw" = (interface.make #semantics.semantics #"switchConcrete'ptr" (![#ptrT] "v"))
     then do:  #()
     else return: (#false));;;
-    let: "$sw" := (![ptrT] "v") in
-    (if: (interface.make #semantics.semantics #"switchConcrete'ptr" "$sw") = (![switchInterface] "x")
+    let: "$sw" := (![#ptrT] "v") in
+    (if: (interface.make #semantics.semantics #"switchConcrete'ptr" "$sw") = (![#switchInterface] "x")
     then do:  #()
     else return: (#false));;;
     return: (#true)).
@@ -2488,23 +2488,23 @@ Definition testSwitchConversion : val :=
 (* go: vars.go:3:6 *)
 Definition testPointerAssignment : val :=
   rec: "testPointerAssignment" <> :=
-    exception_do (let: "x" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "x" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("x" <-[boolT] "$r0");;;
-    return: (![boolT] "x")).
+    do:  ("x" <-[#boolT] "$r0");;;
+    return: (![#boolT] "x")).
 
 (* go: vars.go:9:6 *)
 Definition testAddressOfLocal : val :=
   rec: "testAddressOfLocal" <> :=
-    exception_do (let: "x" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "x" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
-    do:  ("x" <-[boolT] "$r0");;;
-    let: "xptr" := (ref_ty ptrT (zero_val ptrT)) in
+    do:  ("x" <-[#boolT] "$r0");;;
+    let: "xptr" := (alloc (type.zero_val #ptrT)) in
     let: "$r0" := "x" in
-    do:  ("xptr" <-[ptrT] "$r0");;;
+    do:  ("xptr" <-[#ptrT] "$r0");;;
     let: "$r0" := #true in
-    do:  ((![ptrT] "xptr") <-[boolT] "$r0");;;
-    return: ((![boolT] "x") && (![boolT] (![ptrT] "xptr")))).
+    do:  ((![#ptrT] "xptr") <-[#boolT] "$r0");;;
+    return: ((![#boolT] "x") && (![#boolT] (![#ptrT] "xptr")))).
 
 (* go: vars.go:16:6 *)
 Definition testAnonymousAssign : val :=
@@ -2528,64 +2528,64 @@ Definition Log : go_type := structT [
 (* go: wal.go:25:6 *)
 Definition intToBlock : val :=
   rec: "intToBlock" "a" :=
-    exception_do (let: "a" := (ref_ty uint64T "a") in
-    let: "b" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT disk.BlockSize) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![uint64T] "a") in
+    exception_do (let: "a" := (alloc "a") in
+    let: "b" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #byteT disk.BlockSize) in
+    do:  ("b" <-[#sliceT] "$r0");;;
+    do:  (let: "$a0" := (![#sliceT] "b") in
+    let: "$a1" := (![#uint64T] "a") in
     (func_call #primitive #"UInt64Put"%go) "$a0" "$a1");;;
-    return: (![sliceT] "b")).
+    return: (![#sliceT] "b")).
 
 (* go: wal.go:31:6 *)
 Definition blockToInt : val :=
   rec: "blockToInt" "v" :=
-    exception_do (let: "v" := (ref_ty sliceT "v") in
-    let: "a" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "v") in
+    exception_do (let: "v" := (alloc "v") in
+    let: "a" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "v") in
     (func_call #primitive #"UInt64Get"%go) "$a0") in
-    do:  ("a" <-[uint64T] "$r0");;;
-    return: (![uint64T] "a")).
+    do:  ("a" <-[#uint64T] "$r0");;;
+    return: (![#uint64T] "a")).
 
 (* New initializes a fresh log
 
    go: wal.go:37:6 *)
 Definition New : val :=
   rec: "New" <> :=
-    exception_do (let: "d" := (ref_ty disk.Disk (zero_val disk.Disk)) in
+    exception_do (let: "d" := (alloc (type.zero_val #disk.Disk)) in
     let: "$r0" := ((func_call #disk #"Get"%go) #()) in
-    do:  ("d" <-[disk.Disk] "$r0");;;
-    let: "diskSize" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := ((interface.get #"Size"%go (![disk.Disk] "d")) #()) in
-    do:  ("diskSize" <-[uint64T] "$r0");;;
-    (if: (![uint64T] "diskSize") ≤ logLength
+    do:  ("d" <-[#disk.Disk] "$r0");;;
+    let: "diskSize" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := ((interface.get #"Size"%go (![#disk.Disk] "d")) #()) in
+    do:  ("diskSize" <-[#uint64T] "$r0");;;
+    (if: (![#uint64T] "diskSize") ≤ logLength
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"disk is too small to host log"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "cache" := (ref_ty (mapT uint64T sliceT) (zero_val (mapT uint64T sliceT))) in
-    let: "$r0" := (map.make uint64T sliceT #()) in
-    do:  ("cache" <-[mapT uint64T sliceT] "$r0");;;
-    let: "header" := (ref_ty sliceT (zero_val sliceT)) in
+    let: "cache" := (alloc (type.zero_val #(mapT uint64T sliceT))) in
+    let: "$r0" := (map.make #uint64T #sliceT) in
+    do:  ("cache" <-[#(mapT uint64T sliceT)] "$r0");;;
+    let: "header" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (func_call #semantics.semantics #"intToBlock"%go) "$a0") in
-    do:  ("header" <-[sliceT] "$r0");;;
+    do:  ("header" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![sliceT] "header") in
-    (interface.get #"Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
-    let: "lengthPtr" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
-    do:  ("lengthPtr" <-[ptrT] "$r0");;;
+    let: "$a1" := (![#sliceT] "header") in
+    (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
+    let: "lengthPtr" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #uint64T)) in
+    do:  ("lengthPtr" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((![ptrT] "lengthPtr") <-[uint64T] "$r0");;;
-    let: "l" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
-    do:  ("l" <-[ptrT] "$r0");;;
-    return: (let: "$d" := (![disk.Disk] "d") in
-     let: "$cache" := (![mapT uint64T sliceT] "cache") in
-     let: "$length" := (![ptrT] "lengthPtr") in
-     let: "$l" := (![ptrT] "l") in
-     struct.make Log [{
+    do:  ((![#ptrT] "lengthPtr") <-[#uint64T] "$r0");;;
+    let: "l" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
+    do:  ("l" <-[#ptrT] "$r0");;;
+    return: (let: "$d" := (![#disk.Disk] "d") in
+     let: "$cache" := (![#(mapT uint64T sliceT)] "cache") in
+     let: "$length" := (![#ptrT] "lengthPtr") in
+     let: "$l" := (![#ptrT] "l") in
+     struct.make #Log [{
        "d" ::= "$d";
        "l" ::= "$l";
        "cache" ::= "$cache";
@@ -2595,14 +2595,14 @@ Definition New : val :=
 (* go: wal.go:52:14 *)
 Definition Log__lock : val :=
   rec: "Log__lock" "l" <> :=
-    exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref Log "l" "l"))) #())).
+    exception_do (let: "l" := (alloc "l") in
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #())).
 
 (* go: wal.go:56:14 *)
 Definition Log__unlock : val :=
   rec: "Log__unlock" "l" <> :=
-    exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref Log "l" "l"))) #())).
+    exception_do (let: "l" := (alloc "l") in
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #())).
 
 (* BeginTxn allocates space for a new transaction in the log.
 
@@ -2611,17 +2611,17 @@ Definition Log__unlock : val :=
    go: wal.go:63:14 *)
 Definition Log__BeginTxn : val :=
   rec: "Log__BeginTxn" "l" <> :=
-    exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
-    let: "length" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
-    do:  ("length" <-[uint64T] "$r0");;;
-    (if: (![uint64T] "length") = #(W64 0)
+    exception_do (let: "l" := (alloc "l") in
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
+    let: "length" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
+    do:  ("length" <-[#uint64T] "$r0");;;
+    (if: (![#uint64T] "length") = #(W64 0)
     then
-      do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
+      do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #());;;
       return: (#true)
     else do:  #());;;
-    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #());;;
     return: (#false)).
 
 (* Read from the logical disk.
@@ -2631,141 +2631,141 @@ Definition Log__BeginTxn : val :=
    go: wal.go:77:14 *)
 Definition Log__Read : val :=
   rec: "Log__Read" "l" "a" :=
-    exception_do (let: "l" := (ref_ty Log "l") in
-    let: "a" := (ref_ty uint64T "a") in
-    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
-    let: "v" := (ref_ty sliceT (zero_val sliceT)) in
-    let: ("$ret0", "$ret1") := (map.get (![mapT uint64T sliceT] (struct.field_ref Log "cache" "l")) (![uint64T] "a")) in
+    exception_do (let: "l" := (alloc "l") in
+    let: "a" := (alloc "a") in
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
+    let: "ok" := (alloc (type.zero_val #boolT)) in
+    let: "v" := (alloc (type.zero_val #sliceT)) in
+    let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T sliceT)] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("v" <-[sliceT] "$r0");;;
-    do:  ("ok" <-[boolT] "$r1");;;
-    (if: ![boolT] "ok"
+    do:  ("v" <-[#sliceT] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    (if: ![#boolT] "ok"
     then
-      do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
-      return: (![sliceT] "v")
+      do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #());;;
+      return: (![#sliceT] "v")
     else do:  #());;;
-    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
-    let: "dv" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (logLength + (![uint64T] "a")) in
-    (interface.get #"Read"%go (![disk.Disk] (struct.field_ref Log "d" "l"))) "$a0") in
-    do:  ("dv" <-[sliceT] "$r0");;;
-    return: (![sliceT] "dv")).
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #());;;
+    let: "dv" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$a0" := (logLength + (![#uint64T] "a")) in
+    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0") in
+    do:  ("dv" <-[#sliceT] "$r0");;;
+    return: (![#sliceT] "dv")).
 
 (* go: wal.go:90:14 *)
 Definition Log__Size : val :=
   rec: "Log__Size" "l" <> :=
-    exception_do (let: "l" := (ref_ty Log "l") in
-    let: "sz" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := ((interface.get #"Size"%go (![disk.Disk] (struct.field_ref Log "d" "l"))) #()) in
-    do:  ("sz" <-[uint64T] "$r0");;;
-    return: ((![uint64T] "sz") - logLength)).
+    exception_do (let: "l" := (alloc "l") in
+    let: "sz" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := ((interface.get #"Size"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) #()) in
+    do:  ("sz" <-[#uint64T] "$r0");;;
+    return: ((![#uint64T] "sz") - logLength)).
 
 (* Write to the disk through the log.
 
    go: wal.go:97:14 *)
 Definition Log__Write : val :=
   rec: "Log__Write" "l" "a" "v" :=
-    exception_do (let: "l" := (ref_ty Log "l") in
-    let: "v" := (ref_ty sliceT "v") in
-    let: "a" := (ref_ty uint64T "a") in
-    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
-    let: "length" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
-    do:  ("length" <-[uint64T] "$r0");;;
-    (if: (![uint64T] "length") ≥ MaxTxnWrites
+    exception_do (let: "l" := (alloc "l") in
+    let: "v" := (alloc "v") in
+    let: "a" := (alloc "a") in
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
+    let: "length" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
+    do:  ("length" <-[#uint64T] "$r0");;;
+    (if: (![#uint64T] "length") ≥ MaxTxnWrites
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"transaction is at capacity"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "aBlock" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![uint64T] "a") in
+    let: "aBlock" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$a0" := (![#uint64T] "a") in
     (func_call #semantics.semantics #"intToBlock"%go) "$a0") in
-    do:  ("aBlock" <-[sliceT] "$r0");;;
-    let: "nextAddr" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (#(W64 1) + (#(W64 2) * (![uint64T] "length"))) in
-    do:  ("nextAddr" <-[uint64T] "$r0");;;
-    do:  (let: "$a0" := (![uint64T] "nextAddr") in
-    let: "$a1" := (![sliceT] "aBlock") in
-    (interface.get #"Write"%go (![disk.Disk] (struct.field_ref Log "d" "l"))) "$a0" "$a1");;;
-    do:  (let: "$a0" := ((![uint64T] "nextAddr") + #(W64 1)) in
-    let: "$a1" := (![sliceT] "v") in
-    (interface.get #"Write"%go (![disk.Disk] (struct.field_ref Log "d" "l"))) "$a0" "$a1");;;
-    let: "$r0" := (![sliceT] "v") in
-    do:  (map.insert (![mapT uint64T sliceT] (struct.field_ref Log "cache" "l")) (![uint64T] "a") "$r0");;;
-    let: "$r0" := ((![uint64T] "length") + #(W64 1)) in
-    do:  ((![ptrT] (struct.field_ref Log "length" "l")) <-[uint64T] "$r0");;;
-    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #())).
+    do:  ("aBlock" <-[#sliceT] "$r0");;;
+    let: "nextAddr" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (#(W64 1) + (#(W64 2) * (![#uint64T] "length"))) in
+    do:  ("nextAddr" <-[#uint64T] "$r0");;;
+    do:  (let: "$a0" := (![#uint64T] "nextAddr") in
+    let: "$a1" := (![#sliceT] "aBlock") in
+    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1");;;
+    do:  (let: "$a0" := ((![#uint64T] "nextAddr") + #(W64 1)) in
+    let: "$a1" := (![#sliceT] "v") in
+    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1");;;
+    let: "$r0" := (![#sliceT] "v") in
+    do:  (map.insert (![#(mapT uint64T sliceT)] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a") "$r0");;;
+    let: "$r0" := ((![#uint64T] "length") + #(W64 1)) in
+    do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #())).
 
 (* Commit the current transaction.
 
    go: wal.go:113:14 *)
 Definition Log__Commit : val :=
   rec: "Log__Commit" "l" <> :=
-    exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
-    let: "length" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
-    do:  ("length" <-[uint64T] "$r0");;;
-    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #());;;
-    let: "header" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![uint64T] "length") in
+    exception_do (let: "l" := (alloc "l") in
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
+    let: "length" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
+    do:  ("length" <-[#uint64T] "$r0");;;
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #());;;
+    let: "header" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$a0" := (![#uint64T] "length") in
     (func_call #semantics.semantics #"intToBlock"%go) "$a0") in
-    do:  ("header" <-[sliceT] "$r0");;;
+    do:  ("header" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![sliceT] "header") in
-    (interface.get #"Write"%go (![disk.Disk] (struct.field_ref Log "d" "l"))) "$a0" "$a1")).
+    let: "$a1" := (![#sliceT] "header") in
+    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1")).
 
 (* go: wal.go:122:6 *)
 Definition getLogEntry : val :=
   rec: "getLogEntry" "d" "logOffset" :=
-    exception_do (let: "logOffset" := (ref_ty uint64T "logOffset") in
-    let: "d" := (ref_ty disk.Disk "d") in
-    let: "diskAddr" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (#(W64 1) + (#(W64 2) * (![uint64T] "logOffset"))) in
-    do:  ("diskAddr" <-[uint64T] "$r0");;;
-    let: "aBlock" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![uint64T] "diskAddr") in
-    (interface.get #"Read"%go (![disk.Disk] "d")) "$a0") in
-    do:  ("aBlock" <-[sliceT] "$r0");;;
-    let: "a" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "aBlock") in
+    exception_do (let: "logOffset" := (alloc "logOffset") in
+    let: "d" := (alloc "d") in
+    let: "diskAddr" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (#(W64 1) + (#(W64 2) * (![#uint64T] "logOffset"))) in
+    do:  ("diskAddr" <-[#uint64T] "$r0");;;
+    let: "aBlock" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$a0" := (![#uint64T] "diskAddr") in
+    (interface.get #"Read"%go (![#disk.Disk] "d")) "$a0") in
+    do:  ("aBlock" <-[#sliceT] "$r0");;;
+    let: "a" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "aBlock") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") in
-    do:  ("a" <-[uint64T] "$r0");;;
-    let: "v" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := ((![uint64T] "diskAddr") + #(W64 1)) in
-    (interface.get #"Read"%go (![disk.Disk] "d")) "$a0") in
-    do:  ("v" <-[sliceT] "$r0");;;
-    return: (![uint64T] "a", ![sliceT] "v")).
+    do:  ("a" <-[#uint64T] "$r0");;;
+    let: "v" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$a0" := ((![#uint64T] "diskAddr") + #(W64 1)) in
+    (interface.get #"Read"%go (![#disk.Disk] "d")) "$a0") in
+    do:  ("v" <-[#sliceT] "$r0");;;
+    return: (![#uint64T] "a", ![#sliceT] "v")).
 
 (* applyLog assumes we are running sequentially
 
    go: wal.go:131:6 *)
 Definition applyLog : val :=
   rec: "applyLog" "d" "length" :=
-    exception_do (let: "length" := (ref_ty uint64T "length") in
-    let: "d" := (ref_ty disk.Disk "d") in
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "length" := (alloc "length") in
+    let: "d" := (alloc "d") in
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
+    do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: (![uint64T] "i") < (![uint64T] "length")
+      (if: (![#uint64T] "i") < (![#uint64T] "length")
       then
-        let: "v" := (ref_ty sliceT (zero_val sliceT)) in
-        let: "a" := (ref_ty uint64T (zero_val uint64T)) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![disk.Disk] "d") in
-        let: "$a1" := (![uint64T] "i") in
+        let: "v" := (alloc (type.zero_val #sliceT)) in
+        let: "a" := (alloc (type.zero_val #uint64T)) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![#disk.Disk] "d") in
+        let: "$a1" := (![#uint64T] "i") in
         (func_call #semantics.semantics #"getLogEntry"%go) "$a0" "$a1") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("a" <-[uint64T] "$r0");;;
-        do:  ("v" <-[sliceT] "$r1");;;
-        do:  (let: "$a0" := (logLength + (![uint64T] "a")) in
-        let: "$a1" := (![sliceT] "v") in
-        (interface.get #"Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
-        let: "$r0" := ((![uint64T] "i") + #(W64 1)) in
-        do:  ("i" <-[uint64T] "$r0");;;
+        do:  ("a" <-[#uint64T] "$r0");;;
+        do:  ("v" <-[#sliceT] "$r1");;;
+        do:  (let: "$a0" := (logLength + (![#uint64T] "a")) in
+        let: "$a1" := (![#sliceT] "v") in
+        (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
+        let: "$r0" := ((![#uint64T] "i") + #(W64 1)) in
+        do:  ("i" <-[#uint64T] "$r0");;;
         continue: #()
       else do:  #());;;
       break: #()))).
@@ -2773,14 +2773,14 @@ Definition applyLog : val :=
 (* go: wal.go:142:6 *)
 Definition clearLog : val :=
   rec: "clearLog" "d" :=
-    exception_do (let: "d" := (ref_ty disk.Disk "d") in
-    let: "header" := (ref_ty sliceT (zero_val sliceT)) in
+    exception_do (let: "d" := (alloc "d") in
+    let: "header" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (func_call #semantics.semantics #"intToBlock"%go) "$a0") in
-    do:  ("header" <-[sliceT] "$r0");;;
+    do:  ("header" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![sliceT] "header") in
-    (interface.get #"Write"%go (![disk.Disk] "d")) "$a0" "$a1")).
+    let: "$a1" := (![#sliceT] "header") in
+    (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1")).
 
 (* Apply all the committed transactions.
 
@@ -2789,57 +2789,57 @@ Definition clearLog : val :=
    go: wal.go:150:14 *)
 Definition Log__Apply : val :=
   rec: "Log__Apply" "l" <> :=
-    exception_do (let: "l" := (ref_ty Log "l") in
-    do:  ((method_call #semantics.semantics #"Log" #"lock" (![Log] "l")) #());;;
-    let: "length" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (![ptrT] (struct.field_ref Log "length" "l"))) in
-    do:  ("length" <-[uint64T] "$r0");;;
-    do:  (let: "$a0" := (![disk.Disk] (struct.field_ref Log "d" "l")) in
-    let: "$a1" := (![uint64T] "length") in
+    exception_do (let: "l" := (alloc "l") in
+    do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
+    let: "length" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "l"))) in
+    do:  ("length" <-[#uint64T] "$r0");;;
+    do:  (let: "$a0" := (![#disk.Disk] (struct.field_ref #Log #"d"%go "l")) in
+    let: "$a1" := (![#uint64T] "length") in
     (func_call #semantics.semantics #"applyLog"%go) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![disk.Disk] (struct.field_ref Log "d" "l")) in
+    do:  (let: "$a0" := (![#disk.Disk] (struct.field_ref #Log #"d"%go "l")) in
     (func_call #semantics.semantics #"clearLog"%go) "$a0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((![ptrT] (struct.field_ref Log "length" "l")) <-[uint64T] "$r0");;;
-    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![Log] "l")) #())).
+    do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #())).
 
 (* Open recovers the log following a crash or shutdown
 
    go: wal.go:163:6 *)
 Definition Open : val :=
   rec: "Open" <> :=
-    exception_do (let: "d" := (ref_ty disk.Disk (zero_val disk.Disk)) in
+    exception_do (let: "d" := (alloc (type.zero_val #disk.Disk)) in
     let: "$r0" := ((func_call #disk #"Get"%go) #()) in
-    do:  ("d" <-[disk.Disk] "$r0");;;
-    let: "header" := (ref_ty sliceT (zero_val sliceT)) in
+    do:  ("d" <-[#disk.Disk] "$r0");;;
+    let: "header" := (alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (interface.get #"Read"%go (![disk.Disk] "d")) "$a0") in
-    do:  ("header" <-[sliceT] "$r0");;;
-    let: "length" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "header") in
+    (interface.get #"Read"%go (![#disk.Disk] "d")) "$a0") in
+    do:  ("header" <-[#sliceT] "$r0");;;
+    let: "length" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "header") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") in
-    do:  ("length" <-[uint64T] "$r0");;;
-    do:  (let: "$a0" := (![disk.Disk] "d") in
-    let: "$a1" := (![uint64T] "length") in
+    do:  ("length" <-[#uint64T] "$r0");;;
+    do:  (let: "$a0" := (![#disk.Disk] "d") in
+    let: "$a1" := (![#uint64T] "length") in
     (func_call #semantics.semantics #"applyLog"%go) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![disk.Disk] "d") in
+    do:  (let: "$a0" := (![#disk.Disk] "d") in
     (func_call #semantics.semantics #"clearLog"%go) "$a0");;;
-    let: "cache" := (ref_ty (mapT uint64T sliceT) (zero_val (mapT uint64T sliceT))) in
-    let: "$r0" := (map.make uint64T sliceT #()) in
-    do:  ("cache" <-[mapT uint64T sliceT] "$r0");;;
-    let: "lengthPtr" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty uint64T (zero_val uint64T)) in
-    do:  ("lengthPtr" <-[ptrT] "$r0");;;
+    let: "cache" := (alloc (type.zero_val #(mapT uint64T sliceT))) in
+    let: "$r0" := (map.make #uint64T #sliceT) in
+    do:  ("cache" <-[#(mapT uint64T sliceT)] "$r0");;;
+    let: "lengthPtr" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #uint64T)) in
+    do:  ("lengthPtr" <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((![ptrT] "lengthPtr") <-[uint64T] "$r0");;;
-    let: "l" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
-    do:  ("l" <-[ptrT] "$r0");;;
-    return: (let: "$d" := (![disk.Disk] "d") in
-     let: "$cache" := (![mapT uint64T sliceT] "cache") in
-     let: "$length" := (![ptrT] "lengthPtr") in
-     let: "$l" := (![ptrT] "l") in
-     struct.make Log [{
+    do:  ((![#ptrT] "lengthPtr") <-[#uint64T] "$r0");;;
+    let: "l" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
+    do:  ("l" <-[#ptrT] "$r0");;;
+    return: (let: "$d" := (![#disk.Disk] "d") in
+     let: "$cache" := (![#(mapT uint64T sliceT)] "cache") in
+     let: "$length" := (![#ptrT] "lengthPtr") in
+     let: "$l" := (![#ptrT] "l") in
+     struct.make #Log [{
        "d" ::= "$d";
        "l" ::= "$l";
        "cache" ::= "$cache";
@@ -2851,65 +2851,65 @@ Definition Open : val :=
    go: wal.go:178:6 *)
 Definition disabled_testWal : val :=
   rec: "disabled_testWal" <> :=
-    exception_do (let: "ok" := (ref_ty boolT (zero_val boolT)) in
+    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "lg" := (ref_ty Log (zero_val Log)) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "lg" := (alloc (type.zero_val #Log)) in
     let: "$r0" := ((func_call #semantics.semantics #"New"%go) #()) in
-    do:  ("lg" <-[Log] "$r0");;;
-    (if: (method_call #semantics.semantics #"Log" #"BeginTxn" (![Log] "lg")) #()
+    do:  ("lg" <-[#Log] "$r0");;;
+    (if: (method_call #semantics.semantics #"Log" #"BeginTxn" (![#Log] "lg")) #()
     then
       do:  (let: "$a0" := #(W64 2) in
       let: "$a1" := (let: "$a0" := #(W64 11) in
       (func_call #semantics.semantics #"intToBlock"%go) "$a0") in
-      (method_call #semantics.semantics #"Log" #"Write" (![Log] "lg")) "$a0" "$a1")
+      (method_call #semantics.semantics #"Log" #"Write" (![#Log] "lg")) "$a0" "$a1")
     else do:  #());;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 2) in
-    (method_call #semantics.semantics #"Log" #"Read" (![Log] "lg")) "$a0") in
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 2) in
+    (method_call #semantics.semantics #"Log" #"Read" (![#Log] "lg")) "$a0") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") = #(W64 11))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
-    (interface.get #"Read"%go (![disk.Disk] (struct.field_ref Log "d" "lg"))) "$a0") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
+    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "lg"))) "$a0") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    do:  ((method_call #semantics.semantics #"Log" #"Commit" (![Log] "lg")) #());;;
-    let: "$r0" := ((![boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
-    (interface.get #"Read"%go (![disk.Disk] (struct.field_ref Log "d" "lg"))) "$a0") in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    do:  ((method_call #semantics.semantics #"Log" #"Commit" (![#Log] "lg")) #());;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (let: "$a0" := #(W64 0) in
+    (interface.get #"Read"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "lg"))) "$a0") in
     (func_call #semantics.semantics #"blockToInt"%go) "$a0") = #(W64 1))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    do:  ((method_call #semantics.semantics #"Log" #"Apply" (![Log] "lg")) #());;;
-    let: "$r0" := ((![boolT] "ok") && ((![uint64T] (![ptrT] (struct.field_ref Log "length" "lg"))) = #(W64 0))) in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    do:  ("ok" <-[#boolT] "$r0");;;
+    do:  ((method_call #semantics.semantics #"Log" #"Apply" (![#Log] "lg")) #());;;
+    let: "$r0" := ((![#boolT] "ok") && ((![#uint64T] (![#ptrT] (struct.field_ref #Log #"length"%go "lg"))) = #(W64 0))) in
+    do:  ("ok" <-[#boolT] "$r0");;;
+    return: (![#boolT] "ok")).
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [("findKey"%go, findKey); ("allocate"%go, allocate); ("freeRange"%go, freeRange); ("testAllocateDistinct"%go, testAllocateDistinct); ("testAllocateFull"%go, testAllocateFull); ("testExplicitBlockStmt"%go, testExplicitBlockStmt); ("testMinUint64"%go, testMinUint64); ("testMaxUint64"%go, testMaxUint64); ("adder"%go, adder); ("testClosureBasic"%go, testClosureBasic); ("testCompareAll"%go, testCompareAll); ("testCompareGT"%go, testCompareGT); ("testCompareGE"%go, testCompareGE); ("testCompareLT"%go, testCompareLT); ("testCompareLE"%go, testCompareLE); ("literalCast"%go, literalCast); ("stringToByteSlice"%go, stringToByteSlice); ("byteSliceToString"%go, byteSliceToString); ("testByteSliceToString"%go, testByteSliceToString); ("testCopySimple"%go, testCopySimple); ("testCopyShorterDst"%go, testCopyShorterDst); ("testCopyShorterSrc"%go, testCopyShorterSrc); ("deferSimple"%go, deferSimple); ("testDefer"%go, testDefer); ("testDeferFuncLit"%go, testDeferFuncLit); ("roundtripEncDec32"%go, roundtripEncDec32); ("roundtripEncDec64"%go, roundtripEncDec64); ("testEncDec32Simple"%go, testEncDec32Simple); ("failing_testEncDec32"%go, failing_testEncDec32); ("testEncDec64Simple"%go, testEncDec64Simple); ("testEncDec64"%go, testEncDec64); ("FirstClassFunction"%go, FirstClassFunction); ("ApplyF"%go, ApplyF); ("testFirstClassFunction"%go, testFirstClassFunction); ("addFour64"%go, addFour64); ("failing_testFunctionOrdering"%go, failing_testFunctionOrdering); ("storeAndReturn"%go, storeAndReturn); ("failing_testArgumentOrder"%go, failing_testArgumentOrder); ("testU64ToU32"%go, testU64ToU32); ("testU32Len"%go, testU32Len); ("failing_testU32NewtypeLen"%go, failing_testU32NewtypeLen); ("measureArea"%go, measureArea); ("measureVolumePlusNM"%go, measureVolumePlusNM); ("measureVolume"%go, measureVolume); ("testBasicInterface"%go, testBasicInterface); ("testAssignInterface"%go, testAssignInterface); ("testMultipleInterface"%go, testMultipleInterface); ("testBinaryExprInterface"%go, testBinaryExprInterface); ("testIfStmtInterface"%go, testIfStmtInterface); ("testsUseLocks"%go, testsUseLocks); ("standardForLoop"%go, standardForLoop); ("testStandardForLoop"%go, testStandardForLoop); ("testForLoopWait"%go, testForLoopWait); ("testBreakFromLoopWithContinue"%go, testBreakFromLoopWithContinue); ("testBreakFromLoopNoContinue"%go, testBreakFromLoopNoContinue); ("testBreakFromLoopNoContinueDouble"%go, testBreakFromLoopNoContinueDouble); ("testBreakFromLoopForOnly"%go, testBreakFromLoopForOnly); ("testBreakFromLoopAssignAndContinue"%go, testBreakFromLoopAssignAndContinue); ("testNestedLoops"%go, testNestedLoops); ("testNestedGoStyleLoops"%go, testNestedGoStyleLoops); ("testNestedGoStyleLoopsNoComparison"%go, testNestedGoStyleLoopsNoComparison); ("IterateMapKeys"%go, IterateMapKeys); ("IterateMapValues"%go, IterateMapValues); ("testIterateMap"%go, testIterateMap); ("testMapSize"%go, testMapSize); ("multReturnTwo"%go, multReturnTwo); ("testAssignTwo"%go, testAssignTwo); ("multReturnThree"%go, multReturnThree); ("testAssignThree"%go, testAssignThree); ("testMultipleAssignToMap"%go, testMultipleAssignToMap); ("returnTwo"%go, returnTwo); ("testReturnTwo"%go, testReturnTwo); ("testAnonymousBinding"%go, testAnonymousBinding); ("returnThree"%go, returnThree); ("testReturnThree"%go, testReturnThree); ("returnFour"%go, returnFour); ("testReturnFour"%go, testReturnFour); ("failing_testCompareSliceToNil"%go, failing_testCompareSliceToNil); ("testComparePointerToNil"%go, testComparePointerToNil); ("testCompareNilToNil"%go, testCompareNilToNil); ("testComparePointerWrappedToNil"%go, testComparePointerWrappedToNil); ("testComparePointerWrappedDefaultToNil"%go, testComparePointerWrappedDefaultToNil); ("reverseAssignOps64"%go, reverseAssignOps64); ("reverseAssignOps32"%go, reverseAssignOps32); ("add64Equals"%go, add64Equals); ("sub64Equals"%go, sub64Equals); ("testReverseAssignOps64"%go, testReverseAssignOps64); ("failing_testReverseAssignOps32"%go, failing_testReverseAssignOps32); ("testAdd64Equals"%go, testAdd64Equals); ("testSub64Equals"%go, testSub64Equals); ("testDivisionPrecedence"%go, testDivisionPrecedence); ("testModPrecedence"%go, testModPrecedence); ("testBitwiseOpsPrecedence"%go, testBitwiseOpsPrecedence); ("testArithmeticShifts"%go, testArithmeticShifts); ("testBitAddAnd"%go, testBitAddAnd); ("testManyParentheses"%go, testManyParentheses); ("testPlusTimes"%go, testPlusTimes); ("testOrCompareSimple"%go, testOrCompareSimple); ("testOrCompare"%go, testOrCompare); ("testAndCompare"%go, testAndCompare); ("testShiftMod"%go, testShiftMod); ("testLinearize"%go, testLinearize); ("CheckTrue"%go, CheckTrue); ("CheckFalse"%go, CheckFalse); ("testShortcircuitAndTF"%go, testShortcircuitAndTF); ("testShortcircuitAndFT"%go, testShortcircuitAndFT); ("testShortcircuitOrTF"%go, testShortcircuitOrTF); ("testShortcircuitOrFT"%go, testShortcircuitOrFT); ("testSliceOps"%go, testSliceOps); ("testSliceCapacityOps"%go, testSliceCapacityOps); ("testOverwriteArray"%go, testOverwriteArray); ("testSliceLiteral"%go, testSliceLiteral); ("testSliceAppend"%go, testSliceAppend); ("testFooBarMutation"%go, testFooBarMutation); ("NewS"%go, NewS); ("testStructUpdates"%go, testStructUpdates); ("testNestedStructUpdates"%go, testNestedStructUpdates); ("testStructConstructions"%go, testStructConstructions); ("testIncompleteStruct"%go, testIncompleteStruct); ("testStoreInStructVar"%go, testStoreInStructVar); ("testStoreInStructPointerVar"%go, testStoreInStructPointerVar); ("testStoreComposite"%go, testStoreComposite); ("testStoreSlice"%go, testStoreSlice); ("testStructFieldFunc"%go, testStructFieldFunc); ("testSwitchVal"%go, testSwitchVal); ("testSwitchMultiple"%go, testSwitchMultiple); ("testSwitchDefaultTrue"%go, testSwitchDefaultTrue); ("testSwitchConversion"%go, testSwitchConversion); ("testPointerAssignment"%go, testPointerAssignment); ("testAddressOfLocal"%go, testAddressOfLocal); ("testAnonymousAssign"%go, testAnonymousAssign); ("intToBlock"%go, intToBlock); ("blockToInt"%go, blockToInt); ("New"%go, New); ("getLogEntry"%go, getLogEntry); ("applyLog"%go, applyLog); ("clearLog"%go, clearLog); ("Open"%go, Open); ("disabled_testWal"%go, disabled_testWal)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("unit"%go, []); ("unit'ptr"%go, []); ("Enc"%go, []); ("Enc'ptr"%go, [("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("consume"%go, Dec__consume)]); ("Editor"%go, []); ("Editor'ptr"%go, [("AdvanceReturn"%go, Editor__AdvanceReturn)]); ("Pair"%go, []); ("Pair'ptr"%go, []); ("Uint32"%go, []); ("Uint32'ptr"%go, []); ("SquareStruct"%go, [("Square"%go, SquareStruct__Square); ("Volume"%go, SquareStruct__Volume)]); ("SquareStruct'ptr"%go, [("Square"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"SquareStruct" #"Square" (![SquareStruct] "$recvAddr")
+                 method_call #semantics.semantics #"SquareStruct" #"Square" (![#SquareStruct] "$recvAddr")
                  )%V); ("Volume"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"SquareStruct" #"Volume" (![SquareStruct] "$recvAddr")
+                 method_call #semantics.semantics #"SquareStruct" #"Volume" (![#SquareStruct] "$recvAddr")
                  )%V)]); ("LoopStruct"%go, [("forLoopWait"%go, LoopStruct__forLoopWait)]); ("LoopStruct'ptr"%go, [("forLoopWait"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"LoopStruct" #"forLoopWait" (![LoopStruct] "$recvAddr")
+                 method_call #semantics.semantics #"LoopStruct" #"forLoopWait" (![#LoopStruct] "$recvAddr")
                  )%V)]); ("BoolTest"%go, []); ("BoolTest'ptr"%go, []); ("ArrayEditor"%go, []); ("ArrayEditor'ptr"%go, [("Advance"%go, ArrayEditor__Advance)]); ("Bar"%go, []); ("Bar'ptr"%go, [("mutate"%go, Bar__mutate)]); ("Foo"%go, []); ("Foo'ptr"%go, [("mutateBar"%go, Foo__mutateBar)]); ("TwoInts"%go, []); ("TwoInts'ptr"%go, []); ("S"%go, [("readBVal"%go, S__readBVal)]); ("S'ptr"%go, [("negateC"%go, S__negateC); ("readA"%go, S__readA); ("readB"%go, S__readB); ("readBVal"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"S" #"readBVal" (![S] "$recvAddr")
+                 method_call #semantics.semantics #"S" #"readBVal" (![#S] "$recvAddr")
                  )%V); ("updateBValX"%go, S__updateBValX)]); ("StructWrap"%go, []); ("StructWrap'ptr"%go, []); ("StructWithFunc"%go, []); ("StructWithFunc'ptr"%go, []); ("switchConcrete"%go, []); ("switchConcrete'ptr"%go, [("marker"%go, switchConcrete__marker)]); ("Log"%go, [("Apply"%go, Log__Apply); ("BeginTxn"%go, Log__BeginTxn); ("Commit"%go, Log__Commit); ("Read"%go, Log__Read); ("Size"%go, Log__Size); ("Write"%go, Log__Write); ("lock"%go, Log__lock); ("unlock"%go, Log__unlock)]); ("Log'ptr"%go, [("Apply"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"Log" #"Apply" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Apply" (![#Log] "$recvAddr")
                  )%V); ("BeginTxn"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"Log" #"BeginTxn" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"BeginTxn" (![#Log] "$recvAddr")
                  )%V); ("Commit"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"Log" #"Commit" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Commit" (![#Log] "$recvAddr")
                  )%V); ("Read"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"Log" #"Read" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Read" (![#Log] "$recvAddr")
                  )%V); ("Size"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"Log" #"Size" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Size" (![#Log] "$recvAddr")
                  )%V); ("Write"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"Log" #"Write" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"Write" (![#Log] "$recvAddr")
                  )%V); ("lock"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"Log" #"lock" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"lock" (![#Log] "$recvAddr")
                  )%V); ("unlock"%go, (λ: "$recvAddr",
-                 method_call #semantics.semantics #"Log" #"unlock" (![Log] "$recvAddr")
+                 method_call #semantics.semantics #"Log" #"unlock" (![#Log] "$recvAddr")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo semantics.semantics :=

@@ -1,4 +1,4 @@
-From New.golang.defn Require Export mem typing list pkg.
+From New.golang.defn Require Import mem typing list pkg.
 From Perennial Require Import base.
 
 Module globals.
@@ -26,7 +26,7 @@ Definition alloc (vars : list (go_string * go_type)) : val :=
            (match vars with
             | Datatypes.nil => alist_val []
             | (pair name t) :: vars =>
-                list.Cons (#name, ref_ty t (zero_val t)) (alloc vars)
+                list.Cons (#name, mem.alloc (zero_val t)) (alloc vars)
             end)%E) vars
 .
 

@@ -1,6 +1,6 @@
 From New.golang.defn Require Export chan.
 From iris.base_logic Require Export lib.ghost_var.
-From New.golang.theory Require Export exception list mem loop typing struct proofmode.
+From New.golang.theory Require Import exception list mem loop typing struct proofmode.
 From Perennial Require Import base.
 
 Module chanstate.

@@ -49,7 +49,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_BankClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} lck' kvck' accts':
   PureWp True
-    (struct.make bank.BankClerk (alist_val [
+    (struct.make #bank.BankClerk (alist_val [
       "lck" ::= #lck';
       "kvck" ::= #kvck';
       "accts" ::= #accts'

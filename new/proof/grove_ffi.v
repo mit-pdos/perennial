@@ -6,6 +6,7 @@ From New.proof Require Export proof_prelude own_crash.
 From Perennial.goose_lang.ffi.grove_ffi Require Export grove_ffi.
 From New.code.github_com.mit_pdos.gokv Require Import grove_ffi.
 Require Import New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
+From Perennial Require Import base.
 
 Set Default Proof Using "Type".
 
@@ -29,7 +30,7 @@ Global Instance into_val_ConnectRet `{ffi_syntax} : IntoVal ConnectRet.t :=
 Instance wp_struct_make_ConnectRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   err conn :
   PureWp True
-  (struct.make ConnectRet (alist_val [("Err" ::= #err); ("Connection" ::= #conn)]))%struct
+  (struct.make #ConnectRet (alist_val [("Err" ::= #err); ("Connection" ::= #conn)]))%struct
   #(ConnectRet.mk err conn).
 Proof.
   rewrite [in #(_ : ConnectRet.t)]to_val_unseal.
@@ -56,7 +57,7 @@ Global Instance into_val_ReceiveRet `{ffi_syntax} : IntoVal ReceiveRet.t :=
 Instance wp_struct_make_ReceiveRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   err data :
   PureWp True
-  (struct.make ReceiveRet (alist_val [("Err" ::= #err); ("Data" ::= #data)]))%struct
+  (struct.make #ReceiveRet (alist_val [("Err" ::= #err); ("Data" ::= #data)]))%struct
   #(ReceiveRet.mk err data).
 Proof.
   rewrite [in #(_ : ReceiveRet.t)]to_val_unseal.

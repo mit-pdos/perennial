@@ -46,7 +46,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_inflight `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} index' bytes':
   PureWp True
-    (struct.make tracker.inflight (alist_val [
+    (struct.make #tracker.inflight (alist_val [
       "index" ::= #index';
       "bytes" ::= #bytes'
     ]))%struct
@@ -114,7 +114,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Inflights `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} start' count' bytes' size' maxBytes' buffer':
   PureWp True
-    (struct.make tracker.Inflights (alist_val [
+    (struct.make #tracker.Inflights (alist_val [
       "start" ::= #start';
       "count" ::= #count';
       "bytes" ::= #bytes';
@@ -209,7 +209,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Progress `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Match' Next' sentCommit' State' PendingSnapshot' RecentActive' MsgAppFlowPaused' Inflights' IsLearner':
   PureWp True
-    (struct.make tracker.Progress (alist_val [
+    (struct.make #tracker.Progress (alist_val [
       "Match" ::= #Match';
       "Next" ::= #Next';
       "sentCommit" ::= #sentCommit';
@@ -290,7 +290,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Voters' AutoLeave' Learners' LearnersNext':
   PureWp True
-    (struct.make tracker.Config (alist_val [
+    (struct.make #tracker.Config (alist_val [
       "Voters" ::= #Voters';
       "AutoLeave" ::= #AutoLeave';
       "Learners" ::= #Learners';
@@ -358,7 +358,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ProgressTracker `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Config' Progress' Votes' MaxInflight' MaxInflightBytes':
   PureWp True
-    (struct.make tracker.ProgressTracker (alist_val [
+    (struct.make #tracker.ProgressTracker (alist_val [
       "Config" ::= #Config';
       "Progress" ::= #Progress';
       "Votes" ::= #Votes';
@@ -409,7 +409,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined tracker :=
 |}.
 
 Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
-  "Hprstmap" ∷ prstmap ↦ (default_val (vec go_string 3)).
+  "Hprstmap" ∷ prstmap ↦ (default_val (vec go_string (uint.nat (W64 3)))).
 
 Global Instance wp_globals_get_prstmap : 
   WpGlobalsGet tracker "prstmap" prstmap (is_pkg_defined tracker).

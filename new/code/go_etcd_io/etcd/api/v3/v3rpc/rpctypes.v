@@ -21,51 +21,51 @@ Definition EtcdError : go_type := structT [
    go: error.go:248:20 *)
 Definition EtcdError__Code : val :=
   rec: "EtcdError__Code" "e" <> :=
-    exception_do (let: "e" := (ref_ty EtcdError "e") in
-    return: (![codes.Code] (struct.field_ref EtcdError "code" "e"))).
+    exception_do (let: "e" := (alloc "e") in
+    return: (![#codes.Code] (struct.field_ref #EtcdError #"code"%go "e"))).
 
 (* go: error.go:252:20 *)
 Definition EtcdError__Error : val :=
   rec: "EtcdError__Error" "e" <> :=
-    exception_do (let: "e" := (ref_ty EtcdError "e") in
-    return: (![stringT] (struct.field_ref EtcdError "desc" "e"))).
+    exception_do (let: "e" := (alloc "e") in
+    return: (![#stringT] (struct.field_ref #EtcdError #"desc"%go "e"))).
 
 (* go: error.go:256:6 *)
 Definition Error : val :=
   rec: "Error" "err" :=
-    exception_do (let: "err" := (ref_ty error "err") in
-    (if: interface.eq (![error] "err") #interface.nil
+    exception_do (let: "err" := (alloc "err") in
+    (if: interface.eq (![#error] "err") #interface.nil
     then return: (#interface.nil)
     else do:  #());;;
-    let: "ok" := (ref_ty boolT (zero_val boolT)) in
-    let: "verr" := (ref_ty error (zero_val error)) in
-    let: ("$ret0", "$ret1") := (map.get (![mapT stringT error] (globals.get #rpctypes.rpctypes #"errStringToError"%go)) (let: "$a0" := (![error] "err") in
+    let: "ok" := (alloc (type.zero_val #boolT)) in
+    let: "verr" := (alloc (type.zero_val #error)) in
+    let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT error)] (globals.get #rpctypes.rpctypes #"errStringToError"%go)) (let: "$a0" := (![#error] "err") in
     (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("verr" <-[error] "$r0");;;
-    do:  ("ok" <-[boolT] "$r1");;;
-    (if: (~ (![boolT] "ok"))
-    then return: (![error] "err")
+    do:  ("verr" <-[#error] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    (if: (~ (![#boolT] "ok"))
+    then return: (![#error] "err")
     else do:  #());;;
-    let: "ev" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![error] "verr") in
+    let: "ev" := (alloc (type.zero_val #ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#error] "verr") in
     (func_call #status #"FromError"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("ev" <-[ptrT] "$r0");;;
-    do:  ("ok" <-[boolT] "$r1");;;
-    let: "desc" := (ref_ty stringT (zero_val stringT)) in
-    (if: ![boolT] "ok"
+    do:  ("ev" <-[#ptrT] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    let: "desc" := (alloc (type.zero_val #stringT)) in
+    (if: ![#boolT] "ok"
     then
-      let: "$r0" := ((method_call #status #"Status'ptr" #"Message" (![ptrT] "ev")) #()) in
-      do:  ("desc" <-[stringT] "$r0")
+      let: "$r0" := ((method_call #status #"Status'ptr" #"Message" (![#ptrT] "ev")) #()) in
+      do:  ("desc" <-[#stringT] "$r0")
     else
-      let: "$r0" := ((interface.get #"Error"%go (![error] "verr")) #()) in
-      do:  ("desc" <-[stringT] "$r0"));;;
-    return: (interface.make #rpctypes.rpctypes #"EtcdError" (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![ptrT] "ev")) #()) in
-     let: "$desc" := (![stringT] "desc") in
-     struct.make EtcdError [{
+      let: "$r0" := ((interface.get #"Error"%go (![#error] "verr")) #()) in
+      do:  ("desc" <-[#stringT] "$r0"));;;
+    return: (interface.make #rpctypes.rpctypes #"EtcdError" (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![#ptrT] "ev")) #()) in
+     let: "$desc" := (![#stringT] "desc") in
+     struct.make #EtcdError [{
        "code" ::= "$code";
        "desc" ::= "$desc"
      }]))).
@@ -73,19 +73,19 @@ Definition Error : val :=
 (* go: error.go:274:6 *)
 Definition ErrorDesc : val :=
   rec: "ErrorDesc" "err" :=
-    exception_do (let: "err" := (ref_ty error "err") in
-    (let: "ok" := (ref_ty boolT (zero_val boolT)) in
-    let: "s" := (ref_ty ptrT (zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![error] "err") in
+    exception_do (let: "err" := (alloc "err") in
+    (let: "ok" := (alloc (type.zero_val #boolT)) in
+    let: "s" := (alloc (type.zero_val #ptrT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#error] "err") in
     (func_call #status #"FromError"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("s" <-[ptrT] "$r0");;;
-    do:  ("ok" <-[boolT] "$r1");;;
-    (if: ![boolT] "ok"
-    then return: ((method_call #status #"Status'ptr" #"Message" (![ptrT] "s")) #())
+    do:  ("s" <-[#ptrT] "$r0");;;
+    do:  ("ok" <-[#boolT] "$r1");;;
+    (if: ![#boolT] "ok"
+    then return: ((method_call #status #"Status'ptr" #"Message" (![#ptrT] "s")) #())
     else do:  #()));;;
-    return: ((interface.get #"Error"%go (![error] "err")) #())).
+    return: ((interface.get #"Error"%go (![#error] "err")) #())).
 
 Definition TokenFieldNameGRPCKey : go_type := structT [
 ].
@@ -95,9 +95,9 @@ Definition vars' : list (go_string * go_type) := [("ErrGRPCEmptyKey"%go, error);
 Definition functions' : list (go_string * val) := [("Error"%go, Error); ("ErrorDesc"%go, ErrorDesc)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("EtcdError"%go, [("Code"%go, EtcdError__Code); ("Error"%go, EtcdError__Error)]); ("EtcdError'ptr"%go, [("Code"%go, (λ: "$recvAddr",
-                 method_call #rpctypes.rpctypes #"EtcdError" #"Code" (![EtcdError] "$recvAddr")
+                 method_call #rpctypes.rpctypes #"EtcdError" #"Code" (![#EtcdError] "$recvAddr")
                  )%V); ("Error"%go, (λ: "$recvAddr",
-                 method_call #rpctypes.rpctypes #"EtcdError" #"Error" (![EtcdError] "$recvAddr")
+                 method_call #rpctypes.rpctypes #"EtcdError" #"Error" (![#EtcdError] "$recvAddr")
                  )%V)]); ("TokenFieldNameGRPCKey"%go, []); ("TokenFieldNameGRPCKey'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo rpctypes.rpctypes :=
@@ -116,613 +116,613 @@ Definition initialize' : val :=
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: key is not provided"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCEmptyKey"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCEmptyKey"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: key not found"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCKeyNotFound"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCKeyNotFound"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: value is provided"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCValueProvided"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCValueProvided"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: lease is provided"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaseProvided"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaseProvided"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: too many operations in txn request"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTooManyOps"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTooManyOps"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: duplicate key given in txn request"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCDuplicateKey"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCDuplicateKey"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid client api version"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidClientAPIVersion"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidClientAPIVersion"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid sort option"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidSortOption"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidSortOption"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.OutOfRange in
       let: "$a1" := #"etcdserver: mvcc: required revision has been compacted"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCCompacted"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCCompacted"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.OutOfRange in
       let: "$a1" := #"etcdserver: mvcc: required revision is a future revision"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCFutureRev"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCFutureRev"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.ResourceExhausted in
       let: "$a1" := #"etcdserver: mvcc: database space exceeded"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNoSpace"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNoSpace"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.NotFound in
       let: "$a1" := #"etcdserver: requested lease not found"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaseNotFound"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaseNotFound"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: lease already exists"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaseExist"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaseExist"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.OutOfRange in
       let: "$a1" := #"etcdserver: too large lease TTL"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaseTTLTooLarge"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaseTTLTooLarge"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Canceled in
       let: "$a1" := #"etcdserver: watch canceled"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCWatchCanceled"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCWatchCanceled"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: member ID already exist"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberExist"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberExist"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: Peer URLs already exists"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCPeerURLExist"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCPeerURLExist"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: re-configuration failed due to not enough started members"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotEnoughStarted"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotEnoughStarted"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: given member URLs are invalid"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberBadURLs"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberBadURLs"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.NotFound in
       let: "$a1" := #"etcdserver: member not found"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotFound"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotFound"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: can only promote a learner member"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotLearner"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotLearner"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: can only promote a learner member which is in sync with leader"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLearnerNotReady"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLearnerNotReady"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: too many learner members in cluster"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTooManyLearners"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTooManyLearners"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: cluster ID mismatch"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go) <-[error] "$r0");;;
-      let: "$r0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go)) in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCClusterIdMismatch"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go) <-[#error] "$r0");;;
+      let: "$r0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCClusterIdMismatch"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: request is too large"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooLarge"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooLarge"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.ResourceExhausted in
       let: "$a1" := #"etcdserver: too many requests"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooManyRequests"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooManyRequests"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: root user does not exist"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRootUserNotExist"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRootUserNotExist"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: root user does not have root role"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRootRoleNotExist"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRootRoleNotExist"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: user name already exists"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCUserAlreadyExist"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCUserAlreadyExist"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: user name is empty"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCUserEmpty"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCUserEmpty"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: user name not found"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCUserNotFound"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCUserNotFound"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: role name already exists"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRoleAlreadyExist"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRoleAlreadyExist"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: role name not found"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotFound"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotFound"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: role name is empty"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRoleEmpty"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRoleEmpty"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: authentication failed, invalid user ID or password"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCAuthFailed"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCAuthFailed"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: permission not given"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGiven"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGiven"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.PermissionDenied in
       let: "$a1" := #"etcdserver: permission denied"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCPermissionDenied"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCPermissionDenied"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: role is not granted to the user"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotGranted"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotGranted"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: permission is not granted to the role"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGranted"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGranted"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: authentication is not enabled"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCAuthNotEnabled"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCAuthNotEnabled"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Unauthenticated in
       let: "$a1" := #"etcdserver: invalid auth token"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthToken"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthToken"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid auth management"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthMgmt"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthMgmt"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: revision of auth store is old"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCAuthOldRevision"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCAuthOldRevision"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: no leader"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNoLeader"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNoLeader"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: not leader"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNotLeader"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNotLeader"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: leader changed"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaderChanged"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCLeaderChanged"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: not capable"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNotCapable"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNotCapable"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: server stopped"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCStopped"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCStopped"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTimeout"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTimeout"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out, possibly due to previous leader failure"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToLeaderFail"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToLeaderFail"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out, possibly due to connection lost"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToConnectionLost"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToConnectionLost"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: request timed out, waiting for the applied index took too long"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutWaitAppliedIndex"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutWaitAppliedIndex"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Unavailable in
       let: "$a1" := #"etcdserver: unhealthy cluster"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCUnhealthy"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCUnhealthy"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.DataLoss in
       let: "$a1" := #"etcdserver: corrupt cluster"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCCorrupt"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCCorrupt"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: rpc not supported for learner"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNotSupportedForLearner"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNotSupportedForLearner"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: bad leader transferee"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCBadLeaderTransferee"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCBadLeaderTransferee"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: wrong downgrade target version format"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCWrongDowngradeVersionFormat"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCWrongDowngradeVersionFormat"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.InvalidArgument in
       let: "$a1" := #"etcdserver: invalid downgrade target version"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidDowngradeTargetVersion"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCInvalidDowngradeTargetVersion"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: cluster version not found during downgrade"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCClusterVersionUnavailable"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCClusterVersionUnavailable"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: cluster has a downgrade job in progress"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCDowngradeInProcess"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCDowngradeInProcess"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.FailedPrecondition in
       let: "$a1" := #"etcdserver: no inflight downgrade job"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNoInflightDowngrade"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCNoInflightDowngrade"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.Canceled in
       let: "$a1" := #"etcdserver: request canceled"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCCanceled"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCCanceled"%go) <-[#error] "$r0");;;
       let: "$r0" := (let: "$a0" := codes.DeadlineExceeded in
       let: "$a1" := #"etcdserver: context deadline exceeded"%go in
       (func_call #status #"Error"%go) "$a0" "$a1") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCDeadlineExceeded"%go) <-[error] "$r0");;;
-      let: "$r0" := ((let: "$v0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCEmptyKey"%go)) in
-      let: "$k0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCEmptyKey"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrGRPCDeadlineExceeded"%go) <-[#error] "$r0");;;
+      let: "$r0" := ((let: "$v0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCEmptyKey"%go)) in
+      let: "$k0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCEmptyKey"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v1" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCKeyNotFound"%go)) in
-      let: "$k1" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCKeyNotFound"%go)) in
+      let: "$v1" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCKeyNotFound"%go)) in
+      let: "$k1" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCKeyNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v2" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCValueProvided"%go)) in
-      let: "$k2" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCValueProvided"%go)) in
+      let: "$v2" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCValueProvided"%go)) in
+      let: "$k2" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCValueProvided"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v3" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseProvided"%go)) in
-      let: "$k3" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseProvided"%go)) in
+      let: "$v3" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseProvided"%go)) in
+      let: "$k3" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseProvided"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v4" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyOps"%go)) in
-      let: "$k4" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyOps"%go)) in
+      let: "$v4" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyOps"%go)) in
+      let: "$k4" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyOps"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v5" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCDuplicateKey"%go)) in
-      let: "$k5" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCDuplicateKey"%go)) in
+      let: "$v5" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCDuplicateKey"%go)) in
+      let: "$k5" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCDuplicateKey"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v6" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidSortOption"%go)) in
-      let: "$k6" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidSortOption"%go)) in
+      let: "$v6" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidSortOption"%go)) in
+      let: "$k6" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidSortOption"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v7" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCCompacted"%go)) in
-      let: "$k7" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCCompacted"%go)) in
+      let: "$v7" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCCompacted"%go)) in
+      let: "$k7" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCCompacted"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v8" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCFutureRev"%go)) in
-      let: "$k8" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCFutureRev"%go)) in
+      let: "$v8" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCFutureRev"%go)) in
+      let: "$k8" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCFutureRev"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v9" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoSpace"%go)) in
-      let: "$k9" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoSpace"%go)) in
+      let: "$v9" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoSpace"%go)) in
+      let: "$k9" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoSpace"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v10" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseNotFound"%go)) in
-      let: "$k10" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseNotFound"%go)) in
+      let: "$v10" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseNotFound"%go)) in
+      let: "$k10" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v11" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseExist"%go)) in
-      let: "$k11" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseExist"%go)) in
+      let: "$v11" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseExist"%go)) in
+      let: "$k11" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseExist"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v12" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseTTLTooLarge"%go)) in
-      let: "$k12" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseTTLTooLarge"%go)) in
+      let: "$v12" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseTTLTooLarge"%go)) in
+      let: "$k12" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseTTLTooLarge"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v13" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberExist"%go)) in
-      let: "$k13" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberExist"%go)) in
+      let: "$v13" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberExist"%go)) in
+      let: "$k13" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberExist"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v14" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCPeerURLExist"%go)) in
-      let: "$k14" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCPeerURLExist"%go)) in
+      let: "$v14" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCPeerURLExist"%go)) in
+      let: "$k14" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCPeerURLExist"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v15" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotEnoughStarted"%go)) in
-      let: "$k15" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotEnoughStarted"%go)) in
+      let: "$v15" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotEnoughStarted"%go)) in
+      let: "$k15" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotEnoughStarted"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v16" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberBadURLs"%go)) in
-      let: "$k16" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberBadURLs"%go)) in
+      let: "$v16" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberBadURLs"%go)) in
+      let: "$k16" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberBadURLs"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v17" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotFound"%go)) in
-      let: "$k17" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotFound"%go)) in
+      let: "$v17" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotFound"%go)) in
+      let: "$k17" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v18" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotLearner"%go)) in
-      let: "$k18" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotLearner"%go)) in
+      let: "$v18" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotLearner"%go)) in
+      let: "$k18" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotLearner"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v19" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLearnerNotReady"%go)) in
-      let: "$k19" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLearnerNotReady"%go)) in
+      let: "$v19" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLearnerNotReady"%go)) in
+      let: "$k19" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLearnerNotReady"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v20" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyLearners"%go)) in
-      let: "$k20" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyLearners"%go)) in
+      let: "$v20" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyLearners"%go)) in
+      let: "$k20" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyLearners"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v21" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go)) in
-      let: "$k21" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go)) in
+      let: "$v21" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go)) in
+      let: "$k21" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v22" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooLarge"%go)) in
-      let: "$k22" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooLarge"%go)) in
+      let: "$v22" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooLarge"%go)) in
+      let: "$k22" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooLarge"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v23" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooManyRequests"%go)) in
-      let: "$k23" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooManyRequests"%go)) in
+      let: "$v23" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooManyRequests"%go)) in
+      let: "$k23" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooManyRequests"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v24" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootUserNotExist"%go)) in
-      let: "$k24" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootUserNotExist"%go)) in
+      let: "$v24" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootUserNotExist"%go)) in
+      let: "$k24" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootUserNotExist"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v25" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootRoleNotExist"%go)) in
-      let: "$k25" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootRoleNotExist"%go)) in
+      let: "$v25" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootRoleNotExist"%go)) in
+      let: "$k25" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootRoleNotExist"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v26" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserAlreadyExist"%go)) in
-      let: "$k26" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserAlreadyExist"%go)) in
+      let: "$v26" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserAlreadyExist"%go)) in
+      let: "$k26" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserAlreadyExist"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v27" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserEmpty"%go)) in
-      let: "$k27" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserEmpty"%go)) in
+      let: "$v27" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserEmpty"%go)) in
+      let: "$k27" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserEmpty"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v28" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserNotFound"%go)) in
-      let: "$k28" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserNotFound"%go)) in
+      let: "$v28" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserNotFound"%go)) in
+      let: "$k28" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v29" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleAlreadyExist"%go)) in
-      let: "$k29" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleAlreadyExist"%go)) in
+      let: "$v29" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleAlreadyExist"%go)) in
+      let: "$k29" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleAlreadyExist"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v30" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotFound"%go)) in
-      let: "$k30" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotFound"%go)) in
+      let: "$v30" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotFound"%go)) in
+      let: "$k30" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v31" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleEmpty"%go)) in
-      let: "$k31" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleEmpty"%go)) in
+      let: "$v31" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleEmpty"%go)) in
+      let: "$k31" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleEmpty"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v32" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthFailed"%go)) in
-      let: "$k32" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthFailed"%go)) in
+      let: "$v32" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthFailed"%go)) in
+      let: "$k32" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthFailed"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v33" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionDenied"%go)) in
-      let: "$k33" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionDenied"%go)) in
+      let: "$v33" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionDenied"%go)) in
+      let: "$k33" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionDenied"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v34" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotGranted"%go)) in
-      let: "$k34" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotGranted"%go)) in
+      let: "$v34" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotGranted"%go)) in
+      let: "$k34" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotGranted"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v35" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGranted"%go)) in
-      let: "$k35" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGranted"%go)) in
+      let: "$v35" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGranted"%go)) in
+      let: "$k35" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGranted"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v36" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthNotEnabled"%go)) in
-      let: "$k36" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthNotEnabled"%go)) in
+      let: "$v36" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthNotEnabled"%go)) in
+      let: "$k36" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthNotEnabled"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v37" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthToken"%go)) in
-      let: "$k37" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthToken"%go)) in
+      let: "$v37" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthToken"%go)) in
+      let: "$k37" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthToken"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v38" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthMgmt"%go)) in
-      let: "$k38" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthMgmt"%go)) in
+      let: "$v38" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthMgmt"%go)) in
+      let: "$k38" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthMgmt"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v39" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthOldRevision"%go)) in
-      let: "$k39" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthOldRevision"%go)) in
+      let: "$v39" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthOldRevision"%go)) in
+      let: "$k39" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthOldRevision"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v40" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoLeader"%go)) in
-      let: "$k40" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoLeader"%go)) in
+      let: "$v40" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoLeader"%go)) in
+      let: "$k40" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoLeader"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v41" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotLeader"%go)) in
-      let: "$k41" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotLeader"%go)) in
+      let: "$v41" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotLeader"%go)) in
+      let: "$k41" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotLeader"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v42" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaderChanged"%go)) in
-      let: "$k42" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaderChanged"%go)) in
+      let: "$v42" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaderChanged"%go)) in
+      let: "$k42" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaderChanged"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v43" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotCapable"%go)) in
-      let: "$k43" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotCapable"%go)) in
+      let: "$v43" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotCapable"%go)) in
+      let: "$k43" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotCapable"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v44" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCStopped"%go)) in
-      let: "$k44" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCStopped"%go)) in
+      let: "$v44" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCStopped"%go)) in
+      let: "$k44" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCStopped"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v45" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeout"%go)) in
-      let: "$k45" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeout"%go)) in
+      let: "$v45" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeout"%go)) in
+      let: "$k45" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeout"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v46" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
-      let: "$k46" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
+      let: "$v46" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
+      let: "$k46" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v47" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
-      let: "$k47" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
+      let: "$v47" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
+      let: "$k47" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v48" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUnhealthy"%go)) in
-      let: "$k48" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUnhealthy"%go)) in
+      let: "$v48" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUnhealthy"%go)) in
+      let: "$k48" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUnhealthy"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v49" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCCorrupt"%go)) in
-      let: "$k49" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCCorrupt"%go)) in
+      let: "$v49" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCCorrupt"%go)) in
+      let: "$k49" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCCorrupt"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v50" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotSupportedForLearner"%go)) in
-      let: "$k50" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotSupportedForLearner"%go)) in
+      let: "$v50" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotSupportedForLearner"%go)) in
+      let: "$k50" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotSupportedForLearner"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v51" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCBadLeaderTransferee"%go)) in
-      let: "$k51" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCBadLeaderTransferee"%go)) in
+      let: "$v51" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCBadLeaderTransferee"%go)) in
+      let: "$k51" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCBadLeaderTransferee"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v52" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterVersionUnavailable"%go)) in
-      let: "$k52" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterVersionUnavailable"%go)) in
+      let: "$v52" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterVersionUnavailable"%go)) in
+      let: "$k52" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterVersionUnavailable"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v53" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
-      let: "$k53" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
+      let: "$v53" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
+      let: "$k53" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v54" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
-      let: "$k54" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
+      let: "$v54" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
+      let: "$k54" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v55" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCDowngradeInProcess"%go)) in
-      let: "$k55" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCDowngradeInProcess"%go)) in
+      let: "$v55" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCDowngradeInProcess"%go)) in
+      let: "$k55" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCDowngradeInProcess"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      let: "$v56" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoInflightDowngrade"%go)) in
-      let: "$k56" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoInflightDowngrade"%go)) in
+      let: "$v56" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoInflightDowngrade"%go)) in
+      let: "$k56" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoInflightDowngrade"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
-      map.literal error [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4"); ("$k5", "$v5"); ("$k6", "$v6"); ("$k7", "$v7"); ("$k8", "$v8"); ("$k9", "$v9"); ("$k10", "$v10"); ("$k11", "$v11"); ("$k12", "$v12"); ("$k13", "$v13"); ("$k14", "$v14"); ("$k15", "$v15"); ("$k16", "$v16"); ("$k17", "$v17"); ("$k18", "$v18"); ("$k19", "$v19"); ("$k20", "$v20"); ("$k21", "$v21"); ("$k22", "$v22"); ("$k23", "$v23"); ("$k24", "$v24"); ("$k25", "$v25"); ("$k26", "$v26"); ("$k27", "$v27"); ("$k28", "$v28"); ("$k29", "$v29"); ("$k30", "$v30"); ("$k31", "$v31"); ("$k32", "$v32"); ("$k33", "$v33"); ("$k34", "$v34"); ("$k35", "$v35"); ("$k36", "$v36"); ("$k37", "$v37"); ("$k38", "$v38"); ("$k39", "$v39"); ("$k40", "$v40"); ("$k41", "$v41"); ("$k42", "$v42"); ("$k43", "$v43"); ("$k44", "$v44"); ("$k45", "$v45"); ("$k46", "$v46"); ("$k47", "$v47"); ("$k48", "$v48"); ("$k49", "$v49"); ("$k50", "$v50"); ("$k51", "$v51"); ("$k52", "$v52"); ("$k53", "$v53"); ("$k54", "$v54"); ("$k55", "$v55"); ("$k56", "$v56")])) in
-      do:  ((globals.get #rpctypes.rpctypes #"errStringToError"%go) <-[mapT stringT error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCEmptyKey"%go)) in
+      map.literal #stringT #error [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4"); ("$k5", "$v5"); ("$k6", "$v6"); ("$k7", "$v7"); ("$k8", "$v8"); ("$k9", "$v9"); ("$k10", "$v10"); ("$k11", "$v11"); ("$k12", "$v12"); ("$k13", "$v13"); ("$k14", "$v14"); ("$k15", "$v15"); ("$k16", "$v16"); ("$k17", "$v17"); ("$k18", "$v18"); ("$k19", "$v19"); ("$k20", "$v20"); ("$k21", "$v21"); ("$k22", "$v22"); ("$k23", "$v23"); ("$k24", "$v24"); ("$k25", "$v25"); ("$k26", "$v26"); ("$k27", "$v27"); ("$k28", "$v28"); ("$k29", "$v29"); ("$k30", "$v30"); ("$k31", "$v31"); ("$k32", "$v32"); ("$k33", "$v33"); ("$k34", "$v34"); ("$k35", "$v35"); ("$k36", "$v36"); ("$k37", "$v37"); ("$k38", "$v38"); ("$k39", "$v39"); ("$k40", "$v40"); ("$k41", "$v41"); ("$k42", "$v42"); ("$k43", "$v43"); ("$k44", "$v44"); ("$k45", "$v45"); ("$k46", "$v46"); ("$k47", "$v47"); ("$k48", "$v48"); ("$k49", "$v49"); ("$k50", "$v50"); ("$k51", "$v51"); ("$k52", "$v52"); ("$k53", "$v53"); ("$k54", "$v54"); ("$k55", "$v55"); ("$k56", "$v56")])) in
+      do:  ((globals.get #rpctypes.rpctypes #"errStringToError"%go) <-[#(mapT stringT error)] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCEmptyKey"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrEmptyKey"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCKeyNotFound"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrEmptyKey"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCKeyNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrKeyNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCValueProvided"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrKeyNotFound"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCValueProvided"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrValueProvided"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseProvided"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrValueProvided"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseProvided"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaseProvided"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyOps"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaseProvided"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyOps"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrTooManyOps"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCDuplicateKey"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrTooManyOps"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCDuplicateKey"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrDuplicateKey"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidSortOption"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrDuplicateKey"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidSortOption"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrInvalidSortOption"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCCompacted"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrInvalidSortOption"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCCompacted"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrCompacted"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCFutureRev"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrCompacted"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCFutureRev"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrFutureRev"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoSpace"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrFutureRev"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoSpace"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrNoSpace"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseNotFound"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrNoSpace"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaseNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseExist"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaseNotFound"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseExist"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaseExist"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseTTLTooLarge"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaseExist"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaseTTLTooLarge"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaseTTLTooLarge"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberExist"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaseTTLTooLarge"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberExist"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberExist"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCPeerURLExist"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberExist"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCPeerURLExist"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrPeerURLExist"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotEnoughStarted"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrPeerURLExist"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotEnoughStarted"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberNotEnoughStarted"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberBadURLs"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberNotEnoughStarted"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberBadURLs"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberBadURLs"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotFound"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberBadURLs"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotLearner"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberNotFound"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCMemberNotLearner"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberNotLearner"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLearnerNotReady"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberNotLearner"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLearnerNotReady"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberLearnerNotReady"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyLearners"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrMemberLearnerNotReady"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTooManyLearners"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrTooManyLearners"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooLarge"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrTooManyLearners"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooLarge"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrRequestTooLarge"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooManyRequests"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrRequestTooLarge"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRequestTooManyRequests"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrTooManyRequests"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootUserNotExist"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrTooManyRequests"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootUserNotExist"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrRootUserNotExist"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootRoleNotExist"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrRootUserNotExist"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRootRoleNotExist"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrRootRoleNotExist"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserAlreadyExist"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrRootRoleNotExist"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserAlreadyExist"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrUserAlreadyExist"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserEmpty"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrUserAlreadyExist"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserEmpty"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrUserEmpty"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserNotFound"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrUserEmpty"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUserNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrUserNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleAlreadyExist"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrUserNotFound"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleAlreadyExist"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrRoleAlreadyExist"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotFound"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrRoleAlreadyExist"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotFound"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrRoleNotFound"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleEmpty"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrRoleNotFound"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleEmpty"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrRoleEmpty"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthFailed"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrRoleEmpty"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthFailed"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrAuthFailed"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionDenied"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrAuthFailed"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionDenied"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrPermissionDenied"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotGranted"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrPermissionDenied"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCRoleNotGranted"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrRoleNotGranted"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGranted"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrRoleNotGranted"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCPermissionNotGranted"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrPermissionNotGranted"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthNotEnabled"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrPermissionNotGranted"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthNotEnabled"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrAuthNotEnabled"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthToken"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrAuthNotEnabled"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthToken"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrInvalidAuthToken"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthOldRevision"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrInvalidAuthToken"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCAuthOldRevision"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrAuthOldRevision"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthMgmt"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrAuthOldRevision"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidAuthMgmt"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrInvalidAuthMgmt"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrInvalidAuthMgmt"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterIDMismatch"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrClusterIDMismatch"%go) <-[error] "$r0");;;
-      let: "$r0" := (![error] (globals.get #rpctypes.rpctypes #"ErrClusterIDMismatch"%go)) in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrClusterIdMismatch"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoLeader"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrClusterIDMismatch"%go) <-[#error] "$r0");;;
+      let: "$r0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrClusterIDMismatch"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrClusterIdMismatch"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoLeader"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrNoLeader"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotLeader"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrNoLeader"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotLeader"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrNotLeader"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaderChanged"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrNotLeader"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCLeaderChanged"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaderChanged"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotCapable"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrLeaderChanged"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNotCapable"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrNotCapable"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCStopped"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrNotCapable"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCStopped"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrStopped"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeout"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrStopped"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeout"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrTimeout"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrTimeout"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToLeaderFail"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrTimeoutDueToLeaderFail"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrTimeoutDueToLeaderFail"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutDueToConnectionLost"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrTimeoutDueToConnectionLost"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutWaitAppliedIndex"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrTimeoutDueToConnectionLost"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCTimeoutWaitAppliedIndex"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrTimeoutWaitAppliedIndex"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCUnhealthy"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrTimeoutWaitAppliedIndex"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCUnhealthy"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrUnhealthy"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCCorrupt"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrUnhealthy"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCCorrupt"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrCorrupt"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCBadLeaderTransferee"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrCorrupt"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCBadLeaderTransferee"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrBadLeaderTransferee"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterVersionUnavailable"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrBadLeaderTransferee"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCClusterVersionUnavailable"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrClusterVersionUnavailable"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrClusterVersionUnavailable"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCWrongDowngradeVersionFormat"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrWrongDowngradeVersionFormat"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrWrongDowngradeVersionFormat"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCInvalidDowngradeTargetVersion"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrInvalidDowngradeTargetVersion"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCDowngradeInProcess"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrInvalidDowngradeTargetVersion"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCDowngradeInProcess"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrDowngradeInProcess"%go) <-[error] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoInflightDowngrade"%go)) in
+      do:  ((globals.get #rpctypes.rpctypes #"ErrDowngradeInProcess"%go) <-[#error] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoInflightDowngrade"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
-      do:  ((globals.get #rpctypes.rpctypes #"ErrNoInflightDowngrade"%go) <-[error] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"ErrNoInflightDowngrade"%go) <-[#error] "$r0");;;
       let: "$r0" := #"hasleader"%go in
-      do:  ((globals.get #rpctypes.rpctypes #"MetadataRequireLeaderKey"%go) <-[stringT] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"MetadataRequireLeaderKey"%go) <-[#stringT] "$r0");;;
       let: "$r0" := #"true"%go in
-      do:  ((globals.get #rpctypes.rpctypes #"MetadataHasLeader"%go) <-[stringT] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"MetadataHasLeader"%go) <-[#stringT] "$r0");;;
       let: "$r0" := #"client-api-version"%go in
-      do:  ((globals.get #rpctypes.rpctypes #"MetadataClientAPIVersionKey"%go) <-[stringT] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"MetadataClientAPIVersionKey"%go) <-[#stringT] "$r0");;;
       let: "$r0" := #"token"%go in
-      do:  ((globals.get #rpctypes.rpctypes #"TokenFieldNameGRPC"%go) <-[stringT] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"TokenFieldNameGRPC"%go) <-[#stringT] "$r0");;;
       let: "$r0" := #"authorization"%go in
-      do:  ((globals.get #rpctypes.rpctypes #"TokenFieldNameSwagger"%go) <-[stringT] "$r0"))
+      do:  ((globals.get #rpctypes.rpctypes #"TokenFieldNameSwagger"%go) <-[#stringT] "$r0"))
       ).
 
 End code.

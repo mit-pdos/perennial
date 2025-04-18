@@ -31,7 +31,7 @@ Section grove.
       let: "c" := ExternalOp ConnectOp "e" in
       let: "err" := Fst "c" in
       let: "socket" := ref (Snd "c") in
-      struct.make ConnectRet [{
+      struct.make #ConnectRet [{
         "Err" ::= "err" ;
         "Connection" ::= "socket"
       }].
@@ -52,7 +52,7 @@ Section grove.
       let: "slice" := Snd "r" in
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
-      struct.make ReceiveRet [{
+      struct.make #ReceiveRet [{
         "Err" ::= "err" ;
         "Data" ::= InjL ("ptr", "len", "len")
       }].

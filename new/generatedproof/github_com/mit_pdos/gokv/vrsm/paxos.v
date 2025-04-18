@@ -45,7 +45,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_singleClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cl':
   PureWp True
-    (struct.make paxos.singleClerk (alist_val [
+    (struct.make #paxos.singleClerk (alist_val [
       "cl" ::= #cl'
     ]))%struct
     #(singleClerk.mk cl').
@@ -106,7 +106,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_applyAsFollowerArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} epoch' nextIndex' state':
   PureWp True
-    (struct.make paxos.applyAsFollowerArgs (alist_val [
+    (struct.make #paxos.applyAsFollowerArgs (alist_val [
       "epoch" ::= #epoch';
       "nextIndex" ::= #nextIndex';
       "state" ::= #state'
@@ -156,7 +156,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_applyAsFollowerReply `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} err':
   PureWp True
-    (struct.make paxos.applyAsFollowerReply (alist_val [
+    (struct.make #paxos.applyAsFollowerReply (alist_val [
       "err" ::= #err'
     ]))%struct
     #(applyAsFollowerReply.mk err').
@@ -202,7 +202,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_enterNewEpochArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} epoch':
   PureWp True
-    (struct.make paxos.enterNewEpochArgs (alist_val [
+    (struct.make #paxos.enterNewEpochArgs (alist_val [
       "epoch" ::= #epoch'
     ]))%struct
     #(enterNewEpochArgs.mk epoch').
@@ -260,7 +260,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_enterNewEpochReply `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} err' acceptedEpoch' nextIndex' state':
   PureWp True
-    (struct.make paxos.enterNewEpochReply (alist_val [
+    (struct.make #paxos.enterNewEpochReply (alist_val [
       "err" ::= #err';
       "acceptedEpoch" ::= #acceptedEpoch';
       "nextIndex" ::= #nextIndex';
@@ -316,7 +316,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_applyReply `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} err' ret':
   PureWp True
-    (struct.make paxos.applyReply (alist_val [
+    (struct.make #paxos.applyReply (alist_val [
       "err" ::= #err';
       "ret" ::= #ret'
     ]))%struct
@@ -380,7 +380,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_paxosState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} epoch' acceptedEpoch' nextIndex' state' isLeader':
   PureWp True
-    (struct.make paxos.paxosState (alist_val [
+    (struct.make #paxos.paxosState (alist_val [
       "epoch" ::= #epoch';
       "acceptedEpoch" ::= #acceptedEpoch';
       "nextIndex" ::= #nextIndex';
@@ -446,7 +446,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' ps' storage' clerks':
   PureWp True
-    (struct.make paxos.Server (alist_val [
+    (struct.make #paxos.Server (alist_val [
       "mu" ::= #mu';
       "ps" ::= #ps';
       "storage" ::= #storage';

@@ -1,5 +1,6 @@
 From New.golang.theory Require Import exception mem typing list.
-From New.golang.defn Require Import globals.
+From New.golang.defn Require Import pkg.
+From New.golang.defn Require Export globals.
 From iris.base_logic.lib Require Import ghost_map ghost_var.
 From Coq Require Import Ascii Equality.
 From Perennial Require Import base.

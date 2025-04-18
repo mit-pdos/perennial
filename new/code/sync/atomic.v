@@ -23,8 +23,8 @@ Definition Int32 : go_type := structT [
    go: type.go:74:17 *)
 Definition Int32__Load : val :=
   rec: "Int32__Load" "x" <> :=
-    exception_do (let: "x" := (ref_ty ptrT "x") in
-    return: (let: "$a0" := (struct.field_ref Int32 "v" (![ptrT] "x")) in
+    exception_do (let: "x" := (alloc "x") in
+    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
      (func_call #atomic.atomic #"LoadInt32"%go) "$a0")).
 
 (* Store atomically stores val into x.
@@ -32,10 +32,10 @@ Definition Int32__Load : val :=
    go: type.go:77:17 *)
 Definition Int32__Store : val :=
   rec: "Int32__Store" "x" "val" :=
-    exception_do (let: "x" := (ref_ty ptrT "x") in
-    let: "val" := (ref_ty int32T "val") in
-    do:  (let: "$a0" := (struct.field_ref Int32 "v" (![ptrT] "x")) in
-    let: "$a1" := (![int32T] "val") in
+    exception_do (let: "x" := (alloc "x") in
+    let: "val" := (alloc "val") in
+    do:  (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
+    let: "$a1" := (![#int32T] "val") in
     (func_call #atomic.atomic #"StoreInt32"%go) "$a0" "$a1")).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
@@ -43,13 +43,13 @@ Definition Int32__Store : val :=
    go: type.go:83:17 *)
 Definition Int32__CompareAndSwap : val :=
   rec: "Int32__CompareAndSwap" "x" "old" "new" :=
-    exception_do (let: "swapped" := (ref_ty boolT (zero_val boolT)) in
-    let: "x" := (ref_ty ptrT "x") in
-    let: "new" := (ref_ty int32T "new") in
-    let: "old" := (ref_ty int32T "old") in
-    return: (let: "$a0" := (struct.field_ref Int32 "v" (![ptrT] "x")) in
-     let: "$a1" := (![int32T] "old") in
-     let: "$a2" := (![int32T] "new") in
+    exception_do (let: "swapped" := (alloc (type.zero_val #boolT)) in
+    let: "x" := (alloc "x") in
+    let: "new" := (alloc "new") in
+    let: "old" := (alloc "old") in
+    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int32T] "old") in
+     let: "$a2" := (![#int32T] "new") in
      (func_call #atomic.atomic #"CompareAndSwapInt32"%go) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
@@ -57,11 +57,11 @@ Definition Int32__CompareAndSwap : val :=
    go: type.go:88:17 *)
 Definition Int32__Add : val :=
   rec: "Int32__Add" "x" "delta" :=
-    exception_do (let: "new" := (ref_ty int32T (zero_val int32T)) in
-    let: "x" := (ref_ty ptrT "x") in
-    let: "delta" := (ref_ty int32T "delta") in
-    return: (let: "$a0" := (struct.field_ref Int32 "v" (![ptrT] "x")) in
-     let: "$a1" := (![int32T] "delta") in
+    exception_do (let: "new" := (alloc (type.zero_val #int32T)) in
+    let: "x" := (alloc "x") in
+    let: "delta" := (alloc "delta") in
+    return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#int32T] "delta") in
      (func_call #atomic.atomic #"AddInt32"%go) "$a0" "$a1")).
 
 Definition align64 : go_type := structT [
@@ -78,8 +78,8 @@ Definition Uint64 : go_type := structT [
    go: type.go:169:18 *)
 Definition Uint64__Load : val :=
   rec: "Uint64__Load" "x" <> :=
-    exception_do (let: "x" := (ref_ty ptrT "x") in
-    return: (let: "$a0" := (struct.field_ref Uint64 "v" (![ptrT] "x")) in
+    exception_do (let: "x" := (alloc "x") in
+    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
      (func_call #atomic.atomic #"LoadUint64"%go) "$a0")).
 
 (* Store atomically stores val into x.
@@ -87,10 +87,10 @@ Definition Uint64__Load : val :=
    go: type.go:172:18 *)
 Definition Uint64__Store : val :=
   rec: "Uint64__Store" "x" "val" :=
-    exception_do (let: "x" := (ref_ty ptrT "x") in
-    let: "val" := (ref_ty uint64T "val") in
-    do:  (let: "$a0" := (struct.field_ref Uint64 "v" (![ptrT] "x")) in
-    let: "$a1" := (![uint64T] "val") in
+    exception_do (let: "x" := (alloc "x") in
+    let: "val" := (alloc "val") in
+    do:  (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
+    let: "$a1" := (![#uint64T] "val") in
     (func_call #atomic.atomic #"StoreUint64"%go) "$a0" "$a1")).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
@@ -98,13 +98,13 @@ Definition Uint64__Store : val :=
    go: type.go:178:18 *)
 Definition Uint64__CompareAndSwap : val :=
   rec: "Uint64__CompareAndSwap" "x" "old" "new" :=
-    exception_do (let: "swapped" := (ref_ty boolT (zero_val boolT)) in
-    let: "x" := (ref_ty ptrT "x") in
-    let: "new" := (ref_ty uint64T "new") in
-    let: "old" := (ref_ty uint64T "old") in
-    return: (let: "$a0" := (struct.field_ref Uint64 "v" (![ptrT] "x")) in
-     let: "$a1" := (![uint64T] "old") in
-     let: "$a2" := (![uint64T] "new") in
+    exception_do (let: "swapped" := (alloc (type.zero_val #boolT)) in
+    let: "x" := (alloc "x") in
+    let: "new" := (alloc "new") in
+    let: "old" := (alloc "old") in
+    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint64T] "old") in
+     let: "$a2" := (![#uint64T] "new") in
      (func_call #atomic.atomic #"CompareAndSwapUint64"%go) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
@@ -112,11 +112,11 @@ Definition Uint64__CompareAndSwap : val :=
    go: type.go:183:18 *)
 Definition Uint64__Add : val :=
   rec: "Uint64__Add" "x" "delta" :=
-    exception_do (let: "new" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "x" := (ref_ty ptrT "x") in
-    let: "delta" := (ref_ty uint64T "delta") in
-    return: (let: "$a0" := (struct.field_ref Uint64 "v" (![ptrT] "x")) in
-     let: "$a1" := (![uint64T] "delta") in
+    exception_do (let: "new" := (alloc (type.zero_val #uint64T)) in
+    let: "x" := (alloc "x") in
+    let: "delta" := (alloc "delta") in
+    return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
+     let: "$a1" := (![#uint64T] "delta") in
      (func_call #atomic.atomic #"AddUint64"%go) "$a0" "$a1")).
 
 Definition vars' : list (go_string * go_type) := [].

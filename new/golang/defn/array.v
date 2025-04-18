@@ -1,28 +1,35 @@
-From New Require Export notation.
-From New.golang.defn Require Export typing list.
+From New Require Import notation.
+From New.golang.defn Require Import typing list.
+
+(** Fixed-size arrays.
+
+NOTE: this library is incomplete, even the signatures here could be wrong.
+*)
 
 Module array.
 Section defn.
   Context `{ffi_syntax}.
 
-  Definition elem_ref (t : go_type) : val.
-  Admitted.
+  Definition elem_ref : val :=
+    λ: "et" "a" "i", Panic "todo".
 
-  Definition elem_get (t : go_type) : val.
-  Admitted.
+  Definition elem_get : val :=
+    λ: "et" "a" "i", Panic "todo".
 
-  Definition len (t : go_type) : val.
-  Admitted.
+  (* t here is the array type, not the element type *)
+  Definition len : val :=
+    λ: "t", Panic "todo".
 
-  Definition cap (t : go_type) : val.
-  Admitted.
+  (* t here is the array type, not the element type *)
+  Definition cap : val :=
+    λ: "t", len "t".
 
-  Definition slice : val.
-  Admitted.
+  Definition slice : val :=
+    λ: "t" "a", Panic "todo".
 
   (* takes a list as input, and makes an array value *)
   Definition literal : val :=
     rec: "literal" "len" "elems" :=
-      list.Match (λ: <>, #()) (λ: "hd" "tl", ("hd", "literal" "tl")).
+      list.Match "elems" (λ: <>, #()) (λ: "hd" "tl", ("hd", "literal" "tl")).
 End defn.
 End array.

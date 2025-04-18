@@ -45,7 +45,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_cacheValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} v' l':
   PureWp True
-    (struct.make cachekv.cacheValue (alist_val [
+    (struct.make #cachekv.cacheValue (alist_val [
       "v" ::= #v';
       "l" ::= #l'
     ]))%struct
@@ -101,7 +101,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_CacheKv `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv' mu' cache':
   PureWp True
-    (struct.make cachekv.CacheKv (alist_val [
+    (struct.make #cachekv.CacheKv (alist_val [
       "kv" ::= #kv';
       "mu" ::= #mu';
       "cache" ::= #cache'

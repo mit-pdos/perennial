@@ -60,7 +60,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Field `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' Type' Integer' String' Interface':
   PureWp True
-    (struct.make zapcore.Field (alist_val [
+    (struct.make #zapcore.Field (alist_val [
       "Key" ::= #Key';
       "Type" ::= #Type';
       "Integer" ::= #Integer';

@@ -1,9 +1,11 @@
 From Perennial.goose_lang Require Import lifting.
 From New.golang.defn Require Export struct.
-From New.golang.theory Require Import mem exception list typing.
+From New.golang.theory Require Import typed_pointsto exception list typing dynamic_typing.
 From Perennial.Helpers Require Import NamedProps.
 From RecordUpdate Require Export RecordUpdate.
 From Perennial Require Import base.
+
+Set Default Proof Using "Type".
 
 Module struct.
 Section goose_lang.
@@ -13,6 +15,23 @@ Implicit Types (d : struct.descriptor).
 Infix "=?" := (ByteString.eqb).
 
 (* FIXME: what does _f mean? Want better name. *)
+Definition field_offset_f (t : go_type) f : (w64 * go_type) :=
+  let missing := W64 (2^64-1) in
+  match t with
+  | structT d =>
+      (fix field_offset_struct (d : struct.descriptor) : (w64 * go_type) :=
+         match d with
+         | [] => (missing, badT)
+         | (f',t)::fs => if f' =? f then (W64 0, t)
+                         else match field_offset_struct fs with
+                              | (off, t') => (word.add (go_type_size t) off, t')
+                              end
+         end) d
+  | _ => (missing, badT)
+  end .
+
+Definition field_ty_f t f : go_type := (field_offset_f t f).2.
+
 Definition field_get_f t f0: val -> val :=
   match t with
   | structT d =>
@@ -47,7 +66,7 @@ Definition field_set_f t f0 fv: val -> val :=
   end
   .
 
-Definition field_ref_f_def t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
+Definition field_ref_f_def t f0 l: loc := l +ₗ uint.Z (field_offset_f t f0).1.
 Program Definition field_ref_f := sealed @field_ref_f_def.
 Definition field_ref_f_unseal : field_ref_f = _ := seal_eq _.
 
@@ -159,13 +178,84 @@ End lemmas.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Global Instance pure_struct_field_ref_wp t f (l : loc) :
-  PureWp True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
+#[global] Instance field_offset_into_val : IntoVal (w64 * go_type) :=
+  { to_val_def := fun '(off, t) => (#off, #t)%V; }.
+
+Lemma field_off_to_val_unfold (p: w64 * go_type) :
+  #p = (#p.1, #p.2)%V.
+Proof.
+  destruct p.
+  rewrite {1}to_val_unseal //=.
+Qed.
+
+Lemma wp_struct_field_offset t f stk E :
+  {{{ True }}}
+    struct.field_offset #t #f @ stk; E
+  {{{ RET #(struct.field_offset_f t f); £1 }}}.
+Proof.
+  induction t using go_type_ind;
+    try solve [
+        iIntros (Φ) "_ HΦ"; wp_call_lc "?";
+        rewrite [in #(_, _)]to_val_unseal /=;
+          iApply "HΦ"; done
+      ].
+  iIntros (Φ) "_ HΦ"; wp_call_lc "?".
+  iSpecialize ("HΦ" with "[$]").
+  iInduction decls as [|[f' ft] decls] forall (Φ).
+  - wp_pures.
+    rewrite field_off_to_val_unfold /=.
+    iApply "HΦ".
+  - match goal with
+    | |- context[environments.Esnoc _ (INamed "IHdecls") ?P] =>
+        set (IHdeclsP := P)
+    end.
+    wp_pures.
+    rewrite !field_off_to_val_unfold !desc_to_val_unfold /=.
+    wp_pures.
+    destruct (bool_decide_reflect (f' = f)); subst.
+    + rewrite -> bool_decide_eq_true_2 by auto; wp_pures.
+      rewrite -> ByteString.eqb_eq by auto.
+      iApply "HΦ".
+    + rewrite -> bool_decide_eq_false_2 by auto; wp_pures.
+      rewrite -> ByteString.eqb_ne by auto.
+      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
+      iApply "IHdecls".
+      { naive_solver. }
+      wp_pures.
+      rewrite field_off_to_val_unfold.
+      destruct ((fix field_offset_struct (d : struct.descriptor) :=
+                  match d with
+                  | nil => _
+                  | cons _ _ => _
+                  end)
+        decls) eqn:Hoff.
+      wp_pures.
+      wp_apply wp_type_size.
+      iIntros "_".
+      wp_pures.
+      iApply "HΦ".
+Qed.
+
+Global Instance pure_struct_field_offset_wp (t: go_type) f :
+  PureWp True (struct.field_offset #t #f) (#(struct.field_offset_f t f)).
+Proof.
+  iIntros (?????) "HΦ".
+  wp_apply wp_struct_field_offset.
+  iIntros "Hlc". iApply "HΦ". done.
+Qed.
+
+Global Instance pure_struct_field_ref_wp (t: go_type) f (l : loc) :
+  PureWp True (struct.field_ref #t #f #l) #(struct.field_ref_f t f l).
 Proof.
   iIntros (?????) "HΦ".
   wp_call_lc "?".
   iSpecialize ("HΦ" with "[$]").
-  iExactEq "HΦ". rewrite struct.field_ref_f_unseal /struct.field_ref_f_def.
+  destruct (struct.field_offset_f t f) eqn:Hoff.
+  rewrite field_off_to_val_unfold /=; wp_pures.
+  iExactEq "HΦ".
+  repeat f_equal.
+  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def.
+  rewrite Hoff /=.
   repeat (f_equal; try word).
 Qed.
 
@@ -178,26 +268,27 @@ Definition is_structT (t : go_type) : Prop :=
 Definition wp_struct_make (t : go_type) (l : list (go_string*val)) :
   is_structT t →
   PureWp True
-  (struct.make t (alist_val l))
+  (struct.make #t (alist_val l))
   (struct.val_aux t l).
 Proof.
   intros ??????K.
-  rewrite struct.make_unseal struct.val_aux_unseal.
+  rewrite struct.make_unseal /struct.make_def struct.val_aux_unseal.
   destruct t; try by exfalso.
-  unfold struct.make_def.
   iIntros "HΦ".
-  iInduction decls as [] "IH" forall (Φ K).
-  - wp_pure_lc "?". by iApply "HΦ".
-  - destruct a.
-    wp_pure_lc "?". wp_pures.
-    unfold struct.val_aux_def.
+  wp_pures.
+  iInduction decls as [|[f ft] decls] "IH" forall (Φ K).
+  - wp_pure_lc "?". wp_pures. by iApply "HΦ".
+  - wp_pure_lc "?"; wp_pures.
+    rewrite !desc_to_val_unfold /=; wp_pures.
     destruct (alist_lookup_f _ _).
     + wp_pures.
-      unshelve wp_apply ("IH" $! _ _ []); first done.
+      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
+      unshelve iApply ("IH" $! _ _ []); first done.
       iIntros "_".
       simpl fill. wp_pures. by iApply "HΦ".
     + wp_pures.
-      unshelve wp_apply ("IH" $! _ _ []); first done.
+      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
+      unshelve iApply ("IH" $! _ _ []); first done.
       iIntros "_".
       simpl fill. wp_pures. by iApply "HΦ".
 Qed.

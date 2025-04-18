@@ -68,7 +68,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Election `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} session' keyPrefix' leaderKey' leaderRev' leaderSession' hdr':
   PureWp True
-    (struct.make concurrency.Election (alist_val [
+    (struct.make #concurrency.Election (alist_val [
       "session" ::= #session';
       "keyPrefix" ::= #keyPrefix';
       "leaderKey" ::= #leaderKey';
@@ -140,7 +140,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Mutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s' pfx' myKey' myRev' hdr':
   PureWp True
-    (struct.make concurrency.Mutex (alist_val [
+    (struct.make #concurrency.Mutex (alist_val [
       "s" ::= #s';
       "pfx" ::= #pfx';
       "myKey" ::= #myKey';
@@ -194,7 +194,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_lockerMutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Mutex':
   PureWp True
-    (struct.make concurrency.lockerMutex (alist_val [
+    (struct.make #concurrency.lockerMutex (alist_val [
       "Mutex" ::= #Mutex'
     ]))%struct
     #(lockerMutex.mk Mutex').
@@ -260,7 +260,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Session `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} client' opts' id' ctx' cancel' donec':
   PureWp True
-    (struct.make concurrency.Session (alist_val [
+    (struct.make #concurrency.Session (alist_val [
       "client" ::= #client';
       "opts" ::= #opts';
       "id" ::= #id';
@@ -324,7 +324,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_sessionOptions `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ttl' leaseID' ctx':
   PureWp True
-    (struct.make concurrency.sessionOptions (alist_val [
+    (struct.make #concurrency.sessionOptions (alist_val [
       "ttl" ::= #ttl';
       "leaseID" ::= #leaseID';
       "ctx" ::= #ctx'
@@ -395,7 +395,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmError `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} err':
   PureWp True
-    (struct.make concurrency.stmError (alist_val [
+    (struct.make #concurrency.stmError (alist_val [
       "err" ::= #err'
     ]))%struct
     #(stmError.mk err').
@@ -449,7 +449,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmOptions `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} iso' ctx' prefetch':
   PureWp True
-    (struct.make concurrency.stmOptions (alist_val [
+    (struct.make #concurrency.stmOptions (alist_val [
       "iso" ::= #iso';
       "ctx" ::= #ctx';
       "prefetch" ::= #prefetch'
@@ -510,7 +510,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} resp' err':
   PureWp True
-    (struct.make concurrency.stmResponse (alist_val [
+    (struct.make #concurrency.stmResponse (alist_val [
       "resp" ::= #resp';
       "err" ::= #err'
     ]))%struct
@@ -592,7 +592,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stm `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} client' ctx' rset' wset' getOpts' conflicts':
   PureWp True
-    (struct.make concurrency.stm (alist_val [
+    (struct.make #concurrency.stm (alist_val [
       "client" ::= #client';
       "ctx" ::= #ctx';
       "rset" ::= #rset';
@@ -652,7 +652,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmPut `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} val' op':
   PureWp True
-    (struct.make concurrency.stmPut (alist_val [
+    (struct.make #concurrency.stmPut (alist_val [
       "val" ::= #val';
       "op" ::= #op'
     ]))%struct
@@ -704,7 +704,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_stmSerializable `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} stm' prefetch':
   PureWp True
-    (struct.make concurrency.stmSerializable (alist_val [
+    (struct.make #concurrency.stmSerializable (alist_val [
       "stm" ::= #stm';
       "prefetch" ::= #prefetch'
     ]))%struct

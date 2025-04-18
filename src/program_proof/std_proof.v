@@ -268,7 +268,7 @@ Proof.
       iExactEq "HΦ".
       repeat f_equal.
       apply bool_decide_ext.
-      pose proof (mul_overflow_check_correct x y ltac:(word) ltac:(word)).
+      pose proof (mul_overflow_check_correct x y ltac:(word)).
       change (word.sub (word.slu (W64 1) (W64 64)) (W64 1)) with (W64 (2^64-1)).
       word.
 Qed.

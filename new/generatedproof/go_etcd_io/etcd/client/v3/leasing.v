@@ -62,7 +62,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_leaseCache `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' entries' revokes' header':
   PureWp True
-    (struct.make leasing.leaseCache (alist_val [
+    (struct.make #leasing.leaseCache (alist_val [
       "mu" ::= #mu';
       "entries" ::= #entries';
       "revokes" ::= #revokes';
@@ -122,7 +122,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_leaseKey `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} response' rev' waitc':
   PureWp True
-    (struct.make leasing.leaseKey (alist_val [
+    (struct.make #leasing.leaseKey (alist_val [
       "response" ::= #response';
       "rev" ::= #rev';
       "waitc" ::= #waitc'
@@ -208,7 +208,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_leasingKV `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cl' kv' pfx' leases' ctx' cancel' wg' sessionOpts' session' sessionc':
   PureWp True
-    (struct.make leasing.leasingKV (alist_val [
+    (struct.make #leasing.leasingKV (alist_val [
       "cl" ::= #cl';
       "kv" ::= #kv';
       "pfx" ::= #pfx';
@@ -292,7 +292,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_txnLeasing `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Txn' lkv' ctx' cs' opst' opse':
   PureWp True
-    (struct.make leasing.txnLeasing (alist_val [
+    (struct.make #leasing.txnLeasing (alist_val [
       "Txn" ::= #Txn';
       "lkv" ::= #lkv';
       "ctx" ::= #ctx';

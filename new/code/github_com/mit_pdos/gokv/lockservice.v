@@ -16,29 +16,29 @@ Definition LockClerk : go_type := structT [
 (* go: lock_clerk.go:11:22 *)
 Definition LockClerk__Lock : val :=
   rec: "LockClerk__Lock" "ck" "key" :=
-    exception_do (let: "ck" := (ref_ty ptrT "ck") in
-    let: "key" := (ref_ty stringT "key") in
-    (for: (λ: <>, (let: "$a0" := (![stringT] "key") in
+    exception_do (let: "ck" := (alloc "ck") in
+    let: "key" := (alloc "key") in
+    (for: (λ: <>, (let: "$a0" := (![#stringT] "key") in
     let: "$a1" := #""%go in
     let: "$a2" := #"1"%go in
-    (interface.get #"ConditionalPut"%go (![kv.KvCput] (struct.field_ref LockClerk "kv" (![ptrT] "ck")))) "$a0" "$a1" "$a2") ≠ #"ok"%go); (λ: <>, Skip) := λ: <>,
+    (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref #LockClerk #"kv"%go (![#ptrT] "ck")))) "$a0" "$a1" "$a2") ≠ #"ok"%go); (λ: <>, Skip) := λ: <>,
       do:  #())).
 
 (* go: lock_clerk.go:16:22 *)
 Definition LockClerk__Unlock : val :=
   rec: "LockClerk__Unlock" "ck" "key" :=
-    exception_do (let: "ck" := (ref_ty ptrT "ck") in
-    let: "key" := (ref_ty stringT "key") in
-    do:  (let: "$a0" := (![stringT] "key") in
+    exception_do (let: "ck" := (alloc "ck") in
+    let: "key" := (alloc "key") in
+    do:  (let: "$a0" := (![#stringT] "key") in
     let: "$a1" := #""%go in
-    (interface.get #"Put"%go (![kv.KvCput] (struct.field_ref LockClerk "kv" (![ptrT] "ck")))) "$a0" "$a1")).
+    (interface.get #"Put"%go (![#kv.KvCput] (struct.field_ref #LockClerk #"kv"%go (![#ptrT] "ck")))) "$a0" "$a1")).
 
 (* go: lock_clerk.go:20:6 *)
 Definition MakeLockClerk : val :=
   rec: "MakeLockClerk" "kv" :=
-    exception_do (let: "kv" := (ref_ty kv.KvCput "kv") in
-    return: (ref_ty LockClerk (let: "$kv" := (![kv.KvCput] "kv") in
-     struct.make LockClerk [{
+    exception_do (let: "kv" := (alloc "kv") in
+    return: (alloc (let: "$kv" := (![#kv.KvCput] "kv") in
+     struct.make #LockClerk [{
        "kv" ::= "$kv"
      }]))).
 

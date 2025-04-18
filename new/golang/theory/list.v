@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Export lifting.
-From New.golang.defn Require Export list.
+From New.golang.defn Require Export typing list.
 From New.golang.theory Require Import exception.
 From New.golang.theory Require Import proofmode.
 

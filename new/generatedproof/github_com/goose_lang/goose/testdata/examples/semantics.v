@@ -33,7 +33,7 @@ Global Instance into_val_typed_unit `{ffi_syntax} : IntoValTyped unit.t semantic
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_unit `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make semantics.unit (alist_val [
+    (struct.make #semantics.unit (alist_val [
     ]))%struct
     #(unit.mk).
 Admitted.
@@ -86,7 +86,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Enc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p':
   PureWp True
-    (struct.make semantics.Enc (alist_val [
+    (struct.make #semantics.Enc (alist_val [
       "p" ::= #p'
     ]))%struct
     #(Enc.mk p').
@@ -132,7 +132,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Dec `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p':
   PureWp True
-    (struct.make semantics.Dec (alist_val [
+    (struct.make #semantics.Dec (alist_val [
       "p" ::= #p'
     ]))%struct
     #(Dec.mk p').
@@ -182,7 +182,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Editor `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s' next_val':
   PureWp True
-    (struct.make semantics.Editor (alist_val [
+    (struct.make #semantics.Editor (alist_val [
       "s" ::= #s';
       "next_val" ::= #next_val'
     ]))%struct
@@ -234,7 +234,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Pair `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x' y':
   PureWp True
-    (struct.make semantics.Pair (alist_val [
+    (struct.make #semantics.Pair (alist_val [
       "x" ::= #x';
       "y" ::= #y'
     ]))%struct
@@ -296,7 +296,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_SquareStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Side':
   PureWp True
-    (struct.make semantics.SquareStruct (alist_val [
+    (struct.make #semantics.SquareStruct (alist_val [
       "Side" ::= #Side'
     ]))%struct
     #(SquareStruct.mk Side').
@@ -342,7 +342,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_LoopStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} loopNext':
   PureWp True
-    (struct.make semantics.LoopStruct (alist_val [
+    (struct.make #semantics.LoopStruct (alist_val [
       "loopNext" ::= #loopNext'
     ]))%struct
     #(LoopStruct.mk loopNext').
@@ -400,7 +400,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_BoolTest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' f' tc' fc':
   PureWp True
-    (struct.make semantics.BoolTest (alist_val [
+    (struct.make #semantics.BoolTest (alist_val [
       "t" ::= #t';
       "f" ::= #f';
       "tc" ::= #tc';
@@ -456,7 +456,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ArrayEditor `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s' next_val':
   PureWp True
-    (struct.make semantics.ArrayEditor (alist_val [
+    (struct.make #semantics.ArrayEditor (alist_val [
       "s" ::= #s';
       "next_val" ::= #next_val'
     ]))%struct
@@ -508,7 +508,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Bar `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a' b':
   PureWp True
-    (struct.make semantics.Bar (alist_val [
+    (struct.make #semantics.Bar (alist_val [
       "a" ::= #a';
       "b" ::= #b'
     ]))%struct
@@ -556,7 +556,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Foo `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} bar':
   PureWp True
-    (struct.make semantics.Foo (alist_val [
+    (struct.make #semantics.Foo (alist_val [
       "bar" ::= #bar'
     ]))%struct
     #(Foo.mk bar').
@@ -606,7 +606,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_TwoInts `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x' y':
   PureWp True
-    (struct.make semantics.TwoInts (alist_val [
+    (struct.make #semantics.TwoInts (alist_val [
       "x" ::= #x';
       "y" ::= #y'
     ]))%struct
@@ -662,7 +662,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_S `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a' b' c':
   PureWp True
-    (struct.make semantics.S (alist_val [
+    (struct.make #semantics.S (alist_val [
       "a" ::= #a';
       "b" ::= #b';
       "c" ::= #c'
@@ -712,7 +712,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_StructWrap `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} i':
   PureWp True
-    (struct.make semantics.StructWrap (alist_val [
+    (struct.make #semantics.StructWrap (alist_val [
       "i" ::= #i'
     ]))%struct
     #(StructWrap.mk i').
@@ -758,7 +758,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_StructWithFunc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} fn':
   PureWp True
-    (struct.make semantics.StructWithFunc (alist_val [
+    (struct.make #semantics.StructWithFunc (alist_val [
       "fn" ::= #fn'
     ]))%struct
     #(StructWithFunc.mk fn').
@@ -797,7 +797,7 @@ Global Instance into_val_typed_switchConcrete `{ffi_syntax} : IntoValTyped switc
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_switchConcrete `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make semantics.switchConcrete (alist_val [
+    (struct.make #semantics.switchConcrete (alist_val [
     ]))%struct
     #(switchConcrete.mk).
 Admitted.
@@ -855,7 +855,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} d' l' cache' length':
   PureWp True
-    (struct.make semantics.Log (alist_val [
+    (struct.make #semantics.Log (alist_val [
       "d" ::= #d';
       "l" ::= #l';
       "cache" ::= #cache';

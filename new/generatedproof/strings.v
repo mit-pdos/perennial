@@ -41,7 +41,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Builder `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} addr' buf':
   PureWp True
-    (struct.make strings.Builder (alist_val [
+    (struct.make #strings.Builder (alist_val [
       "addr" ::= #addr';
       "buf" ::= #buf'
     ]))%struct

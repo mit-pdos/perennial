@@ -88,7 +88,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_unstable `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} snapshot' entries' offset' snapshotInProgress' offsetInProgress' logger':
   PureWp True
-    (struct.make raft.unstable (alist_val [
+    (struct.make #raft.unstable (alist_val [
       "snapshot" ::= #snapshot';
       "entries" ::= #entries';
       "offset" ::= #offset';
@@ -183,7 +183,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_raftLog `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} storage' unstable' committed' applying' applied' logger' maxApplyingEntsSize' applyingEntsSize' applyingEntsPaused':
   PureWp True
-    (struct.make raft.raftLog (alist_val [
+    (struct.make #raft.raftLog (alist_val [
       "storage" ::= #storage';
       "unstable" ::= #unstable';
       "committed" ::= #committed';
@@ -249,7 +249,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_DefaultLogger `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Logger' debug':
   PureWp True
-    (struct.make raft.DefaultLogger (alist_val [
+    (struct.make #raft.DefaultLogger (alist_val [
       "Logger" ::= #Logger';
       "debug" ::= #debug'
     ]))%struct
@@ -315,7 +315,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_SoftState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Lead' RaftState':
   PureWp True
-    (struct.make raft.SoftState (alist_val [
+    (struct.make #raft.SoftState (alist_val [
       "Lead" ::= #Lead';
       "RaftState" ::= #RaftState'
     ]))%struct
@@ -391,7 +391,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Ready `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} SoftState' HardState' ReadStates' Entries' Snapshot' CommittedEntries' Messages' MustSync':
   PureWp True
-    (struct.make raft.Ready (alist_val [
+    (struct.make #raft.Ready (alist_val [
       "SoftState" ::= #SoftState';
       "HardState" ::= #HardState';
       "ReadStates" ::= #ReadStates';
@@ -462,7 +462,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Peer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Context':
   PureWp True
-    (struct.make raft.Peer (alist_val [
+    (struct.make #raft.Peer (alist_val [
       "ID" ::= #ID';
       "Context" ::= #Context'
     ]))%struct
@@ -514,7 +514,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_msgWithResult `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} m' result':
   PureWp True
-    (struct.make raft.msgWithResult (alist_val [
+    (struct.make #raft.msgWithResult (alist_val [
       "m" ::= #m';
       "result" ::= #result'
     ]))%struct
@@ -602,7 +602,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_node `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} propc' recvc' confc' confstatec' readyc' advancec' tickc' done' stop' status' rn':
   PureWp True
-    (struct.make raft.node (alist_val [
+    (struct.make #raft.node (alist_val [
       "propc" ::= #propc';
       "recvc" ::= #recvc';
       "confc" ::= #confc';
@@ -675,7 +675,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_lockedRand `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu':
   PureWp True
-    (struct.make raft.lockedRand (alist_val [
+    (struct.make #raft.lockedRand (alist_val [
       "mu" ::= #mu'
     ]))%struct
     #(lockedRand.mk mu').
@@ -807,7 +807,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' ElectionTick' HeartbeatTick' Storage' Applied' AsyncStorageWrites' MaxSizePerMsg' MaxCommittedSizePerReady' MaxUncommittedEntriesSize' MaxInflightMsgs' MaxInflightBytes' CheckQuorum' PreVote' ReadOnlyOption' Logger' DisableProposalForwarding' DisableConfChangeValidation' StepDownOnRemoval' TraceLogger':
   PureWp True
-    (struct.make raft.Config (alist_val [
+    (struct.make #raft.Config (alist_val [
       "ID" ::= #ID';
       "ElectionTick" ::= #ElectionTick';
       "HeartbeatTick" ::= #HeartbeatTick';
@@ -1027,7 +1027,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger':
   PureWp True
-    (struct.make raft.raft (alist_val [
+    (struct.make #raft.raft (alist_val [
       "id" ::= #id';
       "Term" ::= #Term';
       "Vote" ::= #Vote';
@@ -1151,7 +1151,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_RawNode `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} raft' asyncStorageWrites' prevSoftSt' prevHardSt' stepsOnAdvance':
   PureWp True
-    (struct.make raft.RawNode (alist_val [
+    (struct.make #raft.RawNode (alist_val [
       "raft" ::= #raft';
       "asyncStorageWrites" ::= #asyncStorageWrites';
       "prevSoftSt" ::= #prevSoftSt';
@@ -1216,7 +1216,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ReadState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Index' RequestCtx':
   PureWp True
-    (struct.make raft.ReadState (alist_val [
+    (struct.make #raft.ReadState (alist_val [
       "Index" ::= #Index';
       "RequestCtx" ::= #RequestCtx'
     ]))%struct
@@ -1272,7 +1272,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_readIndexStatus `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} req' index' acks':
   PureWp True
-    (struct.make raft.readIndexStatus (alist_val [
+    (struct.make #raft.readIndexStatus (alist_val [
       "req" ::= #req';
       "index" ::= #index';
       "acks" ::= #acks'
@@ -1330,7 +1330,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_readOnly `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} option' pendingReadIndex' readIndexQueue':
   PureWp True
-    (struct.make raft.readOnly (alist_val [
+    (struct.make #raft.readOnly (alist_val [
       "option" ::= #option';
       "pendingReadIndex" ::= #pendingReadIndex';
       "readIndexQueue" ::= #readIndexQueue'
@@ -1373,7 +1373,7 @@ Global Instance into_val_typed_TracingEvent `{ffi_syntax} : IntoValTyped Tracing
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_TracingEvent `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make raft.TracingEvent (alist_val [
+    (struct.make #raft.TracingEvent (alist_val [
     ]))%struct
     #(TracingEvent.mk).
 Admitted.
@@ -1428,7 +1428,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_BasicStatus `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' HardState' SoftState' Applied' LeadTransferee':
   PureWp True
-    (struct.make raft.BasicStatus (alist_val [
+    (struct.make #raft.BasicStatus (alist_val [
       "ID" ::= #ID';
       "HardState" ::= #HardState';
       "SoftState" ::= #SoftState';
@@ -1490,7 +1490,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Status `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} BasicStatus' Config' Progress':
   PureWp True
-    (struct.make raft.Status (alist_val [
+    (struct.make #raft.Status (alist_val [
       "BasicStatus" ::= #BasicStatus';
       "Config" ::= #Config';
       "Progress" ::= #Progress'
@@ -1560,7 +1560,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_inMemStorageCallStats `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} initialState' firstIndex' lastIndex' entries' term' snapshot':
   PureWp True
-    (struct.make raft.inMemStorageCallStats (alist_val [
+    (struct.make #raft.inMemStorageCallStats (alist_val [
       "initialState" ::= #initialState';
       "firstIndex" ::= #firstIndex';
       "lastIndex" ::= #lastIndex';
@@ -1632,7 +1632,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_MemoryStorage `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Mutex' hardState' snapshot' ents' callStats':
   PureWp True
-    (struct.make raft.MemoryStorage (alist_val [
+    (struct.make #raft.MemoryStorage (alist_val [
       "Mutex" ::= #Mutex';
       "hardState" ::= #hardState';
       "snapshot" ::= #snapshot';
@@ -1690,7 +1690,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_entryID `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} term' index':
   PureWp True
-    (struct.make raft.entryID (alist_val [
+    (struct.make #raft.entryID (alist_val [
       "term" ::= #term';
       "index" ::= #index'
     ]))%struct
@@ -1746,7 +1746,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_logSlice `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} term' prev' entries':
   PureWp True
-    (struct.make raft.logSlice (alist_val [
+    (struct.make #raft.logSlice (alist_val [
       "term" ::= #term';
       "prev" ::= #prev';
       "entries" ::= #entries'
@@ -1835,7 +1835,7 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrStopped" ∷ ErrStopped ↦ (default_val error.t) ∗
   "HErrProposalDropped" ∷ ErrProposalDropped ↦ (default_val error.t) ∗
   "HglobalRand" ∷ globalRand ↦ (default_val loc) ∗
-  "Hstmap" ∷ stmap ↦ (default_val (vec go_string 4)) ∗
+  "Hstmap" ∷ stmap ↦ (default_val (vec go_string (uint.nat (W64 4)))) ∗
   "HerrBreak" ∷ errBreak ↦ (default_val error.t) ∗
   "HErrStepLocalMsg" ∷ ErrStepLocalMsg ↦ (default_val error.t) ∗
   "HErrStepPeerNotFound" ∷ ErrStepPeerNotFound ↦ (default_val error.t) ∗
@@ -1843,8 +1843,8 @@ Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
   "HErrSnapOutOfDate" ∷ ErrSnapOutOfDate ↦ (default_val error.t) ∗
   "HErrUnavailable" ∷ ErrUnavailable ↦ (default_val error.t) ∗
   "HErrSnapshotTemporarilyUnavailable" ∷ ErrSnapshotTemporarilyUnavailable ↦ (default_val error.t) ∗
-  "HisLocalMsg" ∷ isLocalMsg ↦ (default_val (vec bool 23)) ∗
-  "HisResponseMsg" ∷ isResponseMsg ↦ (default_val (vec bool 23)).
+  "HisLocalMsg" ∷ isLocalMsg ↦ (default_val (vec bool (uint.nat (W64 23)))) ∗
+  "HisResponseMsg" ∷ isResponseMsg ↦ (default_val (vec bool (uint.nat (W64 23)))).
 
 Global Instance wp_globals_get_defaultLogger : 
   WpGlobalsGet raft "defaultLogger" defaultLogger (is_pkg_defined raft).

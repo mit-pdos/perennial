@@ -1,5 +1,5 @@
-From New.golang.defn Require Export notation.
-From New.golang.defn Require Export typing slice.
+From New.golang.defn Require Import notation.
+From New.golang.defn Require Import mem typing slice.
 From Perennial Require Import base.
 
 Section defn.
@@ -17,7 +17,7 @@ Section defn.
        then #slice.nil
        else
          let: "j" := "i" - #(W64 1) in
-         (slice.append byteT ("to_bytes" "j" "s") (StringGet "s" "j")))
+         (slice.append #byteT ("to_bytes" "j" "s") (StringGet "s" "j")))
   .
 
   Definition to_bytes_def : val :=
@@ -33,12 +33,12 @@ Section defn.
     (rec: "from_bytes" "b" :=
        if: (slice.len "b") = #(W64 0)
        then (# "")
-       else (to_string ![byteT] (slice.elem_ref byteT "b" #(W64 0))) +
-              ("from_bytes" (slice.slice byteT "b" #(W64 1) (slice.len "b")))).
+       else (to_string ![#byteT] (slice.elem_ref #byteT "b" #(W64 0))) +
+              ("from_bytes" (slice.slice #byteT "b" #(W64 1) (slice.len "b")))).
 
   Definition slice : val :=
     λ: "s" "low" "high",
-      from_bytes (slice.slice uint8T (to_bytes "s") "low" "high").
+      from_bytes (slice.slice #uint8T (to_bytes "s") "low" "high").
 
 End defn.
 End string.

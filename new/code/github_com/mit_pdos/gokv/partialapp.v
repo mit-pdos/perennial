@@ -11,10 +11,10 @@ Context `{ffi_syntax}.
 (* go: examples.go:3:6 *)
 Definition partiallyApplyMe : val :=
   rec: "partiallyApplyMe" "x" "y" :=
-    exception_do (let: "y" := (ref_ty intT "y") in
-    let: "x" := (ref_ty stringT "x") in
-    (if: (let: "$a0" := (![stringT] "x") in
-    StringLength "$a0") ≠ (![intT] "y")
+    exception_do (let: "y" := (alloc "y") in
+    let: "x" := (alloc "x") in
+    (if: (let: "$a0" := (![#stringT] "x") in
+    StringLength "$a0") ≠ (![#intT] "y")
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"not allowed"%go) in
       Panic "$a0")
@@ -25,32 +25,32 @@ Definition Foo : go_type := stringT.
 (* go: examples.go:11:14 *)
 Definition Foo__someMethod : val :=
   rec: "Foo__someMethod" "f" <> :=
-    exception_do (let: "f" := (ref_ty Foo "f") in
+    exception_do (let: "f" := (alloc "f") in
     do:  #()).
 
 (* go: examples.go:14:14 *)
 Definition Foo__someMethodWithArgs : val :=
   rec: "Foo__someMethodWithArgs" "f" "y" "z" :=
-    exception_do (let: "f" := (ref_ty Foo "f") in
-    let: "z" := (ref_ty intT "z") in
-    let: "y" := (ref_ty stringT "y") in
-    do:  (let: "$a0" := ((![Foo] "f") + (![stringT] "y")) in
-    let: "$a1" := (![intT] "z") in
+    exception_do (let: "f" := (alloc "f") in
+    let: "z" := (alloc "z") in
+    let: "y" := (alloc "y") in
+    do:  (let: "$a0" := ((![#Foo] "f") + (![#stringT] "y")) in
+    let: "$a1" := (![#intT] "z") in
     (func_call #partialapp.main #"partiallyApplyMe"%go) "$a0" "$a1")).
 
 (* go: examples.go:18:6 *)
 Definition main : val :=
   rec: "main" <> :=
-    with_defer: (let: "x" := (ref_ty funcT (zero_val funcT)) in
+    with_defer: (let: "x" := (alloc (type.zero_val #funcT)) in
     let: "$r0" := (func_call #partialapp.main #"partiallyApplyMe"%go) in
-    do:  ("x" <-[funcT] "$r0");;;
+    do:  ("x" <-[#funcT] "$r0");;;
     do:  (let: "$a0" := #"blah"%go in
     let: "$a1" := #(W64 4) in
-    (![funcT] "x") "$a0" "$a1");;;
+    (![#funcT] "x") "$a0" "$a1");;;
     do:  (let: "$a0" := #"ok"%go in
     let: "$a1" := #(W64 2) in
-    let: "$f" := (![funcT] "x") in
-    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
+    let: "$f" := (![#funcT] "x") in
+    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" "$a0" "$a1";;
       "$oldf" #()
@@ -58,32 +58,32 @@ Definition main : val :=
     do:  (let: "$a0" := #"abc"%go in
     let: "$a1" := #(W64 3) in
     let: "$f" := (func_call #partialapp.main #"partiallyApplyMe"%go) in
-    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
+    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" "$a0" "$a1";;
       "$oldf" #()
       )));;;
-    let: "f" := (ref_ty Foo (zero_val Foo)) in
+    let: "f" := (alloc (type.zero_val #Foo)) in
     let: "$r0" := #"a"%go in
-    do:  ("f" <-[Foo] "$r0");;;
-    do:  ((method_call #partialapp.main #"Foo" #"someMethod" (![Foo] "f")) #());;;
-    let: "$r0" := (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![Foo] "f")) in
-    do:  ("x" <-[funcT] "$r0");;;
+    do:  ("f" <-[#Foo] "$r0");;;
+    do:  ((method_call #partialapp.main #"Foo" #"someMethod" (![#Foo] "f")) #());;;
+    let: "$r0" := (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "f")) in
+    do:  ("x" <-[#funcT] "$r0");;;
     do:  (let: "$a0" := #"b"%go in
     let: "$a1" := #(W64 2) in
-    (![funcT] "x") "$a0" "$a1");;;
+    (![#funcT] "x") "$a0" "$a1");;;
     do:  (let: "$a0" := #"bc"%go in
     let: "$a1" := #(W64 3) in
-    (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![Foo] "f")) "$a0" "$a1")).
+    (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "f")) "$a0" "$a1")).
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [("partiallyApplyMe"%go, partiallyApplyMe); ("main"%go, main)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [("someMethod"%go, Foo__someMethod); ("someMethodWithArgs"%go, Foo__someMethodWithArgs)]); ("Foo'ptr"%go, [("someMethod"%go, (λ: "$recvAddr",
-                 method_call #partialapp.main #"Foo" #"someMethod" (![Foo] "$recvAddr")
+                 method_call #partialapp.main #"Foo" #"someMethod" (![#Foo] "$recvAddr")
                  )%V); ("someMethodWithArgs"%go, (λ: "$recvAddr",
-                 method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![Foo] "$recvAddr")
+                 method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "$recvAddr")
                  )%V)])].
 
 #[global] Instance info' : PkgInfo partialapp.main :=

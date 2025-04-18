@@ -1,9 +1,13 @@
 From Perennial.goose_lang Require Import notation.
+From Coq Require Import ssreflect.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Import typing.
-From New.golang.theory Require Import proofmode mem globals pkg loop chan.
+From New.golang.theory Require Import proofmode globals pkg loop chan.
+From New.golang.theory Require Import mem.
 From Perennial Require Import base.
+
+#[local] Open Scope general_if_scope.
 
 (* TODO: iFrame # is only for backwards compatibility *)
 Tactic Notation "wp_globals_get" :=
@@ -75,7 +79,8 @@ Ltac2 wp_auto_lc (num_lc_wanted : int) :=
       repeat (first [ wp_pure_maybe_lc ()
                     | wp_load ()
                     | wp_store ()
-                    | wp_alloc_auto ()]);
+                    | wp_alloc_auto ()
+                    | ltac1:(rewrite <- !default_val_eq_zero_val) ]);
       if (Int.gt (Ref.get num_lc_wanted) 0) then
         Control.backtrack_tactic_failure "wp_auto_lc: unable to generate enough later credits"
       else

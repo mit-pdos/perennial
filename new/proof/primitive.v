@@ -31,8 +31,7 @@ Lemma wp_RandomUint64 :
 Proof.
   wp_start as "_".
   wp_apply wp_ArbitraryInt.
-  iIntros (x) "_".
-  replace (LitV x) with (#x) by (rewrite to_val_unseal //).
+  iIntros (x).
   iApply "HΦ".
   done.
 Qed.

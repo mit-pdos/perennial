@@ -1,7 +1,7 @@
 From Perennial.Helpers Require Import NamedProps.
 From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export map.
-From New.golang.theory Require Export list mem exception loop typing.
+From New.golang.theory Require Import list mem exception loop typing.
 From Perennial Require Import base.
 
 Transparent map.insert map.get map.delete map.for_range map.len map.make.
@@ -133,7 +133,7 @@ Qed.
 Lemma wp_map_make :
   is_comparable_go_type kt = true →
   {{{ True }}}
-    map.make kt vt #()
+    map.make #kt #vt
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof.
   rewrite own_map_unseal.

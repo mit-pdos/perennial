@@ -38,7 +38,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_LockClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv':
   PureWp True
-    (struct.make lockservice.LockClerk (alist_val [
+    (struct.make #lockservice.LockClerk (alist_val [
       "kv" ::= #kv'
     ]))%struct
     #(LockClerk.mk kv').

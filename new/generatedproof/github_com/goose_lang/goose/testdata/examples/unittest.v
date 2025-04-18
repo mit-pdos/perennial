@@ -15,7 +15,7 @@ Axiom falso : False.
 Module Foo.
 Section def.
 Context `{ffi_syntax}.
-Definition t := (vec w64 10).
+Definition t := (vec w64 (uint.nat (W64 10))).
 End def.
 End Foo.
 Module importantStruct.
@@ -43,7 +43,7 @@ Global Instance into_val_typed_importantStruct `{ffi_syntax} : IntoValTyped impo
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_importantStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make unittest.importantStruct (alist_val [
+    (struct.make #unittest.importantStruct (alist_val [
     ]))%struct
     #(importantStruct.mk).
 Admitted.
@@ -89,7 +89,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_diskWrapper `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} d':
   PureWp True
-    (struct.make unittest.diskWrapper (alist_val [
+    (struct.make #unittest.diskWrapper (alist_val [
       "d" ::= #d'
     ]))%struct
     #(diskWrapper.mk d').
@@ -135,7 +135,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_embedA `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a':
   PureWp True
-    (struct.make unittest.embedA (alist_val [
+    (struct.make #unittest.embedA (alist_val [
       "a" ::= #a'
     ]))%struct
     #(embedA.mk a').
@@ -181,7 +181,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_embedB `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} embedA':
   PureWp True
-    (struct.make unittest.embedB (alist_val [
+    (struct.make #unittest.embedB (alist_val [
       "embedA" ::= #embedA'
     ]))%struct
     #(embedB.mk embedA').
@@ -227,7 +227,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_embedC `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} embedB':
   PureWp True
-    (struct.make unittest.embedC (alist_val [
+    (struct.make #unittest.embedC (alist_val [
       "embedB" ::= #embedB'
     ]))%struct
     #(embedC.mk embedB').
@@ -273,7 +273,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_embedD `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} embedC':
   PureWp True
-    (struct.make unittest.embedD (alist_val [
+    (struct.make #unittest.embedD (alist_val [
       "embedC" ::= #embedC'
     ]))%struct
     #(embedD.mk embedC').
@@ -319,7 +319,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Enc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p':
   PureWp True
-    (struct.make unittest.Enc (alist_val [
+    (struct.make #unittest.Enc (alist_val [
       "p" ::= #p'
     ]))%struct
     #(Enc.mk p').
@@ -365,7 +365,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Dec `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p':
   PureWp True
-    (struct.make unittest.Dec (alist_val [
+    (struct.make #unittest.Dec (alist_val [
       "p" ::= #p'
     ]))%struct
     #(Dec.mk p').
@@ -418,7 +418,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_concreteFooer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a':
   PureWp True
-    (struct.make unittest.concreteFooer (alist_val [
+    (struct.make #unittest.concreteFooer (alist_val [
       "a" ::= #a'
     ]))%struct
     #(concreteFooer.mk a').
@@ -464,7 +464,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_FooerUser `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} f':
   PureWp True
-    (struct.make unittest.FooerUser (alist_val [
+    (struct.make #unittest.FooerUser (alist_val [
       "f" ::= #f'
     ]))%struct
     #(FooerUser.mk f').
@@ -510,7 +510,7 @@ Global Instance into_val_typed_concrete1 `{ffi_syntax} : IntoValTyped concrete1.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_concrete1 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make unittest.concrete1 (alist_val [
+    (struct.make #unittest.concrete1 (alist_val [
     ]))%struct
     #(concrete1.mk).
 Admitted.
@@ -571,7 +571,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_allTheLiterals `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} int' s' b':
   PureWp True
-    (struct.make unittest.allTheLiterals (alist_val [
+    (struct.make #unittest.allTheLiterals (alist_val [
       "int" ::= #int';
       "s" ::= #s';
       "b" ::= #b'
@@ -621,7 +621,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_hasCondVar `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cond':
   PureWp True
-    (struct.make unittest.hasCondVar (alist_val [
+    (struct.make #unittest.hasCondVar (alist_val [
       "cond" ::= #cond'
     ]))%struct
     #(hasCondVar.mk cond').
@@ -685,7 +685,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_mapElem `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a' b':
   PureWp True
-    (struct.make unittest.mapElem (alist_val [
+    (struct.make #unittest.mapElem (alist_val [
       "a" ::= #a';
       "b" ::= #b'
     ]))%struct
@@ -733,7 +733,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_wrapExternalStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} j':
   PureWp True
-    (struct.make unittest.wrapExternalStruct (alist_val [
+    (struct.make #unittest.wrapExternalStruct (alist_val [
       "j" ::= #j'
     ]))%struct
     #(wrapExternalStruct.mk j').
@@ -779,7 +779,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_typing `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} proph':
   PureWp True
-    (struct.make unittest.typing (alist_val [
+    (struct.make #unittest.typing (alist_val [
       "proph" ::= #proph'
     ]))%struct
     #(typing.mk proph').
@@ -829,7 +829,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_composite `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a' b':
   PureWp True
-    (struct.make unittest.composite (alist_val [
+    (struct.make #unittest.composite (alist_val [
       "a" ::= #a';
       "b" ::= #b'
     ]))%struct
@@ -870,7 +870,7 @@ Global Instance into_val_typed_R `{ffi_syntax} : IntoValTyped R.t unittest.R :=
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_R `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make unittest.R (alist_val [
+    (struct.make #unittest.R (alist_val [
     ]))%struct
     #(R.mk).
 Admitted.
@@ -909,7 +909,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Other `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} RecursiveEmbedded':
   PureWp True
-    (struct.make unittest.Other (alist_val [
+    (struct.make #unittest.Other (alist_val [
       "RecursiveEmbedded" ::= #RecursiveEmbedded'
     ]))%struct
     #(Other.mk RecursiveEmbedded').
@@ -955,7 +955,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_RecursiveEmbedded `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Other':
   PureWp True
-    (struct.make unittest.RecursiveEmbedded (alist_val [
+    (struct.make #unittest.RecursiveEmbedded (alist_val [
       "Other" ::= #Other'
     ]))%struct
     #(RecursiveEmbedded.mk Other').
@@ -1001,7 +1001,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Block `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Value':
   PureWp True
-    (struct.make unittest.Block (alist_val [
+    (struct.make #unittest.Block (alist_val [
       "Value" ::= #Value'
     ]))%struct
     #(Block.mk Value').
@@ -1054,7 +1054,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_thing `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x':
   PureWp True
-    (struct.make unittest.thing (alist_val [
+    (struct.make #unittest.thing (alist_val [
       "x" ::= #x'
     ]))%struct
     #(thing.mk x').
@@ -1100,7 +1100,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_sliceOfThings `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} things':
   PureWp True
-    (struct.make unittest.sliceOfThings (alist_val [
+    (struct.make #unittest.sliceOfThings (alist_val [
       "things" ::= #things'
     ]))%struct
     #(sliceOfThings.mk things').
@@ -1150,7 +1150,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_Point `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x' y':
   PureWp True
-    (struct.make unittest.Point (alist_val [
+    (struct.make #unittest.Point (alist_val [
       "x" ::= #x';
       "y" ::= #y'
     ]))%struct
@@ -1202,7 +1202,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_TwoInts `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x' y':
   PureWp True
-    (struct.make unittest.TwoInts (alist_val [
+    (struct.make #unittest.TwoInts (alist_val [
       "x" ::= #x';
       "y" ::= #y'
     ]))%struct
@@ -1258,7 +1258,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_S `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a' b' c':
   PureWp True
-    (struct.make unittest.S (alist_val [
+    (struct.make #unittest.S (alist_val [
       "a" ::= #a';
       "b" ::= #b';
       "c" ::= #c'
@@ -1308,7 +1308,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_B `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a':
   PureWp True
-    (struct.make unittest.B (alist_val [
+    (struct.make #unittest.B (alist_val [
       "a" ::= #a'
     ]))%struct
     #(B.mk a').
@@ -1347,7 +1347,7 @@ Global Instance into_val_typed_A `{ffi_syntax} : IntoValTyped A.t unittest.A :=
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_A `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
   PureWp True
-    (struct.make unittest.A (alist_val [
+    (struct.make #unittest.A (alist_val [
     ]))%struct
     #(A.mk).
 Admitted.

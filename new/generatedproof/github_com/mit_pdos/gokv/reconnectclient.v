@@ -53,7 +53,7 @@ Admitted.
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_ReconnectingClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' valid' urpcCl' addr':
   PureWp True
-    (struct.make reconnectclient.ReconnectingClient (alist_val [
+    (struct.make #reconnectclient.ReconnectingClient (alist_val [
       "mu" ::= #mu';
       "valid" ::= #valid';
       "urpcCl" ::= #urpcCl';

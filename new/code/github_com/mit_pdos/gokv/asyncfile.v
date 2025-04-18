@@ -27,125 +27,125 @@ Definition AsyncFile : go_type := structT [
 (* go: storage.go:24:21 *)
 Definition AsyncFile__Write : val :=
   rec: "AsyncFile__Write" "s" "data" :=
-    with_defer: (let: "s" := (ref_ty ptrT "s") in
-    let: "data" := (ref_ty sliceT "data") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
-    do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) in
-    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
+    with_defer: (let: "s" := (alloc "s") in
+    let: "data" := (alloc "data") in
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
+    do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) in
+    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "$r0" := (![sliceT] "data") in
-    do:  ((struct.field_ref AsyncFile "data" (![ptrT] "s")) <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s"))) in
+    let: "$r0" := (![#sliceT] "data") in
+    do:  ((struct.field_ref #AsyncFile #"data"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s"))) in
     let: "$a1" := #(W64 1) in
     (func_call #std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
-    do:  ((struct.field_ref AsyncFile "index" (![ptrT] "s")) <-[uint64T] "$r0");;;
-    let: "index" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s"))) in
-    do:  ("index" <-[uint64T] "$r0");;;
-    do:  ((method_call #sync #"Cond'ptr" #"Signal" (![ptrT] (struct.field_ref AsyncFile "indexCond" (![ptrT] "s")))) #());;;
+    do:  ((struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
+    let: "index" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s"))) in
+    do:  ("index" <-[#uint64T] "$r0");;;
+    do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #AsyncFile #"indexCond"%go (![#ptrT] "s")))) #());;;
     return: ((λ: <>,
-       exception_do (do:  (let: "$a0" := (![uint64T] "index") in
-       (method_call #asyncfile.asyncfile #"AsyncFile'ptr" #"wait" (![ptrT] "s")) "$a0"))
+       exception_do (do:  (let: "$a0" := (![#uint64T] "index") in
+       (method_call #asyncfile.asyncfile #"AsyncFile'ptr" #"wait" (![#ptrT] "s")) "$a0"))
        ))).
 
 (* go: storage.go:36:21 *)
 Definition AsyncFile__wait : val :=
   rec: "AsyncFile__wait" "s" "index" :=
-    with_defer: (let: "s" := (ref_ty ptrT "s") in
-    let: "index" := (ref_ty uint64T "index") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
-    do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) in
-    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
+    with_defer: (let: "s" := (alloc "s") in
+    let: "index" := (alloc "index") in
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
+    do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) in
+    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    (for: (λ: <>, (![uint64T] (struct.field_ref AsyncFile "durableIndex" (![ptrT] "s"))) < (![uint64T] "index")); (λ: <>, Skip) := λ: <>,
-      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #()))).
+    (for: (λ: <>, (![#uint64T] (struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s"))) < (![#uint64T] "index")); (λ: <>, Skip) := λ: <>,
+      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"durableIndexCond"%go (![#ptrT] "s")))) #()))).
 
 (* go: storage.go:45:21 *)
 Definition AsyncFile__flushThread : val :=
   rec: "AsyncFile__flushThread" "s" <> :=
-    exception_do (let: "s" := (ref_ty ptrT "s") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
+    exception_do (let: "s" := (alloc "s") in
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ![boolT] (struct.field_ref AsyncFile "closeRequested" (![ptrT] "s"))
+      (if: ![#boolT] (struct.field_ref #AsyncFile #"closeRequested"%go (![#ptrT] "s"))
       then
-        do:  (let: "$a0" := (![stringT] (struct.field_ref AsyncFile "filename" (![ptrT] "s"))) in
-        let: "$a1" := (![sliceT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
+        do:  (let: "$a0" := (![#stringT] (struct.field_ref #AsyncFile #"filename"%go (![#ptrT] "s"))) in
+        let: "$a1" := (![#sliceT] (struct.field_ref #AsyncFile #"data"%go (![#ptrT] "s"))) in
         (func_call #grove_ffi #"FileWrite"%go) "$a0" "$a1");;;
-        let: "$r0" := (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s"))) in
-        do:  ((struct.field_ref AsyncFile "durableIndex" (![ptrT] "s")) <-[uint64T] "$r0");;;
-        do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #());;;
+        let: "$r0" := (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s"))) in
+        do:  ((struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
+        do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] (struct.field_ref #AsyncFile #"durableIndexCond"%go (![#ptrT] "s")))) #());;;
         let: "$r0" := #true in
-        do:  ((struct.field_ref AsyncFile "closed" (![ptrT] "s")) <-[boolT] "$r0");;;
-        do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
-        do:  ((method_call #sync #"Cond'ptr" #"Signal" (![ptrT] (struct.field_ref AsyncFile "closedCond" (![ptrT] "s")))) #());;;
+        do:  ((struct.field_ref #AsyncFile #"closed"%go (![#ptrT] "s")) <-[#boolT] "$r0");;;
+        do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
+        do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #AsyncFile #"closedCond"%go (![#ptrT] "s")))) #());;;
         return: (#())
       else do:  #());;;
-      (if: (![uint64T] (struct.field_ref AsyncFile "durableIndex" (![ptrT] "s"))) ≥ (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s")))
+      (if: (![#uint64T] (struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s"))) ≥ (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s")))
       then
-        do:  ((method_call #sync #"Cond'ptr" #"Wait" (![ptrT] (struct.field_ref AsyncFile "indexCond" (![ptrT] "s")))) #());;;
+        do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"indexCond"%go (![#ptrT] "s")))) #());;;
         continue: #()
       else do:  #());;;
-      let: "index" := (ref_ty uint64T (zero_val uint64T)) in
-      let: "$r0" := (![uint64T] (struct.field_ref AsyncFile "index" (![ptrT] "s"))) in
-      do:  ("index" <-[uint64T] "$r0");;;
-      let: "data" := (ref_ty sliceT (zero_val sliceT)) in
-      let: "$r0" := (![sliceT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
-      do:  ("data" <-[sliceT] "$r0");;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
-      do:  (let: "$a0" := (![stringT] (struct.field_ref AsyncFile "filename" (![ptrT] "s"))) in
-      let: "$a1" := (![sliceT] "data") in
+      let: "index" := (alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s"))) in
+      do:  ("index" <-[#uint64T] "$r0");;;
+      let: "data" := (alloc (type.zero_val #sliceT)) in
+      let: "$r0" := (![#sliceT] (struct.field_ref #AsyncFile #"data"%go (![#ptrT] "s"))) in
+      do:  ("data" <-[#sliceT] "$r0");;;
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
+      do:  (let: "$a0" := (![#stringT] (struct.field_ref #AsyncFile #"filename"%go (![#ptrT] "s"))) in
+      let: "$a1" := (![#sliceT] "data") in
       (func_call #grove_ffi #"FileWrite"%go) "$a0" "$a1");;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
-      let: "$r0" := (![uint64T] "index") in
-      do:  ((struct.field_ref AsyncFile "durableIndex" (![ptrT] "s")) <-[uint64T] "$r0");;;
-      do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![ptrT] (struct.field_ref AsyncFile "durableIndexCond" (![ptrT] "s")))) #()))).
+      do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
+      let: "$r0" := (![#uint64T] "index") in
+      do:  ((struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
+      do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] (struct.field_ref #AsyncFile #"durableIndexCond"%go (![#ptrT] "s")))) #()))).
 
 (* go: storage.go:73:21 *)
 Definition AsyncFile__Close : val :=
   rec: "AsyncFile__Close" "s" <> :=
-    with_defer: (let: "s" := (ref_ty ptrT "s") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) #());;;
-    do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![ptrT] (struct.field_ref AsyncFile "mu" (![ptrT] "s")))) in
-    "$defer" <-[funcT] (let: "$oldf" := (![funcT] "$defer") in
+    with_defer: (let: "s" := (alloc "s") in
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
+    do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) in
+    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
     let: "$r0" := #true in
-    do:  ((struct.field_ref AsyncFile "closeRequested" (![ptrT] "s")) <-[boolT] "$r0");;;
-    do:  ((method_call #sync #"Cond'ptr" #"Signal" (![ptrT] (struct.field_ref AsyncFile "indexCond" (![ptrT] "s")))) #());;;
-    (for: (λ: <>, (~ (![boolT] (struct.field_ref AsyncFile "closed" (![ptrT] "s"))))); (λ: <>, Skip) := λ: <>,
-      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![ptrT] (struct.field_ref AsyncFile "closedCond" (![ptrT] "s")))) #()))).
+    do:  ((struct.field_ref #AsyncFile #"closeRequested"%go (![#ptrT] "s")) <-[#boolT] "$r0");;;
+    do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #AsyncFile #"indexCond"%go (![#ptrT] "s")))) #());;;
+    (for: (λ: <>, (~ (![#boolT] (struct.field_ref #AsyncFile #"closed"%go (![#ptrT] "s"))))); (λ: <>, Skip) := λ: <>,
+      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"closedCond"%go (![#ptrT] "s")))) #()))).
 
 (* returns the state, then the File object
 
    go: storage.go:85:6 *)
 Definition MakeAsyncFile : val :=
   rec: "MakeAsyncFile" "filename" :=
-    exception_do (let: "filename" := (ref_ty stringT "filename") in
-    let: "mu" := (ref_ty sync.Mutex (zero_val sync.Mutex)) in
-    let: "s" := (ref_ty ptrT (zero_val ptrT)) in
-    let: "$r0" := (ref_ty AsyncFile (let: "$mu" := "mu" in
+    exception_do (let: "filename" := (alloc "filename") in
+    let: "mu" := (alloc (type.zero_val #sync.Mutex)) in
+    let: "s" := (alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (alloc (let: "$mu" := "mu" in
     let: "$indexCond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" "mu") in
     (func_call #sync #"NewCond"%go) "$a0") in
     let: "$closedCond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" "mu") in
     (func_call #sync #"NewCond"%go) "$a0") in
     let: "$durableIndexCond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" "mu") in
     (func_call #sync #"NewCond"%go) "$a0") in
-    let: "$filename" := (![stringT] "filename") in
-    let: "$data" := (let: "$a0" := (![stringT] "filename") in
+    let: "$filename" := (![#stringT] "filename") in
+    let: "$data" := (let: "$a0" := (![#stringT] "filename") in
     (func_call #grove_ffi #"FileRead"%go) "$a0") in
     let: "$index" := #(W64 0) in
     let: "$durableIndex" := #(W64 0) in
     let: "$closed" := #false in
     let: "$closeRequested" := #false in
-    struct.make AsyncFile [{
+    struct.make #AsyncFile [{
       "mu" ::= "$mu";
       "data" ::= "$data";
       "filename" ::= "$filename";
@@ -157,13 +157,13 @@ Definition MakeAsyncFile : val :=
       "closed" ::= "$closed";
       "closedCond" ::= "$closedCond"
     }])) in
-    do:  ("s" <-[ptrT] "$r0");;;
-    let: "data" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (![sliceT] (struct.field_ref AsyncFile "data" (![ptrT] "s"))) in
-    do:  ("data" <-[sliceT] "$r0");;;
-    let: "$go" := (method_call #asyncfile.asyncfile #"AsyncFile'ptr" #"flushThread" (![ptrT] "s")) in
+    do:  ("s" <-[#ptrT] "$r0");;;
+    let: "data" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (![#sliceT] (struct.field_ref #AsyncFile #"data"%go (![#ptrT] "s"))) in
+    do:  ("data" <-[#sliceT] "$r0");;;
+    let: "$go" := (method_call #asyncfile.asyncfile #"AsyncFile'ptr" #"flushThread" (![#ptrT] "s")) in
     do:  (Fork ("$go" #()));;;
-    return: (![sliceT] "data", ![ptrT] "s")).
+    return: (![#sliceT] "data", ![#ptrT] "s")).
 
 Definition vars' : list (go_string * go_type) := [].
 

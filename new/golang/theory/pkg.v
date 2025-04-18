@@ -1,6 +1,7 @@
 From Perennial.goose_lang Require Import notation.
 From New.golang.theory Require Import proofmode globals.
-From New.golang.defn Require Import globals.
+From New.golang.defn Require Import globals pkg.
+From New.golang.defn Require Export pkg.
 Import Ltac2.
 
 (** [IsPkgInit] is used to record a mapping from pkg names to an

@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem list.
+From New.golang.defn Require Import list dynamic_typing.
 From Perennial Require Import base.
 
 (* cannot be export *)
@@ -18,53 +18,57 @@ Infix "=?" := (ByteString.eqb).
 
 Context `{ffi_syntax}.
 
-Definition field_offset (t : go_type) f : (Z * go_type) :=
-  match t with
-  | structT d =>
-      (fix field_offset_struct (d : struct.descriptor) : (Z * go_type) :=
-         match d with
-         | [] => (-1, badT)
-         | (f',t)::fs => if f' =? f then (0, t)
-                      else match field_offset_struct fs with
-                           | (off, t') => ((go_type_size t) + off, t')
-                           end
-         end) d
-  | _ => (-1, badT)
-  end
+Definition field_offset : val :=
+  λ: "t" "f",
+    let: "missing" := #(W64 (2^64-1)) in
+    type.Match "t"
+               (λ: <>, ("missing", #badT))
+               (λ: "n" "et", ("missing", #badT)) (* arrayT *)
+               (λ: "decls",
+               (rec: "field_offset_struct" "fs" :=
+                   list.Match "fs"
+                              (λ: <>, ("missing", #badT))
+                              (λ: "hd" "fs", let: ("f'", "t") := "hd" in
+                                  if: "f'" = "f" then (#(W64 0), "t")
+                                  else
+                                    let: ("off", "t'") := "field_offset_struct" "fs" in
+                                    (type.go_type_size "t" + "off", "t'"))
+               ) "decls")
 .
 
-Definition field_ref (t : go_type) f: val :=
-  λ: "p", BinOp (OffsetOp (field_offset t f).1) (Var "p") #(W64 1).
+Definition field_ref : val :=
+  λ: "t" "f" "p", BinOp (OffsetOp 1%Z) (Var "p") (Fst (field_offset "t" "f")).
 
-Definition field_ty d f : go_type := (field_offset d f).2.
+Definition field_get : val :=
+  λ: "t" "f" "v",
+    type.Match "t"
+               (λ: <>, #())
+               (λ: "n" "et", #()) (* arrayT *)
+               (λ: "decls",
+               (rec: "field_get_struct" "fs" :=
+                   list.Match "fs"
+                              (λ: <>, #())
+                              (λ: "hd" "fs", let: ("f'", <>) := "hd" in
+                                  if: "f'" = "f"
+                                  then (Fst "v")
+                                  else "field_get_struct" "fs" (Snd "v"))
+               ) "decls").
 
-Definition field_get (t : go_type) f : val :=
-  match t with
-  | structT d =>
-      (fix field_get_struct (d : struct.descriptor) : val :=
-         match d with
-         | [] => (λ: <>, #())%V
-         | (f',_)::fs => if f' =? f
-                       then (λ: "v", Fst (Var "v"))%V
-                       else (λ: "v", field_get_struct fs (Snd (Var "v")))%V
-         end
-      ) d
-      | _ => (#())
-  end.
-
-Definition make_def (t : go_type) : val :=
-  match t with
-  | structT d =>
-      (fix make_def_struct (fs : struct.descriptor) : val :=
-         match fs with
-         | [] => (λ: "fvs", Val #())%V
-         | (f,ft)::fs => (λ: "fvs", ((match: (alist_lookup #f "fvs") with
-                                     InjL <> => (Val (zero_val ft))
-                                     | InjR "x" => "x" end),
-                                            (make_def_struct fs) "fvs"))%V
-         end) d
-  | _ => LitV $ LitPoison
-  end.
+Definition make_def : val :=
+  λ: "t" "fvs",
+    type.Match "t"
+               (λ: <>, LitV (LitPoison))
+               (λ: "n" "et", LitV (LitPoison)) (* arrayT *)
+               (λ: "decls",
+               (rec: "make_struct" "fs" :=
+                   list.Match "fs"
+                              (λ: <>, #())
+                              (λ: "hd" "fs", let: ("f", "ft") := "hd" in
+                                  ((match: (alist_lookup "f" "fvs") with
+                                    InjL <> => type.zero_val "ft"
+                                  | InjR "x" => "x" end),
+                                    "make_struct" "fs"))
+               ) "decls").
 Program Definition make := sealed @make_def.
 Definition make_unseal : make = _ := seal_eq _.
 
