@@ -1,6 +1,6 @@
 From New Require Export notation.
 From New.golang.defn Require Export builtin assume.
-From New.golang.theory Require Export typing proofmode auto.
+From New.golang.theory Require Export typing proofmode.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
@@ -91,11 +91,12 @@ Proof.
   wp_apply wp_mul_overflows.
   wp_pures.
   wp_apply wp_assume.
-  wp_if_destruct.
-  { iIntros (H); congruence. }
+  match goal with
+  | |- context[bool_decide ?P] => destruct (bool_decide_reflect P)
+  end.
+  { iIntros (?); congruence. }
   iIntros (_). iApply "HΦ".
-  iPureIntro.
-  lia.
+  iPureIntro. lia.
 Qed.
 
 End wps.

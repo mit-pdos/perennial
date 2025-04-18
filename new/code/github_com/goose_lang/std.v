@@ -269,26 +269,26 @@ Definition Skip : val :=
    go: goose_std.go:182:6 *)
 Definition Shuffle : val :=
   rec: "Shuffle" "xs" :=
-    exception_do (let: "xs" := (ref_ty sliceT "xs") in
-    (if: (let: "$a0" := (![sliceT] "xs") in
+    exception_do (let: "xs" := (alloc "xs") in
+    (if: (let: "$a0" := (![#sliceT] "xs") in
     slice.len "$a0") = #(W64 0)
     then return: (#())
     else do:  #());;;
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
-    let: "$r0" := (s_to_w64 ((let: "$a0" := (![sliceT] "xs") in
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (s_to_w64 ((let: "$a0" := (![#sliceT] "xs") in
     slice.len "$a0") - #(W64 1))) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") > #(W64 0)); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") - #(W64 1)))) := λ: <>,
-      let: "j" := (ref_ty uint64T (zero_val uint64T)) in
-      let: "$r0" := (((func_call #primitive #"RandomUint64"%go) #()) `rem` ((![uint64T] "i") + #(W64 1))) in
-      do:  ("j" <-[uint64T] "$r0");;;
-      let: "temp" := (ref_ty uint64T (zero_val uint64T)) in
-      let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "i"))) in
-      do:  ("temp" <-[uint64T] "$r0");;;
-      let: "$r0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "j"))) in
-      do:  ((slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "i")) <-[uint64T] "$r0");;;
-      let: "$r0" := (![uint64T] "temp") in
-      do:  ((slice.elem_ref uint64T (![sliceT] "xs") (![uint64T] "j")) <-[uint64T] "$r0")))).
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") > #(W64 0)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") - #(W64 1)))) := λ: <>,
+      let: "j" := (alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (((func_call #primitive #"RandomUint64"%go) #()) `rem` ((![#uint64T] "i") + #(W64 1))) in
+      do:  ("j" <-[#uint64T] "$r0");;;
+      let: "temp" := (alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "i"))) in
+      do:  ("temp" <-[#uint64T] "$r0");;;
+      let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "j"))) in
+      do:  ((slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "i")) <-[#uint64T] "$r0");;;
+      let: "$r0" := (![#uint64T] "temp") in
+      do:  ((slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "j")) <-[#uint64T] "$r0")))).
 
 (* Permutation returns a random permutation of the integers 0, ..., n-1, using a
    Fisher-Yates shuffle.
@@ -296,19 +296,19 @@ Definition Shuffle : val :=
    go: goose_std.go:196:6 *)
 Definition Permutation : val :=
   rec: "Permutation" "n" :=
-    exception_do (let: "n" := (ref_ty uint64T "n") in
-    let: "order" := (ref_ty sliceT (zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T (![uint64T] "n")) in
-    do:  ("order" <-[sliceT] "$r0");;;
-    (let: "i" := (ref_ty uint64T (zero_val uint64T)) in
+    exception_do (let: "n" := (alloc "n") in
+    let: "order" := (alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #uint64T (![#uint64T] "n")) in
+    do:  ("order" <-[#sliceT] "$r0");;;
+    (let: "i" := (alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "n")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (![uint64T] "i") in
-      do:  ((slice.elem_ref uint64T (![sliceT] "order") (![uint64T] "i")) <-[uint64T] "$r0")));;;
-    do:  (let: "$a0" := (![sliceT] "order") in
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "n")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "$r0" := (![#uint64T] "i") in
+      do:  ((slice.elem_ref #uint64T (![#sliceT] "order") (![#uint64T] "i")) <-[#uint64T] "$r0")));;;
+    do:  (let: "$a0" := (![#sliceT] "order") in
     (func_call #std.std #"Shuffle"%go) "$a0");;;
-    return: (![sliceT] "order")).
+    return: (![#sliceT] "order")).
 
 Definition vars' : list (go_string * go_type) := [].
 

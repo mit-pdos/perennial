@@ -879,11 +879,9 @@ Proof.
   { iExists (W64 0). iFrame. }
   wp_for "Hinv".
   iDestruct (own_slice_len with "Hsl") as %Hlen.
-  case_bool_decide as Hlt.
+  wp_if_destruct.
   - (* Case: execute loop body *)
-    wp_pures.
-    wp_load.
-    wp_pures.
+    wp_auto.
     pose proof (list_lookup_lt vs (uint.nat j) ltac:(word)) as [w Hlookup].
     iDestruct (own_slice_elem_acc with "[$]") as "[Helem Hown]"; [eassumption|].
     wp_load.

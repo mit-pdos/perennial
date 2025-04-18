@@ -1,9 +1,13 @@
 From Perennial.goose_lang Require Import notation.
+From Coq Require Import ssreflect.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
-From New.golang.theory Require Import proofmode mem globals pkg loop chan.
+From New.golang.defn Require Import typing.
+From New.golang.theory Require Import proofmode globals pkg loop chan.
 From New.golang.theory Require Import mem.
 From Perennial Require Import base.
+
+#[local] Open Scope general_if_scope.
 
 (* TODO: iFrame # is only for backwards compatibility *)
 Tactic Notation "wp_globals_get" :=
