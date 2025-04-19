@@ -126,16 +126,16 @@ Definition None : expr := #(W64 0).
    go: bootstrap.go:30:20 *)
 Definition RawNode__Bootstrap : val :=
   rec: "RawNode__Bootstrap" "rn" "peers" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "peers" := (alloc "peers") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "peers" := (mem.alloc "peers") in
     (if: (let: "$a0" := (![#sliceT] "peers") in
     slice.len "$a0") = #(W64 0)
     then
       return: (let: "$a0" := #"must provide at least one peer to Bootstrap"%go in
        (func_call #errors #"New"%go) "$a0")
     else do:  #());;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "lastIndex" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "lastIndex" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((interface.get #"LastIndex"%go (![#Storage] (struct.field_ref #raftLog #"storage"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn")))))))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -154,17 +154,17 @@ Definition RawNode__Bootstrap : val :=
     do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := None in
     (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn")))) "$a0" "$a1");;;
-    let: "ents" := (alloc (type.zero_val #sliceT)) in
+    let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #raftpb.Entry (let: "$a0" := (![#sliceT] "peers") in
     slice.len "$a0")) in
     do:  ("ents" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "peers") in
-    (let: "peer" := (alloc (type.zero_val #intT)) in
-    let: "i" := (alloc (type.zero_val #intT)) in
+    (let: "peer" := (mem.alloc (type.zero_val #intT)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #Peer "$range" (λ: "$key" "$value",
       do:  ("peer" <-[#Peer] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
-      let: "cc" := (alloc (type.zero_val #raftpb.ConfChange)) in
+      let: "cc" := (mem.alloc (type.zero_val #raftpb.ConfChange)) in
       let: "$r0" := (let: "$Type" := raftpb.ConfChangeAddNode in
       let: "$NodeID" := (![#uint64T] (struct.field_ref #Peer #"ID"%go "peer")) in
       let: "$Context" := (![#sliceT] (struct.field_ref #Peer #"Context"%go "peer")) in
@@ -175,8 +175,8 @@ Definition RawNode__Bootstrap : val :=
         "ID" ::= type.zero_val #uint64T
       }]) in
       do:  ("cc" <-[#raftpb.ConfChange] "$r0");;;
-      let: "err" := (alloc (type.zero_val #error)) in
-      let: "data" := (alloc (type.zero_val #sliceT)) in
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "data" := (mem.alloc (type.zero_val #sliceT)) in
       let: ("$ret0", "$ret1") := ((method_call #raftpb #"ConfChange'ptr" #"Marshal" "cc") #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -202,7 +202,7 @@ Definition RawNode__Bootstrap : val :=
     slice.len "$a0")) in
     do:  ((struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn")))))) <-[#uint64T] "$r0");;;
     let: "$range" := (![#sliceT] "peers") in
-    (let: "peer" := (alloc (type.zero_val #intT)) in
+    (let: "peer" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #Peer "$range" (λ: "$key" "$value",
       do:  ("peer" <-[#Peer] "$value");;;
       do:  "$key";;;
@@ -226,8 +226,8 @@ Definition noLimit : Z := math.MaxUint64.
    go: log.go:67:6 *)
 Definition newLog : val :=
   rec: "newLog" "storage" "logger" :=
-    exception_do (let: "logger" := (alloc "logger") in
-    let: "storage" := (alloc "storage") in
+    exception_do (let: "logger" := (mem.alloc "logger") in
+    let: "storage" := (mem.alloc "storage") in
     return: (let: "$a0" := (![#Storage] "storage") in
      let: "$a1" := (![#Logger] "logger") in
      let: "$a2" := #(W64 noLimit) in
@@ -239,11 +239,11 @@ Definition newLog : val :=
    go: log.go:73:6 *)
 Definition newLogWithSize : val :=
   rec: "newLogWithSize" "storage" "logger" "maxApplyingEntsSize" :=
-    exception_do (let: "maxApplyingEntsSize" := (alloc "maxApplyingEntsSize") in
-    let: "logger" := (alloc "logger") in
-    let: "storage" := (alloc "storage") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "firstIndex" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "maxApplyingEntsSize" := (mem.alloc "maxApplyingEntsSize") in
+    let: "logger" := (mem.alloc "logger") in
+    let: "storage" := (mem.alloc "storage") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "firstIndex" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((interface.get #"FirstIndex"%go (![#Storage] "storage")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -254,7 +254,7 @@ Definition newLogWithSize : val :=
       do:  (let: "$a0" := (![#error] "err") in
       Panic "$a0")
     else do:  #());;;
-    let: "lastIndex" := (alloc (type.zero_val #uint64T)) in
+    let: "lastIndex" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((interface.get #"LastIndex"%go (![#Storage] "storage")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -265,7 +265,7 @@ Definition newLogWithSize : val :=
       do:  (let: "$a0" := (![#error] "err") in
       Panic "$a0")
     else do:  #());;;
-    return: (alloc (let: "$storage" := (![#Storage] "storage") in
+    return: (mem.alloc (let: "$storage" := (![#Storage] "storage") in
      let: "$unstable" := (let: "$offset" := ((![#uint64T] "lastIndex") + #(W64 1)) in
      let: "$offsetInProgress" := ((![#uint64T] "lastIndex") + #(W64 1)) in
      let: "$logger" := (![#Logger] "logger") in
@@ -297,7 +297,7 @@ Definition newLogWithSize : val :=
 (* go: log.go:100:19 *)
 Definition raftLog__String : val :=
   rec: "raftLog__String" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     return: (let: "$a0" := #"committed=%d, applied=%d, applying=%d, unstable.offset=%d, unstable.offsetInProgress=%d, len(unstable.Entries)=%d"%go in
      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] "l")))) in
      let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raftLog #"applied"%go (![#ptrT] "l")))) in
@@ -326,11 +326,11 @@ Definition logSlice : go_type := structT [
    go: log.go:107:19 *)
 Definition raftLog__maybeAppend : val :=
   rec: "raftLog__maybeAppend" "l" "a" "committed" :=
-    exception_do (let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "lastnewi" := (alloc (type.zero_val #uint64T)) in
-    let: "l" := (alloc "l") in
-    let: "committed" := (alloc "committed") in
-    let: "a" := (alloc "a") in
+    exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "lastnewi" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "l" := (mem.alloc "l") in
+    let: "committed" := (mem.alloc "committed") in
+    let: "a" := (mem.alloc "a") in
     (if: (~ (let: "$a0" := (![#entryID] (struct.field_ref #logSlice #"prev"%go "a")) in
     (method_call #v3.raft #"raftLog'ptr" #"matchTerm" (![#ptrT] "l")) "$a0"))
     then return: (#(W64 0), #false)
@@ -338,7 +338,7 @@ Definition raftLog__maybeAppend : val :=
     let: "$r0" := ((![#uint64T] (struct.field_ref #entryID #"index"%go (struct.field_ref #logSlice #"prev"%go "a"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #logSlice #"entries"%go "a")) in
     slice.len "$a0"))) in
     do:  ("lastnewi" <-[#uint64T] "$r0");;;
-    let: "ci" := (alloc (type.zero_val #uint64T)) in
+    let: "ci" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #logSlice #"entries"%go "a")) in
     (method_call #v3.raft #"raftLog'ptr" #"findConflict" (![#ptrT] "l")) "$a0") in
     do:  ("ci" <-[#uint64T] "$r0");;;
@@ -354,7 +354,7 @@ Definition raftLog__maybeAppend : val :=
         slice.literal #interfaceT ["$sl0"; "$sl1"])) in
         (interface.get #"Panicf"%go (![#Logger] (struct.field_ref #raftLog #"logger"%go (![#ptrT] "l")))) "$a0" "$a1")
       else
-        let: "offset" := (alloc (type.zero_val #uint64T)) in
+        let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
         let: "$r0" := ((![#uint64T] (struct.field_ref #entryID #"index"%go (struct.field_ref #logSlice #"prev"%go "a"))) + #(W64 1)) in
         do:  ("offset" <-[#uint64T] "$r0");;;
         (if: ((![#uint64T] "ci") - (![#uint64T] "offset")) > (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #logSlice #"entries"%go "a")) in
@@ -379,13 +379,13 @@ Definition raftLog__maybeAppend : val :=
 (* go: log.go:131:19 *)
 Definition raftLog__append : val :=
   rec: "raftLog__append" "l" "ents" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "ents" := (alloc "ents") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "ents" := (mem.alloc "ents") in
     (if: (let: "$a0" := (![#sliceT] "ents") in
     slice.len "$a0") = #(W64 0)
     then return: ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] "l")) #())
     else do:  #());;;
-    (let: "after" := (alloc (type.zero_val #uint64T)) in
+    (let: "after" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] "ents") #(W64 0)))) - #(W64 1)) in
     do:  ("after" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "after") < (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] "l")))
@@ -414,13 +414,13 @@ Definition raftLog__append : val :=
    go: log.go:152:19 *)
 Definition raftLog__findConflict : val :=
   rec: "raftLog__findConflict" "l" "ents" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "ents" := (alloc "ents") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "ents" := (mem.alloc "ents") in
     let: "$range" := (![#sliceT] "ents") in
-    (let: "i" := (alloc (type.zero_val #intT)) in
+    (let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[#intT] "$key");;;
-      (let: "id" := (alloc (type.zero_val #entryID)) in
+      (let: "id" := (mem.alloc (type.zero_val #entryID)) in
       let: "$r0" := (let: "$a0" := (slice.elem_ref #raftpb.Entry (![#sliceT] "ents") (![#intT] "i")) in
       (func_call #v3.raft #"pbEntryID"%go) "$a0") in
       do:  ("id" <-[#entryID] "$r0");;;
@@ -461,12 +461,12 @@ Definition raftLog__findConflict : val :=
    go: log.go:180:19 *)
 Definition raftLog__findConflictByTerm : val :=
   rec: "raftLog__findConflictByTerm" "l" "index" "term" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "term" := (alloc "term") in
-    let: "index" := (alloc "index") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "term" := (mem.alloc "term") in
+    let: "index" := (mem.alloc "index") in
     (for: (λ: <>, (![#uint64T] "index") > #(W64 0)); (λ: <>, do:  ("index" <-[#uint64T] ((![#uint64T] "index") - #(W64 1)))) := λ: <>,
-      (let: "err" := (alloc (type.zero_val #error)) in
-      let: "ourTerm" := (alloc (type.zero_val #uint64T)) in
+      (let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "ourTerm" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "index") in
       (method_call #v3.raft #"raftLog'ptr" #"term" (![#ptrT] "l")) "$a0") in
       let: "$r0" := "$ret0" in
@@ -487,7 +487,7 @@ Definition raftLog__findConflictByTerm : val :=
    go: log.go:196:19 *)
 Definition raftLog__nextUnstableEnts : val :=
   rec: "raftLog__nextUnstableEnts" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     return: ((method_call #v3.raft #"unstable'ptr" #"nextEntries" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) #())).
 
 (* hasNextUnstableEnts returns if there are any entries that are available to be
@@ -496,7 +496,7 @@ Definition raftLog__nextUnstableEnts : val :=
    go: log.go:202:19 *)
 Definition raftLog__hasNextUnstableEnts : val :=
   rec: "raftLog__hasNextUnstableEnts" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     return: (int_gt (let: "$a0" := ((method_call #v3.raft #"raftLog'ptr" #"nextUnstableEnts" (![#ptrT] "l")) #()) in
      slice.len "$a0") #(W64 0))).
 
@@ -507,7 +507,7 @@ Definition raftLog__hasNextUnstableEnts : val :=
    go: log.go:209:19 *)
 Definition raftLog__hasNextOrInProgressUnstableEnts : val :=
   rec: "raftLog__hasNextOrInProgressUnstableEnts" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     return: (int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #unstable #"entries"%go (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l")))) in
      slice.len "$a0") #(W64 0))).
 
@@ -520,17 +520,17 @@ Definition raftLog__hasNextOrInProgressUnstableEnts : val :=
    go: log.go:218:19 *)
 Definition raftLog__nextCommittedEnts : val :=
   rec: "raftLog__nextCommittedEnts" "l" "allowUnstable" :=
-    exception_do (let: "ents" := (alloc (type.zero_val #sliceT)) in
-    let: "l" := (alloc "l") in
-    let: "allowUnstable" := (alloc "allowUnstable") in
+    exception_do (let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "l" := (mem.alloc "l") in
+    let: "allowUnstable" := (mem.alloc "allowUnstable") in
     (if: ![#boolT] (struct.field_ref #raftLog #"applyingEntsPaused"%go (![#ptrT] "l"))
     then return: (#slice.nil)
     else do:  #());;;
     (if: (method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressSnapshot" (![#ptrT] "l")) #()
     then return: (#slice.nil)
     else do:  #());;;
-    let: "hi" := (alloc (type.zero_val #uint64T)) in
-    let: "lo" := (alloc (type.zero_val #uint64T)) in
+    let: "hi" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "lo" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((![#uint64T] (struct.field_ref #raftLog #"applying"%go (![#ptrT] "l"))) + #(W64 1)) in
     let: "$r1" := ((let: "$a0" := (![#boolT] "allowUnstable") in
     (method_call #v3.raft #"raftLog'ptr" #"maxAppliableIndex" (![#ptrT] "l")) "$a0") + #(W64 1)) in
@@ -539,7 +539,7 @@ Definition raftLog__nextCommittedEnts : val :=
     (if: (![#uint64T] "lo") ≥ (![#uint64T] "hi")
     then return: (#slice.nil)
     else do:  #());;;
-    let: "maxSize" := (alloc (type.zero_val #entryEncodingSize)) in
+    let: "maxSize" := (mem.alloc (type.zero_val #entryEncodingSize)) in
     let: "$r0" := ((![#entryEncodingSize] (struct.field_ref #raftLog #"maxApplyingEntsSize"%go (![#ptrT] "l"))) - (![#entryEncodingSize] (struct.field_ref #raftLog #"applyingEntsSize"%go (![#ptrT] "l")))) in
     do:  ("maxSize" <-[#entryEncodingSize] "$r0");;;
     (if: (![#entryEncodingSize] "maxSize") ≤ #(W64 0)
@@ -551,7 +551,7 @@ Definition raftLog__nextCommittedEnts : val :=
       slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
       (interface.get #"Panicf"%go (![#Logger] (struct.field_ref #raftLog #"logger"%go (![#ptrT] "l")))) "$a0" "$a1")
     else do:  #());;;
-    let: "err" := (alloc (type.zero_val #error)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "lo") in
     let: "$a1" := (![#uint64T] "hi") in
     let: "$a2" := (![#entryEncodingSize] "maxSize") in
@@ -575,16 +575,16 @@ Definition raftLog__nextCommittedEnts : val :=
    go: log.go:246:19 *)
 Definition raftLog__hasNextCommittedEnts : val :=
   rec: "raftLog__hasNextCommittedEnts" "l" "allowUnstable" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "allowUnstable" := (alloc "allowUnstable") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "allowUnstable" := (mem.alloc "allowUnstable") in
     (if: ![#boolT] (struct.field_ref #raftLog #"applyingEntsPaused"%go (![#ptrT] "l"))
     then return: (#false)
     else do:  #());;;
     (if: (method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressSnapshot" (![#ptrT] "l")) #()
     then return: (#false)
     else do:  #());;;
-    let: "hi" := (alloc (type.zero_val #uint64T)) in
-    let: "lo" := (alloc (type.zero_val #uint64T)) in
+    let: "hi" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "lo" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((![#uint64T] (struct.field_ref #raftLog #"applying"%go (![#ptrT] "l"))) + #(W64 1)) in
     let: "$r1" := ((let: "$a0" := (![#boolT] "allowUnstable") in
     (method_call #v3.raft #"raftLog'ptr" #"maxAppliableIndex" (![#ptrT] "l")) "$a0") + #(W64 1)) in
@@ -600,9 +600,9 @@ Definition raftLog__hasNextCommittedEnts : val :=
    go: log.go:265:19 *)
 Definition raftLog__maxAppliableIndex : val :=
   rec: "raftLog__maxAppliableIndex" "l" "allowUnstable" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "allowUnstable" := (alloc "allowUnstable") in
-    let: "hi" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "allowUnstable" := (mem.alloc "allowUnstable") in
+    let: "hi" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] "l"))) in
     do:  ("hi" <-[#uint64T] "$r0");;;
     (if: (~ (![#boolT] "allowUnstable"))
@@ -620,7 +620,7 @@ Definition raftLog__maxAppliableIndex : val :=
    go: log.go:275:19 *)
 Definition raftLog__nextUnstableSnapshot : val :=
   rec: "raftLog__nextUnstableSnapshot" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     return: ((method_call #v3.raft #"unstable'ptr" #"nextSnapshot" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) #())).
 
 (* hasNextUnstableSnapshot returns if there is a snapshot that is available to
@@ -629,7 +629,7 @@ Definition raftLog__nextUnstableSnapshot : val :=
    go: log.go:281:19 *)
 Definition raftLog__hasNextUnstableSnapshot : val :=
   rec: "raftLog__hasNextUnstableSnapshot" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     return: (((method_call #v3.raft #"unstable'ptr" #"nextSnapshot" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) #()) ≠ #null)).
 
 (* hasNextOrInProgressSnapshot returns if there is pending snapshot waiting for
@@ -638,13 +638,13 @@ Definition raftLog__hasNextUnstableSnapshot : val :=
    go: log.go:287:19 *)
 Definition raftLog__hasNextOrInProgressSnapshot : val :=
   rec: "raftLog__hasNextOrInProgressSnapshot" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     return: ((![#ptrT] (struct.field_ref #unstable #"snapshot"%go (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l")))) ≠ #null)).
 
 (* go: log.go:291:19 *)
 Definition raftLog__snapshot : val :=
   rec: "raftLog__snapshot" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     (if: (![#ptrT] (struct.field_ref #unstable #"snapshot"%go (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l")))) ≠ #null
     then return: (![#raftpb.Snapshot] (![#ptrT] (struct.field_ref #unstable #"snapshot"%go (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l")))), #interface.nil)
     else do:  #());;;
@@ -654,9 +654,9 @@ Definition raftLog__snapshot : val :=
 (* go: log.go:298:19 *)
 Definition raftLog__firstIndex : val :=
   rec: "raftLog__firstIndex" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
-    (let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "i" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "l" := (mem.alloc "l") in
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((method_call #v3.raft #"unstable'ptr" #"maybeFirstIndex" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -665,8 +665,8 @@ Definition raftLog__firstIndex : val :=
     (if: ![#boolT] "ok"
     then return: (![#uint64T] "i")
     else do:  #()));;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "index" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "index" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((interface.get #"FirstIndex"%go (![#Storage] (struct.field_ref #raftLog #"storage"%go (![#ptrT] "l")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -682,9 +682,9 @@ Definition raftLog__firstIndex : val :=
 (* go: log.go:309:19 *)
 Definition raftLog__lastIndex : val :=
   rec: "raftLog__lastIndex" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
-    (let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "i" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "l" := (mem.alloc "l") in
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((method_call #v3.raft #"unstable'ptr" #"maybeLastIndex" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -693,8 +693,8 @@ Definition raftLog__lastIndex : val :=
     (if: ![#boolT] "ok"
     then return: (![#uint64T] "i")
     else do:  #()));;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "i" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((interface.get #"LastIndex"%go (![#Storage] (struct.field_ref #raftLog #"storage"%go (![#ptrT] "l")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -710,8 +710,8 @@ Definition raftLog__lastIndex : val :=
 (* go: log.go:320:19 *)
 Definition raftLog__commitTo : val :=
   rec: "raftLog__commitTo" "l" "tocommit" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "tocommit" := (alloc "tocommit") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "tocommit" := (mem.alloc "tocommit") in
     (if: (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] "l"))) < (![#uint64T] "tocommit")
     then
       (if: ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] "l")) #()) < (![#uint64T] "tocommit")
@@ -729,9 +729,9 @@ Definition raftLog__commitTo : val :=
 (* go: log.go:330:19 *)
 Definition raftLog__appliedTo : val :=
   rec: "raftLog__appliedTo" "l" "i" "size" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "size" := (alloc "size") in
-    let: "i" := (alloc "i") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "size" := (mem.alloc "size") in
+    let: "i" := (mem.alloc "i") in
     (if: ((![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] "l"))) < (![#uint64T] "i")) || ((![#uint64T] "i") < (![#uint64T] (struct.field_ref #raftLog #"applied"%go (![#ptrT] "l"))))
     then
       do:  (let: "$a0" := #"applied(%d) is out of range [prevApplied(%d), committed(%d)]"%go in
@@ -758,10 +758,10 @@ Definition raftLog__appliedTo : val :=
 (* go: log.go:345:19 *)
 Definition raftLog__acceptApplying : val :=
   rec: "raftLog__acceptApplying" "l" "i" "size" "allowUnstable" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "allowUnstable" := (alloc "allowUnstable") in
-    let: "size" := (alloc "size") in
-    let: "i" := (alloc "i") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "allowUnstable" := (mem.alloc "allowUnstable") in
+    let: "size" := (mem.alloc "size") in
+    let: "i" := (mem.alloc "i") in
     (if: (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] "l"))) < (![#uint64T] "i")
     then
       do:  (let: "$a0" := #"applying(%d) is out of range [prevApplying(%d), committed(%d)]"%go in
@@ -781,16 +781,16 @@ Definition raftLog__acceptApplying : val :=
 (* go: log.go:365:19 *)
 Definition raftLog__stableTo : val :=
   rec: "raftLog__stableTo" "l" "id" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "id" := (alloc "id") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "id" := (mem.alloc "id") in
     do:  (let: "$a0" := (![#entryID] "id") in
     (method_call #v3.raft #"unstable'ptr" #"stableTo" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) "$a0")).
 
 (* go: log.go:367:19 *)
 Definition raftLog__stableSnapTo : val :=
   rec: "raftLog__stableSnapTo" "l" "i" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "i" := (alloc "i") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "i" := (mem.alloc "i") in
     do:  (let: "$a0" := (![#uint64T] "i") in
     (method_call #v3.raft #"unstable'ptr" #"stableSnapTo" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) "$a0")).
 
@@ -802,7 +802,7 @@ Definition raftLog__stableSnapTo : val :=
    go: log.go:373:19 *)
 Definition raftLog__acceptUnstable : val :=
   rec: "raftLog__acceptUnstable" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     do:  ((method_call #v3.raft #"unstable'ptr" #"acceptInProgress" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) #())).
 
 (* lastEntryID returns the ID of the last entry in the log.
@@ -810,12 +810,12 @@ Definition raftLog__acceptUnstable : val :=
    go: log.go:376:19 *)
 Definition raftLog__lastEntryID : val :=
   rec: "raftLog__lastEntryID" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "index" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "index" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] "l")) #()) in
     do:  ("index" <-[#uint64T] "$r0");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "t" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "t" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "index") in
     (method_call #v3.raft #"raftLog'ptr" #"term" (![#ptrT] "l")) "$a0") in
     let: "$r0" := "$ret0" in
@@ -840,10 +840,10 @@ Definition raftLog__lastEntryID : val :=
 (* go: log.go:385:19 *)
 Definition raftLog__term : val :=
   rec: "raftLog__term" "l" "i" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "i" := (alloc "i") in
-    (let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "t" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "i" := (mem.alloc "i") in
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "t" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "i") in
     (method_call #v3.raft #"unstable'ptr" #"maybeTerm" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) "$a0") in
     let: "$r0" := "$ret0" in
@@ -859,8 +859,8 @@ Definition raftLog__term : val :=
     (if: (![#uint64T] "i") > ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] "l")) #())
     then return: (#(W64 0), ![#error] (globals.get #v3.raft #"ErrUnavailable"%go))
     else do:  #());;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "t" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "t" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "i") in
     (interface.get #"Term"%go (![#Storage] (struct.field_ref #raftLog #"storage"%go (![#ptrT] "l")))) "$a0") in
     let: "$r0" := "$ret0" in
@@ -879,9 +879,9 @@ Definition raftLog__term : val :=
 (* go: log.go:413:19 *)
 Definition raftLog__entries : val :=
   rec: "raftLog__entries" "l" "i" "maxSize" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "maxSize" := (alloc "maxSize") in
-    let: "i" := (alloc "i") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "maxSize" := (mem.alloc "maxSize") in
+    let: "i" := (mem.alloc "i") in
     (if: (![#uint64T] "i") > ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] "l")) #())
     then return: (#slice.nil, #interface.nil)
     else do:  #());;;
@@ -896,9 +896,9 @@ Definition raftLog__entries : val :=
    go: log.go:421:19 *)
 Definition raftLog__allEntries : val :=
   rec: "raftLog__allEntries" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "ents" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := ((method_call #v3.raft #"raftLog'ptr" #"firstIndex" (![#ptrT] "l")) #()) in
     let: "$a1" := #(W64 noLimit) in
     (method_call #v3.raft #"raftLog'ptr" #"entries" (![#ptrT] "l")) "$a0" "$a1") in
@@ -926,9 +926,9 @@ Definition raftLog__allEntries : val :=
    go: log.go:440:19 *)
 Definition raftLog__isUpToDate : val :=
   rec: "raftLog__isUpToDate" "l" "their" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "their" := (alloc "their") in
-    let: "our" := (alloc (type.zero_val #entryID)) in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "their" := (mem.alloc "their") in
+    let: "our" := (mem.alloc (type.zero_val #entryID)) in
     let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![#ptrT] "l")) #()) in
     do:  ("our" <-[#entryID] "$r0");;;
     return: (((![#uint64T] (struct.field_ref #entryID #"term"%go "their")) > (![#uint64T] (struct.field_ref #entryID #"term"%go "our"))) || (((![#uint64T] (struct.field_ref #entryID #"term"%go "their")) = (![#uint64T] (struct.field_ref #entryID #"term"%go "our"))) && ((![#uint64T] (struct.field_ref #entryID #"index"%go "their")) ≥ (![#uint64T] (struct.field_ref #entryID #"index"%go "our")))))).
@@ -936,10 +936,10 @@ Definition raftLog__isUpToDate : val :=
 (* go: log.go:445:19 *)
 Definition raftLog__matchTerm : val :=
   rec: "raftLog__matchTerm" "l" "id" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "id" := (alloc "id") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "t" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "id" := (mem.alloc "id") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "t" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] (struct.field_ref #entryID #"index"%go "id")) in
     (method_call #v3.raft #"raftLog'ptr" #"term" (![#ptrT] "l")) "$a0") in
     let: "$r0" := "$ret0" in
@@ -954,8 +954,8 @@ Definition raftLog__matchTerm : val :=
 (* go: log.go:453:19 *)
 Definition raftLog__maybeCommit : val :=
   rec: "raftLog__maybeCommit" "l" "at" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "at" := (alloc "at") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "at" := (mem.alloc "at") in
     (if: (((![#uint64T] (struct.field_ref #entryID #"term"%go "at")) ≠ #(W64 0)) && ((![#uint64T] (struct.field_ref #entryID #"index"%go "at")) > (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] "l"))))) && (let: "$a0" := (![#entryID] "at") in
     (method_call #v3.raft #"raftLog'ptr" #"matchTerm" (![#ptrT] "l")) "$a0")
     then
@@ -968,8 +968,8 @@ Definition raftLog__maybeCommit : val :=
 (* go: log.go:464:19 *)
 Definition raftLog__restore : val :=
   rec: "raftLog__restore" "l" "s" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "s" := (alloc "s") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "s" := (mem.alloc "s") in
     do:  (let: "$a0" := #"log [%s] starts to restore snapshot [index: %d, term: %d]"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #v3.raft #"raftLog'ptr" (![#ptrT] "l")) in
     let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "s")))) in
@@ -995,14 +995,14 @@ Definition raftLog__restore : val :=
    go: log.go:480:19 *)
 Definition raftLog__scan : val :=
   rec: "raftLog__scan" "l" "lo" "hi" "pageSize" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
-    let: "pageSize" := (alloc "pageSize") in
-    let: "hi" := (alloc "hi") in
-    let: "lo" := (alloc "lo") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
+    let: "pageSize" := (mem.alloc "pageSize") in
+    let: "hi" := (mem.alloc "hi") in
+    let: "lo" := (mem.alloc "lo") in
     (for: (λ: <>, (![#uint64T] "lo") < (![#uint64T] "hi")); (λ: <>, Skip) := λ: <>,
-      let: "err" := (alloc (type.zero_val #error)) in
-      let: "ents" := (alloc (type.zero_val #sliceT)) in
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "lo") in
       let: "$a1" := (![#uint64T] "hi") in
       let: "$a2" := (![#entryEncodingSize] "pageSize") in
@@ -1023,7 +1023,7 @@ Definition raftLog__scan : val :=
            slice.literal #interfaceT ["$sl0"; "$sl1"])) in
            (func_call #fmt #"Errorf"%go) "$a0" "$a1")
         else do:  #()));;;
-      (let: "err" := (alloc (type.zero_val #error)) in
+      (let: "err" := (mem.alloc (type.zero_val #error)) in
       let: "$r0" := (let: "$a0" := (![#sliceT] "ents") in
       (![#funcT] "v") "$a0") in
       do:  ("err" <-[#error] "$r0");;;
@@ -1039,11 +1039,11 @@ Definition raftLog__scan : val :=
    go: log.go:497:19 *)
 Definition raftLog__slice : val :=
   rec: "raftLog__slice" "l" "lo" "hi" "maxSize" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "maxSize" := (alloc "maxSize") in
-    let: "hi" := (alloc "hi") in
-    let: "lo" := (alloc "lo") in
-    (let: "err" := (alloc (type.zero_val #error)) in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "maxSize" := (mem.alloc "maxSize") in
+    let: "hi" := (mem.alloc "hi") in
+    let: "lo" := (mem.alloc "lo") in
+    (let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "lo") in
     let: "$a1" := (![#uint64T] "hi") in
     (method_call #v3.raft #"raftLog'ptr" #"mustCheckOutOfBounds" (![#ptrT] "l")) "$a0" "$a1") in
@@ -1056,7 +1056,7 @@ Definition raftLog__slice : val :=
     else do:  #());;;
     (if: (![#uint64T] "lo") ≥ (![#uint64T] (struct.field_ref #unstable #"offset"%go (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))))
     then
-      let: "ents" := (alloc (type.zero_val #sliceT)) in
+      let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := (let: "$a0" := (let: "$a0" := (![#uint64T] "lo") in
       let: "$a1" := (![#uint64T] "hi") in
       (method_call #v3.raft #"unstable'ptr" #"slice" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) "$a0" "$a1") in
@@ -1068,13 +1068,13 @@ Definition raftLog__slice : val :=
        slice.len "$a0") (let: "$a0" := (![#sliceT] "ents") in
        slice.len "$a0"), #interface.nil)
     else do:  #());;;
-    let: "cut" := (alloc (type.zero_val #uint64T)) in
+    let: "cut" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "hi") in
     let: "$a1" := (![#uint64T] (struct.field_ref #unstable #"offset"%go (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l")))) in
     (minUint64 2) "$a0" "$a1") in
     do:  ("cut" <-[#uint64T] "$r0");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "ents" := (alloc (type.zero_val #sliceT)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "lo") in
     let: "$a1" := (![#uint64T] "cut") in
     let: "$a2" := (![#entryEncodingSize] "maxSize") in
@@ -1106,14 +1106,14 @@ Definition raftLog__slice : val :=
     slice.len "$a0")) < ((![#uint64T] "cut") - (![#uint64T] "lo"))
     then return: (![#sliceT] "ents", #interface.nil)
     else do:  #());;;
-    let: "size" := (alloc (type.zero_val #entryEncodingSize)) in
+    let: "size" := (mem.alloc (type.zero_val #entryEncodingSize)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "ents") in
     (func_call #v3.raft #"entsSize"%go) "$a0") in
     do:  ("size" <-[#entryEncodingSize] "$r0");;;
     (if: (![#entryEncodingSize] "size") ≥ (![#entryEncodingSize] "maxSize")
     then return: (![#sliceT] "ents", #interface.nil)
     else do:  #());;;
-    let: "unstable" := (alloc (type.zero_val #sliceT)) in
+    let: "unstable" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#uint64T] (struct.field_ref #unstable #"offset"%go (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l")))) in
     let: "$a1" := (![#uint64T] "hi") in
     (method_call #v3.raft #"unstable'ptr" #"slice" (struct.field_ref #raftLog #"unstable"%go (![#ptrT] "l"))) "$a0" "$a1") in
@@ -1134,9 +1134,9 @@ Definition raftLog__slice : val :=
    go: log.go:549:19 *)
 Definition raftLog__mustCheckOutOfBounds : val :=
   rec: "raftLog__mustCheckOutOfBounds" "l" "lo" "hi" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "hi" := (alloc "hi") in
-    let: "lo" := (alloc "lo") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "hi" := (mem.alloc "hi") in
+    let: "lo" := (mem.alloc "lo") in
     (if: (![#uint64T] "lo") > (![#uint64T] "hi")
     then
       do:  (let: "$a0" := #"invalid slice %d > %d"%go in
@@ -1145,13 +1145,13 @@ Definition raftLog__mustCheckOutOfBounds : val :=
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (interface.get #"Panicf"%go (![#Logger] (struct.field_ref #raftLog #"logger"%go (![#ptrT] "l")))) "$a0" "$a1")
     else do:  #());;;
-    let: "fi" := (alloc (type.zero_val #uint64T)) in
+    let: "fi" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"firstIndex" (![#ptrT] "l")) #()) in
     do:  ("fi" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "lo") < (![#uint64T] "fi")
     then return: (![#error] (globals.get #v3.raft #"ErrCompacted"%go))
     else do:  #());;;
-    let: "length" := (alloc (type.zero_val #uint64T)) in
+    let: "length" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] "l")) #()) + #(W64 1)) - (![#uint64T] "fi")) in
     do:  ("length" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "hi") > ((![#uint64T] "fi") + (![#uint64T] "length"))
@@ -1169,9 +1169,9 @@ Definition raftLog__mustCheckOutOfBounds : val :=
 (* go: log.go:565:19 *)
 Definition raftLog__zeroTermOnOutOfBounds : val :=
   rec: "raftLog__zeroTermOnOutOfBounds" "l" "t" "err" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "err" := (alloc "err") in
-    let: "t" := (alloc "t") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "err" := (mem.alloc "err") in
+    let: "t" := (mem.alloc "t") in
     (if: interface.eq (![#error] "err") #interface.nil
     then return: (![#uint64T] "t")
     else do:  #());;;
@@ -1190,7 +1190,7 @@ Definition raftLog__zeroTermOnOutOfBounds : val :=
    go: log_unstable.go:54:20 *)
 Definition unstable__maybeFirstIndex : val :=
   rec: "unstable__maybeFirstIndex" "u" <> :=
-    exception_do (let: "u" := (alloc "u") in
+    exception_do (let: "u" := (mem.alloc "u") in
     (if: (![#ptrT] (struct.field_ref #unstable #"snapshot"%go (![#ptrT] "u"))) ≠ #null
     then return: ((![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go (![#ptrT] (struct.field_ref #unstable #"snapshot"%go (![#ptrT] "u")))))) + #(W64 1), #true)
     else do:  #());;;
@@ -1202,8 +1202,8 @@ Definition unstable__maybeFirstIndex : val :=
    go: log_unstable.go:63:20 *)
 Definition unstable__maybeLastIndex : val :=
   rec: "unstable__maybeLastIndex" "u" <> :=
-    exception_do (let: "u" := (alloc "u") in
-    (let: "l" := (alloc (type.zero_val #intT)) in
+    exception_do (let: "u" := (mem.alloc "u") in
+    (let: "l" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #unstable #"entries"%go (![#ptrT] "u"))) in
     slice.len "$a0") in
     do:  ("l" <-[#intT] "$r0");;;
@@ -1221,8 +1221,8 @@ Definition unstable__maybeLastIndex : val :=
    go: log_unstable.go:75:20 *)
 Definition unstable__maybeTerm : val :=
   rec: "unstable__maybeTerm" "u" "i" :=
-    exception_do (let: "u" := (alloc "u") in
-    let: "i" := (alloc "i") in
+    exception_do (let: "u" := (mem.alloc "u") in
+    let: "i" := (mem.alloc "i") in
     (if: (![#uint64T] "i") < (![#uint64T] (struct.field_ref #unstable #"offset"%go (![#ptrT] "u")))
     then
       (if: ((![#ptrT] (struct.field_ref #unstable #"snapshot"%go (![#ptrT] "u"))) ≠ #null) && ((![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go (![#ptrT] (struct.field_ref #unstable #"snapshot"%go (![#ptrT] "u")))))) = (![#uint64T] "i"))
@@ -1230,8 +1230,8 @@ Definition unstable__maybeTerm : val :=
       else do:  #());;;
       return: (#(W64 0), #false)
     else do:  #());;;
-    let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "last" := (alloc (type.zero_val #uint64T)) in
+    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "last" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((method_call #v3.raft #"unstable'ptr" #"maybeLastIndex" (![#ptrT] "u")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1251,8 +1251,8 @@ Definition unstable__maybeTerm : val :=
    go: log_unstable.go:96:20 *)
 Definition unstable__nextEntries : val :=
   rec: "unstable__nextEntries" "u" <> :=
-    exception_do (let: "u" := (alloc "u") in
-    let: "inProgress" := (alloc (type.zero_val #intT)) in
+    exception_do (let: "u" := (mem.alloc "u") in
+    let: "inProgress" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := (u_to_w64 ((![#uint64T] (struct.field_ref #unstable #"offsetInProgress"%go (![#ptrT] "u"))) - (![#uint64T] (struct.field_ref #unstable #"offset"%go (![#ptrT] "u"))))) in
     do:  ("inProgress" <-[#intT] "$r0");;;
     (if: (let: "$a0" := (![#sliceT] (struct.field_ref #unstable #"entries"%go (![#ptrT] "u"))) in
@@ -1268,7 +1268,7 @@ Definition unstable__nextEntries : val :=
    go: log_unstable.go:106:20 *)
 Definition unstable__nextSnapshot : val :=
   rec: "unstable__nextSnapshot" "u" <> :=
-    exception_do (let: "u" := (alloc "u") in
+    exception_do (let: "u" := (mem.alloc "u") in
     (if: ((![#ptrT] (struct.field_ref #unstable #"snapshot"%go (![#ptrT] "u"))) = #null) || (![#boolT] (struct.field_ref #unstable #"snapshotInProgress"%go (![#ptrT] "u")))
     then return: (#null)
     else do:  #());;;
@@ -1283,7 +1283,7 @@ Definition unstable__nextSnapshot : val :=
    go: log_unstable.go:118:20 *)
 Definition unstable__acceptInProgress : val :=
   rec: "unstable__acceptInProgress" "u" <> :=
-    exception_do (let: "u" := (alloc "u") in
+    exception_do (let: "u" := (mem.alloc "u") in
     (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #unstable #"entries"%go (![#ptrT] "u"))) in
     slice.len "$a0") #(W64 0)
     then
@@ -1307,10 +1307,10 @@ Definition unstable__acceptInProgress : val :=
    go: log_unstable.go:134:20 *)
 Definition unstable__stableTo : val :=
   rec: "unstable__stableTo" "u" "id" :=
-    exception_do (let: "u" := (alloc "u") in
-    let: "id" := (alloc "id") in
-    let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "gt" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "u" := (mem.alloc "u") in
+    let: "id" := (mem.alloc "id") in
+    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "gt" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] (struct.field_ref #entryID #"index"%go "id")) in
     (method_call #v3.raft #"unstable'ptr" #"maybeTerm" (![#ptrT] "u")) "$a0") in
     let: "$r0" := "$ret0" in
@@ -1344,7 +1344,7 @@ Definition unstable__stableTo : val :=
       (interface.get #"Infof"%go (![#Logger] (struct.field_ref #unstable #"logger"%go (![#ptrT] "u")))) "$a0" "$a1");;;
       return: (#())
     else do:  #());;;
-    let: "num" := (alloc (type.zero_val #intT)) in
+    let: "num" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := (u_to_w64 (((![#uint64T] (struct.field_ref #entryID #"index"%go "id")) + #(W64 1)) - (![#uint64T] (struct.field_ref #unstable #"offset"%go (![#ptrT] "u"))))) in
     do:  ("num" <-[#intT] "$r0");;;
     let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #unstable #"entries"%go (![#ptrT] "u"))) in
@@ -1363,7 +1363,7 @@ Definition lenMultiple : Z := 2.
 (* go: log_unstable.go:168:20 *)
 Definition unstable__shrinkEntriesArray : val :=
   rec: "unstable__shrinkEntriesArray" "u" <> :=
-    exception_do (let: "u" := (alloc "u") in
+    exception_do (let: "u" := (mem.alloc "u") in
     (if: (let: "$a0" := (![#sliceT] (struct.field_ref #unstable #"entries"%go (![#ptrT] "u"))) in
     slice.len "$a0") = #(W64 0)
     then
@@ -1374,7 +1374,7 @@ Definition unstable__shrinkEntriesArray : val :=
       slice.len "$a0") * #(W64 lenMultiple)) (let: "$a0" := (![#sliceT] (struct.field_ref #unstable #"entries"%go (![#ptrT] "u"))) in
       slice.cap "$a0")
       then
-        let: "newEntries" := (alloc (type.zero_val #sliceT)) in
+        let: "newEntries" := (mem.alloc (type.zero_val #sliceT)) in
         let: "$r0" := (slice.make2 #raftpb.Entry (let: "$a0" := (![#sliceT] (struct.field_ref #unstable #"entries"%go (![#ptrT] "u"))) in
         slice.len "$a0")) in
         do:  ("newEntries" <-[#sliceT] "$r0");;;
@@ -1388,8 +1388,8 @@ Definition unstable__shrinkEntriesArray : val :=
 (* go: log_unstable.go:182:20 *)
 Definition unstable__stableSnapTo : val :=
   rec: "unstable__stableSnapTo" "u" "i" :=
-    exception_do (let: "u" := (alloc "u") in
-    let: "i" := (alloc "i") in
+    exception_do (let: "u" := (mem.alloc "u") in
+    let: "i" := (mem.alloc "i") in
     (if: ((![#ptrT] (struct.field_ref #unstable #"snapshot"%go (![#ptrT] "u"))) ≠ #null) && ((![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go (![#ptrT] (struct.field_ref #unstable #"snapshot"%go (![#ptrT] "u")))))) = (![#uint64T] "i"))
     then
       let: "$r0" := #null in
@@ -1401,8 +1401,8 @@ Definition unstable__stableSnapTo : val :=
 (* go: log_unstable.go:189:20 *)
 Definition unstable__restore : val :=
   rec: "unstable__restore" "u" "s" :=
-    exception_do (let: "u" := (alloc "u") in
-    let: "s" := (alloc "s") in
+    exception_do (let: "u" := (mem.alloc "u") in
+    let: "s" := (mem.alloc "s") in
     let: "$r0" := ((![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "s"))) + #(W64 1)) in
     do:  ((struct.field_ref #unstable #"offset"%go (![#ptrT] "u")) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#uint64T] (struct.field_ref #unstable #"offset"%go (![#ptrT] "u"))) in
@@ -1417,9 +1417,9 @@ Definition unstable__restore : val :=
 (* go: log_unstable.go:197:20 *)
 Definition unstable__truncateAndAppend : val :=
   rec: "unstable__truncateAndAppend" "u" "ents" :=
-    exception_do (let: "u" := (alloc "u") in
-    let: "ents" := (alloc "ents") in
-    let: "fromIndex" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "u" := (mem.alloc "u") in
+    let: "ents" := (mem.alloc "ents") in
+    let: "fromIndex" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] "ents") #(W64 0)))) in
     do:  ("fromIndex" <-[#uint64T] "$r0");;;
     let: "$sw" := #true in
@@ -1448,7 +1448,7 @@ Definition unstable__truncateAndAppend : val :=
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "fromIndex")) in
         slice.literal #interfaceT ["$sl0"])) in
         (interface.get #"Infof"%go (![#Logger] (struct.field_ref #unstable #"logger"%go (![#ptrT] "u")))) "$a0" "$a1");;;
-        let: "keep" := (alloc (type.zero_val #sliceT)) in
+        let: "keep" := (mem.alloc (type.zero_val #sliceT)) in
         let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #unstable #"offset"%go (![#ptrT] "u"))) in
         let: "$a1" := (![#uint64T] "fromIndex") in
         (method_call #v3.raft #"unstable'ptr" #"slice" (![#ptrT] "u")) "$a0" "$a1") in
@@ -1474,9 +1474,9 @@ Definition unstable__truncateAndAppend : val :=
    go: log_unstable.go:229:20 *)
 Definition unstable__slice : val :=
   rec: "unstable__slice" "u" "lo" "hi" :=
-    exception_do (let: "u" := (alloc "u") in
-    let: "hi" := (alloc "hi") in
-    let: "lo" := (alloc "lo") in
+    exception_do (let: "u" := (mem.alloc "u") in
+    let: "hi" := (mem.alloc "hi") in
+    let: "lo" := (mem.alloc "lo") in
     do:  (let: "$a0" := (![#uint64T] "lo") in
     let: "$a1" := (![#uint64T] "hi") in
     (method_call #v3.raft #"unstable'ptr" #"mustCheckOutOfBounds" (![#ptrT] "u")) "$a0" "$a1");;;
@@ -1488,9 +1488,9 @@ Definition unstable__slice : val :=
    go: log_unstable.go:238:20 *)
 Definition unstable__mustCheckOutOfBounds : val :=
   rec: "unstable__mustCheckOutOfBounds" "u" "lo" "hi" :=
-    exception_do (let: "u" := (alloc "u") in
-    let: "hi" := (alloc "hi") in
-    let: "lo" := (alloc "lo") in
+    exception_do (let: "u" := (mem.alloc "u") in
+    let: "hi" := (mem.alloc "hi") in
+    let: "lo" := (mem.alloc "lo") in
     (if: (![#uint64T] "lo") > (![#uint64T] "hi")
     then
       do:  (let: "$a0" := #"invalid unstable.slice %d > %d"%go in
@@ -1499,7 +1499,7 @@ Definition unstable__mustCheckOutOfBounds : val :=
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (interface.get #"Panicf"%go (![#Logger] (struct.field_ref #unstable #"logger"%go (![#ptrT] "u")))) "$a0" "$a1")
     else do:  #());;;
-    let: "upper" := (alloc (type.zero_val #uint64T)) in
+    let: "upper" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((![#uint64T] (struct.field_ref #unstable #"offset"%go (![#ptrT] "u"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #unstable #"entries"%go (![#ptrT] "u"))) in
     slice.len "$a0"))) in
     do:  ("upper" <-[#uint64T] "$r0");;;
@@ -1517,7 +1517,7 @@ Definition unstable__mustCheckOutOfBounds : val :=
 (* go: logger.go:45:6 *)
 Definition SetLogger : val :=
   rec: "SetLogger" "l" :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (globals.get #v3.raft #"raftLoggerMu"%go)) #());;;
     let: "$r0" := (![#Logger] "l") in
     do:  ((globals.get #v3.raft #"raftLogger"%go) <-[#Logger] "$r0");;;
@@ -1551,22 +1551,22 @@ Definition calldepth : Z := 2.
 (* go: logger.go:78:25 *)
 Definition DefaultLogger__EnableTimestamps : val :=
   rec: "DefaultLogger__EnableTimestamps" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     do:  (let: "$a0" := ((((method_call #v3.raft #"DefaultLogger'ptr" #"Flags" (![#ptrT] "l")) #()) `or` #(W64 log.Ldate)) `or` #(W64 log.Ltime)) in
     (method_call #v3.raft #"DefaultLogger'ptr" #"SetFlags" (![#ptrT] "l")) "$a0")).
 
 (* go: logger.go:82:25 *)
 Definition DefaultLogger__EnableDebug : val :=
   rec: "DefaultLogger__EnableDebug" "l" <> :=
-    exception_do (let: "l" := (alloc "l") in
+    exception_do (let: "l" := (mem.alloc "l") in
     let: "$r0" := #true in
     do:  ((struct.field_ref #DefaultLogger #"debug"%go (![#ptrT] "l")) <-[#boolT] "$r0")).
 
 (* go: logger.go:86:25 *)
 Definition DefaultLogger__Debug : val :=
   rec: "DefaultLogger__Debug" "l" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
     (if: ![#boolT] (struct.field_ref #DefaultLogger #"debug"%go (![#ptrT] "l"))
     then
       do:  (let: "$a0" := #(W64 calldepth) in
@@ -1580,9 +1580,9 @@ Definition DefaultLogger__Debug : val :=
 (* go: logger.go:92:25 *)
 Definition DefaultLogger__Debugf : val :=
   rec: "DefaultLogger__Debugf" "l" "format" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
-    let: "format" := (alloc "format") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
+    let: "format" := (mem.alloc "format") in
     (if: ![#boolT] (struct.field_ref #DefaultLogger #"debug"%go (![#ptrT] "l"))
     then
       do:  (let: "$a0" := #(W64 calldepth) in
@@ -1597,8 +1597,8 @@ Definition DefaultLogger__Debugf : val :=
 (* go: logger.go:98:25 *)
 Definition DefaultLogger__Info : val :=
   rec: "DefaultLogger__Info" "l" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"INFO"%go in
     let: "$a1" := (let: "$a0" := (![#sliceT] "v") in
@@ -1609,9 +1609,9 @@ Definition DefaultLogger__Info : val :=
 (* go: logger.go:102:25 *)
 Definition DefaultLogger__Infof : val :=
   rec: "DefaultLogger__Infof" "l" "format" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
-    let: "format" := (alloc "format") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
+    let: "format" := (mem.alloc "format") in
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"INFO"%go in
     let: "$a1" := (let: "$a0" := (![#stringT] "format") in
@@ -1623,8 +1623,8 @@ Definition DefaultLogger__Infof : val :=
 (* go: logger.go:106:25 *)
 Definition DefaultLogger__Error : val :=
   rec: "DefaultLogger__Error" "l" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"ERROR"%go in
     let: "$a1" := (let: "$a0" := (![#sliceT] "v") in
@@ -1635,9 +1635,9 @@ Definition DefaultLogger__Error : val :=
 (* go: logger.go:110:25 *)
 Definition DefaultLogger__Errorf : val :=
   rec: "DefaultLogger__Errorf" "l" "format" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
-    let: "format" := (alloc "format") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
+    let: "format" := (mem.alloc "format") in
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"ERROR"%go in
     let: "$a1" := (let: "$a0" := (![#stringT] "format") in
@@ -1649,8 +1649,8 @@ Definition DefaultLogger__Errorf : val :=
 (* go: logger.go:114:25 *)
 Definition DefaultLogger__Warning : val :=
   rec: "DefaultLogger__Warning" "l" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"WARN"%go in
     let: "$a1" := (let: "$a0" := (![#sliceT] "v") in
@@ -1661,9 +1661,9 @@ Definition DefaultLogger__Warning : val :=
 (* go: logger.go:118:25 *)
 Definition DefaultLogger__Warningf : val :=
   rec: "DefaultLogger__Warningf" "l" "format" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
-    let: "format" := (alloc "format") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
+    let: "format" := (mem.alloc "format") in
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"WARN"%go in
     let: "$a1" := (let: "$a0" := (![#stringT] "format") in
@@ -1675,8 +1675,8 @@ Definition DefaultLogger__Warningf : val :=
 (* go: logger.go:122:25 *)
 Definition DefaultLogger__Fatal : val :=
   rec: "DefaultLogger__Fatal" "l" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"FATAL"%go in
     let: "$a1" := (let: "$a0" := (![#sliceT] "v") in
@@ -1689,9 +1689,9 @@ Definition DefaultLogger__Fatal : val :=
 (* go: logger.go:127:25 *)
 Definition DefaultLogger__Fatalf : val :=
   rec: "DefaultLogger__Fatalf" "l" "format" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
-    let: "format" := (alloc "format") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
+    let: "format" := (mem.alloc "format") in
     do:  (let: "$a0" := #(W64 calldepth) in
     let: "$a1" := (let: "$a0" := #"FATAL"%go in
     let: "$a1" := (let: "$a0" := (![#stringT] "format") in
@@ -1705,17 +1705,17 @@ Definition DefaultLogger__Fatalf : val :=
 (* go: logger.go:132:25 *)
 Definition DefaultLogger__Panic : val :=
   rec: "DefaultLogger__Panic" "l" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
     do:  (let: "$a0" := (![#sliceT] "v") in
     (method_call #log #"Logger'ptr" #"Panic" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go (![#ptrT] "l")))) "$a0")).
 
 (* go: logger.go:136:25 *)
 Definition DefaultLogger__Panicf : val :=
   rec: "DefaultLogger__Panicf" "l" "format" "v" :=
-    exception_do (let: "l" := (alloc "l") in
-    let: "v" := (alloc "v") in
-    let: "format" := (alloc "format") in
+    exception_do (let: "l" := (mem.alloc "l") in
+    let: "v" := (mem.alloc "v") in
+    let: "format" := (mem.alloc "format") in
     do:  (let: "$a0" := (![#stringT] "format") in
     let: "$a1" := (![#sliceT] "v") in
     (method_call #log #"Logger'ptr" #"Panicf" (![#ptrT] (struct.field_ref #DefaultLogger #"Logger"%go (![#ptrT] "l")))) "$a0" "$a1")).
@@ -1723,8 +1723,8 @@ Definition DefaultLogger__Panicf : val :=
 (* go: logger.go:140:6 *)
 Definition header : val :=
   rec: "header" "lvl" "msg" :=
-    exception_do (let: "msg" := (alloc "msg") in
-    let: "lvl" := (alloc "lvl") in
+    exception_do (let: "msg" := (mem.alloc "msg") in
+    let: "lvl" := (mem.alloc "lvl") in
     return: (let: "$a0" := #"%s: %s"%go in
      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![#stringT] "lvl")) in
      let: "$sl1" := (interface.make #""%go #"string"%go (![#stringT] "msg")) in
@@ -1745,8 +1745,8 @@ Definition SoftState : go_type := structT [
 (* go: node.go:45:21 *)
 Definition SoftState__equal : val :=
   rec: "SoftState__equal" "a" "b" :=
-    exception_do (let: "a" := (alloc "a") in
-    let: "b" := (alloc "b") in
+    exception_do (let: "a" := (mem.alloc "a") in
+    let: "b" := (mem.alloc "b") in
     return: (((![#uint64T] (struct.field_ref #SoftState #"Lead"%go (![#ptrT] "a"))) = (![#uint64T] (struct.field_ref #SoftState #"Lead"%go (![#ptrT] "b")))) && ((![#StateType] (struct.field_ref #SoftState #"RaftState"%go (![#ptrT] "a"))) = (![#StateType] (struct.field_ref #SoftState #"RaftState"%go (![#ptrT] "b")))))).
 
 Definition Ready : go_type := structT [
@@ -1763,8 +1763,8 @@ Definition Ready : go_type := structT [
 (* go: node.go:117:6 *)
 Definition isHardStateEqual : val :=
   rec: "isHardStateEqual" "a" "b" :=
-    exception_do (let: "b" := (alloc "b") in
-    let: "a" := (alloc "a") in
+    exception_do (let: "b" := (mem.alloc "b") in
+    let: "a" := (mem.alloc "a") in
     return: ((((![#uint64T] (struct.field_ref #raftpb.HardState #"Term"%go "a")) = (![#uint64T] (struct.field_ref #raftpb.HardState #"Term"%go "b"))) && ((![#uint64T] (struct.field_ref #raftpb.HardState #"Vote"%go "a")) = (![#uint64T] (struct.field_ref #raftpb.HardState #"Vote"%go "b")))) && ((![#uint64T] (struct.field_ref #raftpb.HardState #"Commit"%go "a")) = (![#uint64T] (struct.field_ref #raftpb.HardState #"Commit"%go "b"))))).
 
 (* IsEmptyHardState returns true if the given HardState is empty.
@@ -1772,7 +1772,7 @@ Definition isHardStateEqual : val :=
    go: node.go:122:6 *)
 Definition IsEmptyHardState : val :=
   rec: "IsEmptyHardState" "st" :=
-    exception_do (let: "st" := (alloc "st") in
+    exception_do (let: "st" := (mem.alloc "st") in
     return: (let: "$a0" := (![#raftpb.HardState] "st") in
      let: "$a1" := (![#raftpb.HardState] (globals.get #v3.raft #"emptyState"%go)) in
      (func_call #v3.raft #"isHardStateEqual"%go) "$a0" "$a1")).
@@ -1782,7 +1782,7 @@ Definition IsEmptyHardState : val :=
    go: node.go:127:6 *)
 Definition IsEmptySnap : val :=
   rec: "IsEmptySnap" "sp" :=
-    exception_do (let: "sp" := (alloc "sp") in
+    exception_do (let: "sp" := (mem.alloc "sp") in
     return: ((![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "sp"))) = #(W64 0))).
 
 Definition Node : go_type := interfaceT.
@@ -1851,16 +1851,16 @@ Definition Config : go_type := structT [
 (* go: node.go:250:6 *)
 Definition setupNode : val :=
   rec: "setupNode" "c" "peers" :=
-    exception_do (let: "peers" := (alloc "peers") in
-    let: "c" := (alloc "c") in
+    exception_do (let: "peers" := (mem.alloc "peers") in
+    let: "c" := (mem.alloc "c") in
     (if: (let: "$a0" := (![#sliceT] "peers") in
     slice.len "$a0") = #(W64 0)
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"no peers given; use RestartNode instead"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "rn" := (alloc (type.zero_val #ptrT)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "rn" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] "c") in
     (func_call #v3.raft #"NewRawNode"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -1882,7 +1882,7 @@ Definition setupNode : val :=
       slice.literal #interfaceT ["$sl0"])) in
       (interface.get #"Warningf"%go (![#Logger] (struct.field_ref #Config #"Logger"%go (![#ptrT] "c")))) "$a0" "$a1")
     else do:  #());;;
-    let: "n" := (alloc (type.zero_val #node)) in
+    let: "n" := (mem.alloc (type.zero_val #node)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "rn") in
     (func_call #v3.raft #"newNode"%go) "$a0") in
     do:  ("n" <-[#node] "$r0");;;
@@ -1896,9 +1896,9 @@ Definition setupNode : val :=
    go: node.go:271:6 *)
 Definition StartNode : val :=
   rec: "StartNode" "c" "peers" :=
-    exception_do (let: "peers" := (alloc "peers") in
-    let: "c" := (alloc "c") in
-    let: "n" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "peers" := (mem.alloc "peers") in
+    let: "c" := (mem.alloc "c") in
+    let: "n" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "c") in
     let: "$a1" := (![#sliceT] "peers") in
     (func_call #v3.raft #"setupNode"%go) "$a0" "$a1") in
@@ -1915,9 +1915,9 @@ Definition StartNode : val :=
    go: node.go:281:6 *)
 Definition RestartNode : val :=
   rec: "RestartNode" "c" :=
-    exception_do (let: "c" := (alloc "c") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "rn" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "c" := (mem.alloc "c") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "rn" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] "c") in
     (func_call #v3.raft #"NewRawNode"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -1929,7 +1929,7 @@ Definition RestartNode : val :=
       do:  (let: "$a0" := (![#error] "err") in
       Panic "$a0")
     else do:  #());;;
-    let: "n" := (alloc (type.zero_val #node)) in
+    let: "n" := (mem.alloc (type.zero_val #node)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "rn") in
     (func_call #v3.raft #"newNode"%go) "$a0") in
     do:  ("n" <-[#node] "$r0");;;
@@ -1940,7 +1940,7 @@ Definition RestartNode : val :=
 (* go: node.go:312:6 *)
 Definition newNode : val :=
   rec: "newNode" "rn" :=
-    exception_do (let: "rn" := (alloc "rn") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
     return: (let: "$propc" := (chan.make msgWithResult #(W64 0)) in
      let: "$recvc" := (chan.make raftpb.Message #(W64 0)) in
      let: "$confc" := (chan.make raftpb.ConfChangeV2 #(W64 0)) in
@@ -1973,7 +1973,7 @@ Definition newNode : val :=
 (* go: node.go:331:16 *)
 Definition node__Stop : val :=
   rec: "node__Stop" "n" <> :=
-    exception_do (let: "n" := (alloc "n") in
+    exception_do (let: "n" := (mem.alloc "n") in
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
         do:  #()
         ))] [("$recvChan0", (λ: "$recvVal",
@@ -1985,16 +1985,16 @@ Definition node__Stop : val :=
 (* go: node.go:343:16 *)
 Definition node__run : val :=
   rec: "node__run" "n" <> :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "propc" := (alloc (type.zero_val #(chanT msgWithResult))) in
-    let: "readyc" := (alloc (type.zero_val #(chanT Ready))) in
-    let: "advancec" := (alloc (type.zero_val #(chanT (structT [
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "propc" := (mem.alloc (type.zero_val #(chanT msgWithResult))) in
+    let: "readyc" := (mem.alloc (type.zero_val #(chanT Ready))) in
+    let: "advancec" := (mem.alloc (type.zero_val #(chanT (structT [
     ])))) in
-    let: "rd" := (alloc (type.zero_val #Ready)) in
-    let: "r" := (alloc (type.zero_val #ptrT)) in
+    let: "rd" := (mem.alloc (type.zero_val #Ready)) in
+    let: "r" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] (struct.field_ref #node #"rn"%go (![#ptrT] "n"))))) in
     do:  ("r" <-[#ptrT] "$r0");;;
-    let: "lead" := (alloc (type.zero_val #uint64T)) in
+    let: "lead" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := None in
     do:  ("lead" <-[#uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -2064,15 +2064,15 @@ Definition node__run : val :=
           let: "$r0" := #null in
           do:  ("readyc" <-[#(chanT Ready)] "$r0")
           ))] [("$recvChan0", (λ: "$recvVal",
-          let: "pm" := (alloc (type.zero_val #msgWithResult)) in
+          let: "pm" := (mem.alloc (type.zero_val #msgWithResult)) in
           let: "$r0" := (Fst "$recvVal") in
           do:  ("pm" <-[#msgWithResult] "$r0");;;
-          let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+          let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
           let: "$r0" := (![#raftpb.Message] (struct.field_ref #msgWithResult #"m"%go "pm")) in
           do:  ("m" <-[#raftpb.Message] "$r0");;;
           let: "$r0" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))) in
           do:  ((struct.field_ref #raftpb.Message #"From"%go "m") <-[#uint64T] "$r0");;;
-          let: "err" := (alloc (type.zero_val #error)) in
+          let: "err" := (mem.alloc (type.zero_val #error)) in
           let: "$r0" := (let: "$a0" := (![#raftpb.Message] "m") in
           (method_call #v3.raft #"raft'ptr" #"Step" (![#ptrT] "r")) "$a0") in
           do:  ("err" <-[#error] "$r0");;;
@@ -2085,7 +2085,7 @@ Definition node__run : val :=
             chan.close "$a0")
           else do:  #())
           )); ("$recvChan1", (λ: "$recvVal",
-          let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+          let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
           let: "$r0" := (Fst "$recvVal") in
           do:  ("m" <-[#raftpb.Message] "$r0");;;
           (if: ((let: "$a0" := (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) in
@@ -2096,20 +2096,20 @@ Definition node__run : val :=
           do:  (let: "$a0" := (![#raftpb.Message] "m") in
           (method_call #v3.raft #"raft'ptr" #"Step" (![#ptrT] "r")) "$a0")
           )); ("$recvChan2", (λ: "$recvVal",
-          let: "cc" := (alloc (type.zero_val #raftpb.ConfChangeV2)) in
+          let: "cc" := (mem.alloc (type.zero_val #raftpb.ConfChangeV2)) in
           let: "$r0" := (Fst "$recvVal") in
           do:  ("cc" <-[#raftpb.ConfChangeV2] "$r0");;;
-          let: "okBefore" := (alloc (type.zero_val #boolT)) in
+          let: "okBefore" := (mem.alloc (type.zero_val #boolT)) in
           let: ("$ret0", "$ret1") := (map.get (![#tracker.ProgressMap] (struct.field_ref #tracker.ProgressTracker #"Progress"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  "$r0";;;
           do:  ("okBefore" <-[#boolT] "$r1");;;
-          let: "cs" := (alloc (type.zero_val #raftpb.ConfState)) in
+          let: "cs" := (mem.alloc (type.zero_val #raftpb.ConfState)) in
           let: "$r0" := (let: "$a0" := (![#raftpb.ConfChangeV2] "cc") in
           (method_call #v3.raft #"raft'ptr" #"applyConfChange" (![#ptrT] "r")) "$a0") in
           do:  ("cs" <-[#raftpb.ConfState] "$r0");;;
-          (let: "okAfter" := (alloc (type.zero_val #boolT)) in
+          (let: "okAfter" := (mem.alloc (type.zero_val #boolT)) in
           let: ("$ret0", "$ret1") := (map.get (![#tracker.ProgressMap] (struct.field_ref #tracker.ProgressTracker #"Progress"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
@@ -2117,16 +2117,16 @@ Definition node__run : val :=
           do:  ("okAfter" <-[#boolT] "$r1");;;
           (if: (![#boolT] "okBefore") && (~ (![#boolT] "okAfter"))
           then
-            let: "found" := (alloc (type.zero_val #boolT)) in
+            let: "found" := (mem.alloc (type.zero_val #boolT)) in
             let: "$range" := ((let: "$sl0" := (![#sliceT] (struct.field_ref #raftpb.ConfState #"Voters"%go "cs")) in
             let: "$sl1" := (![#sliceT] (struct.field_ref #raftpb.ConfState #"VotersOutgoing"%go "cs")) in
             slice.literal #sliceT ["$sl0"; "$sl1"])) in
-            (let: "sl" := (alloc (type.zero_val #intT)) in
+            (let: "sl" := (mem.alloc (type.zero_val #intT)) in
             slice.for_range #sliceT "$range" (λ: "$key" "$value",
               do:  ("sl" <-[#sliceT] "$value");;;
               do:  "$key";;;
               let: "$range" := (![#sliceT] "sl") in
-              (let: "id" := (alloc (type.zero_val #intT)) in
+              (let: "id" := (mem.alloc (type.zero_val #intT)) in
               slice.for_range #uint64T "$range" (λ: "$key" "$value",
                 do:  ("id" <-[#uint64T] "$value");;;
                 do:  "$key";;;
@@ -2170,7 +2170,7 @@ Definition node__run : val :=
           do:  ("advancec" <-[#(chanT (structT [
           ]))] "$r0")
           )); ("$recvChan5", (λ: "$recvVal",
-          let: "c" := (alloc (type.zero_val #(chanT Status))) in
+          let: "c" := (mem.alloc (type.zero_val #(chanT Status))) in
           let: "$r0" := (Fst "$recvVal") in
           do:  ("c" <-[#(chanT Status)] "$r0");;;
           do:  (let: "$chan" := (![#(chanT Status)] "c") in
@@ -2190,7 +2190,7 @@ Definition node__run : val :=
    go: node.go:458:16 *)
 Definition node__Tick : val :=
   rec: "node__Tick" "n" <> :=
-    exception_do (let: "n" := (alloc "n") in
+    exception_do (let: "n" := (mem.alloc "n") in
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
         do:  #()
         ))] [("$recvChan0", (λ: "$recvVal",
@@ -2205,8 +2205,8 @@ Definition node__Tick : val :=
 (* go: node.go:467:16 *)
 Definition node__Campaign : val :=
   rec: "node__Campaign" "n" "ctx" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "ctx" := (mem.alloc "ctx") in
     return: (let: "$a0" := (![#context.Context] "ctx") in
      let: "$a1" := (let: "$Type" := raftpb.MsgHup in
      struct.make #raftpb.Message [{
@@ -2230,9 +2230,9 @@ Definition node__Campaign : val :=
 (* go: node.go:469:16 *)
 Definition node__Propose : val :=
   rec: "node__Propose" "n" "ctx" "data" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "data" := (alloc "data") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "data" := (mem.alloc "data") in
+    let: "ctx" := (mem.alloc "ctx") in
     return: (let: "$a0" := (![#context.Context] "ctx") in
      let: "$a1" := (let: "$Type" := raftpb.MsgProp in
      let: "$Entries" := ((let: "$sl0" := (let: "$Data" := (![#sliceT] "data") in
@@ -2264,9 +2264,9 @@ Definition node__Propose : val :=
 (* go: node.go:473:16 *)
 Definition node__Step : val :=
   rec: "node__Step" "n" "ctx" "m" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "m" := (alloc "m") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "m" := (mem.alloc "m") in
+    let: "ctx" := (mem.alloc "ctx") in
     (if: (let: "$a0" := (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) in
     (func_call #v3.raft #"IsLocalMsg"%go) "$a0") && (~ (let: "$a0" := (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")) in
     (func_call #v3.raft #"IsLocalMsgTarget"%go) "$a0"))
@@ -2279,10 +2279,10 @@ Definition node__Step : val :=
 (* go: node.go:482:6 *)
 Definition confChangeToMsg : val :=
   rec: "confChangeToMsg" "c" :=
-    exception_do (let: "c" := (alloc "c") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "data" := (alloc (type.zero_val #sliceT)) in
-    let: "typ" := (alloc (type.zero_val #raftpb.EntryType)) in
+    exception_do (let: "c" := (mem.alloc "c") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "data" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "typ" := (mem.alloc (type.zero_val #raftpb.EntryType)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#raftpb.ConfChangeI] "c") in
     (func_call #raftpb #"MarshalConfChange"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -2340,11 +2340,11 @@ Definition confChangeToMsg : val :=
 (* go: node.go:490:16 *)
 Definition node__ProposeConfChange : val :=
   rec: "node__ProposeConfChange" "n" "ctx" "cc" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "cc" := (alloc "cc") in
-    let: "ctx" := (alloc "ctx") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "msg" := (alloc (type.zero_val #raftpb.Message)) in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "cc" := (mem.alloc "cc") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "msg" := (mem.alloc (type.zero_val #raftpb.Message)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#raftpb.ConfChangeI] "cc") in
     (func_call #v3.raft #"confChangeToMsg"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -2361,9 +2361,9 @@ Definition node__ProposeConfChange : val :=
 (* go: node.go:498:16 *)
 Definition node__step : val :=
   rec: "node__step" "n" "ctx" "m" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "m" := (alloc "m") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "m" := (mem.alloc "m") in
+    let: "ctx" := (mem.alloc "ctx") in
     return: (let: "$a0" := (![#context.Context] "ctx") in
      let: "$a1" := (![#raftpb.Message] "m") in
      let: "$a2" := #false in
@@ -2372,9 +2372,9 @@ Definition node__step : val :=
 (* go: node.go:502:16 *)
 Definition node__stepWait : val :=
   rec: "node__stepWait" "n" "ctx" "m" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "m" := (alloc "m") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "m" := (mem.alloc "m") in
+    let: "ctx" := (mem.alloc "ctx") in
     return: (let: "$a0" := (![#context.Context] "ctx") in
      let: "$a1" := (![#raftpb.Message] "m") in
      let: "$a2" := #true in
@@ -2386,10 +2386,10 @@ Definition node__stepWait : val :=
    go: node.go:508:16 *)
 Definition node__stepWithWaitOption : val :=
   rec: "node__stepWithWaitOption" "n" "ctx" "m" "wait" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "wait" := (alloc "wait") in
-    let: "m" := (alloc "m") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "wait" := (mem.alloc "wait") in
+    let: "m" := (mem.alloc "m") in
+    let: "ctx" := (mem.alloc "ctx") in
     (if: (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) ≠ raftpb.MsgProp
     then
       do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
@@ -2400,10 +2400,10 @@ Definition node__stepWithWaitOption : val :=
           return: (![#error] (globals.get #v3.raft #"ErrStopped"%go))
           ))] (InjLV #()))
     else do:  #());;;
-    let: "ch" := (alloc (type.zero_val #(chanT msgWithResult))) in
+    let: "ch" := (mem.alloc (type.zero_val #(chanT msgWithResult))) in
     let: "$r0" := (![#(chanT msgWithResult)] (struct.field_ref #node #"propc"%go (![#ptrT] "n"))) in
     do:  ("ch" <-[#(chanT msgWithResult)] "$r0");;;
-    let: "pm" := (alloc (type.zero_val #msgWithResult)) in
+    let: "pm" := (mem.alloc (type.zero_val #msgWithResult)) in
     let: "$r0" := (let: "$m" := (![#raftpb.Message] "m") in
     struct.make #msgWithResult [{
       "m" ::= "$m";
@@ -2425,7 +2425,7 @@ Definition node__stepWithWaitOption : val :=
         return: (![#error] (globals.get #v3.raft #"ErrStopped"%go))
         ))] (InjLV #()));;;
     do:  (chan.select [] [("$recvChan0", (λ: "$recvVal",
-        let: "err" := (alloc (type.zero_val #error)) in
+        let: "err" := (mem.alloc (type.zero_val #error)) in
         let: "$r0" := (Fst "$recvVal") in
         do:  ("err" <-[#error] "$r0");;;
         (if: (~ (interface.eq (![#error] "err") #interface.nil))
@@ -2441,13 +2441,13 @@ Definition node__stepWithWaitOption : val :=
 (* go: node.go:547:16 *)
 Definition node__Ready : val :=
   rec: "node__Ready" "n" <> :=
-    exception_do (let: "n" := (alloc "n") in
+    exception_do (let: "n" := (mem.alloc "n") in
     return: (![#(chanT Ready)] (struct.field_ref #node #"readyc"%go (![#ptrT] "n")))).
 
 (* go: node.go:549:16 *)
 Definition node__Advance : val :=
   rec: "node__Advance" "n" <> :=
-    exception_do (let: "n" := (alloc "n") in
+    exception_do (let: "n" := (mem.alloc "n") in
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
         do:  #()
         ))] [("$recvChan0", (λ: "$recvVal",
@@ -2457,9 +2457,9 @@ Definition node__Advance : val :=
 (* go: node.go:556:16 *)
 Definition node__ApplyConfChange : val :=
   rec: "node__ApplyConfChange" "n" "cc" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "cc" := (alloc "cc") in
-    let: "cs" := (alloc (type.zero_val #raftpb.ConfState)) in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "cc" := (mem.alloc "cc") in
+    let: "cs" := (mem.alloc (type.zero_val #raftpb.ConfState)) in
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
         do:  #()
         ))] [("$recvChan0", (λ: "$recvVal",
@@ -2477,8 +2477,8 @@ Definition node__ApplyConfChange : val :=
 (* go: node.go:569:16 *)
 Definition node__Status : val :=
   rec: "node__Status" "n" <> :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "c" := (alloc (type.zero_val #(chanT Status))) in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "c" := (mem.alloc (type.zero_val #(chanT Status))) in
     let: "$r0" := (chan.make Status #(W64 0)) in
     do:  ("c" <-[#(chanT Status)] "$r0");;;
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
@@ -2494,8 +2494,8 @@ Definition node__Status : val :=
 (* go: node.go:579:16 *)
 Definition node__ReportUnreachable : val :=
   rec: "node__ReportUnreachable" "n" "id" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "id" := (alloc "id") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "id" := (mem.alloc "id") in
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
         do:  #()
         ))] [("$recvChan0", (λ: "$recvVal",
@@ -2505,10 +2505,10 @@ Definition node__ReportUnreachable : val :=
 (* go: node.go:586:16 *)
 Definition node__ReportSnapshot : val :=
   rec: "node__ReportSnapshot" "n" "id" "status" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "status" := (alloc "status") in
-    let: "id" := (alloc "id") in
-    let: "rej" := (alloc (type.zero_val #boolT)) in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "status" := (mem.alloc "status") in
+    let: "id" := (mem.alloc "id") in
+    let: "rej" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := ((![#SnapshotStatus] "status") = SnapshotFailure) in
     do:  ("rej" <-[#boolT] "$r0");;;
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
@@ -2520,10 +2520,10 @@ Definition node__ReportSnapshot : val :=
 (* go: node.go:595:16 *)
 Definition node__TransferLeadership : val :=
   rec: "node__TransferLeadership" "n" "ctx" "lead" "transferee" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "transferee" := (alloc "transferee") in
-    let: "lead" := (alloc "lead") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "transferee" := (mem.alloc "transferee") in
+    let: "lead" := (mem.alloc "lead") in
+    let: "ctx" := (mem.alloc "ctx") in
     do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
         do:  #()
         ))] [("$recvChan0", (λ: "$recvVal",
@@ -2535,8 +2535,8 @@ Definition node__TransferLeadership : val :=
 (* go: node.go:604:16 *)
 Definition node__ForgetLeader : val :=
   rec: "node__ForgetLeader" "n" "ctx" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "ctx" := (mem.alloc "ctx") in
     return: (let: "$a0" := (![#context.Context] "ctx") in
      let: "$a1" := (let: "$Type" := raftpb.MsgForgetLeader in
      struct.make #raftpb.Message [{
@@ -2560,9 +2560,9 @@ Definition node__ForgetLeader : val :=
 (* go: node.go:608:16 *)
 Definition node__ReadIndex : val :=
   rec: "node__ReadIndex" "n" "ctx" "rctx" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "rctx" := (alloc "rctx") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "rctx" := (mem.alloc "rctx") in
+    let: "ctx" := (mem.alloc "ctx") in
     return: (let: "$a0" := (![#context.Context] "ctx") in
      let: "$a1" := (let: "$Type" := raftpb.MsgReadIndex in
      let: "$Entries" := ((let: "$sl0" := (let: "$Data" := (![#sliceT] "rctx") in
@@ -2622,10 +2622,10 @@ Definition lockedRand : go_type := structT [
 (* go: raft.go:95:22 *)
 Definition lockedRand__Intn : val :=
   rec: "lockedRand__Intn" "r" "n" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "n" := (alloc "n") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "n" := (mem.alloc "n") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (struct.field_ref #lockedRand #"mu"%go (![#ptrT] "r"))) #());;;
-    let: "v" := (alloc (type.zero_val #ptrT)) in
+    let: "v" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#io.Reader] (globals.get #rand #"Reader"%go)) in
     let: "$a1" := (let: "$a0" := (s_to_w64 (![#intT] "n")) in
     (func_call #big #"NewInt"%go) "$a0") in
@@ -2642,13 +2642,13 @@ Definition CampaignType : go_type := stringT.
 (* go: raft.go:119:21 *)
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
-    exception_do (let: "st" := (alloc "st") in
+    exception_do (let: "st" := (mem.alloc "st") in
     return: (![#stringT] (array.elem_ref #stringT (![#(arrayT 4 stringT)] (globals.get #v3.raft #"stmap"%go)) (![#StateType] "st")))).
 
 (* go: raft.go:291:18 *)
 Definition Config__validate : val :=
   rec: "Config__validate" "c" <> :=
-    exception_do (let: "c" := (alloc "c") in
+    exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#uint64T] (struct.field_ref #Config #"ID"%go (![#ptrT] "c"))) = None
     then
       return: (let: "$a0" := #"cannot use none as id"%go in
@@ -2715,8 +2715,8 @@ Definition Config__validate : val :=
 (* go: raft.go:437:6 *)
 Definition newRaft : val :=
   rec: "newRaft" "c" :=
-    exception_do (let: "c" := (alloc "c") in
-    (let: "err" := (alloc (type.zero_val #error)) in
+    exception_do (let: "c" := (mem.alloc "c") in
+    (let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := ((method_call #v3.raft #"Config'ptr" #"validate" (![#ptrT] "c")) #()) in
     do:  ("err" <-[#error] "$r0");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
@@ -2724,15 +2724,15 @@ Definition newRaft : val :=
       do:  (let: "$a0" := (interface.make #""%go #"string"%go ((interface.get #"Error"%go (![#error] "err")) #())) in
       Panic "$a0")
     else do:  #()));;;
-    let: "raftlog" := (alloc (type.zero_val #ptrT)) in
+    let: "raftlog" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#Storage] (struct.field_ref #Config #"Storage"%go (![#ptrT] "c"))) in
     let: "$a1" := (![#Logger] (struct.field_ref #Config #"Logger"%go (![#ptrT] "c"))) in
     let: "$a2" := (![#uint64T] (struct.field_ref #Config #"MaxCommittedSizePerReady"%go (![#ptrT] "c"))) in
     (func_call #v3.raft #"newLogWithSize"%go) "$a0" "$a1" "$a2") in
     do:  ("raftlog" <-[#ptrT] "$r0");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "cs" := (alloc (type.zero_val #raftpb.ConfState)) in
-    let: "hs" := (alloc (type.zero_val #raftpb.HardState)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "cs" := (mem.alloc (type.zero_val #raftpb.ConfState)) in
+    let: "hs" := (mem.alloc (type.zero_val #raftpb.HardState)) in
     let: (("$ret0", "$ret1"), "$ret2") := ((interface.get #"InitialState"%go (![#Storage] (struct.field_ref #Config #"Storage"%go (![#ptrT] "c")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -2745,8 +2745,8 @@ Definition newRaft : val :=
       do:  (let: "$a0" := (![#error] "err") in
       Panic "$a0")
     else do:  #());;;
-    let: "r" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (let: "$id" := (![#uint64T] (struct.field_ref #Config #"ID"%go (![#ptrT] "c"))) in
+    let: "r" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$id" := (![#uint64T] (struct.field_ref #Config #"ID"%go (![#ptrT] "c"))) in
     let: "$lead" := None in
     let: "$isLearner" := #false in
     let: "$raftLog" := (![#ptrT] "raftlog") in
@@ -2803,11 +2803,11 @@ Definition newRaft : val :=
     do:  ("r" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#ptrT] "r") in
     (func_call #v3.raft #"traceInitState"%go) "$a0");;;
-    let: "lastID" := (alloc (type.zero_val #entryID)) in
+    let: "lastID" := (mem.alloc (type.zero_val #entryID)) in
     let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
     do:  ("lastID" <-[#entryID] "$r0");;;
-    let: "trk" := (alloc (type.zero_val #tracker.ProgressMap)) in
-    let: "cfg" := (alloc (type.zero_val #tracker.Config)) in
+    let: "trk" := (mem.alloc (type.zero_val #tracker.ProgressMap)) in
+    let: "cfg" := (mem.alloc (type.zero_val #tracker.Config)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (let: "$Tracker" := (![#tracker.ProgressTracker] (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) in
     let: "$LastIndex" := (![#uint64T] (struct.field_ref #entryID #"index"%go "lastID")) in
     struct.make #confchange.Changer [{
@@ -2848,9 +2848,9 @@ Definition newRaft : val :=
     do:  (let: "$a0" := (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r"))) in
     let: "$a1" := None in
     (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![#ptrT] "r")) "$a0" "$a1");;;
-    let: "nodesStrs" := (alloc (type.zero_val #sliceT)) in
+    let: "nodesStrs" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$range" := ((method_call #tracker #"ProgressTracker'ptr" #"VoterNodes" (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) #()) in
-    (let: "n" := (alloc (type.zero_val #intT)) in
+    (let: "n" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("n" <-[#uint64T] "$value");;;
       do:  "$key";;;
@@ -2879,13 +2879,13 @@ Definition newRaft : val :=
 (* go: raft.go:498:16 *)
 Definition raft__hasLeader : val :=
   rec: "raft__hasLeader" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     return: ((![#uint64T] (struct.field_ref #raft #"lead"%go (![#ptrT] "r"))) ≠ None)).
 
 (* go: raft.go:500:16 *)
 Definition raft__softState : val :=
   rec: "raft__softState" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     return: (let: "$Lead" := (![#uint64T] (struct.field_ref #raft #"lead"%go (![#ptrT] "r"))) in
      let: "$RaftState" := (![#StateType] (struct.field_ref #raft #"state"%go (![#ptrT] "r"))) in
      struct.make #SoftState [{
@@ -2896,7 +2896,7 @@ Definition raft__softState : val :=
 (* go: raft.go:502:16 *)
 Definition raft__hardState : val :=
   rec: "raft__hardState" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     return: (let: "$Term" := (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r"))) in
      let: "$Vote" := (![#uint64T] (struct.field_ref #raft #"Vote"%go (![#ptrT] "r"))) in
      let: "$Commit" := (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) in
@@ -2912,8 +2912,8 @@ Definition raft__hardState : val :=
    go: raft.go:512:16 *)
 Definition raft__send : val :=
   rec: "raft__send" "r" "m" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "m" := (alloc "m") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "m" := (mem.alloc "m") in
     (if: (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")) = None
     then
       let: "$r0" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))) in
@@ -2975,8 +2975,8 @@ Definition raft__send : val :=
    go: raft.go:603:16 *)
 Definition raft__sendAppend : val :=
   rec: "raft__sendAppend" "r" "to" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "to" := (alloc "to") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "to" := (mem.alloc "to") in
     do:  (let: "$a0" := (![#uint64T] "to") in
     let: "$a1" := #true in
     (method_call #v3.raft #"raft'ptr" #"maybeSendAppend" (![#ptrT] "r")) "$a0" "$a1")).
@@ -2994,20 +2994,20 @@ Definition raft__sendAppend : val :=
    go: raft.go:616:16 *)
 Definition raft__maybeSendAppend : val :=
   rec: "raft__maybeSendAppend" "r" "to" "sendIfEmpty" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "sendIfEmpty" := (alloc "sendIfEmpty") in
-    let: "to" := (alloc "to") in
-    let: "pr" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "sendIfEmpty" := (mem.alloc "sendIfEmpty") in
+    let: "to" := (mem.alloc "to") in
+    let: "pr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (Fst (map.get (![#tracker.ProgressMap] (struct.field_ref #tracker.ProgressTracker #"Progress"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) (![#uint64T] "to"))) in
     do:  ("pr" <-[#ptrT] "$r0");;;
     (if: (method_call #tracker #"Progress'ptr" #"IsPaused" (![#ptrT] "pr")) #()
     then return: (#false)
     else do:  #());;;
-    let: "prevIndex" := (alloc (type.zero_val #uint64T)) in
+    let: "prevIndex" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((![#uint64T] (struct.field_ref #tracker.Progress #"Next"%go (![#ptrT] "pr"))) - #(W64 1)) in
     do:  ("prevIndex" <-[#uint64T] "$r0");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "prevTerm" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "prevTerm" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "prevIndex") in
     (method_call #v3.raft #"raftLog'ptr" #"term" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) "$a0") in
     let: "$r0" := "$ret0" in
@@ -3020,7 +3020,7 @@ Definition raft__maybeSendAppend : val :=
        let: "$a1" := (![#ptrT] "pr") in
        (method_call #v3.raft #"raft'ptr" #"maybeSendSnapshot" (![#ptrT] "r")) "$a0" "$a1")
     else do:  #());;;
-    let: "ents" := (alloc (type.zero_val #sliceT)) in
+    let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
     (if: ((![#tracker.StateType] (struct.field_ref #tracker.Progress #"State"%go (![#ptrT] "pr"))) ≠ tracker.StateReplicate) || (~ ((method_call #tracker #"Inflights'ptr" #"Full" (![#ptrT] (struct.field_ref #tracker.Progress #"Inflights"%go (![#ptrT] "pr")))) #()))
     then
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] (struct.field_ref #tracker.Progress #"Next"%go (![#ptrT] "pr"))) in
@@ -3079,9 +3079,9 @@ Definition raft__maybeSendAppend : val :=
    go: raft.go:664:16 *)
 Definition raft__maybeSendSnapshot : val :=
   rec: "raft__maybeSendSnapshot" "r" "to" "pr" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "pr" := (alloc "pr") in
-    let: "to" := (alloc "to") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "pr" := (mem.alloc "pr") in
+    let: "to" := (mem.alloc "to") in
     (if: (~ (![#boolT] (struct.field_ref #tracker.Progress #"RecentActive"%go (![#ptrT] "pr"))))
     then
       do:  (let: "$a0" := #"ignore sending snapshot to %x since it is not recently active"%go in
@@ -3090,8 +3090,8 @@ Definition raft__maybeSendSnapshot : val :=
       (interface.get #"Debugf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1");;;
       return: (#false)
     else do:  #());;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "snapshot" := (alloc (type.zero_val #raftpb.Snapshot)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "snapshot" := (mem.alloc (type.zero_val #raftpb.Snapshot)) in
     let: ("$ret0", "$ret1") := ((method_call #v3.raft #"raftLog'ptr" #"snapshot" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -3117,8 +3117,8 @@ Definition raft__maybeSendSnapshot : val :=
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"need non-empty snapshot"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "sterm" := (alloc (type.zero_val #uint64T)) in
-    let: "sindex" := (alloc (type.zero_val #uint64T)) in
+    let: "sterm" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "sindex" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "snapshot"))) in
     let: "$r1" := (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Term"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "snapshot"))) in
     do:  ("sindex" <-[#uint64T] "$r0");;;
@@ -3168,13 +3168,13 @@ Definition raft__maybeSendSnapshot : val :=
    go: raft.go:692:16 *)
 Definition raft__sendHeartbeat : val :=
   rec: "raft__sendHeartbeat" "r" "to" "ctx" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "ctx" := (alloc "ctx") in
-    let: "to" := (alloc "to") in
-    let: "pr" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "to" := (mem.alloc "to") in
+    let: "pr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (Fst (map.get (![#tracker.ProgressMap] (struct.field_ref #tracker.ProgressTracker #"Progress"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) (![#uint64T] "to"))) in
     do:  ("pr" <-[#ptrT] "$r0");;;
-    let: "commit" := (alloc (type.zero_val #uint64T)) in
+    let: "commit" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #tracker.Progress #"Match"%go (![#ptrT] "pr"))) in
     let: "$a1" := (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) in
     (minUint64 2) "$a0" "$a1") in
@@ -3209,10 +3209,10 @@ Definition raft__sendHeartbeat : val :=
    go: raft.go:712:16 *)
 Definition raft__bcastAppend : val :=
   rec: "raft__bcastAppend" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     do:  (let: "$a0" := (λ: "id" <>,
-      exception_do (let: <> := (alloc "_") in
-      let: "id" := (alloc "id") in
+      exception_do (let: <> := (mem.alloc "_") in
+      let: "id" := (mem.alloc "id") in
       (if: (![#uint64T] "id") = (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))
       then return: (#())
       else do:  #());;;
@@ -3232,8 +3232,8 @@ Definition readOnly : go_type := structT [
    go: raft.go:722:16 *)
 Definition raft__bcastHeartbeat : val :=
   rec: "raft__bcastHeartbeat" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "lastCtx" := (alloc (type.zero_val #stringT)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "lastCtx" := (mem.alloc (type.zero_val #stringT)) in
     let: "$r0" := ((method_call #v3.raft #"readOnly'ptr" #"lastPendingRequestCtx" (![#ptrT] (struct.field_ref #raft #"readOnly"%go (![#ptrT] "r")))) #()) in
     do:  ("lastCtx" <-[#stringT] "$r0");;;
     (if: (let: "$a0" := (![#stringT] "lastCtx") in
@@ -3248,11 +3248,11 @@ Definition raft__bcastHeartbeat : val :=
 (* go: raft.go:731:16 *)
 Definition raft__bcastHeartbeatWithCtx : val :=
   rec: "raft__bcastHeartbeatWithCtx" "r" "ctx" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "ctx" := (mem.alloc "ctx") in
     do:  (let: "$a0" := (λ: "id" <>,
-      exception_do (let: <> := (alloc "_") in
-      let: "id" := (alloc "id") in
+      exception_do (let: <> := (mem.alloc "_") in
+      let: "id" := (mem.alloc "id") in
       (if: (![#uint64T] "id") = (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))
       then return: (#())
       else do:  #());;;
@@ -3265,13 +3265,13 @@ Definition raft__bcastHeartbeatWithCtx : val :=
 (* go: raft.go:740:16 *)
 Definition raft__appliedTo : val :=
   rec: "raft__appliedTo" "r" "index" "size" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "size" := (alloc "size") in
-    let: "index" := (alloc "index") in
-    let: "oldApplied" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "size" := (mem.alloc "size") in
+    let: "index" := (mem.alloc "index") in
+    let: "oldApplied" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftLog #"applied"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) in
     do:  ("oldApplied" <-[#uint64T] "$r0");;;
-    let: "newApplied" := (alloc (type.zero_val #uint64T)) in
+    let: "newApplied" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "index") in
     let: "$a1" := (![#uint64T] "oldApplied") in
     (maxUint64 2) "$a0" "$a1") in
@@ -3281,8 +3281,8 @@ Definition raft__appliedTo : val :=
     (method_call #v3.raft #"raftLog'ptr" #"appliedTo" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) "$a0" "$a1");;;
     (if: ((![#boolT] (struct.field_ref #tracker.Config #"AutoLeave"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))))) && ((![#uint64T] "newApplied") ≥ (![#uint64T] (struct.field_ref #raft #"pendingConfIndex"%go (![#ptrT] "r"))))) && ((![#StateType] (struct.field_ref #raft #"state"%go (![#ptrT] "r"))) = StateLeader)
     then
-      let: "err" := (alloc (type.zero_val #error)) in
-      let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := #interface.nil in
       (func_call #v3.raft #"confChangeToMsg"%go) "$a0") in
       let: "$r0" := "$ret0" in
@@ -3294,7 +3294,7 @@ Definition raft__appliedTo : val :=
         do:  (let: "$a0" := (![#error] "err") in
         Panic "$a0")
       else do:  #());;;
-      (let: "err" := (alloc (type.zero_val #error)) in
+      (let: "err" := (mem.alloc (type.zero_val #error)) in
       let: "$r0" := (let: "$a0" := (![#raftpb.Message] "m") in
       (method_call #v3.raft #"raft'ptr" #"Step" (![#ptrT] "r")) "$a0") in
       do:  ("err" <-[#error] "$r0");;;
@@ -3315,9 +3315,9 @@ Definition raft__appliedTo : val :=
 (* go: raft.go:769:16 *)
 Definition raft__appliedSnap : val :=
   rec: "raft__appliedSnap" "r" "snap" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "snap" := (alloc "snap") in
-    let: "index" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "snap" := (mem.alloc "snap") in
+    let: "index" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go (![#ptrT] "snap")))) in
     do:  ("index" <-[#uint64T] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "index") in
@@ -3333,7 +3333,7 @@ Definition raft__appliedSnap : val :=
    go: raft.go:778:16 *)
 Definition raft__maybeCommit : val :=
   rec: "raft__maybeCommit" "r" <> :=
-    with_defer: (let: "r" := (alloc "r") in
+    with_defer: (let: "r" := (mem.alloc "r") in
     do:  (let: "$a0" := (![#ptrT] "r") in
     let: "$f" := (func_call #v3.raft #"traceCommit"%go) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -3352,8 +3352,8 @@ Definition raft__maybeCommit : val :=
 (* go: raft.go:784:16 *)
 Definition raft__reset : val :=
   rec: "raft__reset" "r" "term" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "term" := (alloc "term") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "term" := (mem.alloc "term") in
     (if: (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r"))) ≠ (![#uint64T] "term")
     then
       let: "$r0" := (![#uint64T] "term") in
@@ -3371,8 +3371,8 @@ Definition raft__reset : val :=
     do:  ((method_call #v3.raft #"raft'ptr" #"abortLeaderTransfer" (![#ptrT] "r")) #());;;
     do:  ((method_call #tracker #"ProgressTracker'ptr" #"ResetVotes" (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) #());;;
     do:  (let: "$a0" := (λ: "id" "pr",
-      exception_do (let: "pr" := (alloc "pr") in
-      let: "id" := (alloc "id") in
+      exception_do (let: "pr" := (mem.alloc "pr") in
+      let: "id" := (mem.alloc "id") in
       let: "$r0" := (let: "$Match" := #(W64 0) in
       let: "$Next" := (((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) + #(W64 1)) in
       let: "$Inflights" := (let: "$a0" := (![#intT] (struct.field_ref #tracker.ProgressTracker #"MaxInflight"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) in
@@ -3409,14 +3409,14 @@ Definition raft__reset : val :=
 (* go: raft.go:815:16 *)
 Definition raft__appendEntry : val :=
   rec: "raft__appendEntry" "r" "es" :=
-    exception_do (let: "accepted" := (alloc (type.zero_val #boolT)) in
-    let: "r" := (alloc "r") in
-    let: "es" := (alloc "es") in
-    let: "li" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "accepted" := (mem.alloc (type.zero_val #boolT)) in
+    let: "r" := (mem.alloc "r") in
+    let: "es" := (mem.alloc "es") in
+    let: "li" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
     do:  ("li" <-[#uint64T] "$r0");;;
     let: "$range" := (![#sliceT] "es") in
-    (let: "i" := (alloc (type.zero_val #intT)) in
+    (let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[#intT] "$key");;;
       let: "$r0" := (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r"))) in
@@ -3465,13 +3465,13 @@ Definition raft__appendEntry : val :=
    go: raft.go:850:16 *)
 Definition raft__tickElection : val :=
   rec: "raft__tickElection" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     do:  ((struct.field_ref #raft #"electionElapsed"%go (![#ptrT] "r")) <-[#intT] ((![#intT] (struct.field_ref #raft #"electionElapsed"%go (![#ptrT] "r"))) + #(W64 1)));;;
     (if: ((method_call #v3.raft #"raft'ptr" #"promotable" (![#ptrT] "r")) #()) && ((method_call #v3.raft #"raft'ptr" #"pastElectionTimeout" (![#ptrT] "r")) #())
     then
       let: "$r0" := #(W64 0) in
       do:  ((struct.field_ref #raft #"electionElapsed"%go (![#ptrT] "r")) <-[#intT] "$r0");;;
-      (let: "err" := (alloc (type.zero_val #error)) in
+      (let: "err" := (mem.alloc (type.zero_val #error)) in
       let: "$r0" := (let: "$a0" := (let: "$From" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))) in
       let: "$Type" := raftpb.MsgHup in
       struct.make #raftpb.Message [{
@@ -3506,7 +3506,7 @@ Definition raft__tickElection : val :=
    go: raft.go:862:16 *)
 Definition raft__tickHeartbeat : val :=
   rec: "raft__tickHeartbeat" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     do:  ((struct.field_ref #raft #"heartbeatElapsed"%go (![#ptrT] "r")) <-[#intT] ((![#intT] (struct.field_ref #raft #"heartbeatElapsed"%go (![#ptrT] "r"))) + #(W64 1)));;;
     do:  ((struct.field_ref #raft #"electionElapsed"%go (![#ptrT] "r")) <-[#intT] ((![#intT] (struct.field_ref #raft #"electionElapsed"%go (![#ptrT] "r"))) + #(W64 1)));;;
     (if: int_geq (![#intT] (struct.field_ref #raft #"electionElapsed"%go (![#ptrT] "r"))) (![#intT] (struct.field_ref #raft #"electionTimeout"%go (![#ptrT] "r")))
@@ -3515,7 +3515,7 @@ Definition raft__tickHeartbeat : val :=
       do:  ((struct.field_ref #raft #"electionElapsed"%go (![#ptrT] "r")) <-[#intT] "$r0");;;
       (if: ![#boolT] (struct.field_ref #raft #"checkQuorum"%go (![#ptrT] "r"))
       then
-        (let: "err" := (alloc (type.zero_val #error)) in
+        (let: "err" := (mem.alloc (type.zero_val #error)) in
         let: "$r0" := (let: "$a0" := (let: "$From" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))) in
         let: "$Type" := raftpb.MsgCheckQuorum in
         struct.make #raftpb.Message [{
@@ -3555,7 +3555,7 @@ Definition raft__tickHeartbeat : val :=
     then
       let: "$r0" := #(W64 0) in
       do:  ((struct.field_ref #raft #"heartbeatElapsed"%go (![#ptrT] "r")) <-[#intT] "$r0");;;
-      (let: "err" := (alloc (type.zero_val #error)) in
+      (let: "err" := (mem.alloc (type.zero_val #error)) in
       let: "$r0" := (let: "$a0" := (let: "$From" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))) in
       let: "$Type" := raftpb.MsgBeat in
       struct.make #raftpb.Message [{
@@ -3588,9 +3588,9 @@ Definition raft__tickHeartbeat : val :=
 (* go: raft.go:891:16 *)
 Definition raft__becomeFollower : val :=
   rec: "raft__becomeFollower" "r" "term" "lead" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "lead" := (alloc "lead") in
-    let: "term" := (alloc "term") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "lead" := (mem.alloc "lead") in
+    let: "term" := (mem.alloc "term") in
     let: "$r0" := (func_call #v3.raft #"stepFollower"%go) in
     do:  ((struct.field_ref #raft #"step"%go (![#ptrT] "r")) <-[#stepFunc] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "term") in
@@ -3612,7 +3612,7 @@ Definition raft__becomeFollower : val :=
 (* go: raft.go:902:16 *)
 Definition raft__becomeCandidate : val :=
   rec: "raft__becomeCandidate" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     (if: (![#StateType] (struct.field_ref #raft #"state"%go (![#ptrT] "r"))) = StateLeader
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"invalid transition [leader -> candidate]"%go) in
@@ -3639,7 +3639,7 @@ Definition raft__becomeCandidate : val :=
 (* go: raft.go:917:16 *)
 Definition raft__becomePreCandidate : val :=
   rec: "raft__becomePreCandidate" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     (if: (![#StateType] (struct.field_ref #raft #"state"%go (![#ptrT] "r"))) = StateLeader
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"invalid transition [leader -> pre-candidate]"%go) in
@@ -3663,7 +3663,7 @@ Definition raft__becomePreCandidate : val :=
 (* go: raft.go:933:16 *)
 Definition raft__becomeLeader : val :=
   rec: "raft__becomeLeader" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     (if: (![#StateType] (struct.field_ref #raft #"state"%go (![#ptrT] "r"))) = StateFollower
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"invalid transition [follower -> leader]"%go) in
@@ -3679,7 +3679,7 @@ Definition raft__becomeLeader : val :=
     do:  ((struct.field_ref #raft #"lead"%go (![#ptrT] "r")) <-[#uint64T] "$r0");;;
     let: "$r0" := StateLeader in
     do:  ((struct.field_ref #raft #"state"%go (![#ptrT] "r")) <-[#StateType] "$r0");;;
-    let: "pr" := (alloc (type.zero_val #ptrT)) in
+    let: "pr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (Fst (map.get (![#tracker.ProgressMap] (struct.field_ref #tracker.ProgressTracker #"Progress"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))))) in
     do:  ("pr" <-[#ptrT] "$r0");;;
     do:  ((method_call #tracker #"Progress'ptr" #"BecomeReplicate" (![#ptrT] "pr")) #());;;
@@ -3689,7 +3689,7 @@ Definition raft__becomeLeader : val :=
     do:  ((struct.field_ref #raft #"pendingConfIndex"%go (![#ptrT] "r")) <-[#uint64T] "$r0");;;
     do:  (let: "$a0" := (![#ptrT] "r") in
     (func_call #v3.raft #"traceBecomeLeader"%go) "$a0");;;
-    let: "emptyEnt" := (alloc (type.zero_val #raftpb.Entry)) in
+    let: "emptyEnt" := (mem.alloc (type.zero_val #raftpb.Entry)) in
     let: "$r0" := (let: "$Data" := #slice.nil in
     struct.make #raftpb.Entry [{
       "Term" ::= type.zero_val #uint64T;
@@ -3715,8 +3715,8 @@ Definition raft__becomeLeader : val :=
 (* go: raft.go:973:16 *)
 Definition raft__hup : val :=
   rec: "raft__hup" "r" "t" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "t" := (alloc "t") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "t" := (mem.alloc "t") in
     (if: (![#StateType] (struct.field_ref #raft #"state"%go (![#ptrT] "r"))) = StateLeader
     then
       do:  (let: "$a0" := #"%x ignoring MsgHup because already leader"%go in
@@ -3753,30 +3753,30 @@ Definition raft__hup : val :=
 (* go: raft.go:995:16 *)
 Definition raft__hasUnappliedConfChanges : val :=
   rec: "raft__hasUnappliedConfChanges" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     (if: (![#uint64T] (struct.field_ref #raftLog #"applied"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) ≥ (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))))
     then return: (#false)
     else do:  #());;;
-    let: "found" := (alloc (type.zero_val #boolT)) in
+    let: "found" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
     do:  ("found" <-[#boolT] "$r0");;;
-    let: "hi" := (alloc (type.zero_val #uint64T)) in
-    let: "lo" := (alloc (type.zero_val #uint64T)) in
+    let: "hi" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "lo" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((![#uint64T] (struct.field_ref #raftLog #"applied"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) + #(W64 1)) in
     let: "$r1" := ((![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) + #(W64 1)) in
     do:  ("lo" <-[#uint64T] "$r0");;;
     do:  ("hi" <-[#uint64T] "$r1");;;
-    let: "pageSize" := (alloc (type.zero_val #entryEncodingSize)) in
+    let: "pageSize" := (mem.alloc (type.zero_val #entryEncodingSize)) in
     let: "$r0" := (![#entryEncodingSize] (struct.field_ref #raftLog #"maxApplyingEntsSize"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) in
     do:  ("pageSize" <-[#entryEncodingSize] "$r0");;;
-    (let: "err" := (alloc (type.zero_val #error)) in
+    (let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "lo") in
     let: "$a1" := (![#uint64T] "hi") in
     let: "$a2" := (![#entryEncodingSize] "pageSize") in
     let: "$a3" := (λ: "ents",
-      exception_do (let: "ents" := (alloc "ents") in
+      exception_do (let: "ents" := (mem.alloc "ents") in
       let: "$range" := (![#sliceT] "ents") in
-      (let: "i" := (alloc (type.zero_val #intT)) in
+      (let: "i" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #raftpb.Entry "$range" (λ: "$key" "$value",
         do:  ("i" <-[#intT] "$key");;;
         (if: ((![#raftpb.EntryType] (struct.field_ref #raftpb.Entry #"Type"%go (slice.elem_ref #raftpb.Entry (![#sliceT] "ents") (![#intT] "i")))) = raftpb.EntryConfChange) || ((![#raftpb.EntryType] (struct.field_ref #raftpb.Entry #"Type"%go (slice.elem_ref #raftpb.Entry (![#sliceT] "ents") (![#intT] "i")))) = raftpb.EntryConfChangeV2)
@@ -3806,8 +3806,8 @@ Definition raft__hasUnappliedConfChanges : val :=
    go: raft.go:1025:16 *)
 Definition raft__campaign : val :=
   rec: "raft__campaign" "r" "t" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "t" := (alloc "t") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "t" := (mem.alloc "t") in
     (if: (~ ((method_call #v3.raft #"raft'ptr" #"promotable" (![#ptrT] "r")) #()))
     then
       do:  (let: "$a0" := #"%x is unpromotable; campaign() should have been called"%go in
@@ -3815,8 +3815,8 @@ Definition raft__campaign : val :=
       slice.literal #interfaceT ["$sl0"])) in
       (interface.get #"Warningf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1")
     else do:  #());;;
-    let: "term" := (alloc (type.zero_val #uint64T)) in
-    let: "voteMsg" := (alloc (type.zero_val #raftpb.MessageType)) in
+    let: "term" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "voteMsg" := (mem.alloc (type.zero_val #raftpb.MessageType)) in
     (if: (![#CampaignType] "t") = campaignPreElection
     then
       do:  ((method_call #v3.raft #"raft'ptr" #"becomePreCandidate" (![#ptrT] "r")) #());;;
@@ -3830,8 +3830,8 @@ Definition raft__campaign : val :=
       do:  ("voteMsg" <-[#raftpb.MessageType] "$r0");;;
       let: "$r0" := (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r"))) in
       do:  ("term" <-[#uint64T] "$r0"));;;
-    let: "ids" := (alloc (type.zero_val #sliceT)) in
-    let: "idMap" := (alloc (type.zero_val #(mapT uint64T (structT [
+    let: "ids" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "idMap" := (mem.alloc (type.zero_val #(mapT uint64T (structT [
     ])))) in
     let: "$r0" := ((method_call #quorum #"JointConfig" #"IDs" (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))))) #()) in
     do:  ("idMap" <-[#(mapT uint64T (structT [
@@ -3842,7 +3842,7 @@ Definition raft__campaign : val :=
     do:  ("ids" <-[#sliceT] "$r0");;;
     let: "$range" := (![#(mapT uint64T (structT [
     ]))] "idMap") in
-    (let: "id" := (alloc (type.zero_val #uint64T)) in
+    (let: "id" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[#uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "ids") in
@@ -3853,7 +3853,7 @@ Definition raft__campaign : val :=
     do:  (let: "$a0" := (![#sliceT] "ids") in
     (func_call #slices #"SortUint64"%go) "$a0");;;
     let: "$range" := (![#sliceT] "ids") in
-    (let: "id" := (alloc (type.zero_val #intT)) in
+    (let: "id" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("id" <-[#uint64T] "$value");;;
       do:  "$key";;;
@@ -3882,7 +3882,7 @@ Definition raft__campaign : val :=
         (method_call #v3.raft #"raft'ptr" #"send" (![#ptrT] "r")) "$a0");;;
         continue: #()
       else do:  #());;;
-      let: "last" := (alloc (type.zero_val #entryID)) in
+      let: "last" := (mem.alloc (type.zero_val #entryID)) in
       let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
       do:  ("last" <-[#entryID] "$r0");;;
       do:  (let: "$a0" := #"%x [logterm: %d, index: %d] sent %s request to %x at term %d"%go in
@@ -3894,7 +3894,7 @@ Definition raft__campaign : val :=
       let: "$sl5" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"])) in
       (interface.get #"Infof"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1");;;
-      let: "ctx" := (alloc (type.zero_val #sliceT)) in
+      let: "ctx" := (mem.alloc (type.zero_val #sliceT)) in
       (if: (![#CampaignType] "t") = campaignTransfer
       then
         let: "$r0" := (string.to_bytes (![#CampaignType] "t")) in
@@ -3927,13 +3927,13 @@ Definition raft__campaign : val :=
 (* go: raft.go:1075:16 *)
 Definition raft__poll : val :=
   rec: "raft__poll" "r" "id" "t" "v" :=
-    exception_do (let: "result" := (alloc (type.zero_val #quorum.VoteResult)) in
-    let: "rejected" := (alloc (type.zero_val #intT)) in
-    let: "granted" := (alloc (type.zero_val #intT)) in
-    let: "r" := (alloc "r") in
-    let: "v" := (alloc "v") in
-    let: "t" := (alloc "t") in
-    let: "id" := (alloc "id") in
+    exception_do (let: "result" := (mem.alloc (type.zero_val #quorum.VoteResult)) in
+    let: "rejected" := (mem.alloc (type.zero_val #intT)) in
+    let: "granted" := (mem.alloc (type.zero_val #intT)) in
+    let: "r" := (mem.alloc "r") in
+    let: "v" := (mem.alloc "v") in
+    let: "t" := (mem.alloc "t") in
+    let: "id" := (mem.alloc "id") in
     (if: ![#boolT] "v"
     then
       do:  (let: "$a0" := #"%x received %s from %x at term %d"%go in
@@ -3960,8 +3960,8 @@ Definition raft__poll : val :=
 (* go: raft.go:1085:16 *)
 Definition raft__Step : val :=
   rec: "raft__Step" "r" "m" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "m" := (alloc "m") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "m" := (mem.alloc "m") in
     do:  (let: "$a0" := (![#ptrT] "r") in
     let: "$a1" := "m" in
     (func_call #v3.raft #"traceReceiveMessage"%go) "$a0" "$a1");;;
@@ -3973,17 +3973,17 @@ Definition raft__Step : val :=
       then
         (if: ((![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) = raftpb.MsgVote) || ((![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) = raftpb.MsgPreVote)
         then
-          let: "force" := (alloc (type.zero_val #boolT)) in
+          let: "force" := (mem.alloc (type.zero_val #boolT)) in
           let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.Message #"Context"%go "m")) in
           let: "$a1" := (string.to_bytes campaignTransfer) in
           (func_call #bytes #"Equal"%go) "$a0" "$a1") in
           do:  ("force" <-[#boolT] "$r0");;;
-          let: "inLease" := (alloc (type.zero_val #boolT)) in
+          let: "inLease" := (mem.alloc (type.zero_val #boolT)) in
           let: "$r0" := (((![#boolT] (struct.field_ref #raft #"checkQuorum"%go (![#ptrT] "r"))) && ((![#uint64T] (struct.field_ref #raft #"lead"%go (![#ptrT] "r"))) ≠ None)) && (int_lt (![#intT] (struct.field_ref #raft #"electionElapsed"%go (![#ptrT] "r"))) (![#intT] (struct.field_ref #raft #"electionTimeout"%go (![#ptrT] "r"))))) in
           do:  ("inLease" <-[#boolT] "$r0");;;
           (if: (~ (![#boolT] "force")) && (![#boolT] "inLease")
           then
-            let: "last" := (alloc (type.zero_val #entryID)) in
+            let: "last" := (mem.alloc (type.zero_val #entryID)) in
             let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
             do:  ("last" <-[#entryID] "$r0");;;
             do:  (let: "$a0" := #"%x [logterm: %d, index: %d, vote: %x] ignored %s from %x [logterm: %d, index: %d] at term %d: lease is not expired (remaining ticks: %d)"%go in
@@ -4053,7 +4053,7 @@ Definition raft__Step : val :=
           else
             (if: (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) = raftpb.MsgPreVote
             then
-              let: "last" := (alloc (type.zero_val #entryID)) in
+              let: "last" := (mem.alloc (type.zero_val #entryID)) in
               let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
               do:  ("last" <-[#entryID] "$r0");;;
               do:  (let: "$a0" := #"%x [logterm: %d, index: %d, vote: %x] rejected %s from %x [logterm: %d, index: %d] at term %d"%go in
@@ -4152,7 +4152,7 @@ Definition raft__Step : val :=
           (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go "m")) in
           slice.len "$a0") #(W64 0)
           then
-            let: "index" := (alloc (type.zero_val #uint64T)) in
+            let: "index" := (mem.alloc (type.zero_val #uint64T)) in
             let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go "m")) ((let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go "m")) in
             slice.len "$a0") - #(W64 1))))) in
             do:  ("index" <-[#uint64T] "$r0");;;
@@ -4167,13 +4167,13 @@ Definition raft__Step : val :=
         else
           (if: ("$sw" = raftpb.MsgPreVote) || ("$sw" = raftpb.MsgVote)
           then
-            let: "canVote" := (alloc (type.zero_val #boolT)) in
+            let: "canVote" := (mem.alloc (type.zero_val #boolT)) in
             let: "$r0" := ((((![#uint64T] (struct.field_ref #raft #"Vote"%go (![#ptrT] "r"))) = (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m"))) || (((![#uint64T] (struct.field_ref #raft #"Vote"%go (![#ptrT] "r"))) = None) && ((![#uint64T] (struct.field_ref #raft #"lead"%go (![#ptrT] "r"))) = None))) || (((![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) = raftpb.MsgPreVote) && ((![#uint64T] (struct.field_ref #raftpb.Message #"Term"%go "m")) > (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r")))))) in
             do:  ("canVote" <-[#boolT] "$r0");;;
-            let: "lastID" := (alloc (type.zero_val #entryID)) in
+            let: "lastID" := (mem.alloc (type.zero_val #entryID)) in
             let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
             do:  ("lastID" <-[#entryID] "$r0");;;
-            let: "candLastID" := (alloc (type.zero_val #entryID)) in
+            let: "candLastID" := (mem.alloc (type.zero_val #entryID)) in
             let: "$r0" := (let: "$term" := (![#uint64T] (struct.field_ref #raftpb.Message #"LogTerm"%go "m")) in
             let: "$index" := (![#uint64T] (struct.field_ref #raftpb.Message #"Index"%go "m")) in
             struct.make #entryID [{
@@ -4260,7 +4260,7 @@ Definition raft__Step : val :=
               }]) in
               (method_call #v3.raft #"raft'ptr" #"send" (![#ptrT] "r")) "$a0"))
           else
-            let: "err" := (alloc (type.zero_val #error)) in
+            let: "err" := (mem.alloc (type.zero_val #error)) in
             let: "$r0" := (let: "$a0" := (![#ptrT] "r") in
             let: "$a1" := (![#raftpb.Message] "m") in
             (![#stepFunc] (struct.field_ref #raft #"step"%go (![#ptrT] "r"))) "$a0" "$a1") in
@@ -4279,8 +4279,8 @@ Definition readIndexStatus : go_type := structT [
 (* go: raft.go:1267:6 *)
 Definition stepLeader : val :=
   rec: "stepLeader" "r" "m" :=
-    exception_do (let: "m" := (alloc "m") in
-    let: "r" := (alloc "r") in
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "r" := (mem.alloc "r") in
     let: "$sw" := (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) in
     (if: "$sw" = raftpb.MsgBeat
     then
@@ -4300,8 +4300,8 @@ Definition stepLeader : val :=
           (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![#ptrT] "r")) "$a0" "$a1")
         else do:  #());;;
         do:  (let: "$a0" := (λ: "id" "pr",
-          exception_do (let: "pr" := (alloc "pr") in
-          let: "id" := (alloc "id") in
+          exception_do (let: "pr" := (mem.alloc "pr") in
+          let: "id" := (mem.alloc "id") in
           (if: (![#uint64T] "id") ≠ (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))
           then
             let: "$r0" := #false in
@@ -4335,17 +4335,17 @@ Definition stepLeader : val :=
             return: (![#error] (globals.get #v3.raft #"ErrProposalDropped"%go))
           else do:  #());;;
           let: "$range" := (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go "m")) in
-          (let: "i" := (alloc (type.zero_val #intT)) in
+          (let: "i" := (mem.alloc (type.zero_val #intT)) in
           slice.for_range #raftpb.Entry "$range" (λ: "$key" "$value",
             do:  ("i" <-[#intT] "$key");;;
-            let: "e" := (alloc (type.zero_val #ptrT)) in
+            let: "e" := (mem.alloc (type.zero_val #ptrT)) in
             let: "$r0" := (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go "m")) (![#intT] "i")) in
             do:  ("e" <-[#ptrT] "$r0");;;
-            let: "cc" := (alloc (type.zero_val #raftpb.ConfChangeI)) in
+            let: "cc" := (mem.alloc (type.zero_val #raftpb.ConfChangeI)) in
             (if: (![#raftpb.EntryType] (struct.field_ref #raftpb.Entry #"Type"%go (![#ptrT] "e"))) = raftpb.EntryConfChange
             then
-              let: "ccc" := (alloc (type.zero_val #raftpb.ConfChange)) in
-              (let: "err" := (alloc (type.zero_val #error)) in
+              let: "ccc" := (mem.alloc (type.zero_val #raftpb.ConfChange)) in
+              (let: "err" := (mem.alloc (type.zero_val #error)) in
               let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.Entry #"Data"%go (![#ptrT] "e"))) in
               (method_call #raftpb #"ConfChange'ptr" #"Unmarshal" "ccc") "$a0") in
               do:  ("err" <-[#error] "$r0");;;
@@ -4359,8 +4359,8 @@ Definition stepLeader : val :=
             else
               (if: (![#raftpb.EntryType] (struct.field_ref #raftpb.Entry #"Type"%go (![#ptrT] "e"))) = raftpb.EntryConfChangeV2
               then
-                let: "ccc" := (alloc (type.zero_val #raftpb.ConfChangeV2)) in
-                (let: "err" := (alloc (type.zero_val #error)) in
+                let: "ccc" := (mem.alloc (type.zero_val #raftpb.ConfChangeV2)) in
+                (let: "err" := (mem.alloc (type.zero_val #error)) in
                 let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.Entry #"Data"%go (![#ptrT] "e"))) in
                 (method_call #raftpb #"ConfChangeV2'ptr" #"Unmarshal" "ccc") "$a0") in
                 do:  ("err" <-[#error] "$r0");;;
@@ -4374,18 +4374,18 @@ Definition stepLeader : val :=
               else do:  #()));;;
             (if: (~ (interface.eq (![#raftpb.ConfChangeI] "cc") #interface.nil))
             then
-              let: "alreadyPending" := (alloc (type.zero_val #boolT)) in
+              let: "alreadyPending" := (mem.alloc (type.zero_val #boolT)) in
               let: "$r0" := ((![#uint64T] (struct.field_ref #raft #"pendingConfIndex"%go (![#ptrT] "r"))) > (![#uint64T] (struct.field_ref #raftLog #"applied"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))))) in
               do:  ("alreadyPending" <-[#boolT] "$r0");;;
-              let: "alreadyJoint" := (alloc (type.zero_val #boolT)) in
+              let: "alreadyJoint" := (mem.alloc (type.zero_val #boolT)) in
               let: "$r0" := (int_gt (let: "$a0" := (![#quorum.MajorityConfig] (array.elem_ref #quorum.MajorityConfig (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))))) #(W64 1))) in
               map.len "$a0") #(W64 0)) in
               do:  ("alreadyJoint" <-[#boolT] "$r0");;;
-              let: "wantsLeaveJoint" := (alloc (type.zero_val #boolT)) in
+              let: "wantsLeaveJoint" := (mem.alloc (type.zero_val #boolT)) in
               let: "$r0" := ((let: "$a0" := (struct.field_get #raftpb.ConfChangeV2 "Changes" ((interface.get #"AsV2"%go (![#raftpb.ConfChangeI] "cc")) #())) in
               slice.len "$a0") = #(W64 0)) in
               do:  ("wantsLeaveJoint" <-[#boolT] "$r0");;;
-              let: "failedCheck" := (alloc (type.zero_val #stringT)) in
+              let: "failedCheck" := (mem.alloc (type.zero_val #stringT)) in
               (if: ![#boolT] "alreadyPending"
               then
                 let: "$r0" := (let: "$a0" := #"possible unapplied conf change at index %d (applied to %d)"%go in
@@ -4440,7 +4440,7 @@ Definition stepLeader : val :=
           then
             (if: (method_call #tracker #"ProgressTracker'ptr" #"IsSingleton" (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) #()
             then
-              (let: "resp" := (alloc (type.zero_val #raftpb.Message)) in
+              (let: "resp" := (mem.alloc (type.zero_val #raftpb.Message)) in
               let: "$r0" := (let: "$a0" := (![#raftpb.Message] "m") in
               let: "$a1" := (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) in
               (method_call #v3.raft #"raft'ptr" #"responseToReadIndexReq" (![#ptrT] "r")) "$a0" "$a1") in
@@ -4469,7 +4469,7 @@ Definition stepLeader : val :=
             (if: "$sw" = raftpb.MsgForgetLeader
             then return: (#interface.nil)
             else #())))));;;
-    let: "pr" := (alloc (type.zero_val #ptrT)) in
+    let: "pr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (Fst (map.get (![#tracker.ProgressMap] (struct.field_ref #tracker.ProgressTracker #"Progress"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")))) in
     do:  ("pr" <-[#ptrT] "$r0");;;
     (if: (![#ptrT] "pr") = #null
@@ -4496,7 +4496,7 @@ Definition stepLeader : val :=
         let: "$sl4" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raftpb.Message #"Index"%go "m"))) in
         slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
         (interface.get #"Debugf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1");;;
-        let: "nextProbeIdx" := (alloc (type.zero_val #uint64T)) in
+        let: "nextProbeIdx" := (mem.alloc (type.zero_val #uint64T)) in
         let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.Message #"RejectHint"%go "m")) in
         do:  ("nextProbeIdx" <-[#uint64T] "$r0");;;
         (if: (![#uint64T] (struct.field_ref #raftpb.Message #"LogTerm"%go "m")) > #(W64 0)
@@ -4601,16 +4601,16 @@ Definition stepLeader : val :=
         (method_call #quorum #"JointConfig" #"VoteResult" (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))))) "$a0") ≠ quorum.VoteWon
         then return: (#interface.nil)
         else do:  #());;;
-        let: "rss" := (alloc (type.zero_val #sliceT)) in
+        let: "rss" := (mem.alloc (type.zero_val #sliceT)) in
         let: "$r0" := (let: "$a0" := (![#raftpb.Message] "m") in
         (method_call #v3.raft #"readOnly'ptr" #"advance" (![#ptrT] (struct.field_ref #raft #"readOnly"%go (![#ptrT] "r")))) "$a0") in
         do:  ("rss" <-[#sliceT] "$r0");;;
         let: "$range" := (![#sliceT] "rss") in
-        (let: "rs" := (alloc (type.zero_val #intT)) in
+        (let: "rs" := (mem.alloc (type.zero_val #intT)) in
         slice.for_range #ptrT "$range" (λ: "$key" "$value",
           do:  ("rs" <-[#ptrT] "$value");;;
           do:  "$key";;;
-          (let: "resp" := (alloc (type.zero_val #raftpb.Message)) in
+          (let: "resp" := (mem.alloc (type.zero_val #raftpb.Message)) in
           let: "$r0" := (let: "$a0" := (![#raftpb.Message] (struct.field_ref #readIndexStatus #"req"%go (![#ptrT] "rs"))) in
           let: "$a1" := (![#uint64T] (struct.field_ref #readIndexStatus #"index"%go (![#ptrT] "rs"))) in
           (method_call #v3.raft #"raft'ptr" #"responseToReadIndexReq" (![#ptrT] "r")) "$a0" "$a1") in
@@ -4670,10 +4670,10 @@ Definition stepLeader : val :=
                 (interface.get #"Debugf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1");;;
                 return: (#interface.nil)
               else do:  #());;;
-              let: "leadTransferee" := (alloc (type.zero_val #uint64T)) in
+              let: "leadTransferee" := (mem.alloc (type.zero_val #uint64T)) in
               let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")) in
               do:  ("leadTransferee" <-[#uint64T] "$r0");;;
-              let: "lastLeadTransferee" := (alloc (type.zero_val #uint64T)) in
+              let: "lastLeadTransferee" := (mem.alloc (type.zero_val #uint64T)) in
               let: "$r0" := (![#uint64T] (struct.field_ref #raft #"leadTransferee"%go (![#ptrT] "r"))) in
               do:  ("lastLeadTransferee" <-[#uint64T] "$r0");;;
               (if: (![#uint64T] "lastLeadTransferee") ≠ None
@@ -4737,9 +4737,9 @@ Definition stepLeader : val :=
    go: raft.go:1668:6 *)
 Definition stepCandidate : val :=
   rec: "stepCandidate" "r" "m" :=
-    exception_do (let: "m" := (alloc "m") in
-    let: "r" := (alloc "r") in
-    let: "myVoteRespType" := (alloc (type.zero_val #raftpb.MessageType)) in
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "r" := (mem.alloc "r") in
+    let: "myVoteRespType" := (mem.alloc (type.zero_val #raftpb.MessageType)) in
     (if: (![#StateType] (struct.field_ref #raft #"state"%go (![#ptrT] "r"))) = StatePreCandidate
     then
       let: "$r0" := raftpb.MsgPreVoteResp in
@@ -4783,9 +4783,9 @@ Definition stepCandidate : val :=
           else
             (if: "$sw" = (![#raftpb.MessageType] "myVoteRespType")
             then
-              let: "res" := (alloc (type.zero_val #quorum.VoteResult)) in
-              let: "rj" := (alloc (type.zero_val #intT)) in
-              let: "gr" := (alloc (type.zero_val #intT)) in
+              let: "res" := (mem.alloc (type.zero_val #quorum.VoteResult)) in
+              let: "rj" := (mem.alloc (type.zero_val #intT)) in
+              let: "gr" := (mem.alloc (type.zero_val #intT)) in
               let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")) in
               let: "$a1" := (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) in
               let: "$a2" := (~ (![#boolT] (struct.field_ref #raftpb.Message #"Reject"%go "m"))) in
@@ -4836,8 +4836,8 @@ Definition stepCandidate : val :=
 (* go: raft.go:1713:6 *)
 Definition stepFollower : val :=
   rec: "stepFollower" "r" "m" :=
-    exception_do (let: "m" := (alloc "m") in
-    let: "r" := (alloc "r") in
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "r" := (mem.alloc "r") in
     let: "$sw" := (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) in
     (if: "$sw" = raftpb.MsgProp
     then
@@ -4988,7 +4988,7 @@ Definition stepFollower : val :=
    go: raft.go:1777:6 *)
 Definition logSliceFromMsgApp : val :=
   rec: "logSliceFromMsgApp" "m" :=
-    exception_do (let: "m" := (alloc "m") in
+    exception_do (let: "m" := (mem.alloc "m") in
     return: (let: "$term" := (![#uint64T] (struct.field_ref #raftpb.Message #"Term"%go (![#ptrT] "m"))) in
      let: "$prev" := (let: "$term" := (![#uint64T] (struct.field_ref #raftpb.Message #"LogTerm"%go (![#ptrT] "m"))) in
      let: "$index" := (![#uint64T] (struct.field_ref #raftpb.Message #"Index"%go (![#ptrT] "m"))) in
@@ -5006,9 +5006,9 @@ Definition logSliceFromMsgApp : val :=
 (* go: raft.go:1786:16 *)
 Definition raft__handleAppendEntries : val :=
   rec: "raft__handleAppendEntries" "r" "m" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "m" := (alloc "m") in
-    let: "a" := (alloc (type.zero_val #logSlice)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "m" := (mem.alloc "m") in
+    let: "a" := (mem.alloc (type.zero_val #logSlice)) in
     let: "$r0" := (let: "$a0" := "m" in
     (func_call #v3.raft #"logSliceFromMsgApp"%go) "$a0") in
     do:  ("a" <-[#logSlice] "$r0");;;
@@ -5036,8 +5036,8 @@ Definition raft__handleAppendEntries : val :=
       (method_call #v3.raft #"raft'ptr" #"send" (![#ptrT] "r")) "$a0");;;
       return: (#())
     else do:  #());;;
-    (let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "mlastIndex" := (alloc (type.zero_val #uint64T)) in
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "mlastIndex" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#logSlice] "a") in
     let: "$a1" := (![#uint64T] (struct.field_ref #raftpb.Message #"Commit"%go "m")) in
     (method_call #v3.raft #"raftLog'ptr" #"maybeAppend" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) "$a0" "$a1") in
@@ -5082,12 +5082,12 @@ Definition raft__handleAppendEntries : val :=
     let: "$sl5" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m"))) in
     slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"])) in
     (interface.get #"Debugf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1");;;
-    let: "hintIndex" := (alloc (type.zero_val #uint64T)) in
+    let: "hintIndex" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #raftpb.Message #"Index"%go "m")) in
     let: "$a1" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
     (minUint64 2) "$a0" "$a1") in
     do:  ("hintIndex" <-[#uint64T] "$r0");;;
-    let: "hintTerm" := (alloc (type.zero_val #uint64T)) in
+    let: "hintTerm" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "hintIndex") in
     let: "$a1" := (![#uint64T] (struct.field_ref #raftpb.Message #"LogTerm"%go "m")) in
     (method_call #v3.raft #"raftLog'ptr" #"findConflictByTerm" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) "$a0" "$a1") in
@@ -5122,8 +5122,8 @@ Definition raft__handleAppendEntries : val :=
 (* go: raft.go:1830:16 *)
 Definition raft__handleHeartbeat : val :=
   rec: "raft__handleHeartbeat" "r" "m" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "m" := (alloc "m") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "m" := (mem.alloc "m") in
     do:  (let: "$a0" := (![#uint64T] (struct.field_ref #raftpb.Message #"Commit"%go "m")) in
     (method_call #v3.raft #"raftLog'ptr" #"commitTo" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) "$a0");;;
     do:  (let: "$a0" := (let: "$To" := (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")) in
@@ -5150,16 +5150,16 @@ Definition raft__handleHeartbeat : val :=
 (* go: raft.go:1835:16 *)
 Definition raft__handleSnapshot : val :=
   rec: "raft__handleSnapshot" "r" "m" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "m" := (alloc "m") in
-    let: "s" := (alloc (type.zero_val #raftpb.Snapshot)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "m" := (mem.alloc "m") in
+    let: "s" := (mem.alloc (type.zero_val #raftpb.Snapshot)) in
     (if: (![#ptrT] (struct.field_ref #raftpb.Message #"Snapshot"%go "m")) ≠ #null
     then
       let: "$r0" := (![#raftpb.Snapshot] (![#ptrT] (struct.field_ref #raftpb.Message #"Snapshot"%go "m"))) in
       do:  ("s" <-[#raftpb.Snapshot] "$r0")
     else do:  #());;;
-    let: "sterm" := (alloc (type.zero_val #uint64T)) in
-    let: "sindex" := (alloc (type.zero_val #uint64T)) in
+    let: "sterm" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "sindex" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "s"))) in
     let: "$r1" := (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Term"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "s"))) in
     do:  ("sindex" <-[#uint64T] "$r0");;;
@@ -5230,8 +5230,8 @@ Definition raft__handleSnapshot : val :=
    go: raft.go:1857:16 *)
 Definition raft__restore : val :=
   rec: "raft__restore" "r" "s" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "s" := (alloc "s") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "s" := (mem.alloc "s") in
     (if: (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "s"))) ≤ (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))))
     then return: (#false)
     else do:  #());;;
@@ -5246,22 +5246,22 @@ Definition raft__restore : val :=
       (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![#ptrT] "r")) "$a0" "$a1");;;
       return: (#false)
     else do:  #());;;
-    let: "found" := (alloc (type.zero_val #boolT)) in
+    let: "found" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
     do:  ("found" <-[#boolT] "$r0");;;
-    let: "cs" := (alloc (type.zero_val #raftpb.ConfState)) in
+    let: "cs" := (mem.alloc (type.zero_val #raftpb.ConfState)) in
     let: "$r0" := (![#raftpb.ConfState] (struct.field_ref #raftpb.SnapshotMetadata #"ConfState"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "s"))) in
     do:  ("cs" <-[#raftpb.ConfState] "$r0");;;
     let: "$range" := ((let: "$sl0" := (![#sliceT] (struct.field_ref #raftpb.ConfState #"Voters"%go "cs")) in
     let: "$sl1" := (![#sliceT] (struct.field_ref #raftpb.ConfState #"Learners"%go "cs")) in
     let: "$sl2" := (![#sliceT] (struct.field_ref #raftpb.ConfState #"VotersOutgoing"%go "cs")) in
     slice.literal #sliceT ["$sl0"; "$sl1"; "$sl2"])) in
-    (let: "set" := (alloc (type.zero_val #intT)) in
+    (let: "set" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #sliceT "$range" (λ: "$key" "$value",
       do:  ("set" <-[#sliceT] "$value");;;
       do:  "$key";;;
       let: "$range" := (![#sliceT] "set") in
-      (let: "id" := (alloc (type.zero_val #intT)) in
+      (let: "id" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #uint64T "$range" (λ: "$key" "$value",
         do:  ("id" <-[#uint64T] "$value");;;
         do:  "$key";;;
@@ -5283,7 +5283,7 @@ Definition raft__restore : val :=
       (interface.get #"Warningf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1");;;
       return: (#false)
     else do:  #());;;
-    let: "id" := (alloc (type.zero_val #entryID)) in
+    let: "id" := (mem.alloc (type.zero_val #entryID)) in
     let: "$r0" := (let: "$term" := (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Term"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "s"))) in
     let: "$index" := (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "s"))) in
     struct.make #entryID [{
@@ -5294,7 +5294,7 @@ Definition raft__restore : val :=
     (if: let: "$a0" := (![#entryID] "id") in
     (method_call #v3.raft #"raftLog'ptr" #"matchTerm" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) "$a0"
     then
-      let: "last" := (alloc (type.zero_val #entryID)) in
+      let: "last" := (mem.alloc (type.zero_val #entryID)) in
       let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
       do:  ("last" <-[#entryID] "$r0");;;
       do:  (let: "$a0" := #"%x [commit: %d, lastindex: %d, lastterm: %d] fast-forwarded commit to snapshot [index: %d, term: %d]"%go in
@@ -5316,9 +5316,9 @@ Definition raft__restore : val :=
     let: "$a1" := (![#uint64T] (struct.field_ref #tracker.ProgressTracker #"MaxInflightBytes"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) in
     (func_call #tracker #"MakeProgressTracker"%go) "$a0" "$a1") in
     do:  ((struct.field_ref #raft #"trk"%go (![#ptrT] "r")) <-[#tracker.ProgressTracker] "$r0");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "trk" := (alloc (type.zero_val #tracker.ProgressMap)) in
-    let: "cfg" := (alloc (type.zero_val #tracker.Config)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "trk" := (mem.alloc (type.zero_val #tracker.ProgressMap)) in
+    let: "cfg" := (mem.alloc (type.zero_val #tracker.Config)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (let: "$Tracker" := (![#tracker.ProgressTracker] (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) in
     let: "$LastIndex" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
     struct.make #confchange.Changer [{
@@ -5348,7 +5348,7 @@ Definition raft__restore : val :=
     let: "$a1" := (![#tracker.ProgressMap] "trk") in
     (method_call #v3.raft #"raft'ptr" #"switchToConfig" (![#ptrT] "r")) "$a0" "$a1") in
     (func_call #v3.raft #"assertConfStatesEquivalent"%go) "$a0" "$a1" "$a2");;;
-    let: "last" := (alloc (type.zero_val #entryID)) in
+    let: "last" := (mem.alloc (type.zero_val #entryID)) in
     let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
     do:  ("last" <-[#entryID] "$r0");;;
     do:  (let: "$a0" := #"%x [commit: %d, lastindex: %d, lastterm: %d] restored snapshot [index: %d, term: %d]"%go in
@@ -5368,8 +5368,8 @@ Definition raft__restore : val :=
    go: raft.go:1942:16 *)
 Definition raft__promotable : val :=
   rec: "raft__promotable" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "pr" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "pr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (Fst (map.get (![#tracker.ProgressMap] (struct.field_ref #tracker.ProgressTracker #"Progress"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))))) in
     do:  ("pr" <-[#ptrT] "$r0");;;
     return: ((((![#ptrT] "pr") ≠ #null) && (~ (![#boolT] (struct.field_ref #tracker.Progress #"IsLearner"%go (![#ptrT] "pr"))))) && (~ ((method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressSnapshot" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #())))).
@@ -5377,13 +5377,13 @@ Definition raft__promotable : val :=
 (* go: raft.go:1947:16 *)
 Definition raft__applyConfChange : val :=
   rec: "raft__applyConfChange" "r" "cc" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "cc" := (alloc "cc") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "trk" := (alloc (type.zero_val #tracker.ProgressMap)) in
-    let: "cfg" := (alloc (type.zero_val #tracker.Config)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "cc" := (mem.alloc "cc") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "trk" := (mem.alloc (type.zero_val #tracker.ProgressMap)) in
+    let: "cfg" := (mem.alloc (type.zero_val #tracker.Config)) in
     let: (("$ret0", "$ret1"), "$ret2") := ((λ: <>,
-      exception_do (let: "changer" := (alloc (type.zero_val #confchange.Changer)) in
+      exception_do (let: "changer" := (mem.alloc (type.zero_val #confchange.Changer)) in
       let: "$r0" := (let: "$Tracker" := (![#tracker.ProgressTracker] (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) in
       let: "$LastIndex" := ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
       struct.make #confchange.Changer [{
@@ -5396,8 +5396,8 @@ Definition raft__applyConfChange : val :=
         let: (("$ret0", "$ret1"), "$ret2") := (((method_call #confchange #"Changer" #"LeaveJoint" (![#confchange.Changer] "changer")) #())) in
         return: ("$ret0", "$ret1", "$ret2")
       else
-        (let: "ok" := (alloc (type.zero_val #boolT)) in
-        let: "autoLeave" := (alloc (type.zero_val #boolT)) in
+        (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+        let: "autoLeave" := (mem.alloc (type.zero_val #boolT)) in
         let: ("$ret0", "$ret1") := ((method_call #raftpb #"ConfChangeV2" #"EnterJoint" (![#raftpb.ConfChangeV2] "cc")) #()) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
@@ -5439,9 +5439,9 @@ Definition raft__applyConfChange : val :=
    go: raft.go:1975:16 *)
 Definition raft__switchToConfig : val :=
   rec: "raft__switchToConfig" "r" "cfg" "trk" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "trk" := (alloc "trk") in
-    let: "cfg" := (alloc "cfg") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "trk" := (mem.alloc "trk") in
+    let: "cfg" := (mem.alloc "cfg") in
     do:  (let: "$a0" := (![#tracker.Config] "cfg") in
     let: "$a1" := (![#ptrT] "r") in
     (func_call #v3.raft #"traceConfChangeEvent"%go) "$a0" "$a1");;;
@@ -5454,11 +5454,11 @@ Definition raft__switchToConfig : val :=
     let: "$sl1" := (interface.make #tracker #"Config" (![#tracker.Config] (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))))) in
     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (interface.get #"Infof"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1");;;
-    let: "cs" := (alloc (type.zero_val #raftpb.ConfState)) in
+    let: "cs" := (mem.alloc (type.zero_val #raftpb.ConfState)) in
     let: "$r0" := ((method_call #tracker #"ProgressTracker'ptr" #"ConfState" (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) #()) in
     do:  ("cs" <-[#raftpb.ConfState] "$r0");;;
-    let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "pr" := (alloc (type.zero_val #ptrT)) in
+    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "pr" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (map.get (![#tracker.ProgressMap] (struct.field_ref #tracker.ProgressTracker #"Progress"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -5484,8 +5484,8 @@ Definition raft__switchToConfig : val :=
     then do:  ((method_call #v3.raft #"raft'ptr" #"bcastAppend" (![#ptrT] "r")) #())
     else
       do:  (let: "$a0" := (λ: "id" <>,
-        exception_do (let: <> := (alloc "_") in
-        let: "id" := (alloc "id") in
+        exception_do (let: <> := (mem.alloc "_") in
+        let: "id" := (mem.alloc "id") in
         (if: (![#uint64T] "id") = (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))
         then return: (#())
         else do:  #());;;
@@ -5494,7 +5494,7 @@ Definition raft__switchToConfig : val :=
         (method_call #v3.raft #"raft'ptr" #"maybeSendAppend" (![#ptrT] "r")) "$a0" "$a1"))
         ) in
       (method_call #tracker #"ProgressTracker'ptr" #"Visit" (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) "$a0"));;;
-    (let: "tOK" := (alloc (type.zero_val #boolT)) in
+    (let: "tOK" := (mem.alloc (type.zero_val #boolT)) in
     let: ("$ret0", "$ret1") := (map.get ((method_call #quorum #"JointConfig" #"IDs" (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))))) #()) (![#uint64T] (struct.field_ref #raft #"leadTransferee"%go (![#ptrT] "r")))) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -5508,8 +5508,8 @@ Definition raft__switchToConfig : val :=
 (* go: raft.go:2033:16 *)
 Definition raft__loadState : val :=
   rec: "raft__loadState" "r" "state" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "state" := (alloc "state") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "state" := (mem.alloc "state") in
     (if: ((![#uint64T] (struct.field_ref #raftpb.HardState #"Commit"%go "state")) < (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))))) || ((![#uint64T] (struct.field_ref #raftpb.HardState #"Commit"%go "state")) > ((method_call #v3.raft #"raftLog'ptr" #"lastIndex" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()))
     then
       do:  (let: "$a0" := #"%x state.commit %d is out of range [%d, %d]"%go in
@@ -5534,13 +5534,13 @@ Definition raft__loadState : val :=
    go: raft.go:2045:16 *)
 Definition raft__pastElectionTimeout : val :=
   rec: "raft__pastElectionTimeout" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     return: (int_geq (![#intT] (struct.field_ref #raft #"electionElapsed"%go (![#ptrT] "r"))) (![#intT] (struct.field_ref #raft #"randomizedElectionTimeout"%go (![#ptrT] "r"))))).
 
 (* go: raft.go:2049:16 *)
 Definition raft__resetRandomizedElectionTimeout : val :=
   rec: "raft__resetRandomizedElectionTimeout" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     let: "$r0" := ((![#intT] (struct.field_ref #raft #"electionTimeout"%go (![#ptrT] "r"))) + (let: "$a0" := (![#intT] (struct.field_ref #raft #"electionTimeout"%go (![#ptrT] "r"))) in
     (method_call #v3.raft #"lockedRand'ptr" #"Intn" (![#ptrT] (globals.get #v3.raft #"globalRand"%go))) "$a0")) in
     do:  ((struct.field_ref #raft #"randomizedElectionTimeout"%go (![#ptrT] "r")) <-[#intT] "$r0")).
@@ -5548,8 +5548,8 @@ Definition raft__resetRandomizedElectionTimeout : val :=
 (* go: raft.go:2053:16 *)
 Definition raft__sendTimeoutNow : val :=
   rec: "raft__sendTimeoutNow" "r" "to" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "to" := (alloc "to") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "to" := (mem.alloc "to") in
     do:  (let: "$a0" := (let: "$To" := (![#uint64T] "to") in
     let: "$Type" := raftpb.MsgTimeoutNow in
     struct.make #raftpb.Message [{
@@ -5573,7 +5573,7 @@ Definition raft__sendTimeoutNow : val :=
 (* go: raft.go:2057:16 *)
 Definition raft__abortLeaderTransfer : val :=
   rec: "raft__abortLeaderTransfer" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     let: "$r0" := None in
     do:  ((struct.field_ref #raft #"leadTransferee"%go (![#ptrT] "r")) <-[#uint64T] "$r0")).
 
@@ -5582,7 +5582,7 @@ Definition raft__abortLeaderTransfer : val :=
    go: raft.go:2062:16 *)
 Definition raft__committedEntryInCurrentTerm : val :=
   rec: "raft__committedEntryInCurrentTerm" "r" <> :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     return: ((let: ("$ret0", "$ret1") := ((let: "$a0" := (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) in
      (method_call #v3.raft #"raftLog'ptr" #"term" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) "$a0")) in
      let: "$a0" := "$ret0" in
@@ -5595,9 +5595,9 @@ Definition raft__committedEntryInCurrentTerm : val :=
    go: raft.go:2070:16 *)
 Definition raft__responseToReadIndexReq : val :=
   rec: "raft__responseToReadIndexReq" "r" "req" "readIndex" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "readIndex" := (alloc "readIndex") in
-    let: "req" := (alloc "req") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "readIndex" := (mem.alloc "readIndex") in
+    let: "req" := (mem.alloc "req") in
     (if: ((![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "req")) = None) || ((![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "req")) = (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))))
     then
       let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #raft #"readStates"%go (![#ptrT] "r"))) in
@@ -5660,9 +5660,9 @@ Definition raft__responseToReadIndexReq : val :=
    go: raft.go:2094:16 *)
 Definition raft__increaseUncommittedSize : val :=
   rec: "raft__increaseUncommittedSize" "r" "ents" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "ents" := (alloc "ents") in
-    let: "s" := (alloc (type.zero_val #entryPayloadSize)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "ents" := (mem.alloc "ents") in
+    let: "s" := (mem.alloc (type.zero_val #entryPayloadSize)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "ents") in
     (func_call #v3.raft #"payloadsSize"%go) "$a0") in
     do:  ("s" <-[#entryPayloadSize] "$r0");;;
@@ -5678,8 +5678,8 @@ Definition raft__increaseUncommittedSize : val :=
    go: raft.go:2112:16 *)
 Definition raft__reduceUncommittedSize : val :=
   rec: "raft__reduceUncommittedSize" "r" "s" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "s" := (alloc "s") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "s" := (mem.alloc "s") in
     (if: (![#entryPayloadSize] "s") > (![#entryPayloadSize] (struct.field_ref #raft #"uncommittedSize"%go (![#ptrT] "r")))
     then
       let: "$r0" := #(W64 0) in
@@ -5689,7 +5689,7 @@ Definition raft__reduceUncommittedSize : val :=
 (* go: raft.go:2123:6 *)
 Definition releasePendingReadIndexMessages : val :=
   rec: "releasePendingReadIndexMessages" "r" :=
-    exception_do (let: "r" := (alloc "r") in
+    exception_do (let: "r" := (mem.alloc "r") in
     (if: (let: "$a0" := (![#sliceT] (struct.field_ref #raft #"pendingReadIndexMessages"%go (![#ptrT] "r"))) in
     slice.len "$a0") = #(W64 0)
     then return: (#())
@@ -5701,13 +5701,13 @@ Definition releasePendingReadIndexMessages : val :=
       (interface.get #"Error"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0");;;
       return: (#())
     else do:  #());;;
-    let: "msgs" := (alloc (type.zero_val #sliceT)) in
+    let: "msgs" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] (struct.field_ref #raft #"pendingReadIndexMessages"%go (![#ptrT] "r"))) in
     do:  ("msgs" <-[#sliceT] "$r0");;;
     let: "$r0" := #slice.nil in
     do:  ((struct.field_ref #raft #"pendingReadIndexMessages"%go (![#ptrT] "r")) <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "msgs") in
-    (let: "m" := (alloc (type.zero_val #intT)) in
+    (let: "m" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #raftpb.Message "$range" (λ: "$key" "$value",
       do:  ("m" <-[#raftpb.Message] "$value");;;
       do:  "$key";;;
@@ -5718,8 +5718,8 @@ Definition releasePendingReadIndexMessages : val :=
 (* go: raft.go:2142:6 *)
 Definition sendMsgReadIndexResponse : val :=
   rec: "sendMsgReadIndexResponse" "r" "m" :=
-    exception_do (let: "m" := (alloc "m") in
-    let: "r" := (alloc "r") in
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "r" := (mem.alloc "r") in
     let: "$sw" := (![#ReadOnlyOption] (struct.field_ref #readOnly #"option"%go (![#ptrT] (struct.field_ref #raft #"readOnly"%go (![#ptrT] "r"))))) in
     (if: "$sw" = ReadOnlySafe
     then
@@ -5734,7 +5734,7 @@ Definition sendMsgReadIndexResponse : val :=
     else
       (if: "$sw" = ReadOnlyLeaseBased
       then
-        (let: "resp" := (alloc (type.zero_val #raftpb.Message)) in
+        (let: "resp" := (mem.alloc (type.zero_val #raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![#raftpb.Message] "m") in
         let: "$a1" := (![#uint64T] (struct.field_ref #raftLog #"committed"%go (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r"))))) in
         (method_call #v3.raft #"raft'ptr" #"responseToReadIndexReq" (![#ptrT] "r")) "$a0" "$a1") in
@@ -5757,13 +5757,13 @@ Definition sendMsgReadIndexResponse : val :=
    go: rawnode.go:51:6 *)
 Definition NewRawNode : val :=
   rec: "NewRawNode" "config" :=
-    exception_do (let: "config" := (alloc "config") in
-    let: "r" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "config" := (mem.alloc "config") in
+    let: "r" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "config") in
     (func_call #v3.raft #"newRaft"%go) "$a0") in
     do:  ("r" <-[#ptrT] "$r0");;;
-    let: "rn" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (let: "$raft" := (![#ptrT] "r") in
+    let: "rn" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$raft" := (![#ptrT] "r") in
     struct.make #RawNode [{
       "raft" ::= "$raft";
       "asyncStorageWrites" ::= type.zero_val #boolT;
@@ -5774,7 +5774,7 @@ Definition NewRawNode : val :=
     do:  ("rn" <-[#ptrT] "$r0");;;
     let: "$r0" := (![#boolT] (struct.field_ref #Config #"AsyncStorageWrites"%go (![#ptrT] "config"))) in
     do:  ((struct.field_ref #RawNode #"asyncStorageWrites"%go (![#ptrT] "rn")) <-[#boolT] "$r0");;;
-    let: "ss" := (alloc (type.zero_val #SoftState)) in
+    let: "ss" := (mem.alloc (type.zero_val #SoftState)) in
     let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"softState" (![#ptrT] "r")) #()) in
     do:  ("ss" <-[#SoftState] "$r0");;;
     let: "$r0" := "ss" in
@@ -5788,7 +5788,7 @@ Definition NewRawNode : val :=
    go: rawnode.go:64:20 *)
 Definition RawNode__Tick : val :=
   rec: "RawNode__Tick" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
     do:  ((![#funcT] (struct.field_ref #raft #"tick"%go (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))))) #())).
 
 (* TickQuiesced advances the internal logical clock by a single tick without
@@ -5805,7 +5805,7 @@ Definition RawNode__Tick : val :=
    go: rawnode.go:78:20 *)
 Definition RawNode__TickQuiesced : val :=
   rec: "RawNode__TickQuiesced" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
     do:  ((struct.field_ref #raft #"electionElapsed"%go (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn")))) <-[#intT] ((![#intT] (struct.field_ref #raft #"electionElapsed"%go (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))))) + #(W64 1)))).
 
 (* Campaign causes this RawNode to transition to candidate state.
@@ -5813,7 +5813,7 @@ Definition RawNode__TickQuiesced : val :=
    go: rawnode.go:83:20 *)
 Definition RawNode__Campaign : val :=
   rec: "RawNode__Campaign" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
     return: (let: "$a0" := (let: "$Type" := raftpb.MsgHup in
      struct.make #raftpb.Message [{
        "Type" ::= "$Type";
@@ -5838,8 +5838,8 @@ Definition RawNode__Campaign : val :=
    go: rawnode.go:90:20 *)
 Definition RawNode__Propose : val :=
   rec: "RawNode__Propose" "rn" "data" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "data" := (alloc "data") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "data" := (mem.alloc "data") in
     return: (let: "$a0" := (let: "$Type" := raftpb.MsgProp in
      let: "$From" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))))) in
      let: "$Entries" := ((let: "$sl0" := (let: "$Data" := (![#sliceT] "data") in
@@ -5874,10 +5874,10 @@ Definition RawNode__Propose : val :=
    go: rawnode.go:101:20 *)
 Definition RawNode__ProposeConfChange : val :=
   rec: "RawNode__ProposeConfChange" "rn" "cc" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "cc" := (alloc "cc") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "cc" := (mem.alloc "cc") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#raftpb.ConfChangeI] "cc") in
     (func_call #v3.raft #"confChangeToMsg"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -5897,9 +5897,9 @@ Definition RawNode__ProposeConfChange : val :=
    go: rawnode.go:112:20 *)
 Definition RawNode__ApplyConfChange : val :=
   rec: "RawNode__ApplyConfChange" "rn" "cc" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "cc" := (alloc "cc") in
-    let: "cs" := (alloc (type.zero_val #raftpb.ConfState)) in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "cc" := (mem.alloc "cc") in
+    let: "cs" := (mem.alloc (type.zero_val #raftpb.ConfState)) in
     let: "$r0" := (let: "$a0" := ((interface.get #"AsV2"%go (![#raftpb.ConfChangeI] "cc")) #()) in
     (method_call #v3.raft #"raft'ptr" #"applyConfChange" (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn")))) "$a0") in
     do:  ("cs" <-[#raftpb.ConfState] "$r0");;;
@@ -5910,8 +5910,8 @@ Definition RawNode__ApplyConfChange : val :=
    go: rawnode.go:118:20 *)
 Definition RawNode__Step : val :=
   rec: "RawNode__Step" "rn" "m" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "m" := (alloc "m") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "m" := (mem.alloc "m") in
     (if: (let: "$a0" := (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) in
     (func_call #v3.raft #"IsLocalMsg"%go) "$a0") && (~ (let: "$a0" := (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")) in
     (func_call #v3.raft #"IsLocalMsgTarget"%go) "$a0"))
@@ -5933,8 +5933,8 @@ Definition RawNode__Step : val :=
    go: rawnode.go:133:20 *)
 Definition RawNode__Ready : val :=
   rec: "RawNode__Ready" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "rd" := (alloc (type.zero_val #Ready)) in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "rd" := (mem.alloc (type.zero_val #Ready)) in
     let: "$r0" := ((method_call #v3.raft #"RawNode'ptr" #"readyWithoutAccept" (![#ptrT] "rn")) #()) in
     do:  ("rd" <-[#Ready] "$r0");;;
     do:  (let: "$a0" := (![#Ready] "rd") in
@@ -5947,11 +5947,11 @@ Definition RawNode__Ready : val :=
    go: rawnode.go:141:20 *)
 Definition RawNode__readyWithoutAccept : val :=
   rec: "RawNode__readyWithoutAccept" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "r" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "r" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))) in
     do:  ("r" <-[#ptrT] "$r0");;;
-    let: "rd" := (alloc (type.zero_val #Ready)) in
+    let: "rd" := (mem.alloc (type.zero_val #Ready)) in
     let: "$r0" := (let: "$Entries" := ((method_call #v3.raft #"raftLog'ptr" #"nextUnstableEnts" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
     let: "$CommittedEntries" := (let: "$a0" := ((method_call #v3.raft #"RawNode'ptr" #"applyUnstableEntries" (![#ptrT] "rn")) #()) in
     (method_call #v3.raft #"raftLog'ptr" #"nextCommittedEnts" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) "$a0") in
@@ -5967,19 +5967,19 @@ Definition RawNode__readyWithoutAccept : val :=
       "MustSync" ::= type.zero_val #boolT
     }]) in
     do:  ("rd" <-[#Ready] "$r0");;;
-    (let: "softSt" := (alloc (type.zero_val #SoftState)) in
+    (let: "softSt" := (mem.alloc (type.zero_val #SoftState)) in
     let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"softState" (![#ptrT] "r")) #()) in
     do:  ("softSt" <-[#SoftState] "$r0");;;
     (if: (~ (let: "$a0" := (![#ptrT] (struct.field_ref #RawNode #"prevSoftSt"%go (![#ptrT] "rn"))) in
     (method_call #v3.raft #"SoftState'ptr" #"equal" "softSt") "$a0"))
     then
-      let: "escapingSoftSt" := (alloc (type.zero_val #SoftState)) in
+      let: "escapingSoftSt" := (mem.alloc (type.zero_val #SoftState)) in
       let: "$r0" := (![#SoftState] "softSt") in
       do:  ("escapingSoftSt" <-[#SoftState] "$r0");;;
       let: "$r0" := "escapingSoftSt" in
       do:  ((struct.field_ref #Ready #"SoftState"%go "rd") <-[#ptrT] "$r0")
     else do:  #()));;;
-    (let: "hardSt" := (alloc (type.zero_val #raftpb.HardState)) in
+    (let: "hardSt" := (mem.alloc (type.zero_val #raftpb.HardState)) in
     let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"hardState" (![#ptrT] "r")) #()) in
     do:  ("hardSt" <-[#raftpb.HardState] "$r0");;;
     (if: (~ (let: "$a0" := (![#raftpb.HardState] "hardSt") in
@@ -6012,7 +6012,7 @@ Definition RawNode__readyWithoutAccept : val :=
       let: "$a1" := (![#Ready] "rd") in
       (func_call #v3.raft #"needStorageAppendMsg"%go) "$a0" "$a1"
       then
-        let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+        let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![#ptrT] "r") in
         let: "$a1" := (![#Ready] "rd") in
         (func_call #v3.raft #"newStorageAppendMsg"%go) "$a0" "$a1") in
@@ -6026,7 +6026,7 @@ Definition RawNode__readyWithoutAccept : val :=
       (if: let: "$a0" := (![#Ready] "rd") in
       (func_call #v3.raft #"needStorageApplyMsg"%go) "$a0"
       then
-        let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+        let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![#ptrT] "r") in
         let: "$a1" := (![#Ready] "rd") in
         (func_call #v3.raft #"newStorageApplyMsg"%go) "$a0" "$a1") in
@@ -6039,7 +6039,7 @@ Definition RawNode__readyWithoutAccept : val :=
       else do:  #())
     else
       let: "$range" := (![#sliceT] (struct.field_ref #raft #"msgsAfterAppend"%go (![#ptrT] "r"))) in
-      (let: "m" := (alloc (type.zero_val #intT)) in
+      (let: "m" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #raftpb.Message "$range" (λ: "$key" "$value",
         do:  ("m" <-[#raftpb.Message] "$value");;;
         do:  "$key";;;
@@ -6059,16 +6059,16 @@ Definition RawNode__readyWithoutAccept : val :=
    go: rawnode.go:193:6 *)
 Definition MustSync : val :=
   rec: "MustSync" "st" "prevst" "entsnum" :=
-    exception_do (let: "entsnum" := (alloc "entsnum") in
-    let: "prevst" := (alloc "prevst") in
-    let: "st" := (alloc "st") in
+    exception_do (let: "entsnum" := (mem.alloc "entsnum") in
+    let: "prevst" := (mem.alloc "prevst") in
+    let: "st" := (mem.alloc "st") in
     return: ((((![#intT] "entsnum") ≠ #(W64 0)) || ((![#uint64T] (struct.field_ref #raftpb.HardState #"Vote"%go "st")) ≠ (![#uint64T] (struct.field_ref #raftpb.HardState #"Vote"%go "prevst")))) || ((![#uint64T] (struct.field_ref #raftpb.HardState #"Term"%go "st")) ≠ (![#uint64T] (struct.field_ref #raftpb.HardState #"Term"%go "prevst"))))).
 
 (* go: rawnode.go:202:6 *)
 Definition needStorageAppendMsg : val :=
   rec: "needStorageAppendMsg" "r" "rd" :=
-    exception_do (let: "rd" := (alloc "rd") in
-    let: "r" := (alloc "r") in
+    exception_do (let: "rd" := (mem.alloc "rd") in
+    let: "r" := (mem.alloc "r") in
     return: ((((int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #Ready #"Entries"%go "rd")) in
      slice.len "$a0") #(W64 0)) || (~ (let: "$a0" := (![#raftpb.HardState] (struct.field_ref #Ready #"HardState"%go "rd")) in
      (func_call #v3.raft #"IsEmptyHardState"%go) "$a0"))) || (~ (let: "$a0" := (![#raftpb.Snapshot] (struct.field_ref #Ready #"Snapshot"%go "rd")) in
@@ -6078,8 +6078,8 @@ Definition needStorageAppendMsg : val :=
 (* go: rawnode.go:212:6 *)
 Definition needStorageAppendRespMsg : val :=
   rec: "needStorageAppendRespMsg" "r" "rd" :=
-    exception_do (let: "rd" := (alloc "rd") in
-    let: "r" := (alloc "r") in
+    exception_do (let: "rd" := (mem.alloc "rd") in
+    let: "r" := (mem.alloc "r") in
     return: (((method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressUnstableEnts" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) || (~ (let: "$a0" := (![#raftpb.Snapshot] (struct.field_ref #Ready #"Snapshot"%go "rd")) in
      (func_call #v3.raft #"IsEmptySnap"%go) "$a0")))).
 
@@ -6092,9 +6092,9 @@ Definition needStorageAppendRespMsg : val :=
    go: rawnode.go:225:6 *)
 Definition newStorageAppendMsg : val :=
   rec: "newStorageAppendMsg" "r" "rd" :=
-    exception_do (let: "rd" := (alloc "rd") in
-    let: "r" := (alloc "r") in
-    let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+    exception_do (let: "rd" := (mem.alloc "rd") in
+    let: "r" := (mem.alloc "r") in
+    let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
     let: "$r0" := (let: "$Type" := raftpb.MsgStorageAppend in
     let: "$To" := LocalAppendThread in
     let: "$From" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))) in
@@ -6129,7 +6129,7 @@ Definition newStorageAppendMsg : val :=
     (if: (~ (let: "$a0" := (![#raftpb.Snapshot] (struct.field_ref #Ready #"Snapshot"%go "rd")) in
     (func_call #v3.raft #"IsEmptySnap"%go) "$a0"))
     then
-      let: "snap" := (alloc (type.zero_val #raftpb.Snapshot)) in
+      let: "snap" := (mem.alloc (type.zero_val #raftpb.Snapshot)) in
       let: "$r0" := (![#raftpb.Snapshot] (struct.field_ref #Ready #"Snapshot"%go "rd")) in
       do:  ("snap" <-[#raftpb.Snapshot] "$r0");;;
       let: "$r0" := "snap" in
@@ -6159,9 +6159,9 @@ Definition newStorageAppendMsg : val :=
    go: rawnode.go:268:6 *)
 Definition newStorageAppendRespMsg : val :=
   rec: "newStorageAppendRespMsg" "r" "rd" :=
-    exception_do (let: "rd" := (alloc "rd") in
-    let: "r" := (alloc "r") in
-    let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+    exception_do (let: "rd" := (mem.alloc "rd") in
+    let: "r" := (mem.alloc "r") in
+    let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
     let: "$r0" := (let: "$Type" := raftpb.MsgStorageAppendResp in
     let: "$To" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))) in
     let: "$From" := LocalAppendThread in
@@ -6185,7 +6185,7 @@ Definition newStorageAppendRespMsg : val :=
     do:  ("m" <-[#raftpb.Message] "$r0");;;
     (if: (method_call #v3.raft #"raftLog'ptr" #"hasNextOrInProgressUnstableEnts" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()
     then
-      let: "last" := (alloc (type.zero_val #entryID)) in
+      let: "last" := (mem.alloc (type.zero_val #entryID)) in
       let: "$r0" := ((method_call #v3.raft #"raftLog'ptr" #"lastEntryID" (![#ptrT] (struct.field_ref #raft #"raftLog"%go (![#ptrT] "r")))) #()) in
       do:  ("last" <-[#entryID] "$r0");;;
       let: "$r0" := (![#uint64T] (struct.field_ref #entryID #"index"%go "last")) in
@@ -6196,7 +6196,7 @@ Definition newStorageAppendRespMsg : val :=
     (if: (~ (let: "$a0" := (![#raftpb.Snapshot] (struct.field_ref #Ready #"Snapshot"%go "rd")) in
     (func_call #v3.raft #"IsEmptySnap"%go) "$a0"))
     then
-      let: "snap" := (alloc (type.zero_val #raftpb.Snapshot)) in
+      let: "snap" := (mem.alloc (type.zero_val #raftpb.Snapshot)) in
       let: "$r0" := (![#raftpb.Snapshot] (struct.field_ref #Ready #"Snapshot"%go "rd")) in
       do:  ("snap" <-[#raftpb.Snapshot] "$r0");;;
       let: "$r0" := "snap" in
@@ -6207,14 +6207,14 @@ Definition newStorageAppendRespMsg : val :=
 (* go: rawnode.go:368:6 *)
 Definition needStorageApplyMsg : val :=
   rec: "needStorageApplyMsg" "rd" :=
-    exception_do (let: "rd" := (alloc "rd") in
+    exception_do (let: "rd" := (mem.alloc "rd") in
     return: (int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #Ready #"CommittedEntries"%go "rd")) in
      slice.len "$a0") #(W64 0))).
 
 (* go: rawnode.go:369:6 *)
 Definition needStorageApplyRespMsg : val :=
   rec: "needStorageApplyRespMsg" "rd" :=
-    exception_do (let: "rd" := (alloc "rd") in
+    exception_do (let: "rd" := (mem.alloc "rd") in
     return: (let: "$a0" := (![#Ready] "rd") in
      (func_call #v3.raft #"needStorageApplyMsg"%go) "$a0")).
 
@@ -6226,9 +6226,9 @@ Definition needStorageApplyRespMsg : val :=
    go: rawnode.go:375:6 *)
 Definition newStorageApplyMsg : val :=
   rec: "newStorageApplyMsg" "r" "rd" :=
-    exception_do (let: "rd" := (alloc "rd") in
-    let: "r" := (alloc "r") in
-    let: "ents" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "rd" := (mem.alloc "rd") in
+    let: "r" := (mem.alloc "r") in
+    let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] (struct.field_ref #Ready #"CommittedEntries"%go "rd")) in
     do:  ("ents" <-[#sliceT] "$r0");;;
     return: (let: "$Type" := raftpb.MsgStorageApply in
@@ -6264,8 +6264,8 @@ Definition newStorageApplyMsg : val :=
    go: rawnode.go:392:6 *)
 Definition newStorageApplyRespMsg : val :=
   rec: "newStorageApplyRespMsg" "r" "ents" :=
-    exception_do (let: "ents" := (alloc "ents") in
-    let: "r" := (alloc "r") in
+    exception_do (let: "ents" := (mem.alloc "ents") in
+    let: "r" := (mem.alloc "r") in
     return: (let: "$Type" := raftpb.MsgStorageApplyResp in
      let: "$To" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))) in
      let: "$From" := LocalApplyThread in
@@ -6295,8 +6295,8 @@ Definition newStorageApplyRespMsg : val :=
    go: rawnode.go:405:20 *)
 Definition RawNode__acceptReady : val :=
   rec: "RawNode__acceptReady" "rn" "rd" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "rd" := (alloc "rd") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "rd" := (mem.alloc "rd") in
     (if: (![#ptrT] (struct.field_ref #Ready #"SoftState"%go "rd")) ≠ #null
     then
       let: "$r0" := (![#ptrT] (struct.field_ref #Ready #"SoftState"%go "rd")) in
@@ -6324,7 +6324,7 @@ Definition RawNode__acceptReady : val :=
         (interface.get #"Panicf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn")))))) "$a0" "$a1")
       else do:  #());;;
       let: "$range" := (![#sliceT] (struct.field_ref #raft #"msgsAfterAppend"%go (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))))) in
-      (let: "m" := (alloc (type.zero_val #intT)) in
+      (let: "m" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #raftpb.Message "$range" (λ: "$key" "$value",
         do:  ("m" <-[#raftpb.Message] "$value");;;
         do:  "$key";;;
@@ -6340,7 +6340,7 @@ Definition RawNode__acceptReady : val :=
       let: "$a1" := (![#Ready] "rd") in
       (func_call #v3.raft #"needStorageAppendRespMsg"%go) "$a0" "$a1"
       then
-        let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+        let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))) in
         let: "$a1" := (![#Ready] "rd") in
         (func_call #v3.raft #"newStorageAppendRespMsg"%go) "$a0" "$a1") in
@@ -6354,7 +6354,7 @@ Definition RawNode__acceptReady : val :=
       (if: let: "$a0" := (![#Ready] "rd") in
       (func_call #v3.raft #"needStorageApplyRespMsg"%go) "$a0"
       then
-        let: "m" := (alloc (type.zero_val #raftpb.Message)) in
+        let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
         let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))) in
         let: "$a1" := (![#sliceT] (struct.field_ref #Ready #"CommittedEntries"%go "rd")) in
         (func_call #v3.raft #"newStorageApplyRespMsg"%go) "$a0" "$a1") in
@@ -6374,10 +6374,10 @@ Definition RawNode__acceptReady : val :=
     (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #Ready #"CommittedEntries"%go "rd")) in
     slice.len "$a0") #(W64 0)
     then
-      let: "ents" := (alloc (type.zero_val #sliceT)) in
+      let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := (![#sliceT] (struct.field_ref #Ready #"CommittedEntries"%go "rd")) in
       do:  ("ents" <-[#sliceT] "$r0");;;
-      let: "index" := (alloc (type.zero_val #uint64T)) in
+      let: "index" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] "ents") ((let: "$a0" := (![#sliceT] "ents") in
       slice.len "$a0") - #(W64 1))))) in
       do:  ("index" <-[#uint64T] "$r0");;;
@@ -6397,7 +6397,7 @@ Definition RawNode__acceptReady : val :=
    go: rawnode.go:448:20 *)
 Definition RawNode__applyUnstableEntries : val :=
   rec: "RawNode__applyUnstableEntries" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
     return: ((~ (![#boolT] (struct.field_ref #RawNode #"asyncStorageWrites"%go (![#ptrT] "rn")))))).
 
 (* HasReady called when RawNode user need to check if any Ready pending.
@@ -6405,18 +6405,18 @@ Definition RawNode__applyUnstableEntries : val :=
    go: rawnode.go:453:20 *)
 Definition RawNode__HasReady : val :=
   rec: "RawNode__HasReady" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "r" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "r" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))) in
     do:  ("r" <-[#ptrT] "$r0");;;
-    (let: "softSt" := (alloc (type.zero_val #SoftState)) in
+    (let: "softSt" := (mem.alloc (type.zero_val #SoftState)) in
     let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"softState" (![#ptrT] "r")) #()) in
     do:  ("softSt" <-[#SoftState] "$r0");;;
     (if: (~ (let: "$a0" := (![#ptrT] (struct.field_ref #RawNode #"prevSoftSt"%go (![#ptrT] "rn"))) in
     (method_call #v3.raft #"SoftState'ptr" #"equal" "softSt") "$a0"))
     then return: (#true)
     else do:  #()));;;
-    (let: "hardSt" := (alloc (type.zero_val #raftpb.HardState)) in
+    (let: "hardSt" := (mem.alloc (type.zero_val #raftpb.HardState)) in
     let: "$r0" := ((method_call #v3.raft #"raft'ptr" #"hardState" (![#ptrT] "r")) #()) in
     do:  ("hardSt" <-[#raftpb.HardState] "$r0");;;
     (if: (~ (let: "$a0" := (![#raftpb.HardState] "hardSt") in
@@ -6452,8 +6452,8 @@ Definition RawNode__HasReady : val :=
    go: rawnode.go:482:20 *)
 Definition RawNode__Advance : val :=
   rec: "RawNode__Advance" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: <> := (alloc "_") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: <> := (mem.alloc "_") in
     (if: ![#boolT] (struct.field_ref #RawNode #"asyncStorageWrites"%go (![#ptrT] "rn"))
     then
       do:  (let: "$a0" := #"Advance must not be called when using AsyncStorageWrites"%go in
@@ -6461,8 +6461,8 @@ Definition RawNode__Advance : val :=
       (interface.get #"Panicf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn")))))) "$a0" "$a1")
     else do:  #());;;
     let: "$range" := (![#sliceT] (struct.field_ref #RawNode #"stepsOnAdvance"%go (![#ptrT] "rn"))) in
-    (let: "m" := (alloc (type.zero_val #intT)) in
-    let: "i" := (alloc (type.zero_val #intT)) in
+    (let: "m" := (mem.alloc (type.zero_val #intT)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #raftpb.Message "$range" (λ: "$key" "$value",
       do:  ("m" <-[#raftpb.Message] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
@@ -6496,8 +6496,8 @@ Definition RawNode__Advance : val :=
    go: rawnode.go:498:20 *)
 Definition RawNode__Status : val :=
   rec: "RawNode__Status" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "status" := (alloc (type.zero_val #Status)) in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "status" := (mem.alloc (type.zero_val #Status)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))) in
     (func_call #v3.raft #"getStatus"%go) "$a0") in
     do:  ("status" <-[#Status] "$r0");;;
@@ -6509,7 +6509,7 @@ Definition RawNode__Status : val :=
    go: rawnode.go:505:20 *)
 Definition RawNode__BasicStatus : val :=
   rec: "RawNode__BasicStatus" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
     return: (let: "$a0" := (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn"))) in
      (func_call #v3.raft #"getBasicStatus"%go) "$a0")).
 
@@ -6525,12 +6525,12 @@ Definition ProgressTypeLearner : expr := #(W8 1).
    go: rawnode.go:521:20 *)
 Definition RawNode__WithProgress : val :=
   rec: "RawNode__WithProgress" "rn" "visitor" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "visitor" := (alloc "visitor") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "visitor" := (mem.alloc "visitor") in
     do:  (let: "$a0" := (λ: "id" "pr",
-      exception_do (let: "pr" := (alloc "pr") in
-      let: "id" := (alloc "id") in
-      let: "typ" := (alloc (type.zero_val #ProgressType)) in
+      exception_do (let: "pr" := (mem.alloc "pr") in
+      let: "id" := (mem.alloc "id") in
+      let: "typ" := (mem.alloc (type.zero_val #ProgressType)) in
       let: "$r0" := ProgressTypePeer in
       do:  ("typ" <-[#ProgressType] "$r0");;;
       (if: ![#boolT] (struct.field_ref #tracker.Progress #"IsLearner"%go (![#ptrT] "pr"))
@@ -6538,7 +6538,7 @@ Definition RawNode__WithProgress : val :=
         let: "$r0" := ProgressTypeLearner in
         do:  ("typ" <-[#ProgressType] "$r0")
       else do:  #());;;
-      let: "p" := (alloc (type.zero_val #tracker.Progress)) in
+      let: "p" := (mem.alloc (type.zero_val #tracker.Progress)) in
       let: "$r0" := (![#tracker.Progress] (![#ptrT] "pr")) in
       do:  ("p" <-[#tracker.Progress] "$r0");;;
       let: "$r0" := #null in
@@ -6555,8 +6555,8 @@ Definition RawNode__WithProgress : val :=
    go: rawnode.go:534:20 *)
 Definition RawNode__ReportUnreachable : val :=
   rec: "RawNode__ReportUnreachable" "rn" "id" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "id" := (alloc "id") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "id" := (mem.alloc "id") in
     let: "$r0" := (let: "$a0" := (let: "$Type" := raftpb.MsgUnreachable in
     let: "$From" := (![#uint64T] "id") in
     struct.make #raftpb.Message [{
@@ -6583,10 +6583,10 @@ Definition RawNode__ReportUnreachable : val :=
    go: rawnode.go:539:20 *)
 Definition RawNode__ReportSnapshot : val :=
   rec: "RawNode__ReportSnapshot" "rn" "id" "status" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "status" := (alloc "status") in
-    let: "id" := (alloc "id") in
-    let: "rej" := (alloc (type.zero_val #boolT)) in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "status" := (mem.alloc "status") in
+    let: "id" := (mem.alloc "id") in
+    let: "rej" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := ((![#SnapshotStatus] "status") = SnapshotFailure) in
     do:  ("rej" <-[#boolT] "$r0");;;
     let: "$r0" := (let: "$a0" := (let: "$Type" := raftpb.MsgSnapStatus in
@@ -6616,8 +6616,8 @@ Definition RawNode__ReportSnapshot : val :=
    go: rawnode.go:546:20 *)
 Definition RawNode__TransferLeader : val :=
   rec: "RawNode__TransferLeader" "rn" "transferee" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "transferee" := (alloc "transferee") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "transferee" := (mem.alloc "transferee") in
     let: "$r0" := (let: "$a0" := (let: "$Type" := raftpb.MsgTransferLeader in
     let: "$From" := (![#uint64T] "transferee") in
     struct.make #raftpb.Message [{
@@ -6645,7 +6645,7 @@ Definition RawNode__TransferLeader : val :=
    go: rawnode.go:552:20 *)
 Definition RawNode__ForgetLeader : val :=
   rec: "RawNode__ForgetLeader" "rn" <> :=
-    exception_do (let: "rn" := (alloc "rn") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
     return: (let: "$a0" := (let: "$Type" := raftpb.MsgForgetLeader in
      struct.make #raftpb.Message [{
        "Type" ::= "$Type";
@@ -6673,8 +6673,8 @@ Definition RawNode__ForgetLeader : val :=
    go: rawnode.go:560:20 *)
 Definition RawNode__ReadIndex : val :=
   rec: "RawNode__ReadIndex" "rn" "rctx" :=
-    exception_do (let: "rn" := (alloc "rn") in
-    let: "rctx" := (alloc "rctx") in
+    exception_do (let: "rn" := (mem.alloc "rn") in
+    let: "rctx" := (mem.alloc "rctx") in
     let: "$r0" := (let: "$a0" := (let: "$Type" := raftpb.MsgReadIndex in
     let: "$Entries" := ((let: "$sl0" := (let: "$Data" := (![#sliceT] "rctx") in
     struct.make #raftpb.Entry [{
@@ -6706,8 +6706,8 @@ Definition RawNode__ReadIndex : val :=
 (* go: read_only.go:45:6 *)
 Definition newReadOnly : val :=
   rec: "newReadOnly" "option" :=
-    exception_do (let: "option" := (alloc "option") in
-    return: (alloc (let: "$option" := (![#ReadOnlyOption] "option") in
+    exception_do (let: "option" := (mem.alloc "option") in
+    return: (mem.alloc (let: "$option" := (![#ReadOnlyOption] "option") in
      let: "$pendingReadIndex" := (map.make #stringT #ptrT) in
      struct.make #readOnly [{
        "option" ::= "$option";
@@ -6723,13 +6723,13 @@ Definition newReadOnly : val :=
    go: read_only.go:56:21 *)
 Definition readOnly__addRequest : val :=
   rec: "readOnly__addRequest" "ro" "index" "m" :=
-    exception_do (let: "ro" := (alloc "ro") in
-    let: "m" := (alloc "m") in
-    let: "index" := (alloc "index") in
-    let: "s" := (alloc (type.zero_val #stringT)) in
+    exception_do (let: "ro" := (mem.alloc "ro") in
+    let: "m" := (mem.alloc "m") in
+    let: "index" := (mem.alloc "index") in
+    let: "s" := (mem.alloc (type.zero_val #stringT)) in
     let: "$r0" := (string.from_bytes (![#sliceT] (struct.field_ref #raftpb.Entry #"Data"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go "m")) #(W64 0))))) in
     do:  ("s" <-[#stringT] "$r0");;;
-    (let: "ok" := (alloc (type.zero_val #boolT)) in
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT ptrT)] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (![#stringT] "s")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -6738,7 +6738,7 @@ Definition readOnly__addRequest : val :=
     (if: ![#boolT] "ok"
     then return: (#())
     else do:  #()));;;
-    let: "$r0" := (alloc (let: "$index" := (![#uint64T] "index") in
+    let: "$r0" := (mem.alloc (let: "$index" := (![#uint64T] "index") in
     let: "$req" := (![#raftpb.Message] "m") in
     let: "$acks" := (map.make #uint64T #boolT) in
     struct.make #readIndexStatus [{
@@ -6760,11 +6760,11 @@ Definition readOnly__addRequest : val :=
    go: read_only.go:68:21 *)
 Definition readOnly__recvAck : val :=
   rec: "readOnly__recvAck" "ro" "id" "context" :=
-    exception_do (let: "ro" := (alloc "ro") in
-    let: "context" := (alloc "context") in
-    let: "id" := (alloc "id") in
-    let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "rs" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "ro" := (mem.alloc "ro") in
+    let: "context" := (mem.alloc "context") in
+    let: "id" := (mem.alloc "id") in
+    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "rs" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT ptrT)] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (string.from_bytes (![#sliceT] "context"))) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -6784,22 +6784,22 @@ Definition readOnly__recvAck : val :=
    go: read_only.go:81:21 *)
 Definition readOnly__advance : val :=
   rec: "readOnly__advance" "ro" "m" :=
-    exception_do (let: "ro" := (alloc "ro") in
-    let: "m" := (alloc "m") in
-    let: "found" := (alloc (type.zero_val #boolT)) in
-    let: "i" := (alloc (type.zero_val #intT)) in
-    let: "ctx" := (alloc (type.zero_val #stringT)) in
+    exception_do (let: "ro" := (mem.alloc "ro") in
+    let: "m" := (mem.alloc "m") in
+    let: "found" := (mem.alloc (type.zero_val #boolT)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "ctx" := (mem.alloc (type.zero_val #stringT)) in
     let: "$r0" := (string.from_bytes (![#sliceT] (struct.field_ref #raftpb.Message #"Context"%go "m"))) in
     do:  ("ctx" <-[#stringT] "$r0");;;
-    let: "rss" := (alloc (type.zero_val #sliceT)) in
+    let: "rss" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$range" := (![#sliceT] (struct.field_ref #readOnly #"readIndexQueue"%go (![#ptrT] "ro"))) in
-    (let: "okctx" := (alloc (type.zero_val #intT)) in
+    (let: "okctx" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("okctx" <-[#stringT] "$value");;;
       do:  "$key";;;
       do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)));;;
-      let: "ok" := (alloc (type.zero_val #boolT)) in
-      let: "rs" := (alloc (type.zero_val #ptrT)) in
+      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+      let: "rs" := (mem.alloc (type.zero_val #ptrT)) in
       let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT ptrT)] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (![#stringT] "okctx")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -6827,7 +6827,7 @@ Definition readOnly__advance : val :=
       slice.slice #stringT "$s" (![#intT] "i") (slice.len "$s")) in
       do:  ((struct.field_ref #readOnly #"readIndexQueue"%go (![#ptrT] "ro")) <-[#sliceT] "$r0");;;
       let: "$range" := (![#sliceT] "rss") in
-      (let: "rs" := (alloc (type.zero_val #intT)) in
+      (let: "rs" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("rs" <-[#ptrT] "$value");;;
         do:  "$key";;;
@@ -6844,7 +6844,7 @@ Definition readOnly__advance : val :=
    go: read_only.go:116:21 *)
 Definition readOnly__lastPendingRequestCtx : val :=
   rec: "readOnly__lastPendingRequestCtx" "ro" <> :=
-    exception_do (let: "ro" := (alloc "ro") in
+    exception_do (let: "ro" := (mem.alloc "ro") in
     (if: (let: "$a0" := (![#sliceT] (struct.field_ref #readOnly #"readIndexQueue"%go (![#ptrT] "ro"))) in
     slice.len "$a0") = #(W64 0)
     then return: (#""%go)
@@ -6860,85 +6860,85 @@ Definition TracingEvent : go_type := structT [
 (* go: state_trace_nop.go:30:6 *)
 Definition traceInitState : val :=
   rec: "traceInitState" "" :=
-    exception_do (let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:32:6 *)
 Definition traceReady : val :=
   rec: "traceReady" "" :=
-    exception_do (let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:34:6 *)
 Definition traceCommit : val :=
   rec: "traceCommit" "" :=
-    exception_do (let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:36:6 *)
 Definition traceReplicate : val :=
   rec: "traceReplicate" "" "" :=
-    exception_do (let: "" := (alloc "") in
-    let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
+    let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:38:6 *)
 Definition traceBecomeFollower : val :=
   rec: "traceBecomeFollower" "" :=
-    exception_do (let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:40:6 *)
 Definition traceBecomeCandidate : val :=
   rec: "traceBecomeCandidate" "" :=
-    exception_do (let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:42:6 *)
 Definition traceBecomeLeader : val :=
   rec: "traceBecomeLeader" "" :=
-    exception_do (let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:44:6 *)
 Definition traceChangeConfEvent : val :=
   rec: "traceChangeConfEvent" "" "" :=
-    exception_do (let: "" := (alloc "") in
-    let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
+    let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:46:6 *)
 Definition traceConfChangeEvent : val :=
   rec: "traceConfChangeEvent" "" "" :=
-    exception_do (let: "" := (alloc "") in
-    let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
+    let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:48:6 *)
 Definition traceSendMessage : val :=
   rec: "traceSendMessage" "" "" :=
-    exception_do (let: "" := (alloc "") in
-    let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
+    let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: state_trace_nop.go:50:6 *)
 Definition traceReceiveMessage : val :=
   rec: "traceReceiveMessage" "" "" :=
-    exception_do (let: "" := (alloc "") in
-    let: "" := (alloc "") in
+    exception_do (let: "" := (mem.alloc "") in
+    let: "" := (mem.alloc "") in
     do:  #()).
 
 (* go: status.go:44:6 *)
 Definition getProgressCopy : val :=
   rec: "getProgressCopy" "r" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "m" := (alloc (type.zero_val #(mapT uint64T tracker.Progress))) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "m" := (mem.alloc (type.zero_val #(mapT uint64T tracker.Progress))) in
     let: "$r0" := (map.make #uint64T #tracker.Progress) in
     do:  ("m" <-[#(mapT uint64T tracker.Progress)] "$r0");;;
     do:  (let: "$a0" := (λ: "id" "pr",
-      exception_do (let: "pr" := (alloc "pr") in
-      let: "id" := (alloc "id") in
-      let: "p" := (alloc (type.zero_val #tracker.Progress)) in
+      exception_do (let: "pr" := (mem.alloc "pr") in
+      let: "id" := (mem.alloc "id") in
+      let: "p" := (mem.alloc (type.zero_val #tracker.Progress)) in
       let: "$r0" := (![#tracker.Progress] (![#ptrT] "pr")) in
       do:  ("p" <-[#tracker.Progress] "$r0");;;
       let: "$r0" := ((method_call #tracker #"Inflights'ptr" #"Clone" (![#ptrT] (struct.field_ref #tracker.Progress #"Inflights"%go (![#ptrT] "pr")))) #()) in
@@ -6954,8 +6954,8 @@ Definition getProgressCopy : val :=
 (* go: status.go:56:6 *)
 Definition getBasicStatus : val :=
   rec: "getBasicStatus" "r" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "s" := (alloc (type.zero_val #BasicStatus)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "s" := (mem.alloc (type.zero_val #BasicStatus)) in
     let: "$r0" := (let: "$ID" := (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r"))) in
     let: "$LeadTransferee" := (![#uint64T] (struct.field_ref #raft #"leadTransferee"%go (![#ptrT] "r"))) in
     struct.make #BasicStatus [{
@@ -6979,8 +6979,8 @@ Definition getBasicStatus : val :=
    go: status.go:68:6 *)
 Definition getStatus : val :=
   rec: "getStatus" "r" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "s" := (alloc (type.zero_val #Status)) in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "s" := (mem.alloc (type.zero_val #Status)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "r") in
     (func_call #v3.raft #"getBasicStatus"%go) "$a0") in
     do:  ((struct.field_ref #Status #"BasicStatus"%go "s") <-[#BasicStatus] "$r0");;;
@@ -7000,8 +7000,8 @@ Definition getStatus : val :=
    go: status.go:80:17 *)
 Definition Status__MarshalJSON : val :=
   rec: "Status__MarshalJSON" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "j" := (alloc (type.zero_val #stringT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "j" := (mem.alloc (type.zero_val #stringT)) in
     let: "$r0" := (let: "$a0" := #"{""id"":""%x"",""term"":%d,""vote"":""%x"",""commit"":%d,""lead"":""%x"",""raftState"":%q,""applied"":%d,""progress"":{"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #BasicStatus #"ID"%go (struct.field_ref #Status #"BasicStatus"%go "s")))) in
     let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raftpb.HardState #"Term"%go (struct.field_ref #BasicStatus #"HardState"%go (struct.field_ref #Status #"BasicStatus"%go "s"))))) in
@@ -7018,12 +7018,12 @@ Definition Status__MarshalJSON : val :=
     then do:  ("j" <-[#stringT] ((![#stringT] "j") + #"},"%go))
     else
       let: "$range" := (![#(mapT uint64T tracker.Progress)] (struct.field_ref #Status #"Progress"%go "s")) in
-      (let: "v" := (alloc (type.zero_val #uint64T)) in
-      let: "k" := (alloc (type.zero_val #uint64T)) in
+      (let: "v" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "k" := (mem.alloc (type.zero_val #uint64T)) in
       map.for_range "$range" (λ: "$key" "value",
         do:  ("v" <-[#tracker.Progress] "$value");;;
         do:  ("k" <-[#uint64T] "$key");;;
-        let: "subj" := (alloc (type.zero_val #stringT)) in
+        let: "subj" := (mem.alloc (type.zero_val #stringT)) in
         let: "$r0" := (let: "$a0" := #"""%x"":{""match"":%d,""next"":%d,""state"":%q},"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "k")) in
         let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #tracker.Progress #"Match"%go "v"))) in
@@ -7046,9 +7046,9 @@ Definition Status__MarshalJSON : val :=
 (* go: status.go:99:17 *)
 Definition Status__String : val :=
   rec: "Status__String" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "b" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := ((method_call #v3.raft #"Status" #"MarshalJSON" (![#Status] "s")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -7085,7 +7085,7 @@ Definition MemoryStorage : go_type := structT [
    go: storage.go:113:6 *)
 Definition NewMemoryStorage : val :=
   rec: "NewMemoryStorage" <> :=
-    exception_do (return: (alloc (let: "$ents" := (slice.make2 #raftpb.Entry #(W64 1)) in
+    exception_do (return: (mem.alloc (let: "$ents" := (slice.make2 #raftpb.Entry #(W64 1)) in
      struct.make #MemoryStorage [{
        "Mutex" ::= type.zero_val #sync.Mutex;
        "hardState" ::= type.zero_val #raftpb.HardState;
@@ -7099,7 +7099,7 @@ Definition NewMemoryStorage : val :=
    go: storage.go:121:26 *)
 Definition MemoryStorage__InitialState : val :=
   rec: "MemoryStorage__InitialState" "ms" <> :=
-    exception_do (let: "ms" := (alloc "ms") in
+    exception_do (let: "ms" := (mem.alloc "ms") in
     do:  ((struct.field_ref #inMemStorageCallStats #"initialState"%go (struct.field_ref #MemoryStorage #"callStats"%go (![#ptrT] "ms"))) <-[#intT] ((![#intT] (struct.field_ref #inMemStorageCallStats #"initialState"%go (struct.field_ref #MemoryStorage #"callStats"%go (![#ptrT] "ms")))) + #(W64 1)));;;
     return: (![#raftpb.HardState] (struct.field_ref #MemoryStorage #"hardState"%go (![#ptrT] "ms")), ![#raftpb.ConfState] (struct.field_ref #raftpb.SnapshotMetadata #"ConfState"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go (struct.field_ref #MemoryStorage #"snapshot"%go (![#ptrT] "ms")))), #interface.nil)).
 
@@ -7108,8 +7108,8 @@ Definition MemoryStorage__InitialState : val :=
    go: storage.go:127:26 *)
 Definition MemoryStorage__SetHardState : val :=
   rec: "MemoryStorage__SetHardState" "ms" "st" :=
-    with_defer: (let: "ms" := (alloc "ms") in
-    let: "st" := (alloc "st") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
+    let: "st" := (mem.alloc "st") in
     do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![#ptrT] "ms")) #());;;
     do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![#ptrT] "ms")) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -7126,10 +7126,10 @@ Definition MemoryStorage__SetHardState : val :=
    go: storage.go:135:26 *)
 Definition MemoryStorage__Entries : val :=
   rec: "MemoryStorage__Entries" "ms" "lo" "hi" "maxSize" :=
-    with_defer: (let: "ms" := (alloc "ms") in
-    let: "maxSize" := (alloc "maxSize") in
-    let: "hi" := (alloc "hi") in
-    let: "lo" := (alloc "lo") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
+    let: "maxSize" := (mem.alloc "maxSize") in
+    let: "hi" := (mem.alloc "hi") in
+    let: "lo" := (mem.alloc "lo") in
     do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![#ptrT] "ms")) #());;;
     do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![#ptrT] "ms")) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -7138,7 +7138,7 @@ Definition MemoryStorage__Entries : val :=
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref #inMemStorageCallStats #"entries"%go (struct.field_ref #MemoryStorage #"callStats"%go (![#ptrT] "ms"))) <-[#intT] ((![#intT] (struct.field_ref #inMemStorageCallStats #"entries"%go (struct.field_ref #MemoryStorage #"callStats"%go (![#ptrT] "ms")))) + #(W64 1)));;;
-    let: "offset" := (alloc (type.zero_val #uint64T)) in
+    let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) #(W64 0)))) in
     do:  ("offset" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "lo") ≤ (![#uint64T] "offset")
@@ -7156,7 +7156,7 @@ Definition MemoryStorage__Entries : val :=
     slice.len "$a0") = #(W64 1)
     then return: (#slice.nil, ![#error] (globals.get #v3.raft #"ErrUnavailable"%go))
     else do:  #());;;
-    let: "ents" := (alloc (type.zero_val #sliceT)) in
+    let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (let: "$s" := (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) in
     slice.slice #raftpb.Entry "$s" ((![#uint64T] "lo") - (![#uint64T] "offset")) ((![#uint64T] "hi") - (![#uint64T] "offset"))) in
     let: "$a1" := (![#uint64T] "maxSize") in
@@ -7172,8 +7172,8 @@ Definition MemoryStorage__Entries : val :=
    go: storage.go:159:26 *)
 Definition MemoryStorage__Term : val :=
   rec: "MemoryStorage__Term" "ms" "i" :=
-    with_defer: (let: "ms" := (alloc "ms") in
-    let: "i" := (alloc "i") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
+    let: "i" := (mem.alloc "i") in
     do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![#ptrT] "ms")) #());;;
     do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![#ptrT] "ms")) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -7182,7 +7182,7 @@ Definition MemoryStorage__Term : val :=
       "$oldf" #()
       )));;;
     do:  ((struct.field_ref #inMemStorageCallStats #"term"%go (struct.field_ref #MemoryStorage #"callStats"%go (![#ptrT] "ms"))) <-[#intT] ((![#intT] (struct.field_ref #inMemStorageCallStats #"term"%go (struct.field_ref #MemoryStorage #"callStats"%go (![#ptrT] "ms")))) + #(W64 1)));;;
-    let: "offset" := (alloc (type.zero_val #uint64T)) in
+    let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) #(W64 0)))) in
     do:  ("offset" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "i") < (![#uint64T] "offset")
@@ -7199,7 +7199,7 @@ Definition MemoryStorage__Term : val :=
    go: storage.go:174:26 *)
 Definition MemoryStorage__LastIndex : val :=
   rec: "MemoryStorage__LastIndex" "ms" <> :=
-    with_defer: (let: "ms" := (alloc "ms") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
     do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![#ptrT] "ms")) #());;;
     do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![#ptrT] "ms")) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -7213,7 +7213,7 @@ Definition MemoryStorage__LastIndex : val :=
 (* go: storage.go:181:26 *)
 Definition MemoryStorage__lastIndex : val :=
   rec: "MemoryStorage__lastIndex" "ms" <> :=
-    exception_do (let: "ms" := (alloc "ms") in
+    exception_do (let: "ms" := (mem.alloc "ms") in
     return: (((![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) #(W64 0)))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) in
      slice.len "$a0"))) - #(W64 1))).
 
@@ -7222,7 +7222,7 @@ Definition MemoryStorage__lastIndex : val :=
    go: storage.go:186:26 *)
 Definition MemoryStorage__FirstIndex : val :=
   rec: "MemoryStorage__FirstIndex" "ms" <> :=
-    with_defer: (let: "ms" := (alloc "ms") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
     do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![#ptrT] "ms")) #());;;
     do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![#ptrT] "ms")) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -7236,7 +7236,7 @@ Definition MemoryStorage__FirstIndex : val :=
 (* go: storage.go:193:26 *)
 Definition MemoryStorage__firstIndex : val :=
   rec: "MemoryStorage__firstIndex" "ms" <> :=
-    exception_do (let: "ms" := (alloc "ms") in
+    exception_do (let: "ms" := (mem.alloc "ms") in
     return: ((![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) #(W64 0)))) + #(W64 1))).
 
 (* Snapshot implements the Storage interface.
@@ -7244,7 +7244,7 @@ Definition MemoryStorage__firstIndex : val :=
    go: storage.go:198:26 *)
 Definition MemoryStorage__Snapshot : val :=
   rec: "MemoryStorage__Snapshot" "ms" <> :=
-    with_defer: (let: "ms" := (alloc "ms") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
     do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![#ptrT] "ms")) #());;;
     do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![#ptrT] "ms")) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -7261,8 +7261,8 @@ Definition MemoryStorage__Snapshot : val :=
    go: storage.go:207:26 *)
 Definition MemoryStorage__ApplySnapshot : val :=
   rec: "MemoryStorage__ApplySnapshot" "ms" "snap" :=
-    with_defer: (let: "ms" := (alloc "ms") in
-    let: "snap" := (alloc "snap") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
+    let: "snap" := (mem.alloc "snap") in
     do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![#ptrT] "ms")) #());;;
     do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![#ptrT] "ms")) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -7270,10 +7270,10 @@ Definition MemoryStorage__ApplySnapshot : val :=
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "msIndex" := (alloc (type.zero_val #uint64T)) in
+    let: "msIndex" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go (struct.field_ref #MemoryStorage #"snapshot"%go (![#ptrT] "ms"))))) in
     do:  ("msIndex" <-[#uint64T] "$r0");;;
-    let: "snapIndex" := (alloc (type.zero_val #uint64T)) in
+    let: "snapIndex" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.SnapshotMetadata #"Index"%go (struct.field_ref #raftpb.Snapshot #"Metadata"%go "snap"))) in
     do:  ("snapIndex" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "msIndex") ≥ (![#uint64T] "snapIndex")
@@ -7301,10 +7301,10 @@ Definition MemoryStorage__ApplySnapshot : val :=
    go: storage.go:227:26 *)
 Definition MemoryStorage__CreateSnapshot : val :=
   rec: "MemoryStorage__CreateSnapshot" "ms" "i" "cs" "data" :=
-    with_defer: (let: "ms" := (alloc "ms") in
-    let: "data" := (alloc "data") in
-    let: "cs" := (alloc "cs") in
-    let: "i" := (alloc "i") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
+    let: "data" := (mem.alloc "data") in
+    let: "cs" := (mem.alloc "cs") in
+    let: "i" := (mem.alloc "i") in
     do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![#ptrT] "ms")) #());;;
     do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![#ptrT] "ms")) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -7319,7 +7319,7 @@ Definition MemoryStorage__CreateSnapshot : val :=
          "Metadata" ::= type.zero_val #raftpb.SnapshotMetadata
        }], ![#error] (globals.get #v3.raft #"ErrSnapOutOfDate"%go))
     else do:  #());;;
-    let: "offset" := (alloc (type.zero_val #uint64T)) in
+    let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) #(W64 0)))) in
     do:  ("offset" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "i") > ((method_call #v3.raft #"MemoryStorage'ptr" #"lastIndex" (![#ptrT] "ms")) #())
@@ -7350,8 +7350,8 @@ Definition MemoryStorage__CreateSnapshot : val :=
    go: storage.go:251:26 *)
 Definition MemoryStorage__Compact : val :=
   rec: "MemoryStorage__Compact" "ms" "compactIndex" :=
-    with_defer: (let: "ms" := (alloc "ms") in
-    let: "compactIndex" := (alloc "compactIndex") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
+    let: "compactIndex" := (mem.alloc "compactIndex") in
     do:  ((method_call #v3.raft #"MemoryStorage'ptr" #"Lock" (![#ptrT] "ms")) #());;;
     do:  (let: "$f" := (method_call #v3.raft #"MemoryStorage'ptr" #"Unlock" (![#ptrT] "ms")) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -7359,7 +7359,7 @@ Definition MemoryStorage__Compact : val :=
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "offset" := (alloc (type.zero_val #uint64T)) in
+    let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) #(W64 0)))) in
     do:  ("offset" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "compactIndex") ≤ (![#uint64T] "offset")
@@ -7373,10 +7373,10 @@ Definition MemoryStorage__Compact : val :=
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (interface.get #"Panicf"%go ((func_call #v3.raft #"getLogger"%go) #())) "$a0" "$a1")
     else do:  #());;;
-    let: "i" := (alloc (type.zero_val #uint64T)) in
+    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((![#uint64T] "compactIndex") - (![#uint64T] "offset")) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    let: "ents" := (alloc (type.zero_val #sliceT)) in
+    let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #raftpb.Entry #(W64 1) ((s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) in
     slice.len "$a0")) - (![#uint64T] "i"))) in
     do:  ("ents" <-[#sliceT] "$r0");;;
@@ -7400,8 +7400,8 @@ Definition MemoryStorage__Compact : val :=
    go: storage.go:277:26 *)
 Definition MemoryStorage__Append : val :=
   rec: "MemoryStorage__Append" "ms" "entries" :=
-    with_defer: (let: "ms" := (alloc "ms") in
-    let: "entries" := (alloc "entries") in
+    with_defer: (let: "ms" := (mem.alloc "ms") in
+    let: "entries" := (mem.alloc "entries") in
     (if: (let: "$a0" := (![#sliceT] "entries") in
     slice.len "$a0") = #(W64 0)
     then return: (#interface.nil)
@@ -7413,10 +7413,10 @@ Definition MemoryStorage__Append : val :=
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "first" := (alloc (type.zero_val #uint64T)) in
+    let: "first" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((method_call #v3.raft #"MemoryStorage'ptr" #"firstIndex" (![#ptrT] "ms")) #()) in
     do:  ("first" <-[#uint64T] "$r0");;;
-    let: "last" := (alloc (type.zero_val #uint64T)) in
+    let: "last" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (((![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] "entries") #(W64 0)))) + (s_to_w64 (let: "$a0" := (![#sliceT] "entries") in
     slice.len "$a0"))) - #(W64 1)) in
     do:  ("last" <-[#uint64T] "$r0");;;
@@ -7429,7 +7429,7 @@ Definition MemoryStorage__Append : val :=
       slice.slice #raftpb.Entry "$s" ((![#uint64T] "first") - (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] "entries") #(W64 0))))) (slice.len "$s")) in
       do:  ("entries" <-[#sliceT] "$r0")
     else do:  #());;;
-    let: "offset" := (alloc (type.zero_val #uint64T)) in
+    let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] "entries") #(W64 0)))) - (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #MemoryStorage #"ents"%go (![#ptrT] "ms"))) #(W64 0))))) in
     do:  ("offset" <-[#uint64T] "$r0");;;
     let: "$sw" := #true in
@@ -7462,7 +7462,7 @@ Definition MemoryStorage__Append : val :=
    go: types.go:34:6 *)
 Definition pbEntryID : val :=
   rec: "pbEntryID" "entry" :=
-    exception_do (let: "entry" := (alloc "entry") in
+    exception_do (let: "entry" := (mem.alloc "entry") in
     return: (let: "$term" := (![#uint64T] (struct.field_ref #raftpb.Entry #"Term"%go (![#ptrT] "entry"))) in
      let: "$index" := (![#uint64T] (struct.field_ref #raftpb.Entry #"Index"%go (![#ptrT] "entry"))) in
      struct.make #entryID [{
@@ -7476,7 +7476,7 @@ Definition pbEntryID : val :=
    go: types.go:78:19 *)
 Definition logSlice__lastIndex : val :=
   rec: "logSlice__lastIndex" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     return: ((![#uint64T] (struct.field_ref #entryID #"index"%go (struct.field_ref #logSlice #"prev"%go "s"))) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #logSlice #"entries"%go "s")) in
      slice.len "$a0")))).
 
@@ -7486,8 +7486,8 @@ Definition logSlice__lastIndex : val :=
    go: types.go:84:19 *)
 Definition logSlice__lastEntryID : val :=
   rec: "logSlice__lastEntryID" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
-    (let: "ln" := (alloc (type.zero_val #intT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    (let: "ln" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #logSlice #"entries"%go "s")) in
     slice.len "$a0") in
     do:  ("ln" <-[#intT] "$r0");;;
@@ -7504,15 +7504,15 @@ Definition logSlice__lastEntryID : val :=
    go: types.go:93:19 *)
 Definition logSlice__valid : val :=
   rec: "logSlice__valid" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "prev" := (alloc (type.zero_val #entryID)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "prev" := (mem.alloc (type.zero_val #entryID)) in
     let: "$r0" := (![#entryID] (struct.field_ref #logSlice #"prev"%go "s")) in
     do:  ("prev" <-[#entryID] "$r0");;;
     let: "$range" := (![#sliceT] (struct.field_ref #logSlice #"entries"%go "s")) in
-    (let: "i" := (alloc (type.zero_val #intT)) in
+    (let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("i" <-[#intT] "$key");;;
-      let: "id" := (alloc (type.zero_val #entryID)) in
+      let: "id" := (mem.alloc (type.zero_val #entryID)) in
       let: "$r0" := (let: "$a0" := (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #logSlice #"entries"%go "s")) (![#intT] "i")) in
       (func_call #v3.raft #"pbEntryID"%go) "$a0") in
       do:  ("id" <-[#entryID] "$r0");;;
@@ -7540,7 +7540,7 @@ Definition logSlice__valid : val :=
 (* go: util.go:25:21 *)
 Definition StateType__MarshalJSON : val :=
   rec: "StateType__MarshalJSON" "st" <> :=
-    exception_do (let: "st" := (alloc "st") in
+    exception_do (let: "st" := (mem.alloc "st") in
     return: (string.to_bytes (let: "$a0" := #"%q"%go in
      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go ((method_call #v3.raft #"StateType" #"String" (![#StateType] "st")) #())) in
      slice.literal #interfaceT ["$sl0"])) in
@@ -7549,9 +7549,9 @@ Definition StateType__MarshalJSON : val :=
 (* go: util.go:52:6 *)
 Definition isMsgInArray : val :=
   rec: "isMsgInArray" "msgt" "arr" :=
-    exception_do (let: "arr" := (alloc "arr") in
-    let: "msgt" := (alloc "msgt") in
-    let: "i" := (alloc (type.zero_val #intT)) in
+    exception_do (let: "arr" := (mem.alloc "arr") in
+    let: "msgt" := (mem.alloc "msgt") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := (s_to_w64 (![#raftpb.MessageType] "msgt")) in
     do:  ("i" <-[#intT] "$r0");;;
     return: ((int_lt (![#intT] "i") (let: "$a0" := (![#sliceT] "arr") in
@@ -7560,7 +7560,7 @@ Definition isMsgInArray : val :=
 (* go: util.go:57:6 *)
 Definition IsLocalMsg : val :=
   rec: "IsLocalMsg" "msgt" :=
-    exception_do (let: "msgt" := (alloc "msgt") in
+    exception_do (let: "msgt" := (mem.alloc "msgt") in
     return: (let: "$a0" := (![#raftpb.MessageType] "msgt") in
      let: "$a1" := (let: "$a" := (globals.get #v3.raft #"isLocalMsg"%go) in
      array.slice #boolT "$a" #(W64 0) (array.len #boolT)) in
@@ -7569,7 +7569,7 @@ Definition IsLocalMsg : val :=
 (* go: util.go:61:6 *)
 Definition IsResponseMsg : val :=
   rec: "IsResponseMsg" "msgt" :=
-    exception_do (let: "msgt" := (alloc "msgt") in
+    exception_do (let: "msgt" := (mem.alloc "msgt") in
     return: (let: "$a0" := (![#raftpb.MessageType] "msgt") in
      let: "$a1" := (let: "$a" := (globals.get #v3.raft #"isResponseMsg"%go) in
      array.slice #boolT "$a" #(W64 0) (array.len #boolT)) in
@@ -7578,7 +7578,7 @@ Definition IsResponseMsg : val :=
 (* go: util.go:65:6 *)
 Definition IsLocalMsgTarget : val :=
   rec: "IsLocalMsgTarget" "id" :=
-    exception_do (let: "id" := (alloc "id") in
+    exception_do (let: "id" := (mem.alloc "id") in
     return: (((![#uint64T] "id") = LocalAppendThread) || ((![#uint64T] "id") = LocalApplyThread))).
 
 (* voteResponseType maps vote and prevote message types to their corresponding responses.
@@ -7586,7 +7586,7 @@ Definition IsLocalMsgTarget : val :=
    go: util.go:70:6 *)
 Definition voteRespMsgType : val :=
   rec: "voteRespMsgType" "msgt" :=
-    exception_do (let: "msgt" := (alloc "msgt") in
+    exception_do (let: "msgt" := (mem.alloc "msgt") in
     let: "$sw" := (![#raftpb.MessageType] "msgt") in
     (if: "$sw" = raftpb.MsgVote
     then return: (raftpb.MsgVoteResp)
@@ -7603,8 +7603,8 @@ Definition voteRespMsgType : val :=
 (* go: util.go:81:6 *)
 Definition DescribeHardState : val :=
   rec: "DescribeHardState" "hs" :=
-    exception_do (let: "hs" := (alloc "hs") in
-    let: "buf" := (alloc (type.zero_val #strings.Builder)) in
+    exception_do (let: "hs" := (mem.alloc "hs") in
+    let: "buf" := (mem.alloc (type.zero_val #strings.Builder)) in
     do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
     let: "$a1" := #"Term:%d"%go in
     let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raftpb.HardState #"Term"%go "hs"))) in
@@ -7628,7 +7628,7 @@ Definition DescribeHardState : val :=
 (* go: util.go:91:6 *)
 Definition DescribeSoftState : val :=
   rec: "DescribeSoftState" "ss" :=
-    exception_do (let: "ss" := (alloc "ss") in
+    exception_do (let: "ss" := (mem.alloc "ss") in
     return: (let: "$a0" := #"Lead:%d State:%s"%go in
      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #SoftState #"Lead"%go "ss"))) in
      let: "$sl1" := (interface.make #v3.raft #"StateType" (![#StateType] (struct.field_ref #SoftState #"RaftState"%go "ss"))) in
@@ -7638,7 +7638,7 @@ Definition DescribeSoftState : val :=
 (* go: util.go:95:6 *)
 Definition DescribeConfState : val :=
   rec: "DescribeConfState" "state" :=
-    exception_do (let: "state" := (alloc "state") in
+    exception_do (let: "state" := (mem.alloc "state") in
     return: (let: "$a0" := #"Voters:%v VotersOutgoing:%v Learners:%v LearnersNext:%v AutoLeave:%v"%go in
      let: "$a1" := ((let: "$sl0" := (interface.make #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"Voters"%go "state"))) in
      let: "$sl1" := (interface.make #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"VotersOutgoing"%go "state"))) in
@@ -7651,8 +7651,8 @@ Definition DescribeConfState : val :=
 (* go: util.go:102:6 *)
 Definition DescribeSnapshot : val :=
   rec: "DescribeSnapshot" "snap" :=
-    exception_do (let: "snap" := (alloc "snap") in
-    let: "m" := (alloc (type.zero_val #raftpb.SnapshotMetadata)) in
+    exception_do (let: "snap" := (mem.alloc "snap") in
+    let: "m" := (mem.alloc (type.zero_val #raftpb.SnapshotMetadata)) in
     let: "$r0" := (![#raftpb.SnapshotMetadata] (struct.field_ref #raftpb.Snapshot #"Metadata"%go "snap")) in
     do:  ("m" <-[#raftpb.SnapshotMetadata] "$r0");;;
     return: (let: "$a0" := #"Index:%d Term:%d ConfState:%s"%go in
@@ -7668,9 +7668,9 @@ Definition EntryFormatter : go_type := funcT.
 (* go: util.go:107:6 *)
 Definition DescribeReady : val :=
   rec: "DescribeReady" "rd" "f" :=
-    exception_do (let: "f" := (alloc "f") in
-    let: "rd" := (alloc "rd") in
-    let: "buf" := (alloc (type.zero_val #strings.Builder)) in
+    exception_do (let: "f" := (mem.alloc "f") in
+    let: "rd" := (mem.alloc "rd") in
+    let: "buf" := (mem.alloc (type.zero_val #strings.Builder)) in
     (if: (![#ptrT] (struct.field_ref #Ready #"SoftState"%go "rd")) ≠ #null
     then
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
@@ -7747,7 +7747,7 @@ Definition DescribeReady : val :=
       "%go in
       (method_call #strings #"Builder'ptr" #"WriteString" "buf") "$a0");;;
       let: "$range" := (![#sliceT] (struct.field_ref #Ready #"Messages"%go "rd")) in
-      (let: "msg" := (alloc (type.zero_val #intT)) in
+      (let: "msg" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #raftpb.Message "$range" (λ: "$key" "$value",
         do:  ("msg" <-[#raftpb.Message] "$value");;;
         do:  "$key";;;
@@ -7777,8 +7777,8 @@ Definition DescribeReady : val :=
    go: util.go:150:6 *)
 Definition DescribeMessage : val :=
   rec: "DescribeMessage" "m" "f" :=
-    exception_do (let: "f" := (alloc "f") in
-    let: "m" := (alloc "m") in
+    exception_do (let: "f" := (mem.alloc "f") in
+    let: "m" := (mem.alloc "m") in
     return: (let: "$a0" := #""%go in
      let: "$a1" := (![#raftpb.Message] "m") in
      let: "$a2" := (![#EntryFormatter] "f") in
@@ -7787,10 +7787,10 @@ Definition DescribeMessage : val :=
 (* go: util.go:154:6 *)
 Definition describeMessageWithIndent : val :=
   rec: "describeMessageWithIndent" "indent" "m" "f" :=
-    exception_do (let: "f" := (alloc "f") in
-    let: "m" := (alloc "m") in
-    let: "indent" := (alloc "indent") in
-    let: "buf" := (alloc (type.zero_val #bytes.Buffer)) in
+    exception_do (let: "f" := (mem.alloc "f") in
+    let: "m" := (mem.alloc "m") in
+    let: "indent" := (mem.alloc "indent") in
+    let: "buf" := (mem.alloc (type.zero_val #bytes.Buffer)) in
     do:  (let: "$a0" := (interface.make #bytes #"Buffer'ptr" "buf") in
     let: "$a1" := #"%s%s->%s %v Term:%d Log:%d/%d"%go in
     let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![#stringT] "indent")) in
@@ -7828,7 +7828,7 @@ Definition describeMessageWithIndent : val :=
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
-    (let: "ln" := (alloc (type.zero_val #intT)) in
+    (let: "ln" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go "m")) in
     slice.len "$a0") in
     do:  ("ln" <-[#intT] "$r0");;;
@@ -7849,7 +7849,7 @@ Definition describeMessageWithIndent : val :=
         slice.literal #interfaceT ["$sl0"])) in
         (func_call #fmt #"Fprint"%go) "$a0" "$a1");;;
         let: "$range" := (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go "m")) in
-        (let: "e" := (alloc (type.zero_val #intT)) in
+        (let: "e" := (mem.alloc (type.zero_val #intT)) in
         slice.for_range #raftpb.Entry "$range" (λ: "$key" "$value",
           do:  ("e" <-[#raftpb.Entry] "$value");;;
           do:  "$key";;;
@@ -7870,7 +7870,7 @@ Definition describeMessageWithIndent : val :=
         slice.literal #interfaceT ["$sl0"])) in
         (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
       else do:  #())));;;
-    (let: "s" := (alloc (type.zero_val #ptrT)) in
+    (let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #raftpb.Message #"Snapshot"%go "m")) in
     do:  ("s" <-[#ptrT] "$r0");;;
     (if: ((![#ptrT] "s") ≠ #null) && (~ (let: "$a0" := (![#raftpb.Snapshot] (![#ptrT] "s")) in
@@ -7893,7 +7893,7 @@ Definition describeMessageWithIndent : val :=
       let: "$a2" := #slice.nil in
       (func_call #fmt #"Fprintf"%go) "$a0" "$a1" "$a2");;;
       let: "$range" := (![#sliceT] (struct.field_ref #raftpb.Message #"Responses"%go "m")) in
-      (let: "m" := (alloc (type.zero_val #intT)) in
+      (let: "m" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #raftpb.Message "$range" (λ: "$key" "$value",
         do:  ("m" <-[#raftpb.Message] "$value");;;
         do:  "$key";;;
@@ -7917,7 +7917,7 @@ Definition describeMessageWithIndent : val :=
 (* go: util.go:191:6 *)
 Definition describeTarget : val :=
   rec: "describeTarget" "id" :=
-    exception_do (let: "id" := (alloc "id") in
+    exception_do (let: "id" := (mem.alloc "id") in
     let: "$sw" := (![#uint64T] "id") in
     (if: "$sw" = None
     then return: (#"None"%go)
@@ -7939,12 +7939,12 @@ Definition describeTarget : val :=
    go: util.go:206:6 *)
 Definition DescribeEntry : val :=
   rec: "DescribeEntry" "e" "f" :=
-    exception_do (let: "f" := (alloc "f") in
-    let: "e" := (alloc "e") in
+    exception_do (let: "f" := (mem.alloc "f") in
+    let: "e" := (mem.alloc "e") in
     (if: (![#EntryFormatter] "f") = #func.nil
     then
       let: "$r0" := (λ: "data",
-        exception_do (let: "data" := (alloc "data") in
+        exception_do (let: "data" := (mem.alloc "data") in
         return: (let: "$a0" := #"%q"%go in
          let: "$a1" := ((let: "$sl0" := (interface.make #"slice'"%go (![#sliceT] "data")) in
          slice.literal #interfaceT ["$sl0"])) in
@@ -7952,14 +7952,14 @@ Definition DescribeEntry : val :=
         ) in
       do:  ("f" <-[#EntryFormatter] "$r0")
     else do:  #());;;
-    let: "formatConfChange" := (alloc (type.zero_val #funcT)) in
+    let: "formatConfChange" := (mem.alloc (type.zero_val #funcT)) in
     let: "$r0" := (λ: "cc",
-      exception_do (let: "cc" := (alloc "cc") in
+      exception_do (let: "cc" := (mem.alloc "cc") in
       return: (let: "$a0" := (struct.field_get #raftpb.ConfChangeV2 "Changes" ((interface.get #"AsV2"%go (![#raftpb.ConfChangeI] "cc")) #())) in
        (func_call #raftpb #"ConfChangesToString"%go) "$a0"))
       ) in
     do:  ("formatConfChange" <-[#funcT] "$r0");;;
-    let: "formatted" := (alloc (type.zero_val #stringT)) in
+    let: "formatted" := (mem.alloc (type.zero_val #stringT)) in
     let: "$sw" := (![#raftpb.EntryType] (struct.field_ref #raftpb.Entry #"Type"%go "e")) in
     (if: "$sw" = raftpb.EntryNormal
     then
@@ -7969,8 +7969,8 @@ Definition DescribeEntry : val :=
     else
       (if: "$sw" = raftpb.EntryConfChange
       then
-        let: "cc" := (alloc (type.zero_val #raftpb.ConfChange)) in
-        (let: "err" := (alloc (type.zero_val #error)) in
+        let: "cc" := (mem.alloc (type.zero_val #raftpb.ConfChange)) in
+        (let: "err" := (mem.alloc (type.zero_val #error)) in
         let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.Entry #"Data"%go "e")) in
         (method_call #raftpb #"ConfChange'ptr" #"Unmarshal" "cc") "$a0") in
         do:  ("err" <-[#error] "$r0");;;
@@ -7985,8 +7985,8 @@ Definition DescribeEntry : val :=
       else
         (if: "$sw" = raftpb.EntryConfChangeV2
         then
-          let: "cc" := (alloc (type.zero_val #raftpb.ConfChangeV2)) in
-          (let: "err" := (alloc (type.zero_val #error)) in
+          let: "cc" := (mem.alloc (type.zero_val #raftpb.ConfChangeV2)) in
+          (let: "err" := (mem.alloc (type.zero_val #error)) in
           let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.Entry #"Data"%go "e")) in
           (method_call #raftpb #"ConfChangeV2'ptr" #"Unmarshal" "cc") "$a0") in
           do:  ("err" <-[#error] "$r0");;;
@@ -8018,11 +8018,11 @@ Definition DescribeEntry : val :=
    go: util.go:244:6 *)
 Definition DescribeEntries : val :=
   rec: "DescribeEntries" "ents" "f" :=
-    exception_do (let: "f" := (alloc "f") in
-    let: "ents" := (alloc "ents") in
-    let: "buf" := (alloc (type.zero_val #bytes.Buffer)) in
+    exception_do (let: "f" := (mem.alloc "f") in
+    let: "ents" := (mem.alloc "ents") in
+    let: "buf" := (mem.alloc (type.zero_val #bytes.Buffer)) in
     let: "$range" := (![#sliceT] "ents") in
-    (let: "e" := (alloc (type.zero_val #intT)) in
+    (let: "e" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("e" <-[#raftpb.Entry] "$value");;;
       do:  "$key";;;
@@ -8040,10 +8040,10 @@ Definition DescribeEntries : val :=
 (* go: util.go:256:6 *)
 Definition entsSize : val :=
   rec: "entsSize" "ents" :=
-    exception_do (let: "ents" := (alloc "ents") in
-    let: "size" := (alloc (type.zero_val #entryEncodingSize)) in
+    exception_do (let: "ents" := (mem.alloc "ents") in
+    let: "size" := (mem.alloc (type.zero_val #entryEncodingSize)) in
     let: "$range" := (![#sliceT] "ents") in
-    (let: "ent" := (alloc (type.zero_val #intT)) in
+    (let: "ent" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("ent" <-[#raftpb.Entry] "$value");;;
       do:  "$key";;;
@@ -8058,16 +8058,16 @@ Definition entsSize : val :=
    go: util.go:268:6 *)
 Definition limitSize : val :=
   rec: "limitSize" "ents" "maxSize" :=
-    exception_do (let: "maxSize" := (alloc "maxSize") in
-    let: "ents" := (alloc "ents") in
+    exception_do (let: "maxSize" := (mem.alloc "maxSize") in
+    let: "ents" := (mem.alloc "ents") in
     (if: (let: "$a0" := (![#sliceT] "ents") in
     slice.len "$a0") = #(W64 0)
     then return: (![#sliceT] "ents")
     else do:  #());;;
-    let: "size" := (alloc (type.zero_val #intT)) in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := ((method_call #raftpb #"Entry'ptr" #"Size" (slice.elem_ref #raftpb.Entry (![#sliceT] "ents") #(W64 0))) #()) in
     do:  ("size" <-[#intT] "$r0");;;
-    (let: "limit" := (alloc (type.zero_val #intT)) in
+    (let: "limit" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 1) in
     do:  ("limit" <-[#intT] "$r0");;;
     (for: (λ: <>, int_lt (![#intT] "limit") (let: "$a0" := (![#sliceT] "ents") in
@@ -8085,7 +8085,7 @@ Definition limitSize : val :=
    go: util.go:289:6 *)
 Definition payloadSize : val :=
   rec: "payloadSize" "e" :=
-    exception_do (let: "e" := (alloc "e") in
+    exception_do (let: "e" := (mem.alloc "e") in
     return: (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #raftpb.Entry #"Data"%go "e")) in
      slice.len "$a0"))).
 
@@ -8094,10 +8094,10 @@ Definition payloadSize : val :=
    go: util.go:294:6 *)
 Definition payloadsSize : val :=
   rec: "payloadsSize" "ents" :=
-    exception_do (let: "ents" := (alloc "ents") in
-    let: "s" := (alloc (type.zero_val #entryPayloadSize)) in
+    exception_do (let: "ents" := (mem.alloc "ents") in
+    let: "s" := (mem.alloc (type.zero_val #entryPayloadSize)) in
     let: "$range" := (![#sliceT] "ents") in
-    (let: "e" := (alloc (type.zero_val #intT)) in
+    (let: "e" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #raftpb.Entry "$range" (λ: "$key" "$value",
       do:  ("e" <-[#raftpb.Entry] "$value");;;
       do:  "$key";;;
@@ -8108,10 +8108,10 @@ Definition payloadsSize : val :=
 (* go: util.go:302:6 *)
 Definition assertConfStatesEquivalent : val :=
   rec: "assertConfStatesEquivalent" "l" "cs1" "cs2" :=
-    exception_do (let: "cs2" := (alloc "cs2") in
-    let: "cs1" := (alloc "cs1") in
-    let: "l" := (alloc "l") in
-    let: "err" := (alloc (type.zero_val #error)) in
+    exception_do (let: "cs2" := (mem.alloc "cs2") in
+    let: "cs1" := (mem.alloc "cs1") in
+    let: "l" := (mem.alloc "l") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := (let: "$a0" := (![#raftpb.ConfState] "cs2") in
     (method_call #raftpb #"ConfState" #"Equivalent" (![#raftpb.ConfState] "cs1")) "$a0") in
     do:  ("err" <-[#error] "$r0");;;
@@ -8132,9 +8132,9 @@ Definition assertConfStatesEquivalent : val :=
    go: util.go:316:6 *)
 Definition extend : val :=
   rec: "extend" "dst" "vals" :=
-    exception_do (let: "vals" := (alloc "vals") in
-    let: "dst" := (alloc "dst") in
-    let: "need" := (alloc (type.zero_val #intT)) in
+    exception_do (let: "vals" := (mem.alloc "vals") in
+    let: "dst" := (mem.alloc "dst") in
+    let: "need" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := ((let: "$a0" := (![#sliceT] "dst") in
     slice.len "$a0") + (let: "$a0" := (![#sliceT] "vals") in
     slice.len "$a0")) in
@@ -8146,7 +8146,7 @@ Definition extend : val :=
        let: "$a1" := (![#sliceT] "vals") in
        (slice.append #raftpb.Entry) "$a0" "$a1")
     else do:  #());;;
-    let: "buf" := (alloc (type.zero_val #sliceT)) in
+    let: "buf" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #raftpb.Entry (![#intT] "need") (![#intT] "need")) in
     do:  ("buf" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "buf") in
@@ -8355,7 +8355,7 @@ Definition initialize' : val :=
       do:  fmt.initialize';;;
       do:  raftpb.initialize';;;
       do:  errors.initialize';;;
-      let: "$r0" := (alloc (let: "$Logger" := (let: "$a0" := (interface.make #os #"File'ptr" (![#ptrT] (globals.get #os #"Stderr"%go))) in
+      let: "$r0" := (mem.alloc (let: "$Logger" := (let: "$a0" := (interface.make #os #"File'ptr" (![#ptrT] (globals.get #os #"Stderr"%go))) in
       let: "$a1" := #"raft"%go in
       let: "$a2" := #(W64 log.LstdFlags) in
       (func_call #log #"New"%go) "$a0" "$a1" "$a2") in
@@ -8364,7 +8364,7 @@ Definition initialize' : val :=
         "debug" ::= type.zero_val #boolT
       }])) in
       do:  ((globals.get #v3.raft #"defaultLogger"%go) <-[#ptrT] "$r0");;;
-      let: "$r0" := (alloc (let: "$Logger" := (let: "$a0" := (![#io.Writer] (globals.get #io #"Discard"%go)) in
+      let: "$r0" := (mem.alloc (let: "$Logger" := (let: "$a0" := (![#io.Writer] (globals.get #io #"Discard"%go)) in
       let: "$a1" := #""%go in
       let: "$a2" := #(W64 0) in
       (func_call #log #"New"%go) "$a0" "$a1" "$a2") in
@@ -8387,7 +8387,7 @@ Definition initialize' : val :=
       let: "$r0" := (let: "$a0" := #"raft proposal dropped"%go in
       (func_call #errors #"New"%go) "$a0") in
       do:  ((globals.get #v3.raft #"ErrProposalDropped"%go) <-[#error] "$r0");;;
-      let: "$r0" := (alloc (struct.make #lockedRand [{
+      let: "$r0" := (mem.alloc (struct.make #lockedRand [{
         "mu" ::= type.zero_val #sync.Mutex
       }])) in
       do:  ((globals.get #v3.raft #"globalRand"%go) <-[#ptrT] "$r0");;;

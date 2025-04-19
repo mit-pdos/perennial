@@ -16,8 +16,8 @@ Definition LockClerk : go_type := structT [
 (* go: lock_clerk.go:11:22 *)
 Definition LockClerk__Lock : val :=
   rec: "LockClerk__Lock" "ck" "key" :=
-    exception_do (let: "ck" := (alloc "ck") in
-    let: "key" := (alloc "key") in
+    exception_do (let: "ck" := (mem.alloc "ck") in
+    let: "key" := (mem.alloc "key") in
     (for: (λ: <>, (let: "$a0" := (![#stringT] "key") in
     let: "$a1" := #""%go in
     let: "$a2" := #"1"%go in
@@ -27,8 +27,8 @@ Definition LockClerk__Lock : val :=
 (* go: lock_clerk.go:16:22 *)
 Definition LockClerk__Unlock : val :=
   rec: "LockClerk__Unlock" "ck" "key" :=
-    exception_do (let: "ck" := (alloc "ck") in
-    let: "key" := (alloc "key") in
+    exception_do (let: "ck" := (mem.alloc "ck") in
+    let: "key" := (mem.alloc "key") in
     do:  (let: "$a0" := (![#stringT] "key") in
     let: "$a1" := #""%go in
     (interface.get #"Put"%go (![#kv.KvCput] (struct.field_ref #LockClerk #"kv"%go (![#ptrT] "ck")))) "$a0" "$a1")).
@@ -36,8 +36,8 @@ Definition LockClerk__Unlock : val :=
 (* go: lock_clerk.go:20:6 *)
 Definition MakeLockClerk : val :=
   rec: "MakeLockClerk" "kv" :=
-    exception_do (let: "kv" := (alloc "kv") in
-    return: (alloc (let: "$kv" := (![#kv.KvCput] "kv") in
+    exception_do (let: "kv" := (mem.alloc "kv") in
+    return: (mem.alloc (let: "$kv" := (![#kv.KvCput] "kv") in
      struct.make #LockClerk [{
        "kv" ::= "$kv"
      }]))).

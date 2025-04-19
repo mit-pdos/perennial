@@ -11,8 +11,8 @@ Context `{ffi_syntax}.
 (* go: examples.go:3:6 *)
 Definition partiallyApplyMe : val :=
   rec: "partiallyApplyMe" "x" "y" :=
-    exception_do (let: "y" := (alloc "y") in
-    let: "x" := (alloc "x") in
+    exception_do (let: "y" := (mem.alloc "y") in
+    let: "x" := (mem.alloc "x") in
     (if: (let: "$a0" := (![#stringT] "x") in
     StringLength "$a0") ≠ (![#intT] "y")
     then
@@ -25,15 +25,15 @@ Definition Foo : go_type := stringT.
 (* go: examples.go:11:14 *)
 Definition Foo__someMethod : val :=
   rec: "Foo__someMethod" "f" <> :=
-    exception_do (let: "f" := (alloc "f") in
+    exception_do (let: "f" := (mem.alloc "f") in
     do:  #()).
 
 (* go: examples.go:14:14 *)
 Definition Foo__someMethodWithArgs : val :=
   rec: "Foo__someMethodWithArgs" "f" "y" "z" :=
-    exception_do (let: "f" := (alloc "f") in
-    let: "z" := (alloc "z") in
-    let: "y" := (alloc "y") in
+    exception_do (let: "f" := (mem.alloc "f") in
+    let: "z" := (mem.alloc "z") in
+    let: "y" := (mem.alloc "y") in
     do:  (let: "$a0" := ((![#Foo] "f") + (![#stringT] "y")) in
     let: "$a1" := (![#intT] "z") in
     (func_call #partialapp.main #"partiallyApplyMe"%go) "$a0" "$a1")).
@@ -41,7 +41,7 @@ Definition Foo__someMethodWithArgs : val :=
 (* go: examples.go:18:6 *)
 Definition main : val :=
   rec: "main" <> :=
-    with_defer: (let: "x" := (alloc (type.zero_val #funcT)) in
+    with_defer: (let: "x" := (mem.alloc (type.zero_val #funcT)) in
     let: "$r0" := (func_call #partialapp.main #"partiallyApplyMe"%go) in
     do:  ("x" <-[#funcT] "$r0");;;
     do:  (let: "$a0" := #"blah"%go in
@@ -63,7 +63,7 @@ Definition main : val :=
       "$f" "$a0" "$a1";;
       "$oldf" #()
       )));;;
-    let: "f" := (alloc (type.zero_val #Foo)) in
+    let: "f" := (mem.alloc (type.zero_val #Foo)) in
     let: "$r0" := #"a"%go in
     do:  ("f" <-[#Foo] "$r0");;;
     do:  ((method_call #partialapp.main #"Foo" #"someMethod" (![#Foo] "f")) #());;;

@@ -29,9 +29,9 @@ Definition singleClerk : go_type := structT [
 (* go: internalclerk.go:19:6 *)
 Definition MakeSingleClerk : val :=
   rec: "MakeSingleClerk" "addr" :=
-    exception_do (let: "addr" := (alloc "addr") in
-    let: "ck" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (let: "$cl" := (let: "$a0" := (![#uint64T] "addr") in
+    exception_do (let: "addr" := (mem.alloc "addr") in
+    let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$cl" := (let: "$a0" := (![#uint64T] "addr") in
     (func_call #reconnectclient #"MakeReconnectingClient"%go) "$a0") in
     struct.make #singleClerk [{
       "cl" ::= "$cl"
@@ -53,16 +53,16 @@ Definition ETimeout : expr := #(W64 3).
 (* go: internalclerk.go:28:23 *)
 Definition singleClerk__enterNewEpoch : val :=
   rec: "singleClerk__enterNewEpoch" "s" "args" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "args" := (alloc "args") in
-    let: "raw_args" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "args" := (mem.alloc "args") in
+    let: "raw_args" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "args") in
     (func_call #paxos.paxos #"encodeEnterNewEpochArgs"%go) "$a0") in
     do:  ("raw_args" <-[#sliceT] "$r0");;;
-    let: "raw_reply" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #sliceT)) in
+    let: "raw_reply" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
     do:  ("raw_reply" <-[#ptrT] "$r0");;;
-    let: "err" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := RPC_ENTER_NEW_EPOCH in
     let: "$a1" := (![#sliceT] "raw_args") in
     let: "$a2" := (![#ptrT] "raw_reply") in
@@ -74,7 +74,7 @@ Definition singleClerk__enterNewEpoch : val :=
       return: (let: "$a0" := (![#sliceT] (![#ptrT] "raw_reply")) in
        (func_call #paxos.paxos #"decodeEnterNewEpochReply"%go) "$a0")
     else
-      return: (alloc (let: "$err" := ETimeout in
+      return: (mem.alloc (let: "$err" := ETimeout in
        struct.make #enterNewEpochReply [{
          "err" ::= "$err";
          "acceptedEpoch" ::= type.zero_val #uint64T;
@@ -89,16 +89,16 @@ Definition applyAsFollowerReply : go_type := structT [
 (* go: internalclerk.go:40:23 *)
 Definition singleClerk__applyAsFollower : val :=
   rec: "singleClerk__applyAsFollower" "s" "args" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "args" := (alloc "args") in
-    let: "raw_args" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "args" := (mem.alloc "args") in
+    let: "raw_args" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "args") in
     (func_call #paxos.paxos #"encodeApplyAsFollowerArgs"%go) "$a0") in
     do:  ("raw_args" <-[#sliceT] "$r0");;;
-    let: "raw_reply" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #sliceT)) in
+    let: "raw_reply" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
     do:  ("raw_reply" <-[#ptrT] "$r0");;;
-    let: "err" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := RPC_APPLY_AS_FOLLOWER in
     let: "$a1" := (![#sliceT] "raw_args") in
     let: "$a2" := (![#ptrT] "raw_reply") in
@@ -110,7 +110,7 @@ Definition singleClerk__applyAsFollower : val :=
       return: (let: "$a0" := (![#sliceT] (![#ptrT] "raw_reply")) in
        (func_call #paxos.paxos #"decodeApplyAsFollowerReply"%go) "$a0")
     else
-      return: (alloc (let: "$err" := ETimeout in
+      return: (mem.alloc (let: "$err" := ETimeout in
        struct.make #applyAsFollowerReply [{
          "err" ::= "$err"
        }])))).
@@ -118,9 +118,9 @@ Definition singleClerk__applyAsFollower : val :=
 (* go: internalclerk.go:51:23 *)
 Definition singleClerk__TryBecomeLeader : val :=
   rec: "singleClerk__TryBecomeLeader" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "reply" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
     do:  ("reply" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := RPC_BECOME_LEADER in
     let: "$a1" := (slice.make2 #byteT #(W64 0)) in
@@ -145,8 +145,8 @@ Definition applyAsFollowerArgs : go_type := structT [
 (* go: marshal.go:21:6 *)
 Definition encodeApplyAsFollowerArgs : val :=
   rec: "encodeApplyAsFollowerArgs" "o" :=
-    exception_do (let: "o" := (alloc "o") in
-    let: "enc" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "o" := (mem.alloc "o") in
+    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![#sliceT] (struct.field_ref #applyAsFollowerArgs #"state"%go (![#ptrT] "o"))) in
     slice.len "$a0"))) in
     do:  ("enc" <-[#sliceT] "$r0");;;
@@ -167,9 +167,9 @@ Definition encodeApplyAsFollowerArgs : val :=
 (* go: marshal.go:29:6 *)
 Definition decodeApplyAsFollowerArgs : val :=
   rec: "decodeApplyAsFollowerArgs" "enc" :=
-    exception_do (let: "enc" := (alloc "enc") in
-    let: "o" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #applyAsFollowerArgs)) in
+    exception_do (let: "enc" := (mem.alloc "enc") in
+    let: "o" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #applyAsFollowerArgs)) in
     do:  ("o" <-[#ptrT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
     (func_call #marshal #"ReadInt"%go) "$a0") in
@@ -190,13 +190,13 @@ Definition decodeApplyAsFollowerArgs : val :=
 (* go: marshal.go:41:6 *)
 Definition decodeApplyAsFollowerReply : val :=
   rec: "decodeApplyAsFollowerReply" "s" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "o" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (struct.make #applyAsFollowerReply [{
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "o" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (struct.make #applyAsFollowerReply [{
       "err" ::= type.zero_val #Error
     }])) in
     do:  ("o" <-[#ptrT] "$r0");;;
-    let: "err" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
     (func_call #marshal #"ReadInt"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -210,8 +210,8 @@ Definition decodeApplyAsFollowerReply : val :=
 (* go: marshal.go:48:6 *)
 Definition encodeApplyAsFollowerReply : val :=
   rec: "encodeApplyAsFollowerReply" "o" :=
-    exception_do (let: "o" := (alloc "o") in
-    let: "enc" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "o" := (mem.alloc "o") in
+    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 8)) in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
@@ -227,8 +227,8 @@ Definition enterNewEpochArgs : go_type := structT [
 (* go: marshal.go:58:6 *)
 Definition encodeEnterNewEpochArgs : val :=
   rec: "encodeEnterNewEpochArgs" "o" :=
-    exception_do (let: "o" := (alloc "o") in
-    let: "enc" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "o" := (mem.alloc "o") in
+    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 8)) in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
@@ -240,9 +240,9 @@ Definition encodeEnterNewEpochArgs : val :=
 (* go: marshal.go:64:6 *)
 Definition decodeEnterNewEpochArgs : val :=
   rec: "decodeEnterNewEpochArgs" "s" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "o" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #enterNewEpochArgs)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "o" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #enterNewEpochArgs)) in
     do:  ("o" <-[#ptrT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
     (func_call #marshal #"ReadInt"%go) "$a0") in
@@ -255,16 +255,16 @@ Definition decodeEnterNewEpochArgs : val :=
 (* go: marshal.go:77:6 *)
 Definition decodeEnterNewEpochReply : val :=
   rec: "decodeEnterNewEpochReply" "enc" :=
-    exception_do (let: "enc" := (alloc "enc") in
-    let: "o" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (struct.make #enterNewEpochReply [{
+    exception_do (let: "enc" := (mem.alloc "enc") in
+    let: "o" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (struct.make #enterNewEpochReply [{
       "err" ::= type.zero_val #Error;
       "acceptedEpoch" ::= type.zero_val #uint64T;
       "nextIndex" ::= type.zero_val #uint64T;
       "state" ::= type.zero_val #sliceT
     }])) in
     do:  ("o" <-[#ptrT] "$r0");;;
-    let: "err" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
     (func_call #marshal #"ReadInt"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -292,8 +292,8 @@ Definition decodeEnterNewEpochReply : val :=
 (* go: marshal.go:89:6 *)
 Definition encodeEnterNewEpochReply : val :=
   rec: "encodeEnterNewEpochReply" "o" :=
-    exception_do (let: "o" := (alloc "o") in
-    let: "enc" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "o" := (mem.alloc "o") in
+    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 ((8 + 8) + 8)) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #enterNewEpochReply #"state"%go (![#ptrT] "o"))) in
     slice.len "$a0")))) in
     do:  ("enc" <-[#sliceT] "$r0");;;
@@ -323,8 +323,8 @@ Definition applyReply : go_type := structT [
 (* go: marshal.go:103:6 *)
 Definition encodeApplyReply : val :=
   rec: "encodeApplyReply" "o" :=
-    exception_do (let: "o" := (alloc "o") in
-    let: "enc" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "o" := (mem.alloc "o") in
+    let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #applyReply #"ret"%go (![#ptrT] "o"))) in
     slice.len "$a0")))) in
     do:  ("enc" <-[#sliceT] "$r0");;;
@@ -341,14 +341,14 @@ Definition encodeApplyReply : val :=
 (* go: marshal.go:110:6 *)
 Definition decodeApplyReply : val :=
   rec: "decodeApplyReply" "enc" :=
-    exception_do (let: "enc" := (alloc "enc") in
-    let: "o" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (struct.make #applyReply [{
+    exception_do (let: "enc" := (mem.alloc "enc") in
+    let: "o" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (struct.make #applyReply [{
       "err" ::= type.zero_val #Error;
       "ret" ::= type.zero_val #sliceT
     }])) in
     do:  ("o" <-[#ptrT] "$r0");;;
-    let: "err" := (alloc (type.zero_val #uint64T)) in
+    let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
     (func_call #marshal #"ReadInt"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -364,7 +364,7 @@ Definition decodeApplyReply : val :=
 (* go: marshal.go:120:6 *)
 Definition boolToU64 : val :=
   rec: "boolToU64" "b" :=
-    exception_do (let: "b" := (alloc "b") in
+    exception_do (let: "b" := (mem.alloc "b") in
     (if: ![#boolT] "b"
     then return: (#(W64 1))
     else return: (#(W64 0)))).
@@ -380,8 +380,8 @@ Definition paxosState : go_type := structT [
 (* go: marshal.go:128:6 *)
 Definition encodePaxosState : val :=
   rec: "encodePaxosState" "ps" :=
-    exception_do (let: "ps" := (alloc "ps") in
-    let: "e" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "ps" := (mem.alloc "ps") in
+    let: "e" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
@@ -410,13 +410,13 @@ Definition encodePaxosState : val :=
 (* go: marshal.go:138:6 *)
 Definition decodePaxosState : val :=
   rec: "decodePaxosState" "enc" :=
-    exception_do (let: "enc" := (alloc "enc") in
-    let: "e" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "enc" := (mem.alloc "enc") in
+    let: "e" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc") in
     do:  ("e" <-[#sliceT] "$r0");;;
-    let: "leaderInt" := (alloc (type.zero_val #uint64T)) in
-    let: "ps" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #paxosState)) in
+    let: "leaderInt" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "ps" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #paxosState)) in
     do:  ("ps" <-[#ptrT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "e") in
     (func_call #marshal #"ReadInt"%go) "$a0") in
@@ -456,12 +456,12 @@ Definition Server : go_type := structT [
 (* go: server.go:28:18 *)
 Definition Server__withLock : val :=
   rec: "Server__withLock" "s" "f" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "f" := (alloc "f") in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "f" := (mem.alloc "f") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
     do:  (let: "$a0" := (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))) in
     (![#funcT] "f") "$a0");;;
-    let: "waitFn" := (alloc (type.zero_val #funcT)) in
+    let: "waitFn" := (mem.alloc (type.zero_val #funcT)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))) in
     (func_call #paxos.paxos #"encodePaxosState"%go) "$a0") in
     (method_call #asyncfile #"AsyncFile'ptr" #"Write" (![#ptrT] (struct.field_ref #Server #"storage"%go (![#ptrT] "s")))) "$a0") in
@@ -472,11 +472,11 @@ Definition Server__withLock : val :=
 (* go: server.go:36:18 *)
 Definition Server__applyAsFollower : val :=
   rec: "Server__applyAsFollower" "s" "args" "reply" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "reply" := (alloc "reply") in
-    let: "args" := (alloc "args") in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "reply" := (mem.alloc "reply") in
+    let: "args" := (mem.alloc "args") in
     do:  (let: "$a0" := (λ: "ps",
-      exception_do (let: "ps" := (alloc "ps") in
+      exception_do (let: "ps" := (mem.alloc "ps") in
       (if: (![#uint64T] (struct.field_ref #paxosState #"epoch"%go (![#ptrT] "ps"))) ≤ (![#uint64T] (struct.field_ref #applyAsFollowerArgs #"epoch"%go (![#ptrT] "args")))
       then
         (if: (![#uint64T] (struct.field_ref #paxosState #"acceptedEpoch"%go (![#ptrT] "ps"))) = (![#uint64T] (struct.field_ref #applyAsFollowerArgs #"epoch"%go (![#ptrT] "args")))
@@ -522,11 +522,11 @@ Definition Server__applyAsFollower : val :=
    go: server.go:68:18 *)
 Definition Server__enterNewEpoch : val :=
   rec: "Server__enterNewEpoch" "s" "args" "reply" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "reply" := (alloc "reply") in
-    let: "args" := (alloc "args") in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "reply" := (mem.alloc "reply") in
+    let: "args" := (mem.alloc "args") in
     do:  (let: "$a0" := (λ: "ps",
-      exception_do (let: "ps" := (alloc "ps") in
+      exception_do (let: "ps" := (mem.alloc "ps") in
       (if: (![#uint64T] (struct.field_ref #paxosState #"epoch"%go (![#ptrT] "ps"))) ≥ (![#uint64T] (struct.field_ref #enterNewEpochArgs #"epoch"%go (![#ptrT] "args")))
       then
         let: "$r0" := EEpochStale in
@@ -549,7 +549,7 @@ Definition Server__enterNewEpoch : val :=
 (* go: server.go:83:18 *)
 Definition Server__TryBecomeLeader : val :=
   rec: "Server__TryBecomeLeader" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"started trybecomeleader"%go) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #log #"Println"%go) "$a0");;;
@@ -562,42 +562,42 @@ Definition Server__TryBecomeLeader : val :=
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
       return: (#())
     else do:  #());;;
-    let: "clerks" := (alloc (type.zero_val #sliceT)) in
+    let: "clerks" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] (struct.field_ref #Server #"clerks"%go (![#ptrT] "s"))) in
     do:  ("clerks" <-[#sliceT] "$r0");;;
-    let: "args" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (let: "$epoch" := ((![#uint64T] (struct.field_ref #paxosState #"epoch"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))) + #(W64 1)) in
+    let: "args" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$epoch" := ((![#uint64T] (struct.field_ref #paxosState #"epoch"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))) + #(W64 1)) in
     struct.make #enterNewEpochArgs [{
       "epoch" ::= "$epoch"
     }])) in
     do:  ("args" <-[#ptrT] "$r0");;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
-    let: "numReplies" := (alloc (type.zero_val #uint64T)) in
+    let: "numReplies" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("numReplies" <-[#uint64T] "$r0");;;
-    let: "replies" := (alloc (type.zero_val #sliceT)) in
+    let: "replies" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #ptrT (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
     slice.len "$a0"))) in
     do:  ("replies" <-[#sliceT] "$r0");;;
-    let: "mu" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
+    let: "mu" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("mu" <-[#ptrT] "$r0");;;
-    let: "numReplies_cond" := (alloc (type.zero_val #ptrT)) in
+    let: "numReplies_cond" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "mu")) in
     (func_call #sync #"NewCond"%go) "$a0") in
     do:  ("numReplies_cond" <-[#ptrT] "$r0");;;
-    let: "n" := (alloc (type.zero_val #uint64T)) in
+    let: "n" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
     slice.len "$a0")) in
     do:  ("n" <-[#uint64T] "$r0");;;
     let: "$range" := (![#sliceT] "clerks") in
-    (let: "ck" := (alloc (type.zero_val #intT)) in
-    let: "i" := (alloc (type.zero_val #intT)) in
+    (let: "ck" := (mem.alloc (type.zero_val #intT)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("ck" <-[#ptrT] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
       let: "$go" := (λ: <>,
-        exception_do (let: "reply" := (alloc (type.zero_val #ptrT)) in
+        exception_do (let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
         let: "$r0" := (let: "$a0" := (![#ptrT] "args") in
         (method_call #paxos.paxos #"singleClerk'ptr" #"enterNewEpoch" (![#ptrT] "ck")) "$a0") in
         do:  ("reply" <-[#ptrT] "$r0");;;
@@ -614,12 +614,12 @@ Definition Server__TryBecomeLeader : val :=
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "mu")) #());;;
     (for: (λ: <>, (#(W64 2) * (![#uint64T] "numReplies")) ≤ (![#uint64T] "n")); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] "numReplies_cond")) #()));;;
-    let: "latestReply" := (alloc (type.zero_val #ptrT)) in
-    let: "numSuccesses" := (alloc (type.zero_val #uint64T)) in
+    let: "latestReply" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "numSuccesses" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("numSuccesses" <-[#uint64T] "$r0");;;
     let: "$range" := (![#sliceT] "replies") in
-    (let: "reply" := (alloc (type.zero_val #intT)) in
+    (let: "reply" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("reply" <-[#ptrT] "$value");;;
       do:  "$key";;;
@@ -648,7 +648,7 @@ Definition Server__TryBecomeLeader : val :=
     (if: (#(W64 2) * (![#uint64T] "numSuccesses")) > (![#uint64T] "n")
     then
       do:  (let: "$a0" := (λ: "ps",
-        exception_do (let: "ps" := (alloc "ps") in
+        exception_do (let: "ps" := (mem.alloc "ps") in
         (if: (![#uint64T] (struct.field_ref #paxosState #"epoch"%go (![#ptrT] "ps"))) ≤ (![#uint64T] (struct.field_ref #enterNewEpochArgs #"epoch"%go (![#ptrT] "args")))
         then
           do:  (let: "$a0" := #"succeeded becomeleader in epoch %d
@@ -679,23 +679,23 @@ Definition Server__TryBecomeLeader : val :=
 (* go: server.go:165:18 *)
 Definition Server__TryAcquire : val :=
   rec: "Server__TryAcquire" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "retErr" := (alloc (type.zero_val #Error)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "retErr" := (mem.alloc (type.zero_val #Error)) in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
     (if: (~ (![#boolT] (struct.field_ref #paxosState #"isLeader"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))))
     then
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
-      let: "n" := (alloc (type.zero_val #ptrT)) in
+      let: "n" := (mem.alloc (type.zero_val #ptrT)) in
       return: (ENotLeader, ![#ptrT] "n", #func.nil)
     else do:  #());;;
-    let: "tryRelease" := (alloc (type.zero_val #funcT)) in
+    let: "tryRelease" := (mem.alloc (type.zero_val #funcT)) in
     let: "$r0" := (λ: <>,
       exception_do (let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #paxosState #"nextIndex"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))) in
       let: "$a1" := #(W64 1) in
       (func_call #std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
       do:  ((struct.field_ref #paxosState #"nextIndex"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s")))) <-[#uint64T] "$r0");;;
-      let: "args" := (alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (alloc (let: "$epoch" := (![#uint64T] (struct.field_ref #paxosState #"epoch"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))) in
+      let: "args" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (mem.alloc (let: "$epoch" := (![#uint64T] (struct.field_ref #paxosState #"epoch"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))) in
       let: "$nextIndex" := (![#uint64T] (struct.field_ref #paxosState #"nextIndex"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))) in
       let: "$state" := (![#sliceT] (struct.field_ref #paxosState #"state"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))) in
       struct.make #applyAsFollowerArgs [{
@@ -704,48 +704,48 @@ Definition Server__TryAcquire : val :=
         "state" ::= "$state"
       }])) in
       do:  ("args" <-[#ptrT] "$r0");;;
-      let: "waitFn" := (alloc (type.zero_val #funcT)) in
+      let: "waitFn" := (mem.alloc (type.zero_val #funcT)) in
       let: "$r0" := (let: "$a0" := (let: "$a0" := (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))) in
       (func_call #paxos.paxos #"encodePaxosState"%go) "$a0") in
       (method_call #asyncfile #"AsyncFile'ptr" #"Write" (![#ptrT] (struct.field_ref #Server #"storage"%go (![#ptrT] "s")))) "$a0") in
       do:  ("waitFn" <-[#funcT] "$r0");;;
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
       do:  ((![#funcT] "waitFn") #());;;
-      let: "clerks" := (alloc (type.zero_val #sliceT)) in
+      let: "clerks" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := (![#sliceT] (struct.field_ref #Server #"clerks"%go (![#ptrT] "s"))) in
       do:  ("clerks" <-[#sliceT] "$r0");;;
-      let: "numReplies" := (alloc (type.zero_val #uint64T)) in
+      let: "numReplies" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := #(W64 0) in
       do:  ("numReplies" <-[#uint64T] "$r0");;;
-      let: "replies" := (alloc (type.zero_val #sliceT)) in
+      let: "replies" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := (slice.make2 #ptrT (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
       slice.len "$a0"))) in
       do:  ("replies" <-[#sliceT] "$r0");;;
-      let: "mu" := (alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
+      let: "mu" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
       do:  ("mu" <-[#ptrT] "$r0");;;
-      let: "numReplies_cond" := (alloc (type.zero_val #ptrT)) in
+      let: "numReplies_cond" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "mu")) in
       (func_call #sync #"NewCond"%go) "$a0") in
       do:  ("numReplies_cond" <-[#ptrT] "$r0");;;
-      let: "n" := (alloc (type.zero_val #uint64T)) in
+      let: "n" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
       slice.len "$a0")) in
       do:  ("n" <-[#uint64T] "$r0");;;
       let: "$range" := (![#sliceT] "clerks") in
-      (let: "ck" := (alloc (type.zero_val #intT)) in
-      let: "i" := (alloc (type.zero_val #intT)) in
+      (let: "ck" := (mem.alloc (type.zero_val #intT)) in
+      let: "i" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("ck" <-[#ptrT] "$value");;;
         do:  ("i" <-[#intT] "$key");;;
-        let: "ck" := (alloc (type.zero_val #ptrT)) in
+        let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
         let: "$r0" := (![#ptrT] "ck") in
         do:  ("ck" <-[#ptrT] "$r0");;;
-        let: "i" := (alloc (type.zero_val #intT)) in
+        let: "i" := (mem.alloc (type.zero_val #intT)) in
         let: "$r0" := (![#intT] "i") in
         do:  ("i" <-[#intT] "$r0");;;
         let: "$go" := (λ: <>,
-          exception_do (let: "reply" := (alloc (type.zero_val #ptrT)) in
+          exception_do (let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
           let: "$r0" := (let: "$a0" := (![#ptrT] "args") in
           (method_call #paxos.paxos #"singleClerk'ptr" #"applyAsFollower" (![#ptrT] "ck")) "$a0") in
           do:  ("reply" <-[#ptrT] "$r0");;;
@@ -762,11 +762,11 @@ Definition Server__TryAcquire : val :=
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "mu")) #());;;
       (for: (λ: <>, (#(W64 2) * (![#uint64T] "numReplies")) ≤ (![#uint64T] "n")); (λ: <>, Skip) := λ: <>,
         do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] "numReplies_cond")) #()));;;
-      let: "numSuccesses" := (alloc (type.zero_val #uint64T)) in
+      let: "numSuccesses" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := #(W64 0) in
       do:  ("numSuccesses" <-[#uint64T] "$r0");;;
       let: "$range" := (![#sliceT] "replies") in
-      (let: "reply" := (alloc (type.zero_val #intT)) in
+      (let: "reply" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("reply" <-[#ptrT] "$value");;;
         do:  "$key";;;
@@ -791,9 +791,9 @@ Definition Server__TryAcquire : val :=
 (* go: server.go:235:18 *)
 Definition Server__WeakRead : val :=
   rec: "Server__WeakRead" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
-    let: "ret" := (alloc (type.zero_val #sliceT)) in
+    let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] (struct.field_ref #paxosState #"state"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))) in
     do:  ("ret" <-[#sliceT] "$r0");;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -802,18 +802,18 @@ Definition Server__WeakRead : val :=
 (* go: server.go:242:6 *)
 Definition makeServer : val :=
   rec: "makeServer" "fname" "initstate" "config" :=
-    exception_do (let: "config" := (alloc "config") in
-    let: "initstate" := (alloc "initstate") in
-    let: "fname" := (alloc "fname") in
-    let: "s" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #Server)) in
+    exception_do (let: "config" := (mem.alloc "config") in
+    let: "initstate" := (mem.alloc "initstate") in
+    let: "fname" := (mem.alloc "fname") in
+    let: "s" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #Server)) in
     do:  ("s" <-[#ptrT] "$r0");;;
-    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
+    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ((struct.field_ref #Server #"mu"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     let: "$r0" := (slice.make2 #ptrT #(W64 0)) in
     do:  ((struct.field_ref #Server #"clerks"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "config") in
-    (let: "host" := (alloc (type.zero_val #intT)) in
+    (let: "host" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("host" <-[#uint64T] "$value");;;
       do:  "$key";;;
@@ -823,7 +823,7 @@ Definition makeServer : val :=
       slice.literal #ptrT ["$sl0"])) in
       (slice.append #ptrT) "$a0" "$a1") in
       do:  ((struct.field_ref #Server #"clerks"%go (![#ptrT] "s")) <-[#sliceT] "$r0")));;;
-    let: "encstate" := (alloc (type.zero_val #sliceT)) in
+    let: "encstate" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#stringT] "fname") in
     (func_call #asyncfile #"MakeAsyncFile"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -833,7 +833,7 @@ Definition makeServer : val :=
     (if: (let: "$a0" := (![#sliceT] "encstate") in
     slice.len "$a0") = #(W64 0)
     then
-      let: "$r0" := (alloc (type.zero_val #paxosState)) in
+      let: "$r0" := (mem.alloc (type.zero_val #paxosState)) in
       do:  ((struct.field_ref #Server #"ps"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
       let: "$r0" := (![#sliceT] "initstate") in
       do:  ((struct.field_ref #paxosState #"state"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s")))) <-[#sliceT] "$r0")
@@ -846,26 +846,26 @@ Definition makeServer : val :=
 (* go: server.go:262:6 *)
 Definition StartServer : val :=
   rec: "StartServer" "fname" "initstate" "me" "config" :=
-    exception_do (let: "config" := (alloc "config") in
-    let: "me" := (alloc "me") in
-    let: "initstate" := (alloc "initstate") in
-    let: "fname" := (alloc "fname") in
-    let: "s" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "config" := (mem.alloc "config") in
+    let: "me" := (mem.alloc "me") in
+    let: "initstate" := (mem.alloc "initstate") in
+    let: "fname" := (mem.alloc "fname") in
+    let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#stringT] "fname") in
     let: "$a1" := (![#sliceT] "initstate") in
     let: "$a2" := (![#sliceT] "config") in
     (func_call #paxos.paxos #"makeServer"%go) "$a0" "$a1" "$a2") in
     do:  ("s" <-[#ptrT] "$r0");;;
-    let: "handlers" := (alloc (type.zero_val #(mapT uint64T funcT))) in
+    let: "handlers" := (mem.alloc (type.zero_val #(mapT uint64T funcT))) in
     let: "$r0" := (map.make #uint64T #funcT) in
     do:  ("handlers" <-[#(mapT uint64T funcT)] "$r0");;;
     let: "$r0" := (λ: "raw_args" "raw_reply",
-      exception_do (let: "raw_reply" := (alloc "raw_reply") in
-      let: "raw_args" := (alloc "raw_args") in
-      let: "reply" := (alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (alloc (type.zero_val #applyAsFollowerReply)) in
+      exception_do (let: "raw_reply" := (mem.alloc "raw_reply") in
+      let: "raw_args" := (mem.alloc "raw_args") in
+      let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (mem.alloc (type.zero_val #applyAsFollowerReply)) in
       do:  ("reply" <-[#ptrT] "$r0");;;
-      let: "args" := (alloc (type.zero_val #ptrT)) in
+      let: "args" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (let: "$a0" := (![#sliceT] "raw_args") in
       (func_call #paxos.paxos #"decodeApplyAsFollowerArgs"%go) "$a0") in
       do:  ("args" <-[#ptrT] "$r0");;;
@@ -878,12 +878,12 @@ Definition StartServer : val :=
       ) in
     do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_APPLY_AS_FOLLOWER "$r0");;;
     let: "$r0" := (λ: "raw_args" "raw_reply",
-      exception_do (let: "raw_reply" := (alloc "raw_reply") in
-      let: "raw_args" := (alloc "raw_args") in
-      let: "reply" := (alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (alloc (type.zero_val #enterNewEpochReply)) in
+      exception_do (let: "raw_reply" := (mem.alloc "raw_reply") in
+      let: "raw_args" := (mem.alloc "raw_args") in
+      let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (mem.alloc (type.zero_val #enterNewEpochReply)) in
       do:  ("reply" <-[#ptrT] "$r0");;;
-      let: "args" := (alloc (type.zero_val #ptrT)) in
+      let: "args" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (let: "$a0" := (![#sliceT] "raw_args") in
       (func_call #paxos.paxos #"decodeEnterNewEpochArgs"%go) "$a0") in
       do:  ("args" <-[#ptrT] "$r0");;;
@@ -896,12 +896,12 @@ Definition StartServer : val :=
       ) in
     do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_ENTER_NEW_EPOCH "$r0");;;
     let: "$r0" := (λ: "raw_args" "raw_reply",
-      exception_do (let: "raw_reply" := (alloc "raw_reply") in
-      let: "raw_args" := (alloc "raw_args") in
+      exception_do (let: "raw_reply" := (mem.alloc "raw_reply") in
+      let: "raw_args" := (mem.alloc "raw_args") in
       do:  ((method_call #paxos.paxos #"Server'ptr" #"TryBecomeLeader" (![#ptrT] "s")) #()))
       ) in
     do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_BECOME_LEADER "$r0");;;
-    let: "r" := (alloc (type.zero_val #ptrT)) in
+    let: "r" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#(mapT uint64T funcT)] "handlers") in
     (func_call #urpc #"MakeServer"%go) "$a0") in
     do:  ("r" <-[#ptrT] "$r0");;;

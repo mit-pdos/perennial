@@ -21,24 +21,24 @@ Definition EtcdError : go_type := structT [
    go: error.go:248:20 *)
 Definition EtcdError__Code : val :=
   rec: "EtcdError__Code" "e" <> :=
-    exception_do (let: "e" := (alloc "e") in
+    exception_do (let: "e" := (mem.alloc "e") in
     return: (![#codes.Code] (struct.field_ref #EtcdError #"code"%go "e"))).
 
 (* go: error.go:252:20 *)
 Definition EtcdError__Error : val :=
   rec: "EtcdError__Error" "e" <> :=
-    exception_do (let: "e" := (alloc "e") in
+    exception_do (let: "e" := (mem.alloc "e") in
     return: (![#stringT] (struct.field_ref #EtcdError #"desc"%go "e"))).
 
 (* go: error.go:256:6 *)
 Definition Error : val :=
   rec: "Error" "err" :=
-    exception_do (let: "err" := (alloc "err") in
+    exception_do (let: "err" := (mem.alloc "err") in
     (if: interface.eq (![#error] "err") #interface.nil
     then return: (#interface.nil)
     else do:  #());;;
-    let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "verr" := (alloc (type.zero_val #error)) in
+    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "verr" := (mem.alloc (type.zero_val #error)) in
     let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT error)] (globals.get #rpctypes.rpctypes #"errStringToError"%go)) (let: "$a0" := (![#error] "err") in
     (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0")) in
     let: "$r0" := "$ret0" in
@@ -48,14 +48,14 @@ Definition Error : val :=
     (if: (~ (![#boolT] "ok"))
     then return: (![#error] "err")
     else do:  #());;;
-    let: "ev" := (alloc (type.zero_val #ptrT)) in
+    let: "ev" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#error] "verr") in
     (func_call #status #"FromError"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("ev" <-[#ptrT] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
-    let: "desc" := (alloc (type.zero_val #stringT)) in
+    let: "desc" := (mem.alloc (type.zero_val #stringT)) in
     (if: ![#boolT] "ok"
     then
       let: "$r0" := ((method_call #status #"Status'ptr" #"Message" (![#ptrT] "ev")) #()) in
@@ -73,9 +73,9 @@ Definition Error : val :=
 (* go: error.go:274:6 *)
 Definition ErrorDesc : val :=
   rec: "ErrorDesc" "err" :=
-    exception_do (let: "err" := (alloc "err") in
-    (let: "ok" := (alloc (type.zero_val #boolT)) in
-    let: "s" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "err" := (mem.alloc "err") in
+    (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+    let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#error] "err") in
     (func_call #status #"FromError"%go) "$a0") in
     let: "$r0" := "$ret0" in

@@ -15,7 +15,7 @@ Context `{ffi_syntax}.
    go: goose_std.go:10:6 *)
 Definition Assert : val :=
   rec: "Assert" "b" :=
-    exception_do (let: "b" := (alloc "b") in
+    exception_do (let: "b" := (mem.alloc "b") in
     (if: (~ (![#boolT] "b"))
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"assertion failure"%go) in
@@ -27,9 +27,9 @@ Definition Assert : val :=
    go: goose_std.go:17:6 *)
 Definition BytesEqual : val :=
   rec: "BytesEqual" "x" "y" :=
-    exception_do (let: "y" := (alloc "y") in
-    let: "x" := (alloc "x") in
-    let: "xlen" := (alloc (type.zero_val #intT)) in
+    exception_do (let: "y" := (mem.alloc "y") in
+    let: "x" := (mem.alloc "x") in
+    let: "xlen" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "x") in
     slice.len "$a0") in
     do:  ("xlen" <-[#intT] "$r0");;;
@@ -37,10 +37,10 @@ Definition BytesEqual : val :=
     slice.len "$a0")
     then return: (#false)
     else do:  #());;;
-    let: "i" := (alloc (type.zero_val #uint64T)) in
+    let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    let: "retval" := (alloc (type.zero_val #boolT)) in
+    let: "retval" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
     do:  ("retval" <-[#boolT] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (![#intT] "xlen"))); (λ: <>, Skip) := λ: <>,
@@ -61,7 +61,7 @@ Definition BytesEqual : val :=
    go: goose_std.go:38:6 *)
 Definition BytesClone : val :=
   rec: "BytesClone" "b" :=
-    exception_do (let: "b" := (alloc "b") in
+    exception_do (let: "b" := (mem.alloc "b") in
     (if: (![#sliceT] "b") = #slice.nil
     then return: (#slice.nil)
     else do:  #());;;
@@ -80,8 +80,8 @@ Definition BytesClone : val :=
    go: goose_std.go:52:6 *)
 Definition SliceSplit : val :=
   rec: "SliceSplit" "xs" "n" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "xs" := (alloc "xs") in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "xs" := (mem.alloc "xs") in
     return: (let: "$s" := (![#sliceT] "xs") in
      slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n"), let: "$s" := (![#sliceT] "xs") in
      slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s"))).
@@ -91,8 +91,8 @@ Definition SliceSplit : val :=
    go: goose_std.go:60:6 *)
 Definition SumNoOverflow : val :=
   rec: "SumNoOverflow" "x" "y" :=
-    exception_do (let: "y" := (alloc "y") in
-    let: "x" := (alloc "x") in
+    exception_do (let: "y" := (mem.alloc "y") in
+    let: "x" := (mem.alloc "x") in
     return: (((![#uint64T] "x") + (![#uint64T] "y")) ≥ (![#uint64T] "x"))).
 
 (* SumAssumeNoOverflow returns x + y, `Assume`ing that this does not overflow.
@@ -102,8 +102,8 @@ Definition SumNoOverflow : val :=
    go: goose_std.go:67:6 *)
 Definition SumAssumeNoOverflow : val :=
   rec: "SumAssumeNoOverflow" "x" "y" :=
-    exception_do (let: "y" := (alloc "y") in
-    let: "x" := (alloc "x") in
+    exception_do (let: "y" := (mem.alloc "y") in
+    let: "x" := (mem.alloc "x") in
     do:  (let: "$a0" := (let: "$a0" := (![#uint64T] "x") in
     let: "$a1" := (![#uint64T] "y") in
     (func_call #std.std #"SumNoOverflow"%go) "$a0" "$a1") in
@@ -115,8 +115,8 @@ Definition SumAssumeNoOverflow : val :=
    go: goose_std.go:73:6 *)
 Definition MulNoOverflow : val :=
   rec: "MulNoOverflow" "x" "y" :=
-    exception_do (let: "y" := (alloc "y") in
-    let: "x" := (alloc "x") in
+    exception_do (let: "y" := (mem.alloc "y") in
+    let: "x" := (mem.alloc "x") in
     (if: ((![#uint64T] "x") = #(W64 0)) || ((![#uint64T] "y") = #(W64 0))
     then return: (#true)
     else do:  #());;;
@@ -129,8 +129,8 @@ Definition MulNoOverflow : val :=
    go: goose_std.go:83:6 *)
 Definition MulAssumeNoOverflow : val :=
   rec: "MulAssumeNoOverflow" "x" "y" :=
-    exception_do (let: "y" := (alloc "y") in
-    let: "x" := (alloc "x") in
+    exception_do (let: "y" := (mem.alloc "y") in
+    let: "x" := (mem.alloc "x") in
     do:  (let: "$a0" := (let: "$a0" := (![#uint64T] "x") in
     let: "$a1" := (![#uint64T] "y") in
     (func_call #std.std #"MulNoOverflow"%go) "$a0" "$a1") in
@@ -146,14 +146,14 @@ Definition JoinHandle : go_type := structT [
 (* go: goose_std.go:96:6 *)
 Definition newJoinHandle : val :=
   rec: "newJoinHandle" <> :=
-    exception_do (let: "mu" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
+    exception_do (let: "mu" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("mu" <-[#ptrT] "$r0");;;
-    let: "cond" := (alloc (type.zero_val #ptrT)) in
+    let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "mu")) in
     (func_call #sync #"NewCond"%go) "$a0") in
     do:  ("cond" <-[#ptrT] "$r0");;;
-    return: (alloc (let: "$mu" := (![#ptrT] "mu") in
+    return: (mem.alloc (let: "$mu" := (![#ptrT] "mu") in
      let: "$done" := #false in
      let: "$cond" := (![#ptrT] "cond") in
      struct.make #JoinHandle [{
@@ -165,7 +165,7 @@ Definition newJoinHandle : val :=
 (* go: goose_std.go:106:22 *)
 Definition JoinHandle__finish : val :=
   rec: "JoinHandle__finish" "h" <> :=
-    exception_do (let: "h" := (alloc "h") in
+    exception_do (let: "h" := (mem.alloc "h") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
     let: "$r0" := #true in
     do:  ((struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h")) <-[#boolT] "$r0");;;
@@ -183,8 +183,8 @@ Definition JoinHandle__finish : val :=
    go: goose_std.go:120:6 *)
 Definition Spawn : val :=
   rec: "Spawn" "f" :=
-    exception_do (let: "f" := (alloc "f") in
-    let: "h" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "f" := (mem.alloc "f") in
+    let: "h" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((func_call #std.std #"newJoinHandle"%go) #()) in
     do:  ("h" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
@@ -197,7 +197,7 @@ Definition Spawn : val :=
 (* go: goose_std.go:129:22 *)
 Definition JoinHandle__Join : val :=
   rec: "JoinHandle__Join" "h" <> :=
-    exception_do (let: "h" := (alloc "h") in
+    exception_do (let: "h" := (mem.alloc "h") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![#boolT] (struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h"))
@@ -218,23 +218,23 @@ Definition JoinHandle__Join : val :=
    go: goose_std.go:148:6 *)
 Definition Multipar : val :=
   rec: "Multipar" "num" "op" :=
-    exception_do (let: "op" := (alloc "op") in
-    let: "num" := (alloc "num") in
-    let: "num_left" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "op" := (mem.alloc "op") in
+    let: "num" := (mem.alloc "num") in
+    let: "num_left" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] "num") in
     do:  ("num_left" <-[#uint64T] "$r0");;;
-    let: "num_left_mu" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #sync.Mutex)) in
+    let: "num_left_mu" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("num_left_mu" <-[#ptrT] "$r0");;;
-    let: "num_left_cond" := (alloc (type.zero_val #ptrT)) in
+    let: "num_left_cond" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "num_left_mu")) in
     (func_call #sync #"NewCond"%go) "$a0") in
     do:  ("num_left_cond" <-[#ptrT] "$r0");;;
-    (let: "i" := (alloc (type.zero_val #uint64T)) in
+    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "num")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "i" := (alloc (type.zero_val #uint64T)) in
+      let: "i" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] "i") in
       do:  ("i" <-[#uint64T] "$r0");;;
       let: "$go" := (λ: <>,
@@ -269,20 +269,20 @@ Definition Skip : val :=
    go: goose_std.go:182:6 *)
 Definition Shuffle : val :=
   rec: "Shuffle" "xs" :=
-    exception_do (let: "xs" := (alloc "xs") in
+    exception_do (let: "xs" := (mem.alloc "xs") in
     (if: (let: "$a0" := (![#sliceT] "xs") in
     slice.len "$a0") = #(W64 0)
     then return: (#())
     else do:  #());;;
-    (let: "i" := (alloc (type.zero_val #uint64T)) in
+    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (s_to_w64 ((let: "$a0" := (![#sliceT] "xs") in
     slice.len "$a0") - #(W64 1))) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") > #(W64 0)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") - #(W64 1)))) := λ: <>,
-      let: "j" := (alloc (type.zero_val #uint64T)) in
+      let: "j" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (((func_call #primitive #"RandomUint64"%go) #()) `rem` ((![#uint64T] "i") + #(W64 1))) in
       do:  ("j" <-[#uint64T] "$r0");;;
-      let: "temp" := (alloc (type.zero_val #uint64T)) in
+      let: "temp" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "i"))) in
       do:  ("temp" <-[#uint64T] "$r0");;;
       let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "j"))) in
@@ -296,11 +296,11 @@ Definition Shuffle : val :=
    go: goose_std.go:196:6 *)
 Definition Permutation : val :=
   rec: "Permutation" "n" :=
-    exception_do (let: "n" := (alloc "n") in
-    let: "order" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "n" := (mem.alloc "n") in
+    let: "order" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #uint64T (![#uint64T] "n")) in
     do:  ("order" <-[#sliceT] "$r0");;;
-    (let: "i" := (alloc (type.zero_val #uint64T)) in
+    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "n")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,

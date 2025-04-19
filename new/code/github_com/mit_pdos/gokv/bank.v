@@ -23,9 +23,9 @@ Definition BankClerk : go_type := structT [
 (* go: bank.go:19:6 *)
 Definition acquire_two_good : val :=
   rec: "acquire_two_good" "lck" "l1" "l2" :=
-    exception_do (let: "l2" := (alloc "l2") in
-    let: "l1" := (alloc "l1") in
-    let: "lck" := (alloc "lck") in
+    exception_do (let: "l2" := (mem.alloc "l2") in
+    let: "l1" := (mem.alloc "l1") in
+    let: "lck" := (mem.alloc "lck") in
     (if: (![#stringT] "l1") < (![#stringT] "l2")
     then
       do:  (let: "$a0" := (![#stringT] "l1") in
@@ -42,9 +42,9 @@ Definition acquire_two_good : val :=
 (* go: bank.go:30:6 *)
 Definition acquire_two : val :=
   rec: "acquire_two" "lck" "l1" "l2" :=
-    exception_do (let: "l2" := (alloc "l2") in
-    let: "l1" := (alloc "l1") in
-    let: "lck" := (alloc "lck") in
+    exception_do (let: "l2" := (mem.alloc "l2") in
+    let: "l1" := (mem.alloc "l1") in
+    let: "lck" := (mem.alloc "lck") in
     do:  (let: "$a0" := (![#stringT] "l1") in
     (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0");;;
     do:  (let: "$a0" := (![#stringT] "l2") in
@@ -54,9 +54,9 @@ Definition acquire_two : val :=
 (* go: bank.go:37:6 *)
 Definition release_two : val :=
   rec: "release_two" "lck" "l1" "l2" :=
-    exception_do (let: "l2" := (alloc "l2") in
-    let: "l1" := (alloc "l1") in
-    let: "lck" := (alloc "lck") in
+    exception_do (let: "l2" := (mem.alloc "l2") in
+    let: "l1" := (mem.alloc "l1") in
+    let: "lck" := (mem.alloc "lck") in
     do:  (let: "$a0" := (![#stringT] "l1") in
     (method_call #lockservice #"LockClerk'ptr" #"Unlock" (![#ptrT] "lck")) "$a0");;;
     do:  (let: "$a0" := (![#stringT] "l2") in
@@ -66,7 +66,7 @@ Definition release_two : val :=
 (* go: bank.go:43:6 *)
 Definition encodeInt : val :=
   rec: "encodeInt" "a" :=
-    exception_do (let: "a" := (alloc "a") in
+    exception_do (let: "a" := (mem.alloc "a") in
     return: (string.from_bytes (let: "$a0" := #slice.nil in
      let: "$a1" := (![#uint64T] "a") in
      (func_call #marshal #"WriteInt"%go) "$a0" "$a1"))).
@@ -74,8 +74,8 @@ Definition encodeInt : val :=
 (* go: bank.go:47:6 *)
 Definition decodeInt : val :=
   rec: "decodeInt" "a" :=
-    exception_do (let: "a" := (alloc "a") in
-    let: "v" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "a" := (mem.alloc "a") in
+    let: "v" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (string.to_bytes (![#stringT] "a")) in
     (func_call #marshal #"ReadInt"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -90,15 +90,15 @@ Definition decodeInt : val :=
    go: bank.go:54:23 *)
 Definition BankClerk__transfer_internal : val :=
   rec: "BankClerk__transfer_internal" "bck" "acc_from" "acc_to" "amount" :=
-    exception_do (let: "bck" := (alloc "bck") in
-    let: "amount" := (alloc "amount") in
-    let: "acc_to" := (alloc "acc_to") in
-    let: "acc_from" := (alloc "acc_from") in
+    exception_do (let: "bck" := (mem.alloc "bck") in
+    let: "amount" := (mem.alloc "amount") in
+    let: "acc_to" := (mem.alloc "acc_to") in
+    let: "acc_from" := (mem.alloc "acc_from") in
     do:  (let: "$a0" := (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck"))) in
     let: "$a1" := (![#stringT] "acc_from") in
     let: "$a2" := (![#stringT] "acc_to") in
     (func_call #bank.bank #"acquire_two"%go) "$a0" "$a1" "$a2");;;
-    let: "old_amount" := (alloc (type.zero_val #uint64T)) in
+    let: "old_amount" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#stringT] "acc_from") in
     (interface.get #"Get"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0") in
     (func_call #bank.bank #"decodeInt"%go) "$a0") in
@@ -124,15 +124,15 @@ Definition BankClerk__transfer_internal : val :=
 (* go: bank.go:65:23 *)
 Definition BankClerk__SimpleTransfer : val :=
   rec: "BankClerk__SimpleTransfer" "bck" <> :=
-    exception_do (let: "bck" := (alloc "bck") in
+    exception_do (let: "bck" := (mem.alloc "bck") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "src" := (alloc (type.zero_val #uint64T)) in
+      let: "src" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := ((func_call #primitive #"RandomUint64"%go) #()) in
       do:  ("src" <-[#uint64T] "$r0");;;
-      let: "dst" := (alloc (type.zero_val #uint64T)) in
+      let: "dst" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := ((func_call #primitive #"RandomUint64"%go) #()) in
       do:  ("dst" <-[#uint64T] "$r0");;;
-      let: "amount" := (alloc (type.zero_val #uint64T)) in
+      let: "amount" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := ((func_call #primitive #"RandomUint64"%go) #()) in
       do:  ("amount" <-[#uint64T] "$r0");;;
       (if: (((![#uint64T] "src") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
@@ -148,10 +148,10 @@ Definition BankClerk__SimpleTransfer : val :=
 (* go: bank.go:76:23 *)
 Definition BankClerk__get_total : val :=
   rec: "BankClerk__get_total" "bck" <> :=
-    exception_do (let: "bck" := (alloc "bck") in
-    let: "sum" := (alloc (type.zero_val #uint64T)) in
+    exception_do (let: "bck" := (mem.alloc "bck") in
+    let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$range" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
-    (let: "acct" := (alloc (type.zero_val #intT)) in
+    (let: "acct" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
@@ -162,7 +162,7 @@ Definition BankClerk__get_total : val :=
       (func_call #bank.bank #"decodeInt"%go) "$a0")) in
       do:  ("sum" <-[#uint64T] "$r0")));;;
     let: "$range" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
-    (let: "acct" := (alloc (type.zero_val #intT)) in
+    (let: "acct" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
@@ -173,7 +173,7 @@ Definition BankClerk__get_total : val :=
 (* go: bank.go:92:23 *)
 Definition BankClerk__SimpleAudit : val :=
   rec: "BankClerk__SimpleAudit" "bck" <> :=
-    exception_do (let: "bck" := (alloc "bck") in
+    exception_do (let: "bck" := (mem.alloc "bck") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ((method_call #bank.bank #"BankClerk'ptr" #"get_total" (![#ptrT] "bck")) #()) ≠ BAL_TOTAL
       then
@@ -184,12 +184,12 @@ Definition BankClerk__SimpleAudit : val :=
 (* go: bank.go:100:6 *)
 Definition MakeBankClerkSlice : val :=
   rec: "MakeBankClerkSlice" "lck" "kv" "init_flag" "accts" :=
-    exception_do (let: "accts" := (alloc "accts") in
-    let: "init_flag" := (alloc "init_flag") in
-    let: "kv" := (alloc "kv") in
-    let: "lck" := (alloc "lck") in
-    let: "bck" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (type.zero_val #BankClerk)) in
+    exception_do (let: "accts" := (mem.alloc "accts") in
+    let: "init_flag" := (mem.alloc "init_flag") in
+    let: "kv" := (mem.alloc "kv") in
+    let: "lck" := (mem.alloc "lck") in
+    let: "bck" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (type.zero_val #BankClerk)) in
     do:  ("bck" <-[#ptrT] "$r0");;;
     let: "$r0" := (![#ptrT] "lck") in
     do:  ((struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")) <-[#ptrT] "$r0");;;
@@ -208,7 +208,7 @@ Definition MakeBankClerkSlice : val :=
       (interface.get #"Put"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0" "$a1");;;
       let: "$range" := (let: "$s" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
       slice.slice #stringT "$s" #(W64 1) (slice.len "$s")) in
-      (let: "acct" := (alloc (type.zero_val #intT)) in
+      (let: "acct" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #stringT "$range" (λ: "$key" "$value",
         do:  ("acct" <-[#stringT] "$value");;;
         do:  "$key";;;
@@ -227,12 +227,12 @@ Definition MakeBankClerkSlice : val :=
 (* go: bank.go:120:6 *)
 Definition MakeBankClerk : val :=
   rec: "MakeBankClerk" "lck" "kv" "init_flag" "acc1" "acc2" :=
-    exception_do (let: "acc2" := (alloc "acc2") in
-    let: "acc1" := (alloc "acc1") in
-    let: "init_flag" := (alloc "init_flag") in
-    let: "kv" := (alloc "kv") in
-    let: "lck" := (alloc "lck") in
-    let: "accts" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "acc2" := (mem.alloc "acc2") in
+    let: "acc1" := (mem.alloc "acc1") in
+    let: "init_flag" := (mem.alloc "init_flag") in
+    let: "kv" := (mem.alloc "kv") in
+    let: "lck" := (mem.alloc "lck") in
+    let: "accts" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "accts") in
     let: "$a1" := ((let: "$sl0" := (![#stringT] "acc1") in
     slice.literal #stringT ["$sl0"])) in

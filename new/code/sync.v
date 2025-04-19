@@ -34,7 +34,7 @@ Definition rwmutexMaxReaders : Z := 1073741824.
    go: rwmutex.go:67:20 *)
 Definition RWMutex__RLock : val :=
   rec: "RWMutex__RLock" "rw" <> :=
-    exception_do (let: "rw" := (alloc "rw") in
+    exception_do (let: "rw" := (mem.alloc "rw") in
     (if: race.Enabled
     then
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw")) in
@@ -65,7 +65,7 @@ Definition RWMutex__RLock : val :=
    go: rwmutex.go:87:20 *)
 Definition RWMutex__TryRLock : val :=
   rec: "RWMutex__TryRLock" "rw" <> :=
-    exception_do (let: "rw" := (alloc "rw") in
+    exception_do (let: "rw" := (mem.alloc "rw") in
     (if: race.Enabled
     then
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw")) in
@@ -73,7 +73,7 @@ Definition RWMutex__TryRLock : val :=
       do:  ((func_call #race #"Disable"%go) #())
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "c" := (alloc (type.zero_val #int32T)) in
+      let: "c" := (mem.alloc (type.zero_val #int32T)) in
       let: "$r0" := ((method_call #atomic #"Int32'ptr" #"Load" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) #()) in
       do:  ("c" <-[#int32T] "$r0");;;
       (if: int_lt (![#int32T] "c") #(W32 0)
@@ -104,7 +104,7 @@ Definition RWMutex__TryRLock : val :=
    go: rwmutex.go:114:20 *)
 Definition RWMutex__RUnlock : val :=
   rec: "RWMutex__RUnlock" "rw" <> :=
-    exception_do (let: "rw" := (alloc "rw") in
+    exception_do (let: "rw" := (mem.alloc "rw") in
     (if: race.Enabled
     then
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw")) in
@@ -113,7 +113,7 @@ Definition RWMutex__RUnlock : val :=
       (func_call #race #"ReleaseMerge"%go) "$a0");;;
       do:  ((func_call #race #"Disable"%go) #())
     else do:  #());;;
-    (let: "r" := (alloc (type.zero_val #int32T)) in
+    (let: "r" := (mem.alloc (type.zero_val #int32T)) in
     let: "$r0" := (let: "$a0" := #(W32 (- 1)) in
     (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") in
     do:  ("r" <-[#int32T] "$r0");;;
@@ -129,8 +129,8 @@ Definition RWMutex__RUnlock : val :=
 (* go: rwmutex.go:129:20 *)
 Definition RWMutex__rUnlockSlow : val :=
   rec: "RWMutex__rUnlockSlow" "rw" "r" :=
-    exception_do (let: "rw" := (alloc "rw") in
-    let: "r" := (alloc "r") in
+    exception_do (let: "rw" := (mem.alloc "rw") in
+    let: "r" := (mem.alloc "r") in
     (if: (((![#int32T] "r") + #(W32 1)) = #(W32 0)) || (((![#int32T] "r") + #(W32 1)) = #(W32 (- rwmutexMaxReaders)))
     then
       do:  ((func_call #race #"Enable"%go) #());;;
@@ -153,7 +153,7 @@ Definition RWMutex__rUnlockSlow : val :=
    go: rwmutex.go:144:20 *)
 Definition RWMutex__Lock : val :=
   rec: "RWMutex__Lock" "rw" <> :=
-    exception_do (let: "rw" := (alloc "rw") in
+    exception_do (let: "rw" := (mem.alloc "rw") in
     (if: race.Enabled
     then
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw")) in
@@ -161,7 +161,7 @@ Definition RWMutex__Lock : val :=
       do:  ((func_call #race #"Disable"%go) #())
     else do:  #());;;
     do:  ((method_call #sync.sync #"Mutex'ptr" #"Lock" (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
-    let: "r" := (alloc (type.zero_val #int32T)) in
+    let: "r" := (mem.alloc (type.zero_val #int32T)) in
     let: "$r0" := ((let: "$a0" := #(W32 (- rwmutexMaxReaders)) in
     (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") + #(W32 rwmutexMaxReaders)) in
     do:  ("r" <-[#int32T] "$r0");;;
@@ -191,7 +191,7 @@ Definition RWMutex__Lock : val :=
    go: rwmutex.go:169:20 *)
 Definition RWMutex__TryLock : val :=
   rec: "RWMutex__TryLock" "rw" <> :=
-    exception_do (let: "rw" := (alloc "rw") in
+    exception_do (let: "rw" := (mem.alloc "rw") in
     (if: race.Enabled
     then
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw")) in
@@ -235,7 +235,7 @@ Definition RWMutex__TryLock : val :=
    go: rwmutex.go:201:20 *)
 Definition RWMutex__Unlock : val :=
   rec: "RWMutex__Unlock" "rw" <> :=
-    exception_do (let: "rw" := (alloc "rw") in
+    exception_do (let: "rw" := (mem.alloc "rw") in
     (if: race.Enabled
     then
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw")) in
@@ -244,7 +244,7 @@ Definition RWMutex__Unlock : val :=
       (func_call #race #"Release"%go) "$a0");;;
       do:  ((func_call #race #"Disable"%go) #())
     else do:  #());;;
-    let: "r" := (alloc (type.zero_val #int32T)) in
+    let: "r" := (mem.alloc (type.zero_val #int32T)) in
     let: "$r0" := (let: "$a0" := #(W32 rwmutexMaxReaders) in
     (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") in
     do:  ("r" <-[#int32T] "$r0");;;
@@ -254,7 +254,7 @@ Definition RWMutex__Unlock : val :=
       do:  (let: "$a0" := #"sync: Unlock of unlocked RWMutex"%go in
       (func_call #sync.sync #"fatal"%go) "$a0")
     else do:  #());;;
-    (let: "i" := (alloc (type.zero_val #intT)) in
+    (let: "i" := (mem.alloc (type.zero_val #intT)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#intT] "$r0");;;
     (for: (λ: <>, int_lt (![#intT] "i") (s_to_w64 (![#int32T] "r"))); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
@@ -290,8 +290,8 @@ Definition WaitGroup : go_type := structT [
    go: waitgroup.go:45:22 *)
 Definition WaitGroup__Add : val :=
   rec: "WaitGroup__Add" "wg" "delta" :=
-    with_defer: (let: "wg" := (alloc "wg") in
-    let: "delta" := (alloc "delta") in
+    with_defer: (let: "wg" := (mem.alloc "wg") in
+    let: "delta" := (mem.alloc "delta") in
     (if: race.Enabled
     then
       (if: int_lt (![#intT] "delta") #(W64 0)
@@ -307,14 +307,14 @@ Definition WaitGroup__Add : val :=
         "$oldf" #()
         )))
     else do:  #());;;
-    let: "state" := (alloc (type.zero_val #uint64T)) in
+    let: "state" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := ((s_to_w64 (![#intT] "delta")) ≪ #(W64 32)) in
     (method_call #atomic #"Uint64'ptr" #"Add" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) "$a0") in
     do:  ("state" <-[#uint64T] "$r0");;;
-    let: "v" := (alloc (type.zero_val #int32T)) in
+    let: "v" := (mem.alloc (type.zero_val #int32T)) in
     let: "$r0" := (u_to_w32 ((![#uint64T] "state") ≫ #(W64 32))) in
     do:  ("v" <-[#int32T] "$r0");;;
-    let: "w" := (alloc (type.zero_val #uint32T)) in
+    let: "w" := (mem.alloc (type.zero_val #uint32T)) in
     let: "$r0" := (u_to_w32 (![#uint64T] "state")) in
     do:  ("w" <-[#uint32T] "$r0");;;
     (if: (race.Enabled && (int_gt (![#intT] "delta") #(W64 0))) && ((![#int32T] "v") = (s_to_w32 (![#intT] "delta")))
@@ -353,7 +353,7 @@ Definition WaitGroup__Add : val :=
    go: waitgroup.go:88:22 *)
 Definition WaitGroup__Done : val :=
   rec: "WaitGroup__Done" "wg" <> :=
-    exception_do (let: "wg" := (alloc "wg") in
+    exception_do (let: "wg" := (mem.alloc "wg") in
     do:  (let: "$a0" := #(W64 (- 1)) in
     (method_call #sync.sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0")).
 
@@ -362,18 +362,18 @@ Definition WaitGroup__Done : val :=
    go: waitgroup.go:93:22 *)
 Definition WaitGroup__Wait : val :=
   rec: "WaitGroup__Wait" "wg" <> :=
-    exception_do (let: "wg" := (alloc "wg") in
+    exception_do (let: "wg" := (mem.alloc "wg") in
     (if: race.Enabled
     then do:  ((func_call #race #"Disable"%go) #())
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "state" := (alloc (type.zero_val #uint64T)) in
+      let: "state" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) in
       do:  ("state" <-[#uint64T] "$r0");;;
-      let: "v" := (alloc (type.zero_val #int32T)) in
+      let: "v" := (mem.alloc (type.zero_val #int32T)) in
       let: "$r0" := (u_to_w32 ((![#uint64T] "state") ≫ #(W64 32))) in
       do:  ("v" <-[#int32T] "$r0");;;
-      let: "w" := (alloc (type.zero_val #uint32T)) in
+      let: "w" := (mem.alloc (type.zero_val #uint32T)) in
       let: "$r0" := (u_to_w32 (![#uint64T] "state")) in
       do:  ("w" <-[#uint32T] "$r0");;;
       (if: (![#int32T] "v") = #(W32 0)

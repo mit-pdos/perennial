@@ -33,9 +33,9 @@ Definition Election : go_type := structT [
    go: election.go:44:6 *)
 Definition NewElection : val :=
   rec: "NewElection" "s" "pfx" :=
-    exception_do (let: "pfx" := (alloc "pfx") in
-    let: "s" := (alloc "s") in
-    return: (alloc (let: "$session" := (![#ptrT] "s") in
+    exception_do (let: "pfx" := (mem.alloc "pfx") in
+    let: "s" := (mem.alloc "s") in
+    return: (mem.alloc (let: "$session" := (![#ptrT] "s") in
      let: "$keyPrefix" := ((![#stringT] "pfx") + #"/"%go) in
      struct.make #Election [{
        "session" ::= "$session";
@@ -51,11 +51,11 @@ Definition NewElection : val :=
    go: election.go:49:6 *)
 Definition ResumeElection : val :=
   rec: "ResumeElection" "s" "pfx" "leaderKey" "leaderRev" :=
-    exception_do (let: "leaderRev" := (alloc "leaderRev") in
-    let: "leaderKey" := (alloc "leaderKey") in
-    let: "pfx" := (alloc "pfx") in
-    let: "s" := (alloc "s") in
-    return: (alloc (let: "$keyPrefix" := (![#stringT] "pfx") in
+    exception_do (let: "leaderRev" := (mem.alloc "leaderRev") in
+    let: "leaderKey" := (mem.alloc "leaderKey") in
+    let: "pfx" := (mem.alloc "pfx") in
+    let: "s" := (mem.alloc "s") in
+    return: (mem.alloc (let: "$keyPrefix" := (![#stringT] "pfx") in
      let: "$session" := (![#ptrT] "s") in
      let: "$leaderKey" := (![#stringT] "leaderKey") in
      let: "$leaderRev" := (![#int64T] "leaderRev") in
@@ -93,23 +93,23 @@ Definition Session : go_type := structT [
    go: election.go:69:20 *)
 Definition Election__Campaign : val :=
   rec: "Election__Campaign" "e" "ctx" "val" :=
-    exception_do (let: "e" := (alloc "e") in
-    let: "val" := (alloc "val") in
-    let: "ctx" := (alloc "ctx") in
-    let: "s" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "e" := (mem.alloc "e") in
+    let: "val" := (mem.alloc "val") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e"))) in
     do:  ("s" <-[#ptrT] "$r0");;;
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    let: "k" := (alloc (type.zero_val #stringT)) in
+    let: "k" := (mem.alloc (type.zero_val #stringT)) in
     let: "$r0" := (let: "$a0" := #"%s%x"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![#stringT] (struct.field_ref #Election #"keyPrefix"%go (![#ptrT] "e")))) in
     let: "$sl1" := (interface.make #clientv3 #"LeaseID" ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #())) in
     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ("k" <-[#stringT] "$r0");;;
-    let: "txn" := (alloc (type.zero_val #clientv3.Txn)) in
+    let: "txn" := (mem.alloc (type.zero_val #clientv3.Txn)) in
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := (![#stringT] "k") in
     (func_call #clientv3 #"CreateRevision"%go) "$a0") in
     let: "$a1" := #"="%go in
@@ -134,8 +134,8 @@ Definition Election__Campaign : val :=
     slice.literal #clientv3.Op ["$sl0"])) in
     (interface.get #"Else"%go (![#clientv3.Txn] "txn")) "$a0") in
     do:  ("txn" <-[#clientv3.Txn] "$r0");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "resp" := (alloc (type.zero_val #ptrT)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (![#clientv3.Txn] "txn")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -152,7 +152,7 @@ Definition Election__Campaign : val :=
     do:  ((struct.field_ref #Election #"leaderSession"%go (![#ptrT] "e")) <-[#ptrT] "$r2");;;
     (if: (~ (![#boolT] (struct.field_ref #clientv3.TxnResponse #"Succeeded"%go (![#ptrT] "resp"))))
     then
-      let: "kv" := (alloc (type.zero_val #ptrT)) in
+      let: "kv" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #etcdserverpb.RangeResponse #"Kvs"%go ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.TxnResponse #"Responses"%go (![#ptrT] "resp"))) #(W64 0)))) #()))) #(W64 0))) in
       do:  ("kv" <-[#ptrT] "$r0");;;
       let: "$r0" := (![#int64T] (struct.field_ref #mvccpb.KeyValue #"CreateRevision"%go (![#ptrT] "kv"))) in
@@ -197,23 +197,23 @@ Definition Election__Campaign : val :=
    go: election.go:110:20 *)
 Definition Election__Proclaim : val :=
   rec: "Election__Proclaim" "e" "ctx" "val" :=
-    exception_do (let: "e" := (alloc "e") in
-    let: "val" := (alloc "val") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "e" := (mem.alloc "e") in
+    let: "val" := (mem.alloc "val") in
+    let: "ctx" := (mem.alloc "ctx") in
     (if: (![#ptrT] (struct.field_ref #Election #"leaderSession"%go (![#ptrT] "e"))) = #null
     then return: (![#error] (globals.get #concurrency.concurrency #"ErrElectionNotLeader"%go))
     else do:  #());;;
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    let: "cmp" := (alloc (type.zero_val #clientv3.Cmp)) in
+    let: "cmp" := (mem.alloc (type.zero_val #clientv3.Cmp)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#stringT] (struct.field_ref #Election #"leaderKey"%go (![#ptrT] "e"))) in
     (func_call #clientv3 #"CreateRevision"%go) "$a0") in
     let: "$a1" := #"="%go in
     let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] (struct.field_ref #Election #"leaderRev"%go (![#ptrT] "e")))) in
     (func_call #clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
     do:  ("cmp" <-[#clientv3.Cmp] "$r0");;;
-    let: "txn" := (alloc (type.zero_val #clientv3.Txn)) in
+    let: "txn" := (mem.alloc (type.zero_val #clientv3.Txn)) in
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (![#clientv3.Cmp] "cmp") in
     slice.literal #clientv3.Cmp ["$sl0"])) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] "ctx") in
@@ -228,8 +228,8 @@ Definition Election__Proclaim : val :=
     slice.literal #clientv3.Op ["$sl0"])) in
     (interface.get #"Then"%go (![#clientv3.Txn] "txn")) "$a0") in
     do:  ("txn" <-[#clientv3.Txn] "$r0");;;
-    let: "terr" := (alloc (type.zero_val #error)) in
-    let: "tresp" := (alloc (type.zero_val #ptrT)) in
+    let: "terr" := (mem.alloc (type.zero_val #error)) in
+    let: "tresp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (![#clientv3.Txn] "txn")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -253,23 +253,23 @@ Definition Election__Proclaim : val :=
    go: election.go:132:20 *)
 Definition Election__Resign : val :=
   rec: "Election__Resign" "e" "ctx" :=
-    exception_do (let: "err" := (alloc (type.zero_val #error)) in
-    let: "e" := (alloc "e") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "e" := (mem.alloc "e") in
+    let: "ctx" := (mem.alloc "ctx") in
     (if: (![#ptrT] (struct.field_ref #Election #"leaderSession"%go (![#ptrT] "e"))) = #null
     then return: (#interface.nil)
     else do:  #());;;
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    let: "cmp" := (alloc (type.zero_val #clientv3.Cmp)) in
+    let: "cmp" := (mem.alloc (type.zero_val #clientv3.Cmp)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#stringT] (struct.field_ref #Election #"leaderKey"%go (![#ptrT] "e"))) in
     (func_call #clientv3 #"CreateRevision"%go) "$a0") in
     let: "$a1" := #"="%go in
     let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] (struct.field_ref #Election #"leaderRev"%go (![#ptrT] "e")))) in
     (func_call #clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
     do:  ("cmp" <-[#clientv3.Cmp] "$r0");;;
-    let: "resp" := (alloc (type.zero_val #ptrT)) in
+    let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (![#stringT] (struct.field_ref #Election #"leaderKey"%go (![#ptrT] "e"))) in
     let: "$a1" := #slice.nil in
     (func_call #clientv3 #"OpDelete"%go) "$a0" "$a1") in
@@ -298,13 +298,13 @@ Definition Election__Resign : val :=
    go: election.go:148:20 *)
 Definition Election__Leader : val :=
   rec: "Election__Leader" "e" "ctx" :=
-    exception_do (let: "e" := (alloc "e") in
-    let: "ctx" := (alloc "ctx") in
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "e" := (mem.alloc "e") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "resp" := (alloc (type.zero_val #ptrT)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     let: "$a1" := (![#stringT] (struct.field_ref #Election #"keyPrefix"%go (![#ptrT] "e"))) in
     let: "$a2" := ((func_call #clientv3 #"WithFirstCreate"%go) #()) in
@@ -333,9 +333,9 @@ Definition Election__Leader : val :=
    go: election.go:167:20 *)
 Definition Election__Observe : val :=
   rec: "Election__Observe" "e" "ctx" :=
-    exception_do (let: "e" := (alloc "e") in
-    let: "ctx" := (alloc "ctx") in
-    let: "retc" := (alloc (type.zero_val #(chanT clientv3.GetResponse))) in
+    exception_do (let: "e" := (mem.alloc "e") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "retc" := (mem.alloc (type.zero_val #(chanT clientv3.GetResponse))) in
     let: "$r0" := (chan.make clientv3.GetResponse #(W64 0)) in
     do:  ("retc" <-[#(chanT clientv3.GetResponse)] "$r0");;;
     let: "$a0" := (![#context.Context] "ctx") in
@@ -347,10 +347,10 @@ Definition Election__Observe : val :=
 (* go: election.go:173:20 *)
 Definition Election__observe : val :=
   rec: "Election__observe" "e" "ctx" "ch" :=
-    with_defer: (let: "e" := (alloc "e") in
-    let: "ch" := (alloc "ch") in
-    let: "ctx" := (alloc "ctx") in
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    with_defer: (let: "e" := (mem.alloc "e") in
+    let: "ch" := (mem.alloc "ch") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#(chanT clientv3.GetResponse)] "ch") in
@@ -361,8 +361,8 @@ Definition Election__observe : val :=
       "$oldf" #()
       )));;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "err" := (alloc (type.zero_val #error)) in
-      let: "resp" := (alloc (type.zero_val #ptrT)) in
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
       let: "$a1" := (![#stringT] (struct.field_ref #Election #"keyPrefix"%go (![#ptrT] "e"))) in
       let: "$a2" := ((func_call #clientv3 #"WithFirstCreate"%go) #()) in
@@ -374,34 +374,34 @@ Definition Election__observe : val :=
       (if: (~ (interface.eq (![#error] "err") #interface.nil))
       then return: (#())
       else do:  #());;;
-      let: "kv" := (alloc (type.zero_val #ptrT)) in
-      let: "hdr" := (alloc (type.zero_val #ptrT)) in
+      let: "kv" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "hdr" := (mem.alloc (type.zero_val #ptrT)) in
       (if: (let: "$a0" := (![#sliceT] (struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp"))) in
       slice.len "$a0") = #(W64 0)
       then
-        let: "cancel" := (alloc (type.zero_val #context.CancelFunc)) in
-        let: "cctx" := (alloc (type.zero_val #context.Context)) in
+        let: "cancel" := (mem.alloc (type.zero_val #context.CancelFunc)) in
+        let: "cctx" := (mem.alloc (type.zero_val #context.Context)) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
         (func_call #context #"WithCancel"%go) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("cctx" <-[#context.Context] "$r0");;;
         do:  ("cancel" <-[#context.CancelFunc] "$r1");;;
-        let: "opts" := (alloc (type.zero_val #sliceT)) in
+        let: "opts" := (mem.alloc (type.zero_val #sliceT)) in
         let: "$r0" := ((let: "$sl0" := (let: "$a0" := (![#int64T] (struct.field_ref #etcdserverpb.ResponseHeader #"Revision"%go (![#ptrT] (struct.field_ref #clientv3.GetResponse #"Header"%go (![#ptrT] "resp"))))) in
         (func_call #clientv3 #"WithRev"%go) "$a0") in
         let: "$sl1" := ((func_call #clientv3 #"WithPrefix"%go) #()) in
         slice.literal #clientv3.OpOption ["$sl0"; "$sl1"])) in
         do:  ("opts" <-[#sliceT] "$r0");;;
-        let: "wch" := (alloc (type.zero_val #clientv3.WatchChan)) in
+        let: "wch" := (mem.alloc (type.zero_val #clientv3.WatchChan)) in
         let: "$r0" := (let: "$a0" := (![#context.Context] "cctx") in
         let: "$a1" := (![#stringT] (struct.field_ref #Election #"keyPrefix"%go (![#ptrT] "e"))) in
         let: "$a2" := (![#sliceT] "opts") in
         (method_call #clientv3 #"Client'ptr" #"Watch" (![#ptrT] "client")) "$a0" "$a1" "$a2") in
         do:  ("wch" <-[#clientv3.WatchChan] "$r0");;;
         (for: (λ: <>, (![#ptrT] "kv") = #null); (λ: <>, Skip) := λ: <>,
-          let: "ok" := (alloc (type.zero_val #boolT)) in
-          let: "wr" := (alloc (type.zero_val #clientv3.WatchResponse)) in
+          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+          let: "wr" := (mem.alloc (type.zero_val #clientv3.WatchResponse)) in
           let: ("$ret0", "$ret1") := (chan.receive (![#clientv3.WatchChan] "wch")) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
@@ -413,7 +413,7 @@ Definition Election__observe : val :=
             return: (#())
           else do:  #());;;
           let: "$range" := (![#sliceT] (struct.field_ref #clientv3.WatchResponse #"Events"%go "wr")) in
-          (let: "ev" := (alloc (type.zero_val #intT)) in
+          (let: "ev" := (mem.alloc (type.zero_val #intT)) in
           slice.for_range #ptrT "$range" (λ: "$key" "$value",
             do:  ("ev" <-[#ptrT] "$value");;;
             do:  "$key";;;
@@ -438,15 +438,15 @@ Definition Election__observe : val :=
           ))] [("$recvChan0", (λ: "$recvVal",
           return: (#())
           ))] (InjLV #()));;;
-      let: "cancel" := (alloc (type.zero_val #context.CancelFunc)) in
-      let: "cctx" := (alloc (type.zero_val #context.Context)) in
+      let: "cancel" := (mem.alloc (type.zero_val #context.CancelFunc)) in
+      let: "cctx" := (mem.alloc (type.zero_val #context.Context)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
       (func_call #context #"WithCancel"%go) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("cctx" <-[#context.Context] "$r0");;;
       do:  ("cancel" <-[#context.CancelFunc] "$r1");;;
-      let: "wch" := (alloc (type.zero_val #clientv3.WatchChan)) in
+      let: "wch" := (mem.alloc (type.zero_val #clientv3.WatchChan)) in
       let: "$r0" := (let: "$a0" := (![#context.Context] "cctx") in
       let: "$a1" := (string.from_bytes (![#sliceT] (struct.field_ref #mvccpb.KeyValue #"Key"%go (![#ptrT] "kv")))) in
       let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((![#int64T] (struct.field_ref #etcdserverpb.ResponseHeader #"Revision"%go (![#ptrT] "hdr"))) + #(W64 1)) in
@@ -454,12 +454,12 @@ Definition Election__observe : val :=
       slice.literal #clientv3.OpOption ["$sl0"])) in
       (method_call #clientv3 #"Client'ptr" #"Watch" (![#ptrT] "client")) "$a0" "$a1" "$a2") in
       do:  ("wch" <-[#clientv3.WatchChan] "$r0");;;
-      let: "keyDeleted" := (alloc (type.zero_val #boolT)) in
+      let: "keyDeleted" := (mem.alloc (type.zero_val #boolT)) in
       let: "$r0" := #false in
       do:  ("keyDeleted" <-[#boolT] "$r0");;;
       (for: (λ: <>, (~ (![#boolT] "keyDeleted"))); (λ: <>, Skip) := λ: <>,
-        let: "ok" := (alloc (type.zero_val #boolT)) in
-        let: "wr" := (alloc (type.zero_val #clientv3.WatchResponse)) in
+        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+        let: "wr" := (mem.alloc (type.zero_val #clientv3.WatchResponse)) in
         let: ("$ret0", "$ret1") := (chan.receive (![#clientv3.WatchChan] "wch")) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
@@ -471,7 +471,7 @@ Definition Election__observe : val :=
           return: (#())
         else do:  #());;;
         let: "$range" := (![#sliceT] (struct.field_ref #clientv3.WatchResponse #"Events"%go "wr")) in
-        (let: "ev" := (alloc (type.zero_val #intT)) in
+        (let: "ev" := (mem.alloc (type.zero_val #intT)) in
         slice.for_range #ptrT "$range" (λ: "$key" "$value",
           do:  ("ev" <-[#ptrT] "$value");;;
           do:  "$key";;;
@@ -499,7 +499,7 @@ Definition Election__observe : val :=
    go: election.go:248:20 *)
 Definition Election__Key : val :=
   rec: "Election__Key" "e" <> :=
-    exception_do (let: "e" := (alloc "e") in
+    exception_do (let: "e" := (mem.alloc "e") in
     return: (![#stringT] (struct.field_ref #Election #"leaderKey"%go (![#ptrT] "e")))).
 
 (* Rev returns the leader key's creation revision, if elected.
@@ -507,7 +507,7 @@ Definition Election__Key : val :=
    go: election.go:251:20 *)
 Definition Election__Rev : val :=
   rec: "Election__Rev" "e" <> :=
-    exception_do (let: "e" := (alloc "e") in
+    exception_do (let: "e" := (mem.alloc "e") in
     return: (![#int64T] (struct.field_ref #Election #"leaderRev"%go (![#ptrT] "e")))).
 
 (* Header is the response header from the last successful election proposal.
@@ -515,18 +515,18 @@ Definition Election__Rev : val :=
    go: election.go:254:20 *)
 Definition Election__Header : val :=
   rec: "Election__Header" "e" <> :=
-    exception_do (let: "e" := (alloc "e") in
+    exception_do (let: "e" := (mem.alloc "e") in
     return: (![#ptrT] (struct.field_ref #Election #"hdr"%go (![#ptrT] "e")))).
 
 (* go: key.go:25:6 *)
 Definition waitDelete : val :=
   rec: "waitDelete" "ctx" "client" "key" "rev" :=
-    with_defer: (let: "rev" := (alloc "rev") in
-    let: "key" := (alloc "key") in
-    let: "client" := (alloc "client") in
-    let: "ctx" := (alloc "ctx") in
-    let: "cancel" := (alloc (type.zero_val #context.CancelFunc)) in
-    let: "cctx" := (alloc (type.zero_val #context.Context)) in
+    with_defer: (let: "rev" := (mem.alloc "rev") in
+    let: "key" := (mem.alloc "key") in
+    let: "client" := (mem.alloc "client") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "cancel" := (mem.alloc (type.zero_val #context.CancelFunc)) in
+    let: "cctx" := (mem.alloc (type.zero_val #context.Context)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     (func_call #context #"WithCancel"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -539,8 +539,8 @@ Definition waitDelete : val :=
       "$f" #();;
       "$oldf" #()
       )));;;
-    let: "wr" := (alloc (type.zero_val #clientv3.WatchResponse)) in
-    let: "wch" := (alloc (type.zero_val #clientv3.WatchChan)) in
+    let: "wr" := (mem.alloc (type.zero_val #clientv3.WatchResponse)) in
+    let: "wch" := (mem.alloc (type.zero_val #clientv3.WatchChan)) in
     let: "$r0" := (let: "$a0" := (![#context.Context] "cctx") in
     let: "$a1" := (![#stringT] "key") in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := (![#int64T] "rev") in
@@ -552,20 +552,20 @@ Definition waitDelete : val :=
     chan.for_range "$range" (λ: "$key",
       do:  ("wr" <-[#clientv3.WatchResponse] "$key");;;
       let: "$range" := (![#sliceT] (struct.field_ref #clientv3.WatchResponse #"Events"%go "wr")) in
-      (let: "ev" := (alloc (type.zero_val #intT)) in
+      (let: "ev" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("ev" <-[#ptrT] "$value");;;
         do:  "$key";;;
         (if: (![#mvccpb.Event_EventType] (struct.field_ref #clientv3.Event #"Type"%go (![#ptrT] "ev"))) = mvccpb.DELETE
         then return: (#interface.nil)
         else do:  #()))));;;
-    (let: "err" := (alloc (type.zero_val #error)) in
+    (let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := ((method_call #clientv3 #"WatchResponse'ptr" #"Err" "wr") #()) in
     do:  ("err" <-[#error] "$r0");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then return: (![#error] "err")
     else do:  #()));;;
-    (let: "err" := (alloc (type.zero_val #error)) in
+    (let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := ((interface.get #"Err"%go (![#context.Context] "ctx")) #()) in
     do:  ("err" <-[#error] "$r0");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
@@ -580,11 +580,11 @@ Definition waitDelete : val :=
    go: key.go:49:6 *)
 Definition waitDeletes : val :=
   rec: "waitDeletes" "ctx" "client" "pfx" "maxCreateRev" :=
-    exception_do (let: "maxCreateRev" := (alloc "maxCreateRev") in
-    let: "pfx" := (alloc "pfx") in
-    let: "client" := (alloc "client") in
-    let: "ctx" := (alloc "ctx") in
-    let: "getOpts" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "maxCreateRev" := (mem.alloc "maxCreateRev") in
+    let: "pfx" := (mem.alloc "pfx") in
+    let: "client" := (mem.alloc "client") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "getOpts" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := ((func_call #clientv3 #"WithLastCreate"%go) #()) in
     let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![#int64T] "maxCreateRev") in
     (func_call #clientv3 #"WithMaxCreateRev"%go) "$a0") in
@@ -592,8 +592,8 @@ Definition waitDeletes : val :=
     (slice.append #clientv3.OpOption) "$a0" "$a1") in
     do:  ("getOpts" <-[#sliceT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      let: "err" := (alloc (type.zero_val #error)) in
-      let: "resp" := (alloc (type.zero_val #ptrT)) in
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
       let: "$a1" := (![#stringT] "pfx") in
       let: "$a2" := (![#sliceT] "getOpts") in
@@ -609,7 +609,7 @@ Definition waitDeletes : val :=
       slice.len "$a0") = #(W64 0)
       then return: (#interface.nil)
       else do:  #());;;
-      let: "lastKey" := (alloc (type.zero_val #stringT)) in
+      let: "lastKey" := (mem.alloc (type.zero_val #stringT)) in
       let: "$r0" := (string.from_bytes (![#sliceT] (struct.field_ref #mvccpb.KeyValue #"Key"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp"))) #(W64 0)))))) in
       do:  ("lastKey" <-[#stringT] "$r0");;;
       (let: "$r0" := (let: "$a0" := (![#context.Context] "ctx") in
@@ -633,9 +633,9 @@ Definition Mutex : go_type := structT [
 (* go: mutex.go:45:6 *)
 Definition NewMutex : val :=
   rec: "NewMutex" "s" "pfx" :=
-    exception_do (let: "pfx" := (alloc "pfx") in
-    let: "s" := (alloc "s") in
-    return: (alloc (struct.make #Mutex [{
+    exception_do (let: "pfx" := (mem.alloc "pfx") in
+    let: "s" := (mem.alloc "s") in
+    return: (mem.alloc (struct.make #Mutex [{
        "s" ::= ![#ptrT] "s";
        "pfx" ::= (![#stringT] "pfx") + #"/"%go;
        "myKey" ::= #""%go;
@@ -650,10 +650,10 @@ Definition NewMutex : val :=
    go: mutex.go:52:17 *)
 Definition Mutex__TryLock : val :=
   rec: "Mutex__TryLock" "m" "ctx" :=
-    exception_do (let: "m" := (alloc "m") in
-    let: "ctx" := (alloc "ctx") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "resp" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     (method_call #concurrency.concurrency #"Mutex'ptr" #"tryAcquire" (![#ptrT] "m")) "$a0") in
     let: "$r0" := "$ret0" in
@@ -663,7 +663,7 @@ Definition Mutex__TryLock : val :=
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then return: (![#error] "err")
     else do:  #());;;
-    let: "ownerKey" := (alloc (type.zero_val #sliceT)) in
+    let: "ownerKey" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] (struct.field_ref #etcdserverpb.RangeResponse #"Kvs"%go ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.TxnResponse #"Responses"%go (![#ptrT] "resp"))) #(W64 1)))) #()))) in
     do:  ("ownerKey" <-[#sliceT] "$r0");;;
     (if: ((let: "$a0" := (![#sliceT] "ownerKey") in
@@ -673,10 +673,10 @@ Definition Mutex__TryLock : val :=
       do:  ((struct.field_ref #Mutex #"hdr"%go (![#ptrT] "m")) <-[#ptrT] "$r0");;;
       return: (#interface.nil)
     else do:  #());;;
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Mutex #"s"%go (![#ptrT] "m")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    (let: "err" := (alloc (type.zero_val #error)) in
+    (let: "err" := (mem.alloc (type.zero_val #error)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     let: "$a1" := (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) in
     let: "$a2" := #slice.nil in
@@ -700,10 +700,10 @@ Definition Mutex__TryLock : val :=
    go: mutex.go:75:17 *)
 Definition Mutex__Lock : val :=
   rec: "Mutex__Lock" "m" "ctx" :=
-    exception_do (let: "m" := (alloc "m") in
-    let: "ctx" := (alloc "ctx") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "resp" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     (method_call #concurrency.concurrency #"Mutex'ptr" #"tryAcquire" (![#ptrT] "m")) "$a0") in
     let: "$r0" := "$ret0" in
@@ -713,7 +713,7 @@ Definition Mutex__Lock : val :=
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then return: (![#error] "err")
     else do:  #());;;
-    let: "ownerKey" := (alloc (type.zero_val #sliceT)) in
+    let: "ownerKey" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] (struct.field_ref #etcdserverpb.RangeResponse #"Kvs"%go ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.TxnResponse #"Responses"%go (![#ptrT] "resp"))) #(W64 1)))) #()))) in
     do:  ("ownerKey" <-[#sliceT] "$r0");;;
     (if: ((let: "$a0" := (![#sliceT] "ownerKey") in
@@ -723,10 +723,10 @@ Definition Mutex__Lock : val :=
       do:  ((struct.field_ref #Mutex #"hdr"%go (![#ptrT] "m")) <-[#ptrT] "$r0");;;
       return: (#interface.nil)
     else do:  #());;;
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Mutex #"s"%go (![#ptrT] "m")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    let: "werr" := (alloc (type.zero_val #error)) in
+    let: "werr" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := (let: "$a0" := (![#context.Context] "ctx") in
     let: "$a1" := (![#ptrT] "client") in
     let: "$a2" := (![#stringT] (struct.field_ref #Mutex #"pfx"%go (![#ptrT] "m"))) in
@@ -739,7 +739,7 @@ Definition Mutex__Lock : val :=
       (method_call #concurrency.concurrency #"Mutex'ptr" #"Unlock" (![#ptrT] "m")) "$a0");;;
       return: (![#error] "werr")
     else do:  #());;;
-    let: "gresp" := (alloc (type.zero_val #ptrT)) in
+    let: "gresp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     let: "$a1" := (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) in
     let: "$a2" := #slice.nil in
@@ -765,12 +765,12 @@ Definition Mutex__Lock : val :=
 (* go: mutex.go:111:17 *)
 Definition Mutex__tryAcquire : val :=
   rec: "Mutex__tryAcquire" "m" "ctx" :=
-    exception_do (let: "m" := (alloc "m") in
-    let: "ctx" := (alloc "ctx") in
-    let: "s" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "ctx" := (mem.alloc "ctx") in
+    let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #Mutex #"s"%go (![#ptrT] "m"))) in
     do:  ("s" <-[#ptrT] "$r0");;;
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Mutex #"s"%go (![#ptrT] "m")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := #"%s%x"%go in
@@ -779,14 +779,14 @@ Definition Mutex__tryAcquire : val :=
     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (func_call #fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ((struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m")) <-[#stringT] "$r0");;;
-    let: "cmp" := (alloc (type.zero_val #clientv3.Cmp)) in
+    let: "cmp" := (mem.alloc (type.zero_val #clientv3.Cmp)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) in
     (func_call #clientv3 #"CreateRevision"%go) "$a0") in
     let: "$a1" := #"="%go in
     let: "$a2" := (interface.make #""%go #"int"%go #(W64 0)) in
     (func_call #clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
     do:  ("cmp" <-[#clientv3.Cmp] "$r0");;;
-    let: "put" := (alloc (type.zero_val #clientv3.Op)) in
+    let: "put" := (mem.alloc (type.zero_val #clientv3.Op)) in
     let: "$r0" := (let: "$a0" := (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) in
     let: "$a1" := #""%go in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #()) in
@@ -794,18 +794,18 @@ Definition Mutex__tryAcquire : val :=
     slice.literal #clientv3.OpOption ["$sl0"])) in
     (func_call #clientv3 #"OpPut"%go) "$a0" "$a1" "$a2") in
     do:  ("put" <-[#clientv3.Op] "$r0");;;
-    let: "get" := (alloc (type.zero_val #clientv3.Op)) in
+    let: "get" := (mem.alloc (type.zero_val #clientv3.Op)) in
     let: "$r0" := (let: "$a0" := (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) in
     let: "$a1" := #slice.nil in
     (func_call #clientv3 #"OpGet"%go) "$a0" "$a1") in
     do:  ("get" <-[#clientv3.Op] "$r0");;;
-    let: "getOwner" := (alloc (type.zero_val #clientv3.Op)) in
+    let: "getOwner" := (mem.alloc (type.zero_val #clientv3.Op)) in
     let: "$r0" := (let: "$a0" := (![#stringT] (struct.field_ref #Mutex #"pfx"%go (![#ptrT] "m"))) in
     let: "$a1" := ((func_call #clientv3 #"WithFirstCreate"%go) #()) in
     (func_call #clientv3 #"OpGet"%go) "$a0" "$a1") in
     do:  ("getOwner" <-[#clientv3.Op] "$r0");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "resp" := (alloc (type.zero_val #ptrT)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((let: "$sl0" := (![#clientv3.Op] "get") in
     let: "$sl1" := (![#clientv3.Op] "getOwner") in
     slice.literal #clientv3.Op ["$sl0"; "$sl1"])) in
@@ -835,8 +835,8 @@ Definition Mutex__tryAcquire : val :=
 (* go: mutex.go:134:17 *)
 Definition Mutex__Unlock : val :=
   rec: "Mutex__Unlock" "m" "ctx" :=
-    exception_do (let: "m" := (alloc "m") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "ctx" := (mem.alloc "ctx") in
     (if: (((![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) = #""%go) || (int_leq (![#int64T] (struct.field_ref #Mutex #"myRev"%go (![#ptrT] "m"))) #(W64 0))) || ((![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) = #" "%go)
     then return: (![#error] (globals.get #concurrency.concurrency #"ErrLockReleased"%go))
     else do:  #());;;
@@ -850,10 +850,10 @@ Definition Mutex__Unlock : val :=
        slice.literal #interfaceT ["$sl0"; "$sl1"])) in
        (func_call #fmt #"Errorf"%go) "$a0" "$a1")
     else do:  #());;;
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Mutex #"s"%go (![#ptrT] "m")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    (let: "err" := (alloc (type.zero_val #error)) in
+    (let: "err" := (mem.alloc (type.zero_val #error)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     let: "$a1" := (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) in
     let: "$a2" := #slice.nil in
@@ -874,7 +874,7 @@ Definition Mutex__Unlock : val :=
 (* go: mutex.go:152:17 *)
 Definition Mutex__IsOwner : val :=
   rec: "Mutex__IsOwner" "m" <> :=
-    exception_do (let: "m" := (alloc "m") in
+    exception_do (let: "m" := (mem.alloc "m") in
     return: (let: "$a0" := (let: "$a0" := (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) in
      (func_call #clientv3 #"CreateRevision"%go) "$a0") in
      let: "$a1" := #"="%go in
@@ -884,7 +884,7 @@ Definition Mutex__IsOwner : val :=
 (* go: mutex.go:156:17 *)
 Definition Mutex__Key : val :=
   rec: "Mutex__Key" "m" <> :=
-    exception_do (let: "m" := (alloc "m") in
+    exception_do (let: "m" := (mem.alloc "m") in
     return: (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m")))).
 
 (* Header is the response header received from etcd on acquiring the lock.
@@ -892,7 +892,7 @@ Definition Mutex__Key : val :=
    go: mutex.go:159:17 *)
 Definition Mutex__Header : val :=
   rec: "Mutex__Header" "m" <> :=
-    exception_do (let: "m" := (alloc "m") in
+    exception_do (let: "m" := (mem.alloc "m") in
     return: (![#ptrT] (struct.field_ref #Mutex #"hdr"%go (![#ptrT] "m")))).
 
 Definition lockerMutex : go_type := structT [
@@ -902,11 +902,11 @@ Definition lockerMutex : go_type := structT [
 (* go: mutex.go:163:24 *)
 Definition lockerMutex__Lock : val :=
   rec: "lockerMutex__Lock" "lm" <> :=
-    exception_do (let: "lm" := (alloc "lm") in
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "lm" := (mem.alloc "lm") in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Mutex #"s"%go (![#ptrT] (struct.field_ref #lockerMutex #"Mutex"%go (![#ptrT] "lm")))))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    (let: "err" := (alloc (type.zero_val #error)) in
+    (let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := (let: "$a0" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![#ptrT] "client")) #()) in
     (method_call #concurrency.concurrency #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #lockerMutex #"Mutex"%go (![#ptrT] "lm")))) "$a0") in
     do:  ("err" <-[#error] "$r0");;;
@@ -919,11 +919,11 @@ Definition lockerMutex__Lock : val :=
 (* go: mutex.go:170:24 *)
 Definition lockerMutex__Unlock : val :=
   rec: "lockerMutex__Unlock" "lm" <> :=
-    exception_do (let: "lm" := (alloc "lm") in
-    let: "client" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "lm" := (mem.alloc "lm") in
+    let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Mutex #"s"%go (![#ptrT] (struct.field_ref #lockerMutex #"Mutex"%go (![#ptrT] "lm")))))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    (let: "err" := (alloc (type.zero_val #error)) in
+    (let: "err" := (mem.alloc (type.zero_val #error)) in
     let: "$r0" := (let: "$a0" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![#ptrT] "client")) #()) in
     (method_call #concurrency.concurrency #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #lockerMutex #"Mutex"%go (![#ptrT] "lm")))) "$a0") in
     do:  ("err" <-[#error] "$r0");;;
@@ -938,9 +938,9 @@ Definition lockerMutex__Unlock : val :=
    go: mutex.go:178:6 *)
 Definition NewLocker : val :=
   rec: "NewLocker" "s" "pfx" :=
-    exception_do (let: "pfx" := (alloc "pfx") in
-    let: "s" := (alloc "s") in
-    return: (interface.make #concurrency.concurrency #"lockerMutex'ptr" (alloc (struct.make #lockerMutex [{
+    exception_do (let: "pfx" := (mem.alloc "pfx") in
+    let: "s" := (mem.alloc "s") in
+    return: (interface.make #concurrency.concurrency #"lockerMutex'ptr" (mem.alloc (struct.make #lockerMutex [{
        "Mutex" ::= let: "$a0" := (![#ptrT] "s") in
        let: "$a1" := (![#stringT] "pfx") in
        (func_call #concurrency.concurrency #"NewMutex"%go) "$a0" "$a1"
@@ -961,13 +961,13 @@ Definition SessionOption : go_type := funcT.
    go: session.go:41:6 *)
 Definition NewSession : val :=
   rec: "NewSession" "client" "opts" :=
-    exception_do (let: "opts" := (alloc "opts") in
-    let: "client" := (alloc "client") in
-    let: "lg" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "opts" := (mem.alloc "opts") in
+    let: "client" := (mem.alloc "client") in
+    let: "lg" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #clientv3 #"Client'ptr" #"GetLogger" (![#ptrT] "client")) #()) in
     do:  ("lg" <-[#ptrT] "$r0");;;
-    let: "ops" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (let: "$ttl" := #(W64 defaultSessionTTL) in
+    let: "ops" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$ttl" := #(W64 defaultSessionTTL) in
     let: "$ctx" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![#ptrT] "client")) #()) in
     struct.make #sessionOptions [{
       "ttl" ::= "$ttl";
@@ -976,20 +976,20 @@ Definition NewSession : val :=
     }])) in
     do:  ("ops" <-[#ptrT] "$r0");;;
     let: "$range" := (![#sliceT] "opts") in
-    (let: "opt" := (alloc (type.zero_val #intT)) in
+    (let: "opt" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #SessionOption "$range" (λ: "$key" "$value",
       do:  ("opt" <-[#SessionOption] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![#ptrT] "ops") in
       let: "$a1" := (![#ptrT] "lg") in
       (![#SessionOption] "opt") "$a0" "$a1")));;;
-    let: "id" := (alloc (type.zero_val #clientv3.LeaseID)) in
+    let: "id" := (mem.alloc (type.zero_val #clientv3.LeaseID)) in
     let: "$r0" := (![#clientv3.LeaseID] (struct.field_ref #sessionOptions #"leaseID"%go (![#ptrT] "ops"))) in
     do:  ("id" <-[#clientv3.LeaseID] "$r0");;;
     (if: (![#clientv3.LeaseID] "id") = clientv3.NoLease
     then
-      let: "err" := (alloc (type.zero_val #error)) in
-      let: "resp" := (alloc (type.zero_val #ptrT)) in
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] (struct.field_ref #sessionOptions #"ctx"%go (![#ptrT] "ops"))) in
       let: "$a1" := (s_to_w64 (![#intT] (struct.field_ref #sessionOptions #"ttl"%go (![#ptrT] "ops")))) in
       (method_call #clientv3 #"Client'ptr" #"Grant" (![#ptrT] "client")) "$a0" "$a1") in
@@ -1003,16 +1003,16 @@ Definition NewSession : val :=
       let: "$r0" := (![#clientv3.LeaseID] (struct.field_ref #clientv3.LeaseGrantResponse #"ID"%go (![#ptrT] "resp"))) in
       do:  ("id" <-[#clientv3.LeaseID] "$r0")
     else do:  #());;;
-    let: "cancel" := (alloc (type.zero_val #context.CancelFunc)) in
-    let: "ctx" := (alloc (type.zero_val #context.Context)) in
+    let: "cancel" := (mem.alloc (type.zero_val #context.CancelFunc)) in
+    let: "ctx" := (mem.alloc (type.zero_val #context.Context)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] (struct.field_ref #sessionOptions #"ctx"%go (![#ptrT] "ops"))) in
     (func_call #context #"WithCancel"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("ctx" <-[#context.Context] "$r0");;;
     do:  ("cancel" <-[#context.CancelFunc] "$r1");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "keepAlive" := (alloc (type.zero_val #(chanT ptrT))) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "keepAlive" := (mem.alloc (type.zero_val #(chanT ptrT))) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     let: "$a1" := (![#clientv3.LeaseID] "id") in
     (method_call #clientv3 #"Client'ptr" #"KeepAlive" (![#ptrT] "client")) "$a0" "$a1") in
@@ -1025,14 +1025,14 @@ Definition NewSession : val :=
       do:  ((![#context.CancelFunc] "cancel") #());;;
       return: (#null, ![#error] "err")
     else do:  #());;;
-    let: "donec" := (alloc (type.zero_val #(chanT (structT [
+    let: "donec" := (mem.alloc (type.zero_val #(chanT (structT [
     ])))) in
     let: "$r0" := (chan.make (structT [
     ]) #(W64 0)) in
     do:  ("donec" <-[#(chanT (structT [
     ]))] "$r0");;;
-    let: "s" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (let: "$client" := (![#ptrT] "client") in
+    let: "s" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$client" := (![#ptrT] "client") in
     let: "$opts" := (![#ptrT] "ops") in
     let: "$id" := (![#clientv3.LeaseID] "id") in
     let: "$ctx" := (![#context.Context] "ctx") in
@@ -1072,7 +1072,7 @@ Definition NewSession : val :=
    go: session.go:82:19 *)
 Definition Session__Client : val :=
   rec: "Session__Client" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     return: (![#ptrT] (struct.field_ref #Session #"client"%go (![#ptrT] "s")))).
 
 (* Lease is the lease ID for keys bound to the session.
@@ -1080,7 +1080,7 @@ Definition Session__Client : val :=
    go: session.go:87:19 *)
 Definition Session__Lease : val :=
   rec: "Session__Lease" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     return: (![#clientv3.LeaseID] (struct.field_ref #Session #"id"%go (![#ptrT] "s")))).
 
 (* Ctx is the context attached to the session, it is canceled when the lease is orphaned, expires, or
@@ -1089,7 +1089,7 @@ Definition Session__Lease : val :=
    go: session.go:91:19 *)
 Definition Session__Ctx : val :=
   rec: "Session__Ctx" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     return: (![#context.Context] (struct.field_ref #Session #"ctx"%go (![#ptrT] "s")))).
 
 (* Done returns a channel that closes when the lease is orphaned, expires, or
@@ -1098,7 +1098,7 @@ Definition Session__Ctx : val :=
    go: session.go:97:19 *)
 Definition Session__Done : val :=
   rec: "Session__Done" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     return: (![#(chanT (structT [
      ]))] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))).
 
@@ -1109,7 +1109,7 @@ Definition Session__Done : val :=
    go: session.go:102:19 *)
 Definition Session__Orphan : val :=
   rec: "Session__Orphan" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     do:  ((![#context.CancelFunc] (struct.field_ref #Session #"cancel"%go (![#ptrT] "s"))) #());;;
     do:  (Fst (chan.receive (![#(chanT (structT [
     ]))] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))))).
@@ -1119,10 +1119,10 @@ Definition Session__Orphan : val :=
    go: session.go:108:19 *)
 Definition Session__Close : val :=
   rec: "Session__Close" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     do:  ((method_call #concurrency.concurrency #"Session'ptr" #"Orphan" (![#ptrT] "s")) #());;;
-    let: "cancel" := (alloc (type.zero_val #context.CancelFunc)) in
-    let: "ctx" := (alloc (type.zero_val #context.Context)) in
+    let: "cancel" := (mem.alloc (type.zero_val #context.CancelFunc)) in
+    let: "ctx" := (mem.alloc (type.zero_val #context.Context)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] (struct.field_ref #sessionOptions #"ctx"%go (![#ptrT] (struct.field_ref #Session #"opts"%go (![#ptrT] "s"))))) in
     let: "$a1" := ((s_to_w64 (![#intT] (struct.field_ref #sessionOptions #"ttl"%go (![#ptrT] (struct.field_ref #Session #"opts"%go (![#ptrT] "s")))))) * time.Second) in
     (func_call #context #"WithTimeout"%go) "$a0" "$a1") in
@@ -1130,7 +1130,7 @@ Definition Session__Close : val :=
     let: "$r1" := "$ret1" in
     do:  ("ctx" <-[#context.Context] "$r0");;;
     do:  ("cancel" <-[#context.CancelFunc] "$r1");;;
-    let: "err" := (alloc (type.zero_val #error)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     let: "$a1" := (![#clientv3.LeaseID] (struct.field_ref #Session #"id"%go (![#ptrT] "s"))) in
     (method_call #clientv3 #"Client'ptr" #"Revoke" (![#ptrT] (struct.field_ref #Session #"client"%go (![#ptrT] "s")))) "$a0" "$a1") in
@@ -1147,10 +1147,10 @@ Definition Session__Close : val :=
    go: session.go:128:6 *)
 Definition WithTTL : val :=
   rec: "WithTTL" "ttl" :=
-    exception_do (let: "ttl" := (alloc "ttl") in
+    exception_do (let: "ttl" := (mem.alloc "ttl") in
     return: ((λ: "so" "lg",
-       exception_do (let: "lg" := (alloc "lg") in
-       let: "so" := (alloc "so") in
+       exception_do (let: "lg" := (mem.alloc "lg") in
+       let: "so" := (mem.alloc "so") in
        (if: int_gt (![#intT] "ttl") #(W64 0)
        then
          let: "$r0" := (![#intT] "ttl") in
@@ -1171,10 +1171,10 @@ Definition WithTTL : val :=
    go: session.go:141:6 *)
 Definition WithLease : val :=
   rec: "WithLease" "leaseID" :=
-    exception_do (let: "leaseID" := (alloc "leaseID") in
+    exception_do (let: "leaseID" := (mem.alloc "leaseID") in
     return: ((λ: "so" <>,
-       exception_do (let: <> := (alloc "_") in
-       let: "so" := (alloc "so") in
+       exception_do (let: <> := (mem.alloc "_") in
+       let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#clientv3.LeaseID] "leaseID") in
        do:  ((struct.field_ref #sessionOptions #"leaseID"%go (![#ptrT] "so")) <-[#clientv3.LeaseID] "$r0"))
        ))).
@@ -1188,10 +1188,10 @@ Definition WithLease : val :=
    go: session.go:152:6 *)
 Definition WithContext : val :=
   rec: "WithContext" "ctx" :=
-    exception_do (let: "ctx" := (alloc "ctx") in
+    exception_do (let: "ctx" := (mem.alloc "ctx") in
     return: ((λ: "so" <>,
-       exception_do (let: <> := (alloc "_") in
-       let: "so" := (alloc "so") in
+       exception_do (let: <> := (mem.alloc "_") in
+       let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#context.Context] "ctx") in
        do:  ((struct.field_ref #sessionOptions #"ctx"%go (![#ptrT] "so")) <-[#context.Context] "$r0"))
        ))).
@@ -1225,9 +1225,9 @@ Definition stmOption : go_type := funcT.
    go: stm.go:71:6 *)
 Definition WithIsolation : val :=
   rec: "WithIsolation" "lvl" :=
-    exception_do (let: "lvl" := (alloc "lvl") in
+    exception_do (let: "lvl" := (mem.alloc "lvl") in
     return: ((λ: "so",
-       exception_do (let: "so" := (alloc "so") in
+       exception_do (let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#Isolation] "lvl") in
        do:  ((struct.field_ref #stmOptions #"iso"%go (![#ptrT] "so")) <-[#Isolation] "$r0"))
        ))).
@@ -1237,9 +1237,9 @@ Definition WithIsolation : val :=
    go: stm.go:76:6 *)
 Definition WithAbortContext : val :=
   rec: "WithAbortContext" "ctx" :=
-    exception_do (let: "ctx" := (alloc "ctx") in
+    exception_do (let: "ctx" := (mem.alloc "ctx") in
     return: ((λ: "so",
-       exception_do (let: "so" := (alloc "so") in
+       exception_do (let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#context.Context] "ctx") in
        do:  ((struct.field_ref #stmOptions #"ctx"%go (![#ptrT] "so")) <-[#context.Context] "$r0"))
        ))).
@@ -1252,9 +1252,9 @@ Definition WithAbortContext : val :=
    go: stm.go:84:6 *)
 Definition WithPrefetch : val :=
   rec: "WithPrefetch" "keys" :=
-    exception_do (let: "keys" := (alloc "keys") in
+    exception_do (let: "keys" := (mem.alloc "keys") in
     return: ((λ: "so",
-       exception_do (let: "so" := (alloc "so") in
+       exception_do (let: "so" := (mem.alloc "so") in
        let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #stmOptions #"prefetch"%go (![#ptrT] "so"))) in
        let: "$a1" := (![#sliceT] "keys") in
        (slice.append #stringT) "$a0" "$a1") in
@@ -1266,11 +1266,11 @@ Definition WithPrefetch : val :=
    go: stm.go:89:6 *)
 Definition NewSTM : val :=
   rec: "NewSTM" "c" "apply" "so" :=
-    exception_do (let: "so" := (alloc "so") in
-    let: "apply" := (alloc "apply") in
-    let: "c" := (alloc "c") in
-    let: "opts" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (let: "$ctx" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![#ptrT] "c")) #()) in
+    exception_do (let: "so" := (mem.alloc "so") in
+    let: "apply" := (mem.alloc "apply") in
+    let: "c" := (mem.alloc "c") in
+    let: "opts" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$ctx" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![#ptrT] "c")) #()) in
     struct.make #stmOptions [{
       "iso" ::= type.zero_val #Isolation;
       "ctx" ::= "$ctx";
@@ -1278,7 +1278,7 @@ Definition NewSTM : val :=
     }])) in
     do:  ("opts" <-[#ptrT] "$r0");;;
     let: "$range" := (![#sliceT] "so") in
-    (let: "f" := (alloc (type.zero_val #intT)) in
+    (let: "f" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #stmOption "$range" (λ: "$key" "$value",
       do:  ("f" <-[#stmOption] "$value");;;
       do:  "$key";;;
@@ -1287,11 +1287,11 @@ Definition NewSTM : val :=
     (if: (let: "$a0" := (![#sliceT] (struct.field_ref #stmOptions #"prefetch"%go (![#ptrT] "opts"))) in
     slice.len "$a0") ≠ #(W64 0)
     then
-      let: "f" := (alloc (type.zero_val #funcT)) in
+      let: "f" := (mem.alloc (type.zero_val #funcT)) in
       let: "$r0" := (![#funcT] "apply") in
       do:  ("f" <-[#funcT] "$r0");;;
       let: "$r0" := (λ: "s",
-        exception_do (let: "s" := (alloc "s") in
+        exception_do (let: "s" := (mem.alloc "s") in
         do:  (let: "$a0" := (![#sliceT] (struct.field_ref #stmOptions #"prefetch"%go (![#ptrT] "opts"))) in
         (interface.get #"Get"%go (![#STM] "s")) "$a0");;;
         return: (let: "$a0" := (![#STM] "s") in
@@ -1332,13 +1332,13 @@ Definition stmSerializable : go_type := structT [
 (* go: stm.go:104:6 *)
 Definition mkSTM : val :=
   rec: "mkSTM" "c" "opts" :=
-    exception_do (let: "opts" := (alloc "opts") in
-    let: "c" := (alloc "c") in
+    exception_do (let: "opts" := (mem.alloc "opts") in
+    let: "c" := (mem.alloc "c") in
     let: "$sw" := (![#Isolation] (struct.field_ref #stmOptions #"iso"%go (![#ptrT] "opts"))) in
     (if: "$sw" = SerializableSnapshot
     then
-      let: "s" := (alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (alloc (let: "$stm" := (let: "$client" := (![#ptrT] "c") in
+      let: "s" := (mem.alloc (type.zero_val #ptrT)) in
+      let: "$r0" := (mem.alloc (let: "$stm" := (let: "$client" := (![#ptrT] "c") in
       let: "$ctx" := (![#context.Context] (struct.field_ref #stmOptions #"ctx"%go (![#ptrT] "opts"))) in
       struct.make #stm [{
         "client" ::= "$client";
@@ -1365,8 +1365,8 @@ Definition mkSTM : val :=
     else
       (if: "$sw" = Serializable
       then
-        let: "s" := (alloc (type.zero_val #ptrT)) in
-        let: "$r0" := (alloc (let: "$stm" := (let: "$client" := (![#ptrT] "c") in
+        let: "s" := (mem.alloc (type.zero_val #ptrT)) in
+        let: "$r0" := (mem.alloc (let: "$stm" := (let: "$client" := (![#ptrT] "c") in
         let: "$ctx" := (![#context.Context] (struct.field_ref #stmOptions #"ctx"%go (![#ptrT] "opts"))) in
         struct.make #stm [{
           "client" ::= "$client";
@@ -1390,8 +1390,8 @@ Definition mkSTM : val :=
       else
         (if: "$sw" = RepeatableReads
         then
-          let: "s" := (alloc (type.zero_val #ptrT)) in
-          let: "$r0" := (alloc (let: "$client" := (![#ptrT] "c") in
+          let: "s" := (mem.alloc (type.zero_val #ptrT)) in
+          let: "$r0" := (mem.alloc (let: "$client" := (![#ptrT] "c") in
           let: "$ctx" := (![#context.Context] (struct.field_ref #stmOptions #"ctx"%go (![#ptrT] "opts"))) in
           let: "$getOpts" := ((let: "$sl0" := ((func_call #clientv3 #"WithSerializable"%go) #()) in
           slice.literal #clientv3.OpOption ["$sl0"])) in
@@ -1412,8 +1412,8 @@ Definition mkSTM : val :=
         else
           (if: "$sw" = ReadCommitted
           then
-            let: "s" := (alloc (type.zero_val #ptrT)) in
-            let: "$r0" := (alloc (let: "$client" := (![#ptrT] "c") in
+            let: "s" := (mem.alloc (type.zero_val #ptrT)) in
+            let: "$r0" := (mem.alloc (let: "$client" := (![#ptrT] "c") in
             let: "$ctx" := (![#context.Context] (struct.field_ref #stmOptions #"ctx"%go (![#ptrT] "opts"))) in
             let: "$getOpts" := ((let: "$sl0" := ((func_call #clientv3 #"WithSerializable"%go) #()) in
             slice.literal #clientv3.OpOption ["$sl0"])) in
@@ -1443,20 +1443,20 @@ Definition stmResponse : go_type := structT [
 (* go: stm.go:140:6 *)
 Definition runSTM : val :=
   rec: "runSTM" "s" "apply" :=
-    exception_do (let: "apply" := (alloc "apply") in
-    let: "s" := (alloc "s") in
-    let: "outc" := (alloc (type.zero_val #(chanT stmResponse))) in
+    exception_do (let: "apply" := (mem.alloc "apply") in
+    let: "s" := (mem.alloc "s") in
+    let: "outc" := (mem.alloc (type.zero_val #(chanT stmResponse))) in
     let: "$r0" := (chan.make stmResponse #(W64 1)) in
     do:  ("outc" <-[#(chanT stmResponse)] "$r0");;;
     let: "$go" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
-        exception_do ((let: "r" := (alloc (type.zero_val #interfaceT)) in
+        exception_do ((let: "r" := (mem.alloc (type.zero_val #interfaceT)) in
         let: "$r0" := (recover #()) in
         do:  ("r" <-[#interfaceT] "$r0");;;
         (if: (~ (interface.eq (![#interfaceT] "r") #interface.nil))
         then
-          let: "ok" := (alloc (type.zero_val #boolT)) in
-          let: "e" := (alloc (type.zero_val #stmError)) in
+          let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+          let: "e" := (mem.alloc (type.zero_val #stmError)) in
           let: ("$ret0", "$ret1") := (![#interfaceT] "r") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
@@ -1480,7 +1480,7 @@ Definition runSTM : val :=
         "$f" #();;
         "$oldf" #()
         )));;;
-      let: "out" := (alloc (type.zero_val #stmResponse)) in
+      let: "out" := (mem.alloc (type.zero_val #stmResponse)) in
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         do:  ((interface.get #"reset"%go (![#STM] "s")) #());;;
         (let: "$r0" := (let: "$a0" := (![#STM] "s") in
@@ -1499,7 +1499,7 @@ Definition runSTM : val :=
       chan.send "$chan" "$v"))
       ) in
     do:  (Fork ("$go" #()));;;
-    let: "r" := (alloc (type.zero_val #stmResponse)) in
+    let: "r" := (mem.alloc (type.zero_val #stmResponse)) in
     let: "$r0" := (Fst (chan.receive (![#(chanT stmResponse)] "outc"))) in
     do:  ("r" <-[#stmResponse] "$r0");;;
     return: (![#ptrT] (struct.field_ref #stmResponse #"resp"%go "r"), ![#error] (struct.field_ref #stmResponse #"err"%go "r"))).
@@ -1507,12 +1507,12 @@ Definition runSTM : val :=
 (* go: stm.go:190:19 *)
 Definition readSet__add : val :=
   rec: "readSet__add" "rs" "keys" "txnresp" :=
-    exception_do (let: "rs" := (alloc "rs") in
-    let: "txnresp" := (alloc "txnresp") in
-    let: "keys" := (alloc "keys") in
+    exception_do (let: "rs" := (mem.alloc "rs") in
+    let: "txnresp" := (mem.alloc "txnresp") in
+    let: "keys" := (mem.alloc "keys") in
     let: "$range" := (![#sliceT] (struct.field_ref #clientv3.TxnResponse #"Responses"%go (![#ptrT] "txnresp"))) in
-    (let: "resp" := (alloc (type.zero_val #intT)) in
-    let: "i" := (alloc (type.zero_val #intT)) in
+    (let: "resp" := (mem.alloc (type.zero_val #intT)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("resp" <-[#ptrT] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
@@ -1524,16 +1524,16 @@ Definition readSet__add : val :=
    go: stm.go:197:19 *)
 Definition readSet__first : val :=
   rec: "readSet__first" "rs" <> :=
-    exception_do (let: "rs" := (alloc "rs") in
-    let: "ret" := (alloc (type.zero_val #int64T)) in
+    exception_do (let: "rs" := (mem.alloc "rs") in
+    let: "ret" := (mem.alloc (type.zero_val #int64T)) in
     let: "$r0" := #(W64 (math.MaxInt64 - 1)) in
     do:  ("ret" <-[#int64T] "$r0");;;
     let: "$range" := (![#readSet] "rs") in
-    (let: "resp" := (alloc (type.zero_val #stringT)) in
+    (let: "resp" := (mem.alloc (type.zero_val #stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("resp" <-[#ptrT] "$value");;;
       do:  "$key";;;
-      (let: "rev" := (alloc (type.zero_val #int64T)) in
+      (let: "rev" := (mem.alloc (type.zero_val #int64T)) in
       let: "$r0" := (![#int64T] (struct.field_ref #etcdserverpb.ResponseHeader #"Revision"%go (![#ptrT] (struct.field_ref #clientv3.GetResponse #"Header"%go (![#ptrT] "resp"))))) in
       do:  ("rev" <-[#int64T] "$r0");;;
       (if: int_lt (![#int64T] "rev") (![#int64T] "ret")
@@ -1548,14 +1548,14 @@ Definition readSet__first : val :=
    go: stm.go:208:19 *)
 Definition readSet__cmps : val :=
   rec: "readSet__cmps" "rs" <> :=
-    exception_do (let: "rs" := (alloc "rs") in
-    let: "cmps" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "rs" := (mem.alloc "rs") in
+    let: "cmps" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #clientv3.Cmp #(W64 0) (let: "$a0" := (![#readSet] "rs") in
     map.len "$a0")) in
     do:  ("cmps" <-[#sliceT] "$r0");;;
     let: "$range" := (![#readSet] "rs") in
-    (let: "rk" := (alloc (type.zero_val #stringT)) in
-    let: "k" := (alloc (type.zero_val #stringT)) in
+    (let: "rk" := (mem.alloc (type.zero_val #stringT)) in
+    let: "k" := (mem.alloc (type.zero_val #stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("rk" <-[#ptrT] "$value");;;
       do:  ("k" <-[#stringT] "$key");;;
@@ -1571,15 +1571,15 @@ Definition readSet__cmps : val :=
 (* go: stm.go:218:20 *)
 Definition writeSet__get : val :=
   rec: "writeSet__get" "ws" "keys" :=
-    exception_do (let: "ws" := (alloc "ws") in
-    let: "keys" := (alloc "keys") in
+    exception_do (let: "ws" := (mem.alloc "ws") in
+    let: "keys" := (mem.alloc "keys") in
     let: "$range" := (![#sliceT] "keys") in
-    (let: "key" := (alloc (type.zero_val #intT)) in
+    (let: "key" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[#stringT] "$value");;;
       do:  "$key";;;
-      (let: "ok" := (alloc (type.zero_val #boolT)) in
-      let: "wv" := (alloc (type.zero_val #stmPut)) in
+      (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+      let: "wv" := (mem.alloc (type.zero_val #stmPut)) in
       let: ("$ret0", "$ret1") := (map.get (![#writeSet] "ws") (![#stringT] "key")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -1595,14 +1595,14 @@ Definition writeSet__get : val :=
    go: stm.go:228:20 *)
 Definition writeSet__cmps : val :=
   rec: "writeSet__cmps" "ws" "rev" :=
-    exception_do (let: "ws" := (alloc "ws") in
-    let: "rev" := (alloc "rev") in
-    let: "cmps" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "ws" := (mem.alloc "ws") in
+    let: "rev" := (mem.alloc "rev") in
+    let: "cmps" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #clientv3.Cmp #(W64 0) (let: "$a0" := (![#writeSet] "ws") in
     map.len "$a0")) in
     do:  ("cmps" <-[#sliceT] "$r0");;;
     let: "$range" := (![#writeSet] "ws") in
-    (let: "key" := (alloc (type.zero_val #stringT)) in
+    (let: "key" := (mem.alloc (type.zero_val #stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("key" <-[#stringT] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "cmps") in
@@ -1621,13 +1621,13 @@ Definition writeSet__cmps : val :=
    go: stm.go:237:20 *)
 Definition writeSet__puts : val :=
   rec: "writeSet__puts" "ws" <> :=
-    exception_do (let: "ws" := (alloc "ws") in
-    let: "puts" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "ws" := (mem.alloc "ws") in
+    let: "puts" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #clientv3.Op #(W64 0) (let: "$a0" := (![#writeSet] "ws") in
     map.len "$a0")) in
     do:  ("puts" <-[#sliceT] "$r0");;;
     let: "$range" := (![#writeSet] "ws") in
-    (let: "v" := (alloc (type.zero_val #stringT)) in
+    (let: "v" := (mem.alloc (type.zero_val #stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("v" <-[#stmPut] "$value");;;
       do:  "$key";;;
@@ -1641,9 +1641,9 @@ Definition writeSet__puts : val :=
 (* go: stm.go:245:15 *)
 Definition stm__Get : val :=
   rec: "stm__Get" "s" "keys" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "keys" := (alloc "keys") in
-    (let: "wv" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "keys" := (mem.alloc "keys") in
+    (let: "wv" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "keys") in
     (method_call #concurrency.concurrency #"writeSet" #"get" (![#writeSet] (struct.field_ref #stm #"wset"%go (![#ptrT] "s")))) "$a0") in
     do:  ("wv" <-[#ptrT] "$r0");;;
@@ -1657,10 +1657,10 @@ Definition stm__Get : val :=
 (* go: stm.go:252:15 *)
 Definition stm__Put : val :=
   rec: "stm__Put" "s" "key" "val" "opts" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "opts" := (alloc "opts") in
-    let: "val" := (alloc "val") in
-    let: "key" := (alloc "key") in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "opts" := (mem.alloc "opts") in
+    let: "val" := (mem.alloc "val") in
+    let: "key" := (mem.alloc "key") in
     let: "$r0" := (struct.make #stmPut [{
       "val" ::= ![#stringT] "val";
       "op" ::= let: "$a0" := (![#stringT] "key") in
@@ -1673,8 +1673,8 @@ Definition stm__Put : val :=
 (* go: stm.go:256:15 *)
 Definition stm__Del : val :=
   rec: "stm__Del" "s" "key" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "key" := (alloc "key") in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "key" := (mem.alloc "key") in
     let: "$r0" := (struct.make #stmPut [{
       "val" ::= #""%go;
       "op" ::= let: "$a0" := (![#stringT] "key") in
@@ -1686,9 +1686,9 @@ Definition stm__Del : val :=
 (* go: stm.go:258:15 *)
 Definition stm__Rev : val :=
   rec: "stm__Rev" "s" "key" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "key" := (alloc "key") in
-    (let: "resp" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "key" := (mem.alloc "key") in
+    (let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (![#stringT] "key") in
     slice.literal #stringT ["$sl0"])) in
     (method_call #concurrency.concurrency #"stm'ptr" #"fetch" (![#ptrT] "s")) "$a0") in
@@ -1702,9 +1702,9 @@ Definition stm__Rev : val :=
 (* go: stm.go:265:15 *)
 Definition stm__commit : val :=
   rec: "stm__commit" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "txnresp" := (alloc (type.zero_val #ptrT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "txnresp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := ((method_call #concurrency.concurrency #"writeSet" #"puts" (![#writeSet] (struct.field_ref #stm #"wset"%go (![#ptrT] "s")))) #()) in
     (interface.get #"Then"%go (let: "$a0" := ((![#funcT] (struct.field_ref #stm #"conflicts"%go (![#ptrT] "s"))) #()) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] (struct.field_ref #stm #"ctx"%go (![#ptrT] "s"))) in
@@ -1728,24 +1728,24 @@ Definition stm__commit : val :=
 (* go: stm.go:276:15 *)
 Definition stm__fetch : val :=
   rec: "stm__fetch" "s" "keys" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "keys" := (alloc "keys") in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "keys" := (mem.alloc "keys") in
     (if: (let: "$a0" := (![#sliceT] "keys") in
     slice.len "$a0") = #(W64 0)
     then return: (#null)
     else do:  #());;;
-    let: "ops" := (alloc (type.zero_val #sliceT)) in
+    let: "ops" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #clientv3.Op (let: "$a0" := (![#sliceT] "keys") in
     slice.len "$a0")) in
     do:  ("ops" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "keys") in
-    (let: "key" := (alloc (type.zero_val #intT)) in
-    let: "i" := (alloc (type.zero_val #intT)) in
+    (let: "key" := (mem.alloc (type.zero_val #intT)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[#stringT] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
-      (let: "ok" := (alloc (type.zero_val #boolT)) in
-      let: "resp" := (alloc (type.zero_val #ptrT)) in
+      (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+      let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
       let: ("$ret0", "$ret1") := (map.get (![#readSet] (struct.field_ref #stm #"rset"%go (![#ptrT] "s"))) (![#stringT] "key")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -1758,8 +1758,8 @@ Definition stm__fetch : val :=
       let: "$a1" := (![#sliceT] (struct.field_ref #stm #"getOpts"%go (![#ptrT] "s"))) in
       (func_call #clientv3 #"OpGet"%go) "$a0" "$a1") in
       do:  ((slice.elem_ref #clientv3.Op (![#sliceT] "ops") (![#intT] "i")) <-[#clientv3.Op] "$r0")));;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "txnresp" := (alloc (type.zero_val #ptrT)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "txnresp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := (![#sliceT] "ops") in
     (interface.get #"Then"%go (let: "$a0" := (![#context.Context] (struct.field_ref #stm #"ctx"%go (![#ptrT] "s"))) in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![#ptrT] (struct.field_ref #stm #"client"%go (![#ptrT] "s")))) "$a0")) "$a0")) #()) in
@@ -1782,7 +1782,7 @@ Definition stm__fetch : val :=
 (* go: stm.go:295:15 *)
 Definition stm__reset : val :=
   rec: "stm__reset" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     let: "$r0" := (map.make #stringT #ptrT) in
     do:  ((struct.field_ref #stm #"rset"%go (![#ptrT] "s")) <-[#readSet] "$r0");;;
     let: "$r0" := (map.make #stringT #stmPut) in
@@ -1791,30 +1791,30 @@ Definition stm__reset : val :=
 (* go: stm.go:305:27 *)
 Definition stmSerializable__Get : val :=
   rec: "stmSerializable__Get" "s" "keys" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "keys" := (alloc "keys") in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "keys" := (mem.alloc "keys") in
     (if: (let: "$a0" := (![#sliceT] "keys") in
     slice.len "$a0") = #(W64 0)
     then return: (#""%go)
     else do:  #());;;
-    (let: "wv" := (alloc (type.zero_val #ptrT)) in
+    (let: "wv" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "keys") in
     (method_call #concurrency.concurrency #"writeSet" #"get" (![#writeSet] (struct.field_ref #stm #"wset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) "$a0") in
     do:  ("wv" <-[#ptrT] "$r0");;;
     (if: (![#ptrT] "wv") ≠ #null
     then return: (![#stringT] (struct.field_ref #stmPut #"val"%go (![#ptrT] "wv")))
     else do:  #()));;;
-    let: "firstRead" := (alloc (type.zero_val #boolT)) in
+    let: "firstRead" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := ((let: "$a0" := (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) in
     map.len "$a0") = #(W64 0)) in
     do:  ("firstRead" <-[#boolT] "$r0");;;
     let: "$range" := (![#sliceT] "keys") in
-    (let: "key" := (alloc (type.zero_val #intT)) in
+    (let: "key" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[#stringT] "$value");;;
       do:  "$key";;;
-      (let: "ok" := (alloc (type.zero_val #boolT)) in
-      let: "resp" := (alloc (type.zero_val #ptrT)) in
+      (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+      let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
       let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT ptrT)] (struct.field_ref #stmSerializable #"prefetch"%go (![#ptrT] "s"))) (![#stringT] "key")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -1828,7 +1828,7 @@ Definition stmSerializable__Get : val :=
         let: "$r0" := (![#ptrT] "resp") in
         do:  (map.insert (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) (![#stringT] "key") "$r0")
       else do:  #()))));;;
-    let: "resp" := (alloc (type.zero_val #ptrT)) in
+    let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "keys") in
     (method_call #concurrency.concurrency #"stm'ptr" #"fetch" (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) "$a0") in
     do:  ("resp" <-[#ptrT] "$r0");;;
@@ -1846,8 +1846,8 @@ Definition stmSerializable__Get : val :=
 (* go: stm.go:331:27 *)
 Definition stmSerializable__Rev : val :=
   rec: "stmSerializable__Rev" "s" "key" :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "key" := (alloc "key") in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "key" := (mem.alloc "key") in
     do:  (let: "$a0" := ((let: "$sl0" := (![#stringT] "key") in
     slice.literal #stringT ["$sl0"])) in
     (method_call #concurrency.concurrency #"stmSerializable'ptr" #"Get" (![#ptrT] "s")) "$a0");;;
@@ -1857,17 +1857,17 @@ Definition stmSerializable__Rev : val :=
 (* go: stm.go:336:27 *)
 Definition stmSerializable__gets : val :=
   rec: "stmSerializable__gets" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "keys" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "keys" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #stringT #(W64 0) (let: "$a0" := (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) in
     map.len "$a0")) in
     do:  ("keys" <-[#sliceT] "$r0");;;
-    let: "ops" := (alloc (type.zero_val #sliceT)) in
+    let: "ops" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #clientv3.Op #(W64 0) (let: "$a0" := (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) in
     map.len "$a0")) in
     do:  ("ops" <-[#sliceT] "$r0");;;
     let: "$range" := (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) in
-    (let: "k" := (alloc (type.zero_val #stringT)) in
+    (let: "k" := (mem.alloc (type.zero_val #stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[#stringT] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "keys") in
@@ -1887,22 +1887,22 @@ Definition stmSerializable__gets : val :=
 (* go: stm.go:346:27 *)
 Definition stmSerializable__commit : val :=
   rec: "stmSerializable__commit" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
-    let: "getops" := (alloc (type.zero_val #sliceT)) in
-    let: "keys" := (alloc (type.zero_val #sliceT)) in
+    exception_do (let: "s" := (mem.alloc "s") in
+    let: "getops" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "keys" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := ((method_call #concurrency.concurrency #"stmSerializable'ptr" #"gets" (![#ptrT] "s")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("keys" <-[#sliceT] "$r0");;;
     do:  ("getops" <-[#sliceT] "$r1");;;
-    let: "txn" := (alloc (type.zero_val #clientv3.Txn)) in
+    let: "txn" := (mem.alloc (type.zero_val #clientv3.Txn)) in
     let: "$r0" := (let: "$a0" := ((method_call #concurrency.concurrency #"writeSet" #"puts" (![#writeSet] (struct.field_ref #stm #"wset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) #()) in
     (interface.get #"Then"%go (let: "$a0" := ((![#funcT] (struct.field_ref #stm #"conflicts"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) #()) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] (struct.field_ref #stm #"ctx"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) in
     (method_call #clientv3 #"Client'ptr" #"Txn" (![#ptrT] (struct.field_ref #stm #"client"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) "$a0")) "$a0")) "$a0") in
     do:  ("txn" <-[#clientv3.Txn] "$r0");;;
-    let: "err" := (alloc (type.zero_val #error)) in
-    let: "txnresp" := (alloc (type.zero_val #ptrT)) in
+    let: "err" := (mem.alloc (type.zero_val #error)) in
+    let: "txnresp" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := ((interface.get #"Commit"%go (let: "$a0" := (![#sliceT] "getops") in
     (interface.get #"Else"%go (![#clientv3.Txn] "txn")) "$a0")) #()) in
     let: "$r0" := "$ret0" in
@@ -1931,8 +1931,8 @@ Definition stmSerializable__commit : val :=
 (* go: stm.go:364:6 *)
 Definition isKeyCurrent : val :=
   rec: "isKeyCurrent" "k" "r" :=
-    exception_do (let: "r" := (alloc "r") in
-    let: "k" := (alloc "k") in
+    exception_do (let: "r" := (mem.alloc "r") in
+    let: "k" := (mem.alloc "k") in
     (if: (let: "$a0" := (![#sliceT] (struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "r"))) in
     slice.len "$a0") ≠ #(W64 0)
     then
@@ -1951,7 +1951,7 @@ Definition isKeyCurrent : val :=
 (* go: stm.go:371:6 *)
 Definition respToValue : val :=
   rec: "respToValue" "resp" :=
-    exception_do (let: "resp" := (alloc "resp") in
+    exception_do (let: "resp" := (mem.alloc "resp") in
     (if: ((![#ptrT] "resp") = #null) || ((let: "$a0" := (![#sliceT] (struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp"))) in
     slice.len "$a0") = #(W64 0))
     then return: (#""%go)
@@ -1963,9 +1963,9 @@ Definition respToValue : val :=
    go: stm.go:379:6 *)
 Definition NewSTMRepeatable : val :=
   rec: "NewSTMRepeatable" "ctx" "c" "apply" :=
-    exception_do (let: "apply" := (alloc "apply") in
-    let: "c" := (alloc "c") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "apply" := (mem.alloc "apply") in
+    let: "c" := (mem.alloc "c") in
+    let: "ctx" := (mem.alloc "ctx") in
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![#ptrT] "c") in
     let: "$a1" := (![#funcT] "apply") in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := (![#context.Context] "ctx") in
@@ -1981,9 +1981,9 @@ Definition NewSTMRepeatable : val :=
    go: stm.go:384:6 *)
 Definition NewSTMSerializable : val :=
   rec: "NewSTMSerializable" "ctx" "c" "apply" :=
-    exception_do (let: "apply" := (alloc "apply") in
-    let: "c" := (alloc "c") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "apply" := (mem.alloc "apply") in
+    let: "c" := (mem.alloc "c") in
+    let: "ctx" := (mem.alloc "ctx") in
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![#ptrT] "c") in
     let: "$a1" := (![#funcT] "apply") in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := (![#context.Context] "ctx") in
@@ -1999,9 +1999,9 @@ Definition NewSTMSerializable : val :=
    go: stm.go:389:6 *)
 Definition NewSTMReadCommitted : val :=
   rec: "NewSTMReadCommitted" "ctx" "c" "apply" :=
-    exception_do (let: "apply" := (alloc "apply") in
-    let: "c" := (alloc "c") in
-    let: "ctx" := (alloc "ctx") in
+    exception_do (let: "apply" := (mem.alloc "apply") in
+    let: "c" := (mem.alloc "c") in
+    let: "ctx" := (mem.alloc "ctx") in
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![#ptrT] "c") in
     let: "$a1" := (![#funcT] "apply") in
     let: "$a2" := ((let: "$sl0" := (let: "$a0" := (![#context.Context] "ctx") in

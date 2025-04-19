@@ -27,8 +27,8 @@ Definition AsyncFile : go_type := structT [
 (* go: storage.go:24:21 *)
 Definition AsyncFile__Write : val :=
   rec: "AsyncFile__Write" "s" "data" :=
-    with_defer: (let: "s" := (alloc "s") in
-    let: "data" := (alloc "data") in
+    with_defer: (let: "s" := (mem.alloc "s") in
+    let: "data" := (mem.alloc "data") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
     do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -42,7 +42,7 @@ Definition AsyncFile__Write : val :=
     let: "$a1" := #(W64 1) in
     (func_call #std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
     do:  ((struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
-    let: "index" := (alloc (type.zero_val #uint64T)) in
+    let: "index" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s"))) in
     do:  ("index" <-[#uint64T] "$r0");;;
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #AsyncFile #"indexCond"%go (![#ptrT] "s")))) #());;;
@@ -54,8 +54,8 @@ Definition AsyncFile__Write : val :=
 (* go: storage.go:36:21 *)
 Definition AsyncFile__wait : val :=
   rec: "AsyncFile__wait" "s" "index" :=
-    with_defer: (let: "s" := (alloc "s") in
-    let: "index" := (alloc "index") in
+    with_defer: (let: "s" := (mem.alloc "s") in
+    let: "index" := (mem.alloc "index") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
     do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -69,7 +69,7 @@ Definition AsyncFile__wait : val :=
 (* go: storage.go:45:21 *)
 Definition AsyncFile__flushThread : val :=
   rec: "AsyncFile__flushThread" "s" <> :=
-    exception_do (let: "s" := (alloc "s") in
+    exception_do (let: "s" := (mem.alloc "s") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ![#boolT] (struct.field_ref #AsyncFile #"closeRequested"%go (![#ptrT] "s"))
@@ -91,10 +91,10 @@ Definition AsyncFile__flushThread : val :=
         do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"indexCond"%go (![#ptrT] "s")))) #());;;
         continue: #()
       else do:  #());;;
-      let: "index" := (alloc (type.zero_val #uint64T)) in
+      let: "index" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s"))) in
       do:  ("index" <-[#uint64T] "$r0");;;
-      let: "data" := (alloc (type.zero_val #sliceT)) in
+      let: "data" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := (![#sliceT] (struct.field_ref #AsyncFile #"data"%go (![#ptrT] "s"))) in
       do:  ("data" <-[#sliceT] "$r0");;;
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
@@ -109,7 +109,7 @@ Definition AsyncFile__flushThread : val :=
 (* go: storage.go:73:21 *)
 Definition AsyncFile__Close : val :=
   rec: "AsyncFile__Close" "s" <> :=
-    with_defer: (let: "s" := (alloc "s") in
+    with_defer: (let: "s" := (mem.alloc "s") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
     do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
@@ -128,10 +128,10 @@ Definition AsyncFile__Close : val :=
    go: storage.go:85:6 *)
 Definition MakeAsyncFile : val :=
   rec: "MakeAsyncFile" "filename" :=
-    exception_do (let: "filename" := (alloc "filename") in
-    let: "mu" := (alloc (type.zero_val #sync.Mutex)) in
-    let: "s" := (alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (alloc (let: "$mu" := "mu" in
+    exception_do (let: "filename" := (mem.alloc "filename") in
+    let: "mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
+    let: "s" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$mu" := "mu" in
     let: "$indexCond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" "mu") in
     (func_call #sync #"NewCond"%go) "$a0") in
     let: "$closedCond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" "mu") in
@@ -158,7 +158,7 @@ Definition MakeAsyncFile : val :=
       "closedCond" ::= "$closedCond"
     }])) in
     do:  ("s" <-[#ptrT] "$r0");;;
-    let: "data" := (alloc (type.zero_val #sliceT)) in
+    let: "data" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] (struct.field_ref #AsyncFile #"data"%go (![#ptrT] "s"))) in
     do:  ("data" <-[#sliceT] "$r0");;;
     let: "$go" := (method_call #asyncfile.asyncfile #"AsyncFile'ptr" #"flushThread" (![#ptrT] "s")) in
