@@ -107,6 +107,49 @@ Proof using ghost_mapG0.
   done.
 Qed.
 
+Record leasingKV_names := {
+    etcd_gn : clientv3_names
+  }.
+
+Definition is_leasingKV (lkv : loc) γ : iProp Σ :=
+  ∃ (cl : loc) (ctx : context.Context.t) ctx_st (session : loc),
+  "#cl" ∷ lkv ↦s[leasing.leasingKV :: "cl"]□ cl ∗
+  "#Hcl" ∷ is_Client cl γ.(etcd_gn) ∗
+  "#ctx" ∷ lkv ↦s[leasing.leasingKV::"ctx"]□ ctx ∗
+  "#Hctx" ∷ is_Context ctx ctx_st.
+
+(* Half of this goes in the RWMutex. *)
+Definition own_leasingKV_monitorSession lkv γ q : iProp Σ :=
+  ∃ (session : loc) lease,
+  "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#q} session ∗
+  "#Hsession" ∷ is_Session session γ.(etcd_gn) lease
+.
+
+Lemma wp_leasingKV__monitorSession lkv γ :
+  {{{
+      is_pkg_init leasing ∗
+      "#His_kv" ∷ is_leasingKV lkv γ ∗
+      "Hown" ∷ own_leasingKV_monitorSession lkv γ (1/2)
+  }}}
+    lkv @ leasing @ "leasingKV'ptr" @ "monitorSession" #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start as "Hpre". iNamed "Hpre". wp_auto.
+  wp_for. iNamed "His_kv". wp_auto. iNamed "Hctx".
+  wp_apply "HErr". iIntros (?) "_". wp_pures.
+  destruct bool_decide.
+  2:{
+    rewrite decide_False //; last naive_solver.
+    rewrite decide_True //. wp_auto. iApply "HΦ". eauto.
+  }
+  rewrite decide_True //. wp_auto.
+  iNamed "Hown".
+  wp_auto. wp_if_destruct.
+  2:{ (* not nil *)
+    (* FIXME(goose): recvChan0, recvChan1 undefined *)
+Admitted.
+
+
 Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
   {{{
       is_pkg_init leasing ∗

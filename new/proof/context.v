@@ -44,7 +44,12 @@ Definition is_Context (c : interface.t) (s : Context_state.t) : iProp Σ :=
   "#HDone" ∷
     {{{ True }}}
       interface.get #"Done" #c #()
-    {{{ RET #s.(Done); True }}}.
+    {{{ RET #s.(Done); True }}} ∗
+  "#HErr" ∷
+    {{{ True }}}
+      interface.get #"Err" #c #()
+    {{{ (err : interface.t), RET #err; True }}}
+.
 
 (*
 From the docs for `WithCancel`:
