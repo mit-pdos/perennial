@@ -83,6 +83,12 @@ def main():
         metavar="ETCD_PATH",
         default=None,
     )
+    parser.add_argument(
+        "--tulip",
+        help="path to tulip repo (skip translation if not provided)",
+        metavar="TULIP_PATH",
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -94,6 +100,7 @@ def main():
     gokv_dir = args.gokv
     etcd_raft_dir = args.etcd_raft
     etcd_dir = args.etcd
+    tulip_dir = args.tulip
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -109,6 +116,8 @@ def main():
         parser.error("etcd-raft directory does not exist")
     if etcd_dir is not None and not os.path.isdir(etcd_dir):
         parser.error("etcd directory does not exist")
+    if tulip_dir is not None and not os.path.isdir(tulip_dir):
+        parser.error("tulip directory does not exist")
 
     def do_run(cmd_args):
         run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
@@ -242,6 +251,25 @@ def main():
         "google.golang.org/grpc/status",
         "go.uber.org/zap",
         "go.uber.org/zap/zapcore",
+    )
+
+    run_goose(
+        tulip_dir,
+        "./backup",
+        "./gcoord",
+        "./index",
+        "./message",
+        "./params",
+        "./paxos",
+        "./quorum",
+        "./replica",
+        "./tulip",
+        "./tuple",
+        "./txn",
+        "./txnlog",
+        "./util",
+        "./trusted_proph",
+        "./trusted_time",
     )
 
 

@@ -4,6 +4,9 @@ From New.code.github_com.goose_lang.goose.testdata.examples Require unittest sem
 From New.golang.theory Require static_mem.
 From New.proof Require asyncfile lock etcdraft globals_test github_com.mit_pdos.gokv.partialapp.
 
+From New.generatedproof.github_com.mit_pdos.tulip
+  Require gcoord replica.
+
 (* FIXME: keeping this out because of universe inconsistency. *)
 (* From New.proof Require go_etcd_io.etcd.client.v3.concurrency. *)
 (* in the meantime, at least check goose output  *)
