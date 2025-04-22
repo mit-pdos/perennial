@@ -42,6 +42,7 @@ Proof.
     naive_solver.
   - (* structT *)
     generalize dependent decls0.
+    rewrite list.Nil_unseal /list.Nil_def.
     induction decls as [|[d t] decls]; intros decls' Heq.
     + destruct decls' as [|[d' t']]; simpl in *; try congruence.
     + destruct decls' as [|[d' t']]; simpl in *; try congruence.
@@ -79,6 +80,7 @@ Proof.
   - iDestruct ("Hwp" with "[$]") as "Hwp".
     iExactEq "Hwp".
     repeat f_equal.
+    rewrite list.Nil_unseal /list.Nil_def.
     repeat rewrite !to_val_unseal /=.
     induction decls as [|[d t] decls]; simpl; auto.
     congruence.

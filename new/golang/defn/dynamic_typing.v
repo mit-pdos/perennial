@@ -39,8 +39,8 @@ Fixpoint type_to_val (t: go_type): val :=
       (* decls' is a list *)
       let decls' := (fix go (decls: list (go_string * go_type)) :=
                        match decls with
-                       | [] => InjLV #()
-                       | (d, t) :: decls => InjRV ((#d, type_to_val t), go decls)
+                       | [] => list.Nil
+                       | (d, t) :: decls => list.ConsV (#d, type_to_val t) (go decls)
                        end
                     ) decls in
       (* wrap this in the right constructor *)
