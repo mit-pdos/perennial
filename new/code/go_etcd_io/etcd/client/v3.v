@@ -113,7 +113,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Cmp"%go, [
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [etcdserverpb; mvccpb];
+    pkg_imported_pkgs := [etcdserverpb.etcdserverpb; mvccpb.mvccpb];
   |}.
 
 Axiom _'init : val.

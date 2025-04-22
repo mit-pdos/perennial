@@ -2917,7 +2917,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("unit"%go, 
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [primitive; sync; disk];
+    pkg_imported_pkgs := [primitive.primitive; sync.sync; disk.disk];
   |}.
 
 Definition initialize' : val :=

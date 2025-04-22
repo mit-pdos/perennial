@@ -260,7 +260,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("BankClerk"
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [primitive; kv; lockservice; marshal];
+    pkg_imported_pkgs := [primitive.primitive; kv.kv; lockservice.lockservice; marshal.marshal];
   |}.
 
 Definition initialize' : val :=

@@ -971,7 +971,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("inflight"%
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [fmt; strings; slices; quorum; raftpb];
+    pkg_imported_pkgs := [fmt.fmt; strings.strings; slices.slices; quorum.quorum; raftpb.raftpb];
   |}.
 
 Definition initialize' : val :=

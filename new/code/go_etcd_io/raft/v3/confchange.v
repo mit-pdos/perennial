@@ -25,7 +25,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Changer"%g
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [tracker];
+    pkg_imported_pkgs := [tracker.tracker];
   |}.
 
 Axiom _'init : val.

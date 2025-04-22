@@ -176,7 +176,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("AsyncFile"
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [sync; std; grove_ffi];
+    pkg_imported_pkgs := [sync.sync; std.std; grove_ffi.grove_ffi];
   |}.
 
 Definition initialize' : val :=

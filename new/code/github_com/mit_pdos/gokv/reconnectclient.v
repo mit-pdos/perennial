@@ -117,7 +117,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Reconnecti
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [sync; primitive; grove_ffi; urpc];
+    pkg_imported_pkgs := [sync.sync; primitive.primitive; grove_ffi.grove_ffi; urpc.urpc];
   |}.
 
 Definition initialize' : val :=

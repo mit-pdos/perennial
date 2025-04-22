@@ -399,7 +399,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Server"%go
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [log; sync; primitive; std; grove_ffi; marshal];
+    pkg_imported_pkgs := [log.log; sync.sync; primitive.primitive; std.std; grove_ffi.grove_ffi; marshal.marshal];
   |}.
 
 Definition initialize' : val :=

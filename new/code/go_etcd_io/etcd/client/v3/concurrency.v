@@ -2063,7 +2063,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Election"%
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [context; errors; fmt; etcdserverpb; mvccpb; clientv3; strings; sync; time; zap; math];
+    pkg_imported_pkgs := [context.context; errors.errors; fmt.fmt; etcdserverpb.etcdserverpb; mvccpb.mvccpb; v3.clientv3; strings.strings; sync.sync; time.time; zap.zap; math.math];
   |}.
 
 Definition initialize' : val :=

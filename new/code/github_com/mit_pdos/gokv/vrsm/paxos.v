@@ -920,7 +920,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("singleCler
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [grove_ffi; reconnectclient; marshal; log; sync; std; asyncfile; urpc];
+    pkg_imported_pkgs := [grove_ffi.grove_ffi; reconnectclient.reconnectclient; marshal.marshal; log.log; sync.sync; std.std; asyncfile.asyncfile; urpc.urpc];
   |}.
 
 Definition initialize' : val :=

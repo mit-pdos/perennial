@@ -8332,13 +8332,14 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("raftLog"%g
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [errors; raftpb; fmt; io; log; os; sync; context; bytes; rand; math; big; strings; confchange; quorum; slices; tracker];
+    pkg_imported_pkgs := [errors.errors; raftpb.raftpb; fmt.fmt; io.io; log.log; os.os; sync.sync; context.context; bytes.bytes; rand.rand; math.math; big.big; strings.strings; confchange.confchange; quorum.quorum; slices.slices; tracker.tracker; raftpb.raftpb];
   |}.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=
     globals.package_init v3.raft (λ: <>,
-      exception_do (do:  tracker.initialize';;;
+      exception_do (do:  raftpb.initialize';;;
+      do:  tracker.initialize';;;
       do:  slices.initialize';;;
       do:  quorum.initialize';;;
       do:  confchange.initialize';;;
