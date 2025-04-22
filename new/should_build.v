@@ -6,6 +6,9 @@ From New.proof Require asyncfile lock etcdraft globals_test github_com.mit_pdos.
 
 (* FIXME: keeping this out because of universe inconsistency. *)
 (* From New.proof Require go_etcd_io.etcd.client.v3.concurrency. *)
+(* in the meantime, at least check goose output  *)
+From New.generatedproof.go_etcd_io.etcd
+  Require client.v3.leasing client.v3.concurrency.
 
 (* FIXME: add back in. *)
 (* From Perennial.program_proof.pav Require should_build. *)
