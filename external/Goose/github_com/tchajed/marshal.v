@@ -152,6 +152,20 @@ Definition ReadInt32: val :=
     let: "i" := UInt32Get "b" in
     ("i", SliceSkip byteT "b" #4).
 
+Definition ReadInts: val :=
+  rec: "ReadInts" "b" "num" :=
+    let: "b2" := ref_to (slice.T byteT) "b" in
+    let: "xs" := ref_to (slice.T uint64T) (NewSliceWithCap uint64T #0 "num") in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "i") < "num"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      let: "x" := ref (zero_val uint64T) in
+      let: ("0_ret", "1_ret") := ReadInt (![slice.T byteT] "b2") in
+      "x" <-[uint64T] "0_ret";;
+      "b2" <-[slice.T byteT] "1_ret";;
+      "xs" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "xs") (![uint64T] "x"));;
+      Continue);;
+    (![slice.T uint64T] "xs", ![slice.T byteT] "b2").
+
 (* ReadBytes reads `l` bytes from b and returns (bs, rest) *)
 Definition ReadBytes: val :=
   rec: "ReadBytes" "b" "l" :=
@@ -198,6 +212,13 @@ Definition WriteInt32: val :=
 Definition WriteBytes: val :=
   rec: "WriteBytes" "b" "data" :=
     SliceAppendSlice byteT "b" "data".
+
+Definition WriteInts: val :=
+  rec: "WriteInts" "b" "xs" :=
+    let: "b2" := ref_to (slice.T byteT) (reserve "b" ((slice.len "xs") * #8)) in
+    ForSlice uint64T <> "x" "xs"
+      ("b2" <-[slice.T byteT] (WriteInt (![slice.T byteT] "b2") "x"));;
+    ![slice.T byteT] "b2".
 
 Definition WriteBool: val :=
   rec: "WriteBool" "b" "x" :=
