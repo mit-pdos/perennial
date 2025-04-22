@@ -4,6 +4,78 @@ import os
 from os import path
 import subprocess
 
+from dataclasses import dataclass
+
+
+@dataclass
+class Proj:
+    name: str
+    repo: str
+    pkgs: list[str]
+
+
+def create_proj(name=None, repo=None, pkgs=None):
+    if name is None:
+        name = repo.split("/")[-1]
+    if pkgs is None:
+        pkgs = ["./..."]
+    return Proj(name, repo, pkgs)
+
+
+# define the supported projects
+projs = [
+    create_proj(repo="goose-lang/std"),
+    create_proj(repo="tchajed/marshal"),
+    create_proj(repo="goose-lang/primitive", pkgs=[".", "./disk"]),
+    create_proj(
+        repo="mit-pdos/gokv",
+        pkgs=[
+            "./partialapp",
+            "./urpc",
+            "./reconnectclient",
+            "./asyncfile",
+            "./vrsm/paxos",
+            "./kv",
+            "./cachekv",
+            "./lockservice",
+            "./bank",
+            "./globals_test",
+            "./grove_ffi",
+            # "./vrsm/replica",
+        ],
+    ),
+    create_proj(
+        repo="upamanyus/etcd-raft",
+        pkgs=[
+            ".",
+            "github.com/stretchr/testify/assert",
+            "go.etcd.io/raft/v3/confchange",
+            "go.etcd.io/raft/v3/quorum",
+            "go.etcd.io/raft/v3/quorum/slices",
+            "go.etcd.io/raft/v3/raftpb",
+            "go.etcd.io/raft/v3/tracker",
+        ],
+    ),
+    create_proj(
+        repo="upamanyus/etcd",
+        pkgs=[
+            "time",
+            "math",
+            "google.golang.org/grpc",
+            "go.etcd.io/etcd/api/v3/etcdserverpb",
+            "go.etcd.io/etcd/api/v3/mvccpb",
+            "go.etcd.io/etcd/client/v3",
+            "go.etcd.io/etcd/client/v3/concurrency",
+            "go.etcd.io/etcd/client/v3/leasing",
+            "go.etcd.io/etcd/api/v3/v3rpc/rpctypes",
+            "google.golang.org/grpc/codes",
+            "google.golang.org/grpc/status",
+            "go.uber.org/zap",
+            "go.uber.org/zap/zapcore",
+        ],
+    ),
+]
+
 
 def run_command(args, dry_run=False, verbose=False):
     if dry_run or verbose:
@@ -47,68 +119,28 @@ def main():
         help="translate (parts of) Go standard library",
         action="store_true",
     )
-    parser.add_argument(
-        "--std",
-        help="path to goose-lang/std repo (skip translation if not provided)",
-        metavar="STD_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--marshal",
-        help="path to tchajed/marshal repo (skip translation if not provided)",
-        metavar="MARSHAL_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--primitive",
-        help="path to goose-lang/primitive repo (skip translation if not provided)",
-        metavar="PRIMITIVE_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--gokv",
-        help="path to gokv repo (skip translation if not provided)",
-        metavar="GOKV_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--etcd-raft",
-        help="path to upamanyus/etcd-raft repo (skip translation if not provided)",
-        metavar="ETCD_RAFT_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--etcd",
-        help="path to upamanyus/etcd repo (skip translation if not provided)",
-        metavar="ETCD_PATH",
-        default=None,
-    )
+    for proj in projs:
+        parser.add_argument(
+            f"--{proj.name}",
+            help=f"path to {proj.repo} repo (skip translation if not provided)",
+            metavar=f"{proj.name.upper()}_PATH",
+            default=None,
+        )
 
     args = parser.parse_args()
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
     goose_dir = args.goose
-    primitive_dir = args.primitive
-    std_dir = args.std
-    marshal_dir = args.marshal
-    gokv_dir = args.gokv
-    etcd_raft_dir = args.etcd_raft
-    etcd_dir = args.etcd
+
+    def proj_dir(name):
+        return getattr(args, name.replace("-", "_"))
+
+    for proj in projs:
+        if not os.path.isdir(proj_dir(proj.name)):
+            parser.error(f"{proj.name} directory does not exist")
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
-    if primitive_dir is not None and not os.path.isdir(primitive_dir):
-        parser.error("primitive directory does not exist")
-    if std_dir is not None and not os.path.isdir(std_dir):
-        parser.error("std directory does not exist")
-    if marshal_dir is not None and not os.path.isdir(marshal_dir):
-        parser.error("marshal directory does not exist")
-    if gokv_dir is not None and not os.path.isdir(gokv_dir):
-        parser.error("gokv directory does not exist")
-    if etcd_raft_dir is not None and not os.path.isdir(etcd_raft_dir):
-        parser.error("etcd-raft directory does not exist")
-    if etcd_dir is not None and not os.path.isdir(etcd_dir):
-        parser.error("etcd directory does not exist")
 
     def do_run(cmd_args):
         run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
@@ -194,55 +226,11 @@ def main():
             "log",
         )
 
-    run_goose(std_dir, ".")
-
-    run_goose(marshal_dir, ".")
-
-    run_goose(primitive_dir, ".", "github.com/goose-lang/primitive/disk")
-
-    run_goose(
-        gokv_dir,
-        "./partialapp",
-        "./urpc",
-        "./reconnectclient",
-        "./asyncfile",
-        "./vrsm/paxos",
-        "./kv",
-        "./cachekv",
-        "./lockservice",
-        "./bank",
-        "./globals_test",
-        "./grove_ffi",
-        # "./vrsm/replica",
-    )
-
-    run_goose(
-        etcd_raft_dir,
-        "go.etcd.io/raft/v3/quorum/slices",
-        "go.etcd.io/raft/v3/confchange",
-        "github.com/stretchr/testify/assert",
-        "go.etcd.io/raft/v3/raftpb",
-        ".",
-        "go.etcd.io/raft/v3/tracker",
-        "go.etcd.io/raft/v3/quorum",
-    )
-
-    run_goose(
-        etcd_dir,
-        "time",
-        "math",
-        "google.golang.org/grpc",
-        "go.etcd.io/etcd/api/v3/etcdserverpb",
-        "go.etcd.io/etcd/api/v3/mvccpb",
-        "go.etcd.io/etcd/client/v3",
-        "go.etcd.io/etcd/client/v3/concurrency",
-        "go.etcd.io/etcd/client/v3/leasing",
-        "go.etcd.io/etcd/api/v3/v3rpc/rpctypes",
-        "google.golang.org/grpc/codes",
-        "google.golang.org/grpc/status",
-        "go.uber.org/zap",
-        "go.uber.org/zap/zapcore",
-    )
+    for proj in projs:
+        run_goose(
+            proj_dir(proj.name),
+            *proj.pkgs,
+        )
 
 
 if __name__ == "__main__":
