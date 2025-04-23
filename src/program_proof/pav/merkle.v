@@ -241,6 +241,9 @@ Definition is_merkle_entry (label : list w8) (val : option $ list w8)
     "#Hfound" ∷ is_merkle_found label found dig ∗
     "%Hnonmemb" ∷ ⌜ found_nonmemb label found ⌝
   end.
+Global Opaque is_merkle_entry.
+Local Transparent is_merkle_entry.
+Global Instance is_merkle_entry_pers l v d : Persistent (is_merkle_entry l v d) := _.
 
 Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth : w64)
     (proof: list w8) : iProp Σ :=
@@ -291,6 +294,9 @@ Definition wish_merkle_Verify (in_tree : bool) label val proof dig : iProp Σ :=
         label ≠ proof_obj.(MerkleProof.LeafLabel)
       else found = None ⌝ ∗
   "#His_proof" ∷ is_merkle_proof label found proof_obj.(MerkleProof.Siblings) dig.
+Global Opaque wish_merkle_Verify.
+Local Transparent wish_merkle_Verify.
+Global Instance wish_merkle_Verify_pers i l v p d : Persistent (wish_merkle_Verify i l v p d) := _.
 
 Lemma wish_merkle_Verify_to_entry in_tree label val proof dig :
   wish_merkle_Verify in_tree label val proof dig -∗
