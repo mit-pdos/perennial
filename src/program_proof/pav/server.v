@@ -165,12 +165,12 @@ Definition wish_checkMembHide vrf_pk uid ver dig memb_hide label : iProp Σ :=
     memb_hide.(MembHide.MapVal) memb_hide.(MembHide.MerkleProof) dig.
 
 Definition wish_checkMemb vrf_pk uid ver dig memb label commit : iProp Σ :=
+  ∃ enc,
   "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb.(Memb.LabelProof) ∗
   "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
   "#Hcommit" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) commit ∗
-  "#Hmerk" ∷ wish_merkle_Verify true label
-    (enc_val memb.(Memb.EpochAdded) commit)
-    memb.(Memb.MerkleProof) dig.
+  "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk memb.(Memb.EpochAdded) commit) ⌝ ∗
+  "#Hmerk" ∷ wish_merkle_Verify true label enc memb.(Memb.MerkleProof) dig.
 
 Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
   ∃ label,
