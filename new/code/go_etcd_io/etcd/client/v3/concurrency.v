@@ -1173,8 +1173,7 @@ Definition WithLease : val :=
   rec: "WithLease" "leaseID" :=
     exception_do (let: "leaseID" := (mem.alloc "leaseID") in
     return: ((λ: "so" <>,
-       exception_do (let: <> := (mem.alloc "_") in
-       let: "so" := (mem.alloc "so") in
+       exception_do (let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#clientv3.LeaseID] "leaseID") in
        do:  ((struct.field_ref #sessionOptions #"leaseID"%go (![#ptrT] "so")) <-[#clientv3.LeaseID] "$r0"))
        ))).
@@ -1190,8 +1189,7 @@ Definition WithContext : val :=
   rec: "WithContext" "ctx" :=
     exception_do (let: "ctx" := (mem.alloc "ctx") in
     return: ((λ: "so" <>,
-       exception_do (let: <> := (mem.alloc "_") in
-       let: "so" := (mem.alloc "so") in
+       exception_do (let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#context.Context] "ctx") in
        do:  ((struct.field_ref #sessionOptions #"ctx"%go (![#ptrT] "so")) <-[#context.Context] "$r0"))
        ))).

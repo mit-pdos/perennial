@@ -1645,6 +1645,14 @@ Global Instance wp_func_call_emptyReturn :
   WpFuncCall unittest "emptyReturn" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_unnamedParams :
+  WpFuncCall unittest "unnamedParams" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_anonymousParam :
+  WpFuncCall unittest "anonymousParam" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_forRangeNoBinding :
   WpFuncCall unittest "forRangeNoBinding" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).

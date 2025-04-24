@@ -149,7 +149,6 @@ Proof.
     (* FIXME(goose): recvChan0, recvChan1 undefined *)
 Admitted.
 
-
 Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
   {{{
       is_pkg_init leasing ∗

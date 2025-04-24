@@ -3211,8 +3211,7 @@ Definition raft__bcastAppend : val :=
   rec: "raft__bcastAppend" "r" <> :=
     exception_do (let: "r" := (mem.alloc "r") in
     do:  (let: "$a0" := (λ: "id" <>,
-      exception_do (let: <> := (mem.alloc "_") in
-      let: "id" := (mem.alloc "id") in
+      exception_do (let: "id" := (mem.alloc "id") in
       (if: (![#uint64T] "id") = (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))
       then return: (#())
       else do:  #());;;
@@ -3251,8 +3250,7 @@ Definition raft__bcastHeartbeatWithCtx : val :=
     exception_do (let: "r" := (mem.alloc "r") in
     let: "ctx" := (mem.alloc "ctx") in
     do:  (let: "$a0" := (λ: "id" <>,
-      exception_do (let: <> := (mem.alloc "_") in
-      let: "id" := (mem.alloc "id") in
+      exception_do (let: "id" := (mem.alloc "id") in
       (if: (![#uint64T] "id") = (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))
       then return: (#())
       else do:  #());;;
@@ -5484,8 +5482,7 @@ Definition raft__switchToConfig : val :=
     then do:  ((method_call #v3.raft #"raft'ptr" #"bcastAppend" (![#ptrT] "r")) #())
     else
       do:  (let: "$a0" := (λ: "id" <>,
-        exception_do (let: <> := (mem.alloc "_") in
-        let: "id" := (mem.alloc "id") in
+        exception_do (let: "id" := (mem.alloc "id") in
         (if: (![#uint64T] "id") = (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))
         then return: (#())
         else do:  #());;;
@@ -6453,7 +6450,6 @@ Definition RawNode__HasReady : val :=
 Definition RawNode__Advance : val :=
   rec: "RawNode__Advance" "rn" <> :=
     exception_do (let: "rn" := (mem.alloc "rn") in
-    let: <> := (mem.alloc "_") in
     (if: ![#boolT] (struct.field_ref #RawNode #"asyncStorageWrites"%go (![#ptrT] "rn"))
     then
       do:  (let: "$a0" := #"Advance must not be called when using AsyncStorageWrites"%go in
@@ -6859,74 +6855,58 @@ Definition TracingEvent : go_type := structT [
 
 (* go: state_trace_nop.go:30:6 *)
 Definition traceInitState : val :=
-  rec: "traceInitState" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceInitState" <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:32:6 *)
 Definition traceReady : val :=
-  rec: "traceReady" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceReady" <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:34:6 *)
 Definition traceCommit : val :=
-  rec: "traceCommit" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceCommit" <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:36:6 *)
 Definition traceReplicate : val :=
-  rec: "traceReplicate" "" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceReplicate" <> <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:38:6 *)
 Definition traceBecomeFollower : val :=
-  rec: "traceBecomeFollower" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceBecomeFollower" <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:40:6 *)
 Definition traceBecomeCandidate : val :=
-  rec: "traceBecomeCandidate" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceBecomeCandidate" <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:42:6 *)
 Definition traceBecomeLeader : val :=
-  rec: "traceBecomeLeader" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceBecomeLeader" <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:44:6 *)
 Definition traceChangeConfEvent : val :=
-  rec: "traceChangeConfEvent" "" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceChangeConfEvent" <> <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:46:6 *)
 Definition traceConfChangeEvent : val :=
-  rec: "traceConfChangeEvent" "" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceConfChangeEvent" <> <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:48:6 *)
 Definition traceSendMessage : val :=
-  rec: "traceSendMessage" "" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceSendMessage" <> <> :=
+    exception_do (do:  #()).
 
 (* go: state_trace_nop.go:50:6 *)
 Definition traceReceiveMessage : val :=
-  rec: "traceReceiveMessage" "" "" :=
-    exception_do (let: "" := (mem.alloc "") in
-    let: "" := (mem.alloc "") in
-    do:  #()).
+  rec: "traceReceiveMessage" <> <> :=
+    exception_do (do:  #()).
 
 (* go: status.go:44:6 *)
 Definition getProgressCopy : val :=
