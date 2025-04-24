@@ -1074,6 +1074,7 @@ Proof.
   - iFrame "#".
 Qed.
 
+(*
 Definition auditEpoch_post adtr_pk seen_dig : iProp Σ :=
   □ ∀ adtr_γ,
   ("#His_pk" ∷ is_sig_pk adtr_pk (adtr_sigpred adtr_γ))
@@ -1265,33 +1266,6 @@ Proof.
   opose proof (prefix_lookup_agree _ _ _ _ _ Hpref Hlook_adtr Hlook_dig) as ?.
   rewrite lookup_fmap in Hlook_final. simplify_eq/=. naive_solver.
 Qed.
-
 *)
+
 End proof.
-
-(*
-Definition lemmas := (@wp_NewClient, @wp_Client__Audit, @wp_Client__Get, @wp_Client__SelfMon, @wp_Client__Put).
-Print Assumptions lemmas.
-
-Section derived.
-Context `{!heapGS Σ, !pavG Σ}.
-
-Lemma get_audit_msv cli_γ uid ep lat adtr_γ aud_ep :
-  uint.Z ep < uint.Z aud_ep →
-  ("#His_key" ∷ is_get_post cli_γ uid ep lat ∗
-  "#His_audit" ∷ is_audit cli_γ adtr_γ aud_ep) -∗
-  msv adtr_γ ep uid lat.
-Proof.
-  intros ?. iNamed 1. iNamed "His_audit". iNamed "His_key". iNamedSuffix "Hbound" "_bnd".
-  list_elem ms (uint.nat ep) as m.
-  iDestruct (mono_list_idx_own_get with "Hadtr_maps") as "Hadtr_map"; [exact Hm_lookup|].
-  iFrame "#". iSplit.
-  - iApply big_sepL_forall.  iIntros "* %Hlook_val".
-    iDestruct (big_sepL_lookup with "Hhist") as "H"; [exact Hlook_val|]. iNamed "H".
-    iDestruct ("Hmap_transf" with "[$Hsubmap $Hin_map $His_label]") as %?; [done|].
-    iFrame "#%".
-  - by iDestruct ("Hmap_transf" with "[$Hsubmap $Hin_map_bnd $His_label_bnd]") as %?.
-Qed.
-
-End derived.
-*)

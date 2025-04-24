@@ -228,6 +228,40 @@ Proof.
   by rewrite -lookup_fmap.
 Qed.
 
+Lemma get_None_to_msv ep ep_aud γcli vrf_pk uid γaudit :
+  uint.Z ep < uint.Z ep_aud →
+  is_get_post_None γcli vrf_pk uid ep -∗
+  logical_audit_post γcli γaudit vrf_pk ep_aud -∗
+  msv γaudit vrf_pk ep uid None.
+Proof.
+  iIntros (?) "#Hpost #Haudit". iNamed "Haudit".
+  iPoseProof "Hpost" as "Hentry". iNamed "Hpost".
+  list_elem gs (uint.nat ep) as m. destruct m as [m ?].
+  iDestruct (mono_list_idx_own_get with "Hlb_gs") as "Hidx"; [exact Hm_lookup|].
+  iFrame "Hidx". iExists []. iSplit; [done|]. iSplit; [naive_solver|].
+  iFrame "#".
+  iDestruct ("Hmap_transf" with "[$Hentry //]") as "H".
+  iNamedSuffix "H" "0".
+  iDestruct (is_vrf_out_det with "Hvrf_out Hvrf_out0") as %->.
+  inv Henc_val0.
+  by simplify_option_eq.
+Qed.
+
+Lemma get_Some_to_msv ep ep_aud γcli vrf_pk uid pk γaudit :
+  uint.Z ep < uint.Z ep_aud →
+  is_get_post_Some γcli vrf_pk uid ep pk -∗
+  logical_audit_post γcli γaudit vrf_pk ep_aud -∗
+  ∃ ep', msv γaudit vrf_pk ep uid (Some (ep', pk)).
+Proof.
+  iIntros (?) "#Hpost #Haudit". iNamed "Hpost". iNamed "Haudit".
+  list_elem gs (uint.nat ep) as m. destruct m as [m ?].
+  iDestruct (mono_list_idx_own_get with "Hlb_gs") as "Hidx"; [exact Hm_lookup|].
+  iFrame "Hidx". iExists ep'.
+  (* having trouble filling in msv hist.
+  it comes from repeated application of map_transf to all the opaque hist vals
+  known by the client. *)
+Admitted.
+
 Lemma logical_audit_get_msv (ep : w64) ptr_c c γaudit :
   uint.Z ep < uint.Z c.(ClientHist.next_epoch) →
   ClientHist.own ptr_c c -∗
