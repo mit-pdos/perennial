@@ -3,6 +3,9 @@ From Goose.github_com.mit_pdos.pav Require Import kt.
 
 From Perennial.program_proof.pav Require Import auditor client core serde.
 
+(* TODO: make history have just physical history lemmas.
+there should be a separate file for client agreement. *)
+
 Section hist.
 (* logical history. *)
 Context `{!heapGS Σ, !pavG Σ}.
@@ -68,7 +71,7 @@ Qed.
 Lemma hist_extend_selfmon cli_γ vrf_pk uid hist valid selfmon_ep :
   let new_valid := word.add selfmon_ep (W64 1) in
   uint.Z valid ≤ uint.Z new_valid →
-  uint.Z new_valid = uint.Z selfmon_ep + uint.Z selfmon_ep + uint.Z 1 →
+  uint.Z new_valid = uint.Z selfmon_ep + uint.Z 1 →
   ("#His_hist" ∷ is_hist cli_γ vrf_pk uid hist valid ∗
   "#His_selfmon_post" ∷ is_selfmon_post cli_γ vrf_pk uid (W64 $ length hist) selfmon_ep) -∗
   is_hist cli_γ vrf_pk uid hist new_valid.
