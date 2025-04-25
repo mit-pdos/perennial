@@ -146,8 +146,10 @@ Proof.
   iNamed "Hown".
   wp_auto. wp_if_destruct.
   2:{ (* not nil *)
-    (* FIXME(goose): recvChan0, recvChan1 undefined *)
-Admitted.
+    wp_auto.
+    wp_apply "HDone".
+
+Qed.
 
 Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
   {{{

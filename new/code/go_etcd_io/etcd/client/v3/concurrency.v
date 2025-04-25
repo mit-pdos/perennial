@@ -179,10 +179,10 @@ Definition Election__Campaign : val :=
     do:  ("err" <-[#error] "$r0");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then
-      do:  (chan.select [] [("$recvChan0", (λ: "$recvVal",
-          do:  (let: "$a0" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![#ptrT] "client")) #()) in
-          (method_call #concurrency.concurrency #"Election'ptr" #"Resign" (![#ptrT] "e")) "$a0")
-          ))] (InjR (λ: <>,
+      do:  (chan.select [chan.select_receive ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
+         do:  (let: "$a0" := ((method_call #clientv3 #"Client'ptr" #"Ctx" (![#ptrT] "client")) #()) in
+         (method_call #concurrency.concurrency #"Election'ptr" #"Resign" (![#ptrT] "e")) "$a0")
+         )] (chan.select_default (λ: <>,
         let: "$r0" := #null in
         do:  ((struct.field_ref #Election #"leaderSession"%go (![#ptrT] "e")) <-[#ptrT] "$r0")
         )));;;
@@ -433,11 +433,23 @@ Definition Election__observe : val :=
         let: "$r1" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp"))) #(W64 0))) in
         do:  ("hdr" <-[#ptrT] "$r0");;;
         do:  ("kv" <-[#ptrT] "$r1"));;;
-      do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
-          do:  #()
-          ))] [("$recvChan0", (λ: "$recvVal",
-          return: (#())
-          ))] (InjLV #()));;;
+      do:  (chan.select [chan.select_send (let: "$Header" := (![#ptrT] "hdr") in
+       let: "$Kvs" := ((let: "$sl0" := (![#ptrT] "kv") in
+       slice.literal #ptrT ["$sl0"])) in
+       struct.make #clientv3.GetResponse [{
+         "Header" ::= "$Header";
+         "Kvs" ::= "$Kvs";
+         "More" ::= type.zero_val #boolT;
+         "Count" ::= type.zero_val #int64T;
+         "XXX_NoUnkeyedLiteral" ::= type.zero_val #(structT [
+         ]);
+         "XXX_unrecognized" ::= type.zero_val #sliceT;
+         "XXX_sizecache" ::= type.zero_val #int32T
+       }]) (![#(chanT clientv3.GetResponse)] "ch") (λ: <>,
+         do:  #()
+         ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
+         return: (#())
+         )] chan.select_no_default);;;
       let: "cancel" := (mem.alloc (type.zero_val #context.CancelFunc)) in
       let: "cctx" := (mem.alloc (type.zero_val #context.Context)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
@@ -486,12 +498,12 @@ Definition Election__observe : val :=
           let: "$r0" := ((let: "$sl0" := (![#ptrT] (struct.field_ref #clientv3.Event #"Kv"%go (![#ptrT] "ev"))) in
           slice.literal #ptrT ["$sl0"])) in
           do:  ((struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp")) <-[#sliceT] "$r0");;;
-          do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
-              do:  #()
-              ))] [("$recvChan0", (λ: "$recvVal",
-              do:  ((![#context.CancelFunc] "cancel") #());;;
-              return: (#())
-              ))] (InjLV #())))));;;
+          do:  (chan.select [chan.select_send (![#clientv3.GetResponse] (![#ptrT] "resp")) (![#(chanT clientv3.GetResponse)] "ch") (λ: <>,
+             do:  #()
+             ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "cctx")) #()) (λ: "$recvVal",
+             do:  ((![#context.CancelFunc] "cancel") #());;;
+             return: (#())
+             )] chan.select_no_default))));;;
       do:  ((![#context.CancelFunc] "cancel") #()))).
 
 (* Key returns the leader key if elected, empty string otherwise.

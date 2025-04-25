@@ -4,12 +4,18 @@ Require Import New.proof.proof_prelude.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
 From New.proof Require Import context sync.
 
+Class concurrencyG Σ :=
+  {
+    ghost_varG :: ghost_varG Σ ()
+  }.
+
 Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
 Context `{!concurrency.GlobalAddrs}.
 Context `{!goGlobalsGS Σ}.
+Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
 Program Instance : IsPkgInit math :=
@@ -38,11 +44,18 @@ Program Instance : IsPkgInit concurrency :=
   ltac2:(build_pkg_init ()).
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
-  ∃ cl,
+  ∃ cl donec,
   "#client" ∷ s ↦s[concurrency.Session :: "client"]□ cl ∗
   "#id" ∷ s ↦s[concurrency.Session :: "id"]□ lease ∗
   "#Hclient" ∷ is_Client cl γ ∗
-  "#Hlease" ∷ is_etcd_lease γ lease.
+  "#Hlease" ∷ is_etcd_lease γ lease ∗
+  "#donec" ∷ s ↦s[concurrency.Session :: "donec"]□ donec ∗
+  (* One can keep calling receive, and the only thing they might get back is a
+     "closed" value. *)
+  "#Hdonec" ∷ □(∀ Φ, Φ (#(), #false)%V -∗ receive_atomic_update donec Φ (V:=unit)).
+#[global] Opaque is_Session.
+#[local] Transparent is_Session.
+#[global] Instance is_Session_pers s γ lease : Persistent (is_Session s γ lease) := _.
 
 Lemma wp_NewSession (client : loc) γetcd :
   {{{
@@ -152,7 +165,7 @@ Proof.
   }
   iDestruct (struct_fields_split with "Hs") as "hs".
   simpl. iClear "Hctx". iNamed "hs".
-  iPersist "Hclient Hid".
+  iPersist "Hclient Hid Hdonec".
   iModIntro.
   iApply "HΦ".
   rewrite decide_True //.
@@ -163,6 +176,16 @@ Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
     s @ concurrency @ "Session'ptr" @ "Lease" #()
   {{{ RET #lease; True }}}.
+Proof.
+  wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
+Qed.
+
+Lemma wp_Session__Done s γ lease :
+  {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
+    s @ concurrency @ "Session'ptr" @ "Done" #()
+  {{{ ch, RET #ch;
+      □(∀ Φ, Φ (#(), #false)%V -∗ receive_atomic_update donec Φ (V:=unit))
+  }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
 Qed.

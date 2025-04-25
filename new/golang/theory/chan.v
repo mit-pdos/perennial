@@ -203,28 +203,63 @@ Ltac wp_for_chan_post_core :=
   | _ => fail "wp_for_chan_post: not a for_chan_postcondition goal"
   end.
 
+Module chan.
+Section op.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Inductive op :=
+| select_send_f (v : val) (ch : chan.t) (handler : func.t)
+| select_receive_f (ch : chan.t) (handler : func.t).
+
+Global Instance into_val_op : IntoVal op :=
+  {|
+    to_val_def := λ o,
+        match o with
+        | select_send_f v ch f => InjLV (v, #ch, #f)
+        | select_receive_f ch f => InjRV (#ch, #f)
+        end
+  |}.
+
+Global Instance wp_select_send (v : val) ch f :
+  PureWp True (chan.select_send v #ch #f)
+    #(select_send_f v ch f).
+Proof.
+  intros ?????. iIntros "Hwp". wp_call_lc "?".
+  repeat rewrite to_val_unseal /=.
+  by iApply "Hwp".
+Qed.
+
+Global Instance wp_select_receive ch f :
+  PureWp True (chan.select_receive #ch #f)
+    #(select_receive_f ch f).
+Proof.
+  intros ?????. iIntros "Hwp". wp_call_lc "?".
+  repeat rewrite to_val_unseal /=.
+  by iApply "Hwp".
+Qed.
+
+End op.
+End chan.
+
 Section select_proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
-(* TODO: combine the chans+(vals)+handlers into one list? *)
-Lemma wp_chan_select_blocking (send_chans recv_chans : list chan.t)
-  (send_vals : list val) (send_handlers recv_handlers : list func.t) :
+Lemma wp_chan_select_blocking (cases : list chan.op) :
   ∀ Φ,
-  ((∀ idx send_chan send_val send_handler,
-      ⌜ send_chans !! idx = Some send_chan ∧ send_vals !! idx = Some send_val ∧
-      send_handlers !! idx = Some send_handler ⌝ →
-      ∃ V (v : V) `(!IntoVal V),
-        ⌜ send_val = #v ⌝ ∗
-        is_chan V send_chan ∗
-        send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }})
-   ) ∧
-   (∀ idx recv_chan recv_handler,
-      ⌜ recv_chans !! idx = Some recv_chan ∧ recv_handlers !! idx = Some recv_handler ⌝ →
-      ∃ V t `(!IntoVal V) `(!IntoValTyped V t),
-        is_chan V recv_chan ∗
-        receive_atomic_update (V:=V) recv_chan (λ v, WP #recv_handler v {{ Φ }})
-  )) -∗
-  WP chan.select (* #send_vals *) #send_chans #recv_chans (InjLV #()) {{ Φ }}.
+  (∀ idx op,
+     ⌜ cases !! idx = Some op ⌝ →
+     match op with
+     | chan.select_send_f send_val send_chan send_handler =>
+         (∃ V (v : V) `(!IntoVal V),
+             ⌜ send_val = #v ⌝ ∗
+             is_chan V send_chan ∗
+             send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }}))
+     | chan.select_receive_f recv_chan recv_handler =>
+         (∃ V t `(!IntoVal V) `(!IntoValTyped V t),
+             is_chan V recv_chan ∗
+             receive_atomic_update (V:=V) recv_chan (λ v, WP #recv_handler v {{ Φ }}))
+     end
+  ) -∗
+  WP chan.select #cases chan.select_no_default {{ Φ }}.
 Proof.
 Admitted.
 
