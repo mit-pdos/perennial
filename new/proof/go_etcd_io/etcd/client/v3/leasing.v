@@ -8,6 +8,11 @@ From New.proof Require Import context sync.
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
 
+Class leasingG Σ :=
+  {
+    concurrency_inG :: concurrencyG Σ
+  }.
+
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
@@ -16,6 +21,7 @@ Context `{!concurrency.GlobalAddrs}.
 Context `{!rpctypes.GlobalAddrs}.
 Context `{!leasing.GlobalAddrs}.
 Context `{!goGlobalsGS Σ}.
+Context `{leasingG Σ}.
 
 (* FIXME: move these *)
 Program Instance : IsPkgInit bytes :=
@@ -75,7 +81,7 @@ Proof using ghost_mapG0.
   rewrite big_sepL_fmap.
   iApply (big_sepL_impl with "Htoks []").
   iIntros "!# * % Hx * #Hinit HΦ".
-  clear ctr g n H2.
+  clear ctr g n H3.
   wp_apply (wp_WaitGroup__Done with "[$]").
   iInv "Hinv" as ">Hi" "Hclose".
   iNamed "Hi".
@@ -148,7 +154,23 @@ Proof.
   2:{ (* not nil *)
     wp_auto.
     wp_apply "HDone".
-
+    ltac2:(wp_bind_apply ()).
+    iApply wp_Session__Done.
+    {
+      iSplitR.
+      { solve_pkg_init. (* FIXME: solve_pkg_init is pretty slow here. *) }
+      iFrame "#".
+    }
+    iNext. iIntros "* #HsessDone".
+    wp_auto.
+    wp_apply wp_chan_select_blocking.
+    rewrite big_andL_cons.
+    iSplit.
+    2:{
+      rewrite big_andL_cons. rewrite big_andL_nil.
+      iSplit; last done.
+      repeat iExists _.
+    }
 Qed.
 
 Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
