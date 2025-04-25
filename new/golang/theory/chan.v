@@ -37,7 +37,7 @@ Arguments is_chan {_ _ _ _ _ _} (_) {_} ch.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!IntoVal V}.
+Context `{!IntoVal V} `{!IntoValTyped V t}.
 
 Implicit Types v : V.
 Implicit Types (s : chanstate.t V).
@@ -52,14 +52,15 @@ Lemma is_chan_not_nil ch :
 Proof.
 Admitted.
 
-Lemma wp_chan_make `{!IntoValTyped V t} cap :
+Lemma wp_chan_make cap :
   {{{ True }}}
     chan.make t #cap
   {{{ (c : chan.t) (init : list V), RET #c; own_chan c (chanstate.mk cap false init (length init)) }}}.
 Proof.
 Admitted.
 
-Definition receive_atomic_update `{!IntoValTyped V t} ch Φ : iProp Σ :=
+Definition receive_atomic_update ch Φ : iProp Σ :=
+  is_chan V ch ∗
   |={⊤,∅}=>
     ▷∃ s, own_chan ch s ∗
           if decide (s.(chanstate.closed) = true ∧ s.(chanstate.received) = length s.(chanstate.sent)) then
@@ -74,9 +75,8 @@ Definition receive_atomic_update `{!IntoValTyped V t} ch Φ : iProp Σ :=
                            (∀ v, ⌜ s'.(chanstate.sent) !! s.(chanstate.received) = Some v ⌝ -∗
                                  own_chan ch s' ={∅,⊤}=∗ Φ (#v, #true)%V))).
 
-Lemma wp_chan_receive `{!IntoValTyped V t} ch :
+Lemma wp_chan_receive ch :
   ∀ Φ,
-  is_chan V ch -∗
   ▷ receive_atomic_update ch Φ -∗
   WP chan.receive #ch {{ Φ }}.
 Proof.
@@ -84,6 +84,7 @@ Admitted.
 
 Definition send_atomic_update ch (v : V) Φ : iProp Σ :=
   (* send the value *)
+  is_chan V ch ∗
   |={⊤,∅}=>
     ▷∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
           (own_chan ch (s <| chanstate.sent := s.(chanstate.sent) ++ [v] |>) ={∅,⊤}=∗
@@ -96,7 +97,6 @@ Definition send_atomic_update ch (v : V) Φ : iProp Σ :=
 
 Lemma wp_chan_send ch (v : V) :
   ∀ Φ,
-  is_chan V ch -∗
   ▷ send_atomic_update ch v Φ -∗
   WP chan.send #ch #v {{ Φ }}.
 Proof.
@@ -240,6 +240,8 @@ Qed.
 End op.
 End chan.
 
+Arguments receive_atomic_update {_ _ _ _ _ _} (_) {_ _ _} (_ _).
+
 Section select_proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
@@ -250,12 +252,10 @@ Lemma wp_chan_select_blocking (cases : list chan.op) :
      | chan.select_send_f send_val send_chan send_handler =>
          (∃ V (v : V) `(!IntoVal V),
              ⌜ send_val = #v ⌝ ∗
-             is_chan V send_chan ∗
              send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }}))
      | chan.select_receive_f recv_chan recv_handler =>
          (∃ V t `(!IntoVal V) `(!IntoValTyped V t),
-             is_chan V recv_chan ∗
-             receive_atomic_update (V:=V) recv_chan (λ v, WP #recv_handler v {{ Φ }}))
+             receive_atomic_update V recv_chan (λ v, WP #recv_handler v {{ Φ }}))
      end
   ) -∗
   WP chan.select #cases chan.select_no_default {{ Φ }}.

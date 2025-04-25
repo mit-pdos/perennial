@@ -13,7 +13,9 @@ Class contextG Σ :=
 (* Context logical descriptor. *)
 Module Context_desc.
 Section defn.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{ffi_syntax}.
+(* Context `{hG: heapGS Σ, !ffi_semantics _ _}. *)
+Context `{PROP : Type}.
 (* FIXME: prove this and put it in golang directory. *)
 Instance interface_countable : Countable interface.t.
 Admitted.
@@ -25,7 +27,7 @@ Record t :=
       (* Deadline : time.Time.t  *)
       Deadline : option w64;
       Done: chan.t;
-      PCancel : iProp Σ;
+      PCancel : PROP;
     }.
 Global Instance eta : Settable _ :=
   settable! mk <Values; Deadline; Done; PCancel>.

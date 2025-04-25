@@ -46,9 +46,9 @@ Definition is_closeable_chan (ch : chan.t) (Pclose : iProp Σ) : iProp Σ :=
 
 Lemma closeable_chan_receive ch Pclosed Φ :
   is_closeable_chan ch Pclosed -∗
-  (Pclosed -∗ Φ (#(), #false)%V) -∗ receive_atomic_update ch Φ (V:=unit).
+  (Pclosed -∗ Φ (#(), #false)%V) -∗ receive_atomic_update unit ch Φ.
 Proof.
-  iNamed 1. iIntros "HΦ". rewrite /receive_atomic_update.
+  iNamed 1. iIntros "HΦ". rewrite /receive_atomic_update. iFrame "#".
   iInv "Hinv" as "Hi" "Hclose". iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
   iNext. iNamed "Hi". iFrame.
   destruct decide as [|].
@@ -87,7 +87,7 @@ Lemma alloc_closeable_chan {E} Pclose ch (s : chanstate.t unit) :
   is_closeable_chan ch Pclose ∗
   own_closeable_chan ch Pclose.
 Proof.
-  intros ? Hnotclosed. iIntros "Hch". iDestruct (own_chan_is_chan with "[$]") as "#His".
+  intros ? Hnotclosed. iIntros "Hch". iDestruct (own_chan_is_chan with "Hch") as "#His".
   iMod (ghost_var_alloc ()) as (tok_gn) "Htok".
   iAssert (|={E}=> is_closeable_chan_internal ch ltac:(econstructor) Pclose)%I with "[-Htok]" as ">#H".
   2:{ iFrame "∗#". simpl. iFrame. done. }

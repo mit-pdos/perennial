@@ -142,7 +142,7 @@ Definition chanSelect : val :=
     let: "c" := (mem.alloc (type.zero_val #(chanT intT))) in
     let: "i2" := (mem.alloc (type.zero_val #intT)) in
     let: "i1" := (mem.alloc (type.zero_val #intT)) in
-    do:  (chan.select [chan.select_receive (![#(chanT intT)] "c3") (λ: "$recvVal",
+    chan.select [chan.select_receive (![#(chanT intT)] "c3") (λ: "$recvVal",
        do:  #()
        ); chan.select_receive (![#(chanT intT)] "c1") (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
@@ -190,14 +190,14 @@ Definition chanSelect : val :=
       "%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.fmt #"Print"%go) "$a0")
-      )));;;
+      ));;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      do:  (chan.select [chan.select_send #(W64 0) (![#(chanT intT)] "c") (λ: <>,
+      chan.select [chan.select_send #(W64 0) (![#(chanT intT)] "c") (λ: <>,
          do:  #()
          ); chan.select_send #(W64 1) (![#(chanT intT)] "c") (λ: <>,
          do:  #()
-         )] chan.select_no_default));;;
-    do:  (chan.select [] chan.select_no_default)).
+         )] chan.select_no_default);;;
+    chan.select [] chan.select_no_default).
 
 (* go: chan.go:59:6 *)
 Definition chanDirectional : val :=

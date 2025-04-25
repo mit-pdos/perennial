@@ -2,11 +2,13 @@ Require Import New.code.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
-From New.proof Require Import context sync chan.
+From New.proof Require Import context sync.
+From New.proof Require Export chan.
 
 Class concurrencyG Σ :=
   {
-    donecG :: closeable_chanG Σ
+    donecG :: closeable_chanG Σ ;
+    context_inG :: contextG Σ
   }.
 
 Section proof.
@@ -44,7 +46,7 @@ Program Instance : IsPkgInit concurrency :=
   ltac2:(build_pkg_init ()).
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
-  ∃ cl donec γch,
+  ∃ cl donec,
   "#client" ∷ s ↦s[concurrency.Session :: "client"]□ cl ∗
   "#id" ∷ s ↦s[concurrency.Session :: "id"]□ lease ∗
   "#Hclient" ∷ is_Client cl γ ∗
@@ -52,7 +54,7 @@ Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   "#donec" ∷ s ↦s[concurrency.Session :: "donec"]□ donec ∗
   (* One can keep calling receive, and the only thing they might get back is a
      "closed" value. *)
-  "#Hdonec" ∷ is_closeable_chan unit donec γch True.
+  "#Hdonec" ∷ is_closeable_chan donec True.
 
 #[global] Opaque is_Session.
 #[local] Transparent is_Session.
@@ -179,7 +181,7 @@ Qed.
 Lemma wp_Session__Done s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
     s @ concurrency @ "Session'ptr" @ "Done" #()
-  {{{ ch γch, RET #ch; is_closeable_chan () ch γch True }}}.
+  {{{ ch, RET #ch; is_closeable_chan ch True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
 Qed.

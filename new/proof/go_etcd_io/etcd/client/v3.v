@@ -718,7 +718,10 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 
 Axiom clientv3G : gFunctors → Set.
+Existing Class clientv3G.
 Axiom clientv3_names : Set.
+Axiom clientv_context3G : ∀ {Σ} {_:clientv3G Σ}, contextG Σ.
+Local Existing Instance clientv_context3G.
 Context `{!clientv3G Σ}.
 Implicit Types (γ : clientv3_names).
 
@@ -784,7 +787,7 @@ Axiom wp_Client__Ctx :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
     client @ clientv3 @ "Client'ptr" @ "Ctx" #()
-  {{{ (ctx : context.Context.t), RET #ctx; True }}}.
+  {{{ ctx s, RET #ctx; is_Context ctx s }}}.
 
 Axiom wp_Client__Grant :
   ∀ client γ (ctx : context.Context.t) (ttl : w64),
