@@ -62,6 +62,24 @@ Proof.
   rewrite {1}to_val_unseal //.
 Qed.
 
+#[global] Instance mapT_pure_wp (keyT elemT: go_type) :
+  PureWp True
+         (type.mapT #keyT #elemT)
+         (#(mapT keyT elemT)).
+Proof.
+  pure_wp_start.
+  iApply "HΦ".
+Qed.
+
+#[global] Instance chanT_pure_wp (elemT: go_type) :
+  PureWp True
+         (type.chanT #elemT)
+         (#(chanT elemT)).
+Proof.
+  pure_wp_start.
+  iApply "HΦ".
+Qed.
+
 Global Instance wp_type_Match (t : go_type) (baseCase arrayCase structCase : val) :
   PureWp True
     (type.Match #t baseCase arrayCase structCase)

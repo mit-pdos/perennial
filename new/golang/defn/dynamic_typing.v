@@ -53,6 +53,9 @@ Fixpoint type_to_val (t: go_type): val :=
 Instance go_type_into_val : IntoVal go_type :=
   { to_val_def := type_to_val; }.
 
+Definition mapT: val := λ: "keyT" "elemT", #ptrT.
+Definition chanT: val := λ: "elemT", #ptrT.
+
 Definition Match_def : val :=
   λ: "t" "baseCase" "arrayCase" "structCase",
     match: "t" with
