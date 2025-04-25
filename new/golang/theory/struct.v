@@ -188,11 +188,10 @@ Proof.
   rewrite {1}to_val_unseal //=.
 Qed.
 
-Lemma wp_struct_field_offset t f stk E :
-  {{{ True }}}
-    struct.field_offset #t #f @ stk; E
-  {{{ RET #(struct.field_offset_f t f); £1 }}}.
+Global Instance pure_struct_field_offset_wp (t: go_type) f :
+  PureWp True (struct.field_offset #t #f) (#(struct.field_offset_f t f)).
 Proof.
+  apply pure_wp_val. iIntros (??).
   induction t using go_type_ind;
     try solve [
         iIntros (Φ) "_ HΦ"; wp_call_lc "?";
@@ -236,20 +235,10 @@ Proof.
       iApply "HΦ".
 Qed.
 
-Global Instance pure_struct_field_offset_wp (t: go_type) f :
-  PureWp True (struct.field_offset #t #f) (#(struct.field_offset_f t f)).
-Proof.
-  iIntros (?????) "HΦ".
-  wp_apply wp_struct_field_offset.
-  iIntros "Hlc". iApply "HΦ". done.
-Qed.
-
 Global Instance pure_struct_field_ref_wp (t: go_type) f (l : loc) :
   PureWp True (struct.field_ref #t #f #l) #(struct.field_ref_f t f l).
 Proof.
-  iIntros (?????) "HΦ".
-  wp_call_lc "?".
-  iSpecialize ("HΦ" with "[$]").
+  pure_wp_start.
   destruct (struct.field_offset_f t f) eqn:Hoff.
   rewrite field_off_to_val_unfold /=; wp_pures.
   iExactEq "HΦ".
@@ -271,24 +260,24 @@ Definition wp_struct_make (t : go_type) (l : list (go_string*val)) :
   (struct.make #t (alist_val l))
   (struct.val_aux t l).
 Proof.
-  intros ??????K.
+  intros ?.
+  pure_wp_start.
   rewrite struct.make_unseal /struct.make_def struct.val_aux_unseal.
   destruct t; try by exfalso.
-  iIntros "HΦ".
   wp_pures.
-  iInduction decls as [|[f ft] decls] "IH" forall (Φ K).
+  iInduction decls as [|[f ft] decls] "IH" forall (Φ).
   - wp_pure_lc "?". wp_pures. by iApply "HΦ".
   - wp_pure_lc "?"; wp_pures.
     rewrite !desc_to_val_unfold /=; wp_pures.
     destruct (alist_lookup_f _ _).
     + wp_pures.
       wp_bind (match decls with | nil => _ | cons _ _ => _ end).
-      unshelve iApply ("IH" $! _ _ []); first done.
+      unshelve iApply "IH"; first done.
       iIntros "_".
       simpl fill. wp_pures. by iApply "HΦ".
     + wp_pures.
       wp_bind (match decls with | nil => _ | cons _ _ => _ end).
-      unshelve iApply ("IH" $! _ _ []); first done.
+      unshelve iApply "IH"; first done.
       iIntros "_".
       simpl fill. wp_pures. by iApply "HΦ".
 Qed.
