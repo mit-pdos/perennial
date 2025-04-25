@@ -62,6 +62,32 @@ Proof.
   rewrite {1}to_val_unseal //.
 Qed.
 
+#[global] Instance arrayT_pure_wp (n: w64) (elemT: go_type) :
+  PureWp True
+         (type.arrayT #n #elemT)
+         (#(arrayT n elemT)).
+Proof.
+  pure_wp_start.
+  rewrite to_val_unseal /=.
+  iApply "HΦ".
+Qed.
+
+#[global] Instance structT_pure_wp (decls: list (go_string * go_type)) :
+  PureWp True
+         (type.structT #decls)
+         (#(structT decls)).
+Proof.
+  pure_wp_start.
+  rewrite to_val_unseal /=.
+  iExactEq "HΦ".
+  repeat f_equal.
+  induction decls as [|[f t] decls]; simpl; auto.
+  - rewrite list.Nil_unseal //.
+  - rewrite IHdecls.
+    repeat f_equal.
+    repeat rewrite to_val_unseal //=.
+Qed.
+
 #[global] Instance mapT_pure_wp (keyT elemT: go_type) :
   PureWp True
          (type.mapT #keyT #elemT)

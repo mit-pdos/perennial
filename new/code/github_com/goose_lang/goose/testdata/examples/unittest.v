@@ -14,13 +14,13 @@ Module unittest.
 Section code.
 
 
-Definition Foo : go_type := arrayT 10 uint64T.
+Definition Foo : go_type := arrayT (W64 10) uint64T.
 
 (* go: array.go:5:6 *)
 Definition takesArray : val :=
   rec: "takesArray" "x" :=
     exception_do (let: "x" := (mem.alloc "x") in
-    return: (![#stringT] (array.elem_ref #stringT (![#(arrayT 13 stringT)] "x") #(W64 3)))).
+    return: (![#stringT] (array.elem_ref #stringT (![type.arrayT #(W64 13) #stringT] "x") #(W64 3)))).
 
 (* go: array.go:9:6 *)
 Definition takesPtr : val :=
@@ -31,14 +31,14 @@ Definition takesPtr : val :=
 (* go: array.go:13:6 *)
 Definition usesArrayElemRef : val :=
   rec: "usesArrayElemRef" <> :=
-    exception_do (let: "x" := (mem.alloc (type.zero_val #(arrayT 2 stringT))) in
+    exception_do (let: "x" := (mem.alloc (type.zero_val (type.arrayT #(W64 2) #stringT))) in
     let: "$r0" := ((let: "$ar0" := #"a"%go in
     let: "$ar1" := #"b"%go in
     array.literal ["$ar0"; "$ar1"])) in
-    do:  ("x" <-[#(arrayT 2 stringT)] "$r0");;;
+    do:  ("x" <-[type.arrayT #(W64 2) #stringT] "$r0");;;
     let: "$r0" := #"c"%go in
-    do:  ((array.elem_ref #stringT (![#(arrayT 2 stringT)] "x") #(W64 1)) <-[#stringT] "$r0");;;
-    do:  (let: "$a0" := (array.elem_ref #stringT (![#(arrayT 2 stringT)] "x") #(W64 1)) in
+    do:  ((array.elem_ref #stringT (![type.arrayT #(W64 2) #stringT] "x") #(W64 1)) <-[#stringT] "$r0");;;
+    do:  (let: "$a0" := (array.elem_ref #stringT (![type.arrayT #(W64 2) #stringT] "x") #(W64 1)) in
     (func_call #unittest.unittest #"takesPtr"%go) "$a0")).
 
 (* go: array.go:22:6 *)
@@ -51,19 +51,19 @@ Definition sum : val :=
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (array.len #(arrayT 100 uint64T)))); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (![#uint64T] (array.elem_ref #uint64T (![#(arrayT 100 uint64T)] "x") (![#uint64T] "i")))))));;;
-    do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (s_to_w64 (array.cap #(arrayT 100 uint64T)))));;;
+    (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (array.len (type.arrayT #(W64 100) #uint64T)))); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (![#uint64T] (array.elem_ref #uint64T (![type.arrayT #(W64 100) #uint64T] "x") (![#uint64T] "i")))))));;;
+    do:  ("sum" <-[#uint64T] ((![#uint64T] "sum") + (s_to_w64 (array.cap (type.arrayT #(W64 100) #uint64T)))));;;
     return: (![#uint64T] "sum")).
 
 (* go: array.go:31:6 *)
 Definition arrayToSlice : val :=
   rec: "arrayToSlice" <> :=
-    exception_do (let: "x" := (mem.alloc (type.zero_val #(arrayT 2 stringT))) in
+    exception_do (let: "x" := (mem.alloc (type.zero_val (type.arrayT #(W64 2) #stringT))) in
     let: "$r0" := ((let: "$ar0" := #"a"%go in
     let: "$ar1" := #"b"%go in
     array.literal ["$ar0"; "$ar1"])) in
-    do:  ("x" <-[#(arrayT 2 stringT)] "$r0");;;
+    do:  ("x" <-[type.arrayT #(W64 2) #stringT] "$r0");;;
     return: (let: "$a" := "x" in
      array.slice #stringT "$a" #(W64 0) (array.len #stringT))).
 
@@ -74,7 +74,7 @@ Definition arrayB : Z := 10.
 (* go: array.go:44:6 *)
 Definition arrayLiteralKeyed : val :=
   rec: "arrayLiteralKeyed" <> :=
-    exception_do (let: "x" := (mem.alloc (type.zero_val #(arrayT 13 stringT))) in
+    exception_do (let: "x" := (mem.alloc (type.zero_val (type.arrayT #(W64 13) #stringT))) in
     let: "$r0" := ((let: "$ar0" := #"A"%go in
     let: "$ar1" := #"3"%go in
     let: "$ar2" := (type.zero_val #stringT) in
@@ -89,34 +89,34 @@ Definition arrayLiteralKeyed : val :=
     let: "$ar11" := #"1"%go in
     let: "$ar12" := #"2"%go in
     array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"; "$ar4"; "$ar5"; "$ar6"; "$ar7"; "$ar8"; "$ar9"; "$ar10"; "$ar11"; "$ar12"])) in
-    do:  ("x" <-[#(arrayT 13 stringT)] "$r0");;;
-    return: (![#stringT] (array.elem_ref #stringT (![#(arrayT 13 stringT)] "x") #(W64 0)))).
+    do:  ("x" <-[type.arrayT #(W64 13) #stringT] "$r0");;;
+    return: (![#stringT] (array.elem_ref #stringT (![type.arrayT #(W64 13) #stringT] "x") #(W64 0)))).
 
 (* go: chan.go:5:6 *)
 Definition chanBasic : val :=
   rec: "chanBasic" <> :=
-    exception_do (let: "x" := (mem.alloc (type.zero_val #(chanT stringT))) in
-    let: "$r0" := (chan.make stringT #(W64 10)) in
-    do:  ("x" <-[#(chanT stringT)] "$r0");;;
-    let: "$r0" := (chan.make stringT #(W64 0)) in
-    do:  ("x" <-[#(chanT stringT)] "$r0");;;
+    exception_do (let: "x" := (mem.alloc (type.zero_val (type.chanT #stringT))) in
+    let: "$r0" := (chan.make #stringT #(W64 10)) in
+    do:  ("x" <-[type.chanT #stringT] "$r0");;;
+    let: "$r0" := (chan.make #stringT #(W64 0)) in
+    do:  ("x" <-[type.chanT #stringT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  (let: "$chan" := (![#(chanT stringT)] "x") in
+      exception_do (do:  (let: "$chan" := (![type.chanT #stringT] "x") in
       let: "$v" := #"Foo"%go in
       chan.send "$chan" "$v");;;
-      do:  (let: "$chan" := (![#(chanT stringT)] "x") in
+      do:  (let: "$chan" := (![type.chanT #stringT] "x") in
       let: "$v" := #"Foo"%go in
       chan.send "$chan" "$v"))
       ) in
     do:  (Fork ("$go" #()));;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "y" := (mem.alloc (type.zero_val #stringT)) in
-    let: ("$ret0", "$ret1") := (chan.receive (![#(chanT stringT)] "x")) in
+    let: ("$ret0", "$ret1") := (chan.receive (![type.chanT #stringT] "x")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("y" <-[#stringT] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
-    let: "$r0" := (Fst (chan.receive (![#(chanT stringT)] "x"))) in
+    let: "$r0" := (Fst (chan.receive (![type.chanT #stringT] "x"))) in
     do:  ("y" <-[#stringT] "$r0");;;
     (if: ![#boolT] "ok"
     then
@@ -135,16 +135,16 @@ Definition f : val :=
 Definition chanSelect : val :=
   rec: "chanSelect" <> :=
     exception_do (let: "a" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "c4" := (mem.alloc (type.zero_val #(chanT intT))) in
-    let: "c3" := (mem.alloc (type.zero_val #(chanT intT))) in
-    let: "c2" := (mem.alloc (type.zero_val #(chanT intT))) in
-    let: "c1" := (mem.alloc (type.zero_val #(chanT intT))) in
-    let: "c" := (mem.alloc (type.zero_val #(chanT intT))) in
+    let: "c4" := (mem.alloc (type.zero_val (type.chanT #intT))) in
+    let: "c3" := (mem.alloc (type.zero_val (type.chanT #intT))) in
+    let: "c2" := (mem.alloc (type.zero_val (type.chanT #intT))) in
+    let: "c1" := (mem.alloc (type.zero_val (type.chanT #intT))) in
+    let: "c" := (mem.alloc (type.zero_val (type.chanT #intT))) in
     let: "i2" := (mem.alloc (type.zero_val #intT)) in
     let: "i1" := (mem.alloc (type.zero_val #intT)) in
-    chan.select [chan.select_receive (![#(chanT intT)] "c3") (λ: "$recvVal",
+    chan.select [chan.select_receive (![type.chanT #intT] "c3") (λ: "$recvVal",
        do:  #()
-       ); chan.select_receive (![#(chanT intT)] "c1") (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT #intT] "c1") (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
        do:  ("i1" <-[#intT] "$r0");;;
        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"received "%go) in
@@ -153,14 +153,14 @@ Definition chanSelect : val :=
        "%go) in
        slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
        (func_call #fmt.fmt #"Print"%go) "$a0")
-       ); chan.select_send (![#intT] "i2") (![#(chanT intT)] "c2") (λ: <>,
+       ); chan.select_send (![#intT] "i2") (![type.chanT #intT] "c2") (λ: <>,
        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"sent "%go) in
        let: "$sl1" := (interface.make #""%go #"int"%go (![#intT] "i2")) in
        let: "$sl2" := (interface.make #""%go #"string"%go #" to c2
        "%go) in
        slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
        (func_call #fmt.fmt #"Print"%go) "$a0")
-       ); chan.select_receive (![#(chanT intT)] "c3") (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT #intT] "c3") (λ: "$recvVal",
        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
        let: "i3" := (mem.alloc (type.zero_val #intT)) in
        let: ("$ret0", "$ret1") := "$recvVal" in
@@ -181,7 +181,7 @@ Definition chanSelect : val :=
          "%go) in
          slice.literal #interfaceT ["$sl0"])) in
          (func_call #fmt.fmt #"Print"%go) "$a0"))
-       ); chan.select_receive (![#(chanT intT)] "c4") (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT #intT] "c4") (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
        do:  ((slice.elem_ref #intT (![#sliceT] "a") ((func_call #unittest.unittest #"f"%go) #())) <-[#intT] "$r0");;;
        do:  #()
@@ -192,9 +192,9 @@ Definition chanSelect : val :=
       (func_call #fmt.fmt #"Print"%go) "$a0")
       ));;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      chan.select [chan.select_send #(W64 0) (![#(chanT intT)] "c") (λ: <>,
+      chan.select [chan.select_send #(W64 0) (![type.chanT #intT] "c") (λ: <>,
          do:  #()
-         ); chan.select_send #(W64 1) (![#(chanT intT)] "c") (λ: <>,
+         ); chan.select_send #(W64 1) (![type.chanT #intT] "c") (λ: <>,
          do:  #()
          )] chan.select_no_default);;;
     chan.select [] chan.select_no_default).
@@ -202,32 +202,32 @@ Definition chanSelect : val :=
 (* go: chan.go:59:6 *)
 Definition chanDirectional : val :=
   rec: "chanDirectional" <> :=
-    exception_do (let: "x" := (mem.alloc (type.zero_val #(chanT uint64T))) in
-    let: "y" := (mem.alloc (type.zero_val #(chanT stringT))) in
-    do:  (Fst (chan.receive (![#(chanT uint64T)] "x")));;;
-    do:  (let: "$chan" := (![#(chanT stringT)] "y") in
+    exception_do (let: "x" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
+    let: "y" := (mem.alloc (type.zero_val (type.chanT #stringT))) in
+    do:  (Fst (chan.receive (![type.chanT #uint64T] "x")));;;
+    do:  (let: "$chan" := (![type.chanT #stringT] "y") in
     let: "$v" := #""%go in
     chan.send "$chan" "$v")).
 
 (* go: chan.go:66:6 *)
 Definition chanRange : val :=
   rec: "chanRange" <> :=
-    exception_do (let: "x" := (mem.alloc (type.zero_val #(chanT uint64T))) in
-    let: "$range" := (![#(chanT uint64T)] "x") in
+    exception_do (let: "x" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
+    let: "$range" := (![type.chanT #uint64T] "x") in
     (let: "y" := (mem.alloc (type.zero_val #uint64T)) in
     chan.for_range "$range" (λ: "$key",
       do:  ("y" <-[#uint64T] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "y")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.fmt #"Print"%go) "$a0")));;;
-    let: "$range" := (![#(chanT uint64T)] "x") in
+    let: "$range" := (![type.chanT #uint64T] "x") in
     (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
     chan.for_range "$range" (λ: "$key",
       do:  ("x" <-[#uint64T] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "x")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.fmt #"Print"%go) "$a0")));;;
-    let: "$range" := (![#(chanT uint64T)] "x") in
+    let: "$range" := (![type.chanT #uint64T] "x") in
     chan.for_range "$range" (λ: "$key",
       do:  #())).
 
@@ -548,14 +548,14 @@ Definition useSliceIndexing : val :=
 (* go: data_structures.go:22:6 *)
 Definition useMap : val :=
   rec: "useMap" <> :=
-    exception_do (let: "m" := (mem.alloc (type.zero_val #(mapT uint64T sliceT))) in
+    exception_do (let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
     let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ("m" <-[#(mapT uint64T sliceT)] "$r0");;;
+    do:  ("m" <-[type.mapT #uint64T #sliceT] "$r0");;;
     let: "$r0" := #slice.nil in
-    do:  (map.insert (![#(mapT uint64T sliceT)] "m") #(W64 1) "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #sliceT] "m") #(W64 1) "$r0");;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "x" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T sliceT)] "m") #(W64 2)) in
+    let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #sliceT] "m") #(W64 2)) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("x" <-[#sliceT] "$r0");;;
@@ -564,7 +564,7 @@ Definition useMap : val :=
     then return: (#())
     else do:  #());;;
     let: "$r0" := (![#sliceT] "x") in
-    do:  (map.insert (![#(mapT uint64T sliceT)] "m") #(W64 3) "$r0")).
+    do:  (map.insert (![type.mapT #uint64T #sliceT] "m") #(W64 3) "$r0")).
 
 (* go: data_structures.go:32:6 *)
 Definition usePtr : val :=
@@ -587,7 +587,7 @@ Definition iterMapKeysAndValues : val :=
     let: "sumPtr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
     do:  ("sumPtr" <-[#ptrT] "$r0");;;
-    let: "$range" := (![#(mapT uint64T uint64T)] "m") in
+    let: "$range" := (![type.mapT #uint64T #uint64T] "m") in
     (let: "v" := (mem.alloc (type.zero_val #uint64T)) in
     let: "k" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
@@ -615,7 +615,7 @@ Definition iterMapKeys : val :=
     do:  ("keysRef" <-[#ptrT] "$r0");;;
     let: "$r0" := (![#sliceT] "keysSlice") in
     do:  ((![#ptrT] "keysRef") <-[#sliceT] "$r0");;;
-    let: "$range" := (![#(mapT uint64T uint64T)] "m") in
+    let: "$range" := (![type.mapT #uint64T #uint64T] "m") in
     (let: "k" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[#uint64T] "$key");;;
@@ -970,17 +970,17 @@ Definition testPassConcreteToInterfaceArgSpecial : val :=
     let: "$sl1" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![#ptrT] "c2")) in
     slice.literal #Fooer ["$sl0"; "$sl1"])) in
     do:  ("l" <-[#sliceT] "$r0");;;
-    let: "m" := (mem.alloc (type.zero_val #(mapT uint64T Fooer))) in
+    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #Fooer))) in
     let: "$r0" := (map.make #uint64T #Fooer) in
-    do:  ("m" <-[#(mapT uint64T Fooer)] "$r0");;;
+    do:  ("m" <-[type.mapT #uint64T #Fooer] "$r0");;;
     let: "$r0" := (interface.make #unittest.unittest #"concreteFooer'ptr" (![#ptrT] "c1")) in
-    do:  (map.insert (![#(mapT uint64T Fooer)] "m") #(W64 10) "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #Fooer] "m") #(W64 10) "$r0");;;
     let: "f" := (mem.alloc (type.zero_val #FooerUser)) in
     let: "$r0" := (struct.make #FooerUser [{
       "f" ::= interface.make #unittest.unittest #"concreteFooer'ptr" (![#ptrT] "c1")
     }]) in
     do:  ("f" <-[#FooerUser] "$r0");;;
-    return: (![#sliceT] "l", ![#(mapT uint64T Fooer)] "m", ![#FooerUser] "f")).
+    return: (![#sliceT] "l", ![type.mapT #uint64T #Fooer] "m", ![#FooerUser] "f")).
 
 (* go: interfaces.go:51:6 *)
 Definition takesVarArgsInterface : val :=
@@ -1436,7 +1436,7 @@ Definition IterateMapKeys : val :=
   rec: "IterateMapKeys" "m" "sum" :=
     exception_do (let: "sum" := (mem.alloc "sum") in
     let: "m" := (mem.alloc "m") in
-    let: "$range" := (![#(mapT uint64T uint64T)] "m") in
+    let: "$range" := (![type.mapT #uint64T #uint64T] "m") in
     (let: "k" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[#uint64T] "$key");;;
@@ -1450,7 +1450,7 @@ Definition IterateMapKeys : val :=
 Definition MapSize : val :=
   rec: "MapSize" "m" :=
     exception_do (let: "m" := (mem.alloc "m") in
-    return: (s_to_w64 (let: "$a0" := (![#(mapT uint64T boolT)] "m") in
+    return: (s_to_w64 (let: "$a0" := (![type.mapT #uint64T #boolT] "m") in
      map.len "$a0"))).
 
 Definition IntWrapper : go_type := uint64T.
@@ -1463,13 +1463,13 @@ Definition MapTypeAliases : val :=
     exception_do (let: "m2" := (mem.alloc "m2") in
     let: "m1" := (mem.alloc "m1") in
     let: "$r0" := (Fst (map.get (![#MapWrapper] "m2") #(W64 0))) in
-    do:  (map.insert (![#(mapT IntWrapper boolT)] "m1") #(W64 4) "$r0")).
+    do:  (map.insert (![type.mapT #IntWrapper #boolT] "m1") #(W64 4) "$r0")).
 
 (* go: maps.go:22:6 *)
 Definition StringMap : val :=
   rec: "StringMap" "m" :=
     exception_do (let: "m" := (mem.alloc "m") in
-    return: (Fst (map.get (![#(mapT stringT uint64T)] "m") #"foo"%go))).
+    return: (Fst (map.get (![type.mapT #stringT #uint64T] "m") #"foo"%go))).
 
 Definition mapElem : go_type := structT [
   "a" :: uint64T;
@@ -1479,11 +1479,11 @@ Definition mapElem : go_type := structT [
 (* go: maps.go:31:6 *)
 Definition mapUpdateField : val :=
   rec: "mapUpdateField" <> :=
-    exception_do (let: "x" := (mem.alloc (type.zero_val #(mapT uint64T ptrT))) in
+    exception_do (let: "x" := (mem.alloc (type.zero_val (type.mapT #uint64T #ptrT))) in
     let: "$r0" := (map.make #uint64T #ptrT) in
-    do:  ("x" <-[#(mapT uint64T ptrT)] "$r0");;;
+    do:  ("x" <-[type.mapT #uint64T #ptrT] "$r0");;;
     let: "$r0" := #(W64 10) in
-    do:  ((struct.field_ref #mapElem #"a"%go (Fst (map.get (![#(mapT uint64T ptrT)] "x") #(W64 0)))) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #mapElem #"a"%go (Fst (map.get (![type.mapT #uint64T #ptrT] "x") #(W64 0)))) <-[#uint64T] "$r0")).
 
 (* go: multiple.go:3:6 *)
 Definition returnTwo : val :=
@@ -2356,11 +2356,11 @@ Definition initialize' : val :=
       let: "$r0" := ((let: "$v0" := #(W64 10) in
       let: "$k0" := #"a"%go in
       map.literal #stringT #uint64T [("$k0", "$v0")])) in
-      do:  ((globals.get #unittest.unittest #"mapLiteral"%go) <-[#(mapT stringT uint64T)] "$r0");;;
+      do:  ((globals.get #unittest.unittest #"mapLiteral"%go) <-[type.mapT #stringT #uint64T] "$r0");;;
       let: "$r0" := ((let: "$v0" := (interface.make #""%go #"int"%go #(W64 10)) in
       let: "$k0" := (interface.make #""%go #"string"%go #"a"%go) in
       map.literal #interfaceT #interfaceT [("$k0", "$v0")])) in
-      do:  ((globals.get #unittest.unittest #"mapLiteralWithConversion"%go) <-[#(mapT interfaceT interfaceT)] "$r0");;;
+      do:  ((globals.get #unittest.unittest #"mapLiteralWithConversion"%go) <-[type.mapT #interfaceT #interfaceT] "$r0");;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := (![#uint64T] (globals.get #unittest.unittest #"GlobalX"%go)) in
         do:  ((globals.get #unittest.unittest #"GlobalX"%go) <-[#uint64T] "$r0"))

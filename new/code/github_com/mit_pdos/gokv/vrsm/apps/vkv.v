@@ -379,7 +379,7 @@ Definition KVState__put : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
     let: "$r0" := (![#stringT] (struct.field_ref #PutArgs #"Val"%go (![#ptrT] "args"))) in
-    do:  (map.insert (![#(mapT stringT stringT)] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #PutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
+    do:  (map.insert (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #PutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
     return: (slice.make2 #byteT #(W64 0))).
 
 (* go: server.go:112:19 *)
@@ -387,7 +387,7 @@ Definition KVState__get : val :=
   rec: "KVState__get" "s" "args" :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
-    return: (string.to_bytes (Fst (map.get (![#(mapT stringT stringT)] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] "args"))))).
+    return: (string.to_bytes (Fst (map.get (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] "args"))))).
 
 (* go: server.go:116:19 *)
 Definition KVState__apply : val :=
@@ -402,7 +402,7 @@ Definition KVState__apply : val :=
       (func_call #vkv.vkv #"decodePutArgs"%go) "$a0") in
       do:  ("args" <-[#ptrT] "$r0");;;
       let: "$r0" := (![#uint64T] "vnum") in
-      do:  (map.insert (![#(mapT stringT uint64T)] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #PutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
+      do:  (map.insert (![type.mapT #stringT #uint64T] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #PutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
       return: (let: "$a0" := (![#ptrT] "args") in
        (method_call #vkv.vkv #"KVState'ptr" #"put" (![#ptrT] "s")) "$a0")
     else
@@ -413,7 +413,7 @@ Definition KVState__apply : val :=
         (func_call #vkv.vkv #"decodeGetArgs"%go) "$a0") in
         do:  ("key" <-[#stringT] "$r0");;;
         let: "$r0" := (![#uint64T] "vnum") in
-        do:  (map.insert (![#(mapT stringT uint64T)] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] "key") "$r0");;;
+        do:  (map.insert (![type.mapT #stringT #uint64T] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] "key") "$r0");;;
         return: (let: "$a0" := (![#stringT] "key") in
          (method_call #vkv.vkv #"KVState'ptr" #"get" (![#ptrT] "s")) "$a0")
       else
@@ -423,12 +423,12 @@ Definition KVState__apply : val :=
           let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
           (func_call #vkv.vkv #"decodeCondPutArgs"%go) "$a0") in
           do:  ("args" <-[#ptrT] "$r0");;;
-          (if: (Fst (map.get (![#(mapT stringT stringT)] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))))) = (![#stringT] (struct.field_ref #CondPutArgs #"Expect"%go (![#ptrT] "args")))
+          (if: (Fst (map.get (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))))) = (![#stringT] (struct.field_ref #CondPutArgs #"Expect"%go (![#ptrT] "args")))
           then
             let: "$r0" := (![#uint64T] "vnum") in
-            do:  (map.insert (![#(mapT stringT uint64T)] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
+            do:  (map.insert (![type.mapT #stringT #uint64T] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
             let: "$r0" := (![#stringT] (struct.field_ref #CondPutArgs #"Val"%go (![#ptrT] "args"))) in
-            do:  (map.insert (![#(mapT stringT stringT)] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
+            do:  (map.insert (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) (![#stringT] (struct.field_ref #CondPutArgs #"Key"%go (![#ptrT] "args"))) "$r0");;;
             return: (string.to_bytes #"ok"%go)
           else do:  #());;;
           return: (string.to_bytes #""%go)
@@ -456,7 +456,7 @@ Definition KVState__applyReadonly : val :=
     do:  ("reply" <-[#sliceT] "$r0");;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "vnum" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT uint64T)] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] "key")) in
+    let: ("$ret0", "$ret1") := (map.get (![type.mapT #stringT #uint64T] (struct.field_ref #KVState #"vnums"%go (![#ptrT] "s"))) (![#stringT] "key")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("vnum" <-[#uint64T] "$r0");;;
@@ -469,7 +469,7 @@ Definition KVState__applyReadonly : val :=
 Definition KVState__getState : val :=
   rec: "KVState__getState" "s" <> :=
     exception_do (let: "s" := (mem.alloc "s") in
-    return: (let: "$a0" := (![#(mapT stringT stringT)] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) in
+    return: (let: "$a0" := (![type.mapT #stringT #stringT] (struct.field_ref #KVState #"kvs"%go (![#ptrT] "s"))) in
      (func_call #map_string_marshal.map_string_marshal #"EncodeStringMap"%go) "$a0")).
 
 (* go: server.go:156:19 *)
@@ -481,10 +481,10 @@ Definition KVState__setState : val :=
     let: "$r0" := (![#uint64T] "nextIndex") in
     do:  ((struct.field_ref #KVState #"minVnum"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     let: "$r0" := (map.make #stringT #uint64T) in
-    do:  ((struct.field_ref #KVState #"vnums"%go (![#ptrT] "s")) <-[#(mapT stringT uint64T)] "$r0");;;
+    do:  ((struct.field_ref #KVState #"vnums"%go (![#ptrT] "s")) <-[type.mapT #stringT #uint64T] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "snap") in
     (func_call #map_string_marshal.map_string_marshal #"DecodeStringMap"%go) "$a0") in
-    do:  ((struct.field_ref #KVState #"kvs"%go (![#ptrT] "s")) <-[#(mapT stringT stringT)] "$r0")).
+    do:  ((struct.field_ref #KVState #"kvs"%go (![#ptrT] "s")) <-[type.mapT #stringT #stringT] "$r0")).
 
 (* go: server.go:175:6 *)
 Definition makeVersionedStateMachine : val :=
@@ -493,9 +493,9 @@ Definition makeVersionedStateMachine : val :=
     let: "$r0" := (mem.alloc (type.zero_val #KVState)) in
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "$r0" := (map.make #stringT #stringT) in
-    do:  ((struct.field_ref #KVState #"kvs"%go (![#ptrT] "s")) <-[#(mapT stringT stringT)] "$r0");;;
+    do:  ((struct.field_ref #KVState #"kvs"%go (![#ptrT] "s")) <-[type.mapT #stringT #stringT] "$r0");;;
     let: "$r0" := (map.make #stringT #uint64T) in
-    do:  ((struct.field_ref #KVState #"vnums"%go (![#ptrT] "s")) <-[#(mapT stringT uint64T)] "$r0");;;
+    do:  ((struct.field_ref #KVState #"vnums"%go (![#ptrT] "s")) <-[type.mapT #stringT #uint64T] "$r0");;;
     return: (mem.alloc (let: "$ApplyVolatile" := (method_call #vkv.vkv #"KVState'ptr" #"apply" (![#ptrT] "s")) in
      let: "$ApplyReadonly" := (method_call #vkv.vkv #"KVState'ptr" #"applyReadonly" (![#ptrT] "s")) in
      let: "$GetState" := (λ: <>,

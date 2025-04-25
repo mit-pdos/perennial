@@ -16,7 +16,7 @@ Context `{ffi_syntax}.
 Definition MajorityConfig : go_type := mapT uint64T (structT [
 ]).
 
-Definition JointConfig : go_type := arrayT 2 MajorityConfig.
+Definition JointConfig : go_type := arrayT (W64 2) MajorityConfig.
 
 (* go: joint.go:21:22 *)
 Definition JointConfig__String : val :=
@@ -35,32 +35,32 @@ Definition JointConfig__String : val :=
 Definition JointConfig__IDs : val :=
   rec: "JointConfig__IDs" "c" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
-    let: "m" := (mem.alloc (type.zero_val #(mapT uint64T (structT [
+    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T (type.structT [
     ])))) in
-    let: "$r0" := ((map.literal #uint64T #(structT [
+    let: "$r0" := ((map.literal #uint64T (type.structT [
     ]) [])) in
-    do:  ("m" <-[#(mapT uint64T (structT [
-    ]))] "$r0");;;
+    do:  ("m" <-[type.mapT #uint64T (type.structT [
+    ])] "$r0");;;
     let: "$range" := (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0))) in
     (let: "id" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[#uint64T] "$key");;;
-      let: "$r0" := (struct.make #(structT [
+      let: "$r0" := (struct.make (type.structT [
       ]) [{
       }]) in
-      do:  (map.insert (![#(mapT uint64T (structT [
-      ]))] "m") (![#uint64T] "id") "$r0")));;;
+      do:  (map.insert (![type.mapT #uint64T (type.structT [
+      ])] "m") (![#uint64T] "id") "$r0")));;;
     let: "$range" := (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1))) in
     (let: "id" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[#uint64T] "$key");;;
-      let: "$r0" := (struct.make #(structT [
+      let: "$r0" := (struct.make (type.structT [
       ]) [{
       }]) in
-      do:  (map.insert (![#(mapT uint64T (structT [
-      ]))] "m") (![#uint64T] "id") "$r0")));;;
-    return: (![#(mapT uint64T (structT [
-     ]))] "m")).
+      do:  (map.insert (![type.mapT #uint64T (type.structT [
+      ])] "m") (![#uint64T] "id") "$r0")));;;
+    return: (![type.mapT #uint64T (type.structT [
+     ])] "m")).
 
 Definition AckedIndexer : go_type := interfaceT.
 
@@ -115,11 +115,11 @@ Definition JointConfig__VoteResult : val :=
     exception_do (let: "c" := (mem.alloc "c") in
     let: "votes" := (mem.alloc "votes") in
     let: "r1" := (mem.alloc (type.zero_val #VoteResult)) in
-    let: "$r0" := (let: "$a0" := (![#(mapT uint64T boolT)] "votes") in
+    let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #boolT] "votes") in
     (method_call #quorum.quorum #"MajorityConfig" #"VoteResult" (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) "$a0") in
     do:  ("r1" <-[#VoteResult] "$r0");;;
     let: "r2" := (mem.alloc (type.zero_val #VoteResult)) in
-    let: "$r0" := (let: "$a0" := (![#(mapT uint64T boolT)] "votes") in
+    let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #boolT] "votes") in
     (method_call #quorum.quorum #"MajorityConfig" #"VoteResult" (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) "$a0") in
     do:  ("r2" <-[#VoteResult] "$r0");;;
     (if: (![#VoteResult] "r1") = (![#VoteResult] "r2")
@@ -324,9 +324,9 @@ Definition MajorityConfig__CommittedIndex : val :=
     (if: (![#intT] "n") = #(W64 0)
     then return: (#(W64 math.MaxUint64))
     else do:  #());;;
-    let: "stk" := (mem.alloc (type.zero_val #(arrayT 7 uint64T))) in
+    let: "stk" := (mem.alloc (type.zero_val (type.arrayT #(W64 7) #uint64T))) in
     let: "srt" := (mem.alloc (type.zero_val #sliceT)) in
-    (if: int_geq (array.len #(arrayT 7 uint64T)) (![#intT] "n")
+    (if: int_geq (array.len (type.arrayT #(W64 7) #uint64T)) (![#intT] "n")
     then
       let: "$r0" := (let: "$a" := "stk" in
       array.slice #uint64T "$a" #(W64 0) (![#intT] "n")) in
@@ -386,7 +386,7 @@ Definition MajorityConfig__VoteResult : val :=
       do:  ("id" <-[#uint64T] "$key");;;
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "v" := (mem.alloc (type.zero_val #boolT)) in
-      let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T boolT)] "votes") (![#uint64T] "id")) in
+      let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #boolT] "votes") (![#uint64T] "id")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("v" <-[#boolT] "$r0");;;
@@ -445,16 +445,16 @@ Definition VoteResult__String : val :=
   rec: "VoteResult__String" "i" <> :=
     exception_do (let: "i" := (mem.alloc "i") in
     do:  ("i" <-[#VoteResult] ((![#VoteResult] "i") - #(W8 1)));;;
-    (if: (![#VoteResult] "i") ≥ (s_to_w8 ((array.len #(arrayT 4 uint8T)) - #(W64 1)))
+    (if: (![#VoteResult] "i") ≥ (s_to_w8 ((array.len (type.arrayT #(W64 4) #uint8T)) - #(W64 1)))
     then
       return: ((#"VoteResult("%go + (let: "$a0" := (u_to_w64 ((![#VoteResult] "i") + #(W8 1))) in
        let: "$a1" := #(W64 10) in
        (func_call #strconv.strconv #"FormatInt"%go) "$a0" "$a1")) + #")"%go)
     else do:  #());;;
     return: (string.from_bytes (let: "$s" := (string.to_bytes #_VoteResult_name) in
-     slice.slice #byteT "$s" (![#uint8T] (array.elem_ref #uint8T (![#(arrayT 4 uint8T)] (globals.get #quorum.quorum #"_VoteResult_index"%go)) (![#VoteResult] "i"))) (![#uint8T] (array.elem_ref #uint8T (![#(arrayT 4 uint8T)] (globals.get #quorum.quorum #"_VoteResult_index"%go)) ((![#VoteResult] "i") + #(W8 1))))))).
+     slice.slice #byteT "$s" (![#uint8T] (array.elem_ref #uint8T (![type.arrayT #(W64 4) #uint8T] (globals.get #quorum.quorum #"_VoteResult_index"%go)) (![#VoteResult] "i"))) (![#uint8T] (array.elem_ref #uint8T (![type.arrayT #(W64 4) #uint8T] (globals.get #quorum.quorum #"_VoteResult_index"%go)) ((![#VoteResult] "i") + #(W8 1))))))).
 
-Definition vars' : list (go_string * go_type) := [("_VoteResult_index"%go, arrayT 4 uint8T)].
+Definition vars' : list (go_string * go_type) := [("_VoteResult_index"%go, arrayT (W64 4) uint8T)].
 
 Definition functions' : list (go_string * val) := [].
 
@@ -507,7 +507,7 @@ Definition initialize' : val :=
       let: "$ar2" := #(W8 19) in
       let: "$ar3" := #(W8 26) in
       array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"])) in
-      do:  ((globals.get #quorum.quorum #"_VoteResult_index"%go) <-[#(arrayT 4 uint8T)] "$r0"))
+      do:  ((globals.get #quorum.quorum #"_VoteResult_index"%go) <-[type.arrayT #(W64 4) #uint8T] "$r0"))
       ).
 
 End code.

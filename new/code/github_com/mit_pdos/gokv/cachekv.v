@@ -93,7 +93,7 @@ Definition CacheKv__Get : val :=
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "cv" := (mem.alloc (type.zero_val #cacheValue)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT cacheValue)] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key")) in
+    let: ("$ret0", "$ret1") := (map.get (![type.mapT #stringT #cacheValue] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("cv" <-[#cacheValue] "$r0");;;
@@ -109,7 +109,7 @@ Definition CacheKv__Get : val :=
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
       return: (![#stringT] (struct.field_ref #cacheValue #"v"%go "cv"))
     else do:  #());;;
-    do:  (let: "$a0" := (![#(mapT stringT cacheValue)] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) in
+    do:  (let: "$a0" := (![type.mapT #stringT #cacheValue] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) in
     let: "$a1" := (![#stringT] "key") in
     map.delete "$a0" "$a1");;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
@@ -164,11 +164,11 @@ Definition CacheKv__GetAndCache : val :=
           "v" ::= "$v";
           "l" ::= "$l"
         }]) in
-        do:  (map.insert (![#(mapT stringT cacheValue)] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key") "$r0");;;
+        do:  (map.insert (![type.mapT #stringT #cacheValue] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key") "$r0");;;
         break: #()
       else do:  #()));;;
     let: "ret" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := (struct.field_get #cacheValue "v" (Fst (map.get (![#(mapT stringT cacheValue)] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key")))) in
+    let: "$r0" := (struct.field_get #cacheValue "v" (Fst (map.get (![type.mapT #stringT #cacheValue] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key")))) in
     do:  ("ret" <-[#stringT] "$r0");;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
     return: (![#stringT] "ret")).

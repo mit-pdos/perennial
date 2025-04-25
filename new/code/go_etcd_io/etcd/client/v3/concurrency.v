@@ -335,14 +335,14 @@ Definition Election__Observe : val :=
   rec: "Election__Observe" "e" "ctx" :=
     exception_do (let: "e" := (mem.alloc "e") in
     let: "ctx" := (mem.alloc "ctx") in
-    let: "retc" := (mem.alloc (type.zero_val #(chanT clientv3.GetResponse))) in
-    let: "$r0" := (chan.make clientv3.GetResponse #(W64 0)) in
-    do:  ("retc" <-[#(chanT clientv3.GetResponse)] "$r0");;;
+    let: "retc" := (mem.alloc (type.zero_val (type.chanT #clientv3.GetResponse))) in
+    let: "$r0" := (chan.make #clientv3.GetResponse #(W64 0)) in
+    do:  ("retc" <-[type.chanT #clientv3.GetResponse] "$r0");;;
     let: "$a0" := (![#context.Context] "ctx") in
-    let: "$a1" := (![#(chanT clientv3.GetResponse)] "retc") in
+    let: "$a1" := (![type.chanT #clientv3.GetResponse] "retc") in
     let: "$go" := (method_call #concurrency.concurrency #"Election'ptr" #"observe" (![#ptrT] "e")) in
     do:  (Fork ("$go" "a0" "a1"));;;
-    return: (![#(chanT clientv3.GetResponse)] "retc")).
+    return: (![type.chanT #clientv3.GetResponse] "retc")).
 
 (* go: election.go:173:20 *)
 Definition Election__observe : val :=
@@ -353,7 +353,7 @@ Definition Election__observe : val :=
     let: "client" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#(chanT clientv3.GetResponse)] "ch") in
+    do:  (let: "$a0" := (![type.chanT #clientv3.GetResponse] "ch") in
     let: "$f" := chan.close in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
@@ -441,11 +441,11 @@ Definition Election__observe : val :=
          "Kvs" ::= "$Kvs";
          "More" ::= type.zero_val #boolT;
          "Count" ::= type.zero_val #int64T;
-         "XXX_NoUnkeyedLiteral" ::= type.zero_val #(structT [
+         "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
          ]);
          "XXX_unrecognized" ::= type.zero_val #sliceT;
          "XXX_sizecache" ::= type.zero_val #int32T
-       }]) (![#(chanT clientv3.GetResponse)] "ch") (λ: <>,
+       }]) (![type.chanT #clientv3.GetResponse] "ch") (λ: <>,
          do:  #()
          ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
          return: (#())
@@ -498,7 +498,7 @@ Definition Election__observe : val :=
           let: "$r0" := ((let: "$sl0" := (![#ptrT] (struct.field_ref #clientv3.Event #"Kv"%go (![#ptrT] "ev"))) in
           slice.literal #ptrT ["$sl0"])) in
           do:  ((struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp")) <-[#sliceT] "$r0");;;
-          chan.select [chan.select_send (![#clientv3.GetResponse] (![#ptrT] "resp")) (![#(chanT clientv3.GetResponse)] "ch") (λ: <>,
+          chan.select [chan.select_send (![#clientv3.GetResponse] (![#ptrT] "resp")) (![type.chanT #clientv3.GetResponse] "ch") (λ: <>,
              do:  #()
              ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "cctx")) #()) (λ: "$recvVal",
              do:  ((![#context.CancelFunc] "cancel") #());;;
@@ -1024,33 +1024,33 @@ Definition NewSession : val :=
     do:  ("ctx" <-[#context.Context] "$r0");;;
     do:  ("cancel" <-[#context.CancelFunc] "$r1");;;
     let: "err" := (mem.alloc (type.zero_val #error)) in
-    let: "keepAlive" := (mem.alloc (type.zero_val #(chanT ptrT))) in
+    let: "keepAlive" := (mem.alloc (type.zero_val (type.chanT #ptrT))) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
     let: "$a1" := (![#clientv3.LeaseID] "id") in
     (method_call #clientv3 #"Client'ptr" #"KeepAlive" (![#ptrT] "client")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("keepAlive" <-[#(chanT ptrT)] "$r0");;;
+    do:  ("keepAlive" <-[type.chanT #ptrT] "$r0");;;
     do:  ("err" <-[#error] "$r1");;;
-    (if: (~ (interface.eq (![#error] "err") #interface.nil)) || ((![#(chanT ptrT)] "keepAlive") = #null)
+    (if: (~ (interface.eq (![#error] "err") #interface.nil)) || ((![type.chanT #ptrT] "keepAlive") = #null)
     then
       do:  ((![#context.CancelFunc] "cancel") #());;;
       return: (#null, ![#error] "err")
     else do:  #());;;
-    let: "donec" := (mem.alloc (type.zero_val #(chanT (structT [
+    let: "donec" := (mem.alloc (type.zero_val (type.chanT (type.structT [
     ])))) in
-    let: "$r0" := (chan.make (structT [
+    let: "$r0" := (chan.make (type.structT [
     ]) #(W64 0)) in
-    do:  ("donec" <-[#(chanT (structT [
-    ]))] "$r0");;;
+    do:  ("donec" <-[type.chanT (type.structT [
+    ])] "$r0");;;
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$client" := (![#ptrT] "client") in
     let: "$opts" := (![#ptrT] "ops") in
     let: "$id" := (![#clientv3.LeaseID] "id") in
     let: "$ctx" := (![#context.Context] "ctx") in
     let: "$cancel" := (![#context.CancelFunc] "cancel") in
-    let: "$donec" := (![#(chanT (structT [
-    ]))] "donec") in
+    let: "$donec" := (![type.chanT (type.structT [
+    ])] "donec") in
     struct.make #Session [{
       "client" ::= "$client";
       "opts" ::= "$opts";
@@ -1062,8 +1062,8 @@ Definition NewSession : val :=
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
-        exception_do (do:  (let: "$a0" := (![#(chanT (structT [
-        ]))] "donec") in
+        exception_do (do:  (let: "$a0" := (![type.chanT (type.structT [
+        ])] "donec") in
         chan.close "$a0");;;
         do:  ((![#context.CancelFunc] "cancel") #()))
         ) in
@@ -1072,7 +1072,7 @@ Definition NewSession : val :=
         "$f" #();;
         "$oldf" #()
         )));;;
-      let: "$range" := (![#(chanT ptrT)] "keepAlive") in
+      let: "$range" := (![type.chanT #ptrT] "keepAlive") in
       chan.for_range "$range" (λ: "$key",
         do:  #()))
       ) in
@@ -1111,8 +1111,8 @@ Definition Session__Ctx : val :=
 Definition Session__Done : val :=
   rec: "Session__Done" "s" <> :=
     exception_do (let: "s" := (mem.alloc "s") in
-    return: (![#(chanT (structT [
-     ]))] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))).
+    return: (![type.chanT (type.structT [
+     ])] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))).
 
 (* Orphan ends the refresh for the session lease. This is useful
    in case the state of the client connection is indeterminate (revoke
@@ -1123,8 +1123,8 @@ Definition Session__Orphan : val :=
   rec: "Session__Orphan" "s" <> :=
     exception_do (let: "s" := (mem.alloc "s") in
     do:  ((![#context.CancelFunc] (struct.field_ref #Session #"cancel"%go (![#ptrT] "s"))) #());;;
-    do:  (Fst (chan.receive (![#(chanT (structT [
-    ]))] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))))).
+    do:  (Fst (chan.receive (![type.chanT (type.structT [
+    ])] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))))).
 
 (* Close orphans the session and revokes the session lease.
 
@@ -1455,9 +1455,9 @@ Definition runSTM : val :=
   rec: "runSTM" "s" "apply" :=
     exception_do (let: "apply" := (mem.alloc "apply") in
     let: "s" := (mem.alloc "s") in
-    let: "outc" := (mem.alloc (type.zero_val #(chanT stmResponse))) in
-    let: "$r0" := (chan.make stmResponse #(W64 1)) in
-    do:  ("outc" <-[#(chanT stmResponse)] "$r0");;;
+    let: "outc" := (mem.alloc (type.zero_val (type.chanT #stmResponse))) in
+    let: "$r0" := (chan.make #stmResponse #(W64 1)) in
+    do:  ("outc" <-[type.chanT #stmResponse] "$r0");;;
     let: "$go" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
         exception_do ((let: "r" := (mem.alloc (type.zero_val #interfaceT)) in
@@ -1477,7 +1477,7 @@ Definition runSTM : val :=
             do:  (let: "$a0" := (![#interfaceT] "r") in
             Panic "$a0")
           else do:  #());;;
-          do:  (let: "$chan" := (![#(chanT stmResponse)] "outc") in
+          do:  (let: "$chan" := (![type.chanT #stmResponse] "outc") in
           let: "$v" := (struct.make #stmResponse [{
             "resp" ::= #null;
             "err" ::= ![#error] (struct.field_ref #stmError #"err"%go "e")
@@ -1504,13 +1504,13 @@ Definition runSTM : val :=
         (if: (![#ptrT] (struct.field_ref #stmResponse #"resp"%go "out")) ≠ #null
         then break: #()
         else do:  #())));;;
-      do:  (let: "$chan" := (![#(chanT stmResponse)] "outc") in
+      do:  (let: "$chan" := (![type.chanT #stmResponse] "outc") in
       let: "$v" := (![#stmResponse] "out") in
       chan.send "$chan" "$v"))
       ) in
     do:  (Fork ("$go" #()));;;
     let: "r" := (mem.alloc (type.zero_val #stmResponse)) in
-    let: "$r0" := (Fst (chan.receive (![#(chanT stmResponse)] "outc"))) in
+    let: "$r0" := (Fst (chan.receive (![type.chanT #stmResponse] "outc"))) in
     do:  ("r" <-[#stmResponse] "$r0");;;
     return: (![#ptrT] (struct.field_ref #stmResponse #"resp"%go "r"), ![#error] (struct.field_ref #stmResponse #"err"%go "r"))).
 
@@ -1825,14 +1825,14 @@ Definition stmSerializable__Get : val :=
       do:  "$key";;;
       (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
-      let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT ptrT)] (struct.field_ref #stmSerializable #"prefetch"%go (![#ptrT] "s"))) (![#stringT] "key")) in
+      let: ("$ret0", "$ret1") := (map.get (![type.mapT #stringT #ptrT] (struct.field_ref #stmSerializable #"prefetch"%go (![#ptrT] "s"))) (![#stringT] "key")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("resp" <-[#ptrT] "$r0");;;
       do:  ("ok" <-[#boolT] "$r1");;;
       (if: ![#boolT] "ok"
       then
-        do:  (let: "$a0" := (![#(mapT stringT ptrT)] (struct.field_ref #stmSerializable #"prefetch"%go (![#ptrT] "s"))) in
+        do:  (let: "$a0" := (![type.mapT #stringT #ptrT] (struct.field_ref #stmSerializable #"prefetch"%go (![#ptrT] "s"))) in
         let: "$a1" := (![#stringT] "key") in
         map.delete "$a0" "$a1");;;
         let: "$r0" := (![#ptrT] "resp") in
@@ -1933,7 +1933,7 @@ Definition stmSerializable__commit : val :=
     let: "$a1" := (![#ptrT] "txnresp") in
     (method_call #concurrency.concurrency #"readSet" #"add" (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
     let: "$r0" := (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s")))) in
-    do:  ((struct.field_ref #stmSerializable #"prefetch"%go (![#ptrT] "s")) <-[#(mapT stringT ptrT)] "$r0");;;
+    do:  ((struct.field_ref #stmSerializable #"prefetch"%go (![#ptrT] "s")) <-[type.mapT #stringT #ptrT] "$r0");;;
     let: "$r0" := #slice.nil in
     do:  ((struct.field_ref #stm #"getOpts"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) <-[#sliceT] "$r0");;;
     return: (#null)).

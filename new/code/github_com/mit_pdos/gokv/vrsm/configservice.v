@@ -757,19 +757,19 @@ Definition StartServer : val :=
     let: "$a3" := (![#sliceT] "initconfig") in
     (func_call #configservice.configservice #"makeServer"%go) "$a0" "$a1" "$a2" "$a3") in
     do:  ("s" <-[#ptrT] "$r0");;;
-    let: "handlers" := (mem.alloc (type.zero_val #(mapT uint64T funcT))) in
+    let: "handlers" := (mem.alloc (type.zero_val (type.mapT #uint64T #funcT))) in
     let: "$r0" := (map.make #uint64T #funcT) in
-    do:  ("handlers" <-[#(mapT uint64T funcT)] "$r0");;;
+    do:  ("handlers" <-[type.mapT #uint64T #funcT] "$r0");;;
     let: "$r0" := (method_call #configservice.configservice #"Server'ptr" #"ReserveEpochAndGetConfig" (![#ptrT] "s")) in
-    do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_RESERVEEPOCH "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_RESERVEEPOCH "$r0");;;
     let: "$r0" := (method_call #configservice.configservice #"Server'ptr" #"GetConfig" (![#ptrT] "s")) in
-    do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_GETCONFIG "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_GETCONFIG "$r0");;;
     let: "$r0" := (method_call #configservice.configservice #"Server'ptr" #"TryWriteConfig" (![#ptrT] "s")) in
-    do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_TRYWRITECONFIG "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_TRYWRITECONFIG "$r0");;;
     let: "$r0" := (method_call #configservice.configservice #"Server'ptr" #"GetLease" (![#ptrT] "s")) in
-    do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_GETLEASE "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_GETLEASE "$r0");;;
     let: "rs" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#(mapT uint64T funcT)] "handlers") in
+    let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #funcT] "handlers") in
     (func_call #urpc.urpc #"MakeServer"%go) "$a0") in
     do:  ("rs" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "me") in

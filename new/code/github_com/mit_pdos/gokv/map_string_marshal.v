@@ -17,11 +17,11 @@ Definition EncodeStringMap : val :=
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#(mapT stringT stringT)] "kvs") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![type.mapT #stringT #stringT] "kvs") in
     map.len "$a0")) in
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#(mapT stringT stringT)] "kvs") in
+    let: "$range" := (![type.mapT #stringT #stringT] "kvs") in
     (let: "v" := (mem.alloc (type.zero_val #stringT)) in
     let: "k" := (mem.alloc (type.zero_val #stringT)) in
     map.for_range "$range" (λ: "$key" "value",
@@ -55,9 +55,9 @@ Definition DecodeStringMap : val :=
     let: "$r0" := (![#sliceT] "enc_in") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "numEntries" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "kvs" := (mem.alloc (type.zero_val #(mapT stringT stringT))) in
+    let: "kvs" := (mem.alloc (type.zero_val (type.mapT #stringT #stringT))) in
     let: "$r0" := (map.make #stringT #stringT) in
-    do:  ("kvs" <-[#(mapT stringT stringT)] "$r0");;;
+    do:  ("kvs" <-[type.mapT #stringT #stringT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
     (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
     let: "$r0" := "$ret0" in
@@ -101,8 +101,8 @@ Definition DecodeStringMap : val :=
       do:  ("val" <-[#sliceT] "$r0");;;
       do:  ("enc" <-[#sliceT] "$r1");;;
       let: "$r0" := (string.from_bytes (![#sliceT] "val")) in
-      do:  (map.insert (![#(mapT stringT stringT)] "kvs") (string.from_bytes (![#sliceT] "key")) "$r0")));;;
-    return: (![#(mapT stringT stringT)] "kvs")).
+      do:  (map.insert (![type.mapT #stringT #stringT] "kvs") (string.from_bytes (![#sliceT] "key")) "$r0")));;;
+    return: (![type.mapT #stringT #stringT] "kvs")).
 
 Definition vars' : list (go_string * go_type) := [].
 

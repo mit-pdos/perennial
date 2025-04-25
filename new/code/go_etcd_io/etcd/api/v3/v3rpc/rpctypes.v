@@ -39,7 +39,7 @@ Definition Error : val :=
     else do:  #());;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "verr" := (mem.alloc (type.zero_val #error)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT error)] (globals.get #rpctypes.rpctypes #"errStringToError"%go)) (let: "$a0" := (![#error] "err") in
+    let: ("$ret0", "$ret1") := (map.get (![type.mapT #stringT #error] (globals.get #rpctypes.rpctypes #"errStringToError"%go)) (let: "$a0" := (![#error] "err") in
     (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -539,7 +539,7 @@ Definition initialize' : val :=
       let: "$k56" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCNoInflightDowngrade"%go)) in
       (func_call #rpctypes.rpctypes #"ErrorDesc"%go) "$a0") in
       map.literal #stringT #error [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4"); ("$k5", "$v5"); ("$k6", "$v6"); ("$k7", "$v7"); ("$k8", "$v8"); ("$k9", "$v9"); ("$k10", "$v10"); ("$k11", "$v11"); ("$k12", "$v12"); ("$k13", "$v13"); ("$k14", "$v14"); ("$k15", "$v15"); ("$k16", "$v16"); ("$k17", "$v17"); ("$k18", "$v18"); ("$k19", "$v19"); ("$k20", "$v20"); ("$k21", "$v21"); ("$k22", "$v22"); ("$k23", "$v23"); ("$k24", "$v24"); ("$k25", "$v25"); ("$k26", "$v26"); ("$k27", "$v27"); ("$k28", "$v28"); ("$k29", "$v29"); ("$k30", "$v30"); ("$k31", "$v31"); ("$k32", "$v32"); ("$k33", "$v33"); ("$k34", "$v34"); ("$k35", "$v35"); ("$k36", "$v36"); ("$k37", "$v37"); ("$k38", "$v38"); ("$k39", "$v39"); ("$k40", "$v40"); ("$k41", "$v41"); ("$k42", "$v42"); ("$k43", "$v43"); ("$k44", "$v44"); ("$k45", "$v45"); ("$k46", "$v46"); ("$k47", "$v47"); ("$k48", "$v48"); ("$k49", "$v49"); ("$k50", "$v50"); ("$k51", "$v51"); ("$k52", "$v52"); ("$k53", "$v53"); ("$k54", "$v54"); ("$k55", "$v55"); ("$k56", "$v56")])) in
-      do:  ((globals.get #rpctypes.rpctypes #"errStringToError"%go) <-[#(mapT stringT error)] "$r0");;;
+      do:  ((globals.get #rpctypes.rpctypes #"errStringToError"%go) <-[type.mapT #stringT #error] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#error] (globals.get #rpctypes.rpctypes #"ErrGRPCEmptyKey"%go)) in
       (func_call #rpctypes.rpctypes #"Error"%go) "$a0") in
       do:  ((globals.get #rpctypes.rpctypes #"ErrEmptyKey"%go) <-[#error] "$r0");;;

@@ -24,7 +24,7 @@ translate = [
 
 axiomatize = [
   "Client",
-  "Op", # FIXME: sliceT shouldn't take a type as input
+  "Op",
 ]
 
 imports = [

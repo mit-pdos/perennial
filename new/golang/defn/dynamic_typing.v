@@ -53,6 +53,8 @@ Fixpoint type_to_val (t: go_type): val :=
 Instance go_type_into_val : IntoVal go_type :=
   { to_val_def := type_to_val; }.
 
+Definition arrayT: val := λ: "n" "elemT", InjR (InjL ("n", "elemT")).
+Definition structT: val := λ: "decls", InjR (InjR (InjL "decls")).
 Definition mapT: val := λ: "keyT" "elemT", #ptrT.
 Definition chanT: val := λ: "elemT", #ptrT.
 
