@@ -106,5 +106,9 @@ From Perennial.program_proof.tutorial Require
      kvservice.proof
      kvservice.full_proof.
 
+(* Verus-related proofs *)
+From Perennial.program_proof.verus Require
+    wrs.
+
 From Perennial.program_proof.cachekv Require proof.
 From New Require should_build.
