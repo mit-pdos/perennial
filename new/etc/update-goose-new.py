@@ -51,7 +51,7 @@ projs = [
             "./vrsm/apps/closed",
             "./map_marshal",
             "./cachekv",
-            "./trusted_proph"
+            "./trusted_proph",
         ],
     ),
     create_proj(
