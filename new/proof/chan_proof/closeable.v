@@ -5,7 +5,7 @@ Require Import New.proof.proof_prelude.
     readers. *)
 Class closeable_chanG Σ :=
   {
-    ghost_varG :: ghost_varG Σ ()
+    ghost_var_inG :: ghost_varG Σ ()
   }.
 
 Record closeable_chan_names :=
