@@ -1,16 +1,24 @@
 Require Import New.code.context.
 Require Export New.generatedproof.context.
 Require Import New.proof.proof_prelude.
+Require Import New.proof.chan.
 
 Require Import Perennial.Helpers.CountableTactics.
 
-Module Context_state.
+Class contextG Σ :=
+  {
+    closeable_inG :: closeable_chanG Σ
+  }.
+
+(* Context logical descriptor. *)
+Module Context_desc.
 Section defn.
 Context `{ffi_syntax}.
+(* Context `{hG: heapGS Σ, !ffi_semantics _ _}. *)
+Context `{PROP : Type}.
 (* FIXME: prove this and put it in golang directory. *)
 Instance interface_countable : Countable interface.t.
 Admitted.
-
 Record t :=
   mk
     {
@@ -19,21 +27,25 @@ Record t :=
       (* Deadline : time.Time.t  *)
       Deadline : option w64;
       Done: chan.t;
+      PCancel : PROP;
     }.
+Global Instance eta : Settable _ :=
+  settable! mk <Values; Deadline; Done; PCancel>.
 End defn.
-End Context_state.
+End Context_desc.
 
 Section definitions.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
+Context `{contextG Σ}.
 
 #[global]
 Program Instance : IsPkgInit context :=
   ltac2:(build_pkg_init ()).
 
-Import Context_state.
-Definition is_Context (c : interface.t) (s : Context_state.t) : iProp Σ :=
+Import Context_desc.
+Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
   "#HDeadline" ∷
     {{{ True }}}
       interface.get #"Deadline" #c #()
@@ -48,7 +60,8 @@ Definition is_Context (c : interface.t) (s : Context_state.t) : iProp Σ :=
   "#HErr" ∷
     {{{ True }}}
       interface.get #"Err" #c #()
-    {{{ (err : interface.t), RET #err; True }}}
+    {{{ (err : interface.t), RET #err; True }}} ∗
+  "#HDone_ch" ∷ is_closeable_chan s.(Done) s.(PCancel)
 .
 
 (*
@@ -67,14 +80,15 @@ would be a liveness property. But should be able to do the converse.
 Should be able to prove that if the returned context's Done channel is closed,
 then (cancel was run) ∨ (chan.is_closed ctx.Done). *)
 
-Lemma wp_WithCancel (ctx : interface.t) :
-  {{{ True }}}
+Lemma wp_WithCancel PCancel' (ctx : interface.t) ctx_desc :
+  {{{
+        is_Context ctx ctx_desc
+  }}}
     context @ "WithCancel" #ctx
   {{{
-        ctx' ctx_state (cancel : func.t), RET (#ctx', #cancel);
-        is_Context ctx' ctx_state ∗
-        {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
-        inv nroot (∃ (s : chanstate.t unit), own_chan ctx_state.(Done) s)
+        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        {{{ PCancel' }}} #cancel #() {{{ RET #(); True }}} ∗
+        is_Context ctx' (ctx_desc <| PCancel := ctx_desc.(PCancel) ∨ PCancel' |> <|Done := done'|> )
   }}}.
 Proof.
 Admitted.

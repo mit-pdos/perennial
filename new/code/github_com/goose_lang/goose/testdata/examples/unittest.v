@@ -142,62 +142,62 @@ Definition chanSelect : val :=
     let: "c" := (mem.alloc (type.zero_val #(chanT intT))) in
     let: "i2" := (mem.alloc (type.zero_val #intT)) in
     let: "i1" := (mem.alloc (type.zero_val #intT)) in
-    do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
-        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"sent "%go) in
-        let: "$sl1" := (interface.make #""%go #"int"%go (![#intT] "i2")) in
-        let: "$sl2" := (interface.make #""%go #"string"%go #" to c2
-        "%go) in
-        slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
-        (func_call #fmt.fmt #"Print"%go) "$a0")
-        ))] [("$recvChan0", (λ: "$recvVal",
-        do:  #()
-        )); ("$recvChan1", (λ: "$recvVal",
-        let: "$r0" := (Fst "$recvVal") in
-        do:  ("i1" <-[#intT] "$r0");;;
-        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"received "%go) in
-        let: "$sl1" := (interface.make #""%go #"int"%go (![#intT] "i1")) in
-        let: "$sl2" := (interface.make #""%go #"string"%go #" from c1
-        "%go) in
-        slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
-        (func_call #fmt.fmt #"Print"%go) "$a0")
-        )); ("$recvChan2", (λ: "$recvVal",
-        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-        let: "i3" := (mem.alloc (type.zero_val #intT)) in
-        let: ("$ret0", "$ret1") := "$recvVal" in
-        let: "$r0" := "$ret0" in
-        let: "$r1" := "$ret1" in
-        do:  ("i3" <-[#intT] "$r0");;;
-        do:  ("ok" <-[#boolT] "$r1");;;
-        (if: ![#boolT] "ok"
-        then
-          do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"received "%go) in
-          let: "$sl1" := (interface.make #""%go #"int"%go (![#intT] "i3")) in
-          let: "$sl2" := (interface.make #""%go #"string"%go #" from c3
-          "%go) in
-          slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
-          (func_call #fmt.fmt #"Print"%go) "$a0")
-        else
-          do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"c3 is closed
-          "%go) in
-          slice.literal #interfaceT ["$sl0"])) in
-          (func_call #fmt.fmt #"Print"%go) "$a0"))
-        )); ("$recvChan3", (λ: "$recvVal",
-        let: "$r0" := (Fst "$recvVal") in
-        do:  ((slice.elem_ref #intT (![#sliceT] "a") ((func_call #unittest.unittest #"f"%go) #())) <-[#intT] "$r0");;;
-        do:  #()
-        ))] (InjR (λ: <>,
+    chan.select [chan.select_receive (![#(chanT intT)] "c3") (λ: "$recvVal",
+       do:  #()
+       ); chan.select_receive (![#(chanT intT)] "c1") (λ: "$recvVal",
+       let: "$r0" := (Fst "$recvVal") in
+       do:  ("i1" <-[#intT] "$r0");;;
+       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"received "%go) in
+       let: "$sl1" := (interface.make #""%go #"int"%go (![#intT] "i1")) in
+       let: "$sl2" := (interface.make #""%go #"string"%go #" from c1
+       "%go) in
+       slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
+       (func_call #fmt.fmt #"Print"%go) "$a0")
+       ); chan.select_send (![#intT] "i2") (![#(chanT intT)] "c2") (λ: <>,
+       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"sent "%go) in
+       let: "$sl1" := (interface.make #""%go #"int"%go (![#intT] "i2")) in
+       let: "$sl2" := (interface.make #""%go #"string"%go #" to c2
+       "%go) in
+       slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
+       (func_call #fmt.fmt #"Print"%go) "$a0")
+       ); chan.select_receive (![#(chanT intT)] "c3") (λ: "$recvVal",
+       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+       let: "i3" := (mem.alloc (type.zero_val #intT)) in
+       let: ("$ret0", "$ret1") := "$recvVal" in
+       let: "$r0" := "$ret0" in
+       let: "$r1" := "$ret1" in
+       do:  ("i3" <-[#intT] "$r0");;;
+       do:  ("ok" <-[#boolT] "$r1");;;
+       (if: ![#boolT] "ok"
+       then
+         do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"received "%go) in
+         let: "$sl1" := (interface.make #""%go #"int"%go (![#intT] "i3")) in
+         let: "$sl2" := (interface.make #""%go #"string"%go #" from c3
+         "%go) in
+         slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
+         (func_call #fmt.fmt #"Print"%go) "$a0")
+       else
+         do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"c3 is closed
+         "%go) in
+         slice.literal #interfaceT ["$sl0"])) in
+         (func_call #fmt.fmt #"Print"%go) "$a0"))
+       ); chan.select_receive (![#(chanT intT)] "c4") (λ: "$recvVal",
+       let: "$r0" := (Fst "$recvVal") in
+       do:  ((slice.elem_ref #intT (![#sliceT] "a") ((func_call #unittest.unittest #"f"%go) #())) <-[#intT] "$r0");;;
+       do:  #()
+       )] (chan.select_default (λ: <>,
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"no communication
       "%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.fmt #"Print"%go) "$a0")
-      )));;;
+      ));;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      do:  (chan.select [("$sendVal0", "$sendChan0", (λ: <>,
-          do:  #()
-          )); ("$sendVal1", "$sendChan1", (λ: <>,
-          do:  #()
-          ))] [] (InjLV #())));;;
-    do:  (chan.select [] [] (InjLV #()))).
+      chan.select [chan.select_send #(W64 0) (![#(chanT intT)] "c") (λ: <>,
+         do:  #()
+         ); chan.select_send #(W64 1) (![#(chanT intT)] "c") (λ: <>,
+         do:  #()
+         )] chan.select_no_default);;;
+    chan.select [] chan.select_no_default).
 
 (* go: chan.go:59:6 *)
 Definition chanDirectional : val :=

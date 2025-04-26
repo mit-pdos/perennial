@@ -3,6 +3,13 @@ Require Import New.generatedproof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
 From New.proof Require Import context sync.
+From New.proof Require Export chan.
+
+Class concurrencyG Σ :=
+  {
+    donecG :: closeable_chanG Σ ;
+    context_inG :: contextG Σ
+  }.
 
 Section proof.
 
@@ -10,6 +17,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
 Context `{!concurrency.GlobalAddrs}.
 Context `{!goGlobalsGS Σ}.
+Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
 Program Instance : IsPkgInit math :=
@@ -38,11 +46,19 @@ Program Instance : IsPkgInit concurrency :=
   ltac2:(build_pkg_init ()).
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
-  ∃ cl,
+  ∃ cl donec,
   "#client" ∷ s ↦s[concurrency.Session :: "client"]□ cl ∗
   "#id" ∷ s ↦s[concurrency.Session :: "id"]□ lease ∗
   "#Hclient" ∷ is_Client cl γ ∗
-  "#Hlease" ∷ is_etcd_lease γ lease.
+  "#Hlease" ∷ is_etcd_lease γ lease ∗
+  "#donec" ∷ s ↦s[concurrency.Session :: "donec"]□ donec ∗
+  (* One can keep calling receive, and the only thing they might get back is a
+     "closed" value. *)
+  "#Hdonec" ∷ is_closeable_chan donec True.
+
+#[global] Opaque is_Session.
+#[local] Transparent is_Session.
+#[global] Instance is_Session_pers s γ lease : Persistent (is_Session s γ lease) := _.
 
 Lemma wp_NewSession (client : loc) γetcd :
   {{{
@@ -104,12 +120,14 @@ Proof.
     done.
   }
   wp_auto.
-  unshelve wp_apply wp_chan_make as "* Hdonec"; try tc_solve.
+  wp_apply (wp_chan_make (V:=())) as "* Hdonec".
+  iDestruct (own_chan_is_chan with "Hdonec") as "#Hdonec_is".
   wp_alloc s as "Hs".
   wp_auto.
   iPersist "cancel donec keepAlive".
+  iMod (alloc_closeable_chan True with "Hdonec_is Hdonec") as (γch) "[#Hdonec_closeable Hdonec_tok]"; [done..|].
   rewrite -wp_fupd.
-  wp_apply (wp_fork with "[Hdonec Hcancel]").
+  wp_apply (wp_fork with "[Hdonec_tok Hcancel]").
   {
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
@@ -124,15 +142,8 @@ Proof.
       iMod ("Hkrecv1" with "[$]") as "_".
       iModIntro.
       wp_auto.
-      iDestruct (own_chan_is_chan with "Hdonec") as "#?".
-      unshelve wp_apply (wp_chan_close with "[$] [Hdonec Hcancel]"); try tc_solve.
-      iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
-      iNext. iFrame.
-      iSplitR; first done.
-      iIntros "Hdonec".
-      iMod "Hmask".
-      iModIntro.
-      wp_auto.
+      wp_apply (wp_closeable_chan_close with "[$Hdonec_tok]").
+      { iFrame "#". done. }
       wp_apply "Hcancel".
       done.
     }
@@ -152,7 +163,7 @@ Proof.
   }
   iDestruct (struct_fields_split with "Hs") as "hs".
   simpl. iClear "Hctx". iNamed "hs".
-  iPersist "Hclient Hid".
+  iPersist "Hclient Hid Hdonec".
   iModIntro.
   iApply "HΦ".
   rewrite decide_True //.
@@ -163,6 +174,14 @@ Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
     s @ concurrency @ "Session'ptr" @ "Lease" #()
   {{{ RET #lease; True }}}.
+Proof.
+  wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
+Qed.
+
+Lemma wp_Session__Done s γ lease :
+  {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
+    s @ concurrency @ "Session'ptr" @ "Done" #()
+  {{{ ch, RET #ch; is_closeable_chan ch True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
 Qed.

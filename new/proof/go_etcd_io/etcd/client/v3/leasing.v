@@ -8,6 +8,12 @@ From New.proof Require Import context sync.
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
 
+Class leasingG Σ :=
+  {
+    concurrency_inG :: concurrencyG Σ;
+    context_inG :: contextG Σ
+  }.
+
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
@@ -16,6 +22,7 @@ Context `{!concurrency.GlobalAddrs}.
 Context `{!rpctypes.GlobalAddrs}.
 Context `{!leasing.GlobalAddrs}.
 Context `{!goGlobalsGS Σ}.
+Context `{leasingG Σ}.
 
 (* FIXME: move these *)
 Program Instance : IsPkgInit bytes :=
@@ -75,7 +82,7 @@ Proof using ghost_mapG0.
   rewrite big_sepL_fmap.
   iApply (big_sepL_impl with "Htoks []").
   iIntros "!# * % Hx * #Hinit HΦ".
-  clear ctr g n H2.
+  clear ctr g n H3.
   wp_apply (wp_WaitGroup__Done with "[$]").
   iInv "Hinv" as ">Hi" "Hclose".
   iNamed "Hi".
@@ -144,9 +151,48 @@ Proof.
   }
   rewrite decide_True //. wp_auto.
   iNamed "Hown".
-  wp_auto. wp_if_destruct.
-  2:{ (* not nil *)
-    (* FIXME(goose): recvChan0, recvChan1 undefined *)
+  wp_auto.
+  wp_bind (if: _ then _ else _)%E.
+  iApply (wp_wand _ _ _ (λ v,
+                           (⌜ v = execute_val #tt ⌝ ∨
+                                    ⌜ v = return_val #tt ⌝) ∗
+                           "session" ∷ _ ↦s[_::_]{#1/2} session0 ∗ _)%I with "[-]").
+  {
+    wp_if_destruct.
+    { simpl. iFrame "session". iSplitR.
+      { by iLeft. }
+      iNamedAccu. }
+    { (* not nil *)
+      wp_auto.
+      wp_apply "HDone".
+      ltac2:(wp_bind_apply ()).
+      iApply wp_Session__Done.
+      {
+        iSplitR.
+        { solve_pkg_init. (* FIXME: solve_pkg_init is pretty slow here. *) }
+        iFrame "#".
+      }
+      iNext. iIntros "* #HsessDone".
+      wp_auto.
+      wp_apply wp_chan_select_blocking.
+      rewrite big_andL_cons.
+      iSplit.
+      2:{
+        rewrite big_andL_cons. rewrite big_andL_nil.
+        iSplit; last done.
+        repeat iExists _.
+        iApply (closeable_chan_receive with "HDone_ch").
+        iIntros "_". simpl. wp_auto. iFrame. by iRight.
+      }
+      repeat iExists _.
+      iApply (closeable_chan_receive with "HsessDone").
+      iIntros "_". wp_auto. iFrame. by iLeft.
+    }
+  }
+  iIntros "* ([%|%] & H)"; subst; iNamed "H".
+  2:{ wp_auto. wp_for_post. by iApply "HΦ". }
+  wp_auto.
+  (* Acquire lock, etc. *)
 Admitted.
 
 Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
@@ -160,10 +206,16 @@ Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
 Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
-  wp_apply (wp_Client__Ctx with "[$]") as "% _".
+  wp_apply (wp_Client__Ctx with "[$]") as "* #Hctx".
   iDestruct (is_Client_to_pub with "[$]") as "#Hclient_pub".
   iNamed "Hclient_pub".
-  wp_apply (wp_WithCancel with "[$]").
+  wp_apply (wp_WithCancel with "[]").
+  { iFrame "#".
+    iExactEq "Hctx".
+    repeat f_equal.
+    Print gFunctors.
+    (* FIXME: two different [contextG] instances are available in context. *)
+  }
   iIntros "* #(Hctx' & Hcancel_spec & Hctx_done)".
   wp_auto.
   unshelve wp_apply wp_map_make as "%revokes Hrevokes"; try tc_solve; try tc_solve.

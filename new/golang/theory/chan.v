@@ -37,7 +37,7 @@ Arguments is_chan {_ _ _ _ _ _} (_) {_} ch.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!IntoVal V, !IntoValTyped V t}.
+Context `{!IntoVal V} `{!IntoValTyped V t}.
 
 Implicit Types v : V.
 Implicit Types (s : chanstate.t V).
@@ -60,6 +60,7 @@ Proof.
 Admitted.
 
 Definition receive_atomic_update ch Φ : iProp Σ :=
+  is_chan V ch ∗
   |={⊤,∅}=>
     ▷∃ s, own_chan ch s ∗
           if decide (s.(chanstate.closed) = true ∧ s.(chanstate.received) = length s.(chanstate.sent)) then
@@ -76,7 +77,6 @@ Definition receive_atomic_update ch Φ : iProp Σ :=
 
 Lemma wp_chan_receive ch :
   ∀ Φ,
-  is_chan V ch -∗
   ▷ receive_atomic_update ch Φ -∗
   WP chan.receive #ch {{ Φ }}.
 Proof.
@@ -84,6 +84,7 @@ Admitted.
 
 Definition send_atomic_update ch (v : V) Φ : iProp Σ :=
   (* send the value *)
+  is_chan V ch ∗
   |={⊤,∅}=>
     ▷∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
           (own_chan ch (s <| chanstate.sent := s.(chanstate.sent) ++ [v] |>) ={∅,⊤}=∗
@@ -96,7 +97,6 @@ Definition send_atomic_update ch (v : V) Φ : iProp Σ :=
 
 Lemma wp_chan_send ch (v : V) :
   ∀ Φ,
-  is_chan V ch -∗
   ▷ send_atomic_update ch v Φ -∗
   WP chan.send #ch #v {{ Φ }}.
 Proof.
@@ -141,7 +141,7 @@ Lemma wp_for_chan_range P ch (body : func.t) :
                             own_chan ch s' ={∅,⊤}=∗ WP #body #v {{ for_chan_postcondition P Φ }})))
     ) -∗
   WP chan.for_range #ch #body {{ Φ }}.
-Proof using IntoValTyped0.
+Proof.
 Admitted.
 
 Lemma wp_for_chan_post_do (v : val) P Φ :
@@ -182,10 +182,10 @@ End proof.
     current context to the loop invariant, then apply this tactic. Use
     [wp_for_chan_post] for the leaves of the proof. *)
 Ltac wp_for_chan_core :=
-  wp_bind (chan.for_range _ _); (iApply (wp_for_chan_range (IntoValTyped0:=?[ivt]) with "[-]"));
+  wp_bind (chan.for_range _ _); (iApply (wp_for_chan_range with "[-]"));
   [ by iNamedAccu
   | (by iFrame "#" || fail "wp_for_chan_core: could not solve [is_chan] by [iFrame ""#""]. ")
-  | iIntros "!# __CTX"; iNamed "__CTX" ]; instantiate(ivt:=ltac:(tc_solve)).
+  | iIntros "!# __CTX"; iNamed "__CTX" ].
 
 
 (** Automatically apply the right theorem for [for_chan_postcondition] *)
@@ -203,189 +203,63 @@ Ltac wp_for_chan_post_core :=
   | _ => fail "wp_for_chan_post: not a for_chan_postcondition goal"
   end.
 
+Module chan.
+Section op.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Inductive op :=
+| select_send_f (v : val) (ch : chan.t) (handler : func.t)
+| select_receive_f (ch : chan.t) (handler : func.t).
+
+Global Instance into_val_op : IntoVal op :=
+  {|
+    to_val_def := λ o,
+        match o with
+        | select_send_f v ch f => InjLV (v, #ch, #f)
+        | select_receive_f ch f => InjRV (#ch, #f)
+        end
+  |}.
+
+Global Instance wp_select_send (v : val) ch f :
+  PureWp True (chan.select_send v #ch #f)
+    #(select_send_f v ch f).
+Proof.
+  intros ?????. iIntros "Hwp". wp_call_lc "?".
+  repeat rewrite to_val_unseal /=.
+  by iApply "Hwp".
+Qed.
+
+Global Instance wp_select_receive ch f :
+  PureWp True (chan.select_receive #ch #f)
+    #(select_receive_f ch f).
+Proof.
+  intros ?????. iIntros "Hwp". wp_call_lc "?".
+  repeat rewrite to_val_unseal /=.
+  by iApply "Hwp".
+Qed.
+
+End op.
+End chan.
+
+Arguments receive_atomic_update {_ _ _ _ _ _} (_) {_ _ _} (_ _).
+
 Section select_proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
-(* TODO: combine the chans+(vals)+handlers into one list? *)
-Lemma wp_chan_select_blocking (send_chans recv_chans : list chan.t)
-  (send_vals : list val) (send_handlers recv_handlers : list func.t) :
+Lemma wp_chan_select_blocking (cases : list chan.op) :
   ∀ Φ,
-  ((∀ idx send_chan send_val send_handler,
-      ⌜ send_chans !! idx = Some send_chan ∧ send_vals !! idx = Some send_val ∧
-      send_handlers !! idx = Some send_handler ⌝ →
-      ∃ V (v : V) `(!IntoVal V),
-        ⌜ send_val = #v ⌝ ∗
-        is_chan V send_chan ∗
-        send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }})
-   ) ∧
-   (∀ idx recv_chan recv_handler,
-      ⌜ recv_chans !! idx = Some recv_chan ∧ recv_handlers !! idx = Some recv_handler ⌝ →
-      ∃ V t `(!IntoVal V) `(!IntoValTyped V t),
-        is_chan V recv_chan ∗
-        receive_atomic_update (V:=V) recv_chan (λ v, WP #recv_handler v {{ Φ }})
-  )) -∗
-  WP chan.select (* #send_vals *) #send_chans #recv_chans (InjLV #()) {{ Φ }}.
+  ([∧ list] case ∈ cases,
+     match case with
+     | chan.select_send_f send_val send_chan send_handler =>
+         (∃ V (v : V) `(!IntoVal V),
+             ⌜ send_val = #v ⌝ ∗
+             send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }}))
+     | chan.select_receive_f recv_chan recv_handler =>
+         (∃ V t `(!IntoVal V) `(!IntoValTyped V t),
+             receive_atomic_update V recv_chan (λ v, WP #recv_handler v {{ Φ }}))
+     end
+  ) -∗
+  WP chan.select #cases chan.select_no_default {{ Φ }}.
 Proof.
 Admitted.
 
 End select_proof.
-
-Section onetime_barrier.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!ghost_varG Σ ()}.
-
-Implicit Types (s : chanstate.t unit).
-
-Record params :=
-  {
-    gauge_init : nat; (* XXX: putting "gauge" in the name because this would
-                       change under a `chan` gauge transformation. *)
-    send_gn : gname;
-    recv_gn : gname;
-  }.
-Implicit Types γ : params.
-
-Definition own_send_tok γ := ghost_var γ.(send_gn) 1 ().
-Definition own_recv_tok γ := ghost_var γ.(recv_gn) 1 ().
-
-Definition is_onetime_barrier γ (ch : chan.t) Sd Rv : iProp Σ :=
-  is_chan () ch ∗
-  inv nroot (
-      ∃ s,
-        "Hch" ∷ own_chan ch s ∗
-        "%Hcap" ∷ ⌜ s.(chanstate.cap) = W64 0 ⌝ ∗
-        "%Hopen" ∷ ⌜ s.(chanstate.closed) = false ⌝ ∗
-        "%Hoffset_r" ∷ ⌜ γ.(gauge_init) ≤ s.(chanstate.received) ⌝%nat ∗
-        "%Hoffset_s" ∷ ⌜ γ.(gauge_init) ≤ length s.(chanstate.sent) ⌝%nat ∗
-        "Hr" ∷ match (s.(chanstate.received) - γ.(gauge_init))%nat with
-          | O => True
-          | S _ => (Rv ∨ own_send_tok γ)
-          end ∗
-        "Hs" ∷ match (length s.(chanstate.sent) - γ.(gauge_init))%nat with
-          | O => True
-          | S _ => (Sd ∨ own_recv_tok γ)
-          end
-    ).
-
-Lemma start_onetime_barrier Sd Rv ch s:
-  s.(chanstate.cap) = (W64 0) →
-  s.(chanstate.closed) = false →
-  s.(chanstate.received) = length s.(chanstate.sent) →
-  is_chan () ch -∗
-  own_chan ch s ={⊤}=∗
-  ∃ γ, is_onetime_barrier γ ch Sd Rv ∗
-       own_recv_tok γ ∗
-       own_send_tok γ.
-Proof.
-  intros.
-  iIntros "#? Hchan".
-  iMod (ghost_var_alloc ()) as "[% ?]".
-  iMod (ghost_var_alloc ()) as "[% ?]".
-  iExists _.
-  instantiate (1:=(ltac:(econstructor))). simpl.
-  iFrame "#". iFrame. simpl.
-  iApply inv_alloc.
-  iNext. iFrame "∗%".
-  instantiate (1:=s.(chanstate.received)).
-  iSplitR; first word.
-  iSplitR; first word.
-  rewrite H1 Nat.sub_diag //.
-Qed.
-
-Lemma wp_onetime_barrier_receive γ ch Sd Rv :
-  {{{
-      is_onetime_barrier γ ch Sd Rv ∗
-      own_recv_tok γ ∗
-      Rv
-  }}}
-    chan.receive #ch
-  {{{
-      RET (#(), #true); Sd
-  }}}.
-Proof.
-  iIntros (?) "((#Hchan & #Hinv) & Htok & HR) HΦ".
-  wp_apply (wp_chan_receive (V:=()) with "[$]").
-
-  (* send Rv *)
-  iInv "Hinv" as "Hi" "Hclose".
-  iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
-  iNext. iNamed "Hi".
-  iExists _; iFrame.
-  rewrite Hopen.
-  iIntros "Hch".
-  iMod "Hmask" as "_".
-  iMod ("Hclose" with "[-Htok HΦ]").
-  { iNext. iFrame "∗%".
-    simpl. iSplitR; first word.
-    rewrite Nat.sub_succ_l //. iFrame.
-  }
-  iModIntro.
-
-  (* get Sd *)
-  iInv "Hinv" as "Hi" "Hclose".
-  iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
-  iNext. iNamed "Hi".
-  iExists _; iFrame.
-  iIntros "* % Hch".
-
-  edestruct (length _ - _)%nat eqn:?.
-  { simpl in *. exfalso. apply lookup_lt_Some in H. lia. }
-  iDestruct "Hs" as "[Hs|Hbad]".
-  2:{ iCombine "Hbad Htok" gives %[Hbad _]. done. }
-  iMod "Hmask" as "_".
-  iMod ("Hclose" with "[-HΦ Hs]").
-  { iNext. iFrame "∗%". destruct (_ - _)%nat; iFrame. }
-  iModIntro.
-  destruct v.
-  iApply "HΦ".
-  iFrame.
-Qed.
-
-Lemma wp_onetime_barrier_send γ ch Sd Rv :
-  {{{
-      is_onetime_barrier γ ch Sd Rv ∗
-      own_send_tok γ ∗
-      Sd
-  }}}
-    chan.send #ch #()
-  {{{
-      RET #(); Rv
-  }}}.
-Proof.
-  iIntros (?) "((#Hchan & #Hinv) & Htok & HR) HΦ".
-  wp_apply (wp_chan_send (V:=()) with "[$]").
-
-  (* send Sd *)
-  iInv "Hinv" as "Hi" "Hclose".
-  iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
-  iNext. iNamed "Hi".
-  iExists _; iFrame "∗%".
-  iIntros "Hch".
-  iMod "Hmask" as "_".
-  iMod ("Hclose" with "[-Htok HΦ]").
-  { iNext. iFrame "∗%". iSplitR.
-    { rewrite length_app /=. iPureIntro. lia. }
-    iClear "Hs". by destruct Nat.sub; iFrame.
-  }
-  iModIntro.
-
-  (* get Rv *)
-  iInv "Hinv" as "Hi" "Hclose".
-  iApply fupd_mask_intro; [set_solver | iIntros "Hmask"].
-  iNext. iNamed "Hi".
-  iExists _; iFrame.
-  iIntros "* % Hch".
-
-  edestruct (chanstate.received s0 - _)%nat eqn:?.
-  { simpl in *. exfalso. word. }
-  iDestruct "Hr" as "[Hr|Hbad]".
-  2:{ iCombine "Hbad Htok" gives %[Hbad _]. done. }
-  iMod "Hmask" as "_".
-  iMod ("Hclose" with "[-HΦ Hr]").
-  { iNext. iFrame "∗%". by destruct Nat.sub; iFrame. }
-  iModIntro.
-  iApply "HΦ".
-  iFrame.
-Qed.
-
-End onetime_barrier.
