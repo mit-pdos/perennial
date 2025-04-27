@@ -25,6 +25,7 @@ Notation enc_label_pre uid ver := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver
 Notation enc_val ep commit := (MapValPre.encodesF $ MapValPre.mk ep commit).
 
 Section misc.
+
 Class pavG Σ :=
   {
     #[global] pavG_serv_ep :: mono_natG Σ;
@@ -54,66 +55,97 @@ Qed.
 
 End misc.
 
-Section msv_core.
+Section msv.
 (* maximum sequence of versions. *)
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition msv_core (m : adtr_map_ty) uid vals pk : iProp Σ :=
-  "#Hhist" ∷ ([∗ list] ver ↦ val ∈ vals,
-    ∃ label,
-    "#His_label" ∷ is_map_label pk uid (W64 ver) label ∗
-    "%Hin_prev" ∷ ⌜ m !! label = Some val ⌝) ∗
-  (∃ label,
-  "#His_label" ∷ is_map_label pk uid (W64 $ length vals) label ∗
-  "%Hnin_next" ∷ ⌜ m !! label = None ⌝).
+Definition msv_Some (m : adtr_map_ty) vrf_pk uid lat n_vers : iProp Σ :=
+  "#Hhist" ∷
+    (∀ ver,
+    ⌜ uint.Z ver < uint.Z (word.sub n_vers (W64 1)) ⌝ -∗
+    ∃ label val,
+    "#His_label" ∷ is_map_label vrf_pk uid ver label ∗
+    "%Hlook_map" ∷ ⌜ m !! label = Some val ⌝) ∗
+  "#Hlatest" ∷
+    (∃ label,
+    "#His_label" ∷ is_map_label vrf_pk uid (word.sub n_vers (W64 1)) label ∗
+    "%Hlook_map" ∷ ⌜ m !! label = Some lat ⌝) ∗
+  "#Hbound" ∷
+    (∃ label,
+    "#His_label" ∷ is_map_label vrf_pk uid n_vers label ∗
+    "%Hlook_map" ∷ ⌜ m !! label = None ⌝).
 
-Lemma msv_core_len_agree_aux m uid vals0 vals1 pk :
-  ("#Hmsv0" ∷ msv_core m uid vals0 pk ∗
-  "#Hmsv1" ∷ msv_core m uid vals1 pk ∗
-  "%Hlt_len" ∷ ⌜ length vals0 < length vals1 ⌝) -∗
+Lemma msv_Some_vers_agree_aux m vrf_pk uid lat0 n_vers0 lat1 n_vers1 :
+  uint.Z n_vers0 < uint.Z n_vers1 →
+  msv_Some m vrf_pk uid lat0 n_vers0 -∗
+  msv_Some m vrf_pk uid lat1 n_vers1 -∗
   False.
 Proof.
-  iNamed 1.
-  iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
-  iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
-  list_elem vals1 (length vals0) as val.
-  iDestruct (big_sepL_lookup with "Hhist1") as "H"; [exact Hval_lookup|].
-  iNamed "H".
-  iDestruct (is_vrf_out_det with "His_label0 His_label") as %->. naive_solver.
+  iIntros (?).
+  iNamedSuffix 1 "0". iNamedSuffix 1 "1".
+  iClear "Hhist0 Hlatest0 Hbound1".
+  iNamedSuffix "Hbound0" "0".
+  destruct (decide (n_vers0 = word.sub n_vers1 (W64 1))).
+  - subst. iNamedSuffix "Hlatest1" "1".
+    iDestruct (is_vrf_out_det with "His_label0 His_label1") as %->.
+    naive_solver.
+  - iSpecialize ("Hhist1" $! n_vers0 with "[]"); [word|].
+    iNamedSuffix "Hhist1" "1".
+    iDestruct (is_vrf_out_det with "His_label0 His_label1") as %->.
+    naive_solver.
 Qed.
 
-Lemma msv_core_len_agree m uid vals0 vals1 pk :
-  ("#Hmsv0" ∷ msv_core m uid vals0 pk ∗
-  "#Hmsv1" ∷ msv_core m uid vals1 pk) -∗
-  ⌜ length vals0 = length vals1 ⌝.
+Lemma msv_Some_vers_agree m vrf_pk uid lat0 n_vers0 lat1 n_vers1 :
+  msv_Some m vrf_pk uid lat0 n_vers0 -∗
+  msv_Some m vrf_pk uid lat1 n_vers1 -∗
+  ⌜ n_vers0 = n_vers1 ⌝.
 Proof.
-  iNamed 1. destruct (decide (length vals0 = length vals1)) as [?|?]; [done|iExFalso].
-  destruct (decide (length vals0 < length vals1)) as [?|?].
-  - iApply (msv_core_len_agree_aux _ _ vals0 vals1 with "[]").
-    iFrame "Hmsv0 Hmsv1". iPureIntro. lia.
-  - iApply (msv_core_len_agree_aux _ _ vals1 vals0 with "[]").
-    iFrame "Hmsv1 Hmsv0". iPureIntro. lia.
+  iIntros "Hmsv0 Hmsv1".
+  destruct (decide (uint.Z n_vers0 < uint.Z n_vers1)).
+  { by iDestruct (msv_Some_vers_agree_aux with "Hmsv0 Hmsv1") as "[]". }
+  destruct (decide (uint.Z n_vers1 < uint.Z n_vers0)).
+  { by iDestruct (msv_Some_vers_agree_aux with "Hmsv1 Hmsv0") as "[]". }
+  word.
 Qed.
 
-Lemma msv_core_agree m uid vals0 vals1 pk :
-  ("#Hmsv0" ∷ msv_core m uid vals0 pk ∗
-  "#Hmsv1" ∷ msv_core m uid vals1 pk) -∗
-  ⌜ vals0 = vals1 ⌝.
+Lemma msv_Some_nonzero_ver m vrf_pk uid lat n_vers :
+  msv_Some m vrf_pk uid lat n_vers -∗
+  ⌜ 0 < uint.Z n_vers ⌝.
 Proof.
   iNamed 1.
-  iDestruct (msv_core_len_agree _ _ vals0 vals1 with "[$Hmsv0 $Hmsv1]") as %?.
-  iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
-  iApply (big_sepL_func_eq with "Hhist0 Hhist1"); [|done].
-  rewrite /Func. iIntros "*". iNamedSuffix 1 "0". iNamedSuffix 1 "1".
-  iDestruct (is_vrf_out_det with "His_label0 His_label1") as %->. naive_solver.
+  destruct (decide (n_vers = W64 0)); [|word].
+  subst.
+  iSpecialize ("Hhist" $! (W64 0) with "[]"); [word|].
+  iNamedSuffix "Hhist" "0". iNamedSuffix "Hbound" "1".
+  iDestruct (is_vrf_out_det with "His_label0 His_label1") as %->.
+  naive_solver.
 Qed.
 
-End msv_core.
+Definition msv_None (m : adtr_map_ty) vrf_pk uid : iProp Σ :=
+  ∃ label,
+  "#His_label" ∷ is_map_label vrf_pk uid (W64 0) label ∗
+  "%Hlook_map" ∷ ⌜ m !! label = None ⌝.
 
-Section msv.
-Context `{!heapGS Σ, !pavG Σ}.
+Lemma msv_Some_None_excl m vrf_pk uid lat n_vers :
+  msv_Some m vrf_pk uid lat n_vers -∗
+  msv_None m vrf_pk uid -∗
+  False.
+Proof.
+  iIntros "Hmsv0".
+  iDestruct (msv_Some_nonzero_ver with "Hmsv0") as %?.
+  iNamedSuffix "Hmsv0" "0". iNamedSuffix 1 "1".
+  destruct (decide (n_vers = W64 1)).
+  + subst. iNamedSuffix "Hlatest0" "0".
+    replace (word.sub _ _) with (W64 0) by word.
+    iDestruct (is_vrf_out_det with "His_label0 His_label1") as %->.
+    naive_solver.
+  + iSpecialize ("Hhist0" $! (W64 0) with "[]"); [word|].
+    iNamedSuffix "Hhist0" "0".
+    iDestruct (is_vrf_out_det with "His_label0 His_label1") as %->.
+    naive_solver.
+Qed.
 
-Definition lat_pk_commit (lat_pk : lat_val_ty) (lat_commit : lat_opaque_val_ty) : iProp Σ :=
+Definition option_is_commit (lat_pk : lat_val_ty) (lat_commit : lat_opaque_val_ty) : iProp Σ :=
   match lat_pk, lat_commit with
   | Some (ep0, pk), Some (ep1, commit) =>
     "%Heq_ep" ∷ ⌜ ep0 = ep1 ⌝ ∗
@@ -122,23 +154,38 @@ Definition lat_pk_commit (lat_pk : lat_val_ty) (lat_commit : lat_opaque_val_ty) 
   | _, _ => False
   end.
 
-Definition msv (adtr_γ : gname) pk (ep uid : w64) (lat : lat_val_ty) : iProp Σ :=
-  ∃ m dig (vals : list opaque_map_val_ty),
-  "#Hlat_pk_commit" ∷ lat_pk_commit lat (last vals) ∗
-  "#Hmap" ∷ mono_list_idx_own adtr_γ (uint.nat ep) (m, dig) ∗
-  "#Hmsv_core" ∷ msv_core m uid vals pk.
+Definition msv γaudit vrf_pk (ep : w64) uid (lat : lat_val_ty) : iProp Σ :=
+  ∃ m dig lat_commit,
+  "#Hlook_gs" ∷ mono_list_idx_own γaudit (uint.nat ep) (m, dig) ∗
+  "#Hcommit" ∷ option_is_commit lat lat_commit ∗
+  "#Hmsv" ∷ match lat_commit with
+    | None => "#Hmsv" ∷ msv_None m vrf_pk uid
+    | Some lat' => ∃ n_vers, "#Hmsv" ∷ msv_Some m vrf_pk uid lat' n_vers
+    end.
 
-Lemma msv_agree γ pk ep uid lat0 lat1 :
-  ("#Hmsv0" ∷ msv γ pk ep uid lat0 ∗
-  "#Hmsv1" ∷ msv γ pk ep uid lat1) -∗
+Lemma msv_agree γ vrf_pk ep uid lat0 lat1 :
+  msv γ vrf_pk ep uid lat0 -∗
+  msv γ vrf_pk ep uid lat1 -∗
   ⌜ lat0 = lat1 ⌝.
 Proof.
-  iNamed 1. iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
-  iDestruct (mono_list_idx_agree with "Hmap0 Hmap1") as %H. inversion_clear H. iClear "Hmap0 Hmap1".
-  iDestruct (msv_core_agree _ _ vals vals0 with "[$Hmsv_core0 $Hmsv_core1]") as %->.
-  destruct lat0 as [[??]|], lat1 as [[??]|], (last vals0) as [[??]|]; [|done..].
-  iNamedSuffix "Hlat_pk_commit0" "0". iNamedSuffix "Hlat_pk_commit1" "1".
-  iDestruct (is_commit_inj with "His_commit0 His_commit1") as %->. naive_solver.
+  iNamedSuffix 1 "0". iNamedSuffix 1 "1".
+  iDestruct (mono_list_idx_agree with "Hlook_gs0 Hlook_gs1") as %?.
+  simplify_eq/=.
+  destruct lat_commit as [[??]|], lat_commit0 as [[??]|];
+    iNamedSuffix "Hmsv0" "0"; iNamedSuffix "Hmsv1" "1".
+  - iDestruct (msv_Some_vers_agree with "Hmsv0 Hmsv1") as %->.
+    iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
+    iClear "Hhist0 Hbound0 Hhist1 Hbound1".
+    iNamedSuffix "Hlatest0" "0". iNamedSuffix "Hlatest1" "1".
+    iDestruct (is_vrf_out_det with "His_label0 His_label1") as %->.
+    simplify_eq/=.
+    destruct lat0 as [[??]|], lat1 as [[??]|]; try done.
+    iNamedSuffix "Hcommit0" "0". iNamedSuffix "Hcommit1" "1".
+    iDestruct (is_commit_inj with "His_commit0 His_commit1") as %?.
+    by simplify_eq/=.
+  - iDestruct (msv_Some_None_excl with "Hmsv0 Hmsv1") as "[]".
+  - iDestruct (msv_Some_None_excl with "Hmsv1 Hmsv0") as "[]".
+  - by destruct lat0 as [[??]|], lat1 as [[??]|].
 Qed.
 
 End msv.
