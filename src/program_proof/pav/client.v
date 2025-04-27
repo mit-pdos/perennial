@@ -124,7 +124,103 @@ Definition is_get_post_Some cli_γ serv_vrf_pk uid (ep : w64) pk : iProp Σ :=
 Definition is_get_post_None cli_γ serv_vrf_pk uid (ep : w64) : iProp Σ :=
   "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (W64 0) None.
 
+(* written in this structure to elicit the pure gs_hist,
+into which the caller can transfer any is_cli_entry.
+the caller can then use the sigpred invariants to translate
+between different gs_hist map entries. *)
+Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ :=
+  ∃ gs,
+  "%Hlen_gs" ∷ ⌜ length gs = uint.nat bound ⌝ ∗
+  "#Hlb_gs" ∷ mono_list_lb_own γaudit gs ∗
+  "#Hinv_gs" ∷ audit_gs_inv gs ∗
+
+  "#Hmap_transf" ∷ (□ ∀ (ep : w64) m dig uid ver val,
+
+    ("%Hlook_adtr" ∷ ⌜ gs !! uint.nat ep = Some (m, dig) ⌝ ∗
+    "#Hcli_entry" ∷ is_cli_entry γcli serv_vrf_pk ep uid ver val)
+    -∗
+
+    (∃ label audit_val,
+    "#Hvrf_out" ∷ is_vrf_out serv_vrf_pk (enc_label_pre uid ver) label ∗
+    "#His_label" ∷ is_map_label serv_vrf_pk uid ver label ∗
+    (* convert audit_val to MapValPre, then relate it to val. *)
+    "%Henc_val" ∷ ⌜ option_Forall2 MapValPre.encodes val
+      ((λ x, MapValPre.mk x.1 x.2) <$> audit_val) ⌝ ∗
+    "%Hlook_adtr" ∷ ⌜ m !! label = audit_val ⌝)).
+
 (* WPs. *)
+
+Lemma good_serv_logical_audit ptr_c c :
+  c.(Client.serv_is_good) = true →
+  Client.own ptr_c c
+  ==∗
+  logical_audit_post c.(Client.γ) c.(Client.serv).(Server.γhist)
+    c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch).
+Proof.
+  iIntros (Heq_good). iNamed 1.
+  destruct (decide (uint.Z c.(Client.next_epoch) = uint.Z 0)).
+  { iMod (mono_list_lb_own_nil (mono_listG0:=pavG_adtr) _) as "$".
+    iModIntro. simpl.
+    iSplit; [word|].
+    iSplit. { rewrite /audit_gs_inv. naive_solver. }
+    iModIntro. iIntros "*". by iNamed 1. }
+
+  (* get gs from last sig. *)
+  iModIntro.
+  assert (∃ x, last digs = Some x) as [? Hlast_Some].
+  { destruct digs. { simpl in *. word. }
+    by apply last_is_Some. }
+  odestruct (Hlast_digs _ Hlast_Some) as [? ->].
+  rewrite last_lookup in Hlast_Some.
+  replace (pred _) with
+    (uint.nat (word.sub c.(Client.next_epoch) (W64 1))) in Hlast_Some; [|word].
+  odestruct (Hagree_digs_sd _ _ Hlast_Some) as [? Hlook_sd].
+  iDestruct (big_sepM_lookup with "His_sd") as "[% H]"; [done|].
+  iNamed "H". iNamed "His_sigdig".
+  rewrite Heq_good. simpl.
+  iDestruct (is_sig_to_pred with "Hserv_sig_pk Hsig") as "H".
+  iNamed "H".
+  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc Henc0); eauto.
+  intuition. simplify_eq/=.
+
+  (* fill in gs inv. *)
+  iExists (take (uint.nat c.(Client.next_epoch)) gs).
+  do 3 try iSplit.
+  { apply lookup_lt_Some in Hlook_dig.
+    rewrite length_take_le; [done|word]. }
+  { iApply (mono_list_lb_own_le with "Hlb"). apply prefix_take. }
+  { iApply (audit_gs_prefix with "Hinv_gs"). apply prefix_take. }
+  iClear (Hlast_Some Hlook_sd Henc Hlook_dig Henc0) "Hsig Hinv_gs".
+
+  (* prove transfer wand. *)
+  iDestruct (mono_list_lb_own_get with "Hown_digs") as "#Hlb_digs".
+  iIntros "!> *". iNamed 1. iNamed "Hcli_entry". iFrame "Hvrf_out".
+  (* learn that cli_entry uses dig that's also in adtr gs. *)
+  pose proof Hlook_adtr as Hlt_ep.
+  apply lookup_lt_Some in Hlt_ep.
+  rewrite length_take in Hlt_ep.
+  iDestruct (mono_list_lb_idx_lookup with "Hlb_digs Hlook_dig") as %Hlook_digs; [word|].
+  opose proof (Hagree_digs_sd _ _ Hlook_digs) as [? Hlook_sd].
+  iDestruct (big_sepM_lookup with "His_sd") as "H"; [done|].
+  iNamed "H". iNamed "His_sigdig".
+  iDestruct (is_sig_to_pred with "Hserv_sig_pk Hsig") as "H".
+  iRename "Hlb" into "Hlb_adtr". iNamed "H".
+  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc Henc0); eauto.
+  intuition. simplify_eq/=.
+  iDestruct (mono_list_idx_own_get with "Hlb") as "Hidx"; [done|].
+  iDestruct (mono_list_lb_idx_lookup with "Hlb_adtr Hidx") as %?; [word|].
+  apply lookup_take_Some in Hlook_adtr as [Hlook_adtr _].
+  list_simplifier.
+  (* use merkle entry to learn that cli_entry in adtr's map too. *)
+  iNamed "Hinv_gs".
+  iDestruct (big_sepL_lookup with "His_digs") as "Hmap"; [done|].
+  iNamed "Hmap".
+  iDestruct (is_merkle_map_agree_entry with "His_map Hmerk_entry") as %Hlook_map.
+  iPureIntro. clear -Hlower Hlook_map. simpl in *.
+  opose proof (Hlower label) as Hlower.
+  eexists _. split; [|done]. subst.
+  by rewrite -lookup_fmap.
+Qed.
 
 Lemma wp_NewClient uid (serv_addr : w64) sl_serv_sig_pk sl_serv_vrf_pk serv serv_is_good :
   {{{

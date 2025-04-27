@@ -1,14 +1,11 @@
 From Perennial.program_proof.pav Require Import prelude.
-From Goose.github_com.mit_pdos.pav Require Import kt.
 
-From Perennial.program_proof.pav Require Import auditor client core serde.
+From Perennial.program_proof.pav Require Import client core serde.
 
-(* TODO: make history have just physical history lemmas.
-there should be a separate file for client agreement. *)
-
-Section hist.
-(* logical history. *)
+Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
+
+(* Logical history defs. *)
 
 Definition is_hist_ep cli_γ serv_vrf_pk (uid ep : w64)
     (hist : list map_val_ty) (valid : w64) : iProp Σ :=
@@ -46,12 +43,9 @@ Definition is_hist cli_γ serv_vrf_pk (uid : w64)
     ⌜ uint.Z ep < uint.Z valid ⌝ -∗
     is_hist_ep cli_γ serv_vrf_pk uid ep hist valid).
 
-End hist.
+(* Logical history derived. *)
 
-Section hist_derived.
-Context `{!heapGS Σ, !pavG Σ}.
-
-Lemma hist_val_extend_valid γ vrf_pk uid ep hist valid new_valid :
+Lemma hist_extend_valid γ vrf_pk uid ep hist valid new_valid :
   uint.Z valid ≤ uint.Z new_valid →
   is_hist_ep γ vrf_pk uid ep hist valid -∗
   is_hist_ep γ vrf_pk uid ep hist new_valid.
@@ -83,7 +77,7 @@ Proof.
   iIntros (ep ?). destruct (decide (uint.Z ep < uint.Z valid)).
   (* case 1: ep < valid. *)
   { iSpecialize ("Hknow_eps" $! ep with "[]"); [word|].
-    iApply (hist_val_extend_valid with "Hknow_eps"). word. }
+    iApply (hist_extend_valid with "Hknow_eps"). word. }
   destruct (decide (valid = 0)) as [->|].
   (* case 2: valid = 0. *)
   { iDestruct (hist_nil with "[$Hknow_eps //]") as %->.
@@ -177,102 +171,154 @@ Proof.
       iFrame "#". iSplit; [word|]. iLeft. word.
 Qed.
 
-Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
-  last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist.
-
-End hist_derived.
-
-Section wps.
-Context `{!heapGS Σ, !pavG Σ}.
-
-Definition is_HistEntry (ptr : loc) (obj : map_val_ty) : iProp Σ :=
-  ∃ sl_HistVal,
-  "#Hptr_Epoch" ∷ ptr ↦[HistEntry :: "Epoch"]□ #obj.1 ∗
-  "#Hptr_HistVal" ∷ ptr ↦[HistEntry :: "HistVal"]□ (slice_val sl_HistVal) ∗
-  "#Hsl_HistVal" ∷ own_slice_small sl_HistVal byteT DfracDiscarded obj.2.
-
-Definition own_hist sl_hist hist : iProp Σ :=
-  ∃ dim0_hist,
-  "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
-  "#Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, is_HistEntry p o).
-
-Lemma wp_put_hist sl_hist hist ptr_e ep pk  :
-  {{{
-    "Hown_hist" ∷ own_hist sl_hist hist ∗
-    "#His_entry" ∷ is_HistEntry ptr_e (ep, pk)
-  }}}
-  SliceAppend ptrT (slice_val sl_hist) #ptr_e
-  {{{
-    sl_hist', RET (slice_val sl_hist');
-    "Hown_hist" ∷ own_hist sl_hist' (hist ++ [(ep, pk)])
-  }}}.
+Lemma hist_to_msv (ep hist_ep aud_ep : w64) γcli vrf_pk uid pks γaudit :
+  uint.Z ep < uint.Z hist_ep →
+  uint.Z ep < uint.Z aud_ep →
+  is_hist γcli vrf_pk uid pks hist_ep -∗
+  logical_audit_post γcli γaudit vrf_pk aud_ep -∗
+  msv γaudit vrf_pk ep uid (get_lat pks ep).
 Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_hist".
-  wp_apply (wp_SliceAppend with "Hsl_hist"). iIntros (?) "Hsl_hist".
-  iDestruct (big_sepL2_snoc with "[$Hdim0_hist $His_entry]") as "Hnew_dim0_hist".
-  iApply "HΦ". iFrame "∗#".
+  iIntros (Hlt_valid). iNamed 1. iClear "Hcli". iNamed 1.
+  list_elem gs (uint.nat ep) as m. destruct m as [m dig].
+  iDestruct (mono_list_idx_own_get with "Hlb_gs") as "Hidx"; [done|].
+  iFrame "Hidx". iClear "Hidx".
+  iNamed "Hhist". iSpecialize ("Hknow_eps" $! ep with "[//]").
+  iNamed "Hknow_eps". iExists vals. iSplit.
+
+  { (* get commitment from pk_commit_reln. *)
+    iClear "Hhist Hbound".
+    iDestruct (big_sepL2_length with "Hpk_commit_reln") as %Hlen_vals.
+    destruct (get_lat _ _) as [[??]|] eqn:Hlat_pk,
+      (last vals) as [[??]|] eqn:Hlat_commit; [|exfalso..|done];
+      rewrite /get_lat last_lookup in Hlat_pk;
+      rewrite last_lookup in Hlat_commit.
+    + rewrite Hlen_vals in Hlat_pk.
+      iDestruct (big_sepL2_lookup with "Hpk_commit_reln") as "?";
+        [exact Hlat_pk|exact Hlat_commit|].
+      iFrame "#".
+    + apply lookup_lt_Some in Hlat_pk. apply lookup_ge_None in Hlat_commit. lia.
+    + apply lookup_ge_None in Hlat_pk. apply lookup_lt_Some in Hlat_commit. lia. }
+  iNamedSuffix "Hbound" "_bnd". iFrame "#".
+  list_elem gs (uint.nat bound) as mbound.
+  destruct mbound as [mbound dbound].
+  iSplit; [|iClear "Hhist"; iDestruct "Hbound" as "[H|H]"; iNamed "H"].
+
+  (* bring history into curr epoch using mono_maps. *)
+  - iClear "Hbound". iApply (big_sepL_impl with "Hhist").
+    iIntros (?[prior ?]) "!> %Hlook_vals". iNamed 1.
+    (* tedious: need prior ep < adtr_bound to get prior adtr map for map transf.
+    get that by tracing val back to filtered hist and using hist validity. *)
+    iDestruct (big_sepL2_lookup_2_some with "Hpk_commit_reln") as %[[??] Hlook_hist];
+      [exact Hlook_vals|].
+    iDestruct (big_sepL2_lookup with "Hpk_commit_reln") as "H";
+      [exact Hlook_hist|exact Hlook_vals|].
+    iNamed "H". opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
+    { eapply elem_of_list_lookup. eauto using Hlook_hist. }
+    simpl in *.
+    list_elem gs (uint.nat prior) as mprior.
+    destruct mprior as [prior_ep prior_dig].
+    iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
+    iNamed "H". iFrame "#". iNamed "Hinv_gs". iPureIntro.
+    apply (f_equal (fmap fst)) in Hmprior_lookup, Hm_lookup.
+    rewrite -!list_lookup_fmap in Hmprior_lookup, Hm_lookup.
+    simpl in *.
+    opose proof (Hmono_maps _ _ _ _ Hmprior_lookup Hm_lookup _); [word|].
+    eapply lookup_weaken; [|done].
+    (* is_hist_ep had encoding of relevant commit.
+    map transfer lemma over bytes, but gives back an encoding.
+    need to unify the encodings, to prove that the commit still there
+    in latest ep. *)
+    subst. clear -Henc Henc_val.
+    inv Henc_val.
+    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H1); [done|].
+    intuition. simplify_eq/=.
+    destruct (prior_ep !! label) as [[??]|]; [|done].
+    by simplify_eq/=.
+
+  (* bring None bound into curr epoch using mono_maps. *)
+  - iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
+    iNamed "H". iFrame "#". iNamed "Hinv_gs". iPureIntro.
+    apply (f_equal (fmap fst)) in Hmbound_lookup, Hm_lookup.
+    rewrite -!list_lookup_fmap in Hmbound_lookup, Hm_lookup.
+    simpl in *.
+    opose proof (Hmono_maps _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
+    eapply lookup_weaken_None; [|done].
+    inv Henc_val.
+    destruct (mbound !! label); [naive_solver|done].
+
+  (* bring Some bound into curr epoch. arg by contra:
+  if had Some x at ep, by ok_epochs, x.ep <= ep.
+  move x into bound_ep (with mono_maps) and use encoding inj
+  to unify with existing bound entry.
+  for that entry, already know that ep < x.ep. *)
+  - iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
+    iNamed "H". iFrame "#". iNamed "Hinv_gs". iPureIntro.
+    destruct (decide $ is_Some $ m !! label) as [[[??] Hlook_mkey]|].
+    2: { by eapply eq_None_not_Some. }
+    apply (f_equal (fmap fst)) in Hmbound_lookup, Hm_lookup.
+    rewrite -!list_lookup_fmap in Hmbound_lookup, Hm_lookup.
+    simpl in *.
+    opose proof (Hok_epochs _ _ _ _ _ Hm_lookup Hlook_mkey) as ?.
+    opose proof (Hmono_maps _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
+    opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
+    inv Henc_val.
+    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H4); [done|].
+    intuition. simplify_eq/=.
+    destruct (mbound !! label) as [[??]|]; [|done].
+    simplify_eq/=. word.
 Qed.
 
-Lemma wp_GetHist sl_hist hist (ep : w64) :
-  {{{
-    "Hown_hist" ∷ own_hist sl_hist hist
-  }}}
-  GetHist (slice_val sl_hist) #ep
-  {{{
-    (is_reg : bool) sl_pk pk, RET (#is_reg, slice_val sl_pk);
-    "Hown_hist" ∷ own_hist sl_hist hist ∗
-    "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
-    "%Heq_lat" ∷
-      ⌜ match get_lat hist ep with
-        | None => is_reg = false
-        | Some lat => is_reg = true ∧ pk = lat.2
-        end ⌝
-  }}}.
+(* Get calls. *)
+
+Lemma get_None_to_msv ep aud_ep γcli vrf_pk uid γaudit :
+  uint.Z ep < uint.Z aud_ep →
+  is_get_post_None γcli vrf_pk uid ep -∗
+  logical_audit_post γcli γaudit vrf_pk aud_ep -∗
+  msv γaudit vrf_pk ep uid None.
 Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". rewrite /GetHist. iNamed "Hown_hist".
-  wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_isReg) "Hptr_isReg".
-  wp_apply wp_ref_of_zero; [done|]. iIntros (ptr_val) "Hptr_val".
-  iDestruct (own_slice_small_read with "Hsl_hist") as "[Hsl_hist Hsl_restore]".
-  wp_apply (wp_forSlicePrefix
-    (λ donel _,
-    ∃ (is_reg : bool) sl_pk pk,
-    "Hptr_isReg" ∷ ptr_isReg ↦[boolT] #is_reg ∗
-    "Hptr_val" ∷ ptr_val ↦[slice.T byteT] (slice_val sl_pk) ∗
-    "Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
-    "%Heq_lat" ∷
-      ⌜ match get_lat (take (length donel) hist) ep with
-        | None => is_reg = false
-        | Some lat => is_reg = true ∧ pk = lat.2
-        end ⌝)%I with "[] [$Hsl_hist Hptr_isReg Hptr_val]").
-  2: { iExists _, Slice.nil, []. iFrame. iSplit; [|done].
-    iDestruct (own_slice_zero byteT) as "H".
-    by iDestruct (own_slice_to_small with "H") as "?". }
-  { clear. iIntros "* %". iIntros (Φ) "!> H HΦ". iNamed "H".
-    opose proof (list_lookup_middle done todo x _ _) as Hlook_x; [done|].
-    subst dim0_hist.
-    iDestruct (big_sepL2_lookup_1_some with "Hdim0_hist")
-      as %[[new_ep new_pk] Hlook_hist]; [exact Hlook_x|].
-    iDestruct (big_sepL2_lookup with "Hdim0_hist")
-      as "His_entry"; [exact Hlook_x|exact Hlook_hist|].
-    iNamed "His_entry". wp_loadField. wp_if_destruct.
-    - wp_store. wp_loadField. wp_store. iApply "HΦ".
-      iFrame "Hsl_HistVal". iFrame "∗#". rewrite app_length. simpl.
-      replace (length done + 1)%nat with (S $ length done)%nat; [|lia].
-      rewrite (take_S_r _ _ _ Hlook_hist). rewrite /get_lat filter_app.
-      opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
-        (new_ep, new_pk)) as [[_?]|[Htmp _]]. { exfalso. simpl in *. word. }
-      rewrite Htmp. clear Htmp. rewrite last_snoc. naive_solver.
-    - iApply "HΦ". iFrame "Hsl_pk". iFrame "∗#". rewrite app_length. simpl.
-      replace (length done + 1)%nat with (S $ length done)%nat; [|lia].
-      rewrite (take_S_r _ _ _ Hlook_hist). rewrite /get_lat filter_app.
-      opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
-        (new_ep, new_pk)) as [[Htmp _]|[_?]]. 2: { exfalso. simpl in *. word. }
-      rewrite Htmp. clear Htmp. list_simplifier. by iFrame "%". }
-  iIntros "[H0 H1]". iNamed "H1". iDestruct ("Hsl_restore" with "H0") as "Hsl_hist".
-  do 2 wp_load. wp_pures. iApply "HΦ". iFrame "∗#".
-  iDestruct (big_sepL2_length with "Hdim0_hist") as %Htmp.
-  rewrite Htmp in Heq_lat. clear Htmp.
-  rewrite firstn_all in Heq_lat. naive_solver.
+  iIntros (?) "#Hpost #Haudit". iNamed "Haudit".
+  iPoseProof "Hpost" as "Hentry". iNamed "Hpost".
+  list_elem gs (uint.nat ep) as m. destruct m as [m ?].
+  iDestruct (mono_list_idx_own_get with "Hlb_gs") as "Hidx"; try done.
+  iFrame "#".
+  iDestruct ("Hmap_transf" with "[$Hentry //]") as "H".
+  iNamedSuffix "H" "0".
+  iDestruct (is_vrf_out_det with "Hvrf_out Hvrf_out0") as %->.
+  inv Henc_val0.
+  by simplify_option_eq.
 Qed.
 
-End wps.
+Lemma get_Some_to_msv ep aud_ep γcli vrf_pk uid pk γaudit :
+  uint.Z ep < uint.Z aud_ep →
+  is_get_post_Some γcli vrf_pk uid ep pk -∗
+  logical_audit_post γcli γaudit vrf_pk aud_ep -∗
+  ∃ ep', msv γaudit vrf_pk ep uid (Some (ep', pk)).
+Proof.
+  iIntros (?) "#Hpost #Haudit". iNamed "Hpost". iNamed "Haudit".
+  list_elem gs (uint.nat ep) as m. destruct m as [m ?].
+  iDestruct (mono_list_idx_own_get with "Hlb_gs") as "Hidx"; try done.
+  iFrame "#".
+  iExists ep', (word.add (W64 $ length hist) (W64 1)).
+  repeat iSplit.
+  - iIntros (??).
+    list_elem hist (uint.nat ver) as a_hist.
+    iDestruct (big_sepL_lookup with "Hhist") as "Hentry"; try done.
+    replace (W64 (uint.nat _)) with ver by word.
+    iDestruct ("Hmap_transf" with "[$Hentry //]") as "H".
+    iNamed "H". iFrame "#".
+    inv Henc_val. simplify_option_eq. naive_solver.
+  - iDestruct ("Hmap_transf" with "[$His_lat //]") as "H".
+    iNamed "H".
+    replace (word.sub _ _) with (W64 $ length hist) by word.
+    iFrame "#".
+    iExists (_, _). iFrame "#". iSplit; try done.
+    inv Henc_val. simplify_option_eq.
+    destruct H0 as [??]. simpl in *.
+    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H2) as ?; try done.
+    intuition. by simplify_eq/=.
+  - iDestruct ("Hmap_transf" with "[$His_bound //]") as "H".
+    iNamed "H". iFrame "#".
+    inv Henc_val. by simplify_option_eq.
+Qed.
+
+End proof.

@@ -53,6 +53,9 @@ Proof.
   by opose proof (CommitOpen.inj _ _ Heq_hash) as [=].
 Qed.
 
+Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
+  last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist.
+
 End misc.
 
 Section msv.
