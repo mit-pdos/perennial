@@ -9,5 +9,6 @@ From New.proof Require asyncfile lock etcdraft globals_test github_com.mit_pdos.
 (* in the meantime, at least check goose output  *)
 From New.generatedproof.go_etcd_io.etcd
   Require client.v3.leasing client.v3.concurrency.
+From New.proof Require Import chan context.
 
 Require New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.closed.

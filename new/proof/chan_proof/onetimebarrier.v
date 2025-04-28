@@ -74,7 +74,8 @@ Lemma wp_onetime_barrier_receive γ ch Sd Rv :
   }}}.
 Proof.
   iIntros (?) "((#Hchan & #Hinv) & Htok & HR) HΦ".
-  wp_apply (wp_chan_receive (V:=()) with "[$]").
+  wp_apply (wp_chan_receive (V:=())).
+  iFrame "Hchan".
 
   (* send Rv *)
   iInv "Hinv" as "Hi" "Hclose".
@@ -123,7 +124,8 @@ Lemma wp_onetime_barrier_send γ ch Sd Rv :
   }}}.
 Proof.
   iIntros (?) "((#Hchan & #Hinv) & Htok & HR) HΦ".
-  wp_apply (wp_chan_send (V:=()) with "[$]").
+  wp_apply (wp_chan_send (V:=())).
+  iFrame "Hchan".
 
   (* send Sd *)
   iInv "Hinv" as "Hi" "Hclose".

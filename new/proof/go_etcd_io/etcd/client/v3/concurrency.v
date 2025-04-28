@@ -8,7 +8,8 @@ From New.proof Require Export chan.
 Class concurrencyG Σ :=
   {
     donecG :: closeable_chanG Σ ;
-    context_inG :: contextG Σ
+    (* context_inG :: contextG Σ; *)
+    clientv3_inG :: clientv3G Σ;
   }.
 
 Section proof.
@@ -76,7 +77,7 @@ Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
   wp_apply (wp_Client__GetLogger with "[$]") as "% _".
-  wp_apply (wp_Client__Ctx with "[$]") as "% _".
+  wp_apply (wp_Client__Ctx with "[$]") as "% % #Hcontext".
   wp_alloc ops as "Hops".
   wp_auto.
   (* only consider nil options *)
@@ -103,6 +104,7 @@ Proof.
   iClear "err". clear err_ptr.
   iDestruct "Hl" as "#Hlease0".
   wp_apply wp_WithCancel as "* (Hctx & Hcancel & Hchan)".
+  { iFrame "#". }
 
   wp_apply (wp_Client__KeepAlive with "[$]") as "* #Hkch".
   rewrite bool_decide_decide. destruct decide.
