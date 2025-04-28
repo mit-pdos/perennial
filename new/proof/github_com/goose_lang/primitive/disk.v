@@ -181,4 +181,44 @@ Proof.
   iApply block_array_to_slice; eauto.
 Qed.
 
+Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
+  {{{ is_pkg_init disk ∗ own_slice s q (vec_to_list b) ∗
+      (|NC={⊤,E'}=> ∃ b0, uint.Z a d↦ b0 ∗ (uint.Z a d↦ b -∗ |NC={E',⊤}=> Q)) }}}
+    disk@"Write" #a #s
+  {{{ RET #(); own_slice s q (vec_to_list b) ∗ Q }}}.
+Proof.
+  iIntros (Φ) "[#Hpkg [Hs Hupd]] HΦ".
+  iApply (wp_Write_atomic with "[$Hpkg $Hs]").
+  rewrite difference_empty_L. iNext.
+  iMod "Hupd" as (b0) "[Hda Hclose]".
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "HcloseE". iExists b0.
+  iFrame. iIntros "Hda". iMod "HcloseE" as "_". iMod ("Hclose" with "Hda").
+  iIntros "!> Hs". iApply "HΦ". iFrame.
+Qed.
+
+Theorem wp_Write (a: u64) s q b :
+  {{{ is_pkg_init disk ∗ ∃ b0, uint.Z a d↦ b0 ∗ own_slice s q (vec_to_list b) }}}
+    disk@"Write" #a #s
+  {{{ RET #(); uint.Z a d↦ b ∗ own_slice s q (vec_to_list b) }}}.
+Proof.
+  iIntros (Φ) "[#Hpkg Hpre] HΦ".
+  iDestruct "Hpre" as (b0) "[Hda Hs]".
+  wp_apply (wp_Write_atomic with "[$Hs]").
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "Hclose". iExists _. iFrame.
+  iIntros "Hda". iMod "Hclose" as "_".
+  iIntros "!> Hs". iApply "HΦ". iFrame.
+Qed.
+
+Theorem wp_Write' (z: Z) (a: u64) s q b :
+  {{{ is_pkg_init disk ∗ ⌜uint.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ own_slice s q (vec_to_list b) }}}
+    disk@"Write" #a #s
+  {{{ RET #(); z d↦ b ∗ own_slice s q (vec_to_list b) }}}.
+Proof.
+  iIntros (Φ) "[#Hpkg [<- >Hpre]] HΦ".
+  iApply (wp_Write with "[$Hpkg $Hpre]").
+  eauto.
+Qed.
+
 End wps.
