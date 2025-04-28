@@ -1,0 +1,184 @@
+From New.proof Require Import proof_prelude.
+From New Require Export atomic_fupd.
+Require Import New.code.github_com.goose_lang.primitive.disk.
+Require Import New.generatedproof.github_com.goose_lang.primitive.disk.
+Require Import Perennial.goose_lang.ffi.disk.
+Require Import Perennial.goose_lang.ffi.disk_prelude.
+
+Section wps.
+Context `{!heapGS Σ}.
+Context `{!goGlobalsGS Σ}.
+
+#[global]
+Program Instance is_pkg_init_inst : IsPkgInit (PROP:=iProp Σ) disk :=
+  ltac2:(build_pkg_init ()).
+
+Implicit Types v : val.
+Implicit Types z : Z.
+Implicit Types s : slice.t.
+Implicit Types (stk:stuckness) (E: coPset).
+
+Definition is_block (s:slice.t) (q: dfrac) (b:Block) :=
+  own_slice s q (vec_to_list b).
+
+Definition is_block_full (s:slice.t) (b:Block) :=
+  own_slice s (DfracOwn 1) (vec_to_list b).
+
+Global Instance is_block_timeless s q b :
+  Timeless (is_block s q b) := _.
+
+Global Instance is_block_dfractional s b :
+  DFractional (λ dq, is_block s dq b).
+Proof. apply _. Qed.
+
+Theorem is_block_not_nil s q b :
+  is_block s q b -∗
+  ⌜ s ≠ slice.nil ⌝.
+Proof.
+  iIntros "Hb".
+  rewrite /is_block.
+  iDestruct (own_slice_not_null with "Hb") as "%Hnull"; eauto.
+  { rewrite go_type_size_unseal //. }
+  { rewrite length_vec_to_list.
+    rewrite /block_bytes. lia. }
+  iPureIntro.
+  destruct s. rewrite /slice.nil. simpl in *. congruence.
+Qed.
+
+Definition list_to_block (l: list u8) : Block :=
+  match decide (length l = Z.to_nat 4096) with
+  | left H => eq_rect _ _ (list_to_vec l) _ H
+  | _ => inhabitant
+  end.
+
+Lemma vec_to_list_to_vec_eq_rect A (l: list A) n (H: length l = n) :
+  vec_to_list (eq_rect _ _ (list_to_vec l) _ H) = l.
+Proof.
+  rewrite <- H; simpl.
+  rewrite vec_to_list_to_vec.
+  auto.
+Qed.
+
+Theorem list_to_block_to_list l :
+  length l = Z.to_nat 4096 ->
+  vec_to_list (list_to_block l) = l.
+Proof.
+  intros H.
+  rewrite /list_to_block /Block_to_vals.
+  rewrite decide_True_pi.
+  rewrite vec_to_list_to_vec_eq_rect; auto.
+Qed.
+
+Theorem list_to_block_to_vals l :
+  length l = Z.to_nat 4096 ->
+  Block_to_vals (list_to_block l) = b2val <$> l.
+Proof.
+  intros H.
+  rewrite /Block_to_vals list_to_block_to_list //.
+Qed.
+
+Theorem block_list_inj l (b: Block) :
+  l = vec_to_list b →
+  b = list_to_block l.
+Proof.
+  intros ->.
+  apply vec_to_list_inj2.
+  rewrite list_to_block_to_list //.
+  rewrite length_vec_to_list //.
+Qed.
+
+Theorem block_to_list_to_block i :
+  list_to_block (vec_to_list i) = i.
+Proof.
+  symmetry.
+  apply block_list_inj.
+  auto.
+Qed.
+
+Lemma slice_to_block_array s q b :
+  own_slice s q (vec_to_list b) -∗ pointsto_block s.(slice.ptr_f) q b.
+Proof.
+  rewrite /pointsto_block heap_array_to_list.
+  rewrite own_slice_unseal /own_slice_def.
+  iIntros "[Ha %]".
+  rewrite big_sepL_fmap.
+  iApply (big_sepL_impl with "Ha"); simpl.
+  iModIntro.
+  iIntros (i x) "% Hl".
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  rewrite to_val_unseal. simpl.
+  rewrite go_type_size_unseal. simpl.
+  rewrite loc_add_0.
+  replace (Z.mul 1%nat i) with (Z.of_nat i) by word.
+  iDestruct "Hl" as "[Hl _]".
+  iFrame.
+Qed.
+
+Lemma block_array_to_slice s q (b: Block) :
+  length b = uint.nat s.(slice.len_f) ->
+  uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) ->
+  pointsto_block s.(slice.ptr_f) q b -∗ own_slice s q (vec_to_list b).
+Proof.
+  intros.
+  rewrite /pointsto_block heap_array_to_list.
+  rewrite own_slice_unseal /own_slice_def.
+  iIntros "Hb".
+  rewrite big_sepL_fmap.
+  iDestruct (big_sepL_impl with "Hb []") as "$"; eauto.
+  iModIntro.
+  iIntros (i x) "% Hl".
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  rewrite to_val_unseal. simpl.
+  rewrite go_type_size_unseal. simpl.
+  rewrite loc_add_0.
+  replace (Z.mul 1%nat i) with (Z.of_nat i) by word.
+  iFrame.
+Qed.
+
+Transparent disk.Read disk.Write.
+
+Ltac inv_undefined :=
+  match goal with
+  | [ H: relation.denote (match ?e with | _ => _ end) _ _ _ |- _ ] =>
+    destruct e; try (apply suchThat_false in H; contradiction)
+  end.
+
+Local Ltac solve_atomic :=
+  apply strongly_atomic_atomic, ectx_language_atomic;
+  [ apply heap_base_atomic; cbn [relation.denote base_trans]; intros * H;
+    repeat inv_undefined;
+    try solve [ apply atomically_is_val in H; auto ]
+    |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
+
+Theorem wp_Write_atomic (a: u64) s q b :
+  ⊢
+  {{{ is_pkg_init disk ∗ own_slice s q (vec_to_list b) }}}
+  <<< ∀∀ b0, uint.Z a d↦ b0 >>>
+    disk@"Write" #a #s @@ ∅
+  <<< uint.Z a d↦ b >>>
+  {{{ RET #(); own_slice s q (vec_to_list b) }}}.
+Proof.
+  wp_start as "Hs".
+  iDestruct (own_slice_len with "Hs") as %Hsz.
+  iDestruct (own_slice_wf with "Hs") as %Hwf.
+  iApply (wp_ncatomic _ _ ∅).
+  { solve_atomic. rewrite to_val_unseal in H.
+    inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
+    inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
+  rewrite difference_empty_L.
+  iMod "HΦ" as (b0) "[Hda Hupd]"; iModIntro.
+  rewrite to_val_unseal.
+  iApply (wp_WriteOp with "[Hda Hs]").
+  { iIntros "!>".
+    iExists b0.
+    iFrame.
+    by iApply slice_to_block_array. }
+  iModIntro.
+  iIntros "[Hda Hmapsto]".
+  iMod ("Hupd" with "Hda") as "HQ".
+  iModIntro.
+  iApply "HQ".
+  iApply block_array_to_slice; eauto.
+Qed.
+
+End wps.
