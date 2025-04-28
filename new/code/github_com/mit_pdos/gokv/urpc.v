@@ -30,7 +30,7 @@ Definition Server__rpcHandle : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
     do:  ("replyData" <-[#ptrT] "$r0");;;
     let: "f" := (mem.alloc (type.zero_val #funcT)) in
-    let: "$r0" := (Fst (map.get (![#(mapT uint64T funcT)] (struct.field_ref #Server #"handlers"%go (![#ptrT] "srv"))) (![#uint64T] "rpcid"))) in
+    let: "$r0" := (Fst (map.get (![type.mapT #uint64T #funcT] (struct.field_ref #Server #"handlers"%go (![#ptrT] "srv"))) (![#uint64T] "rpcid"))) in
     do:  ("f" <-[#funcT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "data") in
     let: "$a1" := (![#ptrT] "replyData") in
@@ -57,7 +57,7 @@ Definition Server__rpcHandle : val :=
 Definition MakeServer : val :=
   rec: "MakeServer" "handlers" :=
     exception_do (let: "handlers" := (mem.alloc "handlers") in
-    return: (mem.alloc (let: "$handlers" := (![#(mapT uint64T funcT)] "handlers") in
+    return: (mem.alloc (let: "$handlers" := (![type.mapT #uint64T #funcT] "handlers") in
      struct.make #Server [{
        "handlers" ::= "$handlers"
      }]))).
@@ -159,7 +159,7 @@ Definition Client__replyThread : val :=
       (if: ![#boolT] (struct.field_ref #grove_ffi.ReceiveRet #"Err"%go "r")
       then
         do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
-        let: "$range" := (![#(mapT uint64T ptrT)] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) in
+        let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) in
         (let: "cb" := (mem.alloc (type.zero_val #uint64T)) in
         map.for_range "$range" (λ: "$key" "value",
           do:  ("cb" <-[#ptrT] "$value");;;
@@ -186,14 +186,14 @@ Definition Client__replyThread : val :=
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "cb" := (mem.alloc (type.zero_val #ptrT)) in
-      let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T ptrT)] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) (![#uint64T] "seqno")) in
+      let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) (![#uint64T] "seqno")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("cb" <-[#ptrT] "$r0");;;
       do:  ("ok" <-[#boolT] "$r1");;;
       (if: ![#boolT] "ok"
       then
-        do:  (let: "$a0" := (![#(mapT uint64T ptrT)] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) in
+        do:  (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) in
         let: "$a1" := (![#uint64T] "seqno") in
         map.delete "$a0" "$a1");;;
         let: "$r0" := (![#sliceT] "reply") in
@@ -301,7 +301,7 @@ Definition Client__CallStart : val :=
     (func_call #std.std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
     do:  ((struct.field_ref #Client #"seq"%go (![#ptrT] "cl")) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#ptrT] "cb") in
-    do:  (map.insert (![#(mapT uint64T ptrT)] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) (![#uint64T] "seqno") "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) (![#uint64T] "seqno") "$r0");;;
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
     let: "data1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![#sliceT] "args") in

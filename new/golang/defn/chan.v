@@ -4,7 +4,8 @@ Module chan.
 Section defns.
 Context `{ffi_syntax}.
 
-Axiom make : go_type → val.
+(* takes type as first argument *)
+Axiom make : val.
 Axiom receive : val.
 Axiom send : val.
 Axiom select : val.

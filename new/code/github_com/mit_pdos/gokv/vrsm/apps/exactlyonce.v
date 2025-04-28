@@ -84,9 +84,9 @@ Definition eStateMachine__applyVolatile : val :=
         let: "$r1" := "$ret1" in
         do:  ("seq" <-[#uint64T] "$r0");;;
         do:  ("realOp" <-[#sliceT] "$r1");;;
-        (if: (Fst (map.get (![#(mapT uint64T uint64T)] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) (![#uint64T] "cid"))) ≥ (![#uint64T] "seq")
+        (if: (Fst (map.get (![type.mapT #uint64T #uint64T] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) (![#uint64T] "cid"))) ≥ (![#uint64T] "seq")
         then
-          let: "$r0" := (Fst (map.get (![#(mapT uint64T sliceT)] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) (![#uint64T] "cid"))) in
+          let: "$r0" := (Fst (map.get (![type.mapT #uint64T #sliceT] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) (![#uint64T] "cid"))) in
           do:  ("ret" <-[#sliceT] "$r0")
         else
           let: "$r0" := (let: "$a0" := (![#sliceT] "realOp") in
@@ -94,9 +94,9 @@ Definition eStateMachine__applyVolatile : val :=
           (![#funcT] (struct.field_ref #VersionedStateMachine #"ApplyVolatile"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) "$a0" "$a1") in
           do:  ("ret" <-[#sliceT] "$r0");;;
           let: "$r0" := (![#sliceT] "ret") in
-          do:  (map.insert (![#(mapT uint64T sliceT)] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) (![#uint64T] "cid") "$r0");;;
+          do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) (![#uint64T] "cid") "$r0");;;
           let: "$r0" := (![#uint64T] "seq") in
-          do:  (map.insert (![#(mapT uint64T uint64T)] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) (![#uint64T] "cid") "$r0"))
+          do:  (map.insert (![type.mapT #uint64T #uint64T] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) (![#uint64T] "cid") "$r0"))
       else
         (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RO
         then
@@ -166,12 +166,12 @@ Definition eStateMachine__getState : val :=
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (let: "$a0" := (![#(mapT uint64T uint64T)] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) in
+    let: "$a1" := (let: "$a0" := (![type.mapT #uint64T #uint64T] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) in
     (func_call #map_marshal.map_marshal #"EncodeMapU64ToU64"%go) "$a0") in
     (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (let: "$a0" := (![#(mapT uint64T sliceT)] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) in
+    let: "$a1" := (let: "$a0" := (![type.mapT #uint64T #sliceT] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) in
     (func_call #map_marshal.map_marshal #"EncodeMapU64ToBytes"%go) "$a0") in
     (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
@@ -200,13 +200,13 @@ Definition eStateMachine__setState : val :=
     (func_call #map_marshal.map_marshal #"DecodeMapU64ToU64"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s")) <-[#(mapT uint64T uint64T)] "$r0");;;
+    do:  ((struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s")) <-[type.mapT #uint64T #uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
     (func_call #map_marshal.map_marshal #"DecodeMapU64ToBytes"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s")) <-[#(mapT uint64T sliceT)] "$r0");;;
+    do:  ((struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s")) <-[type.mapT #uint64T #sliceT] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     do:  (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] "nextIndex") in
@@ -222,9 +222,9 @@ Definition MakeExactlyOnceStateMachine : val :=
     let: "$r0" := (mem.alloc (type.zero_val #eStateMachine)) in
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "$r0" := (map.make #uint64T #uint64T) in
-    do:  ((struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s")) <-[#(mapT uint64T uint64T)] "$r0");;;
+    do:  ((struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s")) <-[type.mapT #uint64T #uint64T] "$r0");;;
     let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ((struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s")) <-[#(mapT uint64T sliceT)] "$r0");;;
+    do:  ((struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s")) <-[type.mapT #uint64T #sliceT] "$r0");;;
     let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#ptrT] "sm") in

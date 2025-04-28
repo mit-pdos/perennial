@@ -17,11 +17,11 @@ Definition EncodeMapU64ToU64 : val :=
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#(mapT uint64T uint64T)] "kvs") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![type.mapT #uint64T #uint64T] "kvs") in
     map.len "$a0")) in
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#(mapT uint64T uint64T)] "kvs") in
+    let: "$range" := (![type.mapT #uint64T #uint64T] "kvs") in
     (let: "v" := (mem.alloc (type.zero_val #uint64T)) in
     let: "k" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
@@ -44,9 +44,9 @@ Definition DecodeMapU64ToU64 : val :=
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_in") in
     do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "kvs" := (mem.alloc (type.zero_val #(mapT uint64T uint64T))) in
+    let: "kvs" := (mem.alloc (type.zero_val (type.mapT #uint64T #uint64T))) in
     let: "$r0" := (map.make #uint64T #uint64T) in
-    do:  ("kvs" <-[#(mapT uint64T uint64T)] "$r0");;;
+    do:  ("kvs" <-[type.mapT #uint64T #uint64T] "$r0");;;
     let: "enc2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "numEntries" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
@@ -76,8 +76,8 @@ Definition DecodeMapU64ToU64 : val :=
       do:  ("val" <-[#uint64T] "$r0");;;
       do:  ("enc" <-[#sliceT] "$r1");;;
       let: "$r0" := (![#uint64T] "val") in
-      do:  (map.insert (![#(mapT uint64T uint64T)] "kvs") (![#uint64T] "key") "$r0")));;;
-    return: (![#(mapT uint64T uint64T)] "kvs", ![#sliceT] "enc")).
+      do:  (map.insert (![type.mapT #uint64T #uint64T] "kvs") (![#uint64T] "key") "$r0")));;;
+    return: (![type.mapT #uint64T #uint64T] "kvs", ![#sliceT] "enc")).
 
 (* go: map_marshal.go:31:6 *)
 Definition EncodeMapU64ToBytes : val :=
@@ -87,11 +87,11 @@ Definition EncodeMapU64ToBytes : val :=
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![#(mapT uint64T sliceT)] "kvs") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![type.mapT #uint64T #sliceT] "kvs") in
     map.len "$a0")) in
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#(mapT uint64T sliceT)] "kvs") in
+    let: "$range" := (![type.mapT #uint64T #sliceT] "kvs") in
     (let: "v" := (mem.alloc (type.zero_val #uint64T)) in
     let: "k" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
@@ -119,9 +119,9 @@ Definition DecodeMapU64ToBytes : val :=
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_in") in
     do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "kvs" := (mem.alloc (type.zero_val #(mapT uint64T sliceT))) in
+    let: "kvs" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
     let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ("kvs" <-[#(mapT uint64T sliceT)] "$r0");;;
+    do:  ("kvs" <-[type.mapT #uint64T #sliceT] "$r0");;;
     let: "enc2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "numEntries" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
@@ -164,8 +164,8 @@ Definition DecodeMapU64ToBytes : val :=
       let: "$r0" := (![#sliceT] "enc5") in
       do:  ("enc" <-[#sliceT] "$r0");;;
       let: "$r0" := (![#sliceT] "val") in
-      do:  (map.insert (![#(mapT uint64T sliceT)] "kvs") (![#uint64T] "key") "$r0")));;;
-    return: (![#(mapT uint64T sliceT)] "kvs", ![#sliceT] "enc")).
+      do:  (map.insert (![type.mapT #uint64T #sliceT] "kvs") (![#uint64T] "key") "$r0")));;;
+    return: (![type.mapT #uint64T #sliceT] "kvs", ![#sliceT] "enc")).
 
 Definition vars' : list (go_string * go_type) := [].
 

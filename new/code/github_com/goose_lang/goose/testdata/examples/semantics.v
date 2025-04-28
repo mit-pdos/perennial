@@ -24,7 +24,7 @@ Definition findKey : val :=
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := #false in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$range" := (![#(mapT uint64T unit)] "m") in
+    let: "$range" := (![type.mapT #uint64T #unit] "m") in
     (let: "k" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[#uint64T] "$key");;;
@@ -43,13 +43,13 @@ Definition allocate : val :=
     exception_do (let: "m" := (mem.alloc "m") in
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "k" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "m") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "m") in
     (func_call #semantics.semantics #"findKey"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("k" <-[#uint64T] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
-    do:  (let: "$a0" := (![#(mapT uint64T unit)] "m") in
+    do:  (let: "$a0" := (![type.mapT #uint64T #unit] "m") in
     let: "$a1" := (![#uint64T] "k") in
     map.delete "$a0" "$a1");;;
     return: (![#uint64T] "k", ![#boolT] "ok")).
@@ -58,34 +58,34 @@ Definition allocate : val :=
 Definition freeRange : val :=
   rec: "freeRange" "sz" :=
     exception_do (let: "sz" := (mem.alloc "sz") in
-    let: "m" := (mem.alloc (type.zero_val #(mapT uint64T unit))) in
+    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #unit))) in
     let: "$r0" := (map.make #uint64T #unit) in
-    do:  ("m" <-[#(mapT uint64T unit)] "$r0");;;
+    do:  ("m" <-[type.mapT #uint64T #unit] "$r0");;;
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "sz")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
       let: "$r0" := (struct.make #unit [{
       }]) in
-      do:  (map.insert (![#(mapT uint64T unit)] "m") (![#uint64T] "i") "$r0")));;;
-    return: (![#(mapT uint64T unit)] "m")).
+      do:  (map.insert (![type.mapT #uint64T #unit] "m") (![#uint64T] "i") "$r0")));;;
+    return: (![type.mapT #uint64T #unit] "m")).
 
 (* go: allocator.go:34:6 *)
 Definition testAllocateDistinct : val :=
   rec: "testAllocateDistinct" <> :=
-    exception_do (let: "free" := (mem.alloc (type.zero_val #(mapT uint64T unit))) in
+    exception_do (let: "free" := (mem.alloc (type.zero_val (type.mapT #uint64T #unit))) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
     (func_call #semantics.semantics #"freeRange"%go) "$a0") in
-    do:  ("free" <-[#(mapT uint64T unit)] "$r0");;;
+    do:  ("free" <-[type.mapT #uint64T #unit] "$r0");;;
     let: "a1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("a1" <-[#uint64T] "$r0");;;
     do:  "$r1";;;
     let: "a2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -96,26 +96,26 @@ Definition testAllocateDistinct : val :=
 (* go: allocator.go:41:6 *)
 Definition testAllocateFull : val :=
   rec: "testAllocateFull" <> :=
-    exception_do (let: "free" := (mem.alloc (type.zero_val #(mapT uint64T unit))) in
+    exception_do (let: "free" := (mem.alloc (type.zero_val (type.mapT #uint64T #unit))) in
     let: "$r0" := (let: "$a0" := #(W64 2) in
     (func_call #semantics.semantics #"freeRange"%go) "$a0") in
-    do:  ("free" <-[#(mapT uint64T unit)] "$r0");;;
+    do:  ("free" <-[type.mapT #uint64T #unit] "$r0");;;
     let: "ok1" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("ok1" <-[#boolT] "$r1");;;
     let: "ok2" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("ok2" <-[#boolT] "$r1");;;
     let: "ok3" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#(mapT uint64T unit)] "free") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![type.mapT #uint64T #unit] "free") in
     (func_call #semantics.semantics #"allocate"%go) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1222,7 +1222,7 @@ Definition IterateMapKeys : val :=
   rec: "IterateMapKeys" "m" :=
     exception_do (let: "m" := (mem.alloc "m") in
     let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$range" := (![#(mapT uint64T uint64T)] "m") in
+    let: "$range" := (![type.mapT #uint64T #uint64T] "m") in
     (let: "k" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[#uint64T] "$key");;;
@@ -1235,7 +1235,7 @@ Definition IterateMapValues : val :=
   rec: "IterateMapValues" "m" :=
     exception_do (let: "m" := (mem.alloc "m") in
     let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$range" := (![#(mapT uint64T uint64T)] "m") in
+    let: "$range" := (![type.mapT #uint64T #uint64T] "m") in
     (let: "v" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("v" <-[#uint64T] "$value");;;
@@ -1250,19 +1250,19 @@ Definition testIterateMap : val :=
     exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "m" := (mem.alloc (type.zero_val #(mapT uint64T uint64T))) in
+    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #uint64T))) in
     let: "$r0" := (map.make #uint64T #uint64T) in
-    do:  ("m" <-[#(mapT uint64T uint64T)] "$r0");;;
+    do:  ("m" <-[type.mapT #uint64T #uint64T] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 0) "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 0) "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 1) "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 3) "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#(mapT uint64T uint64T)] "m") in
+    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 3) "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![type.mapT #uint64T #uint64T] "m") in
     (func_call #semantics.semantics #"IterateMapKeys"%go) "$a0") = #(W64 4))) in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![#(mapT uint64T uint64T)] "m") in
+    let: "$r0" := ((![#boolT] "ok") && ((let: "$a0" := (![type.mapT #uint64T #uint64T] "m") in
     (func_call #semantics.semantics #"IterateMapValues"%go) "$a0") = #(W64 7))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
@@ -1273,19 +1273,19 @@ Definition testMapSize : val :=
     exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := #true in
     do:  ("ok" <-[#boolT] "$r0");;;
-    let: "m" := (mem.alloc (type.zero_val #(mapT uint64T uint64T))) in
+    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #uint64T))) in
     let: "$r0" := (map.make #uint64T #uint64T) in
-    do:  ("m" <-[#(mapT uint64T uint64T)] "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![#(mapT uint64T uint64T)] "m") in
+    do:  ("m" <-[type.mapT #uint64T #uint64T] "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![type.mapT #uint64T #uint64T] "m") in
     map.len "$a0")) = #(W64 0))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 0) "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 0) "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 1) "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 3) "$r0");;;
-    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![#(mapT uint64T uint64T)] "m") in
+    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 3) "$r0");;;
+    let: "$r0" := ((![#boolT] "ok") && ((s_to_w64 (let: "$a0" := (![type.mapT #uint64T #uint64T] "m") in
     map.len "$a0")) = #(W64 3))) in
     do:  ("ok" <-[#boolT] "$r0");;;
     return: (![#boolT] "ok")).
@@ -1343,15 +1343,15 @@ Definition testMultipleAssignToMap : val :=
     exception_do (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[#uint64T] "$r0");;;
-    let: "m" := (mem.alloc (type.zero_val #(mapT uint64T uint64T))) in
+    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #uint64T))) in
     let: "$r0" := (map.make #uint64T #uint64T) in
-    do:  ("m" <-[#(mapT uint64T uint64T)] "$r0");;;
+    do:  ("m" <-[type.mapT #uint64T #uint64T] "$r0");;;
     let: ("$ret0", "$ret1") := ((func_call #semantics.semantics #"multReturnTwo"%go) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("x" <-[#uint64T] "$r0");;;
-    do:  (map.insert (![#(mapT uint64T uint64T)] "m") #(W64 0) "$r1");;;
-    return: (((![#uint64T] "x") = #(W64 2)) && ((Fst (map.get (![#(mapT uint64T uint64T)] "m") #(W64 0))) = #(W64 3)))).
+    do:  (map.insert (![type.mapT #uint64T #uint64T] "m") #(W64 0) "$r1");;;
+    return: (((![#uint64T] "x") = #(W64 2)) && ((Fst (map.get (![type.mapT #uint64T #uint64T] "m") #(W64 0))) = #(W64 3)))).
 
 (* go: multiple_return.go:3:6 *)
 Definition returnTwo : val :=
@@ -2563,9 +2563,9 @@ Definition New : val :=
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"disk is too small to host log"%go) in
       Panic "$a0")
     else do:  #());;;
-    let: "cache" := (mem.alloc (type.zero_val #(mapT uint64T sliceT))) in
+    let: "cache" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
     let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ("cache" <-[#(mapT uint64T sliceT)] "$r0");;;
+    do:  ("cache" <-[type.mapT #uint64T #sliceT] "$r0");;;
     let: "header" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (func_call #semantics.semantics #"intToBlock"%go) "$a0") in
@@ -2582,7 +2582,7 @@ Definition New : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("l" <-[#ptrT] "$r0");;;
     return: (let: "$d" := (![#disk.Disk] "d") in
-     let: "$cache" := (![#(mapT uint64T sliceT)] "cache") in
+     let: "$cache" := (![type.mapT #uint64T #sliceT] "cache") in
      let: "$length" := (![#ptrT] "lengthPtr") in
      let: "$l" := (![#ptrT] "l") in
      struct.make #Log [{
@@ -2636,7 +2636,7 @@ Definition Log__Read : val :=
     do:  ((method_call #semantics.semantics #"Log" #"lock" (![#Log] "l")) #());;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "v" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T sliceT)] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a")) in
+    let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #sliceT] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[#sliceT] "$r0");;;
@@ -2693,7 +2693,7 @@ Definition Log__Write : val :=
     let: "$a1" := (![#sliceT] "v") in
     (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1");;;
     let: "$r0" := (![#sliceT] "v") in
-    do:  (map.insert (![#(mapT uint64T sliceT)] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a") "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a") "$r0");;;
     let: "$r0" := ((![#uint64T] "length") + #(W64 1)) in
     do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
     do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #())).
@@ -2824,9 +2824,9 @@ Definition Open : val :=
     (func_call #semantics.semantics #"applyLog"%go) "$a0" "$a1");;;
     do:  (let: "$a0" := (![#disk.Disk] "d") in
     (func_call #semantics.semantics #"clearLog"%go) "$a0");;;
-    let: "cache" := (mem.alloc (type.zero_val #(mapT uint64T sliceT))) in
+    let: "cache" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
     let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ("cache" <-[#(mapT uint64T sliceT)] "$r0");;;
+    do:  ("cache" <-[type.mapT #uint64T #sliceT] "$r0");;;
     let: "lengthPtr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
     do:  ("lengthPtr" <-[#ptrT] "$r0");;;
@@ -2836,7 +2836,7 @@ Definition Open : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("l" <-[#ptrT] "$r0");;;
     return: (let: "$d" := (![#disk.Disk] "d") in
-     let: "$cache" := (![#(mapT uint64T sliceT)] "cache") in
+     let: "$cache" := (![type.mapT #uint64T #sliceT] "cache") in
      let: "$length" := (![#ptrT] "lengthPtr") in
      let: "$l" := (![#ptrT] "l") in
      struct.make #Log [{

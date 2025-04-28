@@ -32,6 +32,8 @@ Section defn.
                               else (rec: "infloop" <> := Var "infloop" #()) #()
                            ).
 End defn.
+
+Notation ConsV hd tl := (InjRV (hd, tl)).
 End list.
 
 Section defn.
@@ -57,3 +59,8 @@ End defn.
 Notation "[ ]" := (list.Nil) (only parsing) : expr_scope.
 Notation "[ x ]" := (list.Cons x []%E) : expr_scope.
 Notation "[ x ; y ; .. ; z ]" := (list.Cons x (list.Cons y .. (list.Cons z []%E) ..)) : expr_scope.
+
+Notation "[ ]" := (list.Nil) (only parsing) : val_scope.
+Notation "[ x ]" := (list.ConsV x []%V) : val_scope.
+Notation "[ x ]" := (list.ConsV x []%V) : val_scope.
+Notation "[ x ; y ; .. ; z ]" := (list.ConsV x (list.ConsV y .. (list.ConsV z []%V) ..)) : val_scope.

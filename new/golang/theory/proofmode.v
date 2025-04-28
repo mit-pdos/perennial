@@ -54,6 +54,19 @@ Proof.
   repeat iModIntro. iIntros "[Hlc _]". by iApply "Hk".
 Qed.
 
+Lemma pure_wp_val `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+  φ (e : expr) (v' : val) :
+  (∀ stk E Φ (H: φ),
+     ▷ (£ 1 -∗  Φ v') -∗ WP e @ stk; E {{ Φ }}) →
+  PureWp φ e v'.
+Proof.
+  intros Hwp.
+  red. intros ?????.
+  iIntros "HΦ".
+  iApply wp_bind; auto.
+  iApply Hwp; auto.
+Qed.
+
 End classes.
 
 (** Some basic, primitive instances. Adapted to use `IntoVal`. *)
@@ -514,6 +527,10 @@ Ltac2 wp_call () :=
   end.
 Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); iIntros "_"; wp_pures.
 Tactic Notation "wp_call_lc" constr(H) := ltac2:(Control.enter wp_call); iIntros H; wp_pures.
+
+Ltac pure_wp_start :=
+  apply pure_wp_val; intros ????;
+  iIntros "HΦ"; try (wp_call_lc "Hlc"; try iSpecialize ("HΦ" with "[$Hlc]")).
 
 Ltac2 wp_bind_filter (filter_tac : constr -> unit) : constr :=
   lazy_match! goal with

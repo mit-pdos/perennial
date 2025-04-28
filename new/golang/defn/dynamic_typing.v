@@ -39,8 +39,8 @@ Fixpoint type_to_val (t: go_type): val :=
       (* decls' is a list *)
       let decls' := (fix go (decls: list (go_string * go_type)) :=
                        match decls with
-                       | [] => InjLV #()
-                       | (d, t) :: decls => InjRV ((#d, type_to_val t), go decls)
+                       | [] => list.Nil
+                       | (d, t) :: decls => list.ConsV (#d, type_to_val t) (go decls)
                        end
                     ) decls in
       (* wrap this in the right constructor *)
@@ -52,6 +52,11 @@ Fixpoint type_to_val (t: go_type): val :=
 #[global]
 Instance go_type_into_val : IntoVal go_type :=
   { to_val_def := type_to_val; }.
+
+Definition arrayT: val := λ: "n" "elemT", InjR (InjL ("n", "elemT")).
+Definition structT: val := λ: "decls", InjR (InjR (InjL "decls")).
+Definition mapT: val := λ: "keyT" "elemT", #ptrT.
+Definition chanT: val := λ: "elemT", #ptrT.
 
 Definition Match_def : val :=
   λ: "t" "baseCase" "arrayCase" "structCase",

@@ -856,9 +856,9 @@ Definition StartServer : val :=
     let: "$a2" := (![#sliceT] "config") in
     (func_call #paxos.paxos #"makeServer"%go) "$a0" "$a1" "$a2") in
     do:  ("s" <-[#ptrT] "$r0");;;
-    let: "handlers" := (mem.alloc (type.zero_val #(mapT uint64T funcT))) in
+    let: "handlers" := (mem.alloc (type.zero_val (type.mapT #uint64T #funcT))) in
     let: "$r0" := (map.make #uint64T #funcT) in
-    do:  ("handlers" <-[#(mapT uint64T funcT)] "$r0");;;
+    do:  ("handlers" <-[type.mapT #uint64T #funcT] "$r0");;;
     let: "$r0" := (λ: "raw_args" "raw_reply",
       exception_do (let: "raw_reply" := (mem.alloc "raw_reply") in
       let: "raw_args" := (mem.alloc "raw_args") in
@@ -876,7 +876,7 @@ Definition StartServer : val :=
       (func_call #paxos.paxos #"encodeApplyAsFollowerReply"%go) "$a0") in
       do:  ((![#ptrT] "raw_reply") <-[#sliceT] "$r0"))
       ) in
-    do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_APPLY_AS_FOLLOWER "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_APPLY_AS_FOLLOWER "$r0");;;
     let: "$r0" := (λ: "raw_args" "raw_reply",
       exception_do (let: "raw_reply" := (mem.alloc "raw_reply") in
       let: "raw_args" := (mem.alloc "raw_args") in
@@ -894,15 +894,15 @@ Definition StartServer : val :=
       (func_call #paxos.paxos #"encodeEnterNewEpochReply"%go) "$a0") in
       do:  ((![#ptrT] "raw_reply") <-[#sliceT] "$r0"))
       ) in
-    do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_ENTER_NEW_EPOCH "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_ENTER_NEW_EPOCH "$r0");;;
     let: "$r0" := (λ: "raw_args" "raw_reply",
       exception_do (let: "raw_reply" := (mem.alloc "raw_reply") in
       let: "raw_args" := (mem.alloc "raw_args") in
       do:  ((method_call #paxos.paxos #"Server'ptr" #"TryBecomeLeader" (![#ptrT] "s")) #()))
       ) in
-    do:  (map.insert (![#(mapT uint64T funcT)] "handlers") RPC_BECOME_LEADER "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_BECOME_LEADER "$r0");;;
     let: "r" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#(mapT uint64T funcT)] "handlers") in
+    let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #funcT] "handlers") in
     (func_call #urpc.urpc #"MakeServer"%go) "$a0") in
     do:  ("r" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "me") in

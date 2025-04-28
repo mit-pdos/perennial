@@ -1941,20 +1941,20 @@ Definition RestartNode : val :=
 Definition newNode : val :=
   rec: "newNode" "rn" :=
     exception_do (let: "rn" := (mem.alloc "rn") in
-    return: (let: "$propc" := (chan.make msgWithResult #(W64 0)) in
-     let: "$recvc" := (chan.make raftpb.Message #(W64 0)) in
-     let: "$confc" := (chan.make raftpb.ConfChangeV2 #(W64 0)) in
-     let: "$confstatec" := (chan.make raftpb.ConfState #(W64 0)) in
-     let: "$readyc" := (chan.make Ready #(W64 0)) in
-     let: "$advancec" := (chan.make (structT [
+    return: (let: "$propc" := (chan.make #msgWithResult #(W64 0)) in
+     let: "$recvc" := (chan.make #raftpb.Message #(W64 0)) in
+     let: "$confc" := (chan.make #raftpb.ConfChangeV2 #(W64 0)) in
+     let: "$confstatec" := (chan.make #raftpb.ConfState #(W64 0)) in
+     let: "$readyc" := (chan.make #Ready #(W64 0)) in
+     let: "$advancec" := (chan.make (type.structT [
      ]) #(W64 0)) in
-     let: "$tickc" := (chan.make (structT [
+     let: "$tickc" := (chan.make (type.structT [
      ]) #(W64 128)) in
-     let: "$done" := (chan.make (structT [
+     let: "$done" := (chan.make (type.structT [
      ]) #(W64 0)) in
-     let: "$stop" := (chan.make (structT [
+     let: "$stop" := (chan.make (type.structT [
      ]) #(W64 0)) in
-     let: "$status" := (chan.make (chanT Status) #(W64 0)) in
+     let: "$status" := (chan.make (type.chanT #Status) #(W64 0)) in
      let: "$rn" := (![#ptrT] "rn") in
      struct.make #node [{
        "propc" ::= "$propc";
@@ -1974,25 +1974,25 @@ Definition newNode : val :=
 Definition node__Stop : val :=
   rec: "node__Stop" "n" <> :=
     exception_do (let: "n" := (mem.alloc "n") in
-    chan.select [chan.select_send (struct.make #(structT [
+    chan.select [chan.select_send (struct.make (type.structT [
      ]) [{
-     }]) (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"stop"%go (![#ptrT] "n"))) (λ: <>,
+     }]) (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"stop"%go (![#ptrT] "n"))) (λ: <>,
        do:  #()
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        return: (#())
        )] chan.select_no_default;;;
-    do:  (Fst (chan.receive (![#(chanT (structT [
-    ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n")))))).
+    do:  (Fst (chan.receive (![type.chanT (type.structT [
+    ])] (struct.field_ref #node #"done"%go (![#ptrT] "n")))))).
 
 (* go: node.go:343:16 *)
 Definition node__run : val :=
   rec: "node__run" "n" <> :=
     exception_do (let: "n" := (mem.alloc "n") in
-    let: "propc" := (mem.alloc (type.zero_val #(chanT msgWithResult))) in
-    let: "readyc" := (mem.alloc (type.zero_val #(chanT Ready))) in
-    let: "advancec" := (mem.alloc (type.zero_val #(chanT (structT [
+    let: "propc" := (mem.alloc (type.zero_val (type.chanT #msgWithResult))) in
+    let: "readyc" := (mem.alloc (type.zero_val (type.chanT #Ready))) in
+    let: "advancec" := (mem.alloc (type.zero_val (type.chanT (type.structT [
     ])))) in
     let: "rd" := (mem.alloc (type.zero_val #Ready)) in
     let: "r" := (mem.alloc (type.zero_val #ptrT)) in
@@ -2002,13 +2002,13 @@ Definition node__run : val :=
     let: "$r0" := None in
     do:  ("lead" <-[#uint64T] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      (if: ((![#(chanT (structT [
-      ]))] "advancec") = #null) && ((method_call #v3.raft #"RawNode'ptr" #"HasReady" (![#ptrT] (struct.field_ref #node #"rn"%go (![#ptrT] "n")))) #())
+      (if: ((![type.chanT (type.structT [
+      ])] "advancec") = #null) && ((method_call #v3.raft #"RawNode'ptr" #"HasReady" (![#ptrT] (struct.field_ref #node #"rn"%go (![#ptrT] "n")))) #())
       then
         let: "$r0" := ((method_call #v3.raft #"RawNode'ptr" #"readyWithoutAccept" (![#ptrT] (struct.field_ref #node #"rn"%go (![#ptrT] "n")))) #()) in
         do:  ("rd" <-[#Ready] "$r0");;;
-        let: "$r0" := (![#(chanT Ready)] (struct.field_ref #node #"readyc"%go (![#ptrT] "n"))) in
-        do:  ("readyc" <-[#(chanT Ready)] "$r0")
+        let: "$r0" := (![type.chanT #Ready] (struct.field_ref #node #"readyc"%go (![#ptrT] "n"))) in
+        do:  ("readyc" <-[type.chanT #Ready] "$r0")
       else do:  #());;;
       (if: (![#uint64T] "lead") ≠ (![#uint64T] (struct.field_ref #raft #"lead"%go (![#ptrT] "r")))
       then
@@ -2030,8 +2030,8 @@ Definition node__run : val :=
             let: "$sl3" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r")))) in
             slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
             (interface.get #"Infof"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1"));;;
-          let: "$r0" := (![#(chanT msgWithResult)] (struct.field_ref #node #"propc"%go (![#ptrT] "n"))) in
-          do:  ("propc" <-[#(chanT msgWithResult)] "$r0")
+          let: "$r0" := (![type.chanT #msgWithResult] (struct.field_ref #node #"propc"%go (![#ptrT] "n"))) in
+          do:  ("propc" <-[type.chanT #msgWithResult] "$r0")
         else
           do:  (let: "$a0" := #"raft.node: %x lost leader %x at term %d"%go in
           let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #raft #"id"%go (![#ptrT] "r")))) in
@@ -2040,11 +2040,11 @@ Definition node__run : val :=
           slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
           (interface.get #"Infof"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1");;;
           let: "$r0" := #null in
-          do:  ("propc" <-[#(chanT msgWithResult)] "$r0"));;;
+          do:  ("propc" <-[type.chanT #msgWithResult] "$r0"));;;
         let: "$r0" := (![#uint64T] (struct.field_ref #raft #"lead"%go (![#ptrT] "r"))) in
         do:  ("lead" <-[#uint64T] "$r0")
       else do:  #());;;
-      chan.select [chan.select_receive (![#(chanT msgWithResult)] "propc") (λ: "$recvVal",
+      chan.select [chan.select_receive (![type.chanT #msgWithResult] "propc") (λ: "$recvVal",
          let: "pm" := (mem.alloc (type.zero_val #msgWithResult)) in
          let: "$r0" := (Fst "$recvVal") in
          do:  ("pm" <-[#msgWithResult] "$r0");;;
@@ -2057,15 +2057,15 @@ Definition node__run : val :=
          let: "$r0" := (let: "$a0" := (![#raftpb.Message] "m") in
          (method_call #v3.raft #"raft'ptr" #"Step" (![#ptrT] "r")) "$a0") in
          do:  ("err" <-[#error] "$r0");;;
-         (if: (![#(chanT error)] (struct.field_ref #msgWithResult #"result"%go "pm")) ≠ #null
+         (if: (![type.chanT #error] (struct.field_ref #msgWithResult #"result"%go "pm")) ≠ #null
          then
-           do:  (let: "$chan" := (![#(chanT error)] (struct.field_ref #msgWithResult #"result"%go "pm")) in
+           do:  (let: "$chan" := (![type.chanT #error] (struct.field_ref #msgWithResult #"result"%go "pm")) in
            let: "$v" := (![#error] "err") in
            chan.send "$chan" "$v");;;
-           do:  (let: "$a0" := (![#(chanT error)] (struct.field_ref #msgWithResult #"result"%go "pm")) in
+           do:  (let: "$a0" := (![type.chanT #error] (struct.field_ref #msgWithResult #"result"%go "pm")) in
            chan.close "$a0")
          else do:  #())
-         ); chan.select_receive (![#(chanT raftpb.Message)] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: "$recvVal",
+         ); chan.select_receive (![type.chanT #raftpb.Message] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: "$recvVal",
          let: "m" := (mem.alloc (type.zero_val #raftpb.Message)) in
          let: "$r0" := (Fst "$recvVal") in
          do:  ("m" <-[#raftpb.Message] "$r0");;;
@@ -2076,7 +2076,7 @@ Definition node__run : val :=
          else do:  #());;;
          do:  (let: "$a0" := (![#raftpb.Message] "m") in
          (method_call #v3.raft #"raft'ptr" #"Step" (![#ptrT] "r")) "$a0")
-         ); chan.select_receive (![#(chanT raftpb.ConfChangeV2)] (struct.field_ref #node #"confc"%go (![#ptrT] "n"))) (λ: "$recvVal",
+         ); chan.select_receive (![type.chanT #raftpb.ConfChangeV2] (struct.field_ref #node #"confc"%go (![#ptrT] "n"))) (λ: "$recvVal",
          let: "cc" := (mem.alloc (type.zero_val #raftpb.ConfChangeV2)) in
          let: "$r0" := (Fst "$recvVal") in
          do:  ("cc" <-[#raftpb.ConfChangeV2] "$r0");;;
@@ -2123,27 +2123,27 @@ Definition node__run : val :=
            (if: (~ (![#boolT] "found"))
            then
              let: "$r0" := #null in
-             do:  ("propc" <-[#(chanT msgWithResult)] "$r0")
+             do:  ("propc" <-[type.chanT #msgWithResult] "$r0")
            else do:  #())
          else do:  #()));;;
-         chan.select [chan.select_send (![#raftpb.ConfState] "cs") (![#(chanT raftpb.ConfState)] (struct.field_ref #node #"confstatec"%go (![#ptrT] "n"))) (λ: <>,
+         chan.select [chan.select_send (![#raftpb.ConfState] "cs") (![type.chanT #raftpb.ConfState] (struct.field_ref #node #"confstatec"%go (![#ptrT] "n"))) (λ: <>,
             do:  #()
-            ); chan.select_receive (![#(chanT (structT [
-          ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+            ); chan.select_receive (![type.chanT (type.structT [
+          ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
             do:  #()
             )] chan.select_no_default
-         ); chan.select_receive (![#(chanT (structT [
-       ]))] (struct.field_ref #node #"tickc"%go (![#ptrT] "n"))) (λ: "$recvVal",
+         ); chan.select_receive (![type.chanT (type.structT [
+       ])] (struct.field_ref #node #"tickc"%go (![#ptrT] "n"))) (λ: "$recvVal",
          do:  ((method_call #v3.raft #"RawNode'ptr" #"Tick" (![#ptrT] (struct.field_ref #node #"rn"%go (![#ptrT] "n")))) #())
-         ); chan.select_send (![#Ready] "rd") (![#(chanT Ready)] "readyc") (λ: <>,
+         ); chan.select_send (![#Ready] "rd") (![type.chanT #Ready] "readyc") (λ: <>,
          do:  (let: "$a0" := (![#Ready] "rd") in
          (method_call #v3.raft #"RawNode'ptr" #"acceptReady" (![#ptrT] (struct.field_ref #node #"rn"%go (![#ptrT] "n")))) "$a0");;;
          (if: (~ (![#boolT] (struct.field_ref #RawNode #"asyncStorageWrites"%go (![#ptrT] (struct.field_ref #node #"rn"%go (![#ptrT] "n"))))))
          then
-           let: "$r0" := (![#(chanT (structT [
-           ]))] (struct.field_ref #node #"advancec"%go (![#ptrT] "n"))) in
-           do:  ("advancec" <-[#(chanT (structT [
-           ]))] "$r0")
+           let: "$r0" := (![type.chanT (type.structT [
+           ])] (struct.field_ref #node #"advancec"%go (![#ptrT] "n"))) in
+           do:  ("advancec" <-[type.chanT (type.structT [
+           ])] "$r0")
          else
            let: "$r0" := (struct.make #Ready [{
              "SoftState" ::= type.zero_val #ptrT;
@@ -2157,9 +2157,9 @@ Definition node__run : val :=
            }]) in
            do:  ("rd" <-[#Ready] "$r0"));;;
          let: "$r0" := #null in
-         do:  ("readyc" <-[#(chanT Ready)] "$r0")
-         ); chan.select_receive (![#(chanT (structT [
-       ]))] "advancec") (λ: "$recvVal",
+         do:  ("readyc" <-[type.chanT #Ready] "$r0")
+         ); chan.select_receive (![type.chanT (type.structT [
+       ])] "advancec") (λ: "$recvVal",
          do:  (let: "$a0" := (![#Ready] "rd") in
          (method_call #v3.raft #"RawNode'ptr" #"Advance" (![#ptrT] (struct.field_ref #node #"rn"%go (![#ptrT] "n")))) "$a0");;;
          let: "$r0" := (struct.make #Ready [{
@@ -2174,20 +2174,20 @@ Definition node__run : val :=
          }]) in
          do:  ("rd" <-[#Ready] "$r0");;;
          let: "$r0" := #null in
-         do:  ("advancec" <-[#(chanT (structT [
-         ]))] "$r0")
-         ); chan.select_receive (![#(chanT (chanT Status))] (struct.field_ref #node #"status"%go (![#ptrT] "n"))) (λ: "$recvVal",
-         let: "c" := (mem.alloc (type.zero_val #(chanT Status))) in
+         do:  ("advancec" <-[type.chanT (type.structT [
+         ])] "$r0")
+         ); chan.select_receive (![type.chanT (type.chanT #Status)] (struct.field_ref #node #"status"%go (![#ptrT] "n"))) (λ: "$recvVal",
+         let: "c" := (mem.alloc (type.zero_val (type.chanT #Status))) in
          let: "$r0" := (Fst "$recvVal") in
-         do:  ("c" <-[#(chanT Status)] "$r0");;;
-         do:  (let: "$chan" := (![#(chanT Status)] "c") in
+         do:  ("c" <-[type.chanT #Status] "$r0");;;
+         do:  (let: "$chan" := (![type.chanT #Status] "c") in
          let: "$v" := (let: "$a0" := (![#ptrT] "r") in
          (func_call #v3.raft #"getStatus"%go) "$a0") in
          chan.send "$chan" "$v")
-         ); chan.select_receive (![#(chanT (structT [
-       ]))] (struct.field_ref #node #"stop"%go (![#ptrT] "n"))) (λ: "$recvVal",
-         do:  (let: "$a0" := (![#(chanT (structT [
-         ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) in
+         ); chan.select_receive (![type.chanT (type.structT [
+       ])] (struct.field_ref #node #"stop"%go (![#ptrT] "n"))) (λ: "$recvVal",
+         do:  (let: "$a0" := (![type.chanT (type.structT [
+         ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) in
          chan.close "$a0");;;
          return: (#())
          )] chan.select_no_default)).
@@ -2199,13 +2199,13 @@ Definition node__run : val :=
 Definition node__Tick : val :=
   rec: "node__Tick" "n" <> :=
     exception_do (let: "n" := (mem.alloc "n") in
-    chan.select [chan.select_send (struct.make #(structT [
+    chan.select [chan.select_send (struct.make (type.structT [
      ]) [{
-     }]) (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"tickc"%go (![#ptrT] "n"))) (λ: <>,
+     }]) (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"tickc"%go (![#ptrT] "n"))) (λ: <>,
        do:  #()
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        do:  #()
        )] (chan.select_default (λ: <>,
       do:  (let: "$a0" := #"%x A tick missed to fire. Node blocks too long!"%go in
@@ -2404,41 +2404,41 @@ Definition node__stepWithWaitOption : val :=
     let: "ctx" := (mem.alloc "ctx") in
     (if: (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) ≠ raftpb.MsgProp
     then
-      chan.select [chan.select_send (![#raftpb.Message] "m") (![#(chanT raftpb.Message)] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: <>,
+      chan.select [chan.select_send (![#raftpb.Message] "m") (![type.chanT #raftpb.Message] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: <>,
          return: (#interface.nil)
          ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
          return: ((interface.get #"Err"%go (![#context.Context] "ctx")) #())
-         ); chan.select_receive (![#(chanT (structT [
-       ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+         ); chan.select_receive (![type.chanT (type.structT [
+       ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
          return: (![#error] (globals.get #v3.raft #"ErrStopped"%go))
          )] chan.select_no_default
     else do:  #());;;
-    let: "ch" := (mem.alloc (type.zero_val #(chanT msgWithResult))) in
-    let: "$r0" := (![#(chanT msgWithResult)] (struct.field_ref #node #"propc"%go (![#ptrT] "n"))) in
-    do:  ("ch" <-[#(chanT msgWithResult)] "$r0");;;
+    let: "ch" := (mem.alloc (type.zero_val (type.chanT #msgWithResult))) in
+    let: "$r0" := (![type.chanT #msgWithResult] (struct.field_ref #node #"propc"%go (![#ptrT] "n"))) in
+    do:  ("ch" <-[type.chanT #msgWithResult] "$r0");;;
     let: "pm" := (mem.alloc (type.zero_val #msgWithResult)) in
     let: "$r0" := (let: "$m" := (![#raftpb.Message] "m") in
     struct.make #msgWithResult [{
       "m" ::= "$m";
-      "result" ::= type.zero_val #(chanT error)
+      "result" ::= type.zero_val (type.chanT #error)
     }]) in
     do:  ("pm" <-[#msgWithResult] "$r0");;;
     (if: ![#boolT] "wait"
     then
-      let: "$r0" := (chan.make error #(W64 1)) in
-      do:  ((struct.field_ref #msgWithResult #"result"%go "pm") <-[#(chanT error)] "$r0")
+      let: "$r0" := (chan.make #error #(W64 1)) in
+      do:  ((struct.field_ref #msgWithResult #"result"%go "pm") <-[type.chanT #error] "$r0")
     else do:  #());;;
-    chan.select [chan.select_send (![#msgWithResult] "pm") (![#(chanT msgWithResult)] "ch") (λ: <>,
+    chan.select [chan.select_send (![#msgWithResult] "pm") (![type.chanT #msgWithResult] "ch") (λ: <>,
        (if: (~ (![#boolT] "wait"))
        then return: (#interface.nil)
        else do:  #())
        ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
        return: ((interface.get #"Err"%go (![#context.Context] "ctx")) #())
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        return: (![#error] (globals.get #v3.raft #"ErrStopped"%go))
        )] chan.select_no_default;;;
-    chan.select [chan.select_receive (![#(chanT error)] (struct.field_ref #msgWithResult #"result"%go "pm")) (λ: "$recvVal",
+    chan.select [chan.select_receive (![type.chanT #error] (struct.field_ref #msgWithResult #"result"%go "pm")) (λ: "$recvVal",
        let: "err" := (mem.alloc (type.zero_val #error)) in
        let: "$r0" := (Fst "$recvVal") in
        do:  ("err" <-[#error] "$r0");;;
@@ -2447,8 +2447,8 @@ Definition node__stepWithWaitOption : val :=
        else do:  #())
        ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
        return: ((interface.get #"Err"%go (![#context.Context] "ctx")) #())
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        return: (![#error] (globals.get #v3.raft #"ErrStopped"%go))
        )] chan.select_no_default;;;
     return: (#interface.nil)).
@@ -2457,19 +2457,19 @@ Definition node__stepWithWaitOption : val :=
 Definition node__Ready : val :=
   rec: "node__Ready" "n" <> :=
     exception_do (let: "n" := (mem.alloc "n") in
-    return: (![#(chanT Ready)] (struct.field_ref #node #"readyc"%go (![#ptrT] "n")))).
+    return: (![type.chanT #Ready] (struct.field_ref #node #"readyc"%go (![#ptrT] "n")))).
 
 (* go: node.go:549:16 *)
 Definition node__Advance : val :=
   rec: "node__Advance" "n" <> :=
     exception_do (let: "n" := (mem.alloc "n") in
-    chan.select [chan.select_send (struct.make #(structT [
+    chan.select [chan.select_send (struct.make (type.structT [
      ]) [{
-     }]) (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"advancec"%go (![#ptrT] "n"))) (λ: <>,
+     }]) (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"advancec"%go (![#ptrT] "n"))) (λ: <>,
        do:  #()
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        do:  #()
        )] chan.select_no_default).
 
@@ -2479,18 +2479,18 @@ Definition node__ApplyConfChange : val :=
     exception_do (let: "n" := (mem.alloc "n") in
     let: "cc" := (mem.alloc "cc") in
     let: "cs" := (mem.alloc (type.zero_val #raftpb.ConfState)) in
-    chan.select [chan.select_send ((interface.get #"AsV2"%go (![#raftpb.ConfChangeI] "cc")) #()) (![#(chanT raftpb.ConfChangeV2)] (struct.field_ref #node #"confc"%go (![#ptrT] "n"))) (λ: <>,
+    chan.select [chan.select_send ((interface.get #"AsV2"%go (![#raftpb.ConfChangeI] "cc")) #()) (![type.chanT #raftpb.ConfChangeV2] (struct.field_ref #node #"confc"%go (![#ptrT] "n"))) (λ: <>,
        do:  #()
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        do:  #()
        )] chan.select_no_default;;;
-    chan.select [chan.select_receive (![#(chanT raftpb.ConfState)] (struct.field_ref #node #"confstatec"%go (![#ptrT] "n"))) (λ: "$recvVal",
+    chan.select [chan.select_receive (![type.chanT #raftpb.ConfState] (struct.field_ref #node #"confstatec"%go (![#ptrT] "n"))) (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
        do:  ("cs" <-[#raftpb.ConfState] "$r0");;;
        do:  #()
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        do:  #()
        )] chan.select_no_default;;;
     return: ("cs")).
@@ -2499,17 +2499,17 @@ Definition node__ApplyConfChange : val :=
 Definition node__Status : val :=
   rec: "node__Status" "n" <> :=
     exception_do (let: "n" := (mem.alloc "n") in
-    let: "c" := (mem.alloc (type.zero_val #(chanT Status))) in
-    let: "$r0" := (chan.make Status #(W64 0)) in
-    do:  ("c" <-[#(chanT Status)] "$r0");;;
-    chan.select [chan.select_send (![#(chanT Status)] "c") (![#(chanT (chanT Status))] (struct.field_ref #node #"status"%go (![#ptrT] "n"))) (λ: <>,
-       return: (Fst (chan.receive (![#(chanT Status)] "c")))
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+    let: "c" := (mem.alloc (type.zero_val (type.chanT #Status))) in
+    let: "$r0" := (chan.make #Status #(W64 0)) in
+    do:  ("c" <-[type.chanT #Status] "$r0");;;
+    chan.select [chan.select_send (![type.chanT #Status] "c") (![type.chanT (type.chanT #Status)] (struct.field_ref #node #"status"%go (![#ptrT] "n"))) (λ: <>,
+       return: (Fst (chan.receive (![type.chanT #Status] "c")))
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        return: (struct.make #Status [{
           "BasicStatus" ::= type.zero_val #BasicStatus;
           "Config" ::= type.zero_val #tracker.Config;
-          "Progress" ::= type.zero_val #(mapT uint64T tracker.Progress)
+          "Progress" ::= type.zero_val (type.mapT #uint64T #tracker.Progress)
         }])
        )] chan.select_no_default).
 
@@ -2535,10 +2535,10 @@ Definition node__ReportUnreachable : val :=
        "RejectHint" ::= type.zero_val #uint64T;
        "Context" ::= type.zero_val #sliceT;
        "Responses" ::= type.zero_val #sliceT
-     }]) (![#(chanT raftpb.Message)] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: <>,
+     }]) (![type.chanT #raftpb.Message] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: <>,
        do:  #()
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        do:  #()
        )] chan.select_no_default).
 
@@ -2569,10 +2569,10 @@ Definition node__ReportSnapshot : val :=
        "RejectHint" ::= type.zero_val #uint64T;
        "Context" ::= type.zero_val #sliceT;
        "Responses" ::= type.zero_val #sliceT
-     }]) (![#(chanT raftpb.Message)] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: <>,
+     }]) (![type.chanT #raftpb.Message] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: <>,
        do:  #()
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        do:  #()
        )] chan.select_no_default).
 
@@ -2601,10 +2601,10 @@ Definition node__TransferLeadership : val :=
        "RejectHint" ::= type.zero_val #uint64T;
        "Context" ::= type.zero_val #sliceT;
        "Responses" ::= type.zero_val #sliceT
-     }]) (![#(chanT raftpb.Message)] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: <>,
+     }]) (![type.chanT #raftpb.Message] (struct.field_ref #node #"recvc"%go (![#ptrT] "n"))) (λ: <>,
        do:  #()
-       ); chan.select_receive (![#(chanT (structT [
-     ]))] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
+       ); chan.select_receive (![type.chanT (type.structT [
+     ])] (struct.field_ref #node #"done"%go (![#ptrT] "n"))) (λ: "$recvVal",
        do:  #()
        ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
        do:  #()
@@ -2721,7 +2721,7 @@ Definition CampaignType : go_type := stringT.
 Definition StateType__String : val :=
   rec: "StateType__String" "st" <> :=
     exception_do (let: "st" := (mem.alloc "st") in
-    return: (![#stringT] (array.elem_ref #stringT (![#(arrayT 4 stringT)] (globals.get #v3.raft #"stmap"%go)) (![#StateType] "st")))).
+    return: (![#stringT] (array.elem_ref #stringT (![type.arrayT #(W64 4) #stringT] (globals.get #v3.raft #"stmap"%go)) (![#StateType] "st")))).
 
 (* go: raft.go:291:18 *)
 Definition Config__validate : val :=
@@ -3907,17 +3907,17 @@ Definition raft__campaign : val :=
       let: "$r0" := (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r"))) in
       do:  ("term" <-[#uint64T] "$r0"));;;
     let: "ids" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "idMap" := (mem.alloc (type.zero_val #(mapT uint64T (structT [
+    let: "idMap" := (mem.alloc (type.zero_val (type.mapT #uint64T (type.structT [
     ])))) in
     let: "$r0" := ((method_call #quorum #"JointConfig" #"IDs" (![#quorum.JointConfig] (struct.field_ref #tracker.Config #"Voters"%go (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))))) #()) in
-    do:  ("idMap" <-[#(mapT uint64T (structT [
-    ]))] "$r0");;;
-    let: "$r0" := (slice.make3 #uint64T #(W64 0) (let: "$a0" := (![#(mapT uint64T (structT [
-    ]))] "idMap") in
+    do:  ("idMap" <-[type.mapT #uint64T (type.structT [
+    ])] "$r0");;;
+    let: "$r0" := (slice.make3 #uint64T #(W64 0) (let: "$a0" := (![type.mapT #uint64T (type.structT [
+    ])] "idMap") in
     map.len "$a0")) in
     do:  ("ids" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#(mapT uint64T (structT [
-    ]))] "idMap") in
+    let: "$range" := (![type.mapT #uint64T (type.structT [
+    ])] "idMap") in
     (let: "id" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("id" <-[#uint64T] "$key");;;
@@ -6804,7 +6804,7 @@ Definition readOnly__addRequest : val :=
     let: "$r0" := (string.from_bytes (![#sliceT] (struct.field_ref #raftpb.Entry #"Data"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go "m")) #(W64 0))))) in
     do:  ("s" <-[#stringT] "$r0");;;
     (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT ptrT)] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (![#stringT] "s")) in
+    let: ("$ret0", "$ret1") := (map.get (![type.mapT #stringT #ptrT] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (![#stringT] "s")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
@@ -6820,7 +6820,7 @@ Definition readOnly__addRequest : val :=
       "index" ::= "$index";
       "acks" ::= "$acks"
     }])) in
-    do:  (map.insert (![#(mapT stringT ptrT)] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (![#stringT] "s") "$r0");;;
+    do:  (map.insert (![type.mapT #stringT #ptrT] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (![#stringT] "s") "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #readOnly #"readIndexQueue"%go (![#ptrT] "ro"))) in
     let: "$a1" := ((let: "$sl0" := (![#stringT] "s") in
     slice.literal #stringT ["$sl0"])) in
@@ -6839,7 +6839,7 @@ Definition readOnly__recvAck : val :=
     let: "id" := (mem.alloc "id") in
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "rs" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT ptrT)] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (string.from_bytes (![#sliceT] "context"))) in
+    let: ("$ret0", "$ret1") := (map.get (![type.mapT #stringT #ptrT] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (string.from_bytes (![#sliceT] "context"))) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("rs" <-[#ptrT] "$r0");;;
@@ -6848,8 +6848,8 @@ Definition readOnly__recvAck : val :=
     then return: (#null)
     else do:  #());;;
     let: "$r0" := #true in
-    do:  (map.insert (![#(mapT uint64T boolT)] (struct.field_ref #readIndexStatus #"acks"%go (![#ptrT] "rs"))) (![#uint64T] "id") "$r0");;;
-    return: (![#(mapT uint64T boolT)] (struct.field_ref #readIndexStatus #"acks"%go (![#ptrT] "rs")))).
+    do:  (map.insert (![type.mapT #uint64T #boolT] (struct.field_ref #readIndexStatus #"acks"%go (![#ptrT] "rs"))) (![#uint64T] "id") "$r0");;;
+    return: (![type.mapT #uint64T #boolT] (struct.field_ref #readIndexStatus #"acks"%go (![#ptrT] "rs")))).
 
 (* advance advances the read only request queue kept by the readonly struct.
    It dequeues the requests until it finds the read only request that has
@@ -6874,7 +6874,7 @@ Definition readOnly__advance : val :=
       do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)));;;
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "rs" := (mem.alloc (type.zero_val #ptrT)) in
-      let: ("$ret0", "$ret1") := (map.get (![#(mapT stringT ptrT)] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (![#stringT] "okctx")) in
+      let: ("$ret0", "$ret1") := (map.get (![type.mapT #stringT #ptrT] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) (![#stringT] "okctx")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("rs" <-[#ptrT] "$r0");;;
@@ -6905,7 +6905,7 @@ Definition readOnly__advance : val :=
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("rs" <-[#ptrT] "$value");;;
         do:  "$key";;;
-        do:  (let: "$a0" := (![#(mapT stringT ptrT)] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) in
+        do:  (let: "$a0" := (![type.mapT #stringT #ptrT] (struct.field_ref #readOnly #"pendingReadIndex"%go (![#ptrT] "ro"))) in
         let: "$a1" := (string.from_bytes (![#sliceT] (struct.field_ref #raftpb.Entry #"Data"%go (slice.elem_ref #raftpb.Entry (![#sliceT] (struct.field_ref #raftpb.Message #"Entries"%go (struct.field_ref #readIndexStatus #"req"%go (![#ptrT] "rs")))) #(W64 0))))) in
         map.delete "$a0" "$a1")));;;
       return: (![#sliceT] "rss")
@@ -6990,9 +6990,9 @@ Definition traceReceiveMessage : val :=
 Definition getProgressCopy : val :=
   rec: "getProgressCopy" "r" :=
     exception_do (let: "r" := (mem.alloc "r") in
-    let: "m" := (mem.alloc (type.zero_val #(mapT uint64T tracker.Progress))) in
+    let: "m" := (mem.alloc (type.zero_val (type.mapT #uint64T #tracker.Progress))) in
     let: "$r0" := (map.make #uint64T #tracker.Progress) in
-    do:  ("m" <-[#(mapT uint64T tracker.Progress)] "$r0");;;
+    do:  ("m" <-[type.mapT #uint64T #tracker.Progress] "$r0");;;
     do:  (let: "$a0" := (λ: "id" "pr",
       exception_do (let: "pr" := (mem.alloc "pr") in
       let: "id" := (mem.alloc "id") in
@@ -7004,10 +7004,10 @@ Definition getProgressCopy : val :=
       let: "$r0" := #null in
       do:  ("pr" <-[#ptrT] "$r0");;;
       let: "$r0" := (![#tracker.Progress] "p") in
-      do:  (map.insert (![#(mapT uint64T tracker.Progress)] "m") (![#uint64T] "id") "$r0"))
+      do:  (map.insert (![type.mapT #uint64T #tracker.Progress] "m") (![#uint64T] "id") "$r0"))
       ) in
     (method_call #tracker #"ProgressTracker'ptr" #"Visit" (struct.field_ref #raft #"trk"%go (![#ptrT] "r"))) "$a0");;;
-    return: (![#(mapT uint64T tracker.Progress)] "m")).
+    return: (![type.mapT #uint64T #tracker.Progress] "m")).
 
 (* go: status.go:56:6 *)
 Definition getBasicStatus : val :=
@@ -7046,7 +7046,7 @@ Definition getStatus : val :=
     then
       let: "$r0" := (let: "$a0" := (![#ptrT] "r") in
       (func_call #v3.raft #"getProgressCopy"%go) "$a0") in
-      do:  ((struct.field_ref #Status #"Progress"%go "s") <-[#(mapT uint64T tracker.Progress)] "$r0")
+      do:  ((struct.field_ref #Status #"Progress"%go "s") <-[type.mapT #uint64T #tracker.Progress] "$r0")
     else do:  #());;;
     let: "$r0" := ((method_call #tracker #"Config'ptr" #"Clone" (struct.field_ref #tracker.ProgressTracker #"Config"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) #()) in
     do:  ((struct.field_ref #Status #"Config"%go "s") <-[#tracker.Config] "$r0");;;
@@ -7071,11 +7071,11 @@ Definition Status__MarshalJSON : val :=
     slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"; "$sl5"; "$sl6"])) in
     (func_call #fmt.fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ("j" <-[#stringT] "$r0");;;
-    (if: (let: "$a0" := (![#(mapT uint64T tracker.Progress)] (struct.field_ref #Status #"Progress"%go "s")) in
+    (if: (let: "$a0" := (![type.mapT #uint64T #tracker.Progress] (struct.field_ref #Status #"Progress"%go "s")) in
     map.len "$a0") = #(W64 0)
     then do:  ("j" <-[#stringT] ((![#stringT] "j") + #"},"%go))
     else
-      let: "$range" := (![#(mapT uint64T tracker.Progress)] (struct.field_ref #Status #"Progress"%go "s")) in
+      let: "$range" := (![type.mapT #uint64T #tracker.Progress] (struct.field_ref #Status #"Progress"%go "s")) in
       (let: "v" := (mem.alloc (type.zero_val #uint64T)) in
       let: "k" := (mem.alloc (type.zero_val #uint64T)) in
       map.for_range "$range" (λ: "$key" "value",
@@ -8217,7 +8217,7 @@ Definition extend : val :=
     (slice.copy #raftpb.Entry) "$a0" "$a1");;;
     return: (![#sliceT] "buf")).
 
-Definition vars' : list (go_string * go_type) := [("defaultLogger"%go, ptrT); ("discardLogger"%go, ptrT); ("raftLoggerMu"%go, sync.Mutex); ("raftLogger"%go, Logger); ("emptyState"%go, raftpb.HardState); ("ErrStopped"%go, error); ("ErrProposalDropped"%go, error); ("globalRand"%go, ptrT); ("stmap"%go, arrayT 4 stringT); ("errBreak"%go, error); ("ErrStepLocalMsg"%go, error); ("ErrStepPeerNotFound"%go, error); ("ErrCompacted"%go, error); ("ErrSnapOutOfDate"%go, error); ("ErrUnavailable"%go, error); ("ErrSnapshotTemporarilyUnavailable"%go, error); ("isLocalMsg"%go, arrayT 23 boolT); ("isResponseMsg"%go, arrayT 23 boolT)].
+Definition vars' : list (go_string * go_type) := [("defaultLogger"%go, ptrT); ("discardLogger"%go, ptrT); ("raftLoggerMu"%go, sync.Mutex); ("raftLogger"%go, Logger); ("emptyState"%go, raftpb.HardState); ("ErrStopped"%go, error); ("ErrProposalDropped"%go, error); ("globalRand"%go, ptrT); ("stmap"%go, arrayT (W64 4) stringT); ("errBreak"%go, error); ("ErrStepLocalMsg"%go, error); ("ErrStepPeerNotFound"%go, error); ("ErrCompacted"%go, error); ("ErrSnapOutOfDate"%go, error); ("ErrUnavailable"%go, error); ("ErrSnapshotTemporarilyUnavailable"%go, error); ("isLocalMsg"%go, arrayT (W64 23) boolT); ("isResponseMsg"%go, arrayT (W64 23) boolT)].
 
 Definition functions' : list (go_string * val) := [("newLog"%go, newLog); ("newLogWithSize"%go, newLogWithSize); ("SetLogger"%go, SetLogger); ("ResetDefaultLogger"%go, ResetDefaultLogger); ("getLogger"%go, getLogger); ("header"%go, header); ("isHardStateEqual"%go, isHardStateEqual); ("IsEmptyHardState"%go, IsEmptyHardState); ("IsEmptySnap"%go, IsEmptySnap); ("setupNode"%go, setupNode); ("StartNode"%go, StartNode); ("RestartNode"%go, RestartNode); ("newNode"%go, newNode); ("confChangeToMsg"%go, confChangeToMsg); ("newRaft"%go, newRaft); ("stepLeader"%go, stepLeader); ("stepCandidate"%go, stepCandidate); ("stepFollower"%go, stepFollower); ("logSliceFromMsgApp"%go, logSliceFromMsgApp); ("releasePendingReadIndexMessages"%go, releasePendingReadIndexMessages); ("sendMsgReadIndexResponse"%go, sendMsgReadIndexResponse); ("NewRawNode"%go, NewRawNode); ("MustSync"%go, MustSync); ("needStorageAppendMsg"%go, needStorageAppendMsg); ("needStorageAppendRespMsg"%go, needStorageAppendRespMsg); ("newStorageAppendMsg"%go, newStorageAppendMsg); ("newStorageAppendRespMsg"%go, newStorageAppendRespMsg); ("needStorageApplyMsg"%go, needStorageApplyMsg); ("needStorageApplyRespMsg"%go, needStorageApplyRespMsg); ("newStorageApplyMsg"%go, newStorageApplyMsg); ("newStorageApplyRespMsg"%go, newStorageApplyRespMsg); ("newReadOnly"%go, newReadOnly); ("traceInitState"%go, traceInitState); ("traceReady"%go, traceReady); ("traceCommit"%go, traceCommit); ("traceReplicate"%go, traceReplicate); ("traceBecomeFollower"%go, traceBecomeFollower); ("traceBecomeCandidate"%go, traceBecomeCandidate); ("traceBecomeLeader"%go, traceBecomeLeader); ("traceChangeConfEvent"%go, traceChangeConfEvent); ("traceConfChangeEvent"%go, traceConfChangeEvent); ("traceSendMessage"%go, traceSendMessage); ("traceReceiveMessage"%go, traceReceiveMessage); ("getProgressCopy"%go, getProgressCopy); ("getBasicStatus"%go, getBasicStatus); ("getStatus"%go, getStatus); ("NewMemoryStorage"%go, NewMemoryStorage); ("pbEntryID"%go, pbEntryID); ("isMsgInArray"%go, isMsgInArray); ("IsLocalMsg"%go, IsLocalMsg); ("IsResponseMsg"%go, IsResponseMsg); ("IsLocalMsgTarget"%go, IsLocalMsgTarget); ("voteRespMsgType"%go, voteRespMsgType); ("DescribeHardState"%go, DescribeHardState); ("DescribeSoftState"%go, DescribeSoftState); ("DescribeConfState"%go, DescribeConfState); ("DescribeSnapshot"%go, DescribeSnapshot); ("DescribeReady"%go, DescribeReady); ("DescribeMessage"%go, DescribeMessage); ("describeMessageWithIndent"%go, describeMessageWithIndent); ("describeTarget"%go, describeTarget); ("DescribeEntry"%go, DescribeEntry); ("DescribeEntries"%go, DescribeEntries); ("entsSize"%go, entsSize); ("limitSize"%go, limitSize); ("payloadSize"%go, payloadSize); ("payloadsSize"%go, payloadsSize); ("assertConfStatesEquivalent"%go, assertConfStatesEquivalent); ("extend"%go, extend)].
 
@@ -8455,7 +8455,7 @@ Definition initialize' : val :=
       let: "$ar2" := #"StateLeader"%go in
       let: "$ar3" := #"StatePreCandidate"%go in
       array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"])) in
-      do:  ((globals.get #v3.raft #"stmap"%go) <-[#(arrayT 4 stringT)] "$r0");;;
+      do:  ((globals.get #v3.raft #"stmap"%go) <-[type.arrayT #(W64 4) #stringT] "$r0");;;
       let: "$r0" := (let: "$a0" := #"break"%go in
       (func_call #errors.errors #"New"%go) "$a0") in
       do:  ((globals.get #v3.raft #"errBreak"%go) <-[#error] "$r0");;;
@@ -8501,7 +8501,7 @@ Definition initialize' : val :=
       let: "$ar21" := #true in
       let: "$ar22" := #true in
       array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"; "$ar4"; "$ar5"; "$ar6"; "$ar7"; "$ar8"; "$ar9"; "$ar10"; "$ar11"; "$ar12"; "$ar13"; "$ar14"; "$ar15"; "$ar16"; "$ar17"; "$ar18"; "$ar19"; "$ar20"; "$ar21"; "$ar22"])) in
-      do:  ((globals.get #v3.raft #"isLocalMsg"%go) <-[#(arrayT 23 boolT)] "$r0");;;
+      do:  ((globals.get #v3.raft #"isLocalMsg"%go) <-[type.arrayT #(W64 23) #boolT] "$r0");;;
       let: "$r0" := ((let: "$ar0" := (type.zero_val #boolT) in
       let: "$ar1" := (type.zero_val #boolT) in
       let: "$ar2" := (type.zero_val #boolT) in
@@ -8526,7 +8526,7 @@ Definition initialize' : val :=
       let: "$ar21" := (type.zero_val #boolT) in
       let: "$ar22" := #true in
       array.literal ["$ar0"; "$ar1"; "$ar2"; "$ar3"; "$ar4"; "$ar5"; "$ar6"; "$ar7"; "$ar8"; "$ar9"; "$ar10"; "$ar11"; "$ar12"; "$ar13"; "$ar14"; "$ar15"; "$ar16"; "$ar17"; "$ar18"; "$ar19"; "$ar20"; "$ar21"; "$ar22"])) in
-      do:  ((globals.get #v3.raft #"isResponseMsg"%go) <-[#(arrayT 23 boolT)] "$r0"))
+      do:  ((globals.get #v3.raft #"isResponseMsg"%go) <-[type.arrayT #(W64 23) #boolT] "$r0"))
       ).
 
 End code.
