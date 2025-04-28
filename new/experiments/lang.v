@@ -266,11 +266,7 @@ Instance ecomp_MBind E : MBind (ecomp E) := ecomp_bind.
 
 Instance ecomp_MRet E : MRet (ecomp E) := (@Pure E).
 
-(* | FunctionDecl : identifier → type_parameters → signature → block → _ *)
-
-Inductive literal_val :=
-| LZ (z : Z)
-.
+Definition Handler (E M : Type → Type) := ∀ A (e : E A), M A.
 
 Inductive heap_val :=
 | HW64 (w : w64)
@@ -290,49 +286,92 @@ Inductive goE : Type → Type :=
 | Panic (msg : go_string) : goE False
 .
 
-Fixpoint interpret_expr (e : go.expression) : ecomp goE (list val) :=
+Fixpoint interpret_expr (e : go.expression) : ecomp goE val :=
   match e with
   | go.UnaryExpr (go.UnaryPrimaryExpr p) => interpret_primary_expr p
   | _ => Effect (Panic "unsupported expression"%go) (λ (x : False), match x with end)
   end
-with interpret_primary_expr (e : go.primary_expr) : ecomp goE (list val) :=
+with interpret_primary_expr (e : go.primary_expr) : ecomp goE val :=
        match e with
        | go.Operand operand => interpret_operand operand
        | _ => Effect (Panic "unsupported primary expression"%go) (λ (x : False), match x with end)
        end
-with interpret_operand (e : go.operand) : ecomp goE (list val) :=
+with interpret_operand (e : go.operand) : ecomp goE val :=
        match e with
        | go.Literal l => interpret_literal l
        | _ => Effect (Panic "unsupported operand"%go) (λ (x : False), match x with end)
        end
-with interpret_literal (l : go.literal) : ecomp goE (list val) :=
+with interpret_literal (l : go.literal) : ecomp goE val :=
        match l with
        | go.BasicLit l => interpret_basic_lit l
        | _ => Effect (Panic "unsupported literal"%go) (λ (x : False), match x with end)
        end
-with interpret_basic_lit (l : go.basic_lit) : ecomp goE (list val) :=
+with interpret_basic_lit (l : go.basic_lit) : ecomp goE val :=
        match l with
        | _ => Effect (Panic "unsupported basic literal"%go) (λ (x : False), match x with end)
        end
-with interpret_expr_addr (e : go.expression) : ecomp goE (list val) :=
+with interpret_expr_addr (e : go.expression) : ecomp goE val :=
        match e with
        | _ => Effect (Panic "unsupported expr address"%go) (λ (x : False), match x with end)
        end.
 
-(* TODO: encoders+decoders to better types (e.g. [loc]). *)
+Class Encodable (V : Type) :=
+  {
+    encode_val : V → val;
+    decode_val : val → option V;
+    decode_encode_val : ∀ v, decode_val (encode_val v) = Some v
+  }.
 
-Definition interpret_stmt (a : go.statement) k : ecomp goE (list val) :=
-  match a with
-  | go.SimpleStmt (go.Assignment [l] None [r]) =>
-      addr ← interpret_expr_addr l ;
-      Effect (Store addr) ;;
-      k
-  | _ => Effect (Panic "unsupported statement"%go) (λ (x : False), match x with end)
+Definition decode_into V `{!Encodable V} (l : val) : ecomp goE V :=
+  match decode_val l with
+  | Some v => Pure v
+  | _ => Effect (Panic "unable to decode into expected type"%go) (λ (x : False), match x with end)
   end
 .
 
-Axiom go_denotes : ∀ {A R} (a : goAst) (e : A → ecomp goE R), Prop.
+Instance loc_Encodable : Encodable loc.
+Proof. Admitted.
 
+Fixpoint store (addr : loc) (v : list heap_val) : ecomp goE () :=
+  match v with
+  | [] => Pure ()
+  | h :: v => Effect (Store addr h) (λ _, store (addr +ₗ 1) v)
+  end.
+
+Definition interpret_stmt (a : go.statement) (k : ecomp goE (list val)) : ecomp goE (list val) :=
+  match a with
+  | go.SimpleStmt (go.Assignment [l] None [r]) =>
+      addr ← interpret_expr_addr l ≫= (decode_into loc);
+      v ← (interpret_expr r);
+      store addr v;;
+      k
+  | _ => Effect (Panic "unsupported statement"%go) (λ (x : False), match x with end)
+  end.
+(*
+  How to translate
+  x := 10
+  x = 11
+  return x;
+  x = 12
+
+Definition test : ecomp goE val :=
+  alloc "x";:
+  store "x" (HW64 (W64 10));;
+  store "x" (HW64 (W64 11));;
+  (r' ← load "x" in
+  return r');;
+  store "x" (HW64 (W64 12)).
+
+Definition test : ecomp goE val :=
+  x ← alloc (go.Named "uint64"%go (go.TypeArgs []));
+  store "x" (HW64 (W64 10));;
+  store "x" (HW64 (W64 11));;
+  (r' ← load "x" in
+  return r');;
+  store "x" (HW64 (W64 12)).
+*)
+
+(*
 Record state :=
   mk {
     heap : gmap loc heap_val;
@@ -341,23 +380,14 @@ Record state :=
 Global Instance settable : Settable _ :=
   settable! mk <heap; funcs>.
 
-Definition Handler (E M : Type → Type) := ∀ A (e : E A), M A.
-
 Definition handle_goE : Handler goE (relation.t state) :=
   λ A e,
     match e with
     | SuchThat pred => λ σ σ' a, pred a ∧ σ' = σ
     | Load l => λ σ σ' v, σ' = σ ∧ σ.(heap) !! l = Some v
     | Store l v => λ σ σ' _, σ' = (σ <| heap := <[l := v]> σ.(heap) |>)
-    | GetFun fname => λ σ σ' f, σ' = σ ∧ σ.(funcs) !! fname = Some f
     | _ => λ σ σ' _, False
     end.
-
-Definition test_program : loc → ecomp goE (w64 → ecomp goE unit) :=
-  λ l, Pure (λ v, Effect (Store l (HW64 v)) Pure).
-
-Definition try_loading : string → ecomp goE (w64 → ecomp goE unit) :=
-  λ fname, Effect (GetFun fname) (λ gast, ).
 
 Polymorphic Inductive plist (A : Type) :=
 | nil : plist A
@@ -386,3 +416,4 @@ Inductive is_val_type {Γ : type_context} : go.type → Type → Prop :=
   (* How to handle named types? Maybe refer to a global typing context? *)
   (* need to have projections that line up with the field decls *)
   is_val_type (go.TypeLit $ go.StructType field_decls) T.
+ *)
