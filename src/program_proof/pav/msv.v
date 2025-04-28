@@ -2,7 +2,15 @@ From Perennial.program_proof.pav Require Import prelude.
 
 From Perennial.program_proof.pav Require Import core cryptoffi.
 
-(* maximum sequence of versions. *)
+(* Maximum Sequence of Versions (MSV).
+sequence: contiguous versions starting from 0.
+maximum: the longest sequence s.t. the next version is not present.
+
+MSV is on a plaintext latest pk.
+we have a commitment for that pk, and the commitment is in the map.
+we need not have plaintexts for all prior pks, like in the Client Get calls.
+we just need to know that they exist.
+this difference is why we separated history from latest resource. *)
 
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
