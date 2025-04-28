@@ -33,6 +33,15 @@ Section goose_lang.
     end.
   Program Definition val_aux := unseal (_ : seal (@val_aux_def)). Final Obligation. by eexists. Qed.
   Definition val_aux_unseal : val_aux = _ := seal_eq _.
+
+  Lemma val_aux_nil field_vals : val_aux (structT []) field_vals = #().
+  Proof. rewrite val_aux_unseal //. Qed.
+  Lemma val_aux_cons field_vals f ft fs :
+    val_aux (structT ((f,ft)::fs)) field_vals =
+    (default (zero_val ft) (alist_lookup_f f field_vals), val_aux (structT fs) field_vals)%V
+  .
+  Proof. rewrite val_aux_unseal //. Qed.
+
 End goose_lang.
 End struct.
 

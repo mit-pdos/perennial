@@ -24,8 +24,10 @@ Next Obligation.
   rewrite zero_val_eq /= !to_val_unseal //.
 Qed.
 Next Obligation.
-  (* FIXME: automation for this *)
-Admitted.
+  intros v1 v2. rewrite to_val_unseal /= struct.val_aux_unseal /=.
+  destruct v1, v2; with_strategy transparent [w8_word_instance] cbn.
+  naive_solver.
+Qed.
 Final Obligation. solve_decision. Qed.
 
 Global Program Instance into_val_struct_Mutex_state :
@@ -47,23 +49,38 @@ Proof.
   by apply wp_struct_make.
 Qed.
 
+(* TODO: move *)
+Lemma flatten_struct_tt : flatten_struct #() = [].
+Proof.
+  rewrite to_val_unseal //.
+Qed.
+
+(* TODO: move *)
+Lemma struct_fields_split_intro V `{!IntoVal V} t `{!IntoValTyped V t} {dwf: struct.Wf t} dq l (v: V) Psplit :
+  (l ↦{dq} v ⊣⊢ Psplit) → StructFieldsSplit dq l v Psplit.
+Proof.
+  intros Heq.
+  constructor.
+  - rewrite Heq //.
+  - rewrite Heq //.
+Qed.
+
 Global Instance Mutex_struct_split dq l (v : Mutex.t) :
   StructFieldsSplit dq l v (
       "Hstate" ∷ l ↦s[sync.Mutex :: "state"]{dq} v.(Mutex.state)
     ).
 Proof.
-  constructor.
-  - iIntros "H".
-    rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=.
-    (*
-    rewrite struct_val_aux_cons.
-    rewrite struct_val_aux_nil.
-    replace (alist_lookup_f "state" [("state" ::= # v.(Mutex.state))%V]) with (Some #v.(Mutex.state)) by reflexivity.
-    progress simpl.
-    rewrite flatten_struct_tt app_nil_r.
-    rewrite typed_pointsto_unseal /typed_pointsto_def.
-    rewrite struct.field_ref_f_unseal /struct.field_ref_f_def loc_add_0 //. *)
-Admitted.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=.
+  rewrite ?struct.val_aux_cons ?struct.val_aux_nil.
+  with_strategy transparent [w8_word_instance] cbn.
+  rewrite flatten_struct_tt app_nil_r.
+  (* rewrite big_sepL_app. *)
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def loc_add_0.
+  reflexivity.
+Qed.
 End instances.
 
 Module Cond.
