@@ -239,13 +239,16 @@ Section grove.
     iDestruct (own_slice_len with "Hs") as "%Hlen".
     iDestruct (own_slice_wf with "Hs") as "%Hwf".
     rewrite difference_empty_L /=.
-    iMod "HΦ" as (ms) "[Hc HΦ]".
+    (* XXX why was it not necessary to explicitly use wp_ncatomic in old Perennial/Goose? *)
+    iApply wp_ncatomic.
     { solve_atomic2. }
+    iMod "HΦ" as (ms) "[Hc HΦ]".
     cbn in *.
     rewrite to_val_unseal.
     iApply (wp_SendOp with "[$Hc Hs]").
     { done. }
     { iApply (own_slice_to_pointsto_vals with "[$]"). }
+    iModIntro.
     iNext. iIntros (err_early err_late) "[Hc Hl]".
     iApply ("HΦ" $! (negb err_early) with "[Hc]").
     { by destruct err_early. }
@@ -273,9 +276,12 @@ Section grove.
     iIntros "!> * ?".
     wp_bind (ExternalOp _ _).
     rewrite difference_empty_L.
-    iMod "HΦ" as (ms) "[Hc HΦ]".
+    (* XXX why was it not necessary to explicitly use wp_ncatomic in old Perennial/Goose? *)
+    iApply wp_ncatomic.
     { solve_atomic2. }
+    iMod "HΦ" as (ms) "[Hc HΦ]".
     iApply (wp_RecvOp with "Hc").
+    iModIntro.
     iIntros "!#" (err l len data) "(%Hm & Hc & Hl)".
     iMod ("HΦ" $! err data with "[Hc]") as "HΦ".
     { iFrame. destruct err; first done. iPureIntro. apply Hm. }
