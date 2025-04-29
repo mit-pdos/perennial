@@ -114,6 +114,32 @@ Proof.
   iFrame.
 Qed.
 
+Lemma block_array_to_slice_mk l q (b: Block) :
+  pointsto_block l q b -∗ own_slice (slice.mk l (length b) (length b)) q (vec_to_list b).
+Proof.
+  intros.
+  rewrite /pointsto_block heap_array_to_list.
+  rewrite own_slice_unseal /own_slice_def.
+  iIntros "Hb".
+  rewrite big_sepL_fmap.
+  iDestruct (big_sepL_impl with "Hb []") as "$"; eauto.
+  2: {
+    iPureIntro. simpl.
+    rewrite length_vec_to_list.
+    assert (block_bytes < 2^64)%Z.
+    { unfold block_bytes. lia. }
+    word.
+  }
+  iModIntro.
+  iIntros (i x) "% Hl".
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  rewrite to_val_unseal. simpl.
+  rewrite go_type_size_unseal. simpl.
+  rewrite loc_add_0.
+  replace (Z.mul 1%nat i) with (Z.of_nat i) by word.
+  iFrame.
+Qed.
+
 Lemma block_array_to_slice s q (b: Block) :
   length b = uint.nat s.(slice.len_f) ->
   uint.Z s.(slice.len_f) ≤ uint.Z s.(slice.cap_f) ->
@@ -219,6 +245,132 @@ Proof.
   iIntros (Φ) "[#Hpkg [<- >Hpre]] HΦ".
   iApply (wp_Write with "[$Hpkg $Hpre]").
   eauto.
+Qed.
+
+Lemma wp_Read_atomic (a: u64) q :
+  ⊢ {{{ is_pkg_init disk }}}
+    <<< ∀∀ b, uint.Z a d↦{q} b >>>
+      disk@"Read" #a @@ ∅
+    <<< uint.Z a d↦{q} b >>>
+    {{{ s, RET #s; is_block_full s b }}}.
+Proof.
+  wp_start as "_".
+  wp_bind (ExternalOp _ _).
+  rewrite difference_empty_L.
+  iMod "HΦ" as (b) "[Hda Hupd]".
+  { solve_atomic. rewrite to_val_unseal in H.
+    inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
+    inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
+  rewrite to_val_unseal. simpl.
+  iApply (wp_ReadOp with "Hda").
+  iNext.
+  iIntros (l) "(Hda&Hl)".
+  iMod ("Hupd" with "Hda") as "HQ"; iModIntro.
+  iDestruct (block_array_to_slice_mk with "Hl") as "Hs".
+  iSpecialize ("HQ" with "Hs"). simpl.
+  rewrite length_vec_to_list /block_bytes.
+  replace (Z.of_nat (Z.to_nat 4096)) with 4096%Z by lia.
+  wp_pures.
+  rewrite to_val_unseal //.
+Qed.
+
+(*
+Lemma wp_ReadTo_atomic (a: u64) b0 s q :
+  ⊢ {{{ is_pkg_init disk ∗ is_block_full s b0 }}}
+    <<< ∀∀ b, uint.Z a d↦{q} b >>>
+      disk@"ReadTo" #a #s @@ ∅
+    <<< uint.Z a d↦{q} b >>>
+    {{{ RET #(); is_block_full s b }}}.
+Proof.
+  iIntros "!#" (Φ) "Hs Hupd".
+  wp_rec. wp_pures.
+  iDestruct (own_slice_sz with "Hs") as %Hsz.
+  iDestruct (own_slice_wf with "Hs") as %Hwf.
+  wp_bind (ExternalOp _ _).
+  iApply (wp_ncatomic _ _ ∅).
+  { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
+    inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
+  rewrite difference_empty_L.
+  iMod "Hupd" as (db0) "[Hda Hupd]"; iModIntro.
+  wp_apply (wp_ReadOp with "[$Hda]").
+  iIntros (l) "(Hda&Hl)".
+  iMod ("Hupd" with "Hda") as "HQ".
+  iModIntro.
+  wp_pures.
+  wp_apply wp_slice_ptr.
+  iDestruct "Hs" as "[Hs Hcap]".
+  rewrite /own_slice_small.
+  iDestruct "Hs" as "[Hs _]".
+  wp_apply (wp_MemCpy_rec with "[Hs Hl]").
+  { iFrame.
+    iDestruct (array_to_block_array with "Hl") as "$".
+    iPureIntro.
+    rewrite !length_Block_to_vals.
+    rewrite /block_bytes.
+    split; [ reflexivity | ].
+    cbv; congruence.
+  }
+  rewrite take_ge; last first.
+  { rewrite length_Block_to_vals.
+    rewrite /block_bytes //. }
+  iIntros "[Hs Hl]".
+  iApply "HQ".
+  rewrite /is_block_full /own_slice /own_slice_small.
+  iFrame.
+  iPureIntro.
+  move: Hsz; rewrite !length_Block_to_vals //.
+Qed.
+*)
+
+Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
+  {{{ is_pkg_init disk ∗
+      |NC={⊤,E'}=> ∃ b, uint.Z a d↦{q} b ∗ (uint.Z a d↦{q} b -∗ |NC={E',⊤}=> Q b) }}}
+    disk@"Read" #a
+  {{{ s b, RET #s;
+      Q b ∗ is_block_full s b }}}.
+Proof.
+  iIntros (Φ) "[#Hpkg Hupd] HΦ". iApply (wp_Read_atomic with "[$Hpkg]").
+  rewrite difference_empty_L. iNext.
+  iMod "Hupd" as (b0) "[Hda Hclose]".
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "HcloseE". iExists _. iFrame.
+  iIntros "Hda". iMod "HcloseE" as "_". iMod ("Hclose" with "Hda").
+  iIntros "!> * Hs". iApply "HΦ". iFrame.
+Qed.
+
+Lemma wp_Read (a: u64) q b :
+  {{{ is_pkg_init disk ∗ uint.Z a d↦{q} b }}}
+    disk@"Read" #a
+  {{{ s, RET #s;
+      uint.Z a d↦{q} b ∗ is_block_full s b }}}.
+Proof.
+  iIntros (Φ) "[#Hpkg Hda] HΦ".
+  wp_apply wp_Read_atomic.
+  iApply ncfupd_mask_intro; first set_solver+.
+  iIntros "HcloseE". iExists _. iFrame.
+  iIntros "Hda". iMod "HcloseE" as "_".
+  iIntros "!> * Hs". iApply ("HΦ" with "[$]").
+Qed.
+
+Lemma wp_Read_eq (a: u64) (a': Z) q b :
+  {{{ is_pkg_init disk ∗ a' d↦{q} b ∗ ⌜uint.Z a = a'⌝ }}}
+    disk@"Read" #a
+  {{{ s, RET #s;
+      a' d↦{q} b ∗ is_block_full s b }}}.
+Proof.
+  iIntros (Φ) "[#Hpkg Hb] HΦ".
+  iDestruct "Hb" as "[Hb %]". subst.
+  wp_apply (wp_Read with "[$Hpkg $Hb]").
+  iApply "HΦ".
+Qed.
+
+Lemma wp_Barrier :
+  {{{ is_pkg_init disk }}}
+    disk@"Barrier" #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start as "_".
+  iApply ("HΦ" with "[//]").
 Qed.
 
 End wps.
