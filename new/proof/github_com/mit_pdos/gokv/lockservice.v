@@ -96,7 +96,7 @@ Proof.
   iInv "Hlock" as "Hlock_inner" "Hclo".
   iMod (lc_fupd_elim_later with "[$] Hlock_inner") as "Hlock_inner".
   iDestruct "Hlock_inner" as (?) "(Hk&HR)".
-  iApply fupd_mask_intro.
+  iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _. iFrame "Hk".
@@ -136,7 +136,7 @@ Proof.
   iInv "Hlock" as "Hlock_inner" "Hclo".
   iMod (lc_fupd_elim_later with "[$] Hlock_inner") as "Hlock_inner".
   iDestruct "Hlock_inner" as (?) "(Hk&_)".
-  iApply fupd_mask_intro.
+  iApply ncfupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask".
   iExists _. iFrame "Hk".

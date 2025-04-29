@@ -8,9 +8,10 @@ maximum: the longest sequence s.t. the next version is not present.
 
 MSV is on a plaintext latest pk.
 we have a commitment for that pk, and the commitment is in the map.
-we need not have plaintexts for all prior pks, like in the Client Get calls.
-we just need to know that they exist.
-this difference is why we separated history from latest resource. *)
+we need not have plaintexts for all prior versions,
+like in the Client Get calls.
+we just need to know their opaque commitments are in the map.
+this difference is why we separated the "history" and "latest" resources. *)
 
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.

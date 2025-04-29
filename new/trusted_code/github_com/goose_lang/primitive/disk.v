@@ -16,7 +16,7 @@ Section disk.
   Definition Read: val :=
     λ: "a",
     let: "p" := ExternalOp ReadOp (Var "a") in
-    (Var "p", #(W64 4096), #(W64 4096)).
+    (InjL (Var "p", #(W64 4096), #(W64 4096))).
 
   Definition ReadTo: val :=
     λ: "a" "buf",
