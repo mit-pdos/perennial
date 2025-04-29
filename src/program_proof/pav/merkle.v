@@ -1966,39 +1966,33 @@ Lemma wp_Tree__Put ptr_tr elems sl_label sl_val (label val : list w8) :
   {{{
     "Hown_Tree" ∷ own_Tree ptr_tr elems (DfracOwn 1) ∗
     "Hsl_label" ∷ own_slice_small sl_label byteT DfracDiscarded label ∗
-    "Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val
+    "Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val ∗
+    "%Hlen_label" ∷ ⌜ Z.of_nat $ length label = hash_len ⌝
   }}}
   Tree__Put #ptr_tr (slice_val sl_label) (slice_val sl_val)
   {{{
     err, RET #err;
-    "Hgenie" ∷
-      (⌜ err = false ⌝ ∗-∗
-      "%Hlen_hash" ∷ ⌜ Z.of_nat $ length label = hash_len ⌝) ∗
-    "Herr" ∷
-      ("%Hlen_hash" ∷ ⌜ Z.of_nat $ length label = hash_len ⌝
-      -∗
-      "Hown_Tree" ∷ own_Tree ptr_tr (<[label:=val]>elems) (DfracOwn 1))
+    (* even tho length check is part of spec precond,
+    code returns err to make it harder for programmers to
+    accidentally forget about precond. *)
+    "%Herr" ∷ ⌜ err = false ⌝ ∗
+    "Hown_Tree" ∷ own_Tree ptr_tr (<[label:=val]>elems) (DfracOwn 1)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_apply wp_slice_len.
   iDestruct (own_slice_small_sz with "Hsl_label") as %?.
-  wp_if_destruct.
-  { iApply "HΦ". iIntros "!>". iSplit.
-    - iSplit; [done|word].
-    - iIntros "%". word. }
+  wp_if_destruct; [word|].
   iNamed "Hown_Tree".
   wp_loadField.
   wp_apply (wp_struct_fieldRef_pointsto with "[$Hptr_root]"); [done|].
   iIntros "* [%Hclose Hptr2_root]".
   wp_apply (wp_put with "[$Hown_ctx $Hown_map $Hsl_label $Hsl_val $Hptr2_root]").
   iIntros "*". iNamed 1.
-  wp_pures. iApply "HΦ". iIntros "!>". iSplit.
-  - iSplit; [word|done].
-  - iIntros "_".
-    specialize (Hclose #ptr_n').
-    iDestruct (Hclose with "Hptr_n0") as "Hptr_root".
-    iFrame.
+  wp_pures. iApply "HΦ". iIntros "!>". iSplit; try done.
+  specialize (Hclose #ptr_n').
+  iDestruct (Hclose with "Hptr_n0") as "Hptr_root".
+  iFrame.
 Qed.
 
 Lemma wp_verifySiblings sl_label sl_last_hash sl_sibs sl_dig
