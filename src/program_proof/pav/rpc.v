@@ -183,6 +183,25 @@ Lemma wp_CallAdtrUpdate ptr_cli addr ptr_upd upd d0 :
   }}}.
 Proof. Admitted.
 
+Lemma wp_CallAdtrGet ptr_cli addr is_good (ep : w64) :
+  {{{
+    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr is_good
+  }}}
+  CallAdtrGet #ptr_cli #ep
+  {{{
+    ptr_info info, RET #ptr_info;
+    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr is_good ∗
+    "Hown_info" ∷ AdtrEpochInfo.own ptr_info info (DfracOwn 1)
+  }}}.
+Proof. Admitted.
+
+(* TODO: with the curr impl, it's impossible for the auditor
+to check if the server's sig is correct.
+if it updates the merkle tree and sig doesn't verify,
+it can't roll-back the update.
+we could fix this with optimized auditor update proofs,
+those are easier to roll-back -- the auditor just tracks valid digests. *)
+(*
 Lemma wp_CallAdtrGet ptr_cli addr is_good (ep : w64) serv adtr_sig_pk :
   {{{
     "Hown_cli" ∷ advrpc.own_Client ptr_cli addr is_good
@@ -202,5 +221,6 @@ Lemma wp_CallAdtrGet ptr_cli addr is_good (ep : w64) serv adtr_sig_pk :
         info.(AdtrEpochInfo.AdtrSig))
   }}}.
 Proof. Admitted.
+*)
 
 End specs.
