@@ -32,4 +32,20 @@ Proof.
   Fail apply fact.
   Undo 2.
   apply fact.
+  Unset Printing All.
 Qed.
+
+Fail Definition x := ltac:(eunify (Nat.pred ?[x], (S ?x)) (O, (S (S O)))).
+Definition x : unit := ltac:(
+  let A := open_constr:(Nat.pred ?[x]) in
+  let B := open_constr:(S ?x) in
+  let A' := open_constr:(O) in
+  let B' := open_constr:(S (S O)) in
+  first [
+      (* This fails. *)
+      (unify (A, B) (A', B'))  | idtac "first one failed";
+      (* But this one doesn't: *)
+      (unify B B'; unify A A'; refine tt)
+    ];
+  refine []
+).
