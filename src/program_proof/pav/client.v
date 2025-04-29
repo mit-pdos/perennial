@@ -257,6 +257,7 @@ Proof.
   by repeat (iSplit; [naive_solver|]).
 Qed.
 
+(*
 Lemma wp_checkDig sl_sig_pk (sig_pk : list w8) ptr_sd (sd_refs : gmap w64 loc) sd ptr_dig dig :
   let wish := (
     "#His_dig" ∷ is_SigDig dig sig_pk ∗
@@ -1169,33 +1170,25 @@ Proof.
     iFrame "#".
   - iFrame "#".
 Qed.
+*)
 
-(*
-Definition auditEpoch_post adtr_pk seen_dig : iProp Σ :=
-  □ ∀ adtr_γ,
-  ("#His_pk" ∷ is_sig_pk adtr_pk (adtr_sigpred adtr_γ))
-  -∗
-  (∃ adtr_st m,
-  "#Hlb_adtr" ∷ mono_list_lb_own adtr_γ adtr_st ∗
-  "#Hdigs_adtr" ∷ ([∗ list] x ∈ adtr_st, is_dig (lower_adtr x.1) x.2) ∗
-  "%Hlook_dig" ∷ ⌜ adtr_st !! uint.nat seen_dig.(SigDig.Epoch) =
-    Some (m, seen_dig.(SigDig.Dig)) ⌝ ∗
-  "%Hinv_adtr" ∷ ⌜ adtr_inv (fst <$> adtr_st) ⌝).
-
-Lemma wp_auditEpoch ptr_seen_dig seen_dig sl_serv_sig_pk (serv_sig_pk : list w8) ptr_adtr_cli adtr_cli sl_adtr_pk adtr_pk :
+Lemma wp_auditEpoch ptr_seen_dig seen_dig sl_serv_sig_pk (serv_sig_pk : list w8) ptr_adtr_cli adtr_cli adtr_is_good sl_adtr_pk adtr_pk :
   {{{
-    "#Hown_seen_dig" ∷ SigDig.own ptr_seen_dig seen_dig ∗
+    "#Hown_seen_dig" ∷ SigDig.own ptr_seen_dig seen_dig DfracDiscarded ∗
     "#His_seen_dig" ∷ is_SigDig seen_dig serv_sig_pk ∗
     "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded serv_sig_pk ∗
-    "Hown_adtr_cli" ∷ advrpc.Client.own ptr_adtr_cli adtr_cli ∗
+    "Hown_adtr_cli" ∷ advrpc.own_Client ptr_adtr_cli adtr_cli adtr_is_good ∗
     "#Hsl_adtrPk" ∷ own_slice_small sl_adtr_pk byteT DfracDiscarded adtr_pk
   }}}
   auditEpoch #ptr_seen_dig (slice_val sl_serv_sig_pk) #ptr_adtr_cli (slice_val sl_adtr_pk)
   {{{
     ptr_err err, RET #ptr_err;
-    "Hown_adtr_cli" ∷ advrpc.Client.own ptr_adtr_cli adtr_cli ∗
+    "Hown_adtr_cli" ∷ advrpc.own_Client ptr_adtr_cli adtr_cli adtr_is_good ∗
     "Hown_err" ∷ ClientErr.own ptr_err err serv_sig_pk ∗
-    "Herr" ∷ if err.(ClientErr.Err) then True else auditEpoch_post adtr_pk seen_dig
+    "Herr" ∷ (if err.(ClientErr.Err) then True else
+      ∃ adtr_sig,
+      "#Hsig_adtr" ∷ is_SigDig (SigDig.mk seen_dig.(SigDig.Epoch)
+        seen_dig.(SigDig.Dig) adtr_sig) adtr_pk)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". iNamedSuffix "Hown_seen_dig" "_seen".
@@ -1204,9 +1197,9 @@ Proof.
   iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_stdErr".
   wp_loadField.
   wp_apply (wp_CallAdtrGet with "Hown_adtr_cli"). iIntros "* H". iNamed "H".
-  wp_if_destruct.
-  { iApply ("HΦ" $! _ (ClientErr.mk None _)). by iFrame "∗#". }
-  simpl. iNamed "H". iNamed "Hown_info". do 3 wp_loadField.
+  iNamed "Hown_info".
+  iPersist "Hsl_Dig Hsl_ServSig Hsl_AdtrSig".
+  do 3 wp_loadField.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H0".
   iMod (struct_pointsto_persist with "H0") as "#H0".
   iDestruct (struct_fields_split with "H0") as "H1". iNamedSuffix "H1" "_serv".
@@ -1215,36 +1208,36 @@ Proof.
   iMod (struct_pointsto_persist with "H0") as "#H0".
   iDestruct (struct_fields_split with "H0") as "H1". iNamedSuffix "H1" "_adtr".
   iClear "H0".
-  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _) with "[]"); [iFrame "#"|].
+  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _)); [iFrame "#"|].
   iIntros (err0). iNamedSuffix 1 "_servSig". wp_if_destruct.
   { iApply ("HΦ" $! _ (ClientErr.mk None _)). by iFrame "∗#". }
-  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _) with "[#]"); [iFrame "#"|].
+  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _)); [iFrame "#"|].
   iIntros (err1). iNamedSuffix 1 "_adtrSig". wp_if_destruct.
   { iApply ("HΦ" $! _ (ClientErr.mk None _)). by iFrame "∗#". }
-  iDestruct ("Hgenie_servSig") as "[_ H]".
+  iDestruct ("Hgenie_servSig") as "[H _]".
   iDestruct ("H" with "[//]") as "#His_servSig".
-  iDestruct ("Hgenie_adtrSig") as "[_ H]".
+  iDestruct ("Hgenie_adtrSig") as "[H _]".
   iDestruct ("H" with "[//]") as "#His_adtrSig".
   do 2 wp_loadField.
   wp_apply (wp_BytesEqual sl_Dig0 sl_Dig with "[$Hsl_Dig $Hsl_Dig_seen]").
   iIntros "_". wp_if_destruct.
   { wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
     iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_evid".
+    iPersist "sigDig0_evid sigDig1_evid".
     wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
     iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_err".
     iApply ("HΦ" $! _ (ClientErr.mk (Some
       (Evid.mk (SigDig.mk seen_dig.(SigDig.Epoch)
-        adtrInfo.(AdtrEpochInfo.Dig) adtrInfo.(AdtrEpochInfo.ServSig))
+        info.(AdtrEpochInfo.Dig) info.(AdtrEpochInfo.ServSig))
       seen_dig)) _)).
     by iFrame "∗#". }
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_err".
   iApply ("HΦ" $! _ (ClientErr.mk None _)).
-  iFrame "∗#". iIntros (?) "!>". iNamed 1.
-  iDestruct (is_sig_to_pred with "His_pk His_adtrSig") as "H".
-  iNamed "H". apply PreSigDig.inj in Henc as <-. rewrite -Heqb2. iFrame "#%".
+  destruct seen_dig, info. simpl in *. subst. iFrame "∗#".
 Qed.
 
+(*
 Lemma prefix_lookup_agree {A} l1 l2 i (x1 x2 : A) :
   l1 `prefix_of` l2 ∨ l2 `prefix_of` l1 →
   l1 !! i = Some x1 →
