@@ -2,7 +2,7 @@ From New.code.go_etcd_io.raft Require v3.
 From New.code.github_com.goose_lang.goose.testdata.examples Require unittest semantics.
 (* required just to make sure this demo works *)
 From New.golang.theory Require static_mem.
-From New.proof Require etcdraft.
+From New.proof Require go_etcd_io.etcd.raft.v3.
 From New.proof.github_com.mit_pdos Require partialapp asyncfile lockservice globals_test.
 
 (* FIXME: keeping this out because of universe inconsistency. *)
