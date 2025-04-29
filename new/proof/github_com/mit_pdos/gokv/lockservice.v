@@ -1,6 +1,10 @@
-From New.code Require Import github_com.mit_pdos.gokv.lockservice.
-From New.proof Require Import grove_prelude std kv.
+(* Begin imports. Could be generated from imports of Go package. *)
+Require Import New.proof.github_com.goose_lang.std.
+Require Import New.proof.github_com.mit_pdos.gokv.kv.
+
+From New.proof Require Import grove_prelude.
 Require Import New.generatedproof.github_com.mit_pdos.gokv.lockservice.
+(* End imports. *)
 
 Section defns.
 

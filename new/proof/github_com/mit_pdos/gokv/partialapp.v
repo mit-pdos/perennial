@@ -1,7 +1,7 @@
-Require Import New.code.github_com.mit_pdos.gokv.partialapp.
-Require Import New.generatedproof.github_com.mit_pdos.gokv.partialapp.
+(* Begin imports. Could be generated from imports of Go package. *)
 Require Import New.proof.proof_prelude.
-Require Import New.golang.theory.globals.
+Require Import New.generatedproof.github_com.mit_pdos.gokv.partialapp.
+(* End imports. *)
 
 Section proof.
 Context `{ffi_sem: ffi_semantics}.
