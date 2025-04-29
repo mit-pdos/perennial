@@ -886,10 +886,10 @@ Definition AdtrGetReplyDecode: val :=
            "Err" ::= "a2"
          ], "b2", #false))).
 
-(* CallAdtrGet from rpc.go *)
+(* callAdtrGetInner from rpc.go *)
 
-Definition CallAdtrGet: val :=
-  rec: "CallAdtrGet" "c" "epoch" :=
+Definition callAdtrGetInner: val :=
+  rec: "callAdtrGetInner" "c" "epoch" :=
     let: "arg" := struct.new AdtrGetArg [
       "Epoch" ::= "epoch"
     ] in
@@ -905,6 +905,18 @@ Definition CallAdtrGet: val :=
     then (slice.nil, #true)
     else (struct.loadF AdtrGetReply "X" "reply", struct.loadF AdtrGetReply "Err" "reply")).
 
+Definition CallAdtrGet: val :=
+  rec: "CallAdtrGet" "c" "epoch" :=
+    let: "adtrInfo" := ref (zero_val ptrT) in
+    let: "err" := ref_to boolT #true in
+    Skip;;
+    (for: (λ: <>, ![boolT] "err"); (λ: <>, Skip) := λ: <>,
+      let: ("adtrInfo0", "err0") := callAdtrGetInner "c" "epoch" in
+      "adtrInfo" <-[ptrT] "adtrInfo0";;
+      "err" <-[boolT] "err0";;
+      Continue);;
+    ![ptrT] "adtrInfo".
+
 (* auditEpoch from client.go *)
 
 (* auditEpoch checks a single epoch against an auditor, and evid / error on fail. *)
@@ -913,40 +925,37 @@ Definition auditEpoch: val :=
     let: "stdErr" := struct.new ClientErr [
       "Err" ::= #true
     ] in
-    let: ("adtrInfo", "err0") := CallAdtrGet "adtrCli" (struct.loadF SigDig "Epoch" "seenDig") in
-    (if: "err0"
+    let: "adtrInfo" := CallAdtrGet "adtrCli" (struct.loadF SigDig "Epoch" "seenDig") in
+    let: "servDig" := struct.new SigDig [
+      "Epoch" ::= struct.loadF SigDig "Epoch" "seenDig";
+      "Dig" ::= struct.loadF AdtrEpochInfo "Dig" "adtrInfo";
+      "Sig" ::= struct.loadF AdtrEpochInfo "ServSig" "adtrInfo"
+    ] in
+    let: "adtrDig" := struct.new SigDig [
+      "Epoch" ::= struct.loadF SigDig "Epoch" "seenDig";
+      "Dig" ::= struct.loadF AdtrEpochInfo "Dig" "adtrInfo";
+      "Sig" ::= struct.loadF AdtrEpochInfo "AdtrSig" "adtrInfo"
+    ] in
+    (if: CheckSigDig "servDig" "servSigPk"
     then "stdErr"
     else
-      let: "servDig" := struct.new SigDig [
-        "Epoch" ::= struct.loadF SigDig "Epoch" "seenDig";
-        "Dig" ::= struct.loadF AdtrEpochInfo "Dig" "adtrInfo";
-        "Sig" ::= struct.loadF AdtrEpochInfo "ServSig" "adtrInfo"
-      ] in
-      let: "adtrDig" := struct.new SigDig [
-        "Epoch" ::= struct.loadF SigDig "Epoch" "seenDig";
-        "Dig" ::= struct.loadF AdtrEpochInfo "Dig" "adtrInfo";
-        "Sig" ::= struct.loadF AdtrEpochInfo "AdtrSig" "adtrInfo"
-      ] in
-      (if: CheckSigDig "servDig" "servSigPk"
+      (if: CheckSigDig "adtrDig" "adtrPk"
       then "stdErr"
       else
-        (if: CheckSigDig "adtrDig" "adtrPk"
-        then "stdErr"
+        (if: (~ (std.BytesEqual (struct.loadF AdtrEpochInfo "Dig" "adtrInfo") (struct.loadF SigDig "Dig" "seenDig")))
+        then
+          let: "evid" := struct.new Evid [
+            "sigDig0" ::= "servDig";
+            "sigDig1" ::= "seenDig"
+          ] in
+          struct.new ClientErr [
+            "Evid" ::= "evid";
+            "Err" ::= #true
+          ]
         else
-          (if: (~ (std.BytesEqual (struct.loadF AdtrEpochInfo "Dig" "adtrInfo") (struct.loadF SigDig "Dig" "seenDig")))
-          then
-            let: "evid" := struct.new Evid [
-              "sigDig0" ::= "servDig";
-              "sigDig1" ::= "seenDig"
-            ] in
-            struct.new ClientErr [
-              "Evid" ::= "evid";
-              "Err" ::= #true
-            ]
-          else
-            struct.new ClientErr [
-              "Err" ::= #false
-            ])))).
+          struct.new ClientErr [
+            "Err" ::= #false
+          ]))).
 
 Definition Client__Audit: val :=
   rec: "Client__Audit" "c" "adtrAddr" "adtrPk" :=
