@@ -28,6 +28,11 @@ Lemma wp_NewRpcAuditor ptr_adtr :
   }}}.
 Proof. Admitted.
 
+(* TODO: curr spec is unprovable bc we don't know that serv
+on other side of addr actually has the same serv obj params
+(e.g., serv_sig_pk, γvers) that the client has.
+have similar issue for adtr rpc.
+need to know that adtr has same serv_sig_pk and adtr_sig_pk. *)
 (* TODO: this is mostly a copy of the Server__Put spec.
 later, need to properly bind these two. *)
 Lemma wp_CallServPut ptr_cli addr is_good serv uid nVers sl_pk d0 (pk : list w8) cli_next_ep :
@@ -178,17 +183,23 @@ Lemma wp_CallAdtrUpdate ptr_cli addr ptr_upd upd d0 :
   }}}.
 Proof. Admitted.
 
-Lemma wp_CallAdtrGet ptr_cli addr (ep : w64) :
+Lemma wp_CallAdtrGet ptr_cli addr is_good (ep : w64) serv adtr_sig_pk :
   {{{
-    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr false
+    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr is_good
   }}}
   CallAdtrGet #ptr_cli #ep
   {{{
-    (err : bool) ptr_adtrInfo adtrInfo, RET (#ptr_adtrInfo, #err);
-    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr false ∗
-    if negb err then
-      "Hown_info" ∷ AdtrEpochInfo.own ptr_adtrInfo adtrInfo (DfracOwn 1)
-    else True
+    ptr_info info, RET #ptr_info;
+    "Hown_cli" ∷ advrpc.own_Client ptr_cli addr is_good ∗
+    "Hown_info" ∷ AdtrEpochInfo.own ptr_info info (DfracOwn 1) ∗
+
+    "Hgood" ∷ (if negb is_good then True else
+      "#Hsig_serv" ∷ is_sig serv.(Server.sig_pk)
+        (enc_sigdig ep info.(AdtrEpochInfo.Dig))
+        info.(AdtrEpochInfo.ServSig) ∗
+      "#Hsig_adtr" ∷ is_sig adtr_sig_pk
+        (enc_sigdig ep info.(AdtrEpochInfo.Dig))
+        info.(AdtrEpochInfo.AdtrSig))
   }}}.
 Proof. Admitted.
 

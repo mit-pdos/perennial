@@ -24,6 +24,7 @@ Notation lat_opaque_val_ty := (option opaque_map_val_ty) (only parsing).
 
 Notation enc_label_pre uid ver := (MapLabelPre.encodesF $ MapLabelPre.mk uid ver).
 Notation enc_val ep commit := (MapValPre.encodesF $ MapValPre.mk ep commit).
+Notation enc_sigdig ep dig := (PreSigDig.encodesF $ PreSigDig.mk ep dig).
 
 Section defs.
 
