@@ -150,14 +150,26 @@ Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ
 
 (* WPs. *)
 
-Lemma good_serv_logical_audit ptr_c c :
-  c.(Client.serv_is_good) = true →
-  Client.own ptr_c c
+Lemma do_logical_audit c digs sd aud_pk aud_γ :
+  (∀ (ep : w64) (dig : list w8),
+    digs !! uint.nat ep = Some (Some dig) →
+    ∃ sig : list w8,
+    sd !! ep =
+    Some {| SigDig.Epoch := ep; SigDig.Dig := dig; SigDig.Sig := sig |}) →
+  (∀ m : option (list w8), last digs = Some m → is_Some m) →
+  length digs = uint.nat c.(Client.next_epoch) →
+  (* generalized from client own pred to allow sigs from diff parties. *)
+  ([∗ map] ep↦x ∈ sd,
+    ∃ aud_sig,
+    "#His_sigdig" ∷ is_SigDig (SigDig.mk x.(SigDig.Epoch)
+      x.(SigDig.Dig) aud_sig) aud_pk) -∗
+  mono_list_lb_own c.(Client.γ) digs -∗
+  is_sig_pk aud_pk (sigpred aud_γ)
   ==∗
-  logical_audit_post c.(Client.γ) c.(Client.serv).(Server.γhist)
-    c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch).
+  logical_audit_post c.(Client.γ) aud_γ c.(Client.serv).(Server.vrf_pk)
+    c.(Client.next_epoch).
 Proof.
-  iIntros (Heq_good). iNamed 1.
+  iIntros (Hagree_digs_sd Hlast_digs Hlen_digs) "#His_sd #Hlb_digs #Hsig_pk".
   destruct (decide (uint.Z c.(Client.next_epoch) = uint.Z 0)).
   { iMod (mono_list_lb_own_nil (mono_listG0:=pavG_adtr) _) as "$".
     iModIntro. simpl.
@@ -177,8 +189,7 @@ Proof.
   odestruct (Hagree_digs_sd _ _ Hlast_Some) as [? Hlook_sd].
   iDestruct (big_sepM_lookup with "His_sd") as "[% H]"; [done|].
   iNamed "H". iNamed "His_sigdig".
-  rewrite Heq_good. simpl.
-  iDestruct (is_sig_to_pred with "Hserv_sig_pk Hsig") as "H".
+  iDestruct (is_sig_to_pred with "Hsig_pk Hsig") as "H".
   iNamed "H".
   opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc Henc0); eauto.
   intuition. simplify_eq/=.
@@ -193,7 +204,6 @@ Proof.
   iClear (Hlast_Some Hlook_sd Henc Hlook_dig Henc0) "Hsig Hinv_gs".
 
   (* prove transfer wand. *)
-  iDestruct (mono_list_lb_own_get with "Hown_digs") as "#Hlb_digs".
   iIntros "!> *". iNamed 1. iNamed "Hcli_entry". iFrame "Hvrf_out".
   (* learn that cli_entry uses dig that's also in adtr gs. *)
   pose proof Hlook_adtr as Hlt_ep.
@@ -203,7 +213,7 @@ Proof.
   opose proof (Hagree_digs_sd _ _ Hlook_digs) as [? Hlook_sd].
   iDestruct (big_sepM_lookup with "His_sd") as "H"; [done|].
   iNamed "H". iNamed "His_sigdig".
-  iDestruct (is_sig_to_pred with "Hserv_sig_pk Hsig") as "H".
+  iDestruct (is_sig_to_pred with "Hsig_pk Hsig") as "H".
   iRename "Hlb" into "Hlb_adtr". iNamed "H".
   opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc Henc0); eauto.
   intuition. simplify_eq/=.
@@ -220,6 +230,21 @@ Proof.
   opose proof (Hlower label) as Hlower.
   eexists _. split; [|done]. subst.
   by rewrite -lookup_fmap.
+Qed.
+
+Lemma good_serv_logical_audit ptr_c c :
+  c.(Client.serv_is_good) = true →
+  Client.own ptr_c c
+  ==∗
+  logical_audit_post c.(Client.γ) c.(Client.serv).(Server.γhist)
+    c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch).
+Proof.
+  iIntros (Heq_good). iNamed 1.
+  rewrite Heq_good.
+  iDestruct (mono_list_lb_own_get with "Hown_digs") as "#Hlb_digs".
+  iMod (do_logical_audit with "[] Hlb_digs Hserv_sig_pk") as "H"; try done.
+  iApply (big_sepM_impl with "His_sd").
+  iIntros "!> * %". iNamed 1. iFrame "#".
 Qed.
 
 Lemma wp_NewClient uid (serv_addr : w64) sl_serv_sig_pk sl_serv_vrf_pk serv serv_is_good :
@@ -1187,7 +1212,7 @@ Lemma wp_auditEpoch ptr_seen_dig seen_dig sl_serv_sig_pk (serv_sig_pk : list w8)
     "Hown_err" ∷ ClientErr.own ptr_err err serv_sig_pk ∗
     "Herr" ∷ (if err.(ClientErr.Err) then True else
       ∃ adtr_sig,
-      "#Hsig_adtr" ∷ is_SigDig (SigDig.mk seen_dig.(SigDig.Epoch)
+      is_SigDig (SigDig.mk seen_dig.(SigDig.Epoch)
         seen_dig.(SigDig.Dig) adtr_sig) adtr_pk)
   }}}.
 Proof.
@@ -1237,54 +1262,44 @@ Proof.
   destruct seen_dig, info. simpl in *. subst. iFrame "∗#".
 Qed.
 
-(*
-Lemma prefix_lookup_agree {A} l1 l2 i (x1 x2 : A) :
-  l1 `prefix_of` l2 ∨ l2 `prefix_of` l1 →
-  l1 !! i = Some x1 →
-  l2 !! i = Some x2 →
-  x1 = x2.
-Proof.
-  intros Hpref Hlook1 Hlook2.
-  destruct Hpref as [Hpref|Hpref].
-  - opose proof (prefix_lookup_Some _ _ _ _ Hlook1 Hpref) as ?. by simplify_eq/=.
-  - opose proof (prefix_lookup_Some _ _ _ _ Hlook2 Hpref) as ?. by simplify_eq/=.
-Qed.
-
-Lemma wp_Client__Audit ptr_c c (adtrAddr : w64) sl_adtrPk adtr_pk :
-  uint.Z c.(Client.next_epoch) > 0 →
+Lemma wp_Client__Audit ptr_c c (adtr_addr : w64) sl_adtrPk (adtr_pk : list w8) :
   {{{
     "Hown_cli" ∷ Client.own ptr_c c ∗
     "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtr_pk
   }}}
-  Client__Audit #ptr_c #adtrAddr (slice_val sl_adtrPk)
+  Client__Audit #ptr_c #adtr_addr (slice_val sl_adtrPk)
   {{{
     ptr_err err, RET #ptr_err;
     "Hown_cli" ∷ Client.own ptr_c c ∗
     "Hown_err" ∷ ClientErr.own ptr_err err c.(Client.serv).(Server.sig_pk) ∗
-    "Herr" ∷ if err.(ClientErr.Err) then True else
+
+    "Herr" ∷ (if err.(ClientErr.Err) then True else
       ∀ adtr_γ,
-      ("#His_pk" ∷ is_sig_pk adtr_pk (adtr_sigpred adtr_γ))
+      "#His_pk" ∷ is_sig_pk adtr_pk (sigpred adtr_γ)
       -∗
-      ("#His_audit" ∷ is_audit c.(Client.γ) adtr_γ c.(Client.serv_vrf_pk) c.(Client.next_epoch))
+      "#His_audit" ∷ logical_audit_post c.(Client.γ) adtr_γ
+        c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch))
   }}}.
 Proof.
-  iIntros (? Φ) "H HΦ". iNamed "H". rewrite /Client__Audit.
-  wp_apply wp_Dial. iIntros (??). iNamedSuffix 1 "_adtr".
+  iIntros (Φ) "H HΦ". iNamed "H". rewrite /Client__Audit.
+  wp_apply (wp_Dial _ false). iIntros "*". iNamedSuffix 1 "_adtr".
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Herr0".
   wp_apply wp_ref_to; [val_ty|]. iIntros (ptr2_err0) "Hptr_err0".
   iNamed "Hown_cli". wp_loadField.
   wp_apply (wp_MapIter_fold _ _ _
     (λ sd_ptrs',
     ∃ ptr_err0 err0,
-    "Hown_cli_adtr" ∷ advrpc.Client.own ptr_cli cli ∗
+    "Hown_cli_adtr" ∷ advrpc.own_Client ptr_cli adtr_addr false ∗
     "Herr" ∷ ClientErr.own ptr_err0 err0 c.(Client.serv).(Server.sig_pk) ∗
     "Hptr_err0" ∷ ptr2_err0 ↦[ptrT] #ptr_err0 ∗
-    if negb err0.(ClientErr.Err) then
+    if err0.(ClientErr.Err) then True else
       ∃ sd',
       "%Hdom" ∷ ⌜ dom sd_ptrs' = dom sd' ⌝ ∗
       "%Hsub" ∷ ⌜ sd' ⊆ sd ⌝ ∗
-      "#Hpost" ∷ ([∗ map] x ∈ sd', auditEpoch_post adtr_pk x)
-    else True)%I with "Hown_sd_refs [$Hown_cli_adtr $Hptr_err0 Herr0]").
+      "#Hpost" ∷ ([∗ map] x ∈ sd',
+        ∃ adtr_sig, is_SigDig (SigDig.mk x.(SigDig.Epoch)
+          x.(SigDig.Dig) adtr_sig) adtr_pk))%I
+    with "Hown_sd_refs [$Hrpc_cli_adtr $Hptr_err0 Herr0]").
   { iDestruct (struct_fields_split with "Herr0") as "H". iNamed "H".
     iExists (ClientErr.mk None false). iFrame. iExists ∅.
     iSplit; [done|]. iSplit. { iPureIntro. by eapply map_empty_subseteq. }
@@ -1309,52 +1324,22 @@ Proof.
         iApply big_sepM_insert_2; iFrame "#". }
   iIntros "[Hown_sd_maps Hpost]". iNamed "Hpost". iClear "Hown_cli_adtr".
   iDestruct (mono_list_lb_own_get with "Hown_digs") as "#His_digs".
-  wp_load. iApply "HΦ". iFrame "∗#%".
+  wp_load. iApply "HΦ".
+  iDestruct (mono_list_lb_own_get with "Hown_digs") as "#Hlb_digs".
+  iFrame "∗#%".
   destruct err0.(ClientErr.Err); [done|].
-  iIntros "!>". iIntros (?). iNamed 1. iNamed "Hpost".
   iDestruct (big_sepM2_dom with "Hown_sd") as %Hdom1.
+  iNamed "Hpost".
   opose proof (map_subset_dom_eq _ _ _ _ _ Hsub) as ->.
   { by rewrite -Hdom -Hdom1. }
   clear Hdom Hdom1 Hsub.
 
-  (* process last ep to fill is_audit adtr maps. *)
-  destruct (last digs) eqn:Hlast_dig; rewrite last_lookup in Hlast_dig.
-  2: { exfalso. rewrite lookup_ge_None in Hlast_dig. word. }
-  opose proof (Hlast_digs _ _) as [??]; [done|]. simplify_eq/=.
-  rewrite Hlen_digs in Hlast_dig.
-  assert (pred $ uint.nat c.(Client.next_epoch) =
-    uint.nat (word.sub c.(Client.next_epoch) (W64 1))) as Heq_pred by word.
-  rewrite Heq_pred in Hlast_dig.
-  pose proof (Hagree_digs_sd _ _ Hlast_dig) as [? Hlook_sd].
-  iDestruct (big_sepM_lookup with "Hpost") as "H"; [exact Hlook_sd|].
-  iSpecialize ("H" with "His_pk"). iNamed "H". simpl in *.
-
-  iExists (take (uint.nat c.(Client.next_epoch)) adtr_st). do 4 try iSplit.
-  { iPureIntro. apply lookup_lt_Some in Hlook_dig.
-    rewrite -Heq_pred in Hlook_dig.
-    rewrite length_take_le; [done|lia]. }
-  { iApply (mono_list_lb_own_le with "Hlb_adtr"). apply prefix_take. }
-  { iApply (big_sepL_take with "Hdigs_adtr"). }
-  { iPureIntro. rewrite fmap_take.
-    refine (adtr_inv_prefix _ _ Hinv_adtr). apply prefix_take. }
-  iClear (Hlook_sd Hlook_dig Hinv_adtr) "Hdigs_adtr".
-  iRename "Hlb_adtr" into "Hlb_adtr0".
-
-  (* process the ep in the wand precond. *)
-  iIntros "!> *". iNamed 1. iNamed "His_entry". iFrame "His_label".
-  iDestruct (mono_list_lb_idx_lookup with "His_digs His_dig") as %Hlook_digs.
-  { apply lookup_lt_Some in Hlook_adtr.
-    rewrite length_take in Hlook_adtr. word. }
-  pose proof (Hagree_digs_sd _ _ Hlook_digs) as [? Hlook_sd].
-  iDestruct (big_sepM_lookup with "Hpost") as "H"; [exact Hlook_sd|].
-  iSpecialize ("H" with "His_pk"). iNamed "H". simpl in *.
-  iDestruct (big_sepL_lookup with "Hdigs_adtr") as "Hmerk_dig"; [exact Hlook_dig|].
-  iDestruct (is_merkle_entry_with_map with "Hhas_merk_proof Hmerk_dig") as %Hlook_final.
-  iDestruct (mono_list_lb_valid with "Hlb_adtr0 Hlb_adtr") as %Hpref.
-  apply lookup_take_Some in Hlook_adtr as [Hlook_adtr _].
-  opose proof (prefix_lookup_agree _ _ _ _ _ Hpref Hlook_adtr Hlook_dig) as ?.
-  rewrite lookup_fmap in Hlook_final. simplify_eq/=. naive_solver.
-Qed.
-*)
+  iIntros "!>". iIntros (?). iNamed 1. iNamed "Hpost".
+  (* TODO: after specializing lemma, left with bupd, which we can't
+  get rid of bc we've already iIntro'd it away. *)
+  iMod (do_logical_audit with "[] Hlb_digs His_pk") as "H"; try done.
+  iApply (big_sepM_impl with "His_sd").
+  iIntros "!> * %". iNamed 1. iFrame "#".
+Admitted.
 
 End proof.
