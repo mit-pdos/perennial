@@ -1,4 +1,4 @@
-From iris.bi Require Export bi.
+From iris.bi Require Import bi.
 From iris.proofmode Require Import classes classes_make proofmode.
 From iris.bi.lib Require Import fractional.
 From iris.algebra Require Import dfrac.
