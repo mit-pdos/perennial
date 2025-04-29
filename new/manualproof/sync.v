@@ -17,24 +17,14 @@ Global Instance into_val_Mutex : IntoVal Mutex.t :=
 
 Global Program Instance into_val_typed_Mutex : IntoValTyped Mutex.t sync.Mutex :=
 {| default_val := Mutex.mk false |}.
-Next Obligation. rewrite to_val_unseal /=. solve_has_go_type. Qed.
-Next Obligation.
-  (* FIXME: [solve_zero_val] tactic *)
-  intros. rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal /=.
-  rewrite zero_val_eq /= !to_val_unseal //.
-Qed.
-Next Obligation.
-  intros v1 v2. rewrite to_val_unseal /= struct.val_aux_unseal /=.
-  destruct v1, v2; with_strategy transparent [w8_word_instance] cbn.
-  naive_solver.
-Qed.
+Next Obligation. rewrite to_val_unseal /=; solve_has_go_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
 
-Global Program Instance into_val_struct_Mutex_state :
+Global Instance into_val_struct_Mutex_state :
   IntoValStructField "state" sync.Mutex Mutex.state.
-Final Obligation.
-intros. by rewrite to_val_unseal /= struct.val_aux_unseal /= to_val_unseal /=.
-Qed.
+Proof. solve_into_val_struct_field. Qed.
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 
@@ -44,26 +34,7 @@ Global Instance wp_struct_make_Mutex (state : bool) :
       "state" ::= #state
     ]))%struct
     #(Mutex.mk state).
-Proof.
-  rewrite [in #(_ : Mutex.t)]to_val_unseal.
-  by apply wp_struct_make.
-Qed.
-
-(* TODO: move *)
-Lemma flatten_struct_tt : flatten_struct #() = [].
-Proof.
-  rewrite to_val_unseal //.
-Qed.
-
-(* TODO: move *)
-Lemma struct_fields_split_intro V `{!IntoVal V} t `{!IntoValTyped V t} {dwf: struct.Wf t} dq l (v: V) Psplit :
-  (l ↦{dq} v ⊣⊢ Psplit) → StructFieldsSplit dq l v Psplit.
-Proof.
-  intros Heq.
-  constructor.
-  - rewrite Heq //.
-  - rewrite Heq //.
-Qed.
+Proof. solve_struct_make_pure_wp. Qed.
 
 Global Instance Mutex_struct_split dq l (v : Mutex.t) :
   StructFieldsSplit dq l v (
@@ -72,14 +43,10 @@ Global Instance Mutex_struct_split dq l (v : Mutex.t) :
 Proof.
   rewrite /named.
   apply struct_fields_split_intro.
-  rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=.
-  rewrite ?struct.val_aux_cons ?struct.val_aux_nil.
-  with_strategy transparent [w8_word_instance] cbn.
-  rewrite flatten_struct_tt app_nil_r.
-  (* rewrite big_sepL_app. *)
-  rewrite typed_pointsto_unseal /typed_pointsto_def.
-  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def loc_add_0.
-  reflexivity.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_field_ref_f.
 Qed.
 End instances.
 

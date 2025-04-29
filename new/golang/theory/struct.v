@@ -1,4 +1,5 @@
 From Perennial.goose_lang Require Import lifting.
+From New.golang Require defn.
 From New.golang.defn Require Export struct.
 From New.golang.theory Require Import typed_pointsto exception list typing dynamic_typing.
 From Perennial.Helpers Require Import NamedProps.
@@ -148,6 +149,32 @@ Class StructFieldsSplit `{!IntoVal V} `{!IntoValTyped V t} {dwf : struct.Wf t}
     struct_fields_combine : Psplit ⊢ l ↦{dq} v
   }.
 
+Lemma flatten_struct_tt : flatten_struct #() = [].
+Proof. rewrite to_val_unseal //. Qed.
+
+Lemma struct_fields_split_intro `{!IntoVal V} `{!IntoValTyped V t} {dwf: struct.Wf t}
+  (dq: dfrac) (l: loc) (v: V) Psplit :
+  (l ↦{dq} v ⊣⊢ Psplit) → StructFieldsSplit dq l v Psplit.
+Proof.
+  intros Heq.
+  constructor; rewrite Heq //.
+Qed.
+
+(* A specialized version of [big_sepL_app] that simplifies some loc_add-related
+expressions. Not strictly about heap_pointsto, but specialized with a dfrac so
+higher-order unification works properly. *)
+Lemma heap_pointsto_app (vs1 vs2: list val) (l: loc) dq (f: loc → dfrac → val → iProp Σ) :
+  ([∗ list] j↦vj ∈ (vs1 ++ vs2), f (l +ₗ j) dq vj) ⊣⊢
+  ([∗ list] j↦vj ∈ vs1, f (l +ₗ j) dq vj) ∗
+  ([∗ list] j↦vj ∈ vs2, f (l +ₗ (Z.of_nat (length vs1)) +ₗ Z.of_nat j) dq vj).
+Proof.
+  rewrite big_sepL_app.
+  f_equiv.
+  setoid_rewrite Nat2Z.inj_add.
+  setoid_rewrite loc_add_assoc.
+  reflexivity.
+Qed.
+
 Theorem struct_fields_acc_update f t V Vf
   l dq {dwf : struct.Wf t} (v : V)
   `{IntoValStructField f t V Vf tf field_proj} `{!SetterWf field_proj} :
@@ -282,6 +309,15 @@ Proof.
       simpl fill. wp_pures. by iApply "HΦ".
 Qed.
 
+Lemma struct_val_aux_nil fvs :
+  (struct.val_aux (structT $ []) fvs) = #().
+Proof. rewrite struct.val_aux_unseal //=. Qed.
+
+Lemma struct_val_aux_cons decls f t fvs :
+  (struct.val_aux (structT $ (f,t) :: decls) fvs) =
+  (default (zero_val t) (alist_lookup_f f fvs), (struct.val_aux (structT decls) fvs))%V.
+Proof. rewrite struct.val_aux_unseal //=. Qed.
+
 Global Instance points_to_access_struct_field_ref {V Vf} l f v (proj : V → Vf) dq {t tf : go_type}
   `{!IntoVal V} `{!IntoValTyped V t}
   `{!IntoVal Vf} `{!IntoValTyped Vf tf}
@@ -297,3 +333,145 @@ Proof.
   - by rewrite RecordSet.set_eq.
 Qed.
 End wps.
+
+(* Specialized simplification for the tactics below. Normally these tactics
+solve the goal and this isn't necessary, but debugging is way easier if they
+fail with the goal in a readable state. *)
+Ltac cbn_w8 :=
+  with_strategy transparent [w8_word_instance]
+    (with_strategy opaque [loc_add] cbn).
+
+(* solve #default_val = zero_val t in IntoValTyped *)
+Ltac solve_zero_val :=
+  intros;
+  rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal /=;
+  rewrite zero_val_eq /= !to_val_unseal //=;
+  cbn_w8.
+
+Ltac solve_to_val_inj :=
+  (* prove Inj (=) (=) (λ v, #v) *)
+  intros;
+  intros [] [];
+  rewrite to_val_unseal /= struct.val_aux_unseal /=;
+    cbn_w8;
+  inv 1;
+  try reflexivity.
+
+Ltac solve_into_val_struct_field :=
+  (* prove IntoValStructField *)
+  constructor; intros ?;
+  rewrite to_val_unseal /= struct.val_aux_unseal /= to_val_unseal //=;
+  cbn_w8.
+
+Ltac solve_struct_make_pure_wp :=
+  intros;
+  (* BUG: ssreflect has rewrite [in v in PureWp _ _ v]to_val_unseal that would
+  do this directly, but Coq incorrectly flags v as an unbound variable when
+  trying to use it in an Ltac. *)
+  lazymatch goal with
+  | |- PureWp _ _ ?v =>
+      rewrite [in v]to_val_unseal;
+      apply wp_struct_make; cbn; auto
+  end.
+
+Ltac simpl_field_ref_f :=
+  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def;
+  with_strategy transparent [w8_word_instance] (with_strategy opaque [loc_add] cbn);
+  rewrite ?go_type_size_unseal /= ?loc_add_assoc ?loc_add_0 //.
+
+Ltac unfold_typed_pointsto :=
+  rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=
+    struct.val_aux_unseal /=;
+    with_strategy transparent [w8_word_instance]
+    (with_strategy opaque [loc_add] cbn).
+
+Ltac split_pointsto_app :=
+  rewrite !heap_pointsto_app;
+  rewrite ?flatten_struct_tt ?big_sepL_nil ?(right_id bi_emp).
+
+(* use the above automation the way proofgen does (approximately, not kept in sync) *)
+Module __struct_automation_test.
+
+Import New.golang.defn.
+
+Module time.
+
+Definition Time : go_type := structT [
+  "wall" :: uint64T;
+  "ext" :: int64T;
+  "loc" :: ptrT
+].
+
+Module Time.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  wall' : w64;
+  ext' : w64;
+  loc' : loc;
+}.
+End def.
+End Time.
+
+Section instances.
+
+Global Instance settable_Time `{ffi_syntax} : Settable _ :=
+  settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
+Global Instance into_val_Time `{ffi_syntax} : IntoVal Time.t :=
+  {| to_val_def v := struct.val_aux time.Time
+                       ["wall" ::= #(Time.wall' v);
+                        "ext" ::= #(Time.ext' v);
+                        "loc" ::= #(Time.loc' v)
+                       ]%struct |}.
+
+Global Program Instance into_val_typed_Time `{ffi_syntax} : IntoValTyped Time.t time.Time :=
+{|
+  default_val := Time.mk (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. rewrite to_val_unseal /=; solve_has_go_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+Global Instance into_val_struct_field_Time_wall `{ffi_syntax} : IntoValStructField "wall" time.Time Time.wall'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Time_ext `{ffi_syntax} : IntoValStructField "ext" time.Time Time.ext'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Time_loc `{ffi_syntax} : IntoValStructField "loc" time.Time Time.loc'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_syntax} `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Time `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} wall' ext' loc':
+  PureWp True
+    (struct.make #time.Time (alist_val [
+      "wall" ::= #wall';
+      "ext" ::= #ext';
+      "loc" ::= #loc'
+    ]))%struct
+    #(Time.mk wall' ext' loc').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Time_struct_fields_split dq l (v : Time.t) :
+  StructFieldsSplit dq l v (
+    "Hwall" ∷ l ↦s[time.Time :: "wall"]{dq} v.(Time.wall') ∗
+    "Hext" ∷ l ↦s[time.Time :: "ext"]{dq} v.(Time.ext') ∗
+    "Hloc" ∷ l ↦s[time.Time :: "loc"]{dq} v.(Time.loc')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Time.wall' v)) int64T); [ | by solve_has_go_type ].
+  rewrite (@has_go_type_len _ (# (Time.ext' v)) int64T); [ | by solve_has_go_type ].
+  simpl_field_ref_f.
+Qed.
+
+End instances.
+End time.
+
+End __struct_automation_test.

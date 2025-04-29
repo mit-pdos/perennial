@@ -41,19 +41,6 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
-Lemma struct_val_aux_cons decls f t fvs :
-  (struct.val_aux (structT $ (f,t) :: decls) fvs) =
-  (default (zero_val t) (alist_lookup_f f fvs), (struct.val_aux (structT decls) fvs))%V.
-Proof. rewrite struct.val_aux_unseal //=. Qed.
-
-Lemma struct_val_aux_nil fvs :
-  (struct.val_aux (structT $ []) fvs) = #().
-Proof. rewrite struct.val_aux_unseal //=. Qed.
-
-Lemma flatten_struct_tt :
-  flatten_struct (# ()%V) = [].
-Proof. rewrite to_val_unseal //=. Qed.
-
 Theorem init_Mutex R E m : m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "Hl HR".
