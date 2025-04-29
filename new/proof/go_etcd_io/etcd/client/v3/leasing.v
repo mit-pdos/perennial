@@ -215,6 +215,8 @@ Proof.
     repeat f_equal.
     Print gFunctors.
     (* FIXME: two different [contextG] instances are available in context. *)
+Admitted.
+(*
   }
   iIntros "* #(Hctx' & Hcancel_spec & Hctx_done)".
   wp_auto.
@@ -263,6 +265,6 @@ Proof.
   }
   (* TODO: wp_waitSession. *)
   admit.
-Admitted.
+Admitted. *)
 
 End proof.
