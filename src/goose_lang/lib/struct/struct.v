@@ -189,6 +189,16 @@ Proof.
   - iIntros "%". done.
 Qed.
 
+#[global]
+Instance struct_field_pointsto_persistently l q d f v :
+  UpdateIntoPersistently (struct_field_pointsto l q d f v)
+    (struct_field_pointsto l DfracDiscarded d f v).
+Proof.
+  rewrite /UpdateIntoPersistently.
+  iIntros "H".
+  by iMod (struct_field_pointsto_persist with "H") as "#H".
+Qed.
+
 (* only works for first field *)
 Lemma struct_field_pointsto_not_null l q (d:descriptor) f v ft :
   field_offset d f = Some (0, ft) →
