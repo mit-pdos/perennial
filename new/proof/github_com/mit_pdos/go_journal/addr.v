@@ -801,14 +801,7 @@ Theorem wp_Addr__Flatid a :
   }}}.
 Proof.
   wp_start as "%Hvalid".
-  wp_alloc aptr as "Ha".
-  iDestruct (struct_fields_split with "Ha") as "H".
-  iNamed "H".
-  wp_pures.
-  wp_load.
-  wp_pures.
-  wp_load.
-  wp_pures.
+  wp_auto.
   iApply "HΦ".
   iPureIntro.
   revert Hvalid.

@@ -47,19 +47,10 @@ Theorem wp_Min_l (n m: u64) :
   {{{ RET #n; True }}}.
 Proof.
   wp_start as "%Hmin".
-  wp_alloc mptr as "Hm".
-  wp_pures.
-  wp_alloc nptr as "Hn".
-  wp_pures.
-  wp_load.
-  wp_pures.
-  wp_load.
-  wp_pures.
-  wp_if_destruct.
-  - wp_load. wp_pures.
-    iApply "HΦ". done.
-  - wp_load. wp_pures.
-    replace m with n by word.
+  wp_auto.
+  wp_if_destruct; wp_auto.
+  - iApply "HΦ". done.
+  - replace m with n by word.
     iApply "HΦ". done.
 Qed.
 
@@ -70,20 +61,11 @@ Theorem wp_Min_r (n m: u64) :
   {{{ RET #m; True }}}.
 Proof.
   wp_start as "%Hmin".
-  wp_alloc mptr as "Hm".
-  wp_pures.
-  wp_alloc nptr as "Hn".
-  wp_pures.
-  wp_load.
-  wp_pures.
-  wp_load.
-  wp_pures.
-  wp_if_destruct.
-  - wp_load. wp_pures.
-    replace n with m by word.
+  wp_auto.
+  wp_if_destruct; wp_auto.
+  - replace n with m by word.
     iApply "HΦ". done.
-  - wp_load. wp_pures.
-    iApply "HΦ". done.
+  - iApply "HΦ". done.
 Qed.
 
 Theorem wp_DPrintf (level: u64) (msg: go_string) (arg: slice.t) :
@@ -97,27 +79,16 @@ Proof.
   iIntros (Φ) "[#Hpkg _] HΦ".
   wp_func_call. wp_call.
 
-  wp_alloc aptr as "Ha".
-  wp_pures.
-  wp_alloc msgptr as "Hmsg".
-  wp_pures.
-  wp_alloc lptr as "Hl".
-  wp_pures.
-  wp_load.
-
+  wp_auto.
   wp_globals_get.
 
   (* Annoying that [iNamed "Hpkg"] doesn't work directly.. *)
   rewrite /is_pkg_init /is_pkg_init_util.
   iNamed "Hpkg".
   iNamed "Hinit".
-  wp_load.
-  wp_pures.
+  wp_auto.
   wp_if_destruct.
-  - wp_load.
-    wp_pures.
-    wp_load.
-    wp_pures.
+  - wp_auto.
     wp_apply wp_Printf.
     iApply "HΦ". done.
   - iApply "HΦ". done.
