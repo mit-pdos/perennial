@@ -104,9 +104,6 @@ Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_case_inl v e1 e2 : PureWp True (Case (InjLV v) e1 e2) (e1 v).
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_total_le (v1 v2 : val) : PureWp True (TotalLe v1 v2) #(val_le v1 v2).
-Proof. apply (pure_exec_pure_wp O). rewrite to_val_unseal. solve_pure_exec. Qed.
-
 Definition wp_eq_val (v1 v2 : val) :
   PureWp (is_comparable v1 ∧ is_comparable v2) (BinOp EqOp v1 v2) #(bool_decide (v1 = v2)).
 Proof.
