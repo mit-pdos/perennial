@@ -154,7 +154,7 @@ Proof.
   iIntros (?) "Hs". wp_pures.
   iNamedStruct "Hs". rewrite Henc.
   wp_apply (wp_ReadInt [] with "[Hsl]").
-  { list_simplifier. iFrame "Hsl". }
+  { by list_simplifier. }
   iIntros (?) "?". wp_pures. wp_storeField.
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
 Qed.
