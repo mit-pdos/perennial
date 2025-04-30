@@ -70,9 +70,9 @@ Definition Log__installBufsMap : val :=
   rec: "Log__installBufsMap" "l" "bufs" :=
     exception_do (let: "l" := (mem.alloc "l") in
     let: "bufs" := (mem.alloc "bufs") in
-    let: "blks" := (mem.alloc (type.zero_val #(mapT uint64T sliceT))) in
+    let: "blks" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
     let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ("blks" <-[#(mapT uint64T sliceT)] "$r0");;;
+    do:  ("blks" <-[type.mapT #uint64T #sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "bufs") in
     (let: "b" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
@@ -81,12 +81,12 @@ Definition Log__installBufsMap : val :=
       (if: (![#uint64T] (struct.field_ref #buf.Buf #"Sz"%go (![#ptrT] "b"))) = common.NBITBLOCK
       then
         let: "$r0" := (![#sliceT] (struct.field_ref #buf.Buf #"Data"%go (![#ptrT] "b"))) in
-        do:  (map.insert (![#(mapT uint64T sliceT)] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) "$r0")
+        do:  (map.insert (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) "$r0")
       else
         let: "blk" := (mem.alloc (type.zero_val #sliceT)) in
         let: "ok" := (mem.alloc (type.zero_val #boolT)) in
         let: "mapblk" := (mem.alloc (type.zero_val #sliceT)) in
-        let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T sliceT)] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b"))))) in
+        let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b"))))) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("mapblk" <-[#sliceT] "$r0");;;
@@ -100,25 +100,25 @@ Definition Log__installBufsMap : val :=
           (method_call #wal #"Walog'ptr" #"Read" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
           do:  ("blk" <-[#sliceT] "$r0");;;
           let: "$r0" := (![#sliceT] "blk") in
-          do:  (map.insert (![#(mapT uint64T sliceT)] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) "$r0"));;;
+          do:  (map.insert (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) "$r0"));;;
         do:  (let: "$a0" := (![#sliceT] "blk") in
         (method_call #buf #"Buf'ptr" #"Install" (![#ptrT] "b")) "$a0"))));;;
-    return: (![#(mapT uint64T sliceT)] "blks")).
+    return: (![type.mapT #uint64T #sliceT] "blks")).
 
 (* go: obj.go:70:15 *)
 Definition Log__installBufs : val :=
   rec: "Log__installBufs" "l" "bufs" :=
     exception_do (let: "l" := (mem.alloc "l") in
     let: "bufs" := (mem.alloc "bufs") in
-    let: "bufmap" := (mem.alloc (type.zero_val #(mapT uint64T sliceT))) in
+    let: "bufmap" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "bufs") in
     (method_call #obj.obj #"Log'ptr" #"installBufsMap" (![#ptrT] "l")) "$a0") in
-    do:  ("bufmap" <-[#(mapT uint64T sliceT)] "$r0");;;
+    do:  ("bufmap" <-[type.mapT #uint64T #sliceT] "$r0");;;
     let: "blks" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #wal.Update #(W64 0) (let: "$a0" := (![#(mapT uint64T sliceT)] "bufmap") in
+    let: "$r0" := (slice.make3 #wal.Update #(W64 0) (let: "$a0" := (![type.mapT #uint64T #sliceT] "bufmap") in
     map.len "$a0")) in
     do:  ("blks" <-[#sliceT] "$r0");;;
-    let: "$range" := (![#(mapT uint64T sliceT)] "bufmap") in
+    let: "$range" := (![type.mapT #uint64T #sliceT] "bufmap") in
     (let: "data" := (mem.alloc (type.zero_val #uint64T)) in
     let: "blkno" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
