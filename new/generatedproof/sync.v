@@ -246,6 +246,10 @@ Global Instance wp_method_call_RWMutex'ptr_RLock :
   WpMethodCall sync "RWMutex'ptr" "RLock" _ (is_pkg_defined sync) :=
   ltac:(apply wp_method_call'; reflexivity).
 
+Global Instance wp_method_call_RWMutex'ptr_RLocker :
+  WpMethodCall sync "RWMutex'ptr" "RLocker" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
 Global Instance wp_method_call_RWMutex'ptr_RUnlock :
   WpMethodCall sync "RWMutex'ptr" "RUnlock" _ (is_pkg_defined sync) :=
   ltac:(apply wp_method_call'; reflexivity).
