@@ -66,7 +66,7 @@ End C.
 
 End simple.
 (* The above could be fixed by removing [C_a] from [C]; this is a little
-   unfortunately unsystematic since it requires looking transitive inside the
+   unfortunately unsystematic since it requires looking transitively inside the
    definition of B, but it does work. *)
 
 Module trickier.

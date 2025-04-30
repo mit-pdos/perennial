@@ -124,7 +124,7 @@ Local Existing Instance clientv3_inG.
 Local Existing Instance clientv3_contextG.
 
 Definition is_leasingKV (lkv : loc) γ : iProp Σ :=
-  ∃ (cl : loc) (ctx : context.Context.t) ctx_st (session : loc),
+  ∃ (cl : loc) (ctx : context.Context.t) ctx_st,
   "#cl" ∷ lkv ↦s[leasing.leasingKV :: "cl"]□ cl ∗
   "#Hcl" ∷ is_Client cl γ.(etcd_gn) ∗
   "#ctx" ∷ lkv ↦s[leasing.leasingKV::"ctx"]□ ctx ∗
@@ -132,9 +132,9 @@ Definition is_leasingKV (lkv : loc) γ : iProp Σ :=
 
 (* Half of this goes in the RWMutex. *)
 Definition own_leasingKV_monitorSession lkv γ q : iProp Σ :=
-  ∃ (session : loc) lease,
+  ∃ (session : loc),
   "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#q} session ∗
-  "#Hsession" ∷ is_Session session γ.(etcd_gn) lease
+  "#Hsession" ∷ if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease
 .
 
 Lemma wp_leasingKV__monitorSession lkv γ :
@@ -161,13 +161,14 @@ Proof.
   iApply (wp_wand _ _ _ (λ v,
                            (⌜ v = execute_val #tt ⌝ ∨
                                     ⌜ v = return_val #tt ⌝) ∗
-                           "session" ∷ _ ↦s[_::_]{#1/2} session0 ∗ _)%I with "[-]").
+                           "session" ∷ _ ↦s[_::_]{#1/2} session ∗ _)%I with "[-]").
   {
     wp_if_destruct.
     { simpl. iFrame "session". iSplitR.
       { by iLeft. }
       iNamedAccu. }
     { (* not nil *)
+      rewrite decide_False //. iNamed "Hsession".
       wp_auto.
       wp_apply "HDone".
       ltac2:(wp_bind_apply ()).
@@ -211,13 +212,10 @@ Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
 Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
-  wp_apply (wp_Client__Ctx with "[$]") as "* #Hctx".
+  wp_apply (wp_Client__Ctx with "[$]") as "* #Hclient_ctx".
   iDestruct (is_Client_to_pub with "[$]") as "#Hclient_pub".
   iNamed "Hclient_pub".
-  wp_apply (wp_WithCancel with "Hctx").
-Admitted.
-(*
-  }
+  wp_apply (wp_WithCancel with "Hclient_ctx").
   iIntros "* #(Hctx' & Hcancel_spec & Hctx_done)".
   wp_auto.
   unshelve wp_apply wp_map_make as "%revokes Hrevokes"; try tc_solve; try tc_solve.
@@ -250,13 +248,29 @@ Admitted.
   replace (Z.to_nat (sint.Z (W32 2))) with (2%nat) by done.
   iEval (simpl) in "H".
   iDestruct "H" as "[Hwg_done1 Hwg_done2]".
+
+  iPersist "Hcl Hkv Hctx".
+  iAssert (is_leasingKV lkv ltac:(econstructor)) with "[-]" as "#Hlkv".
+  { iFrame "#". }
+
   wp_apply (wp_fork with "[Hwg_done1 session_monitor]").
   {
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
-    (* TODO: wp_monitorSession. *)
-    admit.
+    ltac2:(wp_bind_apply ()).
+    Time iApply (wp_leasingKV__monitorSession with "[session_monitor]").
+    {
+      (* iFrame. iFrame "#". *)
+      iSplitR.
+      { Time solve_pkg_init. (* FIXME: solve_pkg_init is pretty slow here. *) }
+      (* ~13 seconds. *)
+      iFrame "∗#".
+    }
+    iNext. iIntros "_". wp_auto.
+    wp_apply "Hwg_done1".
+    { admit. (* FIXME: [is_pkg_init] got unfolded.... *) }
+    done.
   }
   wp_apply (wp_fork with "[Hwg_done2]").
   {
@@ -265,6 +279,6 @@ Admitted.
   }
   (* TODO: wp_waitSession. *)
   admit.
-Admitted. *)
+Admitted.
 
 End proof.
