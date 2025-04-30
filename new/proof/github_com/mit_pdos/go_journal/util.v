@@ -119,8 +119,6 @@ Proof.
     wp_load.
     wp_pures.
     wp_apply wp_Printf.
-    iIntros (???) "_".
-    wp_auto.
     iApply "HΦ". done.
   - iApply "HΦ". done.
 Qed.
