@@ -8,7 +8,8 @@ Section disk.
 
   Definition Disk : go_type := ptrT.
 
-  Definition BlockSize := BlockSize.
+  Definition BlockSize :=
+    #(W64 4096).
 
   Definition Get: val :=
     λ: <>, ExtV ().
