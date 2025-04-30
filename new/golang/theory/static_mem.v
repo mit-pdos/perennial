@@ -112,8 +112,7 @@ Section goose_lang.
       replace (LitV (LitLoc l')) with (# l').
       2:{ by rewrite to_val_unseal. }
       wp_pures.
-      simpl.
-      ltac2:(wp_bind_apply ()).
+      simpl. wp_bind.
       rewrite [in (to_val (l' +ₗ _))]to_val_unseal.
       wp_apply ("IH2" with "[] [] [Hl]").
       { iPureIntro. intros. apply Hfields. by right. }
