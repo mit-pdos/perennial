@@ -5,7 +5,7 @@ From New.golang.theory Require static_mem.
 From New.proof Require go_etcd_io.etcd.raft.v3.
 From New.proof.github_com.mit_pdos Require partialapp asyncfile lockservice globals_test.
 
-From New.proof Require go_etcd_io.etcd.client.v3.concurrency.
+From New.proof Require go_etcd_io.etcd.client.v3.leasing.
 From New.proof Require Import chan context.
 
 Require New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.closed.

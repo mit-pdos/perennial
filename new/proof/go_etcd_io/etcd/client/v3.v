@@ -720,8 +720,8 @@ Context `{!goGlobalsGS Σ}.
 Axiom clientv3G : gFunctors → Set.
 Existing Class clientv3G.
 Axiom clientv3_names : Set.
-Axiom clientv_context3G : ∀ {Σ} {_:clientv3G Σ}, contextG Σ.
-Local Existing Instance clientv_context3G.
+Axiom clientv3_contextG : ∀ {Σ} {_:clientv3G Σ}, contextG Σ.
+Local Existing Instance clientv3_contextG.
 Context `{!clientv3G Σ}.
 Implicit Types (γ : clientv3_names).
 

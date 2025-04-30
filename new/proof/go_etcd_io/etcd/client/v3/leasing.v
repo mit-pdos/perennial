@@ -11,7 +11,7 @@ Require Import New.proof.go_etcd_io.etcd.client.v3.
 Class leasingG Σ :=
   {
     concurrency_inG :: concurrencyG Σ;
-    context_inG :: contextG Σ
+    (* context_inG :: contextG Σ *) (* FIXME: skipped to avoid duplicate [inG]s. *)
   }.
 
 Section proof.
@@ -118,6 +118,11 @@ Record leasingKV_names := {
     etcd_gn : clientv3_names
   }.
 
+(* FIXME: make this a global instance where it's defined?; this is to have contextG
+   available here without directly adding it to [leasingG]. *)
+Local Existing Instance clientv3_inG.
+Local Existing Instance clientv3_contextG.
+
 Definition is_leasingKV (lkv : loc) γ : iProp Σ :=
   ∃ (cl : loc) (ctx : context.Context.t) ctx_st (session : loc),
   "#cl" ∷ lkv ↦s[leasing.leasingKV :: "cl"]□ cl ∗
@@ -209,12 +214,7 @@ Proof.
   wp_apply (wp_Client__Ctx with "[$]") as "* #Hctx".
   iDestruct (is_Client_to_pub with "[$]") as "#Hclient_pub".
   iNamed "Hclient_pub".
-  wp_apply (wp_WithCancel with "[]").
-  { iFrame "#".
-    iExactEq "Hctx".
-    repeat f_equal.
-    Print gFunctors.
-    (* FIXME: two different [contextG] instances are available in context. *)
+  wp_apply (wp_WithCancel with "Hctx").
 Admitted.
 (*
   }
