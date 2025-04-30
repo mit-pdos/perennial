@@ -84,6 +84,7 @@ projs = [
             "go.uber.org/zap/zapcore",
         ],
     ),
+    create_proj(repo="mit-pdos/go-journal"),
 ]
 
 
