@@ -146,7 +146,7 @@ def main():
         return getattr(args, name.replace("-", "_"))
 
     for proj in projs:
-        if not os.path.isdir(proj_dir(proj.name)):
+        if proj_dir(proj.name) is not None and not os.path.isdir(proj_dir(proj.name)):
             parser.error(f"{proj.name} directory does not exist")
 
     if not os.path.isdir(goose_dir):
