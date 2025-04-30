@@ -1,3 +1,6 @@
-Imports = []
-ToTranslate = []
-ToAxiomatize = []
+translate = [
+  "!*",
+]
+imports = [
+  "!*",
+]

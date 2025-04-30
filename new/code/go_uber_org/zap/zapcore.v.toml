@@ -2,3 +2,6 @@ translate = [
   "Field",
   "FieldType",
 ]
+imports = [
+  "!*",
+]

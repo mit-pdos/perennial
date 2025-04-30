@@ -2,3 +2,6 @@ translate = [
   "Reader",
   "Writer",
 ]
+imports = [
+  "!*"
+]

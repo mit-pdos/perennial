@@ -1,4 +1,5 @@
 translate = [
+  "!*",
   "rwmutexMaxReaders",
   "RWMutex",
   "RWMutex.TryLock",
