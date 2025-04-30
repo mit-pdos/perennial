@@ -11,7 +11,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
 
 Implicit Types (v:val).
 
-Theorem wp_ReadInt s q x tail :
+Theorem wp_ReadInt tail s q x :
   {{{ own_slice_small s byteT q (u64_le x ++ tail) }}}
     ReadInt (slice_val s)
   {{{ s', RET (#x, slice_val s'); own_slice_small s' byteT q tail }}}.
@@ -26,7 +26,7 @@ Proof.
   rewrite drop_app_length'; [done|len].
 Qed.
 
-Theorem wp_ReadInt32 s q (x: u32) tail :
+Theorem wp_ReadInt32 tail s q (x: u32) :
   {{{ own_slice_small s byteT q (u32_le x ++ tail) }}}
     ReadInt32 (slice_val s)
   {{{ s', RET (#x, slice_val s'); own_slice_small s' byteT q tail }}}.

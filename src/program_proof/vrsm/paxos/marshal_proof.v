@@ -58,7 +58,10 @@ Proof.
   iIntros (?) "Hsl". wp_store. wp_loadField.
   wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl]").
   iIntros (?) "[Hsl _]". wp_store.
-  wp_load. iApply "HΦ". iFrame. iPureIntro. done.
+  wp_load. iApply "HΦ". iFrame. iPureIntro.
+  replace (uint.nat (W64 0)) with (0%nat) by word.
+  list_simplifier.
+  by rewrite /has_encoding.
 Qed.
 
 Lemma wp_Decode enc enc_sl (args:C) :
@@ -150,7 +153,8 @@ Proof.
   wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
   iNamedStruct "Hs". rewrite Henc.
-  wp_apply (wp_ReadInt with "[$]").
+  wp_apply (wp_ReadInt [] with "[Hsl]").
+  { list_simplifier. iFrame "Hsl". }
   iIntros (?) "?". wp_pures. wp_storeField.
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
 Qed.

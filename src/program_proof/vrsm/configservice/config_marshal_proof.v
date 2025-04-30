@@ -84,7 +84,8 @@ Proof.
        the first (i+1) entries *)
     rewrite -app_assoc.
     f_equal.
-    replace (u64_le srv) with (concat (u64_le <$> [srv])) by done.
+    replace (u64_le srv) with (concat (u64_le <$> [srv])).
+    2: { by list_simplifier. }
     rewrite -concat_app.
     rewrite -fmap_app.
     replace (uint.nat (word.add i 1)) with (uint.nat i + 1)%nat by word.
@@ -115,6 +116,8 @@ Proof.
   {
     unfold P.
     iExists _; iFrame.
+    replace (uint.nat (W64 0)) with (0%nat) by word.
+    by list_simplifier.
   }
   iIntros "[HP Hconf_sl]".
   iNamed "HP".
@@ -230,7 +233,8 @@ Proof.
       rewrite Forall_fmap.
       apply Forall_true.
       intros.
-      done.
+      simpl.
+      len.
     }
     word.
   }

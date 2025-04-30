@@ -917,7 +917,9 @@ Section encode.
     not (encode_lsn_icommand lsn icmd []).
   Proof.
     intros Henc.
-    by destruct Henc as (cmddata & Happ & _).
+    destruct Henc as (cmddata & Happ & _).
+    apply (f_equal length) in Happ.
+    revert Happ. len.
   Qed.
 
 End encode.
