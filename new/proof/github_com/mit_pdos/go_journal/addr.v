@@ -3,8 +3,6 @@ Require Import New.generatedproof.github_com.mit_pdos.go_journal.addr.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.github_com.goose_lang.primitive.disk.
 Require Import New.proof.github_com.mit_pdos.go_journal.common.
-Require Import New.golang.theory.globals.
-Require Import Perennial.Helpers.CountableTactics.
 
 Set Implicit Arguments.
 
