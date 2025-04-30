@@ -145,7 +145,7 @@ Proof.
     let T := type of t in change T with (HList.tuple byte n) in *.
     rewrite combine_unfold.
     rewrite BitOps.or_to_plus.
-    2: { pose proof (IHn t).
+    { pose proof (IHn t).
       pose proof (word.unsigned_range b).
       split.
       { unfold Z.shiftl; simpl. lia. }
@@ -158,13 +158,17 @@ Proof.
     unfold Z.eqf; intros.
     rewrite Z.land_spec.
     rewrite Z.bits_0.
-    (* TODO: error here. *)
     destruct (decide (n0 < 0)).
-    { rewrite Z.testbit_neg_r; lia. }
+    { rewrite Z.testbit_neg_r; [ | lia ].
+      rewrite andb_false_l; auto.
+    }
     destruct (decide (n0 < 8)).
-    + rewrite Z.shiftl_spec_low; lia.
-    + rewrite (Zmod_small_bits_high 8); lia.
+    + rewrite Z.shiftl_spec_low; [ | lia ].
+      rewrite andb_false_r; auto.
+    + rewrite (Zmod_small_bits_high 8); [ | lia | lia ].
+      rewrite andb_false_l; auto.
 Qed.
+
 
 Lemma le_to_u64_le bs :
   length bs = 8%nat ->
@@ -174,10 +178,10 @@ Proof.
   intros.
   do 8 (destruct bs; [ simpl in H; lia | ]).
   destruct bs; [ clear H | simpl in H; lia ].
-  unfold u64_le_def, le_to_u64.
+  unfold le_to_u64, u64_le_def.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small.
-  2: { rewrite LittleEndian.split_combine.
+  { rewrite LittleEndian.split_combine.
     simpl; auto. }
   cbv [length].
   apply combine_bound.
