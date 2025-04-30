@@ -82,7 +82,7 @@ Definition Txn__acquireNoCheck : val :=
     do:  (let: "$a0" := (![#uint64T] "flatAddr") in
     (method_call #lockmap #"LockMap'ptr" #"Acquire" (![#ptrT] (struct.field_ref #Txn #"locks"%go (![#ptrT] "txn")))) "$a0");;;
     let: "$r0" := #true in
-    do:  (map.insert (![#(mapT uint64T boolT)] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr") "$r0")).
+    do:  (map.insert (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr") "$r0")).
 
 (* go: txn.go:58:17 *)
 Definition Txn__isAlreadyAcquired : val :=
@@ -92,7 +92,7 @@ Definition Txn__isAlreadyAcquired : val :=
     let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] "addr")) #()) in
     do:  ("flatAddr" <-[#uint64T] "$r0");;;
-    return: (Fst (map.get (![#(mapT uint64T boolT)] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr")))).
+    return: (Fst (map.get (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr")))).
 
 (* go: txn.go:63:17 *)
 Definition Txn__Acquire : val :=
@@ -113,7 +113,7 @@ Definition Txn__Acquire : val :=
 Definition Txn__ReleaseAll : val :=
   rec: "Txn__ReleaseAll" "txn" <> :=
     exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "$range" := (![#(mapT uint64T boolT)] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) in
+    let: "$range" := (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) in
     (let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("flatAddr" <-[#uint64T] "$key");;;

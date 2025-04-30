@@ -279,9 +279,9 @@ Definition mkSliding : val :=
   rec: "mkSliding" "log" "start" :=
     exception_do (let: "start" := (mem.alloc "start") in
     let: "log" := (mem.alloc "log") in
-    let: "addrPos" := (mem.alloc (type.zero_val #(mapT uint64T LogPosition))) in
+    let: "addrPos" := (mem.alloc (type.zero_val (type.mapT #uint64T #LogPosition))) in
     let: "$r0" := (map.make #uint64T #LogPosition) in
-    do:  ("addrPos" <-[#(mapT uint64T LogPosition)] "$r0");;;
+    do:  ("addrPos" <-[type.mapT #uint64T #LogPosition] "$r0");;;
     let: "$range" := (![#sliceT] "log") in
     (let: "buf" := (mem.alloc (type.zero_val #intT)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
@@ -289,12 +289,12 @@ Definition mkSliding : val :=
       do:  ("buf" <-[#Update] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
       let: "$r0" := ((![#LogPosition] "start") + (s_to_w64 (![#intT] "i"))) in
-      do:  (map.insert (![#(mapT uint64T LogPosition)] "addrPos") (![#uint64T] (struct.field_ref #Update #"Addr"%go "buf")) "$r0")));;;
+      do:  (map.insert (![type.mapT #uint64T #LogPosition] "addrPos") (![#uint64T] (struct.field_ref #Update #"Addr"%go "buf")) "$r0")));;;
     return: (mem.alloc (let: "$log" := (![#sliceT] "log") in
      let: "$start" := (![#LogPosition] "start") in
      let: "$mutable" := ((![#LogPosition] "start") + (s_to_w64 (let: "$a0" := (![#sliceT] "log") in
      slice.len "$a0"))) in
-     let: "$addrPos" := (![#(mapT uint64T LogPosition)] "addrPos") in
+     let: "$addrPos" := (![type.mapT #uint64T #LogPosition] "addrPos") in
      struct.make #sliding [{
        "log" ::= "$log";
        "start" ::= "$start";
@@ -324,7 +324,7 @@ Definition sliding__posForAddr : val :=
     let: "a" := (mem.alloc "a") in
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "pos" := (mem.alloc (type.zero_val #LogPosition)) in
-    let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T LogPosition)] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) (![#uint64T] "a")) in
+    let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #LogPosition] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) (![#uint64T] "a")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("pos" <-[#LogPosition] "$r0");;;
@@ -364,7 +364,7 @@ Definition sliding__append : val :=
     (slice.append #Update) "$a0" "$a1") in
     do:  ((struct.field_ref #sliding #"log"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
     let: "$r0" := (![#LogPosition] "pos") in
-    do:  (map.insert (![#(mapT uint64T LogPosition)] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) (![#uint64T] (struct.field_ref #Update #"Addr"%go "u")) "$r0")).
+    do:  (map.insert (![type.mapT #uint64T #LogPosition] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) (![#uint64T] (struct.field_ref #Update #"Addr"%go "u")) "$r0")).
 
 (* Absorbs writes in in-memory transactions (avoiding those that might be in
    the process of being logged or installed).
@@ -486,7 +486,7 @@ Definition sliding__deleteFrom : val :=
       do:  ("blkno" <-[#uint64T] "$r0");;;
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "oldPos" := (mem.alloc (type.zero_val #LogPosition)) in
-      let: ("$ret0", "$ret1") := (map.get (![#(mapT uint64T LogPosition)] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) (![#uint64T] "blkno")) in
+      let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #LogPosition] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) (![#uint64T] "blkno")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("oldPos" <-[#LogPosition] "$r0");;;
@@ -500,7 +500,7 @@ Definition sliding__deleteFrom : val :=
         let: "$sl1" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "oldPos")) in
         slice.literal #interfaceT ["$sl0"; "$sl1"])) in
         (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
-        do:  (let: "$a0" := (![#(mapT uint64T LogPosition)] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) in
+        do:  (let: "$a0" := (![type.mapT #uint64T #LogPosition] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) in
         let: "$a1" := (![#uint64T] "blkno") in
         map.delete "$a0" "$a1")
       else do:  #())));;;

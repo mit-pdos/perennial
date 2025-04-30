@@ -255,21 +255,21 @@ Definition BufMap__Insert : val :=
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "buf" := (mem.alloc "buf") in
     let: "$r0" := (![#ptrT] "buf") in
-    do:  (map.insert (![#(mapT uint64T ptrT)] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) #()) "$r0")).
+    do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) #()) "$r0")).
 
 (* go: bufmap.go:26:21 *)
 Definition BufMap__Lookup : val :=
   rec: "BufMap__Lookup" "bmap" "addr" :=
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "addr" := (mem.alloc "addr") in
-    return: (Fst (map.get (![#(mapT uint64T ptrT)] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] "addr")) #())))).
+    return: (Fst (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] "addr")) #())))).
 
 (* go: bufmap.go:30:21 *)
 Definition BufMap__Del : val :=
   rec: "BufMap__Del" "bmap" "addr" :=
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "addr" := (mem.alloc "addr") in
-    do:  (let: "$a0" := (![#(mapT uint64T ptrT)] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
+    do:  (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
     let: "$a1" := ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] "addr")) #()) in
     map.delete "$a0" "$a1")).
 
@@ -277,13 +277,13 @@ Definition BufMap__Del : val :=
 Definition BufMap__Ndirty : val :=
   rec: "BufMap__Ndirty" "bmap" <> :=
     exception_do (let: "bmap" := (mem.alloc "bmap") in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![#(mapT uint64T ptrT)] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
     map.len "$a0")) in
     do:  "$r0";;;
     let: "n" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("n" <-[#uint64T] "$r0");;;
-    let: "$range" := (![#(mapT uint64T ptrT)] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
+    let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
     (let: "buf" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("buf" <-[#ptrT] "$value");;;
@@ -298,7 +298,7 @@ Definition BufMap__DirtyBufs : val :=
   rec: "BufMap__DirtyBufs" "bmap" <> :=
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "bufs" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$range" := (![#(mapT uint64T ptrT)] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
+    let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
     (let: "buf" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("buf" <-[#ptrT] "$value");;;
