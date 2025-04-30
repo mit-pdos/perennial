@@ -182,11 +182,10 @@ End proof.
     current context to the loop invariant, then apply this tactic. Use
     [wp_for_chan_post] for the leaves of the proof. *)
 Ltac wp_for_chan_core :=
-  wp_bind (chan.for_range _ _); (iApply (wp_for_chan_range with "[-]"));
+  wp_bind (chan.for_range _ _); (iApply (wp_for_chan_range (IntoValTyped0:=?[ivt]) with "[-]"));
   [ by iNamedAccu
   | (by iFrame "#" || fail "wp_for_chan_core: could not solve [is_chan] by [iFrame ""#""]. ")
-  | iIntros "!# __CTX"; iNamed "__CTX" ].
-
+  | iIntros "!# __CTX"; iNamed "__CTX" ]; instantiate(ivt:=ltac:(tc_solve)).
 
 (** Automatically apply the right theorem for [for_chan_postcondition] *)
 Ltac wp_for_chan_post_core :=

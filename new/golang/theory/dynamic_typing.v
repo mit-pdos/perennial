@@ -88,6 +88,14 @@ Proof.
     repeat rewrite to_val_unseal //=.
 Qed.
 
+(* A [list.Nil] doesn't match up with [#decls], so this explicitly provides a
+   pure reduction for that case. *)
+#[global] Instance structT_pure_wp_nil :
+  PureWp True (type.structT list.Nil) (#(structT [])).
+Proof.
+  pure_wp_start. rewrite to_val_unseal /=. done.
+Qed.
+
 #[global] Instance mapT_pure_wp (keyT elemT: go_type) :
   PureWp True
          (type.mapT #keyT #elemT)

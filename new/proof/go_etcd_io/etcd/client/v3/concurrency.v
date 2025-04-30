@@ -103,7 +103,7 @@ Proof.
   rewrite decide_True //.
   iClear "err". clear err_ptr.
   iDestruct "Hl" as "#Hlease0".
-  wp_apply wp_WithCancel as "* (Hctx & Hcancel & Hchan)".
+  wp_apply (wp_WithCancel True) as "* (Hcancel & Hctx)".
   { iFrame "#". }
 
   wp_apply (wp_Client__KeepAlive with "[$]") as "* #Hkch".
@@ -123,11 +123,11 @@ Proof.
   }
   wp_auto.
   wp_apply (wp_chan_make (V:=())) as "* Hdonec".
-  iDestruct (own_chan_is_chan with "Hdonec") as "#Hdonec_is".
+  rename s into ctx_desc.
   wp_alloc s as "Hs".
   wp_auto.
   iPersist "cancel donec keepAlive".
-  iMod (alloc_closeable_chan True with "Hdonec_is Hdonec") as (γch) "[#Hdonec_closeable Hdonec_tok]"; [done..|].
+  iMod (alloc_closeable_chan True with "Hdonec") as "[#Hdonec_closeable Hdonec_tok]"; [done..|].
   rewrite -wp_fupd.
   wp_apply (wp_fork with "[Hdonec_tok Hcancel]").
   {

@@ -531,7 +531,7 @@ Ltac2 wp_alloc () :=
   ltac1:(rewrite <- ?default_val_eq_zero_val);
   lazy_match! goal with
   | [ |- envs_entails _ (wp _ _ ?e _) ] => wp_walk_unwrap (fun () => walk_expr e wp_alloc_visit)
-                                                        "wp_alloc: could not find ref_ty"
+                                                        "wp_alloc: could not find [alloc]"
   | [ |- _ ] => Control.backtrack_tactic_failure "wp_alloc: not a wp"
   end.
 
@@ -560,7 +560,7 @@ Ltac2 wp_alloc_auto () :=
   ltac1:(rewrite <- ?default_val_eq_zero_val);
   lazy_match! goal with
   | [ |- envs_entails _ (wp _ _ ?e _) ] => wp_walk_unwrap (fun () => walk_expr e wp_alloc_auto_visit)
-                                                        "wp_alloc_auto: could not find ref_ty"
+                                                        "wp_alloc_auto: could not find [alloc]"
   | [ |- _ ] => Control.backtrack_tactic_failure "wp_alloc_auto: not a wp"
   end.
 
