@@ -158,7 +158,7 @@ Lemma do_logical_audit c digs sd aud_pk aud_γ :
   (∀ m : option (list w8), last digs = Some m → is_Some m) →
   length digs = uint.nat c.(Client.next_epoch) →
   (* bupd needs to come after aud_γ.
-  use for mono_list_lb_own aud_γ [] when don't yet have auditor sigs. *)
+  used for making aud_γ lb when don't yet have auditor sigs. *)
   ⊢ |==>
   (* generalized from client own pred to allow sigs from diff parties. *)
   ([∗ map] ep↦x ∈ sd,
@@ -1341,7 +1341,7 @@ Proof.
   { by rewrite -Hdom -Hdom1. }
   clear Hdom Hdom1 Hsub.
   iIntros "!> %".
-  by iMod (do_logical_audit with "Hpost Hlb_digs") as "H".
+  by iMod (do_logical_audit with "Hpost Hlb_digs").
 Qed.
 
 End proof.
