@@ -25,3 +25,7 @@ trusted = [
   "AddInt32",
   "CompareAndSwapInt32",
 ]
+
+imports = [
+  "!*",
+]

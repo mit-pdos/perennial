@@ -2,3 +2,6 @@ translate = [
   "Context",
   "CancelFunc",
 ]
+imports = [
+  "!*"
+]
