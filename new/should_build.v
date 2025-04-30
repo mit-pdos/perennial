@@ -9,3 +9,5 @@ From New.proof Require go_etcd_io.etcd.client.v3.concurrency.
 From New.proof Require Import chan context.
 
 Require New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.closed.
+
+From New.proof Require Import inG_problem.
