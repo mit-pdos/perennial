@@ -148,9 +148,8 @@ Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ
       ((λ x, MapValPre.mk x.1 x.2) <$> audit_val) ⌝ ∗
     "%Hlook_adtr" ∷ ⌜ m !! label = audit_val ⌝)).
 
-(* WPs. *)
-
 Lemma do_logical_audit c digs sd aud_pk aud_γ :
+  (* most of these preds are copied from Client.own. *)
   (∀ (ep : w64) (dig : list w8),
     digs !! uint.nat ep = Some (Some dig) →
     ∃ sig : list w8,
@@ -158,27 +157,30 @@ Lemma do_logical_audit c digs sd aud_pk aud_γ :
     Some {| SigDig.Epoch := ep; SigDig.Dig := dig; SigDig.Sig := sig |}) →
   (∀ m : option (list w8), last digs = Some m → is_Some m) →
   length digs = uint.nat c.(Client.next_epoch) →
+  (* bupd needs to come after aud_γ.
+  use for mono_list_lb_own aud_γ [] when don't yet have auditor sigs. *)
+  ⊢ |==>
   (* generalized from client own pred to allow sigs from diff parties. *)
   ([∗ map] ep↦x ∈ sd,
     ∃ aud_sig,
     "#His_sigdig" ∷ is_SigDig (SigDig.mk x.(SigDig.Epoch)
       x.(SigDig.Dig) aud_sig) aud_pk) -∗
   mono_list_lb_own c.(Client.γ) digs -∗
-  is_sig_pk aud_pk (sigpred aud_γ)
-  ==∗
+  is_sig_pk aud_pk (sigpred aud_γ) -∗
   logical_audit_post c.(Client.γ) aud_γ c.(Client.serv).(Server.vrf_pk)
     c.(Client.next_epoch).
 Proof.
-  iIntros (Hagree_digs_sd Hlast_digs Hlen_digs) "#His_sd #Hlb_digs #Hsig_pk".
+  intros Hagree_digs_sd Hlast_digs Hlen_digs.
+  iMod (mono_list_lb_own_nil (mono_listG0:=pavG_adtr) aud_γ) as "#Hlb_nil".
+
+  iIntros "!> #His_sd #Hlb_digs #Hsig_pk".
   destruct (decide (uint.Z c.(Client.next_epoch) = uint.Z 0)).
-  { iMod (mono_list_lb_own_nil (mono_listG0:=pavG_adtr) _) as "$".
-    iModIntro. simpl.
+  { iFrame "Hlb_nil". simpl.
     iSplit; [word|].
     iSplit. { rewrite /audit_gs_inv. naive_solver. }
     iModIntro. iIntros "*". by iNamed 1. }
 
   (* get gs from last sig. *)
-  iModIntro.
   assert (∃ x, last digs = Some x) as [? Hlast_Some].
   { destruct digs. { simpl in *. word. }
     by apply last_is_Some. }
@@ -247,6 +249,8 @@ Proof.
   iIntros "!> * %". iNamed 1. iFrame "#".
 Qed.
 
+(* WPs. *)
+
 Lemma wp_NewClient uid (serv_addr : w64) sl_serv_sig_pk sl_serv_vrf_pk serv serv_is_good :
   {{{
     "Huid" ∷ (if negb serv_is_good then True else uid ↪[serv.(Server.γvers)] (W64 0)) ∗
@@ -282,7 +286,6 @@ Proof.
   by repeat (iSplit; [naive_solver|]).
 Qed.
 
-(*
 Lemma wp_checkDig sl_sig_pk (sig_pk : list w8) ptr_sd (sd_refs : gmap w64 loc) sd ptr_dig dig :
   let wish := (
     "#His_dig" ∷ is_SigDig dig sig_pk ∗
@@ -1195,7 +1198,6 @@ Proof.
     iFrame "#".
   - iFrame "#".
 Qed.
-*)
 
 Lemma wp_auditEpoch ptr_seen_dig seen_dig sl_serv_sig_pk (serv_sig_pk : list w8) ptr_adtr_cli adtr_cli adtr_is_good sl_adtr_pk adtr_pk :
   {{{
@@ -1275,8 +1277,11 @@ Lemma wp_Client__Audit ptr_c c (adtr_addr : w64) sl_adtrPk (adtr_pk : list w8) :
 
     "Herr" ∷ (if err.(ClientErr.Err) then True else
       ∀ adtr_γ,
-      "#His_pk" ∷ is_sig_pk adtr_pk (sigpred adtr_γ)
-      -∗
+      |==>
+      (* KT has at least one good auditor, so might call Client.Audit
+      on an unknown goodness auditor. that's why spec has is_sig_pk here,
+      and not in precond. *)
+      "#His_pk" ∷ is_sig_pk adtr_pk (sigpred adtr_γ) -∗
       "#His_audit" ∷ logical_audit_post c.(Client.γ) adtr_γ
         c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch))
   }}}.
@@ -1322,9 +1327,11 @@ Proof.
         iIntros "!>". iSplit. { iPureIntro. set_solver. }
         iSplit. { iPureIntro. by apply insert_subseteq_l. }
         iApply big_sepM_insert_2; iFrame "#". }
-  iIntros "[Hown_sd_maps Hpost]". iNamed "Hpost". iClear "Hown_cli_adtr".
-  iDestruct (mono_list_lb_own_get with "Hown_digs") as "#His_digs".
-  wp_load. iApply "HΦ".
+  iIntros "[Hown_sd_maps Hpost]".
+  iNamed "Hpost". iClear "Hown_cli_adtr".
+  wp_load.
+
+  iApply "HΦ".
   iDestruct (mono_list_lb_own_get with "Hown_digs") as "#Hlb_digs".
   iFrame "∗#%".
   destruct err0.(ClientErr.Err); [done|].
@@ -1333,13 +1340,8 @@ Proof.
   opose proof (map_subset_dom_eq _ _ _ _ _ Hsub) as ->.
   { by rewrite -Hdom -Hdom1. }
   clear Hdom Hdom1 Hsub.
-
-  iIntros "!>". iIntros (?). iNamed 1. iNamed "Hpost".
-  (* TODO: after specializing lemma, left with bupd, which we can't
-  get rid of bc we've already iIntro'd it away. *)
-  iMod (do_logical_audit with "[] Hlb_digs His_pk") as "H"; try done.
-  iApply (big_sepM_impl with "His_sd").
-  iIntros "!> * %". iNamed 1. iFrame "#".
-Admitted.
+  iIntros "!> %".
+  by iMod (do_logical_audit with "Hpost Hlb_digs") as "H".
+Qed.
 
 End proof.
