@@ -118,8 +118,10 @@ Lemma zero_encodings :
 Proof.
   rewrite /block_encodes /has_encoding.
   split.
-  - reflexivity.
-  - reflexivity.
+  - rewrite /block_encodes /has_encoding /marshal_proof.encode /marshal_proof.encode1.
+    by rewrite ?u64_le_unseal.
+  - rewrite /block_encodes /has_encoding /marshal_proof.encode /marshal_proof.encode1.
+    by rewrite ?u64_le_unseal.
 Qed.
 
 Lemma circular_init :

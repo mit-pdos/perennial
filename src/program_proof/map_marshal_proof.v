@@ -115,7 +115,7 @@ Local Definition encode_byte_maplist (l:list (u64 * list u8)) : list u8 :=
 
 Local Lemma encode_byte_maplist_cons k data l :
   encode_byte_maplist ((k, data)::l) = (u64_le k) ++ (u64_le (uint.Z (length data))) ++ data ++ encode_byte_maplist l.
-Proof. done. Qed.
+Proof. by list_simplifier. Qed.
 
 Local Definition has_partial_byte_map_encoding (enc:list u8) (fullsize: u64) (m:gmap u64 (list u8)) : Prop :=
   ∃ l,
@@ -161,7 +161,7 @@ Proof.
     split; first by apply NoDup_nil_2.
     rewrite map_zip_with_empty_r.
     split; first by apply list_to_map_nil.
-    do 2 rewrite -size_dom. rewrite -Hkvs_dom size_dom. done. }
+    do 2 rewrite -size_dom. rewrite -Hkvs_dom size_dom. by list_simplifier. }
   { (* core loop *)
      clear Φ s' mptr. iIntros (k v kvs_todo kvs_done Φ) "!# [HI %Hk] HΦ". iNamed "HI". wp_pures.
      wp_load. wp_apply (wp_WriteInt with "Hs"). iIntros (s') "Hs". wp_store. clear s.
@@ -276,7 +276,7 @@ Local Definition encode_u64_maplist (l:list (u64 * u64)) : list u8 :=
 
 Local Lemma encode_u64_maplist_cons k data l :
   encode_u64_maplist ((k, data)::l) = (u64_le k) ++ (u64_le data) ++ encode_u64_maplist l.
-Proof. done. Qed.
+Proof. by list_simplifier. Qed.
 
 Local Definition has_partial_u64_map_encoding (enc:list u8) (fullsize: u64) (m:gmap u64 u64) : Prop :=
   ∃ l,
@@ -321,7 +321,7 @@ Proof.
     exists [].
     split; first by apply NoDup_nil_2.
     split; first by apply list_to_map_nil.
-    done. }
+    by list_simplifier. }
   { (* core loop *)
      clear Φ s' mptr. iIntros (k v mtodo mdone Φ) "!# [HI %Hk] HΦ". iNamed "HI". wp_pures.
      wp_load. wp_apply (wp_WriteInt with "Hs"). iIntros (s') "Hs". wp_store. clear s.
@@ -345,6 +345,7 @@ Proof.
      - rewrite list_to_map_snoc //. rewrite Hls //.
      - rewrite Henc. rewrite -!app_assoc. repeat f_equal.
        rewrite /encode_u64_maplist flat_map_app. f_equal.
+       by list_simplifier.
   }
   iIntros "[Hkvs_map HI]". iNamed "HI".
   wp_load. iApply "HΦ". iFrame.
