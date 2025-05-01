@@ -171,7 +171,7 @@ Proof.
       rewrite decide_False //. iNamed "Hsession".
       wp_auto.
       wp_apply "HDone".
-      ltac2:(wp_bind_apply ()).
+      wp_bind.
       iApply wp_Session__Done.
       {
         iSplitR.
@@ -258,7 +258,7 @@ Proof.
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
-    ltac2:(wp_bind_apply ()).
+    wp_bind.
     Time iApply (wp_leasingKV__monitorSession with "[session_monitor]").
     {
       (* iFrame. iFrame "#". *)

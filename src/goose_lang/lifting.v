@@ -807,10 +807,6 @@ Global Instance pure_case_inr v e1 e2 :
   PureExec True 1 (Case (Val $ InjRV v) e1 e2) (App e2 (Val v)).
 Proof. solve_pure_exec. Qed.
 
-Global Instance pure_total_le v1 v2 :
-  PureExec True 1 (TotalLe (Val v1) (Val v2)) (Val $ LitV $ LitBool $ val_le v1 v2).
-Proof. solve_pure_exec. Qed.
-
 Section lifting.
 (* TODO: measure perf impact of parameterizing over heapGS
 vs gooseGS+gooseLocalGS *)
