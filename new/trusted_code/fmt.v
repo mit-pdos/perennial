@@ -5,12 +5,12 @@ Section code.
 Context `{ffi_syntax}.
 
 (* FIXME: Returns some stuff *)
-Definition Printf : val :=
+Definition Print : val :=
   λ: "format" "a",
     Panic "unimplemented".
 
 (* FIXME: Returns some stuff *)
-Definition Println : val :=
+Definition Printf : val :=
   λ: "a",
     Panic "unimplemented".
 
