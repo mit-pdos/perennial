@@ -233,7 +233,7 @@ Proof.
   iFrame "Hs". iModIntro.
   rewrite encoded_length_app1 u64_le_length.
   iSplitR; first by iPureIntro; len.
-  iSplitR; first by iPureIntro; len.
+  iSplitR; first by iPureIntro; word.
   iSplitL "Hoff".
   { iExactEq "Hoff".
     rewrite /named.
@@ -243,6 +243,8 @@ Proof.
   - subst off.
     apply has_encoding_app; auto.
     eapply has_encoding_from_app; eauto.
+    rewrite /encode /encode1.
+    by list_simplifier.
 Qed.
 
 Theorem wp_Enc__PutInt32 stk E enc_v sz r (x:u32) remaining :
@@ -288,6 +290,8 @@ Proof.
   - subst off.
     apply has_encoding_app; auto.
     eapply has_encoding_from_app; eauto.
+    rewrite /encode /encode1.
+    by list_simplifier.
 Qed.
 
 Local Lemma wp_bool2byte stk E (x:bool) :
@@ -513,7 +517,9 @@ Proof.
   rewrite encode_cons.
   eapply has_encoding_from_app.
   rewrite -app_assoc.
-  rewrite drop_app_ge //.
+  rewrite ?/encode ?/encode1.
+  rewrite drop_app_ge //; len.
+  by list_simplifier.
 Qed.
 
 Theorem wp_Dec__GetInt32 stk E dec_v (x: u32) r s q data :
@@ -556,7 +562,9 @@ Proof.
   rewrite encode_cons.
   eapply has_encoding_from_app.
   rewrite -app_assoc.
-  rewrite drop_app_ge //.
+  rewrite ?/encode ?/encode1.
+  rewrite drop_app_ge //; len.
+  by list_simplifier.
 Qed.
 
 Theorem wp_Dec__GetBool stk E dec_v (x: bool) r s q data :
