@@ -159,8 +159,7 @@ def main():
     def compile_goose():
         old_dir = os.getcwd()
         os.chdir(goose_dir)
-        do_run(["go", "install", "./cmd/goose"])
-        do_run(["go", "install", "./cmd/proofgen"])
+        do_run(["go", "install", "./cmd/goose", "./cmd/proofgen"])
         os.chdir(old_dir)
 
     def run_goose(src_path, *pkgs, extra_args=None):
