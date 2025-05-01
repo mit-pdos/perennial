@@ -119,3 +119,50 @@ Abort.
 End D.
 
 End trickier.
+
+Module trickier_parameter.
+
+  (** Solves the problem in the "trickier" module by moving A from a
+     field of B and C to a parameter instead.  Then, when defining D
+     we can ensure that they are the same. *)
+
+Section A.
+Class A := { x : nat }.
+Context `{!A}.
+Definition a_prop : Prop := x > 1.
+End A.
+
+Section B.
+Class B (B_a : A) := { y : nat }.
+Context `{!B B_a}.
+Definition b_prop : Prop := x = 3.
+Lemma b_fact : b_prop → a_prop.
+Proof. unfold b_prop, a_prop. lia. Qed.
+End B.
+
+Section C.
+Class C (C_a : A) := { z : nat }.
+Context `{!C C_a}.
+Definition c_prop : Prop := x > 0.
+Lemma c_fact : a_prop → c_prop.
+Proof. unfold c_prop, a_prop. lia. Qed.
+End C.
+
+Section D.
+Class D := {
+    D_a :: A  ;
+    D_b :: B D_a ;
+    D_c :: C D_a ;
+  }.
+
+Context `{!D}.
+Definition d_prop : Prop := y = y ∧ z = z.
+Lemma d_fact : b_prop → c_prop.
+Proof.
+  intros Hb. apply b_fact in Hb.
+  apply c_fact in Hb.
+  exact Hb.
+Qed.
+End D.
+
+End trickier_parameter.
