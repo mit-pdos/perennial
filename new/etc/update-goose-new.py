@@ -204,6 +204,7 @@ def main():
         os.chdir(goose_dir)
         do_run(["go", "install", "./cmd/goose", "./cmd/proofgen"])
         os.chdir(old_dir)
+        pm.wait_all()
 
     def run_goose(src_path, *pkgs, extra_args=None):
         if src_path is None:
