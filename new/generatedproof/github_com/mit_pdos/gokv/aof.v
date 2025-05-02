@@ -30,12 +30,12 @@ End AppendOnlyFile.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_AppendOnlyFile `{ffi_syntax}: Settable _ :=
+Global Instance settable_AppendOnlyFile : Settable _ :=
   settable! AppendOnlyFile.mk < AppendOnlyFile.mu'; AppendOnlyFile.oldDurableCond'; AppendOnlyFile.durableCond'; AppendOnlyFile.lengthCond'; AppendOnlyFile.membuf'; AppendOnlyFile.length'; AppendOnlyFile.durableLength'; AppendOnlyFile.closeRequested'; AppendOnlyFile.closed'; AppendOnlyFile.closedCond' >.
-Global Instance into_val_AppendOnlyFile `{ffi_syntax} : IntoVal AppendOnlyFile.t.
+Global Instance into_val_AppendOnlyFile : IntoVal AppendOnlyFile.t.
 Admitted.
 
-Global Instance into_val_typed_AppendOnlyFile `{ffi_syntax} : IntoValTyped AppendOnlyFile.t aof.AppendOnlyFile :=
+Global Instance into_val_typed_AppendOnlyFile : IntoValTyped AppendOnlyFile.t aof.AppendOnlyFile :=
 {|
   default_val := AppendOnlyFile.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -43,39 +43,39 @@ Global Instance into_val_typed_AppendOnlyFile `{ffi_syntax} : IntoValTyped Appen
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_AppendOnlyFile_mu `{ffi_syntax} : IntoValStructField "mu" aof.AppendOnlyFile AppendOnlyFile.mu'.
+Global Instance into_val_struct_field_AppendOnlyFile_mu : IntoValStructField "mu" aof.AppendOnlyFile AppendOnlyFile.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_AppendOnlyFile_oldDurableCond `{ffi_syntax} : IntoValStructField "oldDurableCond" aof.AppendOnlyFile AppendOnlyFile.oldDurableCond'.
+Global Instance into_val_struct_field_AppendOnlyFile_oldDurableCond : IntoValStructField "oldDurableCond" aof.AppendOnlyFile AppendOnlyFile.oldDurableCond'.
 Admitted.
 
-Global Instance into_val_struct_field_AppendOnlyFile_durableCond `{ffi_syntax} : IntoValStructField "durableCond" aof.AppendOnlyFile AppendOnlyFile.durableCond'.
+Global Instance into_val_struct_field_AppendOnlyFile_durableCond : IntoValStructField "durableCond" aof.AppendOnlyFile AppendOnlyFile.durableCond'.
 Admitted.
 
-Global Instance into_val_struct_field_AppendOnlyFile_lengthCond `{ffi_syntax} : IntoValStructField "lengthCond" aof.AppendOnlyFile AppendOnlyFile.lengthCond'.
+Global Instance into_val_struct_field_AppendOnlyFile_lengthCond : IntoValStructField "lengthCond" aof.AppendOnlyFile AppendOnlyFile.lengthCond'.
 Admitted.
 
-Global Instance into_val_struct_field_AppendOnlyFile_membuf `{ffi_syntax} : IntoValStructField "membuf" aof.AppendOnlyFile AppendOnlyFile.membuf'.
+Global Instance into_val_struct_field_AppendOnlyFile_membuf : IntoValStructField "membuf" aof.AppendOnlyFile AppendOnlyFile.membuf'.
 Admitted.
 
-Global Instance into_val_struct_field_AppendOnlyFile_length `{ffi_syntax} : IntoValStructField "length" aof.AppendOnlyFile AppendOnlyFile.length'.
+Global Instance into_val_struct_field_AppendOnlyFile_length : IntoValStructField "length" aof.AppendOnlyFile AppendOnlyFile.length'.
 Admitted.
 
-Global Instance into_val_struct_field_AppendOnlyFile_durableLength `{ffi_syntax} : IntoValStructField "durableLength" aof.AppendOnlyFile AppendOnlyFile.durableLength'.
+Global Instance into_val_struct_field_AppendOnlyFile_durableLength : IntoValStructField "durableLength" aof.AppendOnlyFile AppendOnlyFile.durableLength'.
 Admitted.
 
-Global Instance into_val_struct_field_AppendOnlyFile_closeRequested `{ffi_syntax} : IntoValStructField "closeRequested" aof.AppendOnlyFile AppendOnlyFile.closeRequested'.
+Global Instance into_val_struct_field_AppendOnlyFile_closeRequested : IntoValStructField "closeRequested" aof.AppendOnlyFile AppendOnlyFile.closeRequested'.
 Admitted.
 
-Global Instance into_val_struct_field_AppendOnlyFile_closed `{ffi_syntax} : IntoValStructField "closed" aof.AppendOnlyFile AppendOnlyFile.closed'.
+Global Instance into_val_struct_field_AppendOnlyFile_closed : IntoValStructField "closed" aof.AppendOnlyFile AppendOnlyFile.closed'.
 Admitted.
 
-Global Instance into_val_struct_field_AppendOnlyFile_closedCond `{ffi_syntax} : IntoValStructField "closedCond" aof.AppendOnlyFile AppendOnlyFile.closedCond'.
+Global Instance into_val_struct_field_AppendOnlyFile_closedCond : IntoValStructField "closedCond" aof.AppendOnlyFile AppendOnlyFile.closedCond'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_AppendOnlyFile `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' oldDurableCond' durableCond' lengthCond' membuf' length' durableLength' closeRequested' closed' closedCond':
+Global Instance wp_struct_make_AppendOnlyFile mu' oldDurableCond' durableCond' lengthCond' membuf' length' durableLength' closeRequested' closed' closedCond':
   PureWp True
     (struct.make #aof.AppendOnlyFile (alist_val [
       "mu" ::= #mu';
@@ -128,7 +128,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined aof :=
   is_pkg_defined := is_global_definitions aof var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_CreateAppendOnlyFile :

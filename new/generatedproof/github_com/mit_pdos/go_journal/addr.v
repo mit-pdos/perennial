@@ -20,12 +20,12 @@ End Addr.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Addr `{ffi_syntax}: Settable _ :=
+Global Instance settable_Addr : Settable _ :=
   settable! Addr.mk < Addr.Blkno'; Addr.Off' >.
-Global Instance into_val_Addr `{ffi_syntax} : IntoVal Addr.t.
+Global Instance into_val_Addr : IntoVal Addr.t.
 Admitted.
 
-Global Instance into_val_typed_Addr `{ffi_syntax} : IntoValTyped Addr.t addr.Addr :=
+Global Instance into_val_typed_Addr : IntoValTyped Addr.t addr.Addr :=
 {|
   default_val := Addr.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -33,15 +33,15 @@ Global Instance into_val_typed_Addr `{ffi_syntax} : IntoValTyped Addr.t addr.Add
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Addr_Blkno `{ffi_syntax} : IntoValStructField "Blkno" addr.Addr Addr.Blkno'.
+Global Instance into_val_struct_field_Addr_Blkno : IntoValStructField "Blkno" addr.Addr Addr.Blkno'.
 Admitted.
 
-Global Instance into_val_struct_field_Addr_Off `{ffi_syntax} : IntoValStructField "Off" addr.Addr Addr.Off'.
+Global Instance into_val_struct_field_Addr_Off : IntoValStructField "Off" addr.Addr Addr.Off'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Addr `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Blkno' Off':
+Global Instance wp_struct_make_Addr Blkno' Off':
   PureWp True
     (struct.make #addr.Addr (alist_val [
       "Blkno" ::= #Blkno';
@@ -78,7 +78,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined addr :=
   is_pkg_defined := is_global_definitions addr var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MkAddr :

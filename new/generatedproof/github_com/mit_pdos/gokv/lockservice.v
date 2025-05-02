@@ -18,12 +18,12 @@ End LockClerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_LockClerk `{ffi_syntax}: Settable _ :=
+Global Instance settable_LockClerk : Settable _ :=
   settable! LockClerk.mk < LockClerk.kv' >.
-Global Instance into_val_LockClerk `{ffi_syntax} : IntoVal LockClerk.t.
+Global Instance into_val_LockClerk : IntoVal LockClerk.t.
 Admitted.
 
-Global Instance into_val_typed_LockClerk `{ffi_syntax} : IntoValTyped LockClerk.t lockservice.LockClerk :=
+Global Instance into_val_typed_LockClerk : IntoValTyped LockClerk.t lockservice.LockClerk :=
 {|
   default_val := LockClerk.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -31,12 +31,12 @@ Global Instance into_val_typed_LockClerk `{ffi_syntax} : IntoValTyped LockClerk.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LockClerk_kv `{ffi_syntax} : IntoValStructField "kv" lockservice.LockClerk LockClerk.kv'.
+Global Instance into_val_struct_field_LockClerk_kv : IntoValStructField "kv" lockservice.LockClerk LockClerk.kv'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_LockClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv':
+Global Instance wp_struct_make_LockClerk kv':
   PureWp True
     (struct.make #lockservice.LockClerk (alist_val [
       "kv" ::= #kv'
@@ -71,7 +71,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined lockservice :=
   is_pkg_defined := is_global_definitions lockservice var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MakeLockClerk :

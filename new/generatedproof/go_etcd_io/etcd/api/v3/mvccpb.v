@@ -5,13 +5,13 @@ Require Export New.golang.theory.
 Require Export New.code.go_etcd_io.etcd.api.v3.mvccpb.
 Module mvccpb.
 Axiom falso : False.
-
 Module Event_EventType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w32.
 End def.
 End Event_EventType.
+
 Module KeyValue.
 Section def.
 Context `{ffi_syntax}.
@@ -32,12 +32,12 @@ End KeyValue.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_KeyValue `{ffi_syntax}: Settable _ :=
+Global Instance settable_KeyValue : Settable _ :=
   settable! KeyValue.mk < KeyValue.Key'; KeyValue.CreateRevision'; KeyValue.ModRevision'; KeyValue.Version'; KeyValue.Value'; KeyValue.Lease'; KeyValue.XXX_NoUnkeyedLiteral'; KeyValue.XXX_unrecognized'; KeyValue.XXX_sizecache' >.
-Global Instance into_val_KeyValue `{ffi_syntax} : IntoVal KeyValue.t.
+Global Instance into_val_KeyValue : IntoVal KeyValue.t.
 Admitted.
 
-Global Instance into_val_typed_KeyValue `{ffi_syntax} : IntoValTyped KeyValue.t mvccpb.KeyValue :=
+Global Instance into_val_typed_KeyValue : IntoValTyped KeyValue.t mvccpb.KeyValue :=
 {|
   default_val := KeyValue.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -45,36 +45,36 @@ Global Instance into_val_typed_KeyValue `{ffi_syntax} : IntoValTyped KeyValue.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_KeyValue_Key `{ffi_syntax} : IntoValStructField "Key" mvccpb.KeyValue KeyValue.Key'.
+Global Instance into_val_struct_field_KeyValue_Key : IntoValStructField "Key" mvccpb.KeyValue KeyValue.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_CreateRevision `{ffi_syntax} : IntoValStructField "CreateRevision" mvccpb.KeyValue KeyValue.CreateRevision'.
+Global Instance into_val_struct_field_KeyValue_CreateRevision : IntoValStructField "CreateRevision" mvccpb.KeyValue KeyValue.CreateRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_ModRevision `{ffi_syntax} : IntoValStructField "ModRevision" mvccpb.KeyValue KeyValue.ModRevision'.
+Global Instance into_val_struct_field_KeyValue_ModRevision : IntoValStructField "ModRevision" mvccpb.KeyValue KeyValue.ModRevision'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_Version `{ffi_syntax} : IntoValStructField "Version" mvccpb.KeyValue KeyValue.Version'.
+Global Instance into_val_struct_field_KeyValue_Version : IntoValStructField "Version" mvccpb.KeyValue KeyValue.Version'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_Value `{ffi_syntax} : IntoValStructField "Value" mvccpb.KeyValue KeyValue.Value'.
+Global Instance into_val_struct_field_KeyValue_Value : IntoValStructField "Value" mvccpb.KeyValue KeyValue.Value'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_Lease `{ffi_syntax} : IntoValStructField "Lease" mvccpb.KeyValue KeyValue.Lease'.
+Global Instance into_val_struct_field_KeyValue_Lease : IntoValStructField "Lease" mvccpb.KeyValue KeyValue.Lease'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" mvccpb.KeyValue KeyValue.XXX_NoUnkeyedLiteral'.
+Global Instance into_val_struct_field_KeyValue_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" mvccpb.KeyValue KeyValue.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" mvccpb.KeyValue KeyValue.XXX_unrecognized'.
+Global Instance into_val_struct_field_KeyValue_XXX_unrecognized : IntoValStructField "XXX_unrecognized" mvccpb.KeyValue KeyValue.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_KeyValue_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" mvccpb.KeyValue KeyValue.XXX_sizecache'.
+Global Instance into_val_struct_field_KeyValue_XXX_sizecache : IntoValStructField "XXX_sizecache" mvccpb.KeyValue KeyValue.XXX_sizecache'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_KeyValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+Global Instance wp_struct_make_KeyValue Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make #mvccpb.KeyValue (alist_val [
       "Key" ::= #Key';
@@ -106,6 +106,7 @@ Global Instance KeyValue_struct_fields_split dq l (v : KeyValue.t) :
 Admitted.
 
 End instances.
+
 Module Event.
 Section def.
 Context `{ffi_syntax}.
@@ -123,12 +124,12 @@ End Event.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Event `{ffi_syntax}: Settable _ :=
+Global Instance settable_Event : Settable _ :=
   settable! Event.mk < Event.Type'; Event.Kv'; Event.PrevKv'; Event.XXX_NoUnkeyedLiteral'; Event.XXX_unrecognized'; Event.XXX_sizecache' >.
-Global Instance into_val_Event `{ffi_syntax} : IntoVal Event.t.
+Global Instance into_val_Event : IntoVal Event.t.
 Admitted.
 
-Global Instance into_val_typed_Event `{ffi_syntax} : IntoValTyped Event.t mvccpb.Event :=
+Global Instance into_val_typed_Event : IntoValTyped Event.t mvccpb.Event :=
 {|
   default_val := Event.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -136,27 +137,27 @@ Global Instance into_val_typed_Event `{ffi_syntax} : IntoValTyped Event.t mvccpb
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Event_Type `{ffi_syntax} : IntoValStructField "Type" mvccpb.Event Event.Type'.
+Global Instance into_val_struct_field_Event_Type : IntoValStructField "Type" mvccpb.Event Event.Type'.
 Admitted.
 
-Global Instance into_val_struct_field_Event_Kv `{ffi_syntax} : IntoValStructField "Kv" mvccpb.Event Event.Kv'.
+Global Instance into_val_struct_field_Event_Kv : IntoValStructField "Kv" mvccpb.Event Event.Kv'.
 Admitted.
 
-Global Instance into_val_struct_field_Event_PrevKv `{ffi_syntax} : IntoValStructField "PrevKv" mvccpb.Event Event.PrevKv'.
+Global Instance into_val_struct_field_Event_PrevKv : IntoValStructField "PrevKv" mvccpb.Event Event.PrevKv'.
 Admitted.
 
-Global Instance into_val_struct_field_Event_XXX_NoUnkeyedLiteral `{ffi_syntax} : IntoValStructField "XXX_NoUnkeyedLiteral" mvccpb.Event Event.XXX_NoUnkeyedLiteral'.
+Global Instance into_val_struct_field_Event_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" mvccpb.Event Event.XXX_NoUnkeyedLiteral'.
 Admitted.
 
-Global Instance into_val_struct_field_Event_XXX_unrecognized `{ffi_syntax} : IntoValStructField "XXX_unrecognized" mvccpb.Event Event.XXX_unrecognized'.
+Global Instance into_val_struct_field_Event_XXX_unrecognized : IntoValStructField "XXX_unrecognized" mvccpb.Event Event.XXX_unrecognized'.
 Admitted.
 
-Global Instance into_val_struct_field_Event_XXX_sizecache `{ffi_syntax} : IntoValStructField "XXX_sizecache" mvccpb.Event Event.XXX_sizecache'.
+Global Instance into_val_struct_field_Event_XXX_sizecache : IntoValStructField "XXX_sizecache" mvccpb.Event Event.XXX_sizecache'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Event `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' Kv' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+Global Instance wp_struct_make_Event Type' Kv' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
   PureWp True
     (struct.make #mvccpb.Event (alist_val [
       "Type" ::= #Type';
@@ -201,7 +202,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined mvccpb :=
   is_pkg_defined := is_global_definitions mvccpb var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

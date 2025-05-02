@@ -22,12 +22,12 @@ End Op.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Op `{ffi_syntax}: Settable _ :=
+Global Instance settable_Op : Settable _ :=
   settable! Op.mk < Op.log'; Op.bufs' >.
-Global Instance into_val_Op `{ffi_syntax} : IntoVal Op.t.
+Global Instance into_val_Op : IntoVal Op.t.
 Admitted.
 
-Global Instance into_val_typed_Op `{ffi_syntax} : IntoValTyped Op.t jrnl.Op :=
+Global Instance into_val_typed_Op : IntoValTyped Op.t jrnl.Op :=
 {|
   default_val := Op.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -35,15 +35,15 @@ Global Instance into_val_typed_Op `{ffi_syntax} : IntoValTyped Op.t jrnl.Op :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Op_log `{ffi_syntax} : IntoValStructField "log" jrnl.Op Op.log'.
+Global Instance into_val_struct_field_Op_log : IntoValStructField "log" jrnl.Op Op.log'.
 Admitted.
 
-Global Instance into_val_struct_field_Op_bufs `{ffi_syntax} : IntoValStructField "bufs" jrnl.Op Op.bufs'.
+Global Instance into_val_struct_field_Op_bufs : IntoValStructField "bufs" jrnl.Op Op.bufs'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Op `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} log' bufs':
+Global Instance wp_struct_make_Op log' bufs':
   PureWp True
     (struct.make #jrnl.Op (alist_val [
       "log" ::= #log';
@@ -80,7 +80,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined jrnl :=
   is_pkg_defined := is_global_definitions jrnl var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Begin :

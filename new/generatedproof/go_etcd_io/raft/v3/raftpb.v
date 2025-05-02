@@ -5,7 +5,6 @@ Require Export New.golang.theory.
 Require Export New.code.go_etcd_io.raft.v3.raftpb.
 Module raftpb.
 Axiom falso : False.
-
 Module ConfChangeI.
 Section def.
 Context `{ffi_syntax}.
@@ -40,6 +39,7 @@ Context `{ffi_syntax}.
 Definition t := w32.
 End def.
 End ConfChangeType.
+
 Module Entry.
 Section def.
 Context `{ffi_syntax}.
@@ -55,12 +55,12 @@ End Entry.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Entry `{ffi_syntax}: Settable _ :=
+Global Instance settable_Entry : Settable _ :=
   settable! Entry.mk < Entry.Term'; Entry.Index'; Entry.Type'; Entry.Data' >.
-Global Instance into_val_Entry `{ffi_syntax} : IntoVal Entry.t.
+Global Instance into_val_Entry : IntoVal Entry.t.
 Admitted.
 
-Global Instance into_val_typed_Entry `{ffi_syntax} : IntoValTyped Entry.t raftpb.Entry :=
+Global Instance into_val_typed_Entry : IntoValTyped Entry.t raftpb.Entry :=
 {|
   default_val := Entry.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -68,21 +68,21 @@ Global Instance into_val_typed_Entry `{ffi_syntax} : IntoValTyped Entry.t raftpb
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Entry_Term `{ffi_syntax} : IntoValStructField "Term" raftpb.Entry Entry.Term'.
+Global Instance into_val_struct_field_Entry_Term : IntoValStructField "Term" raftpb.Entry Entry.Term'.
 Admitted.
 
-Global Instance into_val_struct_field_Entry_Index `{ffi_syntax} : IntoValStructField "Index" raftpb.Entry Entry.Index'.
+Global Instance into_val_struct_field_Entry_Index : IntoValStructField "Index" raftpb.Entry Entry.Index'.
 Admitted.
 
-Global Instance into_val_struct_field_Entry_Type `{ffi_syntax} : IntoValStructField "Type" raftpb.Entry Entry.Type'.
+Global Instance into_val_struct_field_Entry_Type : IntoValStructField "Type" raftpb.Entry Entry.Type'.
 Admitted.
 
-Global Instance into_val_struct_field_Entry_Data `{ffi_syntax} : IntoValStructField "Data" raftpb.Entry Entry.Data'.
+Global Instance into_val_struct_field_Entry_Data : IntoValStructField "Data" raftpb.Entry Entry.Data'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Entry `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Term' Index' Type' Data':
+Global Instance wp_struct_make_Entry Term' Index' Type' Data':
   PureWp True
     (struct.make #raftpb.Entry (alist_val [
       "Term" ::= #Term';
@@ -104,6 +104,7 @@ Global Instance Entry_struct_fields_split dq l (v : Entry.t) :
 Admitted.
 
 End instances.
+
 Module ConfState.
 Section def.
 Context `{ffi_syntax}.
@@ -120,12 +121,12 @@ End ConfState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ConfState `{ffi_syntax}: Settable _ :=
+Global Instance settable_ConfState : Settable _ :=
   settable! ConfState.mk < ConfState.Voters'; ConfState.Learners'; ConfState.VotersOutgoing'; ConfState.LearnersNext'; ConfState.AutoLeave' >.
-Global Instance into_val_ConfState `{ffi_syntax} : IntoVal ConfState.t.
+Global Instance into_val_ConfState : IntoVal ConfState.t.
 Admitted.
 
-Global Instance into_val_typed_ConfState `{ffi_syntax} : IntoValTyped ConfState.t raftpb.ConfState :=
+Global Instance into_val_typed_ConfState : IntoValTyped ConfState.t raftpb.ConfState :=
 {|
   default_val := ConfState.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -133,24 +134,24 @@ Global Instance into_val_typed_ConfState `{ffi_syntax} : IntoValTyped ConfState.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ConfState_Voters `{ffi_syntax} : IntoValStructField "Voters" raftpb.ConfState ConfState.Voters'.
+Global Instance into_val_struct_field_ConfState_Voters : IntoValStructField "Voters" raftpb.ConfState ConfState.Voters'.
 Admitted.
 
-Global Instance into_val_struct_field_ConfState_Learners `{ffi_syntax} : IntoValStructField "Learners" raftpb.ConfState ConfState.Learners'.
+Global Instance into_val_struct_field_ConfState_Learners : IntoValStructField "Learners" raftpb.ConfState ConfState.Learners'.
 Admitted.
 
-Global Instance into_val_struct_field_ConfState_VotersOutgoing `{ffi_syntax} : IntoValStructField "VotersOutgoing" raftpb.ConfState ConfState.VotersOutgoing'.
+Global Instance into_val_struct_field_ConfState_VotersOutgoing : IntoValStructField "VotersOutgoing" raftpb.ConfState ConfState.VotersOutgoing'.
 Admitted.
 
-Global Instance into_val_struct_field_ConfState_LearnersNext `{ffi_syntax} : IntoValStructField "LearnersNext" raftpb.ConfState ConfState.LearnersNext'.
+Global Instance into_val_struct_field_ConfState_LearnersNext : IntoValStructField "LearnersNext" raftpb.ConfState ConfState.LearnersNext'.
 Admitted.
 
-Global Instance into_val_struct_field_ConfState_AutoLeave `{ffi_syntax} : IntoValStructField "AutoLeave" raftpb.ConfState ConfState.AutoLeave'.
+Global Instance into_val_struct_field_ConfState_AutoLeave : IntoValStructField "AutoLeave" raftpb.ConfState ConfState.AutoLeave'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ConfState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Voters' Learners' VotersOutgoing' LearnersNext' AutoLeave':
+Global Instance wp_struct_make_ConfState Voters' Learners' VotersOutgoing' LearnersNext' AutoLeave':
   PureWp True
     (struct.make #raftpb.ConfState (alist_val [
       "Voters" ::= #Voters';
@@ -174,6 +175,7 @@ Global Instance ConfState_struct_fields_split dq l (v : ConfState.t) :
 Admitted.
 
 End instances.
+
 Module SnapshotMetadata.
 Section def.
 Context `{ffi_syntax}.
@@ -188,12 +190,12 @@ End SnapshotMetadata.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SnapshotMetadata `{ffi_syntax}: Settable _ :=
+Global Instance settable_SnapshotMetadata : Settable _ :=
   settable! SnapshotMetadata.mk < SnapshotMetadata.ConfState'; SnapshotMetadata.Index'; SnapshotMetadata.Term' >.
-Global Instance into_val_SnapshotMetadata `{ffi_syntax} : IntoVal SnapshotMetadata.t.
+Global Instance into_val_SnapshotMetadata : IntoVal SnapshotMetadata.t.
 Admitted.
 
-Global Instance into_val_typed_SnapshotMetadata `{ffi_syntax} : IntoValTyped SnapshotMetadata.t raftpb.SnapshotMetadata :=
+Global Instance into_val_typed_SnapshotMetadata : IntoValTyped SnapshotMetadata.t raftpb.SnapshotMetadata :=
 {|
   default_val := SnapshotMetadata.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -201,18 +203,18 @@ Global Instance into_val_typed_SnapshotMetadata `{ffi_syntax} : IntoValTyped Sna
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SnapshotMetadata_ConfState `{ffi_syntax} : IntoValStructField "ConfState" raftpb.SnapshotMetadata SnapshotMetadata.ConfState'.
+Global Instance into_val_struct_field_SnapshotMetadata_ConfState : IntoValStructField "ConfState" raftpb.SnapshotMetadata SnapshotMetadata.ConfState'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotMetadata_Index `{ffi_syntax} : IntoValStructField "Index" raftpb.SnapshotMetadata SnapshotMetadata.Index'.
+Global Instance into_val_struct_field_SnapshotMetadata_Index : IntoValStructField "Index" raftpb.SnapshotMetadata SnapshotMetadata.Index'.
 Admitted.
 
-Global Instance into_val_struct_field_SnapshotMetadata_Term `{ffi_syntax} : IntoValStructField "Term" raftpb.SnapshotMetadata SnapshotMetadata.Term'.
+Global Instance into_val_struct_field_SnapshotMetadata_Term : IntoValStructField "Term" raftpb.SnapshotMetadata SnapshotMetadata.Term'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SnapshotMetadata `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ConfState' Index' Term':
+Global Instance wp_struct_make_SnapshotMetadata ConfState' Index' Term':
   PureWp True
     (struct.make #raftpb.SnapshotMetadata (alist_val [
       "ConfState" ::= #ConfState';
@@ -232,6 +234,7 @@ Global Instance SnapshotMetadata_struct_fields_split dq l (v : SnapshotMetadata.
 Admitted.
 
 End instances.
+
 Module Snapshot.
 Section def.
 Context `{ffi_syntax}.
@@ -245,12 +248,12 @@ End Snapshot.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Snapshot `{ffi_syntax}: Settable _ :=
+Global Instance settable_Snapshot : Settable _ :=
   settable! Snapshot.mk < Snapshot.Data'; Snapshot.Metadata' >.
-Global Instance into_val_Snapshot `{ffi_syntax} : IntoVal Snapshot.t.
+Global Instance into_val_Snapshot : IntoVal Snapshot.t.
 Admitted.
 
-Global Instance into_val_typed_Snapshot `{ffi_syntax} : IntoValTyped Snapshot.t raftpb.Snapshot :=
+Global Instance into_val_typed_Snapshot : IntoValTyped Snapshot.t raftpb.Snapshot :=
 {|
   default_val := Snapshot.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -258,15 +261,15 @@ Global Instance into_val_typed_Snapshot `{ffi_syntax} : IntoValTyped Snapshot.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Snapshot_Data `{ffi_syntax} : IntoValStructField "Data" raftpb.Snapshot Snapshot.Data'.
+Global Instance into_val_struct_field_Snapshot_Data : IntoValStructField "Data" raftpb.Snapshot Snapshot.Data'.
 Admitted.
 
-Global Instance into_val_struct_field_Snapshot_Metadata `{ffi_syntax} : IntoValStructField "Metadata" raftpb.Snapshot Snapshot.Metadata'.
+Global Instance into_val_struct_field_Snapshot_Metadata : IntoValStructField "Metadata" raftpb.Snapshot Snapshot.Metadata'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Snapshot `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Data' Metadata':
+Global Instance wp_struct_make_Snapshot Data' Metadata':
   PureWp True
     (struct.make #raftpb.Snapshot (alist_val [
       "Data" ::= #Data';
@@ -284,6 +287,7 @@ Global Instance Snapshot_struct_fields_split dq l (v : Snapshot.t) :
 Admitted.
 
 End instances.
+
 Module Message.
 Section def.
 Context `{ffi_syntax}.
@@ -296,6 +300,7 @@ Admitted.
 
 Global Instance into_val_typed_Message `{ffi_syntax} : IntoValTyped Message.t raftpb.Message.
 Admitted.
+
 Module HardState.
 Section def.
 Context `{ffi_syntax}.
@@ -310,12 +315,12 @@ End HardState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_HardState `{ffi_syntax}: Settable _ :=
+Global Instance settable_HardState : Settable _ :=
   settable! HardState.mk < HardState.Term'; HardState.Vote'; HardState.Commit' >.
-Global Instance into_val_HardState `{ffi_syntax} : IntoVal HardState.t.
+Global Instance into_val_HardState : IntoVal HardState.t.
 Admitted.
 
-Global Instance into_val_typed_HardState `{ffi_syntax} : IntoValTyped HardState.t raftpb.HardState :=
+Global Instance into_val_typed_HardState : IntoValTyped HardState.t raftpb.HardState :=
 {|
   default_val := HardState.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -323,18 +328,18 @@ Global Instance into_val_typed_HardState `{ffi_syntax} : IntoValTyped HardState.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_HardState_Term `{ffi_syntax} : IntoValStructField "Term" raftpb.HardState HardState.Term'.
+Global Instance into_val_struct_field_HardState_Term : IntoValStructField "Term" raftpb.HardState HardState.Term'.
 Admitted.
 
-Global Instance into_val_struct_field_HardState_Vote `{ffi_syntax} : IntoValStructField "Vote" raftpb.HardState HardState.Vote'.
+Global Instance into_val_struct_field_HardState_Vote : IntoValStructField "Vote" raftpb.HardState HardState.Vote'.
 Admitted.
 
-Global Instance into_val_struct_field_HardState_Commit `{ffi_syntax} : IntoValStructField "Commit" raftpb.HardState HardState.Commit'.
+Global Instance into_val_struct_field_HardState_Commit : IntoValStructField "Commit" raftpb.HardState HardState.Commit'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_HardState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Term' Vote' Commit':
+Global Instance wp_struct_make_HardState Term' Vote' Commit':
   PureWp True
     (struct.make #raftpb.HardState (alist_val [
       "Term" ::= #Term';
@@ -354,6 +359,7 @@ Global Instance HardState_struct_fields_split dq l (v : HardState.t) :
 Admitted.
 
 End instances.
+
 Module ConfChange.
 Section def.
 Context `{ffi_syntax}.
@@ -369,12 +375,12 @@ End ConfChange.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ConfChange `{ffi_syntax}: Settable _ :=
+Global Instance settable_ConfChange : Settable _ :=
   settable! ConfChange.mk < ConfChange.Type'; ConfChange.NodeID'; ConfChange.Context'; ConfChange.ID' >.
-Global Instance into_val_ConfChange `{ffi_syntax} : IntoVal ConfChange.t.
+Global Instance into_val_ConfChange : IntoVal ConfChange.t.
 Admitted.
 
-Global Instance into_val_typed_ConfChange `{ffi_syntax} : IntoValTyped ConfChange.t raftpb.ConfChange :=
+Global Instance into_val_typed_ConfChange : IntoValTyped ConfChange.t raftpb.ConfChange :=
 {|
   default_val := ConfChange.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -382,21 +388,21 @@ Global Instance into_val_typed_ConfChange `{ffi_syntax} : IntoValTyped ConfChang
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ConfChange_Type `{ffi_syntax} : IntoValStructField "Type" raftpb.ConfChange ConfChange.Type'.
+Global Instance into_val_struct_field_ConfChange_Type : IntoValStructField "Type" raftpb.ConfChange ConfChange.Type'.
 Admitted.
 
-Global Instance into_val_struct_field_ConfChange_NodeID `{ffi_syntax} : IntoValStructField "NodeID" raftpb.ConfChange ConfChange.NodeID'.
+Global Instance into_val_struct_field_ConfChange_NodeID : IntoValStructField "NodeID" raftpb.ConfChange ConfChange.NodeID'.
 Admitted.
 
-Global Instance into_val_struct_field_ConfChange_Context `{ffi_syntax} : IntoValStructField "Context" raftpb.ConfChange ConfChange.Context'.
+Global Instance into_val_struct_field_ConfChange_Context : IntoValStructField "Context" raftpb.ConfChange ConfChange.Context'.
 Admitted.
 
-Global Instance into_val_struct_field_ConfChange_ID `{ffi_syntax} : IntoValStructField "ID" raftpb.ConfChange ConfChange.ID'.
+Global Instance into_val_struct_field_ConfChange_ID : IntoValStructField "ID" raftpb.ConfChange ConfChange.ID'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ConfChange `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Type' NodeID' Context' ID':
+Global Instance wp_struct_make_ConfChange Type' NodeID' Context' ID':
   PureWp True
     (struct.make #raftpb.ConfChange (alist_val [
       "Type" ::= #Type';
@@ -418,6 +424,7 @@ Global Instance ConfChange_struct_fields_split dq l (v : ConfChange.t) :
 Admitted.
 
 End instances.
+
 Module ConfChangeV2.
 Section def.
 Context `{ffi_syntax}.
@@ -432,12 +439,12 @@ End ConfChangeV2.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ConfChangeV2 `{ffi_syntax}: Settable _ :=
+Global Instance settable_ConfChangeV2 : Settable _ :=
   settable! ConfChangeV2.mk < ConfChangeV2.Transition'; ConfChangeV2.Changes'; ConfChangeV2.Context' >.
-Global Instance into_val_ConfChangeV2 `{ffi_syntax} : IntoVal ConfChangeV2.t.
+Global Instance into_val_ConfChangeV2 : IntoVal ConfChangeV2.t.
 Admitted.
 
-Global Instance into_val_typed_ConfChangeV2 `{ffi_syntax} : IntoValTyped ConfChangeV2.t raftpb.ConfChangeV2 :=
+Global Instance into_val_typed_ConfChangeV2 : IntoValTyped ConfChangeV2.t raftpb.ConfChangeV2 :=
 {|
   default_val := ConfChangeV2.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -445,18 +452,18 @@ Global Instance into_val_typed_ConfChangeV2 `{ffi_syntax} : IntoValTyped ConfCha
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ConfChangeV2_Transition `{ffi_syntax} : IntoValStructField "Transition" raftpb.ConfChangeV2 ConfChangeV2.Transition'.
+Global Instance into_val_struct_field_ConfChangeV2_Transition : IntoValStructField "Transition" raftpb.ConfChangeV2 ConfChangeV2.Transition'.
 Admitted.
 
-Global Instance into_val_struct_field_ConfChangeV2_Changes `{ffi_syntax} : IntoValStructField "Changes" raftpb.ConfChangeV2 ConfChangeV2.Changes'.
+Global Instance into_val_struct_field_ConfChangeV2_Changes : IntoValStructField "Changes" raftpb.ConfChangeV2 ConfChangeV2.Changes'.
 Admitted.
 
-Global Instance into_val_struct_field_ConfChangeV2_Context `{ffi_syntax} : IntoValStructField "Context" raftpb.ConfChangeV2 ConfChangeV2.Context'.
+Global Instance into_val_struct_field_ConfChangeV2_Context : IntoValStructField "Context" raftpb.ConfChangeV2 ConfChangeV2.Context'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ConfChangeV2 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Transition' Changes' Context':
+Global Instance wp_struct_make_ConfChangeV2 Transition' Changes' Context':
   PureWp True
     (struct.make #raftpb.ConfChangeV2 (alist_val [
       "Transition" ::= #Transition';
@@ -495,7 +502,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined raftpb :=
   is_pkg_defined := is_global_definitions raftpb var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

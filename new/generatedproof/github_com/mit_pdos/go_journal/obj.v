@@ -26,12 +26,12 @@ End Log.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Log `{ffi_syntax}: Settable _ :=
+Global Instance settable_Log : Settable _ :=
   settable! Log.mk < Log.mu'; Log.log'; Log.pos' >.
-Global Instance into_val_Log `{ffi_syntax} : IntoVal Log.t.
+Global Instance into_val_Log : IntoVal Log.t.
 Admitted.
 
-Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t obj.Log :=
+Global Instance into_val_typed_Log : IntoValTyped Log.t obj.Log :=
 {|
   default_val := Log.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -39,18 +39,18 @@ Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t obj.Log :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Log_mu `{ffi_syntax} : IntoValStructField "mu" obj.Log Log.mu'.
+Global Instance into_val_struct_field_Log_mu : IntoValStructField "mu" obj.Log Log.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_Log_log `{ffi_syntax} : IntoValStructField "log" obj.Log Log.log'.
+Global Instance into_val_struct_field_Log_log : IntoValStructField "log" obj.Log Log.log'.
 Admitted.
 
-Global Instance into_val_struct_field_Log_pos `{ffi_syntax} : IntoValStructField "pos" obj.Log Log.pos'.
+Global Instance into_val_struct_field_Log_pos : IntoValStructField "pos" obj.Log Log.pos'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' log' pos':
+Global Instance wp_struct_make_Log mu' log' pos':
   PureWp True
     (struct.make #obj.Log (alist_val [
       "mu" ::= #mu';
@@ -89,7 +89,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined obj :=
   is_pkg_defined := is_global_definitions obj var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MkLog :

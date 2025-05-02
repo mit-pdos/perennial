@@ -6,7 +6,6 @@ Require Export New.golang.theory.
 Require Export New.code.github_com.mit_pdos.gokv.map_string_marshal.
 Module map_string_marshal.
 Axiom falso : False.
-
 Section names.
 
 Class GlobalAddrs :=
@@ -25,7 +24,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined map_string_marshal :=
   is_pkg_defined := is_global_definitions map_string_marshal var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_EncodeStringMap :

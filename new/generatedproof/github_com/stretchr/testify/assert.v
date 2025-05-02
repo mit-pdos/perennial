@@ -5,7 +5,6 @@ Require Export New.golang.theory.
 Require Export New.code.github_com.stretchr.testify.assert.
 Module assert.
 Axiom falso : False.
-
 Section names.
 
 Class GlobalAddrs :=
@@ -24,7 +23,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined assert :=
   is_pkg_defined := is_global_definitions assert var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

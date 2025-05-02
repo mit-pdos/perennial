@@ -26,12 +26,12 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk `{ffi_syntax}: Settable _ :=
+Global Instance settable_Clerk : Settable _ :=
   settable! Clerk.mk < Clerk.confCk'; Clerk.replicaClerks'; Clerk.preferredReplica'; Clerk.lastPreferenceRefresh' >.
-Global Instance into_val_Clerk `{ffi_syntax} : IntoVal Clerk.t.
+Global Instance into_val_Clerk : IntoVal Clerk.t.
 Admitted.
 
-Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t clerk.Clerk :=
+Global Instance into_val_typed_Clerk : IntoValTyped Clerk.t clerk.Clerk :=
 {|
   default_val := Clerk.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -39,21 +39,21 @@ Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t clerk.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Clerk_confCk `{ffi_syntax} : IntoValStructField "confCk" clerk.Clerk Clerk.confCk'.
+Global Instance into_val_struct_field_Clerk_confCk : IntoValStructField "confCk" clerk.Clerk Clerk.confCk'.
 Admitted.
 
-Global Instance into_val_struct_field_Clerk_replicaClerks `{ffi_syntax} : IntoValStructField "replicaClerks" clerk.Clerk Clerk.replicaClerks'.
+Global Instance into_val_struct_field_Clerk_replicaClerks : IntoValStructField "replicaClerks" clerk.Clerk Clerk.replicaClerks'.
 Admitted.
 
-Global Instance into_val_struct_field_Clerk_preferredReplica `{ffi_syntax} : IntoValStructField "preferredReplica" clerk.Clerk Clerk.preferredReplica'.
+Global Instance into_val_struct_field_Clerk_preferredReplica : IntoValStructField "preferredReplica" clerk.Clerk Clerk.preferredReplica'.
 Admitted.
 
-Global Instance into_val_struct_field_Clerk_lastPreferenceRefresh `{ffi_syntax} : IntoValStructField "lastPreferenceRefresh" clerk.Clerk Clerk.lastPreferenceRefresh'.
+Global Instance into_val_struct_field_Clerk_lastPreferenceRefresh : IntoValStructField "lastPreferenceRefresh" clerk.Clerk Clerk.lastPreferenceRefresh'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} confCk' replicaClerks' preferredReplica' lastPreferenceRefresh':
+Global Instance wp_struct_make_Clerk confCk' replicaClerks' preferredReplica' lastPreferenceRefresh':
   PureWp True
     (struct.make #clerk.Clerk (alist_val [
       "confCk" ::= #confCk';
@@ -94,7 +94,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined clerk :=
   is_pkg_defined := is_global_definitions clerk var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_makeClerks :

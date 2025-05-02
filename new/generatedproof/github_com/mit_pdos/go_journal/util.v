@@ -6,7 +6,6 @@ Require Export New.golang.theory.
 Require Export New.code.github_com.mit_pdos.go_journal.util.
 Module util.
 Axiom falso : False.
-
 Section names.
 
 Class GlobalAddrs :=
@@ -27,7 +26,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined util :=
   is_pkg_defined := is_global_definitions util var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
   "HDebug" ∷ Debug ↦ (default_val w64).
 
 Global Instance wp_globals_get_Debug : 

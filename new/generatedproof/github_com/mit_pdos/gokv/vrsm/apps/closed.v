@@ -11,7 +11,6 @@ Require Export New.golang.theory.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.closed.
 Module closed.
 Axiom falso : False.
-
 Section names.
 
 Class GlobalAddrs :=
@@ -30,7 +29,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined closed :=
   is_pkg_defined := is_global_definitions closed var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_mk_lconfig_hosts :

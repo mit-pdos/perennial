@@ -27,12 +27,12 @@ End RepBlock.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_RepBlock `{ffi_syntax}: Settable _ :=
+Global Instance settable_RepBlock : Settable _ :=
   settable! RepBlock.mk < RepBlock.txn'; RepBlock.m'; RepBlock.a0'; RepBlock.a1' >.
-Global Instance into_val_RepBlock `{ffi_syntax} : IntoVal RepBlock.t.
+Global Instance into_val_RepBlock : IntoVal RepBlock.t.
 Admitted.
 
-Global Instance into_val_typed_RepBlock `{ffi_syntax} : IntoValTyped RepBlock.t replicated_block.RepBlock :=
+Global Instance into_val_typed_RepBlock : IntoValTyped RepBlock.t replicated_block.RepBlock :=
 {|
   default_val := RepBlock.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -40,21 +40,21 @@ Global Instance into_val_typed_RepBlock `{ffi_syntax} : IntoValTyped RepBlock.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RepBlock_txn `{ffi_syntax} : IntoValStructField "txn" replicated_block.RepBlock RepBlock.txn'.
+Global Instance into_val_struct_field_RepBlock_txn : IntoValStructField "txn" replicated_block.RepBlock RepBlock.txn'.
 Admitted.
 
-Global Instance into_val_struct_field_RepBlock_m `{ffi_syntax} : IntoValStructField "m" replicated_block.RepBlock RepBlock.m'.
+Global Instance into_val_struct_field_RepBlock_m : IntoValStructField "m" replicated_block.RepBlock RepBlock.m'.
 Admitted.
 
-Global Instance into_val_struct_field_RepBlock_a0 `{ffi_syntax} : IntoValStructField "a0" replicated_block.RepBlock RepBlock.a0'.
+Global Instance into_val_struct_field_RepBlock_a0 : IntoValStructField "a0" replicated_block.RepBlock RepBlock.a0'.
 Admitted.
 
-Global Instance into_val_struct_field_RepBlock_a1 `{ffi_syntax} : IntoValStructField "a1" replicated_block.RepBlock RepBlock.a1'.
+Global Instance into_val_struct_field_RepBlock_a1 : IntoValStructField "a1" replicated_block.RepBlock RepBlock.a1'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RepBlock `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} txn' m' a0' a1':
+Global Instance wp_struct_make_RepBlock txn' m' a0' a1':
   PureWp True
     (struct.make #replicated_block.RepBlock (alist_val [
       "txn" ::= #txn';
@@ -95,7 +95,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined replicated_block :=
   is_pkg_defined := is_global_definitions replicated_block var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Open :

@@ -20,12 +20,12 @@ End lockState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_lockState `{ffi_syntax}: Settable _ :=
+Global Instance settable_lockState : Settable _ :=
   settable! lockState.mk < lockState.held'; lockState.cond'; lockState.waiters' >.
-Global Instance into_val_lockState `{ffi_syntax} : IntoVal lockState.t.
+Global Instance into_val_lockState : IntoVal lockState.t.
 Admitted.
 
-Global Instance into_val_typed_lockState `{ffi_syntax} : IntoValTyped lockState.t lockmap.lockState :=
+Global Instance into_val_typed_lockState : IntoValTyped lockState.t lockmap.lockState :=
 {|
   default_val := lockState.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -33,18 +33,18 @@ Global Instance into_val_typed_lockState `{ffi_syntax} : IntoValTyped lockState.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_lockState_held `{ffi_syntax} : IntoValStructField "held" lockmap.lockState lockState.held'.
+Global Instance into_val_struct_field_lockState_held : IntoValStructField "held" lockmap.lockState lockState.held'.
 Admitted.
 
-Global Instance into_val_struct_field_lockState_cond `{ffi_syntax} : IntoValStructField "cond" lockmap.lockState lockState.cond'.
+Global Instance into_val_struct_field_lockState_cond : IntoValStructField "cond" lockmap.lockState lockState.cond'.
 Admitted.
 
-Global Instance into_val_struct_field_lockState_waiters `{ffi_syntax} : IntoValStructField "waiters" lockmap.lockState lockState.waiters'.
+Global Instance into_val_struct_field_lockState_waiters : IntoValStructField "waiters" lockmap.lockState lockState.waiters'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_lockState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} held' cond' waiters':
+Global Instance wp_struct_make_lockState held' cond' waiters':
   PureWp True
     (struct.make #lockmap.lockState (alist_val [
       "held" ::= #held';
@@ -64,6 +64,7 @@ Global Instance lockState_struct_fields_split dq l (v : lockState.t) :
 Admitted.
 
 End instances.
+
 Module lockShard.
 Section def.
 Context `{ffi_syntax}.
@@ -77,12 +78,12 @@ End lockShard.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_lockShard `{ffi_syntax}: Settable _ :=
+Global Instance settable_lockShard : Settable _ :=
   settable! lockShard.mk < lockShard.mu'; lockShard.state' >.
-Global Instance into_val_lockShard `{ffi_syntax} : IntoVal lockShard.t.
+Global Instance into_val_lockShard : IntoVal lockShard.t.
 Admitted.
 
-Global Instance into_val_typed_lockShard `{ffi_syntax} : IntoValTyped lockShard.t lockmap.lockShard :=
+Global Instance into_val_typed_lockShard : IntoValTyped lockShard.t lockmap.lockShard :=
 {|
   default_val := lockShard.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -90,15 +91,15 @@ Global Instance into_val_typed_lockShard `{ffi_syntax} : IntoValTyped lockShard.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_lockShard_mu `{ffi_syntax} : IntoValStructField "mu" lockmap.lockShard lockShard.mu'.
+Global Instance into_val_struct_field_lockShard_mu : IntoValStructField "mu" lockmap.lockShard lockShard.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_lockShard_state `{ffi_syntax} : IntoValStructField "state" lockmap.lockShard lockShard.state'.
+Global Instance into_val_struct_field_lockShard_state : IntoValStructField "state" lockmap.lockShard lockShard.state'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_lockShard `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' state':
+Global Instance wp_struct_make_lockShard mu' state':
   PureWp True
     (struct.make #lockmap.lockShard (alist_val [
       "mu" ::= #mu';
@@ -116,6 +117,7 @@ Global Instance lockShard_struct_fields_split dq l (v : lockShard.t) :
 Admitted.
 
 End instances.
+
 Module LockMap.
 Section def.
 Context `{ffi_syntax}.
@@ -128,12 +130,12 @@ End LockMap.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_LockMap `{ffi_syntax}: Settable _ :=
+Global Instance settable_LockMap : Settable _ :=
   settable! LockMap.mk < LockMap.shards' >.
-Global Instance into_val_LockMap `{ffi_syntax} : IntoVal LockMap.t.
+Global Instance into_val_LockMap : IntoVal LockMap.t.
 Admitted.
 
-Global Instance into_val_typed_LockMap `{ffi_syntax} : IntoValTyped LockMap.t lockmap.LockMap :=
+Global Instance into_val_typed_LockMap : IntoValTyped LockMap.t lockmap.LockMap :=
 {|
   default_val := LockMap.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -141,12 +143,12 @@ Global Instance into_val_typed_LockMap `{ffi_syntax} : IntoValTyped LockMap.t lo
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LockMap_shards `{ffi_syntax} : IntoValStructField "shards" lockmap.LockMap LockMap.shards'.
+Global Instance into_val_struct_field_LockMap_shards : IntoValStructField "shards" lockmap.LockMap LockMap.shards'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_LockMap `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} shards':
+Global Instance wp_struct_make_LockMap shards':
   PureWp True
     (struct.make #lockmap.LockMap (alist_val [
       "shards" ::= #shards'
@@ -181,7 +183,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined lockmap :=
   is_pkg_defined := is_global_definitions lockmap var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_mkLockShard :

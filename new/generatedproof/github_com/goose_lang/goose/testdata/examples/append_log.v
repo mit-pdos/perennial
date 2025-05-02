@@ -22,12 +22,12 @@ End Log.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Log `{ffi_syntax}: Settable _ :=
+Global Instance settable_Log : Settable _ :=
   settable! Log.mk < Log.m'; Log.sz'; Log.diskSz' >.
-Global Instance into_val_Log `{ffi_syntax} : IntoVal Log.t.
+Global Instance into_val_Log : IntoVal Log.t.
 Admitted.
 
-Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t append_log.Log :=
+Global Instance into_val_typed_Log : IntoValTyped Log.t append_log.Log :=
 {|
   default_val := Log.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -35,18 +35,18 @@ Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t append_log
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Log_m `{ffi_syntax} : IntoValStructField "m" append_log.Log Log.m'.
+Global Instance into_val_struct_field_Log_m : IntoValStructField "m" append_log.Log Log.m'.
 Admitted.
 
-Global Instance into_val_struct_field_Log_sz `{ffi_syntax} : IntoValStructField "sz" append_log.Log Log.sz'.
+Global Instance into_val_struct_field_Log_sz : IntoValStructField "sz" append_log.Log Log.sz'.
 Admitted.
 
-Global Instance into_val_struct_field_Log_diskSz `{ffi_syntax} : IntoValStructField "diskSz" append_log.Log Log.diskSz'.
+Global Instance into_val_struct_field_Log_diskSz : IntoValStructField "diskSz" append_log.Log Log.diskSz'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} m' sz' diskSz':
+Global Instance wp_struct_make_Log m' sz' diskSz':
   PureWp True
     (struct.make #append_log.Log (alist_val [
       "m" ::= #m';
@@ -85,7 +85,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined append_log :=
   is_pkg_defined := is_global_definitions append_log var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Init :

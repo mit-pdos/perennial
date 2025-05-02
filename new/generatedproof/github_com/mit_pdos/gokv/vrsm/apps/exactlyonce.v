@@ -27,12 +27,12 @@ End eStateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_eStateMachine `{ffi_syntax}: Settable _ :=
+Global Instance settable_eStateMachine : Settable _ :=
   settable! eStateMachine.mk < eStateMachine.lastSeq'; eStateMachine.lastReply'; eStateMachine.nextCID'; eStateMachine.sm'; eStateMachine.esmNextIndex' >.
-Global Instance into_val_eStateMachine `{ffi_syntax} : IntoVal eStateMachine.t.
+Global Instance into_val_eStateMachine : IntoVal eStateMachine.t.
 Admitted.
 
-Global Instance into_val_typed_eStateMachine `{ffi_syntax} : IntoValTyped eStateMachine.t exactlyonce.eStateMachine :=
+Global Instance into_val_typed_eStateMachine : IntoValTyped eStateMachine.t exactlyonce.eStateMachine :=
 {|
   default_val := eStateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -40,24 +40,24 @@ Global Instance into_val_typed_eStateMachine `{ffi_syntax} : IntoValTyped eState
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_eStateMachine_lastSeq `{ffi_syntax} : IntoValStructField "lastSeq" exactlyonce.eStateMachine eStateMachine.lastSeq'.
+Global Instance into_val_struct_field_eStateMachine_lastSeq : IntoValStructField "lastSeq" exactlyonce.eStateMachine eStateMachine.lastSeq'.
 Admitted.
 
-Global Instance into_val_struct_field_eStateMachine_lastReply `{ffi_syntax} : IntoValStructField "lastReply" exactlyonce.eStateMachine eStateMachine.lastReply'.
+Global Instance into_val_struct_field_eStateMachine_lastReply : IntoValStructField "lastReply" exactlyonce.eStateMachine eStateMachine.lastReply'.
 Admitted.
 
-Global Instance into_val_struct_field_eStateMachine_nextCID `{ffi_syntax} : IntoValStructField "nextCID" exactlyonce.eStateMachine eStateMachine.nextCID'.
+Global Instance into_val_struct_field_eStateMachine_nextCID : IntoValStructField "nextCID" exactlyonce.eStateMachine eStateMachine.nextCID'.
 Admitted.
 
-Global Instance into_val_struct_field_eStateMachine_sm `{ffi_syntax} : IntoValStructField "sm" exactlyonce.eStateMachine eStateMachine.sm'.
+Global Instance into_val_struct_field_eStateMachine_sm : IntoValStructField "sm" exactlyonce.eStateMachine eStateMachine.sm'.
 Admitted.
 
-Global Instance into_val_struct_field_eStateMachine_esmNextIndex `{ffi_syntax} : IntoValStructField "esmNextIndex" exactlyonce.eStateMachine eStateMachine.esmNextIndex'.
+Global Instance into_val_struct_field_eStateMachine_esmNextIndex : IntoValStructField "esmNextIndex" exactlyonce.eStateMachine eStateMachine.esmNextIndex'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_eStateMachine `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} lastSeq' lastReply' nextCID' sm' esmNextIndex':
+Global Instance wp_struct_make_eStateMachine lastSeq' lastReply' nextCID' sm' esmNextIndex':
   PureWp True
     (struct.make #exactlyonce.eStateMachine (alist_val [
       "lastSeq" ::= #lastSeq';
@@ -81,6 +81,7 @@ Global Instance eStateMachine_struct_fields_split dq l (v : eStateMachine.t) :
 Admitted.
 
 End instances.
+
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -95,12 +96,12 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk `{ffi_syntax}: Settable _ :=
+Global Instance settable_Clerk : Settable _ :=
   settable! Clerk.mk < Clerk.ck'; Clerk.cid'; Clerk.seq' >.
-Global Instance into_val_Clerk `{ffi_syntax} : IntoVal Clerk.t.
+Global Instance into_val_Clerk : IntoVal Clerk.t.
 Admitted.
 
-Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t exactlyonce.Clerk :=
+Global Instance into_val_typed_Clerk : IntoValTyped Clerk.t exactlyonce.Clerk :=
 {|
   default_val := Clerk.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -108,18 +109,18 @@ Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t exactl
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Clerk_ck `{ffi_syntax} : IntoValStructField "ck" exactlyonce.Clerk Clerk.ck'.
+Global Instance into_val_struct_field_Clerk_ck : IntoValStructField "ck" exactlyonce.Clerk Clerk.ck'.
 Admitted.
 
-Global Instance into_val_struct_field_Clerk_cid `{ffi_syntax} : IntoValStructField "cid" exactlyonce.Clerk Clerk.cid'.
+Global Instance into_val_struct_field_Clerk_cid : IntoValStructField "cid" exactlyonce.Clerk Clerk.cid'.
 Admitted.
 
-Global Instance into_val_struct_field_Clerk_seq `{ffi_syntax} : IntoValStructField "seq" exactlyonce.Clerk Clerk.seq'.
+Global Instance into_val_struct_field_Clerk_seq : IntoValStructField "seq" exactlyonce.Clerk Clerk.seq'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ck' cid' seq':
+Global Instance wp_struct_make_Clerk ck' cid' seq':
   PureWp True
     (struct.make #exactlyonce.Clerk (alist_val [
       "ck" ::= #ck';
@@ -139,6 +140,7 @@ Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
 Admitted.
 
 End instances.
+
 Module VersionedStateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -154,12 +156,12 @@ End VersionedStateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_VersionedStateMachine `{ffi_syntax}: Settable _ :=
+Global Instance settable_VersionedStateMachine : Settable _ :=
   settable! VersionedStateMachine.mk < VersionedStateMachine.ApplyVolatile'; VersionedStateMachine.ApplyReadonly'; VersionedStateMachine.SetState'; VersionedStateMachine.GetState' >.
-Global Instance into_val_VersionedStateMachine `{ffi_syntax} : IntoVal VersionedStateMachine.t.
+Global Instance into_val_VersionedStateMachine : IntoVal VersionedStateMachine.t.
 Admitted.
 
-Global Instance into_val_typed_VersionedStateMachine `{ffi_syntax} : IntoValTyped VersionedStateMachine.t exactlyonce.VersionedStateMachine :=
+Global Instance into_val_typed_VersionedStateMachine : IntoValTyped VersionedStateMachine.t exactlyonce.VersionedStateMachine :=
 {|
   default_val := VersionedStateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -167,21 +169,21 @@ Global Instance into_val_typed_VersionedStateMachine `{ffi_syntax} : IntoValType
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_VersionedStateMachine_ApplyVolatile `{ffi_syntax} : IntoValStructField "ApplyVolatile" exactlyonce.VersionedStateMachine VersionedStateMachine.ApplyVolatile'.
+Global Instance into_val_struct_field_VersionedStateMachine_ApplyVolatile : IntoValStructField "ApplyVolatile" exactlyonce.VersionedStateMachine VersionedStateMachine.ApplyVolatile'.
 Admitted.
 
-Global Instance into_val_struct_field_VersionedStateMachine_ApplyReadonly `{ffi_syntax} : IntoValStructField "ApplyReadonly" exactlyonce.VersionedStateMachine VersionedStateMachine.ApplyReadonly'.
+Global Instance into_val_struct_field_VersionedStateMachine_ApplyReadonly : IntoValStructField "ApplyReadonly" exactlyonce.VersionedStateMachine VersionedStateMachine.ApplyReadonly'.
 Admitted.
 
-Global Instance into_val_struct_field_VersionedStateMachine_SetState `{ffi_syntax} : IntoValStructField "SetState" exactlyonce.VersionedStateMachine VersionedStateMachine.SetState'.
+Global Instance into_val_struct_field_VersionedStateMachine_SetState : IntoValStructField "SetState" exactlyonce.VersionedStateMachine VersionedStateMachine.SetState'.
 Admitted.
 
-Global Instance into_val_struct_field_VersionedStateMachine_GetState `{ffi_syntax} : IntoValStructField "GetState" exactlyonce.VersionedStateMachine VersionedStateMachine.GetState'.
+Global Instance into_val_struct_field_VersionedStateMachine_GetState : IntoValStructField "GetState" exactlyonce.VersionedStateMachine VersionedStateMachine.GetState'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_VersionedStateMachine `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ApplyVolatile' ApplyReadonly' SetState' GetState':
+Global Instance wp_struct_make_VersionedStateMachine ApplyVolatile' ApplyReadonly' SetState' GetState':
   PureWp True
     (struct.make #exactlyonce.VersionedStateMachine (alist_val [
       "ApplyVolatile" ::= #ApplyVolatile';
@@ -222,7 +224,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined exactlyonce :=
   is_pkg_defined := is_global_definitions exactlyonce var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MakeExactlyOnceStateMachine :

@@ -29,12 +29,12 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk `{ffi_syntax}: Settable _ :=
+Global Instance settable_Clerk : Settable _ :=
   settable! Clerk.mk < Clerk.mu'; Clerk.cls'; Clerk.leader' >.
-Global Instance into_val_Clerk `{ffi_syntax} : IntoVal Clerk.t.
+Global Instance into_val_Clerk : IntoVal Clerk.t.
 Admitted.
 
-Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t configservice.Clerk :=
+Global Instance into_val_typed_Clerk : IntoValTyped Clerk.t configservice.Clerk :=
 {|
   default_val := Clerk.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -42,18 +42,18 @@ Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t config
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Clerk_mu `{ffi_syntax} : IntoValStructField "mu" configservice.Clerk Clerk.mu'.
+Global Instance into_val_struct_field_Clerk_mu : IntoValStructField "mu" configservice.Clerk Clerk.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_Clerk_cls `{ffi_syntax} : IntoValStructField "cls" configservice.Clerk Clerk.cls'.
+Global Instance into_val_struct_field_Clerk_cls : IntoValStructField "cls" configservice.Clerk Clerk.cls'.
 Admitted.
 
-Global Instance into_val_struct_field_Clerk_leader `{ffi_syntax} : IntoValStructField "leader" configservice.Clerk Clerk.leader'.
+Global Instance into_val_struct_field_Clerk_leader : IntoValStructField "leader" configservice.Clerk Clerk.leader'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' cls' leader':
+Global Instance wp_struct_make_Clerk mu' cls' leader':
   PureWp True
     (struct.make #configservice.Clerk (alist_val [
       "mu" ::= #mu';
@@ -73,6 +73,7 @@ Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
 Admitted.
 
 End instances.
+
 Module state.
 Section def.
 Context `{ffi_syntax}.
@@ -89,12 +90,12 @@ End state.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_state `{ffi_syntax}: Settable _ :=
+Global Instance settable_state : Settable _ :=
   settable! state.mk < state.epoch'; state.reservedEpoch'; state.leaseExpiration'; state.wantLeaseToExpire'; state.config' >.
-Global Instance into_val_state `{ffi_syntax} : IntoVal state.t.
+Global Instance into_val_state : IntoVal state.t.
 Admitted.
 
-Global Instance into_val_typed_state `{ffi_syntax} : IntoValTyped state.t configservice.state :=
+Global Instance into_val_typed_state : IntoValTyped state.t configservice.state :=
 {|
   default_val := state.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -102,24 +103,24 @@ Global Instance into_val_typed_state `{ffi_syntax} : IntoValTyped state.t config
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_state_epoch `{ffi_syntax} : IntoValStructField "epoch" configservice.state state.epoch'.
+Global Instance into_val_struct_field_state_epoch : IntoValStructField "epoch" configservice.state state.epoch'.
 Admitted.
 
-Global Instance into_val_struct_field_state_reservedEpoch `{ffi_syntax} : IntoValStructField "reservedEpoch" configservice.state state.reservedEpoch'.
+Global Instance into_val_struct_field_state_reservedEpoch : IntoValStructField "reservedEpoch" configservice.state state.reservedEpoch'.
 Admitted.
 
-Global Instance into_val_struct_field_state_leaseExpiration `{ffi_syntax} : IntoValStructField "leaseExpiration" configservice.state state.leaseExpiration'.
+Global Instance into_val_struct_field_state_leaseExpiration : IntoValStructField "leaseExpiration" configservice.state state.leaseExpiration'.
 Admitted.
 
-Global Instance into_val_struct_field_state_wantLeaseToExpire `{ffi_syntax} : IntoValStructField "wantLeaseToExpire" configservice.state state.wantLeaseToExpire'.
+Global Instance into_val_struct_field_state_wantLeaseToExpire : IntoValStructField "wantLeaseToExpire" configservice.state state.wantLeaseToExpire'.
 Admitted.
 
-Global Instance into_val_struct_field_state_config `{ffi_syntax} : IntoValStructField "config" configservice.state state.config'.
+Global Instance into_val_struct_field_state_config : IntoValStructField "config" configservice.state state.config'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_state `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} epoch' reservedEpoch' leaseExpiration' wantLeaseToExpire' config':
+Global Instance wp_struct_make_state epoch' reservedEpoch' leaseExpiration' wantLeaseToExpire' config':
   PureWp True
     (struct.make #configservice.state (alist_val [
       "epoch" ::= #epoch';
@@ -143,6 +144,7 @@ Global Instance state_struct_fields_split dq l (v : state.t) :
 Admitted.
 
 End instances.
+
 Module Server.
 Section def.
 Context `{ffi_syntax}.
@@ -155,12 +157,12 @@ End Server.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Server `{ffi_syntax}: Settable _ :=
+Global Instance settable_Server : Settable _ :=
   settable! Server.mk < Server.s' >.
-Global Instance into_val_Server `{ffi_syntax} : IntoVal Server.t.
+Global Instance into_val_Server : IntoVal Server.t.
 Admitted.
 
-Global Instance into_val_typed_Server `{ffi_syntax} : IntoValTyped Server.t configservice.Server :=
+Global Instance into_val_typed_Server : IntoValTyped Server.t configservice.Server :=
 {|
   default_val := Server.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -168,12 +170,12 @@ Global Instance into_val_typed_Server `{ffi_syntax} : IntoValTyped Server.t conf
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Server_s `{ffi_syntax} : IntoValStructField "s" configservice.Server Server.s'.
+Global Instance into_val_struct_field_Server_s : IntoValStructField "s" configservice.Server Server.s'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s':
+Global Instance wp_struct_make_Server s':
   PureWp True
     (struct.make #configservice.Server (alist_val [
       "s" ::= #s'
@@ -208,7 +210,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined configservice :=
   is_pkg_defined := is_global_definitions configservice var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_EncodeConfig :

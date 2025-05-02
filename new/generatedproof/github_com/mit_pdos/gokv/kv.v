@@ -5,7 +5,6 @@ Require Export New.golang.theory.
 Require Export New.code.github_com.mit_pdos.gokv.kv.
 Module kv.
 Axiom falso : False.
-
 Module Kv.
 Section def.
 Context `{ffi_syntax}.
@@ -38,7 +37,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined kv :=
   is_pkg_defined := is_global_definitions kv var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.
