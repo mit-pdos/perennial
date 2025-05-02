@@ -193,7 +193,7 @@ Proof.
   iNamed "H". iNamed "His_sigdig".
   iDestruct (is_sig_to_pred with "Hsig_pk Hsig") as "H".
   iNamed "H".
-  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc Henc0); eauto.
+  opose proof (PreSigDig.inj [] [] Henc Henc0 _); eauto.
   intuition. simplify_eq/=.
 
   (* fill in gs inv. *)
@@ -217,7 +217,7 @@ Proof.
   iNamed "H". iNamed "His_sigdig".
   iDestruct (is_sig_to_pred with "Hsig_pk Hsig") as "H".
   iRename "Hlb" into "Hlb_adtr". iNamed "H".
-  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc Henc0); eauto.
+  opose proof (PreSigDig.inj [] [] Henc Henc0 _); eauto.
   intuition. simplify_eq/=.
   iDestruct (mono_list_idx_own_get with "Hlb") as "Hidx"; [done|].
   iDestruct (mono_list_lb_idx_lookup with "Hlb_adtr Hidx") as %?; [word|].
@@ -602,27 +602,6 @@ Proof.
     iDestruct "Hgenie" as "[Hgenie _]".
     iDestruct ("Hgenie" with "[//]") as "#Hmerk".
     iFrame "∗#".
-Qed.
-
-Lemma is_sigdig_agree sd0 sd1 pk γ :
-  sd0.(SigDig.Epoch) = sd1.(SigDig.Epoch) →
-  is_sig_pk pk (sigpred γ) -∗
-  is_SigDig sd0 pk -∗
-  is_SigDig sd1 pk -∗
-  ⌜ sd0.(SigDig.Dig) = sd1.(SigDig.Dig) ⌝.
-Proof.
-  iIntros (Heq) "#Hpk". iNamedSuffix 1 "0". iNamedSuffix 1 "1".
-  iDestruct (is_sig_to_pred with "Hpk Hsig0") as "H". iNamedSuffix "H" "0".
-  iDestruct (is_sig_to_pred with "Hpk Hsig1") as "H". iNamedSuffix "H" "1".
-  (* unify with sigdig existentially hidden by sigpred. *)
-  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc1 Henc3); eauto.
-  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc0 Henc2); eauto.
-  intuition. simplify_eq/=.
-  iDestruct (mono_list_idx_own_get with "Hlb0") as "Hidx0"; [done|].
-  iDestruct (mono_list_idx_own_get with "Hlb1") as "Hidx1"; [done|].
-  rewrite Heq.
-  iDestruct (mono_list_idx_agree with "Hidx0 Hidx1") as %?.
-  naive_solver.
 Qed.
 
 Lemma mk_is_sigdig l sd d0 pk :

@@ -26,7 +26,7 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
   uint.Z (W64 (length obj.(Dig))) = length obj.(Dig) ∧
   enc = encodesF obj.
 
-Lemma inj tail0 tail1 obj0 obj1 enc0 enc1 :
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
   encodes enc0 obj0 →
   encodes enc1 obj1 →
   enc0 ++ tail0 = enc1 ++ tail1 →
@@ -108,7 +108,7 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
   uint.Z (W64 (length obj.(PkCommit))) = length obj.(PkCommit) ∧
   enc = encodesF obj.
 
-Lemma inj tail0 tail1 obj0 obj1 enc0 enc1 :
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
   encodes enc0 obj0 →
   encodes enc1 obj1 →
   enc0 ++ tail0 = enc1 ++ tail1 →
@@ -206,7 +206,7 @@ Definition encodesF (obj : t) : list w8 :=
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 
-Lemma inj tail0 tail1 obj0 obj1 enc0 enc1 :
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
   encodes enc0 obj0 →
   encodes enc1 obj1 →
   enc0 ++ tail0 = enc1 ++ tail1 →
@@ -280,7 +280,7 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
 
   enc = encodesF obj.
 
-Lemma inj tail0 tail1 obj0 obj1 enc0 enc1 :
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
   encodes enc0 obj0 →
   encodes enc1 obj1 →
   enc0 ++ tail0 = enc1 ++ tail1 →

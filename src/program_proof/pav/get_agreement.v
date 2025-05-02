@@ -50,7 +50,7 @@ Proof.
     iExists (_, _). iFrame "#". iSplit; try done.
     inv Henc_val. simplify_option_eq.
     destruct H0 as [??]. simpl in *.
-    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H2) as ?; try done.
+    opose proof (MapValPre.inj [] [] Henc H2 _) as ?; try done.
     intuition. by simplify_eq/=.
   - iDestruct ("Hmap_transf" with "[$His_bound //]") as "H".
     iNamed "H". iFrame "#".

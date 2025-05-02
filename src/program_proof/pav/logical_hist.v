@@ -226,7 +226,7 @@ Proof.
       opose proof (Hmono_maps _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
       opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
       inv Henc_val.
-      opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H6); [done|].
+      opose proof (MapValPre.inj [] [] Henc H6 _); [done|].
       intuition. simplify_eq/=.
       destruct (mbound !! label) as [[??]|]; [|done].
       simplify_eq/=. word. }
@@ -283,7 +283,7 @@ Proof.
     in latest ep. *)
     subst. clear -Henc Henc_val.
     inv Henc_val.
-    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H6); [done|].
+    opose proof (MapValPre.inj [] [] Henc H6 _); [done|].
     intuition. simplify_eq/=.
     destruct (mprior !! label) as [[??]|]; [|done].
     by simplify_eq/=.
@@ -313,7 +313,7 @@ Proof.
     in latest ep. *)
     subst. clear -Henc Henc_val.
     inv Henc_val.
-    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H1); [done|].
+    opose proof (MapValPre.inj [] [] Henc H1 _); [done|].
     intuition. simplify_eq/=.
     destruct (mprior !! label) as [[??]|]; [|done].
     by simplify_eq/=.

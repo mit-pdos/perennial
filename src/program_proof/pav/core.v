@@ -45,14 +45,17 @@ Definition is_map_label pk uid ver label : iProp Σ :=
   is_vrf_out pk (MapLabelPre.encodesF $ MapLabelPre.mk uid ver) label.
 
 Definition is_commit (val : pk_ty) (commit : commit_ty) : iProp Σ :=
-  ∃ rand, is_hash (CommitOpen.encodesF $ CommitOpen.mk val rand) commit.
+  ∃ rand enc,
+  "%Henc" ∷ ⌜ CommitOpen.encodes enc (CommitOpen.mk val rand) ⌝ ∗
+  "#Hhash" ∷ is_hash enc commit.
 
 Lemma is_commit_inj val0 val1 commit :
   is_commit val0 commit -∗ is_commit val1 commit -∗ ⌜ val0 = val1 ⌝.
 Proof.
-  iIntros "[% Hhash0] [% Hhash1]".
-  iDestruct (is_hash_inj with "Hhash0 Hhash1") as %Heq_hash.
-  by opose proof (CommitOpen.inj _ _ Heq_hash) as [=].
+  iNamedSuffix 1 "0". iNamedSuffix 1 "1".
+  iDestruct (is_hash_inj with "Hhash0 Hhash1") as %->.
+  opose proof (CommitOpen.inj [] [] Henc0 Henc1 _) as ?; [done|].
+  naive_solver.
 Qed.
 
 Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
