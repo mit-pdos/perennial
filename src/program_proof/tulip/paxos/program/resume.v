@@ -309,6 +309,7 @@ Section resume.
         (*@                                                                         @*)
         wp_apply (wp_ReadInt with "Hdata").
         iIntros (q') "Hdata".
+        iEval list_simplifier in "Hdata".
         wp_apply (wp_ReadInt with "Hdata").
         iIntros (bs1) "Hdata".
         wp_apply (wp_ReadInt with "Hdata").
@@ -371,6 +372,7 @@ Section resume.
         (*@                                                                         @*)
         wp_apply (wp_ReadInt with "Hdata").
         iIntros (q') "Hdata".
+        iEval list_simplifier in "Hdata".
         wp_apply (wp_ReadInt with "Hdata").
         iIntros (bs1) "Hdata".
         wp_apply (wp_DecodeStrings with "Hdata").

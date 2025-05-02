@@ -37,7 +37,10 @@ Section program.
                  let l := encode_dbmods_xlen (take (uint.nat i) xs) in
                 "HdataP" ∷ dataP ↦[slice.T byteT] px ∗
                 "Hdata"  ∷ own_slice px byteT (DfracOwn 1) (bs ++ u64_le nW ++ l))%I.
-    wp_apply (wp_forSlice P with "[] [$Hm $Hp $HdataP]"); last first; first 1 last.
+    wp_apply (wp_forSlice P with "[] [$Hm Hp $HdataP]"); last first; first 1 last.
+    { replace (uint.nat (W64 0)) with (0%nat) by word.
+      rewrite /encode_dbmods_xlen /serialize.serialize.
+      by list_simplifier. }
     { clear Φ.
       iIntros (i x Φ) "!> [HP %Hloop] HΦ".
       destruct Hloop as [Hi Hx].
@@ -49,7 +52,8 @@ Section program.
       iApply "HΦ".
       iFrame.
       rewrite uint_nat_word_add_S; last word.
-      by rewrite (take_S_r _ _ _ Hx) encode_dbmods_xlen_snoc -app_assoc.
+      rewrite (take_S_r _ _ _ Hx) encode_dbmods_xlen_snoc -app_assoc.
+      by list_simplifier.
     }
     iIntros "[HP Hm]".
     iNamed "HP".

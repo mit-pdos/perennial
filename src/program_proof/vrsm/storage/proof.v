@@ -107,7 +107,7 @@ Qed.
 Lemma file_encodes_state_snapshot snap ops epoch :
   (length ops < 2 ^ 64)%Z →
   has_snap_encoding snap ops →
-  file_encodes_state ((u64_le (length snap) ++ snap) ++ u64_le epoch ++ u64_le (length ops))
+  file_encodes_state (u64_le (length snap) ++ snap ++ u64_le epoch ++ u64_le (length ops))
     epoch ops false
 .
 Proof.
@@ -610,6 +610,7 @@ Proof.
       iExists _, _, _; iFrame "HP".
       iPureIntro.
       rewrite -app_assoc.
+      list_simplifier.
       by apply file_encodes_state_snapshot.
     }
   }
@@ -660,8 +661,9 @@ Proof.
     iExists _, _; iFrame "HP #".
     iPureIntro.
     unfold newdata.
-    rewrite -app_assoc.
-    by apply file_encodes_state_snapshot.
+    rewrite -?app_assoc.
+    list_simplifier.
+    by eapply file_encodes_state_snapshot.
   }
   iModIntro.
   iExists _.
@@ -1076,8 +1078,8 @@ Proof.
         { word. }
         rewrite app_nil_l.
         rewrite -app_assoc.
-        unshelve (epose proof (file_encodes_state_snapshot snap [] 0 _ Hsnapenc)  as H; done).
-        simpl. lia.
+        list_simplifier.
+        by eapply file_encodes_state_snapshot.
       }
     }
     iNext.
@@ -1087,8 +1089,8 @@ Proof.
     iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
     {
       instantiate (1:=((replicate (n+1) ([]:list OpType, false)))).
-      rewrite replicate_S.
-      simpl.
+      replace (n + 1) with (1 + n) by lia.
+      rewrite !replicate_S.
       apply prefix_cons.
       apply prefix_nil.
     }
@@ -1115,8 +1117,8 @@ Proof.
       { word. }
       rewrite app_nil_l.
       rewrite -app_assoc.
-      unshelve (epose proof (file_encodes_state_snapshot snap [] 0 _ Hsnapenc)  as H; done).
-      simpl; lia.
+      list_simplifier.
+      by eapply file_encodes_state_snapshot.
     }
     iSplit.
     {
@@ -1159,8 +1161,8 @@ Proof.
       { word. }
       rewrite app_nil_l.
       rewrite -app_assoc.
-      unshelve (epose proof (file_encodes_state_snapshot snap [] 0 _ Hsnapenc)  as H; done).
-      simpl; lia.
+      list_simplifier.
+      by eapply file_encodes_state_snapshot.
     }
     iSplitL; first done.
     iPureIntro.

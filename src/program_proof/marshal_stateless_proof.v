@@ -11,32 +11,34 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
 
 Implicit Types (v:val).
 
-Theorem wp_ReadInt s q x tail :
+Theorem wp_ReadInt tail s q x :
   {{{ own_slice_small s byteT q (u64_le x ++ tail) }}}
     ReadInt (slice_val s)
   {{{ s', RET (#x, slice_val s'); own_slice_small s' byteT q tail }}}.
 Proof.
   iIntros (Φ) "Hs HΦ". wp_rec.
   wp_apply (wp_UInt64Get_unchanged with "Hs").
-  { rewrite /list.untype fmap_app take_app_length' //. }
+  { rewrite /list.untype fmap_app take_app_length' //. len. }
   iIntros "Hs".
   wp_apply (wp_SliceSkip_small with "Hs").
   { len. }
-  iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
+  iIntros (s') "Hs'". wp_pures. iApply "HΦ".
+  rewrite drop_app_length'; [done|len].
 Qed.
 
-Theorem wp_ReadInt32 s q (x: u32) tail :
+Theorem wp_ReadInt32 tail s q (x: u32) :
   {{{ own_slice_small s byteT q (u32_le x ++ tail) }}}
     ReadInt32 (slice_val s)
   {{{ s', RET (#x, slice_val s'); own_slice_small s' byteT q tail }}}.
 Proof.
   iIntros (Φ) "Hs HΦ". wp_rec.
   wp_apply (wp_UInt32Get_unchanged with "Hs").
-  { rewrite /list.untype fmap_app take_app_length' //. }
+  { rewrite /list.untype fmap_app take_app_length' //. len. }
   iIntros "Hs".
   wp_apply (wp_SliceSkip_small with "Hs").
   { len. }
-  iIntros (s') "Hs'". wp_pures. iApply "HΦ". done.
+  iIntros (s') "Hs'". wp_pures. iApply "HΦ".
+  rewrite drop_app_length'; [done|len].
 Qed.
 
 Theorem wp_ReadBytes s q (len: u64) (head tail : list u8) :
@@ -305,7 +307,8 @@ Proof.
   rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
   rewrite /list.untype fmap_app. f_equal.
   { rewrite take_app_length' //. len. }
-  rewrite drop_ge //. len.
+  rewrite drop_ge; [|len].
+  by list_simplifier.
 Qed.
 
 Theorem wp_WriteInt32 s x (vs : list u8) :
@@ -333,7 +336,8 @@ Proof.
   rewrite /own_slice. iExactEq "Hsl". repeat f_equal.
   rewrite /list.untype fmap_app. f_equal.
   { rewrite take_app_length' //. len. }
-  rewrite drop_ge //. len.
+  rewrite drop_ge; [|len].
+  by list_simplifier.
 Qed.
 
 Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :

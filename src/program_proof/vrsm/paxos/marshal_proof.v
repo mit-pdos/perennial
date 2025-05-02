@@ -58,7 +58,8 @@ Proof.
   iIntros (?) "Hsl". wp_store. wp_loadField.
   wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl]").
   iIntros (?) "[Hsl _]". wp_store.
-  wp_load. iApply "HΦ". iFrame. iPureIntro. done.
+  wp_load. iApply "HΦ". iFrame. iPureIntro.
+  by list_simplifier.
 Qed.
 
 Lemma wp_Decode enc enc_sl (args:C) :
@@ -150,7 +151,8 @@ Proof.
   wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
   iNamedStruct "Hs". rewrite Henc.
-  wp_apply (wp_ReadInt with "[$]").
+  wp_apply (wp_ReadInt [] with "[Hsl]").
+  { by list_simplifier. }
   iIntros (?) "?". wp_pures. wp_storeField.
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
 Qed.
@@ -291,7 +293,8 @@ Proof.
   wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
   iNamedStruct "Hs". rewrite Henc.
-  wp_apply (wp_ReadInt with "[$]").
+  wp_apply (wp_ReadInt [] with "[Hsl]").
+  { by list_simplifier. }
   iIntros (?) "?". wp_pures. wp_storeField. wp_pures.
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
 Qed.
@@ -359,7 +362,8 @@ Proof.
   iIntros (?) "Hsl". wp_store. wp_loadField.
   wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl]").
   iIntros (?) "[Hsl _]". wp_store.
-  wp_load. iApply "HΦ". iFrame. iPureIntro. done.
+  wp_load. iApply "HΦ". iFrame. iPureIntro.
+  by list_simplifier.
 Qed.
 
 Lemma wp_Decode enc enc_sl (args:C) :
@@ -417,14 +421,16 @@ Definition encode (st:t) : list u8 :=
 Instance encode_inj : Inj (=) (=) encode.
 Proof.
   intros ???. destruct x, y.
-  apply app_inj_1 in H as [? H]; last done.
-  apply app_inj_1 in H as [? H]; last done.
-  apply app_inj_1 in H as [? H]; last done.
-  apply app_inj_1 in H as [? H]; last done.
+  apply app_inj_1 in H as [? H]; [|len].
+  apply app_inj_1 in H as [? H]; [|len].
+  apply app_inj_1 in H as [? H]; [|len].
+  apply app_inj_1 in H as [? H]; [|len].
   simpl in *.
   apply (f_equal le_to_u64) in H0, H1, H2.
   repeat rewrite u64_le_to_word in H0, H1, H2.
-  subst. f_equal. destruct isLeader0, isLeader1; done.
+  subst. f_equal.
+  apply (inj u64_le) in H3.
+  destruct isLeader0, isLeader1; done.
 Qed.
 
 Context `{!heapGS Σ}.
@@ -472,6 +478,7 @@ Proof.
   wp_loadField. wp_load. wp_apply (wp_WriteBytes with "[$Hsl $Hstate_sl2]").
   iIntros (?) "[Hsl _]". wp_store. wp_load.
   iApply "HΦ".
+  list_simplifier.
   by iFrame.
 Qed.
 

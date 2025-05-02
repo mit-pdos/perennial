@@ -90,7 +90,8 @@ Lemma wp_DecodeUint64 sl x q :
 Proof.
   iIntros (Φ) "Hsl HΦ".
   wp_rec.
-  wp_apply (wp_ReadInt with "Hsl").
+  wp_apply (wp_ReadInt [] with "[Hsl]").
+  { by list_simplifier. }
   iIntros (?) "Hsl".
   wp_pures.
   by iApply "HΦ".

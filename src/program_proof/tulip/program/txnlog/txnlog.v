@@ -172,7 +172,8 @@ Section program.
       wp_apply (wp_ReadInt with "Hbs").
       iIntros (p1) "Hbs".
       wp_pures.
-      wp_apply (wp_ReadInt with "Hbs").
+      wp_apply (wp_ReadInt [] with "[Hbs]").
+      { by list_simplifier. }
       iIntros (p2) "Hbs".
       wp_pures.
       iSpecialize ("HΦ" $! (CmdAbort tid) _ Slice.nil).

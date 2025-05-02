@@ -44,8 +44,7 @@ Lemma encode_cacheValue_inj v l v' l' :
 Proof.
   intros H.
   rewrite /encode_cacheValue in H.
-  apply app_inj_1 in H.
-  2:{ done. }
+  apply app_inj_1 in H; [|len].
   destruct H as [H1 H2].
   split.
   { done. }

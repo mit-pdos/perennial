@@ -1800,11 +1800,12 @@ Proof.
   iIntros (?) "Hrep_sl _ Hpbck".
   iNamed 1.
   wp_pures.
-  wp_apply (wp_ReadInt with "[Hrep_sl]").
+  wp_apply (wp_ReadInt [] with "[Hrep_sl]").
   {
     simpl.
     unfold compute_reply.
-    iFrame.
+    rewrite /apply_op_and_get_reply /=.
+    by list_simplifier.
   }
   iIntros (?) "_".
   wp_pures.

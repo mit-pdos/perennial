@@ -262,7 +262,8 @@ Proof.
       wp_pures.
       iDestruct "Hspec" as (?) "[% Hspec]".
       subst. wp_rec. wp_pures.
-      wp_apply (wp_ReadInt with "[$]").
+      wp_apply (wp_ReadInt [] with "[Hreq_sl]").
+      { by list_simplifier. }
       iIntros (?) "_". wp_pures.
       wp_apply (wp_Server__IncreaseCommit with "Hsrv [-Hspec] Hspec").
       iIntros "Hspec".
