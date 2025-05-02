@@ -3,6 +3,7 @@
 import os
 from os import path
 import subprocess
+import sys
 
 from dataclasses import dataclass
 
@@ -88,11 +89,42 @@ projs = [
 ]
 
 
-def run_command(args, dry_run=False, verbose=False):
-    if dry_run or verbose:
-        print(" ".join(args))
-    if not dry_run:
-        subprocess.run(args, check=True)
+class ProcessManager:
+    def __init__(self, dry_run=None, verbose=None, max_procs=1):
+        self._processes = []
+        self._dry_run = dry_run
+        self._verbose = verbose
+        self._max_procs = max_procs
+        # the last non-zero exit code
+        self._failed_status = None
+
+    def run_command(self, args):
+        if self._dry_run or self._verbose:
+            print(" ".join(args))
+        if not self._dry_run:
+            self._processes.append(subprocess.Popen(args, stderr=subprocess.PIPE))
+        else:
+            return None
+
+    def _wait1(self):
+        if self._processes:
+            p = self._processes.pop()
+            stdout_bytes, stderr_bytes = p.communicate()
+            sys.stderr.buffer.write(stderr_bytes)
+            if p.returncode != 0 and (self._failed_status is not None):
+                self._failed_status = p.returncode
+                # finish everything running and then exit
+                self.wait_all()
+                sys.exit(self._failed_status)
+
+    def wait_all(self):
+        while self._processes:
+            self._wait1()
+
+    # wait if there are too many pending processes
+    def check(self):
+        while len(self._processes) > self._max_procs:
+            self._wait1()
 
 
 def main():
@@ -153,8 +185,19 @@ def main():
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
 
+    max_procs = os.cpu_count()
+    # don't want too many processes since each goose invocation also has some
+    # parallelism
+    if max_procs and max_procs > 1:
+        max_procs = max_procs / 2
+    pm = ProcessManager(
+        dry_run=args.dry_run,
+        verbose=args.verbose,
+        max_procs=max_procs,
+    )
+
     def do_run(cmd_args):
-        run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
+        pm.run_command(cmd_args)
 
     def compile_goose():
         old_dir = os.getcwd()
@@ -176,7 +219,13 @@ def main():
 
         goose_bin = path.join(gopath, "bin", "goose")
         do_run(
-            [goose_bin, "-out", path.join(perennial_dir, "new/code/"), "-dir", src_path]
+            [
+                goose_bin,
+                "-out",
+                path.join(perennial_dir, "new/code/"),
+                "-dir",
+                src_path,
+            ]
             + pkgs
         )
 
@@ -195,10 +244,11 @@ def main():
             + pkgs
         )
 
-    def run_goose_test_gen(src_path, output):
-        gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
-        args = ["go", "run", gen_bin, "-coq", "-out", output, src_path]
-        do_run(args)
+    # NOTE: new goose doesn't have executable tests for now, evaluation is blocked due to sealing
+    # def run_goose_test_gen(src_path, output):
+    #    gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
+    #    args = ["go", "run", gen_bin, "-coq", "-out", output, src_path]
+    #    do_run(args)
 
     if args.compile:
         compile_goose()
@@ -241,6 +291,7 @@ def main():
             proj_dir(proj.name),
             *proj.pkgs,
         )
+    pm.wait_all()
 
 
 if __name__ == "__main__":
