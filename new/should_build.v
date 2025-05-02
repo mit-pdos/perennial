@@ -11,6 +11,6 @@ From New.proof Require Import chan context.
 Require New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.closed.
 
 From New.proof.github_com.mit_pdos.go_journal Require
-  common addr util.
+  common addr util lockmap alloc.
 
 From New.proof Require Import inG_problem.
