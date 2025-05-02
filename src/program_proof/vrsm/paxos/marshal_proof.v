@@ -151,7 +151,8 @@ Proof.
   wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
   iNamedStruct "Hs". rewrite Henc.
-  wp_apply (wp_ReadInt with "[$]").
+  wp_apply (wp_ReadInt [] with "[Hsl]").
+  { by list_simplifier. }
   iIntros (?) "?". wp_pures. wp_storeField.
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
 Qed.
@@ -292,7 +293,8 @@ Proof.
   wp_rec. wp_apply wp_allocStruct; first by val_ty.
   iIntros (?) "Hs". wp_pures.
   iNamedStruct "Hs". rewrite Henc.
-  wp_apply (wp_ReadInt with "[$]").
+  wp_apply (wp_ReadInt [] with "[Hsl]").
+  { by list_simplifier. }
   iIntros (?) "?". wp_pures. wp_storeField. wp_pures.
   iApply "HΦ". iModIntro. repeat iExists _; iFrame "∗#".
 Qed.

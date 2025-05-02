@@ -6,26 +6,17 @@ From Perennial.goose_lang.lib Require Import encoding.
 From Perennial.program_proof Require Import proof_prelude std_proof.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
-(* Requires that l = x ++ tail, but is associated with some automation so the tail
-   can be determined to be empty when `l = x`. *)
-Class MarshalEqTail (l x tail: list w8) : Prop := marshal_eq : l = x ++ tail.
-Global Instance marshal_eq_diag x : MarshalEqTail x x [].
-Proof. rewrite /MarshalEq app_nil_r //. Qed.
-Global Hint Extern 0 (MarshalEqTail _ _ _) => (reflexivity) : typeclass_instances.
-(* This says that the [tail] is an output whereas [l] and [x] are inputs. *)
-Global Hint Mode MarshalEqTail ! ! - : typeclass_instances.
-
 Section goose_lang.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
 
 Implicit Types (v:val).
 
-Theorem wp_ReadInt s q l x tail {H:MarshalEqTail l (u64_le x) tail} :
-  {{{ own_slice_small s byteT q l }}}
+Theorem wp_ReadInt tail s q x :
+  {{{ own_slice_small s byteT q (u64_le x ++ tail) }}}
     ReadInt (slice_val s)
   {{{ s', RET (#x, slice_val s'); own_slice_small s' byteT q tail }}}.
 Proof.
-  iIntros (Φ) "Hs HΦ". wp_rec. rewrite H.
+  iIntros (Φ) "Hs HΦ". wp_rec.
   wp_apply (wp_UInt64Get_unchanged with "Hs").
   { rewrite /list.untype fmap_app take_app_length' //. len. }
   iIntros "Hs".
