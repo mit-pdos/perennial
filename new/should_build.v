@@ -3,7 +3,7 @@ From New.code.github_com.goose_lang.goose.testdata.examples Require unittest sem
 (* required just to make sure this demo works *)
 From New.golang.theory Require static_mem.
 From New.proof Require go_etcd_io.etcd.raft.v3.
-From New.proof.github_com.mit_pdos Require partialapp asyncfile gokv.lockservice globals_test.
+From New.proof.github_com.mit_pdos.gokv Require partialapp asyncfile lockservice globals_test.
 
 From New.proof Require go_etcd_io.etcd.client.v3.leasing.
 From New.proof Require Import chan context.
