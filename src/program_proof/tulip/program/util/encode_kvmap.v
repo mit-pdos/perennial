@@ -40,7 +40,9 @@ Section program.
                 "Hdata"  ∷ own_slice px byteT (DfracOwn 1) (bs ++ u64_le (W64 (size m)) ++ l) ∗
                 "%Hml"   ∷ ⌜ml ≡ₚ map_to_list mx⌝)%I.
     wp_apply (wp_MapIter_fold _ _ _ P with "Hm [-HΦ]").
-    { iExists _, []. rewrite map_to_list_empty. by iFrame. }
+    { iExists _, []. rewrite map_to_list_empty.
+      rewrite /encode_dbmods_xlen /serialize.serialize.
+      list_simplifier. by iFrame. }
     { clear Φ.
       iIntros (mx k v Φ) "!> [HP %Hk] HΦ".
       destruct Hk as [Hmxk Hmk].

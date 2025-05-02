@@ -79,6 +79,7 @@ Section encode.
     iFrame.
     iPureIntro.
     rewrite /= /encode_fast_prepare_req /encode_fast_prepare_req_xkind.
+    list_simplifier.
     by eauto 10.
   Qed.
 
@@ -124,6 +125,7 @@ Section encode.
     iFrame.
     iPureIntro.
     rewrite /= /encode_validate_req /encode_validate_req_xkind.
+    list_simplifier.
     by eauto 10.
   Qed.
 
@@ -256,7 +258,9 @@ Section encode.
     wp_pures.
     rewrite uint_nat_W64_0 replicate_0 app_nil_l -app_assoc.
     iApply "HΦ".
-    by iFrame.
+    iFrame.
+    rewrite /encode_txnreq /encode_inquire_req /encode_inquire_req_xkind /encode_ts_rank.
+    by list_simplifier.
   Qed.
 
   Theorem wp_EncodeTxnRefreshRequest (ts : u64) (rank : u64) :

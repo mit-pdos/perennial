@@ -132,7 +132,7 @@ Proof.
   wp_store. clear sl.
   wp_load.
   iApply "HΦ". iModIntro. iFrame.
-  done.
+  by list_simplifier.
 Qed.
 
 Lemma wp_decodePutArgs enc_sl enc q (key val:byte_string) :

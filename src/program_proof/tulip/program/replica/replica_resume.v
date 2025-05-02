@@ -624,7 +624,8 @@ Section program.
         iIntros (bs2P) "Hdata".
         wp_apply (wp_ReadInt with "Hdata").
         iIntros (bs3P) "Hdata".
-        wp_apply (wp_ReadInt with "Hdata").
+        wp_apply (wp_ReadInt with "[Hdata]").
+        { by list_simplifier. }
         iIntros (bs4P) "Hdata".
         wp_apply (wp_ReadBool with "Hdata").
         iIntros (dec bs5P) "[%Hdec Hdata]".
