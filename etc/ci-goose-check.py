@@ -110,6 +110,8 @@ sp.run(
         projs["etcd"].path(),
         "--etcd-raft",
         projs["etcd-raft"].path(),
+        "--go-journal",
+        projs["journal"].path(),
     ],
     check=True,
 )

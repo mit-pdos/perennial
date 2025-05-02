@@ -18,10 +18,10 @@ End unit.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_unit `{ffi_syntax} : IntoVal unit.t.
+Global Instance into_val_unit : IntoVal unit.t.
 Admitted.
 
-Global Instance into_val_typed_unit `{ffi_syntax} : IntoValTyped unit.t semantics.unit :=
+Global Instance into_val_typed_unit : IntoValTyped unit.t semantics.unit :=
 {|
   default_val := unit.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -31,13 +31,12 @@ Global Instance into_val_typed_unit `{ffi_syntax} : IntoValTyped unit.t semantic
 |}.
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_unit `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+Global Instance wp_struct_make_unit:
   PureWp True
     (struct.make #semantics.unit (alist_val [
     ]))%struct
     #(unit.mk).
 Admitted.
-
 
 End instances.
 
@@ -54,6 +53,7 @@ Context `{ffi_syntax}.
 Definition t := func.t.
 End def.
 End MultipleArgsType.
+
 Module Enc.
 Section def.
 Context `{ffi_syntax}.
@@ -66,12 +66,12 @@ End Enc.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Enc `{ffi_syntax}: Settable _ :=
+Global Instance settable_Enc : Settable _ :=
   settable! Enc.mk < Enc.p' >.
-Global Instance into_val_Enc `{ffi_syntax} : IntoVal Enc.t.
+Global Instance into_val_Enc : IntoVal Enc.t.
 Admitted.
 
-Global Instance into_val_typed_Enc `{ffi_syntax} : IntoValTyped Enc.t semantics.Enc :=
+Global Instance into_val_typed_Enc : IntoValTyped Enc.t semantics.Enc :=
 {|
   default_val := Enc.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -79,12 +79,12 @@ Global Instance into_val_typed_Enc `{ffi_syntax} : IntoValTyped Enc.t semantics.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Enc_p `{ffi_syntax} : IntoValStructField "p" semantics.Enc Enc.p'.
+Global Instance into_val_struct_field_Enc_p : IntoValStructField "p" semantics.Enc Enc.p'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Enc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p':
+Global Instance wp_struct_make_Enc p':
   PureWp True
     (struct.make #semantics.Enc (alist_val [
       "p" ::= #p'
@@ -100,6 +100,7 @@ Global Instance Enc_struct_fields_split dq l (v : Enc.t) :
 Admitted.
 
 End instances.
+
 Module Dec.
 Section def.
 Context `{ffi_syntax}.
@@ -112,12 +113,12 @@ End Dec.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Dec `{ffi_syntax}: Settable _ :=
+Global Instance settable_Dec : Settable _ :=
   settable! Dec.mk < Dec.p' >.
-Global Instance into_val_Dec `{ffi_syntax} : IntoVal Dec.t.
+Global Instance into_val_Dec : IntoVal Dec.t.
 Admitted.
 
-Global Instance into_val_typed_Dec `{ffi_syntax} : IntoValTyped Dec.t semantics.Dec :=
+Global Instance into_val_typed_Dec : IntoValTyped Dec.t semantics.Dec :=
 {|
   default_val := Dec.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -125,12 +126,12 @@ Global Instance into_val_typed_Dec `{ffi_syntax} : IntoValTyped Dec.t semantics.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Dec_p `{ffi_syntax} : IntoValStructField "p" semantics.Dec Dec.p'.
+Global Instance into_val_struct_field_Dec_p : IntoValStructField "p" semantics.Dec Dec.p'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Dec `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} p':
+Global Instance wp_struct_make_Dec p':
   PureWp True
     (struct.make #semantics.Dec (alist_val [
       "p" ::= #p'
@@ -146,6 +147,7 @@ Global Instance Dec_struct_fields_split dq l (v : Dec.t) :
 Admitted.
 
 End instances.
+
 Module Editor.
 Section def.
 Context `{ffi_syntax}.
@@ -159,12 +161,12 @@ End Editor.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Editor `{ffi_syntax}: Settable _ :=
+Global Instance settable_Editor : Settable _ :=
   settable! Editor.mk < Editor.s'; Editor.next_val' >.
-Global Instance into_val_Editor `{ffi_syntax} : IntoVal Editor.t.
+Global Instance into_val_Editor : IntoVal Editor.t.
 Admitted.
 
-Global Instance into_val_typed_Editor `{ffi_syntax} : IntoValTyped Editor.t semantics.Editor :=
+Global Instance into_val_typed_Editor : IntoValTyped Editor.t semantics.Editor :=
 {|
   default_val := Editor.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -172,15 +174,15 @@ Global Instance into_val_typed_Editor `{ffi_syntax} : IntoValTyped Editor.t sema
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Editor_s `{ffi_syntax} : IntoValStructField "s" semantics.Editor Editor.s'.
+Global Instance into_val_struct_field_Editor_s : IntoValStructField "s" semantics.Editor Editor.s'.
 Admitted.
 
-Global Instance into_val_struct_field_Editor_next_val `{ffi_syntax} : IntoValStructField "next_val" semantics.Editor Editor.next_val'.
+Global Instance into_val_struct_field_Editor_next_val : IntoValStructField "next_val" semantics.Editor Editor.next_val'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Editor `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s' next_val':
+Global Instance wp_struct_make_Editor s' next_val':
   PureWp True
     (struct.make #semantics.Editor (alist_val [
       "s" ::= #s';
@@ -198,6 +200,7 @@ Global Instance Editor_struct_fields_split dq l (v : Editor.t) :
 Admitted.
 
 End instances.
+
 Module Pair.
 Section def.
 Context `{ffi_syntax}.
@@ -211,12 +214,12 @@ End Pair.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Pair `{ffi_syntax}: Settable _ :=
+Global Instance settable_Pair : Settable _ :=
   settable! Pair.mk < Pair.x'; Pair.y' >.
-Global Instance into_val_Pair `{ffi_syntax} : IntoVal Pair.t.
+Global Instance into_val_Pair : IntoVal Pair.t.
 Admitted.
 
-Global Instance into_val_typed_Pair `{ffi_syntax} : IntoValTyped Pair.t semantics.Pair :=
+Global Instance into_val_typed_Pair : IntoValTyped Pair.t semantics.Pair :=
 {|
   default_val := Pair.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -224,15 +227,15 @@ Global Instance into_val_typed_Pair `{ffi_syntax} : IntoValTyped Pair.t semantic
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Pair_x `{ffi_syntax} : IntoValStructField "x" semantics.Pair Pair.x'.
+Global Instance into_val_struct_field_Pair_x : IntoValStructField "x" semantics.Pair Pair.x'.
 Admitted.
 
-Global Instance into_val_struct_field_Pair_y `{ffi_syntax} : IntoValStructField "y" semantics.Pair Pair.y'.
+Global Instance into_val_struct_field_Pair_y : IntoValStructField "y" semantics.Pair Pair.y'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Pair `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x' y':
+Global Instance wp_struct_make_Pair x' y':
   PureWp True
     (struct.make #semantics.Pair (alist_val [
       "x" ::= #x';
@@ -264,6 +267,7 @@ Context `{ffi_syntax}.
 Definition t := interface.t.
 End def.
 End geometryInterface.
+
 Module SquareStruct.
 Section def.
 Context `{ffi_syntax}.
@@ -276,12 +280,12 @@ End SquareStruct.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SquareStruct `{ffi_syntax}: Settable _ :=
+Global Instance settable_SquareStruct : Settable _ :=
   settable! SquareStruct.mk < SquareStruct.Side' >.
-Global Instance into_val_SquareStruct `{ffi_syntax} : IntoVal SquareStruct.t.
+Global Instance into_val_SquareStruct : IntoVal SquareStruct.t.
 Admitted.
 
-Global Instance into_val_typed_SquareStruct `{ffi_syntax} : IntoValTyped SquareStruct.t semantics.SquareStruct :=
+Global Instance into_val_typed_SquareStruct : IntoValTyped SquareStruct.t semantics.SquareStruct :=
 {|
   default_val := SquareStruct.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -289,12 +293,12 @@ Global Instance into_val_typed_SquareStruct `{ffi_syntax} : IntoValTyped SquareS
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SquareStruct_Side `{ffi_syntax} : IntoValStructField "Side" semantics.SquareStruct SquareStruct.Side'.
+Global Instance into_val_struct_field_SquareStruct_Side : IntoValStructField "Side" semantics.SquareStruct SquareStruct.Side'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SquareStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Side':
+Global Instance wp_struct_make_SquareStruct Side':
   PureWp True
     (struct.make #semantics.SquareStruct (alist_val [
       "Side" ::= #Side'
@@ -310,6 +314,7 @@ Global Instance SquareStruct_struct_fields_split dq l (v : SquareStruct.t) :
 Admitted.
 
 End instances.
+
 Module LoopStruct.
 Section def.
 Context `{ffi_syntax}.
@@ -322,12 +327,12 @@ End LoopStruct.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_LoopStruct `{ffi_syntax}: Settable _ :=
+Global Instance settable_LoopStruct : Settable _ :=
   settable! LoopStruct.mk < LoopStruct.loopNext' >.
-Global Instance into_val_LoopStruct `{ffi_syntax} : IntoVal LoopStruct.t.
+Global Instance into_val_LoopStruct : IntoVal LoopStruct.t.
 Admitted.
 
-Global Instance into_val_typed_LoopStruct `{ffi_syntax} : IntoValTyped LoopStruct.t semantics.LoopStruct :=
+Global Instance into_val_typed_LoopStruct : IntoValTyped LoopStruct.t semantics.LoopStruct :=
 {|
   default_val := LoopStruct.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -335,12 +340,12 @@ Global Instance into_val_typed_LoopStruct `{ffi_syntax} : IntoValTyped LoopStruc
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LoopStruct_loopNext `{ffi_syntax} : IntoValStructField "loopNext" semantics.LoopStruct LoopStruct.loopNext'.
+Global Instance into_val_struct_field_LoopStruct_loopNext : IntoValStructField "loopNext" semantics.LoopStruct LoopStruct.loopNext'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_LoopStruct `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} loopNext':
+Global Instance wp_struct_make_LoopStruct loopNext':
   PureWp True
     (struct.make #semantics.LoopStruct (alist_val [
       "loopNext" ::= #loopNext'
@@ -356,6 +361,7 @@ Global Instance LoopStruct_struct_fields_split dq l (v : LoopStruct.t) :
 Admitted.
 
 End instances.
+
 Module BoolTest.
 Section def.
 Context `{ffi_syntax}.
@@ -371,12 +377,12 @@ End BoolTest.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_BoolTest `{ffi_syntax}: Settable _ :=
+Global Instance settable_BoolTest : Settable _ :=
   settable! BoolTest.mk < BoolTest.t'; BoolTest.f'; BoolTest.tc'; BoolTest.fc' >.
-Global Instance into_val_BoolTest `{ffi_syntax} : IntoVal BoolTest.t.
+Global Instance into_val_BoolTest : IntoVal BoolTest.t.
 Admitted.
 
-Global Instance into_val_typed_BoolTest `{ffi_syntax} : IntoValTyped BoolTest.t semantics.BoolTest :=
+Global Instance into_val_typed_BoolTest : IntoValTyped BoolTest.t semantics.BoolTest :=
 {|
   default_val := BoolTest.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -384,21 +390,21 @@ Global Instance into_val_typed_BoolTest `{ffi_syntax} : IntoValTyped BoolTest.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_BoolTest_t `{ffi_syntax} : IntoValStructField "t" semantics.BoolTest BoolTest.t'.
+Global Instance into_val_struct_field_BoolTest_t : IntoValStructField "t" semantics.BoolTest BoolTest.t'.
 Admitted.
 
-Global Instance into_val_struct_field_BoolTest_f `{ffi_syntax} : IntoValStructField "f" semantics.BoolTest BoolTest.f'.
+Global Instance into_val_struct_field_BoolTest_f : IntoValStructField "f" semantics.BoolTest BoolTest.f'.
 Admitted.
 
-Global Instance into_val_struct_field_BoolTest_tc `{ffi_syntax} : IntoValStructField "tc" semantics.BoolTest BoolTest.tc'.
+Global Instance into_val_struct_field_BoolTest_tc : IntoValStructField "tc" semantics.BoolTest BoolTest.tc'.
 Admitted.
 
-Global Instance into_val_struct_field_BoolTest_fc `{ffi_syntax} : IntoValStructField "fc" semantics.BoolTest BoolTest.fc'.
+Global Instance into_val_struct_field_BoolTest_fc : IntoValStructField "fc" semantics.BoolTest BoolTest.fc'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_BoolTest `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} t' f' tc' fc':
+Global Instance wp_struct_make_BoolTest t' f' tc' fc':
   PureWp True
     (struct.make #semantics.BoolTest (alist_val [
       "t" ::= #t';
@@ -420,6 +426,7 @@ Global Instance BoolTest_struct_fields_split dq l (v : BoolTest.t) :
 Admitted.
 
 End instances.
+
 Module ArrayEditor.
 Section def.
 Context `{ffi_syntax}.
@@ -433,12 +440,12 @@ End ArrayEditor.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ArrayEditor `{ffi_syntax}: Settable _ :=
+Global Instance settable_ArrayEditor : Settable _ :=
   settable! ArrayEditor.mk < ArrayEditor.s'; ArrayEditor.next_val' >.
-Global Instance into_val_ArrayEditor `{ffi_syntax} : IntoVal ArrayEditor.t.
+Global Instance into_val_ArrayEditor : IntoVal ArrayEditor.t.
 Admitted.
 
-Global Instance into_val_typed_ArrayEditor `{ffi_syntax} : IntoValTyped ArrayEditor.t semantics.ArrayEditor :=
+Global Instance into_val_typed_ArrayEditor : IntoValTyped ArrayEditor.t semantics.ArrayEditor :=
 {|
   default_val := ArrayEditor.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -446,15 +453,15 @@ Global Instance into_val_typed_ArrayEditor `{ffi_syntax} : IntoValTyped ArrayEdi
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ArrayEditor_s `{ffi_syntax} : IntoValStructField "s" semantics.ArrayEditor ArrayEditor.s'.
+Global Instance into_val_struct_field_ArrayEditor_s : IntoValStructField "s" semantics.ArrayEditor ArrayEditor.s'.
 Admitted.
 
-Global Instance into_val_struct_field_ArrayEditor_next_val `{ffi_syntax} : IntoValStructField "next_val" semantics.ArrayEditor ArrayEditor.next_val'.
+Global Instance into_val_struct_field_ArrayEditor_next_val : IntoValStructField "next_val" semantics.ArrayEditor ArrayEditor.next_val'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ArrayEditor `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s' next_val':
+Global Instance wp_struct_make_ArrayEditor s' next_val':
   PureWp True
     (struct.make #semantics.ArrayEditor (alist_val [
       "s" ::= #s';
@@ -472,6 +479,7 @@ Global Instance ArrayEditor_struct_fields_split dq l (v : ArrayEditor.t) :
 Admitted.
 
 End instances.
+
 Module Bar.
 Section def.
 Context `{ffi_syntax}.
@@ -485,12 +493,12 @@ End Bar.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Bar `{ffi_syntax}: Settable _ :=
+Global Instance settable_Bar : Settable _ :=
   settable! Bar.mk < Bar.a'; Bar.b' >.
-Global Instance into_val_Bar `{ffi_syntax} : IntoVal Bar.t.
+Global Instance into_val_Bar : IntoVal Bar.t.
 Admitted.
 
-Global Instance into_val_typed_Bar `{ffi_syntax} : IntoValTyped Bar.t semantics.Bar :=
+Global Instance into_val_typed_Bar : IntoValTyped Bar.t semantics.Bar :=
 {|
   default_val := Bar.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -498,15 +506,15 @@ Global Instance into_val_typed_Bar `{ffi_syntax} : IntoValTyped Bar.t semantics.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Bar_a `{ffi_syntax} : IntoValStructField "a" semantics.Bar Bar.a'.
+Global Instance into_val_struct_field_Bar_a : IntoValStructField "a" semantics.Bar Bar.a'.
 Admitted.
 
-Global Instance into_val_struct_field_Bar_b `{ffi_syntax} : IntoValStructField "b" semantics.Bar Bar.b'.
+Global Instance into_val_struct_field_Bar_b : IntoValStructField "b" semantics.Bar Bar.b'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Bar `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a' b':
+Global Instance wp_struct_make_Bar a' b':
   PureWp True
     (struct.make #semantics.Bar (alist_val [
       "a" ::= #a';
@@ -524,6 +532,7 @@ Global Instance Bar_struct_fields_split dq l (v : Bar.t) :
 Admitted.
 
 End instances.
+
 Module Foo.
 Section def.
 Context `{ffi_syntax}.
@@ -536,12 +545,12 @@ End Foo.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Foo `{ffi_syntax}: Settable _ :=
+Global Instance settable_Foo : Settable _ :=
   settable! Foo.mk < Foo.bar' >.
-Global Instance into_val_Foo `{ffi_syntax} : IntoVal Foo.t.
+Global Instance into_val_Foo : IntoVal Foo.t.
 Admitted.
 
-Global Instance into_val_typed_Foo `{ffi_syntax} : IntoValTyped Foo.t semantics.Foo :=
+Global Instance into_val_typed_Foo : IntoValTyped Foo.t semantics.Foo :=
 {|
   default_val := Foo.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -549,12 +558,12 @@ Global Instance into_val_typed_Foo `{ffi_syntax} : IntoValTyped Foo.t semantics.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Foo_bar `{ffi_syntax} : IntoValStructField "bar" semantics.Foo Foo.bar'.
+Global Instance into_val_struct_field_Foo_bar : IntoValStructField "bar" semantics.Foo Foo.bar'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Foo `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} bar':
+Global Instance wp_struct_make_Foo bar':
   PureWp True
     (struct.make #semantics.Foo (alist_val [
       "bar" ::= #bar'
@@ -570,6 +579,7 @@ Global Instance Foo_struct_fields_split dq l (v : Foo.t) :
 Admitted.
 
 End instances.
+
 Module TwoInts.
 Section def.
 Context `{ffi_syntax}.
@@ -583,12 +593,12 @@ End TwoInts.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_TwoInts `{ffi_syntax}: Settable _ :=
+Global Instance settable_TwoInts : Settable _ :=
   settable! TwoInts.mk < TwoInts.x'; TwoInts.y' >.
-Global Instance into_val_TwoInts `{ffi_syntax} : IntoVal TwoInts.t.
+Global Instance into_val_TwoInts : IntoVal TwoInts.t.
 Admitted.
 
-Global Instance into_val_typed_TwoInts `{ffi_syntax} : IntoValTyped TwoInts.t semantics.TwoInts :=
+Global Instance into_val_typed_TwoInts : IntoValTyped TwoInts.t semantics.TwoInts :=
 {|
   default_val := TwoInts.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -596,15 +606,15 @@ Global Instance into_val_typed_TwoInts `{ffi_syntax} : IntoValTyped TwoInts.t se
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_TwoInts_x `{ffi_syntax} : IntoValStructField "x" semantics.TwoInts TwoInts.x'.
+Global Instance into_val_struct_field_TwoInts_x : IntoValStructField "x" semantics.TwoInts TwoInts.x'.
 Admitted.
 
-Global Instance into_val_struct_field_TwoInts_y `{ffi_syntax} : IntoValStructField "y" semantics.TwoInts TwoInts.y'.
+Global Instance into_val_struct_field_TwoInts_y : IntoValStructField "y" semantics.TwoInts TwoInts.y'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_TwoInts `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} x' y':
+Global Instance wp_struct_make_TwoInts x' y':
   PureWp True
     (struct.make #semantics.TwoInts (alist_val [
       "x" ::= #x';
@@ -622,6 +632,7 @@ Global Instance TwoInts_struct_fields_split dq l (v : TwoInts.t) :
 Admitted.
 
 End instances.
+
 Module S.
 Section def.
 Context `{ffi_syntax}.
@@ -636,12 +647,12 @@ End S.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_S `{ffi_syntax}: Settable _ :=
+Global Instance settable_S : Settable _ :=
   settable! S.mk < S.a'; S.b'; S.c' >.
-Global Instance into_val_S `{ffi_syntax} : IntoVal S.t.
+Global Instance into_val_S : IntoVal S.t.
 Admitted.
 
-Global Instance into_val_typed_S `{ffi_syntax} : IntoValTyped S.t semantics.S :=
+Global Instance into_val_typed_S : IntoValTyped S.t semantics.S :=
 {|
   default_val := S.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -649,18 +660,18 @@ Global Instance into_val_typed_S `{ffi_syntax} : IntoValTyped S.t semantics.S :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_S_a `{ffi_syntax} : IntoValStructField "a" semantics.S S.a'.
+Global Instance into_val_struct_field_S_a : IntoValStructField "a" semantics.S S.a'.
 Admitted.
 
-Global Instance into_val_struct_field_S_b `{ffi_syntax} : IntoValStructField "b" semantics.S S.b'.
+Global Instance into_val_struct_field_S_b : IntoValStructField "b" semantics.S S.b'.
 Admitted.
 
-Global Instance into_val_struct_field_S_c `{ffi_syntax} : IntoValStructField "c" semantics.S S.c'.
+Global Instance into_val_struct_field_S_c : IntoValStructField "c" semantics.S S.c'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} a' b' c':
+Global Instance wp_struct_make_S a' b' c':
   PureWp True
     (struct.make #semantics.S (alist_val [
       "a" ::= #a';
@@ -680,6 +691,7 @@ Global Instance S_struct_fields_split dq l (v : S.t) :
 Admitted.
 
 End instances.
+
 Module StructWrap.
 Section def.
 Context `{ffi_syntax}.
@@ -692,12 +704,12 @@ End StructWrap.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_StructWrap `{ffi_syntax}: Settable _ :=
+Global Instance settable_StructWrap : Settable _ :=
   settable! StructWrap.mk < StructWrap.i' >.
-Global Instance into_val_StructWrap `{ffi_syntax} : IntoVal StructWrap.t.
+Global Instance into_val_StructWrap : IntoVal StructWrap.t.
 Admitted.
 
-Global Instance into_val_typed_StructWrap `{ffi_syntax} : IntoValTyped StructWrap.t semantics.StructWrap :=
+Global Instance into_val_typed_StructWrap : IntoValTyped StructWrap.t semantics.StructWrap :=
 {|
   default_val := StructWrap.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -705,12 +717,12 @@ Global Instance into_val_typed_StructWrap `{ffi_syntax} : IntoValTyped StructWra
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_StructWrap_i `{ffi_syntax} : IntoValStructField "i" semantics.StructWrap StructWrap.i'.
+Global Instance into_val_struct_field_StructWrap_i : IntoValStructField "i" semantics.StructWrap StructWrap.i'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_StructWrap `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} i':
+Global Instance wp_struct_make_StructWrap i':
   PureWp True
     (struct.make #semantics.StructWrap (alist_val [
       "i" ::= #i'
@@ -726,6 +738,7 @@ Global Instance StructWrap_struct_fields_split dq l (v : StructWrap.t) :
 Admitted.
 
 End instances.
+
 Module StructWithFunc.
 Section def.
 Context `{ffi_syntax}.
@@ -738,12 +751,12 @@ End StructWithFunc.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_StructWithFunc `{ffi_syntax}: Settable _ :=
+Global Instance settable_StructWithFunc : Settable _ :=
   settable! StructWithFunc.mk < StructWithFunc.fn' >.
-Global Instance into_val_StructWithFunc `{ffi_syntax} : IntoVal StructWithFunc.t.
+Global Instance into_val_StructWithFunc : IntoVal StructWithFunc.t.
 Admitted.
 
-Global Instance into_val_typed_StructWithFunc `{ffi_syntax} : IntoValTyped StructWithFunc.t semantics.StructWithFunc :=
+Global Instance into_val_typed_StructWithFunc : IntoValTyped StructWithFunc.t semantics.StructWithFunc :=
 {|
   default_val := StructWithFunc.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -751,12 +764,12 @@ Global Instance into_val_typed_StructWithFunc `{ffi_syntax} : IntoValTyped Struc
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_StructWithFunc_fn `{ffi_syntax} : IntoValStructField "fn" semantics.StructWithFunc StructWithFunc.fn'.
+Global Instance into_val_struct_field_StructWithFunc_fn : IntoValStructField "fn" semantics.StructWithFunc StructWithFunc.fn'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_StructWithFunc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} fn':
+Global Instance wp_struct_make_StructWithFunc fn':
   PureWp True
     (struct.make #semantics.StructWithFunc (alist_val [
       "fn" ::= #fn'
@@ -772,6 +785,7 @@ Global Instance StructWithFunc_struct_fields_split dq l (v : StructWithFunc.t) :
 Admitted.
 
 End instances.
+
 Module switchConcrete.
 Section def.
 Context `{ffi_syntax}.
@@ -782,10 +796,10 @@ End switchConcrete.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_switchConcrete `{ffi_syntax} : IntoVal switchConcrete.t.
+Global Instance into_val_switchConcrete : IntoVal switchConcrete.t.
 Admitted.
 
-Global Instance into_val_typed_switchConcrete `{ffi_syntax} : IntoValTyped switchConcrete.t semantics.switchConcrete :=
+Global Instance into_val_typed_switchConcrete : IntoValTyped switchConcrete.t semantics.switchConcrete :=
 {|
   default_val := switchConcrete.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -795,13 +809,12 @@ Global Instance into_val_typed_switchConcrete `{ffi_syntax} : IntoValTyped switc
 |}.
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_switchConcrete `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+Global Instance wp_struct_make_switchConcrete:
   PureWp True
     (struct.make #semantics.switchConcrete (alist_val [
     ]))%struct
     #(switchConcrete.mk).
 Admitted.
-
 
 End instances.
 
@@ -811,6 +824,7 @@ Context `{ffi_syntax}.
 Definition t := interface.t.
 End def.
 End switchInterface.
+
 Module Log.
 Section def.
 Context `{ffi_syntax}.
@@ -826,12 +840,12 @@ End Log.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Log `{ffi_syntax}: Settable _ :=
+Global Instance settable_Log : Settable _ :=
   settable! Log.mk < Log.d'; Log.l'; Log.cache'; Log.length' >.
-Global Instance into_val_Log `{ffi_syntax} : IntoVal Log.t.
+Global Instance into_val_Log : IntoVal Log.t.
 Admitted.
 
-Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t semantics.Log :=
+Global Instance into_val_typed_Log : IntoValTyped Log.t semantics.Log :=
 {|
   default_val := Log.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -839,21 +853,21 @@ Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t semantics.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Log_d `{ffi_syntax} : IntoValStructField "d" semantics.Log Log.d'.
+Global Instance into_val_struct_field_Log_d : IntoValStructField "d" semantics.Log Log.d'.
 Admitted.
 
-Global Instance into_val_struct_field_Log_l `{ffi_syntax} : IntoValStructField "l" semantics.Log Log.l'.
+Global Instance into_val_struct_field_Log_l : IntoValStructField "l" semantics.Log Log.l'.
 Admitted.
 
-Global Instance into_val_struct_field_Log_cache `{ffi_syntax} : IntoValStructField "cache" semantics.Log Log.cache'.
+Global Instance into_val_struct_field_Log_cache : IntoValStructField "cache" semantics.Log Log.cache'.
 Admitted.
 
-Global Instance into_val_struct_field_Log_length `{ffi_syntax} : IntoValStructField "length" semantics.Log Log.length'.
+Global Instance into_val_struct_field_Log_length : IntoValStructField "length" semantics.Log Log.length'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} d' l' cache' length':
+Global Instance wp_struct_make_Log d' l' cache' length':
   PureWp True
     (struct.make #semantics.Log (alist_val [
       "d" ::= #d';
@@ -894,7 +908,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined semantics :=
   is_pkg_defined := is_global_definitions semantics var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_findKey :

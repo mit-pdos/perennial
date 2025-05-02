@@ -20,12 +20,12 @@ End EtcdError.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_EtcdError `{ffi_syntax}: Settable _ :=
+Global Instance settable_EtcdError : Settable _ :=
   settable! EtcdError.mk < EtcdError.code'; EtcdError.desc' >.
-Global Instance into_val_EtcdError `{ffi_syntax} : IntoVal EtcdError.t.
+Global Instance into_val_EtcdError : IntoVal EtcdError.t.
 Admitted.
 
-Global Instance into_val_typed_EtcdError `{ffi_syntax} : IntoValTyped EtcdError.t rpctypes.EtcdError :=
+Global Instance into_val_typed_EtcdError : IntoValTyped EtcdError.t rpctypes.EtcdError :=
 {|
   default_val := EtcdError.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -33,15 +33,15 @@ Global Instance into_val_typed_EtcdError `{ffi_syntax} : IntoValTyped EtcdError.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_EtcdError_code `{ffi_syntax} : IntoValStructField "code" rpctypes.EtcdError EtcdError.code'.
+Global Instance into_val_struct_field_EtcdError_code : IntoValStructField "code" rpctypes.EtcdError EtcdError.code'.
 Admitted.
 
-Global Instance into_val_struct_field_EtcdError_desc `{ffi_syntax} : IntoValStructField "desc" rpctypes.EtcdError EtcdError.desc'.
+Global Instance into_val_struct_field_EtcdError_desc : IntoValStructField "desc" rpctypes.EtcdError EtcdError.desc'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_EtcdError `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} code' desc':
+Global Instance wp_struct_make_EtcdError code' desc':
   PureWp True
     (struct.make #rpctypes.EtcdError (alist_val [
       "code" ::= #code';
@@ -59,6 +59,7 @@ Global Instance EtcdError_struct_fields_split dq l (v : EtcdError.t) :
 Admitted.
 
 End instances.
+
 Module TokenFieldNameGRPCKey.
 Section def.
 Context `{ffi_syntax}.
@@ -69,10 +70,10 @@ End TokenFieldNameGRPCKey.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_TokenFieldNameGRPCKey `{ffi_syntax} : IntoVal TokenFieldNameGRPCKey.t.
+Global Instance into_val_TokenFieldNameGRPCKey : IntoVal TokenFieldNameGRPCKey.t.
 Admitted.
 
-Global Instance into_val_typed_TokenFieldNameGRPCKey `{ffi_syntax} : IntoValTyped TokenFieldNameGRPCKey.t rpctypes.TokenFieldNameGRPCKey :=
+Global Instance into_val_typed_TokenFieldNameGRPCKey : IntoValTyped TokenFieldNameGRPCKey.t rpctypes.TokenFieldNameGRPCKey :=
 {|
   default_val := TokenFieldNameGRPCKey.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -82,13 +83,12 @@ Global Instance into_val_typed_TokenFieldNameGRPCKey `{ffi_syntax} : IntoValType
 |}.
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_TokenFieldNameGRPCKey `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+Global Instance wp_struct_make_TokenFieldNameGRPCKey:
   PureWp True
     (struct.make #rpctypes.TokenFieldNameGRPCKey (alist_val [
     ]))%struct
     #(TokenFieldNameGRPCKey.mk).
 Admitted.
-
 
 End instances.
 
@@ -366,7 +366,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined rpctypes :=
   is_pkg_defined := is_global_definitions rpctypes var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
   "HErrGRPCEmptyKey" ∷ ErrGRPCEmptyKey ↦ (default_val error.t) ∗
   "HErrGRPCKeyNotFound" ∷ ErrGRPCKeyNotFound ↦ (default_val error.t) ∗
   "HErrGRPCValueProvided" ∷ ErrGRPCValueProvided ↦ (default_val error.t) ∗

@@ -25,12 +25,12 @@ End Buf.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Buf `{ffi_syntax}: Settable _ :=
+Global Instance settable_Buf : Settable _ :=
   settable! Buf.mk < Buf.Addr'; Buf.Sz'; Buf.Data'; Buf.dirty' >.
-Global Instance into_val_Buf `{ffi_syntax} : IntoVal Buf.t.
+Global Instance into_val_Buf : IntoVal Buf.t.
 Admitted.
 
-Global Instance into_val_typed_Buf `{ffi_syntax} : IntoValTyped Buf.t buf.Buf :=
+Global Instance into_val_typed_Buf : IntoValTyped Buf.t buf.Buf :=
 {|
   default_val := Buf.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -38,21 +38,21 @@ Global Instance into_val_typed_Buf `{ffi_syntax} : IntoValTyped Buf.t buf.Buf :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Buf_Addr `{ffi_syntax} : IntoValStructField "Addr" buf.Buf Buf.Addr'.
+Global Instance into_val_struct_field_Buf_Addr : IntoValStructField "Addr" buf.Buf Buf.Addr'.
 Admitted.
 
-Global Instance into_val_struct_field_Buf_Sz `{ffi_syntax} : IntoValStructField "Sz" buf.Buf Buf.Sz'.
+Global Instance into_val_struct_field_Buf_Sz : IntoValStructField "Sz" buf.Buf Buf.Sz'.
 Admitted.
 
-Global Instance into_val_struct_field_Buf_Data `{ffi_syntax} : IntoValStructField "Data" buf.Buf Buf.Data'.
+Global Instance into_val_struct_field_Buf_Data : IntoValStructField "Data" buf.Buf Buf.Data'.
 Admitted.
 
-Global Instance into_val_struct_field_Buf_dirty `{ffi_syntax} : IntoValStructField "dirty" buf.Buf Buf.dirty'.
+Global Instance into_val_struct_field_Buf_dirty : IntoValStructField "dirty" buf.Buf Buf.dirty'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Buf `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Addr' Sz' Data' dirty':
+Global Instance wp_struct_make_Buf Addr' Sz' Data' dirty':
   PureWp True
     (struct.make #buf.Buf (alist_val [
       "Addr" ::= #Addr';
@@ -74,6 +74,7 @@ Global Instance Buf_struct_fields_split dq l (v : Buf.t) :
 Admitted.
 
 End instances.
+
 Module BufMap.
 Section def.
 Context `{ffi_syntax}.
@@ -86,12 +87,12 @@ End BufMap.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_BufMap `{ffi_syntax}: Settable _ :=
+Global Instance settable_BufMap : Settable _ :=
   settable! BufMap.mk < BufMap.addrs' >.
-Global Instance into_val_BufMap `{ffi_syntax} : IntoVal BufMap.t.
+Global Instance into_val_BufMap : IntoVal BufMap.t.
 Admitted.
 
-Global Instance into_val_typed_BufMap `{ffi_syntax} : IntoValTyped BufMap.t buf.BufMap :=
+Global Instance into_val_typed_BufMap : IntoValTyped BufMap.t buf.BufMap :=
 {|
   default_val := BufMap.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -99,12 +100,12 @@ Global Instance into_val_typed_BufMap `{ffi_syntax} : IntoValTyped BufMap.t buf.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_BufMap_addrs `{ffi_syntax} : IntoValStructField "addrs" buf.BufMap BufMap.addrs'.
+Global Instance into_val_struct_field_BufMap_addrs : IntoValStructField "addrs" buf.BufMap BufMap.addrs'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_BufMap `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} addrs':
+Global Instance wp_struct_make_BufMap addrs':
   PureWp True
     (struct.make #buf.BufMap (alist_val [
       "addrs" ::= #addrs'
@@ -139,7 +140,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined buf :=
   is_pkg_defined := is_global_definitions buf var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MkBuf :

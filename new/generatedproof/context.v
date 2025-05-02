@@ -5,7 +5,6 @@ Require Export New.golang.theory.
 Require Export New.code.context.
 Module context.
 Axiom falso : False.
-
 Module Context.
 Section def.
 Context `{ffi_syntax}.
@@ -38,7 +37,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined context :=
   is_pkg_defined := is_global_definitions context var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

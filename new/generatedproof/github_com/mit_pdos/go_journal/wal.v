@@ -11,13 +11,13 @@ Require Export New.golang.theory.
 Require Export New.code.github_com.mit_pdos.go_journal.wal.
 Module wal.
 Axiom falso : False.
-
 Module LogPosition.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End LogPosition.
+
 Module Update.
 Section def.
 Context `{ffi_syntax}.
@@ -31,12 +31,12 @@ End Update.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Update `{ffi_syntax}: Settable _ :=
+Global Instance settable_Update : Settable _ :=
   settable! Update.mk < Update.Addr'; Update.Block' >.
-Global Instance into_val_Update `{ffi_syntax} : IntoVal Update.t.
+Global Instance into_val_Update : IntoVal Update.t.
 Admitted.
 
-Global Instance into_val_typed_Update `{ffi_syntax} : IntoValTyped Update.t wal.Update :=
+Global Instance into_val_typed_Update : IntoValTyped Update.t wal.Update :=
 {|
   default_val := Update.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -44,15 +44,15 @@ Global Instance into_val_typed_Update `{ffi_syntax} : IntoValTyped Update.t wal.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Update_Addr `{ffi_syntax} : IntoValStructField "Addr" wal.Update Update.Addr'.
+Global Instance into_val_struct_field_Update_Addr : IntoValStructField "Addr" wal.Update Update.Addr'.
 Admitted.
 
-Global Instance into_val_struct_field_Update_Block `{ffi_syntax} : IntoValStructField "Block" wal.Update Update.Block'.
+Global Instance into_val_struct_field_Update_Block : IntoValStructField "Block" wal.Update Update.Block'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Update `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Addr' Block':
+Global Instance wp_struct_make_Update Addr' Block':
   PureWp True
     (struct.make #wal.Update (alist_val [
       "Addr" ::= #Addr';
@@ -70,6 +70,7 @@ Global Instance Update_struct_fields_split dq l (v : Update.t) :
 Admitted.
 
 End instances.
+
 Module circularAppender.
 Section def.
 Context `{ffi_syntax}.
@@ -82,12 +83,12 @@ End circularAppender.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_circularAppender `{ffi_syntax}: Settable _ :=
+Global Instance settable_circularAppender : Settable _ :=
   settable! circularAppender.mk < circularAppender.diskAddrs' >.
-Global Instance into_val_circularAppender `{ffi_syntax} : IntoVal circularAppender.t.
+Global Instance into_val_circularAppender : IntoVal circularAppender.t.
 Admitted.
 
-Global Instance into_val_typed_circularAppender `{ffi_syntax} : IntoValTyped circularAppender.t wal.circularAppender :=
+Global Instance into_val_typed_circularAppender : IntoValTyped circularAppender.t wal.circularAppender :=
 {|
   default_val := circularAppender.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -95,12 +96,12 @@ Global Instance into_val_typed_circularAppender `{ffi_syntax} : IntoValTyped cir
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_circularAppender_diskAddrs `{ffi_syntax} : IntoValStructField "diskAddrs" wal.circularAppender circularAppender.diskAddrs'.
+Global Instance into_val_struct_field_circularAppender_diskAddrs : IntoValStructField "diskAddrs" wal.circularAppender circularAppender.diskAddrs'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_circularAppender `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} diskAddrs':
+Global Instance wp_struct_make_circularAppender diskAddrs':
   PureWp True
     (struct.make #wal.circularAppender (alist_val [
       "diskAddrs" ::= #diskAddrs'
@@ -116,6 +117,7 @@ Global Instance circularAppender_struct_fields_split dq l (v : circularAppender.
 Admitted.
 
 End instances.
+
 Module sliding.
 Section def.
 Context `{ffi_syntax}.
@@ -132,12 +134,12 @@ End sliding.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_sliding `{ffi_syntax}: Settable _ :=
+Global Instance settable_sliding : Settable _ :=
   settable! sliding.mk < sliding.log'; sliding.start'; sliding.mutable'; sliding.needFlush'; sliding.addrPos' >.
-Global Instance into_val_sliding `{ffi_syntax} : IntoVal sliding.t.
+Global Instance into_val_sliding : IntoVal sliding.t.
 Admitted.
 
-Global Instance into_val_typed_sliding `{ffi_syntax} : IntoValTyped sliding.t wal.sliding :=
+Global Instance into_val_typed_sliding : IntoValTyped sliding.t wal.sliding :=
 {|
   default_val := sliding.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -145,24 +147,24 @@ Global Instance into_val_typed_sliding `{ffi_syntax} : IntoValTyped sliding.t wa
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_sliding_log `{ffi_syntax} : IntoValStructField "log" wal.sliding sliding.log'.
+Global Instance into_val_struct_field_sliding_log : IntoValStructField "log" wal.sliding sliding.log'.
 Admitted.
 
-Global Instance into_val_struct_field_sliding_start `{ffi_syntax} : IntoValStructField "start" wal.sliding sliding.start'.
+Global Instance into_val_struct_field_sliding_start : IntoValStructField "start" wal.sliding sliding.start'.
 Admitted.
 
-Global Instance into_val_struct_field_sliding_mutable `{ffi_syntax} : IntoValStructField "mutable" wal.sliding sliding.mutable'.
+Global Instance into_val_struct_field_sliding_mutable : IntoValStructField "mutable" wal.sliding sliding.mutable'.
 Admitted.
 
-Global Instance into_val_struct_field_sliding_needFlush `{ffi_syntax} : IntoValStructField "needFlush" wal.sliding sliding.needFlush'.
+Global Instance into_val_struct_field_sliding_needFlush : IntoValStructField "needFlush" wal.sliding sliding.needFlush'.
 Admitted.
 
-Global Instance into_val_struct_field_sliding_addrPos `{ffi_syntax} : IntoValStructField "addrPos" wal.sliding sliding.addrPos'.
+Global Instance into_val_struct_field_sliding_addrPos : IntoValStructField "addrPos" wal.sliding sliding.addrPos'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_sliding `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} log' start' mutable' needFlush' addrPos':
+Global Instance wp_struct_make_sliding log' start' mutable' needFlush' addrPos':
   PureWp True
     (struct.make #wal.sliding (alist_val [
       "log" ::= #log';
@@ -186,6 +188,7 @@ Global Instance sliding_struct_fields_split dq l (v : sliding.t) :
 Admitted.
 
 End instances.
+
 Module WalogState.
 Section def.
 Context `{ffi_syntax}.
@@ -201,12 +204,12 @@ End WalogState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_WalogState `{ffi_syntax}: Settable _ :=
+Global Instance settable_WalogState : Settable _ :=
   settable! WalogState.mk < WalogState.memLog'; WalogState.diskEnd'; WalogState.shutdown'; WalogState.nthread' >.
-Global Instance into_val_WalogState `{ffi_syntax} : IntoVal WalogState.t.
+Global Instance into_val_WalogState : IntoVal WalogState.t.
 Admitted.
 
-Global Instance into_val_typed_WalogState `{ffi_syntax} : IntoValTyped WalogState.t wal.WalogState :=
+Global Instance into_val_typed_WalogState : IntoValTyped WalogState.t wal.WalogState :=
 {|
   default_val := WalogState.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -214,21 +217,21 @@ Global Instance into_val_typed_WalogState `{ffi_syntax} : IntoValTyped WalogStat
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WalogState_memLog `{ffi_syntax} : IntoValStructField "memLog" wal.WalogState WalogState.memLog'.
+Global Instance into_val_struct_field_WalogState_memLog : IntoValStructField "memLog" wal.WalogState WalogState.memLog'.
 Admitted.
 
-Global Instance into_val_struct_field_WalogState_diskEnd `{ffi_syntax} : IntoValStructField "diskEnd" wal.WalogState WalogState.diskEnd'.
+Global Instance into_val_struct_field_WalogState_diskEnd : IntoValStructField "diskEnd" wal.WalogState WalogState.diskEnd'.
 Admitted.
 
-Global Instance into_val_struct_field_WalogState_shutdown `{ffi_syntax} : IntoValStructField "shutdown" wal.WalogState WalogState.shutdown'.
+Global Instance into_val_struct_field_WalogState_shutdown : IntoValStructField "shutdown" wal.WalogState WalogState.shutdown'.
 Admitted.
 
-Global Instance into_val_struct_field_WalogState_nthread `{ffi_syntax} : IntoValStructField "nthread" wal.WalogState WalogState.nthread'.
+Global Instance into_val_struct_field_WalogState_nthread : IntoValStructField "nthread" wal.WalogState WalogState.nthread'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WalogState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} memLog' diskEnd' shutdown' nthread':
+Global Instance wp_struct_make_WalogState memLog' diskEnd' shutdown' nthread':
   PureWp True
     (struct.make #wal.WalogState (alist_val [
       "memLog" ::= #memLog';
@@ -250,6 +253,7 @@ Global Instance WalogState_struct_fields_split dq l (v : WalogState.t) :
 Admitted.
 
 End instances.
+
 Module Walog.
 Section def.
 Context `{ffi_syntax}.
@@ -268,12 +272,12 @@ End Walog.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Walog `{ffi_syntax}: Settable _ :=
+Global Instance settable_Walog : Settable _ :=
   settable! Walog.mk < Walog.memLock'; Walog.d'; Walog.circ'; Walog.st'; Walog.condLogger'; Walog.condInstall'; Walog.condShut' >.
-Global Instance into_val_Walog `{ffi_syntax} : IntoVal Walog.t.
+Global Instance into_val_Walog : IntoVal Walog.t.
 Admitted.
 
-Global Instance into_val_typed_Walog `{ffi_syntax} : IntoValTyped Walog.t wal.Walog :=
+Global Instance into_val_typed_Walog : IntoValTyped Walog.t wal.Walog :=
 {|
   default_val := Walog.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -281,30 +285,30 @@ Global Instance into_val_typed_Walog `{ffi_syntax} : IntoValTyped Walog.t wal.Wa
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Walog_memLock `{ffi_syntax} : IntoValStructField "memLock" wal.Walog Walog.memLock'.
+Global Instance into_val_struct_field_Walog_memLock : IntoValStructField "memLock" wal.Walog Walog.memLock'.
 Admitted.
 
-Global Instance into_val_struct_field_Walog_d `{ffi_syntax} : IntoValStructField "d" wal.Walog Walog.d'.
+Global Instance into_val_struct_field_Walog_d : IntoValStructField "d" wal.Walog Walog.d'.
 Admitted.
 
-Global Instance into_val_struct_field_Walog_circ `{ffi_syntax} : IntoValStructField "circ" wal.Walog Walog.circ'.
+Global Instance into_val_struct_field_Walog_circ : IntoValStructField "circ" wal.Walog Walog.circ'.
 Admitted.
 
-Global Instance into_val_struct_field_Walog_st `{ffi_syntax} : IntoValStructField "st" wal.Walog Walog.st'.
+Global Instance into_val_struct_field_Walog_st : IntoValStructField "st" wal.Walog Walog.st'.
 Admitted.
 
-Global Instance into_val_struct_field_Walog_condLogger `{ffi_syntax} : IntoValStructField "condLogger" wal.Walog Walog.condLogger'.
+Global Instance into_val_struct_field_Walog_condLogger : IntoValStructField "condLogger" wal.Walog Walog.condLogger'.
 Admitted.
 
-Global Instance into_val_struct_field_Walog_condInstall `{ffi_syntax} : IntoValStructField "condInstall" wal.Walog Walog.condInstall'.
+Global Instance into_val_struct_field_Walog_condInstall : IntoValStructField "condInstall" wal.Walog Walog.condInstall'.
 Admitted.
 
-Global Instance into_val_struct_field_Walog_condShut `{ffi_syntax} : IntoValStructField "condShut" wal.Walog Walog.condShut'.
+Global Instance into_val_struct_field_Walog_condShut : IntoValStructField "condShut" wal.Walog Walog.condShut'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Walog `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} memLock' d' circ' st' condLogger' condInstall' condShut':
+Global Instance wp_struct_make_Walog memLock' d' circ' st' condLogger' condInstall' condShut':
   PureWp True
     (struct.make #wal.Walog (alist_val [
       "memLock" ::= #memLock';
@@ -351,7 +355,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined wal :=
   is_pkg_defined := is_global_definitions wal var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MkBlockData :

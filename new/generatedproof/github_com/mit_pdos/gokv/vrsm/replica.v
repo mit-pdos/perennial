@@ -15,13 +15,13 @@ Require Export New.golang.theory.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.replica.
 Module replica.
 Axiom falso : False.
-
 Module Op.
 Section def.
 Context `{ffi_syntax}.
 Definition t := slice.t.
 End def.
 End Op.
+
 Module ApplyAsBackupArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -36,12 +36,12 @@ End ApplyAsBackupArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ApplyAsBackupArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_ApplyAsBackupArgs : Settable _ :=
   settable! ApplyAsBackupArgs.mk < ApplyAsBackupArgs.epoch'; ApplyAsBackupArgs.index'; ApplyAsBackupArgs.op' >.
-Global Instance into_val_ApplyAsBackupArgs `{ffi_syntax} : IntoVal ApplyAsBackupArgs.t.
+Global Instance into_val_ApplyAsBackupArgs : IntoVal ApplyAsBackupArgs.t.
 Admitted.
 
-Global Instance into_val_typed_ApplyAsBackupArgs `{ffi_syntax} : IntoValTyped ApplyAsBackupArgs.t replica.ApplyAsBackupArgs :=
+Global Instance into_val_typed_ApplyAsBackupArgs : IntoValTyped ApplyAsBackupArgs.t replica.ApplyAsBackupArgs :=
 {|
   default_val := ApplyAsBackupArgs.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -49,18 +49,18 @@ Global Instance into_val_typed_ApplyAsBackupArgs `{ffi_syntax} : IntoValTyped Ap
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ApplyAsBackupArgs_epoch `{ffi_syntax} : IntoValStructField "epoch" replica.ApplyAsBackupArgs ApplyAsBackupArgs.epoch'.
+Global Instance into_val_struct_field_ApplyAsBackupArgs_epoch : IntoValStructField "epoch" replica.ApplyAsBackupArgs ApplyAsBackupArgs.epoch'.
 Admitted.
 
-Global Instance into_val_struct_field_ApplyAsBackupArgs_index `{ffi_syntax} : IntoValStructField "index" replica.ApplyAsBackupArgs ApplyAsBackupArgs.index'.
+Global Instance into_val_struct_field_ApplyAsBackupArgs_index : IntoValStructField "index" replica.ApplyAsBackupArgs ApplyAsBackupArgs.index'.
 Admitted.
 
-Global Instance into_val_struct_field_ApplyAsBackupArgs_op `{ffi_syntax} : IntoValStructField "op" replica.ApplyAsBackupArgs ApplyAsBackupArgs.op'.
+Global Instance into_val_struct_field_ApplyAsBackupArgs_op : IntoValStructField "op" replica.ApplyAsBackupArgs ApplyAsBackupArgs.op'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ApplyAsBackupArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} epoch' index' op':
+Global Instance wp_struct_make_ApplyAsBackupArgs epoch' index' op':
   PureWp True
     (struct.make #replica.ApplyAsBackupArgs (alist_val [
       "epoch" ::= #epoch';
@@ -80,6 +80,7 @@ Global Instance ApplyAsBackupArgs_struct_fields_split dq l (v : ApplyAsBackupArg
 Admitted.
 
 End instances.
+
 Module SetStateArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -95,12 +96,12 @@ End SetStateArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SetStateArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_SetStateArgs : Settable _ :=
   settable! SetStateArgs.mk < SetStateArgs.Epoch'; SetStateArgs.NextIndex'; SetStateArgs.CommittedNextIndex'; SetStateArgs.State' >.
-Global Instance into_val_SetStateArgs `{ffi_syntax} : IntoVal SetStateArgs.t.
+Global Instance into_val_SetStateArgs : IntoVal SetStateArgs.t.
 Admitted.
 
-Global Instance into_val_typed_SetStateArgs `{ffi_syntax} : IntoValTyped SetStateArgs.t replica.SetStateArgs :=
+Global Instance into_val_typed_SetStateArgs : IntoValTyped SetStateArgs.t replica.SetStateArgs :=
 {|
   default_val := SetStateArgs.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -108,21 +109,21 @@ Global Instance into_val_typed_SetStateArgs `{ffi_syntax} : IntoValTyped SetStat
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SetStateArgs_Epoch `{ffi_syntax} : IntoValStructField "Epoch" replica.SetStateArgs SetStateArgs.Epoch'.
+Global Instance into_val_struct_field_SetStateArgs_Epoch : IntoValStructField "Epoch" replica.SetStateArgs SetStateArgs.Epoch'.
 Admitted.
 
-Global Instance into_val_struct_field_SetStateArgs_NextIndex `{ffi_syntax} : IntoValStructField "NextIndex" replica.SetStateArgs SetStateArgs.NextIndex'.
+Global Instance into_val_struct_field_SetStateArgs_NextIndex : IntoValStructField "NextIndex" replica.SetStateArgs SetStateArgs.NextIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_SetStateArgs_CommittedNextIndex `{ffi_syntax} : IntoValStructField "CommittedNextIndex" replica.SetStateArgs SetStateArgs.CommittedNextIndex'.
+Global Instance into_val_struct_field_SetStateArgs_CommittedNextIndex : IntoValStructField "CommittedNextIndex" replica.SetStateArgs SetStateArgs.CommittedNextIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_SetStateArgs_State `{ffi_syntax} : IntoValStructField "State" replica.SetStateArgs SetStateArgs.State'.
+Global Instance into_val_struct_field_SetStateArgs_State : IntoValStructField "State" replica.SetStateArgs SetStateArgs.State'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SetStateArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Epoch' NextIndex' CommittedNextIndex' State':
+Global Instance wp_struct_make_SetStateArgs Epoch' NextIndex' CommittedNextIndex' State':
   PureWp True
     (struct.make #replica.SetStateArgs (alist_val [
       "Epoch" ::= #Epoch';
@@ -144,6 +145,7 @@ Global Instance SetStateArgs_struct_fields_split dq l (v : SetStateArgs.t) :
 Admitted.
 
 End instances.
+
 Module GetStateArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -156,12 +158,12 @@ End GetStateArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_GetStateArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_GetStateArgs : Settable _ :=
   settable! GetStateArgs.mk < GetStateArgs.Epoch' >.
-Global Instance into_val_GetStateArgs `{ffi_syntax} : IntoVal GetStateArgs.t.
+Global Instance into_val_GetStateArgs : IntoVal GetStateArgs.t.
 Admitted.
 
-Global Instance into_val_typed_GetStateArgs `{ffi_syntax} : IntoValTyped GetStateArgs.t replica.GetStateArgs :=
+Global Instance into_val_typed_GetStateArgs : IntoValTyped GetStateArgs.t replica.GetStateArgs :=
 {|
   default_val := GetStateArgs.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -169,12 +171,12 @@ Global Instance into_val_typed_GetStateArgs `{ffi_syntax} : IntoValTyped GetStat
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_GetStateArgs_Epoch `{ffi_syntax} : IntoValStructField "Epoch" replica.GetStateArgs GetStateArgs.Epoch'.
+Global Instance into_val_struct_field_GetStateArgs_Epoch : IntoValStructField "Epoch" replica.GetStateArgs GetStateArgs.Epoch'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_GetStateArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Epoch':
+Global Instance wp_struct_make_GetStateArgs Epoch':
   PureWp True
     (struct.make #replica.GetStateArgs (alist_val [
       "Epoch" ::= #Epoch'
@@ -190,6 +192,7 @@ Global Instance GetStateArgs_struct_fields_split dq l (v : GetStateArgs.t) :
 Admitted.
 
 End instances.
+
 Module GetStateReply.
 Section def.
 Context `{ffi_syntax}.
@@ -205,12 +208,12 @@ End GetStateReply.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_GetStateReply `{ffi_syntax}: Settable _ :=
+Global Instance settable_GetStateReply : Settable _ :=
   settable! GetStateReply.mk < GetStateReply.Err'; GetStateReply.NextIndex'; GetStateReply.CommittedNextIndex'; GetStateReply.State' >.
-Global Instance into_val_GetStateReply `{ffi_syntax} : IntoVal GetStateReply.t.
+Global Instance into_val_GetStateReply : IntoVal GetStateReply.t.
 Admitted.
 
-Global Instance into_val_typed_GetStateReply `{ffi_syntax} : IntoValTyped GetStateReply.t replica.GetStateReply :=
+Global Instance into_val_typed_GetStateReply : IntoValTyped GetStateReply.t replica.GetStateReply :=
 {|
   default_val := GetStateReply.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -218,21 +221,21 @@ Global Instance into_val_typed_GetStateReply `{ffi_syntax} : IntoValTyped GetSta
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_GetStateReply_Err `{ffi_syntax} : IntoValStructField "Err" replica.GetStateReply GetStateReply.Err'.
+Global Instance into_val_struct_field_GetStateReply_Err : IntoValStructField "Err" replica.GetStateReply GetStateReply.Err'.
 Admitted.
 
-Global Instance into_val_struct_field_GetStateReply_NextIndex `{ffi_syntax} : IntoValStructField "NextIndex" replica.GetStateReply GetStateReply.NextIndex'.
+Global Instance into_val_struct_field_GetStateReply_NextIndex : IntoValStructField "NextIndex" replica.GetStateReply GetStateReply.NextIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_GetStateReply_CommittedNextIndex `{ffi_syntax} : IntoValStructField "CommittedNextIndex" replica.GetStateReply GetStateReply.CommittedNextIndex'.
+Global Instance into_val_struct_field_GetStateReply_CommittedNextIndex : IntoValStructField "CommittedNextIndex" replica.GetStateReply GetStateReply.CommittedNextIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_GetStateReply_State `{ffi_syntax} : IntoValStructField "State" replica.GetStateReply GetStateReply.State'.
+Global Instance into_val_struct_field_GetStateReply_State : IntoValStructField "State" replica.GetStateReply GetStateReply.State'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_GetStateReply `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Err' NextIndex' CommittedNextIndex' State':
+Global Instance wp_struct_make_GetStateReply Err' NextIndex' CommittedNextIndex' State':
   PureWp True
     (struct.make #replica.GetStateReply (alist_val [
       "Err" ::= #Err';
@@ -254,6 +257,7 @@ Global Instance GetStateReply_struct_fields_split dq l (v : GetStateReply.t) :
 Admitted.
 
 End instances.
+
 Module BecomePrimaryArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -267,12 +271,12 @@ End BecomePrimaryArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_BecomePrimaryArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_BecomePrimaryArgs : Settable _ :=
   settable! BecomePrimaryArgs.mk < BecomePrimaryArgs.Epoch'; BecomePrimaryArgs.Replicas' >.
-Global Instance into_val_BecomePrimaryArgs `{ffi_syntax} : IntoVal BecomePrimaryArgs.t.
+Global Instance into_val_BecomePrimaryArgs : IntoVal BecomePrimaryArgs.t.
 Admitted.
 
-Global Instance into_val_typed_BecomePrimaryArgs `{ffi_syntax} : IntoValTyped BecomePrimaryArgs.t replica.BecomePrimaryArgs :=
+Global Instance into_val_typed_BecomePrimaryArgs : IntoValTyped BecomePrimaryArgs.t replica.BecomePrimaryArgs :=
 {|
   default_val := BecomePrimaryArgs.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -280,15 +284,15 @@ Global Instance into_val_typed_BecomePrimaryArgs `{ffi_syntax} : IntoValTyped Be
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_BecomePrimaryArgs_Epoch `{ffi_syntax} : IntoValStructField "Epoch" replica.BecomePrimaryArgs BecomePrimaryArgs.Epoch'.
+Global Instance into_val_struct_field_BecomePrimaryArgs_Epoch : IntoValStructField "Epoch" replica.BecomePrimaryArgs BecomePrimaryArgs.Epoch'.
 Admitted.
 
-Global Instance into_val_struct_field_BecomePrimaryArgs_Replicas `{ffi_syntax} : IntoValStructField "Replicas" replica.BecomePrimaryArgs BecomePrimaryArgs.Replicas'.
+Global Instance into_val_struct_field_BecomePrimaryArgs_Replicas : IntoValStructField "Replicas" replica.BecomePrimaryArgs BecomePrimaryArgs.Replicas'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_BecomePrimaryArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Epoch' Replicas':
+Global Instance wp_struct_make_BecomePrimaryArgs Epoch' Replicas':
   PureWp True
     (struct.make #replica.BecomePrimaryArgs (alist_val [
       "Epoch" ::= #Epoch';
@@ -306,6 +310,7 @@ Global Instance BecomePrimaryArgs_struct_fields_split dq l (v : BecomePrimaryArg
 Admitted.
 
 End instances.
+
 Module ApplyReply.
 Section def.
 Context `{ffi_syntax}.
@@ -319,12 +324,12 @@ End ApplyReply.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ApplyReply `{ffi_syntax}: Settable _ :=
+Global Instance settable_ApplyReply : Settable _ :=
   settable! ApplyReply.mk < ApplyReply.Err'; ApplyReply.Reply' >.
-Global Instance into_val_ApplyReply `{ffi_syntax} : IntoVal ApplyReply.t.
+Global Instance into_val_ApplyReply : IntoVal ApplyReply.t.
 Admitted.
 
-Global Instance into_val_typed_ApplyReply `{ffi_syntax} : IntoValTyped ApplyReply.t replica.ApplyReply :=
+Global Instance into_val_typed_ApplyReply : IntoValTyped ApplyReply.t replica.ApplyReply :=
 {|
   default_val := ApplyReply.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -332,15 +337,15 @@ Global Instance into_val_typed_ApplyReply `{ffi_syntax} : IntoValTyped ApplyRepl
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ApplyReply_Err `{ffi_syntax} : IntoValStructField "Err" replica.ApplyReply ApplyReply.Err'.
+Global Instance into_val_struct_field_ApplyReply_Err : IntoValStructField "Err" replica.ApplyReply ApplyReply.Err'.
 Admitted.
 
-Global Instance into_val_struct_field_ApplyReply_Reply `{ffi_syntax} : IntoValStructField "Reply" replica.ApplyReply ApplyReply.Reply'.
+Global Instance into_val_struct_field_ApplyReply_Reply : IntoValStructField "Reply" replica.ApplyReply ApplyReply.Reply'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ApplyReply `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Err' Reply':
+Global Instance wp_struct_make_ApplyReply Err' Reply':
   PureWp True
     (struct.make #replica.ApplyReply (alist_val [
       "Err" ::= #Err';
@@ -365,6 +370,7 @@ Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End IncreaseCommitArgs.
+
 Module StateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -380,12 +386,12 @@ End StateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_StateMachine `{ffi_syntax}: Settable _ :=
+Global Instance settable_StateMachine : Settable _ :=
   settable! StateMachine.mk < StateMachine.StartApply'; StateMachine.ApplyReadonly'; StateMachine.SetStateAndUnseal'; StateMachine.GetStateAndSeal' >.
-Global Instance into_val_StateMachine `{ffi_syntax} : IntoVal StateMachine.t.
+Global Instance into_val_StateMachine : IntoVal StateMachine.t.
 Admitted.
 
-Global Instance into_val_typed_StateMachine `{ffi_syntax} : IntoValTyped StateMachine.t replica.StateMachine :=
+Global Instance into_val_typed_StateMachine : IntoValTyped StateMachine.t replica.StateMachine :=
 {|
   default_val := StateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -393,21 +399,21 @@ Global Instance into_val_typed_StateMachine `{ffi_syntax} : IntoValTyped StateMa
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_StateMachine_StartApply `{ffi_syntax} : IntoValStructField "StartApply" replica.StateMachine StateMachine.StartApply'.
+Global Instance into_val_struct_field_StateMachine_StartApply : IntoValStructField "StartApply" replica.StateMachine StateMachine.StartApply'.
 Admitted.
 
-Global Instance into_val_struct_field_StateMachine_ApplyReadonly `{ffi_syntax} : IntoValStructField "ApplyReadonly" replica.StateMachine StateMachine.ApplyReadonly'.
+Global Instance into_val_struct_field_StateMachine_ApplyReadonly : IntoValStructField "ApplyReadonly" replica.StateMachine StateMachine.ApplyReadonly'.
 Admitted.
 
-Global Instance into_val_struct_field_StateMachine_SetStateAndUnseal `{ffi_syntax} : IntoValStructField "SetStateAndUnseal" replica.StateMachine StateMachine.SetStateAndUnseal'.
+Global Instance into_val_struct_field_StateMachine_SetStateAndUnseal : IntoValStructField "SetStateAndUnseal" replica.StateMachine StateMachine.SetStateAndUnseal'.
 Admitted.
 
-Global Instance into_val_struct_field_StateMachine_GetStateAndSeal `{ffi_syntax} : IntoValStructField "GetStateAndSeal" replica.StateMachine StateMachine.GetStateAndSeal'.
+Global Instance into_val_struct_field_StateMachine_GetStateAndSeal : IntoValStructField "GetStateAndSeal" replica.StateMachine StateMachine.GetStateAndSeal'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_StateMachine `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} StartApply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
+Global Instance wp_struct_make_StateMachine StartApply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
   PureWp True
     (struct.make #replica.StateMachine (alist_val [
       "StartApply" ::= #StartApply';
@@ -429,6 +435,7 @@ Global Instance StateMachine_struct_fields_split dq l (v : StateMachine.t) :
 Admitted.
 
 End instances.
+
 Module SyncStateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -444,12 +451,12 @@ End SyncStateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SyncStateMachine `{ffi_syntax}: Settable _ :=
+Global Instance settable_SyncStateMachine : Settable _ :=
   settable! SyncStateMachine.mk < SyncStateMachine.Apply'; SyncStateMachine.ApplyReadonly'; SyncStateMachine.SetStateAndUnseal'; SyncStateMachine.GetStateAndSeal' >.
-Global Instance into_val_SyncStateMachine `{ffi_syntax} : IntoVal SyncStateMachine.t.
+Global Instance into_val_SyncStateMachine : IntoVal SyncStateMachine.t.
 Admitted.
 
-Global Instance into_val_typed_SyncStateMachine `{ffi_syntax} : IntoValTyped SyncStateMachine.t replica.SyncStateMachine :=
+Global Instance into_val_typed_SyncStateMachine : IntoValTyped SyncStateMachine.t replica.SyncStateMachine :=
 {|
   default_val := SyncStateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -457,21 +464,21 @@ Global Instance into_val_typed_SyncStateMachine `{ffi_syntax} : IntoValTyped Syn
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SyncStateMachine_Apply `{ffi_syntax} : IntoValStructField "Apply" replica.SyncStateMachine SyncStateMachine.Apply'.
+Global Instance into_val_struct_field_SyncStateMachine_Apply : IntoValStructField "Apply" replica.SyncStateMachine SyncStateMachine.Apply'.
 Admitted.
 
-Global Instance into_val_struct_field_SyncStateMachine_ApplyReadonly `{ffi_syntax} : IntoValStructField "ApplyReadonly" replica.SyncStateMachine SyncStateMachine.ApplyReadonly'.
+Global Instance into_val_struct_field_SyncStateMachine_ApplyReadonly : IntoValStructField "ApplyReadonly" replica.SyncStateMachine SyncStateMachine.ApplyReadonly'.
 Admitted.
 
-Global Instance into_val_struct_field_SyncStateMachine_SetStateAndUnseal `{ffi_syntax} : IntoValStructField "SetStateAndUnseal" replica.SyncStateMachine SyncStateMachine.SetStateAndUnseal'.
+Global Instance into_val_struct_field_SyncStateMachine_SetStateAndUnseal : IntoValStructField "SetStateAndUnseal" replica.SyncStateMachine SyncStateMachine.SetStateAndUnseal'.
 Admitted.
 
-Global Instance into_val_struct_field_SyncStateMachine_GetStateAndSeal `{ffi_syntax} : IntoValStructField "GetStateAndSeal" replica.SyncStateMachine SyncStateMachine.GetStateAndSeal'.
+Global Instance into_val_struct_field_SyncStateMachine_GetStateAndSeal : IntoValStructField "GetStateAndSeal" replica.SyncStateMachine SyncStateMachine.GetStateAndSeal'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SyncStateMachine `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Apply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
+Global Instance wp_struct_make_SyncStateMachine Apply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
   PureWp True
     (struct.make #replica.SyncStateMachine (alist_val [
       "Apply" ::= #Apply';
@@ -493,6 +500,7 @@ Global Instance SyncStateMachine_struct_fields_split dq l (v : SyncStateMachine.
 Admitted.
 
 End instances.
+
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -505,12 +513,12 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk `{ffi_syntax}: Settable _ :=
+Global Instance settable_Clerk : Settable _ :=
   settable! Clerk.mk < Clerk.cl' >.
-Global Instance into_val_Clerk `{ffi_syntax} : IntoVal Clerk.t.
+Global Instance into_val_Clerk : IntoVal Clerk.t.
 Admitted.
 
-Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t replica.Clerk :=
+Global Instance into_val_typed_Clerk : IntoValTyped Clerk.t replica.Clerk :=
 {|
   default_val := Clerk.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -518,12 +526,12 @@ Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t replic
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Clerk_cl `{ffi_syntax} : IntoValStructField "cl" replica.Clerk Clerk.cl'.
+Global Instance into_val_struct_field_Clerk_cl : IntoValStructField "cl" replica.Clerk Clerk.cl'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cl':
+Global Instance wp_struct_make_Clerk cl':
   PureWp True
     (struct.make #replica.Clerk (alist_val [
       "cl" ::= #cl'
@@ -539,6 +547,7 @@ Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
 Admitted.
 
 End instances.
+
 Module Server.
 Section def.
 Context `{ffi_syntax}.
@@ -565,12 +574,12 @@ End Server.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Server `{ffi_syntax}: Settable _ :=
+Global Instance settable_Server : Settable _ :=
   settable! Server.mk < Server.mu'; Server.epoch'; Server.sealed'; Server.sm'; Server.nextIndex'; Server.canBecomePrimary'; Server.isPrimary'; Server.clerks'; Server.isPrimary_cond'; Server.opAppliedConds'; Server.leaseExpiration'; Server.leaseValid'; Server.committedNextIndex'; Server.committedNextIndex_cond'; Server.confCk' >.
-Global Instance into_val_Server `{ffi_syntax} : IntoVal Server.t.
+Global Instance into_val_Server : IntoVal Server.t.
 Admitted.
 
-Global Instance into_val_typed_Server `{ffi_syntax} : IntoValTyped Server.t replica.Server :=
+Global Instance into_val_typed_Server : IntoValTyped Server.t replica.Server :=
 {|
   default_val := Server.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -578,54 +587,54 @@ Global Instance into_val_typed_Server `{ffi_syntax} : IntoValTyped Server.t repl
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Server_mu `{ffi_syntax} : IntoValStructField "mu" replica.Server Server.mu'.
+Global Instance into_val_struct_field_Server_mu : IntoValStructField "mu" replica.Server Server.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_epoch `{ffi_syntax} : IntoValStructField "epoch" replica.Server Server.epoch'.
+Global Instance into_val_struct_field_Server_epoch : IntoValStructField "epoch" replica.Server Server.epoch'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_sealed `{ffi_syntax} : IntoValStructField "sealed" replica.Server Server.sealed'.
+Global Instance into_val_struct_field_Server_sealed : IntoValStructField "sealed" replica.Server Server.sealed'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_sm `{ffi_syntax} : IntoValStructField "sm" replica.Server Server.sm'.
+Global Instance into_val_struct_field_Server_sm : IntoValStructField "sm" replica.Server Server.sm'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_nextIndex `{ffi_syntax} : IntoValStructField "nextIndex" replica.Server Server.nextIndex'.
+Global Instance into_val_struct_field_Server_nextIndex : IntoValStructField "nextIndex" replica.Server Server.nextIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_canBecomePrimary `{ffi_syntax} : IntoValStructField "canBecomePrimary" replica.Server Server.canBecomePrimary'.
+Global Instance into_val_struct_field_Server_canBecomePrimary : IntoValStructField "canBecomePrimary" replica.Server Server.canBecomePrimary'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_isPrimary `{ffi_syntax} : IntoValStructField "isPrimary" replica.Server Server.isPrimary'.
+Global Instance into_val_struct_field_Server_isPrimary : IntoValStructField "isPrimary" replica.Server Server.isPrimary'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_clerks `{ffi_syntax} : IntoValStructField "clerks" replica.Server Server.clerks'.
+Global Instance into_val_struct_field_Server_clerks : IntoValStructField "clerks" replica.Server Server.clerks'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_isPrimary_cond `{ffi_syntax} : IntoValStructField "isPrimary_cond" replica.Server Server.isPrimary_cond'.
+Global Instance into_val_struct_field_Server_isPrimary_cond : IntoValStructField "isPrimary_cond" replica.Server Server.isPrimary_cond'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_opAppliedConds `{ffi_syntax} : IntoValStructField "opAppliedConds" replica.Server Server.opAppliedConds'.
+Global Instance into_val_struct_field_Server_opAppliedConds : IntoValStructField "opAppliedConds" replica.Server Server.opAppliedConds'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_leaseExpiration `{ffi_syntax} : IntoValStructField "leaseExpiration" replica.Server Server.leaseExpiration'.
+Global Instance into_val_struct_field_Server_leaseExpiration : IntoValStructField "leaseExpiration" replica.Server Server.leaseExpiration'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_leaseValid `{ffi_syntax} : IntoValStructField "leaseValid" replica.Server Server.leaseValid'.
+Global Instance into_val_struct_field_Server_leaseValid : IntoValStructField "leaseValid" replica.Server Server.leaseValid'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_committedNextIndex `{ffi_syntax} : IntoValStructField "committedNextIndex" replica.Server Server.committedNextIndex'.
+Global Instance into_val_struct_field_Server_committedNextIndex : IntoValStructField "committedNextIndex" replica.Server Server.committedNextIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_committedNextIndex_cond `{ffi_syntax} : IntoValStructField "committedNextIndex_cond" replica.Server Server.committedNextIndex_cond'.
+Global Instance into_val_struct_field_Server_committedNextIndex_cond : IntoValStructField "committedNextIndex_cond" replica.Server Server.committedNextIndex_cond'.
 Admitted.
 
-Global Instance into_val_struct_field_Server_confCk `{ffi_syntax} : IntoValStructField "confCk" replica.Server Server.confCk'.
+Global Instance into_val_struct_field_Server_confCk : IntoValStructField "confCk" replica.Server Server.confCk'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' epoch' sealed' sm' nextIndex' canBecomePrimary' isPrimary' clerks' isPrimary_cond' opAppliedConds' leaseExpiration' leaseValid' committedNextIndex' committedNextIndex_cond' confCk':
+Global Instance wp_struct_make_Server mu' epoch' sealed' sm' nextIndex' canBecomePrimary' isPrimary' clerks' isPrimary_cond' opAppliedConds' leaseExpiration' leaseValid' committedNextIndex' committedNextIndex_cond' confCk':
   PureWp True
     (struct.make #replica.Server (alist_val [
       "mu" ::= #mu';
@@ -688,7 +697,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined replica :=
   is_pkg_defined := is_global_definitions replica var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_EncodeApplyAsBackupArgs :

@@ -4,9 +4,14 @@ From New.golang Require Export defn.
 Section code.
 Context `{ffi_syntax}.
 
-Definition Print : val := variadic_noop.
-Definition Printf : val := variadic_noop.
+(* FIXME: Returns some stuff *)
+Definition Print : val :=
+  λ: "format" "a",
+    Panic "unimplemented".
 
-Definition initialize' : val := λ: <>, #().
+(* FIXME: Returns some stuff *)
+Definition Printf : val :=
+  λ: "a",
+    Panic "unimplemented".
 
 End code.

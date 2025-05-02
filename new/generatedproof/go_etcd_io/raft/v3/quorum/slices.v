@@ -20,12 +20,12 @@ End Tup.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Tup `{ffi_syntax}: Settable _ :=
+Global Instance settable_Tup : Settable _ :=
   settable! Tup.mk < Tup.ID'; Tup.Idx'; Tup.Ok'; Tup.Bar' >.
-Global Instance into_val_Tup `{ffi_syntax} : IntoVal Tup.t.
+Global Instance into_val_Tup : IntoVal Tup.t.
 Admitted.
 
-Global Instance into_val_typed_Tup `{ffi_syntax} : IntoValTyped Tup.t slices.Tup :=
+Global Instance into_val_typed_Tup : IntoValTyped Tup.t slices.Tup :=
 {|
   default_val := Tup.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -33,21 +33,21 @@ Global Instance into_val_typed_Tup `{ffi_syntax} : IntoValTyped Tup.t slices.Tup
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Tup_ID `{ffi_syntax} : IntoValStructField "ID" slices.Tup Tup.ID'.
+Global Instance into_val_struct_field_Tup_ID : IntoValStructField "ID" slices.Tup Tup.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_Tup_Idx `{ffi_syntax} : IntoValStructField "Idx" slices.Tup Tup.Idx'.
+Global Instance into_val_struct_field_Tup_Idx : IntoValStructField "Idx" slices.Tup Tup.Idx'.
 Admitted.
 
-Global Instance into_val_struct_field_Tup_Ok `{ffi_syntax} : IntoValStructField "Ok" slices.Tup Tup.Ok'.
+Global Instance into_val_struct_field_Tup_Ok : IntoValStructField "Ok" slices.Tup Tup.Ok'.
 Admitted.
 
-Global Instance into_val_struct_field_Tup_Bar `{ffi_syntax} : IntoValStructField "Bar" slices.Tup Tup.Bar'.
+Global Instance into_val_struct_field_Tup_Bar : IntoValStructField "Bar" slices.Tup Tup.Bar'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Tup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Idx' Ok' Bar':
+Global Instance wp_struct_make_Tup ID' Idx' Ok' Bar':
   PureWp True
     (struct.make #slices.Tup (alist_val [
       "ID" ::= #ID';
@@ -88,7 +88,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined slices :=
   is_pkg_defined := is_global_definitions slices var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

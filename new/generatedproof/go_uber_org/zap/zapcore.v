@@ -5,13 +5,13 @@ Require Export New.golang.theory.
 Require Export New.code.go_uber_org.zap.zapcore.
 Module zapcore.
 Axiom falso : False.
-
 Module FieldType.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w8.
 End def.
 End FieldType.
+
 Module Field.
 Section def.
 Context `{ffi_syntax}.
@@ -28,12 +28,12 @@ End Field.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Field `{ffi_syntax}: Settable _ :=
+Global Instance settable_Field : Settable _ :=
   settable! Field.mk < Field.Key'; Field.Type'; Field.Integer'; Field.String'; Field.Interface' >.
-Global Instance into_val_Field `{ffi_syntax} : IntoVal Field.t.
+Global Instance into_val_Field : IntoVal Field.t.
 Admitted.
 
-Global Instance into_val_typed_Field `{ffi_syntax} : IntoValTyped Field.t zapcore.Field :=
+Global Instance into_val_typed_Field : IntoValTyped Field.t zapcore.Field :=
 {|
   default_val := Field.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -41,24 +41,24 @@ Global Instance into_val_typed_Field `{ffi_syntax} : IntoValTyped Field.t zapcor
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Field_Key `{ffi_syntax} : IntoValStructField "Key" zapcore.Field Field.Key'.
+Global Instance into_val_struct_field_Field_Key : IntoValStructField "Key" zapcore.Field Field.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_Field_Type `{ffi_syntax} : IntoValStructField "Type" zapcore.Field Field.Type'.
+Global Instance into_val_struct_field_Field_Type : IntoValStructField "Type" zapcore.Field Field.Type'.
 Admitted.
 
-Global Instance into_val_struct_field_Field_Integer `{ffi_syntax} : IntoValStructField "Integer" zapcore.Field Field.Integer'.
+Global Instance into_val_struct_field_Field_Integer : IntoValStructField "Integer" zapcore.Field Field.Integer'.
 Admitted.
 
-Global Instance into_val_struct_field_Field_String `{ffi_syntax} : IntoValStructField "String" zapcore.Field Field.String'.
+Global Instance into_val_struct_field_Field_String : IntoValStructField "String" zapcore.Field Field.String'.
 Admitted.
 
-Global Instance into_val_struct_field_Field_Interface `{ffi_syntax} : IntoValStructField "Interface" zapcore.Field Field.Interface'.
+Global Instance into_val_struct_field_Field_Interface : IntoValStructField "Interface" zapcore.Field Field.Interface'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Field `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' Type' Integer' String' Interface':
+Global Instance wp_struct_make_Field Key' Type' Integer' String' Interface':
   PureWp True
     (struct.make #zapcore.Field (alist_val [
       "Key" ::= #Key';
@@ -101,7 +101,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined zapcore :=
   is_pkg_defined := is_global_definitions zapcore var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

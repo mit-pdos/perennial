@@ -19,12 +19,12 @@ End Time.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Time `{ffi_syntax}: Settable _ :=
+Global Instance settable_Time : Settable _ :=
   settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
-Global Instance into_val_Time `{ffi_syntax} : IntoVal Time.t.
+Global Instance into_val_Time : IntoVal Time.t.
 Admitted.
 
-Global Instance into_val_typed_Time `{ffi_syntax} : IntoValTyped Time.t time.Time :=
+Global Instance into_val_typed_Time : IntoValTyped Time.t time.Time :=
 {|
   default_val := Time.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -32,18 +32,18 @@ Global Instance into_val_typed_Time `{ffi_syntax} : IntoValTyped Time.t time.Tim
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Time_wall `{ffi_syntax} : IntoValStructField "wall" time.Time Time.wall'.
+Global Instance into_val_struct_field_Time_wall : IntoValStructField "wall" time.Time Time.wall'.
 Admitted.
 
-Global Instance into_val_struct_field_Time_ext `{ffi_syntax} : IntoValStructField "ext" time.Time Time.ext'.
+Global Instance into_val_struct_field_Time_ext : IntoValStructField "ext" time.Time Time.ext'.
 Admitted.
 
-Global Instance into_val_struct_field_Time_loc `{ffi_syntax} : IntoValStructField "loc" time.Time Time.loc'.
+Global Instance into_val_struct_field_Time_loc : IntoValStructField "loc" time.Time Time.loc'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Time `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} wall' ext' loc':
+Global Instance wp_struct_make_Time wall' ext' loc':
   PureWp True
     (struct.make #time.Time (alist_val [
       "wall" ::= #wall';
@@ -82,7 +82,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined time :=
   is_pkg_defined := is_global_definitions time var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

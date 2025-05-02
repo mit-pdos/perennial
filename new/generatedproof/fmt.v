@@ -6,7 +6,6 @@ Require Export New.golang.theory.
 Require Export New.code.fmt.
 Module fmt.
 Axiom falso : False.
-
 Section names.
 
 Class GlobalAddrs :=
@@ -25,7 +24,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined fmt :=
   is_pkg_defined := is_global_definitions fmt var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Printf :

@@ -27,7 +27,7 @@ Fixpoint expr_vars (e : expr) : gset string :=
   | ExternalOp _ e | Primitive1 _ e =>
      expr_vars e
   | App e1 e2 | BinOp _ e1 e2 | Pair e1 e2 | AllocN e1 e2 | Atomically e1 e2
-  | Primitive2 _ e1 e2 | ResolveProph e1 e2 | TotalLe e1 e2 =>
+  | Primitive2 _ e1 e2 | ResolveProph e1 e2 =>
      expr_vars e1 ∪ expr_vars e2
   | If e0 e1 e2 | Case e0 e1 e2 | CmpXchg e0 e1 e2 =>
      expr_vars e0 ∪ expr_vars e1 ∪ expr_vars e2
@@ -59,7 +59,7 @@ Fixpoint is_closed_expr (X : list string) (e : expr) : bool :=
   | ExternalOp _ e | Primitive1 _ e =>
      is_closed_expr X e
   | App e1 e2 | BinOp _ e1 e2 | Pair e1 e2 | AllocN e1 e2 | Atomically e1 e2
-  | Primitive2 _ e1 e2 | ResolveProph e1 e2 | TotalLe e1 e2 =>
+  | Primitive2 _ e1 e2 | ResolveProph e1 e2 =>
      is_closed_expr X e1 && is_closed_expr X e2
   | If e0 e1 e2 | Case e0 e1 e2 | CmpXchg e0 e1 e2 =>
      is_closed_expr X e0 && is_closed_expr X e1 && is_closed_expr X e2
@@ -262,7 +262,6 @@ Fixpoint subst_map (vs : gmap string val) (e : expr) : expr :=
   | Primitive2 op e1 e2 => Primitive2 op (subst_map vs e1) (subst_map vs e2)
   | ExternalOp op e => ExternalOp op (subst_map vs e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst_map vs e0) (subst_map vs e1) (subst_map vs e2)
-  | TotalLe e1 e2 => TotalLe (subst_map vs e1) (subst_map vs e2)
   | NewProph => NewProph
   | ResolveProph e1 e2 => ResolveProph (subst_map vs e1) (subst_map vs e2)
   end.

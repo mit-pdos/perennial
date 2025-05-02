@@ -24,12 +24,12 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk `{ffi_syntax}: Settable _ :=
+Global Instance settable_Clerk : Settable _ :=
   settable! Clerk.mk < Clerk.cl' >.
-Global Instance into_val_Clerk `{ffi_syntax} : IntoVal Clerk.t.
+Global Instance into_val_Clerk : IntoVal Clerk.t.
 Admitted.
 
-Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t vkv.Clerk :=
+Global Instance into_val_typed_Clerk : IntoValTyped Clerk.t vkv.Clerk :=
 {|
   default_val := Clerk.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -37,12 +37,12 @@ Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t vkv.Cl
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Clerk_cl `{ffi_syntax} : IntoValStructField "cl" vkv.Clerk Clerk.cl'.
+Global Instance into_val_struct_field_Clerk_cl : IntoValStructField "cl" vkv.Clerk Clerk.cl'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cl':
+Global Instance wp_struct_make_Clerk cl':
   PureWp True
     (struct.make #vkv.Clerk (alist_val [
       "cl" ::= #cl'
@@ -58,6 +58,7 @@ Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
 Admitted.
 
 End instances.
+
 Module ClerkPool.
 Section def.
 Context `{ffi_syntax}.
@@ -72,12 +73,12 @@ End ClerkPool.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ClerkPool `{ffi_syntax}: Settable _ :=
+Global Instance settable_ClerkPool : Settable _ :=
   settable! ClerkPool.mk < ClerkPool.mu'; ClerkPool.cls'; ClerkPool.confHosts' >.
-Global Instance into_val_ClerkPool `{ffi_syntax} : IntoVal ClerkPool.t.
+Global Instance into_val_ClerkPool : IntoVal ClerkPool.t.
 Admitted.
 
-Global Instance into_val_typed_ClerkPool `{ffi_syntax} : IntoValTyped ClerkPool.t vkv.ClerkPool :=
+Global Instance into_val_typed_ClerkPool : IntoValTyped ClerkPool.t vkv.ClerkPool :=
 {|
   default_val := ClerkPool.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -85,18 +86,18 @@ Global Instance into_val_typed_ClerkPool `{ffi_syntax} : IntoValTyped ClerkPool.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ClerkPool_mu `{ffi_syntax} : IntoValStructField "mu" vkv.ClerkPool ClerkPool.mu'.
+Global Instance into_val_struct_field_ClerkPool_mu : IntoValStructField "mu" vkv.ClerkPool ClerkPool.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_ClerkPool_cls `{ffi_syntax} : IntoValStructField "cls" vkv.ClerkPool ClerkPool.cls'.
+Global Instance into_val_struct_field_ClerkPool_cls : IntoValStructField "cls" vkv.ClerkPool ClerkPool.cls'.
 Admitted.
 
-Global Instance into_val_struct_field_ClerkPool_confHosts `{ffi_syntax} : IntoValStructField "confHosts" vkv.ClerkPool ClerkPool.confHosts'.
+Global Instance into_val_struct_field_ClerkPool_confHosts : IntoValStructField "confHosts" vkv.ClerkPool ClerkPool.confHosts'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ClerkPool `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' cls' confHosts':
+Global Instance wp_struct_make_ClerkPool mu' cls' confHosts':
   PureWp True
     (struct.make #vkv.ClerkPool (alist_val [
       "mu" ::= #mu';
@@ -116,6 +117,7 @@ Global Instance ClerkPool_struct_fields_split dq l (v : ClerkPool.t) :
 Admitted.
 
 End instances.
+
 Module KVState.
 Section def.
 Context `{ffi_syntax}.
@@ -130,12 +132,12 @@ End KVState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_KVState `{ffi_syntax}: Settable _ :=
+Global Instance settable_KVState : Settable _ :=
   settable! KVState.mk < KVState.kvs'; KVState.vnums'; KVState.minVnum' >.
-Global Instance into_val_KVState `{ffi_syntax} : IntoVal KVState.t.
+Global Instance into_val_KVState : IntoVal KVState.t.
 Admitted.
 
-Global Instance into_val_typed_KVState `{ffi_syntax} : IntoValTyped KVState.t vkv.KVState :=
+Global Instance into_val_typed_KVState : IntoValTyped KVState.t vkv.KVState :=
 {|
   default_val := KVState.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -143,18 +145,18 @@ Global Instance into_val_typed_KVState `{ffi_syntax} : IntoValTyped KVState.t vk
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_KVState_kvs `{ffi_syntax} : IntoValStructField "kvs" vkv.KVState KVState.kvs'.
+Global Instance into_val_struct_field_KVState_kvs : IntoValStructField "kvs" vkv.KVState KVState.kvs'.
 Admitted.
 
-Global Instance into_val_struct_field_KVState_vnums `{ffi_syntax} : IntoValStructField "vnums" vkv.KVState KVState.vnums'.
+Global Instance into_val_struct_field_KVState_vnums : IntoValStructField "vnums" vkv.KVState KVState.vnums'.
 Admitted.
 
-Global Instance into_val_struct_field_KVState_minVnum `{ffi_syntax} : IntoValStructField "minVnum" vkv.KVState KVState.minVnum'.
+Global Instance into_val_struct_field_KVState_minVnum : IntoValStructField "minVnum" vkv.KVState KVState.minVnum'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_KVState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kvs' vnums' minVnum':
+Global Instance wp_struct_make_KVState kvs' vnums' minVnum':
   PureWp True
     (struct.make #vkv.KVState (alist_val [
       "kvs" ::= #kvs';
@@ -174,6 +176,7 @@ Global Instance KVState_struct_fields_split dq l (v : KVState.t) :
 Admitted.
 
 End instances.
+
 Module PutArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -187,12 +190,12 @@ End PutArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_PutArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_PutArgs : Settable _ :=
   settable! PutArgs.mk < PutArgs.Key'; PutArgs.Val' >.
-Global Instance into_val_PutArgs `{ffi_syntax} : IntoVal PutArgs.t.
+Global Instance into_val_PutArgs : IntoVal PutArgs.t.
 Admitted.
 
-Global Instance into_val_typed_PutArgs `{ffi_syntax} : IntoValTyped PutArgs.t vkv.PutArgs :=
+Global Instance into_val_typed_PutArgs : IntoValTyped PutArgs.t vkv.PutArgs :=
 {|
   default_val := PutArgs.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -200,15 +203,15 @@ Global Instance into_val_typed_PutArgs `{ffi_syntax} : IntoValTyped PutArgs.t vk
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_PutArgs_Key `{ffi_syntax} : IntoValStructField "Key" vkv.PutArgs PutArgs.Key'.
+Global Instance into_val_struct_field_PutArgs_Key : IntoValStructField "Key" vkv.PutArgs PutArgs.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_PutArgs_Val `{ffi_syntax} : IntoValStructField "Val" vkv.PutArgs PutArgs.Val'.
+Global Instance into_val_struct_field_PutArgs_Val : IntoValStructField "Val" vkv.PutArgs PutArgs.Val'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_PutArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' Val':
+Global Instance wp_struct_make_PutArgs Key' Val':
   PureWp True
     (struct.make #vkv.PutArgs (alist_val [
       "Key" ::= #Key';
@@ -233,6 +236,7 @@ Context `{ffi_syntax}.
 Definition t := go_string.
 End def.
 End getArgs.
+
 Module CondPutArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -247,12 +251,12 @@ End CondPutArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_CondPutArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_CondPutArgs : Settable _ :=
   settable! CondPutArgs.mk < CondPutArgs.Key'; CondPutArgs.Expect'; CondPutArgs.Val' >.
-Global Instance into_val_CondPutArgs `{ffi_syntax} : IntoVal CondPutArgs.t.
+Global Instance into_val_CondPutArgs : IntoVal CondPutArgs.t.
 Admitted.
 
-Global Instance into_val_typed_CondPutArgs `{ffi_syntax} : IntoValTyped CondPutArgs.t vkv.CondPutArgs :=
+Global Instance into_val_typed_CondPutArgs : IntoValTyped CondPutArgs.t vkv.CondPutArgs :=
 {|
   default_val := CondPutArgs.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -260,18 +264,18 @@ Global Instance into_val_typed_CondPutArgs `{ffi_syntax} : IntoValTyped CondPutA
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_CondPutArgs_Key `{ffi_syntax} : IntoValStructField "Key" vkv.CondPutArgs CondPutArgs.Key'.
+Global Instance into_val_struct_field_CondPutArgs_Key : IntoValStructField "Key" vkv.CondPutArgs CondPutArgs.Key'.
 Admitted.
 
-Global Instance into_val_struct_field_CondPutArgs_Expect `{ffi_syntax} : IntoValStructField "Expect" vkv.CondPutArgs CondPutArgs.Expect'.
+Global Instance into_val_struct_field_CondPutArgs_Expect : IntoValStructField "Expect" vkv.CondPutArgs CondPutArgs.Expect'.
 Admitted.
 
-Global Instance into_val_struct_field_CondPutArgs_Val `{ffi_syntax} : IntoValStructField "Val" vkv.CondPutArgs CondPutArgs.Val'.
+Global Instance into_val_struct_field_CondPutArgs_Val : IntoValStructField "Val" vkv.CondPutArgs CondPutArgs.Val'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_CondPutArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Key' Expect' Val':
+Global Instance wp_struct_make_CondPutArgs Key' Expect' Val':
   PureWp True
     (struct.make #vkv.CondPutArgs (alist_val [
       "Key" ::= #Key';
@@ -310,7 +314,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined vkv :=
   is_pkg_defined := is_global_definitions vkv var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MakeClerk :

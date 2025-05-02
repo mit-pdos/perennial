@@ -10,7 +10,6 @@ Require Export New.golang.theory.
 Require Export New.code.go_etcd_io.raft.v3.quorum.
 Module quorum.
 Axiom falso : False.
-
 Module MajorityConfig.
 Section def.
 Context `{ffi_syntax}.
@@ -73,7 +72,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined quorum :=
   is_pkg_defined := is_global_definitions quorum var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
   "H_VoteResult_index" ∷ _VoteResult_index ↦ (default_val (vec w8 (uint.nat (W64 4)))).
 
 Global Instance wp_globals_get__VoteResult_index : 

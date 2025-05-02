@@ -231,7 +231,6 @@ Ltac wpc_pure_filter e' :=
         | eunify e' (Case (Val _) _ _)
         | eunify e' (UnOp _ (Val _))
         | eunify e' (BinOp _ (Val _) (Val _))
-        | eunify e' (TotalLe (Val _) (Val _))
     ].
 
 Tactic Notation "wpc_pure1" simple_intropattern(H) :=

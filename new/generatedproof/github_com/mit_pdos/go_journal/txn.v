@@ -24,12 +24,12 @@ End Log.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Log `{ffi_syntax}: Settable _ :=
+Global Instance settable_Log : Settable _ :=
   settable! Log.mk < Log.log'; Log.locks' >.
-Global Instance into_val_Log `{ffi_syntax} : IntoVal Log.t.
+Global Instance into_val_Log : IntoVal Log.t.
 Admitted.
 
-Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t txn.Log :=
+Global Instance into_val_typed_Log : IntoValTyped Log.t txn.Log :=
 {|
   default_val := Log.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -37,15 +37,15 @@ Global Instance into_val_typed_Log `{ffi_syntax} : IntoValTyped Log.t txn.Log :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Log_log `{ffi_syntax} : IntoValStructField "log" txn.Log Log.log'.
+Global Instance into_val_struct_field_Log_log : IntoValStructField "log" txn.Log Log.log'.
 Admitted.
 
-Global Instance into_val_struct_field_Log_locks `{ffi_syntax} : IntoValStructField "locks" txn.Log Log.locks'.
+Global Instance into_val_struct_field_Log_locks : IntoValStructField "locks" txn.Log Log.locks'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Log `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} log' locks':
+Global Instance wp_struct_make_Log log' locks':
   PureWp True
     (struct.make #txn.Log (alist_val [
       "log" ::= #log';
@@ -63,6 +63,7 @@ Global Instance Log_struct_fields_split dq l (v : Log.t) :
 Admitted.
 
 End instances.
+
 Module Txn.
 Section def.
 Context `{ffi_syntax}.
@@ -77,12 +78,12 @@ End Txn.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Txn `{ffi_syntax}: Settable _ :=
+Global Instance settable_Txn : Settable _ :=
   settable! Txn.mk < Txn.buftxn'; Txn.locks'; Txn.acquired' >.
-Global Instance into_val_Txn `{ffi_syntax} : IntoVal Txn.t.
+Global Instance into_val_Txn : IntoVal Txn.t.
 Admitted.
 
-Global Instance into_val_typed_Txn `{ffi_syntax} : IntoValTyped Txn.t txn.Txn :=
+Global Instance into_val_typed_Txn : IntoValTyped Txn.t txn.Txn :=
 {|
   default_val := Txn.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -90,18 +91,18 @@ Global Instance into_val_typed_Txn `{ffi_syntax} : IntoValTyped Txn.t txn.Txn :=
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Txn_buftxn `{ffi_syntax} : IntoValStructField "buftxn" txn.Txn Txn.buftxn'.
+Global Instance into_val_struct_field_Txn_buftxn : IntoValStructField "buftxn" txn.Txn Txn.buftxn'.
 Admitted.
 
-Global Instance into_val_struct_field_Txn_locks `{ffi_syntax} : IntoValStructField "locks" txn.Txn Txn.locks'.
+Global Instance into_val_struct_field_Txn_locks : IntoValStructField "locks" txn.Txn Txn.locks'.
 Admitted.
 
-Global Instance into_val_struct_field_Txn_acquired `{ffi_syntax} : IntoValStructField "acquired" txn.Txn Txn.acquired'.
+Global Instance into_val_struct_field_Txn_acquired : IntoValStructField "acquired" txn.Txn Txn.acquired'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Txn `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} buftxn' locks' acquired':
+Global Instance wp_struct_make_Txn buftxn' locks' acquired':
   PureWp True
     (struct.make #txn.Txn (alist_val [
       "buftxn" ::= #buftxn';
@@ -140,7 +141,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined txn :=
   is_pkg_defined := is_global_definitions txn var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Init :

@@ -16,10 +16,10 @@ End noCopy.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_noCopy `{ffi_syntax} : IntoVal noCopy.t.
+Global Instance into_val_noCopy : IntoVal noCopy.t.
 Admitted.
 
-Global Instance into_val_typed_noCopy `{ffi_syntax} : IntoValTyped noCopy.t atomic.noCopy :=
+Global Instance into_val_typed_noCopy : IntoValTyped noCopy.t atomic.noCopy :=
 {|
   default_val := noCopy.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -29,15 +29,15 @@ Global Instance into_val_typed_noCopy `{ffi_syntax} : IntoValTyped noCopy.t atom
 |}.
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_noCopy `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+Global Instance wp_struct_make_noCopy:
   PureWp True
     (struct.make #atomic.noCopy (alist_val [
     ]))%struct
     #(noCopy.mk).
 Admitted.
 
-
 End instances.
+
 Module Int32.
 Section def.
 Context `{ffi_syntax}.
@@ -51,12 +51,12 @@ End Int32.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Int32 `{ffi_syntax}: Settable _ :=
+Global Instance settable_Int32 : Settable _ :=
   settable! Int32.mk < Int32._0'; Int32.v' >.
-Global Instance into_val_Int32 `{ffi_syntax} : IntoVal Int32.t.
+Global Instance into_val_Int32 : IntoVal Int32.t.
 Admitted.
 
-Global Instance into_val_typed_Int32 `{ffi_syntax} : IntoValTyped Int32.t atomic.Int32 :=
+Global Instance into_val_typed_Int32 : IntoValTyped Int32.t atomic.Int32 :=
 {|
   default_val := Int32.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -64,15 +64,15 @@ Global Instance into_val_typed_Int32 `{ffi_syntax} : IntoValTyped Int32.t atomic
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Int32__0 `{ffi_syntax} : IntoValStructField "_0" atomic.Int32 Int32._0'.
+Global Instance into_val_struct_field_Int32__0 : IntoValStructField "_0" atomic.Int32 Int32._0'.
 Admitted.
 
-Global Instance into_val_struct_field_Int32_v `{ffi_syntax} : IntoValStructField "v" atomic.Int32 Int32.v'.
+Global Instance into_val_struct_field_Int32_v : IntoValStructField "v" atomic.Int32 Int32.v'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Int32 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} _0' v':
+Global Instance wp_struct_make_Int32 _0' v':
   PureWp True
     (struct.make #atomic.Int32 (alist_val [
       "_0" ::= #_0';
@@ -90,6 +90,7 @@ Global Instance Int32_struct_fields_split dq l (v : Int32.t) :
 Admitted.
 
 End instances.
+
 Module align64.
 Section def.
 Context `{ffi_syntax}.
@@ -100,10 +101,10 @@ End align64.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_align64 `{ffi_syntax} : IntoVal align64.t.
+Global Instance into_val_align64 : IntoVal align64.t.
 Admitted.
 
-Global Instance into_val_typed_align64 `{ffi_syntax} : IntoValTyped align64.t atomic.align64 :=
+Global Instance into_val_typed_align64 : IntoValTyped align64.t atomic.align64 :=
 {|
   default_val := align64.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -113,15 +114,15 @@ Global Instance into_val_typed_align64 `{ffi_syntax} : IntoValTyped align64.t at
 |}.
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_align64 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+Global Instance wp_struct_make_align64:
   PureWp True
     (struct.make #atomic.align64 (alist_val [
     ]))%struct
     #(align64.mk).
 Admitted.
 
-
 End instances.
+
 Module Uint64.
 Section def.
 Context `{ffi_syntax}.
@@ -136,12 +137,12 @@ End Uint64.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Uint64 `{ffi_syntax}: Settable _ :=
+Global Instance settable_Uint64 : Settable _ :=
   settable! Uint64.mk < Uint64._0'; Uint64._1'; Uint64.v' >.
-Global Instance into_val_Uint64 `{ffi_syntax} : IntoVal Uint64.t.
+Global Instance into_val_Uint64 : IntoVal Uint64.t.
 Admitted.
 
-Global Instance into_val_typed_Uint64 `{ffi_syntax} : IntoValTyped Uint64.t atomic.Uint64 :=
+Global Instance into_val_typed_Uint64 : IntoValTyped Uint64.t atomic.Uint64 :=
 {|
   default_val := Uint64.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -149,18 +150,18 @@ Global Instance into_val_typed_Uint64 `{ffi_syntax} : IntoValTyped Uint64.t atom
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Uint64__0 `{ffi_syntax} : IntoValStructField "_0" atomic.Uint64 Uint64._0'.
+Global Instance into_val_struct_field_Uint64__0 : IntoValStructField "_0" atomic.Uint64 Uint64._0'.
 Admitted.
 
-Global Instance into_val_struct_field_Uint64__1 `{ffi_syntax} : IntoValStructField "_1" atomic.Uint64 Uint64._1'.
+Global Instance into_val_struct_field_Uint64__1 : IntoValStructField "_1" atomic.Uint64 Uint64._1'.
 Admitted.
 
-Global Instance into_val_struct_field_Uint64_v `{ffi_syntax} : IntoValStructField "v" atomic.Uint64 Uint64.v'.
+Global Instance into_val_struct_field_Uint64_v : IntoValStructField "v" atomic.Uint64 Uint64.v'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Uint64 `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} _0' _1' v':
+Global Instance wp_struct_make_Uint64 _0' _1' v':
   PureWp True
     (struct.make #atomic.Uint64 (alist_val [
       "_0" ::= #_0';
@@ -199,7 +200,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined atomic :=
   is_pkg_defined := is_global_definitions atomic var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_CompareAndSwapInt32 :

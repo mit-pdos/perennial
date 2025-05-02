@@ -20,12 +20,12 @@ End Alloc.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Alloc `{ffi_syntax}: Settable _ :=
+Global Instance settable_Alloc : Settable _ :=
   settable! Alloc.mk < Alloc.mu'; Alloc.next'; Alloc.bitmap' >.
-Global Instance into_val_Alloc `{ffi_syntax} : IntoVal Alloc.t.
+Global Instance into_val_Alloc : IntoVal Alloc.t.
 Admitted.
 
-Global Instance into_val_typed_Alloc `{ffi_syntax} : IntoValTyped Alloc.t alloc.Alloc :=
+Global Instance into_val_typed_Alloc : IntoValTyped Alloc.t alloc.Alloc :=
 {|
   default_val := Alloc.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -33,18 +33,18 @@ Global Instance into_val_typed_Alloc `{ffi_syntax} : IntoValTyped Alloc.t alloc.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Alloc_mu `{ffi_syntax} : IntoValStructField "mu" alloc.Alloc Alloc.mu'.
+Global Instance into_val_struct_field_Alloc_mu : IntoValStructField "mu" alloc.Alloc Alloc.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_Alloc_next `{ffi_syntax} : IntoValStructField "next" alloc.Alloc Alloc.next'.
+Global Instance into_val_struct_field_Alloc_next : IntoValStructField "next" alloc.Alloc Alloc.next'.
 Admitted.
 
-Global Instance into_val_struct_field_Alloc_bitmap `{ffi_syntax} : IntoValStructField "bitmap" alloc.Alloc Alloc.bitmap'.
+Global Instance into_val_struct_field_Alloc_bitmap : IntoValStructField "bitmap" alloc.Alloc Alloc.bitmap'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Alloc `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' next' bitmap':
+Global Instance wp_struct_make_Alloc mu' next' bitmap':
   PureWp True
     (struct.make #alloc.Alloc (alist_val [
       "mu" ::= #mu';
@@ -83,7 +83,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined alloc :=
   is_pkg_defined := is_global_definitions alloc var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MkAlloc :

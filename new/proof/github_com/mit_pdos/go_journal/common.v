@@ -1,8 +1,6 @@
-Require Import New.code.github_com.mit_pdos.go_journal.common.
 Require Import New.generatedproof.github_com.mit_pdos.go_journal.common.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.github_com.goose_lang.primitive.disk.
-Require Import New.golang.theory.globals.
 
 Section proof.
 Context `{!heapGS Σ} `{!goGlobalsGS Σ}.

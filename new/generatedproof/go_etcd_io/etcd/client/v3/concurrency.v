@@ -33,12 +33,12 @@ End Election.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Election `{ffi_syntax}: Settable _ :=
+Global Instance settable_Election : Settable _ :=
   settable! Election.mk < Election.session'; Election.keyPrefix'; Election.leaderKey'; Election.leaderRev'; Election.leaderSession'; Election.hdr' >.
-Global Instance into_val_Election `{ffi_syntax} : IntoVal Election.t.
+Global Instance into_val_Election : IntoVal Election.t.
 Admitted.
 
-Global Instance into_val_typed_Election `{ffi_syntax} : IntoValTyped Election.t concurrency.Election :=
+Global Instance into_val_typed_Election : IntoValTyped Election.t concurrency.Election :=
 {|
   default_val := Election.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -46,27 +46,27 @@ Global Instance into_val_typed_Election `{ffi_syntax} : IntoValTyped Election.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Election_session `{ffi_syntax} : IntoValStructField "session" concurrency.Election Election.session'.
+Global Instance into_val_struct_field_Election_session : IntoValStructField "session" concurrency.Election Election.session'.
 Admitted.
 
-Global Instance into_val_struct_field_Election_keyPrefix `{ffi_syntax} : IntoValStructField "keyPrefix" concurrency.Election Election.keyPrefix'.
+Global Instance into_val_struct_field_Election_keyPrefix : IntoValStructField "keyPrefix" concurrency.Election Election.keyPrefix'.
 Admitted.
 
-Global Instance into_val_struct_field_Election_leaderKey `{ffi_syntax} : IntoValStructField "leaderKey" concurrency.Election Election.leaderKey'.
+Global Instance into_val_struct_field_Election_leaderKey : IntoValStructField "leaderKey" concurrency.Election Election.leaderKey'.
 Admitted.
 
-Global Instance into_val_struct_field_Election_leaderRev `{ffi_syntax} : IntoValStructField "leaderRev" concurrency.Election Election.leaderRev'.
+Global Instance into_val_struct_field_Election_leaderRev : IntoValStructField "leaderRev" concurrency.Election Election.leaderRev'.
 Admitted.
 
-Global Instance into_val_struct_field_Election_leaderSession `{ffi_syntax} : IntoValStructField "leaderSession" concurrency.Election Election.leaderSession'.
+Global Instance into_val_struct_field_Election_leaderSession : IntoValStructField "leaderSession" concurrency.Election Election.leaderSession'.
 Admitted.
 
-Global Instance into_val_struct_field_Election_hdr `{ffi_syntax} : IntoValStructField "hdr" concurrency.Election Election.hdr'.
+Global Instance into_val_struct_field_Election_hdr : IntoValStructField "hdr" concurrency.Election Election.hdr'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Election `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} session' keyPrefix' leaderKey' leaderRev' leaderSession' hdr':
+Global Instance wp_struct_make_Election session' keyPrefix' leaderKey' leaderRev' leaderSession' hdr':
   PureWp True
     (struct.make #concurrency.Election (alist_val [
       "session" ::= #session';
@@ -92,6 +92,7 @@ Global Instance Election_struct_fields_split dq l (v : Election.t) :
 Admitted.
 
 End instances.
+
 Module Mutex.
 Section def.
 Context `{ffi_syntax}.
@@ -108,12 +109,12 @@ End Mutex.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Mutex `{ffi_syntax}: Settable _ :=
+Global Instance settable_Mutex : Settable _ :=
   settable! Mutex.mk < Mutex.s'; Mutex.pfx'; Mutex.myKey'; Mutex.myRev'; Mutex.hdr' >.
-Global Instance into_val_Mutex `{ffi_syntax} : IntoVal Mutex.t.
+Global Instance into_val_Mutex : IntoVal Mutex.t.
 Admitted.
 
-Global Instance into_val_typed_Mutex `{ffi_syntax} : IntoValTyped Mutex.t concurrency.Mutex :=
+Global Instance into_val_typed_Mutex : IntoValTyped Mutex.t concurrency.Mutex :=
 {|
   default_val := Mutex.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -121,24 +122,24 @@ Global Instance into_val_typed_Mutex `{ffi_syntax} : IntoValTyped Mutex.t concur
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Mutex_s `{ffi_syntax} : IntoValStructField "s" concurrency.Mutex Mutex.s'.
+Global Instance into_val_struct_field_Mutex_s : IntoValStructField "s" concurrency.Mutex Mutex.s'.
 Admitted.
 
-Global Instance into_val_struct_field_Mutex_pfx `{ffi_syntax} : IntoValStructField "pfx" concurrency.Mutex Mutex.pfx'.
+Global Instance into_val_struct_field_Mutex_pfx : IntoValStructField "pfx" concurrency.Mutex Mutex.pfx'.
 Admitted.
 
-Global Instance into_val_struct_field_Mutex_myKey `{ffi_syntax} : IntoValStructField "myKey" concurrency.Mutex Mutex.myKey'.
+Global Instance into_val_struct_field_Mutex_myKey : IntoValStructField "myKey" concurrency.Mutex Mutex.myKey'.
 Admitted.
 
-Global Instance into_val_struct_field_Mutex_myRev `{ffi_syntax} : IntoValStructField "myRev" concurrency.Mutex Mutex.myRev'.
+Global Instance into_val_struct_field_Mutex_myRev : IntoValStructField "myRev" concurrency.Mutex Mutex.myRev'.
 Admitted.
 
-Global Instance into_val_struct_field_Mutex_hdr `{ffi_syntax} : IntoValStructField "hdr" concurrency.Mutex Mutex.hdr'.
+Global Instance into_val_struct_field_Mutex_hdr : IntoValStructField "hdr" concurrency.Mutex Mutex.hdr'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Mutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} s' pfx' myKey' myRev' hdr':
+Global Instance wp_struct_make_Mutex s' pfx' myKey' myRev' hdr':
   PureWp True
     (struct.make #concurrency.Mutex (alist_val [
       "s" ::= #s';
@@ -162,6 +163,7 @@ Global Instance Mutex_struct_fields_split dq l (v : Mutex.t) :
 Admitted.
 
 End instances.
+
 Module lockerMutex.
 Section def.
 Context `{ffi_syntax}.
@@ -174,12 +176,12 @@ End lockerMutex.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_lockerMutex `{ffi_syntax}: Settable _ :=
+Global Instance settable_lockerMutex : Settable _ :=
   settable! lockerMutex.mk < lockerMutex.Mutex' >.
-Global Instance into_val_lockerMutex `{ffi_syntax} : IntoVal lockerMutex.t.
+Global Instance into_val_lockerMutex : IntoVal lockerMutex.t.
 Admitted.
 
-Global Instance into_val_typed_lockerMutex `{ffi_syntax} : IntoValTyped lockerMutex.t concurrency.lockerMutex :=
+Global Instance into_val_typed_lockerMutex : IntoValTyped lockerMutex.t concurrency.lockerMutex :=
 {|
   default_val := lockerMutex.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -187,12 +189,12 @@ Global Instance into_val_typed_lockerMutex `{ffi_syntax} : IntoValTyped lockerMu
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_lockerMutex_Mutex `{ffi_syntax} : IntoValStructField "Mutex" concurrency.lockerMutex lockerMutex.Mutex'.
+Global Instance into_val_struct_field_lockerMutex_Mutex : IntoValStructField "Mutex" concurrency.lockerMutex lockerMutex.Mutex'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_lockerMutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Mutex':
+Global Instance wp_struct_make_lockerMutex Mutex':
   PureWp True
     (struct.make #concurrency.lockerMutex (alist_val [
       "Mutex" ::= #Mutex'
@@ -208,6 +210,7 @@ Global Instance lockerMutex_struct_fields_split dq l (v : lockerMutex.t) :
 Admitted.
 
 End instances.
+
 Module Session.
 Section def.
 Context `{ffi_syntax}.
@@ -225,12 +228,12 @@ End Session.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Session `{ffi_syntax}: Settable _ :=
+Global Instance settable_Session : Settable _ :=
   settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
-Global Instance into_val_Session `{ffi_syntax} : IntoVal Session.t.
+Global Instance into_val_Session : IntoVal Session.t.
 Admitted.
 
-Global Instance into_val_typed_Session `{ffi_syntax} : IntoValTyped Session.t concurrency.Session :=
+Global Instance into_val_typed_Session : IntoValTyped Session.t concurrency.Session :=
 {|
   default_val := Session.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -238,27 +241,27 @@ Global Instance into_val_typed_Session `{ffi_syntax} : IntoValTyped Session.t co
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Session_client `{ffi_syntax} : IntoValStructField "client" concurrency.Session Session.client'.
+Global Instance into_val_struct_field_Session_client : IntoValStructField "client" concurrency.Session Session.client'.
 Admitted.
 
-Global Instance into_val_struct_field_Session_opts `{ffi_syntax} : IntoValStructField "opts" concurrency.Session Session.opts'.
+Global Instance into_val_struct_field_Session_opts : IntoValStructField "opts" concurrency.Session Session.opts'.
 Admitted.
 
-Global Instance into_val_struct_field_Session_id `{ffi_syntax} : IntoValStructField "id" concurrency.Session Session.id'.
+Global Instance into_val_struct_field_Session_id : IntoValStructField "id" concurrency.Session Session.id'.
 Admitted.
 
-Global Instance into_val_struct_field_Session_ctx `{ffi_syntax} : IntoValStructField "ctx" concurrency.Session Session.ctx'.
+Global Instance into_val_struct_field_Session_ctx : IntoValStructField "ctx" concurrency.Session Session.ctx'.
 Admitted.
 
-Global Instance into_val_struct_field_Session_cancel `{ffi_syntax} : IntoValStructField "cancel" concurrency.Session Session.cancel'.
+Global Instance into_val_struct_field_Session_cancel : IntoValStructField "cancel" concurrency.Session Session.cancel'.
 Admitted.
 
-Global Instance into_val_struct_field_Session_donec `{ffi_syntax} : IntoValStructField "donec" concurrency.Session Session.donec'.
+Global Instance into_val_struct_field_Session_donec : IntoValStructField "donec" concurrency.Session Session.donec'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Session `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} client' opts' id' ctx' cancel' donec':
+Global Instance wp_struct_make_Session client' opts' id' ctx' cancel' donec':
   PureWp True
     (struct.make #concurrency.Session (alist_val [
       "client" ::= #client';
@@ -284,6 +287,7 @@ Global Instance Session_struct_fields_split dq l (v : Session.t) :
 Admitted.
 
 End instances.
+
 Module sessionOptions.
 Section def.
 Context `{ffi_syntax}.
@@ -298,12 +302,12 @@ End sessionOptions.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_sessionOptions `{ffi_syntax}: Settable _ :=
+Global Instance settable_sessionOptions : Settable _ :=
   settable! sessionOptions.mk < sessionOptions.ttl'; sessionOptions.leaseID'; sessionOptions.ctx' >.
-Global Instance into_val_sessionOptions `{ffi_syntax} : IntoVal sessionOptions.t.
+Global Instance into_val_sessionOptions : IntoVal sessionOptions.t.
 Admitted.
 
-Global Instance into_val_typed_sessionOptions `{ffi_syntax} : IntoValTyped sessionOptions.t concurrency.sessionOptions :=
+Global Instance into_val_typed_sessionOptions : IntoValTyped sessionOptions.t concurrency.sessionOptions :=
 {|
   default_val := sessionOptions.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -311,18 +315,18 @@ Global Instance into_val_typed_sessionOptions `{ffi_syntax} : IntoValTyped sessi
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_sessionOptions_ttl `{ffi_syntax} : IntoValStructField "ttl" concurrency.sessionOptions sessionOptions.ttl'.
+Global Instance into_val_struct_field_sessionOptions_ttl : IntoValStructField "ttl" concurrency.sessionOptions sessionOptions.ttl'.
 Admitted.
 
-Global Instance into_val_struct_field_sessionOptions_leaseID `{ffi_syntax} : IntoValStructField "leaseID" concurrency.sessionOptions sessionOptions.leaseID'.
+Global Instance into_val_struct_field_sessionOptions_leaseID : IntoValStructField "leaseID" concurrency.sessionOptions sessionOptions.leaseID'.
 Admitted.
 
-Global Instance into_val_struct_field_sessionOptions_ctx `{ffi_syntax} : IntoValStructField "ctx" concurrency.sessionOptions sessionOptions.ctx'.
+Global Instance into_val_struct_field_sessionOptions_ctx : IntoValStructField "ctx" concurrency.sessionOptions sessionOptions.ctx'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_sessionOptions `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ttl' leaseID' ctx':
+Global Instance wp_struct_make_sessionOptions ttl' leaseID' ctx':
   PureWp True
     (struct.make #concurrency.sessionOptions (alist_val [
       "ttl" ::= #ttl';
@@ -363,6 +367,7 @@ Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End Isolation.
+
 Module stmError.
 Section def.
 Context `{ffi_syntax}.
@@ -375,12 +380,12 @@ End stmError.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmError `{ffi_syntax}: Settable _ :=
+Global Instance settable_stmError : Settable _ :=
   settable! stmError.mk < stmError.err' >.
-Global Instance into_val_stmError `{ffi_syntax} : IntoVal stmError.t.
+Global Instance into_val_stmError : IntoVal stmError.t.
 Admitted.
 
-Global Instance into_val_typed_stmError `{ffi_syntax} : IntoValTyped stmError.t concurrency.stmError :=
+Global Instance into_val_typed_stmError : IntoValTyped stmError.t concurrency.stmError :=
 {|
   default_val := stmError.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -388,12 +393,12 @@ Global Instance into_val_typed_stmError `{ffi_syntax} : IntoValTyped stmError.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_stmError_err `{ffi_syntax} : IntoValStructField "err" concurrency.stmError stmError.err'.
+Global Instance into_val_struct_field_stmError_err : IntoValStructField "err" concurrency.stmError stmError.err'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmError `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} err':
+Global Instance wp_struct_make_stmError err':
   PureWp True
     (struct.make #concurrency.stmError (alist_val [
       "err" ::= #err'
@@ -409,6 +414,7 @@ Global Instance stmError_struct_fields_split dq l (v : stmError.t) :
 Admitted.
 
 End instances.
+
 Module stmOptions.
 Section def.
 Context `{ffi_syntax}.
@@ -423,12 +429,12 @@ End stmOptions.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmOptions `{ffi_syntax}: Settable _ :=
+Global Instance settable_stmOptions : Settable _ :=
   settable! stmOptions.mk < stmOptions.iso'; stmOptions.ctx'; stmOptions.prefetch' >.
-Global Instance into_val_stmOptions `{ffi_syntax} : IntoVal stmOptions.t.
+Global Instance into_val_stmOptions : IntoVal stmOptions.t.
 Admitted.
 
-Global Instance into_val_typed_stmOptions `{ffi_syntax} : IntoValTyped stmOptions.t concurrency.stmOptions :=
+Global Instance into_val_typed_stmOptions : IntoValTyped stmOptions.t concurrency.stmOptions :=
 {|
   default_val := stmOptions.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -436,18 +442,18 @@ Global Instance into_val_typed_stmOptions `{ffi_syntax} : IntoValTyped stmOption
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_stmOptions_iso `{ffi_syntax} : IntoValStructField "iso" concurrency.stmOptions stmOptions.iso'.
+Global Instance into_val_struct_field_stmOptions_iso : IntoValStructField "iso" concurrency.stmOptions stmOptions.iso'.
 Admitted.
 
-Global Instance into_val_struct_field_stmOptions_ctx `{ffi_syntax} : IntoValStructField "ctx" concurrency.stmOptions stmOptions.ctx'.
+Global Instance into_val_struct_field_stmOptions_ctx : IntoValStructField "ctx" concurrency.stmOptions stmOptions.ctx'.
 Admitted.
 
-Global Instance into_val_struct_field_stmOptions_prefetch `{ffi_syntax} : IntoValStructField "prefetch" concurrency.stmOptions stmOptions.prefetch'.
+Global Instance into_val_struct_field_stmOptions_prefetch : IntoValStructField "prefetch" concurrency.stmOptions stmOptions.prefetch'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmOptions `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} iso' ctx' prefetch':
+Global Instance wp_struct_make_stmOptions iso' ctx' prefetch':
   PureWp True
     (struct.make #concurrency.stmOptions (alist_val [
       "iso" ::= #iso';
@@ -474,6 +480,7 @@ Context `{ffi_syntax}.
 Definition t := func.t.
 End def.
 End stmOption.
+
 Module stmResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -487,12 +494,12 @@ End stmResponse.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmResponse `{ffi_syntax}: Settable _ :=
+Global Instance settable_stmResponse : Settable _ :=
   settable! stmResponse.mk < stmResponse.resp'; stmResponse.err' >.
-Global Instance into_val_stmResponse `{ffi_syntax} : IntoVal stmResponse.t.
+Global Instance into_val_stmResponse : IntoVal stmResponse.t.
 Admitted.
 
-Global Instance into_val_typed_stmResponse `{ffi_syntax} : IntoValTyped stmResponse.t concurrency.stmResponse :=
+Global Instance into_val_typed_stmResponse : IntoValTyped stmResponse.t concurrency.stmResponse :=
 {|
   default_val := stmResponse.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -500,15 +507,15 @@ Global Instance into_val_typed_stmResponse `{ffi_syntax} : IntoValTyped stmRespo
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_stmResponse_resp `{ffi_syntax} : IntoValStructField "resp" concurrency.stmResponse stmResponse.resp'.
+Global Instance into_val_struct_field_stmResponse_resp : IntoValStructField "resp" concurrency.stmResponse stmResponse.resp'.
 Admitted.
 
-Global Instance into_val_struct_field_stmResponse_err `{ffi_syntax} : IntoValStructField "err" concurrency.stmResponse stmResponse.err'.
+Global Instance into_val_struct_field_stmResponse_err : IntoValStructField "err" concurrency.stmResponse stmResponse.err'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmResponse `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} resp' err':
+Global Instance wp_struct_make_stmResponse resp' err':
   PureWp True
     (struct.make #concurrency.stmResponse (alist_val [
       "resp" ::= #resp';
@@ -540,6 +547,7 @@ Context `{ffi_syntax}.
 Definition t := loc.
 End def.
 End writeSet.
+
 Module stm.
 Section def.
 Context `{ffi_syntax}.
@@ -557,12 +565,12 @@ End stm.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stm `{ffi_syntax}: Settable _ :=
+Global Instance settable_stm : Settable _ :=
   settable! stm.mk < stm.client'; stm.ctx'; stm.rset'; stm.wset'; stm.getOpts'; stm.conflicts' >.
-Global Instance into_val_stm `{ffi_syntax} : IntoVal stm.t.
+Global Instance into_val_stm : IntoVal stm.t.
 Admitted.
 
-Global Instance into_val_typed_stm `{ffi_syntax} : IntoValTyped stm.t concurrency.stm :=
+Global Instance into_val_typed_stm : IntoValTyped stm.t concurrency.stm :=
 {|
   default_val := stm.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -570,27 +578,27 @@ Global Instance into_val_typed_stm `{ffi_syntax} : IntoValTyped stm.t concurrenc
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_stm_client `{ffi_syntax} : IntoValStructField "client" concurrency.stm stm.client'.
+Global Instance into_val_struct_field_stm_client : IntoValStructField "client" concurrency.stm stm.client'.
 Admitted.
 
-Global Instance into_val_struct_field_stm_ctx `{ffi_syntax} : IntoValStructField "ctx" concurrency.stm stm.ctx'.
+Global Instance into_val_struct_field_stm_ctx : IntoValStructField "ctx" concurrency.stm stm.ctx'.
 Admitted.
 
-Global Instance into_val_struct_field_stm_rset `{ffi_syntax} : IntoValStructField "rset" concurrency.stm stm.rset'.
+Global Instance into_val_struct_field_stm_rset : IntoValStructField "rset" concurrency.stm stm.rset'.
 Admitted.
 
-Global Instance into_val_struct_field_stm_wset `{ffi_syntax} : IntoValStructField "wset" concurrency.stm stm.wset'.
+Global Instance into_val_struct_field_stm_wset : IntoValStructField "wset" concurrency.stm stm.wset'.
 Admitted.
 
-Global Instance into_val_struct_field_stm_getOpts `{ffi_syntax} : IntoValStructField "getOpts" concurrency.stm stm.getOpts'.
+Global Instance into_val_struct_field_stm_getOpts : IntoValStructField "getOpts" concurrency.stm stm.getOpts'.
 Admitted.
 
-Global Instance into_val_struct_field_stm_conflicts `{ffi_syntax} : IntoValStructField "conflicts" concurrency.stm stm.conflicts'.
+Global Instance into_val_struct_field_stm_conflicts : IntoValStructField "conflicts" concurrency.stm stm.conflicts'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stm `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} client' ctx' rset' wset' getOpts' conflicts':
+Global Instance wp_struct_make_stm client' ctx' rset' wset' getOpts' conflicts':
   PureWp True
     (struct.make #concurrency.stm (alist_val [
       "client" ::= #client';
@@ -616,6 +624,7 @@ Global Instance stm_struct_fields_split dq l (v : stm.t) :
 Admitted.
 
 End instances.
+
 Module stmPut.
 Section def.
 Context `{ffi_syntax}.
@@ -629,12 +638,12 @@ End stmPut.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmPut `{ffi_syntax}: Settable _ :=
+Global Instance settable_stmPut : Settable _ :=
   settable! stmPut.mk < stmPut.val'; stmPut.op' >.
-Global Instance into_val_stmPut `{ffi_syntax} : IntoVal stmPut.t.
+Global Instance into_val_stmPut : IntoVal stmPut.t.
 Admitted.
 
-Global Instance into_val_typed_stmPut `{ffi_syntax} : IntoValTyped stmPut.t concurrency.stmPut :=
+Global Instance into_val_typed_stmPut : IntoValTyped stmPut.t concurrency.stmPut :=
 {|
   default_val := stmPut.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -642,15 +651,15 @@ Global Instance into_val_typed_stmPut `{ffi_syntax} : IntoValTyped stmPut.t conc
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_stmPut_val `{ffi_syntax} : IntoValStructField "val" concurrency.stmPut stmPut.val'.
+Global Instance into_val_struct_field_stmPut_val : IntoValStructField "val" concurrency.stmPut stmPut.val'.
 Admitted.
 
-Global Instance into_val_struct_field_stmPut_op `{ffi_syntax} : IntoValStructField "op" concurrency.stmPut stmPut.op'.
+Global Instance into_val_struct_field_stmPut_op : IntoValStructField "op" concurrency.stmPut stmPut.op'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmPut `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} val' op':
+Global Instance wp_struct_make_stmPut val' op':
   PureWp True
     (struct.make #concurrency.stmPut (alist_val [
       "val" ::= #val';
@@ -668,6 +677,7 @@ Global Instance stmPut_struct_fields_split dq l (v : stmPut.t) :
 Admitted.
 
 End instances.
+
 Module stmSerializable.
 Section def.
 Context `{ffi_syntax}.
@@ -681,12 +691,12 @@ End stmSerializable.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmSerializable `{ffi_syntax}: Settable _ :=
+Global Instance settable_stmSerializable : Settable _ :=
   settable! stmSerializable.mk < stmSerializable.stm'; stmSerializable.prefetch' >.
-Global Instance into_val_stmSerializable `{ffi_syntax} : IntoVal stmSerializable.t.
+Global Instance into_val_stmSerializable : IntoVal stmSerializable.t.
 Admitted.
 
-Global Instance into_val_typed_stmSerializable `{ffi_syntax} : IntoValTyped stmSerializable.t concurrency.stmSerializable :=
+Global Instance into_val_typed_stmSerializable : IntoValTyped stmSerializable.t concurrency.stmSerializable :=
 {|
   default_val := stmSerializable.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -694,15 +704,15 @@ Global Instance into_val_typed_stmSerializable `{ffi_syntax} : IntoValTyped stmS
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_stmSerializable_stm `{ffi_syntax} : IntoValStructField "stm" concurrency.stmSerializable stmSerializable.stm'.
+Global Instance into_val_struct_field_stmSerializable_stm : IntoValStructField "stm" concurrency.stmSerializable stmSerializable.stm'.
 Admitted.
 
-Global Instance into_val_struct_field_stmSerializable_prefetch `{ffi_syntax} : IntoValStructField "prefetch" concurrency.stmSerializable stmSerializable.prefetch'.
+Global Instance into_val_struct_field_stmSerializable_prefetch : IntoValStructField "prefetch" concurrency.stmSerializable stmSerializable.prefetch'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_stmSerializable `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} stm' prefetch':
+Global Instance wp_struct_make_stmSerializable stm' prefetch':
   PureWp True
     (struct.make #concurrency.stmSerializable (alist_val [
       "stm" ::= #stm';
@@ -749,7 +759,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined concurrency :=
   is_pkg_defined := is_global_definitions concurrency var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
   "HErrElectionNotLeader" ∷ ErrElectionNotLeader ↦ (default_val error.t) ∗
   "HErrElectionNoLeader" ∷ ErrElectionNoLeader ↦ (default_val error.t) ∗
   "HErrLocked" ∷ ErrLocked ↦ (default_val error.t) ∗

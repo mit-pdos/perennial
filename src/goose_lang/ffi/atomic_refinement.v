@@ -1246,7 +1246,6 @@ Section go_refinement.
     - inv_expr_impl.
     - inv_expr_impl.
     - inv_expr_impl.
-    - inv_expr_impl.
   Qed.
 
   Theorem base_step_simulation_rev se1 sσ1 sg1 κ se2 sσ2 sg2 sefs ie1 iσ1 ig1 :
@@ -1494,7 +1493,6 @@ Section go_refinement.
           repeat econstructor; eauto.
           { rewrite /when. rewrite ifThenElse_else //. }
         }
-    - inv_expr_impl.
     - inv_expr_impl.
       { apply in_wf_ctxt_closed in Hwf. inversion Hwf. }
       do 4 eexists. eapply base_step_atomically_fail.

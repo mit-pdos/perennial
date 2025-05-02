@@ -22,7 +22,6 @@ Require Export New.golang.theory.
 Require Export New.code.go_etcd_io.raft.v3.
 Module raft.
 Axiom falso : False.
-
 Module Storage.
 Section def.
 Context `{ffi_syntax}.
@@ -36,6 +35,7 @@ Context `{ffi_syntax}.
 Definition t := interface.t.
 End def.
 End Logger.
+
 Module unstable.
 Section def.
 Context `{ffi_syntax}.
@@ -53,12 +53,12 @@ End unstable.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_unstable `{ffi_syntax}: Settable _ :=
+Global Instance settable_unstable : Settable _ :=
   settable! unstable.mk < unstable.snapshot'; unstable.entries'; unstable.offset'; unstable.snapshotInProgress'; unstable.offsetInProgress'; unstable.logger' >.
-Global Instance into_val_unstable `{ffi_syntax} : IntoVal unstable.t.
+Global Instance into_val_unstable : IntoVal unstable.t.
 Admitted.
 
-Global Instance into_val_typed_unstable `{ffi_syntax} : IntoValTyped unstable.t raft.unstable :=
+Global Instance into_val_typed_unstable : IntoValTyped unstable.t raft.unstable :=
 {|
   default_val := unstable.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -66,27 +66,27 @@ Global Instance into_val_typed_unstable `{ffi_syntax} : IntoValTyped unstable.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_unstable_snapshot `{ffi_syntax} : IntoValStructField "snapshot" raft.unstable unstable.snapshot'.
+Global Instance into_val_struct_field_unstable_snapshot : IntoValStructField "snapshot" raft.unstable unstable.snapshot'.
 Admitted.
 
-Global Instance into_val_struct_field_unstable_entries `{ffi_syntax} : IntoValStructField "entries" raft.unstable unstable.entries'.
+Global Instance into_val_struct_field_unstable_entries : IntoValStructField "entries" raft.unstable unstable.entries'.
 Admitted.
 
-Global Instance into_val_struct_field_unstable_offset `{ffi_syntax} : IntoValStructField "offset" raft.unstable unstable.offset'.
+Global Instance into_val_struct_field_unstable_offset : IntoValStructField "offset" raft.unstable unstable.offset'.
 Admitted.
 
-Global Instance into_val_struct_field_unstable_snapshotInProgress `{ffi_syntax} : IntoValStructField "snapshotInProgress" raft.unstable unstable.snapshotInProgress'.
+Global Instance into_val_struct_field_unstable_snapshotInProgress : IntoValStructField "snapshotInProgress" raft.unstable unstable.snapshotInProgress'.
 Admitted.
 
-Global Instance into_val_struct_field_unstable_offsetInProgress `{ffi_syntax} : IntoValStructField "offsetInProgress" raft.unstable unstable.offsetInProgress'.
+Global Instance into_val_struct_field_unstable_offsetInProgress : IntoValStructField "offsetInProgress" raft.unstable unstable.offsetInProgress'.
 Admitted.
 
-Global Instance into_val_struct_field_unstable_logger `{ffi_syntax} : IntoValStructField "logger" raft.unstable unstable.logger'.
+Global Instance into_val_struct_field_unstable_logger : IntoValStructField "logger" raft.unstable unstable.logger'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_unstable `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} snapshot' entries' offset' snapshotInProgress' offsetInProgress' logger':
+Global Instance wp_struct_make_unstable snapshot' entries' offset' snapshotInProgress' offsetInProgress' logger':
   PureWp True
     (struct.make #raft.unstable (alist_val [
       "snapshot" ::= #snapshot';
@@ -119,6 +119,7 @@ Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End entryEncodingSize.
+
 Module raftLog.
 Section def.
 Context `{ffi_syntax}.
@@ -139,12 +140,12 @@ End raftLog.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_raftLog `{ffi_syntax}: Settable _ :=
+Global Instance settable_raftLog : Settable _ :=
   settable! raftLog.mk < raftLog.storage'; raftLog.unstable'; raftLog.committed'; raftLog.applying'; raftLog.applied'; raftLog.logger'; raftLog.maxApplyingEntsSize'; raftLog.applyingEntsSize'; raftLog.applyingEntsPaused' >.
-Global Instance into_val_raftLog `{ffi_syntax} : IntoVal raftLog.t.
+Global Instance into_val_raftLog : IntoVal raftLog.t.
 Admitted.
 
-Global Instance into_val_typed_raftLog `{ffi_syntax} : IntoValTyped raftLog.t raft.raftLog :=
+Global Instance into_val_typed_raftLog : IntoValTyped raftLog.t raft.raftLog :=
 {|
   default_val := raftLog.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -152,36 +153,36 @@ Global Instance into_val_typed_raftLog `{ffi_syntax} : IntoValTyped raftLog.t ra
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_raftLog_storage `{ffi_syntax} : IntoValStructField "storage" raft.raftLog raftLog.storage'.
+Global Instance into_val_struct_field_raftLog_storage : IntoValStructField "storage" raft.raftLog raftLog.storage'.
 Admitted.
 
-Global Instance into_val_struct_field_raftLog_unstable `{ffi_syntax} : IntoValStructField "unstable" raft.raftLog raftLog.unstable'.
+Global Instance into_val_struct_field_raftLog_unstable : IntoValStructField "unstable" raft.raftLog raftLog.unstable'.
 Admitted.
 
-Global Instance into_val_struct_field_raftLog_committed `{ffi_syntax} : IntoValStructField "committed" raft.raftLog raftLog.committed'.
+Global Instance into_val_struct_field_raftLog_committed : IntoValStructField "committed" raft.raftLog raftLog.committed'.
 Admitted.
 
-Global Instance into_val_struct_field_raftLog_applying `{ffi_syntax} : IntoValStructField "applying" raft.raftLog raftLog.applying'.
+Global Instance into_val_struct_field_raftLog_applying : IntoValStructField "applying" raft.raftLog raftLog.applying'.
 Admitted.
 
-Global Instance into_val_struct_field_raftLog_applied `{ffi_syntax} : IntoValStructField "applied" raft.raftLog raftLog.applied'.
+Global Instance into_val_struct_field_raftLog_applied : IntoValStructField "applied" raft.raftLog raftLog.applied'.
 Admitted.
 
-Global Instance into_val_struct_field_raftLog_logger `{ffi_syntax} : IntoValStructField "logger" raft.raftLog raftLog.logger'.
+Global Instance into_val_struct_field_raftLog_logger : IntoValStructField "logger" raft.raftLog raftLog.logger'.
 Admitted.
 
-Global Instance into_val_struct_field_raftLog_maxApplyingEntsSize `{ffi_syntax} : IntoValStructField "maxApplyingEntsSize" raft.raftLog raftLog.maxApplyingEntsSize'.
+Global Instance into_val_struct_field_raftLog_maxApplyingEntsSize : IntoValStructField "maxApplyingEntsSize" raft.raftLog raftLog.maxApplyingEntsSize'.
 Admitted.
 
-Global Instance into_val_struct_field_raftLog_applyingEntsSize `{ffi_syntax} : IntoValStructField "applyingEntsSize" raft.raftLog raftLog.applyingEntsSize'.
+Global Instance into_val_struct_field_raftLog_applyingEntsSize : IntoValStructField "applyingEntsSize" raft.raftLog raftLog.applyingEntsSize'.
 Admitted.
 
-Global Instance into_val_struct_field_raftLog_applyingEntsPaused `{ffi_syntax} : IntoValStructField "applyingEntsPaused" raft.raftLog raftLog.applyingEntsPaused'.
+Global Instance into_val_struct_field_raftLog_applyingEntsPaused : IntoValStructField "applyingEntsPaused" raft.raftLog raftLog.applyingEntsPaused'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_raftLog `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} storage' unstable' committed' applying' applied' logger' maxApplyingEntsSize' applyingEntsSize' applyingEntsPaused':
+Global Instance wp_struct_make_raftLog storage' unstable' committed' applying' applied' logger' maxApplyingEntsSize' applyingEntsSize' applyingEntsPaused':
   PureWp True
     (struct.make #raft.raftLog (alist_val [
       "storage" ::= #storage';
@@ -213,6 +214,7 @@ Global Instance raftLog_struct_fields_split dq l (v : raftLog.t) :
 Admitted.
 
 End instances.
+
 Module DefaultLogger.
 Section def.
 Context `{ffi_syntax}.
@@ -226,12 +228,12 @@ End DefaultLogger.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_DefaultLogger `{ffi_syntax}: Settable _ :=
+Global Instance settable_DefaultLogger : Settable _ :=
   settable! DefaultLogger.mk < DefaultLogger.Logger'; DefaultLogger.debug' >.
-Global Instance into_val_DefaultLogger `{ffi_syntax} : IntoVal DefaultLogger.t.
+Global Instance into_val_DefaultLogger : IntoVal DefaultLogger.t.
 Admitted.
 
-Global Instance into_val_typed_DefaultLogger `{ffi_syntax} : IntoValTyped DefaultLogger.t raft.DefaultLogger :=
+Global Instance into_val_typed_DefaultLogger : IntoValTyped DefaultLogger.t raft.DefaultLogger :=
 {|
   default_val := DefaultLogger.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -239,15 +241,15 @@ Global Instance into_val_typed_DefaultLogger `{ffi_syntax} : IntoValTyped Defaul
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_DefaultLogger_Logger `{ffi_syntax} : IntoValStructField "Logger" raft.DefaultLogger DefaultLogger.Logger'.
+Global Instance into_val_struct_field_DefaultLogger_Logger : IntoValStructField "Logger" raft.DefaultLogger DefaultLogger.Logger'.
 Admitted.
 
-Global Instance into_val_struct_field_DefaultLogger_debug `{ffi_syntax} : IntoValStructField "debug" raft.DefaultLogger DefaultLogger.debug'.
+Global Instance into_val_struct_field_DefaultLogger_debug : IntoValStructField "debug" raft.DefaultLogger DefaultLogger.debug'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_DefaultLogger `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Logger' debug':
+Global Instance wp_struct_make_DefaultLogger Logger' debug':
   PureWp True
     (struct.make #raft.DefaultLogger (alist_val [
       "Logger" ::= #Logger';
@@ -279,6 +281,7 @@ Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End StateType.
+
 Module SoftState.
 Section def.
 Context `{ffi_syntax}.
@@ -292,12 +295,12 @@ End SoftState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SoftState `{ffi_syntax}: Settable _ :=
+Global Instance settable_SoftState : Settable _ :=
   settable! SoftState.mk < SoftState.Lead'; SoftState.RaftState' >.
-Global Instance into_val_SoftState `{ffi_syntax} : IntoVal SoftState.t.
+Global Instance into_val_SoftState : IntoVal SoftState.t.
 Admitted.
 
-Global Instance into_val_typed_SoftState `{ffi_syntax} : IntoValTyped SoftState.t raft.SoftState :=
+Global Instance into_val_typed_SoftState : IntoValTyped SoftState.t raft.SoftState :=
 {|
   default_val := SoftState.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -305,15 +308,15 @@ Global Instance into_val_typed_SoftState `{ffi_syntax} : IntoValTyped SoftState.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SoftState_Lead `{ffi_syntax} : IntoValStructField "Lead" raft.SoftState SoftState.Lead'.
+Global Instance into_val_struct_field_SoftState_Lead : IntoValStructField "Lead" raft.SoftState SoftState.Lead'.
 Admitted.
 
-Global Instance into_val_struct_field_SoftState_RaftState `{ffi_syntax} : IntoValStructField "RaftState" raft.SoftState SoftState.RaftState'.
+Global Instance into_val_struct_field_SoftState_RaftState : IntoValStructField "RaftState" raft.SoftState SoftState.RaftState'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SoftState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Lead' RaftState':
+Global Instance wp_struct_make_SoftState Lead' RaftState':
   PureWp True
     (struct.make #raft.SoftState (alist_val [
       "Lead" ::= #Lead';
@@ -331,6 +334,7 @@ Global Instance SoftState_struct_fields_split dq l (v : SoftState.t) :
 Admitted.
 
 End instances.
+
 Module Ready.
 Section def.
 Context `{ffi_syntax}.
@@ -350,12 +354,12 @@ End Ready.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Ready `{ffi_syntax}: Settable _ :=
+Global Instance settable_Ready : Settable _ :=
   settable! Ready.mk < Ready.SoftState'; Ready.HardState'; Ready.ReadStates'; Ready.Entries'; Ready.Snapshot'; Ready.CommittedEntries'; Ready.Messages'; Ready.MustSync' >.
-Global Instance into_val_Ready `{ffi_syntax} : IntoVal Ready.t.
+Global Instance into_val_Ready : IntoVal Ready.t.
 Admitted.
 
-Global Instance into_val_typed_Ready `{ffi_syntax} : IntoValTyped Ready.t raft.Ready :=
+Global Instance into_val_typed_Ready : IntoValTyped Ready.t raft.Ready :=
 {|
   default_val := Ready.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -363,33 +367,33 @@ Global Instance into_val_typed_Ready `{ffi_syntax} : IntoValTyped Ready.t raft.R
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Ready_SoftState `{ffi_syntax} : IntoValStructField "SoftState" raft.Ready Ready.SoftState'.
+Global Instance into_val_struct_field_Ready_SoftState : IntoValStructField "SoftState" raft.Ready Ready.SoftState'.
 Admitted.
 
-Global Instance into_val_struct_field_Ready_HardState `{ffi_syntax} : IntoValStructField "HardState" raft.Ready Ready.HardState'.
+Global Instance into_val_struct_field_Ready_HardState : IntoValStructField "HardState" raft.Ready Ready.HardState'.
 Admitted.
 
-Global Instance into_val_struct_field_Ready_ReadStates `{ffi_syntax} : IntoValStructField "ReadStates" raft.Ready Ready.ReadStates'.
+Global Instance into_val_struct_field_Ready_ReadStates : IntoValStructField "ReadStates" raft.Ready Ready.ReadStates'.
 Admitted.
 
-Global Instance into_val_struct_field_Ready_Entries `{ffi_syntax} : IntoValStructField "Entries" raft.Ready Ready.Entries'.
+Global Instance into_val_struct_field_Ready_Entries : IntoValStructField "Entries" raft.Ready Ready.Entries'.
 Admitted.
 
-Global Instance into_val_struct_field_Ready_Snapshot `{ffi_syntax} : IntoValStructField "Snapshot" raft.Ready Ready.Snapshot'.
+Global Instance into_val_struct_field_Ready_Snapshot : IntoValStructField "Snapshot" raft.Ready Ready.Snapshot'.
 Admitted.
 
-Global Instance into_val_struct_field_Ready_CommittedEntries `{ffi_syntax} : IntoValStructField "CommittedEntries" raft.Ready Ready.CommittedEntries'.
+Global Instance into_val_struct_field_Ready_CommittedEntries : IntoValStructField "CommittedEntries" raft.Ready Ready.CommittedEntries'.
 Admitted.
 
-Global Instance into_val_struct_field_Ready_Messages `{ffi_syntax} : IntoValStructField "Messages" raft.Ready Ready.Messages'.
+Global Instance into_val_struct_field_Ready_Messages : IntoValStructField "Messages" raft.Ready Ready.Messages'.
 Admitted.
 
-Global Instance into_val_struct_field_Ready_MustSync `{ffi_syntax} : IntoValStructField "MustSync" raft.Ready Ready.MustSync'.
+Global Instance into_val_struct_field_Ready_MustSync : IntoValStructField "MustSync" raft.Ready Ready.MustSync'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Ready `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} SoftState' HardState' ReadStates' Entries' Snapshot' CommittedEntries' Messages' MustSync':
+Global Instance wp_struct_make_Ready SoftState' HardState' ReadStates' Entries' Snapshot' CommittedEntries' Messages' MustSync':
   PureWp True
     (struct.make #raft.Ready (alist_val [
       "SoftState" ::= #SoftState';
@@ -426,6 +430,7 @@ Context `{ffi_syntax}.
 Definition t := interface.t.
 End def.
 End Node.
+
 Module Peer.
 Section def.
 Context `{ffi_syntax}.
@@ -439,12 +444,12 @@ End Peer.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Peer `{ffi_syntax}: Settable _ :=
+Global Instance settable_Peer : Settable _ :=
   settable! Peer.mk < Peer.ID'; Peer.Context' >.
-Global Instance into_val_Peer `{ffi_syntax} : IntoVal Peer.t.
+Global Instance into_val_Peer : IntoVal Peer.t.
 Admitted.
 
-Global Instance into_val_typed_Peer `{ffi_syntax} : IntoValTyped Peer.t raft.Peer :=
+Global Instance into_val_typed_Peer : IntoValTyped Peer.t raft.Peer :=
 {|
   default_val := Peer.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -452,15 +457,15 @@ Global Instance into_val_typed_Peer `{ffi_syntax} : IntoValTyped Peer.t raft.Pee
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Peer_ID `{ffi_syntax} : IntoValStructField "ID" raft.Peer Peer.ID'.
+Global Instance into_val_struct_field_Peer_ID : IntoValStructField "ID" raft.Peer Peer.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_Peer_Context `{ffi_syntax} : IntoValStructField "Context" raft.Peer Peer.Context'.
+Global Instance into_val_struct_field_Peer_Context : IntoValStructField "Context" raft.Peer Peer.Context'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Peer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Context':
+Global Instance wp_struct_make_Peer ID' Context':
   PureWp True
     (struct.make #raft.Peer (alist_val [
       "ID" ::= #ID';
@@ -478,6 +483,7 @@ Global Instance Peer_struct_fields_split dq l (v : Peer.t) :
 Admitted.
 
 End instances.
+
 Module msgWithResult.
 Section def.
 Context `{ffi_syntax}.
@@ -491,12 +497,12 @@ End msgWithResult.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_msgWithResult `{ffi_syntax}: Settable _ :=
+Global Instance settable_msgWithResult : Settable _ :=
   settable! msgWithResult.mk < msgWithResult.m'; msgWithResult.result' >.
-Global Instance into_val_msgWithResult `{ffi_syntax} : IntoVal msgWithResult.t.
+Global Instance into_val_msgWithResult : IntoVal msgWithResult.t.
 Admitted.
 
-Global Instance into_val_typed_msgWithResult `{ffi_syntax} : IntoValTyped msgWithResult.t raft.msgWithResult :=
+Global Instance into_val_typed_msgWithResult : IntoValTyped msgWithResult.t raft.msgWithResult :=
 {|
   default_val := msgWithResult.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -504,15 +510,15 @@ Global Instance into_val_typed_msgWithResult `{ffi_syntax} : IntoValTyped msgWit
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_msgWithResult_m `{ffi_syntax} : IntoValStructField "m" raft.msgWithResult msgWithResult.m'.
+Global Instance into_val_struct_field_msgWithResult_m : IntoValStructField "m" raft.msgWithResult msgWithResult.m'.
 Admitted.
 
-Global Instance into_val_struct_field_msgWithResult_result `{ffi_syntax} : IntoValStructField "result" raft.msgWithResult msgWithResult.result'.
+Global Instance into_val_struct_field_msgWithResult_result : IntoValStructField "result" raft.msgWithResult msgWithResult.result'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_msgWithResult `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} m' result':
+Global Instance wp_struct_make_msgWithResult m' result':
   PureWp True
     (struct.make #raft.msgWithResult (alist_val [
       "m" ::= #m';
@@ -530,6 +536,7 @@ Global Instance msgWithResult_struct_fields_split dq l (v : msgWithResult.t) :
 Admitted.
 
 End instances.
+
 Module node.
 Section def.
 Context `{ffi_syntax}.
@@ -552,12 +559,12 @@ End node.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_node `{ffi_syntax}: Settable _ :=
+Global Instance settable_node : Settable _ :=
   settable! node.mk < node.propc'; node.recvc'; node.confc'; node.confstatec'; node.readyc'; node.advancec'; node.tickc'; node.done'; node.stop'; node.status'; node.rn' >.
-Global Instance into_val_node `{ffi_syntax} : IntoVal node.t.
+Global Instance into_val_node : IntoVal node.t.
 Admitted.
 
-Global Instance into_val_typed_node `{ffi_syntax} : IntoValTyped node.t raft.node :=
+Global Instance into_val_typed_node : IntoValTyped node.t raft.node :=
 {|
   default_val := node.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -565,42 +572,42 @@ Global Instance into_val_typed_node `{ffi_syntax} : IntoValTyped node.t raft.nod
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_node_propc `{ffi_syntax} : IntoValStructField "propc" raft.node node.propc'.
+Global Instance into_val_struct_field_node_propc : IntoValStructField "propc" raft.node node.propc'.
 Admitted.
 
-Global Instance into_val_struct_field_node_recvc `{ffi_syntax} : IntoValStructField "recvc" raft.node node.recvc'.
+Global Instance into_val_struct_field_node_recvc : IntoValStructField "recvc" raft.node node.recvc'.
 Admitted.
 
-Global Instance into_val_struct_field_node_confc `{ffi_syntax} : IntoValStructField "confc" raft.node node.confc'.
+Global Instance into_val_struct_field_node_confc : IntoValStructField "confc" raft.node node.confc'.
 Admitted.
 
-Global Instance into_val_struct_field_node_confstatec `{ffi_syntax} : IntoValStructField "confstatec" raft.node node.confstatec'.
+Global Instance into_val_struct_field_node_confstatec : IntoValStructField "confstatec" raft.node node.confstatec'.
 Admitted.
 
-Global Instance into_val_struct_field_node_readyc `{ffi_syntax} : IntoValStructField "readyc" raft.node node.readyc'.
+Global Instance into_val_struct_field_node_readyc : IntoValStructField "readyc" raft.node node.readyc'.
 Admitted.
 
-Global Instance into_val_struct_field_node_advancec `{ffi_syntax} : IntoValStructField "advancec" raft.node node.advancec'.
+Global Instance into_val_struct_field_node_advancec : IntoValStructField "advancec" raft.node node.advancec'.
 Admitted.
 
-Global Instance into_val_struct_field_node_tickc `{ffi_syntax} : IntoValStructField "tickc" raft.node node.tickc'.
+Global Instance into_val_struct_field_node_tickc : IntoValStructField "tickc" raft.node node.tickc'.
 Admitted.
 
-Global Instance into_val_struct_field_node_done `{ffi_syntax} : IntoValStructField "done" raft.node node.done'.
+Global Instance into_val_struct_field_node_done : IntoValStructField "done" raft.node node.done'.
 Admitted.
 
-Global Instance into_val_struct_field_node_stop `{ffi_syntax} : IntoValStructField "stop" raft.node node.stop'.
+Global Instance into_val_struct_field_node_stop : IntoValStructField "stop" raft.node node.stop'.
 Admitted.
 
-Global Instance into_val_struct_field_node_status `{ffi_syntax} : IntoValStructField "status" raft.node node.status'.
+Global Instance into_val_struct_field_node_status : IntoValStructField "status" raft.node node.status'.
 Admitted.
 
-Global Instance into_val_struct_field_node_rn `{ffi_syntax} : IntoValStructField "rn" raft.node node.rn'.
+Global Instance into_val_struct_field_node_rn : IntoValStructField "rn" raft.node node.rn'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_node `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} propc' recvc' confc' confstatec' readyc' advancec' tickc' done' stop' status' rn':
+Global Instance wp_struct_make_node propc' recvc' confc' confstatec' readyc' advancec' tickc' done' stop' status' rn':
   PureWp True
     (struct.make #raft.node (alist_val [
       "propc" ::= #propc';
@@ -643,6 +650,7 @@ Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End ReadOnlyOption.
+
 Module lockedRand.
 Section def.
 Context `{ffi_syntax}.
@@ -655,12 +663,12 @@ End lockedRand.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_lockedRand `{ffi_syntax}: Settable _ :=
+Global Instance settable_lockedRand : Settable _ :=
   settable! lockedRand.mk < lockedRand.mu' >.
-Global Instance into_val_lockedRand `{ffi_syntax} : IntoVal lockedRand.t.
+Global Instance into_val_lockedRand : IntoVal lockedRand.t.
 Admitted.
 
-Global Instance into_val_typed_lockedRand `{ffi_syntax} : IntoValTyped lockedRand.t raft.lockedRand :=
+Global Instance into_val_typed_lockedRand : IntoValTyped lockedRand.t raft.lockedRand :=
 {|
   default_val := lockedRand.mk (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -668,12 +676,12 @@ Global Instance into_val_typed_lockedRand `{ffi_syntax} : IntoValTyped lockedRan
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_lockedRand_mu `{ffi_syntax} : IntoValStructField "mu" raft.lockedRand lockedRand.mu'.
+Global Instance into_val_struct_field_lockedRand_mu : IntoValStructField "mu" raft.lockedRand lockedRand.mu'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_lockedRand `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu':
+Global Instance wp_struct_make_lockedRand mu':
   PureWp True
     (struct.make #raft.lockedRand (alist_val [
       "mu" ::= #mu'
@@ -703,6 +711,7 @@ Context `{ffi_syntax}.
 Definition t := interface.t.
 End def.
 End TraceLogger.
+
 Module Config.
 Section def.
 Context `{ffi_syntax}.
@@ -733,12 +742,12 @@ End Config.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Config `{ffi_syntax}: Settable _ :=
+Global Instance settable_Config : Settable _ :=
   settable! Config.mk < Config.ID'; Config.ElectionTick'; Config.HeartbeatTick'; Config.Storage'; Config.Applied'; Config.AsyncStorageWrites'; Config.MaxSizePerMsg'; Config.MaxCommittedSizePerReady'; Config.MaxUncommittedEntriesSize'; Config.MaxInflightMsgs'; Config.MaxInflightBytes'; Config.CheckQuorum'; Config.PreVote'; Config.ReadOnlyOption'; Config.Logger'; Config.DisableProposalForwarding'; Config.DisableConfChangeValidation'; Config.StepDownOnRemoval'; Config.TraceLogger' >.
-Global Instance into_val_Config `{ffi_syntax} : IntoVal Config.t.
+Global Instance into_val_Config : IntoVal Config.t.
 Admitted.
 
-Global Instance into_val_typed_Config `{ffi_syntax} : IntoValTyped Config.t raft.Config :=
+Global Instance into_val_typed_Config : IntoValTyped Config.t raft.Config :=
 {|
   default_val := Config.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -746,66 +755,66 @@ Global Instance into_val_typed_Config `{ffi_syntax} : IntoValTyped Config.t raft
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Config_ID `{ffi_syntax} : IntoValStructField "ID" raft.Config Config.ID'.
+Global Instance into_val_struct_field_Config_ID : IntoValStructField "ID" raft.Config Config.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_ElectionTick `{ffi_syntax} : IntoValStructField "ElectionTick" raft.Config Config.ElectionTick'.
+Global Instance into_val_struct_field_Config_ElectionTick : IntoValStructField "ElectionTick" raft.Config Config.ElectionTick'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_HeartbeatTick `{ffi_syntax} : IntoValStructField "HeartbeatTick" raft.Config Config.HeartbeatTick'.
+Global Instance into_val_struct_field_Config_HeartbeatTick : IntoValStructField "HeartbeatTick" raft.Config Config.HeartbeatTick'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_Storage `{ffi_syntax} : IntoValStructField "Storage" raft.Config Config.Storage'.
+Global Instance into_val_struct_field_Config_Storage : IntoValStructField "Storage" raft.Config Config.Storage'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_Applied `{ffi_syntax} : IntoValStructField "Applied" raft.Config Config.Applied'.
+Global Instance into_val_struct_field_Config_Applied : IntoValStructField "Applied" raft.Config Config.Applied'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_AsyncStorageWrites `{ffi_syntax} : IntoValStructField "AsyncStorageWrites" raft.Config Config.AsyncStorageWrites'.
+Global Instance into_val_struct_field_Config_AsyncStorageWrites : IntoValStructField "AsyncStorageWrites" raft.Config Config.AsyncStorageWrites'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_MaxSizePerMsg `{ffi_syntax} : IntoValStructField "MaxSizePerMsg" raft.Config Config.MaxSizePerMsg'.
+Global Instance into_val_struct_field_Config_MaxSizePerMsg : IntoValStructField "MaxSizePerMsg" raft.Config Config.MaxSizePerMsg'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_MaxCommittedSizePerReady `{ffi_syntax} : IntoValStructField "MaxCommittedSizePerReady" raft.Config Config.MaxCommittedSizePerReady'.
+Global Instance into_val_struct_field_Config_MaxCommittedSizePerReady : IntoValStructField "MaxCommittedSizePerReady" raft.Config Config.MaxCommittedSizePerReady'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_MaxUncommittedEntriesSize `{ffi_syntax} : IntoValStructField "MaxUncommittedEntriesSize" raft.Config Config.MaxUncommittedEntriesSize'.
+Global Instance into_val_struct_field_Config_MaxUncommittedEntriesSize : IntoValStructField "MaxUncommittedEntriesSize" raft.Config Config.MaxUncommittedEntriesSize'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_MaxInflightMsgs `{ffi_syntax} : IntoValStructField "MaxInflightMsgs" raft.Config Config.MaxInflightMsgs'.
+Global Instance into_val_struct_field_Config_MaxInflightMsgs : IntoValStructField "MaxInflightMsgs" raft.Config Config.MaxInflightMsgs'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_MaxInflightBytes `{ffi_syntax} : IntoValStructField "MaxInflightBytes" raft.Config Config.MaxInflightBytes'.
+Global Instance into_val_struct_field_Config_MaxInflightBytes : IntoValStructField "MaxInflightBytes" raft.Config Config.MaxInflightBytes'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_CheckQuorum `{ffi_syntax} : IntoValStructField "CheckQuorum" raft.Config Config.CheckQuorum'.
+Global Instance into_val_struct_field_Config_CheckQuorum : IntoValStructField "CheckQuorum" raft.Config Config.CheckQuorum'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_PreVote `{ffi_syntax} : IntoValStructField "PreVote" raft.Config Config.PreVote'.
+Global Instance into_val_struct_field_Config_PreVote : IntoValStructField "PreVote" raft.Config Config.PreVote'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_ReadOnlyOption `{ffi_syntax} : IntoValStructField "ReadOnlyOption" raft.Config Config.ReadOnlyOption'.
+Global Instance into_val_struct_field_Config_ReadOnlyOption : IntoValStructField "ReadOnlyOption" raft.Config Config.ReadOnlyOption'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_Logger `{ffi_syntax} : IntoValStructField "Logger" raft.Config Config.Logger'.
+Global Instance into_val_struct_field_Config_Logger : IntoValStructField "Logger" raft.Config Config.Logger'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_DisableProposalForwarding `{ffi_syntax} : IntoValStructField "DisableProposalForwarding" raft.Config Config.DisableProposalForwarding'.
+Global Instance into_val_struct_field_Config_DisableProposalForwarding : IntoValStructField "DisableProposalForwarding" raft.Config Config.DisableProposalForwarding'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_DisableConfChangeValidation `{ffi_syntax} : IntoValStructField "DisableConfChangeValidation" raft.Config Config.DisableConfChangeValidation'.
+Global Instance into_val_struct_field_Config_DisableConfChangeValidation : IntoValStructField "DisableConfChangeValidation" raft.Config Config.DisableConfChangeValidation'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_StepDownOnRemoval `{ffi_syntax} : IntoValStructField "StepDownOnRemoval" raft.Config Config.StepDownOnRemoval'.
+Global Instance into_val_struct_field_Config_StepDownOnRemoval : IntoValStructField "StepDownOnRemoval" raft.Config Config.StepDownOnRemoval'.
 Admitted.
 
-Global Instance into_val_struct_field_Config_TraceLogger `{ffi_syntax} : IntoValStructField "TraceLogger" raft.Config Config.TraceLogger'.
+Global Instance into_val_struct_field_Config_TraceLogger : IntoValStructField "TraceLogger" raft.Config Config.TraceLogger'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Config `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' ElectionTick' HeartbeatTick' Storage' Applied' AsyncStorageWrites' MaxSizePerMsg' MaxCommittedSizePerReady' MaxUncommittedEntriesSize' MaxInflightMsgs' MaxInflightBytes' CheckQuorum' PreVote' ReadOnlyOption' Logger' DisableProposalForwarding' DisableConfChangeValidation' StepDownOnRemoval' TraceLogger':
+Global Instance wp_struct_make_Config ID' ElectionTick' HeartbeatTick' Storage' Applied' AsyncStorageWrites' MaxSizePerMsg' MaxCommittedSizePerReady' MaxUncommittedEntriesSize' MaxInflightMsgs' MaxInflightBytes' CheckQuorum' PreVote' ReadOnlyOption' Logger' DisableProposalForwarding' DisableConfChangeValidation' StepDownOnRemoval' TraceLogger':
   PureWp True
     (struct.make #raft.Config (alist_val [
       "ID" ::= #ID';
@@ -871,6 +880,7 @@ Context `{ffi_syntax}.
 Definition t := func.t.
 End def.
 End stepFunc.
+
 Module raft.
 Section def.
 Context `{ffi_syntax}.
@@ -914,12 +924,12 @@ End raft.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_raft `{ffi_syntax}: Settable _ :=
+Global Instance settable_raft : Settable _ :=
   settable! raft.mk < raft.id'; raft.Term'; raft.Vote'; raft.readStates'; raft.raftLog'; raft.maxMsgSize'; raft.maxUncommittedSize'; raft.trk'; raft.state'; raft.isLearner'; raft.msgs'; raft.msgsAfterAppend'; raft.lead'; raft.leadTransferee'; raft.pendingConfIndex'; raft.disableConfChangeValidation'; raft.uncommittedSize'; raft.readOnly'; raft.electionElapsed'; raft.heartbeatElapsed'; raft.checkQuorum'; raft.preVote'; raft.heartbeatTimeout'; raft.electionTimeout'; raft.randomizedElectionTimeout'; raft.disableProposalForwarding'; raft.stepDownOnRemoval'; raft.tick'; raft.step'; raft.logger'; raft.pendingReadIndexMessages'; raft.traceLogger' >.
-Global Instance into_val_raft `{ffi_syntax} : IntoVal raft.t.
+Global Instance into_val_raft : IntoVal raft.t.
 Admitted.
 
-Global Instance into_val_typed_raft `{ffi_syntax} : IntoValTyped raft.t raft.raft :=
+Global Instance into_val_typed_raft : IntoValTyped raft.t raft.raft :=
 {|
   default_val := raft.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -927,105 +937,105 @@ Global Instance into_val_typed_raft `{ffi_syntax} : IntoValTyped raft.t raft.raf
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_raft_id `{ffi_syntax} : IntoValStructField "id" raft.raft raft.id'.
+Global Instance into_val_struct_field_raft_id : IntoValStructField "id" raft.raft raft.id'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_Term `{ffi_syntax} : IntoValStructField "Term" raft.raft raft.Term'.
+Global Instance into_val_struct_field_raft_Term : IntoValStructField "Term" raft.raft raft.Term'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_Vote `{ffi_syntax} : IntoValStructField "Vote" raft.raft raft.Vote'.
+Global Instance into_val_struct_field_raft_Vote : IntoValStructField "Vote" raft.raft raft.Vote'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_readStates `{ffi_syntax} : IntoValStructField "readStates" raft.raft raft.readStates'.
+Global Instance into_val_struct_field_raft_readStates : IntoValStructField "readStates" raft.raft raft.readStates'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_raftLog `{ffi_syntax} : IntoValStructField "raftLog" raft.raft raft.raftLog'.
+Global Instance into_val_struct_field_raft_raftLog : IntoValStructField "raftLog" raft.raft raft.raftLog'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_maxMsgSize `{ffi_syntax} : IntoValStructField "maxMsgSize" raft.raft raft.maxMsgSize'.
+Global Instance into_val_struct_field_raft_maxMsgSize : IntoValStructField "maxMsgSize" raft.raft raft.maxMsgSize'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_maxUncommittedSize `{ffi_syntax} : IntoValStructField "maxUncommittedSize" raft.raft raft.maxUncommittedSize'.
+Global Instance into_val_struct_field_raft_maxUncommittedSize : IntoValStructField "maxUncommittedSize" raft.raft raft.maxUncommittedSize'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_trk `{ffi_syntax} : IntoValStructField "trk" raft.raft raft.trk'.
+Global Instance into_val_struct_field_raft_trk : IntoValStructField "trk" raft.raft raft.trk'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_state `{ffi_syntax} : IntoValStructField "state" raft.raft raft.state'.
+Global Instance into_val_struct_field_raft_state : IntoValStructField "state" raft.raft raft.state'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_isLearner `{ffi_syntax} : IntoValStructField "isLearner" raft.raft raft.isLearner'.
+Global Instance into_val_struct_field_raft_isLearner : IntoValStructField "isLearner" raft.raft raft.isLearner'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_msgs `{ffi_syntax} : IntoValStructField "msgs" raft.raft raft.msgs'.
+Global Instance into_val_struct_field_raft_msgs : IntoValStructField "msgs" raft.raft raft.msgs'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_msgsAfterAppend `{ffi_syntax} : IntoValStructField "msgsAfterAppend" raft.raft raft.msgsAfterAppend'.
+Global Instance into_val_struct_field_raft_msgsAfterAppend : IntoValStructField "msgsAfterAppend" raft.raft raft.msgsAfterAppend'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_lead `{ffi_syntax} : IntoValStructField "lead" raft.raft raft.lead'.
+Global Instance into_val_struct_field_raft_lead : IntoValStructField "lead" raft.raft raft.lead'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_leadTransferee `{ffi_syntax} : IntoValStructField "leadTransferee" raft.raft raft.leadTransferee'.
+Global Instance into_val_struct_field_raft_leadTransferee : IntoValStructField "leadTransferee" raft.raft raft.leadTransferee'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_pendingConfIndex `{ffi_syntax} : IntoValStructField "pendingConfIndex" raft.raft raft.pendingConfIndex'.
+Global Instance into_val_struct_field_raft_pendingConfIndex : IntoValStructField "pendingConfIndex" raft.raft raft.pendingConfIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_disableConfChangeValidation `{ffi_syntax} : IntoValStructField "disableConfChangeValidation" raft.raft raft.disableConfChangeValidation'.
+Global Instance into_val_struct_field_raft_disableConfChangeValidation : IntoValStructField "disableConfChangeValidation" raft.raft raft.disableConfChangeValidation'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_uncommittedSize `{ffi_syntax} : IntoValStructField "uncommittedSize" raft.raft raft.uncommittedSize'.
+Global Instance into_val_struct_field_raft_uncommittedSize : IntoValStructField "uncommittedSize" raft.raft raft.uncommittedSize'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_readOnly `{ffi_syntax} : IntoValStructField "readOnly" raft.raft raft.readOnly'.
+Global Instance into_val_struct_field_raft_readOnly : IntoValStructField "readOnly" raft.raft raft.readOnly'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_electionElapsed `{ffi_syntax} : IntoValStructField "electionElapsed" raft.raft raft.electionElapsed'.
+Global Instance into_val_struct_field_raft_electionElapsed : IntoValStructField "electionElapsed" raft.raft raft.electionElapsed'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_heartbeatElapsed `{ffi_syntax} : IntoValStructField "heartbeatElapsed" raft.raft raft.heartbeatElapsed'.
+Global Instance into_val_struct_field_raft_heartbeatElapsed : IntoValStructField "heartbeatElapsed" raft.raft raft.heartbeatElapsed'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_checkQuorum `{ffi_syntax} : IntoValStructField "checkQuorum" raft.raft raft.checkQuorum'.
+Global Instance into_val_struct_field_raft_checkQuorum : IntoValStructField "checkQuorum" raft.raft raft.checkQuorum'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_preVote `{ffi_syntax} : IntoValStructField "preVote" raft.raft raft.preVote'.
+Global Instance into_val_struct_field_raft_preVote : IntoValStructField "preVote" raft.raft raft.preVote'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_heartbeatTimeout `{ffi_syntax} : IntoValStructField "heartbeatTimeout" raft.raft raft.heartbeatTimeout'.
+Global Instance into_val_struct_field_raft_heartbeatTimeout : IntoValStructField "heartbeatTimeout" raft.raft raft.heartbeatTimeout'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_electionTimeout `{ffi_syntax} : IntoValStructField "electionTimeout" raft.raft raft.electionTimeout'.
+Global Instance into_val_struct_field_raft_electionTimeout : IntoValStructField "electionTimeout" raft.raft raft.electionTimeout'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_randomizedElectionTimeout `{ffi_syntax} : IntoValStructField "randomizedElectionTimeout" raft.raft raft.randomizedElectionTimeout'.
+Global Instance into_val_struct_field_raft_randomizedElectionTimeout : IntoValStructField "randomizedElectionTimeout" raft.raft raft.randomizedElectionTimeout'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_disableProposalForwarding `{ffi_syntax} : IntoValStructField "disableProposalForwarding" raft.raft raft.disableProposalForwarding'.
+Global Instance into_val_struct_field_raft_disableProposalForwarding : IntoValStructField "disableProposalForwarding" raft.raft raft.disableProposalForwarding'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_stepDownOnRemoval `{ffi_syntax} : IntoValStructField "stepDownOnRemoval" raft.raft raft.stepDownOnRemoval'.
+Global Instance into_val_struct_field_raft_stepDownOnRemoval : IntoValStructField "stepDownOnRemoval" raft.raft raft.stepDownOnRemoval'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_tick `{ffi_syntax} : IntoValStructField "tick" raft.raft raft.tick'.
+Global Instance into_val_struct_field_raft_tick : IntoValStructField "tick" raft.raft raft.tick'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_step `{ffi_syntax} : IntoValStructField "step" raft.raft raft.step'.
+Global Instance into_val_struct_field_raft_step : IntoValStructField "step" raft.raft raft.step'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_logger `{ffi_syntax} : IntoValStructField "logger" raft.raft raft.logger'.
+Global Instance into_val_struct_field_raft_logger : IntoValStructField "logger" raft.raft raft.logger'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_pendingReadIndexMessages `{ffi_syntax} : IntoValStructField "pendingReadIndexMessages" raft.raft raft.pendingReadIndexMessages'.
+Global Instance into_val_struct_field_raft_pendingReadIndexMessages : IntoValStructField "pendingReadIndexMessages" raft.raft raft.pendingReadIndexMessages'.
 Admitted.
 
-Global Instance into_val_struct_field_raft_traceLogger `{ffi_syntax} : IntoValStructField "traceLogger" raft.raft raft.traceLogger'.
+Global Instance into_val_struct_field_raft_traceLogger : IntoValStructField "traceLogger" raft.raft raft.traceLogger'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_raft `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger':
+Global Instance wp_struct_make_raft id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger':
   PureWp True
     (struct.make #raft.raft (alist_val [
       "id" ::= #id';
@@ -1103,6 +1113,7 @@ Global Instance raft_struct_fields_split dq l (v : raft.t) :
 Admitted.
 
 End instances.
+
 Module RawNode.
 Section def.
 Context `{ffi_syntax}.
@@ -1119,12 +1130,12 @@ End RawNode.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_RawNode `{ffi_syntax}: Settable _ :=
+Global Instance settable_RawNode : Settable _ :=
   settable! RawNode.mk < RawNode.raft'; RawNode.asyncStorageWrites'; RawNode.prevSoftSt'; RawNode.prevHardSt'; RawNode.stepsOnAdvance' >.
-Global Instance into_val_RawNode `{ffi_syntax} : IntoVal RawNode.t.
+Global Instance into_val_RawNode : IntoVal RawNode.t.
 Admitted.
 
-Global Instance into_val_typed_RawNode `{ffi_syntax} : IntoValTyped RawNode.t raft.RawNode :=
+Global Instance into_val_typed_RawNode : IntoValTyped RawNode.t raft.RawNode :=
 {|
   default_val := RawNode.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1132,24 +1143,24 @@ Global Instance into_val_typed_RawNode `{ffi_syntax} : IntoValTyped RawNode.t ra
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RawNode_raft `{ffi_syntax} : IntoValStructField "raft" raft.RawNode RawNode.raft'.
+Global Instance into_val_struct_field_RawNode_raft : IntoValStructField "raft" raft.RawNode RawNode.raft'.
 Admitted.
 
-Global Instance into_val_struct_field_RawNode_asyncStorageWrites `{ffi_syntax} : IntoValStructField "asyncStorageWrites" raft.RawNode RawNode.asyncStorageWrites'.
+Global Instance into_val_struct_field_RawNode_asyncStorageWrites : IntoValStructField "asyncStorageWrites" raft.RawNode RawNode.asyncStorageWrites'.
 Admitted.
 
-Global Instance into_val_struct_field_RawNode_prevSoftSt `{ffi_syntax} : IntoValStructField "prevSoftSt" raft.RawNode RawNode.prevSoftSt'.
+Global Instance into_val_struct_field_RawNode_prevSoftSt : IntoValStructField "prevSoftSt" raft.RawNode RawNode.prevSoftSt'.
 Admitted.
 
-Global Instance into_val_struct_field_RawNode_prevHardSt `{ffi_syntax} : IntoValStructField "prevHardSt" raft.RawNode RawNode.prevHardSt'.
+Global Instance into_val_struct_field_RawNode_prevHardSt : IntoValStructField "prevHardSt" raft.RawNode RawNode.prevHardSt'.
 Admitted.
 
-Global Instance into_val_struct_field_RawNode_stepsOnAdvance `{ffi_syntax} : IntoValStructField "stepsOnAdvance" raft.RawNode RawNode.stepsOnAdvance'.
+Global Instance into_val_struct_field_RawNode_stepsOnAdvance : IntoValStructField "stepsOnAdvance" raft.RawNode RawNode.stepsOnAdvance'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RawNode `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} raft' asyncStorageWrites' prevSoftSt' prevHardSt' stepsOnAdvance':
+Global Instance wp_struct_make_RawNode raft' asyncStorageWrites' prevSoftSt' prevHardSt' stepsOnAdvance':
   PureWp True
     (struct.make #raft.RawNode (alist_val [
       "raft" ::= #raft';
@@ -1180,6 +1191,7 @@ Context `{ffi_syntax}.
 Definition t := w8.
 End def.
 End ProgressType.
+
 Module ReadState.
 Section def.
 Context `{ffi_syntax}.
@@ -1193,12 +1205,12 @@ End ReadState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ReadState `{ffi_syntax}: Settable _ :=
+Global Instance settable_ReadState : Settable _ :=
   settable! ReadState.mk < ReadState.Index'; ReadState.RequestCtx' >.
-Global Instance into_val_ReadState `{ffi_syntax} : IntoVal ReadState.t.
+Global Instance into_val_ReadState : IntoVal ReadState.t.
 Admitted.
 
-Global Instance into_val_typed_ReadState `{ffi_syntax} : IntoValTyped ReadState.t raft.ReadState :=
+Global Instance into_val_typed_ReadState : IntoValTyped ReadState.t raft.ReadState :=
 {|
   default_val := ReadState.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1206,15 +1218,15 @@ Global Instance into_val_typed_ReadState `{ffi_syntax} : IntoValTyped ReadState.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ReadState_Index `{ffi_syntax} : IntoValStructField "Index" raft.ReadState ReadState.Index'.
+Global Instance into_val_struct_field_ReadState_Index : IntoValStructField "Index" raft.ReadState ReadState.Index'.
 Admitted.
 
-Global Instance into_val_struct_field_ReadState_RequestCtx `{ffi_syntax} : IntoValStructField "RequestCtx" raft.ReadState ReadState.RequestCtx'.
+Global Instance into_val_struct_field_ReadState_RequestCtx : IntoValStructField "RequestCtx" raft.ReadState ReadState.RequestCtx'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ReadState `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Index' RequestCtx':
+Global Instance wp_struct_make_ReadState Index' RequestCtx':
   PureWp True
     (struct.make #raft.ReadState (alist_val [
       "Index" ::= #Index';
@@ -1232,6 +1244,7 @@ Global Instance ReadState_struct_fields_split dq l (v : ReadState.t) :
 Admitted.
 
 End instances.
+
 Module readIndexStatus.
 Section def.
 Context `{ffi_syntax}.
@@ -1246,12 +1259,12 @@ End readIndexStatus.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_readIndexStatus `{ffi_syntax}: Settable _ :=
+Global Instance settable_readIndexStatus : Settable _ :=
   settable! readIndexStatus.mk < readIndexStatus.req'; readIndexStatus.index'; readIndexStatus.acks' >.
-Global Instance into_val_readIndexStatus `{ffi_syntax} : IntoVal readIndexStatus.t.
+Global Instance into_val_readIndexStatus : IntoVal readIndexStatus.t.
 Admitted.
 
-Global Instance into_val_typed_readIndexStatus `{ffi_syntax} : IntoValTyped readIndexStatus.t raft.readIndexStatus :=
+Global Instance into_val_typed_readIndexStatus : IntoValTyped readIndexStatus.t raft.readIndexStatus :=
 {|
   default_val := readIndexStatus.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1259,18 +1272,18 @@ Global Instance into_val_typed_readIndexStatus `{ffi_syntax} : IntoValTyped read
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_readIndexStatus_req `{ffi_syntax} : IntoValStructField "req" raft.readIndexStatus readIndexStatus.req'.
+Global Instance into_val_struct_field_readIndexStatus_req : IntoValStructField "req" raft.readIndexStatus readIndexStatus.req'.
 Admitted.
 
-Global Instance into_val_struct_field_readIndexStatus_index `{ffi_syntax} : IntoValStructField "index" raft.readIndexStatus readIndexStatus.index'.
+Global Instance into_val_struct_field_readIndexStatus_index : IntoValStructField "index" raft.readIndexStatus readIndexStatus.index'.
 Admitted.
 
-Global Instance into_val_struct_field_readIndexStatus_acks `{ffi_syntax} : IntoValStructField "acks" raft.readIndexStatus readIndexStatus.acks'.
+Global Instance into_val_struct_field_readIndexStatus_acks : IntoValStructField "acks" raft.readIndexStatus readIndexStatus.acks'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_readIndexStatus `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} req' index' acks':
+Global Instance wp_struct_make_readIndexStatus req' index' acks':
   PureWp True
     (struct.make #raft.readIndexStatus (alist_val [
       "req" ::= #req';
@@ -1290,6 +1303,7 @@ Global Instance readIndexStatus_struct_fields_split dq l (v : readIndexStatus.t)
 Admitted.
 
 End instances.
+
 Module readOnly.
 Section def.
 Context `{ffi_syntax}.
@@ -1304,12 +1318,12 @@ End readOnly.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_readOnly `{ffi_syntax}: Settable _ :=
+Global Instance settable_readOnly : Settable _ :=
   settable! readOnly.mk < readOnly.option'; readOnly.pendingReadIndex'; readOnly.readIndexQueue' >.
-Global Instance into_val_readOnly `{ffi_syntax} : IntoVal readOnly.t.
+Global Instance into_val_readOnly : IntoVal readOnly.t.
 Admitted.
 
-Global Instance into_val_typed_readOnly `{ffi_syntax} : IntoValTyped readOnly.t raft.readOnly :=
+Global Instance into_val_typed_readOnly : IntoValTyped readOnly.t raft.readOnly :=
 {|
   default_val := readOnly.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1317,18 +1331,18 @@ Global Instance into_val_typed_readOnly `{ffi_syntax} : IntoValTyped readOnly.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_readOnly_option `{ffi_syntax} : IntoValStructField "option" raft.readOnly readOnly.option'.
+Global Instance into_val_struct_field_readOnly_option : IntoValStructField "option" raft.readOnly readOnly.option'.
 Admitted.
 
-Global Instance into_val_struct_field_readOnly_pendingReadIndex `{ffi_syntax} : IntoValStructField "pendingReadIndex" raft.readOnly readOnly.pendingReadIndex'.
+Global Instance into_val_struct_field_readOnly_pendingReadIndex : IntoValStructField "pendingReadIndex" raft.readOnly readOnly.pendingReadIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_readOnly_readIndexQueue `{ffi_syntax} : IntoValStructField "readIndexQueue" raft.readOnly readOnly.readIndexQueue'.
+Global Instance into_val_struct_field_readOnly_readIndexQueue : IntoValStructField "readIndexQueue" raft.readOnly readOnly.readIndexQueue'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_readOnly `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} option' pendingReadIndex' readIndexQueue':
+Global Instance wp_struct_make_readOnly option' pendingReadIndex' readIndexQueue':
   PureWp True
     (struct.make #raft.readOnly (alist_val [
       "option" ::= #option';
@@ -1348,6 +1362,7 @@ Global Instance readOnly_struct_fields_split dq l (v : readOnly.t) :
 Admitted.
 
 End instances.
+
 Module TracingEvent.
 Section def.
 Context `{ffi_syntax}.
@@ -1358,10 +1373,10 @@ End TracingEvent.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_TracingEvent `{ffi_syntax} : IntoVal TracingEvent.t.
+Global Instance into_val_TracingEvent : IntoVal TracingEvent.t.
 Admitted.
 
-Global Instance into_val_typed_TracingEvent `{ffi_syntax} : IntoValTyped TracingEvent.t raft.TracingEvent :=
+Global Instance into_val_typed_TracingEvent : IntoValTyped TracingEvent.t raft.TracingEvent :=
 {|
   default_val := TracingEvent.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -1371,15 +1386,15 @@ Global Instance into_val_typed_TracingEvent `{ffi_syntax} : IntoValTyped Tracing
 |}.
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_TracingEvent `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+Global Instance wp_struct_make_TracingEvent:
   PureWp True
     (struct.make #raft.TracingEvent (alist_val [
     ]))%struct
     #(TracingEvent.mk).
 Admitted.
 
-
 End instances.
+
 Module BasicStatus.
 Section def.
 Context `{ffi_syntax}.
@@ -1396,12 +1411,12 @@ End BasicStatus.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_BasicStatus `{ffi_syntax}: Settable _ :=
+Global Instance settable_BasicStatus : Settable _ :=
   settable! BasicStatus.mk < BasicStatus.ID'; BasicStatus.HardState'; BasicStatus.SoftState'; BasicStatus.Applied'; BasicStatus.LeadTransferee' >.
-Global Instance into_val_BasicStatus `{ffi_syntax} : IntoVal BasicStatus.t.
+Global Instance into_val_BasicStatus : IntoVal BasicStatus.t.
 Admitted.
 
-Global Instance into_val_typed_BasicStatus `{ffi_syntax} : IntoValTyped BasicStatus.t raft.BasicStatus :=
+Global Instance into_val_typed_BasicStatus : IntoValTyped BasicStatus.t raft.BasicStatus :=
 {|
   default_val := BasicStatus.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1409,24 +1424,24 @@ Global Instance into_val_typed_BasicStatus `{ffi_syntax} : IntoValTyped BasicSta
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_BasicStatus_ID `{ffi_syntax} : IntoValStructField "ID" raft.BasicStatus BasicStatus.ID'.
+Global Instance into_val_struct_field_BasicStatus_ID : IntoValStructField "ID" raft.BasicStatus BasicStatus.ID'.
 Admitted.
 
-Global Instance into_val_struct_field_BasicStatus_HardState `{ffi_syntax} : IntoValStructField "HardState" raft.BasicStatus BasicStatus.HardState'.
+Global Instance into_val_struct_field_BasicStatus_HardState : IntoValStructField "HardState" raft.BasicStatus BasicStatus.HardState'.
 Admitted.
 
-Global Instance into_val_struct_field_BasicStatus_SoftState `{ffi_syntax} : IntoValStructField "SoftState" raft.BasicStatus BasicStatus.SoftState'.
+Global Instance into_val_struct_field_BasicStatus_SoftState : IntoValStructField "SoftState" raft.BasicStatus BasicStatus.SoftState'.
 Admitted.
 
-Global Instance into_val_struct_field_BasicStatus_Applied `{ffi_syntax} : IntoValStructField "Applied" raft.BasicStatus BasicStatus.Applied'.
+Global Instance into_val_struct_field_BasicStatus_Applied : IntoValStructField "Applied" raft.BasicStatus BasicStatus.Applied'.
 Admitted.
 
-Global Instance into_val_struct_field_BasicStatus_LeadTransferee `{ffi_syntax} : IntoValStructField "LeadTransferee" raft.BasicStatus BasicStatus.LeadTransferee'.
+Global Instance into_val_struct_field_BasicStatus_LeadTransferee : IntoValStructField "LeadTransferee" raft.BasicStatus BasicStatus.LeadTransferee'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_BasicStatus `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' HardState' SoftState' Applied' LeadTransferee':
+Global Instance wp_struct_make_BasicStatus ID' HardState' SoftState' Applied' LeadTransferee':
   PureWp True
     (struct.make #raft.BasicStatus (alist_val [
       "ID" ::= #ID';
@@ -1450,6 +1465,7 @@ Global Instance BasicStatus_struct_fields_split dq l (v : BasicStatus.t) :
 Admitted.
 
 End instances.
+
 Module Status.
 Section def.
 Context `{ffi_syntax}.
@@ -1464,12 +1480,12 @@ End Status.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Status `{ffi_syntax}: Settable _ :=
+Global Instance settable_Status : Settable _ :=
   settable! Status.mk < Status.BasicStatus'; Status.Config'; Status.Progress' >.
-Global Instance into_val_Status `{ffi_syntax} : IntoVal Status.t.
+Global Instance into_val_Status : IntoVal Status.t.
 Admitted.
 
-Global Instance into_val_typed_Status `{ffi_syntax} : IntoValTyped Status.t raft.Status :=
+Global Instance into_val_typed_Status : IntoValTyped Status.t raft.Status :=
 {|
   default_val := Status.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1477,18 +1493,18 @@ Global Instance into_val_typed_Status `{ffi_syntax} : IntoValTyped Status.t raft
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Status_BasicStatus `{ffi_syntax} : IntoValStructField "BasicStatus" raft.Status Status.BasicStatus'.
+Global Instance into_val_struct_field_Status_BasicStatus : IntoValStructField "BasicStatus" raft.Status Status.BasicStatus'.
 Admitted.
 
-Global Instance into_val_struct_field_Status_Config `{ffi_syntax} : IntoValStructField "Config" raft.Status Status.Config'.
+Global Instance into_val_struct_field_Status_Config : IntoValStructField "Config" raft.Status Status.Config'.
 Admitted.
 
-Global Instance into_val_struct_field_Status_Progress `{ffi_syntax} : IntoValStructField "Progress" raft.Status Status.Progress'.
+Global Instance into_val_struct_field_Status_Progress : IntoValStructField "Progress" raft.Status Status.Progress'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Status `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} BasicStatus' Config' Progress':
+Global Instance wp_struct_make_Status BasicStatus' Config' Progress':
   PureWp True
     (struct.make #raft.Status (alist_val [
       "BasicStatus" ::= #BasicStatus';
@@ -1508,6 +1524,7 @@ Global Instance Status_struct_fields_split dq l (v : Status.t) :
 Admitted.
 
 End instances.
+
 Module inMemStorageCallStats.
 Section def.
 Context `{ffi_syntax}.
@@ -1525,12 +1542,12 @@ End inMemStorageCallStats.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_inMemStorageCallStats `{ffi_syntax}: Settable _ :=
+Global Instance settable_inMemStorageCallStats : Settable _ :=
   settable! inMemStorageCallStats.mk < inMemStorageCallStats.initialState'; inMemStorageCallStats.firstIndex'; inMemStorageCallStats.lastIndex'; inMemStorageCallStats.entries'; inMemStorageCallStats.term'; inMemStorageCallStats.snapshot' >.
-Global Instance into_val_inMemStorageCallStats `{ffi_syntax} : IntoVal inMemStorageCallStats.t.
+Global Instance into_val_inMemStorageCallStats : IntoVal inMemStorageCallStats.t.
 Admitted.
 
-Global Instance into_val_typed_inMemStorageCallStats `{ffi_syntax} : IntoValTyped inMemStorageCallStats.t raft.inMemStorageCallStats :=
+Global Instance into_val_typed_inMemStorageCallStats : IntoValTyped inMemStorageCallStats.t raft.inMemStorageCallStats :=
 {|
   default_val := inMemStorageCallStats.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1538,27 +1555,27 @@ Global Instance into_val_typed_inMemStorageCallStats `{ffi_syntax} : IntoValType
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_inMemStorageCallStats_initialState `{ffi_syntax} : IntoValStructField "initialState" raft.inMemStorageCallStats inMemStorageCallStats.initialState'.
+Global Instance into_val_struct_field_inMemStorageCallStats_initialState : IntoValStructField "initialState" raft.inMemStorageCallStats inMemStorageCallStats.initialState'.
 Admitted.
 
-Global Instance into_val_struct_field_inMemStorageCallStats_firstIndex `{ffi_syntax} : IntoValStructField "firstIndex" raft.inMemStorageCallStats inMemStorageCallStats.firstIndex'.
+Global Instance into_val_struct_field_inMemStorageCallStats_firstIndex : IntoValStructField "firstIndex" raft.inMemStorageCallStats inMemStorageCallStats.firstIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_inMemStorageCallStats_lastIndex `{ffi_syntax} : IntoValStructField "lastIndex" raft.inMemStorageCallStats inMemStorageCallStats.lastIndex'.
+Global Instance into_val_struct_field_inMemStorageCallStats_lastIndex : IntoValStructField "lastIndex" raft.inMemStorageCallStats inMemStorageCallStats.lastIndex'.
 Admitted.
 
-Global Instance into_val_struct_field_inMemStorageCallStats_entries `{ffi_syntax} : IntoValStructField "entries" raft.inMemStorageCallStats inMemStorageCallStats.entries'.
+Global Instance into_val_struct_field_inMemStorageCallStats_entries : IntoValStructField "entries" raft.inMemStorageCallStats inMemStorageCallStats.entries'.
 Admitted.
 
-Global Instance into_val_struct_field_inMemStorageCallStats_term `{ffi_syntax} : IntoValStructField "term" raft.inMemStorageCallStats inMemStorageCallStats.term'.
+Global Instance into_val_struct_field_inMemStorageCallStats_term : IntoValStructField "term" raft.inMemStorageCallStats inMemStorageCallStats.term'.
 Admitted.
 
-Global Instance into_val_struct_field_inMemStorageCallStats_snapshot `{ffi_syntax} : IntoValStructField "snapshot" raft.inMemStorageCallStats inMemStorageCallStats.snapshot'.
+Global Instance into_val_struct_field_inMemStorageCallStats_snapshot : IntoValStructField "snapshot" raft.inMemStorageCallStats inMemStorageCallStats.snapshot'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_inMemStorageCallStats `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} initialState' firstIndex' lastIndex' entries' term' snapshot':
+Global Instance wp_struct_make_inMemStorageCallStats initialState' firstIndex' lastIndex' entries' term' snapshot':
   PureWp True
     (struct.make #raft.inMemStorageCallStats (alist_val [
       "initialState" ::= #initialState';
@@ -1584,6 +1601,7 @@ Global Instance inMemStorageCallStats_struct_fields_split dq l (v : inMemStorage
 Admitted.
 
 End instances.
+
 Module MemoryStorage.
 Section def.
 Context `{ffi_syntax}.
@@ -1600,12 +1618,12 @@ End MemoryStorage.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_MemoryStorage `{ffi_syntax}: Settable _ :=
+Global Instance settable_MemoryStorage : Settable _ :=
   settable! MemoryStorage.mk < MemoryStorage.Mutex'; MemoryStorage.hardState'; MemoryStorage.snapshot'; MemoryStorage.ents'; MemoryStorage.callStats' >.
-Global Instance into_val_MemoryStorage `{ffi_syntax} : IntoVal MemoryStorage.t.
+Global Instance into_val_MemoryStorage : IntoVal MemoryStorage.t.
 Admitted.
 
-Global Instance into_val_typed_MemoryStorage `{ffi_syntax} : IntoValTyped MemoryStorage.t raft.MemoryStorage :=
+Global Instance into_val_typed_MemoryStorage : IntoValTyped MemoryStorage.t raft.MemoryStorage :=
 {|
   default_val := MemoryStorage.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1613,24 +1631,24 @@ Global Instance into_val_typed_MemoryStorage `{ffi_syntax} : IntoValTyped Memory
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_MemoryStorage_Mutex `{ffi_syntax} : IntoValStructField "Mutex" raft.MemoryStorage MemoryStorage.Mutex'.
+Global Instance into_val_struct_field_MemoryStorage_Mutex : IntoValStructField "Mutex" raft.MemoryStorage MemoryStorage.Mutex'.
 Admitted.
 
-Global Instance into_val_struct_field_MemoryStorage_hardState `{ffi_syntax} : IntoValStructField "hardState" raft.MemoryStorage MemoryStorage.hardState'.
+Global Instance into_val_struct_field_MemoryStorage_hardState : IntoValStructField "hardState" raft.MemoryStorage MemoryStorage.hardState'.
 Admitted.
 
-Global Instance into_val_struct_field_MemoryStorage_snapshot `{ffi_syntax} : IntoValStructField "snapshot" raft.MemoryStorage MemoryStorage.snapshot'.
+Global Instance into_val_struct_field_MemoryStorage_snapshot : IntoValStructField "snapshot" raft.MemoryStorage MemoryStorage.snapshot'.
 Admitted.
 
-Global Instance into_val_struct_field_MemoryStorage_ents `{ffi_syntax} : IntoValStructField "ents" raft.MemoryStorage MemoryStorage.ents'.
+Global Instance into_val_struct_field_MemoryStorage_ents : IntoValStructField "ents" raft.MemoryStorage MemoryStorage.ents'.
 Admitted.
 
-Global Instance into_val_struct_field_MemoryStorage_callStats `{ffi_syntax} : IntoValStructField "callStats" raft.MemoryStorage MemoryStorage.callStats'.
+Global Instance into_val_struct_field_MemoryStorage_callStats : IntoValStructField "callStats" raft.MemoryStorage MemoryStorage.callStats'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_MemoryStorage `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Mutex' hardState' snapshot' ents' callStats':
+Global Instance wp_struct_make_MemoryStorage Mutex' hardState' snapshot' ents' callStats':
   PureWp True
     (struct.make #raft.MemoryStorage (alist_val [
       "Mutex" ::= #Mutex';
@@ -1654,6 +1672,7 @@ Global Instance MemoryStorage_struct_fields_split dq l (v : MemoryStorage.t) :
 Admitted.
 
 End instances.
+
 Module entryID.
 Section def.
 Context `{ffi_syntax}.
@@ -1667,12 +1686,12 @@ End entryID.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_entryID `{ffi_syntax}: Settable _ :=
+Global Instance settable_entryID : Settable _ :=
   settable! entryID.mk < entryID.term'; entryID.index' >.
-Global Instance into_val_entryID `{ffi_syntax} : IntoVal entryID.t.
+Global Instance into_val_entryID : IntoVal entryID.t.
 Admitted.
 
-Global Instance into_val_typed_entryID `{ffi_syntax} : IntoValTyped entryID.t raft.entryID :=
+Global Instance into_val_typed_entryID : IntoValTyped entryID.t raft.entryID :=
 {|
   default_val := entryID.mk (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1680,15 +1699,15 @@ Global Instance into_val_typed_entryID `{ffi_syntax} : IntoValTyped entryID.t ra
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_entryID_term `{ffi_syntax} : IntoValStructField "term" raft.entryID entryID.term'.
+Global Instance into_val_struct_field_entryID_term : IntoValStructField "term" raft.entryID entryID.term'.
 Admitted.
 
-Global Instance into_val_struct_field_entryID_index `{ffi_syntax} : IntoValStructField "index" raft.entryID entryID.index'.
+Global Instance into_val_struct_field_entryID_index : IntoValStructField "index" raft.entryID entryID.index'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_entryID `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} term' index':
+Global Instance wp_struct_make_entryID term' index':
   PureWp True
     (struct.make #raft.entryID (alist_val [
       "term" ::= #term';
@@ -1706,6 +1725,7 @@ Global Instance entryID_struct_fields_split dq l (v : entryID.t) :
 Admitted.
 
 End instances.
+
 Module logSlice.
 Section def.
 Context `{ffi_syntax}.
@@ -1720,12 +1740,12 @@ End logSlice.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_logSlice `{ffi_syntax}: Settable _ :=
+Global Instance settable_logSlice : Settable _ :=
   settable! logSlice.mk < logSlice.term'; logSlice.prev'; logSlice.entries' >.
-Global Instance into_val_logSlice `{ffi_syntax} : IntoVal logSlice.t.
+Global Instance into_val_logSlice : IntoVal logSlice.t.
 Admitted.
 
-Global Instance into_val_typed_logSlice `{ffi_syntax} : IntoValTyped logSlice.t raft.logSlice :=
+Global Instance into_val_typed_logSlice : IntoValTyped logSlice.t raft.logSlice :=
 {|
   default_val := logSlice.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -1733,18 +1753,18 @@ Global Instance into_val_typed_logSlice `{ffi_syntax} : IntoValTyped logSlice.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_logSlice_term `{ffi_syntax} : IntoValStructField "term" raft.logSlice logSlice.term'.
+Global Instance into_val_struct_field_logSlice_term : IntoValStructField "term" raft.logSlice logSlice.term'.
 Admitted.
 
-Global Instance into_val_struct_field_logSlice_prev `{ffi_syntax} : IntoValStructField "prev" raft.logSlice logSlice.prev'.
+Global Instance into_val_struct_field_logSlice_prev : IntoValStructField "prev" raft.logSlice logSlice.prev'.
 Admitted.
 
-Global Instance into_val_struct_field_logSlice_entries `{ffi_syntax} : IntoValStructField "entries" raft.logSlice logSlice.entries'.
+Global Instance into_val_struct_field_logSlice_entries : IntoValStructField "entries" raft.logSlice logSlice.entries'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_logSlice `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} term' prev' entries':
+Global Instance wp_struct_make_logSlice term' prev' entries':
   PureWp True
     (struct.make #raft.logSlice (alist_val [
       "term" ::= #term';
@@ -1826,7 +1846,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined raft :=
   is_pkg_defined := is_global_definitions raft var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
   "HdefaultLogger" ∷ defaultLogger ↦ (default_val loc) ∗
   "HdiscardLogger" ∷ discardLogger ↦ (default_val loc) ∗
   "HraftLoggerMu" ∷ raftLoggerMu ↦ (default_val sync.Mutex.t) ∗

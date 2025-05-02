@@ -33,12 +33,12 @@ End leaseCache.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_leaseCache `{ffi_syntax}: Settable _ :=
+Global Instance settable_leaseCache : Settable _ :=
   settable! leaseCache.mk < leaseCache.mu'; leaseCache.entries'; leaseCache.revokes'; leaseCache.header' >.
-Global Instance into_val_leaseCache `{ffi_syntax} : IntoVal leaseCache.t.
+Global Instance into_val_leaseCache : IntoVal leaseCache.t.
 Admitted.
 
-Global Instance into_val_typed_leaseCache `{ffi_syntax} : IntoValTyped leaseCache.t leasing.leaseCache :=
+Global Instance into_val_typed_leaseCache : IntoValTyped leaseCache.t leasing.leaseCache :=
 {|
   default_val := leaseCache.mk (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -46,21 +46,21 @@ Global Instance into_val_typed_leaseCache `{ffi_syntax} : IntoValTyped leaseCach
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_leaseCache_mu `{ffi_syntax} : IntoValStructField "mu" leasing.leaseCache leaseCache.mu'.
+Global Instance into_val_struct_field_leaseCache_mu : IntoValStructField "mu" leasing.leaseCache leaseCache.mu'.
 Admitted.
 
-Global Instance into_val_struct_field_leaseCache_entries `{ffi_syntax} : IntoValStructField "entries" leasing.leaseCache leaseCache.entries'.
+Global Instance into_val_struct_field_leaseCache_entries : IntoValStructField "entries" leasing.leaseCache leaseCache.entries'.
 Admitted.
 
-Global Instance into_val_struct_field_leaseCache_revokes `{ffi_syntax} : IntoValStructField "revokes" leasing.leaseCache leaseCache.revokes'.
+Global Instance into_val_struct_field_leaseCache_revokes : IntoValStructField "revokes" leasing.leaseCache leaseCache.revokes'.
 Admitted.
 
-Global Instance into_val_struct_field_leaseCache_header `{ffi_syntax} : IntoValStructField "header" leasing.leaseCache leaseCache.header'.
+Global Instance into_val_struct_field_leaseCache_header : IntoValStructField "header" leasing.leaseCache leaseCache.header'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_leaseCache `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' entries' revokes' header':
+Global Instance wp_struct_make_leaseCache mu' entries' revokes' header':
   PureWp True
     (struct.make #leasing.leaseCache (alist_val [
       "mu" ::= #mu';
@@ -82,6 +82,7 @@ Global Instance leaseCache_struct_fields_split dq l (v : leaseCache.t) :
 Admitted.
 
 End instances.
+
 Module leaseKey.
 Section def.
 Context `{ffi_syntax}.
@@ -96,12 +97,12 @@ End leaseKey.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_leaseKey `{ffi_syntax}: Settable _ :=
+Global Instance settable_leaseKey : Settable _ :=
   settable! leaseKey.mk < leaseKey.response'; leaseKey.rev'; leaseKey.waitc' >.
-Global Instance into_val_leaseKey `{ffi_syntax} : IntoVal leaseKey.t.
+Global Instance into_val_leaseKey : IntoVal leaseKey.t.
 Admitted.
 
-Global Instance into_val_typed_leaseKey `{ffi_syntax} : IntoValTyped leaseKey.t leasing.leaseKey :=
+Global Instance into_val_typed_leaseKey : IntoValTyped leaseKey.t leasing.leaseKey :=
 {|
   default_val := leaseKey.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -109,18 +110,18 @@ Global Instance into_val_typed_leaseKey `{ffi_syntax} : IntoValTyped leaseKey.t 
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_leaseKey_response `{ffi_syntax} : IntoValStructField "response" leasing.leaseKey leaseKey.response'.
+Global Instance into_val_struct_field_leaseKey_response : IntoValStructField "response" leasing.leaseKey leaseKey.response'.
 Admitted.
 
-Global Instance into_val_struct_field_leaseKey_rev `{ffi_syntax} : IntoValStructField "rev" leasing.leaseKey leaseKey.rev'.
+Global Instance into_val_struct_field_leaseKey_rev : IntoValStructField "rev" leasing.leaseKey leaseKey.rev'.
 Admitted.
 
-Global Instance into_val_struct_field_leaseKey_waitc `{ffi_syntax} : IntoValStructField "waitc" leasing.leaseKey leaseKey.waitc'.
+Global Instance into_val_struct_field_leaseKey_waitc : IntoValStructField "waitc" leasing.leaseKey leaseKey.waitc'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_leaseKey `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} response' rev' waitc':
+Global Instance wp_struct_make_leaseKey response' rev' waitc':
   PureWp True
     (struct.make #leasing.leaseKey (alist_val [
       "response" ::= #response';
@@ -140,6 +141,7 @@ Global Instance leaseKey_struct_fields_split dq l (v : leaseKey.t) :
 Admitted.
 
 End instances.
+
 Module leasingKV.
 Section def.
 Context `{ffi_syntax}.
@@ -161,12 +163,12 @@ End leasingKV.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_leasingKV `{ffi_syntax}: Settable _ :=
+Global Instance settable_leasingKV : Settable _ :=
   settable! leasingKV.mk < leasingKV.cl'; leasingKV.kv'; leasingKV.pfx'; leasingKV.leases'; leasingKV.ctx'; leasingKV.cancel'; leasingKV.wg'; leasingKV.sessionOpts'; leasingKV.session'; leasingKV.sessionc' >.
-Global Instance into_val_leasingKV `{ffi_syntax} : IntoVal leasingKV.t.
+Global Instance into_val_leasingKV : IntoVal leasingKV.t.
 Admitted.
 
-Global Instance into_val_typed_leasingKV `{ffi_syntax} : IntoValTyped leasingKV.t leasing.leasingKV :=
+Global Instance into_val_typed_leasingKV : IntoValTyped leasingKV.t leasing.leasingKV :=
 {|
   default_val := leasingKV.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -174,39 +176,39 @@ Global Instance into_val_typed_leasingKV `{ffi_syntax} : IntoValTyped leasingKV.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_leasingKV_cl `{ffi_syntax} : IntoValStructField "cl" leasing.leasingKV leasingKV.cl'.
+Global Instance into_val_struct_field_leasingKV_cl : IntoValStructField "cl" leasing.leasingKV leasingKV.cl'.
 Admitted.
 
-Global Instance into_val_struct_field_leasingKV_kv `{ffi_syntax} : IntoValStructField "kv" leasing.leasingKV leasingKV.kv'.
+Global Instance into_val_struct_field_leasingKV_kv : IntoValStructField "kv" leasing.leasingKV leasingKV.kv'.
 Admitted.
 
-Global Instance into_val_struct_field_leasingKV_pfx `{ffi_syntax} : IntoValStructField "pfx" leasing.leasingKV leasingKV.pfx'.
+Global Instance into_val_struct_field_leasingKV_pfx : IntoValStructField "pfx" leasing.leasingKV leasingKV.pfx'.
 Admitted.
 
-Global Instance into_val_struct_field_leasingKV_leases `{ffi_syntax} : IntoValStructField "leases" leasing.leasingKV leasingKV.leases'.
+Global Instance into_val_struct_field_leasingKV_leases : IntoValStructField "leases" leasing.leasingKV leasingKV.leases'.
 Admitted.
 
-Global Instance into_val_struct_field_leasingKV_ctx `{ffi_syntax} : IntoValStructField "ctx" leasing.leasingKV leasingKV.ctx'.
+Global Instance into_val_struct_field_leasingKV_ctx : IntoValStructField "ctx" leasing.leasingKV leasingKV.ctx'.
 Admitted.
 
-Global Instance into_val_struct_field_leasingKV_cancel `{ffi_syntax} : IntoValStructField "cancel" leasing.leasingKV leasingKV.cancel'.
+Global Instance into_val_struct_field_leasingKV_cancel : IntoValStructField "cancel" leasing.leasingKV leasingKV.cancel'.
 Admitted.
 
-Global Instance into_val_struct_field_leasingKV_wg `{ffi_syntax} : IntoValStructField "wg" leasing.leasingKV leasingKV.wg'.
+Global Instance into_val_struct_field_leasingKV_wg : IntoValStructField "wg" leasing.leasingKV leasingKV.wg'.
 Admitted.
 
-Global Instance into_val_struct_field_leasingKV_sessionOpts `{ffi_syntax} : IntoValStructField "sessionOpts" leasing.leasingKV leasingKV.sessionOpts'.
+Global Instance into_val_struct_field_leasingKV_sessionOpts : IntoValStructField "sessionOpts" leasing.leasingKV leasingKV.sessionOpts'.
 Admitted.
 
-Global Instance into_val_struct_field_leasingKV_session `{ffi_syntax} : IntoValStructField "session" leasing.leasingKV leasingKV.session'.
+Global Instance into_val_struct_field_leasingKV_session : IntoValStructField "session" leasing.leasingKV leasingKV.session'.
 Admitted.
 
-Global Instance into_val_struct_field_leasingKV_sessionc `{ffi_syntax} : IntoValStructField "sessionc" leasing.leasingKV leasingKV.sessionc'.
+Global Instance into_val_struct_field_leasingKV_sessionc : IntoValStructField "sessionc" leasing.leasingKV leasingKV.sessionc'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_leasingKV `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cl' kv' pfx' leases' ctx' cancel' wg' sessionOpts' session' sessionc':
+Global Instance wp_struct_make_leasingKV cl' kv' pfx' leases' ctx' cancel' wg' sessionOpts' session' sessionc':
   PureWp True
     (struct.make #leasing.leasingKV (alist_val [
       "cl" ::= #cl';
@@ -240,6 +242,7 @@ Global Instance leasingKV_struct_fields_split dq l (v : leasingKV.t) :
 Admitted.
 
 End instances.
+
 Module txnLeasing.
 Section def.
 Context `{ffi_syntax}.
@@ -257,12 +260,12 @@ End txnLeasing.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_txnLeasing `{ffi_syntax}: Settable _ :=
+Global Instance settable_txnLeasing : Settable _ :=
   settable! txnLeasing.mk < txnLeasing.Txn'; txnLeasing.lkv'; txnLeasing.ctx'; txnLeasing.cs'; txnLeasing.opst'; txnLeasing.opse' >.
-Global Instance into_val_txnLeasing `{ffi_syntax} : IntoVal txnLeasing.t.
+Global Instance into_val_txnLeasing : IntoVal txnLeasing.t.
 Admitted.
 
-Global Instance into_val_typed_txnLeasing `{ffi_syntax} : IntoValTyped txnLeasing.t leasing.txnLeasing :=
+Global Instance into_val_typed_txnLeasing : IntoValTyped txnLeasing.t leasing.txnLeasing :=
 {|
   default_val := txnLeasing.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -270,27 +273,27 @@ Global Instance into_val_typed_txnLeasing `{ffi_syntax} : IntoValTyped txnLeasin
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_txnLeasing_Txn `{ffi_syntax} : IntoValStructField "Txn" leasing.txnLeasing txnLeasing.Txn'.
+Global Instance into_val_struct_field_txnLeasing_Txn : IntoValStructField "Txn" leasing.txnLeasing txnLeasing.Txn'.
 Admitted.
 
-Global Instance into_val_struct_field_txnLeasing_lkv `{ffi_syntax} : IntoValStructField "lkv" leasing.txnLeasing txnLeasing.lkv'.
+Global Instance into_val_struct_field_txnLeasing_lkv : IntoValStructField "lkv" leasing.txnLeasing txnLeasing.lkv'.
 Admitted.
 
-Global Instance into_val_struct_field_txnLeasing_ctx `{ffi_syntax} : IntoValStructField "ctx" leasing.txnLeasing txnLeasing.ctx'.
+Global Instance into_val_struct_field_txnLeasing_ctx : IntoValStructField "ctx" leasing.txnLeasing txnLeasing.ctx'.
 Admitted.
 
-Global Instance into_val_struct_field_txnLeasing_cs `{ffi_syntax} : IntoValStructField "cs" leasing.txnLeasing txnLeasing.cs'.
+Global Instance into_val_struct_field_txnLeasing_cs : IntoValStructField "cs" leasing.txnLeasing txnLeasing.cs'.
 Admitted.
 
-Global Instance into_val_struct_field_txnLeasing_opst `{ffi_syntax} : IntoValStructField "opst" leasing.txnLeasing txnLeasing.opst'.
+Global Instance into_val_struct_field_txnLeasing_opst : IntoValStructField "opst" leasing.txnLeasing txnLeasing.opst'.
 Admitted.
 
-Global Instance into_val_struct_field_txnLeasing_opse `{ffi_syntax} : IntoValStructField "opse" leasing.txnLeasing txnLeasing.opse'.
+Global Instance into_val_struct_field_txnLeasing_opse : IntoValStructField "opse" leasing.txnLeasing txnLeasing.opse'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_txnLeasing `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Txn' lkv' ctx' cs' opst' opse':
+Global Instance wp_struct_make_txnLeasing Txn' lkv' ctx' cs' opst' opse':
   PureWp True
     (struct.make #leasing.txnLeasing (alist_val [
       "Txn" ::= #Txn';
@@ -337,7 +340,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined leasing :=
   is_pkg_defined := is_global_definitions leasing var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
   "HclosedCh" ∷ closedCh ↦ (default_val loc).
 
 Global Instance wp_globals_get_closedCh : 

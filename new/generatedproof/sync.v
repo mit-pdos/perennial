@@ -18,10 +18,10 @@ End noCopy.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_noCopy `{ffi_syntax} : IntoVal noCopy.t.
+Global Instance into_val_noCopy : IntoVal noCopy.t.
 Admitted.
 
-Global Instance into_val_typed_noCopy `{ffi_syntax} : IntoValTyped noCopy.t sync.noCopy :=
+Global Instance into_val_typed_noCopy : IntoValTyped noCopy.t sync.noCopy :=
 {|
   default_val := noCopy.mk;
   to_val_has_go_type := ltac:(destruct falso);
@@ -31,15 +31,15 @@ Global Instance into_val_typed_noCopy `{ffi_syntax} : IntoValTyped noCopy.t sync
 |}.
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_noCopy `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+Global Instance wp_struct_make_noCopy:
   PureWp True
     (struct.make #sync.noCopy (alist_val [
     ]))%struct
     #(noCopy.mk).
 Admitted.
 
-
 End instances.
+
 Module RWMutex.
 Section def.
 Context `{ffi_syntax}.
@@ -56,12 +56,12 @@ End RWMutex.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_RWMutex `{ffi_syntax}: Settable _ :=
+Global Instance settable_RWMutex : Settable _ :=
   settable! RWMutex.mk < RWMutex.w'; RWMutex.writerSem'; RWMutex.readerSem'; RWMutex.readerCount'; RWMutex.readerWait' >.
-Global Instance into_val_RWMutex `{ffi_syntax} : IntoVal RWMutex.t.
+Global Instance into_val_RWMutex : IntoVal RWMutex.t.
 Admitted.
 
-Global Instance into_val_typed_RWMutex `{ffi_syntax} : IntoValTyped RWMutex.t sync.RWMutex :=
+Global Instance into_val_typed_RWMutex : IntoValTyped RWMutex.t sync.RWMutex :=
 {|
   default_val := RWMutex.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -69,24 +69,24 @@ Global Instance into_val_typed_RWMutex `{ffi_syntax} : IntoValTyped RWMutex.t sy
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RWMutex_w `{ffi_syntax} : IntoValStructField "w" sync.RWMutex RWMutex.w'.
+Global Instance into_val_struct_field_RWMutex_w : IntoValStructField "w" sync.RWMutex RWMutex.w'.
 Admitted.
 
-Global Instance into_val_struct_field_RWMutex_writerSem `{ffi_syntax} : IntoValStructField "writerSem" sync.RWMutex RWMutex.writerSem'.
+Global Instance into_val_struct_field_RWMutex_writerSem : IntoValStructField "writerSem" sync.RWMutex RWMutex.writerSem'.
 Admitted.
 
-Global Instance into_val_struct_field_RWMutex_readerSem `{ffi_syntax} : IntoValStructField "readerSem" sync.RWMutex RWMutex.readerSem'.
+Global Instance into_val_struct_field_RWMutex_readerSem : IntoValStructField "readerSem" sync.RWMutex RWMutex.readerSem'.
 Admitted.
 
-Global Instance into_val_struct_field_RWMutex_readerCount `{ffi_syntax} : IntoValStructField "readerCount" sync.RWMutex RWMutex.readerCount'.
+Global Instance into_val_struct_field_RWMutex_readerCount : IntoValStructField "readerCount" sync.RWMutex RWMutex.readerCount'.
 Admitted.
 
-Global Instance into_val_struct_field_RWMutex_readerWait `{ffi_syntax} : IntoValStructField "readerWait" sync.RWMutex RWMutex.readerWait'.
+Global Instance into_val_struct_field_RWMutex_readerWait : IntoValStructField "readerWait" sync.RWMutex RWMutex.readerWait'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RWMutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} w' writerSem' readerSem' readerCount' readerWait':
+Global Instance wp_struct_make_RWMutex w' writerSem' readerSem' readerCount' readerWait':
   PureWp True
     (struct.make #sync.RWMutex (alist_val [
       "w" ::= #w';
@@ -110,6 +110,7 @@ Global Instance RWMutex_struct_fields_split dq l (v : RWMutex.t) :
 Admitted.
 
 End instances.
+
 Module WaitGroup.
 Section def.
 Context `{ffi_syntax}.
@@ -124,12 +125,12 @@ End WaitGroup.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_WaitGroup `{ffi_syntax}: Settable _ :=
+Global Instance settable_WaitGroup : Settable _ :=
   settable! WaitGroup.mk < WaitGroup.noCopy'; WaitGroup.state'; WaitGroup.sema' >.
-Global Instance into_val_WaitGroup `{ffi_syntax} : IntoVal WaitGroup.t.
+Global Instance into_val_WaitGroup : IntoVal WaitGroup.t.
 Admitted.
 
-Global Instance into_val_typed_WaitGroup `{ffi_syntax} : IntoValTyped WaitGroup.t sync.WaitGroup :=
+Global Instance into_val_typed_WaitGroup : IntoValTyped WaitGroup.t sync.WaitGroup :=
 {|
   default_val := WaitGroup.mk (default_val _) (default_val _) (default_val _);
   to_val_has_go_type := ltac:(destruct falso);
@@ -137,18 +138,18 @@ Global Instance into_val_typed_WaitGroup `{ffi_syntax} : IntoValTyped WaitGroup.
   to_val_inj := ltac:(destruct falso);
   to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WaitGroup_noCopy `{ffi_syntax} : IntoValStructField "noCopy" sync.WaitGroup WaitGroup.noCopy'.
+Global Instance into_val_struct_field_WaitGroup_noCopy : IntoValStructField "noCopy" sync.WaitGroup WaitGroup.noCopy'.
 Admitted.
 
-Global Instance into_val_struct_field_WaitGroup_state `{ffi_syntax} : IntoValStructField "state" sync.WaitGroup WaitGroup.state'.
+Global Instance into_val_struct_field_WaitGroup_state : IntoValStructField "state" sync.WaitGroup WaitGroup.state'.
 Admitted.
 
-Global Instance into_val_struct_field_WaitGroup_sema `{ffi_syntax} : IntoValStructField "sema" sync.WaitGroup WaitGroup.sema'.
+Global Instance into_val_struct_field_WaitGroup_sema : IntoValStructField "sema" sync.WaitGroup WaitGroup.sema'.
 Admitted.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WaitGroup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} noCopy' state' sema':
+Global Instance wp_struct_make_WaitGroup noCopy' state' sema':
   PureWp True
     (struct.make #sync.WaitGroup (alist_val [
       "noCopy" ::= #noCopy';
@@ -187,7 +188,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined sync :=
   is_pkg_defined := is_global_definitions sync var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_NewCond :

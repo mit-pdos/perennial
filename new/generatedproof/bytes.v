@@ -36,7 +36,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined bytes :=
   is_pkg_defined := is_global_definitions bytes var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.
