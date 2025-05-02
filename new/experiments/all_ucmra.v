@@ -95,20 +95,21 @@ Lemma all_ucmra_cmra_mixin : CmraMixin all_ucmra.
  *)
 Admitted.
 
+(* Need universe polymorphism:
 Definition all_ucmraUR: ucmra :=
   (Ucmra' all_ucmra all_ucmra_ofe_mixin all_ucmra_cmra_mixin all_ucmra_ucmra_mixin).
+  *)
 
 End all.
 
-From Coq Require Import Classical_Prop.
+From Coq Require Import Logic.ClassicalEpsilon.
 Section own.
 Context {SI : sidx}.
-Definition is_converted_to_all {A : ucmra} (a : A) (x : all_ucmra) : Prop :=
-  (x A) = a ∧ (∀ y, (y A) = a → x ≼ y).
 
-Lemma convert_to_all {A : ucmra} (a : A) :
-  ∃ x, is_converted_to_all a x.
-Proof.
-Admitted.
+Definition convert_to_all {A : ucmra} (a : A) : all_ucmra :=
+  λ B, match (excluded_middle_informative (A = B)) with
+       | right _ => ε
+       | left eq_proof => eq_rect A id a B eq_proof
+       end.
 
 End own.
