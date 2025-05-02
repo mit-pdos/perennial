@@ -1,10 +1,6 @@
 From Perennial.program_proof.pav Require Import prelude.
 From iris.bi.lib Require Import fractional.
 From Perennial.goose_lang.lib Require Import encoding.
-(* for sealed.
-TODO: for some reason, this has to go after encoding,
-probably an indication of import ordering instability. *)
-From Perennial Require Import base.
 From Goose.github_com.mit_pdos.pav Require Import merkle.
 
 From Perennial.Helpers Require Import bytes.
@@ -14,15 +10,6 @@ From Perennial.program_proof Require Import std_proof marshal_stateless_proof.
 Notation empty_node_tag := (W8 0) (only parsing).
 Notation leaf_node_tag := (W8 1) (only parsing).
 Notation inner_node_tag := (W8 2) (only parsing).
-
-(* TODO: rm once seal merged in. *)
-Program Definition u64_le_seal := sealed @u64_le.
-Definition u64_le_unseal : u64_le_seal = _ := seal_eq _.
-Lemma u64_le_seal_len x :
-  length $ u64_le_seal x = 8%nat.
-Proof. rewrite u64_le_unseal. done. Qed.
-Global Instance u64_le_seal_inj : Inj eq eq u64_le_seal.
-Proof. rewrite u64_le_unseal. apply _. Qed.
 
 Module MerkleProof.
 Record t :=
@@ -37,10 +24,10 @@ Definition encodes (obj : t) (enc : list w8) : Prop :=
   uint.Z (W64 (length obj.(LeafLabel))) = length obj.(LeafLabel) ∧
   uint.Z (W64 (length obj.(LeafVal))) = length obj.(LeafVal) ∧
 
-  enc = u64_le_seal (length obj.(Siblings)) ++ obj.(Siblings) ++
+  enc = u64_le (length obj.(Siblings)) ++ obj.(Siblings) ++
   [(if obj.(FoundOtherLeaf) then W8 1 else W8 0)] ++
-  u64_le_seal (length obj.(LeafLabel)) ++ obj.(LeafLabel) ++
-  u64_le_seal (length obj.(LeafVal)) ++ obj.(LeafVal).
+  u64_le (length obj.(LeafLabel)) ++ obj.(LeafLabel) ++
+  u64_le (length obj.(LeafVal)) ++ obj.(LeafVal).
 
 Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
   enc0 ++ tail0 = enc1 ++ tail1 →
@@ -50,19 +37,15 @@ Lemma inj {obj0 obj1 enc0 enc1 tail0 tail1} :
 Proof.
   intros ? (?&?&? & Henc0) (?&?&? & Henc). subst.
   list_simplifier. move: H => Henc.
-  apply app_inj_1 in Henc as [Hlen_sib Henc].
-  2: { by rewrite !u64_le_seal_len. }
-  apply (inj u64_le_seal) in Hlen_sib.
+  apply app_inj_1 in Henc as [Hlen_sib Henc]; [|len].
+  apply (inj u64_le) in Hlen_sib.
   apply app_inj_1 in Henc as [Heq_sib Henc]; [|word].
   inv Henc as [[Heq_found Henc']].
-  (* FIXME(word): somehow word.unsigned gets unfolded here. *)
-  apply app_inj_1 in Henc' as [Hlen_label Henc].
-  2: { by rewrite !u64_le_seal_len. }
-  apply (inj u64_le_seal) in Hlen_label.
+  apply app_inj_1 in Henc' as [Hlen_label Henc]; [|len].
+  apply (inj u64_le) in Hlen_label.
   apply app_inj_1 in Henc as [Heq_label Henc]; [|word].
-  apply app_inj_1 in Henc as [Hlen_val Henc].
-  2: { by rewrite !u64_le_seal_len. }
-  apply (inj u64_le_seal) in Hlen_val.
+  apply app_inj_1 in Henc as [Hlen_val Henc]; [|len].
+  apply (inj u64_le) in Hlen_val.
   assert (obj0.(FoundOtherLeaf) = obj1.(FoundOtherLeaf)) as ?.
   { by repeat case_match. }
   apply app_inj_1 in Henc as [Heq_val Henc]; [|word].
@@ -188,8 +171,8 @@ Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
     "%Hinb_label" ∷ ⌜ uint.Z (W64 (length label)) = length label ⌝ ∗
     "#His_hash" ∷
       is_hash ([leaf_node_tag] ++
-        (u64_le_seal $ length label) ++ label ++
-        (u64_le_seal $ length val) ++ val) h
+        (u64_le $ length label) ++ label ++
+        (u64_le $ length val) ++ val) h
   | Inner child0 child1 =>
     ∃ hl hr,
     "#Hleft_hash" ∷ is_tree_hash child0 hl ∗
@@ -329,14 +312,13 @@ Proof.
 
   (* both leaves. use leaf encoding. *)
   - iPureIntro. list_simplifier.
-    apply app_inj_1 in H as [Heq_len_label H].
-    2: { by rewrite !u64_le_seal_len. }
-    apply (inj u64_le_seal) in Heq_len_label.
+    apply app_inj_1 in H as [Heq_len_label H]; [|len].
+    apply (inj u64_le) in Heq_len_label.
     assert (length label0 = length label1) as ?.
     { rewrite Heq_len_label in Hinb_label0. word. }
     list_simplifier.
     apply app_inj_1 in H1; [naive_solver|].
-    by rewrite !u64_le_seal_len.
+    len.
   (* both inner. use inner encoding and next_pos same to get
   the same next_hash. then apply IH. *)
   - iDestruct (is_tree_hash_len with "Hleft_hash0") as %?.
@@ -982,8 +964,8 @@ Lemma wp_compLeafHash sl_label sl_val d0 d1 (label val : list w8) :
     "Hsl_hash" ∷ own_slice sl_hash byteT (DfracOwn 1) hash ∗
     "#His_hash" ∷ is_hash
       (leaf_node_tag ::
-      (u64_le_seal $ length label) ++ label ++
-      (u64_le_seal $ length val) ++ val) hash
+      (u64_le $ length label) ++ label ++
+      (u64_le $ length val) ++ val) hash
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -1469,8 +1451,8 @@ Proof.
       iFrame "#". iPureIntro. split; [|by list_simplifier].
       rewrite /MerkleProof.encodes. simpl.
       apply (f_equal length) in Henc_proof.
-      rewrite -!u64_le_unseal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
-      repeat split; [word|].
+      rewrite !app_length in Henc_proof Hlen_proof.
+      repeat (split; [word|]).
       by list_simplifier.
 
     - wp_load.
@@ -1514,8 +1496,8 @@ Proof.
       iFrame "#". iPureIntro. split; [|by list_simplifier].
       rewrite /MerkleProof.encodes. simpl.
       apply (f_equal length) in Henc_proof.
-      rewrite -!u64_le_unseal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
-      repeat split; [word..|].
+      rewrite !app_length in Henc_proof Hlen_proof.
+      repeat (split; [word|]).
       apply (f_equal (λ x : nat, W64 x)) in Hlen_label, Hlen_val.
       rewrite !w64_to_nat_id in Hlen_label Hlen_val.
       rewrite -Hlen_label -Hlen_val.
@@ -1550,7 +1532,7 @@ Proof.
     iFrame "#". iPureIntro. split; [|by list_simplifier].
     rewrite /MerkleProof.encodes. simpl.
     apply (f_equal length) in Henc_proof.
-    rewrite -!u64_le_unseal !app_length !u64_le_seal_len in Henc_proof Hlen_proof |-*.
+    rewrite !app_length in Henc_proof Hlen_proof.
     repeat split; [word|].
     by list_simplifier. }
 
