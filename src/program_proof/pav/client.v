@@ -756,11 +756,18 @@ Proof.
   iDestruct (wish_merkle_Verify_to_entry with "Hmerk_bound") as "Hentry_bound".
   iDestruct (is_hash_len with "Hcommit_lat") as %?.
 
+  iDestruct (own_slice_small_sz with "Hsl_rand") as %?.
+  iDestruct (own_slice_small_sz with "Hsl_pk") as %?.
   rewrite -Heq_ep. iFrame "∗#". iIntros "!>".
-  repeat try iSplit; simpl in *; try word.
+  repeat try iSplit; simpl in *; try word; first last.
 
-  2: { destruct lat, PkOpen. rewrite Heq_pk. iFrame "#".
-    iPureIntro. split; [|done]. simpl. word. }
+  { iPureIntro. rewrite /MapValPre.encodes in Henc_lat.
+    intuition. destruct lat, sigdig. by simplify_eq/=. }
+  { destruct lat, PkOpen. rewrite Heq_pk. iFrame "#".
+    iPureIntro. exists Rand.
+    rewrite /CommitOpen.encodes. simpl in *.
+    apply (f_equal length) in Heq_pk.
+    repeat split; word. }
 
   (* get all the serv_is_good obligations together. *)
   iEval (rewrite sep_assoc). iSplitL.
@@ -1098,6 +1105,8 @@ Proof.
   iDestruct (wish_merkle_Verify_to_entry with "Hmerk_bound") as "Hentry_bound".
   iFrame "Hown_sd_refs Hptr_nextVer Hown_cli Hptr_nextEpoch Hserv_vrf_pk Evid Err #".
   simpl in *.
+  iDestruct (own_slice_small_sz with "Hsl_val") as %?.
+  iDestruct (own_slice_small_sz with "Hsl_rand") as %?.
 
   destruct (decide (uint.Z sigdig.(SigDig.Epoch) + 1 = Z.of_nat (length digs))).
   (* case 1: new dig equals end of old digs. *)
@@ -1128,6 +1137,10 @@ Proof.
       iNamedSuffix "Hwish_lat" "_lat".
       iDestruct (wish_merkle_Verify_to_entry with "Hmerk_lat") as "Hentry_lat".
       iFrame "#%".
+      iSplit.
+      2: { iPureIntro. rewrite /CommitOpen.encodes.
+        destruct lat, PkOpen. simpl in *.
+        repeat esplit; word. }
       iApply big_sepL_fmap.
       iApply (big_sepL_impl with "Hwish_hist").
       iIntros "!> * % #H". iNamedSuffix "H" "_hide".
@@ -1170,6 +1183,10 @@ Proof.
     iNamedSuffix "Hwish_lat" "_lat".
     iDestruct (wish_merkle_Verify_to_entry with "Hmerk_lat") as "Hentry_lat".
     iFrame "#%".
+    iSplit.
+    2: { iPureIntro. rewrite /CommitOpen.encodes.
+      destruct lat, PkOpen. simpl in *.
+      repeat esplit; word. }
     iApply big_sepL_fmap.
     iApply (big_sepL_impl with "Hwish_hist").
     iIntros "!> * % #H". iNamedSuffix "H" "_hide".
