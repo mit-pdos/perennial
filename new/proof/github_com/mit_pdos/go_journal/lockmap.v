@@ -1,4 +1,3 @@
-Require Import New.code.github_com.mit_pdos.go_journal.lockmap.
 Require Import New.generatedproof.github_com.mit_pdos.go_journal.lockmap.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.github_com.goose_lang.primitive.disk.
@@ -46,11 +45,11 @@ Definition lockShard_addr gh (shardlock : interface.t) (addr : u64) (gheld : boo
 Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
            (ghostHeap : gname) (covered : gset u64) (P : u64 -> iProp Σ) : iProp Σ :=
   ( ∃ (m: gmap u64 loc) ghostMap,
-      own_map mptr (DfracOwn 1) m ∗
-      ghost_map_auth ghostHeap 1 ghostMap ∗
-      ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
+      "Hmptr" ∷ own_map mptr (DfracOwn 1) m ∗
+      "Hghctx" ∷ ghost_map_auth ghostHeap 1 ghostMap ∗
+      "Haddrs" ∷ ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
           lockShard_addr ghostHeap (interface.mk sync "Mutex'ptr"%go #shardlock) addr gheld lockStatePtrV covered P ) ∗
-      ( [∗ set] addr ∈ covered,
+      "Hcovered" ∷ ( [∗ set] addr ∈ covered,
           ⌜m !! addr = None⌝ → P addr )
   )%I.
 
@@ -74,10 +73,8 @@ Proof.
   wp_auto.
   wp_apply wp_map_make; first eauto. iIntros (mref) "Hmap".
   wp_auto.
-  (* XXX why doesn't [wp_auto] do this? *)
   wp_alloc shardlock as "Hshardlock".
   wp_auto.
-  (* XXX why doesn't [wp_auto] do this? *)
   wp_alloc ls as "Hls".
 
   iMod (ghost_map_alloc (∅: gmap u64 bool)) as (hG) "[Hheapctx _]".
@@ -118,316 +115,164 @@ Proof.
   iIntros "[Hlocked Hinner]".
 
   wp_auto.
-  (* XXX need wp_forBreak *)
+  wp_for.
+  iNamed "Hinner".
+  wp_apply (wp_map_get with "Hmptr"). iIntros "Hmptr".
+  wp_auto.
 
-  wp_apply (wp_forBreak
-    (fun b => is_lockShard_inner mptr shardlock gh covered P ∗ locked gh shardlock ∗ if b then emp else P addr ∗ locked gh addr)%I
-    with "[] [$Hlocked $Hinner]").
+  destruct (m !! addr) eqn:Hmaddr.
+  - wp_auto.
+    iDestruct (big_sepM2_lookup_r_some with "Haddrs") as (gheld) "%"; eauto.
+    iDestruct (big_sepM2_insert_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
+    iNamed "Haddr".
+    wp_auto.
+    destruct gheld; wp_auto.
+    + iSpecialize ("Haddrs" $! true l).
+      rewrite insert_id; eauto.
+      rewrite insert_id; eauto.
 
-  {
-    iIntros (Φloop) "!> (Hinner&Hlocked&_) HΦloop".
-    iDestruct "Hinner" as (m gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
-    wp_pures.
-    wp_apply wp_ref_of_zero; first by auto.
-    iIntros (state) "Hstate".
-    wp_loadField.
-    wp_apply (wp_MapGet with "[$Hmptr]"); auto.
-    iIntros (lockStatePtr ok) "[% Hmptr]".
-
-    wp_pures.
-    iEval (rewrite struct_pointsto_eq) in "Hstate".
-    iDestruct "Hstate" as "[[Hstate _] _]". rewrite /=.
-    rewrite loc_add_0.
-
-    destruct ok; wp_pures.
-    - wp_pures.
-      wp_apply (wp_store with "Hstate"); iIntros "Hstate".
-
-      wp_apply wp_ref_of_zero; first by auto.
-      iIntros (acquired) "Hacquired".
-
-      wp_untyped_load.
-      apply map_get_true in H0.
-      iDestruct (big_sepM2_lookup_r_some with "Haddrs") as (gheld) "%"; eauto.
-      iDestruct (big_sepM2_insert_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
-      iNamed "Haddr".
-      wp_loadField.
-      destruct gheld; wp_pures.
-      + wp_untyped_load.
-        wp_loadField.
-        wp_untyped_load.
-        wp_storeField.
-        wp_pures.
-
-        iSpecialize ("Haddrs" $! true lockStatePtr).
-        rewrite insert_id; eauto.
-        rewrite insert_id; eauto.
-
-        wp_untyped_load.
-        wp_loadField.
-        wp_apply (lock.wp_Cond__Wait with "[-HΦloop Hstate Hacquired]").
-        {
-          iFrame "Hlock Hcond Hlocked".
-          iExists _, _.
-          iFrame.
-          iApply "Haddrs".
-          iExists _, _.
-          iFrame "∗ Hcond".
-          done.
-        }
-
-        iIntros "(Hlocked & Hinner)".
-        wp_loadField.
-
-        iDestruct "Hinner" as (m2 gm2) "(Hmptr & Hghctx & Haddrs & Hcovered)".
-        wp_apply (wp_MapGet with "[$Hmptr]"). iIntros (lockStatePtr2 ok) "[% Hmptr]".
-        destruct ok.
-        * wp_pures.
-
-          apply map_get_true in H2.
-          iDestruct (big_sepM2_lookup_r_some with "Haddrs") as (gheld) "%"; eauto.
-          iDestruct (big_sepM2_lookup_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
-          iDestruct "Haddr" as (cond2 nwaiters2) "(? & ? & ? & Hcond2 & % & Hwaiters2)".
-
-          wp_loadField.
-          wp_storeField.
-
-          iEval (rewrite struct_pointsto_eq) in "Hacquired".
-          iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
-          wp_untyped_load.
-
-          wp_pures.
-          iApply "HΦloop".
-          iFrame.
-          iApply "Haddrs".
-          iExists _, _. iFrame. done.
-
-        * iEval (rewrite struct_pointsto_eq) in "Hacquired".
-          iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
-          wp_untyped_load.
-          wp_pures.
-          iApply "HΦloop".
-          by iFrame.
-
-      + wp_untyped_load.
-        wp_storeField.
-        wp_pures.
-
-        iDestruct "Hwaiters" as "[% | [_ [Haddr Hp]]]"; try congruence.
-        iMod (ghost_map_update true with "Hghctx Haddr") as "[Hghctx Haddr]".
-
-        iEval (rewrite struct_pointsto_eq) in "Hacquired".
-        iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
-        wp_pures.
-        wp_untyped_store.
-        wp_untyped_load.
-
-        wp_pures.
-        iApply "HΦloop".
-        iFrame "Hlocked Hp Haddr".
-        iExists _, _. iFrame.
-
-        erewrite <- (insert_id m) at 1; eauto.
-        iApply "Haddrs". iModIntro.
-        iExists _, _. iFrame "∗ Hcond".
-        iSplit; try done.
-        iLeft; done.
-
-    - wp_pures.
-      wp_loadField.
-      wp_apply lock.wp_newCond; [done|].
-      iIntros (c) "#Hcond".
-      wp_apply (wp_allocStruct); first by val_ty.
-      iIntros (lst) "Hlst".
-      wp_untyped_store.
-      wp_untyped_load.
-      wp_loadField.
-      wp_apply (wp_MapInsert with "[$Hmptr]"); first by reflexivity.
-      iIntros "Hmptr".
-
-      wp_apply wp_ref_of_zero; first by auto.
-      iIntros (acquired) "Hacquired".
-
-      iDestruct (struct_fields_split with "Hlst") as "(?&?&?&_)".
-
-      wp_pures.
-      wp_untyped_load.
-      wp_loadField.
-      wp_pures.
-      wp_untyped_load.
-      wp_storeField.
-
-      apply map_get_false in H0.
-      iDestruct (big_sepM2_lookup_r_none with "Haddrs") as %Hgaddr; intuition eauto.
-
-      iMod (ghost_map_insert addr true with "Hghctx") as "(Hghctx & Haddrlocked)"; [auto|].  
-
-      iEval (rewrite struct_pointsto_eq) in "Hacquired".
-      iDestruct "Hacquired" as "[[Hacquired _] _]"; rewrite loc_add_0.
-      wp_untyped_store.
-      wp_untyped_load.
-
-      wp_pures.
-      iApply "HΦloop".
-      iFrame.
-
-      iDestruct (big_sepS_delete with "Hcovered") as "[Hp Hcovered]"; eauto.
-      iSplitR "Hp".
-      2: { iApply "Hp"; done. }
-
-      iSplitR "Hcovered".
+      iDestruct ("Haddrs" with "[held cond waiters]") as "Haddrs".
       {
-        iApply (big_sepM2_insert); [auto | auto | ].
-        iFrame "∗ Hcond".
-        iSplitL; [ iPureIntro; congruence | ].
-        iLeft; done.
+        iFrame "∗#%".
+        iLeft. done.
+      }
+      wp_apply (wp_Cond__Wait with "[$Hcond Hlocked Hmptr Hghctx Hcovered Haddrs]").
+      {
+        iDestruct (Mutex_is_Locker with "[] [$Hlock]") as "$".
+        { iPkgInit. }
+        iFrame.
+      }
+      iIntros "(Hlocked & Hinner)".
+      wp_auto.
+      iDestruct "Hinner" as (m2 gm2) "(Hmptr & Hghctx & Haddrs & Hcovered)".
+
+      wp_apply (wp_map_get with "Hmptr"). iIntros "Hmptr".
+      wp_auto.
+      destruct (m2 !! addr) eqn:Hm2addr.
+      * wp_auto.
+        iDestruct (big_sepM2_lookup_r_some with "Haddrs") as (gheld) "%"; eauto.
+        iDestruct (big_sepM2_lookup_acc with "Haddrs") as "[Haddr Haddrs]"; eauto.
+        iNamedSuffix "Haddr" "2".
+        wp_auto.
+        wp_for_post.
+        iDestruct ("Haddrs" with "[$held2 $cond2 $waiters2 $Hwaiters2 $Hcond2]") as "Haddrs".
+        { done. }
+        iFrame.
+
+      * wp_auto.
+        wp_for_post.
+        iFrame.
+
+    + wp_for_post.
+
+      iDestruct "Hwaiters" as "[% | [_ [Haddr Hp]]]"; try congruence.
+      iMod (ghost_map_update true with "Hghctx Haddr") as "[Hghctx Haddr]".
+
+      iDestruct ("Haddrs" with "[held cond waiters]") as "Haddrs".
+      {
+        iFrame "∗#%".
+        iLeft. done.
       }
 
-      replace (covered) with ({[ addr ]} ∪ (covered ∖ {[ addr ]})) at 3.
-      2: {
-        rewrite -union_difference_L; auto.
-        set_solver.
-      }
+      wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Hcovered Haddrs]").
+      { erewrite <- (insert_id m) at 2; eauto. }
+      iApply "HΦ". iFrame.
 
-      iApply (big_sepS_insert).
+  - wp_auto.
+    wp_apply (wp_NewCond) as "%c #Hcond".
+    wp_alloc lst as "Hlst".
+    wp_auto.
+    wp_apply (wp_map_insert with "Hmptr"). iIntros "Hmptr".
+    wp_auto.
+    wp_for_post.
+
+    iDestruct (big_sepM2_lookup_r_none with "Haddrs") as %Hgaddr; intuition eauto.
+    iMod (ghost_map_insert addr true with "Hghctx") as "(Hghctx & Haddrlocked)"; [auto|].
+    iDestruct (big_sepS_delete with "Hcovered") as "[Hp Hcovered]"; eauto.
+    iDestruct ("Hp" with "[]") as "Hp"; first auto.
+    iDestruct (big_sepM2_insert _ _ _ _ true lst with "[$Haddrs Hlst]") as "Haddrs"; [ eassumption | eassumption | | ].
+    { iDestruct (struct_fields_split with "Hlst") as "Hlst". iNamedSuffix "Hlst" "x". iFrame "∗#%". iLeft; done. }
+
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Haddrs Hcovered]").
+    { replace (covered) with ({[ addr ]} ∪ (covered ∖ {[ addr ]})) at 3.
+      2: { rewrite -union_difference_L; set_solver. }
+      iApply big_sepS_insert.
       { set_solver. }
-
-      iModIntro.
-      iSplitR. { rewrite lookup_insert; iIntros (Hx). congruence. }
-
+      iSplitR.
+      { rewrite lookup_insert; iIntros "!>%Hne". done. }
       iApply big_sepS_mono; iFrame.
       iIntros (x Hx) "H".
       destruct (decide (addr = x)); subst.
-      { set_solver. }
+      + set_solver.
+      + rewrite lookup_insert_ne //.
+    }
 
-      rewrite lookup_insert_ne //.
-  }
-
-  iIntros "(Hinner & Hlocked & Hp & Haddrlocked)".
-  wp_loadField.
-  wp_apply (wp_Mutex__Unlock with "[Hlocked Hinner]").
-  {
-    iSplitR. { iApply "Hlock". }
-    iFrame.
-  }
-
-  wp_pures. iApply "HΦ".
-  by iFrame.
+    iApply "HΦ". iFrame.
 Qed.
 
 Theorem wp_lockShard__release ls (addr : u64) (P : u64 -> iProp Σ) covered gh :
-  {{{ is_lockShard ls gh covered P ∗ P addr ∗ locked gh addr }}}
-    lockShard__release #ls #addr
+  {{{ is_pkg_init lockmap ∗
+      is_lockShard ls gh covered P ∗ P addr ∗ locked gh addr }}}
+    ls@lockmap@"lockShard'ptr"@"release" #addr
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(Hls & Hp & Haddrlocked) HΦ".
+  wp_start as "(Hls & Hp & Haddrlocked)".
   iDestruct "Hls" as (shardlock mptr) "(#Hls_mu&#Hls_state&#Hlock)".
-  wp_rec. wp_pures.
-  wp_loadField.
-  wp_apply (wp_Mutex__Lock with "Hlock").
+  wp_auto.
+  wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked Hinner]".
   iDestruct "Hinner" as (m gm) "(Hmptr & Hghctx & Haddrs & Hcovered)".
-
-  wp_loadField.
-  wp_apply (wp_MapGet with "Hmptr").
-  iIntros (lockStatePtr ok) "[% Hmptr]".
-
-  wp_pures.
+  wp_auto.
+  wp_apply (wp_map_get with "Hmptr"). iIntros "Hmptr".
 
   rewrite /locked.
   iDestruct (ghost_map_lookup with "Hghctx Haddrlocked") as %Hsome.
   iDestruct (big_sepM2_lookup_l_some with "Haddrs") as %Hsome2; eauto.
-  destruct Hsome2.
+  destruct Hsome2 as [x Hsome2]. rewrite Hsome2.
 
   iDestruct (big_sepM2_delete with "Haddrs") as "[Haddr Haddrs]"; eauto.
-
   iNamed "Haddr".
 
-  rewrite /map_get H0 /= in H.
-  inversion H; clear H; subst.
-
-  wp_storeField.
-  wp_loadField.
-  wp_pures.
-
-  destruct (bool_decide (uint.Z 0 < uint.Z nwaiters))%Z.
-
-  {
-    wp_pures.
-    wp_loadField.
-    wp_apply (lock.wp_Cond__Signal with "[$Hcond]").
+  wp_auto.
+  wp_if_destruct.
+  - wp_auto.
+    wp_apply (wp_Cond__Signal with "[$Hcond]").
 
     iMod (ghost_map_update false with "Hghctx Haddrlocked") as "[Hghctx Haddrlocked]".
+    iDestruct (big_sepM2_insert_2 _ _ _ addr with "[held cond waiters Haddrlocked Hp] Haddrs") as "Haddrs".
+    { iFrame "∗#%". iRight. iFrame. done. }
+    rewrite insert_delete_insert.
+    rewrite insert_delete_insert.
+    rewrite (insert_id m); eauto.
 
-    wp_loadField.
-    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
-    {
-      iFrame "Hlock Hlocked".
-      iExists _, _.
-      iFrame.
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Haddrs $Hcovered]").
+    iApply "HΦ". done.
 
-      iDestruct (big_sepM2_insert_2 _ _ _ addr false lockStatePtr
-        with "[-Haddrs] Haddrs") as "Haddrs".
-      {
-        rewrite /setField_f /=.
-        iExists _, _.
-        iFrame "∗ Hcond".
-        iSplitR; auto.
-        iRight.
-        by iFrame.
-      }
-
-      rewrite insert_delete_insert.
-      rewrite insert_delete_insert.
-      rewrite (insert_id m); eauto.
-    }
-
-    wp_pures. iApply "HΦ".
-    auto.
-  }
-
-  {
-    wp_pures.
-    wp_loadField.
-    wp_apply (wp_MapDelete with "[$Hmptr]").
-    iIntros "Hmptr".
+  - wp_auto.
+    wp_apply (wp_map_delete with "Hmptr"). iIntros "Hmptr".
+    wp_auto.
 
     iMod (ghost_map_delete with "Hghctx Haddrlocked") as "Hghctx".
+    iDestruct (big_sepS_delete with "Hcovered") as "[Hcaddr Hcovered]"; eauto.
 
-    wp_loadField.
-    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
-    {
-      iFrame "∗ Hlock".
-      iExists _, (delete addr gm).
-      iFrame.
-
-      iDestruct (big_sepS_delete with "Hcovered") as "[Hcaddr Hcovered]"; eauto.
-      replace (covered) with ({[ addr ]} ∪ (covered ∖ {[ addr ]})) at 3.
-      2: {
-        rewrite -union_difference_L; auto.
-        set_solver.
-      }
-
-      iApply (big_sepS_insert).
-      { set_solver. }
-
-      iSplitL "Hp". { iFrame. done. }
-
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Haddrs Hcovered Hp]").
+    { replace (covered) with ({[ addr ]} ∪ (covered ∖ {[ addr ]})) at 3.
+      2: { rewrite -union_difference_L; set_solver. }
+      iApply big_sepS_insert; first set_solver.
+      iSplitL "Hp".
+      { iIntros "!>_". iFrame. }
       iApply big_sepS_mono; iFrame.
-      iIntros (x Hx) "H".
-      destruct (decide (addr = x)); subst.
-      { set_solver. }
-
-      rewrite lookup_delete_ne //.
+      iIntros (y Hy) "H".
+      destruct (decide (addr = y)); subst.
+      + set_solver.
+      + rewrite lookup_delete_ne //.
     }
 
-    wp_pures. iApply "HΦ".
-    auto.
-  }
+    iApply "HΦ". done.
 Qed.
 
 
-Definition NSHARD_def : Z := Eval vm_compute in (match NSHARD with #(LitInt z) => uint.Z z | _ => 0 end).
+Definition NSHARD_def : Z := 65537.
 Definition NSHARD_aux : seal (@NSHARD_def). Proof. by eexists. Qed.
 Definition NSHARD := NSHARD_aux.(unseal).
 Definition NSHARD_eq : @NSHARD = @NSHARD_def := NSHARD_aux.(seal_eq).
@@ -531,9 +376,9 @@ Proof.
 Qed.
 
 Definition is_lockMap (l: loc) (ghs: list gname) (covered: gset u64) (P: u64 -> iProp Σ) : iProp Σ :=
-  ∃ (shards: list loc) (shardslice: Slice.t),
-    "#Href" ∷ readonly (l ↦[LockMap :: "shards"] (slice_val shardslice)) ∗
-    "#Hslice" ∷ readonly (own_slice_small shardslice ptrT (DfracOwn 1) shards) ∗
+  ∃ (shards: list loc) (shardslice: slice.t),
+    "#Href" ∷ l ↦s[lockmap.LockMap :: "shards"]□ shardslice ∗
+    "#Hslice" ∷ own_slice shardslice DfracDiscarded shards ∗
     "%Hlen" ∷ ⌜ length shards = Z.to_nat NSHARD ⌝ ∗
     "#Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shards; ghs,
       is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P.
@@ -544,114 +389,105 @@ Definition Locked (ghs : list gname) (addr : u64) : iProp Σ :=
     locked gh addr.
 
 
-(* XXX why is this needed here? *)
-Opaque load_ty.
-Opaque lockShard.
-
 Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
-  {{{ [∗ set] a ∈ covered, P a }}}
-    MkLockMap #()
+  {{{ is_pkg_init lockmap ∗
+      [∗ set] a ∈ covered, P a }}}
+    lockmap@"MkLockMap" #()
   {{{ l ghs, RET #l; is_lockMap l ghs covered P }}}.
 Proof.
-  iIntros (Φ) "Hcovered HΦ".
-  wp_rec. wp_pures.
-  wp_apply wp_ref_of_zero; eauto.
-  iIntros (shards) "Hvar".
-  rewrite zero_slice_val.
-  wp_pures.
-  wp_apply wp_ref_to; first by val_ty.
-  iIntros (iv) "Hi".
-  wp_pures.
-  wp_apply (wp_forUpto (λ (i : u64),
-                          ∃ s shardlocs ghs,
-                            "Hvar" ∷ shards ↦[slice.T ptrT] (slice_val s) ∗
-                            "Hslice" ∷ own_slice s ptrT (DfracOwn 1) shardlocs ∗
-                            "%Hlen" ∷ ⌜ length shardlocs = uint.nat i ⌝ ∗
-                            "Hpp" ∷ ( [∗ set] shardnum ∈ rangeSet (uint.Z i) (NSHARD-uint.Z i),
-                              [∗ set] a ∈ covered_by_shard (uint.Z shardnum) covered, P a ) ∗
-                            "Hshards" ∷ [∗ list] shardnum ↦ shardloc; shardgh ∈ shardlocs; ghs,
-                              is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P)%I
-            with "[] [$Hi Hvar Hcovered]").
-  { word. }
-  { clear Φ.
-    iIntros (i).
-    iIntros "!>" (Φ) "(HI & Hi & %Hibound) HΦ".
-    iNamed "HI".
-    wp_pures.
+  wp_start as "Hcovered".
+  wp_auto.
+
+  iAssert (∃ (i: w64) (s: slice.t) shardlocs ghs,
+              "i" ∷ i_ptr ↦ i ∗
+              "Hvar" ∷ shards_ptr ↦ s ∗
+              "Hslice" ∷ own_slice s (DfracOwn 1) shardlocs ∗
+              "Hslice_cap" ∷ own_slice_cap loc s ∗
+              "%Hlen" ∷ ⌜ length shardlocs = uint.nat i ⌝ ∗
+              "Hpp" ∷ ( [∗ set] shardnum ∈ rangeSet (uint.Z i) (NSHARD-uint.Z i),
+                [∗ set] a ∈ covered_by_shard (uint.Z shardnum) covered, P a ) ∗
+              "Hshards" ∷ ([∗ list] shardnum ↦ shardloc; shardgh ∈ shardlocs; ghs,
+                is_lockShard shardloc shardgh (covered_by_shard shardnum covered) P) ∗
+              "%Hrange" ∷ ⌜0 ≤ uint.Z i ≤ NSHARD⌝%Z)%I
+    with "[$i Hcovered $shards]" as "Hloop".
+  { iExists nil, nil.
+    iDestruct own_slice_nil as "$".
+    iDestruct own_slice_cap_none as "$".
+    { done. }
+    iDestruct (big_sepL2_nil with "[$]") as "$".
+    iSplitR.
+    { done. }
+    iDestruct (covered_by_shard_split with "Hcovered") as "Hsplit".
+    change (uint.Z 0%Z) with 0%Z.
+    replace (NSHARD - 0)%Z with NSHARD by word.
+    iFrame.
+    unseal_nshard. word.
+  }
+
+  wp_for.
+  iNamed "Hloop".
+  wp_auto.
+  wp_if_destruct.
+  - wp_auto.
     rewrite rangeSet_first.
     2: { unseal_nshard. word. }
     iDestruct (big_sepS_insert with "Hpp") as "[Hp Hpp]".
     { unseal_nshard. intro Hx.
       apply rangeSet_lookup in Hx; try word. }
-    wp_apply (wp_mkLockShard with "Hp").
+    wp_apply (wp_mkLockShard with "[$Hp]").
     iIntros (ls gh) "Hls".
-    wp_load.
-    wp_apply (wp_SliceAppend (V:=loc) with "Hslice").
-    iIntros (s') "Hslice".
-    wp_store.
-    iApply "HΦ".
-    iFrame "Hi".
-    iExists _, _, _.
-    iFrame "Hvar Hslice".
+    wp_auto.
+    wp_apply wp_slice_literal.
+    iIntros (sls) "Hsls".
+    wp_auto.
+
+    wp_apply (wp_slice_append with "[$Hslice_cap $Hslice $Hsls]").
+    iIntros (s') "(Hslice & Hslice_cap & Hsls)".
+    wp_auto.
+    iDestruct (big_sepL2_app with "Hshards [Hls]") as "Hshards".
+    { iApply big_sepL2_singleton.
+      rewrite Hlen.
+      replace (uint.Z (W64 (uint.Z i))) with (uint.Z i) by word.
+      replace (Z.of_nat (uint.nat i + 0)) with (uint.Z i) by word.
+      iFrame.
+    }
+
+    wp_for_post.
+    iFrame "HΦ i Hslice_cap Hvar Hslice Hshards".
     iSplitR.
     { rewrite length_app Hlen /=. word. }
-    iSplitL "Hpp".
-    { replace (uint.Z (word.add i 1))%Z with (uint.Z i + 1)%Z by word.
-      replace (NSHARD - (uint.Z i + 1))%Z with (NSHARD - uint.Z i - 1)%Z by word.
-      by iFrame. }
-    iApply (big_sepL2_app with "Hshards").
-    iApply big_sepL2_singleton.
-    rewrite Hlen.
-    replace (Z.of_nat (uint.nat i + 0)) with (uint.Z (W64 (uint.Z i))) by word.
-    by iFrame.
-  }
-  {
-    iExists _, nil, nil.
-    iFrame "Hvar".
-    iSplitR.
-    { iApply own_slice_zero. }
-    iSplitR.
-    { done. }
-    iSplitL "Hcovered".
-    { iDestruct (covered_by_shard_split with "Hcovered") as "Hsplit".
-      change (uint.Z 0%Z) with 0%Z.
-      replace (NSHARD - 0)%Z with NSHARD by word.
-      iFrame. }
-    iApply big_sepL2_nil. done.
-  }
-  iIntros "[HI Hi]".
-  iNamed "HI".
-  wp_pures.
-  wp_load.
-  wp_apply wp_allocStruct; first by val_ty.
-  iIntros (lm) "Hlm".
-  iDestruct (struct_fields_split with "Hlm") as "(Hlm&_)".
-  iMod (readonly_alloc_1 with "Hlm") as "Hlm".
-  iDestruct (own_slice_to_small with "Hslice") as "Hslice".
-  iMod (readonly_alloc_1 with "Hslice") as "Hslice".
-  wp_pures.
-  iApply "HΦ".
-  iExists _, _.
-  iFrame "Hlm".
-  iFrame "Hslice".
-  iSplitR.
-  { iPureIntro. rewrite Hlen. unseal_nshard. reflexivity. }
-  iApply "Hshards".
+    replace (uint.Z (word.add i 1))%Z with (uint.Z i + 1)%Z by word.
+    replace (NSHARD - (uint.Z i + 1))%Z with (NSHARD - uint.Z i - 1)%Z by word.
+    iFrame.
+    unseal_nshard. word.
+
+  - (* XXX why do i get this [if decide ... then .. else ..] around my goal? *)
+    replace (# true) with (into_val_bool.(to_val_def) true) by ( rewrite to_val_unseal; auto ).
+    replace (# false) with (into_val_bool.(to_val_def) false) by ( rewrite to_val_unseal; auto ).
+    simpl.
+
+    wp_auto.
+    wp_alloc lm as "Hlm".
+    iDestruct (struct_fields_split with "Hlm") as "Hlm".
+    iPersist "Hlm".
+    iPersist "Hslice".
+    wp_auto.
+    iApply "HΦ".
+    iFrame "∗#".
+
+    iPureIntro.
+    rewrite Hlen. revert Hrange. unseal_nshard. word.
 Qed.
 
 Theorem wp_LockMap__Acquire l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
-  {{{ is_lockMap l ghs covered P ∗
+  {{{ is_pkg_init lockmap ∗
+      is_lockMap l ghs covered P ∗
       ⌜addr ∈ covered⌝ }}}
-    LockMap__Acquire #l #addr
+    l@lockmap@"LockMap'ptr"@"Acquire" #addr
   {{{ RET #(); P addr ∗ Locked ghs addr }}}.
 Proof.
-  iIntros (Φ) "[Hlm %] HΦ".
+  wp_start as "[Hlm %]".
   iNamed "Hlm".
-
-  wp_rec. wp_pures.
-  wp_loadField.
-
-  iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
 
   iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
   pose proof NSHARD_pos.
@@ -660,19 +496,26 @@ Proof.
   list_elem ghs (uint.nat (word.modu addr NSHARD)) as gh.
   { revert Hlen. unseal_nshard. word. }
 
-  wp_apply (wp_SliceGet _ _ _ _ _ shards with "[$Hslice_copy]").
-  { revert Hshard_lookup. unseal_nshard. eauto. }
-  iIntros "Hslice_copy".
+  iDestruct (own_slice_len with "Hslice") as "%Hlen3".
+  pose proof NSHARD_eq as Hunseal. unfold NSHARD_def in Hunseal.
+  rewrite Hunseal in Hshard_lookup.
+  rewrite Hunseal in Hgh_lookup.
+  wp_auto.
 
+  (* XXX is this the expected way to use the [pure_elem_ref] instance of PureWp? *)
+  wp_pure; first word.
+
+  (* XXX is this the expected way to use [wp_load_slice_elem]? *)
+  wp_apply (wp_load_slice_elem with "[$Hslice]"); first eauto. iIntros "_".
+
+  wp_auto.
   iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
   wp_apply (wp_lockShard__acquire with "[$Hshard]").
-  { iPureIntro. rewrite -covered_by_shard_mod. auto. }
+  { iPureIntro. rewrite -Hunseal. rewrite -covered_by_shard_mod. eauto. }
 
   iIntros "[HP Hlocked]".
-  wp_pures. iModIntro. iApply "HΦ".
-  iFrame "HP".
-
-  iExists _. iFrame.
+  wp_auto.
+  iApply "HΦ". iFrame.
   iPureIntro.
   rewrite -Hgh_lookup. f_equal.
   unseal_nshard.
@@ -680,31 +523,35 @@ Proof.
 Qed.
 
 Theorem wp_LockMap__Release l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
-  {{{ is_lockMap l ghs covered P ∗ P addr ∗ Locked ghs addr }}}
-    LockMap__Release #l #addr
+  {{{ is_pkg_init lockmap ∗
+      is_lockMap l ghs covered P ∗ P addr ∗ Locked ghs addr }}}
+    l@lockmap@"LockMap'ptr"@"Release" #addr
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "[Hlm [HP Hlocked]] HΦ".
+  wp_start as "[Hlm [HP Hlocked]]".
   iNamed "Hlm".
 
-  wp_rec. wp_pures.
-  wp_loadField.
-
-  iMod (readonly_load with "Hslice") as (q) "Hslice_copy".
-
-  pose proof NSHARD_pos as Hnshard_pos.
+  iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
+  pose proof NSHARD_pos.
   list_elem shards (uint.nat (word.modu addr NSHARD)) as shard.
   { revert Hlen. unseal_nshard. word. }
 
-  iDestruct "Hlocked" as (gh) "[% Hlocked]".
+  iDestruct (own_slice_len with "Hslice") as "%Hlen3".
+  pose proof NSHARD_eq as Hunseal. unfold NSHARD_def in Hunseal.
+  rewrite Hunseal in Hshard_lookup.
+  wp_auto.
 
-  wp_apply (wp_SliceGet _ _ _ _ _ shards with "[$Hslice_copy]").
-  { revert Hshard_lookup. unseal_nshard. eauto. }
-  iIntros "Hslice_copy".
+  (* XXX is this the expected way to use the [pure_elem_ref] instance of PureWp? *)
+  wp_pure; first word.
 
-  iDestruct (big_sepL2_lookup with "Hshards") as "Hshard"; eauto.
-  { erewrite <- H. unseal_nshard. f_equal. word. }
+  (* XXX is this the expected way to use [wp_load_slice_elem]? *)
+  wp_apply (wp_load_slice_elem with "[$Hslice]"); first eauto. iIntros "_".
 
+  wp_auto.
+  iDestruct "Hlocked" as (gh) "[%Hgh_lookup Hlocked]".
+  rewrite Hunseal in Hgh_lookup.
+  iDestruct (big_sepL2_lookup _ _ _ _ _ gh with "Hshards") as "Hshard"; eauto.
+  { rewrite -Hgh_lookup. f_equal. word. }
   wp_apply (wp_lockShard__release with "[$Hshard $HP $Hlocked]").
   wp_pures. iApply "HΦ". eauto.
 Qed.
