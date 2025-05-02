@@ -1,28 +1,34 @@
 From New.proof Require Import proof_prelude.
 From iris.algebra.lib Require Import mono_list mono_nat dfrac_agree gmap_view.
+From Coq Require Import Logic.ClassicalEpsilon.
 
 Module cmra_expr.
 Inductive t :=
+| prod (A B : t)
 | gmap (K : Type) `{Countable K} (V : t)
 | mono_list (E : Type)
 | frac
+| dfrac
 | agree (A : Type)
-| dfrac_agree (A : Type)
 | excl (A : Type)
 | gmap_view (K : Type) `{Countable K} (V : t)
 .
 
 Fixpoint interpret (x : t) : cmra :=
   match x with
+  | prod A B => prodR (interpret A) (interpret B)
   | gmap K V => gmapR K (interpret V)
   | mono_list A => mono_listR (leibnizO A)
   | frac => fracR
+  | dfrac => dfracR
   | agree A => agreeR (leibnizO A)
-  | dfrac_agree A => dfrac_agreeR (leibnizO A)
   | excl A => exclR (leibnizO A)
   | gmap_view K V => gmap_viewR K (interpret V)
   end.
 End cmra_expr.
+
+(* This would require ucmra for everything, which would exclude exclR. *)
+(* Definition any_cmra : Type := discrete_funUR cmra_expr.interpret. *)
 
 Inductive csigT {A : Type} P :=
 | CexistT : ∀ (x : A), P x → csigT P
@@ -30,103 +36,135 @@ Inductive csigT {A : Type} P :=
 Arguments CexistT {_ _} (_).
 Arguments Cinvalid {_ _}.
 
-Definition any_cmra_car : Type := csigT cmra_expr.interpret.
+Definition any_cmra : Type := csigT cmra_expr.interpret.
 
-Local Instance any_cmra_equiv_instance : Equiv any_cmra_car :=
-  λ a a',
-    match a, a' with
+Inductive any_cmra_equiv_instance : Equiv any_cmra :=
+| CexistT_equiv {A} a b : a ≡ b → (CexistT A a) ≡ (CexistT A b)
+| Cinvalid_equiv : Cinvalid ≡ Cinvalid.
+Local Existing Instance any_cmra_equiv_instance.
+
+Inductive any_cmra_dist_instance : Dist any_cmra :=
+| CexistT_dist {A} a b i : a ≡{i}≡ b → (CexistT A a) ≡{i}≡ (CexistT A b)
+| Cinvalid_dist i : Cinvalid ≡{i}≡ Cinvalid.
+Local Existing Instance any_cmra_dist_instance.
+
+Local Instance any_cmra_valid_instance : Valid any_cmra :=
+  λ x, match x with CexistT A a => ✓ a | _ => False end.
+
+Local Instance any_cmra_validN_instance : ValidN any_cmra :=
+  λ n x, match x with CexistT A a => ✓{n} a | _ => False end.
+
+Local Instance any_cmra_pcore_instance : PCore any_cmra :=
+  λ x, match x with CexistT A a => CexistT A <$> pcore a | _ => Some Cinvalid end.
+
+Local Instance any_cmra_op_instance : Op any_cmra :=
+  λ x y,
+    match x, y with
     | CexistT A a, CexistT A' a' =>
-        (∃ (pf : A = A'), (eq_rect A cmra_expr.interpret a A' pf) = a')
-    | Cinvalid, Cinvalid => True
-    | _, _ => False
+        match (excluded_middle_informative (A = A')) with
+        | right _ => Cinvalid
+        | left eq_proof =>
+            CexistT A' ((eq_rect A cmra_expr.interpret a A' eq_proof) ⋅ a')
+        end
+    | _, _ => Cinvalid
     end.
-(*
-Inductive any_cmra_equiv_instance : Equiv any_cmra_car :=
-| any_cmra_equiv {A} (a b : cmra_expr.interpret A)
-  : a ≡ b → (existT A a) ≡ (existT A b).
-Local Existing Instance any_cmra_equiv_instance. *)
 
-Inductive any_cmra_dist_instance : Dist any_cmra_car :=
-| any_cmra_dist {A} (a b : cmra_expr.interpret A) i :
-  a ≡{i}≡ b → (existT A a) ≡{i}≡ (existT A b).
-Existing Instance any_cmra_dist_instance.
+Definition any_cmra_ofe_mixin : OfeMixin any_cmra.
+Proof. Admitted.
 
-Inductive any_cmra_valid_instance : Valid any_cmra_car :=
-| any_cmra_valid {A} (a : cmra_expr.interpret A) : ✓ a → ✓ (existT A a).
-Existing Instance any_cmra_valid_instance.
-
-Inductive any_cmra_validN_instance : ValidN any_cmra_car :=
-| any_cmra_validN {A} (a : cmra_expr.interpret A) (n : nat) : (✓{n} a) → (✓{n} (existT A a)).
-Existing Instance any_cmra_validN_instance.
-
-Global Instance pcore_instance : PCore any_cmra_car :=
-  λ x, let '(existT A a) := x in (existT A) <$> pcore a.
-
-Global Instance op_instance : Op all_ucmra :=
-  λ x y, λ A, (x A) ⋅ (y A).
-
-Global Instance dist_equivalence n : Equivalence (dist n (A:=all_ucmra)).
+Lemma any_cmra_cmra_mixin : CmraMixin any_cmra.
 Proof.
   split.
-  - intros ??. done.
-  - intros ????. done.
-  - intros ??????. specialize (H A). specialize (H0 A). rewrite H H0 //.
-Qed.
-
-Lemma all_ucmra_ofe_mixin : OfeMixin all_ucmra.
-  split.
-  - intros ??. split.
-    + intros H n. intros A. apply equiv_dist. apply H.
-    + intros H. intros A. apply equiv_dist. intros n.
-      specialize (H n). apply H.
-  - apply _.
-  - intros. intros A. eapply dist_le; last done. apply H.
-Qed.
-
-
-Lemma all_ucmra_ucmra_mixin : UcmraMixin all_ucmra.
-Proof.
-  split.
-  - intros ?. apply ucmra_unit_valid.
-  - intros ??. apply ucmra_unit_left_id.
-  - constructor. simpl. unfold equiv. unfold equiv_instance.
-    intros ?. rewrite ucmra_pcore_unit //.
-Qed.
-
-Lemma all_ucmra_cmra_mixin : CmraMixin all_ucmra.
-  split; repeat intros ?.
-  - specialize (H A). by apply cmra_op_ne.
-  - eexists _; split; [done|].
-    intros A. specialize (H A).
-    setoid_rewrite <- H.
-    rewrite /pcore /pcore_instance in H0.
-    simplify_eq. done.
-  - specialize (H A). specialize (H0 A). by eapply cmra_validN_ne.
-  - split; repeat intros ?.
-    + specialize (H A). by apply cmra_valid_validN.
-    + apply cmra_valid_validN. intros n. specialize (H n A). done.
-  - specialize (H A). by eapply cmra_validN_le.
-  - apply cmra_assoc.
-  - apply cmra_comm.
-  - rewrite /op /op_instance.
-    rewrite /pcore /pcore_instance in H. simplify_eq.
-    destruct (pcore (x A)) eqn:H.
-    + simpl. by apply cmra_pcore_l.
-    + simpl. rewrite left_id //.
-  - constructor. repeat intros ?.
-    inversion H. subst.
-    destruct (pcore (x A)) eqn:H'.
-    + simpl. rewrite cmra_pcore_idemp //.
-    + simpl. rewrite ucmra_pcore_unit //.
-  - eexists _; split; [done|].
-    destruct H as [z H]. inversion H0. subst.
-    eexists _. intros ?.
-    specialize (H A). rewrite /pcore /pcore_instance.
-(*
-    mixin_cmra_pcore_mono : ∀ x y cx : A, x ≼ y → pcore x = Some cx → ∃ cy : A, pcore y = Some cy ∧ cx ≼ cy;
-    mixin_cmra_validN_op_l : ∀ (n : SI0) (x y : A), ✓{n} (x ⋅ y) → ✓{n} x;
-    mixin_cmra_extend : ∀ (n : SI0) (x y1 y2 : A),
-                          ✓{n} x
-                          → x ≡{n}≡ y1 ⋅ y2 → {z1 : A & {z2 : A | x ≡ z1 ⋅ z2 ∧ z1 ≡{n}≡ y1 ∧ z2 ≡{n}≡ y2}} }.
- *)
+  - intros [] ? ? ? H.
+    + inversion H; subst; rewrite /op /any_cmra_op_instance ///=.
+      destruct excluded_middle_informative; constructor. rewrite H0 //.
+    + cbn. constructor.
+  -
 Admitted.
+
+Canonical Structure any_cmraO : ofe := Ofe any_cmra any_cmra_ofe_mixin.
+Canonical Structure any_cmraR := Cmra any_cmra any_cmra_cmra_mixin.
+
+Definition to_any (A : cmra_expr.t) a : any_cmra :=
+  CexistT A a.
+
+Lemma any_cmra_validN_op A B a b n :
+  ✓{n} (CexistT A a ⋅ CexistT B b) ↔
+  ∃ (pf : A = B), ✓{n}((eq_rect A _ a B pf) ⋅ b).
+Proof.
+Admitted.
+
+Lemma any_cmra_validN_op_invalid_r A a n :
+  ✓{n} (CexistT A a ⋅ Cinvalid) → False.
+Proof.
+Admitted.
+
+Lemma any_cmra_validN_op_invalid_l A a n :
+  ✓{n} (Cinvalid ⋅ CexistT A a) → False.
+Proof.
+Admitted.
+
+Lemma any_cmra_validN A a n :
+  ✓{n} CexistT A a ↔ ✓{n} a.
+Proof. done. Qed.
+
+Lemma any_cmra_valid A a :
+  ✓ CexistT A a ↔ ✓ a.
+Proof. done. Qed.
+
+Lemma any_cmra_update {A : cmra_expr.t} a b :
+  a ~~> b →
+  to_any A a ~~> to_any A b.
+Proof.
+  unfold to_any. intros Hupd n [[]|] Hvalid.
+  - rewrite any_cmra_validN_op in Hvalid. destruct Hvalid as [-> Hvalid].
+    simpl. rewrite any_cmra_validN_op. eexists eq_refl.
+    simpl in *. specialize (Hupd n (Some c)). by apply Hupd.
+  - simpl in *. by apply any_cmra_validN_op_invalid_r in Hvalid.
+  - simpl in *. rewrite !any_cmra_validN in Hvalid |- *.
+    specialize (Hupd n None). by apply Hupd.
+Qed.
+
+Section own.
+Context `{!inG Σ any_cmraR}.
+
+Class SimpleCmra A :=
+  {
+    Aexp : cmra_expr.t;
+    eq_proof : A = cmra_expr.interpret Aexp;
+  }.
+
+Definition own_any {A : cmra} γ (a : A) : iProp Σ :=
+  ∃ (_ : SimpleCmra A), own γ (CexistT Aexp (eq_rect A id a _ eq_proof) : any_cmra).
+
+Lemma own_any_update γ {A : cmra} (a a' : A) :
+  a ~~> a' →
+  own_any γ a ==∗ own_any γ a'.
+Proof.
+  intros Hupd. iIntros "[% Hown]".
+  iExists _. iApply (own_update with "Hown").
+  apply any_cmra_update. simpl. destruct H.
+  simpl in *. destruct eq_proof0. simpl.
+  apply Hupd.
+Qed.
+
+Lemma own_any_alloc `{!SimpleCmra A} (a : A) :
+  ✓ a →
+  ⊢ |==> ∃ γ, own_any γ a.
+Proof.
+  intros Hvalid.
+  iMod (own_alloc (CexistT Aexp (eq_rect A id a _ eq_proof) : any_cmra)) as (γ) "H".
+  { rewrite any_cmra_valid. simpl. destruct SimpleCmra0.
+    simpl in *. destruct eq_proof0. simpl in *. done. }
+  by iFrame.
+Qed.
+
+Instance mlist_simple_cmra (A : Type) : SimpleCmra (mono_listR (leibnizO A)).
+Proof. by eexists (cmra_expr.mono_list A). Qed.
+
+Lemma own_any_mono_list (l : list nat) :
+  ⊢ |==> ∃ γ, own_any γ (●ML l).
+Proof.
+  iApply own_any_alloc. apply mono_list_auth_valid.
+Qed.
+End own.
