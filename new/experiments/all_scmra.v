@@ -69,13 +69,6 @@ Local Instance any_cmra_op_instance : Op any_cmra :=
     | _, _ => Cinvalid
     end.
 
-
-Inductive eq' {A : Type} : A → A → Prop :=  eq_refl' x : eq' x x.
-
-Lemma eq_iff_eq' {A : Type} (a b : A) :
-  a = b ↔ eq' a b.
-Proof. split; intros; subst; first done. by destruct H. Qed.
-
 (* Q: does [inj_pair2] *require* [classical]? *)
 
 Local Instance any_cmra_dist_equivalence n : Equivalence (dist n (A:=any_cmra)).
@@ -125,6 +118,12 @@ Lemma any_cmra_invalid_valid :
   ✓ Cinvalid = False.
 Proof. done. Qed.
 
+Lemma CexistT_op A a a' :
+  CexistT A a ⋅ CexistT A a' = CexistT A (a ⋅ a').
+Proof.
+  cbn. destruct excluded_middle_informative; try done. rewrite (UIP_refl _ _ e) //.
+Qed.
+
 Lemma any_cmra_included x y :
   x ≼ y ↔ y = Cinvalid ∨ (∃ A a a', x = CexistT A a ∧ y = CexistT A a' ∧ a ≼ a').
 Proof.
@@ -135,16 +134,15 @@ Proof.
   - intros [|].
     + subst. eexists Cinvalid. by destruct x.
     + destruct H as (? & ? & ? & -> & -> & Hincl). destruct Hincl as [i Hincl].
-      eexists (CexistT x0 i). cbn. destruct excluded_middle_informative; try done.
-      rewrite (UIP_refl _ _ e). simpl. constructor. done.
+      eexists (CexistT x0 i). rewrite CexistT_op. constructor. done.
 Qed.
 
 Lemma any_cmra_cmra_mixin : CmraMixin any_cmra.
 Proof.
   split.
   - intros [] ? ? ? H.
-    + inversion H; subst; rewrite /op /any_cmra_op_instance ///=.
-      destruct excluded_middle_informative; constructor. rewrite H0 //.
+    + inversion H; subst; last done.
+      cbn. destruct excluded_middle_informative; constructor. rewrite H0 //.
     + cbn. constructor.
   - intros. oinversion H; subst; simpl.
     + rewrite /pcore /any_cmra_pcore_instance in H0 |- *.
@@ -208,18 +206,19 @@ Lemma any_cmra_validN_op A B a b n :
   ✓{n} (CexistT A a ⋅ CexistT B b) ↔
   ∃ (pf : A = B), ✓{n}((eq_rect A _ a B pf) ⋅ b).
 Proof.
-Admitted.
+  split.
+  - intros H. cbn in H. destruct excluded_middle_informative in H; try done.
+    exists e. destruct e. simpl in *. rewrite any_cmra_validN // in H.
+  - intros (? & H). subst. simpl in *. rewrite CexistT_op //.
+Qed.
 
 Lemma any_cmra_validN_op_invalid_r A a n :
   ✓{n} (CexistT A a ⋅ Cinvalid) → False.
-Proof.
-Admitted.
+Proof. done. Qed.
 
 Lemma any_cmra_validN_op_invalid_l A a n :
   ✓{n} (Cinvalid ⋅ CexistT A a) → False.
-Proof.
-Admitted.
-
+Proof. done. Qed.
 
 Lemma any_cmra_update {A : cmra_expr.t} a b :
   a ~~> b →
@@ -277,3 +276,8 @@ Proof.
   iApply own_any_alloc. apply mono_list_auth_valid.
 Qed.
 End own.
+
+(* Print Assumptions own_any_mono_list.
+  constructive_indefinite_description : ∀ (A : Type) (P : A → Prop), (∃ x : A, P x) → {x : A | P x}
+  classic : ∀ P : Prop, P ∨ ¬ P
+*)
