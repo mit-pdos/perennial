@@ -2,6 +2,7 @@ translate = [
 "compute_new_cap", "reserve",
 "ReadInt", "ReadInt32", "ReadBytes", "ReadBytesCopy", "ReadBool", "ReadLenPrefixeBytes",
 "WriteInt", "WriteInt32", "WriteBytes", "WriteBool", "WriteLenPrefixedBytes",
+"Dec", "Enc",
 ]
 imports = [
   "github.com/goose-lang/primitive",

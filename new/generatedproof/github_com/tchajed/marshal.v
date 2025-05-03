@@ -7,6 +7,112 @@ Require Export New.golang.theory.
 Require Export New.code.github_com.tchajed.marshal.
 Module marshal.
 Axiom falso : False.
+Module Enc.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  b' : slice.t;
+  off' : loc;
+}.
+End def.
+End Enc.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Enc : Settable _ :=
+  settable! Enc.mk < Enc.b'; Enc.off' >.
+Global Instance into_val_Enc : IntoVal Enc.t.
+Admitted.
+
+Global Instance into_val_typed_Enc : IntoValTyped Enc.t marshal.Enc :=
+{|
+  default_val := Enc.mk (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_Enc_b : IntoValStructField "b" marshal.Enc Enc.b'.
+Admitted.
+
+Global Instance into_val_struct_field_Enc_off : IntoValStructField "off" marshal.Enc Enc.off'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Enc b' off':
+  PureWp True
+    (struct.make #marshal.Enc (alist_val [
+      "b" ::= #b';
+      "off" ::= #off'
+    ]))%struct
+    #(Enc.mk b' off').
+Admitted.
+
+
+Global Instance Enc_struct_fields_split dq l (v : Enc.t) :
+  StructFieldsSplit dq l v (
+    "Hb" ∷ l ↦s[marshal.Enc :: "b"]{dq} v.(Enc.b') ∗
+    "Hoff" ∷ l ↦s[marshal.Enc :: "off"]{dq} v.(Enc.off')
+  ).
+Admitted.
+
+End instances.
+
+Module Dec.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  b' : slice.t;
+  off' : loc;
+}.
+End def.
+End Dec.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Dec : Settable _ :=
+  settable! Dec.mk < Dec.b'; Dec.off' >.
+Global Instance into_val_Dec : IntoVal Dec.t.
+Admitted.
+
+Global Instance into_val_typed_Dec : IntoValTyped Dec.t marshal.Dec :=
+{|
+  default_val := Dec.mk (default_val _) (default_val _);
+  to_val_has_go_type := ltac:(destruct falso);
+  default_val_eq_zero_val := ltac:(destruct falso);
+  to_val_inj := ltac:(destruct falso);
+  to_val_eqdec := ltac:(solve_decision);
+|}.
+Global Instance into_val_struct_field_Dec_b : IntoValStructField "b" marshal.Dec Dec.b'.
+Admitted.
+
+Global Instance into_val_struct_field_Dec_off : IntoValStructField "off" marshal.Dec Dec.off'.
+Admitted.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Dec b' off':
+  PureWp True
+    (struct.make #marshal.Dec (alist_val [
+      "b" ::= #b';
+      "off" ::= #off'
+    ]))%struct
+    #(Dec.mk b' off').
+Admitted.
+
+
+Global Instance Dec_struct_fields_split dq l (v : Dec.t) :
+  StructFieldsSplit dq l v (
+    "Hb" ∷ l ↦s[marshal.Dec :: "b"]{dq} v.(Dec.b') ∗
+    "Hoff" ∷ l ↦s[marshal.Dec :: "off"]{dq} v.(Dec.off')
+  ).
+Admitted.
+
+End instances.
+
 Section names.
 
 Class GlobalAddrs :=

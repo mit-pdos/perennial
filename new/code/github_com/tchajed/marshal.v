@@ -10,6 +10,16 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Enc : go_type := structT [
+  "b" :: sliceT;
+  "off" :: ptrT
+].
+
+Definition Dec : go_type := structT [
+  "b" :: sliceT;
+  "off" :: ptrT
+].
+
 (* go: stateless.go:8:6 *)
 Definition compute_new_cap : val :=
   rec: "compute_new_cap" "old_cap" "min_cap" :=
@@ -220,7 +230,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [("compute_new_cap"%go, compute_new_cap); ("reserve"%go, reserve); ("ReadInt"%go, ReadInt); ("ReadInt32"%go, ReadInt32); ("ReadBytes"%go, ReadBytes); ("ReadBytesCopy"%go, ReadBytesCopy); ("ReadBool"%go, ReadBool); ("WriteInt"%go, WriteInt); ("WriteInt32"%go, WriteInt32); ("WriteBytes"%go, WriteBytes); ("WriteBool"%go, WriteBool); ("WriteLenPrefixedBytes"%go, WriteLenPrefixedBytes)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Enc"%go, []); ("Enc'ptr"%go, []); ("Dec"%go, []); ("Dec'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo marshal.marshal :=
   {|
