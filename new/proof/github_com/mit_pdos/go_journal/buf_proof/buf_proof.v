@@ -2,6 +2,9 @@ Require Import New.generatedproof.github_com.mit_pdos.go_journal.buf.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.github_com.goose_lang.primitive.disk.
 Require Import New.proof.sync.
+Require Import New.proof.github_com.tchajed.marshal.
+Require Import New.proof.github_com.mit_pdos.go_journal.addr.
+Require Import New.proof.github_com.mit_pdos.go_journal.util.
 Require Import New.proof.github_com.mit_pdos.go_journal.buf_proof.defs.
 
 (*
@@ -18,6 +21,7 @@ From Perennial.program_proof Require Export buf.defs.
 From Perennial.program_proof Require Import addr.addr_proof wal.abstraction.
 From Perennial.Helpers Require Import NamedProps PropRestore NatDivMod.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
+*)
 
 #[local] Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
@@ -30,31 +34,35 @@ Notation object := ({K & bufDataT K}).
 Notation versioned_object := ({K & (bufDataT K * bufDataT K)%type}).
 
 Section heap.
-Context `{!heapGS Σ}.
+Context `{!heapGS Σ} `{!goGlobalsGS Σ}.
 
-Implicit Types s : Slice.t.
-Implicit Types (stk:stuckness) (E: coPset).
+(* XXX cumbersome that package [buf] has to mention global addrs of package [util] *)
+Context `{Huga: !util.GlobalAddrs}.
 
-Definition is_buf_data {K} (s : Slice.t) (d : bufDataT K) (a : addr) : iProp Σ :=
+Program Instance : IsPkgInit buf.buf := ltac2:(build_pkg_init ()).
+
+Implicit Types s : slice.t.
+
+Definition is_buf_data {K} (s : slice.t) (d : bufDataT K) (a : addr) : iProp Σ :=
   match d with
-  | bufBit b => ∃ (b0 : u8), slice.own_slice_small s u8T (DfracOwn 1) (#b0 :: nil) ∗
+  | bufBit b => ∃ (b0 : u8), own_slice s (DfracOwn 1) (b0 :: nil) ∗
     ⌜ get_bit b0 (word.modu a.(addrOff) 8) = b ⌝
-  | bufInode i => slice.own_slice_small s u8T (DfracOwn 1) (inode_to_vals i)
-  | bufBlock b => slice.own_slice_small s u8T (DfracOwn 1) (Block_to_vals b)
+  | bufInode i => own_slice s (DfracOwn 1) (inode_to_vals i)
+  | bufBlock b => own_slice s (DfracOwn 1) (vec_to_list b)
   end.
 
-Definition is_buf_without_data (bufptr : loc) (a : addr) (o : buf) (data : Slice.t) : iProp Σ :=
+Definition is_buf_without_data (bufptr : loc) (a : addr) (o : buf) (data : slice.t) : iProp Σ :=
   ∃ (sz : u64),
-    "Haddr" ∷ bufptr ↦[Buf :: "Addr"] (addr2val a) ∗
-    "Hsz" ∷ bufptr ↦[Buf :: "Sz"] #sz ∗
-    "Hdata" ∷ bufptr ↦[Buf :: "Data"] (slice_val data) ∗
-    "Hdirty" ∷ bufptr ↦[Buf :: "dirty"] #o.(bufDirty) ∗
+    "Haddr" ∷ bufptr ↦s[buf.Buf :: "Addr"] (addr2val a) ∗
+    "Hsz" ∷ bufptr ↦s[buf.Buf :: "Sz"] sz ∗
+    "Hdata" ∷ bufptr ↦s[buf.Buf :: "Data"] (data) ∗
+    "Hdirty" ∷ bufptr ↦s[buf.Buf :: "dirty"] o.(bufDirty) ∗
     "%" ∷ ⌜ valid_addr a ∧ valid_off o.(bufKind) a.(addrOff) ⌝ ∗
     "->" ∷ ⌜ sz = bufSz o.(bufKind) ⌝ ∗
     "%" ∷ ⌜ #bufptr ≠ #null ⌝.
 
 Definition is_buf (bufptr : loc) (a : addr) (o : buf) : iProp Σ :=
-  ∃ (data : Slice.t),
+  ∃ (data : slice.t),
     "Hisbuf_without_data" ∷ is_buf_without_data bufptr a o data ∗
     "Hbufdata" ∷ is_buf_data data o.(bufData) a.
 
@@ -94,7 +102,7 @@ Definition data_has_obj (data: list byte) (a:addr) (obj: object) : Prop :=
 
 Theorem data_has_obj_to_buf_data s a obj data :
   data_has_obj data a obj →
-  own_slice_small s u8T (DfracOwn 1) data -∗ is_buf_data s (objData obj) a.
+  own_slice s (DfracOwn 1) data -∗ is_buf_data s (objData obj) a.
 Proof.
   rewrite /data_has_obj /is_buf_data.
   iIntros (?) "Hs".
@@ -107,7 +115,7 @@ Proof.
 Qed.
 
 Theorem is_buf_data_has_obj s a obj :
-  is_buf_data s (objData obj) a ⊣⊢ ∃ data, own_slice_small s u8T (DfracOwn 1) data ∗
+  is_buf_data s (objData obj) a ⊣⊢ ∃ data, own_slice s (DfracOwn 1) data ∗
                                            ⌜data_has_obj data a obj⌝.
 Proof.
   iSplit; intros.
@@ -120,109 +128,127 @@ Proof.
     iApply (data_has_obj_to_buf_data with "Hs"); auto.
 Qed.
 
-Theorem wp_buf_loadField_sz bufptr a b stk E :
+Theorem wp_buf_loadField_sz bufptr a b :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf "Sz" #bufptr @ stk; E
+    ![# uint64T] (# (struct.field_ref_f buf.Buf "Sz" bufptr))
   {{{
-    RET #(bufSz b.(bufKind));
+    RET #(W64 (bufSz b.(bufKind)));
     is_buf bufptr a b
   }}}.
 Proof using.
-  iIntros (Φ) "Hisbuf HΦ".
+  wp_start as "Hisbuf".
   iNamed "Hisbuf".
   iNamed "Hisbuf_without_data".
-  wp_loadField.
+
+  (* XXX [wp_auto_lc 1] and [wp_load] seem to not be set up to strip off the ▷ on HΦ.. *)
+  wp_apply (wp_load_ty with "Hsz"). iIntros "Hsz".
   iApply "HΦ".
-  iExists _. iFrame. done.
+  iFrame. done.
 Qed.
 
-Theorem wp_buf_loadField_addr bufptr a b stk E :
+Theorem wp_buf_loadField_addr bufptr a b :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf "Addr" #bufptr @ stk; E
+    ![# addr.Addr] (# (struct.field_ref_f buf.Buf "Addr" bufptr))
   {{{
-    RET (addr2val a);
+    RET #(addr2val a);
     is_buf bufptr a b
   }}}.
 Proof using.
-  iIntros (Φ) "Hisbuf HΦ".
+  wp_start as "Hisbuf".
   iNamed "Hisbuf".
   iNamed "Hisbuf_without_data".
-  wp_loadField.
+
+  (* XXX [wp_auto_lc 1] and [wp_load] seem to not be set up to strip off the ▷ on HΦ.. *)
+  wp_apply (wp_load_ty with "Haddr"). iIntros "Haddr".
   iApply "HΦ".
-  iExists _; iFrame. done.
+  iFrame. done.
 Qed.
 
-Theorem wp_buf_loadField_dirty bufptr a b stk E :
+Theorem wp_buf_loadField_dirty bufptr a b :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf "dirty" #bufptr @ stk ; E
+    ![# boolT] (# (struct.field_ref_f buf.Buf "dirty" bufptr))
   {{{
     RET #(b.(bufDirty));
     is_buf bufptr a b
   }}}.
 Proof using.
-  iIntros (Φ) "Hisbuf HΦ".
+  wp_start as "Hisbuf".
   iNamed "Hisbuf".
   iNamed "Hisbuf_without_data".
-  wp_loadField.
+
+  (* XXX [wp_auto_lc 1] and [wp_load] seem to not be set up to strip off the ▷ on HΦ.. *)
+  wp_apply (wp_load_ty with "Hdirty"). iIntros "Hdirty".
   iApply "HΦ".
-  iExists _; iFrame. done.
+  iFrame. done.
 Qed.
 
-Theorem wp_buf_wd_loadField_sz bufptr a b dataslice stk E :
+Theorem wp_buf_wd_loadField_sz bufptr a b dataslice :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf_without_data bufptr a b dataslice
   }}}
-    struct.loadF buf.Buf "Sz" #bufptr @ stk; E
+    ![# uint64T] (# (struct.field_ref_f buf.Buf "Sz" bufptr))
   {{{
-    RET #(bufSz b.(bufKind));
+    RET #(W64 (bufSz b.(bufKind)));
     is_buf_without_data bufptr a b dataslice
   }}}.
 Proof using.
-  iIntros (Φ) "Hisbuf_without_data HΦ".
+  wp_start as "Hisbuf_without_data".
   iNamed "Hisbuf_without_data".
-  wp_loadField.
+
+  (* XXX [wp_auto_lc 1] and [wp_load] seem to not be set up to strip off the ▷ on HΦ.. *)
+  wp_apply (wp_load_ty with "Hsz"). iIntros "Hsz".
   iApply "HΦ".
-  iExists _. iFrame. done.
+  iFrame. done.
 Qed.
 
-Theorem wp_buf_wd_loadField_addr bufptr a b dataslice stk E :
+Theorem wp_buf_wd_loadField_addr bufptr a b dataslice :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf_without_data bufptr a b dataslice
   }}}
-    struct.loadF buf.Buf "Addr" #bufptr @ stk; E
+    ![# addr.Addr] (# (struct.field_ref_f buf.Buf "Addr" bufptr))
   {{{
-    RET (addr2val a);
+    RET #(addr2val a);
     is_buf_without_data bufptr a b dataslice
   }}}.
 Proof using.
-  iIntros (Φ) "Hisbuf_without_data HΦ".
+  wp_start as "Hisbuf_without_data".
   iNamed "Hisbuf_without_data".
-  wp_loadField.
+
+  (* XXX [wp_auto_lc 1] and [wp_load] seem to not be set up to strip off the ▷ on HΦ.. *)
+  wp_apply (wp_load_ty with "Haddr"). iIntros "Haddr".
   iApply "HΦ".
-  iExists _. iFrame. done.
+  iFrame. done.
 Qed.
 
-Theorem wp_buf_wd_loadField_dirty bufptr a b dataslice stk E :
+Theorem wp_buf_wd_loadField_dirty bufptr a b dataslice :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf_without_data bufptr a b dataslice
   }}}
-    struct.loadF buf.Buf "dirty" #bufptr @ stk; E
+    ![# boolT] (# (struct.field_ref_f buf.Buf "dirty" bufptr))
   {{{
     RET #(b.(bufDirty));
     is_buf_without_data bufptr a b dataslice
   }}}.
 Proof using.
-  iIntros (Φ) "Hisbuf_without_data HΦ".
+  wp_start as "Hisbuf_without_data".
   iNamed "Hisbuf_without_data".
-  wp_loadField.
+
+  (* XXX [wp_auto_lc 1] and [wp_load] seem to not be set up to strip off the ▷ on HΦ.. *)
+  wp_apply (wp_load_ty with "Hdirty"). iIntros "Hdirty".
   iApply "HΦ".
-  iExists _. iFrame. done.
+  iFrame. done.
 Qed.
 
 Theorem is_buf_return_data bufptr a b dataslice (v' : bufDataT b.(bufKind)) :
@@ -234,48 +260,54 @@ Proof.
   iExists _. iFrame.
 Qed.
 
-Theorem wp_buf_loadField_data bufptr a b stk E :
+Theorem wp_buf_loadField_data bufptr a b :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf bufptr a b
   }}}
-    struct.loadF buf.Buf "Data" #bufptr @ stk; E
+    ![# sliceT] (# (struct.field_ref_f buf.Buf "Data" bufptr))
   {{{
-    (vslice : Slice.t), RET (slice_val vslice);
+    (vslice : slice.t), RET #(vslice);
     is_buf_data vslice b.(bufData) a ∗
     is_buf_without_data bufptr a b vslice
   }}}.
 Proof using.
-  iIntros (Φ) "Hisbuf HΦ".
+  wp_start as "Hisbuf".
   iNamed "Hisbuf".
   iNamed "Hisbuf_without_data".
-  wp_loadField.
+
+  (* XXX [wp_auto_lc 1] and [wp_load] seem to not be set up to strip off the ▷ on HΦ.. *)
+  wp_apply (wp_load_ty with "Hdata"). iIntros "Hdata".
   iApply "HΦ".
   iFrame. done.
 Qed.
 
-Theorem wp_buf_storeField_data bufptr a b (vslice: Slice.t) k' (v' : bufDataT k') stk E :
+Theorem wp_buf_storeField_data bufptr a b (vslice: slice.t) k' (v' : bufDataT k') :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf bufptr a b ∗
     is_buf_data vslice v' a ∗
     ⌜ k' = b.(bufKind) ⌝
   }}}
-    struct.storeF buf.Buf "Data" #bufptr (slice_val vslice) @ stk; E
+    # (struct.field_ref_f buf.Buf "Data" bufptr) <-[# sliceT] #vslice
   {{{
     RET #();
     is_buf bufptr a (Build_buf k' v' b.(bufDirty))
   }}}.
 Proof using.
-  iIntros (Φ) "(Hisbuf & Hisbufdata & %) HΦ".
+  wp_start as "[Hisbuf [Hisbufdata %Hkind]]".
   iNamed "Hisbuf".
   iClear "Hbufdata".
   iNamed "Hisbuf_without_data".
-  wp_storeField.
+
+  (* XXX [wp_auto_lc 1] and [wp_store] seem to not be set up to strip off the ▷ on HΦ.. *)
+  wp_apply (wp_store_ty with "Hdata"). iIntros "Hdata".
   iApply "HΦ".
-  iExists _; iFrame. intuition subst. done.
+  iFrame. intuition subst. done.
 Qed.
 
-Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : list val :=
-  drop (n * elemsize) (take ((S n) * elemsize) (Block_to_vals b)).
+Definition extract_nth (b : Block) (elemsize : nat) (n : nat) : list w8 :=
+  drop (n * elemsize) (take ((S n) * elemsize) (vec_to_list b)).
 
 Lemma roundup_multiple a b:
   b > 0 ->
@@ -293,12 +325,13 @@ Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : bufDataT K) : Prop
   match d with
   | bufBlock d => b = d ∧ uint.Z off = 0
   | bufInode i => extract_nth b inode_bytes ((uint.nat off)/(inode_bytes*8)) = inode_to_vals i
-  | bufBit d => ∃ (b0 : u8), extract_nth b 1 ((uint.nat off)/8) = #b0 :: nil ∧
+  | bufBit d => ∃ (b0 : u8), extract_nth b 1 ((uint.nat off)/8) = b0 :: nil ∧
       get_bit b0 (word.modu off 8) = d
   end.
 
+(*
 Lemma buf_pointsto_non_null b a:
-  b ↦[Buf :: "Addr"] addr2val a -∗ ⌜ b ≠ null ⌝.
+  b ↦s[buf.Buf :: "Addr"] addr2val a -∗ ⌜ b ≠ null ⌝.
 Proof.
   iIntros "Hb.a".
   iDestruct (heap_pointsto_non_null with "[Hb.a]") as %Hnotnull.
