@@ -413,7 +413,7 @@ Definition Election__observe : val :=
             return: (#())
           else do:  #());;;
           let: "$range" := (![#sliceT] (struct.field_ref #clientv3.WatchResponse #"Events"%go "wr")) in
-          (let: "ev" := (mem.alloc (type.zero_val #intT)) in
+          (let: "ev" := (mem.alloc (type.zero_val #ptrT)) in
           slice.for_range #ptrT "$range" (λ: "$key" "$value",
             do:  ("ev" <-[#ptrT] "$value");;;
             do:  "$key";;;
@@ -483,7 +483,7 @@ Definition Election__observe : val :=
           return: (#())
         else do:  #());;;
         let: "$range" := (![#sliceT] (struct.field_ref #clientv3.WatchResponse #"Events"%go "wr")) in
-        (let: "ev" := (mem.alloc (type.zero_val #intT)) in
+        (let: "ev" := (mem.alloc (type.zero_val #ptrT)) in
         slice.for_range #ptrT "$range" (λ: "$key" "$value",
           do:  ("ev" <-[#ptrT] "$value");;;
           do:  "$key";;;
@@ -564,7 +564,7 @@ Definition waitDelete : val :=
     chan.for_range "$range" (λ: "$key",
       do:  ("wr" <-[#clientv3.WatchResponse] "$key");;;
       let: "$range" := (![#sliceT] (struct.field_ref #clientv3.WatchResponse #"Events"%go "wr")) in
-      (let: "ev" := (mem.alloc (type.zero_val #intT)) in
+      (let: "ev" := (mem.alloc (type.zero_val #ptrT)) in
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("ev" <-[#ptrT] "$value");;;
         do:  "$key";;;
@@ -988,7 +988,7 @@ Definition NewSession : val :=
     }])) in
     do:  ("ops" <-[#ptrT] "$r0");;;
     let: "$range" := (![#sliceT] "opts") in
-    (let: "opt" := (mem.alloc (type.zero_val #intT)) in
+    (let: "opt" := (mem.alloc (type.zero_val #SessionOption)) in
     slice.for_range #SessionOption "$range" (λ: "$key" "$value",
       do:  ("opt" <-[#SessionOption] "$value");;;
       do:  "$key";;;
@@ -1288,7 +1288,7 @@ Definition NewSTM : val :=
     }])) in
     do:  ("opts" <-[#ptrT] "$r0");;;
     let: "$range" := (![#sliceT] "so") in
-    (let: "f" := (mem.alloc (type.zero_val #intT)) in
+    (let: "f" := (mem.alloc (type.zero_val #stmOption)) in
     slice.for_range #stmOption "$range" (λ: "$key" "$value",
       do:  ("f" <-[#stmOption] "$value");;;
       do:  "$key";;;
@@ -1521,7 +1521,7 @@ Definition readSet__add : val :=
     let: "txnresp" := (mem.alloc "txnresp") in
     let: "keys" := (mem.alloc "keys") in
     let: "$range" := (![#sliceT] (struct.field_ref #clientv3.TxnResponse #"Responses"%go (![#ptrT] "txnresp"))) in
-    (let: "resp" := (mem.alloc (type.zero_val #intT)) in
+    (let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("resp" <-[#ptrT] "$value");;;
@@ -1539,7 +1539,7 @@ Definition readSet__first : val :=
     let: "$r0" := #(W64 (math.MaxInt64 - 1)) in
     do:  ("ret" <-[#int64T] "$r0");;;
     let: "$range" := (![#readSet] "rs") in
-    (let: "resp" := (mem.alloc (type.zero_val #stringT)) in
+    (let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("resp" <-[#ptrT] "$value");;;
       do:  "$key";;;
@@ -1564,7 +1564,7 @@ Definition readSet__cmps : val :=
     map.len "$a0")) in
     do:  ("cmps" <-[#sliceT] "$r0");;;
     let: "$range" := (![#readSet] "rs") in
-    (let: "rk" := (mem.alloc (type.zero_val #stringT)) in
+    (let: "rk" := (mem.alloc (type.zero_val #ptrT)) in
     let: "k" := (mem.alloc (type.zero_val #stringT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("rk" <-[#ptrT] "$value");;;
@@ -1584,7 +1584,7 @@ Definition writeSet__get : val :=
     exception_do (let: "ws" := (mem.alloc "ws") in
     let: "keys" := (mem.alloc "keys") in
     let: "$range" := (![#sliceT] "keys") in
-    (let: "key" := (mem.alloc (type.zero_val #intT)) in
+    (let: "key" := (mem.alloc (type.zero_val #stringT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[#stringT] "$value");;;
       do:  "$key";;;
@@ -1637,7 +1637,7 @@ Definition writeSet__puts : val :=
     map.len "$a0")) in
     do:  ("puts" <-[#sliceT] "$r0");;;
     let: "$range" := (![#writeSet] "ws") in
-    (let: "v" := (mem.alloc (type.zero_val #stringT)) in
+    (let: "v" := (mem.alloc (type.zero_val #stmPut)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("v" <-[#stmPut] "$value");;;
       do:  "$key";;;
@@ -1749,7 +1749,7 @@ Definition stm__fetch : val :=
     slice.len "$a0")) in
     do:  ("ops" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "keys") in
-    (let: "key" := (mem.alloc (type.zero_val #intT)) in
+    (let: "key" := (mem.alloc (type.zero_val #stringT)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[#stringT] "$value");;;
@@ -1819,7 +1819,7 @@ Definition stmSerializable__Get : val :=
     map.len "$a0") = #(W64 0)) in
     do:  ("firstRead" <-[#boolT] "$r0");;;
     let: "$range" := (![#sliceT] "keys") in
-    (let: "key" := (mem.alloc (type.zero_val #intT)) in
+    (let: "key" := (mem.alloc (type.zero_val #stringT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("key" <-[#stringT] "$value");;;
       do:  "$key";;;

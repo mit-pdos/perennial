@@ -32,7 +32,7 @@ Definition EncodeConfig : val :=
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "config") in
-    (let: "h" := (mem.alloc (type.zero_val #intT)) in
+    (let: "h" := (mem.alloc (type.zero_val #uint64T)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("h" <-[#uint64T] "$value");;;
       do:  "$key";;;
@@ -95,7 +95,7 @@ Definition MakeClerk : val :=
     let: "$r0" := (slice.make2 #ptrT #(W64 0)) in
     do:  ("cls" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "hosts") in
-    (let: "host" := (mem.alloc (type.zero_val #intT)) in
+    (let: "host" := (mem.alloc (type.zero_val #uint64T)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("host" <-[#uint64T] "$value");;;
       do:  "$key";;;

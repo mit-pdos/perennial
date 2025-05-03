@@ -160,7 +160,7 @@ Definition Client__replyThread : val :=
       then
         do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
         let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) in
-        (let: "cb" := (mem.alloc (type.zero_val #uint64T)) in
+        (let: "cb" := (mem.alloc (type.zero_val #ptrT)) in
         map.for_range "$range" (λ: "$key" "value",
           do:  ("cb" <-[#ptrT] "$value");;;
           do:  "$key";;;

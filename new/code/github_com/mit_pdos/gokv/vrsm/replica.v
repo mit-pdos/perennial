@@ -259,7 +259,7 @@ Definition EncodeBecomePrimaryArgs : val :=
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] (struct.field_ref #BecomePrimaryArgs #"Replicas"%go (![#ptrT] "args"))) in
-    (let: "h" := (mem.alloc (type.zero_val #intT)) in
+    (let: "h" := (mem.alloc (type.zero_val #uint64T)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("h" <-[#uint64T] "$value");;;
       do:  "$key";;;
@@ -760,7 +760,7 @@ Definition Server__Apply : val :=
     slice.len "$a0")) in
     do:  ("errs" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "clerks_inner") in
-    (let: "clerk" := (mem.alloc (type.zero_val #intT)) in
+    (let: "clerk" := (mem.alloc (type.zero_val #ptrT)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("clerk" <-[#ptrT] "$value");;;
@@ -882,7 +882,7 @@ Definition Server__sendIncreaseCommitThread : val :=
       let: "$r0" := (mem.alloc (type.zero_val #sync.WaitGroup)) in
       do:  ("wg" <-[#ptrT] "$r0");;;
       let: "$range" := (![#sliceT] "clerks_inner") in
-      (let: "clerk" := (mem.alloc (type.zero_val #intT)) in
+      (let: "clerk" := (mem.alloc (type.zero_val #ptrT)) in
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("clerk" <-[#ptrT] "$value");;;
         do:  "$key";;;
@@ -1021,7 +1021,7 @@ Definition Server__SetState : val :=
         let: "$a2" := (![#uint64T] (struct.field_ref #SetStateArgs #"Epoch"%go (![#ptrT] "args"))) in
         (![#funcT] (struct.field_ref #StateMachine #"SetStateAndUnseal"%go (![#ptrT] (struct.field_ref #Server #"sm"%go (![#ptrT] "s"))))) "$a0" "$a1" "$a2");;;
         let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #Server #"opAppliedConds"%go (![#ptrT] "s"))) in
-        (let: "cond" := (mem.alloc (type.zero_val #uint64T)) in
+        (let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
         map.for_range "$range" (λ: "$key" "value",
           do:  ("cond" <-[#ptrT] "$value");;;
           do:  "$key";;;
@@ -1066,7 +1066,7 @@ Definition Server__GetState : val :=
     let: "$r0" := (![#uint64T] (struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s"))) in
     do:  ("committedNextIndex" <-[#uint64T] "$r0");;;
     let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #Server #"opAppliedConds"%go (![#ptrT] "s"))) in
-    (let: "cond" := (mem.alloc (type.zero_val #uint64T)) in
+    (let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("cond" <-[#ptrT] "$value");;;
       do:  "$key";;;

@@ -151,7 +151,7 @@ Definition BankClerk__get_total : val :=
     exception_do (let: "bck" := (mem.alloc "bck") in
     let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$range" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
-    (let: "acct" := (mem.alloc (type.zero_val #intT)) in
+    (let: "acct" := (mem.alloc (type.zero_val #stringT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
@@ -162,7 +162,7 @@ Definition BankClerk__get_total : val :=
       (func_call #bank.bank #"decodeInt"%go) "$a0")) in
       do:  ("sum" <-[#uint64T] "$r0")));;;
     let: "$range" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
-    (let: "acct" := (mem.alloc (type.zero_val #intT)) in
+    (let: "acct" := (mem.alloc (type.zero_val #stringT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
@@ -208,7 +208,7 @@ Definition MakeBankClerkSlice : val :=
       (interface.get #"Put"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0" "$a1");;;
       let: "$range" := (let: "$s" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
       slice.slice #stringT "$s" #(W64 1) (slice.len "$s")) in
-      (let: "acct" := (mem.alloc (type.zero_val #intT)) in
+      (let: "acct" := (mem.alloc (type.zero_val #stringT)) in
       slice.for_range #stringT "$range" (λ: "$key" "$value",
         do:  ("acct" <-[#stringT] "$value");;;
         do:  "$key";;;

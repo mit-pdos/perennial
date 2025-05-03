@@ -200,7 +200,7 @@ Definition circularAppender__logBlocks : val :=
     let: "end" := (mem.alloc "end") in
     let: "d" := (mem.alloc "d") in
     let: "$range" := (![#sliceT] "bufs") in
-    (let: "buf" := (mem.alloc (type.zero_val #intT)) in
+    (let: "buf" := (mem.alloc (type.zero_val #Update)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #Update "$range" (λ: "$key" "$value",
       do:  ("buf" <-[#Update] "$value");;;
@@ -283,7 +283,7 @@ Definition mkSliding : val :=
     let: "$r0" := (map.make #uint64T #LogPosition) in
     do:  ("addrPos" <-[type.mapT #uint64T #LogPosition] "$r0");;;
     let: "$range" := (![#sliceT] "log") in
-    (let: "buf" := (mem.alloc (type.zero_val #intT)) in
+    (let: "buf" := (mem.alloc (type.zero_val #Update)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #Update "$range" (λ: "$key" "$value",
       do:  ("buf" <-[#Update] "$value");;;
@@ -380,7 +380,7 @@ Definition sliding__memWrite : val :=
     let: "$r0" := ((method_call #wal.wal #"sliding'ptr" #"end" (![#ptrT] "s")) #()) in
     do:  ("pos" <-[#LogPosition] "$r0");;;
     let: "$range" := (![#sliceT] "bufs") in
-    (let: "buf" := (mem.alloc (type.zero_val #intT)) in
+    (let: "buf" := (mem.alloc (type.zero_val #Update)) in
     slice.for_range #Update "$range" (λ: "$key" "$value",
       do:  ("buf" <-[#Update] "$value");;;
       do:  "$key";;;
@@ -473,7 +473,7 @@ Definition sliding__deleteFrom : val :=
     let: "$range" := (let: "$s" := (let: "$s" := (![#sliceT] (struct.field_ref #sliding #"log"%go (![#ptrT] "s"))) in
     slice.slice #Update "$s" #(W64 0) ((![#LogPosition] (struct.field_ref #sliding #"mutable"%go (![#ptrT] "s"))) - (![#LogPosition] "start"))) in
     slice.slice #Update "$s" #(W64 0) ((![#LogPosition] "newStart") - (![#LogPosition] "start"))) in
-    (let: "u" := (mem.alloc (type.zero_val #intT)) in
+    (let: "u" := (mem.alloc (type.zero_val #Update)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #Update "$range" (λ: "$key" "$value",
       do:  ("u" <-[#Update] "$value");;;
@@ -591,7 +591,7 @@ Definition installBlocks : val :=
     exception_do (let: "bufs" := (mem.alloc "bufs") in
     let: "d" := (mem.alloc "d") in
     let: "$range" := (![#sliceT] "bufs") in
-    (let: "buf" := (mem.alloc (type.zero_val #intT)) in
+    (let: "buf" := (mem.alloc (type.zero_val #Update)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #Update "$range" (λ: "$key" "$value",
       do:  ("buf" <-[#Update] "$value");;;

@@ -284,7 +284,7 @@ Definition BufMap__Ndirty : val :=
     let: "$r0" := #(W64 0) in
     do:  ("n" <-[#uint64T] "$r0");;;
     let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
-    (let: "buf" := (mem.alloc (type.zero_val #uint64T)) in
+    (let: "buf" := (mem.alloc (type.zero_val #ptrT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("buf" <-[#ptrT] "$value");;;
       do:  "$key";;;
@@ -299,7 +299,7 @@ Definition BufMap__DirtyBufs : val :=
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "bufs" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
-    (let: "buf" := (mem.alloc (type.zero_val #uint64T)) in
+    (let: "buf" := (mem.alloc (type.zero_val #ptrT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("buf" <-[#ptrT] "$value");;;
       do:  "$key";;;

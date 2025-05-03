@@ -110,7 +110,12 @@ Proof.
   wp_pure.
   { word. }
 
-  (* XXX why doesn't [wp_auto] work? *)
+  (* Q: why doesn't [wp_auto] work? *)
+  (* A: [points_to_access_slice_elem_ref] requires [TCSimpl (vs !! (uint.nat i))
+     (Some v)], which cannot be established here. It makes sense when the
+     contents of the slice are a literal list, but not here. We should probably
+     not support it at all. FIXME:(slice elem_ref)
+   *)
   wp_apply (wp_load_slice_elem with "[$Hbits]"); first eauto. iIntros "Hbits".
 
   wp_auto.
@@ -368,23 +373,31 @@ Proof.
   iIntros "[Hlocked Hlinv]".
   iNamed "Hlinv".
   wp_auto.
+  (* FIXME: This spec was written to be really convenient with a list literal,
+     but I never did it with general loops. *)
   wp_apply (wp_slice_for_range with "[$Hbits]").
   (* XXX annoying that [bits] appears twice: once as the 3rd argument to [foldr],
    * and once in [bitmap_s ↦* bits] on the left of the wand in the 2nd argument
    * to [foldr].
    *)
+  (* I think induction on [bits] isn't the right proof argument. Correctness of
+     this code with [b::bits] does not reduce to correctness of code with [bits]. *)
   iInduction bits as [|b bits].
-  - simpl. iIntros "Hbits".
-    wp_auto.
-(*
-    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap]").
-*)
+  2:{
+    simpl. wp_auto. wp_apply wp_popCnt. iIntros "* %Hn". wp_auto.
+    iSplitR; first done.
+    (* FIXME: this will not work. The spec is pretty tough to use as-is. *)
+    (* iApply "IHbits". *)
     admit.
-  - simpl. wp_auto. wp_bind.
-    (* XXX is this a goose mis-translation?
-     * the context has [b_ptr ↦ W64 0], but the WP is storing a [byteT] at [b_ptr].
-     *)
-    admit.
+  }
+  simpl. iIntros "Hbits".
+  wp_auto.
+  iDestruct (own_slice_len with "Hbits") as %Hsz.
+    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
+  { iNext. simpl in *. word. }
+  iApply "HΦ". word.
+Admitted.
+
 (*
   Search slice.for_range.
   wp_loadField.
@@ -429,6 +442,5 @@ Proof.
     word.
 Qed.
 *)
-Admitted.
 
 End proof.

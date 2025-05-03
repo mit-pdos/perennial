@@ -74,7 +74,7 @@ Definition Log__installBufsMap : val :=
     let: "$r0" := (map.make #uint64T #sliceT) in
     do:  ("blks" <-[type.mapT #uint64T #sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "bufs") in
-    (let: "b" := (mem.alloc (type.zero_val #intT)) in
+    (let: "b" := (mem.alloc (type.zero_val #ptrT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("b" <-[#ptrT] "$value");;;
       do:  "$key";;;
@@ -119,7 +119,7 @@ Definition Log__installBufs : val :=
     map.len "$a0")) in
     do:  ("blks" <-[#sliceT] "$r0");;;
     let: "$range" := (![type.mapT #uint64T #sliceT] "bufmap") in
-    (let: "data" := (mem.alloc (type.zero_val #uint64T)) in
+    (let: "data" := (mem.alloc (type.zero_val #sliceT)) in
     let: "blkno" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("data" <-[#sliceT] "$value");;;

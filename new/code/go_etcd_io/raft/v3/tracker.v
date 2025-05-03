@@ -533,7 +533,7 @@ Definition ProgressMap__String : val :=
     (func_call #slices.slices #"SortUint64"%go) "$a0");;;
     let: "buf" := (mem.alloc (type.zero_val #strings.Builder)) in
     let: "$range" := (![#sliceT] "ids") in
-    (let: "id" := (mem.alloc (type.zero_val #intT)) in
+    (let: "id" := (mem.alloc (type.zero_val #uint64T)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("id" <-[#uint64T] "$value");;;
       do:  "$key";;;
@@ -787,7 +787,7 @@ Definition ProgressTracker__Visit : val :=
     do:  (let: "$a0" := (![#sliceT] "ids") in
     (func_call #slices.slices #"SortUint64"%go) "$a0");;;
     let: "$range" := (![#sliceT] "ids") in
-    (let: "id" := (mem.alloc (type.zero_val #intT)) in
+    (let: "id" := (mem.alloc (type.zero_val #uint64T)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("id" <-[#uint64T] "$value");;;
       do:  "$key";;;
@@ -919,7 +919,7 @@ Definition ProgressTracker__TallyVotes : val :=
     let: "granted" := (mem.alloc (type.zero_val #intT)) in
     let: "p" := (mem.alloc "p") in
     let: "$range" := (![#ProgressMap] (struct.field_ref #ProgressTracker #"Progress"%go (![#ptrT] "p"))) in
-    (let: "pr" := (mem.alloc (type.zero_val #uint64T)) in
+    (let: "pr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "id" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("pr" <-[#ptrT] "$value");;;

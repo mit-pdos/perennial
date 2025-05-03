@@ -591,7 +591,7 @@ Definition Server__TryBecomeLeader : val :=
     slice.len "$a0")) in
     do:  ("n" <-[#uint64T] "$r0");;;
     let: "$range" := (![#sliceT] "clerks") in
-    (let: "ck" := (mem.alloc (type.zero_val #intT)) in
+    (let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("ck" <-[#ptrT] "$value");;;
@@ -619,7 +619,7 @@ Definition Server__TryBecomeLeader : val :=
     let: "$r0" := #(W64 0) in
     do:  ("numSuccesses" <-[#uint64T] "$r0");;;
     let: "$range" := (![#sliceT] "replies") in
-    (let: "reply" := (mem.alloc (type.zero_val #intT)) in
+    (let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("reply" <-[#ptrT] "$value");;;
       do:  "$key";;;
@@ -733,7 +733,7 @@ Definition Server__TryAcquire : val :=
       slice.len "$a0")) in
       do:  ("n" <-[#uint64T] "$r0");;;
       let: "$range" := (![#sliceT] "clerks") in
-      (let: "ck" := (mem.alloc (type.zero_val #intT)) in
+      (let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
       let: "i" := (mem.alloc (type.zero_val #intT)) in
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("ck" <-[#ptrT] "$value");;;
@@ -766,7 +766,7 @@ Definition Server__TryAcquire : val :=
       let: "$r0" := #(W64 0) in
       do:  ("numSuccesses" <-[#uint64T] "$r0");;;
       let: "$range" := (![#sliceT] "replies") in
-      (let: "reply" := (mem.alloc (type.zero_val #intT)) in
+      (let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("reply" <-[#ptrT] "$value");;;
         do:  "$key";;;
@@ -813,7 +813,7 @@ Definition makeServer : val :=
     let: "$r0" := (slice.make2 #ptrT #(W64 0)) in
     do:  ((struct.field_ref #Server #"clerks"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "config") in
-    (let: "host" := (mem.alloc (type.zero_val #intT)) in
+    (let: "host" := (mem.alloc (type.zero_val #uint64T)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("host" <-[#uint64T] "$value");;;
       do:  "$key";;;

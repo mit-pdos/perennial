@@ -131,7 +131,7 @@ Definition writeAll : val :=
     exception_do (let: "off" := (mem.alloc "off") in
     let: "bks" := (mem.alloc "bks") in
     let: "$range" := (![#sliceT] "bks") in
-    (let: "bk" := (mem.alloc (type.zero_val #intT)) in
+    (let: "bk" := (mem.alloc (type.zero_val #sliceT)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #sliceT "$range" (λ: "$key" "$value",
       do:  ("bk" <-[#sliceT] "$value");;;

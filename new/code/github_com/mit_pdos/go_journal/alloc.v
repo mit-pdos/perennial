@@ -194,7 +194,7 @@ Definition Alloc__NumFree : val :=
     do:  ("total" <-[#uint64T] "$r0");;;
     let: "count" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$range" := (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) in
-    (let: "b" := (mem.alloc (type.zero_val #intT)) in
+    (let: "b" := (mem.alloc (type.zero_val #byteT)) in
     slice.for_range #byteT "$range" (λ: "$key" "$value",
       do:  ("b" <-[#byteT] "$value");;;
       do:  "$key";;;

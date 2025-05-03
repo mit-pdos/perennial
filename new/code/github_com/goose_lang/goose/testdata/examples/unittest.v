@@ -1415,7 +1415,7 @@ Definition sumSlice : val :=
     exception_do (let: "xs" := (mem.alloc "xs") in
     let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$range" := (![#sliceT] "xs") in
-    (let: "x" := (mem.alloc (type.zero_val #intT)) in
+    (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("x" <-[#uint64T] "$value");;;
       do:  "$key";;;
