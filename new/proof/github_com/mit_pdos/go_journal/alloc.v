@@ -128,41 +128,31 @@ Proof.
   iApply "HΦ". done.
 Qed.
 
-(*
 Lemma wp_MkMaxAlloc (max: u64) :
   0 < uint.Z max →
   uint.Z max `mod` 8 = 0 →
-  {{{ True }}}
-    MkMaxAlloc #max
+  {{{ is_pkg_init alloc.alloc }}}
+    alloc.alloc@"MkMaxAlloc" #max
   {{{ l, RET #l; is_alloc max l }}}.
 Proof.
-  iIntros (Hbound Hmod Φ) "_ HΦ".
-  wp_rec. wp_pures.
-  rewrite -> bool_decide_eq_true_2 by word.
-  wp_pures.
-  rewrite bool_decide_eq_true_2; last first.
-  { repeat (f_equal; try word). }
-  wp_pures.
-  wp_apply wp_new_slice; first by auto.
-  iIntros (bitmap_s) "Hs".
-  wp_pures.
-  iApply own_slice_to_small in "Hs".
-  replace (replicate (uint.nat (word.divu max 8)) (zero_val byteT))
-          with (b2val <$> replicate (uint.nat (word.divu max 8)) (W8 0));
-    last first.
-  { rewrite fmap_replicate //. }
+  intros Hbound Hmod.
+  wp_start as "_".
+  wp_auto.
+  wp_if_destruct; last by word.
+  wp_auto.
+  wp_if_destruct; last by word.
+  wp_auto.
+  wp_apply (wp_slice_make2 (V:=u8)).
+  iIntros (bitmap_s) "[Hs Hscap]". simpl.
+  wp_auto.
   wp_apply (wp_MkAlloc with "[$Hs]").
-  { rewrite length_replicate.
-    word. }
-  { rewrite length_replicate.
-    word. }
+  { rewrite length_replicate. word. }
+  { rewrite length_replicate. word. }
   iIntros (a_l) "#Ha".
   rewrite length_replicate.
-  wp_pures.
-  wp_apply (wp_MarkUsed with "Ha").
+  wp_auto.
+  wp_apply (wp_MarkUsed with "[$Ha]").
   { word. }
-  wp_pures.
-  iModIntro.
   iApply "HΦ".
   iExactEq "Ha".
   f_equal.
@@ -171,65 +161,57 @@ Qed.
 
 Lemma wp_incNext (max: u64) (l: loc) :
   0 < uint.Z max →
-  {{{ alloc_linv max l }}}
-    Alloc__incNext #l
+  {{{ is_pkg_init alloc.alloc ∗
+      alloc_linv max l }}}
+    l@alloc.alloc@"Alloc'ptr"@"incNext" #()
   {{{ (next': u64), RET #next'; ⌜uint.Z next' < uint.Z max⌝ ∗
                                 alloc_linv max l }}}.
 Proof.
-  iIntros (Hbound Φ) "Hl HΦ".
+  intros Hbound.
+  wp_start as "Hl".
   iNamed "Hl".
-  wp_rec. wp_pures.
-  wp_loadField.
-  wp_storeField.
-  wp_loadField.
-  wp_apply wp_slice_len.
-  wp_loadField.
-  wp_pures.
+  wp_auto.
   wp_if_destruct.
-  - wp_storeField.
-    wp_loadField.
+  - wp_auto.
     iApply "HΦ".
     iSplit.
     + iPureIntro.
       word.
     + iExists _, _, _.
       iFrame "∗%".
-  - wp_loadField.
+  - wp_auto.
     iApply "HΦ".
-    iDestruct (own_slice_small_sz with "Hbits") as %Hsz_len.
-    rewrite length_fmap in Hsz_len.
-    rewrite word.unsigned_mul in Heqb.
-    rewrite -> wrap_small in Heqb by word.
-    change (uint.Z 8) with 8 in Heqb.
+    iDestruct (own_slice_len with "Hbits") as %Hsz_len.
+    rewrite word.unsigned_mul in n.
+    rewrite -> wrap_small in n by word.
+    change (uint.Z 8) with 8 in n.
     iSplit.
-    + iPureIntro.
-      revert Heqb. word.
+    + iPureIntro. word.
     + iExists _, _, _.
       iFrame "∗%".
-      iPureIntro.
-      revert Heqb; word.
+      iPureIntro. word.
 Qed.
 
 Lemma wp_allocBit (max: u64) (l: loc) :
-  {{{ is_alloc max l }}}
-    Alloc__allocBit #l
+  {{{ is_pkg_init alloc.alloc ∗
+      is_alloc max l }}}
+    l@alloc.alloc@"Alloc'ptr"@"allocBit" #()
   {{{ (n: u64), RET #n; ⌜uint.Z n < uint.Z max⌝ }}}.
 Proof.
-  iIntros (Φ) "Hpre HΦ".
+  wp_start as "Hpre".
   iNamed "Hpre".
-  wp_rec. wp_pures.
-  wp_apply (wp_ref_of_zero); first by auto.
-  iIntros (num_l) "num".
-  wp_pures.
-  wp_loadField.
-  wp_apply (wp_Mutex__Lock with "His_lock").
+  wp_auto.
+  wp_apply (wp_Mutex__Lock with "[$His_lock]").
   iIntros "[Hlocked Hlinv]".
-  wp_apply (wp_incNext with "Hlinv"); auto.
+  wp_auto.
+  wp_apply (wp_incNext with "[$Hlinv]"); auto.
   iIntros (?) "[%Hnext_bound Hlinv]".
-  wp_store.
-  wp_load.
-  wp_pures.
-  wp_bind (For _ _ _).
+  wp_auto.
+  wp_for.
+
+
+(*
+
   wp_apply (wp_forBreak (λ _, ∃ (num: u64),
                             "%Hnum_bound" ∷ ⌜uint.Z num < uint.Z max⌝ ∗
                             "num" ∷ num_l ↦[uint64T] #num ∗
@@ -279,125 +261,132 @@ Proof.
     iApply "HΦ".
     iPureIntro; done.
 Qed.
+*)
+Admitted.
 
 Lemma wp_freeBit max l (bn: u64) :
   uint.Z bn < uint.Z max →
-  {{{ is_alloc max l }}}
-    Alloc__freeBit #l #bn
+  {{{ is_pkg_init alloc.alloc ∗
+      is_alloc max l }}}
+    l@alloc.alloc@"Alloc'ptr"@"freeBit" #bn
   {{{ RET #(); True }}}.
 Proof.
   intros Hbound.
-  iIntros (Φ) "H HΦ". iNamed "H".
-  wp_rec. wp_pures.
-  wp_loadField.
-  wp_apply (wp_Mutex__Lock with "[$]").
+  wp_start as "H". iNamed "H".
+  wp_auto.
+  wp_apply (wp_Mutex__Lock with "[$His_lock]").
   iIntros "[Hlocked Hlinv]".
-  wp_pures.
   iNamed "Hlinv".
-  wp_loadField.
+  iDestruct (own_slice_len with "Hbits") as "%Hbitslen".
   destruct (bits_lookup_byte max bits bn) as [b Hlookup]; [ done | done | ].
-  wp_apply (wp_SliceGet with "[$Hbits]"); first by eauto.
-  iIntros "[Hbits _]".
-  wp_loadField.
-  wp_apply (wp_SliceSet with "[$Hbits]").
-  { iSplit; iPureIntro; [ done | auto ]. }
+  wp_auto.
+  wp_pure; first word.
+  wp_apply (wp_load_slice_elem with "[$Hbits]"); first by eauto.
   iIntros "Hbits".
-  wp_pures.
-  wp_loadField.
-  wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked next bitmap Hbits]").
-  { rewrite -list_fmap_insert.
-    iExists _, _, _; iFrame "∗%".
-    rewrite length_insert.
-    iFrame "%". }
-  wp_pures. by iApply "HΦ".
+  wp_auto.
+  wp_pure; first word.
+  wp_apply (wp_store_slice_elem with "[$Hbits]"); first by word.
+  iIntros "Hbits".
+  wp_auto.
+  wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
+  { rewrite length_insert. word. }
+  by iApply "HΦ".
 Qed.
 
 Lemma wp_AllocNum max l :
-  {{{ is_alloc max l }}}
-    Alloc__AllocNum #l
+  {{{ is_pkg_init alloc.alloc ∗
+      is_alloc max l }}}
+    l@alloc.alloc@"Alloc'ptr"@"AllocNum" #()
   {{{ (n: u64), RET #n; ⌜uint.Z n < uint.Z max⌝ }}}.
 Proof.
-  iIntros (Φ) "H HΦ".
-  wp_rec. wp_pures.
-  wp_apply (wp_allocBit with "H").
+  wp_start as "H".
+  wp_auto.
+  wp_apply (wp_allocBit with "[$H]").
   iIntros (n Hlt).
-  wp_pures. iModIntro.
+  wp_auto.
   iApply "HΦ". auto.
 Qed.
 
 Lemma wp_FreeNum max l (num: u64) :
   uint.Z num < uint.Z max →
   uint.Z num ≠ 0 →
-  {{{ is_alloc max l }}}
-    Alloc__FreeNum #l #num
+  {{{ is_pkg_init alloc.alloc ∗
+      is_alloc max l }}}
+    l@alloc.alloc@"Alloc'ptr"@"FreeNum" #num
   {{{ RET #(); True }}}.
 Proof.
   intros Hnum Hnonzero.
-  iIntros (Φ) "H HΦ".
-  wp_rec. wp_pures.
-  wp_if_destruct.
-  wp_apply (wp_freeBit with "H"); eauto.
-  wp_pures. by iApply "HΦ".
+  wp_start as "H".
+  wp_auto.
+  wp_if_destruct; first word.
+  wp_auto.
+  wp_apply (wp_freeBit with "[$H]"); eauto.
+  by iApply "HΦ".
 Qed.
 
 Lemma wp_popCnt (b: u8) :
-  {{{ True }}}
-    popCnt #b
+  {{{ is_pkg_init alloc.alloc }}}
+    alloc.alloc@"popCnt" #b
   {{{ (n: u64), RET #n; ⌜uint.Z n ≤ 8⌝ }}}.
 Proof.
-  iIntros (Φ) "_ HΦ".
-  wp_rec. wp_pures.
-  wp_apply (wp_ref_of_zero); auto.
-  iIntros (count_l) "Hcount".
-  wp_pures.
-  wp_apply wp_ref_to; auto.
-  iIntros (x_l) "Hx".
-  wp_pures.
-  wp_apply wp_ref_to; auto.
-  iIntros (i_l) "Hi".
-  wp_pures.
-  wp_apply (wp_forUpto (λ i, ∃ (x: u8) (count: u64),
-                           "Hx" ∷ x_l ↦[byteT] #x ∗
-                           "Hcount" ∷ count_l ↦[uint64T] #count ∗
-                           "%Hcount_bound" ∷ ⌜uint.Z count ≤ uint.Z i⌝)%I
-              with "[] [Hx Hcount $Hi]").
-  - word.
-  - clear.
-    iIntros (i Φ) "!> Hpre HΦ".
-    iDestruct "Hpre" as "(Hpre & Hi & %Hi)".
-    iNamed "Hpre".
-    wp_pures.
-    wp_load. wp_load. wp_store. wp_load. wp_store.
-    iModIntro.
-    iApply "HΦ".
-    iFrame "Hi".
-    iExists _, _; iFrame.
-    iPureIntro.
-    pose proof (and_1_u8 x).
-    word.
-  - iExists _, _; iFrame.
-    iPureIntro.
-    word.
-  - iIntros "[Hinv _]".
-    iNamed "Hinv".
-    wp_pures. wp_load.
-    iModIntro.
-    iApply "HΦ".
-    word.
+  wp_start as "_".
+  wp_auto.
+  iAssert (∃ (i count: w64) (x: w8),
+                           "Hx" ∷ x_ptr ↦ x ∗
+                           "Hi" ∷ i_ptr ↦ i ∗
+                           "Hcount" ∷ count_ptr ↦ count ∗
+                           "%Hcount_bound" ∷ ⌜uint.Z count ≤ uint.Z i⌝ ∗
+                           "%Hi_bound" ∷ ⌜0 ≤ uint.Z i ≤ 8⌝)%I
+              with "[$i $x $count]" as "Hloop".
+  { simpl. word. }
+
+  wp_for.
+  iNamed "Hloop".
+  wp_auto.
+  wp_if_destruct.
+  - wp_auto.
+    wp_for_post.
+    iFrame.
+    pose proof (and_1_u8 x). word.
+  - (* XXX why doesn't the automation work for this? *)
+    replace (# true) with (into_val_bool.(to_val_def) true) by ( rewrite to_val_unseal; auto ).
+    replace (# false) with (into_val_bool.(to_val_def) false) by ( rewrite to_val_unseal; auto ).
+    simpl.
+    wp_auto.
+    iApply "HΦ". word.
 Qed.
 
 Lemma wp_NumFree max l :
-  {{{ is_alloc max l }}}
-    Alloc__NumFree #l
+  {{{ is_pkg_init alloc.alloc ∗
+      is_alloc max l }}}
+    l@alloc.alloc@"Alloc'ptr"@"NumFree" #()
   {{{ (n:u64), RET #n; ⌜0 ≤ uint.Z n ≤ uint.Z max⌝}}}.
 Proof.
-  iIntros (Φ) "H HΦ". iNamed "H".
-  wp_rec. wp_pures.
-  wp_loadField.
-  wp_apply (wp_Mutex__Lock with "[$]").
+  wp_start as "H". iNamed "H".
+  wp_auto.
+  wp_apply (wp_Mutex__Lock with "[$His_lock]").
   iIntros "[Hlocked Hlinv]".
-  wp_pures.
   iNamed "Hlinv".
+  wp_auto.
+  wp_apply (wp_slice_for_range with "[$Hbits]").
+  (* XXX annoying that [bits] appears twice: once as the 3rd argument to [foldr],
+   * and once in [bitmap_s ↦* bits] on the left of the wand in the 2nd argument
+   * to [foldr].
+   *)
+  iInduction bits as [|b bits].
+  - simpl. iIntros "Hbits".
+    wp_auto.
+(*
+    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap]").
+*)
+    admit.
+  - simpl. wp_auto. wp_bind.
+    (* XXX is this a goose mis-translation?
+     * the context has [b_ptr ↦ W64 0], but the WP is storing a [byteT] at [b_ptr].
+     *)
+    admit.
+(*
+  Search slice.for_range.
   wp_loadField.
   wp_apply wp_slice_len.
   wp_apply (wp_ref_of_zero); first done.
@@ -440,5 +429,6 @@ Proof.
     word.
 Qed.
 *)
+Admitted.
 
 End proof.
