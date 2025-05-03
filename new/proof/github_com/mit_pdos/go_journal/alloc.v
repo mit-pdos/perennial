@@ -212,62 +212,49 @@ Proof.
   wp_apply (wp_incNext with "[$Hlinv]"); auto.
   iIntros (?) "[%Hnext_bound Hlinv]".
   wp_auto.
+
+  iAssert (∃ (num: w64),
+    "num" ∷ num_ptr ↦ num ∗
+    "%Hnum_bound" ∷ ⌜0 ≤ uint.Z num < uint.Z max⌝)%I
+    with "[$num]" as "Hloop".
+  { word. }
+
   wp_for.
 
+  iNamed "Hloop".
+  iNamed "Hlinv".
+  iDestruct (own_slice_len with "Hbits") as "%Hsz".
 
-(*
-
-  wp_apply (wp_forBreak (λ _, ∃ (num: u64),
-                            "%Hnum_bound" ∷ ⌜uint.Z num < uint.Z max⌝ ∗
-                            "num" ∷ num_l ↦[uint64T] #num ∗
-                            "Hlinv" ∷ alloc_linv max l)%I
-                        with "[] [num Hlinv]"); swap 1 2.
-  - (* initial loop invariant *)
-    iExists _; iFrame "∗%".
-  - clear Φ.
-    iIntros "!>" (Φ) "Hinv HΦ". iNamed "Hinv".
-    wp_pures. wp_load. wp_load.
-    wp_pures.
-    iNamed "Hlinv".
-    wp_loadField.
-    destruct (bits_lookup_byte max bits num) as [b Hlookup]; [ done | done | ].
-    wp_apply (wp_SliceGet _ _ _ _ _ _ _ (b2val b) with "[$Hbits]"); first done.
-    iIntros "[Hbits _]".
-    wp_pures.
+  wp_auto.
+  wp_pure; first by word.
+  destruct (bits_lookup_byte max bits num) as [b Hlookup]; [ done | word | ].
+  wp_apply (wp_load_slice_elem with "[$Hbits]"); first by eauto. iIntros "Hbits".
+  wp_auto.
+  wp_if_destruct.
+  - wp_auto.
+    wp_pure; first by word.
+    wp_apply (wp_load_slice_elem with "[$Hbits]"); first by eauto. iIntros "Hbits".
+    wp_auto.
+    wp_pure; first by word.
+    wp_apply (wp_store_slice_elem with "[$Hbits]"); first by word. iIntros "Hbits".
+    wp_auto.
+    wp_for_post.
+    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
+    { rewrite length_insert. word. }
+    iApply "HΦ". word.
+  - wp_auto.
+    wp_apply (wp_incNext max with "[$next $bitmap $Hbits]"); first done.
+    { word. }
+    iIntros (next'') "[%Hnext'' Hlinv]".
+    wp_auto.
     wp_if_destruct.
-    + wp_loadField.
-      wp_apply (wp_SliceGet with "[$Hbits]"); first done.
-      iIntros "[Hbits _]".
-      wp_loadField.
-      wp_apply (wp_SliceSet with "[$Hbits]").
-      { iSplit; iPureIntro; [ done | auto ]. }
-      iIntros "Hbits".
-      wp_pures.
-      iApply "HΦ".
-      rewrite -list_fmap_insert.
-      iExists _; iFrame "∗%".
-      by rewrite length_insert.
-    + wp_apply (wp_incNext max with "[next bitmap Hbits]"); first done.
-      { iExists _, _, _; iFrame "∗%". }
-      iIntros (next'') "[%Hnext'' Hlinv]".
-      wp_store.
-      wp_load.
-      wp_if_destruct.
-      { wp_store.
-        iApply "HΦ".
-        iExists _; iFrame "∗%". eauto. }
-      iApply "HΦ".
-      iExists _; iFrame "∗%"; eauto.
-  - iNamed 1.
-    wp_pures.
-    wp_loadField.
-    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $Hlinv]").
-    wp_load.
-    iApply "HΦ".
-    iPureIntro; done.
+    + wp_auto.
+      wp_for_post.
+      wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $Hlinv]").
+      iApply "HΦ". done.
+    + wp_for_post.
+      iFrame. word.
 Qed.
-*)
-Admitted.
 
 Lemma wp_freeBit max l (bn: u64) :
   uint.Z bn < uint.Z max →
@@ -373,74 +360,43 @@ Proof.
   iIntros "[Hlocked Hlinv]".
   iNamed "Hlinv".
   wp_auto.
-  (* FIXME: This spec was written to be really convenient with a list literal,
-     but I never did it with general loops. *)
-  wp_apply (wp_slice_for_range with "[$Hbits]").
-  (* XXX annoying that [bits] appears twice: once as the 3rd argument to [foldr],
-   * and once in [bitmap_s ↦* bits] on the left of the wand in the 2nd argument
-   * to [foldr].
-   *)
-  (* I think induction on [bits] isn't the right proof argument. Correctness of
-     this code with [b::bits] does not reduce to correctness of code with [bits]. *)
-  iInduction bits as [|b bits].
-  2:{
-    simpl. wp_auto. wp_apply wp_popCnt. iIntros "* %Hn". wp_auto.
-    iSplitR; first done.
-    (* FIXME: this will not work. The spec is pretty tough to use as-is. *)
-    (* iApply "IHbits". *)
-    admit.
-  }
-  simpl. iIntros "Hbits".
+
+  (* XXX seems unfortunate that the proof has to unfold [slice.for_range] *)
+  Transparent slice.for_range.
+  rewrite /slice.for_range.
   wp_auto.
+
+  iAssert (∃ (i count: w64) (b: w8),
+    "i" ∷ i_ptr ↦ i ∗
+    "count" ∷ count_ptr ↦ count ∗
+    "b" ∷ b_ptr ↦ b ∗
+    "%i_range" ∷ ⌜ 0 ≤ uint.Z i ≤ length bits ⌝ ∗
+    "%count_bound" ∷ ⌜ 0 ≤ uint.Z count ≤ 8 * uint.Z i ⌝)%I
+    with "[$i $count $b]" as "Hloop".
+  { simpl. word. }
+
+  wp_for.
+  iNamed "Hloop".
   iDestruct (own_slice_len with "Hbits") as %Hsz.
+  wp_auto.
+  wp_if_destruct.
+  - wp_auto.
+    edestruct (lookup_lt_is_Some_2 bits (uint.nat i)); first word.
+    wp_apply (wp_load_slice_elem with "[$Hbits]"); first eauto. iIntros "Hbits".
+    wp_auto.
+    wp_apply wp_popCnt. iIntros (n Hn).
+    wp_auto.
+    wp_for_post.
+    iFrame.
+    word.
+  - (* XXX *)
+    replace (# true) with (into_val_bool.(to_val_def) true) by ( rewrite to_val_unseal; auto ).
+    replace (# false) with (into_val_bool.(to_val_def) false) by ( rewrite to_val_unseal; auto ).
+    simpl.
+    wp_auto.
     wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
-  { iNext. simpl in *. word. }
-  iApply "HΦ". word.
-Admitted.
-
-(*
-  Search slice.for_range.
-  wp_loadField.
-  wp_apply wp_slice_len.
-  wp_apply (wp_ref_of_zero); first done.
-  iIntros (count_l) "Hcount".
-  wp_pures.
-  wp_loadField.
-
-  iDestruct (own_slice_small_sz with "Hbits") as %Hsz.
-  rewrite length_fmap in Hsz.
-
-  wp_apply (wp_forSlice (λ i, ∃ (count: u64),
-                            "Hcount" ∷ count_l ↦[uint64T] #count ∗
-                            "%Hcount_bound" ∷ ⌜uint.Z count ≤ 8 * uint.Z i⌝)%I
-           with "[] [Hcount $Hbits]").
-  - clear Φ.
-    iIntros (i x Φ) "!> [Hinv [%Hbound %Hlookup]] HΦ". iNamed "Hinv".
-    fmap_Some in Hlookup as b.
-    wp_pures.
-    wp_load.
-    wp_apply wp_popCnt.
-    iIntros (popcnt Hpop_bound).
-    wp_store.
-    iModIntro.
-    iApply "HΦ".
-    iExists _; iFrame.
-    iPureIntro.
-    word.
-  - iExists _; iFrame.
-    word.
-  - iIntros "[Hinv Hbits]". iNamed "Hinv".
-    wp_pures.
-    wp_loadField.
-    wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked next bitmap Hbits]").
-    { iExists _, _, _; iFrame "∗%". }
-    wp_load.
-    wp_pures.
-    iModIntro.
-    iApply "HΦ".
-    iPureIntro.
-    word.
+    { word. }
+    iApply "HΦ". word.
 Qed.
-*)
 
 End proof.
