@@ -4,8 +4,11 @@ Require Export New.manualproof.github_com.mit_pdos.gokv.trusted_proph.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.trusted_proph.
+
+Set Default Proof Using "Type".
+
 Module trusted_proph.
-Axiom falso : False.
+
 Module ProphId.
 Section def.
 Context `{ffi_syntax}.

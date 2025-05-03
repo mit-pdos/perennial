@@ -4,8 +4,11 @@ Require Export New.manualproof.fmt.
 Require Export New.golang.theory.
 
 Require Export New.code.fmt.
+
+Set Default Proof Using "Type".
+
 Module fmt.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

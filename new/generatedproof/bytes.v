@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.bytes.
+
+Set Default Proof Using "Type".
+
 Module bytes.
-Axiom falso : False.
+
 Module Buffer.
 Section def.
 Context `{ffi_syntax}.

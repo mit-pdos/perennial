@@ -14,8 +14,11 @@ Require Export New.generatedproof.math.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.etcd.client.v3.concurrency.
+
+Set Default Proof Using "Type".
+
 Module concurrency.
-Axiom falso : False.
+
 Module Election.
 Section def.
 Context `{ffi_syntax}.
@@ -35,34 +38,44 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Election : Settable _ :=
   settable! Election.mk < Election.session'; Election.keyPrefix'; Election.leaderKey'; Election.leaderRev'; Election.leaderSession'; Election.hdr' >.
-Global Instance into_val_Election : IntoVal Election.t.
-Admitted.
+Global Instance into_val_Election : IntoVal Election.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.Election [
+    "session" ::= #(Election.session' v);
+    "keyPrefix" ::= #(Election.keyPrefix' v);
+    "leaderKey" ::= #(Election.leaderKey' v);
+    "leaderRev" ::= #(Election.leaderRev' v);
+    "leaderSession" ::= #(Election.leaderSession' v);
+    "hdr" ::= #(Election.hdr' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Election : IntoValTyped Election.t concurrency.Election :=
+Global Program Instance into_val_typed_Election : IntoValTyped Election.t concurrency.Election :=
 {|
   default_val := Election.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Election_session : IntoValStructField "session" concurrency.Election Election.session'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Election_keyPrefix : IntoValStructField "keyPrefix" concurrency.Election Election.keyPrefix'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Election_leaderKey : IntoValStructField "leaderKey" concurrency.Election Election.leaderKey'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Election_leaderRev : IntoValStructField "leaderRev" concurrency.Election Election.leaderRev'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Election_leaderSession : IntoValStructField "leaderSession" concurrency.Election Election.leaderSession'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Election_hdr : IntoValStructField "hdr" concurrency.Election Election.hdr'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -77,7 +90,7 @@ Global Instance wp_struct_make_Election session' keyPrefix' leaderKey' leaderRev
       "hdr" ::= #hdr'
     ]))%struct
     #(Election.mk session' keyPrefix' leaderKey' leaderRev' leaderSession' hdr').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Election_struct_fields_split dq l (v : Election.t) :
@@ -89,6 +102,19 @@ Global Instance Election_struct_fields_split dq l (v : Election.t) :
     "HleaderSession" ∷ l ↦s[concurrency.Election :: "leaderSession"]{dq} v.(Election.leaderSession') ∗
     "Hhdr" ∷ l ↦s[concurrency.Election :: "hdr"]{dq} v.(Election.hdr')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Election.session' v)) (struct.field_offset_f concurrency.Election "session"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Election.keyPrefix' v)) (struct.field_offset_f concurrency.Election "keyPrefix"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Election.leaderKey' v)) (struct.field_offset_f concurrency.Election "leaderKey"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Election.leaderRev' v)) (struct.field_offset_f concurrency.Election "leaderRev"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Election.leaderSession' v)) (struct.field_offset_f concurrency.Election "leaderSession"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -111,31 +137,40 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Mutex : Settable _ :=
   settable! Mutex.mk < Mutex.s'; Mutex.pfx'; Mutex.myKey'; Mutex.myRev'; Mutex.hdr' >.
-Global Instance into_val_Mutex : IntoVal Mutex.t.
-Admitted.
+Global Instance into_val_Mutex : IntoVal Mutex.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.Mutex [
+    "s" ::= #(Mutex.s' v);
+    "pfx" ::= #(Mutex.pfx' v);
+    "myKey" ::= #(Mutex.myKey' v);
+    "myRev" ::= #(Mutex.myRev' v);
+    "hdr" ::= #(Mutex.hdr' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Mutex : IntoValTyped Mutex.t concurrency.Mutex :=
+Global Program Instance into_val_typed_Mutex : IntoValTyped Mutex.t concurrency.Mutex :=
 {|
   default_val := Mutex.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Mutex_s : IntoValStructField "s" concurrency.Mutex Mutex.s'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Mutex_pfx : IntoValStructField "pfx" concurrency.Mutex Mutex.pfx'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Mutex_myKey : IntoValStructField "myKey" concurrency.Mutex Mutex.myKey'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Mutex_myRev : IntoValStructField "myRev" concurrency.Mutex Mutex.myRev'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Mutex_hdr : IntoValStructField "hdr" concurrency.Mutex Mutex.hdr'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -149,7 +184,7 @@ Global Instance wp_struct_make_Mutex s' pfx' myKey' myRev' hdr':
       "hdr" ::= #hdr'
     ]))%struct
     #(Mutex.mk s' pfx' myKey' myRev' hdr').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Mutex_struct_fields_split dq l (v : Mutex.t) :
@@ -160,6 +195,18 @@ Global Instance Mutex_struct_fields_split dq l (v : Mutex.t) :
     "HmyRev" ∷ l ↦s[concurrency.Mutex :: "myRev"]{dq} v.(Mutex.myRev') ∗
     "Hhdr" ∷ l ↦s[concurrency.Mutex :: "hdr"]{dq} v.(Mutex.hdr')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Mutex.s' v)) (struct.field_offset_f concurrency.Mutex "s"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Mutex.pfx' v)) (struct.field_offset_f concurrency.Mutex "pfx"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Mutex.myKey' v)) (struct.field_offset_f concurrency.Mutex "myKey"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Mutex.myRev' v)) (struct.field_offset_f concurrency.Mutex "myRev"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -178,19 +225,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_lockerMutex : Settable _ :=
   settable! lockerMutex.mk < lockerMutex.Mutex' >.
-Global Instance into_val_lockerMutex : IntoVal lockerMutex.t.
-Admitted.
+Global Instance into_val_lockerMutex : IntoVal lockerMutex.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.lockerMutex [
+    "Mutex" ::= #(lockerMutex.Mutex' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_lockerMutex : IntoValTyped lockerMutex.t concurrency.lockerMutex :=
+Global Program Instance into_val_typed_lockerMutex : IntoValTyped lockerMutex.t concurrency.lockerMutex :=
 {|
   default_val := lockerMutex.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_lockerMutex_Mutex : IntoValStructField "Mutex" concurrency.lockerMutex lockerMutex.Mutex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -200,13 +252,21 @@ Global Instance wp_struct_make_lockerMutex Mutex':
       "Mutex" ::= #Mutex'
     ]))%struct
     #(lockerMutex.mk Mutex').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance lockerMutex_struct_fields_split dq l (v : lockerMutex.t) :
   StructFieldsSplit dq l v (
     "HMutex" ∷ l ↦s[concurrency.lockerMutex :: "Mutex"]{dq} v.(lockerMutex.Mutex')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -230,34 +290,44 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Session : Settable _ :=
   settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
-Global Instance into_val_Session : IntoVal Session.t.
-Admitted.
+Global Instance into_val_Session : IntoVal Session.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.Session [
+    "client" ::= #(Session.client' v);
+    "opts" ::= #(Session.opts' v);
+    "id" ::= #(Session.id' v);
+    "ctx" ::= #(Session.ctx' v);
+    "cancel" ::= #(Session.cancel' v);
+    "donec" ::= #(Session.donec' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Session : IntoValTyped Session.t concurrency.Session :=
+Global Program Instance into_val_typed_Session : IntoValTyped Session.t concurrency.Session :=
 {|
   default_val := Session.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Session_client : IntoValStructField "client" concurrency.Session Session.client'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Session_opts : IntoValStructField "opts" concurrency.Session Session.opts'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Session_id : IntoValStructField "id" concurrency.Session Session.id'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Session_ctx : IntoValStructField "ctx" concurrency.Session Session.ctx'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Session_cancel : IntoValStructField "cancel" concurrency.Session Session.cancel'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Session_donec : IntoValStructField "donec" concurrency.Session Session.donec'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -272,7 +342,7 @@ Global Instance wp_struct_make_Session client' opts' id' ctx' cancel' donec':
       "donec" ::= #donec'
     ]))%struct
     #(Session.mk client' opts' id' ctx' cancel' donec').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Session_struct_fields_split dq l (v : Session.t) :
@@ -284,6 +354,19 @@ Global Instance Session_struct_fields_split dq l (v : Session.t) :
     "Hcancel" ∷ l ↦s[concurrency.Session :: "cancel"]{dq} v.(Session.cancel') ∗
     "Hdonec" ∷ l ↦s[concurrency.Session :: "donec"]{dq} v.(Session.donec')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Session.client' v)) (struct.field_offset_f concurrency.Session "client"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Session.opts' v)) (struct.field_offset_f concurrency.Session "opts"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Session.id' v)) (struct.field_offset_f concurrency.Session "id"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Session.ctx' v)) (struct.field_offset_f concurrency.Session "ctx"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Session.cancel' v)) (struct.field_offset_f concurrency.Session "cancel"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -304,25 +387,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_sessionOptions : Settable _ :=
   settable! sessionOptions.mk < sessionOptions.ttl'; sessionOptions.leaseID'; sessionOptions.ctx' >.
-Global Instance into_val_sessionOptions : IntoVal sessionOptions.t.
-Admitted.
+Global Instance into_val_sessionOptions : IntoVal sessionOptions.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.sessionOptions [
+    "ttl" ::= #(sessionOptions.ttl' v);
+    "leaseID" ::= #(sessionOptions.leaseID' v);
+    "ctx" ::= #(sessionOptions.ctx' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_sessionOptions : IntoValTyped sessionOptions.t concurrency.sessionOptions :=
+Global Program Instance into_val_typed_sessionOptions : IntoValTyped sessionOptions.t concurrency.sessionOptions :=
 {|
   default_val := sessionOptions.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_sessionOptions_ttl : IntoValStructField "ttl" concurrency.sessionOptions sessionOptions.ttl'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_sessionOptions_leaseID : IntoValStructField "leaseID" concurrency.sessionOptions sessionOptions.leaseID'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_sessionOptions_ctx : IntoValStructField "ctx" concurrency.sessionOptions sessionOptions.ctx'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -334,7 +424,7 @@ Global Instance wp_struct_make_sessionOptions ttl' leaseID' ctx':
       "ctx" ::= #ctx'
     ]))%struct
     #(sessionOptions.mk ttl' leaseID' ctx').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance sessionOptions_struct_fields_split dq l (v : sessionOptions.t) :
@@ -343,6 +433,16 @@ Global Instance sessionOptions_struct_fields_split dq l (v : sessionOptions.t) :
     "HleaseID" ∷ l ↦s[concurrency.sessionOptions :: "leaseID"]{dq} v.(sessionOptions.leaseID') ∗
     "Hctx" ∷ l ↦s[concurrency.sessionOptions :: "ctx"]{dq} v.(sessionOptions.ctx')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (sessionOptions.ttl' v)) (struct.field_offset_f concurrency.sessionOptions "ttl"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (sessionOptions.leaseID' v)) (struct.field_offset_f concurrency.sessionOptions "leaseID"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -382,19 +482,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmError : Settable _ :=
   settable! stmError.mk < stmError.err' >.
-Global Instance into_val_stmError : IntoVal stmError.t.
-Admitted.
+Global Instance into_val_stmError : IntoVal stmError.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.stmError [
+    "err" ::= #(stmError.err' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_stmError : IntoValTyped stmError.t concurrency.stmError :=
+Global Program Instance into_val_typed_stmError : IntoValTyped stmError.t concurrency.stmError :=
 {|
   default_val := stmError.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_stmError_err : IntoValStructField "err" concurrency.stmError stmError.err'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -404,13 +509,21 @@ Global Instance wp_struct_make_stmError err':
       "err" ::= #err'
     ]))%struct
     #(stmError.mk err').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmError_struct_fields_split dq l (v : stmError.t) :
   StructFieldsSplit dq l v (
     "Herr" ∷ l ↦s[concurrency.stmError :: "err"]{dq} v.(stmError.err')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -431,25 +544,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmOptions : Settable _ :=
   settable! stmOptions.mk < stmOptions.iso'; stmOptions.ctx'; stmOptions.prefetch' >.
-Global Instance into_val_stmOptions : IntoVal stmOptions.t.
-Admitted.
+Global Instance into_val_stmOptions : IntoVal stmOptions.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.stmOptions [
+    "iso" ::= #(stmOptions.iso' v);
+    "ctx" ::= #(stmOptions.ctx' v);
+    "prefetch" ::= #(stmOptions.prefetch' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_stmOptions : IntoValTyped stmOptions.t concurrency.stmOptions :=
+Global Program Instance into_val_typed_stmOptions : IntoValTyped stmOptions.t concurrency.stmOptions :=
 {|
   default_val := stmOptions.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_stmOptions_iso : IntoValStructField "iso" concurrency.stmOptions stmOptions.iso'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stmOptions_ctx : IntoValStructField "ctx" concurrency.stmOptions stmOptions.ctx'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stmOptions_prefetch : IntoValStructField "prefetch" concurrency.stmOptions stmOptions.prefetch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -461,7 +581,7 @@ Global Instance wp_struct_make_stmOptions iso' ctx' prefetch':
       "prefetch" ::= #prefetch'
     ]))%struct
     #(stmOptions.mk iso' ctx' prefetch').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmOptions_struct_fields_split dq l (v : stmOptions.t) :
@@ -470,6 +590,16 @@ Global Instance stmOptions_struct_fields_split dq l (v : stmOptions.t) :
     "Hctx" ∷ l ↦s[concurrency.stmOptions :: "ctx"]{dq} v.(stmOptions.ctx') ∗
     "Hprefetch" ∷ l ↦s[concurrency.stmOptions :: "prefetch"]{dq} v.(stmOptions.prefetch')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (stmOptions.iso' v)) (struct.field_offset_f concurrency.stmOptions "iso"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (stmOptions.ctx' v)) (struct.field_offset_f concurrency.stmOptions "ctx"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -496,22 +626,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmResponse : Settable _ :=
   settable! stmResponse.mk < stmResponse.resp'; stmResponse.err' >.
-Global Instance into_val_stmResponse : IntoVal stmResponse.t.
-Admitted.
+Global Instance into_val_stmResponse : IntoVal stmResponse.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.stmResponse [
+    "resp" ::= #(stmResponse.resp' v);
+    "err" ::= #(stmResponse.err' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_stmResponse : IntoValTyped stmResponse.t concurrency.stmResponse :=
+Global Program Instance into_val_typed_stmResponse : IntoValTyped stmResponse.t concurrency.stmResponse :=
 {|
   default_val := stmResponse.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_stmResponse_resp : IntoValStructField "resp" concurrency.stmResponse stmResponse.resp'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stmResponse_err : IntoValStructField "err" concurrency.stmResponse stmResponse.err'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -522,7 +658,7 @@ Global Instance wp_struct_make_stmResponse resp' err':
       "err" ::= #err'
     ]))%struct
     #(stmResponse.mk resp' err').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmResponse_struct_fields_split dq l (v : stmResponse.t) :
@@ -530,6 +666,15 @@ Global Instance stmResponse_struct_fields_split dq l (v : stmResponse.t) :
     "Hresp" ∷ l ↦s[concurrency.stmResponse :: "resp"]{dq} v.(stmResponse.resp') ∗
     "Herr" ∷ l ↦s[concurrency.stmResponse :: "err"]{dq} v.(stmResponse.err')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (stmResponse.resp' v)) (struct.field_offset_f concurrency.stmResponse "resp"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -567,34 +712,44 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stm : Settable _ :=
   settable! stm.mk < stm.client'; stm.ctx'; stm.rset'; stm.wset'; stm.getOpts'; stm.conflicts' >.
-Global Instance into_val_stm : IntoVal stm.t.
-Admitted.
+Global Instance into_val_stm : IntoVal stm.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.stm [
+    "client" ::= #(stm.client' v);
+    "ctx" ::= #(stm.ctx' v);
+    "rset" ::= #(stm.rset' v);
+    "wset" ::= #(stm.wset' v);
+    "getOpts" ::= #(stm.getOpts' v);
+    "conflicts" ::= #(stm.conflicts' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_stm : IntoValTyped stm.t concurrency.stm :=
+Global Program Instance into_val_typed_stm : IntoValTyped stm.t concurrency.stm :=
 {|
   default_val := stm.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_stm_client : IntoValStructField "client" concurrency.stm stm.client'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stm_ctx : IntoValStructField "ctx" concurrency.stm stm.ctx'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stm_rset : IntoValStructField "rset" concurrency.stm stm.rset'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stm_wset : IntoValStructField "wset" concurrency.stm stm.wset'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stm_getOpts : IntoValStructField "getOpts" concurrency.stm stm.getOpts'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stm_conflicts : IntoValStructField "conflicts" concurrency.stm stm.conflicts'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -609,7 +764,7 @@ Global Instance wp_struct_make_stm client' ctx' rset' wset' getOpts' conflicts':
       "conflicts" ::= #conflicts'
     ]))%struct
     #(stm.mk client' ctx' rset' wset' getOpts' conflicts').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stm_struct_fields_split dq l (v : stm.t) :
@@ -621,6 +776,19 @@ Global Instance stm_struct_fields_split dq l (v : stm.t) :
     "HgetOpts" ∷ l ↦s[concurrency.stm :: "getOpts"]{dq} v.(stm.getOpts') ∗
     "Hconflicts" ∷ l ↦s[concurrency.stm :: "conflicts"]{dq} v.(stm.conflicts')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (stm.client' v)) (struct.field_offset_f concurrency.stm "client"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (stm.ctx' v)) (struct.field_offset_f concurrency.stm "ctx"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (stm.rset' v)) (struct.field_offset_f concurrency.stm "rset"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (stm.wset' v)) (struct.field_offset_f concurrency.stm "wset"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (stm.getOpts' v)) (struct.field_offset_f concurrency.stm "getOpts"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -640,22 +808,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmPut : Settable _ :=
   settable! stmPut.mk < stmPut.val'; stmPut.op' >.
-Global Instance into_val_stmPut : IntoVal stmPut.t.
-Admitted.
+Global Instance into_val_stmPut : IntoVal stmPut.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.stmPut [
+    "val" ::= #(stmPut.val' v);
+    "op" ::= #(stmPut.op' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_stmPut : IntoValTyped stmPut.t concurrency.stmPut :=
+Global Program Instance into_val_typed_stmPut : IntoValTyped stmPut.t concurrency.stmPut :=
 {|
   default_val := stmPut.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_stmPut_val : IntoValStructField "val" concurrency.stmPut stmPut.val'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stmPut_op : IntoValStructField "op" concurrency.stmPut stmPut.op'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -666,7 +840,7 @@ Global Instance wp_struct_make_stmPut val' op':
       "op" ::= #op'
     ]))%struct
     #(stmPut.mk val' op').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmPut_struct_fields_split dq l (v : stmPut.t) :
@@ -674,6 +848,15 @@ Global Instance stmPut_struct_fields_split dq l (v : stmPut.t) :
     "Hval" ∷ l ↦s[concurrency.stmPut :: "val"]{dq} v.(stmPut.val') ∗
     "Hop" ∷ l ↦s[concurrency.stmPut :: "op"]{dq} v.(stmPut.op')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (stmPut.val' v)) (struct.field_offset_f concurrency.stmPut "val"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -693,22 +876,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_stmSerializable : Settable _ :=
   settable! stmSerializable.mk < stmSerializable.stm'; stmSerializable.prefetch' >.
-Global Instance into_val_stmSerializable : IntoVal stmSerializable.t.
-Admitted.
+Global Instance into_val_stmSerializable : IntoVal stmSerializable.t :=
+  {| to_val_def v :=
+    struct.val_aux concurrency.stmSerializable [
+    "stm" ::= #(stmSerializable.stm' v);
+    "prefetch" ::= #(stmSerializable.prefetch' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_stmSerializable : IntoValTyped stmSerializable.t concurrency.stmSerializable :=
+Global Program Instance into_val_typed_stmSerializable : IntoValTyped stmSerializable.t concurrency.stmSerializable :=
 {|
   default_val := stmSerializable.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_stmSerializable_stm : IntoValStructField "stm" concurrency.stmSerializable stmSerializable.stm'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_stmSerializable_prefetch : IntoValStructField "prefetch" concurrency.stmSerializable stmSerializable.prefetch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -719,7 +908,7 @@ Global Instance wp_struct_make_stmSerializable stm' prefetch':
       "prefetch" ::= #prefetch'
     ]))%struct
     #(stmSerializable.mk stm' prefetch').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance stmSerializable_struct_fields_split dq l (v : stmSerializable.t) :
@@ -727,6 +916,15 @@ Global Instance stmSerializable_struct_fields_split dq l (v : stmSerializable.t)
     "Hstm" ∷ l ↦s[concurrency.stmSerializable :: "stm"]{dq} v.(stmSerializable.stm') ∗
     "Hprefetch" ∷ l ↦s[concurrency.stmSerializable :: "prefetch"]{dq} v.(stmSerializable.prefetch')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (stmSerializable.stm' v)) (struct.field_offset_f concurrency.stmSerializable "stm"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.

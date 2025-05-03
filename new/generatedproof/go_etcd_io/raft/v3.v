@@ -20,8 +20,11 @@ Require Export New.generatedproof.go_etcd_io.raft.v3.tracker.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.raft.v3.
+
+Set Default Proof Using "Type".
+
 Module raft.
-Axiom falso : False.
+
 Module Storage.
 Section def.
 Context `{ffi_syntax}.
@@ -55,34 +58,44 @@ Context `{ffi_syntax}.
 
 Global Instance settable_unstable : Settable _ :=
   settable! unstable.mk < unstable.snapshot'; unstable.entries'; unstable.offset'; unstable.snapshotInProgress'; unstable.offsetInProgress'; unstable.logger' >.
-Global Instance into_val_unstable : IntoVal unstable.t.
-Admitted.
+Global Instance into_val_unstable : IntoVal unstable.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.unstable [
+    "snapshot" ::= #(unstable.snapshot' v);
+    "entries" ::= #(unstable.entries' v);
+    "offset" ::= #(unstable.offset' v);
+    "snapshotInProgress" ::= #(unstable.snapshotInProgress' v);
+    "offsetInProgress" ::= #(unstable.offsetInProgress' v);
+    "logger" ::= #(unstable.logger' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_unstable : IntoValTyped unstable.t raft.unstable :=
+Global Program Instance into_val_typed_unstable : IntoValTyped unstable.t raft.unstable :=
 {|
   default_val := unstable.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_unstable_snapshot : IntoValStructField "snapshot" raft.unstable unstable.snapshot'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_unstable_entries : IntoValStructField "entries" raft.unstable unstable.entries'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_unstable_offset : IntoValStructField "offset" raft.unstable unstable.offset'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_unstable_snapshotInProgress : IntoValStructField "snapshotInProgress" raft.unstable unstable.snapshotInProgress'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_unstable_offsetInProgress : IntoValStructField "offsetInProgress" raft.unstable unstable.offsetInProgress'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_unstable_logger : IntoValStructField "logger" raft.unstable unstable.logger'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -97,7 +110,7 @@ Global Instance wp_struct_make_unstable snapshot' entries' offset' snapshotInPro
       "logger" ::= #logger'
     ]))%struct
     #(unstable.mk snapshot' entries' offset' snapshotInProgress' offsetInProgress' logger').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance unstable_struct_fields_split dq l (v : unstable.t) :
@@ -109,6 +122,19 @@ Global Instance unstable_struct_fields_split dq l (v : unstable.t) :
     "HoffsetInProgress" ∷ l ↦s[raft.unstable :: "offsetInProgress"]{dq} v.(unstable.offsetInProgress') ∗
     "Hlogger" ∷ l ↦s[raft.unstable :: "logger"]{dq} v.(unstable.logger')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (unstable.snapshot' v)) (struct.field_offset_f raft.unstable "snapshot"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (unstable.entries' v)) (struct.field_offset_f raft.unstable "entries"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (unstable.offset' v)) (struct.field_offset_f raft.unstable "offset"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (unstable.snapshotInProgress' v)) (struct.field_offset_f raft.unstable "snapshotInProgress"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (unstable.offsetInProgress' v)) (struct.field_offset_f raft.unstable "offsetInProgress"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -142,43 +168,56 @@ Context `{ffi_syntax}.
 
 Global Instance settable_raftLog : Settable _ :=
   settable! raftLog.mk < raftLog.storage'; raftLog.unstable'; raftLog.committed'; raftLog.applying'; raftLog.applied'; raftLog.logger'; raftLog.maxApplyingEntsSize'; raftLog.applyingEntsSize'; raftLog.applyingEntsPaused' >.
-Global Instance into_val_raftLog : IntoVal raftLog.t.
-Admitted.
+Global Instance into_val_raftLog : IntoVal raftLog.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.raftLog [
+    "storage" ::= #(raftLog.storage' v);
+    "unstable" ::= #(raftLog.unstable' v);
+    "committed" ::= #(raftLog.committed' v);
+    "applying" ::= #(raftLog.applying' v);
+    "applied" ::= #(raftLog.applied' v);
+    "logger" ::= #(raftLog.logger' v);
+    "maxApplyingEntsSize" ::= #(raftLog.maxApplyingEntsSize' v);
+    "applyingEntsSize" ::= #(raftLog.applyingEntsSize' v);
+    "applyingEntsPaused" ::= #(raftLog.applyingEntsPaused' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_raftLog : IntoValTyped raftLog.t raft.raftLog :=
+Global Program Instance into_val_typed_raftLog : IntoValTyped raftLog.t raft.raftLog :=
 {|
   default_val := raftLog.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_raftLog_storage : IntoValStructField "storage" raft.raftLog raftLog.storage'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raftLog_unstable : IntoValStructField "unstable" raft.raftLog raftLog.unstable'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raftLog_committed : IntoValStructField "committed" raft.raftLog raftLog.committed'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raftLog_applying : IntoValStructField "applying" raft.raftLog raftLog.applying'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raftLog_applied : IntoValStructField "applied" raft.raftLog raftLog.applied'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raftLog_logger : IntoValStructField "logger" raft.raftLog raftLog.logger'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raftLog_maxApplyingEntsSize : IntoValStructField "maxApplyingEntsSize" raft.raftLog raftLog.maxApplyingEntsSize'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raftLog_applyingEntsSize : IntoValStructField "applyingEntsSize" raft.raftLog raftLog.applyingEntsSize'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raftLog_applyingEntsPaused : IntoValStructField "applyingEntsPaused" raft.raftLog raftLog.applyingEntsPaused'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -196,7 +235,7 @@ Global Instance wp_struct_make_raftLog storage' unstable' committed' applying' a
       "applyingEntsPaused" ::= #applyingEntsPaused'
     ]))%struct
     #(raftLog.mk storage' unstable' committed' applying' applied' logger' maxApplyingEntsSize' applyingEntsSize' applyingEntsPaused').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance raftLog_struct_fields_split dq l (v : raftLog.t) :
@@ -211,6 +250,22 @@ Global Instance raftLog_struct_fields_split dq l (v : raftLog.t) :
     "HapplyingEntsSize" ∷ l ↦s[raft.raftLog :: "applyingEntsSize"]{dq} v.(raftLog.applyingEntsSize') ∗
     "HapplyingEntsPaused" ∷ l ↦s[raft.raftLog :: "applyingEntsPaused"]{dq} v.(raftLog.applyingEntsPaused')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (raftLog.storage' v)) (struct.field_offset_f raft.raftLog "storage"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raftLog.unstable' v)) (struct.field_offset_f raft.raftLog "unstable"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raftLog.committed' v)) (struct.field_offset_f raft.raftLog "committed"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raftLog.applying' v)) (struct.field_offset_f raft.raftLog "applying"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raftLog.applied' v)) (struct.field_offset_f raft.raftLog "applied"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raftLog.logger' v)) (struct.field_offset_f raft.raftLog "logger"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raftLog.maxApplyingEntsSize' v)) (struct.field_offset_f raft.raftLog "maxApplyingEntsSize"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raftLog.applyingEntsSize' v)) (struct.field_offset_f raft.raftLog "applyingEntsSize"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -230,22 +285,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_DefaultLogger : Settable _ :=
   settable! DefaultLogger.mk < DefaultLogger.Logger'; DefaultLogger.debug' >.
-Global Instance into_val_DefaultLogger : IntoVal DefaultLogger.t.
-Admitted.
+Global Instance into_val_DefaultLogger : IntoVal DefaultLogger.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.DefaultLogger [
+    "Logger" ::= #(DefaultLogger.Logger' v);
+    "debug" ::= #(DefaultLogger.debug' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_DefaultLogger : IntoValTyped DefaultLogger.t raft.DefaultLogger :=
+Global Program Instance into_val_typed_DefaultLogger : IntoValTyped DefaultLogger.t raft.DefaultLogger :=
 {|
   default_val := DefaultLogger.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_DefaultLogger_Logger : IntoValStructField "Logger" raft.DefaultLogger DefaultLogger.Logger'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_DefaultLogger_debug : IntoValStructField "debug" raft.DefaultLogger DefaultLogger.debug'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -256,7 +317,7 @@ Global Instance wp_struct_make_DefaultLogger Logger' debug':
       "debug" ::= #debug'
     ]))%struct
     #(DefaultLogger.mk Logger' debug').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance DefaultLogger_struct_fields_split dq l (v : DefaultLogger.t) :
@@ -264,6 +325,15 @@ Global Instance DefaultLogger_struct_fields_split dq l (v : DefaultLogger.t) :
     "HLogger" ∷ l ↦s[raft.DefaultLogger :: "Logger"]{dq} v.(DefaultLogger.Logger') ∗
     "Hdebug" ∷ l ↦s[raft.DefaultLogger :: "debug"]{dq} v.(DefaultLogger.debug')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (DefaultLogger.Logger' v)) (struct.field_offset_f raft.DefaultLogger "Logger"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -297,22 +367,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_SoftState : Settable _ :=
   settable! SoftState.mk < SoftState.Lead'; SoftState.RaftState' >.
-Global Instance into_val_SoftState : IntoVal SoftState.t.
-Admitted.
+Global Instance into_val_SoftState : IntoVal SoftState.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.SoftState [
+    "Lead" ::= #(SoftState.Lead' v);
+    "RaftState" ::= #(SoftState.RaftState' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_SoftState : IntoValTyped SoftState.t raft.SoftState :=
+Global Program Instance into_val_typed_SoftState : IntoValTyped SoftState.t raft.SoftState :=
 {|
   default_val := SoftState.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_SoftState_Lead : IntoValStructField "Lead" raft.SoftState SoftState.Lead'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_SoftState_RaftState : IntoValStructField "RaftState" raft.SoftState SoftState.RaftState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -323,7 +399,7 @@ Global Instance wp_struct_make_SoftState Lead' RaftState':
       "RaftState" ::= #RaftState'
     ]))%struct
     #(SoftState.mk Lead' RaftState').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance SoftState_struct_fields_split dq l (v : SoftState.t) :
@@ -331,6 +407,15 @@ Global Instance SoftState_struct_fields_split dq l (v : SoftState.t) :
     "HLead" ∷ l ↦s[raft.SoftState :: "Lead"]{dq} v.(SoftState.Lead') ∗
     "HRaftState" ∷ l ↦s[raft.SoftState :: "RaftState"]{dq} v.(SoftState.RaftState')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (SoftState.Lead' v)) (struct.field_offset_f raft.SoftState "Lead"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -356,40 +441,52 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Ready : Settable _ :=
   settable! Ready.mk < Ready.SoftState'; Ready.HardState'; Ready.ReadStates'; Ready.Entries'; Ready.Snapshot'; Ready.CommittedEntries'; Ready.Messages'; Ready.MustSync' >.
-Global Instance into_val_Ready : IntoVal Ready.t.
-Admitted.
+Global Instance into_val_Ready : IntoVal Ready.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.Ready [
+    "SoftState" ::= #(Ready.SoftState' v);
+    "HardState" ::= #(Ready.HardState' v);
+    "ReadStates" ::= #(Ready.ReadStates' v);
+    "Entries" ::= #(Ready.Entries' v);
+    "Snapshot" ::= #(Ready.Snapshot' v);
+    "CommittedEntries" ::= #(Ready.CommittedEntries' v);
+    "Messages" ::= #(Ready.Messages' v);
+    "MustSync" ::= #(Ready.MustSync' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Ready : IntoValTyped Ready.t raft.Ready :=
+Global Program Instance into_val_typed_Ready : IntoValTyped Ready.t raft.Ready :=
 {|
   default_val := Ready.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Ready_SoftState : IntoValStructField "SoftState" raft.Ready Ready.SoftState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Ready_HardState : IntoValStructField "HardState" raft.Ready Ready.HardState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Ready_ReadStates : IntoValStructField "ReadStates" raft.Ready Ready.ReadStates'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Ready_Entries : IntoValStructField "Entries" raft.Ready Ready.Entries'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Ready_Snapshot : IntoValStructField "Snapshot" raft.Ready Ready.Snapshot'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Ready_CommittedEntries : IntoValStructField "CommittedEntries" raft.Ready Ready.CommittedEntries'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Ready_Messages : IntoValStructField "Messages" raft.Ready Ready.Messages'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Ready_MustSync : IntoValStructField "MustSync" raft.Ready Ready.MustSync'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -406,7 +503,7 @@ Global Instance wp_struct_make_Ready SoftState' HardState' ReadStates' Entries' 
       "MustSync" ::= #MustSync'
     ]))%struct
     #(Ready.mk SoftState' HardState' ReadStates' Entries' Snapshot' CommittedEntries' Messages' MustSync').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Ready_struct_fields_split dq l (v : Ready.t) :
@@ -420,6 +517,21 @@ Global Instance Ready_struct_fields_split dq l (v : Ready.t) :
     "HMessages" ∷ l ↦s[raft.Ready :: "Messages"]{dq} v.(Ready.Messages') ∗
     "HMustSync" ∷ l ↦s[raft.Ready :: "MustSync"]{dq} v.(Ready.MustSync')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Ready.SoftState' v)) (struct.field_offset_f raft.Ready "SoftState"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Ready.HardState' v)) (struct.field_offset_f raft.Ready "HardState"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Ready.ReadStates' v)) (struct.field_offset_f raft.Ready "ReadStates"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Ready.Entries' v)) (struct.field_offset_f raft.Ready "Entries"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Ready.Snapshot' v)) (struct.field_offset_f raft.Ready "Snapshot"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Ready.CommittedEntries' v)) (struct.field_offset_f raft.Ready "CommittedEntries"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Ready.Messages' v)) (struct.field_offset_f raft.Ready "Messages"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -446,22 +558,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Peer : Settable _ :=
   settable! Peer.mk < Peer.ID'; Peer.Context' >.
-Global Instance into_val_Peer : IntoVal Peer.t.
-Admitted.
+Global Instance into_val_Peer : IntoVal Peer.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.Peer [
+    "ID" ::= #(Peer.ID' v);
+    "Context" ::= #(Peer.Context' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Peer : IntoValTyped Peer.t raft.Peer :=
+Global Program Instance into_val_typed_Peer : IntoValTyped Peer.t raft.Peer :=
 {|
   default_val := Peer.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Peer_ID : IntoValStructField "ID" raft.Peer Peer.ID'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Peer_Context : IntoValStructField "Context" raft.Peer Peer.Context'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -472,7 +590,7 @@ Global Instance wp_struct_make_Peer ID' Context':
       "Context" ::= #Context'
     ]))%struct
     #(Peer.mk ID' Context').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Peer_struct_fields_split dq l (v : Peer.t) :
@@ -480,6 +598,15 @@ Global Instance Peer_struct_fields_split dq l (v : Peer.t) :
     "HID" ∷ l ↦s[raft.Peer :: "ID"]{dq} v.(Peer.ID') ∗
     "HContext" ∷ l ↦s[raft.Peer :: "Context"]{dq} v.(Peer.Context')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Peer.ID' v)) (struct.field_offset_f raft.Peer "ID"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -499,22 +626,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_msgWithResult : Settable _ :=
   settable! msgWithResult.mk < msgWithResult.m'; msgWithResult.result' >.
-Global Instance into_val_msgWithResult : IntoVal msgWithResult.t.
-Admitted.
+Global Instance into_val_msgWithResult : IntoVal msgWithResult.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.msgWithResult [
+    "m" ::= #(msgWithResult.m' v);
+    "result" ::= #(msgWithResult.result' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_msgWithResult : IntoValTyped msgWithResult.t raft.msgWithResult :=
+Global Program Instance into_val_typed_msgWithResult : IntoValTyped msgWithResult.t raft.msgWithResult :=
 {|
   default_val := msgWithResult.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_msgWithResult_m : IntoValStructField "m" raft.msgWithResult msgWithResult.m'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_msgWithResult_result : IntoValStructField "result" raft.msgWithResult msgWithResult.result'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -525,7 +658,7 @@ Global Instance wp_struct_make_msgWithResult m' result':
       "result" ::= #result'
     ]))%struct
     #(msgWithResult.mk m' result').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance msgWithResult_struct_fields_split dq l (v : msgWithResult.t) :
@@ -533,6 +666,15 @@ Global Instance msgWithResult_struct_fields_split dq l (v : msgWithResult.t) :
     "Hm" ∷ l ↦s[raft.msgWithResult :: "m"]{dq} v.(msgWithResult.m') ∗
     "Hresult" ∷ l ↦s[raft.msgWithResult :: "result"]{dq} v.(msgWithResult.result')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (msgWithResult.m' v)) (struct.field_offset_f raft.msgWithResult "m"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -561,49 +703,64 @@ Context `{ffi_syntax}.
 
 Global Instance settable_node : Settable _ :=
   settable! node.mk < node.propc'; node.recvc'; node.confc'; node.confstatec'; node.readyc'; node.advancec'; node.tickc'; node.done'; node.stop'; node.status'; node.rn' >.
-Global Instance into_val_node : IntoVal node.t.
-Admitted.
+Global Instance into_val_node : IntoVal node.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.node [
+    "propc" ::= #(node.propc' v);
+    "recvc" ::= #(node.recvc' v);
+    "confc" ::= #(node.confc' v);
+    "confstatec" ::= #(node.confstatec' v);
+    "readyc" ::= #(node.readyc' v);
+    "advancec" ::= #(node.advancec' v);
+    "tickc" ::= #(node.tickc' v);
+    "done" ::= #(node.done' v);
+    "stop" ::= #(node.stop' v);
+    "status" ::= #(node.status' v);
+    "rn" ::= #(node.rn' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_node : IntoValTyped node.t raft.node :=
+Global Program Instance into_val_typed_node : IntoValTyped node.t raft.node :=
 {|
   default_val := node.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_node_propc : IntoValStructField "propc" raft.node node.propc'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_recvc : IntoValStructField "recvc" raft.node node.recvc'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_confc : IntoValStructField "confc" raft.node node.confc'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_confstatec : IntoValStructField "confstatec" raft.node node.confstatec'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_readyc : IntoValStructField "readyc" raft.node node.readyc'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_advancec : IntoValStructField "advancec" raft.node node.advancec'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_tickc : IntoValStructField "tickc" raft.node node.tickc'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_done : IntoValStructField "done" raft.node node.done'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_stop : IntoValStructField "stop" raft.node node.stop'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_status : IntoValStructField "status" raft.node node.status'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_node_rn : IntoValStructField "rn" raft.node node.rn'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -623,7 +780,7 @@ Global Instance wp_struct_make_node propc' recvc' confc' confstatec' readyc' adv
       "rn" ::= #rn'
     ]))%struct
     #(node.mk propc' recvc' confc' confstatec' readyc' advancec' tickc' done' stop' status' rn').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance node_struct_fields_split dq l (v : node.t) :
@@ -640,6 +797,24 @@ Global Instance node_struct_fields_split dq l (v : node.t) :
     "Hstatus" ∷ l ↦s[raft.node :: "status"]{dq} v.(node.status') ∗
     "Hrn" ∷ l ↦s[raft.node :: "rn"]{dq} v.(node.rn')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (node.propc' v)) (struct.field_offset_f raft.node "propc"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (node.recvc' v)) (struct.field_offset_f raft.node "recvc"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (node.confc' v)) (struct.field_offset_f raft.node "confc"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (node.confstatec' v)) (struct.field_offset_f raft.node "confstatec"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (node.readyc' v)) (struct.field_offset_f raft.node "readyc"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (node.advancec' v)) (struct.field_offset_f raft.node "advancec"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (node.tickc' v)) (struct.field_offset_f raft.node "tickc"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (node.done' v)) (struct.field_offset_f raft.node "done"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (node.stop' v)) (struct.field_offset_f raft.node "stop"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (node.status' v)) (struct.field_offset_f raft.node "status"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -665,19 +840,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_lockedRand : Settable _ :=
   settable! lockedRand.mk < lockedRand.mu' >.
-Global Instance into_val_lockedRand : IntoVal lockedRand.t.
-Admitted.
+Global Instance into_val_lockedRand : IntoVal lockedRand.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.lockedRand [
+    "mu" ::= #(lockedRand.mu' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_lockedRand : IntoValTyped lockedRand.t raft.lockedRand :=
+Global Program Instance into_val_typed_lockedRand : IntoValTyped lockedRand.t raft.lockedRand :=
 {|
   default_val := lockedRand.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_lockedRand_mu : IntoValStructField "mu" raft.lockedRand lockedRand.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -687,13 +867,21 @@ Global Instance wp_struct_make_lockedRand mu':
       "mu" ::= #mu'
     ]))%struct
     #(lockedRand.mk mu').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance lockedRand_struct_fields_split dq l (v : lockedRand.t) :
   StructFieldsSplit dq l v (
     "Hmu" ∷ l ↦s[raft.lockedRand :: "mu"]{dq} v.(lockedRand.mu')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -744,73 +932,96 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Config : Settable _ :=
   settable! Config.mk < Config.ID'; Config.ElectionTick'; Config.HeartbeatTick'; Config.Storage'; Config.Applied'; Config.AsyncStorageWrites'; Config.MaxSizePerMsg'; Config.MaxCommittedSizePerReady'; Config.MaxUncommittedEntriesSize'; Config.MaxInflightMsgs'; Config.MaxInflightBytes'; Config.CheckQuorum'; Config.PreVote'; Config.ReadOnlyOption'; Config.Logger'; Config.DisableProposalForwarding'; Config.DisableConfChangeValidation'; Config.StepDownOnRemoval'; Config.TraceLogger' >.
-Global Instance into_val_Config : IntoVal Config.t.
-Admitted.
+Global Instance into_val_Config : IntoVal Config.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.Config [
+    "ID" ::= #(Config.ID' v);
+    "ElectionTick" ::= #(Config.ElectionTick' v);
+    "HeartbeatTick" ::= #(Config.HeartbeatTick' v);
+    "Storage" ::= #(Config.Storage' v);
+    "Applied" ::= #(Config.Applied' v);
+    "AsyncStorageWrites" ::= #(Config.AsyncStorageWrites' v);
+    "MaxSizePerMsg" ::= #(Config.MaxSizePerMsg' v);
+    "MaxCommittedSizePerReady" ::= #(Config.MaxCommittedSizePerReady' v);
+    "MaxUncommittedEntriesSize" ::= #(Config.MaxUncommittedEntriesSize' v);
+    "MaxInflightMsgs" ::= #(Config.MaxInflightMsgs' v);
+    "MaxInflightBytes" ::= #(Config.MaxInflightBytes' v);
+    "CheckQuorum" ::= #(Config.CheckQuorum' v);
+    "PreVote" ::= #(Config.PreVote' v);
+    "ReadOnlyOption" ::= #(Config.ReadOnlyOption' v);
+    "Logger" ::= #(Config.Logger' v);
+    "DisableProposalForwarding" ::= #(Config.DisableProposalForwarding' v);
+    "DisableConfChangeValidation" ::= #(Config.DisableConfChangeValidation' v);
+    "StepDownOnRemoval" ::= #(Config.StepDownOnRemoval' v);
+    "TraceLogger" ::= #(Config.TraceLogger' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Config : IntoValTyped Config.t raft.Config :=
+Global Program Instance into_val_typed_Config : IntoValTyped Config.t raft.Config :=
 {|
   default_val := Config.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Config_ID : IntoValStructField "ID" raft.Config Config.ID'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_ElectionTick : IntoValStructField "ElectionTick" raft.Config Config.ElectionTick'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_HeartbeatTick : IntoValStructField "HeartbeatTick" raft.Config Config.HeartbeatTick'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_Storage : IntoValStructField "Storage" raft.Config Config.Storage'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_Applied : IntoValStructField "Applied" raft.Config Config.Applied'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_AsyncStorageWrites : IntoValStructField "AsyncStorageWrites" raft.Config Config.AsyncStorageWrites'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_MaxSizePerMsg : IntoValStructField "MaxSizePerMsg" raft.Config Config.MaxSizePerMsg'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_MaxCommittedSizePerReady : IntoValStructField "MaxCommittedSizePerReady" raft.Config Config.MaxCommittedSizePerReady'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_MaxUncommittedEntriesSize : IntoValStructField "MaxUncommittedEntriesSize" raft.Config Config.MaxUncommittedEntriesSize'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_MaxInflightMsgs : IntoValStructField "MaxInflightMsgs" raft.Config Config.MaxInflightMsgs'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_MaxInflightBytes : IntoValStructField "MaxInflightBytes" raft.Config Config.MaxInflightBytes'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_CheckQuorum : IntoValStructField "CheckQuorum" raft.Config Config.CheckQuorum'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_PreVote : IntoValStructField "PreVote" raft.Config Config.PreVote'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_ReadOnlyOption : IntoValStructField "ReadOnlyOption" raft.Config Config.ReadOnlyOption'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_Logger : IntoValStructField "Logger" raft.Config Config.Logger'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_DisableProposalForwarding : IntoValStructField "DisableProposalForwarding" raft.Config Config.DisableProposalForwarding'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_DisableConfChangeValidation : IntoValStructField "DisableConfChangeValidation" raft.Config Config.DisableConfChangeValidation'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_StepDownOnRemoval : IntoValStructField "StepDownOnRemoval" raft.Config Config.StepDownOnRemoval'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_TraceLogger : IntoValStructField "TraceLogger" raft.Config Config.TraceLogger'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -838,7 +1049,7 @@ Global Instance wp_struct_make_Config ID' ElectionTick' HeartbeatTick' Storage' 
       "TraceLogger" ::= #TraceLogger'
     ]))%struct
     #(Config.mk ID' ElectionTick' HeartbeatTick' Storage' Applied' AsyncStorageWrites' MaxSizePerMsg' MaxCommittedSizePerReady' MaxUncommittedEntriesSize' MaxInflightMsgs' MaxInflightBytes' CheckQuorum' PreVote' ReadOnlyOption' Logger' DisableProposalForwarding' DisableConfChangeValidation' StepDownOnRemoval' TraceLogger').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Config_struct_fields_split dq l (v : Config.t) :
@@ -863,6 +1074,32 @@ Global Instance Config_struct_fields_split dq l (v : Config.t) :
     "HStepDownOnRemoval" ∷ l ↦s[raft.Config :: "StepDownOnRemoval"]{dq} v.(Config.StepDownOnRemoval') ∗
     "HTraceLogger" ∷ l ↦s[raft.Config :: "TraceLogger"]{dq} v.(Config.TraceLogger')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Config.ID' v)) (struct.field_offset_f raft.Config "ID"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.ElectionTick' v)) (struct.field_offset_f raft.Config "ElectionTick"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.HeartbeatTick' v)) (struct.field_offset_f raft.Config "HeartbeatTick"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.Storage' v)) (struct.field_offset_f raft.Config "Storage"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.Applied' v)) (struct.field_offset_f raft.Config "Applied"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.AsyncStorageWrites' v)) (struct.field_offset_f raft.Config "AsyncStorageWrites"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.MaxSizePerMsg' v)) (struct.field_offset_f raft.Config "MaxSizePerMsg"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.MaxCommittedSizePerReady' v)) (struct.field_offset_f raft.Config "MaxCommittedSizePerReady"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.MaxUncommittedEntriesSize' v)) (struct.field_offset_f raft.Config "MaxUncommittedEntriesSize"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.MaxInflightMsgs' v)) (struct.field_offset_f raft.Config "MaxInflightMsgs"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.MaxInflightBytes' v)) (struct.field_offset_f raft.Config "MaxInflightBytes"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.CheckQuorum' v)) (struct.field_offset_f raft.Config "CheckQuorum"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.PreVote' v)) (struct.field_offset_f raft.Config "PreVote"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.ReadOnlyOption' v)) (struct.field_offset_f raft.Config "ReadOnlyOption"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.Logger' v)) (struct.field_offset_f raft.Config "Logger"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.DisableProposalForwarding' v)) (struct.field_offset_f raft.Config "DisableProposalForwarding"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.DisableConfChangeValidation' v)) (struct.field_offset_f raft.Config "DisableConfChangeValidation"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Config.StepDownOnRemoval' v)) (struct.field_offset_f raft.Config "StepDownOnRemoval"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -926,112 +1163,148 @@ Context `{ffi_syntax}.
 
 Global Instance settable_raft : Settable _ :=
   settable! raft.mk < raft.id'; raft.Term'; raft.Vote'; raft.readStates'; raft.raftLog'; raft.maxMsgSize'; raft.maxUncommittedSize'; raft.trk'; raft.state'; raft.isLearner'; raft.msgs'; raft.msgsAfterAppend'; raft.lead'; raft.leadTransferee'; raft.pendingConfIndex'; raft.disableConfChangeValidation'; raft.uncommittedSize'; raft.readOnly'; raft.electionElapsed'; raft.heartbeatElapsed'; raft.checkQuorum'; raft.preVote'; raft.heartbeatTimeout'; raft.electionTimeout'; raft.randomizedElectionTimeout'; raft.disableProposalForwarding'; raft.stepDownOnRemoval'; raft.tick'; raft.step'; raft.logger'; raft.pendingReadIndexMessages'; raft.traceLogger' >.
-Global Instance into_val_raft : IntoVal raft.t.
-Admitted.
+Global Instance into_val_raft : IntoVal raft.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.raft [
+    "id" ::= #(raft.id' v);
+    "Term" ::= #(raft.Term' v);
+    "Vote" ::= #(raft.Vote' v);
+    "readStates" ::= #(raft.readStates' v);
+    "raftLog" ::= #(raft.raftLog' v);
+    "maxMsgSize" ::= #(raft.maxMsgSize' v);
+    "maxUncommittedSize" ::= #(raft.maxUncommittedSize' v);
+    "trk" ::= #(raft.trk' v);
+    "state" ::= #(raft.state' v);
+    "isLearner" ::= #(raft.isLearner' v);
+    "msgs" ::= #(raft.msgs' v);
+    "msgsAfterAppend" ::= #(raft.msgsAfterAppend' v);
+    "lead" ::= #(raft.lead' v);
+    "leadTransferee" ::= #(raft.leadTransferee' v);
+    "pendingConfIndex" ::= #(raft.pendingConfIndex' v);
+    "disableConfChangeValidation" ::= #(raft.disableConfChangeValidation' v);
+    "uncommittedSize" ::= #(raft.uncommittedSize' v);
+    "readOnly" ::= #(raft.readOnly' v);
+    "electionElapsed" ::= #(raft.electionElapsed' v);
+    "heartbeatElapsed" ::= #(raft.heartbeatElapsed' v);
+    "checkQuorum" ::= #(raft.checkQuorum' v);
+    "preVote" ::= #(raft.preVote' v);
+    "heartbeatTimeout" ::= #(raft.heartbeatTimeout' v);
+    "electionTimeout" ::= #(raft.electionTimeout' v);
+    "randomizedElectionTimeout" ::= #(raft.randomizedElectionTimeout' v);
+    "disableProposalForwarding" ::= #(raft.disableProposalForwarding' v);
+    "stepDownOnRemoval" ::= #(raft.stepDownOnRemoval' v);
+    "tick" ::= #(raft.tick' v);
+    "step" ::= #(raft.step' v);
+    "logger" ::= #(raft.logger' v);
+    "pendingReadIndexMessages" ::= #(raft.pendingReadIndexMessages' v);
+    "traceLogger" ::= #(raft.traceLogger' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_raft : IntoValTyped raft.t raft.raft :=
+Global Program Instance into_val_typed_raft : IntoValTyped raft.t raft.raft :=
 {|
   default_val := raft.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_raft_id : IntoValStructField "id" raft.raft raft.id'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_Term : IntoValStructField "Term" raft.raft raft.Term'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_Vote : IntoValStructField "Vote" raft.raft raft.Vote'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_readStates : IntoValStructField "readStates" raft.raft raft.readStates'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_raftLog : IntoValStructField "raftLog" raft.raft raft.raftLog'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_maxMsgSize : IntoValStructField "maxMsgSize" raft.raft raft.maxMsgSize'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_maxUncommittedSize : IntoValStructField "maxUncommittedSize" raft.raft raft.maxUncommittedSize'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_trk : IntoValStructField "trk" raft.raft raft.trk'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_state : IntoValStructField "state" raft.raft raft.state'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_isLearner : IntoValStructField "isLearner" raft.raft raft.isLearner'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_msgs : IntoValStructField "msgs" raft.raft raft.msgs'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_msgsAfterAppend : IntoValStructField "msgsAfterAppend" raft.raft raft.msgsAfterAppend'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_lead : IntoValStructField "lead" raft.raft raft.lead'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_leadTransferee : IntoValStructField "leadTransferee" raft.raft raft.leadTransferee'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_pendingConfIndex : IntoValStructField "pendingConfIndex" raft.raft raft.pendingConfIndex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_disableConfChangeValidation : IntoValStructField "disableConfChangeValidation" raft.raft raft.disableConfChangeValidation'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_uncommittedSize : IntoValStructField "uncommittedSize" raft.raft raft.uncommittedSize'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_readOnly : IntoValStructField "readOnly" raft.raft raft.readOnly'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_electionElapsed : IntoValStructField "electionElapsed" raft.raft raft.electionElapsed'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_heartbeatElapsed : IntoValStructField "heartbeatElapsed" raft.raft raft.heartbeatElapsed'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_checkQuorum : IntoValStructField "checkQuorum" raft.raft raft.checkQuorum'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_preVote : IntoValStructField "preVote" raft.raft raft.preVote'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_heartbeatTimeout : IntoValStructField "heartbeatTimeout" raft.raft raft.heartbeatTimeout'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_electionTimeout : IntoValStructField "electionTimeout" raft.raft raft.electionTimeout'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_randomizedElectionTimeout : IntoValStructField "randomizedElectionTimeout" raft.raft raft.randomizedElectionTimeout'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_disableProposalForwarding : IntoValStructField "disableProposalForwarding" raft.raft raft.disableProposalForwarding'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_stepDownOnRemoval : IntoValStructField "stepDownOnRemoval" raft.raft raft.stepDownOnRemoval'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_tick : IntoValStructField "tick" raft.raft raft.tick'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_step : IntoValStructField "step" raft.raft raft.step'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_logger : IntoValStructField "logger" raft.raft raft.logger'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_pendingReadIndexMessages : IntoValStructField "pendingReadIndexMessages" raft.raft raft.pendingReadIndexMessages'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_raft_traceLogger : IntoValStructField "traceLogger" raft.raft raft.traceLogger'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1072,7 +1345,7 @@ Global Instance wp_struct_make_raft id' Term' Vote' readStates' raftLog' maxMsgS
       "traceLogger" ::= #traceLogger'
     ]))%struct
     #(raft.mk id' Term' Vote' readStates' raftLog' maxMsgSize' maxUncommittedSize' trk' state' isLearner' msgs' msgsAfterAppend' lead' leadTransferee' pendingConfIndex' disableConfChangeValidation' uncommittedSize' readOnly' electionElapsed' heartbeatElapsed' checkQuorum' preVote' heartbeatTimeout' electionTimeout' randomizedElectionTimeout' disableProposalForwarding' stepDownOnRemoval' tick' step' logger' pendingReadIndexMessages' traceLogger').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance raft_struct_fields_split dq l (v : raft.t) :
@@ -1110,6 +1383,45 @@ Global Instance raft_struct_fields_split dq l (v : raft.t) :
     "HpendingReadIndexMessages" ∷ l ↦s[raft.raft :: "pendingReadIndexMessages"]{dq} v.(raft.pendingReadIndexMessages') ∗
     "HtraceLogger" ∷ l ↦s[raft.raft :: "traceLogger"]{dq} v.(raft.traceLogger')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (raft.id' v)) (struct.field_offset_f raft.raft "id"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.Term' v)) (struct.field_offset_f raft.raft "Term"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.Vote' v)) (struct.field_offset_f raft.raft "Vote"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.readStates' v)) (struct.field_offset_f raft.raft "readStates"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.raftLog' v)) (struct.field_offset_f raft.raft "raftLog"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.maxMsgSize' v)) (struct.field_offset_f raft.raft "maxMsgSize"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.maxUncommittedSize' v)) (struct.field_offset_f raft.raft "maxUncommittedSize"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.trk' v)) (struct.field_offset_f raft.raft "trk"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.state' v)) (struct.field_offset_f raft.raft "state"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.isLearner' v)) (struct.field_offset_f raft.raft "isLearner"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.msgs' v)) (struct.field_offset_f raft.raft "msgs"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.msgsAfterAppend' v)) (struct.field_offset_f raft.raft "msgsAfterAppend"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.lead' v)) (struct.field_offset_f raft.raft "lead"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.leadTransferee' v)) (struct.field_offset_f raft.raft "leadTransferee"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.pendingConfIndex' v)) (struct.field_offset_f raft.raft "pendingConfIndex"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.disableConfChangeValidation' v)) (struct.field_offset_f raft.raft "disableConfChangeValidation"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.uncommittedSize' v)) (struct.field_offset_f raft.raft "uncommittedSize"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.readOnly' v)) (struct.field_offset_f raft.raft "readOnly"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.electionElapsed' v)) (struct.field_offset_f raft.raft "electionElapsed"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.heartbeatElapsed' v)) (struct.field_offset_f raft.raft "heartbeatElapsed"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.checkQuorum' v)) (struct.field_offset_f raft.raft "checkQuorum"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.preVote' v)) (struct.field_offset_f raft.raft "preVote"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.heartbeatTimeout' v)) (struct.field_offset_f raft.raft "heartbeatTimeout"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.electionTimeout' v)) (struct.field_offset_f raft.raft "electionTimeout"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.randomizedElectionTimeout' v)) (struct.field_offset_f raft.raft "randomizedElectionTimeout"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.disableProposalForwarding' v)) (struct.field_offset_f raft.raft "disableProposalForwarding"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.stepDownOnRemoval' v)) (struct.field_offset_f raft.raft "stepDownOnRemoval"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.tick' v)) (struct.field_offset_f raft.raft "tick"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.step' v)) (struct.field_offset_f raft.raft "step"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.logger' v)) (struct.field_offset_f raft.raft "logger"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (raft.pendingReadIndexMessages' v)) (struct.field_offset_f raft.raft "pendingReadIndexMessages"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1132,31 +1444,40 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RawNode : Settable _ :=
   settable! RawNode.mk < RawNode.raft'; RawNode.asyncStorageWrites'; RawNode.prevSoftSt'; RawNode.prevHardSt'; RawNode.stepsOnAdvance' >.
-Global Instance into_val_RawNode : IntoVal RawNode.t.
-Admitted.
+Global Instance into_val_RawNode : IntoVal RawNode.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.RawNode [
+    "raft" ::= #(RawNode.raft' v);
+    "asyncStorageWrites" ::= #(RawNode.asyncStorageWrites' v);
+    "prevSoftSt" ::= #(RawNode.prevSoftSt' v);
+    "prevHardSt" ::= #(RawNode.prevHardSt' v);
+    "stepsOnAdvance" ::= #(RawNode.stepsOnAdvance' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_RawNode : IntoValTyped RawNode.t raft.RawNode :=
+Global Program Instance into_val_typed_RawNode : IntoValTyped RawNode.t raft.RawNode :=
 {|
   default_val := RawNode.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_RawNode_raft : IntoValStructField "raft" raft.RawNode RawNode.raft'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_RawNode_asyncStorageWrites : IntoValStructField "asyncStorageWrites" raft.RawNode RawNode.asyncStorageWrites'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_RawNode_prevSoftSt : IntoValStructField "prevSoftSt" raft.RawNode RawNode.prevSoftSt'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_RawNode_prevHardSt : IntoValStructField "prevHardSt" raft.RawNode RawNode.prevHardSt'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_RawNode_stepsOnAdvance : IntoValStructField "stepsOnAdvance" raft.RawNode RawNode.stepsOnAdvance'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1170,7 +1491,7 @@ Global Instance wp_struct_make_RawNode raft' asyncStorageWrites' prevSoftSt' pre
       "stepsOnAdvance" ::= #stepsOnAdvance'
     ]))%struct
     #(RawNode.mk raft' asyncStorageWrites' prevSoftSt' prevHardSt' stepsOnAdvance').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RawNode_struct_fields_split dq l (v : RawNode.t) :
@@ -1181,6 +1502,18 @@ Global Instance RawNode_struct_fields_split dq l (v : RawNode.t) :
     "HprevHardSt" ∷ l ↦s[raft.RawNode :: "prevHardSt"]{dq} v.(RawNode.prevHardSt') ∗
     "HstepsOnAdvance" ∷ l ↦s[raft.RawNode :: "stepsOnAdvance"]{dq} v.(RawNode.stepsOnAdvance')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (RawNode.raft' v)) (struct.field_offset_f raft.RawNode "raft"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (RawNode.asyncStorageWrites' v)) (struct.field_offset_f raft.RawNode "asyncStorageWrites"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (RawNode.prevSoftSt' v)) (struct.field_offset_f raft.RawNode "prevSoftSt"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (RawNode.prevHardSt' v)) (struct.field_offset_f raft.RawNode "prevHardSt"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1207,22 +1540,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ReadState : Settable _ :=
   settable! ReadState.mk < ReadState.Index'; ReadState.RequestCtx' >.
-Global Instance into_val_ReadState : IntoVal ReadState.t.
-Admitted.
+Global Instance into_val_ReadState : IntoVal ReadState.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.ReadState [
+    "Index" ::= #(ReadState.Index' v);
+    "RequestCtx" ::= #(ReadState.RequestCtx' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_ReadState : IntoValTyped ReadState.t raft.ReadState :=
+Global Program Instance into_val_typed_ReadState : IntoValTyped ReadState.t raft.ReadState :=
 {|
   default_val := ReadState.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_ReadState_Index : IntoValStructField "Index" raft.ReadState ReadState.Index'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ReadState_RequestCtx : IntoValStructField "RequestCtx" raft.ReadState ReadState.RequestCtx'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1233,7 +1572,7 @@ Global Instance wp_struct_make_ReadState Index' RequestCtx':
       "RequestCtx" ::= #RequestCtx'
     ]))%struct
     #(ReadState.mk Index' RequestCtx').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ReadState_struct_fields_split dq l (v : ReadState.t) :
@@ -1241,6 +1580,15 @@ Global Instance ReadState_struct_fields_split dq l (v : ReadState.t) :
     "HIndex" ∷ l ↦s[raft.ReadState :: "Index"]{dq} v.(ReadState.Index') ∗
     "HRequestCtx" ∷ l ↦s[raft.ReadState :: "RequestCtx"]{dq} v.(ReadState.RequestCtx')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (ReadState.Index' v)) (struct.field_offset_f raft.ReadState "Index"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1261,25 +1609,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_readIndexStatus : Settable _ :=
   settable! readIndexStatus.mk < readIndexStatus.req'; readIndexStatus.index'; readIndexStatus.acks' >.
-Global Instance into_val_readIndexStatus : IntoVal readIndexStatus.t.
-Admitted.
+Global Instance into_val_readIndexStatus : IntoVal readIndexStatus.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.readIndexStatus [
+    "req" ::= #(readIndexStatus.req' v);
+    "index" ::= #(readIndexStatus.index' v);
+    "acks" ::= #(readIndexStatus.acks' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_readIndexStatus : IntoValTyped readIndexStatus.t raft.readIndexStatus :=
+Global Program Instance into_val_typed_readIndexStatus : IntoValTyped readIndexStatus.t raft.readIndexStatus :=
 {|
   default_val := readIndexStatus.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_readIndexStatus_req : IntoValStructField "req" raft.readIndexStatus readIndexStatus.req'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_readIndexStatus_index : IntoValStructField "index" raft.readIndexStatus readIndexStatus.index'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_readIndexStatus_acks : IntoValStructField "acks" raft.readIndexStatus readIndexStatus.acks'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1291,7 +1646,7 @@ Global Instance wp_struct_make_readIndexStatus req' index' acks':
       "acks" ::= #acks'
     ]))%struct
     #(readIndexStatus.mk req' index' acks').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance readIndexStatus_struct_fields_split dq l (v : readIndexStatus.t) :
@@ -1300,6 +1655,16 @@ Global Instance readIndexStatus_struct_fields_split dq l (v : readIndexStatus.t)
     "Hindex" ∷ l ↦s[raft.readIndexStatus :: "index"]{dq} v.(readIndexStatus.index') ∗
     "Hacks" ∷ l ↦s[raft.readIndexStatus :: "acks"]{dq} v.(readIndexStatus.acks')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (readIndexStatus.req' v)) (struct.field_offset_f raft.readIndexStatus "req"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (readIndexStatus.index' v)) (struct.field_offset_f raft.readIndexStatus "index"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1320,25 +1685,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_readOnly : Settable _ :=
   settable! readOnly.mk < readOnly.option'; readOnly.pendingReadIndex'; readOnly.readIndexQueue' >.
-Global Instance into_val_readOnly : IntoVal readOnly.t.
-Admitted.
+Global Instance into_val_readOnly : IntoVal readOnly.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.readOnly [
+    "option" ::= #(readOnly.option' v);
+    "pendingReadIndex" ::= #(readOnly.pendingReadIndex' v);
+    "readIndexQueue" ::= #(readOnly.readIndexQueue' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_readOnly : IntoValTyped readOnly.t raft.readOnly :=
+Global Program Instance into_val_typed_readOnly : IntoValTyped readOnly.t raft.readOnly :=
 {|
   default_val := readOnly.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_readOnly_option : IntoValStructField "option" raft.readOnly readOnly.option'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_readOnly_pendingReadIndex : IntoValStructField "pendingReadIndex" raft.readOnly readOnly.pendingReadIndex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_readOnly_readIndexQueue : IntoValStructField "readIndexQueue" raft.readOnly readOnly.readIndexQueue'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1350,7 +1722,7 @@ Global Instance wp_struct_make_readOnly option' pendingReadIndex' readIndexQueue
       "readIndexQueue" ::= #readIndexQueue'
     ]))%struct
     #(readOnly.mk option' pendingReadIndex' readIndexQueue').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance readOnly_struct_fields_split dq l (v : readOnly.t) :
@@ -1359,6 +1731,16 @@ Global Instance readOnly_struct_fields_split dq l (v : readOnly.t) :
     "HpendingReadIndex" ∷ l ↦s[raft.readOnly :: "pendingReadIndex"]{dq} v.(readOnly.pendingReadIndex') ∗
     "HreadIndexQueue" ∷ l ↦s[raft.readOnly :: "readIndexQueue"]{dq} v.(readOnly.readIndexQueue')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (readOnly.option' v)) (struct.field_offset_f raft.readOnly "option"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (readOnly.pendingReadIndex' v)) (struct.field_offset_f raft.readOnly "pendingReadIndex"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1373,17 +1755,21 @@ End TracingEvent.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_TracingEvent : IntoVal TracingEvent.t.
-Admitted.
+Global Instance into_val_TracingEvent : IntoVal TracingEvent.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.TracingEvent [
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_TracingEvent : IntoValTyped TracingEvent.t raft.TracingEvent :=
+Global Program Instance into_val_typed_TracingEvent : IntoValTyped TracingEvent.t raft.TracingEvent :=
 {|
   default_val := TracingEvent.mk;
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_TracingEvent:
@@ -1391,7 +1777,7 @@ Global Instance wp_struct_make_TracingEvent:
     (struct.make #raft.TracingEvent (alist_val [
     ]))%struct
     #(TracingEvent.mk).
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
@@ -1413,31 +1799,40 @@ Context `{ffi_syntax}.
 
 Global Instance settable_BasicStatus : Settable _ :=
   settable! BasicStatus.mk < BasicStatus.ID'; BasicStatus.HardState'; BasicStatus.SoftState'; BasicStatus.Applied'; BasicStatus.LeadTransferee' >.
-Global Instance into_val_BasicStatus : IntoVal BasicStatus.t.
-Admitted.
+Global Instance into_val_BasicStatus : IntoVal BasicStatus.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.BasicStatus [
+    "ID" ::= #(BasicStatus.ID' v);
+    "HardState" ::= #(BasicStatus.HardState' v);
+    "SoftState" ::= #(BasicStatus.SoftState' v);
+    "Applied" ::= #(BasicStatus.Applied' v);
+    "LeadTransferee" ::= #(BasicStatus.LeadTransferee' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_BasicStatus : IntoValTyped BasicStatus.t raft.BasicStatus :=
+Global Program Instance into_val_typed_BasicStatus : IntoValTyped BasicStatus.t raft.BasicStatus :=
 {|
   default_val := BasicStatus.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_BasicStatus_ID : IntoValStructField "ID" raft.BasicStatus BasicStatus.ID'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_BasicStatus_HardState : IntoValStructField "HardState" raft.BasicStatus BasicStatus.HardState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_BasicStatus_SoftState : IntoValStructField "SoftState" raft.BasicStatus BasicStatus.SoftState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_BasicStatus_Applied : IntoValStructField "Applied" raft.BasicStatus BasicStatus.Applied'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_BasicStatus_LeadTransferee : IntoValStructField "LeadTransferee" raft.BasicStatus BasicStatus.LeadTransferee'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1451,7 +1846,7 @@ Global Instance wp_struct_make_BasicStatus ID' HardState' SoftState' Applied' Le
       "LeadTransferee" ::= #LeadTransferee'
     ]))%struct
     #(BasicStatus.mk ID' HardState' SoftState' Applied' LeadTransferee').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance BasicStatus_struct_fields_split dq l (v : BasicStatus.t) :
@@ -1462,6 +1857,18 @@ Global Instance BasicStatus_struct_fields_split dq l (v : BasicStatus.t) :
     "HApplied" ∷ l ↦s[raft.BasicStatus :: "Applied"]{dq} v.(BasicStatus.Applied') ∗
     "HLeadTransferee" ∷ l ↦s[raft.BasicStatus :: "LeadTransferee"]{dq} v.(BasicStatus.LeadTransferee')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (BasicStatus.ID' v)) (struct.field_offset_f raft.BasicStatus "ID"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (BasicStatus.HardState' v)) (struct.field_offset_f raft.BasicStatus "HardState"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (BasicStatus.SoftState' v)) (struct.field_offset_f raft.BasicStatus "SoftState"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (BasicStatus.Applied' v)) (struct.field_offset_f raft.BasicStatus "Applied"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1482,25 +1889,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Status : Settable _ :=
   settable! Status.mk < Status.BasicStatus'; Status.Config'; Status.Progress' >.
-Global Instance into_val_Status : IntoVal Status.t.
-Admitted.
+Global Instance into_val_Status : IntoVal Status.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.Status [
+    "BasicStatus" ::= #(Status.BasicStatus' v);
+    "Config" ::= #(Status.Config' v);
+    "Progress" ::= #(Status.Progress' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Status : IntoValTyped Status.t raft.Status :=
+Global Program Instance into_val_typed_Status : IntoValTyped Status.t raft.Status :=
 {|
   default_val := Status.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Status_BasicStatus : IntoValStructField "BasicStatus" raft.Status Status.BasicStatus'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Status_Config : IntoValStructField "Config" raft.Status Status.Config'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Status_Progress : IntoValStructField "Progress" raft.Status Status.Progress'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1512,7 +1926,7 @@ Global Instance wp_struct_make_Status BasicStatus' Config' Progress':
       "Progress" ::= #Progress'
     ]))%struct
     #(Status.mk BasicStatus' Config' Progress').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Status_struct_fields_split dq l (v : Status.t) :
@@ -1521,6 +1935,16 @@ Global Instance Status_struct_fields_split dq l (v : Status.t) :
     "HConfig" ∷ l ↦s[raft.Status :: "Config"]{dq} v.(Status.Config') ∗
     "HProgress" ∷ l ↦s[raft.Status :: "Progress"]{dq} v.(Status.Progress')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Status.BasicStatus' v)) (struct.field_offset_f raft.Status "BasicStatus"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Status.Config' v)) (struct.field_offset_f raft.Status "Config"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1544,34 +1968,44 @@ Context `{ffi_syntax}.
 
 Global Instance settable_inMemStorageCallStats : Settable _ :=
   settable! inMemStorageCallStats.mk < inMemStorageCallStats.initialState'; inMemStorageCallStats.firstIndex'; inMemStorageCallStats.lastIndex'; inMemStorageCallStats.entries'; inMemStorageCallStats.term'; inMemStorageCallStats.snapshot' >.
-Global Instance into_val_inMemStorageCallStats : IntoVal inMemStorageCallStats.t.
-Admitted.
+Global Instance into_val_inMemStorageCallStats : IntoVal inMemStorageCallStats.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.inMemStorageCallStats [
+    "initialState" ::= #(inMemStorageCallStats.initialState' v);
+    "firstIndex" ::= #(inMemStorageCallStats.firstIndex' v);
+    "lastIndex" ::= #(inMemStorageCallStats.lastIndex' v);
+    "entries" ::= #(inMemStorageCallStats.entries' v);
+    "term" ::= #(inMemStorageCallStats.term' v);
+    "snapshot" ::= #(inMemStorageCallStats.snapshot' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_inMemStorageCallStats : IntoValTyped inMemStorageCallStats.t raft.inMemStorageCallStats :=
+Global Program Instance into_val_typed_inMemStorageCallStats : IntoValTyped inMemStorageCallStats.t raft.inMemStorageCallStats :=
 {|
   default_val := inMemStorageCallStats.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_inMemStorageCallStats_initialState : IntoValStructField "initialState" raft.inMemStorageCallStats inMemStorageCallStats.initialState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_inMemStorageCallStats_firstIndex : IntoValStructField "firstIndex" raft.inMemStorageCallStats inMemStorageCallStats.firstIndex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_inMemStorageCallStats_lastIndex : IntoValStructField "lastIndex" raft.inMemStorageCallStats inMemStorageCallStats.lastIndex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_inMemStorageCallStats_entries : IntoValStructField "entries" raft.inMemStorageCallStats inMemStorageCallStats.entries'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_inMemStorageCallStats_term : IntoValStructField "term" raft.inMemStorageCallStats inMemStorageCallStats.term'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_inMemStorageCallStats_snapshot : IntoValStructField "snapshot" raft.inMemStorageCallStats inMemStorageCallStats.snapshot'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1586,7 +2020,7 @@ Global Instance wp_struct_make_inMemStorageCallStats initialState' firstIndex' l
       "snapshot" ::= #snapshot'
     ]))%struct
     #(inMemStorageCallStats.mk initialState' firstIndex' lastIndex' entries' term' snapshot').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance inMemStorageCallStats_struct_fields_split dq l (v : inMemStorageCallStats.t) :
@@ -1598,6 +2032,19 @@ Global Instance inMemStorageCallStats_struct_fields_split dq l (v : inMemStorage
     "Hterm" ∷ l ↦s[raft.inMemStorageCallStats :: "term"]{dq} v.(inMemStorageCallStats.term') ∗
     "Hsnapshot" ∷ l ↦s[raft.inMemStorageCallStats :: "snapshot"]{dq} v.(inMemStorageCallStats.snapshot')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.initialState' v)) (struct.field_offset_f raft.inMemStorageCallStats "initialState"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.firstIndex' v)) (struct.field_offset_f raft.inMemStorageCallStats "firstIndex"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.lastIndex' v)) (struct.field_offset_f raft.inMemStorageCallStats "lastIndex"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.entries' v)) (struct.field_offset_f raft.inMemStorageCallStats "entries"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.term' v)) (struct.field_offset_f raft.inMemStorageCallStats "term"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1620,31 +2067,40 @@ Context `{ffi_syntax}.
 
 Global Instance settable_MemoryStorage : Settable _ :=
   settable! MemoryStorage.mk < MemoryStorage.Mutex'; MemoryStorage.hardState'; MemoryStorage.snapshot'; MemoryStorage.ents'; MemoryStorage.callStats' >.
-Global Instance into_val_MemoryStorage : IntoVal MemoryStorage.t.
-Admitted.
+Global Instance into_val_MemoryStorage : IntoVal MemoryStorage.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.MemoryStorage [
+    "Mutex" ::= #(MemoryStorage.Mutex' v);
+    "hardState" ::= #(MemoryStorage.hardState' v);
+    "snapshot" ::= #(MemoryStorage.snapshot' v);
+    "ents" ::= #(MemoryStorage.ents' v);
+    "callStats" ::= #(MemoryStorage.callStats' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_MemoryStorage : IntoValTyped MemoryStorage.t raft.MemoryStorage :=
+Global Program Instance into_val_typed_MemoryStorage : IntoValTyped MemoryStorage.t raft.MemoryStorage :=
 {|
   default_val := MemoryStorage.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_MemoryStorage_Mutex : IntoValStructField "Mutex" raft.MemoryStorage MemoryStorage.Mutex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_MemoryStorage_hardState : IntoValStructField "hardState" raft.MemoryStorage MemoryStorage.hardState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_MemoryStorage_snapshot : IntoValStructField "snapshot" raft.MemoryStorage MemoryStorage.snapshot'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_MemoryStorage_ents : IntoValStructField "ents" raft.MemoryStorage MemoryStorage.ents'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_MemoryStorage_callStats : IntoValStructField "callStats" raft.MemoryStorage MemoryStorage.callStats'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1658,7 +2114,7 @@ Global Instance wp_struct_make_MemoryStorage Mutex' hardState' snapshot' ents' c
       "callStats" ::= #callStats'
     ]))%struct
     #(MemoryStorage.mk Mutex' hardState' snapshot' ents' callStats').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance MemoryStorage_struct_fields_split dq l (v : MemoryStorage.t) :
@@ -1669,6 +2125,18 @@ Global Instance MemoryStorage_struct_fields_split dq l (v : MemoryStorage.t) :
     "Hents" ∷ l ↦s[raft.MemoryStorage :: "ents"]{dq} v.(MemoryStorage.ents') ∗
     "HcallStats" ∷ l ↦s[raft.MemoryStorage :: "callStats"]{dq} v.(MemoryStorage.callStats')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (MemoryStorage.Mutex' v)) (struct.field_offset_f raft.MemoryStorage "Mutex"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (MemoryStorage.hardState' v)) (struct.field_offset_f raft.MemoryStorage "hardState"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (MemoryStorage.snapshot' v)) (struct.field_offset_f raft.MemoryStorage "snapshot"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (MemoryStorage.ents' v)) (struct.field_offset_f raft.MemoryStorage "ents"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1688,22 +2156,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_entryID : Settable _ :=
   settable! entryID.mk < entryID.term'; entryID.index' >.
-Global Instance into_val_entryID : IntoVal entryID.t.
-Admitted.
+Global Instance into_val_entryID : IntoVal entryID.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.entryID [
+    "term" ::= #(entryID.term' v);
+    "index" ::= #(entryID.index' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_entryID : IntoValTyped entryID.t raft.entryID :=
+Global Program Instance into_val_typed_entryID : IntoValTyped entryID.t raft.entryID :=
 {|
   default_val := entryID.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_entryID_term : IntoValStructField "term" raft.entryID entryID.term'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_entryID_index : IntoValStructField "index" raft.entryID entryID.index'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1714,7 +2188,7 @@ Global Instance wp_struct_make_entryID term' index':
       "index" ::= #index'
     ]))%struct
     #(entryID.mk term' index').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance entryID_struct_fields_split dq l (v : entryID.t) :
@@ -1722,6 +2196,15 @@ Global Instance entryID_struct_fields_split dq l (v : entryID.t) :
     "Hterm" ∷ l ↦s[raft.entryID :: "term"]{dq} v.(entryID.term') ∗
     "Hindex" ∷ l ↦s[raft.entryID :: "index"]{dq} v.(entryID.index')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (entryID.term' v)) (struct.field_offset_f raft.entryID "term"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.
@@ -1742,25 +2225,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_logSlice : Settable _ :=
   settable! logSlice.mk < logSlice.term'; logSlice.prev'; logSlice.entries' >.
-Global Instance into_val_logSlice : IntoVal logSlice.t.
-Admitted.
+Global Instance into_val_logSlice : IntoVal logSlice.t :=
+  {| to_val_def v :=
+    struct.val_aux raft.logSlice [
+    "term" ::= #(logSlice.term' v);
+    "prev" ::= #(logSlice.prev' v);
+    "entries" ::= #(logSlice.entries' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_logSlice : IntoValTyped logSlice.t raft.logSlice :=
+Global Program Instance into_val_typed_logSlice : IntoValTyped logSlice.t raft.logSlice :=
 {|
   default_val := logSlice.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_logSlice_term : IntoValStructField "term" raft.logSlice logSlice.term'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_logSlice_prev : IntoValStructField "prev" raft.logSlice logSlice.prev'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_logSlice_entries : IntoValStructField "entries" raft.logSlice logSlice.entries'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -1772,7 +2262,7 @@ Global Instance wp_struct_make_logSlice term' prev' entries':
       "entries" ::= #entries'
     ]))%struct
     #(logSlice.mk term' prev' entries').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance logSlice_struct_fields_split dq l (v : logSlice.t) :
@@ -1781,6 +2271,16 @@ Global Instance logSlice_struct_fields_split dq l (v : logSlice.t) :
     "Hprev" ∷ l ↦s[raft.logSlice :: "prev"]{dq} v.(logSlice.prev') ∗
     "Hentries" ∷ l ↦s[raft.logSlice :: "entries"]{dq} v.(logSlice.entries')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (logSlice.term' v)) (struct.field_offset_f raft.logSlice "term"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (logSlice.prev' v)) (struct.field_offset_f raft.logSlice "prev"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.

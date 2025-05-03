@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.io.
+
+Set Default Proof Using "Type".
+
 Module io.
-Axiom falso : False.
+
 Module Reader.
 Section def.
 Context `{ffi_syntax}.

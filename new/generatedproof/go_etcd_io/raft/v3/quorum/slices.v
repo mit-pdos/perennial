@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.raft.v3.quorum.slices.
+
+Set Default Proof Using "Type".
+
 Module slices.
-Axiom falso : False.
+
 Module Tup.
 Section def.
 Context `{ffi_syntax}.
@@ -22,28 +25,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Tup : Settable _ :=
   settable! Tup.mk < Tup.ID'; Tup.Idx'; Tup.Ok'; Tup.Bar' >.
-Global Instance into_val_Tup : IntoVal Tup.t.
-Admitted.
+Global Instance into_val_Tup : IntoVal Tup.t :=
+  {| to_val_def v :=
+    struct.val_aux slices.Tup [
+    "ID" ::= #(Tup.ID' v);
+    "Idx" ::= #(Tup.Idx' v);
+    "Ok" ::= #(Tup.Ok' v);
+    "Bar" ::= #(Tup.Bar' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Tup : IntoValTyped Tup.t slices.Tup :=
+Global Program Instance into_val_typed_Tup : IntoValTyped Tup.t slices.Tup :=
 {|
   default_val := Tup.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Tup_ID : IntoValStructField "ID" slices.Tup Tup.ID'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Tup_Idx : IntoValStructField "Idx" slices.Tup Tup.Idx'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Tup_Ok : IntoValStructField "Ok" slices.Tup Tup.Ok'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Tup_Bar : IntoValStructField "Bar" slices.Tup Tup.Bar'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -56,7 +67,7 @@ Global Instance wp_struct_make_Tup ID' Idx' Ok' Bar':
       "Bar" ::= #Bar'
     ]))%struct
     #(Tup.mk ID' Idx' Ok' Bar').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Tup_struct_fields_split dq l (v : Tup.t) :
@@ -66,6 +77,17 @@ Global Instance Tup_struct_fields_split dq l (v : Tup.t) :
     "HOk" ∷ l ↦s[slices.Tup :: "Ok"]{dq} v.(Tup.Ok') ∗
     "HBar" ∷ l ↦s[slices.Tup :: "Bar"]{dq} v.(Tup.Bar')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Tup.ID' v)) (struct.field_offset_f slices.Tup "ID"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Tup.Idx' v)) (struct.field_offset_f slices.Tup "Idx"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Tup.Ok' v)) (struct.field_offset_f slices.Tup "Ok"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.

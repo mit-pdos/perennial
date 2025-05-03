@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.google_golang_org.grpc.codes.
+
+Set Default Proof Using "Type".
+
 Module codes.
-Axiom falso : False.
+
 Module Code.
 Section def.
 Context `{ffi_syntax}.

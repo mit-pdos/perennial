@@ -8,8 +8,11 @@ Require Export New.generatedproof.strconv.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.raft.v3.quorum.
+
+Set Default Proof Using "Type".
+
 Module quorum.
-Axiom falso : False.
+
 Module MajorityConfig.
 Section def.
 Context `{ffi_syntax}.

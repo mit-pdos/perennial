@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.stretchr.testify.assert.
+
+Set Default Proof Using "Type".
+
 Module assert.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

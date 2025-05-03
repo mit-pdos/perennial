@@ -6,8 +6,11 @@ Require Export New.generatedproof.github_com.goose_lang.primitive.disk.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.goose_lang.goose.testdata.examples.append_log.
+
+Set Default Proof Using "Type".
+
 Module append_log.
-Axiom falso : False.
+
 Module Log.
 Section def.
 Context `{ffi_syntax}.
@@ -24,25 +27,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Log : Settable _ :=
   settable! Log.mk < Log.m'; Log.sz'; Log.diskSz' >.
-Global Instance into_val_Log : IntoVal Log.t.
-Admitted.
+Global Instance into_val_Log : IntoVal Log.t :=
+  {| to_val_def v :=
+    struct.val_aux append_log.Log [
+    "m" ::= #(Log.m' v);
+    "sz" ::= #(Log.sz' v);
+    "diskSz" ::= #(Log.diskSz' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Log : IntoValTyped Log.t append_log.Log :=
+Global Program Instance into_val_typed_Log : IntoValTyped Log.t append_log.Log :=
 {|
   default_val := Log.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Log_m : IntoValStructField "m" append_log.Log Log.m'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Log_sz : IntoValStructField "sz" append_log.Log Log.sz'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Log_diskSz : IntoValStructField "diskSz" append_log.Log Log.diskSz'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -54,7 +64,7 @@ Global Instance wp_struct_make_Log m' sz' diskSz':
       "diskSz" ::= #diskSz'
     ]))%struct
     #(Log.mk m' sz' diskSz').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Log_struct_fields_split dq l (v : Log.t) :
@@ -63,6 +73,16 @@ Global Instance Log_struct_fields_split dq l (v : Log.t) :
     "Hsz" ∷ l ↦s[append_log.Log :: "sz"]{dq} v.(Log.sz') ∗
     "HdiskSz" ∷ l ↦s[append_log.Log :: "diskSz"]{dq} v.(Log.diskSz')
   ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  rewrite (@has_go_type_len _ (# (Log.m' v)) (struct.field_offset_f append_log.Log "m"%go).2); [ | by solve_has_go_type' ].
+  rewrite (@has_go_type_len _ (# (Log.sz' v)) (struct.field_offset_f append_log.Log "sz"%go).2); [ | by solve_has_go_type' ].
+
+  simpl_field_ref_f.
 Admitted.
 
 End instances.

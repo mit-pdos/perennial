@@ -4,8 +4,11 @@ Require Export New.generatedproof.go_uber_org.zap.zapcore.
 Require Export New.golang.theory.
 
 Require Export New.code.go_uber_org.zap.
+
+Set Default Proof Using "Type".
+
 Module zap.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

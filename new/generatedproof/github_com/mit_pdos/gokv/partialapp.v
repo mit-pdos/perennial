@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.partialapp.
+
+Set Default Proof Using "Type".
+
 Module main.
-Axiom falso : False.
+
 Module Foo.
 Section def.
 Context `{ffi_syntax}.

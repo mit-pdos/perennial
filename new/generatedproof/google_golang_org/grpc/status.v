@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.google_golang_org.grpc.status.
+
+Set Default Proof Using "Type".
+
 Module status.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=
