@@ -5,6 +5,8 @@ From New.golang.theory Require Import typed_pointsto exception list typing dynam
 From Perennial.Helpers Require Import NamedProps.
 From RecordUpdate Require Export RecordUpdate.
 From Perennial Require Import base.
+From Ltac2 Require Import Ltac2.
+Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
@@ -341,12 +343,50 @@ Ltac cbn_w8 :=
   with_strategy transparent [w8_word_instance]
     (with_strategy opaque [loc_add] cbn).
 
+(* extend typing's solve_has_go_type to general goals *)
+Ltac solve_has_go_type' :=
+  (* TODO: crude hack, should re-implement this in a principled way *)
+  repeat (
+      solve [ apply to_val_has_go_type ]
+    || solve_has_go_type
+    || cbn_w8
+    ).
+
+(* solve ∀ v, has_go_type (#v) t in IntoValTyped *)
+Ltac solve_to_val_type :=
+  lazymatch goal with
+  | |- forall (_: ffi_syntax), _ => let H := fresh "H" in intros H
+  | _ => idtac
+  end;
+  intros v;
+  rewrite to_val_unseal /=;
+  destruct v; cbn_w8;
+  solve_has_go_type'.
+
 (* solve #default_val = zero_val t in IntoValTyped *)
 Ltac solve_zero_val :=
+  timeout 10 (
   intros;
-  rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal /=;
-  rewrite zero_val_eq /= !to_val_unseal //=;
-  cbn_w8.
+  rewrite to_val_unseal; with_strategy opaque [default_val] cbn;
+  rewrite ?default_val_eq_zero_val;
+  lazymatch goal with
+  | |- _ = ?rhs => rewrite [in rhs]zero_val_eq /=
+  end;
+  lazymatch goal with
+  | |- _ = ?rhs => rewrite [in rhs]struct.val_aux_unseal /=
+  end;
+  repeat match goal with
+         | |- struct.val_aux _ _ = _ =>
+             rewrite struct.val_aux_cons //
+             || rewrite struct.val_aux_nil //
+         | |- (_, _)%V = (_, _)%V => f_equal
+         | |- ?x = ?x => reflexivity
+         | |- context[alist_lookup_f] =>
+             cbn_w8; rewrite ?zero_val_eq //
+    end;
+  cbn_w8
+  ).
+
 
 Ltac solve_to_val_inj :=
   (* prove Inj (=) (=) (λ v, #v) *)
@@ -359,9 +399,12 @@ Ltac solve_to_val_inj :=
 
 Ltac solve_into_val_struct_field :=
   (* prove IntoValStructField *)
-  constructor; intros ?;
-  rewrite to_val_unseal /= struct.val_aux_unseal /= to_val_unseal //=;
-  cbn_w8.
+  constructor; intros v;
+  lazymatch goal with
+  | |- _ = ?rhs =>
+      rewrite [in rhs]to_val_unseal /= struct.val_aux_unseal /=
+  end;
+  destruct v; try reflexivity; cbn_w8.
 
 Ltac solve_struct_make_pure_wp :=
   intros;
@@ -428,7 +471,7 @@ Global Program Instance into_val_typed_Time `{ffi_syntax} : IntoValTyped Time.t 
 {|
   default_val := Time.mk (default_val _) (default_val _) (default_val _);
 |}.
-Next Obligation. rewrite to_val_unseal /=; solve_has_go_type. Qed.
+Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
@@ -466,8 +509,9 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Time.wall' v)) int64T); [ | by solve_has_go_type ].
-  rewrite (@has_go_type_len _ (# (Time.ext' v)) int64T); [ | by solve_has_go_type ].
+
+  rewrite (@has_go_type_len _ (# (Time.wall' v)) (struct.field_offset_f time.Time "wall"%go).2); [ | by solve_has_go_type ].
+  rewrite (@has_go_type_len _ (# (Time.ext' v)) (struct.field_offset_f Time "ext"%go).2); [ | by solve_has_go_type ].
   simpl_field_ref_f.
 Qed.
 
