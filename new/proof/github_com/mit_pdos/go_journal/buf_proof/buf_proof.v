@@ -7,13 +7,14 @@ Require Import New.proof.github_com.mit_pdos.go_journal.addr.
 Require Import New.proof.github_com.mit_pdos.go_journal.util.
 Require Import New.proof.github_com.mit_pdos.go_journal.buf_proof.defs.
 
-(*
+From Perennial.Helpers Require Import bytes.
 From Coq Require Import Program.Equality.
 
+(*
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.
 
-From Perennial.Helpers Require Import bytes Map.
+From Perennial.Helpers Require Import Map.
 From Perennial.program_proof Require Import disk_prelude.
 From Goose.github_com.mit_pdos.go_journal Require Import buf.
 From Perennial.program_proof Require Import util_proof disk_lib.
@@ -22,8 +23,6 @@ From Perennial.program_proof Require Import addr.addr_proof wal.abstraction.
 From Perennial.Helpers Require Import NamedProps PropRestore NatDivMod.
 From Perennial.goose_lang.lib Require Import slice.typed_slice.
 *)
-
-#[local] Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 (* an object is the data for a sub-block object, a dynamic bundle of a kind and
 data of the appropriate size *)
@@ -329,65 +328,65 @@ Definition is_bufData_at_off {K} (b : Block) (off : u64) (d : bufDataT K) : Prop
       get_bit b0 (word.modu off 8) = d
   end.
 
-(*
 Lemma buf_pointsto_non_null b a:
-  b ↦s[buf.Buf :: "Addr"] addr2val a -∗ ⌜ b ≠ null ⌝.
+  b ↦s[buf.Buf :: "Addr"] addr2val a -∗ ⌜ #b ≠ #null ⌝.
 Proof.
   iIntros "Hb.a".
-  iDestruct (heap_pointsto_non_null with "[Hb.a]") as %Hnotnull.
-  { rewrite struct_field_pointsto_eq /struct_field_pointsto_def //= struct_pointsto_eq /struct_pointsto_def.
-    iDestruct "Hb.a" as "[[[Hb _] _] _]".
-    repeat rewrite loc_add_0. iFrame. }
-  eauto.
+  iDestruct (typed_pointsto_not_null with "Hb.a") as %Hnotnull.
+  { rewrite go_type_size_unseal. done. }
+  iPureIntro. intro H. subst.
+  rewrite struct.field_ref_f_unseal in Hnotnull.
+  rewrite to_val_unseal in H. simpl in H. inversion H. subst.
+  done.
 Qed.
 
-Theorem wp_MkBuf K a data (bufdata : bufDataT K) stk E :
+Theorem wp_MkBuf K a data (bufdata : bufDataT K) :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf_data data bufdata a ∗
     ⌜ valid_addr a ∧ valid_off K a.(addrOff) ⌝
   }}}
-    MkBuf (addr2val a) #(bufSz K) (slice_val data) @ stk; E
+    buf.buf@"MkBuf" #(addr2val a) #(W64 (bufSz K)) #(data)
   {{{
     (bufptr : loc), RET #bufptr;
     is_buf bufptr a (Build_buf _ bufdata false)
   }}}.
 Proof using.
-  iIntros (Φ) "[Hbufdata %] HΦ".
-  wp_rec. wp_pures.
-  wp_apply wp_allocStruct; first val_ty.
-
-  iIntros (b) "Hb".
-  wp_pures.
+  wp_start as "[Hbufdata %]".
+  wp_auto.
+  wp_alloc b as "Hb".
+  wp_auto.
   iApply "HΦ".
-  iDestruct (struct_fields_split with "Hb") as "(Hb.a & Hb.sz & Hb.data & Hb.dirty & %)".
-
+  iDestruct (struct_fields_split with "Hb") as "Hb"; iNamed "Hb".
   iDestruct (buf_pointsto_non_null with "[$]") as %Hnotnull.
-
-  iExists _. iFrame. eauto with congruence.
+  iFrame.
+  iPureIntro. done.
 Qed.
 
+#[local]
 Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Hint Unfold inode_bytes valid_addr block_bytes addrOff addrBlock addr2flat_z : word.
 
-Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) stk E :
+Theorem wp_MkBufLoad K a blk s (bufdata : bufDataT K) :
   {{{
-    slice.own_slice_small s u8T (DfracOwn 1) (Block_to_vals blk) ∗
+    is_pkg_init buf.buf ∗
+    own_slice s (DfracOwn 1) (vec_to_list blk) ∗
     ⌜ is_bufData_at_off blk a.(addrOff) bufdata ⌝ ∗
     ⌜ valid_addr a ⌝
   }}}
-    MkBufLoad (addr2val a) #(bufSz K) (slice_val s) @ stk; E
+    buf.buf@"MkBufLoad" #(addr2val a) #(W64 (bufSz K)) #(s)
   {{{
     (bufptr : loc), RET #bufptr;
     is_buf bufptr a (Build_buf _ bufdata false)
   }}}.
 Proof using.
-  iIntros (Φ) "(Hs & % & %) HΦ".
-  wp_rec. wp_pures.
-
-  iDestruct (slice.own_slice_small_sz with "Hs") as "%".
+  wp_start as "(Hs & % & %)".
+  wp_auto.
+  iDestruct (own_slice_len with "Hs") as "%".
   destruct H as [Hoff Hatoff].
 
+(*
   wp_apply (slice.wp_SliceSubslice_small with "[$Hs]").
   { rewrite /valid_addr in H0.
     rewrite /valid_off in Hoff.
@@ -473,12 +472,14 @@ Opaque PeanoNat.Nat.div.
     2: { rewrite length_Block_to_vals /block_bytes. word. }
     rewrite skipn_O //.
 Qed.
+*)
+Admitted.
 
 Lemma insert_Block_to_vals blk i (v : u8) (Hlt : (i < block_bytes)%nat) :
-  <[i := #v]> (Block_to_vals blk) = Block_to_vals (vinsert (Fin.of_nat_lt Hlt) v blk).
+  <[i := v]> (vec_to_list blk) = vec_to_list (vinsert (Fin.of_nat_lt Hlt) v blk).
 Proof.
-  rewrite /Block_to_vals /b2val vec_to_list_insert.
-  rewrite list_fmap_insert fin_to_nat_to_fin //.
+  rewrite vec_to_list_insert.
+  rewrite fin_to_nat_to_fin //.
 Qed.
 
 (** * Operating on blocks as if they were [nat -> byte]. *)
@@ -548,13 +549,12 @@ Qed.
 Lemma extract_nth_bit blk (off: nat) :
   extract_nth blk 1 off =
   if decide (off < block_bytes)%nat then
-    [b2val (default inhabitant (vec_to_list blk !! off))]
+    [(default inhabitant (vec_to_list blk !! off))]
   else [].
 Proof.
   rewrite /extract_nth.
   rewrite !Nat.mul_1_r.
   rewrite /Block_to_vals.
-  rewrite -fmap_take -fmap_drop.
   destruct (decide _).
   - destruct (lookup_lt_is_Some_2 blk off) as [b0 Hlookup].
     { len. }
@@ -588,6 +588,7 @@ Proof.
     f_equal.
     rewrite /get_buf_data_bit /get_byte.
     repeat (f_equal; try word).
+    admit.
   - intros [Hbound Hbeq].
     inversion Hbeq; subst; clear Hbeq.
     split; [done|].
@@ -597,7 +598,8 @@ Proof.
     rewrite -> get_bit_ok by word.
     rewrite /get_buf_data_bit /get_byte.
     repeat (f_equal; try word).
-Qed.
+    admit.
+Admitted.
 
 (* TODO(tej): I should have used !!! (lookup_total), which is [default inhabitant
 (_ !! _)] ([list_lookup_total_alt] proves that). *)
@@ -612,8 +614,8 @@ Lemma Nat_div_inode_bits (off:nat) :
   (off `div` (inode_bytes * 8) * inode_bytes =
    off `div` 8)%nat.
 Proof.
-  intros. word.
-Qed.
+  intros. (* word. *) admit.
+Admitted.
 
 Global Instance Nat_mul_comm : Comm eq Nat.mul.
 Proof. intros x1 x2. lia. Qed.
@@ -650,7 +652,6 @@ Proof.
   rewrite /is_bufData_at_off.
   rewrite /extract_nth.
   rewrite /Block_to_vals.
-  rewrite -fmap_take -fmap_drop.
   rewrite /get_inode.
   split.
   - intros [Hvalid Heq].
@@ -659,7 +660,6 @@ Proof.
     rewrite -> Nat_div_inode_bits in Heq by word.
     rewrite /subslice.
     rewrite /inode_to_vals in Heq.
-    apply (inj (fmap b2val)) in Heq.
     assert (uint.nat off `div` 8 < block_bytes)%nat.
     { apply (f_equal length) in Heq. move: Heq; len. }
     split; first done.
@@ -676,9 +676,11 @@ Proof.
     rewrite PeanoNat.Nat.mul_succ_l.
     rewrite -> !Nat_div_inode_bits by word.
     rewrite list_to_inode_buf_to_list; last first.
-    { rewrite /subslice; len. }
+    { rewrite /subslice; len.
+      admit. (* word. *)
+    }
     auto.
-Qed.
+Admitted.
 
 Lemma valid_block_off off :
   uint.Z off < block_bytes * 8 →
@@ -770,50 +772,46 @@ Proof.
   bit_cases bit; vm_compute; by inversion 1.
 Qed.
 
-Theorem wp_installOneBit (src dst: u8) (bit: u64) stk E :
+Theorem wp_installOneBit (src dst: u8) (bit: u64) :
   uint.Z bit < 8 →
-  {{{ True }}}
-    installOneBit #src #dst #bit @ stk; E
+  {{{ is_pkg_init buf.buf }}}
+    buf.buf@"installOneBit" #src #dst #bit
   {{{ RET #(install_one_bit src dst (uint.nat bit)); True }}}.
 Proof.
-  iIntros (Hbit_bounded Φ) "_ HΦ".
+  intros Hbit_bounded.
+  wp_start as "_".
   iSpecialize ("HΦ" with "[//]").
-  wp_rec. wp_pures.
-  wp_apply wp_ref_to; first by val_ty.
-  iIntros (new_l) "new_l".
-  wp_pures.
+  wp_auto.
   rewrite !mask_bit_ok //.
-  wp_if_destruct; wp_pures.
-  - rewrite !mask_bit_ok //.
-    wp_if_destruct; wp_pures.
-    + wp_load. wp_store. wp_load.
-      destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?.
-      { apply masks_different in Heqb0; auto; contradiction. }
-      destruct (default false (byte_to_bits dst !! uint.nat bit)) eqn:?; last contradiction.
-      iModIntro.
-      iExactEq "HΦ"; do 3 f_equal.
-      rewrite /install_one_bit.
-      rewrite Heqb1.
-      apply (inj byte_to_bits).
-      rewrite bits_to_byte_to_bits; [|len].
-      bit_cases bit; byte_cases dst; vm_refl.
-    + destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?; last contradiction.
-      destruct (default false (byte_to_bits dst !! uint.nat bit)) eqn:?; first contradiction.
-      wp_load. wp_store. wp_load.
-      iModIntro.
-      iExactEq "HΦ"; do 3 f_equal.
-      rewrite /install_one_bit.
-      rewrite Heqb1.
-      apply (inj byte_to_bits).
-      rewrite bits_to_byte_to_bits; [|len].
-      bit_cases bit; byte_cases dst; vm_refl.
-  - wp_load. iModIntro.
+  wp_if_destruct.
+  - wp_auto.
     iExactEq "HΦ"; do 3 f_equal.
     rewrite install_one_bit_id //.
     { lia. }
     destruct (default false _), (default false _); auto.
-    + apply masks_different in Heqb; eauto; contradiction.
-    + apply symmetry, masks_different in Heqb; eauto; contradiction.
+    + apply masks_different in e; eauto; contradiction.
+    + apply symmetry, masks_different in e; eauto; contradiction.
+  - wp_auto.
+    rewrite !mask_bit_ok //.
+    wp_if_destruct.
+    + wp_auto.
+      destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?.
+      { apply masks_different in e; auto; contradiction. }
+      iExactEq "HΦ"; do 3 f_equal.
+      rewrite /install_one_bit.
+      rewrite Heqb.
+      apply (inj byte_to_bits).
+      rewrite bits_to_byte_to_bits; [|len].
+      bit_cases bit; byte_cases dst; vm_refl.
+    + wp_auto.
+      destruct (default false (byte_to_bits src !! uint.nat bit)) eqn:?; last contradiction.
+      destruct (default false (byte_to_bits dst !! uint.nat bit)) eqn:?; first contradiction.
+      iExactEq "HΦ"; do 3 f_equal.
+      rewrite /install_one_bit.
+      rewrite Heqb.
+      apply (inj byte_to_bits).
+      rewrite bits_to_byte_to_bits; [|len].
+      bit_cases bit; byte_cases dst; vm_refl.
 Qed.
 
 Lemma list_alter_lookup_insert {A} (l: list A) (i: nat) (f: A → A) x0 :
@@ -829,36 +827,43 @@ Proof.
 Qed.
 
 Theorem wp_installBit
-        (src_s: Slice.t) (src_b: u8) q (* source *)
-        (dst_s: Slice.t)  (dst_bs: list u8) (* destination *)
-        (dstoff: u64) (* the offset we're modifying, in bits *) stk E :
+        (src_s: slice.t) (src_b: u8) q (* source *)
+        (dst_s: slice.t)  (dst_bs: list u8) (* destination *)
+        (dstoff: u64) (* the offset we're modifying, in bits *) :
   (uint.Z dstoff < 8 * Z.of_nat (length dst_bs)) →
-  {{{ own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT (DfracOwn 1) dst_bs  }}}
-    installBit (slice_val src_s) (slice_val dst_s) #dstoff @ stk; E
+  {{{ is_pkg_init buf.buf ∗
+      own_slice src_s q [src_b] ∗ own_slice dst_s (DfracOwn 1) dst_bs  }}}
+    buf.buf@"installBit" #(src_s) #(dst_s) #dstoff
   {{{ RET #();
       let dst_bs' :=
           alter
             (λ dst, install_one_bit src_b dst (Z.to_nat $ uint.Z dstoff `mod` 8))
             (Z.to_nat $ uint.Z dstoff `div` 8) dst_bs in
-      own_slice_small src_s byteT q [src_b] ∗ own_slice_small dst_s byteT (DfracOwn 1) dst_bs' }}}.
+      own_slice src_s q [src_b] ∗ own_slice dst_s (DfracOwn 1) dst_bs' }}}.
 Proof.
-  iIntros (Hbound Φ) "Hpre HΦ".
+  intros Hbound.
+  wp_start as "Hpre".
   iDestruct "Hpre" as "[Hsrc Hdst]".
-  wp_rec. wp_pures.
+  wp_auto.
   destruct (lookup_lt_is_Some_2 dst_bs (Z.to_nat (uint.Z dstoff `div` 8)))
     as [dst_b Hlookup]; first word.
-  wp_apply (wp_SliceGet (V:=u8) with "[$Hdst]").
-  { iPureIntro. instantiate (1:=dst_b). rewrite -Hlookup. f_equal. word. }
+  iDestruct (own_slice_len with "Hsrc") as %Hsrcsz; simpl in *.
+  iDestruct (own_slice_len with "Hdst") as %Hdstsz; simpl in *.
+  wp_pure; first word.
+  wp_apply (wp_load_slice_elem with "[$Hsrc]"); first eauto. iIntros "Hsrc".
+  wp_auto.
+  wp_pure; first word.
+  wp_apply (wp_load_slice_elem with "[$Hdst]").
+  { replace (uint.nat (w64_word_instance.(word.divu) dstoff (W64 8)))
+      with (Z.to_nat (uint.Z dstoff `div` 8)); eauto.
+    word. }
   iIntros "Hdst".
-  wp_apply (wp_SliceGet (V:=u8) with "[$Hsrc]").
-  { iPureIntro. change (uint.nat 0) with 0%nat. reflexivity. }
-  iIntros "Hsrc".
+  wp_auto.
   wp_apply wp_installOneBit; first word.
-  wp_apply (wp_SliceSet (V:=u8) with "[$Hdst]").
-  { word with eauto. }
-  iIntros "Hdst".
-  wp_pures. iModIntro. iApply "HΦ".
-  iFrame "Hsrc".
+  wp_pure; first word.
+  wp_apply (wp_store_slice_elem with "[$Hdst]"); first word. iIntros "Hdst".
+  wp_auto.
+  iApply "HΦ". iFrame.
   iExactEq "Hdst".
   f_equal.
   erewrite list_alter_lookup_insert; last done.
@@ -875,76 +880,103 @@ Proof.
 Qed.
 
 Theorem wp_installBytes
-        (src_s: Slice.t) (src_bs: list u8) q (* source *)
-        (dst_s: Slice.t) (dst_bs: list u8) (* destination *)
+        (src_s: slice.t) (src_bs: list u8) q (* source *)
+        (dst_s: slice.t) (dst_bs: list u8) (* destination *)
         (dstoff: u64) (* the offset we're modifying, in bits *)
-        (nbit: u64)   (* the number of bits we're modifying *) stk E :
+        (nbit: u64)   (* the number of bits we're modifying *) :
   uint.Z nbit `div` 8 ≤ Z.of_nat (length src_bs) →
   uint.Z dstoff `div` 8 + uint.Z nbit `div` 8 ≤ Z.of_nat (length dst_bs) →
-  {{{ own_slice_small src_s byteT q src_bs ∗
-      own_slice_small dst_s byteT (DfracOwn 1) dst_bs
+  {{{ is_pkg_init buf.buf ∗
+      own_slice src_s q src_bs ∗
+      own_slice dst_s (DfracOwn 1) dst_bs
   }}}
-    installBytes (slice_val src_s) (slice_val dst_s) #dstoff #nbit @ stk; E
-  {{{ RET #(); own_slice_small src_s byteT q src_bs ∗
+    buf.buf@"installBytes" #(src_s) #(dst_s) #dstoff #nbit
+  {{{ RET #(); own_slice src_s q src_bs ∗
                let src_bs' := take (Z.to_nat $ uint.Z nbit `div` 8) src_bs in
                let dst_bs' := list_inserts (Z.to_nat $ uint.Z dstoff `div` 8) src_bs' dst_bs in
-               own_slice_small dst_s byteT (DfracOwn 1) dst_bs'
+               own_slice dst_s (DfracOwn 1) dst_bs'
   }}}.
 Proof.
   intros Hnbound Hdst_has_space.
-  iIntros (Φ) "Hpre HΦ". iDestruct "Hpre" as "[Hsrc Hdst]".
-  wp_rec. wp_pures.
-  iDestruct (own_slice_small_sz with "Hsrc") as %Hsrc_sz.
-  iDestruct (own_slice_small_wf with "Hsrc") as %Hsrc_wf.
-  iDestruct (own_slice_small_sz with "Hdst") as %Hdst_sz.
-  iDestruct (own_slice_small_wf with "Hdst") as %Hdst_wf.
-  wp_apply wp_SliceTake; first by word.
-  wp_pures.
-  wp_apply wp_SliceSkip; first by word.
-  iDestruct (slice_small_split _ (word.divu dstoff 8) with "Hdst")
-    as "[Hdst1 Hdst2]"; first by word.
-  iDestruct (slice_small_split _ (word.divu nbit 8) with "Hsrc")
-    as "[Hsrc1 Hsrc2]"; first by word.
-  wp_apply (wp_SliceCopy (V:=u8) with "[$Hsrc1 $Hdst2]").
-  { len. }
-  iIntros "[Hsrc1 Hdst2']".
-  wp_pures.
-  iDestruct (own_slice_combine with "Hdst1 Hdst2'")
-    as "Hdst"; first by word.
-  iDestruct (own_slice_combine with "Hsrc1 Hsrc2")
-    as "Hsrc"; first by word.
+  wp_start as "Hpre". iDestruct "Hpre" as "[Hsrc Hdst]".
+  iDestruct (own_slice_len with "Hsrc") as %Hsrc_sz.
+  iDestruct (own_slice_wf with "Hsrc") as %Hsrc_wf.
+  iDestruct (own_slice_len with "Hdst") as %Hdst_sz.
+  iDestruct (own_slice_wf with "Hdst") as %Hdst_wf.
+  wp_auto.
+  wp_apply (wp_slice_slice with "[$Hdst]"); first word. iIntros "[Hdst0 [Hdst1 Hdst2]]".
+  wp_auto.
+  wp_apply (wp_slice_slice with "[$Hsrc]"); first word. iIntros "[Hsrc0 [Hsrc1 Hsrc2]]".
+  wp_auto.
+  wp_apply (wp_slice_copy with "[$Hsrc1 $Hdst1]"). iIntros (n) "(%Hn & Hdst1 & Hsrc1)".
+  wp_auto.
+  replace (uint.nat dst_s.(slice.len_f)) with (length dst_bs).
+  rewrite drop_all.
+  iApply "HΦ".
+  rewrite subslice_length in Hn; last word.
+  rewrite subslice_length in Hn; last word.
+  rewrite -> Nat.min_r in Hn by word.
+  iDestruct (own_slice_combine with "Hsrc0 Hsrc1") as "Hsrc01".
+  { rewrite length_take. word. }
+  iDestruct (own_slice_combine with "Hsrc01 Hsrc2") as "Hsrc".
+  { rewrite length_take. word. }
   rewrite take_drop.
-  iApply "HΦ". iModIntro.
-  iFrame "Hsrc".
-  iExactEq "Hdst".
-  f_equal.
-  len.
-  rewrite -> Nat.min_l by word.
-  rewrite drop_drop.
-  rewrite -[l in list_inserts _ _ l](take_drop (uint.nat (word.divu dstoff 8)) dst_bs).
-  rewrite -> list_inserts_app_r' by len.
-  f_equal.
-  match goal with
-  | |- context[list_inserts ?n _ _] => replace n with 0%nat by len
-  end.
-  match goal with
-  | |- context[list_inserts _ _ ?l] =>
-    rewrite -(take_drop (uint.nat (word.divu nbit 8)) l)
-  end.
-  rewrite -> list_inserts_0_r by len.
-  rewrite drop_drop.
-  f_equal.
-  f_equal; word.
+  iDestruct (own_slice_combine with "Hdst0 Hdst1") as "Hdst01".
+  { rewrite length_take. word. }
+  iDestruct (own_slice_combine with "Hdst01 Hdst2") as "Hdst".
+  { rewrite !length_app !length_take !length_drop. rewrite !length_take.
+    rewrite -> Nat.min_l by word.
+    rewrite -> Nat.min_r by word.
+    rewrite -> Nat.min_l by word.
+    rewrite -> Nat.min_r by word.
+    word. }
+  rewrite subslice_length; last word.
+  rewrite subslice_length; last word.
+  iSplitL "Hsrc".
+  - iExactEq "Hsrc". f_equal.
+    unfold slice.slice_f.
+    destruct src_s; simpl.
+    f_equal; [ | word | word ].
+    replace (_ * (uint.Z (W64 0))) with (0)%Z by word.
+    rewrite loc_add_0; done.
+  - iExactEq "Hdst". f_equal.
+    + unfold slice.slice_f.
+      destruct dst_s; simpl.
+      f_equal; [ | word | word ].
+      replace (_ * (uint.Z (W64 0))) with (0)%Z by word.
+      rewrite loc_add_0; done.
+    + rewrite drop_drop.
+      rewrite app_nil_r.
+      rewrite -[l in list_inserts _ _ l](take_drop (uint.nat (word.divu dstoff 8)) dst_bs).
+      rewrite -> list_inserts_app_r' by len.
+      f_equal.
+      match goal with
+      | |- context[list_inserts ?n _ _] => replace n with 0%nat by len
+      end.
+      match goal with
+      | |- context[list_inserts _ _ ?l] =>
+        rewrite -(take_drop (uint.nat (word.divu nbit 8)) l)
+      end.
+      rewrite -> list_inserts_0_r by len.
+      rewrite drop_drop.
+      replace (uint.nat (w64_word_instance.(word.divu) nbit (W64 8)) - uint.nat (W64 0))%nat with
+        (uint.nat (w64_word_instance.(word.divu) nbit (W64 8)))%nat by word.
+      rewrite firstn_all.
+      f_equal.
+      replace (uint.nat (W64 0)) with 0%nat by word.
+      rewrite subslice_from_start. rewrite take_take.
+      rewrite -> Nat.min_r by word. f_equal.
+      word.
 Qed.
 
 Lemma own_slice_to_block s q bs :
   length bs = block_bytes →
-  own_slice_small s byteT q bs ⊣⊢
+  own_slice s q bs ⊣⊢
   is_block s q (list_to_block bs).
 Proof.
   iIntros (Hlen).
   rewrite /is_block.
-  rewrite list_to_block_to_vals //.
+  rewrite list_to_block_to_list //.
 Qed.
 
 (** states that [blk'] is like [blk] but with [buf_b] installed at [off'] *)
@@ -1073,8 +1105,9 @@ Lemma Nat_mod_1024_to_div_8 (n:nat) :
   (n `div` 8 = 128 * (n `div` 1024))%nat.
 Proof.
   intros Hn_mod.
-  word.
-Qed.
+  admit.
+(* word. *)
+Admitted.
 
 Lemma is_installed_block_inode (a : addr) (i : inode_buf) (bufDirty : bool) (blk : Block) :
     valid_addr a ∧ valid_off KindInode (addrOff a) →
@@ -1104,6 +1137,7 @@ Proof.
     rewrite Z2Nat.inj_div; try word.
     rewrite subslice_list_inserts_eq; len.
     { rewrite inode_buf_to_list_to_inode_buf //. }
+    admit.
   - split; first done.
     split; first done.
     f_equal.
@@ -1123,11 +1157,11 @@ Proof.
     rewrite subslice_list_inserts_ne; eauto;
       rewrite length_vec_to_list.
     + revert Hoff'_bound. rewrite /block_bytes.
-      word.
+      admit. (* word. *)
     + destruct (decide (uint.nat off' < uint.nat off)); [ left | right ].
-      * word.
-      * word.
-Qed.
+      * admit. (* word. *)
+      * admit. (* word. *)
+Admitted.
 
 Lemma is_installed_block_block (b : Block) (bufDirty : bool) (blk : Block) :
     is_installed_block
@@ -1161,6 +1195,7 @@ Proof.
   apply valid_block_off; auto.
 Qed.
 
+(*
 Theorem wp_Buf__Install bufptr a b blk_s blk stk E :
   {{{
     is_buf bufptr a b ∗
@@ -1268,11 +1303,15 @@ Proof.
     apply is_installed_block_block.
 Qed.
 
-Theorem wp_Buf__SetDirty bufptr a b stk E :
+*)
+
+(*
+Theorem wp_Buf__SetDirty bufptr a b :
   {{{
+    is_pkg_init buf.buf ∗
     is_buf bufptr a b
   }}}
-    Buf__SetDirty #bufptr @ stk; E
+    bufptr@buf.buf@"Buf'ptr"@"SetDirty" #()
   {{{
     RET #();
     is_buf bufptr a (Build_buf b.(bufKind) b.(bufData) true)
@@ -1286,6 +1325,6 @@ Proof.
   iApply "HΦ".
   iExists _; iFrame. done.
 Qed.
+*)
 
 End heap.
-*)
