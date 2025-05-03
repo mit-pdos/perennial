@@ -69,8 +69,75 @@ Local Instance any_cmra_op_instance : Op any_cmra :=
     | _, _ => Cinvalid
     end.
 
-Definition any_cmra_ofe_mixin : OfeMixin any_cmra.
-Proof. Admitted.
+
+Inductive eq' {A : Type} : A → A → Prop :=  eq_refl' x : eq' x x.
+
+Lemma eq_iff_eq' {A : Type} (a b : A) :
+  a = b ↔ eq' a b.
+Proof. split; intros; subst; first done. by destruct H. Qed.
+
+(* Q: does [inj_pair2] *require* [classical]? *)
+
+Local Instance any_cmra_dist_equivalence n : Equivalence (dist n (A:=any_cmra)).
+split.
++ intros ?. destruct x; constructor. apply reflexivity.
++ intros ?? Heq. oinversion Heq; subst; constructor.
+  symmetry. done.
++ intros ??? Heqy Heqz. oinversion Heqy; subst; oinversion Heqz; subst; constructor.
+  apply inj_pair2 in H4. subst. by etransitivity.
+Qed.
+
+Local Instance any_cmra_equiv_equivalence : Equivalence (equiv (A:=any_cmra)).
+split.
++ intros ?. destruct x; constructor. apply reflexivity.
++ intros ?? Heq. oinversion Heq; subst; constructor.
+  symmetry. done.
++ intros ??? Heqy Heqz. oinversion Heqy; subst; oinversion Heqz; subst; constructor.
+  apply inj_pair2 in H3. subst. by etransitivity.
+Qed.
+
+Lemma any_cmra_ofe_mixin : OfeMixin any_cmra.
+Proof.
+  split.
+  - intros; split.
+    + intros Heq n. inversion Heq; constructor. by apply equiv_dist.
+    + intros Heq. oinversion (Heq 0ᵢ); subst; constructor.
+      apply equiv_dist => n. oinversion (Heq n); subst.
+      apply inj_pair2 in H4, H5. subst. done.
+  - apply _.
+  - intros ???? Heq Hlt. oinversion Heq; constructor; subst.
+    by eapply dist_le.
+Qed.
+
+Lemma any_cmra_validN A a n :
+  ✓{n} CexistT A a ↔ ✓{n} a.
+Proof. done. Qed.
+
+Lemma any_cmra_valid A a :
+  ✓ CexistT A a ↔ ✓ a.
+Proof. done. Qed.
+
+Lemma any_cmra_invalid_validN n :
+  ✓{n} Cinvalid = False.
+Proof. done. Qed.
+
+Lemma any_cmra_invalid_valid :
+  ✓ Cinvalid = False.
+Proof. done. Qed.
+
+Lemma any_cmra_included x y :
+  x ≼ y ↔ y = Cinvalid ∨ (∃ A a a', x = CexistT A a ∧ y = CexistT A a' ∧ a ≼ a').
+Proof.
+  split.
+  - intros [z Heq]. destruct y; last by left. right.
+    destruct x, z; cbn in *; try destruct excluded_middle_informative in Heq; subst; oinversion Heq.
+    subst. repeat eexists. apply inj_pair2 in H2, H4. subst. done.
+  - intros [|].
+    + subst. eexists Cinvalid. by destruct x.
+    + destruct H as (? & ? & ? & -> & -> & Hincl). destruct Hincl as [i Hincl].
+      eexists (CexistT x0 i). cbn. destruct excluded_middle_informative; try done.
+      rewrite (UIP_refl _ _ e). simpl. constructor. done.
+Qed.
 
 Lemma any_cmra_cmra_mixin : CmraMixin any_cmra.
 Proof.
@@ -79,8 +146,57 @@ Proof.
     + inversion H; subst; rewrite /op /any_cmra_op_instance ///=.
       destruct excluded_middle_informative; constructor. rewrite H0 //.
     + cbn. constructor.
-  -
-Admitted.
+  - intros. oinversion H; subst; simpl.
+    + rewrite /pcore /any_cmra_pcore_instance in H0 |- *.
+      apply fmap_Some_1 in H0 as [? [Hpcore ?]]; subst.
+      eapply cmra_pcore_ne in Hpcore; last eassumption.
+      destruct Hpcore as (ca & -> & Heq).
+      eexists _; split; first done. constructor. done.
+    + eexists _. split; done.
+  - intros ?. intros ?? Heq. inversion Heq; last done.
+    rewrite !any_cmra_validN. by apply cmra_validN_ne.
+  - pose 0ᵢ. intros [|].
+    + setoid_rewrite any_cmra_validN. rewrite /= any_cmra_valid ?cmra_valid_validN //.
+    + rewrite any_cmra_invalid_valid. split; try done.
+      intros H. specialize (H 0). done.
+  - intros n m [|]; simpl; eauto using cmra_validN_le.
+  - intros [|] [|] [|]; try constructor.
+    + cbn. repeat (destruct excluded_middle_informative; subst; cbn); try constructor; try congruence.
+      unfold eq_rect. rewrite (UIP_refl _ _ e). rewrite assoc //.
+    + cbn. repeat (destruct excluded_middle_informative; subst; cbn); try constructor; try congruence.
+  - intros [|] [|]; try constructor. cbn.
+    repeat (destruct excluded_middle_informative; subst; cbn); try constructor; try congruence.
+    rewrite (UIP_refl _ _ e). rewrite comm //.
+  - intros [? a|] ? [=]; subst; auto. cbn in *.
+    destruct (pcore a) as [ca|] eqn:?; simplify_option_eq.
+    cbn. destruct excluded_middle_informative; try done.
+    constructor; rewrite (UIP_refl _ _ e). simpl. eauto using cmra_pcore_l.
+  - intros [? a|] ? [=]; subst; auto. cbn in *.
+    destruct (pcore a) as [ca|] eqn:?; simplify_option_eq. cbn.
+    oinversion (cmra_pcore_idemp a ca); repeat constructor; auto.
+  - intros ??? Hincl Hpcore. rewrite any_cmra_included in Hincl. destruct Hincl.
+    + subst. eexists Cinvalid. split; first done. eexists Cinvalid. destruct cx; reflexivity.
+    + destruct H as (? & ? & ? & -> & -> & Hincl). cbn in *. simplify_option_eq. rename H into p.
+      eapply cmra_pcore_mono in Hincl; try eassumption. destruct Hincl as (? & -> & Hincl).
+      destruct Hincl as [i Hincl]. eexists _. split; first done. eexists (CexistT x0 i).
+      cbn. destruct excluded_middle_informative; try done.
+      rewrite (UIP_refl _ _ e). simpl. constructor. done.
+  - intros n [|] [|]; simpl; try done.
+    cbn. destruct excluded_middle_informative; last done.
+    destruct e. simpl. cbn. eauto using cmra_validN_op_l.
+  - intros n [? a|] y1 y2 Hx Hx'.
+    + destruct y1 as [? a1|], y2 as [? a2|]; try by exfalso; inversion Hx'.
+      cbn in Hx'. destruct excluded_middle_informative in Hx'; last (exfalso; oinversion Hx').
+      subst. simpl in *. destruct (excluded_middle_informative (x = x1)).
+      2:{ exfalso. inversion Hx'. subst. done. }
+      subst.
+      destruct (cmra_extend n a a1 a2) as (z1&z2&?&?&?); [done| |].
+      * inversion Hx'. subst. apply inj_pair2 in H2, H3. subst. done.
+      * repeat econstructor; try done.
+        cbn. destruct excluded_middle_informative; last done.
+        rewrite (UIP_refl _ _ e). simpl. constructor. done.
+    + destruct y1 as [a1|], y2 as [a2|]; try by exfalso; inversion Hx'.
+Qed.
 
 Canonical Structure any_cmraO : ofe := Ofe any_cmra any_cmra_ofe_mixin.
 Canonical Structure any_cmraR := Cmra any_cmra any_cmra_cmra_mixin.
@@ -104,13 +220,6 @@ Lemma any_cmra_validN_op_invalid_l A a n :
 Proof.
 Admitted.
 
-Lemma any_cmra_validN A a n :
-  ✓{n} CexistT A a ↔ ✓{n} a.
-Proof. done. Qed.
-
-Lemma any_cmra_valid A a :
-  ✓ CexistT A a ↔ ✓ a.
-Proof. done. Qed.
 
 Lemma any_cmra_update {A : cmra_expr.t} a b :
   a ~~> b →
