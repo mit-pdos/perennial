@@ -478,6 +478,7 @@ Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Time_wall `{ffi_syntax} : IntoValStructField "wall" time.Time Time.wall'.
 Proof. solve_into_val_struct_field. Qed.
 
@@ -487,9 +488,8 @@ Proof. solve_into_val_struct_field. Qed.
 Global Instance into_val_struct_field_Time_loc `{ffi_syntax} : IntoValStructField "loc" time.Time Time.loc'.
 Proof. solve_into_val_struct_field. Qed.
 
-
 Context `{!ffi_syntax} `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Time `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} wall' ext' loc':
+Global Instance wp_struct_make_Time wall' ext' loc':
   PureWp True
     (struct.make #time.Time (alist_val [
       "wall" ::= #wall';
@@ -513,12 +513,55 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  rewrite (@has_go_type_len _ (# (Time.wall' v)) (struct.field_offset_f time.Time "wall"%go).2); [ | by solve_has_go_type ].
-  rewrite (@has_go_type_len _ (# (Time.ext' v)) (struct.field_offset_f Time "ext"%go).2); [ | by solve_has_go_type ].
+  simpl_one_flatten_struct (#(Time.wall' v)) time.Time "wall"%go.
+  simpl_one_flatten_struct (#(Time.ext' v)) time.Time "ext"%go.
   simpl_field_ref_f.
 Qed.
 
 End instances.
 End time.
+
+Module empty_struct.
+
+
+Definition empty_struct : go_type := structT [].
+
+Module unit.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+}.
+End def.
+End unit.
+
+Section instances.
+Context `{ffi_syntax}.
+Global Instance into_val_unit : IntoVal unit.t :=
+  {| to_val_def v :=
+    struct.val_aux empty_struct [
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_unit : IntoValTyped unit.t empty_struct :=
+{|
+  default_val := unit.mk;
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_unit:
+  PureWp True
+    (struct.make #empty_struct (alist_val [
+    ]))%struct
+    #(unit.mk).
+Proof. solve_struct_make_pure_wp. Qed.
+
+End instances.
+
+End empty_struct.
 
 End __struct_automation_test.
