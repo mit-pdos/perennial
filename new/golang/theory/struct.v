@@ -408,6 +408,23 @@ Ltac simpl_field_ref_f :=
   with_strategy transparent [w8_word_instance] (with_strategy opaque [loc_add] cbn);
   rewrite ?go_type_size_unseal /= ?loc_add_assoc ?loc_add_0 //.
 
+Lemma sep_equiv_split Σ (P1 P2 Q1 Q2: iProp Σ) :
+  P1 ⊣⊢ Q1 →
+  P2 ⊣⊢ Q2 →
+  (P1 ∗ P2 ⊣⊢ Q1 ∗ Q2).
+Proof.
+  intros H1 H2. f_equiv; auto.
+Qed.
+
+(* To prove StructFieldsSplit we need to prove equivalence if a split based on
+[flatten_struct] and one based on a field offset for each field.
+
+This tactic converts one [length (flatten_struct x)] to [go_type_size t]. The
+parameters give it the right value and go_type to relate. *)
+Ltac simpl_one_flatten_struct x go_t f :=
+  rewrite (@has_go_type_len _ x (struct.field_offset_f go_t f).2); [ | by solve_has_go_type' ];
+  apply sep_equiv_split; [ by simpl_field_ref_f | ].
+
 Ltac unfold_typed_pointsto :=
   rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=
     struct.val_aux_unseal /=;
