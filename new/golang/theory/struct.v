@@ -365,28 +365,14 @@ Ltac solve_to_val_type :=
 
 (* solve #default_val = zero_val t in IntoValTyped *)
 Ltac solve_zero_val :=
-  timeout 10 (
   intros;
-  rewrite to_val_unseal; with_strategy opaque [default_val] cbn;
-  rewrite ?default_val_eq_zero_val;
-  lazymatch goal with
-  | |- _ = ?rhs => rewrite [in rhs]zero_val_eq /=
-  end;
-  lazymatch goal with
-  | |- _ = ?rhs => rewrite [in rhs]struct.val_aux_unseal /=
-  end;
-  repeat match goal with
-         | |- struct.val_aux _ _ = _ =>
-             rewrite struct.val_aux_cons //
-             || rewrite struct.val_aux_nil //
-         | |- (_, _)%V = (_, _)%V => f_equal
-         | |- ?x = ?x => reflexivity
-         | |- context[alist_lookup_f] =>
-             cbn_w8; rewrite ?zero_val_eq //
-    end;
-  cbn_w8
-  ).
-
+  (* unfold and simpify, resulting in goal like
+   [struct.val_aux t [a:=#(default_val A); ...; y:=#(default_val Y)] = struct.val_aux t []]. *)
+  rewrite zero_val_eq to_val_unseal; with_strategy opaque [default_val] cbn;
+  (* replace the [default_val] field values with [zero_val], then unfold
+   [struct.val_aux], at which point there should be values with no [to_val] at
+   all, which are definitionally equal. *)
+  rewrite ?default_val_eq_zero_val struct.val_aux_unseal //.
 
 Ltac solve_to_val_inj :=
   (* prove Inj (=) (=) (λ v, #v) *)
