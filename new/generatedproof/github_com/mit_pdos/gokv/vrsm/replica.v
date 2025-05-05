@@ -93,11 +93,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ApplyAsBackupArgs.epoch' v)) (struct.field_offset_f replica.ApplyAsBackupArgs "epoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ApplyAsBackupArgs.index' v)) (struct.field_offset_f replica.ApplyAsBackupArgs "index"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ApplyAsBackupArgs.epoch' v)) replica.ApplyAsBackupArgs "epoch"%go.
+  simpl_one_flatten_struct (# (ApplyAsBackupArgs.index' v)) replica.ApplyAsBackupArgs "index"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -176,12 +176,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (SetStateArgs.Epoch' v)) (struct.field_offset_f replica.SetStateArgs "Epoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (SetStateArgs.NextIndex' v)) (struct.field_offset_f replica.SetStateArgs "NextIndex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (SetStateArgs.CommittedNextIndex' v)) (struct.field_offset_f replica.SetStateArgs "CommittedNextIndex"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (SetStateArgs.Epoch' v)) replica.SetStateArgs "Epoch"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.NextIndex' v)) replica.SetStateArgs "NextIndex"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.CommittedNextIndex' v)) replica.SetStateArgs "CommittedNextIndex"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -240,8 +240,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -320,12 +320,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (GetStateReply.Err' v)) (struct.field_offset_f replica.GetStateReply "Err"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (GetStateReply.NextIndex' v)) (struct.field_offset_f replica.GetStateReply "NextIndex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (GetStateReply.CommittedNextIndex' v)) (struct.field_offset_f replica.GetStateReply "CommittedNextIndex"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (GetStateReply.Err' v)) replica.GetStateReply "Err"%go.
+  simpl_one_flatten_struct (# (GetStateReply.NextIndex' v)) replica.GetStateReply "NextIndex"%go.
+  simpl_one_flatten_struct (# (GetStateReply.CommittedNextIndex' v)) replica.GetStateReply "CommittedNextIndex"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -390,10 +390,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (BecomePrimaryArgs.Epoch' v)) (struct.field_offset_f replica.BecomePrimaryArgs "Epoch"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (BecomePrimaryArgs.Epoch' v)) replica.BecomePrimaryArgs "Epoch"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -458,10 +458,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ApplyReply.Err' v)) (struct.field_offset_f replica.ApplyReply "Err"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ApplyReply.Err' v)) replica.ApplyReply "Err"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -547,12 +547,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (StateMachine.StartApply' v)) (struct.field_offset_f replica.StateMachine "StartApply"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (StateMachine.ApplyReadonly' v)) (struct.field_offset_f replica.StateMachine "ApplyReadonly"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (StateMachine.SetStateAndUnseal' v)) (struct.field_offset_f replica.StateMachine "SetStateAndUnseal"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (StateMachine.StartApply' v)) replica.StateMachine "StartApply"%go.
+  simpl_one_flatten_struct (# (StateMachine.ApplyReadonly' v)) replica.StateMachine "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (StateMachine.SetStateAndUnseal' v)) replica.StateMachine "SetStateAndUnseal"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -631,12 +631,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (SyncStateMachine.Apply' v)) (struct.field_offset_f replica.SyncStateMachine "Apply"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (SyncStateMachine.ApplyReadonly' v)) (struct.field_offset_f replica.SyncStateMachine "ApplyReadonly"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (SyncStateMachine.SetStateAndUnseal' v)) (struct.field_offset_f replica.SyncStateMachine "SetStateAndUnseal"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (SyncStateMachine.Apply' v)) replica.SyncStateMachine "Apply"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.ApplyReadonly' v)) replica.SyncStateMachine "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.SetStateAndUnseal' v)) replica.SyncStateMachine "SetStateAndUnseal"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -695,8 +695,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -852,23 +852,23 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Server.mu' v)) (struct.field_offset_f replica.Server "mu"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.epoch' v)) (struct.field_offset_f replica.Server "epoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.sealed' v)) (struct.field_offset_f replica.Server "sealed"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.sm' v)) (struct.field_offset_f replica.Server "sm"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.nextIndex' v)) (struct.field_offset_f replica.Server "nextIndex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.canBecomePrimary' v)) (struct.field_offset_f replica.Server "canBecomePrimary"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.isPrimary' v)) (struct.field_offset_f replica.Server "isPrimary"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.clerks' v)) (struct.field_offset_f replica.Server "clerks"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.isPrimary_cond' v)) (struct.field_offset_f replica.Server "isPrimary_cond"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.opAppliedConds' v)) (struct.field_offset_f replica.Server "opAppliedConds"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.leaseExpiration' v)) (struct.field_offset_f replica.Server "leaseExpiration"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.leaseValid' v)) (struct.field_offset_f replica.Server "leaseValid"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.committedNextIndex' v)) (struct.field_offset_f replica.Server "committedNextIndex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.committedNextIndex_cond' v)) (struct.field_offset_f replica.Server "committedNextIndex_cond"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Server.mu' v)) replica.Server "mu"%go.
+  simpl_one_flatten_struct (# (Server.epoch' v)) replica.Server "epoch"%go.
+  simpl_one_flatten_struct (# (Server.sealed' v)) replica.Server "sealed"%go.
+  simpl_one_flatten_struct (# (Server.sm' v)) replica.Server "sm"%go.
+  simpl_one_flatten_struct (# (Server.nextIndex' v)) replica.Server "nextIndex"%go.
+  simpl_one_flatten_struct (# (Server.canBecomePrimary' v)) replica.Server "canBecomePrimary"%go.
+  simpl_one_flatten_struct (# (Server.isPrimary' v)) replica.Server "isPrimary"%go.
+  simpl_one_flatten_struct (# (Server.clerks' v)) replica.Server "clerks"%go.
+  simpl_one_flatten_struct (# (Server.isPrimary_cond' v)) replica.Server "isPrimary_cond"%go.
+  simpl_one_flatten_struct (# (Server.opAppliedConds' v)) replica.Server "opAppliedConds"%go.
+  simpl_one_flatten_struct (# (Server.leaseExpiration' v)) replica.Server "leaseExpiration"%go.
+  simpl_one_flatten_struct (# (Server.leaseValid' v)) replica.Server "leaseValid"%go.
+  simpl_one_flatten_struct (# (Server.committedNextIndex' v)) replica.Server "committedNextIndex"%go.
+  simpl_one_flatten_struct (# (Server.committedNextIndex_cond' v)) replica.Server "committedNextIndex_cond"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

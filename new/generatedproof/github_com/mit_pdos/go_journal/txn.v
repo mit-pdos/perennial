@@ -75,10 +75,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Log.log' v)) (struct.field_offset_f txn.Log "log"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Log.log' v)) txn.Log "log"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -150,11 +150,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Txn.buftxn' v)) (struct.field_offset_f txn.Txn "buftxn"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Txn.locks' v)) (struct.field_offset_f txn.Txn "locks"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Txn.buftxn' v)) txn.Txn "buftxn"%go.
+  simpl_one_flatten_struct (# (Txn.locks' v)) txn.Txn "locks"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

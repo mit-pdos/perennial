@@ -17,6 +17,9 @@ Axiom t : Type.
 End def.
 End Client.
 
+Global Instance bounded_size_Client : BoundedTypeSize clientv3.Client.
+Admitted.
+
 Global Instance into_val_Client `{ffi_syntax} : IntoVal Client.t.
 Admitted.
 
@@ -147,12 +150,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (OpResponse.put' v)) (struct.field_offset_f clientv3.OpResponse "put"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (OpResponse.get' v)) (struct.field_offset_f clientv3.OpResponse "get"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (OpResponse.del' v)) (struct.field_offset_f clientv3.OpResponse "del"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (OpResponse.put' v)) clientv3.OpResponse "put"%go.
+  simpl_one_flatten_struct (# (OpResponse.get' v)) clientv3.OpResponse "get"%go.
+  simpl_one_flatten_struct (# (OpResponse.del' v)) clientv3.OpResponse "del"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -238,12 +241,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (LeaseGrantResponse.ResponseHeader' v)) (struct.field_offset_f clientv3.LeaseGrantResponse "ResponseHeader"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (LeaseGrantResponse.ID' v)) (struct.field_offset_f clientv3.LeaseGrantResponse "ID"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (LeaseGrantResponse.TTL' v)) (struct.field_offset_f clientv3.LeaseGrantResponse "TTL"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (LeaseGrantResponse.ResponseHeader' v)) clientv3.LeaseGrantResponse "ResponseHeader"%go.
+  simpl_one_flatten_struct (# (LeaseGrantResponse.ID' v)) clientv3.LeaseGrantResponse "ID"%go.
+  simpl_one_flatten_struct (# (LeaseGrantResponse.TTL' v)) clientv3.LeaseGrantResponse "TTL"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -260,6 +263,9 @@ Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
 End Op.
+
+Global Instance bounded_size_Op : BoundedTypeSize clientv3.Op.
+Admitted.
 
 Global Instance into_val_Op `{ffi_syntax} : IntoVal Op.t.
 Admitted.
@@ -398,15 +404,15 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (WatchResponse.Header' v)) (struct.field_offset_f clientv3.WatchResponse "Header"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (WatchResponse.Events' v)) (struct.field_offset_f clientv3.WatchResponse "Events"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (WatchResponse.CompactRevision' v)) (struct.field_offset_f clientv3.WatchResponse "CompactRevision"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (WatchResponse.Canceled' v)) (struct.field_offset_f clientv3.WatchResponse "Canceled"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (WatchResponse.Created' v)) (struct.field_offset_f clientv3.WatchResponse "Created"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (WatchResponse.closeErr' v)) (struct.field_offset_f clientv3.WatchResponse "closeErr"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (WatchResponse.Header' v)) clientv3.WatchResponse "Header"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Events' v)) clientv3.WatchResponse "Events"%go.
+  simpl_one_flatten_struct (# (WatchResponse.CompactRevision' v)) clientv3.WatchResponse "CompactRevision"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Canceled' v)) clientv3.WatchResponse "Canceled"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Created' v)) clientv3.WatchResponse "Created"%go.
+  simpl_one_flatten_struct (# (WatchResponse.closeErr' v)) clientv3.WatchResponse "closeErr"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

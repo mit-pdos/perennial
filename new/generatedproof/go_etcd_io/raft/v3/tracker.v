@@ -74,10 +74,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (inflight.index' v)) (struct.field_offset_f tracker.inflight "index"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (inflight.index' v)) tracker.inflight "index"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -170,14 +170,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Inflights.start' v)) (struct.field_offset_f tracker.Inflights "start"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Inflights.count' v)) (struct.field_offset_f tracker.Inflights "count"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Inflights.bytes' v)) (struct.field_offset_f tracker.Inflights "bytes"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Inflights.size' v)) (struct.field_offset_f tracker.Inflights "size"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Inflights.maxBytes' v)) (struct.field_offset_f tracker.Inflights "maxBytes"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Inflights.start' v)) tracker.Inflights "start"%go.
+  simpl_one_flatten_struct (# (Inflights.count' v)) tracker.Inflights "count"%go.
+  simpl_one_flatten_struct (# (Inflights.bytes' v)) tracker.Inflights "bytes"%go.
+  simpl_one_flatten_struct (# (Inflights.size' v)) tracker.Inflights "size"%go.
+  simpl_one_flatten_struct (# (Inflights.maxBytes' v)) tracker.Inflights "maxBytes"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -298,17 +298,17 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Progress.Match' v)) (struct.field_offset_f tracker.Progress "Match"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Progress.Next' v)) (struct.field_offset_f tracker.Progress "Next"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Progress.sentCommit' v)) (struct.field_offset_f tracker.Progress "sentCommit"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Progress.State' v)) (struct.field_offset_f tracker.Progress "State"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Progress.PendingSnapshot' v)) (struct.field_offset_f tracker.Progress "PendingSnapshot"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Progress.RecentActive' v)) (struct.field_offset_f tracker.Progress "RecentActive"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Progress.MsgAppFlowPaused' v)) (struct.field_offset_f tracker.Progress "MsgAppFlowPaused"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Progress.Inflights' v)) (struct.field_offset_f tracker.Progress "Inflights"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Progress.Match' v)) tracker.Progress "Match"%go.
+  simpl_one_flatten_struct (# (Progress.Next' v)) tracker.Progress "Next"%go.
+  simpl_one_flatten_struct (# (Progress.sentCommit' v)) tracker.Progress "sentCommit"%go.
+  simpl_one_flatten_struct (# (Progress.State' v)) tracker.Progress "State"%go.
+  simpl_one_flatten_struct (# (Progress.PendingSnapshot' v)) tracker.Progress "PendingSnapshot"%go.
+  simpl_one_flatten_struct (# (Progress.RecentActive' v)) tracker.Progress "RecentActive"%go.
+  simpl_one_flatten_struct (# (Progress.MsgAppFlowPaused' v)) tracker.Progress "MsgAppFlowPaused"%go.
+  simpl_one_flatten_struct (# (Progress.Inflights' v)) tracker.Progress "Inflights"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -394,12 +394,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Config.Voters' v)) (struct.field_offset_f tracker.Config "Voters"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.AutoLeave' v)) (struct.field_offset_f tracker.Config "AutoLeave"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.Learners' v)) (struct.field_offset_f tracker.Config "Learners"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Config.Voters' v)) tracker.Config "Voters"%go.
+  simpl_one_flatten_struct (# (Config.AutoLeave' v)) tracker.Config "AutoLeave"%go.
+  simpl_one_flatten_struct (# (Config.Learners' v)) tracker.Config "Learners"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -485,13 +485,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ProgressTracker.Config' v)) (struct.field_offset_f tracker.ProgressTracker "Config"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ProgressTracker.Progress' v)) (struct.field_offset_f tracker.ProgressTracker "Progress"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ProgressTracker.Votes' v)) (struct.field_offset_f tracker.ProgressTracker "Votes"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ProgressTracker.MaxInflight' v)) (struct.field_offset_f tracker.ProgressTracker "MaxInflight"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ProgressTracker.Config' v)) tracker.ProgressTracker "Config"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.Progress' v)) tracker.ProgressTracker "Progress"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.Votes' v)) tracker.ProgressTracker "Votes"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.MaxInflight' v)) tracker.ProgressTracker "MaxInflight"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

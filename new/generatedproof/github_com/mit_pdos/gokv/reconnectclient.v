@@ -87,12 +87,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ReconnectingClient.mu' v)) (struct.field_offset_f reconnectclient.ReconnectingClient "mu"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ReconnectingClient.valid' v)) (struct.field_offset_f reconnectclient.ReconnectingClient "valid"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ReconnectingClient.urpcCl' v)) (struct.field_offset_f reconnectclient.ReconnectingClient "urpcCl"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ReconnectingClient.mu' v)) reconnectclient.ReconnectingClient "mu"%go.
+  simpl_one_flatten_struct (# (ReconnectingClient.valid' v)) reconnectclient.ReconnectingClient "valid"%go.
+  simpl_one_flatten_struct (# (ReconnectingClient.urpcCl' v)) reconnectclient.ReconnectingClient "urpcCl"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

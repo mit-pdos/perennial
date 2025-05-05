@@ -125,17 +125,17 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (KeyValue.Key' v)) (struct.field_offset_f mvccpb.KeyValue "Key"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (KeyValue.CreateRevision' v)) (struct.field_offset_f mvccpb.KeyValue "CreateRevision"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (KeyValue.ModRevision' v)) (struct.field_offset_f mvccpb.KeyValue "ModRevision"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (KeyValue.Version' v)) (struct.field_offset_f mvccpb.KeyValue "Version"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (KeyValue.Value' v)) (struct.field_offset_f mvccpb.KeyValue "Value"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (KeyValue.Lease' v)) (struct.field_offset_f mvccpb.KeyValue "Lease"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (KeyValue.XXX_NoUnkeyedLiteral' v)) (struct.field_offset_f mvccpb.KeyValue "XXX_NoUnkeyedLiteral"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (KeyValue.XXX_unrecognized' v)) (struct.field_offset_f mvccpb.KeyValue "XXX_unrecognized"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (KeyValue.Key' v)) mvccpb.KeyValue "Key"%go.
+  simpl_one_flatten_struct (# (KeyValue.CreateRevision' v)) mvccpb.KeyValue "CreateRevision"%go.
+  simpl_one_flatten_struct (# (KeyValue.ModRevision' v)) mvccpb.KeyValue "ModRevision"%go.
+  simpl_one_flatten_struct (# (KeyValue.Version' v)) mvccpb.KeyValue "Version"%go.
+  simpl_one_flatten_struct (# (KeyValue.Value' v)) mvccpb.KeyValue "Value"%go.
+  simpl_one_flatten_struct (# (KeyValue.Lease' v)) mvccpb.KeyValue "Lease"%go.
+  simpl_one_flatten_struct (# (KeyValue.XXX_NoUnkeyedLiteral' v)) mvccpb.KeyValue "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (KeyValue.XXX_unrecognized' v)) mvccpb.KeyValue "XXX_unrecognized"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -228,14 +228,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Event.Type' v)) (struct.field_offset_f mvccpb.Event "Type"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Event.Kv' v)) (struct.field_offset_f mvccpb.Event "Kv"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Event.PrevKv' v)) (struct.field_offset_f mvccpb.Event "PrevKv"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Event.XXX_NoUnkeyedLiteral' v)) (struct.field_offset_f mvccpb.Event "XXX_NoUnkeyedLiteral"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Event.XXX_unrecognized' v)) (struct.field_offset_f mvccpb.Event "XXX_unrecognized"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Event.Type' v)) mvccpb.Event "Type"%go.
+  simpl_one_flatten_struct (# (Event.Kv' v)) mvccpb.Event "Kv"%go.
+  simpl_one_flatten_struct (# (Event.PrevKv' v)) mvccpb.Event "PrevKv"%go.
+  simpl_one_flatten_struct (# (Event.XXX_NoUnkeyedLiteral' v)) mvccpb.Event "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (Event.XXX_unrecognized' v)) mvccpb.Event "XXX_unrecognized"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

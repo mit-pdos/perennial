@@ -90,12 +90,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (RepBlock.txn' v)) (struct.field_offset_f replicated_block.RepBlock "txn"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RepBlock.m' v)) (struct.field_offset_f replicated_block.RepBlock "m"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RepBlock.a0' v)) (struct.field_offset_f replicated_block.RepBlock "a0"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (RepBlock.txn' v)) replicated_block.RepBlock "txn"%go.
+  simpl_one_flatten_struct (# (RepBlock.m' v)) replicated_block.RepBlock "m"%go.
+  simpl_one_flatten_struct (# (RepBlock.a0' v)) replicated_block.RepBlock "a0"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

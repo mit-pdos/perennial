@@ -70,10 +70,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Changer.Tracker' v)) (struct.field_offset_f confchange.Changer "Tracker"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Changer.Tracker' v)) confchange.Changer "Tracker"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

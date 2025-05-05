@@ -15,6 +15,9 @@ Axiom t : Type.
 End def.
 End Buffer.
 
+Global Instance bounded_size_Buffer : BoundedTypeSize bytes.Buffer.
+Admitted.
+
 Global Instance into_val_Buffer `{ffi_syntax} : IntoVal Buffer.t.
 Admitted.
 

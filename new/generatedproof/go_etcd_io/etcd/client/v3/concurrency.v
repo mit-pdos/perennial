@@ -108,14 +108,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Election.session' v)) (struct.field_offset_f concurrency.Election "session"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Election.keyPrefix' v)) (struct.field_offset_f concurrency.Election "keyPrefix"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Election.leaderKey' v)) (struct.field_offset_f concurrency.Election "leaderKey"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Election.leaderRev' v)) (struct.field_offset_f concurrency.Election "leaderRev"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Election.leaderSession' v)) (struct.field_offset_f concurrency.Election "leaderSession"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Election.session' v)) concurrency.Election "session"%go.
+  simpl_one_flatten_struct (# (Election.keyPrefix' v)) concurrency.Election "keyPrefix"%go.
+  simpl_one_flatten_struct (# (Election.leaderKey' v)) concurrency.Election "leaderKey"%go.
+  simpl_one_flatten_struct (# (Election.leaderRev' v)) concurrency.Election "leaderRev"%go.
+  simpl_one_flatten_struct (# (Election.leaderSession' v)) concurrency.Election "leaderSession"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -201,13 +201,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Mutex.s' v)) (struct.field_offset_f concurrency.Mutex "s"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Mutex.pfx' v)) (struct.field_offset_f concurrency.Mutex "pfx"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Mutex.myKey' v)) (struct.field_offset_f concurrency.Mutex "myKey"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Mutex.myRev' v)) (struct.field_offset_f concurrency.Mutex "myRev"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Mutex.s' v)) concurrency.Mutex "s"%go.
+  simpl_one_flatten_struct (# (Mutex.pfx' v)) concurrency.Mutex "pfx"%go.
+  simpl_one_flatten_struct (# (Mutex.myKey' v)) concurrency.Mutex "myKey"%go.
+  simpl_one_flatten_struct (# (Mutex.myRev' v)) concurrency.Mutex "myRev"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -266,8 +266,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -360,14 +360,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Session.client' v)) (struct.field_offset_f concurrency.Session "client"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Session.opts' v)) (struct.field_offset_f concurrency.Session "opts"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Session.id' v)) (struct.field_offset_f concurrency.Session "id"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Session.ctx' v)) (struct.field_offset_f concurrency.Session "ctx"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Session.cancel' v)) (struct.field_offset_f concurrency.Session "cancel"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Session.client' v)) concurrency.Session "client"%go.
+  simpl_one_flatten_struct (# (Session.opts' v)) concurrency.Session "opts"%go.
+  simpl_one_flatten_struct (# (Session.id' v)) concurrency.Session "id"%go.
+  simpl_one_flatten_struct (# (Session.ctx' v)) concurrency.Session "ctx"%go.
+  simpl_one_flatten_struct (# (Session.cancel' v)) concurrency.Session "cancel"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -439,11 +439,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (sessionOptions.ttl' v)) (struct.field_offset_f concurrency.sessionOptions "ttl"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (sessionOptions.leaseID' v)) (struct.field_offset_f concurrency.sessionOptions "leaseID"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (sessionOptions.ttl' v)) concurrency.sessionOptions "ttl"%go.
+  simpl_one_flatten_struct (# (sessionOptions.leaseID' v)) concurrency.sessionOptions "leaseID"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -523,8 +523,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -596,11 +596,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (stmOptions.iso' v)) (struct.field_offset_f concurrency.stmOptions "iso"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (stmOptions.ctx' v)) (struct.field_offset_f concurrency.stmOptions "ctx"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (stmOptions.iso' v)) concurrency.stmOptions "iso"%go.
+  simpl_one_flatten_struct (# (stmOptions.ctx' v)) concurrency.stmOptions "ctx"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -672,10 +672,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (stmResponse.resp' v)) (struct.field_offset_f concurrency.stmResponse "resp"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (stmResponse.resp' v)) concurrency.stmResponse "resp"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -782,14 +782,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (stm.client' v)) (struct.field_offset_f concurrency.stm "client"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (stm.ctx' v)) (struct.field_offset_f concurrency.stm "ctx"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (stm.rset' v)) (struct.field_offset_f concurrency.stm "rset"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (stm.wset' v)) (struct.field_offset_f concurrency.stm "wset"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (stm.getOpts' v)) (struct.field_offset_f concurrency.stm "getOpts"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (stm.client' v)) concurrency.stm "client"%go.
+  simpl_one_flatten_struct (# (stm.ctx' v)) concurrency.stm "ctx"%go.
+  simpl_one_flatten_struct (# (stm.rset' v)) concurrency.stm "rset"%go.
+  simpl_one_flatten_struct (# (stm.wset' v)) concurrency.stm "wset"%go.
+  simpl_one_flatten_struct (# (stm.getOpts' v)) concurrency.stm "getOpts"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -854,10 +854,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (stmPut.val' v)) (struct.field_offset_f concurrency.stmPut "val"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (stmPut.val' v)) concurrency.stmPut "val"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -922,10 +922,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (stmSerializable.stm' v)) (struct.field_offset_f concurrency.stmSerializable "stm"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (stmSerializable.stm' v)) concurrency.stmSerializable "stm"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

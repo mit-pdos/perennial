@@ -96,12 +96,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (leaseCache.mu' v)) (struct.field_offset_f leasing.leaseCache "mu"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leaseCache.entries' v)) (struct.field_offset_f leasing.leaseCache "entries"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leaseCache.revokes' v)) (struct.field_offset_f leasing.leaseCache "revokes"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (leaseCache.mu' v)) leasing.leaseCache "mu"%go.
+  simpl_one_flatten_struct (# (leaseCache.entries' v)) leasing.leaseCache "entries"%go.
+  simpl_one_flatten_struct (# (leaseCache.revokes' v)) leasing.leaseCache "revokes"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -173,11 +173,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (leaseKey.response' v)) (struct.field_offset_f leasing.leaseKey "response"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leaseKey.rev' v)) (struct.field_offset_f leasing.leaseKey "rev"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (leaseKey.response' v)) leasing.leaseKey "response"%go.
+  simpl_one_flatten_struct (# (leaseKey.rev' v)) leasing.leaseKey "rev"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -298,18 +298,18 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (leasingKV.cl' v)) (struct.field_offset_f leasing.leasingKV "cl"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leasingKV.kv' v)) (struct.field_offset_f leasing.leasingKV "kv"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leasingKV.pfx' v)) (struct.field_offset_f leasing.leasingKV "pfx"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leasingKV.leases' v)) (struct.field_offset_f leasing.leasingKV "leases"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leasingKV.ctx' v)) (struct.field_offset_f leasing.leasingKV "ctx"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leasingKV.cancel' v)) (struct.field_offset_f leasing.leasingKV "cancel"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leasingKV.wg' v)) (struct.field_offset_f leasing.leasingKV "wg"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leasingKV.sessionOpts' v)) (struct.field_offset_f leasing.leasingKV "sessionOpts"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (leasingKV.session' v)) (struct.field_offset_f leasing.leasingKV "session"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (leasingKV.cl' v)) leasing.leasingKV "cl"%go.
+  simpl_one_flatten_struct (# (leasingKV.kv' v)) leasing.leasingKV "kv"%go.
+  simpl_one_flatten_struct (# (leasingKV.pfx' v)) leasing.leasingKV "pfx"%go.
+  simpl_one_flatten_struct (# (leasingKV.leases' v)) leasing.leasingKV "leases"%go.
+  simpl_one_flatten_struct (# (leasingKV.ctx' v)) leasing.leasingKV "ctx"%go.
+  simpl_one_flatten_struct (# (leasingKV.cancel' v)) leasing.leasingKV "cancel"%go.
+  simpl_one_flatten_struct (# (leasingKV.wg' v)) leasing.leasingKV "wg"%go.
+  simpl_one_flatten_struct (# (leasingKV.sessionOpts' v)) leasing.leasingKV "sessionOpts"%go.
+  simpl_one_flatten_struct (# (leasingKV.session' v)) leasing.leasingKV "session"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -402,14 +402,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (txnLeasing.Txn' v)) (struct.field_offset_f leasing.txnLeasing "Txn"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (txnLeasing.lkv' v)) (struct.field_offset_f leasing.txnLeasing "lkv"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (txnLeasing.ctx' v)) (struct.field_offset_f leasing.txnLeasing "ctx"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (txnLeasing.cs' v)) (struct.field_offset_f leasing.txnLeasing "cs"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (txnLeasing.opst' v)) (struct.field_offset_f leasing.txnLeasing "opst"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (txnLeasing.Txn' v)) leasing.txnLeasing "Txn"%go.
+  simpl_one_flatten_struct (# (txnLeasing.lkv' v)) leasing.txnLeasing "lkv"%go.
+  simpl_one_flatten_struct (# (txnLeasing.ctx' v)) leasing.txnLeasing "ctx"%go.
+  simpl_one_flatten_struct (# (txnLeasing.cs' v)) leasing.txnLeasing "cs"%go.
+  simpl_one_flatten_struct (# (txnLeasing.opst' v)) leasing.txnLeasing "opst"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

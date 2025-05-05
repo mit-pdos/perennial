@@ -86,11 +86,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Clerk.mu' v)) (struct.field_offset_f configservice.Clerk "mu"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Clerk.cls' v)) (struct.field_offset_f configservice.Clerk "cls"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Clerk.mu' v)) configservice.Clerk "mu"%go.
+  simpl_one_flatten_struct (# (Clerk.cls' v)) configservice.Clerk "cls"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -176,13 +176,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (state.epoch' v)) (struct.field_offset_f configservice.state "epoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (state.reservedEpoch' v)) (struct.field_offset_f configservice.state "reservedEpoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (state.leaseExpiration' v)) (struct.field_offset_f configservice.state "leaseExpiration"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (state.wantLeaseToExpire' v)) (struct.field_offset_f configservice.state "wantLeaseToExpire"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (state.epoch' v)) configservice.state "epoch"%go.
+  simpl_one_flatten_struct (# (state.reservedEpoch' v)) configservice.state "reservedEpoch"%go.
+  simpl_one_flatten_struct (# (state.leaseExpiration' v)) configservice.state "leaseExpiration"%go.
+  simpl_one_flatten_struct (# (state.wantLeaseToExpire' v)) configservice.state "wantLeaseToExpire"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -241,8 +241,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

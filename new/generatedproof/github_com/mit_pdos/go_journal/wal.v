@@ -82,10 +82,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Update.Addr' v)) (struct.field_offset_f wal.Update "Addr"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Update.Addr' v)) wal.Update "Addr"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -144,8 +144,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -231,13 +231,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (sliding.log' v)) (struct.field_offset_f wal.sliding "log"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (sliding.start' v)) (struct.field_offset_f wal.sliding "start"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (sliding.mutable' v)) (struct.field_offset_f wal.sliding "mutable"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (sliding.needFlush' v)) (struct.field_offset_f wal.sliding "needFlush"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (sliding.log' v)) wal.sliding "log"%go.
+  simpl_one_flatten_struct (# (sliding.start' v)) wal.sliding "start"%go.
+  simpl_one_flatten_struct (# (sliding.mutable' v)) wal.sliding "mutable"%go.
+  simpl_one_flatten_struct (# (sliding.needFlush' v)) wal.sliding "needFlush"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -316,12 +316,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (WalogState.memLog' v)) (struct.field_offset_f wal.WalogState "memLog"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (WalogState.diskEnd' v)) (struct.field_offset_f wal.WalogState "diskEnd"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (WalogState.shutdown' v)) (struct.field_offset_f wal.WalogState "shutdown"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (WalogState.memLog' v)) wal.WalogState "memLog"%go.
+  simpl_one_flatten_struct (# (WalogState.diskEnd' v)) wal.WalogState "diskEnd"%go.
+  simpl_one_flatten_struct (# (WalogState.shutdown' v)) wal.WalogState "shutdown"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -421,15 +421,15 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Walog.memLock' v)) (struct.field_offset_f wal.Walog "memLock"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Walog.d' v)) (struct.field_offset_f wal.Walog "d"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Walog.circ' v)) (struct.field_offset_f wal.Walog "circ"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Walog.st' v)) (struct.field_offset_f wal.Walog "st"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Walog.condLogger' v)) (struct.field_offset_f wal.Walog "condLogger"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Walog.condInstall' v)) (struct.field_offset_f wal.Walog "condInstall"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Walog.memLock' v)) wal.Walog "memLock"%go.
+  simpl_one_flatten_struct (# (Walog.d' v)) wal.Walog "d"%go.
+  simpl_one_flatten_struct (# (Walog.circ' v)) wal.Walog "circ"%go.
+  simpl_one_flatten_struct (# (Walog.st' v)) wal.Walog "st"%go.
+  simpl_one_flatten_struct (# (Walog.condLogger' v)) wal.Walog "condLogger"%go.
+  simpl_one_flatten_struct (# (Walog.condInstall' v)) wal.Walog "condInstall"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

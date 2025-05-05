@@ -118,12 +118,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Entry.Term' v)) (struct.field_offset_f raftpb.Entry "Term"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Entry.Index' v)) (struct.field_offset_f raftpb.Entry "Index"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Entry.Type' v)) (struct.field_offset_f raftpb.Entry "Type"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Entry.Term' v)) raftpb.Entry "Term"%go.
+  simpl_one_flatten_struct (# (Entry.Index' v)) raftpb.Entry "Index"%go.
+  simpl_one_flatten_struct (# (Entry.Type' v)) raftpb.Entry "Type"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -209,13 +209,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ConfState.Voters' v)) (struct.field_offset_f raftpb.ConfState "Voters"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ConfState.Learners' v)) (struct.field_offset_f raftpb.ConfState "Learners"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ConfState.VotersOutgoing' v)) (struct.field_offset_f raftpb.ConfState "VotersOutgoing"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ConfState.LearnersNext' v)) (struct.field_offset_f raftpb.ConfState "LearnersNext"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ConfState.Voters' v)) raftpb.ConfState "Voters"%go.
+  simpl_one_flatten_struct (# (ConfState.Learners' v)) raftpb.ConfState "Learners"%go.
+  simpl_one_flatten_struct (# (ConfState.VotersOutgoing' v)) raftpb.ConfState "VotersOutgoing"%go.
+  simpl_one_flatten_struct (# (ConfState.LearnersNext' v)) raftpb.ConfState "LearnersNext"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -287,11 +287,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (SnapshotMetadata.ConfState' v)) (struct.field_offset_f raftpb.SnapshotMetadata "ConfState"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (SnapshotMetadata.Index' v)) (struct.field_offset_f raftpb.SnapshotMetadata "Index"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (SnapshotMetadata.ConfState' v)) raftpb.SnapshotMetadata "ConfState"%go.
+  simpl_one_flatten_struct (# (SnapshotMetadata.Index' v)) raftpb.SnapshotMetadata "Index"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -356,10 +356,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Snapshot.Data' v)) (struct.field_offset_f raftpb.Snapshot "Data"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Snapshot.Data' v)) raftpb.Snapshot "Data"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -369,6 +369,9 @@ Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
 End Message.
+
+Global Instance bounded_size_Message : BoundedTypeSize raftpb.Message.
+Admitted.
 
 Global Instance into_val_Message `{ffi_syntax} : IntoVal Message.t.
 Admitted.
@@ -444,11 +447,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (HardState.Term' v)) (struct.field_offset_f raftpb.HardState "Term"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (HardState.Vote' v)) (struct.field_offset_f raftpb.HardState "Vote"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (HardState.Term' v)) raftpb.HardState "Term"%go.
+  simpl_one_flatten_struct (# (HardState.Vote' v)) raftpb.HardState "Vote"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -527,12 +530,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ConfChange.Type' v)) (struct.field_offset_f raftpb.ConfChange "Type"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ConfChange.NodeID' v)) (struct.field_offset_f raftpb.ConfChange "NodeID"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ConfChange.Context' v)) (struct.field_offset_f raftpb.ConfChange "Context"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ConfChange.Type' v)) raftpb.ConfChange "Type"%go.
+  simpl_one_flatten_struct (# (ConfChange.NodeID' v)) raftpb.ConfChange "NodeID"%go.
+  simpl_one_flatten_struct (# (ConfChange.Context' v)) raftpb.ConfChange "Context"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -604,11 +607,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ConfChangeV2.Transition' v)) (struct.field_offset_f raftpb.ConfChangeV2 "Transition"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ConfChangeV2.Changes' v)) (struct.field_offset_f raftpb.ConfChangeV2 "Changes"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ConfChangeV2.Transition' v)) raftpb.ConfChangeV2 "Transition"%go.
+  simpl_one_flatten_struct (# (ConfChangeV2.Changes' v)) raftpb.ConfChangeV2 "Changes"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

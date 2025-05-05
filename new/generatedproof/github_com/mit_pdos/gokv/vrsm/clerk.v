@@ -89,12 +89,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Clerk.confCk' v)) (struct.field_offset_f clerk.Clerk "confCk"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Clerk.replicaClerks' v)) (struct.field_offset_f clerk.Clerk "replicaClerks"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Clerk.preferredReplica' v)) (struct.field_offset_f clerk.Clerk "preferredReplica"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Clerk.confCk' v)) clerk.Clerk "confCk"%go.
+  simpl_one_flatten_struct (# (Clerk.replicaClerks' v)) clerk.Clerk "replicaClerks"%go.
+  simpl_one_flatten_struct (# (Clerk.preferredReplica' v)) clerk.Clerk "preferredReplica"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

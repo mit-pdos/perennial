@@ -128,18 +128,18 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (AsyncFile.mu' v)) (struct.field_offset_f asyncfile.AsyncFile "mu"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AsyncFile.data' v)) (struct.field_offset_f asyncfile.AsyncFile "data"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AsyncFile.filename' v)) (struct.field_offset_f asyncfile.AsyncFile "filename"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AsyncFile.index' v)) (struct.field_offset_f asyncfile.AsyncFile "index"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AsyncFile.indexCond' v)) (struct.field_offset_f asyncfile.AsyncFile "indexCond"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AsyncFile.durableIndex' v)) (struct.field_offset_f asyncfile.AsyncFile "durableIndex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AsyncFile.durableIndexCond' v)) (struct.field_offset_f asyncfile.AsyncFile "durableIndexCond"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AsyncFile.closeRequested' v)) (struct.field_offset_f asyncfile.AsyncFile "closeRequested"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AsyncFile.closed' v)) (struct.field_offset_f asyncfile.AsyncFile "closed"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (AsyncFile.mu' v)) asyncfile.AsyncFile "mu"%go.
+  simpl_one_flatten_struct (# (AsyncFile.data' v)) asyncfile.AsyncFile "data"%go.
+  simpl_one_flatten_struct (# (AsyncFile.filename' v)) asyncfile.AsyncFile "filename"%go.
+  simpl_one_flatten_struct (# (AsyncFile.index' v)) asyncfile.AsyncFile "index"%go.
+  simpl_one_flatten_struct (# (AsyncFile.indexCond' v)) asyncfile.AsyncFile "indexCond"%go.
+  simpl_one_flatten_struct (# (AsyncFile.durableIndex' v)) asyncfile.AsyncFile "durableIndex"%go.
+  simpl_one_flatten_struct (# (AsyncFile.durableIndexCond' v)) asyncfile.AsyncFile "durableIndexCond"%go.
+  simpl_one_flatten_struct (# (AsyncFile.closeRequested' v)) asyncfile.AsyncFile "closeRequested"%go.
+  simpl_one_flatten_struct (# (AsyncFile.closed' v)) asyncfile.AsyncFile "closed"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

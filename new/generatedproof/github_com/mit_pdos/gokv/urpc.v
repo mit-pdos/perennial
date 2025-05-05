@@ -69,8 +69,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -142,11 +142,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Callback.reply' v)) (struct.field_offset_f urpc.Callback "reply"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Callback.state' v)) (struct.field_offset_f urpc.Callback "state"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Callback.reply' v)) urpc.Callback "reply"%go.
+  simpl_one_flatten_struct (# (Callback.state' v)) urpc.Callback "state"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -225,12 +225,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Client.mu' v)) (struct.field_offset_f urpc.Client "mu"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Client.conn' v)) (struct.field_offset_f urpc.Client "conn"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Client.seq' v)) (struct.field_offset_f urpc.Client "seq"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Client.mu' v)) urpc.Client "mu"%go.
+  simpl_one_flatten_struct (# (Client.conn' v)) urpc.Client "conn"%go.
+  simpl_one_flatten_struct (# (Client.seq' v)) urpc.Client "seq"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

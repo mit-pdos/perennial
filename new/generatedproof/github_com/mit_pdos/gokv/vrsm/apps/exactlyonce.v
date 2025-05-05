@@ -96,13 +96,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (eStateMachine.lastSeq' v)) (struct.field_offset_f exactlyonce.eStateMachine "lastSeq"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (eStateMachine.lastReply' v)) (struct.field_offset_f exactlyonce.eStateMachine "lastReply"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (eStateMachine.nextCID' v)) (struct.field_offset_f exactlyonce.eStateMachine "nextCID"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (eStateMachine.sm' v)) (struct.field_offset_f exactlyonce.eStateMachine "sm"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (eStateMachine.lastSeq' v)) exactlyonce.eStateMachine "lastSeq"%go.
+  simpl_one_flatten_struct (# (eStateMachine.lastReply' v)) exactlyonce.eStateMachine "lastReply"%go.
+  simpl_one_flatten_struct (# (eStateMachine.nextCID' v)) exactlyonce.eStateMachine "nextCID"%go.
+  simpl_one_flatten_struct (# (eStateMachine.sm' v)) exactlyonce.eStateMachine "sm"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -174,11 +174,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Clerk.ck' v)) (struct.field_offset_f exactlyonce.Clerk "ck"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Clerk.cid' v)) (struct.field_offset_f exactlyonce.Clerk "cid"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Clerk.ck' v)) exactlyonce.Clerk "ck"%go.
+  simpl_one_flatten_struct (# (Clerk.cid' v)) exactlyonce.Clerk "cid"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -257,12 +257,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (VersionedStateMachine.ApplyVolatile' v)) (struct.field_offset_f exactlyonce.VersionedStateMachine "ApplyVolatile"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (VersionedStateMachine.ApplyReadonly' v)) (struct.field_offset_f exactlyonce.VersionedStateMachine "ApplyReadonly"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (VersionedStateMachine.SetState' v)) (struct.field_offset_f exactlyonce.VersionedStateMachine "SetState"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyVolatile' v)) exactlyonce.VersionedStateMachine "ApplyVolatile"%go.
+  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyReadonly' v)) exactlyonce.VersionedStateMachine "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (VersionedStateMachine.SetState' v)) exactlyonce.VersionedStateMachine "SetState"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

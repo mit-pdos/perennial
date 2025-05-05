@@ -76,11 +76,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Time.wall' v)) (struct.field_offset_f time.Time "wall"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Time.ext' v)) (struct.field_offset_f time.Time "ext"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Time.wall' v)) time.Time "wall"%go.
+  simpl_one_flatten_struct (# (Time.ext' v)) time.Time "ext"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

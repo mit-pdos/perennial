@@ -118,15 +118,15 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ResponseHeader.ClusterId' v)) (struct.field_offset_f etcdserverpb.ResponseHeader "ClusterId"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ResponseHeader.MemberId' v)) (struct.field_offset_f etcdserverpb.ResponseHeader "MemberId"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ResponseHeader.Revision' v)) (struct.field_offset_f etcdserverpb.ResponseHeader "Revision"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ResponseHeader.RaftTerm' v)) (struct.field_offset_f etcdserverpb.ResponseHeader "RaftTerm"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ResponseHeader.XXX_NoUnkeyedLiteral' v)) (struct.field_offset_f etcdserverpb.ResponseHeader "XXX_NoUnkeyedLiteral"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ResponseHeader.XXX_unrecognized' v)) (struct.field_offset_f etcdserverpb.ResponseHeader "XXX_unrecognized"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ResponseHeader.ClusterId' v)) etcdserverpb.ResponseHeader "ClusterId"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.MemberId' v)) etcdserverpb.ResponseHeader "MemberId"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.Revision' v)) etcdserverpb.ResponseHeader "Revision"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.RaftTerm' v)) etcdserverpb.ResponseHeader "RaftTerm"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.XXX_NoUnkeyedLiteral' v)) etcdserverpb.ResponseHeader "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (ResponseHeader.XXX_unrecognized' v)) etcdserverpb.ResponseHeader "XXX_unrecognized"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -226,15 +226,15 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (RangeResponse.Header' v)) (struct.field_offset_f etcdserverpb.RangeResponse "Header"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RangeResponse.Kvs' v)) (struct.field_offset_f etcdserverpb.RangeResponse "Kvs"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RangeResponse.More' v)) (struct.field_offset_f etcdserverpb.RangeResponse "More"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RangeResponse.Count' v)) (struct.field_offset_f etcdserverpb.RangeResponse "Count"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RangeResponse.XXX_NoUnkeyedLiteral' v)) (struct.field_offset_f etcdserverpb.RangeResponse "XXX_NoUnkeyedLiteral"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RangeResponse.XXX_unrecognized' v)) (struct.field_offset_f etcdserverpb.RangeResponse "XXX_unrecognized"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (RangeResponse.Header' v)) etcdserverpb.RangeResponse "Header"%go.
+  simpl_one_flatten_struct (# (RangeResponse.Kvs' v)) etcdserverpb.RangeResponse "Kvs"%go.
+  simpl_one_flatten_struct (# (RangeResponse.More' v)) etcdserverpb.RangeResponse "More"%go.
+  simpl_one_flatten_struct (# (RangeResponse.Count' v)) etcdserverpb.RangeResponse "Count"%go.
+  simpl_one_flatten_struct (# (RangeResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.RangeResponse "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (RangeResponse.XXX_unrecognized' v)) etcdserverpb.RangeResponse "XXX_unrecognized"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -320,13 +320,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (PutResponse.Header' v)) (struct.field_offset_f etcdserverpb.PutResponse "Header"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (PutResponse.PrevKv' v)) (struct.field_offset_f etcdserverpb.PutResponse "PrevKv"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (PutResponse.XXX_NoUnkeyedLiteral' v)) (struct.field_offset_f etcdserverpb.PutResponse "XXX_NoUnkeyedLiteral"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (PutResponse.XXX_unrecognized' v)) (struct.field_offset_f etcdserverpb.PutResponse "XXX_unrecognized"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (PutResponse.Header' v)) etcdserverpb.PutResponse "Header"%go.
+  simpl_one_flatten_struct (# (PutResponse.PrevKv' v)) etcdserverpb.PutResponse "PrevKv"%go.
+  simpl_one_flatten_struct (# (PutResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.PutResponse "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (PutResponse.XXX_unrecognized' v)) etcdserverpb.PutResponse "XXX_unrecognized"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -419,14 +419,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (DeleteRangeResponse.Header' v)) (struct.field_offset_f etcdserverpb.DeleteRangeResponse "Header"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (DeleteRangeResponse.Deleted' v)) (struct.field_offset_f etcdserverpb.DeleteRangeResponse "Deleted"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (DeleteRangeResponse.PrevKvs' v)) (struct.field_offset_f etcdserverpb.DeleteRangeResponse "PrevKvs"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (DeleteRangeResponse.XXX_NoUnkeyedLiteral' v)) (struct.field_offset_f etcdserverpb.DeleteRangeResponse "XXX_NoUnkeyedLiteral"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (DeleteRangeResponse.XXX_unrecognized' v)) (struct.field_offset_f etcdserverpb.DeleteRangeResponse "XXX_unrecognized"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (DeleteRangeResponse.Header' v)) etcdserverpb.DeleteRangeResponse "Header"%go.
+  simpl_one_flatten_struct (# (DeleteRangeResponse.Deleted' v)) etcdserverpb.DeleteRangeResponse "Deleted"%go.
+  simpl_one_flatten_struct (# (DeleteRangeResponse.PrevKvs' v)) etcdserverpb.DeleteRangeResponse "PrevKvs"%go.
+  simpl_one_flatten_struct (# (DeleteRangeResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.DeleteRangeResponse "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (DeleteRangeResponse.XXX_unrecognized' v)) etcdserverpb.DeleteRangeResponse "XXX_unrecognized"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -512,12 +512,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ResponseOp.Response' v)) (struct.field_offset_f etcdserverpb.ResponseOp "Response"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ResponseOp.XXX_NoUnkeyedLiteral' v)) (struct.field_offset_f etcdserverpb.ResponseOp "XXX_NoUnkeyedLiteral"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (ResponseOp.XXX_unrecognized' v)) (struct.field_offset_f etcdserverpb.ResponseOp "XXX_unrecognized"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ResponseOp.Response' v)) etcdserverpb.ResponseOp "Response"%go.
+  simpl_one_flatten_struct (# (ResponseOp.XXX_NoUnkeyedLiteral' v)) etcdserverpb.ResponseOp "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (ResponseOp.XXX_unrecognized' v)) etcdserverpb.ResponseOp "XXX_unrecognized"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -576,8 +576,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -636,8 +636,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -696,8 +696,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -756,8 +756,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -871,16 +871,16 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Compare.Result' v)) (struct.field_offset_f etcdserverpb.Compare "Result"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Compare.Target' v)) (struct.field_offset_f etcdserverpb.Compare "Target"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Compare.Key' v)) (struct.field_offset_f etcdserverpb.Compare "Key"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Compare.TargetUnion' v)) (struct.field_offset_f etcdserverpb.Compare "TargetUnion"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Compare.RangeEnd' v)) (struct.field_offset_f etcdserverpb.Compare "RangeEnd"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Compare.XXX_NoUnkeyedLiteral' v)) (struct.field_offset_f etcdserverpb.Compare "XXX_NoUnkeyedLiteral"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Compare.XXX_unrecognized' v)) (struct.field_offset_f etcdserverpb.Compare "XXX_unrecognized"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Compare.Result' v)) etcdserverpb.Compare "Result"%go.
+  simpl_one_flatten_struct (# (Compare.Target' v)) etcdserverpb.Compare "Target"%go.
+  simpl_one_flatten_struct (# (Compare.Key' v)) etcdserverpb.Compare "Key"%go.
+  simpl_one_flatten_struct (# (Compare.TargetUnion' v)) etcdserverpb.Compare "TargetUnion"%go.
+  simpl_one_flatten_struct (# (Compare.RangeEnd' v)) etcdserverpb.Compare "RangeEnd"%go.
+  simpl_one_flatten_struct (# (Compare.XXX_NoUnkeyedLiteral' v)) etcdserverpb.Compare "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (Compare.XXX_unrecognized' v)) etcdserverpb.Compare "XXX_unrecognized"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -939,8 +939,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -999,8 +999,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1059,8 +1059,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1119,8 +1119,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1179,8 +1179,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1273,14 +1273,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (TxnResponse.Header' v)) (struct.field_offset_f etcdserverpb.TxnResponse "Header"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (TxnResponse.Succeeded' v)) (struct.field_offset_f etcdserverpb.TxnResponse "Succeeded"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (TxnResponse.Responses' v)) (struct.field_offset_f etcdserverpb.TxnResponse "Responses"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (TxnResponse.XXX_NoUnkeyedLiteral' v)) (struct.field_offset_f etcdserverpb.TxnResponse "XXX_NoUnkeyedLiteral"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (TxnResponse.XXX_unrecognized' v)) (struct.field_offset_f etcdserverpb.TxnResponse "XXX_unrecognized"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (TxnResponse.Header' v)) etcdserverpb.TxnResponse "Header"%go.
+  simpl_one_flatten_struct (# (TxnResponse.Succeeded' v)) etcdserverpb.TxnResponse "Succeeded"%go.
+  simpl_one_flatten_struct (# (TxnResponse.Responses' v)) etcdserverpb.TxnResponse "Responses"%go.
+  simpl_one_flatten_struct (# (TxnResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.TxnResponse "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (TxnResponse.XXX_unrecognized' v)) etcdserverpb.TxnResponse "XXX_unrecognized"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

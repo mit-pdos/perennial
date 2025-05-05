@@ -128,14 +128,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (unstable.snapshot' v)) (struct.field_offset_f raft.unstable "snapshot"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (unstable.entries' v)) (struct.field_offset_f raft.unstable "entries"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (unstable.offset' v)) (struct.field_offset_f raft.unstable "offset"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (unstable.snapshotInProgress' v)) (struct.field_offset_f raft.unstable "snapshotInProgress"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (unstable.offsetInProgress' v)) (struct.field_offset_f raft.unstable "offsetInProgress"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (unstable.snapshot' v)) raft.unstable "snapshot"%go.
+  simpl_one_flatten_struct (# (unstable.entries' v)) raft.unstable "entries"%go.
+  simpl_one_flatten_struct (# (unstable.offset' v)) raft.unstable "offset"%go.
+  simpl_one_flatten_struct (# (unstable.snapshotInProgress' v)) raft.unstable "snapshotInProgress"%go.
+  simpl_one_flatten_struct (# (unstable.offsetInProgress' v)) raft.unstable "offsetInProgress"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -256,17 +256,17 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (raftLog.storage' v)) (struct.field_offset_f raft.raftLog "storage"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raftLog.unstable' v)) (struct.field_offset_f raft.raftLog "unstable"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raftLog.committed' v)) (struct.field_offset_f raft.raftLog "committed"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raftLog.applying' v)) (struct.field_offset_f raft.raftLog "applying"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raftLog.applied' v)) (struct.field_offset_f raft.raftLog "applied"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raftLog.logger' v)) (struct.field_offset_f raft.raftLog "logger"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raftLog.maxApplyingEntsSize' v)) (struct.field_offset_f raft.raftLog "maxApplyingEntsSize"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raftLog.applyingEntsSize' v)) (struct.field_offset_f raft.raftLog "applyingEntsSize"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (raftLog.storage' v)) raft.raftLog "storage"%go.
+  simpl_one_flatten_struct (# (raftLog.unstable' v)) raft.raftLog "unstable"%go.
+  simpl_one_flatten_struct (# (raftLog.committed' v)) raft.raftLog "committed"%go.
+  simpl_one_flatten_struct (# (raftLog.applying' v)) raft.raftLog "applying"%go.
+  simpl_one_flatten_struct (# (raftLog.applied' v)) raft.raftLog "applied"%go.
+  simpl_one_flatten_struct (# (raftLog.logger' v)) raft.raftLog "logger"%go.
+  simpl_one_flatten_struct (# (raftLog.maxApplyingEntsSize' v)) raft.raftLog "maxApplyingEntsSize"%go.
+  simpl_one_flatten_struct (# (raftLog.applyingEntsSize' v)) raft.raftLog "applyingEntsSize"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -331,10 +331,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (DefaultLogger.Logger' v)) (struct.field_offset_f raft.DefaultLogger "Logger"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (DefaultLogger.Logger' v)) raft.DefaultLogger "Logger"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -413,10 +413,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (SoftState.Lead' v)) (struct.field_offset_f raft.SoftState "Lead"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (SoftState.Lead' v)) raft.SoftState "Lead"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -523,16 +523,16 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Ready.SoftState' v)) (struct.field_offset_f raft.Ready "SoftState"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Ready.HardState' v)) (struct.field_offset_f raft.Ready "HardState"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Ready.ReadStates' v)) (struct.field_offset_f raft.Ready "ReadStates"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Ready.Entries' v)) (struct.field_offset_f raft.Ready "Entries"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Ready.Snapshot' v)) (struct.field_offset_f raft.Ready "Snapshot"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Ready.CommittedEntries' v)) (struct.field_offset_f raft.Ready "CommittedEntries"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Ready.Messages' v)) (struct.field_offset_f raft.Ready "Messages"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Ready.SoftState' v)) raft.Ready "SoftState"%go.
+  simpl_one_flatten_struct (# (Ready.HardState' v)) raft.Ready "HardState"%go.
+  simpl_one_flatten_struct (# (Ready.ReadStates' v)) raft.Ready "ReadStates"%go.
+  simpl_one_flatten_struct (# (Ready.Entries' v)) raft.Ready "Entries"%go.
+  simpl_one_flatten_struct (# (Ready.Snapshot' v)) raft.Ready "Snapshot"%go.
+  simpl_one_flatten_struct (# (Ready.CommittedEntries' v)) raft.Ready "CommittedEntries"%go.
+  simpl_one_flatten_struct (# (Ready.Messages' v)) raft.Ready "Messages"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -604,10 +604,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Peer.ID' v)) (struct.field_offset_f raft.Peer "ID"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Peer.ID' v)) raft.Peer "ID"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -672,10 +672,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (msgWithResult.m' v)) (struct.field_offset_f raft.msgWithResult "m"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (msgWithResult.m' v)) raft.msgWithResult "m"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -803,19 +803,19 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (node.propc' v)) (struct.field_offset_f raft.node "propc"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (node.recvc' v)) (struct.field_offset_f raft.node "recvc"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (node.confc' v)) (struct.field_offset_f raft.node "confc"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (node.confstatec' v)) (struct.field_offset_f raft.node "confstatec"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (node.readyc' v)) (struct.field_offset_f raft.node "readyc"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (node.advancec' v)) (struct.field_offset_f raft.node "advancec"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (node.tickc' v)) (struct.field_offset_f raft.node "tickc"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (node.done' v)) (struct.field_offset_f raft.node "done"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (node.stop' v)) (struct.field_offset_f raft.node "stop"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (node.status' v)) (struct.field_offset_f raft.node "status"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (node.propc' v)) raft.node "propc"%go.
+  simpl_one_flatten_struct (# (node.recvc' v)) raft.node "recvc"%go.
+  simpl_one_flatten_struct (# (node.confc' v)) raft.node "confc"%go.
+  simpl_one_flatten_struct (# (node.confstatec' v)) raft.node "confstatec"%go.
+  simpl_one_flatten_struct (# (node.readyc' v)) raft.node "readyc"%go.
+  simpl_one_flatten_struct (# (node.advancec' v)) raft.node "advancec"%go.
+  simpl_one_flatten_struct (# (node.tickc' v)) raft.node "tickc"%go.
+  simpl_one_flatten_struct (# (node.done' v)) raft.node "done"%go.
+  simpl_one_flatten_struct (# (node.stop' v)) raft.node "stop"%go.
+  simpl_one_flatten_struct (# (node.status' v)) raft.node "status"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -881,8 +881,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1080,27 +1080,27 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Config.ID' v)) (struct.field_offset_f raft.Config "ID"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.ElectionTick' v)) (struct.field_offset_f raft.Config "ElectionTick"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.HeartbeatTick' v)) (struct.field_offset_f raft.Config "HeartbeatTick"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.Storage' v)) (struct.field_offset_f raft.Config "Storage"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.Applied' v)) (struct.field_offset_f raft.Config "Applied"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.AsyncStorageWrites' v)) (struct.field_offset_f raft.Config "AsyncStorageWrites"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.MaxSizePerMsg' v)) (struct.field_offset_f raft.Config "MaxSizePerMsg"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.MaxCommittedSizePerReady' v)) (struct.field_offset_f raft.Config "MaxCommittedSizePerReady"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.MaxUncommittedEntriesSize' v)) (struct.field_offset_f raft.Config "MaxUncommittedEntriesSize"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.MaxInflightMsgs' v)) (struct.field_offset_f raft.Config "MaxInflightMsgs"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.MaxInflightBytes' v)) (struct.field_offset_f raft.Config "MaxInflightBytes"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.CheckQuorum' v)) (struct.field_offset_f raft.Config "CheckQuorum"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.PreVote' v)) (struct.field_offset_f raft.Config "PreVote"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.ReadOnlyOption' v)) (struct.field_offset_f raft.Config "ReadOnlyOption"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.Logger' v)) (struct.field_offset_f raft.Config "Logger"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.DisableProposalForwarding' v)) (struct.field_offset_f raft.Config "DisableProposalForwarding"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.DisableConfChangeValidation' v)) (struct.field_offset_f raft.Config "DisableConfChangeValidation"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Config.StepDownOnRemoval' v)) (struct.field_offset_f raft.Config "StepDownOnRemoval"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Config.ID' v)) raft.Config "ID"%go.
+  simpl_one_flatten_struct (# (Config.ElectionTick' v)) raft.Config "ElectionTick"%go.
+  simpl_one_flatten_struct (# (Config.HeartbeatTick' v)) raft.Config "HeartbeatTick"%go.
+  simpl_one_flatten_struct (# (Config.Storage' v)) raft.Config "Storage"%go.
+  simpl_one_flatten_struct (# (Config.Applied' v)) raft.Config "Applied"%go.
+  simpl_one_flatten_struct (# (Config.AsyncStorageWrites' v)) raft.Config "AsyncStorageWrites"%go.
+  simpl_one_flatten_struct (# (Config.MaxSizePerMsg' v)) raft.Config "MaxSizePerMsg"%go.
+  simpl_one_flatten_struct (# (Config.MaxCommittedSizePerReady' v)) raft.Config "MaxCommittedSizePerReady"%go.
+  simpl_one_flatten_struct (# (Config.MaxUncommittedEntriesSize' v)) raft.Config "MaxUncommittedEntriesSize"%go.
+  simpl_one_flatten_struct (# (Config.MaxInflightMsgs' v)) raft.Config "MaxInflightMsgs"%go.
+  simpl_one_flatten_struct (# (Config.MaxInflightBytes' v)) raft.Config "MaxInflightBytes"%go.
+  simpl_one_flatten_struct (# (Config.CheckQuorum' v)) raft.Config "CheckQuorum"%go.
+  simpl_one_flatten_struct (# (Config.PreVote' v)) raft.Config "PreVote"%go.
+  simpl_one_flatten_struct (# (Config.ReadOnlyOption' v)) raft.Config "ReadOnlyOption"%go.
+  simpl_one_flatten_struct (# (Config.Logger' v)) raft.Config "Logger"%go.
+  simpl_one_flatten_struct (# (Config.DisableProposalForwarding' v)) raft.Config "DisableProposalForwarding"%go.
+  simpl_one_flatten_struct (# (Config.DisableConfChangeValidation' v)) raft.Config "DisableConfChangeValidation"%go.
+  simpl_one_flatten_struct (# (Config.StepDownOnRemoval' v)) raft.Config "StepDownOnRemoval"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1389,40 +1389,40 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (raft.id' v)) (struct.field_offset_f raft.raft "id"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.Term' v)) (struct.field_offset_f raft.raft "Term"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.Vote' v)) (struct.field_offset_f raft.raft "Vote"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.readStates' v)) (struct.field_offset_f raft.raft "readStates"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.raftLog' v)) (struct.field_offset_f raft.raft "raftLog"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.maxMsgSize' v)) (struct.field_offset_f raft.raft "maxMsgSize"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.maxUncommittedSize' v)) (struct.field_offset_f raft.raft "maxUncommittedSize"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.trk' v)) (struct.field_offset_f raft.raft "trk"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.state' v)) (struct.field_offset_f raft.raft "state"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.isLearner' v)) (struct.field_offset_f raft.raft "isLearner"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.msgs' v)) (struct.field_offset_f raft.raft "msgs"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.msgsAfterAppend' v)) (struct.field_offset_f raft.raft "msgsAfterAppend"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.lead' v)) (struct.field_offset_f raft.raft "lead"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.leadTransferee' v)) (struct.field_offset_f raft.raft "leadTransferee"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.pendingConfIndex' v)) (struct.field_offset_f raft.raft "pendingConfIndex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.disableConfChangeValidation' v)) (struct.field_offset_f raft.raft "disableConfChangeValidation"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.uncommittedSize' v)) (struct.field_offset_f raft.raft "uncommittedSize"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.readOnly' v)) (struct.field_offset_f raft.raft "readOnly"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.electionElapsed' v)) (struct.field_offset_f raft.raft "electionElapsed"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.heartbeatElapsed' v)) (struct.field_offset_f raft.raft "heartbeatElapsed"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.checkQuorum' v)) (struct.field_offset_f raft.raft "checkQuorum"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.preVote' v)) (struct.field_offset_f raft.raft "preVote"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.heartbeatTimeout' v)) (struct.field_offset_f raft.raft "heartbeatTimeout"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.electionTimeout' v)) (struct.field_offset_f raft.raft "electionTimeout"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.randomizedElectionTimeout' v)) (struct.field_offset_f raft.raft "randomizedElectionTimeout"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.disableProposalForwarding' v)) (struct.field_offset_f raft.raft "disableProposalForwarding"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.stepDownOnRemoval' v)) (struct.field_offset_f raft.raft "stepDownOnRemoval"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.tick' v)) (struct.field_offset_f raft.raft "tick"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.step' v)) (struct.field_offset_f raft.raft "step"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.logger' v)) (struct.field_offset_f raft.raft "logger"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (raft.pendingReadIndexMessages' v)) (struct.field_offset_f raft.raft "pendingReadIndexMessages"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (raft.id' v)) raft.raft "id"%go.
+  simpl_one_flatten_struct (# (raft.Term' v)) raft.raft "Term"%go.
+  simpl_one_flatten_struct (# (raft.Vote' v)) raft.raft "Vote"%go.
+  simpl_one_flatten_struct (# (raft.readStates' v)) raft.raft "readStates"%go.
+  simpl_one_flatten_struct (# (raft.raftLog' v)) raft.raft "raftLog"%go.
+  simpl_one_flatten_struct (# (raft.maxMsgSize' v)) raft.raft "maxMsgSize"%go.
+  simpl_one_flatten_struct (# (raft.maxUncommittedSize' v)) raft.raft "maxUncommittedSize"%go.
+  simpl_one_flatten_struct (# (raft.trk' v)) raft.raft "trk"%go.
+  simpl_one_flatten_struct (# (raft.state' v)) raft.raft "state"%go.
+  simpl_one_flatten_struct (# (raft.isLearner' v)) raft.raft "isLearner"%go.
+  simpl_one_flatten_struct (# (raft.msgs' v)) raft.raft "msgs"%go.
+  simpl_one_flatten_struct (# (raft.msgsAfterAppend' v)) raft.raft "msgsAfterAppend"%go.
+  simpl_one_flatten_struct (# (raft.lead' v)) raft.raft "lead"%go.
+  simpl_one_flatten_struct (# (raft.leadTransferee' v)) raft.raft "leadTransferee"%go.
+  simpl_one_flatten_struct (# (raft.pendingConfIndex' v)) raft.raft "pendingConfIndex"%go.
+  simpl_one_flatten_struct (# (raft.disableConfChangeValidation' v)) raft.raft "disableConfChangeValidation"%go.
+  simpl_one_flatten_struct (# (raft.uncommittedSize' v)) raft.raft "uncommittedSize"%go.
+  simpl_one_flatten_struct (# (raft.readOnly' v)) raft.raft "readOnly"%go.
+  simpl_one_flatten_struct (# (raft.electionElapsed' v)) raft.raft "electionElapsed"%go.
+  simpl_one_flatten_struct (# (raft.heartbeatElapsed' v)) raft.raft "heartbeatElapsed"%go.
+  simpl_one_flatten_struct (# (raft.checkQuorum' v)) raft.raft "checkQuorum"%go.
+  simpl_one_flatten_struct (# (raft.preVote' v)) raft.raft "preVote"%go.
+  simpl_one_flatten_struct (# (raft.heartbeatTimeout' v)) raft.raft "heartbeatTimeout"%go.
+  simpl_one_flatten_struct (# (raft.electionTimeout' v)) raft.raft "electionTimeout"%go.
+  simpl_one_flatten_struct (# (raft.randomizedElectionTimeout' v)) raft.raft "randomizedElectionTimeout"%go.
+  simpl_one_flatten_struct (# (raft.disableProposalForwarding' v)) raft.raft "disableProposalForwarding"%go.
+  simpl_one_flatten_struct (# (raft.stepDownOnRemoval' v)) raft.raft "stepDownOnRemoval"%go.
+  simpl_one_flatten_struct (# (raft.tick' v)) raft.raft "tick"%go.
+  simpl_one_flatten_struct (# (raft.step' v)) raft.raft "step"%go.
+  simpl_one_flatten_struct (# (raft.logger' v)) raft.raft "logger"%go.
+  simpl_one_flatten_struct (# (raft.pendingReadIndexMessages' v)) raft.raft "pendingReadIndexMessages"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1508,13 +1508,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (RawNode.raft' v)) (struct.field_offset_f raft.RawNode "raft"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RawNode.asyncStorageWrites' v)) (struct.field_offset_f raft.RawNode "asyncStorageWrites"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RawNode.prevSoftSt' v)) (struct.field_offset_f raft.RawNode "prevSoftSt"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (RawNode.prevHardSt' v)) (struct.field_offset_f raft.RawNode "prevHardSt"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (RawNode.raft' v)) raft.RawNode "raft"%go.
+  simpl_one_flatten_struct (# (RawNode.asyncStorageWrites' v)) raft.RawNode "asyncStorageWrites"%go.
+  simpl_one_flatten_struct (# (RawNode.prevSoftSt' v)) raft.RawNode "prevSoftSt"%go.
+  simpl_one_flatten_struct (# (RawNode.prevHardSt' v)) raft.RawNode "prevHardSt"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1586,10 +1586,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ReadState.Index' v)) (struct.field_offset_f raft.ReadState "Index"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ReadState.Index' v)) raft.ReadState "Index"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1661,11 +1661,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (readIndexStatus.req' v)) (struct.field_offset_f raft.readIndexStatus "req"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (readIndexStatus.index' v)) (struct.field_offset_f raft.readIndexStatus "index"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (readIndexStatus.req' v)) raft.readIndexStatus "req"%go.
+  simpl_one_flatten_struct (# (readIndexStatus.index' v)) raft.readIndexStatus "index"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1737,11 +1737,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (readOnly.option' v)) (struct.field_offset_f raft.readOnly "option"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (readOnly.pendingReadIndex' v)) (struct.field_offset_f raft.readOnly "pendingReadIndex"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (readOnly.option' v)) raft.readOnly "option"%go.
+  simpl_one_flatten_struct (# (readOnly.pendingReadIndex' v)) raft.readOnly "pendingReadIndex"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1863,13 +1863,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (BasicStatus.ID' v)) (struct.field_offset_f raft.BasicStatus "ID"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (BasicStatus.HardState' v)) (struct.field_offset_f raft.BasicStatus "HardState"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (BasicStatus.SoftState' v)) (struct.field_offset_f raft.BasicStatus "SoftState"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (BasicStatus.Applied' v)) (struct.field_offset_f raft.BasicStatus "Applied"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (BasicStatus.ID' v)) raft.BasicStatus "ID"%go.
+  simpl_one_flatten_struct (# (BasicStatus.HardState' v)) raft.BasicStatus "HardState"%go.
+  simpl_one_flatten_struct (# (BasicStatus.SoftState' v)) raft.BasicStatus "SoftState"%go.
+  simpl_one_flatten_struct (# (BasicStatus.Applied' v)) raft.BasicStatus "Applied"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1941,11 +1941,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Status.BasicStatus' v)) (struct.field_offset_f raft.Status "BasicStatus"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Status.Config' v)) (struct.field_offset_f raft.Status "Config"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Status.BasicStatus' v)) raft.Status "BasicStatus"%go.
+  simpl_one_flatten_struct (# (Status.Config' v)) raft.Status "Config"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -2038,14 +2038,14 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.initialState' v)) (struct.field_offset_f raft.inMemStorageCallStats "initialState"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.firstIndex' v)) (struct.field_offset_f raft.inMemStorageCallStats "firstIndex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.lastIndex' v)) (struct.field_offset_f raft.inMemStorageCallStats "lastIndex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.entries' v)) (struct.field_offset_f raft.inMemStorageCallStats "entries"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (inMemStorageCallStats.term' v)) (struct.field_offset_f raft.inMemStorageCallStats "term"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (inMemStorageCallStats.initialState' v)) raft.inMemStorageCallStats "initialState"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.firstIndex' v)) raft.inMemStorageCallStats "firstIndex"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.lastIndex' v)) raft.inMemStorageCallStats "lastIndex"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.entries' v)) raft.inMemStorageCallStats "entries"%go.
+  simpl_one_flatten_struct (# (inMemStorageCallStats.term' v)) raft.inMemStorageCallStats "term"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -2131,13 +2131,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (MemoryStorage.Mutex' v)) (struct.field_offset_f raft.MemoryStorage "Mutex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (MemoryStorage.hardState' v)) (struct.field_offset_f raft.MemoryStorage "hardState"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (MemoryStorage.snapshot' v)) (struct.field_offset_f raft.MemoryStorage "snapshot"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (MemoryStorage.ents' v)) (struct.field_offset_f raft.MemoryStorage "ents"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (MemoryStorage.Mutex' v)) raft.MemoryStorage "Mutex"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.hardState' v)) raft.MemoryStorage "hardState"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.snapshot' v)) raft.MemoryStorage "snapshot"%go.
+  simpl_one_flatten_struct (# (MemoryStorage.ents' v)) raft.MemoryStorage "ents"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -2202,10 +2202,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (entryID.term' v)) (struct.field_offset_f raft.entryID "term"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (entryID.term' v)) raft.entryID "term"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -2277,11 +2277,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (logSlice.term' v)) (struct.field_offset_f raft.logSlice "term"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (logSlice.prev' v)) (struct.field_offset_f raft.logSlice "prev"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (logSlice.term' v)) raft.logSlice "term"%go.
+  simpl_one_flatten_struct (# (logSlice.prev' v)) raft.logSlice "prev"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

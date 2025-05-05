@@ -88,12 +88,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Buf.Addr' v)) (struct.field_offset_f buf.Buf "Addr"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Buf.Sz' v)) (struct.field_offset_f buf.Buf "Sz"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Buf.Data' v)) (struct.field_offset_f buf.Buf "Data"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Buf.Addr' v)) buf.Buf "Addr"%go.
+  simpl_one_flatten_struct (# (Buf.Sz' v)) buf.Buf "Sz"%go.
+  simpl_one_flatten_struct (# (Buf.Data' v)) buf.Buf "Data"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -152,8 +152,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

@@ -83,12 +83,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Tup.ID' v)) (struct.field_offset_f slices.Tup "ID"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Tup.Idx' v)) (struct.field_offset_f slices.Tup "Idx"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Tup.Ok' v)) (struct.field_offset_f slices.Tup "Ok"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Tup.ID' v)) slices.Tup "ID"%go.
+  simpl_one_flatten_struct (# (Tup.Idx' v)) slices.Tup "Idx"%go.
+  simpl_one_flatten_struct (# (Tup.Ok' v)) slices.Tup "Ok"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

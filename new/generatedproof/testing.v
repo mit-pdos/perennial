@@ -15,6 +15,9 @@ Axiom t : Type.
 End def.
 End T.
 
+Global Instance bounded_size_T : BoundedTypeSize testing.T.
+Admitted.
+
 Global Instance into_val_T `{ffi_syntax} : IntoVal T.t.
 Admitted.
 

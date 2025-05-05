@@ -129,18 +129,18 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (AppendOnlyFile.mu' v)) (struct.field_offset_f aof.AppendOnlyFile "mu"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AppendOnlyFile.oldDurableCond' v)) (struct.field_offset_f aof.AppendOnlyFile "oldDurableCond"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AppendOnlyFile.durableCond' v)) (struct.field_offset_f aof.AppendOnlyFile "durableCond"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AppendOnlyFile.lengthCond' v)) (struct.field_offset_f aof.AppendOnlyFile "lengthCond"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AppendOnlyFile.membuf' v)) (struct.field_offset_f aof.AppendOnlyFile "membuf"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AppendOnlyFile.length' v)) (struct.field_offset_f aof.AppendOnlyFile "length"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AppendOnlyFile.durableLength' v)) (struct.field_offset_f aof.AppendOnlyFile "durableLength"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AppendOnlyFile.closeRequested' v)) (struct.field_offset_f aof.AppendOnlyFile "closeRequested"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (AppendOnlyFile.closed' v)) (struct.field_offset_f aof.AppendOnlyFile "closed"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (AppendOnlyFile.mu' v)) aof.AppendOnlyFile "mu"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.oldDurableCond' v)) aof.AppendOnlyFile "oldDurableCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.durableCond' v)) aof.AppendOnlyFile "durableCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.lengthCond' v)) aof.AppendOnlyFile "lengthCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.membuf' v)) aof.AppendOnlyFile "membuf"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.length' v)) aof.AppendOnlyFile "length"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.durableLength' v)) aof.AppendOnlyFile "durableLength"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.closeRequested' v)) aof.AppendOnlyFile "closeRequested"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.closed' v)) aof.AppendOnlyFile "closed"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

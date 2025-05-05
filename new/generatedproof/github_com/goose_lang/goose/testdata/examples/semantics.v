@@ -116,8 +116,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -176,8 +176,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -242,10 +242,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Editor.s' v)) (struct.field_offset_f semantics.Editor "s"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Editor.s' v)) semantics.Editor "s"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -310,10 +310,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Pair.x' v)) (struct.field_offset_f semantics.Pair "x"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Pair.x' v)) semantics.Pair "x"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -386,8 +386,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -446,8 +446,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -526,12 +526,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (BoolTest.t' v)) (struct.field_offset_f semantics.BoolTest "t"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (BoolTest.f' v)) (struct.field_offset_f semantics.BoolTest "f"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (BoolTest.tc' v)) (struct.field_offset_f semantics.BoolTest "tc"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (BoolTest.t' v)) semantics.BoolTest "t"%go.
+  simpl_one_flatten_struct (# (BoolTest.f' v)) semantics.BoolTest "f"%go.
+  simpl_one_flatten_struct (# (BoolTest.tc' v)) semantics.BoolTest "tc"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -596,10 +596,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (ArrayEditor.s' v)) (struct.field_offset_f semantics.ArrayEditor "s"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (ArrayEditor.s' v)) semantics.ArrayEditor "s"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -664,10 +664,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Bar.a' v)) (struct.field_offset_f semantics.Bar "a"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Bar.a' v)) semantics.Bar "a"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -726,8 +726,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -792,10 +792,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (TwoInts.x' v)) (struct.field_offset_f semantics.TwoInts "x"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (TwoInts.x' v)) semantics.TwoInts "x"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -867,11 +867,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (S.a' v)) (struct.field_offset_f semantics.S "a"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (S.b' v)) (struct.field_offset_f semantics.S "b"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (S.a' v)) semantics.S "a"%go.
+  simpl_one_flatten_struct (# (S.b' v)) semantics.S "b"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -930,8 +930,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -990,8 +990,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -1113,12 +1113,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Log.d' v)) (struct.field_offset_f semantics.Log "d"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Log.l' v)) (struct.field_offset_f semantics.Log "l"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Log.cache' v)) (struct.field_offset_f semantics.Log "cache"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Log.d' v)) semantics.Log "d"%go.
+  simpl_one_flatten_struct (# (Log.l' v)) semantics.Log "l"%go.
+  simpl_one_flatten_struct (# (Log.cache' v)) semantics.Log "cache"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

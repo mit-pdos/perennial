@@ -71,8 +71,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -151,11 +151,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (applyAsFollowerArgs.epoch' v)) (struct.field_offset_f paxos.applyAsFollowerArgs "epoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (applyAsFollowerArgs.nextIndex' v)) (struct.field_offset_f paxos.applyAsFollowerArgs "nextIndex"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (applyAsFollowerArgs.epoch' v)) paxos.applyAsFollowerArgs "epoch"%go.
+  simpl_one_flatten_struct (# (applyAsFollowerArgs.nextIndex' v)) paxos.applyAsFollowerArgs "nextIndex"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -214,8 +214,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -274,8 +274,8 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -354,12 +354,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (enterNewEpochReply.err' v)) (struct.field_offset_f paxos.enterNewEpochReply "err"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (enterNewEpochReply.acceptedEpoch' v)) (struct.field_offset_f paxos.enterNewEpochReply "acceptedEpoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (enterNewEpochReply.nextIndex' v)) (struct.field_offset_f paxos.enterNewEpochReply "nextIndex"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (enterNewEpochReply.err' v)) paxos.enterNewEpochReply "err"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.acceptedEpoch' v)) paxos.enterNewEpochReply "acceptedEpoch"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.nextIndex' v)) paxos.enterNewEpochReply "nextIndex"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -424,10 +424,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (applyReply.err' v)) (struct.field_offset_f paxos.applyReply "err"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (applyReply.err' v)) paxos.applyReply "err"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -513,13 +513,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (paxosState.epoch' v)) (struct.field_offset_f paxos.paxosState "epoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (paxosState.acceptedEpoch' v)) (struct.field_offset_f paxos.paxosState "acceptedEpoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (paxosState.nextIndex' v)) (struct.field_offset_f paxos.paxosState "nextIndex"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (paxosState.state' v)) (struct.field_offset_f paxos.paxosState "state"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (paxosState.epoch' v)) paxos.paxosState "epoch"%go.
+  simpl_one_flatten_struct (# (paxosState.acceptedEpoch' v)) paxos.paxosState "acceptedEpoch"%go.
+  simpl_one_flatten_struct (# (paxosState.nextIndex' v)) paxos.paxosState "nextIndex"%go.
+  simpl_one_flatten_struct (# (paxosState.state' v)) paxos.paxosState "state"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -598,12 +598,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Server.mu' v)) (struct.field_offset_f paxos.Server "mu"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.ps' v)) (struct.field_offset_f paxos.Server "ps"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Server.storage' v)) (struct.field_offset_f paxos.Server "storage"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Server.mu' v)) paxos.Server "mu"%go.
+  simpl_one_flatten_struct (# (Server.ps' v)) paxos.Server "ps"%go.
+  simpl_one_flatten_struct (# (Server.storage' v)) paxos.Server "storage"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

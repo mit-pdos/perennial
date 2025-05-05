@@ -88,12 +88,12 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (InMemoryStateMachine.ApplyReadonly' v)) (struct.field_offset_f storage.InMemoryStateMachine "ApplyReadonly"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (InMemoryStateMachine.ApplyVolatile' v)) (struct.field_offset_f storage.InMemoryStateMachine "ApplyVolatile"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (InMemoryStateMachine.GetState' v)) (struct.field_offset_f storage.InMemoryStateMachine "GetState"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyReadonly' v)) storage.InMemoryStateMachine "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyVolatile' v)) storage.InMemoryStateMachine "ApplyVolatile"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.GetState' v)) storage.InMemoryStateMachine "GetState"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -193,15 +193,15 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (StateMachine.fname' v)) (struct.field_offset_f storage.StateMachine "fname"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (StateMachine.logFile' v)) (struct.field_offset_f storage.StateMachine "logFile"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (StateMachine.logsize' v)) (struct.field_offset_f storage.StateMachine "logsize"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (StateMachine.sealed' v)) (struct.field_offset_f storage.StateMachine "sealed"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (StateMachine.epoch' v)) (struct.field_offset_f storage.StateMachine "epoch"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (StateMachine.nextIndex' v)) (struct.field_offset_f storage.StateMachine "nextIndex"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (StateMachine.fname' v)) storage.StateMachine "fname"%go.
+  simpl_one_flatten_struct (# (StateMachine.logFile' v)) storage.StateMachine "logFile"%go.
+  simpl_one_flatten_struct (# (StateMachine.logsize' v)) storage.StateMachine "logsize"%go.
+  simpl_one_flatten_struct (# (StateMachine.sealed' v)) storage.StateMachine "sealed"%go.
+  simpl_one_flatten_struct (# (StateMachine.epoch' v)) storage.StateMachine "epoch"%go.
+  simpl_one_flatten_struct (# (StateMachine.nextIndex' v)) storage.StateMachine "nextIndex"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

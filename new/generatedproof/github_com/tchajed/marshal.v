@@ -71,10 +71,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Enc.b' v)) (struct.field_offset_f marshal.Enc "b"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Enc.b' v)) marshal.Enc "b"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -139,10 +139,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Dec.b' v)) (struct.field_offset_f marshal.Dec "b"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Dec.b' v)) marshal.Dec "b"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

@@ -106,10 +106,10 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Int32._0' v)) (struct.field_offset_f atomic.Int32 "_0"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Int32._0' v)) atomic.Int32 "_0"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -217,11 +217,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Uint64._0' v)) (struct.field_offset_f atomic.Uint64 "_0"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Uint64._1' v)) (struct.field_offset_f atomic.Uint64 "_1"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Uint64._0' v)) atomic.Uint64 "_0"%go.
+  simpl_one_flatten_struct (# (Uint64._1' v)) atomic.Uint64 "_1"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

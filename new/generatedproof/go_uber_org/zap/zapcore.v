@@ -97,13 +97,13 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Field.Key' v)) (struct.field_offset_f zapcore.Field "Key"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Field.Type' v)) (struct.field_offset_f zapcore.Field "Type"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Field.Integer' v)) (struct.field_offset_f zapcore.Field "Integer"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Field.String' v)) (struct.field_offset_f zapcore.Field "String"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Field.Key' v)) zapcore.Field "Key"%go.
+  simpl_one_flatten_struct (# (Field.Type' v)) zapcore.Field "Type"%go.
+  simpl_one_flatten_struct (# (Field.Integer' v)) zapcore.Field "Integer"%go.
+  simpl_one_flatten_struct (# (Field.String' v)) zapcore.Field "String"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

@@ -83,11 +83,11 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Log.mu' v)) (struct.field_offset_f obj.Log "mu"%go).2); [ | by solve_has_go_type' ].
-  rewrite (@has_go_type_len _ (# (Log.log' v)) (struct.field_offset_f obj.Log "log"%go).2); [ | by solve_has_go_type' ].
+  simpl_one_flatten_struct (# (Log.mu' v)) obj.Log "mu"%go.
+  simpl_one_flatten_struct (# (Log.log' v)) obj.Log "log"%go.
 
-  simpl_field_ref_f.
-Admitted.
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
