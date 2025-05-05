@@ -3,6 +3,7 @@ on: push
 
 jobs:
   mailbot:
+    if: github.actor != 'dependabot[bot]'
     uses: sanjit-bhat/github-mailbot/.github/workflows/mailbot.yml@main
     with:
       host: smtp.gmail.com
