@@ -403,10 +403,29 @@ Ltac solve_struct_make_pure_wp :=
       apply wp_struct_make; cbn; auto
   end.
 
-Ltac simpl_field_ref_f :=
+Lemma pointsto_loc_add_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  l dq (off1 off2: Z) `{!IntoVal V} (v: V) :
+  off1 = off2 →
+  (l +ₗ off1) ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
+Proof. intros; subst; rewrite //. Qed.
+
+Lemma pointsto_loc_add0_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  l dq (off2: Z) `{!IntoVal V} (v: V) :
+  0 = off2 →
+  l ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
+Proof. intros; subst; rewrite loc_add_0 //. Qed.
+
+Ltac solve_field_ref_f :=
   rewrite struct.field_ref_f_unseal /struct.field_ref_f_def;
   with_strategy transparent [w8_word_instance] (with_strategy opaque [loc_add] cbn);
-  rewrite ?go_type_size_unseal /= ?loc_add_assoc ?loc_add_0 //.
+  rewrite ?loc_add_assoc;
+  lazymatch goal with
+  | |- typed_pointsto (_ +ₗ _) _ _ ⊣⊢ _ => apply pointsto_loc_add_equiv
+  | |- typed_pointsto _ _ _ ⊣⊢ _ => apply pointsto_loc_add0_equiv
+  | _ => idtac
+  end;
+  rewrite ?go_type_size_unseal //=;
+  try word.
 
 Lemma sep_equiv_split Σ (P1 P2 Q1 Q2: iProp Σ) :
   P1 ⊣⊢ Q1 →
@@ -423,7 +442,7 @@ This tactic converts one [length (flatten_struct x)] to [go_type_size t]. The
 parameters give it the right value and go_type to relate. *)
 Ltac simpl_one_flatten_struct x go_t f :=
   rewrite (@has_go_type_len _ x (struct.field_offset_f go_t f).2); [ | by solve_has_go_type' ];
-  apply sep_equiv_split; [ by simpl_field_ref_f | ].
+  apply sep_equiv_split; [ by solve_field_ref_f | ].
 
 Ltac unfold_typed_pointsto :=
   rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=
@@ -515,7 +534,8 @@ Proof.
 
   simpl_one_flatten_struct (#(Time.wall' v)) time.Time "wall"%go.
   simpl_one_flatten_struct (#(Time.ext' v)) time.Time "ext"%go.
-  simpl_field_ref_f.
+
+  solve_field_ref_f.
 Qed.
 
 End instances.
