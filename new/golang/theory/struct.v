@@ -415,6 +415,16 @@ Lemma pointsto_loc_add0_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
   l ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
 Proof. intros; subst; rewrite loc_add_0 //. Qed.
 
+Lemma has_bounded_type_size_def (t: go_type) `{BoundedTypeSize t} :
+  go_type_size_def t < 2^32.
+Proof.
+  destruct H as [H].
+  rewrite go_type_size_unseal in H.
+  auto.
+Qed.
+
+(* solves goals of the form l ↦{dq} v ⊣⊢ l' ↦{dq} v, where the locations involve
+offset calculations. *)
 Ltac solve_field_ref_f :=
   rewrite struct.field_ref_f_unseal /struct.field_ref_f_def;
   with_strategy transparent [w8_word_instance] (with_strategy opaque [loc_add] cbn);
@@ -425,6 +435,11 @@ Ltac solve_field_ref_f :=
   | _ => idtac
   end;
   rewrite ?go_type_size_unseal //=;
+  repeat
+    match goal with
+    | |- context[go_type_size_def ?t] =>
+        learn_hyp (has_bounded_type_size_def t)
+    end;
   try word.
 
 Lemma sep_equiv_split Σ (P1 P2 Q1 Q2: iProp Σ) :
@@ -439,10 +454,15 @@ Qed.
 [flatten_struct] and one based on a field offset for each field.
 
 This tactic converts one [length (flatten_struct x)] to [go_type_size t]. The
-parameters give it the right value and go_type to relate. *)
+parameters give it the right value and go_type to relate.
+
+*)
 Ltac simpl_one_flatten_struct x go_t f :=
   rewrite (@has_go_type_len _ x (struct.field_offset_f go_t f).2); [ | by solve_has_go_type' ];
-  apply sep_equiv_split; [ by solve_field_ref_f | ].
+  (* this [solve_field_ref_f] should solve the subgoal, but it does not fail
+  otherwise if there are bugs; it's nice for the tactic to leave the simplified
+  state for debugging *)
+  apply sep_equiv_split; [ solve_field_ref_f | ].
 
 Ltac unfold_typed_pointsto :=
   rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=

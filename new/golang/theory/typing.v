@@ -321,6 +321,19 @@ Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
 Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
 Arguments default_val (V) {_ _ _ _}.
 
+(* [BoundedTypeSize] proves that a type has a reasonable maximum upper bound in its size.
+
+When we axiomatize a go_type, we need it to have a sensible size so that
+field offsets can be calculated using w64 calculations. This is a highly
+conversative maximum size for a type that still enables it to be used in
+essentially any larger struct.
+
+We currently do not rely on this typeclass for non-axiomatic types (where it
+could be proven by direct computation) so there's no computation-based instance
+to prove it for other types. *)
+Class BoundedTypeSize (t : go_type) :=
+  { has_bounded_type_size : Z.of_nat (go_type_size t) < 2^32; }.
+
 Fixpoint is_comparable_go_type (t : go_type) : bool :=
   match t with
   | arrayT n elem => is_comparable_go_type elem
