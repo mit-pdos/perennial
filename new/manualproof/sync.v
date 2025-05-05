@@ -16,7 +16,7 @@ Global Instance into_val_Mutex : IntoVal Mutex.t :=
   |}.
 
 Global Program Instance into_val_typed_Mutex : IntoValTyped Mutex.t sync.Mutex :=
-{| default_val := Mutex.mk false |}.
+{| default_val := Mutex.mk (default_val _) |}.
 Next Obligation. rewrite to_val_unseal /=; solve_has_go_type. Qed.
 Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
@@ -46,7 +46,7 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_field_ref_f.
+  solve_field_ref_f.
 Qed.
 End instances.
 

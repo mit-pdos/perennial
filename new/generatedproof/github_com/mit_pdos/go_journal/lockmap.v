@@ -4,8 +4,11 @@ Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.lockmap.
+
+Set Default Proof Using "Type".
+
 Module lockmap.
-Axiom falso : False.
+
 Module lockState.
 Section def.
 Context `{ffi_syntax}.
@@ -22,25 +25,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_lockState : Settable _ :=
   settable! lockState.mk < lockState.held'; lockState.cond'; lockState.waiters' >.
-Global Instance into_val_lockState : IntoVal lockState.t.
-Admitted.
+Global Instance into_val_lockState : IntoVal lockState.t :=
+  {| to_val_def v :=
+    struct.val_aux lockmap.lockState [
+    "held" ::= #(lockState.held' v);
+    "cond" ::= #(lockState.cond' v);
+    "waiters" ::= #(lockState.waiters' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_lockState : IntoValTyped lockState.t lockmap.lockState :=
+Global Program Instance into_val_typed_lockState : IntoValTyped lockState.t lockmap.lockState :=
 {|
   default_val := lockState.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_lockState_held : IntoValStructField "held" lockmap.lockState lockState.held'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_lockState_cond : IntoValStructField "cond" lockmap.lockState lockState.cond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_lockState_waiters : IntoValStructField "waiters" lockmap.lockState lockState.waiters'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -52,7 +62,7 @@ Global Instance wp_struct_make_lockState held' cond' waiters':
       "waiters" ::= #waiters'
     ]))%struct
     #(lockState.mk held' cond' waiters').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance lockState_struct_fields_split dq l (v : lockState.t) :
@@ -61,7 +71,17 @@ Global Instance lockState_struct_fields_split dq l (v : lockState.t) :
     "Hcond" ∷ l ↦s[lockmap.lockState :: "cond"]{dq} v.(lockState.cond') ∗
     "Hwaiters" ∷ l ↦s[lockmap.lockState :: "waiters"]{dq} v.(lockState.waiters')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (lockState.held' v)) lockmap.lockState "held"%go.
+  simpl_one_flatten_struct (# (lockState.cond' v)) lockmap.lockState "cond"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -80,22 +100,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_lockShard : Settable _ :=
   settable! lockShard.mk < lockShard.mu'; lockShard.state' >.
-Global Instance into_val_lockShard : IntoVal lockShard.t.
-Admitted.
+Global Instance into_val_lockShard : IntoVal lockShard.t :=
+  {| to_val_def v :=
+    struct.val_aux lockmap.lockShard [
+    "mu" ::= #(lockShard.mu' v);
+    "state" ::= #(lockShard.state' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_lockShard : IntoValTyped lockShard.t lockmap.lockShard :=
+Global Program Instance into_val_typed_lockShard : IntoValTyped lockShard.t lockmap.lockShard :=
 {|
   default_val := lockShard.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_lockShard_mu : IntoValStructField "mu" lockmap.lockShard lockShard.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_lockShard_state : IntoValStructField "state" lockmap.lockShard lockShard.state'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -106,7 +132,7 @@ Global Instance wp_struct_make_lockShard mu' state':
       "state" ::= #state'
     ]))%struct
     #(lockShard.mk mu' state').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance lockShard_struct_fields_split dq l (v : lockShard.t) :
@@ -114,7 +140,16 @@ Global Instance lockShard_struct_fields_split dq l (v : lockShard.t) :
     "Hmu" ∷ l ↦s[lockmap.lockShard :: "mu"]{dq} v.(lockShard.mu') ∗
     "Hstate" ∷ l ↦s[lockmap.lockShard :: "state"]{dq} v.(lockShard.state')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (lockShard.mu' v)) lockmap.lockShard "mu"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -132,19 +167,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_LockMap : Settable _ :=
   settable! LockMap.mk < LockMap.shards' >.
-Global Instance into_val_LockMap : IntoVal LockMap.t.
-Admitted.
+Global Instance into_val_LockMap : IntoVal LockMap.t :=
+  {| to_val_def v :=
+    struct.val_aux lockmap.LockMap [
+    "shards" ::= #(LockMap.shards' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_LockMap : IntoValTyped LockMap.t lockmap.LockMap :=
+Global Program Instance into_val_typed_LockMap : IntoValTyped LockMap.t lockmap.LockMap :=
 {|
   default_val := LockMap.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_LockMap_shards : IntoValStructField "shards" lockmap.LockMap LockMap.shards'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -154,14 +194,22 @@ Global Instance wp_struct_make_LockMap shards':
       "shards" ::= #shards'
     ]))%struct
     #(LockMap.mk shards').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance LockMap_struct_fields_split dq l (v : LockMap.t) :
   StructFieldsSplit dq l v (
     "Hshards" ∷ l ↦s[lockmap.LockMap :: "shards"]{dq} v.(LockMap.shards')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

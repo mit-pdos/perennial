@@ -8,8 +8,11 @@ Require Export New.generatedproof.go_etcd_io.raft.v3.raftpb.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.raft.v3.tracker.
+
+Set Default Proof Using "Type".
+
 Module tracker.
-Axiom falso : False.
+
 Module inflight.
 Section def.
 Context `{ffi_syntax}.
@@ -25,22 +28,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_inflight : Settable _ :=
   settable! inflight.mk < inflight.index'; inflight.bytes' >.
-Global Instance into_val_inflight : IntoVal inflight.t.
-Admitted.
+Global Instance into_val_inflight : IntoVal inflight.t :=
+  {| to_val_def v :=
+    struct.val_aux tracker.inflight [
+    "index" ::= #(inflight.index' v);
+    "bytes" ::= #(inflight.bytes' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_inflight : IntoValTyped inflight.t tracker.inflight :=
+Global Program Instance into_val_typed_inflight : IntoValTyped inflight.t tracker.inflight :=
 {|
   default_val := inflight.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_inflight_index : IntoValStructField "index" tracker.inflight inflight.index'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_inflight_bytes : IntoValStructField "bytes" tracker.inflight inflight.bytes'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -51,7 +60,7 @@ Global Instance wp_struct_make_inflight index' bytes':
       "bytes" ::= #bytes'
     ]))%struct
     #(inflight.mk index' bytes').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance inflight_struct_fields_split dq l (v : inflight.t) :
@@ -59,7 +68,16 @@ Global Instance inflight_struct_fields_split dq l (v : inflight.t) :
     "Hindex" ∷ l ↦s[tracker.inflight :: "index"]{dq} v.(inflight.index') ∗
     "Hbytes" ∷ l ↦s[tracker.inflight :: "bytes"]{dq} v.(inflight.bytes')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (inflight.index' v)) tracker.inflight "index"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -82,34 +100,44 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Inflights : Settable _ :=
   settable! Inflights.mk < Inflights.start'; Inflights.count'; Inflights.bytes'; Inflights.size'; Inflights.maxBytes'; Inflights.buffer' >.
-Global Instance into_val_Inflights : IntoVal Inflights.t.
-Admitted.
+Global Instance into_val_Inflights : IntoVal Inflights.t :=
+  {| to_val_def v :=
+    struct.val_aux tracker.Inflights [
+    "start" ::= #(Inflights.start' v);
+    "count" ::= #(Inflights.count' v);
+    "bytes" ::= #(Inflights.bytes' v);
+    "size" ::= #(Inflights.size' v);
+    "maxBytes" ::= #(Inflights.maxBytes' v);
+    "buffer" ::= #(Inflights.buffer' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Inflights : IntoValTyped Inflights.t tracker.Inflights :=
+Global Program Instance into_val_typed_Inflights : IntoValTyped Inflights.t tracker.Inflights :=
 {|
   default_val := Inflights.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Inflights_start : IntoValStructField "start" tracker.Inflights Inflights.start'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Inflights_count : IntoValStructField "count" tracker.Inflights Inflights.count'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Inflights_bytes : IntoValStructField "bytes" tracker.Inflights Inflights.bytes'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Inflights_size : IntoValStructField "size" tracker.Inflights Inflights.size'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Inflights_maxBytes : IntoValStructField "maxBytes" tracker.Inflights Inflights.maxBytes'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Inflights_buffer : IntoValStructField "buffer" tracker.Inflights Inflights.buffer'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -124,7 +152,7 @@ Global Instance wp_struct_make_Inflights start' count' bytes' size' maxBytes' bu
       "buffer" ::= #buffer'
     ]))%struct
     #(Inflights.mk start' count' bytes' size' maxBytes' buffer').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Inflights_struct_fields_split dq l (v : Inflights.t) :
@@ -136,7 +164,20 @@ Global Instance Inflights_struct_fields_split dq l (v : Inflights.t) :
     "HmaxBytes" ∷ l ↦s[tracker.Inflights :: "maxBytes"]{dq} v.(Inflights.maxBytes') ∗
     "Hbuffer" ∷ l ↦s[tracker.Inflights :: "buffer"]{dq} v.(Inflights.buffer')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Inflights.start' v)) tracker.Inflights "start"%go.
+  simpl_one_flatten_struct (# (Inflights.count' v)) tracker.Inflights "count"%go.
+  simpl_one_flatten_struct (# (Inflights.bytes' v)) tracker.Inflights "bytes"%go.
+  simpl_one_flatten_struct (# (Inflights.size' v)) tracker.Inflights "size"%go.
+  simpl_one_flatten_struct (# (Inflights.maxBytes' v)) tracker.Inflights "maxBytes"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -169,43 +210,56 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Progress : Settable _ :=
   settable! Progress.mk < Progress.Match'; Progress.Next'; Progress.sentCommit'; Progress.State'; Progress.PendingSnapshot'; Progress.RecentActive'; Progress.MsgAppFlowPaused'; Progress.Inflights'; Progress.IsLearner' >.
-Global Instance into_val_Progress : IntoVal Progress.t.
-Admitted.
+Global Instance into_val_Progress : IntoVal Progress.t :=
+  {| to_val_def v :=
+    struct.val_aux tracker.Progress [
+    "Match" ::= #(Progress.Match' v);
+    "Next" ::= #(Progress.Next' v);
+    "sentCommit" ::= #(Progress.sentCommit' v);
+    "State" ::= #(Progress.State' v);
+    "PendingSnapshot" ::= #(Progress.PendingSnapshot' v);
+    "RecentActive" ::= #(Progress.RecentActive' v);
+    "MsgAppFlowPaused" ::= #(Progress.MsgAppFlowPaused' v);
+    "Inflights" ::= #(Progress.Inflights' v);
+    "IsLearner" ::= #(Progress.IsLearner' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Progress : IntoValTyped Progress.t tracker.Progress :=
+Global Program Instance into_val_typed_Progress : IntoValTyped Progress.t tracker.Progress :=
 {|
   default_val := Progress.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Progress_Match : IntoValStructField "Match" tracker.Progress Progress.Match'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Progress_Next : IntoValStructField "Next" tracker.Progress Progress.Next'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Progress_sentCommit : IntoValStructField "sentCommit" tracker.Progress Progress.sentCommit'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Progress_State : IntoValStructField "State" tracker.Progress Progress.State'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Progress_PendingSnapshot : IntoValStructField "PendingSnapshot" tracker.Progress Progress.PendingSnapshot'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Progress_RecentActive : IntoValStructField "RecentActive" tracker.Progress Progress.RecentActive'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Progress_MsgAppFlowPaused : IntoValStructField "MsgAppFlowPaused" tracker.Progress Progress.MsgAppFlowPaused'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Progress_Inflights : IntoValStructField "Inflights" tracker.Progress Progress.Inflights'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Progress_IsLearner : IntoValStructField "IsLearner" tracker.Progress Progress.IsLearner'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -223,7 +277,7 @@ Global Instance wp_struct_make_Progress Match' Next' sentCommit' State' PendingS
       "IsLearner" ::= #IsLearner'
     ]))%struct
     #(Progress.mk Match' Next' sentCommit' State' PendingSnapshot' RecentActive' MsgAppFlowPaused' Inflights' IsLearner').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Progress_struct_fields_split dq l (v : Progress.t) :
@@ -238,7 +292,23 @@ Global Instance Progress_struct_fields_split dq l (v : Progress.t) :
     "HInflights" ∷ l ↦s[tracker.Progress :: "Inflights"]{dq} v.(Progress.Inflights') ∗
     "HIsLearner" ∷ l ↦s[tracker.Progress :: "IsLearner"]{dq} v.(Progress.IsLearner')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Progress.Match' v)) tracker.Progress "Match"%go.
+  simpl_one_flatten_struct (# (Progress.Next' v)) tracker.Progress "Next"%go.
+  simpl_one_flatten_struct (# (Progress.sentCommit' v)) tracker.Progress "sentCommit"%go.
+  simpl_one_flatten_struct (# (Progress.State' v)) tracker.Progress "State"%go.
+  simpl_one_flatten_struct (# (Progress.PendingSnapshot' v)) tracker.Progress "PendingSnapshot"%go.
+  simpl_one_flatten_struct (# (Progress.RecentActive' v)) tracker.Progress "RecentActive"%go.
+  simpl_one_flatten_struct (# (Progress.MsgAppFlowPaused' v)) tracker.Progress "MsgAppFlowPaused"%go.
+  simpl_one_flatten_struct (# (Progress.Inflights' v)) tracker.Progress "Inflights"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -266,28 +336,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Config : Settable _ :=
   settable! Config.mk < Config.Voters'; Config.AutoLeave'; Config.Learners'; Config.LearnersNext' >.
-Global Instance into_val_Config : IntoVal Config.t.
-Admitted.
+Global Instance into_val_Config : IntoVal Config.t :=
+  {| to_val_def v :=
+    struct.val_aux tracker.Config [
+    "Voters" ::= #(Config.Voters' v);
+    "AutoLeave" ::= #(Config.AutoLeave' v);
+    "Learners" ::= #(Config.Learners' v);
+    "LearnersNext" ::= #(Config.LearnersNext' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Config : IntoValTyped Config.t tracker.Config :=
+Global Program Instance into_val_typed_Config : IntoValTyped Config.t tracker.Config :=
 {|
   default_val := Config.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Config_Voters : IntoValStructField "Voters" tracker.Config Config.Voters'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_AutoLeave : IntoValStructField "AutoLeave" tracker.Config Config.AutoLeave'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_Learners : IntoValStructField "Learners" tracker.Config Config.Learners'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Config_LearnersNext : IntoValStructField "LearnersNext" tracker.Config Config.LearnersNext'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -300,7 +378,7 @@ Global Instance wp_struct_make_Config Voters' AutoLeave' Learners' LearnersNext'
       "LearnersNext" ::= #LearnersNext'
     ]))%struct
     #(Config.mk Voters' AutoLeave' Learners' LearnersNext').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Config_struct_fields_split dq l (v : Config.t) :
@@ -310,7 +388,18 @@ Global Instance Config_struct_fields_split dq l (v : Config.t) :
     "HLearners" ∷ l ↦s[tracker.Config :: "Learners"]{dq} v.(Config.Learners') ∗
     "HLearnersNext" ∷ l ↦s[tracker.Config :: "LearnersNext"]{dq} v.(Config.LearnersNext')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Config.Voters' v)) tracker.Config "Voters"%go.
+  simpl_one_flatten_struct (# (Config.AutoLeave' v)) tracker.Config "AutoLeave"%go.
+  simpl_one_flatten_struct (# (Config.Learners' v)) tracker.Config "Learners"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -332,31 +421,40 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ProgressTracker : Settable _ :=
   settable! ProgressTracker.mk < ProgressTracker.Config'; ProgressTracker.Progress'; ProgressTracker.Votes'; ProgressTracker.MaxInflight'; ProgressTracker.MaxInflightBytes' >.
-Global Instance into_val_ProgressTracker : IntoVal ProgressTracker.t.
-Admitted.
+Global Instance into_val_ProgressTracker : IntoVal ProgressTracker.t :=
+  {| to_val_def v :=
+    struct.val_aux tracker.ProgressTracker [
+    "Config" ::= #(ProgressTracker.Config' v);
+    "Progress" ::= #(ProgressTracker.Progress' v);
+    "Votes" ::= #(ProgressTracker.Votes' v);
+    "MaxInflight" ::= #(ProgressTracker.MaxInflight' v);
+    "MaxInflightBytes" ::= #(ProgressTracker.MaxInflightBytes' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_ProgressTracker : IntoValTyped ProgressTracker.t tracker.ProgressTracker :=
+Global Program Instance into_val_typed_ProgressTracker : IntoValTyped ProgressTracker.t tracker.ProgressTracker :=
 {|
   default_val := ProgressTracker.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_ProgressTracker_Config : IntoValStructField "Config" tracker.ProgressTracker ProgressTracker.Config'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ProgressTracker_Progress : IntoValStructField "Progress" tracker.ProgressTracker ProgressTracker.Progress'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ProgressTracker_Votes : IntoValStructField "Votes" tracker.ProgressTracker ProgressTracker.Votes'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ProgressTracker_MaxInflight : IntoValStructField "MaxInflight" tracker.ProgressTracker ProgressTracker.MaxInflight'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ProgressTracker_MaxInflightBytes : IntoValStructField "MaxInflightBytes" tracker.ProgressTracker ProgressTracker.MaxInflightBytes'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -370,7 +468,7 @@ Global Instance wp_struct_make_ProgressTracker Config' Progress' Votes' MaxInfli
       "MaxInflightBytes" ::= #MaxInflightBytes'
     ]))%struct
     #(ProgressTracker.mk Config' Progress' Votes' MaxInflight' MaxInflightBytes').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ProgressTracker_struct_fields_split dq l (v : ProgressTracker.t) :
@@ -381,7 +479,19 @@ Global Instance ProgressTracker_struct_fields_split dq l (v : ProgressTracker.t)
     "HMaxInflight" ∷ l ↦s[tracker.ProgressTracker :: "MaxInflight"]{dq} v.(ProgressTracker.MaxInflight') ∗
     "HMaxInflightBytes" ∷ l ↦s[tracker.ProgressTracker :: "MaxInflightBytes"]{dq} v.(ProgressTracker.MaxInflightBytes')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (ProgressTracker.Config' v)) tracker.ProgressTracker "Config"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.Progress' v)) tracker.ProgressTracker "Progress"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.Votes' v)) tracker.ProgressTracker "Votes"%go.
+  simpl_one_flatten_struct (# (ProgressTracker.MaxInflight' v)) tracker.ProgressTracker "MaxInflight"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

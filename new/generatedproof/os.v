@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.os.
+
+Set Default Proof Using "Type".
+
 Module os.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

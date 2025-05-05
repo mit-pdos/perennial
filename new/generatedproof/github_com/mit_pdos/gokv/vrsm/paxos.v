@@ -11,8 +11,11 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.urpc.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.paxos.
+
+Set Default Proof Using "Type".
+
 Module paxos.
-Axiom falso : False.
+
 Module singleClerk.
 Section def.
 Context `{ffi_syntax}.
@@ -27,19 +30,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_singleClerk : Settable _ :=
   settable! singleClerk.mk < singleClerk.cl' >.
-Global Instance into_val_singleClerk : IntoVal singleClerk.t.
-Admitted.
+Global Instance into_val_singleClerk : IntoVal singleClerk.t :=
+  {| to_val_def v :=
+    struct.val_aux paxos.singleClerk [
+    "cl" ::= #(singleClerk.cl' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_singleClerk : IntoValTyped singleClerk.t paxos.singleClerk :=
+Global Program Instance into_val_typed_singleClerk : IntoValTyped singleClerk.t paxos.singleClerk :=
 {|
   default_val := singleClerk.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_singleClerk_cl : IntoValStructField "cl" paxos.singleClerk singleClerk.cl'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -49,14 +57,22 @@ Global Instance wp_struct_make_singleClerk cl':
       "cl" ::= #cl'
     ]))%struct
     #(singleClerk.mk cl').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance singleClerk_struct_fields_split dq l (v : singleClerk.t) :
   StructFieldsSplit dq l v (
     "Hcl" ∷ l ↦s[paxos.singleClerk :: "cl"]{dq} v.(singleClerk.cl')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -83,25 +99,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_applyAsFollowerArgs : Settable _ :=
   settable! applyAsFollowerArgs.mk < applyAsFollowerArgs.epoch'; applyAsFollowerArgs.nextIndex'; applyAsFollowerArgs.state' >.
-Global Instance into_val_applyAsFollowerArgs : IntoVal applyAsFollowerArgs.t.
-Admitted.
+Global Instance into_val_applyAsFollowerArgs : IntoVal applyAsFollowerArgs.t :=
+  {| to_val_def v :=
+    struct.val_aux paxos.applyAsFollowerArgs [
+    "epoch" ::= #(applyAsFollowerArgs.epoch' v);
+    "nextIndex" ::= #(applyAsFollowerArgs.nextIndex' v);
+    "state" ::= #(applyAsFollowerArgs.state' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_applyAsFollowerArgs : IntoValTyped applyAsFollowerArgs.t paxos.applyAsFollowerArgs :=
+Global Program Instance into_val_typed_applyAsFollowerArgs : IntoValTyped applyAsFollowerArgs.t paxos.applyAsFollowerArgs :=
 {|
   default_val := applyAsFollowerArgs.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_applyAsFollowerArgs_epoch : IntoValStructField "epoch" paxos.applyAsFollowerArgs applyAsFollowerArgs.epoch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_applyAsFollowerArgs_nextIndex : IntoValStructField "nextIndex" paxos.applyAsFollowerArgs applyAsFollowerArgs.nextIndex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_applyAsFollowerArgs_state : IntoValStructField "state" paxos.applyAsFollowerArgs applyAsFollowerArgs.state'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -113,7 +136,7 @@ Global Instance wp_struct_make_applyAsFollowerArgs epoch' nextIndex' state':
       "state" ::= #state'
     ]))%struct
     #(applyAsFollowerArgs.mk epoch' nextIndex' state').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance applyAsFollowerArgs_struct_fields_split dq l (v : applyAsFollowerArgs.t) :
@@ -122,7 +145,17 @@ Global Instance applyAsFollowerArgs_struct_fields_split dq l (v : applyAsFollowe
     "HnextIndex" ∷ l ↦s[paxos.applyAsFollowerArgs :: "nextIndex"]{dq} v.(applyAsFollowerArgs.nextIndex') ∗
     "Hstate" ∷ l ↦s[paxos.applyAsFollowerArgs :: "state"]{dq} v.(applyAsFollowerArgs.state')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (applyAsFollowerArgs.epoch' v)) paxos.applyAsFollowerArgs "epoch"%go.
+  simpl_one_flatten_struct (# (applyAsFollowerArgs.nextIndex' v)) paxos.applyAsFollowerArgs "nextIndex"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -140,19 +173,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_applyAsFollowerReply : Settable _ :=
   settable! applyAsFollowerReply.mk < applyAsFollowerReply.err' >.
-Global Instance into_val_applyAsFollowerReply : IntoVal applyAsFollowerReply.t.
-Admitted.
+Global Instance into_val_applyAsFollowerReply : IntoVal applyAsFollowerReply.t :=
+  {| to_val_def v :=
+    struct.val_aux paxos.applyAsFollowerReply [
+    "err" ::= #(applyAsFollowerReply.err' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_applyAsFollowerReply : IntoValTyped applyAsFollowerReply.t paxos.applyAsFollowerReply :=
+Global Program Instance into_val_typed_applyAsFollowerReply : IntoValTyped applyAsFollowerReply.t paxos.applyAsFollowerReply :=
 {|
   default_val := applyAsFollowerReply.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_applyAsFollowerReply_err : IntoValStructField "err" paxos.applyAsFollowerReply applyAsFollowerReply.err'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -162,14 +200,22 @@ Global Instance wp_struct_make_applyAsFollowerReply err':
       "err" ::= #err'
     ]))%struct
     #(applyAsFollowerReply.mk err').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance applyAsFollowerReply_struct_fields_split dq l (v : applyAsFollowerReply.t) :
   StructFieldsSplit dq l v (
     "Herr" ∷ l ↦s[paxos.applyAsFollowerReply :: "err"]{dq} v.(applyAsFollowerReply.err')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -187,19 +233,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_enterNewEpochArgs : Settable _ :=
   settable! enterNewEpochArgs.mk < enterNewEpochArgs.epoch' >.
-Global Instance into_val_enterNewEpochArgs : IntoVal enterNewEpochArgs.t.
-Admitted.
+Global Instance into_val_enterNewEpochArgs : IntoVal enterNewEpochArgs.t :=
+  {| to_val_def v :=
+    struct.val_aux paxos.enterNewEpochArgs [
+    "epoch" ::= #(enterNewEpochArgs.epoch' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_enterNewEpochArgs : IntoValTyped enterNewEpochArgs.t paxos.enterNewEpochArgs :=
+Global Program Instance into_val_typed_enterNewEpochArgs : IntoValTyped enterNewEpochArgs.t paxos.enterNewEpochArgs :=
 {|
   default_val := enterNewEpochArgs.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_enterNewEpochArgs_epoch : IntoValStructField "epoch" paxos.enterNewEpochArgs enterNewEpochArgs.epoch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -209,14 +260,22 @@ Global Instance wp_struct_make_enterNewEpochArgs epoch':
       "epoch" ::= #epoch'
     ]))%struct
     #(enterNewEpochArgs.mk epoch').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance enterNewEpochArgs_struct_fields_split dq l (v : enterNewEpochArgs.t) :
   StructFieldsSplit dq l v (
     "Hepoch" ∷ l ↦s[paxos.enterNewEpochArgs :: "epoch"]{dq} v.(enterNewEpochArgs.epoch')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -237,28 +296,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_enterNewEpochReply : Settable _ :=
   settable! enterNewEpochReply.mk < enterNewEpochReply.err'; enterNewEpochReply.acceptedEpoch'; enterNewEpochReply.nextIndex'; enterNewEpochReply.state' >.
-Global Instance into_val_enterNewEpochReply : IntoVal enterNewEpochReply.t.
-Admitted.
+Global Instance into_val_enterNewEpochReply : IntoVal enterNewEpochReply.t :=
+  {| to_val_def v :=
+    struct.val_aux paxos.enterNewEpochReply [
+    "err" ::= #(enterNewEpochReply.err' v);
+    "acceptedEpoch" ::= #(enterNewEpochReply.acceptedEpoch' v);
+    "nextIndex" ::= #(enterNewEpochReply.nextIndex' v);
+    "state" ::= #(enterNewEpochReply.state' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_enterNewEpochReply : IntoValTyped enterNewEpochReply.t paxos.enterNewEpochReply :=
+Global Program Instance into_val_typed_enterNewEpochReply : IntoValTyped enterNewEpochReply.t paxos.enterNewEpochReply :=
 {|
   default_val := enterNewEpochReply.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_enterNewEpochReply_err : IntoValStructField "err" paxos.enterNewEpochReply enterNewEpochReply.err'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_enterNewEpochReply_acceptedEpoch : IntoValStructField "acceptedEpoch" paxos.enterNewEpochReply enterNewEpochReply.acceptedEpoch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_enterNewEpochReply_nextIndex : IntoValStructField "nextIndex" paxos.enterNewEpochReply enterNewEpochReply.nextIndex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_enterNewEpochReply_state : IntoValStructField "state" paxos.enterNewEpochReply enterNewEpochReply.state'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -271,7 +338,7 @@ Global Instance wp_struct_make_enterNewEpochReply err' acceptedEpoch' nextIndex'
       "state" ::= #state'
     ]))%struct
     #(enterNewEpochReply.mk err' acceptedEpoch' nextIndex' state').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance enterNewEpochReply_struct_fields_split dq l (v : enterNewEpochReply.t) :
@@ -281,7 +348,18 @@ Global Instance enterNewEpochReply_struct_fields_split dq l (v : enterNewEpochRe
     "HnextIndex" ∷ l ↦s[paxos.enterNewEpochReply :: "nextIndex"]{dq} v.(enterNewEpochReply.nextIndex') ∗
     "Hstate" ∷ l ↦s[paxos.enterNewEpochReply :: "state"]{dq} v.(enterNewEpochReply.state')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (enterNewEpochReply.err' v)) paxos.enterNewEpochReply "err"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.acceptedEpoch' v)) paxos.enterNewEpochReply "acceptedEpoch"%go.
+  simpl_one_flatten_struct (# (enterNewEpochReply.nextIndex' v)) paxos.enterNewEpochReply "nextIndex"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -300,22 +378,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_applyReply : Settable _ :=
   settable! applyReply.mk < applyReply.err'; applyReply.ret' >.
-Global Instance into_val_applyReply : IntoVal applyReply.t.
-Admitted.
+Global Instance into_val_applyReply : IntoVal applyReply.t :=
+  {| to_val_def v :=
+    struct.val_aux paxos.applyReply [
+    "err" ::= #(applyReply.err' v);
+    "ret" ::= #(applyReply.ret' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_applyReply : IntoValTyped applyReply.t paxos.applyReply :=
+Global Program Instance into_val_typed_applyReply : IntoValTyped applyReply.t paxos.applyReply :=
 {|
   default_val := applyReply.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_applyReply_err : IntoValStructField "err" paxos.applyReply applyReply.err'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_applyReply_ret : IntoValStructField "ret" paxos.applyReply applyReply.ret'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -326,7 +410,7 @@ Global Instance wp_struct_make_applyReply err' ret':
       "ret" ::= #ret'
     ]))%struct
     #(applyReply.mk err' ret').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance applyReply_struct_fields_split dq l (v : applyReply.t) :
@@ -334,7 +418,16 @@ Global Instance applyReply_struct_fields_split dq l (v : applyReply.t) :
     "Herr" ∷ l ↦s[paxos.applyReply :: "err"]{dq} v.(applyReply.err') ∗
     "Hret" ∷ l ↦s[paxos.applyReply :: "ret"]{dq} v.(applyReply.ret')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (applyReply.err' v)) paxos.applyReply "err"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -356,31 +449,40 @@ Context `{ffi_syntax}.
 
 Global Instance settable_paxosState : Settable _ :=
   settable! paxosState.mk < paxosState.epoch'; paxosState.acceptedEpoch'; paxosState.nextIndex'; paxosState.state'; paxosState.isLeader' >.
-Global Instance into_val_paxosState : IntoVal paxosState.t.
-Admitted.
+Global Instance into_val_paxosState : IntoVal paxosState.t :=
+  {| to_val_def v :=
+    struct.val_aux paxos.paxosState [
+    "epoch" ::= #(paxosState.epoch' v);
+    "acceptedEpoch" ::= #(paxosState.acceptedEpoch' v);
+    "nextIndex" ::= #(paxosState.nextIndex' v);
+    "state" ::= #(paxosState.state' v);
+    "isLeader" ::= #(paxosState.isLeader' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_paxosState : IntoValTyped paxosState.t paxos.paxosState :=
+Global Program Instance into_val_typed_paxosState : IntoValTyped paxosState.t paxos.paxosState :=
 {|
   default_val := paxosState.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_paxosState_epoch : IntoValStructField "epoch" paxos.paxosState paxosState.epoch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_paxosState_acceptedEpoch : IntoValStructField "acceptedEpoch" paxos.paxosState paxosState.acceptedEpoch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_paxosState_nextIndex : IntoValStructField "nextIndex" paxos.paxosState paxosState.nextIndex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_paxosState_state : IntoValStructField "state" paxos.paxosState paxosState.state'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_paxosState_isLeader : IntoValStructField "isLeader" paxos.paxosState paxosState.isLeader'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -394,7 +496,7 @@ Global Instance wp_struct_make_paxosState epoch' acceptedEpoch' nextIndex' state
       "isLeader" ::= #isLeader'
     ]))%struct
     #(paxosState.mk epoch' acceptedEpoch' nextIndex' state' isLeader').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance paxosState_struct_fields_split dq l (v : paxosState.t) :
@@ -405,7 +507,19 @@ Global Instance paxosState_struct_fields_split dq l (v : paxosState.t) :
     "Hstate" ∷ l ↦s[paxos.paxosState :: "state"]{dq} v.(paxosState.state') ∗
     "HisLeader" ∷ l ↦s[paxos.paxosState :: "isLeader"]{dq} v.(paxosState.isLeader')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (paxosState.epoch' v)) paxos.paxosState "epoch"%go.
+  simpl_one_flatten_struct (# (paxosState.acceptedEpoch' v)) paxos.paxosState "acceptedEpoch"%go.
+  simpl_one_flatten_struct (# (paxosState.nextIndex' v)) paxos.paxosState "nextIndex"%go.
+  simpl_one_flatten_struct (# (paxosState.state' v)) paxos.paxosState "state"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -426,28 +540,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Server : Settable _ :=
   settable! Server.mk < Server.mu'; Server.ps'; Server.storage'; Server.clerks' >.
-Global Instance into_val_Server : IntoVal Server.t.
-Admitted.
+Global Instance into_val_Server : IntoVal Server.t :=
+  {| to_val_def v :=
+    struct.val_aux paxos.Server [
+    "mu" ::= #(Server.mu' v);
+    "ps" ::= #(Server.ps' v);
+    "storage" ::= #(Server.storage' v);
+    "clerks" ::= #(Server.clerks' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Server : IntoValTyped Server.t paxos.Server :=
+Global Program Instance into_val_typed_Server : IntoValTyped Server.t paxos.Server :=
 {|
   default_val := Server.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Server_mu : IntoValStructField "mu" paxos.Server Server.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Server_ps : IntoValStructField "ps" paxos.Server Server.ps'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Server_storage : IntoValStructField "storage" paxos.Server Server.storage'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Server_clerks : IntoValStructField "clerks" paxos.Server Server.clerks'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -460,7 +582,7 @@ Global Instance wp_struct_make_Server mu' ps' storage' clerks':
       "clerks" ::= #clerks'
     ]))%struct
     #(Server.mk mu' ps' storage' clerks').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :
@@ -470,7 +592,18 @@ Global Instance Server_struct_fields_split dq l (v : Server.t) :
     "Hstorage" ∷ l ↦s[paxos.Server :: "storage"]{dq} v.(Server.storage') ∗
     "Hclerks" ∷ l ↦s[paxos.Server :: "clerks"]{dq} v.(Server.clerks')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Server.mu' v)) paxos.Server "mu"%go.
+  simpl_one_flatten_struct (# (Server.ps' v)) paxos.Server "ps"%go.
+  simpl_one_flatten_struct (# (Server.storage' v)) paxos.Server "storage"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

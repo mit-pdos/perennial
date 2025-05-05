@@ -7,8 +7,11 @@ Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.aof.
+
+Set Default Proof Using "Type".
+
 Module aof.
-Axiom falso : False.
+
 Module AppendOnlyFile.
 Section def.
 Context `{ffi_syntax}.
@@ -32,46 +35,60 @@ Context `{ffi_syntax}.
 
 Global Instance settable_AppendOnlyFile : Settable _ :=
   settable! AppendOnlyFile.mk < AppendOnlyFile.mu'; AppendOnlyFile.oldDurableCond'; AppendOnlyFile.durableCond'; AppendOnlyFile.lengthCond'; AppendOnlyFile.membuf'; AppendOnlyFile.length'; AppendOnlyFile.durableLength'; AppendOnlyFile.closeRequested'; AppendOnlyFile.closed'; AppendOnlyFile.closedCond' >.
-Global Instance into_val_AppendOnlyFile : IntoVal AppendOnlyFile.t.
-Admitted.
+Global Instance into_val_AppendOnlyFile : IntoVal AppendOnlyFile.t :=
+  {| to_val_def v :=
+    struct.val_aux aof.AppendOnlyFile [
+    "mu" ::= #(AppendOnlyFile.mu' v);
+    "oldDurableCond" ::= #(AppendOnlyFile.oldDurableCond' v);
+    "durableCond" ::= #(AppendOnlyFile.durableCond' v);
+    "lengthCond" ::= #(AppendOnlyFile.lengthCond' v);
+    "membuf" ::= #(AppendOnlyFile.membuf' v);
+    "length" ::= #(AppendOnlyFile.length' v);
+    "durableLength" ::= #(AppendOnlyFile.durableLength' v);
+    "closeRequested" ::= #(AppendOnlyFile.closeRequested' v);
+    "closed" ::= #(AppendOnlyFile.closed' v);
+    "closedCond" ::= #(AppendOnlyFile.closedCond' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_AppendOnlyFile : IntoValTyped AppendOnlyFile.t aof.AppendOnlyFile :=
+Global Program Instance into_val_typed_AppendOnlyFile : IntoValTyped AppendOnlyFile.t aof.AppendOnlyFile :=
 {|
   default_val := AppendOnlyFile.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_AppendOnlyFile_mu : IntoValStructField "mu" aof.AppendOnlyFile AppendOnlyFile.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AppendOnlyFile_oldDurableCond : IntoValStructField "oldDurableCond" aof.AppendOnlyFile AppendOnlyFile.oldDurableCond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AppendOnlyFile_durableCond : IntoValStructField "durableCond" aof.AppendOnlyFile AppendOnlyFile.durableCond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AppendOnlyFile_lengthCond : IntoValStructField "lengthCond" aof.AppendOnlyFile AppendOnlyFile.lengthCond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AppendOnlyFile_membuf : IntoValStructField "membuf" aof.AppendOnlyFile AppendOnlyFile.membuf'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AppendOnlyFile_length : IntoValStructField "length" aof.AppendOnlyFile AppendOnlyFile.length'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AppendOnlyFile_durableLength : IntoValStructField "durableLength" aof.AppendOnlyFile AppendOnlyFile.durableLength'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AppendOnlyFile_closeRequested : IntoValStructField "closeRequested" aof.AppendOnlyFile AppendOnlyFile.closeRequested'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AppendOnlyFile_closed : IntoValStructField "closed" aof.AppendOnlyFile AppendOnlyFile.closed'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AppendOnlyFile_closedCond : IntoValStructField "closedCond" aof.AppendOnlyFile AppendOnlyFile.closedCond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -90,7 +107,7 @@ Global Instance wp_struct_make_AppendOnlyFile mu' oldDurableCond' durableCond' l
       "closedCond" ::= #closedCond'
     ]))%struct
     #(AppendOnlyFile.mk mu' oldDurableCond' durableCond' lengthCond' membuf' length' durableLength' closeRequested' closed' closedCond').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance AppendOnlyFile_struct_fields_split dq l (v : AppendOnlyFile.t) :
@@ -106,7 +123,24 @@ Global Instance AppendOnlyFile_struct_fields_split dq l (v : AppendOnlyFile.t) :
     "Hclosed" ∷ l ↦s[aof.AppendOnlyFile :: "closed"]{dq} v.(AppendOnlyFile.closed') ∗
     "HclosedCond" ∷ l ↦s[aof.AppendOnlyFile :: "closedCond"]{dq} v.(AppendOnlyFile.closedCond')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (AppendOnlyFile.mu' v)) aof.AppendOnlyFile "mu"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.oldDurableCond' v)) aof.AppendOnlyFile "oldDurableCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.durableCond' v)) aof.AppendOnlyFile "durableCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.lengthCond' v)) aof.AppendOnlyFile "lengthCond"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.membuf' v)) aof.AppendOnlyFile "membuf"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.length' v)) aof.AppendOnlyFile "length"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.durableLength' v)) aof.AppendOnlyFile "durableLength"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.closeRequested' v)) aof.AppendOnlyFile "closeRequested"%go.
+  simpl_one_flatten_struct (# (AppendOnlyFile.closed' v)) aof.AppendOnlyFile "closed"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

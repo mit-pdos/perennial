@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.raft.v3.raftpb.
+
+Set Default Proof Using "Type".
+
 Module raftpb.
-Axiom falso : False.
+
 Module ConfChangeI.
 Section def.
 Context `{ffi_syntax}.
@@ -57,28 +60,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Entry : Settable _ :=
   settable! Entry.mk < Entry.Term'; Entry.Index'; Entry.Type'; Entry.Data' >.
-Global Instance into_val_Entry : IntoVal Entry.t.
-Admitted.
+Global Instance into_val_Entry : IntoVal Entry.t :=
+  {| to_val_def v :=
+    struct.val_aux raftpb.Entry [
+    "Term" ::= #(Entry.Term' v);
+    "Index" ::= #(Entry.Index' v);
+    "Type" ::= #(Entry.Type' v);
+    "Data" ::= #(Entry.Data' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Entry : IntoValTyped Entry.t raftpb.Entry :=
+Global Program Instance into_val_typed_Entry : IntoValTyped Entry.t raftpb.Entry :=
 {|
   default_val := Entry.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Entry_Term : IntoValStructField "Term" raftpb.Entry Entry.Term'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Entry_Index : IntoValStructField "Index" raftpb.Entry Entry.Index'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Entry_Type : IntoValStructField "Type" raftpb.Entry Entry.Type'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Entry_Data : IntoValStructField "Data" raftpb.Entry Entry.Data'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -91,7 +102,7 @@ Global Instance wp_struct_make_Entry Term' Index' Type' Data':
       "Data" ::= #Data'
     ]))%struct
     #(Entry.mk Term' Index' Type' Data').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Entry_struct_fields_split dq l (v : Entry.t) :
@@ -101,7 +112,18 @@ Global Instance Entry_struct_fields_split dq l (v : Entry.t) :
     "HType" ∷ l ↦s[raftpb.Entry :: "Type"]{dq} v.(Entry.Type') ∗
     "HData" ∷ l ↦s[raftpb.Entry :: "Data"]{dq} v.(Entry.Data')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Entry.Term' v)) raftpb.Entry "Term"%go.
+  simpl_one_flatten_struct (# (Entry.Index' v)) raftpb.Entry "Index"%go.
+  simpl_one_flatten_struct (# (Entry.Type' v)) raftpb.Entry "Type"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -123,31 +145,40 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ConfState : Settable _ :=
   settable! ConfState.mk < ConfState.Voters'; ConfState.Learners'; ConfState.VotersOutgoing'; ConfState.LearnersNext'; ConfState.AutoLeave' >.
-Global Instance into_val_ConfState : IntoVal ConfState.t.
-Admitted.
+Global Instance into_val_ConfState : IntoVal ConfState.t :=
+  {| to_val_def v :=
+    struct.val_aux raftpb.ConfState [
+    "Voters" ::= #(ConfState.Voters' v);
+    "Learners" ::= #(ConfState.Learners' v);
+    "VotersOutgoing" ::= #(ConfState.VotersOutgoing' v);
+    "LearnersNext" ::= #(ConfState.LearnersNext' v);
+    "AutoLeave" ::= #(ConfState.AutoLeave' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_ConfState : IntoValTyped ConfState.t raftpb.ConfState :=
+Global Program Instance into_val_typed_ConfState : IntoValTyped ConfState.t raftpb.ConfState :=
 {|
   default_val := ConfState.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_ConfState_Voters : IntoValStructField "Voters" raftpb.ConfState ConfState.Voters'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ConfState_Learners : IntoValStructField "Learners" raftpb.ConfState ConfState.Learners'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ConfState_VotersOutgoing : IntoValStructField "VotersOutgoing" raftpb.ConfState ConfState.VotersOutgoing'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ConfState_LearnersNext : IntoValStructField "LearnersNext" raftpb.ConfState ConfState.LearnersNext'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ConfState_AutoLeave : IntoValStructField "AutoLeave" raftpb.ConfState ConfState.AutoLeave'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -161,7 +192,7 @@ Global Instance wp_struct_make_ConfState Voters' Learners' VotersOutgoing' Learn
       "AutoLeave" ::= #AutoLeave'
     ]))%struct
     #(ConfState.mk Voters' Learners' VotersOutgoing' LearnersNext' AutoLeave').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ConfState_struct_fields_split dq l (v : ConfState.t) :
@@ -172,7 +203,19 @@ Global Instance ConfState_struct_fields_split dq l (v : ConfState.t) :
     "HLearnersNext" ∷ l ↦s[raftpb.ConfState :: "LearnersNext"]{dq} v.(ConfState.LearnersNext') ∗
     "HAutoLeave" ∷ l ↦s[raftpb.ConfState :: "AutoLeave"]{dq} v.(ConfState.AutoLeave')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (ConfState.Voters' v)) raftpb.ConfState "Voters"%go.
+  simpl_one_flatten_struct (# (ConfState.Learners' v)) raftpb.ConfState "Learners"%go.
+  simpl_one_flatten_struct (# (ConfState.VotersOutgoing' v)) raftpb.ConfState "VotersOutgoing"%go.
+  simpl_one_flatten_struct (# (ConfState.LearnersNext' v)) raftpb.ConfState "LearnersNext"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -192,25 +235,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_SnapshotMetadata : Settable _ :=
   settable! SnapshotMetadata.mk < SnapshotMetadata.ConfState'; SnapshotMetadata.Index'; SnapshotMetadata.Term' >.
-Global Instance into_val_SnapshotMetadata : IntoVal SnapshotMetadata.t.
-Admitted.
+Global Instance into_val_SnapshotMetadata : IntoVal SnapshotMetadata.t :=
+  {| to_val_def v :=
+    struct.val_aux raftpb.SnapshotMetadata [
+    "ConfState" ::= #(SnapshotMetadata.ConfState' v);
+    "Index" ::= #(SnapshotMetadata.Index' v);
+    "Term" ::= #(SnapshotMetadata.Term' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_SnapshotMetadata : IntoValTyped SnapshotMetadata.t raftpb.SnapshotMetadata :=
+Global Program Instance into_val_typed_SnapshotMetadata : IntoValTyped SnapshotMetadata.t raftpb.SnapshotMetadata :=
 {|
   default_val := SnapshotMetadata.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_SnapshotMetadata_ConfState : IntoValStructField "ConfState" raftpb.SnapshotMetadata SnapshotMetadata.ConfState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_SnapshotMetadata_Index : IntoValStructField "Index" raftpb.SnapshotMetadata SnapshotMetadata.Index'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_SnapshotMetadata_Term : IntoValStructField "Term" raftpb.SnapshotMetadata SnapshotMetadata.Term'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -222,7 +272,7 @@ Global Instance wp_struct_make_SnapshotMetadata ConfState' Index' Term':
       "Term" ::= #Term'
     ]))%struct
     #(SnapshotMetadata.mk ConfState' Index' Term').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance SnapshotMetadata_struct_fields_split dq l (v : SnapshotMetadata.t) :
@@ -231,7 +281,17 @@ Global Instance SnapshotMetadata_struct_fields_split dq l (v : SnapshotMetadata.
     "HIndex" ∷ l ↦s[raftpb.SnapshotMetadata :: "Index"]{dq} v.(SnapshotMetadata.Index') ∗
     "HTerm" ∷ l ↦s[raftpb.SnapshotMetadata :: "Term"]{dq} v.(SnapshotMetadata.Term')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (SnapshotMetadata.ConfState' v)) raftpb.SnapshotMetadata "ConfState"%go.
+  simpl_one_flatten_struct (# (SnapshotMetadata.Index' v)) raftpb.SnapshotMetadata "Index"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -250,22 +310,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Snapshot : Settable _ :=
   settable! Snapshot.mk < Snapshot.Data'; Snapshot.Metadata' >.
-Global Instance into_val_Snapshot : IntoVal Snapshot.t.
-Admitted.
+Global Instance into_val_Snapshot : IntoVal Snapshot.t :=
+  {| to_val_def v :=
+    struct.val_aux raftpb.Snapshot [
+    "Data" ::= #(Snapshot.Data' v);
+    "Metadata" ::= #(Snapshot.Metadata' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Snapshot : IntoValTyped Snapshot.t raftpb.Snapshot :=
+Global Program Instance into_val_typed_Snapshot : IntoValTyped Snapshot.t raftpb.Snapshot :=
 {|
   default_val := Snapshot.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Snapshot_Data : IntoValStructField "Data" raftpb.Snapshot Snapshot.Data'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Snapshot_Metadata : IntoValStructField "Metadata" raftpb.Snapshot Snapshot.Metadata'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -276,7 +342,7 @@ Global Instance wp_struct_make_Snapshot Data' Metadata':
       "Metadata" ::= #Metadata'
     ]))%struct
     #(Snapshot.mk Data' Metadata').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Snapshot_struct_fields_split dq l (v : Snapshot.t) :
@@ -284,7 +350,16 @@ Global Instance Snapshot_struct_fields_split dq l (v : Snapshot.t) :
     "HData" ∷ l ↦s[raftpb.Snapshot :: "Data"]{dq} v.(Snapshot.Data') ∗
     "HMetadata" ∷ l ↦s[raftpb.Snapshot :: "Metadata"]{dq} v.(Snapshot.Metadata')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Snapshot.Data' v)) raftpb.Snapshot "Data"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -294,6 +369,9 @@ Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
 End Message.
+
+Global Instance bounded_size_Message : BoundedTypeSize raftpb.Message.
+Admitted.
 
 Global Instance into_val_Message `{ffi_syntax} : IntoVal Message.t.
 Admitted.
@@ -317,25 +395,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_HardState : Settable _ :=
   settable! HardState.mk < HardState.Term'; HardState.Vote'; HardState.Commit' >.
-Global Instance into_val_HardState : IntoVal HardState.t.
-Admitted.
+Global Instance into_val_HardState : IntoVal HardState.t :=
+  {| to_val_def v :=
+    struct.val_aux raftpb.HardState [
+    "Term" ::= #(HardState.Term' v);
+    "Vote" ::= #(HardState.Vote' v);
+    "Commit" ::= #(HardState.Commit' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_HardState : IntoValTyped HardState.t raftpb.HardState :=
+Global Program Instance into_val_typed_HardState : IntoValTyped HardState.t raftpb.HardState :=
 {|
   default_val := HardState.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_HardState_Term : IntoValStructField "Term" raftpb.HardState HardState.Term'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_HardState_Vote : IntoValStructField "Vote" raftpb.HardState HardState.Vote'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_HardState_Commit : IntoValStructField "Commit" raftpb.HardState HardState.Commit'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -347,7 +432,7 @@ Global Instance wp_struct_make_HardState Term' Vote' Commit':
       "Commit" ::= #Commit'
     ]))%struct
     #(HardState.mk Term' Vote' Commit').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance HardState_struct_fields_split dq l (v : HardState.t) :
@@ -356,7 +441,17 @@ Global Instance HardState_struct_fields_split dq l (v : HardState.t) :
     "HVote" ∷ l ↦s[raftpb.HardState :: "Vote"]{dq} v.(HardState.Vote') ∗
     "HCommit" ∷ l ↦s[raftpb.HardState :: "Commit"]{dq} v.(HardState.Commit')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (HardState.Term' v)) raftpb.HardState "Term"%go.
+  simpl_one_flatten_struct (# (HardState.Vote' v)) raftpb.HardState "Vote"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -377,28 +472,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ConfChange : Settable _ :=
   settable! ConfChange.mk < ConfChange.Type'; ConfChange.NodeID'; ConfChange.Context'; ConfChange.ID' >.
-Global Instance into_val_ConfChange : IntoVal ConfChange.t.
-Admitted.
+Global Instance into_val_ConfChange : IntoVal ConfChange.t :=
+  {| to_val_def v :=
+    struct.val_aux raftpb.ConfChange [
+    "Type" ::= #(ConfChange.Type' v);
+    "NodeID" ::= #(ConfChange.NodeID' v);
+    "Context" ::= #(ConfChange.Context' v);
+    "ID" ::= #(ConfChange.ID' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_ConfChange : IntoValTyped ConfChange.t raftpb.ConfChange :=
+Global Program Instance into_val_typed_ConfChange : IntoValTyped ConfChange.t raftpb.ConfChange :=
 {|
   default_val := ConfChange.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_ConfChange_Type : IntoValStructField "Type" raftpb.ConfChange ConfChange.Type'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ConfChange_NodeID : IntoValStructField "NodeID" raftpb.ConfChange ConfChange.NodeID'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ConfChange_Context : IntoValStructField "Context" raftpb.ConfChange ConfChange.Context'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ConfChange_ID : IntoValStructField "ID" raftpb.ConfChange ConfChange.ID'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -411,7 +514,7 @@ Global Instance wp_struct_make_ConfChange Type' NodeID' Context' ID':
       "ID" ::= #ID'
     ]))%struct
     #(ConfChange.mk Type' NodeID' Context' ID').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ConfChange_struct_fields_split dq l (v : ConfChange.t) :
@@ -421,7 +524,18 @@ Global Instance ConfChange_struct_fields_split dq l (v : ConfChange.t) :
     "HContext" ∷ l ↦s[raftpb.ConfChange :: "Context"]{dq} v.(ConfChange.Context') ∗
     "HID" ∷ l ↦s[raftpb.ConfChange :: "ID"]{dq} v.(ConfChange.ID')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (ConfChange.Type' v)) raftpb.ConfChange "Type"%go.
+  simpl_one_flatten_struct (# (ConfChange.NodeID' v)) raftpb.ConfChange "NodeID"%go.
+  simpl_one_flatten_struct (# (ConfChange.Context' v)) raftpb.ConfChange "Context"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -441,25 +555,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ConfChangeV2 : Settable _ :=
   settable! ConfChangeV2.mk < ConfChangeV2.Transition'; ConfChangeV2.Changes'; ConfChangeV2.Context' >.
-Global Instance into_val_ConfChangeV2 : IntoVal ConfChangeV2.t.
-Admitted.
+Global Instance into_val_ConfChangeV2 : IntoVal ConfChangeV2.t :=
+  {| to_val_def v :=
+    struct.val_aux raftpb.ConfChangeV2 [
+    "Transition" ::= #(ConfChangeV2.Transition' v);
+    "Changes" ::= #(ConfChangeV2.Changes' v);
+    "Context" ::= #(ConfChangeV2.Context' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_ConfChangeV2 : IntoValTyped ConfChangeV2.t raftpb.ConfChangeV2 :=
+Global Program Instance into_val_typed_ConfChangeV2 : IntoValTyped ConfChangeV2.t raftpb.ConfChangeV2 :=
 {|
   default_val := ConfChangeV2.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_ConfChangeV2_Transition : IntoValStructField "Transition" raftpb.ConfChangeV2 ConfChangeV2.Transition'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ConfChangeV2_Changes : IntoValStructField "Changes" raftpb.ConfChangeV2 ConfChangeV2.Changes'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ConfChangeV2_Context : IntoValStructField "Context" raftpb.ConfChangeV2 ConfChangeV2.Context'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -471,7 +592,7 @@ Global Instance wp_struct_make_ConfChangeV2 Transition' Changes' Context':
       "Context" ::= #Context'
     ]))%struct
     #(ConfChangeV2.mk Transition' Changes' Context').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ConfChangeV2_struct_fields_split dq l (v : ConfChangeV2.t) :
@@ -480,7 +601,17 @@ Global Instance ConfChangeV2_struct_fields_split dq l (v : ConfChangeV2.t) :
     "HChanges" ∷ l ↦s[raftpb.ConfChangeV2 :: "Changes"]{dq} v.(ConfChangeV2.Changes') ∗
     "HContext" ∷ l ↦s[raftpb.ConfChangeV2 :: "Context"]{dq} v.(ConfChangeV2.Context')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (ConfChangeV2.Transition' v)) raftpb.ConfChangeV2 "Transition"%go.
+  simpl_one_flatten_struct (# (ConfChangeV2.Changes' v)) raftpb.ConfChangeV2 "Changes"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

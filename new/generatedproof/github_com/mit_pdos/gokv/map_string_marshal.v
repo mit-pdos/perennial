@@ -4,8 +4,11 @@ Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.map_string_marshal.
+
+Set Default Proof Using "Type".
+
 Module map_string_marshal.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

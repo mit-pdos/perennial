@@ -5,8 +5,11 @@ Require Export New.generatedproof.google_golang_org.grpc.status.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.
+
+Set Default Proof Using "Type".
+
 Module rpctypes.
-Axiom falso : False.
+
 Module EtcdError.
 Section def.
 Context `{ffi_syntax}.
@@ -22,22 +25,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_EtcdError : Settable _ :=
   settable! EtcdError.mk < EtcdError.code'; EtcdError.desc' >.
-Global Instance into_val_EtcdError : IntoVal EtcdError.t.
-Admitted.
+Global Instance into_val_EtcdError : IntoVal EtcdError.t :=
+  {| to_val_def v :=
+    struct.val_aux rpctypes.EtcdError [
+    "code" ::= #(EtcdError.code' v);
+    "desc" ::= #(EtcdError.desc' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_EtcdError : IntoValTyped EtcdError.t rpctypes.EtcdError :=
+Global Program Instance into_val_typed_EtcdError : IntoValTyped EtcdError.t rpctypes.EtcdError :=
 {|
   default_val := EtcdError.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_EtcdError_code : IntoValStructField "code" rpctypes.EtcdError EtcdError.code'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_EtcdError_desc : IntoValStructField "desc" rpctypes.EtcdError EtcdError.desc'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -48,7 +57,7 @@ Global Instance wp_struct_make_EtcdError code' desc':
       "desc" ::= #desc'
     ]))%struct
     #(EtcdError.mk code' desc').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance EtcdError_struct_fields_split dq l (v : EtcdError.t) :
@@ -56,7 +65,16 @@ Global Instance EtcdError_struct_fields_split dq l (v : EtcdError.t) :
     "Hcode" ∷ l ↦s[rpctypes.EtcdError :: "code"]{dq} v.(EtcdError.code') ∗
     "Hdesc" ∷ l ↦s[rpctypes.EtcdError :: "desc"]{dq} v.(EtcdError.desc')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (EtcdError.code' v)) rpctypes.EtcdError "code"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -70,17 +88,21 @@ End TokenFieldNameGRPCKey.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_TokenFieldNameGRPCKey : IntoVal TokenFieldNameGRPCKey.t.
-Admitted.
+Global Instance into_val_TokenFieldNameGRPCKey : IntoVal TokenFieldNameGRPCKey.t :=
+  {| to_val_def v :=
+    struct.val_aux rpctypes.TokenFieldNameGRPCKey [
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_TokenFieldNameGRPCKey : IntoValTyped TokenFieldNameGRPCKey.t rpctypes.TokenFieldNameGRPCKey :=
+Global Program Instance into_val_typed_TokenFieldNameGRPCKey : IntoValTyped TokenFieldNameGRPCKey.t rpctypes.TokenFieldNameGRPCKey :=
 {|
   default_val := TokenFieldNameGRPCKey.mk;
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Global Instance wp_struct_make_TokenFieldNameGRPCKey:
@@ -88,7 +110,7 @@ Global Instance wp_struct_make_TokenFieldNameGRPCKey:
     (struct.make #rpctypes.TokenFieldNameGRPCKey (alist_val [
     ]))%struct
     #(TokenFieldNameGRPCKey.mk).
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 

@@ -4,8 +4,11 @@ Require Export New.manualproof.github_com.goose_lang.primitive.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.goose_lang.primitive.
+
+Set Default Proof Using "Type".
+
 Module primitive.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

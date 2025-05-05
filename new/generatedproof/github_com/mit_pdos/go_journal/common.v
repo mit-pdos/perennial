@@ -4,8 +4,11 @@ Require Export New.generatedproof.github_com.goose_lang.primitive.disk.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.common.
+
+Set Default Proof Using "Type".
+
 Module common.
-Axiom falso : False.
+
 Module Inum.
 Section def.
 Context `{ffi_syntax}.

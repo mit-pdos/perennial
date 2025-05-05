@@ -9,8 +9,11 @@ Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.urpc.
+
+Set Default Proof Using "Type".
+
 Module urpc.
-Axiom falso : False.
+
 Module Server.
 Section def.
 Context `{ffi_syntax}.
@@ -25,19 +28,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Server : Settable _ :=
   settable! Server.mk < Server.handlers' >.
-Global Instance into_val_Server : IntoVal Server.t.
-Admitted.
+Global Instance into_val_Server : IntoVal Server.t :=
+  {| to_val_def v :=
+    struct.val_aux urpc.Server [
+    "handlers" ::= #(Server.handlers' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Server : IntoValTyped Server.t urpc.Server :=
+Global Program Instance into_val_typed_Server : IntoValTyped Server.t urpc.Server :=
 {|
   default_val := Server.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Server_handlers : IntoValStructField "handlers" urpc.Server Server.handlers'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -47,14 +55,22 @@ Global Instance wp_struct_make_Server handlers':
       "handlers" ::= #handlers'
     ]))%struct
     #(Server.mk handlers').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :
   StructFieldsSplit dq l v (
     "Hhandlers" ∷ l ↦s[urpc.Server :: "handlers"]{dq} v.(Server.handlers')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -74,25 +90,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Callback : Settable _ :=
   settable! Callback.mk < Callback.reply'; Callback.state'; Callback.cond' >.
-Global Instance into_val_Callback : IntoVal Callback.t.
-Admitted.
+Global Instance into_val_Callback : IntoVal Callback.t :=
+  {| to_val_def v :=
+    struct.val_aux urpc.Callback [
+    "reply" ::= #(Callback.reply' v);
+    "state" ::= #(Callback.state' v);
+    "cond" ::= #(Callback.cond' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Callback : IntoValTyped Callback.t urpc.Callback :=
+Global Program Instance into_val_typed_Callback : IntoValTyped Callback.t urpc.Callback :=
 {|
   default_val := Callback.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Callback_reply : IntoValStructField "reply" urpc.Callback Callback.reply'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Callback_state : IntoValStructField "state" urpc.Callback Callback.state'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Callback_cond : IntoValStructField "cond" urpc.Callback Callback.cond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -104,7 +127,7 @@ Global Instance wp_struct_make_Callback reply' state' cond':
       "cond" ::= #cond'
     ]))%struct
     #(Callback.mk reply' state' cond').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Callback_struct_fields_split dq l (v : Callback.t) :
@@ -113,7 +136,17 @@ Global Instance Callback_struct_fields_split dq l (v : Callback.t) :
     "Hstate" ∷ l ↦s[urpc.Callback :: "state"]{dq} v.(Callback.state') ∗
     "Hcond" ∷ l ↦s[urpc.Callback :: "cond"]{dq} v.(Callback.cond')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Callback.reply' v)) urpc.Callback "reply"%go.
+  simpl_one_flatten_struct (# (Callback.state' v)) urpc.Callback "state"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -134,28 +167,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Client : Settable _ :=
   settable! Client.mk < Client.mu'; Client.conn'; Client.seq'; Client.pending' >.
-Global Instance into_val_Client : IntoVal Client.t.
-Admitted.
+Global Instance into_val_Client : IntoVal Client.t :=
+  {| to_val_def v :=
+    struct.val_aux urpc.Client [
+    "mu" ::= #(Client.mu' v);
+    "conn" ::= #(Client.conn' v);
+    "seq" ::= #(Client.seq' v);
+    "pending" ::= #(Client.pending' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Client : IntoValTyped Client.t urpc.Client :=
+Global Program Instance into_val_typed_Client : IntoValTyped Client.t urpc.Client :=
 {|
   default_val := Client.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Client_mu : IntoValStructField "mu" urpc.Client Client.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Client_conn : IntoValStructField "conn" urpc.Client Client.conn'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Client_seq : IntoValStructField "seq" urpc.Client Client.seq'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Client_pending : IntoValStructField "pending" urpc.Client Client.pending'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -168,7 +209,7 @@ Global Instance wp_struct_make_Client mu' conn' seq' pending':
       "pending" ::= #pending'
     ]))%struct
     #(Client.mk mu' conn' seq' pending').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Client_struct_fields_split dq l (v : Client.t) :
@@ -178,7 +219,18 @@ Global Instance Client_struct_fields_split dq l (v : Client.t) :
     "Hseq" ∷ l ↦s[urpc.Client :: "seq"]{dq} v.(Client.seq') ∗
     "Hpending" ∷ l ↦s[urpc.Client :: "pending"]{dq} v.(Client.pending')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Client.mu' v)) urpc.Client "mu"%go.
+  simpl_one_flatten_struct (# (Client.conn' v)) urpc.Client "conn"%go.
+  simpl_one_flatten_struct (# (Client.seq' v)) urpc.Client "seq"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

@@ -5,14 +5,20 @@ Require Export New.generatedproof.go_etcd_io.etcd.api.v3.mvccpb.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.etcd.client.v3.
+
+Set Default Proof Using "Type".
+
 Module clientv3.
-Axiom falso : False.
+
 Module Client.
 Section def.
 Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
 End Client.
+
+Global Instance bounded_size_Client : BoundedTypeSize clientv3.Client.
+Admitted.
 
 Global Instance into_val_Client `{ffi_syntax} : IntoVal Client.t.
 Admitted.
@@ -86,28 +92,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_OpResponse : Settable _ :=
   settable! OpResponse.mk < OpResponse.put'; OpResponse.get'; OpResponse.del'; OpResponse.txn' >.
-Global Instance into_val_OpResponse : IntoVal OpResponse.t.
-Admitted.
+Global Instance into_val_OpResponse : IntoVal OpResponse.t :=
+  {| to_val_def v :=
+    struct.val_aux clientv3.OpResponse [
+    "put" ::= #(OpResponse.put' v);
+    "get" ::= #(OpResponse.get' v);
+    "del" ::= #(OpResponse.del' v);
+    "txn" ::= #(OpResponse.txn' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_OpResponse : IntoValTyped OpResponse.t clientv3.OpResponse :=
+Global Program Instance into_val_typed_OpResponse : IntoValTyped OpResponse.t clientv3.OpResponse :=
 {|
   default_val := OpResponse.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_OpResponse_put : IntoValStructField "put" clientv3.OpResponse OpResponse.put'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_OpResponse_get : IntoValStructField "get" clientv3.OpResponse OpResponse.get'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_OpResponse_del : IntoValStructField "del" clientv3.OpResponse OpResponse.del'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_OpResponse_txn : IntoValStructField "txn" clientv3.OpResponse OpResponse.txn'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -120,7 +134,7 @@ Global Instance wp_struct_make_OpResponse put' get' del' txn':
       "txn" ::= #txn'
     ]))%struct
     #(OpResponse.mk put' get' del' txn').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance OpResponse_struct_fields_split dq l (v : OpResponse.t) :
@@ -130,7 +144,18 @@ Global Instance OpResponse_struct_fields_split dq l (v : OpResponse.t) :
     "Hdel" ∷ l ↦s[clientv3.OpResponse :: "del"]{dq} v.(OpResponse.del') ∗
     "Htxn" ∷ l ↦s[clientv3.OpResponse :: "txn"]{dq} v.(OpResponse.txn')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (OpResponse.put' v)) clientv3.OpResponse "put"%go.
+  simpl_one_flatten_struct (# (OpResponse.get' v)) clientv3.OpResponse "get"%go.
+  simpl_one_flatten_struct (# (OpResponse.del' v)) clientv3.OpResponse "del"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -158,28 +183,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_LeaseGrantResponse : Settable _ :=
   settable! LeaseGrantResponse.mk < LeaseGrantResponse.ResponseHeader'; LeaseGrantResponse.ID'; LeaseGrantResponse.TTL'; LeaseGrantResponse.Error' >.
-Global Instance into_val_LeaseGrantResponse : IntoVal LeaseGrantResponse.t.
-Admitted.
+Global Instance into_val_LeaseGrantResponse : IntoVal LeaseGrantResponse.t :=
+  {| to_val_def v :=
+    struct.val_aux clientv3.LeaseGrantResponse [
+    "ResponseHeader" ::= #(LeaseGrantResponse.ResponseHeader' v);
+    "ID" ::= #(LeaseGrantResponse.ID' v);
+    "TTL" ::= #(LeaseGrantResponse.TTL' v);
+    "Error" ::= #(LeaseGrantResponse.Error' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_LeaseGrantResponse : IntoValTyped LeaseGrantResponse.t clientv3.LeaseGrantResponse :=
+Global Program Instance into_val_typed_LeaseGrantResponse : IntoValTyped LeaseGrantResponse.t clientv3.LeaseGrantResponse :=
 {|
   default_val := LeaseGrantResponse.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_LeaseGrantResponse_ResponseHeader : IntoValStructField "ResponseHeader" clientv3.LeaseGrantResponse LeaseGrantResponse.ResponseHeader'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_LeaseGrantResponse_ID : IntoValStructField "ID" clientv3.LeaseGrantResponse LeaseGrantResponse.ID'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_LeaseGrantResponse_TTL : IntoValStructField "TTL" clientv3.LeaseGrantResponse LeaseGrantResponse.TTL'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_LeaseGrantResponse_Error : IntoValStructField "Error" clientv3.LeaseGrantResponse LeaseGrantResponse.Error'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -192,7 +225,7 @@ Global Instance wp_struct_make_LeaseGrantResponse ResponseHeader' ID' TTL' Error
       "Error" ::= #Error'
     ]))%struct
     #(LeaseGrantResponse.mk ResponseHeader' ID' TTL' Error').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance LeaseGrantResponse_struct_fields_split dq l (v : LeaseGrantResponse.t) :
@@ -202,7 +235,18 @@ Global Instance LeaseGrantResponse_struct_fields_split dq l (v : LeaseGrantRespo
     "HTTL" ∷ l ↦s[clientv3.LeaseGrantResponse :: "TTL"]{dq} v.(LeaseGrantResponse.TTL') ∗
     "HError" ∷ l ↦s[clientv3.LeaseGrantResponse :: "Error"]{dq} v.(LeaseGrantResponse.Error')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (LeaseGrantResponse.ResponseHeader' v)) clientv3.LeaseGrantResponse "ResponseHeader"%go.
+  simpl_one_flatten_struct (# (LeaseGrantResponse.ID' v)) clientv3.LeaseGrantResponse "ID"%go.
+  simpl_one_flatten_struct (# (LeaseGrantResponse.TTL' v)) clientv3.LeaseGrantResponse "TTL"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -219,6 +263,9 @@ Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
 End Op.
+
+Global Instance bounded_size_Op : BoundedTypeSize clientv3.Op.
+Admitted.
 
 Global Instance into_val_Op `{ffi_syntax} : IntoVal Op.t.
 Admitted.
@@ -281,37 +328,48 @@ Context `{ffi_syntax}.
 
 Global Instance settable_WatchResponse : Settable _ :=
   settable! WatchResponse.mk < WatchResponse.Header'; WatchResponse.Events'; WatchResponse.CompactRevision'; WatchResponse.Canceled'; WatchResponse.Created'; WatchResponse.closeErr'; WatchResponse.cancelReason' >.
-Global Instance into_val_WatchResponse : IntoVal WatchResponse.t.
-Admitted.
+Global Instance into_val_WatchResponse : IntoVal WatchResponse.t :=
+  {| to_val_def v :=
+    struct.val_aux clientv3.WatchResponse [
+    "Header" ::= #(WatchResponse.Header' v);
+    "Events" ::= #(WatchResponse.Events' v);
+    "CompactRevision" ::= #(WatchResponse.CompactRevision' v);
+    "Canceled" ::= #(WatchResponse.Canceled' v);
+    "Created" ::= #(WatchResponse.Created' v);
+    "closeErr" ::= #(WatchResponse.closeErr' v);
+    "cancelReason" ::= #(WatchResponse.cancelReason' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_WatchResponse : IntoValTyped WatchResponse.t clientv3.WatchResponse :=
+Global Program Instance into_val_typed_WatchResponse : IntoValTyped WatchResponse.t clientv3.WatchResponse :=
 {|
   default_val := WatchResponse.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_WatchResponse_Header : IntoValStructField "Header" clientv3.WatchResponse WatchResponse.Header'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_WatchResponse_Events : IntoValStructField "Events" clientv3.WatchResponse WatchResponse.Events'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_WatchResponse_CompactRevision : IntoValStructField "CompactRevision" clientv3.WatchResponse WatchResponse.CompactRevision'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_WatchResponse_Canceled : IntoValStructField "Canceled" clientv3.WatchResponse WatchResponse.Canceled'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_WatchResponse_Created : IntoValStructField "Created" clientv3.WatchResponse WatchResponse.Created'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_WatchResponse_closeErr : IntoValStructField "closeErr" clientv3.WatchResponse WatchResponse.closeErr'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_WatchResponse_cancelReason : IntoValStructField "cancelReason" clientv3.WatchResponse WatchResponse.cancelReason'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -327,7 +385,7 @@ Global Instance wp_struct_make_WatchResponse Header' Events' CompactRevision' Ca
       "cancelReason" ::= #cancelReason'
     ]))%struct
     #(WatchResponse.mk Header' Events' CompactRevision' Canceled' Created' closeErr' cancelReason').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance WatchResponse_struct_fields_split dq l (v : WatchResponse.t) :
@@ -340,7 +398,21 @@ Global Instance WatchResponse_struct_fields_split dq l (v : WatchResponse.t) :
     "HcloseErr" ∷ l ↦s[clientv3.WatchResponse :: "closeErr"]{dq} v.(WatchResponse.closeErr') ∗
     "HcancelReason" ∷ l ↦s[clientv3.WatchResponse :: "cancelReason"]{dq} v.(WatchResponse.cancelReason')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (WatchResponse.Header' v)) clientv3.WatchResponse "Header"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Events' v)) clientv3.WatchResponse "Events"%go.
+  simpl_one_flatten_struct (# (WatchResponse.CompactRevision' v)) clientv3.WatchResponse "CompactRevision"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Canceled' v)) clientv3.WatchResponse "Canceled"%go.
+  simpl_one_flatten_struct (# (WatchResponse.Created' v)) clientv3.WatchResponse "Created"%go.
+  simpl_one_flatten_struct (# (WatchResponse.closeErr' v)) clientv3.WatchResponse "closeErr"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

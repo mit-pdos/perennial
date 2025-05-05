@@ -10,8 +10,11 @@ Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.obj.
+
+Set Default Proof Using "Type".
+
 Module obj.
-Axiom falso : False.
+
 Module Log.
 Section def.
 Context `{ffi_syntax}.
@@ -28,25 +31,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Log : Settable _ :=
   settable! Log.mk < Log.mu'; Log.log'; Log.pos' >.
-Global Instance into_val_Log : IntoVal Log.t.
-Admitted.
+Global Instance into_val_Log : IntoVal Log.t :=
+  {| to_val_def v :=
+    struct.val_aux obj.Log [
+    "mu" ::= #(Log.mu' v);
+    "log" ::= #(Log.log' v);
+    "pos" ::= #(Log.pos' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Log : IntoValTyped Log.t obj.Log :=
+Global Program Instance into_val_typed_Log : IntoValTyped Log.t obj.Log :=
 {|
   default_val := Log.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Log_mu : IntoValStructField "mu" obj.Log Log.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Log_log : IntoValStructField "log" obj.Log Log.log'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Log_pos : IntoValStructField "pos" obj.Log Log.pos'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -58,7 +68,7 @@ Global Instance wp_struct_make_Log mu' log' pos':
       "pos" ::= #pos'
     ]))%struct
     #(Log.mk mu' log' pos').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Log_struct_fields_split dq l (v : Log.t) :
@@ -67,7 +77,17 @@ Global Instance Log_struct_fields_split dq l (v : Log.t) :
     "Hlog" ∷ l ↦s[obj.Log :: "log"]{dq} v.(Log.log') ∗
     "Hpos" ∷ l ↦s[obj.Log :: "pos"]{dq} v.(Log.pos')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Log.mu' v)) obj.Log "mu"%go.
+  simpl_one_flatten_struct (# (Log.log' v)) obj.Log "log"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

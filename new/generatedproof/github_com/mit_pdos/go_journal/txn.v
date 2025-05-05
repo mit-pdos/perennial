@@ -9,8 +9,11 @@ Require Export New.generatedproof.github_com.mit_pdos.go_journal.util.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.txn.
+
+Set Default Proof Using "Type".
+
 Module txn.
-Axiom falso : False.
+
 Module Log.
 Section def.
 Context `{ffi_syntax}.
@@ -26,22 +29,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Log : Settable _ :=
   settable! Log.mk < Log.log'; Log.locks' >.
-Global Instance into_val_Log : IntoVal Log.t.
-Admitted.
+Global Instance into_val_Log : IntoVal Log.t :=
+  {| to_val_def v :=
+    struct.val_aux txn.Log [
+    "log" ::= #(Log.log' v);
+    "locks" ::= #(Log.locks' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Log : IntoValTyped Log.t txn.Log :=
+Global Program Instance into_val_typed_Log : IntoValTyped Log.t txn.Log :=
 {|
   default_val := Log.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Log_log : IntoValStructField "log" txn.Log Log.log'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Log_locks : IntoValStructField "locks" txn.Log Log.locks'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -52,7 +61,7 @@ Global Instance wp_struct_make_Log log' locks':
       "locks" ::= #locks'
     ]))%struct
     #(Log.mk log' locks').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Log_struct_fields_split dq l (v : Log.t) :
@@ -60,7 +69,16 @@ Global Instance Log_struct_fields_split dq l (v : Log.t) :
     "Hlog" ∷ l ↦s[txn.Log :: "log"]{dq} v.(Log.log') ∗
     "Hlocks" ∷ l ↦s[txn.Log :: "locks"]{dq} v.(Log.locks')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Log.log' v)) txn.Log "log"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -80,25 +98,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Txn : Settable _ :=
   settable! Txn.mk < Txn.buftxn'; Txn.locks'; Txn.acquired' >.
-Global Instance into_val_Txn : IntoVal Txn.t.
-Admitted.
+Global Instance into_val_Txn : IntoVal Txn.t :=
+  {| to_val_def v :=
+    struct.val_aux txn.Txn [
+    "buftxn" ::= #(Txn.buftxn' v);
+    "locks" ::= #(Txn.locks' v);
+    "acquired" ::= #(Txn.acquired' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Txn : IntoValTyped Txn.t txn.Txn :=
+Global Program Instance into_val_typed_Txn : IntoValTyped Txn.t txn.Txn :=
 {|
   default_val := Txn.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Txn_buftxn : IntoValStructField "buftxn" txn.Txn Txn.buftxn'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Txn_locks : IntoValStructField "locks" txn.Txn Txn.locks'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Txn_acquired : IntoValStructField "acquired" txn.Txn Txn.acquired'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -110,7 +135,7 @@ Global Instance wp_struct_make_Txn buftxn' locks' acquired':
       "acquired" ::= #acquired'
     ]))%struct
     #(Txn.mk buftxn' locks' acquired').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Txn_struct_fields_split dq l (v : Txn.t) :
@@ -119,7 +144,17 @@ Global Instance Txn_struct_fields_split dq l (v : Txn.t) :
     "Hlocks" ∷ l ↦s[txn.Txn :: "locks"]{dq} v.(Txn.locks') ∗
     "Hacquired" ∷ l ↦s[txn.Txn :: "acquired"]{dq} v.(Txn.acquired')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Txn.buftxn' v)) txn.Txn "buftxn"%go.
+  simpl_one_flatten_struct (# (Txn.locks' v)) txn.Txn "locks"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

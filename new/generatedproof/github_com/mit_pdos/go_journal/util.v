@@ -4,8 +4,11 @@ Require Export New.generatedproof.log.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.util.
+
+Set Default Proof Using "Type".
+
 Module util.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.math.rand.
+
+Set Default Proof Using "Type".
+
 Module rand.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

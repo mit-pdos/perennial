@@ -8,8 +8,11 @@ Require Export New.generatedproof.github_com.mit_pdos.go_journal.util.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.buf.
+
+Set Default Proof Using "Type".
+
 Module buf.
-Axiom falso : False.
+
 Module Buf.
 Section def.
 Context `{ffi_syntax}.
@@ -27,28 +30,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Buf : Settable _ :=
   settable! Buf.mk < Buf.Addr'; Buf.Sz'; Buf.Data'; Buf.dirty' >.
-Global Instance into_val_Buf : IntoVal Buf.t.
-Admitted.
+Global Instance into_val_Buf : IntoVal Buf.t :=
+  {| to_val_def v :=
+    struct.val_aux buf.Buf [
+    "Addr" ::= #(Buf.Addr' v);
+    "Sz" ::= #(Buf.Sz' v);
+    "Data" ::= #(Buf.Data' v);
+    "dirty" ::= #(Buf.dirty' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Buf : IntoValTyped Buf.t buf.Buf :=
+Global Program Instance into_val_typed_Buf : IntoValTyped Buf.t buf.Buf :=
 {|
   default_val := Buf.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Buf_Addr : IntoValStructField "Addr" buf.Buf Buf.Addr'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Buf_Sz : IntoValStructField "Sz" buf.Buf Buf.Sz'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Buf_Data : IntoValStructField "Data" buf.Buf Buf.Data'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Buf_dirty : IntoValStructField "dirty" buf.Buf Buf.dirty'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -61,7 +72,7 @@ Global Instance wp_struct_make_Buf Addr' Sz' Data' dirty':
       "dirty" ::= #dirty'
     ]))%struct
     #(Buf.mk Addr' Sz' Data' dirty').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Buf_struct_fields_split dq l (v : Buf.t) :
@@ -71,7 +82,18 @@ Global Instance Buf_struct_fields_split dq l (v : Buf.t) :
     "HData" ∷ l ↦s[buf.Buf :: "Data"]{dq} v.(Buf.Data') ∗
     "Hdirty" ∷ l ↦s[buf.Buf :: "dirty"]{dq} v.(Buf.dirty')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Buf.Addr' v)) buf.Buf "Addr"%go.
+  simpl_one_flatten_struct (# (Buf.Sz' v)) buf.Buf "Sz"%go.
+  simpl_one_flatten_struct (# (Buf.Data' v)) buf.Buf "Data"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -89,19 +111,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_BufMap : Settable _ :=
   settable! BufMap.mk < BufMap.addrs' >.
-Global Instance into_val_BufMap : IntoVal BufMap.t.
-Admitted.
+Global Instance into_val_BufMap : IntoVal BufMap.t :=
+  {| to_val_def v :=
+    struct.val_aux buf.BufMap [
+    "addrs" ::= #(BufMap.addrs' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_BufMap : IntoValTyped BufMap.t buf.BufMap :=
+Global Program Instance into_val_typed_BufMap : IntoValTyped BufMap.t buf.BufMap :=
 {|
   default_val := BufMap.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_BufMap_addrs : IntoValStructField "addrs" buf.BufMap BufMap.addrs'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -111,14 +138,22 @@ Global Instance wp_struct_make_BufMap addrs':
       "addrs" ::= #addrs'
     ]))%struct
     #(BufMap.mk addrs').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance BufMap_struct_fields_split dq l (v : BufMap.t) :
   StructFieldsSplit dq l v (
     "Haddrs" ∷ l ↦s[buf.BufMap :: "addrs"]{dq} v.(BufMap.addrs')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

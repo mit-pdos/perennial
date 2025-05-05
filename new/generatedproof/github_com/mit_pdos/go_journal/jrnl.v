@@ -7,8 +7,11 @@ Require Export New.generatedproof.github_com.mit_pdos.go_journal.util.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.jrnl.
+
+Set Default Proof Using "Type".
+
 Module jrnl.
-Axiom falso : False.
+
 Module Op.
 Section def.
 Context `{ffi_syntax}.
@@ -24,22 +27,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Op : Settable _ :=
   settable! Op.mk < Op.log'; Op.bufs' >.
-Global Instance into_val_Op : IntoVal Op.t.
-Admitted.
+Global Instance into_val_Op : IntoVal Op.t :=
+  {| to_val_def v :=
+    struct.val_aux jrnl.Op [
+    "log" ::= #(Op.log' v);
+    "bufs" ::= #(Op.bufs' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Op : IntoValTyped Op.t jrnl.Op :=
+Global Program Instance into_val_typed_Op : IntoValTyped Op.t jrnl.Op :=
 {|
   default_val := Op.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Op_log : IntoValStructField "log" jrnl.Op Op.log'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Op_bufs : IntoValStructField "bufs" jrnl.Op Op.bufs'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -50,7 +59,7 @@ Global Instance wp_struct_make_Op log' bufs':
       "bufs" ::= #bufs'
     ]))%struct
     #(Op.mk log' bufs').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Op_struct_fields_split dq l (v : Op.t) :
@@ -58,7 +67,16 @@ Global Instance Op_struct_fields_split dq l (v : Op.t) :
     "Hlog" ∷ l ↦s[jrnl.Op :: "log"]{dq} v.(Op.log') ∗
     "Hbufs" ∷ l ↦s[jrnl.Op :: "bufs"]{dq} v.(Op.bufs')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Op.log' v)) jrnl.Op "log"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

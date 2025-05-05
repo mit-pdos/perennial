@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.go_uber_org.zap.zapcore.
+
+Set Default Proof Using "Type".
+
 Module zapcore.
-Axiom falso : False.
+
 Module FieldType.
 Section def.
 Context `{ffi_syntax}.
@@ -30,31 +33,40 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Field : Settable _ :=
   settable! Field.mk < Field.Key'; Field.Type'; Field.Integer'; Field.String'; Field.Interface' >.
-Global Instance into_val_Field : IntoVal Field.t.
-Admitted.
+Global Instance into_val_Field : IntoVal Field.t :=
+  {| to_val_def v :=
+    struct.val_aux zapcore.Field [
+    "Key" ::= #(Field.Key' v);
+    "Type" ::= #(Field.Type' v);
+    "Integer" ::= #(Field.Integer' v);
+    "String" ::= #(Field.String' v);
+    "Interface" ::= #(Field.Interface' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Field : IntoValTyped Field.t zapcore.Field :=
+Global Program Instance into_val_typed_Field : IntoValTyped Field.t zapcore.Field :=
 {|
   default_val := Field.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Field_Key : IntoValStructField "Key" zapcore.Field Field.Key'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Field_Type : IntoValStructField "Type" zapcore.Field Field.Type'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Field_Integer : IntoValStructField "Integer" zapcore.Field Field.Integer'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Field_String : IntoValStructField "String" zapcore.Field Field.String'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Field_Interface : IntoValStructField "Interface" zapcore.Field Field.Interface'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -68,7 +80,7 @@ Global Instance wp_struct_make_Field Key' Type' Integer' String' Interface':
       "Interface" ::= #Interface'
     ]))%struct
     #(Field.mk Key' Type' Integer' String' Interface').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Field_struct_fields_split dq l (v : Field.t) :
@@ -79,7 +91,19 @@ Global Instance Field_struct_fields_split dq l (v : Field.t) :
     "HString" ∷ l ↦s[zapcore.Field :: "String"]{dq} v.(Field.String') ∗
     "HInterface" ∷ l ↦s[zapcore.Field :: "Interface"]{dq} v.(Field.Interface')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Field.Key' v)) zapcore.Field "Key"%go.
+  simpl_one_flatten_struct (# (Field.Type' v)) zapcore.Field "Type"%go.
+  simpl_one_flatten_struct (# (Field.Integer' v)) zapcore.Field "Integer"%go.
+  simpl_one_flatten_struct (# (Field.String' v)) zapcore.Field "String"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

@@ -4,8 +4,11 @@ Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.alloc.
+
+Set Default Proof Using "Type".
+
 Module alloc.
-Axiom falso : False.
+
 Module Alloc.
 Section def.
 Context `{ffi_syntax}.
@@ -22,25 +25,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Alloc : Settable _ :=
   settable! Alloc.mk < Alloc.mu'; Alloc.next'; Alloc.bitmap' >.
-Global Instance into_val_Alloc : IntoVal Alloc.t.
-Admitted.
+Global Instance into_val_Alloc : IntoVal Alloc.t :=
+  {| to_val_def v :=
+    struct.val_aux alloc.Alloc [
+    "mu" ::= #(Alloc.mu' v);
+    "next" ::= #(Alloc.next' v);
+    "bitmap" ::= #(Alloc.bitmap' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Alloc : IntoValTyped Alloc.t alloc.Alloc :=
+Global Program Instance into_val_typed_Alloc : IntoValTyped Alloc.t alloc.Alloc :=
 {|
   default_val := Alloc.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Alloc_mu : IntoValStructField "mu" alloc.Alloc Alloc.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Alloc_next : IntoValStructField "next" alloc.Alloc Alloc.next'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Alloc_bitmap : IntoValStructField "bitmap" alloc.Alloc Alloc.bitmap'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -52,7 +62,7 @@ Global Instance wp_struct_make_Alloc mu' next' bitmap':
       "bitmap" ::= #bitmap'
     ]))%struct
     #(Alloc.mk mu' next' bitmap').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Alloc_struct_fields_split dq l (v : Alloc.t) :
@@ -61,7 +71,17 @@ Global Instance Alloc_struct_fields_split dq l (v : Alloc.t) :
     "Hnext" ∷ l ↦s[alloc.Alloc :: "next"]{dq} v.(Alloc.next') ∗
     "Hbitmap" ∷ l ↦s[alloc.Alloc :: "bitmap"]{dq} v.(Alloc.bitmap')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Alloc.mu' v)) alloc.Alloc "mu"%go.
+  simpl_one_flatten_struct (# (Alloc.next' v)) alloc.Alloc "next"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

@@ -10,8 +10,11 @@ Require Export New.generatedproof.github_com.mit_pdos.go_journal.util.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.jrnl_replication.
+
+Set Default Proof Using "Type".
+
 Module replicated_block.
-Axiom falso : False.
+
 Module RepBlock.
 Section def.
 Context `{ffi_syntax}.
@@ -29,28 +32,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_RepBlock : Settable _ :=
   settable! RepBlock.mk < RepBlock.txn'; RepBlock.m'; RepBlock.a0'; RepBlock.a1' >.
-Global Instance into_val_RepBlock : IntoVal RepBlock.t.
-Admitted.
+Global Instance into_val_RepBlock : IntoVal RepBlock.t :=
+  {| to_val_def v :=
+    struct.val_aux replicated_block.RepBlock [
+    "txn" ::= #(RepBlock.txn' v);
+    "m" ::= #(RepBlock.m' v);
+    "a0" ::= #(RepBlock.a0' v);
+    "a1" ::= #(RepBlock.a1' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_RepBlock : IntoValTyped RepBlock.t replicated_block.RepBlock :=
+Global Program Instance into_val_typed_RepBlock : IntoValTyped RepBlock.t replicated_block.RepBlock :=
 {|
   default_val := RepBlock.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_RepBlock_txn : IntoValStructField "txn" replicated_block.RepBlock RepBlock.txn'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_RepBlock_m : IntoValStructField "m" replicated_block.RepBlock RepBlock.m'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_RepBlock_a0 : IntoValStructField "a0" replicated_block.RepBlock RepBlock.a0'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_RepBlock_a1 : IntoValStructField "a1" replicated_block.RepBlock RepBlock.a1'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -63,7 +74,7 @@ Global Instance wp_struct_make_RepBlock txn' m' a0' a1':
       "a1" ::= #a1'
     ]))%struct
     #(RepBlock.mk txn' m' a0' a1').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RepBlock_struct_fields_split dq l (v : RepBlock.t) :
@@ -73,7 +84,18 @@ Global Instance RepBlock_struct_fields_split dq l (v : RepBlock.t) :
     "Ha0" ∷ l ↦s[replicated_block.RepBlock :: "a0"]{dq} v.(RepBlock.a0') ∗
     "Ha1" ∷ l ↦s[replicated_block.RepBlock :: "a1"]{dq} v.(RepBlock.a1')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (RepBlock.txn' v)) replicated_block.RepBlock "txn"%go.
+  simpl_one_flatten_struct (# (RepBlock.m' v)) replicated_block.RepBlock "m"%go.
+  simpl_one_flatten_struct (# (RepBlock.a0' v)) replicated_block.RepBlock "a0"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.etcd.api.v3.mvccpb.
+
+Set Default Proof Using "Type".
+
 Module mvccpb.
-Axiom falso : False.
+
 Module Event_EventType.
 Section def.
 Context `{ffi_syntax}.
@@ -34,43 +37,56 @@ Context `{ffi_syntax}.
 
 Global Instance settable_KeyValue : Settable _ :=
   settable! KeyValue.mk < KeyValue.Key'; KeyValue.CreateRevision'; KeyValue.ModRevision'; KeyValue.Version'; KeyValue.Value'; KeyValue.Lease'; KeyValue.XXX_NoUnkeyedLiteral'; KeyValue.XXX_unrecognized'; KeyValue.XXX_sizecache' >.
-Global Instance into_val_KeyValue : IntoVal KeyValue.t.
-Admitted.
+Global Instance into_val_KeyValue : IntoVal KeyValue.t :=
+  {| to_val_def v :=
+    struct.val_aux mvccpb.KeyValue [
+    "Key" ::= #(KeyValue.Key' v);
+    "CreateRevision" ::= #(KeyValue.CreateRevision' v);
+    "ModRevision" ::= #(KeyValue.ModRevision' v);
+    "Version" ::= #(KeyValue.Version' v);
+    "Value" ::= #(KeyValue.Value' v);
+    "Lease" ::= #(KeyValue.Lease' v);
+    "XXX_NoUnkeyedLiteral" ::= #(KeyValue.XXX_NoUnkeyedLiteral' v);
+    "XXX_unrecognized" ::= #(KeyValue.XXX_unrecognized' v);
+    "XXX_sizecache" ::= #(KeyValue.XXX_sizecache' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_KeyValue : IntoValTyped KeyValue.t mvccpb.KeyValue :=
+Global Program Instance into_val_typed_KeyValue : IntoValTyped KeyValue.t mvccpb.KeyValue :=
 {|
   default_val := KeyValue.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_KeyValue_Key : IntoValStructField "Key" mvccpb.KeyValue KeyValue.Key'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KeyValue_CreateRevision : IntoValStructField "CreateRevision" mvccpb.KeyValue KeyValue.CreateRevision'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KeyValue_ModRevision : IntoValStructField "ModRevision" mvccpb.KeyValue KeyValue.ModRevision'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KeyValue_Version : IntoValStructField "Version" mvccpb.KeyValue KeyValue.Version'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KeyValue_Value : IntoValStructField "Value" mvccpb.KeyValue KeyValue.Value'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KeyValue_Lease : IntoValStructField "Lease" mvccpb.KeyValue KeyValue.Lease'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KeyValue_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" mvccpb.KeyValue KeyValue.XXX_NoUnkeyedLiteral'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KeyValue_XXX_unrecognized : IntoValStructField "XXX_unrecognized" mvccpb.KeyValue KeyValue.XXX_unrecognized'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KeyValue_XXX_sizecache : IntoValStructField "XXX_sizecache" mvccpb.KeyValue KeyValue.XXX_sizecache'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -88,7 +104,7 @@ Global Instance wp_struct_make_KeyValue Key' CreateRevision' ModRevision' Versio
       "XXX_sizecache" ::= #XXX_sizecache'
     ]))%struct
     #(KeyValue.mk Key' CreateRevision' ModRevision' Version' Value' Lease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance KeyValue_struct_fields_split dq l (v : KeyValue.t) :
@@ -103,7 +119,23 @@ Global Instance KeyValue_struct_fields_split dq l (v : KeyValue.t) :
     "HXXX_unrecognized" ∷ l ↦s[mvccpb.KeyValue :: "XXX_unrecognized"]{dq} v.(KeyValue.XXX_unrecognized') ∗
     "HXXX_sizecache" ∷ l ↦s[mvccpb.KeyValue :: "XXX_sizecache"]{dq} v.(KeyValue.XXX_sizecache')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (KeyValue.Key' v)) mvccpb.KeyValue "Key"%go.
+  simpl_one_flatten_struct (# (KeyValue.CreateRevision' v)) mvccpb.KeyValue "CreateRevision"%go.
+  simpl_one_flatten_struct (# (KeyValue.ModRevision' v)) mvccpb.KeyValue "ModRevision"%go.
+  simpl_one_flatten_struct (# (KeyValue.Version' v)) mvccpb.KeyValue "Version"%go.
+  simpl_one_flatten_struct (# (KeyValue.Value' v)) mvccpb.KeyValue "Value"%go.
+  simpl_one_flatten_struct (# (KeyValue.Lease' v)) mvccpb.KeyValue "Lease"%go.
+  simpl_one_flatten_struct (# (KeyValue.XXX_NoUnkeyedLiteral' v)) mvccpb.KeyValue "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (KeyValue.XXX_unrecognized' v)) mvccpb.KeyValue "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -126,34 +158,44 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Event : Settable _ :=
   settable! Event.mk < Event.Type'; Event.Kv'; Event.PrevKv'; Event.XXX_NoUnkeyedLiteral'; Event.XXX_unrecognized'; Event.XXX_sizecache' >.
-Global Instance into_val_Event : IntoVal Event.t.
-Admitted.
+Global Instance into_val_Event : IntoVal Event.t :=
+  {| to_val_def v :=
+    struct.val_aux mvccpb.Event [
+    "Type" ::= #(Event.Type' v);
+    "Kv" ::= #(Event.Kv' v);
+    "PrevKv" ::= #(Event.PrevKv' v);
+    "XXX_NoUnkeyedLiteral" ::= #(Event.XXX_NoUnkeyedLiteral' v);
+    "XXX_unrecognized" ::= #(Event.XXX_unrecognized' v);
+    "XXX_sizecache" ::= #(Event.XXX_sizecache' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Event : IntoValTyped Event.t mvccpb.Event :=
+Global Program Instance into_val_typed_Event : IntoValTyped Event.t mvccpb.Event :=
 {|
   default_val := Event.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Event_Type : IntoValStructField "Type" mvccpb.Event Event.Type'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Event_Kv : IntoValStructField "Kv" mvccpb.Event Event.Kv'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Event_PrevKv : IntoValStructField "PrevKv" mvccpb.Event Event.PrevKv'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Event_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" mvccpb.Event Event.XXX_NoUnkeyedLiteral'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Event_XXX_unrecognized : IntoValStructField "XXX_unrecognized" mvccpb.Event Event.XXX_unrecognized'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Event_XXX_sizecache : IntoValStructField "XXX_sizecache" mvccpb.Event Event.XXX_sizecache'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -168,7 +210,7 @@ Global Instance wp_struct_make_Event Type' Kv' PrevKv' XXX_NoUnkeyedLiteral' XXX
       "XXX_sizecache" ::= #XXX_sizecache'
     ]))%struct
     #(Event.mk Type' Kv' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Event_struct_fields_split dq l (v : Event.t) :
@@ -180,7 +222,20 @@ Global Instance Event_struct_fields_split dq l (v : Event.t) :
     "HXXX_unrecognized" ∷ l ↦s[mvccpb.Event :: "XXX_unrecognized"]{dq} v.(Event.XXX_unrecognized') ∗
     "HXXX_sizecache" ∷ l ↦s[mvccpb.Event :: "XXX_sizecache"]{dq} v.(Event.XXX_sizecache')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Event.Type' v)) mvccpb.Event "Type"%go.
+  simpl_one_flatten_struct (# (Event.Kv' v)) mvccpb.Event "Kv"%go.
+  simpl_one_flatten_struct (# (Event.PrevKv' v)) mvccpb.Event "PrevKv"%go.
+  simpl_one_flatten_struct (# (Event.XXX_NoUnkeyedLiteral' v)) mvccpb.Event "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (Event.XXX_unrecognized' v)) mvccpb.Event "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

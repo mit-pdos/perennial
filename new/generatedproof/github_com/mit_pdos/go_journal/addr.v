@@ -5,8 +5,11 @@ Require Export New.generatedproof.github_com.mit_pdos.go_journal.common.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.go_journal.addr.
+
+Set Default Proof Using "Type".
+
 Module addr.
-Axiom falso : False.
+
 Module Addr.
 Section def.
 Context `{ffi_syntax}.
@@ -22,22 +25,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Addr : Settable _ :=
   settable! Addr.mk < Addr.Blkno'; Addr.Off' >.
-Global Instance into_val_Addr : IntoVal Addr.t.
-Admitted.
+Global Instance into_val_Addr : IntoVal Addr.t :=
+  {| to_val_def v :=
+    struct.val_aux addr.Addr [
+    "Blkno" ::= #(Addr.Blkno' v);
+    "Off" ::= #(Addr.Off' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Addr : IntoValTyped Addr.t addr.Addr :=
+Global Program Instance into_val_typed_Addr : IntoValTyped Addr.t addr.Addr :=
 {|
   default_val := Addr.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Addr_Blkno : IntoValStructField "Blkno" addr.Addr Addr.Blkno'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Addr_Off : IntoValStructField "Off" addr.Addr Addr.Off'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -48,7 +57,7 @@ Global Instance wp_struct_make_Addr Blkno' Off':
       "Off" ::= #Off'
     ]))%struct
     #(Addr.mk Blkno' Off').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Addr_struct_fields_split dq l (v : Addr.t) :
@@ -56,7 +65,16 @@ Global Instance Addr_struct_fields_split dq l (v : Addr.t) :
     "HBlkno" ∷ l ↦s[addr.Addr :: "Blkno"]{dq} v.(Addr.Blkno') ∗
     "HOff" ∷ l ↦s[addr.Addr :: "Off"]{dq} v.(Addr.Off')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Addr.Blkno' v)) addr.Addr "Blkno"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

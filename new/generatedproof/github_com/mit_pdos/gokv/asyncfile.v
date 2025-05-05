@@ -6,8 +6,11 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.asyncfile.
+
+Set Default Proof Using "Type".
+
 Module asyncfile.
-Axiom falso : False.
+
 Module AsyncFile.
 Section def.
 Context `{ffi_syntax}.
@@ -31,46 +34,60 @@ Context `{ffi_syntax}.
 
 Global Instance settable_AsyncFile : Settable _ :=
   settable! AsyncFile.mk < AsyncFile.mu'; AsyncFile.data'; AsyncFile.filename'; AsyncFile.index'; AsyncFile.indexCond'; AsyncFile.durableIndex'; AsyncFile.durableIndexCond'; AsyncFile.closeRequested'; AsyncFile.closed'; AsyncFile.closedCond' >.
-Global Instance into_val_AsyncFile : IntoVal AsyncFile.t.
-Admitted.
+Global Instance into_val_AsyncFile : IntoVal AsyncFile.t :=
+  {| to_val_def v :=
+    struct.val_aux asyncfile.AsyncFile [
+    "mu" ::= #(AsyncFile.mu' v);
+    "data" ::= #(AsyncFile.data' v);
+    "filename" ::= #(AsyncFile.filename' v);
+    "index" ::= #(AsyncFile.index' v);
+    "indexCond" ::= #(AsyncFile.indexCond' v);
+    "durableIndex" ::= #(AsyncFile.durableIndex' v);
+    "durableIndexCond" ::= #(AsyncFile.durableIndexCond' v);
+    "closeRequested" ::= #(AsyncFile.closeRequested' v);
+    "closed" ::= #(AsyncFile.closed' v);
+    "closedCond" ::= #(AsyncFile.closedCond' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_AsyncFile : IntoValTyped AsyncFile.t asyncfile.AsyncFile :=
+Global Program Instance into_val_typed_AsyncFile : IntoValTyped AsyncFile.t asyncfile.AsyncFile :=
 {|
   default_val := AsyncFile.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_AsyncFile_mu : IntoValStructField "mu" asyncfile.AsyncFile AsyncFile.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AsyncFile_data : IntoValStructField "data" asyncfile.AsyncFile AsyncFile.data'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AsyncFile_filename : IntoValStructField "filename" asyncfile.AsyncFile AsyncFile.filename'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AsyncFile_index : IntoValStructField "index" asyncfile.AsyncFile AsyncFile.index'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AsyncFile_indexCond : IntoValStructField "indexCond" asyncfile.AsyncFile AsyncFile.indexCond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AsyncFile_durableIndex : IntoValStructField "durableIndex" asyncfile.AsyncFile AsyncFile.durableIndex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AsyncFile_durableIndexCond : IntoValStructField "durableIndexCond" asyncfile.AsyncFile AsyncFile.durableIndexCond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AsyncFile_closeRequested : IntoValStructField "closeRequested" asyncfile.AsyncFile AsyncFile.closeRequested'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AsyncFile_closed : IntoValStructField "closed" asyncfile.AsyncFile AsyncFile.closed'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_AsyncFile_closedCond : IntoValStructField "closedCond" asyncfile.AsyncFile AsyncFile.closedCond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -89,7 +106,7 @@ Global Instance wp_struct_make_AsyncFile mu' data' filename' index' indexCond' d
       "closedCond" ::= #closedCond'
     ]))%struct
     #(AsyncFile.mk mu' data' filename' index' indexCond' durableIndex' durableIndexCond' closeRequested' closed' closedCond').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance AsyncFile_struct_fields_split dq l (v : AsyncFile.t) :
@@ -105,7 +122,24 @@ Global Instance AsyncFile_struct_fields_split dq l (v : AsyncFile.t) :
     "Hclosed" ∷ l ↦s[asyncfile.AsyncFile :: "closed"]{dq} v.(AsyncFile.closed') ∗
     "HclosedCond" ∷ l ↦s[asyncfile.AsyncFile :: "closedCond"]{dq} v.(AsyncFile.closedCond')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (AsyncFile.mu' v)) asyncfile.AsyncFile "mu"%go.
+  simpl_one_flatten_struct (# (AsyncFile.data' v)) asyncfile.AsyncFile "data"%go.
+  simpl_one_flatten_struct (# (AsyncFile.filename' v)) asyncfile.AsyncFile "filename"%go.
+  simpl_one_flatten_struct (# (AsyncFile.index' v)) asyncfile.AsyncFile "index"%go.
+  simpl_one_flatten_struct (# (AsyncFile.indexCond' v)) asyncfile.AsyncFile "indexCond"%go.
+  simpl_one_flatten_struct (# (AsyncFile.durableIndex' v)) asyncfile.AsyncFile "durableIndex"%go.
+  simpl_one_flatten_struct (# (AsyncFile.durableIndexCond' v)) asyncfile.AsyncFile "durableIndexCond"%go.
+  simpl_one_flatten_struct (# (AsyncFile.closeRequested' v)) asyncfile.AsyncFile "closeRequested"%go.
+  simpl_one_flatten_struct (# (AsyncFile.closed' v)) asyncfile.AsyncFile "closed"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.time.
+
+Set Default Proof Using "Type".
+
 Module time.
-Axiom falso : False.
+
 Module Time.
 Section def.
 Context `{ffi_syntax}.
@@ -21,25 +24,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Time : Settable _ :=
   settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
-Global Instance into_val_Time : IntoVal Time.t.
-Admitted.
+Global Instance into_val_Time : IntoVal Time.t :=
+  {| to_val_def v :=
+    struct.val_aux time.Time [
+    "wall" ::= #(Time.wall' v);
+    "ext" ::= #(Time.ext' v);
+    "loc" ::= #(Time.loc' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Time : IntoValTyped Time.t time.Time :=
+Global Program Instance into_val_typed_Time : IntoValTyped Time.t time.Time :=
 {|
   default_val := Time.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Time_wall : IntoValStructField "wall" time.Time Time.wall'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Time_ext : IntoValStructField "ext" time.Time Time.ext'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Time_loc : IntoValStructField "loc" time.Time Time.loc'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -51,7 +61,7 @@ Global Instance wp_struct_make_Time wall' ext' loc':
       "loc" ::= #loc'
     ]))%struct
     #(Time.mk wall' ext' loc').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Time_struct_fields_split dq l (v : Time.t) :
@@ -60,7 +70,17 @@ Global Instance Time_struct_fields_split dq l (v : Time.t) :
     "Hext" ∷ l ↦s[time.Time :: "ext"]{dq} v.(Time.ext') ∗
     "Hloc" ∷ l ↦s[time.Time :: "loc"]{dq} v.(Time.loc')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Time.wall' v)) time.Time "wall"%go.
+  simpl_one_flatten_struct (# (Time.ext' v)) time.Time "ext"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

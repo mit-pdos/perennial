@@ -3,8 +3,11 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.sort.
+
+Set Default Proof Using "Type".
+
 Module sort.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

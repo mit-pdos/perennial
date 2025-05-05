@@ -7,8 +7,11 @@ Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.bank.
+
+Set Default Proof Using "Type".
+
 Module bank.
-Axiom falso : False.
+
 Module BankClerk.
 Section def.
 Context `{ffi_syntax}.
@@ -25,25 +28,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_BankClerk : Settable _ :=
   settable! BankClerk.mk < BankClerk.lck'; BankClerk.kvck'; BankClerk.accts' >.
-Global Instance into_val_BankClerk : IntoVal BankClerk.t.
-Admitted.
+Global Instance into_val_BankClerk : IntoVal BankClerk.t :=
+  {| to_val_def v :=
+    struct.val_aux bank.BankClerk [
+    "lck" ::= #(BankClerk.lck' v);
+    "kvck" ::= #(BankClerk.kvck' v);
+    "accts" ::= #(BankClerk.accts' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_BankClerk : IntoValTyped BankClerk.t bank.BankClerk :=
+Global Program Instance into_val_typed_BankClerk : IntoValTyped BankClerk.t bank.BankClerk :=
 {|
   default_val := BankClerk.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_BankClerk_lck : IntoValStructField "lck" bank.BankClerk BankClerk.lck'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_BankClerk_kvck : IntoValStructField "kvck" bank.BankClerk BankClerk.kvck'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_BankClerk_accts : IntoValStructField "accts" bank.BankClerk BankClerk.accts'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -55,7 +65,7 @@ Global Instance wp_struct_make_BankClerk lck' kvck' accts':
       "accts" ::= #accts'
     ]))%struct
     #(BankClerk.mk lck' kvck' accts').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance BankClerk_struct_fields_split dq l (v : BankClerk.t) :
@@ -64,7 +74,17 @@ Global Instance BankClerk_struct_fields_split dq l (v : BankClerk.t) :
     "Hkvck" ∷ l ↦s[bank.BankClerk :: "kvck"]{dq} v.(BankClerk.kvck') ∗
     "Haccts" ∷ l ↦s[bank.BankClerk :: "accts"]{dq} v.(BankClerk.accts')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (BankClerk.lck' v)) bank.BankClerk "lck"%go.
+  simpl_one_flatten_struct (# (BankClerk.kvck' v)) bank.BankClerk "kvck"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

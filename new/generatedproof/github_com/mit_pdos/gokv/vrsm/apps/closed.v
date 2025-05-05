@@ -9,8 +9,11 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.configservice.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.closed.
+
+Set Default Proof Using "Type".
+
 Module closed.
-Axiom falso : False.
+
 Section names.
 
 Class GlobalAddrs :=

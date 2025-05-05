@@ -3,14 +3,20 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.testing.
+
+Set Default Proof Using "Type".
+
 Module testing.
-Axiom falso : False.
+
 Module T.
 Section def.
 Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
 End T.
+
+Global Instance bounded_size_T : BoundedTypeSize testing.T.
+Admitted.
 
 Global Instance into_val_T `{ffi_syntax} : IntoVal T.t.
 Admitted.

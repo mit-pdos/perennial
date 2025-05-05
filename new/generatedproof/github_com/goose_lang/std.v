@@ -5,8 +5,11 @@ Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.goose_lang.std.
+
+Set Default Proof Using "Type".
+
 Module std.
-Axiom falso : False.
+
 Module JoinHandle.
 Section def.
 Context `{ffi_syntax}.
@@ -23,25 +26,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_JoinHandle : Settable _ :=
   settable! JoinHandle.mk < JoinHandle.mu'; JoinHandle.done'; JoinHandle.cond' >.
-Global Instance into_val_JoinHandle : IntoVal JoinHandle.t.
-Admitted.
+Global Instance into_val_JoinHandle : IntoVal JoinHandle.t :=
+  {| to_val_def v :=
+    struct.val_aux std.JoinHandle [
+    "mu" ::= #(JoinHandle.mu' v);
+    "done" ::= #(JoinHandle.done' v);
+    "cond" ::= #(JoinHandle.cond' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_JoinHandle : IntoValTyped JoinHandle.t std.JoinHandle :=
+Global Program Instance into_val_typed_JoinHandle : IntoValTyped JoinHandle.t std.JoinHandle :=
 {|
   default_val := JoinHandle.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_JoinHandle_mu : IntoValStructField "mu" std.JoinHandle JoinHandle.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_JoinHandle_done : IntoValStructField "done" std.JoinHandle JoinHandle.done'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_JoinHandle_cond : IntoValStructField "cond" std.JoinHandle JoinHandle.cond'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -53,7 +63,7 @@ Global Instance wp_struct_make_JoinHandle mu' done' cond':
       "cond" ::= #cond'
     ]))%struct
     #(JoinHandle.mk mu' done' cond').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance JoinHandle_struct_fields_split dq l (v : JoinHandle.t) :
@@ -62,7 +72,17 @@ Global Instance JoinHandle_struct_fields_split dq l (v : JoinHandle.t) :
     "Hdone" ∷ l ↦s[std.JoinHandle :: "done"]{dq} v.(JoinHandle.done') ∗
     "Hcond" ∷ l ↦s[std.JoinHandle :: "cond"]{dq} v.(JoinHandle.cond')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (JoinHandle.mu' v)) std.JoinHandle "mu"%go.
+  simpl_one_flatten_struct (# (JoinHandle.done' v)) std.JoinHandle "done"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

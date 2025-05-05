@@ -10,8 +10,11 @@ Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.vkv.
+
+Set Default Proof Using "Type".
+
 Module vkv.
-Axiom falso : False.
+
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -26,19 +29,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Clerk : Settable _ :=
   settable! Clerk.mk < Clerk.cl' >.
-Global Instance into_val_Clerk : IntoVal Clerk.t.
-Admitted.
+Global Instance into_val_Clerk : IntoVal Clerk.t :=
+  {| to_val_def v :=
+    struct.val_aux vkv.Clerk [
+    "cl" ::= #(Clerk.cl' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Clerk : IntoValTyped Clerk.t vkv.Clerk :=
+Global Program Instance into_val_typed_Clerk : IntoValTyped Clerk.t vkv.Clerk :=
 {|
   default_val := Clerk.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Clerk_cl : IntoValStructField "cl" vkv.Clerk Clerk.cl'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -48,14 +56,22 @@ Global Instance wp_struct_make_Clerk cl':
       "cl" ::= #cl'
     ]))%struct
     #(Clerk.mk cl').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
   StructFieldsSplit dq l v (
     "Hcl" ∷ l ↦s[vkv.Clerk :: "cl"]{dq} v.(Clerk.cl')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -75,25 +91,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_ClerkPool : Settable _ :=
   settable! ClerkPool.mk < ClerkPool.mu'; ClerkPool.cls'; ClerkPool.confHosts' >.
-Global Instance into_val_ClerkPool : IntoVal ClerkPool.t.
-Admitted.
+Global Instance into_val_ClerkPool : IntoVal ClerkPool.t :=
+  {| to_val_def v :=
+    struct.val_aux vkv.ClerkPool [
+    "mu" ::= #(ClerkPool.mu' v);
+    "cls" ::= #(ClerkPool.cls' v);
+    "confHosts" ::= #(ClerkPool.confHosts' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_ClerkPool : IntoValTyped ClerkPool.t vkv.ClerkPool :=
+Global Program Instance into_val_typed_ClerkPool : IntoValTyped ClerkPool.t vkv.ClerkPool :=
 {|
   default_val := ClerkPool.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_ClerkPool_mu : IntoValStructField "mu" vkv.ClerkPool ClerkPool.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ClerkPool_cls : IntoValStructField "cls" vkv.ClerkPool ClerkPool.cls'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_ClerkPool_confHosts : IntoValStructField "confHosts" vkv.ClerkPool ClerkPool.confHosts'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -105,7 +128,7 @@ Global Instance wp_struct_make_ClerkPool mu' cls' confHosts':
       "confHosts" ::= #confHosts'
     ]))%struct
     #(ClerkPool.mk mu' cls' confHosts').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ClerkPool_struct_fields_split dq l (v : ClerkPool.t) :
@@ -114,7 +137,17 @@ Global Instance ClerkPool_struct_fields_split dq l (v : ClerkPool.t) :
     "Hcls" ∷ l ↦s[vkv.ClerkPool :: "cls"]{dq} v.(ClerkPool.cls') ∗
     "HconfHosts" ∷ l ↦s[vkv.ClerkPool :: "confHosts"]{dq} v.(ClerkPool.confHosts')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (ClerkPool.mu' v)) vkv.ClerkPool "mu"%go.
+  simpl_one_flatten_struct (# (ClerkPool.cls' v)) vkv.ClerkPool "cls"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -134,25 +167,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_KVState : Settable _ :=
   settable! KVState.mk < KVState.kvs'; KVState.vnums'; KVState.minVnum' >.
-Global Instance into_val_KVState : IntoVal KVState.t.
-Admitted.
+Global Instance into_val_KVState : IntoVal KVState.t :=
+  {| to_val_def v :=
+    struct.val_aux vkv.KVState [
+    "kvs" ::= #(KVState.kvs' v);
+    "vnums" ::= #(KVState.vnums' v);
+    "minVnum" ::= #(KVState.minVnum' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_KVState : IntoValTyped KVState.t vkv.KVState :=
+Global Program Instance into_val_typed_KVState : IntoValTyped KVState.t vkv.KVState :=
 {|
   default_val := KVState.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_KVState_kvs : IntoValStructField "kvs" vkv.KVState KVState.kvs'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KVState_vnums : IntoValStructField "vnums" vkv.KVState KVState.vnums'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_KVState_minVnum : IntoValStructField "minVnum" vkv.KVState KVState.minVnum'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -164,7 +204,7 @@ Global Instance wp_struct_make_KVState kvs' vnums' minVnum':
       "minVnum" ::= #minVnum'
     ]))%struct
     #(KVState.mk kvs' vnums' minVnum').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance KVState_struct_fields_split dq l (v : KVState.t) :
@@ -173,7 +213,17 @@ Global Instance KVState_struct_fields_split dq l (v : KVState.t) :
     "Hvnums" ∷ l ↦s[vkv.KVState :: "vnums"]{dq} v.(KVState.vnums') ∗
     "HminVnum" ∷ l ↦s[vkv.KVState :: "minVnum"]{dq} v.(KVState.minVnum')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (KVState.kvs' v)) vkv.KVState "kvs"%go.
+  simpl_one_flatten_struct (# (KVState.vnums' v)) vkv.KVState "vnums"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -192,22 +242,28 @@ Context `{ffi_syntax}.
 
 Global Instance settable_PutArgs : Settable _ :=
   settable! PutArgs.mk < PutArgs.Key'; PutArgs.Val' >.
-Global Instance into_val_PutArgs : IntoVal PutArgs.t.
-Admitted.
+Global Instance into_val_PutArgs : IntoVal PutArgs.t :=
+  {| to_val_def v :=
+    struct.val_aux vkv.PutArgs [
+    "Key" ::= #(PutArgs.Key' v);
+    "Val" ::= #(PutArgs.Val' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_PutArgs : IntoValTyped PutArgs.t vkv.PutArgs :=
+Global Program Instance into_val_typed_PutArgs : IntoValTyped PutArgs.t vkv.PutArgs :=
 {|
   default_val := PutArgs.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_PutArgs_Key : IntoValStructField "Key" vkv.PutArgs PutArgs.Key'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_PutArgs_Val : IntoValStructField "Val" vkv.PutArgs PutArgs.Val'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -218,7 +274,7 @@ Global Instance wp_struct_make_PutArgs Key' Val':
       "Val" ::= #Val'
     ]))%struct
     #(PutArgs.mk Key' Val').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance PutArgs_struct_fields_split dq l (v : PutArgs.t) :
@@ -226,7 +282,16 @@ Global Instance PutArgs_struct_fields_split dq l (v : PutArgs.t) :
     "HKey" ∷ l ↦s[vkv.PutArgs :: "Key"]{dq} v.(PutArgs.Key') ∗
     "HVal" ∷ l ↦s[vkv.PutArgs :: "Val"]{dq} v.(PutArgs.Val')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (PutArgs.Key' v)) vkv.PutArgs "Key"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -253,25 +318,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_CondPutArgs : Settable _ :=
   settable! CondPutArgs.mk < CondPutArgs.Key'; CondPutArgs.Expect'; CondPutArgs.Val' >.
-Global Instance into_val_CondPutArgs : IntoVal CondPutArgs.t.
-Admitted.
+Global Instance into_val_CondPutArgs : IntoVal CondPutArgs.t :=
+  {| to_val_def v :=
+    struct.val_aux vkv.CondPutArgs [
+    "Key" ::= #(CondPutArgs.Key' v);
+    "Expect" ::= #(CondPutArgs.Expect' v);
+    "Val" ::= #(CondPutArgs.Val' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_CondPutArgs : IntoValTyped CondPutArgs.t vkv.CondPutArgs :=
+Global Program Instance into_val_typed_CondPutArgs : IntoValTyped CondPutArgs.t vkv.CondPutArgs :=
 {|
   default_val := CondPutArgs.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_CondPutArgs_Key : IntoValStructField "Key" vkv.CondPutArgs CondPutArgs.Key'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_CondPutArgs_Expect : IntoValStructField "Expect" vkv.CondPutArgs CondPutArgs.Expect'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_CondPutArgs_Val : IntoValStructField "Val" vkv.CondPutArgs CondPutArgs.Val'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -283,7 +355,7 @@ Global Instance wp_struct_make_CondPutArgs Key' Expect' Val':
       "Val" ::= #Val'
     ]))%struct
     #(CondPutArgs.mk Key' Expect' Val').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance CondPutArgs_struct_fields_split dq l (v : CondPutArgs.t) :
@@ -292,7 +364,17 @@ Global Instance CondPutArgs_struct_fields_split dq l (v : CondPutArgs.t) :
     "HExpect" ∷ l ↦s[vkv.CondPutArgs :: "Expect"]{dq} v.(CondPutArgs.Expect') ∗
     "HVal" ∷ l ↦s[vkv.CondPutArgs :: "Val"]{dq} v.(CondPutArgs.Val')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (CondPutArgs.Key' v)) vkv.CondPutArgs "Key"%go.
+  simpl_one_flatten_struct (# (CondPutArgs.Expect' v)) vkv.CondPutArgs "Expect"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

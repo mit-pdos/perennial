@@ -8,8 +8,11 @@ Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.storage.
+
+Set Default Proof Using "Type".
+
 Module storage.
-Axiom falso : False.
+
 Module InMemoryStateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -27,28 +30,36 @@ Context `{ffi_syntax}.
 
 Global Instance settable_InMemoryStateMachine : Settable _ :=
   settable! InMemoryStateMachine.mk < InMemoryStateMachine.ApplyReadonly'; InMemoryStateMachine.ApplyVolatile'; InMemoryStateMachine.GetState'; InMemoryStateMachine.SetState' >.
-Global Instance into_val_InMemoryStateMachine : IntoVal InMemoryStateMachine.t.
-Admitted.
+Global Instance into_val_InMemoryStateMachine : IntoVal InMemoryStateMachine.t :=
+  {| to_val_def v :=
+    struct.val_aux storage.InMemoryStateMachine [
+    "ApplyReadonly" ::= #(InMemoryStateMachine.ApplyReadonly' v);
+    "ApplyVolatile" ::= #(InMemoryStateMachine.ApplyVolatile' v);
+    "GetState" ::= #(InMemoryStateMachine.GetState' v);
+    "SetState" ::= #(InMemoryStateMachine.SetState' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_InMemoryStateMachine : IntoValTyped InMemoryStateMachine.t storage.InMemoryStateMachine :=
+Global Program Instance into_val_typed_InMemoryStateMachine : IntoValTyped InMemoryStateMachine.t storage.InMemoryStateMachine :=
 {|
   default_val := InMemoryStateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_InMemoryStateMachine_ApplyReadonly : IntoValStructField "ApplyReadonly" storage.InMemoryStateMachine InMemoryStateMachine.ApplyReadonly'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_InMemoryStateMachine_ApplyVolatile : IntoValStructField "ApplyVolatile" storage.InMemoryStateMachine InMemoryStateMachine.ApplyVolatile'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_InMemoryStateMachine_GetState : IntoValStructField "GetState" storage.InMemoryStateMachine InMemoryStateMachine.GetState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_InMemoryStateMachine_SetState : IntoValStructField "SetState" storage.InMemoryStateMachine InMemoryStateMachine.SetState'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -61,7 +72,7 @@ Global Instance wp_struct_make_InMemoryStateMachine ApplyReadonly' ApplyVolatile
       "SetState" ::= #SetState'
     ]))%struct
     #(InMemoryStateMachine.mk ApplyReadonly' ApplyVolatile' GetState' SetState').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance InMemoryStateMachine_struct_fields_split dq l (v : InMemoryStateMachine.t) :
@@ -71,7 +82,18 @@ Global Instance InMemoryStateMachine_struct_fields_split dq l (v : InMemoryState
     "HGetState" ∷ l ↦s[storage.InMemoryStateMachine :: "GetState"]{dq} v.(InMemoryStateMachine.GetState') ∗
     "HSetState" ∷ l ↦s[storage.InMemoryStateMachine :: "SetState"]{dq} v.(InMemoryStateMachine.SetState')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyReadonly' v)) storage.InMemoryStateMachine "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyVolatile' v)) storage.InMemoryStateMachine "ApplyVolatile"%go.
+  simpl_one_flatten_struct (# (InMemoryStateMachine.GetState' v)) storage.InMemoryStateMachine "GetState"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -95,37 +117,48 @@ Context `{ffi_syntax}.
 
 Global Instance settable_StateMachine : Settable _ :=
   settable! StateMachine.mk < StateMachine.fname'; StateMachine.logFile'; StateMachine.logsize'; StateMachine.sealed'; StateMachine.epoch'; StateMachine.nextIndex'; StateMachine.smMem' >.
-Global Instance into_val_StateMachine : IntoVal StateMachine.t.
-Admitted.
+Global Instance into_val_StateMachine : IntoVal StateMachine.t :=
+  {| to_val_def v :=
+    struct.val_aux storage.StateMachine [
+    "fname" ::= #(StateMachine.fname' v);
+    "logFile" ::= #(StateMachine.logFile' v);
+    "logsize" ::= #(StateMachine.logsize' v);
+    "sealed" ::= #(StateMachine.sealed' v);
+    "epoch" ::= #(StateMachine.epoch' v);
+    "nextIndex" ::= #(StateMachine.nextIndex' v);
+    "smMem" ::= #(StateMachine.smMem' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_StateMachine : IntoValTyped StateMachine.t storage.StateMachine :=
+Global Program Instance into_val_typed_StateMachine : IntoValTyped StateMachine.t storage.StateMachine :=
 {|
   default_val := StateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_StateMachine_fname : IntoValStructField "fname" storage.StateMachine StateMachine.fname'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_StateMachine_logFile : IntoValStructField "logFile" storage.StateMachine StateMachine.logFile'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_StateMachine_logsize : IntoValStructField "logsize" storage.StateMachine StateMachine.logsize'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_StateMachine_sealed : IntoValStructField "sealed" storage.StateMachine StateMachine.sealed'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_StateMachine_epoch : IntoValStructField "epoch" storage.StateMachine StateMachine.epoch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_StateMachine_nextIndex : IntoValStructField "nextIndex" storage.StateMachine StateMachine.nextIndex'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_StateMachine_smMem : IntoValStructField "smMem" storage.StateMachine StateMachine.smMem'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -141,7 +174,7 @@ Global Instance wp_struct_make_StateMachine fname' logFile' logsize' sealed' epo
       "smMem" ::= #smMem'
     ]))%struct
     #(StateMachine.mk fname' logFile' logsize' sealed' epoch' nextIndex' smMem').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance StateMachine_struct_fields_split dq l (v : StateMachine.t) :
@@ -154,7 +187,21 @@ Global Instance StateMachine_struct_fields_split dq l (v : StateMachine.t) :
     "HnextIndex" ∷ l ↦s[storage.StateMachine :: "nextIndex"]{dq} v.(StateMachine.nextIndex') ∗
     "HsmMem" ∷ l ↦s[storage.StateMachine :: "smMem"]{dq} v.(StateMachine.smMem')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (StateMachine.fname' v)) storage.StateMachine "fname"%go.
+  simpl_one_flatten_struct (# (StateMachine.logFile' v)) storage.StateMachine "logFile"%go.
+  simpl_one_flatten_struct (# (StateMachine.logsize' v)) storage.StateMachine "logsize"%go.
+  simpl_one_flatten_struct (# (StateMachine.sealed' v)) storage.StateMachine "sealed"%go.
+  simpl_one_flatten_struct (# (StateMachine.epoch' v)) storage.StateMachine "epoch"%go.
+  simpl_one_flatten_struct (# (StateMachine.nextIndex' v)) storage.StateMachine "nextIndex"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 

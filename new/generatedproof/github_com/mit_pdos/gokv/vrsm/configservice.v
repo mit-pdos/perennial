@@ -13,8 +13,11 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.paxos.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.configservice.
+
+Set Default Proof Using "Type".
+
 Module configservice.
-Axiom falso : False.
+
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -31,25 +34,32 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Clerk : Settable _ :=
   settable! Clerk.mk < Clerk.mu'; Clerk.cls'; Clerk.leader' >.
-Global Instance into_val_Clerk : IntoVal Clerk.t.
-Admitted.
+Global Instance into_val_Clerk : IntoVal Clerk.t :=
+  {| to_val_def v :=
+    struct.val_aux configservice.Clerk [
+    "mu" ::= #(Clerk.mu' v);
+    "cls" ::= #(Clerk.cls' v);
+    "leader" ::= #(Clerk.leader' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Clerk : IntoValTyped Clerk.t configservice.Clerk :=
+Global Program Instance into_val_typed_Clerk : IntoValTyped Clerk.t configservice.Clerk :=
 {|
   default_val := Clerk.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Clerk_mu : IntoValStructField "mu" configservice.Clerk Clerk.mu'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Clerk_cls : IntoValStructField "cls" configservice.Clerk Clerk.cls'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_Clerk_leader : IntoValStructField "leader" configservice.Clerk Clerk.leader'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -61,7 +71,7 @@ Global Instance wp_struct_make_Clerk mu' cls' leader':
       "leader" ::= #leader'
     ]))%struct
     #(Clerk.mk mu' cls' leader').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
@@ -70,7 +80,17 @@ Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
     "Hcls" ∷ l ↦s[configservice.Clerk :: "cls"]{dq} v.(Clerk.cls') ∗
     "Hleader" ∷ l ↦s[configservice.Clerk :: "leader"]{dq} v.(Clerk.leader')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Clerk.mu' v)) configservice.Clerk "mu"%go.
+  simpl_one_flatten_struct (# (Clerk.cls' v)) configservice.Clerk "cls"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -92,31 +112,40 @@ Context `{ffi_syntax}.
 
 Global Instance settable_state : Settable _ :=
   settable! state.mk < state.epoch'; state.reservedEpoch'; state.leaseExpiration'; state.wantLeaseToExpire'; state.config' >.
-Global Instance into_val_state : IntoVal state.t.
-Admitted.
+Global Instance into_val_state : IntoVal state.t :=
+  {| to_val_def v :=
+    struct.val_aux configservice.state [
+    "epoch" ::= #(state.epoch' v);
+    "reservedEpoch" ::= #(state.reservedEpoch' v);
+    "leaseExpiration" ::= #(state.leaseExpiration' v);
+    "wantLeaseToExpire" ::= #(state.wantLeaseToExpire' v);
+    "config" ::= #(state.config' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_state : IntoValTyped state.t configservice.state :=
+Global Program Instance into_val_typed_state : IntoValTyped state.t configservice.state :=
 {|
   default_val := state.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_state_epoch : IntoValStructField "epoch" configservice.state state.epoch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_state_reservedEpoch : IntoValStructField "reservedEpoch" configservice.state state.reservedEpoch'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_state_leaseExpiration : IntoValStructField "leaseExpiration" configservice.state state.leaseExpiration'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_state_wantLeaseToExpire : IntoValStructField "wantLeaseToExpire" configservice.state state.wantLeaseToExpire'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 Global Instance into_val_struct_field_state_config : IntoValStructField "config" configservice.state state.config'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -130,7 +159,7 @@ Global Instance wp_struct_make_state epoch' reservedEpoch' leaseExpiration' want
       "config" ::= #config'
     ]))%struct
     #(state.mk epoch' reservedEpoch' leaseExpiration' wantLeaseToExpire' config').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance state_struct_fields_split dq l (v : state.t) :
@@ -141,7 +170,19 @@ Global Instance state_struct_fields_split dq l (v : state.t) :
     "HwantLeaseToExpire" ∷ l ↦s[configservice.state :: "wantLeaseToExpire"]{dq} v.(state.wantLeaseToExpire') ∗
     "Hconfig" ∷ l ↦s[configservice.state :: "config"]{dq} v.(state.config')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (state.epoch' v)) configservice.state "epoch"%go.
+  simpl_one_flatten_struct (# (state.reservedEpoch' v)) configservice.state "reservedEpoch"%go.
+  simpl_one_flatten_struct (# (state.leaseExpiration' v)) configservice.state "leaseExpiration"%go.
+  simpl_one_flatten_struct (# (state.wantLeaseToExpire' v)) configservice.state "wantLeaseToExpire"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -159,19 +200,24 @@ Context `{ffi_syntax}.
 
 Global Instance settable_Server : Settable _ :=
   settable! Server.mk < Server.s' >.
-Global Instance into_val_Server : IntoVal Server.t.
-Admitted.
+Global Instance into_val_Server : IntoVal Server.t :=
+  {| to_val_def v :=
+    struct.val_aux configservice.Server [
+    "s" ::= #(Server.s' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Server : IntoValTyped Server.t configservice.Server :=
+Global Program Instance into_val_typed_Server : IntoValTyped Server.t configservice.Server :=
 {|
   default_val := Server.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Server_s : IntoValStructField "s" configservice.Server Server.s'.
-Admitted.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
@@ -181,14 +227,22 @@ Global Instance wp_struct_make_Server s':
       "s" ::= #s'
     ]))%struct
     #(Server.mk s').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :
   StructFieldsSplit dq l v (
     "Hs" ∷ l ↦s[configservice.Server :: "s"]{dq} v.(Server.s')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
