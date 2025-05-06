@@ -3,7 +3,7 @@ From Perennial.Helpers Require Import List ModArith.
 From Goose.github_com.goose_lang Require Import std.
 
 From iris.algebra Require Import excl gset.
-From stdpp Require Import list_relations.
+From stdpp Require Import list.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import typed_slice.
 

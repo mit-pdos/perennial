@@ -2,7 +2,7 @@ From Coq Require Import ZArith Lia.
 From Coq Require Import ssreflect.
 
 From stdpp Require Import base numbers.
-From stdpp Require list.
+From stdpp Require Import list.
 
 Set Default Goal Selector "!".
 Set Default Proof Using "Type".
@@ -39,7 +39,7 @@ Lemma length_singleton x : length [x] = 1.
 Proof. reflexivity. Qed.
 
 Lemma length_app l1 l2 : length (l1 ++ l2) = length l1 + length l2.
-Proof. rewrite /length list_basics.length_app. lia.  Qed.
+Proof. rewrite /length list.length_app. lia.  Qed.
 
 Lemma length_cons x l : length (x :: l) = 1 + length l.
 Proof. rewrite /length /=. lia. Qed.
@@ -63,7 +63,7 @@ Proof.
   autounfold with list => Hbound.
   rewrite /lookup_total /list_lookup.
   simpl_decide.
-  destruct (list_basics.nth_lookup_or_length l (Z.to_nat n) inhabitant); [ congruence | ].
+  destruct (list.nth_lookup_or_length l (Z.to_nat n) inhabitant); [ congruence | ].
   lia.
 Qed.
 
@@ -73,7 +73,7 @@ Lemma lookupZ_eq l n x :
   l !!! n = x.
 Proof.
   intros Hle Hget.
-  pose proof (list_basics.lookup_lt_Some _ _ _ Hget).
+  pose proof (list.lookup_lt_Some _ _ _ Hget).
   rewrite lookupZ_to_lookup in Hget; [ lia | ].
   congruence.
 Qed.
@@ -111,7 +111,7 @@ Tactic Notation "handle_index" constr(l) constr(n) :=
   | _ =>
       let x := fresh "x" in
       let Hget := fresh "Hget" in
-      destruct (list_basics.lookup_lt_is_Some_2 l n_nat ltac:(lia)) as [x Hget];
+      destruct (list.lookup_lt_is_Some_2 l n_nat ltac:(lia)) as [x Hget];
       let Heq := fresh "Heq_" x in
       match type of n with
       | nat => pose proof (lookupZ_eq_nat _ _ _ Hget) as Heq
@@ -130,7 +130,7 @@ Ltac list_simpl :=
     | |- Some _ = Some _ => f_equal
     | _ => first [
                rewrite -> lookup_oob in * by lia
-             | rewrite -> list_basics.lookup_ge_None_2 in * by lia
+             | rewrite -> list.lookup_ge_None_2 in * by lia
              | progress rewrite -> Z2Nat.id in *
              | progress rewrite -> Nat2Z.id in *
              | progress subst
@@ -148,7 +148,7 @@ Lemma list_eq l1 l2 :
   l1 = l2.
 Proof.
   intros Hlen Heq.
-  apply list_basics.list_eq => i.
+  apply list.list_eq => i.
   destruct (decide (Z.of_nat i < length l1)); list_solve.
   rewrite Heq; [ lia | ].
   done.
@@ -172,7 +172,7 @@ Proof.
   intros H.
   pose proof (length_app l1 l2).
   destruct (decide (0 ≤ i)); list_solve.
-  rewrite -> list_basics.lookup_app_l in * by lia.
+  rewrite -> list.lookup_app_l in * by lia.
   congruence.
 Qed.
 
@@ -193,7 +193,7 @@ Lemma list_insert_length n x l :
 Proof.
   rewrite /insert /list_insert.
   destruct (decide _); auto.
-  rewrite /length list_basics.length_insert //.
+  rewrite /length list.length_insert //.
 Qed.
 
 Lemma insert_lookup_eq n x l i :
@@ -205,7 +205,7 @@ Proof.
   pose proof (list_insert_length n x l).
   rewrite -> list_insert_nat in * by lia.
   list_simpl.
-  rewrite -> list_basics.list_lookup_insert in * by lia.
+  rewrite -> list.list_lookup_insert in * by lia.
   list_solve.
 Qed.
 
@@ -240,7 +240,7 @@ Proof.
   apply lookup_lookup_eq.
   { rewrite length_drop'; lia. }
   intros ??.
-  rewrite list_basics.lookup_drop.
+  rewrite list.lookup_drop.
   assert ((Z.to_nat n + Z.to_nat i)%nat = Z.to_nat (n + i)) by lia.
   congruence.
 Qed.
@@ -270,7 +270,7 @@ Proof.
   apply lookup_lookup_eq.
   { rewrite length_take'; lia. }
   intros ??.
-  rewrite list_basics.lookup_take_Some.
+  rewrite list.lookup_take_Some.
   intuition. congruence.
 Qed.
 
@@ -330,13 +330,13 @@ Proof.
 Qed.
 
 Definition replicate n x :=
-  list_basics.replicate (Z.to_nat n) x.
+  list.replicate (Z.to_nat n) x.
 
 Lemma length_replicate' n x :
   length (replicate n x) = n `max` 0.
 Proof.
   rewrite /replicate /length.
-  rewrite list_basics.length_replicate.
+  rewrite list.length_replicate.
   lia.
 Qed.
 
@@ -356,7 +356,7 @@ Proof.
   pose proof (length_replicate' n x).
   list_simpl.
   rewrite /replicate.
-  apply list_basics.lookup_replicate_1 in Hget.
+  apply list.lookup_replicate_1 in Hget.
   intuition congruence.
 Qed.
 
@@ -379,7 +379,7 @@ Lemma length_fmap {A B} `{!Inhabited A, !Inhabited B}
   length (f <$> l) = length l.
 Proof.
   rewrite /length.
-  rewrite list_monad.length_fmap //.
+  rewrite list.length_fmap //.
 Qed.
 
 Lemma list_lookup_fmap {A B} `{!Inhabited A, !Inhabited B}
@@ -389,9 +389,9 @@ Lemma list_lookup_fmap {A B} `{!Inhabited A, !Inhabited B}
 Proof.
   intros Hbound.
   apply lookupZ_eq; [ lia | ].
-  rewrite list_monad.list_lookup_fmap.
+  rewrite list.list_lookup_fmap.
   assert (is_Some (l !! Z.to_nat i)) as [x Hget].
-  { apply list_basics.lookup_lt_is_Some. rewrite /length in Hbound; lia. }
+  { apply list.lookup_lt_is_Some. rewrite /length in Hbound; lia. }
   rewrite Hget /=.
   apply lookupZ_eq in Hget.
   - congruence.

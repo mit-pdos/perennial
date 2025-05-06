@@ -326,7 +326,7 @@ Proof.
   intros Hnodup Hlookup.
   rewrite -(take_drop (S i) upds).
   rewrite -(take_drop (S i) upds) fmap_app in Hnodup.
-  apply list_relations.NoDup_app in Hnodup.
+  apply list.NoDup_app in Hnodup.
   destruct Hnodup as (Hnodup&Heither&_).
   rewrite apply_upds_app apply_upds_notin.
   2: {
