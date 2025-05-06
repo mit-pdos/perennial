@@ -28,17 +28,6 @@ Definition Channel (T: ty) : descriptor := struct.decl [
 ].
 
 (* buffer_size = 0 is an unbuffered channel *)
-Definition NewChannel (T:ty): val :=
-  rec: "NewChannel" "buffer_size" :=
-    struct.mk (Channel T) [
-      "buffer" ::= NewSlice T "buffer_size";
-      "lock" ::= newMutex #();
-      "first" ::= #0;
-      "count" ::= #0;
-      "state" ::= start
-    ].
-
-(* buffer_size = 0 is an unbuffered channel *)
 Definition NewChannelRef (T:ty): val :=
   rec: "NewChannelRef" "buffer_size" :=
     struct.new (Channel T) [
@@ -48,6 +37,360 @@ Definition NewChannelRef (T:ty): val :=
       "count" ::= #0;
       "state" ::= start
     ].
+
+Definition SelectDir: ty := uint64T.
+
+(* value is used for the value the sender will send and also used to return the received value by
+   reference. *)
+Definition SelectCase (T: ty) : descriptor := struct.decl [
+  "channel" :: ptrT;
+  "dir" :: SelectDir;
+  "Value" :: T;
+  "Ok" :: boolT
+].
+
+(* case Chan <- Send *)
+Definition SelectSend : expr := #0.
+
+(* case <-Chan: *)
+Definition SelectRecv : expr := #1.
+
+(* The value representing the default case *)
+Definition DefaultCase : expr := #5.
+
+(* Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle. *)
+Definition Shuffle: val :=
+  rec: "Shuffle" "xs" :=
+    (if: (slice.len "xs") = #0
+    then #()
+    else
+      let: "i" := ref_to uint64T ((slice.len "xs") - #1) in
+      (for: (λ: <>, (![uint64T] "i") > #0); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") - #1)) := λ: <>,
+        let: "j" := (rand.RandomUint64 #()) `rem` ((![uint64T] "i") + #1) in
+        let: "temp" := SliceGet uint64T "xs" (![uint64T] "i") in
+        SliceSet uint64T "xs" (![uint64T] "i") (SliceGet uint64T "xs" "j");;
+        SliceSet uint64T "xs" "j" "temp";;
+        Continue);;
+      #()).
+
+(* Permutation returns a random permutation of the integers 0, ..., n-1, using a
+   Fisher-Yates shuffle. *)
+Definition Permutation: val :=
+  rec: "Permutation" "n" :=
+    let: "order" := NewSlice uint64T "n" in
+    let: "i" := ref_to uint64T #0 in
+    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
+      SliceSet uint64T "order" (![uint64T] "i") (![uint64T] "i");;
+      Continue);;
+    Shuffle "order";;
+    "order".
+
+(* If the buffer has free space, push our value. *)
+Definition Channel__BufferedTrySend (T:ty): val :=
+  rec: "Channel__BufferedTrySend" "c" "val" :=
+    (if: (struct.loadF (Channel T) "state" "c") = closed
+    then Panic "send on closed channel"
+    else #());;
+    (if: (struct.loadF (Channel T) "count" "c") < (slice.len (struct.loadF (Channel T) "buffer" "c"))
+    then
+      let: "last" := ref_to uint64T (((struct.loadF (Channel T) "first" "c") + (struct.loadF (Channel T) "count" "c")) `rem` (slice.len (struct.loadF (Channel T) "buffer" "c"))) in
+      SliceSet T (struct.loadF (Channel T) "buffer" "c") (![uint64T] "last") "val";;
+      struct.storeF (Channel T) "count" "c" ((struct.loadF (Channel T) "count" "c") + #1);;
+      #true
+    else #false).
+
+Definition SenderState: ty := uint64T.
+
+(* Sender found a waiting receiver *)
+Definition SenderCompletedWithReceiver : expr := #0.
+
+(* Sender made an offer (no receiver waiting) *)
+Definition SenderMadeOffer : expr := #1.
+
+(* Exchange in progress, don't select *)
+Definition SenderCannotProceed : expr := #2.
+
+Definition Channel__SenderCompleteOrOffer (T:ty): val :=
+  rec: "Channel__SenderCompleteOrOffer" "c" "val" :=
+    (if: (struct.loadF (Channel T) "state" "c") = closed
+    then Panic "send on closed channel"
+    else #());;
+    (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
+    then
+      struct.storeF (Channel T) "state" "c" sender_done;;
+      struct.storeF (Channel T) "v" "c" "val";;
+      SenderCompletedWithReceiver
+    else
+      (if: (struct.loadF (Channel T) "state" "c") = start
+      then
+        struct.storeF (Channel T) "state" "c" sender_ready;;
+        struct.storeF (Channel T) "v" "c" "val";;
+        SenderMadeOffer
+      else SenderCannotProceed)).
+
+Definition OfferResult: ty := uint64T.
+
+(* Offer was rescinded (other party didn't arrive in time) *)
+Definition OfferRescinded : expr := #0.
+
+(* Other party responded to our offer *)
+Definition CompletedExchange : expr := #1.
+
+(* Unexpected state, indicates model bugs. *)
+Definition CloseInterruptedOffer : expr := #2.
+
+Definition Channel__SenderCheckOfferResult (T:ty): val :=
+  rec: "Channel__SenderCheckOfferResult" "c" :=
+    (if: (struct.loadF (Channel T) "state" "c") = closed
+    then Panic "send on closed channel"
+    else #());;
+    (if: (struct.loadF (Channel T) "state" "c") = receiver_done
+    then
+      struct.storeF (Channel T) "state" "c" start;;
+      CompletedExchange
+    else
+      (if: (struct.loadF (Channel T) "state" "c") = sender_ready
+      then
+        struct.storeF (Channel T) "state" "c" start;;
+        OfferRescinded
+      else
+        Panic "Invalid state transition with open receive offer";;
+        #())).
+
+(* Non-Blocking send operation for select statements. Blocking send and blocking select
+   statements simply call this in a for loop until it returns true. *)
+Definition Channel__TrySend (T:ty): val :=
+  rec: "Channel__TrySend" "c" "val" :=
+    let: "buffer_size" := ref_to uint64T (slice.len (struct.loadF (Channel T) "buffer" "c")) in
+    (if: (![uint64T] "buffer_size") ≠ #0
+    then
+      Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
+      let: "sendResult" := Channel__BufferedTrySend T "c" "val" in
+      Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+      "sendResult"
+    else
+      Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
+      let: "senderState" := Channel__SenderCompleteOrOffer T "c" "val" in
+      Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+      (if: "senderState" = SenderMadeOffer
+      then
+        Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
+        let: "offerResult" := Channel__SenderCheckOfferResult T "c" in
+        Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+        "offerResult" = CompletedExchange
+      else "senderState" = SenderCompletedWithReceiver)).
+
+(* If there is a value available in the buffer, consume it, otherwise, don't select. *)
+Definition Channel__BufferedTryReceiveLocked (T:ty): val :=
+  rec: "Channel__BufferedTryReceiveLocked" "c" :=
+    let: "v" := ref (zero_val T) in
+    (if: (struct.loadF (Channel T) "count" "c") > #0
+    then
+      "v" <-[T] (SliceGet T (struct.loadF (Channel T) "buffer" "c") (struct.loadF (Channel T) "first" "c"));;
+      struct.storeF (Channel T) "first" "c" (((struct.loadF (Channel T) "first" "c") + #1) `rem` (slice.len (struct.loadF (Channel T) "buffer" "c")));;
+      struct.storeF (Channel T) "count" "c" ((struct.loadF (Channel T) "count" "c") - #1);;
+      (#true, ![T] "v", #true)
+    else
+      (if: (struct.loadF (Channel T) "state" "c") = closed
+      then (#true, ![T] "v", #false)
+      else (#false, ![T] "v", #true))).
+
+Definition Channel__BufferedTryReceive (T:ty): val :=
+  rec: "Channel__BufferedTryReceive" "c" :=
+    Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
+    let: (("selected", "return_val"), "ok") := Channel__BufferedTryReceiveLocked T "c" in
+    Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+    ("selected", "return_val", "ok").
+
+Definition ReceiverState: ty := uint64T.
+
+(* Receiver found a waiting sender *)
+Definition ReceiverCompletedWithSender : expr := #0.
+
+(* Receiver made an offer (no sender waiting) *)
+Definition ReceiverMadeOffer : expr := #1.
+
+(* Receiver saw that the channel was closed *)
+Definition ReceiverObservedClosed : expr := #2.
+
+(* Invalid state for receiving *)
+Definition ReceiverCannotProceed : expr := #3.
+
+Definition Channel__ReceiverCompleteOrOffer (T:ty): val :=
+  rec: "Channel__ReceiverCompleteOrOffer" "c" :=
+    (if: (struct.loadF (Channel T) "state" "c") = sender_ready
+    then
+      struct.storeF (Channel T) "state" "c" receiver_done;;
+      ReceiverCompletedWithSender
+    else
+      (if: (struct.loadF (Channel T) "state" "c") = start
+      then
+        struct.storeF (Channel T) "state" "c" receiver_ready;;
+        ReceiverMadeOffer
+      else
+        (if: (struct.loadF (Channel T) "state" "c") = closed
+        then ReceiverObservedClosed
+        else ReceiverCannotProceed))).
+
+Definition Channel__ReceiverCompleteOrRescindOffer (T:ty): val :=
+  rec: "Channel__ReceiverCompleteOrRescindOffer" "c" :=
+    (if: (struct.loadF (Channel T) "state" "c") = closed
+    then CloseInterruptedOffer
+    else
+      (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
+      then
+        struct.storeF (Channel T) "state" "c" start;;
+        OfferRescinded
+      else
+        (if: (struct.loadF (Channel T) "state" "c") = sender_done
+        then
+          struct.storeF (Channel T) "state" "c" start;;
+          CompletedExchange
+        else
+          Panic "Invalid state transition with open receive offer";;
+          #()))).
+
+Definition Channel__UnbufferedTryReceive (T:ty): val :=
+  rec: "Channel__UnbufferedTryReceive" "c" :=
+    let: "local_val" := ref (zero_val T) in
+    Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
+    let: "try_select" := Channel__ReceiverCompleteOrOffer T "c" in
+    let: "ok" := ref_to boolT (~ ("try_select" = ReceiverObservedClosed)) in
+    let: "selected" := ref_to boolT (("try_select" = ReceiverCompletedWithSender) || (~ (![boolT] "ok"))) in
+    (if: ![boolT] "selected"
+    then "local_val" <-[T] (struct.loadF (Channel T) "v" "c")
+    else #());;
+    Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+    (if: "try_select" = ReceiverMadeOffer
+    then
+      Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
+      let: "offer_result" := Channel__ReceiverCompleteOrRescindOffer T "c" in
+      (if: "offer_result" = CompletedExchange
+      then
+        "local_val" <-[T] (struct.loadF (Channel T) "v" "c");;
+        "selected" <-[boolT] #true
+      else #());;
+      Mutex__Unlock (struct.loadF (Channel T) "lock" "c")
+    else #());;
+    (![boolT] "selected", ![T] "local_val", ![boolT] "ok").
+
+(* Non-blocking receive function used for select statements. Blocking receive is modeled as
+   a single blocking select statement which amounts to a for loop until selected. *)
+Definition Channel__TryReceive (T:ty): val :=
+  rec: "Channel__TryReceive" "c" :=
+    (if: (slice.len (struct.loadF (Channel T) "buffer" "c")) > #0
+    then Channel__BufferedTryReceive T "c"
+    else Channel__UnbufferedTryReceive T "c").
+
+(* Uses the applicable Try<Operation> function on the select case's channel. Default is always
+   selectable so simply returns true. *)
+Definition TrySelect (T:ty): val :=
+  rec: "TrySelect" "select_case" :=
+    let: "channel" := ref_to ptrT (struct.loadF (SelectCase T) "channel" "select_case") in
+    (if: (![ptrT] "channel") = #null
+    then #false
+    else
+      (if: (struct.loadF (SelectCase T) "dir" "select_case") = SelectSend
+      then Channel__TrySend T (![ptrT] "channel") (struct.loadF (SelectCase T) "Value" "select_case")
+      else
+        (if: (struct.loadF (SelectCase T) "dir" "select_case") = SelectRecv
+        then
+          let: "item" := ref (zero_val T) in
+          let: "ok" := ref (zero_val boolT) in
+          let: "selected" := ref (zero_val boolT) in
+          let: (("0_ret", "1_ret"), "2_ret") := Channel__TryReceive T (![ptrT] "channel") in
+          "selected" <-[boolT] "0_ret";;
+          "item" <-[T] "1_ret";;
+          "ok" <-[boolT] "2_ret";;
+          struct.storeF (SelectCase T) "Value" "select_case" (![T] "item");;
+          struct.storeF (SelectCase T) "Ok" "select_case" (![boolT] "ok");;
+          ![boolT] "selected"
+        else #false))).
+
+(* TrySelectAt attempts to select a specific case *)
+Definition TrySelectAt (T:ty): val :=
+  rec: "TrySelectAt" "selectCase" :=
+    (if: (struct.loadF (SelectCase T) "channel" "selectCase") ≠ #null
+    then TrySelect T "selectCase"
+    else #false).
+
+(* TrySelectCase attempts to select a specific case at a given index
+   Returns true if the case was selected, false otherwise *)
+Definition TrySelectCase (T1:ty) (T2:ty) (T3:ty) (T4:ty) (T5:ty): val :=
+  rec: "TrySelectCase" "index" "case1" "case2" "case3" "case4" "case5" :=
+    (if: "index" = #0
+    then TrySelectAt T1 "case1"
+    else
+      (if: "index" = #1
+      then TrySelectAt T2 "case2"
+      else
+        (if: "index" = #2
+        then TrySelectAt T3 "case3"
+        else
+          (if: "index" = #3
+          then TrySelectAt T4 "case4"
+          else
+            (if: "index" = #4
+            then TrySelectAt T5 "case5"
+            else #false))))).
+
+(* TryCasesInOrder attempts to select one of the cases in the given order
+   Returns the index of the selected case, or 5 if none was selected.
+   I would probably return a sentinel value of 1 here but we are limited to
+   uint64 and the index after the last makes sense since that would be where the
+   default block is. *)
+Definition TryCasesInOrder (T1:ty) (T2:ty) (T3:ty) (T4:ty) (T5:ty): val :=
+  rec: "TryCasesInOrder" "order" "case1" "case2" "case3" "case4" "case5" :=
+    let: "select_case" := ref_to uint64T (slice.len "order") in
+    ForSlice uint64T <> "i" "order"
+      ((if: ((![uint64T] "select_case") = (slice.len "order")) && (TrySelectCase T1 T2 T3 T4 T5 "i" "case1" "case2" "case3" "case4" "case5")
+      then "select_case" <-[uint64T] "i"
+      else #()));;
+    ![uint64T] "select_case".
+
+(* MultiSelect performs a select operation on up to 5 cases.
+   This is the largest number of cases the model will support, at least for now.
+   Because of the fact that nil channels are not selectable, we can simply make
+   this function never select a case with a nil channel and take advantage of
+   this behavior to model selects with fewer than 5 statements by simply passing
+   in "empty cases" that have a nil channel. This will allow verifying only the
+   5 statement case with a thin wrapper for the smaller ones.
+
+   Cases with nil channels are ignored.
+   This function returns the index of the selected case.
+   If blocking is true, keep trying to select until a select succeeds.
+   If blocking is false, return 5. 5 is the equivalent of a default case
+   in Go channels. *)
+Definition multiSelect (T1:ty) (T2:ty) (T3:ty) (T4:ty) (T5:ty): val :=
+  rec: "multiSelect" "case1" "case2" "case3" "case4" "case5" "blocking" :=
+    let: "selected_case" := ref_to uint64T DefaultCase in
+    let: "order" := Permutation #5 in
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      "selected_case" <-[uint64T] (TryCasesInOrder T1 T2 T3 T4 T5 "order" "case1" "case2" "case3" "case4" "case5");;
+      (if: ((![uint64T] "selected_case") ≠ DefaultCase) || (~ "blocking")
+      then Break
+      else Continue));;
+    ![uint64T] "selected_case".
+
+(* Select1 performs a select operation on 1 case. This is used for Send and
+   Receive as well, since these channel operations in Go are equivalent to
+   a single case select statement with no default. *)
+Definition Select1 (T1:ty): val :=
+  rec: "Select1" "case1" "blocking" :=
+    let: "emptyCase2" := struct.new (SelectCase uint64T) [
+      "channel" ::= slice.nil
+    ] in
+    let: "emptyCase3" := struct.new (SelectCase uint64T) [
+      "channel" ::= slice.nil
+    ] in
+    let: "emptyCase4" := struct.new (SelectCase uint64T) [
+      "channel" ::= slice.nil
+    ] in
+    let: "emptyCase5" := struct.new (SelectCase uint64T) [
+      "channel" ::= slice.nil
+    ] in
+    multiSelect T1 uint64T uint64T uint64T uint64T "case1" "emptyCase2" "emptyCase3" "emptyCase4" "emptyCase5" "blocking".
 
 (* c.Send(val)
 
@@ -62,80 +405,20 @@ Definition Channel__Send (T:ty): val :=
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Continue)
     else #());;
-    let: "buffer_size" := ref_to uint64T (slice.len (struct.loadF (Channel T) "buffer" "c")) in
-    (if: (![uint64T] "buffer_size") ≠ #0
-    then
-      Skip;;
-      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "state" "c") = closed
-        then Panic "send on closed channel"
-        else #());;
-        (if: (struct.loadF (Channel T) "count" "c") ≥ (![uint64T] "buffer_size")
-        then
-          Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-          Continue
-        else
-          let: "last" := ref_to uint64T (((struct.loadF (Channel T) "first" "c") + (struct.loadF (Channel T) "count" "c")) `rem` (![uint64T] "buffer_size")) in
-          SliceSet T (struct.loadF (Channel T) "buffer" "c") (![uint64T] "last") "val";;
-          struct.storeF (Channel T) "count" "c" ((struct.loadF (Channel T) "count" "c") + #1);;
-          Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-          Break));;
-      #()
-    else
-      let: "return_early" := ref_to boolT #false in
-      Skip;;
-      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "state" "c") = closed
-        then Panic "send on closed channel"
-        else #());;
-        (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
-        then
-          struct.storeF (Channel T) "state" "c" sender_done;;
-          struct.storeF (Channel T) "v" "c" "val";;
-          Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-          "return_early" <-[boolT] #true;;
-          Break
-        else
-          (if: (struct.loadF (Channel T) "state" "c") = start
-          then
-            struct.storeF (Channel T) "v" "c" "val";;
-            struct.storeF (Channel T) "state" "c" sender_ready;;
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            Break
-          else
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            Continue)));;
-      (if: ![boolT] "return_early"
-      then
-        Skip;;
-        (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-          Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-          (if: (~ ((struct.loadF (Channel T) "state" "c") = sender_done))
-          then
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            Break
-          else
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            Continue));;
-        #()
-      else
-        Skip;;
-        (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-          Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-          (if: (struct.loadF (Channel T) "state" "c") = closed
-          then Panic "send on closed channel"
-          else #());;
-          (if: (struct.loadF (Channel T) "state" "c") = receiver_done
-          then
-            struct.storeF (Channel T) "state" "c" start;;
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            Break
-          else
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            Continue));;
-        #())).
+    let: "send_case" := ref_to (struct.t (SelectCase T)) (struct.mk (SelectCase T) [
+      "channel" ::= "c";
+      "dir" ::= SelectSend;
+      "Value" ::= "val"
+    ]) in
+    Select1 T "send_case" #true;;
+    #().
+
+Definition NewRecvCase (T:ty): val :=
+  rec: "NewRecvCase" "channel" :=
+    struct.mk (SelectCase T) [
+      "channel" ::= "channel";
+      "dir" ::= SelectRecv
+    ].
 
 (* Equivalent to:
    value, ok := <-c
@@ -150,94 +433,23 @@ Definition Channel__Receive (T:ty): val :=
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         Continue)
     else #());;
-    let: "ret_val" := ref (zero_val T) in
-    let: "buffer_size" := ref_to uint64T (slice.len (struct.loadF (Channel T) "buffer" "c")) in
-    let: "closed_local" := ref_to boolT #false in
-    (if: (![uint64T] "buffer_size") ≠ #0
+    let: "recvCase" := NewRecvCase T "c" in
+    Select1 T "recvCase" #true;;
+    (struct.get (SelectCase T) "Value" "recvCase", struct.get (SelectCase T) "Ok" "recvCase").
+
+(* This is a non-blocking attempt at closing. The only reason close blocks ever is because there
+   may be successful exchanges that need to complete, which is equivalent to the go runtime where
+   the closer must still obtain the channel's lock *)
+Definition Channel__TryClose (T:ty): val :=
+  rec: "Channel__TryClose" "c" :=
+    (if: (struct.loadF (Channel T) "state" "c") = closed
+    then Panic "close of closed channel"
+    else #());;
+    (if: ((struct.loadF (Channel T) "state" "c") ≠ receiver_done) && ((struct.loadF (Channel T) "state" "c") ≠ sender_done)
     then
-      Skip;;
-      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: ((struct.loadF (Channel T) "state" "c") = closed) && ((struct.loadF (Channel T) "count" "c") = #0)
-        then
-          Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-          "closed_local" <-[boolT] #true;;
-          Break
-        else
-          (if: (struct.loadF (Channel T) "count" "c") = #0
-          then
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            Continue
-          else
-            "ret_val" <-[T] (SliceGet T (struct.loadF (Channel T) "buffer" "c") (struct.loadF (Channel T) "first" "c"));;
-            struct.storeF (Channel T) "first" "c" (((struct.loadF (Channel T) "first" "c") + #1) `rem` (![uint64T] "buffer_size"));;
-            struct.storeF (Channel T) "count" "c" ((struct.loadF (Channel T) "count" "c") - #1);;
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            Break)));;
-      (![T] "ret_val", (~ (![boolT] "closed_local")))
-    else
-      let: "return_early" := ref_to boolT #false in
-      Skip;;
-      (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-        Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "state" "c") = closed
-        then
-          Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-          "closed_local" <-[boolT] #true;;
-          Break
-        else
-          (if: (struct.loadF (Channel T) "state" "c") = sender_ready
-          then
-            struct.storeF (Channel T) "state" "c" receiver_done;;
-            "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
-            Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-            "return_early" <-[boolT] #true;;
-            Break
-          else
-            (if: (struct.loadF (Channel T) "state" "c") = start
-            then
-              struct.storeF (Channel T) "state" "c" receiver_ready;;
-              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              Break
-            else
-              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              Continue))));;
-      (if: ![boolT] "closed_local"
-      then (![T] "ret_val", (~ (![boolT] "closed_local")))
-      else
-        (if: ![boolT] "return_early"
-        then
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-            (if: (~ ((struct.loadF (Channel T) "state" "c") = receiver_done))
-            then
-              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              Break
-            else
-              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              Continue));;
-          (![T] "ret_val", (~ (![boolT] "closed_local")))
-        else
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-            (if: (struct.loadF (Channel T) "state" "c") = closed
-            then
-              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              "closed_local" <-[boolT] #true;;
-              Break
-            else
-              (if: (struct.loadF (Channel T) "state" "c") = sender_done
-              then
-                struct.storeF (Channel T) "state" "c" start;;
-                "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
-                Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-                Break
-              else
-                Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-                Continue)));;
-          (![T] "ret_val", (~ (![boolT] "closed_local")))))).
+      struct.storeF (Channel T) "state" "c" closed;;
+      #true
+    else #false).
 
 (* c.Close()
 
@@ -249,20 +461,13 @@ Definition Channel__Close (T:ty): val :=
     (if: "c" = #null
     then Panic "close of nil channel"
     else #());;
+    let: "done" := ref_to boolT #false in
     Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, (~ (![boolT] "done"))); (λ: <>, Skip) := λ: <>,
       Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-      (if: (struct.loadF (Channel T) "state" "c") = closed
-      then Panic "close of closed channel"
-      else #());;
-      (if: ((struct.loadF (Channel T) "state" "c") = receiver_done) || ((struct.loadF (Channel T) "state" "c") = sender_done)
-      then
-        Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-        Continue
-      else
-        struct.storeF (Channel T) "state" "c" closed;;
-        Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-        Break));;
+      "done" <-[boolT] (Channel__TryClose T "c");;
+      Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
+      Continue);;
     #().
 
 (* v := c.ReceiveDiscardOk
@@ -278,162 +483,6 @@ Definition Channel__ReceiveDiscardOk (T:ty): val :=
     "return_val" <-[T] "0_ret";;
     "1_ret";;
     ![T] "return_val".
-
-(* A non-blocking receive operation. If there is not a sender available in an unbuffered channel,
-   we "offer" for a single program step by setting receiver_ready to true, unlocking, then
-   immediately locking, which is necessary when a potential matching party is using TrySend.
-   See the various <n>CaseSelect functions for a description of how this is used to model selects. *)
-Definition Channel__TryReceive (T:ty): val :=
-  rec: "Channel__TryReceive" "c" :=
-    let: "ret_val" := ref (zero_val T) in
-    (if: "c" = #null
-    then (#false, ![T] "ret_val", #false)
-    else
-      let: "buffer_size" := ref_to uint64T (slice.len (struct.loadF (Channel T) "buffer" "c")) in
-      let: "closed_local" := ref_to boolT #false in
-      let: "selected" := ref_to boolT #false in
-      (if: (![uint64T] "buffer_size") ≠ #0
-      then
-        Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "count" "c") = #0
-        then
-          (if: (struct.loadF (Channel T) "state" "c") = closed
-          then
-            "closed_local" <-[boolT] #true;;
-            "selected" <-[boolT] #true
-          else #());;
-          Mutex__Unlock (struct.loadF (Channel T) "lock" "c")
-        else
-          "ret_val" <-[T] (SliceGet T (struct.loadF (Channel T) "buffer" "c") (struct.loadF (Channel T) "first" "c"));;
-          struct.storeF (Channel T) "first" "c" (((struct.loadF (Channel T) "first" "c") + #1) `rem` (![uint64T] "buffer_size"));;
-          struct.storeF (Channel T) "count" "c" ((struct.loadF (Channel T) "count" "c") - #1);;
-          "selected" <-[boolT] #true;;
-          Mutex__Unlock (struct.loadF (Channel T) "lock" "c"));;
-        (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed_local")))
-      else
-        let: "offer" := ref_to boolT #false in
-        Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "state" "c") = closed
-        then
-          "closed_local" <-[boolT] #true;;
-          "selected" <-[boolT] #true
-        else
-          (if: (struct.loadF (Channel T) "state" "c") = sender_ready
-          then
-            struct.storeF (Channel T) "state" "c" receiver_done;;
-            "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
-            "selected" <-[boolT] #true
-          else #());;
-          (if: (struct.loadF (Channel T) "state" "c") = start
-          then
-            struct.storeF (Channel T) "state" "c" receiver_ready;;
-            "offer" <-[boolT] #true
-          else #()));;
-        Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-        (if: ![boolT] "offer"
-        then
-          Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-          (if: (struct.loadF (Channel T) "state" "c") = sender_done
-          then
-            "ret_val" <-[T] (struct.loadF (Channel T) "v" "c");;
-            struct.storeF (Channel T) "state" "c" start;;
-            "selected" <-[boolT] #true
-          else #());;
-          (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
-          then struct.storeF (Channel T) "state" "c" start
-          else #());;
-          Mutex__Unlock (struct.loadF (Channel T) "lock" "c")
-        else #());;
-        (if: ![boolT] "closed_local"
-        then (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed_local")))
-        else
-          (if: (![boolT] "selected") && (~ (![boolT] "offer"))
-          then
-            Skip;;
-            (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-              Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-              (if: (~ ((struct.loadF (Channel T) "state" "c") = receiver_done))
-              then
-                Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-                Break
-              else
-                Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-                Continue))
-          else #());;
-          (![boolT] "selected", ![T] "ret_val", (~ (![boolT] "closed_local")))))).
-
-(* A non-blocking send operation. If there is not a receiver available in an unbuffered channel,
-   we "offer" for a single program step by setting sender_ready to true, unlocking, then
-   immediately locking, which is necessary when a potential matching party is using TryReceive.
-   See the various <n>CaseSelect functions for a description of how this is used to model selects. *)
-Definition Channel__TrySend (T:ty): val :=
-  rec: "Channel__TrySend" "c" "val" :=
-    (if: "c" = #null
-    then #false
-    else
-      let: "selected" := ref_to boolT #false in
-      let: "buffer_size" := ref_to uint64T (slice.len (struct.loadF (Channel T) "buffer" "c")) in
-      (if: (![uint64T] "buffer_size") ≠ #0
-      then
-        Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "state" "c") = closed
-        then Panic "send on closed channel"
-        else #());;
-        (if: (~ ((struct.loadF (Channel T) "count" "c") ≥ (![uint64T] "buffer_size")))
-        then
-          let: "last" := ref_to uint64T (((struct.loadF (Channel T) "first" "c") + (struct.loadF (Channel T) "count" "c")) `rem` (![uint64T] "buffer_size")) in
-          SliceSet T (struct.loadF (Channel T) "buffer" "c") (![uint64T] "last") "val";;
-          struct.storeF (Channel T) "count" "c" ((struct.loadF (Channel T) "count" "c") + #1);;
-          "selected" <-[boolT] #true
-        else #());;
-        Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-        ![boolT] "selected"
-      else
-        let: "offer" := ref_to boolT #false in
-        Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-        (if: (struct.loadF (Channel T) "state" "c") = closed
-        then Panic "send on closed channel"
-        else #());;
-        (if: (struct.loadF (Channel T) "state" "c") = receiver_ready
-        then
-          struct.storeF (Channel T) "state" "c" sender_done;;
-          struct.storeF (Channel T) "v" "c" "val";;
-          "selected" <-[boolT] #true
-        else #());;
-        (if: (struct.loadF (Channel T) "state" "c") = start
-        then
-          struct.storeF (Channel T) "state" "c" sender_ready;;
-          struct.storeF (Channel T) "v" "c" "val";;
-          "offer" <-[boolT] #true
-        else #());;
-        Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-        (if: ![boolT] "offer"
-        then
-          Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-          (if: (struct.loadF (Channel T) "state" "c") = receiver_done
-          then
-            struct.storeF (Channel T) "state" "c" start;;
-            "selected" <-[boolT] #true
-          else #());;
-          (if: (struct.loadF (Channel T) "state" "c") = sender_ready
-          then struct.storeF (Channel T) "state" "c" start
-          else #());;
-          Mutex__Unlock (struct.loadF (Channel T) "lock" "c")
-        else #());;
-        (if: (![boolT] "selected") && (~ (![boolT] "offer"))
-        then
-          Skip;;
-          (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-            Mutex__Lock (struct.loadF (Channel T) "lock" "c");;
-            (if: (~ ((struct.loadF (Channel T) "state" "c") = sender_done))
-            then
-              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              Break
-            else
-              Mutex__Unlock (struct.loadF (Channel T) "lock" "c");;
-              Continue))
-        else #());;
-        ![boolT] "selected")).
 
 (* c.Len()
 
@@ -463,161 +512,37 @@ Definition Channel__Cap (T:ty): val :=
     then #0
     else slice.len (struct.loadF (Channel T) "buffer" "c")).
 
-Definition SelectDir: ty := uint64T.
+(* Select2 performs a select operation on 2 cases. *)
+Definition Select2 (T1:ty) (T2:ty): val :=
+  rec: "Select2" "case1" "case2" "blocking" :=
+    let: "emptyCase3" := struct.new (SelectCase uint64T) [
+    ] in
+    let: "emptyCase4" := struct.new (SelectCase uint64T) [
+    ] in
+    let: "emptyCase5" := struct.new (SelectCase uint64T) [
+    ] in
+    multiSelect T1 T2 uint64T uint64T uint64T "case1" "case2" "emptyCase3" "emptyCase4" "emptyCase5" "blocking".
 
-(* case Chan <- Send *)
-Definition SelectSend : expr := #0.
+(* Select3 performs a select operation on 3 cases. *)
+Definition Select3 (T1:ty) (T2:ty) (T3:ty): val :=
+  rec: "Select3" "case1" "case2" "case3" "blocking" :=
+    let: "emptyCase4" := struct.new (SelectCase uint64T) [
+    ] in
+    let: "emptyCase5" := struct.new (SelectCase uint64T) [
+    ] in
+    multiSelect T1 T2 T3 uint64T uint64T "case1" "case2" "case3" "emptyCase4" "emptyCase5" "blocking".
 
-(* case <-Chan: *)
-Definition SelectRecv : expr := #1.
+(* Select4 performs a select operation on 4 cases. *)
+Definition Select4 (T1:ty) (T2:ty) (T3:ty) (T4:ty): val :=
+  rec: "Select4" "case1" "case2" "case3" "case4" "blocking" :=
+    let: "emptyCase5" := struct.new (SelectCase uint64T) [
+    ] in
+    multiSelect T1 T2 T3 T4 uint64T "case1" "case2" "case3" "case4" "emptyCase5" "blocking".
 
-(* default *)
-Definition SelectDefault : expr := #2.
-
-(* value is used for the value the sender will send and also used to return the received value by
-   reference. *)
-Definition SelectCase (T: ty) : descriptor := struct.decl [
-  "channel" :: ptrT;
-  "dir" :: SelectDir;
-  "Value" :: T;
-  "Ok" :: boolT
-].
-
-(* Simple knuth shuffle. *)
-Definition Shuffle: val :=
-  rec: "Shuffle" "n" :=
-    let: "order" := ref_to (slice.T uint64T) (NewSlice uint64T "n") in
-    let: "i" := ref_to uint64T #0 in
-    (for: (λ: <>, (![uint64T] "i") < "n"); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") + #1)) := λ: <>,
-      SliceSet uint64T (![slice.T uint64T] "order") (![uint64T] "i") (![uint64T] "i");;
-      Continue);;
-    let: "i" := ref_to uint64T ((slice.len (![slice.T uint64T] "order")) - #1) in
-    (for: (λ: <>, (![uint64T] "i") > #0); (λ: <>, "i" <-[uint64T] ((![uint64T] "i") - #1)) := λ: <>,
-      let: "j" := ref_to uint64T ((rand.RandomUint64 #()) `rem` ((![uint64T] "i") + #1)) in
-      let: "temp" := ref_to uint64T (SliceGet uint64T (![slice.T uint64T] "order") (![uint64T] "i")) in
-      SliceSet uint64T (![slice.T uint64T] "order") (![uint64T] "i") (SliceGet uint64T (![slice.T uint64T] "order") (![uint64T] "j"));;
-      SliceSet uint64T (![slice.T uint64T] "order") (![uint64T] "j") (![uint64T] "temp");;
-      Continue);;
-    ![slice.T uint64T] "order".
-
-(* Uses the applicable Try<Operation> function on the select case's channel. Default is always
-   selectable so simply returns true. *)
-Definition TrySelect (T:ty): val :=
-  rec: "TrySelect" "select_case" :=
-    let: "channel" := ref_to ptrT (struct.loadF (SelectCase T) "channel" "select_case") in
-    (if: (struct.loadF (SelectCase T) "dir" "select_case") = SelectSend
-    then Channel__TrySend T (![ptrT] "channel") (struct.loadF (SelectCase T) "Value" "select_case")
-    else
-      (if: (struct.loadF (SelectCase T) "dir" "select_case") = SelectRecv
-      then
-        let: "item" := ref (zero_val T) in
-        let: "ok" := ref (zero_val boolT) in
-        let: "selected" := ref (zero_val boolT) in
-        let: (("0_ret", "1_ret"), "2_ret") := Channel__TryReceive T (![ptrT] "channel") in
-        "selected" <-[boolT] "0_ret";;
-        "item" <-[T] "1_ret";;
-        "ok" <-[boolT] "2_ret";;
-        struct.storeF (SelectCase T) "Value" "select_case" (![T] "item");;
-        struct.storeF (SelectCase T) "Ok" "select_case" (![boolT] "ok");;
-        ![boolT] "selected"
-      else
-        (if: (struct.loadF (SelectCase T) "dir" "select_case") = SelectDefault
-        then #true
-        else #false))).
-
-(* Models a 2 case select statement. Returns 0 if case 1 selected, 1 if case 2 selected.
-   Requires that case 1 not have dir = SelectDefault. If case_2 is a default, this will never block.
-   This is similar to the reflect package dynamic select statements and should give us a true to
-   runtime Go model with a fairly intuitive spec/translation.
-
-   	This:
-   	select {
-   		case c1 <- 0:
-   			<case 1 body>
-   		case v, ok := <-c2:
-   			<case 2 body>
-   	}
-
-   	Will be translated to:
-
-   case_1 := channel.NewSendCase(c1, 0)
-   case_2 := channel.NewRecvCase(c2)
-   var uint64 selected_case = TwoCaseSelect(case_1, case_2)
-
-   	if selected_case == 0 {
-   		<case 1 body>
-   	}
-   	if selected_case == 1 {
-   			var ok bool = case_2.ok
-   			var v uint64 = case_2.value
-   			<case 2 body>
-   		} *)
-Definition TwoCaseSelect (T1:ty) (T2:ty): val :=
-  rec: "TwoCaseSelect" "case_1" "case_2" :=
-    let: "selected_case" := ref_to uint64T #0 in
-    let: "selected" := ref_to boolT #false in
-    let: "order" := ref_to (slice.T uint64T) (Shuffle #2) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      ForSlice uint64T <> "i" (![slice.T uint64T] "order")
-        ((if: ("i" = #0) && (~ (![boolT] "selected"))
-        then
-          "selected" <-[boolT] (TrySelect T1 "case_1");;
-          (if: ![boolT] "selected"
-          then "selected_case" <-[uint64T] #0
-          else #())
-        else #());;
-        (if: (("i" = #1) && (~ (![boolT] "selected"))) && ((struct.loadF (SelectCase T2) "dir" "case_2") ≠ SelectDefault)
-        then
-          "selected" <-[boolT] (TrySelect T2 "case_2");;
-          (if: ![boolT] "selected"
-          then "selected_case" <-[uint64T] #1
-          else #())
-        else #()));;
-      (if: (~ (![boolT] "selected")) && ((struct.loadF (SelectCase T2) "dir" "case_2") = SelectDefault)
-      then Break
-      else
-        (if: ![boolT] "selected"
-        then Break
-        else Continue)));;
-    ![uint64T] "selected_case".
-
-Definition ThreeCaseSelect (T1:ty) (T2:ty) (T3:ty): val :=
-  rec: "ThreeCaseSelect" "case_1" "case_2" "case_3" :=
-    let: "selected_case" := ref_to uint64T #0 in
-    let: "selected" := ref_to boolT #false in
-    let: "order" := ref_to (slice.T uint64T) (Shuffle #3) in
-    Skip;;
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      ForSlice uint64T <> "i" (![slice.T uint64T] "order")
-        ((if: ("i" = #0) && (~ (![boolT] "selected"))
-        then
-          "selected" <-[boolT] (TrySelect T1 "case_1");;
-          (if: ![boolT] "selected"
-          then "selected_case" <-[uint64T] #0
-          else #())
-        else #());;
-        (if: ("i" = #1) && (~ (![boolT] "selected"))
-        then
-          "selected" <-[boolT] (TrySelect T2 "case_2");;
-          (if: ![boolT] "selected"
-          then "selected_case" <-[uint64T] #1
-          else #())
-        else #());;
-        (if: (("i" = #2) && (~ (![boolT] "selected"))) && ((struct.loadF (SelectCase T3) "dir" "case_3") ≠ SelectDefault)
-        then
-          "selected" <-[boolT] (TrySelect T3 "case_3");;
-          (if: ![boolT] "selected"
-          then "selected_case" <-[uint64T] #2
-          else #())
-        else #()));;
-      (if: (~ (![boolT] "selected")) && ((struct.loadF (SelectCase T3) "dir" "case_3") = SelectDefault)
-      then Break
-      else
-        (if: ![boolT] "selected"
-        then Break
-        else Continue)));;
-    ![uint64T] "selected_case".
+(* Select5 is just an alias to MultiSelect for consistency in the API. *)
+Definition Select5 (T1:ty) (T2:ty) (T3:ty) (T4:ty) (T5:ty): val :=
+  rec: "Select5" "case1" "case2" "case3" "case4" "case5" "blocking" :=
+    multiSelect T1 T2 T3 T4 T5 "case1" "case2" "case3" "case4" "case5" "blocking".
 
 Definition NewSendCase (T:ty): val :=
   rec: "NewSendCase" "channel" "value" :=
@@ -625,20 +550,6 @@ Definition NewSendCase (T:ty): val :=
       "channel" ::= "channel";
       "dir" ::= SelectSend;
       "Value" ::= "value"
-    ].
-
-Definition NewRecvCase (T:ty): val :=
-  rec: "NewRecvCase" "channel" :=
-    struct.mk (SelectCase T) [
-      "channel" ::= "channel";
-      "dir" ::= SelectRecv
-    ].
-
-(* The type does not matter here, picking a simple primitive. *)
-Definition NewDefaultCase: val :=
-  rec: "NewDefaultCase" <> :=
-    struct.mk (SelectCase uint64T) [
-      "dir" ::= SelectDefault
     ].
 
 End code.
