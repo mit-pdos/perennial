@@ -387,6 +387,8 @@ Ltac2 solve_has_go_type_step () :=
             Std.indcl_in := None
         } ] None
   | [ h : (@eq (go_string * go_type) (_, _) _) |- _ ] =>
+      (* XXX: inversion_clear is not as powerful as inversion H; subst; clear H;
+      comes up in generics when there are dependent types *)
       Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None; cbn
   end.
 Ltac solve_has_go_type := repeat ltac2:(solve_has_go_type_step ()).
