@@ -17,7 +17,6 @@ Context `{ffi_syntax}.
 Implicit Types (d : struct.descriptor).
 Infix "=?" := (ByteString.eqb).
 
-(* FIXME: what does _f mean? Want better name. *)
 Definition field_offset_f (t : go_type) f : (w64 * go_type) :=
   let missing := W64 (2^64-1) in
   match t with
@@ -109,21 +108,190 @@ Global Hint Extern 3 (struct.Wf (structT ?d)) => exact (proj_descriptor_wf d) : 
 Section lemmas.
 Context `{heapGS Σ}.
 
-Class IntoValStructField (f : go_string) (t : go_type) {V Vf : Type} {tf}
-  (field_proj : V → Vf)
-  `{!IntoVal V} `{!IntoVal Vf}
-  `{!IntoValTyped Vf tf}
-  :=
+Record StructField V :=
+struct_field {
+  Vf : Type;
+  proj : V → Vf;
+  iv :: IntoVal Vf;
+  tf : go_type;
+  ivt :: IntoValTyped Vf tf;
+  setter_wf :: SetterWf proj;
+}.
+Arguments struct_field {_ _} (_) {_ _ _ _}.
+Arguments tf {_} (_).
+Arguments proj {_} (_ _).
+
+Lemma struct_val_aux_eq decls fvs fvs' :
+  (∀ f t, (f, t) ∈ decls →
+  default (zero_val t) (alist_lookup_f f fvs) = default (zero_val t) (alist_lookup_f f fvs')) ↔
+  struct.val_aux (structT decls) fvs = struct.val_aux (structT decls) fvs'.
+Proof.
+  split.
+  - intros Heq. induction decls as [|[]].
+    + rewrite !struct.val_aux_nil //.
+    + rewrite !struct.val_aux_cons. simpl in *. rewrite -IHdecls; first f_equal.
+      2:{ intros. apply Heq. right. done. }
+      apply Heq. left.
+  - intros Heq. intros ?? Hin. induction decls as [|[]]; first by inversion Hin.
+    rewrite !struct.val_aux_cons in Heq. simplify_eq.
+    apply elem_of_cons in Hin. destruct Hin as [Hin|Hcontinue].
+    + simplify_eq. done.
+    + by apply IHdecls.
+Qed.
+
+Definition x V (projections : list (go_string * StructField V)) :=
+  foldl (λ mkType '(_, p), p.(Vf V) → mkType) V projections.
+Record t := mk {
+  wall' : w64;
+  ext' : w64;
+  loc' : loc;
+}.
+Global Instance settable_Time `{ffi_syntax} : Settable _ :=
+  settable! mk < wall'; ext'; loc' >.
+Definition y := [
+    ("wall"%go, struct_field wall');
+    ("ext"%go, struct_field ext');
+    ("loc"%go, struct_field loc')
+  ]%struct.
+
+Eval simpl in foldr (λ '(_, p) mkType, p.(Vf t) → mkType) t y.
+Check (mk : foldr (λ '(_, p) mkType, p.(Vf t) → mkType) t y).
+
+Program Definition x'
+  {V : Type} (projections : list (go_string * StructField V))
+  (mk_record : foldr (λ '(_, p) mkType, p.(Vf V) → mkType) V projections)
+  : Prop :=
+  (fix go (projections : list (go_string * StructField V)) mk1 mk2 :=
+     match projections as ps return (projections = ps → Prop) with
+     | [] => λ _, mk1 = mk2
+     | (name, p) :: tl =>
+         λ Heq,
+         (∀ (x x' : p.(Vf V)),
+            _
+         )
+     end eq_refl
+  ) projections mk_record mk_record.
+Final Obligation.
+intros. subst. clear -go mk1 mk2 x0 x'.
+set (y:=mk1 x0). set (y':=mk2 x').
+eapply go.
+{ exact y. }
+{ exact y'. }
+Defined.
+
+Eval simpl in x' y mk.
+Lemma test : x' y mk.
+Proof.
+  cbn. intros ??????. cbn. unfold x'.
+  cbn.
+  rewrite /eq_trans /f_equal. simpl.
+  unfold foldr_cons.
+  simpl. intros ??. clear.
+  simpl in *.
+Eval cbn in x' y mk.
+unfodl eq_$ect
+
+specialize ()
+Show Proof.
+subst.
+Show Proof.
+
+mk_record mk_record.
+
+
+Class IntoValStruct (t : go_type) (V : Type) :=
   {
-    field_proj_eq_field_get : ∀ v, #(field_proj v) = (struct.field_get_f t f #v);
+    projections : list (go_string * StructField V);
+    mk_record : foldr (λ '(_, p) mkType, p.(Vf V) → mkType) V projections;
+    mk_record_inv :
+    (fix go projections (mk1 mk2 : foldr (λ '(_, p) mkType, p.(Vf V) → mkType) V projections) :=
+       match projections with
+       | [] => mk1 = mk2
+       | (name, p) :: tl =>
+           mk1 = match projections as ps return (foldr _ _ ps) with
+                 | [] => mk1
+                 | (name, p) :: tl => mk1
+                 end
+       end
+    ) projections mk_record mk_record;
+  }.
+    (* )| _ => None *)
+    end
+    foldl (λ P '(_, p),
+                             True
+                        (* ∀ (a a' : p.(Vf V)), mk_record a = mk_record a' → a = a' *)
+                      ) True projections;
+    (* default_struct_val : V; *)
+    size_bounded : go_type_size t < 2^64;
+    struct_wf :: struct.Wf t;
+    projections_match : t = structT ((λ '(x, p), (x, p.(tf))) <$> projections);
+    projections_complete : (∀ v1 v2, Forall (λ '(_, p), p.(proj) v1 = p.(proj) v2) projections → v1 = v2);
+    (* default_projections : Forall (λ '(_, p), p.(proj) default_struct_val = default_val _) projections; *)
+    #[global] struct_eq_dec :: EqDecision V;
   }.
 
-Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
-  (fs : struct.descriptor) (v : V) : iProp Σ :=
-  [∗ list] '(f, _) ∈ fs,
-    ∀ `(H:IntoValStructField f t V Vf tf field_proj), ("H" +:+
-                                                         (String.string_of_list_byte $
-                                                            w8_to_byte <$> f)) ∷ l ↦s[t :: f]{dq} (field_proj v).
+Global Instance into_val_struct_into_val `{!IntoValStruct t V} : IntoVal V :=
+  {|
+    to_val_def := λ v, struct.val_aux t ((λ '(n, p), (n, #(p.(proj) v))) <$> projections)
+  |}.
+
+Program Global Instance into_val_struct_into_val_typed `{!IntoValStruct t V} : IntoValTyped V t :=
+  {|
+    default_val := default_struct_val;
+  |}.
+Next Obligation.
+  intros.
+  destruct IntoValStruct0; subst.
+  rewrite to_val_unseal. simpl. constructor. intros ?? Hin.
+  clear -Hin struct_wf0. induction projections0 as [|[]]; first done.
+  pose proof struct.descriptor_NoDup as Hdup. rewrite fmap_cons in Hdup.
+  inversion Hdup. subst. rename H1 into Hnotin.
+  destruct Hin as [Hin|Hcontinue].
+  - simplify_eq. simpl. rewrite ByteString.eqb_refl /=. apply to_val_has_go_type.
+  - simpl. rewrite ByteString.eqb_ne /=.
+    { by apply IHprojections0. }
+    intros Heq. subst. rewrite -elem_of_list_In in Hcontinue.
+    apply Hnotin. by eapply elem_of_list_fmap_1_alt.
+Qed.
+Next Obligation.
+  intros. destruct IntoValStruct0; subst.
+  rewrite zero_val_eq to_val_unseal /=. pose proof struct.descriptor_NoDup as Hdup. simpl in Hdup.
+  clear -default_projections0 Hdup.
+  induction projections0 as [|[]]; first done.
+  rewrite !struct.val_aux_cons /=. inversion Hdup; subst.
+  inversion default_projections0; subst. simpl.
+  rewrite ByteString.eqb_refl /= H3 default_val_eq_zero_val. f_equal.
+  rewrite -IHprojections0 //=. apply struct_val_aux_eq. intros ?? Hin.
+  apply elem_of_list_fmap_2 in Hin as [[f' ?] [[=->->] ?]].
+  f_equal. simpl. rewrite ByteString.eqb_ne //. intros Heq. subst. apply H1.
+  eapply elem_of_list_fmap_1_alt; try done.
+  { eapply elem_of_list_fmap_1_alt; done. }
+  done.
+Qed.
+Final Obligation.
+  intros. rewrite to_val_unseal /=. intros x y Heq. apply projections_complete.
+  destruct IntoValStruct0. pose proof struct.descriptor_NoDup as Hdup. subst.
+  rewrite Forall_forall.
+  intros [] Hin. simpl in *. clear -Hin Heq Hdup.
+  induction projections0 as [|[]]; first done.
+  rewrite -struct_val_aux_eq in Heq.
+  destruct Hin as [Hin|Hcontinue].
+  - simplify_eq. opose proof (Heq g s.(tf) _) as Heq.
+    { left. }
+    simpl in Heq. rewrite /= ByteString.eqb_refl /= in Heq.
+    apply to_val_inj. done.
+  - inversion Hdup; subst. apply IHprojections0; try done.
+    rewrite struct_val_aux_eq in Heq.
+    rewrite !fmap_cons !struct.val_aux_cons in Heq.
+    simplify_eq. rename H into H'.
+    rewrite -!struct_val_aux_eq in H' |- *.
+    intros. ospecialize (H' f t ltac:(done)).
+    simpl in H'. rewrite ByteString.eqb_ne // in H'.
+    intros ->. apply H1. apply elem_of_list_fmap_2 in H as [[f' ?] [[=->->] ?]].
+    eapply elem_of_list_fmap_1_alt; try done.
+    { eapply elem_of_list_fmap_1_alt; done. }
+    done.
+Qed.
 
 Lemma struct_val_inj d fvs1 fvs2 :
   struct.val_aux (structT d) fvs1 = struct.val_aux (structT d) fvs2 →
@@ -143,24 +311,12 @@ Proof.
   - simpl in *. injection Heq as ??. by apply IHd.
 Qed.
 
-Class StructFieldsSplit `{!IntoVal V} `{!IntoValTyped V t} {dwf : struct.Wf t}
+Class StructFieldsSplit `{!IntoValStruct t V} {dwf : struct.Wf t}
                         (dq : dfrac) (l : loc) (v : V) (Psplit : iProp Σ)
   :=
   {
-    struct_fields_split : l ↦{dq} v ⊢ Psplit ;
-    struct_fields_combine : Psplit ⊢ l ↦{dq} v
+    struct_fields_splittable : (Psplit ⊣⊢ [∗ list] '(name, p) ∈ projections, struct.field_ref_f t name l ↦{dq} (p.(proj) v))
   }.
-
-Lemma flatten_struct_tt : flatten_struct #() = [].
-Proof. rewrite to_val_unseal //. Qed.
-
-Lemma struct_fields_split_intro `{!IntoVal V} `{!IntoValTyped V t} {dwf: struct.Wf t}
-  (dq: dfrac) (l: loc) (v: V) Psplit :
-  (l ↦{dq} v ⊣⊢ Psplit) → StructFieldsSplit dq l v Psplit.
-Proof.
-  intros Heq.
-  constructor; rewrite Heq //.
-Qed.
 
 (* A specialized version of [big_sepL_app] that simplifies some loc_add-related
 expressions. Not strictly about heap_pointsto, but specialized with a dfrac so
@@ -177,19 +333,197 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem struct_fields_acc_update f t V Vf
-  l dq {dwf : struct.Wf t} (v : V)
-  `{IntoValStructField f t V Vf tf field_proj} `{!SetterWf field_proj} :
-  typed_pointsto l dq v -∗
+Lemma struct_field_offset_le decls f:
+  f ∈ decls.*1 →
+  uint.Z (struct.field_offset_f (structT decls) f).1 ≤ go_type_size (structT decls).
+Proof.
+  intros Hin. induction decls as [|[]]; first set_solver.
+  simpl.
+  destruct (decide (g = f)).
+  - subst. rewrite ByteString.eqb_refl. simpl. word.
+  - simpl in *. rewrite ByteString.eqb_ne //.
+    rewrite !go_type_size_unseal in IHdecls |- *. simpl in *.
+    ospecialize (IHdecls _); first set_solver.
+    set (x:=_ decls) in IHdecls |- *.
+    destruct x eqn:H'. simpl in *. word.
+Qed.
+
+Lemma struct_field_offset_cons f t decls f' :
+  go_type_size (structT ((f,t)::decls)) < 2^64 →
+  f' ≠ f →
+  f' ∈ decls.*1 →
+  uint.Z (struct.field_offset_f (structT ((f,t)::decls)) f').1 =
+  go_type_size t + uint.Z (struct.field_offset_f (structT decls) f').1.
+Proof.
+  intros Hsize Hne Hin.
+  opose proof (struct_field_offset_le decls f' _) as Hw.
+  { simpl. done. }
+  subst. simpl in *. rewrite ByteString.eqb_ne //.
+  set (x:=_ decls) in Hw |- *.
+  destruct x. simpl in *.
+  simpl. rewrite !go_type_size_unseal in Hsize Hw |- *.
+  simpl in *. word.
+Qed.
+
+Lemma flatten_struct_tt : flatten_struct #() = [].
+Proof. rewrite to_val_unseal //. Qed.
+
+Lemma flatten_struct_val_aux `{!IntoValStruct t V} v :
+  flatten_struct (struct.val_aux t ((λ '(n, p), (n ::= # (proj p v))%struct) <$> projections)) =
+  concat (flatten_struct <$> ((λ '(_, p), #(proj p v)) <$> projections)).
+Proof.
+  pose proof projections_match. rewrite {1}H0.
+  destruct IntoValStruct0. pose proof struct.descriptor_NoDup as Hdup. subst.
+  simpl in *. clear -Hdup. induction projections0 as [|[]].
+  { rewrite /= struct.val_aux_nil flatten_struct_tt //. }
+  rewrite struct.val_aux_cons /=. inversion Hdup; subst.
+  rewrite /= -IHprojections0 //. rewrite ByteString.eqb_refl. f_equal.
+  f_equal. apply struct_val_aux_eq. intros ?? Hin. f_equal.
+  simpl. rewrite ByteString.eqb_ne //.
+  intros Heq. subst. apply H1.
+  by eapply elem_of_list_fmap_1_alt.
+Qed.
+
+Lemma sep_equiv {PROP : bi} (P P' Q Q' : PROP) :
+  P ⊣⊢ P' →
+  Q ⊣⊢ Q' →
+  P ∗ Q ⊣⊢ P' ∗ Q'.
+Proof. by intros -> ->. Qed.
+
+Lemma big_sepL_equiv {PROP:bi} {A} (l : list A) (Φ Ψ : _ → _ → PROP) :
+  (∀ i x, l !! i = Some x → Φ i x ⊣⊢ Ψ i x) →
+  ([∗ list] i ↦ x ∈ l, Φ i x)%I ⊣⊢ ([∗ list] i ↦ x ∈ l, Ψ i x)%I.
+Proof.
+  induction l using rev_ind; first done.
+  rewrite !big_sepL_snoc => Heq.
+  rewrite IHl.
+  - simpl. iSplit.
+    + iIntros "[$ H]". rewrite Heq; first iFrame.
+      rewrite lookup_app_r // Nat.sub_diag //.
+    + iIntros "[$ H]". rewrite Heq; first iFrame.
+      rewrite lookup_app_r // Nat.sub_diag //.
+  - intros ?? Hlook. apply Heq. rewrite lookup_app Hlook //.
+Qed.
+
+Lemma big_sepL_concat {PROP:bi} {A} (l : list (list A)) (Φ : _ → _ → PROP) :
+  ([∗ list] i ↦ x ∈ concat l, Φ i x) ⊣⊢
+  ([∗ list] j ↦ xs ∈ l, ([∗ list] i ↦ x ∈ xs, Φ (length (concat (take j l)) + i)%nat x)).
+Proof.
+  clear. induction l using rev_ind; first done. simpl. rewrite !concat_app !big_sepL_app.
+  apply sep_equiv. 2: rewrite /= take_app Nat.add_0_r Nat.sub_diag take_0 app_nil_r take_ge //.
+  rewrite IHl. apply big_sepL_equiv. intros.
+  apply lookup_lt_Some in H. rewrite take_app_le //. lia.
+Qed.
+
+Lemma eq_equiv `{Equiv A, !Reflexive (≡@{A})} {a a' : A}:
+  a = a' → a ≡ a'.
+Proof. intros ->. reflexivity. Qed.
+
+Lemma struct_field_offset_lookup i f t decls `{!NoDup decls.*1}:
+  go_type_size (structT decls) < 2^64 →
+  decls !! i = Some (f, t) →
+  uint.Z (struct.field_offset_f (structT decls) f).1 =
+  list_sum (go_type_size <$> take i (decls.*2)).
+Proof.
+  intros Hty. generalize dependent i. induction decls as [|[]]; first done; intros i Hlookup.
+  destruct i.
+  - subst. simpl in *. simplify_eq. rewrite ByteString.eqb_refl //.
+  - inversion NoDup0; subst.
+    rewrite struct_field_offset_cons; [ |list_simplifier..]; first last.
+    { apply elem_of_list_lookup_2 in Hlookup. eapply elem_of_list_fmap_1_alt; done. }
+    { intros ->. subst. apply elem_of_list_lookup_2 in Hlookup.
+      exfalso. apply H2. eapply elem_of_list_fmap_1_alt; done. }
+    { done. }
+    ospecialize (IHdecls _ _ i _).
+    { done. }
+    { clear -Hty. rewrite go_type_size_unseal in Hty |- *. simpl in *. word. }
+    { list_simplifier. done. }
+    rewrite IHdecls fmap_cons firstn_cons fmap_cons /=. word.
+Qed.
+
+Lemma struct_fields_split' `{IntoValStruct t V} l dq (v : V) :
+  l ↦{dq} v ⊣⊢ [∗ list] '(name, p) ∈ projections, struct.field_ref_f t name l ↦{dq} (p.(proj) v).
+Proof.
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  rewrite [in #v]to_val_unseal /= flatten_struct_val_aux big_sepL_concat
+    big_sepL_fmap big_sepL_fmap.
+  apply big_sepL_equiv.
+  intros i [name p] Hlookup.
+  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def.
+  rewrite typed_pointsto_unseal /typed_pointsto_def.
+  apply big_sepL_equiv. intros j x Hlook_x. apply eq_equiv.
+  f_equal. rewrite loc_add_assoc. f_equal.
+  rewrite length_concat. rewrite -> fmap_take.
+  pose proof projections_match. rewrite [in struct.field_offset_f _ _]H1.
+  erewrite (struct_field_offset_lookup i).
+  2:{ pose proof struct.descriptor_NoDup as Hdup. rewrite H1 // in Hdup. }
+  2:{ pose proof size_bounded. rewrite H1 in H2. done. }
+  2:{ rewrite list_lookup_fmap. rewrite Hlookup //. }
+  zify. f_equal. rewrite fmap_take.
+  rewrite -!list_fmap_compose. unfold compose.
+  setoid_rewrite has_go_type_len; first done.
+  destruct x0. apply to_val_has_go_type.
+Qed.
+
+Lemma struct_fields_split `{StructFieldsSplit t V dq l} :
+  l ↦{dq} v ⊢ Psplit.
+Proof. rewrite struct_fields_split' /=. rewrite -> struct_fields_splittable. done. Qed.
+
+Lemma struct_fields_combine `{StructFieldsSplit t V dq l} :
+  Psplit ⊢ l ↦{dq} v.
+Proof. rewrite struct_fields_split' /=. rewrite -> struct_fields_splittable. done. Qed.
+
+Class IntoValStructField (f : go_string) (t : go_type) {V Vf' : Type} {tf'}
+  (field_proj : V → Vf')
+  `{!IntoValStruct t V}
+  `{!IntoVal Vf'}
+  `{!IntoValTyped Vf' tf'} :=
+  {
+    lookup_projection : (alist_lookup_f f projections) = Some (struct_field field_proj)
+  }.
+
+Theorem struct_fields_acc_update f t V Vf'
+  l dq {dwf : struct.Wf t} (v : V) (field_proj : _ → Vf')
+  `{IntoValStructField f t V Vf' tf' field_proj} `{!SetterWf field_proj} :
+  l ↦{dq} v -∗
   l ↦s[t :: f]{dq} (field_proj v) ∗
   (∀ fv', l ↦s[t :: f]{dq} fv' -∗
           typed_pointsto l dq (set field_proj (λ _, fv') v)).
 Proof.
-Admitted.
+  iIntros "Hl".
+  iDestruct (struct_fields_split' with "Hl") as "H".
+  inversion H0.
+  eassert (Hp : ∃ i, projections !! i = Some (f, _)).
+  { induction projections as [|[]]; first done.
+    destruct (decide (g = f)).
+    - eexists O. simpl in *. subst. rewrite ByteString.eqb_refl in lookup_projection0.
+      simplify_eq. done.
+    - ospecialize (IHl0 _).
+      { simpl in *. rewrite ByteString.eqb_ne // in lookup_projection0. }
+      destruct IHl0 as [i IHl].
+      eexists (S i). done. }
+  destruct Hp as [i Hp].
+  iDestruct (big_sepL_lookup_acc_impl with "H") as "[H' H]"; first eassumption.
+  simpl. iFrame.
+  iIntros (?) "H'".
+  iApply struct_fields_split'.
+  iApply ("H" with "[] [H']").
+  2:{ rewrite set_get. iFrame. }
+  iIntros "!# * %Hlook %Hne H". destruct y.
+  iExactEq "H". f_equal.
+  Print Settable.
+  Print SetterWf.
+  rewrite [in (l ↦{_} v)%I]typed_pointsto_unseal /typed_pointsto_def.
+  rewrite to_val_unseal. simpl. destruct IntoValStruct0.
+  subst. simpl in *. destruct H0.
+  iInduction projections0 as [|[]] "IH".
+  { simpl in *. done. }
+  simpl in *.
+Qed.
 
 Theorem struct_fields_acc f t V Vf
   l dq {dwf : struct.Wf t} (v : V)
-  `{IntoValStructField f t V Vf tf field_proj} `{!SetterWf field_proj} :
+  `{IntoValStructField f t V Vf tf' field_proj} `{!SetterWf field_proj} :
   typed_pointsto l dq v -∗
   l ↦s[t :: f]{dq} (field_proj v) ∗
   (l ↦s[t :: f]{dq} (field_proj v) -∗ typed_pointsto l dq v).
@@ -320,11 +654,10 @@ Lemma struct_val_aux_cons decls f t fvs :
   (default (zero_val t) (alist_lookup_f f fvs), (struct.val_aux (structT decls) fvs))%V.
 Proof. rewrite struct.val_aux_unseal //=. Qed.
 
-Global Instance points_to_access_struct_field_ref {V Vf} l f v (proj : V → Vf) dq {t tf : go_type}
-  `{!IntoVal V} `{!IntoValTyped V t}
-  `{!IntoVal Vf} `{!IntoValTyped Vf tf}
-  `{!IntoValStructField f t proj} `{!SetterWf proj}
-  `{!struct.Wf t}
+(* Global Instance *) Definition points_to_access_struct_field_ref
+  {V Vf} (l : loc) f (v : V) (proj : V → Vf) dq {t tf : go_type}
+  `{!IntoValStruct t V} `{!IntoVal Vf} `{!IntoValTyped Vf tf}
+  `{!IntoValStructField f t proj} `{!SetterWf proj} `{!struct.Wf t}
   : PointsToAccess (struct.field_ref_f t f l) (proj v)
                    dq
                    (l ↦{dq} v)%I
@@ -336,61 +669,8 @@ Proof.
 Qed.
 End wps.
 
-(* Specialized simplification for the tactics below. Normally these tactics
-solve the goal and this isn't necessary, but debugging is way easier if they
-fail with the goal in a readable state. *)
-Ltac cbn_w8 :=
-  with_strategy transparent [w8_word_instance]
-    (with_strategy opaque [loc_add] cbn).
-
-(* extend typing's solve_has_go_type to general goals *)
-Ltac solve_has_go_type' :=
-  (* TODO: crude hack, should re-implement this in a principled way *)
-  repeat (
-      solve [ apply to_val_has_go_type ]
-    || solve_has_go_type
-    || cbn_w8
-    ).
-
-(* solve ∀ v, has_go_type (#v) t in IntoValTyped *)
-Ltac solve_to_val_type :=
-  lazymatch goal with
-  | |- forall (_: ffi_syntax), _ => let H := fresh "H" in intros H
-  | _ => idtac
-  end;
-  intros v;
-  rewrite to_val_unseal /=;
-  destruct v; cbn_w8;
-  solve_has_go_type'.
-
-(* solve #default_val = zero_val t in IntoValTyped *)
-Ltac solve_zero_val :=
-  intros;
-  (* unfold and simpify, resulting in goal like
-   [struct.val_aux t [a:=#(default_val A); ...; y:=#(default_val Y)] = struct.val_aux t []]. *)
-  rewrite zero_val_eq to_val_unseal; with_strategy opaque [default_val] cbn;
-  (* replace the [default_val] field values with [zero_val], then unfold
-   [struct.val_aux], at which point there should be values with no [to_val] at
-   all, which are definitionally equal. *)
-  rewrite ?default_val_eq_zero_val struct.val_aux_unseal //.
-
-Ltac solve_to_val_inj :=
-  (* prove Inj (=) (=) (λ v, #v) *)
-  intros;
-  intros [] [];
-  rewrite to_val_unseal /= struct.val_aux_unseal /=;
-    cbn_w8;
-  inv 1;
-  try reflexivity.
-
 Ltac solve_into_val_struct_field :=
-  (* prove IntoValStructField *)
-  constructor; intros v;
-  lazymatch goal with
-  | |- _ = ?rhs =>
-      rewrite [in rhs]to_val_unseal /= struct.val_aux_unseal /=
-  end;
-  destruct v; try reflexivity; cbn_w8.
+  done.
 
 Ltac solve_struct_make_pure_wp :=
   intros;
@@ -402,77 +682,6 @@ Ltac solve_struct_make_pure_wp :=
       rewrite [in v]to_val_unseal;
       apply wp_struct_make; cbn; auto
   end.
-
-Lemma pointsto_loc_add_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
-  l dq (off1 off2: Z) `{!IntoVal V} (v: V) :
-  off1 = off2 →
-  (l +ₗ off1) ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
-Proof. intros; subst; rewrite //. Qed.
-
-Lemma pointsto_loc_add0_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
-  l dq (off2: Z) `{!IntoVal V} (v: V) :
-  0 = off2 →
-  l ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
-Proof. intros; subst; rewrite loc_add_0 //. Qed.
-
-Lemma has_bounded_type_size_def (t: go_type) `{BoundedTypeSize t} :
-  go_type_size_def t < 2^32.
-Proof.
-  destruct H as [H].
-  rewrite go_type_size_unseal in H.
-  auto.
-Qed.
-
-(* solves goals of the form l ↦{dq} v ⊣⊢ l' ↦{dq} v, where the locations involve
-offset calculations. *)
-Ltac solve_field_ref_f :=
-  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def;
-  with_strategy transparent [w8_word_instance] (with_strategy opaque [loc_add] cbn);
-  rewrite ?loc_add_assoc;
-  lazymatch goal with
-  | |- typed_pointsto (_ +ₗ _) _ _ ⊣⊢ _ => apply pointsto_loc_add_equiv
-  | |- typed_pointsto _ _ _ ⊣⊢ _ => apply pointsto_loc_add0_equiv
-  | _ => idtac
-  end;
-  rewrite ?go_type_size_unseal //=;
-  repeat
-    match goal with
-    | |- context[go_type_size_def ?t] =>
-        learn_hyp (has_bounded_type_size_def t)
-    end;
-  try word.
-
-Lemma sep_equiv_split Σ (P1 P2 Q1 Q2: iProp Σ) :
-  P1 ⊣⊢ Q1 →
-  P2 ⊣⊢ Q2 →
-  (P1 ∗ P2 ⊣⊢ Q1 ∗ Q2).
-Proof.
-  intros H1 H2. f_equiv; auto.
-Qed.
-
-(* To prove StructFieldsSplit we need to prove equivalence if a split based on
-[flatten_struct] and one based on a field offset for each field.
-
-This tactic converts one [length (flatten_struct x)] to [go_type_size t]. The
-parameters give it the right value and go_type to relate.
-
-*)
-Ltac simpl_one_flatten_struct x go_t f :=
-  rewrite (@has_go_type_len _ x (struct.field_offset_f go_t f).2); [ | by solve_has_go_type' ];
-  (* this [solve_field_ref_f] should solve the subgoal, but it does not fail
-  otherwise if there are bugs; it's nice for the tactic to leave the simplified
-  state for debugging *)
-  apply sep_equiv_split; [ solve_field_ref_f | ].
-
-Ltac unfold_typed_pointsto :=
-  rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=
-    struct.val_aux_unseal /=;
-    with_strategy transparent [w8_word_instance]
-    (with_strategy opaque [loc_add] cbn).
-
-Ltac split_pointsto_app :=
-  rewrite !heap_pointsto_app;
-  rewrite ?flatten_struct_tt ?big_sepL_nil ?(right_id bi_emp).
 
 (* use the above automation the way proofgen does (approximately, not kept in sync) *)
 Module __struct_automation_test.
@@ -502,21 +711,21 @@ Section instances.
 
 Global Instance settable_Time `{ffi_syntax} : Settable _ :=
   settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
-Global Instance into_val_Time `{ffi_syntax} : IntoVal Time.t :=
-  {| to_val_def v := struct.val_aux time.Time
-                       ["wall" ::= #(Time.wall' v);
-                        "ext" ::= #(Time.ext' v);
-                        "loc" ::= #(Time.loc' v)
-                       ]%struct |}.
-
-Global Program Instance into_val_typed_Time `{ffi_syntax} : IntoValTyped Time.t time.Time :=
-{|
-  default_val := Time.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
+Arguments struct_field {_ _ _} (_) {_ _ _}.
+Global Program Instance into_val_struct_Time `{ffi_syntax} : IntoValStruct time.Time Time.t :=
+  {|
+    projections := [
+      ("wall"%go, struct_field Time.wall');
+      ("ext"%go, struct_field Time.ext');
+      ("loc"%go, struct_field Time.loc')
+    ]%struct;
+    default_struct_val := Time.mk (default_val _) (default_val _) (default_val _);
+  |}.
+Next Obligation. intros. rewrite go_type_size_unseal. reflexivity. Qed.
+Next Obligation. intros. reflexivity. Qed.
+Next Obligation. intros ? [][] H. rewrite !Forall_cons /= in H. naive_solver. Qed.
+Next Obligation. intros. repeat (constructor; first reflexivity); constructor. Qed.
+Final Obligation. intros ?. solve_decision. Qed.
 
 Global Instance into_val_struct_field_Time_wall `{ffi_syntax} : IntoValStructField "wall" time.Time Time.wall'.
 Proof. solve_into_val_struct_field. Qed.
@@ -543,20 +752,10 @@ Global Instance Time_struct_fields_split dq l (v : Time.t) :
   StructFieldsSplit dq l v (
     "Hwall" ∷ l ↦s[time.Time :: "wall"]{dq} v.(Time.wall') ∗
     "Hext" ∷ l ↦s[time.Time :: "ext"]{dq} v.(Time.ext') ∗
-    "Hloc" ∷ l ↦s[time.Time :: "loc"]{dq} v.(Time.loc')
+    "Hloc" ∷ l ↦s[time.Time :: "loc"]{dq} v.(Time.loc') ∗
+    "_" ∷ emp
   ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  simpl_one_flatten_struct (#(Time.wall' v)) time.Time "wall"%go.
-  simpl_one_flatten_struct (#(Time.ext' v)) time.Time "ext"%go.
-
-  solve_field_ref_f.
-Qed.
+Proof. done. Qed.
 
 End instances.
 End time.
