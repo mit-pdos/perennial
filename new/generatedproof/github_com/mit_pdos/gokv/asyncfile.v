@@ -11,6 +11,7 @@ Set Default Proof Using "Type".
 
 Module asyncfile.
 
+(* type asyncfile.AsyncFile *)
 Module AsyncFile.
 Section def.
 Context `{ffi_syntax}.

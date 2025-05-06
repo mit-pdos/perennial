@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module raftpb.
 
+(* type raftpb.ConfChangeI *)
 Module ConfChangeI.
 Section def.
 Context `{ffi_syntax}.
@@ -15,6 +16,7 @@ Definition t := interface.t.
 End def.
 End ConfChangeI.
 
+(* type raftpb.EntryType *)
 Module EntryType.
 Section def.
 Context `{ffi_syntax}.
@@ -22,6 +24,7 @@ Definition t := w32.
 End def.
 End EntryType.
 
+(* type raftpb.MessageType *)
 Module MessageType.
 Section def.
 Context `{ffi_syntax}.
@@ -29,6 +32,7 @@ Definition t := w32.
 End def.
 End MessageType.
 
+(* type raftpb.ConfChangeTransition *)
 Module ConfChangeTransition.
 Section def.
 Context `{ffi_syntax}.
@@ -36,6 +40,7 @@ Definition t := w32.
 End def.
 End ConfChangeTransition.
 
+(* type raftpb.ConfChangeType *)
 Module ConfChangeType.
 Section def.
 Context `{ffi_syntax}.
@@ -43,6 +48,7 @@ Definition t := w32.
 End def.
 End ConfChangeType.
 
+(* type raftpb.Entry *)
 Module Entry.
 Section def.
 Context `{ffi_syntax}.
@@ -127,6 +133,7 @@ Qed.
 
 End instances.
 
+(* type raftpb.ConfState *)
 Module ConfState.
 Section def.
 Context `{ffi_syntax}.
@@ -219,6 +226,7 @@ Qed.
 
 End instances.
 
+(* type raftpb.SnapshotMetadata *)
 Module SnapshotMetadata.
 Section def.
 Context `{ffi_syntax}.
@@ -295,6 +303,7 @@ Qed.
 
 End instances.
 
+(* type raftpb.Snapshot *)
 Module Snapshot.
 Section def.
 Context `{ffi_syntax}.
@@ -363,6 +372,7 @@ Qed.
 
 End instances.
 
+(* type raftpb.Message *)
 Module Message.
 Section def.
 Context `{ffi_syntax}.
@@ -379,6 +389,7 @@ Admitted.
 Global Instance into_val_typed_Message `{ffi_syntax} : IntoValTyped Message.t raftpb.Message.
 Admitted.
 
+(* type raftpb.HardState *)
 Module HardState.
 Section def.
 Context `{ffi_syntax}.
@@ -455,6 +466,7 @@ Qed.
 
 End instances.
 
+(* type raftpb.ConfChange *)
 Module ConfChange.
 Section def.
 Context `{ffi_syntax}.
@@ -539,6 +551,7 @@ Qed.
 
 End instances.
 
+(* type raftpb.ConfChangeV2 *)
 Module ConfChangeV2.
 Section def.
 Context `{ffi_syntax}.

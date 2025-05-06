@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module etcdserverpb.
 
+(* type etcdserverpb.Compare_CompareResult *)
 Module Compare_CompareResult.
 Section def.
 Context `{ffi_syntax}.
@@ -15,6 +16,7 @@ Definition t := w32.
 End def.
 End Compare_CompareResult.
 
+(* type etcdserverpb.Compare_CompareTarget *)
 Module Compare_CompareTarget.
 Section def.
 Context `{ffi_syntax}.
@@ -22,6 +24,7 @@ Definition t := w32.
 End def.
 End Compare_CompareTarget.
 
+(* type etcdserverpb.ResponseHeader *)
 Module ResponseHeader.
 Section def.
 Context `{ffi_syntax}.
@@ -130,6 +133,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.RangeResponse *)
 Module RangeResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -238,6 +242,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.PutResponse *)
 Module PutResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -330,6 +335,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.DeleteRangeResponse *)
 Module DeleteRangeResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -430,6 +436,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.isResponseOp_Response *)
 Module isResponseOp_Response.
 Section def.
 Context `{ffi_syntax}.
@@ -437,6 +444,7 @@ Definition t := interface.t.
 End def.
 End isResponseOp_Response.
 
+(* type etcdserverpb.ResponseOp *)
 Module ResponseOp.
 Section def.
 Context `{ffi_syntax}.
@@ -521,6 +529,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.ResponseOp_ResponseRange *)
 Module ResponseOp_ResponseRange.
 Section def.
 Context `{ffi_syntax}.
@@ -581,6 +590,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.ResponseOp_ResponsePut *)
 Module ResponseOp_ResponsePut.
 Section def.
 Context `{ffi_syntax}.
@@ -641,6 +651,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.ResponseOp_ResponseDeleteRange *)
 Module ResponseOp_ResponseDeleteRange.
 Section def.
 Context `{ffi_syntax}.
@@ -701,6 +712,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.ResponseOp_ResponseTxn *)
 Module ResponseOp_ResponseTxn.
 Section def.
 Context `{ffi_syntax}.
@@ -761,6 +773,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.isCompare_TargetUnion *)
 Module isCompare_TargetUnion.
 Section def.
 Context `{ffi_syntax}.
@@ -768,6 +781,7 @@ Definition t := interface.t.
 End def.
 End isCompare_TargetUnion.
 
+(* type etcdserverpb.Compare *)
 Module Compare.
 Section def.
 Context `{ffi_syntax}.
@@ -884,6 +898,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.Compare_Version *)
 Module Compare_Version.
 Section def.
 Context `{ffi_syntax}.
@@ -944,6 +959,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.Compare_CreateRevision *)
 Module Compare_CreateRevision.
 Section def.
 Context `{ffi_syntax}.
@@ -1004,6 +1020,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.Compare_ModRevision *)
 Module Compare_ModRevision.
 Section def.
 Context `{ffi_syntax}.
@@ -1064,6 +1081,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.Compare_Value *)
 Module Compare_Value.
 Section def.
 Context `{ffi_syntax}.
@@ -1124,6 +1142,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.Compare_Lease *)
 Module Compare_Lease.
 Section def.
 Context `{ffi_syntax}.
@@ -1184,6 +1203,7 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.TxnResponse *)
 Module TxnResponse.
 Section def.
 Context `{ffi_syntax}.

@@ -9,6 +9,7 @@ Set Default Proof Using "Type".
 
 Module lockservice.
 
+(* type lockservice.LockClerk *)
 Module LockClerk.
 Section def.
 Context `{ffi_syntax}.

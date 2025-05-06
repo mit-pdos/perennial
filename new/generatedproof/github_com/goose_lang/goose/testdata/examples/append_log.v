@@ -11,6 +11,7 @@ Set Default Proof Using "Type".
 
 Module append_log.
 
+(* type append_log.Log *)
 Module Log.
 Section def.
 Context `{ffi_syntax}.

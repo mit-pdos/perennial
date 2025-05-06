@@ -9,6 +9,7 @@ Set Default Proof Using "Type".
 
 Module trusted_proph.
 
+(* type trusted_proph.ProphId *)
 Module ProphId.
 Section def.
 Context `{ffi_syntax}.

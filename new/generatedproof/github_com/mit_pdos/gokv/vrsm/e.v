@@ -9,6 +9,7 @@ Set Default Proof Using "Type".
 
 Module e.
 
+(* type e.Error *)
 Module Error.
 Section def.
 Context `{ffi_syntax}.

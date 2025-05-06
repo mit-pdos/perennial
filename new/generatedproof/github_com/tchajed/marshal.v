@@ -10,6 +10,7 @@ Set Default Proof Using "Type".
 
 Module marshal.
 
+(* type marshal.Enc *)
 Module Enc.
 Section def.
 Context `{ffi_syntax}.
@@ -78,6 +79,7 @@ Qed.
 
 End instances.
 
+(* type marshal.Dec *)
 Module Dec.
 Section def.
 Context `{ffi_syntax}.

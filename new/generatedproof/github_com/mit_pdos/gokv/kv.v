@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module kv.
 
+(* type kv.Kv *)
 Module Kv.
 Section def.
 Context `{ffi_syntax}.
@@ -15,6 +16,7 @@ Definition t := interface.t.
 End def.
 End Kv.
 
+(* type kv.KvCput *)
 Module KvCput.
 Section def.
 Context `{ffi_syntax}.

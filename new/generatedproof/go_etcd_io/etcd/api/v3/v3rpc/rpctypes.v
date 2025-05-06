@@ -10,6 +10,7 @@ Set Default Proof Using "Type".
 
 Module rpctypes.
 
+(* type rpctypes.EtcdError *)
 Module EtcdError.
 Section def.
 Context `{ffi_syntax}.
@@ -78,6 +79,7 @@ Qed.
 
 End instances.
 
+(* type rpctypes.TokenFieldNameGRPCKey *)
 Module TokenFieldNameGRPCKey.
 Section def.
 Context `{ffi_syntax}.

@@ -9,6 +9,7 @@ Set Default Proof Using "Type".
 
 Module alloc.
 
+(* type alloc.Alloc *)
 Module Alloc.
 Section def.
 Context `{ffi_syntax}.

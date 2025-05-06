@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module zapcore.
 
+(* type zapcore.FieldType *)
 Module FieldType.
 Section def.
 Context `{ffi_syntax}.
@@ -15,6 +16,7 @@ Definition t := w8.
 End def.
 End FieldType.
 
+(* type zapcore.Field *)
 Module Field.
 Section def.
 Context `{ffi_syntax}.

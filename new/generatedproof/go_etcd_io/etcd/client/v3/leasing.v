@@ -21,6 +21,7 @@ Set Default Proof Using "Type".
 
 Module leasing.
 
+(* type leasing.leaseCache *)
 Module leaseCache.
 Section def.
 Context `{ffi_syntax}.
@@ -105,6 +106,7 @@ Qed.
 
 End instances.
 
+(* type leasing.leaseKey *)
 Module leaseKey.
 Section def.
 Context `{ffi_syntax}.
@@ -181,6 +183,7 @@ Qed.
 
 End instances.
 
+(* type leasing.leasingKV *)
 Module leasingKV.
 Section def.
 Context `{ffi_syntax}.
@@ -313,6 +316,7 @@ Qed.
 
 End instances.
 
+(* type leasing.txnLeasing *)
 Module txnLeasing.
 Section def.
 Context `{ffi_syntax}.

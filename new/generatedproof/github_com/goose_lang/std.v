@@ -10,6 +10,7 @@ Set Default Proof Using "Type".
 
 Module std.
 
+(* type std.JoinHandle *)
 Module JoinHandle.
 Section def.
 Context `{ffi_syntax}.

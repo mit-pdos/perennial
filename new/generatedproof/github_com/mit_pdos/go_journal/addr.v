@@ -10,6 +10,7 @@ Set Default Proof Using "Type".
 
 Module addr.
 
+(* type addr.Addr *)
 Module Addr.
 Section def.
 Context `{ffi_syntax}.

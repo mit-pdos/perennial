@@ -12,6 +12,7 @@ Set Default Proof Using "Type".
 
 Module cachekv.
 
+(* type cachekv.cacheValue *)
 Module cacheValue.
 Section def.
 Context `{ffi_syntax}.
@@ -80,6 +81,7 @@ Qed.
 
 End instances.
 
+(* type cachekv.CacheKv *)
 Module CacheKv.
 Section def.
 Context `{ffi_syntax}.

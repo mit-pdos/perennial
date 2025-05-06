@@ -15,6 +15,7 @@ Set Default Proof Using "Type".
 
 Module vkv.
 
+(* type vkv.Clerk *)
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -75,6 +76,7 @@ Qed.
 
 End instances.
 
+(* type vkv.ClerkPool *)
 Module ClerkPool.
 Section def.
 Context `{ffi_syntax}.
@@ -151,6 +153,7 @@ Qed.
 
 End instances.
 
+(* type vkv.KVState *)
 Module KVState.
 Section def.
 Context `{ffi_syntax}.
@@ -227,6 +230,7 @@ Qed.
 
 End instances.
 
+(* type vkv.PutArgs *)
 Module PutArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -295,6 +299,7 @@ Qed.
 
 End instances.
 
+(* type vkv.getArgs *)
 Module getArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -302,6 +307,7 @@ Definition t := go_string.
 End def.
 End getArgs.
 
+(* type vkv.CondPutArgs *)
 Module CondPutArgs.
 Section def.
 Context `{ffi_syntax}.

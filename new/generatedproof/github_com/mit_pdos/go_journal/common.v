@@ -9,6 +9,7 @@ Set Default Proof Using "Type".
 
 Module common.
 
+(* type common.Inum *)
 Module Inum.
 Section def.
 Context `{ffi_syntax}.
@@ -16,6 +17,7 @@ Definition t := w64.
 End def.
 End Inum.
 
+(* type common.Bnum *)
 Module Bnum.
 Section def.
 Context `{ffi_syntax}.

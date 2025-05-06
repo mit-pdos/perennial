@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module context.
 
+(* type context.Context *)
 Module Context.
 Section def.
 Context `{ffi_syntax}.
@@ -15,6 +16,7 @@ Definition t := interface.t.
 End def.
 End Context.
 
+(* type context.CancelFunc *)
 Module CancelFunc.
 Section def.
 Context `{ffi_syntax}.

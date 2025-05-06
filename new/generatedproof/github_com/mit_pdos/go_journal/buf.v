@@ -13,6 +13,7 @@ Set Default Proof Using "Type".
 
 Module buf.
 
+(* type buf.Buf *)
 Module Buf.
 Section def.
 Context `{ffi_syntax}.
@@ -97,6 +98,7 @@ Qed.
 
 End instances.
 
+(* type buf.BufMap *)
 Module BufMap.
 Section def.
 Context `{ffi_syntax}.

@@ -12,6 +12,7 @@ Set Default Proof Using "Type".
 
 Module reconnectclient.
 
+(* type reconnectclient.ReconnectingClient *)
 Module ReconnectingClient.
 Section def.
 Context `{ffi_syntax}.

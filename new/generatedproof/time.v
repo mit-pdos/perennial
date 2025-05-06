@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module time.
 
+(* type time.Time *)
 Module Time.
 Section def.
 Context `{ffi_syntax}.

@@ -14,6 +14,7 @@ Set Default Proof Using "Type".
 
 Module urpc.
 
+(* type urpc.Server *)
 Module Server.
 Section def.
 Context `{ffi_syntax}.
@@ -74,6 +75,7 @@ Qed.
 
 End instances.
 
+(* type urpc.Callback *)
 Module Callback.
 Section def.
 Context `{ffi_syntax}.
@@ -150,6 +152,7 @@ Qed.
 
 End instances.
 
+(* type urpc.Client *)
 Module Client.
 Section def.
 Context `{ffi_syntax}.
@@ -234,6 +237,7 @@ Qed.
 
 End instances.
 
+(* type urpc.Error *)
 Module Error.
 Section def.
 Context `{ffi_syntax}.

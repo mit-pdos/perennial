@@ -15,6 +15,7 @@ Set Default Proof Using "Type".
 
 Module replicated_block.
 
+(* type replicated_block.RepBlock *)
 Module RepBlock.
 Section def.
 Context `{ffi_syntax}.

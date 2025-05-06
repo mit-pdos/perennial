@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module mvccpb.
 
+(* type mvccpb.Event_EventType *)
 Module Event_EventType.
 Section def.
 Context `{ffi_syntax}.
@@ -15,6 +16,7 @@ Definition t := w32.
 End def.
 End Event_EventType.
 
+(* type mvccpb.KeyValue *)
 Module KeyValue.
 Section def.
 Context `{ffi_syntax}.
@@ -139,6 +141,7 @@ Qed.
 
 End instances.
 
+(* type mvccpb.Event *)
 Module Event.
 Section def.
 Context `{ffi_syntax}.

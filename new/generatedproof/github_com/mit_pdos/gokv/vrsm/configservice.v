@@ -18,6 +18,7 @@ Set Default Proof Using "Type".
 
 Module configservice.
 
+(* type configservice.Clerk *)
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -94,6 +95,7 @@ Qed.
 
 End instances.
 
+(* type configservice.state *)
 Module state.
 Section def.
 Context `{ffi_syntax}.
@@ -186,6 +188,7 @@ Qed.
 
 End instances.
 
+(* type configservice.Server *)
 Module Server.
 Section def.
 Context `{ffi_syntax}.

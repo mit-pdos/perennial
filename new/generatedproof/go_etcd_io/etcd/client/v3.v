@@ -10,6 +10,7 @@ Set Default Proof Using "Type".
 
 Module clientv3.
 
+(* type clientv3.Client *)
 Module Client.
 Section def.
 Context `{ffi_syntax}.
@@ -26,6 +27,7 @@ Admitted.
 Global Instance into_val_typed_Client `{ffi_syntax} : IntoValTyped Client.t clientv3.Client.
 Admitted.
 
+(* type clientv3.Cluster *)
 Module Cluster.
 Section def.
 Context `{ffi_syntax}.
@@ -33,6 +35,7 @@ Definition t := interface.t.
 End def.
 End Cluster.
 
+(* type clientv3.Cmp *)
 Module Cmp.
 Section def.
 Context `{ffi_syntax}.
@@ -40,6 +43,7 @@ Definition t := etcdserverpb.Compare.t.
 End def.
 End Cmp.
 
+(* type clientv3.PutResponse *)
 Module PutResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -47,6 +51,7 @@ Definition t := etcdserverpb.PutResponse.t.
 End def.
 End PutResponse.
 
+(* type clientv3.GetResponse *)
 Module GetResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -54,6 +59,7 @@ Definition t := etcdserverpb.RangeResponse.t.
 End def.
 End GetResponse.
 
+(* type clientv3.DeleteResponse *)
 Module DeleteResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -61,6 +67,7 @@ Definition t := etcdserverpb.DeleteRangeResponse.t.
 End def.
 End DeleteResponse.
 
+(* type clientv3.TxnResponse *)
 Module TxnResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -68,6 +75,7 @@ Definition t := etcdserverpb.TxnResponse.t.
 End def.
 End TxnResponse.
 
+(* type clientv3.KV *)
 Module KV.
 Section def.
 Context `{ffi_syntax}.
@@ -75,6 +83,7 @@ Definition t := interface.t.
 End def.
 End KV.
 
+(* type clientv3.OpResponse *)
 Module OpResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -159,6 +168,7 @@ Qed.
 
 End instances.
 
+(* type clientv3.LeaseID *)
 Module LeaseID.
 Section def.
 Context `{ffi_syntax}.
@@ -166,6 +176,7 @@ Definition t := w64.
 End def.
 End LeaseID.
 
+(* type clientv3.LeaseGrantResponse *)
 Module LeaseGrantResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -250,6 +261,7 @@ Qed.
 
 End instances.
 
+(* type clientv3.Lease *)
 Module Lease.
 Section def.
 Context `{ffi_syntax}.
@@ -257,6 +269,7 @@ Definition t := interface.t.
 End def.
 End Lease.
 
+(* type clientv3.Op *)
 Module Op.
 Section def.
 Context `{ffi_syntax}.
@@ -273,6 +286,7 @@ Admitted.
 Global Instance into_val_typed_Op `{ffi_syntax} : IntoValTyped Op.t clientv3.Op.
 Admitted.
 
+(* type clientv3.OpOption *)
 Module OpOption.
 Section def.
 Context `{ffi_syntax}.
@@ -280,6 +294,7 @@ Definition t := func.t.
 End def.
 End OpOption.
 
+(* type clientv3.Txn *)
 Module Txn.
 Section def.
 Context `{ffi_syntax}.
@@ -287,6 +302,7 @@ Definition t := interface.t.
 End def.
 End Txn.
 
+(* type clientv3.Event *)
 Module Event.
 Section def.
 Context `{ffi_syntax}.
@@ -294,6 +310,7 @@ Definition t := mvccpb.Event.t.
 End def.
 End Event.
 
+(* type clientv3.WatchChan *)
 Module WatchChan.
 Section def.
 Context `{ffi_syntax}.
@@ -301,6 +318,7 @@ Definition t := loc.
 End def.
 End WatchChan.
 
+(* type clientv3.Watcher *)
 Module Watcher.
 Section def.
 Context `{ffi_syntax}.
@@ -308,6 +326,7 @@ Definition t := interface.t.
 End def.
 End Watcher.
 
+(* type clientv3.WatchResponse *)
 Module WatchResponse.
 Section def.
 Context `{ffi_syntax}.

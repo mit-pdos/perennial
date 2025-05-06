@@ -14,6 +14,7 @@ Set Default Proof Using "Type".
 
 Module wal.
 
+(* type wal.LogPosition *)
 Module LogPosition.
 Section def.
 Context `{ffi_syntax}.
@@ -21,6 +22,7 @@ Definition t := w64.
 End def.
 End LogPosition.
 
+(* type wal.Update *)
 Module Update.
 Section def.
 Context `{ffi_syntax}.
@@ -89,6 +91,7 @@ Qed.
 
 End instances.
 
+(* type wal.circularAppender *)
 Module circularAppender.
 Section def.
 Context `{ffi_syntax}.
@@ -149,6 +152,7 @@ Qed.
 
 End instances.
 
+(* type wal.sliding *)
 Module sliding.
 Section def.
 Context `{ffi_syntax}.
@@ -241,6 +245,7 @@ Qed.
 
 End instances.
 
+(* type wal.WalogState *)
 Module WalogState.
 Section def.
 Context `{ffi_syntax}.
@@ -325,6 +330,7 @@ Qed.
 
 End instances.
 
+(* type wal.Walog *)
 Module Walog.
 Section def.
 Context `{ffi_syntax}.

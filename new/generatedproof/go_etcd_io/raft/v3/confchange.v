@@ -9,6 +9,7 @@ Set Default Proof Using "Type".
 
 Module confchange.
 
+(* type confchange.Changer *)
 Module Changer.
 Section def.
 Context `{ffi_syntax}.

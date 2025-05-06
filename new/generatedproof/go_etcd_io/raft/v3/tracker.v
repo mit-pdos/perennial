@@ -13,6 +13,7 @@ Set Default Proof Using "Type".
 
 Module tracker.
 
+(* type tracker.inflight *)
 Module inflight.
 Section def.
 Context `{ffi_syntax}.
@@ -81,6 +82,7 @@ Qed.
 
 End instances.
 
+(* type tracker.Inflights *)
 Module Inflights.
 Section def.
 Context `{ffi_syntax}.
@@ -181,6 +183,7 @@ Qed.
 
 End instances.
 
+(* type tracker.StateType *)
 Module StateType.
 Section def.
 Context `{ffi_syntax}.
@@ -188,6 +191,7 @@ Definition t := w64.
 End def.
 End StateType.
 
+(* type tracker.Progress *)
 Module Progress.
 Section def.
 Context `{ffi_syntax}.
@@ -312,6 +316,7 @@ Qed.
 
 End instances.
 
+(* type tracker.ProgressMap *)
 Module ProgressMap.
 Section def.
 Context `{ffi_syntax}.
@@ -319,6 +324,7 @@ Definition t := loc.
 End def.
 End ProgressMap.
 
+(* type tracker.Config *)
 Module Config.
 Section def.
 Context `{ffi_syntax}.
@@ -403,6 +409,7 @@ Qed.
 
 End instances.
 
+(* type tracker.ProgressTracker *)
 Module ProgressTracker.
 Section def.
 Context `{ffi_syntax}.
@@ -495,6 +502,7 @@ Qed.
 
 End instances.
 
+(* type tracker.matchAckIndexer *)
 Module matchAckIndexer.
 Section def.
 Context `{ffi_syntax}.

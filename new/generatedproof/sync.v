@@ -11,6 +11,7 @@ Set Default Proof Using "Type".
 
 Module sync.
 
+(* type sync.noCopy *)
 Module noCopy.
 Section def.
 Context `{ffi_syntax}.
@@ -47,6 +48,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type sync.RWMutex *)
 Module RWMutex.
 Section def.
 Context `{ffi_syntax}.
@@ -139,6 +141,7 @@ Qed.
 
 End instances.
 
+(* type sync.WaitGroup *)
 Module WaitGroup.
 Section def.
 Context `{ffi_syntax}.

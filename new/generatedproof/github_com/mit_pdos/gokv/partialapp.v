@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module main.
 
+(* type main.Foo *)
 Module Foo.
 Section def.
 Context `{ffi_syntax}.

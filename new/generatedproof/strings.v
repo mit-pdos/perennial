@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module strings.
 
+(* type strings.Builder *)
 Module Builder.
 Section def.
 Context `{ffi_syntax}.

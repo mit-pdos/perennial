@@ -16,6 +16,7 @@ Set Default Proof Using "Type".
 
 Module paxos.
 
+(* type paxos.singleClerk *)
 Module singleClerk.
 Section def.
 Context `{ffi_syntax}.
@@ -76,6 +77,7 @@ Qed.
 
 End instances.
 
+(* type paxos.Error *)
 Module Error.
 Section def.
 Context `{ffi_syntax}.
@@ -83,6 +85,7 @@ Definition t := w64.
 End def.
 End Error.
 
+(* type paxos.applyAsFollowerArgs *)
 Module applyAsFollowerArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -159,6 +162,7 @@ Qed.
 
 End instances.
 
+(* type paxos.applyAsFollowerReply *)
 Module applyAsFollowerReply.
 Section def.
 Context `{ffi_syntax}.
@@ -219,6 +223,7 @@ Qed.
 
 End instances.
 
+(* type paxos.enterNewEpochArgs *)
 Module enterNewEpochArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -279,6 +284,7 @@ Qed.
 
 End instances.
 
+(* type paxos.enterNewEpochReply *)
 Module enterNewEpochReply.
 Section def.
 Context `{ffi_syntax}.
@@ -363,6 +369,7 @@ Qed.
 
 End instances.
 
+(* type paxos.applyReply *)
 Module applyReply.
 Section def.
 Context `{ffi_syntax}.
@@ -431,6 +438,7 @@ Qed.
 
 End instances.
 
+(* type paxos.paxosState *)
 Module paxosState.
 Section def.
 Context `{ffi_syntax}.
@@ -523,6 +531,7 @@ Qed.
 
 End instances.
 
+(* type paxos.Server *)
 Module Server.
 Section def.
 Context `{ffi_syntax}.

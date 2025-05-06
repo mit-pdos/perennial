@@ -14,6 +14,7 @@ Set Default Proof Using "Type".
 
 Module exactlyonce.
 
+(* type exactlyonce.eStateMachine *)
 Module eStateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -106,6 +107,7 @@ Qed.
 
 End instances.
 
+(* type exactlyonce.Clerk *)
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -182,6 +184,7 @@ Qed.
 
 End instances.
 
+(* type exactlyonce.VersionedStateMachine *)
 Module VersionedStateMachine.
 Section def.
 Context `{ffi_syntax}.

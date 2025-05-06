@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module codes.
 
+(* type codes.Code *)
 Module Code.
 Section def.
 Context `{ffi_syntax}.

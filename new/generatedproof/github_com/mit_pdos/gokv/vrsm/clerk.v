@@ -14,6 +14,7 @@ Set Default Proof Using "Type".
 
 Module clerk.
 
+(* type clerk.Clerk *)
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.

@@ -18,6 +18,7 @@ Set Default Proof Using "Type".
 
 Module replica.
 
+(* type replica.Op *)
 Module Op.
 Section def.
 Context `{ffi_syntax}.
@@ -25,6 +26,7 @@ Definition t := slice.t.
 End def.
 End Op.
 
+(* type replica.ApplyAsBackupArgs *)
 Module ApplyAsBackupArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -101,6 +103,7 @@ Qed.
 
 End instances.
 
+(* type replica.SetStateArgs *)
 Module SetStateArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -185,6 +188,7 @@ Qed.
 
 End instances.
 
+(* type replica.GetStateArgs *)
 Module GetStateArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -245,6 +249,7 @@ Qed.
 
 End instances.
 
+(* type replica.GetStateReply *)
 Module GetStateReply.
 Section def.
 Context `{ffi_syntax}.
@@ -329,6 +334,7 @@ Qed.
 
 End instances.
 
+(* type replica.BecomePrimaryArgs *)
 Module BecomePrimaryArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -397,6 +403,7 @@ Qed.
 
 End instances.
 
+(* type replica.ApplyReply *)
 Module ApplyReply.
 Section def.
 Context `{ffi_syntax}.
@@ -465,6 +472,7 @@ Qed.
 
 End instances.
 
+(* type replica.IncreaseCommitArgs *)
 Module IncreaseCommitArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -472,6 +480,7 @@ Definition t := w64.
 End def.
 End IncreaseCommitArgs.
 
+(* type replica.StateMachine *)
 Module StateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -556,6 +565,7 @@ Qed.
 
 End instances.
 
+(* type replica.SyncStateMachine *)
 Module SyncStateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -640,6 +650,7 @@ Qed.
 
 End instances.
 
+(* type replica.Clerk *)
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -700,6 +711,7 @@ Qed.
 
 End instances.
 
+(* type replica.Server *)
 Module Server.
 Section def.
 Context `{ffi_syntax}.

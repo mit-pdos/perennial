@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module slices.
 
+(* type slices.Tup *)
 Module Tup.
 Section def.
 Context `{ffi_syntax}.

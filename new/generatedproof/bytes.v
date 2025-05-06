@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module bytes.
 
+(* type bytes.Buffer *)
 Module Buffer.
 Section def.
 Context `{ffi_syntax}.

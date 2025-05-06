@@ -25,6 +25,7 @@ Set Default Proof Using "Type".
 
 Module raft.
 
+(* type raft.Storage *)
 Module Storage.
 Section def.
 Context `{ffi_syntax}.
@@ -32,6 +33,7 @@ Definition t := interface.t.
 End def.
 End Storage.
 
+(* type raft.Logger *)
 Module Logger.
 Section def.
 Context `{ffi_syntax}.
@@ -39,6 +41,7 @@ Definition t := interface.t.
 End def.
 End Logger.
 
+(* type raft.unstable *)
 Module unstable.
 Section def.
 Context `{ffi_syntax}.
@@ -139,6 +142,7 @@ Qed.
 
 End instances.
 
+(* type raft.entryEncodingSize *)
 Module entryEncodingSize.
 Section def.
 Context `{ffi_syntax}.
@@ -146,6 +150,7 @@ Definition t := w64.
 End def.
 End entryEncodingSize.
 
+(* type raft.raftLog *)
 Module raftLog.
 Section def.
 Context `{ffi_syntax}.
@@ -270,6 +275,7 @@ Qed.
 
 End instances.
 
+(* type raft.DefaultLogger *)
 Module DefaultLogger.
 Section def.
 Context `{ffi_syntax}.
@@ -338,6 +344,7 @@ Qed.
 
 End instances.
 
+(* type raft.SnapshotStatus *)
 Module SnapshotStatus.
 Section def.
 Context `{ffi_syntax}.
@@ -345,6 +352,7 @@ Definition t := w64.
 End def.
 End SnapshotStatus.
 
+(* type raft.StateType *)
 Module StateType.
 Section def.
 Context `{ffi_syntax}.
@@ -352,6 +360,7 @@ Definition t := w64.
 End def.
 End StateType.
 
+(* type raft.SoftState *)
 Module SoftState.
 Section def.
 Context `{ffi_syntax}.
@@ -420,6 +429,7 @@ Qed.
 
 End instances.
 
+(* type raft.Ready *)
 Module Ready.
 Section def.
 Context `{ffi_syntax}.
@@ -536,6 +546,7 @@ Qed.
 
 End instances.
 
+(* type raft.Node *)
 Module Node.
 Section def.
 Context `{ffi_syntax}.
@@ -543,6 +554,7 @@ Definition t := interface.t.
 End def.
 End Node.
 
+(* type raft.Peer *)
 Module Peer.
 Section def.
 Context `{ffi_syntax}.
@@ -611,6 +623,7 @@ Qed.
 
 End instances.
 
+(* type raft.msgWithResult *)
 Module msgWithResult.
 Section def.
 Context `{ffi_syntax}.
@@ -679,6 +692,7 @@ Qed.
 
 End instances.
 
+(* type raft.node *)
 Module node.
 Section def.
 Context `{ffi_syntax}.
@@ -819,6 +833,7 @@ Qed.
 
 End instances.
 
+(* type raft.ReadOnlyOption *)
 Module ReadOnlyOption.
 Section def.
 Context `{ffi_syntax}.
@@ -826,6 +841,7 @@ Definition t := w64.
 End def.
 End ReadOnlyOption.
 
+(* type raft.lockedRand *)
 Module lockedRand.
 Section def.
 Context `{ffi_syntax}.
@@ -886,6 +902,7 @@ Qed.
 
 End instances.
 
+(* type raft.CampaignType *)
 Module CampaignType.
 Section def.
 Context `{ffi_syntax}.
@@ -893,6 +910,7 @@ Definition t := go_string.
 End def.
 End CampaignType.
 
+(* type raft.TraceLogger *)
 Module TraceLogger.
 Section def.
 Context `{ffi_syntax}.
@@ -900,6 +918,7 @@ Definition t := interface.t.
 End def.
 End TraceLogger.
 
+(* type raft.Config *)
 Module Config.
 Section def.
 Context `{ffi_syntax}.
@@ -1104,6 +1123,7 @@ Qed.
 
 End instances.
 
+(* type raft.entryPayloadSize *)
 Module entryPayloadSize.
 Section def.
 Context `{ffi_syntax}.
@@ -1111,6 +1131,7 @@ Definition t := w64.
 End def.
 End entryPayloadSize.
 
+(* type raft.stepFunc *)
 Module stepFunc.
 Section def.
 Context `{ffi_syntax}.
@@ -1118,6 +1139,7 @@ Definition t := func.t.
 End def.
 End stepFunc.
 
+(* type raft.raft *)
 Module raft.
 Section def.
 Context `{ffi_syntax}.
@@ -1426,6 +1448,7 @@ Qed.
 
 End instances.
 
+(* type raft.RawNode *)
 Module RawNode.
 Section def.
 Context `{ffi_syntax}.
@@ -1518,6 +1541,7 @@ Qed.
 
 End instances.
 
+(* type raft.ProgressType *)
 Module ProgressType.
 Section def.
 Context `{ffi_syntax}.
@@ -1525,6 +1549,7 @@ Definition t := w8.
 End def.
 End ProgressType.
 
+(* type raft.ReadState *)
 Module ReadState.
 Section def.
 Context `{ffi_syntax}.
@@ -1593,6 +1618,7 @@ Qed.
 
 End instances.
 
+(* type raft.readIndexStatus *)
 Module readIndexStatus.
 Section def.
 Context `{ffi_syntax}.
@@ -1669,6 +1695,7 @@ Qed.
 
 End instances.
 
+(* type raft.readOnly *)
 Module readOnly.
 Section def.
 Context `{ffi_syntax}.
@@ -1745,6 +1772,7 @@ Qed.
 
 End instances.
 
+(* type raft.TracingEvent *)
 Module TracingEvent.
 Section def.
 Context `{ffi_syntax}.
@@ -1781,6 +1809,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type raft.BasicStatus *)
 Module BasicStatus.
 Section def.
 Context `{ffi_syntax}.
@@ -1873,6 +1902,7 @@ Qed.
 
 End instances.
 
+(* type raft.Status *)
 Module Status.
 Section def.
 Context `{ffi_syntax}.
@@ -1949,6 +1979,7 @@ Qed.
 
 End instances.
 
+(* type raft.inMemStorageCallStats *)
 Module inMemStorageCallStats.
 Section def.
 Context `{ffi_syntax}.
@@ -2049,6 +2080,7 @@ Qed.
 
 End instances.
 
+(* type raft.MemoryStorage *)
 Module MemoryStorage.
 Section def.
 Context `{ffi_syntax}.
@@ -2141,6 +2173,7 @@ Qed.
 
 End instances.
 
+(* type raft.entryID *)
 Module entryID.
 Section def.
 Context `{ffi_syntax}.
@@ -2209,6 +2242,7 @@ Qed.
 
 End instances.
 
+(* type raft.logSlice *)
 Module logSlice.
 Section def.
 Context `{ffi_syntax}.
@@ -2285,6 +2319,7 @@ Qed.
 
 End instances.
 
+(* type raft.EntryFormatter *)
 Module EntryFormatter.
 Section def.
 Context `{ffi_syntax}.

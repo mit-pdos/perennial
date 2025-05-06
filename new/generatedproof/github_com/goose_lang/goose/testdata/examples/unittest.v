@@ -14,6 +14,7 @@ Set Default Proof Using "Type".
 
 Module unittest.
 
+(* type unittest.Foo *)
 Module Foo.
 Section def.
 Context `{ffi_syntax}.
@@ -21,6 +22,7 @@ Definition t := (vec w64 (uint.nat (W64 10))).
 End def.
 End Foo.
 
+(* type unittest.importantStruct *)
 Module importantStruct.
 Section def.
 Context `{ffi_syntax}.
@@ -57,6 +59,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type unittest.stringWrapper *)
 Module stringWrapper.
 Section def.
 Context `{ffi_syntax}.
@@ -64,6 +67,7 @@ Definition t := go_string.
 End def.
 End stringWrapper.
 
+(* type unittest.diskWrapper *)
 Module diskWrapper.
 Section def.
 Context `{ffi_syntax}.
@@ -124,6 +128,7 @@ Qed.
 
 End instances.
 
+(* type unittest.embedA *)
 Module embedA.
 Section def.
 Context `{ffi_syntax}.
@@ -184,6 +189,7 @@ Qed.
 
 End instances.
 
+(* type unittest.embedB *)
 Module embedB.
 Section def.
 Context `{ffi_syntax}.
@@ -244,6 +250,7 @@ Qed.
 
 End instances.
 
+(* type unittest.embedC *)
 Module embedC.
 Section def.
 Context `{ffi_syntax}.
@@ -304,6 +311,7 @@ Qed.
 
 End instances.
 
+(* type unittest.embedD *)
 Module embedD.
 Section def.
 Context `{ffi_syntax}.
@@ -364,6 +372,7 @@ Qed.
 
 End instances.
 
+(* type unittest.Enc *)
 Module Enc.
 Section def.
 Context `{ffi_syntax}.
@@ -424,6 +433,7 @@ Qed.
 
 End instances.
 
+(* type unittest.Dec *)
 Module Dec.
 Section def.
 Context `{ffi_syntax}.
@@ -484,6 +494,7 @@ Qed.
 
 End instances.
 
+(* type unittest.Fooer *)
 Module Fooer.
 Section def.
 Context `{ffi_syntax}.
@@ -491,6 +502,7 @@ Definition t := interface.t.
 End def.
 End Fooer.
 
+(* type unittest.concreteFooer *)
 Module concreteFooer.
 Section def.
 Context `{ffi_syntax}.
@@ -551,6 +563,7 @@ Qed.
 
 End instances.
 
+(* type unittest.FooerUser *)
 Module FooerUser.
 Section def.
 Context `{ffi_syntax}.
@@ -611,6 +624,7 @@ Qed.
 
 End instances.
 
+(* type unittest.PointerInterface *)
 Module PointerInterface.
 Section def.
 Context `{ffi_syntax}.
@@ -618,6 +632,7 @@ Definition t := interface.t.
 End def.
 End PointerInterface.
 
+(* type unittest.concrete1 *)
 Module concrete1.
 Section def.
 Context `{ffi_syntax}.
@@ -654,6 +669,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type unittest.my_u32 *)
 Module my_u32.
 Section def.
 Context `{ffi_syntax}.
@@ -661,6 +677,7 @@ Definition t := w32.
 End def.
 End my_u32.
 
+(* type unittest.also_u32 *)
 Module also_u32.
 Section def.
 Context `{ffi_syntax}.
@@ -668,6 +685,7 @@ Definition t := my_u32.t.
 End def.
 End also_u32.
 
+(* type unittest.allTheLiterals *)
 Module allTheLiterals.
 Section def.
 Context `{ffi_syntax}.
@@ -744,6 +762,7 @@ Qed.
 
 End instances.
 
+(* type unittest.hasCondVar *)
 Module hasCondVar.
 Section def.
 Context `{ffi_syntax}.
@@ -804,6 +823,7 @@ Qed.
 
 End instances.
 
+(* type unittest.IntWrapper *)
 Module IntWrapper.
 Section def.
 Context `{ffi_syntax}.
@@ -811,6 +831,7 @@ Definition t := w64.
 End def.
 End IntWrapper.
 
+(* type unittest.MapWrapper *)
 Module MapWrapper.
 Section def.
 Context `{ffi_syntax}.
@@ -818,6 +839,7 @@ Definition t := loc.
 End def.
 End MapWrapper.
 
+(* type unittest.mapElem *)
 Module mapElem.
 Section def.
 Context `{ffi_syntax}.
@@ -886,6 +908,7 @@ Qed.
 
 End instances.
 
+(* type unittest.wrapExternalStruct *)
 Module wrapExternalStruct.
 Section def.
 Context `{ffi_syntax}.
@@ -946,6 +969,7 @@ Qed.
 
 End instances.
 
+(* type unittest.typing *)
 Module typing.
 Section def.
 Context `{ffi_syntax}.
@@ -1006,6 +1030,7 @@ Qed.
 
 End instances.
 
+(* type unittest.composite *)
 Module composite.
 Section def.
 Context `{ffi_syntax}.
@@ -1074,6 +1099,7 @@ Qed.
 
 End instances.
 
+(* type unittest.R *)
 Module R.
 Section def.
 Context `{ffi_syntax}.
@@ -1110,6 +1136,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type unittest.Other *)
 Module Other.
 Section def.
 Context `{ffi_syntax}.
@@ -1170,6 +1197,7 @@ Qed.
 
 End instances.
 
+(* type unittest.RecursiveEmbedded *)
 Module RecursiveEmbedded.
 Section def.
 Context `{ffi_syntax}.
@@ -1230,6 +1258,7 @@ Qed.
 
 End instances.
 
+(* type unittest.Block *)
 Module Block.
 Section def.
 Context `{ffi_syntax}.
@@ -1290,6 +1319,7 @@ Qed.
 
 End instances.
 
+(* type unittest.SliceAlias *)
 Module SliceAlias.
 Section def.
 Context `{ffi_syntax}.
@@ -1297,6 +1327,7 @@ Definition t := slice.t.
 End def.
 End SliceAlias.
 
+(* type unittest.thing *)
 Module thing.
 Section def.
 Context `{ffi_syntax}.
@@ -1357,6 +1388,7 @@ Qed.
 
 End instances.
 
+(* type unittest.sliceOfThings *)
 Module sliceOfThings.
 Section def.
 Context `{ffi_syntax}.
@@ -1417,6 +1449,7 @@ Qed.
 
 End instances.
 
+(* type unittest.Point *)
 Module Point.
 Section def.
 Context `{ffi_syntax}.
@@ -1485,6 +1518,7 @@ Qed.
 
 End instances.
 
+(* type unittest.TwoInts *)
 Module TwoInts.
 Section def.
 Context `{ffi_syntax}.
@@ -1553,6 +1587,7 @@ Qed.
 
 End instances.
 
+(* type unittest.S *)
 Module S.
 Section def.
 Context `{ffi_syntax}.
@@ -1629,6 +1664,7 @@ Qed.
 
 End instances.
 
+(* type unittest.B *)
 Module B.
 Section def.
 Context `{ffi_syntax}.
@@ -1689,6 +1725,7 @@ Qed.
 
 End instances.
 
+(* type unittest.A *)
 Module A.
 Section def.
 Context `{ffi_syntax}.
@@ -1725,6 +1762,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type unittest.my_u64 *)
 Module my_u64.
 Section def.
 Context `{ffi_syntax}.
@@ -1732,6 +1770,7 @@ Definition t := w64.
 End def.
 End my_u64.
 
+(* type unittest.Timestamp *)
 Module Timestamp.
 Section def.
 Context `{ffi_syntax}.
@@ -1739,6 +1778,7 @@ Definition t := w64.
 End def.
 End Timestamp.
 
+(* type unittest.UseTypeAbbrev *)
 Module UseTypeAbbrev.
 Section def.
 Context `{ffi_syntax}.
@@ -1746,6 +1786,7 @@ Definition t := w64.
 End def.
 End UseTypeAbbrev.
 
+(* type unittest.UseNamedType *)
 Module UseNamedType.
 Section def.
 Context `{ffi_syntax}.

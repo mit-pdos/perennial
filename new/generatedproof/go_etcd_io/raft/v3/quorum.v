@@ -13,6 +13,7 @@ Set Default Proof Using "Type".
 
 Module quorum.
 
+(* type quorum.MajorityConfig *)
 Module MajorityConfig.
 Section def.
 Context `{ffi_syntax}.
@@ -20,6 +21,7 @@ Definition t := loc.
 End def.
 End MajorityConfig.
 
+(* type quorum.JointConfig *)
 Module JointConfig.
 Section def.
 Context `{ffi_syntax}.
@@ -27,6 +29,7 @@ Definition t := (vec MajorityConfig.t (uint.nat (W64 2))).
 End def.
 End JointConfig.
 
+(* type quorum.Index *)
 Module Index.
 Section def.
 Context `{ffi_syntax}.
@@ -34,6 +37,7 @@ Definition t := w64.
 End def.
 End Index.
 
+(* type quorum.AckedIndexer *)
 Module AckedIndexer.
 Section def.
 Context `{ffi_syntax}.
@@ -41,6 +45,7 @@ Definition t := interface.t.
 End def.
 End AckedIndexer.
 
+(* type quorum.mapAckIndexer *)
 Module mapAckIndexer.
 Section def.
 Context `{ffi_syntax}.
@@ -48,6 +53,7 @@ Definition t := loc.
 End def.
 End mapAckIndexer.
 
+(* type quorum.VoteResult *)
 Module VoteResult.
 Section def.
 Context `{ffi_syntax}.

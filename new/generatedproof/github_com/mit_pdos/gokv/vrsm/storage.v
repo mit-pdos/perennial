@@ -13,6 +13,7 @@ Set Default Proof Using "Type".
 
 Module storage.
 
+(* type storage.InMemoryStateMachine *)
 Module InMemoryStateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -97,6 +98,7 @@ Qed.
 
 End instances.
 
+(* type storage.StateMachine *)
 Module StateMachine.
 Section def.
 Context `{ffi_syntax}.

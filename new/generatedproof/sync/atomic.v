@@ -9,6 +9,7 @@ Set Default Proof Using "Type".
 
 Module atomic.
 
+(* type atomic.noCopy *)
 Module noCopy.
 Section def.
 Context `{ffi_syntax}.
@@ -45,6 +46,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type atomic.Int32 *)
 Module Int32.
 Section def.
 Context `{ffi_syntax}.
@@ -113,6 +115,7 @@ Qed.
 
 End instances.
 
+(* type atomic.align64 *)
 Module align64.
 Section def.
 Context `{ffi_syntax}.
@@ -149,6 +152,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type atomic.Uint64 *)
 Module Uint64.
 Section def.
 Context `{ffi_syntax}.

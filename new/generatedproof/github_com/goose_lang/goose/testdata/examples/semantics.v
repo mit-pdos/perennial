@@ -11,6 +11,7 @@ Set Default Proof Using "Type".
 
 Module semantics.
 
+(* type semantics.unit *)
 Module unit.
 Section def.
 Context `{ffi_syntax}.
@@ -47,6 +48,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type semantics.AdderType *)
 Module AdderType.
 Section def.
 Context `{ffi_syntax}.
@@ -54,6 +56,7 @@ Definition t := func.t.
 End def.
 End AdderType.
 
+(* type semantics.MultipleArgsType *)
 Module MultipleArgsType.
 Section def.
 Context `{ffi_syntax}.
@@ -61,6 +64,7 @@ Definition t := func.t.
 End def.
 End MultipleArgsType.
 
+(* type semantics.Enc *)
 Module Enc.
 Section def.
 Context `{ffi_syntax}.
@@ -121,6 +125,7 @@ Qed.
 
 End instances.
 
+(* type semantics.Dec *)
 Module Dec.
 Section def.
 Context `{ffi_syntax}.
@@ -181,6 +186,7 @@ Qed.
 
 End instances.
 
+(* type semantics.Editor *)
 Module Editor.
 Section def.
 Context `{ffi_syntax}.
@@ -249,6 +255,7 @@ Qed.
 
 End instances.
 
+(* type semantics.Pair *)
 Module Pair.
 Section def.
 Context `{ffi_syntax}.
@@ -317,6 +324,7 @@ Qed.
 
 End instances.
 
+(* type semantics.Uint32 *)
 Module Uint32.
 Section def.
 Context `{ffi_syntax}.
@@ -324,6 +332,7 @@ Definition t := w32.
 End def.
 End Uint32.
 
+(* type semantics.geometryInterface *)
 Module geometryInterface.
 Section def.
 Context `{ffi_syntax}.
@@ -331,6 +340,7 @@ Definition t := interface.t.
 End def.
 End geometryInterface.
 
+(* type semantics.SquareStruct *)
 Module SquareStruct.
 Section def.
 Context `{ffi_syntax}.
@@ -391,6 +401,7 @@ Qed.
 
 End instances.
 
+(* type semantics.LoopStruct *)
 Module LoopStruct.
 Section def.
 Context `{ffi_syntax}.
@@ -451,6 +462,7 @@ Qed.
 
 End instances.
 
+(* type semantics.BoolTest *)
 Module BoolTest.
 Section def.
 Context `{ffi_syntax}.
@@ -535,6 +547,7 @@ Qed.
 
 End instances.
 
+(* type semantics.ArrayEditor *)
 Module ArrayEditor.
 Section def.
 Context `{ffi_syntax}.
@@ -603,6 +616,7 @@ Qed.
 
 End instances.
 
+(* type semantics.Bar *)
 Module Bar.
 Section def.
 Context `{ffi_syntax}.
@@ -671,6 +685,7 @@ Qed.
 
 End instances.
 
+(* type semantics.Foo *)
 Module Foo.
 Section def.
 Context `{ffi_syntax}.
@@ -731,6 +746,7 @@ Qed.
 
 End instances.
 
+(* type semantics.TwoInts *)
 Module TwoInts.
 Section def.
 Context `{ffi_syntax}.
@@ -799,6 +815,7 @@ Qed.
 
 End instances.
 
+(* type semantics.S *)
 Module S.
 Section def.
 Context `{ffi_syntax}.
@@ -875,6 +892,7 @@ Qed.
 
 End instances.
 
+(* type semantics.StructWrap *)
 Module StructWrap.
 Section def.
 Context `{ffi_syntax}.
@@ -935,6 +953,7 @@ Qed.
 
 End instances.
 
+(* type semantics.StructWithFunc *)
 Module StructWithFunc.
 Section def.
 Context `{ffi_syntax}.
@@ -995,6 +1014,7 @@ Qed.
 
 End instances.
 
+(* type semantics.switchConcrete *)
 Module switchConcrete.
 Section def.
 Context `{ffi_syntax}.
@@ -1031,6 +1051,7 @@ Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
 
+(* type semantics.switchInterface *)
 Module switchInterface.
 Section def.
 Context `{ffi_syntax}.
@@ -1038,6 +1059,7 @@ Definition t := interface.t.
 End def.
 End switchInterface.
 
+(* type semantics.Log *)
 Module Log.
 Section def.
 Context `{ffi_syntax}.

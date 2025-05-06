@@ -12,6 +12,7 @@ Set Default Proof Using "Type".
 
 Module jrnl.
 
+(* type jrnl.Op *)
 Module Op.
 Section def.
 Context `{ffi_syntax}.

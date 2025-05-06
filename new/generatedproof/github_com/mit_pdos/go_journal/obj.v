@@ -15,6 +15,7 @@ Set Default Proof Using "Type".
 
 Module obj.
 
+(* type obj.Log *)
 Module Log.
 Section def.
 Context `{ffi_syntax}.

@@ -19,6 +19,7 @@ Set Default Proof Using "Type".
 
 Module concurrency.
 
+(* type concurrency.Election *)
 Module Election.
 Section def.
 Context `{ffi_syntax}.
@@ -119,6 +120,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.Mutex *)
 Module Mutex.
 Section def.
 Context `{ffi_syntax}.
@@ -211,6 +213,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.lockerMutex *)
 Module lockerMutex.
 Section def.
 Context `{ffi_syntax}.
@@ -271,6 +274,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.Session *)
 Module Session.
 Section def.
 Context `{ffi_syntax}.
@@ -371,6 +375,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.sessionOptions *)
 Module sessionOptions.
 Section def.
 Context `{ffi_syntax}.
@@ -447,6 +452,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.SessionOption *)
 Module SessionOption.
 Section def.
 Context `{ffi_syntax}.
@@ -454,6 +460,7 @@ Definition t := func.t.
 End def.
 End SessionOption.
 
+(* type concurrency.STM *)
 Module STM.
 Section def.
 Context `{ffi_syntax}.
@@ -461,6 +468,7 @@ Definition t := interface.t.
 End def.
 End STM.
 
+(* type concurrency.Isolation *)
 Module Isolation.
 Section def.
 Context `{ffi_syntax}.
@@ -468,6 +476,7 @@ Definition t := w64.
 End def.
 End Isolation.
 
+(* type concurrency.stmError *)
 Module stmError.
 Section def.
 Context `{ffi_syntax}.
@@ -528,6 +537,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.stmOptions *)
 Module stmOptions.
 Section def.
 Context `{ffi_syntax}.
@@ -604,6 +614,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.stmOption *)
 Module stmOption.
 Section def.
 Context `{ffi_syntax}.
@@ -611,6 +622,7 @@ Definition t := func.t.
 End def.
 End stmOption.
 
+(* type concurrency.stmResponse *)
 Module stmResponse.
 Section def.
 Context `{ffi_syntax}.
@@ -679,6 +691,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.readSet *)
 Module readSet.
 Section def.
 Context `{ffi_syntax}.
@@ -686,6 +699,7 @@ Definition t := loc.
 End def.
 End readSet.
 
+(* type concurrency.writeSet *)
 Module writeSet.
 Section def.
 Context `{ffi_syntax}.
@@ -693,6 +707,7 @@ Definition t := loc.
 End def.
 End writeSet.
 
+(* type concurrency.stm *)
 Module stm.
 Section def.
 Context `{ffi_syntax}.
@@ -793,6 +808,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.stmPut *)
 Module stmPut.
 Section def.
 Context `{ffi_syntax}.
@@ -861,6 +877,7 @@ Qed.
 
 End instances.
 
+(* type concurrency.stmSerializable *)
 Module stmSerializable.
 Section def.
 Context `{ffi_syntax}.

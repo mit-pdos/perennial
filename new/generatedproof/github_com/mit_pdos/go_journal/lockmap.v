@@ -9,6 +9,7 @@ Set Default Proof Using "Type".
 
 Module lockmap.
 
+(* type lockmap.lockState *)
 Module lockState.
 Section def.
 Context `{ffi_syntax}.
@@ -85,6 +86,7 @@ Qed.
 
 End instances.
 
+(* type lockmap.lockShard *)
 Module lockShard.
 Section def.
 Context `{ffi_syntax}.
@@ -153,6 +155,7 @@ Qed.
 
 End instances.
 
+(* type lockmap.LockMap *)
 Module LockMap.
 Section def.
 Context `{ffi_syntax}.

@@ -14,6 +14,7 @@ Set Default Proof Using "Type".
 
 Module txn.
 
+(* type txn.Log *)
 Module Log.
 Section def.
 Context `{ffi_syntax}.
@@ -82,6 +83,7 @@ Qed.
 
 End instances.
 
+(* type txn.Txn *)
 Module Txn.
 Section def.
 Context `{ffi_syntax}.

@@ -12,6 +12,7 @@ Set Default Proof Using "Type".
 
 Module aof.
 
+(* type aof.AppendOnlyFile *)
 Module AppendOnlyFile.
 Section def.
 Context `{ffi_syntax}.

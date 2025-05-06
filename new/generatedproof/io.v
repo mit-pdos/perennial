@@ -8,6 +8,7 @@ Set Default Proof Using "Type".
 
 Module io.
 
+(* type io.Reader *)
 Module Reader.
 Section def.
 Context `{ffi_syntax}.
@@ -15,6 +16,7 @@ Definition t := interface.t.
 End def.
 End Reader.
 
+(* type io.Writer *)
 Module Writer.
 Section def.
 Context `{ffi_syntax}.
