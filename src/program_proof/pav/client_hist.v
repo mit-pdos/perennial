@@ -5,26 +5,6 @@ From Perennial.program_proof.pav Require Import
   advrpc auditor core classes client cryptoffi evidence
   logical_audit logical_hist merkle msv rpc serde server.
 
-Lemma last_replicate {A} (x : A) n :
-  last (replicate n x) = match n with 0%nat => None | S _ => Some x end.
-Proof.
-  rewrite last_lookup length_replicate.
-  destruct n; [done|].
-  rewrite lookup_replicate_2; [done|lia].
-Qed.
-
-Lemma last_replicate_option_app {A} (l : list (option A)) n :
-  mjoin $ last (l ++ replicate n (mjoin $ last l)) = mjoin $ last l.
-Proof.
-  rewrite last_app last_replicate.
-  repeat case_match; try done.
-  naive_solver.
-Qed.
-
-Lemma filter_snoc {A} (P : A → Prop) `{∀ x, Decision (P x)} l x :
-  filter P (l ++ [x]) = filter P l ++ (if decide (P x) then [x] else []).
-Proof. by rewrite filter_app. Qed.
-
 Module hist_epochs_puts.
 
 (* length-extends hist with its last element. *)

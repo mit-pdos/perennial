@@ -1,15 +1,39 @@
-From stdpp Require Import list list_numbers.
-From Coq Require Import ssreflect.
+From stdpp Require Import list list_numbers ssreflect.
 
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
 
+(* these lemmas require specific forms of A, so they don't include it as a
+context variable. *)
+Section list_misc.
+
+  Lemma last_replicate {A} (x : A) n :
+    last (replicate n x) = match n with 0 => None | S _ => Some x end.
+  Proof.
+    rewrite last_lookup length_replicate.
+    destruct n; [done|].
+    rewrite lookup_replicate_2; [done|lia].
+  Qed.
+
+  Lemma last_replicate_option_app {A} (l : list (option A)) n :
+    mjoin $ last (l ++ replicate n (mjoin $ last l)) = mjoin $ last l.
+  Proof.
+    rewrite last_app last_replicate.
+    repeat case_match; try done.
+    naive_solver.
+  Qed.
+
+End list_misc.
+
 Section list.
   Context {A : Type}.
-  Notation list := (list A).
-  Implicit Types l : list.
+  Implicit Types l : (list A).
 
-  Lemma prefix_to_take (l0 l1 : list) :
+  Lemma filter_snoc (P : A → Prop) `{∀ x, Decision (P x)} l x :
+    filter P (l ++ [x]) = filter P l ++ (if decide (P x) then [x] else []).
+  Proof. by rewrite filter_app. Qed.
+
+  Lemma prefix_to_take (l0 l1 : list A) :
     l0 `prefix_of` l1 →
     l0 = take (length l0) l1.
   Proof.
@@ -18,7 +42,7 @@ Section list.
     by rewrite take_app_length in Hpref.
   Qed.
 
-  Lemma prefix_fmap {B} (f : A → B) (l0 l1 : list) :
+  Lemma prefix_fmap {B} (f : A → B) (l0 l1 : list A) :
     l0 `prefix_of` l1 →
     f <$> l0 `prefix_of` f <$> l1.
   Proof.
@@ -62,8 +86,8 @@ Section list.
     opose proof (HPiff 0 a _) as ?; [done|].
     ospecialize (IH _). { intros i x ?. by ospecialize (HPiff (S i) x _). }
     destruct (decide (P1 a)).
-    - rewrite !filter_cons_True; [by naive_solver..|]. by rewrite IH.
-    - rewrite !filter_cons_False; [by naive_solver..|]. by rewrite IH.
+    - rewrite !filter_cons_True; [|by naive_solver..]. by rewrite IH.
+    - rewrite !filter_cons_False; [|by naive_solver..]. by rewrite IH.
   Qed.
 
   Lemma list_filter_all (P : A → Prop)
@@ -74,7 +98,7 @@ Section list.
     intros HP. induction l as [|a l IH]; [done|].
     opose proof (HP 0 a _) as ?; [done|].
     ospecialize (IH _). { intros i x ?. by ospecialize (HP (S i) x _). }
-    rewrite filter_cons_True; [done|]. by rewrite IH.
+    rewrite filter_cons_True; [|done]. by rewrite IH.
   Qed.
 
   Lemma lookup_snoc l x :
@@ -114,16 +138,16 @@ Section list.
     eauto.
   Qed.
 
-  Lemma map_neq_nil {B: Type} (f: A → B) (l: list): l ≠ [] → map f l ≠ [].
+  Lemma map_neq_nil {B: Type} (f: A → B) (l: list A): l ≠ [] → map f l ≠ [].
   Proof. induction l => //=. Qed.
 
-  Lemma length_nonzero_neq_nil (l: list): (0 < length l)%nat → l ≠ [].
+  Lemma length_nonzero_neq_nil (l: list A): (0 < length l)%nat → l ≠ [].
   Proof. induction l => //=. inversion 1. Qed.
 
-  Lemma drop_lt (l : list) (n : nat): (n < length l)%nat → drop n l ≠ [].
+  Lemma drop_lt (l : list A) (n : nat): (n < length l)%nat → drop n l ≠ [].
   Proof.  intros. eapply length_nonzero_neq_nil. rewrite length_drop. lia. Qed.
 
-  Lemma list_lookup_lt (l: list) (i: nat) :
+  Lemma list_lookup_lt (l: list A) (i: nat) :
     (i < length l)%nat ->
     exists x, l !! i = Some x.
   Proof.
@@ -134,11 +158,11 @@ Section list.
     lia.
   Qed.
 
-  Lemma list_fmap_map {B} (f: A → B) (l: list):
+  Lemma list_fmap_map {B} (f: A → B) (l: list A):
     f <$> l = map f l.
   Proof. reflexivity. Qed.
 
-  Definition Forall_idx (P: nat -> A -> Prop) (start:nat) (l: list): Prop :=
+  Definition Forall_idx (P: nat -> A -> Prop) (start:nat) (l: list A): Prop :=
     Forall2 P (seq start (length l)) l.
 
   Lemma drop_seq n len m :
@@ -210,12 +234,9 @@ Section list.
     eapply prefix_lookup_Some in Hlookup1; eauto.
     congruence.
   Qed.
-End list.
 
-(* section for more specific list lemmas that aren't for arbitrary [list A] *)
-Section list.
   (* for compatibility with Coq v8.11, which doesn't have this lemma *)
-  Lemma in_concat {A} : forall (l: list (list A)) y,
+  Lemma in_concat : forall (l: list (list A)) y,
     In y (concat l) <-> exists x, In x l /\ In y x.
   Proof.
     induction l; simpl; split; intros.
@@ -232,7 +253,7 @@ Section list.
         exists x; auto.
   Qed.
 
-  Lemma concat_insert_app {A} : forall (index: nat) (l: list (list A)) (x: list A),
+  Lemma concat_insert_app : forall (index: nat) (l: list (list A)) (x: list A),
     index < length l ->
     concat (<[index := x]> l) = (concat (take index l)) ++ x ++ (concat (drop (index+1) l)).
   Proof.
@@ -242,16 +263,16 @@ Section list.
     by replace (index + 1) with (S index) by lia.
   Qed.
 
-End list.
+  (* copied from Coq 8.12+alpha for 8.11 compatibility *)
+  Lemma Permutation_app_swap_app : forall (l1 l2 l3: list A),
+    Permutation (l1 ++ l2 ++ l3) (l2 ++ l1 ++ l3).
+  Proof.
+    intros.
+    rewrite -> 2 app_assoc.
+    apply Permutation_app_tail, Permutation_app_comm.
+  Qed.
 
-(* copied from Coq 8.12+alpha for 8.11 compatibility *)
-Lemma Permutation_app_swap_app {A} : forall (l1 l2 l3: list A),
-  Permutation (l1 ++ l2 ++ l3) (l2 ++ l1 ++ l3).
-Proof.
-  intros.
-  rewrite -> 2 app_assoc.
-  apply Permutation_app_tail, Permutation_app_comm.
-Qed.
+End list.
 
 Global Instance concat_permutation_proper T :
   Proper (Permutation ==> Permutation) (@concat T).
@@ -482,7 +503,7 @@ Local Lemma subslice_subslice_trivial {A} (l: list A) n m n' m' :
     subslice (n + n') (n + m' `min` (m-n)) l.
 Proof.
   intros Hgt.
-  rewrite (subslice_none n m); [ lia | ].
+  rewrite (subslice_none n m); [|lia].
   rewrite subslice_nil.
   rewrite subslice_none //.
   lia.
@@ -661,10 +682,10 @@ Proof.
     lia. }
   rewrite -> (list_split2 l i1 i2 x1 x2) by auto.
   rewrite list_insert_middle.
-  { rewrite length_take; lia. }
+  2: { rewrite length_take; lia. }
   do 2 rewrite app_assoc.
   rewrite list_insert_middle.
-  { rewrite !length_app ?length_take ?subslice_length' /=; lia. }
+  2: { rewrite !length_app ?length_take ?subslice_length' /=; lia. }
   rewrite -!app_assoc.
   f_equiv.
   simpl.
