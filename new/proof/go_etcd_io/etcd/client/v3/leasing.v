@@ -118,36 +118,77 @@ Record leasingKV_names := {
     etcd_gn : clientv3_names
   }.
 
+Implicit Types γ : leasingKV_names.
+
 (* FIXME: make this a global instance where it's defined?; this is to have contextG
    available here without directly adding it to [leasingG]. *)
 Local Existing Instance clientv3_inG.
 Local Existing Instance clientv3_contextG.
 
-Definition is_leasingKV (lkv : loc) γ : iProp Σ :=
+Definition own_leaseKey (lk : loc) γ (key : go_string) (resp : v3.RangeResponse.t) : iProp Σ :=
+  True.
+
+Definition own_leaseCache_locked lc γ q : iProp Σ :=
+  ∃ entries_ptr (entries : gmap go_string loc) revokes_ptr (revokes : gmap go_string time.Time.t),
+  "entries_ptr" ∷ lc ↦s[leasing.leaseCache :: "entries"]{#q} entries_ptr ∗
+  "entries" ∷  own_map entries_ptr (DfracOwn 1) entries ∗
+  "Hentries" ∷ ([∗ map] key ↦ lk ∈ entries, ∃ resp, own_leaseKey lk γ key resp) ∗
+  "entries_ptr" ∷ lc ↦s[leasing.leaseCache :: "revokes"]{#q} revokes_ptr ∗
+  "entries" ∷  own_map revokes_ptr (DfracOwn 1) revokes
+  (* TODO: header? *)
+.
+
+(* Proposition guarded by [lkv.leases.mu] *)
+Definition own_leasingKV_locked lkv (γ : leasingKV_names) q : iProp Σ :=
+  let leases := (struct.field_ref_f leasing.leasingKV "leases" lkv) in
+  ∃ (sessionc : chan.t) (session : loc),
+    "sessionc" ∷ lkv ↦s[leasing.leasingKV :: "sessionc"]{#q} sessionc ∗
+    "#Hsessionc" ∷ is_closeable_chan sessionc True ∗
+    "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#q/2} session ∗
+    "#Hsession" ∷ (if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease) ∗
+    "Hleases" ∷ own_leaseCache_locked leases γ q
+.
+
+(* This is owned by the background thread running [monitorSession]. *)
+Definition own_leasingKV_monitorSession lkv γ : iProp Σ :=
+  ∃ (session : loc),
+  "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#(1/2)} session ∗
+  "#Hsession" ∷ if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease.
+
+(* Almost persistent. *)
+Definition own_leasingKV (lkv : loc) γ : iProp Σ :=
   ∃ (cl : loc) (ctx : context.Context.t) ctx_st,
   "#cl" ∷ lkv ↦s[leasing.leasingKV :: "cl"]□ cl ∗
   "#Hcl" ∷ is_Client cl γ.(etcd_gn) ∗
   "#ctx" ∷ lkv ↦s[leasing.leasingKV::"ctx"]□ ctx ∗
-  "#Hctx" ∷ is_Context ctx ctx_st.
-
-(* Half of this goes in the RWMutex. *)
-Definition own_leasingKV_monitorSession lkv γ q : iProp Σ :=
-  ∃ (session : loc),
-  "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#q} session ∗
-  "#Hsession" ∷ if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease
+  "#Hctx" ∷ is_Context ctx ctx_st ∗
+  "Hmu" ∷ own_RWMutex (struct.field_ref_f leasing.leaseCache "mu" (struct.field_ref_f leasing.leasingKV "leases" lkv))
+    (own_leasingKV_locked lkv γ)
 .
+
+Lemma wp_optional R e Φ :
+  R -∗
+  (R -∗ WP e {{ _, R }}) -∗
+  (∀ v, R -∗ Φ v) -∗
+  WP e {{ Φ }}.
+Proof.
+  iIntros "HR He HΦ".
+  iSpecialize ("He" with "HR").
+  iApply (wp_wand with "He").
+  iIntros (?) "HR". iApply "HΦ". iFrame.
+Qed.
 
 Lemma wp_leasingKV__monitorSession lkv γ :
   {{{
       is_pkg_init leasing ∗
-      "#His_kv" ∷ is_leasingKV lkv γ ∗
-      "Hown" ∷ own_leasingKV_monitorSession lkv γ (1/2)
+      "Hown_kv" ∷ own_leasingKV lkv γ ∗
+      "Hown" ∷ own_leasingKV_monitorSession lkv γ
   }}}
     lkv @ leasing @ "leasingKV'ptr" @ "monitorSession" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "Hpre". iNamed "Hpre". wp_auto.
-  wp_for. iNamed "His_kv". wp_auto. iNamed "Hctx".
+  wp_for. iNamed "Hown_kv". wp_auto. iNamed "Hctx".
   wp_apply "HErr". iIntros (?) "_". wp_pures.
   destruct bool_decide.
   2:{
@@ -198,7 +239,26 @@ Proof.
   iIntros "* ([%|%] & H)"; subst; iNamed "H".
   2:{ wp_auto. wp_for_post. by iApply "HΦ". }
   wp_auto.
-  (* Acquire lock, etc. *)
+  wp_apply (wp_RWMutex__Lock with "[$Hmu]").
+  iIntros "[Hmu Hown]".
+  wp_auto.
+  wp_bind (chan.select _ _).
+  iApply (wp_optional with "[-]"); first iNamedAccu.
+  {
+    iNamed 1. iNamedSuffix "Hown" "_lock". wp_auto.
+    wp_apply wp_chan_select_nonblocking.
+    repeat iSplit.
+    - (* default *) wp_auto. iFrame "∗#%".
+    - rewrite big_opL_singleton.
+      repeat iExists _.
+      iApply (closeable_chan_receive with "[$]"). iIntros "_".
+      wp_auto. wp_apply (wp_chan_make (V:=unit)). iIntros "* Hsessionc'".
+      iMod (alloc_closeable_chan True with "[$]") as "[H ?]"; [done..|].
+      wp_auto. iFrame "∗#%".
+  }
+  (* FIXME: need to know that if the nonblocking receive failed, the closeable
+     chan must not be closed.
+ *)
 Admitted.
 
 Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
@@ -250,8 +310,12 @@ Proof.
   iDestruct "H" as "[Hwg_done1 Hwg_done2]".
 
   iPersist "Hcl Hkv Hctx".
-  iAssert (is_leasingKV lkv ltac:(econstructor)) with "[-]" as "#Hlkv".
-  { iFrame "#". }
+  iDestruct (struct_fields_split with "Hleases") as "H".
+  iNamed "H".
+  (*
+  iDestruct (init_RWMutex with "[] [Hleases Hcancel HsessionOpts session Hsessionc Hwg_wait] [$]") as "H".
+  iAssert (own_leasingKV lkv ltac:(econstructor)) with "[-]" as "Hlkv".
+  { iFrame "∗#". }
 
   wp_apply (wp_fork with "[Hwg_done1 session_monitor]").
   {
@@ -278,7 +342,7 @@ Proof.
     admit.
   }
   (* TODO: wp_waitSession. *)
-  admit.
+  admit. *)
 Admitted.
 
 End proof.

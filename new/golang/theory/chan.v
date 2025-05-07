@@ -222,18 +222,31 @@ Global Instance wp_select_send (v : val) ch f :
   PureWp True (chan.select_send v #ch #f)
     #(select_send_f v ch f).
 Proof.
-  intros ?????. iIntros "Hwp". wp_call_lc "?".
-  repeat rewrite to_val_unseal /=.
-  by iApply "Hwp".
+  pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
 Qed.
 
 Global Instance wp_select_receive ch f :
   PureWp True (chan.select_receive #ch #f)
     #(select_receive_f ch f).
 Proof.
-  intros ?????. iIntros "Hwp". wp_call_lc "?".
-  repeat rewrite to_val_unseal /=.
-  by iApply "Hwp".
+  pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
+Qed.
+
+Inductive default :=
+| select_default_f  : func.t → default.
+
+Global Instance into_val_default : IntoVal default :=
+  {|
+    to_val_def := λ s,
+        match s with
+        | select_default_f f => InjRV #f
+        end
+  |}.
+
+Global Instance wp_select_default f:
+  PureWp True (chan.select_default #f) #(select_default_f f).
+Proof.
+  pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
 Qed.
 
 End op.
@@ -258,6 +271,27 @@ Lemma wp_chan_select_blocking (cases : list chan.op) :
      end
   ) -∗
   WP chan.select #cases chan.select_no_default {{ Φ }}.
+Proof.
+Admitted.
+
+(* This spec is conservative (over-approximate): it states that [def] may run
+   regardless of what's in the channels. *)
+Lemma wp_chan_select_nonblocking (cases : list chan.op) (def : func.t) :
+  ∀ Φ,
+  (
+    WP #def #() {{ Φ }} ∧
+    [∧ list] case ∈ cases,
+     match case with
+     | chan.select_send_f send_val send_chan send_handler =>
+         (∃ V (v : V) `(!IntoVal V),
+             ⌜ send_val = #v ⌝ ∗
+             send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }}))
+     | chan.select_receive_f recv_chan recv_handler =>
+         (∃ V t `(!IntoVal V) `(!IntoValTyped V t),
+             receive_atomic_update V recv_chan (λ v, WP #recv_handler v {{ Φ }}))
+     end
+  ) -∗
+  WP chan.select #cases #(chan.select_default_f def) {{ Φ }}.
 Proof.
 Admitted.
 
