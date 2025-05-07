@@ -108,6 +108,105 @@ Global Hint Extern 3 (struct.Wf (structT ?d)) => exact (proj_descriptor_wf d) : 
 Section lemmas.
 Context `{heapGS Σ}.
 
+Record GoField V :=
+  go_field {
+      name : go_string;
+      Vf : Type;
+      proj : V → Vf;
+      iv :: IntoVal Vf;
+      tf : go_type;
+      ivt :: IntoValTyped Vf tf;
+      setter_wf :: SetterWf proj;
+    }.
+Arguments go_field (_) {_ _} (_) {_ _ _ _}.
+Arguments tf {_} (_).
+Arguments proj {_} (_ _).
+Arguments Vf {_} (_).
+Arguments name {_} (_).
+
+Definition constructor_type {V} (fields : list (GoField V)) : Type :=
+  foldr (λ p ty, p.(Vf) → ty) V fields.
+
+(* FIXME: would need a [match] principle, or at least beta reduction of the fields. *)
+Definition constructor_injective
+  {V : Type} {fields : list (GoField V)}
+  (mk : constructor_type fields) :=
+  (fix go fields mk1 mk2 P :=
+     match fields as fs return (fields = fs → Prop) with
+     | [] => λ _, mk1 = mk2 → P
+     | p :: fields =>
+         λ eq_pf,
+           (∀ (v1 v2 : p.(Vf V)),
+              let mk1 := (match eq_pf in (_ = fs) return (constructor_type fs) with eq_refl => mk1 end) in
+              let mk2 := (match eq_pf in (_ = fs) return (constructor_type fs) with eq_refl => mk2 end) in
+              go fields (mk1 v1) (mk2 v2) (v1 = v2 ∧ P)
+           )
+     end eq_refl
+  ) fields mk mk True.
+
+Definition mk_default_val {V} {fields : list (GoField V)} (mk : constructor_type fields) : V :=
+  (fix go (fields : list (GoField V)) mk : V :=
+     match fields as fs return (fields = fs → V) with
+     | [] => λ eq_pf,
+              let mk := (match eq_pf in (_ = fs) return (constructor_type fs) with eq_refl => mk end) in
+              mk
+     | p :: fields =>
+         λ eq_pf,
+           let mk' := (match eq_pf in (_ = fs) return (constructor_type fs) with eq_refl => mk end) in
+           go fields (mk' (default_val p.(Vf)))
+     end eq_refl
+  ) fields mk.
+
+(*
+Lemma proj_mk_cons {V} first {fields : list (GoField V)} (mk : constructor_type (first :: fields)) v :
+  proj a (mk v)
+
+Lemma proj_mk_default_val {V} {fields : list (GoField V)} (mk : constructor_type fields) : V :=
+  proj a (mk_default_val (mk (default_val (Vf a)))) *)
+
+Class IntoValStruct (t : go_type) (V : Type) :=
+  {
+    fields : list (GoField V);
+    mk : constructor_type fields;
+
+    mk_inv : constructor_injective mk;
+    size_bounded : go_type_size t < 2^64;
+    struct_wf :: struct.Wf t;
+    fields_match : t = structT ((λ f, (f.(name), f.(tf))) <$> fields);
+    #[global] struct_eq_dec :: EqDecision V;
+  }.
+
+Global Instance into_val_struct_into_val `{!IntoValStruct t V} : IntoVal V :=
+  {|  to_val_def := λ v, struct.val_aux t ((λ f, (f.(name), #(f.(proj) v))) <$> fields) |}.
+
+Program Global Instance into_val_struct_into_val_typed `{!IntoValStruct t V} : IntoValTyped V t :=
+  {| default_val := mk_default_val mk; |}.
+Next Obligation.
+  rewrite to_val_unseal /=. destruct IntoValStruct0. simpl in *. subst.
+  pose proof struct.descriptor_NoDup as Hdup. simpl in Hdup. clear -Hdup.
+  intros. constructor. intros ?? Hin.
+  induction fields0 as [|]; first done. simpl.
+  rewrite list.NoDup_cons /= in Hdup. destruct Hdup as [Hnotin Hdup].
+  destruct Hin as [Hin|Hcontinue].
+  - simplify_eq. simpl. rewrite ByteString.eqb_refl /=. apply to_val_has_go_type.
+  - simpl. rewrite ByteString.eqb_ne /=.
+    { by apply IHfields0. }
+    intros Heq. subst. rewrite -elem_of_list_In in Hcontinue.
+    apply Hnotin. by eapply elem_of_list_fmap_1_alt.
+Qed.
+Next Obligation.
+  destruct IntoValStruct0. simpl in *. subst.
+  pose proof struct.descriptor_NoDup as Hdup. simpl in Hdup.
+  rewrite to_val_unseal zero_val_eq /=. clear -Hdup mk_inv0.
+  induction fields0 as [|]; first done.
+  rewrite !fmap_cons !struct.val_aux_cons /= ByteString.eqb_refl /=.
+  rewrite -default_val_eq_zero_val. f_equal.
+  {
+    f_equal.
+    ospecialize (mk_inv0 _ _).
+    simpl in mk_inv0.
+Abort.
+
 Record StructField V :=
 struct_field {
   Vf : Type;
