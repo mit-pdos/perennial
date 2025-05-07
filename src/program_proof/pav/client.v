@@ -951,7 +951,6 @@ Lemma wp_Client__Get ptr_c c uid :
       else
         let new_c := set Client.next_epoch (λ _, word.add ep (W64 1)) c in
         "Hown_cli" ∷ Client.own ptr_c new_c ∗
-        "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
         "%Hlt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) ≤ uint.Z new_c.(Client.next_epoch) ⌝ ∗
         "Hreg" ∷ (if is_reg
           then

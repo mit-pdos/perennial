@@ -103,6 +103,7 @@ Proof.
     naive_solver.
 Qed.
 
+(* TODO: should only talk about latest pk and leave existentially hidden. *)
 Definition msv γaudit vrf_pk (ep : w64) uid lat : iProp Σ :=
   ∃ m dig,
   "#Hlook_gs" ∷ mono_list_idx_own γaudit (uint.nat ep) (m, dig) ∗
