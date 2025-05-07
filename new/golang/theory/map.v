@@ -77,6 +77,54 @@ Proof.
     + rewrite lookup_insert_ne //. apply Hm.
 Qed.
 
+Lemma is_map_val_inv : ∀ (vm: val) (m : gmap K V),
+  is_map_val vm m ->
+  (∃ d, vm = InjLV d ∧ m = ∅ ∧ d = #(default_val V)) ∨
+  (∃ k v vm', vm = list.ConsV (# k, # v) vm' ∧ ∃ m', is_map_val vm' m' ∧ m = insert k v m').
+Proof.
+Admitted.
+
+Lemma is_map_val_cons (m m' : gmap K V) (vm : val) (k : K) (v : V) :
+  is_map_val vm m' ->
+  m = insert k v m' ->
+  is_map_val (list.ConsV (# k, # v) vm) m.
+Proof.
+  intros Hm -> k'.
+  eexists _, _; intuition eauto.
+  destruct (decide (k' = k)).
+  - subst. rewrite lookup_insert //.
+  - specialize (Hm k').
+    rewrite lookup_insert_ne //.
+Qed.
+
+Lemma wp_map_delete_aux (v: val) (k: K) (m: gmap K V) :
+  {{{ ⌜is_map_val v m⌝ ∗
+      ⌜is_comparable_go_type kt = true⌝ }}}
+    map.delete_aux v #k
+  {{{ vd, RET vd; ⌜is_map_val vd (delete k m)⌝ }}}.
+Proof.
+  iIntros (Φ) "[%Hm %Hcmp] HΦ".
+  iLöb as "IH" forall (v m Hm Φ).
+  specialize (Hm k) as Hmk.
+  wp_call.
+  apply is_map_val_inv in Hm; destruct Hm as [(d & -> & -> & ->) | (k' & v' & vm' & -> & m' & Hm & ->)].
+  - wp_pures.
+    iApply "HΦ". iPureIntro.
+    destruct Hmk as [Hmk1 Hmk2].
+    intros k'. intuition eauto.
+  - wp_pures.
+    destruct (decide (k = k')).
+    + subst. rewrite bool_decide_eq_true_2; eauto. wp_pures.
+      iApply ("IH" with "[]"); first eauto.
+      iNext. iIntros (vd ?). iApply "HΦ". rewrite delete_insert_delete. done.
+    + rewrite bool_decide_eq_false_2; eauto. wp_pures.
+      wp_bind.
+      iApply ("IH" with "[]"); first eauto.
+      iNext. iIntros (vd Hvd). wp_pures. iApply "HΦ". iPureIntro.
+      eapply is_map_val_cons; first eauto.
+      rewrite -delete_insert_ne; done.
+Qed.
+
 Lemma wp_map_delete l (m : gmap K V) k :
   {{{ l ↦$ m }}}
     map.delete #l #k
@@ -89,8 +137,14 @@ Proof.
   wp_bind (! _)%E.
   iApply (wp_load with "[$]"). iNext.
   iIntros "Hm".
-  wp_pures.
-Admitted.
+  wp_bind.
+  iApply (wp_map_delete_aux); first eauto.
+  iNext. iIntros (vd Hmd).
+  iApply (wp_store with "[$]"). iNext.
+  iIntros "Hm".
+  rewrite [in #()]to_val_unseal.
+  iApply "HΦ". iFrame. done.
+Qed.
 
 Lemma wp_map_get l (m : gmap K V) k dq :
   {{{ l ↦${dq} m }}}
