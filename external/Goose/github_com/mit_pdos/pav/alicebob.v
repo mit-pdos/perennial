@@ -42,6 +42,7 @@ Definition setup: val :=
       "adtrPks" <-[slice.T cryptoffi.SigPublicKey] (SliceAppend cryptoffi.SigPublicKey (![slice.T cryptoffi.SigPublicKey] "adtrPks") "adtrPk"));;
     time.Sleep #1000000;;
     struct.new setupParams [
+      "servGood" ::= #true;
       "servAddr" ::= "servAddr";
       "servSigPk" ::= "servSigPk";
       "servVrfPk" ::= "servVrfPkEnc";

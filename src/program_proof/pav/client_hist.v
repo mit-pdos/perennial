@@ -105,7 +105,7 @@ Lemma lookup_msv ptr_c c ep opt_pk γaudit aud_ep :
   epochs_hist might only be an msv with some later ep bound. *)
   Z.of_nat $ length c.(epochs_hist) <= uint.Z aud_ep →
   own ptr_c c -∗
-  logical_audit_post c.(γ) γaudit c.(serv).(Server.vrf_pk) aud_ep -∗
+  logical_audit c.(γ) γaudit c.(serv).(Server.vrf_pk) aud_ep -∗
   msv γaudit c.(serv).(Server.vrf_pk) ep c.(uid) opt_pk.
 Proof.
   iIntros (Hlook ?) "H #Haudit". iNamed "H".

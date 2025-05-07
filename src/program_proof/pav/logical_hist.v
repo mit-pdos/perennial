@@ -178,7 +178,7 @@ Lemma hist_to_msv (ep hist_ep aud_ep : w64) γcli vrf_pk uid pks γaudit :
   (* need to transfer hist epochs (including bound) into auditor maps. *)
   uint.Z hist_ep <= uint.Z aud_ep →
   is_hist γcli vrf_pk uid pks hist_ep -∗
-  logical_audit_post γcli γaudit vrf_pk aud_ep -∗
+  logical_audit γcli γaudit vrf_pk aud_ep -∗
   msv γaudit vrf_pk ep uid (lookup_puts_hist pks ep).
 Proof.
   iIntros (??) "#Hhist". iNamed 1.

@@ -128,7 +128,7 @@ Definition is_get_post_None cli_γ serv_vrf_pk uid (ep : w64) : iProp Σ :=
 into which the caller can transfer any is_cli_entry.
 the caller can then use the sigpred invariants to translate
 between different gs_hist map entries. *)
-Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ :=
+Definition logical_audit γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ :=
   ∃ gs,
   "%Hlen_gs" ∷ ⌜ length gs = uint.nat bound ⌝ ∗
   "#Hlb_gs" ∷ mono_list_lb_own γaudit gs ∗
@@ -167,7 +167,7 @@ Lemma do_logical_audit c digs sd aud_pk aud_γ :
       x.(SigDig.Dig) aud_sig) aud_pk) -∗
   mono_list_lb_own c.(Client.γ) digs -∗
   is_sig_pk aud_pk (sigpred aud_γ) -∗
-  logical_audit_post c.(Client.γ) aud_γ c.(Client.serv).(Server.vrf_pk)
+  logical_audit c.(Client.γ) aud_γ c.(Client.serv).(Server.vrf_pk)
     c.(Client.next_epoch).
 Proof.
   intros Hagree_digs_sd Hlast_digs Hlen_digs.
@@ -238,7 +238,7 @@ Lemma good_serv_logical_audit ptr_c c :
   c.(Client.serv_is_good) = true →
   Client.own ptr_c c
   ==∗
-  logical_audit_post c.(Client.γ) c.(Client.serv).(Server.γhist)
+  logical_audit c.(Client.γ) c.(Client.serv).(Server.γhist)
     c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch).
 Proof.
   iIntros (Heq_good). iNamed 1.
@@ -1277,7 +1277,7 @@ Lemma wp_Client__Audit ptr_c c (adtr_addr : w64) sl_adtrPk (adtr_pk : list w8) :
       on an unknown goodness auditor. that's why spec has is_sig_pk here,
       and not in precond. *)
       "#His_pk" ∷ is_sig_pk adtr_pk (sigpred adtr_γ) -∗
-      "#His_audit" ∷ logical_audit_post c.(Client.γ) adtr_γ
+      "#His_audit" ∷ logical_audit c.(Client.γ) adtr_γ
         c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch))
   }}}.
 Proof.

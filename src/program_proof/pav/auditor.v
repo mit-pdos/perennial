@@ -36,7 +36,6 @@ Definition valid (ptr : loc) : iProp Σ :=
 End defs.
 End Auditor.
 
-(*
 Section specs.
 Context `{!heapGS Σ, !pavG Σ}.
 
@@ -49,9 +48,9 @@ Lemma wp_NewAuditor :
     ptr_adtr sl_adtrPk adtrPk adtr_γ, RET (#ptr_adtr, slice_val sl_adtrPk);
     "Hvalid_adtr" ∷ Auditor.valid ptr_adtr ∗
     "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtrPk ∗
-    "#His_adtrPk" ∷ is_sig_pk adtrPk (adtr_sigpred adtr_γ)
+    "#His_adtrPk" ∷ is_sig_pk adtrPk (sigpred adtr_γ)
   }}}.
-Proof.
+Proof. Admitted. (*
   iIntros (?) "_ HΦ".
   wp_rec.
   wp_apply wp_new_free_lock.
@@ -75,8 +74,9 @@ Proof.
   rewrite zero_slice_val.
   iExists [], []. iFrame "Hown_gs ∗#". repeat try iSplit; try naive_solver.
   by iApply own_slice_nil.
-Qed.
+Qed. *)
 
+(*
 Lemma wp_Auditor__Get a (epoch : u64) :
   {{{
     "#Hvalid" ∷ Auditor.valid a
@@ -360,6 +360,6 @@ Proof. Admitted. (*
   iFrame "Hown_gs Hown_hist".
   rewrite !fmap_app last_snoc Hdigs_gs. by iFrame "∗#".
 Qed. *)
+*)
 
 End specs.
-*)

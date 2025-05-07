@@ -9,7 +9,7 @@ Context `{!heapGS Σ, !pavG Σ}.
 Lemma get_None_to_msv ep aud_ep γcli vrf_pk uid γaudit :
   uint.Z ep < uint.Z aud_ep →
   is_get_post_None γcli vrf_pk uid ep -∗
-  logical_audit_post γcli γaudit vrf_pk aud_ep -∗
+  logical_audit γcli γaudit vrf_pk aud_ep -∗
   msv γaudit vrf_pk ep uid None.
 Proof.
   iIntros (?) "#Hpost #Haudit". iNamed "Haudit".
@@ -27,7 +27,7 @@ Qed.
 Lemma get_Some_to_msv ep aud_ep γcli vrf_pk uid pk γaudit :
   uint.Z ep < uint.Z aud_ep →
   is_get_post_Some γcli vrf_pk uid ep pk -∗
-  logical_audit_post γcli γaudit vrf_pk aud_ep -∗
+  logical_audit γcli γaudit vrf_pk aud_ep -∗
   msv γaudit vrf_pk ep uid (Some pk).
 Proof.
   iIntros (?) "#Hpost #Haudit". iNamed "Hpost". iNamed "Haudit".

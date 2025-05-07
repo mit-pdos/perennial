@@ -146,13 +146,13 @@ Definition own_Server ptr serv q : iProp Σ :=
     "%HupdM" ∷ ⌜ nextM = x.(servEpochInfo.updates) ∪ prevM ⌝).
 
 Definition is_Server ptr serv : iProp Σ :=
-  ∃ mu (sigSk_ptr vrfSk_ptr workQ : loc) sig_pk γ,
+  ∃ mu (sigSk_ptr vrfSk_ptr workQ : loc),
   "#Hinv_gs" ∷ inv nroot (inv_gs serv) ∗
   (* rwmutex has 1/2 physical ownership. other 1/2 owned by worker thread. *)
   "#mu" ∷ ptr ↦[Server :: "mu"]□ #mu ∗
   "#Hmu" ∷ is_rwlock nroot #mu (λ q, own_Server ptr serv (q / 2)) ∗
   "#sigSk" ∷ ptr ↦[Server :: "sigSk"]□ #sigSk_ptr ∗
-  "#HsigSk" ∷ is_sig_sk sigSk_ptr sig_pk (sigpred γ) ∗
+  "#HsigSk" ∷ is_sig_sk sigSk_ptr serv.(Server.sig_pk) (sigpred serv.(Server.γhist)) ∗
   "#vrfSk" ∷ ptr ↦[Server :: "vrfSk"]□ #vrfSk_ptr ∗
   "#HvrfSk" ∷ is_vrf_sk vrfSk_ptr serv.(Server.vrf_pk) ∗
   "#Hptr_workq" ∷ ptr ↦[Server :: "workQ"]□ #workQ ∗
@@ -178,6 +178,18 @@ Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
   "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
   "#Hmerk" ∷ wish_merkle_Verify false label []
     non_memb.(NonMemb.MerkleProof) dig.
+
+Lemma wp_NewServer :
+  {{{ True }}}
+  NewServer #()
+  {{{
+    ptr_serv serv sl_sig_pk ptr_vrf_pk,
+    RET (#ptr_serv, slice_val sl_sig_pk, #ptr_vrf_pk);
+    "#Hserv" ∷ is_Server ptr_serv serv ∗
+    "#Hsl_sig_pk" ∷ own_slice_small sl_sig_pk byteT DfracDiscarded serv.(Server.sig_pk) ∗
+    "#Hptr_vrf_pk" ∷ is_vrf_pk ptr_vrf_pk serv.(Server.vrf_pk)
+  }}}.
+Proof. Admitted.
 
 Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_next_ep :
   {{{

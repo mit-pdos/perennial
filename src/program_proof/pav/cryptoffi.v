@@ -96,6 +96,11 @@ Admitted.
 Instance is_sig_pk_persistent pk P : Persistent (is_sig_pk pk P).
 Proof. Admitted.
 
+Lemma is_sig_sk_to_pk ptr_sk pk P :
+  is_sig_sk ptr_sk pk P -∗
+  is_sig_pk pk P.
+Proof. Admitted.
+
 (* is_sig says that Verify will ret True on these inputs.
 relative to the crypto model, it says the inputs are in the set of
 memoized=True Verify inputs. *)
