@@ -1,4 +1,4 @@
-From stdpp Require Import list list_numbers ssreflect.
+From stdpp Require Import list ssreflect.
 
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
