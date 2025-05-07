@@ -28,24 +28,24 @@ Proof. by rewrite filter_app. Qed.
 Module hist_epochs_puts.
 
 (* length-extends hist with its last element. *)
-Definition lookup_epochs_hist (hist : list $ option pk_ty) (ep : w64) :=
+Definition lookup_epochs (hist : list $ option pk_ty) (ep : w64) :=
   match hist !! (uint.nat ep) with
   | Some opt_pk => opt_pk
   | None => mjoin $ last hist
   end.
 
-Definition lookup_puts_hist (hist : list map_val_ty) (ep : w64) :=
+Definition lookup_puts (hist : list map_val_ty) (ep : w64) :=
   snd <$> (last $ filter (λ x, uint.Z x.1 <= uint.Z ep) hist).
 
 Definition reln epochs puts :=
   ∀ ep,
-  lookup_epochs_hist epochs ep = lookup_puts_hist puts ep.
+  lookup_epochs epochs ep = lookup_puts puts ep.
 
 Lemma update_replicate epochs puts n :
   reln epochs puts →
   reln (epochs ++ replicate n (mjoin $ last epochs)) puts.
 Proof.
-  rewrite /reln /lookup_epochs_hist.
+  rewrite /reln /lookup_epochs.
   intros Hreln ep.
   ospecialize (Hreln ep).
   rewrite last_replicate_option_app.
@@ -65,7 +65,7 @@ Lemma update_new epochs puts ep pk :
   reln epochs puts →
   reln (epochs ++ [Some pk]) (puts ++ [(ep, pk)]).
 Proof.
-  rewrite /reln /lookup_epochs_hist /lookup_puts_hist.
+  rewrite /reln /lookup_epochs /lookup_puts.
   intros ? Hreln ep0.
   rewrite filter_snoc /=.
   destruct (decide (uint.Z ep0 < Z.of_nat $ length epochs)).
@@ -122,24 +122,10 @@ Definition own (ptr : loc) (obj : t) : iProp Σ :=
   "#Hhist" ∷ is_hist obj.(γ) obj.(serv).(Server.vrf_pk) obj.(uid)
     obj.(puts_hist) (W64 $ length obj.(epochs_hist)).
 
-Lemma lookup_msv' ptr_c c ep opt_pk γaudit aud_ep :
-  c.(epochs_hist) !! (uint.nat ep) = Some opt_pk →
-  uint.Z ep < uint.Z aud_ep →
-  own ptr_c c -∗
-  logical_audit_post c.(γ) γaudit c.(serv).(Server.vrf_pk) aud_ep -∗
-  ∃ opt_mapval,
-  ⌜ snd <$> opt_mapval = opt_pk ⌝ ∗
-  msv γaudit c.(serv).(Server.vrf_pk) ep c.(uid) opt_mapval.
-Proof.
-  iIntros (Hlook ?) "H #Haudit". iNamed "H".
-  iDestruct (hist_to_msv ep with "Hhist Haudit") as "H".
-  { apply lookup_lt_Some in Hlook. word. }
-  { (* this requires knowing that for any epochs hist idx,
-    can make a puts hist, valid for idx, that relates to it. *)
-Abort.
-
 Lemma lookup_msv ptr_c c ep opt_pk γaudit aud_ep :
   c.(epochs_hist) !! (uint.nat ep) = Some opt_pk →
+  (* it's hard to give tighter aud_ep bound, since a particular ep of
+  epochs_hist might only be an msv with some later ep bound. *)
   Z.of_nat $ length c.(epochs_hist) <= uint.Z aud_ep →
   own ptr_c c -∗
   logical_audit_post c.(γ) γaudit c.(serv).(Server.vrf_pk) aud_ep -∗
@@ -153,7 +139,7 @@ Proof.
   { word. }
   iPureIntro.
   ospecialize (Hhist_reln ep).
-  by rewrite /hist_epochs_puts.lookup_epochs_hist Hlook in Hhist_reln.
+  by rewrite /hist_epochs_puts.lookup_epochs Hlook in Hhist_reln.
 Qed.
 
 End defs.
