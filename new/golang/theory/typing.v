@@ -329,8 +329,7 @@ conversative maximum size for a type that still enables it to be used in
 essentially any larger struct.
 
 We currently do not rely on this typeclass for non-axiomatic types (where it
-could be proven by direct computation) so there's no computation-based instance
-to prove it for other types. *)
+could be proven by direct computation). *)
 Class BoundedTypeSize (t : go_type) :=
   { has_bounded_type_size : Z.of_nat (go_type_size t) < 2^32; }.
 

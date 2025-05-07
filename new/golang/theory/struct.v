@@ -457,6 +457,24 @@ Proof.
   auto.
 Qed.
 
+Lemma has_bounded_type_size_intro {t} :
+  match decide (Z.of_nat (go_type_size_def t) < 2^32) with
+  | left _ => True
+  | right _ => False
+  end → BoundedTypeSize t.
+Proof.
+  destruct (decide _); intros; [ | contradiction ].
+  constructor.
+  rewrite go_type_size_unseal //.
+Qed.
+
+(* only works if type size can be computed *)
+Ltac solve_bounded_type_size :=
+  apply (has_bounded_type_size_intro);
+  try exact I.
+
+#[global] Hint Extern 10 (BoundedTypeSize _) => solve [ solve_bounded_type_size ] : typeclass_instances.
+
 (* solves goals of the form l ↦{dq} v ⊣⊢ l' ↦{dq} v, where the locations involve
 offset calculations. *)
 Ltac solve_field_ref_f :=
