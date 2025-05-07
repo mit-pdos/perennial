@@ -27,7 +27,7 @@ End BankClerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_BankClerk : Settable _ :=
+Global Instance settable_BankClerk : Settable BankClerk.t :=
   settable! BankClerk.mk < BankClerk.lck'; BankClerk.kvck'; BankClerk.accts' >.
 Global Instance into_val_BankClerk : IntoVal BankClerk.t :=
   {| to_val_def v :=

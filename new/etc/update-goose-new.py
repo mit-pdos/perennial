@@ -259,7 +259,7 @@ def main():
             path.join(goose_dir, "testdata/examples"),
             "./append_log",
             "./semantics",
-            "./unittest",
+            "./unittest/...",
         )
 
     if args.std_lib:

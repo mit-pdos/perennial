@@ -103,6 +103,9 @@ Definition proj_descriptor_wf (d : struct.descriptor) :=
   end.
 
 (* This hint converts [someStructType] into [structT blah] *)
+Global Hint Extern 10 (struct.Wf ?t) =>
+         progress (let t' := (eval hnf in t) in
+                   change t with t') : typeclass_instances.
 Global Hint Extern 10 (struct.Wf ?t) => unfold t : typeclass_instances.
 Global Hint Extern 3 (struct.Wf (structT ?d)) => exact (proj_descriptor_wf d) : typeclass_instances.
 
@@ -343,14 +346,25 @@ Ltac cbn_w8 :=
   with_strategy transparent [w8_word_instance]
     (with_strategy opaque [loc_add] cbn).
 
+(* TODO: maybe should re-implement this in a more principled way *)
+Ltac _solve_has_go_type_step :=
+  match goal with
+  | |- has_go_type (zero_val _) _ => apply zero_val_has_go_type
+  | |- has_go_type _ _ => solve [ apply to_val_has_go_type ]
+  | |- has_go_type _ _ => try assumption; constructor
+  | |- ∀ _, _ => intros
+  | H: In _ _ |- _ => destruct H
+  | H: (@eq (go_string * go_type) (_, _) _) |- _ =>
+      (* replaces solve_has_go_type_step's use of inversion_clear with the more
+      powerful inversion; subst; clear pattern *)
+      inversion H; subst; clear H
+  | _ => contradiction
+  | _ => progress cbn_w8
+  end.
+
 (* extend typing's solve_has_go_type to general goals *)
 Ltac solve_has_go_type' :=
-  (* TODO: crude hack, should re-implement this in a principled way *)
-  repeat (
-      solve [ apply to_val_has_go_type ]
-    || solve_has_go_type
-    || cbn_w8
-    ).
+  repeat _solve_has_go_type_step.
 
 (* solve ∀ v, has_go_type (#v) t in IntoValTyped *)
 Ltac solve_to_val_type :=
@@ -392,6 +406,26 @@ Ltac solve_into_val_struct_field :=
   end;
   destruct v; try reflexivity; cbn_w8.
 
+(* XXX: the to_val for go_string * go_type isn't produced by the PureWp
+instances, instead we just have a raw PairV which doesn't work with lists.
+
+We probably shouldn't be using a pair here but instead a new inductive (now that
+the type is used with to_val, after the switch to "dynamic" types).
+*)
+Lemma struct_field_to_val `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  (f: go_string) (t: go_type) :
+  (f ::= #t)%V = #(f, t).
+Proof. rewrite [in #(f,t)]to_val_unseal //. Qed.
+
+(* solve the PureWp instance that relates the val representing a generic type to
+its go_type-based model *)
+Ltac solve_type_pure_wp :=
+  pure_wp_start;
+  repeat (rewrite ?struct_field_to_val || wp_pures);
+  (* this should solve the goal; the [try] is only there to leave a proof state
+  for debugging *)
+  try iApply "HΦ".
+
 Ltac solve_struct_make_pure_wp :=
   intros;
   (* BUG: ssreflect has rewrite [in v in PureWp _ _ v]to_val_unseal that would
@@ -422,6 +456,24 @@ Proof.
   rewrite go_type_size_unseal in H.
   auto.
 Qed.
+
+Lemma has_bounded_type_size_intro {t} :
+  match decide (Z.of_nat (go_type_size_def t) < 2^32) with
+  | left _ => True
+  | right _ => False
+  end → BoundedTypeSize t.
+Proof.
+  destruct (decide _); intros; [ | contradiction ].
+  constructor.
+  rewrite go_type_size_unseal //.
+Qed.
+
+(* only works if type size can be computed *)
+Ltac solve_bounded_type_size :=
+  apply (has_bounded_type_size_intro);
+  try exact I.
+
+#[global] Hint Extern 10 (BoundedTypeSize _) => solve [ solve_bounded_type_size ] : typeclass_instances.
 
 (* solves goals of the form l ↦{dq} v ⊣⊢ l' ↦{dq} v, where the locations involve
 offset calculations. *)
@@ -479,13 +531,14 @@ Module __struct_automation_test.
 
 Import New.golang.defn.
 
+(* TEST *)
 Module time.
 
 Definition Time : go_type := structT [
   "wall" :: uint64T;
   "ext" :: int64T;
   "loc" :: ptrT
-].
+]%struct.
 
 Module Time.
 Section def.
@@ -561,9 +614,8 @@ Qed.
 End instances.
 End time.
 
+(* TEST *)
 Module empty_struct.
-
-
 Definition empty_struct : go_type := structT [].
 
 Module unit.
@@ -603,5 +655,95 @@ Proof. solve_struct_make_pure_wp. Qed.
 End instances.
 
 End empty_struct.
+
+
+(* TEST *)
+Module generic_struct.
+
+Module generics.
+Definition Box `{ffi_syntax} : val :=
+  λ: "T", type.structT [
+    (#"Value"%go, "T")
+  ]%struct.
+End generics.
+
+Module Box.
+Section def.
+Context `{ffi_syntax}.
+Definition ty (T: go_type) : go_type := structT [
+      "Value" :: T
+  ]%struct.
+Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
+  Value' : T';
+}.
+End def.
+End Box.
+
+Arguments Box.mk {_} {T'} {_ T _}.
+Arguments Box.t {_} T' {_ T _}.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Context `{!IntoVal T'} `{!IntoValTyped T' T}.
+
+Global Instance Box_ty_wf : struct.Wf (Box.ty T).
+Proof. apply _. Qed.
+
+Global Instance settable_Box : Settable (Box.t T') :=
+  settable! (Box.mk (T:=T)) < Box.Value' >.
+Global Instance into_val_Box : IntoVal (Box.t T') :=
+  {| to_val_def v :=
+    struct.val_aux (Box.ty T) [
+    "Value" ::= #(Box.Value' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Box : IntoValTyped (Box.t T') (Box.ty T) :=
+{|
+  default_val := Box.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Box_Value : IntoValStructField "Value" (Box.ty T) Box.Value'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+
+Global Instance wp_type_Box :
+  PureWp True
+         (generics.Box #T)
+         #(Box.ty T).
+Proof. solve_type_pure_wp. Qed.
+
+Global Instance wp_struct_make_Box Value':
+  PureWp True
+    (struct.make #(Box.ty T) (alist_val [
+      "Value" ::= #Value'
+    ]))%struct
+    #(Box.mk Value').
+Proof. solve_struct_make_pure_wp. Qed.
+
+Global Instance Box_struct_fields_split dq l (v : Box.t T') :
+  StructFieldsSplit dq l v (
+    "HValue" ∷ l ↦s[Box.ty T :: "Value"]{dq} v.(Box.Value')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+End generic_struct.
 
 End __struct_automation_test.

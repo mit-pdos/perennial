@@ -26,7 +26,7 @@ End cacheValue.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_cacheValue : Settable _ :=
+Global Instance settable_cacheValue : Settable cacheValue.t :=
   settable! cacheValue.mk < cacheValue.v'; cacheValue.l' >.
 Global Instance into_val_cacheValue : IntoVal cacheValue.t :=
   {| to_val_def v :=
@@ -96,7 +96,7 @@ End CacheKv.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_CacheKv : Settable _ :=
+Global Instance settable_CacheKv : Settable CacheKv.t :=
   settable! CacheKv.mk < CacheKv.kv'; CacheKv.mu'; CacheKv.cache' >.
 Global Instance into_val_CacheKv : IntoVal CacheKv.t :=
   {| to_val_def v :=

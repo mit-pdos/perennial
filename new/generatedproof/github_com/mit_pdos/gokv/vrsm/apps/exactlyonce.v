@@ -31,7 +31,7 @@ End eStateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_eStateMachine : Settable _ :=
+Global Instance settable_eStateMachine : Settable eStateMachine.t :=
   settable! eStateMachine.mk < eStateMachine.lastSeq'; eStateMachine.lastReply'; eStateMachine.nextCID'; eStateMachine.sm'; eStateMachine.esmNextIndex' >.
 Global Instance into_val_eStateMachine : IntoVal eStateMachine.t :=
   {| to_val_def v :=
@@ -122,7 +122,7 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk : Settable _ :=
+Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.ck'; Clerk.cid'; Clerk.seq' >.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
@@ -200,7 +200,7 @@ End VersionedStateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_VersionedStateMachine : Settable _ :=
+Global Instance settable_VersionedStateMachine : Settable VersionedStateMachine.t :=
   settable! VersionedStateMachine.mk < VersionedStateMachine.ApplyVolatile'; VersionedStateMachine.ApplyReadonly'; VersionedStateMachine.SetState'; VersionedStateMachine.GetState' >.
 Global Instance into_val_VersionedStateMachine : IntoVal VersionedStateMachine.t :=
   {| to_val_def v :=

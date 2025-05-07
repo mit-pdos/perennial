@@ -28,7 +28,7 @@ End Log.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Log : Settable _ :=
+Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.log'; Log.locks' >.
 Global Instance into_val_Log : IntoVal Log.t :=
   {| to_val_def v :=
@@ -98,7 +98,7 @@ End Txn.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Txn : Settable _ :=
+Global Instance settable_Txn : Settable Txn.t :=
   settable! Txn.mk < Txn.buftxn'; Txn.locks'; Txn.acquired' >.
 Global Instance into_val_Txn : IntoVal Txn.t :=
   {| to_val_def v :=

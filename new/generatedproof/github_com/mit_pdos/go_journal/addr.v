@@ -24,7 +24,7 @@ End Addr.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Addr : Settable _ :=
+Global Instance settable_Addr : Settable Addr.t :=
   settable! Addr.mk < Addr.Blkno'; Addr.Off' >.
 Global Instance into_val_Addr : IntoVal Addr.t :=
   {| to_val_def v :=

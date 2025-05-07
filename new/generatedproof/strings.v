@@ -22,7 +22,7 @@ End Builder.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Builder : Settable _ :=
+Global Instance settable_Builder : Settable Builder.t :=
   settable! Builder.mk < Builder.addr'; Builder.buf' >.
 Global Instance into_val_Builder : IntoVal Builder.t :=
   {| to_val_def v :=

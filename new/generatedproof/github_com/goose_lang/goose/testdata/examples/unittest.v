@@ -80,7 +80,7 @@ End diskWrapper.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_diskWrapper : Settable _ :=
+Global Instance settable_diskWrapper : Settable diskWrapper.t :=
   settable! diskWrapper.mk < diskWrapper.d' >.
 Global Instance into_val_diskWrapper : IntoVal diskWrapper.t :=
   {| to_val_def v :=
@@ -141,7 +141,7 @@ End embedA.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_embedA : Settable _ :=
+Global Instance settable_embedA : Settable embedA.t :=
   settable! embedA.mk < embedA.a' >.
 Global Instance into_val_embedA : IntoVal embedA.t :=
   {| to_val_def v :=
@@ -202,7 +202,7 @@ End embedB.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_embedB : Settable _ :=
+Global Instance settable_embedB : Settable embedB.t :=
   settable! embedB.mk < embedB.embedA' >.
 Global Instance into_val_embedB : IntoVal embedB.t :=
   {| to_val_def v :=
@@ -263,7 +263,7 @@ End embedC.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_embedC : Settable _ :=
+Global Instance settable_embedC : Settable embedC.t :=
   settable! embedC.mk < embedC.embedB' >.
 Global Instance into_val_embedC : IntoVal embedC.t :=
   {| to_val_def v :=
@@ -324,7 +324,7 @@ End embedD.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_embedD : Settable _ :=
+Global Instance settable_embedD : Settable embedD.t :=
   settable! embedD.mk < embedD.embedC' >.
 Global Instance into_val_embedD : IntoVal embedD.t :=
   {| to_val_def v :=
@@ -385,7 +385,7 @@ End Enc.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Enc : Settable _ :=
+Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.p' >.
 Global Instance into_val_Enc : IntoVal Enc.t :=
   {| to_val_def v :=
@@ -446,7 +446,7 @@ End Dec.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Dec : Settable _ :=
+Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.p' >.
 Global Instance into_val_Dec : IntoVal Dec.t :=
   {| to_val_def v :=
@@ -515,7 +515,7 @@ End concreteFooer.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_concreteFooer : Settable _ :=
+Global Instance settable_concreteFooer : Settable concreteFooer.t :=
   settable! concreteFooer.mk < concreteFooer.a' >.
 Global Instance into_val_concreteFooer : IntoVal concreteFooer.t :=
   {| to_val_def v :=
@@ -576,7 +576,7 @@ End FooerUser.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_FooerUser : Settable _ :=
+Global Instance settable_FooerUser : Settable FooerUser.t :=
   settable! FooerUser.mk < FooerUser.f' >.
 Global Instance into_val_FooerUser : IntoVal FooerUser.t :=
   {| to_val_def v :=
@@ -700,7 +700,7 @@ End allTheLiterals.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_allTheLiterals : Settable _ :=
+Global Instance settable_allTheLiterals : Settable allTheLiterals.t :=
   settable! allTheLiterals.mk < allTheLiterals.int'; allTheLiterals.s'; allTheLiterals.b' >.
 Global Instance into_val_allTheLiterals : IntoVal allTheLiterals.t :=
   {| to_val_def v :=
@@ -775,7 +775,7 @@ End hasCondVar.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_hasCondVar : Settable _ :=
+Global Instance settable_hasCondVar : Settable hasCondVar.t :=
   settable! hasCondVar.mk < hasCondVar.cond' >.
 Global Instance into_val_hasCondVar : IntoVal hasCondVar.t :=
   {| to_val_def v :=
@@ -853,7 +853,7 @@ End mapElem.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_mapElem : Settable _ :=
+Global Instance settable_mapElem : Settable mapElem.t :=
   settable! mapElem.mk < mapElem.a'; mapElem.b' >.
 Global Instance into_val_mapElem : IntoVal mapElem.t :=
   {| to_val_def v :=
@@ -921,7 +921,7 @@ End wrapExternalStruct.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_wrapExternalStruct : Settable _ :=
+Global Instance settable_wrapExternalStruct : Settable wrapExternalStruct.t :=
   settable! wrapExternalStruct.mk < wrapExternalStruct.j' >.
 Global Instance into_val_wrapExternalStruct : IntoVal wrapExternalStruct.t :=
   {| to_val_def v :=
@@ -982,7 +982,7 @@ End typing.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_typing : Settable _ :=
+Global Instance settable_typing : Settable typing.t :=
   settable! typing.mk < typing.proph' >.
 Global Instance into_val_typing : IntoVal typing.t :=
   {| to_val_def v :=
@@ -1044,7 +1044,7 @@ End composite.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_composite : Settable _ :=
+Global Instance settable_composite : Settable composite.t :=
   settable! composite.mk < composite.a'; composite.b' >.
 Global Instance into_val_composite : IntoVal composite.t :=
   {| to_val_def v :=
@@ -1149,7 +1149,7 @@ End Other.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Other : Settable _ :=
+Global Instance settable_Other : Settable Other.t :=
   settable! Other.mk < Other.RecursiveEmbedded' >.
 Global Instance into_val_Other : IntoVal Other.t :=
   {| to_val_def v :=
@@ -1210,7 +1210,7 @@ End RecursiveEmbedded.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_RecursiveEmbedded : Settable _ :=
+Global Instance settable_RecursiveEmbedded : Settable RecursiveEmbedded.t :=
   settable! RecursiveEmbedded.mk < RecursiveEmbedded.Other' >.
 Global Instance into_val_RecursiveEmbedded : IntoVal RecursiveEmbedded.t :=
   {| to_val_def v :=
@@ -1271,7 +1271,7 @@ End Block.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Block : Settable _ :=
+Global Instance settable_Block : Settable Block.t :=
   settable! Block.mk < Block.Value' >.
 Global Instance into_val_Block : IntoVal Block.t :=
   {| to_val_def v :=
@@ -1340,7 +1340,7 @@ End thing.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_thing : Settable _ :=
+Global Instance settable_thing : Settable thing.t :=
   settable! thing.mk < thing.x' >.
 Global Instance into_val_thing : IntoVal thing.t :=
   {| to_val_def v :=
@@ -1401,7 +1401,7 @@ End sliceOfThings.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_sliceOfThings : Settable _ :=
+Global Instance settable_sliceOfThings : Settable sliceOfThings.t :=
   settable! sliceOfThings.mk < sliceOfThings.things' >.
 Global Instance into_val_sliceOfThings : IntoVal sliceOfThings.t :=
   {| to_val_def v :=
@@ -1463,7 +1463,7 @@ End Point.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Point : Settable _ :=
+Global Instance settable_Point : Settable Point.t :=
   settable! Point.mk < Point.x'; Point.y' >.
 Global Instance into_val_Point : IntoVal Point.t :=
   {| to_val_def v :=
@@ -1532,7 +1532,7 @@ End TwoInts.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_TwoInts : Settable _ :=
+Global Instance settable_TwoInts : Settable TwoInts.t :=
   settable! TwoInts.mk < TwoInts.x'; TwoInts.y' >.
 Global Instance into_val_TwoInts : IntoVal TwoInts.t :=
   {| to_val_def v :=
@@ -1602,7 +1602,7 @@ End S.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_S : Settable _ :=
+Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.a'; S.b'; S.c' >.
 Global Instance into_val_S : IntoVal S.t :=
   {| to_val_def v :=
@@ -1677,7 +1677,7 @@ End B.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_B : Settable _ :=
+Global Instance settable_B : Settable B.t :=
   settable! B.mk < B.a' >.
 Global Instance into_val_B : IntoVal B.t :=
   {| to_val_def v :=

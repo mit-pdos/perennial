@@ -27,7 +27,7 @@ End inflight.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_inflight : Settable _ :=
+Global Instance settable_inflight : Settable inflight.t :=
   settable! inflight.mk < inflight.index'; inflight.bytes' >.
 Global Instance into_val_inflight : IntoVal inflight.t :=
   {| to_val_def v :=
@@ -100,7 +100,7 @@ End Inflights.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Inflights : Settable _ :=
+Global Instance settable_Inflights : Settable Inflights.t :=
   settable! Inflights.mk < Inflights.start'; Inflights.count'; Inflights.bytes'; Inflights.size'; Inflights.maxBytes'; Inflights.buffer' >.
 Global Instance into_val_Inflights : IntoVal Inflights.t :=
   {| to_val_def v :=
@@ -212,7 +212,7 @@ End Progress.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Progress : Settable _ :=
+Global Instance settable_Progress : Settable Progress.t :=
   settable! Progress.mk < Progress.Match'; Progress.Next'; Progress.sentCommit'; Progress.State'; Progress.PendingSnapshot'; Progress.RecentActive'; Progress.MsgAppFlowPaused'; Progress.Inflights'; Progress.IsLearner' >.
 Global Instance into_val_Progress : IntoVal Progress.t :=
   {| to_val_def v :=
@@ -340,7 +340,7 @@ End Config.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Config : Settable _ :=
+Global Instance settable_Config : Settable Config.t :=
   settable! Config.mk < Config.Voters'; Config.AutoLeave'; Config.Learners'; Config.LearnersNext' >.
 Global Instance into_val_Config : IntoVal Config.t :=
   {| to_val_def v :=
@@ -426,7 +426,7 @@ End ProgressTracker.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ProgressTracker : Settable _ :=
+Global Instance settable_ProgressTracker : Settable ProgressTracker.t :=
   settable! ProgressTracker.mk < ProgressTracker.Config'; ProgressTracker.Progress'; ProgressTracker.Votes'; ProgressTracker.MaxInflight'; ProgressTracker.MaxInflightBytes' >.
 Global Instance into_val_ProgressTracker : IntoVal ProgressTracker.t :=
   {| to_val_def v :=

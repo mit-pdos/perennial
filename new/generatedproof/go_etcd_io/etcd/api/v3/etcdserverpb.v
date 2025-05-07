@@ -43,7 +43,7 @@ End ResponseHeader.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ResponseHeader : Settable _ :=
+Global Instance settable_ResponseHeader : Settable ResponseHeader.t :=
   settable! ResponseHeader.mk < ResponseHeader.ClusterId'; ResponseHeader.MemberId'; ResponseHeader.Revision'; ResponseHeader.RaftTerm'; ResponseHeader.XXX_NoUnkeyedLiteral'; ResponseHeader.XXX_unrecognized'; ResponseHeader.XXX_sizecache' >.
 Global Instance into_val_ResponseHeader : IntoVal ResponseHeader.t :=
   {| to_val_def v :=
@@ -152,7 +152,7 @@ End RangeResponse.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_RangeResponse : Settable _ :=
+Global Instance settable_RangeResponse : Settable RangeResponse.t :=
   settable! RangeResponse.mk < RangeResponse.Header'; RangeResponse.Kvs'; RangeResponse.More'; RangeResponse.Count'; RangeResponse.XXX_NoUnkeyedLiteral'; RangeResponse.XXX_unrecognized'; RangeResponse.XXX_sizecache' >.
 Global Instance into_val_RangeResponse : IntoVal RangeResponse.t :=
   {| to_val_def v :=
@@ -259,7 +259,7 @@ End PutResponse.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_PutResponse : Settable _ :=
+Global Instance settable_PutResponse : Settable PutResponse.t :=
   settable! PutResponse.mk < PutResponse.Header'; PutResponse.PrevKv'; PutResponse.XXX_NoUnkeyedLiteral'; PutResponse.XXX_unrecognized'; PutResponse.XXX_sizecache' >.
 Global Instance into_val_PutResponse : IntoVal PutResponse.t :=
   {| to_val_def v :=
@@ -353,7 +353,7 @@ End DeleteRangeResponse.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_DeleteRangeResponse : Settable _ :=
+Global Instance settable_DeleteRangeResponse : Settable DeleteRangeResponse.t :=
   settable! DeleteRangeResponse.mk < DeleteRangeResponse.Header'; DeleteRangeResponse.Deleted'; DeleteRangeResponse.PrevKvs'; DeleteRangeResponse.XXX_NoUnkeyedLiteral'; DeleteRangeResponse.XXX_unrecognized'; DeleteRangeResponse.XXX_sizecache' >.
 Global Instance into_val_DeleteRangeResponse : IntoVal DeleteRangeResponse.t :=
   {| to_val_def v :=
@@ -460,7 +460,7 @@ End ResponseOp.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ResponseOp : Settable _ :=
+Global Instance settable_ResponseOp : Settable ResponseOp.t :=
   settable! ResponseOp.mk < ResponseOp.Response'; ResponseOp.XXX_NoUnkeyedLiteral'; ResponseOp.XXX_unrecognized'; ResponseOp.XXX_sizecache' >.
 Global Instance into_val_ResponseOp : IntoVal ResponseOp.t :=
   {| to_val_def v :=
@@ -542,7 +542,7 @@ End ResponseOp_ResponseRange.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ResponseOp_ResponseRange : Settable _ :=
+Global Instance settable_ResponseOp_ResponseRange : Settable ResponseOp_ResponseRange.t :=
   settable! ResponseOp_ResponseRange.mk < ResponseOp_ResponseRange.ResponseRange' >.
 Global Instance into_val_ResponseOp_ResponseRange : IntoVal ResponseOp_ResponseRange.t :=
   {| to_val_def v :=
@@ -603,7 +603,7 @@ End ResponseOp_ResponsePut.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ResponseOp_ResponsePut : Settable _ :=
+Global Instance settable_ResponseOp_ResponsePut : Settable ResponseOp_ResponsePut.t :=
   settable! ResponseOp_ResponsePut.mk < ResponseOp_ResponsePut.ResponsePut' >.
 Global Instance into_val_ResponseOp_ResponsePut : IntoVal ResponseOp_ResponsePut.t :=
   {| to_val_def v :=
@@ -664,7 +664,7 @@ End ResponseOp_ResponseDeleteRange.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ResponseOp_ResponseDeleteRange : Settable _ :=
+Global Instance settable_ResponseOp_ResponseDeleteRange : Settable ResponseOp_ResponseDeleteRange.t :=
   settable! ResponseOp_ResponseDeleteRange.mk < ResponseOp_ResponseDeleteRange.ResponseDeleteRange' >.
 Global Instance into_val_ResponseOp_ResponseDeleteRange : IntoVal ResponseOp_ResponseDeleteRange.t :=
   {| to_val_def v :=
@@ -725,7 +725,7 @@ End ResponseOp_ResponseTxn.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ResponseOp_ResponseTxn : Settable _ :=
+Global Instance settable_ResponseOp_ResponseTxn : Settable ResponseOp_ResponseTxn.t :=
   settable! ResponseOp_ResponseTxn.mk < ResponseOp_ResponseTxn.ResponseTxn' >.
 Global Instance into_val_ResponseOp_ResponseTxn : IntoVal ResponseOp_ResponseTxn.t :=
   {| to_val_def v :=
@@ -801,7 +801,7 @@ End Compare.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Compare : Settable _ :=
+Global Instance settable_Compare : Settable Compare.t :=
   settable! Compare.mk < Compare.Result'; Compare.Target'; Compare.Key'; Compare.TargetUnion'; Compare.RangeEnd'; Compare.XXX_NoUnkeyedLiteral'; Compare.XXX_unrecognized'; Compare.XXX_sizecache' >.
 Global Instance into_val_Compare : IntoVal Compare.t :=
   {| to_val_def v :=
@@ -911,7 +911,7 @@ End Compare_Version.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Compare_Version : Settable _ :=
+Global Instance settable_Compare_Version : Settable Compare_Version.t :=
   settable! Compare_Version.mk < Compare_Version.Version' >.
 Global Instance into_val_Compare_Version : IntoVal Compare_Version.t :=
   {| to_val_def v :=
@@ -972,7 +972,7 @@ End Compare_CreateRevision.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Compare_CreateRevision : Settable _ :=
+Global Instance settable_Compare_CreateRevision : Settable Compare_CreateRevision.t :=
   settable! Compare_CreateRevision.mk < Compare_CreateRevision.CreateRevision' >.
 Global Instance into_val_Compare_CreateRevision : IntoVal Compare_CreateRevision.t :=
   {| to_val_def v :=
@@ -1033,7 +1033,7 @@ End Compare_ModRevision.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Compare_ModRevision : Settable _ :=
+Global Instance settable_Compare_ModRevision : Settable Compare_ModRevision.t :=
   settable! Compare_ModRevision.mk < Compare_ModRevision.ModRevision' >.
 Global Instance into_val_Compare_ModRevision : IntoVal Compare_ModRevision.t :=
   {| to_val_def v :=
@@ -1094,7 +1094,7 @@ End Compare_Value.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Compare_Value : Settable _ :=
+Global Instance settable_Compare_Value : Settable Compare_Value.t :=
   settable! Compare_Value.mk < Compare_Value.Value' >.
 Global Instance into_val_Compare_Value : IntoVal Compare_Value.t :=
   {| to_val_def v :=
@@ -1155,7 +1155,7 @@ End Compare_Lease.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Compare_Lease : Settable _ :=
+Global Instance settable_Compare_Lease : Settable Compare_Lease.t :=
   settable! Compare_Lease.mk < Compare_Lease.Lease' >.
 Global Instance into_val_Compare_Lease : IntoVal Compare_Lease.t :=
   {| to_val_def v :=
@@ -1221,7 +1221,7 @@ End TxnResponse.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_TxnResponse : Settable _ :=
+Global Instance settable_TxnResponse : Settable TxnResponse.t :=
   settable! TxnResponse.mk < TxnResponse.Header'; TxnResponse.Succeeded'; TxnResponse.Responses'; TxnResponse.XXX_NoUnkeyedLiteral'; TxnResponse.XXX_unrecognized'; TxnResponse.XXX_sizecache' >.
 Global Instance into_val_TxnResponse : IntoVal TxnResponse.t :=
   {| to_val_def v :=

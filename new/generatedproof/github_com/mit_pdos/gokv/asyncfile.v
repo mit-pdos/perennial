@@ -33,7 +33,7 @@ End AsyncFile.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_AsyncFile : Settable _ :=
+Global Instance settable_AsyncFile : Settable AsyncFile.t :=
   settable! AsyncFile.mk < AsyncFile.mu'; AsyncFile.data'; AsyncFile.filename'; AsyncFile.index'; AsyncFile.indexCond'; AsyncFile.durableIndex'; AsyncFile.durableIndexCond'; AsyncFile.closeRequested'; AsyncFile.closed'; AsyncFile.closedCond' >.
 Global Instance into_val_AsyncFile : IntoVal AsyncFile.t :=
   {| to_val_def v :=

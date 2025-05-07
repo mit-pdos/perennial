@@ -22,7 +22,7 @@ End LockClerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_LockClerk : Settable _ :=
+Global Instance settable_LockClerk : Settable LockClerk.t :=
   settable! LockClerk.mk < LockClerk.kv' >.
 Global Instance into_val_LockClerk : IntoVal LockClerk.t :=
   {| to_val_def v :=

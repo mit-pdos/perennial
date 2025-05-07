@@ -2198,11 +2198,11 @@ Definition sleep : val :=
     exception_do (do:  (let: "$a0" := #(W64 1000) in
     (func_call #primitive.primitive #"Sleep"%go) "$a0")).
 
-Definition A : go_type := structT [
-].
-
 Definition B : go_type := structT [
   "a" :: sliceT
+].
+
+Definition A : go_type := structT [
 ].
 
 (* go: trailing_call.go:3:6 *)

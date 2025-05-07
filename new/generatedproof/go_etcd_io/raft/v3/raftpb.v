@@ -64,7 +64,7 @@ End Entry.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Entry : Settable _ :=
+Global Instance settable_Entry : Settable Entry.t :=
   settable! Entry.mk < Entry.Term'; Entry.Index'; Entry.Type'; Entry.Data' >.
 Global Instance into_val_Entry : IntoVal Entry.t :=
   {| to_val_def v :=
@@ -150,7 +150,7 @@ End ConfState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ConfState : Settable _ :=
+Global Instance settable_ConfState : Settable ConfState.t :=
   settable! ConfState.mk < ConfState.Voters'; ConfState.Learners'; ConfState.VotersOutgoing'; ConfState.LearnersNext'; ConfState.AutoLeave' >.
 Global Instance into_val_ConfState : IntoVal ConfState.t :=
   {| to_val_def v :=
@@ -241,7 +241,7 @@ End SnapshotMetadata.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SnapshotMetadata : Settable _ :=
+Global Instance settable_SnapshotMetadata : Settable SnapshotMetadata.t :=
   settable! SnapshotMetadata.mk < SnapshotMetadata.ConfState'; SnapshotMetadata.Index'; SnapshotMetadata.Term' >.
 Global Instance into_val_SnapshotMetadata : IntoVal SnapshotMetadata.t :=
   {| to_val_def v :=
@@ -317,7 +317,7 @@ End Snapshot.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Snapshot : Settable _ :=
+Global Instance settable_Snapshot : Settable Snapshot.t :=
   settable! Snapshot.mk < Snapshot.Data'; Snapshot.Metadata' >.
 Global Instance into_val_Snapshot : IntoVal Snapshot.t :=
   {| to_val_def v :=
@@ -404,7 +404,7 @@ End HardState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_HardState : Settable _ :=
+Global Instance settable_HardState : Settable HardState.t :=
   settable! HardState.mk < HardState.Term'; HardState.Vote'; HardState.Commit' >.
 Global Instance into_val_HardState : IntoVal HardState.t :=
   {| to_val_def v :=
@@ -482,7 +482,7 @@ End ConfChange.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ConfChange : Settable _ :=
+Global Instance settable_ConfChange : Settable ConfChange.t :=
   settable! ConfChange.mk < ConfChange.Type'; ConfChange.NodeID'; ConfChange.Context'; ConfChange.ID' >.
 Global Instance into_val_ConfChange : IntoVal ConfChange.t :=
   {| to_val_def v :=
@@ -566,7 +566,7 @@ End ConfChangeV2.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ConfChangeV2 : Settable _ :=
+Global Instance settable_ConfChangeV2 : Settable ConfChangeV2.t :=
   settable! ConfChangeV2.mk < ConfChangeV2.Transition'; ConfChangeV2.Changes'; ConfChangeV2.Context' >.
 Global Instance into_val_ConfChangeV2 : IntoVal ConfChangeV2.t :=
   {| to_val_def v :=

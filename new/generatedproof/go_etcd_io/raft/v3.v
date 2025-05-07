@@ -59,7 +59,7 @@ End unstable.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_unstable : Settable _ :=
+Global Instance settable_unstable : Settable unstable.t :=
   settable! unstable.mk < unstable.snapshot'; unstable.entries'; unstable.offset'; unstable.snapshotInProgress'; unstable.offsetInProgress'; unstable.logger' >.
 Global Instance into_val_unstable : IntoVal unstable.t :=
   {| to_val_def v :=
@@ -171,7 +171,7 @@ End raftLog.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_raftLog : Settable _ :=
+Global Instance settable_raftLog : Settable raftLog.t :=
   settable! raftLog.mk < raftLog.storage'; raftLog.unstable'; raftLog.committed'; raftLog.applying'; raftLog.applied'; raftLog.logger'; raftLog.maxApplyingEntsSize'; raftLog.applyingEntsSize'; raftLog.applyingEntsPaused' >.
 Global Instance into_val_raftLog : IntoVal raftLog.t :=
   {| to_val_def v :=
@@ -289,7 +289,7 @@ End DefaultLogger.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_DefaultLogger : Settable _ :=
+Global Instance settable_DefaultLogger : Settable DefaultLogger.t :=
   settable! DefaultLogger.mk < DefaultLogger.Logger'; DefaultLogger.debug' >.
 Global Instance into_val_DefaultLogger : IntoVal DefaultLogger.t :=
   {| to_val_def v :=
@@ -374,7 +374,7 @@ End SoftState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SoftState : Settable _ :=
+Global Instance settable_SoftState : Settable SoftState.t :=
   settable! SoftState.mk < SoftState.Lead'; SoftState.RaftState' >.
 Global Instance into_val_SoftState : IntoVal SoftState.t :=
   {| to_val_def v :=
@@ -449,7 +449,7 @@ End Ready.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Ready : Settable _ :=
+Global Instance settable_Ready : Settable Ready.t :=
   settable! Ready.mk < Ready.SoftState'; Ready.HardState'; Ready.ReadStates'; Ready.Entries'; Ready.Snapshot'; Ready.CommittedEntries'; Ready.Messages'; Ready.MustSync' >.
 Global Instance into_val_Ready : IntoVal Ready.t :=
   {| to_val_def v :=
@@ -568,7 +568,7 @@ End Peer.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Peer : Settable _ :=
+Global Instance settable_Peer : Settable Peer.t :=
   settable! Peer.mk < Peer.ID'; Peer.Context' >.
 Global Instance into_val_Peer : IntoVal Peer.t :=
   {| to_val_def v :=
@@ -637,7 +637,7 @@ End msgWithResult.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_msgWithResult : Settable _ :=
+Global Instance settable_msgWithResult : Settable msgWithResult.t :=
   settable! msgWithResult.mk < msgWithResult.m'; msgWithResult.result' >.
 Global Instance into_val_msgWithResult : IntoVal msgWithResult.t :=
   {| to_val_def v :=
@@ -715,7 +715,7 @@ End node.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_node : Settable _ :=
+Global Instance settable_node : Settable node.t :=
   settable! node.mk < node.propc'; node.recvc'; node.confc'; node.confstatec'; node.readyc'; node.advancec'; node.tickc'; node.done'; node.stop'; node.status'; node.rn' >.
 Global Instance into_val_node : IntoVal node.t :=
   {| to_val_def v :=
@@ -854,7 +854,7 @@ End lockedRand.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_lockedRand : Settable _ :=
+Global Instance settable_lockedRand : Settable lockedRand.t :=
   settable! lockedRand.mk < lockedRand.mu' >.
 Global Instance into_val_lockedRand : IntoVal lockedRand.t :=
   {| to_val_def v :=
@@ -949,7 +949,7 @@ End Config.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Config : Settable _ :=
+Global Instance settable_Config : Settable Config.t :=
   settable! Config.mk < Config.ID'; Config.ElectionTick'; Config.HeartbeatTick'; Config.Storage'; Config.Applied'; Config.AsyncStorageWrites'; Config.MaxSizePerMsg'; Config.MaxCommittedSizePerReady'; Config.MaxUncommittedEntriesSize'; Config.MaxInflightMsgs'; Config.MaxInflightBytes'; Config.CheckQuorum'; Config.PreVote'; Config.ReadOnlyOption'; Config.Logger'; Config.DisableProposalForwarding'; Config.DisableConfChangeValidation'; Config.StepDownOnRemoval'; Config.TraceLogger' >.
 Global Instance into_val_Config : IntoVal Config.t :=
   {| to_val_def v :=
@@ -1183,7 +1183,7 @@ End raft.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_raft : Settable _ :=
+Global Instance settable_raft : Settable raft.t :=
   settable! raft.mk < raft.id'; raft.Term'; raft.Vote'; raft.readStates'; raft.raftLog'; raft.maxMsgSize'; raft.maxUncommittedSize'; raft.trk'; raft.state'; raft.isLearner'; raft.msgs'; raft.msgsAfterAppend'; raft.lead'; raft.leadTransferee'; raft.pendingConfIndex'; raft.disableConfChangeValidation'; raft.uncommittedSize'; raft.readOnly'; raft.electionElapsed'; raft.heartbeatElapsed'; raft.checkQuorum'; raft.preVote'; raft.heartbeatTimeout'; raft.electionTimeout'; raft.randomizedElectionTimeout'; raft.disableProposalForwarding'; raft.stepDownOnRemoval'; raft.tick'; raft.step'; raft.logger'; raft.pendingReadIndexMessages'; raft.traceLogger' >.
 Global Instance into_val_raft : IntoVal raft.t :=
   {| to_val_def v :=
@@ -1465,7 +1465,7 @@ End RawNode.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_RawNode : Settable _ :=
+Global Instance settable_RawNode : Settable RawNode.t :=
   settable! RawNode.mk < RawNode.raft'; RawNode.asyncStorageWrites'; RawNode.prevSoftSt'; RawNode.prevHardSt'; RawNode.stepsOnAdvance' >.
 Global Instance into_val_RawNode : IntoVal RawNode.t :=
   {| to_val_def v :=
@@ -1563,7 +1563,7 @@ End ReadState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ReadState : Settable _ :=
+Global Instance settable_ReadState : Settable ReadState.t :=
   settable! ReadState.mk < ReadState.Index'; ReadState.RequestCtx' >.
 Global Instance into_val_ReadState : IntoVal ReadState.t :=
   {| to_val_def v :=
@@ -1633,7 +1633,7 @@ End readIndexStatus.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_readIndexStatus : Settable _ :=
+Global Instance settable_readIndexStatus : Settable readIndexStatus.t :=
   settable! readIndexStatus.mk < readIndexStatus.req'; readIndexStatus.index'; readIndexStatus.acks' >.
 Global Instance into_val_readIndexStatus : IntoVal readIndexStatus.t :=
   {| to_val_def v :=
@@ -1710,7 +1710,7 @@ End readOnly.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_readOnly : Settable _ :=
+Global Instance settable_readOnly : Settable readOnly.t :=
   settable! readOnly.mk < readOnly.option'; readOnly.pendingReadIndex'; readOnly.readIndexQueue' >.
 Global Instance into_val_readOnly : IntoVal readOnly.t :=
   {| to_val_def v :=
@@ -1826,7 +1826,7 @@ End BasicStatus.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_BasicStatus : Settable _ :=
+Global Instance settable_BasicStatus : Settable BasicStatus.t :=
   settable! BasicStatus.mk < BasicStatus.ID'; BasicStatus.HardState'; BasicStatus.SoftState'; BasicStatus.Applied'; BasicStatus.LeadTransferee' >.
 Global Instance into_val_BasicStatus : IntoVal BasicStatus.t :=
   {| to_val_def v :=
@@ -1917,7 +1917,7 @@ End Status.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Status : Settable _ :=
+Global Instance settable_Status : Settable Status.t :=
   settable! Status.mk < Status.BasicStatus'; Status.Config'; Status.Progress' >.
 Global Instance into_val_Status : IntoVal Status.t :=
   {| to_val_def v :=
@@ -1997,7 +1997,7 @@ End inMemStorageCallStats.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_inMemStorageCallStats : Settable _ :=
+Global Instance settable_inMemStorageCallStats : Settable inMemStorageCallStats.t :=
   settable! inMemStorageCallStats.mk < inMemStorageCallStats.initialState'; inMemStorageCallStats.firstIndex'; inMemStorageCallStats.lastIndex'; inMemStorageCallStats.entries'; inMemStorageCallStats.term'; inMemStorageCallStats.snapshot' >.
 Global Instance into_val_inMemStorageCallStats : IntoVal inMemStorageCallStats.t :=
   {| to_val_def v :=
@@ -2097,7 +2097,7 @@ End MemoryStorage.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_MemoryStorage : Settable _ :=
+Global Instance settable_MemoryStorage : Settable MemoryStorage.t :=
   settable! MemoryStorage.mk < MemoryStorage.Mutex'; MemoryStorage.hardState'; MemoryStorage.snapshot'; MemoryStorage.ents'; MemoryStorage.callStats' >.
 Global Instance into_val_MemoryStorage : IntoVal MemoryStorage.t :=
   {| to_val_def v :=
@@ -2187,7 +2187,7 @@ End entryID.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_entryID : Settable _ :=
+Global Instance settable_entryID : Settable entryID.t :=
   settable! entryID.mk < entryID.term'; entryID.index' >.
 Global Instance into_val_entryID : IntoVal entryID.t :=
   {| to_val_def v :=
@@ -2257,7 +2257,7 @@ End logSlice.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_logSlice : Settable _ :=
+Global Instance settable_logSlice : Settable logSlice.t :=
   settable! logSlice.mk < logSlice.term'; logSlice.prev'; logSlice.entries' >.
 Global Instance into_val_logSlice : IntoVal logSlice.t :=
   {| to_val_def v :=

@@ -36,7 +36,7 @@ End Update.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Update : Settable _ :=
+Global Instance settable_Update : Settable Update.t :=
   settable! Update.mk < Update.Addr'; Update.Block' >.
 Global Instance into_val_Update : IntoVal Update.t :=
   {| to_val_def v :=
@@ -104,7 +104,7 @@ End circularAppender.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_circularAppender : Settable _ :=
+Global Instance settable_circularAppender : Settable circularAppender.t :=
   settable! circularAppender.mk < circularAppender.diskAddrs' >.
 Global Instance into_val_circularAppender : IntoVal circularAppender.t :=
   {| to_val_def v :=
@@ -169,7 +169,7 @@ End sliding.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_sliding : Settable _ :=
+Global Instance settable_sliding : Settable sliding.t :=
   settable! sliding.mk < sliding.log'; sliding.start'; sliding.mutable'; sliding.needFlush'; sliding.addrPos' >.
 Global Instance into_val_sliding : IntoVal sliding.t :=
   {| to_val_def v :=
@@ -261,7 +261,7 @@ End WalogState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_WalogState : Settable _ :=
+Global Instance settable_WalogState : Settable WalogState.t :=
   settable! WalogState.mk < WalogState.memLog'; WalogState.diskEnd'; WalogState.shutdown'; WalogState.nthread' >.
 Global Instance into_val_WalogState : IntoVal WalogState.t :=
   {| to_val_def v :=
@@ -349,7 +349,7 @@ End Walog.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Walog : Settable _ :=
+Global Instance settable_Walog : Settable Walog.t :=
   settable! Walog.mk < Walog.memLock'; Walog.d'; Walog.circ'; Walog.st'; Walog.condLogger'; Walog.condInstall'; Walog.condShut' >.
 Global Instance into_val_Walog : IntoVal Walog.t :=
   {| to_val_def v :=

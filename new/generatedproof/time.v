@@ -23,7 +23,7 @@ End Time.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Time : Settable _ :=
+Global Instance settable_Time : Settable Time.t :=
   settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
 Global Instance into_val_Time : IntoVal Time.t :=
   {| to_val_def v :=

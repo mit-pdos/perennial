@@ -329,8 +329,7 @@ conversative maximum size for a type that still enables it to be used in
 essentially any larger struct.
 
 We currently do not rely on this typeclass for non-axiomatic types (where it
-could be proven by direct computation) so there's no computation-based instance
-to prove it for other types. *)
+could be proven by direct computation). *)
 Class BoundedTypeSize (t : go_type) :=
   { has_bounded_type_size : Z.of_nat (go_type_size t) < 2^32; }.
 
@@ -387,6 +386,8 @@ Ltac2 solve_has_go_type_step () :=
             Std.indcl_in := None
         } ] None
   | [ h : (@eq (go_string * go_type) (_, _) _) |- _ ] =>
+      (* XXX: inversion_clear is not as powerful as inversion H; subst; clear H;
+      comes up in generics when there are dependent types *)
       Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None; cbn
   end.
 Ltac solve_has_go_type := repeat ltac2:(solve_has_go_type_step ()).

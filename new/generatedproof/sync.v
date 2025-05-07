@@ -65,7 +65,7 @@ End RWMutex.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_RWMutex : Settable _ :=
+Global Instance settable_RWMutex : Settable RWMutex.t :=
   settable! RWMutex.mk < RWMutex.w'; RWMutex.writerSem'; RWMutex.readerSem'; RWMutex.readerCount'; RWMutex.readerWait' >.
 Global Instance into_val_RWMutex : IntoVal RWMutex.t :=
   {| to_val_def v :=
@@ -156,7 +156,7 @@ End WaitGroup.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_WaitGroup : Settable _ :=
+Global Instance settable_WaitGroup : Settable WaitGroup.t :=
   settable! WaitGroup.mk < WaitGroup.noCopy'; WaitGroup.state'; WaitGroup.sema' >.
 Global Instance into_val_WaitGroup : IntoVal WaitGroup.t :=
   {| to_val_def v :=
