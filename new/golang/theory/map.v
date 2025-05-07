@@ -17,22 +17,14 @@ is independent of the [IntoValTyped] instance. Otherwise, these proofs end up
 relying on a [gmap] with a particular proof of [EqDecision K]. *)
 Context `{!IntoVal K} `{!EqDecision K} `{!Countable K} `{!IntoVal V}.
 
-Local Definition is_map_val (mv : val) (m : gmap K V)
-  (* these arguments are written out manually so that the type of m directs
-  inferring kt and vt *)
- `{!IntoValTyped K kt} `{!IntoValTyped V vt}
-  : Prop :=
-  ∀ (k : K),
-  (fix go (mv : val) : Prop :=
-     match mv with
-     | InjLV d => (m !! k = None) ∧ d = #(default_val V)
-     | InjRV ((kv', vv'), mv) =>
-         ∃ k' v', kv' = #k' ∧ vv' = #v' ∧
-                  if decide (k = k') then m !! k = Some v'
-                  else go mv
-     | _ => False
-     end
-  ) mv.
+Local Fixpoint is_map_val (mv : val) (m : gmap K V) `{!IntoValTyped V vt} `{!IntoValTyped K kt} : Prop :=
+  match mv with
+  | InjLV d => m = ∅ ∧ d = #(default_val V)
+  | InjRV ((kv', vv'), mv') =>
+      (∃ k' v' m', kv' = #k' ∧ vv' = #v' ∧ is_map_val mv' m' ∧ m = <[k' := v']> m')
+  | _ => False
+end
+.
 
 Definition own_map_def mptr dq (m : gmap K V)
  `{!IntoValTyped K kt} `{!IntoValTyped V vt}
@@ -68,53 +60,31 @@ Proof.
   rewrite [in #()]to_val_unseal.
   iApply "HΦ".
   iFrame. iPureIntro.
-  rewrite /is_map_val.
-  split; first done.
-  intros k'.
-  destruct (decide (k = k')).
-  - subst. eexists _, _. split_and!; try reflexivity. rewrite decide_True //. rewrite lookup_insert //.
-  - eexists _, _. split_and!; try reflexivity. rewrite decide_False //.
-    + rewrite lookup_insert_ne //. apply Hm.
+  naive_solver.
 Qed.
-
-Lemma is_map_val_inv : ∀ (vm: val) (m : gmap K V),
-  is_map_val vm m ->
-  (∃ d, vm = InjLV d ∧ m = ∅ ∧ d = #(default_val V)) ∨
-  (∃ k v vm', vm = list.ConsV (# k, # v) vm' ∧ ∃ m', is_map_val vm' m' ∧ m = insert k v m').
-Proof.
-Admitted.
 
 Lemma is_map_val_cons (m m' : gmap K V) (vm : val) (k : K) (v : V) :
   is_map_val vm m' ->
   m = insert k v m' ->
   is_map_val (list.ConsV (# k, # v) vm) m.
-Proof.
-  intros Hm -> k'.
-  eexists _, _; intuition eauto.
-  destruct (decide (k' = k)).
-  - subst. rewrite lookup_insert //.
-  - specialize (Hm k').
-    rewrite lookup_insert_ne //.
-Qed.
+Proof. naive_solver. Qed.
 
 Lemma wp_map_delete_aux (v: val) (k: K) (m: gmap K V) :
-  {{{ ⌜is_map_val v m⌝ ∗
-      ⌜is_comparable_go_type kt = true⌝ }}}
+  {{{ ⌜ is_map_val v m ⌝ ∗
+      ⌜ is_comparable_go_type kt = true ⌝ }}}
     map.delete_aux v #k
   {{{ vd, RET vd; ⌜is_map_val vd (delete k m)⌝ }}}.
 Proof.
   iIntros (Φ) "[%Hm %Hcmp] HΦ".
   iLöb as "IH" forall (v m Hm Φ).
-  specialize (Hm k) as Hmk.
   wp_call.
-  apply is_map_val_inv in Hm; destruct Hm as [(d & -> & -> & ->) | (k' & v' & vm' & -> & m' & Hm & ->)].
-  - wp_pures.
-    iApply "HΦ". iPureIntro.
-    destruct Hmk as [Hmk1 Hmk2].
-    intros k'. intuition eauto.
-  - wp_pures.
+  destruct v; try by exfalso.
+  - wp_pures. iApply "HΦ". iPureIntro. naive_solver.
+  - wp_pures. destruct v; try by exfalso. destruct v1; try by exfalso.
+    destruct Hm as (k' & v' & ? & -> & -> & Hm' & ->).
+    wp_pures.
     destruct (decide (k = k')).
-    + subst. rewrite bool_decide_eq_true_2; eauto. wp_pures.
+    + subst. wp_pures. rewrite bool_decide_eq_true_2; eauto. wp_pures.
       iApply ("IH" with "[]"); first eauto.
       iNext. iIntros (vd ?). iApply "HΦ". rewrite delete_insert_delete. done.
     + rewrite bool_decide_eq_false_2; eauto. wp_pures.
@@ -159,29 +129,21 @@ Proof.
   rewrite [in #l]to_val_unseal /=.
   iApply (wp_load with "[$]").
   iIntros "!> Hm".
-  iSpecialize ("HΦ" with "[Hm]").
+  wp_pure. iSpecialize ("HΦ" with "[Hm]").
   { iFrame "∗%". }
-  wp_pure.
-  specialize (Hm k).
-  iLöb as "IH" forall (v Hm Φ).
-  wp_pures.
-  simpl in Hm.
-  destruct v; try by exfalso.
-  - wp_pures.
-    destruct Hm as [-> ->]. done.
+  iLöb as "IH" forall (v m Hm Φ).
+  wp_pures. destruct v; try by exfalso.
+  - wp_pures. destruct Hm as [-> ->]. done.
   - destruct v; try by exfalso.
     destruct v1; try by exfalso.
-    destruct Hm as (? & ? & -> & -> & Hm).
-    subst.
+    destruct Hm as (k' & ? & ? & -> & -> & Hm & ->).
     wp_pures.
-    simpl.
-    destruct (decide (k = x)); subst.
-    + rewrite !bool_decide_eq_true_2 //.
-      wp_pures.
-      rewrite Hm. done.
-    + rewrite -> (bool_decide_eq_false_2 (k = x)) by congruence.
-      wp_pure.
-      iApply ("IH" with "[//] HΦ").
+    destruct (decide (k = k')); subst.
+    + rewrite lookup_insert. rewrite !bool_decide_eq_true_2 //.
+      wp_pures. done.
+    + rewrite -> (bool_decide_eq_false_2 (k = k')) by congruence.
+      rewrite lookup_insert_ne //.
+      wp_pure. iApply ("IH" with "[//] HΦ").
 Qed.
 
 Lemma wp_map_make :
@@ -199,10 +161,8 @@ Proof.
   replace (LitV l) with #l; last by rewrite to_val_unseal.
   iApply "HΦ".
   iFrame. iPureIntro.
-  split; first done.
-  unfold is_map_val.
-  intros ?.
-  by rewrite default_val_eq_zero_val.
+  rewrite -default_val_eq_zero_val.
+  naive_solver.
 Qed.
 
 #[global]
