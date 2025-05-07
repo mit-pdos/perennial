@@ -115,7 +115,7 @@ struct_field {
   iv :: IntoVal Vf;
   tf : go_type;
   ivt :: IntoValTyped Vf tf;
-  setter_wf :: SetterWf proj;
+  setter :: Setter proj;
 }.
 Arguments struct_field {_ _} (_) {_ _ _ _}.
 Arguments tf {_} (_).
@@ -139,94 +139,20 @@ Proof.
     + by apply IHdecls.
 Qed.
 
-Definition x V (projections : list (go_string * StructField V)) :=
-  foldl (λ mkType '(_, p), p.(Vf V) → mkType) V projections.
-Record t := mk {
-  wall' : w64;
-  ext' : w64;
-  loc' : loc;
-}.
-Global Instance settable_Time `{ffi_syntax} : Settable _ :=
-  settable! mk < wall'; ext'; loc' >.
-Definition y := [
-    ("wall"%go, struct_field wall');
-    ("ext"%go, struct_field ext');
-    ("loc"%go, struct_field loc')
-  ]%struct.
-
-Eval simpl in foldr (λ '(_, p) mkType, p.(Vf t) → mkType) t y.
-Check (mk : foldr (λ '(_, p) mkType, p.(Vf t) → mkType) t y).
-
-Program Definition x'
-  {V : Type} (projections : list (go_string * StructField V))
-  (mk_record : foldr (λ '(_, p) mkType, p.(Vf V) → mkType) V projections)
-  : Prop :=
-  (fix go (projections : list (go_string * StructField V)) mk1 mk2 :=
-     match projections as ps return (projections = ps → Prop) with
-     | [] => λ _, mk1 = mk2
-     | (name, p) :: tl =>
-         λ Heq,
-         (∀ (x x' : p.(Vf V)),
-            _
-         )
-     end eq_refl
-  ) projections mk_record mk_record.
-Final Obligation.
-intros. subst. clear -go mk1 mk2 x0 x'.
-set (y:=mk1 x0). set (y':=mk2 x').
-eapply go.
-{ exact y. }
-{ exact y'. }
-Defined.
-
-Eval simpl in x' y mk.
-Lemma test : x' y mk.
-Proof.
-  cbn. intros ??????. cbn. unfold x'.
-  cbn.
-  rewrite /eq_trans /f_equal. simpl.
-  unfold foldr_cons.
-  simpl. intros ??. clear.
-  simpl in *.
-Eval cbn in x' y mk.
-unfodl eq_$ect
-
-specialize ()
-Show Proof.
-subst.
-Show Proof.
-
-mk_record mk_record.
-
-
 Class IntoValStruct (t : go_type) (V : Type) :=
   {
     projections : list (go_string * StructField V);
-    mk_record : foldr (λ '(_, p) mkType, p.(Vf V) → mkType) V projections;
-    mk_record_inv :
-    (fix go projections (mk1 mk2 : foldr (λ '(_, p) mkType, p.(Vf V) → mkType) V projections) :=
-       match projections with
-       | [] => mk1 = mk2
-       | (name, p) :: tl =>
-           mk1 = match projections as ps return (foldr _ _ ps) with
-                 | [] => mk1
-                 | (name, p) :: tl => mk1
-                 end
-       end
-    ) projections mk_record mk_record;
-  }.
-    (* )| _ => None *)
-    end
-    foldl (λ P '(_, p),
-                             True
-                        (* ∀ (a a' : p.(Vf V)), mk_record a = mk_record a' → a = a' *)
-                      ) True projections;
-    (* default_struct_val : V; *)
+    default_struct_val : V;
     size_bounded : go_type_size t < 2^64;
     struct_wf :: struct.Wf t;
     projections_match : t = structT ((λ '(x, p), (x, p.(tf))) <$> projections);
     projections_complete : (∀ v1 v2, Forall (λ '(_, p), p.(proj) v1 = p.(proj) v2) projections → v1 = v2);
-    (* default_projections : Forall (λ '(_, p), p.(proj) default_struct_val = default_val _) projections; *)
+    projections_unique : ∀ i j f g p q v fv',
+      i ≠ j →
+      projections !! i = Some (f, p) →
+      projections !! j = Some (g, q) →
+      p.(proj) v = p.(proj) (v <| q.(proj) := fv' |>);
+    default_projections : Forall (λ '(_, p), p.(proj) default_struct_val = default_val _) projections;
     #[global] struct_eq_dec :: EqDecision V;
   }.
 
@@ -476,7 +402,7 @@ Proof. rewrite struct_fields_split' /=. rewrite -> struct_fields_splittable. don
 Class IntoValStructField (f : go_string) (t : go_type) {V Vf' : Type} {tf'}
   (field_proj : V → Vf')
   `{!IntoValStruct t V}
-  `{!IntoVal Vf'}
+  `{!IntoVal Vf'} `{!SetterWf field_proj}
   `{!IntoValTyped Vf' tf'} :=
   {
     lookup_projection : (alist_lookup_f f projections) = Some (struct_field field_proj)
@@ -484,7 +410,7 @@ Class IntoValStructField (f : go_string) (t : go_type) {V Vf' : Type} {tf'}
 
 Theorem struct_fields_acc_update f t V Vf'
   l dq {dwf : struct.Wf t} (v : V) (field_proj : _ → Vf')
-  `{IntoValStructField f t V Vf' tf' field_proj} `{!SetterWf field_proj} :
+  `{IntoValStructField f t V Vf' tf' field_proj} :
   l ↦{dq} v -∗
   l ↦s[t :: f]{dq} (field_proj v) ∗
   (∀ fv', l ↦s[t :: f]{dq} fv' -∗
@@ -511,14 +437,7 @@ Proof.
   2:{ rewrite set_get. iFrame. }
   iIntros "!# * %Hlook %Hne H". destruct y.
   iExactEq "H". f_equal.
-  Print Settable.
-  Print SetterWf.
-  rewrite [in (l ↦{_} v)%I]typed_pointsto_unseal /typed_pointsto_def.
-  rewrite to_val_unseal. simpl. destruct IntoValStruct0.
-  subst. simpl in *. destruct H0.
-  iInduction projections0 as [|[]] "IH".
-  { simpl in *. done. }
-  simpl in *.
+  opose proof (projections_unique k i _ _ _ _ v _ _ _ _); done.
 Qed.
 
 Theorem struct_fields_acc f t V Vf
@@ -654,10 +573,10 @@ Lemma struct_val_aux_cons decls f t fvs :
   (default (zero_val t) (alist_lookup_f f fvs), (struct.val_aux (structT decls) fvs))%V.
 Proof. rewrite struct.val_aux_unseal //=. Qed.
 
-(* Global Instance *) Definition points_to_access_struct_field_ref
+Global Instance points_to_access_struct_field_ref
   {V Vf} (l : loc) f (v : V) (proj : V → Vf) dq {t tf : go_type}
   `{!IntoValStruct t V} `{!IntoVal Vf} `{!IntoValTyped Vf tf}
-  `{!IntoValStructField f t proj} `{!SetterWf proj} `{!struct.Wf t}
+  `{!SetterWf proj} `{!IntoValStructField f t proj}
   : PointsToAccess (struct.field_ref_f t f l) (proj v)
                    dq
                    (l ↦{dq} v)%I
@@ -711,7 +630,7 @@ Section instances.
 
 Global Instance settable_Time `{ffi_syntax} : Settable _ :=
   settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
-Arguments struct_field {_ _ _} (_) {_ _ _}.
+Arguments struct_field {_ _ _} (_) {_ _ _ _}.
 Global Program Instance into_val_struct_Time `{ffi_syntax} : IntoValStruct time.Time Time.t :=
   {|
     projections := [
@@ -724,6 +643,10 @@ Global Program Instance into_val_struct_Time `{ffi_syntax} : IntoValStruct time.
 Next Obligation. intros. rewrite go_type_size_unseal. reflexivity. Qed.
 Next Obligation. intros. reflexivity. Qed.
 Next Obligation. intros ? [][] H. rewrite !Forall_cons /= in H. naive_solver. Qed.
+Next Obligation.
+  intros ? i j. intros.
+  repeat (destruct i; first (repeat (destruct j; first naive_solver; try done)); try done).
+Qed.
 Next Obligation. intros. repeat (constructor; first reflexivity); constructor. Qed.
 Final Obligation. intros ?. solve_decision. Qed.
 
