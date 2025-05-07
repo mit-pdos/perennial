@@ -63,12 +63,6 @@ Proof.
   naive_solver.
 Qed.
 
-Lemma is_map_val_cons (m m' : gmap K V) (vm : val) (k : K) (v : V) :
-  is_map_val vm m' ->
-  m = insert k v m' ->
-  is_map_val (list.ConsV (# k, # v) vm) m.
-Proof. naive_solver. Qed.
-
 Lemma wp_map_delete_aux (v: val) (k: K) (m: gmap K V) :
   {{{ ⌜ is_map_val v m ⌝ ∗
       ⌜ is_comparable_go_type kt = true ⌝ }}}
@@ -91,8 +85,7 @@ Proof.
       wp_bind.
       iApply ("IH" with "[]"); first eauto.
       iNext. iIntros (vd Hvd). wp_pures. iApply "HΦ". iPureIntro.
-      eapply is_map_val_cons; first eauto.
-      rewrite -delete_insert_ne; done.
+      rewrite delete_insert_ne //. naive_solver.
 Qed.
 
 Lemma wp_map_delete l (m : gmap K V) k :
