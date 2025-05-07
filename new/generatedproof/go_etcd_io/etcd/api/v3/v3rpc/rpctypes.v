@@ -24,7 +24,7 @@ End EtcdError.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_EtcdError : Settable _ :=
+Global Instance settable_EtcdError : Settable EtcdError.t :=
   settable! EtcdError.mk < EtcdError.code'; EtcdError.desc' >.
 Global Instance into_val_EtcdError : IntoVal EtcdError.t :=
   {| to_val_def v :=

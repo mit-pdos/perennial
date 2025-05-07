@@ -25,11 +25,6 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition ReadState : go_type := structT [
-  "Index" :: uint64T;
-  "RequestCtx" :: sliceT
-].
-
 Definition entryEncodingSize : go_type := uint64T.
 
 Definition entryPayloadSize : go_type := uint64T.
@@ -4908,6 +4903,11 @@ Definition stepCandidate : val :=
                 (interface.get #"Debugf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1")
               else #()))))));;;
     return: (#interface.nil)).
+
+Definition ReadState : go_type := structT [
+  "Index" :: uint64T;
+  "RequestCtx" :: sliceT
+].
 
 (* go: raft.go:1713:6 *)
 Definition stepFollower : val :=

@@ -37,7 +37,7 @@ End Election.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Election : Settable _ :=
+Global Instance settable_Election : Settable Election.t :=
   settable! Election.mk < Election.session'; Election.keyPrefix'; Election.leaderKey'; Election.leaderRev'; Election.leaderSession'; Election.hdr' >.
 Global Instance into_val_Election : IntoVal Election.t :=
   {| to_val_def v :=
@@ -137,7 +137,7 @@ End Mutex.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Mutex : Settable _ :=
+Global Instance settable_Mutex : Settable Mutex.t :=
   settable! Mutex.mk < Mutex.s'; Mutex.pfx'; Mutex.myKey'; Mutex.myRev'; Mutex.hdr' >.
 Global Instance into_val_Mutex : IntoVal Mutex.t :=
   {| to_val_def v :=
@@ -226,7 +226,7 @@ End lockerMutex.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_lockerMutex : Settable _ :=
+Global Instance settable_lockerMutex : Settable lockerMutex.t :=
   settable! lockerMutex.mk < lockerMutex.Mutex' >.
 Global Instance into_val_lockerMutex : IntoVal lockerMutex.t :=
   {| to_val_def v :=
@@ -292,7 +292,7 @@ End Session.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Session : Settable _ :=
+Global Instance settable_Session : Settable Session.t :=
   settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
 Global Instance into_val_Session : IntoVal Session.t :=
   {| to_val_def v :=
@@ -390,7 +390,7 @@ End sessionOptions.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_sessionOptions : Settable _ :=
+Global Instance settable_sessionOptions : Settable sessionOptions.t :=
   settable! sessionOptions.mk < sessionOptions.ttl'; sessionOptions.leaseID'; sessionOptions.ctx' >.
 Global Instance into_val_sessionOptions : IntoVal sessionOptions.t :=
   {| to_val_def v :=
@@ -489,7 +489,7 @@ End stmError.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmError : Settable _ :=
+Global Instance settable_stmError : Settable stmError.t :=
   settable! stmError.mk < stmError.err' >.
 Global Instance into_val_stmError : IntoVal stmError.t :=
   {| to_val_def v :=
@@ -552,7 +552,7 @@ End stmOptions.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmOptions : Settable _ :=
+Global Instance settable_stmOptions : Settable stmOptions.t :=
   settable! stmOptions.mk < stmOptions.iso'; stmOptions.ctx'; stmOptions.prefetch' >.
 Global Instance into_val_stmOptions : IntoVal stmOptions.t :=
   {| to_val_def v :=
@@ -636,7 +636,7 @@ End stmResponse.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmResponse : Settable _ :=
+Global Instance settable_stmResponse : Settable stmResponse.t :=
   settable! stmResponse.mk < stmResponse.resp'; stmResponse.err' >.
 Global Instance into_val_stmResponse : IntoVal stmResponse.t :=
   {| to_val_def v :=
@@ -725,7 +725,7 @@ End stm.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stm : Settable _ :=
+Global Instance settable_stm : Settable stm.t :=
   settable! stm.mk < stm.client'; stm.ctx'; stm.rset'; stm.wset'; stm.getOpts'; stm.conflicts' >.
 Global Instance into_val_stm : IntoVal stm.t :=
   {| to_val_def v :=
@@ -822,7 +822,7 @@ End stmPut.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmPut : Settable _ :=
+Global Instance settable_stmPut : Settable stmPut.t :=
   settable! stmPut.mk < stmPut.val'; stmPut.op' >.
 Global Instance into_val_stmPut : IntoVal stmPut.t :=
   {| to_val_def v :=
@@ -891,7 +891,7 @@ End stmSerializable.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_stmSerializable : Settable _ :=
+Global Instance settable_stmSerializable : Settable stmSerializable.t :=
   settable! stmSerializable.mk < stmSerializable.stm'; stmSerializable.prefetch' >.
 Global Instance into_val_stmSerializable : IntoVal stmSerializable.t :=
   {| to_val_def v :=

@@ -77,7 +77,7 @@ End Enc.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Enc : Settable _ :=
+Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.p' >.
 Global Instance into_val_Enc : IntoVal Enc.t :=
   {| to_val_def v :=
@@ -138,7 +138,7 @@ End Dec.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Dec : Settable _ :=
+Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.p' >.
 Global Instance into_val_Dec : IntoVal Dec.t :=
   {| to_val_def v :=
@@ -200,7 +200,7 @@ End Editor.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Editor : Settable _ :=
+Global Instance settable_Editor : Settable Editor.t :=
   settable! Editor.mk < Editor.s'; Editor.next_val' >.
 Global Instance into_val_Editor : IntoVal Editor.t :=
   {| to_val_def v :=
@@ -269,7 +269,7 @@ End Pair.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Pair : Settable _ :=
+Global Instance settable_Pair : Settable Pair.t :=
   settable! Pair.mk < Pair.x'; Pair.y' >.
 Global Instance into_val_Pair : IntoVal Pair.t :=
   {| to_val_def v :=
@@ -353,7 +353,7 @@ End SquareStruct.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SquareStruct : Settable _ :=
+Global Instance settable_SquareStruct : Settable SquareStruct.t :=
   settable! SquareStruct.mk < SquareStruct.Side' >.
 Global Instance into_val_SquareStruct : IntoVal SquareStruct.t :=
   {| to_val_def v :=
@@ -414,7 +414,7 @@ End LoopStruct.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_LoopStruct : Settable _ :=
+Global Instance settable_LoopStruct : Settable LoopStruct.t :=
   settable! LoopStruct.mk < LoopStruct.loopNext' >.
 Global Instance into_val_LoopStruct : IntoVal LoopStruct.t :=
   {| to_val_def v :=
@@ -478,7 +478,7 @@ End BoolTest.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_BoolTest : Settable _ :=
+Global Instance settable_BoolTest : Settable BoolTest.t :=
   settable! BoolTest.mk < BoolTest.t'; BoolTest.f'; BoolTest.tc'; BoolTest.fc' >.
 Global Instance into_val_BoolTest : IntoVal BoolTest.t :=
   {| to_val_def v :=
@@ -561,7 +561,7 @@ End ArrayEditor.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ArrayEditor : Settable _ :=
+Global Instance settable_ArrayEditor : Settable ArrayEditor.t :=
   settable! ArrayEditor.mk < ArrayEditor.s'; ArrayEditor.next_val' >.
 Global Instance into_val_ArrayEditor : IntoVal ArrayEditor.t :=
   {| to_val_def v :=
@@ -630,7 +630,7 @@ End Bar.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Bar : Settable _ :=
+Global Instance settable_Bar : Settable Bar.t :=
   settable! Bar.mk < Bar.a'; Bar.b' >.
 Global Instance into_val_Bar : IntoVal Bar.t :=
   {| to_val_def v :=
@@ -698,7 +698,7 @@ End Foo.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Foo : Settable _ :=
+Global Instance settable_Foo : Settable Foo.t :=
   settable! Foo.mk < Foo.bar' >.
 Global Instance into_val_Foo : IntoVal Foo.t :=
   {| to_val_def v :=
@@ -760,7 +760,7 @@ End TwoInts.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_TwoInts : Settable _ :=
+Global Instance settable_TwoInts : Settable TwoInts.t :=
   settable! TwoInts.mk < TwoInts.x'; TwoInts.y' >.
 Global Instance into_val_TwoInts : IntoVal TwoInts.t :=
   {| to_val_def v :=
@@ -830,7 +830,7 @@ End S.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_S : Settable _ :=
+Global Instance settable_S : Settable S.t :=
   settable! S.mk < S.a'; S.b'; S.c' >.
 Global Instance into_val_S : IntoVal S.t :=
   {| to_val_def v :=
@@ -905,7 +905,7 @@ End StructWrap.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_StructWrap : Settable _ :=
+Global Instance settable_StructWrap : Settable StructWrap.t :=
   settable! StructWrap.mk < StructWrap.i' >.
 Global Instance into_val_StructWrap : IntoVal StructWrap.t :=
   {| to_val_def v :=
@@ -966,7 +966,7 @@ End StructWithFunc.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_StructWithFunc : Settable _ :=
+Global Instance settable_StructWithFunc : Settable StructWithFunc.t :=
   settable! StructWithFunc.mk < StructWithFunc.fn' >.
 Global Instance into_val_StructWithFunc : IntoVal StructWithFunc.t :=
   {| to_val_def v :=
@@ -1075,7 +1075,7 @@ End Log.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Log : Settable _ :=
+Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.d'; Log.l'; Log.cache'; Log.length' >.
 Global Instance into_val_Log : IntoVal Log.t :=
   {| to_val_def v :=

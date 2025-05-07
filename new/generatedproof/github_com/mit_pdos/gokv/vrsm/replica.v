@@ -41,7 +41,7 @@ End ApplyAsBackupArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ApplyAsBackupArgs : Settable _ :=
+Global Instance settable_ApplyAsBackupArgs : Settable ApplyAsBackupArgs.t :=
   settable! ApplyAsBackupArgs.mk < ApplyAsBackupArgs.epoch'; ApplyAsBackupArgs.index'; ApplyAsBackupArgs.op' >.
 Global Instance into_val_ApplyAsBackupArgs : IntoVal ApplyAsBackupArgs.t :=
   {| to_val_def v :=
@@ -119,7 +119,7 @@ End SetStateArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SetStateArgs : Settable _ :=
+Global Instance settable_SetStateArgs : Settable SetStateArgs.t :=
   settable! SetStateArgs.mk < SetStateArgs.Epoch'; SetStateArgs.NextIndex'; SetStateArgs.CommittedNextIndex'; SetStateArgs.State' >.
 Global Instance into_val_SetStateArgs : IntoVal SetStateArgs.t :=
   {| to_val_def v :=
@@ -201,7 +201,7 @@ End GetStateArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_GetStateArgs : Settable _ :=
+Global Instance settable_GetStateArgs : Settable GetStateArgs.t :=
   settable! GetStateArgs.mk < GetStateArgs.Epoch' >.
 Global Instance into_val_GetStateArgs : IntoVal GetStateArgs.t :=
   {| to_val_def v :=
@@ -265,7 +265,7 @@ End GetStateReply.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_GetStateReply : Settable _ :=
+Global Instance settable_GetStateReply : Settable GetStateReply.t :=
   settable! GetStateReply.mk < GetStateReply.Err'; GetStateReply.NextIndex'; GetStateReply.CommittedNextIndex'; GetStateReply.State' >.
 Global Instance into_val_GetStateReply : IntoVal GetStateReply.t :=
   {| to_val_def v :=
@@ -348,7 +348,7 @@ End BecomePrimaryArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_BecomePrimaryArgs : Settable _ :=
+Global Instance settable_BecomePrimaryArgs : Settable BecomePrimaryArgs.t :=
   settable! BecomePrimaryArgs.mk < BecomePrimaryArgs.Epoch'; BecomePrimaryArgs.Replicas' >.
 Global Instance into_val_BecomePrimaryArgs : IntoVal BecomePrimaryArgs.t :=
   {| to_val_def v :=
@@ -417,7 +417,7 @@ End ApplyReply.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ApplyReply : Settable _ :=
+Global Instance settable_ApplyReply : Settable ApplyReply.t :=
   settable! ApplyReply.mk < ApplyReply.Err'; ApplyReply.Reply' >.
 Global Instance into_val_ApplyReply : IntoVal ApplyReply.t :=
   {| to_val_def v :=
@@ -496,7 +496,7 @@ End StateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_StateMachine : Settable _ :=
+Global Instance settable_StateMachine : Settable StateMachine.t :=
   settable! StateMachine.mk < StateMachine.StartApply'; StateMachine.ApplyReadonly'; StateMachine.SetStateAndUnseal'; StateMachine.GetStateAndSeal' >.
 Global Instance into_val_StateMachine : IntoVal StateMachine.t :=
   {| to_val_def v :=
@@ -581,7 +581,7 @@ End SyncStateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SyncStateMachine : Settable _ :=
+Global Instance settable_SyncStateMachine : Settable SyncStateMachine.t :=
   settable! SyncStateMachine.mk < SyncStateMachine.Apply'; SyncStateMachine.ApplyReadonly'; SyncStateMachine.SetStateAndUnseal'; SyncStateMachine.GetStateAndSeal' >.
 Global Instance into_val_SyncStateMachine : IntoVal SyncStateMachine.t :=
   {| to_val_def v :=
@@ -663,7 +663,7 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk : Settable _ :=
+Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
@@ -738,7 +738,7 @@ End Server.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Server : Settable _ :=
+Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.epoch'; Server.sealed'; Server.sm'; Server.nextIndex'; Server.canBecomePrimary'; Server.isPrimary'; Server.clerks'; Server.isPrimary_cond'; Server.opAppliedConds'; Server.leaseExpiration'; Server.leaseValid'; Server.committedNextIndex'; Server.committedNextIndex_cond'; Server.confCk' >.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=

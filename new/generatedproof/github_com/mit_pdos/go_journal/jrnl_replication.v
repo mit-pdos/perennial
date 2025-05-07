@@ -31,7 +31,7 @@ End RepBlock.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_RepBlock : Settable _ :=
+Global Instance settable_RepBlock : Settable RepBlock.t :=
   settable! RepBlock.mk < RepBlock.txn'; RepBlock.m'; RepBlock.a0'; RepBlock.a1' >.
 Global Instance into_val_RepBlock : IntoVal RepBlock.t :=
   {| to_val_def v :=

@@ -24,7 +24,7 @@ End Enc.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Enc : Settable _ :=
+Global Instance settable_Enc : Settable Enc.t :=
   settable! Enc.mk < Enc.b'; Enc.off' >.
 Global Instance into_val_Enc : IntoVal Enc.t :=
   {| to_val_def v :=
@@ -93,7 +93,7 @@ End Dec.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Dec : Settable _ :=
+Global Instance settable_Dec : Settable Dec.t :=
   settable! Dec.mk < Dec.b'; Dec.off' >.
 Global Instance into_val_Dec : IntoVal Dec.t :=
   {| to_val_def v :=

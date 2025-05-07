@@ -24,7 +24,7 @@ End Tup.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Tup : Settable _ :=
+Global Instance settable_Tup : Settable Tup.t :=
   settable! Tup.mk < Tup.ID'; Tup.Idx'; Tup.Ok'; Tup.Bar' >.
 Global Instance into_val_Tup : IntoVal Tup.t :=
   {| to_val_def v :=

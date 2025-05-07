@@ -28,7 +28,7 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk : Settable _ :=
+Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
@@ -91,7 +91,7 @@ End ClerkPool.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ClerkPool : Settable _ :=
+Global Instance settable_ClerkPool : Settable ClerkPool.t :=
   settable! ClerkPool.mk < ClerkPool.mu'; ClerkPool.cls'; ClerkPool.confHosts' >.
 Global Instance into_val_ClerkPool : IntoVal ClerkPool.t :=
   {| to_val_def v :=
@@ -168,7 +168,7 @@ End KVState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_KVState : Settable _ :=
+Global Instance settable_KVState : Settable KVState.t :=
   settable! KVState.mk < KVState.kvs'; KVState.vnums'; KVState.minVnum' >.
 Global Instance into_val_KVState : IntoVal KVState.t :=
   {| to_val_def v :=
@@ -244,7 +244,7 @@ End PutArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_PutArgs : Settable _ :=
+Global Instance settable_PutArgs : Settable PutArgs.t :=
   settable! PutArgs.mk < PutArgs.Key'; PutArgs.Val' >.
 Global Instance into_val_PutArgs : IntoVal PutArgs.t :=
   {| to_val_def v :=
@@ -322,7 +322,7 @@ End CondPutArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_CondPutArgs : Settable _ :=
+Global Instance settable_CondPutArgs : Settable CondPutArgs.t :=
   settable! CondPutArgs.mk < CondPutArgs.Key'; CondPutArgs.Expect'; CondPutArgs.Val' >.
 Global Instance into_val_CondPutArgs : IntoVal CondPutArgs.t :=
   {| to_val_def v :=

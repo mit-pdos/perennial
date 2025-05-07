@@ -26,7 +26,7 @@ End Op.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Op : Settable _ :=
+Global Instance settable_Op : Settable Op.t :=
   settable! Op.mk < Op.log'; Op.bufs' >.
 Global Instance into_val_Op : IntoVal Op.t :=
   {| to_val_def v :=

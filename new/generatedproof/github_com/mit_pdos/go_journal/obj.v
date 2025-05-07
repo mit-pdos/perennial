@@ -30,7 +30,7 @@ End Log.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Log : Settable _ :=
+Global Instance settable_Log : Settable Log.t :=
   settable! Log.mk < Log.mu'; Log.log'; Log.pos' >.
 Global Instance into_val_Log : IntoVal Log.t :=
   {| to_val_def v :=

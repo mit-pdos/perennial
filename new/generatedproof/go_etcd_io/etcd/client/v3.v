@@ -99,7 +99,7 @@ End OpResponse.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_OpResponse : Settable _ :=
+Global Instance settable_OpResponse : Settable OpResponse.t :=
   settable! OpResponse.mk < OpResponse.put'; OpResponse.get'; OpResponse.del'; OpResponse.txn' >.
 Global Instance into_val_OpResponse : IntoVal OpResponse.t :=
   {| to_val_def v :=
@@ -192,7 +192,7 @@ End LeaseGrantResponse.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_LeaseGrantResponse : Settable _ :=
+Global Instance settable_LeaseGrantResponse : Settable LeaseGrantResponse.t :=
   settable! LeaseGrantResponse.mk < LeaseGrantResponse.ResponseHeader'; LeaseGrantResponse.ID'; LeaseGrantResponse.TTL'; LeaseGrantResponse.Error' >.
 Global Instance into_val_LeaseGrantResponse : IntoVal LeaseGrantResponse.t :=
   {| to_val_def v :=
@@ -345,7 +345,7 @@ End WatchResponse.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_WatchResponse : Settable _ :=
+Global Instance settable_WatchResponse : Settable WatchResponse.t :=
   settable! WatchResponse.mk < WatchResponse.Header'; WatchResponse.Events'; WatchResponse.CompactRevision'; WatchResponse.Canceled'; WatchResponse.Created'; WatchResponse.closeErr'; WatchResponse.cancelReason' >.
 Global Instance into_val_WatchResponse : IntoVal WatchResponse.t :=
   {| to_val_def v :=

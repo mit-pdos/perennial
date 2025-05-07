@@ -25,7 +25,7 @@ End JoinHandle.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_JoinHandle : Settable _ :=
+Global Instance settable_JoinHandle : Settable JoinHandle.t :=
   settable! JoinHandle.mk < JoinHandle.mu'; JoinHandle.done'; JoinHandle.cond' >.
 Global Instance into_val_JoinHandle : IntoVal JoinHandle.t :=
   {| to_val_def v :=

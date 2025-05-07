@@ -33,7 +33,7 @@ End Field.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Field : Settable _ :=
+Global Instance settable_Field : Settable Field.t :=
   settable! Field.mk < Field.Key'; Field.Type'; Field.Integer'; Field.String'; Field.Interface' >.
 Global Instance into_val_Field : IntoVal Field.t :=
   {| to_val_def v :=

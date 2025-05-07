@@ -33,7 +33,7 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk : Settable _ :=
+Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.mu'; Clerk.cls'; Clerk.leader' >.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=
@@ -112,7 +112,7 @@ End state.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_state : Settable _ :=
+Global Instance settable_state : Settable state.t :=
   settable! state.mk < state.epoch'; state.reservedEpoch'; state.leaseExpiration'; state.wantLeaseToExpire'; state.config' >.
 Global Instance into_val_state : IntoVal state.t :=
   {| to_val_def v :=
@@ -201,7 +201,7 @@ End Server.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Server : Settable _ :=
+Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.s' >.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=

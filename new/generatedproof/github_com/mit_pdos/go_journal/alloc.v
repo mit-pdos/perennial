@@ -24,7 +24,7 @@ End Alloc.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Alloc : Settable _ :=
+Global Instance settable_Alloc : Settable Alloc.t :=
   settable! Alloc.mk < Alloc.mu'; Alloc.next'; Alloc.bitmap' >.
 Global Instance into_val_Alloc : IntoVal Alloc.t :=
   {| to_val_def v :=

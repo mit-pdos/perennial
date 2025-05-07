@@ -30,7 +30,7 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk : Settable _ :=
+Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.confCk'; Clerk.replicaClerks'; Clerk.preferredReplica'; Clerk.lastPreferenceRefresh' >.
 Global Instance into_val_Clerk : IntoVal Clerk.t :=
   {| to_val_def v :=

@@ -24,7 +24,7 @@ End lockState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_lockState : Settable _ :=
+Global Instance settable_lockState : Settable lockState.t :=
   settable! lockState.mk < lockState.held'; lockState.cond'; lockState.waiters' >.
 Global Instance into_val_lockState : IntoVal lockState.t :=
   {| to_val_def v :=
@@ -100,7 +100,7 @@ End lockShard.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_lockShard : Settable _ :=
+Global Instance settable_lockShard : Settable lockShard.t :=
   settable! lockShard.mk < lockShard.mu'; lockShard.state' >.
 Global Instance into_val_lockShard : IntoVal lockShard.t :=
   {| to_val_def v :=
@@ -168,7 +168,7 @@ End LockMap.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_LockMap : Settable _ :=
+Global Instance settable_LockMap : Settable LockMap.t :=
   settable! LockMap.mk < LockMap.shards' >.
 Global Instance into_val_LockMap : IntoVal LockMap.t :=
   {| to_val_def v :=

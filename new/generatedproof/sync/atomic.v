@@ -60,7 +60,7 @@ End Int32.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Int32 : Settable _ :=
+Global Instance settable_Int32 : Settable Int32.t :=
   settable! Int32.mk < Int32._0'; Int32.v' >.
 Global Instance into_val_Int32 : IntoVal Int32.t :=
   {| to_val_def v :=
@@ -167,7 +167,7 @@ End Uint64.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Uint64 : Settable _ :=
+Global Instance settable_Uint64 : Settable Uint64.t :=
   settable! Uint64.mk < Uint64._0'; Uint64._1'; Uint64.v' >.
 Global Instance into_val_Uint64 : IntoVal Uint64.t :=
   {| to_val_def v :=

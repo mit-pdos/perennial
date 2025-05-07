@@ -34,7 +34,7 @@ End AppendOnlyFile.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_AppendOnlyFile : Settable _ :=
+Global Instance settable_AppendOnlyFile : Settable AppendOnlyFile.t :=
   settable! AppendOnlyFile.mk < AppendOnlyFile.mu'; AppendOnlyFile.oldDurableCond'; AppendOnlyFile.durableCond'; AppendOnlyFile.lengthCond'; AppendOnlyFile.membuf'; AppendOnlyFile.length'; AppendOnlyFile.durableLength'; AppendOnlyFile.closeRequested'; AppendOnlyFile.closed'; AppendOnlyFile.closedCond' >.
 Global Instance into_val_AppendOnlyFile : IntoVal AppendOnlyFile.t :=
   {| to_val_def v :=

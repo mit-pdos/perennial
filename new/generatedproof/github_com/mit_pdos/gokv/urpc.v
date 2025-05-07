@@ -27,7 +27,7 @@ End Server.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Server : Settable _ :=
+Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.handlers' >.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=
@@ -90,7 +90,7 @@ End Callback.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Callback : Settable _ :=
+Global Instance settable_Callback : Settable Callback.t :=
   settable! Callback.mk < Callback.reply'; Callback.state'; Callback.cond' >.
 Global Instance into_val_Callback : IntoVal Callback.t :=
   {| to_val_def v :=
@@ -168,7 +168,7 @@ End Client.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Client : Settable _ :=
+Global Instance settable_Client : Settable Client.t :=
   settable! Client.mk < Client.mu'; Client.conn'; Client.seq'; Client.pending' >.
 Global Instance into_val_Client : IntoVal Client.t :=
   {| to_val_def v :=

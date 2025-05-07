@@ -29,7 +29,7 @@ End InMemoryStateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_InMemoryStateMachine : Settable _ :=
+Global Instance settable_InMemoryStateMachine : Settable InMemoryStateMachine.t :=
   settable! InMemoryStateMachine.mk < InMemoryStateMachine.ApplyReadonly'; InMemoryStateMachine.ApplyVolatile'; InMemoryStateMachine.GetState'; InMemoryStateMachine.SetState' >.
 Global Instance into_val_InMemoryStateMachine : IntoVal InMemoryStateMachine.t :=
   {| to_val_def v :=
@@ -117,7 +117,7 @@ End StateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_StateMachine : Settable _ :=
+Global Instance settable_StateMachine : Settable StateMachine.t :=
   settable! StateMachine.mk < StateMachine.fname'; StateMachine.logFile'; StateMachine.logsize'; StateMachine.sealed'; StateMachine.epoch'; StateMachine.nextIndex'; StateMachine.smMem' >.
 Global Instance into_val_StateMachine : IntoVal StateMachine.t :=
   {| to_val_def v :=

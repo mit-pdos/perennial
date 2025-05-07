@@ -29,7 +29,7 @@ End singleClerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_singleClerk : Settable _ :=
+Global Instance settable_singleClerk : Settable singleClerk.t :=
   settable! singleClerk.mk < singleClerk.cl' >.
 Global Instance into_val_singleClerk : IntoVal singleClerk.t :=
   {| to_val_def v :=
@@ -100,7 +100,7 @@ End applyAsFollowerArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_applyAsFollowerArgs : Settable _ :=
+Global Instance settable_applyAsFollowerArgs : Settable applyAsFollowerArgs.t :=
   settable! applyAsFollowerArgs.mk < applyAsFollowerArgs.epoch'; applyAsFollowerArgs.nextIndex'; applyAsFollowerArgs.state' >.
 Global Instance into_val_applyAsFollowerArgs : IntoVal applyAsFollowerArgs.t :=
   {| to_val_def v :=
@@ -175,7 +175,7 @@ End applyAsFollowerReply.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_applyAsFollowerReply : Settable _ :=
+Global Instance settable_applyAsFollowerReply : Settable applyAsFollowerReply.t :=
   settable! applyAsFollowerReply.mk < applyAsFollowerReply.err' >.
 Global Instance into_val_applyAsFollowerReply : IntoVal applyAsFollowerReply.t :=
   {| to_val_def v :=
@@ -236,7 +236,7 @@ End enterNewEpochArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_enterNewEpochArgs : Settable _ :=
+Global Instance settable_enterNewEpochArgs : Settable enterNewEpochArgs.t :=
   settable! enterNewEpochArgs.mk < enterNewEpochArgs.epoch' >.
 Global Instance into_val_enterNewEpochArgs : IntoVal enterNewEpochArgs.t :=
   {| to_val_def v :=
@@ -300,7 +300,7 @@ End enterNewEpochReply.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_enterNewEpochReply : Settable _ :=
+Global Instance settable_enterNewEpochReply : Settable enterNewEpochReply.t :=
   settable! enterNewEpochReply.mk < enterNewEpochReply.err'; enterNewEpochReply.acceptedEpoch'; enterNewEpochReply.nextIndex'; enterNewEpochReply.state' >.
 Global Instance into_val_enterNewEpochReply : IntoVal enterNewEpochReply.t :=
   {| to_val_def v :=
@@ -383,7 +383,7 @@ End applyReply.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_applyReply : Settable _ :=
+Global Instance settable_applyReply : Settable applyReply.t :=
   settable! applyReply.mk < applyReply.err'; applyReply.ret' >.
 Global Instance into_val_applyReply : IntoVal applyReply.t :=
   {| to_val_def v :=
@@ -455,7 +455,7 @@ End paxosState.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_paxosState : Settable _ :=
+Global Instance settable_paxosState : Settable paxosState.t :=
   settable! paxosState.mk < paxosState.epoch'; paxosState.acceptedEpoch'; paxosState.nextIndex'; paxosState.state'; paxosState.isLeader' >.
 Global Instance into_val_paxosState : IntoVal paxosState.t :=
   {| to_val_def v :=
@@ -547,7 +547,7 @@ End Server.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Server : Settable _ :=
+Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.ps'; Server.storage'; Server.clerks' >.
 Global Instance into_val_Server : IntoVal Server.t :=
   {| to_val_def v :=

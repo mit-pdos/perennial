@@ -23,7 +23,7 @@ End Changer.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Changer : Settable _ :=
+Global Instance settable_Changer : Settable Changer.t :=
   settable! Changer.mk < Changer.Tracker'; Changer.LastIndex' >.
 Global Instance into_val_Changer : IntoVal Changer.t :=
   {| to_val_def v :=

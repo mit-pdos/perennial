@@ -28,7 +28,7 @@ End ReconnectingClient.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ReconnectingClient : Settable _ :=
+Global Instance settable_ReconnectingClient : Settable ReconnectingClient.t :=
   settable! ReconnectingClient.mk < ReconnectingClient.mu'; ReconnectingClient.valid'; ReconnectingClient.urpcCl'; ReconnectingClient.addr' >.
 Global Instance into_val_ReconnectingClient : IntoVal ReconnectingClient.t :=
   {| to_val_def v :=
