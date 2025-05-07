@@ -28,13 +28,13 @@ Lemma get_Some_to_msv ep aud_ep γcli vrf_pk uid pk γaudit :
   uint.Z ep < uint.Z aud_ep →
   is_get_post_Some γcli vrf_pk uid ep pk -∗
   logical_audit_post γcli γaudit vrf_pk aud_ep -∗
-  ∃ ep', msv γaudit vrf_pk ep uid (Some (ep', pk)).
+  msv γaudit vrf_pk ep uid (Some pk).
 Proof.
   iIntros (?) "#Hpost #Haudit". iNamed "Hpost". iNamed "Haudit".
   list_elem gs (uint.nat ep) as m. destruct m as [m ?].
   iDestruct (mono_list_idx_own_get with "Hlb_gs") as "Hidx"; try done.
   iFrame "#".
-  iExists ep', (word.add (W64 $ length hist) (W64 1)).
+  iExists (word.add (W64 $ length hist) (W64 1)).
   repeat iSplit.
   - iIntros (??).
     list_elem hist (uint.nat ver) as a_hist.
@@ -46,12 +46,11 @@ Proof.
   - iDestruct ("Hmap_transf" with "[$His_lat //]") as "H".
     iNamed "H".
     replace (word.sub _ _) with (W64 $ length hist) by word.
-    iFrame "#".
-    iExists (_, _). iFrame "#". iSplit; try done.
+    iFrame "#". iPureIntro.
     inv Henc_val. simplify_option_eq.
     destruct H0 as [??]. simpl in *.
     opose proof (MapValPre.inj [] [] Henc H2 _) as ?; try done.
-    intuition. by simplify_eq/=.
+    intuition. eexists _. by simplify_eq/=.
   - iDestruct ("Hmap_transf" with "[$His_bound //]") as "H".
     iNamed "H". iFrame "#".
     inv Henc_val. by simplify_option_eq.

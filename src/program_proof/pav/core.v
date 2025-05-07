@@ -58,7 +58,7 @@ Proof.
   naive_solver.
 Qed.
 
-Definition get_lat (hist : list map_val_ty) (ep : w64) : lat_val_ty :=
-  last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist.
+Definition lookup_puts_hist (hist : list map_val_ty) (ep : w64) :=
+  snd <$> (last $ filter (λ x, uint.Z x.1 ≤ uint.Z ep) hist).
 
 End defs.

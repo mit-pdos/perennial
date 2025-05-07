@@ -34,12 +34,9 @@ Definition lookup_epochs (hist : list $ option pk_ty) (ep : w64) :=
   | None => mjoin $ last hist
   end.
 
-Definition lookup_puts (hist : list map_val_ty) (ep : w64) :=
-  snd <$> (last $ filter (λ x, uint.Z x.1 <= uint.Z ep) hist).
-
 Definition reln epochs puts :=
   ∀ ep,
-  lookup_epochs epochs ep = lookup_puts puts ep.
+  lookup_epochs epochs ep = lookup_puts_hist puts ep.
 
 Lemma update_replicate epochs puts n :
   reln epochs puts →
@@ -65,7 +62,7 @@ Lemma update_new epochs puts ep pk :
   reln epochs puts →
   reln (epochs ++ [Some pk]) (puts ++ [(ep, pk)]).
 Proof.
-  rewrite /reln /lookup_epochs /lookup_puts.
+  rewrite /reln /lookup_epochs /lookup_puts_hist.
   intros ? Hreln ep0.
   rewrite filter_snoc /=.
   destruct (decide (uint.Z ep0 < Z.of_nat $ length epochs)).
@@ -129,17 +126,15 @@ Lemma lookup_msv ptr_c c ep opt_pk γaudit aud_ep :
   Z.of_nat $ length c.(epochs_hist) <= uint.Z aud_ep →
   own ptr_c c -∗
   logical_audit_post c.(γ) γaudit c.(serv).(Server.vrf_pk) aud_ep -∗
-  ∃ opt_mapval,
-  ⌜ snd <$> opt_mapval = opt_pk ⌝ ∗
-  msv γaudit c.(serv).(Server.vrf_pk) ep c.(uid) opt_mapval.
+  msv γaudit c.(serv).(Server.vrf_pk) ep c.(uid) opt_pk.
 Proof.
   iIntros (Hlook ?) "H #Haudit". iNamed "H".
+  ospecialize (Hhist_reln ep).
+  rewrite /hist_epochs_puts.lookup_epochs Hlook in Hhist_reln.
+  subst.
   iDestruct (hist_to_msv ep with "Hhist Haudit") as "$".
   { apply lookup_lt_Some in Hlook. word. }
   { word. }
-  iPureIntro.
-  ospecialize (Hhist_reln ep).
-  by rewrite /hist_epochs_puts.lookup_epochs Hlook in Hhist_reln.
 Qed.
 
 End defs.

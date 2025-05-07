@@ -44,9 +44,9 @@ Lemma wp_GetHist sl_hist hist (ep : w64) :
     "Hown_hist" ∷ own_hist sl_hist hist ∗
     "#Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
     "%Heq_lat" ∷
-      ⌜ match get_lat hist ep with
+      ⌜ match lookup_puts_hist hist ep with
         | None => is_reg = false
-        | Some lat => is_reg = true ∧ pk = lat.2
+        | Some pk' => is_reg = true ∧ pk = pk'
         end ⌝
   }}}.
 Proof.
@@ -61,9 +61,9 @@ Proof.
     "Hptr_val" ∷ ptr_val ↦[slice.T byteT] (slice_val sl_pk) ∗
     "Hsl_pk" ∷ own_slice_small sl_pk byteT DfracDiscarded pk ∗
     "%Heq_lat" ∷
-      ⌜ match get_lat (take (length donel) hist) ep with
+      ⌜ match lookup_puts_hist (take (length donel) hist) ep with
         | None => is_reg = false
-        | Some lat => is_reg = true ∧ pk = lat.2
+        | Some pk' => is_reg = true ∧ pk = pk'
         end ⌝)%I with "[] [$Hsl_hist Hptr_isReg Hptr_val]").
   2: { iExists _, Slice.nil, []. iFrame. iSplit; [|done].
     iDestruct (own_slice_zero byteT) as "H".
@@ -79,13 +79,15 @@ Proof.
     - wp_store. wp_loadField. wp_store. iApply "HΦ".
       iFrame "Hsl_HistVal". iFrame "∗#". rewrite app_length. simpl.
       replace (length done + 1)%nat with (S $ length done)%nat; [|lia].
-      rewrite (take_S_r _ _ _ Hlook_hist). rewrite /get_lat filter_app.
+      rewrite (take_S_r _ _ _ Hlook_hist).
+      rewrite /lookup_puts_hist filter_app.
       opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
         (new_ep, new_pk)) as [[_?]|[Htmp _]]. { exfalso. simpl in *. word. }
       rewrite Htmp. clear Htmp. rewrite last_snoc. naive_solver.
     - iApply "HΦ". iFrame "Hsl_pk". iFrame "∗#". rewrite app_length. simpl.
       replace (length done + 1)%nat with (S $ length done)%nat; [|lia].
-      rewrite (take_S_r _ _ _ Hlook_hist). rewrite /get_lat filter_app.
+      rewrite (take_S_r _ _ _ Hlook_hist).
+      rewrite /lookup_puts_hist filter_app.
       opose proof (list_filter_singleton (λ x, uint.Z x.1 ≤ uint.Z ep)
         (new_ep, new_pk)) as [[Htmp _]|[_?]]. 2: { exfalso. simpl in *. word. }
       rewrite Htmp. clear Htmp. list_simplifier. by iFrame "%". }
