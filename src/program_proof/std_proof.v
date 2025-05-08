@@ -1,5 +1,7 @@
 From Perennial.Helpers Require Import List ModArith.
 
+(* this file verifies std and std_core *)
+From Goose.github_com.goose_lang Require Import std.std_core.
 From Goose.github_com.goose_lang Require Import std.
 
 From iris.algebra Require Import excl gset.
@@ -220,13 +222,13 @@ Proof.
   iApply (own_slice_cap_skip with "Hcap"). word.
 Qed.
 
-Lemma wp_SumNoOverflow (x y : u64) stk E :
+Lemma wp_std_core_SumNoOverflow (x y : u64) stk E :
   ∀ Φ : val → iProp Σ,
     Φ #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)) -∗
-    WP SumNoOverflow #x #y @ stk; E {{ Φ }}.
+    WP std_core.SumNoOverflow #x #y @ stk; E {{ Φ }}.
 Proof.
-  iIntros (Φ) "HΦ".
-  rewrite /SumNoOverflow. wp_pures.
+  iIntros (Φ) "HΦ". wp_rec.
+  wp_pures.
   iModIntro. iExactEq "HΦ".
   repeat f_equal.
   apply bool_decide_ext.
@@ -236,17 +238,37 @@ Proof.
   - word.
 Qed.
 
-Lemma wp_SumAssumeNoOverflow (x y : u64) stk E :
+Lemma wp_SumNoOverflow (x y : u64) stk E :
+  ∀ Φ : val → iProp Σ,
+    Φ #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)) -∗
+    WP std.SumNoOverflow #x #y @ stk; E {{ Φ }}.
+Proof.
+  iIntros (Φ) "HΦ". wp_rec.
+  wp_apply wp_std_core_SumNoOverflow.
+  done.
+Qed.
+
+Lemma wp_std_core_SumAssumeNoOverflow (x y : u64) stk E :
   ∀ Φ : val → iProp Σ,
     (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
-    WP SumAssumeNoOverflow #x #y @ stk; E {{ Φ }}.
+    WP std_core.SumAssumeNoOverflow #x #y @ stk; E {{ Φ }}.
 Proof.
   iIntros "%Φ HΦ". wp_rec; wp_pures.
-  wp_apply wp_SumNoOverflow.
+  wp_apply wp_std_core_SumNoOverflow.
   wp_apply wp_Assume.
   rewrite bool_decide_eq_true.
   iIntros (H). wp_pures. iModIntro.
   iApply "HΦ"; done.
+Qed.
+
+Lemma wp_SumAssumeNoOverflow (x y : u64) stk E :
+  ∀ Φ : val → iProp Σ,
+    (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
+    WP std.SumAssumeNoOverflow #x #y @ stk; E {{ Φ }}.
+Proof.
+  iIntros "%Φ HΦ". wp_rec; wp_pures.
+  wp_apply wp_std_core_SumAssumeNoOverflow.
+  done.
 Qed.
 
 Lemma wp_MulNoOverflow (x y : u64) stk E :
@@ -572,7 +594,7 @@ Qed.
 
 Lemma wp_Permutation (n: w64) :
   {{{ True }}}
-    std.Permutation #n
+    std_core.Permutation #n
   {{{ xs (s: Slice.t), RET (slice_val s);
       ⌜Permutation xs (W64 <$> seqZ 0 (uint.Z n))⌝ ∗
       own_slice_small s uint64T (DfracOwn 1) xs
