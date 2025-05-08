@@ -13,6 +13,52 @@ Definition Box : val :=
     (#"Value"%go, "T")
   ].
 
+(* BoxGet is a function getter (rather than a method)
+
+   go: generics.go:9:6 *)
+Definition BoxGet : val :=
+  rec: "BoxGet" "T" "b" :=
+    exception_do (let: "b" := (mem.alloc "b") in
+    return: (!["T"] (struct.field_ref (Box "T") #"Value"%go "b"))).
+
+(* go: generics.go:13:6 *)
+Definition BoxGet2 : val :=
+  rec: "BoxGet2" "b" :=
+    exception_do (let: "b" := (mem.alloc "b") in
+    return: (![#uint64T] (struct.field_ref (Box #uint64T) #"Value"%go "b"))).
+
+(* go: generics.go:17:17 *)
+Definition Box__Get : val :=
+  rec: "Box__Get" "b" "T" <> :=
+    exception_do (let: "b" := (mem.alloc "b") in
+    return: (!["T"] (struct.field_ref (Box "T") #"Value"%go "b"))).
+
+(* go: generics.go:21:6 *)
+Definition makeGenericBox : val :=
+  rec: "makeGenericBox" "T" "value" :=
+    exception_do (let: "value" := (mem.alloc "value") in
+    return: (let: "$Value" := (!["T"] "value") in
+     struct.make (Box "T") [{
+       "Value" ::= "$Value"
+     }])).
+
+(* go: generics.go:25:6 *)
+Definition makeBox : val :=
+  rec: "makeBox" <> :=
+    exception_do (return: (let: "$Value" := #(W64 42) in
+     struct.make (Box #uint64T) [{
+       "Value" ::= "$Value"
+     }])).
+
+(* go: generics.go:30:6 *)
+Definition useBoxGet : val :=
+  rec: "useBoxGet" <> :=
+    exception_do (let: "x" := (mem.alloc (type.zero_val (Box #uint64T))) in
+    let: "$r0" := (let: "$a0" := #(W64 42) in
+    ((func_call #generics.generics #"makeGenericBox"%go) #uint64T) "$a0") in
+    do:  ("x" <-[Box #uint64T] "$r0");;;
+    return: ((method_call #generics.generics #"Box" #"Get" (![Box #uint64T] "x") #uint64T) #())).
+
 Definition Container : val :=
   λ: "T", type.structT [
     (#"X"%go, "T");
@@ -20,6 +66,32 @@ Definition Container : val :=
     (#"Z"%go, #ptrT);
     (#"W"%go, #uint64T)
   ].
+
+(* go: generics.go:43:6 *)
+Definition useContainer : val :=
+  rec: "useContainer" <> :=
+    exception_do (let: "container" := (mem.alloc (type.zero_val (Container #uint64T))) in
+    let: "$r0" := (let: "$X" := #(W64 1) in
+    let: "$Y" := ((let: "$v0" := #(W64 2) in
+    let: "$k0" := #(W64 1) in
+    map.literal #intT #uint64T [("$k0", "$v0")])) in
+    let: "$Z" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$W" := #(W64 3) in
+    struct.make (Container #uint64T) [{
+      "X" ::= "$X";
+      "Y" ::= "$Y";
+      "Z" ::= "$Z";
+      "W" ::= "$W"
+    }]) in
+    do:  ("container" <-[Container #uint64T] "$r0");;;
+    let: "$r0" := #(W64 2) in
+    do:  ((struct.field_ref (Container #uint64T) #"X"%go "container") <-[#uint64T] "$r0");;;
+    let: "$r0" := #(W64 3) in
+    do:  (map.insert (![type.mapT #intT #uint64T] (struct.field_ref (Container #uint64T) #"Y"%go "container")) #(W64 2) "$r0");;;
+    let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
+    do:  ((struct.field_ref (Container #uint64T) #"Z"%go "container") <-[#ptrT] "$r0");;;
+    let: "$r0" := #(W64 4) in
+    do:  ((struct.field_ref (Container #uint64T) #"W"%go "container") <-[#uint64T] "$r0")).
 
 Definition UseContainer : val :=
   λ: <>, type.structT [
@@ -32,11 +104,61 @@ Definition OnlyIndirect : val :=
     (#"Y"%go, #ptrT)
   ].
 
+Definition MultiParam : val :=
+  λ: "A" "B", type.structT [
+    (#"Y"%go, "B");
+    (#"X"%go, "A")
+  ].
+
+(* go: generics.go:71:6 *)
+Definition useMultiParam : val :=
+  rec: "useMultiParam" <> :=
+    exception_do (let: "mp" := (mem.alloc (type.zero_val (MultiParam #uint64T #boolT))) in
+    let: "$r0" := (let: "$Y" := #true in
+    let: "$X" := #(W64 1) in
+    struct.make (MultiParam #uint64T #boolT) [{
+      "Y" ::= "$Y";
+      "X" ::= "$X"
+    }]) in
+    do:  ("mp" <-[MultiParam #uint64T #boolT] "$r0");;;
+    let: "$r0" := #(W64 2) in
+    do:  ((struct.field_ref (MultiParam #uint64T #boolT) #"X"%go "mp") <-[#uint64T] "$r0")).
+
+(* go: generics.go:76:6 *)
+Definition swapMultiParam : val :=
+  rec: "swapMultiParam" "A" "p" :=
+    exception_do (let: "p" := (mem.alloc "p") in
+    let: "temp" := (mem.alloc (type.zero_val "A")) in
+    let: "$r0" := (!["A"] (struct.field_ref (MultiParam "A" "A") #"X"%go (![#ptrT] "p"))) in
+    do:  ("temp" <-["A"] "$r0");;;
+    let: "$r0" := (!["A"] (struct.field_ref (MultiParam "A" "A") #"Y"%go (![#ptrT] "p"))) in
+    do:  ((struct.field_ref (MultiParam "A" "A") #"X"%go (![#ptrT] "p")) <-["A"] "$r0");;;
+    let: "$r0" := (!["A"] "temp") in
+    do:  ((struct.field_ref (MultiParam "A" "A") #"Y"%go (![#ptrT] "p")) <-["A"] "$r0")).
+
+(* go: generics.go:82:6 *)
+Definition multiParamFunc : val :=
+  rec: "multiParamFunc" "A" "B" "x" "b" :=
+    exception_do (let: "b" := (mem.alloc "b") in
+    let: "x" := (mem.alloc "x") in
+    return: ((let: "$sl0" := (!["B"] "b") in
+     slice.literal "B" ["$sl0"]))).
+
+(* go: generics.go:86:6 *)
+Definition useMultiParamFunc : val :=
+  rec: "useMultiParamFunc" <> :=
+    exception_do (do:  (let: "$a0" := #(W64 1) in
+    let: "$a1" := #true in
+    ((func_call #generics.generics #"multiParamFunc"%go) #uint64T #boolT) "$a0" "$a1");;;
+    return: (#())).
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [("BoxGet"%go, BoxGet); ("BoxGet2"%go, BoxGet2); ("makeGenericBox"%go, makeGenericBox); ("makeBox"%go, makeBox); ("useBoxGet"%go, useBoxGet); ("useContainer"%go, useContainer); ("useMultiParam"%go, useMultiParam); ("swapMultiParam"%go, swapMultiParam); ("multiParamFunc"%go, multiParamFunc); ("useMultiParamFunc"%go, useMultiParamFunc)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Box"%go, []); ("Box'ptr"%go, []); ("Container"%go, []); ("Container'ptr"%go, []); ("UseContainer"%go, []); ("UseContainer'ptr"%go, []); ("OnlyIndirect"%go, []); ("OnlyIndirect'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Box"%go, [("Get"%go, Box__Get)]); ("Box'ptr"%go, [("Get"%go, (λ: "$recvAddr",
+                 method_call #generics.generics #"Box" #"Get" (![Box #()] "$recvAddr")
+                 )%V)]); ("Container"%go, []); ("Container'ptr"%go, []); ("UseContainer"%go, []); ("UseContainer'ptr"%go, []); ("OnlyIndirect"%go, []); ("OnlyIndirect'ptr"%go, []); ("MultiParam"%go, []); ("MultiParam'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo generics.generics :=
   {|

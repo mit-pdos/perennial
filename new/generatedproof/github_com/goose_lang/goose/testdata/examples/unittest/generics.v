@@ -353,6 +353,94 @@ Qed.
 
 End instances.
 
+(* type generics.MultiParam *)
+Module MultiParam.
+Section def.
+Context `{ffi_syntax}.
+
+Definition ty (A B : go_type) : go_type := structT [
+  "Y" :: B;
+  "X" :: A
+]%struct.
+Record t `{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' B} := mk {
+  Y' : B';
+  X' : A';
+}.
+End def.
+End MultiParam.
+
+Arguments MultiParam.mk {_} { A' } {_ A _} { B' } {_ B _} .
+Arguments MultiParam.t {_} A' {_ A _} B' {_ B _} .
+
+Section instances.
+Context `{ffi_syntax}.
+Context`{!IntoVal A'} `{!IntoValTyped A' A} `{!IntoVal B'} `{!IntoValTyped B' B} .
+
+Global Instance MultiParam_ty_wf : struct.Wf (MultiParam.ty A B).
+Proof. apply _. Qed.
+
+Global Instance settable_MultiParam : Settable (MultiParam.t A' B') :=
+  settable! (MultiParam.mk (A:=A) (B:=B)) < MultiParam.Y'; MultiParam.X' >.
+Global Instance into_val_MultiParam : IntoVal (MultiParam.t A' B') :=
+  {| to_val_def v :=
+    struct.val_aux (MultiParam.ty A B) [
+    "Y" ::= #(MultiParam.Y' v);
+    "X" ::= #(MultiParam.X' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_MultiParam : IntoValTyped (MultiParam.t A' B') (MultiParam.ty A B) :=
+{|
+  default_val := MultiParam.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_MultiParam_Y : IntoValStructField "Y" (MultiParam.ty A B) MultiParam.Y'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_MultiParam_X : IntoValStructField "X" (MultiParam.ty A B) MultiParam.X'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_type_MultiParam :
+  PureWp True
+    (generics.MultiParam #A #B)
+    #(MultiParam.ty A B).
+Proof. solve_type_pure_wp. Qed.
+
+
+Global Instance wp_struct_make_MultiParam Y' X':
+  PureWp True
+    (struct.make #(MultiParam.ty A B) (alist_val [
+      "Y" ::= #Y';
+      "X" ::= #X'
+    ]))%struct
+    #(MultiParam.mk Y' X').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance MultiParam_struct_fields_split `{!BoundedTypeSize A} `{!BoundedTypeSize B} dq l (v : (MultiParam.t A' B')) :
+  StructFieldsSplit dq l v (
+    "HY" ∷ l ↦s[(MultiParam.ty A B) :: "Y"]{dq} v.(MultiParam.Y') ∗
+    "HX" ∷ l ↦s[(MultiParam.ty A B) :: "X"]{dq} v.(MultiParam.X')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (MultiParam.Y' v)) (MultiParam.ty A B) "Y"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
 Section names.
 
 Class GlobalAddrs :=
@@ -373,6 +461,54 @@ Global Instance is_pkg_defined_instance : IsPkgDefined generics :=
 
 Definition own_allocated : iProp Σ :=
 True.
+
+Global Instance wp_func_call_BoxGet :
+  WpFuncCall generics "BoxGet" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_BoxGet2 :
+  WpFuncCall generics "BoxGet2" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_makeGenericBox :
+  WpFuncCall generics "makeGenericBox" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_makeBox :
+  WpFuncCall generics "makeBox" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_useBoxGet :
+  WpFuncCall generics "useBoxGet" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_useContainer :
+  WpFuncCall generics "useContainer" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_useMultiParam :
+  WpFuncCall generics "useMultiParam" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_swapMultiParam :
+  WpFuncCall generics "swapMultiParam" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_multiParamFunc :
+  WpFuncCall generics "multiParamFunc" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_useMultiParamFunc :
+  WpFuncCall generics "useMultiParamFunc" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_method_call_Box_Get :
+  WpMethodCall generics "Box" "Get" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Box'ptr_Get :
+  WpMethodCall generics "Box'ptr" "Get" _ (is_pkg_defined generics) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End generics.
