@@ -130,9 +130,47 @@ Proof.
   iFrame "Hptr_epoch Hptr_isReg Hptr_alicePk".
   iFrame "Hsl_pk".
   iFrame "Hreg".
-  iExists next_ver.
-  iFrame "Hown_cli".
-Qed.
+  simpl in *.
+  iClear "Hptr_serv_good Hptr_cli Hptr_evid Hptr_err Hevid".
+  iClear "%".
+  simpl in *.
+
+  eassert (Frame false
+                                  (Client.own ptr_cli
+                                     (set Client.next_epoch
+                                        (λ _ : w64,
+                                           w64_word_instance.(word.add) ep
+                                             (W64 1))
+                                        {|
+                                          Client.γ := cli_γ;
+                                          Client.uid := W64 1;
+                                          Client.next_ver := next_ver;
+                                          Client.next_epoch := W64 0;
+                                          Client.serv := serv;
+                                          Client.serv_is_good := serv_good
+                                        |}))
+                                  ("Hown_cli"
+                                   ∷ Client.own ptr_cli
+                                       {|
+                                         Client.γ := cli_γ;
+                                         Client.uid := W64 1;
+                                         Client.next_ver :=
+                                           ?[next_ver];
+                                         Client.next_epoch :=
+                                           w64_word_instance.(word.add) ep
+                                             (W64 1);
+                                         Client.serv := serv;
+                                         Client.serv_is_good := serv_good
+                                       |}) ?[Q]).
+  { Set Typeclasses Debug.
+    Set Debug "tactic-unification".
+    (* TODO: leftoff here. some hacks:
+    1) remember (word.add ep (W64 1)) as hello
+    2) rewrite /named
+    3) unfold set
+    *)
+    Fail Timeout 5 eapply class_instances_frame.frame_here.
+Admitted.
 
 Lemma wp_testAll ptr_setup setup :
   {{{
