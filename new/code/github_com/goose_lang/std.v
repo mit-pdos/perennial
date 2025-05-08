@@ -74,21 +74,18 @@ Definition BytesClone : val :=
    The capacity of the first slice overlaps with the second, so afterward it is
    no longer safe to append to the first slice.
 
-   TODO: once goose supports it, make this function generic in the slice element
-   type
-
-   go: goose_std.go:52:6 *)
+   go: goose_std.go:49:6 *)
 Definition SliceSplit : val :=
-  rec: "SliceSplit" "xs" "n" :=
+  rec: "SliceSplit" "T" "xs" "n" :=
     exception_do (let: "n" := (mem.alloc "n") in
     let: "xs" := (mem.alloc "xs") in
     return: (let: "$s" := (![#sliceT] "xs") in
-     slice.slice #byteT "$s" #(W64 0) (![#uint64T] "n"), let: "$s" := (![#sliceT] "xs") in
-     slice.slice #byteT "$s" (![#uint64T] "n") (slice.len "$s"))).
+     slice.slice "T" "$s" #(W64 0) (![#uint64T] "n"), let: "$s" := (![#sliceT] "xs") in
+     slice.slice "T" "$s" (![#uint64T] "n") (slice.len "$s"))).
 
 (* Returns true if x + y does not overflow
 
-   go: goose_std.go:60:6 *)
+   go: goose_std.go:57:6 *)
 Definition SumNoOverflow : val :=
   rec: "SumNoOverflow" "x" "y" :=
     exception_do (let: "y" := (mem.alloc "y") in
@@ -99,7 +96,7 @@ Definition SumNoOverflow : val :=
 
    *Use with care* - if the assumption is violated this function will panic.
 
-   go: goose_std.go:67:6 *)
+   go: goose_std.go:64:6 *)
 Definition SumAssumeNoOverflow : val :=
   rec: "SumAssumeNoOverflow" "x" "y" :=
     exception_do (let: "y" := (mem.alloc "y") in
@@ -112,7 +109,7 @@ Definition SumAssumeNoOverflow : val :=
 
 (* MulNoOverflow returns true if x * y does not overflow
 
-   go: goose_std.go:73:6 *)
+   go: goose_std.go:70:6 *)
 Definition MulNoOverflow : val :=
   rec: "MulNoOverflow" "x" "y" :=
     exception_do (let: "y" := (mem.alloc "y") in
@@ -126,7 +123,7 @@ Definition MulNoOverflow : val :=
 
    *Use with care* - if the assumption is violated this function will panic.
 
-   go: goose_std.go:83:6 *)
+   go: goose_std.go:80:6 *)
 Definition MulAssumeNoOverflow : val :=
   rec: "MulAssumeNoOverflow" "x" "y" :=
     exception_do (let: "y" := (mem.alloc "y") in
@@ -143,7 +140,7 @@ Definition JoinHandle : go_type := structT [
   "cond" :: ptrT
 ].
 
-(* go: goose_std.go:96:6 *)
+(* go: goose_std.go:93:6 *)
 Definition newJoinHandle : val :=
   rec: "newJoinHandle" <> :=
     exception_do (let: "mu" := (mem.alloc (type.zero_val #ptrT)) in
@@ -162,7 +159,7 @@ Definition newJoinHandle : val :=
        "cond" ::= "$cond"
      }]))).
 
-(* go: goose_std.go:106:22 *)
+(* go: goose_std.go:103:22 *)
 Definition JoinHandle__finish : val :=
   rec: "JoinHandle__finish" "h" <> :=
     exception_do (let: "h" := (mem.alloc "h") in
@@ -180,7 +177,7 @@ Definition JoinHandle__finish : val :=
    essentially the same implementation, replacing `done` with a pointer to the
    result value.
 
-   go: goose_std.go:120:6 *)
+   go: goose_std.go:117:6 *)
 Definition Spawn : val :=
   rec: "Spawn" "f" :=
     exception_do (let: "f" := (mem.alloc "f") in
@@ -194,7 +191,7 @@ Definition Spawn : val :=
     do:  (Fork ("$go" #()));;;
     return: (![#ptrT] "h")).
 
-(* go: goose_std.go:129:22 *)
+(* go: goose_std.go:126:22 *)
 Definition JoinHandle__Join : val :=
   rec: "JoinHandle__Join" "h" <> :=
     exception_do (let: "h" := (mem.alloc "h") in
@@ -215,7 +212,7 @@ Definition JoinHandle__Join : val :=
    pattern in Go) because this is not supported by Goose. Instead uses mutexes
    and condition variables since these are modeled in Goose
 
-   go: goose_std.go:148:6 *)
+   go: goose_std.go:145:6 *)
 Definition Multipar : val :=
   rec: "Multipar" "num" "op" :=
     exception_do (let: "op" := (mem.alloc "op") in
@@ -259,14 +256,14 @@ Definition Multipar : val :=
    is a simple way to do so - the model always requires one step to reduce this
    application to a value.
 
-   go: goose_std.go:179:6 *)
+   go: goose_std.go:176:6 *)
 Definition Skip : val :=
   rec: "Skip" <> :=
     exception_do (do:  #()).
 
 (* Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle.
 
-   go: goose_std.go:182:6 *)
+   go: goose_std.go:179:6 *)
 Definition Shuffle : val :=
   rec: "Shuffle" "xs" :=
     exception_do (let: "xs" := (mem.alloc "xs") in
@@ -293,7 +290,7 @@ Definition Shuffle : val :=
 (* Permutation returns a random permutation of the integers 0, ..., n-1, using a
    Fisher-Yates shuffle.
 
-   go: goose_std.go:196:6 *)
+   go: goose_std.go:193:6 *)
 Definition Permutation : val :=
   rec: "Permutation" "n" :=
     exception_do (let: "n" := (mem.alloc "n") in

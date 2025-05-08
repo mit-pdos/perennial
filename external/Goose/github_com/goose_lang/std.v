@@ -45,13 +45,10 @@ Definition BytesClone: val :=
 (* SliceSplit splits xs at n into two slices.
 
    The capacity of the first slice overlaps with the second, so afterward it is
-   no longer safe to append to the first slice.
-
-   TODO: once goose supports it, make this function generic in the slice element
-   type *)
-Definition SliceSplit: val :=
+   no longer safe to append to the first slice. *)
+Definition SliceSplit (T:ty): val :=
   rec: "SliceSplit" "xs" "n" :=
-    (SliceTake "xs" "n", SliceSkip byteT "xs" "n").
+    (SliceTake "xs" "n", SliceSkip T "xs" "n").
 
 (* Returns true if x + y does not overflow *)
 Definition SumNoOverflow: val :=

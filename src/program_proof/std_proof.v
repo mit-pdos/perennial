@@ -181,12 +181,12 @@ Proof.
   }
 Qed.
 
-Lemma wp_SliceSplit s dq (xs: list w8) (n: w64) :
-  {{{ own_slice_small s byteT dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
-    SliceSplit (to_val s) #n
-  {{{ RET (to_val (slice_take s n), to_val (slice_skip s byteT n));
-      own_slice_small (slice_take s n) byteT dq (take (uint.nat n) xs) ∗
-      own_slice_small (slice_skip s byteT n) byteT dq (drop (uint.nat n) xs)
+Lemma wp_SliceSplit t s dq `{!IntoVal V} (xs: list V) (n: w64) :
+  {{{ own_slice_small s t dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
+    SliceSplit t (to_val s) #n
+  {{{ RET (to_val (slice_take s n), to_val (slice_skip s t n));
+      own_slice_small (slice_take s n) t dq (take (uint.nat n) xs) ∗
+      own_slice_small (slice_skip s t n) t dq (drop (uint.nat n) xs)
   }}}.
 Proof.
   iIntros (Φ) "[Hs %Hn] HΦ".
@@ -202,12 +202,12 @@ Proof.
   word.
 Qed.
 
-Lemma wp_SliceSplit_full s dq (xs: list w8) (n: w64) :
-  {{{ own_slice s byteT dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
-    SliceSplit (to_val s) #n
-  {{{ RET (to_val (slice_take s n), to_val (slice_skip s byteT n));
-      own_slice_small (slice_take s n) byteT dq (take (uint.nat n) xs) ∗
-      own_slice (slice_skip s byteT n) byteT dq (drop (uint.nat n) xs)
+Lemma wp_SliceSplit_full `{!IntoVal V} t s dq (xs: list V) (n: w64) :
+  {{{ own_slice s t dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
+    SliceSplit t (to_val s) #n
+  {{{ RET (to_val (slice_take s n), to_val (slice_skip s t n));
+      own_slice_small (slice_take s n) t dq (take (uint.nat n) xs) ∗
+      own_slice (slice_skip s t n) t dq (drop (uint.nat n) xs)
   }}}.
 Proof.
   iIntros (Φ) "[Hs %Hn] HΦ".
