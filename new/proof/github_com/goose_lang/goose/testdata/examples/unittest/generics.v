@@ -80,4 +80,59 @@ Proof.
   iApply "HΦ"; done.
 Qed.
 
+Lemma wp_useContainer :
+  {{{ is_pkg_init generics }}}
+    generics @ "useContainer" #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start as "_"; try wp_auto.
+  rewrite <- (default_val_eq_zero_val (V:=generics.Container.t w64)).
+  wp_auto.
+  (* NOTE: there's no way to reduce the pair here to a #x to use the list wp
+  theorems, and anyway there's no wp for map literals yet *)
+Abort.
+
+Lemma wp_useMultiParam :
+  {{{ is_pkg_init generics }}}
+    generics @ "useMultiParam" #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start as "_"; try wp_auto.
+  rewrite <- (default_val_eq_zero_val (V:=generics.MultiParam.t w64 bool)).
+  wp_auto.
+  iApply struct_fields_split in "mp"; iNamed "mp".
+  with_strategy opaque [is_pkg_init] cbn.
+  wp_auto.
+  iApply "HΦ"; done.
+Qed.
+
+Lemma wp_multiParamFunc `{!IntoVal A'} `{!IntoValTyped A' A}
+`{!IntoVal B'} `{!IntoValTyped B' B}
+  (x: A') (y: B') :
+  {{{ is_pkg_init generics }}}
+    generics @ "multiParamFunc" #A #B #x #y
+  {{{ s, RET #s; s ↦* [y] }}}.
+Proof.
+  wp_start as "_"; try wp_auto.
+  unshelve wp_apply wp_slice_literal.
+  { apply _. }
+  iIntros (sl) "H".
+  wp_auto.
+  iApply "HΦ". iFrame.
+Qed.
+
+Lemma wp_useMultiParamFunc :
+  {{{ is_pkg_init generics }}}
+    generics @ "useMultiParamFunc" #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start as "_"; try wp_auto.
+  unshelve wp_apply wp_multiParamFunc.
+  { apply _. }
+  { apply _. }
+  iIntros (s) "H".
+  wp_auto.
+  iApply "HΦ"; done.
+Qed.
+
 End wps.
