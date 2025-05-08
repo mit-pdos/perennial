@@ -1,4 +1,4 @@
-From New Require Export notation.
+From New Require Import notation.
 From New.golang.defn Require Import typing.
 
 Section goose_lang.
