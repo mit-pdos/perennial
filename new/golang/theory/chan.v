@@ -52,13 +52,6 @@ Lemma is_chan_not_nil ch :
 Proof.
 Admitted.
 
-Lemma wp_chan_make cap :
-  {{{ True }}}
-    chan.make #t #cap
-  {{{ (c : chan.t) (init : list V), RET #c; own_chan c (chanstate.mk cap false init (length init)) }}}.
-Proof.
-Admitted.
-
 Definition receive_atomic_update ch Φ : iProp Σ :=
   is_chan V ch ∗
   |={⊤,∅}=>
@@ -75,13 +68,6 @@ Definition receive_atomic_update ch Φ : iProp Σ :=
                            (∀ v, ⌜ s'.(chanstate.sent) !! s.(chanstate.received) = Some v ⌝ -∗
                                  own_chan ch s' ={∅,⊤}=∗ Φ (#v, #true)%V))).
 
-Lemma wp_chan_receive ch :
-  ∀ Φ,
-  ▷ receive_atomic_update ch Φ -∗
-  WP chan.receive #ch {{ Φ }}.
-Proof.
-Admitted.
-
 Definition send_atomic_update ch (v : V) Φ : iProp Σ :=
   (* send the value *)
   is_chan V ch ∗
@@ -94,6 +80,47 @@ Definition send_atomic_update ch (v : V) Φ : iProp Σ :=
                   own_chan ch s' ∗
                   (⌜ length s.(chanstate.sent) < s'.(chanstate.received) + uint.nat (s.(chanstate.cap)) ⌝ -∗
                    own_chan ch s' ={∅,⊤}=∗ Φ #()))).
+
+(* A (blocking) send/receive operation consists of an atomic update that
+   "signals then observes." A non-blocking operation consists of an atomic
+   update that "observes then signals." *)
+
+Definition nonblocking_receive_atomic_update ch Φok Φnotready : iProp Σ :=
+  is_chan V ch ∗
+  |={⊤,∅}=>
+    ▷∃ s, own_chan ch s ∗
+          if decide (s.(chanstate.closed) = true ∧ s.(chanstate.received) = length s.(chanstate.sent)) then
+            (own_chan ch s ={∅,⊤}=∗ (Φok (#(default_val V), #false)%V))
+          else
+            match s.(chanstate.sent) !! s.(chanstate.received) with
+            | None => own_chan ch s ={∅,⊤}=∗ Φnotready
+            | Some v => own_chan ch (set chanstate.received S s) ={∅,⊤}=∗ Φok (#v, #true)%V
+            end
+.
+
+Definition nonblocking_send_atomic_update ch (v : V) Φok Φnotready : iProp Σ :=
+  (* if there's enough space *)
+  is_chan V ch ∗
+  |={⊤,∅}=>
+    ▷∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗
+          (if decide (length s.(chanstate.sent) < s.(chanstate.received) + uint.nat (s.(chanstate.cap))) then
+              own_chan ch (s <| chanstate.sent := s.(chanstate.sent) ++ [v] |>) ={∅,⊤}=∗ Φok
+            else
+              own_chan ch s ={∅,⊤}=∗ Φnotready).
+
+Lemma wp_chan_make cap :
+  {{{ True }}}
+    chan.make #t #cap
+  {{{ (c : chan.t) (init : list V), RET #c; own_chan c (chanstate.mk cap false init (length init)) }}}.
+Proof.
+Admitted.
+
+Lemma wp_chan_receive ch :
+  ∀ Φ,
+  ▷ receive_atomic_update ch Φ -∗
+  WP chan.receive #ch {{ Φ }}.
+Proof.
+Admitted.
 
 Lemma wp_chan_send ch (v : V) :
   ∀ Φ,
@@ -253,6 +280,7 @@ End op.
 End chan.
 
 Arguments receive_atomic_update {_ _ _ _ _ _} (_) {_ _ _} (_ _).
+Arguments nonblocking_receive_atomic_update {_ _ _ _ _ _} (_) {_ _ _} (_ _ _).
 
 Section select_proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -274,22 +302,20 @@ Lemma wp_chan_select_blocking (cases : list chan.op) :
 Proof.
 Admitted.
 
-(* This spec is conservative (over-approximate): it states that [def] may run
-   regardless of what's in the channels. *)
-Lemma wp_chan_select_nonblocking (cases : list chan.op) (def : func.t) :
+Lemma wp_chan_select_nonblocking (Φnrs : list (iProp Σ)) (cases : list chan.op) (def : func.t) :
   ∀ Φ,
-  (
-    WP #def #() {{ Φ }} ∧
-    [∧ list] case ∈ cases,
-     match case with
-     | chan.select_send_f send_val send_chan send_handler =>
-         (∃ V (v : V) `(!IntoVal V),
-             ⌜ send_val = #v ⌝ ∗
-             send_atomic_update send_chan v (λ _, WP #send_handler #() {{ Φ }}))
-     | chan.select_receive_f recv_chan recv_handler =>
-         (∃ V t `(!IntoVal V) `(!IntoValTyped V t),
-             receive_atomic_update V recv_chan (λ v, WP #recv_handler v {{ Φ }}))
-     end
+  (([∧ list] i ↦ case ∈ cases,
+      let Φnotready := default False (Φnrs !! i) in
+      match case with
+      | chan.select_send_f send_val send_chan send_handler =>
+          (∃ V (v : V) `(!IntoVal V),
+              ⌜ send_val = #v ⌝ ∗
+              nonblocking_send_atomic_update send_chan v (WP #send_handler #() {{ Φ }}) Φnotready)
+      | chan.select_receive_f recv_chan recv_handler =>
+          (∃ V t `(!IntoVal V) `(!IntoValTyped V t),
+              nonblocking_receive_atomic_update V recv_chan (λ v, WP #recv_handler v {{ Φ }}) Φnotready)
+      end) ∧
+   ([∗] Φnrs -∗ WP #def #() {{ Φ }})
   ) -∗
   WP chan.select #cases #(chan.select_default_f def) {{ Φ }}.
 Proof.

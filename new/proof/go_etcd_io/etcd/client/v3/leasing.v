@@ -246,19 +246,18 @@ Proof.
   iApply (wp_optional with "[-]"); first iNamedAccu.
   {
     iNamed 1. iNamedSuffix "Hown" "_lock". wp_auto.
-    wp_apply wp_chan_select_nonblocking.
+    wp_apply (wp_chan_select_nonblocking [False%I]).
     repeat iSplit.
-    - (* default *) wp_auto. iFrame "∗#%".
     - rewrite big_opL_singleton.
       repeat iExists _.
+      (*
       iApply (closeable_chan_receive with "[$]"). iIntros "_".
       wp_auto. wp_apply (wp_chan_make (V:=unit)). iIntros "* Hsessionc'".
       iMod (alloc_closeable_chan True with "[$]") as "[H ?]"; [done..|].
-      wp_auto. iFrame "∗#%".
+      wp_auto. iFrame "∗#%". *)
+      admit.
+    - (* default *) iIntros "Hnr". wp_auto. iFrame "∗#%".
   }
-  (* FIXME: need to know that if the nonblocking receive failed, the closeable
-     chan must not be closed.
- *)
 Admitted.
 
 Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :

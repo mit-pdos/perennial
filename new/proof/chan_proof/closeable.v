@@ -65,6 +65,23 @@ Proof.
     exfalso. apply lookup_lt_Some in Hbad. lia.
 Qed.
 
+Lemma closeable_chan_nonblocking_receive ch Pclosed Φ Φnotready :
+  own_closeable_chan ch Pclosed -∗
+  Φnotready -∗ nonblocking_receive_atomic_update unit ch Φ Φnotready.
+Proof.
+  iIntros "(% & H & Hown)". iNamed "H". iIntros "HΦ". rewrite /nonblocking_receive_atomic_update. iFrame "#".
+  iInv "Hinv" as "Hi" "Hclose". iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
+  iNext. iNamed "Hi". iFrame.
+  destruct decide as [|].
+  - destruct a as [-> ?]. iCombine "Hown Hclosed" gives %[Hbad _]. done.
+  - destruct lookup eqn:Hlookup.
+    { simpl. apply lookup_lt_Some in Hlookup. word. }
+    iFrame.
+    iIntros "Hch". iMod "Hmask" as "_".
+    iMod ("Hclose" with "[-]"). { iFrame "∗#%". }
+    done.
+Qed.
+
 Lemma wp_closeable_chan_close ch Pclosed Φ :
   own_closeable_chan ch Pclosed ∗ □ Pclosed -∗
   Φ #() -∗
