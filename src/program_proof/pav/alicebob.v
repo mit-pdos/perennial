@@ -162,14 +162,23 @@ Proof.
                                          Client.serv := serv;
                                          Client.serv_is_good := serv_good
                                        |}) ?[Q]).
-  { Set Typeclasses Debug.
-    Set Debug "tactic-unification".
+  { (* FIXME: non-commutative unification *)
+
     (* TODO: leftoff here. some hacks:
     1) remember (word.add ep (W64 1)) as hello
     2) rewrite /named
-    3) unfold set
+    3) unfold set; this doesn't actually work unless it gets [simpl]'d further.
     *)
-    Fail Timeout 5 eapply class_instances_frame.frame_here.
+
+    Fail Timeout 5 lazymatch goal with
+    | |- Frame _ ?a ?b _ => unify b a
+    end.
+
+    lazymatch goal with
+    | |- Frame _ ?a ?b _ => unify a b
+    end.
+
+    tc_solve.
 Admitted.
 
 Lemma wp_testAll ptr_setup setup :
