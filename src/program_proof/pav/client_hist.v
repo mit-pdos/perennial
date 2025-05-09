@@ -76,28 +76,26 @@ Record t :=
     (* epochs_hist allows stating the "intuitive" KT consistency property:
     that a client knows its key at every epoch. *)
     epochs_hist: list (option pk_ty);
-    (* puts_hist tracks all our puts.
-    it needs to be visible to connect to the physical puts_hist. *)
-    puts_hist: list map_val_ty;
     next_epoch: w64;
     serv: Server.t;
     serv_is_good: bool;
   }.
 Global Instance eta : Settable _ :=
-  settable! mk <γ; uid; epochs_hist; puts_hist; next_epoch; serv; serv_is_good>.
+  settable! mk <γ; uid; epochs_hist; next_epoch; serv; serv_is_good>.
 
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 
 Definition own (ptr : loc) (obj : t) : iProp Σ :=
+  ∃ puts_hist,
   "%Hlt_ep" ∷ ⌜ Z.of_nat $ length obj.(epochs_hist) <= uint.Z obj.(next_epoch) ⌝ ∗
-  "%Hhist_reln" ∷ ⌜ hist_epochs_puts.reln obj.(epochs_hist) obj.(puts_hist) ⌝ ∗
+  "%Hhist_reln" ∷ ⌜ hist_epochs_puts.reln obj.(epochs_hist) puts_hist ⌝ ∗
 
   "Hcli" ∷ Client.own ptr (Client.mk obj.(γ) obj.(uid)
-    (W64 $ length obj.(puts_hist)) obj.(next_epoch) obj.(serv)
+    (W64 $ length puts_hist) obj.(next_epoch) obj.(serv)
     obj.(serv_is_good)) ∗
   "#Hhist" ∷ is_hist obj.(γ) obj.(serv).(Server.vrf_pk) obj.(uid)
-    obj.(puts_hist) (W64 $ length obj.(epochs_hist)).
+    puts_hist (W64 $ length obj.(epochs_hist)).
 
 Lemma lookup_msv ptr_c c ep opt_pk γaudit aud_ep :
   c.(epochs_hist) !! (uint.nat ep) = Some opt_pk →
@@ -143,8 +141,7 @@ Lemma wp_ClientHist__Put ptr_c c sl_pk d0 (pk : list w8) :
           set ClientHist.next_epoch (λ _, word.add ep (W64 1))
           (set ClientHist.epochs_hist (λ x, x ++
             replicate (uint.nat ep - length x) (mjoin $ last x) ++
-            [Some pk])
-          (set ClientHist.puts_hist (λ x, x ++ [(ep, pk)]) c)) in
+            [Some pk]) c) in
         "Hcli" ∷ ClientHist.own ptr_c new_c)
   }}}.
 Proof.
@@ -154,6 +151,7 @@ Proof.
   simpl. iIntros "*". iNamed 1.
   iApply "HΦ". iFrame "∗%".
   case_match; iNamed "Herr"; [by iFrame "∗#"|].
+  iExists (puts_hist ++ [(ep, pk)]).
   do 3 try iSplit; simpl in *.
   - rewrite !length_app length_replicate /=. word.
   - iPureIntro.
@@ -197,6 +195,7 @@ Proof.
   simpl. iIntros "*". iNamed 1.
   iApply "HΦ". iFrame "∗%".
   case_match; iNamed "Herr"; [by iFrame "∗#"|].
+  iExists puts_hist.
   do 3 try iSplit; simpl in *.
   - rewrite !length_app length_replicate. word.
   - iPureIntro.
