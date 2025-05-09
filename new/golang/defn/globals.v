@@ -5,30 +5,20 @@ Module globals.
 Section defns.
 Context `{ffi_syntax}.
 
-Definition unwrap_def : val :=
+Definition unwrap_default_def : val :=
   λ: "x", match: "x" with
-            NONE => #() #()
+            NONE => #()
           | SOME "x" => "x"
           end.
-Program Definition unwrap := sealed @unwrap_def.
-Definition unwrap_unseal : unwrap = _ := seal_eq _.
+Program Definition unwrap_default := sealed @unwrap_default_def.
+Definition unwrap_default_unseal : unwrap_default = _ := seal_eq _.
 
 Definition get_def : val :=
   λ: "pkg_name" "var_name",
-    let: (("varAddrs", "functions"), "typeToMethodSets") := unwrap $ GlobalGet "pkg_name" in
-    unwrap $ alist_lookup "var_name" "varAddrs".
+    let: (("varAddrs", "functions"), "typeToMethodSets") := unwrap_default $ GlobalGet "pkg_name" in
+    unwrap_default $ alist_lookup "var_name" "varAddrs".
 Program Definition get := sealed @get_def.
 Definition get_unseal : get = _ := seal_eq _.
-
-(* XXX: unsealed because user has to prove WPs for this by unfolding. *)
-Definition alloc (vars : list (go_string * go_type)) : val :=
-  λ: <>, (fix alloc (vars : list (go_string * go_type)) : expr :=
-           (match vars with
-            | Datatypes.nil => alist_val []
-            | (pair name t) :: vars =>
-                list.Cons (#name, mem.alloc (zero_val t)) (alloc vars)
-            end)%E) vars
-.
 
 Definition package_init_def (pkg_name : go_string) `{!PkgInfo pkg_name} : val :=
   let functions_val := alist_val (pkg_functions pkg_name) in
@@ -36,10 +26,7 @@ Definition package_init_def (pkg_name : go_string) `{!PkgInfo pkg_name} : val :=
   λ: "init",
     match: GlobalGet #pkg_name with
       SOME <> => #()
-    | NONE =>
-        let: "var_addrs" := alloc (pkg_vars pkg_name) #() in
-        GlobalPut #pkg_name ("var_addrs", functions_val, msets_val) ;;
-        "init" #()
+    | NONE => "init" #()
     end.
 Program Definition package_init := sealed @package_init_def.
 Definition package_init_unseal : package_init = _ := seal_eq _.
