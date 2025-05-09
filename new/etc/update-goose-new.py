@@ -158,6 +158,11 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--channel",
+        help="translate channel model",
+        action="store_true",
+    )
+    parser.add_argument(
         "--std-lib",
         help="translate (parts of) Go standard library",
         action="store_true",
@@ -261,6 +266,9 @@ def main():
             "./semantics",
             "./unittest/...",
         )
+
+    if args.channel:
+        run_goose(goose_dir, "./model/channel")
 
     if args.std_lib:
         # this list of packages comes from the dependencies of etcd-raft
