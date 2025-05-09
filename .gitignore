@@ -38,3 +38,6 @@ __pycache__
 
 # direnv 
 .direnv
+
+# macOS
+.DS_Store
