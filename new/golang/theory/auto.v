@@ -97,22 +97,15 @@ Tactic Notation "wp_auto_lc" int(x) :=
   let f := ltac2:(x |- wp_auto_lc (Option.get (Ltac1.to_int x))) in
   f x.
 
-Tactic Notation "wp_apply_lc" int(n) open_constr(lem) :=
-  wp_apply_core lem; try iPkgInit;
-  try (let f := ltac2:(n |- wp_auto_lc (Option.get (Ltac1.to_int n))) in f n).
+Tactic Notation "wp_apply" open_constr(lem) :=
+  wp_apply_core lem; try iPkgInit.
 
 (* NOTE: did not copy in other variants of [iIntros] from [iris/iris/proofmode/ltac_tactics.v] to
    make intro patterns more canonical.
  *)
-Tactic Notation "wp_apply_lc" int(n) open_constr(lem) "as" constr(pat) :=
-  wp_apply_core lem; try iPkgInit;
-  last (iIntros pat; try (let f := ltac2:(n |- wp_auto_lc (Option.get (Ltac1.to_int n))) in f n)).
-
-Tactic Notation "wp_apply" open_constr(lem) :=
-  wp_apply_lc 0 lem.
-
 Tactic Notation "wp_apply" open_constr(lem) "as" constr(pat) :=
-  wp_apply_lc 0 lem as pat.
+  wp_apply_core lem; try iPkgInit;
+  last (iIntros pat).
 
 Lemma if_decide_bool_eq_true `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
   (if decide (#(bool_decide P) = #true) then x
