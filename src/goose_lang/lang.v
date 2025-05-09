@@ -37,7 +37,7 @@ Definition proph_id := positive.
 
 Class ffi_syntax :=
   mkExtOp {
-      ffi_opcode: Set;
+      ffi_opcode: Type;
       #[global] ffi_opcode_eq_dec :: EqDecision ffi_opcode;
       #[global] ffi_opcode_countable :: Countable ffi_opcode;
       ffi_val: Type;
