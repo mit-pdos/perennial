@@ -21,22 +21,17 @@ Module model.
       }.
 End model.
 
-Class models : Type :=
-  {
-    model_names : gset go_string;
-    models_lookup : { model_name : go_string & (model_name ∈ model_names) } → model.t;
-  }.
+Definition invalid_model :=
+  model.mk unit unit (λ _ _, undefined) (λ _ _, True).
+
+Definition models : Type := go_string → model.t .
 
 Section to_ffi.
 Context {M : models}.
 
-Local Notation model_names_type := { model_name : go_string & (model_name ∈ model_names) }.
+Definition models_state := ∀ name, (M name).(model.state).
 
-Definition models_state : Type :=
-  ∀ (name : model_names_type), (models_lookup name).(model.state).
-
-Definition models_global_state : Type :=
-  ∀ (name : model_names_type), (models_lookup name).(model.global_state).
+Definition models_global_state := ∀ name, (M name).(model.global_state).
 
 Program Instance models_ffi_model : ffi_model :=
   {|
@@ -53,17 +48,14 @@ Qed.
 Definition models_ffi_step :=
   λ (op : ffi_opcode) (v : val),
     let '(model_name, op_name) := op in
-    match decide (model_name ∈ model_names) with
-    | right _ =>  undefined
-    | left in_pf =>
-        let m := models_lookup (existT model_name in_pf) in
-        undefined
-        (* TODO: lift to [models] *)
-        (* m.(model.step) op_name v *)
-    end : transition (state * global_state) expr.
+    let m := M model_name in
+    undefined
+      (* TODO: lift to [models] *)
+      (* m.(model.step) op_name v *)
+    : transition (state * global_state) expr.
 
 Definition models_ffi_crash_step (s s' : models_state) :=
-  ∀ (m : model_names_type), (models_lookup m).(model.crash_step) (s m) (s' m).
+  ∀ name, (M name).(model.crash_step) (s name) (s' name).
 
 Instance models_ffi_semantics : ffi_semantics models_syntax _ :=
   {|
