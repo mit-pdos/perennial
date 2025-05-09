@@ -1223,7 +1223,6 @@ Lemma wp_Channel__ReceiverCompleteOrRescindOffer_Rescind (ch: loc) (i: nat) (q: 
 (size: nat) (is_single_party: bool) (Psingle: (Z -> val -> iProp Σ)) (Pmulti: (val -> iProp Σ)) (Qsingle: (Z -> iProp Σ)) (Qmulti: iProp Σ) (R Ri:nat -> iProp Σ) :
 (if is_single_party then q = 1%Qp else (q < 1)%Qp) ->
 (#buff .(Slice.sz) = #(W64 0)) ->
-
 {{{ 
   "value" ∷ ch ↦[(Channel chan_type) :: "v"] v ∗ 
   "HCh" ∷  isUnbufferedChan ch γ chan_type v receiver_ready 1%nat is_single_party send_count recv_count Psingle 
@@ -2426,9 +2425,8 @@ cs ≠ closed ->
         ∗ ⌜ new_send_count = (send_count + 1)%nat ⌝ 
         ∗ ⌜ new_recv_count = (recv_count)%nat⌝ 
        )
-    | 0%nat => ( P is_single_party new_i v Psingle Pmulti ∗
+    | 0%nat => ( P is_single_party new_i v0 Psingle Pmulti ∗
       own_send_counter_frag γ new_i q ∗ 
-      (*Note to self: this probably needs to be introduced here, we definitely can't speci*)
     "value" ∷ ch ↦[(Channel chan_type) :: "v"] v ∗ 
     "chan_state" ∷ ch ↦[(Channel chan_type) :: "state"] #(W64 0) ∗  
         own_send_counter_auth γ new_send_count false ∗ ⌜ new_i = i ⌝ ∗ ⌜ new_cs = start ⌝ 

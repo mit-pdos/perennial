@@ -12,6 +12,7 @@ Record chan_names :=
     sender_name: gname;
     receiver_name: gname;
     close_name: gname;
+    unbuffered_state_tracker_name: gname;
  }.
 
 Class closePropTrackerG Σ := ClosePropTrackerG {
@@ -57,7 +58,8 @@ Definition own_recv_counter_auth (γ : chan_names)
   (n : nat) (frozen : bool) : iProp Σ :=
   own_chan_counter_auth γ.(receiver_name) n frozen.
 
-Lemma chan_counter_agree (γ: gname) (n: nat) (i: nat) :
+
+Lemma chan_counter_elem (γ: gname) (n: nat) (i: nat) :
  ∀ frozen,
   own_chan_counter_auth γ n frozen -∗ own_chan_counter_frag γ i 1 -∗ 
    ⌜i = n⌝.
@@ -96,6 +98,61 @@ Lemma chan_counter_agree (γ: gname) (n: nat) (i: nat) :
     }
   Qed.
 
+Lemma chan_counter_freeze (γ: gname) (n: nat) (i: nat) :
+∀ frozen,
+  own_chan_counter_auth γ n frozen ==∗ 
+  own_chan_counter_auth γ n true.
+  Proof.
+    unfold own_chan_counter_auth, own_chan_counter_frag.
+    intros frozen. destruct frozen.
+    {
+     iIntros "H". iFrame. done. 
+    }
+    iIntros "Hauth".
+    iMod (own_update with "Hauth") as "H".
+    { 
+      apply auth_update_auth_persist.
+    }
+    {
+      done.
+    }
+  Qed.   
+
+Lemma chan_counter_lower (γ: gname) (n: nat) (i: nat) (q: Qp) :
+ ∀ frozen,
+  own_chan_counter_auth γ n frozen -∗ own_chan_counter_frag γ i q -∗ 
+   ⌜i ≤ n⌝.
+  Proof.
+    intro frozen.
+    unfold own_chan_counter_auth, own_chan_counter_frag.
+    iIntros "Hauth". iIntros "Hfrag".
+    iPoseProof (own_valid_2 with "Hauth Hfrag") as "%Hin".
+    iPureIntro.
+    destruct frozen.
+    {
+      apply auth_both_dfrac_valid_discrete in Hin.
+      destruct Hin as (H1 & H2 & H3).
+      apply Some_pair_included in H2.
+      {
+        destruct H2 as [H4 H5].
+        rewrite Some_included_total in H5.
+        apply nat_included in H5.
+        done.
+      }
+    }
+    {
+      apply auth_both_dfrac_valid_discrete in Hin.
+      destruct Hin as (H1 & H2 & H3).
+      apply Some_pair_included in H2.
+      {
+        destruct H2 as [H4 H5].
+        rewrite Some_included_total in H5.
+        apply nat_included in H5.
+        done.
+      }
+    }
+  Qed.
+
 Lemma chan_counter_update (γ: gname) (n: nat) (i: nat) (q : Qp) :
   (own_chan_counter_auth γ n false ∗ own_chan_counter_frag γ i q) ==∗ 
   (own_chan_counter_auth γ (S n) false ∗ own_chan_counter_frag γ (S i) q).
@@ -120,13 +177,40 @@ Proof.
   { iIntros "H". done. }
 Qed.
 
-Lemma send_counter_agree (γ: chan_names) (n: nat) (i: nat) :
+Lemma chan_counter_agree (γ: gname) (n m: nat) (p q: Qp)  :
+ own_chan_counter_frag γ n p -∗  own_chan_counter_frag γ m q  -∗ 
+ own_chan_counter_frag γ (n + m) (p + q).
+  Proof.
+    iIntros "H1". iIntros "H2".
+    iDestruct ((chan_counter_split γ n m p q) with "[H1 H2]") as "H".
+    {
+      iFrame.
+    }iFrame.
+  Qed.
+
+Lemma send_counter_elem (γ: chan_names) (n: nat) (i: nat) :
  ∀ frozen,
   own_send_counter_auth γ n frozen -∗ own_send_counter_frag γ i 1 -∗ 
    ⌜i = n⌝.
   Proof.
-    apply chan_counter_agree.
+    apply chan_counter_elem.
   Qed.
+
+Lemma send_counter_lower (γ: chan_names) (n: nat) (i: nat) (q: Qp) :
+ ∀ frozen,
+  own_send_counter_auth γ n frozen -∗ own_send_counter_frag γ i q -∗ 
+   ⌜i ≤ n⌝.
+  Proof.
+    apply chan_counter_lower.
+  Qed.
+
+Lemma send_counter_freeze (γ: chan_names) (n: nat) (i: nat) :
+ ∀ frozen,
+  own_send_counter_auth γ n frozen  ==∗ 
+  own_send_counter_auth γ n true.
+  Proof.
+    apply chan_counter_freeze. done.
+  Qed.   
 
 Lemma send_counter_update (γ: chan_names) (n: nat) (i: nat) (q : Qp) :
   (own_send_counter_auth γ n false ∗ own_send_counter_frag γ i q) ==∗ 
@@ -141,13 +225,35 @@ Proof.
   apply chan_counter_split.
 Qed.
 
-Lemma recv_counter_agree (γ: chan_names) (n: nat) (i: nat) :
+Lemma send_counter_agree(γ : chan_names) (n m : nat) (p q : Qp) :
+own_send_counter_frag γ n p -∗  own_send_counter_frag γ m q -∗ own_send_counter_frag γ (n + m) (p + q).
+Proof.
+  apply chan_counter_agree.
+Qed.
+
+Lemma recv_counter_elem (γ: chan_names) (n: nat) (i: nat) :
  ∀ frozen,
   own_recv_counter_auth γ n frozen -∗ own_recv_counter_frag γ i 1 -∗ 
    ⌜i = n⌝.
   Proof.
-    apply chan_counter_agree.
+    apply chan_counter_elem.
   Qed.
+
+Lemma recv_counter_lower (γ: chan_names) (n: nat) (i: nat) (q: Qp) :
+ ∀ frozen,
+  own_recv_counter_auth γ n frozen -∗ own_recv_counter_frag γ i q -∗ 
+   ⌜i ≤ n⌝.
+  Proof.
+    apply chan_counter_lower.
+  Qed.
+
+Lemma recv_counter_freeze (γ: chan_names) (n: nat) (i: nat) :
+ ∀ frozen,
+  own_recv_counter_auth γ n frozen  ==∗ 
+  own_recv_counter_auth γ n true.
+  Proof.
+    apply chan_counter_freeze. done.
+  Qed.   
 
 Lemma recv_counter_update (γ: chan_names) (n: nat) (i: nat) (q : Qp) :
   (own_recv_counter_auth γ n false ∗ own_recv_counter_frag γ i q) ==∗ 
@@ -162,6 +268,12 @@ Proof.
   apply chan_counter_split.
 Qed.
 
+Lemma recv_counter_agree(γ : chan_names) (n m : nat) (p q : Qp) :
+own_recv_counter_frag γ n p -∗  own_recv_counter_frag γ m q -∗ own_recv_counter_frag γ (n + m) (p + q).
+Proof.
+  apply chan_counter_agree.
+Qed.
+
 Definition own_closed_tok_frag (γ: chan_names) (γi: gname) (R:nat -> iProp Σ): iProp Σ :=
     auth_set_frag γ.(close_name) γi ∗ saved_pred_own γi (DfracDiscarded) R.
 
@@ -169,16 +281,52 @@ Definition own_closed_tok_auth (γ: chan_names) (R:nat -> iProp Σ): iProp Σ :=
   ∃ (close_tok_names: gset gname),
     "Hownauth" ∷ auth_set_auth γ.(close_name) close_tok_names ∗ 
   ∀ (n: nat),
-   "HRcentral" ∷ (▷(R n) -∗ ([∗ set] γi ∈ close_tok_names,
-                        ∃ Ri, saved_pred_own γi DfracDiscarded Ri ∗  ▷ (Ri n)))                     
+   "HRcentral" ∷ ((R n) -∗ ([∗ set] γi ∈ close_tok_names,
+                        ∃ Ri, saved_pred_own γi DfracDiscarded Ri ∗  ▷  (Ri n)))                     
     .
 
-Definition own_closed_tok_post_close (γ: chan_names) (n: nat): iProp Σ := 
-∃ (close_tok_names: gset gname) ,
+Definition own_closed_tok_post_close (γ: chan_names) (n: nat)
+(close_tok_names: gset gname) 
+: iProp Σ := 
 auth_set_auth γ.(close_name) close_tok_names ∗ 
 ([∗ set] γi ∈ close_tok_names,
-                    ∃ Ri, saved_pred_own γi DfracDiscarded Ri ∗  ▷ (Ri n))                  
+                    ∃ Ri, saved_pred_own γi DfracDiscarded Ri ∗  (Ri n))                  
 .
+Lemma own_closed_tok_post_close_pop_raw 
+(γ: chan_names) (n: nat) (γr: gname) (Ri: nat -> iProp Σ)
+(close_tok_names: gset gname): 
+own_closed_tok_frag γ γr Ri ∗ 
+auth_set_auth γ.(close_name) close_tok_names ∗ 
+([∗ set] γi ∈ close_tok_names,
+                    ∃ Ri, saved_pred_own γi DfracDiscarded Ri ∗   (Ri n))
+==∗
+(auth_set_auth γ.(close_name) (close_tok_names ∖ {[γr]} )) ∗ 
+([∗ set] γi ∈ (close_tok_names ∖ {[γr]}),
+                    ∃ Ri, saved_pred_own γi DfracDiscarded Ri ∗   (Ri n))
+                    ∗ ▷   Ri n
+
+.
+Proof.
+  iIntros "(H1 & H2 & H3)".
+  unfold own_closed_tok_frag. iDestruct "H1" as "(Hfrag & #Hsp)".
+  iDestruct (auth_set_elem with "[$H2] [$Hfrag]") as "%".
+
+    iDestruct ((big_sepS_delete _ _ γr) with "H3") as "[Hnewauth Hi]".
+    {
+      done.
+    }
+    iNamed "Hnewauth". unfold own_closed_tok_frag. 
+    iDestruct "Hnewauth" as "[Hnewauth Hri]".
+    iDestruct (saved_pred_agree _ _ _ _ _ n  with "Hsp Hnewauth") as "H".
+    iMod (auth_set_dealloc with "[H2 Hfrag]") as "Hownauth".
+    { iFrame. }
+     iFrame.
+    iIntros "!>".
+    iModIntro.
+    iRewrite "H". done.
+Qed.
+
+
 
 Definition own_recv_perm (γ: chan_names) (q: Qp) (i: nat) (T:nat -> iProp Σ): iProp Σ :=
  ∃ (γi: gname),
@@ -210,9 +358,11 @@ Proof.
   iMod (own_chan_counter_alloc) as (γs) "[Hsendauth Hsendfrag]".
   iMod (own_chan_counter_alloc) as (γr) "[Hrecvauth Hrecvfrag]".
   iMod (auth_set_init (A:=gname)) as (γc) "HcloseNames".
+  iMod (auth_set_init (A:=gname)) as (γst) "Hunbufferedstname".
   set (γ := {| receiver_name := γr;
                 sender_name := γs;
                 close_name := γc;
+                unbuffered_state_tracker_name := γst;
               |}).
   iMod (saved_pred_alloc R (DfracDiscarded)) as (γi) "#Hcp1".
               { done. }
@@ -225,7 +375,7 @@ Proof.
    replace (s ∪ ∅) with s.
    subst s.
    rewrite -> (big_sepS_singleton _ γi) by set_solver.
-   iFrame. done. 
+   iExists R. iFrame. done. 
 Qed.
 
 Definition own_close_perm (γ: chan_names) (R:nat -> iProp Σ) (n: nat): iProp Σ :=
