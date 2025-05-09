@@ -14,14 +14,14 @@ Section proof.
 Context `{!heapGS Σ, !pavG Σ, !waitGroupG Σ}.
 
 Definition own_alice ptr cli_γ serv (serv_good : bool) : iProp Σ :=
-  ∃ (ptr_cli : loc) sl_hist epochs puts next_epoch,
+  ∃ (ptr_cli : loc) sl_hist epochs,
   "#Hptr_serv_good" ∷ ptr ↦[alice :: "servGood"]□ #serv_good ∗
   "#Hptr_cli" ∷ ptr ↦[alice :: "cli"]□ #ptr_cli ∗
   "Hptr_hist" ∷ ptr ↦[alice :: "hist"] (slice_val sl_hist) ∗
 
   "Hown_cli" ∷ ClientHist.own ptr_cli (ClientHist.mk cli_γ alice_uid
-    epochs puts next_epoch serv serv_good) ∗
-  "Hown_hist" ∷ own_hist sl_hist puts.
+    epochs serv serv_good) ∗
+  "Hown_hist" ∷ own_hist sl_hist epochs.
 
 Definition own_bob ptr cli_γ serv (serv_good : bool) (is_run : bool)
     (is_reg : bool) (ep : w64) (alice_pk : list w8) : iProp Σ :=
@@ -91,17 +91,25 @@ Proof.
 
   iNamed "Hown_err". do 2 wp_loadField.
   wp_apply (wp_checkServErr with "[//]").
-  iIntros (->).
-  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Hptr_e".
+  iIntros (->). iNamed "Herr".
   wp_loadField.
-  iPersist "Hptr_e Hsl_pk".
-  wp_apply (wp_put_hist with "[$Hown_hist]").
-  { iDestruct (struct_fields_split with "Hptr_e") as "H".
-    iNamed "H". iFrame "#". }
+  wp_apply (wp_extendHist with "[$Hown_hist]"); [word|].
   iIntros "*". iNamed 1.
   wp_storeField.
-  iApply "HΦ".
-  by iFrame "∗#".
+  wp_apply wp_allocStruct; [val_ty|].
+  iIntros "* H".
+  iPersist "H".
+  iDestruct (struct_fields_split with "H") as "{H} H". iNamed "H".
+  wp_loadField.
+  iNamed "Hown_hist".
+  wp_apply (wp_SliceAppend with "Hsl_hist").
+  iIntros "* Hsl_hist".
+  wp_storeField.
+
+  iApply "HΦ". iFrame "∗#". simpl.
+  rewrite (assoc (++)).
+  iPersist "Hsl_pk".
+  iFrame "#". naive_solver.
 Qed.
 
 Lemma wp_bob__run ptr cli_γ serv serv_good a0 a1 a2 :
@@ -127,59 +135,9 @@ Proof.
   do 3 wp_storeField.
   iApply "HΦ".
   iFrame "#".
-  iFrame "Hptr_epoch Hptr_isReg Hptr_alicePk".
-  iFrame "Hsl_pk".
-  iFrame "Hreg".
-  simpl in *.
-  iClear "Hptr_serv_good Hptr_cli Hptr_evid Hptr_err Hevid".
-  iClear "%".
-  simpl in *.
-
-  eassert (Frame false
-                                  (Client.own ptr_cli
-                                     (set Client.next_epoch
-                                        (λ _ : w64,
-                                           w64_word_instance.(word.add) ep
-                                             (W64 1))
-                                        {|
-                                          Client.γ := cli_γ;
-                                          Client.uid := W64 1;
-                                          Client.next_ver := next_ver;
-                                          Client.next_epoch := W64 0;
-                                          Client.serv := serv;
-                                          Client.serv_is_good := serv_good
-                                        |}))
-                                  ("Hown_cli"
-                                   ∷ Client.own ptr_cli
-                                       {|
-                                         Client.γ := cli_γ;
-                                         Client.uid := W64 1;
-                                         Client.next_ver :=
-                                           ?[next_ver];
-                                         Client.next_epoch :=
-                                           w64_word_instance.(word.add) ep
-                                             (W64 1);
-                                         Client.serv := serv;
-                                         Client.serv_is_good := serv_good
-                                       |}) ?[Q]).
-  { (* FIXME: non-commutative unification *)
-
-    (* TODO: leftoff here. some hacks:
-    1) remember (word.add ep (W64 1)) as hello
-    2) rewrite /named
-    3) unfold set; this doesn't actually work unless it gets [simpl]'d further.
-    *)
-
-    Fail Timeout 5 lazymatch goal with
-    | |- Frame _ ?a ?b _ => unify b a
-    end.
-
-    lazymatch goal with
-    | |- Frame _ ?a ?b _ => unify a b
-    end.
-
-    tc_solve.
-Admitted.
+  rewrite /named.
+  by iFrame.
+Qed.
 
 Lemma wp_testAll ptr_setup setup :
   {{{
