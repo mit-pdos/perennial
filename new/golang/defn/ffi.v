@@ -48,6 +48,12 @@ Qed.
 
 Local Existing Instance fallback_genPred.
 Existing Instances r_mbind r_mret r_fmap.
+
+Definition cast {T} {A A' : T} {P : T → Type} (eq_pf : A = A') (a : P A) : P A' :=
+  match eq_pf in (_ = t) return P t with
+  | eq_refl => a
+  end.
+
 Definition models_ffi_step (op : (go_string * go_string)) (v : val) :=
   let '(model_name, op_name) := op in
   let m := M model_name in
@@ -59,13 +65,13 @@ Definition models_ffi_step (op : (go_string * go_string)) (v : val) :=
                         (λ _, λ n,
                            match decide (model_name = n) with
                            | right _ => σ.(world) n
-                           | left eq_pf => eq_rect model_name _ w n eq_pf
+                           | left eq_pf => cast eq_pf w
                            end) σ,
                         set global_world
                           (λ _, λ n,
                              match decide (model_name = n) with
                              | right _ => g.(global_world) n
-                             | left eq_pf => eq_rect model_name _ gw n eq_pf
+                             | left eq_pf => cast eq_pf gw
                              end) g));;
   ret (#() #()) : transition (state * global_state) expr.
 
