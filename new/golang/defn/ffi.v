@@ -2,6 +2,7 @@ From New Require Export notation.
 From New.golang.theory Require Import typing.
 From Perennial Require Import base.
 From Perennial.Helpers Require Import Transitions.
+From RecordUpdate Require Import RecordSet.
 
 Local Instance models_syntax : ffi_syntax :=
   {|
@@ -45,14 +46,28 @@ Final Obligation.
   refine (populate (fun _ => inhabitant)).
 Qed.
 
-Definition models_ffi_step :=
-  λ (op : ffi_opcode) (v : val),
-    let '(model_name, op_name) := op in
-    let m := M model_name in
-    undefined
-      (* TODO: lift to [models] *)
-      (* m.(model.step) op_name v *)
-    : transition (state * global_state) expr.
+Local Existing Instance fallback_genPred.
+Existing Instances r_mbind r_mret r_fmap.
+Definition models_ffi_step (op : (go_string * go_string)) (v : val) :=
+  let '(model_name, op_name) := op in
+  let m := M model_name in
+  '(e, w, gw) ← (suchThat (λ '(σ, g) '(e, w, gw),
+                    relation.denote (m.(model.step) op_name v)
+                      ((σ.(world) : models_state) model_name, (g.(global_world) : models_global_state) model_name)
+                      (w, gw) e));
+  modify (λ '(σ, g), (set world
+                        (λ _, λ n,
+                           match decide (model_name = n) with
+                           | right _ => σ.(world) n
+                           | left eq_pf => eq_rect model_name _ w n eq_pf
+                           end) σ,
+                        set global_world
+                          (λ _, λ n,
+                             match decide (model_name = n) with
+                             | right _ => g.(global_world) n
+                             | left eq_pf => eq_rect model_name _ gw n eq_pf
+                             end) g));;
+  ret (#() #()) : transition (state * global_state) expr.
 
 Definition models_ffi_crash_step (s s' : models_state) :=
   ∀ name, (M name).(model.crash_step) (s name) (s' name).
@@ -64,3 +79,19 @@ Instance models_ffi_semantics : ffi_semantics models_syntax _ :=
   |}.
 
 End to_ffi.
+
+(* TODO: belongs in untrusted theory. *)
+(*
+Class model_interp (model : model.t) :=
+  {
+    modelLocalGS: gFunctors -> Set;
+    modelGlobalGS: gFunctors -> Set;
+    model_global_ctx: ∀ `{modelGlobalGS Σ}, model_global_state -> iProp Σ;
+    model_local_ctx: ∀ `{modelLocalGS Σ}, model_state -> iProp Σ;
+    model_global_start: ∀ `{modelGlobalGS Σ}, model_global_state -> iProp Σ;
+    model_local_start: ∀ `{modelLocalGS Σ}, model_state -> iProp Σ;
+    (* model_restart is provided to the client in idempotence_wpr *)
+    model_restart: ∀ `{modelLocalGS Σ}, model_state -> iProp Σ;
+    model_crash_rel: ∀ Σ, modelLocalGS Σ → model_state → modelLocalGS Σ → model_state → iProp Σ;
+  }.
+ *)
