@@ -1001,27 +1001,6 @@ Definition Evid__Check: val :=
         then #true
         else std.BytesEqual (struct.loadF SigDig "Dig" (struct.loadF Evid "sigDig0" "e")) (struct.loadF SigDig "Dig" (struct.loadF Evid "sigDig1" "e"))))).
 
-(* history.go *)
-
-Definition HistEntry := struct.decl [
-  "Epoch" :: uint64T;
-  "HistVal" :: slice.T byteT
-].
-
-(* GetHist searches hist at the epoch and rets the latest val, or false
-   if there's no registered val. *)
-Definition GetHist: val :=
-  rec: "GetHist" "o" "epoch" :=
-    let: "isReg" := ref (zero_val boolT) in
-    let: "val" := ref (zero_val (slice.T byteT)) in
-    ForSlice ptrT <> "e" "o"
-      ((if: (struct.loadF HistEntry "Epoch" "e") ≤ "epoch"
-      then
-        "isReg" <-[boolT] #true;;
-        "val" <-[slice.T byteT] (struct.loadF HistEntry "HistVal" "e")
-      else #()));;
-    (![boolT] "isReg", ![slice.T byteT] "val").
-
 (* rpc.go *)
 
 (* ServerPutArgDecode from serde.out.go *)

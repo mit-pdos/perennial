@@ -76,6 +76,38 @@ Definition checkServErr: val :=
       control.impl.Assume (~ "err");;
       #()).
 
+(* histEntry from history.go *)
+
+Definition histEntry := struct.decl [
+  "isReg" :: boolT;
+  "pk" :: slice.T byteT
+].
+
+(* extendHist to length numEpochs.
+   error if numEpochs smaller than length hist. *)
+Definition extendHist: val :=
+  rec: "extendHist" "hist" "numEpochs" :=
+    let: "histLen" := slice.len "hist" in
+    (if: "numEpochs" < "histLen"
+    then (#true, "hist")
+    else
+      let: "last" := ref (zero_val ptrT) in
+      (if: "histLen" = #0
+      then
+        "last" <-[ptrT] (struct.new histEntry [
+        ])
+      else "last" <-[ptrT] (SliceGet ptrT "hist" ("histLen" - #1)));;
+      let: "newHist" := ref_to (slice.T ptrT) "hist" in
+      let: "i" := ref_to uint64T "histLen" in
+      Skip;;
+      (for: (λ: <>, (![uint64T] "i") < "numEpochs"); (λ: <>, Skip) := λ: <>,
+        "newHist" <-[slice.T ptrT] (SliceAppend ptrT (![slice.T ptrT] "newHist") (![ptrT] "last"));;
+        "i" <-[uint64T] ((![uint64T] "i") + #1);;
+        Continue);;
+      (#false, ![slice.T ptrT] "newHist")).
+
+(* alice__run from alicebob.go *)
+
 Definition alice__run: val :=
   rec: "alice__run" "a" :=
     let: "i" := ref_to uint64T #0 in
@@ -84,9 +116,12 @@ Definition alice__run: val :=
       let: "pk" := SliceSingleton #(U8 1) in
       let: ("epoch", "err0") := kt.Client__Put (struct.loadF alice "cli" "a") "pk" in
       checkServErr (struct.loadF alice "servGood" "a") (struct.loadF kt.ClientErr "Err" "err0");;
-      struct.storeF alice "hist" "a" (SliceAppend ptrT (struct.loadF alice "hist" "a") (struct.new kt.HistEntry [
-        "Epoch" ::= "epoch";
-        "HistVal" ::= "pk"
+      let: ("err1", "newHist") := extendHist (struct.loadF alice "hist" "a") "epoch" in
+      struct.storeF alice "hist" "a" "newHist";;
+      control.impl.Assert (~ "err1");;
+      struct.storeF alice "hist" "a" (SliceAppend ptrT (struct.loadF alice "hist" "a") (struct.new histEntry [
+        "isReg" ::= #true;
+        "pk" ::= "pk"
       ]));;
       Continue);;
     #().
@@ -170,18 +205,21 @@ Definition testAliceBob: val :=
     waitgroup.Wait "wg";;
     let: ("selfMonEp", "err0") := kt.Client__SelfMon (struct.loadF alice "cli" "alice") in
     checkServErr (struct.loadF setupParams "servGood" "setup") (struct.loadF kt.ClientErr "Err" "err0");;
-    control.impl.Assume ((struct.loadF bob "epoch" "bob") ≤ "selfMonEp");;
+    let: ("err1", "newHist") := extendHist (struct.loadF alice "hist" "alice") ("selfMonEp" + #1) in
+    struct.storeF alice "hist" "alice" "newHist";;
+    control.impl.Assert (~ "err1");;
     (if: (~ (struct.loadF setupParams "servGood" "setup"))
     then
       updAdtrsAll (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "adtrAddrs" "setup");;
       doAudits (struct.loadF alice "cli" "alice") (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
       doAudits (struct.loadF bob "cli" "bob") (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup")
     else #());;
-    let: ("isReg", "alicePk") := kt.GetHist (struct.loadF alice "hist" "alice") (struct.loadF bob "epoch" "bob") in
-    std.Assert ("isReg" = (struct.loadF bob "isReg" "bob"));;
-    (if: "isReg"
+    control.impl.Assume ((struct.loadF bob "epoch" "bob") ≤ "selfMonEp");;
+    let: "aliceKey" := SliceGet ptrT (struct.loadF alice "hist" "alice") (struct.loadF bob "epoch" "bob") in
+    std.Assert ((struct.loadF histEntry "isReg" "aliceKey") = (struct.loadF bob "isReg" "bob"));;
+    (if: struct.loadF histEntry "isReg" "aliceKey"
     then
-      std.Assert (std.BytesEqual "alicePk" (struct.loadF bob "alicePk" "bob"));;
+      std.Assert (std.BytesEqual (struct.loadF histEntry "pk" "aliceKey") (struct.loadF bob "alicePk" "bob"));;
       #()
     else #()).
 
@@ -204,5 +242,7 @@ Definition testCorrectness: val :=
     #().
 
 (* helpers.go *)
+
+(* history.go *)
 
 End code.
