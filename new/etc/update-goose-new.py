@@ -86,6 +86,15 @@ projs = [
         ],
     ),
     create_proj(repo="mit-pdos/go-journal"),
+    create_proj(
+        repo="mit-pdos/tulip",
+        pkgs=[
+            "./params",
+            "./util",
+            "./tulip",
+            "./index",
+        ],
+    ),
 ]
 
 

@@ -32,6 +32,7 @@ projs = {
     "pav": Proj("pav", "https://github.com/mit-pdos/pav", "main"),
     "etcd-raft": Proj("etcd-raft", "https://github.com/upamanyus/etcd-raft", "main"),
     "etcd": Proj("etcd", "https://github.com/upamanyus/etcd", "main"),
+    "tulip": Proj("tulip", "https://github.com/mit-pdos/tulip", "main"),
 }
 
 
@@ -113,6 +114,8 @@ sp.run(
         projs["etcd-raft"].path(),
         "--go-journal",
         projs["journal"].path(),
+        "--tulip",
+        projs["tulip"].path(),
     ],
     check=True,
 )
