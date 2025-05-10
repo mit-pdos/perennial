@@ -98,6 +98,7 @@ sp.run(
         projs["new_goose"].path(),
         "--std-lib",
         "--goose-examples",
+        "--channel",
         "--gokv",
         projs["new_gokv"].path(),
         "--marshal",
