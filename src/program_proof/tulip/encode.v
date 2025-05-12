@@ -2,6 +2,9 @@ From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.tulip Require Import base.
 From Perennial.program_proof.rsm Require Import serialize.
 
+From New.generatedproof.github_com.mit_pdos.tulip Require Import tulip.
+Import tulip.
+
 Definition encode_u64s_xlen (xs : list u64) : list u8 :=
   serialize u64_le xs.
 
@@ -83,7 +86,7 @@ Definition encode_dbval (x : dbval) : list u8 :=
   end.
 
 Definition encode_dbmod (x : dbmod) : list u8 :=
-  encode_string x.1 ++ encode_dbval x.2.
+  encode_string (WriteEntry.Key' x) ++ encode_dbval (to_dbval (WriteEntry.Value' x)).
 Hint Unfold encode_dbmod : len.
 
 Definition encode_dbmods_xlen (xs : list dbmod) : list u8 :=
@@ -122,13 +125,16 @@ Proof.
 Qed.
 
 Definition encode_dbmap (m : dbmap) (data : list u8) :=
-  ∃ xs, data = encode_dbmods xs ∧ xs ≡ₚ map_to_list m.
+  ∃ (xs: list dbmod), data = encode_dbmods xs ∧
+                      (λ e, (WriteEntry.Key' e, to_dbval (WriteEntry.Value' e))) <$> xs ≡ₚ
+                        map_to_list m.
 
 Definition encode_txnptgs (g : txnptgs) (data : list u8) :=
   ∃ ns, data = encode_u64s ns ∧ list_to_set ns = g ∧ NoDup ns.
 
 Definition encode_dbpver (x : dbpver) : list u8 :=
-  u64_le x.1 ++ encode_dbval x.2.
+  u64_le (Version.Timestamp' x) ++ encode_dbval (to_dbval (Version.Value' x)).
 
 Definition encode_ppsl (pp : ppsl) : list u8 :=
-  u64_le pp.1 ++ [if pp.2 then W8 1 else W8 0].
+  u64_le (PrepareProposal.Rank' pp) ++
+  [if PrepareProposal.Prepared' pp then W8 1 else W8 0].

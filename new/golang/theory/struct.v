@@ -383,6 +383,16 @@ Ltac solve_zero_val :=
   (* unfold and simpify, resulting in goal like
    [struct.val_aux t [a:=#(default_val A); ...; y:=#(default_val Y)] = struct.val_aux t []]. *)
   rewrite zero_val_eq to_val_unseal; with_strategy opaque [default_val] cbn;
+  (* attempt to replace concrete values in the left-hand side with [default_val]
+  invocations *)
+  repeat match goal with
+         | |- context[(_, to_val ?x)] =>
+             lazymatch x with
+             | default_val _ => fail
+             | _ => let t := type of x in
+                    change x with (default_val t)
+             end
+         end;
   (* replace the [default_val] field values with [zero_val], then unfold
    [struct.val_aux], at which point there should be values with no [to_val] at
    all, which are definitionally equal. *)

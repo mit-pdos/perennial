@@ -1,21 +1,28 @@
 From iris.algebra Require Import mono_nat mono_list gmap_view gset.
 From iris.algebra.lib Require Import dfrac_agree.
 From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_logic Require Import staged_invariant.
+From New.proof Require Import grove_prelude.
 From Perennial.Helpers Require finite.
+
+From New.generatedproof.github_com.mit_pdos.tulip Require Import tulip.
 
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Definition dbkey := byte_string.
 Definition dbval := option byte_string.
+Definition to_dbval (v: tulip.Value.t) : dbval :=
+  if tulip.Value.Present' v then
+    Some (tulip.Value.Content' v)
+  else None.
 Definition dbhist := list dbval.
 Definition dbtpl := (dbhist * nat)%type.
-Definition dbmod := (dbkey * dbval)%type.
+Definition dbmod := tulip.WriteEntry.t.
 Definition dbmap := gmap dbkey dbval.
 Definition dbkmod := gmap nat dbval.
-Definition dbpver := (u64 * dbval)%type.
+Definition dbpver := tulip.Version.t.
 Definition coordid := (u64 * u64)%type.
-Definition ppsl := (u64 * bool)%type.
+Definition ppsl := tulip.PrepareProposal.t.
 Definition txnptgs := gset u64.
 
 (** Transaction result. *)
