@@ -1,5 +1,5 @@
-From Perennial.program_proof.tulip Require Import prelude.
-From Perennial.program_proof.tulip.invariance Require Import cmd.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure.invariance Require Import cmd.
 
 Lemma ext_by_cmtd_inv_learn_commit repl cmtd kmod ts v :
   kmod !! O = None ->

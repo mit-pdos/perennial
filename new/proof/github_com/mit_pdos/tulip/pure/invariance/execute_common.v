@@ -1,4 +1,4 @@
-From Perennial.program_proof.tulip Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
 
 Lemma prepared_impl_locked_inv_release cpm ptsm ts pwrs :
   cpm !! ts = Some pwrs ->

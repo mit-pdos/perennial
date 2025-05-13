@@ -1,4 +1,4 @@
-From Perennial.program_proof.tulip Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
 
 Lemma lookup_resm_to_tmods_Some resm ts wrs :
   resm_to_tmods resm !! ts = Some wrs ↔

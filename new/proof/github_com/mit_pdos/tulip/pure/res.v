@@ -723,7 +723,7 @@ Section alloc.
            (γgroup_commit) "Hgroup_commit".
     { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }
 
-    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (gset_to_gmap () ∅ : gmap chan.t unit))
+    iMod (own_alloc (gset_to_gmap (gmap_view_auth (DfracOwn 1) (gset_to_gmap () ∅ : gmap impl.chan unit))
                        gids_all)) as
            (γgroup_trmlm) "Hgroup_trmlm".
     { apply gset_to_gmap_valid; apply gmap_view_auth_valid. }

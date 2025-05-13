@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import list quorum fin_maps fin_sets.
-From Perennial.program_proof.tulip Require Import base cmd res stability.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import base cmd res stability.
 
 Lemma tpls_group_keys_group_dom gid tpls :
   dom (tpls_group gid tpls) = keys_group gid (dom tpls).

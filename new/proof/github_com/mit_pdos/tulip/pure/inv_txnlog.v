@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
-From Perennial.program_proof.tulip Require Import base res cmd msg encode.
-From Perennial.program_proof.tulip.paxos Require Import base res.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import base res cmd msg encode.
+From New.proof.github_com.mit_pdos.tulip.pure.paxos Require Import base res.
 
 Definition encode_commit_cmd_xkind (ts : nat) (m : dbmap) (data : list u8) :=
   ∃ mdata, data = u64_le (W64 ts) ++ mdata ∧ encode_dbmap m mdata.

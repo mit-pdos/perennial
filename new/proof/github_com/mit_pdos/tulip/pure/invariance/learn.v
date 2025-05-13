@@ -1,5 +1,5 @@
-From Perennial.program_proof.tulip Require Import prelude.
-From Perennial.program_proof.tulip.invariance Require Import learn_commit learn_abort.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure.invariance Require Import learn_commit learn_abort.
 
 Section inv.
   Context `{!heapGS Σ}.

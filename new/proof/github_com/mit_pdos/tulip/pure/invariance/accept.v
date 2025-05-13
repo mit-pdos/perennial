@@ -1,4 +1,4 @@
-From Perennial.program_proof.tulip Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
 
 Lemma confined_by_ballot_map_inv_accept_absent
   {A} (bm : gmap nat ballot) (mm : gmap nat (gmap nat A)) ts l :

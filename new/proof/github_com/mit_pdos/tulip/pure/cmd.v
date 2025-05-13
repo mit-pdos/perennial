@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import
   extend nonexpanding_merge fin_maps.
-From Perennial.program_proof.tulip Require Import base stability encode.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import base stability encode.
 
 (* TODO: rename this to recovery.v for consistency with paxos. *)
 

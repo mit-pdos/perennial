@@ -4,5 +4,5 @@ From Perennial.program_logic Require Export own_crash_inv. (* import [own_crash_
 From Perennial.program_proof.rsm Require Export big_sep.
 From Perennial.program_proof.rsm.pure Require Export
   extend fin_maps fin_sets list misc nat sets word quorum.
-From Perennial.program_proof.tulip.paxos Require Export
+From New.proof.github_com.mit_pdos.tulip.pure.paxos Require Export
   base consistency msg inv res recovery.

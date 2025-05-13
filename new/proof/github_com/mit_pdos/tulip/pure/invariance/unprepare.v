@@ -1,5 +1,5 @@
-From Perennial.program_proof.tulip Require Import prelude.
-From Perennial.program_proof.tulip.invariance Require Import prepare.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure.invariance Require Import prepare.
 
 Section inv.
   Context `{!heapGS Σ}.

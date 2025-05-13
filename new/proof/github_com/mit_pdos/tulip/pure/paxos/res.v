@@ -4,8 +4,8 @@ From Perennial.Helpers Require Import gmap_algebra.
 From Perennial.base_logic Require Import ghost_map mono_nat saved_prop.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import misc.
-From Perennial.program_proof.tulip.paxos Require Import base recovery.
-From Perennial.program_proof.tulip.paxos Require Export res_network.
+From New.proof.github_com.mit_pdos.tulip.pure.paxos Require Import base recovery.
+From New.proof.github_com.mit_pdos.tulip.pure.paxos Require Export res_network.
 
 Section res.
   Context `{!paxos_ghostG Σ}.

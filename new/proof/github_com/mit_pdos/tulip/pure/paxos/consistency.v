@@ -1,6 +1,6 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import quorum list.
-From Perennial.program_proof.tulip.paxos Require Import base.
+From New.proof.github_com.mit_pdos.tulip.pure.paxos Require Import base.
 
 Section lemma.
   Context `{Countable A}.

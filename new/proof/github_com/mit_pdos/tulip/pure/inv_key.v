@@ -1,7 +1,7 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import list extend largest_before quorum.
-From Perennial.program_proof.tulip Require Import base res.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import base res.
 
 (** Global per-key/tuple invariant. *)
 

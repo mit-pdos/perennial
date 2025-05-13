@@ -1,5 +1,5 @@
-From Perennial.program_proof.tulip Require Import prelude.
-From Perennial.program_proof.tulip.invariance Require Import
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure.invariance Require Import
   execute_commit execute_abort.
 
 Section execute.

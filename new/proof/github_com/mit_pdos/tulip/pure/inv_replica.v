@@ -1,8 +1,8 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import list.
-From Perennial.program_proof.tulip Require Import base cmd res stability.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import base cmd res stability.
 (* TODO: might be better to separate out the common definitions from [inv_group]. *)
-From Perennial.program_proof.tulip Require Import inv_group.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import inv_group.
 
 Definition rank_freshness {A} (blt : ballot) (m : gmap nat A) :=
   ∀ rank, (length blt < rank)%nat -> m !! rank = None.

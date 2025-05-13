@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.tulip Require Import base encode.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import base encode.
 
 Inductive txnreq :=
 | ReadReq        (ts : u64) (key : byte_string)

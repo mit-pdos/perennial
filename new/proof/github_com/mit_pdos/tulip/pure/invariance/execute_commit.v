@@ -1,5 +1,5 @@
-From Perennial.program_proof.tulip Require Import prelude.
-From Perennial.program_proof.tulip.invariance Require Import execute_common.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure.invariance Require Import execute_common.
 
 Section execute_commit.
   Context `{!tulip_ghostG Σ}.

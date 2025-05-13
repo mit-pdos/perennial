@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.tulip Require Import encode.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import encode.
 
 
 Inductive pxreq :=

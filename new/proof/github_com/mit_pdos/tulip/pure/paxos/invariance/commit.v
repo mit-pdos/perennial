@@ -1,4 +1,4 @@
-From Perennial.program_proof.tulip.paxos Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure.paxos Require Import prelude.
 
 Section commit.
   Context `{!paxos_ghostG Σ}.

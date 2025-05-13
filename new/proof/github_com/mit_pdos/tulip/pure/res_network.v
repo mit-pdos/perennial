@@ -7,13 +7,13 @@ Section res.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
 
-  Definition is_terminal γ (gid : u64) (t : chan.t) : iProp Σ :=
+  Definition is_terminal γ (gid : u64) (t : impl.chan) : iProp Σ :=
     own γ.(group_trmlm) {[ gid := gmap_view_frag t DfracDiscarded tt ]}.
 
-  Definition own_terminals_auth γ (gid : u64) (ts : gset chan.t) : iProp Σ :=
+  Definition own_terminals_auth γ (gid : u64) (ts : gset impl.chan) : iProp Σ :=
     own γ.(group_trmlm) {[ gid := gmap_view_auth (DfracOwn 1) (gset_to_gmap tt ts) ]}.
 
-  Definition own_terminals γ (gid : u64) (ts : gset chan.t) : iProp Σ :=
+  Definition own_terminals γ (gid : u64) (ts : gset impl.chan) : iProp Σ :=
     own_terminals_auth γ gid ts ∗ ([∗ set] t ∈ ts, is_terminal γ gid t).
 
   #[global]

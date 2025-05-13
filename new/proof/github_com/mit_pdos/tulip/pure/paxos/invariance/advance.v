@@ -1,4 +1,4 @@
-From Perennial.program_proof.tulip.paxos Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure.paxos Require Import prelude.
 
 Lemma free_terms_inv_advance {nid ts tm} termc :
   gt_prev_term tm nid termc ->

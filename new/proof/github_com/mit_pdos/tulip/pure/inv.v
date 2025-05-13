@@ -1,9 +1,9 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
 From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps serialize.
-From Perennial.program_proof.tulip Require Import
+From New.proof.github_com.mit_pdos.tulip.pure Require Import
   base res cmd msg big_sep stability.
-From Perennial.program_proof.tulip Require Export
+From New.proof.github_com.mit_pdos.tulip.pure Require Export
   inv_txnsys inv_key inv_group inv_replica.
 
 Section inv.

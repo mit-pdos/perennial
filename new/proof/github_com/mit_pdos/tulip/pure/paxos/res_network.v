@@ -1,6 +1,6 @@
 From Perennial.base_logic Require Import ghost_map.
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.tulip.paxos Require Import base.
+From New.proof.github_com.mit_pdos.tulip.pure.paxos Require Import base.
 
 Section res_network.
   Context `{!paxos_ghostG Σ}.

@@ -1,4 +1,4 @@
-From Perennial.program_proof.tulip Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
 
 Lemma conflict_past_inv_linearize_abort {past future tmodas} ts form :
   conflict_cases past future ts form ->

@@ -1,7 +1,7 @@
 From Perennial.base_logic Require Import ghost_map saved_prop mono_nat.
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import dual_lookup vslice nat.
-From Perennial.program_proof.tulip Require Import action base res.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import action base res.
 
 (** Global transaction-system invariant. *)
 

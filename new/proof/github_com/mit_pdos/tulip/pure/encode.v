@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From Perennial.program_proof.tulip Require Import base.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import base.
 From Perennial.program_proof.rsm Require Import serialize.
 
 From New.generatedproof.github_com.mit_pdos.tulip Require Import tulip.

@@ -1,4 +1,4 @@
-From Perennial.program_proof.tulip Require Import prelude.
+From New.proof.github_com.mit_pdos.tulip.pure Require Import prelude.
 
 Lemma ext_by_lnrz_inv_read ts cmtd lnrz kmodl :
   (ts ≤ length lnrz)%nat ->
