@@ -1,5 +1,6 @@
-From Perennial.program_proof.tulip.program Require Import prelude.
-From Perennial.program_proof.tulip.program.tuple Require Import res.
+From stdpp Require Import list.
+From New.proof.github_com.mit_pdos.tulip Require Import program_prelude.
+From New.proof.github_com.mit_pdos.tulip.tuple Require Import res.
 
 (* FIXME: ugly proofs; clean this up *)
 
@@ -94,7 +95,7 @@ Proof.
   intros Htid1 Htid2 Hlast.
   rewrite /find_version /find_version_forward.
   destruct (reverse _) as [| ver versl] eqn:Hversl; first done.
-  rewrite Forall_forall in Hlast.
+  rewrite list.Forall_forall in Hlast.
   assert (Hin : ver ∈ vers).
   { apply elem_of_reverse. rewrite Hversl. apply elem_of_list_here. }
   simpl.

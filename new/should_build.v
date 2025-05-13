@@ -10,7 +10,7 @@ From New.proof.github_com.goose_lang.goose.testdata.examples
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples
   Require channel.
 From New.proof.github_com.mit_pdos.tulip
-  Require program_prelude.
+  Require program_prelude tuple.res.
 
 From New.proof Require go_etcd_io.etcd.client.v3.leasing.
 From New.proof Require Import chan context.
