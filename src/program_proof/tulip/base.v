@@ -10,19 +10,41 @@ From New.generatedproof.github_com.mit_pdos.tulip Require Import tulip.
 Local Ltac Zify.zify_post_hook ::= Z.div_mod_to_equations.
 
 Definition dbkey := byte_string.
+
 Definition dbval := option byte_string.
 Definition to_dbval (v: tulip.Value.t) : dbval :=
   if tulip.Value.Present' v then
     Some (tulip.Value.Content' v)
   else None.
+Definition dbval_to_t (x: dbval) : tulip.Value.t :=
+  tulip.Value.mk (bool_decide (is_Some x)) (default ""%go x).
+
 Definition dbhist := list dbval.
 Definition dbtpl := (dbhist * nat)%type.
-Definition dbmod := tulip.WriteEntry.t.
+
+Definition dbmod := (dbkey * dbval)%type.
+Definition to_dbmod (x: tulip.WriteEntry.t) : dbmod :=
+  (x.(tulip.WriteEntry.Key'), to_dbval x.(tulip.WriteEntry.Value')).
+Definition dbmod_to_t (x: dbmod) : tulip.WriteEntry.t :=
+  tulip.WriteEntry.mk x.1 (dbval_to_t x.2).
+
 Definition dbmap := gmap dbkey dbval.
 Definition dbkmod := gmap nat dbval.
-Definition dbpver := tulip.Version.t.
+
+Definition dbpver := (u64 * dbval)%type.
+Definition to_dbpver (x: tulip.Version.t) : dbpver :=
+  (x.(tulip.Version.Timestamp'), to_dbval x.(tulip.Version.Value')).
+Definition dbpver_to_t (x: dbpver) : tulip.Version.t :=
+  tulip.Version.mk x.1 (dbval_to_t x.2).
+
 Definition coordid := (u64 * u64)%type.
-Definition ppsl := tulip.PrepareProposal.t.
+
+Definition ppsl := (u64 * bool)%type.
+Definition to_ppsl (x: tulip.PrepareProposal.t) : ppsl :=
+  (x.(tulip.PrepareProposal.Rank'), x.(tulip.PrepareProposal.Prepared')).
+Definition ppsl_to_t (x: ppsl) : tulip.PrepareProposal.t :=
+  tulip.PrepareProposal.mk x.1 x.2.
+
 Definition txnptgs := gset u64.
 
 (** Transaction result. *)

@@ -86,7 +86,7 @@ Definition encode_dbval (x : dbval) : list u8 :=
   end.
 
 Definition encode_dbmod (x : dbmod) : list u8 :=
-  encode_string (WriteEntry.Key' x) ++ encode_dbval (to_dbval (WriteEntry.Value' x)).
+  encode_string x.1 ++ encode_dbval x.2.
 Hint Unfold encode_dbmod : len.
 
 Definition encode_dbmods_xlen (xs : list dbmod) : list u8 :=
@@ -126,15 +126,14 @@ Qed.
 
 Definition encode_dbmap (m : dbmap) (data : list u8) :=
   ∃ (xs: list dbmod), data = encode_dbmods xs ∧
-                      (λ e, (WriteEntry.Key' e, to_dbval (WriteEntry.Value' e))) <$> xs ≡ₚ
-                        map_to_list m.
+                      xs ≡ₚ map_to_list m.
 
 Definition encode_txnptgs (g : txnptgs) (data : list u8) :=
   ∃ ns, data = encode_u64s ns ∧ list_to_set ns = g ∧ NoDup ns.
 
 Definition encode_dbpver (x : dbpver) : list u8 :=
-  u64_le (Version.Timestamp' x) ++ encode_dbval (to_dbval (Version.Value' x)).
+  u64_le x.1 ++ encode_dbval x.2.
 
 Definition encode_ppsl (pp : ppsl) : list u8 :=
-  u64_le (PrepareProposal.Rank' pp) ++
-  [if PrepareProposal.Prepared' pp then W8 1 else W8 0].
+  u64_le pp.1 ++
+  [if pp.2 then W8 1 else W8 0].

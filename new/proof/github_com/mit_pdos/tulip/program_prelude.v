@@ -1,30 +1,34 @@
 From New.proof Require Export grove_prelude.
 From Perennial.program_logic Require Export atomic. (* prefer the ncfupd atomics *)
 From Perennial.program_logic Require Export own_crash_inv. (* import [own_crash_ex] *)
+From Perennial.goose_lang.lib Require Import persistent_readonly.
+From Perennial.goose_lang Require Import ipersist.
 From Perennial.program_proof.rsm Require Export big_sep.
 From Perennial.program_proof.rsm.pure Require Export
   dual_lookup extend fin_maps fin_maps_list fin_sets largest_before list misc nat
   nonexpanding_merge sets vslice word quorum.
-From Perennial.program_proof.tulip Require Export
-  action base cmd encode res msg inv inv_txnlog stability.
 (* FIXME: it's a bad idea to export below for names can collide *)
 From Goose.github_com.mit_pdos.tulip Require Export
   backup gcoord index params quorum replica tulip tuple txn txnlog util message.
+From Perennial.program_proof.tulip Require Export
+  action cmd encode res msg inv inv_txnlog stability base.
 
 From New.generatedproof.github_com.mit_pdos.tulip Require Import tulip.
 
 #[global]
 Instance dbval_to_val : IntoVal dbval :=
-  { to_val_def v :=
-      struct.val_aux tulip.Value
-        [("Present"%go, #(match v with | Some _ => true | None => false end));
-         ("Content"%go, #(default "" v))]; }.
+  { to_val_def v := #(dbval_to_t v); }.
 
 #[global]
 Program Instance dbval_into_val_typed : IntoValTyped dbval tulip.Value :=
   { default_val := None; }.
 Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
+Next Obligation.
+  solve_zero_val.
+  rewrite /dbval_to_t /=.
+  rewrite [in lhs in lhs = _]to_val_unseal /=.
+  rewrite struct.val_aux_unseal !zero_val_eq //.
+Qed.
 Final Obligation. solve_to_val_inj. Qed.
 
 (*
@@ -35,12 +39,11 @@ Definition dbval_from_val (v : val) : option dbval :=
   end.
 *)
 
-(* TODO: dbmod replaced with tulip.WriteEntry.t *)
+#[global]
+Instance dbmod_to_val : IntoVal dbmod :=
+  { to_val_def x := #(dbmod_to_t x); }.
 
 (*
-Definition dbmod_to_val (x : dbmod) : val :=
-  (#(LitString x.1), (dbval_to_val x.2, #())).
-
 Definition dbmod_from_val (v : val) : option dbmod :=
   match v with
   | (#(LitString k), (dbv, #()))%V => match dbval_from_val dbv with
@@ -49,26 +52,11 @@ Definition dbmod_from_val (v : val) : option dbmod :=
                                      end
   | _ => None
   end.
-
-#[global]
-Instance dbmod_into_val : IntoVal dbmod.
-Proof.
-  refine {|
-      to_val := dbmod_to_val;
-      from_val := dbmod_from_val;
-      IntoVal_def := (""%go, None);
-    |}.
-  intros [k v].
-  by destruct v.
-Defined.
-
-#[global]
-Instance dbmod_into_val_for_type :
-  IntoValForType dbmod (stringT * (boolT * (stringT * unitT) * unitT)%ht).
-Proof. by constructor; [| | intros [k [s |]]; auto 10]. Defined.
 *)
 
-(* TODO: ppsl can be replaced with tulip.PrepareProposal.t *)
+#[global]
+Instance ppsl_to_val : IntoVal ppsl :=
+  { to_val_def x := #(ppsl_to_t x); }.
 
 (*
 Definition ppsl_to_val (v : ppsl) : val := (#v.1, (#v.2, #())).
@@ -193,16 +181,17 @@ Section def.
 
   Definition own_dbmap_in_slice s (m : dbmap) : iProp Σ :=
     ∃ l : list dbmod,
-      own_slice s (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
+      own_slice s (DfracOwn 1) (dbmod_to_t <$> l) ∗ ⌜map_to_list m ≡ₚ l⌝.
 
   Definition own_dbmap_in_slice_frac s (m : dbmap) : iProp Σ :=
     ∃ (l : list dbmod) (q : dfrac),
-      own_slice_small s (struct.t WriteEntry) q l ∗
+      own_slice s q (dbmod_to_t <$> l) ∗
       ⌜map_to_list m ≡ₚ l⌝.
 
   Definition is_dbmap_in_slice s (m : dbmap) : iProp Σ :=
     ∃ l : list dbmod,
-      readonly (own_slice_small s (struct.t WriteEntry) (DfracOwn 1) l) ∗
+      (* NOTE: changed from a readonly *)
+      own_slice s DfracDiscarded (dbmod_to_t <$> l) ∗
       ⌜map_to_list m ≡ₚ l⌝.
 
   #[global]
@@ -210,14 +199,27 @@ Section def.
     Persistent (is_dbmap_in_slice s m).
   Proof. apply _. Defined.
 
+  (* TODO: no longer needs a fupd *)
   Lemma is_dbmap_in_slice_unpersist s m E :
     is_dbmap_in_slice s m ={E}=∗
     own_dbmap_in_slice_frac s m.
   Proof.
     iIntros "Hm".
+    iModIntro.
     iDestruct "Hm" as (l) "[Hl %Hl]".
-    iMod (readonly_load with "Hl") as (q) "Hl".
-    by iFrame "∗ %".
+    iFrame.
+    done.
+  Qed.
+
+  #[global] Instance own_dbmap_in_slice_persist_inst s m :
+    UpdateIntoPersistently (own_dbmap_in_slice s m) (is_dbmap_in_slice s m).
+  Proof.
+    red.
+    iIntros "Hm".
+    iDestruct "Hm" as (l) "[Hl %Hl]".
+    iPersist "Hl".
+    iFrame "Hl".
+    done.
   Qed.
 
   Lemma own_dbmap_in_slice_persist s m E :
@@ -225,15 +227,13 @@ Section def.
     is_dbmap_in_slice s m.
   Proof.
     iIntros "Hm".
-    iDestruct "Hm" as (l) "[Hl %Hl]".
-    iDestruct (own_slice_to_small with "Hl") as "Hl".
-    iMod (readonly_alloc_1 with "Hl") as "Hl".
-    by iFrame "∗ %".
+    iPersist "Hm".
+    done.
   Qed.
 
   Definition is_txnptgs_in_slice s (g : txnptgs) : iProp Σ :=
     ∃ l : list u64,
-      own_slice_small s uint64T DfracDiscarded l ∗
+      own_slice s DfracDiscarded l ∗
       ⌜list_to_set l = g⌝ ∗
       ⌜NoDup l⌝.
 
@@ -242,7 +242,7 @@ Section def.
     Persistent (is_txnptgs_in_slice s g).
   Proof. apply _. Defined.
 
-  Definition own_pwrs_slice (pwrsS : Slice.t) (c : ccommand) : iProp Σ :=
+  Definition own_pwrs_slice (pwrsS : slice.t) (c : ccommand) : iProp Σ :=
     match c with
     | CmdCommit _ pwrs => own_dbmap_in_slice pwrsS pwrs
     | _ => True
