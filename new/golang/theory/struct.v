@@ -386,13 +386,13 @@ Ltac solve_zero_val :=
   (* replace the [default_val] field values with [zero_val], then unfold
    [struct.val_aux], at which point there should be values with no [to_val] at
    all, which are definitionally equal. *)
-  rewrite ?default_val_eq_zero_val struct.val_aux_unseal //.
+  rewrite ?default_val_eq_zero_val ?struct.val_aux_unseal //.
 
 Ltac solve_to_val_inj :=
   (* prove Inj (=) (=) (λ v, #v) *)
   intros;
   intros [] [];
-  rewrite to_val_unseal /= struct.val_aux_unseal /=;
+  rewrite to_val_unseal /= ?struct.val_aux_unseal /=;
     cbn_w8;
   inv 1;
   try reflexivity.
