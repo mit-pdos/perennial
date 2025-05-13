@@ -265,6 +265,7 @@ def main():
             "./append_log",
             "./semantics",
             "./unittest/...",
+            "./channel",
         )
 
     if args.channel:
