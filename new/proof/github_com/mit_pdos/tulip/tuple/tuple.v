@@ -1,8 +1,18 @@
 From stdpp Require Import list.
-From New.proof.github_com.mit_pdos.tulip Require Import program_prelude.
 From New.proof.github_com.mit_pdos.tulip.tuple Require Import res.
 
+From New.proof.github_com.mit_pdos.tulip Require Import program_prelude.
+
+From New.proof.github_com.mit_pdos.tulip Require Import tulip.
+From New.proof.github_com.mit_pdos.gokv Require Import grove_ffi.
+From New.proof Require Import sync.
+
+From New.proof Require Import grove_prelude.
+From New.generatedproof.github_com.mit_pdos.tulip Require Import tuple.
+
 (* FIXME: ugly proofs; clean this up *)
+
+Unset Printing Projections.
 
 (* spec_find_ver_step *)
 Definition find_version_forward_step (ts : nat) (res : option dbpver) (ver : dbpver) :=
@@ -146,7 +156,10 @@ Proof.
 Qed.
 
 Section program.
-  Context `{!heapGS Σ, !tulip_ghostG Σ}.
+  Context `{!heapGS Σ, !tulip_ghostG Σ} `{!goGlobalsGS Σ}.
+
+  #[global] Program Instance : IsPkgInit tuple :=
+    ltac2:(build_pkg_init ()).
 
   (*@ type Tuple struct {                                                     @*)
   (*@     // Mutex protecting the fields below.                               @*)
@@ -157,45 +170,44 @@ Section program.
   (*@     vers   []tulip.Version                                              @*)
   (*@ }                                                                       @*)
   Definition own_tuple tuple key γ α : iProp Σ :=
-    ∃ (tssafe : u64) (versS : Slice.t) (vers : list dbpver) (verlast : dbpver) (hist : dbhist),
-      "HtssafeP"   ∷ tuple ↦[Tuple :: "tssafe"] #tssafe ∗
-      "HversP"     ∷ tuple ↦[Tuple :: "vers"] (to_val versS) ∗
-      "Hvers"      ∷ own_slice versS (struct.t Version) (DfracOwn 1) vers ∗
+    ∃ (tssafe : u64) (versS : slice.t) (vers : list dbpver) (verlast : dbpver) (hist : dbhist),
+      "HtssafeP"   ∷ tuple ↦s[tuple.Tuple :: "tssafe"] tssafe ∗
+      "HversP"     ∷ tuple ↦s[tuple.Tuple :: "vers"] versS ∗
+      "Hvers"      ∷ own_slice versS (DfracOwn 1) (dbpver_to_t <$> vers) ∗
+      "Hvers_cap"  ∷ own_slice_cap tulip.Version.t versS ∗
       "Hphys"      ∷ own_phys_hist_half α key hist ∗
       "#Hrepl"     ∷ is_repl_hist_lb γ key hist ∗
       "%Habs"      ∷ ⌜(∀ t, (t < length hist)%nat -> hist !! t = Some (lookup_with_versions vers t))⌝ ∗
-      "%Hverlast"  ∷ ⌜last vers = Some verlast⌝ ∗
+      "%Hverlast"  ∷ ⌜list.last vers = Some verlast⌝ ∗
       "%Hlenhist"  ∷ ⌜length hist = S (uint.nat verlast.1)⌝ ∗
       "%Hlelast"   ∷ ⌜Forall (λ v, (uint.nat v.1 ≤ uint.nat verlast.1)%nat) vers⌝ ∗
       "%Hfirst"    ∷ ⌜vers !! O = Some (W64 0, None)⌝ ∗
-      "%Hlasthist" ∷ ⌜last hist = Some verlast.2⌝.
+      "%Hlasthist" ∷ ⌜list.last hist = Some verlast.2⌝.
 
   Definition is_tuple tuple key γ α : iProp Σ :=
     ∃ (muP : loc),
-      "#Hmu"   ∷ readonly (tuple ↦[Tuple :: "mu"] #muP) ∗
-      "#Hlock" ∷ is_lock tulipNS #muP (own_tuple tuple key γ α).
+      "#Hmu"   ∷ tuple ↦s[tuple.Tuple :: "mu"]□ muP ∗
+      "#Hlock" ∷ is_Mutex muP (own_tuple tuple key γ α).
 
-  Theorem wp_Tuple__AppendVersion (tuple : loc) (tsW : u64) (value : byte_string) key hist γ α :
+  Theorem wp_Tuple__AppendVersion (tuple_l : loc) (tsW : u64) (value : byte_string) key hist γ α :
     let ts := uint.nat tsW in
     let hist' := last_extend ts hist ++ [Some value] in
     (length hist ≤ ts)%nat ->
     is_repl_hist_lb γ key hist' -∗
-    is_tuple tuple key γ α -∗
-    {{{ own_phys_hist_half α key hist }}}
-      Tuple__AppendVersion #tuple #tsW #(LitString value)
+    is_tuple tuple_l key γ α -∗
+    {{{ is_pkg_init tuple ∗ own_phys_hist_half α key hist }}}
+      tuple_l @ tuple @ "Tuple'ptr" @ "AppendVersion" #tsW #value
     {{{ RET #(); own_phys_hist_half α key hist' }}}.
   Proof.
     iIntros (ts hist' Hts) "#Hlb #Htpl".
-    iIntros (Φ) "!> HphysX HΦ".
-    wp_rec.
+    wp_start as "HphysX".
 
     (*@ func (tuple *Tuple) AppendVersion(ts uint64, value string) {            @*)
     (*@     tuple.mu.Lock()                                                     @*)
     (*@                                                                         @*)
     iNamed "Htpl".
-    wp_loadField.
-    wp_apply (wp_Mutex__Lock with "Hlock").
-    iIntros "[Hlocked Htpl]".
+    wp_auto.
+    wp_apply (wp_Mutex__Lock with "[$Hlock]") as "[Hlocked Htpl]".
 
     (*@     // Create a new version and add it to the version chain.            @*)
     (*@     ver := tulip.Version{                                               @*)
@@ -208,24 +220,22 @@ Section program.
     (*@     tuple.vers = append(tuple.vers, ver)                                @*)
     (*@                                                                         @*)
     iNamed "Htpl".
+    wp_auto.
     iDestruct (phys_hist_agree with "HphysX Hphys") as %->.
     iApply fupd_wp.
     iMod (phys_hist_update hist' with "HphysX Hphys") as "[HphysX Hphys]".
     iModIntro.
-    wp_loadField.
-    (* somehow wp_SliceAppend doesn't work. *)
-    wp_apply (wp_SliceAppend' with "Hvers").
-    { done. }
-    { by auto 10. }
-    iIntros (versS') "Hvers".
-    iAssert (own_slice versS' (struct.t Version) (DfracOwn 1) (vers ++ [(tsW, Some value)]))%I
+    wp_apply wp_slice_literal as "%sl Hvers_s".
+    wp_apply (wp_slice_append with "[$Hvers $Hvers_cap $Hvers_s]") as "%versS' (Hvers & Hvers_cap & _)".
+    iAssert (own_slice versS' (DfracOwn 1) (dbpver_to_t <$> (vers ++ [(tsW, Some value)])))%I
       with "[Hvers]" as "Hvers".
-    { by rewrite /own_slice {2}/list.untype fmap_app. }
-    wp_storeField.
+    {
+      iExactEq "Hvers".
+      rewrite fmap_app //=.
+    }
 
     (*@     tuple.mu.Unlock()                                                   @*)
     (*@ }                                                                       @*)
-    wp_loadField.
     wp_apply (wp_Mutex__Unlock with "[-HΦ HphysX]").
     { iFrame "Hlock Hlocked ∗ #".
       iModIntro.
@@ -294,15 +304,15 @@ Section program.
         lia.
       }
       split.
-      { apply Forall_app.
+      { apply list.Forall_app.
         split.
-        { apply (Forall_impl _ _ _ Hlelast).
+        { apply (list.Forall_impl _ _ _ Hlelast).
           intros x Hx.
           simpl.
           rewrite Hlenhist in Hts.
           clear -Hx Hts. lia.
         }
-        by rewrite Forall_singleton.
+        by rewrite list.Forall_singleton.
       }
       split.
       { rewrite lookup_app_l; first done.
@@ -315,26 +325,25 @@ Section program.
     by iFrame.
   Qed.
 
-  Theorem wp_Tuple__KillVersion (tuple : loc) (tsW : u64) key hist γ α :
+  Theorem wp_Tuple__KillVersion (tuple_l : loc) (tsW : u64) key hist γ α :
     let ts := uint.nat tsW in
     let hist' := last_extend ts hist ++ [None] in
     (length hist ≤ ts)%nat ->
     is_repl_hist_lb γ key hist' -∗
-    is_tuple tuple key γ α -∗
-    {{{ own_phys_hist_half α key hist }}}
-      Tuple__KillVersion #tuple #tsW
+    is_tuple tuple_l key γ α -∗
+    {{{ is_pkg_init tuple ∗ own_phys_hist_half α key hist }}}
+      tuple_l @ tuple @ "Tuple'ptr" @ "KillVersion" #tsW
     {{{ RET #(); own_phys_hist_half α key hist' }}}.
   Proof.
     iIntros (ts hist' Hts) "#Hlb #Htpl".
-    iIntros (Φ) "!> HphysX HΦ".
-    wp_rec.
+    wp_start as "HphysX".
 
     (*@ func (tuple *Tuple) KillVersion(ts uint64) {                            @*)
     (*@     tuple.mu.Lock()                                                     @*)
     (*@                                                                         @*)
     iNamed "Htpl".
-    wp_loadField.
-    wp_apply (wp_Mutex__Lock with "Hlock").
+    wp_auto.
+    wp_apply (wp_Mutex__Lock with "[$Hlock]").
     iIntros "[Hlocked Htpl]".
 
     (*@     // Create a new version and add it to the version chain.            @*)
@@ -349,20 +358,18 @@ Section program.
     iApply fupd_wp.
     iMod (phys_hist_update hist' with "HphysX Hphys") as "[HphysX Hphys]".
     iModIntro.
-    wp_loadField.
-    (* somehow wp_SliceAppend doesn't work. *)
-    wp_apply (wp_SliceAppend' with "Hvers").
-    { done. }
-    { by auto 10. }
-    iIntros (versS') "Hvers".
-    iAssert (own_slice versS' (struct.t Version) (DfracOwn 1) (vers ++ [(tsW, None)]))%I
+    wp_auto.
+    wp_apply wp_slice_literal. iIntros "%sl Hvers_s". wp_auto.
+    wp_apply (wp_slice_append with "[$Hvers $Hvers_cap $Hvers_s]").
+    iIntros (versS') "(Hvers & Hvers_cap & _)".
+    iAssert (own_slice versS' (DfracOwn 1) (dbpver_to_t <$> (vers ++ [(tsW, None)])))%I
       with "[Hvers]" as "Hvers".
-    { by rewrite /own_slice {2}/list.untype fmap_app. }
-    wp_storeField.
+    { iExactEq "Hvers".
+      rewrite fmap_app //=. }
+    wp_auto.
 
     (*@     tuple.mu.Unlock()                                                   @*)
     (*@ }                                                                       @*)
-    wp_loadField.
     wp_apply (wp_Mutex__Unlock with "[-HΦ HphysX]").
     { iFrame "Hlock Hlocked ∗ #".
       iModIntro.
@@ -431,15 +438,15 @@ Section program.
         lia.
       }
       split.
-      { apply Forall_app.
+      { apply list.Forall_app.
         split.
-        { apply (Forall_impl _ _ _ Hlelast).
+        { apply (list.Forall_impl _ _ _ Hlelast).
           intros x Hx.
           simpl.
           rewrite Hlenhist in Hts.
           clear -Hx Hts. lia.
         }
-        by rewrite Forall_singleton.
+        by rewrite list.Forall_singleton.
       }
       split.
       { rewrite lookup_app_l; first done.
@@ -452,39 +459,37 @@ Section program.
     by iFrame.
   Qed.
 
-  Theorem wp_findVersion (tsW : u64) (versS : Slice.t) (vers : list dbpver) :
+  Theorem wp_findVersion (tsW : u64) (versS : slice.t) (vers : list dbpver) :
     let ts := uint.nat tsW in
     Exists (λ v, uint.Z v.1 ≤ ts) vers ->
-    {{{ own_slice versS (struct.t Version) (DfracOwn 1) vers }}}
-      findVersion #tsW (to_val versS)
-    {{{ (ver : dbpver) (slow : bool), RET (dbpver_to_val ver, #slow);
-        own_slice versS (struct.t Version) (DfracOwn 1) vers ∗
+    {{{ is_pkg_init tuple ∗ own_slice versS (DfracOwn 1) (dbpver_to_t <$> vers) }}}
+      tuple @ "findVersion" #tsW (to_val versS)
+    {{{ (ver : dbpver) (slow : bool), RET (#(dbpver_to_t ver), #slow);
+        own_slice versS (DfracOwn 1) (dbpver_to_t <$> vers) ∗
         ⌜find_version vers ts = Some ver⌝ ∗
         ⌜if slow
-         then last vers = Some ver ∧ (uint.nat ver.1 < ts)%nat
+         then list.last vers = Some ver ∧ (uint.nat ver.1 < ts)%nat
          else Exists (λ v, (ts ≤ uint.nat v.1)%nat) vers⌝
     }}}.
   Proof.
-    iIntros (ts Hexists Φ) "Hvers HΦ".
-    wp_rec.
+    iIntros (ts Hexists).
+    wp_start as "Hvers".
+    wp_auto.
+    iPersist "vers ts".
     rewrite Exists_exists in Hexists.
     destruct Hexists as [ver'' [Hin Hle]].
     destruct (nil_or_length_pos vers) as [| Hnonempty].
     { rewrite H in Hin. by destruct (not_elem_of_nil ver''). }
-    iDestruct (own_slice_small_acc with "Hvers") as "[Hvers HversC]".
-    iDestruct (own_slice_small_sz with "Hvers") as %Hlenvers.
+    iDestruct (own_slice_len with "Hvers") as %Hlenvers.
 
     (*@ func findVersion(ts uint64, vers []tulip.Version) (tulip.Version, bool) { @*)
     (*@     var ver tulip.Version                                               @*)
     (*@     length := uint64(len(vers))                                         @*)
     (*@     var idx uint64 = 0                                                  @*)
     (*@                                                                         @*)
-    wp_apply wp_ref_of_zero; first by auto.
-    iIntros (verP) "HverP".
-    wp_apply wp_slice_len.
-    wp_apply wp_ref_to; first auto.
-    iIntros (idxP) "HidxP".
-    wp_pures.
+    iRename "ver" into "HverP".
+    iRename "idx" into "HidxP".
+    iPersist "length".
 
     (*@     for idx < length {                                                  @*)
     (*@         ver = vers[length - idx - 1]                                    @*)
@@ -494,41 +499,41 @@ Section program.
     (*@         idx++                                                           @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    set P := λ (cont : bool), (∃ (ver : dbpver) (idx : u64),
-             "HverP"  ∷ (verP ↦[struct.t Version] (dbpver_to_val ver)) ∗
-             "HidxP"  ∷ (idxP ↦[uint64T] #idx) ∗
-             "Hvers"  ∷ own_slice_small versS (struct.t Version) (DfracOwn 1) vers ∗
-             "%Hge"   ∷ ⌜(if cont
+    set P := (∃ (ver : dbpver) (idx : u64),
+             "HverP"  ∷ (ver_ptr ↦ (dbpver_to_t ver)) ∗
+             "HidxP"  ∷ (idx_ptr ↦ idx) ∗
+             "Hvers"  ∷ own_slice versS (DfracOwn 1) (dbpver_to_t <$> vers) ∗
+             (* "%Hge"   ∷ ⌜(if cont
                           then True
-                          else (uint.nat ver.1 ≤ ts)%nat)⌝ ∗
+                          else (uint.nat ver.1 ≤ ts)%nat)⌝ ∗ *)
              "%Hlt"   ∷ ⌜(if decide (idx = W64 0)
                           then True
                           else Exists (λ v, (ts < uint.nat v.1)%nat) vers)⌝ ∗
-             "%Hver"  ∷ ⌜(if cont
+             (* "%Hver"  ∷ ⌜(if cont
                           then True
-                          else vers !! (length vers - uint.nat idx - 1)%nat = Some ver)⌝ ∗
-             "%Hspec" ∷ ⌜(if cont
-                          then find_version_forward (take (uint.nat idx) (reverse vers)) ts = None
-                          else find_version_forward (reverse vers) ts = Some ver)⌝)%I.
-    wp_apply (wp_forBreak_cond P with "[] [-HΦ HversC]"); last first; first 1 last.
-    { (* Loop entry. *)
+                          else vers !! (length vers - uint.nat idx - 1)%nat = Some ver)⌝ ∗ *)
+             "%Hspec" ∷ ⌜find_version_forward (take (uint.nat idx) (reverse vers)) ts = None ⌝)%I.
+    iAssert P with "[-HΦ]" as "HI".
+    {
+      subst P.
       iExists (W64 0, None).
       iFrame.
       iPureIntro.
       change (uint.nat 0) with 0%nat.
       by rewrite take_0.
     }
+    wp_for "HI"; try wp_auto.
+    wp_if_destruct.
     { (* Loop body. *)
-      clear Φ.
-      iIntros (Φ).
-      iModIntro.
+      wp_auto.
+      wp_if_destruct; last first.
+      { (* Loop condition. *)
+        wp_auto.
       iIntros "Hloop HΦ".
       iNamed "Hloop".
       wp_pures.
       wp_load.
       wp_pures.
-      wp_if_destruct; last first.
-      { (* Loop condition. *)
         iModIntro.
         iApply "HΦ".
         unfold P.
