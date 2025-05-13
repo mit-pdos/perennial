@@ -8,12 +8,15 @@ From Perennial.program_proof.rsm.pure Require Export
   dual_lookup extend fin_maps fin_maps_list fin_sets largest_before list misc nat
   nonexpanding_merge sets vslice word quorum.
 (* FIXME: it's a bad idea to export below for names can collide *)
-From Goose.github_com.mit_pdos.tulip Require Export
-  backup gcoord index params quorum replica tulip tuple txn txnlog util message.
-From Perennial.program_proof.tulip Require Export
+From New.generatedproof.github_com.mit_pdos.tulip Require Export
+  index params tulip tuple util.
+(* note being translated yet *)
+(*
+From New.generatedproof.github_com.mit_pdos.tulip Require Export
+  backup gcoord quorum replica txn txnlog message.
+*)
+From New.proof.github_com.mit_pdos.tulip.pure Require Export
   action cmd encode res msg inv inv_txnlog stability base.
-
-From New.generatedproof.github_com.mit_pdos.tulip Require Import tulip.
 
 #[global]
 Instance dbval_to_val : IntoVal dbval :=
