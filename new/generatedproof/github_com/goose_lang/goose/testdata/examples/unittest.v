@@ -494,6 +494,22 @@ Qed.
 
 End instances.
 
+(* type unittest.Enum1 *)
+Module Enum1.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End Enum1.
+
+(* type unittest.Enum2 *)
+Module Enum2.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End Enum2.
+
 (* type unittest.Fooer *)
 Module Fooer.
 Section def.

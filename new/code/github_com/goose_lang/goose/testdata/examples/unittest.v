@@ -848,6 +848,27 @@ Definition Dec__UInt32 : val :=
      (method_call #unittest.unittest #"Dec'ptr" #"consume" (![#ptrT] "d")) "$a0") in
      (func_call #primitive.primitive #"UInt32Get"%go) "$a0")).
 
+Definition Enum1 : go_type := uint64T.
+
+Definition Enum1A : expr := #(W64 0).
+
+Definition Enum1B : expr := #(W64 1).
+
+Definition Enum1C : expr := #(W64 2).
+
+Definition Enum2 : go_type := intT.
+
+(* line comment 1 *)
+Definition Enum2A : expr := #(W64 1).
+
+(* line comment 2 *)
+Definition Enum2B : Z := 3.
+
+Definition Enum2C : Z := 4.
+
+(* line comment 3 *)
+Definition Enum2D : expr := #(W64 15).
+
 (* go: for_range.go:5:6 *)
 Definition forRangeNoBinding : val :=
   rec: "forRangeNoBinding" "x" :=
@@ -2310,7 +2331,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [
                  method_call #unittest.unittest #"embedB'ptr" #"Car" (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "$recvAddr")))
                  )%V); ("Foo"%go, (λ: "$recvAddr",
                  method_call #unittest.unittest #"embedB" #"Foo" (![#embedB] (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "$recvAddr"))))
-                 )%V)]); ("Enc"%go, []); ("Enc'ptr"%go, [("UInt32"%go, Enc__UInt32); ("UInt64"%go, Enc__UInt64); ("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("UInt32"%go, Dec__UInt32); ("UInt64"%go, Dec__UInt64); ("consume"%go, Dec__consume)]); ("concreteFooer"%go, []); ("concreteFooer'ptr"%go, [("Foo"%go, concreteFooer__Foo)]); ("FooerUser"%go, []); ("FooerUser'ptr"%go, []); ("concrete1"%go, [("Foo"%go, concrete1__Foo)]); ("concrete1'ptr"%go, [("B"%go, concrete1__B); ("Foo"%go, (λ: "$recvAddr",
+                 )%V)]); ("Enc"%go, []); ("Enc'ptr"%go, [("UInt32"%go, Enc__UInt32); ("UInt64"%go, Enc__UInt64); ("consume"%go, Enc__consume)]); ("Dec"%go, []); ("Dec'ptr"%go, [("UInt32"%go, Dec__UInt32); ("UInt64"%go, Dec__UInt64); ("consume"%go, Dec__consume)]); ("Enum1"%go, []); ("Enum1'ptr"%go, []); ("Enum2"%go, []); ("Enum2'ptr"%go, []); ("concreteFooer"%go, []); ("concreteFooer'ptr"%go, [("Foo"%go, concreteFooer__Foo)]); ("FooerUser"%go, []); ("FooerUser'ptr"%go, []); ("concrete1"%go, [("Foo"%go, concrete1__Foo)]); ("concrete1'ptr"%go, [("B"%go, concrete1__B); ("Foo"%go, (λ: "$recvAddr",
                  method_call #unittest.unittest #"concrete1" #"Foo" (![#concrete1] "$recvAddr")
                  )%V)]); ("my_u32"%go, []); ("my_u32'ptr"%go, []); ("also_u32"%go, []); ("also_u32'ptr"%go, []); ("allTheLiterals"%go, []); ("allTheLiterals'ptr"%go, []); ("hasCondVar"%go, []); ("hasCondVar'ptr"%go, []); ("IntWrapper"%go, []); ("IntWrapper'ptr"%go, []); ("MapWrapper"%go, []); ("MapWrapper'ptr"%go, []); ("mapElem"%go, []); ("mapElem'ptr"%go, []); ("wrapExternalStruct"%go, [("join"%go, wrapExternalStruct__join)]); ("wrapExternalStruct'ptr"%go, [("join"%go, (λ: "$recvAddr",
                  method_call #unittest.unittest #"wrapExternalStruct" #"join" (![#wrapExternalStruct] "$recvAddr")
