@@ -226,13 +226,7 @@ Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_next_ep :
     "#Hwish_bound" ∷ wish_checkNonMemb serv.(Server.vrf_pk)
       uid (word.add nVers (W64 1)) sigdig.(SigDig.Dig) bound
   }}}.
-Proof.
-  iIntros (?) "Hpre HΦ". iNamed "Hpre".
-  wp_rec. wp_pures. wp_apply wp_allocStruct; [val_ty | ].
-  iIntros (wq_ptr) "wq". wp_apply wp_allocStruct; [val_ty | ].
-  iIntros (work_ptr) "work". wp_pures. iNamed "Hserv". wp_loadField.
-  (* TODO: WorkQ spec *)
-Admitted.
+Proof. Admitted.
 
 Lemma wp_getDig epochHist_sl epochHist_ptrs epochHist info q :
   last epochHist = Some info →

@@ -502,6 +502,71 @@ Qed.
 (*
 Print Assumptions wp_testSecurity.
 Print Assumptions wp_testCorrectness.
+
+# Axioms
+
+## misc
+wp_updAdtrsAll
+
+## server
+wp_NewServer
+wp_CallServSelfMon
+wp_CallServPut
+wp_CallServGet
+Server.own
+
+## auditor
+wp_NewAuditor
+wp_CallAdtrGet
+
+## serde
+PreSigDig.wp_enc
+MapValPre.wp_enc
+MapLabelPre.wp_enc
+CommitOpen.wp_enc
+merkle.MerkleProof.wp_dec
+
+## rpc
+wp_Server__Serve
+wp_NewRpcServer
+wp_NewRpcAuditor
+
+## rpc ffi (trusted)
+wp_Dial
+advrpc.Server.t
+own_Client
+
+## crypto ffi (trusted)
+wp_VrfPublicKey__Verify
+wp_VrfPublicKeyEncode
+wp_VrfPublicKeyDecode
+wp_SigPublicKey__Verify
+wp_NewHasher
+own_hasher
+is_vrf_sk_persistent
+is_vrf_sk
+is_vrf_proof_persistent
+is_vrf_proof
+is_vrf_pk_persistent
+is_vrf_pk
+is_vrf_out_persistent
+is_vrf_out_det
+is_vrf_out
+is_sig_to_pred
+is_sig_sk_to_pk
+is_sig_sk_persistent
+is_sig_sk
+is_sig_pk_persistent
+is_sig_pk
+is_sig_persistent
+is_sig
+is_hash_persistent
+is_hash_len
+is_hash_inj
+is_hash_det
+is_hash
+wp_Hasher__Write
+wp_Hasher__Sum
 *)
 
 End proof.
