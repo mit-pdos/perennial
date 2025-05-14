@@ -91,7 +91,9 @@ projs = [
         pkgs=[
             "./params",
             "./util",
+            "./quorum",
             "./tulip",
+            "./tuple",
             "./index",
         ],
     ),

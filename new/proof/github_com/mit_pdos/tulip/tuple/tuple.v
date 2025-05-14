@@ -1,14 +1,14 @@
 From stdpp Require Import list.
 From New.proof.github_com.mit_pdos.tulip.tuple Require Import res.
-
 From New.proof.github_com.mit_pdos.tulip Require Import program_prelude.
 
+(* systematic: import dependency proofs, prelude, then generatedproof *)
 From New.proof.github_com.mit_pdos.tulip Require Import tulip.
 From New.proof.github_com.mit_pdos.gokv Require Import grove_ffi.
 From New.proof Require Import sync.
-
 From New.proof Require Import grove_prelude.
 From New.generatedproof.github_com.mit_pdos.tulip Require Import tuple.
+(* end systematic part *)
 
 (* FIXME: ugly proofs; clean this up *)
 
