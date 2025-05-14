@@ -14,8 +14,8 @@ Definition aliceUid : expr := #0.
 
 Definition bobUid : expr := #1.
 
-(* setupParams from helpers.go *)
-
+(* setupParams describes different security configs with the
+   servGood and adtrGood params. *)
 Definition setupParams := struct.decl [
   "servGood" :: boolT;
   "servAddr" :: uint64T;
@@ -26,9 +26,7 @@ Definition setupParams := struct.decl [
   "adtrPks" :: slice.T cryptoffi.SigPublicKey
 ].
 
-(* setup starts server and auditors. it's mainly a logical convenience.
-   it consolidates the external parties, letting us more easily describe
-   different adversary configs. *)
+(* setup starts server and auditors. *)
 Definition setup: val :=
   rec: "setup" "servAddr" "adtrAddrs" :=
     let: (("serv", "servSigPk"), "servVrfPk") := kt.NewServer #() in
@@ -51,8 +49,6 @@ Definition setup: val :=
       "adtrAddrs" ::= "adtrAddrs";
       "adtrPks" ::= ![slice.T cryptoffi.SigPublicKey] "adtrPks"
     ].
-
-(* alice from alicebob.go *)
 
 Definition alice := struct.decl [
   "servGood" :: boolT;
