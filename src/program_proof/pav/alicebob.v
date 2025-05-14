@@ -56,7 +56,7 @@ End setupParams.
 Section proof.
 Context `{!heapGS Σ, !pavG Σ, !waitgroupG Σ}.
 
-Lemma wp_setup (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) (uids : gset w64) :
+Lemma wp_setup (uids : gset w64) (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
   {{{
     "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded adtrAddrs ∗
     "%Hlen_adtrs" ∷ ⌜ length adtrAddrs > 0 ⌝
@@ -247,12 +247,12 @@ Proof.
   iApply "HΦ".
   iFrame "#".
   (* TODO: bug causing unification to fail, unless we do a hack like this.
-  see git log for more details. *)
+  there are many other possible hacks. see git log for more details. *)
   rewrite /named.
   by iFrame.
 Qed.
 
-Lemma wp_testAliceBob ptr_setup setup :
+Lemma wp_testAliceBob setup ptr_setup :
   {{{
     "Hsetup" ∷ setupParams.own ptr_setup setup ∗
     "Huid_al" ∷ alice_uid ↪[setup.(setupParams.serv).(Server.γvers)] W64 0 ∗
@@ -455,6 +455,48 @@ Proof using Type*.
     wp_apply wp_Assert; [done|].
     wp_loadField.
     wp_pures. by iApply "HΦ".
+Qed.
+
+Lemma wp_testSecurity (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
+  {{{
+    "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded adtrAddrs ∗
+    "%Hlen_adtrs" ∷ ⌜ length adtrAddrs > 0 ⌝
+  }}}
+  testSecurity #servAddr (slice_val sl_adtrAddrs)
+  {{{ RET #(); True }}}.
+Proof using Type*.
+  iIntros (Φ) "H HΦ". wp_rec. iNamed "H".
+  wp_apply (wp_setup {[ alice_uid; bob_uid ]}); [iFrame "#%"|].
+  iIntros "*". iNamed 1.
+  iClear "Hsl_adtrAddrs". iNamed "Hsetup". simpl in *.
+  do 2 wp_storeField.
+  wp_apply (wp_testAliceBob (setupParams.mk _ _ _ _ _ _)
+    with "[Hptr_serv_good Hptr_adtr_good Huids]").
+  { iDestruct (big_sepS_insert with "Huids") as "[Huid_al Huid_bob]"; [set_solver|].
+    rewrite big_sepS_singleton.
+    iFrame "∗#%". naive_solver. }
+  wp_pures. by iApply "HΦ".
+Qed.
+
+Lemma wp_testCorrectness (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
+  {{{
+    "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded adtrAddrs ∗
+    "%Hlen_adtrs" ∷ ⌜ length adtrAddrs > 0 ⌝
+  }}}
+  testCorrectness #servAddr (slice_val sl_adtrAddrs)
+  {{{ RET #(); True }}}.
+Proof using Type*.
+  iIntros (Φ) "H HΦ". wp_rec. iNamed "H".
+  wp_apply (wp_setup {[ alice_uid; bob_uid ]}); [iFrame "#%"|].
+  iIntros "*". iNamed 1.
+  iClear "Hsl_adtrAddrs". iNamed "Hsetup". simpl in *.
+  do 2 wp_storeField.
+  wp_apply (wp_testAliceBob (setupParams.mk _ _ _ _ _ _)
+    with "[Hptr_serv_good Hptr_adtr_good Huids]").
+  { iDestruct (big_sepS_insert with "Huids") as "[Huid_al Huid_bob]"; [set_solver|].
+    rewrite big_sepS_singleton.
+    iFrame "∗#%". naive_solver. }
+  wp_pures. by iApply "HΦ".
 Qed.
 
 End proof.
