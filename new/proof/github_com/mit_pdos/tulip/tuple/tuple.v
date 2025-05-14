@@ -526,7 +526,7 @@ Section program.
     wp_if_destruct.
     { (* Loop body. *)
       wp_auto.
-      wp_if_destruct; last first.
+      (*
       { (* Loop condition. *)
         wp_auto.
       iIntros "Hloop HΦ".
@@ -548,43 +548,109 @@ Section program.
         unfold find_version in H.
         by rewrite H in Hspec.
       }
-      wp_load.
-      wp_pures.
+*)
       destruct (list_lookup_lt vers (length vers - S (uint.nat idx))%nat) as [ver' Hver']; first word.
-      wp_apply (wp_SliceGet with "[Hvers]").
+      wp_pure.
+      { word. }
+      wp_apply (wp_load_slice_elem with "[$Hvers]").
       { iFrame.
         iPureIntro.
-        set x := versS.(Slice.sz).
+        rewrite list_lookup_fmap.
+        set x := versS.(slice.len_f).
         assert (H : Z.ge (uint.Z (word.sub x idx)) 1).
         { subst x. word. }
-        replace (uint.Z (word.sub _ (W64 1))) with (uint.Z versS.(Slice.sz) - uint.Z idx - 1); last first.
+        replace (uint.Z (word.sub _ (W64 1))) with (uint.Z versS.(slice.len_f) - uint.Z idx - 1); last first.
         { subst x. word. }
         replace (Z.to_nat _) with ((length vers) - (S (uint.nat idx)))%nat; last first.
-        { rewrite Hlenvers. word. }
+        { rewrite length_fmap in Hlenvers. rewrite Hlenvers. word. }
         rewrite Hver'.
         done.
       }
       iIntros "Hvers".
-      wp_apply (wp_StoreAt with "HverP").
-      { rewrite /dbpver_to_val /=. by destruct ver'.2; auto 10. }
-      iIntros "HverP".
-      wp_load.
-      wp_pures.
-      wp_if_destruct.
-      { iModIntro.
+      wp_auto.
+    case_bool_decide as Heq; wp_auto.
+    { wp_for_post.
+      case_bool_decide as Hidx; try wp_auto; last first.
+      { (* Case: Slow-path *)
         iApply "HΦ".
-        unfold P.
-        do 2 iExists _.
-        iFrame "∗ %".
+        iFrame "Hvers".
         iPureIntro.
-        pose proof Hver' as Hlookup.
+
         rewrite -reverse_lookup in Hver'; last first.
-        { rewrite Hlenvers. word. }
+        { rewrite length_fmap in Hlenvers; rewrite Hlenvers. word. }
         apply take_drop_middle in Hver'.
-        split; first word.
+        rewrite /find_version.
         split.
-        { rewrite -Hlookup. f_equal. lia. }
-        apply (find_version_forward_match _ _ _ _ _ Hver'); [done | word].
+        { apply (find_version_forward_match _ _ _ _ _ Hver'); [done | word]. }
+        rewrite -> decide_False in Hlt by word.
+        apply (list.Exists_impl _ _ _ Hlt).
+        intros; word.
+      }
+      { (* Case: Fast-path hitting the last version. *)
+        iApply "HΦ".
+        iFrame "Hvers".
+        iPureIntro.
+        subst.
+        change (uint.nat (W64 0)) with 0%nat in *.
+        rewrite /find_version.
+        split.
+        { rewrite <- reverse_lookup in Hver' by word.
+          apply take_drop_middle in Hver'.
+          eapply find_version_forward_match in Hver'; eauto; word.
+        }
+        case_bool_decide as Hidx; subst.
+        - rewrite list.Exists_exists.
+          exists ver'. subst ts.
+          by apply elem_of_list_lookup_2 in Hver'.
+        - rewrite last_lookup -Hver'.
+          split.
+          { f_equal; lia. }
+          word.
+      }
+    }
+    wp_for_post.
+    iFrame "∗%".
+    iPureIntro.
+    pose proof Hver' as Hlookup.
+    rewrite -reverse_lookup in Hver'; last first.
+    { rewrite length_fmap in Hlenvers; rewrite Hlenvers. word. }
+    apply take_drop_middle in Hver'.
+    rewrite -> decide_False by word.
+    replace (uint.nat (word.add idx (W64 1))) with (S (uint.nat idx)) by word.
+    rewrite (take_S_r _ _ ver'); last first.
+    {
+      rewrite reverse_lookup //.
+      rewrite length_fmap in Hlenvers.
+      word.
+    }
+    admit.
+  }
+  wp_auto.
+  (* TODO: seems repetitive with above *)
+  admit.
+  (*
+      set vers_take := take _ _.
+      set vers' := vers_take ++ _.
+      split; first done.
+      split.
+      { clear Hlt.
+        case_decide; first done.
+        rewrite Exists_exists.
+        exists ver'.
+        split.
+        { apply elem_of_list_lookup_2 in Hver'.
+          by rewrite elem_of_reverse in Hver'.
+        }
+        clear -Heqb0. word.
+      }
+      split; first done.
+      apply (find_version_forward_not_match vers' _ vers_take ver'); [auto | auto | word].
+
+
+    split; first word.
+    split.
+    { rewrite -Hlookup. f_equal. lia. }
+    apply (find_version_forward_match _ _ _ _ _ Hver'); [done | word].
       }
       wp_load.
       wp_store.
@@ -659,36 +725,38 @@ Section program.
     apply (Exists_impl _ _ _ Hlt).
     intros v Hvgt.
     word.
-  Qed.
+   *)
+  Admitted.
 
-  Theorem wp_Tuple__ReadVersion_xphys (tuple : loc) (tsW : u64) key γ α :
+  Theorem wp_Tuple__ReadVersion_xphys (tuple_l : loc) (tsW : u64) key γ α :
     let ts := uint.nat tsW in
     ts ≠ O ->
-    is_tuple tuple key γ α -∗
-    {{{ True }}}
-      Tuple__ReadVersion #tuple #tsW
-    {{{ (ver : dbpver) (slow : bool), RET (dbpver_to_val ver, #slow);
+    is_tuple tuple_l key γ α -∗
+    {{{ is_pkg_init tuple }}}
+      tuple_l @ tuple @ "Tuple'ptr" @ "ReadVersion" #tsW
+    {{{ (ver : dbpver) (slow : bool), RET (#(dbpver_to_t ver), #slow);
         if slow then True else is_repl_hist_at γ key (pred ts) ver.2
     }}}.
   Proof.
     iIntros (ts Htsnz) "#Htpl".
-    iIntros (Φ) "!> _ HΦ".
-    wp_rec.
+    wp_start as "_".
+    wp_auto.
+    iPersist "tuple ts".
 
     (*@ func (tuple *Tuple) ReadVersion(ts uint64) (tulip.Version, bool) {      @*)
     (*@     tuple.mu.Lock()                                                     @*)
     (*@                                                                         @*)
     iNamed "Htpl".
-    wp_loadField.
-    wp_apply (wp_Mutex__Lock with "Hlock").
+    wp_auto.
+    wp_apply (wp_Mutex__Lock with "[$Hlock]").
     iIntros "[Hlocked Htpl]".
 
     (*@     ver, slow := findVersion(ts - 1, tuple.vers)                        @*)
     (*@                                                                         @*)
     iNamed "Htpl".
-    wp_loadField.
-    wp_apply (wp_findVersion with "Hvers").
-    { rewrite Exists_exists.
+    wp_auto.
+    wp_apply (wp_findVersion with "[$Hvers]").
+    { rewrite list.Exists_exists.
       exists (W64 0, None). simpl.
       split; last word.
       by apply elem_of_list_lookup_2 in Hfirst.
@@ -701,10 +769,11 @@ Section program.
 
     (*@     tuple.mu.Unlock()                                                   @*)
     (*@                                                                         @*)
-    wp_loadField.
+    wp_auto.
+    iPersist "ver slow".
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { by iFrame "Hlock Hlocked ∗ # %". }
-    wp_pures.
+    try wp_auto.
     iApply "HΦ".
 
     (*@     return ver, slow                                                    @*)
@@ -715,48 +784,48 @@ Section program.
     specialize (Habs (pred ts)).
     rewrite /lookup_with_versions Hfind in Habs.
     apply Habs.
-    rewrite Exists_exists in Hlast.
+    rewrite list.Exists_exists in Hlast.
     destruct Hlast as (v & Hv & Hle).
-    rewrite Forall_forall in Hlelast.
+    rewrite list.Forall_forall in Hlelast.
     specialize (Hlelast _ Hv).
     clear -Hle Hlelast Hlenhist. lia.
   Qed.
 
-  Theorem wp_Tuple__ReadVersion (tuple : loc) (tsW : u64) key hist γ α :
+  Theorem wp_Tuple__ReadVersion (tuple_l : loc) (tsW : u64) key hist γ α :
     let ts := uint.nat tsW in
     ts ≠ O ->
-    is_tuple tuple key γ α -∗
-    {{{ own_phys_hist_half α key hist }}}
-      Tuple__ReadVersion #tuple #tsW
-    {{{ (ver : dbpver) (slow : bool), RET (dbpver_to_val ver, #slow);
+    is_tuple tuple_l key γ α -∗
+    {{{ is_pkg_init tuple ∗ own_phys_hist_half α key hist }}}
+      tuple_l @ tuple @ "Tuple'ptr" @ "ReadVersion" #tsW
+    {{{ (ver : dbpver) (slow : bool), RET (#(dbpver_to_t ver), #slow);
         own_phys_hist_half α key hist ∗
         if slow
         then is_repl_hist_lb γ key hist ∗
-             ⌜last hist = Some ver.2⌝ ∗
+             ⌜list.last hist = Some ver.2⌝ ∗
              ⌜uint.nat ver.1 = pred (length hist)⌝ ∗
              ⌜(length hist < ts)%nat⌝
         else is_repl_hist_at γ key (pred ts) ver.2
     }}}.
   Proof.
     iIntros (ts Htsnz) "#Htpl".
-    iIntros (Φ) "!> HphysX HΦ".
-    wp_rec.
+    wp_start as "HphysX".
 
     (*@ func (tuple *Tuple) ReadVersion(ts uint64) (tulip.Version, bool) {      @*)
     (*@     tuple.mu.Lock()                                                     @*)
     (*@                                                                         @*)
     iNamed "Htpl".
-    wp_loadField.
-    wp_apply (wp_Mutex__Lock with "Hlock").
+    wp_auto.
+    iPersist "tuple ts".
+    wp_apply (wp_Mutex__Lock with "[$Hlock]").
     iIntros "[Hlocked Htpl]".
 
     (*@     ver, slow := findVersion(ts - 1, tuple.vers)                        @*)
     (*@                                                                         @*)
     iNamed "Htpl".
     iDestruct (phys_hist_agree with "HphysX Hphys") as %->.
-    wp_loadField.
-    wp_apply (wp_findVersion with "Hvers").
-    { rewrite Exists_exists.
+    wp_auto.
+    wp_apply (wp_findVersion with "[$Hvers]").
+    { rewrite list.Exists_exists.
       exists (W64 0, None). simpl.
       split; last word.
       by apply elem_of_list_lookup_2 in Hfirst.
@@ -765,11 +834,11 @@ Section program.
     destruct Hfind as [Hfind Hlast].
     replace (uint.nat _) with (pred ts) in Hfind, Hlast; last first.
     { word. }
-    wp_pures.
 
     (*@     tuple.mu.Unlock()                                                   @*)
     (*@                                                                         @*)
-    wp_loadField.
+    wp_auto.
+    iPersist "ver slow".
     wp_apply (wp_Mutex__Unlock with "[-HΦ HphysX]").
     { by iFrame "Hlock Hlocked ∗ # %". }
     wp_pures.
@@ -803,12 +872,17 @@ Section program.
 
   Theorem wp_MkTuple key γ α :
     is_repl_hist_lb γ key [None] -∗
-    {{{ own_phys_hist_half α key [None] }}}
-      MkTuple #()
-    {{{ (tuple : loc), RET #tuple; is_tuple tuple key γ α }}}.
+    {{{ is_pkg_init tuple ∗ own_phys_hist_half α key [None] }}}
+      tuple @ "MkTuple" #()
+    {{{ (tuple_l : loc), RET #tuple_l; is_tuple tuple_l key γ α }}}.
   Proof.
-    iIntros "#Hrepl" (Φ) "!> Hphys HΦ".
-    wp_rec.
+    iIntros "#Hrepl".
+    wp_start as "Hphys".
+    wp_auto.
+    wp_alloc tuple_temp as "tuple_temp".
+    wp_auto.
+    wp_alloc mutex_temp as "mutex_temp".
+    wp_auto.
 
     (*@ func MkTuple() *Tuple {                                                 @*)
     (*@     tuple := new(Tuple)                                                 @*)
@@ -821,35 +895,32 @@ Section program.
     (*@     tuple.vers = vers                                                   @*)
     (*@     return tuple                                                        @*)
     (*@ }                                                                       @*)
-    wp_apply wp_allocStruct; first by auto.
-    iIntros (tupleP) "Htuple".
-    iDestruct (struct_fields_split with "Htuple") as "Htuple".
-    iNamed "Htuple". simpl.
-    wp_apply wp_new_free_lock.
-    iIntros (muP) "Hfree".
-    wp_storeField.
-    wp_apply (wp_NewSliceWithCap); first word.
-    iIntros (versPP).
-    iIntros "Hvers".
-    wp_pures.
-    iDestruct (own_slice_small_acc with "Hvers") as "[Hvers HversC]".
-    wp_apply (slice.wp_SliceSet with "[$Hvers]").
-    { iPureIntro.
-      split.
-      { by rewrite /list.untype fmap_replicate lookup_replicate_2; last word. }
-      { by auto 10. }
-    }
-    iIntros "Hvers".
-    set versP := Slice.mk _ _ _.
+    wp_apply (wp_slice_make3 (V:=tulip.Version.t)).
+    { word. }
+    iIntros (versions_l) "(Hversions & HversionsC & %)".
+    wp_auto.
+    rewrite replicate_S replicate_0.
+    iDestruct (own_slice_len with "Hversions") as %Hlen. simpl in Hlen.
+    wp_pure.
+    { word. }
+    wp_apply (wp_store_slice_elem with "[$Hversions]").
+    { iPureIntro. simpl. word. }
+    change (uint.nat (W64 0)) with 0%nat.
+    cbn [insert list_insert].
+    iIntros "Hversions".
+    rewrite -wp_fupd.
+    wp_auto.
+    iApply struct_fields_split in "tuple_temp". iNamed "tuple_temp".
+    simpl.
+
     set verinit : dbpver := (W64 0, None).
-    iAssert (own_slice_small versP (struct.t Version) (DfracOwn 1) [verinit])%I
-      with "Hvers" as "Hvers".
-    iDestruct ("HversC" with "Hvers") as "Hvers".
-    wp_storeField.
-    iMod (alloc_lock _ _ _ (own_tuple tupleP key γ α) with "Hfree [-HΦ mu]") as "#Hlock".
+    iPersist "Hmu".
+    iMod (init_Mutex (own_tuple tuple_temp key γ α) with "[$mutex_temp] [-HΦ]") as "#Hlock".
     { iFrame "∗ #".
+      iExists ([(W64 0, None)]), verinit.
+      iModIntro.
+      iSplit; [ iExact "Hversions" | ].
       iPureIntro.
-      exists verinit.
       split.
       { intros t Ht. simpl in Ht. assert (t = O) as -> by lia.
         simpl.
@@ -858,9 +929,9 @@ Section program.
       }
       by rewrite Forall_singleton.
     }
-    iMod (readonly_alloc_1 with "mu") as "#HmuP".
+    iModIntro.
     iApply "HΦ".
-    by iFrame "#".
+    iFrame "#".
   Qed.
 
 End program.
