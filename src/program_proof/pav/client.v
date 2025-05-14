@@ -84,9 +84,11 @@ Definition own (ptr : loc) (obj : t) (pk : list w8) : iProp Σ :=
   "Hptr_err" ∷ ptr ↦[ClientErr :: "Err"] #obj.(Err) ∗
   "Hevid" ∷ match obj.(Evid) with
   | Some e =>
+    "%Heq_ptr" ∷ ⌜ ptr_evid ≠ null ⌝ ∗
     "#Hown_evid" ∷ Evid.own ptr_evid e DfracDiscarded ∗
     "#His_evid" ∷ is_Evid e pk
-  | None => True
+  | None =>
+    "%Heq_ptr" ∷ ⌜ ptr_evid = null ⌝
   end.
 End defs.
 End ClientErr.
@@ -318,11 +320,12 @@ Proof.
       (Evid.mk (SigDig.mk seen_dig.(SigDig.Epoch)
         info.(AdtrEpochInfo.Dig) info.(AdtrEpochInfo.ServSig))
       seen_dig)) _)).
+    iDestruct (struct_field_pointsto_not_null with "sigDig0_evid") as %?; [done..|].
     by iFrame "∗#". }
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_err".
   iApply ("HΦ" $! _ (ClientErr.mk None _)).
-  destruct seen_dig, info. simpl in *. subst. iFrame "∗#".
+  destruct seen_dig, info. simpl in *. subst. by iFrame "∗#".
 Qed.
 
 Lemma wp_Client__Audit ptr_c c (adtr_addr : w64) sl_adtrPk (adtr_pk : list w8) :
@@ -367,8 +370,10 @@ Proof.
           x.(SigDig.Dig) adtr_sig) adtr_pk))%I
     with "Hown_sd_refs [$Hrpc_cli_adtr $Hptr_err0 Herr0]").
   { iDestruct (struct_fields_split with "Herr0") as "H". iNamed "H".
-    iExists (ClientErr.mk None false). iFrame. iExists ∅.
-    iSplit; [done|]. iSplit. { iPureIntro. by eapply map_empty_subseteq. }
+    iExists (ClientErr.mk None false). iFrame.
+    iSplit; [done|]. iExists ∅.
+    iSplit; [done|].
+    iSplit. { iPureIntro. by eapply map_empty_subseteq. }
     naive_solver. }
   { clear. iIntros (??? Φ) "!> (Hpre&_&%Hlook_ptr) HΦ". iNamed "Hpre".
     wp_loadField.
@@ -469,7 +474,7 @@ Proof.
   simpl. iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) sig_pk) with "[H]" as "Hown_std_err".
-  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
+  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". by iFrame. }
   wp_apply (wp_CheckSigDig with "[$Hsigdig $Hsl_sig_pk]").
   iIntros "*". iNamed 1.
   wp_if_destruct.
@@ -501,12 +506,15 @@ Proof.
       wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
       iDestruct (struct_fields_split with "H") as "H". iNamed "H".
       iApply ("HΦ" $! (ClientErr.mk (Some (Evid.mk dig x)) true)).
-      iFrame "∗#". simpl. iSplit; [done|]. iSplit. { by iIntros (?). }
+      iFrame "∗#". simpl.
+      iDestruct (struct_field_pointsto_not_null with "sigDig0") as %?; [done..|].
+      iSplit; [done|]. iSplit. { by iIntros (?). }
       iNamed 1. naive_solver.
     - wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
       iDestruct (struct_fields_split with "H") as "H". iNamed "H".
       iApply ("HΦ" $! (ClientErr.mk None false)).
-      iFrame "∗#%". iSplit; [|naive_solver]. iIntros "_".
+      iFrame "∗#%". simpl. iSplit; [done|].
+      iSplit; [|naive_solver]. iIntros "_".
       iPureIntro. naive_solver. }
   apply map_get_false in Hlook_sd_refs as [Hlook_sd_refs _].
   iDestruct (big_sepM2_lookup_l_none with "Hown_sd") as %Hlook_sd;
@@ -514,7 +522,8 @@ Proof.
   iClear "Hown_std_err". wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
   iDestruct (struct_fields_split with "H") as "H". iNamed "H".
   iApply ("HΦ" $! (ClientErr.mk None false)).
-  iFrame "∗#%". iSplit; [|naive_solver]. iIntros (_).
+  iFrame "∗#%". simpl.
+  iSplit; [done|]. iSplit; [|naive_solver]. iIntros (_).
   iPureIntro. naive_solver.
 Qed.
 
@@ -806,7 +815,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_cli". wp_rec.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) c.(Client.serv).(Server.sig_pk)) with "[H]" as "Hown_std_err".
-  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
+  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". by iFrame. }
 
   do 2 wp_loadField.
   wp_apply (wp_CallServPut with "[$Hown_servCli $Huid $Hsl_pk $Hlb_serv_ep]").
@@ -915,7 +924,7 @@ Proof.
   iDestruct (own_slice_small_sz with "Hsl_rand") as %?.
   iDestruct (own_slice_small_sz with "Hsl_pk") as %?.
   rewrite -Heq_ep. iFrame "∗#". iIntros "!>".
-  repeat try iSplit; simpl in *; try word; first last.
+  repeat try iSplit; simpl in *; try word; first last; [..|done].
 
   { iPureIntro. rewrite /MapValPre.encodes in Henc_lat.
     intuition. destruct lat, sigdig. by simplify_eq/=. }
@@ -970,7 +979,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_cli". wp_rec.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) c.(Client.serv).(Server.sig_pk)) with "[H]" as "Hown_std_err".
-  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
+  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". by iFrame. }
 
   do 2 wp_loadField.
   wp_apply (wp_CallServSelfMon with "[$Hown_servCli $Huid $Hlb_serv_ep]").
@@ -1049,6 +1058,7 @@ Proof.
     { by iApply mono_list_lb_own_get. }
     iFrame "Hlook_gdigs Hown_digs %". iIntros "!>".
 
+    iSplit; [done|].
     iEval (rewrite -!sep_assoc sep_assoc). iSplitL.
     { destruct c.(Client.serv_is_good); [|done].
       iNamed "Hgood". iFrame "∗#". }
@@ -1069,7 +1079,9 @@ Proof.
   { rewrite lookup_app_r; [|word].
     rewrite lookup_app_r; rewrite length_replicate; [|done].
     apply list_lookup_singleton_Some. split; [lia|done]. }
-  iFrame "∗#". iIntros "!>". iSplit; [done|]. simpl.
+  iFrame "∗#". simpl. iIntros "!>".
+  iSplit; [done|].
+  iSplit; [done|].
 
   iEval (rewrite -!sep_assoc sep_assoc). iSplitL.
   { destruct c.(Client.serv_is_good); [|done].
@@ -1121,7 +1133,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_cli". wp_rec.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) c.(Client.serv).(Server.sig_pk)) with "[H]" as "Hown_std_err".
-  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
+  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". by iFrame. }
   iDestruct (own_slice_small_nil byteT (DfracOwn 1) Slice.nil) as "Hsl_nil"; [done|].
 
   wp_loadField.
@@ -1277,6 +1289,7 @@ Proof.
     iDestruct (mono_list_idx_own_get _ _ Hlast_dig_lookup with "[Hown_digs]") as "#Hlook_gdigs".
     { by iApply mono_list_lb_own_get. }
     iFrame "∗%". iIntros "!>".
+    iSplit; [done|].
 
     iEval (rewrite -!sep_assoc). iSplitR "".
     { destruct c.(Client.serv_is_good); [|done].
@@ -1315,6 +1328,7 @@ Proof.
     rewrite lookup_app_r; rewrite length_replicate; [|done].
     apply list_lookup_singleton_Some. split; [lia|done]. }
   iFrame "∗%". iIntros "!>".
+  iSplit; [done|].
 
   iEval (rewrite -!sep_assoc). iSplitR "".
   { destruct c.(Client.serv_is_good); [|done].

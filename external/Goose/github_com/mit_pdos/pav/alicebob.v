@@ -52,26 +52,31 @@ Definition setup: val :=
 
 Definition alice := struct.decl [
   "servGood" :: boolT;
+  "servSigPk" :: cryptoffi.SigPublicKey;
   "cli" :: ptrT;
   "hist" :: slice.T ptrT
 ].
 
 Definition bob := struct.decl [
   "servGood" :: boolT;
+  "servSigPk" :: cryptoffi.SigPublicKey;
   "cli" :: ptrT;
   "epoch" :: uint64T;
   "isReg" :: boolT;
   "alicePk" :: slice.T byteT
 ].
 
-Definition checkServErr: val :=
-  rec: "checkServErr" "servGood" "err" :=
+Definition checkCliErr: val :=
+  rec: "checkCliErr" "servGood" "servPk" "err" :=
+    (if: (struct.loadF kt.ClientErr "Evid" "err") ≠ #null
+    then control.impl.Assert (~ (kt.Evid__Check (struct.loadF kt.ClientErr "Evid" "err") "servPk"))
+    else #());;
     (if: "servGood"
     then
-      control.impl.Assert (~ "err");;
+      control.impl.Assert (~ (struct.loadF kt.ClientErr "Err" "err"));;
       #()
     else
-      control.impl.Assume (~ "err");;
+      control.impl.Assume (~ (struct.loadF kt.ClientErr "Err" "err"));;
       #()).
 
 (* histEntry from history.go *)
@@ -110,7 +115,7 @@ Definition alice__run: val :=
       time.Sleep #5000000;;
       let: "pk" := SliceSingleton #(U8 1) in
       let: ("epoch", "err0") := kt.Client__Put (struct.loadF alice "cli" "a") "pk" in
-      checkServErr (struct.loadF alice "servGood" "a") (struct.loadF kt.ClientErr "Err" "err0");;
+      checkCliErr (struct.loadF alice "servGood" "a") (struct.loadF alice "servSigPk" "a") "err0";;
       struct.storeF alice "hist" "a" (extendHist (struct.loadF alice "hist" "a") "epoch");;
       struct.storeF alice "hist" "a" (SliceAppend ptrT (struct.loadF alice "hist" "a") (struct.new histEntry [
         "isReg" ::= #true;
@@ -123,7 +128,7 @@ Definition bob__run: val :=
   rec: "bob__run" "b" :=
     time.Sleep #120000000;;
     let: ((("isReg", "pk"), "epoch"), "err0") := kt.Client__Get (struct.loadF bob "cli" "b") aliceUid in
-    checkServErr (struct.loadF bob "servGood" "b") (struct.loadF kt.ClientErr "Err" "err0");;
+    checkCliErr (struct.loadF bob "servGood" "b") (struct.loadF bob "servSigPk" "b") "err0";;
     struct.storeF bob "epoch" "b" "epoch";;
     struct.storeF bob "isReg" "b" "isReg";;
     struct.storeF bob "alicePk" "b" "pk";;
@@ -181,11 +186,13 @@ Definition testAliceBob: val :=
     let: "aliceCli" := kt.NewClient aliceUid (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "servSigPk" "setup") (struct.loadF setupParams "servVrfPk" "setup") in
     let: "alice" := struct.new alice [
       "servGood" ::= struct.loadF setupParams "servGood" "setup";
+      "servSigPk" ::= struct.loadF setupParams "servSigPk" "setup";
       "cli" ::= "aliceCli"
     ] in
     let: "bobCli" := kt.NewClient bobUid (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "servSigPk" "setup") (struct.loadF setupParams "servVrfPk" "setup") in
     let: "bob" := struct.new bob [
       "servGood" ::= struct.loadF setupParams "servGood" "setup";
+      "servSigPk" ::= struct.loadF setupParams "servSigPk" "setup";
       "cli" ::= "bobCli"
     ] in
     let: "wg" := waitgroup.New #() in
@@ -197,7 +204,7 @@ Definition testAliceBob: val :=
           waitgroup.Done "wg");;
     waitgroup.Wait "wg";;
     let: ("selfMonEp", "err0") := kt.Client__SelfMon (struct.loadF alice "cli" "alice") in
-    checkServErr (struct.loadF setupParams "servGood" "setup") (struct.loadF kt.ClientErr "Err" "err0");;
+    checkCliErr (struct.loadF setupParams "servGood" "setup") (struct.loadF setupParams "servSigPk" "setup") "err0";;
     struct.storeF alice "hist" "alice" (extendHist (struct.loadF alice "hist" "alice") ("selfMonEp" + #1));;
     (if: struct.loadF setupParams "adtrGood" "setup"
     then
