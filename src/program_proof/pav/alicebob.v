@@ -499,4 +499,9 @@ Proof using Type*.
   wp_pures. by iApply "HΦ".
 Qed.
 
+(*
+Print Assumptions wp_testSecurity.
+Print Assumptions wp_testCorrectness.
+*)
+
 End proof.
