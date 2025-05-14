@@ -505,9 +505,6 @@ Print Assumptions wp_testCorrectness.
 
 # Axioms
 
-## misc
-wp_updAdtrsAll
-
 ## server
 wp_NewServer
 wp_CallServSelfMon
