@@ -11,7 +11,7 @@ Notation alice_uid := (W64 0) (only parsing).
 Notation bob_uid := (W64 1) (only parsing).
 
 Section proof.
-Context `{!heapGS Σ, !pavG Σ, !waitGroupG Σ}.
+Context `{!heapGS Σ, !pavG Σ, !waitgroupG Σ}.
 
 Definition own_alice ptr cli_γ serv (serv_good : bool) : iProp Σ :=
   ∃ (ptr_cli : loc) sl_hist epochs,
@@ -284,7 +284,7 @@ Proof using Type*.
   iClear "Hptr_servAddr Hptr_servSigPk Hsl_servSigPk Hptr_serv_vrf_pk Hptr_adtrAddrs
     Hsl_adtrAddrs Hptr_adtrPks Hsl_adtrPks Hdim0_adtrPks Hptr_cli_al Hptr_cli_bob".
 
-  (* the important part. *)
+  (* the final part. *)
   wp_loadField.
   wp_apply wp_Assume.
   iIntros (Hlt_ep).
@@ -293,12 +293,14 @@ Proof using Type*.
   list_elem selfmon_hist (uint.nat ep) as alice_orig_pk.
   { subst selfmon_hist. rewrite length_app length_replicate. word. }
   wp_apply (wp_hist_SliceGet with "[$Hown_hist_al]"); [done|].
-  iIntros "*". iNamed 1. iNamed "Hhist_entry".
+  iIntros "*". iNamed 1.
 
   iAssert (
     |==>
-    "Hcli_al" ∷ ClientHist.own ptr_cli _ ∗
-    "Hcli_bob" ∷ Client.own ptr_cli0 _ ∗
+    "Hcli_al" ∷ ClientHist.own ptr_cli (ClientHist.mk _ _ _ _
+      setup.(setupParams.serv_good)) ∗
+    "Hcli_bob" ∷ Client.own ptr_cli0 (Client.mk _ _ _ _ _
+      setup.(setupParams.serv_good)) ∗
 
     "#Haudit_serv" ∷ (if negb setup.(setupParams.serv_good) then True else
       "#Haudit_al" ∷ logical_audit γ _ _ _ ∗
@@ -307,13 +309,44 @@ Proof using Type*.
   { destruct setup.(setupParams.serv_good) eqn:Heq_good; [|by iFrame].
     rewrite /ClientHist.own /=.
     iNamedSuffix "Hcli_al" "_al".
-    (* TODO: good_serv_logical_audit consumes Client.own,
-    even tho it doesn't need to.
-    need to strengthen that lemma to bring bupd forward. *)
-    iMod (good_serv_logical_audit with "Hcli_al") as "#H /="; [done|].
-    iEval (replace next_epoch with (W64 $ length selfmon_hist) by word) in "H".
-    iFrame "H". iClear "H".
-    admit. }
-Admitted.
+    iMod (good_serv_logical_audit (Client.mk _ _ _ _ _ true)) as "H"; [done|].
+    iDestruct ("H" with "Hcli_al") as "#Haudit_al /=".
+    iMod (good_serv_logical_audit (Client.mk _ _ _ _ _ true)) as "H"; [done|].
+    iDestruct ("H" with "Hcli_bob") as "#Haudit_bob /=".
+    iEval (replace next_epoch with (W64 $ length selfmon_hist) by word)
+      in "Haudit_al Haudit_bob".
+    by iFrame "∗#". }
+  iMod "H". iNamed "H".
+
+  iAssert (
+    ∃ γadtr,
+    "#Haudit_al" ∷ logical_audit γ γadtr _ _ ∗
+    "#Haudit_bob" ∷ logical_audit γ0 γadtr _ _
+  )%I as "#H".
+  { destruct Hgood as [-> | ->]; iFrame "#". }
+  iNamed "H". iClear "Haudit_auditor Haudit_serv".
+
+  iAssert (⌜ alice_orig_pk = if is_reg then Some alice_pk else None ⌝)%I as %->.
+  { iDestruct (ClientHist.lookup_msv with "Hcli_al Haudit_al") as "#Hmsv_al /="; [done|..].
+    { subst selfmon_hist. rewrite length_app length_replicate. word. }
+    destruct is_reg; simpl; iNamed "Hbob_post".
+    + iDestruct (get_Some_to_msv with "His_get_post Haudit_bob") as "#Hmsv_bob"; [word|].
+      by iDestruct (msv_agree with "Hmsv_al Hmsv_bob") as %->.
+    + iDestruct (get_None_to_msv with "His_get_post Haudit_bob") as "#Hmsv_bob"; [word|].
+      by iDestruct (msv_agree with "Hmsv_al Hmsv_bob") as %->. }
+
+  destruct is_reg; simpl; iNamed "Hbob_post"; iNamed "Hhist_entry".
+  - do 2 wp_loadField.
+    wp_apply wp_Assert; [done|].
+    do 3 wp_loadField.
+    wp_apply (wp_BytesEqual with "[Hsl_alicePk_bob]"); [by iFrame "∗#"|].
+    iIntros "_".
+    wp_apply wp_Assert; [by case_bool_decide|].
+    wp_pures. by iApply "HΦ".
+  - do 2 wp_loadField.
+    wp_apply wp_Assert; [done|].
+    wp_loadField.
+    wp_pures. by iApply "HΦ".
+Qed.
 
 End proof.
