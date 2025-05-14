@@ -21,6 +21,7 @@ Definition setupParams := struct.decl [
   "servAddr" :: uint64T;
   "servSigPk" :: cryptoffi.SigPublicKey;
   "servVrfPk" :: slice.T byteT;
+  "adtrGood" :: boolT;
   "adtrAddrs" :: slice.T uint64T;
   "adtrPks" :: slice.T cryptoffi.SigPublicKey
 ].
@@ -46,6 +47,7 @@ Definition setup: val :=
       "servAddr" ::= "servAddr";
       "servSigPk" ::= "servSigPk";
       "servVrfPk" ::= "servVrfPkEnc";
+      "adtrGood" ::= #true;
       "adtrAddrs" ::= "adtrAddrs";
       "adtrPks" ::= ![slice.T cryptoffi.SigPublicKey] "adtrPks"
     ].
@@ -201,7 +203,7 @@ Definition testAliceBob: val :=
     let: ("selfMonEp", "err0") := kt.Client__SelfMon (struct.loadF alice "cli" "alice") in
     checkServErr (struct.loadF setupParams "servGood" "setup") (struct.loadF kt.ClientErr "Err" "err0");;
     struct.storeF alice "hist" "alice" (extendHist (struct.loadF alice "hist" "alice") ("selfMonEp" + #1));;
-    (if: (~ (struct.loadF setupParams "servGood" "setup"))
+    (if: struct.loadF setupParams "adtrGood" "setup"
     then
       updAdtrsAll (struct.loadF setupParams "servAddr" "setup") (struct.loadF setupParams "adtrAddrs" "setup");;
       doAudits (struct.loadF alice "cli" "alice") (struct.loadF setupParams "adtrAddrs" "setup") (struct.loadF setupParams "adtrPks" "setup");;
@@ -222,6 +224,7 @@ Definition testSecurity: val :=
   rec: "testSecurity" "servAddr" "adtrAddrs" :=
     let: "s" := setup "servAddr" "adtrAddrs" in
     struct.storeF setupParams "servGood" "s" #false;;
+    struct.storeF setupParams "adtrGood" "s" #true;;
     testAliceBob "s";;
     #().
 
@@ -231,6 +234,7 @@ Definition testCorrectness: val :=
   rec: "testCorrectness" "servAddr" "adtrAddrs" :=
     let: "s" := setup "servAddr" "adtrAddrs" in
     struct.storeF setupParams "servGood" "s" #true;;
+    struct.storeF setupParams "adtrGood" "s" #false;;
     testAliceBob "s";;
     #().
 

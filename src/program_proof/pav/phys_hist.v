@@ -22,6 +22,36 @@ Definition own_hist sl_hist hist : iProp Σ :=
   "Hsl_hist" ∷ own_slice sl_hist ptrT (DfracOwn 1) dim0_hist ∗
   "#Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist;hist, is_histEntry p o).
 
+Lemma mk_hist :
+  ⊢ own_hist Slice.nil [].
+Proof.
+  iPoseProof own_slice_zero as "$".
+  naive_solver.
+Qed.
+
+Lemma wp_hist_SliceGet sl_hist hist (i : w64) opt_pk :
+  {{{
+    "Hown_hist" ∷ own_hist sl_hist hist ∗
+    "%Hlook_hist" ∷ ⌜ hist !! uint.nat i = Some opt_pk  ⌝
+  }}}
+  SliceGet ptrT sl_hist #i
+  {{{
+    l, RET #l;
+    "Hown_hist" ∷ own_hist sl_hist hist ∗
+    "#Hhist_entry" ∷ is_histEntry l opt_pk
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H".
+  iNamed "Hown_hist".
+  iDestruct (own_slice_small_read with "Hsl_hist") as "[Hsl_hist Hclose]".
+  iDestruct (big_sepL2_lookup_2_some with "Hdim0_hist") as %[? ?]; [done|].
+  wp_apply (wp_SliceGet with "[$Hsl_hist]"); [done|].
+  iIntros "H".
+  iDestruct ("Hclose" with "H") as "Hsl_hist".
+  iDestruct (big_sepL2_lookup with "Hdim0_hist") as "Hentry"; [done..|].
+  iApply "HΦ". iFrame "∗#".
+Qed.
+
 Lemma wp_extendHist sl_hist hist (num_epochs : w64) :
   {{{
     "Hown_hist" ∷ own_hist sl_hist hist ∗
@@ -30,8 +60,9 @@ Lemma wp_extendHist sl_hist hist (num_epochs : w64) :
   extendHist (slice_val sl_hist) #num_epochs
   {{{
     sl_hist', RET (slice_val sl_hist');
+    let len_diff := uint.Z num_epochs - Z.of_nat (length hist) in
     "Hown_hist" ∷ own_hist sl_hist' (hist ++
-      replicate (uint.nat num_epochs - length hist) (mjoin $ last hist))
+      replicate (Z.to_nat len_diff) (mjoin $ last hist))
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". wp_rec. iNamed "H". iNamed "Hown_hist".
@@ -84,26 +115,28 @@ Proof.
   iIntros "* Hptr_i".
   wp_apply (wp_forUpto
     (λ i,
+    let len_diff := uint.Z i - Z.of_nat (length hist) in
     ∃ sl_hist' dim0_hist',
     "%Hlt_i" ∷ ⌜ Z.of_nat $ length hist <= uint.Z i ⌝ ∗
     "Hptr2_last" ∷ l ↦[ptrT] #ptr_entry ∗
     "Hptr_new_hist" ∷ l0 ↦[slice.T ptrT] (slice_val sl_hist') ∗
     "Hsl_hist" ∷ own_slice sl_hist' ptrT (DfracOwn 1) dim0_hist' ∗
     "#Hdim0_hist" ∷ ([∗ list] p;o ∈ dim0_hist';(hist ++
-      replicate (uint.nat i - length hist) (mjoin (last hist))),
+      replicate (Z.to_nat len_diff) (mjoin (last hist))),
       is_histEntry p o)
     )%I
     with "[] [$Hptr_i $Hptr2_last $Hptr_new_hist $Hsl_hist]"
   ); [word|..].
-  2: { replace (_ - _)%nat with (0%nat) by word.
+  2: {
+    replace (Z.to_nat (_ - _)) with (0%nat) by word.
     list_simplifier. iFrame "#". word. }
   { iClear "% Hdim0_hist". iIntros (? Φ) "!> (H & Hptr_i & %) HΦ".
     iNamed "H". do 2 wp_load.
     wp_apply (wp_SliceAppend with "Hsl_hist").
     iIntros "* Hsl_hist". wp_store.
     iApply "HΦ". iFrame.
-    remember (_ - _)%nat as prev_len.
-    replace (_ - _)%nat with (S prev_len) by word.
+    remember (Z.to_nat (_ - _))%nat as prev_len.
+    replace (Z.to_nat (_ - _))%nat with (S prev_len) by word.
     rewrite replicate_S_end (assoc (++)).
     iFrame "#". iIntros "!>". iSplit; [word|done]. }
   iClear "#". iIntros "[H _]". iNamed "H".

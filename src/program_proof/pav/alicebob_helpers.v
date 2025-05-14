@@ -9,57 +9,62 @@ Record t :=
   mk {
     serv_good: bool;
     servAddr: w64;
-    servSigPk: list w8;
-    serv_γ: gname;
-    serv_vrf_pk: list w8;
+    serv: Server.t;
+    adtr_good: bool;
     adtrAddrs: list w64;
     adtr_pks: list (list w8);
   }.
+
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
-Definition valid (ptr : loc) (obj : t) : iProp Σ :=
+
+Definition own (ptr : loc) (obj : t) : iProp Σ :=
   ∃ sl_servSigPk sl_serv_vrf_pk sl_adtrAddrs sl_adtrPks dim0_adtrPks,
-  "#Hptr_serv_good" ∷ ptr ↦[setupParams :: "servGood"]□ #obj.(serv_good) ∗
+  "Hptr_serv_good" ∷ ptr ↦[setupParams :: "servGood"] #obj.(serv_good) ∗
   "#Hptr_servAddr" ∷ ptr ↦[setupParams :: "servAddr"]□ #obj.(servAddr) ∗
   "#Hptr_servSigPk" ∷ ptr ↦[setupParams :: "servSigPk"]□ (slice_val sl_servSigPk) ∗
   "#Hptr_serv_vrf_pk" ∷ ptr ↦[setupParams :: "servVrfPk"]□ (slice_val sl_serv_vrf_pk) ∗
+  "Hptr_adtr_good" ∷ ptr ↦[setupParams :: "adtrGood"] #obj.(adtr_good) ∗
   "#Hptr_adtrAddrs" ∷ ptr ↦[setupParams :: "adtrAddrs"]□ (slice_val sl_adtrAddrs) ∗
   "#Hptr_adtrPks" ∷ ptr ↦[setupParams :: "adtrPks"]□ (slice_val sl_adtrPks) ∗
 
-  "#Hsl_servSigPk" ∷ own_slice_small sl_servSigPk byteT DfracDiscarded obj.(servSigPk) ∗
+  "#Hsl_servSigPk" ∷ own_slice_small sl_servSigPk byteT DfracDiscarded obj.(serv).(Server.sig_pk) ∗
   "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded obj.(adtrAddrs) ∗
   "#Hsl_adtrPks" ∷ own_slice_small sl_adtrPks (slice.T byteT) DfracDiscarded dim0_adtrPks ∗
-  "#Hsl_serv_vrf_pk" ∷ own_slice_small sl_serv_vrf_pk byteT DfracDiscarded obj.(serv_vrf_pk) ∗
+  "#Hsl_serv_vrf_pk" ∷ own_slice_small sl_serv_vrf_pk byteT DfracDiscarded obj.(serv).(Server.vrf_pk) ∗
 
   "#Hdim0_adtrPks" ∷ ([∗ list] p;o ∈ dim0_adtrPks;obj.(adtr_pks),
     own_slice_small p byteT DfracDiscarded o) ∗
 
   "#His_good_serv" ∷ (if negb obj.(serv_good) then True else
-    is_sig_pk obj.(servSigPk) (sigpred obj.(serv_γ))) ∗
-  "#His_good_adtrs" ∷ (∃ i sig_pk γadtr,
-    ⌜ obj.(adtr_pks) !! i = Some sig_pk ⌝ ∗
-    is_sig_pk sig_pk (sigpred γadtr)) ∗
+    is_sig_pk obj.(serv).(Server.sig_pk) (sigpred obj.(serv).(Server.γhist))) ∗
+  "#His_good_adtrs" ∷ (if negb obj.(adtr_good) then True else
+    ∃ i sig_pk γadtr,
+    "%Hlook_adtr" ∷ ⌜ obj.(adtr_pks) !! i = Some sig_pk ⌝ ∗
+    "#His_good_adtr" ∷ is_sig_pk sig_pk (sigpred γadtr)) ∗
   "%Hlen_addr_pk" ∷ ⌜ length obj.(adtrAddrs) = length obj.(adtr_pks) ⌝.
+
 End defs.
 End setupParams.
 
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Lemma wp_setup (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) :
+Lemma wp_setup (servAddr : w64) sl_adtrAddrs (adtrAddrs : list w64) (uids : gset w64) :
   {{{
     "#Hsl_adtrAddrs" ∷ own_slice_small sl_adtrAddrs uint64T DfracDiscarded adtrAddrs ∗
     "%Hlen_adtrs" ∷ ⌜ length adtrAddrs > 0 ⌝
   }}}
   setup #servAddr (slice_val sl_adtrAddrs)
   {{{
-    ptr_setup serv_sig_pk serv_γ serv_vrf_pk adtr_pks, RET #ptr_setup;
-    "#Hsetup" ∷ setupParams.valid ptr_setup (setupParams.mk true servAddr
-      serv_sig_pk serv_γ serv_vrf_pk adtrAddrs adtr_pks)
+    ptr_setup serv adtr_pks, RET #ptr_setup;
+    "Hsetup" ∷ setupParams.own ptr_setup (setupParams.mk true
+      servAddr serv true adtrAddrs adtr_pks) ∗
+    "Huids" ∷ [∗ set] u ∈ uids, u ↪[serv.(Server.γvers)] W64 0
   }}}.
 Proof.
   rewrite /setup. iIntros (Φ) "H HΦ". iNamed "H".
-  wp_apply wp_NewServer.
+  wp_apply (wp_NewServer uids).
   iIntros "*". iNamed 1.
   iPoseProof "Hserv" as "H". iNamed "H".
   wp_apply (wp_VrfPublicKeyEncode with "Hptr_vrf_pk").
@@ -92,9 +97,10 @@ Proof.
     iApply own_slice_zero. }
   iIntros "[_ (%&%&%&H)]". iNamed "H".
   wp_apply wp_Sleep. wp_load. iApply wp_fupd.
+
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
-  iMod (struct_pointsto_persist with "H") as "#H".
-  iDestruct (struct_fields_split with "H") as "{H} H". iNamed "H".
+  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
+  iPersist "servAddr servSigPk servVrfPk adtrAddrs adtrPks".
   iDestruct (own_slice_to_small with "Hsl_adtrPks") as "Hsl_adtrPks".
   iMod (own_slice_small_persist with "Hsl_adtrPks") as "#Hsl_adtrPks".
 

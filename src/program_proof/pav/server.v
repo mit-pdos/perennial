@@ -179,7 +179,7 @@ Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
   "#Hmerk" ∷ wish_merkle_Verify false label []
     non_memb.(NonMemb.MerkleProof) dig.
 
-Lemma wp_NewServer :
+Lemma wp_NewServer (uids : gset w64) :
   {{{ True }}}
   NewServer #()
   {{{
@@ -187,7 +187,8 @@ Lemma wp_NewServer :
     RET (#ptr_serv, slice_val sl_sig_pk, #ptr_vrf_pk);
     "#Hserv" ∷ is_Server ptr_serv serv ∗
     "#Hsl_sig_pk" ∷ own_slice_small sl_sig_pk byteT DfracDiscarded serv.(Server.sig_pk) ∗
-    "#Hptr_vrf_pk" ∷ is_vrf_pk ptr_vrf_pk serv.(Server.vrf_pk)
+    "#Hptr_vrf_pk" ∷ is_vrf_pk ptr_vrf_pk serv.(Server.vrf_pk) ∗
+    "Huids" ∷ [∗ set] u ∈ uids, u ↪[serv.(Server.γvers)] W64 0
   }}}.
 Proof. Admitted.
 

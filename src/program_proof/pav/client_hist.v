@@ -137,12 +137,12 @@ Lemma wp_ClientHist__Put ptr_c c sl_pk d0 (pk : list w8) :
       then
         "Hcli" ∷ ClientHist.own ptr_c c
       else
-        let new_c :=
-          set ClientHist.epochs_hist (λ x, x ++
-            replicate (uint.nat ep - length x) (mjoin $ last x) ++
-            [Some pk]) c in
-        "%Hlt_ep" ∷ ⌜ Z.of_nat $ length c.(ClientHist.epochs_hist) <
-          uint.Z ep + 1 ⌝ ∗
+        let len_diff := uint.Z ep - Z.of_nat (length c.(ClientHist.epochs_hist)) in
+        let new_c := set ClientHist.epochs_hist (λ x, x ++
+          replicate (Z.to_nat len_diff) (mjoin $ last x) ++
+          [Some pk]) c in
+        "%Hlt_diff" ∷ ⌜ len_diff >= 0 ⌝ ∗
+        "%Hnoof_ep" ∷ ⌜ uint.Z $ word.add ep (W64 1) = (uint.Z ep + 1)%Z ⌝ ∗
         "Hcli" ∷ ClientHist.own ptr_c new_c)
   }}}.
 Proof.
@@ -152,6 +152,7 @@ Proof.
   simpl. iIntros "*". iNamed 1.
   iApply "HΦ". iFrame "∗%".
   case_match; iNamed "Herr"; [by iFrame "∗#"|].
+  iSplit; [word|].
   iSplit; [word|].
   iExists (puts_hist ++ [(ep, pk)]), (word.add ep (W64 1)).
   do 3 try iSplit; simpl in *.
@@ -182,11 +183,12 @@ Lemma wp_ClientHist__SelfMon ptr_c c :
       then
         "Hcli" ∷ ClientHist.own ptr_c c
       else
-        let new_c :=
-          set ClientHist.epochs_hist (λ x, x ++
-            replicate (uint.nat ep + 1 - length x) (mjoin $ last x)) c in
-        "%Hlt_ep" ∷ ⌜ Z.of_nat $ length c.(ClientHist.epochs_hist) <=
-          uint.Z ep + 1 ⌝ ∗
+        let new_len := uint.Z ep + 1 in
+        let len_diff := new_len - Z.of_nat (length c.(ClientHist.epochs_hist)) in
+        let new_c := set ClientHist.epochs_hist (λ x, x ++
+          replicate (Z.to_nat len_diff) (mjoin $ last x)) c in
+        "%Hlt_diff" ∷ ⌜ len_diff >= 0 ⌝ ∗
+        "%Hnoof_ep" ∷ ⌜ new_len = uint.Z $ word.add ep (W64 1) ⌝ ∗
         "Hcli" ∷ ClientHist.own ptr_c new_c)
   }}}.
 Proof.
@@ -196,6 +198,7 @@ Proof.
   simpl. iIntros "*". iNamed 1.
   iApply "HΦ". iFrame "∗%".
   case_match; iNamed "Herr"; [by iFrame "∗#"|].
+  iSplit; [word|].
   iSplit; [word|].
   iExists puts_hist, (word.add ep (W64 1)).
   do 3 try iSplit; simpl in *.

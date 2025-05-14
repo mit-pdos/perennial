@@ -55,6 +55,14 @@ Definition is_hist cli_γ serv_vrf_pk (uid : w64)
 
 (* Logical history derived. *)
 
+Lemma mk_hist γ vrf_pk uid :
+  ⊢ is_hist γ vrf_pk uid [] (W64 0).
+Proof.
+  iSplit.
+  - naive_solver.
+  - iIntros (??). word.
+Qed.
+
 Lemma hist_extend_valid γ vrf_pk uid ep hist valid new_valid :
   uint.Z valid ≤ uint.Z new_valid →
   is_hist_ep γ vrf_pk uid ep hist valid -∗

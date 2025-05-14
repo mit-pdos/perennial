@@ -148,6 +148,10 @@ Definition logical_audit γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ :=
       ((λ x, MapValPre.mk x.1 x.2) <$> audit_val) ⌝ ∗
     "%Hlook_adtr" ∷ ⌜ m !! label = audit_val ⌝)).
 
+Global Instance logical_audit_pers a0 a1 a2 a3 :
+  Persistent (logical_audit a0 a1 a2 a3).
+Proof. apply _. Qed.
+
 Lemma do_logical_audit c digs sd aud_pk aud_γ :
   (* most of these preds are copied from Client.own. *)
   (∀ (ep : w64) (dig : list w8),
