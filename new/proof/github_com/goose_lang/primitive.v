@@ -36,4 +36,24 @@ Proof.
   done.
 Qed.
 
+Lemma wp_UInt64Get s q (x: u64) (vs: list w8) :
+  take 8 vs = u64_le x →
+  {{{ is_pkg_init primitive ∗ own_slice s q vs }}}
+    primitive@"UInt64Get" #s
+  {{{ RET #x; own_slice s q vs }}}.
+Proof.
+  intros Hx.
+  wp_start as "Hs".
+Admitted.
+
+Lemma wp_UInt64Put s x (vs: list w8) :
+  (length vs >= w64_bytes)%nat →
+  {{{ is_pkg_init primitive ∗ own_slice s (DfracOwn 1) vs }}}
+    primitive@"UInt64Put" #s #x
+  {{{ RET #(); own_slice s (DfracOwn 1) (u64_le x ++ (drop w64_bytes vs)) }}}.
+Proof.
+  intros Hvs.
+  wp_start as "Hs".
+Admitted.
+
 End wps.

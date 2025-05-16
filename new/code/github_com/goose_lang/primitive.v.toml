@@ -6,6 +6,7 @@ imports = [
 ]
 trusted = [
   "UInt64Put",
+  "UInt64Get",
   "Assume",
   "RandomUint64",
   # FIXME: add remaining functions

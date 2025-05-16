@@ -30,6 +30,10 @@ Global Instance is_pkg_defined_instance : IsPkgDefined primitive :=
 Definition own_allocated : iProp Σ :=
 True.
 
+Global Instance wp_func_call_UInt64Get :
+  WpFuncCall primitive "UInt64Get" _ (is_pkg_defined primitive) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_UInt64Put :
   WpFuncCall primitive "UInt64Put" _ (is_pkg_defined primitive) :=
   ltac:(apply wp_func_call'; reflexivity).
