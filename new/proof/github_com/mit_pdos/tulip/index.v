@@ -1,7 +1,8 @@
 From New.proof.github_com.mit_pdos.tulip Require Import tuple.res program_prelude.
 
 (* systematic *)
-From New.proof.github_com.mit_pdos.tulip Require Import tuple.tuple.
+From New.proof.github_com.mit_pdos.tulip Require Import tuple.
+From New.proof Require Import sync.
 From New.proof Require Import grove_prelude.
 From New.generatedproof.github_com.mit_pdos.tulip Require Import index.
 (* end systematic *)
@@ -18,7 +19,7 @@ Section program.
   Definition own_index (idx : loc) γ α : iProp Σ :=
     ∃ (tplmP : loc) (tplm : gmap dbkey loc),
       let keys_unalloc := keys_all ∖ (dom tplm) in
-      "HtplmP"  ∷ idx ↦[Index :: "tplm"] #tplmP ∗
+      "HtplmP"  ∷ idx ↦s[index.Index :: "tplm"] tplmP ∗
       "Htplm"   ∷ own_map tplmP (DfracOwn 1) tplm ∗
       "Hphysm"  ∷ ([∗ set] key ∈ keys_unalloc, own_phys_hist_half α key [None]) ∗
       "#Hreplm" ∷ ([∗ set] key ∈ keys_all, is_repl_hist_lb γ key [None]) ∗
@@ -26,33 +27,34 @@ Section program.
 
   Definition is_index (idx : loc) (γ : tulip_names) α : iProp Σ :=
     ∃ (muP : loc),
-      "#HmuP" ∷ readonly (idx ↦[Index :: "mu"] #muP) ∗
-      "#Hmu"  ∷ is_lock tulipNS #muP (own_index idx γ α).
+      "#HmuP" ∷ idx ↦s[index.Index :: "mu"]□ muP ∗
+      "#Hmu"  ∷ is_Mutex muP (own_index idx γ α).
 
   Theorem wp_Index__GetTuple (idx : loc) (key : byte_string) γ α :
     key ∈ keys_all ->
     is_index idx γ α -∗
-    {{{ True }}}
-      Index__GetTuple #idx #(LitString key)
+    {{{ is_pkg_init index }}}
+      idx @ index @ "Index'ptr" @ "GetTuple" #key
     {{{ (tpl : loc), RET #tpl; is_tuple tpl key γ α }}}.
   Proof.
     iIntros (Hkey) "#Hidx".
-    iIntros (Φ) "!> _ HΦ".
-    wp_rec.
+    wp_start as "_".
+    wp_auto.
+    iPersist "idx key".
 
     (*@ func (idx *Index) GetTuple(key string) *tuple.Tuple {                   @*)
     (*@     idx.mu.Lock()                                                       @*)
     (*@     tpl, ok := idx.tplm[key]                                            @*)
     (*@                                                                         @*)
     iNamed "Hidx".
-    wp_loadField.
-    wp_apply (wp_Mutex__Lock with "Hmu").
+    wp_auto.
+    wp_apply (wp_Mutex__Lock with "[$Hmu]").
     iIntros "[Hlocked Hidx]".
     iNamed "Hidx".
-    wp_loadField.
-    wp_apply (wp_MapGet with "Htplm").
-    iIntros (tplP ok) "[%Hok Htplm]".
-    wp_pures.
+    wp_auto.
+    wp_apply (wp_map_get with "Htplm").
+    iIntros "Htplm".
+    wp_auto.
 
     (*@     // Return the tuple if there already exists one.                    @*)
     (*@     if ok {                                                             @*)
@@ -60,28 +62,28 @@ Section program.
     (*@         return tpl                                                      @*)
     (*@     }                                                                   @*)
     (*@                                                                         @*)
-    destruct ok; wp_pures.
-    { wp_loadField.
-      wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    destruct (tplm !! key) eqn:Hget.
+    { rewrite Hget. rewrite bool_decide_eq_true_2; [ | by auto ].
+      wp_auto.
+      wp_apply (wp_Mutex__Unlock with "[-HΦ ok tpl]").
       { by iFrame "Hmu Hlocked ∗ #". }
-      wp_pures.
       iApply "HΦ".
-      apply map_get_true in Hok.
       by iApply (big_sepM_lookup with "Htpls").
     }
-    apply map_get_false in Hok as [Hnone _].
+    rewrite Hget. rewrite bool_decide_eq_false_2; [ | by auto ].
+    wp_auto.
 
     (*@     tplnew := tuple.MkTuple()                                           @*)
     (*@     idx.tplm[key] = tplnew                                              @*)
     (*@                                                                         @*)
     iDestruct (big_sepS_delete _ _ key with "Hphysm") as "[Hphys Hphysm]".
-    { apply not_elem_of_dom in Hnone. set_solver. }
+    { apply not_elem_of_dom in Hget. set_solver+ Hkey Hget. }
     iDestruct (big_sepS_elem_of with "Hreplm") as "#Hrepl".
     { apply Hkey. }
-    wp_apply (wp_MkTuple with "Hrepl Hphys").
+    wp_apply (wp_MkTuple with "Hrepl [$Hphys]").
     iIntros (tplnewP) "#Htplnew".
-    wp_loadField.
-    wp_apply (wp_MapInsert with "Htplm"); first done.
+    wp_auto.
+    wp_apply (wp_map_insert with "Htplm").
     iIntros "Htplm".
     iDestruct (big_sepM_insert_2 with "[] Htpls") as "Htpls'".
     { iFrame "Htplnew". }
@@ -89,23 +91,23 @@ Section program.
     (*@     idx.mu.Unlock()                                                     @*)
     (*@     return tplnew                                                       @*)
     (*@ }                                                                       @*)
-    wp_loadField.
-    wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+    wp_auto.
+    wp_apply (wp_Mutex__Unlock with "[-HΦ ok tplnew]").
     { iFrame "Hmu Hlocked ∗ #".
       by rewrite dom_insert_L union_comm_L -difference_difference_l_L.
     }
-    wp_pures.
     by iApply "HΦ".
   Qed.
 
   Theorem wp_MkIndex γ α :
     ([∗ set] key ∈ keys_all, is_repl_hist_lb γ key [None]) -∗
-    {{{ ([∗ set] key ∈ keys_all, own_phys_hist_half α key [None]) }}}
-      MkIndex #()
+    {{{ is_pkg_init index ∗ ([∗ set] key ∈ keys_all, own_phys_hist_half α key [None]) }}}
+      index @ "MkIndex" #()
     {{{ (idx : loc), RET #idx; is_index idx γ α }}}.
   Proof.
-    iIntros "#Hreplm" (Φ) "!> Hphysm HΦ".
-    wp_rec.
+    iIntros "#Hreplm".
+    wp_start as "Hphysm".
+    wp_auto.
 
     (*@ func MkIndex() *Index {                                                 @*)
     (*@     idx := new(Index)                                                   @*)
@@ -113,22 +115,24 @@ Section program.
     (*@     idx.tplm = make(map[string]*tuple.Tuple)                            @*)
     (*@     return idx                                                          @*)
     (*@ }                                                                       @*)
-    wp_apply wp_allocStruct; first by auto.
-    iIntros (idxP) "Hidx".
-    iDestruct (struct_fields_split with "Hidx") as "Hidx".
-    iNamed "Hidx". simpl.
-    wp_apply wp_new_free_lock.
-    iIntros (muP) "Hfree".
-    wp_storeField.
-    wp_apply wp_NewMap.
-    iIntros (tplmP) "Htplm".
-    wp_storeField.
-    iMod (alloc_lock _ _ _ (own_index idxP γ α) with "Hfree [-HΦ mu]") as "#Hmu".
+    wp_alloc idxP as "Hidx".
+    iApply struct_fields_split in "Hidx". iNamed "Hidx".
+    with_strategy opaque [is_pkg_init] cbn.
+    iRename "Hmu" into "mu".
+    wp_auto.
+    wp_alloc muP as "Hfree".
+    wp_auto.
+    wp_apply (wp_map_make (K:=byte_string) (V:=loc)); first done.
+    iIntros (tplmP) "Htplm_map".
+    rewrite -wp_fupd.
+    wp_auto.
+    iMod (init_Mutex (own_index idxP γ α) with "Hfree [-HΦ mu]") as "#Hmu".
     { iFrame "∗ #".
       rewrite dom_empty_L difference_empty_L big_sepM_empty.
-      by iFrame.
+      iFrame.
     }
-    iMod (readonly_alloc_1 with "mu") as "#HmuP".
+    iPersist "mu".
+    iModIntro.
     iApply "HΦ".
     by iFrame "#".
   Qed.
