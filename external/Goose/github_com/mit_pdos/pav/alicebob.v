@@ -69,11 +69,11 @@ Definition bob := struct.decl [
 Definition checkCliErr: val :=
   rec: "checkCliErr" "servGood" "servPk" "err" :=
     (if: (struct.loadF kt.ClientErr "Evid" "err") ≠ #null
-    then control.impl.Assert (~ (kt.Evid__Check (struct.loadF kt.ClientErr "Evid" "err") "servPk"))
+    then std.Assert (~ (kt.Evid__Check (struct.loadF kt.ClientErr "Evid" "err") "servPk"))
     else #());;
     (if: "servGood"
     then
-      control.impl.Assert (~ (struct.loadF kt.ClientErr "Err" "err"));;
+      std.Assert (~ (struct.loadF kt.ClientErr "Err" "err"));;
       #()
     else
       control.impl.Assume (~ (struct.loadF kt.ClientErr "Err" "err"));;
@@ -91,7 +91,7 @@ Definition histEntry := struct.decl [
 Definition extendHist: val :=
   rec: "extendHist" "hist" "numEpochs" :=
     let: "histLen" := slice.len "hist" in
-    control.impl.Assert ("histLen" ≤ "numEpochs");;
+    std.Assert ("histLen" ≤ "numEpochs");;
     let: "last" := ref (zero_val ptrT) in
     (if: "histLen" = #0
     then
