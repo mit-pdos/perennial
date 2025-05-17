@@ -154,13 +154,13 @@ Lemma wp_dec sl_b dq b :
   MapValPreDecode (slice_val sl_b)
   {{{
     ptr_obj sl_tail (err : bool), RET (#ptr_obj, slice_val sl_tail, #err);
-    let wish := (λ enc obj tail,
+    let wish := (λ tail enc obj,
       ("%Henc" ∷ ⌜ encodes enc obj ⌝ ∗
       "%Heq_tail" ∷ ⌜ b = enc ++ tail ⌝) : iProp Σ) in
     "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗
-      ∃ enc obj tail, wish enc obj tail) ∗
+      ∃ tail enc obj, wish tail enc obj) ∗
     "Herr" ∷
-      (∀ enc obj tail, wish enc obj tail -∗
+      (∀ tail enc obj, wish tail enc obj -∗
       "Hown_obj" ∷ own ptr_obj obj (DfracOwn 1) ∗
       "Hsl_tail" ∷ own_slice_small sl_tail byteT dq tail)
   }}}.

@@ -2,6 +2,7 @@ From Perennial.program_proof.pav Require Import prelude.
 From Goose.github_com.mit_pdos.pav Require Import alicebob.
 
 From Perennial.program_proof.pav Require Import core serde.
+From Perennial.program_proof Require Import std_proof.
 
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
@@ -69,7 +70,8 @@ Proof.
   wp_apply wp_slice_len.
   iDestruct (own_slice_sz with "Hsl_hist") as %?.
   iDestruct (big_sepL2_length with "Hdim0_hist") as %?.
-  wp_apply wp_Assert_decide; [word|].
+  wp_apply std_proof.wp_Assert.
+  { case_bool_decide; [done|word]. }
 
   wp_apply wp_ref_of_zero; [done|].
   iIntros "* Hptr2_last".

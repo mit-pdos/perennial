@@ -195,7 +195,8 @@ Lemma wp_CallAdtrGet ptr_cli addr is_good (ep : w64) :
   }}}.
 Proof. Admitted.
 
-(* TODO: with the curr impl, it's impossible for the auditor
+(* Below is a draft auditor correctness spec.
+TODO: with the curr impl, it's impossible for the auditor
 to check if the server's sig is correct.
 if it updates the merkle tree and sig doesn't verify,
 it can't roll-back the update.

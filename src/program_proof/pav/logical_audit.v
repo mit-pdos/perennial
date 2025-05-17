@@ -17,6 +17,7 @@ Definition ok_epochs (ms : list adtr_map_ty) :=
   m_ep !! k = Some (ep', comm) →
   uint.Z ep' ≤ uint.Z ep.
 
+(* TODO: maybe change adtr_map_ty to have MapValPre instead of pair. *)
 Definition map_lower (higher : adtr_map_ty) (lower : merkle_map_ty) :=
   map_Forall2 (λ _ x y, MapValPre.encodes x y) lower
     ((λ x, MapValPre.mk x.1 x.2) <$> higher).

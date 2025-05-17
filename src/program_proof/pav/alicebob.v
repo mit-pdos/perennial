@@ -152,14 +152,14 @@ Proof.
     iIntros "*". iNamed 1.
     iDestruct "Hgenie" as "[_ H]".
     iDestruct ("H" with "His_evid") as %->.
-    wp_apply wp_Assert_true.
+    wp_apply std_proof.wp_Assert; [done|].
     by iFrame. }
   iIntros "*". iNamed 1.
 
   wp_if_destruct.
   - wp_loadField.
     opose proof (Hgenie _) as ->; [done|].
-    wp_apply wp_Assert_true.
+    wp_apply std_proof.wp_Assert; [done|].
     wp_pures. by iApply "HΦ".
   - wp_loadField.
     wp_apply wp_Assume. iIntros (?).

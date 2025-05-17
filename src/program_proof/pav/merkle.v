@@ -939,7 +939,7 @@ Lemma wp_Tree__Digest ptr elems d0 :
     sl_dig dig, RET (slice_val sl_dig);
     "Hown_Tree" ∷ own_Tree ptr elems d0 ∗
     "#His_dig" ∷ is_merkle_map elems dig ∗
-    "#dig_sl" ∷ own_slice_small sl_dig byteT DfracDiscarded dig
+    "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded dig
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -1957,7 +1957,7 @@ Lemma wp_Tree__Put ptr_tr elems sl_label sl_val (label val : list w8) :
     (* even tho length check is part of spec precond,
     code returns err to make it harder for programmers to
     accidentally forget about precond. *)
-    "%Herr" ∷ ⌜ err = false ⌝ ∗
+    "->" ∷ ⌜ err = false ⌝ ∗
     "Hown_Tree" ∷ own_Tree ptr_tr (<[label:=val]>elems) (DfracOwn 1)
   }}}.
 Proof.
