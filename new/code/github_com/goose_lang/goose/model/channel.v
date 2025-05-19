@@ -54,19 +54,6 @@ Definition NewChannelRef : val :=
        "v" ::= type.zero_val "T"
      }]))).
 
-Definition SelectDir : go_type := uint64T.
-
-Definition SelectCase : val :=
-  λ: "T", type.structT [
-    (#"channel"%go, #ptrT);
-    (#"dir"%go, #SelectDir);
-    (#"Value"%go, "T");
-    (#"Ok"%go, #boolT)
-  ].
-
-(* case Chan <- Send *)
-Definition SelectSend : expr := #(W64 0).
-
 (* c.Send(val)
 
    is equivalent to:
@@ -83,20 +70,24 @@ Definition Channel__Send : val :=
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         do:  #())
     else do:  #());;;
-    let: "send_case" := (mem.alloc (type.zero_val (SelectCase "T"))) in
-    let: "$r0" := (let: "$channel" := (![#ptrT] "c") in
-    let: "$dir" := SelectSend in
-    let: "$Value" := (!["T"] "val") in
-    struct.make (SelectCase "T") [{
-      "channel" ::= "$channel";
-      "dir" ::= "$dir";
-      "Value" ::= "$Value";
-      "Ok" ::= type.zero_val #boolT
-    }]) in
-    do:  ("send_case" <-[SelectCase "T"] "$r0");;;
-    do:  (let: "$a0" := "send_case" in
+    let: "sendCase" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (let: "$a0" := (![#ptrT] "c") in
+    let: "$a1" := (!["T"] "val") in
+    ((func_call #channel.channel #"NewSendCase"%go) "T") "$a0" "$a1") in
+    do:  ("sendCase" <-[#ptrT] "$r0");;;
+    do:  (let: "$a0" := (![#ptrT] "sendCase") in
     let: "$a1" := #true in
     ((func_call #channel.channel #"Select1"%go) "T") "$a0" "$a1")).
+
+Definition SelectDir : go_type := uint64T.
+
+Definition SelectCase : val :=
+  λ: "T", type.structT [
+    (#"channel"%go, #ptrT);
+    (#"dir"%go, #SelectDir);
+    (#"Value"%go, "T");
+    (#"Ok"%go, #boolT)
+  ].
 
 (* Equivalent to:
    value, ok := <-c
@@ -104,7 +95,7 @@ Definition Channel__Send : val :=
    channels. This should be able to be solved by adding an overload wrapper that discards the ok
    bool.
 
-   go: channel.go:75:22 *)
+   go: channel.go:71:22 *)
 Definition Channel__Receive : val :=
   rec: "Channel__Receive" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -113,20 +104,20 @@ Definition Channel__Receive : val :=
       (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         do:  #())
     else do:  #());;;
-    let: "recvCase" := (mem.alloc (type.zero_val (SelectCase "T"))) in
+    let: "recvCase" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "c") in
     ((func_call #channel.channel #"NewRecvCase"%go) "T") "$a0") in
-    do:  ("recvCase" <-[SelectCase "T"] "$r0");;;
-    do:  (let: "$a0" := "recvCase" in
+    do:  ("recvCase" <-[#ptrT] "$r0");;;
+    do:  (let: "$a0" := (![#ptrT] "recvCase") in
     let: "$a1" := #true in
     ((func_call #channel.channel #"Select1"%go) "T") "$a0" "$a1");;;
-    return: (!["T"] (struct.field_ref (SelectCase "T") #"Value"%go "recvCase"), ![#boolT] (struct.field_ref (SelectCase "T") #"Ok"%go "recvCase"))).
+    return: (!["T"] (struct.field_ref (SelectCase "T") #"Value"%go (![#ptrT] "recvCase")), ![#boolT] (struct.field_ref (SelectCase "T") #"Ok"%go (![#ptrT] "recvCase")))).
 
 (* This is a non-blocking attempt at closing. The only reason close blocks ever is because there
    may be successful exchanges that need to complete, which is equivalent to the go runtime where
    the closer must still obtain the channel's lock
 
-   go: channel.go:95:22 *)
+   go: channel.go:91:22 *)
 Definition Channel__TryClose : val :=
   rec: "Channel__TryClose" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -149,7 +140,7 @@ Definition Channel__TryClose : val :=
 
    close(c)
 
-   go: channel.go:113:22 *)
+   go: channel.go:109:22 *)
 Definition Channel__Close : val :=
   rec: "Channel__Close" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -174,7 +165,7 @@ Definition Channel__Close : val :=
    It seems like Go requires ignored return values to be annotated with _ but channels don't
    require this so this will need to be translated.
 
-   go: channel.go:131:22 *)
+   go: channel.go:127:22 *)
 Definition Channel__ReceiveDiscardOk : val :=
   rec: "Channel__ReceiveDiscardOk" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -188,7 +179,7 @@ Definition Channel__ReceiveDiscardOk : val :=
 
 (* If there is a value available in the buffer, consume it, otherwise, don't select.
 
-   go: channel.go:138:22 *)
+   go: channel.go:134:22 *)
 Definition Channel__BufferedTryReceiveLocked : val :=
   rec: "Channel__BufferedTryReceiveLocked" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -208,7 +199,7 @@ Definition Channel__BufferedTryReceiveLocked : val :=
     else do:  #());;;
     return: (#false, !["T"] "v", #true)).
 
-(* go: channel.go:152:22 *)
+(* go: channel.go:148:22 *)
 Definition Channel__BufferedTryReceive : val :=
   rec: "Channel__BufferedTryReceive" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -240,7 +231,7 @@ Definition ReceiverObservedClosed : expr := #(W64 2).
 (* Invalid state for receiving *)
 Definition ReceiverCannotProceed : expr := #(W64 3).
 
-(* go: channel.go:168:22 *)
+(* go: channel.go:164:22 *)
 Definition Channel__ReceiverCompleteOrOffer : val :=
   rec: "Channel__ReceiverCompleteOrOffer" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -272,7 +263,7 @@ Definition CompletedExchange : expr := #(W64 1).
 (* Unexpected state, indicates model bugs. *)
 Definition CloseInterruptedOffer : expr := #(W64 2).
 
-(* go: channel.go:196:22 *)
+(* go: channel.go:192:22 *)
 Definition Channel__ReceiverCompleteOrRescindOffer : val :=
   rec: "Channel__ReceiverCompleteOrRescindOffer" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -294,7 +285,7 @@ Definition Channel__ReceiverCompleteOrRescindOffer : val :=
     do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Invalid state transition with open receive offer"%go) in
     Panic "$a0")).
 
-(* go: channel.go:214:22 *)
+(* go: channel.go:210:22 *)
 Definition Channel__UnbufferedTryReceive : val :=
   rec: "Channel__UnbufferedTryReceive" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -335,7 +326,7 @@ Definition Channel__UnbufferedTryReceive : val :=
 (* Non-blocking receive function used for select statements. Blocking receive is modeled as
    a single blocking select statement which amounts to a for loop until selected.
 
-   go: channel.go:246:22 *)
+   go: channel.go:242:22 *)
 Definition Channel__TryReceive : val :=
   rec: "Channel__TryReceive" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -359,7 +350,7 @@ Definition SenderMadeOffer : expr := #(W64 1).
 (* Exchange in progress, don't select *)
 Definition SenderCannotProceed : expr := #(W64 2).
 
-(* go: channel.go:262:22 *)
+(* go: channel.go:258:22 *)
 Definition Channel__SenderCompleteOrOffer : val :=
   rec: "Channel__SenderCompleteOrOffer" "c" "T" "val" :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -387,7 +378,7 @@ Definition Channel__SenderCompleteOrOffer : val :=
     else do:  #());;;
     return: (SenderCannotProceed)).
 
-(* go: channel.go:283:22 *)
+(* go: channel.go:279:22 *)
 Definition Channel__SenderCheckOfferResult : val :=
   rec: "Channel__SenderCheckOfferResult" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -413,7 +404,7 @@ Definition Channel__SenderCheckOfferResult : val :=
 
 (* If the buffer has free space, push our value.
 
-   go: channel.go:301:22 *)
+   go: channel.go:297:22 *)
 Definition Channel__BufferedTrySend : val :=
   rec: "Channel__BufferedTrySend" "c" "T" "val" :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -440,7 +431,7 @@ Definition Channel__BufferedTrySend : val :=
 (* Non-Blocking send operation for select statements. Blocking send and blocking select
    statements simply call this in a for loop until it returns true.
 
-   go: channel.go:318:22 *)
+   go: channel.go:314:22 *)
 Definition Channel__TrySend : val :=
   rec: "Channel__TrySend" "c" "T" "val" :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -484,7 +475,7 @@ Definition Channel__TrySend : val :=
    This might not be worth specifying since it is hard to make good use of channel length
    semantics.
 
-   go: channel.go:354:22 *)
+   go: channel.go:350:22 *)
 Definition Channel__Len : val :=
   rec: "Channel__Len" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -505,7 +496,7 @@ Definition Channel__Len : val :=
    is equivalent to:
    cap(c)
 
-   go: channel.go:369:22 *)
+   go: channel.go:365:22 *)
 Definition Channel__Cap : val :=
   rec: "Channel__Cap" "c" "T" <> :=
     exception_do (let: "c" := (mem.alloc "c") in
@@ -515,12 +506,15 @@ Definition Channel__Cap : val :=
     return: (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
      slice.len "$a0"))).
 
+(* case Chan <- Send *)
+Definition SelectSend : expr := #(W64 0).
+
 (* case <-Chan: *)
 Definition SelectRecv : expr := #(W64 1).
 
 (* TrySelectAt attempts to select a specific case
 
-   go: channel.go:396:6 *)
+   go: channel.go:392:6 *)
 Definition TrySelectAt : val :=
   rec: "TrySelectAt" "T" "selectCase" :=
     exception_do (let: "selectCase" := (mem.alloc "selectCase") in
@@ -534,7 +528,7 @@ Definition TrySelectAt : val :=
 (* TrySelectCase attempts to select a specific case at a given index
    Returns true if the case was selected, false otherwise
 
-   go: channel.go:406:6 *)
+   go: channel.go:402:6 *)
 Definition TrySelectCase : val :=
   rec: "TrySelectCase" "T1" "T2" "T3" "T4" "T5" "index" "case1" "case2" "case3" "case4" "case5" :=
     exception_do (let: "case5" := (mem.alloc "case5") in
@@ -579,7 +573,7 @@ Definition DefaultCase : expr := #(W64 5).
    uint64 and the index after the last makes sense since that would be where the
    default block is.
 
-   go: channel.go:443:6 *)
+   go: channel.go:439:6 *)
 Definition TryCasesInOrder : val :=
   rec: "TryCasesInOrder" "T1" "T2" "T3" "T4" "T5" "order" "case1" "case2" "case3" "case4" "case5" :=
     exception_do (let: "case5" := (mem.alloc "case5") in
@@ -625,7 +619,7 @@ Definition TryCasesInOrder : val :=
    If blocking is false, return 5. 5 is the equivalent of a default case
    in Go channels.
 
-   go: channel.go:472:6 *)
+   go: channel.go:468:6 *)
 Definition multiSelect : val :=
   rec: "multiSelect" "T1" "T2" "T3" "T4" "T5" "case1" "case2" "case3" "case4" "case5" "blocking" :=
     exception_do (let: "blocking" := (mem.alloc "blocking") in
@@ -659,7 +653,7 @@ Definition multiSelect : val :=
    Receive as well, since these channel operations in Go are equivalent to
    a single case select statement with no default.
 
-   go: channel.go:498:6 *)
+   go: channel.go:494:6 *)
 Definition Select1 : val :=
   rec: "Select1" "T1" "case1" "blocking" :=
     exception_do (let: "blocking" := (mem.alloc "blocking") in
@@ -710,7 +704,7 @@ Definition Select1 : val :=
 
 (* Select2 performs a select operation on 2 cases.
 
-   go: channel.go:518:6 *)
+   go: channel.go:514:6 *)
 Definition Select2 : val :=
   rec: "Select2" "T1" "T2" "case1" "case2" "blocking" :=
     exception_do (let: "blocking" := (mem.alloc "blocking") in
@@ -750,7 +744,7 @@ Definition Select2 : val :=
 
 (* Select3 performs a select operation on 3 cases.
 
-   go: channel.go:538:6 *)
+   go: channel.go:534:6 *)
 Definition Select3 : val :=
   rec: "Select3" "T1" "T2" "T3" "case1" "case2" "case3" "blocking" :=
     exception_do (let: "blocking" := (mem.alloc "blocking") in
@@ -783,7 +777,7 @@ Definition Select3 : val :=
 
 (* Select4 performs a select operation on 4 cases.
 
-   go: channel.go:558:6 *)
+   go: channel.go:554:6 *)
 Definition Select4 : val :=
   rec: "Select4" "T1" "T2" "T3" "T4" "case1" "case2" "case3" "case4" "blocking" :=
     exception_do (let: "blocking" := (mem.alloc "blocking") in
@@ -809,7 +803,7 @@ Definition Select4 : val :=
 
 (* Select5 is just an alias to MultiSelect for consistency in the API.
 
-   go: channel.go:578:6 *)
+   go: channel.go:574:6 *)
 Definition Select5 : val :=
   rec: "Select5" "T1" "T2" "T3" "T4" "T5" "case1" "case2" "case3" "case4" "case5" "blocking" :=
     exception_do (let: "blocking" := (mem.alloc "blocking") in
@@ -829,7 +823,7 @@ Definition Select5 : val :=
 (* Uses the applicable Try<Operation> function on the select case's channel. Default is always
    selectable so simply returns true.
 
-   go: channel.go:597:6 *)
+   go: channel.go:593:6 *)
 Definition TrySelect : val :=
   rec: "TrySelect" "T" "select_case" :=
     exception_do (let: "select_case" := (mem.alloc "select_case") in
@@ -864,12 +858,12 @@ Definition TrySelect : val :=
     else do:  #());;;
     return: (#false)).
 
-(* go: channel.go:621:6 *)
+(* go: channel.go:617:6 *)
 Definition NewSendCase : val :=
   rec: "NewSendCase" "T" "channel" "value" :=
     exception_do (let: "value" := (mem.alloc "value") in
     let: "channel" := (mem.alloc "channel") in
-    return: (let: "$channel" := (![#ptrT] "channel") in
+    return: (mem.alloc (let: "$channel" := (![#ptrT] "channel") in
      let: "$dir" := SelectSend in
      let: "$Value" := (!["T"] "value") in
      struct.make (SelectCase "T") [{
@@ -877,20 +871,20 @@ Definition NewSendCase : val :=
        "dir" ::= "$dir";
        "Value" ::= "$Value";
        "Ok" ::= type.zero_val #boolT
-     }])).
+     }]))).
 
-(* go: channel.go:629:6 *)
+(* go: channel.go:625:6 *)
 Definition NewRecvCase : val :=
   rec: "NewRecvCase" "T" "channel" :=
     exception_do (let: "channel" := (mem.alloc "channel") in
-    return: (let: "$channel" := (![#ptrT] "channel") in
+    return: (mem.alloc (let: "$channel" := (![#ptrT] "channel") in
      let: "$dir" := SelectRecv in
      struct.make (SelectCase "T") [{
        "channel" ::= "$channel";
        "dir" ::= "$dir";
        "Value" ::= type.zero_val "T";
        "Ok" ::= type.zero_val #boolT
-     }])).
+     }]))).
 
 Definition vars' : list (go_string * go_type) := [].
 

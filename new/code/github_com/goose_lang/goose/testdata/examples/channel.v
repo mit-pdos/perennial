@@ -17,7 +17,7 @@ Definition SendMessage : val :=
   rec: "SendMessage" <> :=
     exception_do (let: "messageChan" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go) "$a0") in
+    (func_call #channel.channel #"NewChannelRef"%go #stringT) "$a0") in
     do:  ("messageChan" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$a0" := #"hello world"%go in
@@ -43,7 +43,7 @@ Definition JoinWithReceive : val :=
     do:  ("message" <-[#ptrT] "$r0");;;
     let: "done" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go) "$a0") in
+    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
     do:  ("done" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #"hello world"%go in
@@ -69,7 +69,7 @@ Definition JoinWithSend : val :=
     do:  ("message" <-[#ptrT] "$r0");;;
     let: "done" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go) "$a0") in
+    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
     do:  ("done" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #"hello world"%go in
@@ -93,19 +93,19 @@ Definition BroadcastNotification : val :=
   rec: "BroadcastNotification" <> :=
     exception_do (let: "notifyCh" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go) "$a0") in
+    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
     do:  ("notifyCh" <-[#ptrT] "$r0");;;
     let: "done1" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go) "$a0") in
+    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
     do:  ("done1" <-[#ptrT] "$r0");;;
     let: "done2" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go) "$a0") in
+    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
     do:  ("done2" <-[#ptrT] "$r0");;;
     let: "done3" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go) "$a0") in
+    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
     do:  ("done3" <-[#ptrT] "$r0");;;
     let: "results" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "results") in
@@ -200,11 +200,11 @@ Definition CoordinatedChannelClose : val :=
   rec: "CoordinatedChannelClose" <> :=
     exception_do (let: "bufCh" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 2) in
-    (func_call #channel.channel #"NewChannelRef"%go) "$a0") in
+    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
     do:  ("bufCh" <-[#ptrT] "$r0");;;
     let: "syncCh" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go) "$a0") in
+    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
     do:  ("syncCh" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$a0" := #(W64 42) in
