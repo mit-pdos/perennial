@@ -217,5 +217,21 @@ Global Instance wp_func_call_WriteLenPrefixedBytes :
   WpFuncCall marshal "WriteLenPrefixedBytes" _ (is_pkg_defined marshal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_ReadSlice :
+  WpFuncCall marshal "ReadSlice" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_ReadSliceLenPrefix :
+  WpFuncCall marshal "ReadSliceLenPrefix" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WriteSlice :
+  WpFuncCall marshal "WriteSlice" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WriteSliceLenPrefix :
+  WpFuncCall marshal "WriteSliceLenPrefix" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 End names.
 End marshal.
