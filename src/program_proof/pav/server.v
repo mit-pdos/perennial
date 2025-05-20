@@ -27,7 +27,7 @@ End userState.
 Module servEpochInfo.
 Record t :=
   mk {
-    updates: gmap (list w8) (w64 * list w8);
+    updates: merkle_map_ty;
     dig: list w8;
     sig: list w8;
   }.
@@ -37,9 +37,8 @@ Context `{!heapGS Σ, !pavG Σ}.
 
 Definition is_own ptr x : iProp Σ :=
   ∃ ptr2_upd ptr_upd sl_dig sl_sig,
-  "#Hupd" ∷ ([∗ map] sl;y ∈ ptr2_upd;x.(updates),
-    own_slice_small sl byteT DfracDiscarded
-      (MapValPre.encodesF $ MapValPre.mk y.1 y.2)) ∗
+  "#Hupd" ∷ ([∗ map] sl;v ∈ ptr2_upd;x.(updates),
+    own_slice_small sl byteT DfracDiscarded v) ∗
   "#Hptr2_upd" ∷ own_map ptr_upd DfracDiscarded ptr2_upd ∗
   "#Hptr_upd" ∷ ptr ↦[servEpochInfo :: "updates"]□ #ptr_upd ∗
   "#Hsl_dig" ∷ own_slice_small sl_dig byteT DfracDiscarded x.(dig) ∗
@@ -78,7 +77,6 @@ Definition inv_gs serv : iProp Σ :=
   "Hgs_vers" ∷ ghost_map_auth serv.(Server.γvers) (1/2) gs_vers ∗
 
   "%Hmono_maps" ∷ ⌜ mono_maps gs_hist.*1 ⌝ ∗
-  "%Hok_epochs" ∷ ⌜ ok_epochs gs_hist.*1 ⌝ ∗
   "#Hok_vers" ∷ ([∗ map] uid ↦ nVers ∈ gs_vers,
     ∃ label,
     "#Hvrf_out" ∷ is_vrf_out serv.(Server.vrf_pk)
@@ -95,8 +93,9 @@ Definition own_epoch_hist (hist_sl : Slice.t) (hist : list servEpochInfo.t) : iP
 Definition own_Server ptr serv q : iProp Σ :=
   ∃ (keyMap_ptr userInfo_ptr : loc) userInfo_phys commitSecret_sl epochHist_sl
     epochHist_ptrs
-    keyMap userInfo commitSecret epochHist
+    userInfo commitSecret epochHist
     gs_hist gs_vers,
+  let keyMap := default ∅ (last gs_hist.*1) in
 
   (* physical ownership. *)
   "epochHist" ∷ ptr ↦[Server :: "epochHist"]{DfracOwn q} (slice_val epochHist_sl) ∗
@@ -116,16 +115,14 @@ Definition own_Server ptr serv q : iProp Σ :=
       (PreSigDig.encodesF $ PreSigDig.mk (W64 ep) x.(servEpochInfo.dig))
       x.(servEpochInfo.sig)) ∗
   "Hplain_pk" ∷ ([∗ map] uid ↦ x ∈ userInfo,
-    ∃ label commit ep,
+    ∃ label commit,
     "#Hvrf_out" ∷ is_vrf_out serv.(Server.vrf_pk)
-      (MapLabelPre.encodesF $
-        MapLabelPre.mk uid (word.sub x.(userState.numVers) (W64 1)))
+      (enc_label_pre uid (word.sub x.(userState.numVers) (W64 1)))
       label ∗
     "#Hcommit" ∷ is_hash (CommitOpen.encodesF $
       CommitOpen.mk x.(userState.plainPk) commitSecret)
       commit ∗
-    "%Hlook_map" ∷ ⌜ keyMap !! label =
-      Some (MapValPre.encodesF $ MapValPre.mk ep commit) ⌝) ∗
+    "%Hlook_map" ∷ ⌜ keyMap !! label = Some commit ⌝) ∗
   (* TODO: something here needs to tie the versions in userInfo_phys to keyMap.
   this will allow the getHist, etc. helper fns to prove that they got
   memb / non-memb proofs. *)
@@ -138,7 +135,6 @@ Definition own_Server ptr serv q : iProp Σ :=
   (* physical-ghost reln. *)
   "%Heq_dig_hist" ∷ ⌜ gs_hist.*2 = servEpochInfo.dig <$> epochHist ⌝ ∗
   "%Heq_vers" ∷ ⌜ gs_vers = userState.numVers <$> userInfo ⌝ ∗
-  "%Heq_keyM" ∷ ⌜ map_lower (default ∅ (last gs_hist.*1)) keyMap ⌝ ∗
   "%Heq_map_hist" ∷ ([∗ list] ep ↦ x ∈ epochHist,
     ∃ prevM nextM,
     "%Hlook_prevM" ∷ ⌜ gs_hist.*1 !! (pred ep) = Some prevM ⌝ ∗
@@ -165,12 +161,10 @@ Definition wish_checkMembHide vrf_pk uid ver dig memb_hide label : iProp Σ :=
     memb_hide.(MembHide.MapVal) memb_hide.(MembHide.MerkleProof) dig.
 
 Definition wish_checkMemb vrf_pk uid ver dig memb label commit : iProp Σ :=
-  ∃ enc,
   "#Hvrf_proof" ∷ is_vrf_proof vrf_pk (enc_label_pre uid ver) memb.(Memb.LabelProof) ∗
   "#Hvrf_out" ∷ is_vrf_out vrf_pk (enc_label_pre uid ver) label ∗
   "#Hcommit" ∷ is_hash (CommitOpen.encodesF memb.(Memb.PkOpen)) commit ∗
-  "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk memb.(Memb.EpochAdded) commit) ⌝ ∗
-  "#Hmerk" ∷ wish_merkle_Verify true label enc memb.(Memb.MerkleProof) dig.
+  "#Hmerk" ∷ wish_merkle_Verify true label commit memb.(Memb.MerkleProof) dig.
 
 Definition wish_checkNonMemb vrf_pk uid ver dig non_memb : iProp Σ :=
   ∃ label,
@@ -206,7 +200,6 @@ Lemma wp_Server__Put ptr serv uid nVers sl_pk (pk : list w8) cli_next_ep :
     let new_next_ep := word.add sigdig.(SigDig.Epoch) (W64 1) in
     "Hvers" ∷ uid ↪[serv.(Server.γvers)] (word.add nVers (W64 1)) ∗
 
-    "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
     "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
     "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat new_next_ep) ∗
     "%Hlt_ep" ∷ ⌜ Z.of_nat cli_next_ep < uint.Z new_next_ep ⌝ ∗
@@ -371,34 +364,31 @@ Lemma wp_Server__Audit ptr serv (ep : w64) :
   }}}
   Server__Audit #ptr #ep
   {{{
-    ptr_upd upd upd_dec err, RET (#ptr_upd, #err);
+    ptr_upd upd err, RET (#ptr_upd, #err);
     "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ wish) ∗
     "Herr" ∷ (wish -∗
       ∃ gs_hist prevH nextH,
       "#Hupd" ∷ UpdateProof.own ptr_upd upd DfracDiscarded ∗
-      "%Heq_upd_dec" ∷ ⌜ upd.(UpdateProof.Updates) =
-        (λ x, MapValPre.encodesF $ MapValPre.mk x.1 x.2) <$> upd_dec ⌝ ∗
       "#Hlb_hist" ∷ mono_list_lb_own serv.(Server.γhist) gs_hist ∗
       "%Hlook_prevH" ∷ ⌜ gs_hist !! (pred $ uint.nat ep) = Some prevH ⌝ ∗
       "%Hlook_nextH" ∷ ⌜ gs_hist !! (uint.nat ep) = Some nextH ⌝ ∗
       "#Hsig" ∷ is_sig serv.(Server.sig_pk)
         (PreSigDig.encodesF $ PreSigDig.mk ep nextH.2)
         upd.(UpdateProof.Sig) ∗
-      "%HupdM" ∷ ⌜ nextH.1 = upd_dec ∪ prevH.1 ⌝)
+      "%HupdM" ∷ ⌜ nextH.1 = upd.(UpdateProof.Updates) ∪ prevH.1 ⌝)
   }}}.
 Proof. Admitted.
 
-Lemma wp_compMapVal (epoch : w64) ptr_pk_open pk_open d0 :
+Lemma wp_compMapVal ptr_pk_open pk_open d0 :
   {{{
     "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open pk_open d0
   }}}
-  compMapVal #epoch #ptr_pk_open
+  compMapVal #ptr_pk_open
   {{{
     sl_map_val commit, RET (slice_val sl_map_val);
     "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open pk_open d0 ∗
     "#Hcommit" ∷ is_hash (CommitOpen.encodesF pk_open) commit ∗
-    "Hsl_map_val" ∷ own_slice_small sl_map_val byteT (DfracOwn 1)
-      (enc_val epoch commit)
+    "Hsl_map_val" ∷ own_slice_small sl_map_val byteT (DfracOwn 1) commit
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -411,15 +401,8 @@ Proof.
   iIntros "*". iNamedSuffix 1 "_open". simpl.
   iDestruct (own_slice_to_small with "Hsl_enc_open") as "Hsl_enc_open".
   wp_apply (wp_Hash with "[$Hsl_enc_open]"). iIntros "*". iNamed 1.
-  wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
-  iDestruct (struct_fields_split with "H") as "H". iNamed "H".
-  wp_apply wp_NewSliceWithCap; [word|]. iIntros "* Hsl_enc".
   iDestruct (own_slice_to_small with "Hsl_hash") as "Hsl_hash".
-  wp_apply (MapValPre.wp_enc (MapValPre.mk _ _) with "[$Hsl_enc $Epoch $PkCommit $Hsl_hash]").
-  iIntros "*". iNamedSuffix 1 "_mapval". simpl.
-  iDestruct (own_slice_to_small with "Hsl_b_mapval") as "Hsl_b_mapval".
   replace (uint.nat (W64 0)) with (0%nat); [|word].
-  destruct Henc_mapval. subst.
   iApply "HΦ". iFrame "∗#".
 Qed.
 

@@ -94,80 +94,6 @@ Definition own (ptr : loc) (obj : t) d : iProp Σ :=
 End defs.
 End SigDig.
 
-Module MapValPre.
-Record t :=
-  mk {
-    Epoch: w64;
-    PkCommit: list w8;
-  }.
-
-Definition encodesF (obj : t) : list w8 :=
-  u64_le obj.(Epoch) ++ u64_le (length obj.(PkCommit)) ++ obj.(PkCommit).
-
-Definition encodes (enc : list w8) (obj : t) : Prop :=
-  uint.Z (W64 (length obj.(PkCommit))) = length obj.(PkCommit) ∧
-  enc = encodesF obj.
-
-Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
-  encodes enc0 obj0 →
-  encodes enc1 obj1 →
-  enc0 ++ tail0 = enc1 ++ tail1 →
-  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
-Proof.
-  intros (? & Henc0) (? & Henc1) ?.
-  rewrite /encodesF in Henc0 Henc1.
-  list_simplifier. move: H1 => Henc.
-  apply app_inj_1 in Henc as [Heq_ep Henc]; [|len].
-  apply (inj u64_le) in Heq_ep.
-  apply app_inj_1 in Henc as [Hlen_commit Henc]; [|len].
-  apply (inj u64_le) in Hlen_commit.
-  apply app_inj_1 in Henc as [Heq_commit Henc]; [|len].
-  destruct obj0, obj1. by simplify_eq/=.
-Qed.
-
-Section defs.
-Context `{!heapGS Σ}.
-Definition own ptr obj d : iProp Σ :=
-  ∃ sl_pk_commit,
-  "Hptr_epoch" ∷ ptr ↦[MapValPre :: "Epoch"]{d} #obj.(Epoch) ∗
-  "Hptr_pk_commit" ∷ ptr ↦[MapValPre :: "PkCommit"]{d} (slice_val sl_pk_commit) ∗
-  "Hsl_pk_commit" ∷ own_slice_small sl_pk_commit byteT d obj.(PkCommit).
-
-Lemma wp_enc obj sl_b (b : list w8) ptr d :
-  {{{
-    "Hsl_b" ∷ own_slice sl_b byteT (DfracOwn 1) b ∗
-    "Hobj" ∷ own ptr obj d
-  }}}
-  MapValPreEncode (slice_val sl_b) #ptr
-  {{{
-    sl_b' enc, RET (slice_val sl_b');
-    "%Henc" ∷ ⌜ encodes enc obj ⌝ ∗
-    "Hsl_b" ∷ own_slice sl_b' byteT (DfracOwn 1) (b ++ enc) ∗
-    "Hobj" ∷ own ptr obj d
-  }}}.
-Proof. Admitted.
-
-Lemma wp_dec sl_b dq b :
-  {{{
-    "Hsl_b" ∷ own_slice_small sl_b byteT dq b
-  }}}
-  MapValPreDecode (slice_val sl_b)
-  {{{
-    ptr_obj sl_tail (err : bool), RET (#ptr_obj, slice_val sl_tail, #err);
-    let wish := (λ tail enc obj,
-      ("%Henc" ∷ ⌜ encodes enc obj ⌝ ∗
-      "%Heq_tail" ∷ ⌜ b = enc ++ tail ⌝) : iProp Σ) in
-    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗
-      ∃ tail enc obj, wish tail enc obj) ∗
-    "Herr" ∷
-      (∀ tail enc obj, wish tail enc obj -∗
-      "Hown_obj" ∷ own ptr_obj obj (DfracOwn 1) ∗
-      "Hsl_tail" ∷ own_slice_small sl_tail byteT dq tail)
-  }}}.
-Proof. Admitted.
-End defs.
-End MapValPre.
-
 Module AdtrEpochInfo.
 Record t :=
   mk {
@@ -327,7 +253,6 @@ Module Memb.
 Record t :=
   mk {
     LabelProof: list w8;
-    EpochAdded: w64;
     PkOpen: CommitOpen.t;
     MerkleProof: list w8;
   }.
@@ -337,7 +262,6 @@ Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_label_proof ptr_pk_open sl_merk_proof,
   "Hsl_labelP" ∷ own_slice_small sl_label_proof byteT d obj.(LabelProof) ∗
   "Hptr_labelP" ∷ ptr ↦[Memb :: "LabelProof"]{d} (slice_val sl_label_proof) ∗
-  "Hptr_ep_add" ∷ ptr ↦[Memb :: "EpochAdded"]{d} #obj.(EpochAdded) ∗
   "Hpk_open" ∷ CommitOpen.own ptr_pk_open obj.(PkOpen) d ∗
   "Hptr_pk_open" ∷ ptr ↦[Memb :: "PkOpen"]{d} #ptr_pk_open ∗
   (* merkle proofs are always eaten up by decoding. *)

@@ -20,58 +20,22 @@ Definition Auditor := struct.decl [
   "histInfo" :: slice.T ptrT
 ].
 
-(* MapValPre from serde.go *)
-
-Definition MapValPre := struct.decl [
-  "Epoch" :: uint64T;
-  "PkCommit" :: slice.T byteT
-].
-
-(* MapValPreDecode from serde.out.go *)
-
-Definition MapValPreDecode: val :=
-  rec: "MapValPreDecode" "b0" :=
-    let: (("a1", "b1"), "err1") := marshalutil.ReadInt "b0" in
-    (if: "err1"
-    then (slice.nil, slice.nil, #true)
-    else
-      let: (("a2", "b2"), "err2") := marshalutil.ReadSlice1D "b1" in
-      (if: "err2"
-      then (slice.nil, slice.nil, #true)
-      else
-        (struct.new MapValPre [
-           "Epoch" ::= "a1";
-           "PkCommit" ::= "a2"
-         ], "b2", #false))).
-
-(* checkOneUpd from auditor.go *)
-
 (* checkOneUpd checks that an update is safe to apply, and errs on fail. *)
 Definition checkOneUpd: val :=
-  rec: "checkOneUpd" "keys" "nextEp" "mapLabel" "mapVal" :=
+  rec: "checkOneUpd" "keys" "mapLabel" :=
     (if: (slice.len "mapLabel") ≠ cryptoffi.HashLen
     then #true
     else
       let: ("inTree", <>) := merkle.Tree__Get "keys" "mapLabel" in
       (if: "inTree"
       then #true
-      else
-        let: (("valPre", "rem"), "err1") := MapValPreDecode "mapVal" in
-        (if: "err1"
-        then #true
-        else
-          (if: (slice.len "rem") ≠ #0
-          then #true
-          else
-            (if: (struct.loadF MapValPre "Epoch" "valPre") ≠ "nextEp"
-            then #true
-            else #false))))).
+      else #false)).
 
 Definition checkUpd: val :=
-  rec: "checkUpd" "keys" "nextEp" "upd" :=
+  rec: "checkUpd" "keys" "upd" :=
     let: "loopErr" := ref (zero_val boolT) in
-    MapIter "upd" (λ: "mapLabel" "mapVal",
-      (if: checkOneUpd "keys" "nextEp" (StringToBytes "mapLabel") "mapVal"
+    MapIter "upd" (λ: "mapLabel" <>,
+      (if: checkOneUpd "keys" (StringToBytes "mapLabel")
       then "loopErr" <-[boolT] #true
       else #()));;
     ![boolT] "loopErr".
@@ -122,7 +86,7 @@ Definition Auditor__Update: val :=
   rec: "Auditor__Update" "a" "proof" :=
     Mutex__Lock (struct.loadF Auditor "mu" "a");;
     let: "nextEp" := slice.len (struct.loadF Auditor "histInfo" "a") in
-    (if: checkUpd (struct.loadF Auditor "keyMap" "a") "nextEp" (struct.loadF UpdateProof "Updates" "proof")
+    (if: checkUpd (struct.loadF Auditor "keyMap" "a") (struct.loadF UpdateProof "Updates" "proof")
     then
       Mutex__Unlock (struct.loadF Auditor "mu" "a");;
       #true
@@ -276,7 +240,6 @@ Definition CommitOpenDecode: val :=
 
 Definition Memb := struct.decl [
   "LabelProof" :: slice.T byteT;
-  "EpochAdded" :: uint64T;
   "PkOpen" :: ptrT;
   "MerkleProof" :: slice.T byteT
 ].
@@ -289,24 +252,19 @@ Definition MembDecode: val :=
     (if: "err1"
     then (slice.nil, slice.nil, #true)
     else
-      let: (("a2", "b2"), "err2") := marshalutil.ReadInt "b1" in
+      let: (("a2", "b2"), "err2") := CommitOpenDecode "b1" in
       (if: "err2"
       then (slice.nil, slice.nil, #true)
       else
-        let: (("a3", "b3"), "err3") := CommitOpenDecode "b2" in
+        let: (("a3", "b3"), "err3") := marshalutil.ReadSlice1D "b2" in
         (if: "err3"
         then (slice.nil, slice.nil, #true)
         else
-          let: (("a4", "b4"), "err4") := marshalutil.ReadSlice1D "b3" in
-          (if: "err4"
-          then (slice.nil, slice.nil, #true)
-          else
-            (struct.new Memb [
-               "LabelProof" ::= "a1";
-               "EpochAdded" ::= "a2";
-               "PkOpen" ::= "a3";
-               "MerkleProof" ::= "a4"
-             ], "b4", #false))))).
+          (struct.new Memb [
+             "LabelProof" ::= "a1";
+             "PkOpen" ::= "a2";
+             "MerkleProof" ::= "a3"
+           ], "b3", #false)))).
 
 (* NonMemb from serde.go *)
 
@@ -473,25 +431,13 @@ Definition CommitOpenEncode: val :=
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF CommitOpen "Rand" "o"));;
     ![slice.T byteT] "b".
 
-Definition MapValPreEncode: val :=
-  rec: "MapValPreEncode" "b0" "o" :=
-    let: "b" := ref_to (slice.T byteT) "b0" in
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF MapValPre "Epoch" "o"));;
-    "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF MapValPre "PkCommit" "o"));;
-    ![slice.T byteT] "b".
-
 (* compMapVal from server.go *)
 
-(* compMapVal rets mapVal (epoch || Hash(pk || rand)). *)
+(* compMapVal rets mapVal (Hash(pk || rand)). *)
 Definition compMapVal: val :=
-  rec: "compMapVal" "epoch" "pkOpen" :=
+  rec: "compMapVal" "pkOpen" :=
     let: "openByt" := CommitOpenEncode (NewSliceWithCap byteT #0 (((#8 + (slice.len (struct.loadF CommitOpen "Val" "pkOpen"))) + #8) + cryptoffi.HashLen)) "pkOpen" in
-    let: "commit" := cryptoutil.Hash "openByt" in
-    let: "v" := struct.new MapValPre [
-      "Epoch" ::= "epoch";
-      "PkCommit" ::= "commit"
-    ] in
-    MapValPreEncode (NewSliceWithCap byteT #0 ((#8 + #8) + cryptoffi.HashLen)) "v".
+    cryptoutil.Hash "openByt".
 
 (* checkMemb from client.go *)
 
@@ -502,7 +448,7 @@ Definition checkMemb: val :=
     (if: "err"
     then #true
     else
-      let: "mapVal" := compMapVal (struct.loadF Memb "EpochAdded" "memb") (struct.loadF Memb "PkOpen" "memb") in
+      let: "mapVal" := compMapVal (struct.loadF Memb "PkOpen" "memb") in
       merkle.Verify #true "label" "mapVal" (struct.loadF Memb "MerkleProof" "memb") "dig").
 
 (* checkNonMemb errors on fail. *)
@@ -513,7 +459,8 @@ Definition checkNonMemb: val :=
     then #true
     else merkle.Verify #false "label" slice.nil (struct.loadF NonMemb "MerkleProof" "nonMemb") "dig").
 
-(* Put rets the epoch at which the key was put, and evid / error on fail. *)
+(* Put rets an upper bound key insertion epoch, and evid / error on fail.
+   a lower bound from before the insertion comes from the previous SelfMon. *)
 Definition Client__Put: val :=
   rec: "Client__Put" "c" "pk" :=
     let: "stdErr" := struct.new ClientErr [
@@ -533,21 +480,18 @@ Definition Client__Put: val :=
           (if: checkMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") (struct.loadF Client "nextVer" "c") (struct.loadF SigDig "Dig" "dig") "latest"
           then (#0, "stdErr")
           else
-            (if: (struct.loadF SigDig "Epoch" "dig") ≠ (struct.loadF Memb "EpochAdded" "latest")
+            (if: (~ (std.BytesEqual "pk" (struct.loadF CommitOpen "Val" (struct.loadF Memb "PkOpen" "latest"))))
             then (#0, "stdErr")
             else
-              (if: (~ (std.BytesEqual "pk" (struct.loadF CommitOpen "Val" (struct.loadF Memb "PkOpen" "latest"))))
+              (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") ((struct.loadF Client "nextVer" "c") + #1) (struct.loadF SigDig "Dig" "dig") "bound"
               then (#0, "stdErr")
               else
-                (if: checkNonMemb (struct.loadF Client "servVrfPk" "c") (struct.loadF Client "uid" "c") ((struct.loadF Client "nextVer" "c") + #1) (struct.loadF SigDig "Dig" "dig") "bound"
-                then (#0, "stdErr")
-                else
-                  MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
-                  struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
-                  struct.storeF Client "nextVer" "c" (std.SumAssumeNoOverflow (struct.loadF Client "nextVer" "c") #1);;
-                  (struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
-                     "Err" ::= #false
-                   ])))))))).
+                MapInsert (struct.loadF Client "seenDigs" "c") (struct.loadF SigDig "Epoch" "dig") "dig";;
+                struct.storeF Client "nextEpoch" "c" ((struct.loadF SigDig "Epoch" "dig") + #1);;
+                struct.storeF Client "nextVer" "c" (std.SumAssumeNoOverflow (struct.loadF Client "nextVer" "c") #1);;
+                (struct.loadF SigDig "Epoch" "dig", struct.new ClientErr [
+                   "Err" ::= #false
+                 ]))))))).
 
 (* ServerGetArg from serde.go *)
 
@@ -1108,7 +1052,6 @@ Definition MembEncode: val :=
   rec: "MembEncode" "b0" "o" :=
     let: "b" := ref_to (slice.T byteT) "b0" in
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF Memb "LabelProof" "o"));;
-    "b" <-[slice.T byteT] (marshal.WriteInt (![slice.T byteT] "b") (struct.loadF Memb "EpochAdded" "o"));;
     "b" <-[slice.T byteT] (CommitOpenEncode (![slice.T byteT] "b") (struct.loadF Memb "PkOpen" "o"));;
     "b" <-[slice.T byteT] (marshalutil.WriteSlice1D (![slice.T byteT] "b") (struct.loadF Memb "MerkleProof" "o"));;
     ![slice.T byteT] "b".
@@ -1214,10 +1157,8 @@ Definition getLatest: val :=
        ])
     else
       let: ("label", "labelProof") := compMapLabel "uid" ("numVers" - #1) "vrfSk" in
-      let: (("inMap", "mapVal"), "mapProof") := merkle.Tree__Prove "keyMap" "label" in
+      let: (("inMap", <>), "mapProof") := merkle.Tree__Prove "keyMap" "label" in
       std.Assert "inMap";;
-      let: (("valPre", <>), "err1") := MapValPreDecode "mapVal" in
-      std.Assert (~ "err1");;
       let: "r" := compCommitOpen "commitSecret" "label" in
       let: "open" := struct.new CommitOpen [
         "Val" ::= "pk";
@@ -1225,7 +1166,6 @@ Definition getLatest: val :=
       ] in
       (#true, struct.new Memb [
          "LabelProof" ::= "labelProof";
-         "EpochAdded" ::= struct.loadF MapValPre "Epoch" "valPre";
          "PkOpen" ::= "open";
          "MerkleProof" ::= "mapProof"
        ])).
@@ -1746,13 +1686,12 @@ Definition Server__mapper0: val :=
     else #());;
     let: ("latHash", "latProof") := compMapLabel (struct.loadF WQReq "Uid" "in") (![uint64T] "numVers") (struct.loadF Server "vrfSk" "s") in
     let: ("boundHash", "boundProof") := compMapLabel (struct.loadF WQReq "Uid" "in") ((![uint64T] "numVers") + #1) (struct.loadF Server "vrfSk" "s") in
-    let: "nextEpoch" := slice.len (struct.loadF Server "epochHist" "s") in
     let: "r" := compCommitOpen (struct.loadF Server "commitSecret" "s") "latHash" in
     let: "open" := struct.new CommitOpen [
       "Val" ::= struct.loadF WQReq "Pk" "in";
       "Rand" ::= "r"
     ] in
-    let: "mapVal" := compMapVal "nextEpoch" "open" in
+    let: "mapVal" := compMapVal "open" in
     struct.storeF mapper0Out "latestVrfHash" "out" "latHash";;
     struct.storeF mapper0Out "latestVrfProof" "out" "latProof";;
     struct.storeF mapper0Out "boundVrfHash" "out" "boundHash";;
@@ -1791,7 +1730,6 @@ Definition Server__mapper1: val :=
     struct.storeF WQResp "Dig" "out" (getDig (struct.loadF Server "epochHist" "s"));;
     struct.storeF WQResp "Lat" "out" (struct.new Memb [
       "LabelProof" ::= struct.loadF mapper0Out "latestVrfProof" "in";
-      "EpochAdded" ::= (slice.len (struct.loadF Server "epochHist" "s")) - #1;
       "PkOpen" ::= struct.loadF mapper0Out "pkOpen" "in";
       "MerkleProof" ::= "latMerk"
     ]);;

@@ -16,17 +16,17 @@ this difference is why we separated the "history" and "latest" resources. *)
 Section proof.
 Context `{!heapGS Σ, !pavG Σ}.
 
-Definition msv_Some (m : adtr_map_ty) vrf_pk uid pk n_vers : iProp Σ :=
+Definition msv_Some (m : merkle_map_ty) vrf_pk uid pk n_vers : iProp Σ :=
   "#Hhist" ∷
     (∀ ver, ⌜ uint.Z ver < uint.Z (word.sub n_vers (W64 1)) ⌝ -∗
     ∃ label val,
     "#Hlabel" ∷ is_map_label vrf_pk uid ver label ∗
     "%Hlook_map" ∷ ⌜ m !! label = Some val ⌝) ∗
   "#Hlatest" ∷
-    (∃ ep commit label,
+    (∃ commit label,
     "#Hcommit" ∷ is_commit pk commit ∗
     "#Hlabel" ∷ is_map_label vrf_pk uid (word.sub n_vers (W64 1)) label ∗
-    "%Hlook_map" ∷ ⌜ m !! label = Some (ep, commit) ⌝) ∗
+    "%Hlook_map" ∷ ⌜ m !! label = Some commit ⌝) ∗
   "#Hbound" ∷
     (∃ label,
     "#Hlabel" ∷ is_map_label vrf_pk uid n_vers label ∗
@@ -78,7 +78,7 @@ Proof.
   naive_solver.
 Qed.
 
-Definition msv_None (m : adtr_map_ty) vrf_pk uid : iProp Σ :=
+Definition msv_None (m : merkle_map_ty) vrf_pk uid : iProp Σ :=
   ∃ label,
   "#Hlabel" ∷ is_map_label vrf_pk uid (W64 0) label ∗
   "%Hlook_map" ∷ ⌜ m !! label = None ⌝.
