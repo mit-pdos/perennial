@@ -355,11 +355,6 @@ Section interpreter.
           | _ => mfail_bt ("Snd applied to non-PairV of type:" ++ (pretty v))
           end
 
-      | TotalLe e1 e2 =>
-        v1 <- interpret n e1;
-        v2 <- interpret n e2;
-        mret (LitV $ LitBool $ val_le v1 v2)
-
       | InjL e =>
         v <- interpret n e;
           mret (InjLV v)
@@ -888,6 +883,17 @@ Ltac runStateT_inv :=
         subst.
         Transitions.monad_inv.
         do 2 eexists.
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx (AtomicOpOp op) e2)])|].
+        eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx (AtomicOpOp op) #l4)])|].
+        single_step.
+        exact H.
+      }
+      { runStateT_inv.
+        destruct v2 eqn:?; simpl in H; try by inversion H.
+        destruct l2 eqn:?; simpl in H; try by inversion H.
+        subst.
+        Transitions.monad_inv.
+        do 2 eexists.
         eapply nsteps_transitive; [ctx_step (fill [(Primitive2LCtx GlobalPutOp e2)])|].
         eapply nsteps_transitive; [ctx_step (fill [(Primitive2RCtx GlobalPutOp #(str s1))])|].
         single_step.
@@ -910,17 +916,6 @@ Ltac runStateT_inv :=
         case_bool_decide; try by inversion H0;
         repeat (Transitions.monad_simpl; simpl)
         ).
-    }
-
-    (* TotalLe *)
-    {
-      run_next_interpret IHn.
-      run_next_interpret IHn.
-      runStateT_inv.
-      do 2 eexists.
-      eapply nsteps_transitive; [ctx_step (fill [(TotalLeLCtx e2)])|].
-      eapply nsteps_transitive; [ctx_step (fill [(TotalLeRCtx v2)])|].
-      single_step.
     }
 
     (* ExternalOp *)

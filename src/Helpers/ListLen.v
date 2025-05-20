@@ -17,7 +17,7 @@ Create HintDb len.
 Hint Rewrite @singleton_length @length_cons @length_nil : len.
 #[global]
 Hint Rewrite @length_app @length_drop @length_take @length_fmap
-     @length_replicate @repeat_length : len.
+     @length_replicate @repeat_length @subslice_length' : len.
 #[global]
 Hint Rewrite @length_vec_to_list : len.
 #[global]
@@ -28,8 +28,11 @@ Hint Rewrite @length_alter : len.
 Hint Rewrite u64_le_length : len.
 #[global]
 Hint Rewrite u32_le_length : len.
+#[global]
+Hint Rewrite length_seqZ : len.
 
-Ltac len := autorewrite with len; try word.
+(* users can add their own Hint Unfold's to the len db. *)
+Ltac len := autounfold with len; autorewrite with len; try word; try lia.
 
 Tactic Notation "list_elem" constr(l) constr(i) "as" simple_intropattern(x) :=
   let H := fresh "H" x "_lookup" in

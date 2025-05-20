@@ -6,9 +6,9 @@ From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang.automation Require Import extra_tactics.
 From Perennial.goose_lang Require Import proofmode.
 
-From Perennial.program_proof.tutorial.kvservice Require Import get_proof.
-From Perennial.program_proof.tutorial.kvservice Require Import conditionalput_proof.
-From Perennial.program_proof.tutorial.kvservice Require Import put_proof.
+From Perennial.program_proof.tutorial.kvservice Require Import get_proof_gk.
+From Perennial.program_proof.tutorial.kvservice Require Import conditionalput_proof_gk.
+From Perennial.program_proof.tutorial.kvservice Require Import put_proof_gk.
 
 Unset Printing Projections.
 
@@ -90,7 +90,8 @@ Lemma wp_DecodeUint64 sl x q :
 Proof.
   iIntros (Φ) "Hsl HΦ".
   wp_rec.
-  wp_apply (wp_ReadInt with "Hsl").
+  wp_apply (wp_ReadInt [] with "[Hsl]").
+  { by list_simplifier. }
   iIntros (?) "Hsl".
   wp_pures.
   by iApply "HΦ".

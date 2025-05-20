@@ -1,8 +1,9 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm.pure Require Import
   extend nonexpanding_merge fin_maps.
-From Perennial.program_proof.tulip Require Import base stability.
-From Coq.Program Require Import Wf.
+From Perennial.program_proof.tulip Require Import base stability encode.
+
+(* TODO: rename this to recovery.v for consistency with paxos. *)
 
 Section validate.
   Definition validate_key (tid : nat) (ov : option dbval) (ovl : option (list bool)) :=
@@ -528,7 +529,7 @@ Section execute_cmds.
     | LocalStuck => LocalStuck
     end.
 
-  Definition execute_acquire st (tid : nat) (pwrs : dbmap) (ptgs : gset u64) :=
+  Definition execute_acquire st (tid : nat) (pwrs : dbmap) (ptgs : txnptgs) :=
     match st with
     | LocalState cm hists cpm ptgsm sptsm ptsm psm rkm =>
         LocalState
@@ -574,6 +575,7 @@ Section execute_cmds.
                  end
     | ICmd cmd => match cmd with
                  | CmdAcquire tid pwrs ptgs => execute_acquire st tid pwrs ptgs
+                 (* TODO: switch these two to be consistent *)
                  | CmdRead tid key => execute_read st tid key
                  | CmdAdvance tid rank => execute_advance st tid rank
                  | CmdAccept tid rank pdec => execute_accept st tid rank pdec
@@ -884,3 +886,40 @@ Section merge_clog_ilog.
   Qed.
 
 End merge_clog_ilog.
+
+Section encode.
+
+  Definition encode_tulip_read (ts : u64) (key : byte_string) (data : byte_string) :=
+    data = u64_le (U64 0) ++ u64_le ts ++ encode_string key.
+
+  Definition encode_tulip_acquire
+    (ts : u64) (pwrs : dbmap) (ptgs : txnptgs) (data : byte_string) :=
+    ∃ mdata gdata, data = u64_le (U64 1) ++ u64_le ts ++ mdata ++ gdata ∧
+                   encode_dbmap pwrs mdata ∧
+                   encode_txnptgs ptgs gdata.
+
+  Definition encode_tulip_advance (ts rank : u64) (data : byte_string) :=
+    data = u64_le (U64 2) ++ u64_le ts ++ u64_le rank.
+
+  Definition encode_tulip_accept (ts rank : u64) (pdec : bool) (data : byte_string) :=
+    data = u64_le (U64 3) ++ u64_le ts ++ u64_le rank ++ [if pdec then W8 1 else W8 0].
+
+  Definition encode_lsn_icommand (lsn : u64) (icmd : icommand) (data : byte_string) :=
+    ∃ cmddata, data = u64_le lsn ++ cmddata ∧
+               match icmd with
+               | CmdRead ts key => encode_tulip_read ts key cmddata
+               | CmdAcquire ts pwrs ptgs => encode_tulip_acquire ts pwrs ptgs cmddata
+               | CmdAdvance ts rank => encode_tulip_advance ts rank cmddata
+               | CmdAccept ts rank pdec => encode_tulip_accept ts rank pdec cmddata
+               end.
+
+  Lemma encode_lsn_icommand_not_nil lsn icmd :
+    not (encode_lsn_icommand lsn icmd []).
+  Proof.
+    intros Henc.
+    destruct Henc as (cmddata & Happ & _).
+    apply (f_equal length) in Happ.
+    revert Happ. len.
+  Qed.
+
+End encode.

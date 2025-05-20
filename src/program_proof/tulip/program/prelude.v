@@ -85,6 +85,8 @@ Instance ppsl_into_val_for_type :
   IntoValForType ppsl (uint64T * (boolT * unitT)%ht).
 Proof. by constructor; [| | intros [r d]; auto 10]. Defined.
 
+Definition ppsl_to_nat_bool (psl : ppsl) := (uint.nat psl.1, psl.2).
+
 Definition dbpver_to_val (x : u64 * dbval) : val := (#x.1, (dbval_to_val x.2, #())).
 
 Definition dbpver_from_val (v : val) : option dbpver :=
@@ -116,6 +118,31 @@ Proof.
   intros [t [v |]]; by auto 10.
 Defined.
 
+Definition coordid_to_val (v : coordid) : val := (#v.1, (#v.2, #())).
+
+Definition coordid_from_val (v : val) : option coordid :=
+  match v with
+  | (#(LitInt g), (#(LitInt r), #()))%V => Some (g, r)
+  | _ => None
+  end.
+
+#[global]
+Instance coordid_into_val : IntoVal coordid.
+Proof.
+  refine {|
+      to_val := coordid_to_val;
+      from_val := coordid_from_val;
+      IntoVal_def := (W64 0, W64 0);
+    |}.
+  intros v.
+  by destruct v.
+Defined.
+
+#[global]
+Instance coordid_into_val_for_type :
+  IntoValForType coordid (uint64T * (uint64T * unitT)%ht).
+Proof. by constructor; [| | intros [r d]; auto 10]. Defined.
+
 Definition ccommand_to_val (pwrsS : Slice.t) (c : ccommand) : val :=
   match c with
   | CmdAbort ts => (#(U64 0), (#(U64 ts), (Slice.nil, #())))
@@ -126,6 +153,11 @@ Inductive txnphase :=
 | TxnPrepared
 | TxnCommitted
 | TxnAborted.
+
+#[global]
+Instance txnphase_eq_decision :
+  EqDecision txnphase.
+Proof. solve_decision. Qed.
 
 Definition txnphase_to_u64 (p : txnphase) :=
   match p with
@@ -145,6 +177,53 @@ Section def.
   Definition own_dbmap_in_slice s (m : dbmap) : iProp Σ :=
     ∃ l : list dbmod,
       own_slice s (struct.t WriteEntry) (DfracOwn 1) l ∗ ⌜map_to_list m ≡ₚ l⌝.
+
+  Definition own_dbmap_in_slice_frac s (m : dbmap) : iProp Σ :=
+    ∃ (l : list dbmod) (q : dfrac),
+      own_slice_small s (struct.t WriteEntry) q l ∗
+      ⌜map_to_list m ≡ₚ l⌝.
+
+  Definition is_dbmap_in_slice s (m : dbmap) : iProp Σ :=
+    ∃ l : list dbmod,
+      readonly (own_slice_small s (struct.t WriteEntry) (DfracOwn 1) l) ∗
+      ⌜map_to_list m ≡ₚ l⌝.
+
+  #[global]
+  Instance is_dbmap_in_slice_persistent s m :
+    Persistent (is_dbmap_in_slice s m).
+  Proof. apply _. Defined.
+
+  Lemma is_dbmap_in_slice_unpersist s m E :
+    is_dbmap_in_slice s m ={E}=∗
+    own_dbmap_in_slice_frac s m.
+  Proof.
+    iIntros "Hm".
+    iDestruct "Hm" as (l) "[Hl %Hl]".
+    iMod (readonly_load with "Hl") as (q) "Hl".
+    by iFrame "∗ %".
+  Qed.
+
+  Lemma own_dbmap_in_slice_persist s m E :
+    own_dbmap_in_slice s m ={E}=∗
+    is_dbmap_in_slice s m.
+  Proof.
+    iIntros "Hm".
+    iDestruct "Hm" as (l) "[Hl %Hl]".
+    iDestruct (own_slice_to_small with "Hl") as "Hl".
+    iMod (readonly_alloc_1 with "Hl") as "Hl".
+    by iFrame "∗ %".
+  Qed.
+
+  Definition is_txnptgs_in_slice s (g : txnptgs) : iProp Σ :=
+    ∃ l : list u64,
+      own_slice_small s uint64T DfracDiscarded l ∗
+      ⌜list_to_set l = g⌝ ∗
+      ⌜NoDup l⌝.
+
+  #[global]
+  Instance is_txnptgs_in_slice_persistent s g :
+    Persistent (is_txnptgs_in_slice s g).
+  Proof. apply _. Defined.
 
   Definition own_pwrs_slice (pwrsS : Slice.t) (c : ccommand) : iProp Σ :=
     match c with

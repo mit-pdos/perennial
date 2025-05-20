@@ -1,9 +1,13 @@
 From Perennial.program_logic Require Export weakestpre.
-From Perennial.goose_lang Require Export lang lifting.
+From Perennial.goose_lang Require Export lang lifting ipersist.
 From Perennial.Helpers Require Export ipm.
 From iris.proofmode Require Import coq_tactics.
+(* make sure solve_proper comes from stdpp and not Coq *)
+From stdpp Require Export tactics.
 From New.golang.theory Require Export typing.
+From Perennial Require Export base.
 From Ltac2 Require Import Ltac2.
+Import Printf.
 Set Default Proof Mode "Classic".
 
 (** Classes that are used to tell [wp_pures] about steps it can take. *)
@@ -51,6 +55,19 @@ Proof.
   repeat iModIntro. iIntros "[Hlc _]". by iApply "Hk".
 Qed.
 
+Lemma pure_wp_val `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+  φ (e : expr) (v' : val) :
+  (∀ stk E Φ (H: φ),
+     ▷ (£ 1 -∗  Φ v') -∗ WP e @ stk; E {{ Φ }}) →
+  PureWp φ e v'.
+Proof.
+  intros Hwp.
+  red. intros ?????.
+  iIntros "HΦ".
+  iApply wp_bind; auto.
+  iApply Hwp; auto.
+Qed.
+
 End classes.
 
 (** Some basic, primitive instances. Adapted to use `IntoVal`. *)
@@ -87,8 +104,16 @@ Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_case_inl v e1 e2 : PureWp True (Case (InjLV v) e1 e2) (e1 v).
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_total_le (v1 v2 : val) : PureWp True (TotalLe v1 v2) #(val_le v1 v2).
-Proof. apply (pure_exec_pure_wp O). rewrite to_val_unseal. solve_pure_exec. Qed.
+Definition wp_eq_val (v1 v2 : val) :
+  PureWp (is_comparable v1 ∧ is_comparable v2) (BinOp EqOp v1 v2) #(bool_decide (v1 = v2)).
+Proof.
+  apply (pure_exec_pure_wp O).
+  intros Hcomp.
+  cut (bin_op_eval EqOp v1 v2 = Some $ LitV $ LitBool $ bool_decide (v1 = v2)).
+  { rewrite to_val_unseal. solve_pure_exec. }
+  rewrite /bin_op_eval /bin_op_eval_eq /=.
+  rewrite decide_True //.
+Qed.
 
 Global Instance wp_eq `{!IntoVal V} `{!IntoValTyped V t} (v1 v2 : V) :
   PureWp (is_comparable_go_type t = true) (BinOp EqOp #v1 #v2) #(bool_decide (v1 = v2)) | 0.
@@ -112,8 +137,11 @@ Qed.
 Global Instance wp_neg_w64 (v : w64) : PureWp True (~#v) #(word.not v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_w64_u_to_w64 (v : w64) : PureWp True (u_to_w64 #v) #(W64 $ uint.Z v).
-Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Global Instance wp_w64_u_to_w64 (v : w64) : PureWp True (u_to_w64 #v) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  solve_pure_exec. replace (_ (uint.Z v)) with v by word. done.
+Qed.
 
 Global Instance wp_w64_u_to_w32 (v : w64) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -121,8 +149,11 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_w64_u_to_w8 (v : w64) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_w64_s_to_w64 (v : w64) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
-Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Global Instance wp_w64_s_to_w64 (v : w64) : PureWp True (s_to_w64 #v) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  solve_pure_exec. replace (_ (sint.Z v)) with v by word. done.
+Qed.
 
 Global Instance wp_w64_s_to_w32 (v : w64) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -137,8 +168,11 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_w32_u_to_w64 (v : w32) : PureWp True (u_to_w64 #v) #(W64 $ uint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_w32_u_to_w32 (v : w32) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
-Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Global Instance wp_w32_u_to_w32 (v : w32) : PureWp True (u_to_w32 #v) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  solve_pure_exec. replace (_ (uint.Z v)) with v by word. done.
+Qed.
 
 Global Instance wp_w32_u_to_w8 (v : w32) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -146,8 +180,11 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_w32_s_to_w64 (v : w32) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_w32_s_to_w32 (v : w32) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
-Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Global Instance wp_w32_s_to_w32 (v : w32) : PureWp True (s_to_w32 #v) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  solve_pure_exec. replace (_ (sint.Z v)) with v by word. done.
+Qed.
 
 Global Instance wp_w32_s_to_w8 (v : w32) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -162,8 +199,11 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_w8_u_to_w32 (v : w8) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_w8_u_to_w8 (v : w8) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
-Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Global Instance wp_w8_u_to_w8 (v : w8) : PureWp True (u_to_w8 #v) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  solve_pure_exec. replace (_ (uint.Z v)) with v by word. done.
+Qed.
 
 Global Instance wp_w8_s_to_w64 (v : w8) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -171,8 +211,11 @@ Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 Global Instance wp_w8_s_to_w32 (v : w8) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
-Global Instance wp_w8_s_to_w8 (v : w8) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
-Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Global Instance wp_w8_s_to_w8 (v : w8) : PureWp True (s_to_w8 #v) #v.
+Proof.
+  rewrite to_val_unseal. apply (pure_exec_pure_wp O).
+  solve_pure_exec. replace (_ (sint.Z v)) with v by word. done.
+Qed.
 
 Global Instance wp_w8_to_string (v : w8) : PureWp True (to_string #v) #([v]).
 Proof. rewrite to_val_unseal. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -380,39 +423,42 @@ Ltac2 Type exn ::= [ Walk_expr_not_found ].
 
 Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
   let rec walk_ctx (e : constr) (k : constr) :=
-    lazy_match! e with | Val _ => Control.backtrack_tactic_failure "walk_expr: reached a val" | _ => () end;
+    lazy_match! e with | Val _ => Control.zero Walk_expr_not_found | _ => () end;
     match Control.case (fun () => f e k) with
     | Val (a, _) => a
     | Err Walk_expr_more =>
-        match! e with
-        | fill ?k' ?e                     => walk_ctx e '($k ++ $k')
-        | App ?e1 (Val ?v)                => walk_ctx e1 '(@AppLCtx _ $v :: $k)
-        | App ?e1 ?e2                     => walk_ctx e2 '(@AppRCtx _ $e1 :: $k)
-        | UnOp ?op ?e                     => walk_ctx e '(@UnOpCtx _ $op :: $k)
-        | BinOp ?op (Val ?v) ?e           => walk_ctx e '(@BinOpRCtx _ $op $v :: $k)
-        | BinOp ?op ?e1 ?e2               => walk_ctx e1 '(@BinOpLCtx _ $op $e2 :: $k)
-        | If ?e0 ?e1 ?e2                  => walk_ctx e0 '(IfCtx $e1 $e2 :: $k)
-        | Pair (Val ?v) ?e                => walk_ctx e '(PairRCtx $v :: $k)
-        | Pair ?e1 ?e2                    => walk_ctx e1 '(PairLCtx $e2 :: $k)
-        | Fst ?e                          => walk_ctx e '(@FstCtx _ :: $k)
-        | Snd ?e                          => walk_ctx e '(@SndCtx _ :: $k)
-        | InjL ?e                         => walk_ctx e '(@InjLCtx _ :: $k)
-        | InjR ?e                         => walk_ctx e '(@InjRCtx _ :: $k)
-        | Case ?e0 ?e1 ?e2                => walk_ctx e0 '(CaseCtx $e1 $e2 :: $k)
-        | Primitive2 ?op (Val ?v) ?e      => walk_ctx e '(@Primitive2RCtx _ $op $v :: $k)
-        | Primitive2 ?op ?e1 ?e2          => walk_ctx e1 '(@Primitive2LCtx _ $op $e2 :: $k)
-        | Primitive1 ?op ?e               => walk_ctx e '(@Primitive1Ctx _ $op :: $k)
-        | @ExternalOp ?ext ?op ?e         => walk_ctx e '(@ExternalOpCtx $ext $op :: $k)
-        | CmpXchg (Val ?v0) (Val ?v1) ?e2 => walk_ctx e2 '(CmpXchgRCtx $v0 $v1 :: $k)
-        | CmpXchg (Val ?v0) ?e1 ?e2       => walk_ctx e1 '(CmpXchgMCtx $v0 $e2 :: $k)
-        | CmpXchg ?e0 ?e1 ?e2             => walk_ctx e0 '(CmpXchgLCtx $e1 $e2 :: $k)
-        | ResolveProph (Val ?v) ?e        => walk_ctx e '(@ResolveProphRCtx _ $v :: $k)
-        | ResolveProph ?e1 ?e2            => walk_ctx e1 '(@ResolveProphLCtx _ $e2 :: $k)
-        | _ => Control.zero Walk_expr_not_found
+        lazy_match! e with
+        | fill ?k' ?e                     => walk_ctx e constr:($k ++ $k')
+        | App ?e1 (Val ?v)                => walk_ctx e1 constr:(@AppLCtx _ $v :: $k)
+        | App ?e1 ?e2                     => walk_ctx e2 constr:(@AppRCtx _ $e1 :: $k)
+        | UnOp ?op ?e                     => walk_ctx e constr:(@UnOpCtx _ $op :: $k)
+        | BinOp ?op (Val ?v) ?e           => walk_ctx e constr:(@BinOpRCtx _ $op $v :: $k)
+        | BinOp ?op ?e1 ?e2               => walk_ctx e1 constr:(@BinOpLCtx _ $op $e2 :: $k)
+        | If ?e0 ?e1 ?e2                  => walk_ctx e0 constr:(IfCtx $e1 $e2 :: $k)
+        | Pair (Val ?v) ?e                => walk_ctx e constr:(PairRCtx $v :: $k)
+        | Pair ?e1 ?e2                    => walk_ctx e1 constr:(PairLCtx $e2 :: $k)
+        | Fst ?e                          => walk_ctx e constr:(@FstCtx _ :: $k)
+        | Snd ?e                          => walk_ctx e constr:(@SndCtx _ :: $k)
+        | InjL ?e                         => walk_ctx e constr:(@InjLCtx _ :: $k)
+        | InjR ?e                         => walk_ctx e constr:(@InjRCtx _ :: $k)
+        | Case ?e0 ?e1 ?e2                => walk_ctx e0 constr:(CaseCtx $e1 $e2 :: $k)
+        | Primitive2 ?op (Val ?v) ?e      => walk_ctx e constr:(@Primitive2RCtx _ $op $v :: $k)
+        | Primitive2 ?op ?e1 ?e2          => walk_ctx e1 constr:(@Primitive2LCtx _ $op $e2 :: $k)
+        | Primitive1 ?op ?e               => walk_ctx e constr:(@Primitive1Ctx _ $op :: $k)
+        | @ExternalOp ?ext ?op ?e         => walk_ctx e constr:(@ExternalOpCtx $ext $op :: $k)
+        | CmpXchg (Val ?v0) (Val ?v1) ?e2 => walk_ctx e2 constr:(CmpXchgRCtx $v0 $v1 :: $k)
+        | CmpXchg (Val ?v0) ?e1 ?e2       => walk_ctx e1 constr:(CmpXchgMCtx $v0 $e2 :: $k)
+        | CmpXchg ?e0 ?e1 ?e2             => walk_ctx e0 constr:(CmpXchgLCtx $e1 $e2 :: $k)
+        | ResolveProph (Val ?v) ?e        => walk_ctx e constr:(@ResolveProphRCtx _ $v :: $k)
+        | ResolveProph ?e1 ?e2            => walk_ctx e1 constr:(@ResolveProphLCtx _ $e2 :: $k)
+        | Rec _ _ _ => Control.zero Walk_expr_not_found
+        | Fork _ => Control.zero Walk_expr_not_found
+        | Primitive0 _ => Control.zero Walk_expr_not_found
+        | _ => Control.zero (Tactic_failure (Some (fprintf "walk_expr: no match for expr %t" e)))
         end
     | Err e => Control.zero e
     end
-  in (walk_ctx e) '(@nil ectx_item).
+  in (walk_ctx e) constr:(@nil ectx_item).
 
 Ltac2 wp_walk_unwrap t s :=
   match Control.case t with
@@ -425,7 +471,7 @@ Ltac2 wp_walk_unwrap t s :=
 (* Maybe avoid MaybeIntoLaterNEnvs if there are no  laters syntactically. *)
 Ltac2 wp_pure_visit e k :=
      (* This looks for an instance before eapply to make to fail fast. *)
-     let pure_wp := Control.once_plus (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
+     let pure_wp := orelse (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
                       (fun _ => Control.zero Walk_expr_more) in
      eapply (tac_wp_pure_wp $k $e $pure_wp) >
        [ltac1:(try done)|
@@ -444,7 +490,7 @@ Ltac2 wp_pure () :=
 
 Ltac2 wp_pure_lc_visit e k :=
   (* This looks for an instance before eapply to make to fail fast. *)
-  let pure_wp := Control.once_plus (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
+  let pure_wp := orelse (fun () => '(ltac:(tc_solve) : PureWp _ $e _))
                    (fun _ => Control.zero Walk_expr_more) in
   eapply (tac_wp_pure_wp_later_credit $k $e $pure_wp) >
     [ltac1:(try done)|
@@ -465,28 +511,35 @@ Tactic Notation "wp_pure_lc" constr(H) := ltac2:(Control.enter wp_pure_lc); iInt
 Tactic Notation "wp_pures" := repeat (wp_pure; []).
 
 Ltac2 wp_call_visit e k :=
-  Control.once_plus (fun () => Std.unify e '(App (rec: _ _ := _)%V _))
+  orelse (fun () => Std.unify e '(App (rec: _ _ := _)%V _))
     (fun _ => Control.zero Walk_expr_more);
   eapply (tac_wp_rec $k) >
     [ltac1:(tc_solve) | ltac1:(tc_solve)|
       ltac1:(reduction.pm_prettify; simpl subst'; simpl fill)].
 
 Ltac2 wp_call () :=
+  (* XXX: this is when `zero_val`s tend to show up (unfolding the body of a
+     function), so try rewriting to use IntoValTyped's default. *)
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
       wp_walk_unwrap (fun () => walk_expr e wp_call_visit)
-        "wp_call: could not find a function call expression at the head"
+        "wp_call: could not find a function call expression at the head";
+      try (rewrite <- !default_val_eq_zero_val)
   | [ |-  _ ] => Control.backtrack_tactic_failure "wp_call: current proof is not a WP"
   end.
 Tactic Notation "wp_call" := ltac2:(Control.enter wp_call); iIntros "_"; wp_pures.
 Tactic Notation "wp_call_lc" constr(H) := ltac2:(Control.enter wp_call); iIntros H; wp_pures.
 
+Ltac pure_wp_start :=
+  apply pure_wp_val; intros ????;
+  iIntros "HΦ"; try (wp_call_lc "Hlc"; try iSpecialize ("HΦ" with "[$Hlc]")).
+
 Ltac2 wp_bind_filter (filter_tac : constr -> unit) : constr :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
-      Control.once_plus (fun () => filter_tac e; e) (* if the top-level matches, don't walk down the expr at all. *)
+      orelse (fun () => filter_tac e; e) (* if the top-level matches, don't walk down the expr at all. *)
         (fun _ => walk_expr e (fun e' k =>
-                              Control.once_plus (fun () => filter_tac e')
+                              orelse (fun () => filter_tac e')
                                 (fun _ => Control.zero Walk_expr_more);
                               eapply (tac_wp_bind $k $e') >
                                 [simpl; reflexivity|ltac1:(reduction.pm_prettify)]; e'))
@@ -496,24 +549,41 @@ Tactic Notation "wp_bind" open_constr(e) :=
   let f := ltac2:(e |-
                     let e := Ltac1.to_constr e in
                     let e := Option.get e in
-                    Control.once_plus
+                    orelse
                       (fun () => let _ := wp_bind_filter (Std.unify e) in ())
                       (fun _ => Control.backtrack_tactic_failure "wp_bind: could not find pattern")
                  ) in
   f e.
 
-Ltac2 wp_bind_apply () : unit :=
-  Control.once_plus (fun () => let _ := wp_bind_filter
-            (fun e => let rec f e :=
-                     lazy_match! e with
-                     | App (Val _) (Val _) => ()
-                     | App ?e1 (Val _) => f e1
-                     | _ => fail
-                     end
-                   in f e
-    ) in ())
-    (fun _ => Control.backtrack_tactic_failure "wp_bind_apply: could not match a function call with fully evaluated arguments")
-.
+Ltac2 wp_bind_next () : unit :=
+  lazy_match! goal with
+  | [ |- envs_entails _ (wp _  _ ?e _) ] =>
+      let bind_ctx := Ref.ref None in
+      let is_call_so_far := Ref.ref true in
+      match Control.case (
+                fun () => walk_expr e
+                         (fun e k => lazy_match! e with
+                                  | App _ (Val _) => (if (Ref.get is_call_so_far) then ()
+                                                     else Ref.set bind_ctx (Some (e,k)));
+                                                    Ref.set is_call_so_far true
+                                  | _ => Ref.set bind_ctx (Some (e,k));
+                                        Ref.set is_call_so_far false
+                                  end; Control.zero Walk_expr_more)) with
+      | Err Walk_expr_not_found => ()
+      | Err e => Control.zero e
+      | _ => Control.throw (Tactic_failure (Some (fprintf "wp_bind_next: expected walk_expr to raise an exception")))
+      end;
+      match (Ref.get bind_ctx) with
+      | None => ()
+      | Some (e, k) =>
+          lazy_match! k with
+          | nil => ()
+          | _ => eapply (tac_wp_bind $k $e) > [simpl; reflexivity|ltac1:(reduction.pm_prettify)]
+          end
+      end
+  end.
+
+Tactic Notation "wp_bind" := ltac2:(wp_bind_next ()).
 
 Lemma tac_wp_true_elim Σ Δ (P: iProp Σ) :
   envs_entails Δ P ->
@@ -530,7 +600,9 @@ Ltac2 solve_bi_true () :=
   | [ |- envs_entails _ (bi_wand (bi_pure True) _) ] => apply tac_wp_true_elim
   end.
 
+Tactic Notation "wp_apply_core" open_constr(lem) :=
+  ltac2:(Control.enter wp_bind_next);
+  iApply lem; try iNext; try ltac2:(Control.enter solve_bi_true).
+
 Tactic Notation "wp_apply" open_constr(lem) :=
-  ltac2:(Control.enter wp_bind_apply);
-  iApply lem; try iNext; try ltac2:(Control.enter solve_bi_true)
-.
+  wp_apply_core lem.

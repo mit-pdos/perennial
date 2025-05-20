@@ -24,7 +24,7 @@ Section program.
     is_txnlog log gid γ -∗
     {{{ True }}}
     <<< ∀∀ l s, own_txn_consensus_half γ gid l s >>>
-      TxnLog__Lookup #log #lsn @ ↑paxosNS ∪ ↑txnlogNS
+      TxnLog__Lookup #log #lsn @ ↑paxosNS ∪ ↑pxcrashNS ∪ ↑txnlogNS
     <<< ∃∃ l', own_txn_consensus_half γ gid l' s ∗ ⌜txn_cpool_subsume_log s l'⌝ >>>
     {{{ (c : ccommand) (ok : bool) (pwrsP : Slice.t), RET (ccommand_to_val pwrsP c, #ok);
         (if ok then own_pwrs_slice pwrsP c else True) ∗
@@ -172,7 +172,8 @@ Section program.
       wp_apply (wp_ReadInt with "Hbs").
       iIntros (p1) "Hbs".
       wp_pures.
-      wp_apply (wp_ReadInt with "Hbs").
+      wp_apply (wp_ReadInt [] with "[Hbs]").
+      { by list_simplifier. }
       iIntros (p2) "Hbs".
       wp_pures.
       iSpecialize ("HΦ" $! (CmdAbort tid) _ Slice.nil).
@@ -265,14 +266,15 @@ Section program.
 
   Theorem wp_TxnLog__SubmitCommit
     (log : loc) (ts : u64) (pwrsS : Slice.t) (pwrs : dbmap) (gid : u64) γ :
+    is_dbmap_in_slice pwrsS pwrs -∗
     is_txnlog log gid γ -∗
-    {{{ own_dbmap_in_slice pwrsS pwrs }}}
+    {{{ True }}}
     <<< ∀∀ vs, own_txn_cpool_half γ gid vs >>>
       TxnLog__SubmitCommit #log #ts (to_val pwrsS) @ ↑paxosNS ∪ ↑txnlogNS
     <<< own_txn_cpool_half γ gid ({[CmdCommit (uint.nat ts) pwrs]} ∪ vs) >>>
     {{{ (lsn : u64) (term : u64), RET (#lsn, #term); True }}}.
   Proof.
-    iIntros "#Htxnlog" (Φ) "!> Hpwrs HAU".
+    iIntros "#Hpwrs #Htxnlog" (Φ) "!> _ HAU".
     wp_rec.
 
     (*@ func (log *TxnLog) SubmitCommit(ts uint64, pwrs []tulip.WriteEntry) (uint64, uint64) { @*)
@@ -287,8 +289,9 @@ Section program.
     iIntros (p1) "Hbs".
     wp_apply (wp_WriteInt with "Hbs").
     iIntros (p2) "Hbs".
-    wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $Hpwrs]").
-    iIntros (dataP mdata) "(Hbs & Hpwrs & %Hpwrsenc)".
+    iMod (is_dbmap_in_slice_unpersist with "Hpwrs") as "HpwrsR".
+    wp_apply (wp_EncodeKVMapFromSlice with "[$Hbs $HpwrsR]").
+    iIntros (dataP mdata) "(Hbs & _ & %Hpwrsenc)".
 
     (*@     lsn, term := log.px.Submit(string(data))                            @*)
     (*@                                                                         @*)
@@ -370,28 +373,21 @@ Section program.
   Theorem wp_Start
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64) (log : list byte_string)
     (addrmP : loc) (addrm : gmap u64 chan) (fname : byte_string) gid γ π :
-    termc = (W64 0) ->
-    terml = (W64 0) ->
-    lsnc = (W64 0) ->
-    log = [] ->
-    (* remove above assumptions once recovery is proven *)
+    let dst := PaxosDurable termc terml log lsnc in
     is_node_wal_fname π nidme fname -∗
     know_paxos_inv π (dom addrm) -∗
     know_paxos_file_inv π (dom addrm) -∗
     know_paxos_network_inv π addrm -∗
     know_tulip_txnlog_inv γ π gid -∗
     {{{ own_map addrmP (DfracOwn 1) addrm ∗
-        own_current_term_half π nidme (uint.nat termc) ∗
-        own_ledger_term_half π nidme (uint.nat terml) ∗
-        own_committed_lsn_half π nidme (uint.nat lsnc) ∗
-        own_node_ledger_half π nidme log
+        own_crash_ex pxcrashNS (own_paxos_durable π nidme) dst
     }}}
       Start #nidme #addrmP #(LitString fname)
     {{{ (txnlog : loc), RET #txnlog; is_txnlog txnlog gid γ }}}.
   Proof.
-    iIntros (Htermcz Htermlz Hlsncz Hlogz).
+    intros dst.
     iIntros "#Hfnamewal #Hinv #Hinvfile #Hinvnet #Hinvtxnlog" (Φ).
-    iIntros "!> (Haddrm & Htermc & Hterml & Hlsnc & Hlogn) HΦ".
+    iIntros "!> [Haddrm Hdurable] HΦ".
     wp_rec. wp_pures.
 
     (*@ func Start(nidme uint64, addrm map[uint64]grove_ffi.Address, fname string) *TxnLog { @*)
@@ -400,11 +396,7 @@ Section program.
     (*@     return txnlog                                                       @*)
     (*@ }                                                                       @*)
     wp_apply (wp_Start
-      with "Hfnamewal Hinv Hinvfile Hinvnet [$Haddrm $Htermc $Hterml $Hlsnc $Hlogn]").
-    { done. }
-    { done. }
-    { done. }
-    { done. }
+      with "Hfnamewal Hinv Hinvfile Hinvnet [$Haddrm $Hdurable]").
     iIntros (pxP) "#Hpx".
     wp_apply (wp_allocStruct); first by auto.
     iIntros (txnlogP) "HtxnlogP".

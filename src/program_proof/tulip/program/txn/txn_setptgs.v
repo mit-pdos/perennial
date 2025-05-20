@@ -5,21 +5,22 @@ Section program.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
   Theorem wp_Txn__setptgs txn q wrs :
-    {{{ own_txn_wrs txn q wrs ∗ own_txn_ptgs txn [] }}}
+    {{{ own_txn_wrs txn q wrs ∗ own_txn_ptgs_empty txn }}}
       Txn__setptgs #txn
-    {{{ RET #(); ∃ ptgs, own_txn_wrs txn q wrs ∗ own_txn_ptgs txn ptgs ∗
-                         ⌜list_to_set ptgs = ptgroups (dom wrs)⌝
+    {{{ RET #();
+        own_txn_wrs txn q wrs ∗ own_txn_ptgs_fixed txn (ptgroups (dom wrs))
     }}}.
   Proof using heapGS0 tulip_ghostG0 Σ.
     iIntros (Φ) "[Hwrs Hptgs] HΦ".
     wp_rec.
 
     (*@ func (txn *Txn) setptgs() {                                             @*)
-    (*@     var ptgs = txn.ptgs                                                 @*)
+    (*@     var ptgs = make([]uint64, 0, 1)                                     @*)
     (*@                                                                         @*)
     iNamed "Hptgs".
-    clear Hnd.
-    wp_loadField.
+    wp_apply wp_NewSliceWithCap; first word.
+    iIntros (p) "Hptgs".
+    rewrite uint_nat_W64_0 /=.
     wp_apply wp_ref_to; first apply slice_val_ty.
     iIntros (ptgsP) "HptgsP".
 
@@ -94,9 +95,9 @@ Section program.
           }
           rewrite elem_of_singleton in Hgid.
           subst g.
-          (* FIXME: not sure if word is supposed to solve this immediately *)
-          assert (Hnz : size pwrs ≠ O).
-          { intros Hz. rewrite Hz in Heqb. word. }
+          unfold dbmap in *. (* XXX: this is because some occurrences of dbmap
+                                are unfolded (perhaps because of lemmas like wp_MapLen). *)
+          assert (Hnz : (size pwrs ≠ O)) by word.
           clear Heqb.
           specialize (Hwrsg _ _ Hpwrs). simpl in Hwrsg.
           intros Hempty.
@@ -133,6 +134,8 @@ Section program.
     iNamed "HP".
     wp_load. wp_storeField.
     iApply "HΦ".
+    iDestruct (own_slice_to_small with "Hptgs") as "Hptgs".
+    iMod (own_slice_small_persist with "Hptgs") as "#Hptgs'".
     iFrame "∗ # %".
     iPureIntro.
     apply set_eq.

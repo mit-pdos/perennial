@@ -1,14 +1,15 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Perennial.program_proof.rsm Require Import big_sep.
-From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps.
-From Perennial.program_proof.tulip Require Import base res cmd msg.
+From Perennial.program_proof.rsm.pure Require Import vslice extend quorum fin_maps serialize.
+From Perennial.program_proof.tulip Require Import
+  base res cmd msg big_sep stability.
 From Perennial.program_proof.tulip Require Export
   inv_txnsys inv_key inv_group inv_replica.
 
 Section inv.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : tulip_names).
+
+  Definition tulipcoreNS := tulipNS .@ "core".
 
   Definition tulip_inv_with_proph γ p : iProp Σ :=
     (* txn invariants *)
@@ -26,17 +27,15 @@ Section inv.
   Proof. apply _. Qed.
 
   Definition know_tulip_inv_with_proph γ p : iProp Σ :=
-    inv tulipNS (tulip_inv_with_proph γ p).
+    inv tulipcoreNS (tulip_inv_with_proph γ p).
 
   Definition know_tulip_inv γ : iProp Σ :=
-    ∃ p, inv tulipNS (tulip_inv_with_proph γ p).
+    ∃ p, know_tulip_inv_with_proph γ p.
 
 End inv.
 
 Section def.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : tulip_names).
 
   Definition slow_read γ rid key lts ts v : iProp Σ :=
     "#Hv"    ∷ is_repl_hist_at γ key lts v ∗
@@ -154,12 +153,109 @@ Section def.
     Timeless (query_outcome γ ts res).
   Proof. destruct res; apply _. Defined.
 
+  Definition latest_proposal_replica γ gid rid ts rk rkl p : iProp Σ :=
+    ∃ (lb : ballot),
+      "#Hlb"   ∷ is_replica_ballot_lb γ gid rid ts lb ∗
+      (* We can deduce this from [Hlb] and replica inv, but it's convenient to have it here. *)
+      "#Hgpsl" ∷ is_group_prepare_proposal_if_classic γ gid ts rkl p ∗
+      "%Hp"    ∷ ⌜lb !! rkl = Some (Accept p)⌝ ∗
+      "%Hrk"   ∷ ⌜length lb = rk⌝ ∗
+      "%Hrkl"  ∷ ⌜latest_term lb = rkl⌝.
+
+  Definition inquire_positive_outcome
+    γ gid rid cid ts rk rkl p (vd : bool) pwrs : iProp Σ :=
+    "#Hvote"     ∷ is_replica_backup_vote γ gid rid ts rk cid ∗
+    "#Hlb"       ∷ latest_proposal_replica γ gid rid ts rk rkl p ∗
+    "#Hvd"       ∷ (if vd then is_replica_validated_ts γ gid rid ts else True) ∗
+    "#Hsafepwrs" ∷ (if vd then safe_txn_pwrs γ gid ts pwrs else True).
+
+  #[global]
+  Instance inquire_outcome_positive_persistent γ gid rid cid ts rk rkl p vd pwrs :
+    Persistent (inquire_positive_outcome γ gid rid cid ts rk rkl p vd pwrs).
+  Proof. destruct vd; apply _. Defined.
+
+  #[global]
+  Instance inquire_outcome_positive_timeless γ gid rid cid ts rk rkl p vd pwrs :
+    Timeless (inquire_positive_outcome γ gid rid cid ts rk rkl p vd pwrs).
+  Proof. destruct vd; apply _. Defined.
+  
+  Definition inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res : iProp Σ :=
+    match res with
+    | ReplicaOK => inquire_positive_outcome γ gid rid cid ts rk rkl p vd pwrs
+    | ReplicaCommittedTxn => (∃ wrs, is_txn_committed γ ts wrs)
+    | ReplicaAbortedTxn => is_txn_aborted γ ts
+    | ReplicaStaleCoordinator => True
+    | ReplicaFailedValidation => False
+    | ReplicaInvalidRank => False
+    | ReplicaWrongLeader => False
+    end.
+
+  #[global]
+  Instance inquire_outcome_persistent γ gid rid cid ts rk rkl p vd pwrs res :
+    Persistent (inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res).
+  Proof. destruct res; apply _. Defined.
+
+  #[global]
+  Instance inquire_outcome_timeless γ gid rid cid ts rk rkl p vd pwrs res :
+    Timeless (inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res).
+  Proof. destruct res; apply _. Defined.
+
 End def.
+
+Section inv_file.
+  Context `{!heapGS Σ, !tulip_ghostG Σ}.
+
+  Definition tulipfileNS := tulipNS .@ "file".
+  (* TODO: make name consistent, also think about the right NS structure *)
+  Definition rpcrashNS := nroot .@ "rpcrash".
+
+  Inductive rpdur :=
+  | ReplicaDurable (clog : list ccommand) (ilog : list (nat * icommand)).
+
+  Definition own_replica_durable γ (gid rid : u64) (dst : rpdur) : iProp Σ :=
+    match dst with
+    | ReplicaDurable clog ilog =>
+        "Hclog" ∷ own_replica_clog_half γ gid rid clog ∗
+        "Hilog" ∷ own_replica_ilog_quarter γ gid rid ilog
+    end.
+
+  Definition encode_ilog_frag (ilog : list (nat * icommand)) (ilogbytes : list byte_string) :=
+    Forall2 (λ (nc : nat * icommand) bs, encode_lsn_icommand nc.1 nc.2 bs) ilog ilogbytes.
+
+  Lemma encode_ilog_frag_nil_inv ilog :
+    encode_ilog_frag ilog [] ->
+    ilog = [].
+  Proof.
+    intros Henc.
+    by eapply Forall2_nil_inv_r.
+  Qed.
+
+  Definition encode_ilog (ilog : list (nat * icommand)) (data : byte_string) :=
+    ∃ frags, encode_ilog_frag ilog frags ∧ serialize id frags = data.
+
+  Definition valid_icommand (icmd : icommand) :=
+    match icmd with
+    | CmdRead ts key => valid_ts ts ∧ valid_key key
+    | CmdAcquire ts pwrs _ => Z.of_nat ts < 2 ^ 64 ∧ valid_wrs pwrs
+    | CmdAdvance ts rank => Z.of_nat ts < 2 ^ 64 ∧ 0 < Z.of_nat rank < 2 ^ 64
+    | CmdAccept ts rank _ => Z.of_nat ts < 2 ^ 64 ∧ Z.of_nat rank < 2 ^ 64
+    end.
+
+  Definition replica_file_inv (γ : tulip_names) (gid rid : u64) : iProp Σ :=
+    ∃ (ilog : list (nat * icommand)) (fname : byte_string) (content : list u8),
+      "Hfile"        ∷ fname f↦ content ∗
+      "Hilogfileinv" ∷ own_replica_ilog_quarter γ gid rid ilog ∗
+      "#Hilogfname"  ∷ is_replica_ilog_fname γ gid rid fname ∗
+      "%Hvilog"      ∷ ⌜Forall (λ nc, Z.of_nat nc.1 < 2 ^ 64 ∧ valid_icommand nc.2) ilog⌝ ∗
+      "%Hencilog"    ∷ ⌜encode_ilog ilog content⌝.
+
+  Definition know_replica_file_inv γ gid rid : iProp Σ :=
+    inv tulipfileNS (replica_file_inv γ gid rid).
+
+End inv_file.
 
 Section inv_network.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
-  (* TODO: remove this once we have real defintions for resources. *)
-  Implicit Type (γ : tulip_names).
 
   Definition tulipnetNS := tulipNS .@ "net".
 
@@ -173,10 +269,17 @@ Section inv_network.
   Definition safe_txnreq γ (gid : u64) req : iProp Σ :=
     match req with
     | ReadReq ts key => ⌜safe_read_req gid (uint.nat ts) key⌝
-    | FastPrepareReq ts pwrs => safe_txn_pwrs γ gid (uint.nat ts) pwrs
-    | ValidateReq ts _ pwrs => safe_txn_pwrs γ gid (uint.nat ts) pwrs
+    | FastPrepareReq ts pwrs ptgs =>
+        is_lnrz_tid γ (uint.nat ts) ∗
+        safe_txn_pwrs γ gid (uint.nat ts) pwrs ∗
+        safe_txn_ptgs γ (uint.nat ts) ptgs
+    | ValidateReq ts _ pwrs ptgs =>
+        is_lnrz_tid γ (uint.nat ts) ∗
+        safe_txn_pwrs γ gid (uint.nat ts) pwrs ∗
+        safe_txn_ptgs γ (uint.nat ts) ptgs
     | PrepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) true
     | UnprepareReq ts rank => safe_accept_pdec_req γ gid (uint.nat ts) (uint.nat rank) false
+    | InquireReq ts rank _ => ⌜valid_ts (uint.nat ts) ∧ valid_backup_rank (uint.nat rank)⌝
     | CommitReq ts pwrs => safe_commit γ gid (uint.nat ts) pwrs
     | AbortReq ts => safe_abort γ (uint.nat ts)
     | _ => True
@@ -207,6 +310,12 @@ Section inv_network.
     "#Hsafe" ∷ validate_outcome γ gid rid ts res ∗
     "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
 
+  Definition safe_inquire_resp
+    γ (gid rid : u64) (cid : coordid) (ts rk rkl : nat) (p vd : bool) (pwrs : dbmap)
+    (res : rpres) : iProp Σ :=
+    "#Hsafe" ∷ inquire_outcome γ gid rid cid ts rk rkl p vd pwrs res ∗
+    "%Hrid"  ∷ ⌜rid ∈ rids_all⌝.
+
   Definition safe_prepare_resp
     γ (gid rid : u64) (ts rank : nat) (res : rpres) : iProp Σ :=
     "#Hsafe" ∷ accept_outcome γ gid rid ts rank true res ∗
@@ -231,6 +340,8 @@ Section inv_network.
         safe_unprepare_resp γ gid rid (uint.nat ts) (uint.nat rank) res
     | QueryResp ts res =>
         query_outcome γ (uint.nat ts) res
+    | InquireResp ts rank pp vd pwrs rid cid res =>
+        safe_inquire_resp γ gid rid cid (uint.nat ts) (uint.nat rank) (uint.nat pp.1) pp.2 vd pwrs res
     | _ => True
     end.
 
@@ -257,7 +368,8 @@ Section inv_network.
     ∃ (resps : gset txnresp),
       "Hms"     ∷ trml c↦ ms ∗
       "#Hresps" ∷ ([∗ set] resp ∈ resps, safe_txnresp γ gid resp) ∗
-      "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnresp resps⌝.
+      "%Henc"    ∷ ⌜set_Forall (λ x, ∃ resp, resp ∈ resps ∧ encode_txnresp resp (msg_data x)) ms⌝.
+      (* "%Henc"   ∷ ⌜(set_map msg_data ms : gset (list u8)) ⊆ set_map encode_txnresp resps⌝. *)
 
   Definition tulip_network_inv
     γ (gid : u64) (addrm : gmap u64 chan) : iProp Σ :=
@@ -281,34 +393,42 @@ End inv_network.
 Section alloc.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-  Lemma tulip_inv_alloc p future (gaddrm : gmap u64 (gmap u64 chan)) :
+  (* TODO: make gfnames gmap to gmap to be consistent with gaddrm *)
+
+  Lemma tulip_inv_alloc
+    p future
+    (gaddrm : gmap u64 (gmap u64 chan))
+    (gfnames : gmap (u64 * u64) byte_string) :
     dom gaddrm = gids_all ->
     map_Forall (λ _ m, dom m = rids_all) gaddrm ->
+    dom gfnames = gset_cprod gids_all rids_all ->
     ([∗ map] addrm ∈ gaddrm, [∗ set] addr ∈ map_img addrm, addr c↦ ∅) -∗
+    ([∗ map] fname ∈ gfnames, fname f↦ []) -∗
     own_txn_proph p future ==∗
     ∃ γ,
       (* give to client *)
       ([∗ set] k ∈ keys_all, own_db_ptsto γ k None) ∗
       (* give to replica lock invariant *)
       ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all,
-         own_replica_clog_half γ g r [] ∗ own_replica_ilog_half γ g r []) ∗
+         own_replica_clog_half γ g r [] ∗ own_replica_ilog_quarter γ g r []) ∗
       (* give to txnlog invariant *)
       ([∗ set] gid ∈ dom gaddrm, own_txn_log_half γ gid []) ∗
       ([∗ set] gid ∈ dom gaddrm, own_txn_cpool_half γ gid ∅) ∗
       (* tulip atomic invariant *)
       tulip_inv_with_proph γ p ∗
+      ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all, replica_file_inv γ g r) ∗
       gentid_init γ ∗
       ([∗ map] gid ↦ addrm ∈ gaddrm, tulip_network_inv γ gid addrm).
   Proof.
-    iIntros (Hdomgaddrm Hdomaddrm) "Hchans".
+    iIntros (Hdomgaddrm Hdomaddrm Hdomgfnames) "Hchans Hfiles".
     iIntros "Hproph".
-    iMod (tulip_res_alloc) as (γ) "Hres".
+    iMod (tulip_res_alloc gfnames) as (γ) "Hres".
     iDestruct "Hres" as "(Hcli & Hresm & Hwrsm & Hltids & Hwabt & Htmods & Hres)".
     iDestruct "Hres" as "(Hexcltids & Hexclctks & Hpost & Hlts & Hres)".
     iDestruct "Hres" as "(Hdbpts & Hrhistmg & Hrhistmk & Hrtsg & Hrtsk & Hres)".
     iDestruct "Hres" as "(Hchistm & Hlhistm & Hkmodlst & Hkmodlsk & Hkmodcst & Hkmodcsk & Hres)".
     iDestruct "Hres" as "(Hlogs & Hlogstl & Hcpools & Hcpoolstl & Hres)".
-    iDestruct "Hres" as "(Hpms & Hpsms & Hcms & Htrmls & Hrps & Hrplocks)".
+    iDestruct "Hres" as "(Hpms & Hpsms & Hcms & Hfnames & Hilogs & Htrmls & Hrps & Hrplocks & Hts)".
     (* Obtain a lb on the largest timestamp to later establish group invariant. *)
     iDestruct (largest_ts_witness with "Hlts") as "#Hltslb".
     iAssert (txnsys_inv γ p)
@@ -504,7 +624,7 @@ Section alloc.
         do 2 (split; first done).
         split; apply map_Forall2_empty.
       }
-      do 4 (iSplit; first done).
+      do 6 (iSplit; first done).
       iSplit.
       { iIntros (k t).
         destruct (kvdm !! k) as [l |] eqn:Hl; rewrite Hl; last done.
@@ -523,6 +643,8 @@ Section alloc.
       iSplit.
       { iApply (big_sepS_elem_of with "Hloglbs"); first apply Hgid. }
       iPureIntro.
+      split; first done.
+      split; first done.
       split.
       { by rewrite /execute_cmds merge_clog_ilog_nil. }
       split; first done.
@@ -567,6 +689,20 @@ Section alloc.
       by rewrite big_sepM_empty dom_gset_to_gmap Hdomaddrm.
     }
     rewrite Hdomgaddrm.
+    iAssert ([∗ set] g ∈ gids_all, [∗ set] r ∈ rids_all, replica_file_inv γ g r)%I
+      with "[Hfiles Hilogs Hfnames]" as "Hfiles".
+    { iApply big_sepS_gset_cprod.
+      rewrite -Hdomgfnames 2!big_sepS_big_sepM.
+      iCombine "Hfiles Hilogs Hfnames" as "Hfiles".
+      rewrite -2!big_sepM_sep.
+      iApply (big_sepM_mono with "Hfiles").
+      iIntros ([g r] data Hdata) "(Hfile & Hilog & Hfname)".
+      iFrame.
+      iPureIntro.
+      split; first by apply Forall_nil.
+      exists [].
+      by split; first apply Forall2_nil.
+    }
     by iFrame.
   Qed.
 

@@ -239,6 +239,13 @@ Definition testByteSliceToString: val :=
     SliceSet byteT "x" #2 #(U8 67);;
     (byteSliceToString "x") = #(str"ABC").
 
+Notation args := stringT (only parsing).
+
+Definition testStringToByteSliceAlias: val :=
+  rec: "testStringToByteSliceAlias" <> :=
+    let: "x" := #(str"ABC") in
+    (SliceGet byteT (StringToBytes "x") #0) = #(U8 65).
+
 (* copy.go *)
 
 Definition testCopySimple: val :=

@@ -548,6 +548,50 @@ Section bi.
     by apply Hpart.
   Qed.
 
+  Lemma big_sepS_delete_affine `{Countable A} `{!BiAffine PROP}
+    (Φ : A -> PROP) (s : gset A) (x : A) :
+    ([∗ set] y ∈ s, Φ y) -∗
+    ([∗ set] y ∈ s ∖ {[x]}, Φ y).
+  Proof.
+    iIntros "Hs".
+    iApply (big_sepS_subseteq with "Hs").
+    set_solver.
+  Qed.
+
+  Lemma big_sepM_delete_affine `{Countable K} {A}
+    `{!BiAffine PROP} (Φ : K -> A -> PROP) (m : gmap K A) (k : K) :
+    ([∗ map] k↦x ∈ m, Φ k x) -∗
+    ([∗ map] k↦x ∈ (delete k m), Φ k x).
+  Proof.
+    iIntros "Hm".
+    destruct (m !! k) as [x |] eqn:Hm; last first.
+    { by rewrite delete_notin. }
+    iDestruct (big_sepM_delete with "Hm") as "[_ Hm]".
+    { apply Hm. }
+    done.
+  Qed.
+
+  Lemma big_sepM2_delete_affine `{Countable K} {A B}
+    `{!BiAffine PROP} (Φ : K -> A -> B -> PROP) (m1 : gmap K A) (m2 : gmap K B) (k : K) :
+    ([∗ map] k↦x;y ∈ m1; m2, Φ k x y) -∗
+    ([∗ map] k↦x;y ∈ (delete k m1); (delete k m2), Φ k x y).
+  Proof.
+    iIntros "Hm".
+    iDestruct (big_sepM2_dom with "Hm") as %Hdom.
+    destruct (m1 !! k) as [x |] eqn:Hm1; last first.
+    { assert (Hm2 : m2 !! k = None).
+      { by rewrite -not_elem_of_dom -Hdom not_elem_of_dom. }
+      do 2 (rewrite delete_notin; last done).
+      done.
+    }
+    assert (is_Some (m2 !! k)) as [y Hm2].
+    { by rewrite -elem_of_dom -Hdom elem_of_dom. }
+    iDestruct (big_sepM2_delete with "Hm") as "[Hxy Hm]".
+    { apply Hm1. }
+    { apply Hm2. }
+    by iFrame "Hm".
+  Qed.
+
 End bi.
 
 Section bupd.

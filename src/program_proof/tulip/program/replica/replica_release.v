@@ -7,14 +7,13 @@ Section program.
 
   Theorem wp_Replica__release rp pwrsS pwrs ptsm sptsm :
     valid_wrs pwrs ->
-    {{{ own_dbmap_in_slice pwrsS pwrs ∗ own_replica_ptsm_sptsm rp ptsm sptsm }}}
+    is_dbmap_in_slice pwrsS pwrs -∗
+    {{{ own_replica_ptsm_sptsm rp ptsm sptsm }}}
       Replica__release #rp (to_val pwrsS)
-    {{{ RET #(); 
-        own_dbmap_in_slice pwrsS pwrs ∗
-        own_replica_ptsm_sptsm rp (release pwrs ptsm) sptsm
-    }}}.
+    {{{ RET #(); own_replica_ptsm_sptsm rp (release pwrs ptsm) sptsm }}}.
   Proof.
-    iIntros (Hvw Φ) "[Hpwrs Hrp] HΦ".
+    iIntros (Hvw) "#Hpwrs".
+    iIntros (Φ) "!> Hrp HΦ".
     iDestruct "Hpwrs" as (pwrsL) "[HpwrsS %HpwrsL]".
     wp_rec.
     iDestruct (own_replica_ptsm_sptsm_dom with "Hrp") as %[Hdomptsm Hdomsptsm].
@@ -25,12 +24,12 @@ Section program.
     (*@         rp.releaseKey(key)                                              @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    iDestruct (own_slice_sz with "HpwrsS") as %Hlenpwrs.
-    iDestruct (own_slice_small_acc with "HpwrsS") as "[HpwrsS HpwrsC]".
+    iMod (readonly_load with "HpwrsS") as (q) "HpwrsR".
+    iDestruct (own_slice_small_sz with "HpwrsR") as %Hlenpwrs.
     set P := (λ (i : u64),
       let pwrs' := list_to_map (take (uint.nat i) pwrsL) in
       own_replica_ptsm_sptsm rp (release pwrs' ptsm) sptsm)%I.
-    wp_apply (wp_forSlice P with "[] [$HpwrsS Hrp]"); last first; first 1 last.
+    wp_apply (wp_forSlice P with "[] [$HpwrsR Hrp]"); last first; first 1 last.
     { (* Loop entry. *)
       subst P. simpl.
       rewrite uint_nat_W64_0 take_0 list_to_map_nil.
@@ -59,15 +58,13 @@ Section program.
       }
       done.
     }
-    iIntros "[Hrp HpwrsS]".
+    iIntros "[Hrp _]".
     subst P. simpl.
     pose proof (list_to_map_flip _ _ HpwrsL) as Hltm.
     rewrite -Hlenpwrs firstn_all Hltm.
-    iDestruct ("HpwrsC" with "HpwrsS") as "HpwrsS".
     wp_pures.
     iApply "HΦ".
-    iFrame.
-    by rewrite -Hltm.
+    by iFrame.
   Qed.
 
 End program.

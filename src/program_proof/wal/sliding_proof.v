@@ -1140,10 +1140,7 @@ Proof.
       - rewrite drop_drop.
         f_equal.
         word.
-      - word_cleanup.
-        rewrite /word.wrap Zplus_mod_idemp_r.
-        f_equal.
-        lia.
+      - word.
     }
 
     replace (uint.nat (word.add i σ.(slidingM.start))) with (uint.nat i + uint.nat σ.(slidingM.start))%nat by word.

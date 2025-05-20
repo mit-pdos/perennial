@@ -110,7 +110,7 @@ Definition Clerk__PrepareWrite: val :=
 (* From chunk *)
 Definition Clerk__RecordChunk: val :=
   rec: "Clerk__RecordChunk" "ck" "args" :=
-    let: "req" := recordchunk_gk.Marshal "args" (NewSlice byteT #0) in
+    let: "req" := recordchunk_gk.Marshal (NewSlice byteT #0) "args" in
     let: "reply" := ref (zero_val (slice.T byteT)) in
     reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "client" "ck") RecordChunkId "req" "reply" #100;;
     #().
@@ -118,7 +118,7 @@ Definition Clerk__RecordChunk: val :=
 (* From chunk *)
 Definition Clerk__FinishWrite: val :=
   rec: "Clerk__FinishWrite" "ck" "args" :=
-    let: "req" := finishwrite_gk.Marshal "args" (NewSlice byteT #0) in
+    let: "req" := finishwrite_gk.Marshal (NewSlice byteT #0) "args" in
     let: "reply" := ref (zero_val (slice.T byteT)) in
     reconnectclient.ReconnectingClient__Call (struct.loadF Clerk "client" "ck") FinishWriteId "req" "reply" #100;;
     #().

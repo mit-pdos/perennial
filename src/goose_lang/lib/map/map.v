@@ -372,24 +372,8 @@ Proof using IntoValComparable0.
     }
 
     simpl in *.
-    replace (word.add 1 s) with (word.add s 1) by ring.
-    replace (word.add s 1) with (word.add (uint.nat s) 1); last first.
-    { by rewrite -HsizeConversion. }
-    rewrite u64_Z_through_nat.
-    replace (word.add (uint.Z s) 1%Z) with (uint.Z (s + 1):u64); last first.
-    { word. }
-    replace (S s) with (s + 1)%nat in *; last lia.
-
-    assert (Z.of_nat (s + 1) = (uint.Z (s + 1))).
-    {
-      rewrite -u64_Z_through_nat.
-      word.
-    }
-    rewrite -H0.
-    iApply "HΦ".
-    rewrite -u64_Z_through_nat in H0.
-    iPureIntro.
-    word.
+    replace (word.add _ _) with (W64 (S s)) by word.
+    iApply "HΦ". word.
 Qed.
 
 Theorem wp_MapLen stk E mref q m :
@@ -440,7 +424,7 @@ Theorem wp_MapIter stk E mref q (m: gmap K val * val) (I: iProp Σ) (P Q: K -> v
         body (to_val k) v @ stk; E
       {{{ RET #(); I ∗ Q k v }}}) -∗
   ▷ ((own_map mref q m ∗ I ∗ [∗ map] k ↦ v ∈ fst m, Q k v) -∗ Φ #()) -∗
-  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
+  WP MapIter #mref body @ stk; E {{ Φ }}.
 Proof using IntoValComparable0.
   iIntros "Hm Hi Hp #Hind HΦ".
   iDestruct "Hm" as (mv) "[% Hm]".
@@ -636,7 +620,7 @@ Theorem wp_MapIter_2 stk E mref q (m: gmap K val * val) (I: gmap K val -> gmap K
         body (to_val k) v @ stk; E
       {{{ RET #(); I (delete k mtodo) (<[k := v]> mdone) }}}) -∗
   ((own_map mref q m ∗ I ∅ (fst m)) -∗ Φ #()) -∗
-  WP MapIter #mref body @ stk; E {{ v, Φ v }}.
+  WP MapIter #mref body @ stk; E {{ Φ }}.
 Proof using IntoValComparable0.
   iIntros "Hm HI #Hbody HΦ".
   wp_apply (wp_MapIter_fold (λ mdone, ∃ mtodo, ⌜mdone ∪ mtodo = m.1 ∧ mdone ##ₘ mtodo⌝ ∗ I mtodo mdone)%I

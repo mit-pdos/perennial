@@ -1,0 +1,10 @@
+translate = [
+  "!*",
+]
+imports = [
+  "!*",
+]
+trusted = [
+  "Print",
+  "Printf"
+]

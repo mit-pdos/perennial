@@ -1,0 +1,26 @@
+translate = [
+  "HashLen"
+]
+axiomatize = [
+  "Hasher",
+  "NewHasher",
+  "Hasher.Write",
+  "Hasher.Sum",
+
+  "SigPrivateKey",
+  "SigGenerateKey",
+  "SigPrivateKey.Sign",
+  "SigGenerateKey",
+  "SigPublicKey",
+  "SigPublicKey.Verify",
+
+  "VrfPrivateKey",
+  "VrfPublicKey",
+  "VrfGenerateKey",
+  "VrfPrivateKey.Prove",
+  "VrfPublicKey.Verify",
+  "VrfPublicKeyEncode",
+  "VrfPublicKeyDecode",
+
+  "RandBytes",
+]

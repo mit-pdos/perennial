@@ -5,6 +5,31 @@ From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.disk_prelude.
 
+(* channel.go *)
+
+Definition chan_stuff: val :=
+  rec: "chan_stuff" "c" "d" :=
+    let: "to_send" := ref_to uint64T #0 in
+    Channel__Send uint64T "c" (![uint64T] "to_send");;
+    "d".
+
+Definition more_chan_stuff: val :=
+  rec: "more_chan_stuff" <> :=
+    let: "c" := NewChannelRef uint64T #0 in
+    let: "d" := NewChannelRef uint64T #0 in
+    Channel__Send uint64T "c" #1;;
+    Channel__Close uint64T "d";;
+    let: "u" := ref_to uint64T (Channel__ReceiveDiscardOk uint64T "c") in
+    let: "v" := ref (zero_val uint64T) in
+    let: "ok" := ref (zero_val boolT) in
+    let: ("0_ret", "1_ret") := Channel__Receive uint64T "d" in
+    "v" <-[uint64T] "0_ret";;
+    "ok" <-[boolT] "1_ret";;
+    "ok" <-[boolT] (~ (![boolT] "ok"));;
+    "u" <-[uint64T] ((![uint64T] "u") + #1);;
+    "v" <-[uint64T] ((![uint64T] "v") + #1);;
+    #().
+
 (* comments.go *)
 
 (* unittest is a package full of many independent and small translation examples *)
@@ -610,8 +635,15 @@ Definition IntWrapper: ty := uint64T.
 
 Definition MapWrapper: ty := mapT boolT.
 
-Definition MapTypeAliases: val :=
-  rec: "MapTypeAliases" "m1" "m2" :=
+Notation MapAlias := MapWrapper (only parsing).
+
+Definition MapNamedType: val :=
+  rec: "MapNamedType" "m1" "m2" :=
+    MapInsert "m1" #4 (Fst (MapGet "m2" #0));;
+    #().
+
+Definition MapAliasType: val :=
+  rec: "MapAliasType" "m1" "m2" :=
     MapInsert "m1" #4 (Fst (MapGet "m2" #0));;
     #().
 
@@ -866,7 +898,9 @@ Definition ReplicatedDiskRecover: val :=
 
 (* slices.go *)
 
-Definition SliceAlias: ty := slice.T boolT.
+Definition SliceNamed: ty := slice.T boolT.
+
+Notation SliceAlias := (slice.T uint32T) (only parsing).
 
 Definition sliceOps: val :=
   rec: "sliceOps" <> :=
@@ -893,9 +927,17 @@ Definition sliceOfThings__getThingRef: val :=
   rec: "sliceOfThings__getThingRef" "ts" "i" :=
     SliceRef (struct.t thing) (struct.get sliceOfThings "things" "ts") "i".
 
-Definition makeAlias: val :=
-  rec: "makeAlias" <> :=
+Definition makeNamed: val :=
+  rec: "makeNamed" <> :=
     NewSlice boolT #10.
+
+Definition useAlias: val :=
+  rec: "useAlias" <> :=
+    let: "s" := NewSlice uint32T #10 in
+    let: "s2" := NewSlice uint32T #5 in
+    SliceSet uint32T "s" #1 #(U32 2);;
+    SliceCopy uint32T "s" "s2";;
+    SliceGet uint32T "s" #2.
 
 (* spawn.go *)
 
@@ -945,6 +987,72 @@ Definition stringAppend: val :=
 Definition stringLength: val :=
   rec: "stringLength" "s" :=
     StringLength "s".
+
+(* struct_generic.go *)
+
+Definition NonGenericKVPair := struct.decl [
+  "Key" :: uint64T;
+  "Value" :: stringT
+].
+
+Definition KVPair (K: ty) (V: ty) : descriptor := struct.decl [
+  "Key" :: K;
+  "Value" :: V;
+  "Other" :: struct.t NonGenericKVPair
+].
+
+Definition IndexedKVPair (K: ty) (V: ty) : descriptor := struct.decl [
+  "Key" :: K;
+  "Value" :: V;
+  "Index" :: uint64T
+].
+
+(* buffer_size = 0 is an unbuffered channel *)
+Definition NewKVPair (K:ty) (V:ty): val :=
+  rec: "NewKVPair" "Key" "Value" :=
+    struct.mk (KVPair K V) [
+      "Key" ::= "Key";
+      "Value" ::= "Value"
+    ].
+
+(* buffer_size = 0 is an unbuffered channel *)
+Definition NewKVPairRef (K:ty) (V:ty): val :=
+  rec: "NewKVPairRef" "Key" "Value" :=
+    struct.new (KVPair K V) [
+      "Key" ::= "Key";
+      "Value" ::= "Value"
+    ].
+
+Definition KVPair__GetKey (K:ty) (V:ty): val :=
+  rec: "KVPair__GetKey" "c" :=
+    struct.loadF (KVPair K V) "Key" "c".
+
+Definition KVPair__GetValue (K:ty) (V:ty): val :=
+  rec: "KVPair__GetValue" "c" :=
+    struct.loadF (KVPair K V) "Value" "c".
+
+Definition testGenericStructs: val :=
+  rec: "testGenericStructs" <> :=
+    let: "kv_pair_generic_define_inline" := struct.mk (KVPair uint64T stringT) [
+    ] in
+    let: "kv_pair_generic_from_func" := NewKVPair uint64T stringT #0 #(str"str") in
+    let: "kv_pair_generic_ptr" := struct.mk (KVPair uint64T ptrT) [
+    ] in
+    let: "kv_pair_partly_generic" := struct.mk (IndexedKVPair uint64T stringT) [
+    ] in
+    let: "kv_pair_non_generic" := struct.mk NonGenericKVPair [
+    ] in
+    let: "kv_pair_inner_generic" := struct.alloc (KVPair uint64T (struct.t (KVPair uint64T stringT))) (zero_val (struct.t (KVPair uint64T (struct.t (KVPair uint64T stringT))))) in
+    let: "kv_pair_inner_non_generic" := struct.mk (KVPair uint64T (struct.t NonGenericKVPair)) [
+    ] in
+    struct.storeF (KVPair uint64T stringT) "Key" "kv_pair_generic_define_inline" #1;;
+    struct.storeF (IndexedKVPair uint64T stringT) "Value" "kv_pair_partly_generic" (KVPair__GetValue uint64T stringT "kv_pair_generic_from_func");;
+    struct.storeF NonGenericKVPair "Key" "kv_pair_non_generic" (![uint64T] (KVPair__GetValue uint64T ptrT "kv_pair_generic_ptr"));;
+    struct.storeF (KVPair uint64T (struct.t (KVPair uint64T stringT))) "Key" "kv_pair_inner_generic" #3;;
+    struct.storeF (KVPair uint64T (struct.t (KVPair uint64T stringT))) "Value" "kv_pair_inner_generic" "kv_pair_generic_from_func";;
+    struct.storeF (KVPair uint64T (struct.t NonGenericKVPair)) "Key" "kv_pair_inner_non_generic" #4;;
+    struct.storeF (KVPair uint64T ptrT) "Key" "kv_pair_generic_ptr" (KVPair__GetKey uint64T stringT "kv_pair_generic_define_inline");;
+    struct.get (KVPair uint64T stringT) "Key" (struct.loadF (KVPair uint64T (struct.t (KVPair uint64T stringT))) "Value" "kv_pair_inner_generic").
 
 (* struct_method.go *)
 

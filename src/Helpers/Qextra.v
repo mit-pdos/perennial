@@ -4,35 +4,6 @@ Require Import Psatz.
 Require Import QArith.
 Local Open Scope Q_scope.
 
-(*
-Definition Qp_of_Zp (z : Z) (Hpos : (0 < z)%Z) : Qp.
-Proof.
-  refine (mk_Qp (Qc_of_Z z) _).
-  rewrite -Z2Qc_inj_0.
-  rewrite -Z2Qc_inj_lt.
-  auto.
-Qed.
-*)
-
-Definition Qp_of_Z (z : Z) : Qp.
-Proof.
-  refine (mk_Qp (Qc_of_Z (1 `max` z)) _).
-  abstract (rewrite -Z2Qc_inj_0 -Z2Qc_inj_lt; lia).
-Defined.
-
-Lemma Qp_of_Z_add (z1 z2 : Z) :
-  (0 < z1)%Z →
-  (0 < z2)%Z →
-  Qp_of_Z (z1 + z2)%Z =
-  Qp.add (Qp_of_Z z1) (Qp_of_Z z2).
-Proof.
-  intros Hpos1 Hpos2.
-  rewrite /Qp_of_Z //=.
-  apply Qp.to_Qc_inj_iff => //=.
-  rewrite -Z2Qc_inj_add.
-  f_equal. lia.
-Qed.
-
 Fixpoint Qppower (q: Qp) (n: nat) :=
   match n with
   | O => 1%Qp

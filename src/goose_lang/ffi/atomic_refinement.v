@@ -188,6 +188,7 @@ Section go_refinement.
   Definition is_refinement_prim_op2 (o : prim_op2) : Prop :=
     match o with
     | GlobalPutOp => False
+    | AtomicOpOp _ => False
     | _ => True
     end.
 
@@ -1183,6 +1184,7 @@ Section go_refinement.
            rewrite /Free. apply lookup_insert.
         **  inv_base_step. monad_inv. exfalso; eauto.
       * by inv_expr_impl.
+      * by inv_expr_impl.
     - rewrite /base_step//= in Hstep.
       monad_inv; destruct_head.
       inv_base_step. monad_inv. inv_base_step.
@@ -1241,7 +1243,6 @@ Section go_refinement.
           { rewrite /when. rewrite ifThenElse_else //. }
           { rewrite ?bool_decide_false //. }
         }
-    - inv_expr_impl.
     - inv_expr_impl.
     - inv_expr_impl.
     - inv_expr_impl.
@@ -1441,6 +1442,7 @@ Section go_refinement.
            { repeat econstructor; repeat (monad_simpl; simpl); rewrite ?Hlook => //=. }
         ** inv_base_step. monad_inv. exfalso; eauto.
       * by inv_expr_impl.
+      * by inv_expr_impl.
     - rewrite /base_step//= in Hstep.
       monad_inv; destruct_head.
       inv_base_step. monad_inv. inv_base_step.
@@ -1491,7 +1493,6 @@ Section go_refinement.
           repeat econstructor; eauto.
           { rewrite /when. rewrite ifThenElse_else //. }
         }
-    - inv_expr_impl.
     - inv_expr_impl.
       { apply in_wf_ctxt_closed in Hwf. inversion Hwf. }
       do 4 eexists. eapply base_step_atomically_fail.

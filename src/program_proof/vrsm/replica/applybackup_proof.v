@@ -96,7 +96,8 @@ Proof.
       (* FIXME: separate lemma *)
       wp_rec. wp_pures.
       rewrite Henc_rep.
-      wp_apply (wp_ReadInt with "Hrep_sl").
+      wp_apply (wp_ReadInt [] with "[Hrep_sl]").
+      { by list_simplifier. }
       iIntros (?) "_".
       wp_pures.
       iModIntro.
@@ -107,12 +108,13 @@ Proof.
     }
     { (* Apply was rejected by the server (e.g. stale epoch number) *)
       iIntros (err) "%Herr_nz".
-      iIntros.
+      iIntros "% % ? % ? H".
       wp_pures.
       wp_load.
       wp_rec. wp_pures.
       rewrite H.
-      wp_apply (wp_ReadInt with "[$]").
+      wp_apply (wp_ReadInt [] with "[H]").
+      { by list_simplifier. }
       iIntros.
       wp_pures.
       iModIntro.
@@ -496,10 +498,7 @@ Proof.
     iIntros "_ Hghost".
     iMod (applybackup_step with "Hprop_lb Hprop_facts Hprim_facts Hghost") as "Hghost".
     { done. }
-    { word_cleanup.
-      rewrite -> unsigned_U64 in *. (* TODO: regression in [word] *)
-      word.
-    }
+    { word. }
     iModIntro.
     iDestruct "Hghost" as "(Hghost & %Hre & H)".
     rewrite Hre.
@@ -580,11 +579,7 @@ Proof.
     }
     epose proof (applybackup_step_helper2 _ _ _ _ Hghost_op_σ _ Hprefix) as H.
     Unshelve.
-    3: {
-      rewrite Hσ_index.
-      rewrite Heqb2.
-      word. (* FIXME: why do I need to manually rewrite for word? *)
-    }
+    3: { word. }
     2: { shelve. }
     rewrite -H.
     iFrame.

@@ -1,0 +1,9 @@
+axiomatize = [
+  "T",
+]
+translate = [
+  "!*",
+]
+imports = [
+  "!*",
+]

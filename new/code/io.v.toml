@@ -1,0 +1,7 @@
+translate = [
+  "Reader",
+  "Writer",
+]
+imports = [
+  "!*"
+]

@@ -4,6 +4,7 @@ From Goose Require github_com.goose_lang.std.
 From Goose Require github_com.mit_pdos.tulip.backup.
 From Goose Require github_com.mit_pdos.tulip.index.
 From Goose Require github_com.mit_pdos.tulip.message.
+From Goose Require github_com.mit_pdos.tulip.params.
 From Goose Require github_com.mit_pdos.tulip.tulip.
 From Goose Require github_com.mit_pdos.tulip.txnlog.
 From Goose Require github_com.mit_pdos.tulip.util.
@@ -11,13 +12,9 @@ From Goose Require github_com.tchajed.marshal.
 
 From Perennial.goose_lang Require Import ffi.grove_prelude.
 
-Definition PrepareProposal := struct.decl [
-  "rank" :: uint64T;
-  "dec" :: boolT
-].
-
 Definition Replica := struct.decl [
   "mu" :: ptrT;
+  "gid" :: uint64T;
   "rid" :: uint64T;
   "addr" :: uint64T;
   "fname" :: stringT;
@@ -25,14 +22,15 @@ Definition Replica := struct.decl [
   "lsna" :: uint64T;
   "prepm" :: mapT (slice.T (struct.t tulip.WriteEntry));
   "ptgsm" :: mapT (slice.T uint64T);
-  "pstbl" :: mapT (struct.t PrepareProposal);
+  "pstbl" :: mapT (struct.t tulip.PrepareProposal);
   "rktbl" :: mapT uint64T;
   "txntbl" :: mapT boolT;
   "ptsm" :: mapT uint64T;
   "sptsm" :: mapT uint64T;
   "idx" :: ptrT;
-  "rps" :: mapT uint64T;
-  "leader" :: uint64T
+  "gaddrm" :: tulip.AddressMaps;
+  "leader" :: uint64T;
+  "proph" :: ProphIdT
 ].
 
 (* Arguments:
@@ -110,16 +108,17 @@ Definition Replica__bumpKey: val :=
 
 Definition CMD_READ : expr := #0.
 
-Definition CMD_VALIDATE : expr := #1.
+Definition CMD_ACQUIRE : expr := #1.
 
-Definition CMD_FAST_PREPARE : expr := #2.
+Definition CMD_ADVANCE : expr := #2.
 
 Definition CMD_ACCEPT : expr := #3.
 
 Definition logRead: val :=
-  rec: "logRead" "fname" "ts" "key" :=
+  rec: "logRead" "fname" "lsn" "ts" "key" :=
     let: "bs" := NewSliceWithCap byteT #0 #32 in
-    let: "bs1" := marshal.WriteInt "bs" CMD_READ in
+    let: "bs0" := marshal.WriteInt "bs" "lsn" in
+    let: "bs1" := marshal.WriteInt "bs0" CMD_READ in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "bs3" := util.EncodeString "bs2" "key" in
     grove_ffi.FileAppend "fname" "bs3";;
@@ -171,9 +170,21 @@ Definition Replica__Read: val :=
           ("v2", #false, #true)
         else
           Replica__bumpKey "rp" "ts" "key";;
-          logRead (struct.loadF Replica "fname" "rp") "ts" "key";;
+          logRead (struct.loadF Replica "fname" "rp") (struct.loadF Replica "lsna" "rp") "ts" "key";;
           Mutex__Unlock (struct.loadF Replica "mu" "rp");;
           ("v2", #true, #true)))).
+
+Definition Replica__acquireKey: val :=
+  rec: "Replica__acquireKey" "rp" "ts" "key" :=
+    MapInsert (struct.loadF Replica "ptsm" "rp") "key" "ts";;
+    MapInsert (struct.loadF Replica "sptsm" "rp") "key" "ts";;
+    #().
+
+Definition Replica__acquire: val :=
+  rec: "Replica__acquire" "rp" "ts" "pwrs" :=
+    ForSlice (struct.t tulip.WriteEntry) <> "ent" "pwrs"
+      (Replica__acquireKey "rp" "ts" (struct.get tulip.WriteEntry "Key" "ent"));;
+    #().
 
 Definition Replica__writableKey: val :=
   rec: "Replica__writableKey" "rp" "ts" "key" :=
@@ -186,14 +197,8 @@ Definition Replica__writableKey: val :=
       then #false
       else #true)).
 
-Definition Replica__acquireKey: val :=
-  rec: "Replica__acquireKey" "rp" "ts" "key" :=
-    MapInsert (struct.loadF Replica "ptsm" "rp") "key" "ts";;
-    MapInsert (struct.loadF Replica "sptsm" "rp") "key" "ts";;
-    #().
-
-Definition Replica__acquire: val :=
-  rec: "Replica__acquire" "rp" "ts" "pwrs" :=
+Definition Replica__tryAcquire: val :=
+  rec: "Replica__tryAcquire" "rp" "ts" "pwrs" :=
     let: "pos" := ref_to uint64T #0 in
     Skip;;
     (for: (λ: <>, (![uint64T] "pos") < (slice.len "pwrs")); (λ: <>, Skip) := λ: <>,
@@ -207,9 +212,20 @@ Definition Replica__acquire: val :=
     (if: (![uint64T] "pos") < (slice.len "pwrs")
     then #false
     else
-      ForSlice (struct.t tulip.WriteEntry) <> "ent" "pwrs"
-        (Replica__acquireKey "rp" "ts" (struct.get tulip.WriteEntry "Key" "ent"));;
+      Replica__acquire "rp" "ts" "pwrs";;
       #true).
+
+Definition Replica__memorize: val :=
+  rec: "Replica__memorize" "rp" "ts" "pwrs" "ptgs" :=
+    MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
+    MapInsert (struct.loadF Replica "ptgsm" "rp") "ts" "ptgs";;
+    #().
+
+Definition Replica__erase: val :=
+  rec: "Replica__erase" "rp" "ts" :=
+    MapDelete (struct.loadF Replica "prepm" "rp") "ts";;
+    MapDelete (struct.loadF Replica "ptgsm" "rp") "ts";;
+    #().
 
 Definition Replica__finalized: val :=
   rec: "Replica__finalized" "rp" "ts" :=
@@ -221,13 +237,15 @@ Definition Replica__finalized: val :=
       else (tulip.REPLICA_ABORTED_TXN, #true))
     else (tulip.REPLICA_OK, #false)).
 
-Definition logValidate: val :=
-  rec: "logValidate" "fname" "ts" "pwrs" "ptgs" :=
+Definition logAcquire: val :=
+  rec: "logAcquire" "fname" "lsn" "ts" "pwrs" "ptgs" :=
     let: "bs" := NewSliceWithCap byteT #0 #64 in
-    let: "bs1" := marshal.WriteInt "bs" CMD_VALIDATE in
+    let: "bs0" := marshal.WriteInt "bs" "lsn" in
+    let: "bs1" := marshal.WriteInt "bs0" CMD_ACQUIRE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "bs3" := util.EncodeKVMapFromSlice "bs2" "pwrs" in
-    grove_ffi.FileAppend "fname" "bs3";;
+    let: "bs4" := util.EncodeInts "bs3" "ptgs" in
+    grove_ffi.FileAppend "fname" "bs4";;
     #().
 
 (* Arguments:
@@ -247,12 +265,12 @@ Definition Replica__validate: val :=
       (if: "validated"
       then tulip.REPLICA_OK
       else
-        let: "acquired" := Replica__acquire "rp" "ts" "pwrs" in
+        let: "acquired" := Replica__tryAcquire "rp" "ts" "pwrs" in
         (if: (~ "acquired")
         then tulip.REPLICA_FAILED_VALIDATION
         else
-          MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
-          logValidate (struct.loadF Replica "fname" "rp") "ts" "pwrs" "ptgs";;
+          logAcquire (struct.loadF Replica "fname" "rp") (struct.loadF Replica "lsna" "rp") "ts" "pwrs" "ptgs";;
+          Replica__memorize "rp" "ts" "pwrs" "ptgs";;
           tulip.REPLICA_OK))).
 
 (* Keep alive coordinator for @ts at @rank. *)
@@ -271,22 +289,23 @@ Definition Replica__Validate: val :=
 Definition Replica__lastProposal: val :=
   rec: "Replica__lastProposal" "rp" "ts" :=
     let: ("ps", "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
-    (struct.get PrepareProposal "rank" "ps", struct.get PrepareProposal "dec" "ps", "ok").
+    (struct.get tulip.PrepareProposal "Rank" "ps", struct.get tulip.PrepareProposal "Prepared" "ps", "ok").
 
 Definition Replica__accept: val :=
   rec: "Replica__accept" "rp" "ts" "rank" "dec" :=
-    let: "pp" := struct.mk PrepareProposal [
-      "rank" ::= "rank";
-      "dec" ::= "dec"
+    let: "pp" := struct.mk tulip.PrepareProposal [
+      "Rank" ::= "rank";
+      "Prepared" ::= "dec"
     ] in
     MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "pp";;
     MapInsert (struct.loadF Replica "rktbl" "rp") "ts" (std.SumAssumeNoOverflow "rank" #1);;
     #().
 
 Definition logAccept: val :=
-  rec: "logAccept" "fname" "ts" "rank" "dec" :=
+  rec: "logAccept" "fname" "lsn" "ts" "rank" "dec" :=
     let: "bs" := NewSliceWithCap byteT #0 #32 in
-    let: "bs1" := marshal.WriteInt "bs" CMD_ACCEPT in
+    let: "bs0" := marshal.WriteInt "bs" "lsn" in
+    let: "bs1" := marshal.WriteInt "bs0" CMD_ACCEPT in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "bs3" := marshal.WriteInt "bs2" "rank" in
     let: "bs4" := marshal.WriteBool "bs3" "dec" in
@@ -294,12 +313,19 @@ Definition logAccept: val :=
     #().
 
 Definition logFastPrepare: val :=
-  rec: "logFastPrepare" "fname" "ts" "pwrs" "ptgs" :=
-    let: "bs" := NewSliceWithCap byteT #0 #64 in
-    let: "bs1" := marshal.WriteInt "bs" CMD_FAST_PREPARE in
+  rec: "logFastPrepare" "fname" "lsn" "ts" "pwrs" "ptgs" :=
+    let: "bs" := NewSliceWithCap byteT #0 #128 in
+    let: "bs0" := marshal.WriteInt "bs" "lsn" in
+    let: "bs1" := marshal.WriteInt "bs0" CMD_ACQUIRE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "bs3" := util.EncodeKVMapFromSlice "bs2" "pwrs" in
-    grove_ffi.FileAppend "fname" "bs3";;
+    let: "bs4" := util.EncodeInts "bs3" "ptgs" in
+    let: "bs5" := marshal.WriteInt "bs4" "lsn" in
+    let: "bs6" := marshal.WriteInt "bs5" CMD_ACCEPT in
+    let: "bs7" := marshal.WriteInt "bs6" "ts" in
+    let: "bs8" := marshal.WriteInt "bs7" #0 in
+    let: "bs9" := marshal.WriteBool "bs8" #true in
+    grove_ffi.FileAppend "fname" "bs9";;
     #().
 
 (* Arguments:
@@ -330,15 +356,15 @@ Definition Replica__fastPrepare: val :=
         (if: "validated"
         then tulip.REPLICA_STALE_COORDINATOR
         else
-          let: "acquired" := Replica__acquire "rp" "ts" "pwrs" in
+          let: "acquired" := Replica__tryAcquire "rp" "ts" "pwrs" in
           Replica__accept "rp" "ts" #0 "acquired";;
           (if: (~ "acquired")
           then
-            logAccept (struct.loadF Replica "fname" "rp") "ts" #0 #false;;
+            logAccept (struct.loadF Replica "fname" "rp") (struct.loadF Replica "lsna" "rp") "ts" #0 #false;;
             tulip.REPLICA_FAILED_VALIDATION
           else
-            MapInsert (struct.loadF Replica "prepm" "rp") "ts" "pwrs";;
-            logFastPrepare (struct.loadF Replica "fname" "rp") "ts" "pwrs" "ptgs";;
+            logFastPrepare (struct.loadF Replica "fname" "rp") (struct.loadF Replica "lsna" "rp") "ts" "pwrs" "ptgs";;
+            Replica__memorize "rp" "ts" "pwrs" "ptgs";;
             tulip.REPLICA_OK)))).
 
 Definition Replica__FastPrepare: val :=
@@ -374,7 +400,7 @@ Definition Replica__tryAccept: val :=
       then tulip.REPLICA_STALE_COORDINATOR
       else
         Replica__accept "rp" "ts" "rank" "dec";;
-        logAccept (struct.loadF Replica "fname" "rp") "ts" "rank" "dec";;
+        logAccept (struct.loadF Replica "fname" "rp") (struct.loadF Replica "lsna" "rp") "ts" "rank" "dec";;
         tulip.REPLICA_OK)).
 
 Definition Replica__Prepare: val :=
@@ -393,28 +419,57 @@ Definition Replica__Unprepare: val :=
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     "res".
 
+Definition Replica__advance: val :=
+  rec: "Replica__advance" "rp" "ts" "rank" :=
+    MapInsert (struct.loadF Replica "rktbl" "rp") "ts" "rank";;
+    let: (<>, "ok") := MapGet (struct.loadF Replica "pstbl" "rp") "ts" in
+    (if: (~ "ok")
+    then
+      let: "pp" := struct.mk tulip.PrepareProposal [
+        "Rank" ::= #0;
+        "Prepared" ::= #false
+      ] in
+      MapInsert (struct.loadF Replica "pstbl" "rp") "ts" "pp";;
+      #()
+    else #()).
+
+Definition Replica__validated: val :=
+  rec: "Replica__validated" "rp" "ts" :=
+    let: ("pwrs", "ok") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
+    ("pwrs", "ok").
+
+Definition logAdvance: val :=
+  rec: "logAdvance" "fname" "lsn" "ts" "rank" :=
+    let: "bs" := NewSliceWithCap byteT #0 #32 in
+    let: "bs0" := marshal.WriteInt "bs" "lsn" in
+    let: "bs1" := marshal.WriteInt "bs0" CMD_ADVANCE in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := marshal.WriteInt "bs2" "rank" in
+    grove_ffi.FileAppend "fname" "bs3";;
+    #().
+
 Definition Replica__inquire: val :=
   rec: "Replica__inquire" "rp" "ts" "rank" :=
-    let: ("cmted", "done") := MapGet (struct.loadF Replica "txntbl" "rp") "ts" in
+    let: ("res", "done") := Replica__finalized "rp" "ts" in
     (if: "done"
     then
-      (if: "cmted"
-      then
-        (struct.mk PrepareProposal [
-         ], #false, slice.nil, tulip.REPLICA_COMMITTED_TXN)
-      else
-        (struct.mk PrepareProposal [
-         ], #false, slice.nil, tulip.REPLICA_ABORTED_TXN))
+      (struct.mk tulip.PrepareProposal [
+       ], #false, slice.nil, "res")
     else
-      let: ("rankl", "ok") := MapGet (struct.loadF Replica "rktbl" "rp") "ts" in
+      let: ("rankl", "ok") := Replica__lowestRank "rp" "ts" in
       (if: "ok" && ("rank" ≤ "rankl")
       then
-        (struct.mk PrepareProposal [
-         ], #false, slice.nil, tulip.REPLICA_INVALID_RANK)
+        (struct.mk tulip.PrepareProposal [
+         ], #false, slice.nil, tulip.REPLICA_STALE_COORDINATOR)
       else
-        let: "pp" := Fst (MapGet (struct.loadF Replica "pstbl" "rp") "ts") in
-        MapInsert (struct.loadF Replica "rktbl" "rp") "ts" "rank";;
-        let: ("pwrs", "vd") := MapGet (struct.loadF Replica "prepm" "rp") "ts" in
+        let: (("ranka", "pdec"), <>) := Replica__lastProposal "rp" "ts" in
+        let: "pp" := struct.mk tulip.PrepareProposal [
+          "Rank" ::= "ranka";
+          "Prepared" ::= "pdec"
+        ] in
+        Replica__advance "rp" "ts" "rank";;
+        logAdvance (struct.loadF Replica "fname" "rp") (struct.loadF Replica "lsna" "rp") "ts" "rank";;
+        let: ("pwrs", "vd") := Replica__validated "rp" "ts" in
         ("pp", "vd", "pwrs", tulip.REPLICA_OK))).
 
 Definition Replica__Inquire: val :=
@@ -486,7 +541,7 @@ Definition Replica__applyCommit: val :=
       (if: "prepared"
       then
         Replica__release "rp" "pwrs";;
-        MapDelete (struct.loadF Replica "prepm" "rp") "ts";;
+        Replica__erase "rp" "ts";;
         #()
       else #())).
 
@@ -501,7 +556,7 @@ Definition Replica__applyAbort: val :=
       (if: "prepared"
       then
         Replica__release "rp" "pwrs";;
-        MapDelete (struct.loadF Replica "prepm" "rp") "ts";;
+        Replica__erase "rp" "ts";;
         #()
       else #())).
 
@@ -541,7 +596,11 @@ Definition Replica__StartBackupTxnCoordinator: val :=
     Mutex__Lock (struct.loadF Replica "mu" "rp");;
     let: "rank" := (Fst (MapGet (struct.loadF Replica "rktbl" "rp") "ts")) + #1 in
     let: "ptgs" := Fst (MapGet (struct.loadF Replica "ptgsm" "rp") "ts") in
-    let: "tcoord" := backup.MkBackupTxnCoordinator "ts" "rank" "ptgs" (struct.loadF Replica "rps" "rp") (struct.loadF Replica "leader" "rp") in
+    let: "cid" := struct.mk tulip.CoordID [
+      "GroupID" ::= struct.loadF Replica "gid" "rp";
+      "ReplicaID" ::= struct.loadF Replica "rid" "rp"
+    ] in
+    let: "tcoord" := backup.Start "ts" "rank" "cid" "ptgs" (struct.loadF Replica "gaddrm" "rp") (struct.loadF Replica "leader" "rp") (struct.loadF Replica "proph" "rp") in
     backup.BackupTxnCoordinator__ConnectAll "tcoord";;
     Mutex__Unlock (struct.loadF Replica "mu" "rp");;
     backup.BackupTxnCoordinator__Finalize "tcoord";;
@@ -595,16 +654,18 @@ Definition Replica__RequestSession: val :=
           (if: "kind" = message.MSG_TXN_FAST_PREPARE
           then
             let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
-            let: "res" := Replica__FastPrepare "rp" "ts" "pwrs" slice.nil in
+            let: "ptgs" := struct.get message.TxnRequest "ParticipantGroups" "req" in
+            let: "res" := Replica__FastPrepare "rp" "ts" "pwrs" "ptgs" in
             let: "data" := message.EncodeTxnFastPrepareResponse "ts" (struct.loadF Replica "rid" "rp") "res" in
             grove_ffi.Send "conn" "data";;
             Continue
           else
             (if: "kind" = message.MSG_TXN_VALIDATE
             then
-              let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
               let: "rank" := struct.get message.TxnRequest "Rank" "req" in
-              let: "res" := Replica__Validate "rp" "ts" "rank" "pwrs" slice.nil in
+              let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
+              let: "ptgs" := struct.get message.TxnRequest "ParticipantGroups" "req" in
+              let: "res" := Replica__Validate "rp" "ts" "rank" "pwrs" "ptgs" in
               let: "data" := message.EncodeTxnValidateResponse "ts" (struct.loadF Replica "rid" "rp") "res" in
               grove_ffi.Send "conn" "data";;
               Continue
@@ -633,44 +694,53 @@ Definition Replica__RequestSession: val :=
                     grove_ffi.Send "conn" "data";;
                     Continue
                   else
-                    (if: "kind" = message.MSG_TXN_COMMIT
+                    (if: "kind" = message.MSG_TXN_INQUIRE
                     then
-                      let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
-                      let: "ok" := Replica__Commit "rp" "ts" "pwrs" in
-                      (if: "ok"
-                      then
-                        let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_COMMITTED_TXN in
-                        grove_ffi.Send "conn" "data";;
-                        Continue
-                      else
-                        let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_WRONG_LEADER in
-                        grove_ffi.Send "conn" "data";;
-                        Continue)
+                      let: "rank" := struct.get message.TxnRequest "Rank" "req" in
+                      let: "cid" := struct.get message.TxnRequest "CoordID" "req" in
+                      let: ((("pp", "vd"), "pwrs"), "res") := Replica__Inquire "rp" "ts" "rank" in
+                      let: "data" := message.EncodeTxnInquireResponse "ts" "rank" (struct.loadF Replica "rid" "rp") "cid" "pp" "vd" "pwrs" "res" in
+                      grove_ffi.Send "conn" "data";;
+                      Continue
                     else
-                      (if: "kind" = message.MSG_TXN_ABORT
+                      (if: "kind" = message.MSG_TXN_COMMIT
                       then
-                        let: "ok" := Replica__Abort "rp" "ts" in
+                        let: "pwrs" := struct.get message.TxnRequest "PartialWrites" "req" in
+                        let: "ok" := Replica__Commit "rp" "ts" "pwrs" in
                         (if: "ok"
                         then
-                          let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_ABORTED_TXN in
+                          let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_COMMITTED_TXN in
                           grove_ffi.Send "conn" "data";;
                           Continue
                         else
-                          let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_WRONG_LEADER in
+                          let: "data" := message.EncodeTxnCommitResponse "ts" tulip.REPLICA_WRONG_LEADER in
                           grove_ffi.Send "conn" "data";;
                           Continue)
                       else
-                        (if: "kind" = message.MSG_DUMP_STATE
+                        (if: "kind" = message.MSG_TXN_ABORT
                         then
-                          let: "gid" := struct.get message.TxnRequest "Timestamp" "req" in
-                          Replica__DumpState "rp" "gid";;
-                          Continue
-                        else
-                          (if: "kind" = message.MSG_FORCE_ELECTION
+                          let: "ok" := Replica__Abort "rp" "ts" in
+                          (if: "ok"
                           then
-                            Replica__ForceElection "rp";;
+                            let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_ABORTED_TXN in
+                            grove_ffi.Send "conn" "data";;
                             Continue
-                          else Continue))))))))))));;
+                          else
+                            let: "data" := message.EncodeTxnAbortResponse "ts" tulip.REPLICA_WRONG_LEADER in
+                            grove_ffi.Send "conn" "data";;
+                            Continue)
+                        else
+                          (if: "kind" = message.MSG_DUMP_STATE
+                          then
+                            let: "gid" := struct.get message.TxnRequest "Timestamp" "req" in
+                            Replica__DumpState "rp" "gid";;
+                            Continue
+                          else
+                            (if: "kind" = message.MSG_FORCE_ELECTION
+                            then
+                              Replica__ForceElection "rp";;
+                              Continue
+                            else Continue)))))))))))));;
     #().
 
 Definition Replica__Serve: val :=
@@ -683,11 +753,115 @@ Definition Replica__Serve: val :=
       Continue);;
     #().
 
-Definition Start: val :=
-  rec: "Start" "rid" "addr" "fname" "addrmpx" "fnamepx" :=
+Definition Replica__intervene: val :=
+  rec: "Replica__intervene" "rp" "ts" "ptgs" :=
+    let: "rank" := ref_to uint64T #2 in
+    let: ("rankl", "ok") := Replica__lowestRank "rp" "ts" in
+    (if: "ok"
+    then "rank" <-[uint64T] (std.SumAssumeNoOverflow "rankl" #1)
+    else #());;
+    Replica__advance "rp" "ts" (![uint64T] "rank");;
+    logAdvance (struct.loadF Replica "fname" "rp") (struct.loadF Replica "lsna" "rp") "ts" (![uint64T] "rank");;
+    let: "cid" := struct.mk tulip.CoordID [
+      "GroupID" ::= struct.loadF Replica "gid" "rp";
+      "ReplicaID" ::= struct.loadF Replica "rid" "rp"
+    ] in
+    let: "btcoord" := backup.Start "ts" (![uint64T] "rank") "cid" "ptgs" (struct.loadF Replica "gaddrm" "rp") #0 (struct.loadF Replica "proph" "rp") in
+    Fork (backup.BackupTxnCoordinator__Finalize "btcoord");;
+    #().
+
+Definition Replica__Backup: val :=
+  rec: "Replica__Backup" "rp" :=
+    Skip;;
+    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+      Mutex__Lock (struct.loadF Replica "mu" "rp");;
+      let: "ptgsm" := NewMap uint64T (slice.T uint64T) #() in
+      MapIter (struct.loadF Replica "ptgsm" "rp") (λ: "ts" "ptgs",
+        MapInsert "ptgsm" "ts" "ptgs");;
+      MapIter "ptgsm" (λ: "ts" "ptgs",
+        Replica__intervene "rp" "ts" "ptgs");;
+      Mutex__Unlock (struct.loadF Replica "mu" "rp");;
+      time.Sleep params.NS_BACKUP_INTERVAL;;
+      Continue);;
+    #().
+
+(* Argument:
+   1. @lsn: LSN of consistent command to replay. *)
+Definition Replica__replay: val :=
+  rec: "Replica__replay" "rp" "lsn" :=
+    let: "cmd" := ref (zero_val (struct.t txnlog.Cmd)) in
+    let: "ok" := ref_to boolT #false in
+    Skip;;
+    (for: (λ: <>, (~ (![boolT] "ok"))); (λ: <>, Skip) := λ: <>,
+      let: ("0_ret", "1_ret") := txnlog.TxnLog__Lookup (struct.loadF Replica "txnlog" "rp") "lsn" in
+      "cmd" <-[struct.t txnlog.Cmd] "0_ret";;
+      "ok" <-[boolT] "1_ret";;
+      Continue);;
+    Replica__apply "rp" (![struct.t txnlog.Cmd] "cmd");;
+    #().
+
+(* Argument:
+   1. @lsnx and @lsny: LSN range [@lsnx, @lsny) of consistent commands to
+   replay. *)
+Definition Replica__replayBetween: val :=
+  rec: "Replica__replayBetween" "rp" "lsnx" "lsny" :=
+    let: "lsn" := ref_to uint64T "lsnx" in
+    (for: (λ: <>, (![uint64T] "lsn") < "lsny"); (λ: <>, "lsn" <-[uint64T] ((![uint64T] "lsn") + #1)) := λ: <>,
+      Replica__replay "rp" (![uint64T] "lsn");;
+      Continue);;
+    #().
+
+Definition Replica__resume: val :=
+  rec: "Replica__resume" "rp" :=
+    let: "lsnx" := ref_to uint64T #0 in
+    let: "data" := ref_to (slice.T byteT) (grove_ffi.FileRead (struct.loadF Replica "fname" "rp")) in
+    Skip;;
+    (for: (λ: <>, #0 < (slice.len (![slice.T byteT] "data"))); (λ: <>, Skip) := λ: <>,
+      let: ("lsny", "bs1") := marshal.ReadInt (![slice.T byteT] "data") in
+      Replica__replayBetween "rp" (![uint64T] "lsnx") "lsny";;
+      "lsnx" <-[uint64T] "lsny";;
+      let: ("kind", "bs2") := marshal.ReadInt "bs1" in
+      let: ("ts", "bs3") := marshal.ReadInt "bs2" in
+      (if: "kind" = CMD_READ
+      then
+        let: ("key", "bs4") := util.DecodeString "bs3" in
+        "data" <-[slice.T byteT] "bs4";;
+        Replica__bumpKey "rp" "ts" "key";;
+        Continue
+      else
+        (if: "kind" = CMD_ACQUIRE
+        then
+          let: ("pwrs", "bs4") := util.DecodeKVMapIntoSlice "bs3" in
+          let: ("ptgs", "bs5") := util.DecodeInts "bs4" in
+          "data" <-[slice.T byteT] "bs5";;
+          Replica__acquire "rp" "ts" "pwrs";;
+          Replica__memorize "rp" "ts" "pwrs" "ptgs";;
+          Continue
+        else
+          (if: "kind" = CMD_ADVANCE
+          then
+            let: ("rank", "bs4") := marshal.ReadInt "bs3" in
+            "data" <-[slice.T byteT] "bs4";;
+            Replica__advance "rp" "ts" "rank";;
+            Continue
+          else
+            (if: "kind" = CMD_ACCEPT
+            then
+              let: ("rank", "bs4") := marshal.ReadInt "bs3" in
+              let: ("dec", "bs5") := marshal.ReadBool "bs4" in
+              "data" <-[slice.T byteT] "bs5";;
+              Replica__accept "rp" "ts" "rank" "dec";;
+              Continue
+            else Continue)))));;
+    struct.storeF Replica "lsna" "rp" (![uint64T] "lsnx");;
+    #().
+
+Definition start: val :=
+  rec: "start" "gid" "rid" "addr" "fname" "addrmpx" "fnamepx" "gaddrm" "proph" :=
     let: "txnlog" := txnlog.Start "rid" "addrmpx" "fnamepx" in
     let: "rp" := struct.new Replica [
       "mu" ::= newMutex #();
+      "gid" ::= "gid";
       "rid" ::= "rid";
       "addr" ::= "addr";
       "fname" ::= "fname";
@@ -695,13 +869,21 @@ Definition Start: val :=
       "lsna" ::= #0;
       "prepm" ::= NewMap uint64T (slice.T (struct.t tulip.WriteEntry)) #();
       "ptgsm" ::= NewMap uint64T (slice.T uint64T) #();
-      "pstbl" ::= NewMap uint64T (struct.t PrepareProposal) #();
+      "pstbl" ::= NewMap uint64T (struct.t tulip.PrepareProposal) #();
       "rktbl" ::= NewMap uint64T uint64T #();
       "txntbl" ::= NewMap uint64T boolT #();
       "ptsm" ::= NewMap stringT uint64T #();
       "sptsm" ::= NewMap stringT uint64T #();
-      "idx" ::= index.MkIndex #()
+      "idx" ::= index.MkIndex #();
+      "gaddrm" ::= "gaddrm";
+      "proph" ::= "proph"
     ] in
+    Replica__resume "rp";;
     Fork (Replica__Serve "rp");;
     Fork (Replica__Applier "rp");;
+    Fork (Replica__Backup "rp");;
     "rp".
+
+Definition Start: val :=
+  rec: "Start" "gid" "rid" "addr" "fname" "addrmpx" "fnamepx" "gaddrm" :=
+    start "gid" "rid" "addr" "fname" "addrmpx" "fnamepx" "gaddrm" (NewProph #()).

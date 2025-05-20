@@ -52,8 +52,8 @@ Section program.
     (*@         kind := msg.Kind                                                @*)
     (*@                                                                         @*)
     iDestruct (own_slice_to_small with "Hdata") as "Hdata".
-    rewrite Hdataenc.
     wp_apply (wp_DecodeTxnResponse with "Hdata").
+    { apply Hdataenc. }
     iIntros (entsP) "Hents".
 
     (*@         gcoord.mu.Lock()                                                @*)
@@ -327,6 +327,33 @@ Section program.
       iNamed "Hresp".
       wp_apply (wp_GroupPreparer__processQueryResult with "Hresp Hgpp").
       iIntros "Hgpp".
+      wp_loadField.
+      wp_apply (wp_Cond__Broadcast with "Hcv").
+      wp_loadField.
+      wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+      { by iFrame "Hlock Hlocked ∗". }
+      wp_pures.
+      by iApply "HΦ".
+    }
+    { (* Case: TxnInquire. *)
+      iNamed "Hgcoord".
+      wp_loadField.
+      wp_apply (wp_Mutex__Lock with "Hlock").
+      iIntros "[Hlocked Hgcoord]".
+      wp_pures.
+      do 2 iNamed "Hgcoord".
+      wp_apply (wp_GroupCoordinator__attachedWith with "Hgcoord").
+      iIntros (attached) "Hgcoord".
+      wp_pures.
+      destruct attached; wp_pures; last first.
+      { wp_loadField.
+        wp_apply (wp_Mutex__Unlock with "[-HΦ]").
+        { by iFrame "Hlock Hlocked ∗". }
+        wp_pures.
+        by iApply "HΦ".
+      }
+      wp_pures.
+      iNamed "Hgcoord".
       wp_loadField.
       wp_apply (wp_Cond__Broadcast with "Hcv").
       wp_loadField.

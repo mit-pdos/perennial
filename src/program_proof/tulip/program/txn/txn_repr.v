@@ -5,7 +5,6 @@ From Perennial.program_proof.tulip.program.gcoord Require Import gcoord_repr.
 Section repr.
   Context `{!heapGS Σ, !tulip_ghostG Σ}.
 
-
   (*@ type Txn struct {                                                       @*)
   (*@     // Timestamp of this transaction.                                   @*)
   (*@     ts      uint64                                                      @*)
@@ -32,11 +31,16 @@ Section repr.
       "HwrspP" ∷ txn ↦[Txn :: "wrsp"] #wrspP ∗
       "Hwrsp"  ∷ own_map wrspP (DfracOwn 1) wrs.
 
-  Definition own_txn_ptgs txn (ptgs : list u64) : iProp Σ :=
+  Definition own_txn_ptgs_empty txn : iProp Σ :=
     ∃ (ptgsS : Slice.t),
-      "HptgsS" ∷ txn ↦[Txn :: "ptgs"] (to_val ptgsS) ∗
-      "Hptgs"  ∷ own_slice ptgsS uint64T (DfracOwn 1) ptgs ∗
-      "%Hnd"   ∷ ⌜NoDup ptgs⌝.
+      "HptgsS" ∷ txn ↦[Txn :: "ptgs"] (to_val ptgsS).
+
+  Definition own_txn_ptgs_fixed txn (ptgs : txnptgs) : iProp Σ :=
+    ∃ (ptgsS : Slice.t) (ptgsL : list u64),
+      "HptgsS"  ∷ txn ↦[Txn :: "ptgs"] (to_val ptgsS) ∗
+      "#HptgsL" ∷ own_slice_small ptgsS uint64T DfracDiscarded ptgsL ∗
+      "%HptgsL" ∷ ⌜list_to_set ptgsL = ptgs⌝ ∗
+      "%Hnd"    ∷ ⌜NoDup ptgsL⌝.
 
   Definition own_txn_ts txn (tid : nat) : iProp Σ :=
     ∃ (tsW : u64),
@@ -62,7 +66,7 @@ Section repr.
       "Hsid"     ∷ own_txn_sid γ txn ∗
       "Hwrs"     ∷ own_txn_wrs txn (DfracOwn 1) ∅ ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
-      "Hptgs"    ∷ own_txn_ptgs txn [] ∗
+      "Hptgs"    ∷ own_txn_ptgs_empty txn ∗
       "HprophP"  ∷ txn ↦[Txn :: "proph"] #proph ∗
       "#Hinv"    ∷ know_tulip_inv_with_proph γ proph ∗
       "#Hgentid" ∷ have_gentid γ.
@@ -80,12 +84,14 @@ Section repr.
       "Hsid"     ∷ own_txn_sid γ txn ∗
       "Hwrs"     ∷ own_txn_wrs txn (DfracOwn 1) wrs ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
-      "Hptgs"    ∷ own_txn_ptgs txn [] ∗
+      "Hptgs"    ∷ own_txn_ptgs_empty txn ∗
       (* diff from [own_txn_init] *)
       "Htxnmap"  ∷ txnmap_auth τ (wrs ∪ rds) ∗
       "HprophP"  ∷ txn ↦[Txn :: "proph"] #proph ∗
       "#Hinv"    ∷ know_tulip_inv_with_proph γ proph ∗
       "#Hgentid" ∷ have_gentid γ ∗
+      (* diff from [own_txn_init] *)
+      "#Hlnrzts" ∷ is_lnrz_tid γ tid ∗
       (* diff from [own_txn_init] *)
       "#Hlnrz"   ∷ ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
       "%Hdomr"   ∷ ⌜dom rds ⊆ keys_all⌝ ∗
@@ -102,11 +108,12 @@ Section repr.
       (* diff from [own_txn] *)
       "Hwrs"     ∷ own_txn_wrs txn DfracDiscarded wrs ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
-      "Hptgs"    ∷ own_txn_ptgs txn [] ∗
+      "Hptgs"    ∷ own_txn_ptgs_empty txn ∗
       "Htxnmap"  ∷ txnmap_auth τ (wrs ∪ rds) ∗
       "HprophP"  ∷ txn ↦[Txn :: "proph"] #proph ∗
       "#Hinv"    ∷ know_tulip_inv_with_proph γ proph ∗
       "#Hgentid" ∷ have_gentid γ ∗
+      "#Hlnrzts" ∷ is_lnrz_tid γ tid ∗
       "#Hlnrz"   ∷ ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
       "%Hdomr"   ∷ ⌜dom rds ⊆ keys_all⌝ ∗
       (* diff from [own_txn] and [wrs] is exposed *)
@@ -116,24 +123,23 @@ Section repr.
       "%Hvwrs"   ∷ ⌜valid_wrs wrs⌝.
 
   Definition own_txn_prepared txn tid rds wrs γ τ : iProp Σ :=
-    ∃ (proph : proph_id) ptgs,
+    ∃ (proph : proph_id),
       "Htxn"     ∷ own_txn_ts txn tid ∗
       "Hsid"     ∷ own_txn_sid γ txn ∗
       "Hwrs"     ∷ own_txn_wrs txn DfracDiscarded wrs ∗
       "Hgcoords" ∷ own_txn_gcoords txn γ ∗
       (* diff from [own_txn_stable] *)
-      "Hptgs"    ∷ own_txn_ptgs txn ptgs ∗
+      "Hptgs"    ∷ own_txn_ptgs_fixed txn (ptgroups (dom wrs)) ∗
       "Htxnmap"  ∷ txnmap_auth τ (wrs ∪ rds) ∗
       "HprophP"  ∷ txn ↦[Txn :: "proph"] #proph ∗
       "#Hinv"    ∷ know_tulip_inv_with_proph γ proph ∗
       "#Hgentid" ∷ have_gentid γ ∗
+      "#Hlnrzts" ∷ is_lnrz_tid γ tid ∗
       "#Hlnrz"   ∷ ([∗ map] key ↦ value ∈ rds, is_lnrz_hist_at γ key (pred tid) value) ∗
       "#Htxnwrs" ∷ is_txn_wrs γ tid wrs ∗
       "%Hdomr"   ∷ ⌜dom rds ⊆ keys_all⌝ ∗
       "%Hincl"   ∷ ⌜dom wrs ⊆ dom rds⌝ ∗
       "%Hvts"    ∷ ⌜valid_ts tid⌝ ∗
-      "%Hvwrs"   ∷ ⌜valid_wrs wrs⌝ ∗
-      (* diff from [own_txn_stable] *)
-      "%Hptgs"   ∷ ⌜list_to_set ptgs = ptgroups (dom wrs)⌝.
+      "%Hvwrs"   ∷ ⌜valid_wrs wrs⌝.
 
 End repr.

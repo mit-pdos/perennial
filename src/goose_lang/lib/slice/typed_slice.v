@@ -63,6 +63,16 @@ Typeclasses Transparent slice.own_slice_small.
 Definition own_slice s t q vs := slice.own_slice s t q (list.untype vs).
 Definition own_slice_small s t q vs := slice.own_slice_small s t q (list.untype vs).
 
+Lemma own_slice_small_agree s t q1 q2 vs1 vs2 :
+  own_slice_small s t q1 vs1 -∗
+  own_slice_small s t q2 vs2 -∗
+  ⌜vs1 = vs2⌝.
+Proof.
+  rewrite /own_slice_small. iIntros "H0 H1".
+  iDestruct (slice.own_slice_small_agree with "H0 H1") as %Heq.
+  naive_solver.
+Qed.
+
 Lemma own_slice_split s t q vs :
   own_slice s t q vs ⊣⊢
   own_slice_small s t q vs ∗ own_slice_cap s t.
@@ -193,6 +203,16 @@ Proof.
   iMod (slice.own_slice_small_persist with "Hs") as "Hs".
   iModIntro.
   iFrame.
+Qed.
+
+#[global]
+Instance own_slice_small_persistently s t dq vs :
+  UpdateIntoPersistently (own_slice_small s t dq vs) (own_slice_small s t DfracDiscarded vs).
+Proof.
+  rewrite /UpdateIntoPersistently.
+  iIntros "H".
+  iMod (own_slice_small_persist with "H") as "#H".
+  done.
 Qed.
 
 Lemma wp_NewSlice stk E t `{!IntoValForType V t} (sz: u64) :
@@ -451,6 +471,9 @@ Qed.
 
 Opaque SliceAppendSlice.
 
+Local Ltac simplify_nonlinear :=
+  rewrite -?Z.mul_add_distr_l ?Zred_factor3.
+
 (** Only works with the full fraction since some of the ownership is moved from
 the slice part to the extra part *)
 Lemma wp_SliceSubslice_full {stk E} s t `{!IntoVal V} (vs: list V) (n m: u64) :
@@ -483,7 +506,7 @@ Proof.
       subst vs'; rewrite length_fmap. rewrite !length_take.
       rewrite //=.
       rewrite min_l; last word.
-      rewrite u64_Z_through_nat. eauto.
+      nat_cleanup. eauto.
     - iPureIntro. rewrite length_fmap /=.
       split; last word.
       subst vs'. rewrite length_drop length_take. word.
@@ -496,7 +519,8 @@ Proof.
   - iApply array.array_app.
     rewrite loc_add_assoc.
     replace (ty_size t * uint.Z n + ty_size t * uint.Z (word.sub m n)) with
-      (ty_size t * uint.nat m) by word.
+      (ty_size t * uint.nat m).
+    2:{ simplify_nonlinear. f_equal. word. }
     iFrame "Htail".
     iExactEq "Htail2". f_equal.
     rewrite length_fmap length_drop.
@@ -598,7 +622,7 @@ Lemma wp_SliceCopy_full stk E sl t q vs dst vs' :
 Proof.
   iIntros (Φ) "(Hsrc & Hdst & %Hlen) HΦ".
   iDestruct (own_slice_small_sz with "Hsrc") as %Hsz.
-  wp_apply (wp_SliceCopy with "[$Hsrc $Hdst]"); [word|].
+  wp_apply (wp_SliceCopy with "[$Hsrc $Hdst]"); [lia|].
   iIntros "(? & ?)".
   rewrite Hlen.
   rewrite drop_all.

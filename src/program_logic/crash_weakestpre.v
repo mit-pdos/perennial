@@ -310,6 +310,7 @@ Proof.
   { simpl in IHk. by rewrite IHk. }
   f_equiv. f_contractive.
   do 12 f_equiv.
+  cbn [sidx_lt natSI] in *. (* TODO: can zify do this automatically? *)
   rewrite IH; [done|try lia| |].
   - intros v. eapply dist_le; eauto. lia.
   - eapply dist_le; eauto. lia.

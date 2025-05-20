@@ -1837,17 +1837,13 @@ Proof.
       {
         rewrite -updates_since_to_last_disk; eauto.
         1: rewrite no_updates_since_last_disk; auto.
-        apply wal_wf_advance_installed_lb with (σ := (set log_state.durable_lb (λ _ : nat, new_durable) σ)).
-        1: apply wal_wf_advance_durable_lb; auto.
-        simpl.
-        lia.
+        apply (wal_wf_advance_durable_lb _ new_durable) in Hwf; [|done].
+        by apply (wal_wf_advance_installed_lb _ new_installed) in Hwf.
       }
       {
         rewrite no_updates_since_nil; auto.
-        apply wal_wf_advance_installed_lb with (σ := (set log_state.durable_lb (λ _ : nat, new_durable) σ)).
-        1: apply wal_wf_advance_durable_lb; auto.
-        simpl.
-        lia.
+        apply (wal_wf_advance_durable_lb _ new_durable) in Hwf; [|done].
+        by apply (wal_wf_advance_installed_lb _ new_installed) in Hwf.
       }
     }
     rewrite /wal_heap_inv.
@@ -1860,9 +1856,9 @@ Proof.
       apply elem_of_dom; eauto. }
 
     iPureIntro.
-    eapply wal_wf_advance_installed_lb.
-    2: { intuition idtac. }
-    eapply wal_wf_advance_durable_lb; eauto.
+    apply (wal_wf_advance_durable_lb _ new_durable) in Hwf; [|done].
+    apply (wal_wf_advance_installed_lb _ new_installed) in Hwf; [done|].
+    simpl in *. lia.
 Qed.
 
 Definition readinstalled_q γh (a : u64) (installed : Block) (bs : list Block) (res : Block) : iProp Σ :=
@@ -2531,12 +2527,12 @@ Proof using walheapG0.
         { simpl; auto. }
         iSplitL "Hgh".
         {
-          iApply wal_update_installed; first by intuition lia.
-          iApply wal_update_durable; first by intuition lia.
-          iFrame. }
+          iDestruct (wal_update_durable _ _ new_durable with "Hgh") as "Hgh"; [lia|].
+          by iDestruct (wal_update_installed _ _ new_installed with "Hgh") as "Hgh". }
         iPureIntro.
-        eapply wal_wf_advance_installed_lb; last by (intuition; simpl; lia).
-        eapply wal_wf_advance_durable_lb; eauto.
+        apply (wal_wf_advance_durable_lb _ new_durable) in Hwf; [|done].
+        apply (wal_wf_advance_installed_lb _ new_installed) in Hwf; [done|].
+        simpl. lia.
       }
 
       iIntros (σ0 σ1 b0) "%Hwf' %Hrelation Hwalinv".

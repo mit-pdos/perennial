@@ -1,20 +1,21 @@
 From Perennial.program_proof Require Import marshal_stateless_proof.
 From Perennial.program_proof.tulip.program Require Import prelude.
 From Perennial.program_proof.tulip.program.util Require Import
-  decode_string decode_kvmap_into_slice.
+  decode_string decode_kvmap_into_slice decode_ints.
 
-Definition txnreq_to_val (req : txnreq) (pwrsP : Slice.t) : val :=
+Definition txnreq_to_val (req : txnreq) (pwrsP ptgsP : Slice.t) : val :=
   match req with
   | ReadReq ts key =>
       struct.mk_f TxnRequest [
           ("Kind", #(U64 100)); ("Timestamp", #ts); ("Key", #(LitString key))]
-  | FastPrepareReq ts pwrs =>
+  | FastPrepareReq ts _ _ =>
       struct.mk_f TxnRequest [
-          ("Kind", #(U64 201)); ("Timestamp", #ts); ("PartialWrites", to_val pwrsP)]
-  | ValidateReq ts rank pwrs =>
+          ("Kind", #(U64 201)); ("Timestamp", #ts);
+          ("PartialWrites", to_val pwrsP); ("ParticipantGroups", to_val ptgsP)]
+  | ValidateReq ts rank _ _ =>
       struct.mk_f TxnRequest [
           ("Kind", #(U64 202)); ("Timestamp", #ts); ("Rank", #rank);
-          ("PartialWrites", to_val pwrsP)]
+          ("PartialWrites", to_val pwrsP); ("ParticipantGroups", to_val ptgsP)]
   | PrepareReq ts rank =>
       struct.mk_f TxnRequest [
           ("Kind", #(U64 203)); ("Timestamp", #ts); ("Rank", #rank)]
@@ -24,6 +25,10 @@ Definition txnreq_to_val (req : txnreq) (pwrsP : Slice.t) : val :=
   | QueryReq ts rank =>
       struct.mk_f TxnRequest [
           ("Kind", #(U64 205)); ("Timestamp", #ts); ("Rank", #rank)]
+  | InquireReq ts rank cid =>
+      struct.mk_f TxnRequest [
+          ("Kind", #(U64 206)); ("Timestamp", #ts); ("Rank", #rank);
+          ("CoordID", coordid_to_val cid)]
   | RefreshReq ts rank =>
       struct.mk_f TxnRequest [
           ("Kind", #(U64 210)); ("Timestamp", #ts); ("Rank", #rank)]
@@ -42,7 +47,7 @@ Section decode.
     let bs := encode_read_req_xkind ts key in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnReadRequest (to_val bsP)
-    {{{ RET (txnreq_to_val (ReadReq ts key) Slice.nil); True }}}.
+    {{{ RET (txnreq_to_val (ReadReq ts key) Slice.nil Slice.nil); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -65,12 +70,12 @@ Section decode.
     by iApply "HΦ".
   Qed.
 
-  Theorem wp_DecodeTxnFastPrepareRequest (bsP : Slice.t) ts pwrs bs :
-    encode_fast_prepare_req_xkind ts pwrs bs ->
+  Theorem wp_DecodeTxnFastPrepareRequest (bsP : Slice.t) ts pwrs ptgs bs :
+    encode_fast_prepare_req_xkind ts pwrs ptgs bs ->
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnFastPrepareRequest (to_val bsP)
-    {{{ (pwrsP : Slice.t), RET (txnreq_to_val (FastPrepareReq ts pwrs) pwrsP);
-        own_dbmap_in_slice pwrsP pwrs
+    {{{ (pwrsP ptgsP : Slice.t), RET (txnreq_to_val (FastPrepareReq ts pwrs ptgs) pwrsP ptgsP);
+        own_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
     }}}.
   Proof.
     iIntros (Henc Φ) "Hbs HΦ".
@@ -78,30 +83,36 @@ Section decode.
 
     (*@ func DecodeTxnFastPrepareRequest(bs []byte) TxnRequest {                @*)
     (*@     ts, bs1 := marshal.ReadInt(bs)                                      @*)
-    (*@     pwrs, _ := util.DecodeKVMapIntoSlice(bs1)                           @*)
+    (*@     pwrs, bs2 := util.DecodeKVMapIntoSlice(bs1)                         @*)
+    (*@     ptgs, _ := util.DecodeInts(bs2)                                     @*)
     (*@     return TxnRequest{                                                  @*)
-    (*@         Kind          : MSG_TXN_FAST_PREPARE,                           @*)
-    (*@         Timestamp     : ts,                                             @*)
-    (*@         PartialWrites : pwrs,                                           @*)
+    (*@         Kind              : MSG_TXN_FAST_PREPARE,                       @*)
+    (*@         Timestamp         : ts,                                         @*)
+    (*@         PartialWrites     : pwrs,                                       @*)
+    (*@         ParticipantGroups : ptgs,                                       @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    destruct Henc as (reqdata & -> & Hreqdata).
+    destruct Henc as (mdata & gdata & -> & Hmdata & Hgdata).
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (bs1P) "Hbs".
-    rewrite -(app_nil_r reqdata).
     wp_apply (wp_DecodeKVMapIntoSlice with "Hbs").
-    { apply Hreqdata. }
-    iIntros (pwrsP dataP) "[Hpwrs Hdata]".
+    { apply Hmdata. }
+    iIntros (pwrsP bs2P) "[Hpwrs Hbs]".
+    rewrite -(app_nil_r gdata).
+    wp_apply (wp_DecodeInts__encode_txnptgs with "Hbs").
+    { apply Hgdata. }
+    iIntros (ptgsP dataP) "[Hptgs Hbs]".
     wp_pures.
-    by iApply "HΦ".
+    iApply "HΦ".
+    by iFrame.
   Qed.
 
-  Theorem wp_DecodeTxnValidateRequest (bsP : Slice.t) ts rank pwrs bs :
-    encode_validate_req_xkind ts rank pwrs bs ->
+  Theorem wp_DecodeTxnValidateRequest (bsP : Slice.t) ts rank pwrs ptgs bs :
+    encode_validate_req_xkind ts rank pwrs ptgs bs ->
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnValidateRequest (to_val bsP)
-    {{{ (pwrsP : Slice.t), RET (txnreq_to_val (ValidateReq ts rank pwrs) pwrsP);
-        own_dbmap_in_slice pwrsP pwrs
+    {{{ (pwrsP ptgsP: Slice.t), RET (txnreq_to_val (ValidateReq ts rank pwrs ptgs) pwrsP ptgsP);
+        own_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
     }}}.
   Proof.
     iIntros (Henc Φ) "Hbs HΦ".
@@ -110,32 +121,38 @@ Section decode.
     (*@ func DecodeTxnValidateRequest(bs []byte) TxnRequest {                   @*)
     (*@     ts, bs1 := marshal.ReadInt(bs)                                      @*)
     (*@     rank, bs2 := marshal.ReadInt(bs1)                                   @*)
-    (*@     pwrs, _ := util.DecodeKVMapIntoSlice(bs2)                           @*)
+    (*@     pwrs, bs3 := util.DecodeKVMapIntoSlice(bs2)                         @*)
+    (*@     ptgs, _ := util.DecodeInts(bs3)                                     @*)
     (*@     return TxnRequest{                                                  @*)
-    (*@         Kind          : MSG_TXN_VALIDATE,                               @*)
-    (*@         Timestamp     : ts,                                             @*)
-    (*@         Rank          : rank,                                           @*)
-    (*@         PartialWrites : pwrs,                                           @*)
+    (*@         Kind              : MSG_TXN_VALIDATE,                           @*)
+    (*@         Timestamp         : ts,                                         @*)
+    (*@         Rank              : rank,                                       @*)
+    (*@         PartialWrites     : pwrs,                                       @*)
+    (*@         ParticipantGroups : ptgs,                                       @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    destruct Henc as (reqdata & -> & Hreqdata).
+    destruct Henc as (mdata & gdata & -> & Hmdata & Hgdata).
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (bs1P) "Hbs".
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (bs2P) "Hbs".
-    rewrite -(app_nil_r reqdata).
     wp_apply (wp_DecodeKVMapIntoSlice with "Hbs").
-    { apply Hreqdata. }
-    iIntros (pwrsP dataP) "[Hpwrs Hdata]".
+    { apply Hmdata. }
+    iIntros (pwrsP bs3P) "[Hpwrs Hbs]".
+    rewrite -(app_nil_r gdata).
+    wp_apply (wp_DecodeInts__encode_txnptgs with "Hbs").
+    { apply Hgdata. }
+    iIntros (ptgsP dataP) "[Hptgs Hbs]".
     wp_pures.
-    by iApply "HΦ".
+    iApply "HΦ".
+    by iFrame.
   Qed.
 
   Theorem wp_DecodeTxnPrepareRequest (bsP : Slice.t) ts rank :
     let bs := encode_ts_rank ts rank in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnPrepareRequest (to_val bsP)
-    {{{ RET (txnreq_to_val (PrepareReq ts rank) Slice.nil); True }}}.
+    {{{ RET (txnreq_to_val (PrepareReq ts rank) Slice.nil Slice.nil); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -151,7 +168,8 @@ Section decode.
     (*@ }                                                                       @*)
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (bs1P) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (bs2P) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -161,7 +179,7 @@ Section decode.
     let bs := encode_ts_rank ts rank in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnUnprepareRequest (to_val bsP)
-    {{{ RET (txnreq_to_val (UnprepareReq ts rank) Slice.nil); True }}}.
+    {{{ RET (txnreq_to_val (UnprepareReq ts rank) Slice.nil Slice.nil); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -177,7 +195,8 @@ Section decode.
     (*@ }                                                                       @*)
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (bs1P) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (bs2P) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -187,7 +206,7 @@ Section decode.
     let bs := encode_ts_rank ts rank in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnQueryRequest (to_val bsP)
-    {{{ RET (txnreq_to_val (QueryReq ts rank) Slice.nil); True }}}.
+    {{{ RET (txnreq_to_val (QueryReq ts rank) Slice.nil Slice.nil); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -203,8 +222,34 @@ Section decode.
     (*@ }                                                                       @*)
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (bs1P) "Hbs".
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
+    iIntros (bs2P) "Hbs".
+    wp_pures.
+    by iApply "HΦ".
+  Qed.
+
+  Theorem wp_DecodeTxnInquireRequest (bsP : Slice.t) ts rank cid :
+    let bs := encode_inquire_req_xkind ts rank cid in
+    {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
+      DecodeTxnInquireRequest (to_val bsP)
+    {{{ RET (txnreq_to_val (InquireReq ts rank cid) Slice.nil Slice.nil); True }}}.
+  Proof.
+    iIntros (bs Φ) "Hbs HΦ".
+    wp_rec.
+
+    wp_apply (wp_ReadInt with "[Hbs]").
+    { subst bs. rewrite /encode_inquire_req_xkind /encode_ts_rank.
+      by list_simplifier. }
+    iIntros (bs1P) "Hbs".
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (bs2P) "Hbs".
+    wp_apply (wp_ReadInt with "Hbs").
+    iIntros (bs3P) "Hbs".
+    wp_pures.
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
+    iIntros (bs4P) "Hbs".
     wp_pures.
     by iApply "HΦ".
   Qed.
@@ -213,7 +258,7 @@ Section decode.
     let bs := encode_ts_rank ts rank in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnRefreshRequest (to_val bsP)
-    {{{ RET (txnreq_to_val (RefreshReq ts rank) Slice.nil); True }}}.
+    {{{ RET (txnreq_to_val (RefreshReq ts rank) Slice.nil Slice.nil); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -229,7 +274,8 @@ Section decode.
     (*@ }                                                                       @*)
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (bs1P) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (bs2P) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -239,7 +285,7 @@ Section decode.
     encode_commit_req_xkind ts pwrs bs ->
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnCommitRequest (to_val bsP)
-    {{{ (pwrsP : Slice.t), RET (txnreq_to_val (CommitReq ts pwrs) pwrsP);
+    {{{ (pwrsP : Slice.t), RET (txnreq_to_val (CommitReq ts pwrs) pwrsP Slice.nil);
         own_dbmap_in_slice pwrsP pwrs
     }}}.
   Proof.
@@ -270,7 +316,7 @@ Section decode.
     let bs := encode_abort_req_xkind ts in
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnAbortRequest (to_val bsP)
-    {{{ RET (txnreq_to_val (AbortReq ts) Slice.nil); True }}}.
+    {{{ RET (txnreq_to_val (AbortReq ts) Slice.nil Slice.nil); True }}}.
   Proof.
     iIntros (bs Φ) "Hbs HΦ".
     wp_rec.
@@ -282,7 +328,9 @@ Section decode.
     (*@         Timestamp     : ts,                                             @*)
     (*@     }                                                                   @*)
     (*@ }                                                                       @*)
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { subst bs. rewrite /encode_abort_req_xkind.
+      by list_simplifier. }
     iIntros (bs1P) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -292,11 +340,13 @@ Section decode.
     encode_txnreq req bs ->
     {{{ own_slice_small bsP byteT (DfracOwn 1) bs }}}
       DecodeTxnRequest (to_val bsP)
-    {{{ (pwrsP : Slice.t), RET (txnreq_to_val req pwrsP);
+    {{{ (pwrsP ptgsP : Slice.t), RET (txnreq_to_val req pwrsP ptgsP);
         match req with
-        | FastPrepareReq _ pwrs => own_dbmap_in_slice pwrsP pwrs
-        | ValidateReq _ _ pwrs => own_dbmap_in_slice pwrsP pwrs
-        | CommitReq _ pwrs => own_dbmap_in_slice pwrsP pwrs
+        | FastPrepareReq _ pwrs ptgs =>
+            is_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
+        | ValidateReq _ _ pwrs ptgs =>
+            is_dbmap_in_slice pwrsP pwrs ∗ is_txnptgs_in_slice ptgsP ptgs
+        | CommitReq _ pwrs => is_dbmap_in_slice pwrsP pwrs
         | _ => True
         end
     }}}.
@@ -328,10 +378,14 @@ Section decode.
       (*@                                                                         @*)
       wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
+      iApply wp_fupd.
       wp_pures.
       wp_apply (wp_DecodeTxnFastPrepareRequest with "Hbs").
       { apply Hreqdata. }
-      by iApply "HΦ".
+      iIntros (pwrsP ptgsP) "[Hpwrs Hptgs]".
+      iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
+      iApply "HΦ".
+      by iFrame.
     }
     { destruct Henc as (reqdata & -> & Hreqdata).
 
@@ -341,10 +395,14 @@ Section decode.
       (*@                                                                         @*)
       wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
+      iApply wp_fupd.
       wp_pures.
       wp_apply (wp_DecodeTxnValidateRequest with "Hbs").
       { apply Hreqdata. }
-      by iApply "HΦ".
+      iIntros (pwrsP ptgsP) "[Hpwrs Hptgs]".
+      iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
+      iApply "HΦ".
+      by iFrame.
     }
     { rewrite Henc.
 
@@ -384,6 +442,18 @@ Section decode.
     }
     { rewrite Henc.
 
+      (*@     if kind == MSG_TXN_INQUIRE {                                        @*)
+      (*@         return DecodeTxnInquireRequest(bs1)                             @*)
+      (*@     }                                                                   @*)
+      (*@                                                                         @*)
+      wp_apply (wp_ReadInt with "Hbs").
+      iIntros (p) "Hbs".
+      wp_pures.
+      wp_apply (wp_DecodeTxnInquireRequest with "Hbs").
+      by iApply "HΦ".
+    }
+    { rewrite Henc.
+
       (*@     if kind == MSG_TXN_REFRESH {                                        @*)
       (*@         return DecodeTxnRefreshRequest(bs1)                             @*)
       (*@     }                                                                   @*)
@@ -402,10 +472,14 @@ Section decode.
       (*@                                                                         @*)
       wp_apply (wp_ReadInt with "Hbs").
       iIntros (p) "Hbs".
+      iApply wp_fupd.
       wp_pures.
       wp_apply (wp_DecodeTxnCommitRequest with "Hbs").
       { apply Hreqdata. }
-      by iApply "HΦ".
+      iIntros (pwrsP) "Hpwrs".
+      iMod (own_dbmap_in_slice_persist with "Hpwrs") as "Hpwrs".
+      iApply "HΦ".
+      by iFrame.
     }
     { rewrite Henc.
 
@@ -417,7 +491,8 @@ Section decode.
       iIntros (p) "Hbs".
       wp_pures.
       wp_apply (wp_DecodeTxnAbortRequest with "Hbs").
-      by iApply "HΦ".
+      iApply "HΦ".
+      by iFrame.
     }
 
     (*@     return TxnRequest{}                                                 @*)

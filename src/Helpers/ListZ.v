@@ -2,7 +2,7 @@ From Coq Require Import ZArith Lia.
 From Coq Require Import ssreflect.
 
 From stdpp Require Import base numbers.
-From stdpp Require list.
+From stdpp Require Import list.
 
 Set Default Goal Selector "!".
 Set Default Proof Using "Type".

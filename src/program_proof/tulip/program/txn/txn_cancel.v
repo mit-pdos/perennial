@@ -36,8 +36,8 @@ Section program.
 
     (*@     txn.reset()                                                         @*)
     (*@ }                                                                       @*)
-    wp_apply (wp_Txn__reset with "[$Hwrs $Hptgs]").
-    iIntros "[Hwrs Hptgs]".
+    wp_apply (wp_Txn__reset with "Hwrs").
+    iIntros "Hwrs".
     wp_pures.
     iApply "HΦ".
     by iFrame "∗ # %".

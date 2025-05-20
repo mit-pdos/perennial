@@ -425,7 +425,27 @@ Section translate.
         ** match goal with
            | H: relation.denote (unwrap _) _ _ _ |- _ => inv H; intuition
            end.
-      * inversion Hstep; monad_inv.
+      * (* AtomicOp *)
+        rewrite /atomically /= in Hstep.
+        monad_inv. simpl in Hstep.
+        unfold unwrap in Hstep.
+        destruct (heap σ1 !! l) as [[[|[|]]]|] eqn:Hlookup;
+          repeat ((by exfalso) || simpl in * || monad_inv).
+        destruct bin_op_eval eqn:Hop; repeat ((by exfalso) || simpl in * || monad_inv).
+        inversion H. intuition.
+        eexists ({| heap := heap _; oracle := _; trace := _;
+                                                 world := world pσ2 |}).
+        eexists. split_and!.
+        *** simpl in *. split_and!; eauto.
+        *** eauto.
+        *** econstructor; eauto; repeat econstructor; eauto.
+            { rewrite //=. rewrite Hlookup. econstructor; eauto. }
+            rewrite //=. rewrite Hop. repeat econstructor; eauto. f_equal.
+            f_equal. destruct pσ2; subst.
+            simpl in * => //=. rewrite /RecordSet.set //=.
+            f_equal; eauto.
+      * (* GlobalPut *)
+        inversion Hstep; monad_inv.
         inv H1. monad_inv.
         inv H. destruct H2 as (?&?&?&?).
         eexists ({| heap := _; oracle := _; trace := trace σ1;
@@ -937,7 +957,39 @@ Section translate.
            *** right. split_and!; eauto.
                split_and!; eauto. rewrite /RecordSet.set//=. congruence.
         ** inversion H7; intuition.
-      * (* AtomicStore *)
+      * (* AtomicOp *)
+        rewrite /atomically /= in Hstep.
+        monad_inv.
+        destruct (heap pσ1 !! l) eqn:Heq.
+        2:{ simpl in *. by monad_inv. }
+        rewrite /= in Hstep.
+        monad_inv.
+        rewrite /= in Hstep.
+        destruct p. destruct n.
+        { simpl in *. by monad_inv. }
+        destruct n.
+        2:{ simpl in *. by monad_inv. }
+        destruct bin_op_eval eqn:Hbin.
+        2:{ simpl in *. by monad_inv. }
+        rewrite /= in Hstep.
+        monad_inv.
+
+        inversion H. intuition.
+        do 2 eexists.
+        eexists.
+        split_and!.
+        *** simpl in *. econstructor; eauto; repeat econstructor; eauto.
+            { rewrite H1. rewrite Heq. done. }
+            simpl in *.
+            monad_simpl.
+            unfold ret.
+            monad_simpl.
+            simpl.
+            monad_simpl.
+        *** right. split_and!; eauto.
+            split_and!; eauto.
+            rewrite /RecordSet.set//=. congruence.
+      * (* GlobalPut *)
         inversion Hstep; monad_inv.
         simpl in *.
         monad_inv.
@@ -991,12 +1043,6 @@ Section translate.
              rewrite /when. rewrite ifThenElse_else; eauto. repeat econstructor.
          *** repeat econstructor => //=.
       ** right. split_and!; eauto.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      inversion Hstep; subst.
-      monad_inv.
-      do 3 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
     - destruct op.
       (* Read *)
       * rewrite /base_step//= in Hstep.
@@ -1658,17 +1704,40 @@ Section translate.
            *** eauto.
            *** econstructor; eauto; repeat econstructor; eauto.
         ** inversion H5; intuition.
-      * (* AtomicStore *)
+      * (* AtomicOp *)
+        rewrite /atomically in Hstep. simpl in *.
+        monad_inv. simpl in *.
+        destruct (heap _ !! _) eqn:Hheap; simpl in *; monad_inv.
+        2:{ by exfalso. }
+        simpl in *; monad_inv;
+        simpl in *; destruct p;
+        destruct n; simpl in *; monad_inv.
+        { by exfalso. }
+        destruct n; simpl in *; monad_inv.
+        2:{ by exfalso. }
+        simpl in *. monad_inv.
+        destruct bin_op_eval eqn:Hbin; simpl in *; monad_inv.
+        2:{ by exfalso. }
+        destruct Hmatch_curr as (?&?&?&?&?).
+        do 4 eexists.
+        split_and!.
+        ** monad_simpl.
+           rewrite -H.
+           repeat (simpl || monad_simpl).
+        ** simpl. split_and!; eauto. simpl. f_equal. done.
+        ** done.
+        ** eauto.
+      * (* GlobalPut *)
         inversion Hstep; monad_inv.
         inversion H; monad_inv; clear H.
         destruct Hmatch_curr as (?&?&?&?&?).
         do 4 eexists.
         split_and!.
-        *** econstructor; eauto; repeat econstructor; eauto.
-        *** split_and!; eauto. destruct pσ1, pσ1' => //=.
+        ** econstructor; eauto; repeat econstructor; eauto.
+        ** split_and!; eauto. destruct pσ1, pσ1' => //=.
             simpl in *. subst. eauto.
-        *** eauto.
-        *** econstructor; eauto; repeat econstructor; eauto.
+        ** eauto.
+        ** econstructor; eauto; repeat econstructor; eauto.
     - rewrite /base_step//= in Hstep.
       destruct_head.
       inversion Hstep; monad_inv.
@@ -1709,12 +1778,6 @@ Section translate.
            *** repeat econstructor => //=.
         ** rewrite //=.
         ** rewrite //=.
-    - rewrite /base_step//= in Hstep.
-      destruct_head.
-      inversion Hstep; subst.
-      monad_inv.
-      do 4 eexists. split_and!; eauto.
-      econstructor; eauto; econstructor; eauto.
     - destruct op.
       (* Read *)
       * rewrite /base_step//= in Hstep.

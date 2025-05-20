@@ -3,13 +3,128 @@
 import os
 from os import path
 import subprocess
+import sys
+
+from dataclasses import dataclass
 
 
-def run_command(args, dry_run=False, verbose=False):
-    if dry_run or verbose:
-        print(" ".join(args))
-    if not dry_run:
-        subprocess.run(args, check=True)
+@dataclass
+class Proj:
+    name: str
+    repo: str
+    pkgs: list[str]
+
+
+def create_proj(name=None, repo=None, pkgs=None):
+    if name is None:
+        name = repo.split("/")[-1]
+    if pkgs is None:
+        pkgs = ["./..."]
+    return Proj(name, repo, pkgs)
+
+
+# define the supported projects
+projs = [
+    create_proj(repo="goose-lang/std"),
+    create_proj(repo="tchajed/marshal"),
+    create_proj(repo="goose-lang/primitive", pkgs=[".", "./disk"]),
+    create_proj(
+        repo="mit-pdos/gokv",
+        pkgs=[
+            "./partialapp",
+            "./asyncfile",
+            "./urpc",
+            "./kv",
+            "./bank",
+            "./lockservice",
+            "./map_string_marshal",
+            "./vrsm/replica",
+            "./vrsm/reconfig",
+            "./vrsm/configservice",
+            "./vrsm/apps/exactlyonce",
+            "./vrsm/apps/vkv",
+            "./vrsm/paxos",
+            "./aof",
+            "./reconnectclient",
+            "./vrsm/e",
+            "./vrsm/clerk",
+            "./vrsm/storage",
+            "./vrsm/apps/closed",
+            "./map_marshal",
+            "./cachekv",
+            "./trusted_proph",
+        ],
+    ),
+    create_proj(
+        repo="upamanyus/etcd-raft",
+        pkgs=[
+            ".",
+            "github.com/stretchr/testify/assert",
+            "go.etcd.io/raft/v3/confchange",
+            "go.etcd.io/raft/v3/quorum",
+            "go.etcd.io/raft/v3/quorum/slices",
+            "go.etcd.io/raft/v3/raftpb",
+            "go.etcd.io/raft/v3/tracker",
+        ],
+    ),
+    create_proj(
+        repo="upamanyus/etcd",
+        pkgs=[
+            "time",
+            "math",
+            "google.golang.org/grpc",
+            "go.etcd.io/etcd/api/v3/etcdserverpb",
+            "go.etcd.io/etcd/api/v3/mvccpb",
+            "go.etcd.io/etcd/client/v3",
+            "go.etcd.io/etcd/client/v3/concurrency",
+            "go.etcd.io/etcd/client/v3/leasing",
+            "go.etcd.io/etcd/api/v3/v3rpc/rpctypes",
+            "google.golang.org/grpc/codes",
+            "google.golang.org/grpc/status",
+            "go.uber.org/zap",
+            "go.uber.org/zap/zapcore",
+        ],
+    ),
+    create_proj(repo="mit-pdos/go-journal"),
+]
+
+
+class ProcessManager:
+    def __init__(self, dry_run=None, verbose=None, max_procs=1):
+        self._processes = []
+        self._dry_run = dry_run
+        self._verbose = verbose
+        self._max_procs = max_procs
+        # the last non-zero exit code
+        self._failed_status = None
+
+    def run_command(self, args):
+        if self._dry_run or self._verbose:
+            print(" ".join(args))
+        if not self._dry_run:
+            self._processes.append(subprocess.Popen(args, stderr=subprocess.PIPE))
+        else:
+            return None
+
+    def _wait1(self):
+        if self._processes:
+            p = self._processes.pop()
+            stdout_bytes, stderr_bytes = p.communicate()
+            sys.stderr.buffer.write(stderr_bytes)
+            if p.returncode != 0 and (self._failed_status is not None):
+                self._failed_status = p.returncode
+                # finish everything running and then exit
+                self.wait_all()
+                sys.exit(self._failed_status)
+
+    def wait_all(self):
+        while self._processes:
+            self._wait1()
+
+    # wait if there are too many pending processes
+    def check(self):
+        while len(self._processes) > self._max_procs:
+            self._wait1()
 
 
 def main():
@@ -43,119 +158,103 @@ def main():
         action="store_true",
     )
     parser.add_argument(
-        "--marshal",
-        help="path to marshal repo (skip translation if not provided)",
-        metavar="MARSHAL_PATH",
-        default=None,
+        "--channel",
+        help="translate channel model",
+        action="store_true",
     )
     parser.add_argument(
-        "--std",
-        help="path to goose-lang/std repo (skip translation if not provided)",
-        metavar="STD_PATH",
-        default=None,
+        "--std-lib",
+        help="translate (parts of) Go standard library",
+        action="store_true",
     )
-    parser.add_argument(
-        "--gokv",
-        help="path to gokv repo (skip translation if not provided)",
-        metavar="GOKV_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--etcd-raft",
-        help="path to upamanyus/etcd-raft repo (skip translation if not provided)",
-        metavar="ETCD_RAFT_PATH",
-        default=None,
-    )
+    for proj in projs:
+        parser.add_argument(
+            f"--{proj.name}",
+            help=f"path to {proj.repo} repo (skip translation if not provided)",
+            metavar=f"{proj.name.upper()}_PATH",
+            default=None,
+        )
 
     args = parser.parse_args()
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
     goose_dir = args.goose
-    marshal_dir = args.marshal
-    std_dir = args.std
-    gokv_dir = args.gokv
-    etcd_raft_dir = args.etcd_raft
+
+    def proj_dir(name):
+        return getattr(args, name.replace("-", "_"))
+
+    for proj in projs:
+        if proj_dir(proj.name) is not None and not os.path.isdir(proj_dir(proj.name)):
+            parser.error(f"{proj.name} directory does not exist")
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
-    if marshal_dir is not None and not os.path.isdir(marshal_dir):
-        parser.error("marshal directory does not exist")
-    if std_dir is not None and not os.path.isdir(std_dir):
-        parser.error("std directory does not exist")
-    if gokv_dir is not None and not os.path.isdir(gokv_dir):
-        parser.error("gokv directory does not exist")
-    if etcd_raft_dir is not None and not os.path.isdir(etcd_raft_dir):
-        parser.error("etcd-raft directory does not exist")
+
+    max_procs = os.cpu_count()
+    # don't want too many processes since each goose invocation also has some
+    # parallelism
+    if max_procs and max_procs > 1:
+        max_procs = max_procs / 2
+    pm = ProcessManager(
+        dry_run=args.dry_run,
+        verbose=args.verbose,
+        max_procs=max_procs,
+    )
 
     def do_run(cmd_args):
-        run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
+        pm.run_command(cmd_args)
 
     def compile_goose():
         old_dir = os.getcwd()
         os.chdir(goose_dir)
-        do_run(["go", "install", "./cmd/goose"])
-        do_run(["go", "install", "./cmd/goose_axiom"])
-        do_run(["go", "install", "./cmd/recordgen"])
+        do_run(["go", "install", "./cmd/goose", "./cmd/proofgen"])
         os.chdir(old_dir)
+        pm.wait_all()
 
-    def run_goose(src_path, *pkgs):
+    def run_goose(src_path, *pkgs, extra_args=None):
         if src_path is None:
             return
         if not pkgs:
             pkgs = ["."]
+        else:
+            pkgs = list(pkgs)
 
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
             gopath = path.join(path.expanduser("~"), "go")
+
         goose_bin = path.join(gopath, "bin", "goose")
-        args = [goose_bin]
+        do_run(
+            [
+                goose_bin,
+                "-out",
+                path.join(perennial_dir, "new/code/"),
+                "-dir",
+                src_path,
+            ]
+            + pkgs
+        )
 
-        output = path.join(perennial_dir, "new/code/")
-        args.extend(["-out", output])
-        args.extend(["-dir", src_path])
-        args.extend(pkgs)
-        do_run(args)
+        proofgen_bin = path.join(gopath, "bin", "proofgen")
 
-    def run_axiomgen(dst_path, src_path, *pkgs):
-        if src_path is None:
-            return
-        if not pkgs:
-            pkgs = ["."]
+        do_run(
+            [
+                proofgen_bin,
+                "-out",
+                path.join(perennial_dir, "new/generatedproof"),
+                "-configdir",
+                path.join(perennial_dir, "new/code"),
+                "-dir",
+                src_path,
+            ]
+            + pkgs
+        )
 
-        gopath = os.getenv("GOPATH", default=None)
-        if gopath is None or gopath == "":
-            gopath = path.join(path.expanduser("~"), "go")
-        goose_bin = path.join(gopath, "bin", "goose_axiom")
-        args = [goose_bin]
-
-        output = path.join(perennial_dir, dst_path)
-        args.extend(["-out", output])
-        args.extend(["-dir", src_path])
-        args.extend(pkgs)
-        do_run(args)
-
-    def run_recordgen(dst_path, src_path, *pkgs):
-        if src_path is None:
-            return
-        if not pkgs:
-            pkgs = ["."]
-
-        gopath = os.getenv("GOPATH", default=None)
-        if gopath is None or gopath == "":
-            gopath = path.join(path.expanduser("~"), "go")
-        goose_bin = path.join(gopath, "bin", "recordgen")
-        args = [goose_bin]
-
-        output = path.join(perennial_dir, dst_path)
-        args.extend(["-out", output])
-        args.extend(["-dir", src_path])
-        args.extend(pkgs)
-        do_run(args)
-
-    def run_goose_test_gen(src_path, output):
-        gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
-        args = ["go", "run", gen_bin, "-coq", "-out", output, src_path]
-        do_run(args)
+    # NOTE: new goose doesn't have executable tests for now, evaluation is blocked due to sealing
+    # def run_goose_test_gen(src_path, output):
+    #    gen_bin = path.join(goose_dir, "cmd/test_gen/main.go")
+    #    args = ["go", "run", gen_bin, "-coq", "-out", output, src_path]
+    #    do_run(args)
 
     if args.compile:
         compile_goose()
@@ -165,86 +264,44 @@ def main():
             path.join(goose_dir, "testdata/examples"),
             "./append_log",
             "./semantics",
-            "./unittest",
+            "./unittest/...",
+            "./channel",
         )
 
-    run_goose(marshal_dir, ".")
+    if args.channel:
+        run_goose(goose_dir, "./model/channel")
 
-    run_goose(std_dir, ".")
+    if args.std_lib:
+        # this list of packages comes from the dependencies of etcd-raft
+        run_goose(
+            goose_dir,
+            "testing",
+            "bytes",
+            "context",
+            "crypto/rand",
+            "errors",
+            "io",
+            "math",
+            "math/big",
+            "math/rand",
+            "os",
+            "sort",
+            "slices",
+            "strconv",
+            "strings",
+            "sync",
+            "sync/atomic",
+            "internal/race",
+            "fmt",
+            "log",
+        )
 
-    run_goose(
-        gokv_dir,
-        "./urpc",
-        "./reconnectclient",
-        "./asyncfile",
-        "./vrsm/paxos",
-        "./kv",
-        "./cachekv",
-        "./lockservice",
-        "./bank",
-        "./globals_test",
-        # "./vrsm/replica",
-    )
-
-    run_recordgen(
-        "new/proof/structs/",
-        gokv_dir,
-        "./asyncfile",
-    )
-
-    run_axiomgen(
-        "new_code_axioms/",
-        etcd_raft_dir,
-        "testing",
-        "bytes",
-        "context",
-        "crypto/rand",
-        "errors",
-        "go.etcd.io/raft/v3/confchange",
-        "go.etcd.io/raft/v3/quorum/slices64",
-        "github.com/stretchr/testify/assert",
-        "io",
-        "math",
-        "math/big",
-        "math/rand",
-        "os",
-        "sort",
-        "slices",
-        "strconv",
-        "strings",
-    )
-
-    run_axiomgen(
-        "new_partial_axioms/",
-        etcd_raft_dir,
-        "fmt",
-        "log",
-        "go.etcd.io/raft/v3/raftpb",
-    )
-
-    run_goose(
-        etcd_raft_dir,
-        ".",
-        "go.etcd.io/raft/v3/tracker",
-        "go.etcd.io/raft/v3/quorum",
-    )
-
-    run_goose(
-        etcd_raft_dir,
-        "-partial",
-        "Message,MessageType,MsgHup,Entry,ConfState,SnapshotMetadata,Snapshot,HardState,"
-        + "ConfChange,ConfChangeType,ConfChangeSingle,ConfChangeV2,ConfChangeTransition,EntryType",
-        "-ignore-errors",
-        "go.etcd.io/raft/v3/raftpb",
-    )
-
-    run_recordgen(
-        "new/proof/structs/",
-        etcd_raft_dir,
-        "go.etcd.io/raft/v3/raftpb",
-        "go.etcd.io/raft/v3/tracker",
-        "go.etcd.io/raft/v3",
-    )
+    for proj in projs:
+        run_goose(
+            proj_dir(proj.name),
+            *proj.pkgs,
+        )
+    pm.wait_all()
 
 
 if __name__ == "__main__":

@@ -1,8 +1,11 @@
 From Perennial.Helpers Require Import List ModArith.
 
+(* this file verifies std and std_core *)
+From Goose.github_com.goose_lang Require Import std.std_core.
 From Goose.github_com.goose_lang Require Import std.
 
 From iris.algebra Require Import excl gset.
+From stdpp Require Import list.
 From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang.lib Require Import typed_slice.
 
@@ -18,6 +21,18 @@ Section goose_lang.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !ext_types _}.
 
 Implicit Types (v:val).
+
+(* This lemma shadows the one for primitive.Assert *)
+Lemma wp_Assert stk E cond :
+  {{{ ⌜cond = true⌝ }}}
+    Assert #cond @ stk; E
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "% HΦ". subst.
+  wp_rec. wp_pures.
+  iModIntro.
+  by iApply "HΦ".
+Qed.
 
 Local Lemma take_S_lookup_ne {T} (xs : list T) i j :
   i ≠ j →
@@ -122,8 +137,7 @@ Proof.
     iExactEq "Hret".
     repeat f_equal.
     apply bool_decide_ext.
-    word_cleanup.
-    replace (Z.to_nat (uint.Z i + 1)) with (S (uint.nat i)) by word.
+    replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
     erewrite take_S_r by eauto.
     erewrite take_S_r by eauto.
     split; [ congruence | ].
@@ -152,7 +166,7 @@ Proof.
     iApply "HΦ".
     inversion Heqb0.
     apply (f_equal uint.Z) in H1.
-    iPoseProof (slice.own_slice_small_nil _ (DfracOwn 1)) as "Hsl_b'"; [done|].
+    iDestruct (own_slice_small_nil _ (DfracOwn 1)) as "Hsl_b'"; [done|].
     iDestruct (own_slice_small_agree with "[$Hsl_b] [$Hsl_b']") as %Heq.
     destruct b; [|done].
     iApply own_slice_to_small.
@@ -169,12 +183,12 @@ Proof.
   }
 Qed.
 
-Lemma wp_SliceSplit s dq (xs: list w8) (n: w64) :
-  {{{ own_slice_small s byteT dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
-    SliceSplit (to_val s) #n
-  {{{ RET (to_val (slice_take s n), to_val (slice_skip s byteT n));
-      own_slice_small (slice_take s n) byteT dq (take (uint.nat n) xs) ∗
-      own_slice_small (slice_skip s byteT n) byteT dq (drop (uint.nat n) xs)
+Lemma wp_SliceSplit t s dq `{!IntoVal V} (xs: list V) (n: w64) :
+  {{{ own_slice_small s t dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
+    SliceSplit t (to_val s) #n
+  {{{ RET (to_val (slice_take s n), to_val (slice_skip s t n));
+      own_slice_small (slice_take s n) t dq (take (uint.nat n) xs) ∗
+      own_slice_small (slice_skip s t n) t dq (drop (uint.nat n) xs)
   }}}.
 Proof.
   iIntros (Φ) "[Hs %Hn] HΦ".
@@ -190,12 +204,12 @@ Proof.
   word.
 Qed.
 
-Lemma wp_SliceSplit_full s dq (xs: list w8) (n: w64) :
-  {{{ own_slice s byteT dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
-    SliceSplit (to_val s) #n
-  {{{ RET (to_val (slice_take s n), to_val (slice_skip s byteT n));
-      own_slice_small (slice_take s n) byteT dq (take (uint.nat n) xs) ∗
-      own_slice (slice_skip s byteT n) byteT dq (drop (uint.nat n) xs)
+Lemma wp_SliceSplit_full `{!IntoVal V} t s dq (xs: list V) (n: w64) :
+  {{{ own_slice s t dq xs ∗ ⌜uint.Z n < Z.of_nat (length xs)⌝ }}}
+    SliceSplit t (to_val s) #n
+  {{{ RET (to_val (slice_take s n), to_val (slice_skip s t n));
+      own_slice_small (slice_take s n) t dq (take (uint.nat n) xs) ∗
+      own_slice (slice_skip s t n) t dq (drop (uint.nat n) xs)
   }}}.
 Proof.
   iIntros (Φ) "[Hs %Hn] HΦ".
@@ -208,13 +222,13 @@ Proof.
   iApply (own_slice_cap_skip with "Hcap"). word.
 Qed.
 
-Lemma wp_SumNoOverflow (x y : u64) stk E :
+Lemma wp_std_core_SumNoOverflow (x y : u64) stk E :
   ∀ Φ : val → iProp Σ,
     Φ #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)) -∗
-    WP SumNoOverflow #x #y @ stk; E {{ Φ }}.
+    WP std_core.SumNoOverflow #x #y @ stk; E {{ Φ }}.
 Proof.
-  iIntros (Φ) "HΦ".
-  rewrite /SumNoOverflow. wp_pures.
+  iIntros (Φ) "HΦ". wp_rec.
+  wp_pures.
   iModIntro. iExactEq "HΦ".
   repeat f_equal.
   apply bool_decide_ext.
@@ -224,17 +238,77 @@ Proof.
   - word.
 Qed.
 
-Lemma wp_SumAssumeNoOverflow (x y : u64) stk E :
+Lemma wp_SumNoOverflow (x y : u64) stk E :
+  ∀ Φ : val → iProp Σ,
+    Φ #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)) -∗
+    WP std.SumNoOverflow #x #y @ stk; E {{ Φ }}.
+Proof.
+  iIntros (Φ) "HΦ". wp_rec.
+  wp_apply wp_std_core_SumNoOverflow.
+  done.
+Qed.
+
+Lemma wp_std_core_SumAssumeNoOverflow (x y : u64) stk E :
   ∀ Φ : val → iProp Σ,
     (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
-    WP SumAssumeNoOverflow #x #y @ stk; E {{ Φ }}.
+    WP std_core.SumAssumeNoOverflow #x #y @ stk; E {{ Φ }}.
 Proof.
   iIntros "%Φ HΦ". wp_rec; wp_pures.
-  wp_apply wp_SumNoOverflow.
+  wp_apply wp_std_core_SumNoOverflow.
   wp_apply wp_Assume.
   rewrite bool_decide_eq_true.
   iIntros (H). wp_pures. iModIntro.
   iApply "HΦ"; done.
+Qed.
+
+Lemma wp_SumAssumeNoOverflow (x y : u64) stk E :
+  ∀ Φ : val → iProp Σ,
+    (⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.add x y)) -∗
+    WP std.SumAssumeNoOverflow #x #y @ stk; E {{ Φ }}.
+Proof.
+  iIntros "%Φ HΦ". wp_rec; wp_pures.
+  wp_apply wp_std_core_SumAssumeNoOverflow.
+  done.
+Qed.
+
+Lemma wp_MulNoOverflow (x y : u64) stk E :
+  ∀ Φ : val → iProp Σ,
+    Φ #(bool_decide (uint.Z (word.mul x y) = (uint.Z x * uint.Z y)%Z)) -∗
+    WP MulNoOverflow #x #y @ stk; E {{ Φ }}.
+Proof.
+  iIntros (Φ) "HΦ".
+  wp_rec; wp_pures.
+  wp_bind (If #(_) _ _).
+  wp_if_destruct; wp_pures.
+  - iModIntro.
+    rewrite bool_decide_eq_true_2 //.
+  - wp_if_destruct; wp_pures.
+    + iModIntro.
+      rewrite bool_decide_eq_true_2 //.
+      word.
+    + iModIntro.
+      iExactEq "HΦ".
+      repeat f_equal.
+      apply bool_decide_ext.
+      pose proof (mul_overflow_check_correct x y ltac:(word)).
+      change (word.sub (word.slu (W64 1) (W64 64)) (W64 1)) with (W64 (2^64-1)).
+      word.
+Qed.
+
+Lemma wp_MulAssumeNoOverflow (x y : u64) stk E :
+  ∀ Φ : val → iProp Σ,
+    (⌜uint.Z (word.mul x y) = (uint.Z x * uint.Z y)%Z⌝ -∗ Φ #(LitInt $ word.mul x y)) -∗
+    WP MulAssumeNoOverflow #x #y @ stk; E {{ Φ }}.
+Proof.
+  iIntros (Φ) "HΦ".
+  wp_rec; wp_pures.
+  wp_apply wp_MulNoOverflow.
+  wp_apply (wp_Assume).
+  iIntros (H). wp_pures.
+  iModIntro.
+  iApply "HΦ".
+  apply bool_decide_eq_true in H.
+  iPureIntro; word.
 Qed.
 
 Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
@@ -499,6 +573,93 @@ Proof.
   rewrite Hnotleft in Hsz.
   apply size_empty_inv in Hsz.
   set_solver.
+Qed.
+
+Lemma wp_Shuffle (s: Slice.t) (xs: list w64) :
+  {{{ own_slice_small s uint64T (DfracOwn 1) xs }}}
+    Shuffle (to_val s)
+  {{{ xs', RET #(); ⌜Permutation xs xs'⌝ ∗
+                      own_slice_small s uint64T (DfracOwn 1) xs' }}}.
+Proof.
+Admitted.
+
+Lemma seqZ_plus_1 n m :
+  0 ≤ m →
+  seqZ n (m + 1) = seqZ n m ++ [n + m].
+Proof.
+  intros.
+  rewrite seqZ_app; try lia.
+  reflexivity.
+Qed.
+
+Lemma wp_Permutation (n: w64) :
+  {{{ True }}}
+    std_core.Permutation #n
+  {{{ xs (s: Slice.t), RET (slice_val s);
+      ⌜Permutation xs (W64 <$> seqZ 0 (uint.Z n))⌝ ∗
+      own_slice_small s uint64T (DfracOwn 1) xs
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_rec. wp_apply wp_NewSlice.
+  iIntros (s) "Hs".
+  change (IntoVal_def w64) with (W64 0).
+  wp_apply wp_ref_to; [ val_ty | ].
+  iIntros (i_ptr) "i". wp_pures.
+  wp_apply (wp_forUpto (λ (i: w64),
+       own_slice_small s uint64T (DfracOwn 1) ((W64 <$> seqZ 0 (uint.Z i)) ++ replicate (uint.nat n - uint.nat i) (W64 0))
+     ) with "[] [Hs $i]").
+  { word. }
+  - iIntros (i) "!>".
+    clear Φ.
+    iIntros (Φ) "HI HΦ". iDestruct "HI" as "(Hs & i & %)".
+    wp_pures.
+    wp_load. wp_load.
+    wp_apply (wp_SliceSet with "[$Hs]").
+    {
+      iPureIntro.
+      apply lookup_lt_is_Some.
+      len.
+    }
+    iIntros "Hs".
+    wp_pures.
+    iModIntro.
+    iApply "HΦ". iFrame "i".
+    iExactEq "Hs".
+    f_equal.
+    replace (uint.nat (word.add i (W64 1))) with (S (uint.nat i)) by word.
+    replace (uint.Z (word.add i (W64 1))) with (uint.Z i + 1) by word.
+    rewrite insert_app_r_alt; [ | len ].
+    autorewrite with len.
+    replace (uint.nat i - uint.nat i)%nat with 0%nat by word.
+    replace (uint.nat n - uint.nat i)%nat with
+      (S (uint.nat n - uint.nat i - 1)%nat) by word.
+    rewrite replicate_S /=.
+    rewrite cons_middle.
+    rewrite app_assoc.
+    f_equal.
+    + rewrite seqZ_plus_1; [ | word ].
+      rewrite Z.add_0_l.
+      rewrite fmap_app /=.
+      repeat f_equal.
+      word.
+    + f_equal; word.
+  - iApply own_slice_to_small in "Hs".
+    iExactEq "Hs".
+    f_equal.
+    rewrite seqZ_nil /=; [ | word ].
+    f_equal. word.
+  - iIntros "[Hs i]".
+    replace (uint.nat n - uint.nat n)%nat with 0%nat by word.
+    rewrite replicate_0 app_nil_r.
+    wp_pures.
+    wp_apply (wp_Shuffle with "Hs").
+    iIntros (xs) "[%Hperm Hs]".
+    wp_pures.
+    iModIntro.
+    iApply "HΦ".
+    iFrame.
+    auto.
 Qed.
 
 End goose_lang.

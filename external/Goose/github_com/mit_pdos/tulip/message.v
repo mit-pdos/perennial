@@ -4,8 +4,7 @@ From Goose Require github_com.mit_pdos.tulip.tulip.
 From Goose Require github_com.mit_pdos.tulip.util.
 From Goose Require github_com.tchajed.marshal.
 
-Section code.
-Context `{ext_ty: ext_types}.
+From Perennial.goose_lang Require Import ffi.grove_prelude.
 
 Definition TxnRequest := struct.decl [
   "Kind" :: uint64T;
@@ -13,7 +12,8 @@ Definition TxnRequest := struct.decl [
   "Key" :: stringT;
   "Rank" :: uint64T;
   "PartialWrites" :: slice.T (struct.t tulip.WriteEntry);
-  "ParticipantGroups" :: slice.T uint64T
+  "ParticipantGroups" :: slice.T uint64T;
+  "CoordID" :: struct.t tulip.CoordID
 ].
 
 Definition TxnResponse := struct.decl [
@@ -24,10 +24,12 @@ Definition TxnResponse := struct.decl [
   "Key" :: stringT;
   "Version" :: struct.t tulip.Version;
   "Rank" :: uint64T;
+  "RankLast" :: uint64T;
   "Prepared" :: boolT;
   "Validated" :: boolT;
   "Slow" :: boolT;
-  "PartialWrites" :: tulip.KVMap
+  "PartialWrites" :: tulip.KVMap;
+  "CoordID" :: struct.t tulip.CoordID
 ].
 
 Definition MSG_TXN_READ : expr := #100.
@@ -104,17 +106,20 @@ Definition EncodeTxnFastPrepareRequest: val :=
     let: "bs" := NewSliceWithCap byteT #0 #64 in
     let: "bs1" := marshal.WriteInt "bs" MSG_TXN_FAST_PREPARE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
-    let: "data" := util.EncodeKVMap "bs2" "pwrs" in
+    let: "bs3" := util.EncodeKVMap "bs2" "pwrs" in
+    let: "data" := util.EncodeInts "bs3" "ptgs" in
     "data".
 
 Definition DecodeTxnFastPrepareRequest: val :=
   rec: "DecodeTxnFastPrepareRequest" "bs" :=
     let: ("ts", "bs1") := marshal.ReadInt "bs" in
-    let: ("pwrs", <>) := util.DecodeKVMapIntoSlice "bs1" in
+    let: ("pwrs", "bs2") := util.DecodeKVMapIntoSlice "bs1" in
+    let: ("ptgs", <>) := util.DecodeInts "bs2" in
     struct.mk TxnRequest [
       "Kind" ::= MSG_TXN_FAST_PREPARE;
       "Timestamp" ::= "ts";
-      "PartialWrites" ::= "pwrs"
+      "PartialWrites" ::= "pwrs";
+      "ParticipantGroups" ::= "ptgs"
     ].
 
 Definition EncodeTxnFastPrepareResponse: val :=
@@ -144,19 +149,22 @@ Definition EncodeTxnValidateRequest: val :=
     let: "bs1" := marshal.WriteInt "bs" MSG_TXN_VALIDATE in
     let: "bs2" := marshal.WriteInt "bs1" "ts" in
     let: "bs3" := marshal.WriteInt "bs2" "rank" in
-    let: "data" := util.EncodeKVMap "bs3" "pwrs" in
+    let: "bs4" := util.EncodeKVMap "bs3" "pwrs" in
+    let: "data" := util.EncodeInts "bs4" "ptgs" in
     "data".
 
 Definition DecodeTxnValidateRequest: val :=
   rec: "DecodeTxnValidateRequest" "bs" :=
     let: ("ts", "bs1") := marshal.ReadInt "bs" in
     let: ("rank", "bs2") := marshal.ReadInt "bs1" in
-    let: ("pwrs", <>) := util.DecodeKVMapIntoSlice "bs2" in
+    let: ("pwrs", "bs3") := util.DecodeKVMapIntoSlice "bs2" in
+    let: ("ptgs", <>) := util.DecodeInts "bs3" in
     struct.mk TxnRequest [
       "Kind" ::= MSG_TXN_VALIDATE;
       "Timestamp" ::= "ts";
       "Rank" ::= "rank";
-      "PartialWrites" ::= "pwrs"
+      "PartialWrites" ::= "pwrs";
+      "ParticipantGroups" ::= "ptgs"
     ].
 
 Definition EncodeTxnValidateResponse: val :=
@@ -300,6 +308,93 @@ Definition DecodeTxnQueryResponse: val :=
       "Result" ::= "res"
     ].
 
+Definition EncodeTxnInquireRequest: val :=
+  rec: "EncodeTxnInquireRequest" "ts" "rank" "cid" :=
+    let: "bs" := NewSliceWithCap byteT #0 #40 in
+    let: "bs1" := marshal.WriteInt "bs" MSG_TXN_INQUIRE in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := marshal.WriteInt "bs2" "rank" in
+    let: "bs4" := marshal.WriteInt "bs3" (struct.get tulip.CoordID "GroupID" "cid") in
+    let: "data" := marshal.WriteInt "bs4" (struct.get tulip.CoordID "ReplicaID" "cid") in
+    "data".
+
+Definition DecodeTxnInquireRequest: val :=
+  rec: "DecodeTxnInquireRequest" "bs" :=
+    let: ("ts", "bs1") := marshal.ReadInt "bs" in
+    let: ("rank", "bs2") := marshal.ReadInt "bs1" in
+    let: ("cgid", "bs3") := marshal.ReadInt "bs2" in
+    let: ("crid", <>) := marshal.ReadInt "bs3" in
+    let: "cid" := struct.mk tulip.CoordID [
+      "GroupID" ::= "cgid";
+      "ReplicaID" ::= "crid"
+    ] in
+    struct.mk TxnRequest [
+      "Kind" ::= MSG_TXN_INQUIRE;
+      "Timestamp" ::= "ts";
+      "Rank" ::= "rank";
+      "CoordID" ::= "cid"
+    ].
+
+Definition EncodeTxnInquireResponse: val :=
+  rec: "EncodeTxnInquireResponse" "ts" "rank" "rid" "cid" "pp" "vd" "pwrs" "res" :=
+    let: "bs" := NewSliceWithCap byteT #0 #128 in
+    let: "bs1" := marshal.WriteInt "bs" MSG_TXN_INQUIRE in
+    let: "bs2" := marshal.WriteInt "bs1" "ts" in
+    let: "bs3" := marshal.WriteInt "bs2" "rid" in
+    let: "bs4" := marshal.WriteInt "bs3" "rank" in
+    let: "bs5" := util.EncodePrepareProposal "bs4" "pp" in
+    let: "bs6" := marshal.WriteBool "bs5" "vd" in
+    let: "bs7" := marshal.WriteInt "bs6" (struct.get tulip.CoordID "GroupID" "cid") in
+    let: "bs8" := marshal.WriteInt "bs7" (struct.get tulip.CoordID "ReplicaID" "cid") in
+    let: "bs9" := marshal.WriteInt "bs8" "res" in
+    (if: "vd"
+    then
+      let: "data" := util.EncodeKVMapFromSlice "bs9" "pwrs" in
+      "data"
+    else "bs9").
+
+Definition DecodeTxnInquireResponse: val :=
+  rec: "DecodeTxnInquireResponse" "bs" :=
+    let: ("ts", "bs1") := marshal.ReadInt "bs" in
+    let: ("rid", "bs2") := marshal.ReadInt "bs1" in
+    let: ("rank", "bs3") := marshal.ReadInt "bs2" in
+    let: ("pp", "bs4") := util.DecodePrepareProposal "bs3" in
+    let: ("vd", "bs5") := marshal.ReadBool "bs4" in
+    let: ("cgid", "bs6") := marshal.ReadInt "bs5" in
+    let: ("crid", "bs7") := marshal.ReadInt "bs6" in
+    let: ("res", "bs8") := marshal.ReadInt "bs7" in
+    let: "cid" := struct.mk tulip.CoordID [
+      "GroupID" ::= "cgid";
+      "ReplicaID" ::= "crid"
+    ] in
+    (if: "vd"
+    then
+      let: ("pwrs", <>) := util.DecodeKVMap "bs8" in
+      struct.mk TxnResponse [
+        "Kind" ::= MSG_TXN_INQUIRE;
+        "Timestamp" ::= "ts";
+        "ReplicaID" ::= "rid";
+        "Rank" ::= "rank";
+        "RankLast" ::= struct.get tulip.PrepareProposal "Rank" "pp";
+        "Prepared" ::= struct.get tulip.PrepareProposal "Prepared" "pp";
+        "Validated" ::= "vd";
+        "PartialWrites" ::= "pwrs";
+        "CoordID" ::= "cid";
+        "Result" ::= "res"
+      ]
+    else
+      struct.mk TxnResponse [
+        "Kind" ::= MSG_TXN_INQUIRE;
+        "Timestamp" ::= "ts";
+        "ReplicaID" ::= "rid";
+        "Rank" ::= "rank";
+        "RankLast" ::= struct.get tulip.PrepareProposal "Rank" "pp";
+        "Prepared" ::= struct.get tulip.PrepareProposal "Prepared" "pp";
+        "Validated" ::= "vd";
+        "CoordID" ::= "cid";
+        "Result" ::= "res"
+      ]).
+
 Definition EncodeTxnRefreshRequest: val :=
   rec: "EncodeTxnRefreshRequest" "ts" "rank" :=
     let: "bs" := NewSliceWithCap byteT #0 #24 in
@@ -334,33 +429,6 @@ Definition DecodeTxnCommitRequest: val :=
       "Kind" ::= MSG_TXN_COMMIT;
       "Timestamp" ::= "ts";
       "PartialWrites" ::= "pwrs"
-    ].
-
-Definition EncodeDumpStateRequest: val :=
-  rec: "EncodeDumpStateRequest" "gid" :=
-    let: "bs" := NewSliceWithCap byteT #0 #16 in
-    let: "bs1" := marshal.WriteInt "bs" MSG_DUMP_STATE in
-    let: "data" := marshal.WriteInt "bs1" "gid" in
-    "data".
-
-Definition DecodeDumpStateRequest: val :=
-  rec: "DecodeDumpStateRequest" "bs" :=
-    let: ("gid", <>) := marshal.ReadInt "bs" in
-    struct.mk TxnRequest [
-      "Kind" ::= MSG_DUMP_STATE;
-      "Timestamp" ::= "gid"
-    ].
-
-Definition EncodeForceElectionRequest: val :=
-  rec: "EncodeForceElectionRequest" <> :=
-    let: "bs" := NewSliceWithCap byteT #0 #8 in
-    let: "data" := marshal.WriteInt "bs" MSG_FORCE_ELECTION in
-    "data".
-
-Definition DecodeForceElectionRequest: val :=
-  rec: "DecodeForceElectionRequest" <> :=
-    struct.mk TxnRequest [
-      "Kind" ::= MSG_FORCE_ELECTION
     ].
 
 Definition EncodeTxnCommitResponse: val :=
@@ -414,6 +482,33 @@ Definition DecodeTxnAbortResponse: val :=
       "Result" ::= "res"
     ].
 
+Definition EncodeDumpStateRequest: val :=
+  rec: "EncodeDumpStateRequest" "gid" :=
+    let: "bs" := NewSliceWithCap byteT #0 #16 in
+    let: "bs1" := marshal.WriteInt "bs" MSG_DUMP_STATE in
+    let: "data" := marshal.WriteInt "bs1" "gid" in
+    "data".
+
+Definition DecodeDumpStateRequest: val :=
+  rec: "DecodeDumpStateRequest" "bs" :=
+    let: ("gid", <>) := marshal.ReadInt "bs" in
+    struct.mk TxnRequest [
+      "Kind" ::= MSG_DUMP_STATE;
+      "Timestamp" ::= "gid"
+    ].
+
+Definition EncodeForceElectionRequest: val :=
+  rec: "EncodeForceElectionRequest" <> :=
+    let: "bs" := NewSliceWithCap byteT #0 #8 in
+    let: "data" := marshal.WriteInt "bs" MSG_FORCE_ELECTION in
+    "data".
+
+Definition DecodeForceElectionRequest: val :=
+  rec: "DecodeForceElectionRequest" <> :=
+    struct.mk TxnRequest [
+      "Kind" ::= MSG_FORCE_ELECTION
+    ].
+
 Definition DecodeTxnRequest: val :=
   rec: "DecodeTxnRequest" "bs" :=
     let: ("kind", "bs1") := marshal.ReadInt "bs" in
@@ -435,23 +530,26 @@ Definition DecodeTxnRequest: val :=
               (if: "kind" = MSG_TXN_QUERY
               then DecodeTxnQueryRequest "bs1"
               else
-                (if: "kind" = MSG_TXN_REFRESH
-                then DecodeTxnRefreshRequest "bs1"
+                (if: "kind" = MSG_TXN_INQUIRE
+                then DecodeTxnInquireRequest "bs1"
                 else
-                  (if: "kind" = MSG_TXN_COMMIT
-                  then DecodeTxnCommitRequest "bs1"
+                  (if: "kind" = MSG_TXN_REFRESH
+                  then DecodeTxnRefreshRequest "bs1"
                   else
-                    (if: "kind" = MSG_TXN_ABORT
-                    then DecodeTxnAbortRequest "bs1"
+                    (if: "kind" = MSG_TXN_COMMIT
+                    then DecodeTxnCommitRequest "bs1"
                     else
-                      (if: "kind" = MSG_DUMP_STATE
-                      then DecodeDumpStateRequest "bs1"
+                      (if: "kind" = MSG_TXN_ABORT
+                      then DecodeTxnAbortRequest "bs1"
                       else
-                        (if: "kind" = MSG_FORCE_ELECTION
-                        then DecodeForceElectionRequest #()
+                        (if: "kind" = MSG_DUMP_STATE
+                        then DecodeDumpStateRequest "bs1"
                         else
-                          struct.mk TxnRequest [
-                          ]))))))))))).
+                          (if: "kind" = MSG_FORCE_ELECTION
+                          then DecodeForceElectionRequest #()
+                          else
+                            struct.mk TxnRequest [
+                            ])))))))))))).
 
 Definition DecodeTxnResponse: val :=
   rec: "DecodeTxnResponse" "bs" :=
@@ -474,13 +572,14 @@ Definition DecodeTxnResponse: val :=
               (if: "kind" = MSG_TXN_QUERY
               then DecodeTxnQueryResponse "bs1"
               else
-                (if: "kind" = MSG_TXN_COMMIT
-                then DecodeTxnCommitResponse "bs1"
+                (if: "kind" = MSG_TXN_INQUIRE
+                then DecodeTxnInquireResponse "bs1"
                 else
-                  (if: "kind" = MSG_TXN_ABORT
-                  then DecodeTxnAbortResponse "bs1"
+                  (if: "kind" = MSG_TXN_COMMIT
+                  then DecodeTxnCommitResponse "bs1"
                   else
-                    struct.mk TxnResponse [
-                    ])))))))).
-
-End code.
+                    (if: "kind" = MSG_TXN_ABORT
+                    then DecodeTxnAbortResponse "bs1"
+                    else
+                      struct.mk TxnResponse [
+                      ]))))))))).

@@ -45,6 +45,11 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "--channel",
+        help="translate channel model",
+        action="store_true",
+    )
+    parser.add_argument(
         "--nfsd",
         help="path to go-nfsd repo (skip translation if not provided)",
         metavar="GO_NFSD_PATH",
@@ -159,11 +164,13 @@ def main():
         do_run(["go", "install", "./cmd/goose"])
         os.chdir(old_dir)
 
-    def run_goose(src_path, *pkgs):
+    def run_goose(src_path, *pkgs, extra_args=None):
         if src_path is None:
             return
         if not pkgs:
             pkgs = ["."]
+        if not extra_args:
+            extra_args = []
 
         gopath = os.getenv("GOPATH", default=None)
         if gopath is None or gopath == "":
@@ -174,11 +181,15 @@ def main():
         output = path.join(perennial_dir, "external/Goose")
         args.extend(["-out", output])
         args.extend(["-dir", src_path])
+        args.extend(extra_args)
         args.extend(pkgs)
         do_run(args)
 
     if args.compile:
         compile_goose()
+
+    if args.channel:
+        run_goose(goose_dir, "./channel")
 
     if args.goose_examples:
         # generate semantics tests
@@ -312,8 +323,9 @@ def main():
     run_goose(
         pav_dir,
         "./advrpc",
+        "./alicebob",
+        "./cryptoutil",
         "./kt",
-        "./kttest",
         "./marshalutil",
         "./merkle",
     )
@@ -358,9 +370,9 @@ def main():
         "./util",
     )
 
-    run_goose(marshal_dir, ".")
+    run_goose(marshal_dir, ".", extra_args=["-skip-interfaces"])
 
-    run_goose(std_dir, ".")
+    run_goose(std_dir, "./...")
 
 
 if __name__ == "__main__":

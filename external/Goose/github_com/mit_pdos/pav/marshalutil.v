@@ -11,8 +11,8 @@ Definition ReadBool: val :=
     (if: (slice.len (![slice.T byteT] "b")) < #1
     then (#false, slice.nil, #true)
     else
-      let: ("data", "b") := marshal.ReadBool (![slice.T byteT] "b") in
-      ("data", ![slice.T byteT] "b", #false)).
+      let: ("data", "b2") := marshal.ReadBool (![slice.T byteT] "b") in
+      ("data", "b2", #false)).
 
 Definition ReadConstBool: val :=
   rec: "ReadConstBool" "b0" "cst" :=
@@ -31,8 +31,8 @@ Definition ReadInt: val :=
     (if: (slice.len (![slice.T byteT] "b")) < #8
     then (#0, slice.nil, #true)
     else
-      let: ("data", "b") := marshal.ReadInt (![slice.T byteT] "b") in
-      ("data", ![slice.T byteT] "b", #false)).
+      let: ("data", "b2") := marshal.ReadInt (![slice.T byteT] "b") in
+      ("data", "b2", #false)).
 
 Definition ReadConstInt: val :=
   rec: "ReadConstInt" "b0" "cst" :=

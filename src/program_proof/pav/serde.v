@@ -1,6 +1,16 @@
-From Perennial.program_proof Require Import grove_prelude.
+From Perennial.program_proof.pav Require Import prelude.
 From Goose.github_com.mit_pdos.pav Require Import kt.
 From Perennial.program_proof.pav Require Import misc.
+
+(* Patterns:
+1. use dfrac wherever possible in ownership preds.
+allows modularity in ownership usage.
+2. write encodesF separately from encodes.
+this makes it easier for wish lemmas to talk about encoding things.
+3. state injectivity with tail. this is used in code.
+4. have wp_dec give back encodes, which should
+additionally talk about things like no overflow,
+which are required to prove injectivity. *)
 
 Module PreSigDig.
 Record t :=
@@ -8,32 +18,50 @@ Record t :=
     Epoch: w64;
     Dig: list w8;
   }.
+
 Definition encodesF (obj : t) : list w8 :=
   u64_le obj.(Epoch) ++ u64_le (length obj.(Dig)) ++ obj.(Dig).
+
 Definition encodes (enc : list w8) (obj : t) : Prop :=
+  uint.Z (W64 (length obj.(Dig))) = length obj.(Dig) ∧
   enc = encodesF obj.
 
-Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
-Proof. Admitted.
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
+  encodes enc0 obj0 →
+  encodes enc1 obj1 →
+  enc0 ++ tail0 = enc1 ++ tail1 →
+  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Proof.
+  intros (? & Henc0) (? & Henc1) ?.
+  rewrite /encodesF in Henc0 Henc1.
+  list_simplifier. move: H1 => Henc.
+  apply app_inj_1 in Henc as [Heq_ep Henc]; [|len].
+  apply (inj u64_le) in Heq_ep.
+  apply app_inj_1 in Henc as [Hlen_dig Henc]; [|len].
+  apply (inj u64_le) in Hlen_dig.
+  apply app_inj_1 in Henc as [Heq_dig Henc]; [|len].
+  destruct obj0, obj1. by simplify_eq/=.
+Qed.
 
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
+Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_Dig,
-  "Hptr_Epoch" ∷ ptr ↦[PreSigDig :: "Epoch"] #obj.(Epoch) ∗
-  "Hptr_Dig" ∷ ptr ↦[PreSigDig :: "Dig"] (slice_val sl_Dig) ∗
+  "Hptr_Epoch" ∷ ptr ↦[PreSigDig :: "Epoch"]{d} #obj.(Epoch) ∗
+  "Hptr_Dig" ∷ ptr ↦[PreSigDig :: "Dig"]{d} (slice_val sl_Dig) ∗
   "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig).
 
-Lemma wp_enc obj sl_enc (enc : list w8) ptr :
+Lemma wp_enc obj sl_b (b : list w8) ptr d :
   {{{
-    "Hsl_enc" ∷ own_slice sl_enc byteT (DfracOwn 1) enc ∗
-    "Hown_obj" ∷ own ptr obj
+    "Hsl_b" ∷ own_slice sl_b byteT (DfracOwn 1) b ∗
+    "Hobj" ∷ own ptr obj d
   }}}
-  PreSigDigEncode (slice_val sl_enc) #ptr
+  PreSigDigEncode (slice_val sl_b) #ptr
   {{{
-    sl_enc', RET (slice_val sl_enc');
-    "Hsl_enc" ∷ own_slice sl_enc' byteT (DfracOwn 1) (enc ++ encodesF obj) ∗
-    "Hown_obj" ∷ own ptr obj
+    sl_b' enc, RET (slice_val sl_b');
+    "%Henc" ∷ ⌜ encodes enc obj ⌝ ∗
+    "Hsl_b" ∷ own_slice sl_b' byteT (DfracOwn 1) (b ++ enc) ∗
+    "Hobj" ∷ own ptr obj d
   }}}.
 Proof. Admitted.
 
@@ -47,20 +75,22 @@ Record t :=
     Dig: list w8;
     Sig: list w8;
   }.
+
 Definition encodesF (obj : t) : list w8 :=
   u64_le obj.(Epoch) ++ u64_le (length obj.(Dig)) ++ obj.(Dig) ++ u64_le (length obj.(Sig)) ++ obj.(Sig).
+
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
+Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_Dig sl_Sig,
-  "#Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"]□ #obj.(Epoch) ∗
-  "#Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"]□ (slice_val sl_Dig) ∗
-  "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig) ∗
-  "#Hptr_Sig" ∷ ptr ↦[SigDig :: "Sig"]□ (slice_val sl_Sig) ∗
-  "#Hsl_Sig" ∷ own_slice_small sl_Sig byteT DfracDiscarded obj.(Sig).
+  "Hptr_Epoch" ∷ ptr ↦[SigDig :: "Epoch"]{d} #obj.(Epoch) ∗
+  "Hptr_Dig" ∷ ptr ↦[SigDig :: "Dig"]{d} (slice_val sl_Dig) ∗
+  "Hsl_Dig" ∷ own_slice_small sl_Dig byteT d obj.(Dig) ∗
+  "Hptr_Sig" ∷ ptr ↦[SigDig :: "Sig"]{d} (slice_val sl_Sig) ∗
+  "Hsl_Sig" ∷ own_slice_small sl_Sig byteT d obj.(Sig).
 End defs.
 End SigDig.
 
@@ -70,60 +100,71 @@ Record t :=
     Epoch: w64;
     PkCommit: list w8;
   }.
+
 Definition encodesF (obj : t) : list w8 :=
   u64_le obj.(Epoch) ++ u64_le (length obj.(PkCommit)) ++ obj.(PkCommit).
+
 Definition encodes (enc : list w8) (obj : t) : Prop :=
+  uint.Z (W64 (length obj.(PkCommit))) = length obj.(PkCommit) ∧
   enc = encodesF obj.
-Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
-Proof. Admitted.
+
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
+  encodes enc0 obj0 →
+  encodes enc1 obj1 →
+  enc0 ++ tail0 = enc1 ++ tail1 →
+  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Proof.
+  intros (? & Henc0) (? & Henc1) ?.
+  rewrite /encodesF in Henc0 Henc1.
+  list_simplifier. move: H1 => Henc.
+  apply app_inj_1 in Henc as [Heq_ep Henc]; [|len].
+  apply (inj u64_le) in Heq_ep.
+  apply app_inj_1 in Henc as [Hlen_commit Henc]; [|len].
+  apply (inj u64_le) in Hlen_commit.
+  apply app_inj_1 in Henc as [Heq_commit Henc]; [|len].
+  destruct obj0, obj1. by simplify_eq/=.
+Qed.
 
 Section defs.
 Context `{!heapGS Σ}.
-Definition own ptr obj : iProp Σ :=
+Definition own ptr obj d : iProp Σ :=
   ∃ sl_pk_commit,
-  "Hptr_epoch" ∷ ptr ↦[MapValPre :: "Epoch"] #obj.(Epoch) ∗
-  "Hptr_pk_commit" ∷ ptr ↦[MapValPre :: "PkCommit"] (slice_val sl_pk_commit) ∗
-  "#Hsl_pk_commit" ∷ own_slice_small sl_pk_commit byteT DfracDiscarded obj.(PkCommit).
+  "Hptr_epoch" ∷ ptr ↦[MapValPre :: "Epoch"]{d} #obj.(Epoch) ∗
+  "Hptr_pk_commit" ∷ ptr ↦[MapValPre :: "PkCommit"]{d} (slice_val sl_pk_commit) ∗
+  "Hsl_pk_commit" ∷ own_slice_small sl_pk_commit byteT d obj.(PkCommit).
 
-Lemma wp_enc obj sl_enc (enc : list w8) ptr :
+Lemma wp_enc obj sl_b (b : list w8) ptr d :
   {{{
-    "Hsl_enc" ∷ own_slice sl_enc byteT (DfracOwn 1) enc ∗
-    "Hown_obj" ∷ own ptr obj
+    "Hsl_b" ∷ own_slice sl_b byteT (DfracOwn 1) b ∗
+    "Hobj" ∷ own ptr obj d
   }}}
-  MapValPreEncode (slice_val sl_enc) #ptr
+  MapValPreEncode (slice_val sl_b) #ptr
   {{{
-    sl_enc', RET (slice_val sl_enc');
-    "Hsl_enc" ∷ own_slice sl_enc' byteT (DfracOwn 1) (enc ++ encodesF obj) ∗
-    "Hown_obj" ∷ own ptr obj
+    sl_b' enc, RET (slice_val sl_b');
+    "%Henc" ∷ ⌜ encodes enc obj ⌝ ∗
+    "Hsl_b" ∷ own_slice sl_b' byteT (DfracOwn 1) (b ++ enc) ∗
+    "Hobj" ∷ own ptr obj d
   }}}.
 Proof. Admitted.
 
-(* TODO: not fully sure how to prove this, but probably relies
-on the inj lemma. *)
-Lemma enc_inj obj0 tail0 obj1 tail1 :
-  encodesF obj0 ++ tail0 = encodesF obj1 ++ tail1 →
-  obj0 = obj1 ∧ tail0 = tail1.
-Proof. Admitted.
-
-Lemma wp_dec sl_enc dq enc :
+Lemma wp_dec sl_b dq b :
   {{{
-    "Hsl_enc" ∷ own_slice_small sl_enc byteT dq enc
+    "Hsl_b" ∷ own_slice_small sl_b byteT dq b
   }}}
-  MapValPreDecode (slice_val sl_enc)
+  MapValPreDecode (slice_val sl_b)
   {{{
     ptr_obj sl_tail (err : bool), RET (#ptr_obj, slice_val sl_tail, #err);
-    "%Hgenie" ∷ (⌜ ∀ obj tail, enc = encodesF obj ++ tail → err = false ⌝) ∗
-    (* TODO: with curr structure, genie user needs to apply enc_inj to unify
-    their obj and tail with the one they get back from Herr.
-    is there any way to rewrite the spec to avoid this? *)
-    "Herr" ∷ (⌜ err = false ⌝ -∗
-      ∃ obj tail,
-      "Hown_obj" ∷ own ptr_obj obj ∗
-      "Hsl_tail" ∷ own_slice_small sl_tail byteT dq tail ∗
-      "%Henc_obj" ∷ ⌜ enc = encodesF obj ++ tail ⌝)
+    let wish := (λ tail enc obj,
+      ("%Henc" ∷ ⌜ encodes enc obj ⌝ ∗
+      "%Heq_tail" ∷ ⌜ b = enc ++ tail ⌝) : iProp Σ) in
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗
+      ∃ tail enc obj, wish tail enc obj) ∗
+    "Herr" ∷
+      (∀ tail enc obj, wish tail enc obj -∗
+      "Hown_obj" ∷ own ptr_obj obj (DfracOwn 1) ∗
+      "Hsl_tail" ∷ own_slice_small sl_tail byteT dq tail)
   }}}.
 Proof. Admitted.
-
 End defs.
 End MapValPre.
 
@@ -141,14 +182,14 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
 
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
+Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_Dig sl_ServSig sl_AdtrSig,
-  "#Hptr_Dig" ∷ ptr ↦[AdtrEpochInfo :: "Dig"]□ (slice_val sl_Dig) ∗
-  "#Hsl_Dig" ∷ own_slice_small sl_Dig byteT DfracDiscarded obj.(Dig) ∗
-  "#Hptr_ServSig" ∷ ptr ↦[AdtrEpochInfo :: "ServSig"]□ (slice_val sl_ServSig) ∗
-  "#Hsl_ServSig" ∷ own_slice_small sl_ServSig byteT DfracDiscarded obj.(ServSig) ∗
-  "#Hptr_AdtrSig" ∷ ptr ↦[AdtrEpochInfo :: "AdtrSig"]□ (slice_val sl_AdtrSig) ∗
-  "#Hsl_AdtrSig" ∷ own_slice_small sl_AdtrSig byteT DfracDiscarded obj.(AdtrSig).
+  "Hptr_Dig" ∷ ptr ↦[AdtrEpochInfo :: "Dig"]{d} (slice_val sl_Dig) ∗
+  "Hsl_Dig" ∷ own_slice_small sl_Dig byteT d obj.(Dig) ∗
+  "Hptr_ServSig" ∷ ptr ↦[AdtrEpochInfo :: "ServSig"]{d} (slice_val sl_ServSig) ∗
+  "Hsl_ServSig" ∷ own_slice_small sl_ServSig byteT d obj.(ServSig) ∗
+  "Hptr_AdtrSig" ∷ ptr ↦[AdtrEpochInfo :: "AdtrSig"]{d} (slice_val sl_AdtrSig) ∗
+  "Hsl_AdtrSig" ∷ own_slice_small sl_AdtrSig byteT d obj.(AdtrSig).
 End defs.
 End AdtrEpochInfo.
 
@@ -158,27 +199,46 @@ Record t :=
     Uid: w64;
     Ver: w64;
   }.
+
 Definition encodesF (obj : t) : list w8 :=
   u64_le obj.(Uid) ++ u64_le obj.(Ver).
+
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
+  encodes enc0 obj0 →
+  encodes enc1 obj1 →
+  enc0 ++ tail0 = enc1 ++ tail1 →
+  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Proof.
+  intros Henc0 Henc1 ?.
+  rewrite /encodes /encodesF in Henc0 Henc1.
+  list_simplifier. move: H => Henc.
+  apply app_inj_1 in Henc as [Heq_uid Henc]; [|len].
+  apply (inj u64_le) in Heq_uid.
+  apply app_inj_1 in Henc as [Heq_ver Henc]; [|len].
+  apply (inj u64_le) in Heq_ver.
+  destruct obj0, obj1. by simplify_eq/=.
+Qed.
+
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  "Hptr_uid" ∷ ptr ↦[MapLabelPre :: "Uid"] #obj.(Uid) ∗
-  "Hptr_ver" ∷ ptr ↦[MapLabelPre :: "Ver"] #obj.(Ver).
+Definition own (ptr : loc) (obj : t) d : iProp Σ :=
+  "Hptr_uid" ∷ ptr ↦[MapLabelPre :: "Uid"]{d} #obj.(Uid) ∗
+  "Hptr_ver" ∷ ptr ↦[MapLabelPre :: "Ver"]{d} #obj.(Ver).
 
-Lemma wp_enc obj sl_enc (enc : list w8) ptr :
+Lemma wp_enc obj sl_b (b : list w8) ptr d :
   {{{
-    "Hsl_enc" ∷ own_slice sl_enc byteT (DfracOwn 1) enc ∗
-    "Hown_obj" ∷ own ptr obj
+    "Hsl_b" ∷ own_slice sl_b byteT (DfracOwn 1) b ∗
+    "Hobj" ∷ own ptr obj d
   }}}
-  MapLabelPreEncode (slice_val sl_enc) #ptr
+  MapLabelPreEncode (slice_val sl_b) #ptr
   {{{
-    sl_enc', RET (slice_val sl_enc');
-    "Hsl_enc" ∷ own_slice sl_enc' byteT (DfracOwn 1) (enc ++ encodesF obj) ∗
-    "Hown_obj" ∷ own ptr obj
+    sl_b' enc, RET (slice_val sl_b');
+    "%Henc" ∷ ⌜ encodes enc obj ⌝ ∗
+    "Hsl_b" ∷ own_slice sl_b' byteT (DfracOwn 1) (b ++ enc) ∗
+    "Hobj" ∷ own ptr obj d
   }}}.
 Proof. Admitted.
 End defs.
@@ -187,20 +247,19 @@ End MapLabelPre.
 Module UpdateProof.
 Record t : Type :=
   mk {
-      Updates : gmap byte_string (list w8);
-      Sig: list w8
+    Updates : gmap (list w8) (list w8);
+    Sig: list w8
   }.
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
+Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ (updates_mref : loc) (updatesM : gmap byte_string (Slice.t)) sl_sig,
-    "Hptr_updates" ∷ ptr ↦[UpdateProof :: "Updates"] #updates_mref ∗
-    "Hptr_sig" ∷ ptr ↦[UpdateProof :: "Sig"] (slice_val sl_sig) ∗
-    "#HUpdatesM" ∷ own_map updates_mref DfracDiscarded updatesM ∗
-    "#HUpdatesMSl" ∷ ([∗ map] k ↦ sl; upd ∈ updatesM; obj.(Updates),
-                       own_slice_small sl byteT DfracDiscarded upd) ∗
-    "#Hsl_sig" ∷ own_slice_small sl_sig byteT DfracDiscarded obj.(Sig)
-.
+  "Hptr_updates" ∷ ptr ↦[UpdateProof :: "Updates"]{d} #updates_mref ∗
+  "Hptr_sig" ∷ ptr ↦[UpdateProof :: "Sig"]{d} (slice_val sl_sig) ∗
+  "HUpdatesM" ∷ own_map updates_mref d updatesM ∗
+  "HUpdatesMSl" ∷ ([∗ map] k ↦ sl;y ∈ updatesM;obj.(Updates),
+    own_slice_small sl byteT d y) ∗
+  "Hsl_sig" ∷ own_slice_small sl_sig byteT d obj.(Sig).
 
 End defs.
 End UpdateProof.
@@ -208,35 +267,57 @@ End UpdateProof.
 Module CommitOpen.
 Record t :=
   mk {
-    d: dfrac;
     Val: list w8;
     Rand: list w8;
   }.
+
 Definition encodesF (obj : t) : list w8 :=
   (u64_le $ length obj.(Val)) ++ obj.(Val) ++ (u64_le $ length obj.(Rand)) ++ obj.(Rand).
+
 Definition encodes (enc : list w8) (obj : t) : Prop :=
+  uint.Z (W64 (length obj.(Val))) = length obj.(Val) ∧
+  uint.Z (W64 (length obj.(Rand))) = length obj.(Rand) ∧
+
   enc = encodesF obj.
-Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
-Proof. Admitted.
+
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
+  encodes enc0 obj0 →
+  encodes enc1 obj1 →
+  enc0 ++ tail0 = enc1 ++ tail1 →
+  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Proof.
+  intros (?&?&Henc0) (?&?&Henc1) ?.
+  rewrite /encodesF in Henc0 Henc1.
+  list_simplifier. move: H3 => Henc.
+  apply app_inj_1 in Henc as [Hlen_val Henc]; [|len].
+  apply (inj u64_le) in Hlen_val.
+  apply app_inj_1 in Henc as [Heq_val Henc]; [|len].
+  apply app_inj_1 in Henc as [Hlen_rand Henc]; [|len].
+  apply (inj u64_le) in Hlen_rand.
+  apply app_inj_1 in Henc as [Heq_rand Henc]; [|len].
+  destruct obj0, obj1. by simplify_eq/=.
+Qed.
+
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
-  ∃ sl_val sl_rand,
-  "Hsl_val" ∷ own_slice_small sl_val byteT obj.(d) obj.(Val) ∗
-  "Hptr_val" ∷ ptr ↦[CommitOpen :: "Val"] (slice_val sl_val) ∗
-  "Hsl_rand" ∷ own_slice_small sl_rand byteT obj.(d) obj.(Rand) ∗
-  "Hptr_rand" ∷ ptr ↦[CommitOpen :: "Rand"] (slice_val sl_rand).
 
-Lemma wp_enc sl_enc (enc : list w8) ptr_obj obj :
+Definition own (ptr : loc) (obj : t) d : iProp Σ :=
+  ∃ sl_val sl_rand,
+  "Hsl_val" ∷ own_slice_small sl_val byteT d obj.(Val) ∗
+  "Hptr_val" ∷ ptr ↦[CommitOpen :: "Val"]{d} (slice_val sl_val) ∗
+  "Hsl_rand" ∷ own_slice_small sl_rand byteT d obj.(Rand) ∗
+  "Hptr_rand" ∷ ptr ↦[CommitOpen :: "Rand"]{d} (slice_val sl_rand).
+
+Lemma wp_enc sl_enc (enc : list w8) ptr_obj obj d :
   {{{
     "Hsl_enc" ∷ own_slice sl_enc byteT (DfracOwn 1) enc ∗
-    "Hown_obj" ∷ own ptr_obj obj
+    "Hown_obj" ∷ own ptr_obj obj d
   }}}
   CommitOpenEncode (slice_val sl_enc) #ptr_obj
   {{{
     sl_enc', RET (slice_val sl_enc');
     "Hsl_enc" ∷ own_slice sl_enc' byteT (DfracOwn 1) (enc ++ encodesF obj) ∗
-    "Hown_obj" ∷ own ptr_obj obj
+    "Hown_obj" ∷ own ptr_obj obj d
   }}}.
 Proof. Admitted.
 End defs.
@@ -248,19 +329,20 @@ Record t :=
     LabelProof: list w8;
     EpochAdded: w64;
     PkOpen: CommitOpen.t;
-    MerkProof: list $ list $ list w8;
+    MerkleProof: list w8;
   }.
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
+Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_label_proof ptr_pk_open sl_merk_proof,
-  "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
-  "Hptr_label_proof" ∷ ptr ↦[Memb :: "LabelProof"] (slice_val sl_label_proof) ∗
-  "Hptr_epoch_added" ∷ ptr ↦[Memb :: "EpochAdded"] #obj.(EpochAdded) ∗
-  "Hown_pk_open" ∷ CommitOpen.own ptr_pk_open obj.(PkOpen) ∗
-  "Hptr_pk_open" ∷ ptr ↦[Memb :: "PkOpen"] #ptr_pk_open ∗
-  "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
-  "Hptr_merk_proof" ∷ ptr ↦[Memb :: "MerkProof"] (slice_val sl_merk_proof).
+  "Hsl_labelP" ∷ own_slice_small sl_label_proof byteT d obj.(LabelProof) ∗
+  "Hptr_labelP" ∷ ptr ↦[Memb :: "LabelProof"]{d} (slice_val sl_label_proof) ∗
+  "Hptr_ep_add" ∷ ptr ↦[Memb :: "EpochAdded"]{d} #obj.(EpochAdded) ∗
+  "Hpk_open" ∷ CommitOpen.own ptr_pk_open obj.(PkOpen) d ∗
+  "Hptr_pk_open" ∷ ptr ↦[Memb :: "PkOpen"]{d} #ptr_pk_open ∗
+  (* merkle proofs are always eaten up by decoding. *)
+  "#Hsl_merkP" ∷ own_slice_small sl_merk_proof byteT DfracDiscarded obj.(MerkleProof) ∗
+  "Hptr_merkP" ∷ ptr ↦[Memb :: "MerkleProof"]{d} (slice_val sl_merk_proof).
 End defs.
 End Memb.
 
@@ -269,18 +351,18 @@ Record t :=
   mk {
     LabelProof: list w8;
     MapVal: list w8;
-    MerkProof: list $ list $ list w8;
+    MerkleProof: list w8;
   }.
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
+Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_label_proof sl_map_val sl_merk_proof,
-  "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
-  "Hptr_label_proof" ∷ ptr ↦[MembHide :: "LabelProof"] (slice_val sl_label_proof) ∗
-  "#Hsl_map_val" ∷ own_slice_small sl_map_val byteT DfracDiscarded obj.(MapVal) ∗
-  "Hptr_map_val" ∷ ptr ↦[MembHide :: "MapVal"] (slice_val sl_map_val) ∗
-  "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
-  "Hptr_merk_proof" ∷ ptr ↦[MembHide :: "MerkProof"] (slice_val sl_merk_proof).
+  "Hsl_labelP" ∷ own_slice_small sl_label_proof byteT d obj.(LabelProof) ∗
+  "Hptr_labelP" ∷ ptr ↦[MembHide :: "LabelProof"]{d} (slice_val sl_label_proof) ∗
+  "Hsl_map_val" ∷ own_slice_small sl_map_val byteT DfracDiscarded obj.(MapVal) ∗
+  "Hptr_map_val" ∷ ptr ↦[MembHide :: "MapVal"]{d} (slice_val sl_map_val) ∗
+  "#Hsl_merkP" ∷ own_slice_small sl_merk_proof byteT DfracDiscarded obj.(MerkleProof) ∗
+  "Hptr_merkP" ∷ ptr ↦[MembHide :: "MerkleProof"]{d} (slice_val sl_merk_proof).
 End defs.
 End MembHide.
 
@@ -288,15 +370,15 @@ Module NonMemb.
 Record t :=
   mk {
     LabelProof: list w8;
-    MerkProof: list $ list $ list w8;
+    MerkleProof: list w8;
   }.
 Section defs.
 Context `{!heapGS Σ}.
-Definition own (ptr : loc) (obj : t) : iProp Σ :=
+Definition own (ptr : loc) (obj : t) d : iProp Σ :=
   ∃ sl_label_proof sl_merk_proof,
-  "#Hsl_label_proof" ∷ own_slice_small sl_label_proof byteT DfracDiscarded obj.(LabelProof) ∗
-  "Hptr_label_proof" ∷ ptr ↦[NonMemb :: "LabelProof"] (slice_val sl_label_proof) ∗
-  "#His_merk_proof" ∷ is_Slice3D sl_merk_proof obj.(MerkProof) ∗
-  "Hptr_merk_proof" ∷ ptr ↦[NonMemb :: "MerkProof"] (slice_val sl_merk_proof).
+  "Hsl_labelP" ∷ own_slice_small sl_label_proof byteT d obj.(LabelProof) ∗
+  "Hptr_labelP" ∷ ptr ↦[NonMemb :: "LabelProof"]{d} (slice_val sl_label_proof) ∗
+  "#Hsl_merkP" ∷ own_slice_small sl_merk_proof byteT DfracDiscarded obj.(MerkleProof) ∗
+  "Hptr_merkP" ∷ ptr ↦[NonMemb :: "MerkleProof"]{d} (slice_val sl_merk_proof).
 End defs.
 End NonMemb.

@@ -1,0 +1,6 @@
+translate = [
+  "Enabled",
+]
+imports = [
+  "!*",
+]

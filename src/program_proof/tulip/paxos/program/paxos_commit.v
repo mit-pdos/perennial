@@ -82,6 +82,9 @@ Section commit.
       iNamed "Hfname".
       do 2 wp_loadField.
       wp_apply wp_logExpand.
+      iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+      { solve_ndisj. }
+      iNamed "Hdurable".
       iInv "Hinv" as "> HinvO" "HinvC".
       iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
       iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
@@ -90,9 +93,21 @@ Section commit.
       iApply ncfupd_mask_intro; first solve_ndisj.
       iIntros "Hmask".
       iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
-      iFrame "Hfile".
-      iExists wal.
-      iIntros (bs') "[Hfile %Hbs']".
+      iFrame "Hfile %".
+      iIntros (bs' failed) "Hfile".
+      destruct failed.
+      { (* Case: Write failed. Close the invariant without any updates. *)
+        iMod "Hmask" as "_".
+        iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+        { iFrame "∗ # %". }
+        iMod ("HinvfileC" with "HinvfileO") as "_".
+        iMod ("HinvC" with "HinvO") as "_".
+        set dst := PaxosDurable term term log lsnc.
+        iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
+        by iIntros "!> %Hcontra".
+      }
+      (* Case: Write succeeded. *)
+      iDestruct "Hfile" as "[Hfile %Hbs']".
       iMod (paxos_inv_expand (length log) with "[Hsafe'] Hwalfile Hterml Hlsnc Hlogn HinvO")
         as "(Hwalfile & Hterml & Hlsnc & Hlogn & HinvO)".
       { apply Hnidme. }
@@ -101,10 +116,18 @@ Section commit.
       { by rewrite Hszlog. }
       rewrite -Hszlog in Hbs'.
       iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
-      { iFrame "∗ # %". }
+      { iFrame "∗ # %".
+        iPureIntro.
+        apply Forall_app_2; first apply Hvdwal.
+        rewrite Forall_singleton /=.
+        word.
+      }
       iMod "Hmask" as "_".
       iMod ("HinvfileC" with "HinvfileO") as "_".
       iMod ("HinvC" with "HinvO") as "_".
+      set dst := PaxosDurable term term log logP.(Slice.sz).
+      iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn Hlsnc]") as "Hdurable".
+      { by rewrite Hszlog. }
       iIntros "!> _".
       wp_pures.
 
@@ -114,7 +137,6 @@ Section commit.
       iApply "HΦ".
       iFrame "Hcand Hleader".
       iFrame "Hsafe'".
-      rewrite -Hszlog.
       iFrame "∗ # %".
       iPureIntro.
       clear -Hszlog. word.
@@ -131,6 +153,9 @@ Section commit.
     iNamed "Hfname".
     wp_loadField.
     wp_apply wp_logExpand.
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamed "Hdurable".
     iInv "Hinv" as "> HinvO" "HinvC".
     iInv "Hinvfile" as "> HinvfileO" "HinvfileC".
     iDestruct (big_sepS_elem_of_acc with "HinvfileO") as "[Hnodefile HinvfileO]".
@@ -139,9 +164,21 @@ Section commit.
     iApply ncfupd_mask_intro; first solve_ndisj.
     iIntros "Hmask".
     iDestruct (node_wal_fname_agree with "Hfnameme Hwalfname") as %->.
-    iFrame "Hfile".
-    iExists wal.
-    iIntros (bs') "[Hfile %Hbs']".
+    iFrame "Hfile %".
+    iIntros (bs' failed) "Hfile".
+    destruct failed.
+    { (* Case: Write failed. Close the invariant without any updates. *)
+      iMod "Hmask" as "_".
+      iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
+      { iFrame "∗ # %". }
+      iMod ("HinvfileC" with "HinvfileO") as "_".
+      iMod ("HinvC" with "HinvO") as "_".
+      set dst := PaxosDurable term term log lsnc.
+      iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
+      by iIntros "!> %Hcontra".
+    }
+    (* Case: Write succeeded. *)
+    iDestruct "Hfile" as "[Hfile %Hbs']".
     assert (Hprefix : prefix logc log).
     { destruct Horprefix as [Hprefix | ?]; last done.
       rewrite (prefix_length_eq _ _ Hprefix); first done.
@@ -156,10 +193,17 @@ Section commit.
     { clear -Hgtlsnc. lia. }
     { rewrite Hszlog. clear -Hlelog. lia. }
     iDestruct ("HinvfileO" with "[Hfile Hwalfile]") as "HinvfileO".
-    { iFrame "∗ # %". }
+    { iFrame "∗ # %".
+      iPureIntro.
+      apply Forall_app_2; first apply Hvdwal.
+      rewrite Forall_singleton /=.
+      word.
+    }
     iMod "Hmask" as "_".
     iMod ("HinvfileC" with "HinvfileO") as "_".
     iMod ("HinvC" with "HinvO") as "_".
+    set dst := PaxosDurable term term log lsn.
+    iMod ("HdurableC" $! dst with "[$Htermc $Hterml $Hlogn $Hlsnc]") as "Hdurable".
     iIntros "!> _".
     wp_pures.
     iApply "HΦ".

@@ -1,8 +1,14 @@
 From Perennial.goose_lang Require Import lifting.
+From New.golang Require defn.
 From New.golang.defn Require Export struct.
-From New.golang.theory Require Import mem exception list typing.
+From New.golang.theory Require Import typed_pointsto exception list typing dynamic_typing.
 From Perennial.Helpers Require Import NamedProps.
 From RecordUpdate Require Export RecordUpdate.
+From Perennial Require Import base.
+From Ltac2 Require Import Ltac2.
+Set Default Proof Mode "Classic".
+
+Set Default Proof Using "Type".
 
 Module struct.
 Section goose_lang.
@@ -12,6 +18,23 @@ Implicit Types (d : struct.descriptor).
 Infix "=?" := (ByteString.eqb).
 
 (* FIXME: what does _f mean? Want better name. *)
+Definition field_offset_f (t : go_type) f : (w64 * go_type) :=
+  let missing := W64 (2^64-1) in
+  match t with
+  | structT d =>
+      (fix field_offset_struct (d : struct.descriptor) : (w64 * go_type) :=
+         match d with
+         | [] => (missing, badT)
+         | (f',t)::fs => if f' =? f then (W64 0, t)
+                         else match field_offset_struct fs with
+                              | (off, t') => (word.add (go_type_size t) off, t')
+                              end
+         end) d
+  | _ => (missing, badT)
+  end .
+
+Definition field_ty_f t f : go_type := (field_offset_f t f).2.
+
 Definition field_get_f t f0: val -> val :=
   match t with
   | structT d =>
@@ -46,7 +69,9 @@ Definition field_set_f t f0 fv: val -> val :=
   end
   .
 
-Definition field_ref_f t f0 l: loc := l +ₗ (struct.field_offset t f0).1.
+Definition field_ref_f_def t f0 l: loc := l +ₗ uint.Z (field_offset_f t f0).1.
+Program Definition field_ref_f := sealed @field_ref_f_def.
+Definition field_ref_f_unseal : field_ref_f = _ := seal_eq _.
 
 Class Wf (t : go_type) : Set :=
   {
@@ -78,6 +103,9 @@ Definition proj_descriptor_wf (d : struct.descriptor) :=
   end.
 
 (* This hint converts [someStructType] into [structT blah] *)
+Global Hint Extern 10 (struct.Wf ?t) =>
+         progress (let t' := (eval hnf in t) in
+                   change t with t') : typeclass_instances.
 Global Hint Extern 10 (struct.Wf ?t) => unfold t : typeclass_instances.
 Global Hint Extern 3 (struct.Wf (structT ?d)) => exact (proj_descriptor_wf d) : typeclass_instances.
 
@@ -103,7 +131,7 @@ Definition struct_fields `{!IntoVal V} `{!IntoValTyped V t} l dq
 Lemma struct_val_inj d fvs1 fvs2 :
   struct.val_aux (structT d) fvs1 = struct.val_aux (structT d) fvs2 →
   ∀ f, In f d.*1 →
-       match (assocl_lookup f fvs1), (assocl_lookup f fvs2) with
+       match (alist_lookup_f f fvs1), (alist_lookup_f f fvs2) with
        | Some v1, Some v2 => v1 = v2
        | _, _ => True
        end.
@@ -114,29 +142,43 @@ Proof.
   intros Heq ? [].
   - subst. simpl in Heq.
     injection Heq as ??.
-    repeat destruct assocl_lookup; naive_solver.
+    repeat destruct alist_lookup_f; naive_solver.
   - simpl in *. injection Heq as ??. by apply IHd.
 Qed.
 
-(* FIXME: could try stating this with (structT d) substituted in. The main
-   concern is that it will result in t getting unfolded. *)
-Theorem struct_fields_split `{!IntoVal V} `{!IntoValTyped V t}
-  l q {dwf : struct.Wf t} (v : V) :
-  typed_pointsto l q v
-  ⊣⊢ match t with
-     | structT d  => struct_fields l q d v
-     | _ => typed_pointsto l q v
-     end.
+Class StructFieldsSplit `{!IntoVal V} `{!IntoValTyped V t} {dwf : struct.Wf t}
+                        (dq : dfrac) (l : loc) (v : V) (Psplit : iProp Σ)
+  :=
+  {
+    struct_fields_split : l ↦{dq} v ⊢ Psplit ;
+    struct_fields_combine : Psplit ⊢ l ↦{dq} v
+  }.
+
+Lemma flatten_struct_tt : flatten_struct #() = [].
+Proof. rewrite to_val_unseal //. Qed.
+
+Lemma struct_fields_split_intro `{!IntoVal V} `{!IntoValTyped V t} {dwf: struct.Wf t}
+  (dq: dfrac) (l: loc) (v: V) Psplit :
+  (l ↦{dq} v ⊣⊢ Psplit) → StructFieldsSplit dq l v Psplit.
 Proof.
-  subst.
-  destruct t; try done.
-  iSplit.
-  - (* split up struct *)
-    iIntros "Hv".
-    admit.
-  - (* combine struct fields *)
-    admit.
-Admitted.
+  intros Heq.
+  constructor; rewrite Heq //.
+Qed.
+
+(* A specialized version of [big_sepL_app] that simplifies some loc_add-related
+expressions. Not strictly about heap_pointsto, but specialized with a dfrac so
+higher-order unification works properly. *)
+Lemma heap_pointsto_app (vs1 vs2: list val) (l: loc) dq (f: loc → dfrac → val → iProp Σ) :
+  ([∗ list] j↦vj ∈ (vs1 ++ vs2), f (l +ₗ j) dq vj) ⊣⊢
+  ([∗ list] j↦vj ∈ vs1, f (l +ₗ j) dq vj) ∗
+  ([∗ list] j↦vj ∈ vs2, f (l +ₗ (Z.of_nat (length vs1)) +ₗ Z.of_nat j) dq vj).
+Proof.
+  rewrite big_sepL_app.
+  f_equiv.
+  setoid_rewrite Nat2Z.inj_add.
+  setoid_rewrite loc_add_assoc.
+  reflexivity.
+Qed.
 
 Theorem struct_fields_acc_update f t V Vf
   l dq {dwf : struct.Wf t} (v : V)
@@ -168,13 +210,73 @@ End lemmas.
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
-Global Instance pure_struct_field_ref_wp t f (l : loc) :
-  PureWp True (struct.field_ref t f #l) #(struct.field_ref_f t f l).
+#[global] Instance field_offset_into_val : IntoVal (w64 * go_type) :=
+  { to_val_def := fun '(off, t) => (#off, #t)%V; }.
+
+Lemma field_off_to_val_unfold (p: w64 * go_type) :
+  #p = (#p.1, #p.2)%V.
 Proof.
-  iIntros (?????) "HΦ".
-  wp_call_lc "?".
+  destruct p.
+  rewrite {1}to_val_unseal //=.
+Qed.
+
+Global Instance pure_struct_field_offset_wp (t: go_type) f :
+  PureWp True (struct.field_offset #t #f) (#(struct.field_offset_f t f)).
+Proof.
+  apply pure_wp_val. iIntros (??).
+  induction t using go_type_ind;
+    try solve [
+        iIntros (Φ) "_ HΦ"; wp_call_lc "?";
+        rewrite [in #(_, _)]to_val_unseal /=;
+          iApply "HΦ"; done
+      ].
+  iIntros (Φ) "_ HΦ"; wp_call_lc "?".
   iSpecialize ("HΦ" with "[$]").
-  iExactEq "HΦ". rewrite /struct.field_ref_f.
+  iInduction decls as [|[f' ft] decls] forall (Φ).
+  - wp_pures.
+    rewrite field_off_to_val_unfold /=.
+    iApply "HΦ".
+  - match goal with
+    | |- context[environments.Esnoc _ (INamed "IHdecls") ?P] =>
+        set (IHdeclsP := P)
+    end.
+    wp_pures.
+    rewrite !field_off_to_val_unfold !desc_to_val_unfold /=.
+    wp_pures.
+    destruct (bool_decide_reflect (f' = f)); subst.
+    + rewrite -> bool_decide_eq_true_2 by auto; wp_pures.
+      rewrite -> ByteString.eqb_eq by auto.
+      iApply "HΦ".
+    + rewrite -> bool_decide_eq_false_2 by auto; wp_pures.
+      rewrite -> ByteString.eqb_ne by auto.
+      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
+      iApply "IHdecls".
+      { naive_solver. }
+      wp_pures.
+      rewrite field_off_to_val_unfold.
+      destruct ((fix field_offset_struct (d : struct.descriptor) :=
+                  match d with
+                  | nil => _
+                  | cons _ _ => _
+                  end)
+        decls) eqn:Hoff.
+      wp_pures.
+      wp_apply wp_type_size.
+      iIntros "_".
+      wp_pures.
+      iApply "HΦ".
+Qed.
+
+Global Instance pure_struct_field_ref_wp (t: go_type) f (l : loc) :
+  PureWp True (struct.field_ref #t #f #l) #(struct.field_ref_f t f l).
+Proof.
+  pure_wp_start.
+  destruct (struct.field_offset_f t f) eqn:Hoff.
+  rewrite field_off_to_val_unfold /=; wp_pures.
+  iExactEq "HΦ".
+  repeat f_equal.
+  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def.
+  rewrite Hoff /=.
   repeat (f_equal; try word).
 Qed.
 
@@ -184,90 +286,42 @@ Definition is_structT (t : go_type) : Prop :=
   | _ => False
   end.
 
-Global Instance wp_struct_fields_cons_nil (k : go_string) (l : list (go_string * val)) (v : val) :
-  PureWp  True
-    (list.Cons (PairV #k v) (struct.fields_val l))
-    (struct.fields_val ((pair k v) :: l))
-.
-Proof.
-  iIntros (?????) "HΦ".
-  rewrite struct.fields_val_unseal list.Cons_unseal.
-  wp_call_lc "?". by iApply "HΦ".
-Qed.
-
-Global Instance wp_struct_fields_cons (k : go_string) (l : list (go_string * val)) (v : val) :
-  PureWp True
-    (list.Cons (PairV #k v) (struct.fields_val l))
-    (struct.fields_val ((pair k v) :: l))
-.
-Proof.
-  iIntros (?????) "HΦ".
-  rewrite struct.fields_val_unseal list.Cons_unseal /=.
-  wp_call_lc "?". by iApply "HΦ".
-Qed.
-
-Global Instance wp_struct_assocl_lookup (k : go_string) (l : list (go_string * val)) :
-  PureWp True
-    (struct.assocl_lookup #k (struct.fields_val l))
-    (match (assocl_lookup k l) with | None => InjLV #() | Some v => InjRV v end)
-.
-Proof.
-  iIntros (?????) "HΦ".
-  rewrite struct.fields_val_unseal.
-  iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
-  [base]:{
-    simpl. wp_call. rewrite list.Match_unseal.
-    wp_call_lc "?". by iApply "HΦ".
-  }
-  [cons]: {
-    wp_call_lc "?".
-    rewrite /struct.fields_val_def list.Match_unseal /=.
-    wp_call.
-    destruct bool_decide eqn:Heqb; wp_pures.
-    {
-      rewrite bool_decide_eq_true in Heqb.
-      subst.
-      wp_pures.
-      rewrite /ByteString.eqb bool_decide_true //.
-      by iApply "HΦ".
-    }
-    {
-      rewrite bool_decide_eq_false in Heqb.
-      wp_pures.
-      iApply "IH".
-      destruct (ByteString.eqb g _)%go eqn:Hx.
-      { exfalso. apply Heqb. repeat f_equal. symmetry.
-        rewrite /ByteString.eqb bool_decide_eq_true // in Hx. }
-      by iApply "HΦ".
-    }
-  }
-Qed.
-
 Definition wp_struct_make (t : go_type) (l : list (go_string*val)) :
-  PureWp (is_structT t)
-  (struct.make t (struct.fields_val l))
+  is_structT t →
+  PureWp True
+  (struct.make #t (alist_val l))
   (struct.val_aux t l).
 Proof.
-  intros ?????K.
-  rewrite struct.make_unseal struct.val_aux_unseal.
+  intros ?.
+  pure_wp_start.
+  rewrite struct.make_unseal /struct.make_def struct.val_aux_unseal.
   destruct t; try by exfalso.
-  unfold struct.make_def.
-  iIntros "HΦ".
-  iInduction decls as [] "IH" forall (Φ K).
-  - wp_pure_lc "?". by iApply "HΦ".
-  - destruct a.
-    wp_pure_lc "?". wp_pures.
-    unfold struct.val_aux_def.
-    destruct (assocl_lookup _ _).
+  wp_pures.
+  iInduction decls as [|[f ft] decls] "IH" forall (Φ).
+  - wp_pure_lc "?". wp_pures. by iApply "HΦ".
+  - wp_pure_lc "?"; wp_pures.
+    rewrite !desc_to_val_unfold /=; wp_pures.
+    destruct (alist_lookup_f _ _).
     + wp_pures.
-      unshelve wp_apply ("IH" $! _ _ []); first done.
+      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
+      unshelve iApply "IH"; first done.
       iIntros "_".
       simpl fill. wp_pures. by iApply "HΦ".
     + wp_pures.
-      unshelve wp_apply ("IH" $! _ _ []); first done.
+      wp_bind (match decls with | nil => _ | cons _ _ => _ end).
+      unshelve iApply "IH"; first done.
       iIntros "_".
       simpl fill. wp_pures. by iApply "HΦ".
 Qed.
+
+Lemma struct_val_aux_nil fvs :
+  (struct.val_aux (structT $ []) fvs) = #().
+Proof. rewrite struct.val_aux_unseal //=. Qed.
+
+Lemma struct_val_aux_cons decls f t fvs :
+  (struct.val_aux (structT $ (f,t) :: decls) fvs) =
+  (default (zero_val t) (alist_lookup_f f fvs), (struct.val_aux (structT decls) fvs))%V.
+Proof. rewrite struct.val_aux_unseal //=. Qed.
 
 Global Instance points_to_access_struct_field_ref {V Vf} l f v (proj : V → Vf) dq {t tf : go_type}
   `{!IntoVal V} `{!IntoValTyped V t}
@@ -284,3 +338,412 @@ Proof.
   - by rewrite RecordSet.set_eq.
 Qed.
 End wps.
+
+(* Specialized simplification for the tactics below. Normally these tactics
+solve the goal and this isn't necessary, but debugging is way easier if they
+fail with the goal in a readable state. *)
+Ltac cbn_w8 :=
+  with_strategy transparent [w8_word_instance]
+    (with_strategy opaque [loc_add] cbn).
+
+(* TODO: maybe should re-implement this in a more principled way *)
+Ltac _solve_has_go_type_step :=
+  match goal with
+  | |- has_go_type (zero_val _) _ => apply zero_val_has_go_type
+  | |- has_go_type _ _ => solve [ apply to_val_has_go_type ]
+  | |- has_go_type _ _ => try assumption; constructor
+  | |- ∀ _, _ => intros
+  | H: In _ _ |- _ => destruct H
+  | H: (@eq (go_string * go_type) (_, _) _) |- _ =>
+      (* replaces solve_has_go_type_step's use of inversion_clear with the more
+      powerful inversion; subst; clear pattern *)
+      inversion H; subst; clear H
+  | _ => contradiction
+  | _ => progress cbn_w8
+  end.
+
+(* extend typing's solve_has_go_type to general goals *)
+Ltac solve_has_go_type' :=
+  repeat _solve_has_go_type_step.
+
+(* solve ∀ v, has_go_type (#v) t in IntoValTyped *)
+Ltac solve_to_val_type :=
+  lazymatch goal with
+  | |- forall (_: ffi_syntax), _ => let H := fresh "H" in intros H
+  | _ => idtac
+  end;
+  intros v;
+  rewrite to_val_unseal /=;
+  destruct v; cbn_w8;
+  solve_has_go_type'.
+
+(* solve #default_val = zero_val t in IntoValTyped *)
+Ltac solve_zero_val :=
+  intros;
+  (* unfold and simpify, resulting in goal like
+   [struct.val_aux t [a:=#(default_val A); ...; y:=#(default_val Y)] = struct.val_aux t []]. *)
+  rewrite zero_val_eq to_val_unseal; with_strategy opaque [default_val] cbn;
+  (* replace the [default_val] field values with [zero_val], then unfold
+   [struct.val_aux], at which point there should be values with no [to_val] at
+   all, which are definitionally equal. *)
+  rewrite ?default_val_eq_zero_val ?struct.val_aux_unseal //.
+
+Ltac solve_to_val_inj :=
+  (* prove Inj (=) (=) (λ v, #v) *)
+  intros;
+  intros [] [];
+  rewrite to_val_unseal /= ?struct.val_aux_unseal /=;
+    cbn_w8;
+  inv 1;
+  try reflexivity.
+
+Ltac solve_into_val_struct_field :=
+  (* prove IntoValStructField *)
+  constructor; intros v;
+  lazymatch goal with
+  | |- _ = ?rhs =>
+      rewrite [in rhs]to_val_unseal /= struct.val_aux_unseal /=
+  end;
+  destruct v; try reflexivity; cbn_w8.
+
+(* XXX: the to_val for go_string * go_type isn't produced by the PureWp
+instances, instead we just have a raw PairV which doesn't work with lists.
+
+We probably shouldn't be using a pair here but instead a new inductive (now that
+the type is used with to_val, after the switch to "dynamic" types).
+*)
+Lemma struct_field_to_val `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  (f: go_string) (t: go_type) :
+  (f ::= #t)%V = #(f, t).
+Proof. rewrite [in #(f,t)]to_val_unseal //. Qed.
+
+(* solve the PureWp instance that relates the val representing a generic type to
+its go_type-based model *)
+Ltac solve_type_pure_wp :=
+  pure_wp_start;
+  repeat (rewrite ?struct_field_to_val || wp_pures);
+  (* this should solve the goal; the [try] is only there to leave a proof state
+  for debugging *)
+  try iApply "HΦ".
+
+Ltac solve_struct_make_pure_wp :=
+  intros;
+  (* BUG: ssreflect has rewrite [in v in PureWp _ _ v]to_val_unseal that would
+  do this directly, but Coq incorrectly flags v as an unbound variable when
+  trying to use it in an Ltac. *)
+  lazymatch goal with
+  | |- PureWp _ _ ?v =>
+      rewrite [in v]to_val_unseal;
+      apply wp_struct_make; cbn; auto
+  end.
+
+Lemma pointsto_loc_add_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  l dq (off1 off2: Z) `{!IntoVal V} (v: V) :
+  off1 = off2 →
+  (l +ₗ off1) ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
+Proof. intros; subst; rewrite //. Qed.
+
+Lemma pointsto_loc_add0_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  l dq (off2: Z) `{!IntoVal V} (v: V) :
+  0 = off2 →
+  l ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
+Proof. intros; subst; rewrite loc_add_0 //. Qed.
+
+Lemma has_bounded_type_size_def (t: go_type) `{BoundedTypeSize t} :
+  go_type_size_def t < 2^32.
+Proof.
+  destruct H as [H].
+  rewrite go_type_size_unseal in H.
+  auto.
+Qed.
+
+Lemma has_bounded_type_size_intro {t} :
+  match decide (Z.of_nat (go_type_size_def t) < 2^32) with
+  | left _ => True
+  | right _ => False
+  end → BoundedTypeSize t.
+Proof.
+  destruct (decide _); intros; [ | contradiction ].
+  constructor.
+  rewrite go_type_size_unseal //.
+Qed.
+
+(* only works if type size can be computed *)
+Ltac solve_bounded_type_size :=
+  apply (has_bounded_type_size_intro);
+  try exact I.
+
+#[global] Hint Extern 10 (BoundedTypeSize _) => solve [ solve_bounded_type_size ] : typeclass_instances.
+
+(* solves goals of the form l ↦{dq} v ⊣⊢ l' ↦{dq} v, where the locations involve
+offset calculations. *)
+Ltac solve_field_ref_f :=
+  rewrite struct.field_ref_f_unseal /struct.field_ref_f_def;
+  with_strategy transparent [w8_word_instance] (with_strategy opaque [loc_add] cbn);
+  rewrite ?loc_add_assoc;
+  lazymatch goal with
+  | |- typed_pointsto (_ +ₗ _) _ _ ⊣⊢ _ => apply pointsto_loc_add_equiv
+  | |- typed_pointsto _ _ _ ⊣⊢ _ => apply pointsto_loc_add0_equiv
+  | _ => idtac
+  end;
+  rewrite ?go_type_size_unseal //=;
+  repeat
+    match goal with
+    | |- context[go_type_size_def ?t] =>
+        learn_hyp (has_bounded_type_size_def t)
+    end;
+  try word.
+
+Lemma sep_equiv_split Σ (P1 P2 Q1 Q2: iProp Σ) :
+  P1 ⊣⊢ Q1 →
+  P2 ⊣⊢ Q2 →
+  (P1 ∗ P2 ⊣⊢ Q1 ∗ Q2).
+Proof.
+  intros H1 H2. f_equiv; auto.
+Qed.
+
+(* To prove StructFieldsSplit we need to prove equivalence if a split based on
+[flatten_struct] and one based on a field offset for each field.
+
+This tactic converts one [length (flatten_struct x)] to [go_type_size t]. The
+parameters give it the right value and go_type to relate.
+
+*)
+Ltac simpl_one_flatten_struct x go_t f :=
+  rewrite (@has_go_type_len _ x (struct.field_offset_f go_t f).2); [ | by solve_has_go_type' ];
+  (* this [solve_field_ref_f] should solve the subgoal, but it does not fail
+  otherwise if there are bugs; it's nice for the tactic to leave the simplified
+  state for debugging *)
+  apply sep_equiv_split; [ solve_field_ref_f | ].
+
+Ltac unfold_typed_pointsto :=
+  rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=
+    struct.val_aux_unseal /=;
+    with_strategy transparent [w8_word_instance]
+    (with_strategy opaque [loc_add] cbn).
+
+Ltac split_pointsto_app :=
+  rewrite !heap_pointsto_app;
+  rewrite ?flatten_struct_tt ?big_sepL_nil ?(right_id bi_emp).
+
+(* use the above automation the way proofgen does (approximately, not kept in sync) *)
+Module __struct_automation_test.
+
+Import New.golang.defn.
+
+(* TEST *)
+Module time.
+
+Definition Time : go_type := structT [
+  "wall" :: uint64T;
+  "ext" :: int64T;
+  "loc" :: ptrT
+]%struct.
+
+Module Time.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  wall' : w64;
+  ext' : w64;
+  loc' : loc;
+}.
+End def.
+End Time.
+
+Section instances.
+
+Global Instance settable_Time `{ffi_syntax} : Settable _ :=
+  settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
+Global Instance into_val_Time `{ffi_syntax} : IntoVal Time.t :=
+  {| to_val_def v := struct.val_aux time.Time
+                       ["wall" ::= #(Time.wall' v);
+                        "ext" ::= #(Time.ext' v);
+                        "loc" ::= #(Time.loc' v)
+                       ]%struct |}.
+
+Global Program Instance into_val_typed_Time `{ffi_syntax} : IntoValTyped Time.t time.Time :=
+{|
+  default_val := Time.mk (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Time_wall `{ffi_syntax} : IntoValStructField "wall" time.Time Time.wall'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Time_ext `{ffi_syntax} : IntoValStructField "ext" time.Time Time.ext'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Time_loc `{ffi_syntax} : IntoValStructField "loc" time.Time Time.loc'.
+Proof. solve_into_val_struct_field. Qed.
+
+Context `{!ffi_syntax} `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Time wall' ext' loc':
+  PureWp True
+    (struct.make #time.Time (alist_val [
+      "wall" ::= #wall';
+      "ext" ::= #ext';
+      "loc" ::= #loc'
+    ]))%struct
+    #(Time.mk wall' ext' loc').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Time_struct_fields_split dq l (v : Time.t) :
+  StructFieldsSplit dq l v (
+    "Hwall" ∷ l ↦s[time.Time :: "wall"]{dq} v.(Time.wall') ∗
+    "Hext" ∷ l ↦s[time.Time :: "ext"]{dq} v.(Time.ext') ∗
+    "Hloc" ∷ l ↦s[time.Time :: "loc"]{dq} v.(Time.loc')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  simpl_one_flatten_struct (#(Time.wall' v)) time.Time "wall"%go.
+  simpl_one_flatten_struct (#(Time.ext' v)) time.Time "ext"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+End time.
+
+(* TEST *)
+Module empty_struct.
+Definition empty_struct : go_type := structT [].
+
+Module unit.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+}.
+End def.
+End unit.
+
+Section instances.
+Context `{ffi_syntax}.
+Global Instance into_val_unit : IntoVal unit.t :=
+  {| to_val_def v :=
+    struct.val_aux empty_struct [
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_unit : IntoValTyped unit.t empty_struct :=
+{|
+  default_val := unit.mk;
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_unit:
+  PureWp True
+    (struct.make #empty_struct (alist_val [
+    ]))%struct
+    #(unit.mk).
+Proof. solve_struct_make_pure_wp. Qed.
+
+End instances.
+
+End empty_struct.
+
+
+(* TEST *)
+Module generic_struct.
+
+Module generics.
+Definition Box `{ffi_syntax} : val :=
+  λ: "T", type.structT [
+    (#"Value"%go, "T")
+  ]%struct.
+End generics.
+
+Module Box.
+Section def.
+Context `{ffi_syntax}.
+Definition ty (T: go_type) : go_type := structT [
+      "Value" :: T
+  ]%struct.
+Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
+  Value' : T';
+}.
+End def.
+End Box.
+
+Arguments Box.mk {_} {T'} {_ T _}.
+Arguments Box.t {_} T' {_ T _}.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Context `{!IntoVal T'} `{!IntoValTyped T' T}.
+
+Global Instance Box_ty_wf : struct.Wf (Box.ty T).
+Proof. apply _. Qed.
+
+Global Instance settable_Box : Settable (Box.t T') :=
+  settable! (Box.mk (T:=T)) < Box.Value' >.
+Global Instance into_val_Box : IntoVal (Box.t T') :=
+  {| to_val_def v :=
+    struct.val_aux (Box.ty T) [
+    "Value" ::= #(Box.Value' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Box : IntoValTyped (Box.t T') (Box.ty T) :=
+{|
+  default_val := Box.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Box_Value : IntoValStructField "Value" (Box.ty T) Box.Value'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+
+Global Instance wp_type_Box :
+  PureWp True
+         (generics.Box #T)
+         #(Box.ty T).
+Proof. solve_type_pure_wp. Qed.
+
+Global Instance wp_struct_make_Box Value':
+  PureWp True
+    (struct.make #(Box.ty T) (alist_val [
+      "Value" ::= #Value'
+    ]))%struct
+    #(Box.mk Value').
+Proof. solve_struct_make_pure_wp. Qed.
+
+Global Instance Box_struct_fields_split dq l (v : Box.t T') :
+  StructFieldsSplit dq l v (
+    "HValue" ∷ l ↦s[Box.ty T :: "Value"]{dq} v.(Box.Value')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+End generic_struct.
+
+End __struct_automation_test.

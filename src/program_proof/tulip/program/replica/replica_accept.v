@@ -36,6 +36,8 @@ Section program.
     iFrame.
     iPureIntro.
     split.
+    { apply map_Forall_insert_2; [word | done]. }
+    split.
     { rewrite fmap_insert 2!kmap_insert. f_equal; [word | done]. }
     { rewrite fmap_insert 2!kmap_insert. f_equal; [word | word | done]. }
   Qed.

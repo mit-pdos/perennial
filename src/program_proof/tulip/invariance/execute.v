@@ -21,17 +21,17 @@ Section execute.
   latter". Then we apply [replica_inv_local_read] or [replica_inv_validate] and
   re-establish the invariant. *)
 
-  Lemma replica_inv_execute γ gid rid ilog ccmds :
+  Lemma replica_inv_execute_strong γ gid rid ilog ccmds :
     ∀ clog,
     is_txn_log_lb γ gid (clog ++ ccmds) -∗
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
     group_inv γ gid -∗
-    replica_inv γ gid rid ==∗
+    replica_inv_weak γ gid rid ==∗
     own_replica_clog_half γ gid rid (clog ++ ccmds) ∗
     own_replica_ilog_half γ gid rid ilog ∗
     group_inv γ gid ∗
-    replica_inv γ gid rid.
+    replica_inv_weak γ gid rid.
   Proof.
     iInduction ccmds as [| c l] "IH"; iIntros (clog) "#Hloglb Hclog Hilog Hgroup Hrp".
     { rewrite app_nil_r. by iFrame. }
@@ -53,6 +53,27 @@ Section execute.
       }
       iApply ("IH" with "Hloglb Hclog Hilog Hgroup Hrp").
     }
+  Qed.
+
+  Lemma replica_inv_execute γ gid rid ilog ccmds :
+    ∀ clog,
+    is_txn_log_lb γ gid (clog ++ ccmds) -∗
+    own_replica_clog_half γ gid rid clog -∗
+    own_replica_ilog_half γ gid rid ilog -∗
+    group_inv γ gid -∗
+    replica_inv γ gid rid ==∗
+    own_replica_clog_half γ gid rid (clog ++ ccmds) ∗
+    own_replica_ilog_half γ gid rid ilog ∗
+    group_inv γ gid ∗
+    replica_inv_weak γ gid rid.
+  Proof.
+    iIntros (clog) "#Hlb Hclog Hilog Hgroup Hrp".
+    iAssert (replica_inv_weak γ gid rid)%I with "[Hrp]" as "Hrp".
+    { do 2 iNamed "Hrp".
+      apply eq_lsn_last_ilog_weaken in Heqlast.
+      by iFrame "∗ # %".
+    }
+    iApply (replica_inv_execute_strong with "Hlb Hclog Hilog Hgroup Hrp").
   Qed.
 
 End execute.

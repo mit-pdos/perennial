@@ -2,6 +2,7 @@ From stdpp Require Import fin_maps.
 From iris.proofmode Require Import tactics.
 From iris.algebra Require Import lib.frac_auth auth numbers gmap excl dfrac_agree.
 From iris.bi Require Import fractional.
+From Perennial.iris_lib Require Import dfractional.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.program_logic Require Import ectx_lifting.
 From Perennial.Helpers Require Import Transitions.
@@ -10,6 +11,7 @@ From Perennial.base_logic Require Export proph_map frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
 From Perennial.goose_lang Require Export notation.
+From Perennial Require Import base.
 Set Default Proof Using "Type".
 
 Notation nonAtomic T := (naMode * T)%type.
@@ -31,29 +33,6 @@ Section definitions.
   Definition heap_pointsto_eq : @heap_pointsto = @heap_pointsto_def :=
     seal_eq heap_pointsto_aux.
 
-  Global Instance heap_pointsto_fractional l v: Fractional (λ q, heap_pointsto l (DfracOwn q) v)%I.
-  Proof.
-    intros p q.
-    rewrite heap_pointsto_eq /heap_pointsto_def.
-    rewrite na_heap_pointsto_fractional.
-    iSplit.
-    - by iIntros "(%&$&$)".
-    - by iIntros "[[% $] [% $]]".
-  Qed.
-  Global Instance heap_pointsto_as_fractional l q v:
-    AsFractional (heap_pointsto l (DfracOwn q) v) (λ q, heap_pointsto l (DfracOwn q) v)%I q.
-  Proof. rewrite heap_pointsto_eq /heap_pointsto_def.
-         econstructor; eauto.
-         apply _.
-  Qed.
-  Global Instance heap_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
-    CombineSepGives (heap_pointsto l dq1 v1)%I (heap_pointsto l dq2 v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
-  Proof. rewrite heap_pointsto_eq /CombineSepGives. iIntros "[[?H1] [?H2]]".
-         iCombine "H1 H2" gives %?. iModIntro. iPureIntro. done. Qed.
-
-  Lemma heap_pointsto_agree l q1 q2 v1 v2 : heap_pointsto l q1 v1 ∗ heap_pointsto l q2 v2 -∗ ⌜v1 = v2⌝.
-  Proof. iIntros "[H1 H2]". iCombine "H1 H2" gives %[? ?]. done. Qed.
-
   Global Instance heap_pointsto_persistent l v : Persistent (heap_pointsto l DfracDiscarded v).
   Proof. rewrite heap_pointsto_eq. apply _. Qed.
 
@@ -66,6 +45,35 @@ Section definitions.
     iModIntro.
     iFrame. done.
   Qed.
+
+  Global Instance heap_pointsto_dfractional l v: DFractional (λ dq, heap_pointsto l dq v).
+  Proof.
+    split; intros.
+    - rewrite heap_pointsto_eq /heap_pointsto_def.
+      rewrite (dfractional (DFractional:=na_heap_pointsto_dfractional _ _)).
+      iSplit.
+      + by iIntros "(%&$&$)".
+      + by iIntros "[[% $] [% $]]".
+    - apply _.
+    - iIntros "H". iMod (heap_pointsto_persist with "H") as "$". done.
+  Qed.
+  Global Instance heap_pointsto_as_dfractional l dq v: AsDFractional (heap_pointsto l dq v) (λ dq, heap_pointsto l dq v) dq.
+  Proof. auto. Qed.
+
+  Global Instance heap_pointsto_fractional l v: Fractional (λ q, heap_pointsto l (DfracOwn q) v)%I.
+  Proof.
+    apply (fractional_of_dfractional (λ dq, heap_pointsto l dq v)).
+  Qed.
+  Global Instance heap_pointsto_as_fractional l q v:
+    AsFractional (heap_pointsto l (DfracOwn q) v) (λ q, heap_pointsto l (DfracOwn q) v)%I q.
+  Proof. constructor; [ done | apply _ ]. Qed.
+  Global Instance heap_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
+    CombineSepGives (heap_pointsto l dq1 v1)%I (heap_pointsto l dq2 v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
+  Proof. rewrite heap_pointsto_eq /CombineSepGives. iIntros "[[?H1] [?H2]]".
+         iCombine "H1 H2" gives %?. iModIntro. iPureIntro. done. Qed.
+
+  Lemma heap_pointsto_agree l q1 q2 v1 v2 : heap_pointsto l q1 v1 ∗ heap_pointsto l q2 v2 -∗ ⌜v1 = v2⌝.
+  Proof. iIntros "[H1 H2]". iCombine "H1 H2" gives %[? ?]. done. Qed.
 
   Theorem na_pointsto_to_heap l q v :
     l ≠ null ->
@@ -83,6 +91,15 @@ Section definitions.
     iIntros "[% $]".
     iIntros (v') "Hl".
     by iFrame.
+  Qed.
+
+  Theorem heap_pointsto_valid l dq v:
+     heap_pointsto l dq v -∗ ⌜✓dq⌝.
+  Proof.
+    iIntros "H".
+    iDestruct (heap_pointsto_na_acc with "H") as "(Hna&_)".
+    iDestruct (na_heap_pointsto_valid with "Hna") as %Hvalid.
+    done.
   Qed.
 
   Theorem heap_pointsto_frac_valid l q v:
@@ -142,7 +159,7 @@ Definition own_globals_ctx `{hG : globalsGS Σ} (g : gmap byte_string val) :=
 
 Definition own_globals_def `{hG : globalsGS Σ} (dq : dfrac) (g : gmap byte_string val) :=
   own globals_name (●{dq}Some (Excl (g : leibnizO _))).
-Program Definition own_globals := unseal (_:seal (@own_globals_def)). Obligation 1. by eexists. Qed.
+Program Definition own_globals := sealed @own_globals_def.
 Definition own_globals_unseal : own_globals = _ := seal_eq _.
 Global Arguments own_globals {Σ hG}.
 
@@ -178,6 +195,9 @@ Proof.
 Qed.
 
 Global Instance own_globals_persistent v `{hG : globalsGS Σ} : Persistent (own_globals DfracDiscarded v).
+Proof. rewrite own_globals_unseal. apply _. Qed.
+
+Global Instance own_globals_timeless v dq `{hG : globalsGS Σ} : Timeless (own_globals dq v).
 Proof. rewrite own_globals_unseal. apply _. Qed.
 
 Lemma own_globals_persist `{hG : globalsGS Σ} dq v :
@@ -673,6 +693,8 @@ Global Instance finish_read_atomic s v1 : Atomic s (FinishRead (Val v1)).
 Proof. solve_atomic. Qed.
 Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
+Global Instance atomic_op_atomic s op v0 v1 : Atomic s (AtomicOp op (Val v0) (Val v1)).
+Proof. solve_atomic. Qed.
 Global Instance fork_atomic s e : Atomic s (Fork e).
 Proof. solve_atomic. monad_inv. eauto. Qed.
 Global Instance skip_atomic s  : Atomic s Skip.
@@ -783,10 +805,6 @@ Proof. solve_pure_exec. Qed.
 
 Global Instance pure_case_inr v e1 e2 :
   PureExec True 1 (Case (Val $ InjRV v) e1 e2) (App e2 (Val v)).
-Proof. solve_pure_exec. Qed.
-
-Global Instance pure_total_le v1 v2 :
-  PureExec True 1 (TotalLe (Val v1) (Val v2)) (Val $ LitV $ LitBool $ val_le v1 v2).
 Proof. solve_pure_exec. Qed.
 
 Section lifting.
@@ -1190,6 +1208,22 @@ Proof.
     iApply (big_sepL_mono); intros. iIntros "(?&?)". rewrite -Hlen. iFrame.
 Qed.
 
+Lemma wp_alloc1_seq s E v :
+  {{{ True }}} AllocN (Val $ LitV $ LitInt $ W64 1) (Val v) @ s; E
+  {{{ l, RET LitV (LitLoc l);
+      (pointsto_vals l (DfracOwn 1) (flatten_struct v)) }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  iApply wp_allocN_seq.
+  { word. }
+  { auto. }
+  iModIntro.
+  iIntros (l) "H".
+  change (uint.nat (W64 1)) with 1%nat. simpl.
+  rewrite Z.mul_0_r loc_add_0 right_id.
+  iApply "HΦ". done.
+Qed.
+
 Lemma wp_alloc_untyped stk E v v0 :
   flatten_struct v = [v0] ->
   {{{ True }}} ref (Val v) @ stk; E
@@ -1266,6 +1300,32 @@ Lemma wp_atomic_store s E l v0 v :
   {{{ RET #(); l ↦ v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
+  iApply wp_lift_atomic_base_step_no_fork; auto.
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg".
+  iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iMod (na_heap_write _ _ _ _ _ v with "Hσ Hl") as "(Hσ&Hl)"; first done.
+  iModIntro.
+  iSplit.
+  { iPureIntro.
+    eexists _, _, _, _, _.
+    constructor.
+    eauto. }
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iSplit=>//.
+  iFrame "Hσ ∗". iApply "HΦ".
+  iApply "Hl_rest". iFrame.
+Qed.
+
+Lemma wp_atomic_op s E l v0 v1 v op :
+  bin_op_eval op v0 v1 = Some v →
+  {{{ ▷ l ↦ v0 }}} AtomicOp op (Val $ LitV (LitLoc l)) v1 @ s; E
+  {{{ RET v; l ↦ v }}}.
+Proof.
+  iIntros (? Φ) ">Hl HΦ".
   iApply wp_lift_atomic_base_step_no_fork; auto.
   iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg".
   iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".

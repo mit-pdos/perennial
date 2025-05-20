@@ -1,0 +1,7 @@
+translate = [
+  "Tup",
+]
+
+imports = [
+  "!*",
+]

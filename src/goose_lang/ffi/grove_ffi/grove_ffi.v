@@ -595,9 +595,12 @@ lemmas. *)
     assert (uint.nat old <= uint.nat new) as Hupd.
     2: iMod (mono_nat_own_update (uint.nat new) with "Htsc") as "[Htsc Hnew]"; first lia.
     2: subst new; iFrame "Htsc Hfiles".
-    { subst new. word_cleanup.
-      case_bool_decide; [ | word ].
-      word. }
+    { subst new.
+      (* NOTE: word does not reason about [unsigned_ltu] since it's not used by
+         Goose. *)
+      rewrite word.unsigned_ltu.
+      edestruct (Z.ltb_spec (uint.Z old) (uint.Z (word.add old x))); word.
+    }
     iApply "HΦ". iFrame. iPureIntro. lia.
   Qed.
 
@@ -654,14 +657,8 @@ lemmas. *)
       { word. }
     }
     iMod ("HΦ" $! low_time high_time _ with "[] [] Ht") as "[Ht HΦ]".
-    { iPureIntro.
-      apply Is_true_true_1 in H1. rewrite Z.leb_le in H1.
-      by do 2 rewrite u64_Z_through_nat.
-    }
-    { iPureIntro.
-      apply Is_true_true_1 in H0. rewrite Z.leb_le in H0.
-      by do 2 rewrite u64_Z_through_nat.
-    }
+    {apply Is_true_true_1 in H1. word. }
+    { apply Is_true_true_1 in H0. word. }
     iModIntro.
     iFrame "HΦ".
     by iFrame.

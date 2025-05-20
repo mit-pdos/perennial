@@ -1,0 +1,16 @@
+translate = [
+  "!*",
+]
+imports = [
+  "!*",
+]
+trusted = [
+  "Disk",
+  "BlockSize",
+  "Get",
+  "Read",
+  "ReadTo",
+  "Write",
+  "Barrier",
+  "Size",
+]

@@ -52,23 +52,29 @@ Section lemmas.
       %(av' & _ & _ & Hav' & _ & Hincl)%gmap_view_both_dfrac_valid_discrete_total.
     iPureIntro.
     apply lookup_fmap_Some in Hav' as [v' [<- Hv']].
-    apply to_agree_included_L in Hincl. by rewrite Hincl.
+    apply (@to_agree_included_L _) in Hincl.
+    { by rewrite Hincl. }
+    apply _.
   Qed.
 
   Lemma ghost_map_auth_pers_agree γ q1 m1 m2 :
     ghost_map_auth_pers γ m1 -∗ ghost_map_auth γ q1 m2 -∗ ⌜m1 = m2⌝.
   Proof.
     unseal. iIntros "H1 H2".
-    iCombine "H1 H2" gives %[? ?%(inj _)]%gmap_view_auth_dfrac_op_valid.
-    iPureIntro. by fold_leibniz.
+    iCombine "H1 H2" gives %[? Heq]%gmap_view_auth_dfrac_op_valid.
+    apply (map_fmap_equiv_inj (A:=leibnizO V)) in Heq.
+    { iPureIntro. by fold_leibniz. }
+    apply (to_agree_inj (A:=leibnizO V)).
   Qed.
 
   Lemma ghost_map_auth_pers_pers_agree γ m1 m2 :
     ghost_map_auth_pers γ m1 -∗ ghost_map_auth_pers γ m2 -∗ ⌜m1 = m2⌝.
   Proof.
     unseal. iIntros "H1 H2".
-    iCombine "H1 H2" gives %[? ?%(inj _)]%gmap_view_auth_dfrac_op_valid.
-    iPureIntro. by fold_leibniz.
+    iCombine "H1 H2" gives %[? Heq]%gmap_view_auth_dfrac_op_valid.
+    apply (map_fmap_equiv_inj (A:=leibnizO V)) in Heq.
+    { iPureIntro. by fold_leibniz. }
+    apply (to_agree_inj (A:=leibnizO V)).
   Qed.
 
   Lemma ghost_map_elem_big_exist γ m :

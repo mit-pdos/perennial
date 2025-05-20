@@ -38,7 +38,7 @@ Section program.
     }
     clear Φ. iIntros "!>" (Φ) "[Hrp Hlocked] HΦ".
     wp_rec.
-    do 2 iNamed "Hrp".
+    do 2 iNamed "Hrp". iNamed "Hlsna".
     wp_loadField.
 
     (*@         cmd, ok := rp.txnlog.Lookup(rp.lsna)                            @*)
@@ -52,6 +52,7 @@ Section program.
     iIntros "Hmask".
     iNamed "HinvO".
     (* Take the required group invariant. *)
+    iNamed "Hgidrid".
     iDestruct (big_sepS_elem_of_acc with "Hgroups") as "[Hgroup HgroupsC]"; first apply Hgid.
     (* Separate out the ownership of the Paxos log from others. *)
     iDestruct (group_inv_extract_log_expose_cpool with "Hgroup") as (paxos cpool) "[Hpaxos Hgroup]".
@@ -118,12 +119,12 @@ Section program.
     iClear "Hlb".
     (* Prove the newly applied log is a prefix of the new log. *)
     assert (Hprefix : prefix (cloga ++ [cmd]) (paxos ++ cmds)).
-    { clear -Hloga Hcmd Hlencloga.
+    { clear -Hloga Hcmd HlsnaW Hlencloga.
       destruct Hloga as [l Hl].
       rewrite Hl.
       apply prefix_app, prefix_singleton.
       rewrite Hl lookup_app_r in Hcmd; last lia.
-      by rewrite Hlencloga /= Nat.sub_diag in Hcmd.
+      by rewrite HlsnaW Hlencloga /= Nat.sub_diag in Hcmd.
     }
     iDestruct (txn_log_lb_weaken (cloga ++ [cmd]) with "Hlbnew") as "#Hlb"; first apply Hprefix.
     (* Obtain lbs of replicated history over the new history map. *)
@@ -140,14 +141,14 @@ Section program.
     (*@         rp.apply(cmd)                                                   @*)
     (*@                                                                         @*)
     iAssert (own_replica_with_cloga_no_lsna rp cloga gid rid γ α)%I
-      with "[Hcm Hhistm Hcpm Hptsmsptsm Hpsmrkm Hclog Hilog]" as "Hrp".
+      with "[Hcm Hhistm Hcpm Hpgm Hptsmsptsm Hpsmrkm Hdurable]" as "Hrp".
     { iFrame "∗ # %". }
     wp_apply (wp_Replica__apply with "Hhistmlb Hlb Hidx [$HpwrsS $Hrp]").
     { rewrite Forall_forall in Hvc.
       apply Hvc.
       by apply elem_of_list_lookup_2 in Hcmd.
     }
-    iIntros "[HpwrsS Hrp]".
+    iIntros "Hrp".
 
 
     (*@         rp.lsna = std.SumAssumeNoOverflow(rp.lsna, 1)                   @*)
@@ -161,10 +162,13 @@ Section program.
     (*@ }                                                                       @*)
     iApply "HΦ".
     iFrame.
-    iPureIntro.
-    rewrite uint_nat_word_add_S; last word.
-    rewrite length_app /= Hlencloga.
-    lia.
+    iPureIntro. simpl.
+    exists (S lsna).
+    split.
+    { rewrite uint_nat_word_add_S; last word.
+      by rewrite HlsnaW.
+    }
+    { rewrite length_app /= Hlencloga. lia. }
   Qed.
 
 End program.

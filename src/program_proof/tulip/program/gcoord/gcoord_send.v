@@ -152,24 +152,28 @@ Section program.
   Qed.
 
   Theorem wp_GroupCoordinator__SendFastPrepare
-    (gcoord : loc) (rid : u64) (tsW : u64) (pwrsP : loc) (ptgsP : Slice.t) q (pwrs : dbmap)
+    (gcoord : loc) (rid : u64) (tsW : u64)
+    (pwrsP : loc) (ptgsP : Slice.t) q (pwrs : dbmap) (ptgs : txnptgs)
     addrm gid γ :
     let ts := uint.nat tsW in
     rid ∈ dom addrm ->
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
+    is_txnptgs_in_slice ptgsP ptgs -∗
     is_gcoord_with_addrm gcoord gid addrm γ -∗
     {{{ own_map pwrsP q pwrs }}}
       GroupCoordinator__SendFastPrepare #gcoord #rid #tsW #pwrsP (to_val ptgsP)
     {{{ RET #(); True }}}.
   Proof.
-    iIntros (ts Hrid) "#Hsafepwrs #Hgcoord".
+    iIntros (ts Hrid) "#Hlnrz #Hsafepwrs #Hsafeptgs #Hptgs #Hgcoord".
     iIntros (Φ) "!> Hpwrs HΦ".
     wp_rec.
 
     (*@ func (gcoord *GroupCoordinator) SendFastPrepare(rid, ts uint64, pwrs tulip.KVMap, ptgs []uint64) { @*)
     (*@     gcoord.Send(rid, message.EncodeTxnFastPrepare(ts, pwrs, ptgs))      @*)
     (*@ }                                                                       @*)
-    wp_apply (wp_EncodeTxnFastPrepareRequest with "Hpwrs").
+    wp_apply (wp_EncodeTxnFastPrepareRequest with "Hptgs Hpwrs").
     iIntros (dataP data) "(Hdata & Hpwrs & %Hdataenc)".
     iNamed "Hgcoord".
     iNamed "Haddrm".
@@ -202,14 +206,14 @@ Section program.
     set ms' := _ ∪ ms.
     iDestruct (big_sepM_insert_2 _ _ addrpeer ms' with "[Hms] Hlistens") as "Hlistens".
     { iFrame "Hms".
-      set req := FastPrepareReq _ _ in Hdataenc.
+      set req := FastPrepareReq _ _ _ in Hdataenc.
       iExists ({[req]} ∪ reqs).
       iSplit.
       { rewrite set_map_union_L set_map_singleton_L.
         by iApply big_sepS_insert_2.
       }
       iSplit.
-      { iApply big_sepS_insert_2; [done | done]. }
+      { by iApply big_sepS_insert_2; first iFrame "#". }
       iPureIntro.
       apply set_Forall_union; last first.
       { apply (set_Forall_impl _ _ _ Henc). intros m Hm. clear -Hm. set_solver. }
@@ -233,16 +237,19 @@ Section program.
 
   Theorem wp_GroupCoordinator__SendValidate
     (gcoord : loc) (rid : u64) (tsW : u64) (pwrsP : loc) (ptgsP : Slice.t)
-    q (pwrs : dbmap) addrm gid γ :
+    q (pwrs : dbmap) (ptgs : txnptgs) addrm gid γ :
     let ts := uint.nat tsW in
     rid ∈ dom addrm ->
+    is_lnrz_tid γ ts -∗
     safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
+    is_txnptgs_in_slice ptgsP ptgs -∗
     is_gcoord_with_addrm gcoord gid addrm γ -∗
     {{{ own_map pwrsP q pwrs }}}
       GroupCoordinator__SendValidate #gcoord #rid #tsW #pwrsP (to_val ptgsP)
     {{{ RET #(); True }}}.
   Proof.
-    iIntros (ts Hrid) "#Hsafepwrs #Hgcoord".
+    iIntros (ts Hrid) "#Hlnrz #Hsafepwrs #Hsafeptgs #Hptgs #Hgcoord".
     iIntros (Φ) "!> Hpwrs HΦ".
     wp_rec.
 
@@ -250,7 +257,7 @@ Section program.
     (*@     data := message.EncodeTxnValidateRequest(ts, 1, pwrs, ptgs)         @*)
     (*@     gcoord.Send(rid, data)                                              @*)
     (*@ }                                                                       @*)
-    wp_apply (wp_EncodeTxnValidateRequest with "Hpwrs").
+    wp_apply (wp_EncodeTxnValidateRequest with "Hptgs Hpwrs").
     iIntros (dataP data) "(Hdata & Hpwrs & %Hdataenc)".
     iNamed "Hgcoord".
     iNamed "Haddrm".
@@ -283,14 +290,14 @@ Section program.
     set ms' := _ ∪ ms.
     iDestruct (big_sepM_insert_2 _ _ addrpeer ms' with "[Hms] Hlistens") as "Hlistens".
     { iFrame "Hms".
-      set req := ValidateReq _ _ _ in Hdataenc.
+      set req := ValidateReq _ _ _ _ in Hdataenc.
       iExists ({[req]} ∪ reqs).
       iSplit.
       { rewrite set_map_union_L set_map_singleton_L.
         by iApply big_sepS_insert_2.
       }
       iSplit.
-      { iApply big_sepS_insert_2; [done | done]. }
+      { by iApply big_sepS_insert_2; first iFrame "#". }
       iPureIntro.
       apply set_Forall_union; last first.
       { apply (set_Forall_impl _ _ _ Henc). intros m Hm. clear -Hm. set_solver. }

@@ -16,7 +16,7 @@ Section program.
         then ∃ (data : list u8) (resp : txnresp),
             own_slice dataP byteT (DfracOwn 1) data ∗
             safe_txnresp γ gid resp ∗
-            ⌜data = encode_txnresp resp⌝
+            ⌜encode_txnresp resp data⌝
         else True
     }}}.
   Proof.
@@ -81,12 +81,8 @@ Section program.
     (*@     return ret.Data, true                                               @*)
     (*@ }                                                                       @*)
     iDestruct "Hmsg" as %Hmsg.
-    assert (∃ resp, data = encode_txnresp resp ∧ resp ∈ resps) as (resp & Hresp & Hinresps).
-    { specialize (Henc data).
-      apply (elem_of_map_2 msg_data (D := gset (list u8))) in Hmsg.
-      specialize (Henc Hmsg).
-      by rewrite elem_of_map in Henc.
-    }
+    specialize (Henc _ Hmsg). simpl in Henc.
+    destruct Henc as (resp & Hinresps & Hresp).
     iDestruct (big_sepS_elem_of with "Hresps") as "Hresp"; first apply Hinresps.
     iApply "HΦ".
     by iFrame "∗ # %".

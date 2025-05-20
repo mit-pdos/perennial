@@ -66,7 +66,7 @@ Proof.
     split; first by apply NoDup_nil_2.
     rewrite map_zip_with_empty_r.
     split; first by apply list_to_map_nil.
-    rewrite Hmsize. done. }
+    rewrite Hmsize. by list_simplifier. }
   { (* core loop *)
      clear Φ s' mptr. iIntros (k v m_todo m_done Φ) "!# [HI %Hk] HΦ". iNamed "HI". wp_pures.
      wp_load. wp_apply (wp_WriteInt with "Hs"). iIntros (?) "Hs". wp_store. clear s.

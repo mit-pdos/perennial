@@ -7,7 +7,8 @@ Section mk_paxos.
 
   Theorem wp_mkPaxos
     (nidme : u64) (termc : u64) (terml : u64) (lsnc : u64)
-    (logP : Slice.t) (log : list byte_string) (addrmP : loc) (addrm : gmap u64 chan) (fname : byte_string) γ :
+    (logP : Slice.t) (log : list byte_string) (addrmP : loc) (addrm : gmap u64 chan)
+    (fname : byte_string) γ :
     (1 < size addrm)%nat ->
     nidme ∈ dom addrm ->
     0 ≤ uint.Z nidme < max_nodes ->
@@ -17,18 +18,14 @@ Section mk_paxos.
     know_paxos_network_inv γ addrm -∗
     {{{ own_slice logP stringT (DfracOwn 1) log ∗
         own_map addrmP (DfracOwn 1) addrm ∗
-        (* own_crash_ex paxoscrashNS (own_current_term_half γ nidme) (uint.nat termc) ∗ *)
-        own_current_term_half γ nidme (uint.nat termc) ∗
-        own_ledger_term_half γ nidme (uint.nat terml) ∗
-        own_committed_lsn_half γ nidme (uint.nat lsnc) ∗
-        own_node_ledger_half γ nidme log
+        own_crash_ex pxcrashNS (own_paxos_durable γ nidme) (PaxosDurable termc terml log lsnc)
     }}}
       mkPaxos #nidme #termc #terml #lsnc (to_val logP) #addrmP #(LitString fname)
     {{{ (px : loc), RET #px; is_paxos_with_addrm px nidme addrm γ }}}.
   Proof.
     iIntros (Hmulti Hnidme Hltmax) "#Hfname #Hinv #Hinvfile #Hinvnet".
     (* avoid naming collision when opening invariant. *)
-    iIntros (Φ) "!> (Hlog & Haddrm & HtermcX & HtermlX & HlsncX & HlognX) HΦ".
+    iIntros (Φ) "!> (Hlog & Haddrm & Hdurable) HΦ".
     wp_rec.
 
     (*@ func mkPaxos(nidme, termc, terml, lsnc uint64, log []string, addrm map[uint64]grove_ffi.Address) *Paxos { @*)
@@ -140,6 +137,9 @@ Section mk_paxos.
       { clear -Hmulti Hszaddrm. word. }
       { rewrite size_dom. clear -Hmulti Hszaddrm. word. }
     }
+    iMod (own_crash_ex_open with "Hdurable") as "[> Hdurable HdurableC]".
+    { solve_ndisj. }
+    iNamedSuffix "Hdurable" "X".
     (* Obtain persistent/pure resources that for convenience are also kept in lock inv. *)
     iInv "Hinv" as "> HinvO" "HinvC".
     iAssert (prefix_base_ledger γ (uint.nat terml) log)%I as "#Hgebase".
@@ -150,8 +150,6 @@ Section mk_paxos.
       iDestruct (accepted_proposal_lookup with "Hacpt Hpsa") as %Hlogn.
       by iApply (big_sepM_lookup with "Hpsalbs").
     }
-    (* iMod (own_crash_ex_open with "HtermcX") as "(>HtermcX&Hclose_termcX)". *)
-    (* { solve_ndisj. } *)
     iAssert (if decide (termc = terml)
              then True
              else past_nodedecs_latest_before γ nidme (uint.nat termc) (uint.nat terml) log)%I
@@ -217,8 +215,9 @@ Section mk_paxos.
       iPureIntro.
       clear -Hltlog. word.
     }
-    (* iMod ("Hclose_termcX" with "HtermcX"). *)
     iMod ("HinvC" with "HinvO") as "_".
+    set dst := PaxosDurable termc terml log lsnc.
+    iMod ("HdurableC" $! dst with "[$HtermcX $HtermlX $HlognX $HlsncX]") as "Hdurable".
     iAssert (own_paxos px nidme nids γ ∗ own_paxos_comm px addrm γ)%I
       with "[-HΦ Hfree]" as "(Hpx & Hcomm)".
     { iFrame "Hcand Hleader Hsc ∗ # %". }

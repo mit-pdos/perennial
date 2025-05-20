@@ -30,7 +30,6 @@ Definition mkTxn: val :=
       MapInsert "wrs" "gid" (NewMap stringT (struct.t tulip.Value) #()));;
     struct.storeF Txn "wrs" "txn" "wrs";;
     struct.storeF Txn "wrsp" "txn" (NewMap stringT (struct.t tulip.Value) #());;
-    struct.storeF Txn "ptgs" "txn" (NewSlice uint64T #0);;
     let: "gcoords" := NewMap uint64T ptrT #() in
     MapIter "gaddrm" (λ: "gid" "addrm",
       MapInsert "gcoords" "gid" (gcoord.Start "addrm"));;
@@ -90,14 +89,9 @@ Definition Txn__getwrs: val :=
     let: ("v", "ok") := MapGet "pwrs" "key" in
     ("v", "ok").
 
-Definition Txn__resetptgs: val :=
-  rec: "Txn__resetptgs" "txn" :=
-    struct.storeF Txn "ptgs" "txn" (SliceTake (struct.loadF Txn "ptgs" "txn") #0);;
-    #().
-
 Definition Txn__setptgs: val :=
   rec: "Txn__setptgs" "txn" :=
-    let: "ptgs" := ref_to (slice.T uint64T) (struct.loadF Txn "ptgs" "txn") in
+    let: "ptgs" := ref_to (slice.T uint64T) (NewSliceWithCap uint64T #0 #1) in
     MapIter (struct.loadF Txn "wrs" "txn") (λ: "gid" "pwrs",
       (if: (MapLen "pwrs") ≠ #0
       then "ptgs" <-[slice.T uint64T] (SliceAppend uint64T (![slice.T uint64T] "ptgs") "gid")
@@ -108,7 +102,6 @@ Definition Txn__setptgs: val :=
 Definition Txn__reset: val :=
   rec: "Txn__reset" "txn" :=
     Txn__resetwrs "txn";;
-    Txn__resetptgs "txn";;
     #().
 
 Definition Txn__prepare: val :=

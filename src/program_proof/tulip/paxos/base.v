@@ -375,6 +375,7 @@ Inductive pxst :=
 
 Inductive pxcmd :=
 | CmdPaxosExtend (ents : ledger)
+| CmdPaxosAppend (ent : byte_string)
 | CmdPaxosPrepare (term : nat)
 | CmdPaxosAdvance (term lsn : nat) (ents : ledger)
 | CmdPaxosAccept (lsn : nat) (ents : ledger)
@@ -410,6 +411,7 @@ Class paxos_ghostG (Σ : gFunctors) :=
     #[global] node_walG :: inG Σ node_pxcmdlR;
     #[global] node_wal_fnameG :: inG Σ node_stringR;
     #[global] trmlmG :: ghost_mapG Σ chan unit;
+    #[global] paxos_stagedG :: stagedG Σ;
   }.
 
 Definition paxos_ghostΣ :=
@@ -426,15 +428,14 @@ Definition paxos_ghostΣ :=
      GFunctor node_ledgerR;
      GFunctor node_pxcmdlR;
      GFunctor node_stringR;
-     ghost_mapΣ chan unit
+     ghost_mapΣ chan unit;
+     stagedΣ
     ].
 
 #[global]
 Instance subG_paxos_ghostG {Σ} :
   subG paxos_ghostΣ Σ → paxos_ghostG Σ.
 Proof. solve_inG. Qed.
-
-(* Instance stagedG_paxos_ghostG Σ : paxos_ghostG Σ → stagedG Σ. *)
 
 Record paxos_names := {
     consensus_log : gname;

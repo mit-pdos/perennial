@@ -1,5 +1,5 @@
 From Perennial.program_proof Require Import grove_prelude.
-From iris.bi.lib Require Import fixpoint.
+From iris.bi.lib Require Import fixpoint_mono.
 From Perennial.goose_lang Require Import adequacy.
 From Perennial.goose_lang Require Import dist_lifting.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.

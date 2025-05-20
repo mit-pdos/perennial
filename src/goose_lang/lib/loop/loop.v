@@ -179,6 +179,43 @@ Proof.
     iApply ("IH" with "[$Hpre] [$HΦ]").
 Qed.
 
+Lemma wp_forDec (I: u64 -> iProp Σ) stk E (start:u64) (l:loc) (body: val) :
+  (∀ (i:u64),
+      {{{ I i ∗ l ↦[uint64T] #i ∗ ⌜uint.Z 0 < uint.Z i <= uint.Z start⌝ }}}
+        body #() @ stk; E
+      {{{ RET #true; I (word.sub i (W64 1)) ∗ l ↦[uint64T] #i }}}) -∗
+  {{{ I start ∗ l ↦[uint64T] #start }}}
+    (for: (λ:<>, ![uint64T] #l > #0)%V ; (λ:<>, #l <-[uint64T] ![uint64T] #l - #1)%V :=
+       body) @ stk; E
+  {{{ RET #(); I (W64 0) ∗ l ↦[uint64T] #0 }}}.
+Proof.
+  iIntros "#Hbody".
+  iIntros (Φ) "!> (HI & Hl) HΦ".
+  rewrite /For /Continue.
+  wp_rec.
+  wp_pures.
+  match goal with
+  | |- context[RecV (BNamed "loop") _ ?body] => set (loop:=body)
+  end.
+  assert (∃ x, start = x) as [? Heqx] by naive_solver.
+  iEval (rewrite Heqx) in "HI Hl".
+  assert (uint.Z 0 <= uint.Z x <= uint.Z start) as Hbounds by (subst; word).
+  clear Heqx.
+  iLöb as "IH" forall (x Hbounds).
+  wp_load.
+  wp_bind (If _ _ _).
+  wp_if_destruct.
+  - wp_apply ("Hbody" with "[$HI $Hl]").
+    { iPureIntro; lia. }
+    iIntros "[HI Hl]".
+    wp_load. wp_store.
+    wp_pures. iApply ("IH" with "[] HI Hl"); [word|].
+    iFrame.
+  - assert (uint.Z x = uint.Z 0) by word.
+    apply word.unsigned_inj in H; subst.
+    wp_pures. iApply ("HΦ" with "[$]").
+Qed.
+
 Local Hint Extern 2 (envs_entails _ (∃ i, ?I i ∗ ⌜_⌝)%I) =>
 iExists _; iFrame; word : core.
 

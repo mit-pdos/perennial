@@ -1,6 +1,12 @@
 From Perennial.goose_lang Require Export lang notation.
+From Perennial Require Import base.
 
 Definition go_string := byte_string.
+Delimit Scope byte_string_scope with go.
+Bind Scope byte_string_scope with go_string.
+Delimit Scope byte_char_scope with go_byte.
+
+Set Default Proof Using "Type".
 
 Inductive go_type :=
 (* Boolean *)
@@ -18,11 +24,11 @@ Inductive go_type :=
 | int64T *)
 
 | stringT
-| arrayT (n : nat) (elem : go_type)
+| arrayT (n: w64) (elem : go_type)
 | sliceT
 | interfaceT
 | structT (decls : list (go_string * go_type)) (* What if this were a gmap? *)
-| ptrT (* Untyped pointer; convenient to support recursion in structs *)
+| ptrT (* Untyped pointer *)
 | funcT
 .
 
@@ -43,16 +49,14 @@ Class IntoVal `{ffi_syntax} (V : Type) :=
     to_val_def : V → val;
   }.
 
-Program Definition to_val := unseal (_:seal (@to_val_def)). Obligation 1. by eexists. Qed.
+Program Definition to_val := sealed @to_val_def.
 Definition to_val_unseal : to_val = _ := seal_eq _.
 Arguments to_val {_ _ _} v.
 (* Disable Notation "# l". *)
-Delimit Scope byte_string_scope with go.
-Bind Scope byte_string_scope with go_string.
 Global Notation "# x" := (to_val x%go).
 Global Notation "#" := to_val.
 
-(* One of [V] or [ty] should not be an evar before doing typeclass search *)
+(* [V] is an input to this TC search *)
 Global Hint Mode IntoVal - ! : typeclass_instances.
 
 Module func.
@@ -100,36 +104,24 @@ Record t := mk { ptr_f: loc; len_f: u64; cap_f: u64; }.
 Definition nil : slice.t := mk null 0 0.
 End slice.
 
+Module chan.
+  Definition t := loc.
+  Definition nil : chan.t := null.
+End chan.
+
 Module interface.
 Section goose_lang.
   Context `{ffi_syntax}.
-  Record t := mk { v: val; mset: list (go_string * val) }.
 
-  (* FIXME: use the typeid to distinguish nil interface value from nil pointer
-     used as a non-nil interface value. *)
-  Definition nil := mk #null [].
+  Inductive t :=
+  | mk (pkg_name type_name : go_string) (v : val) : t
+  | nil : t.
+
 End goose_lang.
 End interface.
 
-Fixpoint assocl_lookup {A} (f : go_string) (field_vals: list (go_string * A)) : option A :=
-  match field_vals with
-  | [] => None
-  | (f', v)::fs => if ByteString.eqb f' f then Some v else assocl_lookup f fs
-  end.
-
 Module struct.
 Definition descriptor := list (go_string * go_type).
-Section goose_lang.
-  Context `{ffi_syntax}.
-
-  Fixpoint fields_val_def (m : list (go_string * val)) : val :=
-    match m with
-    | [] => InjLV #()
-    | (f, v) :: tl => InjRV ((#f, v), fields_val_def tl)
-    end.
-  Program Definition fields_val := unseal (_:seal (@fields_val_def)). Obligation 1. by eexists. Qed.
-  Definition fields_val_unseal : fields_val = _ := seal_eq _.
-End goose_lang.
 End struct.
 
 Section instances.
@@ -150,7 +142,10 @@ Proof. solve_decision. Qed.
 Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
   {|
     to_val_def (i: interface.t) :=
-      InjLV (#"NO TYPE IDS YET", i.(interface.v), (struct.fields_val i.(interface.mset)))%V
+      match i with
+      | interface.nil => NONEV
+      | interface.mk pkg_name type_name v => SOMEV (#pkg_name, #type_name, v)%V
+      end
   |}.
 
 End instances.
@@ -164,11 +159,12 @@ Section val_types.
      to deal with it in a proof, then something in Goose must have gone
      wrong. *)
   Definition badT_def := ptrT.
-  Program Definition badT := unseal (_:seal (@badT_def)). Obligation 1. by eexists. Qed.
+  Program Definition badT := sealed @badT_def.
   Definition badT_unseal : badT = _ := seal_eq _.
 
   Definition byteT := uint8T.
   Definition intT := int64T.
+  Definition uintT := uint64T.
 
   Context `{ffi_syntax}.
   Fixpoint zero_val_def (t : go_type) : val :=
@@ -182,16 +178,17 @@ Section val_types.
     | uint64T => #(W64 0)
 
     | stringT => #""%V
-    | arrayT n elem => Vector.fold_right PairV (vreplicate n (zero_val_def elem)) #()
+    | arrayT n elem => fold_right PairV #() (replicate (uint.nat n) (zero_val_def elem))
     | sliceT => #slice.nil
     | structT decls => fold_right PairV #() (fmap (zero_val_def ∘ snd) decls)
     | ptrT => #null
     | funcT => #func.nil
     | interfaceT => #interface.nil
     end.
-  Program Definition zero_val := unseal (_:seal (@zero_val_def)). Obligation 1. by eexists. Qed.
+  Program Definition zero_val := sealed @zero_val_def.
   Definition zero_val_unseal : zero_val = _ := seal_eq _.
 
+  (* TODO: could this be a Z instead of nat? *)
   Fixpoint go_type_size_def (t : go_type) : nat :=
     match t with
     | structT d =>
@@ -201,10 +198,10 @@ Section val_types.
            | (_,t) :: d => (go_type_size_def t + go_type_size_struct d)%nat
            end
         ) d
-    | arrayT n e => n * (go_type_size_def e)
+    | arrayT n e => uint.nat n * (go_type_size_def e)
     | _ => 1
     end.
-  Program Definition go_type_size := unseal (_:seal (@go_type_size_def)). Obligation 1. by eexists. Qed.
+  Program Definition go_type_size := sealed @go_type_size_def.
   Definition go_type_size_unseal : go_type_size = _ := seal_eq _.
 End val_types.
 

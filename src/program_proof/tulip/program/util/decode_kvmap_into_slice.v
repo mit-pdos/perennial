@@ -10,7 +10,7 @@ Section program.
     encode_dbmap m mdata ->
     {{{ own_slice_small bsP byteT (DfracOwn 1) (mdata ++ bstail) }}}
       DecodeKVMapIntoSlice (to_val bsP)
-    {{{ (entsP : Slice.t) (dataP : Slice.t), RET (to_val entsP, to_val dataP); 
+    {{{ (entsP : Slice.t) (dataP : Slice.t), RET (to_val entsP, to_val dataP);
         own_dbmap_in_slice entsP m ∗
         own_slice_small dataP byteT (DfracOwn 1) bstail
     }}}.
@@ -70,8 +70,6 @@ Section program.
       iNamed "HP".
       wp_load.
       wp_pures.
-      rewrite Z_u64; last first.
-      { clear -Hlenxs. lia. }
       set b := bool_decide _.
       destruct b eqn:Hb; wp_pures; last first.
       { iApply "HΦ".
@@ -80,7 +78,7 @@ Section program.
         subst b.
         case_bool_decide as Hi; first done.
         apply bool_decide_pack.
-        lia.
+        word.
       }
       wp_load.
       subst b. apply bool_decide_eq_true_1 in Hb.

@@ -106,12 +106,10 @@ From Perennial.program_proof.tutorial Require
      kvservice.proof
      kvservice.full_proof.
 
+(* Verus-related proofs *)
+From Perennial.program_proof.verus Require
+    wrs.
+
 From Perennial.program_proof.cachekv Require proof.
 
-From New.code.go_etcd_io.raft Require v3.
-From New.proof Require asyncfile etcdraft.
-
-From New.code.github_com.goose_lang.goose.testdata.examples Require unittest semantics.
-
-(* FIXME: add back in. *)
-(* From Perennial.program_proof.pav Require should_build. *)
+From New Require should_build.

@@ -1,10 +1,20 @@
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import Coq.Program.Equality.
-From New.golang.defn Require Export typing.
+From Coq Require Import Logic.FunctionalExtensionality.
+From Coq Require Import Program.Equality.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
+From New.golang.defn Require Export typing.
 
 Set Default Proof Using "Type".
+
+Section alist.
+
+Fixpoint alist_lookup_f {A} (f : go_string) (l : list (go_string * A)) : option A :=
+  match l with
+  | [] => None
+  | (f', v)::l => if ByteString.eqb f' f then Some v else alist_lookup_f f l
+  end.
+
+End alist.
 
 (** * Typed data representations for struct and slice *)
 
@@ -17,19 +27,27 @@ Section goose_lang.
     | structT d => (fix val_struct (fs : list (go_string*go_type)) :=
                      match fs with
                      | [] => (#())
-                     | (f,ft)::fs => (default (zero_val ft) (assocl_lookup f field_vals), val_struct fs)%V
+                     | (f,ft)::fs => (default (zero_val ft) (alist_lookup_f f field_vals), val_struct fs)%V
                      end) d
     | _ => LitV LitPoison
     end.
-  Program Definition val_aux := unseal (_:seal (@val_aux_def)). Obligation 1. by eexists. Qed.
+  Program Definition val_aux := unseal (_ : seal (@val_aux_def)). Final Obligation. by eexists. Qed.
   Definition val_aux_unseal : val_aux = _ := seal_eq _.
+
+  Lemma val_aux_nil field_vals : val_aux (structT []) field_vals = #().
+  Proof. rewrite val_aux_unseal //. Qed.
+  Lemma val_aux_cons field_vals f ft fs :
+    val_aux (structT ((f,ft)::fs)) field_vals =
+    (default (zero_val ft) (alist_lookup_f f field_vals), val_aux (structT fs) field_vals)%V
+  .
+  Proof. rewrite val_aux_unseal //. Qed.
+
 End goose_lang.
 End struct.
 
 Declare Scope struct_scope.
 Notation "f :: t" := (@pair go_string go_type f%go t) : struct_scope.
-Notation "f ::= v" := (@pair go_string val f%go v%V) (at level 60) : val_scope.
-Notation "f ::= v" := (@pair go_string expr f%go v%E) (at level 60) : expr_scope.
+Notation "f ::= v" := (@pair go_string val f%go v%V) (at level 60) : struct_scope.
 Delimit Scope struct_scope with struct.
 
 (** * Pure Coq reasoning principles *)
@@ -38,7 +56,7 @@ Section typing.
 
 Program Definition go_type_ind :=
   λ (P : go_type → Prop) (f : P boolT) (f0 : P uint8T) (f1 : P uint16T) (f2 : P uint32T)
-    (f3 : P uint64T) (f4 : P stringT) (f5 : ∀ (n : nat) (elem : go_type), P elem → P (arrayT n elem))
+    (f3 : P uint64T) (f4 : P stringT) (f5 : ∀ (n : w64) (elem : go_type), P elem → P (arrayT n elem))
     (f6 : P sliceT) (f7 : P interfaceT)
     (f8 : ∀ (decls : list (go_string * go_type)) (Hfields : ∀ t, In t decls.*2 → P t), P (structT decls))
     (f9 : P ptrT) (f10 : P funcT),
@@ -84,13 +102,13 @@ destruct a. apply Forall_cons. split.
   | has_go_type_slice (s : slice.t) : has_go_type (#s) sliceT
   | has_go_type_interface (i : interface.t) : has_go_type (#i) interfaceT
 
-  | has_go_type_array n elem (a : vec val n)
+  | has_go_type_array (n: w64) elem (a : list val) (Hlen: length a = uint.nat n)
                       (Helems : ∀ v, In v a → has_go_type v elem)
-    : has_go_type (Vector.fold_right PairV a #()) (arrayT n elem)
+    : has_go_type (fold_right PairV #() a) (arrayT n elem)
 
   | has_go_type_struct
       (d : struct.descriptor) fvs
-      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (assocl_lookup f fvs)) t)
+      (Hfields : ∀ f t, In (f, t) d → has_go_type (default (zero_val t) (alist_lookup_f f fvs)) t)
     : has_go_type (struct.val_aux (structT d) fvs) (structT d)
   | has_go_type_ptr (l : loc) : has_go_type #l ptrT
   | has_go_type_func (f : func.t) : has_go_type #f funcT
@@ -101,11 +119,15 @@ destruct a. apply Forall_cons. split.
     has_go_type (zero_val t) t.
   Proof.
     induction t using go_type_ind; rewrite zero_val_unseal /to_val; try econstructor.
-    { intros. fold zero_val_def in H.
+    {
+      rewrite length_replicate //.
+    }
+    { (* arrayT *)
+      simpl.
+      intros. fold zero_val_def in H.
       rewrite -elem_of_list_In in H.
-      rewrite elem_of_vlookup in H.
-      destruct H as [??].
-      rewrite vlookup_replicate in H. subst.
+      apply elem_of_list_lookup in H as [? Hget%lookup_replicate].
+      intuition subst.
       by rewrite -zero_val_unseal.
     }
     { (* structT *)
@@ -135,11 +157,13 @@ destruct a. apply Forall_cons. split.
   Proof.
     rewrite go_type_size_unseal.
     induction 1; simpl; rewrite ?to_val_unseal /=; auto.
+    - destruct i; done.
     - simpl.
-      dependent induction a.
-      + simpl in *. subst. done.
-      + simpl.
-        unshelve epose proof (IHa _ _) as IHa.
+      generalize dependent (uint.nat n). clear n.
+      intros; subst.
+      dependent induction a; simpl in *.
+      + done.
+      + unshelve epose proof (IHa _ _) as IHa.
         { intros. apply Helems. by right. }
         { intros. apply H. by right. }
         rewrite length_app.
@@ -156,6 +180,45 @@ destruct a. apply Forall_cons. split.
       { intros. apply H. simpl. by right. }
   Qed.
 
+  Lemma has_go_type_struct_pair_inv f ft fvs decls :
+    has_go_type (struct.val_aux (structT ((f :: ft)%struct :: decls)) fvs)
+      (structT ((f :: ft)%struct :: decls)) →
+    has_go_type (default (zero_val ft) (alist_lookup_f f fvs)) ft ∧
+    has_go_type (struct.val_aux (structT decls) fvs)
+      (structT decls).
+  Proof.
+    inv 1.
+    rewrite struct.val_aux_unseal /= in H1.
+    inv H1.
+    split.
+    { naive_solver. }
+    fold (struct.val_aux_def (structT decls) fvs0) in H2.
+    fold (struct.val_aux_def (structT decls) fvs) in H2.
+    rewrite struct.val_aux_unseal.
+    rewrite -H2.
+    rewrite -struct.val_aux_unseal.
+    apply has_go_type_struct.
+    naive_solver.
+  Qed.
+
+  Lemma has_go_type_array_S_inv (v: val) (n: nat) et :
+    (Z.of_nat (S n) < 2^64)%Z →
+    has_go_type v (arrayT (W64 (S n)) et) →
+    ∃ v0 v', v = (v0, v')%V ∧
+              has_go_type v0 et ∧
+              has_go_type v' (arrayT (W64 n) et).
+  Proof.
+    intros Hbound Hty.
+    inv Hty.
+    destruct a as [|v0 a'].
+    { exfalso; simpl in *; word. }
+    simpl.
+    eexists _, _; split; [ eauto | ].
+    split; [ naive_solver | ].
+    apply has_go_type_array; [ | naive_solver ].
+    simpl in *; word.
+  Qed.
+
   Definition zero_val' (t : go_type) : val :=
     match t with
     | boolT => #false
@@ -167,7 +230,7 @@ destruct a. apply Forall_cons. split.
     | uint64T => #(W64 0)
 
     | stringT => #("")
-    | arrayT n elem => Vector.fold_right PairV (vreplicate n (zero_val_def elem)) #()
+    | arrayT n elem => fold_right PairV #() (replicate (uint.nat n) (zero_val_def elem))
     | sliceT => #slice.nil
     | structT decls => struct.val_aux t []
     | ptrT => #null
@@ -258,6 +321,18 @@ Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
 Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
 Arguments default_val (V) {_ _ _ _}.
 
+(* [BoundedTypeSize] proves that a type has a reasonable maximum upper bound in its size.
+
+When we axiomatize a go_type, we need it to have a sensible size so that
+field offsets can be calculated using w64 calculations. This is a highly
+conversative maximum size for a type that still enables it to be used in
+essentially any larger struct.
+
+We currently do not rely on this typeclass for non-axiomatic types (where it
+could be proven by direct computation). *)
+Class BoundedTypeSize (t : go_type) :=
+  { has_bounded_type_size : Z.of_nat (go_type_size t) < 2^32; }.
+
 Fixpoint is_comparable_go_type (t : go_type) : bool :=
   match t with
   | arrayT n elem => is_comparable_go_type elem
@@ -278,6 +353,8 @@ Proof.
   induction Hty; try rewrite to_val_unseal /= //.
   - repeat constructor; rewrite to_val_unseal //.
   - clear Helems. simpl in Hcomp.
+    generalize dependent (uint.nat n).
+    intros ??; subst.
     induction a.
     + done.
     + rewrite /=. split.
@@ -309,6 +386,8 @@ Ltac2 solve_has_go_type_step () :=
             Std.indcl_in := None
         } ] None
   | [ h : (@eq (go_string * go_type) (_, _) _) |- _ ] =>
+      (* XXX: inversion_clear is not as powerful as inversion H; subst; clear H;
+      comes up in generics when there are dependent types *)
       Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None; cbn
   end.
 Ltac solve_has_go_type := repeat ltac2:(solve_has_go_type_step ()).
@@ -360,27 +439,56 @@ Next Obligation. rewrite to_val_unseal. move => [???][???] [=].
                  repeat intros [=->%to_val_inj]. done.
 Qed.
 
-Program Global Instance into_val_typed_array `{!IntoVal V} `{!IntoValTyped V t} n :
-  IntoValTyped (vec V n) (arrayT n t) :=
-{| default_val := vreplicate n (default_val _) |}.
+Program Global Instance into_val_typed_array `{!IntoVal V} `{!IntoValTyped V t} (n: w64) :
+  IntoValTyped (vec V (uint.nat n)) (arrayT n t) :=
+{| default_val := vreplicate (uint.nat n) (default_val _) |}.
 Next Obligation.
   rewrite to_val_unseal /=.
   solve_has_go_type.
-  induction v as [|].
-  - by exfalso.
-  - simpl in *. destruct H0.
-    + subst. apply to_val_has_go_type.
-    + by apply IHv.
+  assert (n = W64 (uint.nat n)) as Hn by word.
+  assert (Z.of_nat (uint.nat n) < 2^64) by word.
+  rewrite {3}Hn.
+  generalize dependent (uint.nat n); intros n' v ??.
+  clear Hn n.
+  rewrite VectorSpec.to_list_fold_right.
+  apply has_go_type_array.
+  { rewrite VectorSpec.length_to_list.
+    word. }
+  intros v' Hin.
+  apply VectorSpec.to_list_In in Hin.
+  apply VectorSpec.to_list_In in Hin.
+  rewrite VectorSpec.to_list_map in Hin.
+  apply in_map_iff in Hin as [x [<- Hin]].
+  apply to_val_has_go_type.
 Qed.
 Next Obligation.
   rewrite to_val_unseal zero_val_eq /= to_val_unseal //.
   intros.
-  setoid_rewrite vmap_replicate.
   rewrite -zero_val_unseal.
-  rewrite -default_val_eq_zero_val to_val_unseal //.
+  rewrite -default_val_eq_zero_val -to_val_unseal //.
+  setoid_rewrite vmap_replicate.
+  rewrite VectorSpec.to_list_fold_right.
+  f_equal.
+
+  (* TODO: a VectorSpec theorem about vreplicate/replicate is missing *)
+  generalize dependent (uint.nat n); intros n'.
+  induction n'; simpl.
+  { reflexivity. }
+  rewrite VectorSpec.to_list_cons.
+  rewrite IHn' //.
 Qed.
 Final Obligation.
-Admitted.
+rewrite to_val_unseal.
+intros. intros ?? Heq.
+simpl in Heq.
+induction x.
+{ rewrite (VectorSpec.nil_spec y) //. }
+destruct y using vec_S_inv.
+simpl in *.
+injection Heq as Heq1 Heq.
+apply to_val_inj in Heq1. subst.
+f_equal. by apply IHx.
+Qed.
 
 Program Global Instance into_val_typed_func : IntoValTyped func.t funcT :=
 {| default_val := func.nil |}.
@@ -390,32 +498,36 @@ Next Obligation. rewrite to_val_unseal => [[???] [???]] /= [=] //. naive_solver.
 Qed.
 Final Obligation. solve_decision. Qed.
 
-Lemma struct_fields_val_inj a b :
-  struct.fields_val a = struct.fields_val b →
-  a = b.
-Proof.
-  rewrite struct.fields_val_unseal.
-  dependent induction b generalizing a.
-  { by destruct a as [|[]]. }
-  destruct a0.
-  destruct a as [|[]]; first done.
-  rewrite /= => [=].
-  intros. subst.
-  repeat f_equal.
-  - by apply to_val_inj.
-  - by apply IHb.
-Qed.
-
 Program Global Instance into_val_typed_interface : IntoValTyped interface.t interfaceT :=
 {| default_val := interface.nil |}.
 Next Obligation. solve_has_go_type. Qed.
 Next Obligation. rewrite zero_val_eq //. Qed.
-Next Obligation. rewrite to_val_unseal => [[??] [??]] /= [??].
-                 f_equal; try done.
-                 apply struct_fields_val_inj. done.
+Next Obligation.
+  rewrite to_val_unseal => [x y] Heq.
+  destruct x as [|], y as [|].
+  {
+    simpl in *.
+    injection Heq as Heq1 Heq2.
+    apply to_val_inj in Heq1, Heq2.
+    intuition. subst. done.
+  }
+  all: first [discriminate | reflexivity].
 Qed.
 Final Obligation.
   solve_decision.
+Qed.
+
+Program Global Instance into_val_typed_unit : IntoValTyped unit (structT []) :=
+{| default_val := tt |}.
+Next Obligation.
+  intros [].
+  replace (#()) with (struct.val_aux (structT []) []).
+  2:{ rewrite struct.val_aux_unseal //. }
+  by constructor.
+Qed.
+Next Obligation. rewrite zero_val_eq /= struct.val_aux_unseal //. Qed.
+Final Obligation.
+  intros ???. destruct x, y. done.
 Qed.
 
 End into_val_instances.

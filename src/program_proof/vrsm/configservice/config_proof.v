@@ -31,12 +31,14 @@ Lemma list_u64_to_byte_inj a b :
   concat (u64_le <$> a) = concat (u64_le <$> b) → a = b.
 Proof.
   generalize b; clear b. induction a; intros b.
-  { simpl. intros. by destruct b; done. }
+  { simpl. intros.
+    apply (f_equal length) in H. revert H.
+    by destruct b; simpl; len. }
   rewrite fmap_cons concat_cons.
   intros. destruct b.
-  { by exfalso. }
+  { apply (f_equal length) in H. revert H. len. }
   rewrite fmap_cons concat_cons in H.
-  apply app_inj_1 in H as [? H]; last done.
+  apply app_inj_1 in H as [? H]; last len.
   f_equal.
   {
     apply (f_equal le_to_u64) in H0.
@@ -49,16 +51,18 @@ Global Instance encode_inj : Inj eq eq encode.
 Proof.
   intros ???. destruct x, y.
   Opaque u64_le.
-  apply app_inj_1 in H as [? H]; last done.
-  apply app_inj_1 in H as [? H]; last done.
-  apply app_inj_1 in H as [? H]; last done.
-  apply app_inj_1 in H as [? H]; last done.
+  apply app_inj_1 in H as [? H]; last len.
+  apply app_inj_1 in H as [? H]; last len.
+  apply app_inj_1 in H as [? H]; last len.
+  apply app_inj_1 in H as [? H]; last len.
   simpl in *.
   apply (f_equal le_to_u64) in H0, H1, H2.
   repeat rewrite u64_le_to_word in H0, H1, H2.
-  subst. f_equal.
-  { by destruct wantLeaseToExpire0, wantLeaseToExpire1. }
-  apply app_inj_1 in H as [? H]; last done.
+  subst.
+  apply (inj u64_le) in H3.
+  f_equal.
+  { by repeat case_match. }
+  apply app_inj_1 in H as [? H]; last len.
   by apply list_u64_to_byte_inj.
 Qed.
 
@@ -169,7 +173,7 @@ Proof.
     iSplitL "Hsl".
     {
       iApply own_slice_to_small. simpl. rewrite /encode Heqb -app_assoc. rewrite Henc.
-      iFrame.
+      by list_simplifier.
     }
     repeat iExists _; iFrame "∗#".
     rewrite Heqb. iFrame.
@@ -192,7 +196,7 @@ Proof.
     iSplitL "Hsl".
     {
       iApply own_slice_to_small. simpl. rewrite /encode Heqb -app_assoc. rewrite Henc.
-      iFrame.
+      by list_simplifier.
     }
     repeat iExists _; iFrame "∗#".
     rewrite Heqb. iFrame.
@@ -668,8 +672,8 @@ Proof.
     iFrame.
     iModIntro.
     simpl.
-    iApply "HΨ".
-    done.
+    list_simplifier.
+    by iApply "HΨ".
   }
   {
     simpl.
@@ -1041,7 +1045,8 @@ Proof.
   wp_apply (wp_WriteInt with "[$Hrep_sl]").
   iIntros (?) "Hrep_sl".
   wp_store.
-  wp_apply (wp_ReadInt with "Harg_sl").
+  wp_apply (wp_ReadInt [] with "[Harg_sl]").
+  { by list_simplifier. }
   iIntros (?) "Hargs_sl".
   wp_pures.
   wp_apply (wp_Server__tryAcquire with "[$]").
@@ -1432,7 +1437,8 @@ Proof.
       iIntros (?) "Herr".
       wp_pures.
       wp_load.
-      wp_apply (wp_ReadInt with "[$]").
+      wp_apply (wp_ReadInt [] with "[Hrep_sl]").
+      { by list_simplifier. }
       iIntros (?) "Hrep_sl".
       wp_pures.
       wp_store.
@@ -1701,7 +1707,8 @@ Proof.
       wp_load.
       subst.
       iDestruct ("Hrep_sl") as "[Hrep_sl1 Hrep_sl2]".
-      wp_apply (wp_ReadInt with "[$]").
+      wp_apply (wp_ReadInt [] with "[Hrep_sl1]").
+      { by list_simplifier. }
       iIntros (?) "Hrep_sl".
       wp_pures.
       iModIntro.
@@ -1709,7 +1716,8 @@ Proof.
       iRight. iSplitR; first done.
       wp_pures.
       wp_load.
-      wp_apply (wp_ReadInt with "[$]").
+      wp_apply (wp_ReadInt [] with "[Hrep_sl2]").
+      { by list_simplifier. }
       iIntros (?) "_".
       wp_pures.
       iModIntro.
@@ -1723,7 +1731,8 @@ Proof.
       wp_load.
       subst.
       iDestruct "Hrep_sl" as "[Hrep_sl Hrep_sl2]".
-      wp_apply (wp_ReadInt with "[$]").
+      wp_apply (wp_ReadInt [] with "[Hrep_sl]").
+      { by list_simplifier. }
       iIntros (?) "_".
       wp_pures.
       wp_if_destruct.
@@ -1778,7 +1787,8 @@ Proof.
         iSplitR; first done.
         wp_pures.
         wp_load.
-        wp_apply (wp_ReadInt with "[$]").
+        wp_apply (wp_ReadInt [] with "[Hrep_sl2]").
+        { by list_simplifier. }
         iIntros (?) "_".
         wp_pures.
         iApply "Hfail".
@@ -1889,9 +1899,10 @@ Proof.
       wp_pures.
       wp_load.
       wp_apply (wp_ReadInt with "[$]").
-      iIntros (?) "?".
+      iIntros (?) "H".
       wp_pures.
-      wp_apply (wp_ReadInt with "[$]").
+      wp_apply (wp_ReadInt [] with "[H]").
+      { by list_simplifier. }
       iIntros (?) "_".
       wp_pures.
       iApply "Hupd".
@@ -1960,9 +1971,10 @@ Proof.
         wp_pures.
         wp_load.
         wp_apply (wp_ReadInt with "[$]").
-        iIntros (?) "?".
+        iIntros (?) "H".
         wp_pures.
-        wp_apply (wp_ReadInt with "[$]").
+        wp_apply (wp_ReadInt [] with "[H]").
+        { by list_simplifier. }
         iIntros (?) "_".
         wp_pures.
         iRight in "HΦ".

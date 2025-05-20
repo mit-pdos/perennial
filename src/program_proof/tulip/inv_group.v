@@ -88,6 +88,11 @@ Section inv.
   (* TODO: remove this once we have real defintions for resources. *)
   Implicit Type (γ : tulip_names).
 
+  Definition quorum_voted γ (gid : u64) (ts rk : nat) (cid : coordid) : iProp Σ :=
+    ∃ (ridsq : gset u64),
+      ([∗ set] rid ∈ ridsq, is_replica_backup_vote γ gid rid ts rk cid) ∧
+      ⌜cquorum rids_all ridsq⌝.
+  
   Definition quorum_validated γ (gid : u64) (ts : nat) : iProp Σ :=
     ∃ (ridsq : gset u64),
       ([∗ set] rid ∈ ridsq, is_replica_validated_ts γ gid rid ts) ∧
@@ -140,6 +145,28 @@ Section inv.
   Definition safe_txn_pwrs γ gid ts pwrs : iProp Σ :=
     ∃ wrs, is_txn_wrs γ ts wrs ∧
            ⌜valid_ts ts ∧ valid_wrs wrs ∧ pwrs ≠ ∅ ∧ pwrs = wrs_group gid wrs⌝.
+
+  Definition safe_txn_ptgs γ ts ptgs : iProp Σ :=
+    ∃ wrs, is_txn_wrs γ ts wrs ∧ ⌜ptgs = ptgroups (dom wrs)⌝.
+
+  Definition safe_backup_txn γ ts ptgs : iProp Σ :=
+    ∃ wrs,
+      "#Hwrs"   ∷ is_txn_wrs γ ts wrs ∗
+      "%Hvts"   ∷ ⌜valid_ts ts⌝ ∗
+      "%Hvwrs"  ∷ ⌜valid_wrs wrs⌝ ∗
+      "%Hvptgs" ∷ ⌜ptgs = ptgroups (dom wrs)⌝.
+
+  Lemma safe_txn_pwrs_ptgs_backup_txn γ gid ts pwrs ptgs :
+    safe_txn_pwrs γ gid ts pwrs -∗
+    safe_txn_ptgs γ ts ptgs -∗
+    safe_backup_txn γ ts ptgs.
+  Proof.
+    iIntros "Hpwrs Hptgs".
+    iDestruct "Hpwrs" as (wrs1) "(Hwrs1 & %Hvt & %Hvw & _)".
+    iDestruct "Hptgs" as (wrs2) "[Hwrs2 %Hptgs]".
+    iDestruct (txn_wrs_agree with "Hwrs1 Hwrs2") as %->.
+    iFrame "∗ %".
+  Qed.
 
   Lemma safe_txn_pwrs_impl_is_txn_pwrs γ gid ts pwrs :
     safe_txn_pwrs γ gid ts pwrs -∗
@@ -242,6 +269,11 @@ Section inv.
   #[global]
   Instance is_group_prepare_proposal_if_classic_persistent γ gid ts rk p :
     Persistent (is_group_prepare_proposal_if_classic γ gid ts rk p).
+  Proof. rewrite /is_group_prepare_proposal_if_classic. case_decide; apply _. Defined.
+
+  #[global]
+  Instance is_group_prepare_proposal_if_classic_timeless γ gid ts rk p :
+    Timeless (is_group_prepare_proposal_if_classic γ gid ts rk p).
   Proof. rewrite /is_group_prepare_proposal_if_classic. case_decide; apply _. Defined.
 
   (* NB: [safe_proposal] seems unnecessarily strong in that it always requires a
@@ -373,19 +405,11 @@ Section inv.
     - rewrite /group_inv_proposals_map.
       repeat (apply exist_timeless => ?).
       repeat (apply sep_timeless; try apply _).
-      * apply big_sepM_timeless. intros ???.
-        rewrite /exclusive_proposals.
-        apply big_sepS_timeless. intros y Hin.
-        rewrite /exclusive_proposal.
-        destruct (decide _); apply _.
-      * apply big_sepM_timeless. intros ???.
-        rewrite /safe_proposals.
-        apply big_sepM_timeless. intros y b Hlook.
-        rewrite /safe_proposal.
-        repeat (apply exist_timeless => ?).
-        repeat (apply sep_timeless; try apply _).
-        rewrite /is_group_prepare_proposal_if_classic.
-        destruct (decide _); apply _.
+      apply big_sepM_timeless. intros ???.
+      rewrite /exclusive_proposals.
+      apply big_sepS_timeless. intros y Hin.
+      rewrite /exclusive_proposal.
+      destruct (decide _); apply _.
     - apply big_sepM_timeless. intros x ??.
       rewrite /safe_txnst.
       destruct x; try apply _.
@@ -535,5 +559,23 @@ Section lemma.
     group_inv_no_cpool γ gid cpool -∗
     group_inv γ gid.
   Proof. iIntros "Hcpool Hgroup". iNamed "Hgroup". iFrame "∗ # %". Qed.
+
+  Lemma group_inv_impl_valid_ccommand_log {γ gid} loglb :
+    is_txn_log_lb γ gid loglb -∗
+    group_inv γ gid -∗
+    ⌜Forall (valid_ccommand gid) loglb⌝.
+  Proof.
+    iIntros "#Hlb Hinv".
+    iDestruct (group_inv_extract_cpool with "Hinv") as (cpool) "[Hcpool Hinv]".
+    iDestruct (group_inv_impl_valid_ccommand_cpool with "Hinv") as %Hvcmds.
+    iNamed "Hinv".
+    iDestruct (txn_log_prefix with "Hlog Hlb") as %Hprefix.
+    iNamed "Hgroup".
+    iPureIntro.
+    rewrite /txn_cpool_subsume_log Forall_forall in Hcscincl.
+    rewrite Forall_forall.
+    intros cmd Hcmd.
+    by apply Hvcmds, Hcscincl, (elem_of_prefix loglb).
+  Qed.
 
 End lemma.

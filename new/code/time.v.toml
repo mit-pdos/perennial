@@ -1,0 +1,10 @@
+imports = [
+  "!*",
+]
+translate = [
+  "Time",
+  "Second",
+  "Millisecond",
+  "Microsecond",
+  "Nanosecond",
+]

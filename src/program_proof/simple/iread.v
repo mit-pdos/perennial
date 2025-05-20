@@ -201,14 +201,13 @@ Proof.
     iFrame "Hdatavar".
     iFrame "Hdataslice".
     iSplit.
-    { word_cleanup.
-      replace (Z.to_nat (uint.Z b' + 1)) with (S (uint.nat b')) by word.
+    { iPureIntro. replace (uint.nat (word.add _ _)) with (S (uint.nat b')) by word.
       erewrite take_S_r.
       { rewrite Hcontent. eauto. }
       rewrite lookup_drop. rewrite -Hdiskdata.
       rewrite lookup_take.
       { replace (uint.nat (word.add offset b')) with (uint.nat offset + uint.nat b') in He by word. done. }
-      lia.
+      word.
     }
     iSplit.
     { iPureIntro. rewrite length_app /=. word. }

@@ -24,13 +24,13 @@ Section proof.
   Context `{!stagedG Σ}.
 
   Definition rfrac: Qp :=
-    (Qp.inv (Qp_of_Z (2^64)))%Qp.
+    (/(pos_to_Qp (Z.to_pos (2^64))))%Qp.
 
   Definition num_readers (n : u64) := 0 `max` uint.Z (word.sub n 1).
   Definition remaining_readers (n : u64) : Z :=
     (2^64 - num_readers n).
   Definition remaining_frac (n: u64) :=
-    ((Qp_of_Z (remaining_readers n)) * rfrac)%Qp.
+    ((pos_to_Qp (Z.to_pos (remaining_readers n))) * rfrac)%Qp.
 
   Hint Unfold num_readers remaining_readers : word.
 
@@ -40,49 +40,33 @@ Section proof.
     remaining_frac n = Qp.add (remaining_frac (word.add n 1)) rfrac.
   Proof.
     intros Hle1 Hle2.
-    intros.
-    rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
-    assert (Heq1: Qc_of_Z (1 `max` remaining_readers n) = Qc_of_Z (remaining_readers n)).
-    { f_equal. word. }
-    assert (Heq2: Qc_of_Z (1 `max` remaining_readers (word.add n 1)) =
-                  Qc_of_Z (remaining_readers (word.add n 1))).
-    { f_equal. word. }
-    rewrite ?Heq1 ?Heq2.
-    assert (Heq3: (remaining_readers (word.add n 1)) = remaining_readers n - 1).
-    { word. }
-    rewrite Heq3 //=.
-    rewrite Z2Qc_inj_sub.
-    field_simplify => //=.
-    f_equal. rewrite Z2Qc_inj_1. field.
+    intros. rewrite /remaining_frac /remaining_readers /num_readers.
+    replace (uint.Z (word.sub n (W64 1))) with (uint.Z n - 1) by word.
+    replace (uint.Z (word.sub _ _)) with (uint.Z n) by word.
+    rewrite -> !Z.max_r by lia.
+    replace (2^64 - (uint.Z n - 1)) with ((2^64 - uint.Z n) + 1) by word.
+    rewrite -> Z2Pos.inj_add by word. rewrite -pos_to_Qp_add.
+    rewrite Qp.mul_add_distr_r.
+    f_equal. rewrite left_id //.
   Qed.
 
   Lemma remaining_frac_read_release n :
     1 < uint.Z n →
     Qp.add (remaining_frac n) rfrac = remaining_frac (word.sub n 1).
   Proof.
-    intros Hlt.
-    rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
-    assert (Heq1: Qc_of_Z (1 `max` remaining_readers n) = Qc_of_Z (remaining_readers n)).
-    { f_equal. word. }
-    assert (Heq2: Qc_of_Z (1 `max` remaining_readers (word.sub n 1)) =
-                  Qc_of_Z (remaining_readers (word.sub n 1))).
-    { f_equal. word. }
-    rewrite ?Heq1 ?Heq2.
-    assert (Heq3: (remaining_readers (word.sub n 1)) = remaining_readers n + 1) by word.
-    rewrite Heq3 //=.
-    rewrite Z2Qc_inj_add.
-    field_simplify => //=.
+    intros Hlt. rewrite /remaining_frac /remaining_readers /num_readers.
+    replace (2^64 - 0 `max` (uint.Z (word.sub n (W64 1)))) with (2^64 - (uint.nat n - 1)) by word.
+    replace (2^64 - 0 `max` _) with (2^64 - (uint.nat n - 1) + 1) by word.
+    rewrite -> !Z2Pos.inj_add by word. rewrite -pos_to_Qp_add.
+    rewrite Qp.mul_add_distr_r. f_equal.
+    rewrite left_id //.
   Qed.
 
   Lemma remaining_free :
     remaining_frac 1 = 1%Qp.
   Proof.
-    rewrite -Qp.to_Qc_inj_iff/Qp_of_Z//=.
-    assert (Heq1: Qc_of_Z (1 `max` remaining_readers 1) = Qc_of_Z (remaining_readers 1)).
-    { f_equal. }
-    rewrite Heq1 //=.
-    field_simplify => //=.
-    rewrite Z2Qc_inj_1. auto.
+    rewrite /remaining_frac /remaining_readers /num_readers.
+    rewrite Qp.mul_inv_r //.
   Qed.
 
   Definition rwlock_inv (l : loc) (R Rc: Qp → iProp Σ) : iProp Σ :=
@@ -184,7 +168,7 @@ Section proof.
   Qed.
 
   Lemma wp_new_free_lock:
-    {{{ True }}} rwlock.new #() {{{ lk, RET #lk; is_free_lock lk }}}.
+    {{{ True }}} newRWMutex #() {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
     wp_rec. wp_pures.
@@ -216,7 +200,7 @@ Section proof.
 
   Lemma try_read_wp_Mutex__Lock E lk R Rc :
     ↑N ⊆ E →
-    {{{ is_rwlock lk R Rc }}} rwlock.try_read_acquire lk @ E
+    {{{ is_rwlock lk R Rc }}} RWMutex__TryRLock lk @ E
     {{{ b, RET #b; if b is true then crash_borrow (R rfrac) (Rc rfrac) else True }}}.
   Proof.
     iIntros (? Φ) "(#Hwand1&#Hwand2&#Hwand3&#Hl) HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -279,7 +263,7 @@ Section proof.
   Qed.
 
   Lemma read_wp_Mutex__Lock lk R Rc :
-    {{{ is_rwlock lk R Rc }}} rwlock.read_acquire lk {{{ RET #(); crash_borrow (R rfrac) (Rc rfrac) }}}.
+    {{{ is_rwlock lk R Rc }}} RWMutex__RLock lk {{{ RET #(); crash_borrow (R rfrac) (Rc rfrac) }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_read_wp_Mutex__Lock with "Hl"); auto. iIntros ([]).
@@ -288,7 +272,7 @@ Section proof.
   Qed.
 
   Lemma try_read_wp_Mutex__Unlock lk R Rc :
-    {{{ is_rwlock lk R Rc ∗ crash_borrow (R rfrac) (Rc rfrac) }}} rwlock.try_read_release lk
+    {{{ is_rwlock lk R Rc ∗ crash_borrow (R rfrac) (Rc rfrac) }}} RWMutex__TryRUnlock lk
     {{{ b, RET #b; if b is false then crash_borrow (R rfrac) (Rc rfrac) else True }}}.
   Proof.
     iIntros (Φ) "((#Hwand1&#Hwand2&#Hwand3&#Hl)&Hborrow) HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -361,7 +345,7 @@ Section proof.
   Qed.
 
   Lemma read_wp_Mutex__Unlock lk R Rc :
-    {{{ is_rwlock lk R Rc ∗ crash_borrow (R rfrac) (Rc rfrac) }}} rwlock.read_release lk {{{ RET #(); True }}}.
+    {{{ is_rwlock lk R Rc ∗ crash_borrow (R rfrac) (Rc rfrac) }}} RWMutex__RUnlock lk {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(#Hl&Hcb) HΦ". iLöb as "IH". wp_rec.
     wp_apply (try_read_wp_Mutex__Unlock with "[$Hl $Hcb]"); auto. iIntros ([]).
@@ -370,7 +354,7 @@ Section proof.
   Qed.
 
   Lemma try_write_wp_Mutex__Lock lk R Rc :
-    {{{ is_rwlock lk R Rc }}} rwlock.try_write_acquire lk
+    {{{ is_rwlock lk R Rc }}} RWMutex__TryLock lk
     {{{ b, RET #b; if b is true then wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) else True }}}.
   Proof.
     iIntros (Φ) "(#Hwand1&#Hwand2&#Hwand3&#Hl) HΦ". iDestruct "Hl" as (l ->) "#Hinv".
@@ -402,7 +386,7 @@ Section proof.
 
   Lemma write_wp_Mutex__Lock lk R Rc :
     {{{ is_rwlock lk R Rc }}}
-      rwlock.write_acquire lk
+      RWMutex__Lock lk
     {{{ RET #(); wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ". iLöb as "IH". wp_rec.
@@ -413,7 +397,7 @@ Section proof.
 
   Lemma wp_Mutex__Unlock lk R Rc :
     {{{ is_rwlock lk R Rc ∗ wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}
-      rwlock.write_release lk
+      RWMutex__Unlock lk
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "((#Hwand1&#Hwand2&#Hwand3&#Hl)&Hlocked&Hborrow) HΦ". iDestruct "Hl" as (l ->) "#Hinv".

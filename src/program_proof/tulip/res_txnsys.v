@@ -151,6 +151,14 @@ Section res.
     Definition is_txn_committed γ ts wrs :=
       is_txn_res γ ts (ResCommitted wrs).
 
+    Definition is_txn_committed_ex γ ts : iProp Σ :=
+      ∃ wrs, is_txn_committed γ ts wrs.
+
+    (* TODO: Rename [is_txn_committed] to [is_txn_committed_with_wrs] and
+    [is_txn_committed_ex] to [is_txn_committed]. *)
+
+    (* TODO: Use [is_txn_committed_ex] when possible. *)
+
     Definition is_txn_aborted γ ts :=
       is_txn_res γ ts ResAborted.
 

@@ -35,6 +35,7 @@ Example testCompareLE_ok : testCompareLE #() ~~> #true := t.
 
 (* conversions.go *)
 Example testByteSliceToString_ok : testByteSliceToString #() ~~> #true := t.
+Example testStringToByteSliceAlias_ok : testStringToByteSliceAlias #() ~~> #true := t.
 
 (* copy.go *)
 Example testCopySimple_ok : testCopySimple #() ~~> #true := t.

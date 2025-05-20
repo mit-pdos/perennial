@@ -22,6 +22,8 @@ Definition NS_SPAWN_BACKUP_DELTA : expr := #1000000000.
 
 Definition NS_SEND_REFRESH : expr := #4000000000.
 
+Definition NS_BACKUP_INTERVAL : expr := #5000000000.
+
 Definition NS_BATCH_INTERVAL : expr := #300000000.
 
 Definition NS_HEARTBEAT_INTERVAL : expr := #1000000000.

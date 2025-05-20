@@ -2,8 +2,12 @@ From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Export loop.
 From New.golang.theory Require Import exception typing.
 From iris_named_props Require Export named_props.
+From Perennial Require Import base.
 
 Set Default Proof Using "Type".
+
+(* See the documentation for the tactic [wp_for] below for an idea of the
+exported interface of this file. *)
 
 Section wps.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
@@ -37,15 +41,16 @@ Proof.
   wp_call_lc "?". by iApply "Hwp".
 Qed.
 
-(* FIXME: seal this *)
-Definition for_postcondition stk E (post : val) P Φ bv : iProp Σ :=
+(* Sealed - use the wp_for_post_ lemmas below to prove this. *)
+Definition for_postcondition_def stk E (post : val) P Φ bv : iProp Σ :=
             ⌜ bv = continue_val ⌝ ∗ WP post #() @ stk; E {{ _, P }} ∨
             (∃ v, ⌜ bv = execute_val v ⌝ ∗ WP post #() @ stk; E {{ _, P }}) ∨
             ⌜ bv = break_val ⌝ ∗ Φ (execute_val #()) ∨
-            (∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv)
-.
+            (∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv).
+Program Definition for_postcondition := sealed @for_postcondition_def.
+Definition for_postcondition_unseal : for_postcondition = _ := seal_eq _.
 
-Theorem wp_for P stk E (cond body post : val) Φ :
+Lemma wp_for P stk E (cond body post : val) Φ :
   P -∗
   □ (P -∗
      WP cond #() @ stk ; E {{ v, if decide (v = #true) then
@@ -59,6 +64,7 @@ Theorem wp_for P stk E (cond body post : val) Φ :
 Proof.
   iIntros "HP #Hloop".
   rewrite do_for_unseal.
+  rewrite for_postcondition_unseal.
   iLöb as "IH".
   wp_call.
   iDestruct ("Hloop" with "HP") as "Hloop1".
@@ -112,20 +118,56 @@ Lemma wp_for_post_do (v : val) stk E (post : val) P Φ :
   WP (post #()) @ stk; E {{ _, P }} -∗
   for_postcondition stk E post P Φ (execute_val v).
 Proof.
-  iIntros "H". rewrite /for_postcondition. iRight. iLeft. iFrame "H". iPureIntro. by eexists.
+  iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.
+  eauto 10 with iFrame.
 Qed.
 
 Lemma wp_for_post_continue stk E (post : val) P Φ :
   WP (post #()) @ stk; E {{ _, P }} -∗
   for_postcondition stk E post P Φ continue_val.
 Proof.
-  iIntros "H". rewrite /for_postcondition. iLeft. iFrame "H". iPureIntro. by eexists.
+  iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.
+  eauto 10 with iFrame.
+Qed.
+
+Lemma wp_for_post_break stk E (post : val) P Φ :
+  Φ (execute_val #()) -∗
+  for_postcondition stk E post P Φ break_val.
+Proof.
+  iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.
+  eauto 10 with iFrame.
+Qed.
+
+Lemma wp_for_post_return stk E (post : val) P Φ v :
+  Φ (return_val v) -∗
+  for_postcondition stk E post P Φ (return_val v).
+Proof.
+  iIntros "H". rewrite for_postcondition_unseal /for_postcondition_def.
+  eauto 10 with iFrame.
 Qed.
 
 End wps.
 
-(** Tactic for convenient loop reasoning *)
-Ltac wp_for :=
+(** Tactic for convenient loop reasoning. First use [iAssert] to generalize the
+current context to the loop invariant, then apply this tactic. Use
+[wp_for_post_do], [wp_for_post_continue], and [wp_for_post_return] at the leaves
+of the proof. *)
+Ltac wp_for_core :=
   wp_bind (do_for _ _ _); iApply (wp_for with "[-]");
   [ by iNamedAccu
   | iIntros "!# __CTX"; iNamed "__CTX" ].
+
+(** Automatically apply the right theorem for [for_postcondition] *)
+Ltac wp_for_post_core :=
+  lazymatch goal with
+  | |- environments.envs_entails _ (for_postcondition _ _ _ _ _ _) =>
+      (* this could use pattern matching but it's not really necessary,
+      unification will handle it *)
+      first [
+          iApply wp_for_post_do; wp_pures
+        | iApply wp_for_post_continue
+        | iApply wp_for_post_break
+        | iApply wp_for_post_return
+        ]
+  | _ => fail "wp_for_post: not a for_postcondition goal"
+  end.

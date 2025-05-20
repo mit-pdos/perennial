@@ -54,9 +54,9 @@ Definition Client__getFreshNum: val :=
 Definition Client__tryAcquire: val :=
   rec: "Client__tryAcquire" "cl" "id" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "args" := lockrequest_gk.Marshal (struct.mk lockrequest_gk.S [
+    let: "args" := lockrequest_gk.Marshal (NewSlice byteT #0) (struct.mk lockrequest_gk.S [
       "Id" ::= "id"
-    ]) (NewSlice byteT #0) in
+    ]) in
     let: "err" := urpc.Client__Call (struct.loadF Client "cl" "cl") RPC_TRY_ACQUIRE "args" "reply" #100 in
     (if: "err" = urpc.ErrNone
     then (DecodeUint64 (![slice.T byteT] "reply"), "err")
@@ -65,9 +65,9 @@ Definition Client__tryAcquire: val :=
 Definition Client__release: val :=
   rec: "Client__release" "cl" "id" :=
     let: "reply" := ref (zero_val (slice.T byteT)) in
-    let: "args" := lockrequest_gk.Marshal (struct.mk lockrequest_gk.S [
+    let: "args" := lockrequest_gk.Marshal (NewSlice byteT #0) (struct.mk lockrequest_gk.S [
       "Id" ::= "id"
-    ]) (NewSlice byteT #0) in
+    ]) in
     urpc.Client__Call (struct.loadF Client "cl" "cl") RPC_RELEASE "args" "reply" #100.
 
 Definition makeClient: val :=

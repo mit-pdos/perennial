@@ -47,6 +47,8 @@ Definition is_index (idx : loc) (γ : mvcc_names) : iProp Σ :=
     "#Hinv" ∷ mvcc_inv_sst γ p ∗
     "_" ∷ True.
 
+Local Hint Unfold hash_modu : word.
+
 (*****************************************************************)
 (* func (idx *Index) GetTuple(key uint64) *tuple.Tuple           *)
 (*****************************************************************)
@@ -69,7 +71,6 @@ Proof.
   wp_loadField.
   iMod (readonly_load with "HbktsL") as (q) "HbktsL'".
   list_elem bktsL (hash_modu key) as bkt.
-  { revert HbktsLen. rewrite /hash_modu. word. }
   wp_apply (wp_SliceGet with "[$HbktsL']").
   { iPureIntro.
     rewrite list_lookup_fmap.
@@ -465,7 +466,7 @@ Proof.
     { iSplit; last done.
       iExactEq "Hvchains".
       f_equal.
-      apply filter_all.
+      apply filter_all. intros.
       word.
     }
     iExists (replicate (Z.to_nat N_IDX_BUCKET) null).

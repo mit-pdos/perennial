@@ -9,7 +9,9 @@ Section program.
       Replica__lastProposal #rp #tsW
     {{{ (rank : u64) (pdec : bool) (ok : bool), RET (#rank, #pdec, #ok);
         own_replica_psm_rkm rp psm rkm ∗
-        ⌜if ok then psm !! ts = Some (uint.nat rank, pdec) else psm !! ts = None⌝
+        ⌜if ok
+         then psm !! ts = Some (uint.nat rank, pdec)
+         else psm !! ts = None ∧ rank = W64 0 ∧ pdec = false⌝
     }}}.
   Proof.
     iIntros (ts Φ) "Hrp HΦ".
@@ -37,12 +39,15 @@ Section program.
       { subst ts. rewrite Hts'. lia. }
       done.
     }
-    { apply map_get_false in Hok as [Hnone _].
+    { apply map_get_false in Hok as [Hnone Hzv].
       assert (Hpstbl : fmap ppsl_to_nat_bool pstbl !! tsW = None).
       { by rewrite lookup_fmap Hnone. }
       symmetry in Hpsmabs.
-      apply (lookup_kmap_eq_None _ _ _ _ _ Hpsmabs Hpstbl).
-      word.
+      split.
+      { apply (lookup_kmap_eq_None _ _ _ _ _ Hpsmabs Hpstbl).
+        word.
+      }
+      by inv Hzv.
     }
   Qed.
 

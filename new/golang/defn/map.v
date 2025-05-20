@@ -1,4 +1,4 @@
-From New.golang.defn Require Export loop typing.
+From New.golang.defn Require Import loop typing list dynamic_typing.
 
 Module map.
 (* FIXME: seal these functions *)
@@ -34,8 +34,8 @@ Definition delete_aux : val :=
     | InjR "kvm" =>
         let: "kv" := Fst "kvm" in
         let: "m2" := Snd "kvm" in
-        if: "k" = (Fst "kv") then ("mapDel" "m2")
-        else InjR ("kv", "mapDel" "m2")
+        if: "k" = (Fst "kv") then ("mapDel" "m2" "k")
+        else InjR ("kv", "mapDel" "m2" "k")
     end
 .
 
@@ -65,8 +65,18 @@ Definition len : val :=
                        (for: (!"len" < #(W64 (2^64-1))) ; Skip := #())) ;;
     !"len".
 
-Definition make (kt vt : go_type) : val :=
-  λ: <>, Alloc (InjLV (zero_val vt)).
+(* key type is also supplied to supply a type to the wp lemma *)
+Definition make : val :=
+  λ: "kt" "vt", Alloc (InjL (type.zero_val "vt")).
+
+(* TODO: this produces a map value and doesn't allocate a reference *)
+Definition literal : val :=
+  λ: "kt" "vt",
+  rec: "literal" "alist" :=
+    list.Match "alist"
+      (λ: <>, InjL (type.zero_val "vt"))
+      (λ: "kv" "alist", InjR ("kv", ("literal" "alist")))
+.
 
 End goose_lang.
 End map.

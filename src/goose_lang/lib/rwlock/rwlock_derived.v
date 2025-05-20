@@ -3,7 +3,6 @@ From iris.proofmode Require Import tactics.
 From iris.algebra Require Import excl.
 From Perennial.base_logic.lib Require Import invariants.
 From Perennial.program_logic Require Export weakestpre.
-From Perennial.Helpers Require Import Qextra.
 
 From Perennial.goose_lang Require Export lang typing.
 From Perennial.goose_lang Require Import proofmode wpc_proofmode notation crash_borrow.
@@ -11,8 +10,6 @@ From Perennial.goose_lang Require Import persistent_readonly.
 From Perennial.goose_lang.lib Require Import typed_mem.
 From Perennial.goose_lang.lib Require Export rwlock.impl.
 From Perennial.goose_lang.lib Require Export rwlock.rwlock_noncrash.
-Require Import Field.
-Add Field Qcfield : Qcanon.Qcft.
 Set Default Proof Using "Type".
 
 Section goose_lang.
@@ -23,9 +20,6 @@ Context {ext_tys: ext_types ext}.
 Section proof.
   Context `{!heapGS Σ} (N : namespace).
   Context `{!stagedG Σ}.
-
-  Definition rfrac: Qp :=
-    (Qp.inv (Qp_of_Z (2^64)))%Qp.
 
   Definition is_crash_rwlock lk R Rc :=
     is_rwlock N lk (λ q, crash_borrow (R q) (Rc q)).
@@ -69,7 +63,7 @@ Section proof.
   Qed.
 
   Lemma wp_new_free_lock:
-    {{{ True }}} rwlock.new #() {{{ lk, RET #lk; is_free_lock lk }}}.
+    {{{ True }}} newRWMutex #() {{{ lk, RET #lk; is_free_lock lk }}}.
   Proof.
     iIntros (Φ) "_ HΦ".
     wp_rec. wp_pures.
@@ -101,7 +95,7 @@ Section proof.
 
 
   Lemma read_wp_Mutex__Lock lk R Rc :
-    {{{ is_crash_rwlock lk R Rc }}} rwlock.read_acquire lk {{{ RET #(); crash_borrow (R rfrac) (Rc rfrac) }}}.
+    {{{ is_crash_rwlock lk R Rc }}} RWMutex__RLock lk {{{ RET #(); crash_borrow (R rfrac) (Rc rfrac) }}}.
   Proof.
     iIntros (Φ) "#Hl HΦ".
     wp_apply (read_wp_Mutex__Lock with "[$]").
@@ -110,7 +104,7 @@ Section proof.
 
   Lemma read_wp_Mutex__Unlock lk R Rc :
     {{{ is_crash_rwlock lk R Rc ∗ crash_borrow (R rfrac) (Rc rfrac) }}}
-      rwlock.read_release lk
+      RWMutex__RUnlock lk
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(Hlock&Hborrow) HΦ".
@@ -120,7 +114,7 @@ Section proof.
 
   Lemma write_wp_Mutex__Lock lk R Rc :
     {{{ is_crash_rwlock lk R Rc }}}
-      rwlock.write_acquire lk
+      RWMutex__Lock lk
     {{{ RET #(); wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}.
   Proof.
     iIntros (Φ) "Hlock HΦ".
@@ -130,7 +124,7 @@ Section proof.
 
   Lemma wp_Mutex__Unlock lk R Rc :
     {{{ is_crash_rwlock lk R Rc ∗ wlocked lk ∗ crash_borrow (R 1%Qp) (Rc 1%Qp) }}}
-      rwlock.write_release lk
+      RWMutex__Unlock lk
     {{{ RET #(); True }}}.
   Proof.
     iIntros (Φ) "(Hlock&Hborrow) HΦ".

@@ -1,16 +1,17 @@
 From New Require Import notation.
-From New.golang.defn Require Import typing.
+From New.golang.defn Require Export typing.
+From Perennial Require Import base.
 
 Module list.
 Section defn.
   Context `{ffi_syntax}.
 
   Definition Nil_def : val := InjLV #().
-  Program Definition Nil := unseal (_:seal (@Nil_def)). Obligation 1. by eexists. Qed.
+  Program Definition Nil := sealed @Nil_def.
   Definition Nil_unseal : Nil = _ := seal_eq _.
 
   Definition Cons_def : val := λ: "h" "tl", InjR ("h", "tl").
-  Program Definition Cons := unseal (_:seal (@Cons_def)). Obligation 1. by eexists. Qed.
+  Program Definition Cons := sealed @Cons_def.
   Definition Cons_unseal : Cons = _ := seal_eq _.
 
   Definition Match_def : val :=
@@ -18,7 +19,7 @@ Section defn.
       Match "l"
         <> ("nilCase" #())
         "x" (let: ("hd", "tl") := "x" in "consCase" "hd" "tl").
-  Program Definition Match := unseal (_:seal (@Match_def)). Obligation 1. by eexists. Qed.
+  Program Definition Match := sealed @Match_def.
   Definition Match_unseal : Match = _ := seal_eq _.
 
   Definition Length : val :=
@@ -31,8 +32,35 @@ Section defn.
                               else (rec: "infloop" <> := Var "infloop" #()) #()
                            ).
 End defn.
+
+Notation ConsV hd tl := (InjRV (hd, tl)).
 End list.
+
+Section defn.
+Context `{ffi_syntax}.
+Definition alist_lookup : val :=
+  rec: "alist_lookup" "f" "fvs" :=
+    list.Match "fvs"
+              (λ: <>, InjLV #())
+              (λ: "fv" "fvs",
+                 let: ("f'", "v") := "fv" in
+                 if: "f" = "f'" then SOME "v" else "alist_lookup" "f" "fvs").
+
+Fixpoint alist_val_def (m : list (go_string * val)) : val :=
+  match m with
+  | [] => InjLV #()
+  | (f, v) :: tl => InjRV ((#f, v), alist_val_def tl)
+  end.
+Program Definition alist_val := sealed @alist_val_def.
+Definition alist_val_unseal : alist_val = _ := seal_eq _.
+
+End defn.
 
 Notation "[ ]" := (list.Nil) (only parsing) : expr_scope.
 Notation "[ x ]" := (list.Cons x []%E) : expr_scope.
 Notation "[ x ; y ; .. ; z ]" := (list.Cons x (list.Cons y .. (list.Cons z []%E) ..)) : expr_scope.
+
+Notation "[ ]" := (list.Nil) (only parsing) : val_scope.
+Notation "[ x ]" := (list.ConsV x []%V) : val_scope.
+Notation "[ x ]" := (list.ConsV x []%V) : val_scope.
+Notation "[ x ; y ; .. ; z ]" := (list.ConsV x (list.ConsV y .. (list.ConsV z []%V) ..)) : val_scope.

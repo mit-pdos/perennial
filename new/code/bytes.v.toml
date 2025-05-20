@@ -1,0 +1,9 @@
+translate = [
+  "!*",
+]
+imports = [
+  "!*",
+]
+axiomatize = [
+  "Buffer",
+]

@@ -10,6 +10,8 @@ Context `{!paxosG Σ}.
 Context `{!paxosParams.t Σ}.
 Import paxosParams.
 
+Hint Unfold paxosState.encode : len.
+
 Lemma encodes_paxosState_inj st1 st2 data :
   encodes_paxosState st1 data →
   encodes_paxosState st2 data →
@@ -22,10 +24,12 @@ Proof.
     destruct H2 as [H2 | [? ->]].
     { by eapply inj in H2; last apply _. }
     exfalso.
-    done.
+    apply (f_equal length) in H0.
+    revert H0. len.
   }
   destruct H2 as [H2 | [? ->]].
-  { by exfalso. }
+  { apply (f_equal length) in H2.
+    revert H2. len. }
   done.
 Qed.
 

@@ -1,0 +1,33 @@
+translate = [
+  "LeaseID",
+  "Txn",
+  "Cmp",
+  "KV",
+  "OpOption",
+  "TxnResponse",
+  "Cluster",
+  "GetResponse",
+  "WatchResponse",
+  "WatchChan",
+  "Event",
+  "Watcher",
+  "Lease",
+  "NoLease",
+  "LeaseGrantResponse",
+  "OpResponse",
+  "EventTypeDelete",
+
+  "PutResponse",
+  "RangeResponse",
+  "DeleteResponse",
+]
+
+axiomatize = [
+  "Client",
+  "Op",
+]
+
+imports = [
+  "go.etcd.io/etcd/api/v3/etcdserverpb",
+  "go.etcd.io/etcd/api/v3/mvccpb",
+]

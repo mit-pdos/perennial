@@ -1,0 +1,12 @@
+translate = [
+  "ProphId",
+]
+
+trusted = [
+  "ResolveBytes",
+  "NewProph",
+]
+
+imports = [
+  "!*",
+]

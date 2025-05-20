@@ -518,13 +518,41 @@ Section inv_file.
   Context `{!heapGS Σ, !paxos_ghostG Σ}.
 
   Definition paxosfileNS := paxosNS .@ "file".
+  (* TODO: make name consistent, also think about the right NS structure *)
+  Definition pxcrashNS := nroot .@ "pxcrash".
+
+  (* TODO: using nat (rather than u64) here would be more consistent with the
+  principle that in the protocol world types are perfect. *)
+  Inductive pxdur :=
+  | PaxosDurable (termc terml : u64) (log : list byte_string) (lsn : u64).
+
+  Definition own_paxos_durable
+    γ (nidme : u64) (dst : pxdur) : iProp Σ :=
+    match dst with
+    | PaxosDurable termc terml log lsnc =>
+        "Htermc" ∷ own_current_term_half γ nidme (uint.nat termc) ∗
+        "Hterml" ∷ own_ledger_term_half γ nidme (uint.nat terml) ∗
+        "Hlogn"  ∷ own_node_ledger_half γ nidme log ∗
+        "Hlsnc"  ∷ own_committed_lsn_half γ nidme (uint.nat lsnc)
+    end.
+
+  (* Required during recovery. *)
+  Definition valid_wal_entry (cmd : pxcmd) :=
+    match cmd with
+    | CmdPaxosPrepare term => Z.of_nat term < 2 ^ 64
+    | CmdPaxosAdvance term lsn _ => Z.of_nat term < 2 ^ 64 ∧ Z.of_nat lsn < 2 ^ 64
+    | CmdPaxosAccept lsn _ => Z.of_nat lsn < 2 ^ 64
+    | CmdPaxosExpand lsn => Z.of_nat lsn < 2 ^ 64
+    | _ => True
+    end.
 
   Definition node_file_inv (γ : paxos_names) (nid : u64) : iProp Σ :=
     ∃ (wal : list pxcmd) (fname : byte_string) (content : list u8),
       "Hwalfile"   ∷ own_node_wal_half γ nid wal ∗
       "Hfile"      ∷ fname f↦ content ∗
       "#Hwalfname" ∷ is_node_wal_fname γ nid fname ∗
-      "%Hencwal"   ∷ ⌜encode_paxos_cmds wal content⌝.
+      "%Hvdwal"    ∷ ⌜Forall valid_wal_entry wal⌝ ∗
+      "%Hencwal"   ∷ ⌜encode_paxos_cmds wal = content⌝.
 
   Definition paxos_file_inv (γ : paxos_names) (nids : gset u64) : iProp Σ :=
     [∗ set] nid ∈ nids, node_file_inv γ nid.
@@ -1210,6 +1238,7 @@ Section alloc.
       ([∗ set] nid ∈ nids, own_committed_lsn_half γ nid O) ∗
       ([∗ set] nid ∈ nids, own_node_ledger_half γ nid []) ∗
       (* paxos atomic invariant *)
+      (* TODO: also give [is_node_wal_fname] *)
       paxos_inv γ nids ∗ paxos_file_inv γ nids ∗ paxos_network_inv γ addrm.
   Proof.
     iIntros (nids Hmulti Hdomfnames) "Hfiles Hchans".

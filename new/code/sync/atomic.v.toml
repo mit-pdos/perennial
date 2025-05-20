@@ -1,0 +1,31 @@
+translate = [
+  "Uint64",
+  "Uint64.Load",
+  "Uint64.Store",
+  "Uint64.Add",
+  "Uint64.CompareAndSwap",
+
+  "Int32",
+  "Int32.Load",
+  "Int32.Store",
+  "Int32.Add",
+  "Int32.CompareAndSwap",
+
+  "noCopy",
+  "align64",
+]
+
+trusted = [
+  "LoadUint64",
+  "StoreUint64",
+  "AddUint64",
+  "CompareAndSwapUint64",
+  "LoadInt32",
+  "StoreInt32",
+  "AddInt32",
+  "CompareAndSwapInt32",
+]
+
+imports = [
+  "!*",
+]

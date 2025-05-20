@@ -16,6 +16,7 @@ Definition dbkmod := gmap nat dbval.
 Definition dbpver := (u64 * dbval)%type.
 Definition coordid := (u64 * u64)%type.
 Definition ppsl := (u64 * bool)%type.
+Definition txnptgs := gset u64.
 
 (** Transaction result. *)
 Inductive txnres :=
@@ -90,8 +91,8 @@ Inductive ccommand :=
 | CmdAbort (tid : nat).
 
 Inductive icommand :=
-| CmdAcquire (tid : nat) (pwrs : dbmap) (ptgs : gset u64)
 | CmdRead (tid : nat) (key : dbkey)
+| CmdAcquire (tid : nat) (pwrs : dbmap) (ptgs : gset u64)
 | CmdAdvance (tid : nat) (rank : nat)
 | CmdAccept (tid : nat) (rank : nat) (pdec : bool).
 
@@ -283,7 +284,7 @@ Proof.
   rewrite /ptgroups elem_of_map in Hptg.
   destruct Hptg as (k & Hktg & Hin).
   apply elem_of_dom in Hin as [v Hv].
-  rewrite map_filter_empty_iff in Hempty.
+  rewrite map_empty_filter in Hempty.
   specialize (Hempty _ _ Hv). simpl in Hempty. done.
 Qed.
 
@@ -303,6 +304,8 @@ Definition valid_ts (ts : nat) := 0 < ts < 2 ^ 64.
 Definition valid_wrs (wrs : dbmap) := dom wrs ⊆ keys_all.
 
 Definition valid_key (key : dbkey) := key ∈ keys_all.
+
+Definition valid_backup_rank (rank : nat) := 1 < rank < 2 ^ 64.
 
 Lemma valid_key_length key :
   valid_key key ->
@@ -364,6 +367,8 @@ Definition votemR := gmap_viewR (nat * nat) (agreeR coordidO).
 Definition replica_votemR := gmapR (u64 * u64) votemR.
 Definition tokenmR := gmap_viewR (nat * nat * u64) unitR.
 Definition replica_tokenmR := gmapR (u64 * u64) tokenmR.
+Definition byte_stringO := listO w8.
+Definition replica_stringR := gmapR (u64 * u64) (agreeR byte_stringO).
 Definition trmlmR := gmap_viewR chan unitR.
 Definition group_trmlmR := gmapR u64 trmlmR.
 Canonical Structure dbhistO := leibnizO dbhist.
@@ -391,7 +396,6 @@ Class tulip_ghostG (Σ : gFunctors) :=
     #[global] txn_client_tokenG :: ghost_mapG Σ (nat * u64) unit;
     #[global] txn_postcondG :: ghost_mapG Σ nat (dbmap -> Prop);
     #[global] largest_tsG :: mono_natG Σ;
-    (* TODO: proph *)
     (* group resources defined in res_group.v *)
     #[global] group_prepG :: inG Σ group_natboolmvR;
     #[global] group_ppslG :: inG Σ group_ppslmR;
@@ -405,6 +409,7 @@ Class tulip_ghostG (Σ : gFunctors) :=
     #[global] ballotG :: inG Σ ballotR;
     #[global] replica_voteG :: inG Σ replica_votemR;
     #[global] replica_tokenG :: inG Σ replica_tokenmR;
+    #[global] replica_ilog_fnameG :: inG Σ replica_stringR;
     (* network resources defined din res_network.v *)
     #[global] group_trmlmG :: inG Σ group_trmlmR;
     (* txn local resources defined in program/txn/res.v *)
@@ -416,6 +421,7 @@ Class tulip_ghostG (Σ : gFunctors) :=
     #[global] gentid_predG :: savedPredG Σ val;
     #[global] gentid_reservedG :: ghost_mapG Σ u64 gname;
     #[global] gentid_sidG :: inG Σ sid_ownR;
+    #[global] tulip_stagedG :: stagedG Σ;
   }.
 
 Definition tulip_ghostΣ :=
@@ -439,7 +445,6 @@ Definition tulip_ghostΣ :=
      ghost_mapΣ (nat * u64) unit;
      ghost_mapΣ nat (dbmap -> Prop);
      mono_natΣ;
-     (* TODO: proph *)
      (* res_group.v *)
      GFunctor group_natboolmvR;
      GFunctor group_ppslmR;
@@ -453,6 +458,7 @@ Definition tulip_ghostΣ :=
      GFunctor ballotR;
      GFunctor replica_votemR;
      GFunctor replica_tokenmR;
+     GFunctor replica_stringR;
      (* res_network.v *)
      GFunctor group_trmlmR;
      (* program/txn/res.v *)
@@ -462,7 +468,8 @@ Definition tulip_ghostΣ :=
      GFunctor phistmR;
      ghost_mapΣ u64 gname;
      savedPredΣ val;
-     GFunctor sid_ownR
+     GFunctor sid_ownR;
+     stagedΣ
    ].
 
 #[global]
@@ -491,7 +498,6 @@ Record tulip_names :=
     txn_client_token : gname;
     txn_postcond : gname;
     largest_ts : gname;
-    (* TODO: proph *)
     (* res_group.v *)
     group_prep : gname;
     group_prepare_proposal : gname;
@@ -504,6 +510,7 @@ Record tulip_names :=
     replica_ballot : gname;
     replica_vote : gname;
     replica_token : gname;
+    replica_ilog_fname : gname;
     (* res_network.v *)
     group_trmlm : gname;
     (* tid *)
@@ -515,4 +522,3 @@ Definition sysNS := nroot .@ "sys".
 Definition tulipNS := sysNS .@ "tulip".
 Definition tsNS := sysNS .@ "ts".
 Definition txnlogNS := sysNS .@ "txnlog".
-Definition tidNS := sysNS .@ "tid".

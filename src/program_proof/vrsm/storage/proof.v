@@ -107,7 +107,7 @@ Qed.
 Lemma file_encodes_state_snapshot snap ops epoch :
   (length ops < 2 ^ 64)%Z →
   has_snap_encoding snap ops →
-  file_encodes_state ((u64_le (length snap) ++ snap) ++ u64_le epoch ++ u64_le (length ops))
+  file_encodes_state (u64_le (length snap) ++ snap ++ u64_le epoch ++ u64_le (length ops))
     epoch ops false
 .
 Proof.
@@ -610,6 +610,7 @@ Proof.
       iExists _, _, _; iFrame "HP".
       iPureIntro.
       rewrite -app_assoc.
+      list_simplifier.
       by apply file_encodes_state_snapshot.
     }
   }
@@ -660,8 +661,9 @@ Proof.
     iExists _, _; iFrame "HP #".
     iPureIntro.
     unfold newdata.
-    rewrite -app_assoc.
-    by apply file_encodes_state_snapshot.
+    rewrite -?app_assoc.
+    list_simplifier.
+    by eapply file_encodes_state_snapshot.
   }
   iModIntro.
   iExists _.
@@ -1076,8 +1078,8 @@ Proof.
         { word. }
         rewrite app_nil_l.
         rewrite -app_assoc.
-        unshelve (epose proof (file_encodes_state_snapshot snap [] 0 _ Hsnapenc)  as H; done).
-        simpl. lia.
+        list_simplifier.
+        by eapply file_encodes_state_snapshot.
       }
     }
     iNext.
@@ -1087,8 +1089,8 @@ Proof.
     iMod (fmlist_update with "Hallstates") as "[Hallstates Hallstates_lb]".
     {
       instantiate (1:=((replicate (n+1) ([]:list OpType, false)))).
-      rewrite replicate_S.
-      simpl.
+      replace (n + 1) with (1 + n) by lia.
+      rewrite !replicate_S.
       apply prefix_cons.
       apply prefix_nil.
     }
@@ -1115,8 +1117,8 @@ Proof.
       { word. }
       rewrite app_nil_l.
       rewrite -app_assoc.
-      unshelve (epose proof (file_encodes_state_snapshot snap [] 0 _ Hsnapenc)  as H; done).
-      simpl; lia.
+      list_simplifier.
+      by eapply file_encodes_state_snapshot.
     }
     iSplit.
     {
@@ -1159,8 +1161,8 @@ Proof.
       { word. }
       rewrite app_nil_l.
       rewrite -app_assoc.
-      unshelve (epose proof (file_encodes_state_snapshot snap [] 0 _ Hsnapenc)  as H; done).
-      simpl; lia.
+      list_simplifier.
+      by eapply file_encodes_state_snapshot.
     }
     iSplitL; first done.
     iPureIntro.
@@ -1568,24 +1570,8 @@ Proof.
     {
       iApply to_named.
       iExactEq "HnextIndex".
-
       repeat f_equal.
-      apply word.unsigned_inj; auto.
-      rewrite ?word.unsigned_add /=.
-      rewrite -[a in a = _]unsigned_U64.
-      f_equal.
-      replace (Z.of_nat (length snap_ops + (numOpsApplied + 1)))%Z with
-        (Z.of_nat (length snap_ops + numOpsApplied) + uint.Z (W64 1))%Z; last first.
-      { replace (uint.Z 1%Z) with 1%Z.
-        { clear. f_equal. lia. }
-        rewrite //=.
-      }
-      clear.
-      remember (Z.of_nat (length snap_ops + numOpsApplied)) as x.
-      { rewrite /W64.
-        rewrite ?word.ring_morph_add. f_equal.
-        rewrite word.of_Z_unsigned. auto.
-      }
+      word.
     }
     iPureIntro.
     word.
@@ -1601,9 +1587,7 @@ Proof.
     erewrite drop_S in Hrest_data_sz; eauto.
     rewrite /= ?length_app in Hrest_data_sz.
     rewrite Hlen_bytes u64_le_length in Hrest_data_sz.
-    assert (uint.nat (rest_ops_sl.(Slice.sz)) <= 1).
-    { word. }
-    lia.
+    word.
   }
 
   iDestruct (own_slice_small_sz with "Hdata_sl") as %Hdata_sl_sz.
@@ -1669,13 +1653,7 @@ Proof.
   destruct sealed.
   {
     exfalso.
-    assert (uint.nat rest_ops_sl.(Slice.sz) = 0%nat).
-    { assert (uint.Z 0 = 0%Z) as Heq_Z0 by auto.
-      rewrite Heq_Z0 in Heqb1. word.
-    }
-    rewrite -Hdata_sl_sz in H0.
-    rewrite length_app in H0.
-    rewrite Hsealedbytes /= in H0.
+    rewrite length_app Hsealedbytes /= in Hdata_sl_sz.
     word.
   }
 

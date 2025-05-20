@@ -71,7 +71,7 @@ Section proof.
           "HP" ∷ (own γ.(done_gn) (Excl ())
                   (* If this done token in this invariant, then the user has
                      called Wait() once and lacks the resources to do so again. *)
-                  ∨ [∗ set] i ∈ (fin_to_set u64), ⌜uint.nat i ≥ uint.nat total⌝ ∨ ⌜i ∈ remaining⌝ ∨ (P i))
+                  ∨ [∗ set] i ∈ (fin_to_set u64), ⌜ uint.nat total ≤ uint.nat i ⌝ ∨ ⌜i ∈ remaining⌝ ∨ (P i))
 
       ).
 
@@ -297,17 +297,12 @@ Proof.
     iModIntro.
     iIntros (??) "[%H1|[%H2|H3]]".
     {
-      assert (uint.nat x = uint.nat total ∨ uint.nat x ≥ uint.nat (word.add total 1)) as Hcases.
-      { word. }
-      destruct Hcases as [|].
+      destruct (decide (uint.nat total = uint.nat x)).
       {
         replace (x) with (total) by word.
-        iRight. iLeft.
-        iPureIntro. set_solver.
+        iRight. iLeft. iPureIntro. set_solver.
       }
-      {
-        iLeft. done.
-      }
+      { iLeft. word. }
     }
     {
       iRight.
@@ -410,7 +405,7 @@ Lemma wp_WaitGroup__Wait wg γ P n :
   }}}
     waitgroup.Wait wg
   {{{
-        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜uint.nat i ≥ uint.nat n⌝ ∨ (P i)
+        RET #(); [∗ set] i ∈ (fin_to_set u64), ⌜ uint.nat n ≤ uint.nat i ⌝ ∨ (P i)
   }}}.
 Proof.
   iIntros (Φ) "(Hdone&Htotal'&#Hwg) HΦ".

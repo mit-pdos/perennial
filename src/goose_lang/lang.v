@@ -108,6 +108,7 @@ Inductive prim_op2 : Set :=
  | AllocNOp (* array length (positive number), initial value *)
  | FinishStoreOp (* pointer, value *)
  | AtomicStoreOp (* pointer, value *) (* atomic store *)
+ | AtomicOpOp (op : bin_op) (* pointer, value *) (* atomic binary operation *)
  | GlobalPutOp (* string, val *)
 .
 
@@ -147,8 +148,6 @@ Inductive expr :=
   | Primitive2 (op: prim_op args2) (e1 e2 : expr)
   (* | Primitive3 (op: prim_op args3) (e0 e1 e2 : expr) *)
   | CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
-  (* Ordering on vals for implementing vmap *)
-  | TotalLe (e1 : expr) (e2 : expr)
   (* External FFI operation *)
   | ExternalOp (op: ffi_opcode) (e: expr)
   (* Prophecy *)
@@ -178,6 +177,7 @@ Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
 Notation AtomicStore := (Primitive2 AtomicStoreOp).
+Notation AtomicOp o := (Primitive2 (AtomicOpOp o)).
 Notation StartRead := (Primitive1 StartReadOp).
 Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
@@ -413,8 +413,6 @@ Proof using ext.
       | ExternalOp op e, ExternalOp op' e' => cast_if_and (decide (op = op')) (decide (e = e'))
       | CmpXchg e0 e1 e2, CmpXchg e0' e1' e2' =>
         cast_if_and3 (decide (e0 = e0')) (decide (e1 = e1')) (decide (e2 = e2'))
-      | TotalLe e1 e2, TotalLe e1' e2' =>
-        cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
       | NewProph, NewProph => left _
       | ResolveProph e1 e2, ResolveProph e1' e2' =>
         cast_if_and (decide (e1 = e1')) (decide (e2 = e2'))
@@ -546,7 +544,23 @@ Instance prim_op1_countable : Countable prim_op1.
 Proof. solve_countable prim_op1_rec 7%nat. Qed.
 
 Instance prim_op2_countable : Countable prim_op2.
-Proof. solve_countable prim_op2_rec 5%nat. Qed.
+Proof.
+  refine (inj_countable' (λ op, match op with
+                                | AllocNOp => inl 0
+                                | FinishStoreOp => inl 1
+                                | AtomicStoreOp => inl 2
+                                | GlobalPutOp => inl 3
+                                | AtomicOpOp x => inr x
+                                end)
+                         (λ x, match x with
+                               | inl 0 => AllocNOp
+                               | inl 1 => FinishStoreOp
+                               | inl 2 => AtomicStoreOp
+                               | inl 3 => GlobalPutOp
+                               | inr k => AtomicOpOp k
+                               | inl _ => AllocNOp
+                               end) _); by intros [].
+Qed.
 
 Definition prim_op' : Type := prim_op0 + prim_op1 + prim_op2.
 
@@ -641,7 +655,6 @@ Proof using ext.
      | Atomically el e => GenNode 13 [go el; go e]
      | ExternalOp op e => GenNode 20 [GenLeaf $ externOp op; go e]
      | CmpXchg e0 e1 e2 => GenNode 16 [go e0; go e1; go e2]
-     | TotalLe e1 e2 => GenNode 24 [go e1; go e2]
      | NewProph => GenNode 18 []
      | ResolveProph e1 e2 => GenNode 19 [go e1; go e2]
      end
@@ -680,7 +693,6 @@ Proof using ext.
      | GenNode 13 [el; e] => Atomically (go el) (go e)
      | GenNode 20 [GenLeaf (externOp op); e] => ExternalOp op (go e)
      | GenNode 16 [e0; e1; e2] => CmpXchg (go e0) (go e1) (go e2)
-     | GenNode 24 [e1; e2] => TotalLe (go e1) (go e2)
      | GenNode 18 [] => NewProph
      | GenNode 19 [e1; e2] => ResolveProph (go e1) (go e2)
      | _ => Val $ LitV LitUnit (* dummy *)
@@ -698,7 +710,7 @@ Proof using ext.
    for go).
  refine (inj_countable' enc dec _).
  refine (fix go (e : expr) {struct e} := _ with gov (v : val) {struct v} := _ for go).
-  - destruct e as [v| | | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
+  - destruct e as [v| | | | | | | | | | | | | | | | | | | | |]; simpl; f_equal;
       rewrite ?to_prim_op_correct;
       [exact (gov v)|done..].
  - destruct v; by f_equal.
@@ -747,8 +759,6 @@ Inductive ectx_item :=
   | CmpXchgLCtx (e1 : expr) (e2 : expr)
   | CmpXchgMCtx (v1 : val) (e2 : expr)
   | CmpXchgRCtx (v1 : val) (v2 : val)
-  | TotalLeLCtx (e2 : expr)
-  | TotalLeRCtx (v1 : val)
   | ResolveProphLCtx (v2 : val)
   | ResolveProphRCtx (e1 : expr)
   | AtomicallyCtx (e0 : expr).
@@ -775,8 +785,6 @@ Definition fill_item (Ki : ectx_item) (e : expr) : expr :=
   | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
   | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
   | CmpXchgRCtx v0 v1 => CmpXchg (Val v0) (Val v1) e
-  | TotalLeLCtx e2 => TotalLe e e2
-  | TotalLeRCtx v1 => TotalLe (Val v1) e
   | ResolveProphLCtx v2 => ResolveProph e (Val v2)
   | ResolveProphRCtx e1 => ResolveProph e1 e
   | AtomicallyCtx e1 => Atomically e e1
@@ -807,7 +815,6 @@ Fixpoint subst (x : String.string) (v : val) (e : expr)  : expr :=
   (* | Primitive3 op e1 e2 e3 => Primitive3 op (subst x v e1) (subst x v e2) (subst x v e3) *)
   | ExternalOp op e => ExternalOp op (subst x v e)
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
-  | TotalLe e1 e2 => TotalLe (subst x v e1) (subst x v e2)
   | NewProph => NewProph
   | ResolveProph e1 e2 => ResolveProph (subst x v e1) (subst x v e2)
   end.
@@ -917,10 +924,6 @@ Definition bin_op_eval_eq (v1 v2 : val) : option base_lit :=
   if decide (is_comparable v1 ∧ is_comparable v2) then
     Some $ LitBool $ bool_decide (v1 = v2)
   else None.
-
-Definition val_le (v1 v2 : val) : bool :=
-  (Pos.leb (encode v1) (encode v2))
-.
 
 Definition bin_op_eval (op : bin_op) (v1 v2 : val) : option val :=
   if decide (op = EqOp) then LitV <$> bin_op_eval_eq v1 v2
@@ -1133,7 +1136,6 @@ Definition base_trans (e: expr) :
   | Case (Val (InjLV v)) e1 e2 => ret_expr $ App e1 (Val v)
   | Case (Val (InjRV v)) e1 e2 => ret_expr $ App e2 (Val v)
   | Fork e => ret ([], Val $ LitV LitUnit, [e])
-  | TotalLe (Val v1) (Val v2) => atomically $ ret $ LitV $ LitBool (val_le v1 v2)
   (* handled separately *)
   | Atomically _ _ => undefined
   | ArbitraryInt =>
@@ -1193,6 +1195,16 @@ Definition base_trans (e: expr) :
        | (Reading 0, _) =>
            modifyσ (set heap <[l:=Free v]>);;
            ret $ LitV $ LitUnit
+       | _ => undefined
+      end)
+  | AtomicOp op (Val (LitV (LitLoc l))) (Val v) => (* atomic add *)
+    atomically
+      (nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
+       match nav with
+       | (Reading 0, oldv) =>
+           v ← unwrap (bin_op_eval op oldv v);
+           modifyσ (set heap <[l:=Free v]>);;
+           ret $ v
        | _ => undefined
       end)
   | ExternalOp op (Val v) => atomicallyM $ ffi_step op v
@@ -1742,6 +1754,7 @@ Notation AllocN := (Primitive2 AllocNOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
 Notation AtomicStore := (Primitive2 AtomicStoreOp).
+Notation AtomicOp o := (Primitive2 (AtomicOpOp o)).
 Notation StartRead := (Primitive1 StartReadOp).
 Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).

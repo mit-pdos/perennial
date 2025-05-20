@@ -10,11 +10,11 @@ Section execute_abort.
     own_replica_clog_half γ gid rid clog -∗
     own_replica_ilog_half γ gid rid ilog -∗
     group_inv γ gid -∗
-    replica_inv γ gid rid ==∗
+    replica_inv_weak γ gid rid ==∗
     own_replica_clog_half γ gid rid clog' ∗
     own_replica_ilog_half γ gid rid ilog ∗
     group_inv γ gid ∗
-    replica_inv γ gid rid.
+    replica_inv_weak γ gid rid.
   Proof.
     iIntros (clog') "#Hloglb Hclogprog Hilogprog Hgroup Hrp".
     iAssert (⌜not_stuck (apply_cmds clog')⌝)%I as %Hns.
@@ -71,6 +71,10 @@ Section execute_abort.
       rewrite length_app /=.
       clear -Hlen. lia.
     }
+    assert (Heqlast' : ge_lsn_last_ilog (length clog') ilog).
+    { eapply ge_lsn_last_ilog_weaken; last apply Heqlast.
+      rewrite length_app /=. lia.
+    }
     destruct (cm !! ts) as [b |] eqn:Hcm.
     { (* Case: Txn [ts] already finalized. Contradiction for committed; no-op for aborted. *)
       destruct b; first done.
@@ -87,6 +91,9 @@ Section execute_abort.
       (* Set commit map to false, reset currently prepared map and release locks. *)
       iDestruct (big_sepM_delete _ _ ts with "Hsafep") as "[Hpwrs Hsafep']".
       { apply Hcpm. }
+      iDestruct (big_sepS_delete_affine _ _ ts with "Hlnrzs") as "Hlnrzs'".
+      iDestruct (big_sepM_delete_affine _ _ ts with "Hsafebk") as "Hsafebk'".
+      iClear "Hlnrzs Hsafebk".
       iAssert (⌜dom pwrs ⊆ keys_all⌝)%I as %Hdompwrs.
       { iDestruct "Hpwrs" as (wrs) "(_ & _ & %Hvwrs & _ & %Hpwrs)".
         iPureIntro.
@@ -135,6 +142,8 @@ Section execute_abort.
         iApply (big_sepS_subseteq with "Hrpvds").
         set_solver.
       }
+      iSplit.
+      { by rewrite dom_delete_L. }
       iPureIntro.
       split.
       { rewrite dom_insert_L dom_delete_L. clear -Hvtss.

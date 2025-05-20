@@ -19,6 +19,7 @@ projs = {
     "goose": Proj("goose", "https://github.com/goose-lang/goose/", "master"),
     "new_goose": Proj("new_goose", "https://github.com/goose-lang/goose/", "new"),
     "std": Proj("std", "https://github.com/goose-lang/std", "master"),
+    "primitive": Proj("primitive", "https://github.com/goose-lang/primitive", "main"),
     "marshal": Proj("marshal", "https://github.com/tchajed/marshal", "master"),
     "examples": Proj(
         "examples", "https://github.com/mit-pdos/perennial-examples", "master"
@@ -29,6 +30,8 @@ projs = {
     "new_gokv": Proj("new_gokv", "https://github.com/mit-pdos/gokv", "new"),
     "mvcc": Proj("mvcc", "https://github.com/mit-pdos/vmvcc", "main"),
     "pav": Proj("pav", "https://github.com/mit-pdos/pav", "main"),
+    "etcd-raft": Proj("etcd-raft", "https://github.com/upamanyus/etcd-raft", "main"),
+    "etcd": Proj("etcd", "https://github.com/upamanyus/etcd", "main"),
 }
 
 
@@ -65,6 +68,7 @@ sp.run(
         "--goose",
         projs["goose"].path(),
         "--goose-examples",
+        "--channel",
         "--std",
         projs["std"].path(),
         "--marshal",
@@ -92,15 +96,27 @@ sp.run(
         "--compile",
         "--goose",
         projs["new_goose"].path(),
+        "--std-lib",
+        "--goose-examples",
+        "--channel",
         "--gokv",
         projs["new_gokv"].path(),
         "--marshal",
         projs["marshal"].path(),
         "--std",
         projs["std"].path(),
+        "--primitive",
+        projs["primitive"].path(),
+        "--etcd",
+        projs["etcd"].path(),
+        "--etcd-raft",
+        projs["etcd-raft"].path(),
+        "--go-journal",
+        projs["journal"].path(),
     ],
     check=True,
 )
 
 print("\nSeeing if anything is out of sync")
 sp.run(["git", "diff", "--exit-code"], check=True)
+print("\nSuccess!")

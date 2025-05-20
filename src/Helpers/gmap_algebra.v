@@ -1,4 +1,5 @@
 From stdpp Require Export list gmap.
+From iris.algebra Require Import stepindex_finite.
 From iris.algebra Require Export list cmra.
 From iris.algebra Require Import gset.
 From iris.algebra Require Import updates local_updates proofmode_classes big_op gmap.
@@ -50,6 +51,20 @@ Set Default Proof Using "Type".
 
 Section big_sepS_split.
 
+  Lemma big_sepS_singleton_sep {K A} `{Countable K} `{!inG Σ (gmapUR K (dfrac_agreeR A))}
+    γ (X : gset K) (f : K → A) (q1 q2 : Qp) :
+    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (q1 + q2)) (f s)]}) -∗
+    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn q1) (f s)]}) ∗
+    ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn q2) (f s)]}).
+  Proof.
+    iIntros "H".
+    rewrite -big_sepS_sep.
+    iApply (big_sepS_mono with "H").
+    iIntros (x Hin) "H".
+    rewrite -own_op singleton_op.
+    rewrite -dfrac_agree_op.
+    rewrite dfrac_op_own //.
+  Qed.
 
   (* TODO: move this to a more shareable place *)
   Lemma big_sepS_singleton_sep_half {K A} `{Countable K} `{!inG Σ (gmapUR K (dfrac_agreeR A))}
@@ -59,12 +74,8 @@ Section big_sepS_split.
     ([∗ set] s ∈ X, own γ {[ s := to_dfrac_agree (DfracOwn (1 / 2)) (f s)]}).
   Proof.
     iIntros "H".
-    rewrite -big_sepS_sep.
-    iApply (big_sepS_mono with "H").
-    iIntros (x Hin) "H".
-    rewrite -own_op singleton_op.
-    rewrite -dfrac_agree_op.
-    rewrite dfrac_op_own Qp.half_half //.
+    iApply (big_sepS_singleton_sep with "[H]").
+    by rewrite Qp.half_half.
   Qed.
 
   Lemma own_gset_to_gmap_singleton_sep_half {K A} `{Countable K} `{!inG Σ (gmapUR K (dfrac_agreeR A))}

@@ -5,6 +5,7 @@ From iris.algebra Require Export dfrac.
 From iris.algebra Require Import csum excl auth cmra_big_op numbers lib.gmap_view.
 From iris.bi Require Import fractional.
 From Perennial.base_logic Require Export lib.own.
+From Perennial.iris_lib Require Export dfractional.
 From iris.proofmode Require Export tactics.
 From Perennial.algebra Require Export blocks.
 Set Default Proof Using "Type".
@@ -105,7 +106,7 @@ Section definitions.
 
   Definition na_heap_pointsto_st (st : lock_state)
              (l : L) (dq : dfrac) (v: V) : iProp Σ :=
-    own (na_heap_name hG) (@gmap_view_frag L _ _ (na_heap_cmra V) l dq (to_lock_stateR st, to_agree v)).
+    own (na_heap_name hG) (@gmap_view_frag _ L _ _ (na_heap_cmra V) l dq (to_lock_stateR st, to_agree v)).
 
   Definition na_heap_pointsto_def (l : L) (dq : dfrac) (v: V) : iProp Σ :=
     na_heap_pointsto_st (RSt 0) l dq v.
@@ -141,7 +142,7 @@ Section definitions.
 
   Definition na_heap_ctx (σ:gmap L (LK * V)) : iProp Σ := (∃ (m : gmap L (agreeR gnameO)) (sz: gmap Z Z),
     ⌜ dom m ⊆ dom σ ⌝ ∧
-     own (na_heap_name hG) (@gmap_view_auth _ _ _ (na_heap_cmra V) (DfracOwn 1) (to_na_heap tls σ)) ∗
+     own (na_heap_name hG) (@gmap_view_auth _ _ _ _ (na_heap_cmra V) (DfracOwn 1) (to_na_heap tls σ)) ∗
      own (na_meta_name hG) (gmap_view_auth (DfracOwn 1) m) ∗
      own (na_size_name hG) (● to_na_size sz) ∗
      ⌜ block_sizes_wf σ sz ⌝ )%I.
@@ -241,19 +242,38 @@ Section na_heap.
     AsFractional (na_heap_pointsto_st WSt l (DfracOwn q) v) (λ q, na_heap_pointsto_st WSt l (DfracOwn q) v)%I q.
   Proof. split; first done. apply _. Qed.
 
-  Global Instance na_heap_pointsto_fractional l v: Fractional (λ q, l ↦{#q} v)%I.
+  Lemma na_heap_pointsto_persist l dq v:
+    l ↦{dq} v ==∗ l ↦□ v.
   Proof.
-    intros p q.
-    rewrite na_heap_pointsto_eq -own_op -gmap_view_frag_add -pair_op.
-    rewrite agree_idemp.
-    rewrite // Cinr_op.
+    rewrite na_heap_pointsto_eq.
+    iApply own_update.
+    apply gmap_view_frag_persist.
   Qed.
-  Global Instance na_heap_pointsto_as_fractional l q v:
-    AsFractional (l ↦{#q} v) (λ q, l ↦{#q} v)%I q.
-  Proof. split; first done. apply _. Qed.
 
   Global Instance na_heap_pointsto_persistent l v : Persistent (l ↦□ v).
   Proof. rewrite na_heap_pointsto_eq. apply _. Qed.
+
+  Global Instance na_heap_pointsto_dfractional l v : DFractional (λ dq, na_heap_pointsto l dq v).
+  Proof.
+    constructor; intros.
+    - rewrite na_heap_pointsto_eq -own_op -gmap_view_frag_op -pair_op.
+      rewrite agree_idemp.
+      rewrite // Cinr_op.
+    - apply _.
+    - iIntros "H". iMod (na_heap_pointsto_persist with "H") as "$". done.
+  Qed.
+
+  Global Instance na_heap_pointsto_as_dfractional l dq v :
+    AsDFractional (na_heap_pointsto l dq v) (λ dq, na_heap_pointsto l dq v) dq.
+  Proof. auto. Qed.
+
+  Global Instance na_heap_pointsto_fractional l v: Fractional (λ q, l ↦{#q} v)%I.
+  Proof.
+    apply (fractional_of_dfractional (λ dq, na_heap_pointsto l dq v)).
+  Qed.
+  Global Instance na_heap_pointsto_as_fractional l q v:
+    AsFractional (l ↦{#q} v) (λ q, l ↦{#q} v)%I q.
+  Proof. auto. Qed.
 
   Global Instance na_heap_pointsto_combine_sep_gives l dq1 dq2 v1 v2 :
     CombineSepGives (l ↦{dq1} v1)%I (l ↦{dq2} v2)%I ⌜ ✓(dq1 ⋅ dq2) ∧ v1 = v2 ⌝%I.
@@ -262,14 +282,6 @@ Section na_heap.
          iDestruct (own_valid_2 with "H1 H2") as %Hvalid.
          iModIntro. iPureIntro. apply gmap_view_frag_op_valid in Hvalid as [? [? ?]].
          split; first done. simpl in *. pose proof (to_agree_op_inv_L _ _ H3). done.
-  Qed.
-
-  Lemma na_heap_pointsto_persist l dq v:
-    l ↦{dq} v ==∗ l ↦□ v.
-  Proof.
-    rewrite na_heap_pointsto_eq.
-    iApply own_update.
-    apply gmap_view_frag_persist.
   Qed.
 
   Lemma na_heap_pointsto_st_agree l st1 st2 q1 q2 v1 v2 :
@@ -301,13 +313,24 @@ Section na_heap.
   Lemma na_heap_pointsto_agree l q1 q2 v1 v2 : l ↦{q1} v1 ∗ l ↦{q2} v2 ⊢ ⌜v1 = v2⌝.
   Proof. by rewrite na_heap_pointsto_eq na_heap_pointsto_st_agree. Qed.
 
-  Lemma na_heap_pointsto_st_frac_valid l q st v : na_heap_pointsto_st st l (DfracOwn q) v -∗ ⌜(q ≤ 1)%Qp⌝.
+  Lemma na_heap_pointsto_st_valid l dq st v :
+    na_heap_pointsto_st st l dq v -∗ ⌜✓dq⌝.
   Proof.
     rewrite /na_heap_pointsto_st.
     rewrite own_valid discrete_valid.
     rewrite gmap_view_frag_valid dfrac_valid.
     iPureIntro. naive_solver.
   Qed.
+
+  Lemma na_heap_pointsto_st_frac_valid l q st v :
+    na_heap_pointsto_st st l (DfracOwn q) v -∗ ⌜(q ≤ 1)%Qp⌝.
+  Proof.
+    iIntros "H". iDestruct (na_heap_pointsto_st_valid with "H") as %Hvalid%dfrac_valid.
+    done.
+  Qed.
+
+  Lemma na_heap_pointsto_valid l dq v : na_heap_pointsto l dq v -∗ ⌜✓dq⌝.
+  Proof. by rewrite na_heap_pointsto_eq; apply na_heap_pointsto_st_valid. Qed.
 
   Lemma na_heap_pointsto_frac_valid l q v : na_heap_pointsto l (DfracOwn q) v -∗ ⌜(q ≤ 1)%Qp⌝.
   Proof. by rewrite na_heap_pointsto_eq; apply na_heap_pointsto_st_frac_valid. Qed.
@@ -667,7 +690,7 @@ Section na_heap.
 
   Lemma na_heap_pointsto_lookup tls σ l lk (q: dfrac) v :
     own (na_heap_name hG) (gmap_view_auth (DfracOwn 1) (to_na_heap tls σ)) -∗
-    own (na_heap_name hG) (@gmap_view_frag L _ _ (na_heap_cmra V) l q (to_lock_stateR lk, to_agree v)) -∗
+    own (na_heap_name hG) (@gmap_view_frag _ L _ _ (na_heap_cmra V) l q (to_lock_stateR lk, to_agree v)) -∗
     ⌜∃ ls' (n' : nat),
                 σ !! l = Some (ls', v) ∧
                 tls ls' = match lk with
@@ -707,7 +730,7 @@ Section na_heap.
 
   Lemma na_heap_pointsto_lookup_1 tls σ l lk v :
     own (na_heap_name hG) (gmap_view_auth (DfracOwn 1) (to_na_heap tls σ)) -∗
-    own (na_heap_name hG) (@gmap_view_frag L _ _ (na_heap_cmra V) l (DfracOwn 1) (to_lock_stateR lk, to_agree v)) -∗
+    own (na_heap_name hG) (@gmap_view_frag _ L _ _ (na_heap_cmra V) l (DfracOwn 1) (to_lock_stateR lk, to_agree v)) -∗
     ⌜∃ ls', σ !! l = Some (ls', v) ∧ tls ls' = lk⌝.
   Proof.
     iIntros "H● H◯".
