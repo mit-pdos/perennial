@@ -11,6 +11,58 @@ Definition mono_maps (ms : list merkle_map_ty) :=
   uint.Z i ≤ uint.Z j →
   mi ⊆ mj.
 
+Lemma mono_characterization ms :
+  mono_maps ms →
+  ∀ k,
+  (* all flat. *)
+  (∀ (ep : w64) m_ep,
+    ms !! (uint.nat ep) = Some m_ep →
+    m_ep !! k = None)
+  ∨
+  (∃ (insert_ep : w64) m_insert,
+    (* flat. *)
+    (∀ (ep : w64),
+      uint.Z ep < uint.Z insert_ep →
+      ∃ m_ep,
+      ms !! (uint.nat ep) = Some m_ep ∧
+      m_ep !! k = None) ∧
+    (* until a spike. *)
+    ms !! (uint.nat insert_ep) = Some m_insert ∧
+    is_Some (m_insert !! k)).
+Proof. Admitted.
+
+Lemma mono_get_insertion ms (start_ep end_ep : w64) m_start m_end k :
+  mono_maps ms →
+  ms !! (uint.nat start_ep) = Some m_start →
+  ms !! (uint.nat end_ep) = Some m_end →
+  m_start !! k = None →
+  is_Some (m_end !! k) →
+
+  ∃ (insert_ep : w64) m_pred m_insert,
+  ms !! (pred $ uint.nat insert_ep) = Some m_pred ∧
+  ms !! (uint.nat insert_ep) = Some m_insert ∧
+  m_pred !! k = None ∧
+  is_Some (m_insert !! k).
+Proof.
+  intros Hmono Hlook_start Hlook_end ??.
+  opose proof (bar _ Hmono k) as [Hmono1 | Hmono1].
+  - exfalso. ospecialize (Hmono1 _ _ Hlook_end).
+    destruct (m_end !! k); [done|].
+    by eapply is_Some_None.
+  - destruct Hmono1 as (insert_ep&?&Hflat&Hlook_insert&?).
+    destruct (decide (uint.Z insert_ep = 0)).
+    { exfalso.
+      opose proof (Hmono _ _ _ _ Hlook_insert Hlook_start _) as Hsub; [word|].
+      opose proof (lookup_weaken_is_Some _ _ _ _ Hsub); [done|].
+      destruct (m_start !! k); [done|].
+      by eapply is_Some_None. }
+    opose proof (Hflat (word.sub insert_ep (W64 1)) _) as (?&Hlook_pred&?); [word|].
+    eexists insert_ep, _, _.
+    split.
+    { by replace (pred _) with (uint.nat (word.sub insert_ep (W64 1))) by word. }
+    done.
+Qed.
+
 Definition audit_gs_inv (gs : list (merkle_map_ty * dig_ty)) : iProp Σ :=
   "#His_digs" ∷ ([∗ list] x ∈ gs,
     "#His_map" ∷ is_merkle_map x.1 x.2) ∗
