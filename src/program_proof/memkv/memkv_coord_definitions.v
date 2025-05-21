@@ -3,6 +3,8 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.grove_shared Require Import urpc_proof urpc_spec.
 From Perennial.program_proof.memkv Require Import common_proof memkv_shard_definitions.
 
+#[local] Set Universe Polymorphism.
+
 Definition uCOORD_ADD: nat :=
   Eval vm_compute in match COORD_ADD with LitV (LitInt n) => uint.nat n | _ => 0 end.
 Definition uCOORD_GET: nat :=
@@ -22,7 +24,7 @@ Definition all_are_shard_servers (s:list u64) γkv : iProp Σ :=
               (∃ γ, is_shard_server host γ ∗ ⌜γ.(kv_gn) = γkv⌝)
 .
 
-Definition is_coord_server_addSpec γkv : RpcSpec :=
+Polymorphic Definition is_coord_server_addSpec γkv : RpcSpec :=
   {| spec_ty := u64;
      spec_Pre := (λ host reqData, ⌜has_encoding_Uint64 reqData host ⌝ ∗
                                    ∃ γ, ⌜ γ.(kv_gn) = γkv ⌝ ∗ is_shard_server host γ)%I;
@@ -32,7 +34,7 @@ Definition has_encoding_shardMapping (data : list u8) (l: list u64) :=
   has_encoding data (EncUInt64 <$> l) ∧
   length l = uint.nat 65536.
 
-Definition is_coord_server_getSpec γkv : RpcSpec :=
+Polymorphic Definition is_coord_server_getSpec γkv : RpcSpec :=
   {| spec_ty := unit;
      spec_Pre := (λ _ reqData, True)%I;
      spec_Post := (λ _ reqData repData,

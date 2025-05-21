@@ -23,6 +23,8 @@
 -Q external/iris/iris_unstable iris.unstable
 -Q external/iris/iris_heap_lang iris.heap_lang
 -Q external/coqutil/src/coqutil coqutil
+-Q external/diaframe/diaframe diaframe
+-Q external/diaframe/diaframe_heap_lang diaframe.heap_lang
 -Q external/Goose Goose
 -Q external/record-update/src RecordUpdate
 -Q external/coq-tactical/src Tactical

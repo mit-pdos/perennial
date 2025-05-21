@@ -5,6 +5,8 @@ From Goose.github_com.mit_pdos.gokv Require Import memkv.
 
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_coord_definitions.
 
+#[local] Set Universe Polymorphism.
+
 Section memkv_coord_ghost_init_proof.
 
 (* These lemmas happen *before* we get node local names (e.g. the gname for memory, crashes etc. *)

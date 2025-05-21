@@ -1,7 +1,12 @@
 From Perennial.program_proof Require Import grove_prelude.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 
-From Perennial.program_proof.memkv Require Export memkv_shard_definitions memkv_put_proof memkv_conditional_put_proof memkv_get_proof memkv_install_shard_proof memkv_getcid_proof memkv_move_shard_proof common_proof.
+From Perennial.program_proof.memkv Require Export
+  memkv_shard_definitions
+  memkv_put_proof memkv_conditional_put_proof memkv_get_proof memkv_install_shard_proof memkv_getcid_proof memkv_move_shard_proof
+  common_proof.
+
+#[local] Set Universe Polymorphism.
 
 Section memkv_shard_start_proof.
 

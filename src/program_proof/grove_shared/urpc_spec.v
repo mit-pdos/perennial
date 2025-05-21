@@ -12,14 +12,14 @@ Context `{!urpcregG Σ}.
 Context `{HPRE: !gooseGlobalGS Σ}.
 
 (* Higher-level interface for defining a uRPC spec. *)
-Polymorphic Record RpcSpec :=
+Polymorphic Record RpcSpec@{u} :=
   {
-    spec_ty : Type;
+    spec_ty : Type@{u};
     spec_Pre : spec_ty → list u8 → iProp Σ;
     spec_Post : spec_ty → list u8 → list u8 → iProp Σ
   }.
 
-Polymorphic Program Definition RpcSpec_Spec (spec : RpcSpec) : savedSpecO Σ (list u8) (list u8) :=
+Program Polymorphic Definition RpcSpec_Spec@{u} (spec : RpcSpec@{u}) : savedSpecO Σ (list u8) (list u8) :=
   λ args, λne (Φ : list u8 -d> iPropO Σ), (∃ x,
     spec.(spec_Pre) x args ∗ (∀ rep, spec.(spec_Post) x args rep -∗ Φ rep))%I.
 Next Obligation. solve_proper. Qed.
@@ -35,7 +35,7 @@ Local Example spec_iprop :=
   |}.
 
 (* XXX: using this because [list] is not universe polymorphic. *)
-Inductive plist (A : Type) :=
+Polymorphic Inductive plist (A : Type) :=
 | pnil : plist A
 | pcons : A -> plist A -> plist A.
 Arguments pnil {A}.
@@ -46,8 +46,8 @@ Arguments pcons {A} a l.
 Polymorphic Inductive pprod (A : Type) (B:Type) :=
 | ppair : A → B → pprod A B.
 Arguments ppair {A} {B} a b.
-Definition pfst {A B} (p:pprod A B) := let (a, _) := p in a.
-Definition psnd {A B} (p:pprod A B) := let (_, b) := p in b.
+Polymorphic Definition pfst {A B} (p:pprod A B) := let (a, _) := p in a.
+Polymorphic Definition psnd {A B} (p:pprod A B) := let (_, b) := p in b.
 
 Set Universe Polymorphism.
 Fixpoint dom_RpcSpec_list (l: plist (pprod u64 RpcSpec)) : gset u64 :=
