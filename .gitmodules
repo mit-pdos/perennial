@@ -17,3 +17,6 @@
 [submodule "external/iris-named-props"]
 	path = external/iris-named-props
 	url = https://github.com/tchajed/iris-named-props
+[submodule "external/diaframe"]
+	path = external/diaframe
+	url = https://gitlab.mpi-sws.org/iris/diaframe.git

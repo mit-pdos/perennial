@@ -182,6 +182,10 @@ Definition is_uRPCClient (cl : loc) (srv : chan) : iProp Σ :=
     "#Hchan" ∷ inv urpc_clientN (reply_chan_inner Γ client) ∗
     "#Hlk" ∷ is_lock urpc_lockN #lk (Client_lock_inner Γ cl lk mref).
 
+Global Instance is_uRPCClient_pers cl srv :
+  Persistent (is_uRPCClient cl srv).
+Proof. apply _. Qed.
+
 Definition Client_reply_own (cl : loc) : iProp Σ :=
   ∃ Γ (lk : loc) client srv (mref : loc),
     "#Hstfields" ∷ ("mu" ∷ readonly (cl ↦[Client :: "mu"] #lk) ∗

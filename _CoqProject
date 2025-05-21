@@ -15,6 +15,8 @@
 -arg -w -arg -deprecated-typeclasses-transparency-without-locality
 # Iris-disabled warnings
 -arg -w -arg -notation-overridden,-redundant-canonical-projection,-unknown-warning,-argument-scope-delimiter
+# diaframe has a bunch of these
+-arg -w -arg -ltac2-unused-variable
 -Q external/stdpp/stdpp stdpp
 -Q external/stdpp/stdpp_unstable stdpp.unstable
 -Q external/stdpp/stdpp_bitvector stdpp.bitvector
@@ -23,6 +25,8 @@
 -Q external/iris/iris_unstable iris.unstable
 -Q external/iris/iris_heap_lang iris.heap_lang
 -Q external/coqutil/src/coqutil coqutil
+-Q external/diaframe/diaframe diaframe
+-Q external/diaframe/diaframe_heap_lang diaframe.heap_lang
 -Q external/Goose Goose
 -Q external/record-update/src RecordUpdate
 -Q external/coq-tactical/src Tactical

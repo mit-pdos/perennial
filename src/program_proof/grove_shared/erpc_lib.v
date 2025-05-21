@@ -34,7 +34,7 @@ Proof. solve_inG. Qed.
 (* TODO: rename more things to erpc. *)
 Section rpc.
 Context `{!ffi_semantics ext ffi, !ext_types ext}.
-Context  {R:Type}.
+Context  {R:Type@{universes.Logic}}.
 Context `{!erpcG Σ R}.
 Context `{!invGS Σ}.
 
@@ -114,7 +114,7 @@ Local Definition ReplyTable_inv γrpc: iProp Σ :=
 Definition replyTableInvN : namespace := nroot .@ "replyTableInvN".
 Definition rpcRequestInvN req := nroot .@ "rpcRequestInvN" .@ (req.(Req_Seq)).
 
-Definition is_eRPCRequest γrpc γreq (PreCond : iProp Σ) (PostCond : R -> iProp Σ) (req:eRPCRequestID) : iProp Σ :=
+Polymorphic Definition is_eRPCRequest γrpc γreq (PreCond : iProp Σ) (PostCond : R -> iProp Σ) (req:eRPCRequestID) : iProp Σ :=
   inv (rpcRequestInvN req) (RPCRequest_inv γrpc γreq PreCond PostCond req).
 
 Definition is_eRPCServer γrpc : iProp Σ :=
