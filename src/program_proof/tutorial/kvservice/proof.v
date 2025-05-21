@@ -6,6 +6,10 @@ From Perennial.program_proof Require Import std_proof.
 From Perennial.goose_lang.automation Require Import extra_tactics proof_automation marshal_specs.
 From Perennial.goose_lang Require Import proofmode.
 
+From Perennial.program_proof.tutorial.kvservice Require Import get_proof_gk.
+From Perennial.program_proof.tutorial.kvservice Require Import conditionalput_proof_gk.
+From Perennial.program_proof.tutorial.kvservice Require Import put_proof_gk.
+
 Set Default Proof Using "Type".
 
 Unset Printing Projections.
@@ -83,13 +87,13 @@ Qed.
 
 #[global] Instance wp_Server__put (s:loc) args__v Ψ :
   SPEC (args: put.C),
-  {{{
+  {{
         "#Hsrv" ∷ is_Server s ∗
         "Hspec" ∷ put_core_spec args Ψ ∗
         "Hargs" ∷ put.own args__v args (DfracOwn 1)
-  }}}
+  }}
   Server__put #s args__v
-  {{{
+  {{
         RET #(); Ψ ()
   }}
 .
@@ -100,13 +104,13 @@ Proof.
 Qed.
 
 #[global] Instance wp_Server__conditionalPut (s:loc) args__v Ψ :
-  SPEC (args: conditionalPut.C), {{{
+  SPEC (args: conditionalPut.C), {{
         "#Hsrv" ∷ is_Server s ∗
         "Hspec" ∷ conditionalPut_core_spec args Ψ ∗
         "Hargs" ∷ conditionalPut.own args__v args (DfracOwn 1)
-  }}}
+  }}
     Server__conditionalPut #s args__v
-  {{{ r, RET #(str r); Ψ r }}}
+  {{ r, RET #(str r); Ψ r }}
 .
 Proof.
   iSteps.
@@ -116,13 +120,13 @@ Qed.
 #[global] Opaque Server__conditionalPut.
 
 #[global] Instance wp_Server__get (s:loc) args__v :
-  SPEC args Ψ, {{{
+  SPEC args Ψ, {{
         "#Hsrv" ∷ is_Server s ∗
         "Hspec" ∷ get_core_spec args Ψ ∗
         "Hargs" ∷ get.own args__v args (DfracOwn 1)
-  }}}
+  }}
     Server__get #s args__v
-  {{{
+  {{
         r, RET #(str r); Ψ r
   }}
 .
@@ -220,6 +224,11 @@ Typeclasses Opaque decodePutArgs.
 Typeclasses Opaque Server__getFreshNum.
 #[local] Opaque Server__getFreshNum.
 
+#[local] Opaque get_gk.Unmarshal.
+#[local] Opaque conditionalput_gk.Unmarshal.
+#[local] Opaque put_gk.Unmarshal.
+#[local] Opaque Server__put.
+
 Lemma wp_Server__Start (s:loc) (host:u64) :
   {{{
         "#Hsrv" ∷ is_Server s ∗
@@ -271,7 +280,10 @@ Proof.
       wp_apply (get.wp_Decode _ _ _ [] with "[Hreq_sl]").
       { rewrite app_nil_r. iFrame. by iPureIntro. }
       iIntros (??) "[Hargs Hreq_sl]".
-      wp_apply (wp_Server__get with "[$]").
+      wp_pures.
+      iStep.
+      iFrame "Hsrv Hspec Hargs".
+      iModIntro. iNext.
       iIntros (?) "HΨ".
       wp_pures. wp_apply wp_StringToBytes.
       iIntros (ret_sl) "Hret_sl".
@@ -290,7 +302,10 @@ Proof.
       wp_apply (conditionalPut.wp_Decode _ _ _ [] with "[Hreq_sl]").
       { rewrite app_nil_r. iFrame. done. }
       iIntros (??) "[Hargs Hreq_sl]".
-      wp_apply (wp_Server__conditionalPut with "[$]").
+      wp_pures.
+      iStep.
+      iFrame "Hsrv Hspec Hargs".
+      iModIntro. iNext.
       iIntros (?) "HΨ".
       wp_apply wp_StringToBytes.
       iIntros (?) "Henc_req".
@@ -309,8 +324,15 @@ Proof.
       wp_apply (put.wp_Decode _ _ _ [] with "[Hreq_sl]").
       { rewrite app_nil_r. iFrame. done. }
       iIntros (??) "Hargs". iDestruct "Hargs" as "[Hargs _]".
-      wp_apply (wp_Server__put with "[$Hsrv $Hargs Hspec //]").
-      iIntros "HΨ". wp_pures.
+      iStep.
+      iModIntro. iSplit; [ done | ].
+      iNext. iIntros "_".
+      wp_pures.
+      iStep.
+      iFrame "Hsrv Hargs".
+      iModIntro.
+      rewrite /named; iFrame "Hspec".
+      iIntros "!> HΨ". wp_pures.
       iApply "HΦ"; iFrame.
       by iDestruct (own_slice_small_nil _ (DfracOwn 1)) as "$".
     }
@@ -395,10 +417,13 @@ Proof.
     iApply (monotonic_fact with "[] Hspec").
     iModIntro.
     iSteps.
+    (* TODO: this is ugly *)
+    replace (u64_le x5) with (u64_le x5 ++ []) by (rewrite app_nil_r //).
+    iSteps.
   }
   { (* case: Call returns error *)
     iSteps.
-    wp_if_destruct; [ done | ].
+    wp_if_destruct.
     iSteps.
     iModIntro. iModIntro.
     rewrite decide_False //.
@@ -408,6 +433,7 @@ Qed.
 
 #[global] Opaque urpc.Client__Call.
 #[global] Opaque encodePutArgs.
+#[global] Opaque put_gk.Marshal.
 
 Lemma wp_Client__putRpc Post cl args args__v:
   {{{
@@ -429,8 +455,9 @@ Proof.
   { done. }
   iIntros (rep_ptr) "Hrep".
   wp_pures.
-  wp_apply (putArgs.wp_encode) => /=. iExists _; iFrame.
-  iIntros (sl bs) "!> (Hargs & Hreq_sl & %Henc)".
+  wp_apply wp_NewSlice. iIntros (s) "Hs".
+  wp_apply (put.wp_Encode with "[$]").
+  iIntros (??) "(%Henc & Hargs_own & Hreq_sl)".
   wp_pures.
   iNamed "Hcl".
   wp_loadField.
@@ -452,7 +479,6 @@ Proof.
   {
     iSteps.
     wp_if_destruct.
-    { by exfalso. }
     iModIntro. iSteps.
     by rewrite decide_False.
   }
@@ -462,7 +488,9 @@ Typeclasses Opaque
   encodeConditionalPutArgs encodeGetArgs
 .
 
-Lemma wp_Client__conditionalPutRpc Post cl args argsᵥ :
+#[local] Opaque conditionalput_gk.Marshal.
+
+Lemma wp_Client__conditionalPutRpc Post cl args args__v :
   {{{
         "Hargs" ∷ conditionalPut.own args__v args (DfracOwn 1) ∗
         "#Hcl" ∷ is_Client cl ∗
@@ -482,10 +510,9 @@ Proof.
   { done. }
   iIntros (rep_ptr) "Hrep".
   wp_pures.
-
-  wp_apply (conditionalPutArgs.wp_encode).
-  iExists _; iFrame.
-  iIntros "!>" (??) "(Hargs & %Henc & Hreq_sl)".
+  wp_apply wp_NewSlice. iIntros (s) "Hs".
+  wp_apply (conditionalPut.wp_Encode with "[$]").
+  iIntros (??) "(%Henc & Hargs_own & Hreq_sl)".
   iNamed "Hcl".
   wp_loadField.
   iNamed "Hhost".
@@ -507,11 +534,13 @@ Proof.
   }
   {
     iSteps.
-    wp_if_destruct; [ by exfalso | ].
+    wp_if_destruct.
     iSteps.
     iModIntro. iModIntro. by rewrite decide_False.
   }
 Qed.
+
+#[local] Opaque get_gk.Marshal.
 
 Lemma wp_Client__getRpc Post cl args args__v :
   {{{
@@ -558,7 +587,7 @@ Proof.
   }
   {
     iSteps.
-    wp_if_destruct; [ by exfalso | ].
+    wp_if_destruct.
     iSteps.
     iModIntro. iModIntro.
     by rewrite decide_False.
@@ -628,12 +657,6 @@ Proof.
   wp_forBreak_cond.
 
   wp_load.
-  wp_pures.
-  wp_apply (wp_allocStruct).
-  { val_ty. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
   wp_pures.
   wp_loadField.
 
@@ -710,12 +733,6 @@ Proof.
   wp_forBreak_cond.
 
   wp_load.
-  wp_pures.
-  wp_apply (wp_allocStruct).
-  { val_ty. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
   wp_pures.
   wp_loadField.
 
@@ -795,12 +812,6 @@ Proof.
   wp_forBreak_cond.
 
   wp_load.
-  wp_pures.
-  wp_apply (wp_allocStruct).
-  { val_ty. }
-  iIntros (args_ptr) "Hargs".
-  iDestruct (struct_fields_split with "Hargs") as "HH".
-  iNamed "HH".
   wp_pures.
   wp_loadField.
 
