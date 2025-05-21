@@ -49,7 +49,7 @@ Section goose_lang_instances.
   Qed.
 
   Global Instance load_primitive_spec E (l: loc) :
-    SPEC ⟨E⟩ (v: val) (q: dfrac), {{ ▷ l ↦{q} v }} ! #l {{ RET v; l ↦{q} v }}.
+    SPEC ⟨E⟩ (v: val) (q: dfrac), {{ ▷ heap_pointsto l q v }} ! #l {{ RET v; heap_pointsto l q v }}.
   Proof.
     iSteps as (v q) "Hl".
     wp_apply (wp_load with "Hl").
@@ -204,7 +204,7 @@ Section goose_lang_instances.
   Qed.
 
   Global Instance store_primitive_spec l v' E :
-    SPEC ⟨E⟩ v, {{ ▷ l ↦ v }} #l <- v' {{ RET #(); l ↦ v' }}.
+    SPEC ⟨E⟩ v, {{ ▷ heap_pointsto l (DfracOwn 1) v }} #l <- v' {{ RET #(); heap_pointsto l (DfracOwn 1) v' }}.
   Proof.
     iSteps as (v) "Hl".
     iApply (wp_store with "Hl").

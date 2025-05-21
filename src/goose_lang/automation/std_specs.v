@@ -31,18 +31,18 @@ Section proofs.
     iSteps.
   Qed.
 
-  #[global] Instance lock_acquire_spec lk N R :
-    SPEC ⟨⊤⟩ {{ is_lock N lk R }} lock.acquire lk {{ RET #(); locked lk ∗ R }}.
+  #[global] Instance Mutex__Lock_spec lk N R :
+    SPEC ⟨⊤⟩ {{ is_lock N lk R }} Mutex__Lock lk {{ RET #(); locked lk ∗ R }}.
   Proof.
     iStep.
-    wp_apply (acquire_spec' with "[$]"); auto.
+    wp_apply (wp_Mutex__Lock with "[$]"); auto.
   Qed.
 
-  #[global] Instance lock_release_spec lk N R :
-    SPEC {{ is_lock N lk R ∗ locked lk ∗ R }} lock.release lk {{ RET #(); emp }}.
+  #[global] Instance Mutex__Unlock_spec lk N R :
+    SPEC {{ is_lock N lk R ∗ locked lk ∗ R }} Mutex__Unlock lk {{ RET #(); emp }}.
   Proof.
     iStep as "Hlock Hlocked HR".
-    wp_apply (release_spec' with "[$Hlock $Hlocked $HR]"); auto.
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $HR]"); auto.
   Qed.
 
   Section slice_specs.
@@ -134,20 +134,20 @@ Section proofs.
 
   End slice_specs.
 
-  #[global] Instance StringToBytes_spec (s: string) :
+  #[global] Instance StringToBytes_spec (s: byte_string) :
    SPEC
      {{ emp }}
       impl.StringToBytes #(str s)
-    {{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) (string_to_bytes s) }}.
+    {{ sl, RET (slice_val sl); own_slice sl byteT (DfracOwn 1) s }}.
   Proof.
     iStep. iApply wp_StringToBytes; auto.
   Qed.
 
   #[global] Instance StringFromBytes_spec sl :
-   SPEC q (bs: list w8),
+   SPEC q (bs: byte_string),
      {{ own_slice_small sl byteT q bs }}
       impl.StringFromBytes sl
-    {{ RET #(str bytes_to_string bs); own_slice_small sl byteT q bs }}.
+    {{ RET #(str bs); own_slice_small sl byteT q bs }}.
   Proof.
     iStep as (q). iStep. iStep. iApply (wp_StringFromBytes with "[$]"). iSteps.
   Qed.
@@ -172,7 +172,7 @@ Section proofs.
   #[global] Instance Assert_spec E (cond: bool) :
     SPEC ⟨E⟩
       {{ ⌜cond = true⌝ }}
-      Assert #cond
+      std.Assert #cond
       {{ RET #(); emp }}.
   Proof. iSteps. iApply wp_Assert; auto. Qed.
 
