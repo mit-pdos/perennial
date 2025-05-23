@@ -7,6 +7,21 @@ From Perennial.goose_lang.lib Require Import into_val.
 
 Set Default Proof Using "Type".
 
+Section goose_lang.
+Context `{ffi_syntax}.
+  
+#[export]
+Instance val_IntoVal : IntoVal val.
+Proof.
+  refine {|
+      to_val := λ v, v;
+      from_val := λ v, Some v;
+      IntoVal_def := #();
+    |}.
+  intros v; auto.
+Defined.
+End goose_lang.
+
 Module list.
   Definition untype `{IntoVal V}:
     list V -> list val := fun l => to_val <$> l.
