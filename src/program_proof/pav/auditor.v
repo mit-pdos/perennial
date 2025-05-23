@@ -9,7 +9,7 @@ Module Auditor.
 Section defs.
 Context `{!heapGS Σ, !pavG Σ}.
 Definition own (ptr : loc) : iProp Σ :=
-  ∃  ptrs_hist hist gs γ pk (ptr_keys : loc) (ptr_sk : loc) sl_hist,
+  ∃  ptrs_hist hist gs γ pk (ptr_keys : loc) (ptr_sk : loc) sl_hist lower,
   (* Physical ownership. *)
   "Hptr_keys" ∷ ptr ↦[Auditor :: "keyMap"] #ptr_keys ∗
   "Hptr_hist" ∷ ptr ↦[Auditor :: "histInfo"] (slice_val sl_hist) ∗
@@ -24,7 +24,8 @@ Definition own (ptr : loc) : iProp Σ :=
   "#Hinv_gs" ∷ audit_gs_inv gs ∗
 
   (* Physical-ghost relation. *)
-  "Hown_keys" ∷ own_Tree ptr_keys (default ∅ (last gs.*1)) (DfracOwn 1) ∗
+  "%Hlower" ∷ ⌜ map_lower (default ∅ (last gs.*1)) lower ⌝ ∗
+  "Hown_keys" ∷ own_Tree ptr_keys lower (DfracOwn 1) ∗
   "%Hdigs_gs" ∷ ⌜ gs.*2 = AdtrEpochInfo.Dig <$> hist ⌝.
 
 Definition valid (ptr : loc) : iProp Σ :=
@@ -51,7 +52,7 @@ Proof.
   wp_rec.
   wp_apply wp_new_free_lock.
   iIntros (?) "Hl".
-  iMod (mono_list_own_alloc ([] : list (merkle_map_ty * dig_ty))) as (γ) "[Hown_gs _]".
+  iMod (mono_list_own_alloc ([] : list (adtr_map_ty * dig_ty))) as (γ) "[Hown_gs _]".
   wp_apply (wp_SigGenerateKey (sigpred γ)).
   iIntros "*". iNamed 1.
   wp_apply wp_NewTree.
@@ -71,6 +72,9 @@ Proof.
   iExists [], []. iFrame "Hown_gs ∗#".
   iDestruct own_slice_nil as "$"; [done..|].
   repeat try iSplit; try naive_solver.
+  iPureIntro.
+  rewrite /= /map_lower fmap_empty.
+  apply map_Forall2_empty.
 Qed.
 
 Lemma wp_Auditor__Get a (epoch : u64) :
@@ -127,19 +131,23 @@ Proof.
     by iFrame "#".
 Qed.
 
-Lemma wp_checkOneUpd ptr_keys keys d0 sl_label d1 label :
+Lemma wp_checkOneUpd ptr_keys keys lower d0 nextEp sl_label d1 label sl_val val :
   {{{
-    "Hown_keys" ∷ own_Tree ptr_keys keys d0 ∗
-    "Hsl_label" ∷ own_slice_small sl_label byteT d1 label
+    "%Hlower" ∷ ⌜ map_lower keys lower ⌝ ∗
+    "Hown_keys" ∷ own_Tree ptr_keys lower d0 ∗
+    "Hsl_label" ∷ own_slice_small sl_label byteT d1 label ∗
+    "#Hsl_val" ∷ own_slice_small sl_val byteT DfracDiscarded val
   }}}
-  checkOneUpd #ptr_keys (slice_val sl_label)
+  checkOneUpd #ptr_keys #nextEp (slice_val sl_label) (slice_val sl_val)
   {{{
     (err : bool), RET #err;
-    "Hown_keys" ∷ own_Tree ptr_keys keys d0 ∗
+    "Hown_keys" ∷ own_Tree ptr_keys lower d0 ∗
     "Hsl_label" ∷ own_slice_small sl_label byteT d1 label ∗
     "Herr" ∷ (if err then True else
+      ∃ comm,
       "%Hlen_label" ∷ ⌜ Z.of_nat $ length label = hash_len ⌝ ∗
-      "%Hlook_keys" ∷ ⌜ keys !! label = None ⌝)
+      "%Hlook_keys" ∷ ⌜ keys !! label = None ⌝ ∗
+      "%Henc" ∷ ⌜ MapValPre.encodes val (MapValPre.mk nextEp comm) ⌝)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -149,25 +157,51 @@ Proof.
   wp_apply (wp_Tree__Get with "[$Hown_keys $Hsl_label]").
   iIntros "*". iNamedSuffix 1 "_map".
   wp_if_destruct. { iApply "HΦ". by iFrame. }
-  iApply "HΦ". iFrame "∗%". word.
+  wp_apply (MapValPre.wp_dec with "[$Hsl_val]").
+  iIntros "*". iNamedSuffix 1 "_val".
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
+  iDestruct "Hgenie_val" as "[H _]".
+  iDestruct ("H" with "[//]") as "H".
+  iNamed "H".
+  iDestruct ("Herr_val" with "[//]") as "H".
+  iNamedSuffix "H" "_val". iNamed "Hown_obj_val".
+  wp_apply wp_slice_len.
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
+  iDestruct (own_slice_small_sz with "Hsl_tail_val") as %?.
+  destruct tail; simpl in *; [|word].
+  wp_loadField.
+  wp_if_destruct. { iApply "HΦ". by iFrame. }
+
+  list_simplifier.
+  iApply "HΦ". iFrame "∗%".
+  iIntros "!>". iSplit; [word|].
+  ospecialize (Hlower label).
+  rewrite Hlook_elems_map in Hlower.
+  inv Hlower.
+  rewrite lookup_fmap in H1.
+  by simplify_option_eq.
 Qed.
 
-Definition checkUpd_post (keys upd : merkle_map_ty) : iProp Σ :=
+Definition checkUpd_post keys nextEp upd upd_dec : iProp Σ :=
   "%Hlen_labels" ∷ ([∗ map] label ↦ _ ∈ upd, ⌜ length label = 32%nat ⌝) ∗
-  "%Hdisj" ∷ ⌜ upd ##ₘ keys ⌝.
+  "%Hlower" ∷ ⌜ map_lower upd_dec upd ⌝ ∗
+  "%Hok_epoch" ∷ ([∗ map] val ∈ upd_dec, ⌜ val.1 = nextEp ⌝) ∗
+  "%Hdisj" ∷ ⌜ upd_dec ##ₘ keys ⌝.
 
-Lemma wp_checkUpd ptr_keys keys d0 ptr_upd upd_refs upd :
+Lemma wp_checkUpd ptr_keys keys lower d0 ptr_upd upd_refs upd nextEp :
   {{{
-    "Hown_keys" ∷ own_Tree ptr_keys keys d0 ∗
+    "%Hlower" ∷ ⌜ map_lower keys lower ⌝ ∗
+    "Hown_keys" ∷ own_Tree ptr_keys lower d0 ∗
     "#Hown_upd_refs" ∷ own_map ptr_upd DfracDiscarded upd_refs ∗
     "#Hown_upd" ∷ ([∗ map] sl;v ∈ upd_refs;upd,
       own_slice_small sl byteT DfracDiscarded v)
   }}}
-  checkUpd #ptr_keys #ptr_upd
+  checkUpd #ptr_keys #nextEp #ptr_upd
   {{{
     (err : bool), RET #err;
-    "Hown_keys" ∷ own_Tree ptr_keys keys d0 ∗
-    "Herr" ∷ (if err then True else checkUpd_post keys upd)
+    "Hown_keys" ∷ own_Tree ptr_keys lower d0 ∗
+    "Herr" ∷ (if err then True else
+      ∃ upd_dec, checkUpd_post keys nextEp upd upd_dec)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -175,16 +209,21 @@ Proof.
   wp_apply (wp_MapIter_fold _ _ _
     (λ upd_refs',
     ∃ (loopErr : bool),
-    "Hown_keys" ∷ own_Tree ptr_keys keys d0 ∗
+    "%Hlower" ∷ ⌜ map_lower keys lower ⌝ ∗
+    "Hown_keys" ∷ own_Tree ptr_keys lower d0 ∗
     "Hptr_loopErr" ∷ ptr_loopErr ↦[boolT] #loopErr ∗
     "HloopErr" ∷ (if loopErr then True else
-      ∃ upd',
+      ∃ upd' upd_dec',
       "%Hdom0" ∷ ⌜ dom upd_refs' = dom upd' ⌝ ∗
+      "%Hdom1" ∷ ⌜ dom upd' = dom upd_dec' ⌝ ∗
       "%Hsub" ∷ ⌜ upd' ⊆ upd ⌝ ∗
-      "Hpost" ∷ checkUpd_post keys upd')
+      "Hpost" ∷ checkUpd_post keys nextEp upd' upd_dec')
     )%I with "Hown_upd_refs [$Hown_keys $Hptr_loopErr]").
-  { iExists ∅. repeat try iSplit; try naive_solver; iPureIntro.
+  { iSplit; [done|].
+    iExists ∅, ∅. repeat try iSplit; try naive_solver; iPureIntro.
     - eapply map_empty_subseteq.
+    - rewrite /map_lower fmap_empty.
+      apply map_Forall2_empty.
     - eapply map_disjoint_empty_l. }
   { clear. iIntros (? k sl_v Φ) "!> (H&_&%Hlook_ptr) HΦ". iNamed "H".
     wp_apply wp_StringToBytes. iIntros (?) "Hsl_label".
@@ -199,11 +238,15 @@ Proof.
     { wp_store. iApply "HΦ". by iFrame. }
     iNamed "Herr". iApply "HΦ". iFrame "∗%".
     destruct loopErr; [done|]. iNamed "HloopErr". iNamed "Hpost".
-    iPureIntro. exists (<[k:=v]> upd').
+    iPureIntro. exists (<[k:=v]> upd'), (<[k:=(nextEp, comm)]> upd_dec').
     repeat try split.
+    - set_solver.
     - set_solver.
     - by apply insert_subseteq_l.
     - apply map_Forall_insert_2; [lia|done].
+    - rewrite /map_lower fmap_insert.
+      by apply map_Forall2_insert_2.
+    - by apply map_Forall_insert_2.
     - by apply map_disjoint_insert_l_2. }
   iIntros "[_ H]". iNamed "H".
   wp_load. iApply "HΦ". iFrame. destruct loopErr; [done|]. iNamed "HloopErr".
@@ -212,9 +255,9 @@ Proof.
   by iFrame.
 Qed.
 
-Lemma wp_applyUpd ptr_keys keys ptr_upd upd_refs upd :
+Lemma wp_applyUpd ptr_keys lower ptr_upd upd_refs upd :
   {{{
-    "Hown_keys" ∷ own_Tree ptr_keys keys (DfracOwn 1) ∗
+    "Hown_keys" ∷ own_Tree ptr_keys lower (DfracOwn 1) ∗
     "#Hown_upd_refs" ∷ own_map ptr_upd DfracDiscarded upd_refs ∗
     "#Hown_upd" ∷ ([∗ map] sl;v ∈ upd_refs;upd,
       own_slice_small sl byteT DfracDiscarded v) ∗
@@ -223,7 +266,7 @@ Lemma wp_applyUpd ptr_keys keys ptr_upd upd_refs upd :
   applyUpd #ptr_keys #ptr_upd
   {{{
     RET #();
-    "Hown_keys" ∷ own_Tree ptr_keys (upd ∪ keys) (DfracOwn 1)
+    "Hown_keys" ∷ own_Tree ptr_keys (upd ∪ lower) (DfracOwn 1)
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
@@ -232,7 +275,7 @@ Proof.
     ∃ upd',
     "%Hdom" ∷ ⌜ dom upd_refs' = dom upd' ⌝ ∗
     "%Hsub" ∷ ⌜ upd' ⊆ upd ⌝ ∗
-    "Hown_keys" ∷ own_Tree ptr_keys (upd' ∪ keys) (DfracOwn 1)
+    "Hown_keys" ∷ own_Tree ptr_keys (upd' ∪ lower) (DfracOwn 1)
     )%I with "Hown_upd_refs [Hown_keys]").
   { iExists ∅. rewrite map_empty_union. iFrame.
     iPureIntro. split; [done|]. eapply map_empty_subseteq. }
@@ -290,12 +333,16 @@ Proof.
 
   (* update gs. *)
   iMod (mono_list_auth_own_update_app
-    [(upd.(UpdateProof.Updates) ∪ (default ∅ (last gs.*1)), dig)]
+    [(upd_dec ∪ (default ∅ (last gs.*1)), dig)]
     with "Hown_gs") as "[Hown_gs #Hlb_gs]".
   pose proof (f_equal length Hdigs_gs) as Hlen_digs_gs.
   rewrite !length_fmap in Hlen_digs_gs.
   iDestruct (big_sepL2_length with "Hown_hist") as %Hlen_hist.
   iDestruct (own_slice_sz with "Hsl_hist") as %Hlen_sl_hist.
+  replace (sl_hist.(Slice.sz)) with (W64 $ length gs) in Hok_epoch; [|word].
+  eassert (map_lower (_ ∪ _) (_ ∪ _)).
+  { rewrite /map_lower map_fmap_union.
+    apply (map_Forall2_union _ _ _ _ _ Hlower0 Hlower). }
   iDestruct (audit_gs_snoc with "Hinv_gs His_dig") as "{Hinv_gs} Hinv_gs"; [done..|].
 
   (* sign dig. *)

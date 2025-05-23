@@ -105,20 +105,22 @@ Definition is_cli_entry cli_γ serv_vrf_pk (ep : w64) uid ver val : iProp Σ :=
   "#Hmerk_entry" ∷ is_merkle_entry label val dig.
 
 Definition is_put_post cli_γ serv_vrf_pk uid ver ep pk : iProp Σ :=
-  ∃ commit,
+  ∃ commit enc,
   "#Hcommit" ∷ is_commit pk commit ∗
-  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver (Some commit) ∗
+  "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk ep commit) ⌝ ∗
+  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver (Some enc) ∗
   "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (word.add ver (W64 1)) None.
 
 Definition is_selfmon_post cli_γ serv_vrf_pk uid ver (ep : w64) : iProp Σ :=
   "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid ver None.
 
 Definition is_get_post_Some cli_γ serv_vrf_pk uid (ep : w64) pk : iProp Σ :=
-  ∃ hist commit,
+  ∃ hist ep' commit enc,
   "#Hhist" ∷ ([∗ list] ver ↦ val ∈ hist,
     is_cli_entry cli_γ serv_vrf_pk ep uid ver (Some val)) ∗
   "#Hcommit" ∷ is_commit pk commit ∗
-  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (W64 $ length hist) (Some commit) ∗
+  "%Henc" ∷ ⌜ MapValPre.encodes enc (MapValPre.mk ep' commit) ⌝ ∗
+  "#His_lat" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (W64 $ length hist) (Some enc) ∗
   "#His_bound" ∷ is_cli_entry cli_γ serv_vrf_pk ep uid (word.add (length hist) (W64 1)) None.
 
 Definition is_get_post_None cli_γ serv_vrf_pk uid (ep : w64) : iProp Σ :=
@@ -140,10 +142,13 @@ Definition logical_audit γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ :=
     "#Hcli_entry" ∷ is_cli_entry γcli serv_vrf_pk ep uid ver val)
     -∗
 
-    (∃ label,
+    (∃ label audit_val,
     "#Hvrf_out" ∷ is_vrf_out serv_vrf_pk (enc_label_pre uid ver) label ∗
     "#His_label" ∷ is_map_label serv_vrf_pk uid ver label ∗
-    "%Hlook_adtr" ∷ ⌜ m !! label = val ⌝)).
+    (* convert audit_val to MapValPre, then relate it to val. *)
+    "%Henc_val" ∷ ⌜ option_Forall2 MapValPre.encodes val
+      ((λ x, MapValPre.mk x.1 x.2) <$> audit_val) ⌝ ∗
+    "%Hlook_adtr" ∷ ⌜ m !! label = audit_val ⌝)).
 
 Global Instance logical_audit_pers a0 a1 a2 a3 :
   Persistent (logical_audit a0 a1 a2 a3).
@@ -231,7 +236,11 @@ Proof.
   iNamed "Hinv_gs".
   iDestruct (big_sepL_lookup with "His_digs") as "Hmap"; [done|].
   iNamed "Hmap".
-  by iDestruct (is_merkle_map_agree_entry with "His_map Hmerk_entry") as %?.
+  iDestruct (is_merkle_map_agree_entry with "His_map Hmerk_entry") as %Hlook_map.
+  iPureIntro. clear -Hlower Hlook_map. simpl in *.
+  opose proof (Hlower label) as Hlower.
+  eexists _. split; [|done]. subst.
+  by rewrite -lookup_fmap.
 Qed.
 
 Lemma good_serv_logical_audit c ptr_c :
@@ -588,7 +597,7 @@ Proof.
   iDestruct "Hgenie" as "[Hgenie _]".
   iDestruct ("Hgenie" with "[//]") as "H". iNamed "H".
   iDestruct ("Herr" with "[$]") as "H". iNamed "H".
-  wp_loadField.
+  do 2 wp_loadField.
   wp_apply (wp_compMapVal with "[$Hpk_open]"). iIntros "*". iNamed 1.
   wp_loadField.
   wp_apply (wp_Verify with "[$Hsl_label $Hsl_map_val]").
@@ -599,11 +608,15 @@ Proof.
     iNamedSuffix 1 "0". iDestruct "Hgenie" as "[_ Hgenie]".
     iApply "Hgenie".
     iDestruct (is_vrf_out_det with "Hvrf_out Hvrf_out0") as %->.
+    rewrite /MapValPre.encodes in Henc0.
+    destruct_and?. rewrite H0.
     by iDestruct (is_hash_det with "Hcommit Hcommit0") as %->.
   - iSplit; [|naive_solver]. iIntros (_).
     iDestruct "Hgenie" as "[Hgenie _]".
     iDestruct ("Hgenie" with "[//]") as "#Hmerk".
     iFrame "∗#".
+    iDestruct (is_hash_len with "Hcommit") as %?.
+    iPureIntro. split; [|done]. simpl. word.
 Qed.
 
 Lemma wp_checkMembHide ptr_vrf_pk vrf_pk (uid ver : w64) sl_dig (dig : list w8) ptr_memb_hide memb_hide d0 :
@@ -852,14 +865,20 @@ Proof.
   iSpecialize ("Hgenie" with "[//]").
   iNamedSuffix "Hgenie" "_lat".
 
-  iNamed "Hown_memb". iNamed "Hpk_open".
-  do 2 wp_loadField.
+  iNamed "Hown_memb".
+  do 2 wp_loadField. wp_if_destruct.
+  { wp_pures. iApply "HΦ". iFrame "∗#%∗".
+    destruct c.(Client.serv_is_good); [|done].
+    by iNamed "Hgood". }
+  move: Heqb3 => Heq_ep.
+
+  iNamed "Hpk_open". do 2 wp_loadField.
   wp_apply (wp_BytesEqual with "[$Hsl_pk $Hsl_val]").
   iIntros "[Hsl_pk Hsl_val]". wp_if_destruct.
   { wp_pures. iApply "HΦ". iFrame "∗#%∗".
     destruct c.(Client.serv_is_good); [|done].
     by iNamed "Hgood". }
-  move: Heqb3 => Heq_pk.
+  move: Heqb => Heq_pk.
 
   do 4 wp_loadField.
   wp_apply (wp_checkNonMemb with "[$Hserv_vrf_pk $Hsl_Dig $Hbound]").
@@ -904,9 +923,11 @@ Proof.
 
   iDestruct (own_slice_small_sz with "Hsl_rand") as %?.
   iDestruct (own_slice_small_sz with "Hsl_pk") as %?.
-  iFrame "∗#". iIntros "!>".
+  rewrite -Heq_ep. iFrame "∗#". iIntros "!>".
   repeat try iSplit; simpl in *; try word; first last; [..|done].
 
+  { iPureIntro. rewrite /MapValPre.encodes in Henc_lat.
+    intuition. destruct lat, sigdig. by simplify_eq/=. }
   { destruct lat, PkOpen. rewrite Heq_pk. iFrame "#".
     iPureIntro. exists Rand.
     rewrite /CommitOpen.encodes. simpl in *.
@@ -1190,9 +1211,7 @@ Proof.
   wp_bind (if: #is_reg then _ else _)%E.
   (* wp_wand pred should match conditional form of resources from code if stmt. *)
   iApply (wp_wand _ _ _
-    (λ v, ∃ (b : bool),
-      ⌜ v = #b ⌝ ∗ _ ∗
-      (⌜ b = false ⌝ ∗-∗ (if is_reg then _ else True)))%I
+    (λ v, ∃ (b : bool), ⌜ v = #b ⌝ ∗ _ ∗ (⌜ b = false ⌝ ∗-∗ (if is_reg then _ else True)))%I
     with "[Hlat]").
   { wp_if_destruct.
     - do 2 wp_loadField.

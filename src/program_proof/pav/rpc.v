@@ -59,6 +59,7 @@ Lemma wp_CallServPut ptr_cli addr is_good serv uid nVers sl_pk d0 (pk : list w8)
     "Hgood" ∷ (if negb is_good then True else
       "Hvers" ∷ uid ↪[serv.(Server.γvers)] (word.add nVers (W64 1)) ∗
 
+      "%Heq_ep" ∷ ⌜ sigdig.(SigDig.Epoch) = lat.(Memb.EpochAdded) ⌝ ∗
       "%Heq_pk" ∷ ⌜ pk = lat.(Memb.PkOpen).(CommitOpen.Val) ⌝ ∗
       "#Hlb_ep" ∷ mono_nat_lb_own serv.(Server.γepoch) (uint.nat new_next_ep) ∗
       "%Hlt_ep" ∷ ⌜ Z.of_nat cli_next_ep < uint.Z new_next_ep ⌝ ∗
