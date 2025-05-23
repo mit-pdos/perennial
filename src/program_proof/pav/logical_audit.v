@@ -11,7 +11,8 @@ Definition mono_maps (ms : list merkle_map_ty) :=
   uint.Z i ≤ uint.Z j →
   mi ⊆ mj.
 
-Lemma mono_characterization ms :
+(* our "characterization" of monotonic maps. *)
+Lemma mono_char ms :
   mono_maps ms →
   ∀ k,
   (* all flat. *)
@@ -31,36 +32,36 @@ Lemma mono_characterization ms :
     is_Some (m_insert !! k)).
 Proof. Admitted.
 
-Lemma mono_get_insertion ms (start_ep end_ep : w64) m_start m_end k :
+Lemma mono_get_insertion ms (bound_ep : w64) m_bound k :
   mono_maps ms →
-  ms !! (uint.nat start_ep) = Some m_start →
-  ms !! (uint.nat end_ep) = Some m_end →
-  m_start !! k = None →
-  is_Some (m_end !! k) →
+  ms !! (uint.nat bound_ep) = Some m_bound →
+  is_Some (m_bound !! k) →
 
-  ∃ (insert_ep : w64) m_pred m_insert,
-  ms !! (pred $ uint.nat insert_ep) = Some m_pred ∧
+  ∃ (insert_ep : w64) m_insert,
   ms !! (uint.nat insert_ep) = Some m_insert ∧
-  m_pred !! k = None ∧
-  is_Some (m_insert !! k).
+  is_Some (m_insert !! k) ∧
+  (
+    uint.Z insert_ep = 0
+    ∨
+    ∀ m_pred,
+    ms !! (Z.to_nat (uint.Z insert_ep - 1)) = Some m_pred →
+    m_pred !! k = None
+  ).
 Proof.
-  intros Hmono Hlook_start Hlook_end ??.
-  opose proof (bar _ Hmono k) as [Hmono1 | Hmono1].
+  intros Hmono Hlook_end ?.
+  opose proof (mono_char _ Hmono k) as [Hmono1 | Hmono1].
   - exfalso. ospecialize (Hmono1 _ _ Hlook_end).
-    destruct (m_end !! k); [done|].
+    destruct (m_bound !! k); [done|].
     by eapply is_Some_None.
   - destruct Hmono1 as (insert_ep&?&Hflat&Hlook_insert&?).
-    destruct (decide (uint.Z insert_ep = 0)).
-    { exfalso.
-      opose proof (Hmono _ _ _ _ Hlook_insert Hlook_start _) as Hsub; [word|].
-      opose proof (lookup_weaken_is_Some _ _ _ _ Hsub); [done|].
-      destruct (m_start !! k); [done|].
-      by eapply is_Some_None. }
-    opose proof (Hflat (word.sub insert_ep (W64 1)) _) as (?&Hlook_pred&?); [word|].
-    eexists insert_ep, _, _.
-    split.
-    { by replace (pred _) with (uint.nat (word.sub insert_ep (W64 1))) by word. }
-    done.
+    eexists insert_ep, _.
+    repeat try split; [done..|].
+    destruct (decide (uint.Z insert_ep = 0)); [naive_solver|].
+    right. intros ? Hlook_pred0.
+    remember (word.sub insert_ep (W64 1)) as i.
+    replace (Z.to_nat _) with (uint.nat i) in Hlook_pred0 by word.
+    opose proof (Hflat i _) as (?&Hlook_pred1&?); [word|].
+    by simplify_eq/=.
 Qed.
 
 Definition audit_gs_inv (gs : list (merkle_map_ty * dig_ty)) : iProp Σ :=

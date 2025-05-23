@@ -102,25 +102,38 @@ Proof.
     naive_solver.
 Qed.
 
-Definition msv γaudit vrf_pk (ep : w64) uid opt_pk : iProp Σ :=
+(* expose n_vers since it's needed to match up to physical code. *)
+Definition msv_vers γaudit vrf_pk (ep : w64) uid opt_pk n_vers : iProp Σ :=
   ∃ m dig,
   "#Hlook_gs" ∷ mono_list_idx_own γaudit (uint.nat ep) (m, dig) ∗
   "#Hmsv" ∷ match opt_pk with
-    | None => "#Hmsv" ∷ msv_None m vrf_pk uid
-    | Some pk => ∃ n_vers, "#Hmsv" ∷ msv_Some m vrf_pk uid pk n_vers
+    | None =>
+      "%Heq_vers" ∷ ⌜ uint.Z n_vers = 0 ⌝ ∗
+      "#Hmsv" ∷ msv_None m vrf_pk uid
+    | Some pk => "#Hmsv" ∷ msv_Some m vrf_pk uid pk n_vers
     end.
+
+Definition msv γaudit vrf_pk (ep : w64) uid opt_pk : iProp Σ :=
+  match opt_pk with
+  | None => "#Hmsv" ∷ msv_vers γaudit vrf_pk ep uid None (W64 0)
+  | Some pk => ∃ n_vers, "#Hmsv" ∷ msv_vers γaudit vrf_pk ep uid (Some pk) n_vers
+  end.
 
 Lemma msv_agree γ vrf_pk ep uid opt_pk0 opt_pk1 :
   msv γ vrf_pk ep uid opt_pk0 -∗
   msv γ vrf_pk ep uid opt_pk1 -∗
   ⌜ opt_pk0 = opt_pk1 ⌝.
 Proof.
-  iNamedSuffix 1 "0". iNamedSuffix 1 "1".
-  iDestruct (mono_list_idx_agree with "Hlook_gs0 Hlook_gs1") as %?.
-  simplify_eq/=.
-  destruct opt_pk0, opt_pk1; [..|done];
-    iNamedSuffix "Hmsv0" "0"; iNamedSuffix "Hmsv1" "1".
-  - iDestruct (msv_Some_vers_agree with "Hmsv0 Hmsv1") as %->.
+  destruct opt_pk0, opt_pk1; simpl;
+    iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
+    iNamedSuffix "Hmsv0" "0"; iNamedSuffix "Hmsv1" "1";
+    iNamedSuffix "Hmsv0" "0"; iNamedSuffix "Hmsv1" "1";
+    [..|done].
+  (* TODO: mono_list_idx_agree not working in tactic chain bc of some weird
+  unification issues with the list elems being pairs. *)
+  - iDestruct (mono_list_idx_agree with "Hlook_gs0 Hlook_gs1") as %?.
+    simplify_eq/=.
+    iDestruct (msv_Some_vers_agree with "Hmsv0 Hmsv1") as %->.
     iNamedSuffix "Hmsv0" "0". iNamedSuffix "Hmsv1" "1".
     iClear "Hhist0 Hbound0 Hhist1 Hbound1".
     iNamedSuffix "Hlatest0" "0". iNamedSuffix "Hlatest1" "1".
@@ -128,8 +141,12 @@ Proof.
     simplify_eq/=.
     iDestruct (is_commit_inj with "Hcommit0 Hcommit1") as %?.
     by simplify_eq/=.
-  - iDestruct (msv_Some_None_excl with "Hmsv0 Hmsv1") as "[]".
-  - iDestruct (msv_Some_None_excl with "Hmsv1 Hmsv0") as "[]".
+  - iDestruct (mono_list_idx_agree with "Hlook_gs0 Hlook_gs1") as %?.
+    simplify_eq/=.
+    iDestruct (msv_Some_None_excl with "Hmsv0 Hmsv1") as "[]".
+  - iDestruct (mono_list_idx_agree with "Hlook_gs0 Hlook_gs1") as %?.
+    simplify_eq/=.
+    iDestruct (msv_Some_None_excl with "Hmsv1 Hmsv0") as "[]".
 Qed.
 
 End proof.
