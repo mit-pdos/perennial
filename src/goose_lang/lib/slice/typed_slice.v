@@ -7,21 +7,6 @@ From Perennial.goose_lang.lib Require Import into_val.
 
 Set Default Proof Using "Type".
 
-Section goose_lang.
-Context `{ffi_syntax}.
-  
-#[export]
-Instance val_IntoVal : IntoVal val.
-Proof.
-  refine {|
-      to_val := λ v, v;
-      from_val := λ v, Some v;
-      IntoVal_def := #();
-    |}.
-  intros v; auto.
-Defined.
-End goose_lang.
-
 Module list.
   Definition untype `{IntoVal V}:
     list V -> list val := fun l => to_val <$> l.
@@ -49,15 +34,6 @@ Lemma list_untype_drop `{IntoVal V} (l: list V) n :
   list.untype (drop n l) = drop n (list.untype l).
 Proof.
   rewrite /list.untype fmap_drop //.
-Qed.
-
-Lemma list_untype_val `{ffi_syn: ffi_syntax} (l: list val) :
-  list.untype l = l.
-Proof.
-  unfold list.untype.
-  induction l.
-  + done.
-  + rewrite fmap_cons. rewrite IHl. done.
 Qed.
 
 #[global]

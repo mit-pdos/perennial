@@ -28,6 +28,26 @@ Proof.
   apply lookup_lt_is_Some_1; eauto.
 Qed.
 
+#[local]
+Instance val_IntoVal `{ffi_syn: ffi_syntax} : IntoVal val.
+Proof.
+  refine {|
+      to_val := λ v, v;
+      from_val := λ v, Some v;
+      IntoVal_def := #();
+    |}.
+  intros v; auto.
+Defined.
+
+Lemma list_untype_val `{ffi_syn: ffi_syntax} (l: list val) :
+  list.untype l = l.
+Proof.
+  unfold list.untype.
+  induction l.
+  + done.
+  + rewrite fmap_cons. rewrite IHl. done.
+Qed.
+
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context {ext_ty: ext_types ext}.
