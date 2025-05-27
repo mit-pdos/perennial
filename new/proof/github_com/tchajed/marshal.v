@@ -339,7 +339,7 @@ Admitted.
 Theorem wp_WriteInt32 s x (vs : list u8) :
   {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s }}}
     marshal@"WriteInt32" (#s) #x
-  {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u32_le x) ∗ own_slice_cap w8 s ∗ own_slice_cap w8 s ∗ own_slice_cap w8 s ∗ own_slice_cap w8 s ∗ own_slice_cap w8 s ∗ own_slice_cap w8 s ∗ own_slice_cap w8 s ∗ own_slice_cap w8 s }}}.
+  {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u32_le x) ∗ own_slice_cap w8 s' }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
 (*
