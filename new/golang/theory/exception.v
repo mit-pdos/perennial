@@ -15,7 +15,7 @@ Proof.
   wp_call_lc "?". by iApply "Hwp".
 Qed.
 
-Global Instance pure_do_execute_val (v : val) : PureWp True (do: v) (execute_val v).
+Global Instance pure_do_execute_val (v : val) : PureWp True (do: v) (execute_val #()).
 Proof.
   rewrite do_execute_unseal execute_val_unseal.
   intros ?????. iIntros "Hwp".
