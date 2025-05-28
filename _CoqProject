@@ -11,6 +11,8 @@
 -arg -w -arg -deprecated-since-9.0
 # seems to have false positives
 -arg -w -arg -notation-incompatible-prefix
+# false positives with our byte_string
+-arg -w -arg -via-type-remapping,-via-type-mismatch
 # we haven't updated our code to fix this one
 -arg -w -arg -deprecated-typeclasses-transparency-without-locality
 # Iris-disabled warnings
