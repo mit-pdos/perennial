@@ -91,7 +91,8 @@ Definition useContainer : val :=
     let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
     do:  ((struct.field_ref (Container #uint64T) #"Z"%go "container") <-[#ptrT] "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  ((struct.field_ref (Container #uint64T) #"W"%go "container") <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref (Container #uint64T) #"W"%go "container") <-[#uint64T] "$r0");;;
+    return: #()).
 
 Definition UseContainer : val :=
   λ: <>, type.structT [
@@ -122,7 +123,8 @@ Definition useMultiParam : val :=
     }]) in
     do:  ("mp" <-[MultiParam #uint64T #boolT] "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  ((struct.field_ref (MultiParam #uint64T #boolT) #"X"%go "mp") <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref (MultiParam #uint64T #boolT) #"X"%go "mp") <-[#uint64T] "$r0");;;
+    return: #()).
 
 (* go: generics.go:76:6 *)
 Definition swapMultiParam : val :=
@@ -134,7 +136,8 @@ Definition swapMultiParam : val :=
     let: "$r0" := (!["A"] (struct.field_ref (MultiParam "A" "A") #"Y"%go (![#ptrT] "p"))) in
     do:  ((struct.field_ref (MultiParam "A" "A") #"X"%go (![#ptrT] "p")) <-["A"] "$r0");;;
     let: "$r0" := (!["A"] "temp") in
-    do:  ((struct.field_ref (MultiParam "A" "A") #"Y"%go (![#ptrT] "p")) <-["A"] "$r0")).
+    do:  ((struct.field_ref (MultiParam "A" "A") #"Y"%go (![#ptrT] "p")) <-["A"] "$r0");;;
+    return: #()).
 
 (* go: generics.go:82:6 *)
 Definition multiParamFunc : val :=
@@ -150,7 +153,8 @@ Definition useMultiParamFunc : val :=
     exception_do (do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := #true in
     ((func_call #generics.generics #"multiParamFunc"%go) #uint64T #boolT) "$a0" "$a1");;;
-    return: (#())).
+    return: (#());;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

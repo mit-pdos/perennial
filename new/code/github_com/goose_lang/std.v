@@ -20,7 +20,8 @@ Definition Assert : val :=
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"assertion failure"%go) in
       Panic "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* Returns true if x + y does not overflow
 
@@ -140,7 +141,8 @@ Definition JoinHandle__finish : val :=
     let: "$r0" := #true in
     do:  ((struct.field_ref #JoinHandle #"done"%go (![#ptrT] "h")) <-[#boolT] "$r0");;;
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+    return: #()).
 
 (* Spawn runs `f` in a parallel goroutine and returns a handle to wait for
    it to finish.
@@ -159,7 +161,8 @@ Definition Spawn : val :=
     do:  ("h" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  ((![#funcT] "f") #());;;
-      do:  ((method_call #std.std #"JoinHandle'ptr" #"finish" (![#ptrT] "h")) #()))
+      do:  ((method_call #std.std #"JoinHandle'ptr" #"finish" (![#ptrT] "h")) #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     return: (![#ptrT] "h")).
@@ -177,7 +180,8 @@ Definition JoinHandle__Join : val :=
         break: #()
       else do:  #());;;
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #JoinHandle #"cond"%go (![#ptrT] "h")))) #()));;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #JoinHandle #"mu"%go (![#ptrT] "h")))) #());;;
+    return: #()).
 
 (* Multipar runs op(0) ... op(num-1) in parallel and waits for them all to finish.
 
@@ -213,13 +217,15 @@ Definition Multipar : val :=
         do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "num_left_mu")) #());;;
         do:  ("num_left" <-[#uint64T] ((![#uint64T] "num_left") - #(W64 1)));;;
         do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] "num_left_cond")) #());;;
-        do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "num_left_mu")) #()))
+        do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "num_left_mu")) #());;;
+        return: #())
         ) in
       do:  (Fork ("$go" #()))));;;
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "num_left_mu")) #());;;
     (for: (λ: <>, (![#uint64T] "num_left") > #(W64 0)); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] "num_left_cond")) #()));;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "num_left_mu")) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "num_left_mu")) #());;;
+    return: #()).
 
 (* Skip is a no-op that can be useful in proofs.
 

@@ -48,7 +48,8 @@ Definition AsyncFile__Write : val :=
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #AsyncFile #"indexCond"%go (![#ptrT] "s")))) #());;;
     return: ((λ: <>,
        exception_do (do:  (let: "$a0" := (![#uint64T] "index") in
-       (method_call #asyncfile.asyncfile #"AsyncFile'ptr" #"wait" (![#ptrT] "s")) "$a0"))
+       (method_call #asyncfile.asyncfile #"AsyncFile'ptr" #"wait" (![#ptrT] "s")) "$a0");;;
+       return: #())
        ))).
 
 (* go: storage.go:36:21 *)
@@ -64,7 +65,8 @@ Definition AsyncFile__wait : val :=
       "$oldf" #()
       )));;;
     (for: (λ: <>, (![#uint64T] (struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s"))) < (![#uint64T] "index")); (λ: <>, Skip) := λ: <>,
-      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"durableIndexCond"%go (![#ptrT] "s")))) #()))).
+      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"durableIndexCond"%go (![#ptrT] "s")))) #()));;;
+    return: #()).
 
 (* go: storage.go:45:21 *)
 Definition AsyncFile__flushThread : val :=
@@ -104,7 +106,8 @@ Definition AsyncFile__flushThread : val :=
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
       let: "$r0" := (![#uint64T] "index") in
       do:  ((struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
-      do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] (struct.field_ref #AsyncFile #"durableIndexCond"%go (![#ptrT] "s")))) #()))).
+      do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] (struct.field_ref #AsyncFile #"durableIndexCond"%go (![#ptrT] "s")))) #()));;;
+    return: #()).
 
 (* go: storage.go:73:21 *)
 Definition AsyncFile__Close : val :=
@@ -121,7 +124,8 @@ Definition AsyncFile__Close : val :=
     do:  ((struct.field_ref #AsyncFile #"closeRequested"%go (![#ptrT] "s")) <-[#boolT] "$r0");;;
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #AsyncFile #"indexCond"%go (![#ptrT] "s")))) #());;;
     (for: (λ: <>, (~ (![#boolT] (struct.field_ref #AsyncFile #"closed"%go (![#ptrT] "s"))))); (λ: <>, Skip) := λ: <>,
-      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"closedCond"%go (![#ptrT] "s")))) #()))).
+      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"closedCond"%go (![#ptrT] "s")))) #()));;;
+    return: #()).
 
 (* returns the state, then the File object
 

@@ -77,7 +77,8 @@ Definition Channel__Send : val :=
     do:  ("sendCase" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#ptrT] "sendCase") in
     let: "$a1" := #true in
-    ((func_call #channel.channel #"Select1"%go) "T") "$a0" "$a1")).
+    ((func_call #channel.channel #"Select1"%go) "T") "$a0" "$a1");;;
+    return: #()).
 
 Definition SelectDir : go_type := uint64T.
 
@@ -156,7 +157,8 @@ Definition Channel__Close : val :=
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
       let: "$r0" := ((method_call #channel.channel #"Channel'ptr" #"TryClose" (![#ptrT] "c") "T") #()) in
       do:  ("done" <-[#boolT] "$r0");;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #()))).
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #()));;;
+    return: #()).
 
 (* v := c.ReceiveDiscardOk
 

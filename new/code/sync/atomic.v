@@ -36,7 +36,8 @@ Definition Int32__Store : val :=
     let: "val" := (mem.alloc "val") in
     do:  (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
     let: "$a1" := (![#int32T] "val") in
-    (func_call #atomic.atomic #"StoreInt32"%go) "$a0" "$a1")).
+    (func_call #atomic.atomic #"StoreInt32"%go) "$a0" "$a1");;;
+    return: #()).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
@@ -91,7 +92,8 @@ Definition Uint64__Store : val :=
     let: "val" := (mem.alloc "val") in
     do:  (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
     let: "$a1" := (![#uint64T] "val") in
-    (func_call #atomic.atomic #"StoreUint64"%go) "$a0" "$a1")).
+    (func_call #atomic.atomic #"StoreUint64"%go) "$a0" "$a1");;;
+    return: #()).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 

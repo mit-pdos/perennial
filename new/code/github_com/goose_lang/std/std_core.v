@@ -85,7 +85,8 @@ Definition Shuffle : val :=
       let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "j"))) in
       do:  ((slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "i")) <-[#uint64T] "$r0");;;
       let: "$r0" := (![#uint64T] "temp") in
-      do:  ((slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "j")) <-[#uint64T] "$r0")))).
+      do:  ((slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "j")) <-[#uint64T] "$r0")));;;
+    return: #()).
 
 (* Permutation returns a random permutation of the integers 0, ..., n-1, using a
    Fisher-Yates shuffle.

@@ -50,7 +50,8 @@ Definition Clerk__Put : val :=
     do:  ("args" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := (![#ptrT] "args") in
     (func_call #vkv.vkv #"encodePutArgs"%go) "$a0") in
-    (method_call #exactlyonce #"Clerk'ptr" #"ApplyExactlyOnce" (![#ptrT] (struct.field_ref #Clerk #"cl"%go (![#ptrT] "ck")))) "$a0")).
+    (method_call #exactlyonce #"Clerk'ptr" #"ApplyExactlyOnce" (![#ptrT] (struct.field_ref #Clerk #"cl"%go (![#ptrT] "ck")))) "$a0");;;
+    return: #()).
 
 (* go: clerk.go:24:18 *)
 Definition Clerk__Get : val :=
@@ -149,7 +150,8 @@ Definition ClerkPool__doWithClerk : val :=
       slice.literal #ptrT ["$sl0"])) in
       (slice.append #ptrT) "$a0" "$a1") in
       do:  ((struct.field_ref #ClerkPool #"cls"%go (![#ptrT] "ck")) <-[#sliceT] "$r0");;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #ClerkPool #"mu"%go (![#ptrT] "ck")))) #()))).
+      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #ClerkPool #"mu"%go (![#ptrT] "ck")))) #()));;;
+    return: #()).
 
 (* go: clerkpool.go:55:22 *)
 Definition ClerkPool__Put : val :=
@@ -161,9 +163,11 @@ Definition ClerkPool__Put : val :=
       exception_do (let: "ck" := (mem.alloc "ck") in
       do:  (let: "$a0" := (![#stringT] "key") in
       let: "$a1" := (![#stringT] "val") in
-      (method_call #vkv.vkv #"Clerk'ptr" #"Put" (![#ptrT] "ck")) "$a0" "$a1"))
+      (method_call #vkv.vkv #"Clerk'ptr" #"Put" (![#ptrT] "ck")) "$a0" "$a1");;;
+      return: #())
       ) in
-    (method_call #vkv.vkv #"ClerkPool'ptr" #"doWithClerk" (![#ptrT] "ck")) "$a0")).
+    (method_call #vkv.vkv #"ClerkPool'ptr" #"doWithClerk" (![#ptrT] "ck")) "$a0");;;
+    return: #()).
 
 (* go: clerkpool.go:61:22 *)
 Definition ClerkPool__Get : val :=
@@ -175,7 +179,8 @@ Definition ClerkPool__Get : val :=
       exception_do (let: "ck" := (mem.alloc "ck") in
       let: "$r0" := (let: "$a0" := (![#stringT] "key") in
       (method_call #vkv.vkv #"Clerk'ptr" #"Get" (![#ptrT] "ck")) "$a0") in
-      do:  ("ret" <-[#stringT] "$r0"))
+      do:  ("ret" <-[#stringT] "$r0");;;
+      return: #())
       ) in
     (method_call #vkv.vkv #"ClerkPool'ptr" #"doWithClerk" (![#ptrT] "ck")) "$a0");;;
     return: (![#stringT] "ret")).
@@ -194,7 +199,8 @@ Definition ClerkPool__ConditionalPut : val :=
       let: "$a1" := (![#stringT] "expect") in
       let: "$a2" := (![#stringT] "val") in
       (method_call #vkv.vkv #"Clerk'ptr" #"CondPut" (![#ptrT] "ck")) "$a0" "$a1" "$a2") in
-      do:  ("ret" <-[#stringT] "$r0"))
+      do:  ("ret" <-[#stringT] "$r0");;;
+      return: #())
       ) in
     (method_call #vkv.vkv #"ClerkPool'ptr" #"doWithClerk" (![#ptrT] "ck")) "$a0");;;
     return: (![#stringT] "ret")).
@@ -484,7 +490,8 @@ Definition KVState__setState : val :=
     do:  ((struct.field_ref #KVState #"vnums"%go (![#ptrT] "s")) <-[type.mapT #stringT #uint64T] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "snap") in
     (func_call #map_string_marshal.map_string_marshal #"DecodeStringMap"%go) "$a0") in
-    do:  ((struct.field_ref #KVState #"kvs"%go (![#ptrT] "s")) <-[type.mapT #stringT #stringT] "$r0")).
+    do:  ((struct.field_ref #KVState #"kvs"%go (![#ptrT] "s")) <-[type.mapT #stringT #stringT] "$r0");;;
+    return: #()).
 
 (* go: server.go:175:6 *)
 Definition makeVersionedStateMachine : val :=
@@ -520,7 +527,8 @@ Definition Start : val :=
     (func_call #exactlyonce.exactlyonce #"MakeExactlyOnceStateMachine"%go) "$a0") in
     let: "$a1" := (![#stringT] "fname") in
     let: "$a2" := (![#sliceT] "confHosts") in
-    (func_call #storage.storage #"MakePbServer"%go) "$a0" "$a1" "$a2")) "$a0")).
+    (func_call #storage.storage #"MakePbServer"%go) "$a0" "$a1" "$a2")) "$a0");;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

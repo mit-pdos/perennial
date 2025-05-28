@@ -682,7 +682,8 @@ Definition Server__IncreaseCommitIndex : val :=
       do:  ((struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
       do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] (struct.field_ref #Server #"committedNextIndex_cond"%go (![#ptrT] "s")))) #())
     else do:  #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
+    return: #()).
 
 (* called on the primary server to apply a new operation.
 
@@ -785,7 +786,8 @@ Definition Server__Apply : val :=
             let: "$r0" := (![#uint64T] "err") in
             do:  ((slice.elem_ref #uint64T (![#sliceT] "errs") (![#intT] "i")) <-[#uint64T] "$r0");;;
             break: #()));;;
-        do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #()))
+        do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #());;;
+        return: #())
         ) in
       do:  (Fork ("$go" #()))));;;
     do:  ((method_call #sync #"WaitGroup'ptr" #"Wait" (![#ptrT] "wg")) #());;;
@@ -856,7 +858,8 @@ Definition Server__leaseRenewalThread : val :=
         else
           do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
           do:  (let: "$a0" := (#(W64 50) * #(W64 1000000)) in
-          (func_call #primitive.primitive #"Sleep"%go) "$a0"))))).
+          (func_call #primitive.primitive #"Sleep"%go) "$a0"))));;;
+    return: #()).
 
 (* go: server.go:228:18 *)
 Definition Server__sendIncreaseCommitThread : val :=
@@ -900,12 +903,14 @@ Definition Server__sendIncreaseCommitThread : val :=
             (if: (![#uint64T] "err") = e.None
             then break: #()
             else continue: #()));;;
-          do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #()))
+          do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #());;;
+          return: #())
           ) in
         do:  (Fork ("$go" #()))));;;
       do:  ((method_call #sync #"WaitGroup'ptr" #"Wait" (![#ptrT] "wg")) #());;;
       do:  (let: "$a0" := #(W64 5000000) in
-      (func_call #primitive.primitive #"Sleep"%go) "$a0"))).
+      (func_call #primitive.primitive #"Sleep"%go) "$a0"));;;
+    return: #()).
 
 (* requires that we've already at least entered this epoch
    returns true iff stale
@@ -1195,7 +1200,8 @@ Definition Server__Serve : val :=
       (func_call #replica.replica #"DecodeApplyAsBackupArgs"%go) "$a0") in
       (method_call #replica.replica #"Server'ptr" #"ApplyAsBackup" (![#ptrT] "s")) "$a0") in
       (func_call #e.e #"EncodeError"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_APPLYASBACKUP "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1205,7 +1211,8 @@ Definition Server__Serve : val :=
       (func_call #replica.replica #"DecodeSetStateArgs"%go) "$a0") in
       (method_call #replica.replica #"Server'ptr" #"SetState" (![#ptrT] "s")) "$a0") in
       (func_call #e.e #"EncodeError"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_SETSTATE "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1215,7 +1222,8 @@ Definition Server__Serve : val :=
       (func_call #replica.replica #"DecodeGetStateArgs"%go) "$a0") in
       (method_call #replica.replica #"Server'ptr" #"GetState" (![#ptrT] "s")) "$a0") in
       (func_call #replica.replica #"EncodeGetStateReply"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_GETSTATE "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1225,7 +1233,8 @@ Definition Server__Serve : val :=
       (func_call #replica.replica #"DecodeBecomePrimaryArgs"%go) "$a0") in
       (method_call #replica.replica #"Server'ptr" #"BecomePrimary" (![#ptrT] "s")) "$a0") in
       (func_call #e.e #"EncodeError"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_BECOMEPRIMARY "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1234,7 +1243,8 @@ Definition Server__Serve : val :=
       let: "$r0" := (let: "$a0" := (let: "$a0" := (![#sliceT] "args") in
       (method_call #replica.replica #"Server'ptr" #"Apply" (![#ptrT] "s")) "$a0") in
       (func_call #replica.replica #"EncodeApplyReply"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_PRIMARYAPPLY "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1243,7 +1253,8 @@ Definition Server__Serve : val :=
       let: "$r0" := (let: "$a0" := (let: "$a0" := (![#sliceT] "args") in
       (method_call #replica.replica #"Server'ptr" #"ApplyRoWaitForCommit" (![#ptrT] "s")) "$a0") in
       (func_call #replica.replica #"EncodeApplyReply"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_ROPRIMARYAPPLY "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1251,7 +1262,8 @@ Definition Server__Serve : val :=
       let: "args" := (mem.alloc "args") in
       do:  (let: "$a0" := (let: "$a0" := (![#sliceT] "args") in
       (func_call #replica.replica #"DecodeIncreaseCommitArgs"%go) "$a0") in
-      (method_call #replica.replica #"Server'ptr" #"IncreaseCommitIndex" (![#ptrT] "s")) "$a0"))
+      (method_call #replica.replica #"Server'ptr" #"IncreaseCommitIndex" (![#ptrT] "s")) "$a0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_INCREASECOMMIT "$r0");;;
     let: "rs" := (mem.alloc (type.zero_val #ptrT)) in
@@ -1261,13 +1273,16 @@ Definition Server__Serve : val :=
     do:  (let: "$a0" := (![#uint64T] "me") in
     (method_call #urpc #"Server'ptr" #"Serve" (![#ptrT] "rs")) "$a0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #replica.replica #"Server'ptr" #"leaseRenewalThread" (![#ptrT] "s")) #()))
+      exception_do (do:  ((method_call #replica.replica #"Server'ptr" #"leaseRenewalThread" (![#ptrT] "s")) #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #replica.replica #"Server'ptr" #"sendIncreaseCommitThread" (![#ptrT] "s")) #()))
+      exception_do (do:  ((method_call #replica.replica #"Server'ptr" #"sendIncreaseCommitThread" (![#ptrT] "s")) #());;;
+      return: #())
       ) in
-    do:  (Fork ("$go" #()))).
+    do:  (Fork ("$go" #()));;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

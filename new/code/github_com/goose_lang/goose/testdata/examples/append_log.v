@@ -37,7 +37,8 @@ Definition Log__writeHdr : val :=
     exception_do (let: "log" := (mem.alloc "log") in
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := ((method_call #append_log.append_log #"Log'ptr" #"mkHdr" (![#ptrT] "log")) #()) in
-    (func_call #disk.disk #"Write"%go) "$a0" "$a1")).
+    (func_call #disk.disk #"Write"%go) "$a0" "$a1");;;
+    return: #()).
 
 (* go: append_log.go:33:6 *)
 Definition Init : val :=
@@ -138,7 +139,8 @@ Definition writeAll : val :=
       do:  ("i" <-[#intT] "$key");;;
       do:  (let: "$a0" := ((![#uint64T] "off") + (s_to_w64 (![#intT] "i"))) in
       let: "$a1" := (![#sliceT] "bk") in
-      (func_call #disk.disk #"Write"%go) "$a0" "$a1")))).
+      (func_call #disk.disk #"Write"%go) "$a0" "$a1")));;;
+    return: #()).
 
 (* go: append_log.go:71:17 *)
 Definition Log__append : val :=
@@ -179,7 +181,8 @@ Definition Log__reset : val :=
     exception_do (let: "log" := (mem.alloc "log") in
     let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref #Log #"sz"%go (![#ptrT] "log")) <-[#uint64T] "$r0");;;
-    do:  ((method_call #append_log.append_log #"Log'ptr" #"writeHdr" (![#ptrT] "log")) #())).
+    do:  ((method_call #append_log.append_log #"Log'ptr" #"writeHdr" (![#ptrT] "log")) #());;;
+    return: #()).
 
 (* go: append_log.go:94:17 *)
 Definition Log__Reset : val :=
@@ -187,7 +190,8 @@ Definition Log__Reset : val :=
     exception_do (let: "log" := (mem.alloc "log") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
     do:  ((method_call #append_log.append_log #"Log'ptr" #"reset" (![#ptrT] "log")) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

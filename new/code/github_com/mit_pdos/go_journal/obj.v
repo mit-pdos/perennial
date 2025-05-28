@@ -238,7 +238,8 @@ Definition Log__LogSz : val :=
 Definition Log__Shutdown : val :=
   rec: "Log__Shutdown" "l" <> :=
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #wal #"Walog'ptr" #"Shutdown" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) #())).
+    do:  ((method_call #wal #"Walog'ptr" #"Shutdown" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) #());;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

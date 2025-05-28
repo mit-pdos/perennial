@@ -512,7 +512,8 @@ Definition Server__ReserveEpochAndGetConfig : val :=
     let: "$a1" := (let: "$a0" := (![#sliceT] "config") in
     (func_call #configservice.configservice #"EncodeConfig"%go) "$a0") in
     (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
-    do:  ((![#ptrT] "reply") <-[#sliceT] "$r0")).
+    do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+    return: #()).
 
 (* go: server.go:88:18 *)
 Definition Server__GetConfig : val :=
@@ -526,7 +527,8 @@ Definition Server__GetConfig : val :=
     do:  ("st" <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
     (func_call #configservice.configservice #"EncodeConfig"%go) "$a0") in
-    do:  ((![#ptrT] "reply") <-[#sliceT] "$r0")).
+    do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+    return: #()).
 
 (* go: server.go:93:18 *)
 Definition Server__TryWriteConfig : val :=
@@ -630,7 +632,8 @@ Definition Server__TryWriteConfig : val :=
           let: "$a1" := e.None in
           (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
           do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
-          break: #())))).
+          break: #())));;;
+    return: #()).
 
 (* go: server.go:145:18 *)
 Definition Server__GetLease : val :=
@@ -711,7 +714,8 @@ Definition Server__GetLease : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
     let: "$a1" := (![#uint64T] "newLeaseExpiration") in
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
-    do:  ((![#ptrT] "reply") <-[#sliceT] "$r0")).
+    do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+    return: #()).
 
 (* go: server.go:177:6 *)
 Definition makeServer : val :=

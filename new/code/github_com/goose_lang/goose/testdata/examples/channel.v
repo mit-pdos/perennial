@@ -21,7 +21,8 @@ Definition SendMessage : val :=
     do:  ("messageChan" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$a0" := #"hello world"%go in
-      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "messageChan") #stringT) "$a0"))
+      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "messageChan") #stringT) "$a0");;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "message" := (mem.alloc (type.zero_val #stringT)) in
@@ -31,7 +32,8 @@ Definition SendMessage : val :=
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Did not receive expected message"%go) in
       Panic "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* Example 2: Join goroutine with receive on unbuffered channel
 
@@ -49,7 +51,8 @@ Definition JoinWithReceive : val :=
       exception_do (let: "$r0" := #"hello world"%go in
       do:  ((![#ptrT] "message") <-[#stringT] "$r0");;;
       do:  (let: "$a0" := #(W64 0) in
-      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done") #uint64T) "$a0"))
+      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done") #uint64T) "$a0");;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done") #uint64T) #());;;
@@ -57,7 +60,8 @@ Definition JoinWithReceive : val :=
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Message was not set correctly"%go) in
       Panic "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* Example 3: Join goroutine with send on unbuffered channel
 
@@ -74,7 +78,8 @@ Definition JoinWithSend : val :=
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #"hello world"%go in
       do:  ((![#ptrT] "message") <-[#stringT] "$r0");;;
-      do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done") #uint64T) #()))
+      do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done") #uint64T) #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     do:  (let: "$a0" := #(W64 0) in
@@ -83,7 +88,8 @@ Definition JoinWithSend : val :=
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Message was not set correctly"%go) in
       Panic "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* Example 4: Broadcast notification with close. This is testing a case where
    we transfer disjoint ownership to different threads in a single broadcast
@@ -139,7 +145,8 @@ Definition BroadcastNotification : val :=
         else do:  #());;;
         do:  (let: "$a0" := #(W64 0) in
         (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done1") #uint64T) "$a0")
-      else do:  #()))
+      else do:  #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$go" := (λ: <>,
@@ -158,7 +165,8 @@ Definition BroadcastNotification : val :=
         else do:  #());;;
         do:  (let: "$a0" := #(W64 0) in
         (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done2") #uint64T) "$a0")
-      else do:  #()))
+      else do:  #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$go" := (λ: <>,
@@ -177,7 +185,8 @@ Definition BroadcastNotification : val :=
         else do:  #());;;
         do:  (let: "$a0" := #(W64 0) in
         (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done3") #uint64T) "$a0")
-      else do:  #()))
+      else do:  #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$r0" := #"thread1"%go in
@@ -189,7 +198,8 @@ Definition BroadcastNotification : val :=
     do:  ((method_call #channel #"Channel'ptr" #"Close" (![#ptrT] "notifyCh") #uint64T) #());;;
     do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done1") #uint64T) #());;;
     do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done2") #uint64T) #());;;
-    do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done3") #uint64T) #())).
+    do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done3") #uint64T) #());;;
+    return: #()).
 
 (* Example 5: Join sending goroutine before closing a buffered channel.
    This should demonstrate the spec's ability to prevent closing on a channel
@@ -210,7 +220,8 @@ Definition CoordinatedChannelClose : val :=
       exception_do (do:  (let: "$a0" := #(W64 42) in
       (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "bufCh") #uint64T) "$a0");;;
       do:  (let: "$a0" := #(W64 0) in
-      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "syncCh") #uint64T) "$a0"))
+      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "syncCh") #uint64T) "$a0");;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     do:  (let: "$a0" := #(W64 84) in
@@ -240,7 +251,8 @@ Definition CoordinatedChannelClose : val :=
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Did not receive both expected values"%go) in
       Panic "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

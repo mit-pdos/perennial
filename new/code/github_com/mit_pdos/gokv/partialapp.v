@@ -18,7 +18,8 @@ Definition partiallyApplyMe : val :=
     then
       do:  (let: "$a0" := (interface.make #""%go #"string"%go #"not allowed"%go) in
       Panic "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 Definition Foo : go_type := stringT.
 
@@ -36,7 +37,8 @@ Definition Foo__someMethodWithArgs : val :=
     let: "y" := (mem.alloc "y") in
     do:  (let: "$a0" := ((![#Foo] "f") + (![#stringT] "y")) in
     let: "$a1" := (![#intT] "z") in
-    (func_call #partialapp.main #"partiallyApplyMe"%go) "$a0" "$a1")).
+    (func_call #partialapp.main #"partiallyApplyMe"%go) "$a0" "$a1");;;
+    return: #()).
 
 (* go: examples.go:18:6 *)
 Definition main : val :=
@@ -74,7 +76,8 @@ Definition main : val :=
     (![#funcT] "x") "$a0" "$a1");;;
     do:  (let: "$a0" := #"bc"%go in
     let: "$a1" := #(W64 3) in
-    (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "f")) "$a0" "$a1")).
+    (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "f")) "$a0" "$a1");;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

@@ -110,7 +110,8 @@ Definition installBit : val :=
     let: "$a1" := (![#byteT] (slice.elem_ref #byteT (![#sliceT] "dst") (![#uint64T] "dstbyte"))) in
     let: "$a2" := ((![#uint64T] "dstoff") `rem` #(W64 8)) in
     (func_call #buf.buf #"installOneBit"%go) "$a0" "$a1" "$a2") in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "dst") (![#uint64T] "dstbyte")) <-[#byteT] "$r0")).
+    do:  ((slice.elem_ref #byteT (![#sliceT] "dst") (![#uint64T] "dstbyte")) <-[#byteT] "$r0");;;
+    return: #()).
 
 (* Install bytes from src to dst.
 
@@ -129,7 +130,8 @@ Definition installBytes : val :=
     let: "$a1" := (let: "$s" := (![#sliceT] "src") in
     slice.slice #byteT "$s" #(W64 0) (![#uint64T] "sz")) in
     (slice.copy #byteT) "$a0" "$a1");;;
-    return: (#())).
+    return: (#());;;
+    return: #()).
 
 (* Install the bits from buf into blk.  Two cases: a bit or an inode
 
@@ -167,7 +169,8 @@ Definition Buf__Install : val :=
     "%go in
     let: "$a2" := ((let: "$sl0" := (interface.make #"slice'"%go (![#sliceT] "blk")) in
     slice.literal #interfaceT ["$sl0"])) in
-    (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2")).
+    (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
+    return: #()).
 
 (* go: buf.go:88:17 *)
 Definition Buf__IsDirty : val :=
@@ -180,7 +183,8 @@ Definition Buf__SetDirty : val :=
   rec: "Buf__SetDirty" "buf" <> :=
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "$r0" := #true in
-    do:  ((struct.field_ref #Buf #"dirty"%go (![#ptrT] "buf")) <-[#boolT] "$r0")).
+    do:  ((struct.field_ref #Buf #"dirty"%go (![#ptrT] "buf")) <-[#boolT] "$r0");;;
+    return: #()).
 
 (* go: buf.go:96:17 *)
 Definition Buf__WriteDirect : val :=
@@ -202,7 +206,8 @@ Definition Buf__WriteDirect : val :=
       (method_call #buf.buf #"Buf'ptr" #"Install" (![#ptrT] "buf")) "$a0");;;
       do:  (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
       let: "$a1" := (![#sliceT] "blk") in
-      (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1"))).
+      (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1"));;;
+    return: #()).
 
 (* go: buf.go:107:17 *)
 Definition Buf__BnumGet : val :=
@@ -232,7 +237,8 @@ Definition Buf__BnumPut : val :=
     slice.slice #byteT "$s" (![#uint64T] "off") ((![#uint64T] "off") + #(W64 8))) in
     let: "$a1" := ((method_call #marshal #"Enc" #"Finish" (![#marshal.Enc] "enc")) #()) in
     (slice.copy #byteT) "$a0" "$a1");;;
-    do:  ((method_call #buf.buf #"Buf'ptr" #"SetDirty" (![#ptrT] "buf")) #())).
+    do:  ((method_call #buf.buf #"Buf'ptr" #"SetDirty" (![#ptrT] "buf")) #());;;
+    return: #()).
 
 Definition BufMap : go_type := structT [
   "addrs" :: mapT uint64T ptrT
@@ -255,7 +261,8 @@ Definition BufMap__Insert : val :=
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "buf" := (mem.alloc "buf") in
     let: "$r0" := (![#ptrT] "buf") in
-    do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) #()) "$r0")).
+    do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) #()) "$r0");;;
+    return: #()).
 
 (* go: bufmap.go:26:21 *)
 Definition BufMap__Lookup : val :=
@@ -271,7 +278,8 @@ Definition BufMap__Del : val :=
     let: "addr" := (mem.alloc "addr") in
     do:  (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
     let: "$a1" := ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] "addr")) #()) in
-    map.delete "$a0" "$a1")).
+    map.delete "$a0" "$a1");;;
+    return: #()).
 
 (* go: bufmap.go:34:21 *)
 Definition BufMap__Ndirty : val :=

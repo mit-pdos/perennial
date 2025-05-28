@@ -69,7 +69,8 @@ Definition Begin : val :=
 Definition Log__Flush : val :=
   rec: "Log__Flush" "tsys" <> :=
     exception_do (let: "tsys" := (mem.alloc "tsys") in
-    do:  ((method_call #obj #"Log'ptr" #"Flush" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "tsys")))) #())).
+    do:  ((method_call #obj #"Log'ptr" #"Flush" (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "tsys")))) #());;;
+    return: #()).
 
 (* go: txn.go:52:17 *)
 Definition Txn__acquireNoCheck : val :=
@@ -82,7 +83,8 @@ Definition Txn__acquireNoCheck : val :=
     do:  (let: "$a0" := (![#uint64T] "flatAddr") in
     (method_call #lockmap #"LockMap'ptr" #"Acquire" (![#ptrT] (struct.field_ref #Txn #"locks"%go (![#ptrT] "txn")))) "$a0");;;
     let: "$r0" := #true in
-    do:  (map.insert (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr") "$r0")).
+    do:  (map.insert (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr") "$r0");;;
+    return: #()).
 
 (* go: txn.go:58:17 *)
 Definition Txn__isAlreadyAcquired : val :=
@@ -107,7 +109,8 @@ Definition Txn__Acquire : val :=
     then
       do:  (let: "$a0" := (![#addr.Addr] "addr") in
       (method_call #txn.txn #"Txn'ptr" #"acquireNoCheck" (![#ptrT] "txn")) "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* go: txn.go:70:17 *)
 Definition Txn__ReleaseAll : val :=
@@ -118,7 +121,8 @@ Definition Txn__ReleaseAll : val :=
     map.for_range "$range" (λ: "$key" "value",
       do:  ("flatAddr" <-[#uint64T] "$key");;;
       do:  (let: "$a0" := (![#uint64T] "flatAddr") in
-      (method_call #lockmap #"LockMap'ptr" #"Release" (![#ptrT] (struct.field_ref #Txn #"locks"%go (![#ptrT] "txn")))) "$a0")))).
+      (method_call #lockmap #"LockMap'ptr" #"Release" (![#ptrT] (struct.field_ref #Txn #"locks"%go (![#ptrT] "txn")))) "$a0")));;;
+    return: #()).
 
 (* go: txn.go:76:17 *)
 Definition Txn__readBufNoAcquire : val :=
@@ -160,7 +164,8 @@ Definition Txn__OverWrite : val :=
     do:  (let: "$a0" := (![#addr.Addr] "addr") in
     let: "$a1" := (![#uint64T] "sz") in
     let: "$a2" := (![#sliceT] "data") in
-    (method_call #jrnl #"Op'ptr" #"OverWrite" (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) "$a0" "$a1" "$a2")).
+    (method_call #jrnl #"Op'ptr" #"OverWrite" (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) "$a0" "$a1" "$a2");;;
+    return: #()).
 
 (* go: txn.go:96:17 *)
 Definition Txn__ReadBufBit : val :=
@@ -199,7 +204,8 @@ Definition Txn__OverWriteBit : val :=
     do:  (let: "$a0" := (![#addr.Addr] "addr") in
     let: "$a1" := #(W64 1) in
     let: "$a2" := (![#sliceT] "dataBytes") in
-    (method_call #txn.txn #"Txn'ptr" #"OverWrite" (![#ptrT] "txn")) "$a0" "$a1" "$a2")).
+    (method_call #txn.txn #"Txn'ptr" #"OverWrite" (![#ptrT] "txn")) "$a0" "$a1" "$a2");;;
+    return: #()).
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
 

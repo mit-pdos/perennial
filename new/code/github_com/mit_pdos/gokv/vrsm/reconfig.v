@@ -111,7 +111,8 @@ Definition EnterNewConfig : val :=
         }])) in
         (method_call #replica #"Clerk'ptr" #"SetState" (![#ptrT] "clerk")) "$a0") in
         do:  ((slice.elem_ref #uint64T (![#sliceT] "errs") (![#uint64T] "locali")) <-[#uint64T] "$r0");;;
-        do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #()))
+        do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #());;;
+        return: #())
         ) in
       do:  (Fork ("$go" #()));;;
       do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;

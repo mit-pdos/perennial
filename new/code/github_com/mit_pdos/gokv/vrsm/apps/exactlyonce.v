@@ -212,7 +212,8 @@ Definition eStateMachine__setState : val :=
     let: "$a1" := (![#uint64T] "nextIndex") in
     (![#funcT] (struct.field_ref #VersionedStateMachine #"SetState"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
     let: "$r0" := (![#uint64T] "nextIndex") in
-    do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
+    return: #()).
 
 (* go: sm.go:94:6 *)
 Definition MakeExactlyOnceStateMachine : val :=

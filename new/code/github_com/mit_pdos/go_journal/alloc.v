@@ -49,7 +49,8 @@ Definition Alloc__MarkUsed : val :=
     do:  ("bit" <-[#uint64T] "$r0");;;
     let: "$r0" := ((![#byteT] (slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte"))) `or` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit")))) in
     do:  ((slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte")) <-[#byteT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
+    return: #()).
 
 (* MkMaxAlloc initializes an allocator to be fully free with a range of (0,
    max).
@@ -142,7 +143,8 @@ Definition Alloc__freeBit : val :=
     do:  ("bit" <-[#uint64T] "$r0");;;
     let: "$r0" := ((![#byteT] (slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte"))) `and` (~ (#(W8 1) ≪ (u_to_w8 (![#uint64T] "bit"))))) in
     do:  ((slice.elem_ref #byteT (![#sliceT] (struct.field_ref #Alloc #"bitmap"%go (![#ptrT] "a"))) (![#uint64T] "byte")) <-[#byteT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Alloc #"mu"%go (![#ptrT] "a")))) #());;;
+    return: #()).
 
 (* go: alloc.go:90:17 *)
 Definition Alloc__AllocNum : val :=
@@ -164,7 +166,8 @@ Definition Alloc__FreeNum : val :=
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := (![#uint64T] "num") in
-    (method_call #alloc.alloc #"Alloc'ptr" #"freeBit" (![#ptrT] "a")) "$a0")).
+    (method_call #alloc.alloc #"Alloc'ptr" #"freeBit" (![#ptrT] "a")) "$a0");;;
+    return: #()).
 
 (* go: alloc.go:102:6 *)
 Definition popCnt : val :=

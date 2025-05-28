@@ -225,7 +225,8 @@ Definition circularAppender__logBlocks : val :=
       let: "$a1" := (![#sliceT] "blk") in
       (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
       let: "$r0" := (![#uint64T] "blkno") in
-      do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref #circularAppender #"diskAddrs"%go (![#ptrT] "c"))) ((![#LogPosition] "pos") `rem` LOGSZ)) <-[#uint64T] "$r0")))).
+      do:  ((slice.elem_ref #uint64T (![#sliceT] (struct.field_ref #circularAppender #"diskAddrs"%go (![#ptrT] "c"))) ((![#LogPosition] "pos") `rem` LOGSZ)) <-[#uint64T] "$r0")));;;
+    return: #()).
 
 (* go: 0circular.go:95:28 *)
 Definition circularAppender__Append : val :=
@@ -250,7 +251,8 @@ Definition circularAppender__Append : val :=
     do:  (let: "$a0" := LOGHDR in
     let: "$a1" := (![#sliceT] "b") in
     (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
-    do:  ((interface.get #"Barrier"%go (![#disk.Disk] "d")) #())).
+    do:  ((interface.get #"Barrier"%go (![#disk.Disk] "d")) #());;;
+    return: #()).
 
 (* go: 0circular.go:105:6 *)
 Definition Advance : val :=
@@ -264,7 +266,8 @@ Definition Advance : val :=
     do:  (let: "$a0" := LOGHDR2 in
     let: "$a1" := (![#sliceT] "b") in
     (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
-    do:  ((interface.get #"Barrier"%go (![#disk.Disk] "d")) #())).
+    do:  ((interface.get #"Barrier"%go (![#disk.Disk] "d")) #());;;
+    return: #()).
 
 Definition sliding : go_type := structT [
   "log" :: sliceT;
@@ -343,7 +346,8 @@ Definition sliding__update : val :=
     let: "pos" := (mem.alloc "pos") in
     let: "$r0" := (![#Update] "u") in
     do:  ((slice.elem_ref #Update (let: "$s" := (![#sliceT] (struct.field_ref #sliding #"log"%go (![#ptrT] "s"))) in
-    slice.slice #Update "$s" ((![#LogPosition] (struct.field_ref #sliding #"mutable"%go (![#ptrT] "s"))) - (![#LogPosition] (struct.field_ref #sliding #"start"%go (![#ptrT] "s")))) (slice.len "$s")) ((![#LogPosition] "pos") - (![#LogPosition] (struct.field_ref #sliding #"mutable"%go (![#ptrT] "s"))))) <-[#Update] "$r0")).
+    slice.slice #Update "$s" ((![#LogPosition] (struct.field_ref #sliding #"mutable"%go (![#ptrT] "s"))) - (![#LogPosition] (struct.field_ref #sliding #"start"%go (![#ptrT] "s")))) (slice.len "$s")) ((![#LogPosition] "pos") - (![#LogPosition] (struct.field_ref #sliding #"mutable"%go (![#ptrT] "s"))))) <-[#Update] "$r0");;;
+    return: #()).
 
 (* append writes an update that cannot be absorbed
 
@@ -364,7 +368,8 @@ Definition sliding__append : val :=
     (slice.append #Update) "$a0" "$a1") in
     do:  ((struct.field_ref #sliding #"log"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
     let: "$r0" := (![#LogPosition] "pos") in
-    do:  (map.insert (![type.mapT #uint64T #LogPosition] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) (![#uint64T] (struct.field_ref #Update #"Addr"%go "u")) "$r0")).
+    do:  (map.insert (![type.mapT #uint64T #LogPosition] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) (![#uint64T] (struct.field_ref #Update #"Addr"%go "u")) "$r0");;;
+    return: #()).
 
 (* Absorbs writes in in-memory transactions (avoiding those that might be in
    the process of being logged or installed).
@@ -426,7 +431,8 @@ Definition sliding__memWrite : val :=
           (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2"));;;
         do:  (let: "$a0" := (![#Update] "buf") in
         (method_call #wal.wal #"sliding'ptr" #"append" (![#ptrT] "s")) "$a0");;;
-        do:  ("pos" <-[#LogPosition] ((![#LogPosition] "pos") + #(W64 1))))))).
+        do:  ("pos" <-[#LogPosition] ((![#LogPosition] "pos") + #(W64 1))))));;;
+    return: #()).
 
 (* takeFrom takes the read-only updates from a logical start position to the
    current mutable boundary
@@ -508,14 +514,16 @@ Definition sliding__deleteFrom : val :=
     slice.slice #Update "$s" ((![#LogPosition] "newStart") - (![#LogPosition] "start")) (slice.len "$s")) in
     do:  ((struct.field_ref #sliding #"log"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
     let: "$r0" := (![#LogPosition] "newStart") in
-    do:  ((struct.field_ref #sliding #"start"%go (![#ptrT] "s")) <-[#LogPosition] "$r0")).
+    do:  ((struct.field_ref #sliding #"start"%go (![#ptrT] "s")) <-[#LogPosition] "$r0");;;
+    return: #()).
 
 (* go: 0sliding.go:119:19 *)
 Definition sliding__clearMutable : val :=
   rec: "sliding__clearMutable" "s" <> :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "$r0" := ((method_call #wal.wal #"sliding'ptr" #"end" (![#ptrT] "s")) #()) in
-    do:  ((struct.field_ref #sliding #"mutable"%go (![#ptrT] "s")) <-[#LogPosition] "$r0")).
+    do:  ((struct.field_ref #sliding #"mutable"%go (![#ptrT] "s")) <-[#LogPosition] "$r0");;;
+    return: #()).
 
 Definition WalogState : go_type := structT [
   "memLog" :: ptrT;
@@ -558,7 +566,8 @@ Definition WalogState__cutMemLog : val :=
     exception_do (let: "st" := (mem.alloc "st") in
     let: "installEnd" := (mem.alloc "installEnd") in
     do:  (let: "$a0" := (![#LogPosition] "installEnd") in
-    (method_call #wal.wal #"sliding'ptr" #"deleteFrom" (![#ptrT] (struct.field_ref #WalogState #"memLog"%go (![#ptrT] "st")))) "$a0")).
+    (method_call #wal.wal #"sliding'ptr" #"deleteFrom" (![#ptrT] (struct.field_ref #WalogState #"memLog"%go (![#ptrT] "st")))) "$a0");;;
+    return: #()).
 
 (* absorbBufs returns bufs' such that applyUpds(d, bufs') = applyUpds(d,
    bufs) and bufs' has unique addresses
@@ -611,7 +620,8 @@ Definition installBlocks : val :=
       (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
       do:  (let: "$a0" := (![#uint64T] "blkno") in
       let: "$a1" := (![#sliceT] "blk") in
-      (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1")))).
+      (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1")));;;
+    return: #()).
 
 (* logInstall installs one on-disk transaction from the disk log to the data
    region.
@@ -695,7 +705,8 @@ Definition Walog__installer : val :=
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     do:  ((struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))) <-[#uint64T] ((![#uint64T] (struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))) - #(W64 1)));;;
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #Walog #"condShut"%go (![#ptrT] "l")))) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #());;;
+    return: #()).
 
 (* Waits on the installer thread to free space in the log so everything
    logged fits on disk.
@@ -708,7 +719,8 @@ Definition Walog__waitForSpace : val :=
     exception_do (let: "l" := (mem.alloc "l") in
     (for: (λ: <>, (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #sliding #"log"%go (![#ptrT] (struct.field_ref #WalogState #"memLog"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))))) in
     slice.len "$a0")) > LOGSZ); (λ: <>, Skip) := λ: <>,
-      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #Walog #"condInstall"%go (![#ptrT] "l")))) #()))).
+      do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #Walog #"condInstall"%go (![#ptrT] "l")))) #()));;;
+    return: #()).
 
 (* go: logger.go:20:17 *)
 Definition Walog__flushIfNeeded : val :=
@@ -719,7 +731,8 @@ Definition Walog__flushIfNeeded : val :=
       do:  ((method_call #wal.wal #"sliding'ptr" #"clearMutable" (![#ptrT] (struct.field_ref #WalogState #"memLog"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))))) #());;;
       let: "$r0" := #false in
       do:  ((struct.field_ref #sliding #"needFlush"%go (![#ptrT] (struct.field_ref #WalogState #"memLog"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))))) <-[#boolT] "$r0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* logAppend appends to the log, if it can find transactions to append.
 
@@ -790,7 +803,8 @@ Definition Walog__logger : val :=
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     do:  ((struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))) <-[#uint64T] ((![#uint64T] (struct.field_ref #WalogState #"nthread"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l"))))) - #(W64 1)));;;
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #Walog #"condShut"%go (![#ptrT] "l")))) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #());;;
+    return: #()).
 
 (* go: wal.go:14:6 *)
 Definition mkLog : val :=
@@ -862,13 +876,16 @@ Definition Walog__startBackgroundThreads : val :=
     exception_do (let: "l" := (mem.alloc "l") in
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$a0" := (![#ptrT] (struct.field_ref #Walog #"circ"%go (![#ptrT] "l"))) in
-      (method_call #wal.wal #"Walog'ptr" #"logger" (![#ptrT] "l")) "$a0"))
+      (method_call #wal.wal #"Walog'ptr" #"logger" (![#ptrT] "l")) "$a0");;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #wal.wal #"Walog'ptr" #"installer" (![#ptrT] "l")) #()))
+      exception_do (do:  ((method_call #wal.wal #"Walog'ptr" #"installer" (![#ptrT] "l")) #());;;
+      return: #())
       ) in
-    do:  (Fork ("$go" #()))).
+    do:  (Fork ("$go" #()));;;
+    return: #()).
 
 (* go: wal.go:41:6 *)
 Definition MkLog : val :=
@@ -907,7 +924,8 @@ Definition WalogState__endGroupTxn : val :=
   rec: "WalogState__endGroupTxn" "st" <> :=
     exception_do (let: "st" := (mem.alloc "st") in
     let: "$r0" := #true in
-    do:  ((struct.field_ref #sliding #"needFlush"%go (![#ptrT] (struct.field_ref #WalogState #"memLog"%go (![#ptrT] "st")))) <-[#boolT] "$r0")).
+    do:  ((struct.field_ref #sliding #"needFlush"%go (![#ptrT] (struct.field_ref #WalogState #"memLog"%go (![#ptrT] "st")))) <-[#boolT] "$r0");;;
+    return: #()).
 
 (* go: wal.go:68:6 *)
 Definition copyUpdateBlock : val :=
@@ -1112,7 +1130,8 @@ Definition Walog__Flush : val :=
     (for: (λ: <>, (~ ((![#LogPosition] "pos") ≤ (![#LogPosition] (struct.field_ref #WalogState #"diskEnd"%go (![#ptrT] (struct.field_ref #Walog #"st"%go (![#ptrT] "l")))))))); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #Walog #"condLogger"%go (![#ptrT] "l")))) #()));;;
     do:  ((func_call #primitive.primitive #"Linearize"%go) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #());;;
+    return: #()).
 
 (* Shutdown logger and installer
 
@@ -1141,7 +1160,8 @@ Definition Walog__Shutdown : val :=
     let: "$a1" := #"wal done
     "%go in
     let: "$a2" := #slice.nil in
-    (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2")).
+    (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

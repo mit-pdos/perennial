@@ -504,7 +504,8 @@ Definition Election__observe : val :=
              do:  ((![#context.CancelFunc] "cancel") #());;;
              return: (#())
              )] chan.select_no_default)));;;
-      do:  ((![#context.CancelFunc] "cancel") #()))).
+      do:  ((![#context.CancelFunc] "cancel") #()));;;
+    return: #()).
 
 (* Key returns the leader key if elected, empty string otherwise.
 
@@ -926,7 +927,8 @@ Definition lockerMutex__Lock : val :=
     then
       do:  (let: "$a0" := (![#error] "err") in
       Panic "$a0")
-    else do:  #()))).
+    else do:  #()));;;
+    return: #()).
 
 (* go: mutex.go:170:24 *)
 Definition lockerMutex__Unlock : val :=
@@ -943,7 +945,8 @@ Definition lockerMutex__Unlock : val :=
     then
       do:  (let: "$a0" := (![#error] "err") in
       Panic "$a0")
-    else do:  #()))).
+    else do:  #()));;;
+    return: #()).
 
 (* NewLocker creates a sync.Locker backed by an etcd mutex.
 
@@ -1065,7 +1068,8 @@ Definition NewSession : val :=
         exception_do (do:  (let: "$a0" := (![type.chanT (type.structT [
         ])] "donec") in
         chan.close "$a0");;;
-        do:  ((![#context.CancelFunc] "cancel") #()))
+        do:  ((![#context.CancelFunc] "cancel") #());;;
+        return: #())
         ) in
       "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
       (λ: <>,
@@ -1074,7 +1078,8 @@ Definition NewSession : val :=
         )));;;
       let: "$range" := (![type.chanT #ptrT] "keepAlive") in
       chan.for_range "$range" (λ: "$key",
-        do:  #()))
+        do:  #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     return: (![#ptrT] "s", #interface.nil)).
@@ -1124,7 +1129,8 @@ Definition Session__Orphan : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     do:  ((![#context.CancelFunc] (struct.field_ref #Session #"cancel"%go (![#ptrT] "s"))) #());;;
     do:  (Fst (chan.receive (![type.chanT (type.structT [
-    ])] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))))).
+    ])] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))));;;
+    return: #()).
 
 (* Close orphans the session and revokes the session lease.
 
@@ -1173,7 +1179,8 @@ Definition WithTTL : val :=
          let: "$a1" := (s_to_w64 (![#intT] (struct.field_ref #sessionOptions #"ttl"%go (![#ptrT] "so")))) in
          (func_call #zap.zap #"Int64"%go) "$a0" "$a1") in
          slice.literal #zapcore.Field ["$sl0"])) in
-         (method_call #zap #"Logger'ptr" #"Warn" (![#ptrT] "lg")) "$a0" "$a1")))
+         (method_call #zap #"Logger'ptr" #"Warn" (![#ptrT] "lg")) "$a0" "$a1"));;;
+       return: #())
        ))).
 
 (* WithLease specifies the existing leaseID to be used for the session.
@@ -1187,7 +1194,8 @@ Definition WithLease : val :=
     return: ((λ: "so" <>,
        exception_do (let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#clientv3.LeaseID] "leaseID") in
-       do:  ((struct.field_ref #sessionOptions #"leaseID"%go (![#ptrT] "so")) <-[#clientv3.LeaseID] "$r0"))
+       do:  ((struct.field_ref #sessionOptions #"leaseID"%go (![#ptrT] "so")) <-[#clientv3.LeaseID] "$r0");;;
+       return: #())
        ))).
 
 (* WithContext assigns a context to the session instead of defaulting to
@@ -1203,7 +1211,8 @@ Definition WithContext : val :=
     return: ((λ: "so" <>,
        exception_do (let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#context.Context] "ctx") in
-       do:  ((struct.field_ref #sessionOptions #"ctx"%go (![#ptrT] "so")) <-[#context.Context] "$r0"))
+       do:  ((struct.field_ref #sessionOptions #"ctx"%go (![#ptrT] "so")) <-[#context.Context] "$r0");;;
+       return: #())
        ))).
 
 Definition STM : go_type := interfaceT.
@@ -1239,7 +1248,8 @@ Definition WithIsolation : val :=
     return: ((λ: "so",
        exception_do (let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#Isolation] "lvl") in
-       do:  ((struct.field_ref #stmOptions #"iso"%go (![#ptrT] "so")) <-[#Isolation] "$r0"))
+       do:  ((struct.field_ref #stmOptions #"iso"%go (![#ptrT] "so")) <-[#Isolation] "$r0");;;
+       return: #())
        ))).
 
 (* WithAbortContext specifies the context for permanently aborting the transaction.
@@ -1251,7 +1261,8 @@ Definition WithAbortContext : val :=
     return: ((λ: "so",
        exception_do (let: "so" := (mem.alloc "so") in
        let: "$r0" := (![#context.Context] "ctx") in
-       do:  ((struct.field_ref #stmOptions #"ctx"%go (![#ptrT] "so")) <-[#context.Context] "$r0"))
+       do:  ((struct.field_ref #stmOptions #"ctx"%go (![#ptrT] "so")) <-[#context.Context] "$r0");;;
+       return: #())
        ))).
 
 (* WithPrefetch is a hint to prefetch a list of keys before trying to apply.
@@ -1268,7 +1279,8 @@ Definition WithPrefetch : val :=
        let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #stmOptions #"prefetch"%go (![#ptrT] "so"))) in
        let: "$a1" := (![#sliceT] "keys") in
        (slice.append #stringT) "$a0" "$a1") in
-       do:  ((struct.field_ref #stmOptions #"prefetch"%go (![#ptrT] "so")) <-[#sliceT] "$r0"))
+       do:  ((struct.field_ref #stmOptions #"prefetch"%go (![#ptrT] "so")) <-[#sliceT] "$r0");;;
+       return: #())
        ))).
 
 (* NewSTM initiates a new STM instance, using serializable snapshot isolation by default.
@@ -1483,7 +1495,8 @@ Definition runSTM : val :=
             "err" ::= ![#error] (struct.field_ref #stmError #"err"%go "e")
           }]) in
           chan.send "$chan" "$v")
-        else do:  #())))
+        else do:  #()));;;
+        return: #())
         ) in
       "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
       (λ: <>,
@@ -1506,7 +1519,8 @@ Definition runSTM : val :=
         else do:  #())));;;
       do:  (let: "$chan" := (![type.chanT #stmResponse] "outc") in
       let: "$v" := (![#stmResponse] "out") in
-      chan.send "$chan" "$v"))
+      chan.send "$chan" "$v");;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "r" := (mem.alloc (type.zero_val #stmResponse)) in
@@ -1527,7 +1541,8 @@ Definition readSet__add : val :=
       do:  ("resp" <-[#ptrT] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
       let: "$r0" := ((method_call #etcdserverpb #"ResponseOp'ptr" #"GetResponseRange" (![#ptrT] "resp")) #()) in
-      do:  (map.insert (![#readSet] "rs") (![#stringT] (slice.elem_ref #stringT (![#sliceT] "keys") (![#intT] "i"))) "$r0")))).
+      do:  (map.insert (![#readSet] "rs") (![#stringT] (slice.elem_ref #stringT (![#sliceT] "keys") (![#intT] "i"))) "$r0")));;;
+    return: #()).
 
 (* first returns the store revision from the first fetch
 
@@ -1678,7 +1693,8 @@ Definition stm__Put : val :=
       let: "$a2" := (![#sliceT] "opts") in
       (func_call #v3.clientv3 #"OpPut"%go) "$a0" "$a1" "$a2"
     }]) in
-    do:  (map.insert (![#writeSet] (struct.field_ref #stm #"wset"%go (![#ptrT] "s"))) (![#stringT] "key") "$r0")).
+    do:  (map.insert (![#writeSet] (struct.field_ref #stm #"wset"%go (![#ptrT] "s"))) (![#stringT] "key") "$r0");;;
+    return: #()).
 
 (* go: stm.go:256:15 *)
 Definition stm__Del : val :=
@@ -1691,7 +1707,8 @@ Definition stm__Del : val :=
       let: "$a1" := #slice.nil in
       (func_call #v3.clientv3 #"OpDelete"%go) "$a0" "$a1"
     }]) in
-    do:  (map.insert (![#writeSet] (struct.field_ref #stm #"wset"%go (![#ptrT] "s"))) (![#stringT] "key") "$r0")).
+    do:  (map.insert (![#writeSet] (struct.field_ref #stm #"wset"%go (![#ptrT] "s"))) (![#stringT] "key") "$r0");;;
+    return: #()).
 
 (* go: stm.go:258:15 *)
 Definition stm__Rev : val :=
@@ -1796,7 +1813,8 @@ Definition stm__reset : val :=
     let: "$r0" := (map.make #stringT #ptrT) in
     do:  ((struct.field_ref #stm #"rset"%go (![#ptrT] "s")) <-[#readSet] "$r0");;;
     let: "$r0" := (map.make #stringT #stmPut) in
-    do:  ((struct.field_ref #stm #"wset"%go (![#ptrT] "s")) <-[#writeSet] "$r0")).
+    do:  ((struct.field_ref #stm #"wset"%go (![#ptrT] "s")) <-[#writeSet] "$r0");;;
+    return: #()).
 
 (* go: stm.go:305:27 *)
 Definition stmSerializable__Get : val :=

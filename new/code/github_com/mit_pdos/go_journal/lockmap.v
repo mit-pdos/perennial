@@ -95,7 +95,8 @@ Definition lockShard__acquire : val :=
       then break: #()
       else do:  #());;;
       continue: #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
+    return: #()).
 
 (* go: lock.go:81:24 *)
 Definition lockShard__release : val :=
@@ -114,7 +115,8 @@ Definition lockShard__release : val :=
       do:  (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #lockShard #"state"%go (![#ptrT] "lmap"))) in
       let: "$a1" := (![#uint64T] "addr") in
       map.delete "$a0" "$a1"));;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
+    return: #()).
 
 Definition NSHARD : expr := #(W64 65537).
 
@@ -152,7 +154,8 @@ Definition LockMap__Acquire : val :=
     let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #LockMap #"shards"%go (![#ptrT] "lmap"))) ((![#uint64T] "flataddr") `rem` NSHARD))) in
     do:  ("shard" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "flataddr") in
-    (method_call #lockmap.lockmap #"lockShard'ptr" #"acquire" (![#ptrT] "shard")) "$a0")).
+    (method_call #lockmap.lockmap #"lockShard'ptr" #"acquire" (![#ptrT] "shard")) "$a0");;;
+    return: #()).
 
 (* go: lock.go:115:22 *)
 Definition LockMap__Release : val :=
@@ -163,7 +166,8 @@ Definition LockMap__Release : val :=
     let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #LockMap #"shards"%go (![#ptrT] "lmap"))) ((![#uint64T] "flataddr") `rem` NSHARD))) in
     do:  ("shard" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "flataddr") in
-    (method_call #lockmap.lockmap #"lockShard'ptr" #"release" (![#ptrT] "shard")) "$a0")).
+    (method_call #lockmap.lockmap #"lockShard'ptr" #"release" (![#ptrT] "shard")) "$a0");;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

@@ -94,7 +94,8 @@ Definition CreateAppendOnlyFile : val :=
         let: "$r0" := (![#uint64T] "newLength") in
         do:  ((struct.field_ref #AppendOnlyFile #"durableLength"%go (![#ptrT] "a")) <-[#uint64T] "$r0");;;
         do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] "cond")) #());;;
-        continue: #()))
+        continue: #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     return: (![#ptrT] "a")).
@@ -111,7 +112,8 @@ Definition AppendOnlyFile__Close : val :=
     do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #AppendOnlyFile #"lengthCond"%go (![#ptrT] "a")))) #());;;
     (for: (λ: <>, (~ (![#boolT] (struct.field_ref #AppendOnlyFile #"closed"%go (![#ptrT] "a"))))); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AppendOnlyFile #"closedCond"%go (![#ptrT] "a")))) #()));;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
+    return: #()).
 
 (* NOTE: cannot be called concurrently with Close()
 
@@ -154,7 +156,8 @@ Definition AppendOnlyFile__WaitAppend : val :=
       do:  ("cond" <-[#ptrT] "$r0"));;;
     (for: (λ: <>, (![#uint64T] (struct.field_ref #AppendOnlyFile #"durableLength"%go (![#ptrT] "a"))) < (![#uint64T] "length")); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] "cond")) #()));;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

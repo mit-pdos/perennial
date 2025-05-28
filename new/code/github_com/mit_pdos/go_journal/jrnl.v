@@ -99,7 +99,8 @@ Definition Op__OverWrite : val :=
       else do:  #());;;
       let: "$r0" := (![#sliceT] "data") in
       do:  ((struct.field_ref #buf.Buf #"Data"%go (![#ptrT] "b")) <-[#sliceT] "$r0");;;
-      do:  ((method_call #buf #"Buf'ptr" #"SetDirty" (![#ptrT] "b")) #()))).
+      do:  ((method_call #buf #"Buf'ptr" #"SetDirty" (![#ptrT] "b")) #()));;;
+    return: #()).
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
 

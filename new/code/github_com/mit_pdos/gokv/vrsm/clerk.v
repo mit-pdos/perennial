@@ -129,7 +129,8 @@ Definition Clerk__maybeRefreshPreference : val :=
       let: "$r1" := "$ret1" in
       do:  ((struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
       do:  "$r1"
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* go: clerk.go:79:18 *)
 Definition Clerk__ApplyRo2 : val :=

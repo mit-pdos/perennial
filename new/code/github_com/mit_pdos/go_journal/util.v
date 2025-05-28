@@ -20,7 +20,8 @@ Definition DPrintf : val :=
       do:  (let: "$a0" := (![#stringT] "format") in
       let: "$a1" := (![#sliceT] "a") in
       (func_call #log.log #"Printf"%go) "$a0" "$a1")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* go: util.go:15:6 *)
 Definition RoundUp : val :=

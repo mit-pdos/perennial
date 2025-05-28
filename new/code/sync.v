@@ -54,7 +54,8 @@ Definition RWMutex__RLock : val :=
       do:  ((func_call #race.race #"Enable"%go) #());;;
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"readerSem"%go (![#ptrT] "rw")) in
       (func_call #race.race #"Acquire"%go) "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* TryRLock tries to lock rw for reading and reports whether it succeeded.
 
@@ -124,7 +125,8 @@ Definition RWMutex__RUnlock : val :=
     else do:  #()));;;
     (if: race.Enabled
     then do:  ((func_call #race.race #"Enable"%go) #())
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* go: rwmutex.go:129:20 *)
 Definition RWMutex__rUnlockSlow : val :=
@@ -144,7 +146,8 @@ Definition RWMutex__rUnlockSlow : val :=
       let: "$a1" := #false in
       let: "$a2" := #(W64 1) in
       (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* Lock locks rw for writing.
    If the lock is already locked for reading or writing,
@@ -180,7 +183,8 @@ Definition RWMutex__Lock : val :=
       (func_call #race.race #"Acquire"%go) "$a0");;;
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"writerSem"%go (![#ptrT] "rw")) in
       (func_call #race.race #"Acquire"%go) "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* TryLock tries to lock rw for writing and reports whether it succeeded.
 
@@ -265,7 +269,8 @@ Definition RWMutex__Unlock : val :=
     do:  ((method_call #sync.sync #"Mutex'ptr" #"Unlock" (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
     (if: race.Enabled
     then do:  ((func_call #race.race #"Enable"%go) #())
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* RLocker returns a [Locker] interface that implements
    the [Locker.Lock] and [Locker.Unlock] methods by calling rw.RLock and rw.RUnlock.
@@ -355,7 +360,8 @@ Definition WaitGroup__Add : val :=
       do:  (let: "$a0" := (struct.field_ref #WaitGroup #"sema"%go (![#ptrT] "wg")) in
       let: "$a1" := #false in
       let: "$a2" := #(W64 0) in
-      (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2"))).
+      (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2"));;;
+    return: #()).
 
 (* Done decrements the [WaitGroup] counter by one.
 
@@ -364,7 +370,8 @@ Definition WaitGroup__Done : val :=
   rec: "WaitGroup__Done" "wg" <> :=
     exception_do (let: "wg" := (mem.alloc "wg") in
     do:  (let: "$a0" := #(W64 (- 1)) in
-    (method_call #sync.sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0")).
+    (method_call #sync.sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0");;;
+    return: #()).
 
 (* Wait blocks until the [WaitGroup] counter is zero.
 
@@ -418,7 +425,8 @@ Definition WaitGroup__Wait : val :=
           (func_call #race.race #"Acquire"%go) "$a0")
         else do:  #());;;
         return: (#())
-      else do:  #()))).
+      else do:  #()));;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
