@@ -200,7 +200,7 @@ Lemma send_counter_lower (γ: chan_names) (n: nat) (i: nat) (q: Qp) :
     apply chan_counter_lower.
   Qed.
 
-Lemma send_counter_freeze (γ: chan_names) (n: nat) (i: nat) :
+Lemma send_counter_freeze (γ: chan_names) (n: nat) :
  ∀ frozen,
   own_send_counter_auth γ n frozen  ==∗ 
   own_send_counter_auth γ n true.
@@ -243,7 +243,7 @@ Lemma recv_counter_lower (γ: chan_names) (n: nat) (i: nat) (q: Qp) :
     apply chan_counter_lower.
   Qed.
 
-Lemma recv_counter_freeze (γ: chan_names) (n: nat) (i: nat) :
+Lemma recv_counter_freeze (γ: chan_names) (n: nat)  :
  ∀ frozen,
   own_recv_counter_auth γ n frozen  ==∗ 
   own_recv_counter_auth γ n true.
@@ -354,35 +354,6 @@ Lemma own_chan_counter_alloc :
       done.
 Qed.
 
-Lemma own_chan_ghost_alloc (R: nat -> iProp Σ) :
-⊢ |==> ∃ (γ: chan_names), 
-  own_send_counter_auth γ 0 false ∗ own_send_counter_frag γ 0 1%Qp ∗ 
-  own_recv_counter_auth γ 0 false ∗ own_recv_perm γ 1%Qp 0 R ∗ 
-  own_closed_tok_auth γ R
-.
-Proof.
-  iMod (own_chan_counter_alloc) as (γs) "[Hsendauth Hsendfrag]".
-  iMod (own_chan_counter_alloc) as (γr) "[Hrecvauth Hrecvfrag]".
-  iMod (auth_set_init (A:=gname)) as (γc) "HcloseNames".
-  iMod (auth_set_init (A:=gname)) as (γst) "Hunbufferedstname".
-  set (γ := {| receiver_name := γr;
-                sender_name := γs;
-                close_name := γc;
-                unbuffered_state_tracker_name := γst;
-              |}).
-  iMod (saved_pred_alloc R (DfracDiscarded)) as (γi) "#Hcp1".
-              { done. }
-  iMod (auth_set_alloc γi with "HcloseNames") as "[HcloseNames Hctf]".
-    { set_solver. }
-   set (s := {[γi]}).
-  assert (s ∪ ∅ = s) as Hunion by set_solver.
-   iExists γ. iFrame "#". iFrame.
-   iModIntro. iIntros. iIntros "HlaterR".
-   replace (s ∪ ∅) with s.
-   subst s.
-   rewrite -> (big_sepS_singleton _ γi) by set_solver.
-   iExists R. iFrame. done. 
-Qed.
 
 Definition own_close_perm (γ: chan_names) (R:nat -> iProp Σ) (n: nat): iProp Σ :=
   (R n) ∗ own_send_counter_frag γ n 1 ∗ own_closed_tok_auth γ R.
@@ -449,67 +420,91 @@ Proof.
   iModIntro. iFrame.
 Qed.
 
-
 Definition full_exchange_token (γ: chan_names) : iProp Σ :=
   ghost_var γ.(unbuffered_state_tracker_name) 1%Qp (true, #()).
 
-Definition exchange_token (γ: chan_names) (sender_initiated: bool) (v: val): iProp Σ :=
-  ghost_var γ.(unbuffered_state_tracker_name) (1/2)%Qp (sender_initiated, v).
+Definition exchange_token {T'} (γ: chan_names) (sender_initiated: bool) (v: T') `{!IntoVal T'} : iProp Σ :=
+  ghost_var γ.(unbuffered_state_tracker_name) (1/2)%Qp (sender_initiated, to_val v).
 
-(* Half token for sender - contains both flag and value *)
-Definition sender_exchange_token (γ: chan_names) (v: val): iProp Σ :=
-exchange_token γ true v.
+Definition sender_exchange_token {T'} `{!IntoVal T'} (γ: chan_names) (v: T') : iProp Σ :=
+  exchange_token γ true v.
 
-(* Half token for receiver - contains only flag *)
-Definition receiver_exchange_token (γ: chan_names): iProp Σ :=
-∃ dummy_v, 
-exchange_token γ false dummy_v.
+  Definition receiver_exchange_token (γ: chan_names) : iProp Σ :=
+  ∃ dummy_v: val,
+    ghost_var γ.(unbuffered_state_tracker_name) (1/2)%Qp (false, dummy_v).
 
-Lemma exchange_token_combine γ:
-  ∀ sender_initiated sender_initiated' v v',
+Lemma own_chan_ghost_alloc (R: nat -> iProp Σ) :
+⊢ |==> ∃ (γ: chan_names), 
+  own_send_counter_auth γ 0 false ∗ own_send_counter_frag γ 0 1%Qp ∗ 
+  own_recv_counter_auth γ 0 false ∗ own_recv_perm γ 1%Qp 0 R ∗ 
+  own_closed_tok_auth γ R ∗ 
+  full_exchange_token γ
+.
+Proof.
+  iMod (own_chan_counter_alloc) as (γs) "[Hsendauth Hsendfrag]".
+  iMod (own_chan_counter_alloc) as (γr) "[Hrecvauth Hrecvfrag]".
+  iMod (auth_set_init (A:=gname)) as (γc) "HcloseNames".
+  iMod (ghost_var_alloc (true, #())) as (γst) "Htok".
+  set (γ := {| receiver_name := γr;
+                sender_name := γs;
+                close_name := γc;
+                unbuffered_state_tracker_name := γst;
+              |}).
+  iMod (saved_pred_alloc R (DfracDiscarded)) as (γi) "#Hcp1".
+              { done. }
+  iMod (auth_set_alloc γi with "HcloseNames") as "[HcloseNames Hctf]".
+    { set_solver. }
+   set (s := {[γi]}).
+  assert (s ∪ ∅ = s) as Hunion by set_solver.
+   iExists γ. iFrame "#". iFrame.
+   iModIntro. iIntros. 
+   iIntros "HlaterR".
+   replace (s ∪ ∅) with s.
+   subst s.
+   rewrite -> (big_sepS_singleton _ γi) by set_solver.
+   iExists R. iFrame. done. 
+Qed.
+
+Lemma exchange_token_combine {T'} `{!IntoVal T'} (γ: chan_names) :
+  ∀ sender_initiated sender_initiated' (v v': T'),
   exchange_token γ sender_initiated v ∗
   exchange_token γ sender_initiated' v' ==∗
   full_exchange_token γ.
 Proof.
   unfold exchange_token, full_exchange_token.
-  iIntros (sender_initated). iIntros (sender_initiated').
-  iIntros (v v').
+  iIntros (sender_initiated sender_initiated' v v').
   iIntros "[Htok1 Htok2]".
-  iCombine "Htok1 Htok2" as "Htok" gives "%Hvalid".
+  iCombine "Htok1" "Htok2" as "Htok".
   iApply (ghost_var_update (true, #()) with "Htok").
 Qed.
 
-Lemma exchange_token_agree(γ : chan_names) (sender_initiated sender_initiated' : bool) (v v' : val) :
-exchange_token γ sender_initiated v  -∗  exchange_token γ sender_initiated' v' -∗ ⌜ v = v' ∧ sender_initiated = sender_initiated' ⌝ .
-iIntros "H1". iIntros "H2".
-iDestruct (ghost_var_agree with "[$H1] [$H2]") as "%H3". iPureIntro. injection H3.
-intros H1. intros H2. done.
-Qed.
 
-Lemma exchange_token_split γ sender_initiated v:
-  full_exchange_token γ ==∗
-  exchange_token γ sender_initiated v ∗
-  exchange_token γ sender_initiated v.
+Lemma exchange_token_split {T'} `{!IntoVal T'} γ sender_initiated (v: T') :
+  full_exchange_token γ ==∗ exchange_token γ sender_initiated v ∗ exchange_token γ sender_initiated v.
 Proof.
   unfold full_exchange_token, exchange_token.
   iIntros "Htok".
-  iMod (ghost_var_update (sender_initiated, v) with "Htok") as "Htok".
-  iDestruct "Htok" as "[Htok1 Htok2]".
-  iModIntro. iFrame.
+  iMod (ghost_var_update (sender_initiated, to_val v) with "Htok") as "[Htok1 Htok2]".
+  iFrame. done.
 Qed.
 
-Lemma sender_exchange_token_split γ v:
-  full_exchange_token γ ==∗
-  sender_exchange_token γ v ∗
-  sender_exchange_token γ v.
+Lemma exchange_token_agree {T'} `{!IntoVal T'} (γ : chan_names) (sender_initiated sender_initiated' : bool) (v v' : T') :
+  exchange_token γ sender_initiated v -∗  exchange_token γ sender_initiated' v' -∗ ⌜ to_val v = to_val v' ∧ sender_initiated = sender_initiated' ⌝.
 Proof.
-  unfold  sender_exchange_token. apply exchange_token_split.
+  unfold exchange_token.
+  iIntros "H1 H2".
+  iDestruct (ghost_var_agree with "H1 H2") as "%H3".
+  iPureIntro. injection H3 as -> ->. done.
 Qed.
 
-Lemma receiver_exchange_token_split γ:
-  full_exchange_token γ ==∗
-  receiver_exchange_token γ ∗
-  receiver_exchange_token γ.
+Lemma sender_exchange_token_split {T'} `{!IntoVal T'} γ (v: T') :
+  full_exchange_token γ ==∗ sender_exchange_token γ v ∗ sender_exchange_token γ v.
+Proof.
+  unfold sender_exchange_token. apply exchange_token_split.
+Qed.
+
+Lemma receiver_exchange_token_split γ :
+  full_exchange_token γ ==∗ receiver_exchange_token γ ∗ receiver_exchange_token γ.
 Proof.
   unfold receiver_exchange_token, full_exchange_token.
   iIntros "Htok".
@@ -517,9 +512,9 @@ Proof.
   iFrame. done.
 Qed.
 
-Lemma sender_exchange_token_combine γ v v':
-  sender_exchange_token γ v ∗ sender_exchange_token γ v' ==∗
-  full_exchange_token γ.
+
+Lemma sender_exchange_token_combine {T'} `{!IntoVal T'} γ (v v' : T') :
+  sender_exchange_token γ v ∗ sender_exchange_token γ v' ==∗ full_exchange_token γ.
 Proof.
   unfold sender_exchange_token.
   iIntros "[Htok1 Htok2]".
@@ -527,27 +522,26 @@ Proof.
   iFrame.
 Qed.
 
-Lemma receiver_exchange_token_combine γ:
-  receiver_exchange_token γ ∗ receiver_exchange_token γ ==∗
-  full_exchange_token γ.
+Lemma receiver_exchange_token_combine γ :
+  receiver_exchange_token γ ∗ receiver_exchange_token γ ==∗ full_exchange_token γ.
 Proof.
   unfold receiver_exchange_token.
   iIntros "[Htok1 Htok2]".
   iDestruct "Htok1" as (dummy_v1) "Htok1".
   iDestruct "Htok2" as (dummy_v2) "Htok2".
-  iApply (exchange_token_combine γ false false dummy_v1 dummy_v2 with "[Htok1 Htok2]").
-  iFrame.
+  iApply (ghost_var_update (true, #()) with "[Htok1 Htok2]").
+  iDestruct (ghost_var_agree with "[$Htok1] [$Htok2]") as "%Hag".
+  iFrame. replace dummy_v1 with dummy_v2 by set_solver. done.  
 Qed.
 
-Lemma sender_exchange_token_agree γ v v':
-  sender_exchange_token γ v -∗ sender_exchange_token γ v' -∗ ⌜v = v'⌝.
+Lemma sender_exchange_token_agree {T'} `{!IntoVal T'} γ (v v' : T') :
+  sender_exchange_token γ v -∗ sender_exchange_token γ v' -∗ ⌜to_val v = to_val v'⌝.
 Proof.
   unfold sender_exchange_token.
   iIntros "Htok1 Htok2".
-  iDestruct (exchange_token_agree γ true true v v' with "[$Htok1] [$Htok2]") as "(%Hv & _)".
-  iPureIntro. exact Hv.
+  iDestruct (exchange_token_agree γ true true v v' with "Htok1 Htok2") as "[% _]".
+  iPureIntro. done.
 Qed.
-
 
 End lemmas.
 

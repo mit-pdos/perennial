@@ -1,6 +1,6 @@
 From New.proof Require Import proof_prelude.
 
-From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_spec_inv.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_spec_inv.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_spec_base.
 
 Section proof.
@@ -9,11 +9,13 @@ Context `{!closePropTrackerG Σ,  !inG Σ (authR (optionUR (prodR fracR natR)))}
 Context `{!IntoVal T'} `{!IntoValTyped T' T} `{Hbounded: BoundedTypeSize T}.
 
 
-Lemma add_one_lemma_1 : forall slice (first : u64) (count : u64) (e : T') ,
+
+Lemma add_one_lemma_1 : forall (params: @chan _ Σ T' ) (slice : list T')  (first : u64) (count : u64) (e : T') ,
   uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
   uint.Z first < length slice ->
   uint.Z count < length slice ->
+ 
   subslice (uint.nat first) (uint.nat first + uint.nat count)
   (<[Z.to_nat (uint.Z (word.add first count) `mod` length slice):=e]>
      slice ++
@@ -109,7 +111,7 @@ slice). }
   exact (uint.nat first + uint.nat count)%nat.
 Qed.
 
-Lemma add_one_lemma_2 : forall slice (first : u64) (count : u64) (e : T'),
+Lemma add_one_lemma_2 : forall (params: @chan _ Σ T' ) (slice : list T') (first : u64) (count : u64) (e : T'),
   uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
   uint.Z first < length slice ->
@@ -178,7 +180,7 @@ Proof.
         rewrite Z.mod_small; word.
 Qed.
 
-Theorem add_one : forall slice (first : u64) (count : u64) (e: T'), 
+Theorem add_one : forall (params: @ chan _ Σ T' ) (slice : list T') (first : u64) (count : u64) (e: T'), 
   uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
   uint.Z first < length slice ->
@@ -202,7 +204,7 @@ Proof.
     word.
 Qed.
 
-Lemma remove_one_lemma_1 : forall slice (first : u64) (e : T'),
+Lemma remove_one_lemma_1 : forall (params: @chan _ Σ T' ) (slice : list T') (first : u64) (e : T'),
   uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
   uint.Z first < length slice ->
@@ -226,7 +228,7 @@ Proof.
   done.
 Qed.
 
-Lemma remove_one_lemma_2 : forall (slice : list T') (first : u64) (count : u64) (e : T'),
+Lemma remove_one_lemma_2 : forall (params: @chan _ Σ T') (slice : list T') (first : u64) (count : u64) (e : T'),
   uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
   uint.Z first < length slice ->
@@ -260,7 +262,7 @@ Proof.
     f_equal. word.
 Qed.
 
-Theorem remove_one : forall slice (first : u64) (count : u64) (e:T'), 
+Theorem remove_one : forall (params: @chan _ Σ T') (slice : list T') (first : u64) (count : u64) (e: T'), 
   uint.Z (length slice) ≠ 0 ->
   length slice + 1 < 2 ^ 63 ->
   uint.Z first < length slice ->
@@ -275,73 +277,63 @@ Proof.
   rewrite -> !wrap_small by word.
   replace (uint.Z (W64 (length slice))) with (Z.of_nat (length slice)) by word.
   rewrite (subslice_split_r (uint.nat first) (uint.nat first + 1) _ (_++_)).
-  - rewrite (remove_one_lemma_1 slice first e); eauto.
+  - rewrite (remove_one_lemma_1 params slice first e); eauto.
     rewrite app_inv_head_iff.
     apply remove_one_lemma_2; eauto.
   - word.
   - rewrite length_app. word.
 Qed.
 
-
-
-(*
-TODO: Update to use param record and new goose things
-Lemma buff_enqueue_logical (ch: loc) (γ: chan_names) 
-        (size: nat) (vs: valid_chan_state) (is_single_party: bool) 
-        (send_count recv_count: nat) (count: nat) (first: u64) 
-        (xs: list T') (new_xs: list T') (v: T') 
-        (Psingle: Z -> T' -> iProp Σ) (Pmulti: T' -> iProp Σ) 
-        (Qsingle: Z -> iProp Σ) (Qmulti: iProp Σ) (R: nat -> iProp Σ)
-        (i: nat) (q: Qp):
+Lemma buff_enqueue_logical (params: chan T') 
+        (vs: valid_chan_state) 
+        (send_count recv_count: nat) (count: Z) (first: u64) 
+        (xs: list T') (new_xs: list T') (v: T')
+        (i: nat):
       
-        count < size ->  
-        (if is_single_party then q = 1%Qp else (q < 1)%Qp) ->
-        size > 0 ->
-        size + 1 < 2^63 ->
+        count < params.(ch_size) ->  
+        (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
+        params.(ch_size) > 0 ->
+        params.(ch_size) + 1 < 2^63 ->
         count + 1 < 2^63 ->
-        new_xs = <[uint.nat (word.modu (word.add first (W64 count)) (W64 size)):=v]> xs ->
+        uint.Z first + 1 < 2^63 ->
+        0 ≤ count ->
+        new_xs = <[uint.nat (word.modu (word.add first (W64 count)) (W64 params.(ch_size))):=v]> xs ->
         
-        "HBuffChLogical" ∷ isBufferedChanLogical ch γ  size vs is_single_party 
-          send_count recv_count count first xs Psingle Pmulti Qsingle Qmulti R ∗
-        "HP" ∷ P is_single_party i v Psingle Pmulti ∗
-        "HSndCtrAuth" ∷ own_send_counter_auth γ send_count false ∗
-        "HSndPerm" ∷ own_send_counter_frag γ i q
+        "HBuffChLogical" ∷ isBufferedChanLogical params vs send_count recv_count count first xs ∗
+        "HP" ∷ P params.(ch_is_single_party) i v params.(ch_Psingle) params.(ch_Pmulti) ∗
+        "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) send_count false ∗
+        "HSndPerm" ∷ own_send_counter_frag params.(ch_names) i params.(ch_q)
         
         ==∗
         
-        "HBuffChLogical" ∷ isBufferedChanLogical ch γ size vs is_single_party 
-          (S send_count) recv_count (count + 1) first new_xs Psingle Pmulti Qsingle Qmulti R ∗
-        "HQ" ∷ Q is_single_party (send_count - size) Qsingle Qmulti ∗
-        "HSndCtrAuth" ∷ own_send_counter_auth γ (S send_count) false ∗
-        "HSndPerm" ∷ own_send_counter_frag γ (S i) q.
+        "HBuffChLogical" ∷ isBufferedChanLogical params vs (S send_count) recv_count (count + 1) first new_xs ∗
+        "HQ" ∷ Q params.(ch_is_single_party) (send_count - params.(ch_size)) params.(ch_Qsingle) params.(ch_Qmulti) ∗
+        "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) (S send_count) false ∗
+        "HSndPerm" ∷ own_send_counter_frag params.(ch_names) (S i) params.(ch_q).
 
         Proof.
-          intros Hcount_lt Hsp  Hsize_pos Hsize_bound Hcount_bound Hnew_xs .
-          iIntros "(HBuffChLogical & HP & HSndCtrAuth & HSndPerm)".
+          intros Hcount_lt Hsp  Hsize_pos Hsize_bound Hcount_bound Hfb Hcount Hnew_xs . 
+          iIntros "Hpre". iNamed "Hpre". iNamed "HBuffChLogical".
           
-          iDestruct "HBuffChLogical" as "(%HBuffCount & %Hsize & Hsizeinv & HPs & HQs)".
+          destruct params.(ch_is_single_party) eqn: Hsparty.
           
-          iDestruct "Hsizeinv" as "(%Hcount_le & %Hfirst_lt & %Hsize_pos_old & %Hsize_bound_old & %Hcount_bound_old)".
-          
-          destruct is_single_party.
-          
-          - subst q.
-            iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSndPerm]") as "%Helem".
+          - replace params.(ch_q) with 1%Qp. 
+          iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSndPerm]") as "%Helem".
             subst i.
-            iMod (send_counter_update γ send_count send_count with "[$HSndCtrAuth $HSndPerm]") as "[HSndCtrAuth HSndPerm]".
+            iMod (send_counter_update params.(ch_names) send_count send_count with "[$HSndCtrAuth $HSndPerm]") as "[HSndCtrAuth HSndPerm]".
             
-            iDestruct (big_sep_seq_pop send_count (size - count) (λ i, Q true (i - size) Qsingle Qmulti)  with "HQs") as "[HQ HQs]".
+            iDestruct (big_sep_seq_pop send_count (params.(ch_size) - count) (λ i, Q true (i - params.(ch_size)) params.(ch_Qsingle) params.(ch_Qmulti))  with "HQs") as "[HQ HQs]".
             { lia. }
             
             iAssert ([∗ list] i↦x ∈ valid_elems new_xs first (W64 (count + 1)), 
-                      P true (recv_count + i) x Psingle Pmulti)%I with "[HPs HP]" as "HPs'".
+                      P true (recv_count + i) x params.(ch_Psingle) params.(ch_Pmulti))%I with "[HPs HP]" as "HPs'".
             {
 
               subst new_xs.
-              replace size with (length xs).
+              replace params.(ch_size) with (Z.of_nat (length xs)).
               replace (W64 (count + 1)) with (w64_word_instance .(word.add) (W64 count) (W64 1))
               by word.
-              rewrite (add_one xs first count v). all: try word.
+              rewrite (add_one params xs first count v). all: try word.
               {
                 rewrite big_sepL_snoc. iFrame.
                 replace ((recv_count + length (valid_elems xs first (W64 count))))
@@ -350,19 +342,27 @@ Lemma buff_enqueue_logical (ch: loc) (γ: chan_names)
                   iFrame.
                 }
                 unfold valid_elems.
+                assert ((send_count - recv_count)+ 1 < 2^63) by lia.
+                replace (uint.nat (W64 (send_count - recv_count))) with (send_count - recv_count)%nat by word.
                 rewrite subslice_length.
                 {
+                  subst count.
+                  simpl.
                  word. 
                 }
                 rewrite length_app. word.
               }
             }
+              assert (count < (length xs)).
+              {
+                lia.
+              }
             
             (* Reconstruct buff_size_inv for the new state *)
-            iAssert (⌜count + 1 <= size⌝ ∗ 
-                     ⌜word.unsigned first < size⌝ ∗ 
-                     ⌜size > 0⌝ ∗ 
-                     ⌜size + 1 < 2 ^ 63⌝ ∗
+            iAssert (⌜count + 1 <= params.(ch_size)⌝ ∗ 
+                     ⌜word.unsigned first < params.(ch_size)⌝ ∗ 
+                     ⌜params.(ch_size) > 0⌝ ∗ 
+                     ⌜params.(ch_size) + 1 < 2 ^ 63⌝ ∗
                      ⌜count + 1 + 1 < 2 ^ 63⌝)%I as "Hsizeinv".
             {
               iPureIntro.
@@ -384,8 +384,10 @@ Lemma buff_enqueue_logical (ch: loc) (γ: chan_names)
               
               (* Handle HQs *)
               rewrite Nat2Z.inj_succ. 
-              replace (size - (count + 1)) with (size - count - 1) by lia.
-              iFrame "HQs". iPureIntro. subst new_xs. rewrite length_insert.
+              replace (params.(ch_size) - (count + 1)) with (params.(ch_size) - count - 1) by lia.
+              replace (send_count + 1) with (Z.succ send_count) by lia.
+              replace (params.(ch_is_single_party)) with true by done.
+              iFrame "HQs". iFrame. iPureIntro. subst new_xs. rewrite length_insert.
               word.
             }
             
@@ -394,33 +396,34 @@ Lemma buff_enqueue_logical (ch: loc) (γ: chan_names)
             
           - (* Multi-party case - similar structure but with different counter checks *)
             iDestruct (send_counter_lower with "[$HSndCtrAuth] [$HSndPerm]") as "%Hlower".
-            iMod (send_counter_update γ send_count i with "[$HSndCtrAuth $HSndPerm]") as "[HSndCtrAuth HSndPerm]".
+            iMod (send_counter_update params.(ch_names) send_count i with "[$HSndCtrAuth $HSndPerm]") as "[HSndCtrAuth HSndPerm]".
             
             (* Extract Q from big_sep_seq *)
-            iDestruct (big_sep_seq_pop send_count (size - count) (λ i, Q false (i - size) Qsingle Qmulti) 
+            iDestruct (big_sep_seq_pop send_count (params.(ch_size) - count) (λ i, Q false (i - params.(ch_size)) params.(ch_Qsingle) params.(ch_Qmulti)) 
                        with "HQs") as "[HQ HQs]".
             { lia. }
             
             (* Update Ps for the new buffer content - similar to above *)
             iAssert ([∗ list] i↦x ∈ valid_elems new_xs first (W64 (count + 1)), 
-                      P false (recv_count + i) x Psingle Pmulti)%I with "[HPs HP]" as "HPs'".
+                      P false (recv_count + i) x params.(ch_Psingle) params.(ch_Pmulti))%I with "[HPs HP]" as "HPs'".
             {
                (* Similar to single-party case *)
               subst new_xs.
-              replace size with (length xs).
+              replace params.(ch_size) with (Z.of_nat (length xs)).
               replace (W64 (count + 1)) with (w64_word_instance .(word.add) (W64 count) (W64 1))
               by word.
-              rewrite (add_one xs first count v). all: try word.
+              rewrite (add_one params xs first count v). all: try word.
               {
                 rewrite big_sepL_snoc. iFrame.
               }
+
             }
             
             (* Reconstruct buff_size_inv for the new state *)
-            iAssert (⌜count + 1 <= size⌝ ∗ 
-                     ⌜word.unsigned first < size⌝ ∗ 
-                     ⌜size > 0⌝ ∗ 
-                     ⌜size + 1 < 2 ^ 63⌝ ∗
+            iAssert (⌜count + 1 <= params.(ch_size)⌝ ∗ 
+                     ⌜word.unsigned first < params.(ch_size)⌝ ∗ 
+                     ⌜params.(ch_size) > 0⌝ ∗ 
+                     ⌜params.(ch_size) + 1 < 2 ^ 63⌝ ∗
                      ⌜count + 1 + 1 < 2 ^ 63⌝)%I as "Hsizeinv".
             {
               iPureIntro.
@@ -441,8 +444,11 @@ Lemma buff_enqueue_logical (ch: loc) (γ: chan_names)
               
               (* Handle HQs *)
               rewrite Nat2Z.inj_succ.
-              replace (size - (count + 1)) with (size - count - 1) by lia.
-              iFrame "HQs". iPureIntro. subst new_xs. rewrite length_insert.
+              replace (params.(ch_size) - (count + 1)) with (params.(ch_size) - count - 1) by lia.
+              replace (params.(ch_size) - (count + 1)) with (params.(ch_size) - count - 1) by lia.
+              replace (send_count + 1) with (Z.succ send_count) by lia.
+              replace (params.(ch_is_single_party)) with false by done.
+              iFrame "HQs". iFrame. iPureIntro. subst new_xs. rewrite length_insert.
               word.
             }
             
@@ -450,76 +456,79 @@ Lemma buff_enqueue_logical (ch: loc) (γ: chan_names)
             iFrame "HQ HSndCtrAuth HSndPerm".
         Qed.
 
-Lemma buff_dequeue_logical (ch: loc) (γ: chan_names) 
-  (size: nat) (vs: valid_chan_state) (is_single_party: bool) 
-  (send_count recv_count: nat) (count: nat) (first: u64) (new_first: u64)
-  (xs: list T') (v: T') 
-  (Psingle: Z -> T' -> iProp Σ) (Pmulti: T' -> iProp Σ) 
-  (Qsingle: Z -> iProp Σ) (Qmulti: iProp Σ) (R: nat -> iProp Σ)
-  (i: nat) (q: Qp):
+Lemma buff_dequeue_logical (params: chan) 
+  (vs: valid_chan_state) 
+  (send_count recv_count: nat) (count: Z) (first: u64) 
+  (xs: list params.(ch_T')) 
+  (i: nat) v:
   
   count > 0 ->  (* Buffer is not empty *)
-  (if is_single_party then q = 1%Qp else (q < 1)%Qp) ->
-  size > 0 ->
+  (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
+  params.(ch_size) > 0 ->
+  uint.Z first < params.(ch_size) ->
   
-  (* Relate old and new first pointers *)
-  new_first = word.modu (word.add first 1) (W64 size) ->
-  
-  (* The value at the front of the buffer *)
-  xs !! (uint.nat first) = Some v ->
+
+  xs !! uint.nat first = Some v->
   
   (* Input resources *)
-  "HBuffChLogical" ∷ isBufferedChanLogical ch γ size vs is_single_party 
-    send_count recv_count count first xs Psingle Pmulti Qsingle Qmulti R ∗
-  "HQ" ∷ Q is_single_party i Qsingle Qmulti ∗
-  "HRecvCtrAuth" ∷ own_recv_counter_auth γ recv_count false ∗
-  "HRecvPerm" ∷ own_recv_counter_frag γ i q
+  "HBuffChLogical" ∷ isBufferedChanLogical params vs send_count recv_count count first xs ∗
+  "HQ" ∷ Q params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti) ∗
+  "HRcvCtrAuth" ∷ own_recv_counter_auth params.(ch_names) recv_count false ∗
+  "HRecvPerm" ∷ own_recv_perm params.(ch_names) params.(ch_q) i params.(ch_Ri)
   
   ==∗
   
   (* Output resources *)
-  "HBuffChLogical" ∷ isBufferedChanLogical ch γ size vs is_single_party 
-    send_count (S recv_count) (count - 1) new_first xs Psingle Pmulti Qsingle Qmulti R ∗
-  "HP" ∷ P is_single_party recv_count v Psingle Pmulti ∗
-  "HRecvCtrAuth" ∷ own_recv_counter_auth γ (S recv_count) false ∗
-  "HRecvPerm" ∷ own_recv_counter_frag γ (S i) q.
-
-  Proof.
-    intros Hcount_gt Hsp Hsize_pos Hnew_first Hv_at_first.
-    iIntros "(HBuffChLogical & HQ & HRecvCtrAuth & HRecvPerm)".
-    
-    (* Unfold the logical channel state *)
-    iDestruct "HBuffChLogical" as "(%HBuffCount & %Hsize & %Hsizeinv & HPs & HQs)".
-    
-    (* Extract buff_size_inv components *)
-    destruct Hsizeinv as (Hcount_le & Hfirst_lt & Hsize_pos_old & Hsize_bound_old & Hcount_bound_old).
-    
-    (* Update recv counter *)
-    destruct is_single_party.
+  
+  let new_first := word.modu (word.add first (W64 1)) (W64 params.(ch_size)) in
+  "HBuffChLogical" ∷ isBufferedChanLogical params vs send_count (S recv_count) (count - 1) new_first xs ∗
+  "HP" ∷ P params.(ch_is_single_party) (Z.of_nat recv_count) v params.(ch_Psingle) params.(ch_Pmulti) ∗
+  "HRcvCtrAuth" ∷ own_recv_counter_auth params.(ch_names) (S recv_count) (recv_ctr_frozen vs send_count (S recv_count)) ∗
+  "HRecvPerm" ∷ own_recv_perm params.(ch_names) params.(ch_q) (S i) params.(ch_Ri).
+Proof.
+  intros Hcount_pos Hsp Hsize_pos Hfirst_bound Hv. 
+  iIntros "Hpre". iNamed "Hpre". iNamed "HBuffChLogical".
+  
+  destruct params.(ch_is_single_party) eqn:Hsparty.
     
     - (* Single-party case *)
-      subst q.
-      iDestruct (recv_counter_elem with "[$HRecvCtrAuth] [$HRecvPerm]") as "%Helem".
+      replace params.(ch_q) with 1%Qp.
+      iNamed "HRecvPerm".
+      iDestruct "HRecvPerm" as "[Hrff Hctf]".
+      iDestruct (recv_counter_elem with "[$HRcvCtrAuth] [$Hrff]") as "%Helem".
       subst i.
-      iMod (recv_counter_update γ recv_count recv_count with "[$HRecvCtrAuth $HRecvPerm]") as "[HRecvCtrAuth HRecvPerm]".
+      unfold recv_ctr_frozen.
+      assert (send_count ≠ recv_count) by lia.
+      replace (send_count =? recv_count) with false by lia.
+      assert ((match vs with
+      | Valid_start | _ => false
+      end) = false). 
+      {
+        destruct vs. all: done.
+      } 
+      iMod (recv_counter_update params.(ch_names) recv_count recv_count with "[$HRcvCtrAuth $Hrff]") as "[HRecvCtrAuth HRecvPerm]".
       
       (* Add the new Q to the sequence *)
-      iDestruct (big_sep_seq_snoc send_count (size - count) (λ i, Q true (i - size) Qsingle Qmulti) 
+      iDestruct (big_sep_seq_snoc send_count (params.(ch_size) - count) (λ i, Q true (i - params.(ch_size)) params.(ch_Qsingle) params.(ch_Qmulti)) 
                  with "[HQ HQs]") as "HQs".
       { lia. }
       { iFrame "HQs". 
-      replace (Z.of_nat recv_count) with ((send_count + (size - count) - size)) by lia.
+      replace (Z.of_nat recv_count) with ((send_count + (params.(ch_size) - count) - params.(ch_size))) by lia.
       iFrame.
       }
+      set new_first := word.modu (word.add first 1) (W64 params.(ch_size)).
       
       (* Use remove_one to handle the buffer elements *)
       assert (Hremove_one: valid_elems xs first (W64 count) = 
                            v :: valid_elems xs new_first (W64 (count - 1))).
       {
         subst new_first.
-      erewrite (remove_one xs first count); eauto;try word. 
+        rewrite HSizeLen.
       replace ((w64_word_instance .(word.sub) (W64 count) (W64 1))) with (W64 (count - 1)) by word.
-      replace size with (length xs). done.
+      erewrite (remove_one params xs first count _); eauto;try word. 
+      {
+        replace ((W64 (count - 1))) with ((w64_word_instance .(word.sub) (W64 count) (W64 1))) by word. done.
+      }
       }
       
       (* Extract P for the element we're dequeuing *)
@@ -527,10 +536,10 @@ Lemma buff_dequeue_logical (ch: loc) (γ: chan_names)
       iDestruct (big_sepL_cons with "HPs") as "[HP HPs']".
       
       (* Reconstruct buff_size_inv for the new state *)
-      iAssert (⌜count - 1 <= size⌝ ∗ 
-               ⌜word.unsigned new_first < size⌝ ∗ 
-               ⌜size > 0⌝ ∗ 
-               ⌜size + 1 < 2 ^ 63⌝ ∗
+      iAssert (⌜count - 1 <= params.(ch_size)⌝ ∗ 
+               ⌜word.unsigned new_first < params.(ch_size)⌝ ∗ 
+               ⌜params.(ch_size) > 0⌝ ∗ 
+               ⌜params.(ch_size) + 1 < 2 ^ 63⌝ ∗
                ⌜count < 2 ^ 63⌝)%I as "%Hsizeinvnew".
       {
         iPureIntro.
@@ -543,7 +552,6 @@ Lemma buff_dequeue_logical (ch: loc) (γ: chan_names)
       }
       
       (* Reassemble the logical channel state *)
-      iModIntro.
       iSplitL "HPs' HQs".
       {
         unfold isBufferedChanLogical.
@@ -554,7 +562,8 @@ Lemma buff_dequeue_logical (ch: loc) (γ: chan_names)
         { iPureIntro. assumption. }
         
         (* Handle HQs *)
-        replace (size - (count - 1)) with (size - count + 1) by lia.
+        replace (params.(ch_size) - (count - 1)) with (params.(ch_size) - count + 1) by lia.
+        rewrite Hsparty.
         iFrame "HQs".
         iSplitL "".
         { iPureIntro. word. }
@@ -562,6 +571,7 @@ Lemma buff_dequeue_logical (ch: loc) (γ: chan_names)
         setoid_rewrite big_sepL_proper.
         {
         iFrame.
+        done.
         }
         {
           intros. iSimpl.
@@ -590,18 +600,43 @@ Lemma buff_dequeue_logical (ch: loc) (γ: chan_names)
       }
       replace ((recv_count + 0%nat)) with (Z.of_nat recv_count) by lia.
       iFrame.
+      destruct vs. all: try done.
+      destruct ((send_count =? S recv_count)).
+      {
+        iDestruct ((recv_counter_freeze params.(ch_names) (S recv_count)) with "[HRecvCtrAuth]") as ">HSc".
+        {
+          iFrame.
+        }
+        iFrame.
+        done.
+      }
+      iModIntro.
+      iFrame.
+
       
     - (* Multi-party case *)
       (* Similar to single-party but with different counter handling *)
-      iDestruct (recv_counter_lower with "[$HRecvCtrAuth] [$HRecvPerm]") as "%Hlower".
-      iMod (recv_counter_update γ recv_count i with "[$HRecvCtrAuth $HRecvPerm]") as "[HRecvCtrAuth HRecvPerm]".
+      unfold own_recv_perm.
+      iNamed "HRecvPerm".
+      iDestruct "HRecvPerm" as "[Hrff Hctf]".
+      unfold recv_ctr_frozen.
+      assert (send_count ≠ recv_count) by lia.
+      replace (send_count =? recv_count) with false by lia.
+      iDestruct (recv_counter_lower with "[$HRcvCtrAuth] [$Hrff]") as "%Hlower".
+      assert ((match vs with
+      | Valid_start | _ => false
+      end) = false). 
+      {
+        destruct vs. all: done.
+      } 
+      iMod (recv_counter_update params.(ch_names) recv_count i with "[$HRcvCtrAuth $Hrff]") as "[HRecvCtrAuth HRecvPerm]".
       
       (* Add the new Q to the sequence *)
-      iDestruct (big_sep_seq_snoc send_count (size - count) (λ i, Q false (i - size) Qsingle Qmulti) 
+      iDestruct (big_sep_seq_snoc send_count (params.(ch_size) - count) (λ i, Q false (i - params.(ch_size)) params.(ch_Qsingle) params.(ch_Qmulti)) 
                  with "[HQ HQs]") as "HQs".
       { lia. }
       { iFrame "HQs". 
-      replace (Z.of_nat recv_count) with ((send_count + (size - count) - size)) by lia.
+      replace (Z.of_nat recv_count) with ((send_count + (params.(ch_size) - count) - params.(ch_size))) by lia.
       iFrame.
         unfold Q.
         destruct bool_decide eqn: Hbouter.
@@ -626,15 +661,20 @@ Lemma buff_dequeue_logical (ch: loc) (γ: chan_names)
         }
 
       }
+      set new_first := word.modu (word.add first 1) (W64 params.(ch_size)).
+
       
       (* Use remove_one to handle the buffer elements *)
       assert (Hremove_one: valid_elems xs first (W64 count) = 
                            v :: valid_elems xs new_first (W64 (count - 1))).
       {
         subst new_first.
-      erewrite (remove_one xs first count); eauto;try word. 
+        rewrite HSizeLen.
       replace ((w64_word_instance .(word.sub) (W64 count) (W64 1))) with (W64 (count - 1)) by word.
-      replace size with (length xs). done.
+      erewrite (remove_one params xs first count _); eauto;try word. 
+      {
+        replace ((W64 (count - 1))) with ((w64_word_instance .(word.sub) (W64 count) (W64 1))) by word. done.
+      }
       }
       
       (* Extract P for the element we're dequeuing *)
@@ -642,10 +682,10 @@ Lemma buff_dequeue_logical (ch: loc) (γ: chan_names)
       iDestruct (big_sepL_cons with "HPs") as "[HP HPs']".
       
       (* Reconstruct buff_size_inv for the new state *)
-      iAssert (⌜count - 1 <= size⌝ ∗ 
-               ⌜word.unsigned new_first < size⌝ ∗ 
-               ⌜size > 0⌝ ∗ 
-               ⌜size + 1 < 2 ^ 63⌝ ∗
+      iAssert (⌜count - 1 <= params.(ch_size)⌝ ∗ 
+               ⌜word.unsigned new_first < params.(ch_size)⌝ ∗ 
+               ⌜params.(ch_size) > 0⌝ ∗ 
+               ⌜params.(ch_size) + 1 < 2 ^ 63⌝ ∗
                ⌜count < 2 ^ 63⌝)%I as "%Hsizeinv".
       {
         iPureIntro.
@@ -658,7 +698,6 @@ Lemma buff_dequeue_logical (ch: loc) (γ: chan_names)
       }
       
       (* Reassemble the logical channel state *)
-      iModIntro.
       iSplitL "HPs' HQs".
       {
         unfold isBufferedChanLogical.
@@ -669,19 +708,32 @@ Lemma buff_dequeue_logical (ch: loc) (γ: chan_names)
         { iPureIntro. assumption. }
         
         (* Handle HQs *)
-        replace (size - (count - 1)) with (size - count + 1) by lia.
+        replace (params.(ch_size) - (count - 1)) with (params.(ch_size) - count + 1) by lia.
+        rewrite Hsparty.
         iFrame "HQs".
         iSplitL "".
         { iPureIntro. word. }
         iFrame.
+        done.
       }
       {
         intros. iSimpl.
         iFrame.
+         destruct vs. all: try done.
+      destruct ((send_count =? S recv_count)).
+      {
+        iDestruct ((recv_counter_freeze params.(ch_names) (S recv_count)) with "[HRecvCtrAuth]") as ">HSc".
+        {
+          iFrame.
+        }
+        iFrame.
+        done.
+      }
+      iModIntro.
+      iFrame.
       }
   Qed.
 
-  *)
 
 End proof.
 

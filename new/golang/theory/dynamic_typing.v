@@ -24,6 +24,12 @@ Proof.
   intros s1 s2. inv 1. auto.
 Qed.
 
+#[global] Instance to_val_bool_inj : Inj eq eq (λ (b: bool), #b).
+Proof.
+  rewrite to_val_unseal /to_val_def /=.
+  intros s1 s2. inv 1. auto.
+Qed.
+
 #[global] Instance type_to_val_inj : Inj eq eq type.type_to_val.
 Proof.
   intros t1 t2.
