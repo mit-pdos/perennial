@@ -15,8 +15,11 @@ Program Definition return_val := sealed @return_val_def.
 Definition return_val_unseal : return_val = _ := seal_eq _.
 
 (* "Exception" monad *)
+(* executing to the end without a return produces a #() to match Go's void
+return semantics (named return values are translated as return statements using
+do_return as defined below). *)
 Local Definition do_execute_def : val :=
-  λ: "v", (#"execute", Var "v")
+  λ: "_v", (#"execute", #())
 .
 
 Program Definition do_execute := sealed @do_execute_def.
