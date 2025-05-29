@@ -124,6 +124,21 @@ Proof using IntoValComparable0.
   iApply (own_map_retype with "Hm").
 Qed.
 
+Theorem wp_MapGet' stk E mref q m k kk :
+  {{{ own_map mref q m ∗ ⌜kk = to_val k⌝ }}}
+    MapGet #mref kk @ stk; E
+  {{{ v ok, RET (to_val v, #ok);
+      ⌜map_get m k = (v, ok)⌝ ∗
+      own_map mref q m }}}.
+Proof using IntoValComparable0.
+  iIntros (Φ) "[Hm ->] HΦ".
+  wp_apply (wp_MapGet with "Hm").
+  iIntros (v ok) "(% & Hm)".
+  iApply "HΦ".
+  iFrame.
+  auto.
+Qed.
+
 Theorem map_insert_untype m k v' :
   map.map_insert (Map.untype m) k (to_val v') =
   Map.untype (map_insert m k v').

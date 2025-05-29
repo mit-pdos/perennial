@@ -2,6 +2,8 @@ From Perennial.program_proof Require Import grove_prelude std_proof.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof.memkv Require Export memkv_shard_definitions common_proof.
 
+#[local] Set Universe Polymorphism.
+
 Section memkv_conditional_put_proof.
 
 Context `{!heapGS Σ, erpcG Σ, urpcregG Σ, kvMapG Σ}.

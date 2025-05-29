@@ -74,6 +74,13 @@ Lemma own_slice_split_1 s t q vs :
   own_slice_small s t q vs ∗ own_slice_cap s t.
 Proof. rewrite own_slice_split. iIntros "$". Qed.
 
+Global Instance own_slice_merge s t q vs :
+  CombineSepAs (own_slice_small s t q vs) (own_slice_cap s t) (own_slice s t q vs).
+Proof.
+  rewrite /CombineSepAs.
+  rewrite own_slice_split //.
+Qed.
+
 Lemma own_slice_small_acc s t q vs :
   own_slice s t q vs -∗ own_slice_small s t q vs ∗ (∀ vs', own_slice_small s t q vs' -∗ own_slice s t q vs').
 Proof.
