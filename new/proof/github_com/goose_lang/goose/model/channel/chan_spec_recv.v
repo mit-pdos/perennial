@@ -1,6 +1,7 @@
 From New.proof.github_com.goose_lang Require Import primitive.
 From New.proof.github_com.goose_lang.std Require Import std_core.
-From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_ghost_state chan_spec_inv chan_spec_base buffered_chan_helpers.
+From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_ghost_state chan_spec_base buffered_chan_helpers.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_spec_inv.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
 From New.proof Require Import proof_prelude.
 Require Export New.code.sync.
@@ -8,40 +9,42 @@ Require Export New.generatedproof.sync.
 From New.proof.sync_proof Require Import base mutex sema.
 
 Section proof.
-    Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
-    Context `{!closePropTrackerG Σ,  !inG Σ (authR (optionUR (prodR fracR natR)))}.
-    Context `{!ghost_varG Σ (bool * val)}.
-       Context `{!goGlobalsGS Σ}.
-    #[global] Program Instance : IsPkgInit channel := ltac2:(build_pkg_init ()).
-
-Implicit Types (v:val). 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
+Context `{!goGlobalsGS Σ}.
+Context  `{!chanGhostStateG Σ}.
 
 Notation "vs1 =?= vs2" := (valid_chan_state_eq vs1 vs2) (at level 70).
+Arguments ch_loc: default implicits.
+Arguments ch_mu: default implicits.
+Arguments ch_buff: default implicits.
+Arguments ch_γ: default implicits.
+Arguments ch_size: default implicits.
+Arguments ch_is_single_party: default implicits.
+Arguments ch_Psingle: default implicits.
+Arguments ch_Qsingle: default implicits.
+Arguments ch_Qmulti: default implicits.
+Arguments ch_Pmulti: default implicits.
+Arguments ch_R: default implicits.
 
-  Lemma wp_Channel__BufferedTryReceiveLocked (params: chan) (i: nat):
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
-  params.(ch_loc) ≠ null ->
-  (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
-  params.(ch_size) > 0 ->  (* Must be buffered *)
-  {{{ is_pkg_init channel ∗ recv_pre_inner params i  }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "BufferedTryReceiveLocked" #T #()
-  {{{ (success: bool) (v: T') (has_value: bool), RET (#success, #v, #has_value);
+  Lemma wp_Channel__BufferedTryReceiveLocked (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t}  (params: chan V) (i: nat) (q: Qp) (Ri: nat -> iProp Σ):
+  (ch_loc params) ≠ null ->
+  (if (ch_is_single_party params) then (q) = 1%Qp else (q ≤ 1)%Qp) ->
+  (ch_size params) > 0 ->  (* Must be buffered *)
+  {{{ is_pkg_init channel ∗ recv_pre_inner V params q i Ri  }}}
+    params.(ch_loc) @ channel @ "Channel'ptr" @ "BufferedTryReceiveLocked" #t #()
+  {{{ (success: bool) (v: V) (has_value: bool), RET (#success, #v, #has_value);
       if success then
         if has_value then
-          recv_post_inner params i true v
+          recv_post_inner V params q i true v Ri
         else
           (* Channel is closed, no value *)
-          recv_post_inner params i false v
+          recv_post_inner V params q i false v Ri
       else
         (* Channel is empty but not closed *)
-        recv_pre_inner params i
+        recv_pre_inner V params q i Ri
   }}}.
 Proof.
-  intros HT' HT Hiv_inst Hivt_inst Hb_inst Hnn Hsp Hsize_pos.
+  intros  Hnn Hsp Hsize_pos.
   wp_start. wp_auto.
   rewrite -wp_fupd.
   
@@ -62,7 +65,6 @@ Proof.
         
       set (should_freeze := ((count =? 1) && (vs =?= Valid_closed))).
     wp_auto.
-    subst HT. 
       wp_pure;first word.
     (* Get element from slice *)
         edestruct (list_lookup_lt xs (uint.nat first)) as [x Hlookup].
@@ -82,7 +84,7 @@ Proof.
     iIntros "HBuffSlice".
     wp_auto.
     (* Update logical state *)
-    iMod (buff_dequeue_logical params vs send_count recv_count count first xs   i x
+    iMod (buff_dequeue_logical V params vs send_count recv_count count first xs   i Ri
           with "[HPs HQs HRcvCtrAuth HQ HRecvPerm]") as "Hpost". all:try lia;try done.
     { iFrame.
     unfold recv_ctr_frozen. assert ((send_count =? recv_count) = false) by lia.
@@ -177,7 +179,7 @@ Proof.
     iDestruct "HRecvPerm" as "[H1 H2]".
     iDestruct "HCloseTokPostClose" as "[Hct Hsf]".
          iDestruct (send_counter_elem with "[$HSndCtrAuth] [$Hsf]") as "%Hag2".
-       iDestruct ((own_closed_tok_post_close_pop params.(ch_names) recv_count γi params.(ch_Ri) (close_tok_names)) with "[H2 Hct]") as ">Hct".
+       iDestruct ((own_closed_tok_post_close_pop params.(ch_γ) recv_count γi Ri (close_tok_names)) with "[H2 Hct]") as ">Hct".
       
       {
        iFrame.
@@ -185,7 +187,7 @@ Proof.
       }
       iFrame. iFrame "#". subst recv_count. iFrame. iFrame "#".
       iDestruct "Hct" as "[Hct Hri]".
-  iDestruct ((lc_fupd_elim_later _ ( params.(ch_Ri) send_count)) with "[$] [Hri]") as ">Hri".
+  iDestruct ((lc_fupd_elim_later _ ( Ri send_count)) with "[$] [Hri]") as ">Hri".
   {
    
   iFrame.
@@ -211,30 +213,25 @@ Proof.
   }
 Qed.
 
-Lemma wp_Channel__BufferedTryReceive (params: chan) (i: nat):
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
+Lemma wp_Channel__BufferedTryReceive  (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)   (i: nat) (q: Qp) (Ri: nat->iProp Σ):
   params.(ch_loc) ≠ null ->
-  (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
+  (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
   params.(ch_size) > 0 ->  (* Must be buffered *)
-  {{{ is_pkg_init channel ∗ recv_pre params i }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "BufferedTryReceive" #T #()
-  {{{ (success: bool) (v: T') (has_value: bool), RET (#success, #v, #has_value);
+  {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
+    params.(ch_loc) @ channel @ "Channel'ptr" @ "BufferedTryReceive" #t #()
+  {{{ (success: bool) (v: V) (has_value: bool), RET (#success, #v, #has_value);
       if success then
         if has_value then
-          recv_post params i true v
+          recv_post V params q i true v Ri
         else
           (* Channel is closed, no value *)
-          recv_post params i false v
+          recv_post V params q i false v Ri
       else
         (* Channel is empty but not closed *)
-        recv_pre params i
+        recv_pre V params q i Ri
   }}}.
 Proof.
-  intros HT' HT Hiv_inst Hivt_inst Hb_inst Hnn Hsp Hsize_pos.
+  intros  Hnn Hsp Hsize_pos.
   wp_start. wp_auto. 
   rewrite -wp_fupd.
   iNamed "Hpre". iNamed "HCh".
@@ -242,7 +239,9 @@ Proof.
    wp_apply (wp_Mutex__Lock with "[$Hlock]") as "[locked Hinv]".
   iNamed "Hinv". 
     wp_apply (wp_Channel__BufferedTryReceiveLocked with "[HQ HChanState HCloseTokPostClose count state first value HSndCtrAuth HRcvCtrAuth HRecvPerm]"). all: try done.
-  { unfold recv_pre_inner. iFrame. iFrame "#". iPureIntro. 
+  {
+    
+  unfold recv_pre_inner. iFrame. iFrame "#". iPureIntro. 
   do 1 split;first done. split. { done. } set_solver.  }
   iIntros (success). iIntros (v0). iIntros (has_value). 
 iIntros "IH". 
@@ -362,45 +361,40 @@ Definition receiver_updates_value (tr: receiver_transition) : bool :=
   | _ => false
   end.
 
-Lemma receiver_transition_general (params: chan) 
-  (v : params.(ch_T')) (vs_old vs_new: valid_chan_state) (tr: receiver_transition) 
-  (send_count recv_count: nat) (i: nat):
+Lemma receiver_transition_general (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)  
+  (v : V) (vs_old vs_new: valid_chan_state) (tr: receiver_transition) 
+  (send_count recv_count: nat) (i: nat) (q: Qp) (Ri: nat->iProp Σ):
   is_valid_recv_transition tr vs_old vs_new ->
-  (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
+  (if params.(ch_is_single_party) then q = 1%Qp else (q ≤  1)%Qp) ->
   (if params.(ch_is_single_party) then i = recv_count else true) ->
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
   (* Resources *)
-  "HCh" ∷ isUnbufferedChan params v vs_old send_count recv_count ∗
-  (if receiver_needs_token tr then "Hrttok'" ∷ receiver_exchange_token params.(ch_names) else "Hemp" ∷ emp) ∗
-  (if receiver_needs_Q tr then "HQ" ∷ Q params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti) else emp) ∗
-  "HRcvCtrAuth" ∷ own_recv_counter_auth params.(ch_names) recv_count (recv_ctr_frozen vs_old send_count recv_count) ∗ 
-  "HRecvPerm" ∷ own_recv_perm params.(ch_names) params.(ch_q) i params.(ch_Ri)
+  "HCh" ∷ isUnbufferedChan V params v vs_old send_count recv_count ∗
+  (if receiver_needs_token tr then "Hrttok'" ∷ receiver_exchange_token params.(ch_γ) else "Hemp" ∷ emp) ∗
+  (if receiver_needs_Q tr then "HQ" ∷ Q V params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti) else emp) ∗
+  "HRcvCtrAuth" ∷ own_recv_counter_auth params.(ch_γ) recv_count (recv_ctr_frozen vs_old send_count recv_count) ∗ 
+  "HRecvPerm" ∷ own_recv_perm params.(ch_γ) q i Ri
   ==∗ 
   (* Result resources *)
-  "HCh" ∷ isUnbufferedChan params 
+  "HCh" ∷ isUnbufferedChan V params 
      (if receiver_updates_value tr then v else v) 
      vs_new 
      send_count
      (recv_count + receiver_recv_count_change tr) ∗
   (if negb (receiver_produces_P tr) && negb (receiver_needs_Q tr) 
-   then "HQ" ∷ Q params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti) else emp) ∗
+   then "HQ" ∷ Q V params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti) else emp) ∗
   (if receiver_produces_token tr 
-   then "Hrttok" ∷ receiver_exchange_token params.(ch_names) else emp) ∗
+   then "Hrttok" ∷ receiver_exchange_token params.(ch_γ) else emp) ∗
   (if receiver_produces_P tr 
    then 
-       "HP" ∷ P params.(ch_is_single_party) (Z.of_nat i) v params.(ch_Psingle) params.(ch_Pmulti)
+       "HP" ∷ P V params.(ch_is_single_party) (Z.of_nat i) v params.(ch_Psingle) params.(ch_Pmulti)
    else emp) ∗
-  "HRcvCtrAuth" ∷ own_recv_counter_auth params.(ch_names) 
+  "HRcvCtrAuth" ∷ own_recv_counter_auth params.(ch_γ) 
      (recv_count + receiver_recv_count_change tr) 
      (recv_ctr_frozen vs_new send_count (recv_count + receiver_recv_count_change tr)) ∗ 
-  "HRecvPerm" ∷ own_recv_perm params.(ch_names) params.(ch_q) 
-     (i + receiver_recv_count_change tr) params.(ch_Ri).
+  "HRecvPerm" ∷ own_recv_perm params.(ch_γ) q 
+     (i + receiver_recv_count_change tr) Ri.
   Proof.
-  intros Hvalid Hsp Hsame HT' HT Hiv_inst Hivt_inst Hb_inst.
+  intros Hvalid Hsp Hsamet.
   iIntros "Hpre".
   iNamed "Hpre".
   
@@ -420,19 +414,19 @@ Lemma receiver_transition_general (params: chan)
     iDestruct "HChanRes" as "Hfull".
     
     (* Handle token splitting to create receiver token *)
-    iMod (receiver_exchange_token_split params.(ch_names) with "Hfull") as "[Hrttok Hfull]".
+    iMod (receiver_exchange_token_split params.(ch_γ) with "Hfull") as "[Hrttok Hfull]".
     
     (* Handle counter verification *)
     unfold own_recv_perm. iNamed "HRecvPerm".
     iDestruct "HRecvPerm" as "[Hrcf Hctf]".
-    iAssert (own_recv_counter_auth params.(ch_names) recv_count false ∗ 
-             own_recv_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+    iAssert (own_recv_counter_auth params.(ch_γ) recv_count false ∗ 
+             own_recv_counter_frag params.(ch_γ) i q ∗ 
              ⌜if params.(ch_is_single_party) then recv_count = i else i ≤ recv_count⌝%I)%I
       with "[HRcvCtrAuth Hrcf]" as "(HRcvCtrAuth & HRecvPerm & %Hispz)".
     {
       destruct params.(ch_is_single_party).
       - 
-      replace params.(ch_q) with 1%Qp by done. 
+      replace q with 1%Qp by done. 
         iDestruct (recv_counter_elem with "[$HRcvCtrAuth] [$Hrcf]") as "%Hag2".
         iFrame. iPureIntro. done.
       - iDestruct (recv_counter_lower with "[$HRcvCtrAuth] [$Hrcf]") as "%Hag2".
@@ -543,7 +537,7 @@ Lemma receiver_transition_general (params: chan)
    replace (i + 0)%nat with i by lia. iFrame.
    replace (recv_count + 0)%nat with recv_count by lia.
    iFrame. unfold chan_state_resources.
-   iDestruct ((receiver_exchange_token_combine params.(ch_names)) with "[$Hextok $Hrttok']") as ">Hnrc".
+   iDestruct ((receiver_exchange_token_combine params.(ch_γ)) with "[$Hextok $Hrttok']") as ">Hnrc".
    iFrame. destruct params.(ch_is_single_party).
    {
     unfold Q. 
@@ -607,7 +601,7 @@ Lemma receiver_transition_general (params: chan)
     replace (recv_count + 1)%nat with (S recv_count) by lia.
     replace (i + 1)%nat with (S i) by lia.
     iFrame.
-   iDestruct ((receiver_exchange_token_combine params.(ch_names)) with "[$Hextok $Hrttok']") as ">Hnrc".
+   iDestruct ((receiver_exchange_token_combine params.(ch_γ)) with "[$Hextok $Hrttok']") as ">Hnrc".
    iFrame. 
    destruct (params.(ch_is_single_party)).
    {
@@ -620,24 +614,19 @@ Lemma receiver_transition_general (params: chan)
   }
   Qed.
 
-Lemma wp_Channel__UnbufferedTryReceive (params: chan) (i: nat):
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
+Lemma wp_Channel__UnbufferedTryReceive (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)  (i: nat) (q: Qp) (Ri: nat->iProp Σ):
   params.(ch_loc) ≠ null ->
-  (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
+  (if params.(ch_is_single_party) then q = 1%Qp else (q ≤  1)%Qp) ->
   params.(ch_size) = 0 ->  (* Must be unbuffered *)
-  {{{ is_pkg_init channel ∗ recv_pre params i }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "UnbufferedTryReceive" #T #()
-  {{{ (selected: bool) (v: T') (ok: bool), RET (#selected, #v, #ok);
+  {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
+    params.(ch_loc) @ channel @ "Channel'ptr" @ "UnbufferedTryReceive" #t #()
+  {{{ (selected: bool) (v: V) (ok: bool), RET (#selected, #v, #ok);
       if selected then
-        recv_post params i ok v
+        recv_post V params q i ok v Ri
       else
-        recv_pre params i
+        recv_pre V params q i Ri
   }}}.
-intros Hvalid Hsp Hsame HT' HT Hiv_inst Hivt_inst Hb_inst.
+intros Hvalid Hsp Hsame .
 wp_start. wp_auto. iNamed "Hpre".
    iNamed "HCh".
    wp_auto.
@@ -646,7 +635,7 @@ wp_start. wp_auto. iNamed "Hpre".
   iNamed "Hinv".
   iNamed "HRecvPerm".
   iDestruct "HRecvPerm" as "[Hrct Hctf]".
-  rewrite Hb_inst. simpl.
+  rewrite Hsame. simpl.
   destruct vs.
   {
     wp_auto.
@@ -654,14 +643,14 @@ wp_start. wp_auto. iNamed "Hpre".
   {
    destruct params.(ch_is_single_party).
    {
-    rewrite Hivt_inst.
+    rewrite Hsp.
     iDestruct (recv_counter_elem with "[$HRcvCtrAuth] [$Hrct]") as "%Hag2";iPureIntro;done.
   }
   {
     iDestruct (recv_counter_lower with "[$HRcvCtrAuth] [$Hrct]") as "%Hag2";iPureIntro;done.
   }
   }
-    iMod ((receiver_transition_general params v Valid_start Valid_receiver_ready receiver_offer_trans send_count recv_count i)
+    iMod ((receiver_transition_general V params v Valid_start Valid_receiver_ready receiver_offer_trans send_count recv_count i)
       with "[HQ  HChanState Hrct Hctf HRcvCtrAuth ]") as 
       "IH".
       all: try done.
@@ -680,7 +669,7 @@ wp_start. wp_auto. iNamed "Hpre".
       replace (i + 0)%nat with i by lia.
         iFrame.
         iExists Valid_receiver_ready. iExists send_count. iExists recv_count.
-        iFrame. rewrite Hb_inst. iFrame.
+        iFrame. rewrite Hsame. iFrame.
       }
       {
        wp_apply (wp_Mutex__Lock with "[$Hlock]") as "[locked Hinv]".
@@ -691,7 +680,7 @@ wp_start. wp_auto. iNamed "Hpre".
   {
    destruct params.(ch_is_single_party).
    {
-    rewrite Hivt_inst.
+    rewrite Hsp0.
       replace (i + 0)%nat with i by lia.
     iDestruct (recv_counter_elem with "[$HRcvCtrAuth] [$Hrct]") as "%Hag2";iPureIntro;done.
   }
@@ -699,7 +688,7 @@ wp_start. wp_auto. iNamed "Hpre".
     iDestruct (recv_counter_lower with "[$HRcvCtrAuth] [$Hrct]") as "%Hag2";iPureIntro;done.
   }
   }
-      rewrite Hb_inst. simpl.
+      rewrite Hsame. simpl.
       destruct vs.
       {
         wp_auto.
@@ -716,7 +705,7 @@ wp_start. wp_auto. iNamed "Hpre".
        iNamed "HChanState". 
       replace (i + 0)%nat with i by lia.
       wp_auto.
-       iMod ((receiver_transition_general params v Valid_receiver_ready Valid_start receiver_rescind_trans send_count0 recv_count0 i )
+       iMod ((receiver_transition_general V params v Valid_receiver_ready Valid_start receiver_rescind_trans send_count0 recv_count0 i )
          with "[ HQ Hrttok  Hrct Hctf HRcvCtrAuth Hextok ]") as 
          "IH".
          all: try done.
@@ -736,7 +725,7 @@ wp_start. wp_auto. iNamed "Hpre".
     first count value state HRcvCtrAuth HCh $locked]").
     {
       iFrame.
-      rewrite Hb_inst. iFrame.
+      rewrite Hsame. iFrame.
       iExists Valid_start. iFrame.
     }
     iApply "HΦ". iFrame "#". iFrame. done.
@@ -765,7 +754,7 @@ wp_start. wp_auto. iNamed "Hpre".
     {
       wp_auto.
       iNamed "HChanState".
-    iMod ((receiver_transition_general params v0 Valid_sender_done Valid_start receiver_complete_second_trans send_count0 recv_count0 i  )
+    iMod ((receiver_transition_general V params v0 Valid_sender_done Valid_start receiver_complete_second_trans send_count0 recv_count0 i  )
       with "[Hrttok HP Hrct Hctf HRcvCtrAuth Hextok]") as 
       "IH".
       all: try done.
@@ -786,7 +775,7 @@ wp_start. wp_auto. iNamed "Hpre".
     first count value state HRcvCtrAuth HCh $locked]").
     {
       iFrame.
-      rewrite Hb_inst. iFrame.
+      rewrite Hsame. iFrame.
     }
     iApply "HΦ". iFrame "#". iFrame. 
       replace (i + 1)%nat with (S i) by lia.
@@ -798,7 +787,7 @@ wp_start. wp_auto. iNamed "Hpre".
         iNamed "HCloseTokPostClose".
     subst.
     iDestruct "HCloseTokPostClose" as "[Hct Hscf]".
-    iDestruct ((own_closed_tok_post_close_pop params.(ch_names) n γi0 params.(ch_Ri) (close_tok_names)) with "[$Hctf $Hct]") as ">Hct".
+    iDestruct ((own_closed_tok_post_close_pop params.(ch_γ) n γi0 Ri (close_tok_names)) with "[$Hctf $Hct]") as ">Hct".
     unfold send_ctr_frozen. unfold recv_ctr_frozen.
     iNamed "HChanState". 
     replace (send_count0 =? recv_count0) with true by lia.
@@ -812,7 +801,7 @@ wp_start. wp_auto. iNamed "Hpre".
       iFrame. iFrame "#". unfold recv_ctr_frozen. iExists recv_count0.
     replace (send_count0 =? recv_count0) with true by lia.
       iFrame "#".
-      rewrite Hb_inst. iFrame. done.
+      rewrite Hsame. iFrame. done.
     }
     {
      iApply "HΦ". iFrame. subst n. replace send_count0 with recv_count0.
@@ -834,7 +823,7 @@ wp_start. wp_auto. iNamed "Hpre".
     first count value state HRcvCtrAuth HChanState $locked]").
     {
       iFrame.
-      rewrite Hb_inst. iFrame.
+      rewrite Hsame. iFrame.
     }
     iApply "HΦ". iFrame "#". iFrame. iPureIntro. done. 
   }
@@ -844,14 +833,14 @@ wp_start. wp_auto. iNamed "Hpre".
   {
    destruct params.(ch_is_single_party).
    {
-    rewrite Hivt_inst.
+    rewrite Hsp0.
     iDestruct (recv_counter_elem with "[$HRcvCtrAuth] [$Hrct]") as "%Hag2";iPureIntro;done.
   }
   {
     iDestruct (recv_counter_lower with "[$HRcvCtrAuth] [$Hrct]") as "%Hag2";iPureIntro;done.
   }
   }
-    iMod ((receiver_transition_general params v Valid_sender_ready Valid_receiver_done receiver_complete_trans send_count recv_count i  )
+    iMod ((receiver_transition_general V params v Valid_sender_ready Valid_receiver_done receiver_complete_trans send_count recv_count i  )
       with "[HQ  Hrct HRcvCtrAuth Hctf HChanState ]") as 
       "IH".
       all: try done.
@@ -870,7 +859,7 @@ wp_start. wp_auto. iNamed "Hpre".
     first count value state HRcvCtrAuth HCh $locked]").
     {
       iFrame.
-      rewrite Hb_inst. iFrame.
+      rewrite Hsame. iFrame.
     }
     iApply "HΦ". iFrame "#". iFrame. done.
       }
@@ -881,7 +870,7 @@ wp_start. wp_auto. iNamed "Hpre".
     first count value state HRcvCtrAuth HChanState $locked]").
     {
       iFrame.
-      rewrite Hb_inst. iFrame.
+      rewrite Hsame. iFrame.
     }
     iApply "HΦ". iFrame "#". iFrame. iPureIntro. done. 
   }
@@ -891,7 +880,7 @@ wp_start. wp_auto. iNamed "Hpre".
     first count value state HRcvCtrAuth HChanState $locked]").
     {
       iFrame.
-      rewrite Hb_inst. iFrame.
+      rewrite Hsame. iFrame.
     }
     iApply "HΦ". iFrame "#". iFrame. iPureIntro. done.  
   }
@@ -900,7 +889,7 @@ wp_start. wp_auto. iNamed "Hpre".
     iNamed "HCloseTokPostClose".
     subst.
     iDestruct "HCloseTokPostClose" as "[Hct Hscf]".
-    iDestruct ((own_closed_tok_post_close_pop params.(ch_names) n γi params.(ch_Ri) (close_tok_names)) with "[$Hctf $Hct]") as ">Hct".
+    iDestruct ((own_closed_tok_post_close_pop params.(ch_γ) n γi Ri (close_tok_names)) with "[$Hctf $Hct]") as ">Hct".
     unfold send_ctr_frozen. unfold recv_ctr_frozen.
     iNamed "HChanState". 
     replace (send_count =? recv_count) with true by lia.
@@ -914,7 +903,7 @@ wp_start. wp_auto. iNamed "Hpre".
       iFrame. iFrame "#". unfold recv_ctr_frozen. iExists recv_count.
     replace (send_count =? recv_count) with true by lia.
       iFrame "#".
-      rewrite Hb_inst. iFrame. done.
+      rewrite Hsame. iFrame. done.
     }
     {
      iApply "HΦ". iFrame. subst n. replace send_count with recv_count.
@@ -923,30 +912,26 @@ wp_start. wp_auto. iNamed "Hpre".
   }
 Qed.
  
-Lemma wp_Channel__TryReceive (params: chan) (i: nat):
-      let T' := params.(ch_T') in
-      let T := params.(ch_T) in
-      let IntoVal_inst := params.(ch_IntoVal) in
-      let IntoValTyped_inst := params.(ch_IntoValTyped) in
-      let Hbounded := params.(ch_Hbounded) in
+Lemma wp_Channel__TryReceive (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)   (i: nat) (q: Qp) (Ri: nat->iProp Σ):
+     
       params.(ch_loc) ≠ null ->
-      (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
-      {{{ is_pkg_init channel ∗ recv_pre params i }}}
-        params.(ch_loc) @ channel @ "Channel'ptr" @ "TryReceive" #T #()
-      {{{ (v: T') (ok selected: bool), RET (#selected, #v, #ok);
+      (if params.(ch_is_single_party) then q = 1%Qp else (q ≤  1)%Qp) ->
+      {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
+        params.(ch_loc) @ channel @ "Channel'ptr" @ "TryReceive" #t #()
+      {{{ (v: V) (ok selected: bool), RET (#selected, #v, #ok);
           if selected then
-            recv_post params i ok v
+            recv_post V params q i ok v Ri
           else
-            recv_pre params i
+            recv_pre V params q i Ri
       }}}.
     Proof. 
-  intros HT' HT Hiv_inst Hivt_inst Hb_inst Hnn Hsp.
+  intros Hnn Hsp.
   wp_start. wp_auto.
   iNamed "Hpre". iNamed "HCh". wp_auto.
   wp_if_destruct.  
   {
    wp_auto.
-    wp_apply (wp_Channel__BufferedTryReceive params i with "[HQ HRecvPerm]"). all: try done;try word.
+    wp_apply (wp_Channel__BufferedTryReceive V params i q Ri with "[HQ HRecvPerm]"). all: try done;try word.
     {
      assert ((params .(ch_buff) .(slice.len_f)) = (W64 params .(ch_size))).
      {
@@ -976,7 +961,7 @@ iFrame.
   }
   {
     wp_auto.
-    wp_apply (wp_Channel__UnbufferedTryReceive params i with "[HQ HRecvPerm]"). all: try done;try word.
+    wp_apply (wp_Channel__UnbufferedTryReceive V params i q Ri with "[HQ HRecvPerm]"). all: try done;try word.
     {
        assert ((params .(ch_buff) .(slice.len_f)) = (W64 params .(ch_size))).
      {
