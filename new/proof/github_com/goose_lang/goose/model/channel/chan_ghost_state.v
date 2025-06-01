@@ -10,27 +10,27 @@ Record chan_names :=
     unbuffered_state_tracker_name: gname;
  }.
 
-Class closePropTrackerG Σ := ClosePropTrackerG {
+Class chanGhostStateG Σ  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}  `{!heapGS Σ}  := ChanGhostStateG {
     sender_main_saved_predG :: savedPredG Σ nat;
     close_prop_auth_setG :: auth_setG Σ gname;
+    exchange_tokG :: ghost_varG Σ (bool * val);
+    chan_ctrG :: inG Σ (authR (optionUR (prodR fracR natR)));
   }.
 
-Definition closePropTrackerΣ: gFunctors :=
-  #[ savedPredΣ nat; auth_setΣ gname ].
+Definition chanGhostStateΣ  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}   : gFunctors :=
+  #[  savedPredΣ nat; auth_setΣ gname; ghost_varΣ (bool * val); GFunctor (authR (optionUR (prodR fracR natR))) ].
 
-#[global] Instance subG_closePropTrackerG Σ : subG closePropTrackerΣ Σ → closePropTrackerG Σ.
+#[global] Instance subG_chanGhostStateG Σ  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}  `{!heapGS Σ}  : subG chanGhostStateΣ Σ → chanGhostStateG Σ.
 Proof. solve_inG. Qed.
     
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
 
 Section lemmas.
-Context `{!ffi_interp ffi}.
-Context `{!inG Σ (authR (optionUR (prodR fracR natR)))}.
-Context `{!closePropTrackerG Σ}.
-Context `{heapGS Σ}.
+Context `{ffi_syntax}.
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
 Implicit Types (v:val).  
-Context `{!ghost_varG Σ (bool * val)}.
+Context  `{!chanGhostStateG Σ}.
 
 Definition own_chan_counter_frag 
 (γ : gname) (n : nat) (q : Qp) : iProp Σ :=
@@ -53,7 +53,6 @@ Definition own_recv_counter_frag (γ: chan_names) (n: nat) (q: Qp) : iProp Σ :=
 Definition own_recv_counter_auth (γ : chan_names) 
   (n : nat) (frozen : bool) : iProp Σ :=
   own_chan_counter_auth γ.(receiver_name) n frozen.
-
 
 Lemma chan_counter_elem (γ: gname) (n: nat) (i: nat) :
  ∀ frozen,
@@ -354,7 +353,6 @@ Lemma own_chan_counter_alloc :
       done.
 Qed.
 
-
 Definition own_close_perm (γ: chan_names) (R:nat -> iProp Σ) (n: nat): iProp Σ :=
   (R n) ∗ own_send_counter_frag γ n 1 ∗ own_closed_tok_auth γ R.
 
@@ -478,7 +476,6 @@ Proof.
   iApply (ghost_var_update (true, #()) with "Htok").
 Qed.
 
-
 Lemma exchange_token_split {T'} `{!IntoVal T'} γ sender_initiated (v: T') :
   full_exchange_token γ ==∗ exchange_token γ sender_initiated v ∗ exchange_token γ sender_initiated v.
 Proof.
@@ -511,7 +508,6 @@ Proof.
   iMod (ghost_var_update (false, #()) with "Htok") as "[Htok1 Htok2]".
   iFrame. done.
 Qed.
-
 
 Lemma sender_exchange_token_combine {T'} `{!IntoVal T'} γ (v v' : T') :
   sender_exchange_token γ v ∗ sender_exchange_token γ v' ==∗ full_exchange_token γ.

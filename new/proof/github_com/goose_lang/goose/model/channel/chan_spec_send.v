@@ -8,35 +8,41 @@ Require Export New.generatedproof.sync.
 From New.proof.sync_proof Require Import base mutex sema.
 
 Section proof.
-    Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
-    Context `{!closePropTrackerG Σ,  !inG Σ (authR (optionUR (prodR fracR natR)))}.
-    Context `{!ghost_varG Σ (bool * val)}.
-       Context `{!goGlobalsGS Σ}.
-    #[global] Program Instance : IsPkgInit channel := ltac2:(build_pkg_init ()).
+Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
+Context `{!goGlobalsGS Σ}.
+Context  `{!chanGhostStateG Σ}.
 
 Implicit Types (v:val). 
 
 Notation "vs1 =?= vs2" := (valid_chan_state_eq vs1 vs2) (at level 70).
 
+Arguments ch_loc: default implicits.
+Arguments ch_mu: default implicits.
+Arguments ch_buff: default implicits.
+Arguments ch_γ: default implicits.
+Arguments ch_size: default implicits.
+Arguments ch_is_single_party: default implicits.
+Arguments ch_Psingle: default implicits.
+Arguments ch_Qsingle: default implicits.
+Arguments ch_Qmulti: default implicits.
+Arguments ch_Pmulti: default implicits.
+Arguments ch_R: default implicits.
+
 Lemma wp_Channel__BufferedTrySend_params
-  (params: chan) (i: nat) (v: params.(ch_T')) :
-  (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
+  (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V) (q: Qp)   (i: nat) (v: V) :
+  (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
+ 
   params.(ch_loc) ≠ null ->
-  {{{ is_pkg_init channel ∗  send_pre_inner params i v  }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "BufferedTrySend" #params.(ch_T) #v
+  {{{ is_pkg_init channel ∗  send_pre_inner V params q i v  }}}
+    params.(ch_loc) @ channel @ "Channel'ptr" @ "BufferedTrySend" #t #v
   {{{ (success: bool), RET #success;
       if success then
-        send_post_inner params i
+        send_post_inner V params q i
       else
-        send_pre_inner params i v
+        send_pre_inner V params q i v
   }}}.
 Proof.
-  intros Hsp HT' HT Hiv_inst Hivt_inst Hb_inst Hnn . 
+  intros Hsp  Hnn . 
   let x := ident:(Φ) in
   try clear x.
   iIntros (Φ) "Hpre HΦ".
@@ -54,13 +60,13 @@ Proof.
       iDestruct "HCloseTokPostClose" as "[HCloseTokPost HSendCtrFrag]".
       iCombine "HSendCtrFrag" "HSc" as "H" gives "%Hvalid". 
      apply auth_frag_op_valid_1 in Hvalid.
-               rewrite <- (Some_op (1%Qp, n) (params.(ch_q), i)) in Hvalid.
+               rewrite <- (Some_op (1%Qp, n) (q, i)) in Hvalid.
                rewrite Some_valid in Hvalid.
-               rewrite <- (pair_op 1%Qp params.(ch_q) n i) in Hvalid.
+               rewrite <- (pair_op 1%Qp q n i) in Hvalid.
                rewrite pair_valid in Hvalid. destruct Hvalid as [Hqvalid Hivalid].
                rewrite frac_op in Hqvalid.
 
-               assert (((1 + params.(ch_q))%Qp ≤ 1)%Qp).
+               assert (((1 + q)%Qp ≤ 1)%Qp).
                { 
                 done. 
                }
@@ -107,13 +113,13 @@ Proof.
 
 
       (* Build assertion for counter elements *)
-      iAssert (own_send_counter_auth params.(ch_names) send_count false ∗ 
-      own_send_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+      iAssert (own_send_counter_auth params.(ch_γ) send_count false ∗ 
+      own_send_counter_frag params.(ch_γ) i q ∗ 
       ⌜if params.(ch_is_single_party) then send_count = i else i <= send_count⌝%I)%I 
       with "[HSndCtrAuth HSc]" as "(HSndCtrAuth & HSen & %Hispz)".
       {
       destruct params.(ch_is_single_party).
-      - replace (params.(ch_q)) with 1%Qp.
+      - replace (q) with 1%Qp.
         iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSc]") as "%Hag2".
         iFrame.
         destruct vs. all:try (iFrame;done).
@@ -124,7 +130,7 @@ Proof.
       
       (* Set the new buffer state *)
       set (new_xs := <[idx:=v]> xs).
-      iMod (buff_enqueue_logical params vs send_count recv_count count first xs new_xs v i 
+      iMod (buff_enqueue_logical V params vs send_count recv_count count first xs new_xs v i 
       with "[ HPs HQs HP HSndCtrAuth HSen]") as 
       "IH". all: (try done;try word).
       {
@@ -351,38 +357,34 @@ Definition sender_produces_Q (tr: sender_transition) : bool :=
   | _ => false
   end.
 
-Lemma sender_transition_general (params: chan) 
-  (v vold: params.(ch_T')) (vs_old vs_new: valid_chan_state) (tr: sender_transition) 
-  (send_count recv_count: nat) (i: nat):
+Lemma sender_transition_general (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)
+  (v vold: V) (vs_old vs_new: valid_chan_state) (tr: sender_transition) 
+  (send_count recv_count: nat) (i: nat) (q: Qp):
   is_valid_send_transition tr vs_old vs_new ->
-  (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
+  (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
+
   (* Resources *)
-  "HCh" ∷ isUnbufferedChan params vold vs_old send_count recv_count ∗
-  (if sender_needs_token tr then "Hsttok'" ∷ sender_exchange_token params.(ch_names) v else "Hemp" ∷ emp) ∗ "%Heqv'" ∷  ⌜vold = v ⌝ ∗
-  (if sender_needs_P tr then "HP" ∷ P params.(ch_is_single_party) (Z.of_nat send_count) v params.(ch_Psingle) params.(ch_Pmulti) else emp) ∗
-  "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) send_count (send_ctr_frozen vs_old) ∗ 
-  "HSndPerm" ∷ own_send_counter_frag params.(ch_names) i params.(ch_q)
+  "HCh" ∷ isUnbufferedChan V params vold vs_old send_count recv_count ∗
+  (if sender_needs_token tr then "Hsttok'" ∷ sender_exchange_token params.(ch_γ) v else "Hemp" ∷ emp) ∗ "%Heqv'" ∷  ⌜vold = v ⌝ ∗
+  (if sender_needs_P tr then "HP" ∷ P V params.(ch_is_single_party) (Z.of_nat send_count) v params.(ch_Psingle) params.(ch_Pmulti) else emp) ∗
+  "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) send_count (send_ctr_frozen vs_old) ∗ 
+  "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) i q
   ==∗ 
   (* Result resources *)
-  "HCh" ∷ isUnbufferedChan params vold vs_new 
+  "HCh" ∷ isUnbufferedChan V params vold vs_new 
      (send_count + sender_send_count_change tr) recv_count ∗
   (if negb (sender_produces_Q tr) && negb (sender_needs_P tr) 
-  then "HP" ∷ P params.(ch_is_single_party) (Z.of_nat send_count) v params.(ch_Psingle) params.(ch_Pmulti) else emp ∗
+  then "HP" ∷ P V params.(ch_is_single_party) (Z.of_nat send_count) v params.(ch_Psingle) params.(ch_Pmulti) else emp ∗
     
   if sender_produces_token tr 
-   then "Hsttok" ∷ sender_exchange_token params.(ch_names) v else emp) ∗ "%Heqv"  ∷ ⌜vold = v ⌝  ∗
+   then "Hsttok" ∷ sender_exchange_token params.(ch_γ) v else emp) ∗ "%Heqv"  ∷ ⌜vold = v ⌝  ∗
   (if sender_produces_Q tr 
-   then "HQ" ∷ Q params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti) else emp) ∗
-  "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) (send_count + sender_send_count_change tr) 
+   then "HQ" ∷ Q V params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti) else emp) ∗
+  "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) (send_count + sender_send_count_change tr) 
                                          (send_ctr_frozen vs_new) ∗ 
-  "HSndPerm" ∷ own_send_counter_frag params.(ch_names) (i + sender_send_count_change tr) params.(ch_q).
+  "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) (i + sender_send_count_change tr) q.
 Proof.
-  intros Hsp HT' HT Hiv_inst Hivt_inst Hb_inst Hnn . 
+  intros Hsp Hnn . 
   let x := ident:(Φ) in
   try clear x.
   iIntros "Hpre".
@@ -404,16 +406,16 @@ Proof.
     iDestruct "HChanRes" as "Hsttok".
     
     (* Handle token splitting *)
-  iDestruct ((exchange_token_split params.(ch_names) true v) with "[$Hsttok]") as ">[Hsttok1 Hsttok2]". iNamed "Hpre".
+  iDestruct ((exchange_token_split params.(ch_γ) true v) with "[$Hsttok]") as ">[Hsttok1 Hsttok2]". iNamed "Hpre".
     
     (* Handle counter verification *)
-    iAssert (own_send_counter_auth params.(ch_names) send_count false ∗ 
-             own_send_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+    iAssert (own_send_counter_auth params.(ch_γ) send_count false ∗ 
+             own_send_counter_frag params.(ch_γ) i q ∗ 
              ⌜if params.(ch_is_single_party) then send_count = i else i <= send_count⌝%I)%I
       with "[HSndCtrAuth HSndPerm]" as "(HSndCtrAuth & HSndPerm & %Hispz)".
     {
       destruct params.(ch_is_single_party).
-      - replace params.(ch_q) with 1%Qp.  
+      - replace q with 1%Qp.  
         iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
         iFrame. iPureIntro. done.
       - iDestruct (send_counter_lower with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
@@ -442,13 +444,13 @@ Proof.
     (* Extract state resources *)
     
     (* Handle counter verification and update *)
-    iAssert (own_send_counter_auth params.(ch_names) send_count false ∗ 
-             own_send_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+    iAssert (own_send_counter_auth params.(ch_γ) send_count false ∗ 
+             own_send_counter_frag params.(ch_γ) i q ∗ 
              ⌜if params.(ch_is_single_party) then send_count = i else i <= send_count⌝%I)%I
       with "[HSndCtrAuth HSndPerm]" as "(HSndCtrAuth & HSndPerm & %Hispz)".
     {
       destruct params.(ch_is_single_party).
-      - replace (params.(ch_q)) with 1%Qp.
+      - replace (q) with 1%Qp.
         iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
         iFrame.  done.
       - iDestruct (send_counter_lower with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
@@ -456,7 +458,7 @@ Proof.
     }
     
     (* Update counter *)
-    iDestruct (send_counter_update params.(ch_names) send_count i with "[$HSndCtrAuth $HSndPerm]") 
+    iDestruct (send_counter_update params.(ch_γ) send_count i with "[$HSndCtrAuth $HSndPerm]") 
       as ">[HSndCtrAuth HSndPerm]".
     
     (* Finalize *)
@@ -504,13 +506,13 @@ Proof.
   iDestruct ((exchange_token_combine) with "[$Hsttok $Hsttok']") as ">Hsttok".
     
     (* Handle counter verification *)
-    iAssert (own_send_counter_auth params.(ch_names) send_count false ∗ 
-             own_send_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+    iAssert (own_send_counter_auth params.(ch_γ) send_count false ∗ 
+             own_send_counter_frag params.(ch_γ) i q ∗ 
              ⌜if params.(ch_is_single_party) then send_count = i else i <= send_count⌝%I)%I
       with "[HSndCtrAuth HSndPerm]" as "(HSndCtrAuth & HSndPerm & %Hispz)".
     {
       destruct params.(ch_is_single_party).
-      - replace (params.(ch_q)) with 1%Qp.
+      - replace (q) with 1%Qp.
         iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
         iFrame. iPureIntro. done.
       - iDestruct (send_counter_lower with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
@@ -548,23 +550,23 @@ Proof.
     
     (* Combine the tokens *)
   iDestruct ((exchange_token_agree) with "[$Hsttok] [$Hsttok']") as "%Heq".
-  iDestruct ((exchange_token_combine params.(ch_names)) with "[$Hsttok $Hsttok']") as ">Hsttok".
+  iDestruct ((exchange_token_combine params.(ch_γ)) with "[$Hsttok $Hsttok']") as ">Hsttok".
     
     (* Handle counter verification *)
-    iAssert (own_send_counter_auth params.(ch_names) send_count false ∗ 
-             own_send_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+    iAssert (own_send_counter_auth params.(ch_γ) send_count false ∗ 
+             own_send_counter_frag params.(ch_γ) i q ∗ 
              ⌜if params.(ch_is_single_party) then send_count = i else i <= send_count⌝%I)%I
       with "[HSndCtrAuth HSndPerm]" as "(HSndCtrAuth & HSndPerm & %Hispz)".
     {
       destruct params.(ch_is_single_party).
-      - replace (params.(ch_q)) with 1%Qp.
+      - replace (q) with 1%Qp.
         iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
         iFrame. iPureIntro. done.
       - iDestruct (send_counter_lower with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
         iFrame. iPureIntro. lia.
     }
 
-    iDestruct (send_counter_update params.(ch_names) send_count i with "[$HSndCtrAuth $HSndPerm]") 
+    iDestruct (send_counter_update params.(ch_γ) send_count i with "[$HSndCtrAuth $HSndPerm]") 
       as ">[HSndCtrAuth HSndPerm]".
     
     (* Finalize *)
@@ -611,18 +613,14 @@ Proof.
   }
 Qed.
   
-Lemma sender_token_state_agree (params: chan)
-  (v v0: params.(ch_T')) (vs: valid_chan_state) (send_count recv_count: nat) :
+Lemma sender_token_state_agree (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)
+  (v v0: V) (vs: valid_chan_state) (send_count recv_count: nat) :
   vs ≠ Valid_closed →
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  sender_exchange_token params.(ch_names) v -∗
-  isUnbufferedChan params v0 vs send_count recv_count -∗
+  sender_exchange_token params.(ch_γ) v -∗
+  isUnbufferedChan V params v0 vs send_count recv_count -∗
   ⌜(vs = Valid_sender_ready ∨ vs = Valid_receiver_done) ∧ v = v0⌝.
 Proof.
-  intros Hvs HT' HT Hiv_inst Hivt_inst. 
+  intros Hvs . 
   iIntros "Htok HChan".
   unfold isUnbufferedChan, chan_state_resources.
   iDestruct "HChan" as "[Hfacts Hres]".
@@ -662,52 +660,47 @@ Proof.
     contradiction.
 Qed.
 
-Lemma wp_Channel__SenderCheckOfferResult (params: chan) (i: nat) 
-  (vs: valid_chan_state) (send_count recv_count: nat) (v: params.(ch_T')):
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
+Lemma wp_Channel__SenderCheckOfferResult (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V) (i: nat) (q: Qp)
+  (vs: valid_chan_state) (send_count recv_count: nat) (v: V):
   params.(ch_loc) ≠ null ->
-  (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
+  (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
   (*(#params.(ch_buff).(Slice.sz) = #(W64 0)) -> *)
   vs ≠ Valid_closed ->
   (vs = Valid_receiver_done ∨ vs = Valid_sender_ready) ->
   {{{ 
     is_pkg_init channel ∗
-    "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "v"] v ∗ 
-    "HCh" ∷ isUnbufferedChan params v vs send_count recv_count ∗ 
-    "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "state"] (valid_to_word vs) ∗
-    "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) send_count (send_ctr_frozen vs) ∗ 
-    "Hsttok" ∷ sender_exchange_token params.(ch_names) v ∗
-    "HSndPerm" ∷ own_send_counter_frag params.(ch_names) i params.(ch_q)
+    "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "v"] v ∗ 
+    "HCh" ∷ isUnbufferedChan V params v vs send_count recv_count ∗ 
+    "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "state"] (valid_to_word vs) ∗
+    "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) send_count (send_ctr_frozen vs) ∗ 
+    "Hsttok" ∷ sender_exchange_token params.(ch_γ) v ∗
+    "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) i q
   }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "SenderCheckOfferResult" #T #() 
+    params.(ch_loc) @ channel @ "Channel'ptr" @ "SenderCheckOfferResult" #t #() 
   {{{ (res: rescind_result), RET #(rescind_to_word res);
     match vs, res with
     | Valid_receiver_done, CompletedExchange =>
-      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "v"] v ∗ 
-      "HCh" ∷ isUnbufferedChan params v Valid_start (S send_count) recv_count ∗ 
-      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "state"] (valid_to_word Valid_start) ∗
-      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) (S send_count) false ∗ 
-      "HSndPerm" ∷ own_send_counter_frag params.(ch_names) (i + 1) params.(ch_q) ∗
-      "HQ" ∷ Q params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti)
+      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "v"] v ∗ 
+      "HCh" ∷ isUnbufferedChan V params v Valid_start (S send_count) recv_count ∗ 
+      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "state"] (valid_to_word Valid_start) ∗
+      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) (S send_count) false ∗ 
+      "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) (i + 1) q ∗
+      "HQ" ∷ Q V params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti)
       
     | Valid_sender_ready, OfferRescinded =>
-      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "v"] v ∗ 
-      "HCh" ∷ isUnbufferedChan params v Valid_start send_count recv_count ∗ 
-      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "state"] (valid_to_word Valid_start) ∗
-      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) send_count false ∗ 
-      "HP" ∷ P params.(ch_is_single_party) (Z.of_nat send_count) v params.(ch_Psingle) params.(ch_Pmulti) ∗ 
-      "HSndPerm" ∷ own_send_counter_frag params.(ch_names) i params.(ch_q)
+      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "v"] v ∗ 
+      "HCh" ∷ isUnbufferedChan V params v Valid_start send_count recv_count ∗ 
+      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "state"] (valid_to_word Valid_start) ∗
+      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) send_count false ∗ 
+      "HP" ∷ P V params.(ch_is_single_party) (Z.of_nat send_count) v params.(ch_Psingle) params.(ch_Pmulti) ∗ 
+      "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) i q
       
     | _, _ =>
       False
     end
   }}}.
 Proof.
-  intros HT' HT Hiv_inst Hivt_inst Hb_inst Hnn Hsp Hbuffsz Hnot_closed.
+  intros  Hnn Hsp Hbuffsz Hnot_closed.
   let x := ident:(Φ) in
   try clear x.
   iIntros (Φ) "Hpre HΦ".
@@ -734,7 +727,7 @@ Proof.
   iNamed "H1". iNamed "H2".
   
   (* Apply sender_transition_general *)
-  iMod (sender_transition_general params v v Valid_sender_ready Valid_start 
+  iMod (sender_transition_general V params v v Valid_sender_ready Valid_start 
        sender_rescind_trans send_count recv_count i with 
       "[ HP HSndPerm HSndCtrAuth Hextok Hsttok]") as 
       "IH".
@@ -765,7 +758,7 @@ Proof.
   destruct Hnot_closed as [Hvs | Hvs]; try discriminate.
   wp_auto. iNamed "H2". iNamed "H1".
   
-  iMod (sender_transition_general params v v Valid_receiver_done Valid_start 
+  iMod (sender_transition_general V params v v Valid_receiver_done Valid_start 
        sender_complete_second_trans send_count recv_count i with 
       "[HQ Hextok  HSndCtrAuth HSndPerm Hsttok]") as 
       "IH".
@@ -806,57 +799,52 @@ Proof.
   exfalso. done.
 Qed.
 
-Lemma wp_Channel__SenderCompleteOrOffer (params: chan) (i: nat) (v vold: params.(ch_T'))
+Lemma wp_Channel__SenderCompleteOrOffer (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V) (i: nat) (q: Qp) (v vold: V)
   (vs: valid_chan_state) (send_count recv_count: nat):
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
   params.(ch_loc) ≠ null ->
-  (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
+  (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
   vs ≠ Valid_closed ->
   {{{ 
     is_pkg_init channel ∗
-    "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "v"] vold ∗ 
-    "HCh" ∷ isUnbufferedChan params vold vs send_count recv_count ∗ 
-    "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "state"] (valid_to_word vs) ∗
-    "HP" ∷ P params.(ch_is_single_party) (Z.of_nat i) v params.(ch_Psingle) params.(ch_Pmulti) ∗
-    "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) send_count (send_ctr_frozen vs) ∗ 
-    "HSndPerm" ∷ own_send_counter_frag params.(ch_names) i params.(ch_q)
+    "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "v"] vold ∗ 
+    "HCh" ∷ isUnbufferedChan V params vold vs send_count recv_count ∗ 
+    "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "state"] (valid_to_word vs) ∗
+    "HP" ∷ P V params.(ch_is_single_party) (Z.of_nat i) v params.(ch_Psingle) params.(ch_Pmulti) ∗
+    "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) send_count (send_ctr_frozen vs) ∗ 
+    "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) i q
   }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "SenderCompleteOrOffer" #T #v
+    params.(ch_loc) @ channel @ "Channel'ptr" @ "SenderCompleteOrOffer" #t #v
   {{{ (res: sender_result), RET #(sender_result_to_word res);
     match res, vs with
     | SenderCompletedWithReceiver, Valid_receiver_ready =>
-      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "v"] v ∗ 
-      "HCh" ∷ isUnbufferedChan params v Valid_sender_done (send_count + 1) recv_count ∗ 
-      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "state"] (valid_to_word Valid_sender_done) ∗
-      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) (send_count + 1) false ∗ 
-      "HSndPerm" ∷ own_send_counter_frag params.(ch_names) (i + 1) params.(ch_q) ∗
-      "HQ" ∷ Q params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti)
+      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "v"] v ∗ 
+      "HCh" ∷ isUnbufferedChan V params v Valid_sender_done (send_count + 1) recv_count ∗ 
+      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "state"] (valid_to_word Valid_sender_done) ∗
+      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) (send_count + 1) false ∗ 
+      "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) (i + 1) q ∗
+      "HQ" ∷ Q V params.(ch_is_single_party) (Z.of_nat i) params.(ch_Qsingle) params.(ch_Qmulti)
       
     | SenderMadeOffer, Valid_start =>
-      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "v"] v ∗ 
-      "HCh" ∷ isUnbufferedChan params v Valid_sender_ready send_count recv_count ∗ 
-      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "state"] (valid_to_word Valid_sender_ready) ∗
-      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) send_count false ∗ 
-      "HSndPerm" ∷ own_send_counter_frag params.(ch_names) i params.(ch_q) ∗
-      "Hsttok" ∷ sender_exchange_token params.(ch_names) v
+      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "v"] v ∗ 
+      "HCh" ∷ isUnbufferedChan V params v Valid_sender_ready send_count recv_count ∗ 
+      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "state"] (valid_to_word Valid_sender_ready) ∗
+      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) send_count false ∗ 
+      "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) i q ∗
+      "Hsttok" ∷ sender_exchange_token params.(ch_γ) v
       
     | SenderCannotProceed, _ =>
-      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "v"] vold ∗ 
-      "HCh" ∷ isUnbufferedChan params vold vs send_count recv_count ∗ 
-      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty T) :: "state"] (valid_to_word vs) ∗
-      "HP" ∷ P params.(ch_is_single_party) (Z.of_nat i) v params.(ch_Psingle) params.(ch_Pmulti) ∗
-      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_names) send_count (send_ctr_frozen vs) ∗ 
-      "HSndPerm" ∷ own_send_counter_frag params.(ch_names) i params.(ch_q)
+      "value" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "v"] vold ∗ 
+      "HCh" ∷ isUnbufferedChan V params vold vs send_count recv_count ∗ 
+      "chan_state" ∷ params.(ch_loc) ↦s[(channel.Channel.ty t) :: "state"] (valid_to_word vs) ∗
+      "HP" ∷ P V params.(ch_is_single_party) (Z.of_nat i) v params.(ch_Psingle) params.(ch_Pmulti) ∗
+      "HSndCtrAuth" ∷ own_send_counter_auth params.(ch_γ) send_count (send_ctr_frozen vs) ∗ 
+      "HSndPerm" ∷ own_send_counter_frag params.(ch_γ) i q
       
     | _, _ => False
     end
   }}}.
 Proof.
-  intros HT' HT Hiv_inst Hivt_inst Hb_inst Hnn Hsp Hvs Hnot_closed.
+  intros Hnn Hsp Hvs Hnot_closed.
   let x := ident:(Φ) in
   try clear x.
   iIntros "Hpre HΦ".
@@ -871,19 +859,19 @@ Proof.
   - (* Valid_start case: Can make an offer *)
     wp_auto.
     (* Handle counter verification and update *)
-    iAssert (own_send_counter_auth params.(ch_names) send_count false ∗ 
-             own_send_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+    iAssert (own_send_counter_auth params.(ch_γ) send_count false ∗ 
+             own_send_counter_frag params.(ch_γ) i q ∗ 
              ⌜if params.(ch_is_single_party) then send_count = i else i <= send_count⌝%I)%I
       with "[HSndCtrAuth HSndPerm]" as "(HSndCtrAuth & HSndPerm & %Hispz)".
     {
       destruct params.(ch_is_single_party).
-      - replace (params.(ch_q)) with 1%Qp.
+      - replace (q) with 1%Qp.
         iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
         iFrame. iPureIntro. done.
       - iDestruct (send_counter_lower with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
         iFrame. iPureIntro. lia.
     }
-    iMod (sender_transition_general params v v Valid_start Valid_sender_ready 
+    iMod (sender_transition_general V params v v Valid_start Valid_sender_ready 
        sender_offer_trans send_count recv_count i with 
       "[HCh HSndCtrAuth HSndPerm HP]") as 
       "IH".
@@ -924,13 +912,13 @@ Proof.
     
   - (* Valid_receiver_ready case: Can complete exchange *)
     wp_auto.
-    iAssert (own_send_counter_auth params.(ch_names) send_count false ∗ 
-             own_send_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+    iAssert (own_send_counter_auth params.(ch_γ) send_count false ∗ 
+             own_send_counter_frag params.(ch_γ) i q ∗ 
              ⌜if params.(ch_is_single_party) then send_count = i else i <= send_count⌝%I)%I
       with "[HSndCtrAuth HSndPerm]" as "(HSndCtrAuth & HSndPerm & %Hispz)".
     {
       destruct params.(ch_is_single_party).
-      - replace params.(ch_q) with 1%Qp.
+      - replace q with 1%Qp.
         iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
         iFrame. iPureIntro. done.
       - iDestruct (send_counter_lower with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
@@ -939,7 +927,7 @@ Proof.
     
     (* Apply transition using the general lemma *)
     unfold isUnbufferedChan. unfold chan_state_resources.
-    iMod (sender_transition_general params v v Valid_receiver_ready Valid_sender_done 
+    iMod (sender_transition_general V params v v Valid_receiver_ready Valid_sender_done 
        sender_complete_trans send_count recv_count i with 
       "[HCh HSndCtrAuth HSndPerm HP]") as 
       "IH".
@@ -996,27 +984,22 @@ Proof.
     exfalso. done.
 Qed.
 
-  Lemma wp_Channel__TrySend (params: chan) (i: nat) (v: params.(ch_T')):
+  Lemma wp_Channel__TrySend (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V) (i: nat) (q: Qp) (v: V):
   (* Could let bindings be implicit args? *)
-    let T' := params.(ch_T') in
-    let T := params.(ch_T) in
-    let IntoVal_inst := params.(ch_IntoVal) in
-    let IntoValTyped_inst := params.(ch_IntoValTyped) in
-    let Hbounded := params.(ch_Hbounded) in
     params.(ch_loc) ≠ null ->
     0 ≤ params.(ch_size) ->
     params.(ch_size) + 1 < 2 ^ 63 ->
     
-    (if params.(ch_is_single_party) then params.(ch_q) = 1%Qp else (params.(ch_q) < 1)%Qp) ->
-    {{{ is_pkg_init channel ∗ send_pre params i v }}}
-      params.(ch_loc) @ channel @ "Channel'ptr" @ "TrySend" #T #v
+    (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
+    {{{ is_pkg_init channel ∗ send_pre V params q i v }}}
+      params.(ch_loc) @ channel @ "Channel'ptr" @ "TrySend" #t #v
 {{{ (selected: bool), RET #selected; 
         if (selected) then 
-        send_post params i else 
-        send_pre params i v
+        send_post V params q i else 
+        send_pre V params q i v
     }}}.
   Proof. 
-  intros HT' HT Hiv_inst Hivt_inst Hb_inst Hnn Hszgt Hszlt Hsp. wp_start. wp_auto.  
+  intros  Hnn Hszgt Hszlt Hsp. wp_start. wp_auto.  
   iNamed "Hpre". iNamed "HCh". wp_auto. 
   wp_if_destruct.
   - (* Case: Unbuffered channel (size = 0) *)
@@ -1034,13 +1017,13 @@ Qed.
     iDestruct "HCloseTokPostClose" as (n close_tok_names) "[HCloseTokPost HSendCtrFrag]".
     iCombine "HSendCtrFrag" "HSc" as "H" gives "%Hvalid". 
    apply auth_frag_op_valid_1 in Hvalid.
-             rewrite <- (Some_op (1%Qp, n) (params.(ch_q), i)) in Hvalid.
+             rewrite <- (Some_op (1%Qp, n) (q, i)) in Hvalid.
              rewrite Some_valid in Hvalid.
-             rewrite <- (pair_op 1%Qp params.(ch_q) n i) in Hvalid.
+             rewrite <- (pair_op 1%Qp q n i) in Hvalid.
              rewrite pair_valid in Hvalid. destruct Hvalid as [Hqvalid Hivalid].
              rewrite frac_op in Hqvalid.
 
-             assert (((1 + params.(ch_q))%Qp ≤ 1)%Qp).
+             assert (((1 + q)%Qp ≤ 1)%Qp).
              { 
               done. 
              }
@@ -1064,7 +1047,7 @@ assert ((params.(ch_size) =? 0) = true) by lia.
   (* Apply SenderCompleteOrOffer *)
   iDestruct "HChanState" as "HUnbuffCh".
   wp_auto. 
-wp_apply (wp_Channel__SenderCompleteOrOffer params i v v0 vs
+wp_apply (wp_Channel__SenderCompleteOrOffer V params i q v v0 vs
           send_count recv_count with "[value HUnbuffCh state  HP HSndCtrAuth HSc]").
   all: try done.
 
@@ -1123,12 +1106,12 @@ replace vs with Valid_closed.
  iNamed "HCloseTokPostClose". iDestruct "HCloseTokPostClose" as "[Hct1 Hct2]".
  iDestruct (own_valid_2 with "[$Hct2] [$HSndPerm]") as "%Hvalid". 
  apply auth_frag_op_valid_1 in Hvalid.
-rewrite <- (Some_op (1%Qp, n) (params.(ch_q), i)) in Hvalid.
+rewrite <- (Some_op (1%Qp, n) (q, i)) in Hvalid.
 rewrite Some_valid in Hvalid.
-rewrite <- (pair_op 1%Qp params.(ch_q) n i) in Hvalid.
+rewrite <- (pair_op 1%Qp q n i) in Hvalid.
 rewrite pair_valid in Hvalid. destruct Hvalid as [Hqvalid _].
 rewrite frac_op in Hqvalid.
-assert (((1 + params.(ch_q))%Qp ≤ 1)%Qp) by done.
+assert (((1 + q)%Qp ≤ 1)%Qp) by done.
 apply Qp.not_add_le_l in H0.
 contradiction.
 }
@@ -1139,7 +1122,7 @@ contradiction.
 
 
     
-    iDestruct (( sender_token_state_agree params v v1 vs send_count0 recv_count0  ) with " [Hsttok] [HChanState]") as "%Hct".
+    iDestruct (( sender_token_state_agree V params v v1 vs send_count0 recv_count0  ) with " [Hsttok] [HChanState]") as "%Hct".
     {
        destruct vs. all: done.
     }
@@ -1154,26 +1137,26 @@ contradiction.
     
     
     unfold isUnbufferedChan. unfold chan_state_resources.
-      iAssert (own_send_counter_auth params.(ch_names) send_count0 (send_ctr_frozen vs) ∗ 
-              own_send_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+      iAssert (own_send_counter_auth params.(ch_γ) send_count0 (send_ctr_frozen vs) ∗ 
+              own_send_counter_frag params.(ch_γ) i q ∗ 
               ⌜if params.(ch_is_single_party) then send_count0 = i else i <= send_count0⌝%I)%I
         with "[HSndCtrAuth HSndPerm]" as "(HSndCtrAuth & HSen & %Hispz)".
       {
         destruct params.(ch_is_single_party).
-        - replace params.(ch_q) with 1%Qp.
+        - replace q with 1%Qp.
           iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
           iFrame. iPureIntro. lia.  
         - iDestruct (send_counter_lower with "[$HSndCtrAuth] [$HSndPerm]") as "%Hag2".
           iFrame. iPureIntro. lia. 
       }
-      iAssert (isUnbufferedChan params v vs send_count0 recv_count0) with "[HChanState]" as "HCh".
+      iAssert (isUnbufferedChan V params v vs send_count0 recv_count0) with "[HChanState]" as "HCh".
 {
   unfold isUnbufferedChan. rewrite Hl.
   iFrame "HChanState".
 }
 
-     wp_auto. simpl.  subst HT.
-wp_apply (wp_Channel__SenderCheckOfferResult params i vs send_count0 recv_count0 v  
+     wp_auto. simpl.  
+wp_apply (wp_Channel__SenderCheckOfferResult V params i q vs send_count0 recv_count0 v  
           with "[$HSndCtrAuth $HCh $state $value $Hsttok $HSen]").
    
             all: (try done;try word; try lia; try iFrame).
@@ -1192,8 +1175,8 @@ wp_apply (wp_Channel__SenderCheckOfferResult params i vs send_count0 recv_count0
    simpl. wp_auto.  
    destruct vs. all: try done. iNamed "Hvs". iNamed "HCh".
    wp_apply (wp_Mutex__Unlock with "[$Hlock HRcvCtrAuth count first  HSndCtrAuth value chan_state 
-     HCh  $locked]").
-    {
+      HCh  $locked]").
+      {
       iModIntro. iExists Valid_start. iFrame. unfold isChanInner. iFrame "#". 
       simpl. iFrame. rewrite Hl. simpl. iFrame.
       iPureIntro. done.
@@ -1301,13 +1284,13 @@ iPureIntro. done.
       iCombine "Hsc'" "HSc"  as "H" gives "%Hvalid". 
       simpl in Hvalid.
      apply auth_frag_op_valid_1 in Hvalid.
-               rewrite <- (Some_op (1%Qp, n0) (params.(ch_q), i)) in Hvalid.
+               rewrite <- (Some_op (1%Qp, n0) (q, i)) in Hvalid.
                rewrite Some_valid in Hvalid.
-               rewrite <- (pair_op 1%Qp params.(ch_q) n0 i) in Hvalid.
+               rewrite <- (pair_op 1%Qp q n0 i) in Hvalid.
                rewrite pair_valid in Hvalid. destruct Hvalid as [Hqvalid Hivalid].
                rewrite frac_op in Hqvalid.
 
-               assert (((1 + params.(ch_q))%Qp ≤ 1)%Qp).
+               assert (((1 + q)%Qp ≤ 1)%Qp).
                { 
                 done. 
                }
@@ -1332,7 +1315,7 @@ iPureIntro. done.
     rewrite H. iNamed "HChanState". unfold isBufferedChan.
     unfold isBufferedChanLogical.
 
-    wp_apply (wp_Channel__BufferedTrySend_params params i v with 
+    wp_apply (wp_Channel__BufferedTrySend_params V params q i v with 
           "[HP HSc HSndCtrAuth HCloseTokPostClose HRcvCtrAuth state value count HPs HQs HBuffSlice first]"). 
           all: try done.
           { 
@@ -1368,12 +1351,12 @@ iFrame "∗#".  rewrite H. iFrame.
            iNamed "HCloseTokPostClose". iDestruct "HCloseTokPostClose" as "[Hct1 Hct2]".
            iDestruct (own_valid_2 with "[$Hct2] [$HSc]") as "%Hvalid". 
            apply auth_frag_op_valid_1 in Hvalid.
-          rewrite <- (Some_op (1%Qp, n0) (params.(ch_q), i)) in Hvalid.
+          rewrite <- (Some_op (1%Qp, n0) (q, i)) in Hvalid.
           rewrite Some_valid in Hvalid.
-          rewrite <- (pair_op 1%Qp params.(ch_q) n0 i) in Hvalid.
+          rewrite <- (pair_op 1%Qp q n0 i) in Hvalid.
           rewrite pair_valid in Hvalid. destruct Hvalid as [Hqvalid _].
           rewrite frac_op in Hqvalid.
-          assert (((1 + params.(ch_q))%Qp ≤ 1)%Qp) by done.
+          assert (((1 + q)%Qp ≤ 1)%Qp) by done.
           apply Qp.not_add_le_l in H0.
           contradiction.
           }
@@ -1381,13 +1364,13 @@ iFrame "∗#".  rewrite H. iFrame.
             destruct vs0. all: done.
           }
           }
-        iAssert (own_send_counter_auth params.(ch_names) send_count0 false ∗ 
-                own_send_counter_frag params.(ch_names) i params.(ch_q) ∗ 
+        iAssert (own_send_counter_auth params.(ch_γ) send_count0 false ∗ 
+                own_send_counter_frag params.(ch_γ) i q ∗ 
                 ⌜if params.(ch_is_single_party) then send_count0 = i else i <= send_count0⌝%I)%I
           with "[HSndCtrAuth HSc]" as "(HSndCtrAuth & HSen & %Hispz)".
         {
           destruct params.(ch_is_single_party).
-          - replace (params.(ch_q)) with 1%Qp.
+          - replace (q) with 1%Qp.
             iDestruct (send_counter_elem with "[$HSndCtrAuth] [$HSc]") as "%Hag2".
           subst send_count0.
              unfold send_ctr_frozen. destruct vs0. all: try (iFrame;iPureIntro;set_solver). set_solver.
@@ -1417,23 +1400,23 @@ iFrame "∗#".  rewrite H. iFrame.
 Qed.
 
 
-Lemma wp_Channel__TryClose (params : chan) 
+Lemma wp_Channel__TryClose (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)
        (n : nat) :
   #params.(ch_loc) ≠ #null ->
   {{{ is_pkg_init channel ∗  
   
-  "HCh" ∷ isChanInner params  ∗
-  "HCp" ∷   own_close_perm params.(ch_names) params.(ch_R) n }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "TryClose" #params.(ch_T) #()
+  "HCh" ∷ isChanInner V params  ∗
+  "HCp" ∷   own_close_perm params.(ch_γ) params.(ch_R) n }}}
+    params.(ch_loc) @ channel @ "Channel'ptr" @ "TryClose" #t #()
   {{{ (selected : bool), RET #selected;
       (if selected then
         
-           isChanInnerClosed params 
+           isChanInnerClosed V params 
 
        else
-       own_close_perm params.(ch_names) params.(ch_R) n
+       own_close_perm params.(ch_γ) params.(ch_R) n
        ∗ 
-           isChanInner params 
+           isChanInner V params 
        ) 
       
   }}}.
@@ -1458,7 +1441,7 @@ Lemma wp_Channel__TryClose (params : chan)
              rewrite pair_valid in Hvalid. destruct Hvalid as [Hqvalid Hivalid].
              rewrite frac_op in Hqvalid.
 
-             assert (((1 + params.(ch_q))%Qp ≤ 1)%Qp).
+             assert (((1 + 1)%Qp ≤ 1)%Qp).
              { 
               done. 
              }
@@ -1497,7 +1480,7 @@ Lemma wp_Channel__TryClose (params : chan)
   iFrame. iSplitL "HSndCtrAuth".
   {
     simpl.
- iDestruct ((send_counter_freeze params.(ch_names) send_count) with "[$]") as ">HSc".
+ iDestruct ((send_counter_freeze params.(ch_γ) send_count) with "[$]") as ">HSc".
  iModIntro. done.
   }
   iSplitL "HRcvCtrAuth".
@@ -1505,7 +1488,7 @@ Lemma wp_Channel__TryClose (params : chan)
     simpl.
  destruct (send_count =? recv_count).
  {
- iDestruct ((recv_counter_freeze params.(ch_names) recv_count) with "[$]") as ">HSc".
+ iDestruct ((recv_counter_freeze params.(ch_γ) recv_count) with "[$]") as ">HSc".
  iModIntro. iFrame.
  }
  {

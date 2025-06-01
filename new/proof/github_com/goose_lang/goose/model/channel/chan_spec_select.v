@@ -9,70 +9,72 @@ From New.proof.sync_proof Require Import base mutex sema.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
-Context `{!closePropTrackerG Σ,  !inG Σ (authR (optionUR (prodR fracR natR)))}.
-Context `{!ghost_varG Σ (bool * val)}.
-   Context `{!goGlobalsGS Σ}.
-#[global] Program Instance : IsPkgInit channel := ltac2:(build_pkg_init ()).
+Context `{!goGlobalsGS Σ}.
+Context  `{!chanGhostStateG Σ}.
+
+Arguments ch_loc: default implicits.
+Arguments ch_mu: default implicits.
+Arguments ch_buff: default implicits.
+Arguments ch_γ: default implicits.
+Arguments ch_size: default implicits.
+Arguments ch_is_single_party: default implicits.
+Arguments ch_Psingle: default implicits.
+Arguments ch_Qsingle: default implicits.
+Arguments ch_Qmulti: default implicits.
+Arguments ch_Pmulti: default implicits.
+Arguments ch_R: default implicits.
 
 (* Parameterized select case logical function *)
 Definition own_select_case_logical
-  (params: chan) (dir: select_dir)
-  (v: params.(ch_T')) (selected: bool) (i: nat) (ok: bool) : iProp Σ :=
+  (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V) (dir: select_dir)
+  (v: V) (selected: bool) (q: Qp) (i: nat) (ok: bool) (Ri: nat -> iProp Σ): iProp Σ :=
 match selected with
 | false =>
     match dir with
-    | SelectSend => send_pre params i v
-    | SelectRecv => recv_pre params i
+    | SelectSend => send_pre  V params q i v
+    | SelectRecv => recv_pre V params q i Ri
     end
 | true =>
     match dir with
-    | SelectSend => send_post params i
-    | SelectRecv => recv_post params i ok v
+    | SelectSend => send_post V params q i
+    | SelectRecv => recv_post V params q i ok v Ri
     end
 end.
 
 Definition own_select_case
-  (dir: select_dir) (params: chan) (case_ptr: loc) (selected: bool) (i: nat) (v': val) : iProp Σ :=
+  (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V) (dir: select_dir)  (case_ptr: loc) (selected: bool) (i: nat) (q: Qp) (v': val) (Ri: nat->iProp Σ) : iProp Σ :=
   if bool_decide (params.(ch_loc) = null) then
     (* For nil case, precondition is True, postcondition is False *)
     (if selected then False%I else 
-      "%Hintty" ∷ ⌜params.(ch_T) = int64T⌝ ∗  (* This connects v' to a properly typed v *)
-      "chan_ptr" ∷ case_ptr ↦s[(channel.SelectCase.ty params.(ch_T)) :: "channel"] null
+      (*"%Hintty" ∷ ⌜t = int64T⌝ ∗  (* This connects v' to a properly typed v *) *)
+      "chan_ptr" ∷ case_ptr ↦s[(channel.SelectCase.ty t) :: "channel"] null
     
     %I)%I
   else
-    (let T' := params.(ch_T') in
-    let T := params.(ch_T) in
-    let IntoVal_inst := params.(ch_IntoVal) in
-    let IntoValTyped_inst := params.(ch_IntoValTyped) in
-    let Hbounded := params.(ch_Hbounded) in
-    ∃  (v: T') (ok: bool),
-      (*"%Hvalconv" ∷ ⌜v' = to_val v⌝ ∗  (* This connects v' to a properly typed v *) *)
-      "chan_ptr" ∷ case_ptr ↦s[(channel.SelectCase.ty T) :: "channel"] params.(ch_loc) ∗
-      "dir" ∷ case_ptr ↦s[(channel.SelectCase.ty T) :: "dir"] (select_dir_to_word dir) ∗
-      "Value" ∷ case_ptr ↦s[(channel.SelectCase.ty T) :: "Value"] v ∗
-      "Ok" ∷ case_ptr ↦s[(channel.SelectCase.ty T) :: "Ok"] ok ∗ 
-      "Hlogicalselect" ∷ own_select_case_logical params dir v selected i ok)%I.
+    (
+    ∃  (v: V) (ok: bool),
+      "chan_ptr" ∷ case_ptr ↦s[(channel.SelectCase.ty t) :: "channel"] params.(ch_loc) ∗
+      "dir" ∷ case_ptr ↦s[(channel.SelectCase.ty t) :: "dir"] (select_dir_to_word dir) ∗
+      "Value" ∷ case_ptr ↦s[(channel.SelectCase.ty t) :: "Value"] v ∗
+      "Ok" ∷ case_ptr ↦s[(channel.SelectCase.ty t) :: "Ok"] ok ∗ 
+      "Hlogicalselect" ∷ own_select_case_logical V params dir v selected q i ok Ri)%I.
 
 
-Lemma wp_TrySelect (params: chan) (dir: select_dir) (case_ptr: loc) 
-      (i: nat) (v: params.(ch_T')):
-      let IntoVal_inst := params.(ch_IntoVal) in
-      let IntoValTyped_inst := params.(ch_IntoValTyped) in
-      {{{ is_pkg_init channel ∗ own_select_case dir params case_ptr false i #v }}}
-        channel @ "TrySelect" #params.(ch_T) #case_ptr
+Lemma wp_TrySelect (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)  (dir: select_dir) (case_ptr: loc) 
+      (i: nat) (q: Qp) (v: V) (Ri: nat -> iProp Σ):
+      {{{ is_pkg_init channel ∗ own_select_case V params dir case_ptr false i q #v Ri }}}
+        channel @ "TrySelect" #t #case_ptr
       {{{ (selected: bool), RET #selected;
-          own_select_case dir params case_ptr selected i #v
+          own_select_case V params dir case_ptr selected i q #v Ri
       }}}.
     Proof.
-      intros Hiv_inst Hivt_inst.
       wp_start. wp_auto.
       unfold own_select_case.
       destruct bool_decide eqn:Hb.
       {
-        iNamed "Hpre".  replace params.(ch_T) with int64T.
+        iNamed "Hpre".  
         wp_auto. 
-        iApply "HΦ". iFrame. done.
+        iApply "HΦ". iFrame. 
       }
       {
         iNamed "Hpre".
@@ -88,7 +90,7 @@ Lemma wp_TrySelect (params: chan) (dir: select_dir) (case_ptr: loc)
          subst dir.
          iNamed "Hlogicalselect".
          iNamed "HCh".
-         wp_apply (wp_Channel__TrySend params i v0 with "[HSc  HP  ]"). all: try done;try lia; try word.
+         wp_apply (wp_Channel__TrySend V params i q v0 with "[HSc  HP  ]"). all: try done;try lia; try word.
          {
           iFrame "#". iFrame. iPureIntro. done.
          }
@@ -116,7 +118,7 @@ Lemma wp_TrySelect (params: chan) (dir: select_dir) (case_ptr: loc)
           iNamed "Hlogicalselect".
           unfold own_select_case_logical. subst dir.
           iNamed "Hlogicalselect".
-          wp_apply (wp_Channel__TryReceive params i with "[HCh HQ HRecvPerm]").
+          wp_apply (wp_Channel__TryReceive V params i with "[HCh HQ HRecvPerm]").
           all: try done.
           {
            iFrame. done. 
@@ -142,25 +144,23 @@ Lemma wp_TrySelect (params: chan) (dir: select_dir) (case_ptr: loc)
     Qed.
 
     Lemma wp_Select1
-    (params1: chan)
+    (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V) 
     (dir1: select_dir)
     (case1 : loc)
-    (i1: nat) (v1: params1.(ch_T'))
-    (blocking : bool) :
-    let IntoVal_inst1 := params1.(ch_IntoVal) in
-    let IntoValTyped_inst1 := params1.(ch_IntoValTyped) in
-    params1.(ch_loc) ≠ null ->
-    {{{ is_pkg_init channel ∗ own_select_case dir1 params1 case1 false i1 #v1 }}}
-      channel @ "Select1" #params1.(ch_T) #case1 #blocking
+    (i1: nat) (q1: Qp) (v1: V) 
+    (blocking : bool) (Ri: nat -> iProp Σ) :
+    params.(ch_loc) ≠ null ->
+    {{{ is_pkg_init channel ∗ own_select_case V params dir1 case1 false i1 q1 #v1 Ri }}}
+      channel @ "Select1" #t #case1 #blocking
     {{{ (selected : bool), RET #selected;
        "Hb" ∷ ⌜if blocking then selected else true⌝%I ∗ 
        if selected then 
-       own_select_case dir1 params1 case1 true i1 #v1 
+       own_select_case V params dir1 case1 true i1 q1 #v1 Ri
         else 
-        own_select_case dir1 params1 case1 false i1 #v1 
+        own_select_case V params dir1 case1 false i1 q1 #v1 Ri
         }}}.
   Proof. 
-    intros Hiv Hivt Hnn.
+    intros Hnn.
     wp_start. wp_auto.
     wp_for. unfold own_select_case. iNamed "Hpre".
     destruct bool_decide eqn: Hb.
@@ -169,7 +169,7 @@ Lemma wp_TrySelect (params: chan) (dir: select_dir) (case_ptr: loc)
      done. 
     }
     iNamed "Hpre".
-     wp_apply (wp_TrySelect with "[chan_ptr dir Value Ok Hlogicalselect]").
+     wp_apply ((wp_TrySelect V params) with "[chan_ptr dir Value Ok Hlogicalselect]").
      {
       unfold own_select_case.
       destruct bool_decide.
@@ -210,32 +210,34 @@ Lemma wp_TrySelect (params: chan) (dir: select_dir) (case_ptr: loc)
   Qed.
 
     Lemma wp_TrySelectCase2 
-    (params1 params2: chan) 
+    (V1: Type) {K1: IntoVal V1} {t1} {H'1: IntoValTyped V1 t1}  (params1: chan V1) 
+    (V2: Type) {K2: IntoVal V2} {t2} {H'2: IntoValTyped V2 t2}  (params2: chan V2) 
+   
     (dir1 dir2: select_dir)
     (case1_ptr case2_ptr: loc)
     (i1 i2: nat) 
-    (v1: params1.(ch_T')) (v2: params2.(ch_T'))
-    (index: u64):
-    let IntoVal_inst1 := params1.(ch_IntoVal) in
-    let IntoValTyped_inst1 := params1.(ch_IntoValTyped) in
-    let IntoVal_inst2 := params2.(ch_IntoVal) in
-    let IntoValTyped_inst2 := params2.(ch_IntoValTyped) in
+    (v1: V1) (v2: V2)
+    (Ri1 Ri2: nat->iProp Σ)
+    (q1 q2: Qp)
+    (index: u64)
+    :
+ 
     (index = W64 0 ∨ index = W64 1) ->
     {{{ is_pkg_init channel ∗
-       "Hc1pre" ∷ own_select_case dir1 params1 case1_ptr false i1 #v1 ∗
-       "Hc2pre" ∷ own_select_case dir2 params2 case2_ptr false i2 #v2
+       "Hc1pre" ∷ own_select_case V1 params1 dir1  case1_ptr false i1 q1 #v1 Ri1 ∗
+       "Hc2pre" ∷ own_select_case V2 params2 dir2  case2_ptr false i2 q2 #v2 Ri2
     }}}
-      channel @ "TrySelectCase2" #params1.(ch_T) #params2.(ch_T) #index #case1_ptr #case2_ptr
+      channel @ "TrySelectCase2" #t1 #t2 #index #case1_ptr #case2_ptr
     {{{ (selected: bool), RET #selected;
         if decide (index = W64 0) then
-          own_select_case dir1 params1 case1_ptr selected i1 #v1 ∗
-          own_select_case dir2 params2 case2_ptr false i2 #v2
+          own_select_case V1 params1 dir1 case1_ptr selected i1 q1 #v1 Ri1 ∗
+          own_select_case V2 params2 dir2 case2_ptr false i2 q2 #v2 Ri2
         else (* index = W64 1 *)
-          own_select_case dir1 params1 case1_ptr false i1 #v1 ∗
-          own_select_case dir2 params2 case2_ptr selected i2 #v2
+          own_select_case V1 params1 dir1 case1_ptr false i1 q1 #v1 Ri1 ∗
+          own_select_case V2 params2 dir2 case2_ptr selected i2 q2 #v2 Ri2
     }}}.
   Proof.
-    intros Hiv1 Hivt1 Hiv2 Hivt2 Hindex.
+    intros Hindex.
     wp_start. wp_apply wp_alloc.
     iNamed "Hpre". 
     iIntros (case_2) "Hc2p".
@@ -247,7 +249,7 @@ Lemma wp_TrySelect (params: chan) (dir: select_dir) (case_ptr: loc)
     {
      wp_auto.
 
-     wp_apply (wp_TrySelect params1 dir1 case1_ptr i1 v1 with "[Hc1pre Hc1p]").
+     wp_apply (wp_TrySelect V1 params1 dir1 case1_ptr i1 q1 v1 with "[Hc1pre Hc1p]").
      {
       iFrame.
      }
@@ -259,7 +261,7 @@ Lemma wp_TrySelect (params: chan) (dir: select_dir) (case_ptr: loc)
      wp_if_destruct.
      {
       wp_auto. 
-     wp_apply (wp_TrySelect params2 dir2 case2_ptr i2 v2 with "[Hc2pre Hc2p]").
+     wp_apply (wp_TrySelect V2 params2 dir2 case2_ptr i2 q2 v2 with "[Hc2pre Hc2p]").
      {
       iFrame.
      }
@@ -270,47 +272,62 @@ Lemma wp_TrySelect (params: chan) (dir: select_dir) (case_ptr: loc)
     }
   Qed.
 
+Definition null_Ri: Z->iProp Σ := 
+ ( λ _, False%I)
+ .
+
   Lemma wp_NewSendCase
-  (params: chan) (i: nat) (v: params.(ch_T')):
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
-  {{{ is_pkg_init channel ∗ send_pre params i v }}}
-    channel @ "NewSendCase" #T #params.(ch_loc) #v
+  (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V) 
+   (i: nat) (q: Qp) (v: V) (l: loc):
+
+  (l = 
+  (ch_loc params)) ->
+  {{{ is_pkg_init channel ∗ 
+  if bool_decide(params.(ch_loc) ≠ null) then send_pre V params q i v else True%I
+   }}}
+    channel @ "NewSendCase" #t #l #v
   {{{ (case_ptr: loc), RET #case_ptr;
-      own_select_case SelectSend params case_ptr false i #v
+    if bool_decide(params.(ch_loc) ≠ null) then  own_select_case V params SelectSend case_ptr false i q #v null_Ri else True%I
   }}}.
 Proof.
-  intros HT' HT Hiv_inst Hivt_inst Hb_inst. wp_start. wp_auto. iNamed "Hpre".
+  intros Hl.
+  wp_start. wp_auto. iNamed "Hpre".
   wp_apply wp_alloc. iIntros (ptr) "Hptr".
-  iApply struct_fields_split in "Hptr"; iNamed "Hptr". wp_auto. iApply "HΦ".
-  iNamed "HCh".
-  unfold own_select_case. simpl.
-  destruct bool_decide eqn: Hb.
+  iApply (struct_fields_split ) in "Hptr". iNamed "Hptr". wp_auto.
+  
+  iApply "HΦ".
+  iNamed "Hpre".
+  simpl.
+  unfold send_pre. simpl. 
+  unfold own_select_case. subst l.
+  destruct (bool_decide(params .(ch_loc) = null)) eqn: Houter.
   {
-    apply bool_decide_eq_true in Hb.
-    done.
+    apply bool_decide_eq_true in Houter.
+    rewrite Houter.
+    simpl. iFrame. 
   }
-  iFrame.
-  simpl. iFrame "#". iFrame. iPureIntro. done. 
+  {
+    apply bool_decide_eq_false in Houter.
+    destruct bool_decide.
+    {
+      iNamed "Hpre". iFrame. done.
+    }
+    {
+     done. 
+    }
+  }
 Qed.
 
 Lemma wp_NewRecvCase
-  (params: chan) (i: nat):
-  let T' := params.(ch_T') in
-  let T := params.(ch_T) in
-  let IntoVal_inst := params.(ch_IntoVal) in
-  let IntoValTyped_inst := params.(ch_IntoValTyped) in
-  let Hbounded := params.(ch_Hbounded) in
-  {{{ is_pkg_init channel ∗ recv_pre params i }}}
-    channel @ "NewRecvCase" #T #params.(ch_loc)
+  (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V)  (i: nat) (q: Qp) (Ri: nat -> iProp Σ):
+  
+  {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
+    channel @ "NewRecvCase" #t #params.(ch_loc)
   {{{ (case_ptr: loc), RET #case_ptr;
-      own_select_case SelectRecv params case_ptr false i (#(default_val params.(ch_T')))
+      own_select_case V params SelectRecv case_ptr false i q (#(default_val V)) Ri
   }}}.
 Proof.
-  intros H1 H2 Hiv_inst Hivt_inst Hb_inst. wp_start. wp_auto. iNamed "Hpre".
+   wp_start. wp_auto. iNamed "Hpre".
   wp_apply wp_alloc. iIntros (ptr) "Hptr".
   iApply struct_fields_split in "Hptr"; iNamed "Hptr". wp_auto. iApply "HΦ".
   iNamed "HCh".

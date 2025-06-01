@@ -21,7 +21,8 @@ Proof. solve_inG. Qed.
 Local Definition auth_set_auth_def `{auth_setG Σ A}
     (γ : gname) (s: gset A) : iProp Σ :=
   own γ (● GSet s).
-Local Definition auth_set_auth_aux : seal (@auth_set_auth_def). Proof. by eexists. Qed.
+Local Definition auth_set_auth_aux : seal ( @auth_set_auth_def).
+Proof. by eexists. Qed.
 Definition auth_set_auth := auth_set_auth_aux.(unseal).
 Local Definition auth_set_auth_unseal :
   @auth_set_auth = @auth_set_auth_def := auth_set_auth_aux.(seal_eq).
@@ -84,20 +85,6 @@ Section lemmas.
   Proof.
     unseal. iIntros "Hauth Hfrag".
     iDestruct (own_valid_2 with "Hauth Hfrag") as %Hin.
-    iPureIntro.
-    apply auth_both_valid_discrete in Hin as [Hin _].
-    apply gset_disj_included in Hin.
-    apply singleton_subseteq_l in Hin.
-    auto.
-  Qed.
-
-  Lemma auth_set_elem_no_mod γ s a :
-    (auth_set_auth γ s ∗ auth_set_frag γ a) -∗ 
-    (auth_set_auth γ s ∗ auth_set_frag γ a) ∗ 
-    ⌜a ∈ s⌝.
-  Proof.
-    unseal. iIntros "[Hauth Hfrag]".
-    iDestruct (own_valid_2 with "Hauth Hfrag") as %Hin. iFrame.
     iPureIntro.
     apply auth_both_valid_discrete in Hin as [Hin _].
     apply gset_disj_included in Hin.

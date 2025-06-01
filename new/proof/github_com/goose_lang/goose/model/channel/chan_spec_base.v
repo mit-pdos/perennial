@@ -1,15 +1,12 @@
 From New.proof Require Import proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_ghost_state big_sep_seq.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_ghost_state big_sep_seq chan_init.
 Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose.model
   Require Export channel.
 
-
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.  
-Context `{!closePropTrackerG Σ, !inG Σ (authR (optionUR (prodR fracR natR)))}.
-Implicit Types (v:val).  
-Context `{!ghost_varG Σ (bool * val)}.
+Context  `{!chanGhostStateG Σ}.
 
 (* Define valid states as an inductive type *)
 Inductive valid_chan_state := 
