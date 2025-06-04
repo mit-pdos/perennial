@@ -1,6 +1,6 @@
 Require Import New.proof.proof_prelude.
+Require Import New.disk_prelude.
 Require Import New.proof.github_com.goose_lang.primitive.disk.
-Require Import Perennial.goose_lang.ffi.disk_prelude.
 Require Import Coq.Program.Equality.
 From RecordUpdate Require Import RecordSet.
 Import RecordSetNotations.

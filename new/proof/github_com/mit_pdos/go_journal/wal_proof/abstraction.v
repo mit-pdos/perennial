@@ -1,5 +1,6 @@
 Require Import New.proof.proof_prelude.
-From Perennial.goose_lang Require Import ffi.disk_prelude.
+Require Import New.proof.github_com.goose_lang.primitive.disk.
+Require Import New.disk_prelude.
 
 Module update.
   Record t :=
