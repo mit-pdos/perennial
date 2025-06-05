@@ -233,14 +233,12 @@ Definition isChan (V: Type) {H: IntoVal V} {t} {H': IntoValTyped V t} (params: c
     "#Hlock" ∷ is_Mutex params.(ch_mu) (isChanInner V params).
 
 Definition send_pre (V: Type) {H: IntoVal V} {t} {H': IntoValTyped V t} (params: chan V) (q: Qp) (i: nat) (v: V) : iProp Σ :=
-  "%HChNonnull" ∷ ⌜params.(ch_loc) ≠ null⌝ ∗
   "%Hsp" ∷ ⌜if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp⌝ ∗
   "HCh" ∷ isChan V params ∗
   "HP" ∷ P V (ch_is_single_party params) i v params.(ch_Psingle) params.(ch_Pmulti) ∗ 
   "HSc" ∷ own_send_counter_frag params.(ch_γ) i q.
 
 Definition send_pre_inner (V: Type) {H: IntoVal V} {t} {H': IntoValTyped V t} (params: chan V) (q: Qp) (i: nat) (v: V) : iProp Σ :=
-  "%HChNonnull" ∷ ⌜params.(ch_loc) ≠ null⌝ ∗
   "%Hsp" ∷ ⌜if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp⌝ ∗
   "HCh" ∷ isChanInner V params ∗
   "%Hbuffsize" ∷ ⌜params.(ch_buff).(slice.len_f) = (W64 params.(ch_size))⌝ ∗
@@ -259,7 +257,6 @@ Q V params.(ch_is_single_party) (i - params.(ch_size)) params.(ch_Qsingle) param
 own_send_counter_frag params.(ch_γ) (i + 1)%nat q.
 
 Definition recv_pre (V: Type) {H: IntoVal V} {t} {H': IntoValTyped V t} (params: chan V) (q: Qp) (i: nat) (Ri: nat -> iProp Σ) : iProp Σ :=
-  "%HChnonnull" ∷ ⌜params.(ch_loc) ≠ null⌝ ∗
   "%Hsp" ∷  ⌜if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp⌝ ∗
   "HCh" ∷ isChan V params ∗
   "HQ" ∷ Q V params.(ch_is_single_party) i params.(ch_Qsingle) params.(ch_Qmulti) ∗ 
@@ -280,7 +277,6 @@ else
          "#Hrca" ∷ own_recv_counter_auth params.(ch_γ) n true))%I.
 
 Definition recv_pre_inner (V: Type) {H: IntoVal V} {t} {H': IntoValTyped V t} (params: chan V) (q: Qp) (i: nat) (Ri: nat -> iProp Σ) : iProp Σ :=
-"%HChnonnull" ∷ ⌜params.(ch_loc) ≠ null⌝ ∗
 "%Hsp" ∷ ⌜if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp⌝ ∗
 "HCh" ∷ isChanInner V params ∗
 "%Hbuffsize" ∷ ⌜params.(ch_buff).(slice.len_f) = W64 params.(ch_size)⌝ ∗

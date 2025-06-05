@@ -242,7 +242,7 @@ Proof.
   {
     
   unfold recv_pre_inner. iFrame. iFrame "#". iPureIntro. 
-  do 1 split;first done. split. { done. } set_solver.  }
+  do 1 split;first done. set_solver.  }
   iIntros (success). iIntros (v0). iIntros (has_value). 
 iIntros "IH". 
 wp_auto.
@@ -914,7 +914,6 @@ Qed.
  
 Lemma wp_Channel__TryReceive (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)   (i: nat) (q: Qp) (Ri: nat->iProp Σ):
      
-      params.(ch_loc) ≠ null ->
       (if params.(ch_is_single_party) then q = 1%Qp else (q ≤  1)%Qp) ->
       {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
         params.(ch_loc) @ channel @ "Channel'ptr" @ "TryReceive" #t #()
@@ -925,9 +924,15 @@ Lemma wp_Channel__TryReceive (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}
             recv_pre V params q i Ri
       }}}.
     Proof. 
-  intros Hnn Hsp.
+  intros Hsp.
   wp_start. wp_auto.
   iNamed "Hpre". iNamed "HCh". wp_auto.
+  iDestruct (chan_pointsto_non_null V (params.(ch_mu)) params with "mu") as %HNonNull.
+  assert (params .(ch_loc) ≠ null).
+  {
+    intro H1.
+    rewrite H1 in HNonNull. done.
+  }
   wp_if_destruct.  
   {
    wp_auto.

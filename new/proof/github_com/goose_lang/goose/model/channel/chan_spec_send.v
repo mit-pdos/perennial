@@ -986,7 +986,6 @@ Qed.
 
   Lemma wp_Channel__TrySend (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V) (i: nat) (q: Qp) (v: V):
   (* Could let bindings be implicit args? *)
-    params.(ch_loc) ≠ null ->
     0 ≤ params.(ch_size) ->
     params.(ch_size) + 1 < 2 ^ 63 ->
     
@@ -999,8 +998,14 @@ Qed.
         send_pre V params q i v
     }}}.
   Proof. 
-  intros  Hnn Hszgt Hszlt Hsp. wp_start. wp_auto.  
+  intros  Hszgt Hszlt Hsp. wp_start. wp_auto.  
   iNamed "Hpre". iNamed "HCh". wp_auto. 
+  iDestruct (chan_pointsto_non_null V (params.(ch_mu)) params with "mu") as %HNonNull.
+  assert (params .(ch_loc) ≠ null).
+  {
+    intro H1.
+    rewrite H1 in HNonNull. done.
+  }
   wp_if_destruct.
   - (* Case: Unbuffered channel (size = 0) *)
   wp_auto.
@@ -1027,7 +1032,7 @@ Qed.
              { 
               done. 
              }
-             apply Qp.not_add_le_l in H.
+             apply Qp.not_add_le_l in H0.
              contradiction.
   }
   
@@ -1052,7 +1057,7 @@ wp_apply (wp_Channel__SenderCompleteOrOffer V params i q v v0 vs
   all: try done.
 
   {  (* Frame resources *) iFrame. simpl. 
-  simpl. iFrame. rewrite H. iFrame.
+  simpl. iFrame. rewrite H0. iFrame.
   }
   
   iIntros (res) "Hres".
@@ -1073,7 +1078,7 @@ wp_apply (wp_Channel__SenderCompleteOrOffer V params i q v v0 vs
       iModIntro. unfold isChanInner. 
       iExists Valid_sender_done, count, first, v, (S send_count), recv_count.
       iFrame.   iFrame. replace (send_count + 1)%nat with (S send_count) by lia.
-      rewrite H. iFrame.
+      rewrite H0. iFrame.
     }
     
     (* Return success *)
@@ -1112,7 +1117,7 @@ rewrite <- (pair_op 1%Qp q n i) in Hvalid.
 rewrite pair_valid in Hvalid. destruct Hvalid as [Hqvalid _].
 rewrite frac_op in Hqvalid.
 assert (((1 + q)%Qp ≤ 1)%Qp) by done.
-apply Qp.not_add_le_l in H0.
+apply Qp.not_add_le_l in H1.
 contradiction.
 }
 {
@@ -1294,7 +1299,7 @@ iPureIntro. done.
                { 
                 done. 
                }
-               apply Qp.not_add_le_l in H.
+               apply Qp.not_add_le_l in H0.
                contradiction.
     }
     
@@ -1312,14 +1317,14 @@ iPureIntro. done.
       done.
     }
     assert ((params.(ch_size) =? 0) = false) by lia.
-    rewrite H. iNamed "HChanState". unfold isBufferedChan.
+    rewrite H0. iNamed "HChanState". unfold isBufferedChan.
     unfold isBufferedChanLogical.
 
     wp_apply (wp_Channel__BufferedTrySend_params V params q i v with 
           "[HP HSc HSndCtrAuth HCloseTokPostClose HRcvCtrAuth state value count HPs HQs HBuffSlice first]"). 
           all: try done.
           { 
-iFrame "∗#".  rewrite H. iFrame. 
+iFrame "∗#".  rewrite H0. iFrame. 
 
   unfold send_ctr_frozen. 
         destruct vs. all: try (iFrame;iPureIntro;set_solver).
@@ -1334,7 +1339,7 @@ iFrame "∗#".  rewrite H. iFrame.
          wp_apply (wp_Mutex__Unlock with
           "[$Hlock state count HCloseTokPostClose HChanState first value HRcvCtrAuth HSndCtrAuth $locked]")
           .
-        { iModIntro. unfold isChanInner. iExists vs0, count0, first0, v1, send_count0, recv_count0. unfold send_ctr_frozen. rewrite H. iFrame. 
+        { iModIntro. unfold isChanInner. iExists vs0, count0, first0, v1, send_count0, recv_count0. unfold send_ctr_frozen. rewrite H0. iFrame. 
         }
         wp_pures.
         iApply "HΦ". iFrame.
@@ -1357,7 +1362,7 @@ iFrame "∗#".  rewrite H. iFrame.
           rewrite pair_valid in Hvalid. destruct Hvalid as [Hqvalid _].
           rewrite frac_op in Hqvalid.
           assert (((1 + q)%Qp ≤ 1)%Qp) by done.
-          apply Qp.not_add_le_l in H0.
+          apply Qp.not_add_le_l in H1.
           contradiction.
           }
           {
@@ -1402,7 +1407,6 @@ Qed.
 
 Lemma wp_Channel__TryClose (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  (params: chan V)
        (n : nat) :
-  #params.(ch_loc) ≠ #null ->
   {{{ is_pkg_init channel ∗  
   
   "HCh" ∷ isChanInner V params  ∗
@@ -1420,7 +1424,7 @@ Lemma wp_Channel__TryClose (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  
        ) 
       
   }}}.
-  intros Hnotnull. wp_start. wp_auto_lc 1. 
+   wp_start. wp_auto_lc 1. 
   iNamed "Hpre". iNamed "HCh". wp_auto.
     rewrite -wp_fupd.
   wp_if_destruct.
@@ -1514,7 +1518,6 @@ Lemma wp_Channel__TryClose (V: Type) {K: IntoVal V} {t} {H': IntoValTyped V t}  
    iModIntro. done.
   }
 Qed.
-
 
 End proof.
 

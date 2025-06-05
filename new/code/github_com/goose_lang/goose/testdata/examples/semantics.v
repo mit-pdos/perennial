@@ -408,7 +408,8 @@ Definition deferSimple : val :=
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < #(W64 10)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
       do:  (let: "$f" := (λ: <>,
-        exception_do (do:  ((![#ptrT] "x") <-[#uint64T] ((![#uint64T] (![#ptrT] "x")) + #(W64 1))))
+        exception_do (do:  ((![#ptrT] "x") <-[#uint64T] ((![#uint64T] (![#ptrT] "x")) + #(W64 1)));;;
+        return: #())
         ) in
       "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
       (λ: <>,
@@ -431,13 +432,15 @@ Definition testDeferFuncLit : val :=
     let: "f" := (mem.alloc (type.zero_val #funcT)) in
     let: "$r0" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
-        exception_do (do:  ("x" <-[#intT] ((![#intT] "x") + #(W64 1))))
+        exception_do (do:  ("x" <-[#intT] ((![#intT] "x") + #(W64 1)));;;
+        return: #())
         ) in
       "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
       (λ: <>,
         "$f" #();;
         "$oldf" #()
-        ))))
+        )));;;
+      return: #())
       ) in
     do:  ("f" <-[#funcT] "$r0");;;
     do:  ((![#funcT] "f") #());;;
@@ -1030,7 +1033,8 @@ Definition LoopStruct__forLoopWait : val :=
       else do:  #());;;
       let: "$r0" := ((![#uint64T] (![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls"))) + #(W64 1)) in
       do:  ((![#ptrT] (struct.field_ref #LoopStruct #"loopNext"%go "ls")) <-[#uint64T] "$r0");;;
-      continue: #())).
+      continue: #());;;
+    return: #()).
 
 (* tests
 
@@ -1894,7 +1898,8 @@ Definition ArrayEditor__Advance : val :=
     do:  ((struct.field_ref #ArrayEditor #"next_val"%go (![#ptrT] "ae")) <-[#uint64T] "$r0");;;
     let: "$r0" := (let: "$s" := (![#sliceT] (struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae"))) in
     slice.slice #uint64T "$s" #(W64 1) (slice.len "$s")) in
-    do:  ((struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae")) <-[#sliceT] "$r0")).
+    do:  ((struct.field_ref #ArrayEditor #"s"%go (![#ptrT] "ae")) <-[#sliceT] "$r0");;;
+    return: #()).
 
 (* tests
 
@@ -2107,13 +2112,15 @@ Definition Bar__mutate : val :=
     let: "$r0" := #(W64 2) in
     do:  ((struct.field_ref #Bar #"a"%go (![#ptrT] "bar")) <-[#uint64T] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  ((struct.field_ref #Bar #"b"%go (![#ptrT] "bar")) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #Bar #"b"%go (![#ptrT] "bar")) <-[#uint64T] "$r0");;;
+    return: #()).
 
 (* go: struct_pointers.go:19:17 *)
 Definition Foo__mutateBar : val :=
   rec: "Foo__mutateBar" "foo" <> :=
     exception_do (let: "foo" := (mem.alloc "foo") in
-    do:  ((method_call #semantics.semantics #"Bar'ptr" #"mutate" (struct.field_ref #Foo #"bar"%go (![#ptrT] "foo"))) #())).
+    do:  ((method_call #semantics.semantics #"Bar'ptr" #"mutate" (struct.field_ref #Foo #"bar"%go (![#ptrT] "foo"))) #());;;
+    return: #()).
 
 (* go: struct_pointers.go:23:6 *)
 Definition testFooBarMutation : val :=
@@ -2184,14 +2191,16 @@ Definition S__updateBValX : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "i" := (mem.alloc "i") in
     let: "$r0" := (![#uint64T] "i") in
-    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "s"))) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #TwoInts #"x"%go (struct.field_ref #S #"b"%go (![#ptrT] "s"))) <-[#uint64T] "$r0");;;
+    return: #()).
 
 (* go: structs.go:38:13 *)
 Definition S__negateC : val :=
   rec: "S__negateC" "s" <> :=
     exception_do (let: "s" := (mem.alloc "s") in
     let: "$r0" := (~ (![#boolT] (struct.field_ref #S #"c"%go (![#ptrT] "s")))) in
-    do:  ((struct.field_ref #S #"c"%go (![#ptrT] "s")) <-[#boolT] "$r0")).
+    do:  ((struct.field_ref #S #"c"%go (![#ptrT] "s")) <-[#boolT] "$r0");;;
+    return: #()).
 
 (* go: structs.go:42:6 *)
 Definition testStructUpdates : val :=
@@ -2596,13 +2605,15 @@ Definition New : val :=
 Definition Log__lock : val :=
   rec: "Log__lock" "l" <> :=
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #());;;
+    return: #()).
 
 (* go: wal.go:56:14 *)
 Definition Log__unlock : val :=
   rec: "Log__unlock" "l" <> :=
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"l"%go "l"))) #());;;
+    return: #()).
 
 (* BeginTxn allocates space for a new transaction in the log.
 
@@ -2696,7 +2707,8 @@ Definition Log__Write : val :=
     do:  (map.insert (![type.mapT #uint64T #sliceT] (struct.field_ref #Log #"cache"%go "l")) (![#uint64T] "a") "$r0");;;
     let: "$r0" := ((![#uint64T] "length") + #(W64 1)) in
     do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
-    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #())).
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #());;;
+    return: #()).
 
 (* Commit the current transaction.
 
@@ -2715,7 +2727,8 @@ Definition Log__Commit : val :=
     do:  ("header" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![#sliceT] "header") in
-    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1")).
+    (interface.get #"Write"%go (![#disk.Disk] (struct.field_ref #Log #"d"%go "l"))) "$a0" "$a1");;;
+    return: #()).
 
 (* go: wal.go:122:6 *)
 Definition getLogEntry : val :=
@@ -2768,7 +2781,8 @@ Definition applyLog : val :=
         do:  ("i" <-[#uint64T] "$r0");;;
         continue: #()
       else do:  #());;;
-      break: #()))).
+      break: #()));;;
+    return: #()).
 
 (* go: wal.go:142:6 *)
 Definition clearLog : val :=
@@ -2780,7 +2794,8 @@ Definition clearLog : val :=
     do:  ("header" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![#sliceT] "header") in
-    (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1")).
+    (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
+    return: #()).
 
 (* Apply all the committed transactions.
 
@@ -2801,7 +2816,8 @@ Definition Log__Apply : val :=
     (func_call #semantics.semantics #"clearLog"%go) "$a0");;;
     let: "$r0" := #(W64 0) in
     do:  ((![#ptrT] (struct.field_ref #Log #"length"%go "l")) <-[#uint64T] "$r0");;;
-    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #())).
+    do:  ((method_call #semantics.semantics #"Log" #"unlock" (![#Log] "l")) #());;;
+    return: #()).
 
 (* Open recovers the log following a crash or shutdown
 

@@ -2404,6 +2404,14 @@ Global Instance wp_func_call_NamedReturnOverride :
   WpFuncCall unittest "NamedReturnOverride" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_VoidButEndsWithReturn :
+  WpFuncCall unittest "VoidButEndsWithReturn" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_VoidImplicitReturnInBranch :
+  WpFuncCall unittest "VoidImplicitReturnInBranch" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_sliceOps :
   WpFuncCall unittest "sliceOps" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
