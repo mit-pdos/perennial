@@ -332,6 +332,12 @@ Proof.
   iApply struct_fields_split in "Hptr"; iNamed "Hptr". wp_auto. iApply "HΦ".
   iNamed "HCh".
   unfold own_select_case. simpl.
+  iDestruct (chan_pointsto_non_null V (params.(ch_mu)) params with "mu") as %HNonNull.
+  assert (params .(ch_loc) ≠ null).
+  {
+    intro H1.
+    rewrite H1 in HNonNull. done.
+  }
   destruct bool_decide eqn: Hb.
   {
     apply bool_decide_eq_true in Hb.

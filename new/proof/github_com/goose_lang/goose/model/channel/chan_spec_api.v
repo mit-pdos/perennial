@@ -32,22 +32,28 @@ Lemma wp_Channel__Send
   (V: Type) {K: IntoVal V} {t: go_type}
   {H': IntoValTyped V t} {B: BoundedTypeSize t}
   (params: chan V) (i: nat) (q: Qp) (v: V):
-  params.(ch_loc) ≠ null ->
   (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
   {{{ is_pkg_init channel ∗ send_pre V params q i v }}}
     params.(ch_loc) @ channel @ "Channel'ptr" @ "Send" #t #v 
   {{{ RET #(); send_post V params q i }}}.
 Proof.
-  intros Hnn Hsp.
+  intros Hsp.
   wp_start. wp_auto.
   let x := ident:(Φ) in try clear x.
-  iNamed "Hpre".
+  iNamed "Hpre". iNamed "HCh".
+  iDestruct (chan_pointsto_non_null V (params.(ch_mu)) params with "mu") as %HNonNull.
+  assert (params .(ch_loc) ≠ null).
+  {
+    intro H1.
+    rewrite H1 in HNonNull. done.
+  }
   wp_if_destruct; first contradiction.
   wp_auto.
-  wp_apply (wp_NewSendCase with "[HCh HP c HSc]"). all: try done.
+  wp_apply (wp_NewSendCase with "[HP c HSc]"). all: try done.
   {
     rewrite -> bool_decide_true by done.
-    iFrame. done.
+    iFrame. iFrame "#".
+    done.
   }
   iIntros (case_ptr) "Hosc". wp_auto.
   wp_apply (wp_Select1 with "[Hosc]"). all: try done.
@@ -83,10 +89,16 @@ Lemma wp_Channel__Receive
   {{{ (v: V) (ok: bool), RET (#v, #ok);
       recv_post V params q i ok v Ri }}}.
 Proof.
-  wp_start. wp_auto. iNamed "Hpre".
+  wp_start. wp_auto. iNamed "Hpre". iNamed "HCh".
+  iDestruct (chan_pointsto_non_null V (params.(ch_mu)) params with "mu") as %HNonNull.
+  assert (params .(ch_loc) ≠ null).
+  {
+    intro H1.
+    rewrite H1 in HNonNull. done.
+  }
   wp_if_destruct; first contradiction. wp_auto.
-  wp_apply (wp_NewRecvCase with "[HCh HQ c HRecvPerm]").
-  { iFrame. iPureIntro. done. }
+  wp_apply (wp_NewRecvCase with "[HQ c HRecvPerm]").
+  { iFrame "#". iFrame. iPureIntro. done. }
   iIntros (case_ptr) "Hosc". wp_auto.
   wp_apply (wp_Select1 with "[Hosc]"). all: try done.
   iIntros (selected_idx) "Hosc". wp_auto.
@@ -327,15 +339,15 @@ Proof.
 Qed.
 
 Lemma wp_Channel__Cap (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V) :
-  params.(ch_loc) ≠ null ->
   {{{ is_pkg_init channel ∗ isChan V params }}}
     params.(ch_loc) @ channel @ "Channel'ptr" @ "Cap" #t #()
   {{{ RET #(W64 params.(ch_size)); True%I }}}.
 Proof.
-  intros Hnn.
-  wp_start. wp_auto. iNamed "Hpre".  wp_if_destruct.
+  wp_start. wp_auto. iNamed "Hpre".
+  iDestruct (chan_pointsto_non_null V (params.(ch_mu)) params with "mu") as %HNonNull.
+  wp_if_destruct.
   {
-    done.
+    rewrite e in HNonNull. done.
   }
   {
     wp_auto.
@@ -351,29 +363,33 @@ Proof.
 Qed.
 
 Lemma wp_Channel__Close (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V)  (n: nat) :
-  #params.(ch_loc) ≠ #null ->
   {{{ is_pkg_init channel ∗ "HCh" ∷ isChan V params ∗ "HCp" ∷ own_close_perm params.(ch_γ) params.(ch_R) n }}}
     params.(ch_loc) @ channel @ "Channel'ptr" @ "Close" #t #()
   {{{ RET #(); True }}}.
 Proof.
-  intros Hnotnull. wp_start. wp_auto.
-  wp_if_destruct. 
+   wp_start. wp_auto.
+   iNamed "Hpre". iNamed "HCh".
+  iDestruct (chan_pointsto_non_null V (params.(ch_mu)) params with "mu") as %HNonNull.
+  assert (params .(ch_loc) ≠ null).
   {
-   replace params.(ch_loc) with null in Hnotnull. exfalso. apply Hnotnull.
-   done. 
+    intro H1.
+    rewrite H1 in HNonNull. done.
+  }
+  wp_if_destruct.
+  {
+    rewrite e in HNonNull. done.
   }
   wp_auto.
-  iNamed "Hpre".
   iAssert (∃ (done_b: bool),
   "done" ∷  done_ptr ↦ done_b ∗ 
   if done_b then True else 
  ("HCh" ∷  isChan V params ∗ 
 "HCp" ∷  own_close_perm params .(ch_γ) params .(ch_R) n ∗ 
 "c" ∷  c_ptr ↦ params .(ch_loc) )%I )%I
- with "[done HCh HCp c]" as "HI".
+ with "[done HCp c]" as "HI".
  {
   iExists false.
-  iFrame.
+  iFrame. iFrame "#". iPureIntro. done.
  }
   wp_for. 
   iNamed "HI".
@@ -383,7 +399,7 @@ Proof.
     destruct decide.
     {
       inversion e.
-      inversion H0.
+      inversion H1.
       assert (false = true) as Hcontra.
       { apply (to_val_inj _ _ e). }
       congruence. 
@@ -403,16 +419,10 @@ Proof.
    
 
     simpl.
-      
-   iNamed "HCh".
-    
    wp_auto.
   wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked HisChanInner]". wp_auto.
   wp_apply ((wp_Channel__TryClose) with "[$HisChanInner $HCp]").
-  {
-   done. 
-  } 
   iIntros (selected) "IH". wp_auto.
   iNamed "IH". 
   destruct selected.

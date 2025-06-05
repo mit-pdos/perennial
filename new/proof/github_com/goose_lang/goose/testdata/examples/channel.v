@@ -1,5 +1,8 @@
 From New.proof Require Import proof_prelude.
+From Perennial.algebra Require Import auth_map.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_spec_inv chan_ghost_state chan_spec_api chan_spec_base.
+From Perennial.base_logic Require Import lib.ghost_map.
+From iris.base_logic.lib Require Import ghost_map ghost_var.
 From New.code.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 
@@ -12,7 +15,428 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context  `{!chanGhostStateG Σ}.
 Context `{!ghost_varG Σ (w64)}.
 Context `{!goGlobalsGS Σ}.
+Context `{ ghost_mapG Σ Z w64 }.
 #[global] Program Instance : IsPkgInit chan_spec_raw_examples := ltac2:(build_pkg_init ()).
+
+(* 
+  Transfers pointer ownership from main to forked goroutine.
+  Maintains word requirements and exact pointer name. 
+*)
+Definition ghost_pt_pred (γ: gname) (val1_ptr val2_ptr val3_ptr: loc) (i: Z) (l: loc)  : iProp Σ :=  (∃ (w: w64), (l ↦ w) ∗ (i ↪[γ] w) ∗ ⌜i < 3 ⌝ ∗ ⌜ word.unsigned w + 1 < 2 ^ 63 ⌝ 
+∗ 
+   match i with 
+        | 0 => ⌜l = val1_ptr ⌝ 
+        | 1 => ⌜l = val2_ptr ⌝ 
+        | 2 => ⌜l = val3_ptr ⌝ 
+        | _ => False
+        end
+
+).
+
+Lemma wp_DoubleValues :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    chan_spec_raw_examples @ "DoubleValues" #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start. wp_auto.
+
+  (* Allocate empty slice *)
+  wp_apply wp_fupd.
+  iDestruct own_slice_nil as "Hempty".
+  wp_apply wp_slice_literal.
+  iMod (ghost_map_alloc (∅ : gmap Z w64)) as (γ) "[Hauth _]".
+  iIntros (sl) "Hsl".
+  iModIntro. wp_auto.
+
+  (* Append val1_ptr to slice *)
+  wp_apply ((wp_slice_append slice.nil [] sl [val1_ptr]) with "[$Hsl $Hempty]").
+  {
+    iApply own_slice_cap_none.
+    done.
+  }
+  iIntros (s') "(Hs' & Hosc & Hsl')".
+  wp_auto.
+
+  (* Insert ghost map entries *)
+  wp_apply wp_fupd.
+  set (five := W64 5).
+  set (ten := W64 10).
+  set (fifteen := W64 15).
+  set (twenty := W64 20).
+  set (thirty := W64 30).
+
+  iMod (ghost_map_insert 0 five with "[$Hauth]") as "[Hauth Hptstofive]";first done.
+  iMod (ghost_map_insert 1 ten with "[$Hauth]") as "[Hauth' Hptstoten]".
+  {
+    rewrite -> lookup_insert_ne. all: done.
+  }
+  iMod (ghost_map_insert 2 fifteen with "[$Hauth']") as "[Hauth'' Hptstofifteen]".
+  {
+    rewrite -> lookup_insert_ne.
+    {
+     rewrite -> lookup_insert_ne. all: done.
+    } done.
+  }
+
+  (* Additional slices *)
+  wp_apply wp_slice_literal.
+  iIntros (sl0) "Hsl0".
+  iModIntro. wp_auto.
+
+  wp_apply (wp_slice_append with "[$Hs' $Hosc $Hsl0]").
+  iIntros (s0') "(Hs0' & Hosc & Hsl0')".
+  wp_auto.
+
+  wp_apply wp_slice_literal.
+  iIntros (sl1) "Hsl1".
+  wp_auto.
+
+  wp_apply (wp_slice_append with "[$Hs0' $Hosc $Hsl1]").
+  iIntros (s1') "(Hs1' & Hosc & Hsl1')".
+  wp_auto.
+
+  (* Slice length *)
+  iDestruct (own_slice_len with "Hs1'") as %Hlen.
+  simpl in Hlen.
+
+  (* Create channel refs *)
+  wp_apply (wp_NewChannelRef_base loc
+              0 (* unbuffered *)
+              true (* single party *)
+              (* Gain ptrs from main goroutine *)
+              (ghost_pt_pred γ val1_ptr val2_ptr val3_ptr)
+              (λ _, True)%I
+              (λ _, True)%I
+              True%I
+              (* 3 uses only *)
+              (λ n, ⌜n = 3%nat⌝)%I).
+  all: try done.
+  iIntros (vals_ch mu vals_buf_slice γ1 vals_params)
+    "(%Hvalsparams & #HvalsCh & Hctvals & HScvals & HRecvPermVals)".
+  wp_auto.
+
+  wp_apply (wp_NewChannelRef_base w64
+              0 (* unbuffered *)
+              true (* single party *)
+              (* Can't send *)
+              (λ i (v: w64), False%I)%I
+              (* Unused, we are single party *)
+              (λ _, False%I)%I
+              (* Not false, necessary for receiving on closed *)
+              (λ _, True)%I
+              (* Unused, we are single party *)
+              False%I
+              (* Send all of the ptrs back to main *)
+              (λ n, ∃ a b c,
+                "%Hww" ∷ ⌜0 < a + 1 < 2^63 ∧ 0 < b + 1 < 2^63 ∧ 0 < c + 1 < 2^63⌝ ∗
+                0 ↪[γ] (W64 a) ∗ val1_ptr ↦ (W64 (2 * a)) ∗
+                1 ↪[γ] (W64 b) ∗ val2_ptr ↦ (W64 (2 * b)) ∗
+                2 ↪[γ] (W64 c) ∗ val3_ptr ↦ (W64 (2 * c)))%I).
+  all: try done.
+  iIntros (sync_ch mu2 ch_buf_slice2 γ2 sync_params)
+    "(%Hsyncparams & #HsyncCh & Hctsync & HScsync & HRecvPermSync)".
+  iPersist "ch" as "#valsCh".
+  wp_auto.
+  iPersist "done" as "#doneCh".
+
+  (* Forked thread *)
+  wp_apply (wp_fork with "[HRecvPermVals HScsync Hctsync]").
+{
+  iAssert (
+    ∃ (i : nat) (a b c : Z),
+      "Hcase" ∷ ⌜ i ∈ [0%nat;1%nat;2%nat;3%nat] ⌝ ∗
+      "Hbounds" ∷ ⌜ 0 < a + 1 < 2^63 ∧ 0 < b + 1 < 2^63 ∧ 0 < c + 1 < 2^63 ⌝ ∗
+      "Hrecvperm" ∷ own_recv_perm vals_params.(ch_γ loc) 1 i (λ n, ⌜n = 3%nat⌝) ∗
+      "Hresources" ∷ (
+        match i with
+        | 0%nat => True
+        | 1%nat => 0 ↪[γ] (W64 a) ∗ val1_ptr ↦ (W64 (2 * a))
+        | 2%nat => 0 ↪[γ] (W64 a) ∗ val1_ptr ↦ (W64 (2 * a))
+             ∗ 1 ↪[γ] (W64 b) ∗ val2_ptr ↦ (W64 (2 * b))
+        | 3%nat => 0 ↪[γ] (W64 a) ∗ val1_ptr ↦ (W64 (2 * a))
+             ∗ 1 ↪[γ] (W64 b) ∗ val2_ptr ↦ (W64 (2 * b))
+             ∗ 2 ↪[γ] (W64 c) ∗ val3_ptr ↦ (W64 (2 * c))
+        | _ => False
+        end
+      )
+  )%I with "[HRecvPermVals]" as "Hinv".
+  {
+    iExists 0%nat, 0, 0, 0.
+    iFrame.
+    iPureIntro.
+    split; [set_solver | split; repeat split; lia].
+  }
+
+  wp_for "Hinv".
+  iDestruct "Hcase" as %Hi_case.
+  iDestruct "Hbounds" as %Hbounds.
+  destruct i as [| [| [| ]]].
+  {
+    replace vals_ch with (vals_params.(ch_loc loc)) by (subst;done).
+    wp_apply ((wp_Channel__Receive loc vals_params 0%nat 1%Qp (λ n, ⌜n = 3%nat⌝)%I) with "[Hrecvperm]").
+    {
+      iFrame "#%". iFrame. unfold Q. subst. simpl. done.
+    }
+    iIntros (v ok) "Hrecv".
+    destruct ok.
+      - iDestruct "Hrecv" as "[Hval Hrest]".
+        unfold P. subst. simpl. unfold ghost_pt_pred.
+        iNamed "Hval". simpl.
+        iDestruct "Hval" as "(Hvw & Hwmap & %Hlt & %Hw & %Hv)".
+        subst v. wp_auto.
+        wp_for_post.
+        iFrame.
+        iExists (word.unsigned w), b, c.
+        replace (W64 (uint.Z w)) with w by word.
+        replace (w64_word_instance .(word.mul) w (W64 2)) with (W64 (2 * (uint.Z w))) by word.
+        iFrame.
+        iPureIntro.
+        split; [set_solver | word].
+      - wp_auto. unfold recv_post.
+        iNamed "Hrecv". iNamed "Hrecv".  
+        iDestruct "HRi" as "%Hri". subst n.
+        iDestruct (recv_counter_elem vals_params.(ch_γ loc)  with "[$Hrca] [$HRecFrag]") as "%Hag2".
+        done.
+  }
+  {
+    replace vals_ch with (vals_params.(ch_loc loc)) by (subst;done).
+    wp_apply ((wp_Channel__Receive loc vals_params 1%nat 1%Qp (λ n, ⌜n = 3%nat⌝)%I) with "[Hrecvperm]").
+    {
+      iFrame "#%". iFrame. unfold Q. subst. simpl. done.
+    }
+    iIntros (v ok) "Hrecv".
+    destruct ok.
+    - iDestruct "Hrecv" as "[Hval Hrest]".
+      unfold P. subst. simpl. unfold ghost_pt_pred.
+      iNamed "Hval". simpl.
+      iDestruct "Hval" as "(Hvw & Hwmap & %Hlt & %Hw & %Hv)".
+      subst v. wp_auto.
+      wp_for_post.
+      iFrame.
+      iExists a, (word.unsigned w), c.
+      replace (W64 (uint.Z w)) with w by word.
+      replace (w64_word_instance .(word.mul) w (W64 2)) with (W64 (2 * (uint.Z w))) by word.
+      iFrame.
+      iPureIntro.
+      split; [set_solver | word].
+    - wp_auto. unfold recv_post.
+      iNamed "Hrecv". iNamed "Hrecv".  
+      iDestruct "HRi" as "%Hri". subst n.
+      iDestruct (recv_counter_elem vals_params.(ch_γ loc)  with "[$Hrca] [$HRecFrag]") as "%Hag2".
+      done.
+  }
+  {
+    replace vals_ch with (vals_params.(ch_loc loc)) by (subst;done).
+    wp_apply ((wp_Channel__Receive loc vals_params 2%nat 1%Qp (λ n, ⌜n = 3%nat⌝)%I) with "[Hrecvperm]").
+    {
+      iFrame "#%". iFrame. unfold Q. subst. simpl. done.
+    }
+    iIntros (v ok) "Hrecv".
+    destruct ok.
+    - iDestruct "Hrecv" as "[Hval Hrest]".
+      unfold P. subst. simpl. unfold ghost_pt_pred.
+      iNamed "Hval". simpl.
+      iDestruct "Hval" as "(Hvw & Hwmap & %Hlt & %Hw & %Hv)".
+      subst v. wp_auto.
+      wp_for_post.
+      iFrame.
+      iExists a, b, (word.unsigned w).
+      replace (W64 (uint.Z w)) with w by word.
+      replace (w64_word_instance .(word.mul) w (W64 2)) with (W64 (2 * (uint.Z w))) by word.
+      iFrame.
+      iPureIntro.
+      split; [set_solver | word].
+    - wp_auto. unfold recv_post.
+      iNamed "Hrecv". iNamed "Hrecv".  
+      iDestruct "HRi" as "%Hri". subst n.
+      iDestruct (recv_counter_elem vals_params.(ch_γ loc)  with "[$Hrca] [$HRecFrag]") as "%Hag2".
+      done.
+  }
+  {
+  (* Prove that n = 0 using the invariant *)
+  assert (n = 0%nat) as -> by set_solver.
+
+  (* Replace pointer consistency *)
+  replace vals_ch with (vals_params.(ch_loc loc)) by (subst; done).
+
+  (* Apply receive on channel index 3 *)
+  wp_apply ((wp_Channel__Receive loc vals_params 3%nat 1%Qp (λ n, ⌜n = 3%nat⌝)%I) with "[$Hrecvperm]").
+  {
+    unfold Q. subst. simpl.
+    iFrame "%#". iFrame.
+    iPureIntro.
+    done.
+  }
+  iIntros (v1 ok1) "Hrecv".
+  unfold recv_post.
+
+  destruct ok1.
+  - (* Received successfully, process the value *)
+    unfold P.
+    replace (vals_params.(ch_is_single_party loc)) with true by (subst; done).
+    wp_auto.
+
+    (* Destruct the heap points-to and ghost resources *)
+    iDestruct "Hrecv" as "[Hval Hghost]".
+    subst. simpl.
+    iNamed "Hval". simpl. 
+    iDestruct "Hval" as "[Hv1 [Hw %Hf]]".
+    destruct Hf as [Hf1 Hf2].
+    done.  (* Possibly you want to continue with your intended proof here *)
+
+  - (* Receive failed; close the sync channel *)
+    wp_auto.
+    wp_for_post.
+    iNamed "Hrecv".
+    iNamed "Hrecv".
+    iDestruct "HRi" as "%Hri".
+    replace sync_ch with (sync_params.(ch_loc w64)) by (subst; done).
+
+    (* Close the sync channel *)
+    wp_apply ((wp_Channel__Close w64 sync_params 0) with "[Hresources HScsync Hctsync]").
+    {
+      subst. simpl.
+      unfold own_close_perm.
+      iFrame "#".
+      iFrame "%".
+      iFrame "HScsync".
+      iFrame.
+    }
+    done.
+    } 
+}
+  iNamed "HRecvPermSync".
+  wp_pure. { word. }
+
+
+  (* === Load and Send first element === *)
+  wp_apply ((wp_load_slice_elem s1' (W64 0) [val1_ptr; val2_ptr; val3_ptr] (DfracOwn 1) val1_ptr) with "[$Hs1']").
+  { iPureIntro. simpl. reflexivity. }
+  iIntros "Hs1'".
+  wp_auto.
+  replace vals_ch with (vals_params.(ch_loc loc)) by (subst; done).
+  wp_apply ((wp_Channel__Send loc vals_params 0%nat 1%Qp val1_ptr) with "[$HScvals val1 Hptstofive]"). all: try (subst;done).
+  {
+    subst. simpl.
+    iFrame "#%".
+    unfold P. iFrame.
+    unfold ghost_pt_pred.
+    simpl.
+    iFrame. done.
+  }
+  iIntros "Hsend0".
+  iDestruct "Hsend0" as "[_ Hscf]".
+  wp_auto.
+
+  wp_pure. { simpl in Hlen. word. }
+
+  (* === Load and Send second element === *)
+  wp_apply ((wp_load_slice_elem s1' (W64 1) [val1_ptr; val2_ptr; val3_ptr] (DfracOwn 1) val2_ptr) with "[$Hs1']").
+  { iPureIntro. simpl. reflexivity. }
+  iIntros "Hs1'".
+  wp_auto.
+
+  wp_apply ((wp_Channel__Send loc vals_params 1%nat 1%Qp val2_ptr) with "[$Hscf val2 Hptstoten]").
+  all: try (subst;done).
+  {
+    subst. simpl.
+    iFrame "#%".
+    unfold P. iFrame.
+    iSplitL ""; first done.
+    unfold ghost_pt_pred.
+    simpl. done.
+  }
+  iIntros "Hsend1".
+  iDestruct "Hsend1" as "[_ Hscf]".
+  wp_auto.
+
+  wp_pure. { word. }
+
+  (* === Load and Send third element === *)
+  wp_apply ((wp_load_slice_elem s1' (W64 2) [val1_ptr; val2_ptr; val3_ptr] (DfracOwn 1) val3_ptr) with "[$Hs1']").
+  { iPureIntro. simpl. reflexivity. }
+  iIntros "Hs1'".
+  wp_auto.
+
+  wp_apply ((wp_Channel__Send loc vals_params 2%nat 1%Qp val3_ptr) with "[$Hscf val3 Hptstofifteen]"). all: try (subst;done).
+  {
+    subst. simpl.
+    unfold P. iFrame.
+    iSplitL ""; first done.
+    unfold ghost_pt_pred.
+    simpl.
+    iFrame "#". done.
+  }
+  iIntros "Hsend2".
+  iDestruct "Hsend2" as "[_ Hscf]".
+  wp_auto.
+
+  (* === Close vals channel === *)
+  wp_apply ((wp_Channel__Close loc vals_params 3) with "[$Hscf Hctvals]").
+  {
+    subst. simpl.
+    iFrame.
+    iFrame "#". done.
+  }
+
+  (* === Receive from sync channel === *)
+  replace sync_ch with (sync_params.(ch_loc w64)) by (subst; done).
+  wp_apply ((wp_Channel__Receive w64 sync_params 0%nat 1%Qp) with "[$HRecvPerm]").
+  {
+    subst. simpl. iFrame "%#". done.
+  }
+  iIntros (v ok) "Hrecv".
+  wp_auto.
+
+  destruct ok.
+  - iDestruct "Hrecv" as "[Hf _]".
+    subst. simpl. done.
+  - iNamed "Hrecv". iNamed "Hrecv". iNamed "HRi".
+    iDestruct "HRi" as "(H1 & H2 & H3 & H4 & H5 & H6)".
+
+    (* Ghost map lookup *)
+    iDestruct (ghost_map_lookup with "[$Hauth''] [$H1]") as %Hlookup1.
+    iDestruct (ghost_map_lookup with "[$Hauth''] [$H3]") as %Hlookup2.
+    iDestruct (ghost_map_lookup with "[$Hauth''] [$H5]") as %Hlookup3.
+    destruct Hww as (Ha & Hb & Hc).
+    assert (W64 a = five) as Heqa.
+    { 
+      rewrite -> lookup_insert_ne in Hlookup1 by done. 
+      symmetry.
+      inversion Hlookup1 as [Heq].
+      subst. 
+      apply word.unsigned_inj.
+      rewrite -> lookup_insert_ne in Heq by done.
+      rewrite -> lookup_insert in Heq by done.
+      unfold five in *. inversion Heq as [Heq'].
+      done.
+    }
+    assert (W64 b = ten) as Heqb.
+    { 
+      unfold ten.
+      rewrite -> lookup_insert_ne in Hlookup2 by done. 
+      rewrite -> lookup_insert in Hlookup2 by done. 
+      symmetry. 
+      inversion Hlookup2 as [Heq].
+      subst.  
+      apply word.unsigned_inj. done.
+    }
+    assert (W64 c = fifteen).
+    {
+      rewrite lookup_insert in Hlookup3.
+      symmetry.
+      inversion Hlookup3 as [Heq].
+      subst. apply word.unsigned_inj. exact Heq.
+    }
+
+    (* Final conclusion *)
+    unfold five in *. unfold ten in *. unfold fifteen in *.
+    replace a with 5 by word.
+    replace b with 10 by word.
+    replace c with 15 by word.
+    wp_auto.
+    iApply "HΦ". done.
+Qed.
 
 Lemma wp_CoordinatedChannelClose (γ: chan_names):
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -189,7 +613,7 @@ Definition hello_world_pred
  (⌜ v = "hello world"%go ⌝%I) 
 .
 
-Lemma wp_SendMessage (γ: chan_names):
+Lemma wp_SendMessage:
   {{{ is_pkg_init chan_spec_raw_examples }}}
     chan_spec_raw_examples @ "SendMessage" #()
   {{{ RET #(); True }}}.
