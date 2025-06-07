@@ -192,7 +192,7 @@ Proof.
         {
           done.
         }
-        { iFrame "#". }
+        { iFrame. }
       }
       iPureIntro.
       apply prefix_app_r.

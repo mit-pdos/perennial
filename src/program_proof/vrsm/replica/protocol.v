@@ -473,7 +473,7 @@ Proof.
         {
           done.
         }
-        { iFrame "#". }
+        { iFrame. }
       }
       iPureIntro.
       transitivity σ.
