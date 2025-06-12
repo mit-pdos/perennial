@@ -2,7 +2,7 @@
 
 if [[ -z "$IN_NIX_SHELL" ]]; then 
     # Not in nix shell, use the default go installs
-    GRACKLE="go run github.com/mjschwenne/grackle/cmd/grackle@latest"
+    GRACKLE="go run github.com/mjschwenne/grackle/cmd/grackle@v1.0"
 else 
     # In a nix shell, expect grackle to be on the PATH and use that
     GRACKLE="grackle"
