@@ -91,6 +91,7 @@ Qed.
 Definition is_hash γ (data : option (list w8)) (hash : list w8) : iProp Σ :=
   ∃ m,
     "#Hm" ∷ is_hash_map γ m ∗
+    "%Hlen" ∷ ⌜Z.of_nat (length hash) = hash_len⌝ ∗
     "%Hi" ∷ ⌜m !! hash = data⌝.
 
 #[global]
@@ -131,14 +132,9 @@ Proof.
 Qed.
 
 Lemma is_hash_len γ data hash :
-  is_hash γ (Some data) hash -∗ ⌜ Z.of_nat (length hash) = hash_len ⌝.
+  is_hash γ data hash -∗ ⌜ Z.of_nat (length hash) = hash_len ⌝.
 Proof.
-  iNamed 1.
-  iNamed "Hm".
-  iDestruct (is_hash_model_wf with "Hmodel") as "%Hm".
-  subst.
-  specialize (Hm _ _ Hi).
-  subst. rewrite hash_fun_len. done.
+  iNamed 1. done.
 Qed.
 
 (* [is_hash_inv] says that, given a hash value, there's some
@@ -148,11 +144,12 @@ Qed.
  * This is the key lemma that builds on the prophecy model.
  *)
 Lemma is_hash_inv γ hash :
+  Z.of_nat (length hash) = hash_len ->
   is_hash_model γ -∗
   ∃ data,
     is_hash γ data hash.
 Proof.
-  iIntros "#Hm".
+  iIntros (Hlen) "#Hm".
   destruct (hash_map γ !! hash) as [data|] eqn:Hi.
   - iDestruct (is_hash_model_wf with "Hm") as "%Hm".
     specialize (Hm _ _ Hi).
@@ -226,5 +223,109 @@ Proof.
   iIntros (Φ) "H HΦ".
   iNamed "H". iNamed "Hown_hr".
 Admitted.
+
+
+(* Example use of [is_hash_inv] to reason about commitment to
+ * a chain of [list w8] values.  The [limit] value prevents a
+ * theoretical infinite loop (i.e., a hash that corresponds to
+ * an infinite cycle of commitments), which would prevent us
+ * from being able to prove [is_chain_commitment_inv] below.
+ *)
+Fixpoint is_chain_commitment γ (limit: nat) (l : list (list w8)) (h : list w8) : iProp Σ :=
+  match limit with
+  | O => ⌜l = [] ∧ Z.of_nat (length h) = hash_len⌝
+  | S limit =>
+    match l with
+    | nil =>
+      is_hash γ None h ∨
+      (∃ data, is_hash γ (Some data) h ∗ ⌜Z.of_nat (length data) < hash_len⌝)
+    | v :: l' =>
+      ∃ h',
+        is_chain_commitment γ limit l' h' ∗
+        is_hash γ (Some (h' ++ v)) h
+    end
+  end.
+
+Lemma is_chain_commitment_len γ limit l h :
+  is_chain_commitment γ limit l h -∗
+  ⌜Z.of_nat (length h) = hash_len⌝.
+Proof.
+  destruct limit; simpl.
+  * iIntros "%". intuition.
+  * destruct l; simpl; iIntros "H".
+    - iDestruct "H" as "[H | H]".
+      + iDestruct (is_hash_len with "H") as "%". done.
+      + iDestruct "H" as (?) "[H %]".
+        iDestruct (is_hash_len with "H") as "%". done.
+    - iDestruct "H" as (?) "[Hc Hh]".
+      iDestruct (is_hash_len with "Hh") as "%". done.
+Qed.
+
+Lemma is_chain_commitment_det : ∀ γ limit0 limit1 l0 l1 h0 h1,
+  (limit0 ≤ limit1)%nat ->
+  is_chain_commitment γ limit0 l0 h0 -∗
+  is_chain_commitment γ limit1 l1 h1 -∗
+  ⌜h0 = h1 -> l0 = firstn limit0 l1⌝.
+Proof.
+  induction limit0; simpl.
+  { intros. iIntros "%". intuition subst. rewrite take_0. iIntros "H". done. }
+  intros.
+  destruct limit1.
+  { lia. }
+
+  simpl.
+  iIntros "H0 H1".
+  destruct l0, l1.
+  + done.
+  + iDestruct "H1" as (h') "[H1c H1h]".
+    iIntros "%"; subst.
+    iDestruct "H0" as "[H0 | H0]".
+    * iDestruct (is_hash_inj with "H0 H1h") as "%". congruence.
+    * iDestruct "H0" as (?) "[H0 %Hle]".
+      iDestruct (is_chain_commitment_len with "H1c") as "%".
+      iDestruct (is_hash_inj with "H0 H1h") as "%Heq".
+      inversion Heq. subst. rewrite length_app in Hle. lia.
+  + iDestruct "H0" as (h') "[H0c H0h]".
+    iIntros "%"; subst.
+    iDestruct "H1" as "[H1 | H1]".
+    * iDestruct (is_hash_inj with "H0h H1") as "%". congruence.
+    * iDestruct "H1" as (?) "[H1 %Hle]".
+      iDestruct (is_chain_commitment_len with "H0c") as "%".
+      iDestruct (is_hash_inj with "H0h H1") as "%Heq".
+      inversion Heq. subst. rewrite length_app in Hle. lia.
+  + iDestruct "H0" as (h0') "[H0c H0h]".
+    iDestruct "H1" as (h1') "[H1c H1h]".
+    iIntros "%"; subst.
+    iDestruct (is_chain_commitment_len with "H0c") as "%".
+    iDestruct (is_chain_commitment_len with "H1c") as "%".
+    iDestruct (IHlimit0 with "H0c H1c") as "%"; first by lia.
+    iDestruct (is_hash_inj with "H0h H1h") as "%Heq".
+    iDestruct (is_hash_len with "H0h") as "%".
+    inversion Heq as [Heq'].
+    apply app_inj_1  in Heq'; last by lia.
+    intuition subst.
+    done.
+Qed.
+
+Lemma is_chain_commitment_inv γ limit : ∀ h,
+  ⌜Z.of_nat (length h) = hash_len⌝ -∗
+  is_hash_model γ -∗
+  ∃ l,
+    is_chain_commitment γ limit l h.
+Proof.
+  induction limit; iIntros (h) "% #Hmodel".
+  - iExists nil. done.
+  - iDestruct (is_hash_inv _ h with "Hmodel") as (data) "H"; first by done.
+    destruct data as [data|].
+    + destruct (decide (Z.of_nat (length data) < hash_len)).
+      * iExists nil. simpl. iRight. iFrame "#". done.
+      * iDestruct (IHlimit (firstn (Z.to_nat hash_len) data) with "[] Hmodel") as (chain) "Hchain".
+        { iPureIntro. rewrite length_take_le; lia. }
+        iExists (skipn (Z.to_nat hash_len) data :: chain).
+        iFrame "Hchain".
+        rewrite take_drop.
+        iFrame "#".
+    + iExists nil. simpl. iLeft. iFrame "#".
+Qed.
 
 End proof.
