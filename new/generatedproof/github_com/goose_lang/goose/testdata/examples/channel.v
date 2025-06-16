@@ -50,5 +50,9 @@ Global Instance wp_func_call_CoordinatedChannelClose :
   WpFuncCall chan_spec_raw_examples "CoordinatedChannelClose" _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_DoubleValues :
+  WpFuncCall chan_spec_raw_examples "DoubleValues" _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 End names.
 End chan_spec_raw_examples.
