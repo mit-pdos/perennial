@@ -254,9 +254,82 @@ Definition CoordinatedChannelClose : val :=
     else do:  #());;;
     return: #()).
 
+(* Example 6: A basic pipeline that just passes pointers
+   to a single worker who doubles the value of what they
+   point to.
+
+   go: examples.go:189:6 *)
+Definition DoubleValues : val :=
+  rec: "DoubleValues" <> :=
+    exception_do (let: "val1" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := #(W64 5) in
+    do:  ("val1" <-[#uint64T] "$r0");;;
+    let: "val2" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := #(W64 10) in
+    do:  ("val2" <-[#uint64T] "$r0");;;
+    let: "val3" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := #(W64 15) in
+    do:  ("val3" <-[#uint64T] "$r0");;;
+    let: "values" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "values") in
+    let: "$a1" := ((let: "$sl0" := "val1" in
+    slice.literal #ptrT ["$sl0"])) in
+    (slice.append #ptrT) "$a0" "$a1") in
+    do:  ("values" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "values") in
+    let: "$a1" := ((let: "$sl0" := "val2" in
+    slice.literal #ptrT ["$sl0"])) in
+    (slice.append #ptrT) "$a0" "$a1") in
+    do:  ("values" <-[#sliceT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "values") in
+    let: "$a1" := ((let: "$sl0" := "val3" in
+    slice.literal #ptrT ["$sl0"])) in
+    (slice.append #ptrT) "$a0" "$a1") in
+    do:  ("values" <-[#sliceT] "$r0");;;
+    let: "ch" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (let: "$a0" := #(W64 0) in
+    (func_call #channel.channel #"NewChannelRef"%go #ptrT) "$a0") in
+    do:  ("ch" <-[#ptrT] "$r0");;;
+    let: "done" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (let: "$a0" := #(W64 0) in
+    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    do:  ("done" <-[#ptrT] "$r0");;;
+    let: "$go" := (λ: <>,
+      exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+        let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
+        let: ("$ret0", "$ret1") := ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "ch") #ptrT) #()) in
+        let: "$r0" := "$ret0" in
+        let: "$r1" := "$ret1" in
+        do:  ("ptr" <-[#ptrT] "$r0");;;
+        do:  ("ok" <-[#boolT] "$r1");;;
+        (if: (~ (![#boolT] "ok"))
+        then break: #()
+        else do:  #());;;
+        let: "$r0" := ((![#uint64T] (![#ptrT] "ptr")) * #(W64 2)) in
+        do:  ((![#ptrT] "ptr") <-[#uint64T] "$r0"));;;
+      do:  ((method_call #channel #"Channel'ptr" #"Close" (![#ptrT] "done") #uint64T) #());;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    do:  (let: "$a0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "values") #(W64 0))) in
+    (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "ch") #ptrT) "$a0");;;
+    do:  (let: "$a0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "values") #(W64 1))) in
+    (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "ch") #ptrT) "$a0");;;
+    do:  (let: "$a0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "values") #(W64 2))) in
+    (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "ch") #ptrT) "$a0");;;
+    do:  ((method_call #channel #"Channel'ptr" #"Close" (![#ptrT] "ch") #ptrT) #());;;
+    do:  ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "done") #uint64T) #());;;
+    (if: (~ ((((![#uint64T] "val1") = #(W64 10)) && ((![#uint64T] "val2") = #(W64 20))) && ((![#uint64T] "val3") = #(W64 30))))
+    then
+      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Values were not doubled correctly"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    return: #()).
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("SendMessage"%go, SendMessage); ("JoinWithReceive"%go, JoinWithReceive); ("JoinWithSend"%go, JoinWithSend); ("BroadcastNotification"%go, BroadcastNotification); ("CoordinatedChannelClose"%go, CoordinatedChannelClose)].
+Definition functions' : list (go_string * val) := [("SendMessage"%go, SendMessage); ("JoinWithReceive"%go, JoinWithReceive); ("JoinWithSend"%go, JoinWithSend); ("BroadcastNotification"%go, BroadcastNotification); ("CoordinatedChannelClose"%go, CoordinatedChannelClose); ("DoubleValues"%go, DoubleValues)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
