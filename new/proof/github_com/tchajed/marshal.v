@@ -109,6 +109,26 @@ Qed.
 *)
 Admitted.
 
+Theorem wp_ReadLenPrefixedBytes s q (len: u64) (head tail : list u8):
+  length head = uint.nat len →
+  {{{
+        is_pkg_init marshal ∗
+        own_slice s q ((u64_le len) ++ head ++ tail)
+  }}}
+    marshal @ "ReadLenPrefixedBytes" #s
+  {{{
+        b s', RET (#b, #s'); own_slice b q head ∗ own_slice s' q tail
+  }}}.
+Proof.
+  iIntros (Hlen).
+  wp_start as "Hs". wp_auto.
+  wp_apply (wp_ReadInt with "[$Hs]").
+  iIntros (?) "Hs". wp_auto.
+  wp_apply (wp_ReadBytes with "[$]"); first trivial.
+  iIntros (??) "[Hb Hs]". wp_auto.
+  iApply "HΦ". iFrame.
+Qed.
+
 Theorem wp_ReadBool s q (bit: u8) (tail: list u8) :
   {{{ is_pkg_init marshal ∗ own_slice s q (bit :: tail) }}}
     marshal@"ReadBool" (#s)
@@ -369,7 +389,7 @@ Qed.
 Admitted.
 
 Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice data_sl q data ∗ own_slice_cap w8 data_sl }}}
+  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice data_sl q data ∗ own_slice_cap w8 s }}}
     marshal@"WriteBytes" (#s) (#data_sl)
   {{{ s', RET #s';
     own_slice s' (DfracOwn 1) (vs ++ data) ∗
@@ -385,6 +405,34 @@ Proof.
 Qed.
 *)
 Admitted.
+
+Theorem wp_WriteLenPrefixedBytes s (vs : list u8) data_sl q (data : list u8) :
+  {{{
+        is_pkg_init marshal ∗
+        own_slice s (DfracOwn 1) vs ∗
+        own_slice data_sl q data ∗
+        own_slice_cap w8 s
+  }}}
+    marshal @ "WriteLenPrefixedBytes" #s #data_sl
+  {{{
+        s', RET #s';
+        own_slice s' (DfracOwn 1) (vs ++ (u64_le $ length data) ++ data) ∗
+        own_slice_cap w8 s' ∗
+        own_slice data_sl q data
+  }}}.
+Proof.
+  wp_start as "(Hs & Hdata & Hscap)". wp_auto.
+  wp_apply (wp_WriteInt with "[$Hs $Hscap]").
+  iIntros (s') "[Hs' Hscap]". wp_auto.
+  wp_apply (wp_WriteBytes with "[$Hs' $Hdata $Hscap]").
+  iIntros (s'0) "(Hs & Hscap & Hdata)". wp_auto.
+  iApply "HΦ".
+  rewrite -app_assoc.
+  iDestruct (own_slice_len with "Hdata") as "%Hdlen".
+  rewrite Hdlen.
+  rewrite w64_to_nat_id. 
+  iFrame.
+Qed.
 
 Theorem wp_WriteBool s (vs: list u8) (b: bool) :
   {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s }}}

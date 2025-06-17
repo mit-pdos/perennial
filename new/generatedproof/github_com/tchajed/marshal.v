@@ -197,6 +197,10 @@ Global Instance wp_func_call_ReadBool :
   WpFuncCall marshal "ReadBool" _ (is_pkg_defined marshal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_ReadLenPrefixedBytes :
+  WpFuncCall marshal "ReadLenPrefixedBytes" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_WriteInt :
   WpFuncCall marshal "WriteInt" _ (is_pkg_defined marshal) :=
   ltac:(apply wp_func_call'; reflexivity).
