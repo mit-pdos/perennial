@@ -23,4 +23,15 @@ Section wps.
   }}}.
   Admitted.
 
+  Lemma wp_StringFromBytes sl q (l:go_string):
+  {{{
+        own_slice sl q l
+  }}}
+    string.from_bytes #sl
+  {{{
+        RET #l;
+        own_slice sl q l
+  }}}.
+  Admitted.
+
 End wps.
