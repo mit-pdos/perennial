@@ -142,7 +142,7 @@ Definition own_leaseCache_locked lc γ q : iProp Σ :=
 Definition own_leasingKV_locked lkv (γ : leasingKV_names) q : iProp Σ :=
   let leases := (struct.field_ref_f leasing.leasingKV "leases" lkv) in
   ∃ (sessionc : chan.t) (session : loc),
-    "sessionc" ∷ lkv ↦s[leasing.leasingKV :: "sessionc"]{#q} sessionc ∗
+    "sessionc" ∷ lkv ↦s[leasing.leasingKV :: "sessionc"]{#q/2} sessionc ∗
     "#Hsessionc" ∷ is_closeable_chan sessionc True ∗
     "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#q/2} session ∗
     "#Hsession" ∷ (if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease) ∗
@@ -151,9 +151,12 @@ Definition own_leasingKV_locked lkv (γ : leasingKV_names) q : iProp Σ :=
 
 (* This is owned by the background thread running [monitorSession]. *)
 Definition own_leasingKV_monitorSession lkv γ : iProp Σ :=
-  ∃ (session : loc),
+  ∃ (session : loc) sessionc,
   "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#(1/2)} session ∗
-  "#Hsession" ∷ if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease.
+  "#Hsession" ∷ if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease ∗
+  "sessionc" ∷ lkv ↦s[leasing.leasingKV :: "sessionc"]{#(1/2)} sessionc ∗
+  "Hsessionc" ∷ own_closeable_chan sessionc () ∨ own_closeable_chan sessionc () ∨
+.
 
 (* Almost persistent. *)
 Definition own_leasingKV (lkv : loc) γ : iProp Σ :=
@@ -247,6 +250,7 @@ Proof.
   {
     iNamed 1. iNamedSuffix "Hown" "_lock". wp_auto.
     wp_apply (wp_chan_select_nonblocking [False%I]).
+    { reflexivity. }
     repeat iSplit.
     - rewrite big_opL_singleton.
       repeat iExists _.

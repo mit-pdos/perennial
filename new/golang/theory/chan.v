@@ -56,7 +56,7 @@ Definition receive_atomic_update ch Φ : iProp Σ :=
   is_chan V ch ∗
   |={⊤,∅}=>
     ▷∃ s, own_chan ch s ∗
-          if decide (s.(chanstate.closed) = true ∧ s.(chanstate.received) = length s.(chanstate.sent)) then
+          if decide (s.(chanstate.closed) = true ∧ length s.(chanstate.sent) ≤ s.(chanstate.received)) then
             (* the channel is closed and empty, so return the zero value and false *)
             (own_chan ch s ={∅,⊤}=∗ (Φ (#(default_val V), #false)%V))
           else
@@ -89,7 +89,7 @@ Definition nonblocking_receive_atomic_update ch Φok Φnotready : iProp Σ :=
   is_chan V ch ∗
   |={⊤,∅}=>
     ▷∃ s, own_chan ch s ∗
-          if decide (s.(chanstate.closed) = true ∧ s.(chanstate.received) = length s.(chanstate.sent)) then
+          if decide (s.(chanstate.closed) = true ∧ length s.(chanstate.sent) ≤ s.(chanstate.received)) then
             (own_chan ch s ={∅,⊤}=∗ (Φok (#(default_val V), #false)%V))
           else
             match s.(chanstate.sent) !! s.(chanstate.received) with
@@ -154,7 +154,7 @@ Lemma wp_for_chan_range P ch (body : func.t) :
   □(P -∗
     |={⊤,∅}=>
       ▷∃ s, own_chan ch s ∗
-            if decide (s.(chanstate.closed) = true ∧ s.(chanstate.received) = length s.(chanstate.sent)) then
+            if decide (s.(chanstate.closed) = true ∧ length s.(chanstate.sent) ≤ s.(chanstate.received)) then
               (* the channel is closed and empty, so the loop exits *)
               (own_chan ch s ={∅,⊤}=∗ (Φ (execute_val #())))
             else
@@ -304,6 +304,7 @@ Admitted.
 
 Lemma wp_chan_select_nonblocking (Φnrs : list (iProp Σ)) (cases : list chan.op) (def : func.t) :
   ∀ Φ,
+  length Φnrs = length cases →
   (([∧ list] i ↦ case ∈ cases,
       let Φnotready := default False (Φnrs !! i) in
       match case with
