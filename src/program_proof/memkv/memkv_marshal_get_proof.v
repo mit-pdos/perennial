@@ -3,6 +3,9 @@ From Perennial.program_proof Require Import grove_prelude std_proof.
 From Goose.github_com.mit_pdos.gokv Require Import memkv.
 From Perennial.program_proof Require Import marshal_proof.
 
+From Perennial.goose_lang Require Import proof_automation.
+From Perennial.goose_lang Require Import marshal_specs.
+
 (*
   Defines Coq request and reply types for shard server Get RPC. Also defines
   has_encoding for Get Request/Reply and provides WPs for {de|en}codeGetRe{ply|quest}()
@@ -38,6 +41,8 @@ Definition has_encoding_GetRequest (data:list u8) (args:GetRequestC) :=
 Definition has_encoding_GetReply (data:list u8) (rep:GetReplyC) :=
   has_encoding data [ EncUInt64 rep.(GR_Err) ; EncUInt64 (length rep.(GR_Value)) ; EncBytes rep.(GR_Value) ].
 
+Opaque is_enc.
+
 Lemma wp_EncodeGetRequest args_ptr args :
   {{{
        own_GetRequest args_ptr args
@@ -49,25 +54,11 @@ Lemma wp_EncodeGetRequest args_ptr args :
                                                own_GetRequest args_ptr args
   }}}.
 Proof.
-  iIntros (Φ) "Hpre HΦ".
-  iNamed "Hpre".
-  wp_rec.
-  wp_apply (wp_new_enc).
-  iIntros (?) "Henc".
-  wp_pures.
-
-  wp_loadField.
-  wp_apply (wp_Enc__PutInt with "[$Henc]").
-  { done. }
-  iIntros "Henc".
-  wp_pures.
-
-  wp_apply (wp_Enc__Finish with "[$Henc]").
-  iIntros (??) "(%Henc & Hlen & Hsl)".
-  iApply "HΦ".
-  iFrame.
-  done.
+  rewrite /own_GetRequest.
+  iSteps.
 Qed.
+
+Opaque marshal.NewDec marshal.Dec__GetInt marshal.Dec__GetBytes.
 
 Lemma wp_DecodeGetRequest req_sl reqData args :
   {{{
@@ -84,7 +75,7 @@ Proof.
   wp_apply (wp_allocStruct); first val_ty.
   iIntros (rep_ptr) "Hrep".
   iDestruct (struct_fields_split with "Hrep") as "HH".
-  iNamed "HH".
+  iNamed "HH"; simpl.
   wp_pures.
   wp_apply (wp_new_dec with "[$Hsl]"); first done.
   iIntros (?) "Hdec".
@@ -138,6 +129,8 @@ Proof.
   iExists _.
   by iFrame.
 Qed.
+
+Opaque slice.len.
 
 Lemma wp_EncodeGetReply rep_ptr rep :
   {{{

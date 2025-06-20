@@ -4,6 +4,8 @@ From Perennial.program_proof.memkv Require Export common_proof memkv_coord_defin
 
 Local Open Scope nat_scope.
 
+Transparent typed_slice.own_slice typed_slice.own_slice_small.
+
 Section memkv_concurrent_clerk_proof.
 
 Context `{!heapGS Σ (ext:=grove_op) (ffi:=grove_model), !erpcG Σ, !urpcregG Σ, !kvMapG Σ}.
@@ -265,6 +267,8 @@ Proof.
   wp_apply (wp_KVClerk__putSeqClerk with "Hp Hck").
   wp_pures. iApply "HΦ". done.
 Qed.
+
+Transparent SliceGet SliceSet.
 
 Lemma wp_KVClerk__MGet (p:loc) (γ:gname) (keys_sl:Slice.t) (keys_vals:list (u64 * list u8)) q :
   {{{ is_KVClerk p γ ∗
