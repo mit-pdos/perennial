@@ -1,5 +1,8 @@
 SRC_DIRS := 'src' 'external' 'new' 
-ALL_VFILES := $(shell find $(SRC_DIRS) -not -path "external/coqutil/etc/coq-scripts/*" -name "*.v")
+ALL_VFILES := $(shell find $(SRC_DIRS) \
+							-not -path "external/coqutil/etc/coq-scripts/*" \
+							\( ! -path "external/refinedc/*" -o -path "external/refinedc/theories/lithium/*" \) \
+							-name "*.v")
 VFILES := $(shell find 'src' -name "*.v")
 QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
 

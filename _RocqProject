@@ -26,4 +26,6 @@
 -Q external/record-update/src RecordUpdate
 -Q external/coq-tactical/src Tactical
 -Q external/iris-named-props/src iris_named_props
+#-Q external/refinedc/theories refinedc
+-Q external/refinedc/theories/lithium lithium
 -Q new New

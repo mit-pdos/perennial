@@ -17,3 +17,8 @@
 [submodule "external/iris-named-props"]
 	path = external/iris-named-props
 	url = https://github.com/tchajed/iris-named-props
+[submodule "external/refinedc"]
+	path = external/refinedc
+	url = https://gitlab.mpi-sws.org/iris/refinedc.git
+  # refinedc uses dune so its gitignore does not ignore .vo files
+  ignore = dirty
