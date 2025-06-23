@@ -10,6 +10,8 @@ Notation erpcΣ := (erpc_lib.erpcΣ (list u8)).
 
 Definition erpcN := nroot .@ "erpc".
 
+Set Universe Polymorphism.
+
 (** Spec for an eRPC handler.
 This is isomorphic to RpcSpec, but to avoid confusion we use distinct types. *)
 Record eRPCSpec {Σ} :=
