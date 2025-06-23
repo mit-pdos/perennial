@@ -7,11 +7,15 @@ From New.proof Require Import context sync.
 
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
+From Perennial.algebra Require Import ghost_var.
+Require Import Perennial.base.
+
 
 Class leasingG Σ :=
   {
     concurrency_inG :: concurrencyG Σ;
     (* context_inG :: contextG Σ *) (* FIXME: skipped to avoid duplicate [inG]s. *)
+    entries_ready_inG :: ghost_varG Σ bool;
   }.
 
 Section proof.
@@ -25,23 +29,31 @@ Context `{!goGlobalsGS Σ}.
 Context `{leasingG Σ}.
 
 (* FIXME: move these *)
-Program Instance : IsPkgInit bytes :=
-  ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit status.status := ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit codes := ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit rpctypes := ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit errors := ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit time := ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit strings := ltac2:(build_pkg_init ()).
 
 #[global]
-Program Instance : IsPkgInit leasing := ltac2:(build_pkg_init ()).
+Program Instance is_pkg_init_bytes : IsPkgInit bytes := ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_bytes.
+
+#[global]
+Program Instance is_pkg_init_status : IsPkgInit status.status := ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_status.
+
+#[global]
+Program Instance is_pkg_init_codes : IsPkgInit codes := ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_codes.
+
+#[global]
+Program Instance is_pkg_init_rpctypes : IsPkgInit rpctypes := ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_rpctypes.
+
+#[global]
+Program Instance is_pkg_init_strings : IsPkgInit strings := ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_strings.
+
+#[global]
+Program Instance is_pkg_init_leasing : IsPkgInit leasing := ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_leasing.
+#[local] Transparent is_pkg_init_leasing.
 
 Context `{!syncG Σ}.
 
@@ -115,7 +127,8 @@ Proof using ghost_mapG0.
 Qed.
 
 Record leasingKV_names := {
-    etcd_gn : clientv3_names
+    etcd_gn : clientv3_names;
+    entries_ready_gn : gname;
   }.
 
 Implicit Types γ : leasingKV_names.
@@ -129,34 +142,36 @@ Definition own_leaseKey (lk : loc) γ (key : go_string) (resp : v3.RangeResponse
   True.
 
 Definition own_leaseCache_locked lc γ q : iProp Σ :=
-  ∃ entries_ptr (entries : gmap go_string loc) revokes_ptr (revokes : gmap go_string time.Time.t),
+  ∃ entries_ptr (entries : gmap go_string loc) revokes_ptr (revokes : gmap go_string time.Time.t)
+    (entries_ready : bool),
   "entries_ptr" ∷ lc ↦s[leasing.leaseCache :: "entries"]{#q} entries_ptr ∗
-  "entries" ∷  own_map entries_ptr (DfracOwn 1) entries ∗
+  "entries" ∷ (if entries_ready then entries_ptr ↦$ entries else ⌜ entries_ptr = null ∧ entries = ∅ ⌝
+    ) ∗
   "Hentries" ∷ ([∗ map] key ↦ lk ∈ entries, ∃ resp, own_leaseKey lk γ key resp) ∗
-  "entries_ptr" ∷ lc ↦s[leasing.leaseCache :: "revokes"]{#q} revokes_ptr ∗
-  "entries" ∷  own_map revokes_ptr (DfracOwn 1) revokes
+  "revokes_ptr" ∷ lc ↦s[leasing.leaseCache :: "revokes"]{#q} revokes_ptr ∗
+  "revokes" ∷  revokes_ptr ↦$ revokes ∗
+  "Hentries_ready" ∷ ghost_var γ.(entries_ready_gn)
+                                (if entries_ready then DfracDiscarded else (DfracOwn 1)) entries_ready
   (* TODO: header? *)
 .
 
 (* Proposition guarded by [lkv.leases.mu] *)
-Definition own_leasingKV_locked lkv (γ : leasingKV_names) q : iProp Σ :=
+Local Definition own_leasingKV_locked lkv (γ : leasingKV_names) q : iProp Σ :=
   let leases := (struct.field_ref_f leasing.leasingKV "leases" lkv) in
   ∃ (sessionc : chan.t) (session : loc),
     "sessionc" ∷ lkv ↦s[leasing.leasingKV :: "sessionc"]{#q/2} sessionc ∗
-    "#Hsessionc" ∷ is_closeable_chan sessionc True ∗
+    "#Hsessionc" ∷ own_closeable_chan sessionc True closeable.Unknown ∗
     "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#q/2} session ∗
     "#Hsession" ∷ (if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease) ∗
-    "Hleases" ∷ own_leaseCache_locked leases γ q
-.
+    "Hleases" ∷ own_leaseCache_locked leases γ q.
 
 (* This is owned by the background thread running [monitorSession]. *)
-Definition own_leasingKV_monitorSession lkv γ : iProp Σ :=
-  ∃ (session : loc) sessionc,
+Local Definition own_leasingKV_monitorSession lkv γ : iProp Σ :=
+  ∃ (session : loc) sessionc (open : bool),
   "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#(1/2)} session ∗
-  "#Hsession" ∷ if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease ∗
+  "#Hsession" ∷ (if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease) ∗
   "sessionc" ∷ lkv ↦s[leasing.leasingKV :: "sessionc"]{#(1/2)} sessionc ∗
-  "Hsessionc" ∷ own_closeable_chan sessionc () ∨ own_closeable_chan sessionc () ∨
-.
+  "Hsessionc" ∷ own_closeable_chan sessionc True (if open then closeable.Open else closeable.Closed).
 
 (* Almost persistent. *)
 Definition own_leasingKV (lkv : loc) γ : iProp Σ :=
@@ -165,21 +180,11 @@ Definition own_leasingKV (lkv : loc) γ : iProp Σ :=
   "#Hcl" ∷ is_Client cl γ.(etcd_gn) ∗
   "#ctx" ∷ lkv ↦s[leasing.leasingKV::"ctx"]□ ctx ∗
   "#Hctx" ∷ is_Context ctx ctx_st ∗
+  "#session_opts" ∷ lkv ↦s[leasing.leasingKV :: "sessionOpts"]□ slice.nil ∗
   "Hmu" ∷ own_RWMutex (struct.field_ref_f leasing.leaseCache "mu" (struct.field_ref_f leasing.leasingKV "leases" lkv))
-    (own_leasingKV_locked lkv γ)
-.
-
-Lemma wp_optional R e Φ :
-  R -∗
-  (R -∗ WP e {{ _, R }}) -∗
-  (∀ v, R -∗ Φ v) -∗
-  WP e {{ Φ }}.
-Proof.
-  iIntros "HR He HΦ".
-  iSpecialize ("He" with "HR").
-  iApply (wp_wand with "He").
-  iIntros (?) "HR". iApply "HΦ". iFrame.
-Qed.
+    (own_leasingKV_locked lkv γ).
+#[global] Opaque own_leasingKV.
+#[local] Transparent own_leasingKV.
 
 Lemma wp_leasingKV__monitorSession lkv γ :
   {{{
@@ -216,13 +221,9 @@ Proof.
       wp_auto.
       wp_apply "HDone".
       wp_bind.
-      iApply wp_Session__Done.
-      {
-        iSplitR.
-        { solve_pkg_init. (* FIXME: solve_pkg_init is pretty slow here. *) }
-        iFrame "#".
-      }
-      iNext. iIntros "* #HsessDone".
+      wp_apply wp_Session__Done.
+       { iFrame "#". }
+      iIntros "* #HsessDone".
       wp_auto.
       wp_apply wp_chan_select_blocking.
       rewrite big_andL_cons.
@@ -246,49 +247,127 @@ Proof.
   iIntros "[Hmu Hown]".
   wp_auto.
   wp_bind (chan.select _ _).
-  iApply (wp_optional with "[-]"); first iNamedAccu.
+  iNamedSuffix "Hown" "_lock".
+  iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
+  iCombine "sessionc_lock sessionc" as "sessionc".
+  wp_apply (wp_wand _ _ _
+              (λ v,
+                 ∃ sessionc,
+                   ⌜ v = execute_val #tt ⌝ ∗
+                   "sessionc" ∷ _ ↦s[_::_] sessionc ∗
+                   "Hsessionc" ∷ own_closeable_chan sessionc True closeable.Open ∗
+                   "lkv" ∷ lkv_ptr ↦ lkv
+              )%I
+              with "[Hsessionc sessionc lkv]"
+           ).
   {
-    iNamed 1. iNamedSuffix "Hown" "_lock". wp_auto.
-    wp_apply (wp_chan_select_nonblocking [False%I]).
+    wp_apply (wp_chan_select_nonblocking [⌜ open = true ⌝]%I).
     { reflexivity. }
     repeat iSplit.
-    - rewrite big_opL_singleton.
+    { rewrite big_opL_singleton.
       repeat iExists _.
-      (*
-      iApply (closeable_chan_receive with "[$]"). iIntros "_".
-      wp_auto. wp_apply (wp_chan_make (V:=unit)). iIntros "* Hsessionc'".
-      iMod (alloc_closeable_chan True with "[$]") as "[H ?]"; [done..|].
-      wp_auto. iFrame "∗#%". *)
-      admit.
-    - (* default *) iIntros "Hnr". wp_auto. iFrame "∗#%".
+      iApply (own_closeable_chan_nonblocking_receive with "[$]").
+      destruct open.
+      - iSplit; first done.
+        iIntros "Ho". done.
+      - iSplit; last done. iIntros "_".
+        wp_auto. unshelve wp_apply (wp_chan_make (V:=unit)); try tc_solve. iIntros "* Hch".
+        iMod (alloc_closeable_chan True with "[$Hch]") as "H"; [done.. | ].
+        wp_auto. iFrame. done.
+    }
+    { iIntros "[% _]". subst. wp_auto. iFrame. done. }
   }
-Admitted.
+  iClear "Hsessionc_lock". clear sessionc.
+  iIntros "* (% & % & H)". subst. wp_auto. iNamed "H".
+  wp_apply (wp_map_make (K:=go_string) (V:=loc)); [done..|].
+  iNamedSuffix "Hleases_lock" "_leases".
+  iIntros "* entries_new_leases".
+  wp_auto.
+  iDestruct (own_closeable_chan_Unknown with "[$]") as "#?".
+  iDestruct "sessionc" as "[sessionc sessionc_lock]".
 
-Lemma wp_NewKV cl γetcd (pfx : go_string) opts_sl :
+  iAssert (|==> "#Hentries_ready" ∷ ghost_var γ.(entries_ready_gn) DfracDiscarded true)%I
+    with "[Hentries_ready_leases entries_leases]"as ">#Hentries_ready".
+  {
+    destruct entries_ready.
+    { by iFrame "∗#". }
+    iMod (ghost_var_update with "[$]") as "H".
+    iMod (ghost_var_persist with "[$]") as "H".
+    iFrame "H". done.
+  }
+  iClear "Hentries_leases".
+  iCombineNamed "*_leases" as "Hleases_lock".
+  iCombineNamed "*_lock" as "H".
+  wp_apply (wp_RWMutex__Unlock with "[H Hmu]").
+  {
+    iNamed "H". iFrame "∗#%". iNamed "Hleases_lock".
+    iFrame "∗#". iExists ∅, true. iFrame "∗#". iApply big_sepM_empty. done.
+  }
+  iIntros "Hmu".
+  wp_auto.
+  wp_apply wp_NewSession.
+  { iFrame "#". }
+  iIntros "* #Hsession_new". wp_auto.
+  wp_if_destruct.
+  { (* got a valid session *)
+    rewrite (decide_True _ _ eq_refl).
+    rewrite bool_decide_true //.
+    wp_auto. wp_apply (wp_RWMutex__Lock with "[$Hmu]").
+    iIntros "[Hmu Hown]". wp_auto.
+    iClear "Hsession_lock".
+    iNamedSuffix "Hown" "_lock".
+    iCombine "session_lock session" gives %[_ Heq]. subst.
+    iCombine "session_lock session" as "session".
+    iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
+    wp_auto.
+    wp_apply (wp_closeable_chan_close with "[$Hsessionc]").
+    { done. }
+    iIntros "#Hclosed".
+    wp_auto.
+    iDestruct "session" as "[session session_lock]".
+    iCombineNamed "*_lock" as "H".
+    wp_apply (wp_RWMutex__Unlock with "[$Hmu H]").
+    { iNamed "H". iFrame "∗#%". destruct (decide (s = null)); done. }
+    iIntros "Hmu".
+    wp_auto.
+    wp_for_post.
+    iFrame "∗#%". iExists false.
+    iFrame "#". destruct (decide (s = null)); done.
+  }
+  { (* not a valid session. *)
+    rewrite bool_decide_false //. wp_auto. wp_for_post.
+    iFrame "∗#%". iExists true. iFrame.
+  }
+Qed.
+
+Definition num_lkvs : Z := rwmutex.actualMaxReaders - 1.
+Local Hint Unfold num_lkvs : word.
+
+(* FIXME: tie γetcd to γ. *)
+Lemma wp_NewKV cl γetcd (pfx : go_string) :
   {{{
       is_pkg_init leasing ∗
-      "#Hcl" ∷ is_Client cl γetcd ∗
-      "Hopts_sl"  ∷ opts_sl ↦* ([] : list concurrency.SessionOption.t)
+      "#Hcl" ∷ is_Client cl γetcd
   }}}
-    leasing @ "NewKV" #cl #pfx #opts_sl
-  {{{ RET #(); True }}}.
+    leasing @ "NewKV" #cl #pfx #slice.nil
+  {{{ γ lkv, RET #lkv; [∗] replicate (Z.to_nat num_lkvs) (own_leasingKV lkv γ) }}}.
 Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
   wp_apply (wp_Client__Ctx with "[$]") as "* #Hclient_ctx".
   iDestruct (is_Client_to_pub with "[$]") as "#Hclient_pub".
   iNamed "Hclient_pub".
-  wp_apply (wp_WithCancel with "Hclient_ctx").
+  wp_apply (wp_WithCancel True with "Hclient_ctx").
   iIntros "* #(Hctx' & Hcancel_spec & Hctx_done)".
   wp_auto.
-  unshelve wp_apply wp_map_make as "%revokes Hrevokes"; try tc_solve; try tc_solve.
+  unshelve wp_apply wp_map_make as "%revokes revokes"; try tc_solve; try tc_solve.
   { done. }
-  unshelve wp_apply wp_chan_make as "* ?"; try tc_solve.
+  wp_apply (wp_chan_make (V:=unit)) as "* ?".
   wp_alloc lkv as "Hlkv".
   wp_auto.
   iDestruct (struct_fields_split with "Hlkv") as "Hl".
   iEval (simpl) in "Hl".
-  iRename "Hcl" into "#Hcl_in".
+  iRename "Hcl" into "Hcl_in".
   iNamed "Hl".
   iMod (init_WaitGroup (nroot .@ "wg") with "[$]") as (γwg) "(#Hwg_is & Hwg_ctr & Hwg_wait)".
   wp_apply (wp_WaitGroup__Add with "[]").
@@ -312,22 +391,43 @@ Proof.
   iEval (simpl) in "H".
   iDestruct "H" as "[Hwg_done1 Hwg_done2]".
 
-  iPersist "Hcl Hkv Hctx".
+  iPersist "Hcl Hkv Hctx HsessionOpts".
   iDestruct (struct_fields_split with "Hleases") as "H".
+  iEval (simpl) in "H".
   iNamed "H".
-  (*
-  iDestruct (init_RWMutex with "[] [Hleases Hcancel HsessionOpts session Hsessionc Hwg_wait] [$]") as "H".
-  iAssert (own_leasingKV lkv ltac:(econstructor)) with "[-]" as "Hlkv".
-  { iFrame "∗#". }
+  iDestruct "Hsessionc" as "[sessionc sessionc_monitor]".
+  iMod (alloc_closeable_chan with "[$]") as "Hopen_monitor"; [done.. | ].
+  iDestruct (own_closeable_chan_Unknown with "[$]") as "#?".
 
-  wp_apply (wp_fork with "[Hwg_done1 session_monitor]").
+  iMod (ghost_var_alloc false) as (γready) "Hentries_ready".
+  iMod (init_RWMutex
+          (own_leasingKV_locked lkv {| etcd_gn := γetcd; entries_ready_gn := γready |} )
+         with "[] [Hentries_ready Hentries Hrevokes Hcancel HsessionOpts session sessionc Hwg_wait revokes] [$]") as "Hmus".
+  { admit. } (* TODO: fractional *)
+  { iFrame "∗#%". iExists ∅, false. iFrame. iSplit; first done.
+    iApply big_sepM_empty. done. }
+
+  replace (rwmutex.actualMaxReaders) with (1 + num_lkvs).
+  2:{ unfold num_lkvs. word. }
+  rewrite Z2Nat.inj_add //.
+  rewrite -> replicate_S.
+  iDestruct ("Hmus") as "[Hmu Hmus]".
+  iAssert (own_leasingKV lkv ltac:(econstructor)) with "[Hmu]" as "Hlkv".
+  { Time iFrame "Hcl". Time iFrame "∗#". }
+
+  wp_apply (wp_fork with "[Hwg_done1 session_monitor Hlkv]").
   {
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
-    wp_bind.
-    Time iApply (wp_leasingKV__monitorSession with "[session_monitor]").
-    {
+    wp_apply (wp_leasingKV__monitorSession with "[session_monitor Hlkv]").
+    { iClear "#". (* NOTE: ~90seconds to get here without omit-proofs; ~45 seconds with omit-proofs *)
+      iSplitL "Hlkv".
+      {
+        (* FIXME: iFrame timing out. *)
+        (*
+        iFrame "Hlkv". iApply to_named. iExactEq "Hlkv". done. }
+      Fail Timeout 10 iFrame "Hlkv".
       (* iFrame. iFrame "#". *)
       iSplitR.
       { Time solve_pkg_init. (* FIXME: solve_pkg_init is pretty slow here. *) }
@@ -347,5 +447,6 @@ Proof.
   (* TODO: wp_waitSession. *)
   admit. *)
 Admitted.
+
 
 End proof.

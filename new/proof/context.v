@@ -41,8 +41,10 @@ Context `{!goGlobalsGS Σ}.
 Context `{contextG Σ}.
 
 #[global]
-Program Instance : IsPkgInit context :=
+Program Instance is_pkg_init_context : IsPkgInit context :=
   ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_context.
+#[local] Transparent is_pkg_init_context.
 
 Import Context_desc.
 Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
@@ -61,7 +63,7 @@ Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
     {{{ True }}}
       interface.get #"Err" #c #()
     {{{ (err : interface.t), RET #err; True }}} ∗
-  "#HDone_ch" ∷ is_closeable_chan s.(Done) s.(PCancel)
+  "#HDone_ch" ∷ own_closeable_chan s.(Done) s.(PCancel) closeable.Unknown
 .
 
 (*

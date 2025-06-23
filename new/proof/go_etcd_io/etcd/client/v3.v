@@ -690,16 +690,19 @@ Context `{!goGlobalsGS Σ}.
 
 (* FIXME: move these *)
 #[global]
-Program Instance : IsPkgInit mvccpb :=
+Program Instance is_pkg_init_mvccpb : IsPkgInit mvccpb :=
   ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_mvccpb.
 
 #[global]
-Program Instance : IsPkgInit etcdserverpb :=
+Program Instance is_pkg_init_etcdserverpb : IsPkgInit etcdserverpb :=
   ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_etcdserverpb.
 
 #[global]
-Program Instance : IsPkgInit clientv3 :=
+Program Instance is_pkg_init_clientv3 : IsPkgInit clientv3 :=
   ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_clientv3.
 
 End init.
 

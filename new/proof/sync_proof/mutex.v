@@ -1,5 +1,7 @@
 From New.proof.sync_proof Require Import base.
 
+#[local] Transparent is_pkg_init_sync.
+
 Section proof.
 Context `{heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.

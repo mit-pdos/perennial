@@ -15,6 +15,14 @@ Record closeable_chan_names :=
     init_len : nat; (* for gauge invariance *)
   }.
 
+Module closeable.
+Inductive t :=
+| Open
+| Closed
+| Unknown.
+End closeable.
+Import closeable.
+
 Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -35,33 +43,29 @@ Local Definition is_closeable_chan_internal (ch : chan.t) γch (Pclose : iProp �
                    else own γch.(closed_gn) (to_dfrac_agree (DfracOwn (1/2)) false))
     ).
 
-Definition own_closeable_chan ch Pclose : iProp Σ :=
-  ∃ γch, is_closeable_chan_internal ch γch Pclose ∗
-         own γch.(closed_gn) (to_dfrac_agree (DfracOwn (1/2)) false).
+Definition own_closeable_chan (ch : chan.t) (Pclose : iProp Σ) (closed : closeable.t) : iProp Σ :=
+  ∃ γch,
+    "#Hinv" ∷ is_closeable_chan_internal ch γch Pclose ∗
+    "Hown" ∷ (match closed with
+              | Open => own γch.(closed_gn) (to_dfrac_agree (DfracOwn (1/2)) false)
+              | Closed => own γch.(closed_gn) (to_dfrac_agree DfracDiscarded true)
+              | Unknown => True
+              end).
+
 #[global] Opaque own_closeable_chan.
 #[local] Transparent own_closeable_chan.
+#[global] Instance own_closeable_chan_Unknown_pers ch P :
+  Persistent (own_closeable_chan ch P Unknown) := _.
+#[global] Instance own_closeable_chan_Closed_pers ch P :
+  Persistent (own_closeable_chan ch P Closed) := _.
 
-(* Note: could make the namespace be user-chosen *)
-Definition is_closeable_chan (ch : chan.t) (Pclose : iProp Σ) : iProp Σ :=
-  ∃ γch, is_closeable_chan_internal ch γch Pclose.
-#[global] Opaque is_closeable_chan.
-#[local] Transparent is_closeable_chan.
-#[global] Instance is_closeable_chan_pers ch P :
-  Persistent (is_closeable_chan ch P) := _.
-
-Definition is_closed_chan (ch : chan.t) (Pclose : iProp Σ) : iProp Σ :=
-  ∃ γch, is_closeable_chan_internal ch γch Pclose ∗
-         own γch.(closed_gn) (to_dfrac_agree DfracDiscarded true).
-#[global] Opaque is_closed_chan.
-#[local] Transparent is_closed_chan.
-#[global] Instance is_closed_chan_pers ch P :
-  Persistent (is_closed_chan ch P) := _.
-
-Lemma closeable_chan_receive ch Pclosed Φ :
-  is_closeable_chan ch Pclosed -∗
-  (Pclosed ∗ is_closed_chan ch Pclosed -∗ Φ (#(), #false)%V) -∗ receive_atomic_update unit ch Φ.
+Lemma closeable_chan_receive ch Pclosed Φ cl :
+  own_closeable_chan ch Pclosed cl -∗
+  (Pclosed ∗ own_closeable_chan ch Pclosed Closed -∗ Φ (#(), #false)%V) -∗
+  receive_atomic_update unit ch Φ.
 Proof.
-  iNamed 1. iIntros "HΦ". rewrite /receive_atomic_update. iFrame "#".
+  iNamed 1. iIntros "HΦ". rewrite /receive_atomic_update. iNamed "Hinv".
+  iFrame "#".
   iInv "Hinv" as "Hi" "Hclose". iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
   iNext. iNamed "Hi". iFrame.
   destruct decide as [|].
@@ -78,44 +82,45 @@ Proof.
     exfalso. apply lookup_lt_Some in Hbad. lia.
 Qed.
 
-Lemma own_closeable_chan_nonblocking_receive ch Pclosed Φ Φnotready :
-  own_closeable_chan ch Pclosed -∗
-  Φnotready -∗ nonblocking_receive_atomic_update unit ch Φ Φnotready.
+Lemma own_closeable_chan_nonblocking_receive ch Pclosed Φ Φnotready cl :
+  own_closeable_chan ch Pclosed cl -∗
+  (match cl with
+   | Unknown | Closed => (own_closeable_chan ch Pclosed Closed -∗ Φ (#(), #false)%V)
+   | _ => True
+   end ∧
+   match cl with
+   | Unknown | Open => (own_closeable_chan ch Pclosed cl -∗ Φnotready)
+   | _ => True
+   end)
+  -∗
+  nonblocking_receive_atomic_update unit ch Φ Φnotready.
 Proof.
-  iIntros "(% & H & Hown)". iNamed "H". iIntros "HΦ". rewrite /nonblocking_receive_atomic_update. iFrame "#".
+  iNamed 1. iNamed "Hinv".
+  iIntros "HΦ". rewrite /nonblocking_receive_atomic_update. iFrame "#".
   iInv "Hinv" as "Hi" "Hclose". iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
-  iNext. iNamed "Hi". iFrame.
-  destruct decide as [|].
-  - destruct a as [-> ?]. iRight in "Hclosed". iCombine "Hown Hclosed" gives %Hbad.
-    exfalso. rewrite dfrac_agree_op_valid in Hbad. naive_solver.
-  - destruct lookup eqn:Hlookup.
-    { simpl. apply lookup_lt_Some in Hlookup. word. }
-    iFrame.
-    iIntros "Hch". iMod "Hmask" as "_".
-    iMod ("Hclose" with "[-]"). { iFrame "∗#%". }
-    done.
+  iNext. iNamed "Hi". iFrame. destruct st. simpl in *.
+  destruct lookup eqn:Hlookup.
+  { exfalso. apply lookup_lt_Some in Hlookup. lia. }
+  destruct closed.
+  - iIntros "Hch". iMod "Hmask". destruct cl.
+    + iRight in "Hclosed". iCombine "Hclosed Hown" gives %Hbad%dfrac_agree_op_valid. naive_solver.
+    + iSpecialize ("HΦ" with "[$]"). iFrame. iMod ("Hclose" with "[-]"); last done. iFrame "∗#%".
+    + iLeft in "HΦ". iDestruct "Hclosed" as "[? ?]".
+      iSpecialize ("HΦ" with "[$]"). iFrame. iMod ("Hclose" with "[-]"); last done. iFrame "∗#%".
+  - iIntros "Hch". iMod "Hmask". destruct cl.
+    + iRight in "HΦ". iDestruct ("HΦ" with "[$]") as "$". iMod ("Hclose" with "[-]"); last done.
+      iFrame "∗#%".
+    + iCombine "Hopen Hown" gives %Hbad%dfrac_agree_op_valid. naive_solver.
+    + iRight in "HΦ". iDestruct ("HΦ" with "[$]") as "$". iMod ("Hclose" with "[-]"); last done.
+      iFrame "∗#%".
 Qed.
 
-Lemma is_closed_chan_nonblocking_receive ch Pclosed Φ Φnotready :
-  is_closed_chan ch Pclosed -∗
-  Φ (#(), #false)%V -∗ nonblocking_receive_atomic_update unit ch Φ Φnotready.
+Lemma wp_closeable_chan_close ch Pclosed :
+  {{{ own_closeable_chan ch Pclosed Open ∗ □ Pclosed }}}
+  chan.close #ch
+  {{{ RET #(); own_closeable_chan ch Pclosed Closed }}}.
 Proof.
-  iIntros "(% & H & #His)". iNamed "H". iIntros "HΦ". rewrite /nonblocking_receive_atomic_update. iFrame "#".
-  iInv "Hinv" as "Hi" "Hclose". iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
-  iNext. iNamed "Hi". iFrame.
-  destruct decide as [|].
-  - destruct st. destruct a as [? ?]. subst. simpl in *. iIntros "Hch".
-    iFrame. iMod "Hmask". iMod ("Hclose" with "[-]"); last done. iFrame "∗#%".
-  - destruct st. simpl in *. destruct closed; first lia.
-    iCombine "His Hopen" gives %Hbad%dfrac_agree_op_valid. exfalso. naive_solver.
-Qed.
-
-Lemma wp_closeable_chan_close ch Pclosed Φ :
-  own_closeable_chan ch Pclosed ∗ □ Pclosed -∗
-  Φ #() -∗
-  WP chan.close #ch {{ Φ }}.
-Proof.
-  iIntros "(Hown & #HP) HΦ". iDestruct "Hown" as (?) "(His & Hown)". iNamed "His".
+  wp_start as "[Hown #?]". iNamed "Hown". iNamed "Hinv".
   unshelve wp_apply (wp_chan_close with "[$]"); try tc_solve.
   iInv "Hinv" as "Hi" "Hclose". iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
   iNext. iNamed "Hi". iFrame. destruct (st.(chanstate.closed)).
@@ -124,16 +129,15 @@ Proof.
   iCombine "Hown Hopen" as "Hown". rewrite -dfrac_agree_op dfrac_op_own Qp.half_half.
   iMod (own_update _ _ (to_dfrac_agree DfracDiscarded true) with "Hown") as "#H".
   { apply cmra_update_exclusive. done. }
-  iMod ("Hclose" with "[-]"); last done.
-  iFrame "∗#%".
+  iSpecialize ("HΦ" with "[$]"). iFrame.
+  iMod ("Hclose" with "[-]"); last done. iFrame "∗#%".
 Qed.
 
 Lemma alloc_closeable_chan {E} Pclose ch (s : chanstate.t unit) :
   s.(chanstate.received) = length s.(chanstate.sent) →
   s.(chanstate.closed) = false →
   own_chan ch s ={E}=∗
-  is_closeable_chan ch Pclose ∗
-  own_closeable_chan ch Pclose.
+  own_closeable_chan ch Pclose Open.
 Proof.
   intros ? Hnotclosed. iIntros "Hch". iDestruct (own_chan_is_chan with "Hch") as "#His".
   iMod (own_alloc
@@ -148,5 +152,10 @@ Proof.
   iFrame. rewrite Hnotclosed. iFrame. simpl.
   iPureIntro. split; [done|lia].
 Qed.
+
+Lemma own_closeable_chan_Unknown ch Pclose cl :
+  own_closeable_chan ch Pclose cl -∗
+  own_closeable_chan ch Pclose Unknown.
+Proof. iNamed 1. iFrame "#". Qed.
 
 End proof.

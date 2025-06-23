@@ -89,17 +89,16 @@ Definition nonblocking_receive_atomic_update ch Φok Φnotready : iProp Σ :=
   is_chan V ch ∗
   |={⊤,∅}=>
     ▷∃ s, own_chan ch s ∗
-          if decide (s.(chanstate.closed) = true ∧ length s.(chanstate.sent) ≤ s.(chanstate.received)) then
-            (own_chan ch s ={∅,⊤}=∗ (Φok (#(default_val V), #false)%V))
-          else
-            match s.(chanstate.sent) !! s.(chanstate.received) with
-            | None => own_chan ch s ={∅,⊤}=∗ Φnotready
-            | Some v => own_chan ch (set chanstate.received S s) ={∅,⊤}=∗ Φok (#v, #true)%V
-            end
+          match s.(chanstate.sent) !! s.(chanstate.received) with
+          | None =>
+              (if s.(chanstate.closed) then
+                 (own_chan ch s ={∅,⊤}=∗ (Φok (#(default_val V), #false)%V))
+               else own_chan ch s ={∅,⊤}=∗ Φnotready)
+          | Some v => own_chan ch (set chanstate.received S s) ={∅,⊤}=∗ Φok (#v, #true)%V
+          end
 .
 
 Definition nonblocking_send_atomic_update ch (v : V) Φok Φnotready : iProp Σ :=
-  (* if there's enough space *)
   is_chan V ch ∗
   |={⊤,∅}=>
     ▷∃ s, own_chan ch s ∗ ⌜ s.(chanstate.closed) = false ⌝ ∗

@@ -21,30 +21,46 @@ Context `{!goGlobalsGS Σ}.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
-Program Instance : IsPkgInit math :=
+#[global]
+Program Instance is_pkg_init_math : IsPkgInit math :=
   ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit zapcore :=
-  ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit zap :=
-  ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit time :=
-  ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit strings :=
-  ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit fmt :=
-  ltac2:(build_pkg_init ()).
-
-Program Instance : IsPkgInit errors :=
-  ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_math.
 
 #[global]
-Program Instance : IsPkgInit concurrency :=
+Program Instance is_pkg_init_zapcore : IsPkgInit zapcore :=
   ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_zapcore.
+
+#[global]
+Program Instance is_pkg_init_zap : IsPkgInit zap :=
+  ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_zap.
+
+#[global]
+Program Instance is_pkg_init_time : IsPkgInit time :=
+  ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_time.
+
+#[global]
+Program Instance is_pkg_init_strings : IsPkgInit strings :=
+  ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_strings.
+
+#[global]
+Program Instance is_pkg_init_fmt : IsPkgInit fmt :=
+  ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_fmt.
+
+#[global]
+Program Instance is_pkg_init_errors : IsPkgInit errors :=
+  ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_errors.
+
+#[global]
+Program Instance is_pkg_init_concurrency : IsPkgInit concurrency :=
+  ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_concurrency.
+#[local] Transparent is_pkg_init_concurrency.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   ∃ cl donec,
@@ -55,7 +71,7 @@ Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   "#donec" ∷ s ↦s[concurrency.Session :: "donec"]□ donec ∗
   (* One can keep calling receive, and the only thing they might get back is a
      "closed" value. *)
-  "#Hdonec" ∷ is_closeable_chan donec True.
+  "#Hdonec" ∷ own_closeable_chan donec True closeable.Unknown.
 
 #[global] Opaque is_Session.
 #[local] Transparent is_Session.
@@ -127,9 +143,10 @@ Proof.
   wp_alloc s as "Hs".
   wp_auto.
   iPersist "cancel donec keepAlive".
-  iMod (alloc_closeable_chan True with "Hdonec") as "[#Hdonec_closeable Hdonec_tok]"; [done..|].
+  iMod (alloc_closeable_chan True with "Hdonec") as "Hdonec_open"; [done..|].
+  iDestruct (own_closeable_chan_Unknown with "[$]") as "#?".
   rewrite -wp_fupd.
-  wp_apply (wp_fork with "[Hdonec_tok Hcancel]").
+  wp_apply (wp_fork with "[Hdonec_open Hcancel]").
   {
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
@@ -144,7 +161,7 @@ Proof.
       iMod ("Hkrecv1" with "[$]") as "_".
       iModIntro.
       wp_auto.
-      wp_apply (wp_closeable_chan_close with "[$Hdonec_tok]").
+      wp_apply (wp_closeable_chan_close with "[$Hdonec_open]") as "_".
       { iFrame "#". done. }
       wp_apply "Hcancel".
       done.
@@ -183,7 +200,7 @@ Qed.
 Lemma wp_Session__Done s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
     s @ concurrency @ "Session'ptr" @ "Done" #()
-  {{{ ch, RET #ch; is_closeable_chan ch True }}}.
+  {{{ ch, RET #ch; own_closeable_chan ch True closeable.Unknown }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
 Qed.
