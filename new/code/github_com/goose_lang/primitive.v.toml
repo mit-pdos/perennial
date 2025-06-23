@@ -8,5 +8,6 @@ trusted = [
   "UInt64Put",
   "Assume",
   "RandomUint64",
+  "AssumeNoStringOverflow",
   # FIXME: add remaining functions
 ]

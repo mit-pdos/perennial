@@ -42,5 +42,9 @@ Global Instance wp_func_call_Assume :
   WpFuncCall primitive "Assume" _ (is_pkg_defined primitive) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_AssumeNoStringOverflow :
+  WpFuncCall primitive "AssumeNoStringOverflow" _ (is_pkg_defined primitive) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 End names.
 End primitive.
