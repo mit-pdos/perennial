@@ -36,4 +36,19 @@ Proof.
   done.
 Qed.
 
+Lemma wp_AssumeNoStringOverflow (s: byte_string) :
+  {{{ is_pkg_init primitive }}}
+    primitive@"AssumeNoStringOverflow" #s
+  {{{ RET #(); ⌜Z.of_nat (length s) < 2^64⌝ }}}.
+Proof.
+  wp_start as "_".
+  wp_call.
+  wp_if_destruct.
+  - iApply "HΦ". done.
+  - iLöb as "IH".
+    wp_pures.
+    iApply "IH".
+    iApply "HΦ".
+Qed.
+
 End wps.

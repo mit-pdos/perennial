@@ -78,4 +78,7 @@ this in GooseLang, so we just loop. *)
 
   Definition Linearize : val := λ: <>, #().
 
+  Definition AssumeNoStringOverflow : val :=
+    λ: "s", Assume (IsNoStringOverflow "s").
+
 End code.
