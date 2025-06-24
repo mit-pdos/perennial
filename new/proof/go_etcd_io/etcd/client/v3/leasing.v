@@ -343,6 +343,23 @@ Qed.
 Definition num_lkvs : Z := rwmutex.actualMaxReaders - 1.
 Local Hint Unfold num_lkvs : word.
 
+Program Definition own_RWMutex_sealed := sealed own_RWMutex.
+
+(* FIXME: how to avoid this?
+   This removes [name :: _] in the goal when trying to frame.
+
+   This has lower cost than [frame_here] because [frame_here] causes unification
+   between [name :: Q] and [Q], which sometimes hangs. This instance tries to
+   immediately get rid of [named] before recursively looking for a [Frame]
+   instance.
+
+   Q: [frame_here_absorbing] has the same cost, so why doesn't that get applied
+   first and cause the same problem?
+*)
+Instance frame_named {PROP : bi} p (P Q R : PROP) name :
+  Frame p P Q R → Frame p P (name ∷ Q) R | 0.
+Proof. unfold named. done. Qed.
+
 (* FIXME: tie γetcd to γ. *)
 Lemma wp_NewKV cl γetcd (pfx : go_string) :
   {{{
@@ -415,15 +432,53 @@ Proof.
   iAssert (own_leasingKV lkv ltac:(econstructor)) with "[Hmu]" as "Hlkv".
   { Time iFrame "Hcl". Time iFrame "∗#". }
 
-  wp_apply (wp_fork with "[Hwg_done1 session_monitor Hlkv]").
+  iCombineNamed "*_monitor" as "Hmonitor".
+  wp_apply (wp_fork with "[Hwg_done1 Hmonitor Hlkv]").
   {
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
-    wp_apply (wp_leasingKV__monitorSession with "[session_monitor Hlkv]").
-    { iClear "#". (* NOTE: ~90seconds to get here without omit-proofs; ~45 seconds with omit-proofs *)
+    wp_apply (wp_leasingKV__monitorSession with "[Hmonitor Hlkv]").
+    { iNamed "Hmonitor". iFrame. iExists true. iFrame. }
+    (*
       iSplitL "Hlkv".
       {
+        iApply to_named.
+        Fail Timeout 4 set (x:= _ : (Frame false (own_leasingKV lkv {| etcd_gn := γetcd; entries_ready_gn := γready |})
+           ("Hown_kv" ∷ own_leasingKV lkv _) _)).
+
+        Opaque own_leasingKV.
+        set (x := (λ y, ⌜ y = O⌝%I : iProp Σ)).
+
+        Definition own_leasingKV2 (lkv : loc) γ : iProp Σ :=
+          ∃ (cl : loc) (ctx : context.Context.t) ctx_st,
+            "#cl" ∷ lkv ↦s[leasing.leasingKV :: "cl"]□ cl ∗
+            "#Hcl" ∷ is_Client cl γ.(etcd_gn) ∗
+            "#ctx" ∷ lkv ↦s[leasing.leasingKV::"ctx"]□ ctx ∗
+            "#Hctx" ∷ is_Context ctx ctx_st ∗
+            "#session_opts" ∷ lkv ↦s[leasing.leasingKV :: "sessionOpts"]□ slice.nil ∗
+            "Hmu" ∷ own_RWMutex (struct.field_ref_f leasing.leaseCache "mu" (struct.field_ref_f leasing.leasingKV "leases" lkv))
+              (own_leasingKV_locked lkv γ).
+
+        Time eunify
+          (named "ok" (own_leasingKV2 lkv {| etcd_gn := γetcd; entries_ready_gn := γready |}))
+          (named "ok" (own_leasingKV2 lkv _)). (* Slow *)
+        Time eunify
+          ("other" ∷ own_leasingKV lkv {| etcd_gn := γetcd; entries_ready_gn := γready |})
+          ("1" ∷ own_leasingKV lkv _). (* Slow *)
+        Time eunify
+          (own_leasingKV2 lkv {| etcd_gn := γetcd; entries_ready_gn := γready |})
+          (own_leasingKV2 lkv _). (* Fast *)
+        (* FIXME: sealing allows unification to suceed, albeit still kinda slowly. *)
+        eunify
+          ("other" ∷ own_leasingKV2 lkv {| etcd_gn := γetcd; entries_ready_gn := γready |})
+            (own_leasingKV2 lkv _).
+
+        iFrame "Hlkv".
+        iExact "Hlkv".
+
+        Set Typeclasses Debug.
+        Set Debug "tactic-unification".
         (* FIXME: iFrame timing out. *)
         (*
         iFrame "Hlkv". iApply to_named. iExactEq "Hlkv". done. }
@@ -432,21 +487,22 @@ Proof.
       iSplitR.
       { Time solve_pkg_init. (* FIXME: solve_pkg_init is pretty slow here. *) }
       (* ~13 seconds. *)
-      iFrame "∗#".
-    }
-    iNext. iIntros "_". wp_auto.
+      iFrame "∗#". *)
+    } *)
     wp_apply "Hwg_done1".
-    { admit. (* FIXME: [is_pkg_init] got unfolded.... *) }
     done.
   }
+  iPersist "cctx".
   wp_apply (wp_fork with "[Hwg_done2]").
   {
+    wp_apply wp_with_defer as "%defer defer".
+    simpl subst.
+    wp_auto.
     (* TODO: wp_clearOldRevokes. *)
     admit.
   }
   (* TODO: wp_waitSession. *)
-  admit. *)
+  admit.
 Admitted.
-
 
 End proof.
