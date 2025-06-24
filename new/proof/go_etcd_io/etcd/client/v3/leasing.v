@@ -340,7 +340,77 @@ Proof.
   }
 Qed.
 
-Definition num_lkvs : Z := rwmutex.actualMaxReaders - 1.
+Definition own_leaseCache (lc : loc) γ : iProp Σ :=
+  ∃ P,
+  "Hmu" ∷ own_RWMutex (struct.field_ref_f leasing.leaseCache "mu" lc) P ∗
+  "#HP" ∷ □(∀ q, P q -∗ own_leaseCache_locked lc γ q ∗ (own_leaseCache_locked lc γ q -∗ P q)).
+
+(* FIXME: move to `time` *)
+(* 1.23 model: chan is unbuffered. *)
+Lemma wp_After (d : time.Duration.t) :
+  {{{ True }}}
+    time @ "After" #d
+  {{{
+        ch, RET #ch;
+        is_chan time.Time.t ch ∗
+        (* Q: is it OK for the user to send on this channel? *)
+        inv nroot (∃ (st : chanstate.t time.Time.t), own_chan ch st ∗
+                         (⌜ st.(chanstate.cap) = 0 ∧
+                            st.(chanstate.closed) = false ⌝)
+          )
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_clearOldRevokes lc γ ctx ctx_desc :
+  {{{ is_pkg_init leasing ∗ own_leaseCache lc γ ∗ is_Context ctx ctx_desc }}}
+    lc @ leasing @ "leaseCache'ptr" @ "clearOldRevokes" #ctx
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start as "[Hlc #Hctx]". wp_auto.
+  wp_for.
+  wp_apply wp_After.
+  iIntros (after_ch) "#[after_ch Hafter_ch]".
+  wp_auto.
+  iNamed "Hctx".
+  wp_apply "HDone".
+  wp_apply wp_chan_select_blocking.
+  rewrite big_andL_cons.
+  iSplit.
+  { repeat iExists _.
+    iApply closeable_chan_receive.
+    { iExactEq "HDone_ch".
+      f_equal.
+      admit. (* FIXME: another duplicate [inG] problem *) }
+    iIntros "_". wp_auto. wp_for_post. iApply "HΦ". done. }
+  rewrite big_andL_cons big_andL_nil.
+  iSplit; last done. repeat iExists _.
+  iFrame "#". iInv "Hafter_ch" as ">Hi" "Hclose".
+  iDestruct "Hi" as (?) "[Hafter_ch_own %Hafter_ch]".
+  iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
+  iExists _; iFrame. rewrite decide_False.
+  2:{ destruct Hafter_ch. apply not_and_r. left. congruence. }
+  iNext. iIntros "Hafter_ch_own".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[Hafter_ch_own]") as "_". { iFrame "∗%". }
+  iModIntro. clear Hafter_ch.
+  iInv "Hafter_ch" as ">Hi" "Hclose".
+  iDestruct "Hi" as (?) "[Hafter_ch_own %Hafter_ch]".
+  iApply fupd_mask_intro; first solve_ndisj. iIntros "Hmask".
+  iFrame. iNext. iIntros (t) "_ Hafter_ch_own".
+  iMod "Hmask" as "_".
+  iMod ("Hclose" with "[Hafter_ch_own]") as "_". { iFrame "∗%". }
+  iModIntro. wp_auto. iNamed "Hlc".
+  wp_apply (wp_RWMutex__Lock with "[$Hmu]").
+  iIntros "[Hlocked Hown]". wp_auto.
+  iDestruct ("HP" with "Hown") as "[Hown HcloseP]". iNamed "Hown".
+  wp_auto.
+  (* Search map.for_range. *)
+  (* FIXME: need reasoning principle for [map.for_range] *)
+  admit.
+Admitted.
+
+Definition num_lkvs : Z := rwmutex.actualMaxReaders - 2.
 Local Hint Unfold num_lkvs : word.
 
 Program Definition own_RWMutex_sealed := sealed own_RWMutex.
@@ -375,7 +445,7 @@ Proof.
   iDestruct (is_Client_to_pub with "[$]") as "#Hclient_pub".
   iNamed "Hclient_pub".
   wp_apply (wp_WithCancel True with "Hclient_ctx").
-  iIntros "* #(Hctx' & Hcancel_spec & Hctx_done)".
+  iIntros "* #[Hcancel_fn Hctx']".
   wp_auto.
   unshelve wp_apply wp_map_make as "%revokes revokes"; try tc_solve; try tc_solve.
   { done. }
@@ -406,7 +476,7 @@ Proof.
   { solve_ndisj. }
   replace (Z.to_nat (sint.Z (W32 2))) with (2%nat) by done.
   iEval (simpl) in "H".
-  iDestruct "H" as "[Hwg_done1 Hwg_done2]".
+  iDestruct "H" as "(Hwg_done1 & Hwg_done2 & _)".
 
   iPersist "Hcl Hkv Hctx HsessionOpts".
   iDestruct (struct_fields_split with "Hleases") as "H".
@@ -424,13 +494,17 @@ Proof.
   { iFrame "∗#%". iExists ∅, false. iFrame. iSplit; first done.
     iApply big_sepM_empty. done. }
 
-  replace (rwmutex.actualMaxReaders) with (1 + num_lkvs).
+  replace (rwmutex.actualMaxReaders) with (1 + 1 + num_lkvs).
   2:{ unfold num_lkvs. word. }
   rewrite Z2Nat.inj_add //.
-  rewrite -> replicate_S.
+  rewrite -> replicate_add.
   iDestruct ("Hmus") as "[Hmu Hmus]".
-  iAssert (own_leasingKV lkv ltac:(econstructor)) with "[Hmu]" as "Hlkv".
+  iDestruct "Hmu" as "(Hmu1 & Hmu2 & _)".
+  iAssert (own_leasingKV lkv ltac:(econstructor)) with "[Hmu1]" as "Hlkv".
   { Time iFrame "Hcl". Time iFrame "∗#". }
+  iAssert (own_leaseCache (struct.field_ref_f leasing.leasingKV "leases" lkv) ltac:(econstructor))
+            with "[Hmu2]" as "Hlc".
+  { iFrame "Hmu2". iClear "#". iIntros "!# *". iNamed 1. iFrame. iIntros "H". iFrame "∗#". }
 
   iCombineNamed "*_monitor" as "Hmonitor".
   wp_apply (wp_fork with "[Hwg_done1 Hmonitor Hlkv]").
@@ -493,13 +567,15 @@ Proof.
     done.
   }
   iPersist "cctx".
-  wp_apply (wp_fork with "[Hwg_done2]").
+  wp_apply (wp_fork with "[Hwg_done2 Hlc]").
   {
     wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
-    (* TODO: wp_clearOldRevokes. *)
-    admit.
+    wp_apply (wp_clearOldRevokes with "[Hlc]").
+    { iFrame "Hlc Hctx'". }
+    wp_apply "Hwg_done2".
+    done.
   }
   (* TODO: wp_waitSession. *)
   admit.

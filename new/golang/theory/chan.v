@@ -31,6 +31,10 @@ Global Instance is_chan_pers ch : Persistent (is_chan ch).
 Admitted.
 Definition own_chan (ch: chan.t) (s : chanstate.t V) : iProp Σ.
 Admitted.
+
+#[global] Instance own_chan_timeless ch s : Timeless (own_chan ch s).
+Admitted.
+
 End chan.
 
 Arguments is_chan {_ _ _ _ _ _} (_) {_} ch.
