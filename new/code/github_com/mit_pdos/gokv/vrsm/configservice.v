@@ -602,7 +602,7 @@ Definition Server__TryWriteConfig : val :=
             then break: #()
             else do:  #());;;
             do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"New config is:"%go) in
-            let: "$sl1" := (interface.make #"slice'"%go (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st")))) in
+            let: "$sl1" := (interface.make #""%go #"slice'"%go (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st")))) in
             slice.literal #interfaceT ["$sl0"; "$sl1"])) in
             (func_call #log.log #"Println"%go) "$a0");;;
             let: "$r0" := (let: "$a0" := #slice.nil in

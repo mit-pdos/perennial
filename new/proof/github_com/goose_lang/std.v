@@ -2,6 +2,8 @@ From New.proof Require Import proof_prelude.
 From New.generatedproof.github_com.goose_lang Require Export std.
 From New.proof Require Import github_com.goose_lang.primitive std.std_core sync.
 
+Set Default Proof Using "Type".
+
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.

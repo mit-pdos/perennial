@@ -2496,6 +2496,18 @@ Global Instance wp_func_call_convertToAlias :
   WpFuncCall unittest "convertToAlias" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_typeAssertInt :
+  WpFuncCall unittest "typeAssertInt" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_wrapUnwrapInt :
+  WpFuncCall unittest "wrapUnwrapInt" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_checkedTypeAssert :
+  WpFuncCall unittest "checkedTypeAssert" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_variadicFunc :
   WpFuncCall unittest "variadicFunc" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).

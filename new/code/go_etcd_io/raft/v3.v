@@ -7779,10 +7779,10 @@ Definition DescribeConfState : val :=
   rec: "DescribeConfState" "state" :=
     exception_do (let: "state" := (mem.alloc "state") in
     return: (let: "$a0" := #"Voters:%v VotersOutgoing:%v Learners:%v LearnersNext:%v AutoLeave:%v"%go in
-     let: "$a1" := ((let: "$sl0" := (interface.make #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"Voters"%go "state"))) in
-     let: "$sl1" := (interface.make #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"VotersOutgoing"%go "state"))) in
-     let: "$sl2" := (interface.make #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"Learners"%go "state"))) in
-     let: "$sl3" := (interface.make #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"LearnersNext"%go "state"))) in
+     let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"Voters"%go "state"))) in
+     let: "$sl1" := (interface.make #""%go #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"VotersOutgoing"%go "state"))) in
+     let: "$sl2" := (interface.make #""%go #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"Learners"%go "state"))) in
+     let: "$sl3" := (interface.make #""%go #"slice'"%go (![#sliceT] (struct.field_ref #raftpb.ConfState #"LearnersNext"%go "state"))) in
      let: "$sl4" := (interface.make #""%go #"bool"%go (![#boolT] (struct.field_ref #raftpb.ConfState #"AutoLeave"%go "state"))) in
      slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
      (func_call #fmt.fmt #"Sprintf"%go) "$a0" "$a1")).
@@ -7838,7 +7838,7 @@ Definition DescribeReady : val :=
       do:  (let: "$a0" := (interface.make #strings #"Builder'ptr" "buf") in
       let: "$a1" := #"ReadStates %v
       "%go in
-      let: "$a2" := ((let: "$sl0" := (interface.make #"slice'"%go (![#sliceT] (struct.field_ref #Ready #"ReadStates"%go "rd"))) in
+      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"slice'"%go (![#sliceT] (struct.field_ref #Ready #"ReadStates"%go "rd"))) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.fmt #"Fprintf"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
@@ -8085,7 +8085,7 @@ Definition DescribeEntry : val :=
       let: "$r0" := (λ: "data",
         exception_do (let: "data" := (mem.alloc "data") in
         return: (let: "$a0" := #"%q"%go in
-         let: "$a1" := ((let: "$sl0" := (interface.make #"slice'"%go (![#sliceT] "data")) in
+         let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"slice'"%go (![#sliceT] "data")) in
          slice.literal #interfaceT ["$sl0"])) in
          (func_call #fmt.fmt #"Sprintf"%go) "$a0" "$a1"))
         ) in

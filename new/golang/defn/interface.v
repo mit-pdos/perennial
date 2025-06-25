@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.defn Require Import struct typing globals.
+From New.golang.defn Require Import struct dynamic_typing globals.
 From Perennial Require Import base.
 
 Module interface.
@@ -39,6 +39,31 @@ Definition eq : val :=
                         #false
                   end
     end.
+
+(* Models x.(T) - this checks the type of the value stored in interface object x
+and also returns it. *)
+Definition type_assert : val :=
+  λ: "v" "expected_pkg" "expected_type",
+    let: "v" := globals.unwrap "v" in
+    let: (("pkg", "type"), "underlying_v") := "v" in
+    if: ("pkg" = "expected_pkg") && ("type" = "expected_type") then
+    "underlying_v"
+    else Panic "coerce failed: wrong type".
+
+(* Models v, ok := x.(T) - this checks the type and returns a boolean on
+success. The type "T" is used to return the correct default value if the type
+assertion fails. *)
+Definition checked_type_assert : val :=
+  λ: "T" "v" "expected_pkg" "expected_type",
+    match: "v" with
+      SOME "v" =>
+        (let: (("pkg", "type"), "underlying_v") := "v" in
+        if: ("pkg" = "expected_pkg") && ("type" = "expected_type")
+        then ("underlying_v", #true)
+        else (type.zero_val "T", #false))
+     (* if the interface is nil, checked type assertions just return false *)
+     | NONE => (type.zero_val "T", #false)
+     end.
 
 End goose_lang.
 End interface.

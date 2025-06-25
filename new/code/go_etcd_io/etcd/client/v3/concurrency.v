@@ -1479,7 +1479,7 @@ Definition runSTM : val :=
         then
           let: "ok" := (mem.alloc (type.zero_val #boolT)) in
           let: "e" := (mem.alloc (type.zero_val #stmError)) in
-          let: ("$ret0", "$ret1") := (![#interfaceT] "r") in
+          let: ("$ret0", "$ret1") := (interface.checked_type_assert #stmError (![#interfaceT] "r") #concurrency.concurrency #"stmError") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  ("e" <-[#stmError] "$r0");;;

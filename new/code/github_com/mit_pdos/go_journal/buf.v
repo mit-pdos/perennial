@@ -167,7 +167,7 @@ Definition Buf__Install : val :=
     do:  (let: "$a0" := #(W64 20) in
     let: "$a1" := #"install -> %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #"slice'"%go (![#sliceT] "blk")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"slice'"%go (![#sliceT] "blk")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     return: #()).
