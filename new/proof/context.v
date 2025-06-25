@@ -27,10 +27,10 @@ Record t :=
       (* Deadline : time.Time.t  *)
       Deadline : option w64;
       Done: chan.t;
-      PCancel : PROP;
+      PDone: PROP;
     }.
 Global Instance eta : Settable _ :=
-  settable! mk <Values; Deadline; Done; PCancel>.
+  settable! mk <Values; Deadline; Done; PDone>.
 End defn.
 End Context_desc.
 
@@ -62,9 +62,8 @@ Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
   "#HErr" ∷
     {{{ True }}}
       interface.get #"Err" #c #()
-    {{{ (err : interface.t), RET #err; True }}} ∗
-  "#HDone_ch" ∷ own_closeable_chan s.(Done) s.(PCancel) closeable.Unknown
-.
+    {{{ err, RET #err; own_closeable_chan s.(Done) s.(PDone) closeable.Closed ∗-∗ ⌜ err ≠ interface.nil ⌝ }}} ∗
+  "#HDone_ch" ∷ own_closeable_chan s.(Done) s.(PDone) closeable.Unknown.
 
 (*
 From the docs for `WithCancel`:
@@ -82,15 +81,15 @@ would be a liveness property. But should be able to do the converse.
 Should be able to prove that if the returned context's Done channel is closed,
 then (cancel was run) ∨ (chan.is_closed ctx.Done). *)
 
-Lemma wp_WithCancel PCancel' (ctx : interface.t) ctx_desc :
+Lemma wp_WithCancel PDone' (ctx : interface.t) ctx_desc :
   {{{
         is_Context ctx ctx_desc
   }}}
     context @ "WithCancel" #ctx
   {{{
         ctx' done' (cancel : func.t), RET (#ctx', #cancel);
-        {{{ PCancel' }}} #cancel #() {{{ RET #(); True }}} ∗
-        is_Context ctx' (ctx_desc <| PCancel := ctx_desc.(PCancel) ∨ PCancel' |> <|Done := done'|> )
+        {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗
+        is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
   }}}.
 Proof.
 Admitted.

@@ -466,21 +466,21 @@ Proof.
   iSplit.
   {
     repeat iExists _.
-    iApply closeable_chan_receive.
-    { iExactEq "HDone_ch_lkv". f_equal. admit. (* FIXME: multiple inG *) }
-    iIntros "_". wp_auto. wp_apply "HErr_lkv". iIntros "* _".
-    wp_auto. admit.
-    (* FIXME: need to know if ctx.Done() is closed, then ctx.Err() is non-nil. *)
+    iApply (closeable_chan_receive (closeable_chanG0:=clientv3_contextG.(closeable_inG))
+             with "[$HDone_ch_lkv]"). (* FIXME: multiple [inG]s *)
+    iIntros "[_ Hclosed]". wp_auto. wp_apply "HErr_lkv". iIntros "* Herr".
+    iLeft in "Herr". iDestruct ("Herr" with "[$]") as %Herr. wp_auto. iApply "HΦ".
+    rewrite (decide_False (P:=err = interface.nil)) //. iFrame "∗#".
   }
   {
     repeat iExists _.
-    iApply closeable_chan_receive.
-    { iExactEq "HDone_ch". f_equal. admit. (* FIXME: multiple inG *) }
-    iIntros "_". wp_auto. wp_apply "HErr". iIntros "* _".
-    wp_auto. admit.
-    (* FIXME: need to know if ctx.Done() is closed, then ctx.Err() is non-nil. *)
+    iApply (closeable_chan_receive (closeable_chanG0:=clientv3_contextG.(closeable_inG))
+             with "[$HDone_ch]"). (* FIXME: multiple [inG]s *)
+    iIntros "[_ Hclosed]". wp_auto. wp_apply "HErr". iIntros "* Herr".
+    iLeft in "Herr". iDestruct ("Herr" with "[$]") as %Herr. wp_auto. iApply "HΦ".
+    rewrite (decide_False (P:=err = interface.nil)) //. iFrame "∗#".
   }
-Admitted.
+Qed.
 
 (* FIXME: tie γetcd to γ. *)
 Lemma wp_NewKV cl γetcd (pfx : go_string) :
@@ -641,9 +641,6 @@ Proof.
   { iFrame "∗#%". }
   iIntros (err) "Hmaybe_ready".
   wp_auto.
-  iApply "HΦ".
-  (* TODO: wp_waitSession. *)
-  admit.
 Admitted.
 
 End proof.
