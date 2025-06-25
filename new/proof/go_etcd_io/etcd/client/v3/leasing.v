@@ -188,6 +188,9 @@ Definition own_leasingKV (lkv : loc) γ : iProp Σ :=
 #[global] Opaque own_leasingKV.
 #[local] Transparent own_leasingKV.
 
+Instance own_leasingKV_locked_frac lkv γ : fractional.Fractional (own_leasingKV_locked lkv γ).
+Proof. Admitted.
+
 Lemma wp_leasingKV__monitorSession lkv γ :
   {{{
       is_pkg_init leasing ∗
@@ -482,6 +485,18 @@ Proof.
   }
 Qed.
 
+Axiom own_KV : ∀ (kv : interface.t) (γetcd : clientv3_names), iProp Σ.
+
+(* FIXME: [own_leasingKV] should contain [is_entries_ready]. Can have a special
+   version that doesn't have [is_entries_ready] for the goroutines kicked off
+   inside [NewKV]. *)
+Lemma own_leasingKV_own_KV lkv γ :
+  is_entries_ready γ -∗
+  own_leasingKV lkv γ -∗
+  own_KV (interface.mk leasing "leasingKV'ptr" #lkv) γ.(etcd_gn).
+Proof.
+Admitted.
+
 (* FIXME: tie γetcd to γ. *)
 Lemma wp_NewKV cl γetcd (pfx : go_string) :
   {{{
@@ -489,11 +504,13 @@ Lemma wp_NewKV cl γetcd (pfx : go_string) :
       "#Hcl" ∷ is_Client cl γetcd
   }}}
     leasing @ "NewKV" #cl #pfx #slice.nil
-  {{{ γ lkv, RET #lkv; is_entries_ready γ ∗ [∗] replicate (Z.to_nat num_lkvs) (own_leasingKV lkv γ) }}}.
-(* FIXME: [own_leasingKV] should contain [is_entries_ready]. Can have a special
-   version that doesn't have [is_entries_ready] for the goroutines kicked off
-   inside [NewKV]. *)
-Proof.
+  {{{ kv (close : func.t) err, RET (#kv, #close, #err);
+      if decide (err = interface.nil) then
+        [∗] replicate (Z.to_nat num_lkvs) (own_KV kv γetcd)
+        (* {{{ True }}} #close #() {{{ RET #(); True }}} *) (* FIXME: need to have own_leasingKV for this, so not persistent.... *)
+      else True
+  }}}.
+Proof using Type*.
   wp_start. iNamed "Hpre".
   wp_auto.
   wp_apply (wp_Client__Ctx with "[$]") as "* #Hclient_ctx".
@@ -545,7 +562,10 @@ Proof.
   iMod (init_RWMutex
           (own_leasingKV_locked lkv {| etcd_gn := γetcd; entries_ready_gn := γready |} )
          with "[] [Hentries_ready Hentries Hrevokes Hcancel HsessionOpts session sessionc Hwg_wait revokes] [$]") as "Hmus".
-  { admit. } (* TODO: fractional *)
+  {
+    iIntros "!# *". rewrite fractional.fractional //.
+    iDestruct equiv_wand_iff as "$". done.
+  }
   { iFrame "∗#%". iExists ∅, false. iFrame. iSplit; first done.
     iApply big_sepM_empty. done. }
 
@@ -639,8 +659,34 @@ Proof.
   iDestruct "Hmus" as "[Hmu Hmus]".
   wp_apply (wp_leasingKV__waitSession with "[Hmu]").
   { iFrame "∗#%". }
-  iIntros (err) "Hmaybe_ready".
+  iIntros (err) "[Hmu Hmaybe_ready]".
   wp_auto.
-Admitted.
+  iApply "HΦ".
+  destruct decide.
+  2:{ done. }
+  iDestruct "Hmaybe_ready" as "#Hready".
+  rewrite -> replicate_S.
+  iSplitL "Hmu".
+  { iDestruct (own_leasingKV_own_KV with "[$] [$]") as "$". }
+  Search big_sepL.
+  iDestruct (big_sepL2_const_sepL_r with "[$Hmus]") as "H".
+  2:{
+    iDestruct (big_sepL2_impl _ (λ _ x _, x) with "H []") as "H".
+    2:{
+      iDestruct big_sepL2_const_sepL_l  as "[Hlem _]".
+      iDestruct ("Hlem" with "H") as "H".
+      instantiate (1:=replicate _ _).
+      iRight in "H".
+      iFrame "H".
+    }
+    iIntros "!# * %Hin %Hin2".
+    rewrite -> lookup_replicate in Hin, Hin2. destruct Hin as [? _].
+    destruct Hin2 as [? _]. subst.
+    iIntros "Hown".
+    iApply (own_leasingKV_own_KV with "[$] [-]").
+    iFrame "∗#%".
+  }
+  iPureIntro. len.
+Qed.
 
 End proof.
