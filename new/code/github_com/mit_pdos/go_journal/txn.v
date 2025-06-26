@@ -60,7 +60,7 @@ Definition Begin : val :=
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"tp Begin: %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #txn.txn #"Txn'ptr" (![#ptrT] "trans")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#txn.txn, #"Txn'ptr") (![#ptrT] "trans")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     return: (![#ptrT] "trans")).
@@ -228,7 +228,7 @@ Definition Txn__commitNoRelease : val :=
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"tp Commit %p
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #txn.txn #"Txn'ptr" (![#ptrT] "txn")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#txn.txn, #"Txn'ptr") (![#ptrT] "txn")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     return: (let: "$a0" := (![#boolT] "wait") in

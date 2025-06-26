@@ -115,7 +115,7 @@ Definition eStateMachine__applyVolatile : val :=
           do:  "$r0";;;
           do:  ("ret" <-[#sliceT] "$r1")
         else
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"unexpected ee op type"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected ee op type"%go) in
           Panic "$a0"))));;;
     return: (![#sliceT] "ret")).
 
@@ -126,17 +126,17 @@ Definition eStateMachine__applyReadonly : val :=
     let: "op" := (mem.alloc "op") in
     (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Got GETFRESHCID as a read-only op"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Got GETFRESHCID as a read-only op"%go) in
       Panic "$a0")
     else
       (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RW
       then
-        do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Got RW as a read-only op"%go) in
+        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Got RW as a read-only op"%go) in
         Panic "$a0")
       else
         (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) ≠ OPTYPE_RO
         then
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"unexpected ee op type"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected ee op type"%go) in
           Panic "$a0")
         else do:  #())));;;
     let: "n" := (mem.alloc (type.zero_val #intT)) in

@@ -217,8 +217,8 @@ Definition circularAppender__logBlocks : val :=
       do:  (let: "$a0" := #(W64 5) in
       let: "$a1" := #"logBlocks: %d to log block %d
       "%go in
-      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "blkno")) in
-      let: "$sl1" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "pos")) in
+      let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "blkno")) in
+      let: "$sl1" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "pos")) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
       do:  (let: "$a0" := (LOGSTART + ((![#LogPosition] "pos") `rem` LOGSZ)) in
@@ -402,9 +402,9 @@ Definition sliding__memWrite : val :=
         do:  (let: "$a0" := #(W64 5) in
         let: "$a1" := #"memWrite: absorb %d pos %d old %d
         "%go in
-        let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Update #"Addr"%go "buf"))) in
-        let: "$sl1" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "pos")) in
-        let: "$sl2" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "oldpos")) in
+        let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Update #"Addr"%go "buf"))) in
+        let: "$sl1" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "pos")) in
+        let: "$sl2" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "oldpos")) in
         slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
         (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
         do:  (let: "$a0" := (![#LogPosition] "oldpos") in
@@ -416,17 +416,17 @@ Definition sliding__memWrite : val :=
           do:  (let: "$a0" := #(W64 5) in
           let: "$a1" := #"memLogMap: replace %d pos %d old %d
           "%go in
-          let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Update #"Addr"%go "buf"))) in
-          let: "$sl1" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "pos")) in
-          let: "$sl2" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "oldpos")) in
+          let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Update #"Addr"%go "buf"))) in
+          let: "$sl1" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "pos")) in
+          let: "$sl2" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "oldpos")) in
           slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
           (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2")
         else
           do:  (let: "$a0" := #(W64 5) in
           let: "$a1" := #"memLogMap: add %d pos %d
           "%go in
-          let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Update #"Addr"%go "buf"))) in
-          let: "$sl1" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "pos")) in
+          let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Update #"Addr"%go "buf"))) in
+          let: "$sl1" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "pos")) in
           slice.literal #interfaceT ["$sl0"; "$sl1"])) in
           (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2"));;;
         do:  (let: "$a0" := (![#Update] "buf") in
@@ -502,8 +502,8 @@ Definition sliding__deleteFrom : val :=
         do:  (let: "$a0" := #(W64 5) in
         let: "$a1" := #"memLogMap: del %d %d
         "%go in
-        let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "blkno")) in
-        let: "$sl1" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "oldPos")) in
+        let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "blkno")) in
+        let: "$sl1" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "oldPos")) in
         slice.literal #interfaceT ["$sl0"; "$sl1"])) in
         (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
         do:  (let: "$a0" := (![type.mapT #uint64T #LogPosition] (struct.field_ref #sliding #"addrPos"%go (![#ptrT] "s"))) in
@@ -614,8 +614,8 @@ Definition installBlocks : val :=
       do:  (let: "$a0" := #(W64 5) in
       let: "$a1" := #"installBlocks: write log block %d to %d
       "%go in
-      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"int"%go (![#intT] "i")) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] "blkno")) in
+      let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"int"%go) (![#intT] "i")) in
+      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "blkno")) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
       do:  (let: "$a0" := (![#uint64T] "blkno") in
@@ -657,7 +657,7 @@ Definition Walog__logInstall : val :=
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"logInstall up to %d
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "installEnd")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "installEnd")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     do:  (let: "$a0" := (![#disk.Disk] (struct.field_ref #Walog #"d"%go (![#ptrT] "l"))) in
@@ -694,7 +694,7 @@ Definition Walog__installer : val :=
         do:  (let: "$a0" := #(W64 5) in
         let: "$a1" := #"Installed till txn %d
         "%go in
-        let: "$a2" := ((let: "$sl0" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "txn")) in
+        let: "$a2" := ((let: "$sl0" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "txn")) in
         slice.literal #interfaceT ["$sl0"])) in
         (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2")
       else do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #Walog #"condInstall"%go (![#ptrT] "l")))) #())));;;
@@ -846,11 +846,11 @@ Definition mkLog : val :=
     let: "$circ" := (![#ptrT] "circ") in
     let: "$memLock" := (![#ptrT] "ml") in
     let: "$st" := (![#ptrT] "st") in
-    let: "$condLogger" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "ml")) in
+    let: "$condLogger" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] "ml")) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
-    let: "$condInstall" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "ml")) in
+    let: "$condInstall" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] "ml")) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
-    let: "$condShut" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "ml")) in
+    let: "$condShut" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] "ml")) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
     struct.make #Walog [{
       "memLock" ::= "$memLock";
@@ -865,7 +865,7 @@ Definition mkLog : val :=
     do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := #"mkLog: size %d
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go LOGSZ) in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) LOGSZ) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     return: (![#ptrT] "l")).
@@ -954,8 +954,8 @@ Definition WalogState__readMem : val :=
       do:  (let: "$a0" := #(W64 5) in
       let: "$a1" := #"read memLogMap: read %d pos %d
       "%go in
-      let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "blkno")) in
-      let: "$sl1" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "pos")) in
+      let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "blkno")) in
+      let: "$sl1" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "pos")) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
       let: "u" := (mem.alloc (type.zero_val #Update)) in
@@ -1119,7 +1119,7 @@ Definition Walog__Flush : val :=
     do:  (let: "$a0" := #(W64 2) in
     let: "$a1" := #"Flush: commit till txn %d
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #wal.wal #"LogPosition" (![#LogPosition] "pos")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#wal.wal, #"LogPosition") (![#LogPosition] "pos")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Walog #"memLock"%go (![#ptrT] "l")))) #());;;

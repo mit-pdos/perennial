@@ -279,7 +279,7 @@ Definition RWMutex__Unlock : val :=
 Definition RWMutex__RLocker : val :=
   rec: "RWMutex__RLocker" "rw" <> :=
     exception_do (let: "rw" := (mem.alloc "rw") in
-    return: (interface.make #sync.sync #"rlocker'ptr" (![#ptrT] "rw"))).
+    return: (interface.make (#sync.sync, #"rlocker'ptr") (![#ptrT] "rw"))).
 
 Definition WaitGroup : go_type := structT [
   "noCopy" :: noCopy;
@@ -338,12 +338,12 @@ Definition WaitGroup__Add : val :=
     else do:  #());;;
     (if: int_lt (![#int32T] "v") #(W32 0)
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: negative WaitGroup counter"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: negative WaitGroup counter"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (((![#uint32T] "w") ≠ #(W32 0)) && (int_gt (![#intT] "delta") #(W64 0))) && ((![#int32T] "v") = (s_to_w32 (![#intT] "delta")))
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (int_gt (![#int32T] "v") #(W32 0)) || ((![#uint32T] "w") = #(W32 0))
@@ -351,7 +351,7 @@ Definition WaitGroup__Add : val :=
     else do:  #());;;
     (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ (![#uint64T] "state")
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := #(W64 0) in
@@ -415,7 +415,7 @@ Definition WaitGroup__Wait : val :=
         (func_call #sync.sync #"runtime_SemacquireWaitGroup"%go) "$a0");;;
         (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ #(W64 0)
         then
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup is reused before previous Wait has returned"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: WaitGroup is reused before previous Wait has returned"%go) in
           Panic "$a0")
         else do:  #());;;
         (if: race.Enabled

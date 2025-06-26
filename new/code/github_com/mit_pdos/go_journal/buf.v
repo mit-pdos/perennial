@@ -143,7 +143,7 @@ Definition Buf__Install : val :=
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"%v: install
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #addr #"Addr" (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#addr, #"Addr") (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     (if: (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) = #(W64 1)
@@ -161,13 +161,13 @@ Definition Buf__Install : val :=
         let: "$a3" := (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) in
         (func_call #buf.buf #"installBytes"%go) "$a0" "$a1" "$a2" "$a3")
       else
-        do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Install unsupported
+        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Install unsupported
         "%go) in
         Panic "$a0")));;;
     do:  (let: "$a0" := #(W64 20) in
     let: "$a1" := #"install -> %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #"slice'"%go (![#sliceT] "blk")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"slice"%go) (![#sliceT] "blk")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     return: #()).

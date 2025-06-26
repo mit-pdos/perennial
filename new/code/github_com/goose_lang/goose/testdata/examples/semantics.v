@@ -895,7 +895,7 @@ Definition testBasicInterface : val :=
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
-    return: ((let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
+    return: ((let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
      (func_call #semantics.semantics #"measureArea"%go) "$a0") = #(W64 4))).
 
 (* go: interfaces.go:47:6 *)
@@ -908,7 +908,7 @@ Definition testAssignInterface : val :=
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
     let: "area" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
     do:  ("area" <-[#uint64T] "$r0");;;
     return: ((![#uint64T] "area") = #(W64 9))).
@@ -923,11 +923,11 @@ Definition testMultipleInterface : val :=
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
     let: "square1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
     do:  ("square1" <-[#uint64T] "$r0");;;
     let: "square2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
     do:  ("square2" <-[#uint64T] "$r0");;;
     return: ((![#uint64T] "square1") = (![#uint64T] "square2"))).
@@ -942,15 +942,15 @@ Definition testBinaryExprInterface : val :=
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
     let: "square1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") in
     do:  ("square1" <-[#uint64T] "$r0");;;
     let: "square2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureVolume"%go) "$a0") in
     do:  ("square2" <-[#uint64T] "$r0");;;
-    return: (((![#uint64T] "square1") = (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
-     (func_call #semantics.semantics #"measureArea"%go) "$a0")) && ((![#uint64T] "square2") = (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
+    return: (((![#uint64T] "square1") = (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
+     (func_call #semantics.semantics #"measureArea"%go) "$a0")) && ((![#uint64T] "square2") = (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
      (func_call #semantics.semantics #"measureVolume"%go) "$a0")))).
 
 (* go: interfaces.go:73:6 *)
@@ -962,7 +962,7 @@ Definition testIfStmtInterface : val :=
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
-    (if: (let: "$a0" := (interface.make #semantics.semantics #"SquareStruct" (![#SquareStruct] "s")) in
+    (if: (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
     (func_call #semantics.semantics #"measureArea"%go) "$a0") = #(W64 9)
     then return: (#true)
     else do:  #());;;
@@ -2482,14 +2482,14 @@ Definition testSwitchConversion : val :=
     }])) in
     do:  ("v" <-[#ptrT] "$r0");;;
     let: "x" := (mem.alloc (type.zero_val #switchInterface)) in
-    let: "$r0" := (interface.make #semantics.semantics #"switchConcrete'ptr" (![#ptrT] "v")) in
+    let: "$r0" := (interface.make (#semantics.semantics, #"switchConcrete'ptr") (![#ptrT] "v")) in
     do:  ("x" <-[#switchInterface] "$r0");;;
     let: "$sw" := (![#switchInterface] "x") in
-    (if: "$sw" = (interface.make #semantics.semantics #"switchConcrete'ptr" (![#ptrT] "v"))
+    (if: "$sw" = (interface.make (#semantics.semantics, #"switchConcrete'ptr") (![#ptrT] "v"))
     then do:  #()
     else return: (#false));;;
     let: "$sw" := (![#ptrT] "v") in
-    (if: (interface.make #semantics.semantics #"switchConcrete'ptr" "$sw") = (![#switchInterface] "x")
+    (if: (interface.make (#semantics.semantics, #"switchConcrete'ptr") "$sw") = (![#switchInterface] "x")
     then do:  #()
     else return: (#false));;;
     return: (#true)).
@@ -2569,7 +2569,7 @@ Definition New : val :=
     do:  ("diskSize" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "diskSize") ≤ logLength
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"disk is too small to host log"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"disk is too small to host log"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "cache" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
@@ -2687,7 +2687,7 @@ Definition Log__Write : val :=
     do:  ("length" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "length") ≥ MaxTxnWrites
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"transaction is at capacity"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"transaction is at capacity"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "aBlock" := (mem.alloc (type.zero_val #sliceT)) in

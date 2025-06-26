@@ -493,7 +493,7 @@ Axiom own_KV : ∀ (kv : interface.t) (γetcd : clientv3_names), iProp Σ.
 Lemma own_leasingKV_own_KV lkv γ :
   is_entries_ready γ -∗
   own_leasingKV lkv γ -∗
-  own_KV (interface.mk leasing "leasingKV'ptr" #lkv) γ.(etcd_gn).
+  own_KV (interface.mk (leasing, "leasingKV'ptr"%go) #lkv) γ.(etcd_gn).
 Proof.
 Admitted.
 
@@ -668,7 +668,6 @@ Proof using Type*.
   rewrite -> replicate_S.
   iSplitL "Hmu".
   { iDestruct (own_leasingKV_own_KV with "[$] [$]") as "$". }
-  Search big_sepL.
   iDestruct (big_sepL2_const_sepL_r with "[$Hmus]") as "H".
   2:{
     iDestruct (big_sepL2_impl _ (λ _ x _, x) with "H []") as "H".

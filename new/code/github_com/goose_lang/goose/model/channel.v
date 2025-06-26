@@ -125,7 +125,7 @@ Definition Channel__TryClose : val :=
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = closed
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"close of closed channel"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"close of closed channel"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: ((![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) ≠ receiver_done) && ((![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) ≠ sender_done)
@@ -148,7 +148,7 @@ Definition Channel__Close : val :=
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#ptrT] "c") = #null
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"close of nil channel"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"close of nil channel"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "done" := (mem.alloc (type.zero_val #boolT)) in
@@ -283,10 +283,10 @@ Definition Channel__UnbufferedTryReceive : val :=
         do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref (Channel "T") #"lock"%go (![#ptrT] "c")))) #());;;
         return: (#true, !["T"] "local_val", #true)
       else do:  #());;;
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"not supposed to be here!"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"not supposed to be here!"%go) in
       Panic "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make #""%go #"string"%go #"not supposed to be here!"%go) in
+    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"not supposed to be here!"%go) in
     Panic "$a0")).
 
 (* Non-blocking receive function used for select statements. Blocking receive is modeled as
@@ -323,7 +323,7 @@ Definition Channel__SenderCompleteOrOffer : val :=
     let: "val" := (mem.alloc "val") in
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = closed
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"send on closed channel"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"send on closed channel"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = receiver_ready
@@ -350,7 +350,7 @@ Definition Channel__SenderCheckOfferResult : val :=
     exception_do (let: "c" := (mem.alloc "c") in
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = closed
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"send on closed channel"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"send on closed channel"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = receiver_done
@@ -365,7 +365,7 @@ Definition Channel__SenderCheckOfferResult : val :=
       do:  ((struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c")) <-[#ChannelState] "$r0");;;
       return: (OfferRescinded)
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Invalid state transition with open receive offer"%go) in
+    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Invalid state transition with open receive offer"%go) in
     Panic "$a0")).
 
 (* If the buffer has free space, push our value.
@@ -377,7 +377,7 @@ Definition Channel__BufferedTrySend : val :=
     let: "val" := (mem.alloc "val") in
     (if: (![#ChannelState] (struct.field_ref (Channel "T") #"state"%go (![#ptrT] "c"))) = closed
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"send on closed channel"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"send on closed channel"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (![#uint64T] (struct.field_ref (Channel "T") #"count"%go (![#ptrT] "c"))) < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref (Channel "T") #"buffer"%go (![#ptrT] "c"))) in
@@ -579,7 +579,7 @@ Definition TrySelectCase2 : val :=
       return: (let: "$a0" := (![#ptrT] "case2") in
        ((func_call #channel.channel #"TrySelect"%go) "T2") "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make #""%go #"string"%go #"index needs to be 0 or 1"%go) in
+    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"index needs to be 0 or 1"%go) in
     Panic "$a0")).
 
 (* go: channel.go:434:6 *)
@@ -632,7 +632,7 @@ Definition TrySelectCase3 : val :=
       return: (let: "$a0" := (![#ptrT] "case3") in
        ((func_call #channel.channel #"TrySelect"%go) "T3") "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make #""%go #"string"%go #"index needs to be 0, 1 or 2"%go) in
+    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"index needs to be 0, 1 or 2"%go) in
     Panic "$a0")).
 
 (* go: channel.go:475:6 *)
@@ -697,7 +697,7 @@ Definition TrySelectCase4 : val :=
       return: (let: "$a0" := (![#ptrT] "case4") in
        ((func_call #channel.channel #"TrySelect"%go) "T4") "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make #""%go #"string"%go #"index needs to be 0, 1, 2 or 3"%go) in
+    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"index needs to be 0, 1, 2 or 3"%go) in
     Panic "$a0")).
 
 (* go: channel.go:523:6 *)
@@ -774,7 +774,7 @@ Definition TrySelectCase5 : val :=
       return: (let: "$a0" := (![#ptrT] "case5") in
        ((func_call #channel.channel #"TrySelect"%go) "T5") "$a0")
     else do:  #());;;
-    do:  (let: "$a0" := (interface.make #""%go #"string"%go #"index needs to be 0, 1, 2, 3 or 4"%go) in
+    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"index needs to be 0, 1, 2, 3 or 4"%go) in
     Panic "$a0")).
 
 (* go: channel.go:579:6 *)

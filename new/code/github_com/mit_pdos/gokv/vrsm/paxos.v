@@ -556,13 +556,13 @@ Definition Server__enterNewEpoch : val :=
 Definition Server__TryBecomeLeader : val :=
   rec: "Server__TryBecomeLeader" "s" <> :=
     exception_do (let: "s" := (mem.alloc "s") in
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"started trybecomeleader"%go) in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"started trybecomeleader"%go) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #log.log #"Println"%go) "$a0");;;
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
     (if: ![#boolT] (struct.field_ref #paxosState #"isLeader"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))))
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"already leader"%go) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"already leader"%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #log.log #"Println"%go) "$a0");;;
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -589,7 +589,7 @@ Definition Server__TryBecomeLeader : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("mu" <-[#ptrT] "$r0");;;
     let: "numReplies_cond" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "mu")) in
+    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] "mu")) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
     do:  ("numReplies_cond" <-[#ptrT] "$r0");;;
     let: "n" := (mem.alloc (type.zero_val #uint64T)) in
@@ -660,7 +660,7 @@ Definition Server__TryBecomeLeader : val :=
         then
           do:  (let: "$a0" := #"succeeded becomeleader in epoch %d
           "%go in
-          let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #enterNewEpochArgs #"epoch"%go (![#ptrT] "args")))) in
+          let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #enterNewEpochArgs #"epoch"%go (![#ptrT] "args")))) in
           slice.literal #interfaceT ["$sl0"])) in
           (func_call #log.log #"Printf"%go) "$a0" "$a1");;;
           let: "$r0" := (![#uint64T] (struct.field_ref #enterNewEpochArgs #"epoch"%go (![#ptrT] "args"))) in
@@ -680,7 +680,7 @@ Definition Server__TryBecomeLeader : val :=
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "mu")) #())
     else
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "mu")) #());;;
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"failed becomeleader"%go) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"failed becomeleader"%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #log.log #"Println"%go) "$a0"));;;
     return: #()).
@@ -734,7 +734,7 @@ Definition Server__TryAcquire : val :=
       let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
       do:  ("mu" <-[#ptrT] "$r0");;;
       let: "numReplies_cond" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] "mu")) in
+      let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] "mu")) in
       (func_call #sync.sync #"NewCond"%go) "$a0") in
       do:  ("numReplies_cond" <-[#ptrT] "$r0");;;
       let: "n" := (mem.alloc (type.zero_val #uint64T)) in

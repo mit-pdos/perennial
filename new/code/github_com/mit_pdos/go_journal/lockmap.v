@@ -60,7 +60,7 @@ Definition lockShard__acquire : val :=
         do:  ("state" <-[#ptrT] "$r0")
       else
         let: "$r0" := (mem.alloc (let: "$held" := #false in
-        let: "$cond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) in
+        let: "$cond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) in
         (func_call #sync.sync #"NewCond"%go) "$a0") in
         let: "$waiters" := #(W64 0) in
         struct.make #lockState [{

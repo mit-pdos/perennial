@@ -261,7 +261,7 @@ Definition MakeClient : val :=
     (if: (![#uint64T] "err") ≠ #(W64 0)
     then
       do:  (let: "$a0" := #"Unable to connect to %s"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![#uint64T] "host_name") in
+      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) (let: "$a0" := (![#uint64T] "host_name") in
       (func_call #grove_ffi.grove_ffi #"AddressToStr"%go) "$a0")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #log.log #"Printf"%go) "$a0" "$a1")
@@ -290,7 +290,7 @@ Definition Client__CallStart : val :=
     let: "cb" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$reply" := (![#ptrT] "reply_buf") in
     let: "$state" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$cond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) in
+    let: "$cond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
     struct.make #Callback [{
       "reply" ::= "$reply";

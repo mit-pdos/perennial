@@ -46,4 +46,54 @@ Proof.
     by iApply "HΦ".
 Qed.
 
+Lemma wp_typeAssertInt (x: interface.t) (v: w64) :
+  {{{ is_pkg_init unittest ∗ ⌜x = interface.mk (""%go, "int"%go) #v⌝ }}}
+    unittest@"typeAssertInt" #x
+  {{{ RET #v; True }}}.
+Proof.
+  wp_start as "->". wp_auto.
+  wp_apply wp_interface_type_assert.
+  { done. }
+  by iApply "HΦ".
+Qed.
+
+Lemma wp_wrapUnwrapInt :
+  {{{ is_pkg_init unittest }}}
+    unittest@"wrapUnwrapInt" #()
+  {{{ RET #(W64 1); True }}}.
+Proof.
+  wp_start as "_".
+  wp_apply wp_typeAssertInt.
+  { done. }
+  by iApply "HΦ".
+Qed.
+
+Lemma wp_checkedTypeAssert (x: interface.t) :
+  {{{ is_pkg_init unittest ∗
+        ⌜match x with
+        | interface.mk type_id' v0 =>
+            (* a technical side condition is required to show that if i has the
+               correct type identity, then the value it holds has the expected type
+               V *)
+            (""%go, "uint64"%go) = type_id' →
+            ∃ (v: w64), v0 = #v
+        |  interface.nil => True
+        end⌝
+  }}}
+    unittest@"checkedTypeAssert" #x
+  {{{ (y: w64), RET #y; True }}}.
+Proof.
+  wp_start as "%Htype". wp_auto.
+  wp_apply (wp_interface_checked_type_assert _ (V:=w64)).
+  { auto. }
+  iIntros (y ok Hpost).
+  wp_auto.
+  destruct ok; subst; wp_auto.
+  - by iApply "HΦ".
+  - by iApply "HΦ".
+
+  Unshelve.
+  apply _.
+Qed.
+
 End proof.

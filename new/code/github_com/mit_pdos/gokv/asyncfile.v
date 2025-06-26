@@ -136,11 +136,11 @@ Definition MakeAsyncFile : val :=
     let: "mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$mu" := "mu" in
-    let: "$indexCond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" "mu") in
+    let: "$indexCond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") "mu") in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
-    let: "$closedCond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" "mu") in
+    let: "$closedCond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") "mu") in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
-    let: "$durableIndexCond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" "mu") in
+    let: "$durableIndexCond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") "mu") in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
     let: "$filename" := (![#stringT] "filename") in
     let: "$data" := (let: "$a0" := (![#stringT] "filename") in

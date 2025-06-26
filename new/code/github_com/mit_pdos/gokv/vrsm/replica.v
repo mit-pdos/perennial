@@ -616,8 +616,8 @@ Definition Server__ApplyRoWaitForCommit : val :=
     (if: (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` #(W64 10000)) = #(W64 0)
     then
       do:  (let: "$a0" := #"Server nextIndex=%d commitIndex=%d"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Server #"nextIndex"%go (![#ptrT] "s")))) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s")))) in
+      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"nextIndex"%go (![#ptrT] "s")))) in
+      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #log.log #"Printf"%go) "$a0" "$a1")
     else do:  #());;;
@@ -641,8 +641,8 @@ Definition Server__ApplyRoWaitForCommit : val :=
     then
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
       do:  (let: "$a0" := #"Lease expired because %d < %d"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Server #"leaseExpiration"%go (![#ptrT] "s")))) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] "h")) in
+      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"leaseExpiration"%go (![#ptrT] "s")))) in
+      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "h")) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #log.log #"Printf"%go) "$a0" "$a1");;;
       let: "$r0" := e.LeaseExpired in
@@ -942,7 +942,7 @@ Definition Server__ApplyAsBackup : val :=
       (if: (~ (![#boolT] "ok"))
       then
         let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
-        let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
+        let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
         (func_call #sync.sync #"NewCond"%go) "$a0") in
         do:  ("cond" <-[#ptrT] "$r0");;;
         let: "$r0" := (![#ptrT] "cond") in
@@ -1006,7 +1006,7 @@ Definition Server__SetState : val :=
         do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
         return: (e.None)
       else
-        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"Entered new epoch"%go) in
+        do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Entered new epoch"%go) in
         slice.literal #interfaceT ["$sl0"])) in
         (func_call #log.log #"Print"%go) "$a0");;;
         let: "$r0" := #false in
@@ -1100,14 +1100,14 @@ Definition Server__BecomePrimary : val :=
     (if: ((![#uint64T] (struct.field_ref #BecomePrimaryArgs #"Epoch"%go (![#ptrT] "args"))) ≠ (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s")))) || (~ (![#boolT] (struct.field_ref #Server #"canBecomePrimary"%go (![#ptrT] "s"))))
     then
       do:  (let: "$a0" := #"Wrong epoch in BecomePrimary request (in %d, got %d)"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s")))) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #BecomePrimaryArgs #"Epoch"%go (![#ptrT] "args")))) in
+      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s")))) in
+      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #BecomePrimaryArgs #"Epoch"%go (![#ptrT] "args")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #log.log #"Printf"%go) "$a0" "$a1");;;
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
       return: (e.Stale)
     else do:  #());;;
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"Became Primary"%go) in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Became Primary"%go) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #log.log #"Println"%go) "$a0");;;
     let: "$r0" := #true in
@@ -1177,10 +1177,10 @@ Definition MakeServer : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
     (func_call #configservice.configservice #"MakeClerk"%go) "$a0") in
     do:  ((struct.field_ref #Server #"confCk"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
+    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
     do:  ((struct.field_ref #Server #"committedNextIndex_cond"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
+    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
     do:  ((struct.field_ref #Server #"isPrimary_cond"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     return: (![#ptrT] "s")).

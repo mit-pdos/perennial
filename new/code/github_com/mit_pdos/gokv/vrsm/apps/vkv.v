@@ -213,7 +213,7 @@ Definition MakeKv : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
     (func_call #vkv.vkv #"MakeClerkPool"%go) "$a0") in
     do:  ("ck" <-[#ptrT] "$r0");;;
-    return: (interface.make #vkv.vkv #"ClerkPool'ptr" (![#ptrT] "ck"))).
+    return: (interface.make (#vkv.vkv, #"ClerkPool'ptr") (![#ptrT] "ck"))).
 
 Definition KVState : go_type := structT [
   "kvs" :: mapT stringT stringT;
@@ -439,7 +439,7 @@ Definition KVState__apply : val :=
           else do:  #());;;
           return: (string.to_bytes #""%go)
         else
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"unexpected op type"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected op type"%go) in
           Panic "$a0"))))).
 
 (* go: server.go:138:19 *)
@@ -449,7 +449,7 @@ Definition KVState__applyReadonly : val :=
     let: "args" := (mem.alloc "args") in
     (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "args") #(W64 0))) ≠ OP_GET
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"expected a GET as readonly-operation"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"expected a GET as readonly-operation"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "key" := (mem.alloc (type.zero_val #stringT)) in

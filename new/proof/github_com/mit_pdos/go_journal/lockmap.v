@@ -48,7 +48,7 @@ Definition is_lockShard_inner (mptr : loc) (shardlock : loc)
       "Hmptr" ∷ own_map mptr (DfracOwn 1) m ∗
       "Hghctx" ∷ ghost_map_auth ghostHeap 1 ghostMap ∗
       "Haddrs" ∷ ( [∗ map] addr ↦ gheld; lockStatePtrV ∈ ghostMap; m,
-          lockShard_addr ghostHeap (interface.mk sync "Mutex'ptr"%go #shardlock) addr gheld lockStatePtrV covered P ) ∗
+          lockShard_addr ghostHeap (interface.mk Mutex_type_id #shardlock) addr gheld lockStatePtrV covered P ) ∗
       "Hcovered" ∷ ( [∗ set] addr ∈ covered,
           ⌜m !! addr = None⌝ → P addr )
   )%I.
