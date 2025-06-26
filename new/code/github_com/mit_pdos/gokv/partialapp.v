@@ -16,7 +16,7 @@ Definition partiallyApplyMe : val :=
     (if: (let: "$a0" := (![#stringT] "x") in
     StringLength "$a0") ≠ (![#intT] "y")
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"not allowed"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"not allowed"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).

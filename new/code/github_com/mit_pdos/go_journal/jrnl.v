@@ -39,7 +39,7 @@ Definition Begin : val :=
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"Begin: %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #jrnl.jrnl #"Op'ptr" (![#ptrT] "trans")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#jrnl.jrnl, #"Op'ptr") (![#ptrT] "trans")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     return: (![#ptrT] "trans")).
@@ -94,7 +94,7 @@ Definition Op__OverWrite : val :=
     else
       (if: (![#uint64T] "sz") ≠ (![#uint64T] (struct.field_ref #buf.Buf #"Sz"%go (![#ptrT] "b")))
       then
-        do:  (let: "$a0" := (interface.make #""%go #"string"%go #"overwrite"%go) in
+        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"overwrite"%go) in
         Panic "$a0")
       else do:  #());;;
       let: "$r0" := (![#sliceT] "data") in
@@ -133,8 +133,8 @@ Definition Op__CommitWait : val :=
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"Commit %p w %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #jrnl.jrnl #"Op'ptr" (![#ptrT] "op")) in
-    let: "$sl1" := (interface.make #""%go #"bool"%go (![#boolT] "wait")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#jrnl.jrnl, #"Op'ptr") (![#ptrT] "op")) in
+    let: "$sl1" := (interface.make (#""%go, #"bool"%go) (![#boolT] "wait")) in
     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in

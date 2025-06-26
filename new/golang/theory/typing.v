@@ -509,7 +509,7 @@ Next Obligation.
     simpl in *.
     injection Heq as Heq1 Heq2.
     apply to_val_inj in Heq1, Heq2.
-    intuition. subst. done.
+    intuition. subst. destruct type_id, type_id0; simpl in *; congruence.
   }
   all: first [discriminate | reflexivity].
 Qed.

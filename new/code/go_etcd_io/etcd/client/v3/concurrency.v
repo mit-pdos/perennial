@@ -104,8 +104,8 @@ Definition Election__Campaign : val :=
     do:  ("client" <-[#ptrT] "$r0");;;
     let: "k" := (mem.alloc (type.zero_val #stringT)) in
     let: "$r0" := (let: "$a0" := #"%s%x"%go in
-    let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![#stringT] (struct.field_ref #Election #"keyPrefix"%go (![#ptrT] "e")))) in
-    let: "$sl1" := (interface.make #clientv3 #"LeaseID" ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #())) in
+    let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) (![#stringT] (struct.field_ref #Election #"keyPrefix"%go (![#ptrT] "e")))) in
+    let: "$sl1" := (interface.make (#clientv3, #"LeaseID") ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #())) in
     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (func_call #fmt.fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ("k" <-[#stringT] "$r0");;;
@@ -113,7 +113,7 @@ Definition Election__Campaign : val :=
     let: "$r0" := (let: "$a0" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := (![#stringT] "k") in
     (func_call #v3.clientv3 #"CreateRevision"%go) "$a0") in
     let: "$a1" := #"="%go in
-    let: "$a2" := (interface.make #""%go #"int"%go #(W64 0)) in
+    let: "$a2" := (interface.make (#""%go, #"int"%go) #(W64 0)) in
     (func_call #v3.clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
     slice.literal #clientv3.Cmp ["$sl0"])) in
     (interface.get #"If"%go (let: "$a0" := (![#context.Context] "ctx") in
@@ -210,7 +210,7 @@ Definition Election__Proclaim : val :=
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#stringT] (struct.field_ref #Election #"leaderKey"%go (![#ptrT] "e"))) in
     (func_call #v3.clientv3 #"CreateRevision"%go) "$a0") in
     let: "$a1" := #"="%go in
-    let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] (struct.field_ref #Election #"leaderRev"%go (![#ptrT] "e")))) in
+    let: "$a2" := (interface.make (#""%go, #"int64"%go) (![#int64T] (struct.field_ref #Election #"leaderRev"%go (![#ptrT] "e")))) in
     (func_call #v3.clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
     do:  ("cmp" <-[#clientv3.Cmp] "$r0");;;
     let: "txn" := (mem.alloc (type.zero_val #clientv3.Txn)) in
@@ -266,7 +266,7 @@ Definition Election__Resign : val :=
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#stringT] (struct.field_ref #Election #"leaderKey"%go (![#ptrT] "e"))) in
     (func_call #v3.clientv3 #"CreateRevision"%go) "$a0") in
     let: "$a1" := #"="%go in
-    let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] (struct.field_ref #Election #"leaderRev"%go (![#ptrT] "e")))) in
+    let: "$a2" := (interface.make (#""%go, #"int64"%go) (![#int64T] (struct.field_ref #Election #"leaderRev"%go (![#ptrT] "e")))) in
     (func_call #v3.clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
     do:  ("cmp" <-[#clientv3.Cmp] "$r0");;;
     let: "resp" := (mem.alloc (type.zero_val #ptrT)) in
@@ -787,8 +787,8 @@ Definition Mutex__tryAcquire : val :=
     let: "$r0" := ((method_call #concurrency.concurrency #"Session'ptr" #"Client" (![#ptrT] (struct.field_ref #Mutex #"s"%go (![#ptrT] "m")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := #"%s%x"%go in
-    let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![#stringT] (struct.field_ref #Mutex #"pfx"%go (![#ptrT] "m")))) in
-    let: "$sl1" := (interface.make #clientv3 #"LeaseID" ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #())) in
+    let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) (![#stringT] (struct.field_ref #Mutex #"pfx"%go (![#ptrT] "m")))) in
+    let: "$sl1" := (interface.make (#clientv3, #"LeaseID") ((method_call #concurrency.concurrency #"Session'ptr" #"Lease" (![#ptrT] "s")) #())) in
     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (func_call #fmt.fmt #"Sprintf"%go) "$a0" "$a1") in
     do:  ((struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m")) <-[#stringT] "$r0");;;
@@ -796,7 +796,7 @@ Definition Mutex__tryAcquire : val :=
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) in
     (func_call #v3.clientv3 #"CreateRevision"%go) "$a0") in
     let: "$a1" := #"="%go in
-    let: "$a2" := (interface.make #""%go #"int"%go #(W64 0)) in
+    let: "$a2" := (interface.make (#""%go, #"int"%go) #(W64 0)) in
     (func_call #v3.clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
     do:  ("cmp" <-[#clientv3.Cmp] "$r0");;;
     let: "put" := (mem.alloc (type.zero_val #clientv3.Op)) in
@@ -858,8 +858,8 @@ Definition Mutex__Unlock : val :=
     (func_call #strings.strings #"HasPrefix"%go) "$a0" "$a1"))
     then
       return: (let: "$a0" := #"invalid key %q, it should have prefix %q"%go in
-       let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m")))) in
-       let: "$sl1" := (interface.make #""%go #"string"%go (![#stringT] (struct.field_ref #Mutex #"pfx"%go (![#ptrT] "m")))) in
+       let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m")))) in
+       let: "$sl1" := (interface.make (#""%go, #"string"%go) (![#stringT] (struct.field_ref #Mutex #"pfx"%go (![#ptrT] "m")))) in
        slice.literal #interfaceT ["$sl0"; "$sl1"])) in
        (func_call #fmt.fmt #"Errorf"%go) "$a0" "$a1")
     else do:  #());;;
@@ -891,7 +891,7 @@ Definition Mutex__IsOwner : val :=
     return: (let: "$a0" := (let: "$a0" := (![#stringT] (struct.field_ref #Mutex #"myKey"%go (![#ptrT] "m"))) in
      (func_call #v3.clientv3 #"CreateRevision"%go) "$a0") in
      let: "$a1" := #"="%go in
-     let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] (struct.field_ref #Mutex #"myRev"%go (![#ptrT] "m")))) in
+     let: "$a2" := (interface.make (#""%go, #"int64"%go) (![#int64T] (struct.field_ref #Mutex #"myRev"%go (![#ptrT] "m")))) in
      (func_call #v3.clientv3 #"Compare"%go) "$a0" "$a1" "$a2")).
 
 (* go: mutex.go:156:17 *)
@@ -955,7 +955,7 @@ Definition NewLocker : val :=
   rec: "NewLocker" "s" "pfx" :=
     exception_do (let: "pfx" := (mem.alloc "pfx") in
     let: "s" := (mem.alloc "s") in
-    return: (interface.make #concurrency.concurrency #"lockerMutex'ptr" (mem.alloc (struct.make #lockerMutex [{
+    return: (interface.make (#concurrency.concurrency, #"lockerMutex'ptr") (mem.alloc (struct.make #lockerMutex [{
        "Mutex" ::= let: "$a0" := (![#ptrT] "s") in
        let: "$a1" := (![#stringT] "pfx") in
        (func_call #concurrency.concurrency #"NewMutex"%go) "$a0" "$a1"
@@ -1383,7 +1383,7 @@ Definition mkSTM : val :=
          (slice.append #clientv3.Cmp) "$a0" "$a1"))
         ) in
       do:  ((struct.field_ref #stm #"conflicts"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) <-[#funcT] "$r0");;;
-      return: (interface.make #concurrency.concurrency #"stmSerializable'ptr" (![#ptrT] "s"))
+      return: (interface.make (#concurrency.concurrency, #"stmSerializable'ptr") (![#ptrT] "s"))
     else
       (if: "$sw" = Serializable
       then
@@ -1408,7 +1408,7 @@ Definition mkSTM : val :=
           exception_do (return: ((method_call #concurrency.concurrency #"readSet" #"cmps" (![#readSet] (struct.field_ref #stm #"rset"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))))) #()))
           ) in
         do:  ((struct.field_ref #stm #"conflicts"%go (struct.field_ref #stmSerializable #"stm"%go (![#ptrT] "s"))) <-[#funcT] "$r0");;;
-        return: (interface.make #concurrency.concurrency #"stmSerializable'ptr" (![#ptrT] "s"))
+        return: (interface.make (#concurrency.concurrency, #"stmSerializable'ptr") (![#ptrT] "s"))
       else
         (if: "$sw" = RepeatableReads
         then
@@ -1430,7 +1430,7 @@ Definition mkSTM : val :=
             exception_do (return: ((method_call #concurrency.concurrency #"readSet" #"cmps" (![#readSet] (struct.field_ref #stm #"rset"%go (![#ptrT] "s")))) #()))
             ) in
           do:  ((struct.field_ref #stm #"conflicts"%go (![#ptrT] "s")) <-[#funcT] "$r0");;;
-          return: (interface.make #concurrency.concurrency #"stm'ptr" (![#ptrT] "s"))
+          return: (interface.make (#concurrency.concurrency, #"stm'ptr") (![#ptrT] "s"))
         else
           (if: "$sw" = ReadCommitted
           then
@@ -1452,9 +1452,9 @@ Definition mkSTM : val :=
               exception_do (return: (#slice.nil))
               ) in
             do:  ((struct.field_ref #stm #"conflicts"%go (![#ptrT] "s")) <-[#funcT] "$r0");;;
-            return: (interface.make #concurrency.concurrency #"stm'ptr" (![#ptrT] "s"))
+            return: (interface.make (#concurrency.concurrency, #"stm'ptr") (![#ptrT] "s"))
           else
-            do:  (let: "$a0" := (interface.make #""%go #"string"%go #"unsupported stm"%go) in
+            do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unsupported stm"%go) in
             Panic "$a0")))))).
 
 Definition stmResponse : go_type := structT [
@@ -1479,7 +1479,7 @@ Definition runSTM : val :=
         then
           let: "ok" := (mem.alloc (type.zero_val #boolT)) in
           let: "e" := (mem.alloc (type.zero_val #stmError)) in
-          let: ("$ret0", "$ret1") := (interface.checked_type_assert #stmError (![#interfaceT] "r") #concurrency.concurrency #"stmError") in
+          let: ("$ret0", "$ret1") := (interface.checked_type_assert #stmError (![#interfaceT] "r") (#concurrency.concurrency, #"stmError")) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  ("e" <-[#stmError] "$r0");;;
@@ -1634,7 +1634,7 @@ Definition writeSet__cmps : val :=
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (let: "$a0" := (![#stringT] "key") in
       (func_call #v3.clientv3 #"ModRevision"%go) "$a0") in
       let: "$a1" := #"<"%go in
-      let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] "rev")) in
+      let: "$a2" := (interface.make (#""%go, #"int64"%go) (![#int64T] "rev")) in
       (func_call #v3.clientv3 #"Compare"%go) "$a0" "$a1" "$a2") in
       slice.literal #clientv3.Cmp ["$sl0"])) in
       (slice.append #clientv3.Cmp) "$a0" "$a1") in
@@ -1742,7 +1742,7 @@ Definition stm__commit : val :=
     do:  ("err" <-[#error] "$r1");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then
-      do:  (let: "$a0" := (interface.make #concurrency.concurrency #"stmError" (struct.make #stmError [{
+      do:  (let: "$a0" := (interface.make (#concurrency.concurrency, #"stmError") (struct.make #stmError [{
         "err" ::= ![#error] "err"
       }])) in
       Panic "$a0")
@@ -1796,7 +1796,7 @@ Definition stm__fetch : val :=
     do:  ("err" <-[#error] "$r1");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then
-      do:  (let: "$a0" := (interface.make #concurrency.concurrency #"stmError" (struct.make #stmError [{
+      do:  (let: "$a0" := (interface.make (#concurrency.concurrency, #"stmError") (struct.make #stmError [{
         "err" ::= ![#error] "err"
       }])) in
       Panic "$a0")
@@ -1939,7 +1939,7 @@ Definition stmSerializable__commit : val :=
     do:  ("err" <-[#error] "$r1");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then
-      do:  (let: "$a0" := (interface.make #concurrency.concurrency #"stmError" (struct.make #stmError [{
+      do:  (let: "$a0" := (interface.make (#concurrency.concurrency, #"stmError") (struct.make #stmError [{
         "err" ::= ![#error] "err"
       }])) in
       Panic "$a0")
@@ -1967,13 +1967,13 @@ Definition isKeyCurrent : val :=
       return: (let: "$a0" := (let: "$a0" := (![#stringT] "k") in
        (func_call #v3.clientv3 #"ModRevision"%go) "$a0") in
        let: "$a1" := #"="%go in
-       let: "$a2" := (interface.make #""%go #"int64"%go (![#int64T] (struct.field_ref #mvccpb.KeyValue #"ModRevision"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "r"))) #(W64 0)))))) in
+       let: "$a2" := (interface.make (#""%go, #"int64"%go) (![#int64T] (struct.field_ref #mvccpb.KeyValue #"ModRevision"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "r"))) #(W64 0)))))) in
        (func_call #v3.clientv3 #"Compare"%go) "$a0" "$a1" "$a2")
     else do:  #());;;
     return: (let: "$a0" := (let: "$a0" := (![#stringT] "k") in
      (func_call #v3.clientv3 #"ModRevision"%go) "$a0") in
      let: "$a1" := #"="%go in
-     let: "$a2" := (interface.make #""%go #"int"%go #(W64 0)) in
+     let: "$a2" := (interface.make (#""%go, #"int"%go) #(W64 0)) in
      (func_call #v3.clientv3 #"Compare"%go) "$a0" "$a1" "$a2")).
 
 (* go: stm.go:371:6 *)

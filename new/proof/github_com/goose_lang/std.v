@@ -97,7 +97,7 @@ Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
   ∃ (mu_l cond_l: loc),
   "#mu" ∷ l ↦s[std.JoinHandle :: "mu"]□ mu_l ∗
   "#cond" ∷ l ↦s[std.JoinHandle :: "cond"]□ cond_l ∗
-  "#Hcond" ∷ is_Cond cond_l (interface.mk sync "Mutex'ptr"%go #mu_l) ∗
+  "#Hcond" ∷ is_Cond cond_l (interface.mk Mutex_type_id #mu_l) ∗
   "#Hlock" ∷ is_Mutex mu_l
      (∃ (done_b: bool),
          "done_b" ∷ l ↦s[std.JoinHandle :: "done"] done_b ∗

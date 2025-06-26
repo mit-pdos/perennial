@@ -149,7 +149,7 @@ Definition Log__doCommit : val :=
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"doCommit: %v bufs
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #""%go #"int"%go (let: "$a0" := (![#sliceT] "blks") in
+    let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"int"%go) (let: "$a0" := (![#sliceT] "blks") in
     slice.len "$a0")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;

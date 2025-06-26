@@ -23,7 +23,7 @@ Definition EnterNewConfig : val :=
     (if: (let: "$a0" := (![#sliceT] "servers") in
     slice.len "$a0") = #(W64 0)
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"Tried creating empty config"%go) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Tried creating empty config"%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #log.log #"Println"%go) "$a0");;;
       return: (e.EmptyConfig)
@@ -40,7 +40,7 @@ Definition EnterNewConfig : val :=
     do:  ("epoch" <-[#uint64T] "$r0");;;
     do:  ("oldServers" <-[#sliceT] "$r1");;;
     do:  (let: "$a0" := #"Reserved %d"%go in
-    let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "epoch")) in
+    let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "epoch")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #log.log #"Printf"%go) "$a0" "$a1");;;
     let: "id" := (mem.alloc (type.zero_val #uint64T)) in
@@ -61,7 +61,7 @@ Definition EnterNewConfig : val :=
     (if: (![#uint64T] (struct.field_ref #replica.GetStateReply #"Err"%go (![#ptrT] "reply"))) ≠ e.None
     then
       do:  (let: "$a0" := #"Error while getting state and sealing in epoch %d"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "epoch")) in
+      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "epoch")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #log.log #"Printf"%go) "$a0" "$a1");;;
       return: (![#uint64T] (struct.field_ref #replica.GetStateReply #"Err"%go (![#ptrT] "reply")))
@@ -135,7 +135,7 @@ Definition EnterNewConfig : val :=
       do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
     (if: (![#uint64T] "err") ≠ e.None
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"Error while setting state and entering new epoch"%go) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Error while setting state and entering new epoch"%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #log.log #"Println"%go) "$a0");;;
       return: (![#uint64T] "err")
@@ -144,7 +144,7 @@ Definition EnterNewConfig : val :=
     let: "$a1" := (![#sliceT] "servers") in
     (method_call #configservice #"Clerk'ptr" #"TryWriteConfig" (![#ptrT] "configCk")) "$a0" "$a1") ≠ e.None
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"Error while writing to config service"%go) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Error while writing to config service"%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #log.log #"Println"%go) "$a0");;;
       return: (e.Stale)

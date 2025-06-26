@@ -47,7 +47,7 @@ Proof.
 Qed.
 
 Lemma wp_typeAssertInt (x: interface.t) (v: w64) :
-  {{{ is_pkg_init unittest ∗ ⌜x = interface.mk ""%go "int"%go #v⌝ }}}
+  {{{ is_pkg_init unittest ∗ ⌜x = interface.mk (""%go, "int"%go) #v⌝ }}}
     unittest@"typeAssertInt" #x
   {{{ RET #v; True }}}.
 Proof.
@@ -71,11 +71,11 @@ Qed.
 Lemma wp_checkedTypeAssert (x: interface.t) :
   {{{ is_pkg_init unittest ∗
         ⌜match x with
-        | interface.mk pkg_name' type_name' v0 =>
+        | interface.mk type_id' v0 =>
             (* a technical side condition is required to show that if i has the
                correct type identity, then the value it holds has the expected type
                V *)
-            (pkg_name', type_name') = (""%go, "uint64"%go) →
+            (""%go, "uint64"%go) = type_id' →
             ∃ (v: w64), v0 = #v
         |  interface.nil => True
         end⌝

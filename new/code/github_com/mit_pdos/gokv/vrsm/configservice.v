@@ -576,8 +576,8 @@ Definition Server__TryWriteConfig : val :=
         (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
         do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
         do:  (let: "$a0" := #"Stale: %d < %d"%go in
-        let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] "epoch")) in
-        let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #state #"reservedEpoch"%go (![#ptrT] "st")))) in
+        let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "epoch")) in
+        let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #state #"reservedEpoch"%go (![#ptrT] "st")))) in
         slice.literal #interfaceT ["$sl0"; "$sl1"])) in
         (func_call #log.log #"Printf"%go) "$a0" "$a1");;;
         break: #()
@@ -601,8 +601,8 @@ Definition Server__TryWriteConfig : val :=
             (if: (~ ((![#funcT] "tryReleaseFn") #()))
             then break: #()
             else do:  #());;;
-            do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"New config is:"%go) in
-            let: "$sl1" := (interface.make #""%go #"slice'"%go (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st")))) in
+            do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"New config is:"%go) in
+            let: "$sl1" := (interface.make (#""%go, #"slice"%go) (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st")))) in
             slice.literal #interfaceT ["$sl0"; "$sl1"])) in
             (func_call #log.log #"Println"%go) "$a0");;;
             let: "$r0" := (let: "$a0" := #slice.nil in
@@ -671,10 +671,10 @@ Definition Server__GetLease : val :=
     else do:  #());;;
     (if: ((![#uint64T] (struct.field_ref #state #"epoch"%go (![#ptrT] "st"))) ≠ (![#uint64T] "epoch")) || (![#boolT] (struct.field_ref #state #"wantLeaseToExpire"%go (![#ptrT] "st")))
     then
-      do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"Rejected lease request"%go) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] "epoch")) in
-      let: "$sl2" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #state #"epoch"%go (![#ptrT] "st")))) in
-      let: "$sl3" := (interface.make #""%go #"bool"%go (![#boolT] (struct.field_ref #state #"wantLeaseToExpire"%go (![#ptrT] "st")))) in
+      do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Rejected lease request"%go) in
+      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "epoch")) in
+      let: "$sl2" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #state #"epoch"%go (![#ptrT] "st")))) in
+      let: "$sl3" := (interface.make (#""%go, #"bool"%go) (![#boolT] (struct.field_ref #state #"wantLeaseToExpire"%go (![#ptrT] "st")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
       (func_call #log.log #"Println"%go) "$a0");;;
       (if: (~ ((![#funcT] "tryReleaseFn") #()))

@@ -63,7 +63,7 @@ Definition MkMaxAlloc : val :=
     exception_do (let: "max" := (mem.alloc "max") in
     (if: (~ ((#(W64 0) < (![#uint64T] "max")) && (((![#uint64T] "max") `rem` #(W64 8)) = #(W64 0))))
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"invalid max, must be at least 0 and divisible by 8"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"invalid max, must be at least 0 and divisible by 8"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "bitmap" := (mem.alloc (type.zero_val #sliceT)) in
@@ -162,7 +162,7 @@ Definition Alloc__FreeNum : val :=
     let: "num" := (mem.alloc "num") in
     (if: (![#uint64T] "num") = #(W64 0)
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"FreeNum"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"FreeNum"%go) in
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := (![#uint64T] "num") in

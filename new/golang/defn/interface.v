@@ -15,9 +15,17 @@ Program Definition get := sealed @get_def.
 Definition get_unseal : get = _ := seal_eq _.
 
 Local Definition make_def : val :=
-  λ: "pkg_name" "type_name" "v", SOME ("pkg_name", "type_name", "v").
+  λ: "type_id" "v", SOME ("type_id", "v").
 Program Definition make := sealed @make_def.
 Definition make_unseal : make = _ := seal_eq _.
+
+(* our representation of dynamic type identity for interfaces is a tuple of (pkg
+name, type string) *)
+Definition type_id_eq : val :=
+  λ: "type_id1" "type_id2",
+    let: ("pkg1", "type1") := "type_id1" in
+    let: ("pkg2", "type2") := "type_id2" in
+    ("pkg1" = "pkg2") && ("type1" = "type2").
 
 Definition eq : val :=
   (* XXX: this is a "short-circuiting" comparison that first checks if the type
@@ -31,22 +39,18 @@ Definition eq : val :=
     | SOME "i1" => match: "v2" with
                     NONE => #false
                   | SOME "i1" =>
-                      let: ("pkg_type1", "v1") := "i1" in
-                      let: ("pkg_type2", "v2") := "i2" in
-                      if: "pkg_type1" = "pkg_type2" then
-                        "v1" = "v2"
-                      else
-                        #false
+                      (type_id_eq (Fst "i1") (Fst "i2")) &&
+                      (Snd "i1" = Snd "i2")
                   end
     end.
 
 (* Models x.(T) - this checks the type of the value stored in interface object x
 and also returns it. *)
 Definition type_assert : val :=
-  λ: "v" "expected_pkg" "expected_type",
+  λ: "v" "expected_type_id",
     let: "v" := globals.unwrap "v" in
-    let: (("pkg", "type"), "underlying_v") := "v" in
-    if: ("pkg" = "expected_pkg") && ("type" = "expected_type") then
+    let: ("type_id", "underlying_v") := "v" in
+    if: type_id_eq "type_id" "expected_type_id" then
     "underlying_v"
     else Panic "coerce failed: wrong type".
 
@@ -54,11 +58,11 @@ Definition type_assert : val :=
 success. The type "T" is used to return the correct default value if the type
 assertion fails. *)
 Definition checked_type_assert : val :=
-  λ: "T" "v" "expected_pkg" "expected_type",
+  λ: "T" "v" "expected_type_id",
     match: "v" with
       SOME "v" =>
-        (let: (("pkg", "type"), "underlying_v") := "v" in
-        if: ("pkg" = "expected_pkg") && ("type" = "expected_type")
+        (let: ("type_id", "underlying_v") := "v" in
+        if: type_id_eq "type_id" "expected_type_id"
         then ("underlying_v", #true)
         else (type.zero_val "T", #false))
      (* if the interface is nil, checked type assertions just return false *)

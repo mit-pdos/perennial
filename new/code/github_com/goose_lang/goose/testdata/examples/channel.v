@@ -30,7 +30,7 @@ Definition SendMessage : val :=
     do:  ("message" <-[#stringT] "$r0");;;
     (if: (![#stringT] "message") ≠ #"hello world"%go
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Did not receive expected message"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Did not receive expected message"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
@@ -58,7 +58,7 @@ Definition JoinWithReceive : val :=
     do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done") #uint64T) #());;;
     (if: (![#stringT] (![#ptrT] "message")) ≠ #"hello world"%go
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Message was not set correctly"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Message was not set correctly"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
@@ -86,7 +86,7 @@ Definition JoinWithSend : val :=
     (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done") #uint64T) "$a0");;;
     (if: (![#stringT] (![#ptrT] "message")) ≠ #"hello world"%go
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Message was not set correctly"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Message was not set correctly"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
@@ -140,7 +140,7 @@ Definition BroadcastNotification : val :=
       then
         (if: (![#stringT] (slice.elem_ref #stringT (![#sliceT] "results") #(W64 0))) ≠ #"thread1"%go
         then
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Thread 1 received incorrect value"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Thread 1 received incorrect value"%go) in
           Panic "$a0")
         else do:  #());;;
         do:  (let: "$a0" := #(W64 0) in
@@ -160,7 +160,7 @@ Definition BroadcastNotification : val :=
       then
         (if: (![#stringT] (slice.elem_ref #stringT (![#sliceT] "results") #(W64 1))) ≠ #"thread2"%go
         then
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Thread 2 received incorrect value"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Thread 2 received incorrect value"%go) in
           Panic "$a0")
         else do:  #());;;
         do:  (let: "$a0" := #(W64 0) in
@@ -180,7 +180,7 @@ Definition BroadcastNotification : val :=
       then
         (if: (![#stringT] (slice.elem_ref #stringT (![#sliceT] "results") #(W64 2))) ≠ #"thread3"%go
         then
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Thread 3 received incorrect value"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Thread 3 received incorrect value"%go) in
           Panic "$a0")
         else do:  #());;;
         do:  (let: "$a0" := #(W64 0) in
@@ -244,12 +244,12 @@ Definition CoordinatedChannelClose : val :=
     do:  ("ok2" <-[#boolT] "$r1");;;
     (if: (~ (![#boolT] "ok1")) || (~ (![#boolT] "ok2"))
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Channel shouldn't be empty yet"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Channel shouldn't be empty yet"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (~ ((((![#uint64T] "val1") = #(W64 42)) && ((![#uint64T] "val2") = #(W64 84))) || (((![#uint64T] "val1") = #(W64 84)) && ((![#uint64T] "val2") = #(W64 42)))))
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Did not receive both expected values"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Did not receive both expected values"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
@@ -322,7 +322,7 @@ Definition DoubleValues : val :=
     do:  ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "done") #uint64T) #());;;
     (if: (~ ((((![#uint64T] "val1") = #(W64 10)) && ((![#uint64T] "val2") = #(W64 20))) && ((![#uint64T] "val3") = #(W64 30))))
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Values were not doubled correctly"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Values were not doubled correctly"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
