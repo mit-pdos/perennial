@@ -21,7 +21,7 @@ Definition get : val :=
 Definition inner γ addr : iProp Σ :=
   ∃ (v: nat),
     "Haddr" ∷ addr ↦[uint64T] #v ∗
-    "Hauth" ∷ mono_nat_auth_own γ 1%Qp v.
+    "Hauth" ∷ mono_nat_auth_own γ (1/2)%Qp v.
 
 Definition get_inv γ : iProp Σ :=
   inv naddr (inner γ addr).
@@ -29,9 +29,12 @@ Definition get_inv γ : iProp Σ :=
 Theorem wp_get {γ} E Q :
   {{{ get_inv γ ∗
       ∀ x, Q x ∨
-        |={⊤ ∖ ↑naddr,E}=>
-          ∃ x0, mono_nat_lb_own γ x0 ∗
-            ( mono_nat_lb_own γ x0 -∗ ⌜ x0 ≤ x ⌝ -∗ |={E,⊤ ∖ ↑naddr}=> Q x )
+        ( |={⊤ ∖ ↑naddr,E}=>
+            ∃ x0, mono_nat_lb_own γ x0 ∗
+              ( mono_nat_lb_own γ x0 -∗ ⌜ x0 ≤ x ⌝ -∗ |={E,⊤ ∖ ↑naddr}=> Q x ) ) ∨
+        ( |={⊤ ∖ ↑naddr,E}=>
+            ∃ x0, mono_nat_auth_own γ (1/2)%Qp x0 ∗
+              ( mono_nat_auth_own γ (1/2)%Qp x0 -∗ ⌜ x0 = x ⌝ -∗ |={E,⊤ ∖ ↑naddr}=> Q x ) )
   }}}
     get #()
   {{{ x, RET #x;
@@ -46,7 +49,7 @@ Proof.
   iDestruct (mono_nat_lb_own_get with "Hauth") as "#Hlb".
   wp_apply (wp_LoadUint64 with "Haddr").
   iIntros "Haddr".
-  iDestruct ("HQ" $! v) as "[HQ | HQ]".
+  iDestruct ("HQ" $! v) as "[HQ | [HQ | HQ]]".
   - iModIntro.
     iSplitL "Haddr Hauth".
     { iFrame. }
@@ -58,9 +61,16 @@ Proof.
     iSplitL "Haddr Hauth".
     { iFrame. }
     iApply "HΦ". iFrame. done.
+  - iMod "HQ" as (x0) "[Hpreauth HQ]".
+    iDestruct (mono_nat_auth_own_agree with "Hauth Hpreauth") as "%Heq".
+    iMod ("HQ" with "Hpreauth []") as "HQ"; first by intuition eauto.
+    iModIntro.
+    iSplitL "Haddr Hauth".
+    { iFrame. }
+    iApply "HΦ". iFrame. done.
 Qed.
 
-Theorem wp_get_pre γ x0 :
+Theorem wp_get_pre_lb γ x0 :
   {{{ get_inv γ ∗
       mono_nat_lb_own γ x0
   }}}
@@ -73,7 +83,7 @@ Proof.
   iIntros (Φ) "[#Hinv #Hlb] HΦ".
   wp_apply (wp_get _ (λ x, ⌜x0 ≤ x⌝)%I with "[$Hinv Hlb]").
   { iIntros (x).
-    iRight.
+    iRight. iLeft.
     iModIntro.
     iFrame "Hlb".
     iIntros "Hlb2 %Hlb".
@@ -81,6 +91,29 @@ Proof.
   }
   iIntros (x) "[%HQ #Hlb3]".
   iApply "HΦ". iFrame "#". done.
+Qed.
+
+Theorem wp_get_pre_auth γ x :
+  {{{ get_inv γ ∗
+      mono_nat_auth_own γ (1/2)%Qp x
+  }}}
+    get #()
+  {{{ RET #x;
+      mono_nat_lb_own γ x
+  }}}.
+Proof.
+  iIntros (Φ) "[#Hinv Hauth] HΦ".
+  wp_apply (wp_get _ (λ x0, ⌜x0 = x⌝)%I with "[$Hinv Hauth]").
+  { iIntros (x0).
+    iRight. iRight.
+    iModIntro.
+    iFrame "Hauth".
+    iIntros "Hauth %Heq".
+    done.
+  }
+  iIntros (x0) "[%HQ #Hlb]".
+  subst.
+  iApply "HΦ". iFrame "#".
 Qed.
 
 Theorem wp_get_nopre γ :
