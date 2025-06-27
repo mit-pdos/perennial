@@ -29,7 +29,7 @@ projs = {
     "gokv": Proj("gokv", "https://github.com/mit-pdos/gokv", "main"),
     "new_gokv": Proj("new_gokv", "https://github.com/mit-pdos/gokv", "new"),
     "mvcc": Proj("mvcc", "https://github.com/mit-pdos/vmvcc", "main"),
-    "pav": Proj("pav", "https://github.com/mit-pdos/pav", "main"),
+    # "pav": Proj("pav", "https://github.com/mit-pdos/pav", "main"),
     "etcd-raft": Proj("etcd-raft", "https://github.com/upamanyus/etcd-raft", "main"),
     "etcd": Proj("etcd", "https://github.com/upamanyus/etcd", "main"),
 }
@@ -83,8 +83,8 @@ sp.run(
         projs["gokv"].path(),
         "--mvcc",
         projs["mvcc"].path(),
-        "--pav",
-        projs["pav"].path(),
+        # "--pav",
+        # projs["pav"].path(),
     ],
     check=True,
 )
