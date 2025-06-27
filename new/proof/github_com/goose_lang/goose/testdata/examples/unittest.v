@@ -165,4 +165,25 @@ Proof.
   all: apply _.
 Qed.
 
+Lemma wp_testSwitchMultiple (x: w64) :
+  {{{ is_pkg_init unittest }}}
+    unittest@"testSwitchMultiple" #x
+  {{{ (y:w64), RET #y;
+      ⌜(uint.Z x = 10 → sint.Z y = 1) ∧
+       (uint.Z x = 1 → sint.Z y = 1) ∧
+       (uint.Z x = 0 → sint.Z y = 2) ∧
+       (10 < uint.Z x → sint.Z y = 3)⌝
+  }}}.
+Proof.
+  wp_start. wp_auto.
+  wp_if_destruct; try wp_auto.
+  { by iApply "HΦ". }
+  wp_if_destruct; try wp_auto.
+  { by iApply "HΦ". }
+  wp_if_destruct; try wp_auto.
+  { by iApply "HΦ". }
+  iApply "HΦ".
+  word.
+Qed.
+
 End proof.
