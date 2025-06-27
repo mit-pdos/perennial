@@ -95,6 +95,43 @@ Proof.
   by iApply "HΦ".
 Qed.
 
+Lemma wp_interface_try_type_coerce (i : interface.t)
+  (pkg_name type_name: go_string) :
+  {{{ True }}}
+    interface.try_type_coerce #i (#pkg_name, #type_name)%V
+  {{{ (y: val) (ok: bool), RET (y, #ok);
+      ⌜if ok then i = interface.mk (pkg_name, type_name) y
+      else match i with
+      | interface.mk type_id' _ => (pkg_name, type_name) ≠ type_id'
+      | interface.nil => True
+      end⌝
+  }}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_call.
+  destruct i as [[pkg_name' type_id'] y'|].
+  - rewrite {1}[in #(interface.mk _ _)]to_val_unseal /=.
+    wp_pures.
+    match goal with
+    | |- context[bool_decide ?P] => destruct (bool_decide_reflect P)
+    end; wp_pures.
+    {
+      match goal with
+      | H: (_, _) = (_, _) |- _ => inversion H; subst; clear H
+      end.
+      iApply "HΦ".
+      iPureIntro.
+      eauto.
+    }
+    iApply "HΦ".
+    iPureIntro.
+    auto.
+  - rewrite {1}[in #(interface.nil)]to_val_unseal /=.
+    wp_pures.
+    iApply "HΦ".
+    done.
+Qed.
+
 Lemma wp_interface_checked_type_assert (i : interface.t) {V} `{!IntoVal V} t `{!IntoValTyped V t}
   (pkg_name type_name: go_string) :
   {{{ ⌜match i with
@@ -117,30 +154,17 @@ Lemma wp_interface_checked_type_assert (i : interface.t) {V} `{!IntoVal V} t `{!
 Proof.
   iIntros (Φ) "%Htype HΦ".
   wp_call.
-  destruct i as [[pkg_name' type_id'] y'|].
-  - rewrite {1}[in #(interface.mk _ _)]to_val_unseal /=.
-    wp_pures.
-    match goal with
-    | |- context[bool_decide ?P] => destruct (bool_decide_reflect P)
-    end; wp_pures.
-    {
-      match goal with
-      | H: (_, _) = (_, _) |- _ => inversion H; subst; clear H
-      end.
-      destruct Htype as [v ->]; [ done | ].
-      iApply "HΦ".
-      iPureIntro.
-      split; congruence.
-    }
-    rewrite -default_val_eq_zero_val.
+  wp_apply wp_interface_try_type_coerce.
+  iIntros (y ok) "%Hpost".
+  destruct ok; subst; wp_pures.
+  - destruct Htype as [v ?]; subst; auto.
+    by iApply "HΦ".
+  - rewrite -default_val_eq_zero_val.
     iApply "HΦ".
-    iPureIntro.
-    split; congruence.
-  - rewrite {1}[in #(interface.nil)]to_val_unseal /=.
-    wp_pures.
-    rewrite -default_val_eq_zero_val.
-    iApply "HΦ".
-    done.
+    iPureIntro; auto.
 Qed.
+
+#[export] Typeclasses Opaque interface.type_assert interface.checked_type_assert.
+#[global] Opaque interface.type_assert interface.checked_type_assert.
 
 End wps.

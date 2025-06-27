@@ -2508,6 +2508,14 @@ Global Instance wp_func_call_checkedTypeAssert :
   WpFuncCall unittest "checkedTypeAssert" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_basicTypeSwitch :
+  WpFuncCall unittest "basicTypeSwitch" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_fancyTypeSwitch :
+  WpFuncCall unittest "fancyTypeSwitch" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_variadicFunc :
   WpFuncCall unittest "variadicFunc" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
