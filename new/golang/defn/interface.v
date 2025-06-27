@@ -44,7 +44,7 @@ Definition eq : val :=
                   end
     end.
 
-(* Models x.(T) - this checks the type of the value stored in interface object x
+(* Models v.(T) - this checks the type of the value stored in interface object x
 and also returns it. *)
 Definition type_assert : val :=
   λ: "v" "expected_type_id",
@@ -54,20 +54,30 @@ Definition type_assert : val :=
     "underlying_v"
     else Panic "coerce failed: wrong type".
 
-(* Models v, ok := x.(T) - this checks the type and returns a boolean on
-success. The type "T" is used to return the correct default value if the type
-assertion fails. *)
-Definition checked_type_assert : val :=
-  λ: "T" "v" "expected_type_id",
+(* Try converting interface value v to expected_type_id. Returns unit if the type mismatches.
+
+This low-level primitive does not require knowing the type of
+expected_type_id. *)
+Definition try_type_coerce : val :=
+  λ: "v" "expected_type_id",
     match: "v" with
       SOME "v" =>
         (let: ("type_id", "underlying_v") := "v" in
         if: type_id_eq "type_id" "expected_type_id"
         then ("underlying_v", #true)
-        else (type.zero_val "T", #false))
-     (* if the interface is nil, checked type assertions just return false *)
-     | NONE => (type.zero_val "T", #false)
+        else (#(), #false))
+     | NONE =>
+        (* if the interface is nil, checked type assertions just return false *)
+         (#(), #false)
      end.
+
+(* Models x, ok := v.(T) - this checks the type and returns a boolean on
+success. The type "T" is used to return the correct default value if the type
+assertion fails. *)
+Definition checked_type_assert : val :=
+  λ: "T" "v" "expected_type_id",
+    let: ("x", "ok") := try_type_coerce "v" "expected_type_id" in
+    if: "ok" then ("x", #true) else (type.zero_val "T", #false).
 
 End goose_lang.
 End interface.

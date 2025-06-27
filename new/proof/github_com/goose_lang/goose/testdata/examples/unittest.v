@@ -96,4 +96,73 @@ Proof.
   apply _.
 Qed.
 
+Lemma wp_basicTypeSwitch (x: interface.t) :
+  {{{ is_pkg_init unittest ∗
+      ⌜match x with
+      | interface.mk type_id v =>
+          (type_id = (""%go, "int"%go) → ∃ (v': w64), v = #v') ∧
+          (type_id = (""%go, "string"%go) → ∃ (v': go_string), v = #v')
+      | _ => True
+      end⌝
+  }}}
+    unittest@"basicTypeSwitch" #x
+  {{{ (y: w64), RET #y; True }}}.
+Proof.
+  wp_start as "%Htype". wp_auto.
+  wp_apply wp_interface_checked_type_assert.
+  {
+    destruct x; intuition.
+  }
+  iIntros (???).
+  wp_auto.
+  destruct ok; subst; wp_auto.
+  { by iApply "HΦ". }
+  wp_apply wp_interface_checked_type_assert.
+  {
+    destruct x; intuition.
+  }
+  iIntros (???).
+  wp_auto.
+  destruct ok; wp_auto.
+  { by iApply "HΦ". }
+  by iApply "HΦ".
+  Unshelve.
+  all: apply _.
+Qed.
+
+Lemma wp_fancyTypeSwitch (x: interface.t) :
+  {{{ is_pkg_init unittest ∗
+      ⌜match x with
+      | interface.mk type_id v =>
+          (type_id = (""%go, "int"%go) → ∃ (v': w64), v = #v') ∧
+          (type_id = (""%go, "string"%go) → ∃ (v': go_string), v = #v')
+      | _ => True
+      end⌝
+  }}}
+    unittest@"fancyTypeSwitch" #x
+  {{{ (y: w64), RET #y; True }}}.
+Proof.
+  wp_start as "%Htype". wp_auto.
+  wp_apply wp_interface_checked_type_assert.
+  {
+    destruct x; intuition.
+  }
+  iIntros (???); wp_auto.
+  destruct ok; subst; wp_auto.
+  { by iApply "HΦ". }
+  wp_apply wp_interface_checked_type_assert.
+  {
+    destruct x; intuition.
+  }
+  iIntros (???); wp_auto.
+  wp_alloc y' as "y'".
+  wp_auto.
+  destruct ok; subst; wp_auto.
+  { by iApply "HΦ". }
+  by iApply "HΦ".
+
+  Unshelve.
+  all: apply _.
+Qed.
+
 End proof.
