@@ -4245,7 +4245,7 @@ Definition raft__Step : val :=
                 slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"; "$sl4"])) in
                 (interface.get #"Infof"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1"))));;;
           return: (#interface.nil)
-        else #())));;;
+        else do:  #())));;;
     let: "$sw" := (![#raftpb.MessageType] (struct.field_ref #raftpb.Message #"Type"%go "m")) in
     (if: "$sw" = raftpb.MsgHup
     then
@@ -4597,7 +4597,7 @@ Definition stepLeader : val :=
           else
             (if: "$sw" = raftpb.MsgForgetLeader
             then return: (#interface.nil)
-            else #())))));;;
+            else do:  #())))));;;
     let: "pr" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (Fst (map.get (![#tracker.ProgressMap] (struct.field_ref #tracker.ProgressTracker #"Progress"%go (struct.field_ref #raft #"trk"%go (![#ptrT] "r")))) (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m")))) in
     do:  ("pr" <-[#ptrT] "$r0");;;
@@ -4677,7 +4677,7 @@ Definition stepLeader : val :=
               then
                 do:  (let: "$a0" := (![#uint64T] (struct.field_ref #raftpb.Message #"Index"%go "m")) in
                 (method_call #tracker #"Inflights'ptr" #"FreeLE" (![#ptrT] (struct.field_ref #tracker.Progress #"Inflights"%go (![#ptrT] "pr")))) "$a0")
-              else #())));;;
+              else do:  #())));;;
           (if: (method_call #v3.raft #"raft'ptr" #"maybeCommit" (![#ptrT] "r")) #()
           then
             do:  (let: "$a0" := (![#ptrT] "r") in
@@ -4857,7 +4857,7 @@ Definition stepLeader : val :=
               else
                 do:  (let: "$a0" := (![#uint64T] "leadTransferee") in
                 (method_call #v3.raft #"raft'ptr" #"sendAppend" (![#ptrT] "r")) "$a0"))
-            else #())))));;;
+            else do:  #())))));;;
     return: (#interface.nil)).
 
 (* stepCandidate is shared by StateCandidate and StatePreCandidate; the difference is
@@ -4948,7 +4948,7 @@ Definition stepCandidate : val :=
                   do:  (let: "$a0" := (![#uint64T] (struct.field_ref #raft #"Term"%go (![#ptrT] "r"))) in
                   let: "$a1" := None in
                   (method_call #v3.raft #"raft'ptr" #"becomeFollower" (![#ptrT] "r")) "$a0" "$a1")
-                else #()))
+                else do:  #()))
             else
               (if: "$sw" = raftpb.MsgTimeoutNow
               then
@@ -4959,7 +4959,7 @@ Definition stepCandidate : val :=
                 let: "$sl3" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #raftpb.Message #"From"%go "m"))) in
                 slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
                 (interface.get #"Debugf"%go (![#Logger] (struct.field_ref #raft #"logger"%go (![#ptrT] "r")))) "$a0" "$a1")
-              else #()))))));;;
+              else do:  #()))))));;;
     return: (#interface.nil)).
 
 Definition ReadState : go_type := structT [
@@ -5114,7 +5114,7 @@ Definition stepFollower : val :=
                       slice.literal #ReadState ["$sl0"])) in
                       (slice.append #ReadState) "$a0" "$a1") in
                       do:  ((struct.field_ref #raft #"readStates"%go (![#ptrT] "r")) <-[#sliceT] "$r0")
-                    else #())))))))));;;
+                    else do:  #())))))))));;;
     return: (#interface.nil)).
 
 (* logSliceFromMsgApp extracts the appended logSlice from a MsgApp message.
@@ -5887,7 +5887,7 @@ Definition sendMsgReadIndexResponse : val :=
           do:  (let: "$a0" := (![#raftpb.Message] "resp") in
           (method_call #v3.raft #"raft'ptr" #"send" (![#ptrT] "r")) "$a0")
         else do:  #()))
-      else #()));;;
+      else do:  #()));;;
     return: #()).
 
 (* NewRawNode instantiates a RawNode from the given configuration.
@@ -8137,7 +8137,7 @@ Definition DescribeEntry : val :=
             let: "$r0" := (let: "$a0" := (interface.make (#raftpb, #"ConfChangeV2") (![#raftpb.ConfChangeV2] "cc")) in
             (![#funcT] "formatConfChange") "$a0") in
             do:  ("formatted" <-[#stringT] "$r0")))
-        else #())));;;
+        else do:  #())));;;
     (if: (![#stringT] "formatted") ≠ #""%go
     then
       let: "$r0" := (#" "%go + (![#stringT] "formatted")) in

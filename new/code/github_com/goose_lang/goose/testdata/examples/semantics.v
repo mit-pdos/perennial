@@ -2446,7 +2446,7 @@ Definition testSwitchMultiple : val :=
     else
       (if: "$sw" = #(W64 0)
       then return: (#true)
-      else #()));;;
+      else do:  #()));;;
     return: (#false)).
 
 (* go: switch.go:26:6 *)

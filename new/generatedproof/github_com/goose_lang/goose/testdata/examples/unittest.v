@@ -2472,6 +2472,14 @@ Global Instance wp_func_call_setField :
   WpFuncCall unittest "setField" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_testSwitchVal :
+  WpFuncCall unittest "testSwitchVal" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_testSwitchMultiple :
+  WpFuncCall unittest "testSwitchMultiple" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_DoSomeLocking :
   WpFuncCall unittest "DoSomeLocking" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
