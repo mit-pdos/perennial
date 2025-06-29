@@ -143,26 +143,48 @@ Lemma wp_fancyTypeSwitch (x: interface.t) :
   {{{ (y: w64), RET #y; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
-  wp_apply wp_interface_checked_type_assert.
+  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
   {
     destruct x; intuition.
   }
   iIntros (???); wp_auto.
   destruct ok; subst; wp_auto.
   { by iApply "HΦ". }
-  wp_apply wp_interface_checked_type_assert.
+  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
   {
     destruct x; intuition.
   }
   iIntros (???); wp_auto.
-  wp_alloc y' as "y'".
-  wp_auto.
   destruct ok; subst; wp_auto.
   { by iApply "HΦ". }
+  wp_if_destruct.
+  { rewrite bool_decide_true //. wp_auto. by iApply "HΦ". }
+  rewrite bool_decide_false //. wp_auto.
   by iApply "HΦ".
+Qed.
 
-  Unshelve.
-  all: apply _.
+Lemma wp_multiTypeSwitch x :
+  {{{ is_pkg_init unittest ∗
+      ⌜match x with
+      | interface.mk type_id v =>
+          (type_id = (""%go, "int"%go) → ∃ (v': w64), v = #v') ∧
+          (type_id = (""%go, "string"%go) → ∃ (v': go_string), v = #v')
+      | _ => True
+      end⌝
+  }}}
+    unittest@"multiTypeSwitch" #x
+  {{{ (x : w64), RET #x; True }}}.
+Proof.
+  wp_start as "%Htype". wp_auto.
+  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
+  { destruct x; intuition. }
+  iIntros (???). wp_auto.
+  destruct ok; subst; wp_auto.
+  { by iApply "HΦ". }
+  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
+  { destruct x; intuition. }
+  iIntros (???). wp_auto.
+  destruct ok; subst; wp_auto; by iApply "HΦ".
 Qed.
 
 Lemma wp_testSwitchMultiple (x: w64) :
