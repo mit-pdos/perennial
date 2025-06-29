@@ -186,4 +186,12 @@ Proof.
   word.
 Qed.
 
+Lemma wp_Point__IgnoreReceiver (p : unittest.Point.t) :
+  {{{ is_pkg_init unittest }}}
+    p@unittest@"Point"@"IgnoreReceiver" #()
+  {{{ RET #"ok"; True }}}.
+Proof.
+  wp_start. by iApply "HΦ".
+Qed.
+
 End proof.

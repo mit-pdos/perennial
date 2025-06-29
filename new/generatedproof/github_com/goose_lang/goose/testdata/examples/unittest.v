@@ -2696,12 +2696,20 @@ Global Instance wp_method_call_Point_GetField :
   WpMethodCall unittest "Point" "GetField" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
+Global Instance wp_method_call_Point_IgnoreReceiver :
+  WpMethodCall unittest "Point" "IgnoreReceiver" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
 Global Instance wp_method_call_Point'ptr_Add :
   WpMethodCall unittest "Point'ptr" "Add" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Point'ptr_GetField :
   WpMethodCall unittest "Point'ptr" "GetField" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Point'ptr_IgnoreReceiver :
+  WpMethodCall unittest "Point'ptr" "IgnoreReceiver" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S_readBVal :

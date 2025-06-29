@@ -2190,6 +2190,11 @@ Definition UseAddWithLiteral : val :=
     do:  ("r" <-[#uint64T] "$r0");;;
     return: (![#uint64T] "r")).
 
+(* go: struct_method.go:29:14 *)
+Definition Point__IgnoreReceiver : val :=
+  rec: "Point__IgnoreReceiver" <> <> :=
+    exception_do (return: (#"ok"%go)).
+
 Definition TwoInts : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
@@ -2520,10 +2525,12 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [
                  method_call #unittest.unittest #"RecursiveEmbedded'ptr" #"recurEmbeddedMethod" (![#ptrT] (struct.field_ref #Other #"RecursiveEmbedded"%go "$recvAddr"))
                  )%V)]); ("RecursiveEmbedded"%go, []); ("RecursiveEmbedded'ptr"%go, [("recurEmbeddedMethod"%go, RecursiveEmbedded__recurEmbeddedMethod)]); ("Block"%go, []); ("Block'ptr"%go, []); ("SliceAlias"%go, []); ("SliceAlias'ptr"%go, []); ("thing"%go, []); ("thing'ptr"%go, []); ("sliceOfThings"%go, [("getThingRef"%go, sliceOfThings__getThingRef)]); ("sliceOfThings'ptr"%go, [("getThingRef"%go, (λ: "$recvAddr",
                  method_call #unittest.unittest #"sliceOfThings" #"getThingRef" (![#sliceOfThings] "$recvAddr")
-                 )%V)]); ("Point"%go, [("Add"%go, Point__Add); ("GetField"%go, Point__GetField)]); ("Point'ptr"%go, [("Add"%go, (λ: "$recvAddr",
+                 )%V)]); ("Point"%go, [("Add"%go, Point__Add); ("GetField"%go, Point__GetField); ("IgnoreReceiver"%go, Point__IgnoreReceiver)]); ("Point'ptr"%go, [("Add"%go, (λ: "$recvAddr",
                  method_call #unittest.unittest #"Point" #"Add" (![#Point] "$recvAddr")
                  )%V); ("GetField"%go, (λ: "$recvAddr",
                  method_call #unittest.unittest #"Point" #"GetField" (![#Point] "$recvAddr")
+                 )%V); ("IgnoreReceiver"%go, (λ: "$recvAddr",
+                 method_call #unittest.unittest #"Point" #"IgnoreReceiver" (![#Point] "$recvAddr")
                  )%V)]); ("TwoInts"%go, []); ("TwoInts'ptr"%go, []); ("S"%go, [("readBVal"%go, S__readBVal)]); ("S'ptr"%go, [("negateC"%go, S__negateC); ("readA"%go, S__readA); ("readB"%go, S__readB); ("readBVal"%go, (λ: "$recvAddr",
                  method_call #unittest.unittest #"S" #"readBVal" (![#S] "$recvAddr")
                  )%V); ("refC"%go, S__refC); ("writeB"%go, S__writeB)]); ("B"%go, []); ("B'ptr"%go, []); ("A"%go, []); ("A'ptr"%go, []); ("Timestamp"%go, []); ("Timestamp'ptr"%go, []); ("UseTypeAbbrev"%go, []); ("UseTypeAbbrev'ptr"%go, []); ("UseNamedType"%go, []); ("UseNamedType'ptr"%go, [])].
