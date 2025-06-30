@@ -716,11 +716,10 @@ Proof.
       { rewrite length_app. rewrite length_app length_replicate in Hreplicas_sz'. word. }
       nat_cleanup.
       rewrite length_app replicate_add.
-      rewrite lookup_app_r; last first.
-      { rewrite Hreplicas_len. rewrite length_replicate. reflexivity. }
-      rewrite lookup_app_r; last first.
-      { rewrite Hreplicas_len. reflexivity. }
-      simpl. rewrite ?length_replicate //.
+      rewrite !lookup_app_r.
+      { simpl. rewrite ?length_replicate //. }
+      { rewrite Hreplicas_len ?length_replicate //. }
+      { rewrite Hreplicas_len ?length_replicate //. }
     }
     iIntros. iExists _. iFrame. eauto.
   }
