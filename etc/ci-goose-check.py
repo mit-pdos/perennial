@@ -57,66 +57,71 @@ def checkout(proj: Proj):
     sp.run(["git", "checkout", proj.commit], **shared_args)
 
 
-for proj in projs.values():
-    checkout(proj)
+def main():
+    for proj in projs.values():
+        checkout(proj)
 
-print("\nRunning Goose")
-sp.run(
-    [
-        "etc/update-goose.py",
-        "--compile",
-        "--goose",
-        projs["goose"].path(),
-        "--goose-examples",
-        "--channel",
-        "--std",
-        projs["std"].path(),
-        "--marshal",
-        projs["marshal"].path(),
-        "--examples",
-        projs["examples"].path(),
-        "--journal",
-        projs["journal"].path(),
-        "--nfsd",
-        projs["nfsd"].path(),
-        "--gokv",
-        projs["gokv"].path(),
-        "--mvcc",
-        projs["mvcc"].path(),
-    ],
-    check=True,
-)
+    print("\nRunning Goose")
+    sp.run(
+        [
+            "etc/update-goose.py",
+            "--compile",
+            "--goose",
+            projs["goose"].path(),
+            "--goose-examples",
+            "--channel",
+            "--std",
+            projs["std"].path(),
+            "--marshal",
+            projs["marshal"].path(),
+            "--examples",
+            projs["examples"].path(),
+            "--journal",
+            projs["journal"].path(),
+            "--nfsd",
+            projs["nfsd"].path(),
+            "--gokv",
+            projs["gokv"].path(),
+            "--mvcc",
+            projs["mvcc"].path(),
+        ],
+        check=True,
+    )
 
-print("\nRunning new Goose")
-sp.run(
-    [
-        "new/etc/update-goose-new.py",
-        "--compile",
-        "--goose",
-        projs["new_goose"].path(),
-        "--std-lib",
-        "--goose-examples",
-        "--channel",
-        "--gokv",
-        projs["new_gokv"].path(),
-        "--marshal",
-        projs["marshal"].path(),
-        "--std",
-        projs["std"].path(),
-        "--primitive",
-        projs["primitive"].path(),
-        "--etcd",
-        projs["etcd"].path(),
-        "--etcd-raft",
-        projs["etcd-raft"].path(),
-        "--go-journal",
-        projs["journal"].path(),
-        "--pav",
-        projs["pav"].path(),
-    ],
-    check=True,
-)
+    print("\nRunning new Goose")
+    sp.run(
+        [
+            "new/etc/update-goose-new.py",
+            "--compile",
+            "--goose",
+            projs["new_goose"].path(),
+            "--std-lib",
+            "--goose-examples",
+            "--channel",
+            "--gokv",
+            projs["new_gokv"].path(),
+            "--marshal",
+            projs["marshal"].path(),
+            "--std",
+            projs["std"].path(),
+            "--primitive",
+            projs["primitive"].path(),
+            "--etcd",
+            projs["etcd"].path(),
+            "--etcd-raft",
+            projs["etcd-raft"].path(),
+            "--go-journal",
+            projs["journal"].path(),
+            "--pav",
+            projs["pav"].path(),
+        ],
+        check=True,
+    )
 
-print("\nSeeing if anything is out of sync")
-sp.run(["git", "diff", "--exit-code"], check=True)
-print("\nSuccess!")
+    print("\nSeeing if anything is out of sync")
+    sp.run(["git", "diff", "--exit-code"], check=True)
+    print("\nSuccess!")
+
+
+if __name__ == "__main__":
+    main()
