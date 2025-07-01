@@ -1308,7 +1308,7 @@ Proof.
     iExists _, _; iFrame "Haddrs' Hblocks'".
     iSplit; auto.
     iSplit.
-    { iPureIntro.
+   { iPureIntro.
       simpl in Hbkslen.
       apply circ_low_wf_empty; word. }
     change (uint.Z 0) with 0.
@@ -1317,8 +1317,10 @@ Proof.
     iFrame.
     iPureIntro.
     { split.
-      - reflexivity.
-      - reflexivity. }
+      - rewrite /block_encodes /has_encoding /marshal_proof.encode /marshal_proof.encode1.
+        by rewrite ?u64_le_unseal.
+      - rewrite /block_encodes /has_encoding /marshal_proof.encode /marshal_proof.encode1.
+        by rewrite ?u64_le_unseal. }
     }
   iFrame "Hstart2 HdiskEnd2".
   iSplit; auto.

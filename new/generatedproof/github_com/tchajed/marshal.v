@@ -5,8 +5,148 @@ Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.tchajed.marshal.
+
+Set Default Proof Using "Type".
+
 Module marshal.
-Axiom falso : False.
+
+(* type marshal.Enc *)
+Module Enc.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  b' : slice.t;
+  off' : loc;
+}.
+End def.
+End Enc.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Enc : Settable Enc.t :=
+  settable! Enc.mk < Enc.b'; Enc.off' >.
+Global Instance into_val_Enc : IntoVal Enc.t :=
+  {| to_val_def v :=
+    struct.val_aux marshal.Enc [
+    "b" ::= #(Enc.b' v);
+    "off" ::= #(Enc.off' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Enc : IntoValTyped Enc.t marshal.Enc :=
+{|
+  default_val := Enc.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Enc_b : IntoValStructField "b" marshal.Enc Enc.b'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Enc_off : IntoValStructField "off" marshal.Enc Enc.off'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Enc b' off':
+  PureWp True
+    (struct.make #marshal.Enc (alist_val [
+      "b" ::= #b';
+      "off" ::= #off'
+    ]))%struct
+    #(Enc.mk b' off').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Enc_struct_fields_split dq l (v : Enc.t) :
+  StructFieldsSplit dq l v (
+    "Hb" ∷ l ↦s[marshal.Enc :: "b"]{dq} v.(Enc.b') ∗
+    "Hoff" ∷ l ↦s[marshal.Enc :: "off"]{dq} v.(Enc.off')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Enc.b' v)) marshal.Enc "b"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type marshal.Dec *)
+Module Dec.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  b' : slice.t;
+  off' : loc;
+}.
+End def.
+End Dec.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_Dec : Settable Dec.t :=
+  settable! Dec.mk < Dec.b'; Dec.off' >.
+Global Instance into_val_Dec : IntoVal Dec.t :=
+  {| to_val_def v :=
+    struct.val_aux marshal.Dec [
+    "b" ::= #(Dec.b' v);
+    "off" ::= #(Dec.off' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Dec : IntoValTyped Dec.t marshal.Dec :=
+{|
+  default_val := Dec.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Dec_b : IntoValStructField "b" marshal.Dec Dec.b'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Dec_off : IntoValStructField "off" marshal.Dec Dec.off'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Dec b' off':
+  PureWp True
+    (struct.make #marshal.Dec (alist_val [
+      "b" ::= #b';
+      "off" ::= #off'
+    ]))%struct
+    #(Dec.mk b' off').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Dec_struct_fields_split dq l (v : Dec.t) :
+  StructFieldsSplit dq l v (
+    "Hb" ∷ l ↦s[marshal.Dec :: "b"]{dq} v.(Dec.b') ∗
+    "Hoff" ∷ l ↦s[marshal.Dec :: "off"]{dq} v.(Dec.off')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Dec.b' v)) marshal.Dec "b"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
 
 Section names.
 
@@ -26,7 +166,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined marshal :=
   is_pkg_defined := is_global_definitions marshal var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_compute_new_cap :
@@ -57,6 +197,10 @@ Global Instance wp_func_call_ReadBool :
   WpFuncCall marshal "ReadBool" _ (is_pkg_defined marshal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_ReadLenPrefixedBytes :
+  WpFuncCall marshal "ReadLenPrefixedBytes" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_WriteInt :
   WpFuncCall marshal "WriteInt" _ (is_pkg_defined marshal) :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -75,6 +219,22 @@ Global Instance wp_func_call_WriteBool :
 
 Global Instance wp_func_call_WriteLenPrefixedBytes :
   WpFuncCall marshal "WriteLenPrefixedBytes" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_ReadSlice :
+  WpFuncCall marshal "ReadSlice" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_ReadSliceLenPrefix :
+  WpFuncCall marshal "ReadSliceLenPrefix" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WriteSlice :
+  WpFuncCall marshal "WriteSlice" _ (is_pkg_defined marshal) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WriteSliceLenPrefix :
+  WpFuncCall marshal "WriteSliceLenPrefix" _ (is_pkg_defined marshal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

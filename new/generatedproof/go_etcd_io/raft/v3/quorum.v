@@ -8,9 +8,12 @@ Require Export New.generatedproof.strconv.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.raft.v3.quorum.
-Module quorum.
-Axiom falso : False.
 
+Set Default Proof Using "Type".
+
+Module quorum.
+
+(* type quorum.MajorityConfig *)
 Module MajorityConfig.
 Section def.
 Context `{ffi_syntax}.
@@ -18,6 +21,7 @@ Definition t := loc.
 End def.
 End MajorityConfig.
 
+(* type quorum.JointConfig *)
 Module JointConfig.
 Section def.
 Context `{ffi_syntax}.
@@ -25,6 +29,7 @@ Definition t := (vec MajorityConfig.t (uint.nat (W64 2))).
 End def.
 End JointConfig.
 
+(* type quorum.Index *)
 Module Index.
 Section def.
 Context `{ffi_syntax}.
@@ -32,6 +37,7 @@ Definition t := w64.
 End def.
 End Index.
 
+(* type quorum.AckedIndexer *)
 Module AckedIndexer.
 Section def.
 Context `{ffi_syntax}.
@@ -39,6 +45,7 @@ Definition t := interface.t.
 End def.
 End AckedIndexer.
 
+(* type quorum.mapAckIndexer *)
 Module mapAckIndexer.
 Section def.
 Context `{ffi_syntax}.
@@ -46,6 +53,7 @@ Definition t := loc.
 End def.
 End mapAckIndexer.
 
+(* type quorum.VoteResult *)
 Module VoteResult.
 Section def.
 Context `{ffi_syntax}.
@@ -73,7 +81,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined quorum :=
   is_pkg_defined := is_global_definitions quorum var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
   "H_VoteResult_index" ∷ _VoteResult_index ↦ (default_val (vec w8 (uint.nat (W64 4)))).
 
 Global Instance wp_globals_get__VoteResult_index : 

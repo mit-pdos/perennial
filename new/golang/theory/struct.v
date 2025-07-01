@@ -5,6 +5,8 @@ From New.golang.theory Require Import typed_pointsto exception list typing dynam
 From Perennial.Helpers Require Import NamedProps.
 From RecordUpdate Require Export RecordUpdate.
 From Perennial Require Import base.
+From Ltac2 Require Import Ltac2.
+Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
@@ -101,6 +103,9 @@ Definition proj_descriptor_wf (d : struct.descriptor) :=
   end.
 
 (* This hint converts [someStructType] into [structT blah] *)
+Global Hint Extern 10 (struct.Wf ?t) =>
+         progress (let t' := (eval hnf in t) in
+                   change t with t') : typeclass_instances.
 Global Hint Extern 10 (struct.Wf ?t) => unfold t : typeclass_instances.
 Global Hint Extern 3 (struct.Wf (structT ?d)) => exact (proj_descriptor_wf d) : typeclass_instances.
 
@@ -341,27 +346,85 @@ Ltac cbn_w8 :=
   with_strategy transparent [w8_word_instance]
     (with_strategy opaque [loc_add] cbn).
 
+(* TODO: maybe should re-implement this in a more principled way *)
+Ltac _solve_has_go_type_step :=
+  match goal with
+  | |- has_go_type (zero_val _) _ => apply zero_val_has_go_type
+  | |- has_go_type _ _ => solve [ apply to_val_has_go_type ]
+  | |- has_go_type _ _ => try assumption; constructor
+  | |- ∀ _, _ => intros
+  | H: In _ _ |- _ => destruct H
+  | H: (@eq (go_string * go_type) (_, _) _) |- _ =>
+      (* replaces solve_has_go_type_step's use of inversion_clear with the more
+      powerful inversion; subst; clear pattern *)
+      inversion H; subst; clear H
+  | _ => contradiction
+  | _ => progress cbn_w8
+  end.
+
+(* extend typing's solve_has_go_type to general goals *)
+Ltac solve_has_go_type' :=
+  repeat _solve_has_go_type_step.
+
+(* solve ∀ v, has_go_type (#v) t in IntoValTyped *)
+Ltac solve_to_val_type :=
+  lazymatch goal with
+  | |- forall (_: ffi_syntax), _ => let H := fresh "H" in intros H
+  | _ => idtac
+  end;
+  intros v;
+  rewrite to_val_unseal /=;
+  destruct v; cbn_w8;
+  solve_has_go_type'.
+
 (* solve #default_val = zero_val t in IntoValTyped *)
 Ltac solve_zero_val :=
   intros;
-  rewrite zero_val_eq to_val_unseal /= struct.val_aux_unseal /=;
-  rewrite zero_val_eq /= !to_val_unseal //=;
-  cbn_w8.
+  (* unfold and simpify, resulting in goal like
+   [struct.val_aux t [a:=#(default_val A); ...; y:=#(default_val Y)] = struct.val_aux t []]. *)
+  rewrite zero_val_eq to_val_unseal; with_strategy opaque [default_val] cbn;
+  (* replace the [default_val] field values with [zero_val], then unfold
+   [struct.val_aux], at which point there should be values with no [to_val] at
+   all, which are definitionally equal. *)
+  rewrite ?default_val_eq_zero_val ?struct.val_aux_unseal //.
 
 Ltac solve_to_val_inj :=
   (* prove Inj (=) (=) (λ v, #v) *)
   intros;
   intros [] [];
-  rewrite to_val_unseal /= struct.val_aux_unseal /=;
+  rewrite to_val_unseal /= ?struct.val_aux_unseal /=;
     cbn_w8;
   inv 1;
   try reflexivity.
 
 Ltac solve_into_val_struct_field :=
   (* prove IntoValStructField *)
-  constructor; intros ?;
-  rewrite to_val_unseal /= struct.val_aux_unseal /= to_val_unseal //=;
-  cbn_w8.
+  constructor; intros v;
+  lazymatch goal with
+  | |- _ = ?rhs =>
+      rewrite [in rhs]to_val_unseal /= struct.val_aux_unseal /=
+  end;
+  destruct v; try reflexivity; cbn_w8.
+
+(* XXX: the to_val for go_string * go_type isn't produced by the PureWp
+instances, instead we just have a raw PairV which doesn't work with lists.
+
+We probably shouldn't be using a pair here but instead a new inductive (now that
+the type is used with to_val, after the switch to "dynamic" types).
+*)
+Lemma struct_field_to_val `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  (f: go_string) (t: go_type) :
+  (f ::= #t)%V = #(f, t).
+Proof. rewrite [in #(f,t)]to_val_unseal //. Qed.
+
+(* solve the PureWp instance that relates the val representing a generic type to
+its go_type-based model *)
+Ltac solve_type_pure_wp :=
+  pure_wp_start;
+  repeat (rewrite ?struct_field_to_val || wp_pures);
+  (* this should solve the goal; the [try] is only there to leave a proof state
+  for debugging *)
+  try iApply "HΦ".
 
 Ltac solve_struct_make_pure_wp :=
   intros;
@@ -374,10 +437,84 @@ Ltac solve_struct_make_pure_wp :=
       apply wp_struct_make; cbn; auto
   end.
 
-Ltac simpl_field_ref_f :=
+Lemma pointsto_loc_add_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  l dq (off1 off2: Z) `{!IntoVal V} (v: V) :
+  off1 = off2 →
+  (l +ₗ off1) ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
+Proof. intros; subst; rewrite //. Qed.
+
+Lemma pointsto_loc_add0_equiv `{ffi_syntax} `{!ffi_interp ffi} `{!heapGS Σ}
+  l dq (off2: Z) `{!IntoVal V} (v: V) :
+  0 = off2 →
+  l ↦{dq} v ⊣⊢ (l +ₗ off2) ↦{dq} v.
+Proof. intros; subst; rewrite loc_add_0 //. Qed.
+
+Lemma has_bounded_type_size_def (t: go_type) `{BoundedTypeSize t} :
+  go_type_size_def t < 2^32.
+Proof.
+  destruct H as [H].
+  rewrite go_type_size_unseal in H.
+  auto.
+Qed.
+
+Lemma has_bounded_type_size_intro {t} :
+  match decide (Z.of_nat (go_type_size_def t) < 2^32) with
+  | left _ => True
+  | right _ => False
+  end → BoundedTypeSize t.
+Proof.
+  destruct (decide _); intros; [ | contradiction ].
+  constructor.
+  rewrite go_type_size_unseal //.
+Qed.
+
+(* only works if type size can be computed *)
+Ltac solve_bounded_type_size :=
+  apply (has_bounded_type_size_intro);
+  try exact I.
+
+#[global] Hint Extern 10 (BoundedTypeSize _) => solve [ solve_bounded_type_size ] : typeclass_instances.
+
+(* solves goals of the form l ↦{dq} v ⊣⊢ l' ↦{dq} v, where the locations involve
+offset calculations. *)
+Ltac solve_field_ref_f :=
   rewrite struct.field_ref_f_unseal /struct.field_ref_f_def;
   with_strategy transparent [w8_word_instance] (with_strategy opaque [loc_add] cbn);
-  rewrite ?go_type_size_unseal /= ?loc_add_assoc ?loc_add_0 //.
+  rewrite ?loc_add_assoc;
+  lazymatch goal with
+  | |- typed_pointsto (_ +ₗ _) _ _ ⊣⊢ _ => apply pointsto_loc_add_equiv
+  | |- typed_pointsto _ _ _ ⊣⊢ _ => apply pointsto_loc_add0_equiv
+  | _ => idtac
+  end;
+  rewrite ?go_type_size_unseal //=;
+  repeat
+    match goal with
+    | |- context[go_type_size_def ?t] =>
+        learn_hyp (has_bounded_type_size_def t)
+    end;
+  try word.
+
+Lemma sep_equiv_split Σ (P1 P2 Q1 Q2: iProp Σ) :
+  P1 ⊣⊢ Q1 →
+  P2 ⊣⊢ Q2 →
+  (P1 ∗ P2 ⊣⊢ Q1 ∗ Q2).
+Proof.
+  intros H1 H2. f_equiv; auto.
+Qed.
+
+(* To prove StructFieldsSplit we need to prove equivalence if a split based on
+[flatten_struct] and one based on a field offset for each field.
+
+This tactic converts one [length (flatten_struct x)] to [go_type_size t]. The
+parameters give it the right value and go_type to relate.
+
+*)
+Ltac simpl_one_flatten_struct x go_t f :=
+  rewrite (@has_go_type_len _ x (struct.field_offset_f go_t f).2); [ | by solve_has_go_type' ];
+  (* this [solve_field_ref_f] should solve the subgoal, but it does not fail
+  otherwise if there are bugs; it's nice for the tactic to leave the simplified
+  state for debugging *)
+  apply sep_equiv_split; [ solve_field_ref_f | ].
 
 Ltac unfold_typed_pointsto :=
   rewrite typed_pointsto_unseal /typed_pointsto_def to_val_unseal /=
@@ -394,13 +531,14 @@ Module __struct_automation_test.
 
 Import New.golang.defn.
 
+(* TEST *)
 Module time.
 
 Definition Time : go_type := structT [
   "wall" :: uint64T;
   "ext" :: int64T;
   "loc" :: ptrT
-].
+]%struct.
 
 Module Time.
 Section def.
@@ -428,10 +566,11 @@ Global Program Instance into_val_typed_Time `{ffi_syntax} : IntoValTyped Time.t 
 {|
   default_val := Time.mk (default_val _) (default_val _) (default_val _);
 |}.
-Next Obligation. rewrite to_val_unseal /=; solve_has_go_type. Qed.
+Next Obligation. solve_to_val_type. Qed.
 Next Obligation. solve_zero_val. Qed.
 Next Obligation. solve_to_val_inj. Qed.
 Final Obligation. solve_decision. Qed.
+
 Global Instance into_val_struct_field_Time_wall `{ffi_syntax} : IntoValStructField "wall" time.Time Time.wall'.
 Proof. solve_into_val_struct_field. Qed.
 
@@ -441,9 +580,8 @@ Proof. solve_into_val_struct_field. Qed.
 Global Instance into_val_struct_field_Time_loc `{ffi_syntax} : IntoValStructField "loc" time.Time Time.loc'.
 Proof. solve_into_val_struct_field. Qed.
 
-
 Context `{!ffi_syntax} `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Time `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} wall' ext' loc':
+Global Instance wp_struct_make_Time wall' ext' loc':
   PureWp True
     (struct.make #time.Time (alist_val [
       "wall" ::= #wall';
@@ -466,12 +604,146 @@ Proof.
   unfold_typed_pointsto; split_pointsto_app.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  rewrite (@has_go_type_len _ (# (Time.wall' v)) int64T); [ | by solve_has_go_type ].
-  rewrite (@has_go_type_len _ (# (Time.ext' v)) int64T); [ | by solve_has_go_type ].
-  simpl_field_ref_f.
+
+  simpl_one_flatten_struct (#(Time.wall' v)) time.Time "wall"%go.
+  simpl_one_flatten_struct (#(Time.ext' v)) time.Time "ext"%go.
+
+  solve_field_ref_f.
 Qed.
 
 End instances.
 End time.
+
+(* TEST *)
+Module empty_struct.
+Definition empty_struct : go_type := structT [].
+
+Module unit.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+}.
+End def.
+End unit.
+
+Section instances.
+Context `{ffi_syntax}.
+Global Instance into_val_unit : IntoVal unit.t :=
+  {| to_val_def v :=
+    struct.val_aux empty_struct [
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_unit : IntoValTyped unit.t empty_struct :=
+{|
+  default_val := unit.mk;
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_unit:
+  PureWp True
+    (struct.make #empty_struct (alist_val [
+    ]))%struct
+    #(unit.mk).
+Proof. solve_struct_make_pure_wp. Qed.
+
+End instances.
+
+End empty_struct.
+
+
+(* TEST *)
+Module generic_struct.
+
+Module generics.
+Definition Box `{ffi_syntax} : val :=
+  λ: "T", type.structT [
+    (#"Value"%go, "T")
+  ]%struct.
+End generics.
+
+Module Box.
+Section def.
+Context `{ffi_syntax}.
+Definition ty (T: go_type) : go_type := structT [
+      "Value" :: T
+  ]%struct.
+Record t `{!IntoVal T'} `{!IntoValTyped T' T} := mk {
+  Value' : T';
+}.
+End def.
+End Box.
+
+Arguments Box.mk {_} {T'} {_ T _}.
+Arguments Box.t {_} T' {_ T _}.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Context `{!IntoVal T'} `{!IntoValTyped T' T}.
+
+Global Instance Box_ty_wf : struct.Wf (Box.ty T).
+Proof. apply _. Qed.
+
+Global Instance settable_Box : Settable (Box.t T') :=
+  settable! (Box.mk (T:=T)) < Box.Value' >.
+Global Instance into_val_Box : IntoVal (Box.t T') :=
+  {| to_val_def v :=
+    struct.val_aux (Box.ty T) [
+    "Value" ::= #(Box.Value' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Box : IntoValTyped (Box.t T') (Box.ty T) :=
+{|
+  default_val := Box.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Box_Value : IntoValStructField "Value" (Box.ty T) Box.Value'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+
+Global Instance wp_type_Box :
+  PureWp True
+         (generics.Box #T)
+         #(Box.ty T).
+Proof. solve_type_pure_wp. Qed.
+
+Global Instance wp_struct_make_Box Value':
+  PureWp True
+    (struct.make #(Box.ty T) (alist_val [
+      "Value" ::= #Value'
+    ]))%struct
+    #(Box.mk Value').
+Proof. solve_struct_make_pure_wp. Qed.
+
+Global Instance Box_struct_fields_split dq l (v : Box.t T') :
+  StructFieldsSplit dq l v (
+    "HValue" ∷ l ↦s[Box.ty T :: "Value"]{dq} v.(Box.Value')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+End generic_struct.
 
 End __struct_automation_test.

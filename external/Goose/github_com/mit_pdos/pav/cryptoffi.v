@@ -11,15 +11,26 @@ Definition HashLen : expr := #32.
 
 Definition NewHasher: val :=
   rec: "NewHasher" <> :=
-    Panic "ffi".
+    let: "ptr_hr" := ref (zero_val (slice.T byteT)) in
+    "ptr_hr".
 
 Definition Hasher__Write: val :=
   rec: "Hasher__Write" "ptr_hr" "sl_b" :=
+    "ptr_hr" <-[slice.T byteT] (SliceAppendSlice byteT (![slice.T byteT] "ptr_hr") "sl_b").
+
+Definition HashComputeHelper : val :=
+  rec: "HashComputeHelper" "sl" :=
     Panic "ffi".
+
+Definition HashProph : proph_id.
+Admitted.
 
 Definition Hasher__Sum: val :=
   rec: "Hasher__Sum" "ptr_hr" "sl_b" :=
-    Panic "ffi".
+    let: "h" := HashComputeHelper (![slice.T byteT] "ptr_hr") in
+    (* XXX convert [sl_b] and [h] into [val] for [ResolveProph] *)
+    (* ResolveProph (#HashProph) ... *)
+    SliceAppendSlice byteT "sl_b" "h".
 
 (* Signature. *)
 

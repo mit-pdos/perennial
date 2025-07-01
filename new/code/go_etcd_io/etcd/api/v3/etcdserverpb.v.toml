@@ -39,3 +39,7 @@ translate = [
   "Compare_Lease",
 
 ]
+
+imports = [
+  "!*",
+]

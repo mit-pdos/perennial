@@ -54,7 +54,8 @@ Definition RWMutex__RLock : val :=
       do:  ((func_call #race.race #"Enable"%go) #());;;
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"readerSem"%go (![#ptrT] "rw")) in
       (func_call #race.race #"Acquire"%go) "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* TryRLock tries to lock rw for reading and reports whether it succeeded.
 
@@ -124,7 +125,8 @@ Definition RWMutex__RUnlock : val :=
     else do:  #()));;;
     (if: race.Enabled
     then do:  ((func_call #race.race #"Enable"%go) #())
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* go: rwmutex.go:129:20 *)
 Definition RWMutex__rUnlockSlow : val :=
@@ -144,7 +146,8 @@ Definition RWMutex__rUnlockSlow : val :=
       let: "$a1" := #false in
       let: "$a2" := #(W64 1) in
       (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* Lock locks rw for writing.
    If the lock is already locked for reading or writing,
@@ -180,7 +183,8 @@ Definition RWMutex__Lock : val :=
       (func_call #race.race #"Acquire"%go) "$a0");;;
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"writerSem"%go (![#ptrT] "rw")) in
       (func_call #race.race #"Acquire"%go) "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* TryLock tries to lock rw for writing and reports whether it succeeded.
 
@@ -265,7 +269,17 @@ Definition RWMutex__Unlock : val :=
     do:  ((method_call #sync.sync #"Mutex'ptr" #"Unlock" (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
     (if: race.Enabled
     then do:  ((func_call #race.race #"Enable"%go) #())
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
+
+(* RLocker returns a [Locker] interface that implements
+   the [Locker.Lock] and [Locker.Unlock] methods by calling rw.RLock and rw.RUnlock.
+
+   go: rwmutex.go:240:20 *)
+Definition RWMutex__RLocker : val :=
+  rec: "RWMutex__RLocker" "rw" <> :=
+    exception_do (let: "rw" := (mem.alloc "rw") in
+    return: (interface.make (#sync.sync, #"rlocker'ptr") (![#ptrT] "rw"))).
 
 Definition WaitGroup : go_type := structT [
   "noCopy" :: noCopy;
@@ -324,12 +338,12 @@ Definition WaitGroup__Add : val :=
     else do:  #());;;
     (if: int_lt (![#int32T] "v") #(W32 0)
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: negative WaitGroup counter"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: negative WaitGroup counter"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (((![#uint32T] "w") ≠ #(W32 0)) && (int_gt (![#intT] "delta") #(W64 0))) && ((![#int32T] "v") = (s_to_w32 (![#intT] "delta")))
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (int_gt (![#int32T] "v") #(W32 0)) || ((![#uint32T] "w") = #(W32 0))
@@ -337,7 +351,7 @@ Definition WaitGroup__Add : val :=
     else do:  #());;;
     (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ (![#uint64T] "state")
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := #(W64 0) in
@@ -346,7 +360,8 @@ Definition WaitGroup__Add : val :=
       do:  (let: "$a0" := (struct.field_ref #WaitGroup #"sema"%go (![#ptrT] "wg")) in
       let: "$a1" := #false in
       let: "$a2" := #(W64 0) in
-      (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2"))).
+      (func_call #sync.sync #"runtime_Semrelease"%go) "$a0" "$a1" "$a2"));;;
+    return: #()).
 
 (* Done decrements the [WaitGroup] counter by one.
 
@@ -355,7 +370,8 @@ Definition WaitGroup__Done : val :=
   rec: "WaitGroup__Done" "wg" <> :=
     exception_do (let: "wg" := (mem.alloc "wg") in
     do:  (let: "$a0" := #(W64 (- 1)) in
-    (method_call #sync.sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0")).
+    (method_call #sync.sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0");;;
+    return: #()).
 
 (* Wait blocks until the [WaitGroup] counter is zero.
 
@@ -399,7 +415,7 @@ Definition WaitGroup__Wait : val :=
         (func_call #sync.sync #"runtime_SemacquireWaitGroup"%go) "$a0");;;
         (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ #(W64 0)
         then
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"sync: WaitGroup is reused before previous Wait has returned"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: WaitGroup is reused before previous Wait has returned"%go) in
           Panic "$a0")
         else do:  #());;;
         (if: race.Enabled
@@ -409,13 +425,14 @@ Definition WaitGroup__Wait : val :=
           (func_call #race.race #"Acquire"%go) "$a0")
         else do:  #());;;
         return: (#())
-      else do:  #()))).
+      else do:  #()));;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [("NewCond"%go, NewCond); ("runtime_Semacquire"%go, runtime_Semacquire); ("runtime_SemacquireWaitGroup"%go, runtime_SemacquireWaitGroup); ("runtime_SemacquireRWMutexR"%go, runtime_SemacquireRWMutexR); ("runtime_SemacquireRWMutex"%go, runtime_SemacquireRWMutex); ("runtime_Semrelease"%go, runtime_Semrelease)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("TryLock"%go, Mutex__TryLock); ("Unlock"%go, Mutex__Unlock)]); ("RWMutex"%go, []); ("RWMutex'ptr"%go, [("Lock"%go, RWMutex__Lock); ("RLock"%go, RWMutex__RLock); ("RUnlock"%go, RWMutex__RUnlock); ("TryLock"%go, RWMutex__TryLock); ("TryRLock"%go, RWMutex__TryRLock); ("Unlock"%go, RWMutex__Unlock); ("rUnlockSlow"%go, RWMutex__rUnlockSlow)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Cond"%go, []); ("Cond'ptr"%go, [("Broadcast"%go, Cond__Broadcast); ("Signal"%go, Cond__Signal); ("Wait"%go, Cond__Wait)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Lock"%go, Mutex__Lock); ("TryLock"%go, Mutex__TryLock); ("Unlock"%go, Mutex__Unlock)]); ("RWMutex"%go, []); ("RWMutex'ptr"%go, [("Lock"%go, RWMutex__Lock); ("RLock"%go, RWMutex__RLock); ("RLocker"%go, RWMutex__RLocker); ("RUnlock"%go, RWMutex__RUnlock); ("TryLock"%go, RWMutex__TryLock); ("TryRLock"%go, RWMutex__TryRLock); ("Unlock"%go, RWMutex__Unlock); ("rUnlockSlow"%go, RWMutex__rUnlockSlow)]); ("WaitGroup"%go, []); ("WaitGroup'ptr"%go, [("Add"%go, WaitGroup__Add); ("Done"%go, WaitGroup__Done); ("Wait"%go, WaitGroup__Wait)])].
 
 #[global] Instance info' : PkgInfo sync.sync :=
   {|

@@ -26,12 +26,22 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
   uint.Z (W64 (length obj.(Dig))) = length obj.(Dig) ∧
   enc = encodesF obj.
 
-Lemma inj obj0 obj1 enc0 enc1 tail0 tail1 :
-  enc0 ++ tail0 = enc1 ++ tail1 →
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
   encodes enc0 obj0 →
   encodes enc1 obj1 →
+  enc0 ++ tail0 = enc1 ++ tail1 →
   obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
-Proof. Admitted.
+Proof.
+  intros (? & Henc0) (? & Henc1) ?.
+  rewrite /encodesF in Henc0 Henc1.
+  list_simplifier. move: H1 => Henc.
+  apply app_inj_1 in Henc as [Heq_ep Henc]; [|len].
+  apply (inj u64_le) in Heq_ep.
+  apply app_inj_1 in Henc as [Hlen_dig Henc]; [|len].
+  apply (inj u64_le) in Hlen_dig.
+  apply app_inj_1 in Henc as [Heq_dig Henc]; [|len].
+  destruct obj0, obj1. by simplify_eq/=.
+Qed.
 
 Section defs.
 Context `{!heapGS Σ}.
@@ -98,12 +108,22 @@ Definition encodes (enc : list w8) (obj : t) : Prop :=
   uint.Z (W64 (length obj.(PkCommit))) = length obj.(PkCommit) ∧
   enc = encodesF obj.
 
-Lemma inj obj0 obj1 enc0 enc1 tail0 tail1 :
-  enc0 ++ tail0 = enc1 ++ tail1 →
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
   encodes enc0 obj0 →
   encodes enc1 obj1 →
+  enc0 ++ tail0 = enc1 ++ tail1 →
   obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
-Proof. Admitted.
+Proof.
+  intros (? & Henc0) (? & Henc1) ?.
+  rewrite /encodesF in Henc0 Henc1.
+  list_simplifier. move: H1 => Henc.
+  apply app_inj_1 in Henc as [Heq_ep Henc]; [|len].
+  apply (inj u64_le) in Heq_ep.
+  apply app_inj_1 in Henc as [Hlen_commit Henc]; [|len].
+  apply (inj u64_le) in Hlen_commit.
+  apply app_inj_1 in Henc as [Heq_commit Henc]; [|len].
+  destruct obj0, obj1. by simplify_eq/=.
+Qed.
 
 Section defs.
 Context `{!heapGS Σ}.
@@ -134,13 +154,13 @@ Lemma wp_dec sl_b dq b :
   MapValPreDecode (slice_val sl_b)
   {{{
     ptr_obj sl_tail (err : bool), RET (#ptr_obj, slice_val sl_tail, #err);
-    let wish := (λ enc obj tail,
+    let wish := (λ tail enc obj,
       ("%Henc" ∷ ⌜ encodes enc obj ⌝ ∗
       "%Heq_tail" ∷ ⌜ b = enc ++ tail ⌝) : iProp Σ) in
     "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗
-      ∃ enc obj tail, wish enc obj tail) ∗
+      ∃ tail enc obj, wish tail enc obj) ∗
     "Herr" ∷
-      (∀ enc obj tail, wish enc obj tail -∗
+      (∀ tail enc obj, wish tail enc obj -∗
       "Hown_obj" ∷ own ptr_obj obj (DfracOwn 1) ∗
       "Hsl_tail" ∷ own_slice_small sl_tail byteT dq tail)
   }}}.
@@ -186,14 +206,21 @@ Definition encodesF (obj : t) : list w8 :=
 Definition encodes (enc : list w8) (obj : t) : Prop :=
   enc = encodesF obj.
 
-Lemma inj obj0 obj1 enc :
-  encodes enc obj0 →
-  encodes enc obj1 →
-  obj0 = obj1.
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
+  encodes enc0 obj0 →
+  encodes enc1 obj1 →
+  enc0 ++ tail0 = enc1 ++ tail1 →
+  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
 Proof.
-  unfold encodes. intros Henc ->. destruct obj0, obj1.
-  unfold encodesF in Henc.
-Admitted.
+  intros Henc0 Henc1 ?.
+  rewrite /encodes /encodesF in Henc0 Henc1.
+  list_simplifier. move: H => Henc.
+  apply app_inj_1 in Henc as [Heq_uid Henc]; [|len].
+  apply (inj u64_le) in Heq_uid.
+  apply app_inj_1 in Henc as [Heq_ver Henc]; [|len].
+  apply (inj u64_le) in Heq_ver.
+  destruct obj0, obj1. by simplify_eq/=.
+Qed.
 
 Section defs.
 Context `{!heapGS Σ}.
@@ -243,13 +270,33 @@ Record t :=
     Val: list w8;
     Rand: list w8;
   }.
+
 Definition encodesF (obj : t) : list w8 :=
   (u64_le $ length obj.(Val)) ++ obj.(Val) ++ (u64_le $ length obj.(Rand)) ++ obj.(Rand).
-(* TODO: needs to be strengthened to having noof reqs. *)
+
 Definition encodes (enc : list w8) (obj : t) : Prop :=
+  uint.Z (W64 (length obj.(Val))) = length obj.(Val) ∧
+  uint.Z (W64 (length obj.(Rand))) = length obj.(Rand) ∧
+
   enc = encodesF obj.
-Lemma inj obj0 obj1 : encodesF obj0 = encodesF obj1 → obj0 = obj1.
-Proof. Admitted.
+
+Lemma inj {obj0 obj1 enc0 enc1} tail0 tail1 :
+  encodes enc0 obj0 →
+  encodes enc1 obj1 →
+  enc0 ++ tail0 = enc1 ++ tail1 →
+  obj0 = obj1 ∧ enc0 = enc1 ∧ tail0 = tail1.
+Proof.
+  intros (?&?&Henc0) (?&?&Henc1) ?.
+  rewrite /encodesF in Henc0 Henc1.
+  list_simplifier. move: H3 => Henc.
+  apply app_inj_1 in Henc as [Hlen_val Henc]; [|len].
+  apply (inj u64_le) in Hlen_val.
+  apply app_inj_1 in Henc as [Heq_val Henc]; [|len].
+  apply app_inj_1 in Henc as [Hlen_rand Henc]; [|len].
+  apply (inj u64_le) in Hlen_rand.
+  apply app_inj_1 in Henc as [Heq_rand Henc]; [|len].
+  destruct obj0, obj1. by simplify_eq/=.
+Qed.
 
 Section defs.
 Context `{!heapGS Σ}.

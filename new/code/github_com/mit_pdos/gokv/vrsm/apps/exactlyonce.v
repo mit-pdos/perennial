@@ -115,7 +115,7 @@ Definition eStateMachine__applyVolatile : val :=
           do:  "$r0";;;
           do:  ("ret" <-[#sliceT] "$r1")
         else
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"unexpected ee op type"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected ee op type"%go) in
           Panic "$a0"))));;;
     return: (![#sliceT] "ret")).
 
@@ -126,17 +126,17 @@ Definition eStateMachine__applyReadonly : val :=
     let: "op" := (mem.alloc "op") in
     (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Got GETFRESHCID as a read-only op"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Got GETFRESHCID as a read-only op"%go) in
       Panic "$a0")
     else
       (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RW
       then
-        do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Got RW as a read-only op"%go) in
+        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Got RW as a read-only op"%go) in
         Panic "$a0")
       else
         (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) ≠ OPTYPE_RO
         then
-          do:  (let: "$a0" := (interface.make #""%go #"string"%go #"unexpected ee op type"%go) in
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected ee op type"%go) in
           Panic "$a0")
         else do:  #())));;;
     let: "n" := (mem.alloc (type.zero_val #intT)) in
@@ -212,7 +212,8 @@ Definition eStateMachine__setState : val :=
     let: "$a1" := (![#uint64T] "nextIndex") in
     (![#funcT] (struct.field_ref #VersionedStateMachine #"SetState"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
     let: "$r0" := (![#uint64T] "nextIndex") in
-    do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0")).
+    do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
+    return: #()).
 
 (* go: sm.go:94:6 *)
 Definition MakeExactlyOnceStateMachine : val :=

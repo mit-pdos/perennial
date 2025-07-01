@@ -3,8 +3,12 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.raft.v3.quorum.slices.
+
+Set Default Proof Using "Type".
+
 Module slices.
-Axiom falso : False.
+
+(* type slices.Tup *)
 Module Tup.
 Section def.
 Context `{ffi_syntax}.
@@ -20,34 +24,42 @@ End Tup.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Tup `{ffi_syntax}: Settable _ :=
+Global Instance settable_Tup : Settable Tup.t :=
   settable! Tup.mk < Tup.ID'; Tup.Idx'; Tup.Ok'; Tup.Bar' >.
-Global Instance into_val_Tup `{ffi_syntax} : IntoVal Tup.t.
-Admitted.
+Global Instance into_val_Tup : IntoVal Tup.t :=
+  {| to_val_def v :=
+    struct.val_aux slices.Tup [
+    "ID" ::= #(Tup.ID' v);
+    "Idx" ::= #(Tup.Idx' v);
+    "Ok" ::= #(Tup.Ok' v);
+    "Bar" ::= #(Tup.Bar' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Tup `{ffi_syntax} : IntoValTyped Tup.t slices.Tup :=
+Global Program Instance into_val_typed_Tup : IntoValTyped Tup.t slices.Tup :=
 {|
   default_val := Tup.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Tup_ID `{ffi_syntax} : IntoValStructField "ID" slices.Tup Tup.ID'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Tup_Idx `{ffi_syntax} : IntoValStructField "Idx" slices.Tup Tup.Idx'.
-Admitted.
+Global Instance into_val_struct_field_Tup_ID : IntoValStructField "ID" slices.Tup Tup.ID'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Tup_Ok `{ffi_syntax} : IntoValStructField "Ok" slices.Tup Tup.Ok'.
-Admitted.
+Global Instance into_val_struct_field_Tup_Idx : IntoValStructField "Idx" slices.Tup Tup.Idx'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Tup_Bar `{ffi_syntax} : IntoValStructField "Bar" slices.Tup Tup.Bar'.
-Admitted.
+Global Instance into_val_struct_field_Tup_Ok : IntoValStructField "Ok" slices.Tup Tup.Ok'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Tup_Bar : IntoValStructField "Bar" slices.Tup Tup.Bar'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Tup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} ID' Idx' Ok' Bar':
+Global Instance wp_struct_make_Tup ID' Idx' Ok' Bar':
   PureWp True
     (struct.make #slices.Tup (alist_val [
       "ID" ::= #ID';
@@ -56,7 +68,7 @@ Global Instance wp_struct_make_Tup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS
       "Bar" ::= #Bar'
     ]))%struct
     #(Tup.mk ID' Idx' Ok' Bar').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Tup_struct_fields_split dq l (v : Tup.t) :
@@ -66,7 +78,18 @@ Global Instance Tup_struct_fields_split dq l (v : Tup.t) :
     "HOk" ∷ l ↦s[slices.Tup :: "Ok"]{dq} v.(Tup.Ok') ∗
     "HBar" ∷ l ↦s[slices.Tup :: "Bar"]{dq} v.(Tup.Bar')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Tup.ID' v)) slices.Tup "ID"%go.
+  simpl_one_flatten_struct (# (Tup.Idx' v)) slices.Tup "Idx"%go.
+  simpl_one_flatten_struct (# (Tup.Ok' v)) slices.Tup "Ok"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -88,7 +111,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined slices :=
   is_pkg_defined := is_global_definitions slices var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

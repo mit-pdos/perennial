@@ -889,7 +889,7 @@ Proof.
       with (length (u64_le w ++ u64_le w0 ++ x)) by word.
     replace (uint.nat (W64 1)) with (length [W8 0]) by done.
     rewrite drop_app_length.
-    rewrite take_ge; last word.
+    rewrite -> take_ge by len.
     rename x into eeop_bytes.
     wp_pures.
     wp_apply (wp_ReadInt with "Hop_sl").
@@ -957,10 +957,10 @@ Proof.
       iModIntro.
       iSplitL "HesmNextIndex".
       { iApply to_named. iExactEq "HesmNextIndex".
-        repeat f_equal. rewrite length_app /=. word.
+        repeat f_equal. len.
       }
       iFrame "Hislow".
-      iPureIntro. rewrite length_app /=. word.
+      iPureIntro. len.
     }
     {
       wp_loadField.
@@ -1120,7 +1120,7 @@ Proof.
       with (length (x)) by word.
     replace (uint.nat (W64 1)) with (length [W8 2]) by done.
     rewrite drop_app_length.
-    rewrite take_ge; last word.
+    rewrite -> take_ge by len.
     rename x into eeop_bytes.
     wp_pures.
     wp_loadField.
@@ -1158,11 +1158,11 @@ Proof.
       }
       iSplitL "HesmNextIndex".
       { iModIntro. iApply to_named. iExactEq "HesmNextIndex".
-        repeat f_equal. rewrite length_app /=. word.
+        repeat f_equal. len.
       }
       simpl.
       iFrame "Hislow".
-      iPureIntro. rewrite length_app /=. word.
+      iPureIntro. len.
     }
     {
       unfold compute_reply.
@@ -1800,11 +1800,12 @@ Proof.
   iIntros (?) "Hrep_sl _ Hpbck".
   iNamed 1.
   wp_pures.
-  wp_apply (wp_ReadInt with "[Hrep_sl]").
+  wp_apply (wp_ReadInt [] with "[Hrep_sl]").
   {
     simpl.
     unfold compute_reply.
-    iFrame.
+    rewrite /apply_op_and_get_reply /=.
+    by list_simplifier.
   }
   iIntros (?) "_".
   wp_pures.

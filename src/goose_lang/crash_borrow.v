@@ -30,8 +30,8 @@ Proof.
   - intros n1 n2 Hlt => /=.
     transitivity (3 ^ (1 + (n1 + 1)))%nat; last first.
     { apply Nat.pow_le_mono_r; lia. }
-    rewrite [a in _ _ a]Nat.pow_add_r.
-    rewrite [a in _ _ a]/=.
+    rewrite [a in _ ≤ a]Nat.pow_add_r.
+    rewrite [a in _ ≤ a]/=.
     transitivity (2 + 3^(n1 + 1) + 3^(n1 + 1))%nat; first by lia.
     rewrite Nat.add_0_r -Nat.add_assoc.
     apply Nat.add_le_mono_r.

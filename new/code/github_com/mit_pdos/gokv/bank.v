@@ -37,7 +37,8 @@ Definition acquire_two_good : val :=
       (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0");;;
       do:  (let: "$a0" := (![#stringT] "l1") in
       (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0"));;;
-    return: (#())).
+    return: (#());;;
+    return: #()).
 
 (* go: bank.go:30:6 *)
 Definition acquire_two : val :=
@@ -49,7 +50,8 @@ Definition acquire_two : val :=
     (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0");;;
     do:  (let: "$a0" := (![#stringT] "l2") in
     (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0");;;
-    return: (#())).
+    return: (#());;;
+    return: #()).
 
 (* go: bank.go:37:6 *)
 Definition release_two : val :=
@@ -61,7 +63,8 @@ Definition release_two : val :=
     (method_call #lockservice #"LockClerk'ptr" #"Unlock" (![#ptrT] "lck")) "$a0");;;
     do:  (let: "$a0" := (![#stringT] "l2") in
     (method_call #lockservice #"LockClerk'ptr" #"Unlock" (![#ptrT] "lck")) "$a0");;;
-    return: (#())).
+    return: (#());;;
+    return: #()).
 
 (* go: bank.go:43:6 *)
 Definition encodeInt : val :=
@@ -119,7 +122,8 @@ Definition BankClerk__transfer_internal : val :=
     do:  (let: "$a0" := (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck"))) in
     let: "$a1" := (![#stringT] "acc_from") in
     let: "$a2" := (![#stringT] "acc_to") in
-    (func_call #bank.bank #"release_two"%go) "$a0" "$a1" "$a2")).
+    (func_call #bank.bank #"release_two"%go) "$a0" "$a1" "$a2");;;
+    return: #()).
 
 (* go: bank.go:65:23 *)
 Definition BankClerk__SimpleTransfer : val :=
@@ -143,7 +147,8 @@ Definition BankClerk__SimpleTransfer : val :=
         let: "$a1" := (![#stringT] (slice.elem_ref #stringT (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) (![#uint64T] "dst"))) in
         let: "$a2" := (![#uint64T] "amount") in
         (method_call #bank.bank #"BankClerk'ptr" #"transfer_internal" (![#ptrT] "bck")) "$a0" "$a1" "$a2")
-      else do:  #()))).
+      else do:  #()));;;
+    return: #()).
 
 (* go: bank.go:76:23 *)
 Definition BankClerk__get_total : val :=
@@ -151,7 +156,7 @@ Definition BankClerk__get_total : val :=
     exception_do (let: "bck" := (mem.alloc "bck") in
     let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$range" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
-    (let: "acct" := (mem.alloc (type.zero_val #intT)) in
+    (let: "acct" := (mem.alloc (type.zero_val #stringT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
@@ -162,7 +167,7 @@ Definition BankClerk__get_total : val :=
       (func_call #bank.bank #"decodeInt"%go) "$a0")) in
       do:  ("sum" <-[#uint64T] "$r0")));;;
     let: "$range" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
-    (let: "acct" := (mem.alloc (type.zero_val #intT)) in
+    (let: "acct" := (mem.alloc (type.zero_val #stringT)) in
     slice.for_range #stringT "$range" (λ: "$key" "$value",
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
@@ -177,9 +182,10 @@ Definition BankClerk__SimpleAudit : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ((method_call #bank.bank #"BankClerk'ptr" #"get_total" (![#ptrT] "bck")) #()) ≠ BAL_TOTAL
       then
-        do:  (let: "$a0" := (interface.make #""%go #"string"%go #"Balance total invariant violated"%go) in
+        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Balance total invariant violated"%go) in
         Panic "$a0")
-      else do:  #()))).
+      else do:  #()));;;
+    return: #()).
 
 (* go: bank.go:100:6 *)
 Definition MakeBankClerkSlice : val :=
@@ -208,7 +214,7 @@ Definition MakeBankClerkSlice : val :=
       (interface.get #"Put"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0" "$a1");;;
       let: "$range" := (let: "$s" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
       slice.slice #stringT "$s" #(W64 1) (slice.len "$s")) in
-      (let: "acct" := (mem.alloc (type.zero_val #intT)) in
+      (let: "acct" := (mem.alloc (type.zero_val #stringT)) in
       slice.for_range #stringT "$range" (λ: "$key" "$value",
         do:  ("acct" <-[#stringT] "$value");;;
         do:  "$key";;;

@@ -321,6 +321,18 @@ Global Hint Mode IntoValTyped - ! - - : typeclass_instances.
 Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
 Arguments default_val (V) {_ _ _ _}.
 
+(* [BoundedTypeSize] proves that a type has a reasonable maximum upper bound in its size.
+
+When we axiomatize a go_type, we need it to have a sensible size so that
+field offsets can be calculated using w64 calculations. This is a highly
+conversative maximum size for a type that still enables it to be used in
+essentially any larger struct.
+
+We currently do not rely on this typeclass for non-axiomatic types (where it
+could be proven by direct computation). *)
+Class BoundedTypeSize (t : go_type) :=
+  { has_bounded_type_size : Z.of_nat (go_type_size t) < 2^32; }.
+
 Fixpoint is_comparable_go_type (t : go_type) : bool :=
   match t with
   | arrayT n elem => is_comparable_go_type elem
@@ -374,6 +386,8 @@ Ltac2 solve_has_go_type_step () :=
             Std.indcl_in := None
         } ] None
   | [ h : (@eq (go_string * go_type) (_, _) _) |- _ ] =>
+      (* XXX: inversion_clear is not as powerful as inversion H; subst; clear H;
+      comes up in generics when there are dependent types *)
       Std.inversion Std.FullInversionClear (Std.ElimOnIdent h) None None; cbn
   end.
 Ltac solve_has_go_type := repeat ltac2:(solve_has_go_type_step ()).
@@ -495,7 +509,7 @@ Next Obligation.
     simpl in *.
     injection Heq as Heq1 Heq2.
     apply to_val_inj in Heq1, Heq2.
-    intuition. subst. done.
+    intuition. subst. destruct type_id, type_id0; simpl in *; congruence.
   }
   all: first [discriminate | reflexivity].
 Qed.

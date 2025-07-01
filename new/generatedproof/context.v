@@ -3,9 +3,12 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.context.
-Module context.
-Axiom falso : False.
 
+Set Default Proof Using "Type".
+
+Module context.
+
+(* type context.Context *)
 Module Context.
 Section def.
 Context `{ffi_syntax}.
@@ -13,6 +16,7 @@ Definition t := interface.t.
 End def.
 End Context.
 
+(* type context.CancelFunc *)
 Module CancelFunc.
 Section def.
 Context `{ffi_syntax}.
@@ -38,7 +42,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined context :=
   is_pkg_defined := is_global_definitions context var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

@@ -3,9 +3,12 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.google_golang_org.grpc.codes.
-Module codes.
-Axiom falso : False.
 
+Set Default Proof Using "Type".
+
+Module codes.
+
+(* type codes.Code *)
 Module Code.
 Section def.
 Context `{ffi_syntax}.
@@ -31,7 +34,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined codes :=
   is_pkg_defined := is_global_definitions codes var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

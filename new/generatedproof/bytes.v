@@ -3,14 +3,21 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.bytes.
+
+Set Default Proof Using "Type".
+
 Module bytes.
-Axiom falso : False.
+
+(* type bytes.Buffer *)
 Module Buffer.
 Section def.
 Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
 End Buffer.
+
+Global Instance bounded_size_Buffer : BoundedTypeSize bytes.Buffer.
+Admitted.
 
 Global Instance into_val_Buffer `{ffi_syntax} : IntoVal Buffer.t.
 Admitted.
@@ -36,7 +43,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined bytes :=
   is_pkg_defined := is_global_definitions bytes var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

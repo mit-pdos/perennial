@@ -1,5 +1,7 @@
 From New.proof.sync_proof Require Import base.
 
+#[local] Transparent is_pkg_init_sync.
+
 Section proof.
 Context `{heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
@@ -161,10 +163,12 @@ Definition is_Locker (i : interface.t) (P : iProp Σ) : iProp Σ :=
 
 Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 
+Definition Mutex_type_id := (sync, "Mutex'ptr"%go).
+
 Lemma Mutex_is_Locker (m : loc) R :
   is_pkg_init sync -∗
   is_Mutex m R -∗
-  is_Locker (interface.mk sync "Mutex'ptr"%go #m) (own_Mutex m ∗ R).
+  is_Locker (interface.mk Mutex_type_id #m) (own_Mutex m ∗ R).
 Proof.
   iIntros "#? #[? ?]".
   iSplitL.

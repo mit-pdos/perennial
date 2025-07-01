@@ -114,6 +114,20 @@ Proof.
   iFrame.
 Qed.
 
+Theorem slice_to_block s q bs :
+  s.(slice.len_f) = 4096 ->
+  own_slice s q bs -∗ pointsto_block s.(slice.ptr_f) q (list_to_block bs).
+Proof.
+  iIntros (Hsz) "Hs".
+  iDestruct (own_slice_len with "Hs") as "%".
+  assert (vec_to_list (list_to_block bs) = bs) as Heq.
+  { apply list_to_block_to_list. word. }
+  rewrite -Heq.
+  iDestruct (slice_to_block_array with "Hs") as "Hb".
+  rewrite list_to_block_to_list; last word.
+  iFrame.
+Qed.
+
 Lemma block_array_to_slice_mk l q (b: Block) :
   pointsto_block l q b -∗ own_slice (slice.mk l (length b) (length b)) q (vec_to_list b).
 Proof.
@@ -273,54 +287,6 @@ Proof.
   wp_pures.
   rewrite to_val_unseal //.
 Qed.
-
-(*
-Lemma wp_ReadTo_atomic (a: u64) b0 s q :
-  ⊢ {{{ is_pkg_init disk ∗ is_block_full s b0 }}}
-    <<< ∀∀ b, uint.Z a d↦{q} b >>>
-      disk@"ReadTo" #a #s @@ ∅
-    <<< uint.Z a d↦{q} b >>>
-    {{{ RET #(); is_block_full s b }}}.
-Proof.
-  iIntros "!#" (Φ) "Hs Hupd".
-  wp_rec. wp_pures.
-  iDestruct (own_slice_sz with "Hs") as %Hsz.
-  iDestruct (own_slice_wf with "Hs") as %Hwf.
-  wp_bind (ExternalOp _ _).
-  iApply (wp_ncatomic _ _ ∅).
-  { solve_atomic. inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
-    inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
-  rewrite difference_empty_L.
-  iMod "Hupd" as (db0) "[Hda Hupd]"; iModIntro.
-  wp_apply (wp_ReadOp with "[$Hda]").
-  iIntros (l) "(Hda&Hl)".
-  iMod ("Hupd" with "Hda") as "HQ".
-  iModIntro.
-  wp_pures.
-  wp_apply wp_slice_ptr.
-  iDestruct "Hs" as "[Hs Hcap]".
-  rewrite /own_slice_small.
-  iDestruct "Hs" as "[Hs _]".
-  wp_apply (wp_MemCpy_rec with "[Hs Hl]").
-  { iFrame.
-    iDestruct (array_to_block_array with "Hl") as "$".
-    iPureIntro.
-    rewrite !length_Block_to_vals.
-    rewrite /block_bytes.
-    split; [ reflexivity | ].
-    cbv; congruence.
-  }
-  rewrite take_ge; last first.
-  { rewrite length_Block_to_vals.
-    rewrite /block_bytes //. }
-  iIntros "[Hs Hl]".
-  iApply "HQ".
-  rewrite /is_block_full /own_slice /own_slice_small.
-  iFrame.
-  iPureIntro.
-  move: Hsz; rewrite !length_Block_to_vals //.
-Qed.
-*)
 
 Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
   {{{ is_pkg_init disk ∗

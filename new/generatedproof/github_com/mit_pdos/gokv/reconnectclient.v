@@ -7,8 +7,12 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.urpc.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.reconnectclient.
+
+Set Default Proof Using "Type".
+
 Module reconnectclient.
-Axiom falso : False.
+
+(* type reconnectclient.ReconnectingClient *)
 Module ReconnectingClient.
 Section def.
 Context `{ffi_syntax}.
@@ -24,34 +28,42 @@ End ReconnectingClient.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ReconnectingClient `{ffi_syntax}: Settable _ :=
+Global Instance settable_ReconnectingClient : Settable ReconnectingClient.t :=
   settable! ReconnectingClient.mk < ReconnectingClient.mu'; ReconnectingClient.valid'; ReconnectingClient.urpcCl'; ReconnectingClient.addr' >.
-Global Instance into_val_ReconnectingClient `{ffi_syntax} : IntoVal ReconnectingClient.t.
-Admitted.
+Global Instance into_val_ReconnectingClient : IntoVal ReconnectingClient.t :=
+  {| to_val_def v :=
+    struct.val_aux reconnectclient.ReconnectingClient [
+    "mu" ::= #(ReconnectingClient.mu' v);
+    "valid" ::= #(ReconnectingClient.valid' v);
+    "urpcCl" ::= #(ReconnectingClient.urpcCl' v);
+    "addr" ::= #(ReconnectingClient.addr' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_ReconnectingClient `{ffi_syntax} : IntoValTyped ReconnectingClient.t reconnectclient.ReconnectingClient :=
+Global Program Instance into_val_typed_ReconnectingClient : IntoValTyped ReconnectingClient.t reconnectclient.ReconnectingClient :=
 {|
   default_val := ReconnectingClient.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ReconnectingClient_mu `{ffi_syntax} : IntoValStructField "mu" reconnectclient.ReconnectingClient ReconnectingClient.mu'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_ReconnectingClient_valid `{ffi_syntax} : IntoValStructField "valid" reconnectclient.ReconnectingClient ReconnectingClient.valid'.
-Admitted.
+Global Instance into_val_struct_field_ReconnectingClient_mu : IntoValStructField "mu" reconnectclient.ReconnectingClient ReconnectingClient.mu'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_ReconnectingClient_urpcCl `{ffi_syntax} : IntoValStructField "urpcCl" reconnectclient.ReconnectingClient ReconnectingClient.urpcCl'.
-Admitted.
+Global Instance into_val_struct_field_ReconnectingClient_valid : IntoValStructField "valid" reconnectclient.ReconnectingClient ReconnectingClient.valid'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_ReconnectingClient_addr `{ffi_syntax} : IntoValStructField "addr" reconnectclient.ReconnectingClient ReconnectingClient.addr'.
-Admitted.
+Global Instance into_val_struct_field_ReconnectingClient_urpcCl : IntoValStructField "urpcCl" reconnectclient.ReconnectingClient ReconnectingClient.urpcCl'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_ReconnectingClient_addr : IntoValStructField "addr" reconnectclient.ReconnectingClient ReconnectingClient.addr'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ReconnectingClient `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' valid' urpcCl' addr':
+Global Instance wp_struct_make_ReconnectingClient mu' valid' urpcCl' addr':
   PureWp True
     (struct.make #reconnectclient.ReconnectingClient (alist_val [
       "mu" ::= #mu';
@@ -60,7 +72,7 @@ Global Instance wp_struct_make_ReconnectingClient `{ffi_semantics} `{!ffi_interp
       "addr" ::= #addr'
     ]))%struct
     #(ReconnectingClient.mk mu' valid' urpcCl' addr').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ReconnectingClient_struct_fields_split dq l (v : ReconnectingClient.t) :
@@ -70,7 +82,18 @@ Global Instance ReconnectingClient_struct_fields_split dq l (v : ReconnectingCli
     "HurpcCl" ∷ l ↦s[reconnectclient.ReconnectingClient :: "urpcCl"]{dq} v.(ReconnectingClient.urpcCl') ∗
     "Haddr" ∷ l ↦s[reconnectclient.ReconnectingClient :: "addr"]{dq} v.(ReconnectingClient.addr')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (ReconnectingClient.mu' v)) reconnectclient.ReconnectingClient "mu"%go.
+  simpl_one_flatten_struct (# (ReconnectingClient.valid' v)) reconnectclient.ReconnectingClient "valid"%go.
+  simpl_one_flatten_struct (# (ReconnectingClient.urpcCl' v)) reconnectclient.ReconnectingClient "urpcCl"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -92,7 +115,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined reconnectclient :=
   is_pkg_defined := is_global_definitions reconnectclient var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MakeReconnectingClient :

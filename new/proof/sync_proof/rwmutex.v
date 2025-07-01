@@ -1,6 +1,8 @@
 From iris.proofmode Require Import environments.
 From New.proof.sync_proof Require Import base mutex sema.
 
+#[local] Transparent is_pkg_init_sync.
+
 Section proof.
 
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.

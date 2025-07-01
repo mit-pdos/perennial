@@ -51,7 +51,8 @@ Definition Server__rpcHandle : val :=
     do:  ("data3" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#grove_ffi.Connection] "conn") in
     let: "$a1" := (![#sliceT] "data3") in
-    (func_call #grove_ffi.grove_ffi #"Send"%go) "$a0" "$a1")).
+    (func_call #grove_ffi.grove_ffi #"Send"%go) "$a0" "$a1");;;
+    return: #()).
 
 (* go: urpc.go:32:6 *)
 Definition MakeServer : val :=
@@ -100,10 +101,12 @@ Definition Server__readThread : val :=
         let: "$a1" := (![#uint64T] "rpcid") in
         let: "$a2" := (![#uint64T] "seqno") in
         let: "$a3" := (![#sliceT] "req") in
-        (method_call #urpc.urpc #"Server'ptr" #"rpcHandle" (![#ptrT] "srv")) "$a0" "$a1" "$a2" "$a3"))
+        (method_call #urpc.urpc #"Server'ptr" #"rpcHandle" (![#ptrT] "srv")) "$a0" "$a1" "$a2" "$a3");;;
+        return: #())
         ) in
       do:  (Fork ("$go" #()));;;
-      continue: #())).
+      continue: #());;;
+    return: #()).
 
 (* go: urpc.go:58:20 *)
 Definition Server__Serve : val :=
@@ -122,11 +125,14 @@ Definition Server__Serve : val :=
         do:  ("conn" <-[#grove_ffi.Connection] "$r0");;;
         let: "$go" := (λ: <>,
           exception_do (do:  (let: "$a0" := (![#grove_ffi.Connection] "conn") in
-          (method_call #urpc.urpc #"Server'ptr" #"readThread" (![#ptrT] "srv")) "$a0"))
+          (method_call #urpc.urpc #"Server'ptr" #"readThread" (![#ptrT] "srv")) "$a0");;;
+          return: #())
           ) in
-        do:  (Fork ("$go" #()))))
+        do:  (Fork ("$go" #())));;;
+      return: #())
       ) in
-    do:  (Fork ("$go" #()))).
+    do:  (Fork ("$go" #()));;;
+    return: #()).
 
 Definition callbackStateWaiting : expr := #(W64 0).
 
@@ -160,7 +166,7 @@ Definition Client__replyThread : val :=
       then
         do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
         let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) in
-        (let: "cb" := (mem.alloc (type.zero_val #uint64T)) in
+        (let: "cb" := (mem.alloc (type.zero_val #ptrT)) in
         map.for_range "$range" (λ: "$key" "value",
           do:  ("cb" <-[#ptrT] "$value");;;
           do:  "$key";;;
@@ -203,7 +209,8 @@ Definition Client__replyThread : val :=
         do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #Callback #"cond"%go (![#ptrT] "cb")))) #())
       else do:  #());;;
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
-      continue: #())).
+      continue: #());;;
+    return: #()).
 
 (* go: urpc.go:120:6 *)
 Definition TryMakeClient : val :=
@@ -233,7 +240,8 @@ Definition TryMakeClient : val :=
     }])) in
     do:  ("cl" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #urpc.urpc #"Client'ptr" #"replyThread" (![#ptrT] "cl")) #()))
+      exception_do (do:  ((method_call #urpc.urpc #"Client'ptr" #"replyThread" (![#ptrT] "cl")) #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     return: (#(W64 0), ![#ptrT] "cl")).
@@ -253,7 +261,7 @@ Definition MakeClient : val :=
     (if: (![#uint64T] "err") ≠ #(W64 0)
     then
       do:  (let: "$a0" := #"Unable to connect to %s"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"string"%go (let: "$a0" := (![#uint64T] "host_name") in
+      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) (let: "$a0" := (![#uint64T] "host_name") in
       (func_call #grove_ffi.grove_ffi #"AddressToStr"%go) "$a0")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #log.log #"Printf"%go) "$a0" "$a1")
@@ -282,7 +290,7 @@ Definition Client__CallStart : val :=
     let: "cb" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$reply" := (![#ptrT] "reply_buf") in
     let: "$state" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$cond" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) in
+    let: "$cond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
     struct.make #Callback [{
       "reply" ::= "$reply";

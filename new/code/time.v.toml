@@ -1,7 +1,22 @@
+imports = [
+  "!*",
+]
+trusted = [
+  # TODO: these are for verifying (rather than modeling) `After`, but the proof
+  # would be blocked by the lack of support for type assertions (needed in time.sendTime)
+  "runtimeNano", # go:linkname runtimeNano
+  "newTimer", # go:linkname newTimer
+  "syncTimer",
+  # "sendTime",
+
+  "After",
+]
 translate = [
   "Time",
+  "Duration",
   "Second",
   "Millisecond",
   "Microsecond",
   "Nanosecond",
+  "Timer",
 ]

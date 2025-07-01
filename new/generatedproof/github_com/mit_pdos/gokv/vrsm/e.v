@@ -4,9 +4,12 @@ Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.e.
-Module e.
-Axiom falso : False.
 
+Set Default Proof Using "Type".
+
+Module e.
+
+(* type e.Error *)
 Module Error.
 Section def.
 Context `{ffi_syntax}.
@@ -32,7 +35,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined e :=
   is_pkg_defined := is_global_definitions e var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_EncodeError :

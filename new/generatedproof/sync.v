@@ -6,8 +6,12 @@ Require Export New.generatedproof.internal.race.
 Require Export New.golang.theory.
 
 Require Export New.code.sync.
+
+Set Default Proof Using "Type".
+
 Module sync.
-Axiom falso : False.
+
+(* type sync.noCopy *)
 Module noCopy.
 Section def.
 Context `{ffi_syntax}.
@@ -18,28 +22,33 @@ End noCopy.
 
 Section instances.
 Context `{ffi_syntax}.
-Global Instance into_val_noCopy `{ffi_syntax} : IntoVal noCopy.t.
-Admitted.
+Global Instance into_val_noCopy : IntoVal noCopy.t :=
+  {| to_val_def v :=
+    struct.val_aux sync.noCopy [
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_noCopy `{ffi_syntax} : IntoValTyped noCopy.t sync.noCopy :=
+Global Program Instance into_val_typed_noCopy : IntoValTyped noCopy.t sync.noCopy :=
 {|
   default_val := noCopy.mk;
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_noCopy `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}:
+Global Instance wp_struct_make_noCopy:
   PureWp True
     (struct.make #sync.noCopy (alist_val [
     ]))%struct
     #(noCopy.mk).
-Admitted.
-
+Proof. solve_struct_make_pure_wp. Qed.
 
 End instances.
+
+(* type sync.RWMutex *)
 Module RWMutex.
 Section def.
 Context `{ffi_syntax}.
@@ -56,37 +65,46 @@ End RWMutex.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_RWMutex `{ffi_syntax}: Settable _ :=
+Global Instance settable_RWMutex : Settable RWMutex.t :=
   settable! RWMutex.mk < RWMutex.w'; RWMutex.writerSem'; RWMutex.readerSem'; RWMutex.readerCount'; RWMutex.readerWait' >.
-Global Instance into_val_RWMutex `{ffi_syntax} : IntoVal RWMutex.t.
-Admitted.
+Global Instance into_val_RWMutex : IntoVal RWMutex.t :=
+  {| to_val_def v :=
+    struct.val_aux sync.RWMutex [
+    "w" ::= #(RWMutex.w' v);
+    "writerSem" ::= #(RWMutex.writerSem' v);
+    "readerSem" ::= #(RWMutex.readerSem' v);
+    "readerCount" ::= #(RWMutex.readerCount' v);
+    "readerWait" ::= #(RWMutex.readerWait' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_RWMutex `{ffi_syntax} : IntoValTyped RWMutex.t sync.RWMutex :=
+Global Program Instance into_val_typed_RWMutex : IntoValTyped RWMutex.t sync.RWMutex :=
 {|
   default_val := RWMutex.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_RWMutex_w `{ffi_syntax} : IntoValStructField "w" sync.RWMutex RWMutex.w'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_RWMutex_writerSem `{ffi_syntax} : IntoValStructField "writerSem" sync.RWMutex RWMutex.writerSem'.
-Admitted.
+Global Instance into_val_struct_field_RWMutex_w : IntoValStructField "w" sync.RWMutex RWMutex.w'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_RWMutex_readerSem `{ffi_syntax} : IntoValStructField "readerSem" sync.RWMutex RWMutex.readerSem'.
-Admitted.
+Global Instance into_val_struct_field_RWMutex_writerSem : IntoValStructField "writerSem" sync.RWMutex RWMutex.writerSem'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_RWMutex_readerCount `{ffi_syntax} : IntoValStructField "readerCount" sync.RWMutex RWMutex.readerCount'.
-Admitted.
+Global Instance into_val_struct_field_RWMutex_readerSem : IntoValStructField "readerSem" sync.RWMutex RWMutex.readerSem'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_RWMutex_readerWait `{ffi_syntax} : IntoValStructField "readerWait" sync.RWMutex RWMutex.readerWait'.
-Admitted.
+Global Instance into_val_struct_field_RWMutex_readerCount : IntoValStructField "readerCount" sync.RWMutex RWMutex.readerCount'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RWMutex_readerWait : IntoValStructField "readerWait" sync.RWMutex RWMutex.readerWait'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_RWMutex `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} w' writerSem' readerSem' readerCount' readerWait':
+Global Instance wp_struct_make_RWMutex w' writerSem' readerSem' readerCount' readerWait':
   PureWp True
     (struct.make #sync.RWMutex (alist_val [
       "w" ::= #w';
@@ -96,7 +114,7 @@ Global Instance wp_struct_make_RWMutex `{ffi_semantics} `{!ffi_interp ffi} `{!he
       "readerWait" ::= #readerWait'
     ]))%struct
     #(RWMutex.mk w' writerSem' readerSem' readerCount' readerWait').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance RWMutex_struct_fields_split dq l (v : RWMutex.t) :
@@ -107,9 +125,23 @@ Global Instance RWMutex_struct_fields_split dq l (v : RWMutex.t) :
     "HreaderCount" ∷ l ↦s[sync.RWMutex :: "readerCount"]{dq} v.(RWMutex.readerCount') ∗
     "HreaderWait" ∷ l ↦s[sync.RWMutex :: "readerWait"]{dq} v.(RWMutex.readerWait')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (RWMutex.w' v)) sync.RWMutex "w"%go.
+  simpl_one_flatten_struct (# (RWMutex.writerSem' v)) sync.RWMutex "writerSem"%go.
+  simpl_one_flatten_struct (# (RWMutex.readerSem' v)) sync.RWMutex "readerSem"%go.
+  simpl_one_flatten_struct (# (RWMutex.readerCount' v)) sync.RWMutex "readerCount"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type sync.WaitGroup *)
 Module WaitGroup.
 Section def.
 Context `{ffi_syntax}.
@@ -124,31 +156,38 @@ End WaitGroup.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_WaitGroup `{ffi_syntax}: Settable _ :=
+Global Instance settable_WaitGroup : Settable WaitGroup.t :=
   settable! WaitGroup.mk < WaitGroup.noCopy'; WaitGroup.state'; WaitGroup.sema' >.
-Global Instance into_val_WaitGroup `{ffi_syntax} : IntoVal WaitGroup.t.
-Admitted.
+Global Instance into_val_WaitGroup : IntoVal WaitGroup.t :=
+  {| to_val_def v :=
+    struct.val_aux sync.WaitGroup [
+    "noCopy" ::= #(WaitGroup.noCopy' v);
+    "state" ::= #(WaitGroup.state' v);
+    "sema" ::= #(WaitGroup.sema' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_WaitGroup `{ffi_syntax} : IntoValTyped WaitGroup.t sync.WaitGroup :=
+Global Program Instance into_val_typed_WaitGroup : IntoValTyped WaitGroup.t sync.WaitGroup :=
 {|
   default_val := WaitGroup.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_WaitGroup_noCopy `{ffi_syntax} : IntoValStructField "noCopy" sync.WaitGroup WaitGroup.noCopy'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_WaitGroup_state `{ffi_syntax} : IntoValStructField "state" sync.WaitGroup WaitGroup.state'.
-Admitted.
+Global Instance into_val_struct_field_WaitGroup_noCopy : IntoValStructField "noCopy" sync.WaitGroup WaitGroup.noCopy'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_WaitGroup_sema `{ffi_syntax} : IntoValStructField "sema" sync.WaitGroup WaitGroup.sema'.
-Admitted.
+Global Instance into_val_struct_field_WaitGroup_state : IntoValStructField "state" sync.WaitGroup WaitGroup.state'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_WaitGroup_sema : IntoValStructField "sema" sync.WaitGroup WaitGroup.sema'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_WaitGroup `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} noCopy' state' sema':
+Global Instance wp_struct_make_WaitGroup noCopy' state' sema':
   PureWp True
     (struct.make #sync.WaitGroup (alist_val [
       "noCopy" ::= #noCopy';
@@ -156,7 +195,7 @@ Global Instance wp_struct_make_WaitGroup `{ffi_semantics} `{!ffi_interp ffi} `{!
       "sema" ::= #sema'
     ]))%struct
     #(WaitGroup.mk noCopy' state' sema').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance WaitGroup_struct_fields_split dq l (v : WaitGroup.t) :
@@ -165,7 +204,17 @@ Global Instance WaitGroup_struct_fields_split dq l (v : WaitGroup.t) :
     "Hstate" ∷ l ↦s[sync.WaitGroup :: "state"]{dq} v.(WaitGroup.state') ∗
     "Hsema" ∷ l ↦s[sync.WaitGroup :: "sema"]{dq} v.(WaitGroup.sema')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (WaitGroup.noCopy' v)) sync.WaitGroup "noCopy"%go.
+  simpl_one_flatten_struct (# (WaitGroup.state' v)) sync.WaitGroup "state"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -187,7 +236,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined sync :=
   is_pkg_defined := is_global_definitions sync var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_NewCond :
@@ -244,6 +293,10 @@ Global Instance wp_method_call_RWMutex'ptr_Lock :
 
 Global Instance wp_method_call_RWMutex'ptr_RLock :
   WpMethodCall sync "RWMutex'ptr" "RLock" _ (is_pkg_defined sync) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RWMutex'ptr_RLocker :
+  WpMethodCall sync "RWMutex'ptr" "RLocker" _ (is_pkg_defined sync) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RWMutex'ptr_RUnlock :

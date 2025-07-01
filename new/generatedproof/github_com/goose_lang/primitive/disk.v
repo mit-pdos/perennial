@@ -4,8 +4,10 @@ Require Export New.manualproof.github_com.goose_lang.primitive.disk.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.goose_lang.primitive.disk.
+
+Set Default Proof Using "Type".
+
 Module disk.
-Axiom falso : False.
 
 Section names.
 
@@ -25,7 +27,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined disk :=
   is_pkg_defined := is_global_definitions disk var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_Get :

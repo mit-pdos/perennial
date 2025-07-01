@@ -72,7 +72,8 @@ Definition StateMachine__makeDurableWithSnap : val :=
     (func_call #grove_ffi.grove_ffi #"FileWrite"%go) "$a0" "$a1");;;
     let: "$r0" := (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
     (func_call #aof.aof #"CreateAppendOnlyFile"%go) "$a0") in
-    do:  ((struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")) <-[#ptrT] "$r0")).
+    do:  ((struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
+    return: #()).
 
 (* XXX: this is not safe to run concurrently with apply()
    requires that the state machine is not sealed
@@ -85,7 +86,8 @@ Definition StateMachine__truncateAndMakeDurable : val :=
     let: "$r0" := ((![#funcT] (struct.field_ref #InMemoryStateMachine #"GetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) #()) in
     do:  ("snap" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "snap") in
-    (method_call #storage.storage #"StateMachine'ptr" #"makeDurableWithSnap" (![#ptrT] "s")) "$a0")).
+    (method_call #storage.storage #"StateMachine'ptr" #"makeDurableWithSnap" (![#ptrT] "s")) "$a0");;;
+    return: #()).
 
 (* go: durlog.go:66:24 *)
 Definition StateMachine__apply : val :=
@@ -125,7 +127,8 @@ Definition StateMachine__apply : val :=
     let: "waitFn" := (mem.alloc (type.zero_val #funcT)) in
     let: "$r0" := (λ: <>,
       exception_do (do:  (let: "$a0" := (![#uint64T] "l") in
-      (method_call #aof #"AppendOnlyFile'ptr" #"WaitAppend" (![#ptrT] "f")) "$a0"))
+      (method_call #aof #"AppendOnlyFile'ptr" #"WaitAppend" (![#ptrT] "f")) "$a0");;;
+      return: #())
       ) in
     do:  ("waitFn" <-[#funcT] "$r0");;;
     return: (![#sliceT] "ret", ![#funcT] "waitFn")).
@@ -158,7 +161,8 @@ Definition StateMachine__setStateAndUnseal : val :=
     let: "$a1" := (![#uint64T] "nextIndex") in
     (![#funcT] (struct.field_ref #InMemoryStateMachine #"SetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
     do:  (let: "$a0" := (![#sliceT] "snap") in
-    (method_call #storage.storage #"StateMachine'ptr" #"makeDurableWithSnap" (![#ptrT] "s")) "$a0")).
+    (method_call #storage.storage #"StateMachine'ptr" #"makeDurableWithSnap" (![#ptrT] "s")) "$a0");;;
+    return: #()).
 
 (* go: durlog.go:105:24 *)
 Definition StateMachine__getStateAndSeal : val :=
@@ -347,7 +351,8 @@ Definition MakePbServer : val :=
       do:  (let: "$a0" := (![#sliceT] "snap") in
       let: "$a1" := (![#uint64T] "nextIndex") in
       let: "$a2" := (![#uint64T] "epoch") in
-      (method_call #storage.storage #"StateMachine'ptr" #"setStateAndUnseal" (![#ptrT] "s")) "$a0" "$a1" "$a2"))
+      (method_call #storage.storage #"StateMachine'ptr" #"setStateAndUnseal" (![#ptrT] "s")) "$a0" "$a1" "$a2");;;
+      return: #())
       ) in
     let: "$GetStateAndSeal" := (λ: <>,
       exception_do (return: ((method_call #storage.storage #"StateMachine'ptr" #"getStateAndSeal" (![#ptrT] "s")) #()))

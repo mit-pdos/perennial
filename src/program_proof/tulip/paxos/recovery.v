@@ -140,6 +140,9 @@ Definition encode_paxos_accept (lsn : u64) (ents : ledger) : list u8 :=
 Definition encode_paxos_expand (lsn : u64) : list u8 :=
   u64_le (U64 5) ++ u64_le lsn.
 
+Hint Unfold encode_paxos_extend encode_paxos_append encode_paxos_prepare
+  encode_paxos_advance encode_paxos_accept encode_paxos_expand : len.
+
 Definition encode_paxos_cmd c :=
   match c with
   | CmdPaxosExtend ents => encode_paxos_extend ents
@@ -161,7 +164,9 @@ Proof.
   destruct cmds as [| c tl]; first done.
   exfalso.
   rewrite /encode_paxos_cmds /= serialize_cons in Henc.
-  by destruct c.
+  apply (f_equal length) in Henc.
+  revert Henc.
+  destruct c; simpl in *; len.
 Qed.
 
 Lemma encode_paxos_cmds_snoc cmds cmd :

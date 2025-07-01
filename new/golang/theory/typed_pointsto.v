@@ -97,6 +97,9 @@ Section goose_lang.
     .
     all: repeat ltac2:(step ()).
     {
+      destruct type_id, type_id0; simpl in *; congruence.
+    }
+    {
       (* XXX: need to reorder hyps to avoid an error in [dependent induction].... *)
       move a after a0.
       generalize dependent (uint.nat n); intros n' ??.

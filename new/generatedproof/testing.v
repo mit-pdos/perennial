@@ -3,14 +3,21 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.testing.
+
+Set Default Proof Using "Type".
+
 Module testing.
-Axiom falso : False.
+
+(* type testing.T *)
 Module T.
 Section def.
 Context `{ffi_syntax}.
 Axiom t : Type.
 End def.
 End T.
+
+Global Instance bounded_size_T : BoundedTypeSize testing.T.
+Admitted.
 
 Global Instance into_val_T `{ffi_syntax} : IntoVal T.t.
 Admitted.
@@ -36,7 +43,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined testing :=
   is_pkg_defined := is_global_definitions testing var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

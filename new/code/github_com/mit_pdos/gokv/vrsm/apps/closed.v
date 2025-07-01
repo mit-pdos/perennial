@@ -96,7 +96,8 @@ Definition lconfig_main : val :=
     let: "$a2" := lconfigHostPaxos in
     let: "$a3" := ((func_call #closed.closed #"mk_lconfig_paxosHosts"%go) #()) in
     let: "$a4" := (![#sliceT] "servers") in
-    (func_call #configservice.configservice #"StartServer"%go) "$a0" "$a1" "$a2" "$a3" "$a4")).
+    (func_call #configservice.configservice #"StartServer"%go) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+    return: #()).
 
 (* go: mains.go:55:6 *)
 Definition dconfig_main : val :=
@@ -120,7 +121,8 @@ Definition dconfig_main : val :=
     let: "$a2" := dconfigHostPaxos in
     let: "$a3" := ((func_call #closed.closed #"mk_dconfig_paxosHosts"%go) #()) in
     let: "$a4" := (![#sliceT] "servers") in
-    (func_call #configservice.configservice #"StartServer"%go) "$a0" "$a1" "$a2" "$a3" "$a4")).
+    (func_call #configservice.configservice #"StartServer"%go) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+    return: #()).
 
 (* go: mains.go:62:6 *)
 Definition kv_replica_main : val :=
@@ -144,7 +146,8 @@ Definition kv_replica_main : val :=
     do:  (let: "$a0" := (![#stringT] "fname") in
     let: "$a1" := (![#uint64T] "me") in
     let: "$a2" := (![#sliceT] "configHosts") in
-    (func_call #vkv.vkv #"Start"%go) "$a0" "$a1" "$a2")).
+    (func_call #vkv.vkv #"Start"%go) "$a0" "$a1" "$a2");;;
+    return: #()).
 
 (* go: mains.go:70:6 *)
 Definition makeBankClerk : val :=
@@ -160,7 +163,7 @@ Definition makeBankClerk : val :=
     (func_call #lockservice.lockservice #"MakeLockClerk"%go) "$a0") in
     do:  ("lck" <-[#ptrT] "$r0");;;
     return: (let: "$a0" := (![#ptrT] "lck") in
-     let: "$a1" := (interface.make #cachekv #"CacheKv'ptr" (![#ptrT] "kvck")) in
+     let: "$a1" := (interface.make (#cachekv, #"CacheKv'ptr") (![#ptrT] "kvck")) in
      let: "$a2" := #"init"%go in
      let: "$a3" := #"a1"%go in
      let: "$a4" := #"a2"%go in
@@ -173,7 +176,8 @@ Definition bank_transferer_main : val :=
     let: "$r0" := ((func_call #closed.closed #"makeBankClerk"%go) #()) in
     do:  ("bck" <-[#ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      do:  ((method_call #bank #"BankClerk'ptr" #"SimpleTransfer" (![#ptrT] "bck")) #()))).
+      do:  ((method_call #bank #"BankClerk'ptr" #"SimpleTransfer" (![#ptrT] "bck")) #()));;;
+    return: #()).
 
 (* go: mains.go:84:6 *)
 Definition bank_auditor_main : val :=
@@ -182,7 +186,8 @@ Definition bank_auditor_main : val :=
     let: "$r0" := ((func_call #closed.closed #"makeBankClerk"%go) #()) in
     do:  ("bck" <-[#ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
-      do:  ((method_call #bank #"BankClerk'ptr" #"SimpleAudit" (![#ptrT] "bck")) #()))).
+      do:  ((method_call #bank #"BankClerk'ptr" #"SimpleAudit" (![#ptrT] "bck")) #()));;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

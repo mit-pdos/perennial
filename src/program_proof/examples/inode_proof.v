@@ -160,7 +160,9 @@ Proof.
   split_and!.
   - rewrite /inode.wf /=.
     cbv; congruence.
-  - reflexivity.
+  - list_simplifier.
+    rewrite /block_encodes /has_encoding /marshal_proof.encode /marshal_proof.encode1.
+    by rewrite ?u64_le_unseal.
   - reflexivity.
 Qed.
 

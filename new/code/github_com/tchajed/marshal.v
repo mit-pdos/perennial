@@ -10,6 +10,16 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Enc : go_type := structT [
+  "b" :: sliceT;
+  "off" :: ptrT
+].
+
+Definition Dec : go_type := structT [
+  "b" :: sliceT;
+  "off" :: ptrT
+].
+
 (* go: stateless.go:8:6 *)
 Definition compute_new_cap : val :=
   rec: "compute_new_cap" "old_cap" "min_cap" :=
@@ -121,6 +131,29 @@ Definition ReadBool : val :=
     return: (![#boolT] "x", let: "$s" := (![#sliceT] "b") in
      slice.slice #byteT "$s" #(W64 1) (slice.len "$s"))).
 
+(* go: stateless.go:79:6 *)
+Definition ReadLenPrefixedBytes : val :=
+  rec: "ReadLenPrefixedBytes" "b" :=
+    exception_do (let: "b" := (mem.alloc "b") in
+    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "l" := (mem.alloc (type.zero_val #uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "b") in
+    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("l" <-[#uint64T] "$r0");;;
+    do:  ("b2" <-[#sliceT] "$r1");;;
+    let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "bs" := (mem.alloc (type.zero_val #sliceT)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "b2") in
+    let: "$a1" := (![#uint64T] "l") in
+    (func_call #marshal.marshal #"ReadBytes"%go) "$a0" "$a1") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("bs" <-[#sliceT] "$r0");;;
+    do:  ("b3" <-[#sliceT] "$r1");;;
+    return: (![#sliceT] "bs", ![#sliceT] "b3")).
+
 (* WriteInt appends i in little-endian format to b, returning the new slice.
 
    go: stateless.go:88:6 *)
@@ -216,11 +249,103 @@ Definition WriteLenPrefixedBytes : val :=
      let: "$a1" := (![#sliceT] "bs") in
      (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1")).
 
+(* go: stateless_slice.go:3:6 *)
+Definition ReadSlice : val :=
+  rec: "ReadSlice" "T" "b" "count" "readOne" :=
+    exception_do (let: "readOne" := (mem.alloc "readOne") in
+    let: "count" := (mem.alloc "count") in
+    let: "b" := (mem.alloc "b") in
+    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (![#sliceT] "b") in
+    do:  ("b2" <-[#sliceT] "$r0");;;
+    let: "xs" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := #slice.nil in
+    do:  ("xs" <-[#sliceT] "$r0");;;
+    (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("i" <-[#uint64T] "$r0");;;
+    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "count")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
+      let: "bNew" := (mem.alloc (type.zero_val #sliceT)) in
+      let: "xNew" := (mem.alloc (type.zero_val "T")) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "b2") in
+      (![#funcT] "readOne") "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("xNew" <-["T"] "$r0");;;
+      do:  ("bNew" <-[#sliceT] "$r1");;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "xs") in
+      let: "$a1" := ((let: "$sl0" := (!["T"] "xNew") in
+      slice.literal "T" ["$sl0"])) in
+      (slice.append "T") "$a0" "$a1") in
+      do:  ("xs" <-[#sliceT] "$r0");;;
+      let: "$r0" := (![#sliceT] "bNew") in
+      do:  ("b2" <-[#sliceT] "$r0")));;;
+    return: (![#sliceT] "xs", ![#sliceT] "b2")).
+
+(* go: stateless_slice.go:14:6 *)
+Definition ReadSliceLenPrefix : val :=
+  rec: "ReadSliceLenPrefix" "T" "b" "readOne" :=
+    exception_do (let: "readOne" := (mem.alloc "readOne") in
+    let: "b" := (mem.alloc "b") in
+    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "count" := (mem.alloc (type.zero_val #uint64T)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "b") in
+    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("count" <-[#uint64T] "$r0");;;
+    do:  ("b2" <-[#sliceT] "$r1");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "b2") in
+    let: "$a1" := (![#uint64T] "count") in
+    let: "$a2" := (![#funcT] "readOne") in
+    ((func_call #marshal.marshal #"ReadSlice"%go) "T") "$a0" "$a1" "$a2")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: stateless_slice.go:19:6 *)
+Definition WriteSlice : val :=
+  rec: "WriteSlice" "T" "b" "xs" "writeOne" :=
+    exception_do (let: "writeOne" := (mem.alloc "writeOne") in
+    let: "xs" := (mem.alloc "xs") in
+    let: "b" := (mem.alloc "b") in
+    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (![#sliceT] "b") in
+    do:  ("b2" <-[#sliceT] "$r0");;;
+    let: "$range" := (![#sliceT] "xs") in
+    (let: "x" := (mem.alloc (type.zero_val "T")) in
+    slice.for_range "T" "$range" (λ: "$key" "$value",
+      do:  ("x" <-["T"] "$value");;;
+      do:  "$key";;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "b2") in
+      let: "$a1" := (!["T"] "x") in
+      (![#funcT] "writeOne") "$a0" "$a1") in
+      do:  ("b2" <-[#sliceT] "$r0")));;;
+    return: (![#sliceT] "b2")).
+
+(* go: stateless_slice.go:27:6 *)
+Definition WriteSliceLenPrefix : val :=
+  rec: "WriteSliceLenPrefix" "T" "b" "xs" "writeOne" :=
+    exception_do (let: "writeOne" := (mem.alloc "writeOne") in
+    let: "xs" := (mem.alloc "xs") in
+    let: "b" := (mem.alloc "b") in
+    let: "b2" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "xs") in
+    slice.len "$a0")) in
+    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    do:  ("b2" <-[#sliceT] "$r0");;;
+    let: "b3" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "b2") in
+    let: "$a1" := (![#sliceT] "xs") in
+    let: "$a2" := (![#funcT] "writeOne") in
+    ((func_call #marshal.marshal #"WriteSlice"%go) "T") "$a0" "$a1" "$a2") in
+    do:  ("b3" <-[#sliceT] "$r0");;;
+    return: (![#sliceT] "b3")).
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("compute_new_cap"%go, compute_new_cap); ("reserve"%go, reserve); ("ReadInt"%go, ReadInt); ("ReadInt32"%go, ReadInt32); ("ReadBytes"%go, ReadBytes); ("ReadBytesCopy"%go, ReadBytesCopy); ("ReadBool"%go, ReadBool); ("WriteInt"%go, WriteInt); ("WriteInt32"%go, WriteInt32); ("WriteBytes"%go, WriteBytes); ("WriteBool"%go, WriteBool); ("WriteLenPrefixedBytes"%go, WriteLenPrefixedBytes)].
+Definition functions' : list (go_string * val) := [("compute_new_cap"%go, compute_new_cap); ("reserve"%go, reserve); ("ReadInt"%go, ReadInt); ("ReadInt32"%go, ReadInt32); ("ReadBytes"%go, ReadBytes); ("ReadBytesCopy"%go, ReadBytesCopy); ("ReadBool"%go, ReadBool); ("ReadLenPrefixedBytes"%go, ReadLenPrefixedBytes); ("WriteInt"%go, WriteInt); ("WriteInt32"%go, WriteInt32); ("WriteBytes"%go, WriteBytes); ("WriteBool"%go, WriteBool); ("WriteLenPrefixedBytes"%go, WriteLenPrefixedBytes); ("ReadSlice"%go, ReadSlice); ("ReadSliceLenPrefix"%go, ReadSliceLenPrefix); ("WriteSlice"%go, WriteSlice); ("WriteSliceLenPrefix"%go, WriteSliceLenPrefix)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Enc"%go, []); ("Enc'ptr"%go, []); ("Dec"%go, []); ("Dec'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo marshal.marshal :=
   {|

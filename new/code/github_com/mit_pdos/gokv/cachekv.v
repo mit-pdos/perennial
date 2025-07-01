@@ -211,7 +211,8 @@ Definition CacheKv__Put : val :=
       do:  ("resp" <-[#stringT] "$r0");;;
       (if: (![#stringT] "resp") = #"ok"%go
       then break: #()
-      else do:  #()))).
+      else do:  #()));;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

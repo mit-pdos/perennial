@@ -53,3 +53,7 @@ axiomatize = [
   # FIXME: translate this by allowing for recursion over sliceT
   "Message",
 ]
+
+imports = [
+  "!*",
+]

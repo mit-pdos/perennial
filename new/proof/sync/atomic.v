@@ -10,8 +10,11 @@ Context `{!goGlobalsGS Σ}.
 Context `{!atomic.GlobalAddrs}.
 
 #[global]
-Program Instance is_pkg_init_inst : IsPkgInit atomic :=
+Program Instance is_pkg_init_atomic : IsPkgInit atomic :=
   ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_atomic.
+#[local] Transparent is_pkg_init_atomic.
+
 
 Lemma wp_LoadUint64 (addr : loc) dq :
   ∀ Φ,

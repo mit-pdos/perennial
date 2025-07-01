@@ -9,8 +9,12 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.clerk.
+
+Set Default Proof Using "Type".
+
 Module clerk.
-Axiom falso : False.
+
+(* type clerk.Clerk *)
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -26,34 +30,42 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk `{ffi_syntax}: Settable _ :=
+Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.confCk'; Clerk.replicaClerks'; Clerk.preferredReplica'; Clerk.lastPreferenceRefresh' >.
-Global Instance into_val_Clerk `{ffi_syntax} : IntoVal Clerk.t.
-Admitted.
+Global Instance into_val_Clerk : IntoVal Clerk.t :=
+  {| to_val_def v :=
+    struct.val_aux clerk.Clerk [
+    "confCk" ::= #(Clerk.confCk' v);
+    "replicaClerks" ::= #(Clerk.replicaClerks' v);
+    "preferredReplica" ::= #(Clerk.preferredReplica' v);
+    "lastPreferenceRefresh" ::= #(Clerk.lastPreferenceRefresh' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t clerk.Clerk :=
+Global Program Instance into_val_typed_Clerk : IntoValTyped Clerk.t clerk.Clerk :=
 {|
   default_val := Clerk.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Clerk_confCk `{ffi_syntax} : IntoValStructField "confCk" clerk.Clerk Clerk.confCk'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Clerk_replicaClerks `{ffi_syntax} : IntoValStructField "replicaClerks" clerk.Clerk Clerk.replicaClerks'.
-Admitted.
+Global Instance into_val_struct_field_Clerk_confCk : IntoValStructField "confCk" clerk.Clerk Clerk.confCk'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Clerk_preferredReplica `{ffi_syntax} : IntoValStructField "preferredReplica" clerk.Clerk Clerk.preferredReplica'.
-Admitted.
+Global Instance into_val_struct_field_Clerk_replicaClerks : IntoValStructField "replicaClerks" clerk.Clerk Clerk.replicaClerks'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Clerk_lastPreferenceRefresh `{ffi_syntax} : IntoValStructField "lastPreferenceRefresh" clerk.Clerk Clerk.lastPreferenceRefresh'.
-Admitted.
+Global Instance into_val_struct_field_Clerk_preferredReplica : IntoValStructField "preferredReplica" clerk.Clerk Clerk.preferredReplica'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Clerk_lastPreferenceRefresh : IntoValStructField "lastPreferenceRefresh" clerk.Clerk Clerk.lastPreferenceRefresh'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} confCk' replicaClerks' preferredReplica' lastPreferenceRefresh':
+Global Instance wp_struct_make_Clerk confCk' replicaClerks' preferredReplica' lastPreferenceRefresh':
   PureWp True
     (struct.make #clerk.Clerk (alist_val [
       "confCk" ::= #confCk';
@@ -62,7 +74,7 @@ Global Instance wp_struct_make_Clerk `{ffi_semantics} `{!ffi_interp ffi} `{!heap
       "lastPreferenceRefresh" ::= #lastPreferenceRefresh'
     ]))%struct
     #(Clerk.mk confCk' replicaClerks' preferredReplica' lastPreferenceRefresh').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
@@ -72,7 +84,18 @@ Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
     "HpreferredReplica" ∷ l ↦s[clerk.Clerk :: "preferredReplica"]{dq} v.(Clerk.preferredReplica') ∗
     "HlastPreferenceRefresh" ∷ l ↦s[clerk.Clerk :: "lastPreferenceRefresh"]{dq} v.(Clerk.lastPreferenceRefresh')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Clerk.confCk' v)) clerk.Clerk "confCk"%go.
+  simpl_one_flatten_struct (# (Clerk.replicaClerks' v)) clerk.Clerk "replicaClerks"%go.
+  simpl_one_flatten_struct (# (Clerk.preferredReplica' v)) clerk.Clerk "preferredReplica"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -94,7 +117,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined clerk :=
   is_pkg_defined := is_global_definitions clerk var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_makeClerks :

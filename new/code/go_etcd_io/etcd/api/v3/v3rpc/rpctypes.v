@@ -63,7 +63,7 @@ Definition Error : val :=
     else
       let: "$r0" := ((interface.get #"Error"%go (![#error] "verr")) #()) in
       do:  ("desc" <-[#stringT] "$r0"));;;
-    return: (interface.make #rpctypes.rpctypes #"EtcdError" (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![#ptrT] "ev")) #()) in
+    return: (interface.make (#rpctypes.rpctypes, #"EtcdError") (let: "$code" := ((method_call #status #"Status'ptr" #"Code" (![#ptrT] "ev")) #()) in
      let: "$desc" := (![#stringT] "desc") in
      struct.make #EtcdError [{
        "code" ::= "$code";

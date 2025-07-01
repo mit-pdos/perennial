@@ -108,7 +108,8 @@ Section decode.
     iIntros (p1) "Hbs".
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (p2) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (p3) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -138,7 +139,8 @@ Section decode.
     iIntros (p1) "Hbs".
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (p2) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (p3) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -172,7 +174,8 @@ Section decode.
     iIntros (p2) "Hbs".
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (p3) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (p4) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -206,7 +209,8 @@ Section decode.
     iIntros (p2) "Hbs".
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (p3) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (p4) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -232,7 +236,8 @@ Section decode.
     (*@ }                                                                       @*)
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (p1) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (p2) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -309,7 +314,8 @@ Section decode.
       iIntros (bs6P) "Hbs".
       wp_apply (wp_ReadInt with "Hbs").
       iIntros (bs7P) "Hbs".
-      wp_apply (wp_ReadInt with "Hbs").
+      wp_apply (wp_ReadInt [] with "[Hbs]").
+      { by list_simplifier. }
       iIntros (bs8P) "Hbs".
       wp_pures.
       destruct b; wp_pures.
@@ -338,7 +344,8 @@ Section decode.
     (*@ }                                                                       @*)
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (p1) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (p2) "Hbs".
     wp_pures.
     by iApply "HΦ".
@@ -364,7 +371,8 @@ Section decode.
     (*@ }                                                                       @*)
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (p1) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (p2) "Hbs".
     wp_pures.
     by iApply "HΦ".

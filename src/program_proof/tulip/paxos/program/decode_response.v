@@ -84,7 +84,8 @@ Section decode_response.
     iIntros (p1) "Hbs".
     wp_apply (wp_ReadInt with "Hbs").
     iIntros (p2) "Hbs".
-    wp_apply (wp_ReadInt with "Hbs").
+    wp_apply (wp_ReadInt [] with "[Hbs]").
+    { by list_simplifier. }
     iIntros (p3) "Hbs".
     wp_pures.
     by iApply "HΦ".

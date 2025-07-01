@@ -259,7 +259,7 @@ Definition EncodeBecomePrimaryArgs : val :=
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] (struct.field_ref #BecomePrimaryArgs #"Replicas"%go (![#ptrT] "args"))) in
-    (let: "h" := (mem.alloc (type.zero_val #intT)) in
+    (let: "h" := (mem.alloc (type.zero_val #uint64T)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
       do:  ("h" <-[#uint64T] "$value");;;
       do:  "$key";;;
@@ -616,8 +616,8 @@ Definition Server__ApplyRoWaitForCommit : val :=
     (if: (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` #(W64 10000)) = #(W64 0)
     then
       do:  (let: "$a0" := #"Server nextIndex=%d commitIndex=%d"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Server #"nextIndex"%go (![#ptrT] "s")))) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s")))) in
+      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"nextIndex"%go (![#ptrT] "s")))) in
+      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #log.log #"Printf"%go) "$a0" "$a1")
     else do:  #());;;
@@ -641,8 +641,8 @@ Definition Server__ApplyRoWaitForCommit : val :=
     then
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
       do:  (let: "$a0" := #"Lease expired because %d < %d"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Server #"leaseExpiration"%go (![#ptrT] "s")))) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] "h")) in
+      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"leaseExpiration"%go (![#ptrT] "s")))) in
+      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "h")) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #log.log #"Printf"%go) "$a0" "$a1");;;
       let: "$r0" := e.LeaseExpired in
@@ -682,7 +682,8 @@ Definition Server__IncreaseCommitIndex : val :=
       do:  ((struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
       do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] (struct.field_ref #Server #"committedNextIndex_cond"%go (![#ptrT] "s")))) #())
     else do:  #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #())).
+    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
+    return: #()).
 
 (* called on the primary server to apply a new operation.
 
@@ -760,7 +761,7 @@ Definition Server__Apply : val :=
     slice.len "$a0")) in
     do:  ("errs" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "clerks_inner") in
-    (let: "clerk" := (mem.alloc (type.zero_val #intT)) in
+    (let: "clerk" := (mem.alloc (type.zero_val #ptrT)) in
     let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #ptrT "$range" (λ: "$key" "$value",
       do:  ("clerk" <-[#ptrT] "$value");;;
@@ -785,7 +786,8 @@ Definition Server__Apply : val :=
             let: "$r0" := (![#uint64T] "err") in
             do:  ((slice.elem_ref #uint64T (![#sliceT] "errs") (![#intT] "i")) <-[#uint64T] "$r0");;;
             break: #()));;;
-        do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #()))
+        do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #());;;
+        return: #())
         ) in
       do:  (Fork ("$go" #()))));;;
     do:  ((method_call #sync #"WaitGroup'ptr" #"Wait" (![#ptrT] "wg")) #());;;
@@ -856,7 +858,8 @@ Definition Server__leaseRenewalThread : val :=
         else
           do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
           do:  (let: "$a0" := (#(W64 50) * #(W64 1000000)) in
-          (func_call #primitive.primitive #"Sleep"%go) "$a0"))))).
+          (func_call #primitive.primitive #"Sleep"%go) "$a0"))));;;
+    return: #()).
 
 (* go: server.go:228:18 *)
 Definition Server__sendIncreaseCommitThread : val :=
@@ -882,7 +885,7 @@ Definition Server__sendIncreaseCommitThread : val :=
       let: "$r0" := (mem.alloc (type.zero_val #sync.WaitGroup)) in
       do:  ("wg" <-[#ptrT] "$r0");;;
       let: "$range" := (![#sliceT] "clerks_inner") in
-      (let: "clerk" := (mem.alloc (type.zero_val #intT)) in
+      (let: "clerk" := (mem.alloc (type.zero_val #ptrT)) in
       slice.for_range #ptrT "$range" (λ: "$key" "$value",
         do:  ("clerk" <-[#ptrT] "$value");;;
         do:  "$key";;;
@@ -900,12 +903,14 @@ Definition Server__sendIncreaseCommitThread : val :=
             (if: (![#uint64T] "err") = e.None
             then break: #()
             else continue: #()));;;
-          do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #()))
+          do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #());;;
+          return: #())
           ) in
         do:  (Fork ("$go" #()))));;;
       do:  ((method_call #sync #"WaitGroup'ptr" #"Wait" (![#ptrT] "wg")) #());;;
       do:  (let: "$a0" := #(W64 5000000) in
-      (func_call #primitive.primitive #"Sleep"%go) "$a0"))).
+      (func_call #primitive.primitive #"Sleep"%go) "$a0"));;;
+    return: #()).
 
 (* requires that we've already at least entered this epoch
    returns true iff stale
@@ -937,7 +942,7 @@ Definition Server__ApplyAsBackup : val :=
       (if: (~ (![#boolT] "ok"))
       then
         let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
-        let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
+        let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
         (func_call #sync.sync #"NewCond"%go) "$a0") in
         do:  ("cond" <-[#ptrT] "$r0");;;
         let: "$r0" := (![#ptrT] "cond") in
@@ -1001,7 +1006,7 @@ Definition Server__SetState : val :=
         do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
         return: (e.None)
       else
-        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"Entered new epoch"%go) in
+        do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Entered new epoch"%go) in
         slice.literal #interfaceT ["$sl0"])) in
         (func_call #log.log #"Print"%go) "$a0");;;
         let: "$r0" := #false in
@@ -1021,7 +1026,7 @@ Definition Server__SetState : val :=
         let: "$a2" := (![#uint64T] (struct.field_ref #SetStateArgs #"Epoch"%go (![#ptrT] "args"))) in
         (![#funcT] (struct.field_ref #StateMachine #"SetStateAndUnseal"%go (![#ptrT] (struct.field_ref #Server #"sm"%go (![#ptrT] "s"))))) "$a0" "$a1" "$a2");;;
         let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #Server #"opAppliedConds"%go (![#ptrT] "s"))) in
-        (let: "cond" := (mem.alloc (type.zero_val #uint64T)) in
+        (let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
         map.for_range "$range" (λ: "$key" "value",
           do:  ("cond" <-[#ptrT] "$value");;;
           do:  "$key";;;
@@ -1066,7 +1071,7 @@ Definition Server__GetState : val :=
     let: "$r0" := (![#uint64T] (struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s"))) in
     do:  ("committedNextIndex" <-[#uint64T] "$r0");;;
     let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #Server #"opAppliedConds"%go (![#ptrT] "s"))) in
-    (let: "cond" := (mem.alloc (type.zero_val #uint64T)) in
+    (let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("cond" <-[#ptrT] "$value");;;
       do:  "$key";;;
@@ -1095,14 +1100,14 @@ Definition Server__BecomePrimary : val :=
     (if: ((![#uint64T] (struct.field_ref #BecomePrimaryArgs #"Epoch"%go (![#ptrT] "args"))) ≠ (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s")))) || (~ (![#boolT] (struct.field_ref #Server #"canBecomePrimary"%go (![#ptrT] "s"))))
     then
       do:  (let: "$a0" := #"Wrong epoch in BecomePrimary request (in %d, got %d)"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s")))) in
-      let: "$sl1" := (interface.make #""%go #"uint64"%go (![#uint64T] (struct.field_ref #BecomePrimaryArgs #"Epoch"%go (![#ptrT] "args")))) in
+      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s")))) in
+      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #BecomePrimaryArgs #"Epoch"%go (![#ptrT] "args")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #log.log #"Printf"%go) "$a0" "$a1");;;
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
       return: (e.Stale)
     else do:  #());;;
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make #""%go #"string"%go #"Became Primary"%go) in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Became Primary"%go) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #log.log #"Println"%go) "$a0");;;
     let: "$r0" := #true in
@@ -1172,10 +1177,10 @@ Definition MakeServer : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
     (func_call #configservice.configservice #"MakeClerk"%go) "$a0") in
     do:  ((struct.field_ref #Server #"confCk"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
+    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
     do:  ((struct.field_ref #Server #"committedNextIndex_cond"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make #sync #"Mutex'ptr" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
+    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
     (func_call #sync.sync #"NewCond"%go) "$a0") in
     do:  ((struct.field_ref #Server #"isPrimary_cond"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     return: (![#ptrT] "s")).
@@ -1195,7 +1200,8 @@ Definition Server__Serve : val :=
       (func_call #replica.replica #"DecodeApplyAsBackupArgs"%go) "$a0") in
       (method_call #replica.replica #"Server'ptr" #"ApplyAsBackup" (![#ptrT] "s")) "$a0") in
       (func_call #e.e #"EncodeError"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_APPLYASBACKUP "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1205,7 +1211,8 @@ Definition Server__Serve : val :=
       (func_call #replica.replica #"DecodeSetStateArgs"%go) "$a0") in
       (method_call #replica.replica #"Server'ptr" #"SetState" (![#ptrT] "s")) "$a0") in
       (func_call #e.e #"EncodeError"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_SETSTATE "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1215,7 +1222,8 @@ Definition Server__Serve : val :=
       (func_call #replica.replica #"DecodeGetStateArgs"%go) "$a0") in
       (method_call #replica.replica #"Server'ptr" #"GetState" (![#ptrT] "s")) "$a0") in
       (func_call #replica.replica #"EncodeGetStateReply"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_GETSTATE "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1225,7 +1233,8 @@ Definition Server__Serve : val :=
       (func_call #replica.replica #"DecodeBecomePrimaryArgs"%go) "$a0") in
       (method_call #replica.replica #"Server'ptr" #"BecomePrimary" (![#ptrT] "s")) "$a0") in
       (func_call #e.e #"EncodeError"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_BECOMEPRIMARY "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1234,7 +1243,8 @@ Definition Server__Serve : val :=
       let: "$r0" := (let: "$a0" := (let: "$a0" := (![#sliceT] "args") in
       (method_call #replica.replica #"Server'ptr" #"Apply" (![#ptrT] "s")) "$a0") in
       (func_call #replica.replica #"EncodeApplyReply"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_PRIMARYAPPLY "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1243,7 +1253,8 @@ Definition Server__Serve : val :=
       let: "$r0" := (let: "$a0" := (let: "$a0" := (![#sliceT] "args") in
       (method_call #replica.replica #"Server'ptr" #"ApplyRoWaitForCommit" (![#ptrT] "s")) "$a0") in
       (func_call #replica.replica #"EncodeApplyReply"%go) "$a0") in
-      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0"))
+      do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_ROPRIMARYAPPLY "$r0");;;
     let: "$r0" := (λ: "args" "reply",
@@ -1251,7 +1262,8 @@ Definition Server__Serve : val :=
       let: "args" := (mem.alloc "args") in
       do:  (let: "$a0" := (let: "$a0" := (![#sliceT] "args") in
       (func_call #replica.replica #"DecodeIncreaseCommitArgs"%go) "$a0") in
-      (method_call #replica.replica #"Server'ptr" #"IncreaseCommitIndex" (![#ptrT] "s")) "$a0"))
+      (method_call #replica.replica #"Server'ptr" #"IncreaseCommitIndex" (![#ptrT] "s")) "$a0");;;
+      return: #())
       ) in
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_INCREASECOMMIT "$r0");;;
     let: "rs" := (mem.alloc (type.zero_val #ptrT)) in
@@ -1261,13 +1273,16 @@ Definition Server__Serve : val :=
     do:  (let: "$a0" := (![#uint64T] "me") in
     (method_call #urpc #"Server'ptr" #"Serve" (![#ptrT] "rs")) "$a0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #replica.replica #"Server'ptr" #"leaseRenewalThread" (![#ptrT] "s")) #()))
+      exception_do (do:  ((method_call #replica.replica #"Server'ptr" #"leaseRenewalThread" (![#ptrT] "s")) #());;;
+      return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #replica.replica #"Server'ptr" #"sendIncreaseCommitThread" (![#ptrT] "s")) #()))
+      exception_do (do:  ((method_call #replica.replica #"Server'ptr" #"sendIncreaseCommitThread" (![#ptrT] "s")) #());;;
+      return: #())
       ) in
-    do:  (Fork ("$go" #()))).
+    do:  (Fork ("$go" #()));;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [].
 

@@ -13,15 +13,20 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.configservice.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.replica.
-Module replica.
-Axiom falso : False.
 
+Set Default Proof Using "Type".
+
+Module replica.
+
+(* type replica.Op *)
 Module Op.
 Section def.
 Context `{ffi_syntax}.
 Definition t := slice.t.
 End def.
 End Op.
+
+(* type replica.ApplyAsBackupArgs *)
 Module ApplyAsBackupArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -36,31 +41,38 @@ End ApplyAsBackupArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ApplyAsBackupArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_ApplyAsBackupArgs : Settable ApplyAsBackupArgs.t :=
   settable! ApplyAsBackupArgs.mk < ApplyAsBackupArgs.epoch'; ApplyAsBackupArgs.index'; ApplyAsBackupArgs.op' >.
-Global Instance into_val_ApplyAsBackupArgs `{ffi_syntax} : IntoVal ApplyAsBackupArgs.t.
-Admitted.
+Global Instance into_val_ApplyAsBackupArgs : IntoVal ApplyAsBackupArgs.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.ApplyAsBackupArgs [
+    "epoch" ::= #(ApplyAsBackupArgs.epoch' v);
+    "index" ::= #(ApplyAsBackupArgs.index' v);
+    "op" ::= #(ApplyAsBackupArgs.op' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_ApplyAsBackupArgs `{ffi_syntax} : IntoValTyped ApplyAsBackupArgs.t replica.ApplyAsBackupArgs :=
+Global Program Instance into_val_typed_ApplyAsBackupArgs : IntoValTyped ApplyAsBackupArgs.t replica.ApplyAsBackupArgs :=
 {|
   default_val := ApplyAsBackupArgs.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ApplyAsBackupArgs_epoch `{ffi_syntax} : IntoValStructField "epoch" replica.ApplyAsBackupArgs ApplyAsBackupArgs.epoch'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_ApplyAsBackupArgs_index `{ffi_syntax} : IntoValStructField "index" replica.ApplyAsBackupArgs ApplyAsBackupArgs.index'.
-Admitted.
+Global Instance into_val_struct_field_ApplyAsBackupArgs_epoch : IntoValStructField "epoch" replica.ApplyAsBackupArgs ApplyAsBackupArgs.epoch'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_ApplyAsBackupArgs_op `{ffi_syntax} : IntoValStructField "op" replica.ApplyAsBackupArgs ApplyAsBackupArgs.op'.
-Admitted.
+Global Instance into_val_struct_field_ApplyAsBackupArgs_index : IntoValStructField "index" replica.ApplyAsBackupArgs ApplyAsBackupArgs.index'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_ApplyAsBackupArgs_op : IntoValStructField "op" replica.ApplyAsBackupArgs ApplyAsBackupArgs.op'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ApplyAsBackupArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} epoch' index' op':
+Global Instance wp_struct_make_ApplyAsBackupArgs epoch' index' op':
   PureWp True
     (struct.make #replica.ApplyAsBackupArgs (alist_val [
       "epoch" ::= #epoch';
@@ -68,7 +80,7 @@ Global Instance wp_struct_make_ApplyAsBackupArgs `{ffi_semantics} `{!ffi_interp 
       "op" ::= #op'
     ]))%struct
     #(ApplyAsBackupArgs.mk epoch' index' op').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ApplyAsBackupArgs_struct_fields_split dq l (v : ApplyAsBackupArgs.t) :
@@ -77,9 +89,21 @@ Global Instance ApplyAsBackupArgs_struct_fields_split dq l (v : ApplyAsBackupArg
     "Hindex" ∷ l ↦s[replica.ApplyAsBackupArgs :: "index"]{dq} v.(ApplyAsBackupArgs.index') ∗
     "Hop" ∷ l ↦s[replica.ApplyAsBackupArgs :: "op"]{dq} v.(ApplyAsBackupArgs.op')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (ApplyAsBackupArgs.epoch' v)) replica.ApplyAsBackupArgs "epoch"%go.
+  simpl_one_flatten_struct (# (ApplyAsBackupArgs.index' v)) replica.ApplyAsBackupArgs "index"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type replica.SetStateArgs *)
 Module SetStateArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -95,34 +119,42 @@ End SetStateArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SetStateArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_SetStateArgs : Settable SetStateArgs.t :=
   settable! SetStateArgs.mk < SetStateArgs.Epoch'; SetStateArgs.NextIndex'; SetStateArgs.CommittedNextIndex'; SetStateArgs.State' >.
-Global Instance into_val_SetStateArgs `{ffi_syntax} : IntoVal SetStateArgs.t.
-Admitted.
+Global Instance into_val_SetStateArgs : IntoVal SetStateArgs.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.SetStateArgs [
+    "Epoch" ::= #(SetStateArgs.Epoch' v);
+    "NextIndex" ::= #(SetStateArgs.NextIndex' v);
+    "CommittedNextIndex" ::= #(SetStateArgs.CommittedNextIndex' v);
+    "State" ::= #(SetStateArgs.State' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_SetStateArgs `{ffi_syntax} : IntoValTyped SetStateArgs.t replica.SetStateArgs :=
+Global Program Instance into_val_typed_SetStateArgs : IntoValTyped SetStateArgs.t replica.SetStateArgs :=
 {|
   default_val := SetStateArgs.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SetStateArgs_Epoch `{ffi_syntax} : IntoValStructField "Epoch" replica.SetStateArgs SetStateArgs.Epoch'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_SetStateArgs_NextIndex `{ffi_syntax} : IntoValStructField "NextIndex" replica.SetStateArgs SetStateArgs.NextIndex'.
-Admitted.
+Global Instance into_val_struct_field_SetStateArgs_Epoch : IntoValStructField "Epoch" replica.SetStateArgs SetStateArgs.Epoch'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_SetStateArgs_CommittedNextIndex `{ffi_syntax} : IntoValStructField "CommittedNextIndex" replica.SetStateArgs SetStateArgs.CommittedNextIndex'.
-Admitted.
+Global Instance into_val_struct_field_SetStateArgs_NextIndex : IntoValStructField "NextIndex" replica.SetStateArgs SetStateArgs.NextIndex'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_SetStateArgs_State `{ffi_syntax} : IntoValStructField "State" replica.SetStateArgs SetStateArgs.State'.
-Admitted.
+Global Instance into_val_struct_field_SetStateArgs_CommittedNextIndex : IntoValStructField "CommittedNextIndex" replica.SetStateArgs SetStateArgs.CommittedNextIndex'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_SetStateArgs_State : IntoValStructField "State" replica.SetStateArgs SetStateArgs.State'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SetStateArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Epoch' NextIndex' CommittedNextIndex' State':
+Global Instance wp_struct_make_SetStateArgs Epoch' NextIndex' CommittedNextIndex' State':
   PureWp True
     (struct.make #replica.SetStateArgs (alist_val [
       "Epoch" ::= #Epoch';
@@ -131,7 +163,7 @@ Global Instance wp_struct_make_SetStateArgs `{ffi_semantics} `{!ffi_interp ffi} 
       "State" ::= #State'
     ]))%struct
     #(SetStateArgs.mk Epoch' NextIndex' CommittedNextIndex' State').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance SetStateArgs_struct_fields_split dq l (v : SetStateArgs.t) :
@@ -141,9 +173,22 @@ Global Instance SetStateArgs_struct_fields_split dq l (v : SetStateArgs.t) :
     "HCommittedNextIndex" ∷ l ↦s[replica.SetStateArgs :: "CommittedNextIndex"]{dq} v.(SetStateArgs.CommittedNextIndex') ∗
     "HState" ∷ l ↦s[replica.SetStateArgs :: "State"]{dq} v.(SetStateArgs.State')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (SetStateArgs.Epoch' v)) replica.SetStateArgs "Epoch"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.NextIndex' v)) replica.SetStateArgs "NextIndex"%go.
+  simpl_one_flatten_struct (# (SetStateArgs.CommittedNextIndex' v)) replica.SetStateArgs "CommittedNextIndex"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type replica.GetStateArgs *)
 Module GetStateArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -156,40 +201,55 @@ End GetStateArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_GetStateArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_GetStateArgs : Settable GetStateArgs.t :=
   settable! GetStateArgs.mk < GetStateArgs.Epoch' >.
-Global Instance into_val_GetStateArgs `{ffi_syntax} : IntoVal GetStateArgs.t.
-Admitted.
+Global Instance into_val_GetStateArgs : IntoVal GetStateArgs.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.GetStateArgs [
+    "Epoch" ::= #(GetStateArgs.Epoch' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_GetStateArgs `{ffi_syntax} : IntoValTyped GetStateArgs.t replica.GetStateArgs :=
+Global Program Instance into_val_typed_GetStateArgs : IntoValTyped GetStateArgs.t replica.GetStateArgs :=
 {|
   default_val := GetStateArgs.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_GetStateArgs_Epoch `{ffi_syntax} : IntoValStructField "Epoch" replica.GetStateArgs GetStateArgs.Epoch'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_GetStateArgs_Epoch : IntoValStructField "Epoch" replica.GetStateArgs GetStateArgs.Epoch'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_GetStateArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Epoch':
+Global Instance wp_struct_make_GetStateArgs Epoch':
   PureWp True
     (struct.make #replica.GetStateArgs (alist_val [
       "Epoch" ::= #Epoch'
     ]))%struct
     #(GetStateArgs.mk Epoch').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance GetStateArgs_struct_fields_split dq l (v : GetStateArgs.t) :
   StructFieldsSplit dq l v (
     "HEpoch" ∷ l ↦s[replica.GetStateArgs :: "Epoch"]{dq} v.(GetStateArgs.Epoch')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type replica.GetStateReply *)
 Module GetStateReply.
 Section def.
 Context `{ffi_syntax}.
@@ -205,34 +265,42 @@ End GetStateReply.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_GetStateReply `{ffi_syntax}: Settable _ :=
+Global Instance settable_GetStateReply : Settable GetStateReply.t :=
   settable! GetStateReply.mk < GetStateReply.Err'; GetStateReply.NextIndex'; GetStateReply.CommittedNextIndex'; GetStateReply.State' >.
-Global Instance into_val_GetStateReply `{ffi_syntax} : IntoVal GetStateReply.t.
-Admitted.
+Global Instance into_val_GetStateReply : IntoVal GetStateReply.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.GetStateReply [
+    "Err" ::= #(GetStateReply.Err' v);
+    "NextIndex" ::= #(GetStateReply.NextIndex' v);
+    "CommittedNextIndex" ::= #(GetStateReply.CommittedNextIndex' v);
+    "State" ::= #(GetStateReply.State' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_GetStateReply `{ffi_syntax} : IntoValTyped GetStateReply.t replica.GetStateReply :=
+Global Program Instance into_val_typed_GetStateReply : IntoValTyped GetStateReply.t replica.GetStateReply :=
 {|
   default_val := GetStateReply.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_GetStateReply_Err `{ffi_syntax} : IntoValStructField "Err" replica.GetStateReply GetStateReply.Err'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_GetStateReply_NextIndex `{ffi_syntax} : IntoValStructField "NextIndex" replica.GetStateReply GetStateReply.NextIndex'.
-Admitted.
+Global Instance into_val_struct_field_GetStateReply_Err : IntoValStructField "Err" replica.GetStateReply GetStateReply.Err'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_GetStateReply_CommittedNextIndex `{ffi_syntax} : IntoValStructField "CommittedNextIndex" replica.GetStateReply GetStateReply.CommittedNextIndex'.
-Admitted.
+Global Instance into_val_struct_field_GetStateReply_NextIndex : IntoValStructField "NextIndex" replica.GetStateReply GetStateReply.NextIndex'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_GetStateReply_State `{ffi_syntax} : IntoValStructField "State" replica.GetStateReply GetStateReply.State'.
-Admitted.
+Global Instance into_val_struct_field_GetStateReply_CommittedNextIndex : IntoValStructField "CommittedNextIndex" replica.GetStateReply GetStateReply.CommittedNextIndex'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_GetStateReply_State : IntoValStructField "State" replica.GetStateReply GetStateReply.State'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_GetStateReply `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Err' NextIndex' CommittedNextIndex' State':
+Global Instance wp_struct_make_GetStateReply Err' NextIndex' CommittedNextIndex' State':
   PureWp True
     (struct.make #replica.GetStateReply (alist_val [
       "Err" ::= #Err';
@@ -241,7 +309,7 @@ Global Instance wp_struct_make_GetStateReply `{ffi_semantics} `{!ffi_interp ffi}
       "State" ::= #State'
     ]))%struct
     #(GetStateReply.mk Err' NextIndex' CommittedNextIndex' State').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance GetStateReply_struct_fields_split dq l (v : GetStateReply.t) :
@@ -251,9 +319,22 @@ Global Instance GetStateReply_struct_fields_split dq l (v : GetStateReply.t) :
     "HCommittedNextIndex" ∷ l ↦s[replica.GetStateReply :: "CommittedNextIndex"]{dq} v.(GetStateReply.CommittedNextIndex') ∗
     "HState" ∷ l ↦s[replica.GetStateReply :: "State"]{dq} v.(GetStateReply.State')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (GetStateReply.Err' v)) replica.GetStateReply "Err"%go.
+  simpl_one_flatten_struct (# (GetStateReply.NextIndex' v)) replica.GetStateReply "NextIndex"%go.
+  simpl_one_flatten_struct (# (GetStateReply.CommittedNextIndex' v)) replica.GetStateReply "CommittedNextIndex"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type replica.BecomePrimaryArgs *)
 Module BecomePrimaryArgs.
 Section def.
 Context `{ffi_syntax}.
@@ -267,35 +348,41 @@ End BecomePrimaryArgs.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_BecomePrimaryArgs `{ffi_syntax}: Settable _ :=
+Global Instance settable_BecomePrimaryArgs : Settable BecomePrimaryArgs.t :=
   settable! BecomePrimaryArgs.mk < BecomePrimaryArgs.Epoch'; BecomePrimaryArgs.Replicas' >.
-Global Instance into_val_BecomePrimaryArgs `{ffi_syntax} : IntoVal BecomePrimaryArgs.t.
-Admitted.
+Global Instance into_val_BecomePrimaryArgs : IntoVal BecomePrimaryArgs.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.BecomePrimaryArgs [
+    "Epoch" ::= #(BecomePrimaryArgs.Epoch' v);
+    "Replicas" ::= #(BecomePrimaryArgs.Replicas' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_BecomePrimaryArgs `{ffi_syntax} : IntoValTyped BecomePrimaryArgs.t replica.BecomePrimaryArgs :=
+Global Program Instance into_val_typed_BecomePrimaryArgs : IntoValTyped BecomePrimaryArgs.t replica.BecomePrimaryArgs :=
 {|
   default_val := BecomePrimaryArgs.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_BecomePrimaryArgs_Epoch `{ffi_syntax} : IntoValStructField "Epoch" replica.BecomePrimaryArgs BecomePrimaryArgs.Epoch'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_BecomePrimaryArgs_Replicas `{ffi_syntax} : IntoValStructField "Replicas" replica.BecomePrimaryArgs BecomePrimaryArgs.Replicas'.
-Admitted.
+Global Instance into_val_struct_field_BecomePrimaryArgs_Epoch : IntoValStructField "Epoch" replica.BecomePrimaryArgs BecomePrimaryArgs.Epoch'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_BecomePrimaryArgs_Replicas : IntoValStructField "Replicas" replica.BecomePrimaryArgs BecomePrimaryArgs.Replicas'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_BecomePrimaryArgs `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Epoch' Replicas':
+Global Instance wp_struct_make_BecomePrimaryArgs Epoch' Replicas':
   PureWp True
     (struct.make #replica.BecomePrimaryArgs (alist_val [
       "Epoch" ::= #Epoch';
       "Replicas" ::= #Replicas'
     ]))%struct
     #(BecomePrimaryArgs.mk Epoch' Replicas').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance BecomePrimaryArgs_struct_fields_split dq l (v : BecomePrimaryArgs.t) :
@@ -303,9 +390,20 @@ Global Instance BecomePrimaryArgs_struct_fields_split dq l (v : BecomePrimaryArg
     "HEpoch" ∷ l ↦s[replica.BecomePrimaryArgs :: "Epoch"]{dq} v.(BecomePrimaryArgs.Epoch') ∗
     "HReplicas" ∷ l ↦s[replica.BecomePrimaryArgs :: "Replicas"]{dq} v.(BecomePrimaryArgs.Replicas')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (BecomePrimaryArgs.Epoch' v)) replica.BecomePrimaryArgs "Epoch"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type replica.ApplyReply *)
 Module ApplyReply.
 Section def.
 Context `{ffi_syntax}.
@@ -319,35 +417,41 @@ End ApplyReply.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_ApplyReply `{ffi_syntax}: Settable _ :=
+Global Instance settable_ApplyReply : Settable ApplyReply.t :=
   settable! ApplyReply.mk < ApplyReply.Err'; ApplyReply.Reply' >.
-Global Instance into_val_ApplyReply `{ffi_syntax} : IntoVal ApplyReply.t.
-Admitted.
+Global Instance into_val_ApplyReply : IntoVal ApplyReply.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.ApplyReply [
+    "Err" ::= #(ApplyReply.Err' v);
+    "Reply" ::= #(ApplyReply.Reply' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_ApplyReply `{ffi_syntax} : IntoValTyped ApplyReply.t replica.ApplyReply :=
+Global Program Instance into_val_typed_ApplyReply : IntoValTyped ApplyReply.t replica.ApplyReply :=
 {|
   default_val := ApplyReply.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_ApplyReply_Err `{ffi_syntax} : IntoValStructField "Err" replica.ApplyReply ApplyReply.Err'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_ApplyReply_Reply `{ffi_syntax} : IntoValStructField "Reply" replica.ApplyReply ApplyReply.Reply'.
-Admitted.
+Global Instance into_val_struct_field_ApplyReply_Err : IntoValStructField "Err" replica.ApplyReply ApplyReply.Err'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_ApplyReply_Reply : IntoValStructField "Reply" replica.ApplyReply ApplyReply.Reply'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_ApplyReply `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Err' Reply':
+Global Instance wp_struct_make_ApplyReply Err' Reply':
   PureWp True
     (struct.make #replica.ApplyReply (alist_val [
       "Err" ::= #Err';
       "Reply" ::= #Reply'
     ]))%struct
     #(ApplyReply.mk Err' Reply').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance ApplyReply_struct_fields_split dq l (v : ApplyReply.t) :
@@ -355,16 +459,28 @@ Global Instance ApplyReply_struct_fields_split dq l (v : ApplyReply.t) :
     "HErr" ∷ l ↦s[replica.ApplyReply :: "Err"]{dq} v.(ApplyReply.Err') ∗
     "HReply" ∷ l ↦s[replica.ApplyReply :: "Reply"]{dq} v.(ApplyReply.Reply')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (ApplyReply.Err' v)) replica.ApplyReply "Err"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
+(* type replica.IncreaseCommitArgs *)
 Module IncreaseCommitArgs.
 Section def.
 Context `{ffi_syntax}.
 Definition t := w64.
 End def.
 End IncreaseCommitArgs.
+
+(* type replica.StateMachine *)
 Module StateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -380,34 +496,42 @@ End StateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_StateMachine `{ffi_syntax}: Settable _ :=
+Global Instance settable_StateMachine : Settable StateMachine.t :=
   settable! StateMachine.mk < StateMachine.StartApply'; StateMachine.ApplyReadonly'; StateMachine.SetStateAndUnseal'; StateMachine.GetStateAndSeal' >.
-Global Instance into_val_StateMachine `{ffi_syntax} : IntoVal StateMachine.t.
-Admitted.
+Global Instance into_val_StateMachine : IntoVal StateMachine.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.StateMachine [
+    "StartApply" ::= #(StateMachine.StartApply' v);
+    "ApplyReadonly" ::= #(StateMachine.ApplyReadonly' v);
+    "SetStateAndUnseal" ::= #(StateMachine.SetStateAndUnseal' v);
+    "GetStateAndSeal" ::= #(StateMachine.GetStateAndSeal' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_StateMachine `{ffi_syntax} : IntoValTyped StateMachine.t replica.StateMachine :=
+Global Program Instance into_val_typed_StateMachine : IntoValTyped StateMachine.t replica.StateMachine :=
 {|
   default_val := StateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_StateMachine_StartApply `{ffi_syntax} : IntoValStructField "StartApply" replica.StateMachine StateMachine.StartApply'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_StateMachine_ApplyReadonly `{ffi_syntax} : IntoValStructField "ApplyReadonly" replica.StateMachine StateMachine.ApplyReadonly'.
-Admitted.
+Global Instance into_val_struct_field_StateMachine_StartApply : IntoValStructField "StartApply" replica.StateMachine StateMachine.StartApply'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_StateMachine_SetStateAndUnseal `{ffi_syntax} : IntoValStructField "SetStateAndUnseal" replica.StateMachine StateMachine.SetStateAndUnseal'.
-Admitted.
+Global Instance into_val_struct_field_StateMachine_ApplyReadonly : IntoValStructField "ApplyReadonly" replica.StateMachine StateMachine.ApplyReadonly'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_StateMachine_GetStateAndSeal `{ffi_syntax} : IntoValStructField "GetStateAndSeal" replica.StateMachine StateMachine.GetStateAndSeal'.
-Admitted.
+Global Instance into_val_struct_field_StateMachine_SetStateAndUnseal : IntoValStructField "SetStateAndUnseal" replica.StateMachine StateMachine.SetStateAndUnseal'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_StateMachine_GetStateAndSeal : IntoValStructField "GetStateAndSeal" replica.StateMachine StateMachine.GetStateAndSeal'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_StateMachine `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} StartApply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
+Global Instance wp_struct_make_StateMachine StartApply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
   PureWp True
     (struct.make #replica.StateMachine (alist_val [
       "StartApply" ::= #StartApply';
@@ -416,7 +540,7 @@ Global Instance wp_struct_make_StateMachine `{ffi_semantics} `{!ffi_interp ffi} 
       "GetStateAndSeal" ::= #GetStateAndSeal'
     ]))%struct
     #(StateMachine.mk StartApply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance StateMachine_struct_fields_split dq l (v : StateMachine.t) :
@@ -426,9 +550,22 @@ Global Instance StateMachine_struct_fields_split dq l (v : StateMachine.t) :
     "HSetStateAndUnseal" ∷ l ↦s[replica.StateMachine :: "SetStateAndUnseal"]{dq} v.(StateMachine.SetStateAndUnseal') ∗
     "HGetStateAndSeal" ∷ l ↦s[replica.StateMachine :: "GetStateAndSeal"]{dq} v.(StateMachine.GetStateAndSeal')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (StateMachine.StartApply' v)) replica.StateMachine "StartApply"%go.
+  simpl_one_flatten_struct (# (StateMachine.ApplyReadonly' v)) replica.StateMachine "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (StateMachine.SetStateAndUnseal' v)) replica.StateMachine "SetStateAndUnseal"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type replica.SyncStateMachine *)
 Module SyncStateMachine.
 Section def.
 Context `{ffi_syntax}.
@@ -444,34 +581,42 @@ End SyncStateMachine.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_SyncStateMachine `{ffi_syntax}: Settable _ :=
+Global Instance settable_SyncStateMachine : Settable SyncStateMachine.t :=
   settable! SyncStateMachine.mk < SyncStateMachine.Apply'; SyncStateMachine.ApplyReadonly'; SyncStateMachine.SetStateAndUnseal'; SyncStateMachine.GetStateAndSeal' >.
-Global Instance into_val_SyncStateMachine `{ffi_syntax} : IntoVal SyncStateMachine.t.
-Admitted.
+Global Instance into_val_SyncStateMachine : IntoVal SyncStateMachine.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.SyncStateMachine [
+    "Apply" ::= #(SyncStateMachine.Apply' v);
+    "ApplyReadonly" ::= #(SyncStateMachine.ApplyReadonly' v);
+    "SetStateAndUnseal" ::= #(SyncStateMachine.SetStateAndUnseal' v);
+    "GetStateAndSeal" ::= #(SyncStateMachine.GetStateAndSeal' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_SyncStateMachine `{ffi_syntax} : IntoValTyped SyncStateMachine.t replica.SyncStateMachine :=
+Global Program Instance into_val_typed_SyncStateMachine : IntoValTyped SyncStateMachine.t replica.SyncStateMachine :=
 {|
   default_val := SyncStateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_SyncStateMachine_Apply `{ffi_syntax} : IntoValStructField "Apply" replica.SyncStateMachine SyncStateMachine.Apply'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_SyncStateMachine_ApplyReadonly `{ffi_syntax} : IntoValStructField "ApplyReadonly" replica.SyncStateMachine SyncStateMachine.ApplyReadonly'.
-Admitted.
+Global Instance into_val_struct_field_SyncStateMachine_Apply : IntoValStructField "Apply" replica.SyncStateMachine SyncStateMachine.Apply'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_SyncStateMachine_SetStateAndUnseal `{ffi_syntax} : IntoValStructField "SetStateAndUnseal" replica.SyncStateMachine SyncStateMachine.SetStateAndUnseal'.
-Admitted.
+Global Instance into_val_struct_field_SyncStateMachine_ApplyReadonly : IntoValStructField "ApplyReadonly" replica.SyncStateMachine SyncStateMachine.ApplyReadonly'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_SyncStateMachine_GetStateAndSeal `{ffi_syntax} : IntoValStructField "GetStateAndSeal" replica.SyncStateMachine SyncStateMachine.GetStateAndSeal'.
-Admitted.
+Global Instance into_val_struct_field_SyncStateMachine_SetStateAndUnseal : IntoValStructField "SetStateAndUnseal" replica.SyncStateMachine SyncStateMachine.SetStateAndUnseal'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_SyncStateMachine_GetStateAndSeal : IntoValStructField "GetStateAndSeal" replica.SyncStateMachine SyncStateMachine.GetStateAndSeal'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_SyncStateMachine `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Apply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
+Global Instance wp_struct_make_SyncStateMachine Apply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal':
   PureWp True
     (struct.make #replica.SyncStateMachine (alist_val [
       "Apply" ::= #Apply';
@@ -480,7 +625,7 @@ Global Instance wp_struct_make_SyncStateMachine `{ffi_semantics} `{!ffi_interp f
       "GetStateAndSeal" ::= #GetStateAndSeal'
     ]))%struct
     #(SyncStateMachine.mk Apply' ApplyReadonly' SetStateAndUnseal' GetStateAndSeal').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance SyncStateMachine_struct_fields_split dq l (v : SyncStateMachine.t) :
@@ -490,9 +635,22 @@ Global Instance SyncStateMachine_struct_fields_split dq l (v : SyncStateMachine.
     "HSetStateAndUnseal" ∷ l ↦s[replica.SyncStateMachine :: "SetStateAndUnseal"]{dq} v.(SyncStateMachine.SetStateAndUnseal') ∗
     "HGetStateAndSeal" ∷ l ↦s[replica.SyncStateMachine :: "GetStateAndSeal"]{dq} v.(SyncStateMachine.GetStateAndSeal')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (SyncStateMachine.Apply' v)) replica.SyncStateMachine "Apply"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.ApplyReadonly' v)) replica.SyncStateMachine "ApplyReadonly"%go.
+  simpl_one_flatten_struct (# (SyncStateMachine.SetStateAndUnseal' v)) replica.SyncStateMachine "SetStateAndUnseal"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type replica.Clerk *)
 Module Clerk.
 Section def.
 Context `{ffi_syntax}.
@@ -505,40 +663,55 @@ End Clerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Clerk `{ffi_syntax}: Settable _ :=
+Global Instance settable_Clerk : Settable Clerk.t :=
   settable! Clerk.mk < Clerk.cl' >.
-Global Instance into_val_Clerk `{ffi_syntax} : IntoVal Clerk.t.
-Admitted.
+Global Instance into_val_Clerk : IntoVal Clerk.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.Clerk [
+    "cl" ::= #(Clerk.cl' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Clerk `{ffi_syntax} : IntoValTyped Clerk.t replica.Clerk :=
+Global Program Instance into_val_typed_Clerk : IntoValTyped Clerk.t replica.Clerk :=
 {|
   default_val := Clerk.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Clerk_cl `{ffi_syntax} : IntoValStructField "cl" replica.Clerk Clerk.cl'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Clerk_cl : IntoValStructField "cl" replica.Clerk Clerk.cl'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Clerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cl':
+Global Instance wp_struct_make_Clerk cl':
   PureWp True
     (struct.make #replica.Clerk (alist_val [
       "cl" ::= #cl'
     ]))%struct
     #(Clerk.mk cl').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
   StructFieldsSplit dq l v (
     "Hcl" ∷ l ↦s[replica.Clerk :: "cl"]{dq} v.(Clerk.cl')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type replica.Server *)
 Module Server.
 Section def.
 Context `{ffi_syntax}.
@@ -565,67 +738,86 @@ End Server.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Server `{ffi_syntax}: Settable _ :=
+Global Instance settable_Server : Settable Server.t :=
   settable! Server.mk < Server.mu'; Server.epoch'; Server.sealed'; Server.sm'; Server.nextIndex'; Server.canBecomePrimary'; Server.isPrimary'; Server.clerks'; Server.isPrimary_cond'; Server.opAppliedConds'; Server.leaseExpiration'; Server.leaseValid'; Server.committedNextIndex'; Server.committedNextIndex_cond'; Server.confCk' >.
-Global Instance into_val_Server `{ffi_syntax} : IntoVal Server.t.
-Admitted.
+Global Instance into_val_Server : IntoVal Server.t :=
+  {| to_val_def v :=
+    struct.val_aux replica.Server [
+    "mu" ::= #(Server.mu' v);
+    "epoch" ::= #(Server.epoch' v);
+    "sealed" ::= #(Server.sealed' v);
+    "sm" ::= #(Server.sm' v);
+    "nextIndex" ::= #(Server.nextIndex' v);
+    "canBecomePrimary" ::= #(Server.canBecomePrimary' v);
+    "isPrimary" ::= #(Server.isPrimary' v);
+    "clerks" ::= #(Server.clerks' v);
+    "isPrimary_cond" ::= #(Server.isPrimary_cond' v);
+    "opAppliedConds" ::= #(Server.opAppliedConds' v);
+    "leaseExpiration" ::= #(Server.leaseExpiration' v);
+    "leaseValid" ::= #(Server.leaseValid' v);
+    "committedNextIndex" ::= #(Server.committedNextIndex' v);
+    "committedNextIndex_cond" ::= #(Server.committedNextIndex_cond' v);
+    "confCk" ::= #(Server.confCk' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Server `{ffi_syntax} : IntoValTyped Server.t replica.Server :=
+Global Program Instance into_val_typed_Server : IntoValTyped Server.t replica.Server :=
 {|
   default_val := Server.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Server_mu `{ffi_syntax} : IntoValStructField "mu" replica.Server Server.mu'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Server_epoch `{ffi_syntax} : IntoValStructField "epoch" replica.Server Server.epoch'.
-Admitted.
+Global Instance into_val_struct_field_Server_mu : IntoValStructField "mu" replica.Server Server.mu'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_sealed `{ffi_syntax} : IntoValStructField "sealed" replica.Server Server.sealed'.
-Admitted.
+Global Instance into_val_struct_field_Server_epoch : IntoValStructField "epoch" replica.Server Server.epoch'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_sm `{ffi_syntax} : IntoValStructField "sm" replica.Server Server.sm'.
-Admitted.
+Global Instance into_val_struct_field_Server_sealed : IntoValStructField "sealed" replica.Server Server.sealed'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_nextIndex `{ffi_syntax} : IntoValStructField "nextIndex" replica.Server Server.nextIndex'.
-Admitted.
+Global Instance into_val_struct_field_Server_sm : IntoValStructField "sm" replica.Server Server.sm'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_canBecomePrimary `{ffi_syntax} : IntoValStructField "canBecomePrimary" replica.Server Server.canBecomePrimary'.
-Admitted.
+Global Instance into_val_struct_field_Server_nextIndex : IntoValStructField "nextIndex" replica.Server Server.nextIndex'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_isPrimary `{ffi_syntax} : IntoValStructField "isPrimary" replica.Server Server.isPrimary'.
-Admitted.
+Global Instance into_val_struct_field_Server_canBecomePrimary : IntoValStructField "canBecomePrimary" replica.Server Server.canBecomePrimary'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_clerks `{ffi_syntax} : IntoValStructField "clerks" replica.Server Server.clerks'.
-Admitted.
+Global Instance into_val_struct_field_Server_isPrimary : IntoValStructField "isPrimary" replica.Server Server.isPrimary'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_isPrimary_cond `{ffi_syntax} : IntoValStructField "isPrimary_cond" replica.Server Server.isPrimary_cond'.
-Admitted.
+Global Instance into_val_struct_field_Server_clerks : IntoValStructField "clerks" replica.Server Server.clerks'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_opAppliedConds `{ffi_syntax} : IntoValStructField "opAppliedConds" replica.Server Server.opAppliedConds'.
-Admitted.
+Global Instance into_val_struct_field_Server_isPrimary_cond : IntoValStructField "isPrimary_cond" replica.Server Server.isPrimary_cond'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_leaseExpiration `{ffi_syntax} : IntoValStructField "leaseExpiration" replica.Server Server.leaseExpiration'.
-Admitted.
+Global Instance into_val_struct_field_Server_opAppliedConds : IntoValStructField "opAppliedConds" replica.Server Server.opAppliedConds'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_leaseValid `{ffi_syntax} : IntoValStructField "leaseValid" replica.Server Server.leaseValid'.
-Admitted.
+Global Instance into_val_struct_field_Server_leaseExpiration : IntoValStructField "leaseExpiration" replica.Server Server.leaseExpiration'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_committedNextIndex `{ffi_syntax} : IntoValStructField "committedNextIndex" replica.Server Server.committedNextIndex'.
-Admitted.
+Global Instance into_val_struct_field_Server_leaseValid : IntoValStructField "leaseValid" replica.Server Server.leaseValid'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_committedNextIndex_cond `{ffi_syntax} : IntoValStructField "committedNextIndex_cond" replica.Server Server.committedNextIndex_cond'.
-Admitted.
+Global Instance into_val_struct_field_Server_committedNextIndex : IntoValStructField "committedNextIndex" replica.Server Server.committedNextIndex'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_Server_confCk `{ffi_syntax} : IntoValStructField "confCk" replica.Server Server.confCk'.
-Admitted.
+Global Instance into_val_struct_field_Server_committedNextIndex_cond : IntoValStructField "committedNextIndex_cond" replica.Server Server.committedNextIndex_cond'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Server_confCk : IntoValStructField "confCk" replica.Server Server.confCk'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' epoch' sealed' sm' nextIndex' canBecomePrimary' isPrimary' clerks' isPrimary_cond' opAppliedConds' leaseExpiration' leaseValid' committedNextIndex' committedNextIndex_cond' confCk':
+Global Instance wp_struct_make_Server mu' epoch' sealed' sm' nextIndex' canBecomePrimary' isPrimary' clerks' isPrimary_cond' opAppliedConds' leaseExpiration' leaseValid' committedNextIndex' committedNextIndex_cond' confCk':
   PureWp True
     (struct.make #replica.Server (alist_val [
       "mu" ::= #mu';
@@ -645,7 +837,7 @@ Global Instance wp_struct_make_Server `{ffi_semantics} `{!ffi_interp ffi} `{!hea
       "confCk" ::= #confCk'
     ]))%struct
     #(Server.mk mu' epoch' sealed' sm' nextIndex' canBecomePrimary' isPrimary' clerks' isPrimary_cond' opAppliedConds' leaseExpiration' leaseValid' committedNextIndex' committedNextIndex_cond' confCk').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Server_struct_fields_split dq l (v : Server.t) :
@@ -666,7 +858,29 @@ Global Instance Server_struct_fields_split dq l (v : Server.t) :
     "HcommittedNextIndex_cond" ∷ l ↦s[replica.Server :: "committedNextIndex_cond"]{dq} v.(Server.committedNextIndex_cond') ∗
     "HconfCk" ∷ l ↦s[replica.Server :: "confCk"]{dq} v.(Server.confCk')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Server.mu' v)) replica.Server "mu"%go.
+  simpl_one_flatten_struct (# (Server.epoch' v)) replica.Server "epoch"%go.
+  simpl_one_flatten_struct (# (Server.sealed' v)) replica.Server "sealed"%go.
+  simpl_one_flatten_struct (# (Server.sm' v)) replica.Server "sm"%go.
+  simpl_one_flatten_struct (# (Server.nextIndex' v)) replica.Server "nextIndex"%go.
+  simpl_one_flatten_struct (# (Server.canBecomePrimary' v)) replica.Server "canBecomePrimary"%go.
+  simpl_one_flatten_struct (# (Server.isPrimary' v)) replica.Server "isPrimary"%go.
+  simpl_one_flatten_struct (# (Server.clerks' v)) replica.Server "clerks"%go.
+  simpl_one_flatten_struct (# (Server.isPrimary_cond' v)) replica.Server "isPrimary_cond"%go.
+  simpl_one_flatten_struct (# (Server.opAppliedConds' v)) replica.Server "opAppliedConds"%go.
+  simpl_one_flatten_struct (# (Server.leaseExpiration' v)) replica.Server "leaseExpiration"%go.
+  simpl_one_flatten_struct (# (Server.leaseValid' v)) replica.Server "leaseValid"%go.
+  simpl_one_flatten_struct (# (Server.committedNextIndex' v)) replica.Server "committedNextIndex"%go.
+  simpl_one_flatten_struct (# (Server.committedNextIndex_cond' v)) replica.Server "committedNextIndex_cond"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -688,7 +902,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined replica :=
   is_pkg_defined := is_global_definitions replica var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_EncodeApplyAsBackupArgs :

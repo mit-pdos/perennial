@@ -23,7 +23,7 @@ Proof.
   rewrite /encode_u64s_xlen.
   intros Hlen.
   apply (serialize_length_inv u64_le).
-  { intros x. by destruct (nil_or_length_pos (u64_le x)). }
+  { intros x. len. }
   done.
 Qed.
 
@@ -39,6 +39,7 @@ Qed.
 
 Definition encode_string (x : byte_string) : list u8 :=
   u64_le (U64 (length x)) ++ x.
+Hint Unfold encode_string : len.
 
 Definition encode_strings_xlen (xs : list byte_string) : list u8 :=
   serialize encode_string xs.
@@ -61,7 +62,7 @@ Proof.
   rewrite /encode_strings_xlen.
   intros Hlen.
   apply (serialize_length_inv encode_string).
-  { intros x. by destruct (nil_or_length_pos (encode_string x)). }
+  { intros x. destruct (nil_or_length_pos (encode_string x)); len. }
   done.
 Qed.
 
@@ -83,6 +84,7 @@ Definition encode_dbval (x : dbval) : list u8 :=
 
 Definition encode_dbmod (x : dbmod) : list u8 :=
   encode_string x.1 ++ encode_dbval x.2.
+Hint Unfold encode_dbmod : len.
 
 Definition encode_dbmods_xlen (xs : list dbmod) : list u8 :=
   serialize encode_dbmod xs.
@@ -105,7 +107,7 @@ Proof.
   rewrite /encode_dbmods_xlen.
   intros Hlen.
   apply (serialize_length_inv encode_dbmod).
-  { intros x. by destruct (nil_or_length_pos (encode_dbmod x)). }
+  { intros x. destruct (nil_or_length_pos (encode_dbmod x)); len. }
   done.
 Qed.
 

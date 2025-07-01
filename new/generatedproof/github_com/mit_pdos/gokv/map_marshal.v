@@ -4,8 +4,10 @@ Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.map_marshal.
+
+Set Default Proof Using "Type".
+
 Module map_marshal.
-Axiom falso : False.
 
 Section names.
 
@@ -25,7 +27,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined map_marshal :=
   is_pkg_defined := is_global_definitions map_marshal var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_EncodeMapU64ToU64 :

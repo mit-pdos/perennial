@@ -140,7 +140,7 @@ Proof.
     iNamed "HnextDiskEnd". iFrame "∗#%".
   }
   iSplit.
-  { iPureIntro. cbn. lia. }
+  { iPureIntro. rewrite /set /=. lia. }
   iSplit.
   { iPureIntro. lia. }
   iNamed "HnextDiskEnd".

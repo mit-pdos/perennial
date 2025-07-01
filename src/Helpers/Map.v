@@ -7,6 +7,40 @@ Set Default Proof Using "Type".
 Set Default Goal Selector "!".
 
 Section map.
+Context {K V : Type}.
+Context `{Countable K}.
+Implicit Types (m : gmap K V).
+
+Lemma destruct_map_pair_dom_eq {V1} (m0 m1 : gmap K V) (m2 m3 : gmap K V1) :
+  dom m0 = dom m2 →
+  dom m1 = dom m3 →
+  (∀ k : K,
+    (is_Some (m0 !! k) ∧ is_Some (m2 !! k)) ∨
+    (m0 !! k = None ∧ is_Some (m1 !! k) ∧ m2 !! k = None ∧ is_Some (m3 !! k)) ∨
+    ((m0 ∪ m1) !! k = None ∧ (m2 ∪ m3) !! k = None)).
+Proof.
+  intros. rewrite -!elem_of_dom -!not_elem_of_dom.
+  destruct (decide (k ∈ dom m0)), (decide (k ∈ dom m1)); set_solver.
+Qed.
+
+Lemma map_Forall2_union {V1} P (m0 m1 : gmap K V) (m2 m3 : gmap K V1) :
+  map_Forall2 P m0 m2 →
+  map_Forall2 P m1 m3 →
+  map_Forall2 P (m0 ∪ m1) (m2 ∪ m3).
+Proof.
+  intros HM0 HM1 k.
+  opose proof (map_Forall2_dom_L _ _ _ HM0) as Hdom0.
+  opose proof (map_Forall2_dom_L _ _ _ HM1) as Hdom1.
+  opose proof (destruct_map_pair_dom_eq _ _ _ _ Hdom0 Hdom1 k) as Hd.
+  destruct_or?; destruct_and?.
+  - by rewrite !lookup_union_l'.
+  - by rewrite !lookup_union_r.
+  - rewrite H0 H1. constructor.
+Qed.
+
+End map.
+
+Section map.
 
 Context (K V:Type).
 Context `{Countable K}.

@@ -84,9 +84,11 @@ Definition own (ptr : loc) (obj : t) (pk : list w8) : iProp Σ :=
   "Hptr_err" ∷ ptr ↦[ClientErr :: "Err"] #obj.(Err) ∗
   "Hevid" ∷ match obj.(Evid) with
   | Some e =>
+    "%Heq_ptr" ∷ ⌜ ptr_evid ≠ null ⌝ ∗
     "#Hown_evid" ∷ Evid.own ptr_evid e DfracDiscarded ∗
     "#His_evid" ∷ is_Evid e pk
-  | None => True
+  | None =>
+    "%Heq_ptr" ∷ ⌜ ptr_evid = null ⌝
   end.
 End defs.
 End ClientErr.
@@ -128,7 +130,7 @@ Definition is_get_post_None cli_γ serv_vrf_pk uid (ep : w64) : iProp Σ :=
 into which the caller can transfer any is_cli_entry.
 the caller can then use the sigpred invariants to translate
 between different gs_hist map entries. *)
-Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ :=
+Definition logical_audit γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ :=
   ∃ gs,
   "%Hlen_gs" ∷ ⌜ length gs = uint.nat bound ⌝ ∗
   "#Hlb_gs" ∷ mono_list_lb_own γaudit gs ∗
@@ -148,37 +150,46 @@ Definition logical_audit_post γcli γaudit serv_vrf_pk (bound : w64) : iProp Σ
       ((λ x, MapValPre.mk x.1 x.2) <$> audit_val) ⌝ ∗
     "%Hlook_adtr" ∷ ⌜ m !! label = audit_val ⌝)).
 
-(* WPs. *)
+Global Instance logical_audit_pers a0 a1 a2 a3 :
+  Persistent (logical_audit a0 a1 a2 a3).
+Proof. apply _. Qed.
 
-Lemma do_logical_audit c digs sd aud_pk aud_γ :
-  (∀ (ep : w64) (dig : list w8),
+Lemma do_logical_audit aud_γ :
+  (* bupd must come after aud_γ since it's used to make lb when don't
+  yet have auditor sigs.
+  bupd comes so early to make lemma as strong as possible.
+  this allows strengthening downstream lemmas that might only get below vars
+  from opening Client.own. *)
+  ⊢ |==>
+  ∀ c digs sd aud_pk,
+  (* most of these preds are copied from Client.own. *)
+  ⌜ (∀ (ep : w64) (dig : list w8),
     digs !! uint.nat ep = Some (Some dig) →
     ∃ sig : list w8,
     sd !! ep =
-    Some {| SigDig.Epoch := ep; SigDig.Dig := dig; SigDig.Sig := sig |}) →
-  (∀ m : option (list w8), last digs = Some m → is_Some m) →
-  length digs = uint.nat c.(Client.next_epoch) →
-  (* generalized from client own pred to allow sigs from diff parties. *)
+    Some {| SigDig.Epoch := ep; SigDig.Dig := dig; SigDig.Sig := sig |}) ⌝ -∗
+  ⌜ (∀ m : option (list w8), last digs = Some m → is_Some m) ⌝ -∗
+  ⌜ length digs = uint.nat c.(Client.next_epoch) ⌝ -∗
+  (* generalized from Client.own to allow sigs from diff parties. *)
   ([∗ map] ep↦x ∈ sd,
     ∃ aud_sig,
     "#His_sigdig" ∷ is_SigDig (SigDig.mk x.(SigDig.Epoch)
       x.(SigDig.Dig) aud_sig) aud_pk) -∗
   mono_list_lb_own c.(Client.γ) digs -∗
-  is_sig_pk aud_pk (sigpred aud_γ)
-  ==∗
-  logical_audit_post c.(Client.γ) aud_γ c.(Client.serv).(Server.vrf_pk)
+  is_sig_pk aud_pk (sigpred aud_γ) -∗
+  logical_audit c.(Client.γ) aud_γ c.(Client.serv).(Server.vrf_pk)
     c.(Client.next_epoch).
 Proof.
+  iMod (mono_list_lb_own_nil (mono_listG0:=pavG_adtr) aud_γ) as "#Hlb_nil".
+  iIntros "!> *".
   iIntros (Hagree_digs_sd Hlast_digs Hlen_digs) "#His_sd #Hlb_digs #Hsig_pk".
   destruct (decide (uint.Z c.(Client.next_epoch) = uint.Z 0)).
-  { iMod (mono_list_lb_own_nil (mono_listG0:=pavG_adtr) _) as "$".
-    iModIntro. simpl.
+  { iFrame "Hlb_nil". simpl.
     iSplit; [word|].
     iSplit. { rewrite /audit_gs_inv. naive_solver. }
     iModIntro. iIntros "*". by iNamed 1. }
 
   (* get gs from last sig. *)
-  iModIntro.
   assert (∃ x, last digs = Some x) as [? Hlast_Some].
   { destruct digs. { simpl in *. word. }
     by apply last_is_Some. }
@@ -191,7 +202,7 @@ Proof.
   iNamed "H". iNamed "His_sigdig".
   iDestruct (is_sig_to_pred with "Hsig_pk Hsig") as "H".
   iNamed "H".
-  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc Henc0); eauto.
+  opose proof (PreSigDig.inj [] [] Henc Henc0 _); eauto.
   intuition. simplify_eq/=.
 
   (* fill in gs inv. *)
@@ -215,7 +226,7 @@ Proof.
   iNamed "H". iNamed "His_sigdig".
   iDestruct (is_sig_to_pred with "Hsig_pk Hsig") as "H".
   iRename "Hlb" into "Hlb_adtr". iNamed "H".
-  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc Henc0); eauto.
+  opose proof (PreSigDig.inj [] [] Henc Henc0 _); eauto.
   intuition. simplify_eq/=.
   iDestruct (mono_list_idx_own_get with "Hlb") as "Hidx"; [done|].
   iDestruct (mono_list_lb_idx_lookup with "Hlb_adtr Hidx") as %?; [word|].
@@ -232,19 +243,173 @@ Proof.
   by rewrite -lookup_fmap.
 Qed.
 
-Lemma good_serv_logical_audit ptr_c c :
+Lemma good_serv_logical_audit c ptr_c :
   c.(Client.serv_is_good) = true →
-  Client.own ptr_c c
-  ==∗
-  logical_audit_post c.(Client.γ) c.(Client.serv).(Server.γhist)
+  ⊢ |==>
+  Client.own ptr_c c -∗
+  logical_audit c.(Client.γ) c.(Client.serv).(Server.γhist)
     c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch).
 Proof.
-  iIntros (Heq_good). iNamed 1.
+  iIntros (Heq_good).
+  iMod do_logical_audit as "Haudit".
+  iIntros "!>". iNamed 1.
   rewrite Heq_good.
   iDestruct (mono_list_lb_own_get with "Hown_digs") as "#Hlb_digs".
-  iMod (do_logical_audit with "[] Hlb_digs Hserv_sig_pk") as "H"; try done.
+  iDestruct ("Haudit" with "[//] [//] [//] [] Hlb_digs Hserv_sig_pk") as "H"; [|done].
   iApply (big_sepM_impl with "His_sd").
   iIntros "!> * %". iNamed 1. iFrame "#".
+Qed.
+
+(* WPs. *)
+
+Lemma wp_auditEpoch ptr_seen_dig seen_dig sl_serv_sig_pk (serv_sig_pk : list w8) ptr_adtr_cli adtr_cli adtr_is_good sl_adtr_pk adtr_pk :
+  {{{
+    "#Hown_seen_dig" ∷ SigDig.own ptr_seen_dig seen_dig DfracDiscarded ∗
+    "#His_seen_dig" ∷ is_SigDig seen_dig serv_sig_pk ∗
+    "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded serv_sig_pk ∗
+    "Hown_adtr_cli" ∷ advrpc.own_Client ptr_adtr_cli adtr_cli adtr_is_good ∗
+    "#Hsl_adtrPk" ∷ own_slice_small sl_adtr_pk byteT DfracDiscarded adtr_pk
+  }}}
+  auditEpoch #ptr_seen_dig (slice_val sl_serv_sig_pk) #ptr_adtr_cli (slice_val sl_adtr_pk)
+  {{{
+    ptr_err err, RET #ptr_err;
+    "Hown_adtr_cli" ∷ advrpc.own_Client ptr_adtr_cli adtr_cli adtr_is_good ∗
+    "Hown_err" ∷ ClientErr.own ptr_err err serv_sig_pk ∗
+    "Herr" ∷ (if err.(ClientErr.Err) then True else
+      ∃ adtr_sig,
+      is_SigDig (SigDig.mk seen_dig.(SigDig.Epoch)
+        seen_dig.(SigDig.Dig) adtr_sig) adtr_pk)
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". iNamedSuffix "Hown_seen_dig" "_seen".
+  rewrite /auditEpoch. wp_pures.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
+  iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_stdErr".
+  wp_loadField.
+  wp_apply (wp_CallAdtrGet with "Hown_adtr_cli"). iIntros "* H". iNamed "H".
+  iNamed "Hown_info".
+  iPersist "Hsl_Dig Hsl_ServSig Hsl_AdtrSig".
+  do 3 wp_loadField.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H0".
+  iMod (struct_pointsto_persist with "H0") as "#H0".
+  iDestruct (struct_fields_split with "H0") as "H1". iNamedSuffix "H1" "_serv".
+  iClear "H0". do 3 wp_loadField.
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H0".
+  iMod (struct_pointsto_persist with "H0") as "#H0".
+  iDestruct (struct_fields_split with "H0") as "H1". iNamedSuffix "H1" "_adtr".
+  iClear "H0".
+  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _)); [iFrame "#"|].
+  iIntros (err0). iNamedSuffix 1 "_servSig". wp_if_destruct.
+  { iApply ("HΦ" $! _ (ClientErr.mk None _)). by iFrame "∗#". }
+  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _)); [iFrame "#"|].
+  iIntros (err1). iNamedSuffix 1 "_adtrSig". wp_if_destruct.
+  { iApply ("HΦ" $! _ (ClientErr.mk None _)). by iFrame "∗#". }
+  iDestruct ("Hgenie_servSig") as "[H _]".
+  iDestruct ("H" with "[//]") as "#His_servSig".
+  iDestruct ("Hgenie_adtrSig") as "[H _]".
+  iDestruct ("H" with "[//]") as "#His_adtrSig".
+  do 2 wp_loadField.
+  wp_apply (wp_BytesEqual sl_Dig0 sl_Dig with "[$Hsl_Dig $Hsl_Dig_seen]").
+  iIntros "_". wp_if_destruct.
+  { wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
+    iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_evid".
+    iPersist "sigDig0_evid sigDig1_evid".
+    wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
+    iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_err".
+    iApply ("HΦ" $! _ (ClientErr.mk (Some
+      (Evid.mk (SigDig.mk seen_dig.(SigDig.Epoch)
+        info.(AdtrEpochInfo.Dig) info.(AdtrEpochInfo.ServSig))
+      seen_dig)) _)).
+    iDestruct (struct_field_pointsto_not_null with "sigDig0_evid") as %?; [done..|].
+    by iFrame "∗#". }
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
+  iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_err".
+  iApply ("HΦ" $! _ (ClientErr.mk None _)).
+  destruct seen_dig, info. simpl in *. subst. by iFrame "∗#".
+Qed.
+
+Lemma wp_Client__Audit ptr_c c (adtr_addr : w64) sl_adtrPk (adtr_pk : list w8) :
+  {{{
+    "Hown_cli" ∷ Client.own ptr_c c ∗
+    "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtr_pk
+  }}}
+  Client__Audit #ptr_c #adtr_addr (slice_val sl_adtrPk)
+  {{{
+    ptr_err err, RET #ptr_err;
+    "Hown_cli" ∷ Client.own ptr_c c ∗
+    "Hown_err" ∷ ClientErr.own ptr_err err c.(Client.serv).(Server.sig_pk) ∗
+
+    "Herr" ∷ (if err.(ClientErr.Err) then True else
+      ∀ adtr_γ,
+      |==>
+      (* KT has at least one good auditor, so might call Client.Audit
+      on an unknown goodness auditor. that's why spec has is_sig_pk here,
+      and not in precond. *)
+      "#His_pk" ∷ is_sig_pk adtr_pk (sigpred adtr_γ) -∗
+      "#His_audit" ∷ logical_audit c.(Client.γ) adtr_γ
+        c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch))
+  }}}.
+Proof.
+  iIntros (Φ) "H HΦ". iNamed "H". rewrite /Client__Audit.
+  wp_apply (wp_Dial _ false). iIntros "*". iNamedSuffix 1 "_adtr".
+  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Herr0".
+  wp_apply wp_ref_to; [val_ty|]. iIntros (ptr2_err0) "Hptr_err0".
+  iNamed "Hown_cli". wp_loadField.
+  wp_apply (wp_MapIter_fold _ _ _
+    (λ sd_ptrs',
+    ∃ ptr_err0 err0,
+    "Hown_cli_adtr" ∷ advrpc.own_Client ptr_cli adtr_addr false ∗
+    "Herr" ∷ ClientErr.own ptr_err0 err0 c.(Client.serv).(Server.sig_pk) ∗
+    "Hptr_err0" ∷ ptr2_err0 ↦[ptrT] #ptr_err0 ∗
+    if err0.(ClientErr.Err) then True else
+      ∃ sd',
+      "%Hdom" ∷ ⌜ dom sd_ptrs' = dom sd' ⌝ ∗
+      "%Hsub" ∷ ⌜ sd' ⊆ sd ⌝ ∗
+      "#Hpost" ∷ ([∗ map] x ∈ sd',
+        ∃ adtr_sig, is_SigDig (SigDig.mk x.(SigDig.Epoch)
+          x.(SigDig.Dig) adtr_sig) adtr_pk))%I
+    with "Hown_sd_refs [$Hrpc_cli_adtr $Hptr_err0 Herr0]").
+  { iDestruct (struct_fields_split with "Herr0") as "H". iNamed "H".
+    iExists (ClientErr.mk None false). iFrame.
+    iSplit; [done|]. iExists ∅.
+    iSplit; [done|].
+    iSplit. { iPureIntro. by eapply map_empty_subseteq. }
+    naive_solver. }
+  { clear. iIntros (??? Φ) "!> (Hpre&_&%Hlook_ptr) HΦ". iNamed "Hpre".
+    wp_loadField.
+    iDestruct (big_sepM2_lookup_l with "Hown_sd") as (?) "[%Hlook_dig Hown_dig]"; [exact Hlook_ptr|].
+    iDestruct (big_sepM_lookup with "His_sd") as "H"; [exact Hlook_dig|].
+    iNamed "H". wp_apply (wp_auditEpoch with "[$Hown_cli_adtr]"); [iFrame "#"|].
+    iIntros (??) "Haudit". iNamedSuffix "Haudit" "1".
+    iDestruct "Herr1" as "#Haudit".
+    iNamedSuffix "Hown_err1" "1". wp_loadField. wp_if_destruct.
+    - wp_store. iApply "HΦ". iExists ptr_err, err.
+      rewrite /ClientErr.own Heqb. by iFrame "∗#".
+    - iApply "HΦ". iExists ptr_err0, err0.
+      destruct err0.(ClientErr.Err) eqn:Heq_err0.
+      + rewrite /ClientErr.own Heq_err0. by iFrame "∗#".
+      + rewrite /ClientErr.own Heq_err0. iFrame.
+        iNamedSuffix "Hpre" "_pre". iExists (<[k:=x2]>sd').
+        iIntros "!>". iSplit. { iPureIntro. set_solver. }
+        iSplit. { iPureIntro. by apply insert_subseteq_l. }
+        iApply big_sepM_insert_2; iFrame "#". }
+  iIntros "[Hown_sd_maps Hpost]".
+  iNamed "Hpost". iClear "Hown_cli_adtr".
+  wp_load.
+
+  iApply "HΦ".
+  iDestruct (mono_list_lb_own_get with "Hown_digs") as "#Hlb_digs".
+  iFrame "∗#%".
+  destruct err0.(ClientErr.Err); [done|].
+  iDestruct (big_sepM2_dom with "Hown_sd") as %Hdom1.
+  iNamed "Hpost".
+  opose proof (map_subset_dom_eq _ _ _ _ _ Hsub) as ->.
+  { by rewrite -Hdom -Hdom1. }
+  clear Hdom Hdom1 Hsub.
+  iIntros "!> %".
+  iMod (do_logical_audit with "[//] [//] [//] Hpost Hlb_digs") as "Haudit".
+  iIntros "!>". iNamed 1.
+  by iApply "Haudit".
 Qed.
 
 Lemma wp_NewClient uid (serv_addr : w64) sl_serv_sig_pk sl_serv_vrf_pk serv serv_is_good :
@@ -282,7 +447,6 @@ Proof.
   by repeat (iSplit; [naive_solver|]).
 Qed.
 
-(*
 Lemma wp_checkDig sl_sig_pk (sig_pk : list w8) ptr_sd (sd_refs : gmap w64 loc) sd ptr_dig dig :
   let wish := (
     "#His_dig" ∷ is_SigDig dig sig_pk ∗
@@ -310,7 +474,7 @@ Proof.
   simpl. iIntros (Φ) "H HΦ". iNamed "H". wp_rec.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) sig_pk) with "[H]" as "Hown_std_err".
-  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
+  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". by iFrame. }
   wp_apply (wp_CheckSigDig with "[$Hsigdig $Hsl_sig_pk]").
   iIntros "*". iNamed 1.
   wp_if_destruct.
@@ -342,12 +506,15 @@ Proof.
       wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
       iDestruct (struct_fields_split with "H") as "H". iNamed "H".
       iApply ("HΦ" $! (ClientErr.mk (Some (Evid.mk dig x)) true)).
-      iFrame "∗#". simpl. iSplit; [done|]. iSplit. { by iIntros (?). }
+      iFrame "∗#". simpl.
+      iDestruct (struct_field_pointsto_not_null with "sigDig0") as %?; [done..|].
+      iSplit; [done|]. iSplit. { by iIntros (?). }
       iNamed 1. naive_solver.
     - wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
       iDestruct (struct_fields_split with "H") as "H". iNamed "H".
       iApply ("HΦ" $! (ClientErr.mk None false)).
-      iFrame "∗#%". iSplit; [|naive_solver]. iIntros "_".
+      iFrame "∗#%". simpl. iSplit; [done|].
+      iSplit; [|naive_solver]. iIntros "_".
       iPureIntro. naive_solver. }
   apply map_get_false in Hlook_sd_refs as [Hlook_sd_refs _].
   iDestruct (big_sepM2_lookup_l_none with "Hown_sd") as %Hlook_sd;
@@ -355,7 +522,8 @@ Proof.
   iClear "Hown_std_err". wp_apply wp_allocStruct; [val_ty|]. iIntros "* H".
   iDestruct (struct_fields_split with "H") as "H". iNamed "H".
   iApply ("HΦ" $! (ClientErr.mk None false)).
-  iFrame "∗#%". iSplit; [|naive_solver]. iIntros (_).
+  iFrame "∗#%". simpl.
+  iSplit; [done|]. iSplit; [|naive_solver]. iIntros (_).
   iPureIntro. naive_solver.
 Qed.
 
@@ -601,27 +769,6 @@ Proof.
     iFrame "∗#".
 Qed.
 
-Lemma is_sigdig_agree sd0 sd1 pk γ :
-  sd0.(SigDig.Epoch) = sd1.(SigDig.Epoch) →
-  is_sig_pk pk (sigpred γ) -∗
-  is_SigDig sd0 pk -∗
-  is_SigDig sd1 pk -∗
-  ⌜ sd0.(SigDig.Dig) = sd1.(SigDig.Dig) ⌝.
-Proof.
-  iIntros (Heq) "#Hpk". iNamedSuffix 1 "0". iNamedSuffix 1 "1".
-  iDestruct (is_sig_to_pred with "Hpk Hsig0") as "H". iNamedSuffix "H" "0".
-  iDestruct (is_sig_to_pred with "Hpk Hsig1") as "H". iNamedSuffix "H" "1".
-  (* unify with sigdig existentially hidden by sigpred. *)
-  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc1 Henc3); eauto.
-  opose proof (PreSigDig.inj _ _ _ _ [] [] _ Henc0 Henc2); eauto.
-  intuition. simplify_eq/=.
-  iDestruct (mono_list_idx_own_get with "Hlb0") as "Hidx0"; [done|].
-  iDestruct (mono_list_idx_own_get with "Hlb1") as "Hidx1"; [done|].
-  rewrite Heq.
-  iDestruct (mono_list_idx_agree with "Hidx0 Hidx1") as %?.
-  naive_solver.
-Qed.
-
 Lemma mk_is_sigdig l sd d0 pk :
   SigDig.own l sd d0 -∗
   is_sig pk
@@ -668,7 +815,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_cli". wp_rec.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) c.(Client.serv).(Server.sig_pk)) with "[H]" as "Hown_std_err".
-  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
+  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". by iFrame. }
 
   do 2 wp_loadField.
   wp_apply (wp_CallServPut with "[$Hown_servCli $Huid $Hsl_pk $Hlb_serv_ep]").
@@ -774,11 +921,18 @@ Proof.
   iDestruct (wish_merkle_Verify_to_entry with "Hmerk_bound") as "Hentry_bound".
   iDestruct (is_hash_len with "Hcommit_lat") as %?.
 
+  iDestruct (own_slice_small_sz with "Hsl_rand") as %?.
+  iDestruct (own_slice_small_sz with "Hsl_pk") as %?.
   rewrite -Heq_ep. iFrame "∗#". iIntros "!>".
-  repeat try iSplit; simpl in *; try word.
+  repeat try iSplit; simpl in *; try word; first last; [..|done].
 
-  2: { destruct lat, PkOpen. rewrite Heq_pk. iFrame "#".
-    iPureIntro. split; [|done]. simpl. word. }
+  { iPureIntro. rewrite /MapValPre.encodes in Henc_lat.
+    intuition. destruct lat, sigdig. by simplify_eq/=. }
+  { destruct lat, PkOpen. rewrite Heq_pk. iFrame "#".
+    iPureIntro. exists Rand.
+    rewrite /CommitOpen.encodes. simpl in *.
+    apply (f_equal length) in Heq_pk.
+    repeat split; word. }
 
   (* get all the serv_is_good obligations together. *)
   iEval (rewrite sep_assoc). iSplitL.
@@ -825,7 +979,7 @@ Proof.
   iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_cli". wp_rec.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) c.(Client.serv).(Server.sig_pk)) with "[H]" as "Hown_std_err".
-  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
+  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". by iFrame. }
 
   do 2 wp_loadField.
   wp_apply (wp_CallServSelfMon with "[$Hown_servCli $Huid $Hlb_serv_ep]").
@@ -904,6 +1058,7 @@ Proof.
     { by iApply mono_list_lb_own_get. }
     iFrame "Hlook_gdigs Hown_digs %". iIntros "!>".
 
+    iSplit; [done|].
     iEval (rewrite -!sep_assoc sep_assoc). iSplitL.
     { destruct c.(Client.serv_is_good); [|done].
       iNamed "Hgood". iFrame "∗#". }
@@ -924,7 +1079,9 @@ Proof.
   { rewrite lookup_app_r; [|word].
     rewrite lookup_app_r; rewrite length_replicate; [|done].
     apply list_lookup_singleton_Some. split; [lia|done]. }
-  iFrame "∗#". iIntros "!>". iSplit; [done|]. simpl.
+  iFrame "∗#". simpl. iIntros "!>".
+  iSplit; [done|].
+  iSplit; [done|].
 
   iEval (rewrite -!sep_assoc sep_assoc). iSplitL.
   { destruct c.(Client.serv_is_good); [|done].
@@ -951,8 +1108,9 @@ Lemma wp_Client__Get ptr_c c uid :
   }}}
   Client__Get #ptr_c #uid
   {{{
-    err sl_pk (is_reg : bool) (ep : w64) ptr_err,
+    err sl_pk pk (is_reg : bool) (ep : w64) ptr_err,
     RET (#is_reg, slice_val sl_pk, #ep, #ptr_err);
+    "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
     "Hown_err" ∷ ClientErr.own ptr_err err c.(Client.serv).(Server.sig_pk) ∗
     "%Hgenie" ∷ ⌜ c.(Client.serv_is_good) = true → err.(ClientErr.Err) = false ⌝ ∗
 
@@ -962,29 +1120,28 @@ Lemma wp_Client__Get ptr_c c uid :
       else
         let new_c := set Client.next_epoch (λ _, word.add ep (W64 1)) c in
         "Hown_cli" ∷ Client.own ptr_c new_c ∗
-        "%Hnoof_ep" ∷ ⌜ uint.Z new_c.(Client.next_epoch) = (uint.Z ep + 1)%Z ⌝ ∗
         "%Hlt_ep" ∷ ⌜ uint.Z c.(Client.next_epoch) ≤ uint.Z new_c.(Client.next_epoch) ⌝ ∗
         "Hreg" ∷ (if is_reg
           then
-            ∃ pk,
-            "Hsl_pk" ∷ own_slice_small sl_pk byteT (DfracOwn 1) pk ∗
-            "#His_get_post" ∷ is_get_post_Some c.(Client.γ) c.(Client.serv).(Server.vrf_pk) uid ep pk
+            "#His_get_post" ∷ is_get_post_Some c.(Client.γ)
+              c.(Client.serv).(Server.vrf_pk) uid ep pk
           else
-            "#His_get_post" ∷ is_get_post_None c.(Client.γ) c.(Client.serv).(Server.vrf_pk) uid ep))
+            "#His_get_post" ∷ is_get_post_None c.(Client.γ)
+              c.(Client.serv).(Server.vrf_pk) uid ep))
   }}}.
 Proof.
   iIntros (Φ) "H HΦ". iNamed "H". iNamed "Hown_cli". wp_rec.
   wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
   iAssert (ClientErr.own _ (ClientErr.mk None _) c.(Client.serv).(Server.sig_pk)) with "[H]" as "Hown_std_err".
-  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". iFrame. }
+  { iDestruct (struct_fields_split with "H") as "H". iNamed "H". by iFrame. }
+  iDestruct (own_slice_small_nil byteT (DfracOwn 1) Slice.nil) as "Hsl_nil"; [done|].
 
   wp_loadField.
   wp_apply (wp_CallServGet with "[$Hown_servCli $Hlb_serv_ep]").
   iIntros "*". iNamed 1.
   (* TODO: wp_pures takes a long time for some reason. *)
   wp_pures. wp_if_destruct.
-  { wp_pures. iApply ("HΦ" $! _ Slice.nil). iFrame "∗#%∗".
-    destruct c.(Client.serv_is_good); [naive_solver|done]. }
+  { wp_pures. iApply ("HΦ" $! _ Slice.nil). by iFrame "∗#%∗". }
   iNamed "Herr". do 2 wp_loadField.
 
   wp_apply (wp_checkDig with "[$Hsl_servSigPk $Hown_sd $Hown_sd_refs $His_sd $Hsigdig]").
@@ -1116,6 +1273,8 @@ Proof.
   iDestruct (wish_merkle_Verify_to_entry with "Hmerk_bound") as "Hentry_bound".
   iFrame "Hown_sd_refs Hptr_nextVer Hown_cli Hptr_nextEpoch Hserv_vrf_pk Evid Err #".
   simpl in *.
+  iDestruct (own_slice_small_sz with "Hsl_val") as %?.
+  iDestruct (own_slice_small_sz with "Hsl_rand") as %?.
 
   destruct (decide (uint.Z sigdig.(SigDig.Epoch) + 1 = Z.of_nat (length digs))).
   (* case 1: new dig equals end of old digs. *)
@@ -1130,8 +1289,9 @@ Proof.
     iDestruct (mono_list_idx_own_get _ _ Hlast_dig_lookup with "[Hown_digs]") as "#Hlook_gdigs".
     { by iApply mono_list_lb_own_get. }
     iFrame "∗%". iIntros "!>".
+    iSplit; [done|].
 
-    iEval (rewrite -!sep_assoc). iSplitR "Hsl_val".
+    iEval (rewrite -!sep_assoc). iSplitR "".
     { destruct c.(Client.serv_is_good); [|done].
       iNamed "Hgood". iFrame "∗#". }
     repeat try iSplit; try word; [iPureIntro|destruct is_reg].
@@ -1140,12 +1300,16 @@ Proof.
       destruct (decide (ep = sigdig.(SigDig.Epoch))) as [->|].
       + rewrite lookup_insert. destruct sigdig. naive_solver.
       + rewrite lookup_insert_ne; [naive_solver|done].
-    - iFrame "Hsl_val Hentry_bound Hlook_gdigs".
+    - iFrame "Hentry_bound Hlook_gdigs".
       iExists (MembHide.MapVal <$> hist).
       rewrite length_fmap Hlen_hist.
       iNamedSuffix "Hwish_lat" "_lat".
       iDestruct (wish_merkle_Verify_to_entry with "Hmerk_lat") as "Hentry_lat".
       iFrame "#%".
+      iSplit.
+      2: { iPureIntro. rewrite /CommitOpen.encodes.
+        destruct lat, PkOpen. simpl in *.
+        repeat esplit; word. }
       iApply big_sepL_fmap.
       iApply (big_sepL_impl with "Hwish_hist").
       iIntros "!> * % #H". iNamedSuffix "H" "_hide".
@@ -1164,8 +1328,9 @@ Proof.
     rewrite lookup_app_r; rewrite length_replicate; [|done].
     apply list_lookup_singleton_Some. split; [lia|done]. }
   iFrame "∗%". iIntros "!>".
+  iSplit; [done|].
 
-  iEval (rewrite -!sep_assoc). iSplitR "Hsl_val".
+  iEval (rewrite -!sep_assoc). iSplitR "".
   { destruct c.(Client.serv_is_good); [|done].
     iNamed "Hgood". iFrame "∗#". }
 
@@ -1182,12 +1347,16 @@ Proof.
     rewrite lookup_insert. destruct sigdig. naive_solver.
   - subst new_digs. rewrite app_assoc last_snoc. naive_solver.
   - rewrite !length_app length_replicate. simpl. word.
-  - iFrame "Hsl_val Hentry_bound Hlook_gdigs".
+  - iFrame "Hentry_bound Hlook_gdigs".
     iExists (MembHide.MapVal <$> hist).
     rewrite length_fmap Hlen_hist.
     iNamedSuffix "Hwish_lat" "_lat".
     iDestruct (wish_merkle_Verify_to_entry with "Hmerk_lat") as "Hentry_lat".
     iFrame "#%".
+    iSplit.
+    2: { iPureIntro. rewrite /CommitOpen.encodes.
+      destruct lat, PkOpen. simpl in *.
+      repeat esplit; word. }
     iApply big_sepL_fmap.
     iApply (big_sepL_impl with "Hwish_hist").
     iIntros "!> * % #H". iNamedSuffix "H" "_hide".
@@ -1195,151 +1364,5 @@ Proof.
     iFrame "#".
   - iFrame "#".
 Qed.
-*)
-
-Lemma wp_auditEpoch ptr_seen_dig seen_dig sl_serv_sig_pk (serv_sig_pk : list w8) ptr_adtr_cli adtr_cli adtr_is_good sl_adtr_pk adtr_pk :
-  {{{
-    "#Hown_seen_dig" ∷ SigDig.own ptr_seen_dig seen_dig DfracDiscarded ∗
-    "#His_seen_dig" ∷ is_SigDig seen_dig serv_sig_pk ∗
-    "#Hsl_servSigPk" ∷ own_slice_small sl_serv_sig_pk byteT DfracDiscarded serv_sig_pk ∗
-    "Hown_adtr_cli" ∷ advrpc.own_Client ptr_adtr_cli adtr_cli adtr_is_good ∗
-    "#Hsl_adtrPk" ∷ own_slice_small sl_adtr_pk byteT DfracDiscarded adtr_pk
-  }}}
-  auditEpoch #ptr_seen_dig (slice_val sl_serv_sig_pk) #ptr_adtr_cli (slice_val sl_adtr_pk)
-  {{{
-    ptr_err err, RET #ptr_err;
-    "Hown_adtr_cli" ∷ advrpc.own_Client ptr_adtr_cli adtr_cli adtr_is_good ∗
-    "Hown_err" ∷ ClientErr.own ptr_err err serv_sig_pk ∗
-    "Herr" ∷ (if err.(ClientErr.Err) then True else
-      ∃ adtr_sig,
-      is_SigDig (SigDig.mk seen_dig.(SigDig.Epoch)
-        seen_dig.(SigDig.Dig) adtr_sig) adtr_pk)
-  }}}.
-Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". iNamedSuffix "Hown_seen_dig" "_seen".
-  rewrite /auditEpoch. wp_pures.
-  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
-  iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_stdErr".
-  wp_loadField.
-  wp_apply (wp_CallAdtrGet with "Hown_adtr_cli"). iIntros "* H". iNamed "H".
-  iNamed "Hown_info".
-  iPersist "Hsl_Dig Hsl_ServSig Hsl_AdtrSig".
-  do 3 wp_loadField.
-  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H0".
-  iMod (struct_pointsto_persist with "H0") as "#H0".
-  iDestruct (struct_fields_split with "H0") as "H1". iNamedSuffix "H1" "_serv".
-  iClear "H0". do 3 wp_loadField.
-  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H0".
-  iMod (struct_pointsto_persist with "H0") as "#H0".
-  iDestruct (struct_fields_split with "H0") as "H1". iNamedSuffix "H1" "_adtr".
-  iClear "H0".
-  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _)); [iFrame "#"|].
-  iIntros (err0). iNamedSuffix 1 "_servSig". wp_if_destruct.
-  { iApply ("HΦ" $! _ (ClientErr.mk None _)). by iFrame "∗#". }
-  wp_apply (wp_CheckSigDig _ (SigDig.mk _ _ _)); [iFrame "#"|].
-  iIntros (err1). iNamedSuffix 1 "_adtrSig". wp_if_destruct.
-  { iApply ("HΦ" $! _ (ClientErr.mk None _)). by iFrame "∗#". }
-  iDestruct ("Hgenie_servSig") as "[H _]".
-  iDestruct ("H" with "[//]") as "#His_servSig".
-  iDestruct ("Hgenie_adtrSig") as "[H _]".
-  iDestruct ("H" with "[//]") as "#His_adtrSig".
-  do 2 wp_loadField.
-  wp_apply (wp_BytesEqual sl_Dig0 sl_Dig with "[$Hsl_Dig $Hsl_Dig_seen]").
-  iIntros "_". wp_if_destruct.
-  { wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
-    iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_evid".
-    iPersist "sigDig0_evid sigDig1_evid".
-    wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
-    iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_err".
-    iApply ("HΦ" $! _ (ClientErr.mk (Some
-      (Evid.mk (SigDig.mk seen_dig.(SigDig.Epoch)
-        info.(AdtrEpochInfo.Dig) info.(AdtrEpochInfo.ServSig))
-      seen_dig)) _)).
-    by iFrame "∗#". }
-  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "H".
-  iDestruct (struct_fields_split with "H") as "H". iNamedSuffix "H" "_err".
-  iApply ("HΦ" $! _ (ClientErr.mk None _)).
-  destruct seen_dig, info. simpl in *. subst. iFrame "∗#".
-Qed.
-
-Lemma wp_Client__Audit ptr_c c (adtr_addr : w64) sl_adtrPk (adtr_pk : list w8) :
-  {{{
-    "Hown_cli" ∷ Client.own ptr_c c ∗
-    "#Hsl_adtrPk" ∷ own_slice_small sl_adtrPk byteT DfracDiscarded adtr_pk
-  }}}
-  Client__Audit #ptr_c #adtr_addr (slice_val sl_adtrPk)
-  {{{
-    ptr_err err, RET #ptr_err;
-    "Hown_cli" ∷ Client.own ptr_c c ∗
-    "Hown_err" ∷ ClientErr.own ptr_err err c.(Client.serv).(Server.sig_pk) ∗
-
-    "Herr" ∷ (if err.(ClientErr.Err) then True else
-      ∀ adtr_γ,
-      "#His_pk" ∷ is_sig_pk adtr_pk (sigpred adtr_γ)
-      -∗
-      "#His_audit" ∷ logical_audit_post c.(Client.γ) adtr_γ
-        c.(Client.serv).(Server.vrf_pk) c.(Client.next_epoch))
-  }}}.
-Proof.
-  iIntros (Φ) "H HΦ". iNamed "H". rewrite /Client__Audit.
-  wp_apply (wp_Dial _ false). iIntros "*". iNamedSuffix 1 "_adtr".
-  wp_apply wp_allocStruct; [val_ty|]. iIntros (?) "Herr0".
-  wp_apply wp_ref_to; [val_ty|]. iIntros (ptr2_err0) "Hptr_err0".
-  iNamed "Hown_cli". wp_loadField.
-  wp_apply (wp_MapIter_fold _ _ _
-    (λ sd_ptrs',
-    ∃ ptr_err0 err0,
-    "Hown_cli_adtr" ∷ advrpc.own_Client ptr_cli adtr_addr false ∗
-    "Herr" ∷ ClientErr.own ptr_err0 err0 c.(Client.serv).(Server.sig_pk) ∗
-    "Hptr_err0" ∷ ptr2_err0 ↦[ptrT] #ptr_err0 ∗
-    if err0.(ClientErr.Err) then True else
-      ∃ sd',
-      "%Hdom" ∷ ⌜ dom sd_ptrs' = dom sd' ⌝ ∗
-      "%Hsub" ∷ ⌜ sd' ⊆ sd ⌝ ∗
-      "#Hpost" ∷ ([∗ map] x ∈ sd',
-        ∃ adtr_sig, is_SigDig (SigDig.mk x.(SigDig.Epoch)
-          x.(SigDig.Dig) adtr_sig) adtr_pk))%I
-    with "Hown_sd_refs [$Hrpc_cli_adtr $Hptr_err0 Herr0]").
-  { iDestruct (struct_fields_split with "Herr0") as "H". iNamed "H".
-    iExists (ClientErr.mk None false). iFrame. iExists ∅.
-    iSplit; [done|]. iSplit. { iPureIntro. by eapply map_empty_subseteq. }
-    naive_solver. }
-  { clear. iIntros (??? Φ) "!> (Hpre&_&%Hlook_ptr) HΦ". iNamed "Hpre".
-    wp_loadField.
-    iDestruct (big_sepM2_lookup_l with "Hown_sd") as (?) "[%Hlook_dig Hown_dig]"; [exact Hlook_ptr|].
-    iDestruct (big_sepM_lookup with "His_sd") as "H"; [exact Hlook_dig|].
-    iNamed "H". wp_apply (wp_auditEpoch with "[$Hown_cli_adtr]"); [iFrame "#"|].
-    iIntros (??) "Haudit". iNamedSuffix "Haudit" "1".
-    iDestruct "Herr1" as "#Haudit".
-    iNamedSuffix "Hown_err1" "1". wp_loadField. wp_if_destruct.
-    - wp_store. iApply "HΦ". iExists ptr_err, err.
-      rewrite /ClientErr.own Heqb. by iFrame "∗#".
-    - iApply "HΦ". iExists ptr_err0, err0.
-      destruct err0.(ClientErr.Err) eqn:Heq_err0.
-      + rewrite /ClientErr.own Heq_err0. by iFrame "∗#".
-      + rewrite /ClientErr.own Heq_err0. iFrame.
-        iNamedSuffix "Hpre" "_pre". iExists (<[k:=x2]>sd').
-        iIntros "!>". iSplit. { iPureIntro. set_solver. }
-        iSplit. { iPureIntro. by apply insert_subseteq_l. }
-        iApply big_sepM_insert_2; iFrame "#". }
-  iIntros "[Hown_sd_maps Hpost]". iNamed "Hpost". iClear "Hown_cli_adtr".
-  iDestruct (mono_list_lb_own_get with "Hown_digs") as "#His_digs".
-  wp_load. iApply "HΦ".
-  iDestruct (mono_list_lb_own_get with "Hown_digs") as "#Hlb_digs".
-  iFrame "∗#%".
-  destruct err0.(ClientErr.Err); [done|].
-  iDestruct (big_sepM2_dom with "Hown_sd") as %Hdom1.
-  iNamed "Hpost".
-  opose proof (map_subset_dom_eq _ _ _ _ _ Hsub) as ->.
-  { by rewrite -Hdom -Hdom1. }
-  clear Hdom Hdom1 Hsub.
-
-  iIntros "!>". iIntros (?). iNamed 1. iNamed "Hpost".
-  (* TODO: after specializing lemma, left with bupd, which we can't
-  get rid of bc we've already iIntro'd it away. *)
-  iMod (do_logical_audit with "[] Hlb_digs His_pk") as "H"; try done.
-  iApply (big_sepM_impl with "His_sd").
-  iIntros "!> * %". iNamed 1. iFrame "#".
-Admitted.
 
 End proof.

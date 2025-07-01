@@ -4,9 +4,12 @@ Require Export New.manualproof.github_com.mit_pdos.gokv.trusted_proph.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.trusted_proph.
-Module trusted_proph.
-Axiom falso : False.
 
+Set Default Proof Using "Type".
+
+Module trusted_proph.
+
+(* type trusted_proph.ProphId *)
 Module ProphId.
 Section def.
 Context `{ffi_syntax}.
@@ -32,7 +35,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined trusted_proph :=
   is_pkg_defined := is_global_definitions trusted_proph var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_NewProph :

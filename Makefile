@@ -6,6 +6,8 @@ QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
 # extract any global arguments for Coq from _CoqProject
 COQPROJECT_ARGS := $(shell sed -E -e '/^\#/d' -e 's/-arg ([^ ]*)/\1/g' _CoqProject)
 COQ_ARGS :=
+# coqdep: don't allow missing files
+COQDEP_ARGS := -w +module-not-found
 
 # user configurable
 Q:=@
@@ -39,7 +41,7 @@ check-assumptions: \
 
 .coqdeps.d: $(ALL_VFILES) _CoqProject
 	@echo "COQDEP $@"
-	$(Q)coqdep -vos -f _CoqProject $(ALL_VFILES) > $@
+	$(Q)coqdep -vos -f _CoqProject $(COQDEP_ARGS) $(ALL_VFILES) > $@
 
 # do not try to build dependencies if cleaning or just building _CoqProject
 ifeq ($(filter clean,$(MAKECMDGOALS)),)

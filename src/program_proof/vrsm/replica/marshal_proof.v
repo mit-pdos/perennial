@@ -82,7 +82,7 @@ Proof.
   wp_load.
   iApply "HΦ".
   iFrame "Henc_sl".
-  done.
+  by list_simplifier.
 Qed.
 
 Lemma wp_Decode enc enc_sl (args:C) :
@@ -213,7 +213,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iFrame "Henc_sl".
-  iSplitL ""; first done.
+  iSplitL ""; first by list_simplifier.
   iExists _; iFrame "∗#".
 Qed.
 
@@ -340,7 +340,8 @@ Proof.
   iIntros (args_ptr) "Hargs".
   wp_pures.
   rewrite Henc.
-  wp_apply (wp_ReadInt with "Henc_sl").
+  wp_apply (wp_ReadInt [] with "[Henc_sl]").
+  { by list_simplifier. }
   iIntros (?) "Henc_sl".
   wp_pures.
   iDestruct (struct_fields_split with "Hargs") as "HH".
@@ -433,7 +434,7 @@ Proof.
   iModIntro.
   iApply "HΦ".
   iFrame.
-  done.
+  by list_simplifier.
 Qed.
 
 Lemma wp_Decode enc enc_sl (reply:C) :
@@ -580,6 +581,7 @@ Proof.
     iExists _, (replicas_so_far ++ [x]).
     iFrame.
     rewrite flat_map_app.
+    list_simplifier.
     iFrame.
     iPureIntro; split.
     {
@@ -608,6 +610,7 @@ Proof.
   }
   {
     iExists _, [].
+    list_simplifier.
     iFrame.
     iPureIntro; split; eauto.
     apply prefix_nil.
@@ -713,11 +716,10 @@ Proof.
       { rewrite length_app. rewrite length_app length_replicate in Hreplicas_sz'. word. }
       nat_cleanup.
       rewrite length_app replicate_add.
-      rewrite lookup_app_r; last first.
-      { rewrite Hreplicas_len. rewrite length_replicate. reflexivity. }
-      rewrite lookup_app_r; last first.
-      { rewrite Hreplicas_len. reflexivity. }
-      simpl. rewrite ?length_replicate //.
+      rewrite !lookup_app_r.
+      { simpl. rewrite ?length_replicate //. }
+      { rewrite Hreplicas_len ?length_replicate //. }
+      { rewrite Hreplicas_len ?length_replicate //. }
     }
     iIntros. iExists _. iFrame. eauto.
   }
@@ -753,7 +755,8 @@ Proof.
 
     replace (next_replica :: replicas_left') with ([next_replica] ++ replicas_left') by done.
     rewrite flat_map_app.
-    wp_apply (wp_ReadInt with "Henc_sl").
+    wp_apply (wp_ReadInt with "[Henc_sl]").
+    { by list_simplifier. }
     iIntros (?) "Henc_sl".
     wp_pures.
     wp_loadField.
@@ -822,7 +825,8 @@ Proof.
   {
     iDestruct (own_slice_small_sz with "Henc_sl") as %Hsz.
     assert (length (args.(replicas)) <= length (flat_map u64_le args.(replicas))).
-    { apply flat_map_len_non_nil. destruct x => //=. }
+    { apply flat_map_len_non_nil. destruct x => //=.
+      intros H. apply (f_equal length) in H. revert H. len. }
     iExists nil, _, _.
     iFrame "∗".
     simpl.

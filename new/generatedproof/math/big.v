@@ -3,8 +3,10 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.math.big.
+
+Set Default Proof Using "Type".
+
 Module big.
-Axiom falso : False.
 
 Section names.
 
@@ -24,7 +26,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined big :=
   is_pkg_defined := is_global_definitions big var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

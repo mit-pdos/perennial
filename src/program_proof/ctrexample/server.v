@@ -337,9 +337,8 @@ Proof using Type*.
         apply nil_length_inv in HslSize.
         rewrite HslSize in Hbad.
         apply has_encoding_length in Hbad.
-        Transparent u64_le.
-        simpl in Hbad.
-        lia.
+        rewrite encoded_length_singleton u64_le_length in Hbad.
+        simpl in Hbad. lia.
       }
       iFrame.
       done.

@@ -4,8 +4,12 @@ Require Export New.generatedproof.go_etcd_io.raft.v3.tracker.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.raft.v3.confchange.
+
+Set Default Proof Using "Type".
+
 Module confchange.
-Axiom falso : False.
+
+(* type confchange.Changer *)
 Module Changer.
 Section def.
 Context `{ffi_syntax}.
@@ -19,35 +23,41 @@ End Changer.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_Changer `{ffi_syntax}: Settable _ :=
+Global Instance settable_Changer : Settable Changer.t :=
   settable! Changer.mk < Changer.Tracker'; Changer.LastIndex' >.
-Global Instance into_val_Changer `{ffi_syntax} : IntoVal Changer.t.
-Admitted.
+Global Instance into_val_Changer : IntoVal Changer.t :=
+  {| to_val_def v :=
+    struct.val_aux confchange.Changer [
+    "Tracker" ::= #(Changer.Tracker' v);
+    "LastIndex" ::= #(Changer.LastIndex' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Changer `{ffi_syntax} : IntoValTyped Changer.t confchange.Changer :=
+Global Program Instance into_val_typed_Changer : IntoValTyped Changer.t confchange.Changer :=
 {|
   default_val := Changer.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_Changer_Tracker `{ffi_syntax} : IntoValStructField "Tracker" confchange.Changer Changer.Tracker'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_Changer_LastIndex `{ffi_syntax} : IntoValStructField "LastIndex" confchange.Changer Changer.LastIndex'.
-Admitted.
+Global Instance into_val_struct_field_Changer_Tracker : IntoValStructField "Tracker" confchange.Changer Changer.Tracker'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Changer_LastIndex : IntoValStructField "LastIndex" confchange.Changer Changer.LastIndex'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Changer `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Tracker' LastIndex':
+Global Instance wp_struct_make_Changer Tracker' LastIndex':
   PureWp True
     (struct.make #confchange.Changer (alist_val [
       "Tracker" ::= #Tracker';
       "LastIndex" ::= #LastIndex'
     ]))%struct
     #(Changer.mk Tracker' LastIndex').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Changer_struct_fields_split dq l (v : Changer.t) :
@@ -55,7 +65,16 @@ Global Instance Changer_struct_fields_split dq l (v : Changer.t) :
     "HTracker" ∷ l ↦s[confchange.Changer :: "Tracker"]{dq} v.(Changer.Tracker') ∗
     "HLastIndex" ∷ l ↦s[confchange.Changer :: "LastIndex"]{dq} v.(Changer.LastIndex')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Changer.Tracker' v)) confchange.Changer "Tracker"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -77,7 +96,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined confchange :=
   is_pkg_defined := is_global_definitions confchange var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

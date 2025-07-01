@@ -4,8 +4,12 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.kv.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.lockservice.
+
+Set Default Proof Using "Type".
+
 Module lockservice.
-Axiom falso : False.
+
+(* type lockservice.LockClerk *)
 Module LockClerk.
 Section def.
 Context `{ffi_syntax}.
@@ -18,38 +22,51 @@ End LockClerk.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_LockClerk `{ffi_syntax}: Settable _ :=
+Global Instance settable_LockClerk : Settable LockClerk.t :=
   settable! LockClerk.mk < LockClerk.kv' >.
-Global Instance into_val_LockClerk `{ffi_syntax} : IntoVal LockClerk.t.
-Admitted.
+Global Instance into_val_LockClerk : IntoVal LockClerk.t :=
+  {| to_val_def v :=
+    struct.val_aux lockservice.LockClerk [
+    "kv" ::= #(LockClerk.kv' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_LockClerk `{ffi_syntax} : IntoValTyped LockClerk.t lockservice.LockClerk :=
+Global Program Instance into_val_typed_LockClerk : IntoValTyped LockClerk.t lockservice.LockClerk :=
 {|
   default_val := LockClerk.mk (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_LockClerk_kv `{ffi_syntax} : IntoValStructField "kv" lockservice.LockClerk LockClerk.kv'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_LockClerk_kv : IntoValStructField "kv" lockservice.LockClerk LockClerk.kv'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_LockClerk `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv':
+Global Instance wp_struct_make_LockClerk kv':
   PureWp True
     (struct.make #lockservice.LockClerk (alist_val [
       "kv" ::= #kv'
     ]))%struct
     #(LockClerk.mk kv').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance LockClerk_struct_fields_split dq l (v : LockClerk.t) :
   StructFieldsSplit dq l v (
     "Hkv" ∷ l ↦s[lockservice.LockClerk :: "kv"]{dq} v.(LockClerk.kv')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -71,7 +88,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined lockservice :=
   is_pkg_defined := is_global_definitions lockservice var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_MakeLockClerk :

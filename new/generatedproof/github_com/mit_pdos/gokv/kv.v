@@ -3,9 +3,12 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.kv.
-Module kv.
-Axiom falso : False.
 
+Set Default Proof Using "Type".
+
+Module kv.
+
+(* type kv.Kv *)
 Module Kv.
 Section def.
 Context `{ffi_syntax}.
@@ -13,6 +16,7 @@ Definition t := interface.t.
 End def.
 End Kv.
 
+(* type kv.KvCput *)
 Module KvCput.
 Section def.
 Context `{ffi_syntax}.
@@ -38,7 +42,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined kv :=
   is_pkg_defined := is_global_definitions kv var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 End names.

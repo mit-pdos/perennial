@@ -16,8 +16,12 @@ Require Export New.generatedproof.bytes.
 Require Export New.golang.theory.
 
 Require Export New.code.go_etcd_io.etcd.client.v3.leasing.
+
+Set Default Proof Using "Type".
+
 Module leasing.
-Axiom falso : False.
+
+(* type leasing.leaseCache *)
 Module leaseCache.
 Section def.
 Context `{ffi_syntax}.
@@ -33,34 +37,42 @@ End leaseCache.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_leaseCache `{ffi_syntax}: Settable _ :=
+Global Instance settable_leaseCache : Settable leaseCache.t :=
   settable! leaseCache.mk < leaseCache.mu'; leaseCache.entries'; leaseCache.revokes'; leaseCache.header' >.
-Global Instance into_val_leaseCache `{ffi_syntax} : IntoVal leaseCache.t.
-Admitted.
+Global Instance into_val_leaseCache : IntoVal leaseCache.t :=
+  {| to_val_def v :=
+    struct.val_aux leasing.leaseCache [
+    "mu" ::= #(leaseCache.mu' v);
+    "entries" ::= #(leaseCache.entries' v);
+    "revokes" ::= #(leaseCache.revokes' v);
+    "header" ::= #(leaseCache.header' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_leaseCache `{ffi_syntax} : IntoValTyped leaseCache.t leasing.leaseCache :=
+Global Program Instance into_val_typed_leaseCache : IntoValTyped leaseCache.t leasing.leaseCache :=
 {|
   default_val := leaseCache.mk (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_leaseCache_mu `{ffi_syntax} : IntoValStructField "mu" leasing.leaseCache leaseCache.mu'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_leaseCache_entries `{ffi_syntax} : IntoValStructField "entries" leasing.leaseCache leaseCache.entries'.
-Admitted.
+Global Instance into_val_struct_field_leaseCache_mu : IntoValStructField "mu" leasing.leaseCache leaseCache.mu'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leaseCache_revokes `{ffi_syntax} : IntoValStructField "revokes" leasing.leaseCache leaseCache.revokes'.
-Admitted.
+Global Instance into_val_struct_field_leaseCache_entries : IntoValStructField "entries" leasing.leaseCache leaseCache.entries'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leaseCache_header `{ffi_syntax} : IntoValStructField "header" leasing.leaseCache leaseCache.header'.
-Admitted.
+Global Instance into_val_struct_field_leaseCache_revokes : IntoValStructField "revokes" leasing.leaseCache leaseCache.revokes'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_leaseCache_header : IntoValStructField "header" leasing.leaseCache leaseCache.header'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_leaseCache `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} mu' entries' revokes' header':
+Global Instance wp_struct_make_leaseCache mu' entries' revokes' header':
   PureWp True
     (struct.make #leasing.leaseCache (alist_val [
       "mu" ::= #mu';
@@ -69,7 +81,7 @@ Global Instance wp_struct_make_leaseCache `{ffi_semantics} `{!ffi_interp ffi} `{
       "header" ::= #header'
     ]))%struct
     #(leaseCache.mk mu' entries' revokes' header').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance leaseCache_struct_fields_split dq l (v : leaseCache.t) :
@@ -79,9 +91,22 @@ Global Instance leaseCache_struct_fields_split dq l (v : leaseCache.t) :
     "Hrevokes" ∷ l ↦s[leasing.leaseCache :: "revokes"]{dq} v.(leaseCache.revokes') ∗
     "Hheader" ∷ l ↦s[leasing.leaseCache :: "header"]{dq} v.(leaseCache.header')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (leaseCache.mu' v)) leasing.leaseCache "mu"%go.
+  simpl_one_flatten_struct (# (leaseCache.entries' v)) leasing.leaseCache "entries"%go.
+  simpl_one_flatten_struct (# (leaseCache.revokes' v)) leasing.leaseCache "revokes"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type leasing.leaseKey *)
 Module leaseKey.
 Section def.
 Context `{ffi_syntax}.
@@ -96,31 +121,38 @@ End leaseKey.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_leaseKey `{ffi_syntax}: Settable _ :=
+Global Instance settable_leaseKey : Settable leaseKey.t :=
   settable! leaseKey.mk < leaseKey.response'; leaseKey.rev'; leaseKey.waitc' >.
-Global Instance into_val_leaseKey `{ffi_syntax} : IntoVal leaseKey.t.
-Admitted.
+Global Instance into_val_leaseKey : IntoVal leaseKey.t :=
+  {| to_val_def v :=
+    struct.val_aux leasing.leaseKey [
+    "response" ::= #(leaseKey.response' v);
+    "rev" ::= #(leaseKey.rev' v);
+    "waitc" ::= #(leaseKey.waitc' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_leaseKey `{ffi_syntax} : IntoValTyped leaseKey.t leasing.leaseKey :=
+Global Program Instance into_val_typed_leaseKey : IntoValTyped leaseKey.t leasing.leaseKey :=
 {|
   default_val := leaseKey.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_leaseKey_response `{ffi_syntax} : IntoValStructField "response" leasing.leaseKey leaseKey.response'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_leaseKey_rev `{ffi_syntax} : IntoValStructField "rev" leasing.leaseKey leaseKey.rev'.
-Admitted.
+Global Instance into_val_struct_field_leaseKey_response : IntoValStructField "response" leasing.leaseKey leaseKey.response'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leaseKey_waitc `{ffi_syntax} : IntoValStructField "waitc" leasing.leaseKey leaseKey.waitc'.
-Admitted.
+Global Instance into_val_struct_field_leaseKey_rev : IntoValStructField "rev" leasing.leaseKey leaseKey.rev'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_leaseKey_waitc : IntoValStructField "waitc" leasing.leaseKey leaseKey.waitc'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_leaseKey `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} response' rev' waitc':
+Global Instance wp_struct_make_leaseKey response' rev' waitc':
   PureWp True
     (struct.make #leasing.leaseKey (alist_val [
       "response" ::= #response';
@@ -128,7 +160,7 @@ Global Instance wp_struct_make_leaseKey `{ffi_semantics} `{!ffi_interp ffi} `{!h
       "waitc" ::= #waitc'
     ]))%struct
     #(leaseKey.mk response' rev' waitc').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance leaseKey_struct_fields_split dq l (v : leaseKey.t) :
@@ -137,9 +169,21 @@ Global Instance leaseKey_struct_fields_split dq l (v : leaseKey.t) :
     "Hrev" ∷ l ↦s[leasing.leaseKey :: "rev"]{dq} v.(leaseKey.rev') ∗
     "Hwaitc" ∷ l ↦s[leasing.leaseKey :: "waitc"]{dq} v.(leaseKey.waitc')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (leaseKey.response' v)) leasing.leaseKey "response"%go.
+  simpl_one_flatten_struct (# (leaseKey.rev' v)) leasing.leaseKey "rev"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type leasing.leasingKV *)
 Module leasingKV.
 Section def.
 Context `{ffi_syntax}.
@@ -161,52 +205,66 @@ End leasingKV.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_leasingKV `{ffi_syntax}: Settable _ :=
+Global Instance settable_leasingKV : Settable leasingKV.t :=
   settable! leasingKV.mk < leasingKV.cl'; leasingKV.kv'; leasingKV.pfx'; leasingKV.leases'; leasingKV.ctx'; leasingKV.cancel'; leasingKV.wg'; leasingKV.sessionOpts'; leasingKV.session'; leasingKV.sessionc' >.
-Global Instance into_val_leasingKV `{ffi_syntax} : IntoVal leasingKV.t.
-Admitted.
+Global Instance into_val_leasingKV : IntoVal leasingKV.t :=
+  {| to_val_def v :=
+    struct.val_aux leasing.leasingKV [
+    "cl" ::= #(leasingKV.cl' v);
+    "kv" ::= #(leasingKV.kv' v);
+    "pfx" ::= #(leasingKV.pfx' v);
+    "leases" ::= #(leasingKV.leases' v);
+    "ctx" ::= #(leasingKV.ctx' v);
+    "cancel" ::= #(leasingKV.cancel' v);
+    "wg" ::= #(leasingKV.wg' v);
+    "sessionOpts" ::= #(leasingKV.sessionOpts' v);
+    "session" ::= #(leasingKV.session' v);
+    "sessionc" ::= #(leasingKV.sessionc' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_leasingKV `{ffi_syntax} : IntoValTyped leasingKV.t leasing.leasingKV :=
+Global Program Instance into_val_typed_leasingKV : IntoValTyped leasingKV.t leasing.leasingKV :=
 {|
   default_val := leasingKV.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_leasingKV_cl `{ffi_syntax} : IntoValStructField "cl" leasing.leasingKV leasingKV.cl'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_leasingKV_kv `{ffi_syntax} : IntoValStructField "kv" leasing.leasingKV leasingKV.kv'.
-Admitted.
+Global Instance into_val_struct_field_leasingKV_cl : IntoValStructField "cl" leasing.leasingKV leasingKV.cl'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leasingKV_pfx `{ffi_syntax} : IntoValStructField "pfx" leasing.leasingKV leasingKV.pfx'.
-Admitted.
+Global Instance into_val_struct_field_leasingKV_kv : IntoValStructField "kv" leasing.leasingKV leasingKV.kv'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leasingKV_leases `{ffi_syntax} : IntoValStructField "leases" leasing.leasingKV leasingKV.leases'.
-Admitted.
+Global Instance into_val_struct_field_leasingKV_pfx : IntoValStructField "pfx" leasing.leasingKV leasingKV.pfx'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leasingKV_ctx `{ffi_syntax} : IntoValStructField "ctx" leasing.leasingKV leasingKV.ctx'.
-Admitted.
+Global Instance into_val_struct_field_leasingKV_leases : IntoValStructField "leases" leasing.leasingKV leasingKV.leases'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leasingKV_cancel `{ffi_syntax} : IntoValStructField "cancel" leasing.leasingKV leasingKV.cancel'.
-Admitted.
+Global Instance into_val_struct_field_leasingKV_ctx : IntoValStructField "ctx" leasing.leasingKV leasingKV.ctx'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leasingKV_wg `{ffi_syntax} : IntoValStructField "wg" leasing.leasingKV leasingKV.wg'.
-Admitted.
+Global Instance into_val_struct_field_leasingKV_cancel : IntoValStructField "cancel" leasing.leasingKV leasingKV.cancel'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leasingKV_sessionOpts `{ffi_syntax} : IntoValStructField "sessionOpts" leasing.leasingKV leasingKV.sessionOpts'.
-Admitted.
+Global Instance into_val_struct_field_leasingKV_wg : IntoValStructField "wg" leasing.leasingKV leasingKV.wg'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leasingKV_session `{ffi_syntax} : IntoValStructField "session" leasing.leasingKV leasingKV.session'.
-Admitted.
+Global Instance into_val_struct_field_leasingKV_sessionOpts : IntoValStructField "sessionOpts" leasing.leasingKV leasingKV.sessionOpts'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_leasingKV_sessionc `{ffi_syntax} : IntoValStructField "sessionc" leasing.leasingKV leasingKV.sessionc'.
-Admitted.
+Global Instance into_val_struct_field_leasingKV_session : IntoValStructField "session" leasing.leasingKV leasingKV.session'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_leasingKV_sessionc : IntoValStructField "sessionc" leasing.leasingKV leasingKV.sessionc'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_leasingKV `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} cl' kv' pfx' leases' ctx' cancel' wg' sessionOpts' session' sessionc':
+Global Instance wp_struct_make_leasingKV cl' kv' pfx' leases' ctx' cancel' wg' sessionOpts' session' sessionc':
   PureWp True
     (struct.make #leasing.leasingKV (alist_val [
       "cl" ::= #cl';
@@ -221,7 +279,7 @@ Global Instance wp_struct_make_leasingKV `{ffi_semantics} `{!ffi_interp ffi} `{!
       "sessionc" ::= #sessionc'
     ]))%struct
     #(leasingKV.mk cl' kv' pfx' leases' ctx' cancel' wg' sessionOpts' session' sessionc').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance leasingKV_struct_fields_split dq l (v : leasingKV.t) :
@@ -237,9 +295,28 @@ Global Instance leasingKV_struct_fields_split dq l (v : leasingKV.t) :
     "Hsession" ∷ l ↦s[leasing.leasingKV :: "session"]{dq} v.(leasingKV.session') ∗
     "Hsessionc" ∷ l ↦s[leasing.leasingKV :: "sessionc"]{dq} v.(leasingKV.sessionc')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (leasingKV.cl' v)) leasing.leasingKV "cl"%go.
+  simpl_one_flatten_struct (# (leasingKV.kv' v)) leasing.leasingKV "kv"%go.
+  simpl_one_flatten_struct (# (leasingKV.pfx' v)) leasing.leasingKV "pfx"%go.
+  simpl_one_flatten_struct (# (leasingKV.leases' v)) leasing.leasingKV "leases"%go.
+  simpl_one_flatten_struct (# (leasingKV.ctx' v)) leasing.leasingKV "ctx"%go.
+  simpl_one_flatten_struct (# (leasingKV.cancel' v)) leasing.leasingKV "cancel"%go.
+  simpl_one_flatten_struct (# (leasingKV.wg' v)) leasing.leasingKV "wg"%go.
+  simpl_one_flatten_struct (# (leasingKV.sessionOpts' v)) leasing.leasingKV "sessionOpts"%go.
+  simpl_one_flatten_struct (# (leasingKV.session' v)) leasing.leasingKV "session"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type leasing.txnLeasing *)
 Module txnLeasing.
 Section def.
 Context `{ffi_syntax}.
@@ -257,40 +334,50 @@ End txnLeasing.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_txnLeasing `{ffi_syntax}: Settable _ :=
+Global Instance settable_txnLeasing : Settable txnLeasing.t :=
   settable! txnLeasing.mk < txnLeasing.Txn'; txnLeasing.lkv'; txnLeasing.ctx'; txnLeasing.cs'; txnLeasing.opst'; txnLeasing.opse' >.
-Global Instance into_val_txnLeasing `{ffi_syntax} : IntoVal txnLeasing.t.
-Admitted.
+Global Instance into_val_txnLeasing : IntoVal txnLeasing.t :=
+  {| to_val_def v :=
+    struct.val_aux leasing.txnLeasing [
+    "Txn" ::= #(txnLeasing.Txn' v);
+    "lkv" ::= #(txnLeasing.lkv' v);
+    "ctx" ::= #(txnLeasing.ctx' v);
+    "cs" ::= #(txnLeasing.cs' v);
+    "opst" ::= #(txnLeasing.opst' v);
+    "opse" ::= #(txnLeasing.opse' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_txnLeasing `{ffi_syntax} : IntoValTyped txnLeasing.t leasing.txnLeasing :=
+Global Program Instance into_val_typed_txnLeasing : IntoValTyped txnLeasing.t leasing.txnLeasing :=
 {|
   default_val := txnLeasing.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_txnLeasing_Txn `{ffi_syntax} : IntoValStructField "Txn" leasing.txnLeasing txnLeasing.Txn'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_txnLeasing_lkv `{ffi_syntax} : IntoValStructField "lkv" leasing.txnLeasing txnLeasing.lkv'.
-Admitted.
+Global Instance into_val_struct_field_txnLeasing_Txn : IntoValStructField "Txn" leasing.txnLeasing txnLeasing.Txn'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_txnLeasing_ctx `{ffi_syntax} : IntoValStructField "ctx" leasing.txnLeasing txnLeasing.ctx'.
-Admitted.
+Global Instance into_val_struct_field_txnLeasing_lkv : IntoValStructField "lkv" leasing.txnLeasing txnLeasing.lkv'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_txnLeasing_cs `{ffi_syntax} : IntoValStructField "cs" leasing.txnLeasing txnLeasing.cs'.
-Admitted.
+Global Instance into_val_struct_field_txnLeasing_ctx : IntoValStructField "ctx" leasing.txnLeasing txnLeasing.ctx'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_txnLeasing_opst `{ffi_syntax} : IntoValStructField "opst" leasing.txnLeasing txnLeasing.opst'.
-Admitted.
+Global Instance into_val_struct_field_txnLeasing_cs : IntoValStructField "cs" leasing.txnLeasing txnLeasing.cs'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_txnLeasing_opse `{ffi_syntax} : IntoValStructField "opse" leasing.txnLeasing txnLeasing.opse'.
-Admitted.
+Global Instance into_val_struct_field_txnLeasing_opst : IntoValStructField "opst" leasing.txnLeasing txnLeasing.opst'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_txnLeasing_opse : IntoValStructField "opse" leasing.txnLeasing txnLeasing.opse'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_txnLeasing `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} Txn' lkv' ctx' cs' opst' opse':
+Global Instance wp_struct_make_txnLeasing Txn' lkv' ctx' cs' opst' opse':
   PureWp True
     (struct.make #leasing.txnLeasing (alist_val [
       "Txn" ::= #Txn';
@@ -301,7 +388,7 @@ Global Instance wp_struct_make_txnLeasing `{ffi_semantics} `{!ffi_interp ffi} `{
       "opse" ::= #opse'
     ]))%struct
     #(txnLeasing.mk Txn' lkv' ctx' cs' opst' opse').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance txnLeasing_struct_fields_split dq l (v : txnLeasing.t) :
@@ -313,7 +400,20 @@ Global Instance txnLeasing_struct_fields_split dq l (v : txnLeasing.t) :
     "Hopst" ∷ l ↦s[leasing.txnLeasing :: "opst"]{dq} v.(txnLeasing.opst') ∗
     "Hopse" ∷ l ↦s[leasing.txnLeasing :: "opse"]{dq} v.(txnLeasing.opse')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (txnLeasing.Txn' v)) leasing.txnLeasing "Txn"%go.
+  simpl_one_flatten_struct (# (txnLeasing.lkv' v)) leasing.txnLeasing "lkv"%go.
+  simpl_one_flatten_struct (# (txnLeasing.ctx' v)) leasing.txnLeasing "ctx"%go.
+  simpl_one_flatten_struct (# (txnLeasing.cs' v)) leasing.txnLeasing "cs"%go.
+  simpl_one_flatten_struct (# (txnLeasing.opst' v)) leasing.txnLeasing "opst"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -337,7 +437,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined leasing :=
   is_pkg_defined := is_global_definitions leasing var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
   "HclosedCh" ∷ closedCh ↦ (default_val loc).
 
 Global Instance wp_globals_get_closedCh : 

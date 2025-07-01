@@ -96,6 +96,11 @@ Admitted.
 Instance is_sig_pk_persistent pk P : Persistent (is_sig_pk pk P).
 Proof. Admitted.
 
+Lemma is_sig_sk_to_pk ptr_sk pk P :
+  is_sig_sk ptr_sk pk P -∗
+  is_sig_pk pk P.
+Proof. Admitted.
+
 (* is_sig says that Verify will ret True on these inputs.
 relative to the crypto model, it says the inputs are in the set of
 memoized=True Verify inputs. *)
@@ -147,15 +152,15 @@ Proof. Admitted.
 Lemma wp_SigPublicKey__Verify sl_pk pk sl_sig sl_msg (sig msg : list w8) d0 d1 d2 :
   {{{
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
-    "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
-    "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg
+    "Hsl_msg" ∷ own_slice_small sl_msg byteT d1 msg ∗
+    "Hsl_sig" ∷ own_slice_small sl_sig byteT d2 sig
   }}}
   SigPublicKey__Verify (slice_val sl_pk) (slice_val sl_msg) (slice_val sl_sig)
   {{{
     (err : bool), RET #err;
     "Hsl_pk" ∷ own_slice_small sl_pk byteT d0 pk ∗
-    "Hsl_sig" ∷ own_slice_small sl_sig byteT d1 sig ∗
-    "Hsl_msg" ∷ own_slice_small sl_msg byteT d2 msg ∗
+    "Hsl_msg" ∷ own_slice_small sl_msg byteT d1 msg ∗
+    "Hsl_sig" ∷ own_slice_small sl_sig byteT d2 sig ∗
     "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ is_sig pk msg sig)
   }}}.
 Proof. Admitted.

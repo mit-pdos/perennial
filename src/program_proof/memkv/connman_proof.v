@@ -8,6 +8,7 @@ From Perennial.goose_lang.lib Require Import slice.typed_slice.
 
 Section connman_proof.
 
+Set Universe Polymorphism.
 Context `{!urpcregG Σ}.
 Context `{hG: !heapGS Σ}.
 Definition connmanN := nroot .@ "connman".

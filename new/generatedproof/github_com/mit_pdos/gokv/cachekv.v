@@ -7,8 +7,12 @@ Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.cachekv.
+
+Set Default Proof Using "Type".
+
 Module cachekv.
-Axiom falso : False.
+
+(* type cachekv.cacheValue *)
 Module cacheValue.
 Section def.
 Context `{ffi_syntax}.
@@ -22,35 +26,41 @@ End cacheValue.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_cacheValue `{ffi_syntax}: Settable _ :=
+Global Instance settable_cacheValue : Settable cacheValue.t :=
   settable! cacheValue.mk < cacheValue.v'; cacheValue.l' >.
-Global Instance into_val_cacheValue `{ffi_syntax} : IntoVal cacheValue.t.
-Admitted.
+Global Instance into_val_cacheValue : IntoVal cacheValue.t :=
+  {| to_val_def v :=
+    struct.val_aux cachekv.cacheValue [
+    "v" ::= #(cacheValue.v' v);
+    "l" ::= #(cacheValue.l' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_cacheValue `{ffi_syntax} : IntoValTyped cacheValue.t cachekv.cacheValue :=
+Global Program Instance into_val_typed_cacheValue : IntoValTyped cacheValue.t cachekv.cacheValue :=
 {|
   default_val := cacheValue.mk (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_cacheValue_v `{ffi_syntax} : IntoValStructField "v" cachekv.cacheValue cacheValue.v'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_cacheValue_l `{ffi_syntax} : IntoValStructField "l" cachekv.cacheValue cacheValue.l'.
-Admitted.
+Global Instance into_val_struct_field_cacheValue_v : IntoValStructField "v" cachekv.cacheValue cacheValue.v'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_cacheValue_l : IntoValStructField "l" cachekv.cacheValue cacheValue.l'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_cacheValue `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} v' l':
+Global Instance wp_struct_make_cacheValue v' l':
   PureWp True
     (struct.make #cachekv.cacheValue (alist_val [
       "v" ::= #v';
       "l" ::= #l'
     ]))%struct
     #(cacheValue.mk v' l').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance cacheValue_struct_fields_split dq l (v : cacheValue.t) :
@@ -58,9 +68,20 @@ Global Instance cacheValue_struct_fields_split dq l (v : cacheValue.t) :
     "Hv" ∷ l ↦s[cachekv.cacheValue :: "v"]{dq} v.(cacheValue.v') ∗
     "Hl" ∷ l ↦s[cachekv.cacheValue :: "l"]{dq} v.(cacheValue.l')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (cacheValue.v' v)) cachekv.cacheValue "v"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
+
+(* type cachekv.CacheKv *)
 Module CacheKv.
 Section def.
 Context `{ffi_syntax}.
@@ -75,31 +96,38 @@ End CacheKv.
 Section instances.
 Context `{ffi_syntax}.
 
-Global Instance settable_CacheKv `{ffi_syntax}: Settable _ :=
+Global Instance settable_CacheKv : Settable CacheKv.t :=
   settable! CacheKv.mk < CacheKv.kv'; CacheKv.mu'; CacheKv.cache' >.
-Global Instance into_val_CacheKv `{ffi_syntax} : IntoVal CacheKv.t.
-Admitted.
+Global Instance into_val_CacheKv : IntoVal CacheKv.t :=
+  {| to_val_def v :=
+    struct.val_aux cachekv.CacheKv [
+    "kv" ::= #(CacheKv.kv' v);
+    "mu" ::= #(CacheKv.mu' v);
+    "cache" ::= #(CacheKv.cache' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_CacheKv `{ffi_syntax} : IntoValTyped CacheKv.t cachekv.CacheKv :=
+Global Program Instance into_val_typed_CacheKv : IntoValTyped CacheKv.t cachekv.CacheKv :=
 {|
   default_val := CacheKv.mk (default_val _) (default_val _) (default_val _);
-  to_val_has_go_type := ltac:(destruct falso);
-  default_val_eq_zero_val := ltac:(destruct falso);
-  to_val_inj := ltac:(destruct falso);
-  to_val_eqdec := ltac:(solve_decision);
 |}.
-Global Instance into_val_struct_field_CacheKv_kv `{ffi_syntax} : IntoValStructField "kv" cachekv.CacheKv CacheKv.kv'.
-Admitted.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
 
-Global Instance into_val_struct_field_CacheKv_mu `{ffi_syntax} : IntoValStructField "mu" cachekv.CacheKv CacheKv.mu'.
-Admitted.
+Global Instance into_val_struct_field_CacheKv_kv : IntoValStructField "kv" cachekv.CacheKv CacheKv.kv'.
+Proof. solve_into_val_struct_field. Qed.
 
-Global Instance into_val_struct_field_CacheKv_cache `{ffi_syntax} : IntoValStructField "cache" cachekv.CacheKv CacheKv.cache'.
-Admitted.
+Global Instance into_val_struct_field_CacheKv_mu : IntoValStructField "mu" cachekv.CacheKv CacheKv.mu'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_CacheKv_cache : IntoValStructField "cache" cachekv.CacheKv CacheKv.cache'.
+Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_CacheKv `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} kv' mu' cache':
+Global Instance wp_struct_make_CacheKv kv' mu' cache':
   PureWp True
     (struct.make #cachekv.CacheKv (alist_val [
       "kv" ::= #kv';
@@ -107,7 +135,7 @@ Global Instance wp_struct_make_CacheKv `{ffi_semantics} `{!ffi_interp ffi} `{!he
       "cache" ::= #cache'
     ]))%struct
     #(CacheKv.mk kv' mu' cache').
-Admitted.
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance CacheKv_struct_fields_split dq l (v : CacheKv.t) :
@@ -116,7 +144,17 @@ Global Instance CacheKv_struct_fields_split dq l (v : CacheKv.t) :
     "Hmu" ∷ l ↦s[cachekv.CacheKv :: "mu"]{dq} v.(CacheKv.mu') ∗
     "Hcache" ∷ l ↦s[cachekv.CacheKv :: "cache"]{dq} v.(CacheKv.cache')
   ).
-Admitted.
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (CacheKv.kv' v)) cachekv.CacheKv "kv"%go.
+  simpl_one_flatten_struct (# (CacheKv.mu' v)) cachekv.CacheKv "mu"%go.
+
+  solve_field_ref_f.
+Qed.
 
 End instances.
 
@@ -138,7 +176,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined cachekv :=
   is_pkg_defined := is_global_definitions cachekv var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_DecodeValue :

@@ -45,7 +45,9 @@ Section encode.
     wp_pures.
     rewrite uint_nat_W64_0 replicate_0 app_nil_l -!app_assoc.
     iApply "HΦ".
-    by iFrame.
+    iFrame.
+    rewrite /encode_txnresp /encode_read_resp /encode_read_resp_xkind /encode_string /encode_dbpver.
+    by list_simplifier.
   Qed.
 
   Theorem wp_EncodeTxnFastPrepareResponse (ts : u64) (rid : u64) (res : rpres) :
@@ -289,15 +291,17 @@ Section encode.
       iApply "HΦ".
       iFrame.
       iPureIntro.
-      rewrite /= /encode_inquire_resp /encode_inquire_resp_xkind.
-      by eauto.
+      rewrite /= /encode_inquire_resp /encode_inquire_resp_xkind /encode_ppsl.
+      repeat (esplit; try done).
+      by list_simplifier.
     }
     rewrite uint_nat_W64_0 replicate_0 app_nil_l -!app_assoc.
     iApply "HΦ".
     iFrame.
     iPureIntro.
-    rewrite /= /encode_inquire_resp /encode_inquire_resp_xkind.
-    by eauto.
+    rewrite /= /encode_inquire_resp /encode_inquire_resp_xkind /encode_ppsl.
+    esplit; try done.
+    by list_simplifier.
   Qed.
 
   Theorem wp_EncodeTxnCommitResponse (ts : u64) (res : rpres) :

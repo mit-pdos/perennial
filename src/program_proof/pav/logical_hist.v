@@ -55,6 +55,14 @@ Definition is_hist cli_γ serv_vrf_pk (uid : w64)
 
 (* Logical history derived. *)
 
+Lemma mk_hist γ vrf_pk uid :
+  ⊢ is_hist γ vrf_pk uid [] (W64 0).
+Proof.
+  iSplit.
+  - naive_solver.
+  - iIntros (??). word.
+Qed.
+
 Lemma hist_extend_valid γ vrf_pk uid ep hist valid new_valid :
   uint.Z valid ≤ uint.Z new_valid →
   is_hist_ep γ vrf_pk uid ep hist valid -∗
@@ -178,8 +186,8 @@ Lemma hist_to_msv (ep hist_ep aud_ep : w64) γcli vrf_pk uid pks γaudit :
   (* need to transfer hist epochs (including bound) into auditor maps. *)
   uint.Z hist_ep <= uint.Z aud_ep →
   is_hist γcli vrf_pk uid pks hist_ep -∗
-  logical_audit_post γcli γaudit vrf_pk aud_ep -∗
-  msv γaudit vrf_pk ep uid (get_lat pks ep).
+  logical_audit γcli γaudit vrf_pk aud_ep -∗
+  msv γaudit vrf_pk ep uid (lookup_puts_hist pks ep).
 Proof.
   iIntros (??) "#Hhist". iNamed 1.
   list_elem gs (uint.nat ep) as m. destruct m as [m dig].
@@ -226,30 +234,35 @@ Proof.
       opose proof (Hmono_maps _ _ _ _ Hm_lookup Hmbound_lookup _); [word|].
       opose proof (lookup_weaken _ _ _ _ Hlook_mkey _); [done|]. simplify_eq/=.
       inv Henc_val.
-      opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H6); [done|].
+      opose proof (MapValPre.inj [] [] Henc H6 _); [done|].
       intuition. simplify_eq/=.
       destruct (mbound !! label) as [[??]|]; [|done].
       simplify_eq/=. word. }
   iClear "Hbound".
 
-  destruct (get_lat _ _) as [[lat_ep lat_pk]|] eqn:Heq_last.
+  destruct (lookup_puts_hist _ _) as [lat_pk|] eqn:Heq_last.
   2: {
-    rewrite /get_lat last_None in Heq_last.
-    rewrite Heq_last in Heqfilt_hist.
-    simplify_eq/=. iFrame "#". }
+    rewrite /lookup_puts_hist in Heq_last.
+    simplify_option_eq. move: Heqo => Heq_last.
+    rewrite last_None in Heq_last.
+    rewrite Heq_last.
+    iFrame "#". }
 
-  rewrite /get_lat last_Some in Heq_last.
+  rewrite /lookup_puts_hist in Heq_last.
+  simplify_option_eq.
+  destruct H1 as [lat_ep lat_pk].
+  move: Heqo => Heq_last.
+  rewrite last_Some in Heq_last.
   destruct Heq_last as [hist Heq_last].
-  rewrite Heq_last in Heqfilt_hist.
-  iExists (W64 $ length filt_hist).
-  simplify_eq/=.
+  rewrite Heq_last.
+  iExists (W64 $ (length hist + 1)%nat).
   rewrite length_app. simpl.
   iRename "Hhist" into "H".
   iDestruct (big_sepL_snoc with "H") as "[Hhist Hlat]".
   iClear "H".
 
   iEval (rewrite /msv_Some sep_assoc).
-  iSplit; [|iFrame "#"].
+  iSplit; [|by iFrame "#"].
   iClear "Hmsv_bound".
   replace (word.sub _ _) with (W64 $ length hist) by word.
   iSplit.
@@ -283,7 +296,7 @@ Proof.
     in latest ep. *)
     subst. clear -Henc Henc_val.
     inv Henc_val.
-    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H6); [done|].
+    opose proof (MapValPre.inj [] [] Henc H6 _); [done|].
     intuition. simplify_eq/=.
     destruct (mprior !! label) as [[??]|]; [|done].
     by simplify_eq/=.
@@ -298,10 +311,11 @@ Proof.
     list_elem gs (uint.nat lat_ep) as mprior.
     destruct mprior as [mprior prior_dig].
 
+
     iDestruct ("Hmap_transf" with "[$Hcli_entry]") as "H"; [done|].
     iNamed "H". iFrame "#".
-    iExists (_, _). iFrame "#". iSplit; [done|].
-    iNamed "Hinv_gs". iPureIntro.
+    iNamed "Hinv_gs".
+    iPureIntro. eexists _.
     apply (f_equal (fmap fst)) in Hmprior_lookup, Hm_lookup.
     rewrite -!list_lookup_fmap in Hmprior_lookup, Hm_lookup.
     simpl in *.
@@ -313,7 +327,7 @@ Proof.
     in latest ep. *)
     subst. clear -Henc Henc_val.
     inv Henc_val.
-    opose proof (MapValPre.inj _ _ _ _ [] [] _ Henc H1); [done|].
+    opose proof (MapValPre.inj [] [] Henc H4 _); [done|].
     intuition. simplify_eq/=.
     destruct (mprior !! label) as [[??]|]; [|done].
     by simplify_eq/=.

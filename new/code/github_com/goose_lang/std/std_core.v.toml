@@ -1,0 +1,5 @@
+[bootstrap]
+enabled = true
+prelude = [
+    "From New.golang.defn Require Export slice.",
+]

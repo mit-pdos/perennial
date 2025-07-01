@@ -4,8 +4,10 @@ Require Export New.manualproof.github_com.goose_lang.primitive.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.goose_lang.primitive.
+
+Set Default Proof Using "Type".
+
 Module primitive.
-Axiom falso : False.
 
 Section names.
 
@@ -25,7 +27,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined primitive :=
   is_pkg_defined := is_global_definitions primitive var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
 True.
 
 Global Instance wp_func_call_UInt64Put :
@@ -38,6 +40,10 @@ Global Instance wp_func_call_RandomUint64 :
 
 Global Instance wp_func_call_Assume :
   WpFuncCall primitive "Assume" _ (is_pkg_defined primitive) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_AssumeNoStringOverflow :
+  WpFuncCall primitive "AssumeNoStringOverflow" _ (is_pkg_defined primitive) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

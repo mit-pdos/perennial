@@ -1,18 +1,11 @@
 translate = [
+  "!*",
   "rwmutexMaxReaders",
   "RWMutex",
-  "RWMutex.TryLock",
-  "RWMutex.Lock",
-  "RWMutex.Unlock",
-  "RWMutex.RLock",
-  "RWMutex.TryRLock",
-  "RWMutex.RUnlock",
-  "RWMutex.rUnlockSlow",
+  "RWMutex.*",
 
   "WaitGroup",
-  "WaitGroup.Add",
-  "WaitGroup.Done",
-  "WaitGroup.Wait",
+  "WaitGroup.*",
   "noCopy",
 ]
 
@@ -31,14 +24,10 @@ trusted = [
   # E.g. in Mutex.Lock:
   # https://github.com/golang/go/blob/ff27d270c9f95178f9749bc8e1f15957b1c1d5b3/src/internal/sync/mutex.go#L100
   "Mutex",
-  "Mutex.Lock",
-  "Mutex.TryLock",
-  "Mutex.Unlock",
+  "Mutex.*",
 
   "Cond",
-  "Cond.Wait",
-  "Cond.Signal",
-  "Cond.Broadcast",
+  "Cond.*",
   "NewCond",
 
   "runtime_Semacquire",

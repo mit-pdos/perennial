@@ -92,7 +92,7 @@ Definition EncodeMapU64ToBytes : val :=
     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$range" := (![type.mapT #uint64T #sliceT] "kvs") in
-    (let: "v" := (mem.alloc (type.zero_val #uint64T)) in
+    (let: "v" := (mem.alloc (type.zero_val #sliceT)) in
     let: "k" := (mem.alloc (type.zero_val #uint64T)) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("v" <-[#sliceT] "$value");;;

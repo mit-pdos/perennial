@@ -37,9 +37,12 @@ Context `{!goGlobalsGS Σ}.
 Context `{!syncG Σ}.
 
 #[global]
-Program Instance race_pkg_is_init : IsPkgInit race := ltac2:(build_pkg_init ()).
+Program Instance is_pkg_init_race : IsPkgInit race := ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_race.
+#[local] Transparent is_pkg_init_race.
 
 #[global]
-Program Instance pkg_is_init : IsPkgInit sync := ltac2:(build_pkg_init ()).
+Program Instance is_pkg_init_sync : IsPkgInit sync := ltac2:(build_pkg_init ()).
+#[global] Opaque is_pkg_init_sync.
 
 End defns.

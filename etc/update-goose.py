@@ -323,9 +323,9 @@ def main():
     run_goose(
         pav_dir,
         "./advrpc",
+        "./alicebob",
         "./cryptoutil",
         "./kt",
-        "./kt_test",
         "./marshalutil",
         "./merkle",
     )
@@ -372,7 +372,7 @@ def main():
 
     run_goose(marshal_dir, ".", extra_args=["-skip-interfaces"])
 
-    run_goose(std_dir, ".")
+    run_goose(std_dir, "./...")
 
 
 if __name__ == "__main__":

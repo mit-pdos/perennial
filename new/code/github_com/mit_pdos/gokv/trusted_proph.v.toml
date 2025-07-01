@@ -6,3 +6,7 @@ trusted = [
   "ResolveBytes",
   "NewProph",
 ]
+
+imports = [
+  "!*",
+]
