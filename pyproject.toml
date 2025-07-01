@@ -2,7 +2,7 @@
 name = "perennial"
 version = "2024.0.0"
 dependencies = [
-  "ruff==0.11.12",
+  "ruff==0.12.1",
 ]
 
 [tool.ruff]
