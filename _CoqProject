@@ -1,22 +1,19 @@
 -Q src Perennial
--arg -w -arg -ssr-search-moved
 -arg -w -arg +deprecated-instance-without-locality
 # don't allow ambiguous coercions
 -arg -w -arg +ambiguous-paths
 -arg -w -arg +deprecated-hint-rewrite-without-locality
--arg -w -arg -deprecated-field-instance-without-locality
+-arg -w -arg +deprecated-field-instance-without-locality
 -arg -w -arg +deprecated-tactic-notation
--arg -w -arg -deprecated-since-8.19
--arg -w -arg -deprecated-since-8.20
--arg -w -arg -deprecated-since-9.0
-# seems to have false positives
--arg -w -arg -notation-incompatible-prefix
+# for coqutil compatibility
+-arg -w -arg -deprecated-since-8.19,-deprecated-since-8.20
+-arg -w -arg -deprecated-since-9.0,-deprecated-since-9.1
 # false positives with our byte_string
 -arg -w -arg -via-type-remapping,-via-type-mismatch
-# we haven't updated our code to fix this one
--arg -w -arg -deprecated-typeclasses-transparency-without-locality
+-arg -w -arg +deprecated-typeclasses-transparency-without-locality
 # Iris-disabled warnings
--arg -w -arg -notation-overridden,-redundant-canonical-projection,-unknown-warning,-argument-scope-delimiter
+-arg -w -arg -notation-overridden,-redundant-canonical-projection,-notation-incompatible-prefix
+-arg -w -arg -unknown-warning
 -Q external/stdpp/stdpp stdpp
 -Q external/stdpp/stdpp_unstable stdpp.unstable
 -Q external/stdpp/stdpp_bitvector stdpp.bitvector
