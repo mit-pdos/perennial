@@ -73,11 +73,13 @@ Proof.
   rewrite <- (default_val_eq_zero_val (V:=generics.Box.t w64)).
   wp_auto.
   (* TODO: why does this get shelved? *)
-  unshelve wp_apply wp_makeGenericBox.
-  { apply _. }
-  unshelve wp_apply wp_Box__Get.
-  { apply _. }
-  iApply "HΦ"; done.
+  About IntoValTyped.
+  Global Hint Mode IntoValTyped ! - - - : typeclass_instances.
+  unshelve wp_apply wp_makeGenericBox. { apply _. }
+  (* TODO: it's a [wp_load] inside the auto causing the typeclass goal. *)
+  unshelve wp_auto. { apply _. }
+  unshelve wp_apply wp_Box__Get. { apply _. }
+  wp_auto. iApply "HΦ"; done.
 Qed.
 
 Lemma wp_useContainer :

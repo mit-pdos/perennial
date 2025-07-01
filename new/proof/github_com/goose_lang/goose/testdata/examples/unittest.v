@@ -31,7 +31,7 @@ Lemma wp_VoidButEndsWithReturn :
 Proof.
   wp_start.
   wp_apply wp_BasicNamedReturn.
-  by iApply "HΦ".
+  wp_auto. by iApply "HΦ".
 Qed.
 
 Lemma wp_VoidImplicitReturnInBranch (b: bool) :
@@ -43,7 +43,7 @@ Proof.
   destruct b; wp_auto.
   - by iApply "HΦ".
   - wp_apply wp_BasicNamedReturn.
-    by iApply "HΦ".
+    wp_auto. by iApply "HΦ".
 Qed.
 
 Lemma wp_typeAssertInt (x: interface.t) (v: w64) :
@@ -54,7 +54,7 @@ Proof.
   wp_start as "->". wp_auto.
   wp_apply wp_interface_type_assert.
   { done. }
-  by iApply "HΦ".
+  wp_auto. by iApply "HΦ".
 Qed.
 
 Lemma wp_wrapUnwrapInt :
@@ -65,7 +65,7 @@ Proof.
   wp_start as "_".
   wp_apply wp_typeAssertInt.
   { done. }
-  by iApply "HΦ".
+  wp_auto. by iApply "HΦ".
 Qed.
 
 Lemma wp_checkedTypeAssert (x: interface.t) :
