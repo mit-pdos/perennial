@@ -138,7 +138,7 @@ Implicit Types γ : leasingKV_names.
 Local Existing Instance clientv3_inG.
 Local Existing Instance clientv3_contextG.
 
-Definition own_leaseKey (lk : loc) γ (key : go_string) (resp : v3.RangeResponse.t) : iProp Σ :=
+Definition own_leaseKey (lk : loc) γ (key : go_string) (resp : RangeResponse.t) : iProp Σ :=
   True.
 
 Definition own_leaseCache_locked lc γ q : iProp Σ :=
