@@ -18,7 +18,7 @@ jobs:
       matrix:
         coq_version:
           - dev
-          - "8.20"
+          - "9.0"
       max-parallel: 4
       fail-fast: false
 

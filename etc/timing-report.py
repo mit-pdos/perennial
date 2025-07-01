@@ -85,22 +85,22 @@ if __name__ == "__main__":
         file_df = filter_df(file_df, col="fname", pat=args.filter)
     file_df = file_df[file_df["is_vos"] == args.vos]
     total_s = file_df["time"].sum()
-    print("{:12s} {:>6.1f}".format("total", total_s))
+    print("{:12s} {:>7.1f}".format("total", total_s))
     print(
-        "{:12s} {:>6.1f}".format(
+        "{:12s} {:>7.1f}".format(
             "  Iris",
             filter_df(file_df, col="fname", pat="^external/iris")["time"].sum(),
         )
     )
     print(
-        "{:12s} {:>6.1f}".format(
+        "{:12s} {:>7.1f}".format(
             "  stdpp",
             filter_df(file_df, col="fname", pat="^external/stdpp")["time"].sum(),
         )
     )
     qed_s = file_df["qed_time"].sum()
     print(
-        "{:12s} {:>6.1f} ({:0.0f}%)".format("Qed total", qed_s, qed_s / total_s * 100)
+        "{:12s} {:>7.1f} ({:0.0f}%)".format("Qed total", qed_s, qed_s / total_s * 100)
     )
 
     if args.max_files > 0 or args.max_qeds > 0:
