@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 import subprocess as sp
 import shutil
+import argparse
+import re
 
 
 @dataclass
@@ -56,8 +58,27 @@ def checkout(proj: Proj):
 
     sp.run(["git", "checkout", proj.commit], **shared_args)
 
+def parse_github_tree_url(url):
+    m = re.match(r"(?P<repo>https://github.com/.*)/tree/(?P<commit>.*)", url)
+    if m is None:
+        raise ValueError(f"Invalid GitHub tree URL: {url}")
+    return m["repo"], m["commit"]
+
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--new-goose-url",
+        default="https://github.com/goose-lang/goose/tree/new",
+        help="location of new goose",
+    )
+
+    args = parser.parse_args()
+    new_goose_repo, new_goose_commit = parse_github_tree_url(args.new_goose_url)
+
+    projs["new_goose"].repo = new_goose_repo
+    projs["new_goose"].commit = new_goose_commit
+
     for proj in projs.values():
         checkout(proj)
 
