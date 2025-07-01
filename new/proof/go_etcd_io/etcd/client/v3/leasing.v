@@ -94,8 +94,8 @@ Proof using ghost_mapG0.
   rewrite <- (seq_replicate_fmap 0).
   rewrite big_sepL_fmap.
   iApply (big_sepL_impl with "Htoks []").
-  iIntros "!# * % Hx * #Hinit HΦ".
-  clear ctr g n H3.
+  iIntros "!# * %Hlook Hx * #Hinit HΦ".
+  clear ctr g n Hlook.
   wp_apply (wp_WaitGroup__Done with "[$]").
   iInv "Hinv" as ">Hi" "Hclose".
   iNamed "Hi".
