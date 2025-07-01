@@ -34,6 +34,7 @@ jobs:
             startGroup Install dependencies
               sudo apt-get update
               sudo apt-get install -y python3 python3-pandas sqlite3
+              opam install -y coq
             endGroup
           # for permissions issue, see: https://github.com/coq-community/docker-coq-action#permissions.
           before_script: |
