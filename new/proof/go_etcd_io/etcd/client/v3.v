@@ -485,6 +485,13 @@ mk {
   }.
 Global Instance settable : Settable _ :=
   settable! mk < key; value; lease; prev_kv; ignore_value; ignore_lease>.
+
+Definition default `{ffi_syntax} : t :=
+  ltac:(let x := eval simpl in
+        (mk [] [] (default_val _) (default_val _) (default_val _)
+           (default_val _)) in
+          refine x
+       ).
 End PutRequest.
 
 Module PutResponse.
@@ -755,17 +762,30 @@ Global Existing Instance is_Client_pers.
 
 Axiom is_Op : ∀ (op : clientv3.Op.t) (o : Op.t), iProp Σ.
 
+#[global] Instance is_Op_persistent op o : Persistent (is_Op op o).
+Admitted.
+
 (* NOTE: for simplicity, this only supports empty opts list. *)
-Axiom wp_OpGet : ∀ key opts_sl ,
-  {{{
-      is_pkg_init clientv3 ∗
-      "Hopts" ∷ opts_sl ↦* ([] : list clientv3.OpOption.t)
-  }}}
-    clientv3 @ "OpGet" #key #opts_sl
+Lemma wp_OpGet key :
+  {{{ is_pkg_init clientv3 }}}
+    clientv3 @ "OpGet" #key #slice.nil
   {{{
       op, RET #op;
       is_Op op (Op.Get (RangeRequest.default <|RangeRequest.key := key|>))
   }}}.
+Proof.
+Admitted.
+
+Lemma wp_OpPut key v :
+  {{{
+        is_pkg_init clientv3
+  }}}
+    clientv3@"OpPut" #key #v #slice.nil
+  {{{ op, RET #op;
+      is_Op op (Op.Put (PutRequest.default <| PutRequest.key := key |> <| PutRequest.value := v |>))
+  }}}.
+Proof.
+Admitted.
 
 Axiom N : namespace.
 

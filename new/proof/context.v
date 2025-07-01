@@ -60,9 +60,16 @@ Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
       interface.get #"Done" #c #()
     {{{ RET #s.(Done); True }}} ∗
   "#HErr" ∷
-    {{{ True }}}
+    (∀ cl,
+    {{{ own_closeable_chan s.(Done) s.(PDone) cl }}}
       interface.get #"Err" #c #()
-    {{{ err, RET #err; own_closeable_chan s.(Done) s.(PDone) closeable.Closed ∗-∗ ⌜ err ≠ interface.nil ⌝ }}} ∗
+    {{{ err, RET #err;
+        match cl with
+        | closeable.Closed => ⌜ err ≠ interface.nil ⌝
+        | _ => if decide (err = interface.nil) then own_closeable_chan s.(Done) s.(PDone) cl
+              else own_closeable_chan s.(Done) s.(PDone) closeable.Closed
+        end
+    }}}) ∗
   "#HDone_ch" ∷ own_closeable_chan s.(Done) s.(PDone) closeable.Unknown.
 
 (*

@@ -202,7 +202,7 @@ Lemma wp_leasingKV__monitorSession lkv γ :
 Proof.
   wp_start as "Hpre". iNamed "Hpre". wp_auto.
   wp_for. iNamed "Hown_kv". wp_auto. iNamed "Hctx".
-  wp_apply "HErr". iIntros (?) "_". wp_pures.
+  wp_apply "HErr"; first iFrame "#". iIntros (?) "_". wp_pures.
   destruct bool_decide.
   2:{
     rewrite decide_False //; last naive_solver.
@@ -471,21 +471,113 @@ Proof.
     repeat iExists _.
     iApply (closeable_chan_receive (closeable_chanG0:=clientv3_contextG.(closeable_inG))
              with "[$HDone_ch_lkv]"). (* FIXME: multiple [inG]s *)
-    iIntros "[_ Hclosed]". wp_auto. wp_apply "HErr_lkv". iIntros "* Herr".
-    iLeft in "Herr". iDestruct ("Herr" with "[$]") as %Herr. wp_auto. iApply "HΦ".
+    iIntros "[_ #Hclosed]". wp_auto. wp_apply ("HErr_lkv" with "[$Hclosed]").
+    iIntros "* %Herr". wp_auto. iApply "HΦ".
     rewrite (decide_False (P:=err = interface.nil)) //. iFrame "∗#".
   }
   {
     repeat iExists _.
     iApply (closeable_chan_receive (closeable_chanG0:=clientv3_contextG.(closeable_inG))
              with "[$HDone_ch]"). (* FIXME: multiple [inG]s *)
-    iIntros "[_ Hclosed]". wp_auto. wp_apply "HErr". iIntros "* Herr".
-    iLeft in "Herr". iDestruct ("Herr" with "[$]") as %Herr. wp_auto. iApply "HΦ".
+    iIntros "[_ #Hclosed]". wp_auto. wp_apply ("HErr" with "[$Hclosed]").
+    iIntros "* %Herr". wp_auto. iApply "HΦ".
     rewrite (decide_False (P:=err = interface.nil)) //. iFrame "∗#".
   }
 Qed.
 
-Axiom own_KV : ∀ (kv : interface.t) (γetcd : clientv3_names), iProp Σ.
+(* Requires no options. *)
+Definition own_KV (kv : interface.t) (γetcd : clientv3_names) : iProp Σ :=
+  "#HPut" ∷ (∀ (ctx : context.Context.t) (key v : go_string),
+               {{{ True }}}
+                 interface.get "Put" #kv #ctx #key #v #slice.nil
+               {{{ (resp : loc) (err : error.t), RET (#resp, #err); True }}}) ∗
+  "#HGet" ∷ (∀ (ctx : context.Context.t) (key : go_string),
+               {{{ True }}}
+                 interface.get "Get" #kv #ctx #key #slice.nil
+               {{{ (resp : loc) (err : error.t), RET (#resp, #err); True }}})
+
+  (* Put(ctx context.Context, key, val string, opts ...OpOption) (PutResponse, error) *)
+  (* Put, Get *)
+.
+
+Lemma wp_leasingKV__Put lkv ctx ctx_desc (key v : go_string) γ :
+  {{{ is_pkg_init leasing ∗ is_Context ctx ctx_desc ∗ own_leasingKV lkv γ }}}
+    lkv@leasing@"leasingKV'ptr"@"Put" #ctx #key #v #slice.nil
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start as "[#Hctx Hlkv]". wp_auto.
+  (* TODO: spec for `OpPut` *)
+  (* NOTE: put() is called in two different places, so it should have its own spec.
+     Also, it's only ever call
+   *)
+  wp_apply wp_OpPut. iIntros "* #Hop".
+  wp_auto.
+Admitted.
+
+Lemma wp_leasingKV__put ctx ctx_desc lkv γ op put_req :
+  {{{ is_pkg_init leasing ∗
+      "#Hctx" ∷ is_Context ctx ctx_desc ∗
+      "Hlkv" ∷ own_leasingKV lkv γ ∗
+      "#Hop" ∷ is_Op op (Op.Put put_req)
+  }}}
+    lkv@leasing@"leasingKV'ptr"@"put" #ctx #op
+  {{{
+      (pr_ptr : loc) (err : error.t), RET (#pr_ptr, #err);
+        if decide (err = interface.nil) then
+          False
+        else
+          True
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre". wp_auto.
+  wp_alloc errs_ptr as "errs". wp_auto.
+  wp_apply (wp_leasingKV__waitSession with "[$Hlkv]").
+  { iFrame "#". }
+  iIntros "* [Hlkv Hready]".
+  wp_auto. wp_if_destruct.
+  2:{
+    rewrite bool_decide_false; last done.
+    wp_auto. iApply "HΦ". rewrite !decide_False //.
+  }
+  rewrite bool_decide_decide !decide_True //.
+  iDestruct "Hready" as "#Hready".
+  wp_auto. wp_for.
+  iPoseProof "Hctx" as "Hctx2".
+  iNamedSuffix "Hctx2" "_ctx".
+  wp_apply "HErr_ctx".
+  { iFrame "#". }
+  iIntros (?) "Herr".
+  wp_auto.
+  wp_if_destruct.
+  2:{
+    rewrite bool_decide_decide !decide_False //. wp_auto.
+    wp_apply ("HErr_ctx" with "[$Herr]"). iIntros (?) "%Herr". wp_auto.
+    iApply "HΦ". rewrite !decide_False //.
+  }
+  rewrite bool_decide_decide !decide_True //. wp_auto.
+  rename err_ptr into outer_err_ptr. iRename "err" into "outer_err".
+  wp_auto.
+  (* wp_apply wp_leasingKV__tryModifyOp. *)
+Admitted.
+
+Lemma wp_leasingKV__tryModifyOp ctx ctx_desc op o lkv γ :
+  {{{ is_pkg_init leasing ∗
+      "#Hctx" ∷ is_Context ctx ctx_desc ∗
+      "#Hop" ∷ is_Op op o ∗
+      "Hlkv" ∷ own_leasingKV lkv γ
+  }}}
+    lkv@leasing@"leasingKV'ptr"@"tryModifyOp" #ctx #op
+  {{{
+      (resp_ptr : loc) (wc : chan.t) err, RET (#resp_ptr, #wc, #err);
+        if decide (err = interface.nil) then
+          True
+        else
+          True
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre". wp_auto.
+  (* FIXME: Op__KeyBytes *)
+Admitted.
 
 (* FIXME: [own_leasingKV] should contain [is_entries_ready]. Can have a special
    version that doesn't have [is_entries_ready] for the goroutines kicked off

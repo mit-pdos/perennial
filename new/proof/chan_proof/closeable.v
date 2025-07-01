@@ -59,6 +59,18 @@ Definition own_closeable_chan (ch : chan.t) (Pclose : iProp Σ) (closed : closea
 #[global] Instance own_closeable_chan_Closed_pers ch P :
   Persistent (own_closeable_chan ch P Closed) := _.
 
+Lemma closeable_chan_closed ch Pclose :
+  £ 1 -∗ own_closeable_chan ch Pclose Closed ={⊤}=∗
+  Pclose.
+Proof.
+  iIntros "Hlc". iNamed 1. iNamed "Hinv". iInv "Hinv" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
+  destruct st. simpl in *. destruct closed.
+  - iClear "Hown". iMod ("Hclose" with "[-]"). { iFrame "∗#%". }
+    iModIntro. iDestruct "Hclosed" as "[#$ _]".
+  - iCombine "Hown Hopen" gives %Hbad%dfrac_agree_op_valid. exfalso. naive_solver.
+Qed.
+
 Lemma closeable_chan_receive ch Pclosed Φ cl :
   own_closeable_chan ch Pclosed cl -∗
   (Pclosed ∗ own_closeable_chan ch Pclosed Closed -∗ Φ (#(), #false)%V) -∗
