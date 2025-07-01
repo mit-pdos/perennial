@@ -559,7 +559,7 @@ Proof.
     rewrite bool_decide_false //. wp_auto.
     wp_apply (wp_Mutex__Unlock with "[Hlocked Hwl]").
     { iFrame "#". iFrame. }
-    iRight in "HΦ". iFrame.
+    wp_auto. iRight in "HΦ". iFrame.
 Qed.
 
 Local Hint Unfold sync.rwmutexMaxReaders actualMaxReaders : word.
@@ -601,7 +601,7 @@ Proof.
   - wp_auto.
     wp_apply (wp_Mutex__Unlock with "[Hlocked Hwl]").
     { iFrame "#". iFrame. replace (r') with (W32 0) by word. iFrame. }
-    iFrame.
+    wp_auto. iFrame.
 Qed.
 
 Local Transparent own_RWMutex_invariant own_Int32.

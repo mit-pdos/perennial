@@ -87,9 +87,8 @@ Proof.
   iNamed "Hinit".
   wp_auto.
   wp_if_destruct.
-  - wp_auto.
-    wp_apply wp_Printf.
-    iApply "HΦ". done.
+  - wp_auto. wp_apply wp_Printf.
+    wp_auto. iApply "HΦ". done.
   - iApply "HΦ". done.
 Qed.
 

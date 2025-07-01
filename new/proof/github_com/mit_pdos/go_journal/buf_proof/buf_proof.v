@@ -860,7 +860,7 @@ Proof.
   iIntros "Hdst".
   wp_auto.
   wp_apply wp_installOneBit; first word.
-  wp_pure; first word.
+  wp_auto. wp_pure; first word.
   wp_apply (wp_store_slice_elem with "[$Hdst]"); first word. iIntros "Hdst".
   wp_auto.
   iApply "HΦ". iFrame.
