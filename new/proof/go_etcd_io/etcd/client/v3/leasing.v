@@ -22,6 +22,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
 (* FIXME: come up with a plan for global addrs of imported packages. *)
+Context `{!etcdserverpb.GlobalAddrs}.
 Context `{!concurrency.GlobalAddrs}.
 Context `{!rpctypes.GlobalAddrs}.
 Context `{!leasing.GlobalAddrs}.

@@ -16,6 +16,19 @@ Axiom ErrOldCluster'init : val.
 
 Axiom Client : go_type.
 
+(* WithZapLogger is a NewCtxClient option that overrides the logger
+
+   go: client.go:119:6 *)
+Definition WithZapLogger : val :=
+  rec: "WithZapLogger" "lg" :=
+    exception_do (let: "lg" := (mem.alloc "lg") in
+    return: ((λ: "c",
+       exception_do (let: "c" := (mem.alloc "c") in
+       let: "$r0" := (![#ptrT] "lg") in
+       do:  ((struct.field_ref #Client #"lg"%go (![#ptrT] "c")) <-[#ptrT] "$r0");;;
+       return: #())
+       ))).
+
 Definition Cluster : go_type := interfaceT.
 
 Definition Cmp : go_type := etcdserverpb.Compare.
@@ -52,11 +65,1223 @@ Axiom LeaseResponseChSize'init : val.
 
 Definition Lease : go_type := interfaceT.
 
+Definition opType : go_type := intT.
+
+Definition tRange : expr := #(W64 (0 + 1)).
+
+Definition tPut : expr := #(W64 2).
+
+Definition tDeleteRange : expr := #(W64 3).
+
+Definition tTxn : expr := #(W64 4).
+
 Axiom noPrefixEnd'init : val.
 
-Axiom Op : go_type.
+Definition Op : go_type := structT [
+  "t" :: opType;
+  "key" :: sliceT;
+  "end" :: sliceT;
+  "limit" :: int64T;
+  "sort" :: ptrT;
+  "serializable" :: boolT;
+  "keysOnly" :: boolT;
+  "countOnly" :: boolT;
+  "minModRev" :: int64T;
+  "maxModRev" :: int64T;
+  "minCreateRev" :: int64T;
+  "maxCreateRev" :: int64T;
+  "rev" :: int64T;
+  "prevKV" :: boolT;
+  "fragment" :: boolT;
+  "ignoreValue" :: boolT;
+  "ignoreLease" :: boolT;
+  "progressNotify" :: boolT;
+  "createdNotify" :: boolT;
+  "filterPut" :: boolT;
+  "filterDelete" :: boolT;
+  "val" :: sliceT;
+  "leaseID" :: LeaseID;
+  "cmps" :: sliceT;
+  "thenOps" :: sliceT;
+  "elseOps" :: sliceT;
+  "isOptsWithFromKey" :: boolT;
+  "isOptsWithPrefix" :: boolT
+].
+
+(* IsTxn returns true if the "Op" type is transaction.
+
+   go: op.go:88:14 *)
+Definition Op__IsTxn : val :=
+  rec: "Op__IsTxn" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tTxn)).
+
+(* Txn returns the comparison(if) operations, "then" operations, and "else" operations.
+
+   go: op.go:93:14 *)
+Definition Op__Txn : val :=
+  rec: "Op__Txn" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#sliceT] (struct.field_ref #Op #"cmps"%go "op"), ![#sliceT] (struct.field_ref #Op #"thenOps"%go "op"), ![#sliceT] (struct.field_ref #Op #"elseOps"%go "op"))).
+
+(* KeyBytes returns the byte slice holding the Op's key.
+
+   go: op.go:98:14 *)
+Definition Op__KeyBytes : val :=
+  rec: "Op__KeyBytes" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#sliceT] (struct.field_ref #Op #"key"%go "op"))).
+
+(* WithKeyBytes sets the byte slice for the Op's key.
+
+   go: op.go:101:15 *)
+Definition Op__WithKeyBytes : val :=
+  rec: "Op__WithKeyBytes" "op" "key" :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    let: "key" := (mem.alloc "key") in
+    let: "$r0" := (![#sliceT] "key") in
+    do:  ((struct.field_ref #Op #"key"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+    return: #()).
+
+(* RangeBytes returns the byte slice holding with the Op's range end, if any.
+
+   go: op.go:104:14 *)
+Definition Op__RangeBytes : val :=
+  rec: "Op__RangeBytes" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#sliceT] (struct.field_ref #Op #"end"%go "op"))).
+
+(* Rev returns the requested revision, if any.
+
+   go: op.go:107:14 *)
+Definition Op__Rev : val :=
+  rec: "Op__Rev" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#int64T] (struct.field_ref #Op #"rev"%go "op"))).
+
+(* IsPut returns true iff the operation is a Put.
+
+   go: op.go:110:14 *)
+Definition Op__IsPut : val :=
+  rec: "Op__IsPut" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tPut)).
+
+(* IsGet returns true iff the operation is a Get.
+
+   go: op.go:113:14 *)
+Definition Op__IsGet : val :=
+  rec: "Op__IsGet" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tRange)).
+
+(* IsDelete returns true iff the operation is a Delete.
+
+   go: op.go:116:14 *)
+Definition Op__IsDelete : val :=
+  rec: "Op__IsDelete" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tDeleteRange)).
+
+(* IsSerializable returns true if the serializable field is true.
+
+   go: op.go:119:14 *)
+Definition Op__IsSerializable : val :=
+  rec: "Op__IsSerializable" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#boolT] (struct.field_ref #Op #"serializable"%go "op"))).
+
+(* IsKeysOnly returns whether keysOnly is set.
+
+   go: op.go:122:14 *)
+Definition Op__IsKeysOnly : val :=
+  rec: "Op__IsKeysOnly" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#boolT] (struct.field_ref #Op #"keysOnly"%go "op"))).
+
+(* IsCountOnly returns whether countOnly is set.
+
+   go: op.go:125:14 *)
+Definition Op__IsCountOnly : val :=
+  rec: "Op__IsCountOnly" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#boolT] (struct.field_ref #Op #"countOnly"%go "op"))).
+
+(* go: op.go:127:14 *)
+Definition Op__IsOptsWithFromKey : val :=
+  rec: "Op__IsOptsWithFromKey" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#boolT] (struct.field_ref #Op #"isOptsWithFromKey"%go "op"))).
+
+(* go: op.go:129:14 *)
+Definition Op__IsOptsWithPrefix : val :=
+  rec: "Op__IsOptsWithPrefix" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#boolT] (struct.field_ref #Op #"isOptsWithPrefix"%go "op"))).
+
+(* MinModRev returns the operation's minimum modify revision.
+
+   go: op.go:132:14 *)
+Definition Op__MinModRev : val :=
+  rec: "Op__MinModRev" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#int64T] (struct.field_ref #Op #"minModRev"%go "op"))).
+
+(* MaxModRev returns the operation's maximum modify revision.
+
+   go: op.go:135:14 *)
+Definition Op__MaxModRev : val :=
+  rec: "Op__MaxModRev" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#int64T] (struct.field_ref #Op #"maxModRev"%go "op"))).
+
+(* MinCreateRev returns the operation's minimum create revision.
+
+   go: op.go:138:14 *)
+Definition Op__MinCreateRev : val :=
+  rec: "Op__MinCreateRev" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#int64T] (struct.field_ref #Op #"minCreateRev"%go "op"))).
+
+(* MaxCreateRev returns the operation's maximum create revision.
+
+   go: op.go:141:14 *)
+Definition Op__MaxCreateRev : val :=
+  rec: "Op__MaxCreateRev" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "op"))).
+
+(* WithRangeBytes sets the byte slice for the Op's range end.
+
+   go: op.go:144:15 *)
+Definition Op__WithRangeBytes : val :=
+  rec: "Op__WithRangeBytes" "op" "end" :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    let: "end" := (mem.alloc "end") in
+    let: "$r0" := (![#sliceT] "end") in
+    do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+    return: #()).
+
+(* ValueBytes returns the byte slice holding the Op's value, if any.
+
+   go: op.go:147:14 *)
+Definition Op__ValueBytes : val :=
+  rec: "Op__ValueBytes" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    return: (![#sliceT] (struct.field_ref #Op #"val"%go "op"))).
+
+(* WithValueBytes sets the byte slice for the Op's value.
+
+   go: op.go:150:15 *)
+Definition Op__WithValueBytes : val :=
+  rec: "Op__WithValueBytes" "op" "v" :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    let: "v" := (mem.alloc "v") in
+    let: "$r0" := (![#sliceT] "v") in
+    do:  ((struct.field_ref #Op #"val"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+    return: #()).
+
+Definition SortTarget : go_type := intT.
+
+Definition SortOrder : go_type := intT.
+
+Definition SortOption : go_type := structT [
+  "Target" :: SortTarget;
+  "Order" :: SortOrder
+].
+
+(* go: op.go:152:14 *)
+Definition Op__toRangeRequest : val :=
+  rec: "Op__toRangeRequest" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    (if: (![#opType] (struct.field_ref #Op #"t"%go "op")) ≠ tRange
+    then
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"op.t != tRange"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    let: "r" := (mem.alloc (type.zero_val #ptrT)) in
+    let: "$r0" := (mem.alloc (let: "$Key" := (![#sliceT] (struct.field_ref #Op #"key"%go "op")) in
+    let: "$RangeEnd" := (![#sliceT] (struct.field_ref #Op #"end"%go "op")) in
+    let: "$Limit" := (![#int64T] (struct.field_ref #Op #"limit"%go "op")) in
+    let: "$Revision" := (![#int64T] (struct.field_ref #Op #"rev"%go "op")) in
+    let: "$Serializable" := (![#boolT] (struct.field_ref #Op #"serializable"%go "op")) in
+    let: "$KeysOnly" := (![#boolT] (struct.field_ref #Op #"keysOnly"%go "op")) in
+    let: "$CountOnly" := (![#boolT] (struct.field_ref #Op #"countOnly"%go "op")) in
+    let: "$MinModRevision" := (![#int64T] (struct.field_ref #Op #"minModRev"%go "op")) in
+    let: "$MaxModRevision" := (![#int64T] (struct.field_ref #Op #"maxModRev"%go "op")) in
+    let: "$MinCreateRevision" := (![#int64T] (struct.field_ref #Op #"minCreateRev"%go "op")) in
+    let: "$MaxCreateRevision" := (![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "op")) in
+    struct.make #etcdserverpb.RangeRequest [{
+      "Key" ::= "$Key";
+      "RangeEnd" ::= "$RangeEnd";
+      "Limit" ::= "$Limit";
+      "Revision" ::= "$Revision";
+      "SortOrder" ::= type.zero_val #etcdserverpb.RangeRequest_SortOrder;
+      "SortTarget" ::= type.zero_val #etcdserverpb.RangeRequest_SortTarget;
+      "Serializable" ::= "$Serializable";
+      "KeysOnly" ::= "$KeysOnly";
+      "CountOnly" ::= "$CountOnly";
+      "MinModRevision" ::= "$MinModRevision";
+      "MaxModRevision" ::= "$MaxModRevision";
+      "MinCreateRevision" ::= "$MinCreateRevision";
+      "MaxCreateRevision" ::= "$MaxCreateRevision";
+      "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+      ]);
+      "XXX_unrecognized" ::= type.zero_val #sliceT;
+      "XXX_sizecache" ::= type.zero_val #int32T
+    }])) in
+    do:  ("r" <-[#ptrT] "$r0");;;
+    (if: (![#ptrT] (struct.field_ref #Op #"sort"%go "op")) ≠ #null
+    then
+      let: "$r0" := (s_to_w32 (![#SortOrder] (struct.field_ref #SortOption #"Order"%go (![#ptrT] (struct.field_ref #Op #"sort"%go "op"))))) in
+      do:  ((struct.field_ref #etcdserverpb.RangeRequest #"SortOrder"%go (![#ptrT] "r")) <-[#etcdserverpb.RangeRequest_SortOrder] "$r0");;;
+      let: "$r0" := (s_to_w32 (![#SortTarget] (struct.field_ref #SortOption #"Target"%go (![#ptrT] (struct.field_ref #Op #"sort"%go "op"))))) in
+      do:  ((struct.field_ref #etcdserverpb.RangeRequest #"SortTarget"%go (![#ptrT] "r")) <-[#etcdserverpb.RangeRequest_SortTarget] "$r0")
+    else do:  #());;;
+    return: (![#ptrT] "r")).
+
+(* go: op.go:176:14 *)
+Definition Op__toTxnRequest : val :=
+  rec: "Op__toTxnRequest" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    let: "thenOps" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"thenOps"%go "op")) in
+    slice.len "$a0")) in
+    do:  ("thenOps" <-[#sliceT] "$r0");;;
+    let: "$range" := (![#sliceT] (struct.field_ref #Op #"thenOps"%go "op")) in
+    (let: "tOp" := (mem.alloc (type.zero_val #Op)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    slice.for_range #Op "$range" (λ: "$key" "$value",
+      do:  ("tOp" <-[#Op] "$value");;;
+      do:  ("i" <-[#intT] "$key");;;
+      let: "$r0" := ((method_call #v3.clientv3 #"Op" #"toRequestOp" (![#Op] "tOp")) #()) in
+      do:  ((slice.elem_ref #ptrT (![#sliceT] "thenOps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
+    let: "elseOps" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
+    slice.len "$a0")) in
+    do:  ("elseOps" <-[#sliceT] "$r0");;;
+    let: "$range" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
+    (let: "eOp" := (mem.alloc (type.zero_val #Op)) in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    slice.for_range #Op "$range" (λ: "$key" "$value",
+      do:  ("eOp" <-[#Op] "$value");;;
+      do:  ("i" <-[#intT] "$key");;;
+      let: "$r0" := ((method_call #v3.clientv3 #"Op" #"toRequestOp" (![#Op] "eOp")) #()) in
+      do:  ((slice.elem_ref #ptrT (![#sliceT] "elseOps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
+    let: "cmps" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"cmps"%go "op")) in
+    slice.len "$a0")) in
+    do:  ("cmps" <-[#sliceT] "$r0");;;
+    let: "$range" := (![#sliceT] (struct.field_ref #Op #"cmps"%go "op")) in
+    (let: "i" := (mem.alloc (type.zero_val #intT)) in
+    slice.for_range #Cmp "$range" (λ: "$key" "$value",
+      do:  ("i" <-[#intT] "$key");;;
+      let: "$r0" := (slice.elem_ref #Cmp (![#sliceT] (struct.field_ref #Op #"cmps"%go "op")) (![#intT] "i")) in
+      do:  ((slice.elem_ref #ptrT (![#sliceT] "cmps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
+    return: (mem.alloc (let: "$Compare" := (![#sliceT] "cmps") in
+     let: "$Success" := (![#sliceT] "thenOps") in
+     let: "$Failure" := (![#sliceT] "elseOps") in
+     struct.make #etcdserverpb.TxnRequest [{
+       "Compare" ::= "$Compare";
+       "Success" ::= "$Success";
+       "Failure" ::= "$Failure";
+       "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+       ]);
+       "XXX_unrecognized" ::= type.zero_val #sliceT;
+       "XXX_sizecache" ::= type.zero_val #int32T
+     }]))).
+
+(* go: op.go:192:14 *)
+Definition Op__toRequestOp : val :=
+  rec: "Op__toRequestOp" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    let: "$sw" := (![#opType] (struct.field_ref #Op #"t"%go "op")) in
+    (if: "$sw" = tRange
+    then
+      return: (mem.alloc (let: "$Request" := (interface.make (#etcdserverpb, #"RequestOp_RequestRange'ptr") (mem.alloc (let: "$RequestRange" := ((method_call #v3.clientv3 #"Op" #"toRangeRequest" (![#Op] "op")) #()) in
+       struct.make #etcdserverpb.RequestOp_RequestRange [{
+         "RequestRange" ::= "$RequestRange"
+       }]))) in
+       struct.make #etcdserverpb.RequestOp [{
+         "Request" ::= "$Request";
+         "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+         ]);
+         "XXX_unrecognized" ::= type.zero_val #sliceT;
+         "XXX_sizecache" ::= type.zero_val #int32T
+       }]))
+    else
+      (if: "$sw" = tPut
+      then
+        let: "r" := (mem.alloc (type.zero_val #ptrT)) in
+        let: "$r0" := (mem.alloc (let: "$Key" := (![#sliceT] (struct.field_ref #Op #"key"%go "op")) in
+        let: "$Value" := (![#sliceT] (struct.field_ref #Op #"val"%go "op")) in
+        let: "$Lease" := (![#LeaseID] (struct.field_ref #Op #"leaseID"%go "op")) in
+        let: "$PrevKv" := (![#boolT] (struct.field_ref #Op #"prevKV"%go "op")) in
+        let: "$IgnoreValue" := (![#boolT] (struct.field_ref #Op #"ignoreValue"%go "op")) in
+        let: "$IgnoreLease" := (![#boolT] (struct.field_ref #Op #"ignoreLease"%go "op")) in
+        struct.make #etcdserverpb.PutRequest [{
+          "Key" ::= "$Key";
+          "Value" ::= "$Value";
+          "Lease" ::= "$Lease";
+          "PrevKv" ::= "$PrevKv";
+          "IgnoreValue" ::= "$IgnoreValue";
+          "IgnoreLease" ::= "$IgnoreLease";
+          "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+          ]);
+          "XXX_unrecognized" ::= type.zero_val #sliceT;
+          "XXX_sizecache" ::= type.zero_val #int32T
+        }])) in
+        do:  ("r" <-[#ptrT] "$r0");;;
+        return: (mem.alloc (let: "$Request" := (interface.make (#etcdserverpb, #"RequestOp_RequestPut'ptr") (mem.alloc (let: "$RequestPut" := (![#ptrT] "r") in
+         struct.make #etcdserverpb.RequestOp_RequestPut [{
+           "RequestPut" ::= "$RequestPut"
+         }]))) in
+         struct.make #etcdserverpb.RequestOp [{
+           "Request" ::= "$Request";
+           "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+           ]);
+           "XXX_unrecognized" ::= type.zero_val #sliceT;
+           "XXX_sizecache" ::= type.zero_val #int32T
+         }]))
+      else
+        (if: "$sw" = tDeleteRange
+        then
+          let: "r" := (mem.alloc (type.zero_val #ptrT)) in
+          let: "$r0" := (mem.alloc (let: "$Key" := (![#sliceT] (struct.field_ref #Op #"key"%go "op")) in
+          let: "$RangeEnd" := (![#sliceT] (struct.field_ref #Op #"end"%go "op")) in
+          let: "$PrevKv" := (![#boolT] (struct.field_ref #Op #"prevKV"%go "op")) in
+          struct.make #etcdserverpb.DeleteRangeRequest [{
+            "Key" ::= "$Key";
+            "RangeEnd" ::= "$RangeEnd";
+            "PrevKv" ::= "$PrevKv";
+            "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+            ]);
+            "XXX_unrecognized" ::= type.zero_val #sliceT;
+            "XXX_sizecache" ::= type.zero_val #int32T
+          }])) in
+          do:  ("r" <-[#ptrT] "$r0");;;
+          return: (mem.alloc (let: "$Request" := (interface.make (#etcdserverpb, #"RequestOp_RequestDeleteRange'ptr") (mem.alloc (let: "$RequestDeleteRange" := (![#ptrT] "r") in
+           struct.make #etcdserverpb.RequestOp_RequestDeleteRange [{
+             "RequestDeleteRange" ::= "$RequestDeleteRange"
+           }]))) in
+           struct.make #etcdserverpb.RequestOp [{
+             "Request" ::= "$Request";
+             "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+             ]);
+             "XXX_unrecognized" ::= type.zero_val #sliceT;
+             "XXX_sizecache" ::= type.zero_val #int32T
+           }]))
+        else
+          (if: "$sw" = tTxn
+          then
+            return: (mem.alloc (let: "$Request" := (interface.make (#etcdserverpb, #"RequestOp_RequestTxn'ptr") (mem.alloc (let: "$RequestTxn" := ((method_call #v3.clientv3 #"Op" #"toTxnRequest" (![#Op] "op")) #()) in
+             struct.make #etcdserverpb.RequestOp_RequestTxn [{
+               "RequestTxn" ::= "$RequestTxn"
+             }]))) in
+             struct.make #etcdserverpb.RequestOp [{
+               "Request" ::= "$Request";
+               "XXX_NoUnkeyedLiteral" ::= type.zero_val (type.structT [
+               ]);
+               "XXX_unrecognized" ::= type.zero_val #sliceT;
+               "XXX_sizecache" ::= type.zero_val #int32T
+             }]))
+          else
+            do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Unknown Op"%go) in
+            Panic "$a0")))))).
+
+(* go: op.go:209:14 *)
+Definition Op__isWrite : val :=
+  rec: "Op__isWrite" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    (if: (![#opType] (struct.field_ref #Op #"t"%go "op")) = tTxn
+    then
+      let: "$range" := (![#sliceT] (struct.field_ref #Op #"thenOps"%go "op")) in
+      (let: "tOp" := (mem.alloc (type.zero_val #Op)) in
+      slice.for_range #Op "$range" (λ: "$key" "$value",
+        do:  ("tOp" <-[#Op] "$value");;;
+        do:  "$key";;;
+        (if: (method_call #v3.clientv3 #"Op" #"isWrite" (![#Op] "tOp")) #()
+        then return: (#true)
+        else do:  #())));;;
+      let: "$range" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
+      (let: "tOp" := (mem.alloc (type.zero_val #Op)) in
+      slice.for_range #Op "$range" (λ: "$key" "$value",
+        do:  ("tOp" <-[#Op] "$value");;;
+        do:  "$key";;;
+        (if: (method_call #v3.clientv3 #"Op" #"isWrite" (![#Op] "tOp")) #()
+        then return: (#true)
+        else do:  #())));;;
+      return: (#false)
+    else do:  #());;;
+    return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) ≠ tRange)).
+
+(* OpGet returns "get" operation based on given key and operation options.
+
+   go: op.go:231:6 *)
+Definition OpGet : val :=
+  rec: "OpGet" "key" "opts" :=
+    exception_do (let: "opts" := (mem.alloc "opts") in
+    let: "key" := (mem.alloc "key") in
+    (if: (let: "$a0" := (![#sliceT] "opts") in
+    (func_call #v3.clientv3 #"IsOptsWithPrefix"%go) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
+    (func_call #v3.clientv3 #"IsOptsWithFromKey"%go) "$a0")
+    then
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    let: "ret" := (mem.alloc (type.zero_val #Op)) in
+    let: "$r0" := (let: "$t" := tRange in
+    let: "$key" := (string.to_bytes (![#stringT] "key")) in
+    struct.make #Op [{
+      "t" ::= "$t";
+      "key" ::= "$key";
+      "end" ::= type.zero_val #sliceT;
+      "limit" ::= type.zero_val #int64T;
+      "sort" ::= type.zero_val #ptrT;
+      "serializable" ::= type.zero_val #boolT;
+      "keysOnly" ::= type.zero_val #boolT;
+      "countOnly" ::= type.zero_val #boolT;
+      "minModRev" ::= type.zero_val #int64T;
+      "maxModRev" ::= type.zero_val #int64T;
+      "minCreateRev" ::= type.zero_val #int64T;
+      "maxCreateRev" ::= type.zero_val #int64T;
+      "rev" ::= type.zero_val #int64T;
+      "prevKV" ::= type.zero_val #boolT;
+      "fragment" ::= type.zero_val #boolT;
+      "ignoreValue" ::= type.zero_val #boolT;
+      "ignoreLease" ::= type.zero_val #boolT;
+      "progressNotify" ::= type.zero_val #boolT;
+      "createdNotify" ::= type.zero_val #boolT;
+      "filterPut" ::= type.zero_val #boolT;
+      "filterDelete" ::= type.zero_val #boolT;
+      "val" ::= type.zero_val #sliceT;
+      "leaseID" ::= type.zero_val #LeaseID;
+      "cmps" ::= type.zero_val #sliceT;
+      "thenOps" ::= type.zero_val #sliceT;
+      "elseOps" ::= type.zero_val #sliceT;
+      "isOptsWithFromKey" ::= type.zero_val #boolT;
+      "isOptsWithPrefix" ::= type.zero_val #boolT
+    }]) in
+    do:  ("ret" <-[#Op] "$r0");;;
+    do:  (let: "$a0" := (![#sliceT] "opts") in
+    (method_call #v3.clientv3 #"Op'ptr" #"applyOpts" "ret") "$a0");;;
+    return: (![#Op] "ret")).
+
+(* OpDelete returns "delete" operation based on given key and operation options.
+
+   go: op.go:242:6 *)
+Definition OpDelete : val :=
+  rec: "OpDelete" "key" "opts" :=
+    exception_do (let: "opts" := (mem.alloc "opts") in
+    let: "key" := (mem.alloc "key") in
+    (if: (let: "$a0" := (![#sliceT] "opts") in
+    (func_call #v3.clientv3 #"IsOptsWithPrefix"%go) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
+    (func_call #v3.clientv3 #"IsOptsWithFromKey"%go) "$a0")
+    then
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    let: "ret" := (mem.alloc (type.zero_val #Op)) in
+    let: "$r0" := (let: "$t" := tDeleteRange in
+    let: "$key" := (string.to_bytes (![#stringT] "key")) in
+    struct.make #Op [{
+      "t" ::= "$t";
+      "key" ::= "$key";
+      "end" ::= type.zero_val #sliceT;
+      "limit" ::= type.zero_val #int64T;
+      "sort" ::= type.zero_val #ptrT;
+      "serializable" ::= type.zero_val #boolT;
+      "keysOnly" ::= type.zero_val #boolT;
+      "countOnly" ::= type.zero_val #boolT;
+      "minModRev" ::= type.zero_val #int64T;
+      "maxModRev" ::= type.zero_val #int64T;
+      "minCreateRev" ::= type.zero_val #int64T;
+      "maxCreateRev" ::= type.zero_val #int64T;
+      "rev" ::= type.zero_val #int64T;
+      "prevKV" ::= type.zero_val #boolT;
+      "fragment" ::= type.zero_val #boolT;
+      "ignoreValue" ::= type.zero_val #boolT;
+      "ignoreLease" ::= type.zero_val #boolT;
+      "progressNotify" ::= type.zero_val #boolT;
+      "createdNotify" ::= type.zero_val #boolT;
+      "filterPut" ::= type.zero_val #boolT;
+      "filterDelete" ::= type.zero_val #boolT;
+      "val" ::= type.zero_val #sliceT;
+      "leaseID" ::= type.zero_val #LeaseID;
+      "cmps" ::= type.zero_val #sliceT;
+      "thenOps" ::= type.zero_val #sliceT;
+      "elseOps" ::= type.zero_val #sliceT;
+      "isOptsWithFromKey" ::= type.zero_val #boolT;
+      "isOptsWithPrefix" ::= type.zero_val #boolT
+    }]) in
+    do:  ("ret" <-[#Op] "$r0");;;
+    do:  (let: "$a0" := (![#sliceT] "opts") in
+    (method_call #v3.clientv3 #"Op'ptr" #"applyOpts" "ret") "$a0");;;
+    let: "$sw" := #true in
+    (if: "$sw" = ((![#LeaseID] (struct.field_ref #Op #"leaseID"%go "ret")) ≠ #(W64 0))
+    then
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected lease in delete"%go) in
+      Panic "$a0")
+    else
+      (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"limit"%go "ret")) ≠ #(W64 0))
+      then
+        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected limit in delete"%go) in
+        Panic "$a0")
+      else
+        (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"rev"%go "ret")) ≠ #(W64 0))
+        then
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected revision in delete"%go) in
+          Panic "$a0")
+        else
+          (if: "$sw" = ((![#ptrT] (struct.field_ref #Op #"sort"%go "ret")) ≠ #null)
+          then
+            do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected sort in delete"%go) in
+            Panic "$a0")
+          else
+            (if: "$sw" = (![#boolT] (struct.field_ref #Op #"serializable"%go "ret"))
+            then
+              do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected serializable in delete"%go) in
+              Panic "$a0")
+            else
+              (if: "$sw" = (![#boolT] (struct.field_ref #Op #"countOnly"%go "ret"))
+              then
+                do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected countOnly in delete"%go) in
+                Panic "$a0")
+              else
+                (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxModRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minModRev"%go "ret")) ≠ #(W64 0)))
+                then
+                  do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected mod revision filter in delete"%go) in
+                  Panic "$a0")
+                else
+                  (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minCreateRev"%go "ret")) ≠ #(W64 0)))
+                  then
+                    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected create revision filter in delete"%go) in
+                    Panic "$a0")
+                  else
+                    (if: ("$sw" = (![#boolT] (struct.field_ref #Op #"filterPut"%go "ret"))) || ("$sw" = (![#boolT] (struct.field_ref #Op #"filterDelete"%go "ret")))
+                    then
+                      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected filter in delete"%go) in
+                      Panic "$a0")
+                    else
+                      (if: "$sw" = (![#boolT] (struct.field_ref #Op #"createdNotify"%go "ret"))
+                      then
+                        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected createdNotify in delete"%go) in
+                        Panic "$a0")
+                      else do:  #()))))))))));;;
+    return: (![#Op] "ret")).
+
+(* OpPut returns "put" operation based on given key-value and operation options.
+
+   go: op.go:275:6 *)
+Definition OpPut : val :=
+  rec: "OpPut" "key" "val" "opts" :=
+    exception_do (let: "opts" := (mem.alloc "opts") in
+    let: "val" := (mem.alloc "val") in
+    let: "key" := (mem.alloc "key") in
+    let: "ret" := (mem.alloc (type.zero_val #Op)) in
+    let: "$r0" := (let: "$t" := tPut in
+    let: "$key" := (string.to_bytes (![#stringT] "key")) in
+    let: "$val" := (string.to_bytes (![#stringT] "val")) in
+    struct.make #Op [{
+      "t" ::= "$t";
+      "key" ::= "$key";
+      "end" ::= type.zero_val #sliceT;
+      "limit" ::= type.zero_val #int64T;
+      "sort" ::= type.zero_val #ptrT;
+      "serializable" ::= type.zero_val #boolT;
+      "keysOnly" ::= type.zero_val #boolT;
+      "countOnly" ::= type.zero_val #boolT;
+      "minModRev" ::= type.zero_val #int64T;
+      "maxModRev" ::= type.zero_val #int64T;
+      "minCreateRev" ::= type.zero_val #int64T;
+      "maxCreateRev" ::= type.zero_val #int64T;
+      "rev" ::= type.zero_val #int64T;
+      "prevKV" ::= type.zero_val #boolT;
+      "fragment" ::= type.zero_val #boolT;
+      "ignoreValue" ::= type.zero_val #boolT;
+      "ignoreLease" ::= type.zero_val #boolT;
+      "progressNotify" ::= type.zero_val #boolT;
+      "createdNotify" ::= type.zero_val #boolT;
+      "filterPut" ::= type.zero_val #boolT;
+      "filterDelete" ::= type.zero_val #boolT;
+      "val" ::= "$val";
+      "leaseID" ::= type.zero_val #LeaseID;
+      "cmps" ::= type.zero_val #sliceT;
+      "thenOps" ::= type.zero_val #sliceT;
+      "elseOps" ::= type.zero_val #sliceT;
+      "isOptsWithFromKey" ::= type.zero_val #boolT;
+      "isOptsWithPrefix" ::= type.zero_val #boolT
+    }]) in
+    do:  ("ret" <-[#Op] "$r0");;;
+    do:  (let: "$a0" := (![#sliceT] "opts") in
+    (method_call #v3.clientv3 #"Op'ptr" #"applyOpts" "ret") "$a0");;;
+    let: "$sw" := #true in
+    (if: "$sw" = ((![#sliceT] (struct.field_ref #Op #"end"%go "ret")) ≠ #slice.nil)
+    then
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected range in put"%go) in
+      Panic "$a0")
+    else
+      (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"limit"%go "ret")) ≠ #(W64 0))
+      then
+        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected limit in put"%go) in
+        Panic "$a0")
+      else
+        (if: "$sw" = ((![#int64T] (struct.field_ref #Op #"rev"%go "ret")) ≠ #(W64 0))
+        then
+          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected revision in put"%go) in
+          Panic "$a0")
+        else
+          (if: "$sw" = ((![#ptrT] (struct.field_ref #Op #"sort"%go "ret")) ≠ #null)
+          then
+            do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected sort in put"%go) in
+            Panic "$a0")
+          else
+            (if: "$sw" = (![#boolT] (struct.field_ref #Op #"serializable"%go "ret"))
+            then
+              do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected serializable in put"%go) in
+              Panic "$a0")
+            else
+              (if: "$sw" = (![#boolT] (struct.field_ref #Op #"countOnly"%go "ret"))
+              then
+                do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected countOnly in put"%go) in
+                Panic "$a0")
+              else
+                (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxModRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minModRev"%go "ret")) ≠ #(W64 0)))
+                then
+                  do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected mod revision filter in put"%go) in
+                  Panic "$a0")
+                else
+                  (if: ("$sw" = ((![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "ret")) ≠ #(W64 0))) || ("$sw" = ((![#int64T] (struct.field_ref #Op #"minCreateRev"%go "ret")) ≠ #(W64 0)))
+                  then
+                    do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected create revision filter in put"%go) in
+                    Panic "$a0")
+                  else
+                    (if: ("$sw" = (![#boolT] (struct.field_ref #Op #"filterPut"%go "ret"))) || ("$sw" = (![#boolT] (struct.field_ref #Op #"filterDelete"%go "ret")))
+                    then
+                      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected filter in put"%go) in
+                      Panic "$a0")
+                    else
+                      (if: "$sw" = (![#boolT] (struct.field_ref #Op #"createdNotify"%go "ret"))
+                      then
+                        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected createdNotify in put"%go) in
+                        Panic "$a0")
+                      else do:  #()))))))))));;;
+    return: (![#Op] "ret")).
+
+(* OpTxn returns "txn" operation based on given transaction conditions.
+
+   go: op.go:304:6 *)
+Definition OpTxn : val :=
+  rec: "OpTxn" "cmps" "thenOps" "elseOps" :=
+    exception_do (let: "elseOps" := (mem.alloc "elseOps") in
+    let: "thenOps" := (mem.alloc "thenOps") in
+    let: "cmps" := (mem.alloc "cmps") in
+    return: (let: "$t" := tTxn in
+     let: "$cmps" := (![#sliceT] "cmps") in
+     let: "$thenOps" := (![#sliceT] "thenOps") in
+     let: "$elseOps" := (![#sliceT] "elseOps") in
+     struct.make #Op [{
+       "t" ::= "$t";
+       "key" ::= type.zero_val #sliceT;
+       "end" ::= type.zero_val #sliceT;
+       "limit" ::= type.zero_val #int64T;
+       "sort" ::= type.zero_val #ptrT;
+       "serializable" ::= type.zero_val #boolT;
+       "keysOnly" ::= type.zero_val #boolT;
+       "countOnly" ::= type.zero_val #boolT;
+       "minModRev" ::= type.zero_val #int64T;
+       "maxModRev" ::= type.zero_val #int64T;
+       "minCreateRev" ::= type.zero_val #int64T;
+       "maxCreateRev" ::= type.zero_val #int64T;
+       "rev" ::= type.zero_val #int64T;
+       "prevKV" ::= type.zero_val #boolT;
+       "fragment" ::= type.zero_val #boolT;
+       "ignoreValue" ::= type.zero_val #boolT;
+       "ignoreLease" ::= type.zero_val #boolT;
+       "progressNotify" ::= type.zero_val #boolT;
+       "createdNotify" ::= type.zero_val #boolT;
+       "filterPut" ::= type.zero_val #boolT;
+       "filterDelete" ::= type.zero_val #boolT;
+       "val" ::= type.zero_val #sliceT;
+       "leaseID" ::= type.zero_val #LeaseID;
+       "cmps" ::= "$cmps";
+       "thenOps" ::= "$thenOps";
+       "elseOps" ::= "$elseOps";
+       "isOptsWithFromKey" ::= type.zero_val #boolT;
+       "isOptsWithPrefix" ::= type.zero_val #boolT
+     }])).
 
 Definition OpOption : go_type := funcT.
+
+(* go: op.go:330:15 *)
+Definition Op__applyOpts : val :=
+  rec: "Op__applyOpts" "op" "opts" :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    let: "opts" := (mem.alloc "opts") in
+    let: "$range" := (![#sliceT] "opts") in
+    (let: "opt" := (mem.alloc (type.zero_val #OpOption)) in
+    slice.for_range #OpOption "$range" (λ: "$key" "$value",
+      do:  ("opt" <-[#OpOption] "$value");;;
+      do:  "$key";;;
+      do:  (let: "$a0" := (![#ptrT] "op") in
+      (![#OpOption] "opt") "$a0")));;;
+    return: #()).
+
+(* WithLease attaches a lease ID to a key in 'Put' request.
+
+   go: op.go:340:6 *)
+Definition WithLease : val :=
+  rec: "WithLease" "leaseID" :=
+    exception_do (let: "leaseID" := (mem.alloc "leaseID") in
+    return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := (![#LeaseID] "leaseID") in
+       do:  ((struct.field_ref #Op #"leaseID"%go (![#ptrT] "op")) <-[#LeaseID] "$r0");;;
+       return: #())
+       ))).
+
+(* WithLimit limits the number of results to return from 'Get' request.
+   If WithLimit is given a 0 limit, it is treated as no limit.
+
+   go: op.go:346:6 *)
+Definition WithLimit : val :=
+  rec: "WithLimit" "n" :=
+    exception_do (let: "n" := (mem.alloc "n") in
+    return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := (![#int64T] "n") in
+       do:  ((struct.field_ref #Op #"limit"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       return: #())
+       ))).
+
+(* WithRev specifies the store revision for 'Get' request.
+   Or the start revision of 'Watch' request.
+
+   go: op.go:350:6 *)
+Definition WithRev : val :=
+  rec: "WithRev" "rev" :=
+    exception_do (let: "rev" := (mem.alloc "rev") in
+    return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := (![#int64T] "rev") in
+       do:  ((struct.field_ref #Op #"rev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       return: #())
+       ))).
+
+Definition SortByKey : expr := #(W64 0).
+
+Definition SortAscend : expr := #(W64 1).
+
+Definition SortNone : expr := #(W64 0).
+
+(* WithSort specifies the ordering in 'Get' request. It requires
+   'WithRange' and/or 'WithPrefix' to be specified too.
+   'target' specifies the target to sort by: key, version, revisions, value.
+   'order' can be either 'SortNone', 'SortAscend', 'SortDescend'.
+
+   go: op.go:356:6 *)
+Definition WithSort : val :=
+  rec: "WithSort" "target" "order" :=
+    exception_do (let: "order" := (mem.alloc "order") in
+    let: "target" := (mem.alloc "target") in
+    return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       (if: ((![#SortTarget] "target") = SortByKey) && ((![#SortOrder] "order") = SortAscend)
+       then
+         let: "$r0" := SortNone in
+         do:  ("order" <-[#SortOrder] "$r0")
+       else do:  #());;;
+       let: "$r0" := (mem.alloc (struct.make #SortOption [{
+         "Target" ::= ![#SortTarget] "target";
+         "Order" ::= ![#SortOrder] "order"
+       }])) in
+       do:  ((struct.field_ref #Op #"sort"%go (![#ptrT] "op")) <-[#ptrT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithPrefix enables 'Get', 'Delete', or 'Watch' requests to operate
+   on the keys with matching prefix. For example, 'Get(foo, WithPrefix())'
+   can return 'foo1', 'foo2', and so on.
+
+   go: op.go:394:6 *)
+Definition WithPrefix : val :=
+  rec: "WithPrefix" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"isOptsWithPrefix"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       (if: (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"key"%go (![#ptrT] "op"))) in
+       slice.len "$a0") = #(W64 0)
+       then
+         let: "$r0" := ((let: "$sl0" := #(W8 0) in
+         slice.literal #byteT ["$sl0"])) in
+         let: "$r1" := ((let: "$sl0" := #(W8 0) in
+         slice.literal #byteT ["$sl0"])) in
+         do:  ((struct.field_ref #Op #"key"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+         do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r1");;;
+         return: (#())
+       else do:  #());;;
+       let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"key"%go (![#ptrT] "op"))) in
+       (func_call #v3.clientv3 #"getPrefix"%go) "$a0") in
+       do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithRange specifies the range of 'Get', 'Delete', 'Watch' requests.
+   For example, 'Get' requests with 'WithRange(end)' returns
+   the keys in the range [key, end).
+   endKey must be lexicographically greater than start key.
+
+   go: op.go:409:6 *)
+Definition WithRange : val :=
+  rec: "WithRange" "endKey" :=
+    exception_do (let: "endKey" := (mem.alloc "endKey") in
+    return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := (string.to_bytes (![#stringT] "endKey")) in
+       do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithFromKey specifies the range of 'Get', 'Delete', 'Watch' requests
+   to be equal or greater than the key in the argument.
+
+   go: op.go:415:6 *)
+Definition WithFromKey : val :=
+  rec: "WithFromKey" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       (if: (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"key"%go (![#ptrT] "op"))) in
+       slice.len "$a0") = #(W64 0)
+       then
+         let: "$r0" := ((let: "$sl0" := #(W8 0) in
+         slice.literal #byteT ["$sl0"])) in
+         do:  ((struct.field_ref #Op #"key"%go (![#ptrT] "op")) <-[#sliceT] "$r0")
+       else do:  #());;;
+       let: "$r0" := (string.to_bytes #" "%go) in
+       do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"isOptsWithFromKey"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithSerializable makes `Get` and `MemberList` requests serializable.
+   By default, they are linearizable. Serializable requests are better
+   for lower latency requirement, but users should be aware that they
+   could get stale data with serializable requests.
+
+   In some situations users may want to use serializable requests. For
+   example, when adding a new member to a one-node cluster, it's reasonable
+   and safe to use serializable request before the new added member gets
+   started.
+
+   go: op.go:434:6 *)
+Definition WithSerializable : val :=
+  rec: "WithSerializable" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"serializable"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithKeysOnly makes the 'Get' request return only the keys and the corresponding
+   values will be omitted.
+
+   go: op.go:440:6 *)
+Definition WithKeysOnly : val :=
+  rec: "WithKeysOnly" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"keysOnly"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithCountOnly makes the 'Get' request return only the count of keys.
+
+   go: op.go:445:6 *)
+Definition WithCountOnly : val :=
+  rec: "WithCountOnly" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"countOnly"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithMinModRev filters out keys for Get with modification revisions less than the given revision.
+
+   go: op.go:450:6 *)
+Definition WithMinModRev : val :=
+  rec: "WithMinModRev" "rev" :=
+    exception_do (let: "rev" := (mem.alloc "rev") in
+    return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := (![#int64T] "rev") in
+       do:  ((struct.field_ref #Op #"minModRev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       return: #())
+       ))).
+
+(* WithMaxModRev filters out keys for Get with modification revisions greater than the given revision.
+
+   go: op.go:453:6 *)
+Definition WithMaxModRev : val :=
+  rec: "WithMaxModRev" "rev" :=
+    exception_do (let: "rev" := (mem.alloc "rev") in
+    return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := (![#int64T] "rev") in
+       do:  ((struct.field_ref #Op #"maxModRev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       return: #())
+       ))).
+
+(* WithMinCreateRev filters out keys for Get with creation revisions less than the given revision.
+
+   go: op.go:456:6 *)
+Definition WithMinCreateRev : val :=
+  rec: "WithMinCreateRev" "rev" :=
+    exception_do (let: "rev" := (mem.alloc "rev") in
+    return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := (![#int64T] "rev") in
+       do:  ((struct.field_ref #Op #"minCreateRev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       return: #())
+       ))).
+
+(* WithMaxCreateRev filters out keys for Get with creation revisions greater than the given revision.
+
+   go: op.go:459:6 *)
+Definition WithMaxCreateRev : val :=
+  rec: "WithMaxCreateRev" "rev" :=
+    exception_do (let: "rev" := (mem.alloc "rev") in
+    return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := (![#int64T] "rev") in
+       do:  ((struct.field_ref #Op #"maxCreateRev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
+       return: #())
+       ))).
+
+Definition SortByCreateRevision : expr := #(W64 2).
+
+(* WithFirstCreate gets the key with the oldest creation revision in the request range.
+
+   go: op.go:462:6 *)
+Definition WithFirstCreate : val :=
+  rec: "WithFirstCreate" <> :=
+    exception_do (return: (let: "$a0" := SortByCreateRevision in
+     let: "$a1" := SortAscend in
+     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+
+Definition SortDescend : expr := #(W64 2).
+
+(* WithLastCreate gets the key with the latest creation revision in the request range.
+
+   go: op.go:465:6 *)
+Definition WithLastCreate : val :=
+  rec: "WithLastCreate" <> :=
+    exception_do (return: (let: "$a0" := SortByCreateRevision in
+     let: "$a1" := SortDescend in
+     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+
+(* WithFirstKey gets the lexically first key in the request range.
+
+   go: op.go:468:6 *)
+Definition WithFirstKey : val :=
+  rec: "WithFirstKey" <> :=
+    exception_do (return: (let: "$a0" := SortByKey in
+     let: "$a1" := SortAscend in
+     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+
+(* WithLastKey gets the lexically last key in the request range.
+
+   go: op.go:471:6 *)
+Definition WithLastKey : val :=
+  rec: "WithLastKey" <> :=
+    exception_do (return: (let: "$a0" := SortByKey in
+     let: "$a1" := SortDescend in
+     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+
+Definition SortByModRevision : expr := #(W64 3).
+
+(* WithFirstRev gets the key with the oldest modification revision in the request range.
+
+   go: op.go:474:6 *)
+Definition WithFirstRev : val :=
+  rec: "WithFirstRev" <> :=
+    exception_do (return: (let: "$a0" := SortByModRevision in
+     let: "$a1" := SortAscend in
+     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+
+(* WithLastRev gets the key with the latest modification revision in the request range.
+
+   go: op.go:477:6 *)
+Definition WithLastRev : val :=
+  rec: "WithLastRev" <> :=
+    exception_do (return: (let: "$a0" := SortByModRevision in
+     let: "$a1" := SortDescend in
+     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+
+(* WithProgressNotify makes watch server send periodic progress updates
+   every 10 minutes when there is no incoming events.
+   Progress updates have zero events in WatchResponse.
+
+   go: op.go:487:6 *)
+Definition WithProgressNotify : val :=
+  rec: "WithProgressNotify" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"progressNotify"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithCreatedNotify makes watch server sends the created event.
+
+   go: op.go:494:6 *)
+Definition WithCreatedNotify : val :=
+  rec: "WithCreatedNotify" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"createdNotify"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithFilterPut discards PUT events from the watcher.
+
+   go: op.go:501:6 *)
+Definition WithFilterPut : val :=
+  rec: "WithFilterPut" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"filterPut"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithFilterDelete discards DELETE events from the watcher.
+
+   go: op.go:506:6 *)
+Definition WithFilterDelete : val :=
+  rec: "WithFilterDelete" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"filterDelete"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithPrevKV gets the previous key-value pair before the event happens. If the previous KV is already compacted,
+   nothing will be returned.
+
+   go: op.go:512:6 *)
+Definition WithPrevKV : val :=
+  rec: "WithPrevKV" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"prevKV"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithFragment to receive raw watch response with fragmentation.
+   Fragmentation is disabled by default. If fragmentation is enabled,
+   etcd watch server will split watch response before sending to clients
+   when the total size of watch events exceed server-side request limit.
+   The default server-side request limit is 1.5 MiB, which can be configured
+   as "--max-request-bytes" flag value + gRPC-overhead 512 bytes.
+   See "etcdserver/api/v3rpc/watch.go" for more details.
+
+   go: op.go:525:6 *)
+Definition WithFragment : val :=
+  rec: "WithFragment" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"fragment"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithIgnoreValue updates the key using its current value.
+   This option can not be combined with non-empty values.
+   Returns an error if the key does not exist.
+
+   go: op.go:532:6 *)
+Definition WithIgnoreValue : val :=
+  rec: "WithIgnoreValue" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"ignoreValue"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* WithIgnoreLease updates the key using its current lease.
+   This option can not be combined with WithLease.
+   Returns an error if the key does not exist.
+
+   go: op.go:541:6 *)
+Definition WithIgnoreLease : val :=
+  rec: "WithIgnoreLease" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #Op #"ignoreLease"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+Definition LeaseOp : go_type := structT [
+  "id" :: LeaseID;
+  "attachedKeys" :: boolT
+].
+
+Definition LeaseOption : go_type := funcT.
+
+(* WithAttachedKeys makes TimeToLive list the keys attached to the given lease ID.
+
+   go: op.go:565:6 *)
+Definition WithAttachedKeys : val :=
+  rec: "WithAttachedKeys" <> :=
+    exception_do (return: ((λ: "op",
+       exception_do (let: "op" := (mem.alloc "op") in
+       let: "$r0" := #true in
+       do:  ((struct.field_ref #LeaseOp #"attachedKeys"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
+       return: #())
+       ))).
+
+(* go: op.go:595:14 *)
+Definition Op__IsSortOptionValid : val :=
+  rec: "Op__IsSortOptionValid" "op" <> :=
+    exception_do (let: "op" := (mem.alloc "op") in
+    (if: (![#ptrT] (struct.field_ref #Op #"sort"%go "op")) ≠ #null
+    then
+      let: "sortOrder" := (mem.alloc (type.zero_val #int32T)) in
+      let: "$r0" := (s_to_w32 (![#SortOrder] (struct.field_ref #SortOption #"Order"%go (![#ptrT] (struct.field_ref #Op #"sort"%go "op"))))) in
+      do:  ("sortOrder" <-[#int32T] "$r0");;;
+      let: "sortTarget" := (mem.alloc (type.zero_val #int32T)) in
+      let: "$r0" := (s_to_w32 (![#SortTarget] (struct.field_ref #SortOption #"Target"%go (![#ptrT] (struct.field_ref #Op #"sort"%go "op"))))) in
+      do:  ("sortTarget" <-[#int32T] "$r0");;;
+      (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+      let: ("$ret0", "$ret1") := (map.get (![type.mapT #int32T #stringT] (globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortOrder_name"%go)) (![#int32T] "sortOrder")) in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  "$r0";;;
+      do:  ("ok" <-[#boolT] "$r1");;;
+      (if: (~ (![#boolT] "ok"))
+      then return: (#false)
+      else do:  #()));;;
+      (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
+      let: ("$ret0", "$ret1") := (map.get (![type.mapT #int32T #stringT] (globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortTarget_name"%go)) (![#int32T] "sortTarget")) in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  "$r0";;;
+      do:  ("ok" <-[#boolT] "$r1");;;
+      (if: (~ (![#boolT] "ok"))
+      then return: (#false)
+      else do:  #()))
+    else do:  #());;;
+    return: (#true)).
 
 Axiom defaultWaitForReady'init : val.
 
@@ -75,6 +1300,10 @@ Axiom defaultBackoffJitterFraction'init : val.
 Axiom defaultCallOpts'init : val.
 
 Axiom defaultOptions'init : val.
+
+Definition SortByVersion : expr := #(W64 1).
+
+Definition SortByValue : expr := #(W64 4).
 
 Definition Txn : go_type := interfaceT.
 
@@ -104,9 +1333,55 @@ Axiom maxBackoff'init : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [("WithZapLogger"%go, WithZapLogger); ("OpGet"%go, OpGet); ("OpDelete"%go, OpDelete); ("OpPut"%go, OpPut); ("OpTxn"%go, OpTxn); ("WithLease"%go, WithLease); ("WithLimit"%go, WithLimit); ("WithRev"%go, WithRev); ("WithSort"%go, WithSort); ("WithPrefix"%go, WithPrefix); ("WithRange"%go, WithRange); ("WithFromKey"%go, WithFromKey); ("WithSerializable"%go, WithSerializable); ("WithKeysOnly"%go, WithKeysOnly); ("WithCountOnly"%go, WithCountOnly); ("WithMinModRev"%go, WithMinModRev); ("WithMaxModRev"%go, WithMaxModRev); ("WithMinCreateRev"%go, WithMinCreateRev); ("WithMaxCreateRev"%go, WithMaxCreateRev); ("WithFirstCreate"%go, WithFirstCreate); ("WithLastCreate"%go, WithLastCreate); ("WithFirstKey"%go, WithFirstKey); ("WithLastKey"%go, WithLastKey); ("WithFirstRev"%go, WithFirstRev); ("WithLastRev"%go, WithLastRev); ("WithProgressNotify"%go, WithProgressNotify); ("WithCreatedNotify"%go, WithCreatedNotify); ("WithFilterPut"%go, WithFilterPut); ("WithFilterDelete"%go, WithFilterDelete); ("WithPrevKV"%go, WithPrevKV); ("WithFragment"%go, WithFragment); ("WithIgnoreValue"%go, WithIgnoreValue); ("WithIgnoreLease"%go, WithIgnoreLease); ("WithAttachedKeys"%go, WithAttachedKeys)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Cmp"%go, []); ("Cmp'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("GetResponse"%go, []); ("GetResponse'ptr"%go, []); ("DeleteResponse"%go, []); ("DeleteResponse'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, []); ("OpResponse"%go, []); ("OpResponse'ptr"%go, []); ("LeaseID"%go, []); ("LeaseID'ptr"%go, []); ("LeaseGrantResponse"%go, []); ("LeaseGrantResponse'ptr"%go, []); ("OpOption"%go, []); ("OpOption'ptr"%go, []); ("Event"%go, []); ("Event'ptr"%go, []); ("WatchChan"%go, []); ("WatchChan'ptr"%go, []); ("WatchResponse"%go, []); ("WatchResponse'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Cmp"%go, []); ("Cmp'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("GetResponse"%go, []); ("GetResponse'ptr"%go, []); ("DeleteResponse"%go, []); ("DeleteResponse'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, []); ("OpResponse"%go, []); ("OpResponse'ptr"%go, []); ("LeaseID"%go, []); ("LeaseID'ptr"%go, []); ("LeaseGrantResponse"%go, []); ("LeaseGrantResponse'ptr"%go, []); ("opType"%go, []); ("opType'ptr"%go, []); ("Op"%go, [("IsCountOnly"%go, Op__IsCountOnly); ("IsDelete"%go, Op__IsDelete); ("IsGet"%go, Op__IsGet); ("IsKeysOnly"%go, Op__IsKeysOnly); ("IsOptsWithFromKey"%go, Op__IsOptsWithFromKey); ("IsOptsWithPrefix"%go, Op__IsOptsWithPrefix); ("IsPut"%go, Op__IsPut); ("IsSerializable"%go, Op__IsSerializable); ("IsSortOptionValid"%go, Op__IsSortOptionValid); ("IsTxn"%go, Op__IsTxn); ("KeyBytes"%go, Op__KeyBytes); ("MaxCreateRev"%go, Op__MaxCreateRev); ("MaxModRev"%go, Op__MaxModRev); ("MinCreateRev"%go, Op__MinCreateRev); ("MinModRev"%go, Op__MinModRev); ("RangeBytes"%go, Op__RangeBytes); ("Rev"%go, Op__Rev); ("Txn"%go, Op__Txn); ("ValueBytes"%go, Op__ValueBytes); ("isWrite"%go, Op__isWrite); ("toRangeRequest"%go, Op__toRangeRequest); ("toRequestOp"%go, Op__toRequestOp); ("toTxnRequest"%go, Op__toTxnRequest)]); ("Op'ptr"%go, [("IsCountOnly"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsCountOnly" (![#Op] "$recvAddr")
+                 )%V); ("IsDelete"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsDelete" (![#Op] "$recvAddr")
+                 )%V); ("IsGet"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsGet" (![#Op] "$recvAddr")
+                 )%V); ("IsKeysOnly"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsKeysOnly" (![#Op] "$recvAddr")
+                 )%V); ("IsOptsWithFromKey"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsOptsWithFromKey" (![#Op] "$recvAddr")
+                 )%V); ("IsOptsWithPrefix"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsOptsWithPrefix" (![#Op] "$recvAddr")
+                 )%V); ("IsPut"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsPut" (![#Op] "$recvAddr")
+                 )%V); ("IsSerializable"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsSerializable" (![#Op] "$recvAddr")
+                 )%V); ("IsSortOptionValid"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsSortOptionValid" (![#Op] "$recvAddr")
+                 )%V); ("IsTxn"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"IsTxn" (![#Op] "$recvAddr")
+                 )%V); ("KeyBytes"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"KeyBytes" (![#Op] "$recvAddr")
+                 )%V); ("MaxCreateRev"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"MaxCreateRev" (![#Op] "$recvAddr")
+                 )%V); ("MaxModRev"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"MaxModRev" (![#Op] "$recvAddr")
+                 )%V); ("MinCreateRev"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"MinCreateRev" (![#Op] "$recvAddr")
+                 )%V); ("MinModRev"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"MinModRev" (![#Op] "$recvAddr")
+                 )%V); ("RangeBytes"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"RangeBytes" (![#Op] "$recvAddr")
+                 )%V); ("Rev"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"Rev" (![#Op] "$recvAddr")
+                 )%V); ("Txn"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"Txn" (![#Op] "$recvAddr")
+                 )%V); ("ValueBytes"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"ValueBytes" (![#Op] "$recvAddr")
+                 )%V); ("WithKeyBytes"%go, Op__WithKeyBytes); ("WithRangeBytes"%go, Op__WithRangeBytes); ("WithValueBytes"%go, Op__WithValueBytes); ("applyOpts"%go, Op__applyOpts); ("isWrite"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"isWrite" (![#Op] "$recvAddr")
+                 )%V); ("toRangeRequest"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"toRangeRequest" (![#Op] "$recvAddr")
+                 )%V); ("toRequestOp"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"toRequestOp" (![#Op] "$recvAddr")
+                 )%V); ("toTxnRequest"%go, (λ: "$recvAddr",
+                 method_call #v3.clientv3 #"Op" #"toTxnRequest" (![#Op] "$recvAddr")
+                 )%V)]); ("OpOption"%go, []); ("OpOption'ptr"%go, []); ("LeaseOp"%go, []); ("LeaseOp'ptr"%go, []); ("LeaseOption"%go, []); ("LeaseOption'ptr"%go, []); ("SortTarget"%go, []); ("SortTarget'ptr"%go, []); ("SortOrder"%go, []); ("SortOrder'ptr"%go, []); ("SortOption"%go, []); ("SortOption'ptr"%go, []); ("Event"%go, []); ("Event'ptr"%go, []); ("WatchChan"%go, []); ("WatchChan'ptr"%go, []); ("WatchResponse"%go, []); ("WatchResponse'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo v3.clientv3 :=
   {|

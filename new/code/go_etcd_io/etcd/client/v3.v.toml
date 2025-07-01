@@ -20,6 +20,20 @@ translate = [
   "PutResponse",
   "RangeResponse",
   "DeleteResponse",
+  "opType",
+  "Op",
+  "Op.*",
+  "OpPut",
+  "OpGet",
+  "OpDelete",
+  "OpTxn",
+  "With*",
+  "!WithCompactPhysical",
+  "!WithRequireLeader",
+  "tRange", "tPut", "tDeleteRange", "tTxn",
+  "SortTarget", "SortOrder", "SortOption",
+  "SortBy*", "SortNone", "SortAscend", "SortDescend",
+  "LeaseOp", "LeaseOption",
 ]
 
 axiomatize = [

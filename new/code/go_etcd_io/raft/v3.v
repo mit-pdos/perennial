@@ -2736,7 +2736,7 @@ Definition lockedRand__Intn : val :=
     let: "n" := (mem.alloc "n") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (struct.field_ref #lockedRand #"mu"%go (![#ptrT] "r"))) #());;;
     let: "v" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#io.Reader] (globals.get #rand #"Reader"%go)) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![#io.Reader] (globals.get #rand.rand #"Reader"%go)) in
     let: "$a1" := (let: "$a0" := (s_to_w64 (![#intT] "n")) in
     (func_call #big.big #"NewInt"%go) "$a0") in
     (func_call #rand.rand #"Int"%go) "$a0" "$a1") in
@@ -8496,7 +8496,7 @@ Definition initialize' : val :=
       do:  fmt.initialize';;;
       do:  raftpb.initialize';;;
       do:  errors.initialize';;;
-      let: "$r0" := (mem.alloc (let: "$Logger" := (let: "$a0" := (interface.make (#os, #"File'ptr") (![#ptrT] (globals.get #os #"Stderr"%go))) in
+      let: "$r0" := (mem.alloc (let: "$Logger" := (let: "$a0" := (interface.make (#os, #"File'ptr") (![#ptrT] (globals.get #os.os #"Stderr"%go))) in
       let: "$a1" := #"raft"%go in
       let: "$a2" := #(W64 log.LstdFlags) in
       (func_call #log.log #"New"%go) "$a0" "$a1" "$a2") in
@@ -8505,7 +8505,7 @@ Definition initialize' : val :=
         "debug" ::= type.zero_val #boolT
       }])) in
       do:  ((globals.get #v3.raft #"defaultLogger"%go) <-[#ptrT] "$r0");;;
-      let: "$r0" := (mem.alloc (let: "$Logger" := (let: "$a0" := (![#io.Writer] (globals.get #io #"Discard"%go)) in
+      let: "$r0" := (mem.alloc (let: "$Logger" := (let: "$a0" := (![#io.Writer] (globals.get #io.io #"Discard"%go)) in
       let: "$a1" := #""%go in
       let: "$a2" := #(W64 0) in
       (func_call #log.log #"New"%go) "$a0" "$a1" "$a2") in

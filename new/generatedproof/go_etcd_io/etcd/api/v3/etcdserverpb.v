@@ -8,6 +8,22 @@ Set Default Proof Using "Type".
 
 Module etcdserverpb.
 
+(* type etcdserverpb.RangeRequest_SortOrder *)
+Module RangeRequest_SortOrder.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w32.
+End def.
+End RangeRequest_SortOrder.
+
+(* type etcdserverpb.RangeRequest_SortTarget *)
+Module RangeRequest_SortTarget.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w32.
+End def.
+End RangeRequest_SortTarget.
+
 (* type etcdserverpb.Compare_CompareResult *)
 Module Compare_CompareResult.
 Section def.
@@ -133,6 +149,187 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.RangeRequest *)
+Module RangeRequest.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Key' : slice.t;
+  RangeEnd' : slice.t;
+  Limit' : w64;
+  Revision' : w64;
+  SortOrder' : RangeRequest_SortOrder.t;
+  SortTarget' : RangeRequest_SortTarget.t;
+  Serializable' : bool;
+  KeysOnly' : bool;
+  CountOnly' : bool;
+  MinModRevision' : w64;
+  MaxModRevision' : w64;
+  MinCreateRevision' : w64;
+  MaxCreateRevision' : w64;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
+End def.
+End RangeRequest.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_RangeRequest : Settable RangeRequest.t :=
+  settable! RangeRequest.mk < RangeRequest.Key'; RangeRequest.RangeEnd'; RangeRequest.Limit'; RangeRequest.Revision'; RangeRequest.SortOrder'; RangeRequest.SortTarget'; RangeRequest.Serializable'; RangeRequest.KeysOnly'; RangeRequest.CountOnly'; RangeRequest.MinModRevision'; RangeRequest.MaxModRevision'; RangeRequest.MinCreateRevision'; RangeRequest.MaxCreateRevision'; RangeRequest.XXX_NoUnkeyedLiteral'; RangeRequest.XXX_unrecognized'; RangeRequest.XXX_sizecache' >.
+Global Instance into_val_RangeRequest : IntoVal RangeRequest.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.RangeRequest [
+    "Key" ::= #(RangeRequest.Key' v);
+    "RangeEnd" ::= #(RangeRequest.RangeEnd' v);
+    "Limit" ::= #(RangeRequest.Limit' v);
+    "Revision" ::= #(RangeRequest.Revision' v);
+    "SortOrder" ::= #(RangeRequest.SortOrder' v);
+    "SortTarget" ::= #(RangeRequest.SortTarget' v);
+    "Serializable" ::= #(RangeRequest.Serializable' v);
+    "KeysOnly" ::= #(RangeRequest.KeysOnly' v);
+    "CountOnly" ::= #(RangeRequest.CountOnly' v);
+    "MinModRevision" ::= #(RangeRequest.MinModRevision' v);
+    "MaxModRevision" ::= #(RangeRequest.MaxModRevision' v);
+    "MinCreateRevision" ::= #(RangeRequest.MinCreateRevision' v);
+    "MaxCreateRevision" ::= #(RangeRequest.MaxCreateRevision' v);
+    "XXX_NoUnkeyedLiteral" ::= #(RangeRequest.XXX_NoUnkeyedLiteral' v);
+    "XXX_unrecognized" ::= #(RangeRequest.XXX_unrecognized' v);
+    "XXX_sizecache" ::= #(RangeRequest.XXX_sizecache' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_RangeRequest : IntoValTyped RangeRequest.t etcdserverpb.RangeRequest :=
+{|
+  default_val := RangeRequest.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_Key : IntoValStructField "Key" etcdserverpb.RangeRequest RangeRequest.Key'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_RangeEnd : IntoValStructField "RangeEnd" etcdserverpb.RangeRequest RangeRequest.RangeEnd'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_Limit : IntoValStructField "Limit" etcdserverpb.RangeRequest RangeRequest.Limit'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_Revision : IntoValStructField "Revision" etcdserverpb.RangeRequest RangeRequest.Revision'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_SortOrder : IntoValStructField "SortOrder" etcdserverpb.RangeRequest RangeRequest.SortOrder'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_SortTarget : IntoValStructField "SortTarget" etcdserverpb.RangeRequest RangeRequest.SortTarget'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_Serializable : IntoValStructField "Serializable" etcdserverpb.RangeRequest RangeRequest.Serializable'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_KeysOnly : IntoValStructField "KeysOnly" etcdserverpb.RangeRequest RangeRequest.KeysOnly'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_CountOnly : IntoValStructField "CountOnly" etcdserverpb.RangeRequest RangeRequest.CountOnly'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_MinModRevision : IntoValStructField "MinModRevision" etcdserverpb.RangeRequest RangeRequest.MinModRevision'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_MaxModRevision : IntoValStructField "MaxModRevision" etcdserverpb.RangeRequest RangeRequest.MaxModRevision'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_MinCreateRevision : IntoValStructField "MinCreateRevision" etcdserverpb.RangeRequest RangeRequest.MinCreateRevision'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_MaxCreateRevision : IntoValStructField "MaxCreateRevision" etcdserverpb.RangeRequest RangeRequest.MaxCreateRevision'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RangeRequest RangeRequest.XXX_NoUnkeyedLiteral'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_XXX_unrecognized : IntoValStructField "XXX_unrecognized" etcdserverpb.RangeRequest RangeRequest.XXX_unrecognized'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RangeRequest_XXX_sizecache : IntoValStructField "XXX_sizecache" etcdserverpb.RangeRequest RangeRequest.XXX_sizecache'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_RangeRequest Key' RangeEnd' Limit' Revision' SortOrder' SortTarget' Serializable' KeysOnly' CountOnly' MinModRevision' MaxModRevision' MinCreateRevision' MaxCreateRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make #etcdserverpb.RangeRequest (alist_val [
+      "Key" ::= #Key';
+      "RangeEnd" ::= #RangeEnd';
+      "Limit" ::= #Limit';
+      "Revision" ::= #Revision';
+      "SortOrder" ::= #SortOrder';
+      "SortTarget" ::= #SortTarget';
+      "Serializable" ::= #Serializable';
+      "KeysOnly" ::= #KeysOnly';
+      "CountOnly" ::= #CountOnly';
+      "MinModRevision" ::= #MinModRevision';
+      "MaxModRevision" ::= #MaxModRevision';
+      "MinCreateRevision" ::= #MinCreateRevision';
+      "MaxCreateRevision" ::= #MaxCreateRevision';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%struct
+    #(RangeRequest.mk Key' RangeEnd' Limit' Revision' SortOrder' SortTarget' Serializable' KeysOnly' CountOnly' MinModRevision' MaxModRevision' MinCreateRevision' MaxCreateRevision' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance RangeRequest_struct_fields_split dq l (v : RangeRequest.t) :
+  StructFieldsSplit dq l v (
+    "HKey" ∷ l ↦s[etcdserverpb.RangeRequest :: "Key"]{dq} v.(RangeRequest.Key') ∗
+    "HRangeEnd" ∷ l ↦s[etcdserverpb.RangeRequest :: "RangeEnd"]{dq} v.(RangeRequest.RangeEnd') ∗
+    "HLimit" ∷ l ↦s[etcdserverpb.RangeRequest :: "Limit"]{dq} v.(RangeRequest.Limit') ∗
+    "HRevision" ∷ l ↦s[etcdserverpb.RangeRequest :: "Revision"]{dq} v.(RangeRequest.Revision') ∗
+    "HSortOrder" ∷ l ↦s[etcdserverpb.RangeRequest :: "SortOrder"]{dq} v.(RangeRequest.SortOrder') ∗
+    "HSortTarget" ∷ l ↦s[etcdserverpb.RangeRequest :: "SortTarget"]{dq} v.(RangeRequest.SortTarget') ∗
+    "HSerializable" ∷ l ↦s[etcdserverpb.RangeRequest :: "Serializable"]{dq} v.(RangeRequest.Serializable') ∗
+    "HKeysOnly" ∷ l ↦s[etcdserverpb.RangeRequest :: "KeysOnly"]{dq} v.(RangeRequest.KeysOnly') ∗
+    "HCountOnly" ∷ l ↦s[etcdserverpb.RangeRequest :: "CountOnly"]{dq} v.(RangeRequest.CountOnly') ∗
+    "HMinModRevision" ∷ l ↦s[etcdserverpb.RangeRequest :: "MinModRevision"]{dq} v.(RangeRequest.MinModRevision') ∗
+    "HMaxModRevision" ∷ l ↦s[etcdserverpb.RangeRequest :: "MaxModRevision"]{dq} v.(RangeRequest.MaxModRevision') ∗
+    "HMinCreateRevision" ∷ l ↦s[etcdserverpb.RangeRequest :: "MinCreateRevision"]{dq} v.(RangeRequest.MinCreateRevision') ∗
+    "HMaxCreateRevision" ∷ l ↦s[etcdserverpb.RangeRequest :: "MaxCreateRevision"]{dq} v.(RangeRequest.MaxCreateRevision') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.RangeRequest :: "XXX_NoUnkeyedLiteral"]{dq} v.(RangeRequest.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.RangeRequest :: "XXX_unrecognized"]{dq} v.(RangeRequest.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.RangeRequest :: "XXX_sizecache"]{dq} v.(RangeRequest.XXX_sizecache')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (RangeRequest.Key' v)) etcdserverpb.RangeRequest "Key"%go.
+  simpl_one_flatten_struct (# (RangeRequest.RangeEnd' v)) etcdserverpb.RangeRequest "RangeEnd"%go.
+  simpl_one_flatten_struct (# (RangeRequest.Limit' v)) etcdserverpb.RangeRequest "Limit"%go.
+  simpl_one_flatten_struct (# (RangeRequest.Revision' v)) etcdserverpb.RangeRequest "Revision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.SortOrder' v)) etcdserverpb.RangeRequest "SortOrder"%go.
+  simpl_one_flatten_struct (# (RangeRequest.SortTarget' v)) etcdserverpb.RangeRequest "SortTarget"%go.
+  simpl_one_flatten_struct (# (RangeRequest.Serializable' v)) etcdserverpb.RangeRequest "Serializable"%go.
+  simpl_one_flatten_struct (# (RangeRequest.KeysOnly' v)) etcdserverpb.RangeRequest "KeysOnly"%go.
+  simpl_one_flatten_struct (# (RangeRequest.CountOnly' v)) etcdserverpb.RangeRequest "CountOnly"%go.
+  simpl_one_flatten_struct (# (RangeRequest.MinModRevision' v)) etcdserverpb.RangeRequest "MinModRevision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.MaxModRevision' v)) etcdserverpb.RangeRequest "MaxModRevision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.MinCreateRevision' v)) etcdserverpb.RangeRequest "MinCreateRevision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.MaxCreateRevision' v)) etcdserverpb.RangeRequest "MaxCreateRevision"%go.
+  simpl_one_flatten_struct (# (RangeRequest.XXX_NoUnkeyedLiteral' v)) etcdserverpb.RangeRequest "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (RangeRequest.XXX_unrecognized' v)) etcdserverpb.RangeRequest "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
 (* type etcdserverpb.RangeResponse *)
 Module RangeResponse.
 Section def.
@@ -242,6 +439,131 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.PutRequest *)
+Module PutRequest.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Key' : slice.t;
+  Value' : slice.t;
+  Lease' : w64;
+  PrevKv' : bool;
+  IgnoreValue' : bool;
+  IgnoreLease' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
+End def.
+End PutRequest.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_PutRequest : Settable PutRequest.t :=
+  settable! PutRequest.mk < PutRequest.Key'; PutRequest.Value'; PutRequest.Lease'; PutRequest.PrevKv'; PutRequest.IgnoreValue'; PutRequest.IgnoreLease'; PutRequest.XXX_NoUnkeyedLiteral'; PutRequest.XXX_unrecognized'; PutRequest.XXX_sizecache' >.
+Global Instance into_val_PutRequest : IntoVal PutRequest.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.PutRequest [
+    "Key" ::= #(PutRequest.Key' v);
+    "Value" ::= #(PutRequest.Value' v);
+    "Lease" ::= #(PutRequest.Lease' v);
+    "PrevKv" ::= #(PutRequest.PrevKv' v);
+    "IgnoreValue" ::= #(PutRequest.IgnoreValue' v);
+    "IgnoreLease" ::= #(PutRequest.IgnoreLease' v);
+    "XXX_NoUnkeyedLiteral" ::= #(PutRequest.XXX_NoUnkeyedLiteral' v);
+    "XXX_unrecognized" ::= #(PutRequest.XXX_unrecognized' v);
+    "XXX_sizecache" ::= #(PutRequest.XXX_sizecache' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_PutRequest : IntoValTyped PutRequest.t etcdserverpb.PutRequest :=
+{|
+  default_val := PutRequest.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_PutRequest_Key : IntoValStructField "Key" etcdserverpb.PutRequest PutRequest.Key'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_PutRequest_Value : IntoValStructField "Value" etcdserverpb.PutRequest PutRequest.Value'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_PutRequest_Lease : IntoValStructField "Lease" etcdserverpb.PutRequest PutRequest.Lease'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_PutRequest_PrevKv : IntoValStructField "PrevKv" etcdserverpb.PutRequest PutRequest.PrevKv'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_PutRequest_IgnoreValue : IntoValStructField "IgnoreValue" etcdserverpb.PutRequest PutRequest.IgnoreValue'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_PutRequest_IgnoreLease : IntoValStructField "IgnoreLease" etcdserverpb.PutRequest PutRequest.IgnoreLease'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_PutRequest_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.PutRequest PutRequest.XXX_NoUnkeyedLiteral'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_PutRequest_XXX_unrecognized : IntoValStructField "XXX_unrecognized" etcdserverpb.PutRequest PutRequest.XXX_unrecognized'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_PutRequest_XXX_sizecache : IntoValStructField "XXX_sizecache" etcdserverpb.PutRequest PutRequest.XXX_sizecache'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_PutRequest Key' Value' Lease' PrevKv' IgnoreValue' IgnoreLease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make #etcdserverpb.PutRequest (alist_val [
+      "Key" ::= #Key';
+      "Value" ::= #Value';
+      "Lease" ::= #Lease';
+      "PrevKv" ::= #PrevKv';
+      "IgnoreValue" ::= #IgnoreValue';
+      "IgnoreLease" ::= #IgnoreLease';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%struct
+    #(PutRequest.mk Key' Value' Lease' PrevKv' IgnoreValue' IgnoreLease' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance PutRequest_struct_fields_split dq l (v : PutRequest.t) :
+  StructFieldsSplit dq l v (
+    "HKey" ∷ l ↦s[etcdserverpb.PutRequest :: "Key"]{dq} v.(PutRequest.Key') ∗
+    "HValue" ∷ l ↦s[etcdserverpb.PutRequest :: "Value"]{dq} v.(PutRequest.Value') ∗
+    "HLease" ∷ l ↦s[etcdserverpb.PutRequest :: "Lease"]{dq} v.(PutRequest.Lease') ∗
+    "HPrevKv" ∷ l ↦s[etcdserverpb.PutRequest :: "PrevKv"]{dq} v.(PutRequest.PrevKv') ∗
+    "HIgnoreValue" ∷ l ↦s[etcdserverpb.PutRequest :: "IgnoreValue"]{dq} v.(PutRequest.IgnoreValue') ∗
+    "HIgnoreLease" ∷ l ↦s[etcdserverpb.PutRequest :: "IgnoreLease"]{dq} v.(PutRequest.IgnoreLease') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.PutRequest :: "XXX_NoUnkeyedLiteral"]{dq} v.(PutRequest.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.PutRequest :: "XXX_unrecognized"]{dq} v.(PutRequest.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.PutRequest :: "XXX_sizecache"]{dq} v.(PutRequest.XXX_sizecache')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (PutRequest.Key' v)) etcdserverpb.PutRequest "Key"%go.
+  simpl_one_flatten_struct (# (PutRequest.Value' v)) etcdserverpb.PutRequest "Value"%go.
+  simpl_one_flatten_struct (# (PutRequest.Lease' v)) etcdserverpb.PutRequest "Lease"%go.
+  simpl_one_flatten_struct (# (PutRequest.PrevKv' v)) etcdserverpb.PutRequest "PrevKv"%go.
+  simpl_one_flatten_struct (# (PutRequest.IgnoreValue' v)) etcdserverpb.PutRequest "IgnoreValue"%go.
+  simpl_one_flatten_struct (# (PutRequest.IgnoreLease' v)) etcdserverpb.PutRequest "IgnoreLease"%go.
+  simpl_one_flatten_struct (# (PutRequest.XXX_NoUnkeyedLiteral' v)) etcdserverpb.PutRequest "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (PutRequest.XXX_unrecognized' v)) etcdserverpb.PutRequest "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
 (* type etcdserverpb.PutResponse *)
 Module PutResponse.
 Section def.
@@ -329,6 +651,107 @@ Proof.
   simpl_one_flatten_struct (# (PutResponse.PrevKv' v)) etcdserverpb.PutResponse "PrevKv"%go.
   simpl_one_flatten_struct (# (PutResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.PutResponse "XXX_NoUnkeyedLiteral"%go.
   simpl_one_flatten_struct (# (PutResponse.XXX_unrecognized' v)) etcdserverpb.PutResponse "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type etcdserverpb.DeleteRangeRequest *)
+Module DeleteRangeRequest.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Key' : slice.t;
+  RangeEnd' : slice.t;
+  PrevKv' : bool;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
+End def.
+End DeleteRangeRequest.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_DeleteRangeRequest : Settable DeleteRangeRequest.t :=
+  settable! DeleteRangeRequest.mk < DeleteRangeRequest.Key'; DeleteRangeRequest.RangeEnd'; DeleteRangeRequest.PrevKv'; DeleteRangeRequest.XXX_NoUnkeyedLiteral'; DeleteRangeRequest.XXX_unrecognized'; DeleteRangeRequest.XXX_sizecache' >.
+Global Instance into_val_DeleteRangeRequest : IntoVal DeleteRangeRequest.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.DeleteRangeRequest [
+    "Key" ::= #(DeleteRangeRequest.Key' v);
+    "RangeEnd" ::= #(DeleteRangeRequest.RangeEnd' v);
+    "PrevKv" ::= #(DeleteRangeRequest.PrevKv' v);
+    "XXX_NoUnkeyedLiteral" ::= #(DeleteRangeRequest.XXX_NoUnkeyedLiteral' v);
+    "XXX_unrecognized" ::= #(DeleteRangeRequest.XXX_unrecognized' v);
+    "XXX_sizecache" ::= #(DeleteRangeRequest.XXX_sizecache' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_DeleteRangeRequest : IntoValTyped DeleteRangeRequest.t etcdserverpb.DeleteRangeRequest :=
+{|
+  default_val := DeleteRangeRequest.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_DeleteRangeRequest_Key : IntoValStructField "Key" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.Key'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_DeleteRangeRequest_RangeEnd : IntoValStructField "RangeEnd" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.RangeEnd'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_DeleteRangeRequest_PrevKv : IntoValStructField "PrevKv" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.PrevKv'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_DeleteRangeRequest_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.XXX_NoUnkeyedLiteral'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_DeleteRangeRequest_XXX_unrecognized : IntoValStructField "XXX_unrecognized" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.XXX_unrecognized'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_DeleteRangeRequest_XXX_sizecache : IntoValStructField "XXX_sizecache" etcdserverpb.DeleteRangeRequest DeleteRangeRequest.XXX_sizecache'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_DeleteRangeRequest Key' RangeEnd' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make #etcdserverpb.DeleteRangeRequest (alist_val [
+      "Key" ::= #Key';
+      "RangeEnd" ::= #RangeEnd';
+      "PrevKv" ::= #PrevKv';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%struct
+    #(DeleteRangeRequest.mk Key' RangeEnd' PrevKv' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance DeleteRangeRequest_struct_fields_split dq l (v : DeleteRangeRequest.t) :
+  StructFieldsSplit dq l v (
+    "HKey" ∷ l ↦s[etcdserverpb.DeleteRangeRequest :: "Key"]{dq} v.(DeleteRangeRequest.Key') ∗
+    "HRangeEnd" ∷ l ↦s[etcdserverpb.DeleteRangeRequest :: "RangeEnd"]{dq} v.(DeleteRangeRequest.RangeEnd') ∗
+    "HPrevKv" ∷ l ↦s[etcdserverpb.DeleteRangeRequest :: "PrevKv"]{dq} v.(DeleteRangeRequest.PrevKv') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.DeleteRangeRequest :: "XXX_NoUnkeyedLiteral"]{dq} v.(DeleteRangeRequest.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.DeleteRangeRequest :: "XXX_unrecognized"]{dq} v.(DeleteRangeRequest.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.DeleteRangeRequest :: "XXX_sizecache"]{dq} v.(DeleteRangeRequest.XXX_sizecache')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.Key' v)) etcdserverpb.DeleteRangeRequest "Key"%go.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.RangeEnd' v)) etcdserverpb.DeleteRangeRequest "RangeEnd"%go.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.PrevKv' v)) etcdserverpb.DeleteRangeRequest "PrevKv"%go.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.XXX_NoUnkeyedLiteral' v)) etcdserverpb.DeleteRangeRequest "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (DeleteRangeRequest.XXX_unrecognized' v)) etcdserverpb.DeleteRangeRequest "XXX_unrecognized"%go.
 
   solve_field_ref_f.
 Qed.
@@ -430,6 +853,343 @@ Proof.
   simpl_one_flatten_struct (# (DeleteRangeResponse.PrevKvs' v)) etcdserverpb.DeleteRangeResponse "PrevKvs"%go.
   simpl_one_flatten_struct (# (DeleteRangeResponse.XXX_NoUnkeyedLiteral' v)) etcdserverpb.DeleteRangeResponse "XXX_NoUnkeyedLiteral"%go.
   simpl_one_flatten_struct (# (DeleteRangeResponse.XXX_unrecognized' v)) etcdserverpb.DeleteRangeResponse "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type etcdserverpb.isRequestOp_Request *)
+Module isRequestOp_Request.
+Section def.
+Context `{ffi_syntax}.
+Definition t := interface.t.
+End def.
+End isRequestOp_Request.
+
+(* type etcdserverpb.RequestOp *)
+Module RequestOp.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Request' : isRequestOp_Request.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
+End def.
+End RequestOp.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_RequestOp : Settable RequestOp.t :=
+  settable! RequestOp.mk < RequestOp.Request'; RequestOp.XXX_NoUnkeyedLiteral'; RequestOp.XXX_unrecognized'; RequestOp.XXX_sizecache' >.
+Global Instance into_val_RequestOp : IntoVal RequestOp.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.RequestOp [
+    "Request" ::= #(RequestOp.Request' v);
+    "XXX_NoUnkeyedLiteral" ::= #(RequestOp.XXX_NoUnkeyedLiteral' v);
+    "XXX_unrecognized" ::= #(RequestOp.XXX_unrecognized' v);
+    "XXX_sizecache" ::= #(RequestOp.XXX_sizecache' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_RequestOp : IntoValTyped RequestOp.t etcdserverpb.RequestOp :=
+{|
+  default_val := RequestOp.mk (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_RequestOp_Request : IntoValStructField "Request" etcdserverpb.RequestOp RequestOp.Request'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RequestOp_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.RequestOp RequestOp.XXX_NoUnkeyedLiteral'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RequestOp_XXX_unrecognized : IntoValStructField "XXX_unrecognized" etcdserverpb.RequestOp RequestOp.XXX_unrecognized'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_RequestOp_XXX_sizecache : IntoValStructField "XXX_sizecache" etcdserverpb.RequestOp RequestOp.XXX_sizecache'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_RequestOp Request' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make #etcdserverpb.RequestOp (alist_val [
+      "Request" ::= #Request';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%struct
+    #(RequestOp.mk Request' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance RequestOp_struct_fields_split dq l (v : RequestOp.t) :
+  StructFieldsSplit dq l v (
+    "HRequest" ∷ l ↦s[etcdserverpb.RequestOp :: "Request"]{dq} v.(RequestOp.Request') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.RequestOp :: "XXX_NoUnkeyedLiteral"]{dq} v.(RequestOp.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.RequestOp :: "XXX_unrecognized"]{dq} v.(RequestOp.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.RequestOp :: "XXX_sizecache"]{dq} v.(RequestOp.XXX_sizecache')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (RequestOp.Request' v)) etcdserverpb.RequestOp "Request"%go.
+  simpl_one_flatten_struct (# (RequestOp.XXX_NoUnkeyedLiteral' v)) etcdserverpb.RequestOp "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (RequestOp.XXX_unrecognized' v)) etcdserverpb.RequestOp "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type etcdserverpb.RequestOp_RequestRange *)
+Module RequestOp_RequestRange.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  RequestRange' : loc;
+}.
+End def.
+End RequestOp_RequestRange.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_RequestOp_RequestRange : Settable RequestOp_RequestRange.t :=
+  settable! RequestOp_RequestRange.mk < RequestOp_RequestRange.RequestRange' >.
+Global Instance into_val_RequestOp_RequestRange : IntoVal RequestOp_RequestRange.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.RequestOp_RequestRange [
+    "RequestRange" ::= #(RequestOp_RequestRange.RequestRange' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_RequestOp_RequestRange : IntoValTyped RequestOp_RequestRange.t etcdserverpb.RequestOp_RequestRange :=
+{|
+  default_val := RequestOp_RequestRange.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_RequestOp_RequestRange_RequestRange : IntoValStructField "RequestRange" etcdserverpb.RequestOp_RequestRange RequestOp_RequestRange.RequestRange'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_RequestOp_RequestRange RequestRange':
+  PureWp True
+    (struct.make #etcdserverpb.RequestOp_RequestRange (alist_val [
+      "RequestRange" ::= #RequestRange'
+    ]))%struct
+    #(RequestOp_RequestRange.mk RequestRange').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance RequestOp_RequestRange_struct_fields_split dq l (v : RequestOp_RequestRange.t) :
+  StructFieldsSplit dq l v (
+    "HRequestRange" ∷ l ↦s[etcdserverpb.RequestOp_RequestRange :: "RequestRange"]{dq} v.(RequestOp_RequestRange.RequestRange')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type etcdserverpb.RequestOp_RequestPut *)
+Module RequestOp_RequestPut.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  RequestPut' : loc;
+}.
+End def.
+End RequestOp_RequestPut.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_RequestOp_RequestPut : Settable RequestOp_RequestPut.t :=
+  settable! RequestOp_RequestPut.mk < RequestOp_RequestPut.RequestPut' >.
+Global Instance into_val_RequestOp_RequestPut : IntoVal RequestOp_RequestPut.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.RequestOp_RequestPut [
+    "RequestPut" ::= #(RequestOp_RequestPut.RequestPut' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_RequestOp_RequestPut : IntoValTyped RequestOp_RequestPut.t etcdserverpb.RequestOp_RequestPut :=
+{|
+  default_val := RequestOp_RequestPut.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_RequestOp_RequestPut_RequestPut : IntoValStructField "RequestPut" etcdserverpb.RequestOp_RequestPut RequestOp_RequestPut.RequestPut'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_RequestOp_RequestPut RequestPut':
+  PureWp True
+    (struct.make #etcdserverpb.RequestOp_RequestPut (alist_val [
+      "RequestPut" ::= #RequestPut'
+    ]))%struct
+    #(RequestOp_RequestPut.mk RequestPut').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance RequestOp_RequestPut_struct_fields_split dq l (v : RequestOp_RequestPut.t) :
+  StructFieldsSplit dq l v (
+    "HRequestPut" ∷ l ↦s[etcdserverpb.RequestOp_RequestPut :: "RequestPut"]{dq} v.(RequestOp_RequestPut.RequestPut')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type etcdserverpb.RequestOp_RequestDeleteRange *)
+Module RequestOp_RequestDeleteRange.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  RequestDeleteRange' : loc;
+}.
+End def.
+End RequestOp_RequestDeleteRange.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_RequestOp_RequestDeleteRange : Settable RequestOp_RequestDeleteRange.t :=
+  settable! RequestOp_RequestDeleteRange.mk < RequestOp_RequestDeleteRange.RequestDeleteRange' >.
+Global Instance into_val_RequestOp_RequestDeleteRange : IntoVal RequestOp_RequestDeleteRange.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.RequestOp_RequestDeleteRange [
+    "RequestDeleteRange" ::= #(RequestOp_RequestDeleteRange.RequestDeleteRange' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_RequestOp_RequestDeleteRange : IntoValTyped RequestOp_RequestDeleteRange.t etcdserverpb.RequestOp_RequestDeleteRange :=
+{|
+  default_val := RequestOp_RequestDeleteRange.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_RequestOp_RequestDeleteRange_RequestDeleteRange : IntoValStructField "RequestDeleteRange" etcdserverpb.RequestOp_RequestDeleteRange RequestOp_RequestDeleteRange.RequestDeleteRange'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_RequestOp_RequestDeleteRange RequestDeleteRange':
+  PureWp True
+    (struct.make #etcdserverpb.RequestOp_RequestDeleteRange (alist_val [
+      "RequestDeleteRange" ::= #RequestDeleteRange'
+    ]))%struct
+    #(RequestOp_RequestDeleteRange.mk RequestDeleteRange').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance RequestOp_RequestDeleteRange_struct_fields_split dq l (v : RequestOp_RequestDeleteRange.t) :
+  StructFieldsSplit dq l v (
+    "HRequestDeleteRange" ∷ l ↦s[etcdserverpb.RequestOp_RequestDeleteRange :: "RequestDeleteRange"]{dq} v.(RequestOp_RequestDeleteRange.RequestDeleteRange')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type etcdserverpb.RequestOp_RequestTxn *)
+Module RequestOp_RequestTxn.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  RequestTxn' : loc;
+}.
+End def.
+End RequestOp_RequestTxn.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_RequestOp_RequestTxn : Settable RequestOp_RequestTxn.t :=
+  settable! RequestOp_RequestTxn.mk < RequestOp_RequestTxn.RequestTxn' >.
+Global Instance into_val_RequestOp_RequestTxn : IntoVal RequestOp_RequestTxn.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.RequestOp_RequestTxn [
+    "RequestTxn" ::= #(RequestOp_RequestTxn.RequestTxn' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_RequestOp_RequestTxn : IntoValTyped RequestOp_RequestTxn.t etcdserverpb.RequestOp_RequestTxn :=
+{|
+  default_val := RequestOp_RequestTxn.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_RequestOp_RequestTxn_RequestTxn : IntoValStructField "RequestTxn" etcdserverpb.RequestOp_RequestTxn RequestOp_RequestTxn.RequestTxn'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_RequestOp_RequestTxn RequestTxn':
+  PureWp True
+    (struct.make #etcdserverpb.RequestOp_RequestTxn (alist_val [
+      "RequestTxn" ::= #RequestTxn'
+    ]))%struct
+    #(RequestOp_RequestTxn.mk RequestTxn').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance RequestOp_RequestTxn_struct_fields_split dq l (v : RequestOp_RequestTxn.t) :
+  StructFieldsSplit dq l v (
+    "HRequestTxn" ∷ l ↦s[etcdserverpb.RequestOp_RequestTxn :: "RequestTxn"]{dq} v.(RequestOp_RequestTxn.RequestTxn')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
   solve_field_ref_f.
 Qed.
@@ -1203,6 +1963,107 @@ Qed.
 
 End instances.
 
+(* type etcdserverpb.TxnRequest *)
+Module TxnRequest.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Compare' : slice.t;
+  Success' : slice.t;
+  Failure' : slice.t;
+  XXX_NoUnkeyedLiteral' : unit;
+  XXX_unrecognized' : slice.t;
+  XXX_sizecache' : w32;
+}.
+End def.
+End TxnRequest.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_TxnRequest : Settable TxnRequest.t :=
+  settable! TxnRequest.mk < TxnRequest.Compare'; TxnRequest.Success'; TxnRequest.Failure'; TxnRequest.XXX_NoUnkeyedLiteral'; TxnRequest.XXX_unrecognized'; TxnRequest.XXX_sizecache' >.
+Global Instance into_val_TxnRequest : IntoVal TxnRequest.t :=
+  {| to_val_def v :=
+    struct.val_aux etcdserverpb.TxnRequest [
+    "Compare" ::= #(TxnRequest.Compare' v);
+    "Success" ::= #(TxnRequest.Success' v);
+    "Failure" ::= #(TxnRequest.Failure' v);
+    "XXX_NoUnkeyedLiteral" ::= #(TxnRequest.XXX_NoUnkeyedLiteral' v);
+    "XXX_unrecognized" ::= #(TxnRequest.XXX_unrecognized' v);
+    "XXX_sizecache" ::= #(TxnRequest.XXX_sizecache' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_TxnRequest : IntoValTyped TxnRequest.t etcdserverpb.TxnRequest :=
+{|
+  default_val := TxnRequest.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_TxnRequest_Compare : IntoValStructField "Compare" etcdserverpb.TxnRequest TxnRequest.Compare'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_TxnRequest_Success : IntoValStructField "Success" etcdserverpb.TxnRequest TxnRequest.Success'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_TxnRequest_Failure : IntoValStructField "Failure" etcdserverpb.TxnRequest TxnRequest.Failure'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_TxnRequest_XXX_NoUnkeyedLiteral : IntoValStructField "XXX_NoUnkeyedLiteral" etcdserverpb.TxnRequest TxnRequest.XXX_NoUnkeyedLiteral'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_TxnRequest_XXX_unrecognized : IntoValStructField "XXX_unrecognized" etcdserverpb.TxnRequest TxnRequest.XXX_unrecognized'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_TxnRequest_XXX_sizecache : IntoValStructField "XXX_sizecache" etcdserverpb.TxnRequest TxnRequest.XXX_sizecache'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_TxnRequest Compare' Success' Failure' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache':
+  PureWp True
+    (struct.make #etcdserverpb.TxnRequest (alist_val [
+      "Compare" ::= #Compare';
+      "Success" ::= #Success';
+      "Failure" ::= #Failure';
+      "XXX_NoUnkeyedLiteral" ::= #XXX_NoUnkeyedLiteral';
+      "XXX_unrecognized" ::= #XXX_unrecognized';
+      "XXX_sizecache" ::= #XXX_sizecache'
+    ]))%struct
+    #(TxnRequest.mk Compare' Success' Failure' XXX_NoUnkeyedLiteral' XXX_unrecognized' XXX_sizecache').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance TxnRequest_struct_fields_split dq l (v : TxnRequest.t) :
+  StructFieldsSplit dq l v (
+    "HCompare" ∷ l ↦s[etcdserverpb.TxnRequest :: "Compare"]{dq} v.(TxnRequest.Compare') ∗
+    "HSuccess" ∷ l ↦s[etcdserverpb.TxnRequest :: "Success"]{dq} v.(TxnRequest.Success') ∗
+    "HFailure" ∷ l ↦s[etcdserverpb.TxnRequest :: "Failure"]{dq} v.(TxnRequest.Failure') ∗
+    "HXXX_NoUnkeyedLiteral" ∷ l ↦s[etcdserverpb.TxnRequest :: "XXX_NoUnkeyedLiteral"]{dq} v.(TxnRequest.XXX_NoUnkeyedLiteral') ∗
+    "HXXX_unrecognized" ∷ l ↦s[etcdserverpb.TxnRequest :: "XXX_unrecognized"]{dq} v.(TxnRequest.XXX_unrecognized') ∗
+    "HXXX_sizecache" ∷ l ↦s[etcdserverpb.TxnRequest :: "XXX_sizecache"]{dq} v.(TxnRequest.XXX_sizecache')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (TxnRequest.Compare' v)) etcdserverpb.TxnRequest "Compare"%go.
+  simpl_one_flatten_struct (# (TxnRequest.Success' v)) etcdserverpb.TxnRequest "Success"%go.
+  simpl_one_flatten_struct (# (TxnRequest.Failure' v)) etcdserverpb.TxnRequest "Failure"%go.
+  simpl_one_flatten_struct (# (TxnRequest.XXX_NoUnkeyedLiteral' v)) etcdserverpb.TxnRequest "XXX_NoUnkeyedLiteral"%go.
+  simpl_one_flatten_struct (# (TxnRequest.XXX_unrecognized' v)) etcdserverpb.TxnRequest "XXX_unrecognized"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
 (* type etcdserverpb.TxnResponse *)
 Module TxnResponse.
 Section def.
@@ -1308,6 +2169,14 @@ Section names.
 
 Class GlobalAddrs :=
 {
+  RangeRequest_SortOrder_name : loc;
+  RangeRequest_SortOrder_value : loc;
+  RangeRequest_SortTarget_name : loc;
+  RangeRequest_SortTarget_value : loc;
+  Compare_CompareResult_name : loc;
+  Compare_CompareResult_value : loc;
+  Compare_CompareTarget_name : loc;
+  Compare_CompareTarget_value : loc;
 }.
 
 Context `{!GlobalAddrs}.
@@ -1315,6 +2184,14 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 
 Definition var_addrs : list (go_string * loc) := [
+    ("RangeRequest_SortOrder_name"%go, RangeRequest_SortOrder_name);
+    ("RangeRequest_SortOrder_value"%go, RangeRequest_SortOrder_value);
+    ("RangeRequest_SortTarget_name"%go, RangeRequest_SortTarget_name);
+    ("RangeRequest_SortTarget_value"%go, RangeRequest_SortTarget_value);
+    ("Compare_CompareResult_name"%go, Compare_CompareResult_name);
+    ("Compare_CompareResult_value"%go, Compare_CompareResult_value);
+    ("Compare_CompareTarget_name"%go, Compare_CompareTarget_name);
+    ("Compare_CompareTarget_value"%go, Compare_CompareTarget_value)
   ].
 
 Global Instance is_pkg_defined_instance : IsPkgDefined etcdserverpb :=
@@ -1323,7 +2200,286 @@ Global Instance is_pkg_defined_instance : IsPkgDefined etcdserverpb :=
 |}.
 
 Definition own_allocated : iProp Σ :=
-True.
+  "HRangeRequest_SortOrder_name" ∷ RangeRequest_SortOrder_name ↦ (default_val loc) ∗
+  "HRangeRequest_SortOrder_value" ∷ RangeRequest_SortOrder_value ↦ (default_val loc) ∗
+  "HRangeRequest_SortTarget_name" ∷ RangeRequest_SortTarget_name ↦ (default_val loc) ∗
+  "HRangeRequest_SortTarget_value" ∷ RangeRequest_SortTarget_value ↦ (default_val loc) ∗
+  "HCompare_CompareResult_name" ∷ Compare_CompareResult_name ↦ (default_val loc) ∗
+  "HCompare_CompareResult_value" ∷ Compare_CompareResult_value ↦ (default_val loc) ∗
+  "HCompare_CompareTarget_name" ∷ Compare_CompareTarget_name ↦ (default_val loc) ∗
+  "HCompare_CompareTarget_value" ∷ Compare_CompareTarget_value ↦ (default_val loc).
+
+Global Instance wp_globals_get_RangeRequest_SortOrder_name : 
+  WpGlobalsGet etcdserverpb "RangeRequest_SortOrder_name" RangeRequest_SortOrder_name (is_pkg_defined etcdserverpb).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_RangeRequest_SortOrder_value : 
+  WpGlobalsGet etcdserverpb "RangeRequest_SortOrder_value" RangeRequest_SortOrder_value (is_pkg_defined etcdserverpb).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_RangeRequest_SortTarget_name : 
+  WpGlobalsGet etcdserverpb "RangeRequest_SortTarget_name" RangeRequest_SortTarget_name (is_pkg_defined etcdserverpb).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_RangeRequest_SortTarget_value : 
+  WpGlobalsGet etcdserverpb "RangeRequest_SortTarget_value" RangeRequest_SortTarget_value (is_pkg_defined etcdserverpb).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_Compare_CompareResult_name : 
+  WpGlobalsGet etcdserverpb "Compare_CompareResult_name" Compare_CompareResult_name (is_pkg_defined etcdserverpb).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_Compare_CompareResult_value : 
+  WpGlobalsGet etcdserverpb "Compare_CompareResult_value" Compare_CompareResult_value (is_pkg_defined etcdserverpb).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_Compare_CompareTarget_name : 
+  WpGlobalsGet etcdserverpb "Compare_CompareTarget_name" Compare_CompareTarget_name (is_pkg_defined etcdserverpb).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_Compare_CompareTarget_value : 
+  WpGlobalsGet etcdserverpb "Compare_CompareTarget_value" Compare_CompareTarget_value (is_pkg_defined etcdserverpb).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_method_call_RangeRequest_SortOrder_EnumDescriptor :
+  WpMethodCall etcdserverpb "RangeRequest_SortOrder" "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RangeRequest_SortOrder'ptr_EnumDescriptor :
+  WpMethodCall etcdserverpb "RangeRequest_SortOrder'ptr" "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RangeRequest_SortTarget_EnumDescriptor :
+  WpMethodCall etcdserverpb "RangeRequest_SortTarget" "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RangeRequest_SortTarget'ptr_EnumDescriptor :
+  WpMethodCall etcdserverpb "RangeRequest_SortTarget'ptr" "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_CompareResult_EnumDescriptor :
+  WpMethodCall etcdserverpb "Compare_CompareResult" "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_CompareResult'ptr_EnumDescriptor :
+  WpMethodCall etcdserverpb "Compare_CompareResult'ptr" "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_CompareTarget_EnumDescriptor :
+  WpMethodCall etcdserverpb "Compare_CompareTarget" "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_CompareTarget'ptr_EnumDescriptor :
+  WpMethodCall etcdserverpb "Compare_CompareTarget'ptr" "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestRange'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "RequestOp_RequestRange'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestRange'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "RequestOp_RequestRange'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestRange'ptr_Size :
+  WpMethodCall etcdserverpb "RequestOp_RequestRange'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestRange'ptr_isRequestOp_Request :
+  WpMethodCall etcdserverpb "RequestOp_RequestRange'ptr" "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestPut'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "RequestOp_RequestPut'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestPut'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "RequestOp_RequestPut'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestPut'ptr_Size :
+  WpMethodCall etcdserverpb "RequestOp_RequestPut'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestPut'ptr_isRequestOp_Request :
+  WpMethodCall etcdserverpb "RequestOp_RequestPut'ptr" "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestDeleteRange'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "RequestOp_RequestDeleteRange'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestDeleteRange'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "RequestOp_RequestDeleteRange'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestDeleteRange'ptr_Size :
+  WpMethodCall etcdserverpb "RequestOp_RequestDeleteRange'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestDeleteRange'ptr_isRequestOp_Request :
+  WpMethodCall etcdserverpb "RequestOp_RequestDeleteRange'ptr" "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestTxn'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "RequestOp_RequestTxn'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestTxn'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "RequestOp_RequestTxn'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestTxn'ptr_Size :
+  WpMethodCall etcdserverpb "RequestOp_RequestTxn'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_RequestOp_RequestTxn'ptr_isRequestOp_Request :
+  WpMethodCall etcdserverpb "RequestOp_RequestTxn'ptr" "isRequestOp_Request" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseRange'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseRange'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseRange'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseRange'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseRange'ptr_Size :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseRange'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseRange'ptr_isResponseOp_Response :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseRange'ptr" "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponsePut'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "ResponseOp_ResponsePut'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponsePut'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "ResponseOp_ResponsePut'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponsePut'ptr_Size :
+  WpMethodCall etcdserverpb "ResponseOp_ResponsePut'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponsePut'ptr_isResponseOp_Response :
+  WpMethodCall etcdserverpb "ResponseOp_ResponsePut'ptr" "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseDeleteRange'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseDeleteRange'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseDeleteRange'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseDeleteRange'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseDeleteRange'ptr_Size :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseDeleteRange'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseDeleteRange'ptr_isResponseOp_Response :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseDeleteRange'ptr" "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseTxn'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseTxn'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseTxn'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseTxn'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseTxn'ptr_Size :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseTxn'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_ResponseOp_ResponseTxn'ptr_isResponseOp_Response :
+  WpMethodCall etcdserverpb "ResponseOp_ResponseTxn'ptr" "isResponseOp_Response" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Version'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "Compare_Version'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Version'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "Compare_Version'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Version'ptr_Size :
+  WpMethodCall etcdserverpb "Compare_Version'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Version'ptr_isCompare_TargetUnion :
+  WpMethodCall etcdserverpb "Compare_Version'ptr" "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_CreateRevision'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "Compare_CreateRevision'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_CreateRevision'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "Compare_CreateRevision'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_CreateRevision'ptr_Size :
+  WpMethodCall etcdserverpb "Compare_CreateRevision'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_CreateRevision'ptr_isCompare_TargetUnion :
+  WpMethodCall etcdserverpb "Compare_CreateRevision'ptr" "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_ModRevision'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "Compare_ModRevision'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_ModRevision'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "Compare_ModRevision'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_ModRevision'ptr_Size :
+  WpMethodCall etcdserverpb "Compare_ModRevision'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_ModRevision'ptr_isCompare_TargetUnion :
+  WpMethodCall etcdserverpb "Compare_ModRevision'ptr" "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Value'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "Compare_Value'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Value'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "Compare_Value'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Value'ptr_Size :
+  WpMethodCall etcdserverpb "Compare_Value'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Value'ptr_isCompare_TargetUnion :
+  WpMethodCall etcdserverpb "Compare_Value'ptr" "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Lease'ptr_MarshalTo :
+  WpMethodCall etcdserverpb "Compare_Lease'ptr" "MarshalTo" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Lease'ptr_MarshalToSizedBuffer :
+  WpMethodCall etcdserverpb "Compare_Lease'ptr" "MarshalToSizedBuffer" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Lease'ptr_Size :
+  WpMethodCall etcdserverpb "Compare_Lease'ptr" "Size" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Compare_Lease'ptr_isCompare_TargetUnion :
+  WpMethodCall etcdserverpb "Compare_Lease'ptr" "isCompare_TargetUnion" _ (is_pkg_defined etcdserverpb) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End etcdserverpb.

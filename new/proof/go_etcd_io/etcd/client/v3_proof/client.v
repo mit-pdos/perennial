@@ -4,6 +4,7 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
 Context `{!clientv3G Σ}.
+Context `{!etcdserverpb.GlobalAddrs}.
 Implicit Types (γ : clientv3_names).
 
 (* #[global]

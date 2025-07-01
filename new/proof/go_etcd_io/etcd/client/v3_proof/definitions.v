@@ -3,6 +3,8 @@ From New.proof.go_etcd_io.etcd.client.v3_proof Require Import base.
 Section init.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
+(* FIXME: don't want to list out ALL dependent package global addrs *)
+Context `{!etcdserverpb.GlobalAddrs}.
 
 (* FIXME: move these *)
 #[global]

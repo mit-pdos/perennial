@@ -16,6 +16,7 @@ Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
+Context `{!etcdserverpb.GlobalAddrs}.
 Context `{!concurrency.GlobalAddrs}.
 Context `{!goGlobalsGS Σ}.
 Context `{concurrencyG Σ}.

@@ -269,22 +269,290 @@ Definition t := interface.t.
 End def.
 End Lease.
 
+(* type clientv3.opType *)
+Module opType.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End opType.
+
 (* type clientv3.Op *)
 Module Op.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Record t := mk {
+  t' : opType.t;
+  key' : slice.t;
+  end' : slice.t;
+  limit' : w64;
+  sort' : loc;
+  serializable' : bool;
+  keysOnly' : bool;
+  countOnly' : bool;
+  minModRev' : w64;
+  maxModRev' : w64;
+  minCreateRev' : w64;
+  maxCreateRev' : w64;
+  rev' : w64;
+  prevKV' : bool;
+  fragment' : bool;
+  ignoreValue' : bool;
+  ignoreLease' : bool;
+  progressNotify' : bool;
+  createdNotify' : bool;
+  filterPut' : bool;
+  filterDelete' : bool;
+  val' : slice.t;
+  leaseID' : LeaseID.t;
+  cmps' : slice.t;
+  thenOps' : slice.t;
+  elseOps' : slice.t;
+  isOptsWithFromKey' : bool;
+  isOptsWithPrefix' : bool;
+}.
 End def.
 End Op.
 
-Global Instance bounded_size_Op : BoundedTypeSize clientv3.Op.
-Admitted.
+Section instances.
+Context `{ffi_syntax}.
 
-Global Instance into_val_Op `{ffi_syntax} : IntoVal Op.t.
-Admitted.
+Global Instance settable_Op : Settable Op.t :=
+  settable! Op.mk < Op.t'; Op.key'; Op.end'; Op.limit'; Op.sort'; Op.serializable'; Op.keysOnly'; Op.countOnly'; Op.minModRev'; Op.maxModRev'; Op.minCreateRev'; Op.maxCreateRev'; Op.rev'; Op.prevKV'; Op.fragment'; Op.ignoreValue'; Op.ignoreLease'; Op.progressNotify'; Op.createdNotify'; Op.filterPut'; Op.filterDelete'; Op.val'; Op.leaseID'; Op.cmps'; Op.thenOps'; Op.elseOps'; Op.isOptsWithFromKey'; Op.isOptsWithPrefix' >.
+Global Instance into_val_Op : IntoVal Op.t :=
+  {| to_val_def v :=
+    struct.val_aux clientv3.Op [
+    "t" ::= #(Op.t' v);
+    "key" ::= #(Op.key' v);
+    "end" ::= #(Op.end' v);
+    "limit" ::= #(Op.limit' v);
+    "sort" ::= #(Op.sort' v);
+    "serializable" ::= #(Op.serializable' v);
+    "keysOnly" ::= #(Op.keysOnly' v);
+    "countOnly" ::= #(Op.countOnly' v);
+    "minModRev" ::= #(Op.minModRev' v);
+    "maxModRev" ::= #(Op.maxModRev' v);
+    "minCreateRev" ::= #(Op.minCreateRev' v);
+    "maxCreateRev" ::= #(Op.maxCreateRev' v);
+    "rev" ::= #(Op.rev' v);
+    "prevKV" ::= #(Op.prevKV' v);
+    "fragment" ::= #(Op.fragment' v);
+    "ignoreValue" ::= #(Op.ignoreValue' v);
+    "ignoreLease" ::= #(Op.ignoreLease' v);
+    "progressNotify" ::= #(Op.progressNotify' v);
+    "createdNotify" ::= #(Op.createdNotify' v);
+    "filterPut" ::= #(Op.filterPut' v);
+    "filterDelete" ::= #(Op.filterDelete' v);
+    "val" ::= #(Op.val' v);
+    "leaseID" ::= #(Op.leaseID' v);
+    "cmps" ::= #(Op.cmps' v);
+    "thenOps" ::= #(Op.thenOps' v);
+    "elseOps" ::= #(Op.elseOps' v);
+    "isOptsWithFromKey" ::= #(Op.isOptsWithFromKey' v);
+    "isOptsWithPrefix" ::= #(Op.isOptsWithPrefix' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Op `{ffi_syntax} : IntoValTyped Op.t clientv3.Op.
-Admitted.
+Global Program Instance into_val_typed_Op : IntoValTyped Op.t clientv3.Op :=
+{|
+  default_val := Op.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Op_t : IntoValStructField "t" clientv3.Op Op.t'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_key : IntoValStructField "key" clientv3.Op Op.key'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_end : IntoValStructField "end" clientv3.Op Op.end'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_limit : IntoValStructField "limit" clientv3.Op Op.limit'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_sort : IntoValStructField "sort" clientv3.Op Op.sort'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_serializable : IntoValStructField "serializable" clientv3.Op Op.serializable'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_keysOnly : IntoValStructField "keysOnly" clientv3.Op Op.keysOnly'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_countOnly : IntoValStructField "countOnly" clientv3.Op Op.countOnly'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_minModRev : IntoValStructField "minModRev" clientv3.Op Op.minModRev'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_maxModRev : IntoValStructField "maxModRev" clientv3.Op Op.maxModRev'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_minCreateRev : IntoValStructField "minCreateRev" clientv3.Op Op.minCreateRev'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_maxCreateRev : IntoValStructField "maxCreateRev" clientv3.Op Op.maxCreateRev'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_rev : IntoValStructField "rev" clientv3.Op Op.rev'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_prevKV : IntoValStructField "prevKV" clientv3.Op Op.prevKV'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_fragment : IntoValStructField "fragment" clientv3.Op Op.fragment'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_ignoreValue : IntoValStructField "ignoreValue" clientv3.Op Op.ignoreValue'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_ignoreLease : IntoValStructField "ignoreLease" clientv3.Op Op.ignoreLease'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_progressNotify : IntoValStructField "progressNotify" clientv3.Op Op.progressNotify'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_createdNotify : IntoValStructField "createdNotify" clientv3.Op Op.createdNotify'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_filterPut : IntoValStructField "filterPut" clientv3.Op Op.filterPut'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_filterDelete : IntoValStructField "filterDelete" clientv3.Op Op.filterDelete'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_val : IntoValStructField "val" clientv3.Op Op.val'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_leaseID : IntoValStructField "leaseID" clientv3.Op Op.leaseID'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_cmps : IntoValStructField "cmps" clientv3.Op Op.cmps'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_thenOps : IntoValStructField "thenOps" clientv3.Op Op.thenOps'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_elseOps : IntoValStructField "elseOps" clientv3.Op Op.elseOps'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_isOptsWithFromKey : IntoValStructField "isOptsWithFromKey" clientv3.Op Op.isOptsWithFromKey'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Op_isOptsWithPrefix : IntoValStructField "isOptsWithPrefix" clientv3.Op Op.isOptsWithPrefix'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Op t' key' end' limit' sort' serializable' keysOnly' countOnly' minModRev' maxModRev' minCreateRev' maxCreateRev' rev' prevKV' fragment' ignoreValue' ignoreLease' progressNotify' createdNotify' filterPut' filterDelete' val' leaseID' cmps' thenOps' elseOps' isOptsWithFromKey' isOptsWithPrefix':
+  PureWp True
+    (struct.make #clientv3.Op (alist_val [
+      "t" ::= #t';
+      "key" ::= #key';
+      "end" ::= #end';
+      "limit" ::= #limit';
+      "sort" ::= #sort';
+      "serializable" ::= #serializable';
+      "keysOnly" ::= #keysOnly';
+      "countOnly" ::= #countOnly';
+      "minModRev" ::= #minModRev';
+      "maxModRev" ::= #maxModRev';
+      "minCreateRev" ::= #minCreateRev';
+      "maxCreateRev" ::= #maxCreateRev';
+      "rev" ::= #rev';
+      "prevKV" ::= #prevKV';
+      "fragment" ::= #fragment';
+      "ignoreValue" ::= #ignoreValue';
+      "ignoreLease" ::= #ignoreLease';
+      "progressNotify" ::= #progressNotify';
+      "createdNotify" ::= #createdNotify';
+      "filterPut" ::= #filterPut';
+      "filterDelete" ::= #filterDelete';
+      "val" ::= #val';
+      "leaseID" ::= #leaseID';
+      "cmps" ::= #cmps';
+      "thenOps" ::= #thenOps';
+      "elseOps" ::= #elseOps';
+      "isOptsWithFromKey" ::= #isOptsWithFromKey';
+      "isOptsWithPrefix" ::= #isOptsWithPrefix'
+    ]))%struct
+    #(Op.mk t' key' end' limit' sort' serializable' keysOnly' countOnly' minModRev' maxModRev' minCreateRev' maxCreateRev' rev' prevKV' fragment' ignoreValue' ignoreLease' progressNotify' createdNotify' filterPut' filterDelete' val' leaseID' cmps' thenOps' elseOps' isOptsWithFromKey' isOptsWithPrefix').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Op_struct_fields_split dq l (v : Op.t) :
+  StructFieldsSplit dq l v (
+    "Ht" ∷ l ↦s[clientv3.Op :: "t"]{dq} v.(Op.t') ∗
+    "Hkey" ∷ l ↦s[clientv3.Op :: "key"]{dq} v.(Op.key') ∗
+    "Hend" ∷ l ↦s[clientv3.Op :: "end"]{dq} v.(Op.end') ∗
+    "Hlimit" ∷ l ↦s[clientv3.Op :: "limit"]{dq} v.(Op.limit') ∗
+    "Hsort" ∷ l ↦s[clientv3.Op :: "sort"]{dq} v.(Op.sort') ∗
+    "Hserializable" ∷ l ↦s[clientv3.Op :: "serializable"]{dq} v.(Op.serializable') ∗
+    "HkeysOnly" ∷ l ↦s[clientv3.Op :: "keysOnly"]{dq} v.(Op.keysOnly') ∗
+    "HcountOnly" ∷ l ↦s[clientv3.Op :: "countOnly"]{dq} v.(Op.countOnly') ∗
+    "HminModRev" ∷ l ↦s[clientv3.Op :: "minModRev"]{dq} v.(Op.minModRev') ∗
+    "HmaxModRev" ∷ l ↦s[clientv3.Op :: "maxModRev"]{dq} v.(Op.maxModRev') ∗
+    "HminCreateRev" ∷ l ↦s[clientv3.Op :: "minCreateRev"]{dq} v.(Op.minCreateRev') ∗
+    "HmaxCreateRev" ∷ l ↦s[clientv3.Op :: "maxCreateRev"]{dq} v.(Op.maxCreateRev') ∗
+    "Hrev" ∷ l ↦s[clientv3.Op :: "rev"]{dq} v.(Op.rev') ∗
+    "HprevKV" ∷ l ↦s[clientv3.Op :: "prevKV"]{dq} v.(Op.prevKV') ∗
+    "Hfragment" ∷ l ↦s[clientv3.Op :: "fragment"]{dq} v.(Op.fragment') ∗
+    "HignoreValue" ∷ l ↦s[clientv3.Op :: "ignoreValue"]{dq} v.(Op.ignoreValue') ∗
+    "HignoreLease" ∷ l ↦s[clientv3.Op :: "ignoreLease"]{dq} v.(Op.ignoreLease') ∗
+    "HprogressNotify" ∷ l ↦s[clientv3.Op :: "progressNotify"]{dq} v.(Op.progressNotify') ∗
+    "HcreatedNotify" ∷ l ↦s[clientv3.Op :: "createdNotify"]{dq} v.(Op.createdNotify') ∗
+    "HfilterPut" ∷ l ↦s[clientv3.Op :: "filterPut"]{dq} v.(Op.filterPut') ∗
+    "HfilterDelete" ∷ l ↦s[clientv3.Op :: "filterDelete"]{dq} v.(Op.filterDelete') ∗
+    "Hval" ∷ l ↦s[clientv3.Op :: "val"]{dq} v.(Op.val') ∗
+    "HleaseID" ∷ l ↦s[clientv3.Op :: "leaseID"]{dq} v.(Op.leaseID') ∗
+    "Hcmps" ∷ l ↦s[clientv3.Op :: "cmps"]{dq} v.(Op.cmps') ∗
+    "HthenOps" ∷ l ↦s[clientv3.Op :: "thenOps"]{dq} v.(Op.thenOps') ∗
+    "HelseOps" ∷ l ↦s[clientv3.Op :: "elseOps"]{dq} v.(Op.elseOps') ∗
+    "HisOptsWithFromKey" ∷ l ↦s[clientv3.Op :: "isOptsWithFromKey"]{dq} v.(Op.isOptsWithFromKey') ∗
+    "HisOptsWithPrefix" ∷ l ↦s[clientv3.Op :: "isOptsWithPrefix"]{dq} v.(Op.isOptsWithPrefix')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Op.t' v)) clientv3.Op "t"%go.
+  simpl_one_flatten_struct (# (Op.key' v)) clientv3.Op "key"%go.
+  simpl_one_flatten_struct (# (Op.end' v)) clientv3.Op "end"%go.
+  simpl_one_flatten_struct (# (Op.limit' v)) clientv3.Op "limit"%go.
+  simpl_one_flatten_struct (# (Op.sort' v)) clientv3.Op "sort"%go.
+  simpl_one_flatten_struct (# (Op.serializable' v)) clientv3.Op "serializable"%go.
+  simpl_one_flatten_struct (# (Op.keysOnly' v)) clientv3.Op "keysOnly"%go.
+  simpl_one_flatten_struct (# (Op.countOnly' v)) clientv3.Op "countOnly"%go.
+  simpl_one_flatten_struct (# (Op.minModRev' v)) clientv3.Op "minModRev"%go.
+  simpl_one_flatten_struct (# (Op.maxModRev' v)) clientv3.Op "maxModRev"%go.
+  simpl_one_flatten_struct (# (Op.minCreateRev' v)) clientv3.Op "minCreateRev"%go.
+  simpl_one_flatten_struct (# (Op.maxCreateRev' v)) clientv3.Op "maxCreateRev"%go.
+  simpl_one_flatten_struct (# (Op.rev' v)) clientv3.Op "rev"%go.
+  simpl_one_flatten_struct (# (Op.prevKV' v)) clientv3.Op "prevKV"%go.
+  simpl_one_flatten_struct (# (Op.fragment' v)) clientv3.Op "fragment"%go.
+  simpl_one_flatten_struct (# (Op.ignoreValue' v)) clientv3.Op "ignoreValue"%go.
+  simpl_one_flatten_struct (# (Op.ignoreLease' v)) clientv3.Op "ignoreLease"%go.
+  simpl_one_flatten_struct (# (Op.progressNotify' v)) clientv3.Op "progressNotify"%go.
+  simpl_one_flatten_struct (# (Op.createdNotify' v)) clientv3.Op "createdNotify"%go.
+  simpl_one_flatten_struct (# (Op.filterPut' v)) clientv3.Op "filterPut"%go.
+  simpl_one_flatten_struct (# (Op.filterDelete' v)) clientv3.Op "filterDelete"%go.
+  simpl_one_flatten_struct (# (Op.val' v)) clientv3.Op "val"%go.
+  simpl_one_flatten_struct (# (Op.leaseID' v)) clientv3.Op "leaseID"%go.
+  simpl_one_flatten_struct (# (Op.cmps' v)) clientv3.Op "cmps"%go.
+  simpl_one_flatten_struct (# (Op.thenOps' v)) clientv3.Op "thenOps"%go.
+  simpl_one_flatten_struct (# (Op.elseOps' v)) clientv3.Op "elseOps"%go.
+  simpl_one_flatten_struct (# (Op.isOptsWithFromKey' v)) clientv3.Op "isOptsWithFromKey"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
 
 (* type clientv3.OpOption *)
 Module OpOption.
@@ -293,6 +561,168 @@ Context `{ffi_syntax}.
 Definition t := func.t.
 End def.
 End OpOption.
+
+(* type clientv3.LeaseOp *)
+Module LeaseOp.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  id' : LeaseID.t;
+  attachedKeys' : bool;
+}.
+End def.
+End LeaseOp.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_LeaseOp : Settable LeaseOp.t :=
+  settable! LeaseOp.mk < LeaseOp.id'; LeaseOp.attachedKeys' >.
+Global Instance into_val_LeaseOp : IntoVal LeaseOp.t :=
+  {| to_val_def v :=
+    struct.val_aux clientv3.LeaseOp [
+    "id" ::= #(LeaseOp.id' v);
+    "attachedKeys" ::= #(LeaseOp.attachedKeys' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_LeaseOp : IntoValTyped LeaseOp.t clientv3.LeaseOp :=
+{|
+  default_val := LeaseOp.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_LeaseOp_id : IntoValStructField "id" clientv3.LeaseOp LeaseOp.id'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_LeaseOp_attachedKeys : IntoValStructField "attachedKeys" clientv3.LeaseOp LeaseOp.attachedKeys'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_LeaseOp id' attachedKeys':
+  PureWp True
+    (struct.make #clientv3.LeaseOp (alist_val [
+      "id" ::= #id';
+      "attachedKeys" ::= #attachedKeys'
+    ]))%struct
+    #(LeaseOp.mk id' attachedKeys').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance LeaseOp_struct_fields_split dq l (v : LeaseOp.t) :
+  StructFieldsSplit dq l v (
+    "Hid" ∷ l ↦s[clientv3.LeaseOp :: "id"]{dq} v.(LeaseOp.id') ∗
+    "HattachedKeys" ∷ l ↦s[clientv3.LeaseOp :: "attachedKeys"]{dq} v.(LeaseOp.attachedKeys')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (LeaseOp.id' v)) clientv3.LeaseOp "id"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type clientv3.LeaseOption *)
+Module LeaseOption.
+Section def.
+Context `{ffi_syntax}.
+Definition t := func.t.
+End def.
+End LeaseOption.
+
+(* type clientv3.SortTarget *)
+Module SortTarget.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End SortTarget.
+
+(* type clientv3.SortOrder *)
+Module SortOrder.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w64.
+End def.
+End SortOrder.
+
+(* type clientv3.SortOption *)
+Module SortOption.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  Target' : SortTarget.t;
+  Order' : SortOrder.t;
+}.
+End def.
+End SortOption.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_SortOption : Settable SortOption.t :=
+  settable! SortOption.mk < SortOption.Target'; SortOption.Order' >.
+Global Instance into_val_SortOption : IntoVal SortOption.t :=
+  {| to_val_def v :=
+    struct.val_aux clientv3.SortOption [
+    "Target" ::= #(SortOption.Target' v);
+    "Order" ::= #(SortOption.Order' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_SortOption : IntoValTyped SortOption.t clientv3.SortOption :=
+{|
+  default_val := SortOption.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_SortOption_Target : IntoValStructField "Target" clientv3.SortOption SortOption.Target'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_SortOption_Order : IntoValStructField "Order" clientv3.SortOption SortOption.Order'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_SortOption Target' Order':
+  PureWp True
+    (struct.make #clientv3.SortOption (alist_val [
+      "Target" ::= #Target';
+      "Order" ::= #Order'
+    ]))%struct
+    #(SortOption.mk Target' Order').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance SortOption_struct_fields_split dq l (v : SortOption.t) :
+  StructFieldsSplit dq l v (
+    "HTarget" ∷ l ↦s[clientv3.SortOption :: "Target"]{dq} v.(SortOption.Target') ∗
+    "HOrder" ∷ l ↦s[clientv3.SortOption :: "Order"]{dq} v.(SortOption.Order')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (SortOption.Target' v)) clientv3.SortOption "Target"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
 
 (* type clientv3.Txn *)
 Module Txn.
@@ -455,6 +885,342 @@ Global Instance is_pkg_defined_instance : IsPkgDefined clientv3 :=
 
 Definition own_allocated : iProp Σ :=
 True.
+
+Global Instance wp_func_call_WithZapLogger :
+  WpFuncCall clientv3 "WithZapLogger" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_OpGet :
+  WpFuncCall clientv3 "OpGet" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_OpDelete :
+  WpFuncCall clientv3 "OpDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_OpPut :
+  WpFuncCall clientv3 "OpPut" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_OpTxn :
+  WpFuncCall clientv3 "OpTxn" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithLease :
+  WpFuncCall clientv3 "WithLease" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithLimit :
+  WpFuncCall clientv3 "WithLimit" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithRev :
+  WpFuncCall clientv3 "WithRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithSort :
+  WpFuncCall clientv3 "WithSort" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithPrefix :
+  WpFuncCall clientv3 "WithPrefix" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithRange :
+  WpFuncCall clientv3 "WithRange" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithFromKey :
+  WpFuncCall clientv3 "WithFromKey" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithSerializable :
+  WpFuncCall clientv3 "WithSerializable" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithKeysOnly :
+  WpFuncCall clientv3 "WithKeysOnly" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithCountOnly :
+  WpFuncCall clientv3 "WithCountOnly" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithMinModRev :
+  WpFuncCall clientv3 "WithMinModRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithMaxModRev :
+  WpFuncCall clientv3 "WithMaxModRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithMinCreateRev :
+  WpFuncCall clientv3 "WithMinCreateRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithMaxCreateRev :
+  WpFuncCall clientv3 "WithMaxCreateRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithFirstCreate :
+  WpFuncCall clientv3 "WithFirstCreate" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithLastCreate :
+  WpFuncCall clientv3 "WithLastCreate" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithFirstKey :
+  WpFuncCall clientv3 "WithFirstKey" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithLastKey :
+  WpFuncCall clientv3 "WithLastKey" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithFirstRev :
+  WpFuncCall clientv3 "WithFirstRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithLastRev :
+  WpFuncCall clientv3 "WithLastRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithProgressNotify :
+  WpFuncCall clientv3 "WithProgressNotify" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithCreatedNotify :
+  WpFuncCall clientv3 "WithCreatedNotify" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithFilterPut :
+  WpFuncCall clientv3 "WithFilterPut" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithFilterDelete :
+  WpFuncCall clientv3 "WithFilterDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithPrevKV :
+  WpFuncCall clientv3 "WithPrevKV" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithFragment :
+  WpFuncCall clientv3 "WithFragment" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithIgnoreValue :
+  WpFuncCall clientv3 "WithIgnoreValue" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithIgnoreLease :
+  WpFuncCall clientv3 "WithIgnoreLease" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_WithAttachedKeys :
+  WpFuncCall clientv3 "WithAttachedKeys" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsCountOnly :
+  WpMethodCall clientv3 "Op" "IsCountOnly" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsDelete :
+  WpMethodCall clientv3 "Op" "IsDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsGet :
+  WpMethodCall clientv3 "Op" "IsGet" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsKeysOnly :
+  WpMethodCall clientv3 "Op" "IsKeysOnly" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsOptsWithFromKey :
+  WpMethodCall clientv3 "Op" "IsOptsWithFromKey" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsOptsWithPrefix :
+  WpMethodCall clientv3 "Op" "IsOptsWithPrefix" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsPut :
+  WpMethodCall clientv3 "Op" "IsPut" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsSerializable :
+  WpMethodCall clientv3 "Op" "IsSerializable" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsSortOptionValid :
+  WpMethodCall clientv3 "Op" "IsSortOptionValid" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_IsTxn :
+  WpMethodCall clientv3 "Op" "IsTxn" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_KeyBytes :
+  WpMethodCall clientv3 "Op" "KeyBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_MaxCreateRev :
+  WpMethodCall clientv3 "Op" "MaxCreateRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_MaxModRev :
+  WpMethodCall clientv3 "Op" "MaxModRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_MinCreateRev :
+  WpMethodCall clientv3 "Op" "MinCreateRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_MinModRev :
+  WpMethodCall clientv3 "Op" "MinModRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_RangeBytes :
+  WpMethodCall clientv3 "Op" "RangeBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_Rev :
+  WpMethodCall clientv3 "Op" "Rev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_Txn :
+  WpMethodCall clientv3 "Op" "Txn" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_ValueBytes :
+  WpMethodCall clientv3 "Op" "ValueBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_isWrite :
+  WpMethodCall clientv3 "Op" "isWrite" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_toRangeRequest :
+  WpMethodCall clientv3 "Op" "toRangeRequest" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_toRequestOp :
+  WpMethodCall clientv3 "Op" "toRequestOp" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op_toTxnRequest :
+  WpMethodCall clientv3 "Op" "toTxnRequest" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsCountOnly :
+  WpMethodCall clientv3 "Op'ptr" "IsCountOnly" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsDelete :
+  WpMethodCall clientv3 "Op'ptr" "IsDelete" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsGet :
+  WpMethodCall clientv3 "Op'ptr" "IsGet" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsKeysOnly :
+  WpMethodCall clientv3 "Op'ptr" "IsKeysOnly" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsOptsWithFromKey :
+  WpMethodCall clientv3 "Op'ptr" "IsOptsWithFromKey" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsOptsWithPrefix :
+  WpMethodCall clientv3 "Op'ptr" "IsOptsWithPrefix" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsPut :
+  WpMethodCall clientv3 "Op'ptr" "IsPut" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsSerializable :
+  WpMethodCall clientv3 "Op'ptr" "IsSerializable" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsSortOptionValid :
+  WpMethodCall clientv3 "Op'ptr" "IsSortOptionValid" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_IsTxn :
+  WpMethodCall clientv3 "Op'ptr" "IsTxn" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_KeyBytes :
+  WpMethodCall clientv3 "Op'ptr" "KeyBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_MaxCreateRev :
+  WpMethodCall clientv3 "Op'ptr" "MaxCreateRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_MaxModRev :
+  WpMethodCall clientv3 "Op'ptr" "MaxModRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_MinCreateRev :
+  WpMethodCall clientv3 "Op'ptr" "MinCreateRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_MinModRev :
+  WpMethodCall clientv3 "Op'ptr" "MinModRev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_RangeBytes :
+  WpMethodCall clientv3 "Op'ptr" "RangeBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_Rev :
+  WpMethodCall clientv3 "Op'ptr" "Rev" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_Txn :
+  WpMethodCall clientv3 "Op'ptr" "Txn" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_ValueBytes :
+  WpMethodCall clientv3 "Op'ptr" "ValueBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_WithKeyBytes :
+  WpMethodCall clientv3 "Op'ptr" "WithKeyBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_WithRangeBytes :
+  WpMethodCall clientv3 "Op'ptr" "WithRangeBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_WithValueBytes :
+  WpMethodCall clientv3 "Op'ptr" "WithValueBytes" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_applyOpts :
+  WpMethodCall clientv3 "Op'ptr" "applyOpts" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_isWrite :
+  WpMethodCall clientv3 "Op'ptr" "isWrite" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_toRangeRequest :
+  WpMethodCall clientv3 "Op'ptr" "toRangeRequest" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_toRequestOp :
+  WpMethodCall clientv3 "Op'ptr" "toRequestOp" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_Op'ptr_toTxnRequest :
+  WpMethodCall clientv3 "Op'ptr" "toTxnRequest" _ (is_pkg_defined clientv3) :=
+  ltac:(apply wp_method_call'; reflexivity).
 
 End names.
 End clientv3.

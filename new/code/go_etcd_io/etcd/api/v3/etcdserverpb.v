@@ -28,13 +28,39 @@ Axiom AlarmType_name'init : val.
 
 Axiom AlarmType_value'init : val.
 
-Axiom RangeRequest_SortOrder_name'init : val.
+Definition RangeRequest_SortOrder : go_type := int32T.
 
-Axiom RangeRequest_SortOrder_value'init : val.
+Definition RangeRequest_NONE : expr := #(W32 0).
 
-Axiom RangeRequest_SortTarget_name'init : val.
+Definition RangeRequest_ASCEND : expr := #(W32 1).
 
-Axiom RangeRequest_SortTarget_value'init : val.
+Definition RangeRequest_DESCEND : expr := #(W32 2).
+
+(* go: rpc.pb.go:88:31 *)
+Definition RangeRequest_SortOrder__EnumDescriptor : val :=
+  rec: "RangeRequest_SortOrder__EnumDescriptor" <> <> :=
+    exception_do (return: (![#sliceT] (globals.get #etcdserverpb.etcdserverpb #"fileDescriptor_77a6da22d6a3feb1"%go), (let: "$sl0" := #(W64 1) in
+     let: "$sl1" := #(W64 0) in
+     slice.literal #intT ["$sl0"; "$sl1"]))).
+
+Definition RangeRequest_SortTarget : go_type := int32T.
+
+Definition RangeRequest_KEY : expr := #(W32 0).
+
+Definition RangeRequest_VERSION : expr := #(W32 1).
+
+Definition RangeRequest_CREATE : expr := #(W32 2).
+
+Definition RangeRequest_MOD : expr := #(W32 3).
+
+Definition RangeRequest_VALUE : expr := #(W32 4).
+
+(* go: rpc.pb.go:122:32 *)
+Definition RangeRequest_SortTarget__EnumDescriptor : val :=
+  rec: "RangeRequest_SortTarget__EnumDescriptor" <> <> :=
+    exception_do (return: (![#sliceT] (globals.get #etcdserverpb.etcdserverpb #"fileDescriptor_77a6da22d6a3feb1"%go), (let: "$sl0" := #(W64 1) in
+     let: "$sl1" := #(W64 1) in
+     slice.literal #intT ["$sl0"; "$sl1"]))).
 
 Definition Compare_CompareResult : go_type := int32T.
 
@@ -46,9 +72,12 @@ Definition Compare_LESS : expr := #(W32 2).
 
 Definition Compare_NOT_EQUAL : expr := #(W32 3).
 
-Axiom Compare_CompareResult_name'init : val.
-
-Axiom Compare_CompareResult_value'init : val.
+(* go: rpc.pb.go:153:30 *)
+Definition Compare_CompareResult__EnumDescriptor : val :=
+  rec: "Compare_CompareResult__EnumDescriptor" <> <> :=
+    exception_do (return: (![#sliceT] (globals.get #etcdserverpb.etcdserverpb #"fileDescriptor_77a6da22d6a3feb1"%go), (let: "$sl0" := #(W64 9) in
+     let: "$sl1" := #(W64 0) in
+     slice.literal #intT ["$sl0"; "$sl1"]))).
 
 Definition Compare_CompareTarget : go_type := int32T.
 
@@ -62,9 +91,12 @@ Definition Compare_VALUE : expr := #(W32 3).
 
 Definition Compare_LEASE : expr := #(W32 4).
 
-Axiom Compare_CompareTarget_name'init : val.
-
-Axiom Compare_CompareTarget_value'init : val.
+(* go: rpc.pb.go:187:30 *)
+Definition Compare_CompareTarget__EnumDescriptor : val :=
+  rec: "Compare_CompareTarget__EnumDescriptor" <> <> :=
+    exception_do (return: (![#sliceT] (globals.get #etcdserverpb.etcdserverpb #"fileDescriptor_77a6da22d6a3feb1"%go), (let: "$sl0" := #(W64 9) in
+     let: "$sl1" := #(W64 1) in
+     slice.literal #intT ["$sl0"; "$sl1"]))).
 
 Axiom WatchCreateRequest_FilterType_name'init : val.
 
@@ -89,11 +121,44 @@ Definition ResponseHeader : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition RangeRequest : go_type := structT [
+  "Key" :: sliceT;
+  "RangeEnd" :: sliceT;
+  "Limit" :: int64T;
+  "Revision" :: int64T;
+  "SortOrder" :: RangeRequest_SortOrder;
+  "SortTarget" :: RangeRequest_SortTarget;
+  "Serializable" :: boolT;
+  "KeysOnly" :: boolT;
+  "CountOnly" :: boolT;
+  "MinModRevision" :: int64T;
+  "MaxModRevision" :: int64T;
+  "MinCreateRevision" :: int64T;
+  "MaxCreateRevision" :: int64T;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
 Definition RangeResponse : go_type := structT [
   "Header" :: ptrT;
   "Kvs" :: sliceT;
   "More" :: boolT;
   "Count" :: int64T;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
+Definition PutRequest : go_type := structT [
+  "Key" :: sliceT;
+  "Value" :: sliceT;
+  "Lease" :: int64T;
+  "PrevKv" :: boolT;
+  "IgnoreValue" :: boolT;
+  "IgnoreLease" :: boolT;
   "XXX_NoUnkeyedLiteral" :: structT [
   ];
   "XXX_unrecognized" :: sliceT;
@@ -109,6 +174,16 @@ Definition PutResponse : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition DeleteRangeRequest : go_type := structT [
+  "Key" :: sliceT;
+  "RangeEnd" :: sliceT;
+  "PrevKv" :: boolT;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
 Definition DeleteRangeResponse : go_type := structT [
   "Header" :: ptrT;
   "Deleted" :: int64T;
@@ -118,6 +193,52 @@ Definition DeleteRangeResponse : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
+
+Definition isRequestOp_Request : go_type := interfaceT.
+
+Definition RequestOp : go_type := structT [
+  "Request" :: isRequestOp_Request;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
+Definition RequestOp_RequestRange : go_type := structT [
+  "RequestRange" :: ptrT
+].
+
+Definition RequestOp_RequestPut : go_type := structT [
+  "RequestPut" :: ptrT
+].
+
+Definition RequestOp_RequestDeleteRange : go_type := structT [
+  "RequestDeleteRange" :: ptrT
+].
+
+Definition RequestOp_RequestTxn : go_type := structT [
+  "RequestTxn" :: ptrT
+].
+
+(* go: rpc.pb.go:955:32 *)
+Definition RequestOp_RequestRange__isRequestOp_Request : val :=
+  rec: "RequestOp_RequestRange__isRequestOp_Request" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:956:30 *)
+Definition RequestOp_RequestPut__isRequestOp_Request : val :=
+  rec: "RequestOp_RequestPut__isRequestOp_Request" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:957:38 *)
+Definition RequestOp_RequestDeleteRange__isRequestOp_Request : val :=
+  rec: "RequestOp_RequestDeleteRange__isRequestOp_Request" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:958:30 *)
+Definition RequestOp_RequestTxn__isRequestOp_Request : val :=
+  rec: "RequestOp_RequestTxn__isRequestOp_Request" <> <> :=
+    exception_do (do:  #()).
 
 Definition isResponseOp_Response : go_type := interfaceT.
 
@@ -144,6 +265,26 @@ Definition ResponseOp_ResponseDeleteRange : go_type := structT [
 Definition ResponseOp_ResponseTxn : go_type := structT [
   "ResponseTxn" :: ptrT
 ].
+
+(* go: rpc.pb.go:1071:34 *)
+Definition ResponseOp_ResponseRange__isResponseOp_Response : val :=
+  rec: "ResponseOp_ResponseRange__isResponseOp_Response" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:1072:32 *)
+Definition ResponseOp_ResponsePut__isResponseOp_Response : val :=
+  rec: "ResponseOp_ResponsePut__isResponseOp_Response" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:1073:40 *)
+Definition ResponseOp_ResponseDeleteRange__isResponseOp_Response : val :=
+  rec: "ResponseOp_ResponseDeleteRange__isResponseOp_Response" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:1074:32 *)
+Definition ResponseOp_ResponseTxn__isResponseOp_Response : val :=
+  rec: "ResponseOp_ResponseTxn__isResponseOp_Response" <> <> :=
+    exception_do (do:  #()).
 
 Definition isCompare_TargetUnion : go_type := interfaceT.
 
@@ -179,6 +320,41 @@ Definition Compare_Lease : go_type := structT [
   "Lease" :: int64T
 ].
 
+(* go: rpc.pb.go:1198:25 *)
+Definition Compare_Version__isCompare_TargetUnion : val :=
+  rec: "Compare_Version__isCompare_TargetUnion" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:1199:32 *)
+Definition Compare_CreateRevision__isCompare_TargetUnion : val :=
+  rec: "Compare_CreateRevision__isCompare_TargetUnion" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:1200:29 *)
+Definition Compare_ModRevision__isCompare_TargetUnion : val :=
+  rec: "Compare_ModRevision__isCompare_TargetUnion" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:1201:23 *)
+Definition Compare_Value__isCompare_TargetUnion : val :=
+  rec: "Compare_Value__isCompare_TargetUnion" <> <> :=
+    exception_do (do:  #()).
+
+(* go: rpc.pb.go:1202:23 *)
+Definition Compare_Lease__isCompare_TargetUnion : val :=
+  rec: "Compare_Lease__isCompare_TargetUnion" <> <> :=
+    exception_do (do:  #()).
+
+Definition TxnRequest : go_type := structT [
+  "Compare" :: sliceT;
+  "Success" :: sliceT;
+  "Failure" :: sliceT;
+  "XXX_NoUnkeyedLiteral" :: structT [
+  ];
+  "XXX_unrecognized" :: sliceT;
+  "XXX_sizecache" :: int32T
+].
+
 Definition TxnResponse : go_type := structT [
   "Header" :: ptrT;
   "Succeeded" :: boolT;
@@ -203,17 +379,833 @@ Axiom _Maintenance_serviceDesc'init : val.
 
 Axiom _Auth_serviceDesc'init : val.
 
+(* go: rpc.pb.go:8905:34 *)
+Definition RequestOp_RequestRange__MarshalTo : val :=
+  rec: "RequestOp_RequestRange__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"RequestOp_RequestRange'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"RequestOp_RequestRange'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:8910:34 *)
+Definition RequestOp_RequestRange__MarshalToSizedBuffer : val :=
+  rec: "RequestOp_RequestRange__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    (if: (![#ptrT] (struct.field_ref #RequestOp_RequestRange #"RequestRange"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "size" := (mem.alloc (type.zero_val #intT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+      slice.slice #byteT "$s" #(W64 0) (![#intT] "i")) in
+      (method_call #etcdserverpb.etcdserverpb #"RangeRequest'ptr" #"MarshalToSizedBuffer" (![#ptrT] (struct.field_ref #RequestOp_RequestRange #"RequestRange"%go (![#ptrT] "m")))) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("size" <-[#intT] "$r0");;;
+      do:  ("err" <-[#error] "$r1");;;
+      (if: (~ (interface.eq (![#error] "err") #interface.nil))
+      then return: (#(W64 0), ![#error] "err")
+      else do:  #());;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - (![#intT] "size")));;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+      let: "$a1" := (![#intT] "i") in
+      let: "$a2" := (s_to_w64 (![#intT] "size")) in
+      (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+      do:  ("i" <-[#intT] "$r0");;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+      let: "$r0" := #(W8 10) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0")
+    else do:  #());;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:8926:32 *)
+Definition RequestOp_RequestPut__MarshalTo : val :=
+  rec: "RequestOp_RequestPut__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"RequestOp_RequestPut'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"RequestOp_RequestPut'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:8931:32 *)
+Definition RequestOp_RequestPut__MarshalToSizedBuffer : val :=
+  rec: "RequestOp_RequestPut__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    (if: (![#ptrT] (struct.field_ref #RequestOp_RequestPut #"RequestPut"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "size" := (mem.alloc (type.zero_val #intT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+      slice.slice #byteT "$s" #(W64 0) (![#intT] "i")) in
+      (method_call #etcdserverpb.etcdserverpb #"PutRequest'ptr" #"MarshalToSizedBuffer" (![#ptrT] (struct.field_ref #RequestOp_RequestPut #"RequestPut"%go (![#ptrT] "m")))) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("size" <-[#intT] "$r0");;;
+      do:  ("err" <-[#error] "$r1");;;
+      (if: (~ (interface.eq (![#error] "err") #interface.nil))
+      then return: (#(W64 0), ![#error] "err")
+      else do:  #());;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - (![#intT] "size")));;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+      let: "$a1" := (![#intT] "i") in
+      let: "$a2" := (s_to_w64 (![#intT] "size")) in
+      (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+      do:  ("i" <-[#intT] "$r0");;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+      let: "$r0" := #(W8 18) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0")
+    else do:  #());;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:8947:40 *)
+Definition RequestOp_RequestDeleteRange__MarshalTo : val :=
+  rec: "RequestOp_RequestDeleteRange__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"RequestOp_RequestDeleteRange'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"RequestOp_RequestDeleteRange'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:8952:40 *)
+Definition RequestOp_RequestDeleteRange__MarshalToSizedBuffer : val :=
+  rec: "RequestOp_RequestDeleteRange__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    (if: (![#ptrT] (struct.field_ref #RequestOp_RequestDeleteRange #"RequestDeleteRange"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "size" := (mem.alloc (type.zero_val #intT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+      slice.slice #byteT "$s" #(W64 0) (![#intT] "i")) in
+      (method_call #etcdserverpb.etcdserverpb #"DeleteRangeRequest'ptr" #"MarshalToSizedBuffer" (![#ptrT] (struct.field_ref #RequestOp_RequestDeleteRange #"RequestDeleteRange"%go (![#ptrT] "m")))) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("size" <-[#intT] "$r0");;;
+      do:  ("err" <-[#error] "$r1");;;
+      (if: (~ (interface.eq (![#error] "err") #interface.nil))
+      then return: (#(W64 0), ![#error] "err")
+      else do:  #());;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - (![#intT] "size")));;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+      let: "$a1" := (![#intT] "i") in
+      let: "$a2" := (s_to_w64 (![#intT] "size")) in
+      (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+      do:  ("i" <-[#intT] "$r0");;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+      let: "$r0" := #(W8 26) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0")
+    else do:  #());;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:8968:32 *)
+Definition RequestOp_RequestTxn__MarshalTo : val :=
+  rec: "RequestOp_RequestTxn__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"RequestOp_RequestTxn'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"RequestOp_RequestTxn'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:8973:32 *)
+Definition RequestOp_RequestTxn__MarshalToSizedBuffer : val :=
+  rec: "RequestOp_RequestTxn__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    (if: (![#ptrT] (struct.field_ref #RequestOp_RequestTxn #"RequestTxn"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "size" := (mem.alloc (type.zero_val #intT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+      slice.slice #byteT "$s" #(W64 0) (![#intT] "i")) in
+      (method_call #etcdserverpb.etcdserverpb #"TxnRequest'ptr" #"MarshalToSizedBuffer" (![#ptrT] (struct.field_ref #RequestOp_RequestTxn #"RequestTxn"%go (![#ptrT] "m")))) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("size" <-[#intT] "$r0");;;
+      do:  ("err" <-[#error] "$r1");;;
+      (if: (~ (interface.eq (![#error] "err") #interface.nil))
+      then return: (#(W64 0), ![#error] "err")
+      else do:  #());;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - (![#intT] "size")));;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+      let: "$a1" := (![#intT] "i") in
+      let: "$a2" := (s_to_w64 (![#intT] "size")) in
+      (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+      do:  ("i" <-[#intT] "$r0");;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+      let: "$r0" := #(W8 34) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0")
+    else do:  #());;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:9025:36 *)
+Definition ResponseOp_ResponseRange__MarshalTo : val :=
+  rec: "ResponseOp_ResponseRange__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"ResponseOp_ResponseRange'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"ResponseOp_ResponseRange'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:9030:36 *)
+Definition ResponseOp_ResponseRange__MarshalToSizedBuffer : val :=
+  rec: "ResponseOp_ResponseRange__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    (if: (![#ptrT] (struct.field_ref #ResponseOp_ResponseRange #"ResponseRange"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "size" := (mem.alloc (type.zero_val #intT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+      slice.slice #byteT "$s" #(W64 0) (![#intT] "i")) in
+      (method_call #etcdserverpb.etcdserverpb #"RangeResponse'ptr" #"MarshalToSizedBuffer" (![#ptrT] (struct.field_ref #ResponseOp_ResponseRange #"ResponseRange"%go (![#ptrT] "m")))) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("size" <-[#intT] "$r0");;;
+      do:  ("err" <-[#error] "$r1");;;
+      (if: (~ (interface.eq (![#error] "err") #interface.nil))
+      then return: (#(W64 0), ![#error] "err")
+      else do:  #());;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - (![#intT] "size")));;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+      let: "$a1" := (![#intT] "i") in
+      let: "$a2" := (s_to_w64 (![#intT] "size")) in
+      (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+      do:  ("i" <-[#intT] "$r0");;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+      let: "$r0" := #(W8 10) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0")
+    else do:  #());;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:9046:34 *)
+Definition ResponseOp_ResponsePut__MarshalTo : val :=
+  rec: "ResponseOp_ResponsePut__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"ResponseOp_ResponsePut'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"ResponseOp_ResponsePut'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:9051:34 *)
+Definition ResponseOp_ResponsePut__MarshalToSizedBuffer : val :=
+  rec: "ResponseOp_ResponsePut__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    (if: (![#ptrT] (struct.field_ref #ResponseOp_ResponsePut #"ResponsePut"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "size" := (mem.alloc (type.zero_val #intT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+      slice.slice #byteT "$s" #(W64 0) (![#intT] "i")) in
+      (method_call #etcdserverpb.etcdserverpb #"PutResponse'ptr" #"MarshalToSizedBuffer" (![#ptrT] (struct.field_ref #ResponseOp_ResponsePut #"ResponsePut"%go (![#ptrT] "m")))) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("size" <-[#intT] "$r0");;;
+      do:  ("err" <-[#error] "$r1");;;
+      (if: (~ (interface.eq (![#error] "err") #interface.nil))
+      then return: (#(W64 0), ![#error] "err")
+      else do:  #());;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - (![#intT] "size")));;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+      let: "$a1" := (![#intT] "i") in
+      let: "$a2" := (s_to_w64 (![#intT] "size")) in
+      (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+      do:  ("i" <-[#intT] "$r0");;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+      let: "$r0" := #(W8 18) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0")
+    else do:  #());;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:9067:42 *)
+Definition ResponseOp_ResponseDeleteRange__MarshalTo : val :=
+  rec: "ResponseOp_ResponseDeleteRange__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"ResponseOp_ResponseDeleteRange'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"ResponseOp_ResponseDeleteRange'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:9072:42 *)
+Definition ResponseOp_ResponseDeleteRange__MarshalToSizedBuffer : val :=
+  rec: "ResponseOp_ResponseDeleteRange__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    (if: (![#ptrT] (struct.field_ref #ResponseOp_ResponseDeleteRange #"ResponseDeleteRange"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "size" := (mem.alloc (type.zero_val #intT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+      slice.slice #byteT "$s" #(W64 0) (![#intT] "i")) in
+      (method_call #etcdserverpb.etcdserverpb #"DeleteRangeResponse'ptr" #"MarshalToSizedBuffer" (![#ptrT] (struct.field_ref #ResponseOp_ResponseDeleteRange #"ResponseDeleteRange"%go (![#ptrT] "m")))) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("size" <-[#intT] "$r0");;;
+      do:  ("err" <-[#error] "$r1");;;
+      (if: (~ (interface.eq (![#error] "err") #interface.nil))
+      then return: (#(W64 0), ![#error] "err")
+      else do:  #());;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - (![#intT] "size")));;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+      let: "$a1" := (![#intT] "i") in
+      let: "$a2" := (s_to_w64 (![#intT] "size")) in
+      (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+      do:  ("i" <-[#intT] "$r0");;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+      let: "$r0" := #(W8 26) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0")
+    else do:  #());;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:9088:34 *)
+Definition ResponseOp_ResponseTxn__MarshalTo : val :=
+  rec: "ResponseOp_ResponseTxn__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"ResponseOp_ResponseTxn'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"ResponseOp_ResponseTxn'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:9093:34 *)
+Definition ResponseOp_ResponseTxn__MarshalToSizedBuffer : val :=
+  rec: "ResponseOp_ResponseTxn__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    (if: (![#ptrT] (struct.field_ref #ResponseOp_ResponseTxn #"ResponseTxn"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "err" := (mem.alloc (type.zero_val #error)) in
+      let: "size" := (mem.alloc (type.zero_val #intT)) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+      slice.slice #byteT "$s" #(W64 0) (![#intT] "i")) in
+      (method_call #etcdserverpb.etcdserverpb #"TxnResponse'ptr" #"MarshalToSizedBuffer" (![#ptrT] (struct.field_ref #ResponseOp_ResponseTxn #"ResponseTxn"%go (![#ptrT] "m")))) "$a0") in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("size" <-[#intT] "$r0");;;
+      do:  ("err" <-[#error] "$r1");;;
+      (if: (~ (interface.eq (![#error] "err") #interface.nil))
+      then return: (#(W64 0), ![#error] "err")
+      else do:  #());;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - (![#intT] "size")));;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+      let: "$a1" := (![#intT] "i") in
+      let: "$a2" := (s_to_w64 (![#intT] "size")) in
+      (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+      do:  ("i" <-[#intT] "$r0");;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+      let: "$r0" := #(W8 34) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0")
+    else do:  #());;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:9171:27 *)
+Definition Compare_Version__MarshalTo : val :=
+  rec: "Compare_Version__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"Compare_Version'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"Compare_Version'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:9176:27 *)
+Definition Compare_Version__MarshalToSizedBuffer : val :=
+  rec: "Compare_Version__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    let: "$a1" := (![#intT] "i") in
+    let: "$a2" := (s_to_w64 (![#int64T] (struct.field_ref #Compare_Version #"Version"%go (![#ptrT] "m")))) in
+    (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+    do:  ("i" <-[#intT] "$r0");;;
+    do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+    let: "$r0" := #(W8 32) in
+    do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0");;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:9183:34 *)
+Definition Compare_CreateRevision__MarshalTo : val :=
+  rec: "Compare_CreateRevision__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"Compare_CreateRevision'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"Compare_CreateRevision'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:9188:34 *)
+Definition Compare_CreateRevision__MarshalToSizedBuffer : val :=
+  rec: "Compare_CreateRevision__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    let: "$a1" := (![#intT] "i") in
+    let: "$a2" := (s_to_w64 (![#int64T] (struct.field_ref #Compare_CreateRevision #"CreateRevision"%go (![#ptrT] "m")))) in
+    (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+    do:  ("i" <-[#intT] "$r0");;;
+    do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+    let: "$r0" := #(W8 40) in
+    do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0");;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:9195:31 *)
+Definition Compare_ModRevision__MarshalTo : val :=
+  rec: "Compare_ModRevision__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"Compare_ModRevision'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"Compare_ModRevision'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:9200:31 *)
+Definition Compare_ModRevision__MarshalToSizedBuffer : val :=
+  rec: "Compare_ModRevision__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    let: "$a1" := (![#intT] "i") in
+    let: "$a2" := (s_to_w64 (![#int64T] (struct.field_ref #Compare_ModRevision #"ModRevision"%go (![#ptrT] "m")))) in
+    (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+    do:  ("i" <-[#intT] "$r0");;;
+    do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+    let: "$r0" := #(W8 48) in
+    do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0");;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:9207:25 *)
+Definition Compare_Value__MarshalTo : val :=
+  rec: "Compare_Value__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"Compare_Value'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"Compare_Value'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:9212:25 *)
+Definition Compare_Value__MarshalToSizedBuffer : val :=
+  rec: "Compare_Value__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    (if: (![#sliceT] (struct.field_ref #Compare_Value #"Value"%go (![#ptrT] "m"))) ≠ #slice.nil
+    then
+      do:  ("i" <-[#intT] ((![#intT] "i") - (let: "$a0" := (![#sliceT] (struct.field_ref #Compare_Value #"Value"%go (![#ptrT] "m"))) in
+      slice.len "$a0")));;;
+      do:  (let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+      slice.slice #byteT "$s" (![#intT] "i") (slice.len "$s")) in
+      let: "$a1" := (![#sliceT] (struct.field_ref #Compare_Value #"Value"%go (![#ptrT] "m"))) in
+      (slice.copy #byteT) "$a0" "$a1");;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+      let: "$a1" := (![#intT] "i") in
+      let: "$a2" := (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Compare_Value #"Value"%go (![#ptrT] "m"))) in
+      slice.len "$a0")) in
+      (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+      do:  ("i" <-[#intT] "$r0");;;
+      do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+      let: "$r0" := #(W8 58) in
+      do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0")
+    else do:  #());;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:9223:25 *)
+Definition Compare_Lease__MarshalTo : val :=
+  rec: "Compare_Lease__MarshalTo" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "size" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"Compare_Lease'ptr" #"Size" (![#ptrT] "m")) #()) in
+    do:  ("size" <-[#intT] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (let: "$s" := (![#sliceT] "dAtA") in
+    slice.slice #byteT "$s" #(W64 0) (![#intT] "size")) in
+    (method_call #etcdserverpb.etcdserverpb #"Compare_Lease'ptr" #"MarshalToSizedBuffer" (![#ptrT] "m")) "$a0")) in
+    return: ("$ret0", "$ret1")).
+
+(* go: rpc.pb.go:9228:25 *)
+Definition Compare_Lease__MarshalToSizedBuffer : val :=
+  rec: "Compare_Lease__MarshalToSizedBuffer" "m" "dAtA" :=
+    exception_do (let: "m" := (mem.alloc "m") in
+    let: "dAtA" := (mem.alloc "dAtA") in
+    let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    slice.len "$a0") in
+    do:  ("i" <-[#intT] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![#sliceT] "dAtA") in
+    let: "$a1" := (![#intT] "i") in
+    let: "$a2" := (s_to_w64 (![#int64T] (struct.field_ref #Compare_Lease #"Lease"%go (![#ptrT] "m")))) in
+    (func_call #etcdserverpb.etcdserverpb #"encodeVarintRpc"%go) "$a0" "$a1" "$a2") in
+    do:  ("i" <-[#intT] "$r0");;;
+    do:  ("i" <-[#intT] ((![#intT] "i") - #(W64 1)));;;
+    let: "$r0" := #(W8 64) in
+    do:  ((slice.elem_ref #byteT (![#sliceT] "dAtA") (![#intT] "i")) <-[#byteT] "$r0");;;
+    return: ((let: "$a0" := (![#sliceT] "dAtA") in
+     slice.len "$a0") - (![#intT] "i"), #interface.nil)).
+
+(* go: rpc.pb.go:13233:34 *)
+Definition RequestOp_RequestRange__Size : val :=
+  rec: "RequestOp_RequestRange__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    (if: (![#ptrT] (struct.field_ref #RequestOp_RequestRange #"RequestRange"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"RangeRequest'ptr" #"Size" (![#ptrT] (struct.field_ref #RequestOp_RequestRange #"RequestRange"%go (![#ptrT] "m")))) #()) in
+      do:  ("l" <-[#intT] "$r0");;;
+      do:  ("n" <-[#intT] ((![#intT] "n") + ((#(W64 1) + (![#intT] "l")) + (let: "$a0" := (s_to_w64 (![#intT] "l")) in
+      (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))))
+    else do:  #());;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13245:32 *)
+Definition RequestOp_RequestPut__Size : val :=
+  rec: "RequestOp_RequestPut__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    (if: (![#ptrT] (struct.field_ref #RequestOp_RequestPut #"RequestPut"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"PutRequest'ptr" #"Size" (![#ptrT] (struct.field_ref #RequestOp_RequestPut #"RequestPut"%go (![#ptrT] "m")))) #()) in
+      do:  ("l" <-[#intT] "$r0");;;
+      do:  ("n" <-[#intT] ((![#intT] "n") + ((#(W64 1) + (![#intT] "l")) + (let: "$a0" := (s_to_w64 (![#intT] "l")) in
+      (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))))
+    else do:  #());;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13257:40 *)
+Definition RequestOp_RequestDeleteRange__Size : val :=
+  rec: "RequestOp_RequestDeleteRange__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    (if: (![#ptrT] (struct.field_ref #RequestOp_RequestDeleteRange #"RequestDeleteRange"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"DeleteRangeRequest'ptr" #"Size" (![#ptrT] (struct.field_ref #RequestOp_RequestDeleteRange #"RequestDeleteRange"%go (![#ptrT] "m")))) #()) in
+      do:  ("l" <-[#intT] "$r0");;;
+      do:  ("n" <-[#intT] ((![#intT] "n") + ((#(W64 1) + (![#intT] "l")) + (let: "$a0" := (s_to_w64 (![#intT] "l")) in
+      (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))))
+    else do:  #());;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13269:32 *)
+Definition RequestOp_RequestTxn__Size : val :=
+  rec: "RequestOp_RequestTxn__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    (if: (![#ptrT] (struct.field_ref #RequestOp_RequestTxn #"RequestTxn"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"TxnRequest'ptr" #"Size" (![#ptrT] (struct.field_ref #RequestOp_RequestTxn #"RequestTxn"%go (![#ptrT] "m")))) #()) in
+      do:  ("l" <-[#intT] "$r0");;;
+      do:  ("n" <-[#intT] ((![#intT] "n") + ((#(W64 1) + (![#intT] "l")) + (let: "$a0" := (s_to_w64 (![#intT] "l")) in
+      (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))))
+    else do:  #());;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13296:36 *)
+Definition ResponseOp_ResponseRange__Size : val :=
+  rec: "ResponseOp_ResponseRange__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    (if: (![#ptrT] (struct.field_ref #ResponseOp_ResponseRange #"ResponseRange"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"RangeResponse'ptr" #"Size" (![#ptrT] (struct.field_ref #ResponseOp_ResponseRange #"ResponseRange"%go (![#ptrT] "m")))) #()) in
+      do:  ("l" <-[#intT] "$r0");;;
+      do:  ("n" <-[#intT] ((![#intT] "n") + ((#(W64 1) + (![#intT] "l")) + (let: "$a0" := (s_to_w64 (![#intT] "l")) in
+      (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))))
+    else do:  #());;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13308:34 *)
+Definition ResponseOp_ResponsePut__Size : val :=
+  rec: "ResponseOp_ResponsePut__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    (if: (![#ptrT] (struct.field_ref #ResponseOp_ResponsePut #"ResponsePut"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"PutResponse'ptr" #"Size" (![#ptrT] (struct.field_ref #ResponseOp_ResponsePut #"ResponsePut"%go (![#ptrT] "m")))) #()) in
+      do:  ("l" <-[#intT] "$r0");;;
+      do:  ("n" <-[#intT] ((![#intT] "n") + ((#(W64 1) + (![#intT] "l")) + (let: "$a0" := (s_to_w64 (![#intT] "l")) in
+      (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))))
+    else do:  #());;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13320:42 *)
+Definition ResponseOp_ResponseDeleteRange__Size : val :=
+  rec: "ResponseOp_ResponseDeleteRange__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    (if: (![#ptrT] (struct.field_ref #ResponseOp_ResponseDeleteRange #"ResponseDeleteRange"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"DeleteRangeResponse'ptr" #"Size" (![#ptrT] (struct.field_ref #ResponseOp_ResponseDeleteRange #"ResponseDeleteRange"%go (![#ptrT] "m")))) #()) in
+      do:  ("l" <-[#intT] "$r0");;;
+      do:  ("n" <-[#intT] ((![#intT] "n") + ((#(W64 1) + (![#intT] "l")) + (let: "$a0" := (s_to_w64 (![#intT] "l")) in
+      (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))))
+    else do:  #());;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13332:34 *)
+Definition ResponseOp_ResponseTxn__Size : val :=
+  rec: "ResponseOp_ResponseTxn__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    (if: (![#ptrT] (struct.field_ref #ResponseOp_ResponseTxn #"ResponseTxn"%go (![#ptrT] "m"))) ≠ #null
+    then
+      let: "$r0" := ((method_call #etcdserverpb.etcdserverpb #"TxnResponse'ptr" #"Size" (![#ptrT] (struct.field_ref #ResponseOp_ResponseTxn #"ResponseTxn"%go (![#ptrT] "m")))) #()) in
+      do:  ("l" <-[#intT] "$r0");;;
+      do:  ("n" <-[#intT] ((![#intT] "n") + ((#(W64 1) + (![#intT] "l")) + (let: "$a0" := (s_to_w64 (![#intT] "l")) in
+      (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))))
+    else do:  #());;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13373:27 *)
+Definition Compare_Version__Size : val :=
+  rec: "Compare_Version__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    do:  ("n" <-[#intT] ((![#intT] "n") + (#(W64 1) + (let: "$a0" := (s_to_w64 (![#int64T] (struct.field_ref #Compare_Version #"Version"%go (![#ptrT] "m")))) in
+    (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))));;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13382:34 *)
+Definition Compare_CreateRevision__Size : val :=
+  rec: "Compare_CreateRevision__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    do:  ("n" <-[#intT] ((![#intT] "n") + (#(W64 1) + (let: "$a0" := (s_to_w64 (![#int64T] (struct.field_ref #Compare_CreateRevision #"CreateRevision"%go (![#ptrT] "m")))) in
+    (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))));;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13391:31 *)
+Definition Compare_ModRevision__Size : val :=
+  rec: "Compare_ModRevision__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    do:  ("n" <-[#intT] ((![#intT] "n") + (#(W64 1) + (let: "$a0" := (s_to_w64 (![#int64T] (struct.field_ref #Compare_ModRevision #"ModRevision"%go (![#ptrT] "m")))) in
+    (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))));;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13400:25 *)
+Definition Compare_Value__Size : val :=
+  rec: "Compare_Value__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    (if: (![#sliceT] (struct.field_ref #Compare_Value #"Value"%go (![#ptrT] "m"))) ≠ #slice.nil
+    then
+      let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #Compare_Value #"Value"%go (![#ptrT] "m"))) in
+      slice.len "$a0") in
+      do:  ("l" <-[#intT] "$r0");;;
+      do:  ("n" <-[#intT] ((![#intT] "n") + ((#(W64 1) + (![#intT] "l")) + (let: "$a0" := (s_to_w64 (![#intT] "l")) in
+      (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))))
+    else do:  #());;;
+    return: (![#intT] "n")).
+
+(* go: rpc.pb.go:13412:25 *)
+Definition Compare_Lease__Size : val :=
+  rec: "Compare_Lease__Size" "m" <> :=
+    exception_do (let: "n" := (mem.alloc (type.zero_val #intT)) in
+    let: "m" := (mem.alloc "m") in
+    (if: (![#ptrT] "m") = #null
+    then return: (#(W64 0))
+    else do:  #());;;
+    let: "l" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := (![#intT] "l") in
+    do:  "$r0";;;
+    do:  ("n" <-[#intT] ((![#intT] "n") + (#(W64 1) + (let: "$a0" := (s_to_w64 (![#int64T] (struct.field_ref #Compare_Lease #"Lease"%go (![#ptrT] "m")))) in
+    (func_call #etcdserverpb.etcdserverpb #"sovRpc"%go) "$a0"))));;;
+    return: (![#intT] "n")).
+
 Axiom ErrInvalidLengthRpc'init : val.
 
 Axiom ErrIntOverflowRpc'init : val.
 
 Axiom ErrUnexpectedEndOfGroupRpc'init : val.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition vars' : list (go_string * go_type) := [("RangeRequest_SortOrder_name"%go, mapT int32T stringT); ("RangeRequest_SortOrder_value"%go, mapT stringT int32T); ("RangeRequest_SortTarget_name"%go, mapT int32T stringT); ("RangeRequest_SortTarget_value"%go, mapT stringT int32T); ("Compare_CompareResult_name"%go, mapT int32T stringT); ("Compare_CompareResult_value"%go, mapT stringT int32T); ("Compare_CompareTarget_name"%go, mapT int32T stringT); ("Compare_CompareTarget_value"%go, mapT stringT int32T)].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Compare_CompareResult"%go, []); ("Compare_CompareResult'ptr"%go, []); ("Compare_CompareTarget"%go, []); ("Compare_CompareTarget'ptr"%go, []); ("ResponseHeader"%go, []); ("ResponseHeader'ptr"%go, []); ("RangeResponse"%go, []); ("RangeResponse'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("DeleteRangeResponse"%go, []); ("DeleteRangeResponse'ptr"%go, []); ("ResponseOp"%go, []); ("ResponseOp'ptr"%go, []); ("ResponseOp_ResponseRange"%go, []); ("ResponseOp_ResponseRange'ptr"%go, []); ("ResponseOp_ResponsePut"%go, []); ("ResponseOp_ResponsePut'ptr"%go, []); ("ResponseOp_ResponseDeleteRange"%go, []); ("ResponseOp_ResponseDeleteRange'ptr"%go, []); ("ResponseOp_ResponseTxn"%go, []); ("ResponseOp_ResponseTxn'ptr"%go, []); ("Compare"%go, []); ("Compare'ptr"%go, []); ("Compare_Version"%go, []); ("Compare_Version'ptr"%go, []); ("Compare_CreateRevision"%go, []); ("Compare_CreateRevision'ptr"%go, []); ("Compare_ModRevision"%go, []); ("Compare_ModRevision'ptr"%go, []); ("Compare_Value"%go, []); ("Compare_Value'ptr"%go, []); ("Compare_Lease"%go, []); ("Compare_Lease'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("RangeRequest_SortOrder"%go, [("EnumDescriptor"%go, RangeRequest_SortOrder__EnumDescriptor)]); ("RangeRequest_SortOrder'ptr"%go, [("EnumDescriptor"%go, (λ: "$recvAddr",
+                 method_call #etcdserverpb.etcdserverpb #"RangeRequest_SortOrder" #"EnumDescriptor" (![#RangeRequest_SortOrder] "$recvAddr")
+                 )%V)]); ("RangeRequest_SortTarget"%go, [("EnumDescriptor"%go, RangeRequest_SortTarget__EnumDescriptor)]); ("RangeRequest_SortTarget'ptr"%go, [("EnumDescriptor"%go, (λ: "$recvAddr",
+                 method_call #etcdserverpb.etcdserverpb #"RangeRequest_SortTarget" #"EnumDescriptor" (![#RangeRequest_SortTarget] "$recvAddr")
+                 )%V)]); ("Compare_CompareResult"%go, [("EnumDescriptor"%go, Compare_CompareResult__EnumDescriptor)]); ("Compare_CompareResult'ptr"%go, [("EnumDescriptor"%go, (λ: "$recvAddr",
+                 method_call #etcdserverpb.etcdserverpb #"Compare_CompareResult" #"EnumDescriptor" (![#Compare_CompareResult] "$recvAddr")
+                 )%V)]); ("Compare_CompareTarget"%go, [("EnumDescriptor"%go, Compare_CompareTarget__EnumDescriptor)]); ("Compare_CompareTarget'ptr"%go, [("EnumDescriptor"%go, (λ: "$recvAddr",
+                 method_call #etcdserverpb.etcdserverpb #"Compare_CompareTarget" #"EnumDescriptor" (![#Compare_CompareTarget] "$recvAddr")
+                 )%V)]); ("ResponseHeader"%go, []); ("ResponseHeader'ptr"%go, []); ("RangeRequest"%go, []); ("RangeRequest'ptr"%go, []); ("RangeResponse"%go, []); ("RangeResponse'ptr"%go, []); ("PutRequest"%go, []); ("PutRequest'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("DeleteRangeRequest"%go, []); ("DeleteRangeRequest'ptr"%go, []); ("DeleteRangeResponse"%go, []); ("DeleteRangeResponse'ptr"%go, []); ("RequestOp"%go, []); ("RequestOp'ptr"%go, []); ("RequestOp_RequestRange"%go, []); ("RequestOp_RequestRange'ptr"%go, [("MarshalTo"%go, RequestOp_RequestRange__MarshalTo); ("MarshalToSizedBuffer"%go, RequestOp_RequestRange__MarshalToSizedBuffer); ("Size"%go, RequestOp_RequestRange__Size); ("isRequestOp_Request"%go, RequestOp_RequestRange__isRequestOp_Request)]); ("RequestOp_RequestPut"%go, []); ("RequestOp_RequestPut'ptr"%go, [("MarshalTo"%go, RequestOp_RequestPut__MarshalTo); ("MarshalToSizedBuffer"%go, RequestOp_RequestPut__MarshalToSizedBuffer); ("Size"%go, RequestOp_RequestPut__Size); ("isRequestOp_Request"%go, RequestOp_RequestPut__isRequestOp_Request)]); ("RequestOp_RequestDeleteRange"%go, []); ("RequestOp_RequestDeleteRange'ptr"%go, [("MarshalTo"%go, RequestOp_RequestDeleteRange__MarshalTo); ("MarshalToSizedBuffer"%go, RequestOp_RequestDeleteRange__MarshalToSizedBuffer); ("Size"%go, RequestOp_RequestDeleteRange__Size); ("isRequestOp_Request"%go, RequestOp_RequestDeleteRange__isRequestOp_Request)]); ("RequestOp_RequestTxn"%go, []); ("RequestOp_RequestTxn'ptr"%go, [("MarshalTo"%go, RequestOp_RequestTxn__MarshalTo); ("MarshalToSizedBuffer"%go, RequestOp_RequestTxn__MarshalToSizedBuffer); ("Size"%go, RequestOp_RequestTxn__Size); ("isRequestOp_Request"%go, RequestOp_RequestTxn__isRequestOp_Request)]); ("ResponseOp"%go, []); ("ResponseOp'ptr"%go, []); ("ResponseOp_ResponseRange"%go, []); ("ResponseOp_ResponseRange'ptr"%go, [("MarshalTo"%go, ResponseOp_ResponseRange__MarshalTo); ("MarshalToSizedBuffer"%go, ResponseOp_ResponseRange__MarshalToSizedBuffer); ("Size"%go, ResponseOp_ResponseRange__Size); ("isResponseOp_Response"%go, ResponseOp_ResponseRange__isResponseOp_Response)]); ("ResponseOp_ResponsePut"%go, []); ("ResponseOp_ResponsePut'ptr"%go, [("MarshalTo"%go, ResponseOp_ResponsePut__MarshalTo); ("MarshalToSizedBuffer"%go, ResponseOp_ResponsePut__MarshalToSizedBuffer); ("Size"%go, ResponseOp_ResponsePut__Size); ("isResponseOp_Response"%go, ResponseOp_ResponsePut__isResponseOp_Response)]); ("ResponseOp_ResponseDeleteRange"%go, []); ("ResponseOp_ResponseDeleteRange'ptr"%go, [("MarshalTo"%go, ResponseOp_ResponseDeleteRange__MarshalTo); ("MarshalToSizedBuffer"%go, ResponseOp_ResponseDeleteRange__MarshalToSizedBuffer); ("Size"%go, ResponseOp_ResponseDeleteRange__Size); ("isResponseOp_Response"%go, ResponseOp_ResponseDeleteRange__isResponseOp_Response)]); ("ResponseOp_ResponseTxn"%go, []); ("ResponseOp_ResponseTxn'ptr"%go, [("MarshalTo"%go, ResponseOp_ResponseTxn__MarshalTo); ("MarshalToSizedBuffer"%go, ResponseOp_ResponseTxn__MarshalToSizedBuffer); ("Size"%go, ResponseOp_ResponseTxn__Size); ("isResponseOp_Response"%go, ResponseOp_ResponseTxn__isResponseOp_Response)]); ("Compare"%go, []); ("Compare'ptr"%go, []); ("Compare_Version"%go, []); ("Compare_Version'ptr"%go, [("MarshalTo"%go, Compare_Version__MarshalTo); ("MarshalToSizedBuffer"%go, Compare_Version__MarshalToSizedBuffer); ("Size"%go, Compare_Version__Size); ("isCompare_TargetUnion"%go, Compare_Version__isCompare_TargetUnion)]); ("Compare_CreateRevision"%go, []); ("Compare_CreateRevision'ptr"%go, [("MarshalTo"%go, Compare_CreateRevision__MarshalTo); ("MarshalToSizedBuffer"%go, Compare_CreateRevision__MarshalToSizedBuffer); ("Size"%go, Compare_CreateRevision__Size); ("isCompare_TargetUnion"%go, Compare_CreateRevision__isCompare_TargetUnion)]); ("Compare_ModRevision"%go, []); ("Compare_ModRevision'ptr"%go, [("MarshalTo"%go, Compare_ModRevision__MarshalTo); ("MarshalToSizedBuffer"%go, Compare_ModRevision__MarshalToSizedBuffer); ("Size"%go, Compare_ModRevision__Size); ("isCompare_TargetUnion"%go, Compare_ModRevision__isCompare_TargetUnion)]); ("Compare_Value"%go, []); ("Compare_Value'ptr"%go, [("MarshalTo"%go, Compare_Value__MarshalTo); ("MarshalToSizedBuffer"%go, Compare_Value__MarshalToSizedBuffer); ("Size"%go, Compare_Value__Size); ("isCompare_TargetUnion"%go, Compare_Value__isCompare_TargetUnion)]); ("Compare_Lease"%go, []); ("Compare_Lease'ptr"%go, [("MarshalTo"%go, Compare_Lease__MarshalTo); ("MarshalToSizedBuffer"%go, Compare_Lease__MarshalToSizedBuffer); ("Size"%go, Compare_Lease__Size); ("isCompare_TargetUnion"%go, Compare_Lease__isCompare_TargetUnion)]); ("TxnRequest"%go, []); ("TxnRequest'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo etcdserverpb.etcdserverpb :=
   {|
@@ -247,14 +1239,90 @@ Definition initialize' : val :=
       do:  (_'init #());;;
       do:  (AlarmType_name'init #());;;
       do:  (AlarmType_value'init #());;;
-      do:  (RangeRequest_SortOrder_name'init #());;;
-      do:  (RangeRequest_SortOrder_value'init #());;;
-      do:  (RangeRequest_SortTarget_name'init #());;;
-      do:  (RangeRequest_SortTarget_value'init #());;;
-      do:  (Compare_CompareResult_name'init #());;;
-      do:  (Compare_CompareResult_value'init #());;;
-      do:  (Compare_CompareTarget_name'init #());;;
-      do:  (Compare_CompareTarget_value'init #());;;
+      let: "$r0" := ((let: "$v0" := #"NONE"%go in
+      let: "$k0" := #(W32 0) in
+      let: "$v1" := #"ASCEND"%go in
+      let: "$k1" := #(W32 1) in
+      let: "$v2" := #"DESCEND"%go in
+      let: "$k2" := #(W32 2) in
+      map.literal #int32T #stringT [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2")])) in
+      do:  ((globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortOrder_name"%go) <-[type.mapT #int32T #stringT] "$r0");;;
+      let: "$r0" := ((let: "$v0" := #(W32 0) in
+      let: "$k0" := #"NONE"%go in
+      let: "$v1" := #(W32 1) in
+      let: "$k1" := #"ASCEND"%go in
+      let: "$v2" := #(W32 2) in
+      let: "$k2" := #"DESCEND"%go in
+      map.literal #stringT #int32T [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2")])) in
+      do:  ((globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortOrder_value"%go) <-[type.mapT #stringT #int32T] "$r0");;;
+      let: "$r0" := ((let: "$v0" := #"KEY"%go in
+      let: "$k0" := #(W32 0) in
+      let: "$v1" := #"VERSION"%go in
+      let: "$k1" := #(W32 1) in
+      let: "$v2" := #"CREATE"%go in
+      let: "$k2" := #(W32 2) in
+      let: "$v3" := #"MOD"%go in
+      let: "$k3" := #(W32 3) in
+      let: "$v4" := #"VALUE"%go in
+      let: "$k4" := #(W32 4) in
+      map.literal #int32T #stringT [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4")])) in
+      do:  ((globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortTarget_name"%go) <-[type.mapT #int32T #stringT] "$r0");;;
+      let: "$r0" := ((let: "$v0" := #(W32 0) in
+      let: "$k0" := #"KEY"%go in
+      let: "$v1" := #(W32 1) in
+      let: "$k1" := #"VERSION"%go in
+      let: "$v2" := #(W32 2) in
+      let: "$k2" := #"CREATE"%go in
+      let: "$v3" := #(W32 3) in
+      let: "$k3" := #"MOD"%go in
+      let: "$v4" := #(W32 4) in
+      let: "$k4" := #"VALUE"%go in
+      map.literal #stringT #int32T [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4")])) in
+      do:  ((globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortTarget_value"%go) <-[type.mapT #stringT #int32T] "$r0");;;
+      let: "$r0" := ((let: "$v0" := #"EQUAL"%go in
+      let: "$k0" := #(W32 0) in
+      let: "$v1" := #"GREATER"%go in
+      let: "$k1" := #(W32 1) in
+      let: "$v2" := #"LESS"%go in
+      let: "$k2" := #(W32 2) in
+      let: "$v3" := #"NOT_EQUAL"%go in
+      let: "$k3" := #(W32 3) in
+      map.literal #int32T #stringT [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3")])) in
+      do:  ((globals.get #etcdserverpb.etcdserverpb #"Compare_CompareResult_name"%go) <-[type.mapT #int32T #stringT] "$r0");;;
+      let: "$r0" := ((let: "$v0" := #(W32 0) in
+      let: "$k0" := #"EQUAL"%go in
+      let: "$v1" := #(W32 1) in
+      let: "$k1" := #"GREATER"%go in
+      let: "$v2" := #(W32 2) in
+      let: "$k2" := #"LESS"%go in
+      let: "$v3" := #(W32 3) in
+      let: "$k3" := #"NOT_EQUAL"%go in
+      map.literal #stringT #int32T [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3")])) in
+      do:  ((globals.get #etcdserverpb.etcdserverpb #"Compare_CompareResult_value"%go) <-[type.mapT #stringT #int32T] "$r0");;;
+      let: "$r0" := ((let: "$v0" := #"VERSION"%go in
+      let: "$k0" := #(W32 0) in
+      let: "$v1" := #"CREATE"%go in
+      let: "$k1" := #(W32 1) in
+      let: "$v2" := #"MOD"%go in
+      let: "$k2" := #(W32 2) in
+      let: "$v3" := #"VALUE"%go in
+      let: "$k3" := #(W32 3) in
+      let: "$v4" := #"LEASE"%go in
+      let: "$k4" := #(W32 4) in
+      map.literal #int32T #stringT [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4")])) in
+      do:  ((globals.get #etcdserverpb.etcdserverpb #"Compare_CompareTarget_name"%go) <-[type.mapT #int32T #stringT] "$r0");;;
+      let: "$r0" := ((let: "$v0" := #(W32 0) in
+      let: "$k0" := #"VERSION"%go in
+      let: "$v1" := #(W32 1) in
+      let: "$k1" := #"CREATE"%go in
+      let: "$v2" := #(W32 2) in
+      let: "$k2" := #"MOD"%go in
+      let: "$v3" := #(W32 3) in
+      let: "$k3" := #"VALUE"%go in
+      let: "$v4" := #(W32 4) in
+      let: "$k4" := #"LEASE"%go in
+      map.literal #stringT #int32T [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4")])) in
+      do:  ((globals.get #etcdserverpb.etcdserverpb #"Compare_CompareTarget_value"%go) <-[type.mapT #stringT #int32T] "$r0");;;
       do:  (WatchCreateRequest_FilterType_name'init #());;;
       do:  (WatchCreateRequest_FilterType_value'init #());;;
       do:  (AlarmRequest_AlarmAction_name'init #());;;
