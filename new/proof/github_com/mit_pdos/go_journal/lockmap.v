@@ -97,7 +97,7 @@ Proof.
 
   iApply "HΦ".
   iExists _, _.
-  iDestruct (struct_fields_split with "Hls") as "Hls'". iNamed "Hls'".
+  iDestruct (struct_fields_split with "Hls") as "@".
   iFrame "∗#".
 Qed.
 
@@ -108,15 +108,13 @@ Theorem wp_lockShard__acquire ls gh covered (addr : u64) (P : u64 -> iProp Σ) :
     ls@lockmap@"lockShard'ptr"@"acquire" #addr
   {{{ RET #(); P addr ∗ locked gh addr }}}.
 Proof.
-  wp_start as "[Hls %]".
-  iNamed "Hls".
+  wp_start as "[@ %]".
   wp_auto.
   wp_apply (wp_Mutex__Lock with "[$Hlock]").
   iIntros "[Hlocked Hinner]".
 
   wp_auto.
-  wp_for.
-  iNamed "Hinner".
+  wp_for "Hinner".
   wp_apply (wp_map_get with "Hmptr"). iIntros "Hmptr".
   wp_auto.
 
@@ -424,12 +422,9 @@ Proof.
     unseal_nshard. word.
   }
 
-  wp_for.
-  iNamed "Hloop".
-  wp_auto.
-  wp_if_destruct.
-  - wp_auto.
-    rewrite rangeSet_first.
+  wp_for "Hloop".
+  wp_if_destruct; wp_auto.
+  - rewrite rangeSet_first.
     2: { unseal_nshard. word. }
     iDestruct (big_sepS_insert with "Hpp") as "[Hp Hpp]".
     { unseal_nshard. intro Hx.
@@ -461,12 +456,7 @@ Proof.
     iFrame.
     unseal_nshard. word.
 
-  - (* XXX why do i get this [if decide ... then .. else ..] around my goal? *)
-    replace (# true) with (into_val_bool.(to_val_def) true) by ( rewrite to_val_unseal; auto ).
-    replace (# false) with (into_val_bool.(to_val_def) false) by ( rewrite to_val_unseal; auto ).
-    simpl.
-
-    wp_auto.
+  - simpl.
     wp_alloc lm as "Hlm".
     iDestruct (struct_fields_split with "Hlm") as "Hlm".
     iPersist "Hlm".
@@ -486,8 +476,7 @@ Theorem wp_LockMap__Acquire l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
     l@lockmap@"LockMap'ptr"@"Acquire" #addr
   {{{ RET #(); P addr ∗ Locked ghs addr }}}.
 Proof.
-  wp_start as "[Hlm %]".
-  iNamed "Hlm".
+  wp_start as "[@ %]".
 
   iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
   pose proof NSHARD_pos.
@@ -528,8 +517,7 @@ Theorem wp_LockMap__Release l ghs covered (addr : u64) (P : u64 -> iProp Σ) :
     l@lockmap@"LockMap'ptr"@"Release" #addr
   {{{ RET #(); True }}}.
 Proof.
-  wp_start as "[Hlm [HP Hlocked]]".
-  iNamed "Hlm".
+  wp_start as "[@ [HP Hlocked]]".
 
   iDestruct (big_sepL2_length with "Hshards") as "%Hlen2".
   pose proof NSHARD_pos.
