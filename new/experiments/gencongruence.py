@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+
 def print_lem(n):
-    all_args = " ".join([f"a{i+1}" for i in range(n)])
-    all_but_first_args = "".join([f" a{i+2}" for i in range(n - 1)])
+    all_args = " ".join([f"a{i + 1}" for i in range(n)])
+    all_but_first_args = "".join([f" a{i + 2}" for i in range(n - 1)])
     print(f"Inductive t{n} :=")
     print(f"  mk{n} ({all_args} : unit).")
     print(f"Lemma congruence_test{n} f {all_args} :")
@@ -12,5 +13,6 @@ def print_lem(n):
     print("Proof. time congruence. Qed.")
     print("")
 
-for i in range(1,100):
+
+for i in range(1, 100):
     print_lem(i)
