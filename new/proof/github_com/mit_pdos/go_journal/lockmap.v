@@ -5,7 +5,6 @@ Require Import New.proof.sync.
 
 From Perennial.base_logic Require Import lib.ghost_map.
 From Perennial.Helpers Require Import range_set.
-From iris_named_props Require Import custom_syntax.
 
 Ltac len := autorewrite with len; try word.
 
