@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 def print_lem(n):
     all_args = " ".join([f"a{i + 1}" for i in range(n)])
     print(f"Lemma congruence_test{n} f g ({all_args} : unit) :")
