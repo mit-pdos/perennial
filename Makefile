@@ -3,27 +3,27 @@ ALL_VFILES := $(shell find $(SRC_DIRS) -not -path "external/coqutil/etc/coq-scri
 VFILES := $(shell find 'src' -name "*.v")
 QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
 
-# extract any global arguments for Coq from _CoqProject
-COQPROJECT_ARGS := $(shell sed -E -e '/^\#/d' -e 's/-arg ([^ ]*)/\1/g' _CoqProject)
-COQ_ARGS :=
-# coqdep: don't allow missing files
-COQDEP_ARGS := -w +module-not-found
+# extract any global arguments for Rocq from _RocqProject
+ROCQPROJECT_ARGS := $(shell sed -E -e '/^\#/d' -e 's/-arg ([^ ]*)/\1/g' _RocqProject)
+ROCQ_ARGS :=
+# rocqdep: don't allow missing files
+ROCQ_DEP_ARGS := -w +module-not-found
 
 # user configurable
 Q:=@
 TIMED:=true
 TIMING_DB:=.timing.sqlite3
 
-# We detect Coq CI via the TIMING variable (used in coq_makefile) and then
-# disable the coqc.py wrapper, which doesn't work there
+# We detect Rocq CI via the TIMING variable (used in coq_makefile) and then
+# disable the rocqc.py wrapper, which doesn't work there
 ifneq (,$(TIMING))
-COQC := coqc
+ROCQ_C := rocq compile
 else ifeq ($(TIMED), true)
-COQC := ./etc/coqc.py --timing-db $(TIMING_DB)
+ROCQ_C := ./etc/rocqc.py --timing-db $(TIMING_DB)
 else
 # setting TIMED to false or the empty string will disable using the wrapper,
 # for environments where it doesn't work
-COQC := coqc
+ROCQ_C := rocq compile
 endif
 
 default: src/ShouldBuild.vo
@@ -39,16 +39,16 @@ check-assumptions: \
 	src/program_proof/memkv/print_assumptions.vo \
 	src/program_proof/vrsm/apps/print_assumptions.vo
 
-.coqdeps.d: $(ALL_VFILES) _CoqProject
-	@echo "COQDEP $@"
-	$(Q)coqdep -vos -f _CoqProject $(COQDEP_ARGS) $(ALL_VFILES) > $@
+.rocqdeps.d: $(ALL_VFILES) _RocqProject
+	@echo "ROCQ DEP $@"
+	$(Q)rocq dep -vos -f _RocqProject $(ROCQ_DEP_ARGS) $(ALL_VFILES) > $@
 
-# do not try to build dependencies if cleaning or just building _CoqProject
+# do not try to build dependencies if cleaning or just building _RocqProject
 ifeq ($(filter clean,$(MAKECMDGOALS)),)
--include .coqdeps.d
+-include .rocqdeps.d
 endif
 
-# implement coq_makefile's TIMING support for Coq CI
+# implement coq_makefile's TIMING support for Rocq CI
 ifneq (,$(TIMING))
 TIMING_ARGS=-time
 TIMING_EXT?=timing
@@ -56,17 +56,17 @@ TIMING_EXTRA = > $<.$(TIMING_EXT)
 endif
 
 
-%.vo: %.v _CoqProject | .coqdeps.d
-	@echo "COQC $<"
-	$(Q)$(COQC) $(COQPROJECT_ARGS) $(COQ_ARGS) $(TIMING_ARGS) -o $@ $< $(TIMING_EXTRA)
+%.vo: %.v _RocqProject | .rocqdeps.d
+	@echo "ROCQ COMPILE $<"
+	$(Q)$(ROCQ_C) $(ROCQPROJECT_ARGS) $(ROCQ_ARGS) $(TIMING_ARGS) -o $@ $< $(TIMING_EXTRA)
 
-%.vos: %.v _CoqProject | .coqdeps.d
-	@echo "COQC -vos $<"
-	$(Q)$(COQC) $(COQPROJECT_ARGS) -vos $(COQ_ARGS) $< -o $@
+%.vos: %.v _RocqProject | .rocqdeps.d
+	@echo "ROCQ COMPILE -vos $<"
+	$(Q)$(ROCQ_C) $(ROCQPROJECT_ARGS) -vos $(ROCQ_ARGS) $< -o $@
 
-%.vok: %.v _CoqProject | .coqdeps.d
-	@echo "COQC -vok $<"
-	$(Q)$(COQC) $(COQPROJECT_ARGS) $(TIMING_ARGS) -vok $(COQ_ARGS) $< -o $@
+%.vok: %.v _RocqProject | .rocqdeps.d
+	@echo "ROCQ COMPILE -vok $<"
+	$(Q)$(ROCQ_C) $(ROCQPROJECT_ARGS) $(TIMING_ARGS) -vok $(ROCQ_ARGS) $< -o $@
 
 .PHONY: skip-qed unskip-qed ci
 
@@ -86,7 +86,7 @@ ci: skip-qed src/ShouldBuild.vo
 		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
 		fi
 
-# compiled by Coq CI
+# compiled by Rocq CI
 # not intended for normal development
 lite: src/LiteBuild.vo
 	$(Q)if [ ${TIMED} = "true" ]; then \
@@ -99,7 +99,7 @@ clean:
 		-o -name ".*.aux" -o -name ".*.cache" -name "*.glob" \) -delete
 	$(Q)rm -f .lia.cache
 	$(Q)rm -f $(TIMING_DB)
-	rm -f .coqdeps.d
+	rm -f .rocqdeps.d
 
 .PHONY: default
 .DELETE_ON_ERROR:

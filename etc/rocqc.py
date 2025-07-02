@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# coqc wrapper
+# rocq compile wrapper
 
 from __future__ import print_function
 
@@ -176,7 +176,7 @@ class CoqcFilter:
             return
 
     def line(self, ln):
-        """Process a line of output from coqc."""
+        """Process a line of output from rocq compile."""
         line = ln.decode("utf-8")
         timing_info = Classify.get_time(line)
         if timing_info:
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     else:
         db = StdoutDb()
 
-    args = ["coqc"]
+    args = ["rocq", "compile"]
     args.append("-time")
     args += ["-set", "Printing Width=1000000"]
     args.extend(coq_args)
