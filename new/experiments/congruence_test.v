@@ -1,3 +1,39 @@
+(* Here's why it's exponential:
+
+   Claim 1: Once reaching (C: {}; M: {}; T: 22 24 26 28 30)
+     the algorithm ends up reaching values of T that cover all strictly
+     increasing sequences of terms of g ending which are smaller than the
+     current sequence (where [g a1 a2=30] is bigger than [g a1 a2 a3=29], etc.).
+   Proof.
+     Each "update" step results in smallest value in the current set decreasing
+     by 1 or being deleted if it's already minimal.
+
+     Say we're updating when #T = n. Then, we will see all sets that are
+     (T = {t_min} ∪ Trest, M = ∅) --update-->
+     (T = Trest, M = [t_min])
+     Case 1: t_min > 0:           --process mark-->
+     (T = {opp(t_min - 1), t_min - 1} ∪ Trest, M = [t_min]).
+     Already, we can be sure that at some point, we'll see {t_min - 1} ∪ Trest.
+     Moreover,
+     opp(t_min - 1) will result in opp(t_min - 2)
+
+     the next smaller sequence among the claimed set of sequences.
+   Qed.
+
+   The number of non-empty increasing sequences that are smaller (under our
+   ordering) than [1, 3, 5, ... 2k+1] is at least the number of sequences formed by the
+   numbers {1,...,2k}, which is 2^2k = Θ(2^n).
+
+    j ≈ 10+j
+
+    20 ->
+    9 19 ->
+    8 18 19 ->
+    7 17 18 19 ->
+    6 16 17 18 19 ->
+    ....
+ *)
+
 Lemma congruence_test1 f g (a1 : unit) :
   f = g ->
   @eq unit (f a1) (g a1).
@@ -51,22 +87,11 @@ Lemma congruence_test9 f g (a1 a2 a3 a4 a5 a6 a7 a8 a9 : unit) :
 Proof.
   time congruence. Qed.
 
-Set Debug "congruence".
+(* Set Debug "congruence". *)
 Lemma congruence_test10 f g (a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 : unit) :
   f = g ->
   @eq unit (f a1 a2 a3 a4 a5 a6 a7 a8 a9 a10) (g a1 a2 a3 a4 a5 a6 a7 a8 a9 a10).
 Proof. time congruence. Qed.
-Unset Debug "congruence".
-
-Inductive t :=
-| (a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 : unit)
-.
-
-Lemma congruence_test10 f g (a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 : unit) :
-  f = g ->
-  @eq unit (f a1 a2 a3 a4 a5 a6 a7 a8 a9 a10) (g a1 a2 a3 a4 a5 a6 a7 a8 a9 a10).
-Proof. time congruence. Qed.
-
 
 Lemma congruence_test11 f g (a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 : unit) :
   f = g ->

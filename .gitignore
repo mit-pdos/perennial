@@ -24,7 +24,7 @@
 *.vok
 *.v.d
 *.glob
-.coqdeps.d
+.rocqdeps.d
 
 /.timing.sqlite3
 
