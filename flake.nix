@@ -22,8 +22,8 @@
         devShells.default = with pkgs;
           mkShell {
             buildInputs = [
-              coq
-              coqPackages.stdlib
+              rocq-core
+              rocqPackages.stdlib
 
               go
               grackle.packages.${system}.default
