@@ -225,7 +225,7 @@ Proof.
     { (* not nil *)
       rewrite decide_False //. iNamed "Hsession".
       wp_auto.
-      wp_apply "HDone". wp_auto.
+      wp_apply "HDone".
       wp_apply wp_Session__Done.
       { iFrame "#". }
       iIntros "* #HsessDone".
@@ -378,7 +378,7 @@ Proof.
   iIntros (after_ch) "#[after_ch Hafter_ch]".
   wp_auto.
   iNamed "Hctx".
-  wp_apply "HDone". wp_auto.
+  wp_apply "HDone".
   wp_apply wp_chan_select_blocking.
   rewrite big_andL_cons.
   iSplit.
@@ -453,9 +453,9 @@ Proof.
   iIntros "Hmu_lkv".
   wp_auto.
   iNamed "Hctx_in".
-  wp_apply "HDone". wp_auto.
+  wp_apply "HDone".
   iNamedSuffix "Hctx_lkv" "_lkv".
-  wp_apply "HDone_lkv". wp_auto.
+  wp_apply "HDone_lkv".
   wp_apply wp_chan_select_blocking.
   rewrite !big_andL_cons big_andL_nil right_id.
   iSplit.
@@ -606,7 +606,6 @@ Proof using Type*.
   wp_start. iNamed "Hpre".
   wp_auto.
   wp_apply (wp_Client__Ctx with "[$]") as "* #Hclient_ctx".
-  wp_auto.
   iDestruct (is_Client_to_pub with "[$]") as "#Hclient_pub".
   iNamed "Hclient_pub".
   wp_apply (wp_WithCancel True with "Hclient_ctx").
@@ -614,8 +613,8 @@ Proof using Type*.
   wp_auto.
   unshelve wp_apply wp_map_make as "%revokes revokes"; try tc_solve; try tc_solve.
   { done. }
-  wp_auto. wp_apply (wp_chan_make (V:=unit)) as "* ?".
-  wp_auto. wp_alloc lkv as "Hlkv".
+  wp_apply (wp_chan_make (V:=unit)) as "* ?".
+  wp_alloc lkv as "Hlkv".
   wp_auto.
   iDestruct (struct_fields_split with "Hlkv") as "Hl".
   iEval (simpl) in "Hl".
@@ -731,26 +730,26 @@ Proof using Type*.
       (* ~13 seconds. *)
       iFrame "∗#". *)
     } *)
-    wp_auto. wp_apply "Hwg_done1".
-    wp_auto. done.
+    wp_apply "Hwg_done1".
+    done.
   }
   iPersist "cctx".
-  wp_auto. wp_apply (wp_fork with "[Hwg_done2 Hlc]").
+  wp_apply (wp_fork with "[Hwg_done2 Hlc]").
   {
     wp_auto. wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
     wp_apply (wp_leaseCache__clearOldRevokes with "[Hlc]").
     { iFrame "Hlc Hctx'". }
-    wp_auto. wp_apply "Hwg_done2".
-    wp_auto. done.
+    wp_apply "Hwg_done2".
+    done.
   }
 
   replace (num_lkvs) with (1 + (num_lkvs - 1)) by word.
   rewrite Z2Nat.inj_add //.
   rewrite -> replicate_S.
   iDestruct "Hmus" as "[Hmu Hmus]".
-  wp_auto. wp_apply (wp_leasingKV__waitSession with "[Hmu]").
+  wp_apply (wp_leasingKV__waitSession with "[Hmu]").
   { iFrame "∗#%". }
   iIntros (err) "[Hmu Hmaybe_ready]".
   wp_auto.

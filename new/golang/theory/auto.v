@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import notation.
 From Coq Require Import ssreflect.
-From Ltac2 Require Import Ltac2.
+From Ltac2 Require Import Ltac2 Printf.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Import typing.
 From New.golang.theory Require Import proofmode globals pkg loop chan.
@@ -87,16 +87,110 @@ Ltac2 wp_auto_lc (num_lc_wanted : int) :=
         ()
     ).
 
+Ltac2 Type wp_param := [
+  | RunAuto(bool)
+  (* generate later credits *)
+  | GenLc(int)
+  (* intro pattern to run afterward *)
+  | AsClause(Ltac1.t)
+].
+
+Ltac2 Type exn ::= [ WpParamExn(wp_param) ].
+
+Tactic Notation "--no-auto" :=
+  ltac2:(Control.zero (WpParamExn (RunAuto false))).
+Tactic Notation "--lc" int(n) :=
+  let f := ltac2:(n' |-
+    let n := Option.get (Ltac1.to_int n') in
+    Control.zero (WpParamExn (GenLc n))) in
+  f n.
+Tactic Notation "as" constr(ipat) :=
+  let f := ltac2:(ipat' |-
+      Control.zero (WpParamExn (AsClause ipat'))) in
+  f ipat.
+
+Ltac2 Type exn ::= [WrappedExn(message option, exn)].
+Ltac2 catch_wp_param (thunk : unit -> 'a) : wp_param :=
+  match Control.case thunk with
+  | Val _ =>
+    let msg := fprintf "No exn was thrown, so the provided parameter is invalid"
+    in Control.throw (Invalid_argument (Some msg))
+  | Err e =>
+    match e with
+    | WpParamExn p => p
+    | _ =>
+      let msg := fprintf "Bad exn was thrown, so the provided parameter is invalid"
+      in Control.throw (WrappedExn (Some msg) e)
+    end
+  end.
+
+Tactic Notation "wp_auto" tactic1_list(ps) :=
+  let f := ltac2:(ps_raw |-
+    let r_lc := Ref.ref 0 in
+    let ps : Ltac1.t list := Option.get (Ltac1.to_list ps_raw) in
+    List.iter (fun p =>
+      let param := catch_wp_param (fun () => Ltac1.run p) in
+      match param with
+      | GenLc n => Ref.set r_lc n
+      | _ =>
+          let msg := fprintf "Unexpected argument to wp_auto" in
+          Control.throw (Invalid_argument (Some msg))
+      end
+    ) ps;
+    wp_auto_lc (Ref.get r_lc)
+  ) in
+  f ps.
+
+Ltac2 wp_apply_core :=
+  fun lem => ltac1:(lem |- wp_apply_core lem) lem.
+
+Ltac2 focus_last0 (t: unit -> 'a) : 'a :=
+  let n := Control.numgoals () in
+  if Int.equal n 0 then ()
+  else Control.focus n n t.
+
+(* equivalent of ssreflect last *)
+Ltac2 Notation focus_last := focus_last0.
+
+Ltac2 iIntros (ipat: Ltac1.t) :=
+  ltac1:(ipat |- iIntros ipat) ipat.
+
+Tactic Notation "wp_apply" open_constr(lem) tactic1_list(ps) :=
+  let f := ltac2:(lem ps_raw |-
+    let r_auto := Ref.ref true in
+    let r_lc := Ref.ref 0 in
+    let r_as: (Ltac1.t option) Ref.ref := Ref.ref None in
+    let ps : Ltac1.t list := Option.get (Ltac1.to_list ps_raw) in
+    List.iter (fun p =>
+      let param := catch_wp_param (fun () => Ltac1.run p) in
+      match param with
+      | GenLc n => Ref.set r_lc n
+      | AsClause ipat => Ref.set r_as (Some ipat)
+      | RunAuto b => Ref.set r_auto b
+      end
+    ) ps;
+    wp_apply_core lem; try ltac1:(iPkgInit);
+    match Ref.get r_as with
+    | Some ipat => focus_last (iIntros ipat)
+    | None => ()
+    end;
+    if Ref.get r_auto then
+      focus_last (try (wp_auto_lc (Ref.get r_lc)))
+      else ()
+  ) in
+  f lem ps.
+
 (* NOTE: this could be refined to give helpful errors when auto gets stuck by
    using the [Tactic_failure] exception under the hood for backtracking, but using
    some new exception [Human_input_needed] which causes [wp_auto] to stop
    backtracking and to immediately report to the user.
  *)
-Tactic Notation "wp_auto" := ltac2:(wp_auto_lc 0).
+(* Tactic Notation "wp_auto" := ltac2:(wp_auto_lc 0). *)
 Tactic Notation "wp_auto_lc" int(x) :=
   let f := ltac2:(x |- wp_auto_lc (Option.get (Ltac1.to_int x))) in
   f x.
 
+(*
 Tactic Notation "wp_apply" open_constr(lem) :=
   wp_apply_core lem; try iPkgInit.
 
@@ -106,6 +200,7 @@ Tactic Notation "wp_apply" open_constr(lem) :=
 Tactic Notation "wp_apply" open_constr(lem) "as" constr(pat) :=
   wp_apply_core lem; try iPkgInit;
   last (iIntros pat).
+*)
 
 Lemma if_decide_bool_eq_true `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
   (if decide (#(bool_decide P) = #true) then x

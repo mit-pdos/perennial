@@ -41,7 +41,7 @@ Lemma wp_Foo__someMethodWithArgs (f : main.Foo.t) (y : go_string) (z : w64) :
 Proof.
   intros ?. wp_start as "_".
   wp_auto.
-  wp_apply wp_partiallyApplyMe; first done. wp_auto. by iApply "HΦ".
+  wp_apply wp_partiallyApplyMe; first done. by iApply "HΦ".
 Qed.
 
 Lemma wp_main :
@@ -53,12 +53,12 @@ Proof.
   wp_apply wp_with_defer as "%defer defer".
   simpl subst. wp_auto.
   wp_apply wp_partiallyApplyMe; first done.
-  wp_auto. wp_apply wp_Foo__someMethod.
-  wp_auto. wp_apply wp_Foo__someMethodWithArgs; first done.
-  wp_auto. wp_apply wp_Foo__someMethodWithArgs; first done.
-  wp_auto. wp_apply wp_partiallyApplyMe; first done.
-  wp_auto. wp_apply wp_partiallyApplyMe; first done.
-  wp_auto. by iApply "HΦ".
+  wp_apply wp_Foo__someMethod.
+  wp_apply wp_Foo__someMethodWithArgs; first done.
+  wp_apply wp_Foo__someMethodWithArgs; first done.
+  wp_apply wp_partiallyApplyMe; first done.
+  wp_apply wp_partiallyApplyMe; first done.
+  by iApply "HΦ".
 Qed.
 
 End proof.

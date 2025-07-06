@@ -218,7 +218,7 @@ Proof.
   iDestruct (Mutex_is_Locker with "[] [$]") as "#Hlk".
   { iPkgInit. }
   wp_apply (wp_Mutex__Lock with "[$HmuInv]") as "[Hlocked Hown]".
-  wp_auto. wp_for "Hown".
+  wp_for "Hown".
   destruct bool_decide eqn:?.
   { (* case: wait *)
     simpl.
@@ -229,7 +229,7 @@ Proof.
       iFrame "∗#%".
     }
     iDestruct "H" as "[Hlocked Hown]".
-    wp_auto. wp_for_post.
+    wp_for_post.
     by iFrame.
   }
   { (* case: i is durable *)
@@ -244,7 +244,7 @@ Proof.
       iFrame "HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
     }
-    wp_auto. iApply "HΦ". iFrame.
+    iApply "HΦ". iFrame.
   }
 Qed.
 
@@ -362,7 +362,7 @@ Proof.
   wp_apply (wp_Mutex__Lock with "[$HmuInv]") as "[Hlocked Hown]".
   iNamed "Hown".
   wp_auto.
-  wp_apply wp_SumAssumeNoOverflow as "%Hno_overflow". wp_auto.
+  wp_apply wp_SumAssumeNoOverflow as "%Hno_overflow".
   iMod (write_step with "[$] [$] [$] [Hupd]") as "H".
   { word. }
   {
@@ -371,7 +371,7 @@ Proof.
   }
   iDestruct "H" as "(Hnoclose & Hdat & Hghost & Hesc & #Hinv)".
   iMod (own_slice_persist with "Hdata_in") as "#Hdata_in".
-  wp_apply wp_Cond__Signal; first iFrame "#". wp_auto.
+  wp_apply wp_Cond__Signal; first iFrame "#".
   wp_apply (wp_Mutex__Unlock with "[-HΦ Hnoclose Hdat Hesc s data index]").
   {
     iFrame "HmuInv Hlocked".
@@ -379,7 +379,7 @@ Proof.
     repeat iExists _.
     iFrame "∗#%".
   }
-  wp_auto. iApply "HΦ".
+  iApply "HΦ".
   iFrame "∗#".
   wp_auto.
   wp_apply (wp_AsyncFile__wait N _ _ P with "[-]").
@@ -458,7 +458,6 @@ Proof.
   iNamed "His". wp_auto.
   wp_apply (wp_Mutex__Lock with "[]") as "[Hlocked Hown]".
   { iFrame "#". }
-  wp_auto.
   iAssert (∃ curdata curidx,
               "HpreData" ∷ own_predurable_data γ curdata ∗
               "HpreIdx" ∷ own_predurable_index γ curidx ∗
@@ -491,14 +490,13 @@ Proof.
   iNamed "HH".
   iMod (get_upd with "[$] [$] [$] [$]") as "H".
   iDestruct "H" as "(HpreData & HpreIdx & HdurIdx & Hupd & Hghost)".
-  wp_apply (wp_Mutex__Unlock with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile s index data]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ HpreData HpreIdx HdurIdx Hupd Hfile s index data]") --lc 2.
   {
     iFrame "HmuInv Hlocked".
     repeat iExists _; iFrame "∗#%".
     iFrame "#".
     done.
   }
-  wp_auto_lc 2.
   iDestruct (lc_split with "[$]") as "Hlc".
   iCombine "Hfilename_in Hfilename" gives %[_ [=<-]].
   wp_apply (wp_FileWrite with "[$Hdata]").
@@ -533,7 +531,7 @@ Proof.
   iMod (update_durable_index with "[$] HnewWits [$]") as "[HdurIdx Hghost]".
   wp_apply wp_Cond__Broadcast.
   { iFrame "#". }
-  wp_auto. wp_for_post.
+  wp_for_post.
   iFrame "HΦ Hlocked".
   iFrame "∗#%".
 Qed.
@@ -620,9 +618,9 @@ Proof.
   wp_start. iNamed "Hpre".
   wp_auto_lc 2.
   iDestruct (lc_split with "[$]") as "Hlc".
-  wp_apply (wp_NewCond) as "% #?". wp_auto.
-  wp_apply (wp_NewCond) as "% #?". wp_auto.
-  wp_apply (wp_NewCond) as "% #?". wp_auto.
+  wp_apply (wp_NewCond) as "% #?".
+  wp_apply (wp_NewCond) as "% #?".
+  wp_apply (wp_NewCond) as "% #?".
   wp_apply (wp_FileRead).
   iDestruct (own_crash_unfold with "Hfile") as "Hfile".
   unshelve iMod ("Hfile" $! _ _ with "[$]") as "[[HP $] Hau]".
@@ -658,7 +656,7 @@ Proof.
     { iFrame "∗#". }
     done.
   }
-  wp_auto. iApply "HΦ".
+  iApply "HΦ".
   iFrame "∗#".
 Qed.
 
