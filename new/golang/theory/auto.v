@@ -100,6 +100,10 @@ Ltac2 Type wp_param := [
 
 Ltac2 Type exn ::= [ WpParamExn(wp_param) ].
 
+(* FIXME: setting this variable affects all imports; there doesn't seem to be a
+way to set it locally *)
+Ltac2 mutable wp_apply_auto_default : bool := true.
+
 Tactic Notation "--no-auto" :=
   ltac2:(Control.zero (WpParamExn (RunAuto false))).
 Tactic Notation "--auto" :=
@@ -178,7 +182,7 @@ Ltac2 wp_apply (lem: Ltac1.t) (do_auto: bool) (lc: int) (as_clause: Ltac1.t opti
 
 Tactic Notation "wp_apply" open_constr(lem) tactic1_list(ps) :=
   let f := ltac2:(lem ps_raw |-
-    let r_auto := Ref.ref true in
+    let r_auto := Ref.ref wp_apply_auto_default in
     let r_lc := Ref.ref 0 in
     let r_as: (Ltac1.t option) Ref.ref := Ref.ref None in
     let ps : Ltac1.t list := Option.get (Ltac1.to_list ps_raw) in

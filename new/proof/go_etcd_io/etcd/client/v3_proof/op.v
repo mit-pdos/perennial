@@ -2,6 +2,8 @@ From New.proof.go_etcd_io.etcd.client.v3_proof Require Import base definitions.
 
 #[local] Transparent is_pkg_init_clientv3.
 
+Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
+
 (* abstraction of an etcd [Op] *)
 Module Op.
 Inductive t :=
@@ -102,7 +104,7 @@ Proof.
   iIntros "%val_sl val_sl". progress wp_pures.
   rewrite -!default_val_eq_zero_val. progress wp_pures.
   wp_store. progress wp_pures. wp_load. progress wp_pures.
-  wp_apply wp_Op__applyOpts --no-auto. progress wp_pures.
+  wp_apply wp_Op__applyOpts. progress wp_pures.
   wp_bind.
 
   Time eapply (tac_wp_load_ty []);

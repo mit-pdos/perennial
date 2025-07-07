@@ -5,6 +5,8 @@ Require Import New.proof.go_etcd_io.etcd.client.v3.
 From New.proof Require Import context sync.
 From New.proof Require Export chan.
 
+Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
+
 Class concurrencyG Σ :=
   {
     donecG :: closeable_chanG Σ ;
@@ -93,8 +95,8 @@ Lemma wp_NewSession (client : loc) γetcd :
 Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
-  wp_apply (wp_Client__GetLogger with "[$]") as "% _".
-  wp_apply (wp_Client__Ctx with "[$]") as "% % #Hcontext".
+  wp_apply (wp_Client__GetLogger with "[$]") as "% _". wp_auto.
+  wp_apply (wp_Client__Ctx with "[$]") as "% % #Hcontext". wp_auto.
   wp_alloc ops as "Hops".
   wp_auto.
   (* only consider nil options *)
@@ -106,7 +108,7 @@ Proof.
   iIntros "_".
 
   wp_auto.
-  wp_apply (wp_Client__Grant with "[$]") as "* [Hresp Hl]".
+  wp_apply (wp_Client__Grant with "[$]") as "* [Hresp Hl]". wp_auto.
   destruct bool_decide eqn:Herr.
   2:{ (* got an error; early return *)
     wp_auto.
@@ -122,11 +124,12 @@ Proof.
   iDestruct "Hl" as "#Hlease0".
   wp_apply (wp_WithCancel True) as "* (Hcancel & Hctx)".
   { iFrame "#". }
+  wp_auto.
 
   wp_apply (wp_Client__KeepAlive with "[$]") as "* #Hkch".
-  rewrite bool_decide_decide. destruct decide.
+  wp_auto. rewrite bool_decide_decide. destruct decide.
   2:{ (* error *)
-    wp_auto. wp_apply "Hcancel". iApply "HΦ".
+    wp_auto. wp_apply "Hcancel". wp_auto. iApply "HΦ".
     rewrite decide_False //.
   }
   iDestruct "Hkch" as "#[Hkch #Hkrecv]".
@@ -140,6 +143,7 @@ Proof.
   }
   wp_auto.
   wp_apply (wp_chan_make (V:=())) as "* Hdonec".
+  wp_auto.
   rename s into ctx_desc.
   wp_alloc s as "Hs".
   wp_auto.
@@ -164,7 +168,7 @@ Proof.
       wp_auto.
       wp_apply (wp_closeable_chan_close with "[$Hdonec_open]") as "_".
       { iFrame "#". done. }
-      wp_apply "Hcancel".
+      wp_auto. wp_apply "Hcancel". wp_auto.
       done.
     }
     {
@@ -184,7 +188,7 @@ Proof.
   iDestruct (struct_fields_split with "Hs") as "hs".
   simpl. iClear "Hctx". iNamed "hs".
   iPersist "Hclient Hid Hdonec".
-  iModIntro.
+  wp_auto. iModIntro.
   iApply "HΦ".
   rewrite decide_True //.
   iFrame "#".
