@@ -335,7 +335,7 @@ Proof.
   wp_auto.
   wp_apply (wp_Mutex__Unlock with "[-chan_len HΦ]").
   - iFrame. iFrame "#". iModIntro. iFrame.
-  - iApply "HΦ". iPureIntro. lia.
+  - wp_auto. iApply "HΦ". iPureIntro. lia.
 Qed.
 
 Lemma wp_Channel__Cap (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V) :
@@ -439,6 +439,7 @@ Proof.
    } 
   }
   {
+    wp_auto.
     wp_for_post. iFrame.
   }
   }
@@ -454,6 +455,7 @@ Proof.
    }
   } 
    {
+    wp_auto.
     wp_for_post. iFrame "HΦ". iFrame. iFrame "#".
     iSplitL "";first (iPureIntro;done).
     iFrame.
@@ -528,7 +530,6 @@ wp_apply   (wp_TrySelectCase2 with "[Hpre]"). all: try done.
  left. done. 
 }
 iIntros (selected) "Hcases". 
-wp_auto. 
 destruct selected.
 {
   wp_auto. replace ran with (W64 0). simpl. iApply "HΦ".
@@ -542,7 +543,7 @@ destruct selected.
 wp_apply   (wp_TrySelect with "[H1]"). all: try done.
 {
 iIntros (selected). rewrite H1.
-iIntros "Hcases". wp_auto. 
+iIntros "Hcases".  
 destruct selected.
 {
   wp_auto. wp_for_post. iApply "HΦ". iFrame. done.
@@ -552,7 +553,6 @@ destruct selected.
 wp_apply   (wp_TrySelect with "[H2]"). all: try done.
 iIntros (selected).
 iIntros "Hcase2".
- wp_auto. 
 destruct selected.
 {
   wp_auto. wp_for_post. iApply "HΦ". iFrame. done.
@@ -583,7 +583,6 @@ wp_apply   (wp_TrySelect with "[H1]"). all: try done.
   word.
 }
 iIntros (selected) "Hcases". 
-wp_auto. 
 destruct selected.
 {
   wp_auto. 
@@ -607,7 +606,7 @@ destruct selected.
 wp_apply   (wp_TrySelect with "[H1]"). all: try done.
 {
 iIntros (selected). rewrite e.
-iIntros "Hcases". wp_auto. 
+iIntros "Hcases". 
 destruct selected.
 {
   wp_auto. wp_for_post. iApply "HΦ". iFrame. done.
@@ -617,7 +616,6 @@ destruct selected.
 wp_apply   (wp_TrySelect with "[H2]"). all: try done.
 iIntros (selected).
 iIntros "Hcase2".
-wp_auto. 
 destruct selected.
 {
  wp_auto. wp_for_post. iApply "HΦ". iFrame. done. 
@@ -643,7 +641,7 @@ destruct selected.
 wp_apply   (wp_TrySelect with "[H1]"). all: try done.
 {
 iIntros (selected). 
-iIntros "Hcases". wp_auto. 
+iIntros "Hcases". 
 destruct selected.
 {
   wp_auto. wp_for_post. iApply "HΦ". iFrame. done.
@@ -653,7 +651,6 @@ destruct selected.
 wp_apply   (wp_TrySelect with "[H2]"). all: try done.
 iIntros (selected).
 iIntros "Hcase2".
-wp_auto. 
 destruct selected.
 {
  wp_auto. wp_for_post. iApply "HΦ". iFrame. done. 

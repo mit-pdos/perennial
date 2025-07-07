@@ -513,7 +513,15 @@ Proof.
     wp_apply ((wp_Channel__Send w64 sync_params 0%nat 1%Qp (W64 0)) with "[HScsync syncCh HSendDone]").
     all: try (subst;done).
     { iFrame "#". subst. simpl. unfold send_post. simpl. iDestruct "HSendDone" as "[_ Hsc]".
-      iFrame. iPureIntro; done. }
+      iFrame.
+      destruct decide.
+      {
+       iFrame. iPureIntro. done. 
+      } 
+      {
+        done.
+      } 
+      }
     iIntros "_".
     wp_auto. done.
   }
@@ -546,8 +554,14 @@ Proof.
     all: try (subst;done).
     { subst. simpl. iFrame. iFrame "#". iFrame "%". unfold send_post. 
       (* Put the send permissions back together *)
+      destruct decide.
+      {
       iCombine "HMainBufSend Hscf" as "Hcperm".
-      iFrame. iPureIntro;done.
+      iFrame. iPureIntro. done. 
+      } 
+      {
+        done.
+      } 
     }
 
     (* Receive both values from buffered channel *)

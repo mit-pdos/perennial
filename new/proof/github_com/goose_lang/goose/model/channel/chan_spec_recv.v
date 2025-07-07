@@ -238,6 +238,7 @@ Proof.
   wp_auto.
    wp_apply (wp_Mutex__Lock with "[$Hlock]") as "[locked Hinv]".
   iNamed "Hinv". 
+  wp_auto.
     wp_apply (wp_Channel__BufferedTryReceiveLocked with "[HQ HChanState HCloseTokPostClose count state first value HSndCtrAuth HRcvCtrAuth HRecvPerm]"). all: try done.
   {
     
@@ -258,6 +259,7 @@ destruct success.
     {
 iFrame.
     }
+    wp_auto.
     iApply "HΦ". iFrame. done.
   }
   {
@@ -268,6 +270,7 @@ iFrame.
     {
 iFrame.
     }
+    wp_auto.
     iApply "HΦ". iFrame. 
     done.
   }
@@ -281,6 +284,7 @@ iFrame.
     {
 iFrame.
     }
+    wp_auto.
     iApply "HΦ". iFrame. 
     iFrame "#".
     iPureIntro. done.
@@ -672,6 +676,7 @@ wp_start. wp_auto. iNamed "Hpre".
         iFrame. rewrite Hsame. iFrame.
       }
       {
+        wp_auto.
        wp_apply (wp_Mutex__Lock with "[$Hlock]") as "[locked Hinv]".
       iNamed "Hinv".
       iNamed "HRecvPerm".
@@ -728,6 +733,7 @@ wp_start. wp_auto. iNamed "Hpre".
       rewrite Hsame. iFrame.
       iExists Valid_start. iFrame.
     }
+    wp_auto.
     iApply "HΦ". iFrame "#". iFrame. done.
       }
     }
@@ -777,6 +783,7 @@ wp_start. wp_auto. iNamed "Hpre".
       iFrame.
       rewrite Hsame. iFrame.
     }
+    wp_auto.
     iApply "HΦ". iFrame "#". iFrame. 
       replace (i + 1)%nat with (S i) by lia.
     done.
@@ -804,6 +811,7 @@ wp_start. wp_auto. iNamed "Hpre".
       rewrite Hsame. iFrame. done.
     }
     {
+      wp_auto.
      iApply "HΦ". iFrame. subst n. replace send_count0 with recv_count0.
      iFrame "#".
       replace (i + 0)%nat with i by lia.
@@ -825,6 +833,7 @@ wp_start. wp_auto. iNamed "Hpre".
       iFrame.
       rewrite Hsame. iFrame.
     }
+    wp_auto.
     iApply "HΦ". iFrame "#". iFrame. iPureIntro. done. 
   }
   {
@@ -861,6 +870,7 @@ wp_start. wp_auto. iNamed "Hpre".
       iFrame.
       rewrite Hsame. iFrame.
     }
+    wp_auto.
     iApply "HΦ". iFrame "#". iFrame. done.
       }
   }
@@ -872,6 +882,7 @@ wp_start. wp_auto. iNamed "Hpre".
       iFrame.
       rewrite Hsame. iFrame.
     }
+    wp_auto.
     iApply "HΦ". iFrame "#". iFrame. iPureIntro. done. 
   }
   {
@@ -882,6 +893,7 @@ wp_start. wp_auto. iNamed "Hpre".
       iFrame.
       rewrite Hsame. iFrame.
     }
+    wp_auto.
     iApply "HΦ". iFrame "#". iFrame. iPureIntro. done.  
   }
   {
@@ -906,6 +918,7 @@ wp_start. wp_auto. iNamed "Hpre".
       rewrite Hsame. iFrame. done.
     }
     {
+      wp_auto.
      iApply "HΦ". iFrame. subst n. replace send_count with recv_count.
      iFrame "#". iPureIntro. done. 
     }
