@@ -73,6 +73,29 @@ Proof.
   word.
 Qed.
 
+Lemma wp_BytesClone (b:slice.t) (xs:list u8) (dq:dfrac) :
+  {{{ is_pkg_init std ∗ own_slice b dq xs }}}
+    std @ "BytesClone" #b
+  {{{ b', RET #b'; own_slice b' (DfracOwn 1) xs ∗ own_slice_cap w8 b' }}}.
+Proof.
+  wp_start as "Hb". wp_auto.
+  wp_if_destruct; try wp_auto.
+  - iApply "HΦ". 
+    + iSplitL.
+      * iDestruct (own_slice_len with "Hb") as "%Hb_len".
+        apply nil_length_inv in Hb_len. subst.
+        iDestruct (own_slice_nil (DfracOwn 1)) as "Hnil".
+        iApply "Hnil".
+      * iApply own_slice_cap_nil.
+  - wp_apply (wp_slice_append with "[$Hb]"). 
+    + iSplitL.
+      * iApply own_slice_nil.
+      * iApply own_slice_cap_nil.
+    + rewrite app_nil_l.
+      iIntros (?) "(Hsl & Hcap & Hb)".
+      wp_auto. iApply "HΦ". iFrame.
+Qed.
+
 Lemma wp_SumNoOverflow (x y : u64) :
   {{{ is_pkg_init std }}}
     std @ "SumNoOverflow" #x #y
