@@ -86,6 +86,21 @@ projs = [
         ],
     ),
     create_proj(repo="mit-pdos/go-journal"),
+    create_proj(
+        repo="sanjit-bhat/pav",
+        pkgs=[
+            "./advrpc",
+            "./alicebob",
+            "./auditor",
+            "./client",
+            "./cryptoutil",
+            "./hashchain",
+            "./ktcore",
+            "./merkle",
+            "./safemarshal",
+            "./server",
+        ],
+    ),
 ]
 
 
