@@ -13,6 +13,36 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ}.
 
 #[global] Program Instance : IsPkgInit marshal := ltac2:(build_pkg_init ()).
 
+(* Some helper definition for working with slices of primitive values. *)
+
+Definition uint64_has_encoding (encoded : list u8) (x : u64) : Prop :=
+  encoded = u64_le x.
+
+Definition uint32_has_encoding (encoded : list u8) (x : u32) : Prop :=
+  encoded = u32_le x.
+
+Definition bool_has_encoding (encoded : list u8) (x : bool) : Prop :=
+  encoded = [if x then W8 1 else W8 0].
+
+Definition string_has_encoding (encoded : list u8) (x : byte_string) : Prop :=
+  encoded = x.
+
+Definition byte_has_encoding (encoded : list u8) (x : list u8) : Prop :=
+  encoded = x.
+
+Definition own_prim {X : Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X goT} 
+  (x__v:X) (x__c:X) (dq:dfrac) : iProp Σ :=
+  ⌜ x__v = x__c ⌝.
+
+Lemma own_prim_eq {X:Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X goT}
+  (x__v:X) (x__c:X) (dq: dfrac) :
+  own_prim x__v x__c dq ⊢@{_} ⌜x__v = x__c⌝.
+Proof.
+  iIntros "Hown".
+  iUnfold own_prim in "Hown".
+  iFrame.
+Qed.
+
 Theorem wp_ReadInt tail (s: slice.t) q x :
   {{{ is_pkg_init marshal ∗ own_slice s q (u64_le x ++ tail) }}}
     marshal @ "ReadInt" #s
