@@ -457,6 +457,7 @@ Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X
   (has_encoding : list u8 -> C -> Prop) (own : X -> C -> dfrac -> iProp Σ) (writeOne : func.t) (dq : dfrac) :
   {{{   is_pkg_init marshal ∗
         "Hsl" ∷ own_slice pre_sl (DfracOwn 1) prefix ∗
+        "Hcap" ∷ own_slice_cap w8 pre_sl ∗
         "Hown" ∷ own_slice xsl dq xs ∗
         "Hpred" ∷ ([∗ list] x;c ∈ xs;cs, own x c dq) ∗ 
         "#Hwriteone" ∷ ∀ pre_sl' (prefix' : list u8) x c,
