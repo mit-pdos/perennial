@@ -191,8 +191,8 @@ Theorem wp_ReadSlice {X : Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X g
       }}}
         #readOne (#enc_sl')
       {{{ v suff_sl, RET (#v, #suff_sl);
-          own_slice suff_sl dq suffix' ∗
-          own v x (DfracOwn 1)
+          own v x (DfracOwn 1) ∗
+          own_slice suff_sl dq suffix'
       }}}
   }}}
     marshal @ "ReadSlice" #goT #enc_sl #count #readOne
@@ -469,15 +469,16 @@ Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X
           {{{
                 (enc : list u8) (enc_sl : slice.t), RET #enc_sl;
                 ⌜ has_encoding enc c ⌝ ∗
+                own x c dq ∗
                 own_slice enc_sl (DfracOwn 1) (prefix' ++ enc) ∗
-                own_slice_cap w8 enc_sl ∗
-                own x c dq
+                own_slice_cap w8 enc_sl
           }}}
   }}}
     marshal @ "WriteSlice" #goT #pre_sl #xsl #writeOne
   {{{
         enc enc_sl, RET #enc_sl;
         own_slice xsl dq xs ∗
+        ([∗ list] x;c ∈ xs;cs, own x c dq) ∗ 
         ⌜ encodes enc cs has_encoding ⌝ ∗
         own_slice enc_sl (DfracOwn 1) (prefix ++ enc) ∗
         own_slice_cap w8 enc_sl
