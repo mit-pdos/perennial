@@ -87,6 +87,9 @@ Ltac2 wp_auto_lc (num_lc_wanted : int) :=
         ()
     ).
 
+(* optional parameter setup - see
+https://github.com/rocq-community/rocq-tricks/blob/main/src/TacticNotationOptionalParams.v
+for a detailed explanation of how this works *)
 Ltac2 Type wp_param := [
   | RunAuto(bool)
   (* generate later credits *)
@@ -99,11 +102,16 @@ Ltac2 Type exn ::= [ WpParamExn(wp_param) ].
 
 Tactic Notation "--no-auto" :=
   ltac2:(Control.zero (WpParamExn (RunAuto false))).
+Tactic Notation "--auto" :=
+  ltac2:(Control.zero (WpParamExn (RunAuto true))).
 Tactic Notation "--lc" int(n) :=
   let f := ltac2:(n' |-
     let n := Option.get (Ltac1.to_int n') in
     Control.zero (WpParamExn (GenLc n))) in
   f n.
+(* NOTE: does not support other variants of [iIntros] from
+   [iris/iris/proofmode/ltac_tactics.v] to make intro patterns more canonical.
+ *)
 Tactic Notation "as" constr(ipat) :=
   let f := ltac2:(ipat' |-
       Control.zero (WpParamExn (AsClause ipat'))) in
@@ -141,9 +149,7 @@ Tactic Notation "wp_auto" tactic1_list(ps) :=
   ) in
   f ps.
 
-Ltac2 wp_apply_core :=
-  fun lem => ltac1:(lem |- wp_apply_core lem) lem.
-
+(* TODO: move this general-purpose Ltac2 infrastructure out *)
 Ltac2 focus_last0 (t: unit -> 'a) : 'a :=
   let n := Control.numgoals () in
   if Int.equal n 0 then ()
@@ -152,8 +158,23 @@ Ltac2 focus_last0 (t: unit -> 'a) : 'a :=
 (* equivalent of ssreflect last *)
 Ltac2 Notation focus_last := focus_last0.
 
-Ltac2 iIntros (ipat: Ltac1.t) :=
+(* TODO: centralize Ltac2 wrappers (which are useful for building Ltac2
+automation) *)
+Ltac2 wp_apply_core (lem: Ltac1.t) : unit :=
+  ltac1:(lem |- wp_apply_core lem) lem.
+
+Ltac2 iIntros (ipat: Ltac1.t) : unit :=
   ltac1:(ipat |- iIntros ipat) ipat.
+
+Ltac2 wp_apply (lem: Ltac1.t) (do_auto: bool) (lc: int) (as_clause: Ltac1.t option) :=
+    wp_apply_core lem; try ltac1:(iPkgInit);
+    match as_clause with
+    | Some ipat => focus_last (iIntros ipat)
+    | None => ()
+    end;
+    if do_auto then
+      focus_last (try (wp_auto_lc lc))
+      else ().
 
 Tactic Notation "wp_apply" open_constr(lem) tactic1_list(ps) :=
   let f := ltac2:(lem ps_raw |-
@@ -169,14 +190,7 @@ Tactic Notation "wp_apply" open_constr(lem) tactic1_list(ps) :=
       | RunAuto b => Ref.set r_auto b
       end
     ) ps;
-    wp_apply_core lem; try ltac1:(iPkgInit);
-    match Ref.get r_as with
-    | Some ipat => focus_last (iIntros ipat)
-    | None => ()
-    end;
-    if Ref.get r_auto then
-      focus_last (try (wp_auto_lc (Ref.get r_lc)))
-      else ()
+    wp_apply lem (Ref.get r_auto) (Ref.get r_lc) (Ref.get r_as)
   ) in
   f lem ps.
 
@@ -185,22 +199,9 @@ Tactic Notation "wp_apply" open_constr(lem) tactic1_list(ps) :=
    some new exception [Human_input_needed] which causes [wp_auto] to stop
    backtracking and to immediately report to the user.
  *)
-(* Tactic Notation "wp_auto" := ltac2:(wp_auto_lc 0). *)
 Tactic Notation "wp_auto_lc" int(x) :=
   let f := ltac2:(x |- wp_auto_lc (Option.get (Ltac1.to_int x))) in
   f x.
-
-(*
-Tactic Notation "wp_apply" open_constr(lem) :=
-  wp_apply_core lem; try iPkgInit.
-
-(* NOTE: did not copy in other variants of [iIntros] from [iris/iris/proofmode/ltac_tactics.v] to
-   make intro patterns more canonical.
- *)
-Tactic Notation "wp_apply" open_constr(lem) "as" constr(pat) :=
-  wp_apply_core lem; try iPkgInit;
-  last (iIntros pat).
-*)
 
 Lemma if_decide_bool_eq_true `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
   (if decide (#(bool_decide P) = #true) then x
