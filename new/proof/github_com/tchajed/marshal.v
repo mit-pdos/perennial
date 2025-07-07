@@ -469,9 +469,9 @@ Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X
           {{{
                 (enc : list u8) (enc_sl : slice.t), RET #enc_sl;
                 ⌜ has_encoding enc c ⌝ ∗
+                own x c dq ∗
                 own_slice enc_sl (DfracOwn 1) (prefix' ++ enc) ∗
-                own_slice_cap w8 enc_sl ∗
-                own x c dq
+                own_slice_cap w8 enc_sl
           }}}
   }}}
     marshal @ "WriteSlice" #goT #pre_sl #xsl #writeOne
