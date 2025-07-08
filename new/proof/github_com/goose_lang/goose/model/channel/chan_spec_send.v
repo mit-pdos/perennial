@@ -1066,7 +1066,6 @@ wp_apply (wp_Channel__SenderCompleteOrOffer V params i q v v0 vs
     
     (* Return success *)
     
-    wp_auto.
     iApply "HΦ". simpl. iFrame.  simpl. rewrite Hl.  simpl. iFrame.  replace (i - 0%nat) with (Z.of_nat i) by lia.
      replace (i -0) with (Z.of_nat i) by lia. iFrame.
 
@@ -1084,8 +1083,7 @@ wp_apply (wp_Channel__SenderCompleteOrOffer V params i q v v0 vs
     }
     
     (* Check offer result *)
-    wp_auto.
-    wp_apply (wp_Mutex__Lock with "[$Hlock]"). 
+    wp_apply (wp_Mutex__Lock with "[$Hlock]").
     iIntros "[locked inv]". wp_auto.
 
     iNamed "inv". 
@@ -1170,7 +1168,7 @@ wp_apply (wp_Channel__SenderCheckOfferResult V params i q vs send_count0 recv_co
       simpl. iFrame. rewrite Hl. simpl. iFrame.
       iPureIntro. done.
     }
-    wp_auto.  iApply "HΦ". iFrame.
+    iApply "HΦ". iFrame.
     unfold P. destruct params.(ch_is_single_party).
     {
       subst send_count0.
@@ -1189,7 +1187,7 @@ wp_apply (wp_Channel__SenderCheckOfferResult V params i q vs send_count0 recv_co
        iModIntro. iExists Valid_start. iFrame. 
      simpl. iFrame. rewrite Hl. iFrame. done.
      }
-     wp_auto.  iApply "HΦ". iFrame.
+     iApply "HΦ". iFrame.
      unfold P. destruct params.(ch_is_single_party).
      {
        subst send_count0.
@@ -1210,7 +1208,7 @@ wp_apply (wp_Channel__SenderCheckOfferResult V params i q vs send_count0 recv_co
   iModIntro. iFrame. rewrite Hl. iFrame. done.  
 }
 {
- wp_auto.  iApply "HΦ". iFrame. iFrame "#". iPureIntro. done.
+ iApply "HΦ". iFrame. iFrame "#". iPureIntro. done.
 }
   + iNamed "Hres".
   
@@ -1220,7 +1218,7 @@ wp_apply (wp_Channel__SenderCheckOfferResult V params i q vs send_count0 recv_co
   iModIntro. iFrame. rewrite Hl. simpl.  iFrame. done.  
 }
 {
- wp_auto.  iApply "HΦ". iFrame "#". iFrame. iPureIntro. done. 
+ iApply "HΦ". iFrame "#". iFrame. iPureIntro. done.
 }
 + iNamed "Hres".
   
@@ -1230,7 +1228,7 @@ HCh $Hlocked]").
 iModIntro. iFrame. rewrite Hl. simpl. iFrame. done.  
 }
 {
-wp_auto.  iApply "HΦ". iFrame. iFrame "#". iPureIntro. done. 
+iApply "HΦ". iFrame. iFrame "#". iPureIntro. done.
 }
 + iNamed "Hres".
 
@@ -1240,7 +1238,7 @@ HCh $Hlocked]").
 iModIntro. iFrame.  iFrame. simpl. rewrite Hl. iFrame. done. 
 }
 {
-wp_auto.   iApply "HΦ". iFrame "#". iFrame.
+iApply "HΦ". iFrame "#". iFrame.
 iPureIntro. done.
 }
 + iNamed "Hres".
@@ -1252,7 +1250,7 @@ iModIntro. iFrame. rewrite Hl. iFrame. done.
 }
 
 {
-wp_auto. iApply "HΦ". iFrame. iFrame "#".
+iApply "HΦ". iFrame. iFrame "#".
 iPureIntro. done. 
 }
   - (* Case: Buffered channel (size > 0) *)
@@ -1300,7 +1298,7 @@ iPureIntro. done.
     }
     assert ((params.(ch_size) =? 0) = false) by lia.
     rewrite H0. iNamed "HChanState". unfold isBufferedChan.
-    unfold isBufferedChanLogical. wp_auto.
+    unfold isBufferedChanLogical.
 
     wp_apply (wp_Channel__BufferedTrySend_params V params q i v with 
           "[HP HSc HSndCtrAuth HCloseTokPostClose HRcvCtrAuth state value count HPs HQs HBuffSlice first]"). 
@@ -1323,7 +1321,6 @@ iFrame "∗#".  rewrite H0. iFrame.
           .
         { iModIntro. unfold isChanInner. iExists vs0, count0, first0, v1, send_count0, recv_count0. unfold send_ctr_frozen. rewrite H0. iFrame. 
         }
-        wp_auto.
         iApply "HΦ". iFrame.
         }
         {
@@ -1376,7 +1373,6 @@ iFrame "∗#".  rewrite H0. iFrame.
             destruct vs0. all:try iFrame;done.
           }
             
-       wp_auto.
        iApply "HΦ". iFrame.
        replace (i + 1)%nat with (S i) by lia.
        iFrame. iFrame "#". iPureIntro. done.

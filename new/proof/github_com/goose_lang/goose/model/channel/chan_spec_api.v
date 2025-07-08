@@ -335,7 +335,7 @@ Proof.
   wp_auto.
   wp_apply (wp_Mutex__Unlock with "[-chan_len HΦ]").
   - iFrame. iFrame "#". iModIntro. iFrame.
-  - wp_auto. iApply "HΦ". iPureIntro. lia.
+  - iApply "HΦ". iPureIntro. lia.
 Qed.
 
 Lemma wp_Channel__Cap (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V) :
@@ -439,7 +439,6 @@ Proof.
    } 
   }
   {
-    wp_auto.
     wp_for_post. iFrame.
   }
   }
@@ -455,7 +454,6 @@ Proof.
    }
   } 
    {
-    wp_auto.
     wp_for_post. iFrame "HΦ". iFrame. iFrame "#".
     iSplitL "";first (iPureIntro;done).
     iFrame.

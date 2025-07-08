@@ -167,6 +167,7 @@ Proof.
     split; [set_solver | split; repeat split; lia].
   }
 
+  wp_auto.
   wp_for "Hinv".
   iDestruct "Hcase" as %Hi_case.
   iDestruct "Hbounds" as %Hbounds.
@@ -501,6 +502,7 @@ Proof.
     replace sync_ch with (sync_params.(ch_loc w64)) by (subst;done).
     replace buf_ch with buff_params.(ch_loc w64) by (subst;done).
     (* Send 42 on buffered channel *)
+    wp_auto.
     wp_apply ((wp_Channel__Send w64 buff_params 0%nat (1/2)%Qp (W64 42)) with "[HForkBuffSend HSend42 bufCh]"). all: try (subst;done).
     { 
       iFrame "#%". unfold P. iFrame. subst. simpl. iSplitL "";first done. 
@@ -651,6 +653,7 @@ Proof.
   wp_apply (wp_fork with "[HSc]").
   {
     replace msg_ch_ptr with (params.(ch_loc byte_string)) by (subst;done).
+    wp_auto.
     (* Send "hello world" on the message channel *)
     wp_apply ((wp_Channel__Send byte_string params 0%nat 1%Qp "hello world"%go) with "[messageChan HSc]").
     all: try (subst;done).
