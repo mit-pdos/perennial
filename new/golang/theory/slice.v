@@ -328,9 +328,7 @@ Proof.
 
   wp_if_destruct.
   {
-    wp_apply (wp_ArbitraryInt).
-    iIntros (?).
-    wp_pures.
+    wp_apply (wp_ArbitraryInt) as "%".
     rewrite slice_val_fold.
     iApply "HΦ".
     rewrite own_slice_unseal.
@@ -1095,9 +1093,9 @@ Proof.
       list_elem vs' i as y.
       wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2".
       { eauto. }
-      wp_auto. wp_apply (wp_store_slice_elem with "[$Hs1]") as "Hs1".
+      wp_apply (wp_store_slice_elem with "[$Hs1]") as "Hs1".
       { len. }
-      wp_auto. wp_for_post.
+      wp_for_post.
       iFrame.
       replace (uint.nat (word.add i (W64 1))) with
         (S (uint.nat i)) by word.
@@ -1184,7 +1182,7 @@ Proof.
   iDestruct (own_slice_len with "Hs2") as %Hs2.
   iDestruct (own_slice_wf with "Hs") as %Hwf1.
   iDestruct (own_slice_wf with "Hs2") as %Hwf2.
-  wp_apply wp_sum_assume_no_overflow as "%Hoverflow". wp_auto.
+  wp_apply wp_sum_assume_no_overflow as "%Hoverflow".
   wp_if_destruct; try wp_auto.
   - wp_pure.
     { word. }
@@ -1220,8 +1218,8 @@ Proof.
     }
     iApply (own_slice_cap_slice_f_change_first with "Hs_new_cap").
     move: l; word.
-  - wp_apply (wp_ArbitraryInt) as "%x". wp_auto.
-    wp_apply wp_sum_assume_no_overflow as "%Hoverflow2". wp_auto.
+  - wp_apply (wp_ArbitraryInt) as "%x".
+    wp_apply wp_sum_assume_no_overflow as "%Hoverflow2".
     wp_apply wp_slice_make3.
     { move: Hoverflow2; word. }
     iIntros (sl) "(Hnew & Hnew_cap & %Hcap)".

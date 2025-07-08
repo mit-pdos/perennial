@@ -61,8 +61,8 @@ Proof.
   wp_method_call. wp_call.
   iNamed "Hlock".
   wp_auto.
-  wp_apply ("H_Unlock" with "[$]"). wp_auto.
-  wp_apply ("H_Lock" with "[$]") as "?". wp_auto.
+  wp_apply ("H_Unlock" with "[$]").
+  wp_apply ("H_Lock" with "[$]") as "?".
   iApply "HΦ". done.
 Qed.
 

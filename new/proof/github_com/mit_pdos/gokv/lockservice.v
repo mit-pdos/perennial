@@ -89,7 +89,7 @@ Proof.
   wp_start as "(#Hck&#Hlock)".
   iNamed "Hck".
   iNamed "Hkv_is".
-  wp_auto_lc 1.
+  wp_auto --lc 1.
   wp_for.
   wp_apply ("HcputSpec" with "[//]").
   rewrite /is_lock.

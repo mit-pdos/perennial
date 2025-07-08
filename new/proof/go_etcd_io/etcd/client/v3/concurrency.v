@@ -5,6 +5,8 @@ Require Import New.proof.go_etcd_io.etcd.client.v3.
 From New.proof Require Import context sync.
 From New.proof Require Export chan.
 
+Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
+
 Class concurrencyG Σ :=
   {
     donecG :: closeable_chanG Σ ;

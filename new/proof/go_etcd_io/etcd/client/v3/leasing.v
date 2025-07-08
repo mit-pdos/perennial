@@ -10,6 +10,7 @@ Require Import New.proof.go_etcd_io.etcd.client.v3.
 From Perennial.algebra Require Import ghost_var.
 Require Import Perennial.base.
 
+Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
 
 Class leasingG Σ :=
   {
