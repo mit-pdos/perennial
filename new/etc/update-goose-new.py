@@ -99,6 +99,8 @@ projs = [
             "./merkle",
             "./safemarshal",
             "./server",
+            "./cryptoffi",
+            "./netffi",
         ],
     ),
 ]
