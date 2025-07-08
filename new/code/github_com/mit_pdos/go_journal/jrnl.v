@@ -14,7 +14,7 @@ Section code.
 
 Definition LogBlocks : expr := #(W64 511).
 
-Definition LogBytes : expr := #(W64 (4096 * 511)).
+Definition LogBytes : expr := #(W64 2093056).
 
 Definition Op : go_type := structT [
   "log" :: ptrT;

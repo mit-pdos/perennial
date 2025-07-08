@@ -17,12 +17,12 @@ Section code.
 (* space for the end position *)
 Definition HDRMETA : expr := #(W64 8).
 
-Definition HDRADDRS : expr := (disk.BlockSize - HDRMETA) `quot` #(W64 8).
+Definition HDRADDRS : expr := #(W64 511).
 
-Definition LOGSZ : expr := HDRADDRS.
+Definition LOGSZ : expr := #(W64 511).
 
 (* 2 for log header *)
-Definition LOGDISKBLOCKS : expr := HDRADDRS + #(W64 2).
+Definition LOGDISKBLOCKS : expr := #(W64 513).
 
 Definition LOGHDR : expr := #(W64 0).
 

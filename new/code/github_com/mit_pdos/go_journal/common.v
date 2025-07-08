@@ -12,19 +12,19 @@ Section code.
 (* on-disk size *)
 Definition INODESZ : expr := #(W64 128).
 
-Definition NBITBLOCK : expr := disk.BlockSize * #(W64 8).
+Definition NBITBLOCK : expr := #(W64 32768).
 
-Definition INODEBLK : expr := disk.BlockSize `quot` INODESZ.
+Definition INODEBLK : expr := #(W64 32).
 
 Definition NINODEBITMAP : expr := #(W64 1).
 
 (* space for the end position *)
 Definition HDRMETA : expr := #(W64 8).
 
-Definition HDRADDRS : expr := (disk.BlockSize - HDRMETA) `quot` #(W64 8).
+Definition HDRADDRS : expr := #(W64 511).
 
 (* 2 for log header *)
-Definition LOGSIZE : expr := HDRADDRS + #(W64 2).
+Definition LOGSIZE : expr := #(W64 513).
 
 Definition Inum : go_type := uint64T.
 
