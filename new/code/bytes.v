@@ -22,7 +22,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Buffer"%go, []); ("Buffer'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo bytes.bytes :=
   {|
