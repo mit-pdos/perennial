@@ -16,7 +16,7 @@ Definition Blame : go_type := uint64T.
 
 Definition BlameNone : expr := #(W64 0).
 
-Definition BlameServSig : expr := #(W64 32).
+Definition BlameServSig : expr := #(W64 1).
 
 Definition BlameServFull : expr := #(W64 2).
 

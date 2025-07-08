@@ -308,7 +308,7 @@ Definition Second : Z := 1.
 
 Definition Third : Z := 2.
 
-Definition ComplicatedFirst : expr := #(W64 ((2 * 0) + 3)).
+Definition ComplicatedFirst : expr := #(W64 3).
 
 Definition ComplicatedSecond : expr := #(W64 5).
 

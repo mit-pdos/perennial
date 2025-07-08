@@ -67,7 +67,7 @@ Definition Lease : go_type := interfaceT.
 
 Definition opType : go_type := intT.
 
-Definition tRange : expr := #(W64 (0 + 1)).
+Definition tRange : expr := #(W64 1).
 
 Definition tPut : expr := #(W64 2).
 

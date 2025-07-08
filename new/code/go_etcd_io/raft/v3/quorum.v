@@ -99,7 +99,7 @@ Definition JointConfig__CommittedIndex : val :=
     else do:  #());;;
     return: (![#Index] "idx1")).
 
-Definition VotePending : expr := #(W8 (1 + 0)).
+Definition VotePending : expr := #(W8 1).
 
 Definition VoteResult : go_type := uint8T.
 

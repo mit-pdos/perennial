@@ -11,7 +11,7 @@ Context `{ffi_syntax}.
 
 
 (* the date in the local time zone: 2009/01/23 *)
-Definition Ldate : Z := 64.
+Definition Ldate : Z := 1.
 
 (* the time in the local time zone: 01:23:23 *)
 Definition Ltime : Z := 2.
