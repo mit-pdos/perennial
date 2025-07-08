@@ -340,65 +340,33 @@ Section proofs.
   Definition if_bool_inst := [instance if_bool].
   Global Existing Instance if_bool_inst | 10.
 
-  (*
+  (* Without this being transparent, there's a step that tries to run
+     `liExInst` which requires unifying:
+    eunify (@to_val ext (@word.rep (Zpos (xO (xO (xO (xO (xO (xO xH))))))) w64_word_instance)
+              (@into_val_w64 ext)
+              (@word.sub (Zpos (xO (xO (xO (xO (xO (xO xH))))))) w64_word_instance n (W64 (Zpos xH))))
+      (@to_val ext w64 (@into_val_w64 ext) _).
+
+     The following unification fails because the LHS has `word.rep
+     w64_word_instance` while the RHS has `w64`
+     ```
+     lazymatch goal with |- ?a = ?b => unify a b with solve_protected_eq_db end;
+     ```
+     because `solve_protected_eq_db` marks constants as opaque by default.
+ *)
+  Global Hint Transparent w64 : solve_protected_eq_db.
+
   Lemma fib_correct :
     ⊢ fn_ok fib unit (λ _ v, ∃ n : w64, ⌜v = #n⌝ ∗ ⌜(0 ≤ uint.Z n)%Z⌝)
         (λ _ v, ∃ n' : w64, ⌜v = #n'⌝ ∗ ⌜(0 ≤ uint.Z n')%Z⌝).
-  Proof.
+  Proof using goGlobalsGS0.
     iStartProof. iApply prove_fn_ok. simpl.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    liTStep.
-    1: repeat liTStep.
-
-    do 8 liTStep.
-    1: {
-      liTStep; liShow.
-
-      iClear "#".
-
-      liTStep; liShow.
-      liTStep; liShow.
-      liTStep; liShow.
-      liTStep; liShow.
-      liTStep; liShow.
-      liTStep; liShow.
-    }
-
-    do 10 liTStep.
-    liTStep; liShow.
-    liTStep; liShow.
-
-
-    repeat liTStep; liShow.
-    iExists (li_pair _ _).
-    repeat liTStep; liShow.
-    iExists _.
-    repeat liTStep; liShow.
-    iExists _.
-    repeat liTStep; liShow.
+    repeat liTStep.
     Unshelve. all: unshelve_sidecond.
-    - lia.
-    - lia.
-    - lia.
+    - word.
+    - word.
+    - word.
   Qed.
-*)
 
   (** ** 5. Separation logic *)
   Lemma expr_alloc `{!IntoVal V} (v: V) G :
