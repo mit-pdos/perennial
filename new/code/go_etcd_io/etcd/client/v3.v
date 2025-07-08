@@ -1307,7 +1307,7 @@ Definition SortByValue : expr := #(W64 4).
 
 Definition Txn : go_type := interfaceT.
 
-Definition EventTypeDelete : expr := mvccpb.DELETE.
+Definition EventTypeDelete : expr := #(W32 1).
 
 Definition Event : go_type := mvccpb.Event.
 

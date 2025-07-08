@@ -45,11 +45,11 @@ Definition Duration : go_type := int64T.
 
 Definition Nanosecond : expr := #(W64 1).
 
-Definition Microsecond : expr := #(W64 1000) * Nanosecond.
+Definition Microsecond : expr := #(W64 1000).
 
-Definition Millisecond : expr := #(W64 1000) * Microsecond.
+Definition Millisecond : expr := #(W64 1000000).
 
-Definition Second : expr := #(W64 1000) * Millisecond.
+Definition Second : expr := #(W64 1000000000).
 
 Axiom startNano'init : val.
 

@@ -9,10 +9,10 @@ Context `{ffi_syntax}.
 
 
 (* 9223372036854775807 *)
-Definition MaxInt64 : Z := 9223372036854775808 - 1.
+Definition MaxInt64 : Z := 9223372036854775807.
 
 (* 18446744073709551615 *)
-Definition MaxUint64 : Z := 18446744073709551616 - 1.
+Definition MaxUint64 : Z := 18446744073709551615.
 
 Axiom useFMA'init : val.
 

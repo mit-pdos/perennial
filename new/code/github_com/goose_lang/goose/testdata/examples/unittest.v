@@ -286,21 +286,21 @@ Definition UntypedStringConstant : go_string := "bar"%go.
 
 Definition UntypedInt : Z := 13.
 
-Definition OtherUntypedInt : Z := UntypedInt + UntypedInt.
+Definition OtherUntypedInt : Z := 26.
 
 Definition TypedInt : expr := #(W64 32).
 
-Definition ConstWithArith : expr := #(W64 4) + (#(W64 3) * TypedInt).
+Definition ConstWithArith : expr := #(W64 100).
 
 Definition TypedInt32 : expr := #(W32 3).
 
-Definition DivisionInConst : expr := #(W64 ((4096 - 8) `quot` 8)).
+Definition DivisionInConst : expr := #(W64 511).
 
 (* 517 *)
-Definition ModInConst : expr := #(W64 (513 + (12 `rem` 8))).
+Definition ModInConst : expr := #(W64 517).
 
 (* 5 *)
-Definition ModInConstParens : expr := #(W64 ((513 + 12) `rem` 8)).
+Definition ModInConstParens : expr := #(W64 5).
 
 Definition First : Z := 0.
 

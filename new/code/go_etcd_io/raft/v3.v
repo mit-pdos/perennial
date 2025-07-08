@@ -212,7 +212,7 @@ Definition RawNode__Bootstrap : val :=
       (method_call #v3.raft #"raft'ptr" #"applyConfChange" (![#ptrT] (struct.field_ref #RawNode #"raft"%go (![#ptrT] "rn")))) "$a0")));;;
     return: (#interface.nil)).
 
-Definition noLimit : Z := math.MaxUint64.
+Definition noLimit : Z := 18446744073709551615.
 
 (* newLog returns log using the given storage and default options. It
    recovers the log to the state that it just commits and applies the
@@ -2701,9 +2701,9 @@ Definition node__ReadIndex : val :=
      }]) in
      (method_call #v3.raft #"node'ptr" #"step" (![#ptrT] "n")) "$a0" "$a1")).
 
-Definition LocalAppendThread : expr := #(W64 math.MaxUint64).
+Definition LocalAppendThread : expr := #(W64 18446744073709551615).
 
-Definition LocalApplyThread : expr := #(W64 (math.MaxUint64 - 1)).
+Definition LocalApplyThread : expr := #(W64 18446744073709551614).
 
 Definition StateFollower : expr := #(W64 0).
 
