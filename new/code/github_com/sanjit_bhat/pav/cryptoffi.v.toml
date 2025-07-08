@@ -8,17 +8,18 @@ axiomatize = [
   "Hasher.Sum",
 
   "SigPrivateKey",
+  "SigPublicKey",
   "SigGenerateKey",
   "SigPrivateKey.Sign",
-  "SigGenerateKey",
-  "SigPublicKey",
   "SigPublicKey.Verify",
 
   "VrfPrivateKey",
   "VrfPublicKey",
   "VrfGenerateKey",
   "VrfPrivateKey.Prove",
+  "VrfPrivateKey.Evaluate",
   "VrfPublicKey.Verify",
+  "VrfPrivateKey.PublicKey",
   "VrfPublicKeyEncode",
   "VrfPublicKeyDecode",
 

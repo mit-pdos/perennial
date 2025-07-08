@@ -158,8 +158,16 @@ Global Instance wp_method_call_SigPublicKey'ptr_Verify :
   WpMethodCall cryptoffi "SigPublicKey'ptr" "Verify" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
+Global Instance wp_method_call_VrfPrivateKey'ptr_Evaluate :
+  WpMethodCall cryptoffi "VrfPrivateKey'ptr" "Evaluate" _ (is_pkg_defined cryptoffi) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
 Global Instance wp_method_call_VrfPrivateKey'ptr_Prove :
   WpMethodCall cryptoffi "VrfPrivateKey'ptr" "Prove" _ (is_pkg_defined cryptoffi) :=
+  ltac:(apply wp_method_call'; reflexivity).
+
+Global Instance wp_method_call_VrfPrivateKey'ptr_PublicKey :
+  WpMethodCall cryptoffi "VrfPrivateKey'ptr" "PublicKey" _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_VrfPublicKey'ptr_Verify :

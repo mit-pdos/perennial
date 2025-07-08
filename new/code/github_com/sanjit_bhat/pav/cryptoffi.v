@@ -36,7 +36,11 @@ Axiom VrfGenerateKey : val.
 
 Axiom VrfPrivateKey__Prove : val.
 
+Axiom VrfPrivateKey__Evaluate : val.
+
 Axiom VrfPublicKey__Verify : val.
+
+Axiom VrfPrivateKey__PublicKey : val.
 
 Axiom VrfPublicKeyEncode : val.
 
@@ -46,7 +50,7 @@ Axiom RandBytes : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("NewHasher"%go, NewHasher); ("Hasher__Write"%go, Hasher__Write); ("Hasher__Sum"%go, Hasher__Sum); ("SigGenerateKey"%go, SigGenerateKey); ("SigPrivateKey__Sign"%go, SigPrivateKey__Sign); ("SigPublicKey__Verify"%go, SigPublicKey__Verify); ("VrfGenerateKey"%go, VrfGenerateKey); ("VrfPrivateKey__Prove"%go, VrfPrivateKey__Prove); ("VrfPublicKey__Verify"%go, VrfPublicKey__Verify); ("VrfPublicKeyEncode"%go, VrfPublicKeyEncode); ("VrfPublicKeyDecode"%go, VrfPublicKeyDecode); ("RandBytes"%go, RandBytes)].
+Definition functions' : list (go_string * val) := [("NewHasher"%go, NewHasher); ("Hasher__Write"%go, Hasher__Write); ("Hasher__Sum"%go, Hasher__Sum); ("SigGenerateKey"%go, SigGenerateKey); ("SigPrivateKey__Sign"%go, SigPrivateKey__Sign); ("SigPublicKey__Verify"%go, SigPublicKey__Verify); ("VrfGenerateKey"%go, VrfGenerateKey); ("VrfPrivateKey__Prove"%go, VrfPrivateKey__Prove); ("VrfPrivateKey__Evaluate"%go, VrfPrivateKey__Evaluate); ("VrfPublicKey__Verify"%go, VrfPublicKey__Verify); ("VrfPrivateKey__PublicKey"%go, VrfPrivateKey__PublicKey); ("VrfPublicKeyEncode"%go, VrfPublicKeyEncode); ("VrfPublicKeyDecode"%go, VrfPublicKeyDecode); ("RandBytes"%go, RandBytes)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
