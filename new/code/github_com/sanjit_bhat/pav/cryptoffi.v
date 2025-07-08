@@ -50,9 +50,11 @@ Axiom RandBytes : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("NewHasher"%go, NewHasher); ("Hasher__Write"%go, Hasher__Write); ("Hasher__Sum"%go, Hasher__Sum); ("SigGenerateKey"%go, SigGenerateKey); ("SigPrivateKey__Sign"%go, SigPrivateKey__Sign); ("SigPublicKey__Verify"%go, SigPublicKey__Verify); ("VrfGenerateKey"%go, VrfGenerateKey); ("VrfPrivateKey__Prove"%go, VrfPrivateKey__Prove); ("VrfPrivateKey__Evaluate"%go, VrfPrivateKey__Evaluate); ("VrfPublicKey__Verify"%go, VrfPublicKey__Verify); ("VrfPrivateKey__PublicKey"%go, VrfPrivateKey__PublicKey); ("VrfPublicKeyEncode"%go, VrfPublicKeyEncode); ("VrfPublicKeyDecode"%go, VrfPublicKeyDecode); ("RandBytes"%go, RandBytes)].
+Definition functions' : list (go_string * val) := [("NewHasher"%go, NewHasher); ("SigGenerateKey"%go, SigGenerateKey); ("VrfGenerateKey"%go, VrfGenerateKey); ("VrfPublicKeyEncode"%go, VrfPublicKeyEncode); ("VrfPublicKeyDecode"%go, VrfPublicKeyDecode); ("RandBytes"%go, RandBytes)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Hasher"%go, []); ("Hasher'ptr"%go, [("Sum"%go, Hasher__Sum); ("Write"%go, Hasher__Write)]); ("SigPrivateKey"%go, []); ("SigPrivateKey'ptr"%go, [("Sign"%go, SigPrivateKey__Sign)]); ("SigPublicKey"%go, [("Verify"%go, SigPublicKey__Verify)]); ("SigPublicKey'ptr"%go, [("Verify"%go, (λ: "$recvAddr",
+                 method_call #cryptoffi.cryptoffi #"SigPublicKey" #"Verify" (![#SigPublicKey] "$recvAddr")
+                 )%V)]); ("VrfPrivateKey"%go, []); ("VrfPrivateKey'ptr"%go, [("Evaluate"%go, VrfPrivateKey__Evaluate); ("Prove"%go, VrfPrivateKey__Prove); ("PublicKey"%go, VrfPrivateKey__PublicKey)]); ("VrfPublicKey"%go, []); ("VrfPublicKey'ptr"%go, [("Verify"%go, VrfPublicKey__Verify)])].
 
 #[global] Instance info' : PkgInfo cryptoffi.cryptoffi :=
   {|

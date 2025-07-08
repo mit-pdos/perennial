@@ -12,139 +12,35 @@ Module netffi.
 Module Conn.
 Section def.
 Context `{ffi_syntax}.
-Record t := mk {
-  c' : net.Conn.t;
-  sendMu' : loc;
-  recvMu' : loc;
-}.
+Axiom t : Type.
 End def.
 End Conn.
 
-Section instances.
-Context `{ffi_syntax}.
+Global Instance bounded_size_Conn : BoundedTypeSize netffi.Conn.
+Admitted.
 
-Global Instance settable_Conn : Settable Conn.t :=
-  settable! Conn.mk < Conn.c'; Conn.sendMu'; Conn.recvMu' >.
-Global Instance into_val_Conn : IntoVal Conn.t :=
-  {| to_val_def v :=
-    struct.val_aux netffi.Conn [
-    "c" ::= #(Conn.c' v);
-    "sendMu" ::= #(Conn.sendMu' v);
-    "recvMu" ::= #(Conn.recvMu' v)
-    ]%struct
-  |}.
+Global Instance into_val_Conn `{ffi_syntax} : IntoVal Conn.t.
+Admitted.
 
-Global Program Instance into_val_typed_Conn : IntoValTyped Conn.t netffi.Conn :=
-{|
-  default_val := Conn.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Conn_c : IntoValStructField "c" netffi.Conn Conn.c'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Conn_sendMu : IntoValStructField "sendMu" netffi.Conn Conn.sendMu'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Conn_recvMu : IntoValStructField "recvMu" netffi.Conn Conn.recvMu'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Conn c' sendMu' recvMu':
-  PureWp True
-    (struct.make #netffi.Conn (alist_val [
-      "c" ::= #c';
-      "sendMu" ::= #sendMu';
-      "recvMu" ::= #recvMu'
-    ]))%struct
-    #(Conn.mk c' sendMu' recvMu').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Conn_struct_fields_split dq l (v : Conn.t) :
-  StructFieldsSplit dq l v (
-    "Hc" ∷ l ↦s[netffi.Conn :: "c"]{dq} v.(Conn.c') ∗
-    "HsendMu" ∷ l ↦s[netffi.Conn :: "sendMu"]{dq} v.(Conn.sendMu') ∗
-    "HrecvMu" ∷ l ↦s[netffi.Conn :: "recvMu"]{dq} v.(Conn.recvMu')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Conn.c' v)) netffi.Conn "c"%go.
-  simpl_one_flatten_struct (# (Conn.sendMu' v)) netffi.Conn "sendMu"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
+Global Instance into_val_typed_Conn `{ffi_syntax} : IntoValTyped Conn.t netffi.Conn.
+Admitted.
 
 (* type netffi.Listener *)
 Module Listener.
 Section def.
 Context `{ffi_syntax}.
-Record t := mk {
-  l' : net.Listener.t;
-}.
+Axiom t : Type.
 End def.
 End Listener.
 
-Section instances.
-Context `{ffi_syntax}.
+Global Instance bounded_size_Listener : BoundedTypeSize netffi.Listener.
+Admitted.
 
-Global Instance settable_Listener : Settable Listener.t :=
-  settable! Listener.mk < Listener.l' >.
-Global Instance into_val_Listener : IntoVal Listener.t :=
-  {| to_val_def v :=
-    struct.val_aux netffi.Listener [
-    "l" ::= #(Listener.l' v)
-    ]%struct
-  |}.
+Global Instance into_val_Listener `{ffi_syntax} : IntoVal Listener.t.
+Admitted.
 
-Global Program Instance into_val_typed_Listener : IntoValTyped Listener.t netffi.Listener :=
-{|
-  default_val := Listener.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Listener_l : IntoValStructField "l" netffi.Listener Listener.l'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Listener l':
-  PureWp True
-    (struct.make #netffi.Listener (alist_val [
-      "l" ::= #l'
-    ]))%struct
-    #(Listener.mk l').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Listener_struct_fields_split dq l (v : Listener.t) :
-  StructFieldsSplit dq l v (
-    "Hl" ∷ l ↦s[netffi.Listener :: "l"]{dq} v.(Listener.l')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
+Global Instance into_val_typed_Listener `{ffi_syntax} : IntoValTyped Listener.t netffi.Listener.
+Admitted.
 
 Section names.
 
@@ -167,16 +63,8 @@ Global Instance is_pkg_defined_instance : IsPkgDefined netffi :=
 Definition own_allocated : iProp Σ :=
 True.
 
-Global Instance wp_func_call_addrToStr :
-  WpFuncCall netffi "addrToStr" _ (is_pkg_defined netffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
-
 Global Instance wp_func_call_Dial :
   WpFuncCall netffi "Dial" _ (is_pkg_defined netffi) :=
-  ltac:(apply wp_func_call'; reflexivity).
-
-Global Instance wp_func_call_newConn :
-  WpFuncCall netffi "newConn" _ (is_pkg_defined netffi) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Listen :

@@ -39,3 +39,6 @@ __pycache__
 # direnv 
 .direnv
 .envrc
+
+# opam
+_opam

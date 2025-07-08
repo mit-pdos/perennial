@@ -8,231 +8,23 @@ Section code.
 Context `{ffi_syntax}.
 
 
-(* go: netffi.go:19:6 *)
-Definition addrToStr : val :=
-  rec: "addrToStr" "addr" :=
-    exception_do (let: "addr" := (mem.alloc "addr") in
-    let: "a0" := (mem.alloc (type.zero_val #byteT)) in
-    let: "$r0" := (u_to_w8 ((![#uint64T] "addr") `and` #(W64 255))) in
-    do:  ("a0" <-[#byteT] "$r0");;;
-    let: "$r0" := ((![#uint64T] "addr") ≫ #(W64 8)) in
-    do:  ("addr" <-[#uint64T] "$r0");;;
-    let: "a1" := (mem.alloc (type.zero_val #byteT)) in
-    let: "$r0" := (u_to_w8 ((![#uint64T] "addr") `and` #(W64 255))) in
-    do:  ("a1" <-[#byteT] "$r0");;;
-    let: "$r0" := ((![#uint64T] "addr") ≫ #(W64 8)) in
-    do:  ("addr" <-[#uint64T] "$r0");;;
-    let: "a2" := (mem.alloc (type.zero_val #byteT)) in
-    let: "$r0" := (u_to_w8 ((![#uint64T] "addr") `and` #(W64 255))) in
-    do:  ("a2" <-[#byteT] "$r0");;;
-    let: "$r0" := ((![#uint64T] "addr") ≫ #(W64 8)) in
-    do:  ("addr" <-[#uint64T] "$r0");;;
-    let: "a3" := (mem.alloc (type.zero_val #byteT)) in
-    let: "$r0" := (u_to_w8 ((![#uint64T] "addr") `and` #(W64 255))) in
-    do:  ("a3" <-[#byteT] "$r0");;;
-    let: "$r0" := ((![#uint64T] "addr") ≫ #(W64 8)) in
-    do:  ("addr" <-[#uint64T] "$r0");;;
-    let: "port" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((![#uint64T] "addr") `and` #(W64 65535)) in
-    do:  ("port" <-[#uint64T] "$r0");;;
-    return: (let: "$a0" := #"%s:%d"%go in
-     let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) ((method_call #net #"IP" #"String" (let: "$a0" := (![#byteT] "a0") in
-     let: "$a1" := (![#byteT] "a1") in
-     let: "$a2" := (![#byteT] "a2") in
-     let: "$a3" := (![#byteT] "a3") in
-     (func_call #net.net #"IPv4"%go) "$a0" "$a1" "$a2" "$a3")) #())) in
-     let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "port")) in
-     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
-     (func_call #fmt.fmt #"Sprintf"%go) "$a0" "$a1")).
+Axiom Conn : go_type.
 
-Definition Conn : go_type := structT [
-  "c" :: net.Conn;
-  "sendMu" :: ptrT;
-  "recvMu" :: ptrT
-].
+Axiom Dial : val.
 
-(* Dial returns new connection.
+Axiom Conn__Send : val.
 
-   go: netffi.go:41:6 *)
-Definition Dial : val :=
-  rec: "Dial" "addr" :=
-    exception_do (let: "addr" := (mem.alloc "addr") in
-    let: "err" := (mem.alloc (type.zero_val #error)) in
-    let: "conn" := (mem.alloc (type.zero_val #net.Conn)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := #"tcp"%go in
-    let: "$a1" := (let: "$a0" := (![#uint64T] "addr") in
-    (func_call #netffi.netffi #"addrToStr"%go) "$a0") in
-    (func_call #net.net #"Dial"%go) "$a0" "$a1") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  ("conn" <-[#net.Conn] "$r0");;;
-    do:  ("err" <-[#error] "$r1");;;
-    (if: (~ (interface.eq (![#error] "err") #interface.nil))
-    then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"netffi: Dial err"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    return: (let: "$a0" := (![#net.Conn] "conn") in
-     (func_call #netffi.netffi #"newConn"%go) "$a0")).
+Axiom Conn__Receive : val.
 
-(* go: netffi.go:50:16 *)
-Definition Conn__Send : val :=
-  rec: "Conn__Send" "c" "data" :=
-    with_defer: (let: "c" := (mem.alloc "c") in
-    let: "data" := (mem.alloc "data") in
-    let: "e" := (mem.alloc (type.zero_val #marshal.Enc)) in
-    let: "$r0" := (let: "$a0" := (#(W64 8) + (s_to_w64 (let: "$a0" := (![#sliceT] "data") in
-    slice.len "$a0"))) in
-    (func_call #marshal.marshal #"NewEnc"%go) "$a0") in
-    do:  ("e" <-[#marshal.Enc] "$r0");;;
-    do:  (let: "$a0" := (s_to_w64 (let: "$a0" := (![#sliceT] "data") in
-    slice.len "$a0")) in
-    (method_call #marshal #"Enc" #"PutInt" (![#marshal.Enc] "e")) "$a0");;;
-    do:  (let: "$a0" := (![#sliceT] "data") in
-    (method_call #marshal #"Enc" #"PutBytes" (![#marshal.Enc] "e")) "$a0");;;
-    let: "msg" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((method_call #marshal #"Enc" #"Finish" (![#marshal.Enc] "e")) #()) in
-    do:  ("msg" <-[#sliceT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Conn #"sendMu"%go (![#ptrT] "c")))) #());;;
-    do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Conn #"sendMu"%go (![#ptrT] "c")))) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
-    (λ: <>,
-      "$f" #();;
-      "$oldf" #()
-      )));;;
-    let: "err" := (mem.alloc (type.zero_val #error)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "msg") in
-    (interface.get #"Write"%go (![#net.Conn] (struct.field_ref #Conn #"c"%go (![#ptrT] "c")))) "$a0") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  "$r0";;;
-    do:  ("err" <-[#error] "$r1");;;
-    (if: (~ (interface.eq (![#error] "err") #interface.nil))
-    then
-      do:  ((interface.get #"Close"%go (![#net.Conn] (struct.field_ref #Conn #"c"%go (![#ptrT] "c")))) #());;;
-      return: (#true)
-    else do:  #());;;
-    return: (#false)).
+Axiom Listener : go_type.
 
-(* go: netffi.go:68:6 *)
-Definition newConn : val :=
-  rec: "newConn" "conn" :=
-    exception_do (let: "conn" := (mem.alloc "conn") in
-    return: (mem.alloc (let: "$c" := (![#net.Conn] "conn") in
-     let: "$sendMu" := (mem.alloc (type.zero_val #sync.Mutex)) in
-     let: "$recvMu" := (mem.alloc (type.zero_val #sync.Mutex)) in
-     struct.make #Conn [{
-       "c" ::= "$c";
-       "sendMu" ::= "$sendMu";
-       "recvMu" ::= "$recvMu"
-     }]))).
+Axiom Listen : val.
 
-(* go: netffi.go:72:16 *)
-Definition Conn__Receive : val :=
-  rec: "Conn__Receive" "c" <> :=
-    with_defer: (let: "err" := (mem.alloc (type.zero_val #boolT)) in
-    let: "data" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "c" := (mem.alloc "c") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Conn #"recvMu"%go (![#ptrT] "c")))) #());;;
-    do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Conn #"recvMu"%go (![#ptrT] "c")))) in
-    "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
-    (λ: <>,
-      "$f" #();;
-      "$oldf" #()
-      )));;;
-    let: "header" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 8)) in
-    do:  ("header" <-[#sliceT] "$r0");;;
-    (let: "errg" := (mem.alloc (type.zero_val #error)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#net.Conn] (struct.field_ref #Conn #"c"%go (![#ptrT] "c"))) in
-    let: "$a1" := (![#sliceT] "header") in
-    (func_call #io.io #"ReadFull"%go) "$a0" "$a1") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  "$r0";;;
-    do:  ("errg" <-[#error] "$r1");;;
-    (if: (~ (interface.eq (![#error] "errg") #interface.nil))
-    then
-      do:  ((interface.get #"Close"%go (![#net.Conn] (struct.field_ref #Conn #"c"%go (![#ptrT] "c")))) #());;;
-      let: "$r0" := #true in
-      do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#sliceT] "data", ![#boolT] "err")
-    else do:  #()));;;
-    let: "d" := (mem.alloc (type.zero_val #marshal.Dec)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "header") in
-    (func_call #marshal.marshal #"NewDec"%go) "$a0") in
-    do:  ("d" <-[#marshal.Dec] "$r0");;;
-    let: "dataLen" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #marshal #"Dec" #"GetInt" (![#marshal.Dec] "d")) #()) in
-    do:  ("dataLen" <-[#uint64T] "$r0");;;
-    let: "$r0" := (slice.make2 #byteT (![#uint64T] "dataLen")) in
-    do:  ("data" <-[#sliceT] "$r0");;;
-    (let: "errg" := (mem.alloc (type.zero_val #error)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#net.Conn] (struct.field_ref #Conn #"c"%go (![#ptrT] "c"))) in
-    let: "$a1" := (![#sliceT] "data") in
-    (func_call #io.io #"ReadFull"%go) "$a0" "$a1") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  "$r0";;;
-    do:  ("errg" <-[#error] "$r1");;;
-    (if: (~ (interface.eq (![#error] "errg") #interface.nil))
-    then
-      do:  ((interface.get #"Close"%go (![#net.Conn] (struct.field_ref #Conn #"c"%go (![#ptrT] "c")))) #());;;
-      let: "$r0" := #true in
-      do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#sliceT] "data", ![#boolT] "err")
-    else do:  #()));;;
-    return: (![#sliceT] "data", #false)).
-
-Definition Listener : go_type := structT [
-  "l" :: net.Listener
-].
-
-(* go: netffi.go:106:6 *)
-Definition Listen : val :=
-  rec: "Listen" "addr" :=
-    exception_do (let: "addr" := (mem.alloc "addr") in
-    let: "err" := (mem.alloc (type.zero_val #error)) in
-    let: "l" := (mem.alloc (type.zero_val #net.Listener)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := #"tcp"%go in
-    let: "$a1" := (let: "$a0" := (![#uint64T] "addr") in
-    (func_call #netffi.netffi #"addrToStr"%go) "$a0") in
-    (func_call #net.net #"Listen"%go) "$a0" "$a1") in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  ("l" <-[#net.Listener] "$r0");;;
-    do:  ("err" <-[#error] "$r1");;;
-    (if: (~ (interface.eq (![#error] "err") #interface.nil))
-    then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"netffi: Listen err"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    return: (mem.alloc (struct.make #Listener [{
-       "l" ::= ![#net.Listener] "l"
-     }]))).
-
-(* go: netffi.go:115:20 *)
-Definition Listener__Accept : val :=
-  rec: "Listener__Accept" "l" <> :=
-    exception_do (let: "l" := (mem.alloc "l") in
-    let: "err" := (mem.alloc (type.zero_val #error)) in
-    let: "conn" := (mem.alloc (type.zero_val #net.Conn)) in
-    let: ("$ret0", "$ret1") := ((interface.get #"Accept"%go (![#net.Listener] (struct.field_ref #Listener #"l"%go (![#ptrT] "l")))) #()) in
-    let: "$r0" := "$ret0" in
-    let: "$r1" := "$ret1" in
-    do:  ("conn" <-[#net.Conn] "$r0");;;
-    do:  ("err" <-[#error] "$r1");;;
-    (if: (~ (interface.eq (![#error] "err") #interface.nil))
-    then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"netffi: Accept err"%go) in
-      Panic "$a0")
-    else do:  #());;;
-    return: (let: "$a0" := (![#net.Conn] "conn") in
-     (func_call #netffi.netffi #"newConn"%go) "$a0")).
+Axiom Listener__Accept : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("addrToStr"%go, addrToStr); ("Dial"%go, Dial); ("newConn"%go, newConn); ("Listen"%go, Listen)].
+Definition functions' : list (go_string * val) := [("Dial"%go, Dial); ("Listen"%go, Listen)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Conn"%go, []); ("Conn'ptr"%go, [("Receive"%go, Conn__Receive); ("Send"%go, Conn__Send)]); ("Listener"%go, []); ("Listener'ptr"%go, [("Accept"%go, Listener__Accept)])].
 
@@ -243,6 +35,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Conn"%go, 
     pkg_msets := msets';
     pkg_imported_pkgs := [];
   |}.
+
+Axiom _'init : val.
 
 Definition initialize' : val :=
   rec: "initialize'" <> :=

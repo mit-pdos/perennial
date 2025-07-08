@@ -1,3 +1,6 @@
+translate = [
+  "!*",
+]
 axiomatize = [
   "Conn",
   "Dial",

@@ -19,3 +19,5 @@ From New.proof.github_com.mit_pdos.go_journal Require
   common addr util lockmap alloc buf wal.
 
 From New.proof Require Import inG_problem.
+
+From New.generatedproof.github_com.sanjit_bhat.pav Require alicebob.
