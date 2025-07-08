@@ -174,14 +174,13 @@ Proof.
 
       wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Hcovered Haddrs]").
       { erewrite <- (insert_id m) at 2; eauto. }
-      wp_auto. iApply "HΦ". iFrame.
+      iApply "HΦ". iFrame.
 
   - wp_auto.
     wp_apply (wp_NewCond) as "%c #Hcond".
-    wp_auto. wp_alloc lst as "Hlst".
+    wp_alloc lst as "Hlst".
     wp_auto.
-    wp_apply (wp_map_insert with "Hmptr"). iIntros "Hmptr".
-    wp_auto.
+    wp_apply (wp_map_insert with "Hmptr") as "Hmptr".
     wp_for_post.
 
     iDestruct (big_sepM2_lookup_r_none with "Haddrs") as %Hgaddr; intuition eauto.
@@ -205,7 +204,7 @@ Proof.
       + rewrite lookup_insert_ne //.
     }
 
-    wp_auto. iApply "HΦ". iFrame.
+    iApply "HΦ". iFrame.
 Qed.
 
 Theorem wp_lockShard__release ls (addr : u64) (P : u64 -> iProp Σ) covered gh :
@@ -243,12 +242,11 @@ Proof.
     rewrite insert_delete_insert.
     rewrite (insert_id m); eauto.
 
-    wp_auto. wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Haddrs $Hcovered]").
-    wp_auto. iApply "HΦ". done.
+    wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Haddrs $Hcovered]").
+    iApply "HΦ". done.
 
   - wp_auto.
-    wp_apply (wp_map_delete with "Hmptr"). iIntros "Hmptr".
-    wp_auto.
+    wp_apply (wp_map_delete with "Hmptr") as "Hmptr".
 
     iMod (ghost_map_delete with "Hghctx Haddrlocked") as "Hghctx".
     iDestruct (big_sepS_delete with "Hcovered") as "[Hcaddr Hcovered]"; eauto.
@@ -266,7 +264,7 @@ Proof.
       + rewrite lookup_delete_ne //.
     }
 
-    wp_auto. iApply "HΦ". done.
+    iApply "HΦ". done.
 Qed.
 
 
@@ -541,7 +539,7 @@ Proof.
   iDestruct (big_sepL2_lookup _ _ _ _ _ gh with "Hshards") as "Hshard"; eauto.
   { rewrite -Hgh_lookup. f_equal. word. }
   wp_apply (wp_lockShard__release with "[$Hshard $HP $Hlocked]").
-  wp_auto. iApply "HΦ". eauto.
+  iApply "HΦ". eauto.
 Qed.
 
 End heap.

@@ -32,8 +32,8 @@ Lemma wp_SumAssumeNoOverflow (x y : u64) :
 Proof.
   wp_start as "_".
   wp_auto.
-  wp_apply wp_SumNoOverflow. wp_auto.
-  wp_apply wp_Assume as "%Hassume". wp_auto.
+  wp_apply wp_SumNoOverflow.
+  wp_apply wp_Assume as "%Hassume".
   rewrite bool_decide_eq_true in Hassume.
   iApply "HΦ". iPureIntro. done.
 Qed.
@@ -66,8 +66,8 @@ Lemma wp_MulAssumeNoOverflow (x y : u64) :
 Proof.
   wp_start as "_".
   wp_auto.
-  wp_apply wp_MulNoOverflow. wp_auto.
-  wp_apply wp_Assume as "%Hassume". wp_auto.
+  wp_apply wp_MulNoOverflow.
+  wp_apply wp_Assume as "%Hassume".
   rewrite bool_decide_eq_true in Hassume.
   iApply "HΦ". iPureIntro. done.
 Qed.

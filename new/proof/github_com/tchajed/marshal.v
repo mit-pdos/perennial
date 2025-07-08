@@ -13,6 +13,36 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ}.
 
 #[global] Program Instance : IsPkgInit marshal := ltac2:(build_pkg_init ()).
 
+(* Some helper definition for working with slices of primitive values. *)
+
+Definition uint64_has_encoding (encoded : list u8) (x : u64) : Prop :=
+  encoded = u64_le x.
+
+Definition uint32_has_encoding (encoded : list u8) (x : u32) : Prop :=
+  encoded = u32_le x.
+
+Definition bool_has_encoding (encoded : list u8) (x : bool) : Prop :=
+  encoded = [if x then W8 1 else W8 0].
+
+Definition string_has_encoding (encoded : list u8) (x : byte_string) : Prop :=
+  encoded = x.
+
+Definition byte_has_encoding (encoded : list u8) (x : list u8) : Prop :=
+  encoded = x.
+
+Definition own_prim {X : Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X goT} 
+  (x__v:X) (x__c:X) (dq:dfrac) : iProp Σ :=
+  ⌜ x__v = x__c ⌝.
+
+Lemma own_prim_eq {X:Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X goT}
+  (x__v:X) (x__c:X) (dq: dfrac) :
+  own_prim x__v x__c dq ⊢@{_} ⌜x__v = x__c⌝.
+Proof.
+  iIntros "Hown".
+  iUnfold own_prim in "Hown".
+  iFrame.
+Qed.
+
 Theorem wp_ReadInt tail (s: slice.t) q x :
   {{{ is_pkg_init marshal ∗ own_slice s q (u64_le x ++ tail) }}}
     marshal @ "ReadInt" #s
@@ -191,8 +221,8 @@ Theorem wp_ReadSlice {X : Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X g
       }}}
         #readOne (#enc_sl')
       {{{ v suff_sl, RET (#v, #suff_sl);
-          own_slice suff_sl dq suffix' ∗
-          own v x (DfracOwn 1)
+          own v x (DfracOwn 1) ∗
+          own_slice suff_sl dq suffix'
       }}}
   }}}
     marshal @ "ReadSlice" #goT #enc_sl #count #readOne
@@ -457,6 +487,7 @@ Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X
   (has_encoding : list u8 -> C -> Prop) (own : X -> C -> dfrac -> iProp Σ) (writeOne : func.t) (dq : dfrac) :
   {{{   is_pkg_init marshal ∗
         "Hsl" ∷ own_slice pre_sl (DfracOwn 1) prefix ∗
+        "Hcap" ∷ own_slice_cap w8 pre_sl ∗
         "Hown" ∷ own_slice xsl dq xs ∗
         "Hpred" ∷ ([∗ list] x;c ∈ xs;cs, own x c dq) ∗ 
         "#Hwriteone" ∷ ∀ pre_sl' (prefix' : list u8) x c,
@@ -469,15 +500,16 @@ Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X
           {{{
                 (enc : list u8) (enc_sl : slice.t), RET #enc_sl;
                 ⌜ has_encoding enc c ⌝ ∗
+                own x c dq ∗
                 own_slice enc_sl (DfracOwn 1) (prefix' ++ enc) ∗
-                own_slice_cap w8 enc_sl ∗
-                own x c dq
+                own_slice_cap w8 enc_sl
           }}}
   }}}
     marshal @ "WriteSlice" #goT #pre_sl #xsl #writeOne
   {{{
         enc enc_sl, RET #enc_sl;
         own_slice xsl dq xs ∗
+        ([∗ list] x;c ∈ xs;cs, own x c dq) ∗ 
         ⌜ encodes enc cs has_encoding ⌝ ∗
         own_slice enc_sl (DfracOwn 1) (prefix ++ enc) ∗
         own_slice_cap w8 enc_sl

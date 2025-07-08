@@ -46,9 +46,9 @@ Proof.
     wp_if_destruct; try wp_auto.
     - list_elem xs1 i as x1_i.
       wp_apply (wp_load_slice_elem with "[$Hs1]") as "Hs1"; first by eauto.
-      wp_auto. wp_pure; first by word.
+      wp_pure; first by word.
       list_elem xs2 i as x2_i.
-      wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2"; first by eauto. wp_auto.
+      wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2"; first by eauto.
       destruct (bool_decide_reflect (x1_i = x2_i)); subst; wp_auto.
       + wp_for_post.
         iFrame.
@@ -73,13 +73,36 @@ Proof.
   word.
 Qed.
 
+Lemma wp_BytesClone (b:slice.t) (xs:list u8) (dq:dfrac) :
+  {{{ is_pkg_init std ∗ own_slice b dq xs }}}
+    std @ "BytesClone" #b
+  {{{ b', RET #b'; own_slice b' (DfracOwn 1) xs ∗ own_slice_cap w8 b' }}}.
+Proof.
+  wp_start as "Hb". wp_auto.
+  wp_if_destruct; try wp_auto.
+  - iApply "HΦ". 
+    + iSplitL.
+      * iDestruct (own_slice_len with "Hb") as "%Hb_len".
+        apply nil_length_inv in Hb_len. subst.
+        iDestruct (own_slice_nil (DfracOwn 1)) as "Hnil".
+        iApply "Hnil".
+      * iApply own_slice_cap_nil.
+  - wp_apply (wp_slice_append with "[$Hb]"). 
+    + iSplitL.
+      * iApply own_slice_nil.
+      * iApply own_slice_cap_nil.
+    + rewrite app_nil_l.
+      iIntros (?) "(Hsl & Hcap & Hb)".
+      wp_auto. iApply "HΦ". iFrame.
+Qed.
+
 Lemma wp_SumNoOverflow (x y : u64) :
   {{{ is_pkg_init std }}}
     std @ "SumNoOverflow" #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
   wp_start as "_"; wp_auto.
-  wp_apply wp_SumNoOverflow. wp_auto.
+  wp_apply wp_SumNoOverflow.
   iApply "HΦ"; done.
 Qed.
 
@@ -113,7 +136,7 @@ Proof.
   wp_auto.
   wp_alloc mu as "?".
   wp_auto.
-  wp_apply (wp_NewCond with "[#]") as "%cond #His_cond". wp_auto.
+  wp_apply (wp_NewCond with "[#]") as "%cond #His_cond".
   wp_alloc jh_l as "jh".
   iApply struct_fields_split in "jh". simpl. iNamed "jh".
   iPersist "Hmu Hcond".
@@ -138,10 +161,10 @@ Proof.
   wp_apply (wp_Mutex__Lock with "[$Hlock]") as "[locked Hinv]".
   iNamed "Hinv".
   wp_auto.
-  wp_apply (wp_Cond__Signal with "[$Hcond]"). wp_auto.
+  wp_apply (wp_Cond__Signal with "[$Hcond]").
   wp_apply (wp_Mutex__Unlock with "[$Hlock $locked done_b P]").
   { iFrame "done_b P". }
-  wp_auto. iApply "HΦ".
+  iApply "HΦ".
   done.
 Qed.
 
@@ -154,14 +177,13 @@ Proof.
   wp_start as "Hwp".
   wp_auto.
   wp_apply (wp_newJoinHandle P) as "%l #Hhandle".
-  wp_auto. iPersist "f h".
-  wp_apply (wp_fork with "[Hwp]"); wp_auto.
-  - (* NOTE: it's important not to do a pure reduction here since it would
-    produce a substitution into the lambda *)
+  iPersist "f h".
+  wp_apply (wp_fork with "[Hwp]").
+  - wp_auto.
     wp_apply "Hwp".
     iIntros "HP".
     wp_auto.
-    wp_apply (wp_JoinHandle__finish with "[$Hhandle $HP]"). wp_auto.
+    wp_apply (wp_JoinHandle__finish with "[$Hhandle $HP]").
     done.
   - iApply "HΦ".
     iFrame "#".
@@ -174,9 +196,7 @@ Lemma wp_JoinHandle__Join l P :
 Proof.
   wp_start as "Hjh". iNamed "Hjh".
   wp_auto.
-  wp_apply (wp_Mutex__Lock with "[$Hlock]").
-  iIntros "[Hlocked Hlinv]". iNamed "Hlinv".
-  wp_auto.
+  wp_apply (wp_Mutex__Lock with "[$Hlock]") as "[Hlocked @]".
 
   iAssert (∃ (done_b: bool),
            "locked" ∷ own_Mutex mu_l ∗
@@ -187,13 +207,13 @@ Proof.
   destruct done_b0; wp_auto.
   - wp_for_post.
     wp_apply (wp_Mutex__Unlock with "[$Hlock $locked $done]").
-    wp_auto. iApply "HΦ". done.
+    iApply "HΦ". done.
   - wp_apply (wp_Cond__Wait with "[$Hcond locked done HP]") as "H".
     { iSplit.
       - iApply (Mutex_is_Locker with "[] Hlock"). iPkgInit.
       - iFrame. }
     iDestruct "H" as "[Hlocked Hlinv]". iNamed "Hlinv".
-    wp_auto. wp_for_post. iFrame.
+    wp_for_post. iFrame.
 Qed.
 
 End wps.

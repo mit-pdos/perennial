@@ -485,10 +485,6 @@ Section tac_lemmas.
     by iApply (Hwp with "[$]").
   Qed.
 
-  Global Instance points_to_access_trivial {V} l (v : V) {t} `{!IntoVal V} `{!IntoValTyped V t} dq
-    : PointsToAccess l v dq (l ↦{dq} v)%I (λ v', l ↦{dq} v')%I.
-  Proof. constructor; [eauto with iFrame|done]. Qed.
-
 End tac_lemmas.
 
 Ltac2 wp_load_visit e k :=

@@ -30,7 +30,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
+Definition msets' : list (go_string * (list (go_string * val))) := [("T"%go, []); ("T'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo testing.testing :=
   {|

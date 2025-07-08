@@ -130,7 +130,7 @@ Proof.
   wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
   { rewrite length_insert. done. }
 
-  wp_auto. iApply "HΦ". done.
+  iApply "HΦ". done.
 Qed.
 
 Lemma wp_MkMaxAlloc (max: u64) :
@@ -158,7 +158,7 @@ Proof.
   wp_auto.
   wp_apply (wp_MarkUsed with "[$Ha]").
   { word. }
-  wp_auto. iApply "HΦ".
+  iApply "HΦ".
   iExactEq "Ha".
   f_equal.
   word.
@@ -241,7 +241,7 @@ Proof.
     wp_for_post.
     wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
     { rewrite length_insert. word. }
-    wp_auto. iApply "HΦ". word.
+    iApply "HΦ". word.
   - wp_auto.
     wp_apply (wp_incNext max with "[$next $bitmap $Hbits]"); first done.
     { word. }
@@ -251,7 +251,7 @@ Proof.
     + wp_auto.
       wp_for_post.
       wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $Hlinv]").
-      wp_auto. iApply "HΦ". done.
+      iApply "HΦ". done.
     + wp_for_post.
       iFrame. word.
 Qed.
@@ -282,7 +282,7 @@ Proof.
   wp_auto.
   wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
   { rewrite length_insert. word. }
-  wp_auto. by iApply "HΦ".
+  by iApply "HΦ".
 Qed.
 
 Lemma wp_AllocNum max l :
@@ -313,7 +313,7 @@ Proof.
   wp_if_destruct; first word.
   wp_auto.
   wp_apply (wp_freeBit with "[$H]"); eauto.
-  wp_auto. by iApply "HΦ".
+  by iApply "HΦ".
 Qed.
 
 Lemma wp_popCnt (b: u8) :
@@ -396,7 +396,7 @@ Proof.
     wp_auto.
     wp_apply (wp_Mutex__Unlock with "[$His_lock $Hlocked $next $bitmap $Hbits]").
     { word. }
-    wp_auto. iApply "HΦ". word.
+    iApply "HΦ". word.
 Qed.
 
 End proof.

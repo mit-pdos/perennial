@@ -1,3 +1,6 @@
+translate = [
+  "!*",
+]
 axiomatize = [
   "Conn",
   "Dial",
@@ -5,5 +8,8 @@ axiomatize = [
   "Conn.Receive",
   "Listener",
   "Listen",
-  "Listen.Accept",
+  "Listener.Accept",
+]
+imports = [
+  "!*"
 ]
