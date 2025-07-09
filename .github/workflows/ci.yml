@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ 'master' ]
+    branches: ["master"]
   pull_request:
-    branches: [ 'master' ]
+    branches: ["master"]
   schedule:
     # every day at 9am UTC (4am EST).
     - cron: "0 9 * * *"
@@ -92,8 +92,6 @@ jobs:
         run: sudo chown -R 1001:116 .
 
   check-goose:
-    strategy:
-      fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -110,23 +108,30 @@ jobs:
           python-version: "3.13"
           cache: "pip"
       - run: pip install .
+      - name: build ci-use-goose-pr
+        run: |
+          cd etc/ci-use-goose-pr
+          go install .
       - name: check that Goosed files are clean
-        run: etc/ci-goose-check.py
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            ./etc/ci-goose-check.py --new-goose-url "$( ci-use-goose-pr -pr ${{ github.event.number }} )"
+          else
+            ./etc/ci-goose-check.py
+          fi
 
   check-grackle:
-    strategy: 
-      fail-fast: false 
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout 
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: true 
+          submodules: true
       - name: Install protoc
         run: sudo apt-get install protobuf-compiler -y
       - name: Install Go
         uses: actions/setup-go@v5
-        with: 
+        with:
           go-version: "1.22"
           cache: false
       - name: Install Python
@@ -134,7 +139,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      - name: Check Grackle 
+      - name: Check Grackle
         run: |
           ./etc/ci-grackle-check.py
           git diff --exit-code
