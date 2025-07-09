@@ -58,6 +58,7 @@ def checkout(proj: Proj):
 
     sp.run(["git", "checkout", proj.commit], **shared_args)
 
+
 def parse_github_tree_url(url):
     m = re.match(r"(?P<repo>https://github.com/.*)/tree/(?P<commit>.*)", url)
     if m is None:
