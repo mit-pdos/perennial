@@ -216,4 +216,36 @@ Proof.
   wp_start. by iApply "HΦ".
 Qed.
 
+Lemma wp_mapGetCall :
+  {{{ is_pkg_init unittest }}}
+    unittest@"mapGetCall" #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start. wp_auto. unshelve wp_apply (wp_map_make (K:=w64) (V:=func.t)); try tc_solve.
+  { done. }
+  iIntros "* Hm". wp_auto. wp_apply (wp_map_insert with "Hm") as "Hm".
+  wp_apply (wp_map_get with "Hm") as "Hm".
+  rewrite lookup_insert. wp_auto. iApply "HΦ".
+  done.
+Qed.
+
+Lemma wp_useNilField :
+  {{{ is_pkg_init unittest }}}
+    unittest@"useNilField" #()
+  {{{ l, RET #l; l ↦ (unittest.containsPointer.mk null) }}}.
+Proof.
+  wp_start. wp_alloc x as "Hx". wp_auto. iApply "HΦ". iFrame.
+Qed.
+
+Lemma wp_testU32NewtypeLen :
+  {{{ is_pkg_init unittest }}}
+    unittest@"testU32NewtypeLen" #()
+  {{{ RET #true; True }}}.
+Proof.
+  wp_start. wp_auto. wp_apply (wp_slice_make2 (V:=w8)) as "* [? ?]".
+  iDestruct (own_slice_len with "[$]") as "%". rewrite bool_decide_true.
+  2:{ revert H0. len. }
+  by iApply "HΦ".
+Qed.
+
 End proof.

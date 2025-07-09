@@ -67,6 +67,14 @@ Definition t := go_string.
 End def.
 End stringWrapper.
 
+(* type unittest.Uint32 *)
+Module Uint32.
+Section def.
+Context `{ffi_syntax}.
+Definition t := w32.
+End def.
+End Uint32.
+
 (* type unittest.diskWrapper *)
 Module diskWrapper.
 Section def.
@@ -918,6 +926,67 @@ Proof.
 
   rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
   simpl_one_flatten_struct (# (mapElem.a' v)) unittest.mapElem "a"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type unittest.containsPointer *)
+Module containsPointer.
+Section def.
+Context `{ffi_syntax}.
+Record t := mk {
+  s' : loc;
+}.
+End def.
+End containsPointer.
+
+Section instances.
+Context `{ffi_syntax}.
+
+Global Instance settable_containsPointer : Settable containsPointer.t :=
+  settable! containsPointer.mk < containsPointer.s' >.
+Global Instance into_val_containsPointer : IntoVal containsPointer.t :=
+  {| to_val_def v :=
+    struct.val_aux unittest.containsPointer [
+    "s" ::= #(containsPointer.s' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_containsPointer : IntoValTyped containsPointer.t unittest.containsPointer :=
+{|
+  default_val := containsPointer.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_containsPointer_s : IntoValStructField "s" unittest.containsPointer containsPointer.s'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_containsPointer s':
+  PureWp True
+    (struct.make #unittest.containsPointer (alist_val [
+      "s" ::= #s'
+    ]))%struct
+    #(containsPointer.mk s').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance containsPointer_struct_fields_split dq l (v : containsPointer.t) :
+  StructFieldsSplit dq l v (
+    "Hs" ∷ l ↦s[unittest.containsPointer :: "s"]{dq} v.(containsPointer.s')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
 
   solve_field_ref_f.
 Qed.
@@ -1996,6 +2065,10 @@ Global Instance wp_func_call_stringWrapperToString :
   WpFuncCall unittest "stringWrapperToString" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_testU32NewtypeLen :
+  WpFuncCall unittest "testU32NewtypeLen" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_testCopySimple :
   WpFuncCall unittest "testCopySimple" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -2102,6 +2175,10 @@ Global Instance wp_func_call_bar :
 
 Global Instance wp_func_call_TakesFunctionType :
   WpFuncCall unittest "TakesFunctionType" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_FuncVar :
+  WpFuncCall unittest "FuncVar" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_fooConsumer :
@@ -2272,6 +2349,10 @@ Global Instance wp_func_call_mapUpdateField :
   WpFuncCall unittest "mapUpdateField" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_mapGetCall :
+  WpFuncCall unittest "mapGetCall" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_returnTwo :
   WpFuncCall unittest "returnTwo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
@@ -2306,6 +2387,10 @@ Global Instance wp_func_call_CompareSliceToNil :
 
 Global Instance wp_func_call_ComparePointerToNil :
   WpFuncCall unittest "ComparePointerToNil" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
+Global Instance wp_func_call_useNilField :
+  WpFuncCall unittest "useNilField" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LogicalOperators :
