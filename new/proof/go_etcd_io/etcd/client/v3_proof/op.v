@@ -21,10 +21,43 @@ Context `{!clientv3G Σ}.
 Context `{!etcdserverpb.GlobalAddrs}.
 Implicit Types (γ : clientv3_names).
 
-Axiom is_Op : ∀ (op : clientv3.Op.t) (o : Op.t), iProp Σ.
+Local Definition is_Op_RangeRequest (op : clientv3.Op.t) (req : RangeRequest.t) : iProp Σ :=
+  "%Ht" ∷ ⌜ op.(clientv3.Op.t') = W64 1 ⌝ ∗
+  "#key" ∷ op.(clientv3.Op.key') ↦*□ req.(RangeRequest.key) ∗
+  "#end" ∷ op.(clientv3.Op.end') ↦*□ req.(RangeRequest.range_end) ∗
+  "%Hlimit" ∷ ⌜ op.(clientv3.Op.limit') = req.(RangeRequest.limit) ⌝ ∗
+  "%Hsort" ∷
+    op.(clientv3.Op.sort') ↦□
+         (clientv3.SortOption.mk
+            (W64 (sint.Z req.(RangeRequest.sort_target))) (W64 (sint.Z req.(RangeRequest.sort_order)))) ∗
+  "%Hserializable" ∷ ⌜ op.(clientv3.Op.serializable') = req.(RangeRequest.serializable) ⌝ ∗
+  "%HkeysOnly" ∷ ⌜ op.(clientv3.Op.keysOnly') = req.(RangeRequest.keys_only) ⌝ ∗
+  "%HcountOnly" ∷ ⌜ op.(clientv3.Op.countOnly') = req.(RangeRequest.count_only) ⌝ ∗
+  "%HminModRev" ∷ ⌜ op.(clientv3.Op.minModRev') = req.(RangeRequest.min_mod_revision) ⌝ ∗
+  "%HmaxModRev" ∷ ⌜ op.(clientv3.Op.maxModRev') = req.(RangeRequest.max_mod_revision) ⌝ ∗
+  "%HminCreateRev" ∷ ⌜ op.(clientv3.Op.minCreateRev') = req.(RangeRequest.min_create_revision) ⌝ ∗
+  "%HmaxCreateRev" ∷ ⌜ op.(clientv3.Op.maxCreateRev') = req.(RangeRequest.max_create_revision) ⌝.
+
+Local Definition is_Op_PutRequest (op : clientv3.Op.t) (req : PutRequest.t) : iProp Σ :=
+  "%Ht" ∷ ⌜ op.(clientv3.Op.t') = W64 2 ⌝ ∗
+  "#key" ∷ op.(clientv3.Op.key') ↦*□ req.(PutRequest.key) ∗
+  "#value" ∷ op.(clientv3.Op.val') ↦*□ req.(PutRequest.value) ∗
+  "%Hlease" ∷ ⌜ op.(clientv3.Op.leaseID') = req.(PutRequest.lease) ⌝ ∗
+  "%HprevKV" ∷ ⌜ op.(clientv3.Op.prevKV') = req.(PutRequest.prev_kv) ⌝ ∗
+  "%Hignore_value" ∷ ⌜ op.(clientv3.Op.ignoreValue') = req.(PutRequest.ignore_value) ⌝ ∗
+  "%Hignore_lease" ∷ ⌜ op.(clientv3.Op.ignoreLease') = req.(PutRequest.ignore_lease) ⌝.
+
+Definition is_Op (op : clientv3.Op.t) (o : Op.t) : iProp Σ :=
+  match o with
+  | Op.Get req => is_Op_RangeRequest op req
+  | Op.Put req => is_Op_PutRequest op req
+  | _ => False
+  end.
+#[global] Opaque is_Op.
+#[local] Transparent is_Op.
 
 #[global] Instance is_Op_persistent op o : Persistent (is_Op op o).
-Admitted.
+Proof. destruct o; try apply _. Qed.
 
 (* NOTE: for simplicity, this only supports empty opts list. *)
 Lemma wp_OpGet key :
@@ -50,126 +83,24 @@ Proof.
   all: try tc_solve.
 Qed.
 
-Axiom admit_ax : false.
-
-Local Ltac setter etaT proj :=
-  lazymatch etaT with
-  | context[proj] => idtac
-  | _ => fail 1 proj "is not a field"
-  end;
-  let set :=
-      (match eval pattern proj in etaT with
-       | ?setter _ => constr:(fun f => setter (fun r => f (proj r)))
-       end) in
-  exact set.
-Local Ltac get_setter T proj :=
-  match constr:(mkT T _) with
-  | mkT _ ?updateable =>
-    let updateable := (eval hnf in updateable) in
-    match updateable with
-    | {| mkT := ?mk |} =>
-      setter mk proj
-    end
-  end.
-Local Ltac SetterWfInstance_t :=
-  match goal with
-  | |- @SetterWf ?T _ ?A =>
-    unshelve notypeclasses refine (Build_SetterWf _ _ _);
-    [ get_setter T A |
-      let r := fresh in
-      intros ? r; destruct r; reflexivity |
-      let f := fresh in
-      let r := fresh in
-      intros f r; destruct r; cbv [RecordSet.set]; cbn; congruence ]
-  end.
-
 Lemma wp_OpPut key v :
   {{{ is_pkg_init clientv3 }}}
     clientv3@"OpPut" #key #v #slice.nil
   {{{ op, RET #op;
-      (∀ op_ptr,
-         op_ptr ↦ op ==∗
-         is_Op op (Op.Put (PutRequest.default <| PutRequest.key := key |> <| PutRequest.value := v |>))
-      )
+      is_Op op (Op.Put (PutRequest.default <| PutRequest.key := key |> <| PutRequest.value := v |>))
   }}}.
 Proof.
-  wp_start.
-  wp_alloc_auto. progress wp_pures.
-  wp_alloc_auto. progress wp_pures.
-  wp_alloc_auto. progress wp_pures.
-  wp_alloc_auto. progress wp_pures.
-  wp_load. wp_apply wp_StringToBytes.
-  iIntros "%key_sl key_sl". progress wp_pures.
-  wp_load. wp_apply wp_StringToBytes.
-  iIntros "%val_sl val_sl". progress wp_pures.
-  rewrite -!default_val_eq_zero_val. progress wp_pures.
-  wp_store. progress wp_pures. wp_load. progress wp_pures.
-  wp_apply wp_Op__applyOpts. progress wp_pures.
-  wp_bind.
-
-  Time eapply (tac_wp_load_ty []);
-    [ eapply points_to_access_struct_field_ref; tc_solve|
-      iAssumptionCore |
-      ltac2:(ectx_simpl ())]; simpl.
-  Unshelve.
-  2:{
-    unshelve notypeclasses refine (Build_SetterWf _ _ _).
-    { get_setter clientv3.Op.t clientv3.Op.end'.  }
-    { let r := fresh in
-      intros ? r; destruct r; reflexivity. }
-    {
-      let f := fresh in
-      let r := fresh in
-      intros f r; destruct r.
-      simpl. intros ?.
-      cbv [RecordSet.set].
-      cbn. Time congruence.
-      (* Takes 72.858s *)
-Admitted.
-(*
-    }
-
-
-    SetterWfInstance_t.
-    SetterWf
-    tc_solve.
-    (* FIXME: this is what's *really* slow *)
-  }
-  Undo 1.
-  Set Typeclasses Debug.
-  Time eapply (tac_wp_load_ty []);
-    [ ltac2:(tc_solve_many ()) |
-      iAssumptionCore |
-      ltac2:(ectx_simpl ())]; simpl.
-  Unset Typeclasses Debug.
-  wp_auto.
+  wp_start. wp_auto.
+  wp_apply wp_StringToBytes. iIntros "%key_sl key_sl". wp_auto.
+  wp_apply wp_StringToBytes. iIntros "%val_sl val_sl". wp_auto.
+  wp_apply wp_Op__applyOpts. wp_auto.
   rewrite !bool_decide_decide.
   rewrite !(decide_True (P:=slice.nil = slice.nil)) //=.
-  wp_pures.
-  Ltac fast_wp_load :=
-    wp_bind;
-    eapply (tac_wp_load_ty []);
-    [ eapply points_to_access_struct_field_ref; tc_solve|
-      iAssumptionCore |
-      ltac2:(ectx_simpl ())]; simpl.
-
-  wp_bind.
-  eapply (tac_wp_load_ty []).
-
-    { unshelve eapply points_to_access_struct_field_ref; try tc_solve.
-      Search SetterWf.
-    }
-    { iAssumptionCore. }
-    ltac2:(ectx_simpl ()); simpl.
-  Unshelve.
-
-  fast_wp_load. wp_pures).
-  wp_load. wp_pures.
-  iApply "HΦ".
-  destruct admit_ax.
-Time Qed.
-(* 6.51 *) *)
-
-(* FIXME: very slow proof, though [Qed] isn't too bad *)
+  iPersist "val_sl key_sl".
+  wp_auto.
+  iApply "HΦ". iClear "ret".
+  iFrame "∗#%". simpl.
+  iPureIntro. done.
+Qed.
 
 End wps.
