@@ -27,33 +27,6 @@ Axiom is_Client_to_pub : ∀ (cl : loc) γ, is_Client cl γ -∗ is_Client_pub c
 Axiom is_Client_pers : ∀ client γ, Persistent (is_Client client γ).
 Global Existing Instance is_Client_pers.
 
-Axiom is_Op : ∀ (op : clientv3.Op.t) (o : Op.t), iProp Σ.
-
-#[global] Instance is_Op_persistent op o : Persistent (is_Op op o).
-Admitted.
-
-(* NOTE: for simplicity, this only supports empty opts list. *)
-Lemma wp_OpGet key :
-  {{{ is_pkg_init clientv3 }}}
-    clientv3 @ "OpGet" #key #slice.nil
-  {{{
-      op, RET #op;
-      is_Op op (Op.Get (RangeRequest.default <|RangeRequest.key := key|>))
-  }}}.
-Proof.
-Admitted.
-
-Lemma wp_OpPut key v :
-  {{{
-        is_pkg_init clientv3
-  }}}
-    clientv3@"OpPut" #key #v #slice.nil
-  {{{ op, RET #op;
-      is_Op op (Op.Put (PutRequest.default <| PutRequest.key := key |> <| PutRequest.value := v |>))
-  }}}.
-Proof.
-Admitted.
-
 Axiom N : namespace.
 
 (* Only specifying Do Get for now. *)

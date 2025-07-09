@@ -140,8 +140,12 @@ Implicit Types γ : leasingKV_names.
 Local Existing Instance clientv3_inG.
 Local Existing Instance clientv3_contextG.
 
-Definition own_leaseKey (lk : loc) γ (key : go_string) (resp : RangeResponse.t) : iProp Σ :=
-  True.
+Definition own_leaseKey (lk : leasing.leaseKey.t) γ (key : go_string) : iProp Σ :=
+  "Hwaitc" ∷ (⌜ lk.(leasing.leaseKey.waitc') = chan.nil ⌝ ∨
+              own_closeable_chan lk.(leasing.leaseKey.waitc') True closeable.Unknown) ∗
+  "_" ∷ True
+  (* TODO: repr predicate for RangeResponse *)
+.
 
 Definition own_leaseCache_locked lc γ q : iProp Σ :=
   ∃ entries_ptr (entries : gmap go_string loc) revokes_ptr (revokes : gmap go_string time.Time.t)
@@ -149,7 +153,7 @@ Definition own_leaseCache_locked lc γ q : iProp Σ :=
   "entries_ptr" ∷ lc ↦s[leasing.leaseCache :: "entries"]{#q} entries_ptr ∗
   "entries" ∷ (if entries_ready then entries_ptr ↦$ entries else ⌜ entries_ptr = null ∧ entries = ∅ ⌝
     ) ∗
-  "Hentries" ∷ ([∗ map] key ↦ lk ∈ entries, ∃ resp, own_leaseKey lk γ key resp) ∗
+  "Hentries" ∷ ([∗ map] key ↦ lk_ptr ∈ entries, ∃ lk, lk_ptr ↦ lk ∗ own_leaseKey lk γ key) ∗
   "revokes_ptr" ∷ lc ↦s[leasing.leaseCache :: "revokes"]{#q} revokes_ptr ∗
   "revokes" ∷  revokes_ptr ↦$ revokes ∗
   "Hentries_ready" ∷ ghost_var γ.(entries_ready_gn)
@@ -561,10 +565,54 @@ Proof.
   (* wp_apply wp_leasingKV__tryModifyOp. *)
 Admitted.
 
-Lemma wp_leasingKV__tryModifyOp ctx ctx_desc op o lkv γ :
+Lemma wp_leaseCache__Lock lc (key : go_string) γ :
+  {{{ is_pkg_init leasing ∗ "Hown" ∷ own_leaseCache lc γ ∗ "#Hready" ∷ is_entries_ready γ }}}
+    lc @ leasing @ "leaseCache'ptr" @ "Lock" #key
+  {{{ wc (rev : w64), RET (#wc, #rev);
+      own_leaseCache lc γ ∗ (if decide (wc = null) then True else own_closeable_chan wc True closeable.Open)
+  }}}.
+Proof.
+  wp_start. wp_apply wp_with_defer as "%defer defer". simpl subst.
+  wp_auto. iNamed "Hpre". iNamed "Hown". wp_apply (wp_RWMutex__Lock with "[$Hmu]").
+  iIntros "[Hlocked Hown]". wp_auto.
+  iDestruct ("HP" with "Hown") as "[Hown Hclose]".
+  iNamedSuffix "Hown" "_own".
+  wp_auto. destruct entries_ready.
+  2:{ iCombine "Hentries_ready_own Hready" gives %[_ Hbad]. by exfalso. }
+  wp_apply (wp_map_get with "[$entries_own]") as "entries_own".
+  wp_auto. wp_if_destruct.
+  { (* li is nil *)
+    wp_auto. iCombineNamed "*_own" as "Hown".
+    iDestruct ("Hclose" with "[Hown]") as "Hown".
+    { iNamed "Hown". iFrame "∗#%". iExists true. iFrame "∗#%". }
+    wp_apply (wp_RWMutex__Unlock with "[$Hlocked $Hown]") as "Hmu".
+    wp_auto. iApply "HΦ". iFrame "∗#".
+  }
+  { (* li is not nil *)
+    unshelve wp_apply (wp_chan_make (V:=unit)) as "* Hch"; try tc_solve.
+    iMod (alloc_closeable_chan True with "Hch") as "Hch"; [done..|].
+    wp_auto. destruct lookup as [lk_ptr|] eqn:Hlookup in n.
+    2:{ by exfalso. }
+    rewrite Hlookup.
+    iDestruct (big_sepM_lookup_acc with "Hentries_own") as "[(% & lk & @) Hentries_close]".
+    { done. }
+    wp_auto. simpl.
+    iDestruct (own_closeable_chan_Unknown with "Hch") as "#Hch_unknown".
+    iDestruct ("Hentries_close" with "[lk]") as "Hentries_own".
+    { iFrame "∗#". }
+    iCombineNamed "*_own" as "Hown".
+    iDestruct ("Hclose" with "[Hown]") as "Hown".
+    { iNamed "Hown". iFrame "∗#%". iExists true. iFrame. }
+    wp_apply (wp_RWMutex__Unlock with "[$Hlocked $Hown]") as "Hmu".
+    wp_auto. iApply "HΦ".
+    iFrame "∗#". destruct decide; done.
+  }
+Qed.
+
+Lemma wp_leasingKV__tryModifyOp ctx ctx_desc op req lkv γ :
   {{{ is_pkg_init leasing ∗
       "#Hctx" ∷ is_Context ctx ctx_desc ∗
-      "#Hop" ∷ is_Op op o ∗
+      "#Hop" ∷ is_Op op (Op.Put req) ∗
       "Hlkv" ∷ own_leasingKV lkv γ
   }}}
     lkv@leasing@"leasingKV'ptr"@"tryModifyOp" #ctx #op
@@ -577,7 +625,12 @@ Lemma wp_leasingKV__tryModifyOp ctx ctx_desc op o lkv γ :
   }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
-  (* FIXME: Op__KeyBytes *)
+  wp_apply (wp_Op__KeyBytes with "[$Hop]").
+  iIntros "* #?". wp_apply (wp_StringFromBytes with "[$]") as "_".
+  wp_auto.
+  iNamed "Hlkv".
+  (* plan for turning [own_leasingKV] into [own_leaseCache]? *)
+  (* TODO: use leaseCache.Lock() spec *)
 Admitted.
 
 (* FIXME: [own_leasingKV] should contain [is_entries_ready]. Can have a special

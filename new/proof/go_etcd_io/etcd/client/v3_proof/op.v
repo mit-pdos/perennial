@@ -103,4 +103,12 @@ Proof.
   iPureIntro. done.
 Qed.
 
+Lemma wp_Op__KeyBytes op req :
+  {{{ is_pkg_init clientv3 ∗ is_Op op (Op.Put req) }}}
+    op@clientv3@"Op"@"KeyBytes" #()
+  {{{ key_sl, RET #key_sl; key_sl ↦*□ req.(PutRequest.key) }}}.
+Proof.
+  wp_start. wp_auto. iApply "HΦ". iNamed "Hpre". iFrame "#".
+Qed.
+
 End wps.
