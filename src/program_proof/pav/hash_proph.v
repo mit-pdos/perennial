@@ -16,7 +16,6 @@ Lemma hash_fun_len data :
   Z.of_nat (length (hash_fun data)) = hash_len.
 Admitted.
 
-
 Record hash_gnames := {
   hash_namespace: namespace;
   hash_hist: gname;
@@ -327,5 +326,48 @@ Proof.
         iFrame "#".
     + iExists nil. simpl. iLeft. iFrame "#".
 Qed.
+
+Context (em : ∀ (P : Prop), P ∨ ¬P).
+
+(* now that we have a pure hash fn, can make a pure [chain_hash]. *)
+Fixpoint chain_hash (l : list $ list w8) : list w8 :=
+  match l with
+  | [] => hash_fun []
+  | a :: l' => hash_fun ((chain_hash l') ++ a)
+  end.
+
+(* [is_chain] works on an option list.
+a None list signifying "no list hashes to h" seems like a more natural
+way of stating the "invalid hash" case than the approach in
+[is_chain_commitment]. *)
+Definition is_chain ol h :=
+  match ol with
+  | None => ¬∃ l, chain_hash l = h
+  | Some l => chain_hash l = h
+  end.
+
+(* excluded-middle trivially gives us chain inversion. *)
+Lemma is_chain_inv h : ∃ l, is_chain l h.
+Proof using em.
+  destruct (em (∃ l, chain_hash l = h)) as [[??]|].
+  - by eexists (Some _).
+  - by exists None.
+Qed.
+
+(* but can't state inj directly on [hash_func].
+only have inj when knowing that hash "came from semantics".
+maybe there's a way to state that without using iprops?
+if not, can get inj either from iris excluded-middle or with hash prophecies.
+from the iris counterexamples, it looks like iris excluded-middle
+isn't very safe. *)
+Lemma is_chain_inj l0 l1 h :
+  is_chain l0 h →
+  is_chain l1 h →
+  l0 = l1.
+Proof.
+  intros Hc0 Hc1.
+  destruct l0, l1; simpl in *; [|naive_solver..|done].
+  (* XXX: need hash inj. *)
+Admitted.
 
 End proof.
