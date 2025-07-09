@@ -74,6 +74,8 @@ def main():
     )
 
     args = parser.parse_args()
+    if args.new_goose_url == "":
+        args.new_goose_url = "https://github.com/goose-lang/goose/tree/new"
     new_goose_repo, new_goose_commit = parse_github_tree_url(args.new_goose_url)
 
     projs["new_goose"].repo = new_goose_repo
