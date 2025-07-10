@@ -7,7 +7,7 @@
 -arg -w -arg +deprecated-tactic-notation
 # for coqutil compatibility
 -arg -w -arg -deprecated-since-8.19,-deprecated-since-8.20
--arg -w -arg -deprecated-since-9.0,-deprecated-since-9.1
+-arg -w -arg -deprecated-since-9.0,-deprecated-since-9.1,-deprecated-since-9.2
 # false positives with our byte_string
 -arg -w -arg -via-type-remapping,-via-type-mismatch
 -arg -w -arg +deprecated-typeclasses-transparency-without-locality
