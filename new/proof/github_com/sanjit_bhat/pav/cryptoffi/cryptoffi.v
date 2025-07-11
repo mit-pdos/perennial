@@ -1,6 +1,8 @@
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 
+Module cryptoffi.
+
 Notation hash_len := 32 (only parsing).
 
 Section proof.
@@ -10,6 +12,7 @@ Context `{!cryptoffi.GlobalAddrs}.
 #[global]
 Program Instance is_pkg_init_cryptoffi : IsPkgInit cryptoffi := ltac2:(build_pkg_init ()).
 #[global] Opaque is_pkg_init_cryptoffi.
+#[local] Transparent is_pkg_init_cryptoffi.
 
 (* Hashes. *)
 
@@ -55,7 +58,7 @@ Lemma wp_Hasher__Write hr data sl_b d0 b :
     "Hown_hr" ∷ own_Hasher hr data ∗
     "Hsl_b" ∷ sl_b ↦*{d0} b
   }}}
-  hr @ cryptoffi @ "Hasher" @ "Write" #sl_b
+  hr @ cryptoffi @ "Hasher'ptr" @ "Write" #sl_b
   {{{
     RET #();
     "Hown_hr" ∷ own_Hasher hr (data ++ b) ∗
@@ -69,7 +72,7 @@ Lemma wp_Hasher__Sum sl_b_in hr data b_in :
     "Hown_hr" ∷ own_Hasher hr data ∗
     "Hsl_b_in" ∷ sl_b_in ↦* b_in
   }}}
-  hr @ cryptoffi @ "Hasher" @ "Sum" #sl_b_in
+  hr @ cryptoffi @ "Hasher'ptr" @ "Sum" #sl_b_in
   {{{
     sl_b_out hash, RET #sl_b_out;
     "Hown_hr" ∷ own_Hasher hr data ∗
@@ -79,3 +82,4 @@ Lemma wp_Hasher__Sum sl_b_in hr data b_in :
 Proof. Admitted.
 
 End proof.
+End cryptoffi.
