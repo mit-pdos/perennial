@@ -1,5 +1,5 @@
 From New.proof Require Import proof_prelude.
-From New.generatedproof.github_com.goose_lang Require Export std.
+From New.generatedproof.github_com.goose_lang Require Import std.
 From New.proof Require Import github_com.goose_lang.primitive std.std_core sync.
 
 Set Default Proof Using "Type".
