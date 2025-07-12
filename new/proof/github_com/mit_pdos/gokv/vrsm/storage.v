@@ -839,7 +839,7 @@ Proof.
     iDestruct "HH" as (?) "(%HdurPrefix & %HotherPrefix & HP & HcloseP)".
     replace (durableData) with (data); last first.
     {
-      apply list_prefix_eq; first done.
+      apply prefix_length_eq; first done.
       apply prefix_length; done.
     }
     iMod (lc_fupd_elim_later with "Hlc HP") as "HP".

@@ -123,7 +123,7 @@ Proof.
   iDestruct "HH" as "(%Hprefix1 & Hprim)".
   iDestruct (ghost_propose_lb_valid with "Hprim Hs_prop_lb") as "%Hprefix2".
   assert (σ = st.(server.ops_full_eph)).
-  { apply list_prefix_eq; first done. by apply prefix_length. }
+  { apply prefix_length_eq; first done. by apply prefix_length. }
   subst.
   iExists _.
   by iFrame "∗ Hprim_facts_in #%".

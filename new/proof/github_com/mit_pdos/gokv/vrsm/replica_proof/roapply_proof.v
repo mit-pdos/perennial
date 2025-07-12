@@ -293,7 +293,7 @@ Proof.
       iDestruct (fmlist_ptsto_lb_comparable with "Hs_prop_lb Hprop_lb") as %[|].
       2: { iPureIntro. by transitivity opsfull. }
       { iPureIntro.
-        apply list_prefix_eq in H3.
+        apply prefix_length_eq in H3.
         2:{
           apply prefix_length in H1.
           by do 2 rewrite length_fmap in H1.
@@ -377,7 +377,7 @@ Proof.
   {
     iDestruct (fmlist_ptsto_lb_comparable with "Hprop_lb Hcommit_prop_lb") as %[|].
     { by iApply is_pb_log_lb_mono. }
-    apply list_prefix_eq in H.
+    apply prefix_length_eq in H.
     2:{
       rewrite length_fmap in HcommitLen.
       word.

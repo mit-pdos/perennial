@@ -260,7 +260,7 @@ Proof.
       iDestruct (is_hash_len with "Hh") as "%". done.
 Qed.
 
-Lemma is_chain_commitment_det : ∀ γ limit0 limit1 l0 l1 h0 h1,
+Lemma is_chain_commitment_inj : ∀ γ limit0 limit1 l0 l1 h0 h1,
   (limit0 ≤ limit1)%nat ->
   is_chain_commitment γ limit0 l0 h0 -∗
   is_chain_commitment γ limit1 l1 h1 -∗

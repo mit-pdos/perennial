@@ -223,18 +223,6 @@ Section list.
     eapply prefix_lookup_Some in Hlookup; eauto.
   Qed.
 
-  Lemma list_prefix_eq l1 l2 :
-    l1 `prefix_of` l2 → length l2 ≤ length l1 → l1 = l2.
-  Proof.
-    intros Hprefix Hlen.
-    assert (length l1 = length l2).
-    { apply prefix_length in Hprefix; lia. }
-    eapply list_eq_same_length; [ done | done | ].
-    intros i x y ? Hlookup1 Hlookup2.
-    eapply prefix_lookup_Some in Hlookup1; eauto.
-    congruence.
-  Qed.
-
   (* for compatibility with Coq v8.11, which doesn't have this lemma *)
   Lemma in_concat : forall (l: list (list A)) y,
     In y (concat l) <-> exists x, In x l /\ In y x.

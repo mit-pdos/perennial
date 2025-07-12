@@ -78,7 +78,7 @@ Proof.
       { by iDestruct (fmlist_ptsto_lb_agree with "Haccepted_ro Hacc_lb") as %?. }
       { by iDestruct (fmlist_ptsto_lb_agree with "Haccepted Hacc_lb") as %?. }
     }
-    apply list_prefix_eq in Hdone.
+    apply prefix_length_eq in Hdone.
     2:{
       apply prefix_length in H, Hdone.
       apply (f_equal length) in Hre.

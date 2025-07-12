@@ -205,7 +205,7 @@ Section lemmas.
     iDestruct (fmlist_ptsto_lb_comparable with "Hlb1 Hlb2") as "%Hcases".
     destruct Hcases as [Hbad|Hσ_ineq]; first done.
     enough (l'=l) by naive_solver.
-    by apply list_prefix_eq.
+    by apply prefix_length_eq.
   Qed.
 
   Lemma fmlist_ptsto_lb_len_eq γ k l l' :
@@ -217,7 +217,7 @@ Section lemmas.
     iIntros (?) "Hlb1 Hlb2".
     iDestruct (fmlist_ptsto_lb_longer with "Hlb1 Hlb2") as "%Hcases".
     { lia. }
-    apply list_prefix_eq in Hcases.
+    apply prefix_length_eq in Hcases.
     { done. } lia.
   Qed.
 

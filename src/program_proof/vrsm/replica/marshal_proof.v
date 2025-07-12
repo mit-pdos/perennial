@@ -626,7 +626,7 @@ Proof.
   { (* TODO: list_sover. *)
     rewrite -Hsz in Hreplicas_len.
     symmetry.
-    apply list_prefix_eq; last word.
+    apply prefix_length_eq; last word.
     done.
   }
   by iFrame "∗#".

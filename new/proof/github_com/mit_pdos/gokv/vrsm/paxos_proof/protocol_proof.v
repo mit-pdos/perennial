@@ -221,7 +221,7 @@ Proof.
       assert (length σ' = length (st.(mp_log) ++ [entry]) ∨ length σ' < length (st.(mp_log) ++ [entry])) as [|] by word.
       {
         right.
-        apply list_prefix_eq; eauto.
+        apply prefix_length_eq; eauto.
         lia.
       }
       {
@@ -344,7 +344,7 @@ Proof.
   {
     destruct Hcomp as [Hbad|Hcomp]; first done.
     enough (log'=mp_log0) by naive_solver.
-    by apply list_prefix_eq.
+    by apply prefix_length_eq.
   }
 
   iMod (fmlist_ptsto_update log' with "Hacc") as "Hacc".
@@ -390,7 +390,7 @@ Proof.
     destruct Hcomp as [Hbad|Hcomp]; last done.
     enough (log'=st.(mp_log)) by naive_solver.
     symmetry.
-    by apply list_prefix_eq.
+    by apply prefix_length_eq.
   }
   by iApply fmlist_ptsto_lb_mono.
 Qed.

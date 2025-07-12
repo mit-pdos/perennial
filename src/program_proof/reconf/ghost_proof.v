@@ -349,7 +349,7 @@ Proof.
       assert (mval' = highestVal).
       {
         symmetry.
-        apply list_prefix_eq.
+        apply prefix_length_eq.
         {
           done.
         }
