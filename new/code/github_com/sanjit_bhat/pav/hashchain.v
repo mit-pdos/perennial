@@ -75,9 +75,8 @@ Definition HashChain__Bootstrap : val :=
      (func_call #std.std #"BytesClone"%go) "$a0")).
 
 (* Verify updates prevLink with proof.
-   if the extended length is 0, new val is nil.
 
-   go: hashchain.go:43:6 *)
+   go: hashchain.go:42:6 *)
 Definition Verify : val :=
   rec: "Verify" "prevLink" "proof" :=
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -86,13 +85,6 @@ Definition Verify : val :=
     let: "extLen" := (mem.alloc (type.zero_val #uint64T)) in
     let: "proof" := (mem.alloc "proof") in
     let: "prevLink" := (mem.alloc "prevLink") in
-    (if: (s_to_w64 (let: "$a0" := (![#sliceT] "prevLink") in
-    slice.len "$a0")) ≠ cryptoffi.HashLen
-    then
-      let: "$r0" := #true in
-      do:  ("err" <-[#boolT] "$r0");;;
-      return: (![#uint64T] "extLen", ![#sliceT] "newVal", ![#sliceT] "newLink", ![#boolT] "err")
-    else do:  #());;;
     let: "proofLen" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (s_to_w64 (let: "$a0" := (![#sliceT] "proof") in
     slice.len "$a0")) in
@@ -126,7 +118,7 @@ Definition Verify : val :=
       do:  ("newLink" <-[#sliceT] "$r0")));;;
     return: (![#uint64T] "extLen", ![#sliceT] "newVal", ![#sliceT] "newLink", ![#boolT] "err")).
 
-(* go: hashchain.go:65:6 *)
+(* go: hashchain.go:60:6 *)
 Definition New : val :=
   rec: "New" <> :=
     exception_do (return: (mem.alloc (let: "$lastLink" := ((func_call #hashchain.hashchain #"GetEmptyLink"%go) #()) in
@@ -136,13 +128,13 @@ Definition New : val :=
        "vals" ::= type.zero_val #sliceT
      }]))).
 
-(* go: hashchain.go:69:6 *)
+(* go: hashchain.go:64:6 *)
 Definition GetEmptyLink : val :=
   rec: "GetEmptyLink" <> :=
     exception_do (return: (let: "$a0" := #slice.nil in
      (func_call #cryptoutil.cryptoutil #"Hash"%go) "$a0")).
 
-(* go: hashchain.go:73:6 *)
+(* go: hashchain.go:68:6 *)
 Definition GetNextLink : val :=
   rec: "GetNextLink" "prevLink" "nextVal" :=
     exception_do (let: "nextVal" := (mem.alloc "nextVal") in

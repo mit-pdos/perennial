@@ -26,6 +26,8 @@ Local Fixpoint is_chain_aux (boot : list w8) (l : list $ list w8) (h : list w8) 
     "#Hrecur" ∷ is_chain_aux boot l' h' ∗
     "#His_hash" ∷ cryptoffi.is_hash (h' ++ x) h
   end.
+#[global] Opaque is_chain_aux.
+#[local] Transparent is_chain_aux.
 
 #[global]
 Instance is_chain_aux_pers b l h : Persistent (is_chain_aux b l h).
@@ -92,6 +94,77 @@ Proof.
   apply prefix_length_eq; [done|].
   by apply prefix_length.
 Qed.
+
+Lemma wp_GetEmptyLink :
+  {{{ is_pkg_init hashchain }}}
+  hashchain @ "GetEmptyLink" #()
+  {{{
+    sl h, RET #sl;
+    "Hsl_hash" ∷ sl ↦* h ∗
+    "#His_chain" ∷ is_chain [] h
+  }}}.
+Proof using H.
+  wp_start.
+  wp_apply (cryptoutil.wp_Hash _ inhabitant) as "* @".
+  { iApply own_slice_nil. }
+  iDestruct (cryptoffi.is_hash_len with "His_hash") as %?.
+  iApply "HΦ". by iFrame "∗#".
+Qed.
+
+Lemma wp_GetNextLink sl_prevLink d0 prevLink sl_nextVal d1 nextVal :
+  {{{
+    is_pkg_init hashchain ∗
+    "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
+    "Hsl_nextVal" ∷ sl_nextVal ↦*{d1} nextVal
+  }}}
+  hashchain @ "GetNextLink" #sl_prevLink #sl_nextVal
+  {{{
+    sl h, RET #sl;
+    "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
+    "Hsl_nextVal" ∷ sl_nextVal ↦*{d1} nextVal ∗
+    "Hsl_hash" ∷ sl ↦* h ∗
+    "#His_hash" ∷ cryptoffi.is_hash (prevLink ++ nextVal) h
+  }}}.
+Proof using H.
+  wp_start. iNamed "Hpre".
+  wp_auto.
+  wp_apply cryptoffi.wp_NewHasher as "* @".
+  wp_apply (cryptoffi.wp_Hasher__Write with "[$Hown_hr $Hsl_prevLink]").
+  iNamedSuffix 1 "0". wp_auto.
+  wp_apply (cryptoffi.wp_Hasher__Write with "[$Hown_hr0 $Hsl_nextVal]").
+  iNamedSuffix 1 "1". wp_auto.
+  wp_apply (cryptoffi.wp_Hasher__Sum with "[$Hown_hr1]").
+  { iApply own_slice_nil. }
+  iIntros "*". iNamed 1.
+  wp_auto.
+  iApply "HΦ". iFrame "∗#".
+Qed.
+
+Definition wish_Verify (proof : list w8) new_vals : iProp Σ :=
+  "%Hlen_vals" ∷ ([∗ list] v ∈ new_vals,
+    ⌜ Z.of_nat $ length v = cryptoffi.hash_len ⌝) ∗
+  "%Henc_vals" ∷ ⌜ proof = concat new_vals ⌝.
+
+Lemma wp_Verify :
+  {{{
+    is_pkg_init hashchain ∗
+    "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
+    "#Hsl_proof" ∷ sl_proof ↦*□ proof ∗
+    "#His_chain" ∷ is_chain_boot l prevLink
+  }}}
+  hashchain @ "Verify" #sl_prevLink #sl_proof
+  {{{
+    extLen sl_newVal newVal sl_newLink newLink err,
+    RET (#extLen, #sl_newVal, #sl_newLink, #err);
+    "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
+    "#Hsl_newVal" ∷ sl_newVal ↦*□ newVal ∗
+    "Hsl_newLink" ∷ sl_newLink ↦* newLink ∗
+    "Hgenie" ∷ (⌜ err = false ⌝ ∗-∗ ∃ new_vals, wish_Verify proof new_vals) ∗
+    "Herr" ∷ (∀ new_vals, wish_Verify proof new_vals -∗
+      "->" ∷ ⌜ newVal = default [] (last new_vals) ⌝ ∗
+      "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink)
+  }}}.
+Proof. Admitted.
 
 End proof.
 End hashchain.
