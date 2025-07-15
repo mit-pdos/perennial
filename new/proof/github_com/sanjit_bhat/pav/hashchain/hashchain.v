@@ -31,25 +31,25 @@ Program Instance is_pkg_init_hashchain : IsPkgInit hashchain := ltac2:(build_pkg
 #[global] Opaque is_pkg_init_hashchain.
 #[local] Transparent is_pkg_init_hashchain.
 
-Local Fixpoint is_chain_aux (boot : list w8) (l : list $ list w8) (h : list w8) : iProp Σ :=
+Local Fixpoint is_chain_rev (boot : list w8) (l : list $ list w8) (h : list w8) : iProp Σ :=
   match l with
   | [] =>
     "->" ∷ ⌜ boot = h ⌝ ∗
     "%Hlen" ∷ ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝
   | x :: l' =>
     ∃ h',
-    "#Hrecur" ∷ is_chain_aux boot l' h' ∗
+    "#Hrecur" ∷ is_chain_rev boot l' h' ∗
     "#His_hash" ∷ cryptoffi.is_hash (h' ++ x) h
   end.
-#[global] Opaque is_chain_aux.
-#[local] Transparent is_chain_aux.
+#[global] Opaque is_chain_rev.
+#[local] Transparent is_chain_rev.
 
 #[global]
-Instance is_chain_aux_pers b l h : Persistent (is_chain_aux b l h).
+Instance is_chain_rev_pers b l h : Persistent (is_chain_rev b l h).
 Proof. revert h. induction l; apply _. Qed.
 
-Lemma is_chain_aux_len b l h :
-  is_chain_aux b l h -∗
+Lemma is_chain_rev_len b l h :
+  is_chain_rev b l h -∗
   ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝.
 Proof.
   destruct l; simpl; iNamed 1.
@@ -57,16 +57,18 @@ Proof.
   - by iDestruct (cryptoffi.is_hash_len with "His_hash") as %?.
 Qed.
 
+Notation is_chain_aux b l h := (is_chain_rev b (reverse l) h).
+
 (* a full chain. *)
 Definition is_chain l h : iProp Σ :=
   ∃ he,
   "#He" ∷ cryptoffi.is_hash [] he ∗
-  "#His_chain" ∷ is_chain_aux he (reverse l) h.
+  "#His_chain" ∷ is_chain_aux he l h.
 
 (* a bootstrapped chain. *)
 Definition is_chain_boot l h : iProp Σ :=
   ∃ boot,
-  "#His_chain" ∷ is_chain_aux boot (reverse l) h.
+  "#His_chain" ∷ is_chain_aux boot l h.
 
 (* we can't prove inj bw two bootstrapped chains bc of cycles.
 i.e., when Hash(boot, v) = boot, which makes
@@ -76,21 +78,21 @@ this takes a different approach, stating inj with a "complete"
 chain, which prevents cycles by starting with an empty pre-img. *)
 Local Lemma is_chain_inj_aux he l0 l1 b h :
   cryptoffi.is_hash [] he -∗
-  is_chain_aux he l0 h -∗
-  is_chain_aux b l1 h -∗
+  is_chain_rev he l0 h -∗
+  is_chain_rev b l1 h -∗
   ⌜ l1 `prefix_of` l0 ⌝.
 Proof.
   iIntros "#He".
   iInduction l0 as [|??] forall (l1 h); destruct l1; simpl;
     iNamedSuffix 1 "0"; iNamedSuffix 1 "1"; [done|..].
-  - iDestruct (is_chain_aux_len with "Hrecur1") as %?.
+  - iDestruct (is_chain_rev_len with "Hrecur1") as %?.
     iDestruct (cryptoffi.is_hash_inj with "He His_hash1") as %Heq.
     apply (f_equal length) in Heq.
     autorewrite with len in *.
     word.
   - iPureIntro. apply prefix_nil.
-  - iDestruct (is_chain_aux_len with "Hrecur0") as %?.
-    iDestruct (is_chain_aux_len with "Hrecur1") as %?.
+  - iDestruct (is_chain_rev_len with "Hrecur0") as %?.
+    iDestruct (is_chain_rev_len with "Hrecur1") as %?.
     iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %Heq.
     opose proof (app_inj_1 _ _ _ _ _ Heq) as [-> ->]; [lia|].
     iDestruct ("IHl0" with "Hrecur0 Hrecur1") as %?.
@@ -150,7 +152,7 @@ Lemma wp_GetNextLink sl_prevLink d0 prevLink sl_nextVal d1 nextVal b l :
     "Hsl_prevLink" ∷ sl_prevLink ↦*{d0} prevLink ∗
     "Hsl_nextVal" ∷ sl_nextVal ↦*{d1} nextVal ∗
     "Hsl_nextLink" ∷ sl_nextLink ↦* nextLink ∗
-    "#His_chain" ∷ is_chain_aux b (nextVal :: l) nextLink
+    "#His_chain" ∷ is_chain_aux b (l ++ [nextVal]) nextLink
   }}}.
 Proof using H.
   wp_start. iNamed "Hpre".
@@ -164,7 +166,9 @@ Proof using H.
   { iApply own_slice_nil. }
   iIntros "*". iNamed 1.
   wp_auto.
-  iApply "HΦ". iFrame "∗#".
+  iApply "HΦ".
+  rewrite reverse_snoc.
+  iFrame "∗#".
 Qed.
 
 (* new_vals encodes to proof. *)
@@ -183,7 +187,7 @@ Proof.
   lia.
 Qed.
 
-Local Lemma wish_Verify_det proof vs0 vs1 :
+Lemma wish_Verify_det proof vs0 vs1 :
   wish_Verify proof vs0 -∗
   wish_Verify proof vs1 -∗
   ⌜ vs0 = vs1 ⌝.
@@ -196,6 +200,14 @@ Proof.
   - eapply list.Forall_impl; [done|].
     intuition. lia.
 Qed.
+
+Local Lemma wish_Verify_next_val i proof vs :
+  let startp := Z.to_nat $ i * cryptoffi.hash_len in
+  let endp := Z.to_nat $ (i + 1) * cryptoffi.hash_len in
+  endp <= length proof →
+  wish_Verify (take startp proof) vs -∗
+  wish_Verify (take endp proof) (vs ++ [subslice startp endp proof]).
+Proof. Admitted.
 
 Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
   {{{
@@ -215,10 +227,10 @@ Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
       (* TODO(goose): stdpp things like [last] that shadow Stdlib things
       have extremely brittle imports in Perennial.
       see my external notes on fixing. *)
-      "->" ∷ ⌜ newVal = default [] (stdpp.list_basics.list.last new_vals) ⌝ ∗
+      "->" ∷ ⌜ newVal = default [] (list.last new_vals) ⌝ ∗
       "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink)
   }}}.
-Proof.
+Proof using H.
   wp_start. iNamed "Hpre".
   wp_auto.
   iPersist "proof".
@@ -289,10 +301,23 @@ Proof.
   iNamed "His_chain".
   wp_apply (wp_GetNextLink with "[$Hsl_newLink $Hsub $His_chain]") as "*".
   iNamedSuffix 1 "_n".
+  iClear "His_chain".
   wp_auto.
   wp_for_post.
   iFrame.
-Admitted.
+  iDestruct (wish_Verify_next_val with "Hwish") as "#Hwish_n"; [word|].
+  iClear "Hwish".
+  replace (uint.Z (word.add _ _)) with (uint.Z i + 1) by word.
+  iFrame "#".
+  repeat iSplit.
+  - word.
+  - rewrite last_snoc /=. iPureIntro. f_equal; word.
+  - iExists _.
+    iExactEq "His_chain_n".
+    rewrite /named.
+    list_simplifier.
+    repeat f_equal; word.
+Qed.
 
 End proof.
 End hashchain.

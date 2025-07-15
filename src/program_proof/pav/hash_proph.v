@@ -339,7 +339,10 @@ Fixpoint chain_hash (l : list $ list w8) : list w8 :=
 (* [is_chain] works on an option list.
 a None list signifying "no list hashes to h" seems like a more natural
 way of stating the "invalid hash" case than the approach in
-[is_chain_commitment]. *)
+[is_chain_commitment].
+TODO: if invert bootstrapped chains, would never have None's,
+bc all hashes are valid bootstrap values.
+but maybe inversion is only required on complete DS's. *)
 Definition is_chain ol h :=
   match ol with
   | None => ¬∃ l, chain_hash l = h
