@@ -813,22 +813,29 @@ Section map2.
   Qed.
 End map2.
 
-Section gmap_uncurry.
+Section map_uncurry.
 
   Context `{EqDecision A} `{Countable A}.
   Context `{EqDecision B} `{Countable B}.
   Variable (T : Type).
 
+  (* map_curry is horrendously general (including in the result type) so type
+  inference fails in the theorem statements below *)
+  Notation map_curry := (fin_maps.map_curry (M1:=gmap A) (M2:=gmap B)).
+
+  Definition gmap_curry {T} (m: gmap (A*B) T) : gmap A (gmap B T) :=
+    map_curry m.
+
   Theorem gmap_curry_insert (m : gmap (A * B) T) (k : A * B) (v : T) :
     m !! k = None ->
-    gmap_curry (<[k:=v]> m) =
+    map_curry (<[k:=v]> m) =
       <[fst k :=
-        <[snd k := v]> (default ∅ ((gmap_curry m) !! fst k))]>
-      (gmap_curry m).
+        <[snd k := v]> (default ∅ ((map_curry m) !! fst k))]>
+      (map_curry m).
   Proof.
     intros.
     destruct k as [b o].
-    rewrite /gmap_curry.
+    rewrite /map_curry.
     rewrite map_fold_insert_L; eauto.
     2: {
       intros.
@@ -849,10 +856,10 @@ Section gmap_uncurry.
 
   Theorem gmap_curry_insert_delete (m : gmap (A * B) T) (k : A * B) (v : T) :
     m !! k = None ->
-    gmap_curry (<[k:=v]> m) =
+    map_curry (<[k:=v]> m) =
       <[fst k :=
-        <[snd k := v]> (default ∅ ((gmap_curry m) !! fst k))]>
-      (delete (fst k) (gmap_curry m)).
+        <[snd k := v]> (default ∅ ((map_curry m) !! fst k))]>
+      (delete (fst k) (map_curry m)).
   Proof.
     intros.
     rewrite gmap_curry_insert //. rewrite insert_delete_insert //.
@@ -861,29 +868,29 @@ Section gmap_uncurry.
   Theorem gmap_curry_lookup_exists (m : gmap (A * B) T) (k : A * B) (v : T) :
     m !! k = Some v ->
     ∃ offmap,
-      gmap_curry m !! (fst k) = Some offmap ∧
+      map_curry m !! (fst k) = Some offmap ∧
       offmap !! (snd k) = Some v.
   Proof.
     intros.
     destruct k.
-    destruct (gmap_curry m !! a) eqn:He.
+    destruct (map_curry m !! a) eqn:He.
     - eexists; intuition eauto.
-      rewrite -lookup_gmap_curry in H1.
+      rewrite -lookup_map_curry in H1.
       rewrite He in H1; simpl in H1. eauto.
     - exfalso. simpl in He.
-      pose proof (lookup_gmap_curry_None m a). destruct H2.
+      pose proof (lookup_map_curry_None (M2:=gmap B) m a). destruct H2.
       rewrite H2 in H1; eauto. congruence.
   Qed.
 
   Theorem gmap_curry_lookup (m : gmap (A * B) T) (k1 : A) (k2 : B) (offmap : gmap B T) :
-    gmap_curry m !! k1 = Some offmap →
+    map_curry m !! k1 = Some offmap →
     m !! (k1, k2) = offmap !! k2.
   Proof.
     intros Hacc.
-    rewrite -lookup_gmap_curry Hacc //=.
+    rewrite -lookup_map_curry Hacc //=.
   Qed.
 
-End gmap_uncurry.
+End map_uncurry.
 
 (* TODO(joe): got halfway through this before I realized gmap_addr_by_block_big_sepM exists *)
 Lemma big_sepM_gmap_curry `{Countable K1} `{Countable K2} {X : Type}
@@ -893,21 +900,22 @@ Lemma big_sepM_gmap_curry `{Countable K1} `{Countable K2} {X : Type}
 Proof.
   iIntros "H".
   iInduction m as [| i x m1] "IH" using map_ind.
-  * rewrite /gmap_curry //=.
+  * rewrite /map_curry //=.
   * rewrite big_sepM_insert //.
     iDestruct "H" as "(HΦ&H)".
-    rewrite ?gmap_curry_insert_delete //; last first.
+    rewrite /gmap_curry.
+    rewrite gmap_curry_insert_delete //; last first.
     iDestruct ("IH" with "H") as "H".
     rewrite big_sepM_insert ?lookup_delete //.
-    destruct (gmap_curry m1 !! i.1) as [m1'|] eqn:Hlookup.
-    ** assert (Hdel: gmap_curry m1 = <[i.1 := m1']> (delete i.1 (gmap_curry m1))).
+    destruct (map_curry m1 !! i.1) as [m1'|] eqn:Hlookup.
+    ** assert (Hdel: map_curry (M2:=gmap K2) m1 = <[i.1 := m1']> (delete i.1 (map_curry (M1:=gmap K1) (M2:=gmap K2) m1))).
        { rewrite insert_delete //=. }
        iEval (rewrite Hdel) in "H".
        rewrite big_sepM_insert ?lookup_delete //.
        iDestruct "H" as "(H1&H2)".
        iFrame. simpl. rewrite big_sepM_insert; first by iFrame.
        destruct i as (i1&i2).
-       rewrite -lookup_gmap_curry in H1.
+       rewrite -lookup_map_curry in H1.
        rewrite Hlookup /= in H1.
        eauto.
     **
