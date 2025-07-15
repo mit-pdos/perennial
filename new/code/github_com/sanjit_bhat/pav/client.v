@@ -436,6 +436,13 @@ Definition New : val :=
     (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
     then return: (![#ptrT] "c", ![#ktcore.Blame] "err")
     else do:  #());;;
+    (if: (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #server.StartReply #"StartLink"%go (![#ptrT] "reply"))) in
+    slice.len "$a0")) ≠ cryptoffi.HashLen
+    then
+      let: "$r0" := ktcore.BlameServFull in
+      do:  ("err" <-[#ktcore.Blame] "$r0");;;
+      return: (![#ptrT] "c", ![#ktcore.Blame] "err")
+    else do:  #());;;
     let: "errb" := (mem.alloc (type.zero_val #boolT)) in
     let: "newLink" := (mem.alloc (type.zero_val #sliceT)) in
     let: "newDig" := (mem.alloc (type.zero_val #sliceT)) in
@@ -550,7 +557,7 @@ Definition New : val :=
     do:  ("c" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "c", ![#ktcore.Blame] "err")).
 
-(* go: client.go:233:18 *)
+(* go: client.go:237:18 *)
 Definition Client__getChainExt : val :=
   rec: "Client__getChainExt" "c" "chainProof" "sig" :=
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -615,7 +622,7 @@ Definition Client__getChainExt : val :=
     do:  ("ep" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "ep", ![#boolT] "err")).
 
-(* go: client.go:255:6 *)
+(* go: client.go:259:6 *)
 Definition CheckMemb : val :=
   rec: "CheckMemb" "vrfPk" "uid" "ver" "dig" "memb" :=
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -663,7 +670,7 @@ Definition CheckMemb : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-(* go: client.go:272:6 *)
+(* go: client.go:276:6 *)
 Definition CheckHist : val :=
   rec: "CheckHist" "vrfPk" "uid" "prefixLen" "dig" "hist" :=
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -690,7 +697,7 @@ Definition CheckHist : val :=
       else do:  #()))));;;
     return: (![#boolT] "err")).
 
-(* go: client.go:281:6 *)
+(* go: client.go:285:6 *)
 Definition CheckNonMemb : val :=
   rec: "CheckNonMemb" "vrfPk" "uid" "ver" "dig" "nonMemb" :=
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
