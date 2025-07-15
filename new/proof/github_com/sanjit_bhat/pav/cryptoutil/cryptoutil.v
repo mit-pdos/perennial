@@ -1,6 +1,6 @@
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import cryptoutil.
-(* TODO: brittleness with NamedProps import.
+(* TODO(goose): brittleness with NamedProps import.
 if iris import comes after, overrides custom syntax.
 (shouldn't it be imported in overall prelude?) *)
 From Perennial.Helpers Require Import NamedProps.
@@ -29,7 +29,7 @@ Lemma wp_Hash sl_b d0 b :
     "Hsl_hash" ∷ sl_hash ↦* hash ∗
     "#His_hash" ∷ cryptoffi.is_hash b hash
   }}}.
-(* TODO: Proof using Type* doesn't work. *)
+(* TODO(goose): Proof using Type* doesn't work. *)
 Proof using H.
   wp_start. iNamed "Hpre".
   wp_auto.
