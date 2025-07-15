@@ -13,24 +13,20 @@ Section protocol.
 
 Context {W : Type} {W_eq_dec : EqDecision W} {W_countable : Countable W}.
 
-Record Response :=
-  {
-    resp_value : go_string;
-    resp_mod_rev : w64;
-  }.
-
-(* FIXME: this is the wrong abstraction. Even when the entry is being updated,
-   it might be concurrently read as long as the `waitc` the reader saw at the
-   beginning closes. *)
-Inductive LeasedEntryInner :=
-| entry_valid (resp : option Response)
-| entry_updating (waitc : W).
+Inductive LeasedValue :=
+| LeasedValuePresent (lv_mod_rev : Z) (lv_val : go_string)
+| LeasedValueDeleted (lv_del_rev : Z)
+.
 
 Record LeasedEntry :=
   {
-    leased_rev : Z;
-    leased_entry : LeasedEntryInner;
+    le_lease_rev: Z;
+    le_value : LeasedValue;
+    le_waitc : W;
   }.
+
+Global Instance settable_LeasedEntry : Settable LeasedEntry :=
+  settable! Build_LeasedEntry < le_lease_rev; le_value; le_waitc >.
 
 Record ServerNames :=
   {
@@ -70,9 +66,9 @@ Definition step_Lock (key : go_string) (w : W) (rev : Z) : Prop :=
   ∃ le,
   c.(entries) !! key = Some le ∧
   c.(waitc_map) !! w = None ∧
-  rev = le.(leased_rev) ∧
+  rev = le.(le_lease_rev) ∧
   c' = c <| waitc_map := <[ w := false ]> c.(waitc_map) |>
-         <| entries :=  <[key := {| leased_rev := rev; leased_entry := entry_updating w |} ]> c.(entries) |>.
+         <| entries :=  <[key := le <| le_waitc := w |> ]> c.(entries) |>.
 
 Lemma take_step_Lock (key : go_string) w rev :
   step_Lock key w rev →
@@ -109,12 +105,14 @@ Lemma take_step_Evict key w rev :
 Proof.
 Admitted.
 
-(*
-Definition step_Update key val resp :
+(* FIXME: need ResponseHeader. *)
+Definition is_newer_response (lv : LeasedValue) (resp_rev : Z) : Prop :=
+  True.
+
+Definition step_Update key val resp_rev : Prop :=
   ∃ le,
-  s.(entries) !! key = le ∧
-  le.(entry) *)
-(* FIXME: need to update the value even if there's a new waitc, but the sum type
-   doesn't have a way of storing both a value and a waitc. *)
+  c.(entries) !! key = Some le ∧
+  is_newer_response le.(le_value) resp_rev ∧
+  c' = c <| entries := <[ key := le <| le_value := LeasedValuePresent resp_rev val |> ]> c.(entries) |>.
 
 End protocol.
