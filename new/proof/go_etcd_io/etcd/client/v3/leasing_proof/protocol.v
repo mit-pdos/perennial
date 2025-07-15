@@ -2,6 +2,27 @@ Require Import New.proof.proof_prelude.
 
 Require Import New.proof.go_etcd_io.etcd.client.v3.
 
+(* FIXME: the original leasingkv has the following cache-consistency protocol
+   bug (see https://github.com/upamanyus/etcd/commit/174a964e806707b9fde186ade4b12be61967e9ea):
+
+   When Delete and Put run concurrently, if the server executes Put before
+   Delete, but the cache processes the Delete response before the Put response,
+   the leaseCache ends up caching the value written by the (out-of-date) Put in
+   the cached key-value map. A future Get() operation on that leasing client
+   then would incorrectly return a value for the key, when in reality the key is
+   deleted on the server.
+
+   This came up trying to understand the strange code written in
+   leaseCache.Update(): if the current cached response for a key is "Not in KV
+   map", Update() unconditionally records the (previously-Put) value,
+   but then conditionally updates the ModRevision. Instead, it should probably
+   check if (cacheResp.Header.Revision < respHeader.Revision), and only then
+   update the cache. That's more like what leaseCache.Delete does.
+
+   This would give a cleaner definition to `is_newer_response` than is possible
+   now.
+ *)
+
 (* To simplify the proof for now, assuming that all keys are managed by
    leasingKV clients (i.e. the whole map is subject to the following
    protocol).
