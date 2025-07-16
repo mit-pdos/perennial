@@ -6,64 +6,6 @@ From Perennial.Helpers Require Import NamedProps.
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil.
 From New.proof.github_com.goose_lang Require Import std.
 
-Section misc.
-Context {A : Type}.
-
-Lemma take_0' n (l : list A) :
-  n = 0%nat →
-  take n l = [].
-Proof. intros. subst. apply take_0. Qed.
-
-Lemma list_eq_ext (l0 l1 : list A) :
-  (∀ i, l0 !! i = l1 !! i) →
-  l0 = l1.
-Proof. Admitted.
-
-Lemma list_join_inj (c : nat) (l0 l1 : list $ list A) :
-  c > 0 →
-  Forall (λ x, length x = c) l0 →
-  Forall (λ x, length x = c) l1 →
-  mjoin l0 = mjoin l1 →
-  l0 = l1.
-Proof.
-  revert l1.
-  induction l0; destruct l1; [done|..]; intros ? Hc0 Hc1 Heq.
-  - apply (f_equal length) in Heq.
-    rewrite !length_join in Heq.
-    list_simplifier. lia.
-  - apply (f_equal length) in Heq.
-    rewrite !length_join in Heq.
-    list_simplifier. lia.
-  - simpl in *.
-    apply list.Forall_cons in Hc0 as [??].
-    apply list.Forall_cons in Hc1 as [??].
-    eapply (app_inj_1 _) in Heq as [-> ?]; [|lia].
-    f_equal.
-    by eapply IHl0.
-Qed.
-
-Lemma Forall_snoc (P : A → Prop) (x : A) (l : list A) :
-  Forall P (l ++ [x]) ↔ Forall P l ∧ P x.
-Proof.
-  split; intros H.
-  - apply list.Forall_app in H as [H1 H2].
-    by eapply (proj1 (list.Forall_singleton _ _)) in H2.
-  - destruct H as [H1 H2].
-    apply list.Forall_app.
-    split; [done|].
-    by apply list.Forall_singleton.
-Qed.
-
-Lemma take_subslice (n m : nat) (l : list A) :
-  n ≤ m →
-  take m l = take n l ++ subslice n m l.
-Proof.
-  intros. rewrite /subslice.
-  replace (m) with (n + (m - n))%nat by lia.
-  by rewrite -take_drop_commute -take_take_drop.
-Qed.
-End misc.
-
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
 Context `{!cryptoffi.GlobalAddrs, !cryptoutil.GlobalAddrs, !std.GlobalAddrs}.

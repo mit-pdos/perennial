@@ -29,6 +29,46 @@ Section list.
   Context {A : Type}.
   Implicit Types l : (list A).
 
+  Lemma take_0' n l :
+    n = 0 →
+    take n l = [].
+  Proof. intros. subst. apply take_0. Qed.
+
+  Lemma list_join_inj (c : nat) (l0 l1 : list $ list A) :
+    c > 0 →
+    Forall (λ x, length x = c) l0 →
+    Forall (λ x, length x = c) l1 →
+    mjoin l0 = mjoin l1 →
+    l0 = l1.
+  Proof.
+    revert l1.
+    induction l0; destruct l1; [done|..]; intros ? Hc0 Hc1 Heq.
+    - apply (f_equal length) in Heq.
+      rewrite !length_join in Heq.
+      list_simplifier. lia.
+    - apply (f_equal length) in Heq.
+      rewrite !length_join in Heq.
+      list_simplifier. lia.
+    - simpl in *.
+      apply Forall_cons in Hc0 as [??].
+      apply Forall_cons in Hc1 as [??].
+      eapply (app_inj_1 _) in Heq as [-> ?]; [|lia].
+      f_equal.
+      by eapply IHl0.
+  Qed.
+
+  Lemma Forall_snoc (P : A → Prop) (x : A) l :
+    Forall P (l ++ [x]) ↔ Forall P l ∧ P x.
+  Proof.
+    split; intros H.
+    - apply Forall_app in H as [H1 H2].
+      by eapply (proj1 (Forall_singleton _ _)) in H2.
+    - destruct H as [H1 H2].
+      apply Forall_app.
+      split; [done|].
+      by apply Forall_singleton.
+  Qed.
+
   Lemma filter_snoc (P : A → Prop) `{∀ x, Decision (P x)} l x :
     filter P (l ++ [x]) = filter P l ++ (if decide (P x) then [x] else []).
   Proof. by rewrite filter_app. Qed.
@@ -283,6 +323,15 @@ Qed.
 (** subslice takes elements with indices [n, m) in list [l] *)
 Definition subslice {A} (n m: nat) (l: list A): list A :=
   drop n (take m l).
+
+Lemma take_subslice {A} (n m : nat) (l : list A) :
+  n ≤ m →
+  take m l = take n l ++ subslice n m l.
+Proof.
+  intros. rewrite /subslice.
+  replace (m) with (n + (m - n)) by lia.
+  by rewrite -take_drop_commute -take_take_drop.
+Qed.
 
 Theorem subslice_length' {A} n m (l: list A) :
   length (subslice n m l) = (m `min` length l - n)%nat.
