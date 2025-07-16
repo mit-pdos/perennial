@@ -32,8 +32,8 @@ Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
   wp_apply cryptoffi.wp_NewHasher as "* @".
-  wp_apply (cryptoffi.wp_Hasher__Write with "[$Hown_hr $Hsl_b]") as "@".
-  wp_apply (cryptoffi.wp_Hasher__Sum with "[$Hown_hr]") as "* @".
+  wp_apply (cryptoffi.wp_Hasher_Write with "[$Hown_hr $Hsl_b]") as "@".
+  wp_apply (cryptoffi.wp_Hasher_Sum with "[$Hown_hr]") as "* @".
   { iApply own_slice_nil. }
   iApply "HΦ".
   list_simplifier.

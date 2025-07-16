@@ -51,7 +51,7 @@ Lemma wp_NewHasher :
   }}}.
 Proof. Admitted.
 
-Lemma wp_Hasher__Write hr data sl_b d0 b :
+Lemma wp_Hasher_Write hr data sl_b d0 b :
   {{{
     is_pkg_init cryptoffi ∗
     "Hown_hr" ∷ own_Hasher hr data ∗
@@ -65,7 +65,7 @@ Lemma wp_Hasher__Write hr data sl_b d0 b :
   }}}.
 Proof. Admitted.
 
-Lemma wp_Hasher__Sum sl_b_in hr data b_in :
+Lemma wp_Hasher_Sum sl_b_in hr data b_in :
   {{{
     is_pkg_init cryptoffi ∗
     "Hown_hr" ∷ own_Hasher hr data ∗
