@@ -7,7 +7,6 @@ Notation hash_len := 32 (only parsing).
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
-Context `{!cryptoffi.GlobalAddrs}.
 
 #[global]
 Program Instance is_pkg_init_cryptoffi : IsPkgInit cryptoffi := ltac2:(build_pkg_init ()).

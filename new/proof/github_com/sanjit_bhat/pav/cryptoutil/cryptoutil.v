@@ -10,7 +10,6 @@ Module cryptoutil.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
-Context `{!cryptoffi.GlobalAddrs, !cryptoutil.GlobalAddrs}.
 
 #[global]
 Program Instance is_pkg_init_cryptoutil : IsPkgInit cryptoutil := ltac2:(build_pkg_init ()).
