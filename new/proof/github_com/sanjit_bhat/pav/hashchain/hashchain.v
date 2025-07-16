@@ -14,12 +14,54 @@ Lemma take_0' n (l : list A) :
   take n l = [].
 Proof. intros. subst. apply take_0. Qed.
 
-Lemma list_join_inj c (l0 l1 : list $ list A) :
+Lemma list_eq_ext (l0 l1 : list A) :
+  (∀ i, l0 !! i = l1 !! i) →
+  l0 = l1.
+Proof. Admitted.
+
+Lemma list_join_inj (c : nat) (l0 l1 : list $ list A) :
+  c > 0 →
   Forall (λ x, length x = c) l0 →
   Forall (λ x, length x = c) l1 →
   mjoin l0 = mjoin l1 →
   l0 = l1.
-Proof. Admitted.
+Proof.
+  revert l1.
+  induction l0; destruct l1; [done|..]; intros ? Hc0 Hc1 Heq.
+  - apply (f_equal length) in Heq.
+    rewrite !length_join in Heq.
+    list_simplifier. lia.
+  - apply (f_equal length) in Heq.
+    rewrite !length_join in Heq.
+    list_simplifier. lia.
+  - simpl in *.
+    apply list.Forall_cons in Hc0 as [??].
+    apply list.Forall_cons in Hc1 as [??].
+    eapply (app_inj_1 _) in Heq as [-> ?]; [|lia].
+    f_equal.
+    by eapply IHl0.
+Qed.
+
+Lemma Forall_snoc (P : A → Prop) (x : A) (l : list A) :
+  Forall P (l ++ [x]) ↔ Forall P l ∧ P x.
+Proof.
+  split; intros H.
+  - apply list.Forall_app in H as [H1 H2].
+    by eapply (proj1 (list.Forall_singleton _ _)) in H2.
+  - destruct H as [H1 H2].
+    apply list.Forall_app.
+    split; [done|].
+    by apply list.Forall_singleton.
+Qed.
+
+Lemma take_subslice (n m : nat) (l : list A) :
+  n ≤ m →
+  take m l = take n l ++ subslice n m l.
+Proof.
+  intros. rewrite /subslice.
+  replace (m) with (n + (m - n))%nat by lia.
+  by rewrite -take_drop_commute -take_take_drop.
+Qed.
 End misc.
 
 Section proof.
@@ -194,7 +236,7 @@ Lemma wish_Verify_det proof vs0 vs1 :
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1".
   subst. iPureIntro.
-  eapply (list_join_inj (Z.to_nat $ cryptoffi.hash_len)); [..|done].
+  eapply (list_join_inj (Z.to_nat $ cryptoffi.hash_len)); [lia|..|done].
   - eapply list.Forall_impl; [done|].
     intuition. lia.
   - eapply list.Forall_impl; [done|].
@@ -202,12 +244,23 @@ Proof.
 Qed.
 
 Local Lemma wish_Verify_next_val i proof vs :
+  i ≥ 0 →
   let startp := Z.to_nat $ i * cryptoffi.hash_len in
   let endp := Z.to_nat $ (i + 1) * cryptoffi.hash_len in
-  endp <= length proof →
+  endp ≤ length proof →
   wish_Verify (take startp proof) vs -∗
   wish_Verify (take endp proof) (vs ++ [subslice startp endp proof]).
-Proof. Admitted.
+Proof.
+  simpl. iIntros (??) "@".
+  iPureIntro. split.
+  { apply Forall_snoc.
+    split; [done|].
+    rewrite subslice_length; lia. }
+  rewrite (take_subslice (Z.to_nat $ i * 32)); [|lia].
+  rewrite join_app.
+  f_equal; [done|].
+  by list_simplifier.
+Qed.
 
 Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
   {{{
