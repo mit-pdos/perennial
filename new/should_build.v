@@ -21,3 +21,4 @@ From New.proof.github_com.mit_pdos.go_journal Require
 From New.proof Require Import inG_problem.
 
 From New.generatedproof.github_com.sanjit_bhat.pav Require alicebob.
+From New.proof.github_com.sanjit_bhat.pav Require hashchain.

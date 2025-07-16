@@ -6,6 +6,7 @@ From Perennial.Helpers Require Import NamedProps.
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil.
 From New.proof.github_com.goose_lang Require Import std.
 
+Module hashchain.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
 Context `{!cryptoffi.GlobalAddrs, !cryptoutil.GlobalAddrs, !std.GlobalAddrs}.
@@ -186,7 +187,7 @@ Proof.
 Qed.
 
 Local Lemma wish_Verify_next_val i proof vs :
-  i ≥ 0 →
+  i >= 0 →
   let startp := Z.to_nat $ i * cryptoffi.hash_len in
   let endp := Z.to_nat $ (i + 1) * cryptoffi.hash_len in
   endp ≤ length proof →
@@ -300,7 +301,7 @@ Proof using H.
   wp_auto.
   wp_for_post.
   iFrame.
-  iDestruct (wish_Verify_next_val with "Hwish") as "#Hwish_n"; [word|].
+  iDestruct (wish_Verify_next_val with "Hwish") as "#Hwish_n"; [word..|].
   iClear "Hwish".
   replace (uint.Z (word.add _ _)) with (uint.Z i + 1) by word.
   iFrame "#".
