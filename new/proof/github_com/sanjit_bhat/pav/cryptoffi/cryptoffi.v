@@ -41,7 +41,7 @@ Lemma is_hash_len data hash :
   is_hash data hash -∗ ⌜ Z.of_nat (length hash) = hash_len ⌝.
 Proof. Admitted.
 
-Definition own_Hasher (ptr : loc) (data : list w8) : iProp Σ. Admitted.
+Definition own_Hasher (ptr : loc) (data : list w8) : iProp Σ. Proof. Admitted.
 
 Lemma wp_NewHasher :
   {{{ is_pkg_init cryptoffi }}}

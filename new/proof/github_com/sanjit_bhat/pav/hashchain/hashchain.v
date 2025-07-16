@@ -116,7 +116,7 @@ Lemma wp_GetEmptyLink :
     "Hsl_hash" ∷ sl ↦* h ∗
     "#His_chain" ∷ is_chain [] h
   }}}.
-Proof using H.
+Proof.
   wp_start.
   wp_apply (cryptoutil.wp_Hash _ inhabitant) as "* @".
   { iApply own_slice_nil. }
@@ -139,7 +139,7 @@ Lemma wp_GetNextLink sl_prevLink d0 prevLink sl_nextVal d1 nextVal b l :
     "Hsl_nextLink" ∷ sl_nextLink ↦* nextLink ∗
     "#His_chain" ∷ is_chain_aux b (l ++ [nextVal]) nextLink
   }}}.
-Proof using H.
+Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
   wp_apply cryptoffi.wp_NewHasher as "* @".
@@ -226,7 +226,7 @@ Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
       "->" ∷ ⌜ newVal = default [] (list.last new_vals) ⌝ ∗
       "#His_chain" ∷ is_chain_boot (l ++ new_vals) newLink)
   }}}.
-Proof using H.
+Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
   iPersist "proof".

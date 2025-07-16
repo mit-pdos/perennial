@@ -29,8 +29,7 @@ Lemma wp_Hash sl_b d0 b :
     "Hsl_hash" ∷ sl_hash ↦* hash ∗
     "#His_hash" ∷ cryptoffi.is_hash b hash
   }}}.
-(* TODO(goose): Proof using Type* doesn't work. *)
-Proof using H.
+Proof.
   wp_start. iNamed "Hpre".
   wp_auto.
   wp_apply cryptoffi.wp_NewHasher as "* @".
