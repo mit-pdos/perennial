@@ -617,29 +617,23 @@ Qed.
 This is not the only choice; see [own_slice_f_cap] for a variation that uses
 capacity. *)
 Lemma own_slice_f (n m: w64) s dq (vs: list V) :
-  s ↦*{dq} vs ∗ ⌜uint.Z n ≤ uint.Z m ≤ uint.Z s.(slice.len_f)⌝ ⊢
+  uint.Z n ≤ uint.Z m ≤ uint.Z s.(slice.len_f) →
+  s ↦*{dq} vs
+  ⊣⊢
   (slice.slice_f s t (W64 0) n) ↦*{dq} (take (uint.nat n) vs) ∗
   (slice.slice_f s t n m) ↦*{dq} (subslice (uint.nat n) (uint.nat m) vs) ∗
   (* after the sliced part *)
   (slice.slice_f s t m (slice.len_f s)) ↦*{dq} (drop (uint.nat m) vs).
 Proof.
-  iIntros "[Hs %]".
-  iDestruct (own_slice_len with "Hs") as %Hlen.
-  iDestruct (own_slice_wf with "Hs") as %Hwf.
-  iDestruct (own_slice_split_all n with "Hs") as "[Hs1 Hs2]".
-  { word. }
-  iDestruct (own_slice_split m with "Hs2") as "[Hs2 Hs3]";
-    [ move: Hlen; word | ].
-  iSplitL "Hs1".
-  { iExactEq "Hs1".
-    repeat (f_equal; try word). }
-  iSplitL "Hs2".
-  { iExactEq "Hs2".
-    rewrite subslice_drop_take; [ | word ].
-    repeat (f_equal; try word).  }
-  { iExactEq "Hs3".
-    rewrite drop_drop.
-    repeat (f_equal; try word). }
+  intros. rewrite /subslice.
+
+  rewrite {1}(slice_slice_trivial (t:=t) s).
+  rewrite (own_slice_split n); [|word].
+  rewrite (own_slice_split m _ _ _ n); [|word].
+
+  rewrite take_drop_commute drop_drop.
+  replace (_ - uint.nat (W64 0))%nat with (uint.nat n)%nat by word.
+  by replace (_ + _)%nat with (uint.nat m)%nat by word.
 Qed.
 
 Lemma own_slice_slice_absorb_capacity s (vs: list V) (n m: w64) :
@@ -675,17 +669,19 @@ Qed.
 (* divide ownership of [s ↦* vs ∗ own_slice_cap V s] around a slice [slice_f s t
 n m], moving ownership between m and [slice.len_f s] into the capacity of the
 slice *)
+(* TODO: could generalize to ⊣⊢. just need to generalize some deps. *)
 Lemma own_slice_f_cap (n m: w64) s (vs: list V) :
-  s ↦* vs ∗ own_slice_cap V s ∗ ⌜uint.Z n ≤ uint.Z m ≤ uint.Z s.(slice.len_f)⌝ ⊢
+  uint.Z n ≤ uint.Z m ≤ uint.Z s.(slice.len_f) →
+  s ↦* vs ∗ own_slice_cap V s
+  ⊢
   (slice.slice_f s t (W64 0) n) ↦* (take (uint.nat n) vs) ∗
   (slice.slice_f s t n m) ↦* (subslice (uint.nat n) (uint.nat m) vs) ∗
   (* after the sliced part + capacity of original slice *)
   own_slice_cap V (slice.slice_f s t n m).
 Proof.
-  iIntros "(Hs & Hcap & %)".
-  iDestruct (own_slice_len with "Hs") as %Hlen.
-  iDestruct (own_slice_f n m with "[$Hs]") as "(Hs1 & Hs2 & Hs3)".
-  { word. }
+  iIntros (?) "(Hs & Hcap)".
+  rewrite own_slice_f; [|done].
+  iDestruct "Hs" as "(Hs1 & Hs2 & Hs3)".
   iFrame "Hs1 Hs2".
   iDestruct (own_slice_slice_absorb_capacity with "[$Hs3 $Hcap]") as "$".
   { word. }
@@ -712,8 +708,7 @@ Proof.
   wp_apply wp_slice_slice_pure.
   { word. }
   iApply "HΦ".
-  iDestruct (own_slice_f n m with "[$Hs]") as "(Hs_pre & Hs & Hs_post)".
-  { word. }
+  rewrite own_slice_f; [|done].
   iFrame.
 Qed.
 
