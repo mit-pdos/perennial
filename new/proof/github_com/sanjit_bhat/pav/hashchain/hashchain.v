@@ -358,19 +358,22 @@ Proof.
   iDestruct ("His_chain_pred" with "[//]") as "?".
   iFrame "∗#".
 
-  iNamed "Henc". iPureIntro.
-  split.
-  { by apply Forall_drop. }
+  iNamed "Henc". iSplitL.
+  2: { iPureIntro. split. 2: { by list_simplifier. }
+    apply Forall_snoc in Hlen_vals as [??].
+    by rewrite Forall_singleton. }
+  iExactEq "Hsl_b'". rewrite /named. f_equal.
   subst.
-  opose proof (join_subslice (uint.nat prevLen) (length vals)
-    (Z.to_nat cryptoffi.hash_len) vals _ _) as Heq; [word|..].
-  { apply (list.Forall_impl _ _ _ Hlen_vals). lia. }
-  rewrite subslice_to_end in Heq; [|done].
-  rewrite Heq.
-  f_equal; word.
-
-  for lastVal, the code gets a subslice.
-  it's on us to show that it equals lastVal as an input.
+  replace (uint.nat (word.sub _ _)) with
+    ((length pred_vals + 0) * (Z.to_nat cryptoffi.hash_len))%nat by word.
+  replace (uint.nat _) with
+    ((length pred_vals + 1) * (Z.to_nat cryptoffi.hash_len))%nat by word.
+  rewrite -join_subslice.
+  2: { rewrite app_length. simpl. lia. }
+  2: { apply (list.Forall_impl _ _ _ Hlen_vals). lia. }
+  rewrite subslice_app_length.
+  by list_simplifier.
+Qed.
 
 Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
   {{{
