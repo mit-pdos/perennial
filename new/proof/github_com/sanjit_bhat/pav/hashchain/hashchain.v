@@ -5,6 +5,7 @@ From Perennial.Helpers Require Import NamedProps.
 
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil.
 From New.proof.github_com.goose_lang Require Import std.
+From New.proof Require Import bytes.
 
 Module hashchain.
 Section proof.
