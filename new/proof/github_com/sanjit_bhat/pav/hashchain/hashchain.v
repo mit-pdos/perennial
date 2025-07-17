@@ -160,6 +160,8 @@ Qed.
 Definition wish_Verify (proof : list w8) new_vals : iProp Σ :=
   "%Hlen_vals" ∷ ⌜ Forall (λ x, Z.of_nat (length x) = cryptoffi.hash_len) new_vals ⌝ ∗
   "%Henc_vals" ∷ ⌜ proof = mjoin new_vals ⌝.
+#[global] Opaque wish_Verify.
+#[local] Transparent wish_Verify.
 
 Local Lemma wish_Verify_impl_eq_len proof new_vals :
   wish_Verify proof new_vals -∗
@@ -214,7 +216,7 @@ Proof.
   by list_simplifier.
 Qed.
 
-Definition own (l : loc) (vals : list $ list w8) : iProp Σ :=
+Local Definition own (l : loc) (vals : list $ list w8) : iProp Σ :=
   ∃ sl_predLastLink predLastLink sl_lastLink lastLink sl_enc enc,
   "Hstruct" ∷ l ↦ (hashchain.HashChain.mk sl_predLastLink sl_lastLink sl_enc) ∗
 
@@ -228,6 +230,8 @@ Definition own (l : loc) (vals : list $ list w8) : iProp Σ :=
   "Hsl_enc" ∷ sl_enc ↦* enc ∗
   "Hsl_enc_cap" ∷ own_slice_cap w8 sl_enc ∗
   "#Henc" ∷ wish_Verify enc vals.
+#[global] Opaque own.
+#[local] Transparent own.
 
 Lemma wp_New :
   {{{ is_pkg_init hashchain }}}
@@ -305,11 +309,68 @@ Lemma wp_HashChain_Prove c vals (prevLen : w64) :
 Proof.
   wp_start. iNamed "Hpre". iNamed "Hown_HashChain".
   wp_auto.
-  Search slice.slice.
   iDestruct (own_slice_len with "Hsl_enc") as %?.
-  wp_apply (wp_slice_slice with "[$Hsl_enc]") as "(Hsl0 & Hsl1 & Hsl2)".
-  { iDestruct (wish_Verify_impl_eq_len with "Henc") as %?. word. }
-Admitted.
+  iDestruct (wish_Verify_impl_eq_len with "Henc") as %?.
+  wp_apply (wp_slice_slice with "[$Hsl_enc]") as "(Hsl0 & Hsl1 & Hsl2)"; [word|].
+  wp_apply (bytes.wp_Clone with "[$Hsl1]") as "* @".
+  iDestruct (own_slice_f with "[$Hsl0 $Hsl_b $Hsl2]") as "?"; [word|].
+  iApply "HΦ".
+  iFrame "∗#".
+
+  iNamed "Henc". iPureIntro.
+  split.
+  { by apply Forall_drop. }
+  subst.
+  opose proof (join_subslice (uint.nat prevLen) (length vals)
+    (Z.to_nat cryptoffi.hash_len) vals _ _) as Heq; [word|..].
+  { apply (list.Forall_impl _ _ _ Hlen_vals). lia. }
+  rewrite subslice_to_end in Heq; [|done].
+  rewrite Heq.
+  f_equal; word.
+Qed.
+
+Lemma wp_HashChain_Bootstrap c vals pred_vals lastVal :
+  {{{
+    is_pkg_init hashchain ∗
+    "Hown_HashChain" ∷ own c vals ∗
+    "->" ∷ ⌜ vals = pred_vals ++ [lastVal] ⌝
+  }}}
+  c @ hashchain @ "HashChain'ptr" @ "Bootstrap" #()
+  {{{
+    sl_bootLink bootLink sl_proof, RET (#sl_bootLink, #sl_proof);
+    "Hown_HashChain" ∷ own c vals ∗
+    "#Hsl_bootLink" ∷ sl_bootLink ↦*□ bootLink ∗
+    (* TODO: this is stronger than [is_chain_boot].
+    not sure which the client needs just yet. *)
+    "#His_chain" ∷ is_chain pred_vals bootLink ∗
+    "Hsl_proof" ∷ sl_proof ↦* lastVal ∗
+    "#Hwish" ∷ wish_Verify lastVal [lastVal]
+  }}}.
+Proof.
+  wp_start. iNamed "Hpre". iNamed "Hown_HashChain". wp_auto.
+  iDestruct (own_slice_len with "Hsl_enc") as %?.
+  iDestruct (wish_Verify_impl_eq_len with "Henc") as %Hlen.
+  rewrite app_length /= in Hlen.
+  wp_apply (wp_slice_slice with "[$Hsl_enc]") as "(Hsl0 & Hsl1 & Hsl2)"; [word|].
+  wp_apply (bytes.wp_Clone with "[$Hsl1]") as "* @".
+  iDestruct (own_slice_f with "[$Hsl0 $Hsl_b $Hsl2]") as "?"; [word|].
+  iApply "HΦ".
+  iDestruct ("His_chain_pred" with "[//]") as "?".
+  iFrame "∗#".
+
+  iNamed "Henc". iPureIntro.
+  split.
+  { by apply Forall_drop. }
+  subst.
+  opose proof (join_subslice (uint.nat prevLen) (length vals)
+    (Z.to_nat cryptoffi.hash_len) vals _ _) as Heq; [word|..].
+  { apply (list.Forall_impl _ _ _ Hlen_vals). lia. }
+  rewrite subslice_to_end in Heq; [|done].
+  rewrite Heq.
+  f_equal; word.
+
+  for lastVal, the code gets a subslice.
+  it's on us to show that it equals lastVal as an input.
 
 Lemma wp_Verify sl_prevLink prevLink sl_proof proof l :
   {{{

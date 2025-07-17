@@ -65,7 +65,7 @@ Definition HashChain__Prove : val :=
 Definition HashChain__Bootstrap : val :=
   rec: "HashChain__Bootstrap" "c" <> :=
     exception_do (let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "lastVal" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "bootLink" := (mem.alloc (type.zero_val #sliceT)) in
     let: "c" := (mem.alloc "c") in
     let: "start" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #HashChain #"vals"%go (![#ptrT] "c"))) in
