@@ -1060,7 +1060,7 @@ Proof.
                      with (subslice (Z.to_nat (maxDirect + k * indirectNumBlocks))
                                (Z.to_nat (maxDirect + k * indirectNumBlocks) + Z.to_nat indirectNumBlocks)
                                (σ.(inode.blocks))); auto.
-              eapply subslice_before_app_eq.
+              eapply subslice_app_1.
               unfold maxDirect, indirectNumBlocks.
               replace (Z.to_nat (500 + k * 512) + Z.to_nat 512)%nat with
                   (500 + k * 512 + 512)%nat by word.

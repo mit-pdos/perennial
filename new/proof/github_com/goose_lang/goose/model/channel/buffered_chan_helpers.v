@@ -52,9 +52,9 @@ Proof.
             length slice):=e]> slice) = subslice (uint.nat first) (length slice)
             (slice ++ slice)).
         {
-          rewrite <- subslice_before_app_eq.
+          rewrite subslice_app_1.
           2: { rewrite length_insert. word. }
-          rewrite <- subslice_before_app_eq.
+          rewrite subslice_app_1.
           2: word.
           rewrite subslice_take_drop.
           rewrite subslice_take_drop.
