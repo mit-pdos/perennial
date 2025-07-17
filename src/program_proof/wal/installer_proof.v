@@ -1063,9 +1063,9 @@ Proof.
         rewrite apply_upds_app in Happly.
         rewrite Hhas in Happly.
         rewrite -apply_upds_app -txn_upds_app
-          -Hsnapshot_txns_are subslice_from_take
+          -Hsnapshot_txns_are -subslice_from_start
           subslice_app_contig in Happly; last by lia.
-        rewrite -subslice_from_take in Happly.
+        rewrite subslice_from_start in Happly.
         assumption.
       }
 

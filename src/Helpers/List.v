@@ -355,12 +355,6 @@ Theorem subslice_take_drop {A} n m (l: list A) :
   drop n (take m l).
 Proof. reflexivity. Qed.
 
-Lemma subslice_from_take {A} m (l: list A) :
-  take m l = subslice 0 m l.
-Proof.
-  rewrite /subslice //.
-Qed.
-
 Lemma subslice_from_drop {A} n (l: list A) :
   drop n l = subslice n (length l) l.
 Proof.
