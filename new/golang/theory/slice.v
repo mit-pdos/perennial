@@ -206,8 +206,8 @@ Proof.
   iIntros "[? %]". naive_solver.
 Qed.
 
-Lemma own_slice_cap_nil dq :
-  ⊢ own_slice_cap slice.nil dq.
+Lemma own_slice_cap_nil :
+  ⊢ own_slice_cap slice.nil (DfracOwn 1).
 Proof.
   rewrite own_slice_cap_unseal /own_slice_cap_def /=.
   iSplit; [ word | ].

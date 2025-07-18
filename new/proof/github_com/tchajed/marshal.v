@@ -321,11 +321,11 @@ Proof.
 Qed.
 
 Local Theorem wp_reserve s (extra : u64) (vs : list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s }}}
+  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     marshal@"reserve" (#s) #extra
   {{{ s', RET #s';
       ⌜uint.Z extra ≤ uint.Z (slice.cap_f s') - uint.Z (slice.len_f s')⌝ ∗
-      own_slice s' (DfracOwn 1) vs ∗ own_slice_cap w8 s' }}}.
+      own_slice s' (DfracOwn 1) vs ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
 (*
@@ -356,9 +356,9 @@ Qed.
 Admitted.
 
 Theorem wp_WriteInt s x (vs : list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s }}}
+  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     marshal@"WriteInt" (#s) #x
-  {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u64_le x) ∗ own_slice_cap w8 s' }}}.
+  {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u64_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
 (*
@@ -388,9 +388,9 @@ Qed.
 Admitted.
 
 Theorem wp_WriteInt32 s x (vs : list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s }}}
+  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     marshal@"WriteInt32" (#s) #x
-  {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u32_le x) ∗ own_slice_cap w8 s' }}}.
+  {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u32_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
 (*
@@ -420,11 +420,11 @@ Qed.
 Admitted.
 
 Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice data_sl q data ∗ own_slice_cap w8 s }}}
+  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice data_sl q data ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     marshal@"WriteBytes" (#s) (#data_sl)
   {{{ s', RET #s';
     own_slice s' (DfracOwn 1) (vs ++ data) ∗
-    own_slice_cap w8 s' ∗
+    own_slice_cap w8 s' (DfracOwn 1) ∗
     own_slice data_sl q data
   }}}.
 Proof.
@@ -442,13 +442,13 @@ Theorem wp_WriteLenPrefixedBytes s (vs : list u8) data_sl q (data : list u8) :
         is_pkg_init marshal ∗
         own_slice s (DfracOwn 1) vs ∗
         own_slice data_sl q data ∗
-        own_slice_cap w8 s
+        own_slice_cap w8 s (DfracOwn 1)
   }}}
     marshal @ "WriteLenPrefixedBytes" #s #data_sl
   {{{
         s', RET #s';
         own_slice s' (DfracOwn 1) (vs ++ (u64_le $ length data) ++ data) ∗
-        own_slice_cap w8 s' ∗
+        own_slice_cap w8 s' (DfracOwn 1) ∗
         own_slice data_sl q data
   }}}.
 Proof.
@@ -466,11 +466,11 @@ Proof.
 Qed.
 
 Theorem wp_WriteBool s (vs: list u8) (b: bool) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s }}}
+  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     marshal@"WriteBool" #s #b
   {{{ s', RET (#s');
       own_slice s' (DfracOwn 1) (vs ++ [if b then W8 1 else W8 0]) ∗
-      own_slice_cap w8 s'
+      own_slice_cap w8 s' (DfracOwn 1)
    }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
@@ -487,14 +487,14 @@ Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X
   (has_encoding : list u8 -> C -> Prop) (own : X -> C -> dfrac -> iProp Σ) (writeOne : func.t) (dq : dfrac) :
   {{{   is_pkg_init marshal ∗
         "Hsl" ∷ own_slice pre_sl (DfracOwn 1) prefix ∗
-        "Hcap" ∷ own_slice_cap w8 pre_sl ∗
+        "Hcap" ∷ own_slice_cap w8 pre_sl (DfracOwn 1) ∗
         "Hown" ∷ own_slice xsl dq xs ∗
         "Hpred" ∷ ([∗ list] x;c ∈ xs;cs, own x c dq) ∗ 
         "#Hwriteone" ∷ ∀ pre_sl' (prefix' : list u8) x c,
           {{{
                 own x c dq ∗
                 own_slice pre_sl' (DfracOwn 1) prefix' ∗
-                own_slice_cap w8 pre_sl'
+                own_slice_cap w8 pre_sl' (DfracOwn 1)
           }}}
             #writeOne #pre_sl' #x
           {{{
@@ -502,7 +502,7 @@ Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X
                 ⌜ has_encoding enc c ⌝ ∗
                 own x c dq ∗
                 own_slice enc_sl (DfracOwn 1) (prefix' ++ enc) ∗
-                own_slice_cap w8 enc_sl
+                own_slice_cap w8 enc_sl (DfracOwn 1)
           }}}
   }}}
     marshal @ "WriteSlice" #goT #pre_sl #xsl #writeOne
@@ -512,7 +512,7 @@ Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X
         ([∗ list] x;c ∈ xs;cs, own x c dq) ∗ 
         ⌜ encodes enc cs has_encoding ⌝ ∗
         own_slice enc_sl (DfracOwn 1) (prefix ++ enc) ∗
-        own_slice_cap w8 enc_sl
+        own_slice_cap w8 enc_sl (DfracOwn 1)
   }}}.
 Proof.
   wp_start as "Hpre". iNamed "Hpre". wp_auto.

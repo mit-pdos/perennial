@@ -20,7 +20,7 @@ Lemma wp_Clone sl_b dq (b : list w8) :
     sl_b', RET #sl_b';
     "Hsl_b" ∷ sl_b ↦*{dq} b ∗
     "Hsl_b'" ∷ sl_b' ↦* b ∗
-    "Hsl_b'_cap" ∷ own_slice_cap w8 sl_b'
+    "Hsl_b'_cap" ∷ own_slice_cap w8 sl_b' (DfracOwn 1)
   }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
