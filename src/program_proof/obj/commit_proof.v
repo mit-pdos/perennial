@@ -1014,7 +1014,7 @@ Proof using txnG0 Σ.
     iDestruct "Hcrashheapsmatch" as "#Hcrashheapsmatch".
     iDestruct (big_sepL2_length with "Hcrashheapsmatch") as "%Hcrash_heaps_len".
     iMod (ghost_var_update_parts (async_put σl'latest σl) with "Hcrashstates Hcrashstates_frag") as "[Hcrashstates Hcrashstates_frag]".
-    { rewrite Qp.quarter_three_quarter //. }
+    { rewrite dfrac_op_own Qp.quarter_three_quarter //. }
 
     iDestruct (pointsto_txn_cur_map _ _ _
       (λ b, Build_buf_and_prev_data (b.(buf_)) (b.(buf_).(bufData)))

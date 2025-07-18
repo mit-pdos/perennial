@@ -2246,7 +2246,7 @@ Proof using walheapG0.
   iNamed "Hlatest".
 
   iMod (ghost_var_update_parts (async_put (apply_upds_u64 (latest crash_heaps) bs) crash_heaps) with "Hcrash_heaps_own Hcrashheapsfrag") as "[Hcrash_heaps_own Hcrashheapsfrag]".
-  { rewrite Qp.quarter_three_quarter //. }
+  { rewrite dfrac_op_own Qp.quarter_three_quarter //. }
 
   iSpecialize ("Hfupd" $! (pos')).
 
