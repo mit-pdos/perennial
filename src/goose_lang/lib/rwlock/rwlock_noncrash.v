@@ -214,7 +214,7 @@ Section proof.
         { destruct a. intros Hu. subst. auto. }
         iDestruct "HR" as "[>Hl2 HR]".
         iCombine "Hl Hl2" as "Hl".
-        rewrite Qp.quarter_three_quarter.
+        rewrite dfrac_op_own Qp.quarter_three_quarter.
         iApply (wpc_wp NotStuck _ _ _ True).
         iDestruct ("Hwand1" $! (remaining_frac (word.add u 1)) (rfrac) with "[HR]") as "Hpost".
         { rewrite remaining_frac_read_acquire; try naive_solver. }
@@ -272,7 +272,7 @@ Section proof.
         {  intros Hu. subst. inversion H.  }
         iDestruct "HR" as "[>Hl2 HR]".
         iCombine "Hl Hl2" as "Hl".
-        rewrite Qp.quarter_three_quarter.
+        rewrite dfrac_op_own Qp.quarter_three_quarter.
         iApply (wpc_wp NotStuck _ _ _ True).
         iDestruct ("Hwand2" $! (remaining_frac u) (rfrac) with "HR Hborrow") as "Hpost".
         iApply (post_expr_elim with "Hpost"); first set_solver+; auto.
@@ -345,7 +345,7 @@ Section proof.
       subst.
       iDestruct "HR" as "(>Hl2&Hb)".
       iCombine "Hl Hl2" as "Hl".
-      rewrite Qp.quarter_three_quarter.
+      rewrite dfrac_op_own Qp.quarter_three_quarter.
       wp_cmpxchg_suc.
       iModIntro.
       iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
@@ -387,7 +387,7 @@ Section proof.
     iDestruct (locked_loc with "Hlocked") as "Hl2".
     iDestruct (heap_pointsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
-    rewrite Qp.quarter_three_quarter.
+    rewrite dfrac_op_own Qp.quarter_three_quarter.
     wp_cmpxchg_suc.
     iModIntro.
     iSplitR "HΦ"; last by wp_pures; iApply "HΦ".

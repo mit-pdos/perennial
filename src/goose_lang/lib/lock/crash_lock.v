@@ -133,7 +133,7 @@ Section proof.
       wp_pures. iApply ("HΦ" $! false). done.
     - iDestruct "HR" as "[Hl2 HR]".
       iCombine "Hl Hl2" as "Hl".
-      rewrite Qp.quarter_three_quarter.
+      rewrite dfrac_op_own Qp.quarter_three_quarter.
       iApply (wpc_wp NotStuck _ _ _ True).
       iAssert (▷ □ (R' -∗ Rcrash'))%I with "[HR]" as "#Hwand".
       { iNext. by iApply crash_borrow_crash_wand. }
@@ -228,7 +228,7 @@ Section proof.
     iDestruct (locked_loc with "Hlocked") as "Hl2".
     iDestruct (heap_pointsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
-    rewrite Qp.quarter_three_quarter.
+    rewrite dfrac_op_own Qp.quarter_three_quarter.
     iApply (wpc_wp NotStuck _ _ _ True).
     iApply (wpc_crash_borrow_combine _ _ _ _ R' Rcrash'
                   with "Hc1 Hc2"); auto.

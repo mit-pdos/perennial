@@ -228,7 +228,7 @@ Local Definition own (l : loc) (vals : list $ list w8) : iProp Σ :=
   "#His_chain" ∷ is_chain vals lastLink ∗
 
   "Hsl_enc" ∷ sl_enc ↦* enc ∗
-  "Hsl_enc_cap" ∷ own_slice_cap w8 sl_enc ∗
+  "Hsl_enc_cap" ∷ own_slice_cap w8 sl_enc (DfracOwn 1) ∗
   "#Henc" ∷ wish_Verify enc vals.
 #[global] Opaque own.
 #[local] Transparent own.

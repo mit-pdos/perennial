@@ -88,6 +88,24 @@ Section dfractional.
       iFrame. done.
   Qed.
 
+  Lemma dfractional_split P Φ dq1 dq2 :
+    AsDFractional P Φ (dq1 ⋅ dq2) →
+    P ⊣⊢ Φ dq1 ∗ Φ dq2.
+  Proof. move=>-[-> ?]. rewrite dfractional //. Qed.
+
+  Global Instance from_sep_dfractional P Φ dq1 dq2 :
+    AsDFractional P Φ (dq1 ⋅ dq2) → FromSep P (Φ dq1) (Φ dq2).
+  Proof. rewrite /FromSep=>-[-> [->]] //. Qed.
+
+  Global Instance combine_sep_as_dfractional P1 P2 Φ dq1 dq2 :
+    AsDFractional P1 Φ dq1 → AsDFractional P2 Φ dq2 →
+    CombineSepAs P1 P2 (Φ (dq1 ⋅ dq2)) | 50.
+  Proof. rewrite /CombineSepAs =>-[-> _] [-> [<-]] //. Qed.
+
+  Global Instance into_sep_dfractional P Φ dq1 dq2 :
+    AsDFractional P Φ (dq1 ⋅ dq2) → IntoSep P (Φ dq1) (Φ dq2).
+  Proof. intros [??]. rewrite /IntoSep [P]dfractional_split//. Qed.
+
   Global Instance dfractional_big_sepL {A} (l : list A) Ψ :
     (∀ k x, DFractional (Ψ k x)) →
     DFractional (PROP:=PROP) (λ dq, [∗ list] k↦x ∈ l, Ψ k x dq)%I.
