@@ -7,14 +7,18 @@ From iris.prelude Require Import options.
 Export invGS.
 Import uPred le_upd.
 
+Arguments coPset.coPset_wf !_ / : simpl nomatch, assert.
+Arguments coPset.coPNode' : simpl never.
+Hint Resolve coPset.coPNode'_wf : core.
+
 (** * Suffix subsets *)
 Fixpoint coPset_suffixes_of_raw (p : positive) (E: coPset_raw) : coPset_raw :=
   match p with
   | 1 => E
-  | p~0 => coPNode' false (coPset_suffixes_of_raw p E) (coPLeaf false)
-  | p~1 => coPNode' false (coPLeaf false) (coPset_suffixes_of_raw p E)
+  | p~0 => coPset.coPNode' false (coPset_suffixes_of_raw p E) (coPLeaf false)
+  | p~1 => coPset.coPNode' false (coPLeaf false) (coPset_suffixes_of_raw p E)
   end%positive.
-Lemma coPset_suffixes_of_wf p E : coPset_wf E → coPset_wf (coPset_suffixes_of_raw p E).
+Lemma coPset_suffixes_of_wf p E : coPset.coPset_wf E → coPset.coPset_wf (coPset_suffixes_of_raw p E).
 Proof. induction p; simpl; eauto. Qed.
 Definition coPset_suffixes_of (p : positive) (E : coPset) : coPset :=
   coPset_suffixes_of_raw p (`E) ↾ coPset_suffixes_of_wf _ _ (proj2_sig E).
@@ -22,8 +26,8 @@ Lemma elem_coPset_suffixes_of p q E : p ∈ coPset_suffixes_of q E ↔ ∃ q', (
 Proof.
   unfold elem_of, coPset_elem_of; simpl; split.
   - revert p; induction q; intros [?|?|]; simpl;
-      rewrite ?coPset_elem_of_node; naive_solver.
-  - by intros [q' (->&Helem)]; induction q; simpl; rewrite ?coPset_elem_of_node.
+      rewrite ?coPset.coPset_elem_of_node; naive_solver.
+  - by intros [q' (->&Helem)]; induction q; simpl; rewrite ?coPset.coPset_elem_of_node.
 Qed.
 Lemma coPset_suffixes_of_top p :
   coPset_suffixes_of p ⊤ = coPset_suffixes p.
@@ -38,8 +42,8 @@ Definition coPset_inr (E: coPset) : coPset := coPset_suffixes_of (positives_flat
 Lemma coPset_suffixes_of_infinite p E:
   (¬ set_finite E) → (¬ set_finite (coPset_suffixes_of p E)).
 Proof.
-  rewrite ?coPset_finite_spec; simpl. intros Hsuff.
-  induction p; simpl; rewrite ?coPset_finite_node; rewrite ?andb_True //=; naive_solver.
+  rewrite ?coPset.coPset_finite_spec; simpl. intros Hsuff.
+  induction p; simpl; rewrite ?coPset.coPset_finite_node; rewrite ?andb_True //=; naive_solver.
 Qed.
 
 Lemma coPset_inl_inr_disj E1 E2 :

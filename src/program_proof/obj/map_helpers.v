@@ -39,24 +39,24 @@ Proof.
   rewrite map_lookup_filter_key_in; eauto.
   rewrite map_lookup_filter_key_in; eauto.
   rewrite /gmap_addr_by_block.
-  destruct (gmap_curry m !! i) eqn:He.
+  destruct (map_curry m !! i) eqn:He.
   2: {
     symmetry.
-    erewrite lookup_gmap_curry_None in He.
-    erewrite lookup_gmap_curry_None. intros j. specialize (He j).
+    erewrite lookup_map_curry_None in He.
+    erewrite lookup_map_curry_None. intros j. specialize (He j).
     specialize (H0 (i, j)). simpl in *.
     rewrite lookup_union_r; eauto.
     destruct (m' !! (i, j)) eqn:Hee; eauto. exfalso. eapply H0; eauto.
   }
 
-  destruct (gmap_curry (m' ∪ m) !! i) eqn:He2.
+  destruct (map_curry (m' ∪ m) !! i) eqn:He2.
   2: {
     exfalso.
-    erewrite lookup_gmap_curry_None in He2.
-    apply gmap_curry_non_empty in He as He'. apply map_choose in He'. destruct He' as [j [x He']].
+    erewrite lookup_map_curry_None in He2.
+    apply map_curry_non_empty in He as He'. apply map_choose in He'. destruct He' as [j [x He']].
     specialize (He2 j). rewrite lookup_union_r in He2.
     2: { destruct (m' !! (i, j)) eqn:Hee; eauto. exfalso. eapply H0; eauto. }
-    rewrite -lookup_gmap_curry in He2. rewrite He /= in He2. congruence.
+    rewrite -lookup_map_curry in He2. rewrite He /= in He2. congruence.
   }
 
   f_equal.
@@ -64,10 +64,10 @@ Proof.
   intros j.
 
   replace (g !! j) with (m !! (i, j)).
-  2: { rewrite -lookup_gmap_curry. rewrite He. done. }
+  2: { rewrite -lookup_map_curry. rewrite He. done. }
 
   replace (g0 !! j) with ((m' ∪ m) !! (i, j)).
-  2: { rewrite -lookup_gmap_curry. rewrite He2. done. }
+  2: { rewrite -lookup_map_curry. rewrite He2. done. }
 
   rewrite lookup_union_r; eauto.
   destruct (m' !! (i, j)) eqn:Hee; eauto. exfalso. eapply H0; eauto.
