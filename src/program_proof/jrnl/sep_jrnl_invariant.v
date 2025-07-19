@@ -162,7 +162,7 @@ Section goose_lang.
   (* TODO: note that we don't promise γ'.(jrnl_txn_names).(txn_kinds) =
   γ.(jrnl_txn_names).(txn_kinds), even though txn_cfupd_res has this fact *)
   Definition txn_cinv γ γ' : iProp Σ :=
-    (□ |C={⊤}=> inv N (sep_txn_exchanger γ γ')) ∗
+    (□ (|C={⊤}=> inv N (sep_txn_exchanger γ γ'))) ∗
     ⌜γ.(jrnl_txn_names).(txn_kinds) = γ'.(jrnl_txn_names).(txn_kinds)⌝.
 
   (* this is for the entire txn manager, and relates it to some ghost state *)
