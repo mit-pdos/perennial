@@ -1,5 +1,4 @@
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
-From Perennial Require Import base.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import hashchain.
 From Perennial.Helpers Require Import NamedProps.
 
@@ -281,14 +280,14 @@ Qed.
 Lemma wp_HashChain_Append c vals sl_val d0 val :
   {{{
     is_pkg_init hashchain ∗
-    "Hown_HashChain" ∷ own c vals ∗
+    "Hown_HashChain" ∷ own c vals 1 ∗
     "Hsl_val" ∷ sl_val ↦*{d0} val ∗
     "%Hlen_val" ∷ ⌜ Z.of_nat $ length val = cryptoffi.hash_len ⌝
   }}}
   c @ hashchain @ "HashChain'ptr" @ "Append" #sl_val
   {{{
     sl_newLink newLink, RET #sl_newLink;
-    "Hown_HashChain" ∷ own c (vals ++ [val]) ∗
+    "Hown_HashChain" ∷ own c (vals ++ [val]) 1 ∗
     "Hsl_val" ∷ sl_val ↦*{d0} val ∗
     "#Hsl_newLink" ∷ sl_newLink ↦*□ newLink ∗
     "#His_chain" ∷ is_chain (vals ++ [val]) newLink
@@ -317,16 +316,16 @@ Proof.
     + rewrite join_app. f_equal; [done|]. by list_simplifier.
 Qed.
 
-Lemma wp_HashChain_Prove c vals (prevLen : w64) :
+Lemma wp_HashChain_Prove c vals d (prevLen : w64) :
   {{{
     is_pkg_init hashchain ∗
-    "Hown_HashChain" ∷ own c vals ∗
+    "Hown_HashChain" ∷ own c vals d ∗
     "%Hlt_prevLen" ∷ ⌜ uint.Z prevLen <= length vals ⌝
   }}}
   c @ hashchain @ "HashChain'ptr" @ "Prove" #prevLen
   {{{
     sl_proof proof, RET #sl_proof;
-    "Hown_HashChain" ∷ own c vals ∗
+    "Hown_HashChain" ∷ own c vals d ∗
     "Hsl_proof" ∷ sl_proof ↦* proof ∗
     "#Hwish" ∷ wish_Verify proof (drop (uint.nat prevLen) vals)
   }}}.
@@ -353,16 +352,16 @@ Proof.
   f_equal; word.
 Qed.
 
-Lemma wp_HashChain_Bootstrap c vals pred_vals lastVal :
+Lemma wp_HashChain_Bootstrap c vals d pred_vals lastVal :
   {{{
     is_pkg_init hashchain ∗
-    "Hown_HashChain" ∷ own c vals ∗
+    "Hown_HashChain" ∷ own c vals d ∗
     "->" ∷ ⌜ vals = pred_vals ++ [lastVal] ⌝
   }}}
   c @ hashchain @ "HashChain'ptr" @ "Bootstrap" #()
   {{{
     sl_bootLink bootLink sl_proof, RET (#sl_bootLink, #sl_proof);
-    "Hown_HashChain" ∷ own c vals ∗
+    "Hown_HashChain" ∷ own c vals d ∗
     "#Hsl_bootLink" ∷ sl_bootLink ↦*□ bootLink ∗
     (* TODO: this is stronger than [is_chain_boot].
     not sure which the client needs just yet. *)
