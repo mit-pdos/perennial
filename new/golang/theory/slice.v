@@ -142,6 +142,42 @@ Instance own_slice_as_fractional s q vs :
   fractional.AsFractional (s ↦*{#q} vs) (λ q, s ↦*{#q} vs) q.
 Proof. unseal; split; auto; apply _. Qed.
 
+Lemma own_slice_valid s dq (vs: list V) :
+  go_type_size t > 0 →
+  s ↦*{dq} vs ⊢ ⌜✓dq ∨ vs = []⌝.
+Proof.
+  iIntros (Hsize) "H".
+  destruct vs; [ by auto | ].
+  iLeft.
+  rewrite own_slice_unseal /own_slice_def.
+  simpl.
+  iDestruct "H" as "((H & _) & _)".
+  rewrite Z.mul_0_r loc_add_0.
+  iDestruct (typed_pointsto_valid with "H") as %Hvalid.
+  auto.
+Qed.
+
+Global Instance own_slice_combine_sep_gives s dq1 dq2 vs1 vs2 :
+  CombineSepGives (s ↦*{dq1} vs1) (s ↦*{dq2} vs2) (⌜ vs1 = vs2 ⌝).
+Proof.
+  rewrite /CombineSepGives.
+  iIntros "[H0 H1]".
+  iDestruct (own_slice_agree with "H0 H1") as %->.
+  naive_solver.
+Qed.
+
+Global Instance own_slice_combine_sep_as s dq1 dq2 vs1 vs2 :
+  CombineSepAs (s ↦*{dq1} vs1) (s ↦*{dq2} vs2) (s ↦*{dq1 ⋅ dq2} vs1).
+Proof.
+  rewrite /CombineSepAs.
+  iIntros "[H0 H1]".
+  iDestruct (own_slice_agree with "H0 H1") as %->.
+  by iCombine "H0 H1" as "?".
+Qed.
+
+Global Instance own_slice_cap_persistent s : Persistent (own_slice_cap s (□)).
+Proof. unseal; apply _. Qed.
+
 #[global]
 Instance own_slice_cap_dfractional s :
   DFractional (λ dq, own_slice_cap s dq).
@@ -173,6 +209,10 @@ Qed.
 #[global]
 Instance own_slice_update_to_persistent s dq vs :
   UpdateIntoPersistently (s ↦*{dq} vs) (s ↦*□ vs).
+Proof. apply _. Qed.
+
+Global Instance own_slice_cap_update_to_persistent s dq :
+  UpdateIntoPersistently (own_slice_cap s dq) (own_slice_cap s (□)).
 Proof. apply _. Qed.
 
 Global Instance own_slice_timeless s dq vs : Timeless (s ↦*{dq} vs).
@@ -760,21 +800,6 @@ Proof.
   iDestruct (own_slice_f_cap n m with "[$Hs $Hcap]") as "(Hs_pre & Hs & Hs_cap)".
   { word. }
   iFrame.
-Qed.
-
-Lemma own_slice_valid s dq (vs: list V) :
-  go_type_size t > 0 →
-  s ↦*{dq} vs ⊢ ⌜✓dq ∨ vs = []⌝.
-Proof.
-  iIntros (Hsize) "H".
-  destruct vs; [ by auto | ].
-  iLeft.
-  rewrite own_slice_unseal /own_slice_def.
-  simpl.
-  iDestruct "H" as "((H & _) & _)".
-  rewrite Z.mul_0_r loc_add_0.
-  iDestruct (typed_pointsto_valid with "H") as %Hvalid.
-  auto.
 Qed.
 
 (* An unusual use case for slicing where in s[n:m] we have len(s) ≤ m. This

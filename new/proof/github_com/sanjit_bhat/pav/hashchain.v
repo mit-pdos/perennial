@@ -216,9 +216,9 @@ Proof.
   by list_simplifier.
 Qed.
 
-Local Definition own (l : loc) (vals : list $ list w8) : iProp Σ :=
+Local Definition own (l : loc) (vals : list $ list w8) (d : dfrac) : iProp Σ :=
   ∃ sl_predLastLink predLastLink sl_lastLink lastLink sl_enc enc,
-  "Hstruct" ∷ l ↦ (hashchain.HashChain.mk sl_predLastLink sl_lastLink sl_enc) ∗
+  "Hstruct" ∷ l ↦{d} (hashchain.HashChain.mk sl_predLastLink sl_lastLink sl_enc) ∗
 
   "#Hsl_predLastLink" ∷ sl_predLastLink ↦*□ predLastLink ∗
   "#His_chain_pred" ∷ (∀ x vals', ⌜ vals = vals' ++ [x] ⌝ -∗
@@ -227,16 +227,40 @@ Local Definition own (l : loc) (vals : list $ list w8) : iProp Σ :=
   "#Hsl_lastLink" ∷ sl_lastLink ↦*□ lastLink ∗
   "#His_chain" ∷ is_chain vals lastLink ∗
 
-  "Hsl_enc" ∷ sl_enc ↦* enc ∗
-  "Hsl_enc_cap" ∷ own_slice_cap w8 sl_enc (DfracOwn 1) ∗
+  "Hsl_enc" ∷ sl_enc ↦*{d} enc ∗
+  "Hsl_enc_cap" ∷ own_slice_cap w8 sl_enc d ∗
   "#Henc" ∷ wish_Verify enc vals.
 #[global] Opaque own.
 #[local] Transparent own.
 
+Global Instance own_dfractional l v :
+  DFractional (λ d, own l v d).
+Proof.
+  rewrite /own. split.
+  - intros ??. iSplit.
+    + iNamed 1.
+      iDestruct "Hstruct" as "[H0 H1]".
+      iDestruct "Hsl_enc" as "[H2 H3]".
+      iDestruct "Hsl_enc_cap" as "[H4 H5]".
+      iFrame "∗#".
+    + iIntros "[H0 H1]".
+      iNamedSuffix "H0" "0".
+      iNamedSuffix "H1" "1".
+      iCombine "Hstruct0 Hstruct1" as "Hstruct" gives %[_ ?].
+      simplify_eq/=.
+      iCombine "Hsl_enc0 Hsl_enc1" as "Hsl_enc" gives %->.
+      iCombine "Hsl_enc_cap0 Hsl_enc_cap1" as "Hsl_enc_cap".
+      iFrame "∗#".
+  - apply _.
+  - intros ?. iNamed 1.
+    iPersist "Hstruct Hsl_enc Hsl_enc_cap".
+    iModIntro. iFrame "Hstruct #".
+Qed.
+
 Lemma wp_New :
   {{{ is_pkg_init hashchain }}}
   hashchain @ "New" #()
-  {{{ l, RET #l; "Hown_HashChain" ∷ own l [] }}}.
+  {{{ l, RET #l; "Hown_HashChain" ∷ own l [] 1 }}}.
 Proof.
   wp_start.
   wp_apply wp_GetEmptyLink as "* @".
