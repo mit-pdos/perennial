@@ -114,6 +114,8 @@ Inductive tree :=
 | Inner (child0: tree) (child1: tree)
 | Cut (hash: list w8).
 
+(* TODO: shorten these now that they're all module namespaced. *)
+(* TODO: make bunch of these Local and Opaque. *)
 Fixpoint tree_to_map t : gmap (list w8) (list w8) :=
   match t with
   | Empty => ∅
@@ -134,6 +136,17 @@ Fixpoint sorted_tree t depth : Prop :=
     tree_labels_have_bit child0 depth false ∧
     sorted_tree child1 (word.add depth (W64 1)) ∧
     tree_labels_have_bit child1 depth true
+  | _ => True
+  end.
+
+Fixpoint cutless_path t (label : list w8) (depth : w64) : Prop :=
+  match t with
+  | Cut _ => False
+  | Inner child0 child1 =>
+    match get_bit label depth with
+    | false => cutless_path child0 label (word.add depth (W64 1))
+    | true  => cutless_path child1 label (word.add depth (W64 1))
+    end
   | _ => True
   end.
 
@@ -299,6 +312,15 @@ Qed.
 
 (* Derived facts. *)
 
+Lemma cutless_tree_impl_paths t :
+  cutless_tree t →
+  ∀ l d, cutless_path t l d.
+Proof.
+  induction t; intros Hc ??; try done.
+  simpl in *. destruct Hc.
+  case_match; intuition.
+Qed.
+
 Lemma is_tree_hash_len t h:
   is_tree_hash t h -∗
   ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝.
@@ -386,18 +408,17 @@ Qed.
 Lemma tree_to_map_None t label depth:
   tree_to_map t !! label = None →
   sorted_tree t depth →
-  cutless_tree t →
+  cutless_path t label depth →
   ∃ found,
     tree_path t label depth found ∧
     found_nonmemb label found.
 Proof.
   revert depth.
-  induction t; simpl; intros.
+  induction t; simpl; intros; [..|done].
   - rewrite lookup_empty in H. eexists; eauto.
   - apply lookup_singleton_None in H. eexists. split; eauto. simpl; congruence.
   - apply lookup_union_None in H. intuition.
     destruct (get_bit label depth); eauto.
-  - inversion H1.
 Qed.
 
 Lemma is_merkle_proof_to_is_merkle_found label found proof h:
@@ -427,7 +448,8 @@ Proof.
     destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
       iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree";
       try done; naive_solver.
-  - eapply tree_to_map_None in He as [? [? ?]]; eauto.
+  - eapply cutless_tree_impl_paths in Hcutless0.
+    eapply tree_to_map_None in He as [? [? ?]]; eauto.
     destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
       iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree";
       try done; naive_solver.
