@@ -2,9 +2,9 @@ From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import hashchain.
 From Perennial.Helpers Require Import NamedProps.
 
-From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil.
-From New.proof.github_com.goose_lang Require Import std.
 From New.proof Require Import bytes.
+From New.proof.github_com.goose_lang Require Import std.
+From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil.
 
 Module hashchain.
 Section proof.
