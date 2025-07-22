@@ -105,6 +105,9 @@ Local Definition get_bit l (n : w64) : bool :=
   | Some bit => bit
   end.
 
+(* [Invalid] is a sub-tree.
+a different approach bubbles invalid hashes all the way to the top.
+that has the undesirable effect of an invalid inversion stopping the proof. *)
 Inductive tree :=
   | Empty
   | Leaf (label val : list w8)
