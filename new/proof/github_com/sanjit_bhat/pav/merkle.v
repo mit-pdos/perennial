@@ -96,21 +96,102 @@ End MerkleProof.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
 
-Definition bytes_to_bits l := concat (byte_to_bits <$> l).
+Local Definition bytes_to_bits l := concat (byte_to_bits <$> l).
 
 (* get_bit returns false if bit n of l is 0 (or the bit is past the length of l). *)
-Definition get_bit l (n : w64) : bool :=
+Local Definition get_bit l (n : w64) : bool :=
   match bytes_to_bits l !! (uint.nat n) with
   | None => false
   | Some bit => bit
   end.
 
 Inductive tree :=
-| Empty
-| Leaf (label: list w8) (val: list w8)
-| Inner (child0: tree) (child1: tree)
-| Cut (hash: list w8).
+  | Empty
+  | Leaf (label val : list w8)
+  | Inner (child0 child1 : tree)
+  | Invalid (hash : list w8).
 
+Inductive node :=
+  | Empty'
+  | Leaf' (label val : list w8)
+  | Inner' (hash0 hash1 : list w8)
+  | Invalid'.
+
+Definition decode_leaf (data : list w8) : option (list w8 * list w8) :=
+  let rem0 := data in
+  match bool_decide (length rem0 >= 8%nat) with
+  | false => None
+  | _ =>
+    let label_len := uint.nat (le_to_u64 (take 8%nat rem0)) in
+    let rem1 := drop 8%nat rem0 in
+    match bool_decide (length rem1 >= label_len) with
+    | false => None
+    | _ =>
+      let label := take label_len rem1 in
+      let rem2 := drop label_len rem1 in
+      match bool_decide (length rem2 >= 8%nat) with
+      | false => None
+      | _ =>
+        let val_len := uint.nat (le_to_u64 (take 8%nat rem2)) in
+        let rem3 := drop 8%nat rem2 in
+        match bool_decide (length rem3 >= val_len) with
+        | false => None
+        | _ =>
+          let val := take val_len rem3 in
+          let rem4 := drop val_len rem3 in
+          match bool_decide (rem4 = []) with
+          | false => None
+          | _ => Some (label, val)
+          end
+        end
+      end
+    end
+  end.
+
+Definition decode_node (data : option $ list w8) : node :=
+  match data with
+  | None => Invalid'
+  | Some d =>
+    match d with
+    | [] => Invalid'
+    | tag :: d' =>
+      if decide (tag = emptyNodeTag ∧ d' = [])
+      then Empty'
+      else if decide (tag = leafNodeTag)
+      then
+        match decode_leaf d' with
+        | None => Invalid'
+        | Some (label, val) => Leaf' label val
+        end
+      else if decide (tag = innerNodeTag ∧ Z.of_nat (length d') = 2 * cryptoffi.hash_len)
+      then
+        Inner'
+          (take (Z.to_nat cryptoffi.hash_len) d')
+          (drop (Z.to_nat cryptoffi.hash_len) d')
+      else Invalid'
+    end
+  end.
+
+Fixpoint is_tree_hash (t : tree) (h : list w8) (limit : nat) : iProp Σ :=
+  ∃ d n,
+  cryptoffi.is_hash d h ∗
+  ⌜ n = decode_node d ⌝ ∗
+  match n with
+  | Empty' => ⌜ t = Empty ⌝
+  | Leaf' l v => ⌜ t = Leaf l v ⌝
+  | Invalid' => ⌜ t = Invalid h ⌝
+  | Inner' h0 h1 =>
+    match limit with
+    | 0%nat => ⌜ t = Invalid h ⌝
+    | S limit' =>
+      ∃ t0 t1,
+      is_tree_hash t0 h0 limit' ∗
+      is_tree_hash t1 h1 limit' ∗
+      ⌜ t = Inner t0 t1 ⌝
+    end
+  end.
+
+(*
 (* TODO: shorten these now that they're all module namespaced. *)
 (* TODO: make bunch of these Local and Opaque. *)
 Fixpoint tree_to_map t : gmap (list w8) (list w8) :=
@@ -200,43 +281,6 @@ Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
     "%Heq_cut" ∷ ⌜ h = ch ⌝ ∗
     "%Hlen_hash" ∷ ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝
   end.
-
-(* too strong. could have inner nodes. *)
-Definition is_invalid0 (h : list w8) : iProp Σ :=
-  cryptoffi.is_hash None h.
-
-(* still too strong. not everything has to terminate
-in an invalid hash. but at least one child needs to be invalid.
-TODO: Fail bc infinite recursion. *)
-Fail Fixpoint is_invalid1 (h : list w8) : iProp Σ :=
-  cryptoffi.is_hash None h ∨
-  ∃ hl hr,
-  is_invalid1 hl ∗
-  is_invalid1 hr ∗
-  cryptoffi.is_hash (Some $ [innerNodeTag] ++ hl ++ hr) h.
-
-(* seems kinda right.
-TODO: add hash length props? *)
-Fail Fixpoint is_invalid2 (h : list w8) : iProp Σ :=
-  cryptoffi.is_hash None h ∨
-  ∃ hl hr,
-  (is_invalid2 hl ∨ is_invalid2 hr) ∗
-  cryptoffi.is_hash (Some $ [innerNodeTag] ++ hl ++ hr) h.
-
-Fail Definition is_otree_hash (ot : option tree) (h : list w8) : iProp Σ :=
-  match ot with
-  (* NOTE: i eventually wanna write down [is_merkle_map] here.
-  full maps are useful for the client to reason about.
-  the sub-property [cutless_tree] captures what makes inversion non-trivial.
-  could invert any hash to a trivial cut tree.
-  but cut trees would be useless to reason about. *)
-  | Some t => is_tree_hash t h ∗ ⌜ cutless_tree t ⌝
-  | None => is_invalid2 h
-  end.
-
-Fail Lemma invert h :
-  Z.of_nat $ length h = cryptoffi.hash_len →  ⊢
-  ∃ ot, is_otree_hash ot h.
 
 #[global]
 Instance is_tree_hash_persistent t h : Persistent (is_tree_hash t h).
@@ -693,6 +737,7 @@ Proof.
   opose proof (tree_to_map_det _ _ _ _ _ _ _) as ->; [done..|].
   by iDestruct (is_tree_hash_det with "Htree_hash0 Htree_hash1") as %?.
 Qed.
+*)
 
 Context `{!ghost_varG Σ ()}.
 
