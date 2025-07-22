@@ -201,6 +201,43 @@ Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
     "%Hlen_hash" ∷ ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝
   end.
 
+(* too strong. could have inner nodes. *)
+Definition is_invalid0 (h : list w8) : iProp Σ :=
+  cryptoffi.is_hash None h.
+
+(* still too strong. not everything has to terminate
+in an invalid hash. but at least one child needs to be invalid.
+TODO: Fail bc infinite recursion. *)
+Fail Fixpoint is_invalid1 (h : list w8) : iProp Σ :=
+  cryptoffi.is_hash None h ∨
+  ∃ hl hr,
+  is_invalid1 hl ∗
+  is_invalid1 hr ∗
+  cryptoffi.is_hash (Some $ [innerNodeTag] ++ hl ++ hr) h.
+
+(* seems kinda right.
+TODO: add hash length props? *)
+Fail Fixpoint is_invalid2 (h : list w8) : iProp Σ :=
+  cryptoffi.is_hash None h ∨
+  ∃ hl hr,
+  (is_invalid2 hl ∨ is_invalid2 hr) ∗
+  cryptoffi.is_hash (Some $ [innerNodeTag] ++ hl ++ hr) h.
+
+Fail Definition is_otree_hash (ot : option tree) (h : list w8) : iProp Σ :=
+  match ot with
+  (* NOTE: i eventually wanna write down [is_merkle_map] here.
+  full maps are useful for the client to reason about.
+  the sub-property [cutless_tree] captures what makes inversion non-trivial.
+  could invert any hash to a trivial cut tree.
+  but cut trees would be useless to reason about. *)
+  | Some t => is_tree_hash t h ∗ ⌜ cutless_tree t ⌝
+  | None => is_invalid2 h
+  end.
+
+Fail Lemma invert h :
+  Z.of_nat $ length h = cryptoffi.hash_len →  ⊢
+  ∃ ot, is_otree_hash ot h.
+
 #[global]
 Instance is_tree_hash_persistent t h : Persistent (is_tree_hash t h).
 Proof. revert h. induction t; apply _. Qed.
