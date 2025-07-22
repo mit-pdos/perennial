@@ -17,7 +17,7 @@ Program Instance is_pkg_init_cryptoffi : IsPkgInit cryptoffi := ltac2:(build_pkg
 
 (* is_hash says that [data] will hash to [hash].
 relative to the crypto model, it says the inputs are in the set of hashes. *)
-Definition is_hash (data hash : list w8) : iProp Σ.
+Definition is_hash (data : option (list w8)) (hash : list w8) : iProp Σ.
 Proof. Admitted.
 
 #[global]
@@ -29,7 +29,7 @@ Instance is_hash_timeless data hash : Timeless (is_hash data hash).
 Proof. Admitted.
 
 Lemma is_hash_det data hash0 hash1 :
-  is_hash data hash0 -∗ is_hash data hash1 -∗ ⌜ hash0 = hash1 ⌝.
+  is_hash (Some data) hash0 -∗ is_hash (Some data) hash1 -∗ ⌜ hash0 = hash1 ⌝.
 Proof. Admitted.
 
 Lemma is_hash_inj data0 data1 hash :
@@ -38,6 +38,12 @@ Proof. Admitted.
 
 Lemma is_hash_len data hash :
   is_hash data hash -∗ ⌜ Z.of_nat (length hash) = hash_len ⌝.
+Proof. Admitted.
+
+(* key feature of prophecy hash model. *)
+Lemma is_hash_inv hash :
+  Z.of_nat (length hash) = hash_len → ⊢
+  ∃ data, is_hash data hash.
 Proof. Admitted.
 
 Definition own_Hasher (ptr : loc) (data : list w8) : iProp Σ. Proof. Admitted.
@@ -76,7 +82,7 @@ Lemma wp_Hasher_Sum sl_b_in hr data b_in :
     sl_b_out hash, RET #sl_b_out;
     "Hown_hr" ∷ own_Hasher hr data ∗
     "Hsl_b_out" ∷ sl_b_out ↦* (b_in ++ hash) ∗
-    "#His_hash" ∷ is_hash data hash
+    "#His_hash" ∷ is_hash (Some data) hash
   }}}.
 Proof. Admitted.
 

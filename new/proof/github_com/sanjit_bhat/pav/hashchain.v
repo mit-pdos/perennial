@@ -23,7 +23,7 @@ Local Fixpoint is_chain_rev (boot : list w8) (l : list $ list w8) (h : list w8) 
   | x :: l' =>
     ∃ h',
     "#Hrecur" ∷ is_chain_rev boot l' h' ∗
-    "#His_hash" ∷ cryptoffi.is_hash (h' ++ x) h
+    "#His_hash" ∷ cryptoffi.is_hash (Some $ h' ++ x) h
   end.
 #[global] Opaque is_chain_rev.
 #[local] Transparent is_chain_rev.
@@ -46,7 +46,7 @@ Notation is_chain_aux b l h := (is_chain_rev b (reverse l) h).
 (* a full chain. *)
 Definition is_chain l h : iProp Σ :=
   ∃ he,
-  "#He" ∷ cryptoffi.is_hash [] he ∗
+  "#He" ∷ cryptoffi.is_hash (Some []) he ∗
   "#His_chain" ∷ is_chain_aux he l h.
 
 (* a bootstrapped chain. *)
@@ -61,7 +61,7 @@ one fix is to track a max list limit (XXX: pin down core logic).
 this takes a different approach, stating inj with a "complete"
 chain, which prevents cycles by starting with an empty pre-img. *)
 Local Lemma is_chain_inj_aux he l0 l1 b h :
-  cryptoffi.is_hash [] he -∗
+  cryptoffi.is_hash (Some []) he -∗
   is_chain_rev he l0 h -∗
   is_chain_rev b l1 h -∗
   ⌜ l1 `prefix_of` l0 ⌝.
@@ -71,6 +71,7 @@ Proof.
     iNamedSuffix 1 "0"; iNamedSuffix 1 "1"; [done|..].
   - iDestruct (is_chain_rev_len with "Hrecur1") as %?.
     iDestruct (cryptoffi.is_hash_inj with "He His_hash1") as %Heq.
+    simplify_option_eq.
     apply (f_equal length) in Heq.
     autorewrite with len in *.
     word.
@@ -78,6 +79,7 @@ Proof.
   - iDestruct (is_chain_rev_len with "Hrecur0") as %?.
     iDestruct (is_chain_rev_len with "Hrecur1") as %?.
     iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %Heq.
+    simplify_option_eq.
     opose proof (app_inj_1 _ _ _ _ _ Heq) as [-> ->]; [lia|].
     iDestruct ("IHl0" with "Hrecur0 Hrecur1") as %?.
     iPureIntro. by apply prefix_cons.

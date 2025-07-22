@@ -26,7 +26,7 @@ Lemma wp_Hash sl_b d0 b :
     sl_hash hash, RET #sl_hash;
     "Hsl_b" ∷ sl_b ↦*{d0} b ∗
     "Hsl_hash" ∷ sl_hash ↦* hash ∗
-    "#His_hash" ∷ cryptoffi.is_hash b hash
+    "#His_hash" ∷ cryptoffi.is_hash (Some b) hash
   }}}.
 Proof.
   wp_start. iNamed "Hpre".

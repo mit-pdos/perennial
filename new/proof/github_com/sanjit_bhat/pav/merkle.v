@@ -18,7 +18,7 @@ Module merkle.
 
 Module MerkleProof.
 Record t :=
-  mk {
+  mk' {
     Siblings: list w8;
     IsOtherLeaf: bool;
     LeafLabel: list w8;
@@ -63,11 +63,8 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
 
 Definition own ptr obj d : iProp Σ :=
   ∃ sl_Siblings sl_LeafLabel sl_LeafVal,
-  "Hstruct" ∷ ptr ↦{d} {|
-    merkle.MerkleProof.Siblings' := sl_Siblings;
-    merkle.MerkleProof.IsOtherLeaf' := obj.(IsOtherLeaf);
-    merkle.MerkleProof.LeafLabel' := sl_LeafLabel;
-    merkle.MerkleProof.LeafVal' := sl_LeafVal; |} ∗
+  "Hstruct" ∷ ptr ↦{d} (merkle.MerkleProof.mk sl_Siblings
+    obj.(IsOtherLeaf) sl_LeafLabel sl_LeafVal) ∗
 
   "Hsl_Siblings" ∷ sl_Siblings ↦*{d} obj.(Siblings) ∗
   "Hsl_LeafLabel" ∷ sl_LeafLabel ↦*{d} obj.(LeafLabel) ∗
@@ -187,18 +184,18 @@ Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
 Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
   match t with
   | Empty =>
-    "#His_hash" ∷ cryptoffi.is_hash [emptyNodeTag] h
+    "#His_hash" ∷ cryptoffi.is_hash (Some [emptyNodeTag]) h
   | Leaf label val =>
     "%Hinb_label" ∷ ⌜ uint.Z (W64 (length label)) = length label ⌝ ∗
     "#His_hash" ∷
-      cryptoffi.is_hash ([leafNodeTag] ++
+      cryptoffi.is_hash (Some $ [leafNodeTag] ++
         (u64_le $ length label) ++ label ++
         (u64_le $ length val) ++ val) h
   | Inner child0 child1 =>
     ∃ hl hr,
     "#Hleft_hash" ∷ is_tree_hash child0 hl ∗
     "#Hright_hash" ∷ is_tree_hash child1 hr ∗
-    "#His_hash" ∷ cryptoffi.is_hash ([innerNodeTag] ++ hl ++ hr) h
+    "#His_hash" ∷ cryptoffi.is_hash (Some $ [innerNodeTag] ++ hl ++ hr) h
   | Cut ch =>
     "%Heq_cut" ∷ ⌜ h = ch ⌝ ∗
     "%Hlen_hash" ∷ ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝
@@ -670,7 +667,7 @@ Definition own_initialized `{!merkle.GlobalAddrs} : iProp Σ :=
   ∃ sl_emptyHash emptyHash,
   "#HemptyHash" ∷ merkle.emptyHash ↦□ sl_emptyHash ∗
   "#Hsl_emptyHash" ∷ sl_emptyHash ↦*□ emptyHash ∗
-  "#His_hash" ∷ cryptoffi.cryptoffi.is_hash [emptyNodeTag] emptyHash.
+  "#His_hash" ∷ cryptoffi.cryptoffi.is_hash (Some [emptyNodeTag]) emptyHash.
 
 Definition is_initialized (γtok : gname) `{!merkle.GlobalAddrs} : iProp Σ :=
   inv nroot (ghost_var γtok 1 () ∨ own_initialized).
