@@ -40,8 +40,9 @@ Lemma is_hash_len data hash :
   is_hash data hash -∗ ⌜ Z.of_nat (length hash) = hash_len ⌝.
 Proof. Admitted.
 
-(* key feature of prophecy hash model. *)
-Lemma is_hash_inv hash :
+(* key feature of prophecy hash model.
+TODO: this is missing some gnames to pin everything down. *)
+Lemma is_hash_invert hash :
   Z.of_nat (length hash) = hash_len → ⊢
   ∃ data, is_hash data hash.
 Proof. Admitted.

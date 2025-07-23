@@ -105,9 +105,11 @@ Local Definition get_bit l (n : w64) : bool :=
   | Some bit => bit
   end.
 
-(* [Invalid] is a sub-tree.
+(* [Invalid] is an invalid hash. this could either come from:
+(1) bytes that didn't come from the hash fn output.
+(2) bytes whose preimg isn't a valid node encoding.
 a different approach bubbles invalid hashes all the way to the top.
-that has the undesirable effect of an invalid inversion stopping the proof. *)
+that has the undesirable effect of an invalid inversion "stopping the proof". *)
 Inductive tree :=
   | Empty
   | Leaf (label val : list w8)
@@ -117,10 +119,13 @@ Inductive tree :=
 Inductive node :=
   | Empty'
   | Leaf' (label val : list w8)
-  | Inner' (hash0 hash1 : list w8)
+  | Inner' (hash0 hash1 : list w8) :
+    Z.of_nat (length hash0) = cryptoffi.hash_len →
+    Z.of_nat (length hash1) = cryptoffi.hash_len →
+    node
   | Invalid'.
 
-Definition decode_leaf (data : list w8) : option (list w8 * list w8) :=
+Local Definition decode_leaf (data : list w8) : option (list w8 * list w8) :=
   let rem0 := data in
   match bool_decide (length rem0 >= 8%nat) with
   | false => None
@@ -151,7 +156,8 @@ Definition decode_leaf (data : list w8) : option (list w8 * list w8) :=
     end
   end.
 
-Definition decode_node (data : option $ list w8) : node :=
+(* [decode_node] lets us compute one node of a tree inversion. *)
+Local Program Definition decode_node (data : option $ list w8) : node :=
   match data with
   | None => Invalid'
   | Some d =>
@@ -171,19 +177,26 @@ Definition decode_node (data : option $ list w8) : node :=
         Inner'
           (take (Z.to_nat cryptoffi.hash_len) d')
           (drop (Z.to_nat cryptoffi.hash_len) d')
+          _ _
       else Invalid'
     end
   end.
+Next Obligation. intros. rewrite length_take. lia. Qed.
+Next Obligation. intros. rewrite length_drop. lia. Qed.
 
-Fixpoint is_tree_hash (t : tree) (h : list w8) (limit : nat) : iProp Σ :=
-  ∃ d n,
+(* TODO: instead of [limit], can we use iris fixpoint?
+[limit] might cause other issues, like with proving injectivity.
+e.g., the same hash with diff limits can invert to diff trees. *)
+(* TODO: [is_tree_hash] maybe could be written normally.
+as long as [decode_node] is there, can do inversion. *)
+Local Fixpoint is_tree_hash (t : tree) (h : list w8) (limit : nat) : iProp Σ :=
+  ∃ d,
   cryptoffi.is_hash d h ∗
-  ⌜ n = decode_node d ⌝ ∗
-  match n with
+  match decode_node d with
   | Empty' => ⌜ t = Empty ⌝
   | Leaf' l v => ⌜ t = Leaf l v ⌝
   | Invalid' => ⌜ t = Invalid h ⌝
-  | Inner' h0 h1 =>
+  | Inner' h0 h1 _ _ =>
     match limit with
     | 0%nat => ⌜ t = Invalid h ⌝
     | S limit' =>
@@ -193,6 +206,23 @@ Fixpoint is_tree_hash (t : tree) (h : list w8) (limit : nat) : iProp Σ :=
       ⌜ t = Inner t0 t1 ⌝
     end
   end.
+#[global] Typeclasses Opaque is_tree_hash.
+#[local] Typeclasses Transparent is_tree_hash.
+
+Lemma is_tree_hash_invert h limit :
+  Z.of_nat (length h) = cryptoffi.hash_len → ⊢
+  ∃ t, is_tree_hash t h limit.
+Proof.
+  revert h. induction limit; intros.
+  - iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
+    destruct (decode_node data); naive_solver.
+  - iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
+    destruct (decode_node data); try naive_solver.
+    fold is_tree_hash.
+    iDestruct (IHlimit hash0) as "[% $]"; [done|].
+    iDestruct (IHlimit hash1) as "[% $]"; [done|].
+    naive_solver.
+Qed.
 
 (*
 (* TODO: shorten these now that they're all module namespaced. *)
