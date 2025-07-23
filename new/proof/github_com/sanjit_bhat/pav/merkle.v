@@ -164,13 +164,14 @@ Local Program Definition decode_node (data : option $ list w8) : node :=
     match d with
     | [] => Invalid'
     | tag :: d' =>
+      (* TODO: maybe converting to match would help? *)
       if decide (tag = emptyNodeTag ∧ d' = [])
       then Empty'
       else if decide (tag = leafNodeTag)
       then
         match decode_leaf d' with
         | None => Invalid'
-        | Some (label, val) => Leaf' label val
+        | Some x => Leaf' x.1 x.2
         end
       else if decide (tag = innerNodeTag ∧ Z.of_nat (length d') = 2 * cryptoffi.hash_len)
       then
@@ -183,6 +184,56 @@ Local Program Definition decode_node (data : option $ list w8) : node :=
   end.
 Next Obligation. intros. rewrite length_take. lia. Qed.
 Next Obligation. intros. rewrite length_drop. lia. Qed.
+
+Local Lemma decode_empty_inj d :
+  decode_node d = Empty' →
+  d = Some [emptyNodeTag].
+Proof.
+  intros. rewrite /decode_node in H.
+  case_match; [|done].
+  case_match; [done|].
+  case_decide; [naive_solver|].
+  case_decide; [by case_match|].
+  by case_decide.
+Qed.
+
+Local Lemma decode_leaf_inj_aux d l v :
+  decode_leaf d = Some (l, v) →
+  d = u64_le (W64 (length l)) ++ l ++ u64_le (W64 (length v)) ++ v.
+Proof.
+  intros Hd. unfold decode_leaf in Hd.
+  case_bool_decide; [|done].
+  case_bool_decide; [|done].
+  case_bool_decide; [|done].
+  case_bool_decide; [|done].
+  case_bool_decide; [|done].
+  simplify_eq/=.
+Admitted.
+
+Local Lemma decode_leaf_inj d l v :
+  decode_node d = (Leaf' l v) →
+  d =
+  Some
+    (leafNodeTag ::
+    (u64_le (W64 (length l))) ++ l ++
+    (u64_le (W64 (length v))) ++ v).
+Proof.
+  intros. rewrite /decode_node in H.
+  case_match; [|done].
+  case_match; [done|].
+  case_decide; [naive_solver|].
+  (* TODO: use [decode_leaf_inj_aux]. *)
+Admitted.
+
+Lemma decode_node_inj n d0 d1 :
+  n = decode_node d0 →
+  n = decode_node d1 →
+  n ≠ Invalid' →
+  d0 = d1 ∧ is_Some d1.
+Proof.
+  (* TODO: use decode_inj lemma on every node type.
+  much easier than considering every interleaving of both sides. *)
+Admitted.
 
 (* TODO: instead of [limit], can we use iris fixpoint?
 [limit] might cause other issues, like with proving injectivity.
@@ -236,13 +287,6 @@ Proof.
     iDestruct (IHlimit hash1) as "[% $]"; [done|].
     naive_solver.
 Qed.
-
-Lemma decode_node_inj n d0 d1 :
-  n = decode_node d0 →
-  n = decode_node d1 →
-  n ≠ Invalid' →
-  d0 = d1 ∧ is_Some d1.
-Proof. Admitted.
 
 Lemma is_tree_hash_det t h0 h1 limit0 limit1 :
   is_tree_hash t h0 limit0 -∗
