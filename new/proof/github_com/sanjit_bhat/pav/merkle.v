@@ -372,6 +372,20 @@ Proof.
   by iApply cryptoffi.is_hash_det.
 Qed.
 
+Lemma is_tree_hash_inj t0 t1 h limit0 limit1 :
+  is_tree_hash t0 h limit0 -∗
+  is_tree_hash t1 h limit1 -∗
+  ⌜ t0 = t1 ⌝.
+Proof.
+  iInduction (limit0) as [] forall (t0 t1 h limit1); destruct limit1; simpl;
+    iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
+    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %->;
+    case_match;
+    iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
+    simplify_eq/=; try done.
+  (* TODO: need to know that limit "big enough". *)
+Admitted.
+
 (*
 (* TODO: shorten these now that they're all module namespaced. *)
 (* TODO: make bunch of these Local and Opaque. *)
