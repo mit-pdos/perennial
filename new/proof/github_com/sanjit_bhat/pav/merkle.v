@@ -189,7 +189,7 @@ Local Lemma decode_empty_inj d :
   decode_node d = Empty' →
   d = Some [emptyNodeTag].
 Proof.
-  intros. rewrite /decode_node in H.
+  rewrite /decode_node. intros.
   case_match; [|done].
   case_match; [done|].
   case_decide; [naive_solver|].
@@ -201,28 +201,61 @@ Local Lemma decode_leaf_inj_aux d l v :
   decode_leaf d = Some (l, v) →
   d = u64_le (W64 (length l)) ++ l ++ u64_le (W64 (length v)) ++ v.
 Proof.
-  intros Hd. unfold decode_leaf in Hd.
+  rewrite /decode_leaf. intros.
   case_bool_decide; [|done].
   case_bool_decide; [|done].
   case_bool_decide; [|done].
   case_bool_decide; [|done].
   case_bool_decide; [|done].
   simplify_eq/=.
-Admitted.
+  remember d as rem0.
+
+  rewrite -{1}(take_drop 8 rem0).
+  rewrite -{1}(take_drop 8 (_ ++ _ ++ _ ++ _)).
+  f_equal.
+  { rewrite take_app_length'; [|len].
+    rewrite length_take_le; [|lia].
+    rewrite w64_to_nat_id.
+    rewrite le_to_u64_le; [done|].
+    rewrite length_take. lia. }
+  remember (uint.nat (le_to_u64 (take 8 rem0))) as labelLen.
+  remember (drop 8 rem0) as rem1.
+
+  rewrite drop_app_length'; [|len].
+  rewrite -{1}(take_drop labelLen rem1).
+  f_equal.
+  remember (drop labelLen rem1) as rem2.
+
+  rewrite -{1}(take_drop 8 rem2).
+  rewrite -{1}(take_drop 8 (_ ++ _)).
+  f_equal.
+  { rewrite take_app_length'; [|len].
+    rewrite length_take_le; [|lia].
+    rewrite w64_to_nat_id.
+    rewrite le_to_u64_le; [done|].
+    rewrite length_take. lia. }
+  remember (uint.nat (le_to_u64 (take 8 rem2))) as valLen.
+  remember (drop 8 rem2) as rem3.
+
+  rewrite drop_app_length'; [|len].
+  rewrite -{1}(take_drop valLen rem3).
+  rewrite H4.
+  by list_simplifier.
+Qed.
 
 Local Lemma decode_leaf_inj d l v :
   decode_node d = (Leaf' l v) →
   d =
-  Some
-    (leafNodeTag ::
+  Some $
+    leafNodeTag ::
     (u64_le (W64 (length l))) ++ l ++
-    (u64_le (W64 (length v))) ++ v).
+    (u64_le (W64 (length v))) ++ v.
 Proof.
-  intros. rewrite /decode_node in H.
+  rewrite /decode_node. intros.
   case_match; [|done].
   case_match; [done|].
   case_decide; [naive_solver|].
-  (* TODO: use [decode_leaf_inj_aux]. *)
+  case_decide.
 Admitted.
 
 Lemma decode_node_inj n d0 d1 :
