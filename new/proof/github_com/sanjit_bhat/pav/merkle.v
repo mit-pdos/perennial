@@ -164,7 +164,6 @@ Local Program Definition decode_node (data : option $ list w8) : node :=
     match d with
     | [] => Invalid'
     | tag :: d' =>
-      (* TODO: maybe converting to match would help? *)
       if decide (tag = emptyNodeTag ∧ d' = [])
       then Empty'
       else if decide (tag = leafNodeTag)
@@ -244,19 +243,38 @@ Proof.
 Qed.
 
 Local Lemma decode_leaf_inj d l v :
-  decode_node d = (Leaf' l v) →
+  decode_node d = Leaf' l v →
   d =
   Some $
     leafNodeTag ::
-    (u64_le (W64 (length l))) ++ l ++
-    (u64_le (W64 (length v))) ++ v.
+    u64_le (W64 (length l)) ++ l ++
+    u64_le (W64 (length v)) ++ v.
 Proof.
   rewrite /decode_node. intros.
   case_match; [|done].
   case_match; [done|].
   case_decide; [naive_solver|].
-  case_decide.
-Admitted.
+  case_decide. 2: { by case_decide. }
+  case_match; [|done].
+  destruct p. simplify_eq/=.
+  opose proof (decode_leaf_inj_aux _ _ _ _) as Heq; [done|].
+  by rewrite Heq.
+Qed.
+
+Local Lemma decode_inner_inj d h0 h1 {Hlen0 Hlen1} :
+  decode_node d = Inner' h0 h1 Hlen0 Hlen1 →
+  d = Some $ innerNodeTag :: h0 ++ h1.
+Proof.
+  rewrite /decode_node. intros.
+  case_match; [|done].
+  case_match; [done|].
+  case_decide; [naive_solver|].
+  case_decide. { by case_match. }
+  case_decide; [|done].
+  destruct_and!.
+  simplify_eq/=.
+  by rewrite take_drop.
+Qed.
 
 Lemma decode_node_inj n d0 d1 :
   n = decode_node d0 →
@@ -264,9 +282,14 @@ Lemma decode_node_inj n d0 d1 :
   n ≠ Invalid' →
   d0 = d1 ∧ is_Some d1.
 Proof.
-  (* TODO: use decode_inj lemma on every node type.
-  much easier than considering every interleaving of both sides. *)
-Admitted.
+  intros. destruct n; try done.
+  - opose proof (decode_empty_inj d0 _) as ->; [done|].
+    by opose proof (decode_empty_inj d1 _) as ->; [done|].
+  - opose proof (decode_leaf_inj d0 _ _ _) as ->; [done|].
+    by opose proof (decode_leaf_inj d1 _ _ _) as ->; [done|].
+  - opose proof (decode_inner_inj d0 _ _ _) as ->; [done|].
+    by opose proof (decode_inner_inj d1 _ _ _) as ->; [done|].
+Qed.
 
 (* TODO: instead of [limit], can we use iris fixpoint?
 [limit] might cause other issues, like with proving injectivity.
