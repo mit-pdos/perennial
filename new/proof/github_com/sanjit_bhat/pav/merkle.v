@@ -299,7 +299,7 @@ Local Definition is_tree_hash_pre (recur : tree -d> list w8 -d> iPropO Σ)
   (λ t h,
     ∃ d,
     "#His_hash" ∷ cryptoffi.is_hash d h ∗
-    "#Hdecode" ∷ match decode_node d with
+    "Hdecode" ∷ match decode_node d with
     | Empty' =>
       "%" ∷ ⌜ t = Empty ⌝
     | Leaf' l v =>
@@ -308,8 +308,8 @@ Local Definition is_tree_hash_pre (recur : tree -d> list w8 -d> iPropO Σ)
       "%" ∷ ⌜ t = Invalid h ⌝
     | Inner' h0 h1 _ _ =>
       ∃ t0 t1,
-      "#Hrecur0" ∷ ▷ recur t0 h0 ∗
-      "#Hrecur1" ∷ ▷ recur t1 h1 ∗
+      "Hrecur0" ∷ ▷ recur t0 h0 ∗
+      "Hrecur1" ∷ ▷ recur t1 h1 ∗
       "%" ∷ ⌜ t = Inner t0 t1 ⌝
     end)%I.
 
@@ -325,7 +325,7 @@ Local Lemma is_tree_hash_unfold t h :
   is_tree_hash t h ⊣⊢
     ∃ d,
     "#His_hash" ∷ cryptoffi.is_hash d h ∗
-    "#Hdecode" ∷ match decode_node d with
+    "Hdecode" ∷ match decode_node d with
     | Empty' =>
       "%" ∷ ⌜ t = Empty ⌝
     | Leaf' l v =>
@@ -334,8 +334,8 @@ Local Lemma is_tree_hash_unfold t h :
       "%" ∷ ⌜ t = Invalid h ⌝
     | Inner' h0 h1 _ _ =>
       ∃ t0 t1,
-      "#Hrecur0" ∷ ▷ is_tree_hash t0 h0 ∗
-      "#Hrecur1" ∷ ▷ is_tree_hash t1 h1 ∗
+      "Hrecur0" ∷ ▷ is_tree_hash t0 h0 ∗
+      "Hrecur1" ∷ ▷ is_tree_hash t1 h1 ∗
       "%" ∷ ⌜ t = Inner t0 t1 ⌝
     end.
 Proof.
@@ -343,88 +343,24 @@ Proof.
   apply (fixpoint_unfold is_tree_hash_pre).
 Qed.
 
-#[global] Instance is_tree_hash_timeless t h : Timeless (is_tree_hash t h).
-Proof.
-  (*
-  (* approach 1. *)
-  rewrite /Timeless.
-  iLöb as "IH" forall (t h).
-  iIntros "H".
-  iEval (rewrite is_tree_hash_unfold).
-  iEval (rewrite is_tree_hash_unfold) in "H".
-  iEval (rewrite later_exist) in "H".
-  iDestruct "H" as "[% H]".
-  iDestruct (later_sep_1 with "H") as "[H0 H1]".
-  iMod "H0". iNamed "H0".
-  iFrame "#".
-  iRename "H1" into "H".
-  case_match.
-  - iMod "H". by iModIntro.
-  - iMod "H". by iModIntro.
-  - assert (Inhabited tree) by admit.
-    iEval (rewrite later_exist) in "H".
-    iDestruct "H" as (?) "H".
-    iEval (rewrite later_exist) in "H".
-    iDestruct "H" as (?) "H".
-    iEval (rewrite (assoc bi_sep)) in "H".
-    iDestruct (later_sep_1 with "H") as "[H0 H1]".
-    iMod "H1". iNamed "H1". iFrame "%".
-    iDestruct (later_sep_1 with "H0") as "[H0 H1]".
-    iDestruct ("IH" with "H0") as "H0".
-    iDestruct ("IH" with "H1") as "H1".
-    iClear "#".
-    rewrite /bi_except_0.
-    rewrite
-    iModIntro.
-    iSplitL "H0".
-    + iModIntro.
-    iFrame.
+Local Instance tree_inhabited : Inhabited tree := populate Empty.
 
-  (* approach 2. *)
-  rewrite is_tree_hash_unfold.
-  apply exist_timeless. intros.
-  apply sep_timeless; [apply _|].
-  case_match; try apply _.
-  apply exist_timeless. intros.
-  apply exist_timeless. intros.
-  rewrite (assoc bi_sep).
-  apply sep_timeless; [|apply _].
-  *)
-Admitted.
-
-#[global] Instance is_tree_hash_pers t h : Persistent (is_tree_hash t h).
-Proof.
-  (* i think Timeless would make it a lot easier to prove this. *)
-  (*
-  rewrite /Persistent.
-  iIntros "H".
-  iLöb as "IH" forall (t h).
-  iEval (rewrite is_tree_hash_unfold).
-  iEval (rewrite is_tree_hash_unfold) in "H".
-  iNamed "H".
-  iFrame "#".
-  case_match; iNamed "H"; try naive_solver.
-  iDestruct "H" as (??) "(Hrecur0 & Hrecur1 & %)".
-  iFrame "%".
-  iDestruct ("IH" with "Hrecur0") as "Hrecur0".
-  iDestruct ("IH" with "Hrecur1") as "Hrecur1".
-  *)
-Admitted.
-
-(*
-Lemma is_tree_hash_invert h limit :
+Lemma is_tree_hash_invert h :
   Z.of_nat (length h) = cryptoffi.hash_len → ⊢
-  ∃ t, is_tree_hash t h limit.
+  ∃ t, is_tree_hash t h.
 Proof.
-  revert h. induction limit; intros.
-  - iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
-    destruct (decode_node data); naive_solver.
-  - iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
-    destruct (decode_node data); try naive_solver.
-    fold is_tree_hash.
-    iDestruct (IHlimit hash0) as "[% $]"; [done|].
-    iDestruct (IHlimit hash1) as "[% $]"; [done|].
-    naive_solver.
+  intros Hlen.
+  iLöb as "IH" forall (h Hlen).
+  iEval (setoid_rewrite is_tree_hash_unfold).
+  iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
+  case_match; try naive_solver.
+  iDestruct ("IH" $! hash0 with "[//]") as "H0".
+  iDestruct ("IH" $! hash1 with "[//]") as "H1".
+  rewrite !later_exist.
+  iDestruct "H0" as "[% H0]".
+  iDestruct "H1" as "[% H1]".
+  iExists (Inner a a0), a, a0.
+  by iFrame "#".
 Qed.
 
 Local Lemma Inner'_eq_pi h0 h1 H0 H1 H2 H3 :
@@ -433,27 +369,29 @@ Proof. f_equal; apply proof_irrel. Qed.
 
 (* if [Invalid], carries the hash, so hashes must be equal.
 otherwise, [decode_node_inj] says that Some preimg's are equal. *)
-Lemma is_tree_hash_det t h0 h1 limit0 limit1 :
-  is_tree_hash t h0 limit0 -∗
-  is_tree_hash t h1 limit1 -∗
+Lemma is_tree_hash_det t h0 h1 :
+  is_tree_hash t h0 -∗
+  is_tree_hash t h1 -∗
   ⌜ h0 = h1 ⌝.
 Proof.
-  iInduction (limit0) as [] forall (t h0 h1 limit1); destruct limit1; simpl;
-    iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
-    do 2 case_match;
+  iLöb as "IH" forall (t h0 h1).
+  iEval (rewrite !is_tree_hash_unfold).
+  iNamedSuffix 1 "0". iNamedSuffix 1 "1".
+  do 2 case_match;
     iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
     simplify_eq/=; try done.
-  1-8: (
-    opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|];
-    by iApply cryptoffi.is_hash_det
-  ).
-  iDestruct ("IHlimit0" with "Hrecur00 Hrecur01") as %->.
-  iDestruct ("IHlimit0" with "Hrecur10 Hrecur11") as %->.
-  rewrite -(Inner'_eq_pi _ _ e1 e2) in H.
-  opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-  by iApply cryptoffi.is_hash_det.
-Qed.
+  - opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
+    by iApply cryptoffi.is_hash_det.
+  - opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
+    by iApply cryptoffi.is_hash_det.
+  - iDestruct ("IH" with "Hrecur00 Hrecur01") as "H0".
+    iDestruct ("IH" with "Hrecur10 Hrecur11") as "H1".
+    (* problem: from IH, child hashes equal, later.
+    i don't know how to strip that later.
+    if we add later to concl, that additionally shows up in IH. *)
+Admitted.
 
+(*
 Lemma is_tree_hash_inj t0 t1 h limit0 limit1 :
   is_tree_hash t0 h limit0 -∗
   is_tree_hash t1 h limit1 -∗
