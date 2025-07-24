@@ -276,6 +276,7 @@ Proof.
   by rewrite take_drop.
 Qed.
 
+(* for every node, there's only one data that decodes to it. *)
 Lemma decode_node_inj n d0 d1 :
   n = decode_node d0 →
   n = decode_node d1 →
@@ -284,11 +285,11 @@ Lemma decode_node_inj n d0 d1 :
 Proof.
   intros. destruct n; try done.
   - opose proof (decode_empty_inj d0 _) as ->; [done|].
-    by opose proof (decode_empty_inj d1 _) as ->; [done|].
+    by opose proof (decode_empty_inj d1 _) as ->.
   - opose proof (decode_leaf_inj d0 _ _ _) as ->; [done|].
-    by opose proof (decode_leaf_inj d1 _ _ _) as ->; [done|].
+    by opose proof (decode_leaf_inj d1 _ _ _) as ->.
   - opose proof (decode_inner_inj d0 _ _ _) as ->; [done|].
-    by opose proof (decode_inner_inj d1 _ _ _) as ->; [done|].
+    by opose proof (decode_inner_inj d1 _ _ _) as ->.
 Qed.
 
 (* TODO: instead of [limit], can we use iris fixpoint?
@@ -344,44 +345,31 @@ Proof.
     naive_solver.
 Qed.
 
+Local Lemma Inner'_eq_pi h0 h1 H0 H1 H2 H3 :
+  Inner' h0 h1 H0 H1 = Inner' h0 h1 H2 H3.
+Proof. f_equal; apply proof_irrel. Qed.
+
+(* if [Invalid], carries the hash, so hashes must be equal.
+otherwise, [decode_node_inj] says that Some preimg's are equal. *)
 Lemma is_tree_hash_det t h0 h1 limit0 limit1 :
   is_tree_hash t h0 limit0 -∗
   is_tree_hash t h1 limit1 -∗
   ⌜ h0 = h1 ⌝.
 Proof.
   iInduction (limit0) as [] forall (t h0 h1 limit1); destruct limit1; simpl;
-    iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
-  - do 2 case_match; iNamed "Hdecode0"; iNamed "Hdecode1";
-      simplify_eq/=; try done.
-    + opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-      by iApply cryptoffi.is_hash_det.
-    + opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-      by iApply cryptoffi.is_hash_det.
-  - do 2 case_match; iNamed "Hdecode0"; iNamed "Hdecode1";
-      simplify_eq/=; try done.
-    + opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-      by iApply cryptoffi.is_hash_det.
-    + opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-      by iApply cryptoffi.is_hash_det.
-  - do 2 case_match; iNamed "Hdecode0"; iNamed "Hdecode1";
-      simplify_eq/=; try done.
-    + opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-      by iApply cryptoffi.is_hash_det.
-    + opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-      by iApply cryptoffi.is_hash_det.
-  - do 2 case_match; iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
-      simplify_eq/=; try done.
-    + opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-      by iApply cryptoffi.is_hash_det.
-    + opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-      by iApply cryptoffi.is_hash_det.
-    + iDestruct ("IHlimit0" with "Hrecur00 Hrecur01") as %->.
-      iDestruct ("IHlimit0" with "Hrecur10 Hrecur11") as %->.
-      (* trickiness: use proof irrelevance for Inner props. *)
-      assert (e = e1) as -> by (apply proof_irrel).
-      assert (e0 = e2) as -> by (apply proof_irrel).
-      opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-      by iApply cryptoffi.is_hash_det.
+    iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
+    do 2 case_match;
+    iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
+    simplify_eq/=; try done.
+  1-8: (
+    opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|];
+    by iApply cryptoffi.is_hash_det
+  ).
+  iDestruct ("IHlimit0" with "Hrecur00 Hrecur01") as %->.
+  iDestruct ("IHlimit0" with "Hrecur10 Hrecur11") as %->.
+  rewrite -(Inner'_eq_pi _ _ e1 e2) in H.
+  opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
+  by iApply cryptoffi.is_hash_det.
 Qed.
 
 (*
