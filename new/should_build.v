@@ -11,7 +11,7 @@ From New.proof.github_com.goose_lang.goose.testdata.examples
   Require channel.
 
 From New.proof Require go_etcd_io.etcd.client.v3.leasing.
-From New.proof Require Import chan context.
+From New.proof Require Import bytes chan context.
 
 Require New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.closed.
 
@@ -21,3 +21,4 @@ From New.proof.github_com.mit_pdos.go_journal Require
 From New.proof Require Import inG_problem.
 
 From New.generatedproof.github_com.sanjit_bhat.pav Require alicebob.
+From New.proof.github_com.sanjit_bhat.pav Require hashchain merkle.

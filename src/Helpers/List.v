@@ -29,6 +29,46 @@ Section list.
   Context {A : Type}.
   Implicit Types l : (list A).
 
+  Lemma take_0' n l :
+    n = 0 →
+    take n l = [].
+  Proof. intros. subst. apply take_0. Qed.
+
+  Lemma list_join_inj (c : nat) (l0 l1 : list $ list A) :
+    c > 0 →
+    Forall (λ x, length x = c) l0 →
+    Forall (λ x, length x = c) l1 →
+    mjoin l0 = mjoin l1 →
+    l0 = l1.
+  Proof.
+    revert l1.
+    induction l0; destruct l1; [done|..]; intros ? Hc0 Hc1 Heq.
+    - apply (f_equal length) in Heq.
+      rewrite !length_join in Heq.
+      list_simplifier. lia.
+    - apply (f_equal length) in Heq.
+      rewrite !length_join in Heq.
+      list_simplifier. lia.
+    - simpl in *.
+      apply Forall_cons in Hc0 as [??].
+      apply Forall_cons in Hc1 as [??].
+      eapply (app_inj_1 _) in Heq as [-> ?]; [|lia].
+      f_equal.
+      by eapply IHl0.
+  Qed.
+
+  Lemma Forall_snoc (P : A → Prop) (x : A) l :
+    Forall P (l ++ [x]) ↔ Forall P l ∧ P x.
+  Proof.
+    split; intros H.
+    - apply Forall_app in H as [H1 H2].
+      by eapply (proj1 (Forall_singleton _ _)) in H2.
+    - destruct H as [H1 H2].
+      apply Forall_app.
+      split; [done|].
+      by apply Forall_singleton.
+  Qed.
+
   Lemma filter_snoc (P : A → Prop) `{∀ x, Decision (P x)} l x :
     filter P (l ++ [x]) = filter P l ++ (if decide (P x) then [x] else []).
   Proof. by rewrite filter_app. Qed.
@@ -284,6 +324,15 @@ Qed.
 Definition subslice {A} (n m: nat) (l: list A): list A :=
   drop n (take m l).
 
+Lemma take_subslice {A} (n m : nat) (l : list A) :
+  n ≤ m →
+  take m l = take n l ++ subslice n m l.
+Proof.
+  intros. rewrite /subslice.
+  replace (m) with (n + (m - n)) by lia.
+  by rewrite -take_drop_commute -take_take_drop.
+Qed.
+
 Theorem subslice_length' {A} n m (l: list A) :
   length (subslice n m l) = (m `min` length l - n)%nat.
 Proof.
@@ -305,12 +354,6 @@ Theorem subslice_take_drop {A} n m (l: list A) :
   subslice n m l =
   drop n (take m l).
 Proof. reflexivity. Qed.
-
-Lemma subslice_from_take {A} m (l: list A) :
-  take m l = subslice 0 m l.
-Proof.
-  rewrite /subslice //.
-Qed.
 
 Lemma subslice_from_drop {A} n (l: list A) :
   drop n l = subslice n (length l) l.
@@ -408,13 +451,6 @@ Proof.
   erewrite drop_S; eauto.
   replace (m - n) with (S (m - S n)) by lia.
   rewrite //=.
-Qed.
-
-Theorem subslice_before_app_eq {A} n m (l l': list A):
-  m <= length l -> subslice n m l = subslice n m (l ++ l').
-Proof.
-  intros.
-  by rewrite /subslice take_app_le.
 Qed.
 
 Theorem subslice_suffix_eq {A} (l l': list A) n n' m:
@@ -680,4 +716,75 @@ Proof.
   rewrite !Permutation_middle.
   f_equiv.
   rewrite Permutation_swap //.
+Qed.
+
+Lemma subslice_app_length {A} n m (l0 l1 : list A) :
+  subslice ((length l0) + n) ((length l0) + m) (l0 ++ l1) =
+  subslice n m l1.
+Proof. by rewrite /subslice take_app_add drop_app_add. Qed.
+
+Lemma join_lookup_Some_same_length'' {A} i c (x : list A) ls :
+  Forall (λ x, length x = c) ls →
+  ls !! i = Some x →
+  x = subslice (i * c) (S i * c) (mjoin ls).
+Proof.
+  revert i. induction ls.
+  { intros ?? Hlook. by rewrite lookup_nil in Hlook. }
+  intros ? Hc ?.
+  apply Forall_cons in Hc as [<- ?].
+  destruct i.
+  - rewrite subslice_from_start.
+    rewrite take_app_length'; [|lia].
+    naive_solver.
+  - rewrite subslice_app_length.
+    by apply IHls.
+Qed.
+
+Lemma subslice_singleton {A} l n (x : A) :
+  l !! n = Some x →
+  subslice n (S n) l = [x].
+Proof.
+  intros Hlook. rewrite /subslice.
+  eapply lookup_lt_Some in Hlook as ?.
+  eapply take_drop_middle in Hlook as <-.
+  rewrite cons_middle.
+  rewrite (assoc app).
+  rewrite take_app_length'.
+  2: { rewrite app_length length_take. simpl. lia. }
+  rewrite drop_app_length'; [done|].
+  rewrite length_take. lia.
+Qed.
+
+Local Lemma join_subslice_aux {A} i k c (ls : list $ list A) :
+  i ≤ i + k ≤ length ls →
+  Forall (λ x, length x = c) ls →
+  mjoin (subslice i (k + i) ls) = subslice (i * c) ((k + i) * c) (mjoin ls).
+Proof.
+  intros. induction k.
+  { by rewrite !subslice_zero_length. }
+  rewrite (subslice_split_r _ (k + i)); [|lia..].
+  rewrite join_app.
+  rewrite (subslice_split_r (i * c) ((k + i) * c)); [|lia|].
+  2: {
+    rewrite length_join.
+    rewrite (sum_list_fmap_same c); [|done].
+    eapply Nat.mul_le_mono_r. lia. }
+  f_equal. { apply IHk. lia. }
+  clear IHk.
+  destruct (list_lookup_lt ls (k + i)) as [x Hlook]; [lia|].
+  pose proof Hlook as Hlook0.
+  replace (S k + i) with (S (k + i)) by lia.
+  eapply subslice_singleton in Hlook0 as ->.
+  list_simplifier.
+  by rewrite -(join_lookup_Some_same_length'' _ _ x).
+Qed.
+
+Lemma join_subslice {A} i j c (ls : list $ list A) :
+  i ≤ j ≤ length ls →
+  Forall (λ x, length x = c) ls →
+  mjoin (subslice i j ls) = subslice (i * c) (j * c) (mjoin ls).
+Proof.
+  intros.
+  replace (j) with ((j - i) + i) by lia.
+  eapply join_subslice_aux; [lia|done].
 Qed.

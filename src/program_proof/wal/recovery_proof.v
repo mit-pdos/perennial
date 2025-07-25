@@ -1451,7 +1451,7 @@ Proof.
           (S (σ.(log_state.durable_lb) `max` diskEnd_txn_id))%nat
           σ.(log_state.txns)
       )) in Hcirc_matches'.
-      rewrite subslice_from_take subslice_app_contig in Hcirc_matches';
+      rewrite -subslice_from_start subslice_app_contig in Hcirc_matches';
         last by lia.
       rewrite subslice_from_start in Hcirc_matches'.
       assumption.

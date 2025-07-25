@@ -18,9 +18,24 @@ Axiom errUnreadByte'init : val.
 
 Axiom asciiSpace'init : val.
 
+(* Clone returns a copy of b[:len(b)].
+   The result may have additional unused capacity.
+   Clone(nil) returns nil.
+
+   go: bytes.go:1408:6 *)
+Definition Clone : val :=
+  rec: "Clone" "b" :=
+    exception_do (let: "b" := (mem.alloc "b") in
+    (if: (![#sliceT] "b") = #slice.nil
+    then return: (#slice.nil)
+    else do:  #());;;
+    return: (let: "$a0" := #slice.nil in
+     let: "$a1" := (![#sliceT] "b") in
+     (slice.append #byteT) "$a0" "$a1")).
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [].
+Definition functions' : list (go_string * val) := [("Clone"%go, Clone)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Buffer"%go, []); ("Buffer'ptr"%go, [])].
 

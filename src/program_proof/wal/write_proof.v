@@ -332,7 +332,7 @@ Proof.
   iNamed 1. iNamed "Howninstalled".
   iExists already_installed.
   iFrame.
-  rewrite -subslice_before_app_eq; last by lia. iFrame "#".
+  rewrite subslice_app_1; last by lia. iFrame "#".
   iSplitR "Hdata".
   - iPureIntro.
     len.

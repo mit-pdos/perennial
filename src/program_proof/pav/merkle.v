@@ -296,6 +296,7 @@ Lemma is_tree_hash_len t h:
   ⌜ Z.of_nat $ length h = hash_len ⌝.
 Proof. destruct t; iNamed 1; [..|done]; by iApply is_hash_len. Qed.
 
+(* TODO: see if any proof structure simplifies with new code. *)
 Lemma tree_path_agree label depth found0 found1 h t0 t1:
   tree_path t0 label depth found0 →
   tree_path t1 label depth found1 →

@@ -151,7 +151,7 @@ Section proof.
       wp_pures. iApply ("HΦ" $! false). done.
     - iDestruct "HR" as "[Hl2 HR]".
       iCombine "Hl Hl2" as "Hl".
-      rewrite Qp.quarter_three_quarter.
+      rewrite dfrac_op_own Qp.quarter_three_quarter.
       wp_cmpxchg_suc.
       iModIntro.
       iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
@@ -191,7 +191,7 @@ Section proof.
     iDestruct (locked_loc with "Hlocked") as "Hl2".
     iDestruct (heap_pointsto_agree with "[$Hl $Hl2]") as %->.
     iCombine "Hl Hl2" as "Hl".
-    rewrite Qp.quarter_three_quarter.
+    rewrite dfrac_op_own Qp.quarter_three_quarter.
     wp_cmpxchg_suc.
     iModIntro.
     iSplitR "HΦ"; last by wp_pures; iApply "HΦ".

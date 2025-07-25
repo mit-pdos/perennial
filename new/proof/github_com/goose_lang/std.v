@@ -76,7 +76,7 @@ Qed.
 Lemma wp_BytesClone (b:slice.t) (xs:list u8) (dq:dfrac) :
   {{{ is_pkg_init std ∗ own_slice b dq xs }}}
     std @ "BytesClone" #b
-  {{{ b', RET #b'; own_slice b' (DfracOwn 1) xs ∗ own_slice_cap w8 b' }}}.
+  {{{ b', RET #b'; own_slice b' (DfracOwn 1) xs ∗ own_slice_cap w8 b' (DfracOwn 1) }}}.
 Proof.
   wp_start as "Hb". wp_auto.
   wp_if_destruct; try wp_auto.

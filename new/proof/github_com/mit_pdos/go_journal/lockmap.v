@@ -398,7 +398,7 @@ Proof.
               "i" ∷ i_ptr ↦ i ∗
               "Hvar" ∷ shards_ptr ↦ s ∗
               "Hslice" ∷ own_slice s (DfracOwn 1) shardlocs ∗
-              "Hslice_cap" ∷ own_slice_cap loc s ∗
+              "Hslice_cap" ∷ own_slice_cap loc s (DfracOwn 1) ∗
               "%Hlen" ∷ ⌜ length shardlocs = uint.nat i ⌝ ∗
               "Hpp" ∷ ( [∗ set] shardnum ∈ rangeSet (uint.Z i) (NSHARD-uint.Z i),
                 [∗ set] a ∈ covered_by_shard (uint.Z shardnum) covered, P a ) ∗

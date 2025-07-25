@@ -23,7 +23,7 @@ Section goose_lang.
   Arguments as_pointsto {P Φ} AsMapsTo.
 
   Definition readonly_def P `{H: AsMapsTo P Φ}: iProp Σ :=
-    □ |={∅}=> ∃ q, Φ q.
+    □ (|={∅}=> ∃ q, Φ q).
   Definition readonly_aux : seal (@readonly_def). Proof. by eexists. Qed.
   Definition readonly := readonly_aux.(unseal).
   Definition readonly_eq : @readonly = @readonly_def := readonly_aux.(seal_eq).
