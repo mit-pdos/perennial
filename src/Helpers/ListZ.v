@@ -205,7 +205,7 @@ Proof.
   pose proof (list_insert_length n x l).
   rewrite -> list_insert_nat in * by lia.
   list_simpl.
-  rewrite -> list.list_lookup_insert in * by lia.
+  rewrite -> list.list_lookup_insert_eq in * by lia.
   list_solve.
 Qed.
 
@@ -261,7 +261,7 @@ Proof.
   rewrite length_take'; lia.
 Qed.
 
-Lemma lookup_take l n i :
+Lemma lookup_take_lt l n i :
   i < n →
   take n l !!! i = l !!! i.
 Proof.

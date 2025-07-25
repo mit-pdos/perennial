@@ -99,7 +99,7 @@ Section program.
       apply not_elem_of_take.
       { rewrite Hxs. apply NoDup_fst_map_to_list. }
       apply list_lookup_fmap_Some.
-      eexists; split; eauto.
+      eexists (_, _); split; eauto.
     }
     iNamed 1.
     case_bool_decide as Hi; last done.

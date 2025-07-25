@@ -237,7 +237,7 @@ Proof.
   rewrite Forall_forall in Hcomp.
   destruct (Hcomp (ActRead tid' key)); [| done | done].
   rewrite H0.
-  apply elem_of_list_here.
+  apply list_elem_of_here.
 Qed.
 
 Theorem safe_extension_wr (l : list action) (tid tid' : nat) (mods mods' : dbmap) :
@@ -256,7 +256,7 @@ Proof.
   rewrite Forall_forall in Hcomp.
   destruct (Hcomp (ActCommit tid' mods')); [| word | done].
   rewrite H0.
-  apply elem_of_list_here.
+  apply list_elem_of_here.
 Qed.
 
 Lemma first_commit_incompatible_Exists (l1 l2 : list action) (tid : nat) (mods : dbmap) :

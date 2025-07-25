@@ -401,15 +401,15 @@ Proof.
   iExists _, _, _.
   iFrame "Hhost".
   iSplitR.
-  { rewrite lookup_insert. eauto. }
+  { rewrite lookup_insert_eq. eauto. }
   iSplitR.
-  { rewrite lookup_insert_ne; eauto. rewrite lookup_insert. eauto. }
+  { rewrite lookup_insert_ne; eauto. rewrite lookup_insert_eq. eauto. }
   iSplit.
   {
     iIntros (args req va).
     iExists _, _. iFrame "Hhost".
     iSplitR.
-    { rewrite lookup_insert. eauto. }
+    { rewrite lookup_insert_eq. eauto. }
     iApply "Hfget".
   }
   iSplit.
@@ -417,7 +417,7 @@ Proof.
     iIntros (args req).
     iExists _, _. iFrame "Hhost".
     iSplitR.
-    { rewrite lookup_insert_ne; eauto. rewrite lookup_insert. eauto. }
+    { rewrite lookup_insert_ne; eauto. rewrite lookup_insert_eq. eauto. }
     iApply "Hfput".
   }
   iNamed "Hsrv".

@@ -27,8 +27,8 @@ Proof.
   intros Hgid.
   apply map_eq. intros k.
   destruct (decide (key = k)) as [-> | Hne].
-  { rewrite lookup_insert /tpls_group.
-    by rewrite (map_lookup_filter_Some_2 _ _ k tpl); [| rewrite lookup_insert |].
+  { rewrite lookup_insert_eq /tpls_group.
+    by rewrite (map_lookup_filter_Some_2 _ _ k tpl); [| rewrite lookup_insert_eq |].
   }
   rewrite lookup_insert_ne; last done.
   rewrite /tpls_group map_filter_insert.

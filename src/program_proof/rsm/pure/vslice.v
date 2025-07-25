@@ -28,10 +28,10 @@ Section lemma.
     rewrite /vslice_step /dual_lookup.
     destruct (m2 !! k2) as [v |] eqn:Hv.
     - destruct (decide (x = k1)) as [-> | Hne].
-      + by rewrite 2!lookup_insert.
+      + by rewrite 2!lookup_insert_eq.
       + by do 2 (rewrite lookup_insert_ne; last done).
     - destruct (decide (x = k1)) as [-> | Hne].
-      + by rewrite lookup_insert IH /dual_lookup Hnone.
+      + by rewrite lookup_insert_eq IH /dual_lookup Hnone.
       + by rewrite lookup_insert_ne.
   Qed.
 
@@ -43,7 +43,7 @@ Section lemma.
     apply map_eq. intros x.
     rewrite lookup_vslice /dual_lookup.
     destruct (decide (x = k1)) as [-> | Hne].
-    - by rewrite 2!lookup_insert.
+    - by rewrite 2!lookup_insert_eq.
     - do 2 (rewrite lookup_insert_ne; last done).
       by rewrite lookup_vslice /dual_lookup.
   Qed.
@@ -57,7 +57,7 @@ Section lemma.
     apply map_eq. intros x.
     do 2 (rewrite lookup_vslice /dual_lookup).
     destruct (decide (x = k1)) as [-> | Hne].
-    - by rewrite lookup_insert Hm.
+    - by rewrite lookup_insert_eq Hm.
     - by rewrite lookup_insert_ne.
   Qed.
 
@@ -67,7 +67,7 @@ Section lemma.
     apply map_eq. intros x.
     rewrite lookup_vslice /dual_lookup.
     destruct (decide (x = k1)) as [-> | Hne].
-    - by rewrite 2!lookup_delete.
+    - by rewrite 2!lookup_delete_eq.
     - do 2 (rewrite lookup_delete_ne; last done).
       by rewrite lookup_vslice /dual_lookup.
   Qed.
@@ -79,7 +79,7 @@ Section lemma.
   Proof.
     intros Hm Him.
     rewrite vslice_delete.
-    apply delete_notin.
+    apply delete_id.
     by rewrite lookup_vslice /dual_lookup Hm.
   Qed.
 

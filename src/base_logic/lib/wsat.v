@@ -349,7 +349,7 @@ Proof.
   rewrite -own_op own_valid auth_both_validI /=. iIntros "[#HI #HvI]".
   iDestruct "HI" as (I') "HI". rewrite gmap_equivI gmap_validI.
   iSpecialize ("HI" $! i). iSpecialize ("HvI" $! i).
-  rewrite lookup_fmap lookup_op lookup_singleton option_equivI.
+  rewrite lookup_fmap lookup_op lookup_singleton_eq option_equivI.
   case: (I !! i)=> [[[Q sch'] Qmut]|] /=; [|case: (I' !! i)=> [Q'|] /=; by iExFalso].
   iExists Q, Qmut. (* iSplit; first done. *)
   iAssert (invariant_unfold sch' (list_to_vec Q) ≡ invariant_unfold sch Ps)%I as "Hequiv".
@@ -398,7 +398,7 @@ Proof.
   rewrite -own_op own_valid auth_both_validI /=. iIntros "[#HI #HvI]".
   iDestruct "HI" as (I') "HI". rewrite gmap_equivI gmap_validI.
   iSpecialize ("HI" $! i). iSpecialize ("HvI" $! i).
-  rewrite lookup_fmap lookup_op lookup_singleton option_equivI.
+  rewrite lookup_fmap lookup_op lookup_singleton_eq option_equivI.
   case: (I !! i)=> [[[Q sch'] Qmut]|] /=; [|case: (I' !! i)=> [Q'|] /=; by iExFalso].
   iExists Q, Qmut. (* iSplit; first done. *)
   iAssert (invariant_unfold sch' (list_to_vec Q) ≡ invariant_unfold sch Ps)%I as "Hequiv".
@@ -560,9 +560,9 @@ Lemma gmap_validI_singleton `{Countable K} {A: cmra} {M: ucmra} (i: K) (a: A) :
   ✓ {[ i := a ]} ⊣⊢@{uPredI M} ✓ a.
 Proof.
   rewrite gmap_validI. iSplit.
-  - iIntros "H". iSpecialize ("H" $! i). rewrite lookup_singleton option_validI //=.
+  - iIntros "H". iSpecialize ("H" $! i). rewrite lookup_singleton_eq option_validI //=.
   - iIntros "Ha". iIntros (j). destruct (decide (i = j)).
-    * subst. rewrite lookup_singleton option_validI //=.
+    * subst. rewrite lookup_singleton_eq option_validI //=.
     * rewrite lookup_singleton_ne //=.
 Qed.
 
@@ -624,7 +624,7 @@ Proof.
     iDestruct "Hval" as "(Hval&_)".
     iDestruct "Hval" as (I') "Heq".
     rewrite gmap_equivI. iSpecialize ("Heq" $! i). rewrite lookup_fmap Hlookup //=.
-    rewrite lookup_op lookup_singleton option_equivI.
+    rewrite lookup_op lookup_singleton_eq option_equivI.
     case: (I' !! i) => //=.
   }
   iExists QsI, schI, Qs_mutI.
@@ -649,7 +649,7 @@ Proof.
   apply auth_frag_proper => //=.
   intros j. rewrite lookup_op. destruct (decide (i = j)); last first.
   { rewrite ?lookup_singleton_ne //=. }
-  subst. rewrite ?lookup_singleton /=.
+  subst. rewrite ?lookup_singleton_eq /=.
   rewrite -Some_op -pair_op agree_idemp /inv_mut_unfold.
   rewrite -Some_op -pair_op agree_idemp.
   repeat f_equiv. by rewrite frac_op Qp.div_2.
@@ -664,7 +664,7 @@ Proof.
   apply auth_frag_proper => //=.
   intros j. rewrite lookup_op. destruct (decide (i = j)); last first.
   { rewrite ?lookup_singleton_ne //=. }
-  subst. rewrite ?lookup_singleton /=.
+  subst. rewrite ?lookup_singleton_eq /=.
   rewrite -Some_op -pair_op agree_idemp /inv_mut_unfold left_id //=.
 Qed.
 
@@ -681,7 +681,7 @@ Proof.
   iDestruct (own_valid with "Hown") as "Hval".
   rewrite auth_frag_validI gmap_validI.
   iSpecialize ("Hval" $! i).
-  rewrite lookup_singleton /= option_validI /= prod_validI /=.
+  rewrite lookup_singleton_eq /= option_validI /= prod_validI /=.
   iDestruct "Hval" as "(_&Hval)".
   rewrite option_validI /= prod_validI /=.
   iDestruct "Hval" as "(_&Hagree)".
@@ -713,7 +713,7 @@ Proof.
   iDestruct (own_valid with "Hown") as "#Hval".
   rewrite auth_frag_validI gmap_validI.
   iSpecialize ("Hval" $! i).
-  rewrite lookup_singleton /= option_validI /= prod_validI /=.
+  rewrite lookup_singleton_eq /= option_validI /= prod_validI /=.
   iDestruct "Hval" as "(Hval1&Hval2)".
   rewrite agree_op_invI. iRewrite -"Hval1" in "Hown".
   rewrite agree_idemp.

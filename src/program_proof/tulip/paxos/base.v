@@ -143,9 +143,9 @@ Section def.
     intros x n m b Hmx IHm.
     unfold latest_term_before_quorum_step.
     destruct IHm as [-> | [y Hy]]; right.
-    { exists x. rewrite lookup_insert. by rewrite Nat.max_0_r. }
+    { exists x. rewrite lookup_insert_eq. by rewrite Nat.max_0_r. }
     destruct (decide (b ≤ n)%nat).
-    { exists x. rewrite lookup_insert. by replace (_ `max` _)%nat with n by lia. }
+    { exists x. rewrite lookup_insert_eq. by replace (_ `max` _)%nat with n by lia. }
     exists y.
     assert (Hne : x ≠ y) by set_solver.
     rewrite lookup_insert_ne; last done. rewrite Hy.
@@ -160,7 +160,7 @@ Section def.
     intros y n m b _ Hnr Hn.
     unfold latest_term_before_quorum_step.
     destruct (decide (y = x)) as [-> | Hne].
-    { rewrite lookup_insert in Hn. inversion_clear Hn. lia. }
+    { rewrite lookup_insert_eq in Hn. inversion_clear Hn. lia. }
     rewrite lookup_insert_ne in Hn; last done.
     specialize (Hnr Hn).
     lia.
@@ -362,7 +362,7 @@ Lemma elem_of_terms_all (n : nat) :
 Proof.
   intros Hn.
   rewrite /terms_all.
-  rewrite elem_of_list_to_set elem_of_list_fmap.
+  rewrite elem_of_list_to_set list_elem_of_fmap.
   exists (Z.of_nat n).
   split; first lia.
   rewrite elem_of_seqZ.

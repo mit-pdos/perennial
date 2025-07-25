@@ -69,7 +69,7 @@ Proof.
     set_solver.
   }
   unfold Rc_Fetch, Ra_Fetch.
-  rewrite Hr lookup_singleton.
+  rewrite Hr lookup_singleton_eq.
   iSplit; by eauto with iFrame.
 Qed.
 
@@ -124,13 +124,13 @@ Proof.
   { (* Case COMMIT. *)
     iDestruct "H" as "[%HQ Hdbpt]".
     unfold Q_Fetch in HQ.
-    rewrite lookup_singleton in HQ.
+    rewrite lookup_singleton_eq in HQ.
     iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply HQ.
     iMod ("HAU" with "Hdbpt") as "HΦ".
     iIntros "!> [Htxn HR]".
     wp_pures.
     iDestruct "HR" as (v') "[HnRef %Hlookup]".
-    rewrite lookup_singleton in Hlookup.
+    rewrite lookup_singleton_eq in Hlookup.
     inversion Hlookup. subst v'.
     wp_load.
     iApply "HΦ".
@@ -143,7 +143,7 @@ Proof.
     iIntros "!> [Htxn HR]".
     wp_pures.
     iDestruct "HR" as (v') "[HnRef %Hlookup]".
-    rewrite lookup_singleton in Hlookup.
+    rewrite lookup_singleton_eq in Hlookup.
     inversion Hlookup. subst v'.
     wp_load.
     iApply "HΦ".
@@ -209,7 +209,7 @@ Proof.
   wp_if_destruct.
   { iApply "HΦ". iFrame.
     iExists _. iFrame.
-    iPureIntro. by rewrite lookup_singleton.
+    iPureIntro. by rewrite lookup_singleton_eq.
   }
 
   (***********************************************************)
@@ -232,14 +232,14 @@ Proof.
     unfold Q_Increment.
     eexists _, _.
     split.
-    { rewrite Hr. by rewrite lookup_singleton. }
+    { rewrite Hr. by rewrite lookup_singleton_eq. }
     split.
-    { by rewrite lookup_singleton. }
+    { by rewrite lookup_singleton_eq. }
     apply u64_val_ne in Heqb.
     word.
   }
   unfold Rc_Increment, Ra_Increment.
-  rewrite Hr lookup_singleton.
+  rewrite Hr lookup_singleton_eq.
   iSplit; by eauto with iFrame.
 Qed.
 
@@ -298,14 +298,14 @@ Proof.
     iDestruct "H" as "[%HQ Hdbpt]".
     unfold Q_Increment in HQ.
     destruct HQ as (v' & u & Hlookupr & Hlookupw & Hrel).
-    rewrite lookup_singleton in Hlookupr.
+    rewrite lookup_singleton_eq in Hlookupr.
     inversion Hlookupr. subst v'.
     iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply Hlookupw.
     iMod ("HAU" $! true with "[Hdbpt]") as "HΦ"; first by eauto with iFrame.
     iIntros "!> [Htxn HR]".
     wp_pures.
     iDestruct "HR" as (v') "[HnRef %Hlookup]".
-    rewrite lookup_singleton in Hlookup.
+    rewrite lookup_singleton_eq in Hlookup.
     inversion Hlookup. subst v'.
     wp_load.
     wp_pures.
@@ -319,7 +319,7 @@ Proof.
     iIntros "!> [Htxn HR]".
     wp_pures.
     iDestruct "HR" as (v') "[HnRef %Hlookup]".
-    rewrite lookup_singleton in Hlookup.
+    rewrite lookup_singleton_eq in Hlookup.
     inversion Hlookup. subst v'.
     wp_load.
     wp_pures.
@@ -386,7 +386,7 @@ Proof.
   wp_if_destruct.
   { iApply "HΦ". iFrame.
     iExists _. iFrame.
-    iPureIntro. by rewrite lookup_singleton.
+    iPureIntro. by rewrite lookup_singleton_eq.
   }
 
   (***********************************************************)
@@ -409,15 +409,15 @@ Proof.
     unfold Q_Decrement.
     eexists _, _.
     split.
-    { rewrite Hr. by rewrite lookup_singleton. }
+    { rewrite Hr. by rewrite lookup_singleton_eq. }
     split.
-    { by rewrite lookup_singleton. }
+    { by rewrite lookup_singleton_eq. }
     apply u64_val_ne in Heqb.
     replace (uint.Z 0) with 0 in Heqb by word.
     word.
   }
   unfold Rc_Decrement, Ra_Decrement.
-  rewrite Hr lookup_singleton.
+  rewrite Hr lookup_singleton_eq.
   iSplit; by eauto with iFrame.
 Qed.
 
@@ -476,14 +476,14 @@ Proof.
     iDestruct "H" as "[%HQ Hdbpt]".
     unfold Q_Decrement in HQ.
     destruct HQ as (v' & u & Hlookupr & Hlookupw & Hrel).
-    rewrite lookup_singleton in Hlookupr.
+    rewrite lookup_singleton_eq in Hlookupr.
     inversion Hlookupr. subst v'.
     iDestruct (big_sepM_lookup with "Hdbpt") as "Hdbpt"; first apply Hlookupw.
     iMod ("HAU" $! true with "[Hdbpt]") as "HΦ"; first by eauto with iFrame.
     iIntros "!> [Htxn HR]".
     wp_pures.
     iDestruct "HR" as (v') "[HnRef %Hlookup]".
-    rewrite lookup_singleton in Hlookup.
+    rewrite lookup_singleton_eq in Hlookup.
     inversion Hlookup. subst v'.
     wp_load.
     wp_pures.
@@ -497,7 +497,7 @@ Proof.
     iIntros "!> [Htxn HR]".
     wp_pures.
     iDestruct "HR" as (v') "[HnRef %Hlookup]".
-    rewrite lookup_singleton in Hlookup.
+    rewrite lookup_singleton_eq in Hlookup.
     inversion Hlookup. subst v'.
     wp_load.
     wp_pures.
@@ -582,7 +582,7 @@ Proof.
       iSplit; last by rewrite big_sepM_singleton.
       iPureIntro.
       split; last set_solver.
-      rewrite lookup_singleton.
+      rewrite lookup_singleton_eq.
       by eauto.
     }
     (* Give [dbmap_ptsto] owned exclusively. *)

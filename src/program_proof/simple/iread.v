@@ -205,7 +205,7 @@ Proof.
       erewrite take_S_r.
       { rewrite Hcontent. eauto. }
       rewrite lookup_drop. rewrite -Hdiskdata.
-      rewrite lookup_take.
+      rewrite lookup_take_lt.
       { replace (uint.nat (word.add offset b')) with (uint.nat offset + uint.nat b') in He by word. done. }
       word.
     }

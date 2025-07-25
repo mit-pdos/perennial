@@ -14,7 +14,7 @@ Proof.
   intros Hpos Hoverflow.
   rewrite /rangeSet.
   rewrite elem_of_list_to_set.
-  rewrite elem_of_list_fmap.
+  rewrite list_elem_of_fmap.
   split; intros.
   - destruct H as [y [-> Hin%elem_of_seqZ]]; word.
   - exists (uint.Z i).

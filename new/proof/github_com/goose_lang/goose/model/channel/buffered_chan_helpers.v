@@ -30,7 +30,7 @@ Proof.
       2: { rewrite length_insert. word. }
       rewrite take_app_le.
       2: { word. }
-      rewrite take_insert.
+      rewrite take_insert_ge.
       { done. }
       word.
     + rewrite Z.mod_small; word.
@@ -71,7 +71,7 @@ Proof.
                       length slice):=e]> slice)).
           2: { rewrite H6. eauto. }
           rewrite firstn_all.
-          rewrite drop_insert_gt. 
+          rewrite drop_insert_lt. 
           {done. }
           word.
         }
@@ -90,7 +90,7 @@ Proof.
                  <[uint.nat (uint.nat first + uint.nat count - length slice):=e]> slice)).
       2: { rewrite H7. eauto. }
       rewrite drop_app_length.
-      rewrite take_insert.
+      rewrite take_insert_ge.
       { eauto. }
       word.
     + rewrite -(Z_mod_plus_full _ (-1)).
@@ -127,7 +127,7 @@ Proof.
     + rewrite subslice_comm.
       rewrite drop_app_le.
       2: { rewrite length_insert. word. }
-      rewrite drop_insert_le.
+      rewrite drop_insert_ge.
       2: { word. }
       assert ((uint.nat (uint.nat first + uint.nat count)%Z -
       (uint.nat first + uint.nat count))%nat = uint.nat 0).
@@ -153,7 +153,7 @@ Proof.
       rewrite drop_app_ge.
       2: { rewrite length_insert. word. }
       rewrite length_insert.
-      rewrite drop_insert_le.
+      rewrite drop_insert_ge.
       2: { word. }
       assert ((uint.nat (uint.nat first + uint.nat count - length slice)%Z -
       (uint.nat first + uint.nat count - length slice))%nat = uint.nat 0).

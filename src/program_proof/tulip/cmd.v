@@ -830,7 +830,7 @@ Section merge_clog_ilog.
     rewrite /merge_clog_ilog /= drop_0.
     rewrite /filter_ccmd list_filter_all; first done.
     intros i c Hc.
-    by apply list_lookup_fmap_Some in Hc as (x & _ & ->).
+    by apply list_lookup_fmap_Some in Hc as (x & -> & _).
   Qed.
 
   Lemma rpst_to_gpst_execute_cmds_raw clog1 clog2 :

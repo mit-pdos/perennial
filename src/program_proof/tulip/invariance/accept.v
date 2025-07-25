@@ -28,7 +28,7 @@ Proof.
   { rewrite lookup_insert_ne in Hk; last done.
     by eapply Hbm.
   }
-  rewrite lookup_insert in Hk. inv Hk.
+  rewrite lookup_insert_eq in Hk. inv Hk.
   intros r Hlen.
   specialize (Hbm _ _ _ Hl Hm r).
   apply Hbm.
@@ -107,7 +107,7 @@ Section accept.
       (* Extract a witness that this replica accepts [p] at the rank [rk]. *)
       iAssert (is_replica_pdec_at_rank γ gid rid ts rk p)%I as "#Hblt".
       { iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
-        { by rewrite lookup_insert. }
+        { by rewrite lookup_insert_eq. }
         iFrame "Hlb".
         iPureIntro.
         rewrite lookup_snoc_Some.
@@ -186,7 +186,7 @@ Section accept.
     (* Extract a witness that this replica accepts [p] at the fast rank. *)
     iAssert (is_replica_pdec_at_rank γ gid rid ts rk p)%I as "#Hblt".
     { iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
-      { by rewrite lookup_insert. }
+      { by rewrite lookup_insert_eq. }
       iFrame "Hlb".
       iPureIntro.
       rewrite lookup_snoc_Some.

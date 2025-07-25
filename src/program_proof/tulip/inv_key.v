@@ -222,7 +222,7 @@ Proof.
     by rewrite lookup_ge_None_2.
   }
   specialize (Hpoint _ Hlt).
-  by rewrite lookup_take.
+  by rewrite lookup_take_lt.
 Qed.
 
 (** Invariant: The linearized history is extended by linearized but not yet

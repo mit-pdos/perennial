@@ -210,7 +210,7 @@ lemmas. *)
     iSplit; first done.
     iSplit.
     { iPureIntro. clear c_r. intros c ms m. destruct (decide (c = c_l)) as [->|Hne].
-      - rewrite lookup_insert=>-[<-]. rewrite elem_of_empty. done.
+      - rewrite lookup_insert_eq=>-[<-]. rewrite elem_of_empty. done.
       - rewrite lookup_insert_ne //. apply Hg. }
     by iApply ("HΦ" $! false).
   Qed.
@@ -308,7 +308,7 @@ lemmas. *)
     iSplit; first done.
     iSplit.
     { iPureIntro. intros c' ms' m'. destruct (decide (c_r = c')) as [<-|Hne].
-      - rewrite lookup_insert=>-[<-]. rewrite elem_of_union=>-[Hm'|Hm'].
+      - rewrite lookup_insert_eq=>-[<-]. rewrite elem_of_union=>-[Hm'|Hm'].
         + eapply Hg; done.
         + rewrite ->elem_of_singleton in Hm'. subst m'.
           rewrite Hmlen. word.
@@ -503,7 +503,7 @@ lemmas. *)
     iSplit; first done. iSplitR.
     { iPureIntro. clear -Hmlen Hfilebound.
       intros f' c'. destruct (decide (f = f')) as [<-|Hne].
-      - rewrite lookup_insert=>-[<-]. word.
+      - rewrite lookup_insert_eq=>-[<-]. word.
       - rewrite lookup_insert_ne //. eapply Hfilebound. } 
     iApply "HΦ".
     by iFrame.
@@ -561,7 +561,7 @@ lemmas. *)
     iSplit; first done. iSplitR.
     { iPureIntro. clear -Halen Hfilebound.
       intros f' c'. destruct (decide (f = f')) as [<-|Hne].
-      - rewrite lookup_insert=>-[<-]. word.
+      - rewrite lookup_insert_eq=>-[<-]. word.
       - rewrite lookup_insert_ne //. eapply Hfilebound. } 
     iApply "HΦ".
     by iFrame.

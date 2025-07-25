@@ -38,7 +38,7 @@ Section lemmas.
     alter f i m = <[i := f x]> m.
   Proof.
     intros Hmi.
-    by rewrite -alter_insert insert_id.
+    by rewrite -alter_insert_eq insert_id.
   Qed.
 
   Lemma lookup_alter_None {A : Type} (f : A -> A) (m : M A) (i : K) :
@@ -78,7 +78,7 @@ Section lemmas.
       rewrite ?map_filter_insert.
       destruct (decide (P (k1, x1))); destruct (decide (Q (k1, x2))); try intuition.
       * rewrite ?map_size_insert_None ?IH ?map_lookup_filter_None; eauto.
-      * rewrite ?delete_notin //; eauto.
+      * rewrite ?delete_id //; eauto.
   Qed.
 
 End lemmas.

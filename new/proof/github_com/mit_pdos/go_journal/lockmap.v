@@ -196,7 +196,7 @@ Proof.
       iApply big_sepS_insert.
       { set_solver. }
       iSplitR.
-      { rewrite lookup_insert; iIntros "!>%Hne". done. }
+      { rewrite lookup_insert_eq; iIntros "!>%Hne". done. }
       iApply big_sepS_mono; iFrame.
       iIntros (x Hx) "H".
       destruct (decide (addr = x)); subst.
@@ -238,8 +238,8 @@ Proof.
     iMod (ghost_map_update false with "Hghctx Haddrlocked") as "[Hghctx Haddrlocked]".
     iDestruct (big_sepM2_insert_2 _ _ _ addr with "[held cond waiters Haddrlocked Hp] Haddrs") as "Haddrs".
     { iFrame "∗#%". iRight. iFrame. done. }
-    rewrite insert_delete_insert.
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
+    rewrite insert_delete_eq.
     rewrite (insert_id m); eauto.
 
     wp_apply (wp_Mutex__Unlock with "[$Hlock $Hlocked $Hmptr $Hghctx $Haddrs $Hcovered]").

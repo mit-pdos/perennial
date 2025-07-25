@@ -123,7 +123,7 @@ Proof.
   rewrite lookup_fmap.
   rewrite pos_indices_lookup.
   rewrite -option_fmap_compose.
-  destruct (decide (a = a0)); subst; [ rewrite lookup_insert | rewrite lookup_insert_ne; auto ].
+  destruct (decide (a = a0)); subst; [ rewrite lookup_insert_eq | rewrite lookup_insert_ne; auto ].
   - rewrite find_highest_index_app1 /=.
     autorewrite with len.
     f_equal.
@@ -446,7 +446,7 @@ Proof.
     readonly (updates_slice_frag _ _ ?us2) ] =>
     replace us1 with us2; auto
   end.
-  rewrite take_insert; auto.
+  rewrite take_insert_ge; auto.
   word.
 Qed.
 
@@ -544,7 +544,7 @@ Proof.
     + iSplit.
       { iPureIntro; simpl; len. }
       rewrite !numMutable_set_log /=.
-      rewrite -> drop_insert_le by len.
+      rewrite -> drop_insert_ge by len.
       iExactEq "log_mutable".
       rewrite /named.
       f_equal.
@@ -1034,7 +1034,7 @@ Proof.
   rewrite /= decide_True in Hhighest. 2: eauto.
   destruct (find_highest_index addrs addr) eqn:Hn; first by inversion Hhighest.
   destruct (decide (oaddr = addr)).
-  1: subst; rewrite lookup_delete Hn /= //.
+  1: subst; rewrite lookup_delete_eq Hn /= //.
   rewrite lookup_delete_ne. 2: eauto.
   rewrite lookup_partial_alter_ne. 2: eauto.
   rewrite pos_indices_lookup.
@@ -1103,7 +1103,7 @@ Proof.
     iDestruct (big_sepL2_lookup_acc with "Hbks") as "[[%Huaddr Hb] Hbks]"; eauto.
     iAssert (is_update uv (DfracOwn q) upd) with "[Hb]" as "Hbk"; first by (iFrame; eauto).
     iPoseProof ("Hbks" with "Hbk") as "Hbks".
-    rewrite lookup_take in Hupd. 2: word.
+    rewrite lookup_take_lt in Hupd. 2: word.
 
     destruct ok; wp_pures.
     2: {

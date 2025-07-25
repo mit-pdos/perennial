@@ -394,7 +394,7 @@ Section res.
       { apply mono_list_update, Hprefix. }
       iDestruct (big_sepM2_insert_2 _ _ _ ts with "[Hblt] Hblts") as "Hblts".
       { iFrame "Hblt". }
-      rewrite 2!insert_delete_insert.
+      rewrite 2!insert_delete_eq.
       iFrame.
       rewrite insert_id; last done.
       by iFrame "∗ #".
@@ -548,12 +548,12 @@ Section res.
       iPureIntro.
       intros t r c Hc.
       destruct (decide (t = ts)) as [-> | Hne].
-      { rewrite lookup_insert.
+      { rewrite lookup_insert_eq.
         destruct (decide (r = rank)) as [-> | Hner].
-        { rewrite lookup_insert in Hc. inv Hc.
+        { rewrite lookup_insert_eq in Hc. inv Hc.
           exists (<[rank := c]> vm).
           split; first done.
-          by rewrite lookup_insert.
+          by rewrite lookup_insert_eq.
         }
         { rewrite lookup_insert_ne in Hc; last first.
           { intros Hcontra. congruence. }
@@ -708,7 +708,7 @@ Section res.
         destruct Hin as (g' & Heq & _).
         inv Heq.
       }
-      rewrite lookup_insert.
+      rewrite lookup_insert_eq.
       exists (<[rank:=tgids]> tm).
       split; first done.
       destruct (decide (r = rank)) as [-> | Hne]; last first.
@@ -723,7 +723,7 @@ Section res.
         destruct Hin as (g' & Heq & _).
         inv Heq.
       }
-      rewrite lookup_insert.
+      rewrite lookup_insert_eq.
       exists tgids.
       split; first done.
       apply elem_of_union in Hin as [Hin | Hin]; last first.

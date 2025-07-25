@@ -408,7 +408,7 @@ Proof.
       subst. 
       apply word.unsigned_inj.
       rewrite -> lookup_insert_ne in Heq by done.
-      rewrite -> lookup_insert in Heq by done.
+      rewrite -> lookup_insert_eq in Heq by done.
       unfold five in *. inversion Heq as [Heq'].
       done.
     }
@@ -416,7 +416,7 @@ Proof.
     { 
       unfold ten.
       rewrite -> lookup_insert_ne in Hlookup2 by done. 
-      rewrite -> lookup_insert in Hlookup2 by done. 
+      rewrite -> lookup_insert_eq in Hlookup2 by done. 
       symmetry. 
       inversion Hlookup2 as [Heq].
       subst.  
@@ -424,7 +424,7 @@ Proof.
     }
     assert (W64 c = fifteen).
     {
-      rewrite lookup_insert in Hlookup3.
+      rewrite lookup_insert_eq in Hlookup3.
       symmetry.
       inversion Hlookup3 as [Heq].
       subst. apply word.unsigned_inj. exact Heq.

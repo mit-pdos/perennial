@@ -106,7 +106,7 @@ Proof.
         iSplit.
         { iPureIntro. intros.
           destruct (decide (uint.nat i0 = uint.nat i)) as [->|Hneq].
-          { eexists. apply list_lookup_insert. eapply lookup_lt_is_Some_1; eauto. }
+          { eexists. apply list_lookup_insert_eq. eapply lookup_lt_is_Some_1; eauto. }
           rewrite list_lookup_insert_ne; auto.
         }
         assert ((uint.nat i < length kvs_ptrs)%nat).
@@ -115,7 +115,7 @@ Proof.
         { iPureIntro. intros.
           rewrite list_lookup_fmap.
           destruct (decide (uint.nat i0 = uint.nat i)) as [->|Hneq].
-          { rewrite fmap_is_Some. eexists. apply list_lookup_insert; eauto. }
+          { rewrite fmap_is_Some. eexists. apply list_lookup_insert_eq; eauto. }
           rewrite list_lookup_insert_ne; auto.
           rewrite -list_lookup_fmap. eauto. }
         rewrite rangeSet_first; last first.
@@ -144,7 +144,7 @@ Proof.
           iRight. iExists _, ∅, _. iFrame. iSplitL "Hgi".
           { iExactEq "Hgi". f_equal. word. }
           iSplit.
-          { iPureIntro. rewrite list_lookup_insert; eauto. }
+          { iPureIntro. rewrite list_lookup_insert_eq; eauto. }
           iSplit.
           { iPureIntro. rewrite ?dom_empty_L; eauto. }
           iApply big_sepS_intro.
@@ -175,7 +175,7 @@ Proof.
         iSplit.
         { iPureIntro. intros.
           destruct (decide (uint.nat i0 = uint.nat i)) as [->|Hneq].
-          { eexists. apply list_lookup_insert. eapply lookup_lt_is_Some_1; eauto. }
+          { eexists. apply list_lookup_insert_eq. eapply lookup_lt_is_Some_1; eauto. }
           rewrite list_lookup_insert_ne; auto.
         }
         assert ((uint.nat i < length kvs_ptrs)%nat).
@@ -194,7 +194,7 @@ Proof.
         { set_solver. }
         iSplitL "Hi".
         { rewrite ?big_sepS_singleton.
-          iLeft. rewrite list_lookup_insert //. eapply lookup_lt_is_Some_1; eauto. }
+          iLeft. rewrite list_lookup_insert_eq //. eapply lookup_lt_is_Some_1; eauto. }
         iApply (big_sepS_mono with "HownShards").
         { iIntros (??) "H".
           assert (uint.nat i ≠ uint.nat x).

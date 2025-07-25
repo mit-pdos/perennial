@@ -50,13 +50,13 @@ Section program.
       rewrite (take_S_r _ _ _ Hi) list_to_map_snoc; last first.
       { by eapply map_to_list_not_elem_of_take_key. }
       rewrite /acquire setts_insert; last first.
-      { apply elem_of_list_lookup_2 in Hi.
+      { apply list_elem_of_lookup_2 in Hi.
         rewrite -HpwrsL in Hi.
         apply elem_of_map_to_list, elem_of_dom_2 in Hi.
         clear -Hvw Hi Hdomptsm. set_solver.
       }
       rewrite /acquire setts_insert; last first.
-      { apply elem_of_list_lookup_2 in Hi.
+      { apply list_elem_of_lookup_2 in Hi.
         rewrite -HpwrsL in Hi.
         apply elem_of_map_to_list, elem_of_dom_2 in Hi.
         clear -Hvw Hi Hdomsptsm. set_solver.

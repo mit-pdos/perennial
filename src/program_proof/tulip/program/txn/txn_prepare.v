@@ -118,7 +118,7 @@ Section program.
       wp_loadField.
       assert (Hin : gid ∈ gids_all).
       { pose proof (subseteq_ptgroups (dom wrs)) as Hdom.
-        apply elem_of_list_lookup_2 in Hgid.
+        apply list_elem_of_lookup_2 in Hgid.
         clear -Hdom Hgid HptgsL.
         set_solver.
       }
@@ -144,7 +144,7 @@ Section program.
       iDestruct (big_sepM2_lookup_acc with "Hpwrsm") as "[Hpwrs HpwrsmC]"; [done | done |].
       wp_pures.
       assert (Hvg : gid ∈ ptgroups (dom wrs)).
-      { rewrite -HptgsL elem_of_list_to_set. by apply elem_of_list_lookup_2 in Hgid. }
+      { rewrite -HptgsL elem_of_list_to_set. by apply list_elem_of_lookup_2 in Hgid. }
 
       (*@         go func() {                                                     @*)
       (*@                                                                         @*)

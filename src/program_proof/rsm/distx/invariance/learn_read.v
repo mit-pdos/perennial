@@ -113,7 +113,7 @@ Section inv.
     iDestruct ("HkeysC" with "Hkey") as "Hkeys".
     (* Put back tuple ownership back to group invariant. *)
     iDestruct (big_sepM_insert_2 with "Hrepl Hrepls") as "Hrepls".
-    rewrite insert_delete_insert insert_tpls_group_commute; last done.
+    rewrite insert_delete_eq insert_tpls_group_commute; last done.
     (* Create txn tokens for the new state. *)
     iDestruct (txn_tokens_inv_learn_read ts key with "Htks") as "Htks'".
     (* Create witnesses for the replicated history. *)

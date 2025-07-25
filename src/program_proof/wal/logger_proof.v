@@ -106,7 +106,7 @@ Proof.
   {
     rewrite length_app.
     intros bndry Hbndry.
-    apply elem_of_list_lookup in Hbndry.
+    apply list_elem_of_lookup in Hbndry.
     destruct Hbndry as [i Hbndry].
     destruct Hbndrys as [Hbnds _].
     specialize (Hbnds bndry).

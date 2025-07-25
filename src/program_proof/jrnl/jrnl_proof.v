@@ -202,7 +202,7 @@ Proof.
     wp_apply (wp_BufMap__Lookup with "[$Hbufptr]"); intuition.
     iIntros (bufptr2) "Hbufptr2".
 
-    rewrite lookup_insert.
+    rewrite lookup_insert_eq.
     iDestruct "Hbufptr2" as "[Hbufptr2 Hisbufmap]".
 
     destruct b, v, p. simpl in *. subst.
@@ -225,7 +225,7 @@ Proof.
     iIntros (v' dirty') "[% Hbufptr]".
     iDestruct ("Hisbufmap" with "Hbufptr") as "Hisbufmap".
 
-    rewrite insert_insert.
+    rewrite insert_insert_eq.
     iDestruct (big_sepM_delete with "Hctxvalid") as "[Ha Hctxvalid2]"; eauto.
     iDestruct (big_sepM_delete with "Hctxelem") as "[[He %He] Hctxelem]"; eauto. rewrite Hbufmap_a /= in He.
 
@@ -243,12 +243,12 @@ Proof.
       iSplit.
       {
         iApply big_sepM_insert_delete.
-        rewrite lookup_insert /=.
+        rewrite lookup_insert_eq /=.
         iSplitL "He". { iFrame. iPureIntro; eauto. }
         iApply big_sepM_mono; try iFrame.
         iIntros (xa xb Hb) "H".
         destruct (decide (a = xa)); subst.
-        { rewrite lookup_delete in Hb. congruence. }
+        { rewrite lookup_delete_eq in Hb. congruence. }
         rewrite lookup_insert_ne; eauto.
       }
       iPureIntro.
@@ -271,12 +271,12 @@ Proof.
       iSplit.
       {
         iApply big_sepM_insert_delete.
-        rewrite lookup_insert /=.
+        rewrite lookup_insert_eq /=.
         iSplitL "He". { iFrame. iPureIntro. intuition congruence. }
         iApply big_sepM_mono; try iFrame.
         iIntros (xa xb Hb) "H".
         destruct (decide (a = xa)); subst.
-        { rewrite lookup_delete in Hb. congruence. }
+        { rewrite lookup_delete_eq in Hb. congruence. }
         rewrite lookup_insert_ne; eauto.
       }
       iPureIntro.
@@ -289,7 +289,7 @@ Proof.
         rewrite H in Hz; eauto. congruence. }
       destruct anydirty; simpl; try reflexivity.
       rewrite map_filter_insert_False in Hx; last eauto.
-      rewrite delete_notin in Hx; eauto.
+      rewrite delete_id in Hx; eauto.
 
   - destruct (gBufmap !! a) eqn:Hbufmap_a.
     2: {
@@ -333,12 +333,12 @@ Proof.
       iSplit.
       {
         iApply big_sepM_insert_delete.
-        rewrite lookup_insert /=.
+        rewrite lookup_insert_eq /=.
         iSplitL "He". { iFrame. iPureIntro. rewrite /committed /modified /=. intuition eauto. }
         iApply big_sepM_mono; try iFrame.
         iIntros (xa xb Hb) "H".
         destruct (decide (a = xa)); subst.
-        { rewrite lookup_delete in Hb. congruence. }
+        { rewrite lookup_delete_eq in Hb. congruence. }
         rewrite lookup_insert_ne; eauto.
       }
       iPureIntro.
@@ -361,12 +361,12 @@ Proof.
       iSplit.
       {
         iApply big_sepM_insert_delete.
-        rewrite lookup_insert /=.
+        rewrite lookup_insert_eq /=.
         iSplitL "He". { iFrame. iDestruct "Hepure" as %He. rewrite Hbufmap_a /= in He. iPureIntro. rewrite /committed /modified /=. intuition idtac. }
         iApply big_sepM_mono; try iFrame.
         iIntros (xa xb Hb) "H".
         destruct (decide (a = xa)); subst.
-        { rewrite lookup_delete in Hb. congruence. }
+        { rewrite lookup_delete_eq in Hb. congruence. }
         rewrite lookup_insert_ne; eauto.
       }
       iPureIntro.
@@ -480,12 +480,12 @@ Opaque struct.t.
     iSplit.
     {
       iApply big_sepM_insert_delete.
-      rewrite lookup_insert /=.
+      rewrite lookup_insert_eq /=.
       iSplitL "He". { iFrame. intuition. }
       iApply big_sepM_mono; try iFrame.
       iIntros (xa xb Hb) "H".
       destruct (decide (a = xa)); subst.
-      { rewrite lookup_delete in Hb. congruence. }
+      { rewrite lookup_delete_eq in Hb. congruence. }
       rewrite lookup_insert_ne; eauto.
     }
     iPureIntro. split; intros Hx; try congruence.
@@ -528,12 +528,12 @@ Opaque struct.t.
     iSplit.
     {
       iApply big_sepM_insert_delete.
-      rewrite lookup_insert /=.
+      rewrite lookup_insert_eq /=.
       iSplitL "He". { iFrame. intuition. }
       iApply big_sepM_mono; try iFrame.
       iIntros (xa xb Hb) "H".
       destruct (decide (a = xa)); subst.
-      { rewrite lookup_delete in Hb. congruence. }
+      { rewrite lookup_delete_eq in Hb. congruence. }
       rewrite lookup_insert_ne; eauto.
     }
     iPureIntro. split; intros Hx; try congruence.

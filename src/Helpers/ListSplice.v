@@ -38,7 +38,7 @@ Proof.
   destruct (decide (i < length l)).
   - destruct (decide (i < n)).
     + rewrite lookup_app_l; len.
-      rewrite lookup_take //.
+      rewrite lookup_take_lt //.
     + rewrite lookup_app_r; len.
       rewrite lookup_app_r; len.
       rewrite lookup_drop //.
@@ -56,7 +56,7 @@ Proof.
   rewrite /list_splice.
   rewrite lookup_app_r; len.
   rewrite lookup_app_l; len.
-  rewrite lookup_take; len.
+  rewrite lookup_take_lt; len.
   f_equal; lia.
 Qed.
 

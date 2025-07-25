@@ -235,14 +235,14 @@ Proof.
     unfold view_xfer in Hr.
     rewrite map_eq_iff in Hr.
     pose proof (Hr src) as Hsrc.
-    do 2 rewrite lookup_insert in Hsrc.
+    do 2 rewrite lookup_insert_eq in Hsrc.
     (* Q: What's SSR way of rewriting multiple times? *)
     inversion Hsrc. apply u64_to_string_inj in H0. subst sbalr'.
     pose proof (Hr dst) as Hdst.
     rewrite lookup_insert_ne in Hdst; last done.
-    rewrite lookup_insert in Hdst.
+    rewrite lookup_insert_eq in Hdst.
     rewrite lookup_insert_ne in Hdst; last done.
-    rewrite lookup_insert in Hdst.
+    rewrite lookup_insert_eq in Hdst.
     inversion Hdst. apply u64_to_string_inj in H0. subst dbalr'.
     clear Hr Hsrc Hdst.
     (* Should have a nicer proof...? *)

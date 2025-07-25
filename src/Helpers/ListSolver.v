@@ -55,7 +55,7 @@ Ltac list_simpl :=
     ];
   repeat first [
       progress rewrite -> @lookup_drop in * |
-      progress rewrite -> @lookup_take in * by lia |
+      progress rewrite -> @lookup_take_lt in * by lia |
       progress rewrite -> lookup_take_ge in * by lia |
       progress rewrite -> lookup_nil in *
     ];

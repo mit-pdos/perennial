@@ -630,7 +630,7 @@ Section go_refinement.
     { rewrite ?dom_insert_L // Hdom //. }
     intros l' ?? => /=.
     destruct (decide (l = l')).
-    - subst. rewrite ?lookup_insert.
+    - subst. rewrite ?lookup_insert_eq.
       inversion 1; subst.
       inversion 1; subst.
       split; auto.
@@ -859,7 +859,7 @@ Section go_refinement.
     intros Hall.
     apply Forall_forall.
     intros x Hin.
-    apply elem_of_list_lookup_1 in Hin as (i&Hl).
+    apply list_elem_of_lookup_1 in Hin as (i&Hl).
     eapply (Hall (addr_plus_off l (Z.of_nat i))).
     eapply heap_array_lookup. eexists; split_and!; eauto.
     { lia. }
@@ -1163,7 +1163,7 @@ Section go_refinement.
            apply Hfohead in Hstep.
            apply foval_val_impl_relation; auto.
            rewrite /= /foheap in Hstep. eapply Hstep.
-           rewrite /Free. apply lookup_insert.
+           rewrite /Free. apply lookup_insert_eq.
         ** exfalso; eauto.
       * inv_expr_impl; inv_base_step. monad_inv.
         destruct (heap _ !! l) as [(?&?)|] eqn:Heq; subst.
@@ -1181,7 +1181,7 @@ Section go_refinement.
            apply foval_val_impl_relation; auto.
            apply Hfohead in Hstep.
            rewrite /= /foheap in Hstep. eapply Hstep.
-           rewrite /Free. apply lookup_insert.
+           rewrite /Free. apply lookup_insert_eq.
         **  inv_base_step. monad_inv. exfalso; eauto.
       * by inv_expr_impl.
       * by inv_expr_impl.
@@ -1223,7 +1223,7 @@ Section go_refinement.
         apply Hfohead in Hstep.
         apply foval_val_impl_relation; auto.
         rewrite /= /foheap in Hstep. eapply Hstep.
-        rewrite /Free. apply lookup_insert.
+        rewrite /Free. apply lookup_insert_eq.
       * rewrite ifThenElse_else // in Hstep.
         inv_base_step; monad_inv.
         inv_expr_impl.
@@ -1879,7 +1879,7 @@ Section go_refinement.
     wf sr (st2, (sσ2, sg2)) →
     in_wf_ctxt se2 sσ2 sg2.
   Proof.
-    intros (l1&l2&->)%elem_of_list_split. intros Hwf.
+    intros (l1&l2&->)%list_elem_of_split. intros Hwf.
     eexists sr, _, _, []. simpl. eauto.
   Qed.
 
@@ -1899,9 +1899,9 @@ Section go_refinement.
       destruct Hconfig as (Htpimpl&Habstr').
       simpl in Htpimpl.
       assert (∃ se2, se2 ∈ st2 ∧ expr_impl se2 ie2) as (se2&Hin'&Himpl').
-      { apply elem_of_list_lookup_1 in Hin as (i&Hlookup).
+      { apply list_elem_of_lookup_1 in Hin as (i&Hlookup).
         eapply Forall2_lookup_r in Htpimpl as (se2&?&?); eauto.
-        eexists; split; eauto. eapply elem_of_list_lookup_2; eauto. }
+        eexists; split; eauto. eapply list_elem_of_lookup_2; eauto. }
       eapply not_stuck_reflect; eauto.
       { eapply in_wf_ctxt_alt; eauto. }
     - intros tr. destruct 1 as (?&?&?&?&?&?). subst.

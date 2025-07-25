@@ -65,7 +65,7 @@ Section inv.
     (* Insert [(ts, ResAborted)] into the txn result map. *)
     iMod (txn_res_insert ts ResAborted with "Hresm") as "Hresm"; first apply Hres.
     iDestruct (txn_res_witness ts with "Hresm") as "#Habted".
-    { by rewrite lookup_insert. }
+    { by rewrite lookup_insert_eq. }
     (* Re-establish group invariant. *)
     iAssert (|==> group_inv γ gid ∗ is_group_unprepared γ gid ts)%I
       with "[Hlog Hcpool Hpm Hcm Hhists Hlocks Hpsm]" as "Hgroupgnp".
@@ -89,7 +89,7 @@ Section inv.
       intros t b Hb.
       destruct (decide (t = ts)) as [-> | Hne]; last first.
       { rewrite lookup_insert_ne in Hb; last done. by specialize (Hpmstm _ _ Hb). }
-      rewrite lookup_insert in Hb.
+      rewrite lookup_insert_eq in Hb.
       by inv Hb.
     }
     iMod "Hgroupgnp" as "[Hgroup #Hgnp]".

@@ -53,7 +53,7 @@ Proof.
   iFrame "Htxn".
   iExists {[ (W64 0) := (Value v) ]}.
   iSplit.
-  { iPureIntro. unfold Q_WriteReservedKey. split; [by rewrite lookup_singleton | set_solver]. }
+  { iPureIntro. unfold Q_WriteReservedKey. split; [by rewrite lookup_singleton_eq | set_solver]. }
   unfold txnmap_ptstos.
   rewrite big_sepM_singleton.
   done.
@@ -118,7 +118,7 @@ Proof.
   iFrame "Htxn".
   iExists {[ (W64 1) := (Value v) ]}.
   iSplit.
-  { iPureIntro. unfold Q_WriteFreeKey. split; [by rewrite lookup_singleton | set_solver]. }
+  { iPureIntro. unfold Q_WriteFreeKey. split; [by rewrite lookup_singleton_eq | set_solver]. }
   unfold txnmap_ptstos.
   rewrite big_sepM_singleton.
   done.

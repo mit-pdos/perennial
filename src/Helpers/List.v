@@ -598,7 +598,7 @@ Proof.
   intros.
   unfold subslice.
   rewrite lookup_drop.
-  rewrite lookup_take; auto.
+  rewrite lookup_take_lt; auto.
 Qed.
 
 Lemma subslice_lookup_bound A (n m i : nat) (l : list A) :
@@ -658,7 +658,7 @@ Proof.
   f_equal.
   f_equal.
   rewrite -{1}(list_insert_id l i2 x2) //.
-  rewrite -> drop_insert_le by lia.
+  rewrite -> drop_insert_ge by lia.
   rewrite -> insert_take_drop.
   2: {
     rewrite length_drop; lia.
@@ -693,10 +693,10 @@ Proof.
     { apply Hordered; auto. }
     (* special case *)
     destruct (decide (i1 = i2)); subst.
-    { rewrite list_insert_insert list_insert_id //. }
+    { rewrite list_insert_insert_eq list_insert_id //. }
     (* this is the symmetric case, by appeal to Hordered *)
     assert (i2 < i1) by lia.
-    rewrite -> list_insert_commute by lia.
+    rewrite -> list_insert_insert_ne by lia.
     apply Hordered; auto.
   }
   intros Hlt Hget1 Hget2.

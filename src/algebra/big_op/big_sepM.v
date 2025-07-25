@@ -162,7 +162,7 @@ Section map_zip.
     apply map_eq; intros.
     destruct (decide (i = i0)); subst.
     - erewrite lookup_merge by reflexivity.
-      rewrite !lookup_insert. eauto.
+      rewrite !lookup_insert_eq. eauto.
     - erewrite lookup_merge by reflexivity.
       rewrite !lookup_insert_ne; eauto.
       erewrite lookup_merge by reflexivity.
@@ -256,7 +256,7 @@ Section map.
     rewrite ?big_sepM_insert //.
     iIntros "(HP&Hi&H)".
     iDestruct (Hwand with "[$]") as "(?&$)".
-    { by rewrite lookup_insert. }
+    { by rewrite lookup_insert_eq. }
     iApply IH; eauto.
     { iIntros (k x' Hlookup). iApply Hwand.
       destruct (decide (i = k)).
@@ -285,7 +285,7 @@ Section map.
     - iFrame. iApply big_sepM_empty. done.
     - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
       iDestruct ("Hwand" with "[] [$HI $Hi]") as "[HI Hi]".
-      { rewrite lookup_insert. eauto. }
+      { rewrite lookup_insert_eq. eauto. }
       iDestruct ("IH" with "[Hwand] HI Hm") as "[HI Hm]".
       { iModIntro. iIntros (k x0 Hkx0) "[HI Hk]".
         destruct (decide (k = i)); subst; try congruence.
@@ -307,7 +307,7 @@ Section map.
     - iModIntro. iFrame. iApply big_sepM_empty. done.
     - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
       iMod ("Hfupd" with "[] [$HI $Hi]") as "[HI Hi]".
-      { rewrite lookup_insert. eauto. }
+      { rewrite lookup_insert_eq. eauto. }
       iMod ("IH" with "[Hfupd] HI Hm") as "[HI Hm]".
       { iModIntro. iIntros (k x0 Hkx0) "[HI Hk]".
         destruct (decide (k = i)); subst; try congruence.
@@ -329,7 +329,7 @@ Section map.
     - iModIntro. iFrame. iApply big_sepM_empty. done.
     - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
       iMod ("Hbupd" with "[] [$HI $Hi]") as "[HI Hi]".
-      { rewrite lookup_insert. eauto. }
+      { rewrite lookup_insert_eq. eauto. }
       iMod ("IH" with "[Hbupd] HI Hm") as "[HI Hm]".
       { iModIntro. iIntros (k x0 Hkx0) "[HI Hk]".
         destruct (decide (k = i)); subst; try congruence.
@@ -369,7 +369,7 @@ Section map.
     replace (m1) with (m2 ∪ m1 ∖ m2) at 1.
     2: { rewrite map_difference_union; eauto. }
     iDestruct (big_sepM_union with "Hm") as "[Hm1 Hm2]".
-    { apply map_disjoint_difference_r; eauto. }
+    { apply map_disjoint_difference_r1; eauto. }
     iFrame.
   Qed.
 
@@ -385,7 +385,7 @@ Section map.
     iFrame "Hm2".
     iIntros "Hm2".
     iDestruct (big_sepM_union with "[$Hm2 $Hm12]") as "Hm1".
-    { eapply map_disjoint_difference_r; eauto. }
+    { eapply map_disjoint_difference_r1; eauto. }
     rewrite map_difference_union; eauto.
   Qed.
 
@@ -428,13 +428,13 @@ Section map.
       iPureIntro. apply map_eq; intros i. rewrite lookup_empty. eauto.
     - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
       iDestruct ("Hsome" with "[] [$HQ $Hi]") as (x2) "[% [HQ Hi]]".
-      { rewrite lookup_insert; done. }
+      { rewrite lookup_insert_eq; done. }
       replace m2 with (<[i := x2]> (delete i m2)).
-      2: { rewrite insert_delete; eauto. }
+      2: { rewrite insert_delete_id; eauto. }
       iDestruct ("IH" $! (delete i m2) with "[] [] HQ Hm") as "[HQ Hm]".
       { iDestruct "Hnone" as "%Hnone".
         iPureIntro. intros k Hk. destruct (decide (i = k)); subst.
-        { rewrite lookup_delete; done. }
+        { rewrite lookup_delete_eq; done. }
         specialize (Hnone k). repeat rewrite -> lookup_insert_ne in Hnone by eauto.
         eauto.
       }
@@ -442,7 +442,7 @@ Section map.
         iModIntro. iIntros (k kx Hkx) "H".
         iDestruct ("Hsome" with "[] H") as (x0) "[% H]".
         { destruct (decide (i = k)); subst.
-          { rewrite lookup_insert; iPureIntro; congruence. }
+          { rewrite lookup_insert_eq; iPureIntro; congruence. }
           rewrite lookup_insert_ne; eauto.
         }
         iExists _. iFrame.
@@ -454,7 +454,7 @@ Section map.
       }
       iFrame.
       iApply big_sepM_insert.
-      { rewrite lookup_delete; eauto. }
+      { rewrite lookup_delete_eq; eauto. }
       iFrame.
   Qed.
 
@@ -530,7 +530,7 @@ Section iprop_map.
     - iModIntro. iFrame. iApply big_sepM_empty. done.
     - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
       iMod ("Hfupd" with "[] [$HI $Hi]") as "[HI Hi]".
-      { rewrite lookup_insert. eauto. }
+      { rewrite lookup_insert_eq. eauto. }
       iMod ("IH" with "[Hfupd] HI Hm") as "[HI Hm]".
       { iModIntro. iIntros (k x0 Hkx0) "[HI Hk]".
         destruct (decide (k = i)); subst; try congruence.
@@ -611,9 +611,9 @@ Section map2.
       iApply big_sepM_empty; iFrame.
     - simpl.
       iDestruct (big_sepM2_lookup_l_some with "H") as %H2.
-      { apply lookup_insert. }
+      { apply lookup_insert_eq. }
       destruct H2.
-      rewrite <- insert_delete_insert at 1.
+      rewrite <- insert_delete_eq at 1.
       replace m2 with (<[a.1 := x]> m2).
       2: {
         rewrite insert_id //.
@@ -624,9 +624,9 @@ Section map2.
       { apply not_elem_of_list_to_map_1; eauto. }
       iSplitL "Ha".
       { iExists _. iFrame. rewrite insert_id; done. }
-      rewrite delete_idemp.
+      rewrite delete_delete_eq.
       iSpecialize ("Hi" $! H6).
-      rewrite delete_notin.
+      rewrite delete_id.
       2: { apply not_elem_of_list_to_map_1; eauto. }
       iDestruct ("Hi" with "H") as "H".
       iApply (big_sepM_mono with "H").
@@ -636,7 +636,7 @@ Section map2.
       iPureIntro.
       assert (a.1 ≠ k).
       { intro He; subst.
-        rewrite lookup_delete in H1; congruence. }
+        rewrite lookup_delete_eq in H1; congruence. }
       rewrite -> lookup_insert_ne by eauto.
       rewrite -> lookup_delete_ne in H1 by eauto.
       eauto.
@@ -660,9 +660,9 @@ Section map2.
       iApply big_sepM_empty; iFrame.
     - simpl.
       iDestruct (big_sepM2_lookup_r_some with "H") as %H2.
-      { apply lookup_insert. }
+      { apply lookup_insert_eq. }
       destruct H2.
-      rewrite <- insert_delete_insert at 1.
+      rewrite <- insert_delete_eq at 1.
       replace m1 with (<[a.1 := x]> m1).
       2: {
         rewrite insert_id //.
@@ -673,9 +673,9 @@ Section map2.
       { apply not_elem_of_list_to_map_1; eauto. }
       iSplitL "Ha".
       { iExists _. iFrame. rewrite insert_id; done. }
-      rewrite delete_idemp.
+      rewrite delete_delete_eq.
       iSpecialize ("Hi" $! H6).
-      rewrite (delete_notin (list_to_map l)).
+      rewrite (delete_id (list_to_map l)).
       2: { apply not_elem_of_list_to_map_1; eauto. }
       iDestruct ("Hi" with "H") as "H".
       iApply (big_sepM_mono with "H").
@@ -685,7 +685,7 @@ Section map2.
       iPureIntro.
       assert (a.1 ≠ k).
       { intro He; subst.
-        rewrite lookup_delete in H1; congruence. }
+        rewrite lookup_delete_eq in H1; congruence. }
       rewrite -> lookup_insert_ne by eauto.
       rewrite -> lookup_delete_ne in H1 by eauto.
       eauto.
@@ -744,14 +744,14 @@ Section map2.
     - iDestruct (big_sepM2_empty_r with "Hm2") as "%He". subst. iApply big_sepM2_empty. done.
     - iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
       iDestruct (big_sepM2_lookup_l_some _ _ _ i with "Hm2") as (x2) "%Hm2i"; eauto.
-      { rewrite lookup_insert; eauto. }
+      { rewrite lookup_insert_eq; eauto. }
       replace (m2) with (<[i:=x2]> (delete i m2)).
-      2: { rewrite insert_delete //. }
+      2: { rewrite insert_delete_id //. }
       iDestruct (big_sepM2_insert with "Hm2") as "[Hii Hm2]"; eauto.
-      { rewrite lookup_delete; eauto. }
+      { rewrite lookup_delete_eq; eauto. }
       iDestruct ("IH" with "Hm2 Hm") as "Hm2".
       iApply big_sepM2_insert; eauto.
-      { rewrite lookup_delete; eauto. }
+      { rewrite lookup_delete_eq; eauto. }
       iFrame.
   Qed.
 
@@ -808,8 +808,8 @@ Section map2.
     rewrite big_sepM2_insert_delete.
     iDestruct "H" as "(HΦ&H)".
     iExists b. iFrame. iSplit.
-    { rewrite lookup_insert //. }
-    rewrite delete_notin // delete_insert_delete //.
+    { rewrite lookup_insert_eq //. }
+    rewrite delete_id // delete_insert_eq //.
   Qed.
 End map2.
 
@@ -841,12 +841,12 @@ Section map_uncurry.
       intros.
       destruct j1, j2.
       destruct (decide (a = a0)); subst.
-      - repeat rewrite <- partial_alter_compose.
+      - rewrite !partial_alter_partial_alter_eq.
         apply partial_alter_ext.
         destruct x; intros; simpl.
-        + rewrite insert_commute; eauto. congruence.
-        + rewrite insert_commute; eauto. congruence.
-      - rewrite partial_alter_commute; eauto.
+        + rewrite insert_insert_ne; eauto. congruence.
+        + rewrite insert_insert_ne; eauto. congruence.
+      - rewrite partial_alter_partial_alter_ne; eauto.
     }
 
     simpl.
@@ -862,7 +862,7 @@ Section map_uncurry.
       (delete (fst k) (map_curry m)).
   Proof.
     intros.
-    rewrite gmap_curry_insert //. rewrite insert_delete_insert //.
+    rewrite gmap_curry_insert //. rewrite insert_delete_eq //.
   Qed.
 
   Theorem gmap_curry_lookup_exists (m : gmap (A * B) T) (k : A * B) (v : T) :
@@ -906,12 +906,12 @@ Proof.
     rewrite /gmap_curry.
     rewrite gmap_curry_insert_delete //; last first.
     iDestruct ("IH" with "H") as "H".
-    rewrite big_sepM_insert ?lookup_delete //.
+    rewrite big_sepM_insert ?lookup_delete_eq //.
     destruct (map_curry m1 !! i.1) as [m1'|] eqn:Hlookup.
     ** assert (Hdel: map_curry (M2:=gmap K2) m1 = <[i.1 := m1']> (delete i.1 (map_curry (M1:=gmap K1) (M2:=gmap K2) m1))).
-       { rewrite insert_delete //=. }
+       { rewrite insert_delete_id //=. }
        iEval (rewrite Hdel) in "H".
-       rewrite big_sepM_insert ?lookup_delete //.
+       rewrite big_sepM_insert ?lookup_delete_eq //.
        iDestruct "H" as "(H1&H2)".
        iFrame. simpl. rewrite big_sepM_insert; first by iFrame.
        destruct i as (i1&i2).

@@ -143,7 +143,7 @@ Section program.
     { do 2 (rewrite lookup_insert_ne; last done).
       by rewrite lookup_merge.
     }
-    rewrite 2!lookup_insert.
+    rewrite 2!lookup_insert_eq.
     by destruct (prepm !! ts), b.
   Qed.
 
@@ -159,7 +159,7 @@ Section program.
     { do 2 (rewrite lookup_insert_ne; last done).
       by rewrite lookup_merge.
     }
-    by rewrite 2!lookup_insert Htxntbl.
+    by rewrite 2!lookup_insert_eq Htxntbl.
   Qed.
 
   Lemma merge_stm_delete_prepm prepm txntbl ts :
@@ -182,7 +182,7 @@ Section program.
   Proof.
     rewrite /absrel_stm.
     intros Habs.
-    rewrite merge_stm_delete_prepm; last by rewrite lookup_insert.
+    rewrite merge_stm_delete_prepm; last by rewrite lookup_insert_eq.
     rewrite merge_stm_insert_txntbl 2!kmap_insert Habs.
     f_equal.
     word.
@@ -218,7 +218,7 @@ Section program.
   Proof.
     rewrite /absrel_stm.
     intros Habs.
-    rewrite merge_stm_delete_prepm; last by rewrite lookup_insert.
+    rewrite merge_stm_delete_prepm; last by rewrite lookup_insert_eq.
     rewrite merge_stm_insert_txntbl 2!kmap_insert Habs.
     f_equal.
     word.
@@ -502,7 +502,7 @@ Section program.
         { rewrite (prefix_lookup_lt _ _ _ _ Hprefix); [done | lia]. }
         { by eapply prefix_lookup_Some. }
       }
-      apply elem_of_list_lookup_2 in Hloga.
+      apply list_elem_of_lookup_2 in Hloga.
       by eapply apply_cmds_elem_of_prepare.
     }
     wp_apply (wp_Mutex__Unlock with "[-HΦ $Hlock $Hlocked]"); first by iFrame "∗ # %".
@@ -1037,7 +1037,7 @@ Section program.
     set hist' := if ok then _ else _.
     iDestruct (big_sepM_insert_2 _ _ _ (hist', tsprep) with "[Hphyslk Hts] Hphysslk") as "Hphysslk".
     { by iFrame. }
-    rewrite 2!insert_delete_insert.
+    rewrite 2!insert_delete_eq.
     iMod "Hmask" as "_".
     iMod ("HinvhC" with "[Hphyss]") as "_".
     { rewrite /hist_repl_lbs_of_tpls.
@@ -1045,7 +1045,7 @@ Section program.
       inversion Happly. subst tpls'.
       iDestruct (big_sepM_lookup _ _ key with "Hlbs") as "Hlb".
       { rewrite map_lookup_filter_Some.
-        split; first apply lookup_insert.
+        split; first apply lookup_insert_eq.
         set_solver.
       }
       iDestruct (big_sepM_insert_2 with "Hlb Hrepls") as "Hrepls'".
@@ -1151,7 +1151,7 @@ Section program.
       iNamed "Hrp".
       wp_loadField.
       (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
-      apply elem_of_list_lookup_2 in Hwr as Hpwrsv.
+      apply list_elem_of_lookup_2 in Hwr as Hpwrsv.
       rewrite -HpwrsL elem_of_map_to_list in Hpwrsv.
       apply elem_of_dom_2 in Hpwrsv as Hdompwrs.
       assert (Hvk : k ∈ keys_all) by set_solver.
@@ -1190,7 +1190,7 @@ Section program.
       iMod "Hmask" as "_".
       (* Put the 1/4 physical history back to the atomic invariant. *)
       iDestruct (big_sepM_insert_2 with "Hphys Hphyss") as "Hphyss".
-      rewrite insert_delete_insert.
+      rewrite insert_delete_eq.
       iMod ("HinvhC" with "[Hphyss]") as "_".
       { rewrite insert_id; last apply Hh. by iFrame "∗ # %". }
       iIntros "!> %Howned".
@@ -1201,7 +1201,7 @@ Section program.
         (* Put the 1/4 physical history and 1/2 pts back to lock invariant. *)
         iDestruct (big_sepM_insert_2 with "[Hphyslk Hts] Hphysslk") as "Hphysslk".
         { by iFrame. }
-        rewrite insert_delete; last first.
+        rewrite insert_delete_id; last first.
         { destruct t as [h tp]. by rewrite lookup_merge Hnone Ht /=. }
         iFrame "∗ %".
         apply bool_decide_eq_false_1 in Howned.
@@ -1209,7 +1209,7 @@ Section program.
         case_bool_decide; first word. simpl.
         iPureIntro.
         (* Prove that the current (and hence global) validation indeed fails. *)
-        apply elem_of_list_lookup_2 in Hwr.
+        apply list_elem_of_lookup_2 in Hwr.
         rewrite -HpwrsL elem_of_map_to_list in Hwr.
         rewrite negb_true_iff.
         by eapply validate_false.
@@ -1221,7 +1221,7 @@ Section program.
       iDestruct (big_sepM_insert_2 _ _ _ (h, uint.nat ts) with "[Hphyslk Hts] Hphysslk") as "Hphyss".
       { by iFrame. }
       iApply "HΦ".
-      rewrite insert_delete_insert /acquire.
+      rewrite insert_delete_eq /acquire.
       erewrite insert_merge_l; last by rewrite Ht /=.
       (* Adjust the goal. *)
       iFrame.
@@ -1297,7 +1297,7 @@ Section program.
         iNamed "Hrp".
         wp_loadField.
         (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
-        apply elem_of_list_lookup_2 in Hwr as Hpwrsv.
+        apply list_elem_of_lookup_2 in Hwr as Hpwrsv.
         rewrite -HpwrsL elem_of_map_to_list in Hpwrsv.
         apply elem_of_dom_2 in Hpwrsv as Hdompwrs.
         assert (Hvk : k ∈ keys_all) by set_solver.
@@ -1349,7 +1349,7 @@ Section program.
         (* Put 1/4 physical history and 1/2 of pts back to the lock invariant. *)
         iDestruct (big_sepM_insert_2 _ _ _ (t.1, O) with "[Hphyslk Hts] Hphysslk") as "Hphysslk".
         { by iFrame. }
-        rewrite insert_delete_insert.
+        rewrite insert_delete_eq.
         (* Adjust the goal. *)
         rewrite uint_nat_word_add_S; last by word.
         rewrite (take_S_r _ _ _ Hwr) list_to_map_snoc; last first.
@@ -1522,7 +1522,7 @@ Section program.
       iNamed "Hrp".
       wp_loadField.
       (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
-      apply elem_of_list_lookup_2 in Hi as Hpwrsv.
+      apply list_elem_of_lookup_2 in Hi as Hpwrsv.
       rewrite -Hpwrs elem_of_map_to_list in Hpwrsv.
       apply elem_of_dom_2 in Hpwrsv as Hdompwrs.
       assert (Hdomall : k ∈ keys_all) by set_solver.
@@ -1568,7 +1568,7 @@ Section program.
         iDestruct (hist_phys_split with "Hphys") as "[Hphys Hphyslk]".
         iMod "Hmask" as "_".
         iDestruct (big_sepM_insert_2 with "Hphys Hphyss") as "Hphyss".
-        rewrite insert_delete_insert.
+        rewrite insert_delete_eq.
         iMod ("HinvhC" with "[Hphyss]") as "_".
         { rewrite /hist_repl_lbs_of_tpls.
           iDestruct (big_sepM_lookup _ _ k with "Hlbs") as "Hlb".
@@ -1592,7 +1592,7 @@ Section program.
         set h := last_extend _ _ ++ _.
         iDestruct (big_sepM_insert_2 _ _ _ (h, O) with "[Hphyslk Hts] Hphysslk") as "Hphyss".
         { by iFrame. }
-        rewrite insert_delete_insert /multiwrite.
+        rewrite insert_delete_eq /multiwrite.
         erewrite insert_merge_l; last by rewrite Ht /=.
         iApply "HΦ".
         by iFrame "∗ #".
@@ -1615,7 +1615,7 @@ Section program.
         iDestruct (hist_phys_split with "Hphys") as "[Hphys Hphyslk]".
         iMod "Hmask" as "_".
         iDestruct (big_sepM_insert_2 with "Hphys Hphyss") as "Hphyss".
-        rewrite insert_delete_insert.
+        rewrite insert_delete_eq.
         iMod ("HinvhC" with "[Hphyss]") as "_".
         { rewrite /hist_repl_lbs_of_tpls.
           iDestruct (big_sepM_lookup _ _ k with "Hlbs") as "Hlb".
@@ -1639,7 +1639,7 @@ Section program.
         set h := last_extend _ _ ++ _.
         iDestruct (big_sepM_insert_2 _ _ _ (h, O) with "[Hphyslk Hts] Hphysslk") as "Hphyss".
         { by iFrame. }
-        rewrite insert_delete_insert /multiwrite.
+        rewrite insert_delete_eq /multiwrite.
         erewrite insert_merge_l; last by rewrite Ht /=.
         iApply "HΦ".
         by iFrame "∗ #".
@@ -1797,7 +1797,7 @@ Section program.
       iNamed "Hrp".
       wp_loadField.
       (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
-      apply elem_of_list_lookup_2 in Hi as Hpwrsv.
+      apply list_elem_of_lookup_2 in Hi as Hpwrsv.
       rewrite -Hpwrs elem_of_map_to_list in Hpwrsv.
       apply elem_of_dom_2 in Hpwrsv as Hdompwrs.
       assert (Hdomall : k ∈ keys_all) by set_solver.
@@ -1831,7 +1831,7 @@ Section program.
       destruct t as [h ts].
       iDestruct (big_sepM_insert_2 _ _ _ (h, O) with "[Hphyslk Hts] Hphysslk") as "Hphyss".
       { by iFrame. }
-      rewrite insert_delete_insert.
+      rewrite insert_delete_eq.
       iMod "Hmask" as "_".
       iIntros "!> _".
       iApply "HΦ".

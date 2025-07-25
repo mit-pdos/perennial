@@ -533,7 +533,7 @@ Section res.
         apply elem_of_map in Hintgsx as (g' & Heq & Hin).
         inv Heq.
         exists gids.
-        by rewrite lookup_insert.
+        by rewrite lookup_insert_eq.
       }
       { by rewrite big_sepM_gset_to_gmap big_opS_set_map. }
     Qed.

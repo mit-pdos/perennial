@@ -12,7 +12,7 @@ Proof.
   { rewrite lookup_insert_ne in Ht; last done.
     by specialize (Hfree _ _ Ht _ Ht' Hlt).
   }
-  rewrite lookup_insert in Ht.
+  rewrite lookup_insert_eq in Ht.
   symmetry in Ht. inv Ht.
   destruct Hprev as (termp & Htermp & Htermpc).
   assert (Hlt' : (termp < t')%nat) by lia.
@@ -149,7 +149,7 @@ Section advance.
     { apply Hlsncub. }
     { apply Hprefix. }
     iDestruct (big_sepM_insert_2 with "Hnode Hnodes") as "Hnodes".
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
     iFrame "∗ # %".
     iPureIntro.
     split.

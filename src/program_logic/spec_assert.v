@@ -109,7 +109,7 @@ Section ghost_step.
   Proof.
     revert id j; induction tp => id j //=.
     destruct j.
-    * rewrite //= Nat.add_0_r lookup_insert //=.
+    * rewrite //= Nat.add_0_r lookup_insert_eq //=.
     * rewrite //= lookup_insert_ne //=; last by lia.
       replace (id + S j) with (S id + j) by lia; eauto.
   Qed.
@@ -119,7 +119,7 @@ Section ghost_step.
   Proof.
     revert id j; induction tp => id j //=.
     destruct j.
-    * rewrite //= Nat.add_0_r lookup_insert //=.
+    * rewrite //= Nat.add_0_r lookup_insert_eq //=.
     * rewrite //= lookup_insert_ne //=; last by lia.
       replace (id + S j) with (S id + j) by lia; eauto.
   Qed.
@@ -159,7 +159,7 @@ Section ghost_step.
   Proof.
     rewrite /tpool_to_res/tpool_to_map. generalize 0. induction tp => n //=.
     destruct (decide (j = n)); subst.
-    * rewrite lookup_fmap //= lookup_insert. inversion 1; setoid_subst; by eexists.
+    * rewrite lookup_fmap //= lookup_insert_eq. inversion 1; setoid_subst; by eexists.
     * rewrite lookup_fmap //= lookup_insert_ne //= -lookup_fmap; eauto.
   Qed.
 
@@ -169,7 +169,7 @@ Section ghost_step.
   Proof.
     intros Hlt. apply: map_eq; intros i.
     destruct (decide (i = j)); subst.
-    - rewrite lookup_insert tpool_to_res_lookup list_lookup_insert //=.
+    - rewrite lookup_insert_eq tpool_to_res_lookup list_lookup_insert_eq //=.
     - rewrite lookup_insert_ne //=.
       destruct (decide (i < length tp)) as [Hl|Hnl].
       * opose proof (lookup_lt_is_Some_2 tp _ _) as His; first eassumption.
@@ -186,7 +186,7 @@ Section ghost_step.
   Proof.
     apply: map_eq; intros i.
     destruct (decide (i = length tp)); subst.
-    - rewrite lookup_insert tpool_to_res_lookup.
+    - rewrite lookup_insert_eq tpool_to_res_lookup.
       rewrite lookup_app_r //= Nat.sub_diag //=.
     - rewrite lookup_insert_ne //=.
       destruct (decide (i < length tp)) as [Hl|Hnl].
@@ -444,9 +444,9 @@ Section ghost_step.
       - subst. f_equal. symmetry. eapply take_drop_middle; eauto.
       - f_equal. rewrite app_comm_cons assoc; f_equal.
         erewrite <-take_drop_middle at 1; f_equal.
-        { apply take_insert; reflexivity. }
-        { f_equal. apply drop_insert_gt; lia. }
-        rewrite list_lookup_insert //=.
+        { apply take_insert_ge; reflexivity. }
+        { f_equal. apply drop_insert_lt; lia. }
+        rewrite list_lookup_insert_eq //=.
         apply lookup_lt_is_Some_1; eauto.
       }
     iModIntro; iFrame.
@@ -481,7 +481,7 @@ Section ghost_step.
       rewrite /crash_safe in Hnoerr.
       eapply not_not_stuck in Hstuck'.
       eapply Hstuck', Hnoerr; eauto.
-        by eapply elem_of_list_lookup_2.
+        by eapply list_elem_of_lookup_2.
     }
     iFrame.
     iMod ("Hclose" with "[-]").
@@ -524,9 +524,9 @@ Section ghost_step.
       - subst. f_equal. symmetry. eapply take_drop_middle; eauto.
       - f_equal. rewrite app_comm_cons assoc; f_equal.
         erewrite <-take_drop_middle at 1; f_equal.
-        { apply take_insert; reflexivity. }
-        { f_equal. apply drop_insert_gt; lia. }
-        rewrite list_lookup_insert //=.
+        { apply take_insert_ge; reflexivity. }
+        { f_equal. apply drop_insert_lt; lia. }
+        rewrite list_lookup_insert_eq //=.
         apply lookup_lt_is_Some_1; eauto.
       }
     iModIntro; iFrame.
@@ -581,7 +581,7 @@ Section ghost_step.
       rewrite /crash_safe in Hnoerr.
       eapply not_not_stuck in Hstuck'.
       eapply Hstuck', Hnoerr; eauto.
-        by eapply elem_of_list_lookup_2.
+        by eapply list_elem_of_lookup_2.
     }
     iFrame.
     iMod ("Hclose" with "[-]").
@@ -619,7 +619,7 @@ Section ghost_step.
     exfalso. rewrite /crash_safe in Hnoerr.
     eapply not_not_stuck in Hstuck'.
     eapply Hstuck', Hnoerr; eauto.
-    by eapply elem_of_list_lookup_2.
+    by eapply list_elem_of_lookup_2.
   Qed.
 
   Lemma ghost_step_lifting_puredet E j K `{LanguageCtx Λ K} e1 e2 efs:
@@ -650,9 +650,9 @@ Section ghost_step.
       - f_equal. symmetry. eapply take_drop_middle; eauto.
       - f_equal. rewrite app_comm_cons assoc; f_equal.
         erewrite <-take_drop_middle at 1; f_equal.
-        { apply take_insert; reflexivity. }
-        { f_equal. apply drop_insert_gt; lia. }
-        rewrite list_lookup_insert //=.
+        { apply take_insert_ge; reflexivity. }
+        { f_equal. apply drop_insert_lt; lia. }
+        rewrite list_lookup_insert_eq //=.
         apply lookup_lt_is_Some_1; eauto.
       }
     iModIntro; iFrame.

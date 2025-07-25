@@ -103,7 +103,7 @@ Section big_sepS_split.
     iApply own_proper; last by eauto.
     intros k.
     destruct (decide (x = k)) as [Heq|Hneq].
-    - rewrite Heq ?lookup_singleton. f_equiv. rewrite -Hop //.
+    - rewrite Heq ?lookup_singleton_eq. f_equiv. rewrite -Hop //.
     - rewrite ?lookup_singleton_ne //.
   Qed.
 

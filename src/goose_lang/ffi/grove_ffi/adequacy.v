@@ -27,7 +27,7 @@ Theorem grove_ffi_dist_adequacy Σ `{hPre: !gooseGpreS Σ} ebσs g (φinv : _ �
 Proof.
   intros HINITG HINIT H. eapply goose_dist_adequacy; eauto.
   { simpl. intros σ Hσ.
-    apply elem_of_list_fmap in Hσ as (ρ&Heq&Hin).
+    apply list_elem_of_fmap in Hσ as (ρ&Heq&Hin).
     rewrite Heq.
     eapply Forall_forall in HINIT; last done. eauto. }
   intros. iIntros "Hchan". iMod (H HG with "Hchan") as "(H1&H2)".

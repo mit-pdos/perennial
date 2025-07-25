@@ -18,12 +18,12 @@ Section propose.
       iMod (group_prepare_proposal_init ts with "Hpsm") as "Hpsm".
       { apply Hpsmts. }
       iMod (group_prepare_proposal_insert ts _ rk p with "Hpsm") as "Hpsm".
-      { by rewrite lookup_insert. }
+      { by rewrite lookup_insert_eq. }
       { done. }
-      rewrite insert_empty insert_insert.
+      rewrite insert_empty insert_insert_eq.
       iDestruct (group_prepare_proposal_witness ts _ rk p with "Hpsm") as "#Hpsl".
-      { by rewrite lookup_insert. }
-      { by rewrite lookup_singleton. }
+      { by rewrite lookup_insert_eq. }
+      { by rewrite lookup_singleton_eq. }
       iFrame "∗ # %".
       iModIntro.
       iSplit.
@@ -49,12 +49,12 @@ Section propose.
     { apply Hpsmts. }
     { apply Hfresh. }
     iDestruct (group_prepare_proposal_witness ts _ rk p with "Hpsm") as "#Hpsl".
-    { by rewrite lookup_insert. }
-    { by rewrite lookup_insert. }
+    { by rewrite lookup_insert_eq. }
+    { by rewrite lookup_insert_eq. }
     iFrame "∗ # %".
     iModIntro.
     iSplit.
-    { rewrite -insert_delete_insert.
+    { rewrite -insert_delete_eq.
       iDestruct (big_sepM_delete with "Hfresh") as "[Hfreshts Hfresh]".
       { apply Hpsmts. }
       iApply (big_sepM_insert_2 with "[Hfreshts Hexcl] Hfresh").

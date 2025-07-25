@@ -306,7 +306,7 @@ Proof.
       iSplit. 1: word.
       iDestruct (big_sepL_lookup_acc with "Hϕ") as "[H _]".
       {
-        rewrite lookup_take.
+        rewrite lookup_take_lt.
         { done. }
         lia.
       }
@@ -919,10 +919,10 @@ Proof.
   {
     iExists _; iFrame "#".
     iIntros.
-    rewrite elem_of_list_fmap in H.
+    rewrite list_elem_of_fmap in H.
     destruct H as (? & ? & H).
     subst.
-    apply elem_of_list_lookup_1 in H as [k Hlookup_conf].
+    apply list_elem_of_lookup_1 in H as [k Hlookup_conf].
     replace (uint.nat j) with (length clerks); last first.
     { word. }
     epose proof (lookup_lt_Some _ _ _ Hlookup_conf) as HH.

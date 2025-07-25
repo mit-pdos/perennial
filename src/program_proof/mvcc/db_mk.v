@@ -184,10 +184,10 @@ Proof.
     replace (uint.nat (word.add i 1)) with (S (uint.nat i)); last word.
     iFrame.
     rewrite (take_S_r _ _ site); last first.
-    { apply list_lookup_insert. word. }
+    { apply list_lookup_insert_eq. word. }
     iApply (big_sepL_app).
     iSplitL "HsitesRP".
-    { by rewrite take_insert; last auto. }
+    { by rewrite take_insert_ge; last auto. }
     iApply (big_sepL_singleton).
     unfold is_txnsite.
     rewrite length_take_le; last first.

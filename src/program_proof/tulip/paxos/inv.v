@@ -377,7 +377,7 @@ Section inv.
     { by rewrite -fmap_insert map_first_key_fmap. }
     { by rewrite lookup_fmap Hnone. }
     destruct (decide (nidx = nid)) as [-> | Hne].
-    { rewrite lookup_insert in Hv. inv Hv. lia. }
+    { rewrite lookup_insert_eq in Hv. inv Hv. lia. }
     rewrite lookup_insert_ne in Hv; last done.
     specialize (IH Hv).
     rewrite /length_of_longest_ledger in IH.
@@ -420,7 +420,7 @@ Section inv.
     intros Hnid Hnone.
     rewrite /length_of_longest_ledger_in_term omap_insert.
     rewrite /ledger_in_term_with Hnone.
-    by rewrite -omap_delete delete_notin.
+    by rewrite -omap_delete delete_id.
   Qed.
 
   Lemma length_of_longest_ledger_in_term_insert_Some_length_le dss nid ds t v :

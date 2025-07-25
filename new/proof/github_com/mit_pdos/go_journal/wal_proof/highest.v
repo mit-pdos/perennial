@@ -104,7 +104,7 @@ Theorem find_highest_index_none_not_in `{!EqDecision A} (poss: list A) (pos: A) 
 Proof.
   intros Hlookup.
   intros Hin.
-  apply elem_of_list_lookup_1 in Hin as [i Hlookup'].
+  apply list_elem_of_lookup_1 in Hin as [i Hlookup'].
   eapply find_highest_index_none in Hlookup; eauto.
 Qed.
 
@@ -214,7 +214,7 @@ Proof.
   - rewrite lookup_empty; split; congruence.
   - simpl.
     destruct (decide (pos = a)); subst.
-    + rewrite lookup_partial_alter.
+    + rewrite lookup_partial_alter_eq.
       rewrite IHposs.
       destruct (find_highest_index poss a); simpl; auto.
     + rewrite -> lookup_partial_alter_ne by auto.
@@ -277,7 +277,7 @@ Proof.
     intros j Hj.
     destruct j as [|j]; first by lia.
     simpl in Hj.
-    apply elem_of_list_lookup_2 in Hj.
+    apply list_elem_of_lookup_2 in Hj.
     contradiction.
   }
   apply not_elem_of_cons.
@@ -294,13 +294,13 @@ Proof.
   2: {
     destruct opti2 as [i2|]; last by reflexivity.
     destruct Hhighest2 as [Hin _].
-    apply elem_of_list_lookup_2 in Hin.
+    apply list_elem_of_lookup_2 in Hin.
     contradiction.
   }
   destruct opti2 as [i2|].
   2: {
     destruct Hhighest1 as [Hin _].
-    apply elem_of_list_lookup_2 in Hin.
+    apply list_elem_of_lookup_2 in Hin.
     contradiction.
   }
   destruct Hhighest1 as [Hi1 Hhighest1].
@@ -404,7 +404,7 @@ Proof.
   apply lookup_app_Some in Hj.
   destruct Hj as [Hj|[_ Hj]].
   2: {
-    apply elem_of_list_lookup_2 in Hj.
+    apply list_elem_of_lookup_2 in Hj.
     contradiction.
   }
   apply Hhighest1.
@@ -416,7 +416,7 @@ Theorem highest_index_is_drop {A} l (x: A) i :
   x ∉ drop (S i) l.
 Proof.
   intros [_ Hhighest] Hin.
-  apply elem_of_list_lookup_1 in Hin.
+  apply list_elem_of_lookup_1 in Hin.
   destruct Hin as [j Hin].
   rewrite lookup_drop in Hin.
   apply Hhighest in Hin.
@@ -467,7 +467,7 @@ Proof.
       split.
       {
         intros Hin.
-        apply elem_of_list_lookup in Hin.
+        apply list_elem_of_lookup in Hin.
         destruct Hin as [i2 Hacc2].
         specialize (Hhighest (i2 + length l1)%nat).
         rewrite lookup_app_r in Hhighest.
@@ -532,7 +532,7 @@ Proof.
     apply Hhighest in Hacc2.
     assumption.
   }
-  apply elem_of_list_lookup_2 in Hacc2.
+  apply list_elem_of_lookup_2 in Hacc2.
   contradiction.
 Qed.
 
@@ -567,7 +567,7 @@ Proof.
   {
     pose proof (lookup_lt_Some _ _ _ Hacc2) as Hjbnd.
     rewrite length_insert in Hjbnd.
-    rewrite list_lookup_insert in Hacc2; last by assumption.
+    rewrite list_lookup_insert_eq in Hacc2; last by assumption.
     inversion Hacc2.
     contradiction.
   }
@@ -587,7 +587,7 @@ Proof.
     destruct (decide (i ≤ j)%nat) as [Hcmp|Hcmp].
     {
       rewrite Nat.max_r; last by assumption.
-      rewrite list_lookup_insert; last by assumption.
+      rewrite list_lookup_insert_eq; last by assumption.
       reflexivity.
     }
     rewrite list_lookup_insert_ne; last by lia.

@@ -115,7 +115,7 @@ Proof.
   iMod (pb_system_init (r_pb <$> γsrvs) with "[]") as (γpb) "Hpb".
   { by rewrite length_fmap. }
   { iIntros.
-    apply elem_of_list_fmap_2 in H0 as (? & ? & ?); subst.
+    apply list_elem_of_fmap_1 in H0 as (? & ? & ?); subst.
     by iApply "Hpre". }
   iDestruct "Hpb" as "(#Hrep & Hlog & Hinit & #Hwit)".
   iMod (alloc_pb_preread_protocol with "Hlog") as (γprelog γreads) "[#Hpreread Hlog]".
@@ -137,7 +137,7 @@ Proof.
   iIntros.
   iExists _. iFrame "His_conf_prop".
   iPureIntro.
-  by apply elem_of_list_fmap_1.
+  by apply list_elem_of_fmap_2.
 Qed.
 
 Lemma alloc_simplepb_system (configHostPairs: list (u64 * u64)) (extrahosts: list u64) :
@@ -214,7 +214,7 @@ Proof.
     iIntros.
     iApply "HinitWits".
     iPureIntro.
-    by eapply elem_of_list_lookup_2.
+    by eapply list_elem_of_lookup_2.
   }
   iExists γ.
   iFrame "Hlog".

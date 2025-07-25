@@ -249,7 +249,7 @@ Section res.
       iDestruct "Hpsl" as "[Hpsl Hpsl']".
       iDestruct (big_sepM2_insert_2 _ _ _ t with "[Hpsl] Hpslm") as "Hpslm".
       { iFrame "Hpsl". }
-      rewrite 2!insert_delete_insert.
+      rewrite 2!insert_delete_eq.
       iFrame.
       by rewrite insert_id.
     Qed.
@@ -554,7 +554,7 @@ Section res.
       iDestruct "Hl" as "[Hl Hl']".
       iDestruct (big_sepM2_insert_2 _ _ _ t with "[Hl] Hls") as "Hls".
       { iFrame "Hl". }
-      rewrite 2!insert_delete_insert.
+      rewrite 2!insert_delete_eq.
       iFrame.
       by rewrite insert_id.
     Qed.

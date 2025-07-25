@@ -1,5 +1,6 @@
 From Coq Require Import Logic.FunctionalExtensionality.
 From Coq Require Import Program.Equality.
+From stdpp Require Import list.
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Export typing.
@@ -125,8 +126,8 @@ destruct a. apply Forall_cons. split.
     { (* arrayT *)
       simpl.
       intros. fold zero_val_def in H.
-      rewrite -elem_of_list_In in H.
-      apply elem_of_list_lookup in H as [? Hget%lookup_replicate].
+      rewrite -list_elem_of_In in H.
+      apply list_elem_of_lookup in H as [? Hget%lookup_replicate].
       intuition subst.
       by rewrite -zero_val_unseal.
     }
@@ -283,7 +284,7 @@ destruct a. apply Forall_cons. split.
 
   (* TODO: I think this is possible, but some unfortunate changes are needed: we
   need a recursion principle for go_type (which is basically the same as
-  go_type_ind but with `In` replaced with something isomorphic to elem_of_list
+  go_type_ind but with `In` replaced with something isomorphic to list_elem_of
   but in Type), and then we can finish this up. *)
   Definition has_go_type_dec v t : {has_go_type v t} + {¬has_go_type v t}.
   Proof.

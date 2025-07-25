@@ -157,7 +157,7 @@ Section rel.
     { naive_solver. }
     induction f as [|k [dq [ag aset]] f Hk' IH] using map_ind.
     { exists ∅. split; [|done]. apply: map_Forall_empty. }
-    move: (Hf k). rewrite lookup_insert=> -[/= ?[??]].
+    move: (Hf k). rewrite lookup_insert_eq=> -[/= ?[??]].
     destruct (to_agree_uninjN n ag) as [v ?]; [done|].
     destruct IH as (m & Hm & Hdom).
     { intros k'. destruct (decide (k = k')) as [->|?]; [rewrite Hk'|].
@@ -167,10 +167,10 @@ Section rel.
     { intros k'. destruct (decide (k = k')) as [->|?]; [by rewrite Hk'|].
       move: (Hf k'). rewrite lookup_insert_ne //. }
     edestruct (Hspec k) as (va&Hva).
-    { rewrite lookup_insert //. repeat f_equiv; eauto. symmetry. eauto. }
+    { rewrite lookup_insert_eq //. repeat f_equiv; eauto. symmetry. eauto. }
     exists (<[k:=va]> m).
     rewrite /gmap_rel_view_rel /= /gmap_rel_view_rel_raw map_Forall_insert //=. split_and!.
-    - exists v, aset, va. rewrite lookup_insert. split_and!; eauto. f_equiv; eauto.
+    - exists v, aset, va. rewrite lookup_insert_eq. split_and!; eauto. f_equiv; eauto.
     - eapply map_Forall_impl; [apply Hm|]; simpl.
       intros k' [dq' ag'] (v'&?&?&?). exists v'.
       rewrite lookup_insert_ne; naive_solver.
@@ -240,7 +240,7 @@ Section lemmas.
     split.
     - intros Hrel.
       edestruct (Hrel k) as (vf' & aset' & vm' & [Hagree Heq] & Hval & -> & HR).
-      { rewrite lookup_singleton. done. }
+      { rewrite lookup_singleton_eq. done. }
       simpl in *. apply (inj _) in Hagree. exists vm'. split_and!; auto.
       eapply gval_rel_mono; try eassumption; auto.
       apply leibniz_equiv_iff in Heq.
@@ -248,7 +248,7 @@ Section lemmas.
       apply HR. set_solver.
     - intros [vm' (Hq&Hlookup&HR)] j [df [v' aset]].
       destruct (decide (k = j)) as [<-|Hne]; last by rewrite lookup_singleton_ne.
-      rewrite lookup_singleton. intros [= <- <-]. simpl.
+      rewrite lookup_singleton_eq. intros [= <- <-]. simpl.
       exists v, aset, vm'. split_and!; eauto.
       intros a' Hin.
       assert (a' = a) as -> by set_solver.
@@ -264,7 +264,7 @@ Section lemmas.
       rewrite Hlookup; reflexivity.
     - intros [va (Hq&(vm' & Hm & Hv')%dist_Some_inv_r'&HR)] j [df [v' aset']].
       destruct (decide (k = j)) as [<-|Hne]; last by rewrite lookup_singleton_ne.
-      rewrite lookup_singleton. intros [= <- <-]. simpl.
+      rewrite lookup_singleton_eq. intros [= <- <-]. simpl.
       exists v, aset', vm'. split_and!; eauto. intros a' Hin.
       eapply gval_rel_mono; try eassumption; eauto.
       assert (a' = a) as -> by set_solver. auto.
@@ -389,7 +389,7 @@ Section lemmas.
     { by f_equiv. }
     rewrite agree_idemp view_frag_validN. intros (?&Hm)%gmap_rel_view_rel_exists_l.
     edestruct (Hm k) as (vm&Hm').
-    { rewrite lookup_insert. reflexivity. }
+    { rewrite lookup_insert_eq. reflexivity. }
     exists vm. split; eapply Hm'; set_solver.
   Qed.
 
@@ -518,10 +518,10 @@ Section lemmas.
       { destruct (bf !! k) as [[df' va']|] eqn:Hbf; last done.
         specialize (Hrel _ _ Hbf). destruct Hrel as (v' & aset & vm' & _ & _ & Hm & HR).
         exfalso. rewrite Hm in Hfresh. done. }
-      rewrite lookup_singleton Hbf right_id.
+      rewrite lookup_singleton_eq Hbf right_id.
       intros [= <- <-]. eexists v, {[a]}, vm.
       do 2 (split; first done).
-      rewrite lookup_insert. split; first done.
+      rewrite lookup_insert_eq. split; first done.
       set_unfold; naive_solver.
     - rewrite lookup_singleton_ne; last done.
       rewrite left_id=>Hbf.
@@ -548,7 +548,7 @@ Section lemmas.
     rewrite assoc.
     apply cmra_update_op; last done.
     rewrite -insert_union_l. apply (gmap_rel_view_alloc _ k dq); last done.
-    { intros n. eapply (HR k). rewrite lookup_insert //. }
+    { intros n. eapply (HR k). rewrite lookup_insert_eq //. }
     apply lookup_union_None; split; auto.
     rewrite lookup_fmap Hlookup //.
   Qed.
@@ -560,7 +560,7 @@ Section lemmas.
     apply view_update_dealloc=>n bf Hrel j [df va] Hbf /=.
     destruct (decide (j = k)) as [->|Hne].
     - edestruct (Hrel k) as (vf' & aset' & vm' & _ & Hdf & _ & HR).
-      { rewrite lookup_op Hbf lookup_singleton -Some_op. done. }
+      { rewrite lookup_op Hbf lookup_singleton_eq -Some_op. done. }
       exfalso. apply: dfrac_full_exclusive. apply Hdf.
     - edestruct (Hrel j) as (vf' & aset' & vm' & ? & ? & Hm & HR).
       { rewrite lookup_op lookup_singleton_ne // Hbf. done. }
@@ -588,8 +588,8 @@ Section lemmas.
   Proof.
     intros HR.
     rewrite gmap_rel_view_delete.
-    rewrite (gmap_rel_view_alloc _ k (DfracOwn 1) vm' a' v') //; last by rewrite lookup_delete.
-    { rewrite insert_delete_insert //. }
+    rewrite (gmap_rel_view_alloc _ k (DfracOwn 1) vm' a' v') //; last by rewrite lookup_delete_eq.
+    { rewrite insert_delete_eq //. }
   Qed.
 
   Lemma gmap_rel_view_update_approx m dq k a v a' :
@@ -603,9 +603,9 @@ Section lemmas.
     - intros Hlook.
       destruct (bf !! k) as [[dq'' [v'' aset'']]|] eqn:Heqbf.
       * edestruct (Hrel k) as (vh & aseth & vmh & Hequiv1 & Hdq & ? & HRh).
-        { rewrite lookup_op Heqbf lookup_singleton -Some_op -?pair_op. reflexivity. }
+        { rewrite lookup_op Heqbf lookup_singleton_eq -Some_op -?pair_op. reflexivity. }
         simpl. simpl in Hequiv1.
-        rewrite lookup_op Heqbf lookup_singleton -Some_op -?pair_op in Hlook.
+        rewrite lookup_op Heqbf lookup_singleton_eq -Some_op -?pair_op in Hlook.
 
         eexists v, aset', vmh. split_and!; eauto.
         ** f_equiv. inversion Hlook. symmetry.
@@ -622,9 +622,9 @@ Section lemmas.
            { eapply HR; eauto. eapply gval_rel_mono; eauto. }
            { eapply gval_rel_mono; eauto. }
       * edestruct (Hrel k) as (vh & aseth & vmh & Hequiv1 & Hdq & ? & HRh).
-        { rewrite lookup_op Heqbf lookup_singleton //=. }
+        { rewrite lookup_op Heqbf lookup_singleton_eq //=. }
         simpl. simpl in Hequiv1.
-        rewrite lookup_op Heqbf lookup_singleton //= in Hlook.
+        rewrite lookup_op Heqbf lookup_singleton_eq //= in Hlook.
         eexists v, aset', vmh. split_and!; eauto.
         ** f_equiv. inversion Hlook. eauto.
         ** inversion Hlook; subst; eauto.
@@ -660,7 +660,7 @@ Section lemmas.
     rewrite (comm _ _ (gmap_rel_view_frag _ _ _ _ _)).
     rewrite ?assoc.
     rewrite gmap_rel_view_update_approx; last first.
-    { intros. eapply HR; eauto. rewrite lookup_insert //=. }
+    { intros. eapply HR; eauto. rewrite lookup_insert_eq //=. }
     reflexivity.
   Qed.
 
@@ -699,7 +699,7 @@ Section lemmas.
     rewrite -assoc [_ ⋅ gmap_rel_view_frag R _ _ _]comm assoc.
     rewrite (gmap_rel_view_update _ _ _ v').
     rewrite (big_opM_delete _ m1 k v') // -assoc.
-    rewrite insert_union_r; last by rewrite lookup_delete.
+    rewrite insert_union_r; last by rewrite lookup_delete_eq.
     rewrite union_delete_insert //.
   Qed.
    *)
@@ -709,9 +709,9 @@ Section lemmas.
   Proof.
     apply view_update_frag=>m n bf Hrel j [df va] /=.
     rewrite lookup_op. destruct (decide (j = k)) as [->|Hne].
-    - rewrite lookup_singleton.
+    - rewrite lookup_singleton_eq.
       edestruct (Hrel k ((dq, (to_agree v, {[a]})) ⋅? bf !! k)) as (vf' & aset' & vm' & Hdf & Hva & Hm & HR).
-      { rewrite lookup_op lookup_singleton.
+      { rewrite lookup_op lookup_singleton_eq.
         destruct (bf !! k) eqn:Hbf; by rewrite Hbf. }
       rewrite Some_op_opM. intros [= Hbf].
       exists vf', aset', vm'. rewrite assoc; split; last done.

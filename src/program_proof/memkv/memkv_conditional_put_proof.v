@@ -161,7 +161,7 @@ Proof.
         {
           iRight.
           destruct succ.
-          * rewrite lookup_insert. iFrame.
+          * rewrite lookup_insert_eq. iFrame.
           * iFrame.
         }
         iApply (big_sepS_impl with "HshardGhost").
@@ -183,8 +183,8 @@ Proof.
         {
           simpl. iRight. destruct succ.
           - iExists newv_sl.
-            rewrite lookup_insert.
-            rewrite lookup_insert.
+            rewrite lookup_insert_eq.
+            rewrite lookup_insert_eq.
             eauto with iFrame.
           - iExists curv_sl.
             eauto with iFrame.

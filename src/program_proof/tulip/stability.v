@@ -136,7 +136,7 @@ Section stability.
     intros y n' m b _ Hnr Hn'.
     unfold latest_before_quorum_step.
     destruct (decide (y = x)) as [-> | Hne].
-    { rewrite lookup_insert in Hn'. inversion_clear Hn'. lia. }
+    { rewrite lookup_insert_eq in Hn'. inversion_clear Hn'. lia. }
     rewrite lookup_insert_ne in Hn'; last done.
     specialize (Hnr Hn').
     lia.
@@ -162,9 +162,9 @@ Section stability.
     intros x n m b Hmx IHm.
     unfold latest_before_quorum_step.
     destruct IHm as [-> | [y Hy]]; right.
-    { exists x. rewrite lookup_insert. by rewrite Nat.max_0_r. }
+    { exists x. rewrite lookup_insert_eq. by rewrite Nat.max_0_r. }
     destruct (decide (b ≤ n)%nat).
-    { exists x. rewrite lookup_insert. by replace (_ `max` _)%nat with n by lia. }
+    { exists x. rewrite lookup_insert_eq. by replace (_ `max` _)%nat with n by lia. }
     exists y.
     assert (Hne : x ≠ y) by set_solver.
     rewrite lookup_insert_ne; last done. rewrite Hy.
@@ -568,20 +568,20 @@ Section lemma.
     apply map_Forall2_dom_L in Hprefix as Hdom.
     assert (is_Some (bs !! x)) as [l Hl].
     { rewrite -elem_of_dom -Hdom dom_insert_L. set_solver. }
-    rewrite /nfast -(insert_delete bs x l Hl).
+    rewrite /nfast -(insert_delete_id bs x l Hl).
     apply map_Forall2_insert_inv_l in Hprefix; last apply Hnone.
     destruct Hprefix as (l' & bsnx & -> & Hbsn & Hprefixlb & Hprefix).
-    rewrite lookup_insert in Hl. inv Hl.
+    rewrite lookup_insert_eq in Hl. inv Hl.
     apply map_Forall_insert in Hlen as [Hlenlb Hlen]; last apply Hnone.
     rewrite 2!map_filter_insert.
     case_decide as Hcasel.
     { case_decide as Hcaselb.
       { rewrite map_size_insert_None; last first.
-        { rewrite map_lookup_filter_None. left. apply lookup_delete. }
+        { rewrite map_lookup_filter_None. left. apply lookup_delete_eq. }
         rewrite map_size_insert_None; last first.
         { rewrite map_lookup_filter_None. left. apply Hnone. }
         f_equal.
-        apply IH; [apply Hlen | by rewrite delete_insert].
+        apply IH; [apply Hlen | by rewrite delete_insert_id].
       }
       exfalso.
       unshelve epose proof (prefix_lookup_lt lb l O _ Hprefixlb) as Hlookup.
@@ -589,8 +589,8 @@ Section lemma.
       by rewrite /accepted_in Hlookup Hcasel in Hcaselb.
     }
     { case_decide as Hcaselb; last first.
-      { rewrite delete_idemp delete_insert; last apply Hbsn.
-        rewrite delete_notin; last apply Hnone.
+      { rewrite delete_delete_eq delete_insert_id; last apply Hbsn.
+        rewrite delete_id; last apply Hnone.
         by apply IH.
       }
       exfalso.

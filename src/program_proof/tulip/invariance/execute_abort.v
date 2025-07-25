@@ -35,7 +35,7 @@ Section execute_abort.
           by inv Happly.
         }
         inv Happly.
-        by rewrite lookup_insert.
+        by rewrite lookup_insert_eq.
       }
       (* Next, show that [ts] must have aborted after applying the latest log. *)
       iDestruct (txn_log_prefix with "Hlog Hloglb") as %Hprefix.

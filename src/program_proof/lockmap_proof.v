@@ -300,7 +300,7 @@ Proof.
       { set_solver. }
 
       iModIntro.
-      iSplitR. { rewrite lookup_insert; iIntros (Hx). congruence. }
+      iSplitR. { rewrite lookup_insert_eq; iIntros (Hx). congruence. }
 
       iApply big_sepS_mono; iFrame.
       iIntros (x Hx) "H".
@@ -384,8 +384,8 @@ Proof.
         by iFrame.
       }
 
-      rewrite insert_delete_insert.
-      rewrite insert_delete_insert.
+      rewrite insert_delete_eq.
+      rewrite insert_delete_eq.
       rewrite (insert_id m); eauto.
     }
 

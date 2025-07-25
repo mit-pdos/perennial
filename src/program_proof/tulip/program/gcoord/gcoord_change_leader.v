@@ -52,7 +52,7 @@ Section program.
     { done. }
     iIntros "_".
     iApply "HΦ".
-    apply elem_of_list_lookup_2 in Hlead.
+    apply list_elem_of_lookup_2 in Hlead.
     by rewrite Hdomaddrm elem_of_list_to_set.
   Qed.
 
