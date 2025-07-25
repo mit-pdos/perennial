@@ -334,7 +334,7 @@ Lemma is_tree_hash_invert h limit :
 Proof.
   revert h. induction limit; intros.
   - iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
-    destruct (decode_node data); naive_solver.
+    destruct (decode_node data); try naive_solver.
   - iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
     destruct (decode_node data); try naive_solver.
     fold is_tree_hash.
@@ -371,19 +371,27 @@ Proof.
   by iApply cryptoffi.is_hash_det.
 Qed.
 
-Lemma is_tree_hash_inj t0 t1 h limit0 limit1 :
-  is_tree_hash t0 h limit0 -∗
-  is_tree_hash t1 h limit1 -∗
+(* [is_tree_hash_inj] demands the same [limit], which allows it to perform
+the same number of hash inversions before potentially reaching [Invalid].
+merkle clients should all use the same [limit] in their code and proofs.
+in practice, this limit is the hash length,
+which was anyways required for liveness, and now is required for safety.
+another approach is defining a predicate for limit validity.
+however, the inversion lemma can't always provide this. *)
+Lemma is_tree_hash_inj t0 t1 h limit :
+  is_tree_hash t0 h limit -∗
+  is_tree_hash t1 h limit -∗
   ⌜ t0 = t1 ⌝.
 Proof.
-  iInduction (limit0) as [] forall (t0 t1 h limit1); destruct limit1; simpl;
+  iInduction (limit) as [] forall (t0 t1 h); simpl;
     iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
     iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %->;
     case_match;
     iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
     simplify_eq/=; try done.
-  (* TODO: need to know that limit "big enough". *)
-Admitted.
+  iDestruct ("IHlimit" with "Hrecur00 Hrecur01") as %->.
+  by iDestruct ("IHlimit" with "Hrecur10 Hrecur11") as %->.
+Qed.
 
 (*
 (* TODO: shorten these now that they're all module namespaced. *)
