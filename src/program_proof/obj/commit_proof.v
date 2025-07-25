@@ -939,10 +939,10 @@ Proof using txnG0 Σ.
         {
           apply elem_of_dom in e. destruct e.
           iDestruct (big_sepM_lookup_acc _ bufamap ((lv.1).(update.addr), k) with "Hmapstos") as "[Hk Hmapstos]".
-          { erewrite <- (lookup_map_curry bufamap). rewrite Hbufamap_in /=. eauto. }
+          { rewrite -(lookup_map_curry bufamap). rewrite Hbufamap_in /=. eauto. }
           iNamed "Hk".
           iDestruct (map_valid with "Hmetactx Hmapsto_meta") as "%Hmeta_name".
-          rewrite <- (lookup_map_curry metam) in Hmeta_name. rewrite H0 /= in Hmeta_name.
+          rewrite -(lookup_map_curry metam) in Hmeta_name. rewrite H0 /= in Hmeta_name.
           replace (γmeta) with (γm) by congruence.
           iDestruct (ghost_var_agree with "Hmod Hmod_frag") as %->.
           iDestruct ("Hmapstos" with "[Hmapsto_log Hmapsto_meta Hmod_frag]") as "Hmapstos".

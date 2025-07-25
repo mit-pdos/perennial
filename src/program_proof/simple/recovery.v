@@ -94,7 +94,8 @@ Qed.
 Lemma gmap_uncurry_union K1 K2 `{Countable K1} `{Countable K2} A
       (m1 m2: gmap K1 (gmap K2 A)) :
   m1 ##ₘ m2 →
-  map_uncurry (m1 ∪ m2) = map_uncurry m1 ∪ map_uncurry m2.
+  map_uncurry (M12:=gmap (K1 * K2)) (m1 ∪ m2) =
+    map_uncurry (M12:=gmap (K1 * K2)) m1 ∪ map_uncurry (M12:=gmap (K1 * K2)) m2.
 Proof.
   intros.
   apply map_eq; intros.
@@ -118,7 +119,8 @@ Qed.
 Lemma gmap_uncurry_insert K1 K2 `{Countable K1} `{Countable K2} A
       k (m11: gmap K2 A) (m2: gmap K1 (gmap K2 A)) :
   m2 !! k = None →
-  map_uncurry (<[k := m11]> m2) = map_fold (λ i2 x, <[(k,i2):=x]>) (map_uncurry m2) m11.
+  map_uncurry (M12:=gmap (K1 * K2)) (<[k := m11]> m2) =
+    map_fold (λ i2 x, <[(k,i2):=x]>) (map_uncurry (M12:=gmap (K1 * K2)) m2) m11.
 Proof.
   rewrite /map_uncurry => Hlookup.
   simpl.
