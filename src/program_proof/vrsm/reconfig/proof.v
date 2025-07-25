@@ -128,7 +128,7 @@ Proof using waitgroupG0.
   {
     iApply "Hlb".
     iPureIntro.
-    eapply elem_of_list_lookup_2.
+    eapply list_elem_of_lookup_2.
     rewrite list_lookup_fmap.
     by setoid_rewrite Hconfγ_lookup.
   }
@@ -157,8 +157,8 @@ Proof using waitgroupG0.
   }
   iMod (ghost_init_primary with "Hprop_lb Hprop_facts His_conf Hacc_ro Hskip Hprop") as "Hprim".
   {
-    apply elem_of_list_fmap_1.
-    by eapply elem_of_list_lookup_2. }
+    apply list_elem_of_fmap_2.
+    by eapply list_elem_of_lookup_2. }
   { word. }
   { word. }
   iClear "Hprim_facts".
@@ -324,7 +324,7 @@ Proof using waitgroupG0.
       {
         exfalso. simpl in *. word.
       }
-      rewrite lookup_take; last first.
+      rewrite lookup_take_lt; last first.
       { word. }
       rewrite lookup_drop.
       rewrite HcompleteLen.
@@ -512,7 +512,7 @@ Proof using waitgroupG0.
             simpl. lia.
           }
           {
-            eapply elem_of_list_lookup_2.
+            eapply list_elem_of_lookup_2.
             rewrite list_lookup_fmap.
             rewrite lookup_take_Some in Hlookup2.
             destruct Hlookup2 as [-> _].
@@ -731,7 +731,7 @@ Proof using waitgroupG0.
   }
   {
     iIntros (?) "%Hlookup".
-    apply elem_of_list_lookup_1 in Hlookup as [i Hlookup].
+    apply list_elem_of_lookup_1 in Hlookup as [i Hlookup].
     iDestruct (big_sepS_elem_of_acc _ _ (W64 i) with "Hwg_post") as "[HH _]".
     { set_solver. }
 
@@ -803,13 +803,13 @@ Proof using waitgroupG0.
   destruct (server_γs).
   {
     exfalso.
-    rewrite lookup_take /= in Hlookup2; last first.
+    rewrite lookup_take_lt /= in Hlookup2; last first.
     { word. }
     done.
   }
   replace (r) with (γsrv) in *; last first.
   {
-    rewrite lookup_take /= in Hlookup2; last first.
+    rewrite lookup_take_lt /= in Hlookup2; last first.
     { word. }
     naive_solver.
   }
@@ -834,7 +834,7 @@ Proof using waitgroupG0.
     {
       iDestruct ("Hrest" with "[%] [%]") as "H".
       { instantiate (1:=0). word. }
-      { rewrite lookup_take in Hlookup2.
+      { rewrite lookup_take_lt in Hlookup2.
         { done. }
         word.
       }

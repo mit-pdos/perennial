@@ -101,7 +101,7 @@ Proof.
       iFrame.
       iPureIntro.
       split.
-      - apply list_lookup_insert.
+      - apply list_lookup_insert_eq.
         move: HkvssLength. word.
       - eauto.
     }

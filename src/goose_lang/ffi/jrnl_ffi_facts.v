@@ -720,11 +720,11 @@ Proof.
   destruct (decide (a = i)).
   - subst.
     transitivity (({[i := o]} : gmap addr obj) !! i).
-    { rewrite lookup_singleton.
-      eapply lookup_weaken; eauto. rewrite lookup_insert //=. }
-    rewrite lookup_singleton. symmetry.
+    { rewrite lookup_singleton_eq.
+      eapply lookup_weaken; eauto. rewrite lookup_insert_eq //=. }
+    rewrite lookup_singleton_eq. symmetry.
     apply lookup_union_Some_l.
-    apply lookup_singleton.
+    apply lookup_singleton_eq.
   - rewrite lookup_union_r //.
     rewrite lookup_singleton_ne //=.
 Qed.
@@ -742,7 +742,7 @@ Proof.
     * eapply Hwf; eauto.
   - rewrite /sizes_correct => a' Hin Hlookup.
     destruct (decide (a' = a)).
-    { subst. rewrite lookup_insert in Hlookup. destruct Haligned. naive_solver. }
+    { subst. rewrite lookup_insert_eq in Hlookup. destruct Haligned. naive_solver. }
     rewrite lookup_insert_ne in Hlookup; auto.
     eapply Hwf; eauto.
 Qed.
@@ -1061,7 +1061,7 @@ Proof.
     apply elem_of_dom. eauto.
   - rewrite /sizes_correct//= => a' o Hlookup'.
     destruct (decide (a' = a)).
-    * subst. eexists; split; eauto. rewrite lookup_insert in Hlookup'. congruence.
+    * subst. eexists; split; eauto. rewrite lookup_insert_eq in Hlookup'. congruence.
     * eapply Hwf. rewrite lookup_insert_ne in Hlookup'; eauto.
 Qed.
 
@@ -1439,7 +1439,7 @@ Proof.
     subst.
     iFrame. simpl.
     rewrite insert_union_l.
-    rewrite insert_delete //.
+    rewrite insert_delete_id //.
     iFrame.
     assert (size_consistent_and_aligned i o (jrnlKinds (get_jrnl s.(world)))).
     {
@@ -1448,7 +1448,7 @@ Proof.
     iModIntro; iSplit; auto.
     { iPureIntro. eapply wf_jrnl_extend in Hwf'; last eauto.
       rewrite /updateData//= in Hwf'.
-      rewrite /= insert_union_l insert_delete in Hwf'; eauto.
+      rewrite /= insert_union_l insert_delete_id in Hwf'; eauto.
     }
 Qed.
 

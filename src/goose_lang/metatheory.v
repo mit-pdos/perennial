@@ -175,7 +175,7 @@ Proof.
     apply lookup_union_Some in Hix; last first.
     { eapply heap_array_map_disjoint. rewrite fmap_replicate.
         rewrite length_replicate Z2Nat.id; auto with lia. }
-    destruct Hix as [Hlook|[j Hj]%elem_of_map_to_list%elem_of_list_lookup_1].
+    destruct Hix as [Hlook|[j Hj]%elem_of_map_to_list%list_elem_of_lookup_1].
     + eapply heap_array_lookup in Hlook as (?&?&?&Hlook).
       rewrite list_lookup_fmap in Hlook.
       eapply fmap_Some_1 in Hlook as (?&Hlook&Hf).
@@ -280,7 +280,7 @@ Proof.
   { intros [|y] vs ?; rewrite /= ?delete_insert_ne //; congruence. }
   assert (∀ (y : binder) (vs : gmap _ val),
     binder_delete y (delete x vs) = delete x (binder_delete y vs)) as Hdel.
-  { by intros [|y] ?; rewrite /= 1?delete_commute. }
+  { by intros [|y] ?; rewrite /= 1?delete_delete. }
   induction e=> vs; simplify_map_eq; auto with f_equal.
   - match goal with
     | |- context [ <[?x:=_]> _ !! ?y ] =>
@@ -288,8 +288,8 @@ Proof.
     end. by case (vs !! _); simplify_option_eq.
   - destruct (decide _) as [[??]|[<-%dec_stable|[<-%dec_stable ?]]%not_and_l_alt].
     + rewrite !Hins // !Hdel. eauto with f_equal.
-    + by rewrite /= delete_insert_delete delete_idemp.
-    + by rewrite /= Hins // delete_insert_delete !Hdel delete_idemp.
+    + by rewrite /= delete_insert_eq delete_delete_eq.
+    + by rewrite /= Hins // delete_insert_eq !Hdel delete_delete_eq.
 Qed.
 Lemma subst_map_insert' x v vs e:
     subst_map (<[x:=v]> vs) e = subst_map vs (subst x v e).
@@ -304,8 +304,8 @@ Proof.
     end.
   - destruct (decide _) as [[??]|[<-%dec_stable|[<-%dec_stable ?]]%not_and_l_alt].
     + rewrite !Hins // IHe //.
-    + by rewrite /= delete_insert_delete.
-    + by rewrite /= Hins // delete_insert_delete.
+    + by rewrite /= delete_insert_eq.
+    + by rewrite /= Hins // delete_insert_eq.
 Qed.
 Lemma subst_map_subst_comm x v vs e:
   x ∉ dom vs →
@@ -313,7 +313,7 @@ Lemma subst_map_subst_comm x v vs e:
 Proof.
   intros Hnin.
   rewrite -subst_map_insert'. rewrite subst_map_insert. f_equal.
-  f_equal. rewrite delete_notin //.
+  f_equal. rewrite delete_id //.
   apply not_elem_of_dom; eauto.
 Qed.
 Lemma subst_map_binder_insert b v vs e :
@@ -328,7 +328,7 @@ Proof. destruct b; rewrite ?subst_map_insert' //=. Qed.
 Lemma binder_delete_commute b1 b2 (vs: gmap string val):
   binder_delete b1 (binder_delete b2 vs) =
   binder_delete b2 (binder_delete b1 vs).
-Proof. destruct b1, b2; rewrite //= delete_commute //. Qed.
+Proof. destruct b1, b2; rewrite //= delete_delete //. Qed.
 
 (* subst_map on closed expressions *)
 Lemma subst_map_is_closed X e vs :

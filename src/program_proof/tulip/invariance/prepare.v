@@ -36,7 +36,7 @@ Proof.
     }
     by rewrite setts_unmodified.
   }
-  rewrite lookup_insert in Hpwrsx.
+  rewrite lookup_insert_eq in Hpwrsx.
   inv Hpwrsx.
   apply setts_modified; [apply Hkey | set_solver].
 Qed.
@@ -59,7 +59,7 @@ Proof.
     by rewrite -Htsx setts_unmodified.
   }
   exists pwrs.
-  rewrite lookup_insert.
+  rewrite lookup_insert_eq.
   split; first done.
   (* Prove that before this transition no keys are locked by [ts]. *)
   apply dec_stable.
@@ -666,7 +666,7 @@ Section inv.
           { rewrite lookup_insert_ne in Hb; last done.
             by specialize (Hpmstm _ _ Hb).
           }
-          rewrite lookup_insert in Hb.
+          rewrite lookup_insert_eq in Hb.
           inv Hb.
           by apply elem_of_dom_2 in Hstm.
         }
@@ -870,7 +870,7 @@ Section inv.
         specialize (Hpmstm _ _ Hb). simpl in Hpmstm.
         destruct b; [set_solver | done].
       }
-      rewrite lookup_insert in Hb.
+      rewrite lookup_insert_eq in Hb.
       inv Hb.
       set_solver.
     }
@@ -878,7 +878,7 @@ Section inv.
     { by rewrite setts_dom. }
     split.
     { rewrite omap_insert_None; last done.
-      by rewrite -Hcm delete_notin.
+      by rewrite -Hcm delete_id.
     }
     split.
     { apply prepared_impl_locked_inv_prepare.

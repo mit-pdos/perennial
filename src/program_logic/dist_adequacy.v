@@ -223,14 +223,14 @@ Proof.
   iModIntro. iApply (step_fupd2N_wand with "Hgt").
   iMod 1 as "(Hg & Ht)".
   rewrite /stwpnodes.
-  eapply elem_of_list_lookup_1 in Hin1 as (i&Hlookup1).
+  eapply list_elem_of_lookup_1 in Hin1 as (i&Hlookup1).
   iDestruct (big_sepL_lookup with "Ht") as "Hdn"; first eassumption.
   iDestruct "Hdn" as (ct) "Hnode".
   rewrite /stwpnode.
   iDestruct "Hnode" as "((Hσ&HNC)&Hwptp)".
   rewrite /wpnode. destruct (tpool dn) as [| hd tp]; first done.
   iDestruct "Hwptp" as (???) "(Hwpr&Ht)".
-  apply elem_of_cons in Hin2 as [<-|(t1''&t2''&->)%elem_of_list_split].
+  apply elem_of_cons in Hin2 as [<-|(t1''&t2''&->)%list_elem_of_split].
   - rewrite wpr0_unfold/wpr0_pre.
     iPoseProof (wpc_safe with "Hσ [Hg] Hwpr") as "H".
     { eauto. }

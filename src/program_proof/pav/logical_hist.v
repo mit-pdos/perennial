@@ -273,8 +273,8 @@ Proof.
     iDestruct (big_sepL_lookup with "Hhist") as "H"; [done|].
     rewrite w64_to_nat_id. iNamed "H".
 
-    opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
-    { eapply elem_of_list_lookup.
+    opose proof (proj1 (list_elem_of_filter _ _ _) _) as [? _].
+    { eapply list_elem_of_lookup.
       apply (f_equal (lookup (uint.nat ver))) in Heq_last.
       apply (lookup_app_l_Some _ [(lat_ep, lat_pk)]) in Ha_hist_lookup.
       rewrite Ha_hist_lookup in Heq_last.
@@ -302,8 +302,8 @@ Proof.
     by simplify_eq/=.
 
   - iNamed "Hlat".
-    opose proof (proj1 (elem_of_list_filter _ _ _) _) as [? _].
-    { eapply elem_of_list_lookup.
+    opose proof (proj1 (list_elem_of_filter _ _ _) _) as [? _].
+    { eapply list_elem_of_lookup.
       apply (f_equal last) in Heq_last.
       rewrite last_snoc last_lookup in Heq_last.
       naive_solver. }

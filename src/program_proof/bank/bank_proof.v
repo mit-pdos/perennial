@@ -52,8 +52,8 @@ Lemma map_total_insert_2 m k v :
 Proof.
   intro Hsome.
   erewrite <- (map_total_insert _ k).
-  2: rewrite lookup_delete //.
-  rewrite insert_delete //.
+  2: rewrite lookup_delete_eq //.
+  rewrite insert_delete_id //.
 Qed.
 
 Lemma map_total_empty :
@@ -92,13 +92,13 @@ Proof.
   - intros k v v'. rewrite lookup_empty. congruence.
   - intros k v v' Hlookup.
     destruct (decide (k = i)); subst.
-    + rewrite insert_insert.
-      rewrite lookup_insert in Hlookup; inversion Hlookup; subst.
+    + rewrite insert_insert_eq.
+      rewrite lookup_insert_eq in Hlookup; inversion Hlookup; subst.
       rewrite map_total_insert //.
       rewrite map_total_insert //.
       ring_simplify.
       done.
-    + rewrite insert_commute //.
+    + rewrite insert_insert_ne //.
       rewrite lookup_insert_ne // in Hlookup.
       rewrite (map_total_insert _ i).
       2: { rewrite lookup_insert_ne //. }
@@ -264,9 +264,9 @@ Proof.
   wp_loadField.
 
   rewrite -elem_of_elements H in Hsrc.
-  apply elem_of_list_lookup_1 in Hsrc as [? Hsrc].
+  apply list_elem_of_lookup_1 in Hsrc as [? Hsrc].
   rewrite -elem_of_elements H in Hdst.
-  apply elem_of_list_lookup_1 in Hdst as [? Hdst].
+  apply list_elem_of_lookup_1 in Hdst as [? Hdst].
   iDestruct (big_sepL_lookup _ _ _ src with "Haccts_is_lock") as "#Hasrc_is_lock"; first by eauto.
   iDestruct (big_sepL_lookup _ _ _ dst with "Haccts_is_lock") as "#Hadst_is_lock"; first by eauto.
 
@@ -419,9 +419,9 @@ Proof.
     - repeat iExists _. iFrame "∗% Hlck_is #".
     - iPureIntro.
       split.
-      { rewrite -elem_of_elements H elem_of_list_lookup; by eauto. }
+      { rewrite -elem_of_elements H list_elem_of_lookup; by eauto. }
       split.
-      { rewrite -elem_of_elements H elem_of_list_lookup; by eauto. }
+      { rewrite -elem_of_elements H list_elem_of_lookup; by eauto. }
       intro Hc; subst.
       assert (NoDup accts_l) as Hnodup.
       { rewrite -H. apply NoDup_elements. }
@@ -594,7 +594,7 @@ Proof.
     { iDestruct "HbankPs" as "(Hkv & Hlog)". repeat iExists _. iFrame. }
     iApply "HΨ". iFrame. iPureIntro.
     replace (mtodo) with (<[x := x0]> (delete x mtodo)) in Hdom.
-    2: rewrite insert_delete //.
+    2: rewrite insert_delete_id //.
     rewrite dom_insert_L in Hdom.
     rewrite elements_disj_union in Hdom.
     { rewrite elements_singleton in Hdom. simpl in Hdom.

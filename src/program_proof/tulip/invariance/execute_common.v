@@ -6,7 +6,7 @@ Lemma prepared_impl_locked_inv_release cpm ptsm ts pwrs :
   prepared_impl_locked_cpm (delete ts cpm) (release pwrs ptsm).
 Proof.
   intros Hpwrs Hpil t w k Hw Hk.
-  destruct (decide (t = ts)) as [-> | Hne]; first by rewrite lookup_delete in Hw.
+  destruct (decide (t = ts)) as [-> | Hne]; first by rewrite lookup_delete_eq in Hw.
   rewrite lookup_delete_ne in Hw; last done.
   rewrite release_unmodified; last first.
   { apply not_elem_of_dom.

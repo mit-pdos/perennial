@@ -798,7 +798,7 @@ Proof.
       iSplit. 1: word.
       iDestruct (big_sepL_lookup_acc with "Hϕ") as "[H _]".
       {
-        rewrite lookup_take.
+        rewrite lookup_take_lt.
         { done. }
         lia.
       }

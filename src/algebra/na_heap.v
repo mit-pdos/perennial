@@ -512,9 +512,9 @@ Section na_heap.
       iFrame; iPureIntro; split_and!.
       * set_solver.
       * set_unfold => l' z'. intros [->|Hin].
-        { rewrite lookup_insert. inversion 1. rewrite Hoff. split; subst; eauto. lia. }
+        { rewrite lookup_insert_eq. inversion 1. rewrite Hoff. split; subst; eauto. lia. }
         { destruct (decide (addr_id l = addr_id l')) as [e|ne].
-          - rewrite -e. rewrite lookup_insert. inversion 1; subst.
+          - rewrite -e. rewrite lookup_insert_eq. inversion 1; subst.
             cut (¬ (z' <= addr_offset l') ∧ ¬ (addr_offset l' < 0))%Z; first by lia.
             apply elem_of_dom in Hin as (x&Heq).
             rewrite (addr_plus_off_decode l') in Heq.
@@ -683,7 +683,7 @@ Section na_heap.
     rewrite !big_opM_insert // -insert_union_l //.
     iMod (na_heap_alloc _ _ l _ (fst lkv) with "Hσ'σ") as "(? & ? & ?)";
       first by apply lookup_union_None.
-    { eapply (Hread l). rewrite lookup_insert //=. }
+    { eapply (Hread l). rewrite lookup_insert_eq //=. }
     { by destruct lkv; iFrame. }
   Qed.
    *)

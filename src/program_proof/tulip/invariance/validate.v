@@ -291,7 +291,7 @@ Section validate.
         rewrite setts_unmodified; last by apply not_elem_of_dom.
         apply Hpil.
       }
-      rewrite lookup_insert in Hw.
+      rewrite lookup_insert_eq in Hw.
       symmetry in Hw. inv Hw.
       rewrite setts_modified; [done | apply Hk |].
       rewrite Hdomptsm.

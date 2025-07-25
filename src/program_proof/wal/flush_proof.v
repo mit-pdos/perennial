@@ -473,7 +473,7 @@ Proof.
     {
       intros bndry Hbndry.
       specialize (Hbnds bndry).
-      apply elem_of_list_lookup in Hbndry.
+      apply list_elem_of_lookup in Hbndry.
       destruct Hbndry as [i Hbndry].
       do 4 (destruct i; first by (
         simpl in Hbndry; inversion Hbndry; subst bndry; clear Hbndry;
@@ -493,7 +493,7 @@ Proof.
       pose proof Htxns as [Hbnds _].
       unshelve (epose proof (Hbnds _ _) as Hbnd).
       2: {
-        apply elem_of_list_lookup.
+        apply list_elem_of_lookup.
         exists mwrb_us.
         reflexivity.
       }

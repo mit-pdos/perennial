@@ -555,7 +555,7 @@ Section auth_map.
     iFrame. iPureIntro.
     apply map_eq; intros k'; rewrite !lookup_fmap.
     destruct (decide (k = k')); subst.
-    - rewrite lookup_insert Hlookup //.
+    - rewrite lookup_insert_eq Hlookup //.
     - rewrite lookup_insert_ne //.
   Qed.
 
@@ -580,12 +580,12 @@ Section auth_map.
     iMod ("IH" with "[] Hm") as "[Hm Hmany]".
     { iPureIntro. intros k Hk. eapply Hnone.
       destruct (decide (l = k)); subst.
-      { rewrite lookup_insert. eauto. }
+      { rewrite lookup_insert_eq. eauto. }
       rewrite lookup_insert_ne; eauto.
     }
     iMod (Halloc _ l v with "Hm") as "[Hm Hl]".
     { rewrite lookup_union_None; intuition.
-      eapply Hnone. rewrite lookup_insert. eauto. }
+      eapply Hnone. rewrite lookup_insert_eq. eauto. }
     iModIntro.
     rewrite insert_union_l; iFrame "Hm".
     iApply big_sepM_insert; eauto. iFrame.

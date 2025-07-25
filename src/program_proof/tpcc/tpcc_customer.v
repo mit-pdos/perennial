@@ -367,8 +367,8 @@ Proof.
       subst m. simpl in Hr.
       split; last done.
       split; subst r.
-      { apply lookup_union_Some_l. by rewrite lookup_singleton. }
-      { apply lookup_union_Some_r; last by rewrite lookup_singleton.
+      { apply lookup_union_Some_l. by rewrite lookup_singleton_eq. }
+      { apply lookup_union_Some_r; last by rewrite lookup_singleton_eq.
         apply map_disjoint_dom_2.
         set_solver.
       }
@@ -397,11 +397,11 @@ Proof.
   replace clast' with clast; last first.
   { subst m.
     rewrite (lookup_union_Some_l _ _ _ (Value (u64_le tplid))) in Hlookup1; last first.
-    { by rewrite lookup_singleton. }
+    { by rewrite lookup_singleton_eq. }
     do 2 apply Some_inj in Hlookup1.
     rewrite -Hlookup1 in Hlookup2.
     rewrite (lookup_union_Some_r _ _ _ (Value (u64_le cid ++ u64_le cwid ++ clast))) in Hlookup2; last first.
-    { by rewrite lookup_singleton. }
+    { by rewrite lookup_singleton_eq. }
     { apply map_disjoint_dom_2. set_solver. }
     do 2 apply Some_inj in Hlookup2.
     set_solver.

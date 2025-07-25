@@ -101,7 +101,7 @@ Section frac_coPset_cmra.
     - split.
       * intros; econstructor.
       * exists ∅; split.
-        ** intros ? => //=. inversion 1. congruence.
+        ** intros ? => //=.
         ** replace (⊤ ∖ ∅) with (⊤ : coPset) by set_solver. apply top_infinite.
     - intros f x. rewrite frac_coPset_lookup_op //= left_id //.
   Qed.
@@ -134,7 +134,6 @@ Section frac_coPset_cmra_lemmas.
     - intros x => //=; destruct (decide (x ∈ E)) => //=.
     - exists E. split; auto.
       intros x => //=; destruct (decide (x ∈ E)) => //=.
-      inversion 1; congruence.
   Qed.
 
   Lemma fCoPset_op_plus q1 q2 E :
@@ -197,7 +196,6 @@ Section frac_coPset_cmra_lemmas.
       intros p. rewrite //=.
       rewrite op_is_Some.
       repeat (destruct (decide _)); try naive_solver; try set_solver.
-      destruct 1 as [[]|[]]; congruence.
   Qed.
 
   (* Based on dyn_reservation_map *)

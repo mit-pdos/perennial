@@ -99,7 +99,7 @@ Section program.
       iNamed "HP". iNamed "Hgcoords".
       wp_loadField.
       assert (Hinptgs : gid ∈ ptgs).
-      { apply elem_of_list_lookup_2 in Hgid.
+      { apply list_elem_of_lookup_2 in Hgid.
         clear -Hgid HptgsL.
         set_solver.
       }

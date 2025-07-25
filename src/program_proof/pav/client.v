@@ -704,7 +704,7 @@ Proof.
       iIntros "!>". iSplit. { by iIntros (?). }
       iNamed 1. iDestruct "Hgenie" as "[_ Hgenie]". iApply "Hgenie".
       iDestruct (big_sepL_lookup_acc _ _ (uint.nat i) x0 with "Hwish_hist") as "[Hcontr _]".
-      { rewrite lookup_take; [done|word]. }
+      { rewrite lookup_take_lt; [done|word]. }
       by rewrite w64_to_nat_id. }
     iDestruct "Hgenie" as "[Hgenie _]".
     iDestruct ("Hgenie" with "[//]") as "H".
@@ -949,7 +949,7 @@ Proof.
     apply list_lookup_singleton_Some in Hlook_digs as [Heq1 Hlook_digs].
     rewrite length_replicate in Heq0 Heq1.
     assert (ep = sigdig.(SigDig.Epoch)) as -> by word.
-    rewrite lookup_insert. destruct sigdig. naive_solver.
+    rewrite lookup_insert_eq. destruct sigdig. naive_solver.
   - subst new_digs. rewrite app_assoc last_snoc. naive_solver.
   - rewrite !length_app length_replicate. simpl. word.
 Qed.
@@ -1066,7 +1066,7 @@ Proof.
     iIntros (ep ? Hlook_digs) "!%".
     opose proof (Hagree_digs_sd _ _ Hlook_digs) as [? Hlook_sd2].
     destruct (decide (ep = sigdig.(SigDig.Epoch))) as [->|].
-    + rewrite lookup_insert. destruct sigdig. naive_solver.
+    + rewrite lookup_insert_eq. destruct sigdig. naive_solver.
     + rewrite lookup_insert_ne; [naive_solver|done]. }
 
   (* case 2: new dig greater than old digs. update ghost state. *)
@@ -1097,7 +1097,7 @@ Proof.
     apply list_lookup_singleton_Some in Hlook_digs as [Heq1 Hlook_digs].
     rewrite length_replicate in Heq0 Heq1.
     assert (ep = sigdig.(SigDig.Epoch)) as -> by word.
-    rewrite lookup_insert. destruct sigdig. naive_solver.
+    rewrite lookup_insert_eq. destruct sigdig. naive_solver.
   - subst new_digs. rewrite app_assoc last_snoc. naive_solver.
   - rewrite !length_app length_replicate. simpl. word.
 Qed.
@@ -1298,7 +1298,7 @@ Proof.
     - intros ep ? Hlook_digs.
       opose proof (Hagree_digs_sd _ _ Hlook_digs) as [? Hlook_sd2].
       destruct (decide (ep = sigdig.(SigDig.Epoch))) as [->|].
-      + rewrite lookup_insert. destruct sigdig. naive_solver.
+      + rewrite lookup_insert_eq. destruct sigdig. naive_solver.
       + rewrite lookup_insert_ne; [naive_solver|done].
     - iFrame "Hentry_bound Hlook_gdigs".
       iExists (MembHide.MapVal <$> hist).
@@ -1344,7 +1344,7 @@ Proof.
     apply list_lookup_singleton_Some in Hlook_digs as [Heq1 Hlook_digs].
     rewrite length_replicate in Heq0 Heq1.
     assert (ep = sigdig.(SigDig.Epoch)) as -> by word.
-    rewrite lookup_insert. destruct sigdig. naive_solver.
+    rewrite lookup_insert_eq. destruct sigdig. naive_solver.
   - subst new_digs. rewrite app_assoc last_snoc. naive_solver.
   - rewrite !length_app length_replicate. simpl. word.
   - iFrame "Hentry_bound Hlook_gdigs".

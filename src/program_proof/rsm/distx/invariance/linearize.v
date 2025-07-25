@@ -127,7 +127,7 @@ Proof.
   destruct Hu as [? | [Htts Hvu]]; first lia.
   rewrite Hlenext in Htts.
   erewrite prev_dbval_lookup; first apply Hvu.
-  by rewrite Htts lookup_insert.
+  by rewrite Htts lookup_insert_eq.
 Qed.
 
 Section inv.
@@ -513,7 +513,7 @@ Section inv.
     { clear -Htidcs.
       intros t m Htm. revert Htm.
       destruct (decide (t = tid)) as [-> | Hne].
-      { rewrite 2!lookup_insert. inv 1. by left. }
+      { rewrite 2!lookup_insert_eq. inv 1. by left. }
       do 2 (rewrite lookup_insert_ne; last done).
       intros Htm.
       by specialize (Htidcs _ _ Htm).

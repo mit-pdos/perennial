@@ -219,7 +219,7 @@ Section program.
         intros [n c] Hilog. simpl.
         apply elem_of_app in Hilog as [Hilog | Hnewc].
         { rewrite Forall_forall in Hvicmds. by specialize (Hvicmds _ Hilog). }
-        rewrite elem_of_list_singleton in Hnewc.
+        rewrite list_elem_of_singleton in Hnewc.
         by inv Hnewc.
       }
       { rewrite merge_clog_ilog_snoc_ilog; last done.

@@ -153,7 +153,7 @@ Proof.
       split; first word.
       exists (b, d, v).
       split; last done.
-      apply (elem_of_list_lookup_2 _ 0).
+      apply (list_elem_of_lookup_2 _ 0).
       rewrite lookup_drop.
       rewrite -plus_n_O.
       rewrite Hlookup.

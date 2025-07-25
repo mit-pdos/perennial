@@ -54,7 +54,7 @@ Section program.
       wp_loadField.
       assert (Hin : gid ∈ gids_all).
       { pose proof (subseteq_ptgroups (dom wrs)) as Hdom.
-        apply elem_of_list_lookup_2 in Hgid.
+        apply list_elem_of_lookup_2 in Hgid.
         clear -Hdom Hgid HptgsL.
         set_solver.
       }

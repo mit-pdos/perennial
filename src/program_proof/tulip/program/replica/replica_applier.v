@@ -146,7 +146,7 @@ Section program.
     wp_apply (wp_Replica__apply with "Hhistmlb Hlb Hidx [$HpwrsS $Hrp]").
     { rewrite Forall_forall in Hvc.
       apply Hvc.
-      by apply elem_of_list_lookup_2 in Hcmd.
+      by apply list_elem_of_lookup_2 in Hcmd.
     }
     iIntros "Hrp".
 

@@ -792,7 +792,7 @@ Proof.
     destruct (decide (j = uint.nat i)).
     {
       rewrite e.
-      rewrite list_lookup_insert; last first.
+      rewrite list_lookup_insert_eq; last first.
       {
         len.
       }

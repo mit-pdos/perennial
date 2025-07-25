@@ -80,7 +80,7 @@ Proof.
     destruct (decide (k = k')).
     + subst. wp_pures. rewrite bool_decide_eq_true_2; eauto. wp_pures.
       iApply ("IH" with "[]"); first eauto.
-      iNext. iIntros (vd ?). iApply "HΦ". rewrite delete_insert_delete. done.
+      iNext. iIntros (vd ?). iApply "HΦ". rewrite delete_insert_eq. done.
     + rewrite bool_decide_eq_false_2; eauto. wp_pures.
       wp_bind.
       iApply ("IH" with "[]"); first eauto.
@@ -132,7 +132,7 @@ Proof.
     destruct Hm as (k' & ? & ? & -> & -> & Hm & ->).
     wp_pures.
     destruct (decide (k = k')); subst.
-    + rewrite lookup_insert. rewrite !bool_decide_eq_true_2 //.
+    + rewrite lookup_insert_eq. rewrite !bool_decide_eq_true_2 //.
       wp_pures. done.
     + rewrite -> (bool_decide_eq_false_2 (k = k')) by congruence.
       rewrite lookup_insert_ne //.

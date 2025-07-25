@@ -55,7 +55,7 @@ Proof.
   destruct u' as [a b]; simpl in *.
   rewrite apply_upds_app /=.
   rewrite apply_upds_insert_commute; auto.
-  rewrite lookup_insert //.
+  rewrite lookup_insert_eq //.
 Qed.
 
 Lemma apply_upds_not_in_general (a: u64) log d :
@@ -160,7 +160,7 @@ Proof.
     inversion H; clear H; subst; eauto.
     destruct (decide (addr ∈ update.addr <$> upds)); eauto.
     rewrite ?apply_upds_insert_commute; eauto.
-    rewrite ?lookup_insert; done.
+    rewrite ?lookup_insert_eq; done.
 Qed.
 
 Lemma apply_upds_drop' : ∀ off upds d (a : u64) b,
@@ -236,7 +236,7 @@ Proof.
   inversion H; clear H; subst; eauto.
   destruct (decide (addr ∈ update.addr <$> upds)); eauto.
   rewrite apply_upds_insert_commute; eauto.
-  rewrite lookup_insert; eauto.
+  rewrite lookup_insert_eq; eauto.
 Qed.
 
 Lemma apply_upds_no_updates_since memStart (a : u64) installed txns :

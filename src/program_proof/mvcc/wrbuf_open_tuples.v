@@ -133,7 +133,7 @@ Proof.
     destruct H as (_ & Hnotin' & _).
     apply NoDup_app_comm in HNoDup.
     apply NoDup_app in HNoDup as (HNoDup1 & Hnotin & HNoDup2).
-    pose proof (elem_of_list_here k (drop (S (uint.nat n)) ents').*1.*1.*1) as Helem.
+    pose proof (list_elem_of_here k (drop (S (uint.nat n)) ents').*1.*1.*1) as Helem.
     specialize (Hnotin k Helem).
     assert (HNone : tpls !! k = None).
     { apply not_elem_of_list_to_map_1. clear -Hnotin. set_solver. }
@@ -161,7 +161,7 @@ Proof.
     { rewrite -Eqents.
       rewrite -insert_take_drop; last first.
       { rewrite -Hlen. word. }
-      rewrite list_insert_insert.
+      rewrite list_insert_insert_eq.
       rewrite insert_take_drop; last first.
       { rewrite -Hlen. word. }
       do 3 rewrite fmap_app.
@@ -247,13 +247,13 @@ Proof.
           do 3 rewrite fmap_app in HNoDup'.
           by apply NoDup_app in HNoDup' as [HNoDup' _].
         }
-        apply (elem_of_list_lookup_2 _ (uint.nat m)).
+        apply (list_elem_of_lookup_2 _ (uint.nat m)).
         rewrite fmap_take.
-        rewrite lookup_take; last word.
+        rewrite lookup_take_lt; last word.
         by rewrite list_lookup_fmap Hlookup.
       }
       rewrite (drop_S _ (k, v, w, t)); last first.
-      { subst ents''. rewrite lookup_take; [done | word]. }
+      { subst ents''. rewrite lookup_take_lt; [done | word]. }
       rewrite fmap_cons list_to_map_cons. simpl.
       rewrite big_sepM_insert; last first.
       { apply not_elem_of_list_to_map_1.
@@ -322,7 +322,7 @@ Proof.
       { replace _.*1 with ents'.*1.*1.*1; first done.
         do 3 rewrite -list_fmap_compose. set_solver.
       }
-      apply elem_of_list_lookup_2, (elem_of_list_fmap_1 wrent_to_key_tpl) in Hlookup.
+      apply list_elem_of_lookup_2, (list_elem_of_fmap_2 wrent_to_key_tpl) in Hlookup.
       done.
     }
     (**
@@ -339,10 +339,10 @@ Proof.
     apply NoDup_cons in HNoDup as [Hnotin _].
     apply NoDup_app in HNoDup' as (_ & Hnotin' & _).
     specialize (Hnotin' k).
-    pose proof (elem_of_list_here k (drop (S (uint.nat j)) ents').*1.*1.*1) as Helem.
+    pose proof (list_elem_of_here k (drop (S (uint.nat j)) ents').*1.*1.*1) as Helem.
     specialize (Hnotin' Helem).
     (* Q: How to rewrite [P -> Q] to [Q] and prove [P]. *)
-    (* specialize (Hnotin' elem_of_list_here). doesn't work. *)
+    (* specialize (Hnotin' list_elem_of_here). doesn't work. *)
     (* Retrieve [mods_token] of key [k]. *)
     rewrite (drop_S _ _ _ Hlookup).
     rewrite fmap_cons list_to_map_cons. simpl.

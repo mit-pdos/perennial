@@ -84,7 +84,7 @@ Section translate.
     exists cb. split; first done.
     assert (ADP.curr_val cb = bnew).
     { edestruct Hvals as (b'&Hposs&Hlookup2); eauto.
-      { rewrite /RecordSet.set//=. apply: lookup_insert. }
+      { rewrite /RecordSet.set//=. apply: lookup_insert_eq. }
       rewrite Heqp in Hlookup2. inversion Hlookup2 => //=.
     }
     destruct (decide (ADP.crash_val cb = bnew)) as [Heq|Hneq].
@@ -102,7 +102,7 @@ Section translate.
         { subst. assert (ab' = ab) by congruence; subst.
           exists (log_heap.latest ab); split.
           * rewrite /log_heap.possible. apply elem_of_app; right. econstructor.
-          * rewrite lookup_insert //=.
+          * rewrite lookup_insert_eq //=.
         }
         rewrite lookup_insert_ne //. eapply Hvals. rewrite lookup_insert_ne; eauto.
     }
@@ -120,13 +120,13 @@ Section translate.
         { subst. assert (ab' = ab) by congruence; subst.
           exists (ADP.crash_val cb); split.
           * edestruct (Hvals) as (b'&Hin&Hlook'); eauto.
-            { rewrite /RecordSet.set//=. apply lookup_insert. }
+            { rewrite /RecordSet.set//=. apply lookup_insert_eq. }
             rewrite Heqp in Hlook'. inversion Hlook' as [Heq'].
             rewrite //=. move:Hin. rewrite /log_heap.possible //= ?elem_of_app.
             intros [Hin1|Hin2]; eauto.
-            apply elem_of_list_singleton in Hin2. exfalso. subst.
+            apply list_elem_of_singleton in Hin2. exfalso. subst.
             clear -Heq' Hneq. destruct cb. simpl in *; congruence.
-          * rewrite lookup_insert //=.
+          * rewrite lookup_insert_eq //=.
         }
         rewrite lookup_insert_ne //. eapply Hvals. rewrite lookup_insert_ne; eauto.
     }
@@ -562,11 +562,11 @@ Section translate.
         destruct Hcases as [(Hcbeq&Hcase1)|(Hneq&Hcase2)].
         ** do 2 eexists; split_and!; eauto; [].
            repeat econstructor => //=.
-           { rewrite lookup_insert //=. }
+           { rewrite lookup_insert_eq //=. }
            { rewrite //=. destruct H as (Hheap&?). rewrite -Hheap //=. }
            { rewrite //=. simpl in * => //=.
              rewrite /RecordSet.set //=.
-             rewrite insert_insert //=. f_equal; eauto.
+             rewrite insert_insert_eq //=. f_equal; eauto.
              f_equal. destruct pσ2; f_equal; eauto.
              rewrite //=. rewrite //= in Hlookupcb.
              Unshelve. 2:{exact true. }
@@ -576,11 +576,11 @@ Section translate.
            }
         ** do 2 eexists; split_and!; eauto; [].
            repeat econstructor => //=.
-           { rewrite lookup_insert //=. }
+           { rewrite lookup_insert_eq //=. }
            { rewrite //=. destruct H as (Hheap&?). rewrite -Hheap //=. }
            { rewrite //=. simpl in * => //=.
              rewrite /RecordSet.set //=.
-             rewrite insert_insert //=. f_equal; eauto.
+             rewrite insert_insert_eq //=. f_equal; eauto.
              f_equal. destruct pσ2; f_equal; eauto.
              rewrite //=. rewrite //= in Hlookupcb.
              Unshelve. 2:{exact false. }
@@ -591,7 +591,7 @@ Section translate.
              destruct H as (_&Hdisk&_).
              simpl in Hdisk. destruct Hdisk as (?&Hval).
              edestruct (Hval) as (?&Hin&Hval'); eauto.
-             { apply: lookup_insert. }
+             { apply: lookup_insert_eq. }
              rewrite Hlookupcb in Hval'. inversion Hval'. rewrite //=.
            }
       (* SizeOp *)
@@ -1127,12 +1127,12 @@ Section translate.
                }
                subst.
                destruct x2.
-               **** rewrite lookup_insert // in Hlookup. inversion Hlookup; subst.
-                    eexists. rewrite lookup_insert //; split; eauto.
+               **** rewrite lookup_insert_eq // in Hlookup. inversion Hlookup; subst.
+                    eexists. rewrite lookup_insert_eq //; split; eauto.
                     rewrite log_heap.possible_async_put elem_of_app. right.
                     econstructor.
-               **** rewrite lookup_insert // in Hlookup. inversion Hlookup; subst.
-                    eexists. rewrite lookup_insert //; split; eauto.
+               **** rewrite lookup_insert_eq // in Hlookup. inversion Hlookup; subst.
+                    eexists. rewrite lookup_insert_eq //; split; eauto.
                     rewrite log_heap.possible_async_put elem_of_app. left.
                     edestruct H7 as (?&Hposs&Hlook'); eauto.
                     rewrite Heq in Hlook'. inversion Hlook' => //=.
@@ -1420,7 +1420,7 @@ Section translate.
     - rewrite ?dom_insert_L; eauto. rewrite Hdom //.
     - intros ?? Hlook.
       destruct (decide (addr = n)).
-      { subst. eexists. rewrite lookup_insert. rewrite lookup_insert in Hlook.
+      { subst. eexists. rewrite lookup_insert_eq. rewrite lookup_insert_eq in Hlook.
         split.
         { rewrite //=. }
         inversion Hlook. subst. rewrite //=.
@@ -1435,7 +1435,7 @@ Section translate.
   Proof.
     rewrite /ADP.all_synced. intros Hvals z cblk Hlook.
     destruct (decide (z = n)).
-    { subst. rewrite lookup_insert in Hlook. inversion Hlook; subst => //=. }
+    { subst. rewrite lookup_insert_eq in Hlook. inversion Hlook; subst => //=. }
     eapply Hvals. rewrite lookup_insert_ne in Hlook; eauto.
   Qed.
 
@@ -2280,7 +2280,7 @@ Section translate.
             intuition eauto. }
           exists b'. split; eauto.
           rewrite lookup_delete_ne //.
-          intros Heq. rewrite Heq lookup_delete in Hdel. congruence.
+          intros Heq. rewrite Heq lookup_delete_eq in Hdel. congruence.
       }
       edestruct IH as (pd1&Hcrash'&Hcompat'); eauto.
       destruct Hcompat as (Hdom&Hlook).
@@ -2296,11 +2296,11 @@ Section translate.
           rewrite Heqdom. rewrite dom_delete_L. apply (elem_of_dom_2 (D := gset _) pd2) in H5.
           rewrite -union_difference_singleton_L //.
         * intros. destruct (decide (addr = i)).
-          ** subst. rewrite lookup_insert in H6. inversion H6.
+          ** subst. rewrite lookup_insert_eq in H6. inversion H6.
              rewrite //=. rewrite H5 => //=.
              edestruct H0; eauto. destruct H7 as (->&?). rewrite //=.
              rewrite /log_heap.possible/log_heap.sync//= in H4.
-             apply elem_of_list_singleton in H4. subst. eauto.
+             apply list_elem_of_singleton in H4. subst. eauto.
           **  rewrite lookup_insert_ne // in H6.
               inversion Hcrash'. subst. destruct H7 as (_&Hlookup).
               eapply Hlookup in H6. rewrite lookup_delete_ne in H6; eauto.
@@ -2309,15 +2309,15 @@ Section translate.
         split.
         * rewrite ?dom_insert_L. destruct Hcompat' as (Hdomeq&_). rewrite Hdomeq; eauto.
         * intros. destruct (decide (addr = i)).
-          ** subst. rewrite lookup_insert in H6. inversion H6; subst.
-             rewrite lookup_insert. exists cb; split; eauto.
+          ** subst. rewrite lookup_insert_eq in H6. inversion H6; subst.
+             rewrite lookup_insert_eq. exists cb; split; eauto.
              inversion Hcrash. subst. destruct H7 as (?&Hlook_crash).
              edestruct (Hlook_crash) as (b&?&His_possible); eauto.
              subst. rewrite /AD.is_possible in His_possible.
              edestruct His_possible as (?&?&?Hin).
-             rewrite lookup_insert in H8. inversion H8; subst.
+             rewrite lookup_insert_eq in H8. inversion H8; subst.
              rewrite /log_heap.possible/log_heap.sync//= in H4.
-             apply elem_of_list_singleton in H4; subst. eauto.
+             apply list_elem_of_singleton in H4; subst. eauto.
           ** rewrite lookup_insert_ne //.
              destruct Hcompat' as (?&Hlook_compat).
              rewrite lookup_insert_ne // in H6.

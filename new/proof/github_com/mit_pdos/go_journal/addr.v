@@ -105,16 +105,16 @@ Section flatid2addr.
   Proof.
     rewrite /flatid_addr_map; split; intros.
     - destruct (decide (a = a0)); subst.
-      + rewrite lookup_insert in H1; inversion H1; clear H1; subst.
-        repeat rewrite -> lookup_insert; eauto.
+      + rewrite lookup_insert_eq in H1; inversion H1; clear H1; subst.
+        repeat rewrite -> lookup_insert_eq; eauto.
       + rewrite -> lookup_insert_ne in H1 by eauto.
         apply H in H1; intuition eauto.
         rewrite -> lookup_insert_ne by (apply addr2flat_ne; eauto).
         eauto.
     - destruct (decide (addr2flat a = fa)); subst.
-      + rewrite lookup_insert in H1; inversion H1; clear H1; subst.
+      + rewrite lookup_insert_eq in H1; inversion H1; clear H1; subst.
         eexists.
-        repeat rewrite -> lookup_insert; eauto.
+        repeat rewrite -> lookup_insert_eq; eauto.
       + rewrite -> lookup_insert_ne in H1 by eauto.
         apply H in H1; destruct H1. intuition eauto.
         exists x; intuition eauto.
@@ -131,11 +131,11 @@ Section flatid2addr.
     intros.
     destruct H.
     edestruct H.
-    { erewrite lookup_insert; eauto. }
+    { erewrite lookup_insert_eq; eauto. }
     intuition eauto.
     split; intros.
     - destruct (decide (a = a0)); subst.
-      { rewrite lookup_delete in H3; congruence. }
+      { rewrite lookup_delete_eq in H3; congruence. }
       rewrite lookup_delete_ne in H3; eauto.
       edestruct H.
       { rewrite lookup_insert_ne; eauto. }
@@ -143,7 +143,7 @@ Section flatid2addr.
       rewrite lookup_delete_ne; eauto.
       eapply addr2flat_ne; eauto.
     - destruct (decide (addr2flat a = fa)); subst.
-      { rewrite lookup_delete in H3; congruence. }
+      { rewrite lookup_delete_eq in H3; congruence. }
       rewrite lookup_delete_ne in H3; eauto.
       apply H0 in H3. destruct H3.
       exists x. intuition eauto.
@@ -163,12 +163,12 @@ Section flatid2addr.
     intros.
     destruct H.
     edestruct H0.
-    { erewrite lookup_insert; eauto. }
+    { erewrite lookup_insert_eq; eauto. }
     exists x.
     intuition eauto.
     split; intros.
     - destruct (decide (a = x)); subst.
-      { rewrite lookup_delete in H3; congruence. }
+      { rewrite lookup_delete_eq in H3; congruence. }
       rewrite lookup_delete_ne in H3; eauto.
       edestruct H; eauto.
       intuition eauto.
@@ -176,7 +176,7 @@ Section flatid2addr.
       rewrite lookup_delete_ne; eauto.
       eapply addr2flat_ne; eauto.
     - destruct (decide (fa = fa0)); subst.
-      { rewrite lookup_delete in H3; congruence. }
+      { rewrite lookup_delete_eq in H3; congruence. }
       rewrite lookup_delete_ne in H3; eauto.
       edestruct H0.
       { rewrite lookup_insert_ne; eauto. }
@@ -192,13 +192,13 @@ Section flatid2addr.
   Proof.
     rewrite /flatid_addr_map; split; intros.
     - destruct (decide (a = a0)); subst.
-      + rewrite lookup_delete in H1; congruence.
+      + rewrite lookup_delete_eq in H1; congruence.
       + rewrite -> lookup_delete_ne in H1 by eauto.
         apply H in H1; intuition eauto.
         rewrite -> lookup_delete_ne by (apply addr2flat_ne; eauto).
         eauto.
     - destruct (decide (addr2flat a = fa)); subst.
-      + rewrite lookup_delete in H1; congruence.
+      + rewrite lookup_delete_eq in H1; congruence.
       + rewrite -> lookup_delete_ne in H1 by eauto.
         apply H in H1; destruct H1.
         exists x; intuition eauto.
@@ -243,7 +243,7 @@ Section flatid2addr.
     - apply flatid_addr_insert_inv_1 in Hflatid.
       destruct Hflatid as (a & Hvalid & -> & Hamlookup & Hflatid).
       assert (delete (addr2flat a) m = m).
-      { rewrite delete_notin //. }
+      { rewrite delete_id //. }
       rewrite H0 in Hflatid.
       rewrite map_size_insert_None //.
       apply IHfm in Hflatid as ->.
@@ -280,9 +280,9 @@ Section map.
       iApply big_sepM_insert_delete.
       iSplitL "Ha".
       { iExists _; iFrame. done. }
-      rewrite delete_notin.
+      rewrite delete_id.
       2: { apply not_elem_of_list_to_map_1; eauto. }
-      rewrite -> (delete_notin (list_to_map _)) in H3.
+      rewrite -> (delete_id (list_to_map _)) in H3.
       2: { apply not_elem_of_list_to_map_1; eauto. }
       iDestruct ("IH" $! _ H5 H3 with "H") as "H".
       iFrame.
@@ -308,9 +308,9 @@ Section map.
       iApply big_sepM_insert_delete.
       iSplitL "Ha".
       { rewrite H0. iFrame. }
-      rewrite delete_notin.
+      rewrite delete_id.
       2: { apply not_elem_of_list_to_map_1; eauto. }
-      rewrite -> (delete_notin (list_to_map _)) in H6.
+      rewrite -> (delete_id (list_to_map _)) in H6.
       2: { apply not_elem_of_list_to_map_1; eauto. }
       iDestruct ("IH" $! _ H5 H6 with "H") as "H".
       iFrame.
@@ -381,7 +381,7 @@ Section gmap_addr_by_block.
           repeat rewrite gmap_curry_insert; eauto.
           2: rewrite map_lookup_filter_None; eauto.
           destruct (decide (i.1 = b)); subst.
-          { repeat rewrite lookup_insert. f_equal. f_equal. rewrite IHm. eauto. }
+          { repeat rewrite lookup_insert_eq. f_equal. f_equal. rewrite IHm. eauto. }
           repeat rewrite lookup_insert_ne; eauto.
         * rewrite map_filter_insert_not; eauto. rewrite IHm.
           rewrite gmap_curry_insert; eauto.
@@ -654,18 +654,18 @@ Proof.
   - rewrite gmap_addr_by_block_empty !map_zip_empty_l gmap_addr_by_block_empty fmap_empty //.
   - specialize (IHm1 (delete i m2)).
     assert (is_Some (m2 !! i)) as Hk2.
-    { apply H0. rewrite lookup_insert. eauto. }
+    { apply H0. rewrite lookup_insert_eq. eauto. }
     destruct Hk2 as [x2 Hkx2].
     replace m2 with (<[i:=x2]> (delete i m2)).
-    2: rewrite insert_delete //.
+    2: rewrite insert_delete_id //.
     rewrite gmap_addr_by_block_insert; eauto.
-    rewrite gmap_addr_by_block_insert. 2: rewrite lookup_delete //.
+    rewrite gmap_addr_by_block_insert. 2: rewrite lookup_delete_eq //.
     rewrite !map_zip_insert.
-    rewrite gmap_addr_by_block_insert. 2: rewrite map_zip_lookup_none_2 // lookup_delete //.
+    rewrite gmap_addr_by_block_insert. 2: rewrite map_zip_lookup_none_2 // lookup_delete_eq //.
     rewrite fmap_insert /=.
     rewrite -IHm1.
     2: { intro k. destruct (decide (k = i)); subst.
-      { rewrite H. rewrite lookup_delete. split; intro Hx; inversion Hx; congruence. }
+      { rewrite H. rewrite lookup_delete_eq. split; intro Hx; inversion Hx; congruence. }
       specialize (H0 k). rewrite lookup_insert_ne in H0; eauto. rewrite lookup_delete_ne; eauto.
     }
     f_equal.
@@ -693,13 +693,13 @@ Proof.
     2: {
       intros.
       destruct (EqDecision0 k i).
-      { subst. rewrite H0. rewrite lookup_delete. split; intros Hx; destruct Hx; congruence. }
+      { subst. rewrite H0. rewrite lookup_delete_eq. split; intros Hx; destruct Hx; congruence. }
       { rewrite lookup_delete_ne; eauto. rewrite -H1. rewrite lookup_insert_ne; eauto. }
     }
     rewrite dom_delete_L.
     rewrite -union_difference_L; eauto.
     apply singleton_subseteq_l.
-    apply elem_of_dom. apply H1. rewrite lookup_insert. done.
+    apply elem_of_dom. apply H1. rewrite lookup_insert_eq. done.
 Qed.
 
 Theorem dom_lookup_eq_2 {K A B} `{Countable K} (m1 : gmap K A) (m2 : gmap K B):

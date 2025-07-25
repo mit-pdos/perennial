@@ -67,7 +67,7 @@ Proof.
   eexists _. intuition eauto.
   unfold possible, async_put. simpl.
   eapply elem_of_app; right.
-  eapply elem_of_list_here.
+  eapply list_elem_of_here.
 Qed.
 
 Hint Resolve is_one_of_put : core.
@@ -195,7 +195,7 @@ Proof.
     destruct H1. unfold set. destruct s; simpl in *.
     split; simpl.
     { erewrite lookup_union_Some_l.
-      2: rewrite lookup_insert; eauto.
+      2: rewrite lookup_insert_eq; eauto.
       eapply is_one_of_latest. }
     rewrite lookup_union_r; eauto.
     rewrite -> lookup_insert_ne by eauto; apply lookup_empty.
@@ -372,7 +372,7 @@ Proof.
          {
            rewrite <- HbuildAddr. simpl.
            iPoseProof (big_sepM_lookup _ keyMp key (existT defs.KindBlock (defs.bufBlock blk)) with "HkeyMt") as "HsepM"; eauto.
-           apply lookup_singleton.
+           apply lookup_singleton_eq.
          }
          { simpl. auto. }
       -- iIntros (bptr dirty) "[HisBuf HPostRead]".

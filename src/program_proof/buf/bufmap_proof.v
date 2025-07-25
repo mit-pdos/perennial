@@ -126,8 +126,8 @@ Proof using.
     iDestruct (big_sepM2_delete with "Ham") as "[Hcur Hacc]"; eauto.
 
   - iDestruct (big_sepM2_lookup_l_none with "Ham") as "%"; eauto.
-    rewrite delete_notin; eauto.
-    rewrite delete_notin; eauto.
+    rewrite delete_id; eauto.
+    rewrite delete_id; eauto.
 Qed.
 
 Theorem wp_BufMap__Lookup l m a stk E :
@@ -302,7 +302,7 @@ Proof using.
         iExists a0. iSplitR; first eauto.
         iExists y2. iFrame.
         destruct (decide (a = a0)); subst.
-        { rewrite lookup_delete in Hkx. congruence. }
+        { rewrite lookup_delete_eq in Hkx. congruence. }
         rewrite lookup_delete_ne; eauto.
       }
       iDestruct (big_sepM2_dom with "Hbufs") as %Hdom_bufs.
@@ -341,7 +341,7 @@ Proof using.
         iExists a0. iSplitR; first eauto.
         iExists y2. iFrame.
         destruct (decide (a = a0)); subst.
-        { rewrite lookup_delete in Hkx. congruence. }
+        { rewrite lookup_delete_eq in Hkx. congruence. }
         rewrite lookup_delete_ne; eauto.
       }
       iDestruct (big_sepM2_dom with "Hbufs") as %Hdom_bufs.
@@ -459,7 +459,7 @@ Proof using.
         iExists a0. iSplitR; first eauto.
         iExists y2. iFrame.
         destruct (decide (a = a0)); subst.
-        { rewrite lookup_delete in Hkx. congruence. }
+        { rewrite lookup_delete_eq in Hkx. congruence. }
         rewrite lookup_delete_ne; eauto.
       }
       iFrame "Hbufs". iFrame "Hbufptrslice".
@@ -489,13 +489,13 @@ Proof using.
         iExists a0. iSplitR; first eauto.
         iExists y2. iFrame.
         destruct (decide (a = a0)); subst.
-        { rewrite lookup_delete in Hkx. congruence. }
+        { rewrite lookup_delete_eq in Hkx. congruence. }
         rewrite lookup_delete_ne; eauto.
       }
       iFrame "Hbufs". iFrame "Hbufptrslice".
       rewrite map_filter_insert_False.
       2: { simpl. congruence. }
-      rewrite delete_notin.
+      rewrite delete_id.
       { by iFrame. }
       apply not_elem_of_dom.
       assert (is_Some (mtodo !! a)) as Hsome by eauto.

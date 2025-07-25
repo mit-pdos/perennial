@@ -1114,7 +1114,7 @@ Proof.
   iMod (ghost_map_update with "[$] [$]") as "[Hnvers $]".
   iFrame "∗%". iPureIntro. split; first done. simpl.
   intros uid'. destruct (decide (uid = uid')).
-  { subst. rewrite lookup_fmap !lookup_insert //. }
+  { subst. rewrite lookup_fmap !lookup_insert_eq //. }
   { rewrite lookup_fmap !lookup_insert_ne //. specialize (Hgauge uid').
     rewrite lookup_fmap in Hgauge. done. }
 Qed.
@@ -1744,7 +1744,7 @@ Proof.
         iDestruct (big_sepM2_lookup_l_none with "HuserInfo_own") as %Hlookup2; [eassumption|].
         wp_pures. wp_apply wp_allocStruct; [val_ty|]. iIntros (u) "u".
         iDestruct (struct_fields_split with "u") as "H". iNamed "H".
-        wp_store. iFrame. rewrite !delete_notin //. iFrame.
+        wp_store. iFrame. rewrite !delete_id //. iFrame.
         rewrite zero_slice_val. rewrite Hlookup2. simpl. iFrame.
         iDestruct own_slice_small_nil as "$"; done.
     }
@@ -1788,14 +1788,14 @@ Proof.
     iSplitL "HuserInfo_own Huinfo".
     { iApply to_named.
       iDestruct (big_sepM2_insert _ _ _ req.(WQReq.Uid) with "[$HuserInfo_own Huinfo]") as "H".
-      { apply lookup_delete. }
-      { apply lookup_delete. }
+      { apply lookup_delete_eq. }
+      { apply lookup_delete_eq. }
       {
         iNamed "Huinfo". iFrame. simpl.
         instantiate (1:=ltac:(econstructor)). simpl.
         eauto with iFrame.
       }
-      rewrite !insert_delete_insert. simpl.
+      rewrite !insert_delete_eq. simpl.
       subst. iFrame. iExactEq "H".
       f_equal. f_equal. f_equal. f_equal. simpl.
       rewrite -HnversEq.
@@ -1808,8 +1808,8 @@ Proof.
       iIntros "!# *".
       destruct uid_ver as [uid ver].
       destruct (decide (uid = req.(WQReq.Uid) ∧ ver = nVers)) as [[? ?]|].
-      - subst uid ver nVers. rewrite lookup_insert. iFrame "#".
-        simpl. iPureIntro. rewrite -insert_union_l lookup_insert. simpl.
+      - subst uid ver nVers. rewrite lookup_insert_eq. iFrame "#".
+        simpl. iPureIntro. rewrite -insert_union_l lookup_insert_eq. simpl.
         rewrite HmapVal. f_equal.
       - rewrite lookup_insert_ne; last naive_solver.
         iSpecialize ("HopenKeyMap" $! (uid, ver)).
@@ -1838,9 +1838,9 @@ Proof.
     { admit. } (* FIXME: nver overflow *)
     intros uid. specialize (HkeyMapLatest uid).
     destruct (decide (uid = req.(WQReq.Uid))).
-    - subst uid. rewrite lookup_insert.
+    - subst uid. rewrite lookup_insert_eq.
       replace (word.sub _ _) with (nVers) by word.
-      rewrite lookup_insert /=. rewrite -Hpk. split; first done.
+      rewrite lookup_insert_eq /=. rewrite -Hpk. split; first done.
       rewrite /st' /= in HkeyMapLatest.
       intros ver. rewrite dom_insert.
       rewrite elem_of_union. rewrite elem_of_singleton.

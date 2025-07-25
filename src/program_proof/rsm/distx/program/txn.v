@@ -277,15 +277,15 @@ Section program.
       with "[Hpwrsm Hpwrs]" as "Hpwrsm".
     { iDestruct (big_sepM2_insert_2 (λ k p m, own_map p (DfracOwn 1) m) _ _ gid with "Hpwrs Hpwrsm")
         as "Hpwrsm".
-      rewrite insert_delete; last apply Hget.
-      rewrite insert_delete_insert.
+      rewrite insert_delete_id; last apply Hget.
+      rewrite insert_delete_eq.
       done.
     }
     iFrame "∗ %".
     iPureIntro.
     intros g m Hgm.
     destruct (decide (gid = g)) as [-> | Hne].
-    - rewrite lookup_insert in Hgm. inv Hgm.
+    - rewrite lookup_insert_eq in Hgm. inv Hgm.
       specialize (Hwrsg _ _ Hpwrs). simpl in Hwrsg.
       by rewrite Hwrsg wrs_group_insert.
     - rewrite lookup_insert_ne in Hgm; last done.
@@ -714,7 +714,7 @@ Section program.
       iIntros "Hptgs".
       assert (Hin : gid ∈ gids_all).
       { pose proof (subseteq_ptgroups (dom wrs)) as Hdom.
-        apply elem_of_list_lookup_2 in Hgid.
+        apply list_elem_of_lookup_2 in Hgid.
         set_solver.
       }
       iNamed "Hrgs".
@@ -758,7 +758,7 @@ Section program.
         assert (Hwg : pwrs = wrs_group gid wrs).
         { by apply Hwrsg. }
         assert (Hinptgs : gid ∈ ptgroups (dom wrs)).
-        { rewrite -Hptgs elem_of_list_to_set elem_of_list_lookup. by eauto. }
+        { rewrite -Hptgs elem_of_list_to_set list_elem_of_lookup. by eauto. }
         assert (Hne : pwrs ≠ ∅).
         { rewrite elem_of_ptgroups -wrs_group_keys_group_dom dom_empty_iff_L in Hinptgs.
           by rewrite Hwg.
@@ -998,7 +998,7 @@ Section program.
       wp_loadField.
       assert (Hin : gid ∈ gids_all).
       { pose proof (subseteq_ptgroups (dom wrsphys)) as Hdom.
-        apply elem_of_list_lookup_2 in Hgid.
+        apply list_elem_of_lookup_2 in Hgid.
         clear -Hdom Hgid Hptgs.
         set_solver.
       }
@@ -1016,7 +1016,7 @@ Section program.
         iFrame "Hcmt".
         iPureIntro.
         assert (Hinptgs : gid ∈ ptgroups (dom wrsphys)).
-        { rewrite -Hptgs elem_of_list_to_set elem_of_list_lookup. by eauto. }
+        { rewrite -Hptgs elem_of_list_to_set list_elem_of_lookup. by eauto. }
         done.
       }
       iApply "HΦ".
@@ -1130,7 +1130,7 @@ Section program.
       wp_loadField.
       assert (Hin : gid ∈ gids_all).
       { pose proof (subseteq_ptgroups (dom wrs)) as Hdom.
-        apply elem_of_list_lookup_2 in Hgid.
+        apply list_elem_of_lookup_2 in Hgid.
         clear -Hdom Hgid Hptgs.
         set_solver.
       }

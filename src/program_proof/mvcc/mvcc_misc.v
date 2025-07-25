@@ -48,7 +48,7 @@ Proof.
   { apply NoDup_Permutation_proper with l.*1; [by apply fmap_Permutation | done]. }
   set l' := <[_:=_]> l.
   assert (Hlookup : l' !! i = Some (k, v')).
-  { rewrite list_lookup_insert; auto. }
+  { rewrite list_lookup_insert_eq; auto. }
   apply delete_Permutation in Hlookup as Hperm'.
   apply Permutation_sym in Hperm'.
   rewrite -(list_to_map_proper ((k, v') :: (delete i l')) l'); last done; last first.
@@ -60,7 +60,7 @@ Proof.
     by rewrite Hsome.
   }
   do 2 rewrite list_to_map_cons.
-  rewrite insert_insert.
+  rewrite insert_insert_eq.
   by rewrite list_delete_insert_delete.
 Qed.
 
@@ -110,7 +110,7 @@ Proof.
   { (* Case [i < j]. *)
     (* Rewrite LHS. *)
     rewrite insert_take_drop; last by rewrite length_insert.
-    rewrite drop_insert_gt; last lia.
+    rewrite drop_insert_lt; last lia.
     rewrite take_insert_lt; last lia.
     rewrite insert_take_drop; last first.
     { rewrite length_take_le; [done | lia]. }
@@ -120,7 +120,7 @@ Proof.
     rewrite -{4}(list_insert_id _ _ _ Hj).
     rewrite -{4}(list_insert_id _ _ _ Hi).
     rewrite insert_take_drop; last by rewrite length_insert.
-    rewrite drop_insert_gt; last lia.
+    rewrite drop_insert_lt; last lia.
     rewrite take_insert_lt; last lia.
     rewrite insert_take_drop; last first.
     { rewrite length_take_le; [done | lia]. }
@@ -133,17 +133,17 @@ Proof.
   { (* Case [i = j]. *)
     clear n.
     subst j.
-    rewrite list_insert_insert.
+    rewrite list_insert_insert_eq.
     rewrite list_insert_id; last done.
     done.
   }
   { (* Case [j < i]. *)
     assert (Hlt : (j < i)%nat) by lia.
     clear n n0.
-    rewrite list_insert_commute; last lia.
+    rewrite list_insert_insert_ne; last lia.
     (* Rewrite LHS. *)
     rewrite insert_take_drop; last by rewrite length_insert.
-    rewrite drop_insert_gt; last lia.
+    rewrite drop_insert_lt; last lia.
     rewrite take_insert_lt; last lia.
     rewrite insert_take_drop; last first.
     { rewrite length_take_le; [done | lia]. }
@@ -153,7 +153,7 @@ Proof.
     rewrite -{4}(list_insert_id _ _ _ Hi).
     rewrite -{4}(list_insert_id _ _ _ Hj).
     rewrite insert_take_drop; last by rewrite length_insert.
-    rewrite drop_insert_gt; last lia.
+    rewrite drop_insert_lt; last lia.
     rewrite take_insert_lt; last lia.
     rewrite insert_take_drop; last first.
     { rewrite length_take_le; [done | lia]. }
@@ -231,8 +231,8 @@ Lemma take_S_insert {A : Type} (l : list A) (i : nat) (x : A) :
   take (S i) (<[i := x]> l) = take i l ++ [x].
 Proof.
   intros Hlen.
-  rewrite (take_S_r _ _ x); last by apply list_lookup_insert.
-  rewrite take_insert; [done | lia].
+  rewrite (take_S_r _ _ x); last by apply list_lookup_insert_eq.
+  rewrite take_insert_ge; [done | lia].
 Qed.
 
 Lemma big_sepM2_bupd

@@ -115,7 +115,7 @@ Section program.
     destruct sent; last first.
     { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
       { iFrame "∗ # %". }
-      rewrite insert_delete; last apply Hms.
+      rewrite insert_delete_id; last apply Hms.
       iMod "Hmask" as "_".
       iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
       { done. }
@@ -150,7 +150,7 @@ Section program.
       split; first set_solver.
       done.
     }
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
     iMod "Hmask" as "_".
     iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
     { iPureIntro.
@@ -207,7 +207,7 @@ Section program.
     destruct sent; last first.
     { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
       { iFrame "∗ # %". }
-      rewrite insert_delete; last apply Hms.
+      rewrite insert_delete_id; last apply Hms.
       iMod "Hmask" as "_".
       iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
       { done. }
@@ -235,7 +235,7 @@ Section program.
       split; first set_solver.
       done.
     }
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
     iMod "Hmask" as "_".
     iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
     { iPureIntro.
@@ -288,7 +288,7 @@ Section program.
     destruct sent; last first.
     { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
       { iFrame "∗ # %". }
-      rewrite insert_delete; last apply Hms.
+      rewrite insert_delete_id; last apply Hms.
       iMod "Hmask" as "_".
       iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
       { done. }
@@ -316,7 +316,7 @@ Section program.
       split; first set_solver.
       done.
     }
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
     iMod "Hmask" as "_".
     iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
     { iPureIntro.
@@ -369,7 +369,7 @@ wp_apply (wp_EncodeTxnUnprepareRequest).
     destruct sent; last first.
     { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
       { iFrame "∗ # %". }
-      rewrite insert_delete; last apply Hms.
+      rewrite insert_delete_id; last apply Hms.
       iMod "Hmask" as "_".
       iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
       { done. }
@@ -397,7 +397,7 @@ wp_apply (wp_EncodeTxnUnprepareRequest).
       split; first set_solver.
       done.
     }
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
     iMod "Hmask" as "_".
     iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
     { iPureIntro.
@@ -449,7 +449,7 @@ wp_apply (wp_EncodeTxnUnprepareRequest).
     destruct sent; last first.
     { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
       { iFrame "∗ # %". }
-      rewrite insert_delete; last apply Hms.
+      rewrite insert_delete_id; last apply Hms.
       iMod "Hmask" as "_".
       iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
       { done. }
@@ -477,7 +477,7 @@ wp_apply (wp_EncodeTxnUnprepareRequest).
       split; first set_solver.
       done.
     }
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
     iMod "Hmask" as "_".
     iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
     { iPureIntro.
@@ -526,7 +526,7 @@ wp_apply (wp_EncodeTxnUnprepareRequest).
     destruct sent; last first.
     { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
       { iFrame "∗ # %". }
-      rewrite insert_delete; last apply Hms.
+      rewrite insert_delete_id; last apply Hms.
       iMod "Hmask" as "_".
       iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
       { done. }
@@ -554,7 +554,7 @@ wp_apply (wp_EncodeTxnUnprepareRequest).
       split; first set_solver.
       done.
     }
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
     iMod "Hmask" as "_".
     iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
     { iPureIntro.
@@ -602,7 +602,7 @@ wp_apply (wp_EncodeTxnUnprepareRequest).
     destruct sent; last first.
     { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
       { iFrame "∗ # %". }
-      rewrite insert_delete; last apply Hms.
+      rewrite insert_delete_id; last apply Hms.
       iMod "Hmask" as "_".
       iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
       { done. }
@@ -630,7 +630,7 @@ wp_apply (wp_EncodeTxnUnprepareRequest).
       split; first set_solver.
       done.
     }
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
     iMod "Hmask" as "_".
     iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
     { iPureIntro.

@@ -191,7 +191,7 @@ Proof.
   iDestruct (big_sepM2_lookup_acc with "Hmap") as "[HH _]".
   1-2: done.
   simpl in H0.
-  apply elem_of_list_lookup_1 in H0 as [? ?].
+  apply list_elem_of_lookup_1 in H0 as [? ?].
   iDestruct (big_sepL2_lookup_2_some with "HH") as %[? ?].
   { done. }
   iDestruct (big_sepL2_lookup_acc with "HH") as "[H _]".
@@ -199,7 +199,7 @@ Proof.
   repeat iExists _; iFrame "H".
   instantiate (1:=x).
   iSplit.
-  2:{ iPureIntro. by eapply elem_of_list_lookup_2. }
+  2:{ iPureIntro. by eapply list_elem_of_lookup_2. }
   iApply (own_mono with "Hown").
   etransitivity; last apply cmra_included_r.
   apply auth_frag_mono.
@@ -218,7 +218,7 @@ Lemma map_fmset_elem_lookup idx Q ros γreads :
 .
 Proof.
   iIntros "(% & Hown & #Hmap) (% & % & #Hin & % & #Hpred)".
-  apply elem_of_list_lookup_1 in H0 as [? ?].
+  apply list_elem_of_lookup_1 in H0 as [? ?].
   iDestruct (own_valid_2 with "Hown Hin") as %Hvalid.
   rewrite comm assoc in Hvalid.
   apply cmra_valid_op_l in Hvalid.
@@ -244,7 +244,7 @@ Proof.
   iExists x2.
   iSplit.
   { iPureIntro. rewrite H3 /=.
-    by eapply elem_of_list_lookup_2. }
+    by eapply list_elem_of_lookup_2. }
   iModIntro. iIntros.
   iDestruct (saved_pred_agree with "Hpred HH") as "$".
 Qed.
@@ -329,7 +329,7 @@ Proof.
   set (Q':=λ σ', Q (f σ')).
   iMod (update_map_mset_ipred (uint.nat lastModifiedIndex) Q' with "HownRos") as "HownRos".
   iDestruct (map_fmset_get_elem (uint.nat lastModifiedIndex) Q' with "HownRos") as "#His_read".
-  { rewrite lookup_insert. set_solver. }
+  { rewrite lookup_insert_eq. set_solver. }
   iMod ("Hclose" with "[-]"); last done.
   iNext.
   iExists _, _.

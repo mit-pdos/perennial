@@ -81,7 +81,7 @@ Section program.
         split.
         { intros rid' [t' v'] Hv'. simpl.
           destruct (decide (rid' = rid)) as [-> | Hne].
-          { rewrite lookup_insert in Hv'. by inv Hv'. }
+          { rewrite lookup_insert_eq in Hv'. by inv Hv'. }
           rewrite lookup_insert_ne in Hv'; last done.
           specialize (Hlargest _ _ Hv'). simpl in Hlargest.
           clear -Hlargest Horder. lia.

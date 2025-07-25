@@ -124,7 +124,7 @@ Proof.
         iSplitL "Hkvptsto2".
         {
           iRight.
-          rewrite lookup_insert.
+          rewrite lookup_insert_eq.
           iFrame.
         }
         iApply (big_sepS_impl with "HshardGhost").
@@ -142,8 +142,8 @@ Proof.
       {
         simpl. iRight.
         iExists val_sl.
-        rewrite lookup_insert.
-        rewrite lookup_insert.
+        rewrite lookup_insert_eq.
+        rewrite lookup_insert_eq.
         by iFrame "∗#".
       }
       iDestruct (big_sepS_delete _ _ args.(PR_Key) with "HvalSlices") as "[_ HvalSlices]".

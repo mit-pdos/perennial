@@ -342,7 +342,7 @@ Proof.
           iApply (big_sepS_insert).
           { set_solver. }
 
-          iSplitR. { rewrite lookup_insert; iIntros (Hx). congruence. }
+          iSplitR. { rewrite lookup_insert_eq; iIntros (Hx). congruence. }
 
           iApply big_sepS_mono; iFrame.
           iIntros (x Hx) "H".
@@ -470,8 +470,8 @@ Proof.
         by iFrame.
       }
 
-      rewrite insert_delete_insert.
-      rewrite insert_delete_insert.
+      rewrite insert_delete_eq.
+      rewrite insert_delete_eq.
       rewrite (insert_id m); eauto.
     }
 
@@ -501,7 +501,7 @@ Proof.
     { iNext. iIntros "Hcovered".
       iDestruct (big_sepS_delete with "Hcovered") as "[Hp Hcovered]"; eauto.
       iSplitL "Hp".
-      { iApply "Hp". rewrite lookup_delete //. }
+      { iApply "Hp". rewrite lookup_delete_eq //. }
 
       iApply (big_sepS_delete _ _ addr); first auto.
       iSplitL "".

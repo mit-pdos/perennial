@@ -78,7 +78,7 @@ Section program.
       intros c Hc.
       apply elem_of_app in Hc.
       destruct Hc as [Hintlog | Hinext]; last first.
-      { apply elem_of_list_lookup in Hinext as [i Hc].
+      { apply list_elem_of_lookup in Hinext as [i Hc].
         by pose proof (Forall2_lookup_r _ _ _ _ _ Hext Hc) as (x & _ & ? & _).
       }
       rewrite /txn_cpool_subsume_log Forall_forall in Hcsincl.

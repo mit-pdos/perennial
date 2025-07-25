@@ -37,7 +37,7 @@ Lemma wrsm_dbmap_insert_None wrsm ts :
 Proof.
   intros Hnotin.
   rewrite /wrsm_dbmap omap_insert_None; last done.
-  rewrite delete_notin; first done.
+  rewrite delete_id; first done.
   by rewrite lookup_omap Hnotin /=.
 Qed.
 
@@ -52,7 +52,7 @@ Proof.
   apply map_eq. intros tsx.
   rewrite 2!lookup_omap.
   destruct (decide (tsx = ts)) as [-> | Hne]; last by rewrite lookup_insert_ne.
-  by destruct Hresm as [Hresm | Hresm]; rewrite lookup_insert Hresm.
+  by destruct Hresm as [Hresm | Hresm]; rewrite lookup_insert_eq Hresm.
 Qed.
 
 Lemma resm_to_tmods_insert_committed resm ts wrs :
@@ -63,8 +63,8 @@ Proof.
   { rewrite lookup_insert_ne; last done.
     by rewrite 2!lookup_omap lookup_insert_ne; last done.
   }
-  rewrite lookup_insert.
-  by rewrite lookup_omap lookup_insert.
+  rewrite lookup_insert_eq.
+  by rewrite lookup_omap lookup_insert_eq.
 Qed.
 
 Lemma vslice_resm_to_tmods_committed_absent resm ts wrs key :

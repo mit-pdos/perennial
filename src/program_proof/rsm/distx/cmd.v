@@ -36,7 +36,7 @@ Proof.
     { done. }
     { intros _ _ b1 b2 b3 _ _ _. by rewrite andb_comm -andb_assoc (andb_comm b3). }
     destruct (decide (x = k)) as [-> | Hne].
-    { rewrite lookup_insert in Hkb. inversion Hkb. subst v. done. }
+    { rewrite lookup_insert_eq in Hkb. inversion Hkb. subst v. done. }
     rewrite lookup_insert_ne in Hkb; last done.
     destruct v; last done.
     rewrite andb_true_l in Hfold.
@@ -460,7 +460,7 @@ Lemma apply_cmds_elem_of_prepare l :
   is_Some (stm !! ts).
 Proof.
   intros stm tpls ts pwrs Hrsm Hprep.
-  rewrite elem_of_list_lookup in Hprep.
+  rewrite list_elem_of_lookup in Hprep.
   destruct Hprep as [i Hprep].
   apply take_drop_middle in Hprep.
   rewrite -Hprep /apply_cmds foldl_app in Hrsm.
@@ -473,10 +473,10 @@ Proof.
   }
   destruct (validate _ _ _).
   { eapply foldl_apply_cmd_from_stm_present; first apply Hrsm.
-    by rewrite lookup_insert.
+    by rewrite lookup_insert_eq.
   }
   { eapply foldl_apply_cmd_from_stm_present; first apply Hrsm.
-    by rewrite lookup_insert.
+    by rewrite lookup_insert_eq.
   }
 Qed.
 
@@ -627,7 +627,7 @@ Proof.
     { rewrite lookup_insert_ne in Htpl; last done.
       by eapply Hwf.
     }
-    rewrite lookup_insert in Htpl.
+    rewrite lookup_insert_eq in Htpl.
     inversion Htpl. subst tplx. simpl. simpl in Hnz.
     destruct Htsprep as [? | Htsprep]; first done.
     destruct (last_extend_length_eq_n_or_same tid vs) as [-> | ->]; first lia.
@@ -736,7 +736,7 @@ Proof.
     destruct (validate _ _ _); inversion Happly; subst stmc tplsc; last first.
     { (* Case: Fail to acquire lock. *)
       destruct (decide (ts = tid)) as [-> | Hne].
-      { by rewrite lookup_insert in Hstm. }
+      { by rewrite lookup_insert_eq in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hpwrs.
     }
@@ -745,7 +745,7 @@ Proof.
     { rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hpwrs.
     }
-    rewrite lookup_insert in Hstm.
+    rewrite lookup_insert_eq in Hstm.
     inversion Hstm.
     by subst wrs.
   }
@@ -757,7 +757,7 @@ Proof.
     { (* Case: Prepared. *)
       inversion Happly. subst stmc tplsc.
       destruct (decide (ts = tid)) as [-> | Hne].
-      { by rewrite lookup_insert in Hstm. }
+      { by rewrite lookup_insert_eq in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hpwrs.
     }
@@ -773,14 +773,14 @@ Proof.
     { (* Case: Direct abort (i.e., not prepared yet). *)
       inversion Happly. subst stmc tplsc.
       destruct (decide (ts = tid)) as [-> | Hne].
-      { by rewrite lookup_insert in Hstm. }
+      { by rewrite lookup_insert_eq in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hpwrs.
     }
     destruct st; inversion Happly; subst stmc tplsc; last by eapply Hpwrs.
     (* Case: Prepared then abort. *)
     destruct (decide (ts = tid)) as [-> | Hne].
-    { by rewrite lookup_insert in Hstm. }
+    { by rewrite lookup_insert_eq in Hstm. }
     rewrite lookup_insert_ne in Hstm; last done.
     by eapply Hpwrs.
   }
@@ -840,7 +840,7 @@ Proof.
     }
     destruct (validate _ _ _); inversion Happly; subst stmc tplsc; last first.
     { destruct (decide (ts = tid)) as [-> | Hne].
-      { by rewrite lookup_insert in Hstm. }
+      { by rewrite lookup_insert_eq in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hnz.
     }
@@ -854,7 +854,7 @@ Proof.
     destruct (stm !! tid) as [st |] eqn:Htid; last congruence.
     destruct st as [wrs | |]; inversion Happly; subst stmc tplsc.
     { destruct (decide (ts = tid)) as [-> | Hne].
-      { by rewrite lookup_insert in Hstm. }
+      { by rewrite lookup_insert_eq in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hnz.
     }
@@ -865,14 +865,14 @@ Proof.
     destruct (stm !! tid) as [st |] eqn:Htid; last first.
     { inversion Happly; subst stmc tplsc.
       { destruct (decide (ts = tid)) as [-> | Hne].
-        { by rewrite lookup_insert in Hstm. }
+        { by rewrite lookup_insert_eq in Hstm. }
         rewrite lookup_insert_ne in Hstm; last done.
         by eapply Hnz.
       }
     }
     destruct st; inversion Happly; subst stmc tplsc.
     { destruct (decide (ts = tid)) as [-> | Hne].
-      { by rewrite lookup_insert in Hstm. }
+      { by rewrite lookup_insert_eq in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hnz.
     }
@@ -898,7 +898,7 @@ Proof.
     inversion Happly; subst stmc tplsc.
     destruct (decide (keyx = key)) as [-> | Hne]; last first.
     { rewrite lookup_insert_ne in Htpls; last done. by eapply Hcst. }
-    rewrite lookup_insert /read in Htpls.
+    rewrite lookup_insert_eq /read in Htpls.
     specialize (Hcst _ _ _ _ _ _ Heq Hstm Htpl Hkey).
     simpl in Hcst.
     case_decide; by inversion Htpls.
@@ -914,7 +914,7 @@ Proof.
     destruct (validate _ _ _) eqn:Hvd; inversion Happly; subst stmc tplsc; last first.
     { (* Case: Fail to acquire lock. *)
       destruct (decide (ts = tid)) as [-> | Hne].
-      { by rewrite lookup_insert in Hstm. }
+      { by rewrite lookup_insert_eq in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hcst.
     }
@@ -933,7 +933,7 @@ Proof.
       by eapply Hcst.
     }
     (* Case: Modify [key]. *)
-    rewrite lookup_insert in Hstm.
+    rewrite lookup_insert_eq in Hstm.
     inversion Hstm. subst wrsx.
     destruct (tpls !! keyx) as [tpl' |] eqn:Ht; last first.
     { rewrite elem_of_dom in Hkey.
@@ -951,7 +951,7 @@ Proof.
     { (* Case: Prepared. *)
       inversion Happly. subst stmc tplsc.
       destruct (decide (ts = tid)) as [-> | Hne].
-      { by rewrite lookup_insert in Hstm. }
+      { by rewrite lookup_insert_eq in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
       specialize (Hdisj _ _ _ _ _ _ Heq Hne Hstm Htid).
       (* Solved with [Hkey] and [Hdisj]. *)
@@ -971,14 +971,14 @@ Proof.
     { (* Case: Direct abort (i.e., not prepared yet). *)
       inversion Happly. subst stmc tplsc.
       destruct (decide (ts = tid)) as [-> | Hne].
-      { by rewrite lookup_insert in Hstm. }
+      { by rewrite lookup_insert_eq in Hstm. }
       rewrite lookup_insert_ne in Hstm; last done.
       by eapply Hcst.
     }
     destruct st; inversion Happly; subst stmc tplsc; last by eapply Hcst.
     (* Case: Prepared then abort. *)
     destruct (decide (ts = tid)) as [-> | Hne].
-    { by rewrite lookup_insert in Hstm. }
+    { by rewrite lookup_insert_eq in Hstm. }
     rewrite lookup_insert_ne in Hstm; last done.
     specialize (Hdisj _ _ _ _ _ _ Heq Hne Hstm Htid).
     (* Solved with [Hkey] and [Hdisj]. *)
@@ -1015,9 +1015,9 @@ Proof.
     destruct (validate _ _ _) eqn:Hvd; inversion Happly; subst stmc tplsc; last first.
     { (* Case: Fail to acquire lock. *)
       destruct (decide (tid = ts1)) as [-> | Hne1].
-      { by rewrite lookup_insert in Hstm1. }
+      { by rewrite lookup_insert_eq in Hstm1. }
       destruct (decide (tid = ts2)) as [-> | Hne2].
-      { by rewrite lookup_insert in Hstm2. }
+      { by rewrite lookup_insert_eq in Hstm2. }
       rewrite lookup_insert_ne in Hstm1; last done.
       rewrite lookup_insert_ne in Hstm2; last done.
       (* Remove them to make automation choose the right hypothesis. *)
@@ -1026,7 +1026,7 @@ Proof.
     }
     (* Case: Successfully acquire lock. *)
     destruct (decide (tid = ts1)) as [-> | Hne1].
-    { rewrite lookup_insert in Hstm1.
+    { rewrite lookup_insert_eq in Hstm1.
       inversion Hstm1. subst wrs.
       rewrite lookup_insert_ne in Hstm2; last done.
       intros k Hwrs1 Hwrs2.
@@ -1037,7 +1037,7 @@ Proof.
     }
     destruct (decide (tid = ts2)) as [-> | Hne2].
     { (* symmetric to above *)
-      rewrite lookup_insert in Hstm2.
+      rewrite lookup_insert_eq in Hstm2.
       inversion Hstm2. subst wrs.
       rewrite lookup_insert_ne in Hstm1; last done.
       intros k Hwrs1 Hwrs2.
@@ -1058,9 +1058,9 @@ Proof.
     destruct st as [wrs | |];
       inversion Happly; subst stmc tplsc; last by eapply Hdisj.
     destruct (decide (tid = ts1)) as [-> | Hne1].
-    { by rewrite lookup_insert in Hstm1. }
+    { by rewrite lookup_insert_eq in Hstm1. }
     destruct (decide (tid = ts2)) as [-> | Hne2].
-    { by rewrite lookup_insert in Hstm2. }
+    { by rewrite lookup_insert_eq in Hstm2. }
     rewrite lookup_insert_ne in Hstm1; last done.
     rewrite lookup_insert_ne in Hstm2; last done.
     clear Hne1 Hne2.
@@ -1072,9 +1072,9 @@ Proof.
     destruct (stm !! tid) as [st |] eqn:Htid; last first.
     { inversion Happly; subst stmc tplsc.
       destruct (decide (tid = ts1)) as [-> | Hne1].
-      { by rewrite lookup_insert in Hstm1. }
+      { by rewrite lookup_insert_eq in Hstm1. }
       destruct (decide (tid = ts2)) as [-> | Hne2].
-      { by rewrite lookup_insert in Hstm2. }
+      { by rewrite lookup_insert_eq in Hstm2. }
       rewrite lookup_insert_ne in Hstm1; last done.
       rewrite lookup_insert_ne in Hstm2; last done.
       clear Hne1 Hne2.
@@ -1082,9 +1082,9 @@ Proof.
     }
     destruct st; inversion Happly; subst stmc tplsc.
     { destruct (decide (tid = ts1)) as [-> | Hne1].
-      { by rewrite lookup_insert in Hstm1. }
+      { by rewrite lookup_insert_eq in Hstm1. }
       destruct (decide (tid = ts2)) as [-> | Hne2].
-      { by rewrite lookup_insert in Hstm2. }
+      { by rewrite lookup_insert_eq in Hstm2. }
       rewrite lookup_insert_ne in Hstm1; last done.
       rewrite lookup_insert_ne in Hstm2; last done.
       clear Hne1 Hne2.

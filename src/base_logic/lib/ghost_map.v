@@ -119,7 +119,7 @@ Section lemmas.
   Proof.
     iIntros "Hauth".
     iMod (ghost_map_insert_big (base ∖ updates) with "Hauth") as "[Hauth Hfrag]".
-    { by apply map_disjoint_difference_l. }
+    { by apply map_disjoint_difference_l1. }
     iEval (rewrite map_difference_union') in "Hauth".
     by iFrame.
   Qed.

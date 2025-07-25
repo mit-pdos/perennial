@@ -142,7 +142,7 @@ Section res.
         destruct Heq as [_ Hincl].
         apply Hincl.
         destruct (decide (ts = t)) as [-> | Hne].
-        { rewrite lookup_insert in Him. inv Him. }
+        { rewrite lookup_insert_eq in Him. inv Him. }
         { rewrite lookup_insert_ne in Him; last done.
           by eauto.
         }
@@ -185,13 +185,13 @@ Section res.
       split.
       { intros Hp'.
         destruct (decide (t = ts)) as [-> | Hne].
-        { rewrite lookup_insert.
+        { rewrite lookup_insert_eq.
           exists ps'.
           split; first done.
           subst ps'.
           destruct (decide (r = rk)) as [-> | Hner].
-          { rewrite lookup_insert.
-            by rewrite lookup_insert in Hp'.
+          { rewrite lookup_insert_eq.
+            by rewrite lookup_insert_eq in Hp'.
           }
           { rewrite lookup_insert_ne; last done.
             rewrite lookup_insert_ne in Hp'; last first.
@@ -212,10 +212,10 @@ Section res.
       { intros Him.
         destruct Him as (im & Him & Hp').
         destruct (decide (t = ts)) as [-> | Hne].
-        { rewrite lookup_insert in Him. inv Him.
+        { rewrite lookup_insert_eq in Him. inv Him.
           destruct (decide (r = rk)) as [-> | Hner].
-          { rewrite lookup_insert.
-            rewrite lookup_insert in Hp'. by inv Hp'.
+          { rewrite lookup_insert_eq.
+            rewrite lookup_insert_eq in Hp'. by inv Hp'.
           }
           { rewrite lookup_insert_ne; last first.
             { intros Hcontra. inv Hcontra. }

@@ -1006,7 +1006,7 @@ Proof.
   { lia. }
   destruct (decide (i = endpos)); subst.
   - rewrite lookup_update_circ_old; try lia.
-    rewrite -> list_lookup_insert by (mod_bound; lia).
+    rewrite -> list_lookup_insert_eq by (mod_bound; lia).
     replace (Z.to_nat (endpos - endpos)) with 0%nat by lia.
     auto.
   - rewrite -> IHupds by len.

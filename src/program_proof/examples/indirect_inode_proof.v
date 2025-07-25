@@ -963,17 +963,17 @@ Proof.
       { iSplit; auto.
         unfold maxDirect in *.
         iPureIntro.
-        rewrite lookup_take; auto.
+        rewrite lookup_take_lt; auto.
         word.
       }
       iIntros "Hdirect_small".
       wp_pures.
       iDestruct (big_sepL2_lookup_1_some _ _ _ (uint.nat off) a with "HdataDirect") as "%Hblock_lookup"; eauto.
-      { rewrite lookup_take; [auto | word]. }
+      { rewrite lookup_take_lt; [auto | word]. }
       destruct Hblock_lookup as [b0 Hlookup2].
       iDestruct (own_slice_split with "[$Hdirect_small $Hdirect]") as "Hdirect".
       iDestruct (big_sepL2_lookup_acc _ _ _ _ a with "HdataDirect") as "[Hb HdataDirect]"; eauto.
-      { rewrite lookup_take; [auto | word]. }
+      { rewrite lookup_take_lt; [auto | word]. }
       wp_apply (wp_Read with "Hb"); iIntros (s) "[Hb Hs]".
       iSpecialize ("HdataDirect" with "Hb").
       wp_loadField.
@@ -982,7 +982,7 @@ Proof.
       wp_apply (crash_lock.wp_Mutex__Unlock with "His_locked"); auto.
       wp_pures.
       iApply "HΦ"; iFrame.
-      rewrite lookup_take in Hlookup2; [ | word ].
+      rewrite lookup_take_lt in Hlookup2; [ | word ].
       rewrite Hlookup2.
       iDestruct (own_slice_split with "Hs") as "[Hs _]".
       iFrame.
@@ -1092,7 +1092,7 @@ Proof.
         unfold maxDirect, indirectNumBlocks in *.
         rewrite Hindex in HlookupInodeBlk.
         rewrite -HlookupInodeBlk.
-        rewrite -> lookup_take by word.
+        rewrite -> lookup_take_lt by word.
         f_equal; word. }
 
       (* Continue through the program *)

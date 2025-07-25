@@ -32,11 +32,11 @@ Proof.
   intros Hlookup.
   rewrite /marshalledMapSize_data.
   assert (m = <[k := l]> (delete k m)) as Heq.
-  { rewrite insert_delete_insert. rewrite insert_id //. }
+  { rewrite insert_delete_eq. rewrite insert_id //. }
   rewrite Heq.
-  rewrite map_fold_insert_L //; last by apply lookup_delete.
-  { rewrite insert_delete_insert.
-    rewrite delete_insert_delete. lia. }
+  rewrite map_fold_insert_L //; last by apply lookup_delete_eq.
+  { rewrite insert_delete_eq.
+    rewrite delete_insert_eq. lia. }
   intros.
   lia.
 Qed.
@@ -126,13 +126,13 @@ Proof.
     iApply (big_sepM_mono with "Hmvals1").
     { iIntros (?? Hldel) "H". iDestruct "H" as (? Heq) "H". iExists _. iFrame "%".
       rewrite lookup_delete_ne //.
-      intros Heq'. rewrite Heq' lookup_delete in Hldel. congruence. }
+      intros Heq'. rewrite Heq' lookup_delete_eq in Hldel. congruence. }
   }
   iSplit; first iPureIntro.
   { rewrite ?dom_insert_L; congruence. }
   iApply (big_sepM_insert_2 with "[Hl]"); auto.
   { simpl. iDestruct "Hl" as (? Heql) "H". iExists _. iFrame "%".
-    rewrite lookup_insert. rewrite Hl'. eauto. }
+    rewrite lookup_insert_eq. rewrite Hl'. eauto. }
   iApply (big_sepM_mono with "Hmvals2").
   { iIntros (k' ? Hldel) "H". iDestruct "H" as (? Heq) "H". iExists _. iFrame "%".
     destruct (decide (k = k')).
@@ -284,7 +284,7 @@ Proof using Type*.
     assert (NoDup (l ++ [(k, l')]).*1).
     { rewrite fmap_app; simpl.
       apply NoDup_app; split_and!; eauto.
-      { intros x Hinl. intros. intros Hin. apply elem_of_list_singleton in Hin; subst.
+      { intros x Hinl. intros. intros Hin. apply list_elem_of_singleton in Hin; subst.
         apply map_disjoint_dom_1 in Hmdisjoint.
         rewrite dom_list_to_map_L in Hmdisjoint.
         assert (k ∈ (list_to_set l.*1 : gset u64)).
@@ -535,8 +535,8 @@ Proof.
     rewrite lookup_delete_ne; last set_solver. eauto. }
   iSplitR "H".
   { iDestruct "Hk" as "[%Hbad|H]".
-    { exfalso. rewrite lookup_insert in Hbad. intuition congruence. }
-    rewrite lookup_insert. iDestruct "H" as (? Heq) "#H".
+    { exfalso. rewrite lookup_insert_eq in Hbad. intuition congruence. }
+    rewrite lookup_insert_eq. iDestruct "H" as (? Heq) "#H".
     iExists _. iSplit; first eauto. iFrame "∗#".
   }
   iApply (big_sepM_mono with "H").
@@ -715,7 +715,7 @@ Proof.
     }
     rewrite (map_size_insert_None); last first.
     { eapply map_disjoint_Some_l; eauto.
-      simpl. apply lookup_insert. }
+      simpl. apply lookup_insert_eq. }
     replace (word.add (size mdone') 1) with (uint.Z (size mdone') + 1:u64) by word.
     replace (W64 (_)) with (W64 (S (size mdone'))) by word.
     iFrame.
@@ -732,7 +732,7 @@ Proof.
     iApply big_sepM_insert; first auto.
     iSplitL "Hsl".
     { iExists _. iSplit; first eauto.
-      rewrite lookup_insert //=. }
+      rewrite lookup_insert_eq //=. }
     iApply (big_sepM_mono with "Hmvals").
     iIntros (k' x' Hlookup).
     simpl. rewrite lookup_insert_ne //.
@@ -803,7 +803,7 @@ Proof.
   iApply (big_sepS_delete _ _ k); first apply elem_of_fin_to_set.
   iDestruct (big_sepS_delete _ _ k with "Hrest") as "(_&Hrest)"; first apply elem_of_fin_to_set.
   iSplitL "Hk".
-  { iRight. rewrite lookup_insert. iDestruct "Hk" as (? Heq) "H". iExists _. iSplit; eauto. }
+  { iRight. rewrite lookup_insert_eq. iDestruct "Hk" as (? Heq) "H". iExists _. iSplit; eauto. }
   iApply (big_sepS_mono with "Hrest").
   { iIntros (??) "H".
     rewrite lookup_insert_ne; last by set_solver.

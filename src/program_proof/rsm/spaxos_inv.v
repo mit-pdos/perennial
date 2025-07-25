@@ -231,7 +231,7 @@ Section pure.
     intros y n' m b _ Hnr Hn'.
     unfold latest_before_quorum_step.
     destruct (decide (y = x)) as [-> | Hne].
-    { rewrite lookup_insert in Hn'. inversion_clear Hn'. lia. }
+    { rewrite lookup_insert_eq in Hn'. inversion_clear Hn'. lia. }
     rewrite lookup_insert_ne in Hn'; [lia | done].
   Qed.
 
@@ -243,9 +243,9 @@ Section pure.
     intros x n m b Hmx IHm.
     unfold latest_before_quorum_step.
     destruct IHm as [-> | [y Hy]]; right.
-    { exists x. rewrite lookup_insert. by rewrite Nat.max_0_r. }
+    { exists x. rewrite lookup_insert_eq. by rewrite Nat.max_0_r. }
     destruct (decide (b ≤ n)%nat).
-    { exists x. rewrite lookup_insert. by replace (_ `max` _)%nat with n by lia. }
+    { exists x. rewrite lookup_insert_eq. by replace (_ `max` _)%nat with n by lia. }
     exists y.
     assert (Hne : x ≠ y) by set_solver.
     rewrite lookup_insert_ne; last done. rewrite Hy.
@@ -537,7 +537,7 @@ Section pure.
     do 2 rewrite lookup_fmap.
     destruct (decide (i = j)); last by rewrite lookup_alter_ne.
     subst j.
-    rewrite lookup_alter -option_fmap_compose.
+    rewrite lookup_alter_eq -option_fmap_compose.
     destruct (m !! i) eqn:Hlookup; last by apply fmap_None.
     simpl.
     by rewrite -Hfg.
@@ -557,7 +557,7 @@ Section pure.
       by apply HP in Halter.
     }
     subst j.
-    rewrite lookup_alter in Halter.
+    rewrite lookup_alter_eq in Halter.
     rewrite fmap_Some in Halter.
     destruct Halter as (y & Hlookup & Hy).
     rewrite Hy.
@@ -787,7 +787,7 @@ Section pure.
     intros Hvb.
     unfold spaxos_propose.
     intros x l Hlookup n' Hacc.
-    destruct (decide (n' = n)) as [-> | Hneq]; first by rewrite lookup_insert.
+    destruct (decide (n' = n)) as [-> | Hneq]; first by rewrite lookup_insert_eq.
     rewrite lookup_insert_ne; last done.
     by apply (Hvb x l).
   Qed.
@@ -865,7 +865,7 @@ Section pure.
     { rewrite lookup_insert_ne in Hadv; last done.
       by specialize (Hvt _ _ Hadv _ Hyu' Hlt).
     }
-    rewrite lookup_insert in Hadv.
+    rewrite lookup_insert_eq in Hadv.
     inversion Hadv. subst u. clear Hadv.
     destruct Hprev as (c & Hxc & Hcn).
     assert (Hcu' : (c < u')%nat) by lia.
@@ -890,7 +890,7 @@ Section pure.
       specialize (Hvt _ _ Hadv _ Hyu' Hlt).
       by rewrite lookup_insert_ne.
     }
-    rewrite lookup_insert in Hadv.
+    rewrite lookup_insert_eq in Hadv.
     inversion Hadv. subst u. clear Hadv.
     rewrite lookup_insert_ne; last lia.
     destruct Hprev as (c & Hxc & Hcn).

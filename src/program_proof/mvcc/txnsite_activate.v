@@ -123,12 +123,12 @@ Proof.
       split; first done.
       split; last apply NoDup_singleton.
       intros tidx Helem contra.
-      rewrite elem_of_list_singleton in contra.
+      rewrite list_elem_of_singleton in contra.
       apply set_Forall_union_inv_2 in Hmax.
       assert (Helem' : uint.nat tidx ∈ tidsactiveM).
       { rewrite -HactiveLM.
         rewrite elem_of_list_to_set.
-        apply (elem_of_list_fmap_1 (λ x : u64, uint.nat x)).
+        apply (list_elem_of_fmap_2 (λ x : u64, uint.nat x)).
         done.
       }
       apply Hmax in Helem'.

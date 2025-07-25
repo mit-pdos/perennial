@@ -65,7 +65,7 @@ Section program.
       iPureIntro.
       rewrite map_filter_insert_False; last first.
       { simpl. by intros ->. }
-      by rewrite delete_notin.
+      by rewrite delete_id.
     }
     iIntros "[Hm HP]". iNamed "HP".
     wp_load.

@@ -49,7 +49,7 @@ Section inv.
     }
     intros tsx formx Hformx.
     destruct (decide (tsx = tid)) as [-> | Hne].
-    { by rewrite lookup_delete in Hformx. }
+    { by rewrite lookup_delete_eq in Hformx. }
     rewrite lookup_delete_ne in Hformx; last done.
     specialize (Hcp _ _ Hformx). simpl in Hcp.
     rewrite /conflict_cases in Hcp *.

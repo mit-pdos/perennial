@@ -14,7 +14,7 @@ Proof.
   rewrite /is_update.
   exists a0.
   split; try auto.
-  apply elem_of_list_here.
+  apply list_elem_of_here.
 Qed.
 
 Theorem is_update_cons (l: list update.t) a b:
@@ -26,7 +26,7 @@ Proof.
   intuition.
   exists u.
   split; auto.
-  apply elem_of_list_further; auto.
+  apply list_elem_of_further; auto.
 Qed.
 
 Theorem latest_update_cons installed a:
@@ -151,7 +151,7 @@ Proof.
     + simpl.
       erewrite <- IHl.
       { reflexivity. }
-      rewrite lookup_insert. auto.
+      rewrite lookup_insert_eq. auto.
     + erewrite <- IHl.
       { reflexivity. }
       rewrite lookup_insert_ne; auto.

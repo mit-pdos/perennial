@@ -167,9 +167,9 @@ Proof.
   intros Hs_le He_le.
   apply (iffRL (elem_of_subseteq _ _)).
   intros x Hin.
-  apply elem_of_list_lookup in Hin.
+  apply list_elem_of_lookup in Hin.
   destruct Hin as (i&Hin).
-  apply (elem_of_list_lookup_2 _ (s1 + i - s2)).
+  apply (list_elem_of_lookup_2 _ (s1 + i - s2)).
   pose proof (subslice_lookup_bound' _ _ _ _ _ _ Hin) as Hlookup_bound.
   rewrite subslice_lookup.
   2: lia.
@@ -292,8 +292,8 @@ Proof.
 
     assert (((λ u : update.t, uint.Z u.(update.addr)) <$> upds) !! uint.nat i = Some (uint.Z addr_i)) as Hu_lookup_map.
     1: rewrite list_lookup_fmap Hu_lookup //.
-    apply elem_of_list_lookup_2 in Hu_lookup_map.
-    apply elem_of_list_fmap in Hu_lookup_map.
+    apply list_elem_of_lookup_2 in Hu_lookup_map.
+    apply list_elem_of_fmap in Hu_lookup_map.
     destruct Hu_lookup_map as (upd&(Hupd&Hupd_in)).
     apply ((iffLR (Forall_forall _ _)) Hbufs_addrs _) in Hupd_in.
     destruct Hupd_in as (binit&Hbinit).
@@ -354,7 +354,7 @@ Proof.
         assumption.
       }
       simpl in Hinstalled.
-      apply elem_of_list_singleton in Hinstalled.
+      apply list_elem_of_singleton in Hinstalled.
       contradiction.
     }
 
@@ -400,12 +400,12 @@ Proof.
       {
         (* show that the new big_sepM condition holds for address touched by the update *)
         destruct Hbufs as [Hhas Hmatch].
-        pose proof (elem_of_list_lookup_2 _ _ _ Hu_lookup) as Hu_in.
+        pose proof (list_elem_of_lookup_2 _ _ _ Hu_lookup) as Hu_in.
         apply Hmatch in Hu_in.
         simpl in Hu_in.
         destruct Hu_in as [txn [Htxn_in Htxn_apply]].
         destruct txn as [txna txnb].
-        apply elem_of_list_lookup in Htxn_in.
+        apply list_elem_of_lookup in Htxn_in.
         destruct Htxn_in as [txni Htxn_lookup].
         iExists _, (S being_installed_start_txn_id + txni)%nat.
         rewrite -Hupd in Haddr_LogSz_bound.
@@ -431,7 +431,7 @@ Proof.
         intros Hinstalled.
         rewrite fmap_app in Hinstalled.
         apply elem_of_app in Hinstalled.
-        rewrite app_assoc apply_upds_app /= lookup_insert //.
+        rewrite app_assoc apply_upds_app /= lookup_insert_eq //.
       }
       rewrite Hsubtxns.
       iFrame.

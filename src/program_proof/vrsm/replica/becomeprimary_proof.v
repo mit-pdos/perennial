@@ -388,7 +388,7 @@ Proof.
           destruct i0.
           {
             simpl.
-            rewrite lookup_take; last first.
+            rewrite lookup_take_lt; last first.
             { lia. }
             rewrite lookup_drop.
             rewrite HcompleteLen.

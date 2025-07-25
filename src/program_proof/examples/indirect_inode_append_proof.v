@@ -1051,9 +1051,9 @@ Proof.
            iExists indBlkAddrs'.
            iSplitR; [iPureIntro; auto|].
            ++ assert ((take (uint.nat index) ds.(impl_s.indBlkAddrsList)) !! k = Some indBlkAddrs') as H by
-                   (rewrite lookup_take; auto).
-              rewrite -(lookup_take (<[uint.nat index := indBlkAddrs0 ++ [a]]> ds.(impl_s.indBlkAddrsList)) (uint.nat index) k); [|word].
-              rewrite take_insert; auto.
+                   (rewrite lookup_take_lt; auto).
+              rewrite -(lookup_take_lt (<[uint.nat index := indBlkAddrs0 ++ [a]]> ds.(impl_s.indBlkAddrsList)) (uint.nat index) k); [|word].
+              rewrite take_insert_ge; auto.
            ++ replace (subslice (Z.to_nat (maxDirect + k * indirectNumBlocks))
                                (Z.to_nat (maxDirect + k * indirectNumBlocks) + Z.to_nat indirectNumBlocks)
                                (σ.(inode.blocks) ++ [b]))
@@ -1086,7 +1086,7 @@ Proof.
              iExists (indBlkAddrs ++ [a]).
              iSplitR; simpl.
              + iPureIntro. rewrite -plus_n_O. rewrite -tmp1 tmp3.
-               apply (list_lookup_insert (ds.(impl_s.indBlkAddrsList)) (uint.nat index) (indBlkAddrs ++ [a])).
+               apply (list_lookup_insert_eq (ds.(impl_s.indBlkAddrsList)) (uint.nat index) (indBlkAddrs ++ [a])).
                apply lookup_lt_is_Some. eauto.
              + iFrame.
                rewrite -plus_n_O; auto.

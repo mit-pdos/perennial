@@ -101,10 +101,10 @@ Lemma fmap_incl {A B} (f: A → B) (l l': list A):
   incl l l' →
   incl (fmap f l) (fmap f l').
 Proof.
-  intros Hincl a. rewrite -?elem_of_list_In.
-  intros (?&?&Hin')%elem_of_list_fmap. subst.
-  apply elem_of_list_fmap. eexists; split; eauto.
-  move: Hin'. rewrite ?elem_of_list_In. eauto.
+  intros Hincl a. rewrite -?list_elem_of_In.
+  intros (?&?&Hin')%list_elem_of_fmap. subst.
+  apply list_elem_of_fmap. eexists; split; eauto.
+  move: Hin'. rewrite ?list_elem_of_In. eauto.
 Qed.
 
 Lemma log_crash_to_wf σ σ' x :
@@ -144,7 +144,7 @@ Proof.
   rewrite /is_txn.
   rewrite fmap_Some.
   intros (?&Hlookup&_).
-  apply elem_of_list_lookup_2 in Hlookup.
+  apply list_elem_of_lookup_2 in Hlookup.
   destruct txns; eauto.
   set_solver.
 Qed.
@@ -183,7 +183,7 @@ Lemma is_txn_from_take_is_txn n txns id pos:
 Proof.
   rewrite /is_txn.
   destruct (decide (id < n)%nat).
-  { by rewrite -> lookup_take by lia. }
+  { by rewrite -> lookup_take_lt by lia. }
   rewrite -> lookup_take_ge by lia.
   inversion 1.
 Qed.
@@ -203,7 +203,7 @@ Lemma is_txn_take txns txn_id pos :
   is_txn (take (S txn_id) txns) txn_id pos.
 Proof.
   rewrite /is_txn. intro Hlook.
-  rewrite -> lookup_take by lia; auto.
+  rewrite -> lookup_take_lt by lia; auto.
 Qed.
 
 Lemma is_highest_txn_take txns txn_id pos :
@@ -211,7 +211,7 @@ Lemma is_highest_txn_take txns txn_id pos :
   is_highest_txn (take (S txn_id) txns) txn_id pos.
 Proof.
   rewrite /is_highest_txn /is_txn. intros (Hlook&Hle); split.
-  - rewrite -> lookup_take by lia; auto.
+  - rewrite -> lookup_take_lt by lia; auto.
   - intros txn_id'. rewrite ?fmap_Some.
     intros (x&Hlookup&Hpos); subst.
     eapply lookup_take_Some in Hlookup; lia.
@@ -387,7 +387,7 @@ Proof.
     split; last by word.
     apply Forall_forall.
     intros x Hx.
-    apply elem_of_list_singleton in Hx.
+    apply list_elem_of_singleton in Hx.
     subst x.
     word.
   }
@@ -401,8 +401,8 @@ Proof.
     intuition.
   }
   intros i bndry1 bndry2 Hbndry1 Hbndry2.
-  apply elem_of_list_lookup_2 in Hbndry1.
-  apply elem_of_list_lookup_2 in Hbndry2.
+  apply list_elem_of_lookup_2 in Hbndry1.
+  apply list_elem_of_lookup_2 in Hbndry2.
   apply elem_of_replicate_inv in Hbndry1.
   apply elem_of_replicate_inv in Hbndry2.
   subst bndry1 bndry2.
@@ -833,7 +833,7 @@ Proof.
   iFrame "%#".
   iPureIntro.
   rewrite /is_txn in Hstart_txn |- *.
-  rewrite -> lookup_take by lia.
+  rewrite -> lookup_take_lt by lia.
   auto.
 Qed.
 
@@ -964,7 +964,7 @@ Lemma txns_mono_lt_last σ diskEnd :
 Proof.
   intros Hwf Htxn.
   apply Forall_forall => pos Hin.
-  apply elem_of_list_lookup in Hin as [txn_id Hlookup].
+  apply list_elem_of_lookup in Hin as [txn_id Hlookup].
   assert (is_txn σ.(log_state.txns) txn_id pos).
   { rewrite /is_txn.
     rewrite -list_lookup_fmap //. }
@@ -984,9 +984,9 @@ Proof.
   rewrite /is_txn in Htxn'; fmap_Some in Htxn' as txn'.
   pose proof (lookup_take_Some _ _ _ _ Htxn).
   pose proof (lookup_take_Some _ _ _ _ Htxn').
-  rewrite lookup_take in Htxn; auto.
-  rewrite lookup_take in Htxn'; auto.
-  rewrite lookup_take //.
+  rewrite lookup_take_lt in Htxn; auto.
+  rewrite lookup_take_lt in Htxn'; auto.
+  rewrite lookup_take_lt //.
   apply Hstable; rewrite /is_txn.
   - rewrite Htxn //.
   - rewrite Htxn' /=.
@@ -1019,10 +1019,10 @@ Proof.
   { (* we're talking about diskEnd_txn_id *)
     unshelve (epose proof (iffLR (Forall_forall _ _) Hnils _ _) as Hnil).
     2: {
-      apply elem_of_list_lookup.
+      apply list_elem_of_lookup.
       eexists (txn_id' - (S diskEnd_txn_id))%nat.
       rewrite subslice_lookup; last by lia.
-      rewrite -(lookup_take _ (S (durable_lb `max` diskEnd_txn_id)));
+      rewrite -(lookup_take_lt _ (S (durable_lb `max` diskEnd_txn_id)));
         last by lia.
       rewrite -Nat.le_add_sub; last by lia.
       eassumption.

@@ -204,7 +204,7 @@ Proof.
   rewrite size_list_to_set; last first.
   { apply seq_U64_NoDup; lia. }
   rewrite length_fmap length_seqZ.
-  apply elem_of_list_to_set, elem_of_list_fmap_1, elem_of_seqZ.
+  apply elem_of_list_to_set, list_elem_of_fmap_2, elem_of_seqZ.
   lia.
 Qed.
 
@@ -313,7 +313,7 @@ Lemma valid_key_length key :
 Proof.
   intros Hvk.
   rewrite /valid_key /keys_all in Hvk.
-  apply elem_of_list_to_set, elem_of_list_fmap_2 in Hvk.
+  apply elem_of_list_to_set, list_elem_of_fmap_1 in Hvk.
   by destruct Hvk as ([k Hk] & -> & _).
 Qed.
 

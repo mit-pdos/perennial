@@ -505,7 +505,7 @@ Proof.
         iIntros.
         rewrite /typed_map.map_insert /= in H0.
         destruct (decide (k = k0)).
-        { subst. rewrite lookup_insert /= in H0.
+        { subst. rewrite lookup_insert_eq /= in H0.
           replace (vnum) with (vnum') by word.
           iExists _. by iDestruct "Hintermediate" as "[_ $]".
         }
@@ -538,7 +538,7 @@ Proof.
         iPureIntro. intros.
         destruct (decide (k = k0)).
         { subst.
-          by rewrite /typed_map.map_insert lookup_insert /=.
+          by rewrite /typed_map.map_insert lookup_insert_eq /=.
         }
         {
           rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
@@ -592,7 +592,7 @@ Proof.
         iPureIntro. intros.
         destruct (decide (k = k0)).
         { subst.
-          by rewrite /typed_map.map_insert lookup_insert /=. }
+          by rewrite /typed_map.map_insert lookup_insert_eq /=. }
         { rewrite /typed_map.map_insert lookup_insert_ne /=; last done.
           transitivity (uint.nat latestVnum).
           { apply Hle. }
@@ -602,7 +602,7 @@ Proof.
       iIntros.
       rewrite /typed_map.map_insert /= in H0.
       destruct (decide (k = k0)).
-      { subst. rewrite lookup_insert /= in H0.
+      { subst. rewrite lookup_insert_eq /= in H0.
         replace (vnum) with (vnum') by word.
         iExists _. by iDestruct "Hintermediate" as "[_ $]".
       }
@@ -691,7 +691,7 @@ Proof.
           iIntros.
           rewrite /typed_map.map_insert /= in H0.
           destruct (decide (k = k0)).
-          { subst. rewrite lookup_insert /= in H1.
+          { subst. rewrite lookup_insert_eq /= in H1.
             replace (vnum) with (vnum') by word.
             iExists _. by iDestruct "Hintermediate" as "[_ $]".
           }
@@ -728,7 +728,7 @@ Proof.
           iPureIntro. intros.
           destruct (decide (k = k0)).
           { subst.
-            by rewrite /typed_map.map_insert lookup_insert /=.
+            by rewrite /typed_map.map_insert lookup_insert_eq /=.
           }
           {
             rewrite /typed_map.map_insert lookup_insert_ne /=; last done.

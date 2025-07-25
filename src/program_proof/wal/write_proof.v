@@ -257,7 +257,7 @@ Proof.
   intros Hwf.
   rewrite /memWrite_one /numMutableN.
   destruct matches; simpl.
-  - rewrite -> take_insert by lia; auto.
+  - rewrite -> take_insert_ge by lia; auto.
   - rewrite -> take_app_le by word; auto.
   - rewrite -> take_app_le by word; auto.
 Qed.
@@ -580,11 +580,11 @@ Proof.
     + rewrite drop_app_le.
       2: { rewrite /slidingM.logIndex. word. }
       rewrite apply_upds_app /=.
-      rewrite lookup_insert; done.
+      rewrite lookup_insert_eq; done.
   - rewrite drop_app_le.
     2: { rewrite /slidingM.logIndex. word. }
     rewrite apply_upds_app /=.
-    rewrite lookup_insert; done.
+    rewrite lookup_insert_eq; done.
 Qed.
 
 Lemma apply_upds_lookup_eq : ∀ upds d0 d1 a,
@@ -594,7 +594,7 @@ Proof.
   induction upds; simpl; intros; eauto.
   destruct a.
   destruct (decide (a0 = uint.Z addr)); subst.
-  - eapply IHupds. rewrite !lookup_insert. eauto.
+  - eapply IHupds. rewrite !lookup_insert_eq. eauto.
   - eapply IHupds. rewrite lookup_insert_ne; eauto. rewrite lookup_insert_ne; eauto.
 Qed.
 
@@ -683,7 +683,7 @@ Proof.
   eapply map_eq; intros.
   destruct (decide (i = uint.Z addr)); subst.
   {
-    rewrite lookup_insert.
+    rewrite lookup_insert_eq.
     rewrite memWrite_one_eq; eauto.
   }
   {

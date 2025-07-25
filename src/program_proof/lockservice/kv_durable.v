@@ -118,7 +118,7 @@ Proof using Type*.
         split; last apply not_elem_of_nil.
         destruct (decide (x = k)) as [->|]; last done.
         exfalso.
-        apply elem_of_list_fmap_2 in H1 as [ [k0 v0] [Hk Hp]].
+        apply list_elem_of_fmap_1 in H1 as [ [k0 v0] [Hk Hp]].
         simpl in Hk.
         eapply (elem_of_list_to_map_1 (M:=gmap _)) in Hnodup; eauto.
         replace (list_to_map l) with (mdone) in Hnodup by eauto.
@@ -159,7 +159,7 @@ Proof using Type*.
     - split.
       + rewrite map_size_insert_None; first lia. done.
       + apply map_disjoint_insert_r_2.
-        { apply lookup_delete. }
+        { apply lookup_delete_eq. }
         by apply map_disjoint_delete_l.
   }
   iIntros "[Hmap Henc]".
@@ -283,7 +283,7 @@ Proof.
     }
     rewrite (map_size_insert_None); last first.
     { eapply map_disjoint_Some_l; eauto.
-      simpl. apply lookup_insert. }
+      simpl. apply lookup_insert_eq. }
     replace (word.add (size mdone) 1) with (uint.Z (size mdone) + 1:u64) by word.
     rewrite Z_u64; last first.
     { split; first lia.

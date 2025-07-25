@@ -221,8 +221,8 @@ Section language.
     step (t2, (σ2, g2)) κ (<[i:=e']>t2 ++ efs, (σ3, g3)).
   Proof.
     intros.
-    edestruct (elem_of_list_split_length t2) as (t21&t22&?&?);
-      first (by eauto using elem_of_list_lookup_2); simplify_eq.
+    edestruct (list_elem_of_split_length t2) as (t21&t22&?&?);
+      first (by eauto using list_elem_of_lookup_2); simplify_eq.
     econstructor; eauto.
     by rewrite insert_app_r_alt // Nat.sub_diag /= -assoc_L.
   Qed.

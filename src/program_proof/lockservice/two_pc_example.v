@@ -764,7 +764,7 @@ Proof.
         iIntros.
         iSplit.
         { (* prove post-commit resources *)
-          rewrite lookup_insert /=.
+          rewrite lookup_insert_eq /=.
           iIntros.
           iMod (prepared_participant_finish_commit with "Htxn [$] Hunfinish") as "HR'".
           { done. }
@@ -1035,7 +1035,7 @@ Proof.
     {
       iApply "Hkvs_rest"; last first.
       {
-        iLeft. rewrite /typed_map.map_insert. rewrite /map_get. simpl. rewrite lookup_insert.
+        iLeft. rewrite /typed_map.map_insert. rewrite /map_get. simpl. rewrite lookup_insert_eq.
         simpl. iFrame.
       }
       iModIntro.

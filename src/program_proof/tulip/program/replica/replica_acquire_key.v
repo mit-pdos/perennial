@@ -35,14 +35,14 @@ Section program.
       { do 2 (rewrite lookup_insert_ne; last done).
         by apply Hptsmabs.
       }
-      by rewrite 2!lookup_insert.
+      by rewrite 2!lookup_insert_eq.
     }
     { intros k Hk.
       destruct (decide (k = key)) as [-> | Hne]; last first.
       { do 2 (rewrite lookup_insert_ne; last done).
         by apply Hsptsmabs.
       }
-      by rewrite 2!lookup_insert.
+      by rewrite 2!lookup_insert_eq.
     }
   Qed.
 

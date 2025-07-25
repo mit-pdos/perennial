@@ -71,7 +71,7 @@ Proof.
   {
     iPureIntro. eauto.
     eapply map_Forall_impl; first eapply kind_heap0_ok.
-    { intros a Hin. revert Hin. rewrite Hdom elem_of_list_to_set elem_of_list_fmap; intros (x&->&Hin).
+    { intros a Hin. revert Hin. rewrite Hdom elem_of_list_to_set list_elem_of_fmap; intros (x&->&Hin).
       apply elem_of_seqZ in Hin. clear -Hsize2 Hin. rewrite /block_bytes in Hsize2.
       word.
     }
@@ -100,7 +100,7 @@ Lemma jrnl_init_obligation2: sty_init_obligation2 (twophase_initP JRNL_KIND_SIZE
 Proof.
   intros ???? (sz&?&Hsize2&?&?&?&?&Hdom&Hksz). rewrite //=. split_and!; eauto.
   eexists; split; eauto. eapply wf_jrnl_alt, kind_heap0_ok.
-  { intros a Hin. revert Hin. rewrite Hdom elem_of_list_to_set elem_of_list_fmap; intros (?&->&Hin).
+  { intros a Hin. revert Hin. rewrite Hdom elem_of_list_to_set list_elem_of_fmap; intros (?&->&Hin).
     apply elem_of_seqZ in Hin. clear -Hsize2 Hin. rewrite /block_bytes in Hsize2.
     word.
   }
@@ -442,9 +442,9 @@ Proof.
   - rewrite //=.
     apply map_eq => i.
     destruct (decide (s = i)).
-    * subst. rewrite lookup_delete.
+    * subst. rewrite lookup_delete_eq.
       symmetry. apply map_lookup_filter_None_2; eauto.
-      right. intros. rewrite lookup_delete //=.
+      right. intros. rewrite lookup_delete_eq //=.
     * rewrite lookup_delete_ne //.
       destruct (decide (is_Some (Γ !! i))).
       ** rewrite ?(map_lookup_filter_key_in _ (λ i, is_Some (Γ !! i))) //.
@@ -646,23 +646,23 @@ Proof.
     { intros y ty ty' Hlookup.
       rewrite lookup_fmap.
       destruct (decide (x = BNamed y)).
-      { subst. rewrite //= lookup_delete; naive_solver. }
+      { subst. rewrite //= lookup_delete_eq; naive_solver. }
       rewrite lookup_binder_delete_ne //.
       destruct (decide (f = BNamed y)).
-      { subst. rewrite lookup_delete; naive_solver. }
+      { subst. rewrite lookup_delete_eq; naive_solver. }
       rewrite lookup_binder_delete_ne //.
       rewrite ?lookup_binder_insert_ne // in Hlookup.
       intros. eapply Hmap; eauto.
       rewrite lookup_fmap //.
     }
     rewrite ?filtered_subst_insert_filter //=.
-    { destruct x; auto => //=. rewrite lookup_delete //. }
+    { destruct x; auto => //=. rewrite lookup_delete_eq //. }
     { destruct f; auto => //=.
       destruct x.
-      * rewrite /= lookup_delete //.
+      * rewrite /= lookup_delete_eq //.
       * rewrite /=. destruct (decide (s0 = s)); subst.
-        ** rewrite lookup_delete //.
-        ** rewrite lookup_delete_ne // lookup_delete //.
+        ** rewrite lookup_delete_eq //.
+        ** rewrite lookup_delete_ne // lookup_delete_eq //.
     }
 Qed.
 
@@ -706,10 +706,10 @@ Proof.
     { intros y ty ty' Hlookup.
       rewrite lookup_fmap.
       destruct (decide (x = BNamed y)).
-      { subst. rewrite //= lookup_delete; naive_solver. }
+      { subst. rewrite //= lookup_delete_eq; naive_solver. }
       rewrite lookup_binder_delete_ne //.
       destruct (decide (f = BNamed y)).
-      { subst. rewrite lookup_delete; naive_solver. }
+      { subst. rewrite lookup_delete_eq; naive_solver. }
       rewrite lookup_binder_delete_ne //.
       rewrite ?lookup_binder_insert_ne // in Hlookup.
       intros. eapply Hmap; eauto.
@@ -717,13 +717,13 @@ Proof.
     }
     { eauto. }
     rewrite ?filtered_subst_insert_filter //=.
-    { destruct x; auto => //=. rewrite lookup_delete //. }
+    { destruct x; auto => //=. rewrite lookup_delete_eq //. }
     { destruct f; auto => //=.
       destruct x.
-      * rewrite /= lookup_delete //.
+      * rewrite /= lookup_delete_eq //.
       * rewrite /=. destruct (decide (s0 = s)); subst.
-        ** rewrite lookup_delete //.
-        ** rewrite lookup_delete_ne // lookup_delete //.
+        ** rewrite lookup_delete_eq //.
+        ** rewrite lookup_delete_ne // lookup_delete_eq //.
     }
   - rewrite Heq0. f_equal.
   - rewrite Heq0. f_equal.
@@ -752,9 +752,9 @@ Proof.
   iIntros (j K Hctx) "Hj".
   inversion Htrans; subst.
   simpl.
-  rewrite lookup_delete.
+  rewrite lookup_delete_eq.
   rewrite -fmap_delete.
-  rewrite ?delete_notin; last first.
+  rewrite ?delete_id; last first.
   { apply not_elem_of_dom. erewrite <-dom_fmap. eauto. }
 
   wpc_bind (subst_map _ el2).

@@ -64,7 +64,7 @@ Section program.
         assert (Hnone : qreadmM !! key = None).
         { by rewrite -not_elem_of_dom Hdomqreadm. }
         apply not_elem_of_dom in Hnotin.
-        do 2 (rewrite delete_notin; last done).
+        do 2 (rewrite delete_id; last done).
         done.
       }
       iFrame "∗ # %".
@@ -76,7 +76,7 @@ Section program.
       { iSplit.
         { destruct (decide (key ∈ dom qreadm)) as [Hin | Hnotin]; last first.
           { apply not_elem_of_dom in Hnotin.
-            by rewrite delete_notin.
+            by rewrite delete_id.
           }
           apply elem_of_dom in Hin as [qread Hqread].
           by iDestruct (big_sepM_delete with "Hqread") as "[_ ?]".
@@ -148,7 +148,7 @@ Section program.
     destruct responded; wp_pures.
     { iDestruct (big_sepM2_insert_2 _ _ _ key with "[Hqr] Hqreadm") as "Hqreadm".
       { iFrame "Hqr". }
-      do 2 (rewrite insert_delete; last done).
+      do 2 (rewrite insert_delete_id; last done).
       iApply "HΦ".
       by iFrame "∗ # %".
     }
@@ -197,7 +197,7 @@ Section program.
     case_bool_decide as Hsize; wp_pures; last first.
     { iDestruct (big_sepM2_insert_2 _ _ _ key with "[Hqr] Hqreadm") as "Hqreadm".
       { iFrame "Hqr". }
-      rewrite 2!insert_delete_insert.
+      rewrite 2!insert_delete_eq.
       iApply "HΦ".
       by iFrame "∗ # %".
     }
@@ -208,12 +208,12 @@ Section program.
     (*@                                                                         @*)
     iDestruct (big_sepM2_insert_2 _ _ _ key with "[Hqr] Hqreadm") as "Hqreadm".
     { simpl. iFrame "Hqr". }
-    rewrite 2!insert_delete_insert.
+    rewrite 2!insert_delete_eq.
     iAssert (own_greader_qreadm grd qreadm' ts γ)%I
       with "[HqreadmP HqreadmM Hqreadm]" as "Hqreadm".
     { by iFrame "∗ # %". }
     wp_apply (wp_GroupReader__pickLatestValue with "Hqreadm").
-    { apply lookup_insert. }
+    { apply lookup_insert_eq. }
     { rewrite /cquorum_size.
       rewrite dom_insert_L size_union; last first.
       { apply not_elem_of_dom in Hresponded. clear -Hresponded. set_solver. }

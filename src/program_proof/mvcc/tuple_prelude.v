@@ -30,7 +30,7 @@ Lemma val_to_ver_with_lookup (x : val) (l : list (u64 * bool * byte_string)) (i 
   (∃ (b : u64) (d : bool) (v : byte_string), x = ver_to_val (b, d, v) ∧ l !! i = Some (b, d, v)).
 Proof.
   intros H.
-  apply list_lookup_fmap_inv in H as [[[y1 y2] y3] [Heq Hsome]].
+  apply list_lookup_fmap_Some_1 in H as [[[y1 y2] y3] [Heq Hsome]].
   naive_solver.
 Qed.
 
@@ -46,7 +46,7 @@ Lemma spec_find_ver_lt_Some (vers : list pver) (tid : u64) (ver : pver) :
   ∃ ver', spec_find_ver vers tid = Some ver'.
 Proof.
   intros Hin Hlt.
-  apply elem_of_reverse, elem_of_list_lookup_1 in Hin as [idx Hlookup].
+  apply elem_of_reverse, list_elem_of_lookup_1 in Hin as [idx Hlookup].
   unfold spec_find_ver, spec_find_ver_reverse.
   rewrite -(take_drop_middle _ _ _ Hlookup).
   rewrite foldl_app.
@@ -110,7 +110,7 @@ Proof.
   simpl.
   setoid_rewrite Forall_forall in Hlast.
   assert (H : p ∈ vers).
-  { apply elem_of_reverse. rewrite E. apply elem_of_list_here. }
+  { apply elem_of_reverse. rewrite E. apply list_elem_of_here. }
   assert (H1 : uint.Z p.1.1 < uint.Z tid1).
   { apply Hlast in H. apply Z.lt_le_trans with (uint.Z tidlast); done. }
   assert (H2 : uint.Z p.1.1 < uint.Z tid2).

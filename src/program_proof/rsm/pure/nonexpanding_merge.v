@@ -109,12 +109,12 @@ Proof.
     rewrite map_filter_insert_True; last done.
     by rewrite IH.
   - rewrite map_filter_insert_False; last done.
-    rewrite delete_notin; last done.
+    rewrite delete_id; last done.
     apply (mergef_nonexpanding_Some (ma !! k) t) in Hne as Hc.
     destruct Hc as [c Hc].
     erewrite <- insert_merge_r; last done.
     rewrite map_filter_insert_False; last done.
-    rewrite delete_notin; first apply IH.
+    rewrite delete_id; first apply IH.
     rewrite lookup_merge Hlookup.
     by destruct (ma !! k); simpl; [apply mergef_nonexpanding_None |].
 Qed.

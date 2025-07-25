@@ -11,11 +11,11 @@ Proof.
   intros Hsubset Hl2.
   apply List.Forall_forall.
   intros x Hin_l1.
-  apply elem_of_list_In in Hin_l1.
+  apply list_elem_of_In in Hin_l1.
   destruct (elem_of_subseteq l1 l2) as (Hsubset_elem_of&_).
   apply Hsubset_elem_of with (x := x) in Hsubset; intuition.
   destruct (List.Forall_forall f l2) as (Hl2_impl&_).
-  apply elem_of_list_In in Hsubset.
+  apply list_elem_of_In in Hsubset.
   apply (Hl2_impl Hl2 x) in Hsubset.
   done.
 Qed.
@@ -34,7 +34,7 @@ Lemma elem_of_subseteq_concat {A} (x:list A) (l:list (list A)) :
   x ∈ l → x ⊆ concat l.
 Proof.
   intros Helem.
-  apply elem_of_list_split in Helem as (l1 & l2 & ->).
+  apply list_elem_of_split in Helem as (l1 & l2 & ->).
   rewrite concat_app concat_cons.
   set_solver.
 Qed.
@@ -57,16 +57,16 @@ Proof.
   intros Hsubseteq.
   apply (iffRL (elem_of_subseteq _ _)).
   intros y Hin.
-  destruct (elem_of_list_fmap_2 _ _ _ Hin) as (x&Hy&Hx).
+  destruct (list_elem_of_fmap_1 _ _ _ Hin) as (x&Hy&Hx).
   apply ((iffLR (elem_of_subseteq _ _)) Hsubseteq x) in Hx.
-  apply (elem_of_list_fmap_1_alt _ _ _ _ Hx Hy).
+  apply (list_elem_of_fmap_2' _ _ _ _ Hx Hy).
 Qed.
 
 Lemma drop_subseteq {A} (l: list A) n :
   drop n l ⊆ l.
 Proof.
   intros x.
-  rewrite !elem_of_list_lookup.
+  rewrite !list_elem_of_lookup.
   setoid_rewrite lookup_drop.
   naive_solver.
 Qed.

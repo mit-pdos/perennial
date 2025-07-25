@@ -167,13 +167,13 @@ Section push.
     iSplit; last first.
     { iPureIntro.
       rewrite length_take.
-      apply elem_of_list_lookup_2 in Hlsn.
+      apply list_elem_of_lookup_2 in Hlsn.
       rewrite Hperm -Hlsns' in Hlsn.
-      apply elem_of_list_lookup_1 in Hlsn as [j Hlsn].
+      apply list_elem_of_lookup_1 in Hlsn as [j Hlsn].
       rewrite list_lookup_fmap in Hlsn.
       destruct (map_to_list lsnpeers !! j) as [[nidy lsny] |] eqn:Hy; last done.
       inv Hlsn.
-      apply elem_of_list_lookup_2, elem_of_map_to_list in Hy.
+      apply list_elem_of_lookup_2, elem_of_map_to_list in Hy.
       specialize (Hlelog _ _ Hy). simpl in Hlelog.
       clear -Hlelog. word.
     }
@@ -269,7 +269,7 @@ Section push.
       rewrite elem_of_map_to_list.
       rewrite map_lookup_filter_Some /=.
       split; first apply Hinsorts.
-      apply elem_of_list_lookup in Hnlx as [j Hnlx].
+      apply list_elem_of_lookup in Hnlx as [j Hnlx].
       subst nldrops.
       rewrite lookup_drop /= in Hnlx.
       assert (lsnsorts !! (uint.nat i + j)%nat = Some lsnx) as Hlsnx.

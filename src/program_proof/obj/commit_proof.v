@@ -226,7 +226,7 @@ Opaque struct.t.
       eapply valid_off_block in H5; eauto.
       rewrite H2. rewrite H5.
       rewrite lookup_fmap.
-      rewrite lookup_insert.
+      rewrite lookup_insert_eq.
       simpl. done.
 
     - wp_pures.
@@ -301,9 +301,9 @@ Opaque struct.t.
         apply map_get_false in H0; destruct H0; subst.
         iDestruct (big_sepM2_lookup_l_none with "Hbufamap_done") as %Hnone; eauto.
 
-        rewrite delete_insert_delete.
-        rewrite delete_notin; eauto.
-        rewrite /map_insert lookup_insert delete_notin; eauto.
+        rewrite delete_insert_eq.
+        rewrite delete_id; eauto.
+        rewrite /map_insert lookup_insert_eq delete_id; eauto.
         iFrame "Hbufamap_done".
         iSplit; first by done.
         iPureIntro.
@@ -353,7 +353,7 @@ Opaque struct.t.
       destruct (decide (a.(addrOff) = off)).
       + subst.
         rewrite lookup_fmap.
-        rewrite lookup_insert. simpl.
+        rewrite lookup_insert_eq. simpl.
         specialize (Hinstall_ok a.(addrOff)).
         destruct (decide (a.(addrOff) = a.(addrOff))); try congruence.
         destruct (default ∅ ((gmap_addr_by_block (buf_ <$> bufamap ∖ bufamap_todo)) !!
@@ -551,7 +551,7 @@ Proof.
     eapply H. constructor.
   - intros.
     destruct (decide (blkno = a.(update.addr))); subst.
-    + apply elem_of_dom. rewrite lookup_insert. eauto.
+    + apply elem_of_dom. rewrite lookup_insert_eq. eauto.
     + apply elem_of_dom. rewrite lookup_insert_ne; eauto. rewrite -elem_of_dom.
       eapply H. econstructor. eauto.
 Qed.
@@ -581,11 +581,11 @@ Proof.
     eapply H3.
   }
   inversion H; clear H; subst.
-  { rewrite lookup_insert. eauto. }
+  { rewrite lookup_insert_eq. eauto. }
   rewrite lookup_insert_ne.
   { apply IHupdlist_olds; eauto. }
   intro H. rewrite H in H3. apply H3.
-  eapply elem_of_list_fmap_1_alt; eauto.
+  eapply list_elem_of_fmap_2'; eauto.
 Qed.
 
 Definition txn_crashstates_matches_pointsto σl γ σl' a v :
@@ -715,7 +715,7 @@ Proof using txnG0 Σ.
       { simpl in Hx. congruence. }
       simpl.
       iDestruct (big_sepM_lookup_acc with "Ha") as "[H Ha]".
-      { apply lookup_insert. }
+      { apply lookup_insert_eq. }
       iNamed "H".
       iDestruct (ghost_map_lookup with "Hlogheapctx Hmapsto_log") as %Hvalid.
       eapply gmap_addr_by_block_lookup in Hvalid as Hvalidblock; destruct Hvalidblock; intuition idtac.
@@ -771,7 +771,7 @@ Proof using txnG0 Σ.
       as "%Hlwh_any".
     {
       iIntros (lv Hlv).
-      eapply elem_of_list_lookup_1 in Hlv. destruct Hlv as [i Hlv].
+      eapply list_elem_of_lookup_1 in Hlv. destruct Hlv as [i Hlv].
       iDestruct (big_sepML_lookup_l_acc with "Hheapmatch") as (k v) "(% & Hlv & _)"; eauto.
       iDestruct "Hlv" as "[_ Hlv]".
       iDestruct (wal_heap_pointsto_latest_helper with "[$Hiswal_heap $Hwal_latest $Hlv]") as "%Hlwh_ok".
@@ -782,7 +782,7 @@ Proof using txnG0 Σ.
       as "%Hupdlist_olds_σl_latest".
     {
       iIntros (lv Hlv).
-      eapply elem_of_list_lookup_1 in Hlv. destruct Hlv as [i Hlv].
+      eapply list_elem_of_lookup_1 in Hlv. destruct Hlv as [i Hlv].
       iDestruct (big_sepML_lookup_l_acc with "Hheapmatch") as (k v) "(% & Hlv & _)"; eauto.
       iDestruct "Hlv" as "[Hlv _]".
       iDestruct "Hlv" as (blockK v0) "(<- & _ & _ & _)".
@@ -798,7 +798,7 @@ Proof using txnG0 Σ.
       apply elem_of_dom in Hblkno; destruct Hblkno.
       iDestruct (big_sepML_lookup_m_acc with "Hupdmap_addr") as (i lv) "(% & <- & _)"; eauto.
       iPureIntro.
-      eapply elem_of_list_lookup_2.
+      eapply list_elem_of_lookup_2.
       rewrite list_lookup_fmap. erewrite H0. done.
     }
     iModIntro.
@@ -901,7 +901,7 @@ Proof using txnG0 Σ.
 
       assert (u = lv.1); subst.
       {
-        eapply elem_of_list_lookup_1 in Hlv_in. destruct Hlv_in as [j Hlv_in].
+        eapply list_elem_of_lookup_1 in Hlv_in. destruct Hlv_in as [j Hlv_in].
         rewrite list_lookup_fmap in H2.
         destruct (updlist_olds !! i) eqn:Hu'; simpl in *; try congruence.
         destruct (decide (i = j)); subst; try congruence.
@@ -1060,8 +1060,8 @@ Proof using txnG0 Σ.
           as Hupdlist_olds_σl_latest_blkno.
         {
           intros blkno Hblkno.
-          eapply elem_of_list_fmap_2 in Hblkno. destruct Hblkno as [u [? Hblkno]]. subst.
-          eapply elem_of_list_fmap_2 in Hblkno. destruct Hblkno as [lv [? Hblkno]]. subst.
+          eapply list_elem_of_fmap_1 in Hblkno. destruct Hblkno as [u [? Hblkno]]. subst.
+          eapply list_elem_of_fmap_1 in Hblkno. destruct Hblkno as [lv [? Hblkno]]. subst.
           eauto.
         }
 
@@ -1075,11 +1075,11 @@ Proof using txnG0 Σ.
 
       destruct (decide (k ∈ update.addr <$> updlist_olds.*1)).
       {
-        eapply elem_of_list_fmap_2 in e. destruct e as [u [? Hu]]. subst.
-        eapply elem_of_list_fmap_2 in Hu. destruct Hu as [lv [? Hlv]]. subst.
+        eapply list_elem_of_fmap_1 in e. destruct e as [u [? Hu]]. subst.
+        eapply list_elem_of_fmap_1 in Hu. destruct Hu as [lv [? Hlv]]. subst.
         eapply Hupdlist_olds_σl_latest in Hlv as Hbufamap.
         apply elem_of_dom in Hbufamap. destruct Hbufamap as [bufamap_lv Hbufamap].
-        eapply elem_of_list_lookup_1 in Hlv as Hlv'. destruct Hlv' as [lvi Hlv'].
+        eapply list_elem_of_lookup_1 in Hlv as Hlv'. destruct Hlv' as [lvi Hlv'].
         iDestruct (big_sepML_lookup_l_acc with "Hupdmap") as (blkno bufamap_lv') "Hupdmap_lv"; eauto.
         { rewrite list_lookup_fmap. erewrite Hlv'. done. }
         iDestruct "Hupdmap_lv" as "(%Hbufamap_lv' & [<- %Hkindok] & _)".

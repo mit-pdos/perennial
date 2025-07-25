@@ -117,7 +117,7 @@ Section advance.
       set bm' := insert _ _ bm.
       (* Extract a witness that this replica accepts [false] at the fast rank. *)
       iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
-      { by rewrite lookup_insert. }
+      { by rewrite lookup_insert_eq. }
       iAssert (prepare_promise γ gid rid ts rk O false)%I as "#Hpromise".
       { iFrame "Hlb".
         subst blt'.
@@ -134,7 +134,7 @@ Section advance.
       { rewrite -not_elem_of_dom Hdombvm. by apply not_elem_of_dom in Hbmts. }
       (* And then insert [(rk, cid)] into the submap. *)
       iMod (replica_backup_vote_insert ts rk cid with "Hbvm") as "[Hbvm #Hvote]".
-      { by rewrite lookup_insert. }
+      { by rewrite lookup_insert_eq. }
       { done. }
       (* Obtain exclusive tokens for [cid] by inserting [(rk, cid)] into the submap of btm. *)
       (* Insert [(ts, ∅)] into the backup token map. *)
@@ -142,7 +142,7 @@ Section advance.
       { rewrite -not_elem_of_dom Hdombtm. by apply not_elem_of_dom in Hbmts. }
       (* And then insert [(rk, gids_all)] into the submap. *)
       iMod (replica_backup_token_insert ts rk gids_all with "Hbtm") as "[Hbtm Hbts]".
-      { by rewrite lookup_insert. }
+      { by rewrite lookup_insert_eq. }
       { done. }
       iDestruct (big_sepM_insert_2 _ _ ts (O, false) with "[] Hfpw") as "Hfpw'".
       { rewrite /fast_proposal_witness /=.
@@ -157,7 +157,7 @@ Section advance.
       { iPureIntro.
         rewrite 5!dom_insert_L Hdombvm Hdombtm.
         do 2 (split; first set_solver).
-        rewrite 2!insert_empty 2!insert_insert.
+        rewrite 2!insert_empty 2!insert_insert_eq.
         split.
         { apply confined_by_ballot_map_inv_advance_absent; [apply Hbmts | | apply Hbmbvm].
           rewrite extend_length /=.
@@ -224,7 +224,7 @@ Section advance.
     simpl in Hlenblt. subst rl.
     iAssert (prepare_promise γ gid rid ts rk psl.1 psl.2)%I as "#Hpromise".
     { iDestruct (replica_ballot_witness ts with "Hbm") as "#Hlb".
-      { by rewrite lookup_insert. }
+      { by rewrite lookup_insert_eq. }
       iFrame "Hlb".
       subst blt'.
       rewrite latest_term_extend_Reject.

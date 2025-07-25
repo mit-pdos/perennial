@@ -103,7 +103,7 @@ Section local_read.
         clear -Hb Hle. lia.
       }
       iDestruct (big_sepM_insert_2 with "Hkvd Hkvdm") as "Hkvdm".
-      rewrite insert_delete; last apply Hvd.
+      rewrite insert_delete_id; last apply Hvd.
       iFrame "∗ # %".
       iPureIntro.
       rewrite (lookup_alter_Some _ _ _ _ Hspts).
@@ -138,7 +138,7 @@ Section local_read.
         clear -Ht Htge Hz. lia.
       }
       iDestruct (big_sepM_insert_2 with "Hkvd Hkvdm") as "Hkvdm".
-      rewrite insert_delete; last apply Hvd.
+      rewrite insert_delete_id; last apply Hvd.
       iFrame "∗ # %".
       iPureIntro.
       rewrite (lookup_alter_Some _ _ _ _ Hspts).
@@ -178,14 +178,14 @@ Section local_read.
       lia.
     }
     iDestruct (big_sepM_insert_2 with "Hkvd Hkvdm") as "Hkvdm".
-    rewrite insert_delete_insert.
+    rewrite insert_delete_eq.
     iFrame "∗ # %".
     iModIntro.
     iSplit.
     { iIntros (k t).
       destruct (decide (k = key)) as [-> | Hne]; last first.
       { by rewrite lookup_insert_ne. }
-      rewrite lookup_insert Hhist Hpts.
+      rewrite lookup_insert_eq Hhist Hpts.
       destruct (decide (rts ≤ t)%nat) as [Hgerts | Hltrts].
       { rewrite lookup_ge_None_2; first done.
         rewrite extend_length.

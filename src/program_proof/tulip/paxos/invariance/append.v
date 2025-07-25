@@ -121,7 +121,7 @@ Section append.
     iPureIntro.
     intros t.
     destruct (decide (t = term)) as [-> | Hne]; last by rewrite lookup_insert_ne.
-    rewrite lookup_insert.
+    rewrite lookup_insert_eq.
     specialize (Hvp term).
     inversion Hvp as [loglb y Hprefix Heq1 Heq2|]; subst; [ simpl | ].
     - constructor.

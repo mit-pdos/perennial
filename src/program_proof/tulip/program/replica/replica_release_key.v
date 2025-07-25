@@ -30,7 +30,7 @@ Section program.
       rewrite lookup_insert_ne; last done.
       by apply Hptsmabs.
     }
-    by rewrite lookup_delete lookup_insert.
+    by rewrite lookup_delete_eq lookup_insert_eq.
   Qed.
 
 End program.

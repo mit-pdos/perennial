@@ -94,7 +94,7 @@ Lemma map_get_insert k v m def :
   map_get (<[k:=v]> m, def) k = (v, true).
 Proof.
   rewrite /map_get.
-  rewrite lookup_insert //.
+  rewrite lookup_insert_eq //.
 Qed.
 
 Lemma map_get_insert_ne k k' v m def :
@@ -292,7 +292,7 @@ Proof using IntoValComparable0.
       rewrite Hmv' H2 /map_del /=.
       apply (inj (R:=(=))) in H1; last apply _.
       subst.
-      rewrite delete_insert_delete.
+      rewrite delete_insert_eq.
       auto.
     + iSpecialize ("IH" $! _ _ _ H).
       wp_pures.
@@ -354,9 +354,9 @@ Proof using IntoValComparable0.
       replace ((let (m0, def) := m' in (delete k m0, def)%core).1) with (delete k m'.1); last first.
       { destruct m'. done. }
       replace (delete k m'.1) with (delete k m.1); last first.
-      { rewrite Hmuntype. by rewrite delete_insert_delete. }
+      { rewrite Hmuntype. by rewrite delete_insert_eq. }
       rewrite map_size_delete_Some; last first.
-      { exists v. rewrite Hmuntype. simpl. apply lookup_insert. }
+      { exists v. rewrite Hmuntype. simpl. apply lookup_insert_eq. }
       done.
     }
     set (s:=size m.1) in *.
@@ -497,7 +497,7 @@ Proof.
   apply map_eq; intros k0.
   rewrite !lookup_union.
   destruct (decide (k = k0)); subst.
-  - rewrite lookup_insert Hnone Hsome.
+  - rewrite lookup_insert_eq Hnone Hsome.
     rewrite union_Some_l union_Some_r //.
   - rewrite lookup_insert_ne //.
     destruct_with_eqn (m' !! k0).
@@ -511,7 +511,7 @@ Proof.
   apply map_eq; intros k.
   rewrite !lookup_union.
   destruct (decide (a = k)); subst.
-  - rewrite ?lookup_insert lookup_delete.
+  - rewrite ?lookup_insert_eq lookup_delete_eq.
     destruct (m1 !! k); eauto.
   - rewrite ?lookup_insert_ne ?lookup_delete_ne //.
 Qed.
@@ -529,7 +529,7 @@ Proof.
   { apply map_disjoint_alt; auto. }
   intros.
   destruct (decide (k = i)); subst.
-  - rewrite lookup_delete; eauto.
+  - rewrite lookup_delete_eq; eauto.
   - rewrite lookup_insert_ne //.
     destruct (Hdisj' i); eauto.
     rewrite lookup_delete_ne; eauto.
@@ -544,7 +544,7 @@ Proof.
   { apply map_disjoint_alt; eauto. }
   apply map_disjoint_alt; intros.
   destruct (decide (a = i)); subst.
-  - rewrite lookup_delete; eauto.
+  - rewrite lookup_delete_eq; eauto.
   - rewrite lookup_insert_ne //.
     destruct (Hdisj' i); eauto.
     rewrite lookup_insert_ne in H; eauto.
@@ -596,9 +596,9 @@ Proof using IntoValComparable0.
     wp_apply ("Hbody" with "[$HP]").
     { iPureIntro; split.
       { eapply map_disjoint_Some_l; eauto.
-        rewrite lookup_insert; eauto. }
+        rewrite lookup_insert_eq; eauto. }
       erewrite lookup_union_Some_l; eauto.
-      rewrite lookup_insert; eauto.
+      rewrite lookup_insert_eq; eauto.
     }
     iIntros "HP".
     wp_pures.

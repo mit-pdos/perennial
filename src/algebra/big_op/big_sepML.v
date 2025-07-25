@@ -90,9 +90,9 @@ Section maplist.
     iIntros "Hml".
     rewrite big_sepML_eq.
     iDestruct "Hml" as (lm) "[% Hml]".
-    assert (lv ∈ lv :: l) by apply elem_of_list_here.
+    assert (lv ∈ lv :: l) by apply list_elem_of_here.
     setoid_rewrite H0 in H1.
-    apply elem_of_list_fmap_2 in H1 as [[k lv0] H1].
+    apply list_elem_of_fmap_1 in H1 as [[k lv0] H1].
     simpl in H1; intuition subst.
     apply elem_of_map_to_list in H3.
     iDestruct (big_sepM2_lookup_r_some with "Hml") as %[v Hmk]; eauto.
@@ -103,10 +103,10 @@ Section maplist.
     iPureIntro.
     replace lm with (<[k := lv0]> (delete k lm)) in H0.
     2: {
-      rewrite insert_delete; eauto.
+      rewrite insert_delete_id; eauto.
     }
     setoid_rewrite map_to_list_insert in H0.
-    2: apply lookup_delete.
+    2: apply lookup_delete_eq.
     simpl in H0.
     apply Permutation.Permutation_cons_inv in H0.
     done.
@@ -119,25 +119,25 @@ Section maplist.
     <[i := lv']> l ≡ₚ (map_to_list (<[k := lv']> lm)).*2.
   Proof.
     intros.
-    rewrite -insert_delete_insert.
+    rewrite -insert_delete_eq.
     rewrite map_to_list_insert.
-    2: apply lookup_delete.
+    2: apply lookup_delete_eq.
 
     erewrite delete_Permutation in H2; eauto.
     erewrite (delete_Permutation _ i lv').
-    2: { rewrite list_lookup_insert; eauto.
+    2: { rewrite list_lookup_insert_eq; eauto.
          eapply lookup_lt_Some; eauto. }
     erewrite <- (insert_id lm) in H2; eauto.
-    rewrite -insert_delete_insert in H2.
+    rewrite -insert_delete_eq in H2.
     erewrite map_to_list_insert in H2.
-    2: apply lookup_delete.
+    2: apply lookup_delete_eq.
     simpl in *.
     apply Permutation.Permutation_cons_inv in H2.
     rewrite -H2.
     f_equiv.
     repeat rewrite delete_take_drop.
-    rewrite -> take_insert by lia.
-    rewrite -> drop_insert_gt by lia.
+    rewrite -> take_insert_ge by lia.
+    rewrite -> drop_insert_lt by lia.
     f_equiv.
   Qed.
 
@@ -150,9 +150,9 @@ Section maplist.
     intros.
     erewrite delete_Permutation in H2; eauto.
     erewrite <- (insert_id lm) in H2; eauto.
-    rewrite -insert_delete_insert in H2.
+    rewrite -insert_delete_eq in H2.
     erewrite map_to_list_insert in H2.
-    2: apply lookup_delete.
+    2: apply lookup_delete_eq.
     simpl in *.
     apply Permutation.Permutation_cons_inv in H2.
     eauto.
@@ -173,9 +173,9 @@ Section maplist.
     iDestruct (big_sepM2_delete with "Hml") as "[Hk Hml]"; eauto.
 
     apply elem_of_map_to_list in H1 as H1'.
-    eapply (elem_of_list_fmap_1 snd) in H1'.
+    eapply (list_elem_of_fmap_2 snd) in H1'.
     rewrite <- H0 in H1'.
-    eapply elem_of_list_lookup_1 in H1'.
+    eapply list_elem_of_lookup_1 in H1'.
     destruct H1'.
 
     iExists _, _; iFrame.
@@ -191,9 +191,9 @@ Section maplist.
       lm !! k = Some lv.
   Proof.
     intros.
-    assert (lv ∈ l). { eapply elem_of_list_lookup_2; eauto. }
+    assert (lv ∈ l). { eapply list_elem_of_lookup_2; eauto. }
     rewrite -> H1 in H2.
-    eapply elem_of_list_fmap_2 in H2.
+    eapply list_elem_of_fmap_1 in H2.
     destruct H2. intuition subst.
     destruct x.
     apply elem_of_map_to_list in H4.
@@ -208,9 +208,9 @@ Section maplist.
   Proof.
     intros.
     apply elem_of_map_to_list in H0.
-    eapply elem_of_list_fmap_1 in H0.
+    eapply list_elem_of_fmap_2 in H0.
     erewrite <- H1 in H0.
-    eapply elem_of_list_lookup_1 in H0.
+    eapply list_elem_of_lookup_1 in H0.
     eauto.
   Qed.
 
@@ -379,10 +379,10 @@ Section maplist.
         rewrite map_zip_empty_l. iApply big_sepM_empty. done. }
       iDestruct (big_sepM_insert with "Hm") as "[Hi Hm]"; eauto.
       assert (is_Some (lm !! i)) as Hlmi.
-      { apply elem_of_dom. rewrite -Hmlm. apply elem_of_dom. rewrite lookup_insert; eauto. }
+      { apply elem_of_dom. rewrite -Hmlm. apply elem_of_dom. rewrite lookup_insert_eq; eauto. }
       destruct Hlmi.
       replace lm with (<[i:=x0]> (delete i lm)).
-      2: { rewrite insert_delete; eauto. }
+      2: { rewrite insert_delete_id; eauto. }
       rewrite map_zip_insert.
       iApply big_sepM_insert.
       { rewrite map_zip_lookup_none_1; eauto. }
@@ -406,7 +406,7 @@ Section maplist.
     iIntros (k x Hkx) "H".
     iDestruct "H" as (lv) "[% H]".
     iExists _. iFrame.
-    iPureIntro. rewrite H0. eapply elem_of_map_to_list in H1. eapply (elem_of_list_fmap_1 snd) in H1. eapply H1.
+    iPureIntro. rewrite H0. eapply elem_of_map_to_list in H1. eapply (list_elem_of_fmap_2 snd) in H1. eapply H1.
   Qed.
 
   Theorem big_sepML_sepL_split Φ (P : LV -> PROP) m l :
@@ -450,10 +450,10 @@ Section maplist.
     iDestruct "Hl" as "[Hx Hl]".
     assert (is_Some (m !! i)) as Hmi.
     { apply elem_of_dom. rewrite H1. apply elem_of_dom.
-      rewrite lookup_insert. eauto. }
+      rewrite lookup_insert_eq. eauto. }
     destruct Hmi.
     replace m with (<[i:=x0]> (delete i m)).
-    2: { rewrite insert_delete; eauto. }
+    2: { rewrite insert_delete_id; eauto. }
     rewrite map_zip_insert.
     iApply big_sepM_insert.
     { rewrite map_zip_lookup_none_2; eauto. }
@@ -535,12 +535,12 @@ Section maplist.
     destruct (decide (i < j)); eauto.
     - eapply (list_some_map_to_list _ (j-1)) in Hdel as Hdelk.
       2: {
-        rewrite -> lookup_delete_ge by lia.
+        rewrite -> list_lookup_delete_ge by lia.
         replace (S (j-1)) with j by lia; eauto.
       }
       destruct Hdelk as [kj Hkj].
       destruct (decide (ki = kj)); subst.
-      { rewrite lookup_delete in Hkj; congruence. }
+      { rewrite lookup_delete_eq in Hkj; congruence. }
 
       iDestruct (big_sepM2_lookup_r_some with "Hlm") as (mi) "%Hmi"; eauto.
       iDestruct (big_sepM2_delete with "Hlm") as "[Hi Hlm]"; eauto.
@@ -554,12 +554,12 @@ Section maplist.
 
     - eapply (list_some_map_to_list _ j) in Hdel as Hdelk.
       2: {
-        rewrite -> lookup_delete_lt by lia.
+        rewrite -> list_lookup_delete_lt by lia.
         eauto.
       }
       destruct Hdelk as [kj Hkj].
       destruct (decide (ki = kj)); subst.
-      { rewrite lookup_delete in Hkj; congruence. }
+      { rewrite lookup_delete_eq in Hkj; congruence. }
 
       iDestruct (big_sepM2_lookup_r_some with "Hlm") as (mi) "%Hmi"; eauto.
       iDestruct (big_sepM2_delete with "Hlm") as "[Hi Hlm]"; eauto.
@@ -656,9 +656,9 @@ Section maplist2.
       iExists ((a, w) :: lw).
       iSplitR; first by subst; eauto.
       replace m with (<[k := v]> (delete k m)) at 2.
-      2: { rewrite insert_delete; eauto. }
+      2: { rewrite insert_delete_id; eauto. }
       iApply big_sepML_insert.
-      { rewrite lookup_delete; eauto. }
+      { rewrite lookup_delete_eq; eauto. }
       iFrame.
   Qed.
 

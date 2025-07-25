@@ -1555,7 +1555,7 @@ Proof.
       destruct i.
       {
         simpl.
-        rewrite lookup_take; last lia.
+        rewrite lookup_take_lt; last lia.
         rewrite lookup_drop.
         rewrite Nat.add_0_r.
         done.

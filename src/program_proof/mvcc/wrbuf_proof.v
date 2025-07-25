@@ -159,7 +159,7 @@ Proof.
     }
     rewrite elem_of_app in Helem.
     destruct Helem; first by auto.
-    rewrite elem_of_list_singleton in H. by rewrite H in Heqb0.
+    rewrite list_elem_of_singleton in H. by rewrite H in Heqb0.
   }
   { iExists _.
     iFrame.
@@ -250,8 +250,8 @@ Proof.
     unfold spec_wrbuf__Lookup.
     rewrite Hmods.
     rewrite -elem_of_list_to_map; last by apply NoDup_wrent_to_key_dbval.
-    apply elem_of_list_fmap_1_alt with ent.
-    { by apply elem_of_list_lookup_2 with (uint.nat pos). }
+    apply list_elem_of_fmap_2' with ent.
+    { by apply list_elem_of_lookup_2 with (uint.nat pos). }
     { rewrite -Hkey. auto using surjective_pairing. }
   }
   (* cache miss *)
@@ -414,7 +414,7 @@ Proof.
     split; first by apply NoDup_singleton.
     split; last done.
     intros x H.
-    apply elem_of_list_singleton in H.
+    apply list_elem_of_singleton in H.
     by subst x.
   }
   { (* prove insertion to list -> insertion to map representation *)
@@ -563,7 +563,7 @@ Proof.
     split; first by apply NoDup_singleton.
     split; last done.
     intros x H.
-    apply elem_of_list_singleton in H.
+    apply list_elem_of_singleton in H.
     by subst x.
   }
   { (* prove insertion to list -> insertion to map representation *)

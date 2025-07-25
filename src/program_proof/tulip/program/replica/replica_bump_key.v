@@ -48,7 +48,7 @@ Section program.
         { rewrite lookup_insert_ne; last done.
           by apply Hsptsmabs.
         }
-        rewrite lookup_insert Hspts.
+        rewrite lookup_insert_eq Hspts.
         f_equal.
         clear -Hts. word.
       }
@@ -90,7 +90,7 @@ Section program.
       { do 2 (rewrite lookup_insert_ne; last done).
         by apply Hsptsmabs.
       }
-      rewrite 2!lookup_insert.
+      rewrite 2!lookup_insert_eq.
       f_equal.
       clear -Hcond. word.
     }
@@ -110,7 +110,7 @@ Section program.
         { do 2 (rewrite lookup_insert_ne; last done).
           by apply Hsptsmabs.
         }
-        rewrite 2!lookup_insert.
+        rewrite 2!lookup_insert_eq.
         f_equal.
         word.
       }

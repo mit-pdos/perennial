@@ -179,7 +179,7 @@ Proof.
       { iPureIntro. rewrite length_insert. eauto. }
       { iPureIntro. intros i Hlt.
         destruct (decide (i = k)).
-        { subst. rewrite list_lookup_insert; eauto.
+        { subst. rewrite list_lookup_insert_eq; eauto.
           word. }
         { rewrite list_lookup_insert_ne; eauto.
           word. }
@@ -187,7 +187,7 @@ Proof.
       iModIntro. iIntros (? Hin Hlookup').
       destruct (decide (sid = uint.nat k)).
       {
-        subst. rewrite list_lookup_insert in Hlookup'; last by word.
+        subst. rewrite list_lookup_insert_eq in Hlookup'; last by word.
         iExists _. inversion Hlookup'; subst. iFrame "His_shard".
         eauto.
       }
@@ -235,7 +235,7 @@ Proof.
       { iPureIntro. rewrite length_insert. eauto. }
       { iPureIntro. intros i Hlt.
         destruct (decide (i = k)).
-        { subst. rewrite list_lookup_insert; eauto.
+        { subst. rewrite list_lookup_insert_eq; eauto.
           word. }
         { rewrite list_lookup_insert_ne; eauto.
           word. }
@@ -243,7 +243,7 @@ Proof.
       iModIntro. iIntros (? Hin Hlookup').
       destruct (decide (sid = uint.nat k)).
       {
-        subst. rewrite list_lookup_insert in Hlookup'; last by word.
+        subst. rewrite list_lookup_insert_eq in Hlookup'; last by word.
         iExists _. inversion Hlookup'; subst. iFrame "His_shard".
         eauto.
       }

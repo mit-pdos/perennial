@@ -225,7 +225,7 @@ Proof.
   { done. }
   iIntros "* Hm". wp_auto. wp_apply (wp_map_insert with "Hm") as "Hm".
   wp_apply (wp_map_get with "Hm") as "Hm".
-  rewrite lookup_insert. wp_auto. iApply "HΦ".
+  rewrite lookup_insert_eq. wp_auto. iApply "HΦ".
   done.
 Qed.
 

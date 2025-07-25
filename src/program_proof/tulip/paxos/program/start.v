@@ -123,7 +123,7 @@ Section start.
       destruct Hiter as (_ & Hbound & Hnid).
       wp_apply wp_fork.
       { assert (is_Some (addrm !! nid)) as [addr Haddr].
-        { apply elem_of_list_lookup_2 in Hnid.
+        { apply list_elem_of_lookup_2 in Hnid.
           rewrite -elem_of_dom.
           set_solver.
         }

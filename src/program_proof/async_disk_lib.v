@@ -685,7 +685,7 @@ Proof.
   - rewrite ?big_sepM_singleton. iNext. iIntros "(%Hlookup&Ha)".
     iRight in "HΦ". iApply "HΦ". iFrame. iPureIntro.
     eapply (Hlookup a (b0, b)) => //=.
-    rewrite lookup_singleton //.
+    rewrite lookup_singleton_eq //.
 Qed.
 
 End goose.

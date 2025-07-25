@@ -196,7 +196,7 @@ Proof.
       {
         exfalso. simpl in *. word.
       }
-      rewrite lookup_take; last first.
+      rewrite lookup_take_lt; last first.
       { word. }
       rewrite lookup_drop.
       rewrite HcompleteLen.

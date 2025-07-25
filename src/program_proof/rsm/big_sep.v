@@ -27,14 +27,14 @@ Section bi.
     rewrite dom_insert_L in Hdom.
     assert (Hm1k : k ∈ dom m1) by set_solver.
     rewrite elem_of_dom in Hm1k. destruct Hm1k as [y Hy].
-    apply insert_delete in Hy. rewrite -Hy.
+    apply insert_delete_id in Hy. rewrite -Hy.
     set m0 := delete _ _.
     iDestruct (big_sepM_insert with "Hm1") as "[HΦ Hm1]".
-    { by rewrite lookup_delete. }
+    { by rewrite lookup_delete_eq. }
     rewrite big_sepM_insert; last done.
     iDestruct ("Himpl" with "[] [] HΦ HR") as "[HΨ HR]".
-    { by rewrite lookup_insert. }
-    { by rewrite lookup_insert. }
+    { by rewrite lookup_insert_eq. }
+    { by rewrite lookup_insert_eq. }
     iDestruct ("IH" with "[] Hm1 HR []") as "[Hm2 HR]"; last by iFrame.
     { iPureIntro. subst m0. apply not_elem_of_dom_2 in Hm2k. set_solver. }
     iIntros "!>" (i p q Hp Hq) "HΦ HR".
@@ -287,7 +287,7 @@ Section bi.
     iIntros "!>" (i x y Hx Hy) "HΦ".
     replace y with x; first done.
     rewrite lookup_difference in Hx. rewrite lookup_difference in Hy.
-    destruct (decide (i = k)) as [-> | Hne]; first by rewrite lookup_insert in Hy.
+    destruct (decide (i = k)) as [-> | Hne]; first by rewrite lookup_insert_eq in Hy.
     rewrite lookup_insert_ne in Hy; last done.
     destruct (m' !! i) as [? |]; first done.
     rewrite lookup_delete_ne in Hx; last done.
@@ -303,7 +303,7 @@ Section bi.
   Proof.
     iIntros (Hsubseteq) "Hm2".
     rewrite -{1}(map_difference_union _ _ Hsubseteq) big_sepM_union; last first.
-    { by apply map_disjoint_difference_r. }
+    { by apply map_disjoint_difference_r1. }
     iFrame.
   Qed.
 
@@ -316,7 +316,7 @@ Section bi.
   Proof.
     iIntros (Hsubseteq) "Hm1 Hm2m1".
     rewrite -{2}(map_difference_union _ _ Hsubseteq) big_sepM_union; last first.
-    { by apply map_disjoint_difference_r. }
+    { by apply map_disjoint_difference_r1. }
     iFrame.
   Qed.
 
@@ -565,7 +565,7 @@ Section bi.
   Proof.
     iIntros "Hm".
     destruct (m !! k) as [x |] eqn:Hm; last first.
-    { by rewrite delete_notin. }
+    { by rewrite delete_id. }
     iDestruct (big_sepM_delete with "Hm") as "[_ Hm]".
     { apply Hm. }
     done.
@@ -581,7 +581,7 @@ Section bi.
     destruct (m1 !! k) as [x |] eqn:Hm1; last first.
     { assert (Hm2 : m2 !! k = None).
       { by rewrite -not_elem_of_dom -Hdom not_elem_of_dom. }
-      do 2 (rewrite delete_notin; last done).
+      do 2 (rewrite delete_id; last done).
       done.
     }
     assert (is_Some (m2 !! k)) as [y Hm2].

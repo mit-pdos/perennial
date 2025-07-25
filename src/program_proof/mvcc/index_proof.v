@@ -304,7 +304,7 @@ Proof.
   { (* Loop body. *)
     clear Φ.
     iIntros (i x Φ) "!> (_ & %Hbound & %Hlookup) HΦ".
-    apply list_lookup_fmap_inv in Hlookup.
+    apply list_lookup_fmap_Some_1 in Hlookup.
     destruct Hlookup as (k & Hval & Hlookup).
     subst x.
     wp_pures.
@@ -451,10 +451,10 @@ Proof.
     iSplit; first done.
     replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
     rewrite (take_S_r _ _ bkt); last first.
-    { apply list_lookup_insert. word. }
+    { apply list_lookup_insert_eq. word. }
     iApply (big_sepL_app).
     iSplitL "HbktsRP".
-    { by rewrite take_insert; last auto. }
+    { by rewrite take_insert_ge; last auto. }
     iApply (big_sepL_singleton).
     rewrite length_take_le; last first.
     { rewrite length_insert. word. }

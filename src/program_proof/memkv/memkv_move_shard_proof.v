@@ -57,7 +57,7 @@ Proof.
       iSplit; eauto.
       iExists _. iFrame "∗#".
       iSplit.
-      { iPureIntro. rewrite /typed_map.map_insert lookup_insert; eauto. }
+      { iPureIntro. rewrite /typed_map.map_insert lookup_insert_eq; eauto. }
       iApply big_sepM_insert.
       { apply map_get_false in Hlookup; intuition. }
       rewrite Heq_kv_gn. iFrame.
@@ -190,7 +190,7 @@ Proof.
     {
       iLeft.
       iPureIntro.
-      rewrite list_lookup_insert.
+      rewrite list_lookup_insert_eq.
       { done. }
       word.
     }

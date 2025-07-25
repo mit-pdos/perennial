@@ -18,7 +18,7 @@ Proof.
   { subst n.
     rewrite Forall_forall in Hle.
     apply Hle.
-    by apply elem_of_list_lookup_2 in Hx.
+    by apply list_elem_of_lookup_2 in Hx.
   }
   { lia. }
   { by subst x y. }
@@ -60,8 +60,8 @@ Proof.
     }
   }
   { intros x y Hx Hy.
-    apply elem_of_list_lookup in Hx as [i Hx].
-    apply elem_of_list_lookup in Hy as [j Hy].
+    apply list_elem_of_lookup in Hx as [i Hx].
+    apply list_elem_of_lookup in Hy as [j Hy].
     assert (Hij : (i ≤ j + length l1)%nat).
     { apply lookup_lt_Some in Hx. word. }
     eapply Hl12.
@@ -92,8 +92,8 @@ Proof.
     }
     { rewrite lookup_app_r in Hy; last word.
       apply Hl12.
-      { by apply elem_of_list_lookup_2 in Hx. }
-      { by apply elem_of_list_lookup_2 in Hy. }
+      { by apply list_elem_of_lookup_2 in Hx. }
+      { by apply list_elem_of_lookup_2 in Hy. }
     }
   }
   { rewrite lookup_app_r in Hx; last word.
@@ -370,7 +370,7 @@ Section sort.
         intros w Hw.
         trans (uint.Z z); last apply Hge.
         rewrite last_lookup in Hz.
-        apply elem_of_list_lookup_1 in Hw as [k Hw].
+        apply list_elem_of_lookup_1 in Hw as [k Hw].
         rewrite /sorted_u64 in Hsortedl.
         eapply Hsortedl; last first.
         { apply Hz. }
@@ -387,7 +387,7 @@ Section sort.
       { by apply Hsortedlr. }
       rewrite Forall_forall in Hlt.
       specialize (Hlt _ Hy).
-      apply elem_of_list_singleton in Hz as ->.
+      apply list_elem_of_singleton in Hz as ->.
       lia.
     }
     iNamed 1.

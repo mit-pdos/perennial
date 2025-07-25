@@ -71,7 +71,7 @@ Section program.
       iIntros (addrmP ok) "[%Hok HaddrmP]".
       wp_pures.
       assert (Hinptgs : gid ∈ ptgs).
-      { apply elem_of_list_lookup_2 in Hgid.
+      { apply list_elem_of_lookup_2 in Hgid.
         clear -Hgid HptgsL.
         set_solver.
       }

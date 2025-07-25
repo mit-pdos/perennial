@@ -337,13 +337,13 @@ Proof.
   rewrite apply_upds_app apply_upds_notin.
   2: {
     apply Heither.
-    rewrite -(lookup_take _ (S i)) in Hlookup.
+    rewrite -(lookup_take_lt _ (S i)) in Hlookup.
     2: lia.
-    apply (elem_of_list_lookup_2 _ i).
+    apply (list_elem_of_lookup_2 _ i).
     rewrite list_lookup_fmap Hlookup //.
   }
   rewrite (take_S_r _ _ _ Hlookup) apply_upds_app /=.
-  apply lookup_insert.
+  apply lookup_insert_eq.
 Qed.
 
 Lemma apply_upds_dom upds d :

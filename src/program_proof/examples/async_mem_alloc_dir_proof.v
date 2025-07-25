@@ -761,7 +761,7 @@ Section goose.
   Proof.
     induction off; intros; simpl; eauto.
     rewrite IHoff; last by lia.
-    rewrite delete_commute //.
+    rewrite delete_delete //.
   Qed.
 
   Lemma unify_alloc_inodes_used_helper γused γblocks allocs s_inodes off :
@@ -779,10 +779,10 @@ Section goose.
     iDestruct "Hinodes" as "[Ha Hinodes]". iNamed "Ha".
     iDestruct (inode_used_lookup with "Hused1 Hall") as "%".
     replace (allocs) with (<[off := a.(inode.addrs)]> (delete off allocs)) at 2 3.
-    2: { rewrite insert_delete //. replace (off) with (off + 0) by lia. done. }
+    2: { rewrite insert_delete_id //. replace (off) with (off + 0) by lia. done. }
     rewrite delete_below_insert; last by lia.
     rewrite map_to_list_insert.
-    2: { rewrite delete_below_delete; last by lia. rewrite lookup_delete //. }
+    2: { rewrite delete_below_delete; last by lia. rewrite lookup_delete_eq //. }
     rewrite ?fmap_cons ?union_list_cons /=.
     iDestruct ("IH" $! (S off) with "[Hinodes] Hall") as "%IH".
     { setoid_rewrite plus_n_Sm. iFrame. }
@@ -1075,11 +1075,11 @@ Section goose.
     { exfalso. rewrite lookup_empty in Hidx. done. }
     destruct (decide (idx = i)) as [->|Hne].
     - (* Induction reached the updated idx. We bottom out. *)
-      rewrite insert_insert. rewrite !map_to_list_insert //.
+      rewrite insert_insert_eq. rewrite !map_to_list_insert //.
       rewrite !fmap_cons !union_list_cons /=.
-      rewrite lookup_insert in Hidx. simplify_eq/=. set_solver+.
+      rewrite lookup_insert_eq in Hidx. simplify_eq/=. set_solver+.
     - (* The updated element is a different one. Recurse. *)
-      rewrite insert_commute //. rewrite map_to_list_insert //.
+      rewrite insert_insert_ne //. rewrite map_to_list_insert //.
       rewrite map_to_list_insert; last first.
       { rewrite lookup_insert_ne //. }
       rewrite !fmap_cons !union_list_cons /=.
@@ -1156,7 +1156,7 @@ Section goose.
       { iNext. iExists _. iFrame "HP". rewrite /dir_inv /=. iFrame.
         (* Show that the first 5 inodes are still all allocated. *)
         iPureIntro. intros idx' Hidx'. destruct (decide ((uint.nat idx) = idx')) as [->|Hne].
-        - rewrite lookup_insert. eauto.
+        - rewrite lookup_insert_eq. eauto.
         - rewrite lookup_insert_ne //. apply Hdom. done.
       }
       iModIntro.

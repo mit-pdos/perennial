@@ -137,7 +137,7 @@ Proof.
     }
     iLeft.
     iDestruct (big_sepL_elem_of _ (seq 0 n) (Z.to_nat idx) with "H1") as "H".
-    { apply elem_of_list_In, in_seq. lia. }
+    { apply list_elem_of_In, in_seq. lia. }
     assert (addr_base ls +ₗ length (flatten_ty t) * Z.to_nat idx = ls) as ->.
     { symmetry. rewrite (addr_plus_off_decode ls); f_equal; word. }
     assert (addr_base l +ₗ length (flatten_ty t) * Z.to_nat idx = l) as ->.

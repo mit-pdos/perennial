@@ -41,8 +41,8 @@ Proof.
   destruct (le_lt_dec i j) as [Hle|Hlt].
   - intros ?. rewrite lookup_take_ge; last by lia.
     rewrite lookup_take_ge; last by lia. done.
-  - rewrite lookup_take. 2:lia.
-    rewrite lookup_take. 2:lia.
+  - rewrite lookup_take_lt. 2:lia.
+    rewrite lookup_take_lt. 2:lia.
     done.
 Qed.
 

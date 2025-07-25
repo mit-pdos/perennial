@@ -119,7 +119,7 @@ Proof.
     iExists (λ _, True)%I.
     wp_apply (wp_initialize' with "[$]").
     { set_solver. }
-    { rewrite lookup_singleton. done. }
+    { rewrite lookup_singleton_eq. done. }
     iIntros "* (Hdef & Hinit & Htok)".
     iApply fupd_wp. iInv "Hinit" as ">[Hbad|Hi]" "Hclose".
     { iCombine "Hbad Hescrow" gives %[Hbad _]. done. }
