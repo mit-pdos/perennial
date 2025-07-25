@@ -386,9 +386,16 @@ Proof.
     by iApply cryptoffi.is_hash_det.
   - iDestruct ("IH" with "Hrecur00 Hrecur01") as "H0".
     iDestruct ("IH" with "Hrecur10 Hrecur11") as "H1".
-    (* problem: from IH, child hashes equal, later.
-    i don't know how to strip that later.
-    if we add later to concl, that additionally shows up in IH. *)
+    (* problem: from IH, context is:
+    "H0" : ▷ ⌜hash0 = hash2⌝
+    "H1" : ▷ ⌜hl w1 = hash3⌝
+    need to strip laters to learn that child hashes equal.
+    i don't know how to do that.
+    even tho those are pure (i.e., Timeless),
+    to use [elim_modal_timeless] to strip later,
+    need concl to be Except0 (e.g., ▷ P or WP).
+    if we add later to concl, that additionally shows up in IH.
+    and i think later credits run into the same issue. *)
 Admitted.
 
 (*
