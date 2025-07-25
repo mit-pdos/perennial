@@ -442,7 +442,7 @@ Proof.
     clear Hlookup.
     iIntros (??) "[%Hlookup Hcache]".
     wp_pures.
-    rewrite /map_get /typed_map.map_insert lookup_insert /= in Hlookup.
+    rewrite /map_get /typed_map.map_insert lookup_insert_eq /= in Hlookup.
     injection Hlookup as ? ?. subst.
     wp_loadField.
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").

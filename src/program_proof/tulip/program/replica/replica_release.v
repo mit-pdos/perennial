@@ -51,7 +51,7 @@ Section program.
       rewrite (take_S_r _ _ _ Hi) list_to_map_snoc; last apply Htake.
       set pwrs' := list_to_map _.
       rewrite /release setts_insert; last first.
-      { apply elem_of_list_lookup_2 in Hi.
+      { apply list_elem_of_lookup_2 in Hi.
         rewrite -HpwrsL in Hi.
         apply elem_of_map_to_list, elem_of_dom_2 in Hi.
         clear -Hvw Hi Hdomptsm. set_solver.

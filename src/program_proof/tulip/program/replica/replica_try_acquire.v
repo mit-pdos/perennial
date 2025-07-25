@@ -86,7 +86,7 @@ Section program.
       iIntros "HpwrsL".
       wp_pures.
       wp_apply (wp_Replica__writableKey with "Hrp").
-      { apply elem_of_list_lookup_2 in Hwr.
+      { apply list_elem_of_lookup_2 in Hwr.
         rewrite -HpwrsL in Hwr.
         apply elem_of_map_to_list, elem_of_dom_2 in Hwr.
         clear -Hvw Hwr. set_solver.

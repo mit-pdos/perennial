@@ -306,7 +306,7 @@ Proof using Type*.
     iFrame "∗#".
     iApply ("Hlseq_own" with "[] [Hlseq_one]"); simpl.
     - iIntros "!#" (y _ ?). rewrite lookup_insert_ne //. eauto.
-    - rewrite lookup_insert. done.
+    - rewrite lookup_insert_eq. done.
   }
   { (* One-shot update of γrc already happened; this is impossible *)
     by iExFalso; iApply (new_seq_implies_unproc with "Hlseq_lb Hlseq_own").
@@ -453,7 +453,7 @@ Proof.
     iFrame "∗#".
     iApply ("Hlseq_own" with "[] [Hlseq_one]"); simpl.
     - iIntros "!#" (y _ ?). rewrite lookup_insert_ne //. eauto.
-    - rewrite lookup_insert. done.
+    - rewrite lookup_insert_eq. done.
   }
   { by iDestruct (own_valid_2 with "HγPre HγPre2") as %Hbad. }
   { by iExFalso; iApply (new_seq_implies_unproc with "Hlseq_lb Hlseq_own"). }

@@ -577,7 +577,7 @@ Proof.
       { iNamed "Hcase1". iLeft. iExists _, _, _, aborted0. iFrame "∗#".
         iPureIntro.
         destruct (decide (seqno = k)).
-        { subst. rewrite lookup_delete in Hlookup; congruence. }
+        { subst. rewrite lookup_delete_eq in Hlookup; congruence. }
         rewrite lookup_delete_ne //=. }
       { iNamed "Hcase2". iRight. iLeft. iExists _, _. iFrame "∗#".
         iPureIntro.
@@ -839,7 +839,7 @@ Proof.
     iExists Post.
     iFrame "Hreg Hsaved".
     iLeft. iExists _, _, _, false. iFrame "∗#".
-    iPureIntro. rewrite lookup_insert //. }
+    iPureIntro. rewrite lookup_insert_eq //. }
   wp_pures.
   wp_apply (wp_slice_len).
   wp_apply (wp_NewSliceWithCap (V:=u8)).

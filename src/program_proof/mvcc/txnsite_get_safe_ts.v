@@ -197,7 +197,7 @@ Proof.
     rewrite -list_to_set_cons set_Forall_list_to_set in Htidmin'.
     replace (uint.nat tidnew) with (u64_to_nat tidnew) in Helem, Htidmin'; last done.
     rewrite -fmap_cons in Helem Htidmin'.
-    apply (elem_of_list_fmap_1 u64_to_nat) in Helem'.
+    apply (list_elem_of_fmap_2 u64_to_nat) in Helem'.
     rewrite Forall_forall in Htidmin'.
     rewrite Forall_forall in Htidloop.
     apply Htidmin' in Helem'.

@@ -488,11 +488,11 @@ lemmas. *)
     rewrite Z2Nat.id; auto. iFrame "Hl2".
     iIntros (w) "Hl2".
     clear Hlookup. assert (<[Z.to_nat z:=w]> bs !! Z.to_nat z = Some w) as Hlookup.
-    { apply list_lookup_insert. lia. }
+    { apply list_lookup_insert_eq. lia. }
     rewrite -[in (disk_array l q (<[Z.to_nat z:=w]> bs))](take_drop_middle (<[Z.to_nat z:=w]> bs) (Z.to_nat z) w Hlookup).
-    iApply disk_array_app. rewrite take_insert; last by lia. iFrame.
+    iApply disk_array_app. rewrite take_insert_ge; last by lia. iFrame.
     iApply disk_array_cons. rewrite length_take min_l; last by lia. iFrame.
-    rewrite drop_insert_gt; last by lia.
+    rewrite drop_insert_lt; last by lia.
     rewrite Z2Nat.id; auto. iFrame.
   Qed.
 

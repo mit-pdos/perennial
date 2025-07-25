@@ -294,7 +294,7 @@ Section inv.
     split.
     { (* Re-establish [prepared_impl_locked]. *)
       intros t m k Hm Hk.
-      destruct (decide (t = ts)) as [-> | Hneq]; first by rewrite lookup_insert in Hm.
+      destruct (decide (t = ts)) as [-> | Hneq]; first by rewrite lookup_insert_eq in Hm.
       rewrite lookup_insert_ne in Hm; last done.
       pose proof (Hpil _ _ _ Hm Hk) as Hkt.
       rewrite -Hkt release_unmodified; first done.

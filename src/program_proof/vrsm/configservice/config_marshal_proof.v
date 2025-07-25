@@ -99,7 +99,7 @@ Proof.
     destruct i0.
     {
       simpl.
-      rewrite lookup_take; last lia.
+      rewrite lookup_take_lt; last lia.
       rewrite lookup_drop.
       rewrite -Hlookup.
       f_equal.
@@ -150,7 +150,7 @@ Proof.
   destruct (decide (j = i)) as [Heq|Hneq].
   {
     rewrite Heq.
-    rewrite list_lookup_insert; last first.
+    rewrite list_lookup_insert_eq; last first.
     {
       rewrite length_app.
       rewrite length_replicate.
@@ -167,7 +167,7 @@ Proof.
         apply lookup_lt_Some in Hlookup.
         word.
       }
-      rewrite lookup_take; last word.
+      rewrite lookup_take_lt; last word.
       done.
     }
   }
@@ -177,7 +177,7 @@ Proof.
     destruct (decide (j < i)).
     {
       rewrite ?lookup_app_l ?length_take //; try lia; [].
-      rewrite ?lookup_take; auto; lia.
+      rewrite ?lookup_take_lt; auto; lia.
     }
     assert (i < j) by lia.
     rewrite ?lookup_app_r ?length_take //; try lia; [].

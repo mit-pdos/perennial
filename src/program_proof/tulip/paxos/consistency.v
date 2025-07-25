@@ -99,7 +99,7 @@ Section lemma.
       { by apply map_Forall_insert. }
       (* Case: Current proposal [v] exists. *)
       split.
-      { exists x, (Some v). by rewrite lookup_insert. }
+      { exists x, (Some v). by rewrite lookup_insert_eq. }
       { apply map_Forall_insert; first done.
         split; first lia.
         intros y ov Hov.

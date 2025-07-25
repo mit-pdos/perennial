@@ -500,7 +500,7 @@ Proof.
   rewrite /get_byte /update_byte.
   rewrite decide_True; [|word].
   rewrite list_to_block_to_list; [|len].
-  rewrite list_lookup_insert; [|len].
+  rewrite list_lookup_insert_eq; [|len].
   auto.
 Qed.
 
@@ -537,7 +537,7 @@ Lemma drop_take_lookup {A} i (l: list A) x :
   drop i (take (S i) l) = [x].
 Proof.
   intros.
-  apply elem_of_list_split_length in H as (l1 & l2 & -> & ->).
+  apply list_elem_of_split_length in H as (l1 & l2 & -> & ->).
   rewrite take_app_ge; [ | lia ].
   rewrite drop_app_ge; [ | lia ].
   replace (length l1 - length l1)%nat with 0%nat by lia.
@@ -722,7 +722,7 @@ Proof.
   rewrite /install_one_bit.
   rewrite bits_to_byte_to_bits; [|len].
   destruct (decide _); subst.
-  - rewrite list_lookup_insert; [|len].
+  - rewrite list_lookup_insert_eq; [|len].
     destruct (byte_to_bits src !! bit') eqn:Hlookup; auto.
     move: Hlookup; rewrite lookup_ge_None; len.
   - rewrite list_lookup_insert_ne //.
@@ -1017,7 +1017,7 @@ Proof.
     rewrite /get_byte.
     rewrite list_to_block_to_list; [|len].
     rewrite -!HeqbyteOff -!HeqbitOff.
-    rewrite list_lookup_alter.
+    rewrite list_lookup_alter_eq.
     f_equal.
     rewrite Hlookup_byte.
     rewrite install_one_bit_spec; [ | word ].
@@ -1032,7 +1032,7 @@ Proof.
     * rewrite e.
       rewrite /get_byte.
       rewrite -> list_to_block_to_list by len.
-      rewrite list_lookup_alter.
+      rewrite list_lookup_alter_eq.
       rewrite Hlookup_byte /=.
       rewrite install_one_bit_spec; [ | word ].
       rewrite decide_False //.

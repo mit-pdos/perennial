@@ -277,7 +277,7 @@ Section prog.
     iIntros "!>" (v1 ok1 Hv1).
     assert (Hlenv1 : if ok1 then of_length_five v1 else True).
     { destruct ok1; last done.
-      apply elem_of_list_lookup_2 in Hv1.
+      apply list_elem_of_lookup_2 in Hv1.
       rewrite Forall_forall in Hin1.
       specialize (Hin1 _ Hv1).
       by specialize (Hlenvs _ Hin1).
@@ -517,7 +517,7 @@ Section prog.
       { do 2 iExists _. iFrame.
         iPureIntro. split; first done.
         unfold contain_hello. intros _.
-        by apply (elem_of_prefix l'); first eapply elem_of_list_lookup_2.
+        by apply (elem_of_prefix l'); first eapply list_elem_of_lookup_2.
       }
       iIntros "!>" (lsn' term') "_".
       wp_pures.

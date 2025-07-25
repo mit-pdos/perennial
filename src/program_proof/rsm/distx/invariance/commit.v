@@ -235,7 +235,7 @@ Proof.
   intros Hcmtxn t m Htm.
   rewrite resm_to_tmods_insert_committed in Htm.
   destruct (decide (ts = t)) as [-> | Hne].
-  { rewrite lookup_insert in Htm. inv Htm. set_solver. }
+  { rewrite lookup_insert_eq in Htm. inv Htm. set_solver. }
   rewrite lookup_insert_ne in Htm; last done.
   specialize (Hcmtxn _ _ Htm).
   set_solver.
@@ -335,7 +335,7 @@ Proof.
   intros Hnz Hts Hext.
   rewrite /ext_by_cmtd Hts in Hext.
   destruct Hext as [[tsr Hext] Hlen].
-  rewrite /ext_by_cmtd lookup_insert Hext last_extend_twice.
+  rewrite /ext_by_cmtd lookup_insert_eq Hext last_extend_twice.
   destruct (decide (cmtd = [])) as [-> | Hnnil]; first done.
   do 2 f_equal.
   assert (tsr ≤ ts)%nat; last lia.
@@ -839,7 +839,7 @@ Section inv.
     (* Add [(tid, ResCommitted wrs)] to [resm] and extract a witness. *)
     iMod (txnres_insert _ (ResCommitted wrs) with "Hresm") as "Hresm"; first apply Hnone.
     iDestruct (txnres_witness _ _ tid with "Hresm") as "#Hcmt".
-    { by rewrite lookup_insert. }
+    { by rewrite lookup_insert_eq. }
     (* Re-establish [valid_res]. *)
     iDestruct (big_sepM_insert_2 _ _ tid (ResCommitted wrs) with "[] Hvr") as "Hvr'"; first done.
     (* Re-establish [past_action_witness]. *)
@@ -881,7 +881,7 @@ Section inv.
       apply Htidcs.
     }
     right.
-    rewrite lookup_insert.
+    rewrite lookup_insert_eq.
     destruct Htidcs as [Hm | Hm].
     { rewrite Hm in Hwrs. by inv Hwrs. }
     by rewrite Hm in Hnone.

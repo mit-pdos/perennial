@@ -84,7 +84,7 @@ Proof.
     apply lookup_lt_Some in Hlookup as Hlt.
     { assert (Ei : (uint.nat i) = pred (length xs)) by lia.
       rewrite Ei.
-      rewrite list_insert_insert.
+      rewrite list_insert_insert_eq.
       rewrite list_insert_at_end; last set_solver.
       replace x with xlast; last first.
       { rewrite Ei in Hlookup. set_solver. }
@@ -200,7 +200,7 @@ Proof.
     split.
     { change (uint.nat 0) with 0%nat. by rewrite take_0. }
     split; last done.
-    { apply elem_of_list_lookup in Helem as [i Hlookup].
+    { apply list_elem_of_lookup in Helem as [i Hlookup].
       apply lookup_lt_Some in Hlookup. word.
     }
   }
@@ -222,7 +222,7 @@ Qed.
   x ∈ l.
 Proof.
   intros H.
-  apply elem_of_list_fmap_2 in H as (y & Hxy & Helem).
+  apply list_elem_of_fmap_1 in H as (y & Hxy & Helem).
   assert (Exy : x = y) by word.
   by rewrite Exy.
 Qed.

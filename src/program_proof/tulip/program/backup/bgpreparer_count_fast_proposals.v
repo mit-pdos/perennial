@@ -65,7 +65,7 @@ Section program.
       iPureIntro.
       rewrite map_filter_insert_False; last first.
       { simpl. intros Heq. by rewrite Heq in Hvb. }
-      by rewrite delete_notin.
+      by rewrite delete_id.
     }
     iIntros "[Hm HP]". iNamed "HP".
 

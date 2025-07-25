@@ -84,7 +84,7 @@ Section inv.
     { (* Case: [ts] has neither aborted nor committed yet. *)
       iMod (txnres_insert ts ResAborted with "Hresm") as "Hresm"; first done.
       iDestruct (txnres_witness with "Hresm") as "#Hreceipt".
-      { apply lookup_insert. }
+      { apply lookup_insert_eq. }
       iFrame "∗ # %".
       iNamed "Hpart".
       rewrite /partitioned_tids resm_to_tmods_insert_aborted; last by left.
@@ -266,7 +266,7 @@ Section inv.
       (* Mark [ts] unprepared in the prepare map. *)
       iMod (txnprep_insert ts false with "Hpm") as "Hpm"; first done.
       iDestruct (txnprep_witness with "Hpm") as "#Hunp".
-      { apply lookup_insert. }
+      { apply lookup_insert_eq. }
       iDestruct (big_sepS_elem_of with "Hvc") as "Hprep".
       { apply Hc. }
       iDestruct "Hprep" as (wrs) "(Hwrs & %Hnz & %Hpwrs)".
@@ -334,7 +334,7 @@ Section inv.
     iMod (txnprep_insert ts true with "Hpm") as "Hpm"; first done.
     (* Extract witness that [ts] has prepared. *)
     iDestruct (txnprep_witness with "Hpm") as "#Hprep".
-    { apply lookup_insert. }
+    { apply lookup_insert_eq. }
     (* Create txn tokens for the new state. *)
     iDestruct (txn_tokens_inv_learn_prepare_prepared with "Hprep Htks") as "#Htks'"; [done | done |].
     (* Create witnesses for the replicated history. *)

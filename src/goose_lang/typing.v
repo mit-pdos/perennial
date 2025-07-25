@@ -486,7 +486,7 @@ Section goose_lang.
     destruct f; eauto.
     destruct (s =? x)%string eqn:Heq_s.
     - apply String.eqb_eq in Heq_s. subst.
-      move: HΓ. rewrite ?lookup_insert //=.
+      move: HΓ. rewrite ?lookup_insert_eq //=.
     - apply String.eqb_neq in Heq_s.
       move: HΓ. rewrite ?lookup_insert_ne //=; eauto.
   Qed.

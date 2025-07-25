@@ -96,11 +96,11 @@ Proof using Hrpre Hcpre.
   { iNext. iExists _, _. iFrame. iSplit; iPureIntro; eauto.
     intros l Hdom. split.
     * apply Hnonneg. apply elem_of_dom. auto.
-    * rewrite /D. rewrite elem_of_gset_to_coPset elem_of_list_to_set elem_of_list_fmap.
+    * rewrite /D. rewrite elem_of_gset_to_coPset elem_of_list_to_set list_elem_of_fmap.
       eexists; split; eauto.
-      apply elem_of_list_fmap.
+      apply list_elem_of_fmap.
       eexists; split; eauto.
-      apply elem_of_list_fmap.
+      apply list_elem_of_fmap.
       apply elem_of_dom in Hdom as (v&?).
       exists (l, v); split; eauto.
       apply elem_of_map_to_list'; eauto.

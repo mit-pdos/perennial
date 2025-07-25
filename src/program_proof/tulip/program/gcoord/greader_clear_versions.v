@@ -24,10 +24,10 @@ Section program.
     iApply "HΦ".
     destruct (decide (key ∈ dom qreadm)) as [Hin | Hnotin]; last first.
     { apply not_elem_of_dom in Hnotin.
-      rewrite delete_notin; last apply Hnotin.
+      rewrite delete_id; last apply Hnotin.
       assert (Hnone : qreadmM !! key = None).
       { by rewrite -not_elem_of_dom Hdomqreadm not_elem_of_dom. }
-      rewrite /map_del delete_notin; last apply Hnone.
+      rewrite /map_del delete_id; last apply Hnone.
       by iFrame "∗ # %".
     }
     assert (is_Some (qreadmM !! key)) as [p Hp].

@@ -67,7 +67,7 @@ Proof.
       iSplit.
       { iPureIntro. intros.
         destruct (decide (uint.nat i0 = uint.nat i)) as [->|Hneq].
-        { eexists. apply list_lookup_insert. eapply lookup_lt_is_Some_1; eauto.
+        { eexists. apply list_lookup_insert_eq. eapply lookup_lt_is_Some_1; eauto.
           apply HshardMapping_dom. rewrite Heq_uNSHARD. eauto.
         }
         rewrite list_lookup_insert_ne; auto.
@@ -88,7 +88,7 @@ Proof.
       { set_solver+. }
       iSplitL "Hi".
       { rewrite ?big_sepS_singleton.
-        rewrite list_lookup_insert //; last first.
+        rewrite list_lookup_insert_eq //; last first.
         { eapply lookup_lt_is_Some_1; eauto.
           apply HshardMapping_dom. rewrite Heq_uNSHARD. eauto.
         }

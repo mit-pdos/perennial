@@ -828,7 +828,7 @@ Section proof.
     iExists (updateAllocs σj1 la u), (updateAllocs σj2 la u), _, _.
     iFrame "Hj".
     iSplit.
-    { iPureIntro. rewrite //= lookup_insert //=. }
+    { iPureIntro. rewrite //= lookup_insert_eq //=. }
     iSplit; first by iFrame "∗ # %".
     iFrame "# %".
   Qed.
@@ -1033,7 +1033,7 @@ Section proof.
       }
       split; first by assumption.
       rewrite -Hsz //.
-    - rewrite lookup_insert in Hvobj.
+    - rewrite lookup_insert_eq in Hvobj.
       assert (committed vobj = modified vobj) as Hvobj'.
       {
         inversion Hvobj as [Hvobj'].
@@ -1082,7 +1082,7 @@ Section proof.
       {
         rewrite /updateData.
         destruct Hjrnl_maps_mt as [_ <-].
-        rewrite /= -!fmap_insert !lookup_fmap lookup_insert //.
+        rewrite /= -!fmap_insert !lookup_fmap lookup_insert_eq //.
       }
       {
         rewrite /updateData.
@@ -1169,7 +1169,7 @@ Section proof.
         destruct Hjrnl_maps_kinds as [_ ->].
         rewrite Hvalid_γ. subst. eauto.
       }
-    - rewrite lookup_insert in Hvobj.
+    - rewrite lookup_insert_eq in Hvobj.
       assert (committed vobj = modified vobj) as Hvobj'.
       {
         inversion Hvobj as [Hvobj'].
@@ -1221,7 +1221,7 @@ Section proof.
       {
         rewrite /updateData.
         destruct Hjrnl_maps_mt as [_ <-].
-        rewrite /= -!fmap_insert !lookup_fmap lookup_insert //.
+        rewrite /= -!fmap_insert !lookup_fmap lookup_insert_eq //.
         rewrite /= -Heq //.
       }
       {
@@ -1290,7 +1290,7 @@ Section proof.
     {
       apply Forall_forall.
       intros x Hin.
-      apply elem_of_list_fmap_2 in Hin as [b [-> Hin]].
+      apply list_elem_of_fmap_1 in Hin as [b [-> Hin]].
       auto.
     }
     iIntros (data_s) "?".
@@ -1392,7 +1392,7 @@ Section proof.
         split; first by eassumption.
         split; first by apply objSz_bufObj_to_obj.
         opose proof (Hvalids _ _ _) as Hvalid;
-          first by apply lookup_insert.
+          first by apply lookup_insert_eq.
         simpl in Hvalid.
         destruct Hvalid as (_&Hvalid_off&_).
         assumption.
@@ -1430,7 +1430,7 @@ Section proof.
           simpl.
           destruct Hjrnl_maps_kinds as (_&->).
           destruct (decide (a'' = a)) as [->|Ha''].
-          + rewrite lookup_insert in Hacc''.
+          + rewrite lookup_insert_eq in Hacc''.
             inversion Hacc''.
             subst o''.
             eexists _.
@@ -1449,7 +1449,7 @@ Section proof.
             apply objSz_bufObj_to_obj.
       }
       {
-        rewrite Heqσj' /= lookup_insert.
+        rewrite Heqσj' /= lookup_insert_eq.
         eauto.
       }
       {
@@ -1464,7 +1464,7 @@ Section proof.
       }
       rewrite /updateData Hdata in Halways_steps'.
       subst σj'.
-      rewrite /= insert_insert in Halways_steps'.
+      rewrite /= insert_insert_eq in Halways_steps'.
       apply Halways_steps'.
   Qed.
 
@@ -1588,7 +1588,7 @@ Section proof.
         destruct Hjrnl_maps_kinds as (->&_).
         split; first by eassumption.
         opose proof (Hvalids _ _ _) as Hvalid;
-          first by apply lookup_insert.
+          first by apply lookup_insert_eq.
         simpl in Hvalid.
         destruct Hvalid as (_&Hvalid_off&_).
         rewrite objSz_bufObj_to_obj.
@@ -1630,7 +1630,7 @@ Section proof.
           simpl.
           destruct Hjrnl_maps_kinds as (_&->).
           destruct (decide (a'' = a)) as [->|Ha''].
-          + rewrite lookup_insert in Hacc''.
+          + rewrite lookup_insert_eq in Hacc''.
             inversion Hacc''.
             subst o''.
             eexists _.
@@ -1651,7 +1651,7 @@ Section proof.
             apply objSz_bufObj_to_obj.
       }
       {
-        rewrite Heqσj' /= lookup_insert.
+        rewrite Heqσj' /= lookup_insert_eq.
         eauto.
       }
       {
@@ -1664,7 +1664,7 @@ Section proof.
       }
       rewrite /updateData in Halways_steps'.
       subst σj'.
-      rewrite /= insert_insert in Halways_steps'.
+      rewrite /= insert_insert_eq in Halways_steps'.
       rewrite Hvobj_modified //=.
   Qed.
 

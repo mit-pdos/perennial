@@ -188,7 +188,7 @@ Proof.
   rewrite -fmap_insert.
   iExists _. iFrame. iPureIntro. intros k' j.
   destruct (decide (k=k')) as [->|Hne].
-  - rewrite lookup_insert=>[=<-].
+  - rewrite lookup_insert_eq=>[=<-].
     assert (last !! k' = Some i) as Hk'.
     { rewrite lookup_fmap in Hk. apply fmap_Some_equiv in Hk. destruct Hk as (x & Ha & Hb).
       apply (inj to_agree) in Hb.
@@ -241,10 +241,10 @@ Proof.
   rewrite -fmap_insert.
   iFrame. iPureIntro.
   intros k' j. destruct (decide (k = k')) as [<-|Hne].
-  - rewrite lookup_insert=>[=<-]. exists v'.
+  - rewrite lookup_insert_eq=>[=<-]. exists v'.
     assert (lookup_async (async_put (<[k:=v']> m) σs) (length (possible σs)) k = Some v').
     { rewrite /lookup_async possible_async_put.
-      rewrite list_lookup_middle //=. rewrite lookup_insert. done. }
+      rewrite list_lookup_middle //=. rewrite lookup_insert_eq. done. }
     split; first done.
     intros i'. rewrite length_possible_async_put=>??.
     assert (i' = length (possible σs)) as -> by lia. done.
@@ -366,7 +366,7 @@ Proof.
   iSplit.
   - iApply ephemeral_lookup_txn_val; last done.
     rewrite /lookup_async Hi /=. eapply lookup_weaken; last done.
-    rewrite lookup_insert. done.
+    rewrite lookup_insert_eq. done.
   - iApply "IH"; last done. iPureIntro. etrans; last exact Hσ.
     apply insert_subseteq. done.
 Qed.

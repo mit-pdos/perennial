@@ -19,20 +19,20 @@ Theorem list_elem_of_insert_or {A} i (x: A) (l: list _) y :
   y = x ∨ y ∈ l.
 Proof.
   intros Hin.
-  apply elem_of_list_lookup in Hin.
+  apply list_elem_of_lookup in Hin.
   destruct Hin as [j Hacc].
   destruct (decide (i = j)%nat) as [<-|Hj].
   {
     pose proof (lookup_lt_Some _ _ _ Hacc) as Hlt.
     rewrite length_insert in Hlt.
-    rewrite list_lookup_insert in Hacc; last by assumption.
+    rewrite list_lookup_insert_eq in Hacc; last by assumption.
     inversion Hacc; subst y; clear Hacc.
     left.
     reflexivity.
   }
   rewrite list_lookup_insert_ne in Hacc; last by assumption.
   right.
-  apply elem_of_list_lookup_2 in Hacc.
+  apply list_elem_of_lookup_2 in Hacc.
   assumption.
 Qed.
 
@@ -180,7 +180,7 @@ Proof.
   2: {
     destruct Hbndrys as (Hbnds&_).
     unshelve (eapply (Hbnds bndry2 _)).
-    eapply elem_of_list_lookup_2.
+    eapply list_elem_of_lookup_2.
     eassumption.
   }
   rewrite (
@@ -190,7 +190,7 @@ Proof.
   2: {
     destruct Hbndrys as (Hbnds&_).
     unshelve (eapply (Hbnds bndry2 _)).
-    eapply elem_of_list_lookup_2.
+    eapply list_elem_of_lookup_2.
     eassumption.
   }
   apply is_memLog_region_app; assumption.
@@ -222,12 +222,12 @@ Proof.
   apply fmap_Some in Hlast.
   destruct Hlast as [blast [Hlast ->]].
   rewrite last_lookup in Hlast.
-  pose proof (Hbnds _ (elem_of_list_lookup_2 _ _ _ Hlast)) as Hlastbnd.
+  pose proof (Hbnds _ (list_elem_of_lookup_2 _ _ _ Hlast)) as Hlastbnd.
   split.
   {
     intros bndry Hbndry.
     rewrite length_take.
-    apply elem_of_list_lookup in Hbndry.
+    apply list_elem_of_lookup in Hbndry.
     destruct Hbndry as [i Hbndry].
     unshelve (
       epose proof (
@@ -278,7 +278,7 @@ Proof.
   {
     rewrite length_drop.
     intros bndry Hbndry.
-    apply elem_of_list_fmap_2 in Hbndry.
+    apply list_elem_of_fmap_1 in Hbndry.
     destruct Hbndry as [bndry' [-> Hbndry'in]].
     simpl.
     apply Hbnds in Hbndry'in.
@@ -323,7 +323,7 @@ Proof.
   pose proof (Hreg _ _ _ Hbndry1 Hbndry2) as Hreg'.
   rewrite subslice_app_1.
   2: {
-    apply elem_of_list_lookup_2 in Hbndry2.
+    apply list_elem_of_lookup_2 in Hbndry2.
     apply Hbnds in Hbndry2.
     lia.
   }
@@ -344,22 +344,22 @@ Proof.
   {
     intros bndry Hbndry.
     apply Hbndrys_len.
-    destruct (elem_of_list_lookup_1 _ _ Hbndry) as [i' Hset].
+    destruct (list_elem_of_lookup_1 _ _ Hbndry) as [i' Hset].
     destruct (decide (i = i')) as [->|Hi'].
     {
-      rewrite list_lookup_insert in Hset; last by assumption.
+      rewrite list_lookup_insert_eq in Hset; last by assumption.
       inversion Hset; subst bndry; clear Hset.
-      apply (elem_of_list_lookup_2 _ _ _ Hrbnd).
+      apply (list_elem_of_lookup_2 _ _ _ Hrbnd).
     }
     rewrite (list_lookup_insert_ne _ _ _ _ Hi') in Hset.
-    apply (elem_of_list_lookup_2 _ _ _ Hset).
+    apply (list_elem_of_lookup_2 _ _ _ Hset).
   }
 
   intros i' bndry1 bndry2 Hbndry1 Hbndry2.
 
   destruct (decide (i = i')) as [->|Hi_i'].
   {
-    rewrite list_lookup_insert in Hbndry1; last by assumption.
+    rewrite list_lookup_insert_eq in Hbndry1; last by assumption.
     rewrite list_lookup_insert_ne in Hbndry2; last by lia.
     rewrite Hrbnd in Hbndry2.
     inversion Hbndry2; subst rbnd; clear Hbndry2.
@@ -378,7 +378,7 @@ Proof.
     2-4: eassumption.
     lia.
   }
-  rewrite list_lookup_insert in Hbndry2; last by assumption.
+  rewrite list_lookup_insert_eq in Hbndry2; last by assumption.
   inversion Hbndry2; subst bndry2; clear Hbndry2.
   eapply is_memLog_boundaries_region.
   2-4: eassumption.
@@ -457,7 +457,7 @@ Proof.
     destruct (decide (u_us ≤ opthi')%nat) as [Hleq|Hgt]; last by reflexivity.
     apply find_highest_index_Some in Hopthi'.
     destruct Hopthi' as [Hin _].
-    apply list_lookup_fmap_inv in Hin.
+    apply list_lookup_fmap_Some_1 in Hin.
     destruct Hin as [upd'' [_ Hin'']].
     apply lookup_lt_Some in Hin''.
     rewrite length_take in Hin''.
@@ -489,13 +489,13 @@ Proof.
     destruct iupd as [iupda iupdb].
     simpl.
     intros d [_ Hhighest].
-    rewrite apply_upds_notin'; first by rewrite lookup_insert //.
+    rewrite apply_upds_notin'; first by rewrite lookup_insert_eq //.
     intros Hin.
-    apply elem_of_list_fmap_2 in Hin.
+    apply list_elem_of_fmap_1 in Hin.
     destruct Hin as [iupd [Hiupd Hin]].
     apply word.unsigned_inj in Hiupd.
     subst iupda.
-    apply elem_of_list_lookup_1 in Hin.
+    apply list_elem_of_lookup_1 in Hin.
     destruct Hin as [i Hin].
     assert (S i ≤ 0)%nat; last by lia.
     apply Hhighest.
@@ -518,7 +518,7 @@ Proof.
   pose proof Hhighest as [Ha _].
   rewrite list_lookup_fmap Hiupd /= in Ha.
   inversion Ha; subst a; clear Ha.
-  apply elem_of_list_split_length in Hiupd.
+  apply list_elem_of_split_length in Hiupd.
   destruct Hiupd as (upds1&upds2&[-> ->]).
   apply apply_upds_lookup_in_ind.
   assumption.
@@ -540,7 +540,7 @@ Proof.
   simpl.
   destruct (decide (a = uint.Z upda)) as [->|Ha].
   {
-    rewrite lookup_insert decide_True; last by reflexivity.
+    rewrite lookup_insert_eq decide_True; last by reflexivity.
     rewrite last_snoc //.
   }
   rewrite lookup_insert_ne; last by lia.
@@ -568,7 +568,7 @@ Proof.
   intros HForall.
   apply elem_of_nil_inv.
   intros x Hin.
-  apply elem_of_list_filter in Hin.
+  apply list_elem_of_filter in Hin.
   destruct Hin as [HP Hin].
   apply (((iffLR (Forall_forall _ _)) HForall) _ Hin).
   assumption.
@@ -616,14 +616,14 @@ Proof.
     apply elem_of_app in Hin.
     destruct Hin as [Hin|Hin].
     2: {
-      apply elem_of_list_singleton in Hin.
+      apply list_elem_of_singleton in Hin.
       subst upd'.
       contradiction.
     }
     apply ((iffLR (Forall_forall _ _)) Hupdopt1).
     rewrite Holdupdaddr in Haddr.
-    apply elem_of_list_lookup.
-    apply elem_of_list_lookup in Hin.
+    apply list_elem_of_lookup.
+    apply list_elem_of_lookup in Hin.
     destruct Hin as [updi Hupdi].
     exists updi.
     rewrite list_lookup_insert_ne; first by assumption.
@@ -648,7 +648,7 @@ Proof.
     apply list_elem_of_insert_or in Hin.
     destruct Hin as [<-|Hin]; last by intuition.
     right.
-    apply elem_of_list_singleton.
+    apply list_elem_of_singleton.
     reflexivity.
   }
   rewrite filter_app in Hupdopt2.
@@ -676,13 +676,13 @@ Proof.
     intros upd Hupd Haddr.
     apply word.unsigned_inj in Haddr.
     rewrite -Haddr -fmap_drop in Hdrop.
-    rewrite drop_insert_gt in Hupd; last by lia.
+    rewrite drop_insert_lt in Hupd; last by lia.
     apply Hdrop.
-    apply elem_of_list_fmap_1.
+    apply list_elem_of_fmap_2.
     assumption.
   }
   rewrite app_nil_r in Hupdopt1.
-  erewrite take_S_r in Hupdopt1; last by rewrite list_lookup_insert //.
+  erewrite take_S_r in Hupdopt1; last by rewrite list_lookup_insert_eq //.
   rewrite filter_app filter_cons_True in Hupdopt1; last by trivial.
   rewrite filter_nil last_snoc in Hupdopt1.
   inversion Hupdopt1; subst updopt1; clear Hupdopt1.
@@ -795,7 +795,7 @@ Proof.
       destruct (decide _) as [<-|Hneq]; first by contradiction.
       rewrite apply_upds_notin; first by reflexivity.
       intros Hin.
-      apply elem_of_list_fmap_2 in Hin.
+      apply list_elem_of_fmap_1 in Hin.
       destruct Hin as [i [-> Hin]].
       apply ((iffLR (Forall_forall _ _)) Hlast) in Hin.
       contradiction.
@@ -816,7 +816,7 @@ Proof.
     }
     rewrite apply_upds_notin'; first by reflexivity.
     intros Hin.
-    apply elem_of_list_fmap_2 in Hin.
+    apply list_elem_of_fmap_1 in Hin.
     destruct Hin as [upd [Haddr Hin]].
     unshelve (
       epose proof (((iffLR (Forall_forall _ _)) Hlast) upd _) as Haddr'
@@ -827,8 +827,8 @@ Proof.
     }
     apply word.unsigned_inj in Haddr.
     subst a.
-    apply elem_of_list_lookup.
-    apply elem_of_list_lookup in Hin.
+    apply list_elem_of_lookup.
+    apply list_elem_of_lookup in Hin.
     destruct Hin as [j Hin].
     exists j.
     rewrite list_lookup_insert_ne; first by assumption.
@@ -863,7 +863,7 @@ Proof.
   }
   rewrite HmemWrite in Hlast.
   pose proof Hhighest as [Hacc _].
-  apply list_lookup_fmap_inv in Hacc.
+  apply list_lookup_fmap_Some_1 in Hacc.
   destruct Hacc as [oldupd [Holdupdaddr Hacc]].
   destruct (decide _) as [<-|Hneq].
   2: {
@@ -895,7 +895,7 @@ Proof.
     apply word.unsigned_inj in Haddr.
     rewrite -Haddr -fmap_drop in Hhighest.
     apply Hhighest.
-    apply elem_of_list_fmap_1.
+    apply list_elem_of_fmap_2.
     assumption.
   }
   rewrite app_nil_r in Hlast.
@@ -939,7 +939,7 @@ Proof.
   apply highest_index_is_exists in Hin.
   destruct Hin as [i Hin].
   pose proof Hin as [Hacc _].
-  apply list_lookup_fmap_inv in Hacc.
+  apply list_lookup_fmap_Some_1 in Hacc.
   destruct Hacc as [upd [-> Hacc]].
   erewrite apply_upds_lookup_in.
   2-3: eassumption.
@@ -983,7 +983,7 @@ Proof.
       destruct Hhighest as [Hacc _].
       intros Heq.
       subst a.
-      apply elem_of_list_lookup_2 in Hacc.
+      apply list_elem_of_lookup_2 in Hacc.
       contradiction.
     }
     apply highest_index_is_opt_to_find_highest_index.
@@ -1032,7 +1032,7 @@ Proof.
     apply find_highest_index_Some in Hhighest.
     destruct (decide (i = highest)) as [<-|Hh].
     {
-      rewrite list_lookup_insert in Hin.
+      rewrite list_lookup_insert_eq in Hin.
       2: {
         destruct Hhighest as [Hacc _].
         apply lookup_lt_Some in Hacc.
@@ -1067,12 +1067,12 @@ Proof.
     intros Heq.
     rewrite -Heq in Hhighest.
     apply Hhighest.
-    apply elem_of_list_lookup_2 in Hin.
-    apply elem_of_list_fmap_1.
+    apply list_elem_of_lookup_2 in Hin.
+    apply list_elem_of_fmap_2.
     assumption.
   }
-  pose proof (elem_of_list_lookup_2 _ _ _ Hin) as Hin'.
-  apply elem_of_list_singleton in Hin'.
+  pose proof (list_elem_of_lookup_2 _ _ _ Hin) as Hin'.
+  apply list_elem_of_singleton in Hin'.
   subst aupd.
   apply lookup_lt_Some in Hin.
   simpl in Hin.
@@ -1157,7 +1157,7 @@ Proof.
       apply not_elem_of_app.
       split; first by assumption.
       intros Hin.
-      apply elem_of_list_singleton in Hin.
+      apply list_elem_of_singleton in Hin.
       contradiction.
     }
     right.
@@ -1184,7 +1184,7 @@ Proof.
     right.
     split; last by assumption.
     intros Hin.
-    apply elem_of_list_singleton in Hin.
+    apply list_elem_of_singleton in Hin.
     contradiction.
   }
   rewrite /= memWrite_generic_app.
@@ -1201,12 +1201,12 @@ Proof.
   rewrite /memLog_region_upds_match_some_txn in Hmatch.
   rewrite /memLog_region_upds_match_some_txn.
   intros upd Hin.
-  apply elem_of_list_lookup in Hin.
+  apply list_elem_of_lookup in Hin.
   destruct Hin as [i Hin].
   apply memWrite_generic_0_in in Hin.
   destruct Hin as [[Hacc Hhighest]|[Hacc Hhighest]].
   {
-    apply elem_of_list_lookup_2 in Hacc.
+    apply list_elem_of_lookup_2 in Hacc.
     apply Hmatch in Hacc.
     destruct Hacc as [txn' [Hin Htxnmatch]].
     exists txn'.
@@ -1222,7 +1222,7 @@ Proof.
   {
     apply elem_of_app.
     right.
-    apply elem_of_list_singleton.
+    apply list_elem_of_singleton.
     reflexivity.
   }
   intros d.
@@ -1247,16 +1247,16 @@ Theorem is_memLog_boundaries_modify_last txns upds mwrbs b txns' upds' :
 Proof.
   intros Hmwrbs_len Hb Hreg Hbndrys.
   pose proof Hbndrys as [Hbnds Hregs].
-  pose proof (elem_of_list_lookup_2 _ _ _ Hb) as Hbbnd.
+  pose proof (list_elem_of_lookup_2 _ _ _ Hb) as Hbbnd.
   apply Hbnds in Hbbnd.
   split.
   {
     intros bndry Hbndry.
-    apply elem_of_list_lookup in Hbndry.
+    apply list_elem_of_lookup in Hbndry.
     destruct Hbndry as [i Hbndry].
     destruct (decide (i = length mwrbs - 1)%nat) as [->|Hi].
     {
-      rewrite list_lookup_insert in Hbndry; last by lia.
+      rewrite list_lookup_insert_eq in Hbndry; last by lia.
       inversion Hbndry; subst bndry; clear Hbndry.
       simpl.
       rewrite !length_app !length_take.
@@ -1267,7 +1267,7 @@ Proof.
     unshelve (epose proof (
       is_memLog_boundaries_region _ _ _ _ _ _ _ _ Hbndrys Hbndry Hb
     ) as Hupto); first by lia.
-    apply elem_of_list_lookup_2 in Hbndry.
+    apply list_elem_of_lookup_2 in Hbndry.
     apply Hbnds in Hbndry.
     rewrite !length_app !length_take.
     lia.
@@ -1297,7 +1297,7 @@ Proof.
     2: rewrite length_take; lia.
     intuition.
   }
-  rewrite Hi list_lookup_insert in Hbndry2; last by lia.
+  rewrite Hi list_lookup_insert_eq in Hbndry2; last by lia.
   inversion Hbndry2; subst bndry2; clear Hbndry2.
   simpl.
   unshelve (epose proof (
@@ -1346,12 +1346,12 @@ Proof.
   {
     intros bndry Hbndry.
     rewrite !length_app length_take /=.
-    apply elem_of_list_lookup_1 in Hbndry.
+    apply list_elem_of_lookup_1 in Hbndry.
     destruct Hbndry as [bndryi Hbndry].
     destruct (decide (bndryi = length mwrbs - 1)%nat) as [Hbndryi|Hbndryi].
     {
       subst bndryi.
-      rewrite list_lookup_insert in Hbndry; last by lia.
+      rewrite list_lookup_insert_eq in Hbndry; last by lia.
       inversion Hbndry; subst bndry; clear Hbndry.
       simpl.
       split; first by lia.
@@ -1384,7 +1384,7 @@ Proof.
     rewrite subslice_take_all; last by lia.
     assumption.
   }
-  rewrite Hbndryi list_lookup_insert in Hbndry2'; last by lia.
+  rewrite Hbndryi list_lookup_insert_eq in Hbndry2'; last by lia.
   assert (bndryi = length mwrbs - 2)%nat by lia.
   subst bndryi.
   clear Hbndryi_lt Hbndryi.
@@ -1520,7 +1520,7 @@ Proof.
   assert (b2.(mwrb.upd) ≤ length upds ∧ b2.(mwrb.txn) ≤ length txns)
     as Hb2bnd.
   {
-    apply elem_of_list_lookup_2 in Hrbnd.
+    apply list_elem_of_lookup_2 in Hrbnd.
     apply Hbnds in Hrbnd.
     lia.
   }
@@ -1533,15 +1533,15 @@ Proof.
   split.
   {
     intros bndry Hbndry.
-    destruct (elem_of_list_lookup_1 _ _ Hbndry) as [i' Hset].
+    destruct (list_elem_of_lookup_1 _ _ Hbndry) as [i' Hset].
     destruct (decide (i = i')) as [<-|Hi'].
     2: {
       rewrite list_lookup_alter_ne in Hset; last by lia.
-      apply elem_of_list_lookup_2 in Hset.
+      apply list_elem_of_lookup_2 in Hset.
       apply Hbnds in Hset.
       assumption.
     }
-    rewrite list_lookup_alter in Hset.
+    rewrite list_lookup_alter_eq in Hset.
     rewrite Hlbnd in Hset.
     simpl in Hset; inversion Hset; subst bndry.
     simpl.
@@ -1551,7 +1551,7 @@ Proof.
   intros i' bndry1 bndry2 Hbndry1 Hbndry2.
   destruct (decide (i = i')) as [<-|Hi_i'].
   {
-    rewrite list_lookup_alter in Hbndry1.
+    rewrite list_lookup_alter_eq in Hbndry1.
     rewrite list_lookup_alter_ne in Hbndry2; last by lia.
     rewrite Hrbnd in Hbndry2.
     rewrite Hlbnd in Hbndry1.
@@ -1572,7 +1572,7 @@ Proof.
     2-4: eassumption.
     lia.
   }
-  rewrite list_lookup_alter in Hbndry2.
+  rewrite list_lookup_alter_eq in Hbndry2.
   rewrite Hlbnd in Hbndry2.
   simpl in Hbndry2; inversion Hbndry2; subst bndry2; clear Hbndry2.
   destruct (Hregs _ _ _ Hbndry1 Hlbnd) as (Hbnd1&Hbnd2&Hreg).

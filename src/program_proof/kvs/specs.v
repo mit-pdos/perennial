@@ -147,7 +147,7 @@ Proof.
          iPureIntro. split.
          {
            rewrite <- HbuildAddr. simpl.
-           apply lookup_insert.
+           apply lookup_insert_eq.
          }
          { simpl. auto. }
       -- iIntros (bptr dirty) "[HisBuf HPostRead]".

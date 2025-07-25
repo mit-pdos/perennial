@@ -188,7 +188,7 @@ Proof.
   iDestruct "Hfactory" as (txns) "[Hctx Hels]".
   iDestruct (alist_lookup with "Hctx Hel") as %Hloookup.
   iDestruct (big_sepL_lookup with "Hels") as "$".
-  rewrite -> lookup_take by lia. done.
+  rewrite -> lookup_take_lt by lia. done.
 Qed.
 
 Lemma old_txn_get_pos γ γ' crash_txn txn_id pos :

@@ -37,7 +37,7 @@ Lemma find_version_le_is_Some vers (ts : nat) ver :
   is_Some (find_version vers ts).
 Proof.
   intros Hin Hlt.
-  apply elem_of_reverse, elem_of_list_lookup_1 in Hin as [idx Hlookup].
+  apply elem_of_reverse, list_elem_of_lookup_1 in Hin as [idx Hlookup].
   rewrite /find_version /find_version_forward.
   rewrite -(take_drop_middle _ _ _ Hlookup) foldl_app.
   destruct (foldl _ None _) as [ver' |].
@@ -96,7 +96,7 @@ Proof.
   destruct (reverse _) as [| ver versl] eqn:Hversl; first done.
   rewrite Forall_forall in Hlast.
   assert (Hin : ver ∈ vers).
-  { apply elem_of_reverse. rewrite Hversl. apply elem_of_list_here. }
+  { apply elem_of_reverse. rewrite Hversl. apply list_elem_of_here. }
   simpl.
   specialize (Hlast _ Hin).
   do 2 (case_decide; last word).
@@ -601,7 +601,7 @@ Section program.
         rewrite Exists_exists.
         exists ver'.
         split.
-        { apply elem_of_list_lookup_2 in Hver'.
+        { apply list_elem_of_lookup_2 in Hver'.
           by rewrite elem_of_reverse in Hver'.
         }
         clear -Heqb0. word.
@@ -640,7 +640,7 @@ Section program.
         exists ver. subst ts.
         inv Heq.
         split; last done.
-        by apply elem_of_list_lookup_2 in Hver.
+        by apply list_elem_of_lookup_2 in Hver.
       }
     }
     (* Case: Fast-path hitting a non-last version. *)
@@ -685,7 +685,7 @@ Section program.
     { rewrite Exists_exists.
       exists (W64 0, None). simpl.
       split; last word.
-      by apply elem_of_list_lookup_2 in Hfirst.
+      by apply list_elem_of_lookup_2 in Hfirst.
     }
     iIntros (ver slow) "[Hvers %Hfind]".
     destruct Hfind as [Hfind Hlast].
@@ -753,7 +753,7 @@ Section program.
     { rewrite Exists_exists.
       exists (W64 0, None). simpl.
       split; last word.
-      by apply elem_of_list_lookup_2 in Hfirst.
+      by apply list_elem_of_lookup_2 in Hfirst.
     }
     iIntros (ver slow) "[Hvers %Hfind]".
     destruct Hfind as [Hfind Hlast].

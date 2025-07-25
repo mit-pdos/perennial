@@ -12,7 +12,7 @@ Program Definition inj_infinite `{Infinite A} {B}
   Infinite B := {| infinite_fresh := f ∘ fresh ∘ omap g |}.
 Next Obligation.
   intros A ? B f g Hfg xs Hxs; simpl in *.
-  apply (infinite_is_fresh (omap g xs)), elem_of_list_omap; eauto.
+  apply (infinite_is_fresh (omap g xs)), list_elem_of_omap; eauto.
 Qed.
 Next Obligation. solve_proper. Qed.
 
@@ -37,7 +37,7 @@ Section search_infinite.
     revert xs. assert (help : ∀ xs n n',
       Acc (R (filter (≠ f n') xs)) n → n' < n → Acc (R xs) n).
     { induction 1 as [n _ IH]. constructor; intros n2 [??]. apply IH; [|lia].
-      split; [done|]. apply elem_of_list_filter; naive_solver lia. }
+      split; [done|]. apply list_elem_of_filter; naive_solver lia. }
     intros xs. induction (well_founded_ltof _ length xs) as [xs _ IH].
     intros n1; constructor; intros n2 [Hn Hs].
     apply help with (n2 - 1); [|lia]. apply IH. eapply filter_length_lt; eauto.
@@ -137,7 +137,7 @@ Program Instance list_infinite `{Inhabited A} : Infinite (list A) := {|
 |}.
 Next Obligation.
   intros A ? xs ?. destruct (infinite_is_fresh (length <$> xs)).
-  apply elem_of_list_fmap. eexists; split; [|done].
+  apply list_elem_of_fmap. eexists; split; [|done].
   unfold fresh. by rewrite replicate_length.
 Qed.
 Next Obligation. unfold fresh. by intros A ? xs1 xs2 ->. Qed.

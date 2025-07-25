@@ -55,7 +55,7 @@ Section program.
       iNamed "Hidx".
       wp_loadField.
       (* Prove [k] in the domain of [pwrs] and in [keys_all]. *)
-      apply elem_of_list_lookup_2 in Hi as Hpwrsv.
+      apply list_elem_of_lookup_2 in Hi as Hpwrsv.
       rewrite -HpwrsL elem_of_map_to_list in Hpwrsv.
       apply elem_of_dom_2 in Hpwrsv as Hdompwrs.
       assert (Hvk : k ∈ keys_all).
@@ -98,7 +98,7 @@ Section program.
         { apply Hlenhistm. }
         iIntros "Hh".
         iDestruct (big_sepM_insert_2 with "Hh Hhistm") as "Hhistm".
-        rewrite insert_delete_insert /multiwrite.
+        rewrite insert_delete_eq /multiwrite.
         erewrite insert_merge_l; last first.
         { by rewrite Hh. }
         iApply "HΦ".
@@ -109,7 +109,7 @@ Section program.
         { apply Hlenhistm. }
         iIntros "Hh".
         iDestruct (big_sepM_insert_2 with "Hh Hhistm") as "Hhistm".
-        rewrite insert_delete_insert /multiwrite.
+        rewrite insert_delete_eq /multiwrite.
         erewrite insert_merge_l; last first.
         { by rewrite Hh. }
         iApply "HΦ".

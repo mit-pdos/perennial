@@ -131,7 +131,7 @@ Proof.
   iDestruct "Hreserved" as "[Hthis Hreserved]".
   rewrite !assoc. iSplitR "Hreserved"; last first.
   { iApply reserved_inc_clock; last done.
-    rewrite lookup_delete. done. }
+    rewrite lookup_delete_eq. done. }
   iDestruct "Hthis" as (Φ) "(HΦ & Hsid & HAU)".
   rewrite bool_decide_false. 2:word.
   iMod "HAU" as (ts') "[Hts' Hclose]".

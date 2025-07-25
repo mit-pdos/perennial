@@ -278,7 +278,7 @@ Proof.
     rewrite (surjective_pairing res).
     by apply pair_equal_spec.
   - destruct Hspec as [Hallge _].
-    apply (elem_of_list_fmap_1 fst) in Helem. simpl in Helem.
+    apply (list_elem_of_fmap_2 fst) in Helem. simpl in Helem.
     rewrite Forall_forall in Hallge.
     apply Hallge in Helem. lia.
 Qed.
@@ -385,7 +385,7 @@ Proof.
   { apply elements_union_singleton.
     intros contra.
     rewrite -elem_of_elements in contra.
-    by apply (elem_of_list_fmap_1 fst) in contra.
+    by apply (list_elem_of_fmap_2 fst) in contra.
   }
   rewrite fmap_cons. simpl.
   by apply NoDup_cons_2; last auto.
@@ -723,7 +723,7 @@ Proof.
     }
     rewrite Forall_forall.
     intros u Helem.
-    apply elem_of_list_lookup in Helem.
+    apply list_elem_of_lookup in Helem.
     destruct Helem as [i Hlookup].
     rewrite lookup_take_Some in Hlookup.
     destruct Hlookup as [Hlookup Hle].
@@ -798,7 +798,7 @@ Proof.
     }
     rewrite Forall_forall.
     intros u Helem.
-    apply elem_of_list_lookup in Helem.
+    apply list_elem_of_lookup in Helem.
     destruct Helem as [i Hlookup].
     rewrite lookup_take_Some in Hlookup.
     destruct Hlookup as [Hlookup Hle].

@@ -1240,7 +1240,7 @@ Proof.
     iIntros.
     iApply "Hacc".
     iPureIntro.
-    by eapply elem_of_list_lookup_2.
+    by eapply list_elem_of_lookup_2.
   }
   iMod (inv_alloc with "[Hprop_rest Hprop]") as "#$".
   {

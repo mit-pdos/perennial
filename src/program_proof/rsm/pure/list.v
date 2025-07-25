@@ -163,7 +163,7 @@ Section lemma.
     split; first done.
     split; last apply NoDup_singleton.
     intros y Hy Heq.
-    rewrite elem_of_list_singleton in Heq.
+    rewrite list_elem_of_singleton in Heq.
     by subst y.
   Qed.
 

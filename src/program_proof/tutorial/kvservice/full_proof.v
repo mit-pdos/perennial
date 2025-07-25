@@ -398,7 +398,7 @@ Qed.
 Global Instance gauge_proper_insert k v :
   Proper (gauge_eq ==> gauge_eq) (insert k v).
 Proof. intros ????. destruct (decide (k = k0)).
-       - subst. do 2 rewrite lookup_insert. done.
+       - subst. do 2 rewrite lookup_insert_eq. done.
        - do 2 (rewrite lookup_insert_ne; last done). done.
 Qed.
 

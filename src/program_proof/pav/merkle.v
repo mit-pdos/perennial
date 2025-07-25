@@ -1670,7 +1670,7 @@ Proof.
       iDestruct (own_slice_small_sz with "Hsl_label_put") as %?.
       wp_storeField. wp_pures. iApply "HΦ". iFrame "Hown_ctx ∗".
       iIntros "!>". iExists (Leaf label val). iSplit; [|iSplit]; try done.
-      - by rewrite insert_singleton.
+      - by rewrite insert_singleton_eq.
       - iFrame "Hptr_hash Hptr_label Hptr_val ∗#%". word. }
 
     wp_apply wp_allocStruct; [val_ty|].

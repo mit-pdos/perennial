@@ -233,7 +233,7 @@ Proof using txnG0 Σ.
     iModIntro.
     iPureIntro.
 
-    apply elem_of_list_lookup_1 in H0.
+    apply list_elem_of_lookup_1 in H0.
     destruct H0 as [prefix H0].
     specialize (Hoff_prefix_in_block prefix).
     erewrite latest_update_take_some in Hoff_prefix_in_block by eauto.

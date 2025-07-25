@@ -94,7 +94,7 @@ Section leader_session.
         iNamed "Haddrm".
         assert (is_Some (addrm !! nid)) as [addrpeer Haddrpeer].
         { rewrite -elem_of_dom.
-          apply elem_of_list_lookup_2 in Hnid.
+          apply list_elem_of_lookup_2 in Hnid.
           set_solver.
         }
         wp_apply (wp_Paxos__Send with "[] Hdata"); first apply Haddrpeer.
@@ -112,7 +112,7 @@ Section leader_session.
         destruct sent; last first.
         { iDestruct (big_sepM_insert_2 _ _ addrpeer ms with "[Hms] Hlistens") as "Hlistens".
           { iFrame "∗ # %". }
-          rewrite insert_delete; last apply Hms.
+          rewrite insert_delete_id; last apply Hms.
           iMod "Hmask" as "_".
           iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
           { done. }
@@ -134,7 +134,7 @@ Section leader_session.
           rewrite 2!set_map_union_L 2!set_map_singleton_L.
           set_solver.
         }
-        rewrite insert_delete_insert.
+        rewrite insert_delete_eq.
         iMod "Hmask" as "_".
         iMod ("HinvnetC" with "[$Hlistens $Hconnects $Hterminals]") as "_".
         { iPureIntro.

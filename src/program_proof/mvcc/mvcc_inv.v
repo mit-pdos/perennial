@@ -132,7 +132,7 @@ Proof.
   iIntros "Hinv Hactive Hlb".
   iDestruct "Hactive" as "[[Htid %Hlookup] _]".
   apply sids_all_lookup in Hlookup.
-  apply elem_of_list_lookup_2 in Hlookup.
+  apply list_elem_of_lookup_2 in Hlookup.
   iDestruct (big_sepL_elem_of with "Hlb") as "Htidlb"; first done.
   iDestruct (big_sepL_elem_of with "Hinv") as "H"; first done.
   iNamed "H".
@@ -701,11 +701,11 @@ Proof.
   rewrite NoDup_app_assoc NoDup_app_comm in HNoDup.
   apply NoDup_app in HNoDup as (_ & HNoDup & _).
   rewrite -elem_of_elements in Helem.
-  apply (elem_of_list_fmap_1 fst) in Helem. simpl in Helem.
+  apply (list_elem_of_fmap_2 fst) in Helem. simpl in Helem.
   apply HNoDup in Helem.
   intros m Helem'.
   rewrite -elem_of_elements in Helem'.
-  apply (elem_of_list_fmap_1 fst) in Helem'. simpl in Helem'.
+  apply (list_elem_of_fmap_2 fst) in Helem'. simpl in Helem'.
   set_solver.
 Qed.
 
@@ -719,11 +719,11 @@ Proof.
   rewrite NoDup_app_assoc NoDup_app_comm in HNoDup.
   apply NoDup_app in HNoDup as (_ & HNoDup & _).
   rewrite -elem_of_elements in Helem.
-  apply (elem_of_list_fmap_1 fst) in Helem. simpl in Helem.
+  apply (list_elem_of_fmap_2 fst) in Helem. simpl in Helem.
   apply HNoDup in Helem.
   intros m Helem'.
   rewrite -elem_of_elements in Helem'.
-  apply (elem_of_list_fmap_1 fst) in Helem'. simpl in Helem'.
+  apply (list_elem_of_fmap_2 fst) in Helem'. simpl in Helem'.
   set_solver.
 Qed.
 

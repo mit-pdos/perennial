@@ -180,8 +180,8 @@ Proof.
     iMod (map_update acc2 _ (word.add bal2 amount) with "HlogBalCtx Hacc2_log") as "[HlogBalCtx Hacc2_log]".
     iMod ("HbankInvClose" with "[HlogBalCtx]") as "_".
     { iNext. iExists _, _. iSplitL "HlogBalCtx".
-      - rewrite insert_union_l. rewrite insert_singleton. 
-        rewrite insert_union_r; last by apply lookup_singleton_ne. rewrite insert_singleton. 
+      - rewrite insert_union_l. rewrite insert_singleton_eq. 
+        rewrite insert_union_r; last by apply lookup_singleton_ne. rewrite insert_singleton_eq. 
         iFrame.
       - admit. (* FIXME: add the necessary overflow checks and use them here... *)
     }
@@ -242,14 +242,14 @@ Proof.
   iDestruct (map_valid with "HlogBalCtx Hacc1_log") as %Hacc1_logphys.
   assert (bal0 = bal1) as ->.
   {
-    erewrite lookup_union_Some_l in Hacc1_logphys; last by apply lookup_singleton.
+    erewrite lookup_union_Some_l in Hacc1_logphys; last by apply lookup_singleton_eq.
     by injection Hacc1_logphys.
   }
 
   iDestruct (map_valid with "HlogBalCtx Hacc2_log") as %Hacc2_logphys.
   assert (bal2 = bal3) as ->.
   {
-    erewrite lookup_union_Some_r in Hacc2_logphys; last by apply lookup_singleton.
+    erewrite lookup_union_Some_r in Hacc2_logphys; last by apply lookup_singleton_eq.
     { by injection Hacc2_logphys. }
     rewrite map_disjoint_singleton_l.
     by apply lookup_singleton_ne.

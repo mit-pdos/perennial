@@ -47,8 +47,8 @@ Proof.
 
   iMod (na_heap_name_init tls σ.(init_local_state).(heap)) as (name_na_heap) "Hh".
   iMod (ffi_local_init _ _ σ.(init_local_state).(world)) as (ffi_names) "(Hw&Hstart)".
-  { eapply HINIT. apply elem_of_list_fmap. eexists. split; first done.
-    eapply elem_of_list_lookup_2. done. }
+  { eapply HINIT. apply list_elem_of_fmap. eexists. split; first done.
+    eapply list_elem_of_lookup_2. done. }
   iMod (trace_name_init σ.(init_local_state).(trace) σ.(init_local_state).(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   iMod (globals_name_init _ σ.(init_local_state).(globals)) as (globals_name) "(Hg & Hg_auth)".
   set (hL := GooseLocalGS Σ Hc ffi_names (na_heapGS_update_pre _ name_na_heap) (traceGS_update_pre Σ _ name_trace)
@@ -95,9 +95,9 @@ Theorem goose_dist_adequacy_failstop
 Proof.
   intros Hwp. rewrite /dist_adequate_failstop.
   eapply (goose_dist_adequacy Σ); first done.
-  { intros σ (?&->&Hin)%elem_of_list_fmap. eapply HINIT; eauto.
-    apply elem_of_list_fmap in Hin as (?&->&?) => //=.
-    eapply elem_of_list_fmap. eauto. }
+  { intros σ (?&->&Hin)%list_elem_of_fmap. eapply HINIT; eauto.
+    apply list_elem_of_fmap in Hin as (?&->&?) => //=.
+    eapply list_elem_of_fmap. eauto. }
   iIntros (HG) "Hg".
   iMod (Hwp HG with "[$]") as "(Hwp&$)". iModIntro.
   iApply big_sepL_fmap. simpl.

@@ -49,6 +49,6 @@ Lemma wrent_to_val_with_lookup (x : val) (l : list wrent) (i : nat) :
   (∃ (k : u64) (v : byte_string) (w : bool) (t : loc), x = wrent_to_val (k, v, w, t) ∧ l !! i = Some (k, v, w, t)).
 Proof.
   intros H.
-  apply list_lookup_fmap_inv in H as [[[[k v] w] t] [Heq Hsome]].
+  apply list_lookup_fmap_Some_1 in H as [[[[k v] w] t] [Heq Hsome]].
   naive_solver.
 Qed.

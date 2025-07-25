@@ -137,13 +137,13 @@ Proof.
   induction l; simpl.
   - inversion 1.
   - destruct (decide (k = a.1)); subst.
-    + rewrite lookup_insert.
+    + rewrite lookup_insert_eq.
       inversion 1; subst.
       destruct a; simpl.
       constructor.
     + rewrite lookup_insert_ne //.
       intros Hin%IHl.
-      apply elem_of_list_further; auto.
+      apply list_elem_of_further; auto.
 Qed.
 
 Lemma lookup_list_to_map_2 K `{Countable K} A (l: list (K * A)) k v :
@@ -157,12 +157,12 @@ Proof.
     inversion Hnodup; subst; clear Hnodup.
     intros Hin.
     apply elem_of_cons in Hin as [<-|Hin]; simpl.
-    + rewrite lookup_insert //.
+    + rewrite lookup_insert_eq //.
     + rewrite lookup_insert_ne.
       { eauto. }
       intros <-.
       contradiction H2.
-      apply elem_of_list_fmap.
+      apply list_elem_of_fmap.
       exists (a.1, v); auto.
 Qed.
 
@@ -607,12 +607,12 @@ Proof.
     cut (list_to_set l ⊆ s); [ set_solver | ]
   end.
   apply elem_of_subseteq; setoid_rewrite elem_of_list_to_set; intros.
-  apply elem_of_list_fmap_2 in H as [u [-> H]].
+  apply list_elem_of_fmap_1 in H as [u [-> H]].
   apply (Forall_prefix _ (txn_upds $ take (S txn_id) ls.(log_state.txns))) in Haddrs_wf; last first.
   { f_equiv.
     apply take_prefix.
     auto. }
-  apply elem_of_list_lookup_1 in H as [i Hlookup].
+  apply list_elem_of_lookup_1 in H as [i Hlookup].
   eapply Forall_lookup in Hlookup; eauto.
   simpl in Hlookup.
   destruct Hlookup as [_ (b & Hlookup)].
@@ -631,7 +631,7 @@ Proof.
     rewrite dom_insert_L.
     rewrite big_sepS_insert; last first.
     { apply not_elem_of_dom; auto. }
-    rewrite lookup_insert.
+    rewrite lookup_insert_eq.
     rewrite IHm.
     f_equiv.
     + iSplit; [ iIntros "H"; iExists _; by iFrame | ].
@@ -918,13 +918,13 @@ Proof.
   - simpl in *; auto.
   - rewrite concat_cons.
     apply in_or_app.
-    rewrite <- elem_of_list_In in H.
+    rewrite <- list_elem_of_In in H.
     apply elem_of_cons in H.
     intuition; subst.
     + left; auto.
     + right.
       apply IHl.
-      rewrite <- elem_of_list_In; auto.
+      rewrite <- list_elem_of_In; auto.
 Qed.
 
 Theorem concat_list_in {A: Type} (l: list (list A)):
@@ -938,8 +938,8 @@ Proof.
     intuition.
     + exists a.
       split; auto.
-      rewrite <- elem_of_list_In.
-      apply elem_of_list_here.
+      rewrite <- list_elem_of_In.
+      apply list_elem_of_here.
     + destruct H. intuition.
       exists x.
       split; auto.
@@ -966,12 +966,12 @@ Proof.
   induction l.
   - intros.
     rewrite drop_nil in H.
-    rewrite <- elem_of_list_In in H.
+    rewrite <- list_elem_of_In in H.
     apply not_elem_of_nil in H; auto.
   - intros.
     destruct (decide (n = 0%nat)); subst.
     + rewrite skipn_O in H; auto.
-    + rewrite <- elem_of_list_In.
+    + rewrite <- list_elem_of_In.
       assert (n = 0%nat ∨ (∃ m : nat, n = S m)) by apply Nat.zero_or_succ.
       destruct H0; subst; try congruence.
       destruct H0; subst.
@@ -979,7 +979,7 @@ Proof.
       specialize (IHl x e).
       apply elem_of_cons.
       right.
-      rewrite elem_of_list_In; auto.
+      rewrite list_elem_of_In; auto.
 Qed.
 
 Theorem in_drop_ge {A} (l: list A) (n0 n1: nat):
@@ -1002,7 +1002,7 @@ Proof.
   rewrite /is_update.
   exists a0.
   split; try auto.
-  apply elem_of_list_here.
+  apply list_elem_of_here.
 Qed.
 
 Theorem is_update_cons (l: list update.t) a b:
@@ -1014,7 +1014,7 @@ Proof.
   intuition.
   exists u.
   split; auto.
-  apply elem_of_list_further; auto.
+  apply list_elem_of_further; auto.
 Qed.
 
 Theorem latest_update_cons installed a:
@@ -1139,7 +1139,7 @@ Proof.
     + simpl.
       erewrite <- IHl.
       { reflexivity. }
-      rewrite lookup_insert. auto.
+      rewrite lookup_insert_eq. auto.
     + erewrite <- IHl.
       { reflexivity. }
       rewrite lookup_insert_ne; auto.
@@ -1172,7 +1172,7 @@ Proof.
   intros.
   destruct u1, u2.
   simpl in *.
-  rewrite insert_commute; eauto.
+  rewrite insert_insert_ne; eauto.
   intro Hx. apply H. word.
 Qed.
 
@@ -1185,7 +1185,7 @@ Proof.
   destruct u1, u2.
   simpl in *.
   subst.
-  rewrite insert_insert.
+  rewrite insert_insert_eq.
   reflexivity.
 Qed.
 
@@ -1255,7 +1255,7 @@ Proof.
     destruct (decide ((a0.(update.addr) = a))).
     + exfalso.
       apply H0'; auto.
-      apply elem_of_list_here.
+      apply list_elem_of_here.
     + apply IHl0; auto.
       apply Forall_inv_tail in H0; auto.
 Qed.
@@ -1280,7 +1280,7 @@ Proof.
     {
       intros.
       apply H; auto.
-      apply elem_of_list_here.
+      apply list_elem_of_here.
     }
     congruence.
 Qed.
@@ -1361,7 +1361,7 @@ Proof.
   unfold apply_upds in H.
   destruct a0; simpl in *.
   subst.
-  rewrite lookup_insert in H0.
+  rewrite lookup_insert_eq in H0.
   inversion H0; auto.
 Qed.
 
@@ -1386,7 +1386,7 @@ Proof.
       unfold no_updates in H0.
       specialize (H0 a0).
       destruct H0.
-      1: apply elem_of_list_here; auto.
+      1: apply list_elem_of_here; auto.
       auto.
     }
     apply no_updates_cons in H0 as H0'.
@@ -1492,27 +1492,27 @@ Theorem txn_ups_take_elem_of u l:
     u ∈ txn_upds l.
 Proof.
   intros.
-  rewrite -> elem_of_list_In in H1.
+  rewrite -> list_elem_of_In in H1.
   unfold txn_upds in *.
   apply in_concat in H1.
   destruct H1 as [l0 H1].
   intuition.
-  rewrite -> elem_of_list_In.
+  rewrite -> list_elem_of_In.
   apply in_concat.
   exists l0.
   split; auto.
-  rewrite <- elem_of_list_In in H2.
-  rewrite <- elem_of_list_In.
-  eapply elem_of_list_fmap_2 in H2.
+  rewrite <- list_elem_of_In in H2.
+  rewrite <- list_elem_of_In.
+  eapply list_elem_of_fmap_1 in H2.
   destruct H2.
   intuition.
-  eapply elem_of_list_fmap_1_alt; eauto.
-  apply elem_of_list_lookup_1 in H4.
+  eapply list_elem_of_fmap_2'; eauto.
+  apply list_elem_of_lookup_1 in H4.
   destruct H4 as [i H4].
   apply lookup_lt_Some in H4 as Hlen.
   rewrite -> firstn_length_le in Hlen by lia.
-  rewrite -> lookup_take in H4 by lia.
-  apply elem_of_list_lookup_2 in H4; auto.
+  rewrite -> lookup_take_lt in H4 by lia.
+  apply list_elem_of_lookup_2 in H4; auto.
 Qed.
 
 Theorem apply_upds_since_txn_id_new d (txn_id txn_id': nat):
@@ -1558,7 +1558,7 @@ Proof using walheapG0 Σ.
   destruct (decide (b = installedb)).
   {
     subst.
-    apply elem_of_list_here.
+    apply list_elem_of_here.
   }
   eapply apply_upds_since_txn_id_new with (txn_id := txn_id) (txn_id' := txn_id') in H0; eauto.
   destruct H0. destruct H0. intuition.
@@ -1567,11 +1567,11 @@ Proof using walheapG0 Σ.
     rewrite in_map_iff.
     exists x; eauto.
     split; eauto.
-    rewrite <- elem_of_list_In.
-    rewrite elem_of_list_filter.
+    rewrite <- list_elem_of_In.
+    rewrite list_elem_of_filter.
     split; eauto.
   }
-  rewrite elem_of_list_In.
+  rewrite list_elem_of_In.
   apply in_cons; eauto.
 Qed.
 
@@ -1698,7 +1698,7 @@ Proof.
   destruct (decide (a.(update.addr) = u.(update.addr))); eauto.
   exfalso.
   apply H3. rewrite e.
-  eapply elem_of_list_lookup.
+  eapply list_elem_of_lookup.
   eexists.
   rewrite list_lookup_fmap.
   erewrite H; eauto.
@@ -2035,7 +2035,7 @@ Proof.
     inversion H; clear H; subst.
     inversion H0; clear H0; subst.
     rewrite memappend_gh_not_in_bs.
-    { rewrite lookup_insert; eauto. }
+    { rewrite lookup_insert_eq; eauto. }
     inversion H1; eauto.
   }
 
@@ -2060,10 +2060,10 @@ Proof.
   induction bs; intros; eauto.
   destruct a; simpl.
   destruct (decide (addr = u.(update.addr))); subst.
-  - simpl in H. exfalso. apply H. apply elem_of_list_here.
-  - rewrite -> insert_commute by eauto.
+  - simpl in H. exfalso. apply H. apply list_elem_of_here.
+  - rewrite -> insert_insert_ne by eauto.
     rewrite IHbs; eauto.
-    intro Hne. apply H. apply elem_of_list_further. eauto.
+    intro Hne. apply H. apply list_elem_of_further. eauto.
 Qed.
 
 Lemma apply_upds_u64_delete bs : ∀ heapdisk a,
@@ -2074,10 +2074,10 @@ Proof.
   induction bs; intros; eauto.
   destruct a; simpl.
   destruct (decide (addr = a0)); subst.
-  - simpl in H. exfalso. apply H. apply elem_of_list_here.
+  - simpl in H. exfalso. apply H. apply list_elem_of_here.
   - rewrite <- delete_insert_ne by eauto.
     rewrite IHbs; eauto.
-    intro Hne. apply H. apply elem_of_list_further. eauto.
+    intro Hne. apply H. apply list_elem_of_further. eauto.
 Qed.
 
 (*
@@ -2102,11 +2102,11 @@ Proof.
   rewrite -apply_upds_u64_delete; eauto.
   iDestruct ("Hbs" with "[] [] [] Happly") as "Happly"; last by iFrame.
   - eauto.
-  - iPureIntro. intros. eapply Hdisjoint. eapply elem_of_list_further. eauto.
+  - iPureIntro. intros. eapply Hdisjoint. eapply list_elem_of_further. eauto.
   - iPureIntro. intros. destruct (decide (l = a.(update.addr))); subst.
     + exfalso.
       rewrite Hdisjoint in H; try congruence.
-      apply elem_of_list_here.
+      apply list_elem_of_here.
     + rewrite lookup_delete_ne; eauto.
 Qed.
 *)
@@ -2122,7 +2122,7 @@ Proof.
   erewrite IHbs. { reflexivity. }
   intros a.
   destruct (decide (a = addr)); subst.
-  - repeat rewrite lookup_insert. eauto.
+  - repeat rewrite lookup_insert_eq. eauto.
   - rewrite -> lookup_insert_ne by eauto.
     rewrite H.
     rewrite lookup_insert_ne; eauto.
@@ -2147,7 +2147,7 @@ Proof.
   rewrite /addrs_wf.
   setoid_rewrite Forall_forall.
   iIntros (x Hx).
-  eapply elem_of_list_lookup_1 in Hx.
+  eapply list_elem_of_lookup_1 in Hx.
   destruct Hx as [i Hx].
   rewrite /memappend_pre.
   iDestruct (big_sepL2_lookup_1_some with "Hpre") as (o) "%Holds"; eauto.
@@ -2272,7 +2272,7 @@ Proof using walheapG0.
     intros u Hin.
     move: Hbs_in_gh Hin.
     clear.
-    rewrite elem_of_list_lookup elem_of_dom.
+    rewrite list_elem_of_lookup elem_of_dom.
     naive_solver. }
   iDestruct (big_sepM_forall with "Hgh") as %Hgh.
   iSplitL.
@@ -2327,9 +2327,9 @@ Proof using walheapG0.
   specialize (Hgh k).
 
   destruct (decide (k ∈ fmap update.addr bs)).
-  - eapply elem_of_list_fmap in e as ex.
+  - eapply list_elem_of_fmap in e as ex.
     destruct ex as [y [-> ?]].
-    apply elem_of_list_lookup in H0; destruct H0.
+    apply list_elem_of_lookup in H0; destruct H0.
     edestruct Hbs_in_gh; eauto.
     destruct H4.
     specialize (Hgh _ H5). simpl in *.

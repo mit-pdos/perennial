@@ -151,8 +151,8 @@ Proof.
   - destruct a as [a b'].
     destruct (decide (uint.Z a = uint.Z a0)).
     + rewrite e.
-      rewrite insert_insert //.
-    + rewrite insert_commute; auto.
+      rewrite insert_insert_eq //.
+    + rewrite insert_insert_ne; auto.
 Qed.
 
 Theorem apply_upds_lookup_insert_highest upds (a: u64) b d :
@@ -161,7 +161,7 @@ Theorem apply_upds_lookup_insert_highest upds (a: u64) b d :
 Proof.
   revert a b d.
   induction upds; simpl; intros.
-  - rewrite lookup_insert //.
+  - rewrite lookup_insert_eq //.
   - destruct a as [a b']; simpl in *.
     apply not_elem_of_cons in H as [Hneq Hnotin].
     rewrite apply_upds_insert_other; auto.
@@ -180,7 +180,7 @@ Proof.
     rewrite apply_upds_insert_other; auto.
     rewrite lookup_insert_ne; auto.
   }
-  rewrite lookup_insert.
+  rewrite lookup_insert_eq.
   rewrite apply_upds_lookup_insert_highest; auto.
 Qed.
 
@@ -215,7 +215,7 @@ Proof.
     simpl.
     generalize dependent (apply_upds upd1 d); intros d'.
     rewrite !apply_upds_insert_commute; auto.
-    rewrite insert_insert //.
+    rewrite insert_insert_eq //.
 Qed.
 
 Lemma memWrite_one_NoDup σ u :
@@ -237,8 +237,8 @@ Proof.
     apply NoDup_app.
     split_and!; auto.
     + simpl.
-      intros x Hx ->%elem_of_list_singleton.
-      apply elem_of_list_lookup in Hx as [txn_id Hx].
+      intros x Hx ->%list_elem_of_singleton.
+      apply list_elem_of_lookup in Hx as [txn_id Hx].
       eapply find_highest_index_none in Hlookup; eauto.
     + simpl.
       apply NoDup_singleton.

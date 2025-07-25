@@ -170,7 +170,7 @@ Section program.
       intros [n c] Hilog. simpl.
       apply elem_of_app in Hilog as [Hilog | Hnewc].
       { rewrite Forall_forall in Hvicmds. by specialize (Hvicmds _ Hilog). }
-      rewrite elem_of_list_singleton in Hnewc.
+      rewrite list_elem_of_singleton in Hnewc.
       by inv Hnewc.
     }
     { by rewrite /execute_cmds foldl_snoc execute_cmds_unfold Hexec /=. }

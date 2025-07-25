@@ -54,7 +54,7 @@ Proof.
   - set_solver.
   - intros i s1 m s2 Hlookup HP v Hin.
     apply elem_of_union in Hin as [Hs1|Hs2].
-    * exists i, s1. rewrite lookup_insert; auto.
+    * exists i, s1. rewrite lookup_insert_eq; auto.
     * edestruct (HP) as (i'&s'&?&?); eauto.
       exists i', s'. rewrite lookup_insert_ne //=. congruence.
 Qed.
@@ -67,7 +67,7 @@ Proof.
   - set_solver.
   - intros i s1 m s2 Hlookup HP v i' s Hlookup2 Hin.
     destruct (decide (i = i')).
-    * subst. rewrite lookup_insert in Hlookup2. apply elem_of_union_l.
+    * subst. rewrite lookup_insert_eq in Hlookup2. apply elem_of_union_l.
       inversion Hlookup2; subst; eauto.
     * rewrite lookup_insert_ne in Hlookup2 * => //=.
       apply elem_of_union_r. eapply HP; eauto.
@@ -108,11 +108,11 @@ Proof.
   iPureIntro.
   intros i j s1 s2 Hneq.
   destruct (decide (i = fresh (dom σ))) as [He1|Hne1].
-  { subst. rewrite lookup_insert lookup_insert_ne //.
+  { subst. rewrite lookup_insert_eq lookup_insert_ne //.
     inversion 1; subst. intros Hlookup.
     specialize (fresh_partition_value_spec σ j s2). set_solver. }
   destruct (decide (j = fresh (dom σ))) as [He2|Hne2].
-  { subst. rewrite lookup_insert lookup_insert_ne //.
+  { subst. rewrite lookup_insert_eq lookup_insert_ne //.
     inversion 1; subst. intros Hlookup.
     specialize (fresh_partition_value_spec σ i s1). set_solver. }
   rewrite ?lookup_insert_ne //. by eapply Hdisj.
@@ -141,17 +141,17 @@ Proof.
   intros Hneq Hdisj Hl1 Hl2.
   assert (<[l1:=s1]> (<[l2:=s2 ∪ s1']> σ) =
           <[l1:=s1]> (delete l1 (<[l2:=s2 ∪ s1']> (delete l2 σ)))) as Heq.
-  { by rewrite ?insert_delete_insert. }
+  { by rewrite ?insert_delete_eq. }
   rewrite Heq.
 
   assert (σ = <[l1:=s1 ∪ s1']> (delete l1 (<[l2:=s2]> (delete l2 σ)))) as Heq'.
-  { rewrite ?insert_delete_insert ?insert_id //. }
+  { rewrite ?insert_delete_eq ?insert_id //. }
   rewrite {1}Heq'.
 
-  rewrite /union_partition ?map_fold_insert ?lookup_delete //; try set_solver+.
+  rewrite /union_partition ?map_fold_insert ?lookup_delete_eq //; try set_solver+.
   rewrite ?delete_insert_ne //.
   assert (delete l1 (delete l2 σ) !! l2 = None).
-  { rewrite lookup_delete_ne // lookup_delete //. }
+  { rewrite lookup_delete_ne // lookup_delete_eq //. }
   rewrite ?map_fold_insert //; set_solver+.
 Qed.
 
@@ -171,11 +171,11 @@ Proof.
   intros i j si sj Hneq.
   destruct (decide (i = l1)) as [He1|Hne1].
   { subst.
-    rewrite lookup_insert. inversion 1; subst.
+    rewrite lookup_insert_eq. inversion 1; subst.
     rewrite lookup_insert_ne //.
     destruct (decide (j = l2)) as [He2|Hne2].
     {
-      subst. rewrite lookup_insert. inversion 1; subst.
+      subst. rewrite lookup_insert_eq. inversion 1; subst.
       set_solver.
     }
     rewrite lookup_insert_ne //; intros; eauto.
@@ -186,10 +186,10 @@ Proof.
   destruct (decide (i = l2)) as [He2|Hne2].
   {
     subst.
-    rewrite lookup_insert.
+    rewrite lookup_insert_eq.
     destruct (decide (j = l1)) as [He2|Hne2].
     {
-      subst. rewrite lookup_insert. inversion 1; subst.
+      subst. rewrite lookup_insert_eq. inversion 1; subst.
       set_solver.
     }
     inversion 1; subst.
@@ -202,14 +202,14 @@ Proof.
   rewrite lookup_insert_ne // => ?.
   destruct (decide (j = l1)) as [He3|Hne3].
   {
-    subst. rewrite lookup_insert. inversion 1; subst.
+    subst. rewrite lookup_insert_eq. inversion 1; subst.
     cut (sj ∪ s1' ## si); first by set_solver.
     eapply Hdisj; [ | apply Hin1 | eauto ]; eauto.
   }
   rewrite lookup_insert_ne //.
   destruct (decide (j = l2)) as [He4|Hne4].
   {
-    subst. rewrite lookup_insert. inversion 1; subst.
+    subst. rewrite lookup_insert_eq. inversion 1; subst.
     cut (s1 ∪ s1' ## si ∧ s2 ## si); first by set_solver.
     split.
     * eapply Hdisj; [ | apply Hin1 | eauto ]; eauto.
