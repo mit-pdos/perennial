@@ -19,6 +19,8 @@ Local Definition get_bit l (n : w64) : bool :=
   | Some bit => bit
   end.
 
+(** tree defn. *)
+
 (* [Cut]s denote a cut off tree.
 1) for full trees, they come from invalid hashes. e.g.,
   - bytes that didn't come from the hash fn output.
@@ -33,6 +35,8 @@ Inductive tree :=
   | Leaf (label val : list w8)
   | Inner (child0 child1 : tree)
   | Cut (hash : list w8).
+
+(** full trees. *)
 
 Inductive dec_node :=
   | DecEmpty
@@ -315,6 +319,10 @@ Proof.
   by iDestruct ("IHlimit" with "Hrecur10 Hrecur11") as %->.
 Qed.
 
+(** cut trees. *)
+(* TODO: shorten these now that they're all module namespaced. *)
+(* TODO: make bunch of these Local and Opaque. *)
+
 (* [is_cut_tree] has a more traditional structure,
 computing the hash [h] from the tree [t]. some consequences:
 - it allows for trees that arbitrary cut off paths.
@@ -349,8 +357,6 @@ Proof. revert h. induction t; apply _. Qed.
 - every full tree is a cut tree.
 - a terminating (non-cut) path down cut tree has the same path down the full tree. *)
 
-(* TODO: shorten these now that they're all module namespaced. *)
-(* TODO: make bunch of these Local and Opaque. *)
 Fixpoint tree_to_map t : gmap (list w8) (list w8) :=
   match t with
   | Empty => ∅
@@ -404,6 +410,20 @@ Fixpoint minimal_tree t : Prop :=
   | _ => True
   end.
 
+(* [is_merkle_map] is when we talk about the underlying tree map.
+this requires no cuts in the tree, since cuts could result in
+different maps for the same tree hash. *)
+Definition is_merkle_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :=
+  ∃ t,
+  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
+  "%Hsorted" ∷ ⌜ sorted_tree t 0 ⌝ ∗
+  "%Hcutless" ∷ ⌜ cutless_tree t ⌝ ∗
+  "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
+  "#Hcut_tree" ∷ is_cut_tree t h.
+Global Opaque is_merkle_map.
+Local Transparent is_merkle_map.
+Global Instance is_merkle_map_pers m h : Persistent (is_merkle_map m h) := _.
+
 Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
     (result: option (list w8 * list w8)%type) : Prop :=
   match t with
@@ -419,46 +439,11 @@ Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
   | Cut _ => False
   end.
 
-Fixpoint is_tree_hash (t: tree) (h: list w8) : iProp Σ :=
-  match t with
-  | Empty =>
-    "#His_hash" ∷ cryptoffi.is_hash (Some [emptyNodeTag]) h
-  | Leaf label val =>
-    "%Hinb_label" ∷ ⌜ uint.Z (W64 (length label)) = length label ⌝ ∗
-    "#His_hash" ∷
-      cryptoffi.is_hash (Some $ [leafNodeTag] ++
-        (u64_le $ length label) ++ label ++
-        (u64_le $ length val) ++ val) h
-  | Inner child0 child1 =>
-    ∃ hl hr,
-    "#Hleft_hash" ∷ is_tree_hash child0 hl ∗
-    "#Hright_hash" ∷ is_tree_hash child1 hr ∗
-    "#His_hash" ∷ cryptoffi.is_hash (Some $ [innerNodeTag] ++ hl ++ hr) h
-  | Cut ch =>
-    "%Heq_cut" ∷ ⌜ h = ch ⌝ ∗
-    "%Hlen_hash" ∷ ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝
-  end.
-
-#[global]
-Instance is_tree_hash_persistent t h : Persistent (is_tree_hash t h).
-Proof. revert h. induction t; apply _. Qed.
-
-Definition is_merkle_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :=
-  ∃ t,
-  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
-  "%Hsorted" ∷ ⌜ sorted_tree t 0 ⌝ ∗
-  "%Hcutless" ∷ ⌜ cutless_tree t ⌝ ∗
-  "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
-  "#Htree_hash" ∷ is_tree_hash t h.
-Global Opaque is_merkle_map.
-Local Transparent is_merkle_map.
-Global Instance is_merkle_map_pers m h : Persistent (is_merkle_map m h) := _.
-
 Definition is_merkle_found (label: list w8)
     (found: option ((list w8) * (list w8))%type) (h: list w8) : iProp Σ :=
   ∃ t,
   "%Htree_path" ∷ ⌜ tree_path t label 0 found ⌝ ∗
-  "#Htree_hash" ∷ is_tree_hash t h.
+  "#Hcut_tree" ∷ is_cut_tree t h.
 
 Definition found_nonmemb (label: list w8)
     (found: option ((list w8) * (list w8))%type) :=
@@ -498,10 +483,10 @@ Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth : w64)
       match get_bit label depth with
       | false =>
         "Hrecur_proof" ∷ tree_sibs_proof child0 label (word.add depth (W64 1)) proof' ∗
-        "#Htree_hash" ∷ is_tree_hash child1 sibhash
+        "#Hcut_tree" ∷ is_cut_tree child1 sibhash
       | true =>
         "Hrecur_proof" ∷ tree_sibs_proof child1 label (word.add depth (W64 1)) proof' ∗
-        "#Htree_hash" ∷ is_tree_hash child0 sibhash
+        "#Hcut_tree" ∷ is_cut_tree child0 sibhash
       end
   | Cut _ => False
   end.
@@ -517,7 +502,7 @@ Definition is_merkle_proof (label: list w8)
     (found: option ((list w8) * (list w8)%type)) (proof: list w8)
     (h: list w8) : iProp Σ :=
   ∃ t,
-  "#Hhash" ∷ is_tree_hash t h ∗
+  "#Hhash" ∷ is_cut_tree t h ∗
   "#Hproof" ∷ tree_sibs_proof t label (W64 0) proof ∗
   "%Hpath" ∷ ⌜ tree_path t label (W64 0) found ⌝.
 
@@ -545,7 +530,7 @@ Proof.
   repeat case_match; intuition; subst; by iFrame "#%".
 Qed.
 
-(* Derived facts. *)
+(** Derived facts about [is_cut_tree]. *)
 
 Lemma cutless_tree_impl_paths t :
   cutless_tree t →
@@ -556,17 +541,16 @@ Proof.
   case_match; intuition.
 Qed.
 
-Lemma is_tree_hash_len t h:
-  is_tree_hash t h -∗
+Lemma is_cut_tree_len t h:
+  is_cut_tree t h -∗
   ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝.
 Proof. destruct t; iNamed 1; [..|done]; by iApply cryptoffi.is_hash_len. Qed.
 
-(* TODO: see if any proof structure simplifies with new code. *)
 Lemma tree_path_agree label depth found0 found1 h t0 t1:
   tree_path t0 label depth found0 →
   tree_path t1 label depth found1 →
-  is_tree_hash t0 h -∗
-  is_tree_hash t1 h -∗
+  is_cut_tree t0 h -∗
+  is_cut_tree t1 h -∗
   ⌜ found0 = found1 ⌝.
 Proof.
   iInduction t0 as [| ? | ? IH0 ? IH1 | ?] forall (depth t1 h);
@@ -587,8 +571,8 @@ Proof.
     len.
   (* both inner. use inner encoding and next_pos same to get
   the same next_hash. then apply IH. *)
-  - iDestruct (is_tree_hash_len with "Hleft_hash0") as %?.
-    iDestruct (is_tree_hash_len with "Hleft_hash1") as %?.
+  - iDestruct (is_cut_tree_len with "Hleft_hash0") as %?.
+    iDestruct (is_cut_tree_len with "Hleft_hash1") as %?.
     list_simplifier. apply app_inj_1 in H as [-> ->]; [|lia].
     case_match.
     + by iApply "IH1".
@@ -681,12 +665,12 @@ Proof.
   destruct (tree_to_map t !! label) eqn:He.
   - eapply tree_to_map_Some in He; eauto.
     destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
-      iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree";
+      iDestruct (tree_path_agree with "Hcut_tree0 Hcut_tree1") as "%Hagree";
       try done; naive_solver.
   - eapply cutless_tree_impl_paths in Hcutless0.
     eapply tree_to_map_None in He as [? [? ?]]; eauto.
     destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
-      iDestruct (tree_path_agree with "Htree_hash0 Htree_hash1") as "%Hagree";
+      iDestruct (tree_path_agree with "Hcut_tree0 Hcut_tree1") as "%Hagree";
       try done; naive_solver.
 Qed.
 
@@ -697,14 +681,14 @@ Proof.
   iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (depth proof);
     simpl; iNamed 1; subst; simpl; [word..|idtac|done].
   rewrite length_app. case_match; iNamed "Hrecur";
-    iDestruct (is_tree_hash_len with "Htree_hash") as %?.
+    iDestruct (is_cut_tree_len with "Hcut_tree") as %?.
   - iDestruct ("IH1" with "Hrecur_proof") as %?. word.
   - iDestruct ("IH0" with "Hrecur_proof") as %?. word.
 Qed.
 
-Lemma is_tree_hash_det t h0 h1 :
-  is_tree_hash t h0 -∗
-  is_tree_hash t h1 -∗
+Lemma is_cut_tree_det t h0 h1 :
+  is_cut_tree t h0 -∗
+  is_cut_tree t h1 -∗
   ⌜ h0 = h1 ⌝.
 Proof.
   iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (h0 h1);
@@ -737,7 +721,7 @@ Proof.
   - apply (f_equal length) in Heq_proof1.
     rewrite length_app in Heq_proof1.
     case_match; iNamed "Hrecur1";
-      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      iDestruct (is_cut_tree_len with "Hcut_tree") as %?;
       list_simplifier; word.
   - naive_solver.
   - simplify_eq/=.
@@ -745,36 +729,36 @@ Proof.
   - apply (f_equal length) in Heq_proof1.
     rewrite length_app in Heq_proof1.
     case_match; iNamed "Hrecur1";
-      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      iDestruct (is_cut_tree_len with "Hcut_tree") as %?;
       list_simplifier; word.
   - apply (f_equal length) in Heq_proof0.
     rewrite length_app in Heq_proof0.
     case_match; iNamed "Hrecur0";
-      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      iDestruct (is_cut_tree_len with "Hcut_tree") as %?;
       list_simplifier; word.
   - apply (f_equal length) in Heq_proof0.
     rewrite length_app in Heq_proof0.
     case_match; iNamed "Hrecur0";
-      iDestruct (is_tree_hash_len with "Htree_hash") as %?;
+      iDestruct (is_cut_tree_len with "Hcut_tree") as %?;
       list_simplifier; word.
   - case_match;
       iNamedSuffix "Hrecur0" "0"; iNamedSuffix "Hrecur1" "1".
     + (* equal sib hashes. *)
-      iDestruct (is_tree_hash_len with "Htree_hash0") as %?.
-      iDestruct (is_tree_hash_len with "Htree_hash1") as %?.
+      iDestruct (is_cut_tree_len with "Hcut_tree0") as %?.
+      iDestruct (is_cut_tree_len with "Hcut_tree1") as %?.
       subst. apply app_inj_2 in Heq_proof1 as [-> ->]; [|lia].
-      iDestruct (is_tree_hash_det with "Hleft_hash0 Htree_hash0") as %->.
-      iDestruct (is_tree_hash_det with "Hleft_hash1 Htree_hash1") as %->.
+      iDestruct (is_cut_tree_det with "Hleft_hash0 Hcut_tree0") as %->.
+      iDestruct (is_cut_tree_det with "Hleft_hash1 Hcut_tree1") as %->.
       (* equal child hashes. *)
       iDestruct ("IH1" with "[] [] Hright_hash0 Hrecur_proof0
         Hright_hash1 Hrecur_proof1") as %->; [done..|].
       by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %->.
     + (* equal sib hashes. *)
-      iDestruct (is_tree_hash_len with "Htree_hash0") as %?.
-      iDestruct (is_tree_hash_len with "Htree_hash1") as %?.
+      iDestruct (is_cut_tree_len with "Hcut_tree0") as %?.
+      iDestruct (is_cut_tree_len with "Hcut_tree1") as %?.
       subst. apply app_inj_2 in Heq_proof1 as [-> ->]; [|lia].
-      iDestruct (is_tree_hash_det with "Hright_hash0 Htree_hash0") as %->.
-      iDestruct (is_tree_hash_det with "Hright_hash1 Htree_hash1") as %->.
+      iDestruct (is_cut_tree_det with "Hright_hash0 Hcut_tree0") as %->.
+      iDestruct (is_cut_tree_det with "Hright_hash1 Hcut_tree1") as %->.
       (* equal child hashes. *)
       iDestruct ("IH0" with "[] [] Hleft_hash0 Hrecur_proof0
         Hleft_hash1 Hrecur_proof1") as %->; [done..|].
@@ -892,7 +876,7 @@ Lemma is_merkle_map_det m dig0 dig1 :
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1". subst.
   opose proof (tree_to_map_det _ _ _ _ _ _ _) as ->; [done..|].
-  by iDestruct (is_tree_hash_det with "Htree_hash0 Htree_hash1") as %?.
+  by iDestruct (is_cut_tree_det with "Hcut_tree0 Hcut_tree1") as %?.
 Qed.
 
 End proof.
