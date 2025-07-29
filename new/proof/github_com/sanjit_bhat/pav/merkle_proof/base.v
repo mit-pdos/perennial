@@ -1,5 +1,6 @@
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
+From Perennial.Helpers Require Import NamedProps.
 
 From New.proof.github_com.goose_lang Require Import primitive std.
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil safemarshal.
