@@ -364,10 +364,6 @@ Global Instance wp_method_call_Tree'ptr_Digest :
   WpMethodCall merkle "Tree'ptr" "Digest" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
-Global Instance wp_method_call_Tree'ptr_Get :
-  WpMethodCall merkle "Tree'ptr" "Get" _ (is_pkg_defined merkle) :=
-  ltac:(apply wp_method_call'; reflexivity).
-
 Global Instance wp_method_call_Tree'ptr_Prove :
   WpMethodCall merkle "Tree'ptr" "Prove" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).

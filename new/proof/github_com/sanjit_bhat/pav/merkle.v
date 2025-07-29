@@ -377,7 +377,7 @@ merkle clients should all use the same [limit] in their code and proofs.
 in practice, this limit is the hash length,
 which was anyways required for liveness, and now is required for safety.
 another approach is defining a predicate for limit validity.
-however, the inversion lemma can't always provide this. *)
+however, the inversion lemma can't always guarantee this. *)
 Lemma is_tree_hash_inj t0 t1 h limit :
   is_tree_hash t0 h limit -∗
   is_tree_hash t1 h limit -∗
