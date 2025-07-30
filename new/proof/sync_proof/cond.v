@@ -1,5 +1,7 @@
-From New.proof.sync_proof Require Import base mutex.
+From New.proof.sync_proof Require Import base.
 
+
+Unset Printing Projections.
 
 Section proof.
 Context `{heapGS Σ, !ffi_semantics _ _}.
@@ -9,7 +11,12 @@ Context `{!syncG Σ}.
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
   "#Hi" ∷ is_pkg_init sync ∗
-  "#Hc" ∷ c ↦s[sync.Cond :: "L"]□ m.
+  "#Hc" ∷ c ↦s[sync.Cond :: "L"]□ m ∗
+  (* TODO: not accurate to assume it never changes, there should be an unknown
+  notifyList struct in an invariant *)
+  "#?" ∷ c ↦s[sync.Cond :: "notify"]□ default_val sync.notifyList.t ∗
+  "#?" ∷ c ↦s[sync.Cond :: "checker"]□ default_val sync.copyChecker.t
+.
 #[global] Opaque is_Cond.
 #[local] Transparent is_Cond.
 
@@ -21,14 +28,18 @@ Theorem wp_NewCond (m : interface.t) :
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
   wp_start as "_".
-  wp_apply wp_fupd.
-  wp_alloc c as "Hc".
+  rewrite -wp_fupd.
   wp_auto.
+  wp_alloc c as "Hc".
+  wp_pures.
   iApply "HΦ".
 
   iDestruct (struct_fields_split with "Hc") as "Hl".
+  cbn [sync.Cond.L' sync.Cond.noCopy' sync.Cond.notify' sync.Cond.checker'].
   iNamed "Hl".
-  iPersist "HL".
+  iClear "HnoCopy". (* not used *)
+  iPersist "HL Hchecker".
+  iPersist "Hnotify".
   iFrame "#". done.
 Qed.
 
