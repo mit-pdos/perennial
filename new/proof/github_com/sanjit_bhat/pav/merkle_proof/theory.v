@@ -1,19 +1,18 @@
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
-From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
+From New.proof Require Import proof_prelude.
 From Perennial.Helpers Require Import bytes NamedProps.
 
-From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base serde.
-From New.proof.github_com.goose_lang Require Import primitive std.
-From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil safemarshal.
-From New.proof.github_com.tchajed Require Import marshal.
+From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
+
+From New.proof.github_com.sanjit_bhat.pav.merkle_proof Require Import base.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
 
-Local Definition bytes_to_bits l := concat (byte_to_bits <$> l).
+Definition bytes_to_bits l := concat (byte_to_bits <$> l).
 
 (* get_bit returns false if bit n of l is 0 (or the bit is past the length of l). *)
-Local Definition get_bit l (n : w64) : bool :=
+Definition get_bit l (n : w64) : bool :=
   match bytes_to_bits l !! (uint.nat n) with
   | None => false
   | Some bit => bit
@@ -106,7 +105,7 @@ Local Program Definition decode_node (data : option $ list w8) : dec_node :=
 Next Obligation. intros. rewrite length_take. lia. Qed.
 Next Obligation. intros. rewrite length_drop. lia. Qed.
 
-Local Lemma decode_empty_inj d :
+Lemma decode_empty_inj d :
   decode_node d = DecEmpty →
   d = Some [emptyNodeTag].
 Proof.
@@ -164,7 +163,7 @@ Proof.
   by list_simplifier.
 Qed.
 
-Local Lemma decode_leaf_inj d l v :
+Lemma decode_leaf_inj d l v :
   decode_node d = DecLeaf l v →
   d =
   Some $
@@ -183,7 +182,7 @@ Proof.
   by rewrite Heq.
 Qed.
 
-Local Lemma decode_inner_inj d h0 h1 {Hlen0 Hlen1} :
+Lemma decode_inner_inj d h0 h1 {Hlen0 Hlen1} :
   decode_node d = DecInner h0 h1 Hlen0 Hlen1 →
   d = Some $ innerNodeTag :: h0 ++ h1.
 Proof.
@@ -222,7 +221,7 @@ a few consequences:
 this allows proving [is_full_tree_inj].
 
 [limit] prevents infinite recursion. *)
-Local Fixpoint is_full_tree (t : tree) (h : list w8) (limit : nat) : iProp Σ :=
+Fixpoint is_full_tree (t : tree) (h : list w8) (limit : nat) : iProp Σ :=
   ∃ d,
   "#His_hash" ∷ cryptoffi.is_hash d h ∗
   "#Hdecode" ∷ match decode_node d with
@@ -243,8 +242,6 @@ Local Fixpoint is_full_tree (t : tree) (h : list w8) (limit : nat) : iProp Σ :=
       "%" ∷ ⌜ t = Inner t0 t1 ⌝
     end
   end.
-#[global] Typeclasses Opaque is_full_tree.
-#[local] Typeclasses Transparent is_full_tree.
 
 #[global] Instance is_full_tree_pers t h l : Persistent (is_full_tree t h l).
 Proof.
@@ -422,8 +419,7 @@ Definition is_merkle_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :
   "%Hcutless" ∷ ⌜ cutless_tree t ⌝ ∗
   "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
   "#Hcut_tree" ∷ is_cut_tree t h.
-Global Opaque is_merkle_map.
-Local Transparent is_merkle_map.
+
 Global Instance is_merkle_map_pers m h : Persistent (is_merkle_map m h) := _.
 
 Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
@@ -467,8 +463,7 @@ Definition is_merkle_entry (label : list w8) (val : option $ list w8)
     "#Hfound" ∷ is_merkle_found label found dig ∗
     "%Hnonmemb" ∷ ⌜ found_nonmemb label found ⌝
   end.
-Global Opaque is_merkle_entry.
-Local Transparent is_merkle_entry.
+
 Global Instance is_merkle_entry_pers l v d : Persistent (is_merkle_entry l v d) := _.
 
 Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth : w64)
@@ -507,30 +502,6 @@ Definition is_merkle_proof (label: list w8)
   "#Hhash" ∷ is_cut_tree t h ∗
   "#Hproof" ∷ tree_sibs_proof t label (W64 0) proof ∗
   "%Hpath" ∷ ⌜ tree_path t label (W64 0) found ⌝.
-
-Definition wish_merkle_Verify (in_tree : bool) label val proof dig : iProp Σ :=
-  ∃ found proof_obj proof' tail,
-  "%Henc" ∷ ⌜ MerkleProof.encodes proof_obj proof' ⌝ ∗
-  "%Heq_tail" ∷ ⌜ proof = proof' ++ tail ⌝ ∗
-  "%Heq_found" ∷
-    ⌜if in_tree
-    then found = Some (label, val)
-    else if proof_obj.(MerkleProof.IsOtherLeaf)
-      then found = Some (proof_obj.(MerkleProof.LeafLabel), proof_obj.(MerkleProof.LeafVal)) ∧
-        label ≠ proof_obj.(MerkleProof.LeafLabel)
-      else found = None ⌝ ∗
-  "#His_proof" ∷ is_merkle_proof label found proof_obj.(MerkleProof.Siblings) dig.
-Global Opaque wish_merkle_Verify.
-Local Transparent wish_merkle_Verify.
-Global Instance wish_merkle_Verify_pers i l v p d : Persistent (wish_merkle_Verify i l v p d) := _.
-
-Lemma wish_merkle_Verify_to_entry in_tree label val proof dig :
-  wish_merkle_Verify in_tree label val proof dig -∗
-  is_merkle_entry label (if in_tree then Some val else None) dig.
-Proof.
-  iNamed 1. iNamed "His_proof".
-  repeat case_match; intuition; subst; by iFrame "#%".
-Qed.
 
 (** Derived facts about [is_cut_tree]. *)
 
