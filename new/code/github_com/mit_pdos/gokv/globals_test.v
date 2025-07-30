@@ -17,7 +17,8 @@ Definition foo : val :=
 Definition other : val :=
   rec: "other" <> :=
     exception_do (let: "$r0" := #"ok"%go in
-    do:  ((globals.get #globals_test.main #"globalY"%go) <-[#stringT] "$r0")).
+    do:  ((globals.get #globals_test.main #"globalY"%go) <-[#stringT] "$r0");;;
+    return: #()).
 
 (* go: globals.go:16:6 *)
 Definition bar : val :=
@@ -25,14 +26,16 @@ Definition bar : val :=
     exception_do (do:  ((func_call #globals_test.main #"other"%go) #());;;
     (if: ((![#uint64T] (globals.get #globals_test.main #"GlobalX"%go)) ≠ #(W64 10)) || ((![#stringT] (globals.get #globals_test.main #"globalY"%go)) ≠ #"ok"%go)
     then
-      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"bad"%go) in
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"bad"%go) in
       Panic "$a0")
-    else do:  #())).
+    else do:  #());;;
+    return: #()).
 
 (* go: globals.go:31:6 *)
 Definition main : val :=
   rec: "main" <> :=
-    exception_do (do:  ((func_call #globals_test.main #"bar"%go) #())).
+    exception_do (do:  ((func_call #globals_test.main #"bar"%go) #());;;
+    return: #()).
 
 Definition vars' : list (go_string * go_type) := [("GlobalX"%go, uint64T); ("globalY"%go, stringT); ("globalA"%go, stringT); ("globalB"%go, stringT)].
 
@@ -59,11 +62,13 @@ Definition initialize' : val :=
       do:  ((globals.get #globals_test.main #"globalB"%go) <-[#stringT] "$r0");;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := ((![#uint64T] (globals.get #globals_test.main #"GlobalX"%go)) + #(W64 0)) in
-        do:  ((globals.get #globals_test.main #"GlobalX"%go) <-[#uint64T] "$r0"))
+        do:  ((globals.get #globals_test.main #"GlobalX"%go) <-[#uint64T] "$r0");;;
+        return: #())
         ) #());;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := #""%go in
-        do:  ((globals.get #globals_test.main #"globalY"%go) <-[#stringT] "$r0"))
+        do:  ((globals.get #globals_test.main #"globalY"%go) <-[#stringT] "$r0");;;
+        return: #())
         ) #()))
       ).
 
