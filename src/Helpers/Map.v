@@ -11,6 +11,40 @@ Context {K V : Type}.
 Context `{Countable K}.
 Implicit Types (m : gmap K V).
 
+Lemma map_union_dom_pair_eq (m0 m1 m2 m3 : gmap K V) :
+  m0 ∪ m1 = m2 ∪ m3 →
+  m0 ##ₘ m1 →
+  m2 ##ₘ m3 →
+  dom m0 = dom m2 →
+  dom m1 = dom m3 →
+  m0 = m2 ∧ m1 = m3.
+Proof.
+  intros Heq0 **. split; apply map_eq; intros i;
+    opose proof (proj1 (map_eq_iff _ _) Heq0 i) as Heq1.
+  - destruct (m0 !! i) eqn:Hm0.
+    + erewrite lookup_union_Some_l in Heq1; [|exact Hm0].
+      destruct (m2 !! i) eqn:Hm2; [by simpl_map|].
+      apply elem_of_dom_2 in Hm0.
+      apply not_elem_of_dom in Hm2.
+      set_solver.
+    + erewrite lookup_union_r in Heq1; [|done].
+      destruct (m2 !! i) eqn:Hm2; [|done].
+      apply elem_of_dom_2 in Hm2.
+      apply not_elem_of_dom in Hm0.
+      set_solver.
+  - destruct (m1 !! i) eqn:Hm1.
+    + erewrite lookup_union_Some_r in Heq1; [|done|exact Hm1].
+      destruct (m3 !! i) eqn:Hm3; [by simpl_map|].
+      apply elem_of_dom_2 in Hm1.
+      apply not_elem_of_dom in Hm3.
+      set_solver.
+    + erewrite lookup_union_l in Heq1; [|done].
+      destruct (m3 !! i) eqn:Hm3; [|done].
+      apply elem_of_dom_2 in Hm3.
+      apply not_elem_of_dom in Hm1.
+      set_solver.
+Qed.
+
 Lemma destruct_map_pair_dom_eq {V1} (m0 m1 : gmap K V) (m2 m3 : gmap K V1) :
   dom m0 = dom m2 →
   dom m1 = dom m3 →
