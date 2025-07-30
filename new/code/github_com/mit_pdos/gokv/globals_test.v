@@ -30,10 +30,17 @@ Definition other : go_string := "github.com/mit-pdos/gokv/globals_test.other"%go
 Definition otherⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "$r0" := #"ok"%go in
+<<<<<<< HEAD
     do:  ((globals.get #globalY) <-[#stringT] "$r0");;;
     return: #()).
 
 Definition bar : go_string := "github.com/mit-pdos/gokv/globals_test.bar"%go.
+||||||| parent of 1258ef4dc (Goose globals_test)
+    do:  ((globals.get #globals_test.main #"globalY"%go) <-[#stringT] "$r0")).
+=======
+    do:  ((globals.get #globals_test.main #"globalY"%go) <-[#stringT] "$r0");;;
+    return: #()).
+>>>>>>> 1258ef4dc (Goose globals_test)
 
 (* go: globals.go:16:6 *)
 Definition barⁱᵐᵖˡ : val :=
@@ -41,18 +48,42 @@ Definition barⁱᵐᵖˡ : val :=
     exception_do (do:  ((func_call #other) #());;;
     (if: ((![#uint64T] (globals.get #GlobalX)) ≠ #(W64 10)) || ((![#stringT] (globals.get #globalY)) ≠ #"ok"%go)
     then
+<<<<<<< HEAD
       do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
+||||||| parent of 1258ef4dc (Goose globals_test)
+      do:  (let: "$a0" := (interface.make #""%go #"string"%go #"bad"%go) in
+=======
+      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"bad"%go) in
+>>>>>>> 1258ef4dc (Goose globals_test)
       Panic "$a0")
+<<<<<<< HEAD
     else do:  #());;;
     return: #()).
 
 Definition main : go_string := "github.com/mit-pdos/gokv/globals_test.main"%go.
+||||||| parent of 1258ef4dc (Goose globals_test)
+    else do:  #())).
+=======
+    else do:  #());;;
+    return: #()).
+>>>>>>> 1258ef4dc (Goose globals_test)
 
 (* go: globals.go:31:6 *)
+<<<<<<< HEAD
 Definition mainⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (do:  ((func_call #bar) #());;;
     return: #()).
+||||||| parent of 1258ef4dc (Goose globals_test)
+Definition main : val :=
+  rec: "main" <> :=
+    exception_do (do:  ((func_call #globals_test.main #"bar"%go) #())).
+=======
+Definition main : val :=
+  rec: "main" <> :=
+    exception_do (do:  ((func_call #globals_test.main #"bar"%go) #());;;
+    return: #()).
+>>>>>>> 1258ef4dc (Goose globals_test)
 
 Definition vars' : list (go_string * go_type) := [(GlobalX, uint64T); (globalY, stringT); (globalA, stringT); (globalB, stringT)].
 
@@ -79,14 +110,30 @@ Definition initialize' : val :=
       let: "$r0" := #"b"%go in
       do:  ((globals.get #globalB) <-[#stringT] "$r0");;;
       do:  ((λ: <>,
+<<<<<<< HEAD
         exception_do (let: "$r0" := ((![#uint64T] (globals.get #GlobalX)) + #(W64 0)) in
         do:  ((globals.get #GlobalX) <-[#uint64T] "$r0");;;
         return: #())
+||||||| parent of 1258ef4dc (Goose globals_test)
+        exception_do (let: "$r0" := ((![#uint64T] (globals.get #globals_test.main #"GlobalX"%go)) + #(W64 0)) in
+        do:  ((globals.get #globals_test.main #"GlobalX"%go) <-[#uint64T] "$r0"))
+=======
+        exception_do (let: "$r0" := ((![#uint64T] (globals.get #globals_test.main #"GlobalX"%go)) + #(W64 0)) in
+        do:  ((globals.get #globals_test.main #"GlobalX"%go) <-[#uint64T] "$r0");;;
+        return: #())
+>>>>>>> 1258ef4dc (Goose globals_test)
         ) #());;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := #""%go in
+<<<<<<< HEAD
         do:  ((globals.get #globalY) <-[#stringT] "$r0");;;
         return: #())
+||||||| parent of 1258ef4dc (Goose globals_test)
+        do:  ((globals.get #globals_test.main #"globalY"%go) <-[#stringT] "$r0"))
+=======
+        do:  ((globals.get #globals_test.main #"globalY"%go) <-[#stringT] "$r0");;;
+        return: #())
+>>>>>>> 1258ef4dc (Goose globals_test)
         ) #()))
       ).
 
