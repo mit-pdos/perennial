@@ -16,6 +16,17 @@ Axiom errNegativeRead'init : val.
 
 Axiom errUnreadByte'init : val.
 
+(* Equal reports whether a and b
+   are the same length and contain the same bytes.
+   A nil argument is equivalent to an empty slice.
+
+   go: bytes.go:20:6 *)
+Definition Equal : val :=
+  rec: "Equal" "a" "b" :=
+    exception_do (let: "b" := (mem.alloc "b") in
+    let: "a" := (mem.alloc "a") in
+    return: ((string.from_bytes (![#sliceT] "a")) = (string.from_bytes (![#sliceT] "b")))).
+
 Axiom asciiSpace'init : val.
 
 (* Clone returns a copy of b[:len(b)].
@@ -35,7 +46,7 @@ Definition Clone : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Clone"%go, Clone)].
+Definition functions' : list (go_string * val) := [("Equal"%go, Equal); ("Clone"%go, Clone)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("Buffer"%go, []); ("Buffer'ptr"%go, [])].
 

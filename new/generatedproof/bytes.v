@@ -46,6 +46,10 @@ Global Instance is_pkg_defined_instance : IsPkgDefined bytes :=
 Definition own_allocated : iProp Σ :=
 True.
 
+Global Instance wp_func_call_Equal :
+  WpFuncCall bytes "Equal" _ (is_pkg_defined bytes) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_Clone :
   WpFuncCall bytes "Clone" _ (is_pkg_defined bytes) :=
   ltac:(apply wp_func_call'; reflexivity).
