@@ -2482,4 +2482,9 @@ Global Instance wp_method_call_Compare_Lease'ptr_isCompare_TargetUnion :
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
+
+Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
+  WpGlobalsAlloc etcdserverpb.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
+Proof. solve_wp_globals_alloc. Qed.
+
 End etcdserverpb.
