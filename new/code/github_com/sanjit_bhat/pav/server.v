@@ -1471,13 +1471,9 @@ Definition Server__addEntries : val :=
         slice.literal #ptrT ["$sl0"])) in
         (slice.append #ptrT) "$a0" "$a1") in
         do:  ("upd" <-[#sliceT] "$r0");;;
-        let: "err" := (mem.alloc (type.zero_val #boolT)) in
-        let: "$r0" := (let: "$a0" := (![#sliceT] "label") in
+        do:  (let: "$a0" := (![#sliceT] "label") in
         let: "$a1" := (![#sliceT] (struct.field_ref #mapEntry #"val"%go (![#ptrT] "out0"))) in
-        (method_call #merkle #"Tree'ptr" #"Put" (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0" "$a1") in
-        do:  ("err" <-[#boolT] "$r0");;;
-        do:  (let: "$a0" := (~ (![#boolT] "err")) in
-        (func_call #std.std #"Assert"%go) "$a0");;;
+        (method_call #merkle #"Tree'ptr" #"Put" (![#ptrT] (struct.field_ref #keyStore #"hidden"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s")))))) "$a0" "$a1");;;
         let: "$r0" := (let: "$a0" := (Fst (map.get (![type.mapT #uint64T #sliceT] (struct.field_ref #keyStore #"plain"%go (![#ptrT] (struct.field_ref #Server #"keys"%go (![#ptrT] "s"))))) (![#uint64T] (struct.field_ref #WQReq #"Uid"%go (![#ptrT] "req"))))) in
         let: "$a1" := ((let: "$sl0" := (![#sliceT] (struct.field_ref #WQReq #"Pk"%go (![#ptrT] "req"))) in
         slice.literal #sliceT ["$sl0"])) in
@@ -1515,7 +1511,7 @@ Definition Server__addEntries : val :=
 
 (* getHist returns a history of membership proofs for all post-prefix versions.
 
-   go: server.go:249:18 *)
+   go: server.go:248:18 *)
 Definition Server__getHist : val :=
   rec: "Server__getHist" "s" "uid" "prefixLen" :=
     exception_do (let: "hist" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1587,7 +1583,7 @@ Definition Server__getHist : val :=
 
 (* getBound returns a non-membership proof for the boundary version.
 
-   go: server.go:265:18 *)
+   go: server.go:264:18 *)
 Definition Server__getBound : val :=
   rec: "Server__getBound" "s" "uid" "numVers" :=
     exception_do (let: "bound" := (mem.alloc (type.zero_val #ptrT)) in
