@@ -40,6 +40,9 @@ Definition Cond__Waitⁱᵐᵖˡ : val := λ: "c" <>, exception_do (
 Definition Cond__Broadcastⁱᵐᵖˡ : val := λ: "c" <>, #().
 Definition Cond__Signalⁱᵐᵖˡ : val := λ: "c" <>, #().
 
+Definition runtime_notifyListAddⁱᵐᵖˡ : val :=
+  λ: "l", ArbitraryInt.
+
 Definition runtime_Semacquireⁱᵐᵖˡ : val :=
   (* inspired by runtime/sema.go:272:
      ```

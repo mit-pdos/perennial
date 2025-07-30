@@ -21,6 +21,7 @@ Global Instance is_pkg_defined_pure_main : IsPkgDefinedPure main :=
       is_pkg_defined_pure_single main;
   |}.
 
+<<<<<<< HEAD
 #[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
 Global Program Instance is_pkg_defined_main : IsPkgDefined main :=
   {|
@@ -29,6 +30,61 @@ Global Program Instance is_pkg_defined_main : IsPkgDefined main :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+||||||| parent of 17379a16a (Checkpoint setting up sync.Cond for verification)
+Global Instance is_pkg_defined_instance : IsPkgDefined main :=
+{|
+  is_pkg_defined := is_global_definitions main var_addrs;
+|}.
+
+Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+  "HGlobalX" ∷ GlobalX ↦ (default_val w64) ∗
+  "HglobalY" ∷ globalY ↦ (default_val go_string) ∗
+  "HglobalA" ∷ globalA ↦ (default_val go_string) ∗
+  "HglobalB" ∷ globalB ↦ (default_val go_string).
+
+Global Instance wp_globals_get_GlobalX : 
+  WpGlobalsGet main "GlobalX" GlobalX (is_pkg_defined main).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_globalY : 
+  WpGlobalsGet main "globalY" globalY (is_pkg_defined main).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_globalA : 
+  WpGlobalsGet main "globalA" globalA (is_pkg_defined main).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_globalB : 
+  WpGlobalsGet main "globalB" globalB (is_pkg_defined main).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+=======
+Global Instance is_pkg_defined_instance : IsPkgDefined main :=
+{|
+  is_pkg_defined := is_global_definitions main var_addrs;
+|}.
+
+Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+  "HGlobalX" ∷ GlobalX ↦ (default_val w64) ∗
+  "HglobalY" ∷ globalY ↦ (default_val go_string) ∗
+  "HglobalA" ∷ globalA ↦ (default_val go_string) ∗
+  "HglobalB" ∷ globalB ↦ (default_val go_string).
+
+Global Instance wp_globals_get_GlobalX :
+  WpGlobalsGet main "GlobalX" GlobalX (is_pkg_defined main).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_globalY : 
+  WpGlobalsGet main "globalY" globalY (is_pkg_defined main).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_globalA : 
+  WpGlobalsGet main "globalA" globalA (is_pkg_defined main).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+
+Global Instance wp_globals_get_globalB : 
+  WpGlobalsGet main "globalB" globalB (is_pkg_defined main).
+Proof. apply wp_globals_get'. reflexivity. Qed.
+>>>>>>> 17379a16a (Checkpoint setting up sync.Cond for verification)
 
 Global Instance wp_func_call_foo :
   WpFuncCall main.foo _ (is_pkg_defined main) :=
@@ -47,4 +103,12 @@ Global Instance wp_func_call_main :
   ltac:(solve_wp_func_call).
 
 End names.
+
+Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
+  WpGlobalsAlloc main.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
+Proof.
+  solve_wp_globals_alloc.
+Qed.
+
+
 End main.
