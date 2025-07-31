@@ -1,5 +1,4 @@
 From RecordUpdate Require Import RecordSet.
-From Tactical Require Import SimplMatch.
 
 From Perennial.Helpers Require Export NamedProps List Integers Tactics.
 (* TODO: I failed to get a reasonable setup with stdpp and ssreflect and such
@@ -63,7 +62,8 @@ Proof.
   revert memLog.
   intros.
   rewrite /memWrite_one.
-  destruct matches.
+  destruct (find_highest_index _ _) eqn:?; auto.
+  destruct (decide _); auto.
 Qed.
 
 Lemma memWrite_one_same_mutable memLog u :
@@ -127,17 +127,22 @@ Theorem find_highest_index_Some_split `{EqDecision A} (l: list A) (x: A) n :
            length l1 = n.
 Proof.
   revert n.
-  induction l; simpl; intros.
+  induction l as [|a l' IHl]; simpl; intros.
   - congruence.
-  - destruct matches in *; try inversion H; subst.
-    + destruct (IHl n0) as (l1 & l2 & (-> & Hnotin & <-)); auto.
-      exists (a :: l1), l2; eauto.
-    + exists [], l.
-      split; auto.
-      eapply find_highest_index_none_not_in in Heqo; auto.
-    + apply fmap_Some_1 in H as [n' [? ->]].
-      eapply IHl in H as (l1 & l2 & (-> & Hnotin & <-)).
-      exists (a::l1), l2; eauto.
+  - destruct (decide (x = a)); subst.
+    {
+      destruct (find_highest_index _ _) eqn:?.
+      + inv H.
+        destruct (IHl n0) as (l1 & l2 & (-> & Hnotin & <-)); auto.
+        exists (a :: l1), l2; eauto.
+      + inv H.
+        exists [], l'.
+        split; auto.
+        eapply find_highest_index_none_not_in in Heqo; auto.
+    }
+    apply fmap_Some_1 in H as [n' [? ->]].
+    eapply IHl in H as (l1 & l2 & (-> & Hnotin & <-)).
+    exists (a::l1), l2; eauto.
 Qed.
 
 Theorem apply_upds_insert_other upds (z: Z) (a: u64) b d :
@@ -198,9 +203,11 @@ Proof.
     f_equal.
     destruct a as [a b]; simpl.
     rewrite /memWrite_one.
-    destruct matches; simpl;
-      (* the non-aborption cases are easy *)
-      try rewrite apply_upds_app; auto.
+    destruct (find_highest_index _ _) eqn:?; simpl;
+      try rewrite apply_upds_app //.
+    destruct (decide _);
+      try rewrite apply_upds_app //.
+    simpl.
     eapply find_highest_index_Some_split in Heqo as (poss1 & poss2 & (Heq & Hnotin & Hlen)).
     apply fmap_app_inv in Heq as (upd1 & upd2' & (-> & Heq%eq_sym & ->)).
     simpl in Heq, Hnotin.

@@ -1,7 +1,5 @@
 From RecordUpdate Require Import RecordSet.
 
-From Tactical Require Import SimplMatch.
-
 From Perennial.program_proof Require Import disk_lib.
 From Perennial.program_proof Require Import wal.invariant wal.common_proof.
 
@@ -110,7 +108,8 @@ Lemma memWrite_one_length_bound σ u :
   S (length σ.(slidingM.log)).
 Proof.
   rewrite /memWrite_one.
-  destruct matches; simpl; len.
+  destruct (find_highest_index _ _) eqn:?; [ | simpl; len ].
+  destruct (decide _); simpl; len.
 Qed.
 
 Lemma memWrite_length_bound σ upds :
@@ -256,10 +255,13 @@ Lemma memWrite_one_preserves_mutable memLog u :
 Proof.
   intros Hwf.
   rewrite /memWrite_one /numMutableN.
-  destruct matches; simpl.
-  - rewrite -> take_insert_ge by lia; auto.
-  - rewrite -> take_app_le by word; auto.
-  - rewrite -> take_app_le by word; auto.
+  destruct (find_highest_index _ _) eqn:?; simpl.
+  {
+    destruct (decide _); simpl.
+    - rewrite -> take_insert_ge by lia; auto.
+    - rewrite -> take_app_le by word; auto.
+  }
+  rewrite -> take_app_le by word; auto.
 Qed.
 
 Lemma memWrite_preserves_mutable' memLog upds :

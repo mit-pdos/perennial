@@ -11,9 +11,6 @@
 	path = external/iris
 	url = https://gitlab.mpi-sws.org/iris/iris.git
 	branch = master
-[submodule "external/coq-tactical"]
-	path = external/coq-tactical
-	url = https://github.com/tchajed/coq-tactical
 [submodule "external/iris-named-props"]
 	path = external/iris-named-props
 	url = https://github.com/tchajed/iris-named-props

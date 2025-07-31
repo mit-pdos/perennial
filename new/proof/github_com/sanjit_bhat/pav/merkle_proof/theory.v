@@ -409,10 +409,10 @@ Fixpoint minimal_tree t : Prop :=
   | _ => True
   end.
 
-(* [is_merkle_map] is when we talk about the underlying tree map.
+(* [is_map] is when we talk about the underlying tree map.
 this requires no cuts in the tree, since cuts could result in
 different maps for the same tree hash. *)
-Definition is_merkle_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :=
+Definition is_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :=
   ∃ t,
   "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
   "%Hsorted" ∷ ⌜ sorted_tree t 0 ⌝ ∗
@@ -420,7 +420,7 @@ Definition is_merkle_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :
   "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
   "#Hcut_tree" ∷ is_cut_tree t h.
 
-Global Instance is_merkle_map_pers m h : Persistent (is_merkle_map m h) := _.
+Global Instance is_map_pers m h : Persistent (is_map m h) := _.
 
 Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
     (result: option (list w8 * list w8)%type) : Prop :=
@@ -437,7 +437,7 @@ Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
   | Cut _ => False
   end.
 
-Definition is_merkle_found (label: list w8)
+Definition is_found (label: list w8)
     (found: option ((list w8) * (list w8))%type) (h: list w8) : iProp Σ :=
   ∃ t,
   "%Htree_path" ∷ ⌜ tree_path t label 0 found ⌝ ∗
@@ -450,21 +450,21 @@ Definition found_nonmemb (label: list w8)
   | Some (found_label, _) => label ≠ found_label
   end.
 
-(* is_merkle_entry represents memb and nonmemb proofs
+(* is_entry represents memb and nonmemb proofs
 as Some and None option vals, providing a unified way of expressing them
 that directly corresponds to a map entry. *)
-Definition is_merkle_entry (label : list w8) (val : option $ list w8)
+Definition is_entry (label : list w8) (val : option $ list w8)
     (dig : list w8) : iProp Σ :=
   match val with
   | Some v =>
-    "#Hfound" ∷ is_merkle_found label (Some (label, v)) dig
+    "#Hfound" ∷ is_found label (Some (label, v)) dig
   | None =>
     ∃ found,
-    "#Hfound" ∷ is_merkle_found label found dig ∗
+    "#Hfound" ∷ is_found label found dig ∗
     "%Hnonmemb" ∷ ⌜ found_nonmemb label found ⌝
   end.
 
-Global Instance is_merkle_entry_pers l v d : Persistent (is_merkle_entry l v d) := _.
+Global Instance is_entry_pers l v d : Persistent (is_entry l v d) := _.
 
 Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth : w64)
     (proof: list w8) : iProp Σ :=
@@ -495,7 +495,7 @@ Proof.
   simpl. intros. case_match; apply _.
 Qed.
 
-Definition is_merkle_proof (label: list w8)
+Definition is_proof (label: list w8)
     (found: option ((list w8) * (list w8)%type)) (proof: list w8)
     (h: list w8) : iProp Σ :=
   ∃ t,
@@ -613,14 +613,14 @@ Proof.
     destruct (get_bit label depth); eauto.
 Qed.
 
-Lemma is_merkle_proof_to_is_merkle_found label found proof h:
-  is_merkle_proof label found proof h -∗
-  is_merkle_found label found h.
+Lemma is_proof_to_is_found label found proof h:
+  is_proof label found proof h -∗
+  is_found label found h.
 Proof. iNamed 1. iFrame "#%". Qed.
 
-Lemma is_merkle_found_agree label found0 found1 h:
-  is_merkle_found label found0 h -∗
-  is_merkle_found label found1 h -∗
+Lemma is_found_agree label found0 found1 h:
+  is_found label found0 h -∗
+  is_found label found1 h -∗
   ⌜found0 = found1⌝.
 Proof.
   iIntros "H0 H1".
@@ -629,9 +629,9 @@ Proof.
   iApply (tree_path_agree with "H0 H1"); eauto.
 Qed.
 
-Lemma is_merkle_map_agree_entry m h label val :
-  is_merkle_map m h -∗
-  is_merkle_entry label val h -∗
+Lemma is_map_agree_entry m h label val :
+  is_map m h -∗
+  is_entry label val h -∗
   ⌜ m !! label = val ⌝.
 Proof.
   iNamedSuffix 1 "0". subst.
@@ -674,9 +674,9 @@ Proof.
   - naive_solver.
 Qed.
 
-Lemma is_merkle_proof_eq_dig label found proof hash0 hash1 :
-  is_merkle_proof label found proof hash0 -∗
-  is_merkle_proof label found proof hash1 -∗
+Lemma is_proof_eq_dig label found proof hash0 hash1 :
+  is_proof label found proof hash0 -∗
+  is_proof label found proof hash1 -∗
   ⌜ hash0 = hash1 ⌝.
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1".
@@ -808,9 +808,9 @@ Proof.
     opose proof (IH1 t1_2 _ _ _ _ _ _) as ->; try done.
 Qed.
 
-Lemma is_merkle_map_det m dig0 dig1 :
-  is_merkle_map m dig0 -∗
-  is_merkle_map m dig1 -∗
+Lemma is_map_det m dig0 dig1 :
+  is_map m dig0 -∗
+  is_map m dig1 -∗
   ⌜ dig0 = dig1 ⌝.
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1". subst.
