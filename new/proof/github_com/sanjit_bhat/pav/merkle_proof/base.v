@@ -4,7 +4,6 @@ From Perennial.Helpers Require Import NamedProps.
 
 From New.proof Require Import bytes.
 From New.proof.github_com.goose_lang Require Import primitive std.
-From New.proof.github_com.goose_lang Require Import primitive std.
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi cryptoutil safemarshal.
 From New.proof.github_com.tchajed Require Import marshal.
 
