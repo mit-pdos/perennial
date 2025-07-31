@@ -42,8 +42,7 @@ Definition CheckBlame : val :=
     slice.for_range #Blame "$range" (λ: "$key" "$value",
       do:  ("x" <-[#Blame] "$value");;;
       do:  "$key";;;
-      let: "$r0" := ((![#Blame] "all") `or` (![#Blame] "x")) in
-      do:  ("all" <-[#Blame] "$r0")));;;
+      do:  ("all" <-[#Blame] ((![#Blame] "all") `or` (![#Blame] "x")))));;;
     return: (((![#Blame] "b") `and` (~ (![#Blame] "all"))) ≠ #(W64 0))).
 
 Definition VrfSig : go_type := structT [
