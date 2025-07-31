@@ -114,6 +114,7 @@ jobs:
       - name: check that Goosed files are clean
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            ci-use-goose-pr -pr ${{ github.event.number }} -verbose
             ./etc/ci-goose-check.py --new-goose-url "$( ci-use-goose-pr -pr ${{ github.event.number }} )"
           else
             ./etc/ci-goose-check.py
