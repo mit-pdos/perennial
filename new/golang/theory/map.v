@@ -26,6 +26,14 @@ Local Fixpoint is_map_val (mv : val) (m : gmap K V) `{!IntoValTyped V vt} `{!Int
 end
 .
 
+Fixpoint map_list_val_def (m : list (K * V)) : val :=
+  match m with
+  | [] => InjLV #()
+  | h :: tl => InjRV ((#(fst h), #(snd h)), map_list_val_def tl)
+  end.
+Program Definition map_list_val := sealed @map_list_val_def.
+Definition map_list_val_unseal : map_list_val = _ := seal_eq _.
+
 Definition own_map_def mptr dq (m : gmap K V)
  `{!IntoValTyped K kt} `{!IntoValTyped V vt}
   : iProp Σ :=
@@ -41,6 +49,67 @@ Arguments own_map mptr dq m {kt IntoValTyped0 vt IntoValTyped1}.
 Context `{!IntoValTyped K kt} `{!IntoValTyped V vt}.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
+
+Lemma wp_map_literal_val (l:list (K * V)):
+  {{{ True }}}
+    map.literal_val #kt #vt (map_list_val l)
+  {{{ v, RET v; ⌜ is_map_val v (list_to_map l) ⌝ }}}.
+Proof. 
+  iIntros (?) "_ HΦ".
+  iInduction l as [| h tl] "IH" forall (Φ).
+  + wp_call.
+    rewrite map_list_val_unseal /=.
+    rewrite list.Match_unseal /=.
+    wp_call_lc "?".
+    iApply "HΦ".
+    iPureIntro.
+    unfold is_map_val. 
+    split.
+    - done.
+    - symmetry. apply default_val_eq_zero_val.
+  + wp_call.
+    rewrite map_list_val_unseal /=.
+    rewrite list.Match_unseal /=.
+    wp_call_lc "?".
+    wp_bind (map.literal_val _ _ _)%E. 
+    iApply ("IH" with "[HΦ]"). iNext.
+    iIntros (?) "%Htl_map".
+    wp_pures.
+    iApply "HΦ".
+    iPureIntro.
+    unfold is_map_val.
+    exists (fst h), (snd h), (list_to_map tl).
+    split; first reflexivity.
+    split; first reflexivity.
+    split.
+    - destruct v; try by exfalso.
+      * done.
+      * done.
+    - reflexivity.
+Qed. 
+     
+Lemma wp_map_literal (l:list (K * V)):
+  {{{ ⌜ is_comparable_go_type kt = true ⌝ }}}
+    map.literal #kt #vt (map_list_val l)
+    (* Should the return be LitV l or #l? I tend to think #l but I changed it to
+       match wp_alloc_untyped's return structure *)
+  {{{ l_ptr, RET (LitV l_ptr); l_ptr ↦$ (list_to_map l) }}}.
+Proof.
+  iIntros (?) "%Hcomp HΦ".
+  wp_call.
+  wp_apply wp_map_literal_val.
+  iIntros (v) "%Hmv".
+  iApply (wp_alloc_untyped with "[//]").
+  { instantiate (1:=v). by destruct v. }
+  iNext.
+  iIntros (?) "Hm".
+  iApply "HΦ".
+  rewrite own_map_unseal.
+  iUnfold own_map_def.
+  iExists v.
+  iFrame.
+  done.
+Qed.
 
 Lemma wp_map_insert l (m : gmap K V) k v :
   {{{ l ↦$ m }}}

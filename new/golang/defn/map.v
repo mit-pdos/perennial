@@ -69,14 +69,13 @@ Definition len : val :=
 Definition make : val :=
   λ: "kt" "vt", Alloc (InjL (type.zero_val "vt")).
 
-(* TODO: this produces a map value and doesn't allocate a reference *)
-Definition literal : val :=
-  λ: "kt" "vt",
-  rec: "literal" "alist" :=
+Definition literal_val : val :=
+  rec: "lit_val" "kt" "vt" "alist" :=
     list.Match "alist"
       (λ: <>, InjL (type.zero_val "vt"))
-      (λ: "kv" "alist", InjR ("kv", ("literal" "alist")))
-.
+      (λ: "kv" "alist", InjR ("kv", ("lit_val" "kt" "vt" "alist"))).
+
+Definition literal : val := λ: "ks" "vs" "alist", ref (literal_val "ks" "vs" "alist").
 
 End goose_lang.
 End map.
