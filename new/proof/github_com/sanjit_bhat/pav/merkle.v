@@ -12,5 +12,5 @@ Module merkle.
   - ideally, mark external objects as opaque.
   if haven't proved all helper lemmas for external obj,
   then might need to leave as transp and mark lower-level obj as opaque. *)
-  #[global] Opaque is_full_tree is_merkle_map is_merkle_entry.
+  #[global] Opaque is_full_tree is_map is_entry.
 End merkle.
