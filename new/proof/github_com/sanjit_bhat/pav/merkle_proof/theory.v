@@ -18,7 +18,7 @@ Definition get_bit l (n : w64) : bool :=
   | Some bit => bit
   end.
 
-(** tree defn. *)
+(** tree. *)
 
 (* [Cut]s denote a cut off tree.
 1) for full trees, they come from invalid hashes. e.g.,
@@ -321,6 +321,11 @@ Qed.
 (* TODO: shorten these now that they're all module namespaced. *)
 (* TODO: make bunch of these Local and Opaque. *)
 
+(* TODO: could potentially prove:
+- every full tree is a cut tree.
+- cutless cut trees are full trees.
+- a terminating (non-cut) path down cut tree has the same path down the full tree. *)
+
 (* [is_cut_tree] has a more traditional structure,
 computing the hash [h] from the tree [t]. some consequences:
 - it allows for trees that arbitrary cut off paths.
@@ -351,34 +356,6 @@ Fixpoint is_cut_tree (t : tree) (h : list w8) : iProp Σ :=
 Instance is_cut_tree_persistent t h : Persistent (is_cut_tree t h).
 Proof. revert h. induction t; apply _. Qed.
 
-(* TODO: could potentially prove:
-- every full tree is a cut tree.
-- cutless cut trees are full trees.
-- a terminating (non-cut) path down cut tree has the same path down the full tree. *)
-
-Fixpoint tree_to_map t : gmap (list w8) (list w8) :=
-  match t with
-  | Empty => ∅
-  | Leaf label val => {[label := val]}
-  | Inner child0 child1 => (tree_to_map child0) ∪ (tree_to_map child1)
-  | Cut h => ∅
-  end.
-
-Definition tree_labels_have_bit t n val : Prop :=
-  ∀ l,
-  l ∈ dom (tree_to_map t) →
-  get_bit l n = val.
-
-Fixpoint sorted_tree t depth : Prop :=
-  match t with
-  | Inner child0 child1 =>
-    sorted_tree child0 (word.add depth (W64 1)) ∧
-    tree_labels_have_bit child0 depth false ∧
-    sorted_tree child1 (word.add depth (W64 1)) ∧
-    tree_labels_have_bit child1 depth true
-  | _ => True
-  end.
-
 Fixpoint cutless_path t (label : list w8) (depth : w64) : Prop :=
   match t with
   | Cut _ => False
@@ -397,30 +374,36 @@ Fixpoint cutless_tree t : Prop :=
   | _ => True
   end.
 
-Fixpoint minimal_tree t : Prop :=
-  match t with
-  | Inner child0 child1 =>
-    minimal_tree child0 ∧
-    minimal_tree child1 ∧
-    size (tree_to_map t) > 1
-    (* alternate rules for (child0, child1):
-    disallow: (Empty, Empty); (Empty, Leaf).
-    allow: (Empty, Inner); (Leaf, Leaf); (Leaf, Inner); (Inner, Inner). *)
-  | _ => True
-  end.
+Lemma cutless_tree_impl_paths t :
+  cutless_tree t →
+  ∀ l d, cutless_path t l d.
+Proof.
+  induction t; intros Hc ??; try done.
+  simpl in *. destruct Hc.
+  case_match; intuition.
+Qed.
 
-(* [is_map] is when we talk about the underlying tree map.
-this requires no cuts in the tree, since cuts could result in
-different maps for the same tree hash. *)
-Definition is_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :=
-  ∃ t,
-  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
-  "%Hsorted" ∷ ⌜ sorted_tree t 0 ⌝ ∗
-  "%Hcutless" ∷ ⌜ cutless_tree t ⌝ ∗
-  "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
-  "#Hcut_tree" ∷ is_cut_tree t h.
+Lemma is_cut_tree_len t h:
+  is_cut_tree t h -∗
+  ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝.
+Proof. destruct t; iNamed 1; [..|done]; by iApply cryptoffi.is_hash_len. Qed.
 
-Global Instance is_map_pers m h : Persistent (is_map m h) := _.
+Lemma is_cut_tree_det t h0 h1 :
+  is_cut_tree t h0 -∗
+  is_cut_tree t h1 -∗
+  ⌜ h0 = h1 ⌝.
+Proof.
+  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (h0 h1);
+    simpl; iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
+  - by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
+  - by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
+  - iDestruct ("IH0" with "Hleft_hash0 Hleft_hash1") as %->.
+    iDestruct ("IH1" with "Hright_hash0 Hright_hash1") as %->.
+    by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
+  - naive_solver.
+Qed.
+
+(** tree paths. *)
 
 Fixpoint tree_path (t: tree) (label: list w8) (depth: w64)
     (result: option (list w8 * list w8)%type) : Prop :=
@@ -466,6 +449,52 @@ Definition is_entry (label : list w8) (val : option $ list w8)
 
 Global Instance is_entry_pers l v d : Persistent (is_entry l v d) := _.
 
+Lemma tree_path_agree label depth found0 found1 h t0 t1:
+  tree_path t0 label depth found0 →
+  tree_path t1 label depth found1 →
+  is_cut_tree t0 h -∗
+  is_cut_tree t1 h -∗
+  ⌜ found0 = found1 ⌝.
+Proof.
+  iInduction t0 as [| ? | ? IH0 ? IH1 | ?] forall (depth t1 h);
+    destruct t1; simpl; iIntros "*"; try done;
+    iNamedSuffix 1 "0";
+    iNamedSuffix 1 "1";
+    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %?;
+    try naive_solver.
+
+  (* both leaves. use leaf encoding. *)
+  - iPureIntro. list_simplifier.
+    apply app_inj_1 in H as [Heq_len_label H]; [|len].
+    apply (inj u64_le) in Heq_len_label.
+    assert (length label0 = length label1) as ?.
+    { rewrite Heq_len_label in Hinb_label0. word. }
+    list_simplifier.
+    apply app_inj_1 in H1; [naive_solver|].
+    len.
+  (* both inner. use inner encoding and next_pos same to get
+  the same next_hash. then apply IH. *)
+  - iDestruct (is_cut_tree_len with "Hleft_hash0") as %?.
+    iDestruct (is_cut_tree_len with "Hleft_hash1") as %?.
+    list_simplifier. apply app_inj_1 in H as [-> ->]; [|lia].
+    case_match.
+    + by iApply "IH1".
+    + by iApply "IH0".
+Qed.
+
+Lemma is_found_agree label found0 found1 h:
+  is_found label found0 h -∗
+  is_found label found1 h -∗
+  ⌜found0 = found1⌝.
+Proof.
+  iIntros "H0 H1".
+  iDestruct "H0" as (?) "[% H0]".
+  iDestruct "H1" as (?) "[% H1]".
+  iApply (tree_path_agree with "H0 H1"); eauto.
+Qed.
+
+(** tree proofs. *)
+
 Fixpoint tree_sibs_proof (t: tree) (label: list w8) (depth : w64)
     (proof: list w8) : iProp Σ :=
   match t with
@@ -503,149 +532,10 @@ Definition is_proof (label: list w8)
   "#Hproof" ∷ tree_sibs_proof t label (W64 0) proof ∗
   "%Hpath" ∷ ⌜ tree_path t label (W64 0) found ⌝.
 
-(** Derived facts about [is_cut_tree]. *)
-
-Lemma cutless_tree_impl_paths t :
-  cutless_tree t →
-  ∀ l d, cutless_path t l d.
-Proof.
-  induction t; intros Hc ??; try done.
-  simpl in *. destruct Hc.
-  case_match; intuition.
-Qed.
-
-Lemma is_cut_tree_len t h:
-  is_cut_tree t h -∗
-  ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝.
-Proof. destruct t; iNamed 1; [..|done]; by iApply cryptoffi.is_hash_len. Qed.
-
-Lemma tree_path_agree label depth found0 found1 h t0 t1:
-  tree_path t0 label depth found0 →
-  tree_path t1 label depth found1 →
-  is_cut_tree t0 h -∗
-  is_cut_tree t1 h -∗
-  ⌜ found0 = found1 ⌝.
-Proof.
-  iInduction t0 as [| ? | ? IH0 ? IH1 | ?] forall (depth t1 h);
-    destruct t1; simpl; iIntros "*"; try done;
-    iNamedSuffix 1 "0";
-    iNamedSuffix 1 "1";
-    iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %?;
-    try naive_solver.
-
-  (* both leaves. use leaf encoding. *)
-  - iPureIntro. list_simplifier.
-    apply app_inj_1 in H as [Heq_len_label H]; [|len].
-    apply (inj u64_le) in Heq_len_label.
-    assert (length label0 = length label1) as ?.
-    { rewrite Heq_len_label in Hinb_label0. word. }
-    list_simplifier.
-    apply app_inj_1 in H1; [naive_solver|].
-    len.
-  (* both inner. use inner encoding and next_pos same to get
-  the same next_hash. then apply IH. *)
-  - iDestruct (is_cut_tree_len with "Hleft_hash0") as %?.
-    iDestruct (is_cut_tree_len with "Hleft_hash1") as %?.
-    list_simplifier. apply app_inj_1 in H as [-> ->]; [|lia].
-    case_match.
-    + by iApply "IH1".
-    + by iApply "IH0".
-Qed.
-
-Lemma tree_labels_have_bit_disjoint t0 t1 depth :
-  tree_labels_have_bit t0 depth true →
-  tree_labels_have_bit t1 depth false →
-  dom (tree_to_map t0) ## dom (tree_to_map t1).
-Proof.
-  intros.
-  apply elem_of_disjoint; intros.
-  apply H in H1.
-  apply H0 in H2.
-  congruence.
-Qed.
-
-Lemma tree_to_map_lookup_None label depth bit t:
-  get_bit label depth = (negb bit) →
-  tree_labels_have_bit t depth bit →
-  tree_to_map t !! label = None.
-Proof.
-  intros.
-  destruct (tree_to_map t !! label) eqn:He; eauto.
-  assert (get_bit label depth = bit).
-  { apply H0. apply elem_of_dom; eauto. }
-  rewrite H1 in H. destruct bit; simpl in *; congruence.
-Qed.
-
-Lemma tree_to_map_Some t label depth val:
-  tree_to_map t !! label = Some val →
-  sorted_tree t depth →
-  tree_path t label depth (Some (label, val)).
-Proof.
-  revert depth.
-  induction t; simpl; intros.
-  - rewrite lookup_empty in H. congruence.
-  - apply lookup_singleton_Some in H. intuition congruence.
-  - intuition.
-    eapply tree_labels_have_bit_disjoint in H4 as Hd; eauto.
-    apply lookup_union_Some in H.
-    2: apply map_disjoint_dom_2; eauto.
-    destruct (get_bit label depth) eqn:Hbit.
-    + eapply tree_to_map_lookup_None in H0; eauto. destruct H; try congruence.
-      eapply IHt2; eauto.
-    + eapply tree_to_map_lookup_None in H4; eauto. destruct H; try congruence.
-      eapply IHt1; eauto.
-  - rewrite lookup_empty in H. congruence.
-Qed.
-
-Lemma tree_to_map_None t label depth:
-  tree_to_map t !! label = None →
-  sorted_tree t depth →
-  cutless_path t label depth →
-  ∃ found,
-    tree_path t label depth found ∧
-    found_nonmemb label found.
-Proof.
-  revert depth.
-  induction t; simpl; intros; [..|done].
-  - rewrite lookup_empty in H. eexists; eauto.
-  - apply lookup_singleton_None in H. eexists. split; eauto. simpl; congruence.
-  - apply lookup_union_None in H. intuition.
-    destruct (get_bit label depth); eauto.
-Qed.
-
 Lemma is_proof_to_is_found label found proof h:
   is_proof label found proof h -∗
   is_found label found h.
 Proof. iNamed 1. iFrame "#%". Qed.
-
-Lemma is_found_agree label found0 found1 h:
-  is_found label found0 h -∗
-  is_found label found1 h -∗
-  ⌜found0 = found1⌝.
-Proof.
-  iIntros "H0 H1".
-  iDestruct "H0" as (?) "[% H0]".
-  iDestruct "H1" as (?) "[% H1]".
-  iApply (tree_path_agree with "H0 H1"); eauto.
-Qed.
-
-Lemma is_map_agree_entry m h label val :
-  is_map m h -∗
-  is_entry label val h -∗
-  ⌜ m !! label = val ⌝.
-Proof.
-  iNamedSuffix 1 "0". subst.
-  destruct (tree_to_map t !! label) eqn:He.
-  - eapply tree_to_map_Some in He; eauto.
-    destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
-      iDestruct (tree_path_agree with "Hcut_tree0 Hcut_tree1") as "%Hagree";
-      try done; naive_solver.
-  - eapply cutless_tree_impl_paths in Hcutless0.
-    eapply tree_to_map_None in He as [? [? ?]]; eauto.
-    destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
-      iDestruct (tree_path_agree with "Hcut_tree0 Hcut_tree1") as "%Hagree";
-      try done; naive_solver.
-Qed.
 
 Lemma tree_sibs_proof_len t label depth proof :
   tree_sibs_proof t label depth proof -∗
@@ -657,21 +547,6 @@ Proof.
     iDestruct (is_cut_tree_len with "Hcut_tree") as %?.
   - iDestruct ("IH1" with "Hrecur_proof") as %?. word.
   - iDestruct ("IH0" with "Hrecur_proof") as %?. word.
-Qed.
-
-Lemma is_cut_tree_det t h0 h1 :
-  is_cut_tree t h0 -∗
-  is_cut_tree t h1 -∗
-  ⌜ h0 = h1 ⌝.
-Proof.
-  iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (h0 h1);
-    simpl; iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
-  - by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
-  - by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
-  - iDestruct ("IH0" with "Hleft_hash0 Hleft_hash1") as %->.
-    iDestruct ("IH1" with "Hright_hash0 Hright_hash1") as %->.
-    by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
-  - naive_solver.
 Qed.
 
 Lemma is_proof_eq_dig label found proof hash0 hash1 :
@@ -736,6 +611,134 @@ Proof.
       iDestruct ("IH0" with "[] [] Hleft_hash0 Hrecur_proof0
         Hleft_hash1 Hrecur_proof1") as %->; [done..|].
       by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %->.
+Qed.
+
+(** tree to map relation. *)
+
+Fixpoint tree_to_map t : gmap (list w8) (list w8) :=
+  match t with
+  | Empty => ∅
+  | Leaf label val => {[label := val]}
+  | Inner child0 child1 => (tree_to_map child0) ∪ (tree_to_map child1)
+  | Cut h => ∅
+  end.
+
+Definition tree_labels_have_bit t n val : Prop :=
+  ∀ l,
+  l ∈ dom (tree_to_map t) →
+  get_bit l n = val.
+
+Fixpoint sorted_tree t depth : Prop :=
+  match t with
+  | Inner child0 child1 =>
+    sorted_tree child0 (word.add depth (W64 1)) ∧
+    tree_labels_have_bit child0 depth false ∧
+    sorted_tree child1 (word.add depth (W64 1)) ∧
+    tree_labels_have_bit child1 depth true
+  | _ => True
+  end.
+
+Fixpoint minimal_tree t : Prop :=
+  match t with
+  | Inner child0 child1 =>
+    minimal_tree child0 ∧
+    minimal_tree child1 ∧
+    size (tree_to_map t) > 1
+    (* alternate rules for (child0, child1):
+    disallow: (Empty, Empty); (Empty, Leaf).
+    allow: (Empty, Inner); (Leaf, Leaf); (Leaf, Inner); (Inner, Inner). *)
+  | _ => True
+  end.
+
+Lemma tree_labels_have_bit_disjoint t0 t1 depth :
+  tree_labels_have_bit t0 depth true →
+  tree_labels_have_bit t1 depth false →
+  dom (tree_to_map t0) ## dom (tree_to_map t1).
+Proof.
+  intros.
+  apply elem_of_disjoint; intros.
+  apply H in H1.
+  apply H0 in H2.
+  congruence.
+Qed.
+
+(* [is_map] is when we talk about the underlying tree map.
+this requires no cuts in the tree, since cuts could result in
+different maps for the same tree hash. *)
+Definition is_map (m: gmap (list w8) (list w8)) (h: list w8) : iProp Σ :=
+  ∃ t,
+  "%Heq_tree_map" ∷ ⌜ m = tree_to_map t ⌝ ∗
+  "%Hsorted" ∷ ⌜ sorted_tree t 0 ⌝ ∗
+  "%Hcutless" ∷ ⌜ cutless_tree t ⌝ ∗
+  "%Hminimal" ∷ ⌜ minimal_tree t ⌝ ∗
+  "#Hcut_tree" ∷ is_cut_tree t h.
+Global Instance is_map_pers m h : Persistent (is_map m h) := _.
+
+Lemma tree_to_map_lookup_None label depth bit t:
+  get_bit label depth = (negb bit) →
+  tree_labels_have_bit t depth bit →
+  tree_to_map t !! label = None.
+Proof.
+  intros.
+  destruct (tree_to_map t !! label) eqn:He; eauto.
+  assert (get_bit label depth = bit).
+  { apply H0. apply elem_of_dom; eauto. }
+  rewrite H1 in H. destruct bit; simpl in *; congruence.
+Qed.
+
+Lemma tree_to_map_Some t label depth val:
+  tree_to_map t !! label = Some val →
+  sorted_tree t depth →
+  tree_path t label depth (Some (label, val)).
+Proof.
+  revert depth.
+  induction t; simpl; intros.
+  - rewrite lookup_empty in H. congruence.
+  - apply lookup_singleton_Some in H. intuition congruence.
+  - intuition.
+    eapply tree_labels_have_bit_disjoint in H4 as Hd; eauto.
+    apply lookup_union_Some in H.
+    2: apply map_disjoint_dom_2; eauto.
+    destruct (get_bit label depth) eqn:Hbit.
+    + eapply tree_to_map_lookup_None in H0; eauto. destruct H; try congruence.
+      eapply IHt2; eauto.
+    + eapply tree_to_map_lookup_None in H4; eauto. destruct H; try congruence.
+      eapply IHt1; eauto.
+  - rewrite lookup_empty in H. congruence.
+Qed.
+
+Lemma tree_to_map_None t label depth:
+  tree_to_map t !! label = None →
+  sorted_tree t depth →
+  cutless_path t label depth →
+  ∃ found,
+    tree_path t label depth found ∧
+    found_nonmemb label found.
+Proof.
+  revert depth.
+  induction t; simpl; intros; [..|done].
+  - rewrite lookup_empty in H. eexists; eauto.
+  - apply lookup_singleton_None in H. eexists. split; eauto. simpl; congruence.
+  - apply lookup_union_None in H. intuition.
+    destruct (get_bit label depth); eauto.
+Qed.
+
+Lemma is_map_agree_entry m h label val :
+  is_map m h -∗
+  is_entry label val h -∗
+  ⌜ m !! label = val ⌝.
+Proof.
+  iNamedSuffix 1 "0". subst.
+  destruct (tree_to_map t !! label) eqn:He.
+  - eapply tree_to_map_Some in He; eauto.
+    destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
+      iDestruct (tree_path_agree with "Hcut_tree0 Hcut_tree1") as "%Hagree";
+      try done; naive_solver.
+  - eapply cutless_tree_impl_paths in Hcutless0.
+    eapply tree_to_map_None in He as [? [? ?]]; eauto.
+    destruct val; iNamedSuffix 1 "1"; [|iNamedSuffix "Hfound1" "1"];
+      iDestruct (tree_path_agree with "Hcut_tree0 Hcut_tree1") as "%Hagree";
+      try done; naive_solver.
 Qed.
 
 Lemma sorted_tree_pair_dom_eq {l0 l1 r0 r1 depth} :

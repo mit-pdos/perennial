@@ -12,6 +12,8 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
 Context `{!merkle.GlobalAddrs}.
 
+(** ownership preds. *)
+
 Definition wish_Verify (in_tree : bool) label val proof dig : iProp Σ :=
   ∃ found proof_obj proof' tail,
   "%Henc" ∷ ⌜ MerkleProof.encodes proof_obj proof' ⌝ ∗
@@ -124,5 +126,36 @@ Definition own_Tree ptr elems d : iProp Σ :=
   ∃ ptr_root,
   "Hstruct" ∷ ptr ↦{d} (merkle.Tree.mk ptr_root) ∗
   "Hown_map" ∷ own_map ptr_root elems d.
+
+(** relation bw [is_full_tree] and [is_cut_tree]. *)
+
+Fixpoint get_depth t : nat :=
+  match t with
+  | Inner c0 c1 => S (get_depth c0 `max` get_depth c1)
+  | _ => 0%nat
+  end.
+
+Lemma cut_path_is_full_path t0 t1 h label found :
+  is_cut_tree (Σ:=Σ) t0 h -∗
+  ⌜ tree_path t0 label (W64 0) found ⌝ -∗
+  is_full_tree t1 h (get_depth t0) -∗
+  ⌜ tree_path t1 label (W64 0) found ⌝.
+Proof. Admitted.
+
+(** program proofs. *)
+
+Lemma wp_VerifyMemb sl_label sl_val sl_proof d0 d1 d2 (label val proof : list w8) :
+  {{{
+    is_pkg_init merkle ∗
+    "Hsl_label" ∷ sl_label ↦*{d0} label ∗
+    "Hsl_val" ∷ sl_val ↦*{d1} val ∗
+    "Hsl_proof" ∷ sl_proof ↦*{d2} proof
+  }}}
+  merkle @ "VerifyMemb" #sl_label #sl_val #sl_proof
+  {{{
+    sl_dig err, RET (sl_dig, err);
+    True
+  }}}.
+Proof. Admitted.
 
 End proof.
