@@ -114,3 +114,80 @@ Ltac iPkgInit :=
       try solve_pkg_init;
       repeat (iSplitR; [ solve_pkg_init | ])
     ).
+
+Section package_init.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{!goGlobalsGS Σ}.
+
+Lemma wp_package_init
+  pending
+  (postconds : gmap go_string (iProp Σ))
+  (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val)
+
+  `{!WpGlobalsAlloc (pkg_vars pkg_name) GlobalAddrs var_addrs own_allocated}
+  (is_initialized : GlobalAddrs → iProp Σ)
+  (is_defined : GlobalAddrs → iProp Σ)
+  :
+  postconds !! pkg_name = Some (∃ d, is_defined d ∗ is_initialized d)%I →
+  pkg_name ∉ pending →
+  (∀ (d : GlobalAddrs),
+     is_global_definitions pkg_name (var_addrs d) -∗
+     own_allocated d -∗
+     own_globals_tok ({[ pkg_name ]} ∪ pending) postconds -∗
+     WP init_func #()
+       {{ v, ⌜ v = #tt ⌝ ∗
+             □ (is_defined d ∗ is_initialized d) ∗
+             own_globals_tok ({[ pkg_name ]} ∪ pending) postconds
+       }}
+  ) →
+  {{{ own_globals_tok pending postconds }}}
+    globals.package_init pkg_name init_func
+  {{{ (d : GlobalAddrs), RET #(); is_defined d ∗ is_initialized d ∗ own_globals_tok pending postconds }}}.
+Proof.
+  unseal.
+  intros Hpost Hnot_pending Hwp_init.
+  iIntros (?) "Htok HΦ".
+  rewrite globals.package_init_unseal.
+  wp_call.
+  iNamed "Htok".
+  wp_bind (GlobalGet _).
+  iApply (wp_GlobalGet_full with "[$]").
+  iNext. iIntros "Hglobals".
+  destruct (lookup _ g) eqn:Hlookup.
+  { (* don't run init because the package has already been initialized *)
+    wp_pures.
+    apply elem_of_dom_2 in Hlookup.
+    rewrite Hpkg elem_of_union or_r // in Hlookup.
+    iDestruct (big_sepS_elem_of with "Hinited") as "H".
+    { done. }
+    rewrite Hpost /=.
+    iDestruct "H" as (?) "#[? ?]".
+    iApply ("HΦ" with "[-]").
+    iFrame "∗#%".
+  }
+  (* actually run init *)
+  wp_pures.
+  wp_apply wp_globals_alloc.
+  iIntros "* Halloc".
+  wp_pures.
+  wp_bind (GlobalPut _ _).
+  iApply (wp_GlobalPut with "[$]").
+  { done. }
+  iNext. iIntros "[Hg #Hdef]".
+  wp_pures.
+  iDestruct (Hwp_init with "[$Hdef] [$Halloc] [Hg]") as "Hinit".
+  { iFrame "∗#%". iPureIntro. set_solver. }
+  wp_apply (wp_wand with "Hinit").
+  iIntros (?) "H".
+  iDestruct "H" as (?) "[#[? ?] Htok]". subst.
+  iApply ("HΦ" with "[-]").
+  iClear "Hinited".
+  clear Hpkg.
+  iNamed "Htok".
+  iDestruct (big_sepS_insert_2 pkg_name with "[] Hinited") as "Hinited2".
+  { simpl. rewrite Hpost. iFrame "#". }
+  iFrame "∗#%".
+  iPureIntro. set_solver.
+Qed.
+
+End package_init.

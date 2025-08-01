@@ -8,7 +8,7 @@ Context `{ffi_syntax}.
 
 Definition get_def : val :=
   λ: "method_name" "v",
-    let: (("pkg_name", "type_name"), "val") := globals.unwrap "v" in
+    let: (("pkg_name", "type_name"), "val") := option.unwrap "v" in
     method_call "pkg_name" "type_name" "method_name" "val".
 
 Program Definition get := sealed @get_def.
@@ -48,7 +48,7 @@ Definition eq : val :=
 and also returns it. *)
 Definition type_assert : val :=
   λ: "v" "expected_type_id",
-    let: "v" := globals.unwrap "v" in
+    let: "v" := option.unwrap "v" in
     let: ("type_id", "underlying_v") := "v" in
     if: type_id_eq "type_id" "expected_type_id" then
     "underlying_v"

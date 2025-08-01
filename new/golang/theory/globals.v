@@ -10,9 +10,9 @@ Set Default Proof Using "Type".
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Global Instance wp_unwrap (v : val) :
-  PureWp True (globals.unwrap $ InjRV v) v.
+  PureWp True (option.unwrap $ InjRV v) v.
 Proof.
-  rewrite globals.unwrap_unseal /globals.unwrap_def.
+  rewrite option.unwrap_unseal /option.unwrap_def.
   intros ?????. iIntros "Hwp". wp_pure_lc "?".
   wp_pures. by iApply "Hwp".
 Qed.
@@ -144,9 +144,42 @@ Definition own_globals_tok_unseal : own_globals_tok = _ := seal_eq _.
 
 End definitions_and_lemmas.
 
+Class GlobalAddrs :=
+  {
+    global_addr : go_string → loc
+  }.
+
 Section globals.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
+Context `{!GlobalAddrs}.
+
+Definition is_global_vars : iProp Σ :=
+  ∃ (global_addrs_alist : list (go_string * loc)),
+  let global_addrs_val := alist_val ((λ '(name, addr), (name, #addr)) <$> global_addrs_alist) in
+  "#Hg" ∷ is_global "__global_vars" global_addrs_val ∗
+  "%Heq" ∷ ⌜ ∀ s, (global_addr s) = default null (alist_lookup_f s global_addrs_alist) ⌝.
+
+TODO: use a prophecy variable to get the entire `global_addrs_val`, and in
+extension, a `GlobalAddrs` instance right at the beginning. Postcondition of
+`alloc` will be an escrow invariant `is_globals_allocated`, which is needed in
+order to start pkg initialization.
+
+Actually, probably easier to do angelic non-determinism. Can make angelic choice
+at the beginning for `global_addrs_val`, then every time we run `alloc` for a
+particular package, can angelically require that the `loc`s agree with what's in
+`global_addrs_val`. Must only allocate a specific variable once to avoid a
+contradictory assumption (e.g. allocating "x" twice would definitely give two
+different addresses, and result in no valid angelic choices).
+This angelic choice doesn't even need any code: it can be implicitly captured in
+the pure state initialization predicate by saying `dom σ.(globals) = {[ "__global_vars" ]}`.
+angelically-exiting in GooseLang when things don't match up.
+
+(if: angelic_value ≠ physical_value then Stop
+else Skip)
+
+Put `own_allocated` in invariants so each package's init can take it as a precondition.
+
 
 Definition is_global_definitions (pkg_name : go_string)
                                  `{!PkgInfo pkg_name}
@@ -161,12 +194,8 @@ Lemma alist_lookup_f_fmap {A B} n (l: list (go_string * A)) (f : A → B) :
   alist_lookup_f n ((λ '(name, a), (name, f a)) <$> l) =
   f <$> (alist_lookup_f n l).
 Proof.
-  induction l.
-  { done. }
-  simpl.
-  destruct a.
-  destruct (ByteString.eqb g n).
-  { done. }
+  induction l as [|[]]; first done; simpl.
+  destruct (ByteString.eqb g n); first done.
   rewrite IHl //.
 Qed.
 
@@ -179,11 +208,11 @@ Definition func_callv_def (pkg_name func_name : go_string) : func.t :=
     func.f := <>;
     func.x := "firstArg";
     func.e :=
-      let: "__p" := globals.unwrap (GlobalGet (# pkg_name)) in
+      let: "__p" := option.unwrap (GlobalGet (# pkg_name)) in
       let: "varAddrs" := Fst (Fst "__p") in
       let: "functions" := Snd (Fst "__p") in
       let: "typeToMethodSets" := Snd "__p" in
-      globals.unwrap (alist_lookup (# func_name) "functions") "firstArg"
+      option.unwrap (alist_lookup (# func_name) "functions") "firstArg"
   |}.
 Program Definition func_callv := sealed @func_callv_def.
 Definition func_callv_unseal : func_callv = _ := seal_eq _.
@@ -209,12 +238,12 @@ Definition method_callv_def (pkg_name type_name method_name : go_string) (receiv
     func.f := <>;
     func.x := "firstArg";
     func.e :=
-      let: "__p" := globals.unwrap (GlobalGet (# pkg_name)) in
+      let: "__p" := option.unwrap (GlobalGet (# pkg_name)) in
       let: "varAddrs" := Fst (Fst "__p") in
       let: "functions" := Snd (Fst "__p") in
       let: "typeToMethodSets" := Snd "__p" in
-      let: "methodSet" := globals.unwrap (alist_lookup (# type_name) "typeToMethodSets") in
-      globals.unwrap (alist_lookup (# method_name) "methodSet") receiver "firstArg"
+      let: "methodSet" := option.unwrap (alist_lookup (# type_name) "typeToMethodSets") in
+      option.unwrap (alist_lookup (# method_name) "methodSet") receiver "firstArg"
   |}.
 Program Definition method_callv := sealed @method_callv_def.
 Definition method_callv_unseal : method_callv = _ := seal_eq _.
@@ -308,83 +337,6 @@ End globals.
 
 Local Ltac unseal :=
   rewrite ?own_globals_tok_unseal.
-
-Section package_init.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Lemma wp_package_init
-  pending
-  (postconds : gmap go_string (iProp Σ))
-  (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val)
-
-  `{!WpGlobalsAlloc (pkg_vars pkg_name) GlobalAddrs var_addrs own_allocated}
-  (is_initialized : GlobalAddrs → iProp Σ)
-  (is_defined : GlobalAddrs → iProp Σ)
-  :
-  postconds !! pkg_name = Some (∃ d, is_defined d ∗ is_initialized d)%I →
-  pkg_name ∉ pending →
-  (∀ (d : GlobalAddrs),
-     is_global_definitions pkg_name (var_addrs d) -∗
-     own_allocated d -∗
-     own_globals_tok ({[ pkg_name ]} ∪ pending) postconds -∗
-     WP init_func #()
-       {{ v, ⌜ v = #tt ⌝ ∗
-             □ (is_defined d ∗ is_initialized d) ∗
-             own_globals_tok ({[ pkg_name ]} ∪ pending) postconds
-       }}
-  ) →
-  {{{ own_globals_tok pending postconds }}}
-    globals.package_init pkg_name init_func
-  {{{ (d : GlobalAddrs), RET #(); is_defined d ∗ is_initialized d ∗ own_globals_tok pending postconds }}}.
-Proof.
-  unseal.
-  intros Hpost Hnot_pending Hwp_init.
-  iIntros (?) "Htok HΦ".
-  rewrite globals.package_init_unseal.
-  wp_call.
-  iNamed "Htok".
-  wp_bind (GlobalGet _).
-  iApply (wp_GlobalGet_full with "[$]").
-  iNext. iIntros "Hglobals".
-  destruct (lookup _ g) eqn:Hlookup.
-  { (* don't run init because the package has already been initialized *)
-    wp_pures.
-    apply elem_of_dom_2 in Hlookup.
-    rewrite Hpkg elem_of_union or_r // in Hlookup.
-    iDestruct (big_sepS_elem_of with "Hinited") as "H".
-    { done. }
-    rewrite Hpost /=.
-    iDestruct "H" as (?) "#[? ?]".
-    iApply ("HΦ" with "[-]").
-    iFrame "∗#%".
-  }
-  (* actually run init *)
-  wp_pures.
-  wp_apply wp_globals_alloc.
-  iIntros "* Halloc".
-  wp_pures.
-  wp_bind (GlobalPut _ _).
-  iApply (wp_GlobalPut with "[$]").
-  { done. }
-  iNext. iIntros "[Hg #Hdef]".
-  wp_pures.
-  iDestruct (Hwp_init with "[$Hdef] [$Halloc] [Hg]") as "Hinit".
-  { iFrame "∗#%". iPureIntro. set_solver. }
-  wp_apply (wp_wand with "Hinit").
-  iIntros (?) "H".
-  iDestruct "H" as (?) "[#[? ?] Htok]". subst.
-  iApply ("HΦ" with "[-]").
-  iClear "Hinited".
-  clear Hpkg.
-  iNamed "Htok".
-  iDestruct (big_sepS_insert_2 pkg_name with "[] Hinited") as "Hinited2".
-  { simpl. rewrite Hpost. iFrame "#". }
-  iFrame "∗#%".
-  iPureIntro. set_solver.
-Qed.
-
-End package_init.
 
 Section init.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
