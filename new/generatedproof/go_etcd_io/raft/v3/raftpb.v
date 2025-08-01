@@ -376,18 +376,166 @@ End instances.
 Module Message.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Record t := mk {
+  Type' : MessageType.t;
+  To' : w64;
+  From' : w64;
+  Term' : w64;
+  LogTerm' : w64;
+  Index' : w64;
+  Entries' : slice.t;
+  Commit' : w64;
+  Vote' : w64;
+  Snapshot' : loc;
+  Reject' : bool;
+  RejectHint' : w64;
+  Context' : slice.t;
+  Responses' : slice.t;
+}.
 End def.
 End Message.
 
-Global Instance bounded_size_Message : BoundedTypeSize raftpb.Message.
-Admitted.
+Section instances.
+Context `{ffi_syntax}.
 
-Global Instance into_val_Message `{ffi_syntax} : IntoVal Message.t.
-Admitted.
+Global Instance settable_Message : Settable Message.t :=
+  settable! Message.mk < Message.Type'; Message.To'; Message.From'; Message.Term'; Message.LogTerm'; Message.Index'; Message.Entries'; Message.Commit'; Message.Vote'; Message.Snapshot'; Message.Reject'; Message.RejectHint'; Message.Context'; Message.Responses' >.
+Global Instance into_val_Message : IntoVal Message.t :=
+  {| to_val_def v :=
+    struct.val_aux raftpb.Message [
+    "Type" ::= #(Message.Type' v);
+    "To" ::= #(Message.To' v);
+    "From" ::= #(Message.From' v);
+    "Term" ::= #(Message.Term' v);
+    "LogTerm" ::= #(Message.LogTerm' v);
+    "Index" ::= #(Message.Index' v);
+    "Entries" ::= #(Message.Entries' v);
+    "Commit" ::= #(Message.Commit' v);
+    "Vote" ::= #(Message.Vote' v);
+    "Snapshot" ::= #(Message.Snapshot' v);
+    "Reject" ::= #(Message.Reject' v);
+    "RejectHint" ::= #(Message.RejectHint' v);
+    "Context" ::= #(Message.Context' v);
+    "Responses" ::= #(Message.Responses' v)
+    ]%struct
+  |}.
 
-Global Instance into_val_typed_Message `{ffi_syntax} : IntoValTyped Message.t raftpb.Message.
-Admitted.
+Global Program Instance into_val_typed_Message : IntoValTyped Message.t raftpb.Message :=
+{|
+  default_val := Message.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Message_Type : IntoValStructField "Type" raftpb.Message Message.Type'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_To : IntoValStructField "To" raftpb.Message Message.To'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_From : IntoValStructField "From" raftpb.Message Message.From'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_Term : IntoValStructField "Term" raftpb.Message Message.Term'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_LogTerm : IntoValStructField "LogTerm" raftpb.Message Message.LogTerm'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_Index : IntoValStructField "Index" raftpb.Message Message.Index'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_Entries : IntoValStructField "Entries" raftpb.Message Message.Entries'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_Commit : IntoValStructField "Commit" raftpb.Message Message.Commit'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_Vote : IntoValStructField "Vote" raftpb.Message Message.Vote'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_Snapshot : IntoValStructField "Snapshot" raftpb.Message Message.Snapshot'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_Reject : IntoValStructField "Reject" raftpb.Message Message.Reject'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_RejectHint : IntoValStructField "RejectHint" raftpb.Message Message.RejectHint'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_Context : IntoValStructField "Context" raftpb.Message Message.Context'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Message_Responses : IntoValStructField "Responses" raftpb.Message Message.Responses'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Message Type' To' From' Term' LogTerm' Index' Entries' Commit' Vote' Snapshot' Reject' RejectHint' Context' Responses':
+  PureWp True
+    (struct.make #raftpb.Message (alist_val [
+      "Type" ::= #Type';
+      "To" ::= #To';
+      "From" ::= #From';
+      "Term" ::= #Term';
+      "LogTerm" ::= #LogTerm';
+      "Index" ::= #Index';
+      "Entries" ::= #Entries';
+      "Commit" ::= #Commit';
+      "Vote" ::= #Vote';
+      "Snapshot" ::= #Snapshot';
+      "Reject" ::= #Reject';
+      "RejectHint" ::= #RejectHint';
+      "Context" ::= #Context';
+      "Responses" ::= #Responses'
+    ]))%struct
+    #(Message.mk Type' To' From' Term' LogTerm' Index' Entries' Commit' Vote' Snapshot' Reject' RejectHint' Context' Responses').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Message_struct_fields_split dq l (v : Message.t) :
+  StructFieldsSplit dq l v (
+    "HType" ∷ l ↦s[raftpb.Message :: "Type"]{dq} v.(Message.Type') ∗
+    "HTo" ∷ l ↦s[raftpb.Message :: "To"]{dq} v.(Message.To') ∗
+    "HFrom" ∷ l ↦s[raftpb.Message :: "From"]{dq} v.(Message.From') ∗
+    "HTerm" ∷ l ↦s[raftpb.Message :: "Term"]{dq} v.(Message.Term') ∗
+    "HLogTerm" ∷ l ↦s[raftpb.Message :: "LogTerm"]{dq} v.(Message.LogTerm') ∗
+    "HIndex" ∷ l ↦s[raftpb.Message :: "Index"]{dq} v.(Message.Index') ∗
+    "HEntries" ∷ l ↦s[raftpb.Message :: "Entries"]{dq} v.(Message.Entries') ∗
+    "HCommit" ∷ l ↦s[raftpb.Message :: "Commit"]{dq} v.(Message.Commit') ∗
+    "HVote" ∷ l ↦s[raftpb.Message :: "Vote"]{dq} v.(Message.Vote') ∗
+    "HSnapshot" ∷ l ↦s[raftpb.Message :: "Snapshot"]{dq} v.(Message.Snapshot') ∗
+    "HReject" ∷ l ↦s[raftpb.Message :: "Reject"]{dq} v.(Message.Reject') ∗
+    "HRejectHint" ∷ l ↦s[raftpb.Message :: "RejectHint"]{dq} v.(Message.RejectHint') ∗
+    "HContext" ∷ l ↦s[raftpb.Message :: "Context"]{dq} v.(Message.Context') ∗
+    "HResponses" ∷ l ↦s[raftpb.Message :: "Responses"]{dq} v.(Message.Responses')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Message.Type' v)) raftpb.Message "Type"%go.
+  simpl_one_flatten_struct (# (Message.To' v)) raftpb.Message "To"%go.
+  simpl_one_flatten_struct (# (Message.From' v)) raftpb.Message "From"%go.
+  simpl_one_flatten_struct (# (Message.Term' v)) raftpb.Message "Term"%go.
+  simpl_one_flatten_struct (# (Message.LogTerm' v)) raftpb.Message "LogTerm"%go.
+  simpl_one_flatten_struct (# (Message.Index' v)) raftpb.Message "Index"%go.
+  simpl_one_flatten_struct (# (Message.Entries' v)) raftpb.Message "Entries"%go.
+  simpl_one_flatten_struct (# (Message.Commit' v)) raftpb.Message "Commit"%go.
+  simpl_one_flatten_struct (# (Message.Vote' v)) raftpb.Message "Vote"%go.
+  simpl_one_flatten_struct (# (Message.Snapshot' v)) raftpb.Message "Snapshot"%go.
+  simpl_one_flatten_struct (# (Message.Reject' v)) raftpb.Message "Reject"%go.
+  simpl_one_flatten_struct (# (Message.RejectHint' v)) raftpb.Message "RejectHint"%go.
+  simpl_one_flatten_struct (# (Message.Context' v)) raftpb.Message "Context"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
 
 (* type raftpb.HardState *)
 Module HardState.

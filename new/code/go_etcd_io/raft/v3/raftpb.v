@@ -122,7 +122,22 @@ Definition Snapshot : go_type := structT [
   "Metadata" :: SnapshotMetadata
 ].
 
-Axiom Message : go_type.
+Definition Message : go_type := structT [
+  "Type" :: MessageType;
+  "To" :: uint64T;
+  "From" :: uint64T;
+  "Term" :: uint64T;
+  "LogTerm" :: uint64T;
+  "Index" :: uint64T;
+  "Entries" :: sliceT;
+  "Commit" :: uint64T;
+  "Vote" :: uint64T;
+  "Snapshot" :: ptrT;
+  "Reject" :: boolT;
+  "RejectHint" :: uint64T;
+  "Context" :: sliceT;
+  "Responses" :: sliceT
+].
 
 Definition HardState : go_type := structT [
   "Term" :: uint64T;

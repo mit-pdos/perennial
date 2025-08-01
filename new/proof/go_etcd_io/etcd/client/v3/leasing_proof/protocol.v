@@ -69,6 +69,11 @@ Require Import New.proof.go_etcd_io.etcd.client.v3.
    Possible solution: distinguish a PutRPC error from a "Txn Succeeded == false" response.
 *)
 
+(* NOTE(bug?): Get checks for lease validity first, then it checks for ongoing
+   Puts and waits for them to be finished. However, it is possible that the
+   session that's ready is a *new* session.
+*)
+
 (* To simplify the proof for now, assuming that all keys are managed by
    leasingKV clients (i.e. the whole map is subject to the following
    protocol).
