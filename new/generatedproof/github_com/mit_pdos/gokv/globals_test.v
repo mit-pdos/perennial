@@ -3,8 +3,10 @@ Require Export New.proof.proof_prelude.
 Require Export New.golang.theory.
 
 Require Export New.code.github_com.mit_pdos.gokv.globals_test.
+
+Set Default Proof Using "Type".
+
 Module main.
-Axiom falso : False.
 
 Section names.
 
@@ -32,7 +34,7 @@ Global Instance is_pkg_defined_instance : IsPkgDefined main :=
   is_pkg_defined := is_global_definitions main var_addrs;
 |}.
 
-Definition own_allocated `{!GlobalAddrs} : iProp Σ :=
+Definition own_allocated : iProp Σ :=
   "HGlobalX" ∷ GlobalX ↦ (default_val w64) ∗
   "HglobalY" ∷ globalY ↦ (default_val go_string) ∗
   "HglobalA" ∷ globalA ↦ (default_val go_string) ∗
@@ -71,4 +73,9 @@ Global Instance wp_func_call_main :
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.
+
+Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
+  WpGlobalsAlloc main.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
+Proof. solve_wp_globals_alloc. Qed.
+
 End main.

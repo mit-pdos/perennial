@@ -11,12 +11,6 @@ Context `{!heapGS Σ} `{!goGlobalsGS Σ}.
 Context `{!util.GlobalAddrs}.
 Context `{!ghost_varG Σ ()}.
 
-Local Instance wp_globals_alloc_inst :
-  WpGlobalsAlloc util.vars' (@util.GlobalAddrs) (@util.var_addrs) (λ _, util.own_allocated).
-Proof.
-  solve_wp_globals_alloc.
-Qed.
-
 (* More realistically, we might want to put this as a non-persistent fact inside
  * the invariant, to reason about changing the Debug value, but we currently don't
  * prove any WPs about code that modifies Debug, so ignore that technicality for now.

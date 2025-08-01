@@ -10,13 +10,6 @@ Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 Context `{!ghost_varG Σ ()}.
 
-(* FIXME: autogenerate this *)
-Local Instance wp_globals_alloc_inst :
-  WpGlobalsAlloc main.vars' (@main.GlobalAddrs) (@main.var_addrs) (λ _, main.own_allocated).
-Proof.
-  solve_wp_globals_alloc.
-Qed.
-
 Definition own_initialized `{!main.GlobalAddrs} : iProp Σ :=
   "HglobalB" ∷ main.globalB ↦ "b"%go ∗
   "HglobalA" ∷ main.globalA ↦ "a"%go ∗

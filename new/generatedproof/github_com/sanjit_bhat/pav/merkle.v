@@ -378,4 +378,9 @@ Global Instance wp_method_call_Tree'ptr_prove :
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
+
+Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
+  WpGlobalsAlloc merkle.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
+Proof. solve_wp_globals_alloc. Qed.
+
 End merkle.

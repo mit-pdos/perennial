@@ -19,10 +19,6 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
 Context `{!ghost_varG Σ ()}.
 
-Local Instance wp_globals_alloc_inst :
-  WpGlobalsAlloc merkle.vars' (@merkle.GlobalAddrs) (@merkle.var_addrs) (λ _, merkle.own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 Definition own_initialized `{!merkle.GlobalAddrs} : iProp Σ :=
   ∃ sl_emptyHash emptyHash,
   "#HemptyHash" ∷ merkle.emptyHash ↦□ sl_emptyHash ∗

@@ -53,6 +53,7 @@ projs = [
             "./map_marshal",
             "./cachekv",
             "./trusted_proph",
+            "./globals_test",
         ],
     ),
     create_proj(
