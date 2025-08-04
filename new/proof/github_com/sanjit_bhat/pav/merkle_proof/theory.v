@@ -283,6 +283,14 @@ Proof.
   by case_decide.
 Qed.
 
+Lemma decode_empty_det :
+  decode_node (Some [emptyNodeTag]) = DecEmpty.
+Proof.
+  simpl.
+  case_decide; [done|].
+  naive_solver.
+Qed.
+
 Local Lemma decode_leaf_inj_aux d l v :
   decode_leaf d = Some (l, v) →
   d = u64_le (W64 (length l)) ++ l ++ u64_le (W64 (length v)) ++ v.
@@ -348,6 +356,53 @@ Proof.
   by rewrite Heq.
 Qed.
 
+Lemma decode_leaf_det_aux l v :
+  length l < 2^64 →
+  length v < 2^64 →
+  decode_leaf (
+    u64_le (W64 (length l)) ++ l ++
+    u64_le (W64 (length v)) ++ v
+  ) = Some (l, v).
+Proof.
+  intros. rewrite /decode_leaf.
+  repeat (rewrite take_app_length'; [|len]).
+  rewrite u64_le_to_word.
+  repeat (rewrite drop_app_length'; [|len]).
+  repeat (rewrite take_app_length'; [|len]).
+  rewrite u64_le_to_word.
+  rewrite take_ge; [|word].
+  rewrite drop_ge; [|word].
+
+  case_bool_decide as Hif.
+  2: { revert Hif. len. }
+  clear Hif.
+  case_bool_decide as Hif.
+  2: { revert Hif. len. }
+  clear Hif.
+  case_bool_decide as Hif.
+  2: { revert Hif. len. }
+  clear Hif.
+  case_bool_decide as Hif.
+  2: { revert Hif. len. }
+  clear Hif.
+  by case_bool_decide.
+Qed.
+
+Lemma decode_leaf_det l v :
+  length l < 2^64 →
+  length v < 2^64 →
+  decode_node (
+    Some $ leafNodeTag ::
+    u64_le (W64 (length l)) ++ l ++
+    u64_le (W64 (length v)) ++ v
+  ) = DecLeaf l v.
+Proof.
+  intros. simpl.
+  case_decide; [naive_solver|].
+  case_decide; [|done].
+  by rewrite decode_leaf_det_aux.
+Qed.
+
 Lemma decode_inner_inj d h0 h1 {Hlen0 Hlen1} :
   decode_node d = DecInner h0 h1 Hlen0 Hlen1 →
   d = Some $ innerNodeTag :: h0 ++ h1.
@@ -362,6 +417,21 @@ Proof.
   simplify_eq/=.
   by rewrite take_drop.
 Qed.
+
+Lemma decode_inner_det h0 h1
+    {Hl0 : Z.of_nat $ length h0 = cryptoffi.hash_len}
+    {Hl1 : Z.of_nat $ length h1 = cryptoffi.hash_len} :
+  decode_node (Some $ innerNodeTag :: h0 ++ h1) = DecInner h0 h1 Hl0 Hl1.
+Proof.
+  simpl.
+  case_decide; [len|].
+  case_decide; [done|].
+  case_decide.
+  2: { intuition. revert H1. len. }
+  (* TODO: weird dependent type error. maybe i need to change
+  DecNode construction. *)
+  Fail rewrite take_app_length'.
+Admitted.
 
 (* for every node, there's only one data that decodes to it. *)
 Lemma decode_node_inj n d0 d1 :
@@ -612,6 +682,55 @@ Proof.
     by iDestruct (cryptoffi.is_hash_det with "His_hash0 His_hash1") as %?.
   - naive_solver.
 Qed.
+
+(** full <-> cut tree reln. *)
+
+Fixpoint is_limit t limit :=
+  match t with
+  | Inner c0 c1 =>
+    match limit with
+    | 0%nat => False
+    | S l =>
+      is_limit c0 l ∧
+      is_limit c1 l
+    end
+  | _ => True
+  end.
+
+#[local] Transparent is_full_tree.
+
+(* TODO: will need to add is_limit and is_sorted to prove this. *)
+Lemma foo0 t0 t1 h l pref :
+  is_cut_tree t0 h -∗
+  is_full_tree t1 h l pref -∗
+  ⌜ (t0 = Empty ∧ t0 = t1) ∨
+    (∃ label val, t0 = Leaf label val ∧ t0 = t1) ∨
+    (∃ c0 c1 c2 c3, t0 = Inner c0 c1 ∧ t1 = Inner c2 c3) ∨
+    (t0 = Cut h) ⌝.
+Proof.
+  destruct t0, l; simpl;
+    iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
+  - iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
+Admitted.
+
+Lemma foo1 t0 t1 h l pref label found :
+  is_cut_tree t0 h -∗
+  is_full_tree t1 h l pref -∗
+  ⌜ is_path t0 (length pref) label found ⌝ -∗
+  ⌜ is_limit t0 l ⌝ -∗
+  ⌜ is_path t1 (length pref) label found ⌝.
+Proof.
+  revert t1 h l pref label found.
+  induction t0; intros; destruct l.
+  - simpl.
+Admitted.
+
+(* TODO: overall plan for full-map Verify reasoning:
+- user shows up with is_full_map (hash:=comp proof) from merkle inversion.
+- Verify checks path down cut tree (hash:=comp proof),
+explicitly bounding depth.
+- path down cut tree impl path down full tree, if both have same hash.
+- path down full tree impl full map entry. *)
 
 (** tree proofs. *)
 
