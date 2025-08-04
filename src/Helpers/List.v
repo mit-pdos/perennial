@@ -252,17 +252,6 @@ Section list.
     apply List.Forall_forall with (x:=a) in HF; intuition.
   Qed.
 
-  Lemma prefix_lookup_lt l1 l2 i :
-    i < length l1 →
-    l1 `prefix_of` l2 →
-    l1 !! i = l2 !! i.
-  Proof.
-    intros Hlt Hprefix.
-    apply lookup_lt_is_Some_2 in Hlt as [? Hlookup].
-    rewrite Hlookup.
-    eapply prefix_lookup_Some in Hlookup; eauto.
-  Qed.
-
   (* for compatibility with Coq v8.11, which doesn't have this lemma *)
   Lemma in_concat : forall (l: list (list A)) y,
     In y (concat l) <-> exists x, In x l /\ In y x.
