@@ -7,7 +7,7 @@ From Perennial.program_proof Require Import
      txn.typed_translate_facts
      alloc.alloc_proof.
 From Perennial.goose_lang Require Import crash_modality.
-From Perennial.goose_lang.ffi Require Import jrnl_ffi.
+From Perennial.program_proof.jrnl.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert metatheory.
 From Perennial.base_logic Require Import ghost_var.
 From Perennial.program_proof Require Import lockmap_proof.

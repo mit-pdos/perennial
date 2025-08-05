@@ -14,6 +14,7 @@ Context `{!merkle.GlobalAddrs}.
 
 (** ownership preds. *)
 
+(*
 Definition wish_Verify (in_tree : bool) label val proof dig : iProp Σ :=
   ∃ found proof_obj proof' tail,
   "%Henc" ∷ ⌜ MerkleProof.encodes proof_obj proof' ⌝ ∗
@@ -157,5 +158,6 @@ Lemma wp_VerifyMemb sl_label sl_val sl_proof d0 d1 d2 (label val proof : list w8
     True
   }}}.
 Proof. Admitted.
+*)
 
 End proof.

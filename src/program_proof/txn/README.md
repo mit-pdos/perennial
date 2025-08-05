@@ -30,5 +30,5 @@ What's trusted:
 2. The Goose-generic definitions of typed translations (e.g. for code outside atomically blocks)
    (see `../../goose_lang/typed_translate.v`)
 3. More or less all of `op_wrappers.v`, `typed_translate.v`
-4. The jrnl_ffi semantics (see `../../goose_lang/ffi/jrnl_ffi_spec.v`)
+4. The jrnl_ffi semantics (see `../../program_proof/jrnl/ffi/jrnl_ffi_spec.v`)
 5. The definitions and meaning of the statement in `twophase_refinement_thm.v` (e.g. `trace_refines`)

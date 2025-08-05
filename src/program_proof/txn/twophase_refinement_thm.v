@@ -2,7 +2,8 @@ From Perennial.program_proof Require Import disk_prelude.
 From Perennial.program_proof Require Import
      txn.typed_translate txn.twophase_refinement_defs txn.twophase_refinement_proof.
 From Perennial.goose_lang Require Import crash_modality.
-From Perennial.goose_lang.ffi Require Import jrnl_ffi atomic_refinement.
+From Perennial.program_proof.jrnl.ffi Require Import jrnl_ffi.
+From Perennial.goose_lang.ffi Require Import atomic_refinement.
 From Perennial.goose_lang Require Import logical_reln_defns logical_reln_adeq spec_assert.
 
 #[global]

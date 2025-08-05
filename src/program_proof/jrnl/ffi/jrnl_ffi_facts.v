@@ -3,7 +3,7 @@
    implementations of the jrnl and its concurrency control. *)
 
 From iris.algebra Require Import auth frac agree excl csum.
-From Perennial.algebra Require Import auth_map.
+From Perennial.algebra Require Import auth_map big_op.
 From RecordUpdate Require Import RecordSet.
 Require Import Coq.Logic.Classical_Prop.
 
@@ -16,9 +16,11 @@ From Perennial.goose_lang.lib.list Require Import list.
 From Perennial.program_proof Require Import addr_proof buf.buf_proof.
 From Perennial.program_proof Require obj.recovery_proof.
 
-From Perennial.goose_lang Require Import ffi.jrnl_ffi_spec.
+From Perennial.program_proof.jrnl Require Import ffi.jrnl_ffi_spec.
 
 Local Existing Instances jrnl_op jrnl_val_ty.
+
+Set Default Proof Using "Type".
 
 Lemma val_of_list_inj o1 o2:
   val_of_list o1 = val_of_list o2 →

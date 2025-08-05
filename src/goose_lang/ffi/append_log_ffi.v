@@ -67,7 +67,7 @@ Definition sliceT_ (t: ty_) : ty_ := λ val_ty, prodT (arrayT (t _)) uint64T.
 Definition blockT_: ty_ := sliceT_ (λ val_ty, byteT).
 
 
-Inductive LogOp :=
+Inductive LogOp : Set :=
   | AppendOp (* log, slice of blocks *)
   | GetOp (* log, index *)
   | ResetOp (* log *)
@@ -455,6 +455,7 @@ Section log_lemmas.
 
 End log_lemmas.
 
+(* From Perennial.program_proof Require Import proof_prelude. *)
 From Perennial.goose_lang Require Import adequacy.
 
 Program Instance log_interp_adequacy:
@@ -520,7 +521,6 @@ Next Obligation.
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp.half_half agree_idemp.
 Qed.
 
-From Perennial.program_proof Require Import proof_prelude.
 From Perennial.goose_lang Require Import refinement_adequacy.
 Section spec.
 

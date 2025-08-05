@@ -654,7 +654,7 @@ Next Obligation. (* restart, crashed to new ffi_state, Hold = old ffiGS, ffi_upd
     iModIntro. by rewrite -own_op -Cinl_op -pair_op frac_op Qp.half_half agree_idemp.
 Qed.
 
-From Perennial.program_proof Require Import proof_prelude.
+(* From Perennial.program_proof Require Import proof_prelude. *)
 From Perennial.goose_lang Require Import refinement_adequacy.
 Section spec.
 

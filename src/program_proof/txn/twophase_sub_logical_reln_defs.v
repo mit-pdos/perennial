@@ -12,7 +12,7 @@ From Perennial.Helpers Require Import Qextra.
 From Perennial.Helpers Require List.
 From Perennial.program_proof Require Import lockmap_proof.
 
-From Perennial.goose_lang.ffi Require Import jrnl_ffi.
+From Perennial.program_proof.jrnl.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Perennial.program_proof Require Import addr.addr_proof.
 From Perennial.program_proof Require Import txn.typed_translate.

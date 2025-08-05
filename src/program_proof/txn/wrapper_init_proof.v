@@ -1,6 +1,6 @@
 From Perennial.goose_lang Require Import lang notation typing.
 From Perennial.goose_lang.lib Require Import map.impl list.impl list.list_slice slice.typed_slice.
-From Perennial.goose_lang.ffi Require Import jrnl_ffi.
+From Perennial.program_proof.jrnl.ffi Require Import jrnl_ffi.
 From Perennial.goose_lang.ffi Require Import disk.
 From Goose.github_com.mit_pdos.go_journal Require Import obj txn.
 From Perennial.program_proof Require Import lockmap_proof.

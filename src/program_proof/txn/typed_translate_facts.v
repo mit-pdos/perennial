@@ -1,7 +1,7 @@
 From Perennial.Helpers Require Import Tactics.
 
 From Perennial.goose_lang Require Import notation.
-From Perennial.goose_lang.ffi Require Import jrnl_ffi.
+From Perennial.program_proof.jrnl.ffi Require Import jrnl_ffi.
 From Perennial.program_proof Require Import
      buf.defs
      addr.addr_proof
