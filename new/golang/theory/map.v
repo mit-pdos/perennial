@@ -50,12 +50,12 @@ Context `{!IntoValTyped K kt} `{!IntoValTyped V vt}.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
 
-Lemma wp_map_literal_val (l:list (K * V)):
-  {{{ True }}}
-    map.literal_val #kt #vt (map_list_val l)
+Lemma wp_map_literal_val (l:list (K * V)) (v:val):
+  {{{ ⌜ v = map_list_val l ⌝ }}}
+    map.literal_val #kt #vt v
   {{{ v, RET v; ⌜ is_map_val v (list_to_map l) ⌝ }}}.
 Proof. 
-  iIntros (?) "_ HΦ".
+  iIntros (?) "% HΦ". subst.
   iInduction l as [| h tl] "IH" forall (Φ).
   + wp_call.
     rewrite map_list_val_unseal /=.
@@ -88,21 +88,20 @@ Proof.
     - reflexivity.
 Qed. 
      
-Lemma wp_map_literal (l:list (K * V)):
-  {{{ ⌜ is_comparable_go_type kt = true ⌝ }}}
-    map.literal #kt #vt (map_list_val l)
-    (* Should the return be LitV l or #l? I tend to think #l but I changed it to
-       match wp_alloc_untyped's return structure *)
-  {{{ l_ptr, RET (LitV l_ptr); l_ptr ↦$ (list_to_map l) }}}.
+Lemma wp_map_literal (l:list (K * V)) (v:val):
+  {{{ ⌜ v = map_list_val l ⌝ ∗ ⌜ is_comparable_go_type kt = true ⌝ }}}
+    map.literal #kt #vt v
+  {{{ (l_ptr : loc), RET #l_ptr; l_ptr ↦$ (list_to_map l) }}}.
 Proof.
-  iIntros (?) "%Hcomp HΦ".
+  iIntros (?) "[%Hlst %Hcomp] HΦ". subst.
   wp_call.
-  wp_apply wp_map_literal_val.
+  wp_apply wp_map_literal_val; first done.
   iIntros (v) "%Hmv".
   iApply (wp_alloc_untyped with "[//]").
   { instantiate (1:=v). by destruct v. }
   iNext.
   iIntros (?) "Hm".
+  rewrite to_val_unseal.
   iApply "HΦ".
   rewrite own_map_unseal.
   iUnfold own_map_def.
