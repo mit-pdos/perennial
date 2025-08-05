@@ -201,6 +201,11 @@ Proof.
   - eapply sorted_impl_have_bit; [done|]. by rewrite lookup_snoc.
 Qed.
 
+Lemma sorted_impl_sorted_prefix t :
+  is_sorted t 0 →
+  is_sorted_prefix t [].
+Proof. Admitted.
+
 (** full trees / maps. *)
 
 Inductive dec_node :=
@@ -609,7 +614,8 @@ Fixpoint is_cut_tree (t : tree) (h : list w8) : iProp Σ :=
   | Empty =>
     "#His_hash" ∷ cryptoffi.is_hash (Some [emptyNodeTag]) h
   | Leaf label val =>
-    "%Hinb_label" ∷ ⌜ uint.Z (W64 (length label)) = length label ⌝ ∗
+    "%Hlen_label" ∷ ⌜ length label < 2^64 ⌝ ∗
+    "%Hlen_val" ∷ ⌜ length val < 2^64 ⌝ ∗
     "#His_hash" ∷
       cryptoffi.is_hash (Some $ [leafNodeTag] ++
         (u64_le $ length label) ++ label ++
@@ -691,18 +697,28 @@ Fixpoint is_limit t limit :=
 
 #[local] Transparent is_full_tree.
 
-(* TODO: will need to add is_limit and is_sorted to prove this. *)
 Lemma foo0 t0 t1 h l pref :
+  is_sorted t0 (length pref) →
+  is_limit t0 l →
   is_cut_tree t0 h -∗
   is_full_tree t1 h l pref -∗
-  ⌜ (t0 = Empty ∧ t0 = t1) ∨
-    (∃ label val, t0 = Leaf label val ∧ t0 = t1) ∨
-    (∃ c0 c1 c2 c3, t0 = Inner c0 c1 ∧ t1 = Inner c2 c3) ∨
-    (t0 = Cut h) ⌝.
+  ⌜ t0 = Empty ∧ t0 = t1 ⌝ ∨
+    ⌜ ∃ label val, t0 = Leaf label val ∧ t0 = t1 ⌝ ∨
+    (∃ c0 c1 c2 c3,
+      ⌜ t0 = Inner c0 c1 ⌝ ∗
+      ⌜ t1 = Inner c2 c3 ⌝) ∨
+    ⌜ t0 = Cut h ⌝.
 Proof.
-  destruct t0, l; simpl;
-    iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
-  - iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
+  intros. destruct t0, l; simpl;
+    iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
+    try iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
+  - rewrite decode_empty_det.
+    iNamed "Hdecode1".
+    naive_solver.
+  - rewrite decode_empty_det.
+    iNamed "Hdecode1".
+    naive_solver.
+  - rewrite decode_leaf_det; [|done..].
 Admitted.
 
 Lemma foo1 t0 t1 h l pref label found :
@@ -722,7 +738,10 @@ Admitted.
 - Verify checks path down cut tree (hash:=comp proof),
 explicitly bounding depth.
 - path down cut tree impl path down full tree, if both have same hash.
-- path down full tree impl full map entry. *)
+- path down full tree impl full map entry.
+
+func VerifyMemb(label, val, proof []byte) (dig []byte, err bool) {
+*)
 
 (** tree proofs. *)
 
