@@ -1,4 +1,4 @@
-From New.golang.defn Require Import mem typing list pkg.
+From New.golang.defn Require Import mem typing list pkg assume.
 From Perennial Require Import base.
 
 Module option.
@@ -21,7 +21,7 @@ Section defns.
 Context `{ffi_syntax}.
 
 Definition get_def : val :=
-  λ: "var_name", match: alist_lookup "var_name" (option.unwrap $ GlobalGet "__global_vars") with
+  λ: "var_name", match: alist_lookup "var_name" (option.unwrap $ GlobalGet #"__global_vars") with
                    NONE => #null
                  | SOME "v" => "v"
                  end .
@@ -33,49 +33,45 @@ Definition get_unseal : get = _ := seal_eq _.
 Definition alloc (vars : list (go_string * go_type)) : val :=
   λ: <>, (fix alloc (vars : list (go_string * go_type)) : expr :=
            (match vars with
-            | Datatypes.nil => alist_val []
+            | Datatypes.nil => #()
             | (pair name t) :: vars =>
-                list.Cons (#name, mem.alloc (zero_val t)) (alloc vars)
+                let: "addr" := mem.alloc (zero_val t) in
+                assume (get #name = "addr")
             end)%E) vars.
-
-(* FIXME: *)
-Definition package_init_def (pkg_name : go_string) `{!PkgInfo pkg_name} : val :=
-  let functions_val := alist_val (pkg_functions pkg_name) in
-  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> (pkg_msets pkg_name)) in
-  λ: "init",
-    match: GlobalGet #pkg_name with
-      SOME <> => #()
-    | NONE =>
-        let: "var_addrs" := alloc (pkg_vars pkg_name) #() in
-        GlobalPut #pkg_name ("var_addrs", functions_val, msets_val) ;;
-        "init" #()
-    end.
-Program Definition package_init := sealed @package_init_def.
-Definition package_init_unseal : package_init = _ := seal_eq _.
-#[global]
-Arguments package_init pkg_name {PkgInfo0}.
 
 End defns.
 End globals.
+
+Module package.
+Section defns.
+Context `{ffi_syntax}.
+
+Definition init_def (pkg_name : go_string) : val :=
+  λ: "init", match: GlobalGet #pkg_name with
+               SOME <> => #()
+             | NONE => "init" #()
+             end.
+Program Definition init := sealed @init_def.
+Definition init_unseal : init = _ := seal_eq _.
+End defns.
+End package.
 
 Section defns.
 Context `{ffi_syntax}.
 
 Definition func_call_def : val :=
-  λ: "pkg_name" "func_name",
+  λ: "func_name",
     (λ: "firstArg",
-    let: (("varAddrs", "functions"), "typeToMethodSets") := option.unwrap $ GlobalGet "pkg_name" in
-    (option.unwrap $ alist_lookup "func_name" "functions") "firstArg").
+       (option.unwrap $ alist_lookup "func_name" (option.unwrap $ GlobalGet #"__functions")) "firstArg").
 Program Definition func_call := sealed @func_call_def.
 Definition func_call_unseal : func_call = _ := seal_eq _.
 
 Definition method_call_def : val :=
-  λ: "pkg_name" "type_name" "method_name" "receiver",
-    (λ: "firstArg",
-       let: (("varAddrs", "functions"), "typeToMethodSets") := option.unwrap $ GlobalGet "pkg_name" in
-       let: "methodSet" := option.unwrap $ alist_lookup "type_name" "typeToMethodSets" in
-       (option.unwrap $ alist_lookup "method_name" "methodSet") "receiver" "firstArg"
-    ).
+  λ: "type_id" "method_name" "receiver",
+    λ: "firstArg",
+       let: "method_set" := option.unwrap $ alist_lookup "type_id" (option.unwrap $ GlobalGet #"__msets") in
+       (option.unwrap $ alist_lookup "method_name" "method_set") "receiver" "firstArg"
+    .
 Program Definition method_call := sealed @method_call_def.
 Definition method_call_unseal : method_call = _ := seal_eq _.
 

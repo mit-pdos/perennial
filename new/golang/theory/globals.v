@@ -46,149 +46,34 @@ Definition goGlobalsΣ `{ffi_syntax} : gFunctors :=
 Global Instance subG_goGlobalsG `{ffi_syntax} {Σ} : subG goGlobalsΣ Σ → goGlobals_preG Σ.
 Proof. solve_inG. Qed.
 
-Section definitions_and_lemmas.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-(* Internal specs for primitive global that only allows for inserting a new key into
-   the globals map and reading existing keys. *)
-Local Definition own_globals_inv : iProp Σ :=
-  ∃ (g : gmap go_string val),
-    "Hauth" ∷ ghost_map_auth go_globals_name (1/2)%Qp g ∗
-    "Hg" ∷ own_globals (DfracOwn 1) g.
-
-Local Definition is_globals_inv : iProp Σ :=
-  inv nroot own_globals_inv.
-
-Definition is_global (k : go_string) (v : val) : iProp Σ :=
-  "#Hinv" ∷ is_globals_inv ∗
-  "#Hptsto" ∷ k ↪[go_globals_name]□ v.
-
-Definition own_globals (g : gmap go_string val) : iProp Σ :=
-  "#Hinv" ∷ is_globals_inv ∗
-  "Hauth2" ∷ ghost_map_auth go_globals_name (1/2)%Qp g.
-
-Lemma wp_GlobalPut k v g :
-  g !! k = None →
-  {{{ own_globals g }}}
-    GlobalPut #k v
-  {{{ RET #();
-      own_globals (<[ k := v ]> g) ∗
-      is_global k v
-  }}}.
-Proof.
-  intros Hlookup.
-  iIntros (?) "Hg HΦ".
-  iNamed "Hg".
-  iInv "Hinv" as ">Hi".
-  iNamed "Hi".
-  rewrite to_val_unseal.
-  iApply (wp_GlobalPut with "[$]").
-  iIntros " !> Hg".
-  iCombine "Hauth Hauth2" gives %[_ ->].
-  iCombine "Hauth Hauth2" as "Hauth".
-  iMod (ghost_map_insert_persist with "[$]") as "[[Hauth1 Hauth2] #Hptsto]"; first done.
-  iSpecialize ("HΦ" with "[$]").
-  by iFrame.
-Qed.
-
-Lemma wp_GlobalGet k v :
-  {{{ is_global k v }}}
-    GlobalGet #k
-  {{{ RET (SOMEV v); True }}}.
-Proof.
-  iIntros (?) "Hg HΦ".
-  iNamed "Hg".
-  iInv "Hinv" as ">Hi".
-  iNamed "Hi".
-  rewrite to_val_unseal.
-  iApply (wp_GlobalGet with "[$]").
-  iIntros " !> Hg".
-  iCombine "Hauth Hptsto" gives %Hlookup.
-  rewrite Hlookup.
-  iSpecialize ("HΦ" with "[$]").
-  by iFrame.
-Qed.
-
-Lemma wp_GlobalGet_full k m :
-  {{{ own_globals m }}}
-    GlobalGet #k
-  {{{ RET (match (m !! k) with
-           | None => InjLV #()
-           | Some v => InjRV v
-           end); own_globals m  }}}.
-Proof.
-  iIntros (?) "Hg HΦ".
-  iNamed "Hg".
-  iInv "Hinv" as ">Hi".
-  iNamed "Hi".
-  rewrite to_val_unseal.
-  iApply (lifting.wp_GlobalGet with "[$]").
-  iIntros " !> Hg".
-  iCombine "Hauth Hauth2" gives %[_ ->].
-  iSpecialize ("HΦ" with "[$]").
-  by iFrame.
-Qed.
-
-(* This must be owned by the `init` thread. *)
-Definition own_globals_tok_def (pending_packages : gset go_string)
-  (pkg_postconds : gmap go_string (iProp Σ)): iProp Σ :=
-  ∃ g (pkg_initialized : gset go_string),
-  "Hglobals" ∷ own_globals g ∗
-  "%Hpkg" ∷ (⌜ dom g = pending_packages ∪ pkg_initialized ⌝) ∗
-  "#Hinited" ∷ □ ([∗ set] pkg_name ∈ pkg_initialized,
-                  default False (pkg_postconds !! pkg_name)
-    ).
-Program Definition own_globals_tok := sealed @own_globals_tok_def.
-Definition own_globals_tok_unseal : own_globals_tok = _ := seal_eq _.
-
-End definitions_and_lemmas.
-
-Class GlobalAddrs :=
+Class GoContext {ext : ffi_syntax} Σ :=
   {
-    global_addr : go_string → loc
+    global_addr : go_string → loc;
+    function : go_string → option val;
+    method : go_string → go_string → option val;
+    is_pkg_init : go_string → iProp Σ;
   }.
 
 Section globals.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-Context `{!GlobalAddrs}.
+Context `{!GoContext Σ}.
 
-Definition is_global_vars : iProp Σ :=
-  ∃ (global_addrs_alist : list (go_string * loc)),
-  let global_addrs_val := alist_val ((λ '(name, addr), (name, #addr)) <$> global_addrs_alist) in
-  "#Hg" ∷ is_global "__global_vars" global_addrs_val ∗
-  "%Heq" ∷ ⌜ ∀ s, (global_addr s) = default null (alist_lookup_f s global_addrs_alist) ⌝.
-
-TODO: use a prophecy variable to get the entire `global_addrs_val`, and in
-extension, a `GlobalAddrs` instance right at the beginning. Postcondition of
-`alloc` will be an escrow invariant `is_globals_allocated`, which is needed in
-order to start pkg initialization.
-
-Actually, probably easier to do angelic non-determinism. Can make angelic choice
-at the beginning for `global_addrs_val`, then every time we run `alloc` for a
-particular package, can angelically require that the `loc`s agree with what's in
-`global_addrs_val`. Must only allocate a specific variable once to avoid a
-contradictory assumption (e.g. allocating "x" twice would definitely give two
-different addresses, and result in no valid angelic choices).
-This angelic choice doesn't even need any code: it can be implicitly captured in
-the pure state initialization predicate by saying `dom σ.(globals) = {[ "__global_vars" ]}`.
-angelically-exiting in GooseLang when things don't match up.
-
-(if: angelic_value ≠ physical_value then Stop
-else Skip)
-
-Put `own_allocated` in invariants so each package's init can take it as a precondition.
-
-
-Definition is_global_definitions (pkg_name : go_string)
-                                 `{!PkgInfo pkg_name}
-  (var_addrs : list (go_string * loc))
-  : iProp Σ :=
-  let var_addrs_val := alist_val ((λ '(name, addr), (name, #addr)) <$> var_addrs) in
-  let functions_val := alist_val (pkg_functions pkg_name) in
-  let msets_val := alist_val ((λ '(name, mset), (name, alist_val mset)) <$> (pkg_msets pkg_name)) in
-  is_global pkg_name (var_addrs_val, functions_val, msets_val).
+Definition is_go_context : iProp Σ :=
+    inv nroot (
+        ∃ (global_addr_val : list (_ * loc)) function_val method_val package_inited,
+        "Hg" ∷ own_globals 1 (
+            <["__global_vars"%go := alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val)]>
+              (<["__functions"%go := alist_val function_val]>
+                 (<["__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> method_val)]>
+                    package_inited))) ∗
+        "#Hinit" ∷ □([∗ map] pkg_name ↦ _ ∈ package_inited, is_pkg_init pkg_name) ∗
+        "%Hglobal_addr" ∷ ⌜ ∀ var_name, default null (alist_lookup_f var_name global_addr_val) = global_addr var_name ⌝ ∗
+        "%Hfunction" ∷ ⌜ ∀ func_name, (alist_lookup_f func_name function_val) = function func_name ⌝ ∗
+        "%Hmethod" ∷ ⌜ ∀ type_name method_name,
+          (alist_lookup_f type_name method_val) ≫= (alist_lookup_f method_name) =
+          method type_name method_name ⌝
+      ).
 
 Lemma alist_lookup_f_fmap {A B} n (l: list (go_string * A)) (f : A → B) :
   alist_lookup_f n ((λ '(name, a), (name, f a)) <$> l) =
@@ -199,111 +84,155 @@ Proof.
   rewrite IHl //.
 Qed.
 
-Class WpGlobalsGet (pkg_name : go_string) (var_name : go_string) (addr : loc)
-                   (P : iProp Σ)
-  := wp_globals_get : ⊢ {{{ P }}} (globals.get #pkg_name #var_name) {{{ RET #addr; True }}}.
-
-Definition func_callv_def (pkg_name func_name : go_string) : func.t :=
+Definition func_callv_def (func_name : go_string) : func.t :=
   {|
-    func.f := <>;
-    func.x := "firstArg";
+    func.f := <>; func.x := "firstArg";
     func.e :=
-      let: "__p" := option.unwrap (GlobalGet (# pkg_name)) in
-      let: "varAddrs" := Fst (Fst "__p") in
-      let: "functions" := Snd (Fst "__p") in
-      let: "typeToMethodSets" := Snd "__p" in
-      option.unwrap (alist_lookup (# func_name) "functions") "firstArg"
+      option.unwrap (alist_lookup (# func_name) (option.unwrap (GlobalGet (# "__functions"%go))))
+        "firstArg"
   |}.
 Program Definition func_callv := sealed @func_callv_def.
 Definition func_callv_unseal : func_callv = _ := seal_eq _.
 
-Global Instance wp_func_callv (pkg_name func_name : go_string) :
-  PureWp True (func_call #pkg_name #func_name)%E
-    #(func_callv pkg_name func_name)%E.
+Global Instance wp_func_callv (func_name : go_string) :
+  PureWp True (func_call #func_name)%E
+    #(func_callv func_name)%E.
 Proof.
   rewrite func_call_unseal /func_call_def func_callv_unseal.
   intros ?????. iIntros "Hwp". wp_pure_lc "?".
   wp_pures. by iApply "Hwp".
 Qed.
 
-Class WpFuncCall (pkg_name : go_string) (func_name : go_string) (m : val)
-                   (P : iProp Σ)
-  := wp_func_call :
-    ⊢ (∀ (first_arg : val) Φ,
-         P -∗ (WP (m first_arg) {{ Φ }}) -∗
-         WP #(func_callv pkg_name func_name) first_arg {{ Φ }}).
-
-Definition method_callv_def (pkg_name type_name method_name : go_string) (receiver : val) : func.t :=
+Definition method_callv_def (type_name method_name : go_string) (receiver : val) : func.t :=
   {|
-    func.f := <>;
-    func.x := "firstArg";
+    func.f := <>; func.x := "firstArg";
     func.e :=
-      let: "__p" := option.unwrap (GlobalGet (# pkg_name)) in
-      let: "varAddrs" := Fst (Fst "__p") in
-      let: "functions" := Snd (Fst "__p") in
-      let: "typeToMethodSets" := Snd "__p" in
-      let: "methodSet" := option.unwrap (alist_lookup (# type_name) "typeToMethodSets") in
-      option.unwrap (alist_lookup (# method_name) "methodSet") receiver "firstArg"
+      let: "method_set" := option.unwrap
+                             (alist_lookup (# type_name) (option.unwrap (GlobalGet #"__msets"))) in
+      option.unwrap (alist_lookup (# method_name) "method_set") receiver "firstArg"
   |}.
+
 Program Definition method_callv := sealed @method_callv_def.
 Definition method_callv_unseal : method_callv = _ := seal_eq _.
 
-Global Instance wp_method_callv (pkg_name type_name method_name : go_string) (receiver : val) :
-  PureWp True (method_call #pkg_name #type_name #method_name receiver)%E
-    #(method_callv pkg_name type_name method_name receiver)%E.
+Global Instance wp_method_callv (type_name method_name : go_string) (receiver : val) :
+  PureWp True (method_call #type_name #method_name receiver)%E
+    #(method_callv type_name method_name receiver)%E.
 Proof.
   rewrite method_call_unseal /method_call_def method_callv_unseal.
   intros ?????. iIntros "Hwp". wp_pure_lc "?".
   wp_pures. by iApply "Hwp".
 Qed.
 
-Class WpMethodCall (pkg_name : go_string) (type_name : go_string) (func_name : go_string) (m : val)
+Class WpMethodCall (type_name : go_string) (func_name : go_string) (m : val)
                    (P : iProp Σ)
   := wp_method_call :
     ⊢ (∀ (first_arg receiver : val) Φ,
          P -∗ (WP (m receiver first_arg) {{ Φ }}) -∗
-         WP #(method_callv pkg_name type_name func_name receiver) first_arg {{ Φ }}).
+         WP #(method_callv type_name func_name receiver) first_arg {{ Φ }}).
 
-Class WpGlobalsAlloc (vars : list (go_string * go_type)) (GlobalAddrs : Type)
-                     (var_addrs : GlobalAddrs → list (go_string * loc))
-                     (own_allocated : GlobalAddrs → iProp Σ)
-  := wp_globals_alloc :
-    ⊢ {{{ True }}}
-        (globals.alloc vars #())
-      {{{ (d : GlobalAddrs),
-            RET (alist_val $ (λ '(pair name addr), (pair name #addr)) <$> var_addrs d);
-          own_allocated d
-      }}}.
-
-Lemma wp_globals_get' {pkg_name var_name var_addrs addr} `{!PkgInfo pkg_name} :
-  alist_lookup_f var_name var_addrs = Some addr →
-  WpGlobalsGet pkg_name var_name addr (is_global_definitions pkg_name var_addrs).
+Lemma wp_globals_get var_name :
+  {{{ is_go_context }}} (globals.get #var_name) {{{ RET #(global_addr var_name); True }}}.
 Proof.
-  intros Hlookup. rewrite /WpGlobalsGet.
-  iStartProof.
-  iIntros (?) "!# #Hctx HΦ".
-  rewrite globals.get_unseal.
-  wp_call.
-  wp_pures.
-  wp_bind (GlobalGet _).
-  (* FIXME: go_string is getting simplifid to [{| Naive.unsigned := 118; ... |} :: ...] *)
-  iApply (wp_GlobalGet with "[$]").
-  iNext. iIntros "_".
-  wp_pures.
-  rewrite alist_lookup_f_fmap Hlookup.
-  wp_pures. by iApply "HΦ".
+  iIntros (?) "#Hctx HΦ". rewrite globals.get_unseal.
+  wp_call_lc "Hlc". wp_bind.
+  iInv "Hctx" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
+  rewrite [in # "__global_vars"]to_val_unseal.
+  wp_apply (wp_GlobalGet with "[$]").
+  iIntros "Hg".
+  iMod ("Hclose" with "[Hg Hinit]").
+  { iFrame "∗#%". }
+  iModIntro.
+  rewrite lookup_insert_eq.
+  wp_pures. specialize (Hglobal_addr var_name).
+  rewrite alist_lookup_f_fmap.
+  destruct alist_lookup_f.
+  { simpl in *. subst. wp_pures. by iApply "HΦ". }
+  { simpl in *. wp_pures. rewrite <-Hglobal_addr. by iApply "HΦ". }
 Qed.
+
+Local Lemma wp_func_call_aux func_name m :
+  (∀ (first_arg : val) Φ,
+     function func_name = Some m →
+     is_go_context -∗
+     ▷ (WP (m first_arg) {{ Φ }}) -∗
+     WP #(func_callv func_name) first_arg {{ Φ }}).
+Proof.
+  iIntros "* %Hf Hctx HΦ".
+  rewrite func_callv_unseal /func_callv_def.
+  wp_pure_lc "Hlc". wp_bind.
+  iInv "Hctx" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
+  rewrite [in # "__functions"]to_val_unseal.
+  wp_apply (wp_GlobalGet with "[$]").
+  iIntros "Hg".
+  iMod ("Hclose" with "[Hg Hinit]").
+  { iFrame "∗#%". }
+  iModIntro. rewrite lookup_insert_ne // lookup_insert_eq.
+  wp_pures. rewrite Hfunction. rewrite Hf. wp_pures. iApply "HΦ".
+Qed.
+
+Definition is_defined pkg_name `{!PkgInfo pkg_name} : Prop :=
+  (∀ func_name func, (alist_lookup_f func_name (pkg_functions pkg_name)) = Some func →
+             function func_name = Some func).
+
+(** [IsPkgInitDefinition] is used to record the user-defined initialization
+    predicate. Each proof of a package should define a new instances of this. *)
+Class IsPkgInitDefinition (pkg_name : go_string) :=
+  is_pkg_init_def : iProp Σ.
+
+Local Definition is_pkg_init_aux (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInitDefinition pkg_name}
+  : iProp Σ :=
+  "#Hg" ∷ is_go_context ∗
+  "%Hdef" ∷ ⌜ is_defined pkg_name ⌝ ∗ (* this has [is_go_context] inside it. *)
+  "#Hdeps" ∷ □([∗ list] pkg_name ∈ (pkg_imported_pkgs pkg_name), is_pkg_init pkg_name) ∗
+  "#Hinit" ∷ □ is_pkg_init_def.
+
+(** [IsPkgInit] asserts that the global configuration for all initialization
+    predicates actually matches the user-defined predicate for [pkg_name]. This
+    is a precondition to [wp_func_call] and [wp_method_call] for [pkg_name]. *)
+Class IsPkgInit (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInitDefinition pkg_name} : Prop :=
+  is_pkg_init_eq : (is_pkg_init pkg_name = is_pkg_init_aux pkg_name).
+
+Class WpFuncCall func_name f :=
+  wp_func_call : (∀ (first_arg : val) Φ,
+     function func_name = Some f →
+     is_go_context -∗
+     ▷ (WP (f first_arg) {{ Φ }}) -∗
+     WP #(func_callv func_name) first_arg {{ Φ }}).
+
+Context `{IsPkgInit foo}.
+
+TODO: iPkgInit should solve goals like `is_go_context`, `is_pkg_init`, and `is_defined`
+
+is_pkg_init foo :=
+  is_defined foo ∗ (* this has [is_go_context] inside it. *)
+  is_go_context
+
+  (* Should always be autogenerated, but can't be done in `generatedproof` bc it depends on non-autogenerated stuff. *)
+  is_pkg_deps_init_foo ∗
+
+  (* user-chosen predicate *)
+  is_pkg_init_foo.
+
+
+
+function foo = fooⁱᵐᵖˡ ∧
+function bar = barⁱᵐᵖˡ ∧
+...
+function zzz = zzzⁱᵐᵖˡ
 
 Lemma wp_func_call' {pkg_name func_name var_addrs func} `{!PkgInfo pkg_name} :
   alist_lookup_f func_name (pkg_functions pkg_name) = Some func →
-  WpFuncCall pkg_name func_name func (is_global_definitions pkg_name var_addrs).
+  WpFuncCall pkg_name func_name func is_go_context.
 Proof.
   intros Hlookup. rewrite /WpFuncCall.
   iIntros "* #Hctx HΦ".
   rewrite func_callv_unseal /func_callv_def.
   wp_pures.
   wp_bind (GlobalGet _).
-  (* FIXME: go_string is getting simplifid to [{| Naive.unsigned := 118; ... |} :: ...] *)
+  (* FIXME: go_string is getting simplified to [{| Naive.unsigned := 118; ... |} :: ...] *)
   iApply (wp_GlobalGet with "[$]").
   iNext. iIntros "_".
   wp_pures.
@@ -371,14 +300,6 @@ End init.
 Global Hint Mode WpGlobalsGet - - - - - - + + - - : typeclass_instances.
 Global Hint Mode WpMethodCall - - - - - - + + + - - : typeclass_instances.
 Global Hint Mode WpFuncCall - - - - - - + + - - : typeclass_instances.
-
-Ltac solve_wp_globals_alloc :=
-  rewrite /WpGlobalsAlloc;
-  iIntros (?) "!# _ HΦ";
-  wp_call;
-  repeat (let x := fresh "l" in wp_alloc x as "?"; wp_pures);
-  unshelve iSpecialize ("HΦ" $! _); first (econstructor; shelve);
-  iApply "HΦ"; iFrame.
 
 (* TODO: better error messages if tc_solve fails to find a val for the name. *)
 Tactic Notation "wp_globals_get_core" :=
