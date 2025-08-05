@@ -206,10 +206,7 @@ Qed.
 Inductive dec_node :=
   | DecEmpty
   | DecLeaf (label val : list w8)
-  | DecInner (hash0 hash1 : list w8) :
-    Z.of_nat (length hash0) = cryptoffi.hash_len →
-    Z.of_nat (length hash1) = cryptoffi.hash_len →
-    dec_node
+  | DecInner (hash0 hash1 : list w8)
   | DecInvalid.
 
 Local Definition decode_leaf (data : list w8) : option (list w8 * list w8) :=
@@ -244,7 +241,7 @@ Local Definition decode_leaf (data : list w8) : option (list w8 * list w8) :=
   end.
 
 (* [decode_node] lets us compute one dec_node of a tree inversion. *)
-Local Program Definition decode_node (data : option $ list w8) : dec_node :=
+Local Definition decode_node (data : option $ list w8) :=
   match data with
   | None => DecInvalid
   | Some d =>
@@ -264,12 +261,9 @@ Local Program Definition decode_node (data : option $ list w8) : dec_node :=
         DecInner
           (take (Z.to_nat cryptoffi.hash_len) d')
           (drop (Z.to_nat cryptoffi.hash_len) d')
-          _ _
       else DecInvalid
     end
   end.
-Next Obligation. intros. rewrite length_take. lia. Qed.
-Next Obligation. intros. rewrite length_drop. lia. Qed.
 
 Lemma decode_empty_inj d :
   decode_node d = DecEmpty →
@@ -403,9 +397,11 @@ Proof.
   by rewrite decode_leaf_det_aux.
 Qed.
 
-Lemma decode_inner_inj d h0 h1 {Hlen0 Hlen1} :
-  decode_node d = DecInner h0 h1 Hlen0 Hlen1 →
-  d = Some $ innerNodeTag :: h0 ++ h1.
+Lemma decode_inner_inj d h0 h1 :
+  decode_node d = DecInner h0 h1 →
+  d = Some $ innerNodeTag :: h0 ++ h1 ∧
+    Z.of_nat $ length h0 = cryptoffi.hash_len ∧
+    Z.of_nat $ length h1 = cryptoffi.hash_len.
 Proof.
   rewrite /decode_node. intros.
   case_match; [|done].
@@ -415,23 +411,23 @@ Proof.
   case_decide; [|done].
   destruct_and!.
   simplify_eq/=.
+  split; [|len].
   by rewrite take_drop.
 Qed.
 
-Lemma decode_inner_det h0 h1
-    {Hl0 : Z.of_nat $ length h0 = cryptoffi.hash_len}
-    {Hl1 : Z.of_nat $ length h1 = cryptoffi.hash_len} :
-  decode_node (Some $ innerNodeTag :: h0 ++ h1) = DecInner h0 h1 Hl0 Hl1.
+Lemma decode_inner_det h0 h1 :
+  Z.of_nat $ length h0 = cryptoffi.hash_len →
+  Z.of_nat $ length h1 = cryptoffi.hash_len →
+  decode_node (Some $ innerNodeTag :: h0 ++ h1) = DecInner h0 h1.
 Proof.
-  simpl.
+  intros. simpl.
   case_decide; [len|].
   case_decide; [done|].
   case_decide.
-  2: { intuition. revert H1. len. }
-  (* TODO: weird dependent type error. maybe i need to change
-  DecNode construction. *)
-  Fail rewrite take_app_length'.
-Admitted.
+  2: { intuition. revert H3. len. }
+  rewrite take_app_length'; [|lia].
+  by rewrite drop_app_length'; [|lia].
+Qed.
 
 (* for every node, there's only one data that decodes to it. *)
 Lemma decode_node_inj n d0 d1 :
@@ -445,8 +441,8 @@ Proof.
     by opose proof (decode_empty_inj d1 _) as ->.
   - opose proof (decode_leaf_inj d0 _ _ _) as ->; [done|].
     by opose proof (decode_leaf_inj d1 _ _ _) as ->.
-  - opose proof (decode_inner_inj d0 _ _ _) as ->; [done|].
-    by opose proof (decode_inner_inj d1 _ _ _) as ->.
+  - opose proof (decode_inner_inj d0 _ _ _) as [-> ?]; [done|].
+    by opose proof (decode_inner_inj d1 _ _ _) as [-> ?].
 Qed.
 
 (* the overall structure of [is_full_tree] is a bit unconventional.
@@ -469,7 +465,7 @@ Fixpoint is_full_tree t h limit pref : iProp Σ :=
     else "%" ∷ ⌜ t = Cut h ⌝
   | DecInvalid =>
     "%" ∷ ⌜ t = Cut h ⌝
-  | DecInner h0 h1 _ _ =>
+  | DecInner h0 h1 =>
     match limit with
     | 0%nat =>
       "%" ∷ ⌜ t = Cut h ⌝
@@ -500,14 +496,11 @@ Proof.
   - iDestruct (cryptoffi.is_hash_invert h) as "[% $]"; [done|].
     repeat case_match; try naive_solver.
     fold is_full_tree.
+    opose proof (decode_inner_inj _ _ _ _) as (_&?&?); [done|].
     iDestruct (IHl hash0) as "[% $]"; [done|].
     iDestruct (IHl hash1) as "[% $]"; [done|].
     naive_solver.
 Qed.
-
-Local Lemma DecInner_eq_pi h0 h1 H0 H1 H2 H3 :
-  DecInner h0 h1 H0 H1 = DecInner h0 h1 H2 H3.
-Proof. f_equal; apply proof_irrel. Qed.
 
 (* if [Cut], carries the hash, so hashes must be equal.
 otherwise, [decode_node_inj] says that Some preimg's are equal,
@@ -528,7 +521,6 @@ Proof.
   ).
   iDestruct ("IHl0" with "Hrecur00 Hrecur01") as %->.
   iDestruct ("IHl0" with "Hrecur10 Hrecur11") as %->.
-  rewrite -(DecInner_eq_pi _ _ e1 e2) in H.
   opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
   by iApply cryptoffi.is_hash_det.
 Qed.
