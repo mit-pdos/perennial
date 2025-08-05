@@ -262,7 +262,7 @@ Section proof.
     iMod (ghost_step_jrnl_open with "[$] [$] [$]") as "(Hj&#Hopen)".
     { solve_ndisj. }
     iMod ("Hclo" with "[]").
-    { iRight. iNext. iFrame "#Hopen". }
+    { iRight. iNext. iFrame "#". }
     iModIntro.
     rewrite /Init. wp_pure.
     rewrite /twophase_na_crash_inv.

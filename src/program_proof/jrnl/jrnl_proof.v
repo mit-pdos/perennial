@@ -558,7 +558,7 @@ Proof.
   wp_apply (wp_BufMap__Ndirty with "Hbufmap").
   iIntros (n) "[%Hnval Hbufmap]".
   iApply "HΦ".
-  iExists _, _, _. iFrameNamed.
+  iExists _, _, _. iFrameNamed. iFrame.
 Qed.
 
 Theorem Op_lift_one buftx mt γUnified dinit a v E anydirty :

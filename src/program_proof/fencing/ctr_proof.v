@@ -935,7 +935,6 @@ Proof.
       iFrame.
       iApply "Hpost".
       destruct (decide (_)); iFrame "#".
-      done.
     }
     { (* case: the operation hasn't been run before, so we might run it now *)
       iDestruct "Hi" as "[Hincomplete [Hbad | Hupd]]".
@@ -991,7 +990,6 @@ Proof.
         iFrame.
         iApply "Hpost".
         destruct (decide _); iFrame "#".
-        done.
       }
       { (* case: prophecized value doesn't match physical one; we don't have to do anything in this case *)
         iMod ("Hclose" with "[Hincomplete Hupd]").
