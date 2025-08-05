@@ -16,7 +16,7 @@ From Perennial.goose_lang.lib.list Require Import list.
 From Perennial.program_proof Require Import addr_proof buf.buf_proof.
 From Perennial.program_proof Require obj.recovery_proof.
 
-From Perennial.goose_lang Require Import ffi.jrnl_ffi_spec.
+From Perennial.program_proof.jrnl Require Import ffi.jrnl_ffi_spec.
 
 Local Existing Instances jrnl_op jrnl_val_ty.
 
