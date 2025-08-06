@@ -2353,6 +2353,10 @@ Global Instance wp_func_call_mapGetCall :
   WpFuncCall unittest "mapGetCall" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
 
+Global Instance wp_func_call_mapLiteralTest :
+  WpFuncCall unittest "mapLiteralTest" _ (is_pkg_defined unittest) :=
+  ltac:(apply wp_func_call'; reflexivity).
+
 Global Instance wp_func_call_returnTwo :
   WpFuncCall unittest "returnTwo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_func_call'; reflexivity).
