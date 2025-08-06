@@ -1,9 +1,22 @@
-From Goose.github_com.mit_pdos.vmvcc Require Import wrbuf.
 From Perennial.goose_lang Require Import lang notation prelude.
 
 Section goose_lang.
 Context `{ffi_sem: ffi_semantics}.
 Context {ext_ty:ext_types ext}.
+
+(* begin copied from wrbuf.v *)
+Definition WrEnt := struct.decl [
+  "key" :: uint64T;
+  "val" :: stringT;
+  "wr" :: boolT;
+  "tpl" :: ptrT
+].
+
+Definition WrBuf := struct.decl [
+  "ents" :: slice.T (struct.t WrEnt)
+].
+(* end copied from wrbuf.v *)
+
 
 Definition ActReadId : Z := 0.
 Definition ActAbortId : Z := 1.

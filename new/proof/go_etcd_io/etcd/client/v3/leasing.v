@@ -260,7 +260,6 @@ Proof.
   iNamedSuffix "Hown" "_lock".
   iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
   iCombine "sessionc_lock sessionc" as "sessionc".
-  rewrite dfrac_op_own Qp.half_half.
   wp_apply (wp_wand _ _ _
               (λ v,
                  ∃ sessionc,
@@ -329,7 +328,6 @@ Proof.
     iNamedSuffix "Hown" "_lock".
     iCombine "session_lock session" gives %[_ Heq]. subst.
     iCombine "session_lock session" as "session".
-    rewrite dfrac_op_own Qp.half_half.
     iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
     wp_auto.
     wp_apply (wp_closeable_chan_close with "[$Hsessionc]").

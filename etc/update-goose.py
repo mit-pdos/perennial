@@ -68,12 +68,6 @@ def main():
         default=None,
     )
     parser.add_argument(
-        "--distributed-examples",
-        help="path to lockservice repo (skip translation if not provided)",
-        metavar="DISTRIBUTED_EXAMPLES_PATH",
-        default=None,
-    )
-    parser.add_argument(
         "--marshal",
         help="path to marshal repo (skip translation if not provided)",
         metavar="MARSHAL_PATH",
@@ -123,7 +117,6 @@ def main():
     journal_dir = args.journal
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     examples_dir = args.examples
-    distributed_dir = args.distributed_examples
     gokv_dir = args.gokv
     mvcc_dir = args.mvcc
     rsm_dir = args.rsm
@@ -140,8 +133,6 @@ def main():
         parser.error("go-journal directory does not exist")
     if examples_dir is not None and not os.path.isdir(examples_dir):
         parser.error("perennial-examples directory does not exist")
-    if distributed_dir is not None and not os.path.isdir(distributed_dir):
-        parser.error("lockservice (distributed examples) directory does not exist")
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
         parser.error("gokv directory does not exist")
     if mvcc_dir is not None and not os.path.isdir(mvcc_dir):
@@ -254,8 +245,6 @@ def main():
         "./async_mem_alloc_dir",
         "./async_durable_alloc",
     )
-
-    run_goose(distributed_dir, ".", "./grove_common")
 
     if gokv_dir is not None:
         pkgs = [

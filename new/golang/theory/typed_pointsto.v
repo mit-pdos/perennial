@@ -202,7 +202,7 @@ Section goose_lang.
   Qed.
 
   Global Instance typed_pointsto_combine_sep_as l dq1 dq2 v1 v2 :
-    CombineSepAs (l ↦{dq1} v1)%I (l ↦{dq2} v2)%I (l ↦{dq1 ⋅ dq2} v1)%I.
+    CombineSepAs (l ↦{dq1} v1)%I (l ↦{dq2} v2)%I (l ↦{dq1 ⋅ dq2} v1)%I | 60.
   Proof using IntoValTyped0.
     rewrite /CombineSepAs. iIntros "[H1 H2]".
     iCombine "H1 H2" gives %[_ ->].

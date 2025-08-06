@@ -99,7 +99,7 @@ Section dfractional.
 
   Global Instance combine_sep_as_dfractional P1 P2 Φ dq1 dq2 :
     AsDFractional P1 Φ dq1 → AsDFractional P2 Φ dq2 →
-    CombineSepAs P1 P2 (Φ (dq1 ⋅ dq2)) | 50.
+    CombineSepAs P1 P2 (Φ (dq1 ⋅ dq2)) | 60.
   Proof. rewrite /CombineSepAs =>-[-> _] [-> [<-]] //. Qed.
 
   Global Instance into_sep_dfractional P Φ dq1 dq2 :
