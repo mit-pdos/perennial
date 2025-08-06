@@ -11,7 +11,7 @@ From Perennial Require Import base.
 
 (* TODO: iFrame # is only for backwards compatibility *)
 Tactic Notation "wp_globals_get" :=
-  wp_globals_get_core; try iPkgInit; try iFrame "#".
+  unshelve wp_apply (wp_globals_get with "[]") try iPkgInit; try iFrame "#".
 Tactic Notation "wp_func_call" :=
   wp_func_call_core; try iPkgInit; try iFrame "#".
 Tactic Notation "wp_method_call" :=
