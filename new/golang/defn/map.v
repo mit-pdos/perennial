@@ -69,8 +69,11 @@ Definition len : val :=
 Definition make : val :=
   λ: "kt" "vt", Alloc (InjL (type.zero_val "vt")).
 
-Definition kv_entry : val :=
+Definition kv_entry_def : val :=
   λ: "k" "v", ("k", "v").
+Program Definition kv_entry := unseal (_:seal (@kv_entry_def)).
+Obligation 1. by eexists. Qed.
+Definition kv_entry_unseal : @kv_entry = _ := seal_eq _.
 
 Definition literal_val : val :=
   rec: "lit_val" "kt" "vt" "alist" :=
@@ -83,4 +86,4 @@ Definition literal : val := λ: "ks" "vs" "alist", ref (literal_val "ks" "vs" "a
 End goose_lang.
 End map.
 
-Global Opaque map.insert map.get map.delete map.for_range map.len map.make map.kv_entry.
+Global Opaque map.insert map.get map.delete map.for_range map.len map.make.

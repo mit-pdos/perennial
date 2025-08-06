@@ -53,10 +53,14 @@ Notation "mref ↦$ dq m" := (own_map mref dq m)
 Global Instance wp_kv_entry_pure_wp {A B:Type} `{!IntoVal A} `{!IntoVal B} (a: A) (b: B) :
   PureWp True ((map.kv_entry #a #b)%E) (#(a, b)).
 Proof.
-  Transparent map.kv_entry.
   pure_wp_start.
+  rewrite map.kv_entry_unseal.
+  unfold map.kv_entry_def.
+  wp_pure_lc "?".
+  wp_pures.
   rewrite [in #(_, _)]to_val_unseal /=.
   iApply "HΦ".
+  done.
 Qed.
 
 Lemma wp_map_literal_val (l:list (K * V)):
