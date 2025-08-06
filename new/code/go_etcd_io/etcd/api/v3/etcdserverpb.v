@@ -1245,7 +1245,7 @@ Definition initialize' : val :=
       let: "$k1" := #(W32 1) in
       let: "$v2" := #"DESCEND"%go in
       let: "$k2" := #(W32 2) in
-      map.literal #int32T #stringT [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2")])) in
+      map.literal #int32T #stringT [map.kv_entry "$k0" "$v0"; map.kv_entry "$k1" "$v1"; map.kv_entry "$k2" "$v2"])) in
       do:  ((globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortOrder_name"%go) <-[type.mapT #int32T #stringT] "$r0");;;
       let: "$r0" := ((let: "$v0" := #(W32 0) in
       let: "$k0" := #"NONE"%go in
@@ -1253,7 +1253,7 @@ Definition initialize' : val :=
       let: "$k1" := #"ASCEND"%go in
       let: "$v2" := #(W32 2) in
       let: "$k2" := #"DESCEND"%go in
-      map.literal #stringT #int32T [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2")])) in
+      map.literal #stringT #int32T [map.kv_entry "$k0" "$v0"; map.kv_entry "$k1" "$v1"; map.kv_entry "$k2" "$v2"])) in
       do:  ((globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortOrder_value"%go) <-[type.mapT #stringT #int32T] "$r0");;;
       let: "$r0" := ((let: "$v0" := #"KEY"%go in
       let: "$k0" := #(W32 0) in
@@ -1265,7 +1265,7 @@ Definition initialize' : val :=
       let: "$k3" := #(W32 3) in
       let: "$v4" := #"VALUE"%go in
       let: "$k4" := #(W32 4) in
-      map.literal #int32T #stringT [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4")])) in
+      map.literal #int32T #stringT [map.kv_entry "$k0" "$v0"; map.kv_entry "$k1" "$v1"; map.kv_entry "$k2" "$v2"; map.kv_entry "$k3" "$v3"; map.kv_entry "$k4" "$v4"])) in
       do:  ((globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortTarget_name"%go) <-[type.mapT #int32T #stringT] "$r0");;;
       let: "$r0" := ((let: "$v0" := #(W32 0) in
       let: "$k0" := #"KEY"%go in
@@ -1277,7 +1277,7 @@ Definition initialize' : val :=
       let: "$k3" := #"MOD"%go in
       let: "$v4" := #(W32 4) in
       let: "$k4" := #"VALUE"%go in
-      map.literal #stringT #int32T [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4")])) in
+      map.literal #stringT #int32T [map.kv_entry "$k0" "$v0"; map.kv_entry "$k1" "$v1"; map.kv_entry "$k2" "$v2"; map.kv_entry "$k3" "$v3"; map.kv_entry "$k4" "$v4"])) in
       do:  ((globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortTarget_value"%go) <-[type.mapT #stringT #int32T] "$r0");;;
       let: "$r0" := ((let: "$v0" := #"EQUAL"%go in
       let: "$k0" := #(W32 0) in
@@ -1287,7 +1287,7 @@ Definition initialize' : val :=
       let: "$k2" := #(W32 2) in
       let: "$v3" := #"NOT_EQUAL"%go in
       let: "$k3" := #(W32 3) in
-      map.literal #int32T #stringT [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3")])) in
+      map.literal #int32T #stringT [map.kv_entry "$k0" "$v0"; map.kv_entry "$k1" "$v1"; map.kv_entry "$k2" "$v2"; map.kv_entry "$k3" "$v3"])) in
       do:  ((globals.get #etcdserverpb.etcdserverpb #"Compare_CompareResult_name"%go) <-[type.mapT #int32T #stringT] "$r0");;;
       let: "$r0" := ((let: "$v0" := #(W32 0) in
       let: "$k0" := #"EQUAL"%go in
@@ -1297,7 +1297,7 @@ Definition initialize' : val :=
       let: "$k2" := #"LESS"%go in
       let: "$v3" := #(W32 3) in
       let: "$k3" := #"NOT_EQUAL"%go in
-      map.literal #stringT #int32T [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3")])) in
+      map.literal #stringT #int32T [map.kv_entry "$k0" "$v0"; map.kv_entry "$k1" "$v1"; map.kv_entry "$k2" "$v2"; map.kv_entry "$k3" "$v3"])) in
       do:  ((globals.get #etcdserverpb.etcdserverpb #"Compare_CompareResult_value"%go) <-[type.mapT #stringT #int32T] "$r0");;;
       let: "$r0" := ((let: "$v0" := #"VERSION"%go in
       let: "$k0" := #(W32 0) in
@@ -1309,7 +1309,7 @@ Definition initialize' : val :=
       let: "$k3" := #(W32 3) in
       let: "$v4" := #"LEASE"%go in
       let: "$k4" := #(W32 4) in
-      map.literal #int32T #stringT [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4")])) in
+      map.literal #int32T #stringT [map.kv_entry "$k0" "$v0"; map.kv_entry "$k1" "$v1"; map.kv_entry "$k2" "$v2"; map.kv_entry "$k3" "$v3"; map.kv_entry "$k4" "$v4"])) in
       do:  ((globals.get #etcdserverpb.etcdserverpb #"Compare_CompareTarget_name"%go) <-[type.mapT #int32T #stringT] "$r0");;;
       let: "$r0" := ((let: "$v0" := #(W32 0) in
       let: "$k0" := #"VERSION"%go in
@@ -1321,7 +1321,7 @@ Definition initialize' : val :=
       let: "$k3" := #"VALUE"%go in
       let: "$v4" := #(W32 4) in
       let: "$k4" := #"LEASE"%go in
-      map.literal #stringT #int32T [("$k0", "$v0"); ("$k1", "$v1"); ("$k2", "$v2"); ("$k3", "$v3"); ("$k4", "$v4")])) in
+      map.literal #stringT #int32T [map.kv_entry "$k0" "$v0"; map.kv_entry "$k1" "$v1"; map.kv_entry "$k2" "$v2"; map.kv_entry "$k3" "$v3"; map.kv_entry "$k4" "$v4"])) in
       do:  ((globals.get #etcdserverpb.etcdserverpb #"Compare_CompareTarget_value"%go) <-[type.mapT #stringT #int32T] "$r0");;;
       do:  (WatchCreateRequest_FilterType_name'init #());;;
       do:  (WatchCreateRequest_FilterType_value'init #());;;
