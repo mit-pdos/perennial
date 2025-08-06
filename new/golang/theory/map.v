@@ -65,12 +65,8 @@ Lemma wp_map_literal_val (l:list (K * V)):
   {{{ v, RET v; ⌜ is_map_val v (list_to_map l) ⌝ }}}.
 Proof. 
   iIntros (?) "% HΦ".
-  (* subst. *)
   iInduction l as [| h tl] "IH" forall (Φ).
   + wp_call.
-    (* rewrite map_list_val_unseal. *)
-    (* rewrite list.Match_unseal. *)
-    (* wp_call_lc "?". *)
     iApply "HΦ".
     iPureIntro.
     unfold is_map_val. 
@@ -78,9 +74,6 @@ Proof.
     - done.
     - symmetry. apply default_val_eq_zero_val.
   + wp_call.
-    (* rewrite map_list_val_unseal. *)
-    (* rewrite list.Match_unseal. *)
-    (* wp_call_lc "?". *)
     wp_bind (map.literal_val _ _ _)%E. 
     iApply ("IH" with "[HΦ]"). iNext.
     iIntros (?) "%Htl_map".
@@ -106,9 +99,8 @@ Lemma wp_map_literal (l:list (K * V)):
   {{{ (l_ptr : loc), RET #l_ptr; l_ptr ↦$ (list_to_map l) }}}.
 Proof.
   iIntros (?) "%Hcomp HΦ".
-  (* subst. *)
   wp_call.
-  wp_apply wp_map_literal_val. (* ; fist done *)
+  wp_apply wp_map_literal_val.
   iIntros (v) "%Hmv".
   iApply (wp_alloc_untyped with "[//]").
   { instantiate (1:=v). by destruct v. }
