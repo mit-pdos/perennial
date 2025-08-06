@@ -361,7 +361,7 @@ Proof.
       unfold ctr.Put_core_spec.
       replace (latestEpoch) with (epoch) by word.
       iDestruct (own_val_combine with "Hval HepochVal") as "[Hval %Hveq]".
-      rewrite Qp.quarter_quarter.
+      rewrite dfrac_op_own Qp.quarter_quarter.
       rewrite Hveq.
       iExists _; iFrame.
       iModIntro.
@@ -684,7 +684,7 @@ Proof.
       unfold ctr.Put_core_spec.
       replace (latestEpoch) with (epoch) by word.
       iDestruct (own_val_combine with "Hval HepochVal") as "[Hval %Hveq]".
-      rewrite Qp.quarter_quarter.
+      rewrite dfrac_op_own Qp.quarter_quarter.
       rewrite Hveq.
       iExists _; iFrame.
       iModIntro.
