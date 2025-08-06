@@ -167,7 +167,7 @@ Proof.
 Qed.
 
 Global Instance own_slice_combine_sep_as s dq1 dq2 vs1 vs2 :
-  CombineSepAs (s ↦*{dq1} vs1) (s ↦*{dq2} vs2) (s ↦*{dq1 ⋅ dq2} vs1).
+  CombineSepAs (s ↦*{dq1} vs1) (s ↦*{dq2} vs2) (s ↦*{dq1 ⋅ dq2} vs1) | 60.
 Proof.
   rewrite /CombineSepAs.
   iIntros "[H0 H1]".
