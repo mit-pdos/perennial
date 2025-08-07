@@ -2,6 +2,8 @@ From Perennial.goose_lang Require Import notation.
 From New.golang.theory Require Import exception mem typing list.
 From New.golang.defn Require Export pkg.
 From Perennial Require Import base.
+Import Ltac2.
+Set Default Proof Mode "Classic".
 
 Set Default Proof Using "Type".
 
@@ -42,15 +44,27 @@ Context `{!GoContext Σ}.
 
 Definition is_go_context : iProp Σ :=
     inv nroot (
-        ∃ (global_addr_val : list (_ * loc)) package_inited,
-        "Hg" ∷ own_globals 1 (
-            <["__global_vars"%go := alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val)]>
-              (<["__functions"%go := alist_val __function]>
-                 (<["__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> __method)]>
-                    package_inited))) ∗
-        "#Hinit" ∷ □([∗ map] pkg_name ↦ _ ∈ package_inited, is_pkg_init pkg_name) ∗
-        "%Hglobal_addr" ∷ ⌜ ∀ var_name, default null (alist_lookup_f var_name global_addr_val) = global_addr var_name ⌝
+        ∃ (global_addr_val : list (_ * loc)) (package_inited_val : list (_ * val))
+          package_started package_inited,
+        "Hg" ∷ own_globals (DfracOwn (1/2))
+            {[ "__global_vars"%go := alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val);
+               "__functions"%go := alist_val __function;
+               "__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> __method);
+               "__packages"%go := alist_val package_inited_val ]} ∗
+        "#Hinit" ∷ □([∗ set] pkg_name ∈ package_inited, is_pkg_init pkg_name) ∗
+        (* NOTE: could own an auth that has precisely the "started" keys, and
+           the exclusive pointstos can be given to program proofs to help escrow
+           resources into initialization. *)
+        "%Hglobal_addr" ∷ (⌜ ∀ var_name, default null (alist_lookup_f var_name global_addr_val) = global_addr var_name ⌝) ∗
+        "%Hpackage_inited" ∷ (⌜ ∀ pkg_name,
+                                alist_lookup_f pkg_name package_inited_val =
+                                ((gset_to_gmap #"initialized"%go package_inited) ∪
+                                   (gset_to_gmap #"started"%go package_started)) !! pkg_name
+                                  ⌝)
       ).
+
+Definition own_initializing : iProp Σ :=
+  ∃ g, own_globals (DfracOwn (1/2)) g.
 
 Lemma alist_lookup_f_fmap {A B} n (l: list (go_string * A)) (f : A → B) :
   alist_lookup_f n ((λ '(name, a), (name, f a)) <$> l) =
@@ -259,7 +273,6 @@ Hint Mode IsPkgInit + - : typeclass_instances.
 Ltac prove_is_pkg_init :=
   constructor; refine _.
 
-Import Ltac2.
 Ltac2 build_pkg_init () :=
   Control.refine
     (fun () =>
@@ -320,76 +333,15 @@ Ltac iPkgInit :=
 Section package_init.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
+Context `{!GoContext Σ}.
 
-Lemma wp_package_init
-  pending
-  (postconds : gmap go_string (iProp Σ))
-  (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val)
-
-  `{!WpGlobalsAlloc (pkg_vars pkg_name) GlobalAddrs var_addrs own_allocated}
-  (is_initialized : GlobalAddrs → iProp Σ)
-  (is_defined : GlobalAddrs → iProp Σ)
-  :
-  postconds !! pkg_name = Some (∃ d, is_defined d ∗ is_initialized d)%I →
-  pkg_name ∉ pending →
-  (∀ (d : GlobalAddrs),
-     is_global_definitions pkg_name (var_addrs d) -∗
-     own_allocated d -∗
-     own_globals_tok ({[ pkg_name ]} ∪ pending) postconds -∗
-     WP init_func #()
-       {{ v, ⌜ v = #tt ⌝ ∗
-             □ (is_defined d ∗ is_initialized d) ∗
-             own_globals_tok ({[ pkg_name ]} ∪ pending) postconds
-       }}
-  ) →
-  {{{ own_globals_tok pending postconds }}}
-    globals.package_init pkg_name init_func
-  {{{ (d : GlobalAddrs), RET #(); is_defined d ∗ is_initialized d ∗ own_globals_tok pending postconds }}}.
+Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) :
+  ∀ Φ,
+  (own_initializing ∗ WP init_func #() {{ _, is_pkg_init pkg_name }}) -∗
+  (is_pkg_init pkg_name -∗ Φ #()) -∗
+  WP package.init #pkg_name init_func {{ Φ }}.
 Proof.
-  unseal.
-  intros Hpost Hnot_pending Hwp_init.
-  iIntros (?) "Htok HΦ".
-  rewrite globals.package_init_unseal.
-  wp_call.
-  iNamed "Htok".
-  wp_bind (GlobalGet _).
-  iApply (wp_GlobalGet_full with "[$]").
-  iNext. iIntros "Hglobals".
-  destruct (lookup _ g) eqn:Hlookup.
-  { (* don't run init because the package has already been initialized *)
-    wp_pures.
-    apply elem_of_dom_2 in Hlookup.
-    rewrite Hpkg elem_of_union or_r // in Hlookup.
-    iDestruct (big_sepS_elem_of with "Hinited") as "H".
-    { done. }
-    rewrite Hpost /=.
-    iDestruct "H" as (?) "#[? ?]".
-    iApply ("HΦ" with "[-]").
-    iFrame "∗#%".
-  }
-  (* actually run init *)
-  wp_pures.
-  wp_apply wp_globals_alloc.
-  iIntros "* Halloc".
-  wp_pures.
-  wp_bind (GlobalPut _ _).
-  iApply (wp_GlobalPut with "[$]").
-  { done. }
-  iNext. iIntros "[Hg #Hdef]".
-  wp_pures.
-  iDestruct (Hwp_init with "[$Hdef] [$Halloc] [Hg]") as "Hinit".
-  { iFrame "∗#%". iPureIntro. set_solver. }
-  wp_apply (wp_wand with "Hinit").
-  iIntros (?) "H".
-  iDestruct "H" as (?) "[#[? ?] Htok]". subst.
-  iApply ("HΦ" with "[-]").
-  iClear "Hinited".
-  clear Hpkg.
-  iNamed "Htok".
-  iDestruct (big_sepS_insert_2 pkg_name with "[] Hinited") as "Hinited2".
-  { simpl. rewrite Hpost. iFrame "#". }
-  iFrame "∗#%".
-  iPureIntro. set_solver.
-Qed.
+  iIntros (?) "Hpre HΦ".
+Admitted.
 
 End package_init.

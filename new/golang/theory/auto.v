@@ -3,7 +3,7 @@ From Coq Require Import ssreflect.
 From Ltac2 Require Import Ltac2 Printf.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Import typing.
-From New.golang.theory Require Import proofmode globals pkg loop chan.
+From New.golang.theory Require Import proofmode pkg loop chan.
 From New.golang.theory Require Import mem.
 From Perennial Require Import base.
 

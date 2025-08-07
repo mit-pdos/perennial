@@ -97,7 +97,7 @@ Proof.
   iInduction l as [|[]] "IH" forall (Φ); [refine ?[base]| refine ?[cons]].
   [base]:{
     simpl. wp_call. rewrite list.Match_unseal.
-    wp_call_lc "?". by iApply "HΦ".
+    wp_call_lc "?". rewrite to_val_unseal. by iApply "HΦ".
   }
   [cons]: {
     wp_call_lc "?".

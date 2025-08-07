@@ -59,11 +59,37 @@ Definition alloc pkg_name `{!PkgInfo pkg_name} : val :=
                 assume (globals.get #name = "addr")
             end)%E) (pkg_vars pkg_name).
 
-Definition init_def (pkg_name : go_string) : val :=
-  λ: "init", match: GlobalGet #pkg_name with
-               SOME <> => #()
-             | NONE => "init" #()
-             end.
+Local Definition check_status (pkg_name : go_string) : val :=
+  λ: <>, match: GlobalGet #"__packages" with
+      SOME "initmap" =>
+        match: (alist_lookup #pkg_name "initmap") with
+          SOME "status" => "status" = #"done"
+        | NONE => #false
+        end
+    | NONE => #false
+    end.
+
+Local Definition try_start_initialization : val :=
+  λ: "pkg_name",
+    let: "initmap" := option.unwrap $ GlobalGet #"__packages" in
+    assume (alist_lookup "pkg_name" "initmap" ≠ SOMEV #"started") ;;
+    if: (alist_lookup "pkg_name" "initmap") = (SOMEV #"done") then
+      #false
+    else
+      list.Cons ("pkg_name", #"initialized") "initmap";;
+      GlobalPut #"__packages" "initmap";;
+      #true.
+
+Local Definition mark_initialized (pkg_name : go_string) : val :=
+  λ: <>,
+    let: "initmap" := option.unwrap $ GlobalGet #"__packages" in
+    GlobalPut #"__packages" (list.Cons (#pkg_name, #"initialized") "initmap").
+
+Definition init_def : val :=
+  λ: "pkg_name" "init",
+    if: try_start_initialization "pkg_name" #() then
+      "init" #();; mark_initialized "pkg_name" #()
+    else #().
 Program Definition init := sealed @init_def.
 Definition init_unseal : init = _ := seal_eq _.
 End defns.
