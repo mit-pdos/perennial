@@ -72,13 +72,15 @@ Local Definition check_status (pkg_name : go_string) : val :=
 Local Definition try_start_initialization : val :=
   λ: "pkg_name",
     let: "initmap" := option.unwrap $ GlobalGet #"__packages" in
-    assume (alist_lookup "pkg_name" "initmap" ≠ SOMEV #"started") ;;
-    if: (alist_lookup "pkg_name" "initmap") = (SOMEV #"done") then
-      #false
-    else
-      list.Cons ("pkg_name", #"initialized") "initmap";;
-      GlobalPut #"__packages" "initmap";;
-      #true.
+    let: "status" := (alist_lookup "pkg_name" "initmap") in
+    match: "status" with
+      SOME "s" =>
+          assume ("s" ≠ #"started");;
+          #false
+    | NONE =>
+      GlobalPut #"__packages" (list.Cons ("pkg_name", #"started") "initmap");;
+      #true
+    end.
 
 Local Definition mark_initialized (pkg_name : go_string) : val :=
   λ: <>,
@@ -87,8 +89,8 @@ Local Definition mark_initialized (pkg_name : go_string) : val :=
 
 Definition init_def : val :=
   λ: "pkg_name" "init",
-    if: try_start_initialization "pkg_name" #() then
-      "init" #();; mark_initialized "pkg_name" #()
+    if: try_start_initialization "pkg_name" then
+      "init" #();; mark_initialized "pkg_name"
     else #().
 Program Definition init := sealed @init_def.
 Definition init_unseal : init = _ := seal_eq _.

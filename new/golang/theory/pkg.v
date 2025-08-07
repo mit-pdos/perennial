@@ -1,5 +1,5 @@
 From Perennial.goose_lang Require Import notation.
-From New.golang.theory Require Import exception mem typing list.
+From New.golang.theory Require Import exception mem typing list assume.
 From New.golang.defn Require Export pkg.
 From Perennial Require Import base.
 Import Ltac2.
@@ -44,13 +44,13 @@ Context `{!GoContext Σ}.
 
 Definition is_go_context : iProp Σ :=
     inv nroot (
-        ∃ (global_addr_val : list (_ * loc)) (package_inited_val : list (_ * val))
+        ∃ (global_addr_val : list (_ * loc)) (package_inited_val : list (_ * go_string))
           package_started package_inited,
         "Hg" ∷ own_globals (DfracOwn (1/2))
             {[ "__global_vars"%go := alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val);
                "__functions"%go := alist_val __function;
                "__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> __method);
-               "__packages"%go := alist_val package_inited_val ]} ∗
+               "__packages"%go := alist_val ((λ '(a, b), (a, #b)) <$> package_inited_val) ]} ∗
         "#Hinit" ∷ □([∗ set] pkg_name ∈ package_inited, is_pkg_init pkg_name) ∗
         (* NOTE: could own an auth that has precisely the "started" keys, and
            the exclusive pointstos can be given to program proofs to help escrow
@@ -58,8 +58,8 @@ Definition is_go_context : iProp Σ :=
         "%Hglobal_addr" ∷ (⌜ ∀ var_name, default null (alist_lookup_f var_name global_addr_val) = global_addr var_name ⌝) ∗
         "%Hpackage_inited" ∷ (⌜ ∀ pkg_name,
                                 alist_lookup_f pkg_name package_inited_val =
-                                ((gset_to_gmap #"initialized"%go package_inited) ∪
-                                   (gset_to_gmap #"started"%go package_started)) !! pkg_name
+                                ((gset_to_gmap "initialized"%go package_inited) ∪
+                                   (gset_to_gmap "started"%go package_started)) !! pkg_name
                                   ⌝)
       ).
 
@@ -337,11 +337,52 @@ Context `{!GoContext Σ}.
 
 Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) :
   ∀ Φ,
-  (own_initializing ∗ WP init_func #() {{ _, is_pkg_init pkg_name }}) -∗
-  (is_pkg_init pkg_name -∗ Φ #()) -∗
+  (is_go_context ∗ own_initializing ∗ (own_initializing -∗ WP init_func #() {{ _, is_pkg_init pkg_name ∗ own_initializing }})) -∗
+  (own_initializing ∗ is_pkg_init pkg_name -∗ Φ #()) -∗
   WP package.init #pkg_name init_func {{ Φ }}.
 Proof.
-  iIntros (?) "Hpre HΦ".
-Admitted.
+  iIntros (?) "(#Hctx & Hown & Hpre) HΦ". rewrite package.init_unseal.
+  wp_call. wp_call_lc "Hlc".
+  wp_bind. iInv "Hctx" as "Hi" "Hclose".
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
+  rewrite [in #"__packages"]to_val_unseal.
+  wp_apply (wp_GlobalGet with "[$]").
+  iIntros "Hg".
+  iNamed "Hown". iCombine "Hown Hg" gives %[_ Heq]. subst.
+  iMod ("Hclose" with "[Hg Hinit]") as "_". { iFrame "∗#%". }
+  iModIntro. do 3 rewrite lookup_insert_ne //. rewrite lookup_insert_eq.
+  wp_pures. rewrite alist_lookup_f_fmap /=.
+  destruct (alist_lookup_f pkg_name) eqn:Hstatus.
+  - simpl. wp_pures. wp_apply wp_assume. iIntros "%Hstarted_ne".
+    rewrite bool_decide_decide in Hstarted_ne; try done.
+    destruct decide as [|] in Hstarted_ne; try done.
+    wp_pures. iApply "HΦ".
+    iFrame. iDestruct (big_sepS_elem_of_acc with "Hinit") as "[$ _]".
+    specialize (Hpackage_inited pkg_name).
+    rewrite Hstatus lookup_union in Hpackage_inited.
+    destruct lookup eqn:Hlookup in Hpackage_inited.
+    { rewrite lookup_gset_to_gmap_Some in Hlookup. set_solver. }
+    rewrite left_id in Hpackage_inited.
+    symmetry in Hpackage_inited. rewrite lookup_gset_to_gmap_Some in Hpackage_inited.
+    naive_solver.
+  - simpl. wp_pure_lc "Hlc". wp_pures. wp_bind.
+    iInv "Hctx" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+    iAssert (∃ g, own_globals (DfracOwn (1/2)) g)%I with "[Hi]" as "[% Hg]".
+    { iNamedSuffix "Hi" "_tmp". iFrame. }
+    iCombine "Hown Hg" gives %[_ Heq]. subst.
+    iCombine "Hown Hg" as "Hg".
+    wp_apply (wp_GlobalPut with "[$]").
+    iIntros "[Hown Hg]".
+    iMod ("Hclose" with "[Hg]").
+    {
+      do 3 rewrite (insert_insert_ne _ "__packages"%go) //.
+      rewrite insert_insert_eq. rewrite insert_empty.
+      iNext. repeat iExists _, ((_, _) :: _), _, _.
+      rewrite fmap_cons. iFrame "Hg".
+      iFrame "#%". iPureIntro.
+      instantiate (1:=({[pkg_name]} ∪ package_started)).
+      intros pkg_name'. destruct (decide (pkg_name = pkg_name')).
+      TODO:
 
 End package_init.
