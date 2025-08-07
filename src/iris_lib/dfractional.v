@@ -100,6 +100,8 @@ Section dfractional.
   Global Instance combine_sep_as_dfractional P1 P2 Φ dq1 dq2 :
     AsDFractional P1 Φ dq1 → AsDFractional P2 Φ dq2 →
     CombineSepAs P1 P2 (Φ (dq1 ⋅ dq2)) | 60.
+    (* dfrac-based [CombineSepAs] instances need higher cost than
+    50 ([combine_sep_as_fractional] cost) so that two DfracOwn's combine. *)
   Proof. rewrite /CombineSepAs =>-[-> _] [-> [<-]] //. Qed.
 
   Global Instance into_sep_dfractional P Φ dq1 dq2 :
