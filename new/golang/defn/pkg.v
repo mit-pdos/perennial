@@ -82,10 +82,10 @@ Local Definition try_start_initialization : val :=
       #true
     end.
 
-Local Definition mark_initialized (pkg_name : go_string) : val :=
-  λ: <>,
+Local Definition mark_initialized : val :=
+  λ: "pkg_name",
     let: "initmap" := option.unwrap $ GlobalGet #"__packages" in
-    GlobalPut #"__packages" (list.Cons (#pkg_name, #"initialized") "initmap").
+    GlobalPut #"__packages" (list.Cons ("pkg_name", #"initialized") "initmap").
 
 Definition init_def : val :=
   λ: "pkg_name" "init",

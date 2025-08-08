@@ -337,7 +337,7 @@ Context `{!GoContext Σ}.
 
 Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) :
   ∀ Φ,
-  (is_go_context ∗ own_initializing ∗ (own_initializing -∗ WP init_func #() {{ _, is_pkg_init pkg_name ∗ own_initializing }})) -∗
+  (is_go_context ∗ own_initializing ∗ (own_initializing -∗ WP init_func #() {{ _, □ is_pkg_init pkg_name ∗ own_initializing }})) -∗
   (own_initializing ∗ is_pkg_init pkg_name -∗ Φ #()) -∗
   WP package.init #pkg_name init_func {{ Φ }}.
 Proof.
@@ -374,7 +374,7 @@ Proof.
     iCombine "Hown Hg" as "Hg".
     wp_apply (wp_GlobalPut with "[$]").
     iIntros "[Hown Hg]".
-    iMod ("Hclose" with "[Hg]").
+    iMod ("Hclose" with "[Hg]") as "_".
     {
       do 3 rewrite (insert_insert_ne _ "__packages"%go) //.
       rewrite insert_insert_eq. rewrite insert_empty.
@@ -382,7 +382,53 @@ Proof.
       rewrite fmap_cons. iFrame "Hg".
       iFrame "#%". iPureIntro.
       instantiate (1:=({[pkg_name]} ∪ package_started)).
-      intros pkg_name'. destruct (decide (pkg_name = pkg_name')).
-      TODO:
+      intros pkg_name'. specialize (Hpackage_inited pkg_name').
+      rewrite gset_to_gmap_union_singleton !lookup_union.
+      destruct (decide (pkg_name = pkg_name')).
+      { subst. rewrite lookup_insert_eq. rewrite /= ByteString.eqb_refl.
+        symmetry in Hpackage_inited. rewrite Hstatus lookup_union_None in Hpackage_inited.
+        by destruct Hpackage_inited as [-> ?]. }
+      rewrite lookup_insert_ne //.
+      rewrite !lookup_union in Hpackage_inited.
+      simpl. rewrite ByteString.eqb_ne //.
+    }
+    iModIntro. wp_pures. wp_bind.
+    wp_apply (wp_wand with "[Hpre Hown]").
+    { iApply ("Hpre" with "[$Hown]"). }
+    iClear "Hinit". iIntros (?) "[#? Hown]". iNamed "Hown". wp_pures.
+    wp_call_lc "Hlc". wp_bind. iInv "Hctx" as "Hi" "Hclose".
+    clear dependent package_started package_inited package_inited_val global_addr_val.
+    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
+    rewrite [in #"__packages"]to_val_unseal.
+    wp_apply (wp_GlobalGet with "[$]"). iIntros "Hg".
+    iCombine "Hown Hg" gives %[_ Heq]. subst.
+    do 3 rewrite lookup_insert_ne //. rewrite lookup_insert_eq.
+    iMod ("Hclose" with "[Hg]") as "_".
+    { iFrame "∗#%". }
+    iModIntro. wp_pure_lc "Hlc". wp_pures. wp_bind. iInv "Hctx" as "Hi" "Hclose".
+    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+    iAssert (∃ g, own_globals (DfracOwn (1/2)) g)%I with "[Hi]" as "[% Hg]".
+    { iNamedSuffix "Hi" "_tmp". iFrame. }
+    iCombine "Hown Hg" gives %[_ Heq]. subst.
+    iCombine "Hown Hg" as "Hg".
+    wp_apply (wp_GlobalPut with "[$]"). iIntros "[Hown Hg]".
+    iMod ("Hclose" with "[Hg]") as "_".
+    {
+      do 3 rewrite (insert_insert_ne _ "__packages"%go) //.
+      rewrite insert_insert_eq. rewrite insert_empty.
+      iNext. repeat iExists _, ((_, _) :: _), package_started, ({[pkg_name]} ∪ package_inited). iFrame.
+      iSplit. { iModIntro. iApply big_sepS_insert_2; iFrame "#". }
+      iFrame "%". iPureIntro. intros pkg_name'. specialize (Hpackage_inited pkg_name').
+      simpl. rewrite gset_to_gmap_union_singleton !lookup_union.
+      destruct (decide (pkg_name = pkg_name')).
+      { subst. rewrite ByteString.eqb_refl lookup_insert_eq //.
+        erewrite left_absorb; try done.
+        rewrite /LeftAbsorb. by intros []. }
+      rewrite ByteString.eqb_ne //. rewrite lookup_insert_ne //.
+      rewrite !lookup_union // in Hpackage_inited.
+    }
+    rewrite to_val_unseal.
+    iApply "HΦ". iFrame "∗#". done.
+Qed.
 
 End package_init.
