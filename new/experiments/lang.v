@@ -15,7 +15,6 @@ Import RecordSetNotations.
 Definition go_string := byte_string.
 Delimit Scope byte_string_scope with go.
 Bind Scope byte_string_scope with go_string.
-Delimit Scope byte_char_scope with go_byte.
 
 (* Formalization of the syntax in https://go.dev/ref/spec *)
 Module go.

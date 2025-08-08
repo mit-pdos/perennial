@@ -4,7 +4,9 @@ From Perennial Require Import base.
 Definition go_string := byte_string.
 Delimit Scope byte_string_scope with go.
 Bind Scope byte_string_scope with go_string.
-Delimit Scope byte_char_scope with go_byte.
+(* NOTE: this causes W8 values to be printed using the byte notation set up in
+ByteString.v *)
+(* Delimit Scope byte_char_scope with go_byte. *)
 
 Set Default Proof Using "Type".
 
