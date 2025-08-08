@@ -17,7 +17,7 @@ Tactic Notation "wp_func_call" :=
 Tactic Notation "wp_method_call" :=
   wp_method_call_core; try iPkgInit; try iFrame "#".
 
-(* remove and introduce [is_pkg_init] and [is_pkg_defined] facts from a hypothesis *)
+(* remove and introduce [is_pkg_init] and [is_defined] facts from a hypothesis *)
 Ltac destruct_pkg_init H :=
   let i := lazymatch type of H with
            | string => constr:(INamed H)
@@ -34,7 +34,7 @@ Ltac destruct_pkg_init H :=
         lazymatch env with
         | context[environments.Esnoc _ i (is_pkg_init _ ∗ _)%I] =>
             split_hyp
-        | context[environments.Esnoc _ i (is_pkg_defined _ ∗ _)%I] =>
+        | context[environments.Esnoc _ i (is_defined _ ∗ _)%I] =>
             split_hyp
         | context[environments.Esnoc _ i (is_pkg_init _)] =>
             iDestruct i as "#?";
