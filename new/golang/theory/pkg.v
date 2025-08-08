@@ -25,33 +25,31 @@ End wps.
     that future code (package.alloc) will actually allocate on the heap and
     angelically assumes that the allocated location matches the [global_addr]
     map.
-
-    TODO: not sure if having [is_pkg_init] makes sense in here. The other three
-    fields are directly related to execution state, but the [is_pkg_init]
-    consists of predicates chosen by the proof developer.
  *)
-Class GoContext {ext : ffi_syntax} Σ :=
+Class GoContext {ext : ffi_syntax} :=
   {
     global_addr : go_string → loc;
-    is_pkg_init : go_string → iProp Σ;
     __function : list (go_string * val);
     __method : list (go_string * (list (go_string * val)));
   }.
 
 Section globals.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!GoContext Σ}.
+Context `{!GoContext}.
 
-Definition is_go_context : iProp Σ :=
-    inv nroot (
-        ∃ (global_addr_val : list (_ * loc)) (package_inited_val : list (_ * go_string))
-          package_started package_inited,
+(** Proof of initialization must refer to an [is_pkg_init] mapping that covers
+    all packages. This specified what an init function must establish when returning,
+    and what one gets to assume when calling other init functions. *)
+Definition is_initialization get_is_pkg_init : iProp Σ :=
+  inv nroot (
+      ∃ (global_addr_val : list (_ * loc)) (package_inited_val : list (_ * go_string))
+        package_started package_inited,
         "Hg" ∷ own_globals (DfracOwn (1/2))
-            {[ "__global_vars"%go := alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val);
-               "__functions"%go := alist_val __function;
-               "__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> __method);
-               "__packages"%go := alist_val ((λ '(a, b), (a, #b)) <$> package_inited_val) ]} ∗
-        "#Hinit" ∷ □([∗ set] pkg_name ∈ package_inited, is_pkg_init pkg_name) ∗
+          {[ "__global_vars"%go := alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val);
+             "__functions"%go := alist_val __function;
+             "__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> __method);
+             "__packages"%go := alist_val ((λ '(a, b), (a, #b)) <$> package_inited_val) ]} ∗
+        "#Hinit" ∷ □([∗ set] pkg_name ∈ package_inited, get_is_pkg_init pkg_name) ∗
         (* NOTE: could own an auth that has precisely the "started" keys, and
            the exclusive pointstos can be given to program proofs to help escrow
            resources into initialization. *)
@@ -61,7 +59,12 @@ Definition is_go_context : iProp Σ :=
                                 ((gset_to_gmap "initialized"%go package_inited) ∪
                                    (gset_to_gmap "started"%go package_started)) !! pkg_name
                                   ⌝)
-      ).
+    ).
+
+(** This asserts that the implicit [GoContext] matches the execution state of
+    the current Go program. *)
+Definition is_go_context : iProp Σ :=
+  ∃ get_is_pkg_init, is_initialization get_is_pkg_init.
 
 Definition own_initializing : iProp Σ :=
   ∃ g, own_globals (DfracOwn (1/2)) g.
@@ -176,8 +179,8 @@ Lemma wp_func_call' {func_name func} `{!PkgInfo pkg_name} :
   WpFuncCall func_name func (is_defined pkg_name).
 Proof.
   intros Hlookup. rewrite /WpFuncCall. iIntros "* Hdef HΦ". rewrite func_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. iNamed "Hdef". rewrite is_defined_unseal.
-  iNamed "Hdef". iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  wp_pure_lc "Hlc". wp_bind. rewrite is_defined_unseal. iNamed "Hdef". iNamed "Hctx".
+  iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # "__functions"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
   iModIntro. rewrite lookup_insert_ne // lookup_insert_eq.
@@ -190,8 +193,8 @@ Lemma wp_method_call' {type_name method_name m} `{!PkgInfo pkg_name} :
   WpMethodCall type_name method_name m (is_defined pkg_name).
 Proof.
   intros Hlookup. rewrite /WpMethodCall. iIntros "* Hdef HΦ". rewrite method_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. iNamed "Hdef". rewrite is_defined_unseal.
-  iNamed "Hdef". iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  wp_pure_lc "Hlc". wp_bind. rewrite is_defined_unseal. iNamed "Hdef".
+  iNamed "Hctx". iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # "__msets"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
   iModIntro. do 2 rewrite lookup_insert_ne //. rewrite lookup_insert_eq.
@@ -233,7 +236,7 @@ Notation "rcvr @ pkg @ type @ method" :=
 
 (** [IsPkgInit] is used to record a mapping from pkg names to an
 initialization predicate, which is the postcondition for after the package has
-been initialized. This includes the package being "defined", a technicality of
+been initialized. This should include the package being "defined", a technicality of
 Goose where function names are associated with their bodies. Defining the
 package occurs prior to initializing global variables according to their
 initialization expressions, as well as running init() functions.
@@ -248,32 +251,42 @@ Class IsPkgInit (pkg_name: go_string) {PROP: bi} :=
   {
     is_pkg_init_def : PROP ; (* user-specified *)
     is_pkg_init_deps : PROP ; (* autogenerated *)
-    #[global]
-    is_pkg_init_persistent :: Persistent is_pkg_init_def;
   }.
 
-#[global]
-Arguments is_pkg_init_def (pkg_name) {_ _}.
-#[global]
-Typeclasses Opaque is_pkg_init_def.
+#[global] Arguments is_pkg_init_def (pkg_name) {_ _}.
+#[global] Arguments is_pkg_init_deps (pkg_name) {_ _}.
+#[global] Typeclasses Opaque is_pkg_init_def.
 
 Section is_pkg_init.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context `{!GoContext Σ}.
-Definition is_pkg_init_aux `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} : iProp Σ :=
+Context `{!GoContext}.
+
+Definition is_pkg_init (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} : iProp Σ :=
   "#Hdefined" ∷ is_defined pkg_name ∗
-  "#Hdeps" ∷ □ is_pkg_init_deps ∗
-  "#Hinit" ∷ is_pkg_init_def pkg_name.
+  "#Hdeps" ∷ □ is_pkg_init_deps pkg_name ∗
+  "#Hinit" ∷ □ is_pkg_init_def pkg_name.
+#[global] Opaque is_pkg_init.
+#[local] Transparent is_pkg_init.
+#[global] Instance is_pkg_init_pers (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} :
+  Persistent (is_pkg_init pkg_name).
+Proof. apply _. Qed.
+
+Lemma is_pkg_init_unfold (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} :
+  is_pkg_init pkg_name -∗
+  is_pkg_init_def pkg_name.
+Proof. iNamed 1. done. Qed.
+
+Lemma is_pkg_init_unfold_deps (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} :
+  is_pkg_init pkg_name -∗
+  is_pkg_init_deps pkg_name.
+Proof. iNamed 1. done. Qed.
 
 End is_pkg_init.
 
 #[global]
 Hint Mode IsPkgInit + - : typeclass_instances.
 
-Ltac prove_is_pkg_init :=
-  constructor; refine _.
-
-Ltac2 build_pkg_init () :=
+Ltac2 build_pkg_init_deps () :=
   Control.refine
     (fun () =>
        lazy_match! goal with
@@ -289,15 +302,12 @@ Ltac2 build_pkg_init () :=
                  Message.print (Message.of_constr deps);
                  Control.backtrack_tactic_failure "build_pkg_init: unable to match deps list"
              end in
-           let p := build_iprop deps in
-           let p := constr:(Build_IsPkgInit $name _ $p) in
-           (* Intentionally leaving the `Persistent` goal unsolved so the instance can Qed it *)
-           open_constr:($p _)
+           build_iprop deps
        | [ |- _ ] => Control.backtrack_tactic_failure "build_pkg_init: goal is not (IsPkgInit _)"
        end
     ).
 
-(* solve a goal which is just [is_pkg_init] or [is_pkg_defined] *)
+(* solve a goal which is just [is_pkg_init] or [is_defined] *)
 Ltac solve_pkg_init :=
   unfold named;
   lazymatch goal with
@@ -333,12 +343,12 @@ Ltac iPkgInit :=
 Section package_init.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-Context `{!GoContext Σ}.
+Context `{!GoContext}.
 
-Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) :
+Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init :
   ∀ Φ,
-  (is_go_context ∗ own_initializing ∗ (own_initializing -∗ WP init_func #() {{ _, □ is_pkg_init pkg_name ∗ own_initializing }})) -∗
-  (own_initializing ∗ is_pkg_init pkg_name -∗ Φ #()) -∗
+  (is_initialization get_is_pkg_init ∗ own_initializing ∗ (own_initializing -∗ WP init_func #() {{ _, □ get_is_pkg_init pkg_name ∗ own_initializing }})) -∗
+  (own_initializing ∗ get_is_pkg_init pkg_name -∗ Φ #()) -∗
   WP package.init #pkg_name init_func {{ Φ }}.
 Proof.
   iIntros (?) "(#Hctx & Hown & Hpre) HΦ". rewrite package.init_unseal.
