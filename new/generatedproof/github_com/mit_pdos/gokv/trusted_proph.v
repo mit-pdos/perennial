@@ -20,7 +20,7 @@ End ProphId.
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ}.
 Context `{!GoContext}.
 
 Global Instance wp_func_call_NewProph :

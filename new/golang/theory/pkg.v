@@ -215,12 +215,12 @@ Tactic Notation "wp_globals_get_core" :=
   unshelve iApply (wp_globals_get with "[]").
 
 Tactic Notation "wp_func_call_core" :=
-  (wp_bind (#(func_callv _ _) _);
+  (wp_bind (#(func_callv _) _);
    unshelve iApply (wp_func_call with "[]");
    [| | (tc_solve || fail "could not find mapping from function name to val") | | ]).
 
 Tactic Notation "wp_method_call_core" :=
-  (wp_bind (#(method_callv _ _ _ _) _);
+  (wp_bind (#(method_callv _ _ _) _);
    unshelve iApply (wp_method_call with "[]");
    [| | (tc_solve || fail "could not find mapping from method to val") | |]).
 
@@ -286,11 +286,11 @@ End is_pkg_init.
 #[global]
 Hint Mode IsPkgInit + - : typeclass_instances.
 
-Ltac2 build_pkg_init_deps () :=
+Ltac2 build_pkg_init_deps name :=
   Control.refine
     (fun () =>
        lazy_match! goal with
-       | [ |- IsPkgInit ?name ] =>
+       | [ |- iProp _ ] =>
            let deps := Std.eval_hnf constr:(pkg_imported_pkgs $name) in
            let rec build_iprop deps :=
              lazy_match! deps with
@@ -303,7 +303,7 @@ Ltac2 build_pkg_init_deps () :=
                  Control.backtrack_tactic_failure "build_pkg_init: unable to match deps list"
              end in
            build_iprop deps
-       | [ |- _ ] => Control.backtrack_tactic_failure "build_pkg_init: goal is not (IsPkgInit _)"
+       | [ |- _ ] => Control.backtrack_tactic_failure "build_pkg_init: goal is not (iProp _)"
        end
     ).
 

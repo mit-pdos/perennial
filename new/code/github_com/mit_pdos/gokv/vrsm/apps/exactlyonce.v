@@ -345,12 +345,13 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("eStateMach
 Definition initialize' : val :=
   λ: <>,
     package.init #exactlyonce.exactlyonce (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  storage.initialize';;;
-      do:  clerk.initialize';;;
-      do:  map_marshal.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  std.initialize')
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (storage.initialize' #());;;
+      do:  (clerk.initialize' #());;;
+      do:  (map_marshal.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (package.alloc exactlyonce.exactlyonce #()))
       ).
 
 End code.

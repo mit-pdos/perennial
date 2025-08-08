@@ -63,7 +63,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("LockClerk"
 Definition initialize' : val :=
   λ: <>,
     package.init #lockservice.lockservice (λ: <>,
-      exception_do (do:  kv.initialize')
+      exception_do (do:  (kv.initialize' #());;;
+      do:  (package.alloc lockservice.lockservice #()))
       ).
 
 End code.

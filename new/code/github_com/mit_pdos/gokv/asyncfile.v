@@ -188,9 +188,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("AsyncFile"
 Definition initialize' : val :=
   λ: <>,
     package.init #asyncfile.asyncfile (λ: <>,
-      exception_do (do:  grove_ffi.initialize';;;
-      do:  std.initialize';;;
-      do:  sync.initialize')
+      exception_do (do:  (grove_ffi.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (package.alloc asyncfile.asyncfile #()))
       ).
 
 End code.

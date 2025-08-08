@@ -195,13 +195,14 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Definition initialize' : val :=
   λ: <>,
     package.init #reconfig.reconfig (λ: <>,
-      exception_do (do:  replica.initialize';;;
-      do:  e.initialize';;;
-      do:  configservice.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  log.initialize')
+      exception_do (do:  (replica.initialize' #());;;
+      do:  (e.initialize' #());;;
+      do:  (configservice.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (primitive.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (log.initialize' #());;;
+      do:  (package.alloc reconfig.reconfig #()))
       ).
 
 End code.

@@ -12,7 +12,7 @@ Module map_string_marshal.
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ}.
 Context `{!GoContext}.
 
 Global Instance wp_func_call_EncodeStringMap :

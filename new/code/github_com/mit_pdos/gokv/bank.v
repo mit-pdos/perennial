@@ -286,10 +286,11 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("BankClerk"
 Definition initialize' : val :=
   λ: <>,
     package.init #bank.bank (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  lockservice.initialize';;;
-      do:  kv.initialize';;;
-      do:  primitive.initialize')
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (lockservice.initialize' #());;;
+      do:  (kv.initialize' #());;;
+      do:  (primitive.initialize' #());;;
+      do:  (package.alloc bank.bank #()))
       ).
 
 End code.

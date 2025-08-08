@@ -237,12 +237,13 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go,
 Definition initialize' : val :=
   λ: <>,
     package.init #clerk.clerk (λ: <>,
-      exception_do (do:  replica.initialize';;;
-      do:  e.initialize';;;
-      do:  configservice.initialize';;;
-      do:  trusted_proph.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  primitive.initialize')
+      exception_do (do:  (replica.initialize' #());;;
+      do:  (e.initialize' #());;;
+      do:  (configservice.initialize' #());;;
+      do:  (trusted_proph.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (primitive.initialize' #());;;
+      do:  (package.alloc clerk.clerk #()))
       ).
 
 End code.

@@ -35,7 +35,7 @@ Axiom _'init : val.
 Definition initialize' : val :=
   λ: <>,
     package.init #trusted_proph.trusted_proph (λ: <>,
-      exception_do (do:  #())
+      exception_do (do:  (package.alloc trusted_proph.trusted_proph #()))
       ).
 
 End code.

@@ -226,12 +226,13 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Definition initialize' : val :=
   λ: <>,
     package.init #closed.closed (λ: <>,
-      exception_do (do:  configservice.initialize';;;
-      do:  vkv.initialize';;;
-      do:  lockservice.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  cachekv.initialize';;;
-      do:  bank.initialize')
+      exception_do (do:  (configservice.initialize' #());;;
+      do:  (vkv.initialize' #());;;
+      do:  (lockservice.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (cachekv.initialize' #());;;
+      do:  (bank.initialize' #());;;
+      do:  (package.alloc closed.closed #()))
       ).
 
 End code.

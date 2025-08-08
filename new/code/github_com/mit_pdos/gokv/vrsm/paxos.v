@@ -971,14 +971,15 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("singleCler
 Definition initialize' : val :=
   λ: <>,
     package.init #paxos.paxos (λ: <>,
-      exception_do (do:  urpc.initialize';;;
-      do:  asyncfile.initialize';;;
-      do:  std.initialize';;;
-      do:  sync.initialize';;;
-      do:  log.initialize';;;
-      do:  marshal.initialize';;;
-      do:  reconnectclient.initialize';;;
-      do:  grove_ffi.initialize')
+      exception_do (do:  (urpc.initialize' #());;;
+      do:  (asyncfile.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (log.initialize' #());;;
+      do:  (marshal.initialize' #());;;
+      do:  (reconnectclient.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (package.alloc paxos.paxos #()))
       ).
 
 End code.

@@ -178,10 +178,11 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("AppendOnly
 Definition initialize' : val :=
   λ: <>,
     package.init #aof.aof (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  std.initialize';;;
-      do:  sync.initialize')
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (package.alloc aof.aof #()))
       ).
 
 End code.

@@ -392,11 +392,12 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("InMemorySt
 Definition initialize' : val :=
   λ: <>,
     package.init #storage.storage (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  replica.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  aof.initialize';;;
-      do:  std.initialize')
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (replica.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (aof.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (package.alloc storage.storage #()))
       ).
 
 End code.

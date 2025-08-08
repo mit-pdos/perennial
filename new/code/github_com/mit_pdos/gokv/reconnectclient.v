@@ -125,10 +125,11 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Reconnecti
 Definition initialize' : val :=
   λ: <>,
     package.init #reconnectclient.reconnectclient (λ: <>,
-      exception_do (do:  urpc.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize')
+      exception_do (do:  (urpc.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (primitive.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (package.alloc reconnectclient.reconnectclient #()))
       ).
 
 End code.

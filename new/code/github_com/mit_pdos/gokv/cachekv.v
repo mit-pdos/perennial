@@ -239,10 +239,11 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("cacheValue
 Definition initialize' : val :=
   λ: <>,
     package.init #cachekv.cachekv (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  kv.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  sync.initialize')
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (kv.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (package.alloc cachekv.cachekv #()))
       ).
 
 End code.

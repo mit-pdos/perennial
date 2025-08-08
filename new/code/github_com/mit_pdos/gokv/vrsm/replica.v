@@ -1333,16 +1333,17 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("ApplyAsBac
 Definition initialize' : val :=
   λ: <>,
     package.init #replica.replica (λ: <>,
-      exception_do (do:  configservice.initialize';;;
-      do:  urpc.initialize';;;
-      do:  std.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  log.initialize';;;
-      do:  reconnectclient.initialize';;;
-      do:  marshal.initialize';;;
-      do:  e.initialize';;;
-      do:  grove_ffi.initialize')
+      exception_do (do:  (configservice.initialize' #());;;
+      do:  (urpc.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (primitive.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (log.initialize' #());;;
+      do:  (reconnectclient.initialize' #());;;
+      do:  (marshal.initialize' #());;;
+      do:  (e.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (package.alloc replica.replica #()))
       ).
 
 End code.

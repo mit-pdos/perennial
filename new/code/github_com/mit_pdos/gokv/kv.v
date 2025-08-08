@@ -29,7 +29,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Definition initialize' : val :=
   λ: <>,
     package.init #kv.kv (λ: <>,
-      exception_do (do:  #())
+      exception_do (do:  (package.alloc kv.kv #()))
       ).
 
 End code.

@@ -569,13 +569,14 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go,
 Definition initialize' : val :=
   λ: <>,
     package.init #vkv.vkv (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  storage.initialize';;;
-      do:  map_string_marshal.initialize';;;
-      do:  kv.initialize';;;
-      do:  sync.initialize';;;
-      do:  exactlyonce.initialize';;;
-      do:  grove_ffi.initialize')
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (storage.initialize' #());;;
+      do:  (map_string_marshal.initialize' #());;;
+      do:  (kv.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (exactlyonce.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (package.alloc vkv.vkv #()))
       ).
 
 End code.

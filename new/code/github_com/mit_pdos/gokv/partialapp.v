@@ -104,7 +104,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [
 Definition initialize' : val :=
   λ: <>,
     package.init #partialapp.main (λ: <>,
-      exception_do (do:  #())
+      exception_do (do:  (package.alloc partialapp.main #()))
       ).
 
 End code.

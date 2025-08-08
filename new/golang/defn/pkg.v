@@ -56,7 +56,8 @@ Definition alloc pkg_name `{!PkgInfo pkg_name} : val :=
             | Datatypes.nil => #()
             | (pair name t) :: vars =>
                 let: "addr" := mem.alloc (zero_val t) in
-                assume (globals.get #name = "addr")
+                assume (globals.get #name = "addr");;
+                alloc vars
             end)%E) (pkg_vars pkg_name).
 
 Local Definition check_status (pkg_name : go_string) : val :=

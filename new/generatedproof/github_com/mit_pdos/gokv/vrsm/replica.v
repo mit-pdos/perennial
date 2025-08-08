@@ -887,7 +887,7 @@ End instances.
 Section names.
 
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ}.
 Context `{!GoContext}.
 
 Global Instance wp_func_call_EncodeApplyAsBackupArgs :

@@ -27,7 +27,7 @@ End KvCput.
 Section names.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ}.
 Context `{!GoContext}.
 
 End names.

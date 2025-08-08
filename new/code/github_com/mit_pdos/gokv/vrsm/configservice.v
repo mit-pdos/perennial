@@ -811,16 +811,17 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go,
 Definition initialize' : val :=
   λ: <>,
     package.init #configservice.configservice (λ: <>,
-      exception_do (do:  paxos.initialize';;;
-      do:  urpc.initialize';;;
-      do:  std.initialize';;;
-      do:  log.initialize';;;
-      do:  e.initialize';;;
-      do:  reconnectclient.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  marshal.initialize';;;
-      do:  grove_ffi.initialize')
+      exception_do (do:  (paxos.initialize' #());;;
+      do:  (urpc.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (log.initialize' #());;;
+      do:  (e.initialize' #());;;
+      do:  (reconnectclient.initialize' #());;;
+      do:  (primitive.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (marshal.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (package.alloc configservice.configservice #()))
       ).
 
 End code.

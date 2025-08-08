@@ -15,6 +15,14 @@ Definition fooⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (#(W64 10))).
 
+Definition GlobalX : go_string := "github.com/mit-pdos/gokv/globals_test.GlobalX"%go.
+
+Definition globalY : go_string := "github.com/mit-pdos/gokv/globals_test.globalY"%go.
+
+Definition globalA : go_string := "github.com/mit-pdos/gokv/globals_test.globalA"%go.
+
+Definition globalB : go_string := "github.com/mit-pdos/gokv/globals_test.globalB"%go.
+
 Definition other : go_string := "github.com/mit-pdos/gokv/globals_test.other"%go.
 
 (* go: globals.go:12:6 *)
@@ -62,7 +70,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Definition initialize' : val :=
   λ: <>,
     package.init #globals_test.main (λ: <>,
-      exception_do (let: "$r0" := ((func_call #globals_test.main #"foo"%go) #()) in
+      exception_do (do:  (package.alloc globals_test.main #());;;
+      let: "$r0" := ((func_call #globals_test.main #"foo"%go) #()) in
       do:  ((globals.get #globals_test.main #"GlobalX"%go) <-[#uint64T] "$r0");;;
       let: "$r0" := #"a"%go in
       do:  ((globals.get #globals_test.main #"globalA"%go) <-[#stringT] "$r0");;;

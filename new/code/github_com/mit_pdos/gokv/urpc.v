@@ -419,12 +419,13 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Server"%go
 Definition initialize' : val :=
   λ: <>,
     package.init #urpc.urpc (λ: <>,
-      exception_do (do:  marshal.initialize';;;
-      do:  grove_ffi.initialize';;;
-      do:  std.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  log.initialize')
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (grove_ffi.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (primitive.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (log.initialize' #());;;
+      do:  (package.alloc urpc.urpc #()))
       ).
 
 End code.

@@ -125,7 +125,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Definition initialize' : val :=
   λ: <>,
     package.init #map_string_marshal.map_string_marshal (λ: <>,
-      exception_do (do:  marshal.initialize')
+      exception_do (do:  (marshal.initialize' #());;;
+      do:  (package.alloc map_string_marshal.map_string_marshal #()))
       ).
 
 End code.
