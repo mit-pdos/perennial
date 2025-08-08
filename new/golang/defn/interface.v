@@ -8,8 +8,8 @@ Context `{ffi_syntax}.
 
 Definition get_def : val :=
   λ: "method_name" "v",
-    let: (("pkg_name", "type_name"), "val") := option.unwrap "v" in
-    method_call "pkg_name" "type_name" "method_name" "val".
+    let: ("type_id", "val") := option.unwrap "v" in
+    method_call "type_id" "method_name" "val".
 
 Program Definition get := sealed @get_def.
 Definition get_unseal : get = _ := seal_eq _.
@@ -19,16 +19,8 @@ Local Definition make_def : val :=
 Program Definition make := sealed @make_def.
 Definition make_unseal : make = _ := seal_eq _.
 
-(* our representation of dynamic type identity for interfaces is a tuple of (pkg
-name, type string) *)
-Definition type_id_eq : val :=
-  λ: "type_id1" "type_id2",
-    let: ("pkg1", "type1") := "type_id1" in
-    let: ("pkg2", "type2") := "type_id2" in
-    ("pkg1" = "pkg2") && ("type1" = "type2").
-
 Definition eq : val :=
-  (* XXX: this is a "short-circuiting" comparison that first checks if the type
+  (* This is a "short-circuiting" comparison that first checks if the type
      names are equal before possibly checking if the values are equal. *)
   λ: "v1" "v2",
     match: "v1" with
@@ -39,7 +31,7 @@ Definition eq : val :=
     | SOME "i1" => match: "v2" with
                     NONE => #false
                   | SOME "i1" =>
-                      (type_id_eq (Fst "i1") (Fst "i2")) &&
+                      ((Fst "i1") = (Fst "i2")) &&
                       (Snd "i1" = Snd "i2")
                   end
     end.
@@ -50,7 +42,7 @@ Definition type_assert : val :=
   λ: "v" "expected_type_id",
     let: "v" := option.unwrap "v" in
     let: ("type_id", "underlying_v") := "v" in
-    if: type_id_eq "type_id" "expected_type_id" then
+    if: "type_id" = "expected_type_id" then
     "underlying_v"
     else Panic "coerce failed: wrong type".
 
@@ -63,7 +55,7 @@ Definition try_type_coerce : val :=
     match: "v" with
       SOME "v" =>
         (let: ("type_id", "underlying_v") := "v" in
-        if: type_id_eq "type_id" "expected_type_id"
+        if: "type_id" = "expected_type_id"
         then ("underlying_v", #true)
         else (#(), #false))
      | NONE =>
