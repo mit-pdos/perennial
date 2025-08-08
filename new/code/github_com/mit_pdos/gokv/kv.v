@@ -27,8 +27,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init kv.kv (λ: <>,
+  λ: <>,
+    package.init #kv.kv (λ: <>,
       exception_do (do:  #())
       ).
 

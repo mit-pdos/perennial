@@ -18,31 +18,16 @@ End Foo.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined main :=
-{|
-  is_pkg_defined := is_global_definitions main var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_partiallyApplyMe :
-  WpFuncCall main "partiallyApplyMe" _ (is_pkg_defined main) :=
+  WpFuncCall main.partiallyApplyMe _ (is_pkg_defined main) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_main :
-  WpFuncCall main "main" _ (is_pkg_defined main) :=
+  WpFuncCall main.main _ (is_pkg_defined main) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Foo_someMethod :

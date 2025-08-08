@@ -26,9 +26,11 @@ Definition ApplyAsBackupArgs : go_type := structT [
   "op" :: sliceT
 ].
 
+Definition EncodeApplyAsBackupArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeApplyAsBackupArgs"%go.
+
 (* go: 0_marshal.go:17:6 *)
-Definition EncodeApplyAsBackupArgs : val :=
-  rec: "EncodeApplyAsBackupArgs" "args" :=
+Definition EncodeApplyAsBackupArgsⁱᵐᵖˡ : val :=
+  λ: "args",
     exception_do (let: "args" := (mem.alloc "args") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 (8 + 8)) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #ApplyAsBackupArgs #"op"%go (![#ptrT] "args"))) in
@@ -48,9 +50,11 @@ Definition EncodeApplyAsBackupArgs : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeApplyAsBackupArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.DecodeApplyAsBackupArgs"%go.
+
 (* go: 0_marshal.go:25:6 *)
-Definition DecodeApplyAsBackupArgs : val :=
-  rec: "DecodeApplyAsBackupArgs" "enc_args" :=
+Definition DecodeApplyAsBackupArgsⁱᵐᵖˡ : val :=
+  λ: "enc_args",
     exception_do (let: "enc_args" := (mem.alloc "enc_args") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_args") in
@@ -81,9 +85,11 @@ Definition SetStateArgs : go_type := structT [
   "State" :: sliceT
 ].
 
+Definition EncodeSetStateArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeSetStateArgs"%go.
+
 (* go: 0_marshal.go:41:6 *)
-Definition EncodeSetStateArgs : val :=
-  rec: "EncodeSetStateArgs" "args" :=
+Definition EncodeSetStateArgsⁱᵐᵖˡ : val :=
+  λ: "args",
     exception_do (let: "args" := (mem.alloc "args") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #SetStateArgs #"State"%go (![#ptrT] "args"))) in
@@ -107,9 +113,11 @@ Definition EncodeSetStateArgs : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeSetStateArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.DecodeSetStateArgs"%go.
+
 (* go: 0_marshal.go:50:6 *)
-Definition DecodeSetStateArgs : val :=
-  rec: "DecodeSetStateArgs" "enc_args" :=
+Definition DecodeSetStateArgsⁱᵐᵖˡ : val :=
+  λ: "enc_args",
     exception_do (let: "enc_args" := (mem.alloc "enc_args") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_args") in
@@ -143,9 +151,11 @@ Definition GetStateArgs : go_type := structT [
   "Epoch" :: uint64T
 ].
 
+Definition EncodeGetStateArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeGetStateArgs"%go.
+
 (* go: 0_marshal.go:64:6 *)
-Definition EncodeGetStateArgs : val :=
-  rec: "EncodeGetStateArgs" "args" :=
+Definition EncodeGetStateArgsⁱᵐᵖˡ : val :=
+  λ: "args",
     exception_do (let: "args" := (mem.alloc "args") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 8)) in
@@ -156,9 +166,11 @@ Definition EncodeGetStateArgs : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeGetStateArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.DecodeGetStateArgs"%go.
+
 (* go: 0_marshal.go:70:6 *)
-Definition DecodeGetStateArgs : val :=
-  rec: "DecodeGetStateArgs" "enc" :=
+Definition DecodeGetStateArgsⁱᵐᵖˡ : val :=
+  λ: "enc",
     exception_do (let: "enc" := (mem.alloc "enc") in
     let: "args" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #GetStateArgs)) in
@@ -178,9 +190,11 @@ Definition GetStateReply : go_type := structT [
   "State" :: sliceT
 ].
 
+Definition EncodeGetStateReply : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeGetStateReply"%go.
+
 (* go: 0_marshal.go:83:6 *)
-Definition EncodeGetStateReply : val :=
-  rec: "EncodeGetStateReply" "reply" :=
+Definition EncodeGetStateReplyⁱᵐᵖˡ : val :=
+  λ: "reply",
     exception_do (let: "reply" := (mem.alloc "reply") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![#sliceT] (struct.field_ref #GetStateReply #"State"%go (![#ptrT] "reply"))) in
@@ -204,9 +218,11 @@ Definition EncodeGetStateReply : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeGetStateReply : go_string := "github.com/mit-pdos/gokv/vrsm/replica.DecodeGetStateReply"%go.
+
 (* go: 0_marshal.go:92:6 *)
-Definition DecodeGetStateReply : val :=
-  rec: "DecodeGetStateReply" "enc_reply" :=
+Definition DecodeGetStateReplyⁱᵐᵖˡ : val :=
+  λ: "enc_reply",
     exception_do (let: "enc_reply" := (mem.alloc "enc_reply") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_reply") in
@@ -241,9 +257,11 @@ Definition BecomePrimaryArgs : go_type := structT [
   "Replicas" :: sliceT
 ].
 
+Definition EncodeBecomePrimaryArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeBecomePrimaryArgs"%go.
+
 (* go: 0_marshal.go:107:6 *)
-Definition EncodeBecomePrimaryArgs : val :=
-  rec: "EncodeBecomePrimaryArgs" "args" :=
+Definition EncodeBecomePrimaryArgsⁱᵐᵖˡ : val :=
+  λ: "args",
     exception_do (let: "args" := (mem.alloc "args") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 (8 + 8)) + (#(W64 8) * (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #BecomePrimaryArgs #"Replicas"%go (![#ptrT] "args"))) in
@@ -269,9 +287,11 @@ Definition EncodeBecomePrimaryArgs : val :=
       do:  ("enc" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeBecomePrimaryArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.DecodeBecomePrimaryArgs"%go.
+
 (* go: 0_marshal.go:117:6 *)
-Definition DecodeBecomePrimaryArgs : val :=
-  rec: "DecodeBecomePrimaryArgs" "enc_args" :=
+Definition DecodeBecomePrimaryArgsⁱᵐᵖˡ : val :=
+  λ: "enc_args",
     exception_do (let: "enc_args" := (mem.alloc "enc_args") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_args") in
@@ -311,9 +331,11 @@ Definition ApplyReply : go_type := structT [
   "Reply" :: sliceT
 ].
 
+Definition EncodeApplyReply : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeApplyReply"%go.
+
 (* go: 0_marshal.go:135:6 *)
-Definition EncodeApplyReply : val :=
-  rec: "EncodeApplyReply" "reply" :=
+Definition EncodeApplyReplyⁱᵐᵖˡ : val :=
+  λ: "reply",
     exception_do (let: "reply" := (mem.alloc "reply") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #ApplyReply #"Reply"%go (![#ptrT] "reply"))) in
@@ -329,9 +351,11 @@ Definition EncodeApplyReply : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeApplyReply : go_string := "github.com/mit-pdos/gokv/vrsm/replica.DecodeApplyReply"%go.
+
 (* go: 0_marshal.go:142:6 *)
-Definition DecodeApplyReply : val :=
-  rec: "DecodeApplyReply" "enc_reply" :=
+Definition DecodeApplyReplyⁱᵐᵖˡ : val :=
+  λ: "enc_reply",
     exception_do (let: "enc_reply" := (mem.alloc "enc_reply") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_reply") in
@@ -351,17 +375,21 @@ Definition DecodeApplyReply : val :=
 
 Definition IncreaseCommitArgs : go_type := uint64T.
 
+Definition EncodeIncreaseCommitArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeIncreaseCommitArgs"%go.
+
 (* go: 0_marshal.go:153:6 *)
-Definition EncodeIncreaseCommitArgs : val :=
-  rec: "EncodeIncreaseCommitArgs" "args" :=
+Definition EncodeIncreaseCommitArgsⁱᵐᵖˡ : val :=
+  λ: "args",
     exception_do (let: "args" := (mem.alloc "args") in
     return: (let: "$a0" := #slice.nil in
      let: "$a1" := (![#uint64T] "args") in
      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1")).
 
+Definition DecodeIncreaseCommitArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.DecodeIncreaseCommitArgs"%go.
+
 (* go: 0_marshal.go:157:6 *)
-Definition DecodeIncreaseCommitArgs : val :=
-  rec: "DecodeIncreaseCommitArgs" "args" :=
+Definition DecodeIncreaseCommitArgsⁱᵐᵖˡ : val :=
+  λ: "args",
     exception_do (let: "args" := (mem.alloc "args") in
     let: "a" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "args") in
@@ -404,9 +432,11 @@ Definition RPC_ROPRIMARYAPPLY : expr := #(W64 6).
 
 Definition RPC_INCREASECOMMIT : expr := #(W64 7).
 
+Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/replica.MakeClerk"%go.
+
 (* go: clerk.go:24:6 *)
-Definition MakeClerk : val :=
-  rec: "MakeClerk" "host" :=
+Definition MakeClerkⁱᵐᵖˡ : val :=
+  λ: "host",
     exception_do (let: "host" := (mem.alloc "host") in
     return: (mem.alloc (let: "$cl" := (let: "$a0" := (![#uint64T] "host") in
      (func_call #reconnectclient.reconnectclient #"MakeReconnectingClient"%go) "$a0") in
@@ -415,8 +445,8 @@ Definition MakeClerk : val :=
      }]))).
 
 (* go: clerk.go:28:18 *)
-Definition Clerk__ApplyAsBackup : val :=
-  rec: "Clerk__ApplyAsBackup" "ck" "args" :=
+Definition Clerk__ApplyAsBackupⁱᵐᵖˡ : val :=
+  λ: "ck" "args",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "args" := (mem.alloc "args") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
@@ -437,8 +467,8 @@ Definition Clerk__ApplyAsBackup : val :=
        (func_call #e.e #"DecodeError"%go) "$a0"))).
 
 (* go: clerk.go:38:18 *)
-Definition Clerk__SetState : val :=
-  rec: "Clerk__SetState" "ck" "args" :=
+Definition Clerk__SetStateⁱᵐᵖˡ : val :=
+  λ: "ck" "args",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "args" := (mem.alloc "args") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
@@ -459,8 +489,8 @@ Definition Clerk__SetState : val :=
        (func_call #e.e #"DecodeError"%go) "$a0"))).
 
 (* go: clerk.go:48:18 *)
-Definition Clerk__GetState : val :=
-  rec: "Clerk__GetState" "ck" "args" :=
+Definition Clerk__GetStateⁱᵐᵖˡ : val :=
+  λ: "ck" "args",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "args" := (mem.alloc "args") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
@@ -488,8 +518,8 @@ Definition Clerk__GetState : val :=
        (func_call #replica.replica #"DecodeGetStateReply"%go) "$a0"))).
 
 (* go: clerk.go:60:18 *)
-Definition Clerk__BecomePrimary : val :=
-  rec: "Clerk__BecomePrimary" "ck" "args" :=
+Definition Clerk__BecomePrimaryⁱᵐᵖˡ : val :=
+  λ: "ck" "args",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "args" := (mem.alloc "args") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
@@ -510,8 +540,8 @@ Definition Clerk__BecomePrimary : val :=
        (func_call #e.e #"DecodeError"%go) "$a0"))).
 
 (* go: clerk.go:70:18 *)
-Definition Clerk__Apply : val :=
-  rec: "Clerk__Apply" "ck" "op" :=
+Definition Clerk__Applyⁱᵐᵖˡ : val :=
+  λ: "ck" "op",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
@@ -534,8 +564,8 @@ Definition Clerk__Apply : val :=
     else return: (e.Timeout, #slice.nil))).
 
 (* go: clerk.go:81:18 *)
-Definition Clerk__ApplyRo : val :=
-  rec: "Clerk__ApplyRo" "ck" "op" :=
+Definition Clerk__ApplyRoⁱᵐᵖˡ : val :=
+  λ: "ck" "op",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
@@ -558,8 +588,8 @@ Definition Clerk__ApplyRo : val :=
     else return: (e.Timeout, #slice.nil))).
 
 (* go: clerk.go:92:18 *)
-Definition Clerk__IncreaseCommitIndex : val :=
-  rec: "Clerk__IncreaseCommitIndex" "ck" "n" :=
+Definition Clerk__IncreaseCommitIndexⁱᵐᵖˡ : val :=
+  λ: "ck" "n",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "n" := (mem.alloc "n") in
     return: (let: "$a0" := RPC_INCREASECOMMIT in
@@ -591,8 +621,8 @@ Definition Server : go_type := structT [
    replying to client.
 
    go: server.go:45:18 *)
-Definition Server__ApplyRoWaitForCommit : val :=
-  rec: "Server__ApplyRoWaitForCommit" "s" "op" :=
+Definition Server__ApplyRoWaitForCommitⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
@@ -671,8 +701,8 @@ Definition Server__ApplyRoWaitForCommit : val :=
    is_epoch_lb epoch ∗ committed_by epoch log ∗ is_pb_log_lb log
 
    go: server.go:95:18 *)
-Definition Server__IncreaseCommitIndex : val :=
-  rec: "Server__IncreaseCommitIndex" "s" "newCommittedNextIndex" :=
+Definition Server__IncreaseCommitIndexⁱᵐᵖˡ : val :=
+  λ: "s" "newCommittedNextIndex",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "newCommittedNextIndex" := (mem.alloc "newCommittedNextIndex") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -688,8 +718,8 @@ Definition Server__IncreaseCommitIndex : val :=
 (* called on the primary server to apply a new operation.
 
    go: server.go:106:18 *)
-Definition Server__Apply : val :=
-  rec: "Server__Apply" "s" "op" :=
+Definition Server__Applyⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
@@ -826,8 +856,8 @@ Definition Server__Apply : val :=
     return: (![#ptrT] "reply")).
 
 (* go: server.go:203:18 *)
-Definition Server__leaseRenewalThread : val :=
-  rec: "Server__leaseRenewalThread" "s" <> :=
+Definition Server__leaseRenewalThreadⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "latestEpoch" := (mem.alloc (type.zero_val #uint64T)) in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -862,8 +892,8 @@ Definition Server__leaseRenewalThread : val :=
     return: #()).
 
 (* go: server.go:228:18 *)
-Definition Server__sendIncreaseCommitThread : val :=
-  rec: "Server__sendIncreaseCommitThread" "s" <> :=
+Definition Server__sendIncreaseCommitThreadⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -916,8 +946,8 @@ Definition Server__sendIncreaseCommitThread : val :=
    returns true iff stale
 
    go: server.go:272:18 *)
-Definition Server__isEpochStale : val :=
-  rec: "Server__isEpochStale" "s" "epoch" :=
+Definition Server__isEpochStaleⁱᵐᵖˡ : val :=
+  λ: "s" "epoch",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "epoch" := (mem.alloc "epoch") in
     return: ((![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s"))) ≠ (![#uint64T] "epoch"))).
@@ -926,8 +956,8 @@ Definition Server__isEpochStale : val :=
    can be considered committed by primary.
 
    go: server.go:278:18 *)
-Definition Server__ApplyAsBackup : val :=
-  rec: "Server__ApplyAsBackup" "s" "args" :=
+Definition Server__ApplyAsBackupⁱᵐᵖˡ : val :=
+  λ: "s" "args",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -991,8 +1021,8 @@ Definition Server__ApplyAsBackup : val :=
     return: (e.None)).
 
 (* go: server.go:339:18 *)
-Definition Server__SetState : val :=
-  rec: "Server__SetState" "s" "args" :=
+Definition Server__SetStateⁱᵐᵖˡ : val :=
+  λ: "s" "args",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -1042,8 +1072,8 @@ Definition Server__SetState : val :=
 (* XXX: probably should rename to GetStateAndSeal
 
    go: server.go:370:18 *)
-Definition Server__GetState : val :=
-  rec: "Server__GetState" "s" "args" :=
+Definition Server__GetStateⁱᵐᵖˡ : val :=
+  λ: "s" "args",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -1092,8 +1122,8 @@ Definition Server__GetState : val :=
      }]))).
 
 (* go: server.go:393:18 *)
-Definition Server__BecomePrimary : val :=
-  rec: "Server__BecomePrimary" "s" "args" :=
+Definition Server__BecomePrimaryⁱᵐᵖˡ : val :=
+  λ: "s" "args",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -1143,9 +1173,11 @@ Definition Server__BecomePrimary : val :=
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
     return: (e.None)).
 
+Definition MakeServer : go_string := "github.com/mit-pdos/gokv/vrsm/replica.MakeServer"%go.
+
 (* go: server.go:427:6 *)
-Definition MakeServer : val :=
-  rec: "MakeServer" "sm" "confHosts" "nextIndex" "epoch" "sealed" :=
+Definition MakeServerⁱᵐᵖˡ : val :=
+  λ: "sm" "confHosts" "nextIndex" "epoch" "sealed",
     exception_do (let: "sealed" := (mem.alloc "sealed") in
     let: "epoch" := (mem.alloc "epoch") in
     let: "nextIndex" := (mem.alloc "nextIndex") in
@@ -1186,8 +1218,8 @@ Definition MakeServer : val :=
     return: (![#ptrT] "s")).
 
 (* go: server.go:446:18 *)
-Definition Server__Serve : val :=
-  rec: "Server__Serve" "s" "me" :=
+Definition Server__Serveⁱᵐᵖˡ : val :=
+  λ: "s" "me",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "me" := (mem.alloc "me") in
     let: "handlers" := (mem.alloc (type.zero_val (type.mapT #uint64T #funcT))) in
@@ -1286,9 +1318,9 @@ Definition Server__Serve : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("EncodeApplyAsBackupArgs"%go, EncodeApplyAsBackupArgs); ("DecodeApplyAsBackupArgs"%go, DecodeApplyAsBackupArgs); ("EncodeSetStateArgs"%go, EncodeSetStateArgs); ("DecodeSetStateArgs"%go, DecodeSetStateArgs); ("EncodeGetStateArgs"%go, EncodeGetStateArgs); ("DecodeGetStateArgs"%go, DecodeGetStateArgs); ("EncodeGetStateReply"%go, EncodeGetStateReply); ("DecodeGetStateReply"%go, DecodeGetStateReply); ("EncodeBecomePrimaryArgs"%go, EncodeBecomePrimaryArgs); ("DecodeBecomePrimaryArgs"%go, DecodeBecomePrimaryArgs); ("EncodeApplyReply"%go, EncodeApplyReply); ("DecodeApplyReply"%go, DecodeApplyReply); ("EncodeIncreaseCommitArgs"%go, EncodeIncreaseCommitArgs); ("DecodeIncreaseCommitArgs"%go, DecodeIncreaseCommitArgs); ("MakeClerk"%go, MakeClerk); ("MakeServer"%go, MakeServer)].
+Definition functions' : list (go_string * val) := [(EncodeApplyAsBackupArgs, EncodeApplyAsBackupArgsⁱᵐᵖˡ); (DecodeApplyAsBackupArgs, DecodeApplyAsBackupArgsⁱᵐᵖˡ); (EncodeSetStateArgs, EncodeSetStateArgsⁱᵐᵖˡ); (DecodeSetStateArgs, DecodeSetStateArgsⁱᵐᵖˡ); (EncodeGetStateArgs, EncodeGetStateArgsⁱᵐᵖˡ); (DecodeGetStateArgs, DecodeGetStateArgsⁱᵐᵖˡ); (EncodeGetStateReply, EncodeGetStateReplyⁱᵐᵖˡ); (DecodeGetStateReply, DecodeGetStateReplyⁱᵐᵖˡ); (EncodeBecomePrimaryArgs, EncodeBecomePrimaryArgsⁱᵐᵖˡ); (DecodeBecomePrimaryArgs, DecodeBecomePrimaryArgsⁱᵐᵖˡ); (EncodeApplyReply, EncodeApplyReplyⁱᵐᵖˡ); (DecodeApplyReply, DecodeApplyReplyⁱᵐᵖˡ); (EncodeIncreaseCommitArgs, EncodeIncreaseCommitArgsⁱᵐᵖˡ); (DecodeIncreaseCommitArgs, DecodeIncreaseCommitArgsⁱᵐᵖˡ); (MakeClerk, MakeClerkⁱᵐᵖˡ); (MakeServer, MakeServerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("ApplyAsBackupArgs"%go, []); ("ApplyAsBackupArgs'ptr"%go, []); ("SetStateArgs"%go, []); ("SetStateArgs'ptr"%go, []); ("GetStateArgs"%go, []); ("GetStateArgs'ptr"%go, []); ("GetStateReply"%go, []); ("GetStateReply'ptr"%go, []); ("BecomePrimaryArgs"%go, []); ("BecomePrimaryArgs'ptr"%go, []); ("ApplyReply"%go, []); ("ApplyReply'ptr"%go, []); ("StateMachine"%go, []); ("StateMachine'ptr"%go, []); ("SyncStateMachine"%go, []); ("SyncStateMachine'ptr"%go, []); ("Clerk"%go, []); ("Clerk'ptr"%go, [("Apply"%go, Clerk__Apply); ("ApplyAsBackup"%go, Clerk__ApplyAsBackup); ("ApplyRo"%go, Clerk__ApplyRo); ("BecomePrimary"%go, Clerk__BecomePrimary); ("GetState"%go, Clerk__GetState); ("IncreaseCommitIndex"%go, Clerk__IncreaseCommitIndex); ("SetState"%go, Clerk__SetState)]); ("Server"%go, []); ("Server'ptr"%go, [("Apply"%go, Server__Apply); ("ApplyAsBackup"%go, Server__ApplyAsBackup); ("ApplyRoWaitForCommit"%go, Server__ApplyRoWaitForCommit); ("BecomePrimary"%go, Server__BecomePrimary); ("GetState"%go, Server__GetState); ("IncreaseCommitIndex"%go, Server__IncreaseCommitIndex); ("Serve"%go, Server__Serve); ("SetState"%go, Server__SetState); ("isEpochStale"%go, Server__isEpochStale); ("leaseRenewalThread"%go, Server__leaseRenewalThread); ("sendIncreaseCommitThread"%go, Server__sendIncreaseCommitThread)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("ApplyAsBackupArgs"%go, []); ("ApplyAsBackupArgs'ptr"%go, []); ("SetStateArgs"%go, []); ("SetStateArgs'ptr"%go, []); ("GetStateArgs"%go, []); ("GetStateArgs'ptr"%go, []); ("GetStateReply"%go, []); ("GetStateReply'ptr"%go, []); ("BecomePrimaryArgs"%go, []); ("BecomePrimaryArgs'ptr"%go, []); ("ApplyReply"%go, []); ("ApplyReply'ptr"%go, []); ("StateMachine"%go, []); ("StateMachine'ptr"%go, []); ("SyncStateMachine"%go, []); ("SyncStateMachine'ptr"%go, []); ("Clerk"%go, []); ("Clerk'ptr"%go, [("Apply"%go, Clerk__Applyⁱᵐᵖˡ); ("ApplyAsBackup"%go, Clerk__ApplyAsBackupⁱᵐᵖˡ); ("ApplyRo"%go, Clerk__ApplyRoⁱᵐᵖˡ); ("BecomePrimary"%go, Clerk__BecomePrimaryⁱᵐᵖˡ); ("GetState"%go, Clerk__GetStateⁱᵐᵖˡ); ("IncreaseCommitIndex"%go, Clerk__IncreaseCommitIndexⁱᵐᵖˡ); ("SetState"%go, Clerk__SetStateⁱᵐᵖˡ)]); ("Server"%go, []); ("Server'ptr"%go, [("Apply"%go, Server__Applyⁱᵐᵖˡ); ("ApplyAsBackup"%go, Server__ApplyAsBackupⁱᵐᵖˡ); ("ApplyRoWaitForCommit"%go, Server__ApplyRoWaitForCommitⁱᵐᵖˡ); ("BecomePrimary"%go, Server__BecomePrimaryⁱᵐᵖˡ); ("GetState"%go, Server__GetStateⁱᵐᵖˡ); ("IncreaseCommitIndex"%go, Server__IncreaseCommitIndexⁱᵐᵖˡ); ("Serve"%go, Server__Serveⁱᵐᵖˡ); ("SetState"%go, Server__SetStateⁱᵐᵖˡ); ("isEpochStale"%go, Server__isEpochStaleⁱᵐᵖˡ); ("leaseRenewalThread"%go, Server__leaseRenewalThreadⁱᵐᵖˡ); ("sendIncreaseCommitThread"%go, Server__sendIncreaseCommitThreadⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo replica.replica :=
   {|
@@ -1299,8 +1331,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("ApplyAsBac
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init replica.replica (λ: <>,
+  λ: <>,
+    package.init #replica.replica (λ: <>,
       exception_do (do:  configservice.initialize';;;
       do:  urpc.initialize';;;
       do:  std.initialize';;;

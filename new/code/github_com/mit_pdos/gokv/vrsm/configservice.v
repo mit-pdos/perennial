@@ -18,9 +18,11 @@ Module configservice.
 Section code.
 
 
+Definition EncodeConfig : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.EncodeConfig"%go.
+
 (* go: 0_marshal.go:8:6 *)
-Definition EncodeConfig : val :=
-  rec: "EncodeConfig" "config" :=
+Definition EncodeConfigⁱᵐᵖˡ : val :=
+  λ: "config",
     exception_do (let: "config" := (mem.alloc "config") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (#(W64 8) * (s_to_w64 (let: "$a0" := (![#sliceT] "config") in
@@ -42,9 +44,11 @@ Definition EncodeConfig : val :=
       do:  ("enc" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeConfig : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.DecodeConfig"%go.
+
 (* go: 0_marshal.go:17:6 *)
-Definition DecodeConfig : val :=
-  rec: "DecodeConfig" "enc_config" :=
+Definition DecodeConfigⁱᵐᵖˡ : val :=
+  λ: "enc_config",
     exception_do (let: "enc_config" := (mem.alloc "enc_config") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_config") in
@@ -87,9 +91,11 @@ Definition RPC_TRYWRITECONFIG : expr := #(W64 2).
 
 Definition RPC_GETLEASE : expr := #(W64 3).
 
+Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.MakeClerk"%go.
+
 (* go: client.go:26:6 *)
-Definition MakeClerk : val :=
-  rec: "MakeClerk" "hosts" :=
+Definition MakeClerkⁱᵐᵖˡ : val :=
+  λ: "hosts",
     exception_do (let: "hosts" := (mem.alloc "hosts") in
     let: "cls" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #ptrT #(W64 0)) in
@@ -114,8 +120,8 @@ Definition MakeClerk : val :=
      }]))).
 
 (* go: client.go:34:18 *)
-Definition Clerk__ReserveEpochAndGetConfig : val :=
-  rec: "Clerk__ReserveEpochAndGetConfig" "ck" <> :=
+Definition Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
+  λ: "ck" <>,
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
@@ -172,8 +178,8 @@ Definition Clerk__ReserveEpochAndGetConfig : val :=
     return: (![#uint64T] "epoch", ![#sliceT] "config")).
 
 (* go: client.go:67:18 *)
-Definition Clerk__GetConfig : val :=
-  rec: "Clerk__GetConfig" "ck" <> :=
+Definition Clerk__GetConfigⁱᵐᵖˡ : val :=
+  λ: "ck" <>,
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
@@ -201,8 +207,8 @@ Definition Clerk__GetConfig : val :=
     return: (![#sliceT] "config")).
 
 (* go: client.go:81:18 *)
-Definition Clerk__TryWriteConfig : val :=
-  rec: "Clerk__TryWriteConfig" "ck" "epoch" "config" :=
+Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
+  λ: "ck" "epoch" "config",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "config" := (mem.alloc "config") in
     let: "epoch" := (mem.alloc "epoch") in
@@ -270,8 +276,8 @@ Definition Clerk__TryWriteConfig : val :=
    guess on when the lease expires.
 
    go: client.go:117:18 *)
-Definition Clerk__GetLease : val :=
-  rec: "Clerk__GetLease" "ck" "epoch" :=
+Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
+  λ: "ck" "epoch",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "epoch" := (mem.alloc "epoch") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
@@ -347,9 +353,11 @@ Definition state : go_type := structT [
   "config" :: sliceT
 ].
 
+Definition encodeState : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.encodeState"%go.
+
 (* go: server.go:25:6 *)
-Definition encodeState : val :=
-  rec: "encodeState" "st" :=
+Definition encodeStateⁱᵐᵖˡ : val :=
+  λ: "st",
     exception_do (let: "st" := (mem.alloc "st") in
     let: "e" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := #slice.nil in
@@ -382,9 +390,11 @@ Definition encodeState : val :=
     do:  ("e" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "e")).
 
+Definition decodeState : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.decodeState"%go.
+
 (* go: server.go:39:6 *)
-Definition decodeState : val :=
-  rec: "decodeState" "e" :=
+Definition decodeStateⁱᵐᵖˡ : val :=
+  λ: "e",
     exception_do (let: "e" := (mem.alloc "e") in
     let: "st" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #state)) in
@@ -429,8 +439,8 @@ Definition Server : go_type := structT [
 ].
 
 (* go: server.go:56:18 *)
-Definition Server__tryAcquire : val :=
-  rec: "Server__tryAcquire" "s" <> :=
+Definition Server__tryAcquireⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "relF" := (mem.alloc (type.zero_val #funcT)) in
     let: "e" := (mem.alloc (type.zero_val #ptrT)) in
@@ -462,8 +472,8 @@ Definition Server__tryAcquire : val :=
     return: (#true, ![#ptrT] "st", ![#funcT] "releaseFn")).
 
 (* go: server.go:70:18 *)
-Definition Server__ReserveEpochAndGetConfig : val :=
-  rec: "Server__ReserveEpochAndGetConfig" "s" "args" "reply" :=
+Definition Server__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
+  λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
@@ -516,8 +526,8 @@ Definition Server__ReserveEpochAndGetConfig : val :=
     return: #()).
 
 (* go: server.go:88:18 *)
-Definition Server__GetConfig : val :=
-  rec: "Server__GetConfig" "s" "args" "reply" :=
+Definition Server__GetConfigⁱᵐᵖˡ : val :=
+  λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
@@ -531,8 +541,8 @@ Definition Server__GetConfig : val :=
     return: #()).
 
 (* go: server.go:93:18 *)
-Definition Server__TryWriteConfig : val :=
-  rec: "Server__TryWriteConfig" "s" "args" "reply" :=
+Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
+  λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
@@ -636,8 +646,8 @@ Definition Server__TryWriteConfig : val :=
     return: #()).
 
 (* go: server.go:145:18 *)
-Definition Server__GetLease : val :=
-  rec: "Server__GetLease" "s" "args" "reply" :=
+Definition Server__GetLeaseⁱᵐᵖˡ : val :=
+  λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
@@ -717,9 +727,11 @@ Definition Server__GetLease : val :=
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     return: #()).
 
+Definition makeServer : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.makeServer"%go.
+
 (* go: server.go:177:6 *)
-Definition makeServer : val :=
-  rec: "makeServer" "fname" "paxosMe" "hosts" "initconfig" :=
+Definition makeServerⁱᵐᵖˡ : val :=
+  λ: "fname" "paxosMe" "hosts" "initconfig",
     exception_do (let: "initconfig" := (mem.alloc "initconfig") in
     let: "hosts" := (mem.alloc "hosts") in
     let: "paxosMe" := (mem.alloc "paxosMe") in
@@ -746,9 +758,11 @@ Definition makeServer : val :=
     do:  ((struct.field_ref #Server #"s"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     return: (![#ptrT] "s")).
 
+Definition StartServer : go_string := "github.com/mit-pdos/gokv/vrsm/configservice.StartServer"%go.
+
 (* go: server.go:187:6 *)
-Definition StartServer : val :=
-  rec: "StartServer" "fname" "me" "paxosMe" "hosts" "initconfig" :=
+Definition StartServerⁱᵐᵖˡ : val :=
+  λ: "fname" "me" "paxosMe" "hosts" "initconfig",
     exception_do (let: "initconfig" := (mem.alloc "initconfig") in
     let: "hosts" := (mem.alloc "hosts") in
     let: "paxosMe" := (mem.alloc "paxosMe") in
@@ -782,9 +796,9 @@ Definition StartServer : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("EncodeConfig"%go, EncodeConfig); ("DecodeConfig"%go, DecodeConfig); ("MakeClerk"%go, MakeClerk); ("encodeState"%go, encodeState); ("decodeState"%go, decodeState); ("makeServer"%go, makeServer); ("StartServer"%go, StartServer)].
+Definition functions' : list (go_string * val) := [(EncodeConfig, EncodeConfigⁱᵐᵖˡ); (DecodeConfig, DecodeConfigⁱᵐᵖˡ); (MakeClerk, MakeClerkⁱᵐᵖˡ); (encodeState, encodeStateⁱᵐᵖˡ); (decodeState, decodeStateⁱᵐᵖˡ); (makeServer, makeServerⁱᵐᵖˡ); (StartServer, StartServerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go, []); ("Clerk'ptr"%go, [("GetConfig"%go, Clerk__GetConfig); ("GetLease"%go, Clerk__GetLease); ("ReserveEpochAndGetConfig"%go, Clerk__ReserveEpochAndGetConfig); ("TryWriteConfig"%go, Clerk__TryWriteConfig)]); ("state"%go, []); ("state'ptr"%go, []); ("Server"%go, []); ("Server'ptr"%go, [("GetConfig"%go, Server__GetConfig); ("GetLease"%go, Server__GetLease); ("ReserveEpochAndGetConfig"%go, Server__ReserveEpochAndGetConfig); ("TryWriteConfig"%go, Server__TryWriteConfig); ("tryAcquire"%go, Server__tryAcquire)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go, []); ("Clerk'ptr"%go, [("GetConfig"%go, Clerk__GetConfigⁱᵐᵖˡ); ("GetLease"%go, Clerk__GetLeaseⁱᵐᵖˡ); ("ReserveEpochAndGetConfig"%go, Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ); ("TryWriteConfig"%go, Clerk__TryWriteConfigⁱᵐᵖˡ)]); ("state"%go, []); ("state'ptr"%go, []); ("Server"%go, []); ("Server'ptr"%go, [("GetConfig"%go, Server__GetConfigⁱᵐᵖˡ); ("GetLease"%go, Server__GetLeaseⁱᵐᵖˡ); ("ReserveEpochAndGetConfig"%go, Server__ReserveEpochAndGetConfigⁱᵐᵖˡ); ("TryWriteConfig"%go, Server__TryWriteConfigⁱᵐᵖˡ); ("tryAcquire"%go, Server__tryAcquireⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo configservice.configservice :=
   {|
@@ -795,8 +809,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go,
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init configservice.configservice (λ: <>,
+  λ: <>,
+    package.init #configservice.configservice (λ: <>,
       exception_do (do:  paxos.initialize';;;
       do:  urpc.initialize';;;
       do:  std.initialize';;;

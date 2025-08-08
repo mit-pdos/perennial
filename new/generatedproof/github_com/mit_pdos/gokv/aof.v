@@ -147,27 +147,12 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined aof :=
-{|
-  is_pkg_defined := is_global_definitions aof var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_CreateAppendOnlyFile :
-  WpFuncCall aof "CreateAppendOnlyFile" _ (is_pkg_defined aof) :=
+  WpFuncCall aof.CreateAppendOnlyFile _ (is_pkg_defined aof) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_AppendOnlyFile'ptr_Append :

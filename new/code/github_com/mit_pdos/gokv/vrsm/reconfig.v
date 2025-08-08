@@ -15,9 +15,11 @@ Module reconfig.
 Section code.
 
 
+Definition EnterNewConfig : go_string := "github.com/mit-pdos/gokv/vrsm/reconfig.EnterNewConfig"%go.
+
 (* go: admin.go:14:6 *)
-Definition EnterNewConfig : val :=
-  rec: "EnterNewConfig" "configHosts" "servers" :=
+Definition EnterNewConfigⁱᵐᵖˡ : val :=
+  λ: "configHosts" "servers",
     exception_do (let: "servers" := (mem.alloc "servers") in
     let: "configHosts" := (mem.alloc "configHosts") in
     (if: (let: "$a0" := (![#sliceT] "servers") in
@@ -158,9 +160,11 @@ Definition EnterNewConfig : val :=
     (method_call #replica #"Clerk'ptr" #"BecomePrimary" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "clerks") #(W64 0)))) "$a0");;;
     return: (e.None)).
 
+Definition InitializeSystem : go_string := "github.com/mit-pdos/gokv/vrsm/reconfig.InitializeSystem"%go.
+
 (* go: init.go:9:6 *)
-Definition InitializeSystem : val :=
-  rec: "InitializeSystem" "configHosts" "servers" :=
+Definition InitializeSystemⁱᵐᵖˡ : val :=
+  λ: "configHosts" "servers",
     exception_do (let: "servers" := (mem.alloc "servers") in
     let: "configHosts" := (mem.alloc "configHosts") in
     let: "configCk" := (mem.alloc (type.zero_val #ptrT)) in
@@ -176,7 +180,7 @@ Definition InitializeSystem : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("EnterNewConfig"%go, EnterNewConfig); ("InitializeSystem"%go, InitializeSystem)].
+Definition functions' : list (go_string * val) := [(EnterNewConfig, EnterNewConfigⁱᵐᵖˡ); (InitializeSystem, InitializeSystemⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -189,8 +193,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init reconfig.reconfig (λ: <>,
+  λ: <>,
+    package.init #reconfig.reconfig (λ: <>,
       exception_do (do:  replica.initialize';;;
       do:  e.initialize';;;
       do:  configservice.initialize';;;

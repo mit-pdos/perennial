@@ -12,9 +12,13 @@ Context `{ffi_syntax}.
 
 Definition ProphId : go_type := ptrT.
 
+Definition NewProph : go_string := "github.com/mit-pdos/gokv/trusted_proph.NewProph"%go.
+
+Definition ResolveBytes : go_string := "github.com/mit-pdos/gokv/trusted_proph.ResolveBytes"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("NewProph"%go, NewProph); ("ResolveBytes"%go, ResolveBytes)].
+Definition functions' : list (go_string * val) := [(NewProph, NewProphⁱᵐᵖˡ); (ResolveBytes, ResolveBytesⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -29,8 +33,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init trusted_proph.trusted_proph (λ: <>,
+  λ: <>,
+    package.init #trusted_proph.trusted_proph (λ: <>,
       exception_do (do:  #())
       ).
 

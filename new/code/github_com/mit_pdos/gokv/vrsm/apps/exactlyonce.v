@@ -36,8 +36,8 @@ Definition VersionedStateMachine : go_type := structT [
 ].
 
 (* go: sm.go:26:25 *)
-Definition eStateMachine__applyVolatile : val :=
-  rec: "eStateMachine__applyVolatile" "s" "op" :=
+Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
@@ -120,8 +120,8 @@ Definition eStateMachine__applyVolatile : val :=
     return: (![#sliceT] "ret")).
 
 (* go: sm.go:58:25 *)
-Definition eStateMachine__applyReadonly : val :=
-  rec: "eStateMachine__applyReadonly" "s" "op" :=
+Definition eStateMachine__applyReadonlyⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
@@ -152,8 +152,8 @@ Definition eStateMachine__applyReadonly : val :=
     return: ("$ret0", "$ret1")).
 
 (* go: sm.go:72:25 *)
-Definition eStateMachine__getState : val :=
-  rec: "eStateMachine__getState" "s" <> :=
+Definition eStateMachine__getStateⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "appState" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((![#funcT] (struct.field_ref #VersionedStateMachine #"GetState"%go (![#ptrT] (struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s"))))) #()) in
@@ -182,8 +182,8 @@ Definition eStateMachine__getState : val :=
     return: (![#sliceT] "enc")).
 
 (* go: sm.go:85:25 *)
-Definition eStateMachine__setState : val :=
-  rec: "eStateMachine__setState" "s" "state" "nextIndex" :=
+Definition eStateMachine__setStateⁱᵐᵖˡ : val :=
+  λ: "s" "state" "nextIndex",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "nextIndex" := (mem.alloc "nextIndex") in
     let: "state" := (mem.alloc "state") in
@@ -215,9 +215,11 @@ Definition eStateMachine__setState : val :=
     do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     return: #()).
 
+Definition MakeExactlyOnceStateMachine : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeExactlyOnceStateMachine"%go.
+
 (* go: sm.go:94:6 *)
-Definition MakeExactlyOnceStateMachine : val :=
-  rec: "MakeExactlyOnceStateMachine" "sm" :=
+Definition MakeExactlyOnceStateMachineⁱᵐᵖˡ : val :=
+  λ: "sm",
     exception_do (let: "sm" := (mem.alloc "sm") in
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #eStateMachine)) in
@@ -249,9 +251,11 @@ Definition Clerk : go_type := structT [
   "seq" :: uint64T
 ].
 
+Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeClerk"%go.
+
 (* go: sm.go:115:6 *)
-Definition MakeClerk : val :=
-  rec: "MakeClerk" "confHosts" :=
+Definition MakeClerkⁱᵐᵖˡ : val :=
+  λ: "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
     let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #Clerk)) in
@@ -279,8 +283,8 @@ Definition MakeClerk : val :=
     return: (![#ptrT] "ck")).
 
 (* go: sm.go:127:18 *)
-Definition Clerk__ApplyExactlyOnce : val :=
-  rec: "Clerk__ApplyExactlyOnce" "ck" "req" :=
+Definition Clerk__ApplyExactlyOnceⁱᵐᵖˡ : val :=
+  λ: "ck" "req",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "req" := (mem.alloc "req") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
@@ -308,8 +312,8 @@ Definition Clerk__ApplyExactlyOnce : val :=
      (method_call #clerk #"Clerk'ptr" #"Apply" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
 
 (* go: sm.go:138:18 *)
-Definition Clerk__ApplyReadonly : val :=
-  rec: "Clerk__ApplyReadonly" "ck" "req" :=
+Definition Clerk__ApplyReadonlyⁱᵐᵖˡ : val :=
+  λ: "ck" "req",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "req" := (mem.alloc "req") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
@@ -326,9 +330,9 @@ Definition Clerk__ApplyReadonly : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MakeExactlyOnceStateMachine"%go, MakeExactlyOnceStateMachine); ("MakeClerk"%go, MakeClerk)].
+Definition functions' : list (go_string * val) := [(MakeExactlyOnceStateMachine, MakeExactlyOnceStateMachineⁱᵐᵖˡ); (MakeClerk, MakeClerkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("eStateMachine"%go, []); ("eStateMachine'ptr"%go, [("applyReadonly"%go, eStateMachine__applyReadonly); ("applyVolatile"%go, eStateMachine__applyVolatile); ("getState"%go, eStateMachine__getState); ("setState"%go, eStateMachine__setState)]); ("Clerk"%go, []); ("Clerk'ptr"%go, [("ApplyExactlyOnce"%go, Clerk__ApplyExactlyOnce); ("ApplyReadonly"%go, Clerk__ApplyReadonly)]); ("VersionedStateMachine"%go, []); ("VersionedStateMachine'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("eStateMachine"%go, []); ("eStateMachine'ptr"%go, [("applyReadonly"%go, eStateMachine__applyReadonlyⁱᵐᵖˡ); ("applyVolatile"%go, eStateMachine__applyVolatileⁱᵐᵖˡ); ("getState"%go, eStateMachine__getStateⁱᵐᵖˡ); ("setState"%go, eStateMachine__setStateⁱᵐᵖˡ)]); ("Clerk"%go, []); ("Clerk'ptr"%go, [("ApplyExactlyOnce"%go, Clerk__ApplyExactlyOnceⁱᵐᵖˡ); ("ApplyReadonly"%go, Clerk__ApplyReadonlyⁱᵐᵖˡ)]); ("VersionedStateMachine"%go, []); ("VersionedStateMachine'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo exactlyonce.exactlyonce :=
   {|
@@ -339,8 +343,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("eStateMach
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init exactlyonce.exactlyonce (λ: <>,
+  λ: <>,
+    package.init #exactlyonce.exactlyonce (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  storage.initialize';;;
       do:  clerk.initialize';;;

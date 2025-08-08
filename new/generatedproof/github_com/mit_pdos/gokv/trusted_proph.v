@@ -19,31 +19,16 @@ End ProphId.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined trusted_proph :=
-{|
-  is_pkg_defined := is_global_definitions trusted_proph var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewProph :
-  WpFuncCall trusted_proph "NewProph" _ (is_pkg_defined trusted_proph) :=
+  WpFuncCall trusted_proph.NewProph _ (is_pkg_defined trusted_proph) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_ResolveBytes :
-  WpFuncCall trusted_proph "ResolveBytes" _ (is_pkg_defined trusted_proph) :=
+  WpFuncCall trusted_proph.ResolveBytes _ (is_pkg_defined trusted_proph) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

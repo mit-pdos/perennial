@@ -8,21 +8,27 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition foo : go_string := "github.com/mit-pdos/gokv/globals_test.foo"%go.
+
 (* go: globals.go:3:6 *)
-Definition foo : val :=
-  rec: "foo" <> :=
+Definition fooⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: (#(W64 10))).
 
+Definition other : go_string := "github.com/mit-pdos/gokv/globals_test.other"%go.
+
 (* go: globals.go:12:6 *)
-Definition other : val :=
-  rec: "other" <> :=
+Definition otherⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "$r0" := #"ok"%go in
     do:  ((globals.get #globals_test.main #"globalY"%go) <-[#stringT] "$r0");;;
     return: #()).
 
+Definition bar : go_string := "github.com/mit-pdos/gokv/globals_test.bar"%go.
+
 (* go: globals.go:16:6 *)
-Definition bar : val :=
-  rec: "bar" <> :=
+Definition barⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (do:  ((func_call #globals_test.main #"other"%go) #());;;
     (if: ((![#uint64T] (globals.get #globals_test.main #"GlobalX"%go)) ≠ #(W64 10)) || ((![#stringT] (globals.get #globals_test.main #"globalY"%go)) ≠ #"ok"%go)
     then
@@ -31,15 +37,17 @@ Definition bar : val :=
     else do:  #());;;
     return: #()).
 
+Definition main : go_string := "github.com/mit-pdos/gokv/globals_test.main"%go.
+
 (* go: globals.go:31:6 *)
-Definition main : val :=
-  rec: "main" <> :=
+Definition mainⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (do:  ((func_call #globals_test.main #"bar"%go) #());;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [("GlobalX"%go, uint64T); ("globalY"%go, stringT); ("globalA"%go, stringT); ("globalB"%go, stringT)].
 
-Definition functions' : list (go_string * val) := [("foo"%go, foo); ("other"%go, other); ("bar"%go, bar); ("main"%go, main)].
+Definition functions' : list (go_string * val) := [(foo, fooⁱᵐᵖˡ); (other, otherⁱᵐᵖˡ); (bar, barⁱᵐᵖˡ); (main, mainⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -52,8 +60,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init globals_test.main (λ: <>,
+  λ: <>,
+    package.init #globals_test.main (λ: <>,
       exception_do (let: "$r0" := ((func_call #globals_test.main #"foo"%go) #()) in
       do:  ((globals.get #globals_test.main #"GlobalX"%go) <-[#uint64T] "$r0");;;
       let: "$r0" := #"a"%go in

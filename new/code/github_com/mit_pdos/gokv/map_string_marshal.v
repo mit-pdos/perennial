@@ -9,9 +9,11 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition EncodeStringMap : go_string := "github.com/mit-pdos/gokv/map_string_marshal.EncodeStringMap"%go.
+
 (* go: map_string_marshal.go:5:6 *)
-Definition EncodeStringMap : val :=
-  rec: "EncodeStringMap" "kvs" :=
+Definition EncodeStringMapⁱᵐᵖˡ : val :=
+  λ: "kvs",
     exception_do (let: "kvs" := (mem.alloc "kvs") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
@@ -47,9 +49,11 @@ Definition EncodeStringMap : val :=
       do:  ("enc" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeStringMap : go_string := "github.com/mit-pdos/gokv/map_string_marshal.DecodeStringMap"%go.
+
 (* go: map_string_marshal.go:17:6 *)
-Definition DecodeStringMap : val :=
-  rec: "DecodeStringMap" "enc_in" :=
+Definition DecodeStringMapⁱᵐᵖˡ : val :=
+  λ: "enc_in",
     exception_do (let: "enc_in" := (mem.alloc "enc_in") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_in") in
@@ -106,7 +110,7 @@ Definition DecodeStringMap : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("EncodeStringMap"%go, EncodeStringMap); ("DecodeStringMap"%go, DecodeStringMap)].
+Definition functions' : list (go_string * val) := [(EncodeStringMap, EncodeStringMapⁱᵐᵖˡ); (DecodeStringMap, DecodeStringMapⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -119,8 +123,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init map_string_marshal.map_string_marshal (λ: <>,
+  λ: <>,
+    package.init #map_string_marshal.map_string_marshal (λ: <>,
       exception_do (do:  marshal.initialize')
       ).
 

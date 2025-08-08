@@ -24,9 +24,11 @@ Definition Clerk : go_type := structT [
   "lastPreferenceRefresh" :: uint64T
 ].
 
+Definition makeClerks : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.makeClerks"%go.
+
 (* go: clerk.go:23:6 *)
-Definition makeClerks : val :=
-  rec: "makeClerks" "servers" :=
+Definition makeClerksⁱᵐᵖˡ : val :=
+  λ: "servers",
     exception_do (let: "servers" := (mem.alloc "servers") in
     let: "clerks" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] "servers") in
@@ -43,9 +45,11 @@ Definition makeClerks : val :=
       do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
     return: (![#sliceT] "clerks")).
 
+Definition Make : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.Make"%go.
+
 (* go: clerk.go:33:6 *)
-Definition Make : val :=
-  rec: "Make" "confHosts" :=
+Definition Makeⁱᵐᵖˡ : val :=
+  λ: "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
     let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #Clerk)) in
@@ -78,8 +82,8 @@ Definition Make : val :=
 (* will retry forever
 
    go: clerk.go:51:18 *)
-Definition Clerk__Apply : val :=
-  rec: "Clerk__Apply" "ck" "op" :=
+Definition Clerk__Applyⁱᵐᵖˡ : val :=
+  λ: "ck" "op",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
@@ -110,8 +114,8 @@ Definition Clerk__Apply : val :=
     return: (![#sliceT] "ret")).
 
 (* go: clerk.go:71:18 *)
-Definition Clerk__maybeRefreshPreference : val :=
-  rec: "Clerk__maybeRefreshPreference" "ck" <> :=
+Definition Clerk__maybeRefreshPreferenceⁱᵐᵖˡ : val :=
+  λ: "ck" <>,
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "now" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
@@ -133,8 +137,8 @@ Definition Clerk__maybeRefreshPreference : val :=
     return: #()).
 
 (* go: clerk.go:79:18 *)
-Definition Clerk__ApplyRo2 : val :=
-  rec: "Clerk__ApplyRo2" "ck" "op" :=
+Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
+  λ: "ck" "op",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
@@ -200,8 +204,8 @@ Definition Clerk__ApplyRo2 : val :=
     return: (![#sliceT] "ret")).
 
 (* go: clerk.go:118:18 *)
-Definition Clerk__ApplyRo : val :=
-  rec: "Clerk__ApplyRo" "ck" "op" :=
+Definition Clerk__ApplyRoⁱᵐᵖˡ : val :=
+  λ: "ck" "op",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
     let: "p" := (mem.alloc (type.zero_val #ptrT)) in
@@ -218,9 +222,9 @@ Definition Clerk__ApplyRo : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("makeClerks"%go, makeClerks); ("Make"%go, Make)].
+Definition functions' : list (go_string * val) := [(makeClerks, makeClerksⁱᵐᵖˡ); (Make, Makeⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go, []); ("Clerk'ptr"%go, [("Apply"%go, Clerk__Apply); ("ApplyRo"%go, Clerk__ApplyRo); ("ApplyRo2"%go, Clerk__ApplyRo2); ("maybeRefreshPreference"%go, Clerk__maybeRefreshPreference)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go, []); ("Clerk'ptr"%go, [("Apply"%go, Clerk__Applyⁱᵐᵖˡ); ("ApplyRo"%go, Clerk__ApplyRoⁱᵐᵖˡ); ("ApplyRo2"%go, Clerk__ApplyRo2ⁱᵐᵖˡ); ("maybeRefreshPreference"%go, Clerk__maybeRefreshPreferenceⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo clerk.clerk :=
   {|
@@ -231,8 +235,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go,
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init clerk.clerk (λ: <>,
+  λ: <>,
+    package.init #clerk.clerk (λ: <>,
       exception_do (do:  replica.initialize';;;
       do:  e.initialize';;;
       do:  configservice.initialize';;;

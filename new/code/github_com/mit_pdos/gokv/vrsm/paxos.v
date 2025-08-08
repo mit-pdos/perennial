@@ -26,9 +26,11 @@ Definition singleClerk : go_type := structT [
   "cl" :: ptrT
 ].
 
+Definition MakeSingleClerk : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.MakeSingleClerk"%go.
+
 (* go: internalclerk.go:19:6 *)
-Definition MakeSingleClerk : val :=
-  rec: "MakeSingleClerk" "addr" :=
+Definition MakeSingleClerkⁱᵐᵖˡ : val :=
+  λ: "addr",
     exception_do (let: "addr" := (mem.alloc "addr") in
     let: "ck" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$cl" := (let: "$a0" := (![#uint64T] "addr") in
@@ -51,8 +53,8 @@ Definition enterNewEpochReply : go_type := structT [
 Definition ETimeout : expr := #(W64 3).
 
 (* go: internalclerk.go:28:23 *)
-Definition singleClerk__enterNewEpoch : val :=
-  rec: "singleClerk__enterNewEpoch" "s" "args" :=
+Definition singleClerk__enterNewEpochⁱᵐᵖˡ : val :=
+  λ: "s" "args",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
     let: "raw_args" := (mem.alloc (type.zero_val #sliceT)) in
@@ -87,8 +89,8 @@ Definition applyAsFollowerReply : go_type := structT [
 ].
 
 (* go: internalclerk.go:40:23 *)
-Definition singleClerk__applyAsFollower : val :=
-  rec: "singleClerk__applyAsFollower" "s" "args" :=
+Definition singleClerk__applyAsFollowerⁱᵐᵖˡ : val :=
+  λ: "s" "args",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "args" := (mem.alloc "args") in
     let: "raw_args" := (mem.alloc (type.zero_val #sliceT)) in
@@ -116,8 +118,8 @@ Definition singleClerk__applyAsFollower : val :=
        }])))).
 
 (* go: internalclerk.go:51:23 *)
-Definition singleClerk__TryBecomeLeader : val :=
-  rec: "singleClerk__TryBecomeLeader" "s" <> :=
+Definition singleClerk__TryBecomeLeaderⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #sliceT)) in
@@ -143,9 +145,11 @@ Definition applyAsFollowerArgs : go_type := structT [
   "state" :: sliceT
 ].
 
+Definition encodeApplyAsFollowerArgs : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.encodeApplyAsFollowerArgs"%go.
+
 (* go: marshal.go:21:6 *)
-Definition encodeApplyAsFollowerArgs : val :=
-  rec: "encodeApplyAsFollowerArgs" "o" :=
+Definition encodeApplyAsFollowerArgsⁱᵐᵖˡ : val :=
+  λ: "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![#sliceT] (struct.field_ref #applyAsFollowerArgs #"state"%go (![#ptrT] "o"))) in
@@ -165,9 +169,11 @@ Definition encodeApplyAsFollowerArgs : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
+Definition decodeApplyAsFollowerArgs : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.decodeApplyAsFollowerArgs"%go.
+
 (* go: marshal.go:29:6 *)
-Definition decodeApplyAsFollowerArgs : val :=
-  rec: "decodeApplyAsFollowerArgs" "enc" :=
+Definition decodeApplyAsFollowerArgsⁱᵐᵖˡ : val :=
+  λ: "enc",
     exception_do (let: "enc" := (mem.alloc "enc") in
     let: "o" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #applyAsFollowerArgs)) in
@@ -188,9 +194,11 @@ Definition decodeApplyAsFollowerArgs : val :=
     do:  ((struct.field_ref #applyAsFollowerArgs #"state"%go (![#ptrT] "o")) <-[#sliceT] "$r0");;;
     return: (![#ptrT] "o")).
 
+Definition decodeApplyAsFollowerReply : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.decodeApplyAsFollowerReply"%go.
+
 (* go: marshal.go:41:6 *)
-Definition decodeApplyAsFollowerReply : val :=
-  rec: "decodeApplyAsFollowerReply" "s" :=
+Definition decodeApplyAsFollowerReplyⁱᵐᵖˡ : val :=
+  λ: "s",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "o" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (struct.make #applyAsFollowerReply [{
@@ -208,9 +216,11 @@ Definition decodeApplyAsFollowerReply : val :=
     do:  ((struct.field_ref #applyAsFollowerReply #"err"%go (![#ptrT] "o")) <-[#Error] "$r0");;;
     return: (![#ptrT] "o")).
 
+Definition encodeApplyAsFollowerReply : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.encodeApplyAsFollowerReply"%go.
+
 (* go: marshal.go:48:6 *)
-Definition encodeApplyAsFollowerReply : val :=
-  rec: "encodeApplyAsFollowerReply" "o" :=
+Definition encodeApplyAsFollowerReplyⁱᵐᵖˡ : val :=
+  λ: "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 8)) in
@@ -225,9 +235,11 @@ Definition enterNewEpochArgs : go_type := structT [
   "epoch" :: uint64T
 ].
 
+Definition encodeEnterNewEpochArgs : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.encodeEnterNewEpochArgs"%go.
+
 (* go: marshal.go:58:6 *)
-Definition encodeEnterNewEpochArgs : val :=
-  rec: "encodeEnterNewEpochArgs" "o" :=
+Definition encodeEnterNewEpochArgsⁱᵐᵖˡ : val :=
+  λ: "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 8)) in
@@ -238,9 +250,11 @@ Definition encodeEnterNewEpochArgs : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
+Definition decodeEnterNewEpochArgs : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.decodeEnterNewEpochArgs"%go.
+
 (* go: marshal.go:64:6 *)
-Definition decodeEnterNewEpochArgs : val :=
-  rec: "decodeEnterNewEpochArgs" "s" :=
+Definition decodeEnterNewEpochArgsⁱᵐᵖˡ : val :=
+  λ: "s",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "o" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #enterNewEpochArgs)) in
@@ -253,9 +267,11 @@ Definition decodeEnterNewEpochArgs : val :=
     do:  "$r1";;;
     return: (![#ptrT] "o")).
 
+Definition decodeEnterNewEpochReply : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.decodeEnterNewEpochReply"%go.
+
 (* go: marshal.go:77:6 *)
-Definition decodeEnterNewEpochReply : val :=
-  rec: "decodeEnterNewEpochReply" "enc" :=
+Definition decodeEnterNewEpochReplyⁱᵐᵖˡ : val :=
+  λ: "enc",
     exception_do (let: "enc" := (mem.alloc "enc") in
     let: "o" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (struct.make #enterNewEpochReply [{
@@ -290,9 +306,11 @@ Definition decodeEnterNewEpochReply : val :=
     do:  ((struct.field_ref #enterNewEpochReply #"state"%go (![#ptrT] "o")) <-[#sliceT] "$r0");;;
     return: (![#ptrT] "o")).
 
+Definition encodeEnterNewEpochReply : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.encodeEnterNewEpochReply"%go.
+
 (* go: marshal.go:89:6 *)
-Definition encodeEnterNewEpochReply : val :=
-  rec: "encodeEnterNewEpochReply" "o" :=
+Definition encodeEnterNewEpochReplyⁱᵐᵖˡ : val :=
+  λ: "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 ((8 + 8) + 8)) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #enterNewEpochReply #"state"%go (![#ptrT] "o"))) in
@@ -321,9 +339,11 @@ Definition applyReply : go_type := structT [
   "ret" :: sliceT
 ].
 
+Definition encodeApplyReply : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.encodeApplyReply"%go.
+
 (* go: marshal.go:103:6 *)
-Definition encodeApplyReply : val :=
-  rec: "encodeApplyReply" "o" :=
+Definition encodeApplyReplyⁱᵐᵖˡ : val :=
+  λ: "o",
     exception_do (let: "o" := (mem.alloc "o") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 8) + (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #applyReply #"ret"%go (![#ptrT] "o"))) in
@@ -339,9 +359,11 @@ Definition encodeApplyReply : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
+Definition decodeApplyReply : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.decodeApplyReply"%go.
+
 (* go: marshal.go:110:6 *)
-Definition decodeApplyReply : val :=
-  rec: "decodeApplyReply" "enc" :=
+Definition decodeApplyReplyⁱᵐᵖˡ : val :=
+  λ: "enc",
     exception_do (let: "enc" := (mem.alloc "enc") in
     let: "o" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (struct.make #applyReply [{
@@ -362,13 +384,17 @@ Definition decodeApplyReply : val :=
     do:  ((struct.field_ref #applyReply #"ret"%go (![#ptrT] "o")) <-[#sliceT] "$r0");;;
     return: (![#ptrT] "o")).
 
+Definition boolToU64 : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.boolToU64"%go.
+
 (* go: marshal.go:120:6 *)
-Definition boolToU64 : val :=
-  rec: "boolToU64" "b" :=
+Definition boolToU64ⁱᵐᵖˡ : val :=
+  λ: "b",
     exception_do (let: "b" := (mem.alloc "b") in
     (if: ![#boolT] "b"
     then return: (#(W64 1))
     else return: (#(W64 0)))).
+
+Definition encodePaxosState : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.encodePaxosState"%go.
 
 Definition paxosState : go_type := structT [
   "epoch" :: uint64T;
@@ -379,8 +405,8 @@ Definition paxosState : go_type := structT [
 ].
 
 (* go: marshal.go:128:6 *)
-Definition encodePaxosState : val :=
-  rec: "encodePaxosState" "ps" :=
+Definition encodePaxosStateⁱᵐᵖˡ : val :=
+  λ: "ps",
     exception_do (let: "ps" := (mem.alloc "ps") in
     let: "e" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
@@ -408,9 +434,11 @@ Definition encodePaxosState : val :=
     do:  ("e" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "e")).
 
+Definition decodePaxosState : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.decodePaxosState"%go.
+
 (* go: marshal.go:138:6 *)
-Definition decodePaxosState : val :=
-  rec: "decodePaxosState" "enc" :=
+Definition decodePaxosStateⁱᵐᵖˡ : val :=
+  λ: "enc",
     exception_do (let: "enc" := (mem.alloc "enc") in
     let: "e" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc") in
@@ -455,8 +483,8 @@ Definition Server : go_type := structT [
 ].
 
 (* go: server.go:28:18 *)
-Definition Server__withLock : val :=
-  rec: "Server__withLock" "s" "f" :=
+Definition Server__withLockⁱᵐᵖˡ : val :=
+  λ: "s" "f",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "f" := (mem.alloc "f") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -472,8 +500,8 @@ Definition Server__withLock : val :=
     return: #()).
 
 (* go: server.go:36:18 *)
-Definition Server__applyAsFollower : val :=
-  rec: "Server__applyAsFollower" "s" "args" "reply" :=
+Definition Server__applyAsFollowerⁱᵐᵖˡ : val :=
+  λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
@@ -524,8 +552,8 @@ Definition Server__applyAsFollower : val :=
    leader election, only for coming up with a valid proposal.
 
    go: server.go:68:18 *)
-Definition Server__enterNewEpoch : val :=
-  rec: "Server__enterNewEpoch" "s" "args" "reply" :=
+Definition Server__enterNewEpochⁱᵐᵖˡ : val :=
+  λ: "s" "args" "reply",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "reply" := (mem.alloc "reply") in
     let: "args" := (mem.alloc "args") in
@@ -553,8 +581,8 @@ Definition Server__enterNewEpoch : val :=
     return: #()).
 
 (* go: server.go:83:18 *)
-Definition Server__TryBecomeLeader : val :=
-  rec: "Server__TryBecomeLeader" "s" <> :=
+Definition Server__TryBecomeLeaderⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"started trybecomeleader"%go) in
     slice.literal #interfaceT ["$sl0"])) in
@@ -686,8 +714,8 @@ Definition Server__TryBecomeLeader : val :=
     return: #()).
 
 (* go: server.go:165:18 *)
-Definition Server__TryAcquire : val :=
-  rec: "Server__TryAcquire" "s" <> :=
+Definition Server__TryAcquireⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "retErr" := (mem.alloc (type.zero_val #Error)) in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
@@ -799,8 +827,8 @@ Definition Server__TryAcquire : val :=
     return: (ENone, struct.field_ref #paxosState #"state"%go (![#ptrT] (struct.field_ref #Server #"ps"%go (![#ptrT] "s"))), ![#funcT] "tryRelease")).
 
 (* go: server.go:235:18 *)
-Definition Server__WeakRead : val :=
-  rec: "Server__WeakRead" "s" <> :=
+Definition Server__WeakReadⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
@@ -809,9 +837,11 @@ Definition Server__WeakRead : val :=
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
     return: (![#sliceT] "ret")).
 
+Definition makeServer : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.makeServer"%go.
+
 (* go: server.go:242:6 *)
-Definition makeServer : val :=
-  rec: "makeServer" "fname" "initstate" "config" :=
+Definition makeServerⁱᵐᵖˡ : val :=
+  λ: "fname" "initstate" "config",
     exception_do (let: "config" := (mem.alloc "config") in
     let: "initstate" := (mem.alloc "initstate") in
     let: "fname" := (mem.alloc "fname") in
@@ -853,9 +883,11 @@ Definition makeServer : val :=
       do:  ((struct.field_ref #Server #"ps"%go (![#ptrT] "s")) <-[#ptrT] "$r0"));;;
     return: (![#ptrT] "s")).
 
+Definition StartServer : go_string := "github.com/mit-pdos/gokv/vrsm/paxos.StartServer"%go.
+
 (* go: server.go:262:6 *)
-Definition StartServer : val :=
-  rec: "StartServer" "fname" "initstate" "me" "config" :=
+Definition StartServerⁱᵐᵖˡ : val :=
+  λ: "fname" "initstate" "me" "config",
     exception_do (let: "config" := (mem.alloc "config") in
     let: "me" := (mem.alloc "me") in
     let: "initstate" := (mem.alloc "initstate") in
@@ -924,9 +956,9 @@ Definition StartServer : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MakeSingleClerk"%go, MakeSingleClerk); ("encodeApplyAsFollowerArgs"%go, encodeApplyAsFollowerArgs); ("decodeApplyAsFollowerArgs"%go, decodeApplyAsFollowerArgs); ("decodeApplyAsFollowerReply"%go, decodeApplyAsFollowerReply); ("encodeApplyAsFollowerReply"%go, encodeApplyAsFollowerReply); ("encodeEnterNewEpochArgs"%go, encodeEnterNewEpochArgs); ("decodeEnterNewEpochArgs"%go, decodeEnterNewEpochArgs); ("decodeEnterNewEpochReply"%go, decodeEnterNewEpochReply); ("encodeEnterNewEpochReply"%go, encodeEnterNewEpochReply); ("encodeApplyReply"%go, encodeApplyReply); ("decodeApplyReply"%go, decodeApplyReply); ("boolToU64"%go, boolToU64); ("encodePaxosState"%go, encodePaxosState); ("decodePaxosState"%go, decodePaxosState); ("makeServer"%go, makeServer); ("StartServer"%go, StartServer)].
+Definition functions' : list (go_string * val) := [(MakeSingleClerk, MakeSingleClerkⁱᵐᵖˡ); (encodeApplyAsFollowerArgs, encodeApplyAsFollowerArgsⁱᵐᵖˡ); (decodeApplyAsFollowerArgs, decodeApplyAsFollowerArgsⁱᵐᵖˡ); (decodeApplyAsFollowerReply, decodeApplyAsFollowerReplyⁱᵐᵖˡ); (encodeApplyAsFollowerReply, encodeApplyAsFollowerReplyⁱᵐᵖˡ); (encodeEnterNewEpochArgs, encodeEnterNewEpochArgsⁱᵐᵖˡ); (decodeEnterNewEpochArgs, decodeEnterNewEpochArgsⁱᵐᵖˡ); (decodeEnterNewEpochReply, decodeEnterNewEpochReplyⁱᵐᵖˡ); (encodeEnterNewEpochReply, encodeEnterNewEpochReplyⁱᵐᵖˡ); (encodeApplyReply, encodeApplyReplyⁱᵐᵖˡ); (decodeApplyReply, decodeApplyReplyⁱᵐᵖˡ); (boolToU64, boolToU64ⁱᵐᵖˡ); (encodePaxosState, encodePaxosStateⁱᵐᵖˡ); (decodePaxosState, decodePaxosStateⁱᵐᵖˡ); (makeServer, makeServerⁱᵐᵖˡ); (StartServer, StartServerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("singleClerk"%go, []); ("singleClerk'ptr"%go, [("TryBecomeLeader"%go, singleClerk__TryBecomeLeader); ("applyAsFollower"%go, singleClerk__applyAsFollower); ("enterNewEpoch"%go, singleClerk__enterNewEpoch)]); ("Error"%go, []); ("Error'ptr"%go, []); ("applyAsFollowerArgs"%go, []); ("applyAsFollowerArgs'ptr"%go, []); ("applyAsFollowerReply"%go, []); ("applyAsFollowerReply'ptr"%go, []); ("enterNewEpochArgs"%go, []); ("enterNewEpochArgs'ptr"%go, []); ("enterNewEpochReply"%go, []); ("enterNewEpochReply'ptr"%go, []); ("applyReply"%go, []); ("applyReply'ptr"%go, []); ("paxosState"%go, []); ("paxosState'ptr"%go, []); ("Server"%go, []); ("Server'ptr"%go, [("TryAcquire"%go, Server__TryAcquire); ("TryBecomeLeader"%go, Server__TryBecomeLeader); ("WeakRead"%go, Server__WeakRead); ("applyAsFollower"%go, Server__applyAsFollower); ("enterNewEpoch"%go, Server__enterNewEpoch); ("withLock"%go, Server__withLock)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("singleClerk"%go, []); ("singleClerk'ptr"%go, [("TryBecomeLeader"%go, singleClerk__TryBecomeLeaderⁱᵐᵖˡ); ("applyAsFollower"%go, singleClerk__applyAsFollowerⁱᵐᵖˡ); ("enterNewEpoch"%go, singleClerk__enterNewEpochⁱᵐᵖˡ)]); ("Error"%go, []); ("Error'ptr"%go, []); ("applyAsFollowerArgs"%go, []); ("applyAsFollowerArgs'ptr"%go, []); ("applyAsFollowerReply"%go, []); ("applyAsFollowerReply'ptr"%go, []); ("enterNewEpochArgs"%go, []); ("enterNewEpochArgs'ptr"%go, []); ("enterNewEpochReply"%go, []); ("enterNewEpochReply'ptr"%go, []); ("applyReply"%go, []); ("applyReply'ptr"%go, []); ("paxosState"%go, []); ("paxosState'ptr"%go, []); ("Server"%go, []); ("Server'ptr"%go, [("TryAcquire"%go, Server__TryAcquireⁱᵐᵖˡ); ("TryBecomeLeader"%go, Server__TryBecomeLeaderⁱᵐᵖˡ); ("WeakRead"%go, Server__WeakReadⁱᵐᵖˡ); ("applyAsFollower"%go, Server__applyAsFollowerⁱᵐᵖˡ); ("enterNewEpoch"%go, Server__enterNewEpochⁱᵐᵖˡ); ("withLock"%go, Server__withLockⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo paxos.paxos :=
   {|
@@ -937,8 +969,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("singleCler
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init paxos.paxos (λ: <>,
+  λ: <>,
+    package.init #paxos.paxos (λ: <>,
       exception_do (do:  urpc.initialize';;;
       do:  asyncfile.initialize';;;
       do:  std.initialize';;;

@@ -247,35 +247,20 @@ End Error.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined urpc :=
-{|
-  is_pkg_defined := is_global_definitions urpc var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeServer :
-  WpFuncCall urpc "MakeServer" _ (is_pkg_defined urpc) :=
+  WpFuncCall urpc.MakeServer _ (is_pkg_defined urpc) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_TryMakeClient :
-  WpFuncCall urpc "TryMakeClient" _ (is_pkg_defined urpc) :=
+  WpFuncCall urpc.TryMakeClient _ (is_pkg_defined urpc) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeClient :
-  WpFuncCall urpc "MakeClient" _ (is_pkg_defined urpc) :=
+  WpFuncCall urpc.MakeClient _ (is_pkg_defined urpc) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Serve :

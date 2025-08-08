@@ -251,51 +251,36 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined configservice :=
-{|
-  is_pkg_defined := is_global_definitions configservice var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_EncodeConfig :
-  WpFuncCall configservice "EncodeConfig" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.EncodeConfig _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeConfig :
-  WpFuncCall configservice "DecodeConfig" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.DecodeConfig _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeClerk :
-  WpFuncCall configservice "MakeClerk" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.MakeClerk _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodeState :
-  WpFuncCall configservice "encodeState" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.encodeState _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeState :
-  WpFuncCall configservice "decodeState" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.decodeState _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_makeServer :
-  WpFuncCall configservice "makeServer" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.makeServer _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StartServer :
-  WpFuncCall configservice "StartServer" _ (is_pkg_defined configservice) :=
+  WpFuncCall configservice.StartServer _ (is_pkg_defined configservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_GetConfig :

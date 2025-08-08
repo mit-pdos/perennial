@@ -9,9 +9,11 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition EncodeMapU64ToU64 : go_string := "github.com/mit-pdos/gokv/map_marshal.EncodeMapU64ToU64"%go.
+
 (* go: map_marshal.go:5:6 *)
-Definition EncodeMapU64ToU64 : val :=
-  rec: "EncodeMapU64ToU64" "kvs" :=
+Definition EncodeMapU64ToU64ⁱᵐᵖˡ : val :=
+  λ: "kvs",
     exception_do (let: "kvs" := (mem.alloc "kvs") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
@@ -37,9 +39,11 @@ Definition EncodeMapU64ToU64 : val :=
       do:  ("enc" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeMapU64ToU64 : go_string := "github.com/mit-pdos/gokv/map_marshal.DecodeMapU64ToU64"%go.
+
 (* go: map_marshal.go:15:6 *)
-Definition DecodeMapU64ToU64 : val :=
-  rec: "DecodeMapU64ToU64" "enc_in" :=
+Definition DecodeMapU64ToU64ⁱᵐᵖˡ : val :=
+  λ: "enc_in",
     exception_do (let: "enc_in" := (mem.alloc "enc_in") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_in") in
@@ -79,9 +83,11 @@ Definition DecodeMapU64ToU64 : val :=
       do:  (map.insert (![type.mapT #uint64T #uint64T] "kvs") (![#uint64T] "key") "$r0")));;;
     return: (![type.mapT #uint64T #uint64T] "kvs", ![#sliceT] "enc")).
 
+Definition EncodeMapU64ToBytes : go_string := "github.com/mit-pdos/gokv/map_marshal.EncodeMapU64ToBytes"%go.
+
 (* go: map_marshal.go:31:6 *)
-Definition EncodeMapU64ToBytes : val :=
-  rec: "EncodeMapU64ToBytes" "kvs" :=
+Definition EncodeMapU64ToBytesⁱᵐᵖˡ : val :=
+  λ: "kvs",
     exception_do (let: "kvs" := (mem.alloc "kvs") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
@@ -112,9 +118,11 @@ Definition EncodeMapU64ToBytes : val :=
       do:  ("enc" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "enc")).
 
+Definition DecodeMapU64ToBytes : go_string := "github.com/mit-pdos/gokv/map_marshal.DecodeMapU64ToBytes"%go.
+
 (* go: map_marshal.go:42:6 *)
-Definition DecodeMapU64ToBytes : val :=
-  rec: "DecodeMapU64ToBytes" "enc_in" :=
+Definition DecodeMapU64ToBytesⁱᵐᵖˡ : val :=
+  λ: "enc_in",
     exception_do (let: "enc_in" := (mem.alloc "enc_in") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] "enc_in") in
@@ -169,7 +177,7 @@ Definition DecodeMapU64ToBytes : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("EncodeMapU64ToU64"%go, EncodeMapU64ToU64); ("DecodeMapU64ToU64"%go, DecodeMapU64ToU64); ("EncodeMapU64ToBytes"%go, EncodeMapU64ToBytes); ("DecodeMapU64ToBytes"%go, DecodeMapU64ToBytes)].
+Definition functions' : list (go_string * val) := [(EncodeMapU64ToU64, EncodeMapU64ToU64ⁱᵐᵖˡ); (DecodeMapU64ToU64, DecodeMapU64ToU64ⁱᵐᵖˡ); (EncodeMapU64ToBytes, EncodeMapU64ToBytesⁱᵐᵖˡ); (DecodeMapU64ToBytes, DecodeMapU64ToBytesⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -182,8 +190,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init map_marshal.map_marshal (λ: <>,
+  λ: <>,
+    package.init #map_marshal.map_marshal (λ: <>,
       exception_do (do:  marshal.initialize')
       ).
 

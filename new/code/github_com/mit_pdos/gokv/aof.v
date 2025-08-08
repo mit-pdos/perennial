@@ -25,9 +25,11 @@ Definition AppendOnlyFile : go_type := structT [
   "closedCond" :: ptrT
 ].
 
+Definition CreateAppendOnlyFile : go_string := "github.com/mit-pdos/gokv/aof.CreateAppendOnlyFile"%go.
+
 (* go: aof.go:29:6 *)
-Definition CreateAppendOnlyFile : val :=
-  rec: "CreateAppendOnlyFile" "fname" :=
+Definition CreateAppendOnlyFileⁱᵐᵖˡ : val :=
+  λ: "fname",
     exception_do (let: "fname" := (mem.alloc "fname") in
     let: "a" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #AppendOnlyFile)) in
@@ -103,8 +105,8 @@ Definition CreateAppendOnlyFile : val :=
 (* NOTE: cannot be called concurrently with Append()
 
    go: aof.go:84:26 *)
-Definition AppendOnlyFile__Close : val :=
-  rec: "AppendOnlyFile__Close" "a" <> :=
+Definition AppendOnlyFile__Closeⁱᵐᵖˡ : val :=
+  λ: "a" <>,
     exception_do (let: "a" := (mem.alloc "a") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
     let: "$r0" := #true in
@@ -118,8 +120,8 @@ Definition AppendOnlyFile__Close : val :=
 (* NOTE: cannot be called concurrently with Close()
 
    go: aof.go:95:26 *)
-Definition AppendOnlyFile__Append : val :=
-  rec: "AppendOnlyFile__Append" "a" "data" :=
+Definition AppendOnlyFile__Appendⁱᵐᵖˡ : val :=
+  λ: "a" "data",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "data" := (mem.alloc "data") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
@@ -140,8 +142,8 @@ Definition AppendOnlyFile__Append : val :=
     return: (![#uint64T] "r")).
 
 (* go: aof.go:109:26 *)
-Definition AppendOnlyFile__WaitAppend : val :=
-  rec: "AppendOnlyFile__WaitAppend" "a" "length" :=
+Definition AppendOnlyFile__WaitAppendⁱᵐᵖˡ : val :=
+  λ: "a" "length",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "length" := (mem.alloc "length") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
@@ -161,9 +163,9 @@ Definition AppendOnlyFile__WaitAppend : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("CreateAppendOnlyFile"%go, CreateAppendOnlyFile)].
+Definition functions' : list (go_string * val) := [(CreateAppendOnlyFile, CreateAppendOnlyFileⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("AppendOnlyFile"%go, []); ("AppendOnlyFile'ptr"%go, [("Append"%go, AppendOnlyFile__Append); ("Close"%go, AppendOnlyFile__Close); ("WaitAppend"%go, AppendOnlyFile__WaitAppend)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("AppendOnlyFile"%go, []); ("AppendOnlyFile'ptr"%go, [("Append"%go, AppendOnlyFile__Appendⁱᵐᵖˡ); ("Close"%go, AppendOnlyFile__Closeⁱᵐᵖˡ); ("WaitAppend"%go, AppendOnlyFile__WaitAppendⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo aof.aof :=
   {|
@@ -174,8 +176,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("AppendOnly
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init aof.aof (λ: <>,
+  λ: <>,
+    package.init #aof.aof (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  grove_ffi.initialize';;;
       do:  std.initialize';;;

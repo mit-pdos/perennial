@@ -117,7 +117,7 @@ Proof.
 Qed.
 
 (** Internal-ish to Goose. Users should never manually define instances of this.
-    The [P] predicate will generally be a package's [is_defined]. *)
+    The [P] predicate will generally be a package's [is_pkg_defined]. *)
 Class WpFuncCall func_name (f : val) (P : iProp Σ) :=
   wp_func_call :
     (∀ (first_arg : val) Φ,
@@ -134,7 +134,7 @@ Class WpMethodCall (type_name : go_string) (func_name : go_string) (m : val)
 
 (** This says that the package's declarations are accessible (including
     functions, methods, and variables). *)
-Definition is_defined_def pkg_name `{!PkgInfo pkg_name} : iProp Σ :=
+Definition is_pkg_defined_def pkg_name `{!PkgInfo pkg_name} : iProp Σ :=
   "#Hctx" ∷ is_go_context ∗
   "%Hfunction" ∷ ⌜ (∀ func_name func,
                       (alist_lookup_f func_name (pkg_functions pkg_name)) = Some func →
@@ -144,18 +144,18 @@ Definition is_defined_def pkg_name `{!PkgInfo pkg_name} : iProp Σ :=
                       (alist_lookup_f method_name) = Some m →
                       (alist_lookup_f type_name __method) ≫=
                       (alist_lookup_f method_name) = Some m) ⌝.
-Program Definition is_defined := sealed @is_defined_def.
-Definition is_defined_unseal : is_defined = _ := seal_eq _.
-#[global] Arguments is_defined (pkg_name) {_}.
-#[global] Instance is_defined_persistent pkg_name `{!PkgInfo pkg_name} : Persistent (is_defined pkg_name).
-Proof. rewrite is_defined_unseal. apply _. Qed.
+Program Definition is_pkg_defined := sealed @is_pkg_defined_def.
+Definition is_pkg_defined_unseal : is_pkg_defined = _ := seal_eq _.
+#[global] Arguments is_pkg_defined (pkg_name) {_}.
+#[global] Instance is_pkg_defined_persistent pkg_name `{!PkgInfo pkg_name} : Persistent (is_pkg_defined pkg_name).
+Proof. rewrite is_pkg_defined_unseal. apply _. Qed.
 
-(** Any package's [is_defined] suffices as precondition. *)
+(** Any package's [is_pkg_defined] suffices as precondition. *)
 Lemma wp_globals_get pkg_name `{!PkgInfo pkg_name} var_name :
-  {{{ is_defined pkg_name }}} (globals.get #var_name) {{{ RET #(global_addr var_name); True }}}.
+  {{{ is_pkg_defined pkg_name }}} (globals.get #var_name) {{{ RET #(global_addr var_name); True }}}.
 Proof.
   iIntros (?) "#Hdef HΦ". rewrite globals.get_unseal.
-  rewrite is_defined_unseal. iNamed "Hdef". clear Hfunction Hmethod PkgInfo0. iNamed "Hctx".
+  rewrite is_pkg_defined_unseal. iNamed "Hdef". clear Hfunction Hmethod PkgInfo0. iNamed "Hctx".
   wp_call_lc "Hlc". wp_bind.
   iInv "Hctx" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
@@ -176,10 +176,10 @@ Qed.
 (** Internal to Goose. Used in generatedproofs to establish [WpFuncCall]. *)
 Lemma wp_func_call' {func_name func} `{!PkgInfo pkg_name} :
   alist_lookup_f func_name (pkg_functions pkg_name) = Some func →
-  WpFuncCall func_name func (is_defined pkg_name).
+  WpFuncCall func_name func (is_pkg_defined pkg_name).
 Proof.
   intros Hlookup. rewrite /WpFuncCall. iIntros "* Hdef HΦ". rewrite func_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. rewrite is_defined_unseal. iNamed "Hdef". iNamed "Hctx".
+  wp_pure_lc "Hlc". wp_bind. rewrite is_pkg_defined_unseal. iNamed "Hdef". iNamed "Hctx".
   iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # "__functions"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
@@ -190,10 +190,10 @@ Qed.
 (** Internal to Goose. Used in generatedproofs to establish [WpMethodCall]. *)
 Lemma wp_method_call' {type_name method_name m} `{!PkgInfo pkg_name} :
   (alist_lookup_f type_name (pkg_msets pkg_name)) ≫= (alist_lookup_f method_name) = (Some m) →
-  WpMethodCall type_name method_name m (is_defined pkg_name).
+  WpMethodCall type_name method_name m (is_pkg_defined pkg_name).
 Proof.
   intros Hlookup. rewrite /WpMethodCall. iIntros "* Hdef HΦ". rewrite method_callv_unseal.
-  wp_pure_lc "Hlc". wp_bind. rewrite is_defined_unseal. iNamed "Hdef".
+  wp_pure_lc "Hlc". wp_bind. rewrite is_pkg_defined_unseal. iNamed "Hdef".
   iNamed "Hctx". iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # "__msets"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
@@ -262,7 +262,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!GoContext}.
 
 Definition is_pkg_init (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} : iProp Σ :=
-  "#Hdefined" ∷ is_defined pkg_name ∗
+  "#Hdefined" ∷ is_pkg_defined pkg_name ∗
   "#Hdeps" ∷ □ is_pkg_init_deps pkg_name ∗
   "#Hinit" ∷ □ is_pkg_init_def pkg_name.
 #[global] Opaque is_pkg_init.
@@ -297,7 +297,7 @@ Ltac2 build_pkg_init_deps () :=
              | cons ?pkg ?deps =>
                  let rest := build_iprop deps in
                  constr:((is_pkg_init $pkg ∗ $rest)%I)
-             | nil => constr:(is_defined_def $name)
+             | nil => constr:(is_pkg_defined_def $name)
              | _ =>
                  Message.print (Message.of_constr deps);
                  Control.backtrack_tactic_failure "build_pkg_init: unable to match deps list"
@@ -307,13 +307,13 @@ Ltac2 build_pkg_init_deps () :=
        end
     ).
 
-(* solve a goal which is just [is_pkg_init] or [is_defined] *)
+(* solve a goal which is just [is_pkg_init] or [is_pkg_defined] *)
 Ltac solve_pkg_init :=
   unfold named;
   lazymatch goal with
   | |- environments.envs_entails ?env (is_pkg_init _) => idtac
-  | |- environments.envs_entails ?env (is_defined _) => idtac
-  | _ => fail "not a is_pkg_init or is_defined goal"
+  | |- environments.envs_entails ?env (is_pkg_defined _) => idtac
+  | _ => fail "not a is_pkg_init or is_pkg_defined goal"
   end;
   iClear "∗";
   simpl is_pkg_init;

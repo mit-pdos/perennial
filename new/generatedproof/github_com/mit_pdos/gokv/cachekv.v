@@ -160,39 +160,24 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined cachekv :=
-{|
-  is_pkg_defined := is_global_definitions cachekv var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_DecodeValue :
-  WpFuncCall cachekv "DecodeValue" _ (is_pkg_defined cachekv) :=
+  WpFuncCall cachekv.DecodeValue _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeValue :
-  WpFuncCall cachekv "EncodeValue" _ (is_pkg_defined cachekv) :=
+  WpFuncCall cachekv.EncodeValue _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_max :
-  WpFuncCall cachekv "max" _ (is_pkg_defined cachekv) :=
+  WpFuncCall cachekv.max _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Make :
-  WpFuncCall cachekv "Make" _ (is_pkg_defined cachekv) :=
+  WpFuncCall cachekv.Make _ (is_pkg_defined cachekv) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_CacheKv'ptr_Get :

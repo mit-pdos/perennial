@@ -72,27 +72,12 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined lockservice :=
-{|
-  is_pkg_defined := is_global_definitions lockservice var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeLockClerk :
-  WpFuncCall lockservice "MakeLockClerk" _ (is_pkg_defined lockservice) :=
+  WpFuncCall lockservice.MakeLockClerk _ (is_pkg_defined lockservice) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_LockClerk'ptr_Lock :

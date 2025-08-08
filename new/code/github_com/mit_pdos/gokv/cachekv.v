@@ -23,9 +23,11 @@ Definition CacheKv : go_type := structT [
   "cache" :: mapT stringT cacheValue
 ].
 
+Definition DecodeValue : go_string := "github.com/mit-pdos/gokv/cachekv.DecodeValue"%go.
+
 (* go: clerk.go:24:6 *)
-Definition DecodeValue : val :=
-  rec: "DecodeValue" "v" :=
+Definition DecodeValueⁱᵐᵖˡ : val :=
+  λ: "v",
     exception_do (let: "v" := (mem.alloc "v") in
     let: "e" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (string.to_bytes (![#stringT] "v")) in
@@ -45,9 +47,11 @@ Definition DecodeValue : val :=
        "l" ::= "$l"
      }])).
 
+Definition EncodeValue : go_string := "github.com/mit-pdos/gokv/cachekv.EncodeValue"%go.
+
 (* go: clerk.go:33:6 *)
-Definition EncodeValue : val :=
-  rec: "EncodeValue" "c" :=
+Definition EncodeValueⁱᵐᵖˡ : val :=
+  λ: "c",
     exception_do (let: "c" := (mem.alloc "c") in
     let: "e" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #byteT #(W64 0)) in
@@ -62,9 +66,11 @@ Definition EncodeValue : val :=
     do:  ("e" <-[#sliceT] "$r0");;;
     return: (string.from_bytes (![#sliceT] "e"))).
 
+Definition max : go_string := "github.com/mit-pdos/gokv/cachekv.max"%go.
+
 (* go: clerk.go:40:6 *)
-Definition max : val :=
-  rec: "max" "a" "b" :=
+Definition maxⁱᵐᵖˡ : val :=
+  λ: "a" "b",
     exception_do (let: "b" := (mem.alloc "b") in
     let: "a" := (mem.alloc "a") in
     (if: (![#uint64T] "a") > (![#uint64T] "b")
@@ -72,9 +78,11 @@ Definition max : val :=
     else do:  #());;;
     return: (![#uint64T] "b")).
 
+Definition Make : go_string := "github.com/mit-pdos/gokv/cachekv.Make"%go.
+
 (* go: clerk.go:47:6 *)
-Definition Make : val :=
-  rec: "Make" "kv" :=
+Definition Makeⁱᵐᵖˡ : val :=
+  λ: "kv",
     exception_do (let: "kv" := (mem.alloc "kv") in
     return: (mem.alloc (let: "$kv" := (![#kv.KvCput] "kv") in
      let: "$mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
@@ -86,8 +94,8 @@ Definition Make : val :=
      }]))).
 
 (* go: clerk.go:55:19 *)
-Definition CacheKv__Get : val :=
-  rec: "CacheKv__Get" "k" "key" :=
+Definition CacheKv__Getⁱᵐᵖˡ : val :=
+  λ: "k" "key",
     exception_do (let: "k" := (mem.alloc "k") in
     let: "key" := (mem.alloc "key") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
@@ -118,8 +126,8 @@ Definition CacheKv__Get : val :=
      (func_call #cachekv.cachekv #"DecodeValue"%go) "$a0"))).
 
 (* go: clerk.go:69:19 *)
-Definition CacheKv__GetAndCache : val :=
-  rec: "CacheKv__GetAndCache" "k" "key" "cachetime" :=
+Definition CacheKv__GetAndCacheⁱᵐᵖˡ : val :=
+  λ: "k" "key" "cachetime",
     exception_do (let: "k" := (mem.alloc "k") in
     let: "cachetime" := (mem.alloc "cachetime") in
     let: "key" := (mem.alloc "key") in
@@ -174,8 +182,8 @@ Definition CacheKv__GetAndCache : val :=
     return: (![#stringT] "ret")).
 
 (* go: clerk.go:90:19 *)
-Definition CacheKv__Put : val :=
-  rec: "CacheKv__Put" "k" "key" "val" :=
+Definition CacheKv__Putⁱᵐᵖˡ : val :=
+  λ: "k" "key" "val",
     exception_do (let: "k" := (mem.alloc "k") in
     let: "val" := (mem.alloc "val") in
     let: "key" := (mem.alloc "key") in
@@ -216,9 +224,9 @@ Definition CacheKv__Put : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("DecodeValue"%go, DecodeValue); ("EncodeValue"%go, EncodeValue); ("max"%go, max); ("Make"%go, Make)].
+Definition functions' : list (go_string * val) := [(DecodeValue, DecodeValueⁱᵐᵖˡ); (EncodeValue, EncodeValueⁱᵐᵖˡ); (max, maxⁱᵐᵖˡ); (Make, Makeⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("cacheValue"%go, []); ("cacheValue'ptr"%go, []); ("CacheKv"%go, []); ("CacheKv'ptr"%go, [("Get"%go, CacheKv__Get); ("GetAndCache"%go, CacheKv__GetAndCache); ("Put"%go, CacheKv__Put)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("cacheValue"%go, []); ("cacheValue'ptr"%go, []); ("CacheKv"%go, []); ("CacheKv'ptr"%go, [("Get"%go, CacheKv__Getⁱᵐᵖˡ); ("GetAndCache"%go, CacheKv__GetAndCacheⁱᵐᵖˡ); ("Put"%go, CacheKv__Putⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo cachekv.cachekv :=
   {|
@@ -229,8 +237,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("cacheValue
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init cachekv.cachekv (λ: <>,
+  λ: <>,
+    package.init #cachekv.cachekv (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  kv.initialize';;;
       do:  grove_ffi.initialize';;;

@@ -886,87 +886,72 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined replica :=
-{|
-  is_pkg_defined := is_global_definitions replica var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_EncodeApplyAsBackupArgs :
-  WpFuncCall replica "EncodeApplyAsBackupArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeApplyAsBackupArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeApplyAsBackupArgs :
-  WpFuncCall replica "DecodeApplyAsBackupArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeApplyAsBackupArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeSetStateArgs :
-  WpFuncCall replica "EncodeSetStateArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeSetStateArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeSetStateArgs :
-  WpFuncCall replica "DecodeSetStateArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeSetStateArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeGetStateArgs :
-  WpFuncCall replica "EncodeGetStateArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeGetStateArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeGetStateArgs :
-  WpFuncCall replica "DecodeGetStateArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeGetStateArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeGetStateReply :
-  WpFuncCall replica "EncodeGetStateReply" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeGetStateReply _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeGetStateReply :
-  WpFuncCall replica "DecodeGetStateReply" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeGetStateReply _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeBecomePrimaryArgs :
-  WpFuncCall replica "EncodeBecomePrimaryArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeBecomePrimaryArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeBecomePrimaryArgs :
-  WpFuncCall replica "DecodeBecomePrimaryArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeBecomePrimaryArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeApplyReply :
-  WpFuncCall replica "EncodeApplyReply" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeApplyReply _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeApplyReply :
-  WpFuncCall replica "DecodeApplyReply" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeApplyReply _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_EncodeIncreaseCommitArgs :
-  WpFuncCall replica "EncodeIncreaseCommitArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.EncodeIncreaseCommitArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_DecodeIncreaseCommitArgs :
-  WpFuncCall replica "DecodeIncreaseCommitArgs" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.DecodeIncreaseCommitArgs _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeClerk :
-  WpFuncCall replica "MakeClerk" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.MakeClerk _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeServer :
-  WpFuncCall replica "MakeServer" _ (is_pkg_defined replica) :=
+  WpFuncCall replica.MakeServer _ (is_pkg_defined replica) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_Apply :

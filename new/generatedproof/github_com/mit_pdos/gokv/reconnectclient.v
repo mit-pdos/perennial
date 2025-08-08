@@ -99,27 +99,12 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined reconnectclient :=
-{|
-  is_pkg_defined := is_global_definitions reconnectclient var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MakeReconnectingClient :
-  WpFuncCall reconnectclient "MakeReconnectingClient" _ (is_pkg_defined reconnectclient) :=
+  WpFuncCall reconnectclient.MakeReconnectingClient _ (is_pkg_defined reconnectclient) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_ReconnectingClient'ptr_Call :

@@ -25,8 +25,8 @@ Definition AsyncFile : go_type := structT [
 ].
 
 (* go: storage.go:24:21 *)
-Definition AsyncFile__Write : val :=
-  rec: "AsyncFile__Write" "s" "data" :=
+Definition AsyncFile__Writeⁱᵐᵖˡ : val :=
+  λ: "s" "data",
     with_defer: (let: "s" := (mem.alloc "s") in
     let: "data" := (mem.alloc "data") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
@@ -53,8 +53,8 @@ Definition AsyncFile__Write : val :=
        ))).
 
 (* go: storage.go:36:21 *)
-Definition AsyncFile__wait : val :=
-  rec: "AsyncFile__wait" "s" "index" :=
+Definition AsyncFile__waitⁱᵐᵖˡ : val :=
+  λ: "s" "index",
     with_defer: (let: "s" := (mem.alloc "s") in
     let: "index" := (mem.alloc "index") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
@@ -69,8 +69,8 @@ Definition AsyncFile__wait : val :=
     return: #()).
 
 (* go: storage.go:45:21 *)
-Definition AsyncFile__flushThread : val :=
-  rec: "AsyncFile__flushThread" "s" <> :=
+Definition AsyncFile__flushThreadⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -110,8 +110,8 @@ Definition AsyncFile__flushThread : val :=
     return: #()).
 
 (* go: storage.go:73:21 *)
-Definition AsyncFile__Close : val :=
-  rec: "AsyncFile__Close" "s" <> :=
+Definition AsyncFile__Closeⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     with_defer: (let: "s" := (mem.alloc "s") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
     do:  (let: "$f" := (method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) in
@@ -127,11 +127,13 @@ Definition AsyncFile__Close : val :=
       do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] (struct.field_ref #AsyncFile #"closedCond"%go (![#ptrT] "s")))) #()));;;
     return: #()).
 
+Definition MakeAsyncFile : go_string := "github.com/mit-pdos/gokv/asyncfile.MakeAsyncFile"%go.
+
 (* returns the state, then the File object
 
    go: storage.go:85:6 *)
-Definition MakeAsyncFile : val :=
-  rec: "MakeAsyncFile" "filename" :=
+Definition MakeAsyncFileⁱᵐᵖˡ : val :=
+  λ: "filename",
     exception_do (let: "filename" := (mem.alloc "filename") in
     let: "mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
@@ -171,9 +173,9 @@ Definition MakeAsyncFile : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MakeAsyncFile"%go, MakeAsyncFile)].
+Definition functions' : list (go_string * val) := [(MakeAsyncFile, MakeAsyncFileⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("AsyncFile"%go, []); ("AsyncFile'ptr"%go, [("Close"%go, AsyncFile__Close); ("Write"%go, AsyncFile__Write); ("flushThread"%go, AsyncFile__flushThread); ("wait"%go, AsyncFile__wait)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("AsyncFile"%go, []); ("AsyncFile'ptr"%go, [("Close"%go, AsyncFile__Closeⁱᵐᵖˡ); ("Write"%go, AsyncFile__Writeⁱᵐᵖˡ); ("flushThread"%go, AsyncFile__flushThreadⁱᵐᵖˡ); ("wait"%go, AsyncFile__waitⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo asyncfile.asyncfile :=
   {|
@@ -184,8 +186,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("AsyncFile"
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init asyncfile.asyncfile (λ: <>,
+  λ: <>,
+    package.init #asyncfile.asyncfile (λ: <>,
       exception_do (do:  grove_ffi.initialize';;;
       do:  std.initialize';;;
       do:  sync.initialize')

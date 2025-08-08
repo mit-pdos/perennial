@@ -20,9 +20,11 @@ Definition BankClerk : go_type := structT [
   "accts" :: sliceT
 ].
 
+Definition acquire_two_good : go_string := "github.com/mit-pdos/gokv/bank.acquire_two_good"%go.
+
 (* go: bank.go:19:6 *)
-Definition acquire_two_good : val :=
-  rec: "acquire_two_good" "lck" "l1" "l2" :=
+Definition acquire_two_goodⁱᵐᵖˡ : val :=
+  λ: "lck" "l1" "l2",
     exception_do (let: "l2" := (mem.alloc "l2") in
     let: "l1" := (mem.alloc "l1") in
     let: "lck" := (mem.alloc "lck") in
@@ -40,9 +42,11 @@ Definition acquire_two_good : val :=
     return: (#());;;
     return: #()).
 
+Definition acquire_two : go_string := "github.com/mit-pdos/gokv/bank.acquire_two"%go.
+
 (* go: bank.go:30:6 *)
-Definition acquire_two : val :=
-  rec: "acquire_two" "lck" "l1" "l2" :=
+Definition acquire_twoⁱᵐᵖˡ : val :=
+  λ: "lck" "l1" "l2",
     exception_do (let: "l2" := (mem.alloc "l2") in
     let: "l1" := (mem.alloc "l1") in
     let: "lck" := (mem.alloc "lck") in
@@ -52,10 +56,12 @@ Definition acquire_two : val :=
     (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0");;;
     return: (#());;;
     return: #()).
+
+Definition release_two : go_string := "github.com/mit-pdos/gokv/bank.release_two"%go.
 
 (* go: bank.go:37:6 *)
-Definition release_two : val :=
-  rec: "release_two" "lck" "l1" "l2" :=
+Definition release_twoⁱᵐᵖˡ : val :=
+  λ: "lck" "l1" "l2",
     exception_do (let: "l2" := (mem.alloc "l2") in
     let: "l1" := (mem.alloc "l1") in
     let: "lck" := (mem.alloc "lck") in
@@ -66,17 +72,21 @@ Definition release_two : val :=
     return: (#());;;
     return: #()).
 
+Definition encodeInt : go_string := "github.com/mit-pdos/gokv/bank.encodeInt"%go.
+
 (* go: bank.go:43:6 *)
-Definition encodeInt : val :=
-  rec: "encodeInt" "a" :=
+Definition encodeIntⁱᵐᵖˡ : val :=
+  λ: "a",
     exception_do (let: "a" := (mem.alloc "a") in
     return: (string.from_bytes (let: "$a0" := #slice.nil in
      let: "$a1" := (![#uint64T] "a") in
      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1"))).
 
+Definition decodeInt : go_string := "github.com/mit-pdos/gokv/bank.decodeInt"%go.
+
 (* go: bank.go:47:6 *)
-Definition decodeInt : val :=
-  rec: "decodeInt" "a" :=
+Definition decodeIntⁱᵐᵖˡ : val :=
+  λ: "a",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "v" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (string.to_bytes (![#stringT] "a")) in
@@ -91,8 +101,8 @@ Definition decodeInt : val :=
    If account balance in acc_from is at least amount, transfer amount to acc_to
 
    go: bank.go:54:23 *)
-Definition BankClerk__transfer_internal : val :=
-  rec: "BankClerk__transfer_internal" "bck" "acc_from" "acc_to" "amount" :=
+Definition BankClerk__transfer_internalⁱᵐᵖˡ : val :=
+  λ: "bck" "acc_from" "acc_to" "amount",
     exception_do (let: "bck" := (mem.alloc "bck") in
     let: "amount" := (mem.alloc "amount") in
     let: "acc_to" := (mem.alloc "acc_to") in
@@ -126,8 +136,8 @@ Definition BankClerk__transfer_internal : val :=
     return: #()).
 
 (* go: bank.go:65:23 *)
-Definition BankClerk__SimpleTransfer : val :=
-  rec: "BankClerk__SimpleTransfer" "bck" <> :=
+Definition BankClerk__SimpleTransferⁱᵐᵖˡ : val :=
+  λ: "bck" <>,
     exception_do (let: "bck" := (mem.alloc "bck") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "src" := (mem.alloc (type.zero_val #uint64T)) in
@@ -151,8 +161,8 @@ Definition BankClerk__SimpleTransfer : val :=
     return: #()).
 
 (* go: bank.go:76:23 *)
-Definition BankClerk__get_total : val :=
-  rec: "BankClerk__get_total" "bck" <> :=
+Definition BankClerk__get_totalⁱᵐᵖˡ : val :=
+  λ: "bck" <>,
     exception_do (let: "bck" := (mem.alloc "bck") in
     let: "sum" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$range" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
@@ -176,8 +186,8 @@ Definition BankClerk__get_total : val :=
     return: (![#uint64T] "sum")).
 
 (* go: bank.go:92:23 *)
-Definition BankClerk__SimpleAudit : val :=
-  rec: "BankClerk__SimpleAudit" "bck" <> :=
+Definition BankClerk__SimpleAuditⁱᵐᵖˡ : val :=
+  λ: "bck" <>,
     exception_do (let: "bck" := (mem.alloc "bck") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ((method_call #bank.bank #"BankClerk'ptr" #"get_total" (![#ptrT] "bck")) #()) ≠ BAL_TOTAL
@@ -187,9 +197,11 @@ Definition BankClerk__SimpleAudit : val :=
       else do:  #()));;;
     return: #()).
 
+Definition MakeBankClerkSlice : go_string := "github.com/mit-pdos/gokv/bank.MakeBankClerkSlice"%go.
+
 (* go: bank.go:100:6 *)
-Definition MakeBankClerkSlice : val :=
-  rec: "MakeBankClerkSlice" "lck" "kv" "init_flag" "accts" :=
+Definition MakeBankClerkSliceⁱᵐᵖˡ : val :=
+  λ: "lck" "kv" "init_flag" "accts",
     exception_do (let: "accts" := (mem.alloc "accts") in
     let: "init_flag" := (mem.alloc "init_flag") in
     let: "kv" := (mem.alloc "kv") in
@@ -230,9 +242,11 @@ Definition MakeBankClerkSlice : val :=
     (method_call #lockservice #"LockClerk'ptr" #"Unlock" (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0");;;
     return: (![#ptrT] "bck")).
 
+Definition MakeBankClerk : go_string := "github.com/mit-pdos/gokv/bank.MakeBankClerk"%go.
+
 (* go: bank.go:120:6 *)
-Definition MakeBankClerk : val :=
-  rec: "MakeBankClerk" "lck" "kv" "init_flag" "acc1" "acc2" :=
+Definition MakeBankClerkⁱᵐᵖˡ : val :=
+  λ: "lck" "kv" "init_flag" "acc1" "acc2",
     exception_do (let: "acc2" := (mem.alloc "acc2") in
     let: "acc1" := (mem.alloc "acc1") in
     let: "init_flag" := (mem.alloc "init_flag") in
@@ -257,9 +271,9 @@ Definition MakeBankClerk : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("acquire_two_good"%go, acquire_two_good); ("acquire_two"%go, acquire_two); ("release_two"%go, release_two); ("encodeInt"%go, encodeInt); ("decodeInt"%go, decodeInt); ("MakeBankClerkSlice"%go, MakeBankClerkSlice); ("MakeBankClerk"%go, MakeBankClerk)].
+Definition functions' : list (go_string * val) := [(acquire_two_good, acquire_two_goodⁱᵐᵖˡ); (acquire_two, acquire_twoⁱᵐᵖˡ); (release_two, release_twoⁱᵐᵖˡ); (encodeInt, encodeIntⁱᵐᵖˡ); (decodeInt, decodeIntⁱᵐᵖˡ); (MakeBankClerkSlice, MakeBankClerkSliceⁱᵐᵖˡ); (MakeBankClerk, MakeBankClerkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("BankClerk"%go, []); ("BankClerk'ptr"%go, [("SimpleAudit"%go, BankClerk__SimpleAudit); ("SimpleTransfer"%go, BankClerk__SimpleTransfer); ("get_total"%go, BankClerk__get_total); ("transfer_internal"%go, BankClerk__transfer_internal)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("BankClerk"%go, []); ("BankClerk'ptr"%go, [("SimpleAudit"%go, BankClerk__SimpleAuditⁱᵐᵖˡ); ("SimpleTransfer"%go, BankClerk__SimpleTransferⁱᵐᵖˡ); ("get_total"%go, BankClerk__get_totalⁱᵐᵖˡ); ("transfer_internal"%go, BankClerk__transfer_internalⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo bank.bank :=
   {|
@@ -270,8 +284,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("BankClerk"
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init bank.bank (λ: <>,
+  λ: <>,
+    package.init #bank.bank (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  lockservice.initialize';;;
       do:  kv.initialize';;;

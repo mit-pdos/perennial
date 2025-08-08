@@ -14,8 +14,8 @@ Definition LockClerk : go_type := structT [
 ].
 
 (* go: lock_clerk.go:11:22 *)
-Definition LockClerk__Lock : val :=
-  rec: "LockClerk__Lock" "ck" "key" :=
+Definition LockClerk__Lockⁱᵐᵖˡ : val :=
+  λ: "ck" "key",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "key" := (mem.alloc "key") in
     (for: (λ: <>, (let: "$a0" := (![#stringT] "key") in
@@ -26,8 +26,8 @@ Definition LockClerk__Lock : val :=
     return: #()).
 
 (* go: lock_clerk.go:16:22 *)
-Definition LockClerk__Unlock : val :=
-  rec: "LockClerk__Unlock" "ck" "key" :=
+Definition LockClerk__Unlockⁱᵐᵖˡ : val :=
+  λ: "ck" "key",
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "key" := (mem.alloc "key") in
     do:  (let: "$a0" := (![#stringT] "key") in
@@ -35,9 +35,11 @@ Definition LockClerk__Unlock : val :=
     (interface.get #"Put"%go (![#kv.KvCput] (struct.field_ref #LockClerk #"kv"%go (![#ptrT] "ck")))) "$a0" "$a1");;;
     return: #()).
 
+Definition MakeLockClerk : go_string := "github.com/mit-pdos/gokv/lockservice.MakeLockClerk"%go.
+
 (* go: lock_clerk.go:20:6 *)
-Definition MakeLockClerk : val :=
-  rec: "MakeLockClerk" "kv" :=
+Definition MakeLockClerkⁱᵐᵖˡ : val :=
+  λ: "kv",
     exception_do (let: "kv" := (mem.alloc "kv") in
     return: (mem.alloc (let: "$kv" := (![#kv.KvCput] "kv") in
      struct.make #LockClerk [{
@@ -46,9 +48,9 @@ Definition MakeLockClerk : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MakeLockClerk"%go, MakeLockClerk)].
+Definition functions' : list (go_string * val) := [(MakeLockClerk, MakeLockClerkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("LockClerk"%go, []); ("LockClerk'ptr"%go, [("Lock"%go, LockClerk__Lock); ("Unlock"%go, LockClerk__Unlock)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("LockClerk"%go, []); ("LockClerk'ptr"%go, [("Lock"%go, LockClerk__Lockⁱᵐᵖˡ); ("Unlock"%go, LockClerk__Unlockⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo lockservice.lockservice :=
   {|
@@ -59,8 +61,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("LockClerk"
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init lockservice.lockservice (λ: <>,
+  λ: <>,
+    package.init #lockservice.lockservice (λ: <>,
       exception_do (do:  kv.initialize')
       ).
 

@@ -91,51 +91,36 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined bank :=
-{|
-  is_pkg_defined := is_global_definitions bank var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_acquire_two_good :
-  WpFuncCall bank "acquire_two_good" _ (is_pkg_defined bank) :=
+  WpFuncCall bank.acquire_two_good _ (is_pkg_defined bank) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_acquire_two :
-  WpFuncCall bank "acquire_two" _ (is_pkg_defined bank) :=
+  WpFuncCall bank.acquire_two _ (is_pkg_defined bank) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_release_two :
-  WpFuncCall bank "release_two" _ (is_pkg_defined bank) :=
+  WpFuncCall bank.release_two _ (is_pkg_defined bank) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_encodeInt :
-  WpFuncCall bank "encodeInt" _ (is_pkg_defined bank) :=
+  WpFuncCall bank.encodeInt _ (is_pkg_defined bank) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeInt :
-  WpFuncCall bank "decodeInt" _ (is_pkg_defined bank) :=
+  WpFuncCall bank.decodeInt _ (is_pkg_defined bank) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeBankClerkSlice :
-  WpFuncCall bank "MakeBankClerkSlice" _ (is_pkg_defined bank) :=
+  WpFuncCall bank.MakeBankClerkSlice _ (is_pkg_defined bank) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakeBankClerk :
-  WpFuncCall bank "MakeBankClerk" _ (is_pkg_defined bank) :=
+  WpFuncCall bank.MakeBankClerk _ (is_pkg_defined bank) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_BankClerk'ptr_SimpleAudit :

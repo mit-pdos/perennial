@@ -19,9 +19,11 @@ Definition ReconnectingClient : go_type := structT [
   "addr" :: uint64T
 ].
 
+Definition MakeReconnectingClient : go_string := "github.com/mit-pdos/gokv/reconnectclient.MakeReconnectingClient"%go.
+
 (* go: client.go:20:6 *)
-Definition MakeReconnectingClient : val :=
-  rec: "MakeReconnectingClient" "addr" :=
+Definition MakeReconnectingClientⁱᵐᵖˡ : val :=
+  λ: "addr",
     exception_do (let: "addr" := (mem.alloc "addr") in
     let: "r" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #ReconnectingClient)) in
@@ -35,8 +37,8 @@ Definition MakeReconnectingClient : val :=
     return: (![#ptrT] "r")).
 
 (* go: client.go:30:31 *)
-Definition ReconnectingClient__getClient : val :=
-  rec: "ReconnectingClient__getClient" "cl" <> :=
+Definition ReconnectingClient__getClientⁱᵐᵖˡ : val :=
+  λ: "cl" <>,
     exception_do (let: "cl" := (mem.alloc "cl") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
     (if: ![#boolT] (struct.field_ref #ReconnectingClient #"valid"%go (![#ptrT] "cl"))
@@ -73,8 +75,8 @@ Definition ReconnectingClient__getClient : val :=
     return: (![#uint64T] "err", ![#ptrT] "newRpcCl")).
 
 (* go: client.go:63:31 *)
-Definition ReconnectingClient__Call : val :=
-  rec: "ReconnectingClient__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
+Definition ReconnectingClient__Callⁱᵐᵖˡ : val :=
+  λ: "cl" "rpcid" "args" "reply" "timeout_ms",
     exception_do (let: "cl" := (mem.alloc "cl") in
     let: "timeout_ms" := (mem.alloc "timeout_ms") in
     let: "reply" := (mem.alloc "reply") in
@@ -108,9 +110,9 @@ Definition ReconnectingClient__Call : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MakeReconnectingClient"%go, MakeReconnectingClient)].
+Definition functions' : list (go_string * val) := [(MakeReconnectingClient, MakeReconnectingClientⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("ReconnectingClient"%go, []); ("ReconnectingClient'ptr"%go, [("Call"%go, ReconnectingClient__Call); ("getClient"%go, ReconnectingClient__getClient)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("ReconnectingClient"%go, []); ("ReconnectingClient'ptr"%go, [("Call"%go, ReconnectingClient__Callⁱᵐᵖˡ); ("getClient"%go, ReconnectingClient__getClientⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo reconnectclient.reconnectclient :=
   {|
@@ -121,8 +123,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Reconnecti
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init reconnectclient.reconnectclient (λ: <>,
+  λ: <>,
+    package.init #reconnectclient.reconnectclient (λ: <>,
       exception_do (do:  urpc.initialize';;;
       do:  grove_ffi.initialize';;;
       do:  primitive.initialize';;;

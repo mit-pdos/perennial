@@ -209,31 +209,16 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined storage :=
-{|
-  is_pkg_defined := is_global_definitions storage var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_recoverStateMachine :
-  WpFuncCall storage "recoverStateMachine" _ (is_pkg_defined storage) :=
+  WpFuncCall storage.recoverStateMachine _ (is_pkg_defined storage) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MakePbServer :
-  WpFuncCall storage "MakePbServer" _ (is_pkg_defined storage) :=
+  WpFuncCall storage.MakePbServer _ (is_pkg_defined storage) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_StateMachine'ptr_apply :

@@ -17,31 +17,16 @@ Module reconfig.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined reconfig :=
-{|
-  is_pkg_defined := is_global_definitions reconfig var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_EnterNewConfig :
-  WpFuncCall reconfig "EnterNewConfig" _ (is_pkg_defined reconfig) :=
+  WpFuncCall reconfig.EnterNewConfig _ (is_pkg_defined reconfig) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_InitializeSystem :
-  WpFuncCall reconfig "InitializeSystem" _ (is_pkg_defined reconfig) :=
+  WpFuncCall reconfig.InitializeSystem _ (is_pkg_defined reconfig) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

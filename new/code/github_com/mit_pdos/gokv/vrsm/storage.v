@@ -35,8 +35,8 @@ Definition StateMachine : go_type := structT [
 (* FIXME: better name; this isn't the same as "MakeDurable"
 
    go: durlog.go:40:24 *)
-Definition StateMachine__makeDurableWithSnap : val :=
-  rec: "StateMachine__makeDurableWithSnap" "s" "snap" :=
+Definition StateMachine__makeDurableWithSnapⁱᵐᵖˡ : val :=
+  λ: "s" "snap",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "snap" := (mem.alloc "snap") in
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
@@ -79,8 +79,8 @@ Definition StateMachine__makeDurableWithSnap : val :=
    requires that the state machine is not sealed
 
    go: durlog.go:61:24 *)
-Definition StateMachine__truncateAndMakeDurable : val :=
-  rec: "StateMachine__truncateAndMakeDurable" "s" <> :=
+Definition StateMachine__truncateAndMakeDurableⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     let: "snap" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((![#funcT] (struct.field_ref #InMemoryStateMachine #"GetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) #()) in
@@ -90,8 +90,8 @@ Definition StateMachine__truncateAndMakeDurable : val :=
     return: #()).
 
 (* go: durlog.go:66:24 *)
-Definition StateMachine__apply : val :=
-  rec: "StateMachine__apply" "s" "op" :=
+Definition StateMachine__applyⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
@@ -134,8 +134,8 @@ Definition StateMachine__apply : val :=
     return: (![#sliceT] "ret", ![#funcT] "waitFn")).
 
 (* go: durlog.go:92:24 *)
-Definition StateMachine__applyReadonly : val :=
-  rec: "StateMachine__applyReadonly" "s" "op" :=
+Definition StateMachine__applyReadonlyⁱᵐᵖˡ : val :=
+  λ: "s" "op",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "op" := (mem.alloc "op") in
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "op") in
@@ -145,8 +145,8 @@ Definition StateMachine__applyReadonly : val :=
 (* TODO: make the nextIndex and epoch argument order consistent with replica.StateMachine
 
    go: durlog.go:97:24 *)
-Definition StateMachine__setStateAndUnseal : val :=
-  rec: "StateMachine__setStateAndUnseal" "s" "snap" "nextIndex" "epoch" :=
+Definition StateMachine__setStateAndUnsealⁱᵐᵖˡ : val :=
+  λ: "s" "snap" "nextIndex" "epoch",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "epoch" := (mem.alloc "epoch") in
     let: "nextIndex" := (mem.alloc "nextIndex") in
@@ -165,8 +165,8 @@ Definition StateMachine__setStateAndUnseal : val :=
     return: #()).
 
 (* go: durlog.go:105:24 *)
-Definition StateMachine__getStateAndSeal : val :=
-  rec: "StateMachine__getStateAndSeal" "s" <> :=
+Definition StateMachine__getStateAndSealⁱᵐᵖˡ : val :=
+  λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     (if: (~ (![#boolT] (struct.field_ref #StateMachine #"sealed"%go (![#ptrT] "s"))))
     then
@@ -184,9 +184,11 @@ Definition StateMachine__getStateAndSeal : val :=
     do:  ("snap" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "snap")).
 
+Definition recoverStateMachine : go_string := "github.com/mit-pdos/gokv/vrsm/storage.recoverStateMachine"%go.
+
 (* go: durlog.go:118:6 *)
-Definition recoverStateMachine : val :=
-  rec: "recoverStateMachine" "smMem" "fname" :=
+Definition recoverStateMachineⁱᵐᵖˡ : val :=
+  λ: "smMem" "fname",
     exception_do (let: "fname" := (mem.alloc "fname") in
     let: "smMem" := (mem.alloc "smMem") in
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
@@ -314,6 +316,8 @@ Definition recoverStateMachine : val :=
     else do:  #());;;
     return: (![#ptrT] "s")).
 
+Definition MakePbServer : go_string := "github.com/mit-pdos/gokv/vrsm/storage.MakePbServer"%go.
+
 (* XXX: putting this here because MakeServer takes nextIndex, epoch, and sealed
    as input, and the user of simplelog won't have access to the private fields
    index, epoch, etc.
@@ -321,8 +325,8 @@ Definition recoverStateMachine : val :=
    Maybe we should make those be a part of replica.StateMachine
 
    go: durlog.go:190:6 *)
-Definition MakePbServer : val :=
-  rec: "MakePbServer" "smMem" "fname" "confHosts" :=
+Definition MakePbServerⁱᵐᵖˡ : val :=
+  λ: "smMem" "fname" "confHosts",
     exception_do (let: "confHosts" := (mem.alloc "confHosts") in
     let: "fname" := (mem.alloc "fname") in
     let: "smMem" := (mem.alloc "smMem") in
@@ -373,9 +377,9 @@ Definition MakePbServer : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("recoverStateMachine"%go, recoverStateMachine); ("MakePbServer"%go, MakePbServer)].
+Definition functions' : list (go_string * val) := [(recoverStateMachine, recoverStateMachineⁱᵐᵖˡ); (MakePbServer, MakePbServerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("InMemoryStateMachine"%go, []); ("InMemoryStateMachine'ptr"%go, []); ("StateMachine"%go, []); ("StateMachine'ptr"%go, [("apply"%go, StateMachine__apply); ("applyReadonly"%go, StateMachine__applyReadonly); ("getStateAndSeal"%go, StateMachine__getStateAndSeal); ("makeDurableWithSnap"%go, StateMachine__makeDurableWithSnap); ("setStateAndUnseal"%go, StateMachine__setStateAndUnseal); ("truncateAndMakeDurable"%go, StateMachine__truncateAndMakeDurable)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("InMemoryStateMachine"%go, []); ("InMemoryStateMachine'ptr"%go, []); ("StateMachine"%go, []); ("StateMachine'ptr"%go, [("apply"%go, StateMachine__applyⁱᵐᵖˡ); ("applyReadonly"%go, StateMachine__applyReadonlyⁱᵐᵖˡ); ("getStateAndSeal"%go, StateMachine__getStateAndSealⁱᵐᵖˡ); ("makeDurableWithSnap"%go, StateMachine__makeDurableWithSnapⁱᵐᵖˡ); ("setStateAndUnseal"%go, StateMachine__setStateAndUnsealⁱᵐᵖˡ); ("truncateAndMakeDurable"%go, StateMachine__truncateAndMakeDurableⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo storage.storage :=
   {|
@@ -386,8 +390,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("InMemorySt
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init storage.storage (λ: <>,
+  λ: <>,
+    package.init #storage.storage (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  replica.initialize';;;
       do:  grove_ffi.initialize';;;

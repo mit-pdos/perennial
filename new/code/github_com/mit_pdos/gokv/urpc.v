@@ -19,8 +19,8 @@ Definition Server : go_type := structT [
 ].
 
 (* go: urpc.go:19:20 *)
-Definition Server__rpcHandle : val :=
-  rec: "Server__rpcHandle" "srv" "conn" "rpcid" "seqno" "data" :=
+Definition Server__rpcHandleⁱᵐᵖˡ : val :=
+  λ: "srv" "conn" "rpcid" "seqno" "data",
     exception_do (let: "srv" := (mem.alloc "srv") in
     let: "data" := (mem.alloc "data") in
     let: "seqno" := (mem.alloc "seqno") in
@@ -54,9 +54,11 @@ Definition Server__rpcHandle : val :=
     (func_call #grove_ffi.grove_ffi #"Send"%go) "$a0" "$a1");;;
     return: #()).
 
+Definition MakeServer : go_string := "github.com/mit-pdos/gokv/urpc.MakeServer"%go.
+
 (* go: urpc.go:32:6 *)
-Definition MakeServer : val :=
-  rec: "MakeServer" "handlers" :=
+Definition MakeServerⁱᵐᵖˡ : val :=
+  λ: "handlers",
     exception_do (let: "handlers" := (mem.alloc "handlers") in
     return: (mem.alloc (let: "$handlers" := (![type.mapT #uint64T #funcT] "handlers") in
      struct.make #Server [{
@@ -64,8 +66,8 @@ Definition MakeServer : val :=
      }]))).
 
 (* go: urpc.go:36:20 *)
-Definition Server__readThread : val :=
-  rec: "Server__readThread" "srv" "conn" :=
+Definition Server__readThreadⁱᵐᵖˡ : val :=
+  λ: "srv" "conn",
     exception_do (let: "srv" := (mem.alloc "srv") in
     let: "conn" := (mem.alloc "conn") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -109,8 +111,8 @@ Definition Server__readThread : val :=
     return: #()).
 
 (* go: urpc.go:58:20 *)
-Definition Server__Serve : val :=
-  rec: "Server__Serve" "srv" "host" :=
+Definition Server__Serveⁱᵐᵖˡ : val :=
+  λ: "srv" "host",
     exception_do (let: "srv" := (mem.alloc "srv") in
     let: "host" := (mem.alloc "host") in
     let: "listener" := (mem.alloc (type.zero_val #grove_ffi.Listener)) in
@@ -154,8 +156,8 @@ Definition Client : go_type := structT [
 ].
 
 (* go: urpc.go:88:19 *)
-Definition Client__replyThread : val :=
-  rec: "Client__replyThread" "cl" <> :=
+Definition Client__replyThreadⁱᵐᵖˡ : val :=
+  λ: "cl" <>,
     exception_do (let: "cl" := (mem.alloc "cl") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := (mem.alloc (type.zero_val #grove_ffi.ReceiveRet)) in
@@ -212,9 +214,11 @@ Definition Client__replyThread : val :=
       continue: #());;;
     return: #()).
 
+Definition TryMakeClient : go_string := "github.com/mit-pdos/gokv/urpc.TryMakeClient"%go.
+
 (* go: urpc.go:120:6 *)
-Definition TryMakeClient : val :=
-  rec: "TryMakeClient" "host_name" :=
+Definition TryMakeClientⁱᵐᵖˡ : val :=
+  λ: "host_name",
     exception_do (let: "host_name" := (mem.alloc "host_name") in
     let: "host" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] "host_name") in
@@ -246,9 +250,11 @@ Definition TryMakeClient : val :=
     do:  (Fork ("$go" #()));;;
     return: (#(W64 0), ![#ptrT] "cl")).
 
+Definition MakeClient : go_string := "github.com/mit-pdos/gokv/urpc.MakeClient"%go.
+
 (* go: urpc.go:140:6 *)
-Definition MakeClient : val :=
-  rec: "MakeClient" "host_name" :=
+Definition MakeClientⁱᵐᵖˡ : val :=
+  λ: "host_name",
     exception_do (let: "host_name" := (mem.alloc "host_name") in
     let: "cl" := (mem.alloc (type.zero_val #ptrT)) in
     let: "err" := (mem.alloc (type.zero_val #uint64T)) in
@@ -279,8 +285,8 @@ Definition ErrTimeout : expr := #(W64 1).
 Definition ErrDisconnect : expr := #(W64 2).
 
 (* go: urpc.go:155:19 *)
-Definition Client__CallStart : val :=
-  rec: "Client__CallStart" "cl" "rpcid" "args" :=
+Definition Client__CallStartⁱᵐᵖˡ : val :=
+  λ: "cl" "rpcid" "args",
     exception_do (let: "cl" := (mem.alloc "cl") in
     let: "args" := (mem.alloc "args") in
     let: "rpcid" := (mem.alloc "rpcid") in
@@ -343,8 +349,8 @@ Definition Client__CallStart : val :=
     return: (![#ptrT] "cb", ErrNone)).
 
 (* go: urpc.go:188:19 *)
-Definition Client__CallComplete : val :=
-  rec: "Client__CallComplete" "cl" "cb" "reply" "timeout_ms" :=
+Definition Client__CallCompleteⁱᵐᵖˡ : val :=
+  λ: "cl" "cb" "reply" "timeout_ms",
     exception_do (let: "cl" := (mem.alloc "cl") in
     let: "timeout_ms" := (mem.alloc "timeout_ms") in
     let: "reply" := (mem.alloc "reply") in
@@ -372,8 +378,8 @@ Definition Client__CallComplete : val :=
       else return: (ErrTimeout)))).
 
 (* go: urpc.go:215:19 *)
-Definition Client__Call : val :=
-  rec: "Client__Call" "cl" "rpcid" "args" "reply" "timeout_ms" :=
+Definition Client__Callⁱᵐᵖˡ : val :=
+  λ: "cl" "rpcid" "args" "reply" "timeout_ms",
     exception_do (let: "cl" := (mem.alloc "cl") in
     let: "timeout_ms" := (mem.alloc "timeout_ms") in
     let: "reply" := (mem.alloc "reply") in
@@ -398,9 +404,9 @@ Definition Client__Call : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MakeServer"%go, MakeServer); ("TryMakeClient"%go, TryMakeClient); ("MakeClient"%go, MakeClient)].
+Definition functions' : list (go_string * val) := [(MakeServer, MakeServerⁱᵐᵖˡ); (TryMakeClient, TryMakeClientⁱᵐᵖˡ); (MakeClient, MakeClientⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Server"%go, []); ("Server'ptr"%go, [("Serve"%go, Server__Serve); ("readThread"%go, Server__readThread); ("rpcHandle"%go, Server__rpcHandle)]); ("Callback"%go, []); ("Callback'ptr"%go, []); ("Client"%go, []); ("Client'ptr"%go, [("Call"%go, Client__Call); ("CallComplete"%go, Client__CallComplete); ("CallStart"%go, Client__CallStart); ("replyThread"%go, Client__replyThread)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Server"%go, []); ("Server'ptr"%go, [("Serve"%go, Server__Serveⁱᵐᵖˡ); ("readThread"%go, Server__readThreadⁱᵐᵖˡ); ("rpcHandle"%go, Server__rpcHandleⁱᵐᵖˡ)]); ("Callback"%go, []); ("Callback'ptr"%go, []); ("Client"%go, []); ("Client'ptr"%go, [("Call"%go, Client__Callⁱᵐᵖˡ); ("CallComplete"%go, Client__CallCompleteⁱᵐᵖˡ); ("CallStart"%go, Client__CallStartⁱᵐᵖˡ); ("replyThread"%go, Client__replyThreadⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo urpc.urpc :=
   {|
@@ -411,8 +417,8 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Server"%go
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init urpc.urpc (λ: <>,
+  λ: <>,
+    package.init #urpc.urpc (λ: <>,
       exception_do (do:  marshal.initialize';;;
       do:  grove_ffi.initialize';;;
       do:  std.initialize';;;
