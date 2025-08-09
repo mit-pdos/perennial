@@ -69,6 +69,12 @@ Definition len : val :=
 Definition make : val :=
   λ: "kt" "vt", Alloc (InjL (type.zero_val "vt")).
 
+Definition kv_entry_def : val :=
+  λ: "k" "v", ("k", "v").
+Program Definition kv_entry := unseal (_:seal (@kv_entry_def)).
+Obligation 1. by eexists. Qed.
+Definition kv_entry_unseal : @kv_entry = _ := seal_eq _.
+
 Definition literal_val : val :=
   rec: "lit_val" "kt" "vt" "alist" :=
     list.Match "alist"

@@ -150,6 +150,9 @@ Global Instance into_val_interface `{ffi_syntax} : IntoVal interface.t :=
       end
   |}.
 
+Global Instance into_val_prod `{!IntoVal A} `{!IntoVal B} : IntoVal (A * B) :=
+  {| to_val_def (v: A * B) := (PairV #(fst v) #(snd v)) |}.
+
 End instances.
 Global Notation "()" := tt : val_scope.
 

@@ -229,6 +229,21 @@ Proof.
   done.
 Qed.
 
+Lemma wp_mapLiteralTest :
+  {{{
+        is_pkg_init unittest
+  }}}
+    unittest @ "mapLiteralTest" #()
+  {{{
+        l, RET #l; l ↦$ (list_to_map [("a"%go, (W64 97)); ("b"%go, (W64 98)); ("c"%go, (W64 99))])
+  }}}.
+Proof.
+  wp_start. wp_auto.
+  wp_apply wp_map_literal; first done.
+  iIntros (?) "Hmap". wp_auto.
+  iApply "HΦ". iFrame.
+Qed.
+
 Lemma wp_useNilField :
   {{{ is_pkg_init unittest }}}
     unittest@"useNilField" #()
