@@ -37,6 +37,14 @@ Section globals.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!GoContext}.
 
+Definition is_init (σ : state) : Prop :=
+  ∃ (global_addr_val : list (_ * loc)),
+  (∀ var_name, default null (alist_lookup_f var_name global_addr_val) = global_addr var_name) ∧
+  σ.(globals) = {[ "__global_vars"%go := alist_val ((λ '(a, b), (a, #b)) <$> global_addr_val);
+     "__functions"%go := alist_val __function;
+     "__msets"%go := alist_val ((λ '(a, b), (a, alist_val b)) <$> __method);
+     "__packages"%go := alist_val [] ]}.
+
 (** Proof of initialization must refer to an [is_pkg_init] mapping that covers
     all packages. This specified what an init function must establish when returning,
     and what one gets to assume when calling other init functions. *)
@@ -60,6 +68,10 @@ Definition is_initialization get_is_pkg_init : iProp Σ :=
                                    (gset_to_gmap "started"%go package_started)) !! pkg_name
                                   ⌝)
     ).
+#[global] Opaque is_initialization.
+#[local] Transparent is_initialization.
+#[global] Instance is_initialization_pers a : Persistent (is_initialization a).
+Proof. apply _. Qed.
 
 (** This asserts that the implicit [GoContext] matches the execution state of
     the current Go program. *)
@@ -132,18 +144,24 @@ Class WpMethodCall (type_name : go_string) (func_name : go_string) (m : val)
          P -∗ (WP (m receiver first_arg) {{ Φ }}) -∗
          WP #(method_callv type_name func_name receiver) first_arg {{ Φ }}).
 
+(** Pure predicate asserting that the declarations in the Go package [pkg_name]
+    are part of the implicit [GoContext]. Top-level closed theorems can assume
+    this about the starting state/[GoContext]. *)
+Definition is_pkg_defined_pure pkg_name `{!PkgInfo pkg_name} : Prop :=
+  (∀ func_name func,
+     (alist_lookup_f func_name (pkg_functions pkg_name)) = Some func →
+     (alist_lookup_f func_name __function) = Some func) ∧
+  (∀ type_name method_name m,
+     (alist_lookup_f type_name (pkg_msets pkg_name)) ≫=
+     (alist_lookup_f method_name) = Some m →
+     (alist_lookup_f type_name __method) ≫=
+     (alist_lookup_f method_name) = Some m).
+
 (** This says that the package's declarations are accessible (including
     functions, methods, and variables). *)
 Definition is_pkg_defined_def pkg_name `{!PkgInfo pkg_name} : iProp Σ :=
   "#Hctx" ∷ is_go_context ∗
-  "%Hfunction" ∷ ⌜ (∀ func_name func,
-                      (alist_lookup_f func_name (pkg_functions pkg_name)) = Some func →
-                      (alist_lookup_f func_name __function) = Some func) ⌝ ∗
-  "%Hmethod" ∷ ⌜ (∀ type_name method_name m,
-                      (alist_lookup_f type_name (pkg_msets pkg_name)) ≫=
-                      (alist_lookup_f method_name) = Some m →
-                      (alist_lookup_f type_name __method) ≫=
-                      (alist_lookup_f method_name) = Some m) ⌝.
+  "%Hdefined" ∷ ⌜ is_pkg_defined_pure pkg_name ⌝.
 Program Definition is_pkg_defined := sealed @is_pkg_defined_def.
 Definition is_pkg_defined_unseal : is_pkg_defined = _ := seal_eq _.
 #[global] Arguments is_pkg_defined (pkg_name) {_}.
@@ -155,7 +173,7 @@ Lemma wp_globals_get pkg_name `{!PkgInfo pkg_name} var_name :
   {{{ is_pkg_defined pkg_name }}} (globals.get #var_name) {{{ RET #(global_addr var_name); True }}}.
 Proof.
   iIntros (?) "#Hdef HΦ". rewrite globals.get_unseal.
-  rewrite is_pkg_defined_unseal. iNamed "Hdef". clear Hfunction Hmethod PkgInfo0. iNamed "Hctx".
+  rewrite is_pkg_defined_unseal. iNamed "Hdef". clear Hdefined PkgInfo0. iNamed "Hctx".
   wp_call_lc "Hlc". wp_bind.
   iInv "Hctx" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
@@ -183,8 +201,8 @@ Proof.
   iInv "Hctx" as "Hi" "Hclose". iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
   iNamed "Hi". rewrite [in # "__functions"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
-  iModIntro. rewrite lookup_insert_ne // lookup_insert_eq.
-  wp_pures. erewrite Hfunction; last done. wp_pures. iApply "HΦ".
+  iModIntro. rewrite lookup_insert_ne // lookup_insert_eq. wp_pures.
+  destruct Hdefined as [Hfunction Hmethod]. erewrite Hfunction; last done. wp_pures. iApply "HΦ".
 Qed.
 
 (** Internal to Goose. Used in generatedproofs to establish [WpMethodCall]. *)
@@ -198,10 +216,23 @@ Proof.
   iNamed "Hi". rewrite [in # "__msets"]to_val_unseal. wp_apply (wp_GlobalGet with "[$]").
   iIntros "Hg". iMod ("Hclose" with "[Hg Hinit]"). { iFrame "∗#%". }
   iModIntro. do 2 rewrite lookup_insert_ne //. rewrite lookup_insert_eq.
-  wp_pures. rewrite alist_lookup_f_fmap. specialize (Hmethod _ _ _ Hlookup).
-  destruct (alist_lookup_f type_name __method); last by exfalso.
+  wp_pures. rewrite alist_lookup_f_fmap. destruct Hdefined as [Hfunction Hmethod].
+  specialize (Hmethod _ _ _ Hlookup). destruct (alist_lookup_f type_name __method); last by exfalso.
   wp_pures. simpl in *. destruct (alist_lookup_f method_name l); last by exfalso.
   wp_pures. simplify_eq. iApply "HΦ".
+Qed.
+
+Lemma go_init get_is_pkg_init σ :
+  is_init σ →
+  own_globals (DfracOwn 1) σ.(globals) ={⊤}=∗
+  is_initialization get_is_pkg_init ∗ own_initializing ∗ is_go_context.
+Proof.
+  intros (? & Haddrs & ->).
+  iIntros "[Hg Hg2]".
+  iFrame. iMod (inv_alloc with "[-]") as "#H".
+  2:{ by iFrame "H". }
+  iExists _, [], ∅, ∅. iFrame. rewrite big_sepS_empty. iFrame "#%".
+  iSplit; first done. iPureIntro. done.
 Qed.
 
 End globals.
@@ -351,6 +382,7 @@ Section package_init.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 Context `{!goGlobalsGS Σ}.
 Context `{!GoContext}.
+#[local] Transparent is_initialization.
 
 Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init :
   ∀ Φ,
@@ -360,7 +392,7 @@ Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : v
 Proof.
   iIntros (?) "(#Hctx & Hown & Hpre) HΦ". rewrite package.init_unseal.
   wp_call. wp_call_lc "Hlc".
-  wp_bind. iInv "Hctx" as "Hi" "Hclose".
+  wp_bind. unfold is_initialization. iInv "Hctx" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamed "Hi".
   rewrite [in #"__packages"]to_val_unseal.
   wp_apply (wp_GlobalGet with "[$]").

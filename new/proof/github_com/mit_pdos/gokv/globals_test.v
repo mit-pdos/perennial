@@ -20,7 +20,7 @@ Definition own_initialized : iProp Σ :=
 Context (γtok : gname).
 
 Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'globals_test.main).
-Instance is_pkg_init_globals_test : IsPkgInit globals_test.main :=
+#[global] Instance is_pkg_init_globals_test : IsPkgInit globals_test.main :=
   {|
     is_pkg_init_def := inv nroot (ghost_var γtok 1 () ∨ own_initialized);
     is_pkg_init_deps := deps;
@@ -76,15 +76,16 @@ Section closed.
 
 Definition globals_testΣ : gFunctors := #[heapΣ ; ghost_varΣ ()].
 
-Lemma globals_test_boot σ (g : goose_lang.global_state) :
+Lemma globals_test_boot σ (g : goose_lang.global_state) (go_ctx : GoContext) :
   ffi_initgP g.(global_world) →
   ffi_initP σ.(world) g.(global_world) →
-  σ.(globals) = ∅ → (* FIXME: this should be abstracted into a "goose_lang.init" predicate or something. *)
+  is_init σ →
+  is_pkg_defined_pure globals_test.main →
   dist_adequate_failstop [
-      ((main.initialize' #() ;; main @ "main" #())%E, σ) ] g (λ _, True).
+      ((main.initialize' #() ;; ⊥ @ main.main #())%E, σ) ] g (λ _, True).
 Proof.
   simpl.
-  intros ? ? Hgempty.
+  intros ? ? Hginit Hdef_main.
   apply (grove_ffi_dist_adequacy_failstop globals_testΣ).
   { done. }
   { constructor; done. }
@@ -99,18 +100,20 @@ Proof.
     iIntros (HL) "_".
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iIntros "Hglobals".
-    rewrite Hgempty.
     iMod (ghost_var_alloc ()) as (γtok) "Hescrow".
-    iMod (go_global_init
-            (λ _, {[ main := _ ]}) with "[$]") as
-      (hGlobals) "Hpost".
-    iModIntro.
-    iExists (λ _, True)%I.
-    wp_apply (wp_initialize' with "[$]").
-    { set_solver. }
-    { rewrite lookup_singleton_eq. done. }
-    iIntros "* (Hdef & Hinit & Htok)".
-    iApply fupd_wp. iInv "Hinit" as ">[Hbad|Hi]" "Hclose".
+    iMod (go_init (λ k, default True%I (({[
+                                globals_test.main := is_pkg_init globals_test.main
+                            ]} : gmap _ _) !! k)) with "[$]")
+      as "(#? & ? & #?)"; [done|].
+    iModIntro. iExists (λ _, True)%I.
+    Unshelve.
+    2:{ apply is_pkg_init_globals_test. refine γtok. }
+    wp_apply (wp_initialize' with "[-Hescrow]").
+    2:{ iFrame "∗#". rewrite is_pkg_defined_unseal. iFrame "#%". }
+    { rewrite /= -insert_empty lookup_insert_eq //. }
+    iIntros "* (Hown & #Hinit)".
+    iApply fupd_wp. iDestruct (is_pkg_init_def_unfold with "Hinit") as "Hinv".
+    iInv "Hinv" as ">[Hbad|Hi]" "Hclose".
     { iCombine "Hbad Hescrow" gives %[Hbad _]. done. }
     iMod ("Hclose" with "[$Hescrow]") as "_". iModIntro.
     wp_auto.
