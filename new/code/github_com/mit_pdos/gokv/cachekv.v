@@ -35,7 +35,7 @@ Definition DecodeValueⁱᵐᵖˡ : val :=
     let: "vBytes" := (mem.alloc (type.zero_val #sliceT)) in
     let: "l" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "e") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("l" <-[#uint64T] "$r0");;;
@@ -58,11 +58,11 @@ Definition EncodeValueⁱᵐᵖˡ : val :=
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
     let: "$a1" := (![#uint64T] (struct.field_ref #cacheValue #"l"%go "c")) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
     let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #cacheValue #"v"%go "c"))) in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call marshal.WriteBytes) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     return: (string.from_bytes (![#sliceT] "e"))).
 
@@ -107,7 +107,7 @@ Definition CacheKv__Getⁱᵐᵖˡ : val :=
     do:  ("cv" <-[#cacheValue] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
     let: "high" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+    let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
@@ -123,7 +123,7 @@ Definition CacheKv__Getⁱᵐᵖˡ : val :=
     do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
     return: (struct.field_get #cacheValue "v" (let: "$a0" := (let: "$a0" := (![#stringT] "key") in
      (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0") in
-     (func_call #cachekv.cachekv #"DecodeValue"%go) "$a0"))).
+     (func_call #DecodeValue) "$a0"))).
 
 (* go: clerk.go:69:19 *)
 Definition CacheKv__GetAndCacheⁱᵐᵖˡ : val :=
@@ -138,10 +138,10 @@ Definition CacheKv__GetAndCacheⁱᵐᵖˡ : val :=
       do:  ("enc" <-[#stringT] "$r0");;;
       let: "old" := (mem.alloc (type.zero_val #cacheValue)) in
       let: "$r0" := (let: "$a0" := (![#stringT] "enc") in
-      (func_call #cachekv.cachekv #"DecodeValue"%go) "$a0") in
+      (func_call #DecodeValue) "$a0") in
       do:  ("old" <-[#cacheValue] "$r0");;;
       let: "latest" := (mem.alloc (type.zero_val #uint64T)) in
-      let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+      let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -149,7 +149,7 @@ Definition CacheKv__GetAndCacheⁱᵐᵖˡ : val :=
       let: "newLeaseExpiration" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (let: "$a0" := ((![#uint64T] "latest") + (![#uint64T] "cachetime")) in
       let: "$a1" := (![#uint64T] (struct.field_ref #cacheValue #"l"%go "old")) in
-      (func_call #cachekv.cachekv #"max"%go) "$a0" "$a1") in
+      (func_call #max) "$a0" "$a1") in
       do:  ("newLeaseExpiration" <-[#uint64T] "$r0");;;
       let: "resp" := (mem.alloc (type.zero_val #stringT)) in
       let: "$r0" := (let: "$a0" := (![#stringT] "key") in
@@ -160,7 +160,7 @@ Definition CacheKv__GetAndCacheⁱᵐᵖˡ : val :=
         "v" ::= "$v";
         "l" ::= "$l"
       }]) in
-      (func_call #cachekv.cachekv #"EncodeValue"%go) "$a0") in
+      (func_call #EncodeValue) "$a0") in
       (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[#stringT] "$r0");;;
       (if: (![#stringT] "resp") = #"ok"%go
@@ -194,10 +194,10 @@ Definition CacheKv__Putⁱᵐᵖˡ : val :=
       do:  ("enc" <-[#stringT] "$r0");;;
       let: "leaseExpiration" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (struct.field_get #cacheValue "l" (let: "$a0" := (![#stringT] "enc") in
-      (func_call #cachekv.cachekv #"DecodeValue"%go) "$a0")) in
+      (func_call #DecodeValue) "$a0")) in
       do:  ("leaseExpiration" <-[#uint64T] "$r0");;;
       let: "earliest" := (mem.alloc (type.zero_val #uint64T)) in
-      let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+      let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("earliest" <-[#uint64T] "$r0");;;
@@ -214,7 +214,7 @@ Definition CacheKv__Putⁱᵐᵖˡ : val :=
         "v" ::= "$v";
         "l" ::= "$l"
       }]) in
-      (func_call #cachekv.cachekv #"EncodeValue"%go) "$a0") in
+      (func_call #EncodeValue) "$a0") in
       (interface.get #"ConditionalPut"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0" "$a1" "$a2") in
       do:  ("resp" <-[#stringT] "$r0");;;
       (if: (![#stringT] "resp") = #"ok"%go

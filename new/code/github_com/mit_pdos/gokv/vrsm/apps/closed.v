@@ -104,9 +104,9 @@ Definition lconfig_mainⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![#stringT] "fname") in
     let: "$a1" := lconfigHost in
     let: "$a2" := lconfigHostPaxos in
-    let: "$a3" := ((func_call #closed.closed #"mk_lconfig_paxosHosts"%go) #()) in
+    let: "$a3" := ((func_call #mk_lconfig_paxosHosts) #()) in
     let: "$a4" := (![#sliceT] "servers") in
-    (func_call #configservice.configservice #"StartServer"%go) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+    (func_call configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
 
 Definition dconfig_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.dconfig_main"%go.
@@ -131,9 +131,9 @@ Definition dconfig_mainⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![#stringT] "fname") in
     let: "$a1" := dconfigHost in
     let: "$a2" := dconfigHostPaxos in
-    let: "$a3" := ((func_call #closed.closed #"mk_dconfig_paxosHosts"%go) #()) in
+    let: "$a3" := ((func_call #mk_dconfig_paxosHosts) #()) in
     let: "$a4" := (![#sliceT] "servers") in
-    (func_call #configservice.configservice #"StartServer"%go) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+    (func_call configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
 
 Definition kv_replica_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.kv_replica_main"%go.
@@ -160,7 +160,7 @@ Definition kv_replica_mainⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![#stringT] "fname") in
     let: "$a1" := (![#uint64T] "me") in
     let: "$a2" := (![#sliceT] "configHosts") in
-    (func_call #vkv.vkv #"Start"%go) "$a0" "$a1" "$a2");;;
+    (func_call vkv.Start) "$a0" "$a1" "$a2");;;
     return: #()).
 
 Definition makeBankClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.makeBankClerk"%go.
@@ -169,21 +169,21 @@ Definition makeBankClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/clos
 Definition makeBankClerkⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "kvck" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #closed.closed #"mk_dconfig_hosts"%go) #()) in
-    (func_call #vkv.vkv #"MakeKv"%go) "$a0") in
-    (func_call #cachekv.cachekv #"Make"%go) "$a0") in
+    let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #mk_dconfig_hosts) #()) in
+    (func_call vkv.MakeKv) "$a0") in
+    (func_call cachekv.Make) "$a0") in
     do:  ("kvck" <-[#ptrT] "$r0");;;
     let: "lck" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #closed.closed #"mk_lconfig_hosts"%go) #()) in
-    (func_call #vkv.vkv #"MakeKv"%go) "$a0") in
-    (func_call #lockservice.lockservice #"MakeLockClerk"%go) "$a0") in
+    let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #mk_lconfig_hosts) #()) in
+    (func_call vkv.MakeKv) "$a0") in
+    (func_call lockservice.MakeLockClerk) "$a0") in
     do:  ("lck" <-[#ptrT] "$r0");;;
     return: (let: "$a0" := (![#ptrT] "lck") in
      let: "$a1" := (interface.make (#cachekv, #"CacheKv'ptr") (![#ptrT] "kvck")) in
      let: "$a2" := #"init"%go in
      let: "$a3" := #"a1"%go in
      let: "$a4" := #"a2"%go in
-     (func_call #bank.bank #"MakeBankClerk"%go) "$a0" "$a1" "$a2" "$a3" "$a4")).
+     (func_call bank.MakeBankClerk) "$a0" "$a1" "$a2" "$a3" "$a4")).
 
 Definition bank_transferer_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.bank_transferer_main"%go.
 
@@ -191,7 +191,7 @@ Definition bank_transferer_main : go_string := "github.com/mit-pdos/gokv/vrsm/ap
 Definition bank_transferer_mainⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "bck" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := ((func_call #closed.closed #"makeBankClerk"%go) #()) in
+    let: "$r0" := ((func_call #makeBankClerk) #()) in
     do:  ("bck" <-[#ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #bank #"BankClerk'ptr" #"SimpleTransfer" (![#ptrT] "bck")) #()));;;
@@ -203,7 +203,7 @@ Definition bank_auditor_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/
 Definition bank_auditor_mainⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "bck" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := ((func_call #closed.closed #"makeBankClerk"%go) #()) in
+    let: "$r0" := ((func_call #makeBankClerk) #()) in
     do:  ("bck" <-[#ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #bank #"BankClerk'ptr" #"SimpleAudit" (![#ptrT] "bck")) #()));;;

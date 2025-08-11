@@ -37,7 +37,7 @@ Definition EncodeErrorⁱᵐᵖˡ : val :=
     exception_do (let: "err" := (mem.alloc "err") in
     return: (let: "$a0" := (slice.make3 #byteT #(W64 0) #(W64 8)) in
      let: "$a1" := (![#uint64T] "err") in
-     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1")).
+     (func_call marshal.WriteInt) "$a0" "$a1")).
 
 Definition DecodeError : go_string := "github.com/mit-pdos/gokv/vrsm/e.DecodeError"%go.
 
@@ -47,7 +47,7 @@ Definition DecodeErrorⁱᵐᵖˡ : val :=
     exception_do (let: "enc" := (mem.alloc "enc") in
     let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err" <-[#uint64T] "$r0");;;

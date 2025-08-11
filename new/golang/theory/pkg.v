@@ -225,13 +225,13 @@ Tactic Notation "wp_method_call_core" :=
    [| | (tc_solve || fail "could not find mapping from method to val") | |]).
 
 #[global]
-Notation "pkg @ func" :=
-  #(func_callv pkg func) (at level 1, no associativity) : expr_scope.
+Notation "⊥ @ func" :=
+  #(func_callv func) (at level 1, no associativity, format "⊥ @ func") : expr_scope.
 
 #[global]
-Notation "rcvr @ pkg @ type @ method" :=
-  #(method_callv pkg type method #rcvr)
-    (at level 1, pkg at next level, type at next level, no associativity) : expr_scope.
+Notation "rcvr @ type @ method" :=
+  #(method_callv type method #rcvr)
+    (at level 1, type at next level, no associativity) : expr_scope.
 
 
 (** [IsPkgInit] is used to record a mapping from pkg names to an
@@ -272,6 +272,13 @@ Definition is_pkg_init (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit 
 Proof. apply _. Qed.
 
 Lemma is_pkg_init_unfold (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} :
+  is_pkg_init pkg_name ⊣⊢
+  ("#Hdefined" ∷ is_pkg_defined pkg_name ∗
+  "#Hdeps" ∷ □ is_pkg_init_deps pkg_name ∗
+  "#Hinit" ∷ □ is_pkg_init_def pkg_name)%I.
+Proof. done. Qed.
+
+Lemma is_pkg_init_def_unfold (pkg_name : go_string) `{!PkgInfo pkg_name} `{!IsPkgInit pkg_name} :
   is_pkg_init pkg_name -∗
   is_pkg_init_def pkg_name.
 Proof. iNamed 1. done. Qed.
@@ -297,7 +304,7 @@ Ltac2 build_pkg_init_deps name :=
              | cons ?pkg ?deps =>
                  let rest := build_iprop deps in
                  constr:((is_pkg_init $pkg ∗ $rest)%I)
-             | nil => constr:(is_pkg_defined_def $name)
+             | nil => constr:(is_pkg_defined $name)
              | _ =>
                  Message.print (Message.of_constr deps);
                  Control.backtrack_tactic_failure "build_pkg_init: unable to match deps list"
@@ -316,7 +323,7 @@ Ltac solve_pkg_init :=
   | _ => fail "not a is_pkg_init or is_pkg_defined goal"
   end;
   iClear "∗";
-  simpl is_pkg_init;
+  rewrite ?is_pkg_init_unfold;
   repeat
     lazymatch goal with
     | |- environments.envs_entails ?env _ =>

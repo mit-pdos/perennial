@@ -39,7 +39,7 @@ Definition Foo__someMethodWithArgsⁱᵐᵖˡ : val :=
     let: "y" := (mem.alloc "y") in
     do:  (let: "$a0" := ((![#Foo] "f") + (![#stringT] "y")) in
     let: "$a1" := (![#intT] "z") in
-    (func_call #partialapp.main #"partiallyApplyMe"%go) "$a0" "$a1");;;
+    (func_call #partiallyApplyMe) "$a0" "$a1");;;
     return: #()).
 
 Definition main : go_string := "github.com/mit-pdos/gokv/partialapp.main"%go.
@@ -48,7 +48,7 @@ Definition main : go_string := "github.com/mit-pdos/gokv/partialapp.main"%go.
 Definition mainⁱᵐᵖˡ : val :=
   λ: <>,
     with_defer: (let: "x" := (mem.alloc (type.zero_val #funcT)) in
-    let: "$r0" := (func_call #partialapp.main #"partiallyApplyMe"%go) in
+    let: "$r0" := (func_call #partiallyApplyMe) in
     do:  ("x" <-[#funcT] "$r0");;;
     do:  (let: "$a0" := #"blah"%go in
     let: "$a1" := #(W64 4) in
@@ -63,7 +63,7 @@ Definition mainⁱᵐᵖˡ : val :=
       )));;;
     do:  (let: "$a0" := #"abc"%go in
     let: "$a1" := #(W64 3) in
-    let: "$f" := (func_call #partialapp.main #"partiallyApplyMe"%go) in
+    let: "$f" := (func_call #partiallyApplyMe) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" "$a0" "$a1";;

@@ -46,40 +46,24 @@ Proof.
 
   (* go into foo() *)
 
-  wp_bind (#(func_callv _) _).
-  unshelve iApply (wp_func_call with "[]").
-  3:{
-    tc_solve.
-  }
-    [| | (tc_solve || fail "could not find mapping from function name to val") | | ].
-  wp_func_call.
-  wp_call.
+  wp_func_call. wp_call.
   iApply wp_fupd.
-  repeat (wp_globals_get || wp_auto).
-  iFrame "Htok".
-  iSplitR; first done.
-  unfold is_initialized.
+  repeat wp_apply wp_globals_get.
+  iFrame. rewrite Hinit.
   iMod (inv_alloc with "[-]") as "#?".
-  2:{ repeat iModIntro. iFrame "#". }
+  2:{ repeat iModIntro. rewrite is_pkg_init_unfold /=. iFrame "#". }
   iNext. iRight.
   iFrame "∗#".
-  }
-  iApply "HΦ".
 Qed.
 
-Context `{!main.GlobalAddrs}.
-
 Lemma wp_main :
-  {{{ is_pkg_defined main ∗ own_initialized }}}
-  main @ "main" #()
+  {{{ is_pkg_init main ∗ own_initialized }}}
+  ⊥ @ main.main #()
   {{{ RET #(); True }}}.
 Proof.
-  iIntros (?) "[#Hdef Hpre] HΦ".
-  iNamed "Hpre".
+  wp_start. iNamed "Hpre". wp_func_call. wp_call.
   wp_func_call. wp_call.
-  wp_func_call. wp_call.
-  wp_func_call. wp_call.
-  repeat (wp_globals_get || wp_auto).
+  repeat wp_apply wp_globals_get.
   by iApply "HΦ".
 Qed.
 
@@ -90,7 +74,7 @@ From Perennial.goose_lang.ffi Require Import grove_ffi.adequacy.
 From New.proof Require Import grove_prelude.
 Section closed.
 
-Definition globals_testΣ : gFunctors := #[heapΣ ; goGlobalsΣ; ghost_varΣ ()].
+Definition globals_testΣ : gFunctors := #[heapΣ ; ghost_varΣ ()].
 
 Lemma globals_test_boot σ (g : goose_lang.global_state) :
   ffi_initgP g.(global_world) →

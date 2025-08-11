@@ -31,7 +31,7 @@ Definition EncodeConfigⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "config") in
     slice.len "$a0")) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$range" := (![#sliceT] "config") in
     (let: "h" := (mem.alloc (type.zero_val #uint64T)) in
@@ -40,7 +40,7 @@ Definition EncodeConfigⁱᵐᵖˡ : val :=
       do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (![#uint64T] "h") in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call marshal.WriteInt) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "enc")).
 
@@ -55,7 +55,7 @@ Definition DecodeConfigⁱᵐᵖˡ : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "configLen" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("configLen" <-[#uint64T] "$r0");;;
@@ -69,7 +69,7 @@ Definition DecodeConfigⁱᵐᵖˡ : val :=
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "config") in
     slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-      (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+      (func_call marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ((slice.elem_ref #uint64T (![#sliceT] "config") (![#uint64T] "i")) <-[#uint64T] "$r0");;;
@@ -107,7 +107,7 @@ Definition MakeClerkⁱᵐᵖˡ : val :=
       do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "cls") in
       let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![#uint64T] "host") in
-      (func_call #reconnectclient.reconnectclient #"MakeReconnectingClient"%go) "$a0") in
+      (func_call reconnectclient.MakeReconnectingClient) "$a0") in
       slice.literal #ptrT ["$sl0"])) in
       (slice.append #ptrT) "$a0" "$a1") in
       do:  ("cls" <-[#sliceT] "$r0")));;;
@@ -144,7 +144,7 @@ Definition Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
       else do:  #());;;
       let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-      (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+      (func_call marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("err2" <-[#uint64T] "$r0");;;
@@ -166,14 +166,14 @@ Definition Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
       else do:  #()));;;
     let: "epoch" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("epoch" <-[#uint64T] "$r0");;;
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r1");;;
     let: "config" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    (func_call #configservice.configservice #"DecodeConfig"%go) "$a0") in
+    (func_call #DecodeConfig) "$a0") in
     do:  ("config" <-[#sliceT] "$r0");;;
     return: (![#uint64T] "epoch", ![#sliceT] "config")).
 
@@ -186,7 +186,7 @@ Definition Clerk__GetConfigⁱᵐᵖˡ : val :=
     do:  ("reply" <-[#ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"cls"%go (![#ptrT] "ck"))) in
+      let: "$r0" := (((func_call primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"cls"%go (![#ptrT] "ck"))) in
       slice.len "$a0"))) in
       do:  ("i" <-[#uint64T] "$r0");;;
       let: "err" := (mem.alloc (type.zero_val #uint64T)) in
@@ -202,7 +202,7 @@ Definition Clerk__GetConfigⁱᵐᵖˡ : val :=
       continue: #());;;
     let: "config" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    (func_call #configservice.configservice #"DecodeConfig"%go) "$a0") in
+    (func_call #DecodeConfig) "$a0") in
     do:  ("config" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "config")).
 
@@ -221,12 +221,12 @@ Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
     do:  ("args" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
     let: "$a1" := (![#uint64T] "epoch") in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ("args" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
     let: "$a1" := (let: "$a0" := (![#sliceT] "config") in
-    (func_call #configservice.configservice #"EncodeConfig"%go) "$a0") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #EncodeConfig) "$a0") in
+    (func_call marshal.WriteBytes) "$a0" "$a1") in
     do:  ("args" <-[#sliceT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
@@ -246,7 +246,7 @@ Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
       else do:  #());;;
       let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-      (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+      (func_call marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("err2" <-[#uint64T] "$r0");;;
@@ -265,7 +265,7 @@ Definition Clerk__TryWriteConfigⁱᵐᵖˡ : val :=
       else break: #()));;;
     let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err" <-[#uint64T] "$r0");;;
@@ -288,7 +288,7 @@ Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
     do:  ("args" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "args") in
     let: "$a1" := (![#uint64T] "epoch") in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ("args" <-[#sliceT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Clerk #"mu"%go (![#ptrT] "ck")))) #());;;
@@ -308,7 +308,7 @@ Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
       else do:  #());;;
       let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-      (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+      (func_call marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("err2" <-[#uint64T] "$r0");;;
@@ -328,14 +328,14 @@ Definition Clerk__GetLeaseⁱᵐᵖˡ : val :=
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "err2" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err2" <-[#uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: "leaseExpiration" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("leaseExpiration" <-[#uint64T] "$r0");;;
@@ -362,31 +362,31 @@ Definition encodeStateⁱᵐᵖˡ : val :=
     let: "e" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := #slice.nil in
     let: "$a1" := (![#uint64T] (struct.field_ref #state #"epoch"%go (![#ptrT] "st"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
     let: "$a1" := (![#uint64T] (struct.field_ref #state #"reservedEpoch"%go (![#ptrT] "st"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
     let: "$a1" := (![#uint64T] (struct.field_ref #state #"leaseExpiration"%go (![#ptrT] "st"))) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     (if: ![#boolT] (struct.field_ref #state #"wantLeaseToExpire"%go (![#ptrT] "st"))
     then
       let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
       let: "$a1" := #(W64 1) in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call marshal.WriteInt) "$a0" "$a1") in
       do:  ("e" <-[#sliceT] "$r0")
     else
       let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
       let: "$a1" := #(W64 0) in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call marshal.WriteInt) "$a0" "$a1") in
       do:  ("e" <-[#sliceT] "$r0"));;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
     let: "$a1" := (let: "$a0" := (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
-    (func_call #configservice.configservice #"EncodeConfig"%go) "$a0") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #EncodeConfig) "$a0") in
+    (func_call marshal.WriteBytes) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "e")).
 
@@ -403,26 +403,26 @@ Definition decodeStateⁱᵐᵖˡ : val :=
     let: "$r0" := (![#sliceT] "e") in
     do:  ("e2" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "e2") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #state #"epoch"%go (![#ptrT] "st")) <-[#uint64T] "$r0");;;
     do:  ("e2" <-[#sliceT] "$r1");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "e2") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #state #"reservedEpoch"%go (![#ptrT] "st")) <-[#uint64T] "$r0");;;
     do:  ("e2" <-[#sliceT] "$r1");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "e2") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #state #"leaseExpiration"%go (![#ptrT] "st")) <-[#uint64T] "$r0");;;
     do:  ("e2" <-[#sliceT] "$r1");;;
     let: "wantExp" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "e2") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("wantExp" <-[#uint64T] "$r0");;;
@@ -430,7 +430,7 @@ Definition decodeStateⁱᵐᵖˡ : val :=
     let: "$r0" := ((![#uint64T] "wantExp") = #(W64 1)) in
     do:  ((struct.field_ref #state #"wantLeaseToExpire"%go (![#ptrT] "st")) <-[#boolT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e2") in
-    (func_call #configservice.configservice #"DecodeConfig"%go) "$a0") in
+    (func_call #DecodeConfig) "$a0") in
     do:  ((struct.field_ref #state #"config"%go (![#ptrT] "st")) <-[#sliceT] "$r0");;;
     return: (![#ptrT] "st")).
 
@@ -459,12 +459,12 @@ Definition Server__tryAcquireⁱᵐᵖˡ : val :=
     else do:  #());;;
     let: "st" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "e")) in
-    (func_call #configservice.configservice #"decodeState"%go) "$a0") in
+    (func_call #decodeState) "$a0") in
     do:  ("st" <-[#ptrT] "$r0");;;
     let: "releaseFn" := (mem.alloc (type.zero_val #funcT)) in
     let: "$r0" := (λ: <>,
       exception_do (let: "$r0" := (let: "$a0" := (![#ptrT] "st") in
-      (func_call #configservice.configservice #"encodeState"%go) "$a0") in
+      (func_call #encodeState) "$a0") in
       do:  ((![#ptrT] "e") <-[#sliceT] "$r0");;;
       return: (((![#funcT] "relF") #()) = #(W64 0)))
       ) in
@@ -479,7 +479,7 @@ Definition Server__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
     let: "args" := (mem.alloc "args") in
     let: "$r0" := (let: "$a0" := #slice.nil in
     let: "$a1" := e.NotLeader in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "tryReleaseFn" := (mem.alloc (type.zero_val #funcT)) in
     let: "st" := (mem.alloc (type.zero_val #ptrT)) in
@@ -496,7 +496,7 @@ Definition Server__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
     else do:  #());;;
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #state #"reservedEpoch"%go (![#ptrT] "st"))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
+    (func_call std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #state #"reservedEpoch"%go (![#ptrT] "st")) <-[#uint64T] "$r0");;;
     let: "config" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
@@ -512,16 +512,16 @@ Definition Server__ReserveEpochAndGetConfigⁱᵐᵖˡ : val :=
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
     let: "$a1" := e.None in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
     let: "$a1" := (![#uint64T] "reservedEpoch") in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
     let: "$a1" := (let: "$a0" := (![#sliceT] "config") in
-    (func_call #configservice.configservice #"EncodeConfig"%go) "$a0") in
-    (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+    (func_call #EncodeConfig) "$a0") in
+    (func_call marshal.WriteBytes) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     return: #()).
 
@@ -533,10 +533,10 @@ Definition Server__GetConfigⁱᵐᵖˡ : val :=
     let: "args" := (mem.alloc "args") in
     let: "st" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := ((method_call #paxos #"Server'ptr" #"WeakRead" (![#ptrT] (struct.field_ref #Server #"s"%go (![#ptrT] "s")))) #()) in
-    (func_call #configservice.configservice #"decodeState"%go) "$a0") in
+    (func_call #decodeState) "$a0") in
     do:  ("st" <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st"))) in
-    (func_call #configservice.configservice #"EncodeConfig"%go) "$a0") in
+    (func_call #EncodeConfig) "$a0") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     return: #()).
 
@@ -548,19 +548,19 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
     let: "args" := (mem.alloc "args") in
     let: "$r0" := (let: "$a0" := #slice.nil in
     let: "$a1" := e.NotLeader in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "epoch" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "args") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("epoch" <-[#uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: "config" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #configservice.configservice #"DecodeConfig"%go) "$a0") in
+    (func_call #DecodeConfig) "$a0") in
     do:  ("config" <-[#sliceT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "tryReleaseFn" := (mem.alloc (type.zero_val #funcT)) in
@@ -583,19 +583,19 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
         else do:  #());;;
         let: "$r0" := (let: "$a0" := #slice.nil in
         let: "$a1" := e.Stale in
-        (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+        (func_call marshal.WriteInt) "$a0" "$a1") in
         do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
         do:  (let: "$a0" := #"Stale: %d < %d"%go in
         let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "epoch")) in
         let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #state #"reservedEpoch"%go (![#ptrT] "st")))) in
         slice.literal #interfaceT ["$sl0"; "$sl1"])) in
-        (func_call #log.log #"Printf"%go) "$a0" "$a1");;;
+        (func_call log.Printf) "$a0" "$a1");;;
         break: #()
       else
         (if: (![#uint64T] "epoch") > (![#uint64T] (struct.field_ref #state #"epoch"%go (![#ptrT] "st")))
         then
           let: "l" := (mem.alloc (type.zero_val #uint64T)) in
-          let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+          let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  ("l" <-[#uint64T] "$r0");;;
@@ -614,10 +614,10 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
             do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"New config is:"%go) in
             let: "$sl1" := (interface.make (#""%go, #"slice"%go) (![#sliceT] (struct.field_ref #state #"config"%go (![#ptrT] "st")))) in
             slice.literal #interfaceT ["$sl0"; "$sl1"])) in
-            (func_call #log.log #"Println"%go) "$a0");;;
+            (func_call log.Println) "$a0");;;
             let: "$r0" := (let: "$a0" := #slice.nil in
             let: "$a1" := e.None in
-            (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+            (func_call marshal.WriteInt) "$a0" "$a1") in
             do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
             break: #()
           else
@@ -630,7 +630,7 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
             then break: #()
             else do:  #());;;
             do:  (let: "$a0" := (![#uint64T] "timeToSleep") in
-            (func_call #primitive.primitive #"Sleep"%go) "$a0");;;
+            (func_call primitive.Sleep) "$a0");;;
             continue: #())
         else
           let: "$r0" := (![#sliceT] "config") in
@@ -640,7 +640,7 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ : val :=
           else do:  #());;;
           let: "$r0" := (let: "$a0" := #slice.nil in
           let: "$a1" := e.None in
-          (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+          (func_call marshal.WriteInt) "$a0" "$a1") in
           do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
           break: #())));;;
     return: #()).
@@ -653,15 +653,15 @@ Definition Server__GetLeaseⁱᵐᵖˡ : val :=
     let: "args" := (mem.alloc "args") in
     let: "$r0" := (let: "$a0" := #slice.nil in
     let: "$a1" := e.NotLeader in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
     let: "$a1" := #(W64 0) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "epoch" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "args") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("epoch" <-[#uint64T] "$r0");;;
@@ -686,22 +686,22 @@ Definition Server__GetLeaseⁱᵐᵖˡ : val :=
       let: "$sl2" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #state #"epoch"%go (![#ptrT] "st")))) in
       let: "$sl3" := (interface.make (#""%go, #"bool"%go) (![#boolT] (struct.field_ref #state #"wantLeaseToExpire"%go (![#ptrT] "st")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"; "$sl3"])) in
-      (func_call #log.log #"Println"%go) "$a0");;;
+      (func_call log.Println) "$a0");;;
       (if: (~ ((![#funcT] "tryReleaseFn") #()))
       then return: (#())
       else do:  #());;;
       let: "$r0" := (let: "$a0" := #slice.nil in
       let: "$a1" := e.Stale in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call marshal.WriteInt) "$a0" "$a1") in
       do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
       let: "$a1" := #(W64 0) in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call marshal.WriteInt) "$a0" "$a1") in
       do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
       return: (#())
     else do:  #());;;
     let: "l" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+    let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("l" <-[#uint64T] "$r0");;;
@@ -719,11 +719,11 @@ Definition Server__GetLeaseⁱᵐᵖˡ : val :=
     else do:  #());;;
     let: "$r0" := (let: "$a0" := #slice.nil in
     let: "$a1" := e.None in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
     let: "$a1" := (![#uint64T] "newLeaseExpiration") in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
     return: #()).
 
@@ -748,13 +748,13 @@ Definition makeServerⁱᵐᵖˡ : val :=
       "wantLeaseToExpire" ::= type.zero_val #boolT;
       "config" ::= "$config"
     }])) in
-    (func_call #configservice.configservice #"encodeState"%go) "$a0") in
+    (func_call #encodeState) "$a0") in
     do:  ("initEnc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#stringT] "fname") in
     let: "$a1" := (![#sliceT] "initEnc") in
     let: "$a2" := (![#uint64T] "paxosMe") in
     let: "$a3" := (![#sliceT] "hosts") in
-    (func_call #paxos.paxos #"StartServer"%go) "$a0" "$a1" "$a2" "$a3") in
+    (func_call paxos.StartServer) "$a0" "$a1" "$a2" "$a3") in
     do:  ((struct.field_ref #Server #"s"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     return: (![#ptrT] "s")).
 
@@ -773,7 +773,7 @@ Definition StartServerⁱᵐᵖˡ : val :=
     let: "$a1" := (![#uint64T] "paxosMe") in
     let: "$a2" := (![#sliceT] "hosts") in
     let: "$a3" := (![#sliceT] "initconfig") in
-    (func_call #configservice.configservice #"makeServer"%go) "$a0" "$a1" "$a2" "$a3") in
+    (func_call #makeServer) "$a0" "$a1" "$a2" "$a3") in
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "handlers" := (mem.alloc (type.zero_val (type.mapT #uint64T #funcT))) in
     let: "$r0" := (map.make #uint64T #funcT) in
@@ -788,7 +788,7 @@ Definition StartServerⁱᵐᵖˡ : val :=
     do:  (map.insert (![type.mapT #uint64T #funcT] "handlers") RPC_GETLEASE "$r0");;;
     let: "rs" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #funcT] "handlers") in
-    (func_call #urpc.urpc #"MakeServer"%go) "$a0") in
+    (func_call urpc.MakeServer) "$a0") in
     do:  ("rs" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "me") in
     (method_call #urpc #"Server'ptr" #"Serve" (![#ptrT] "rs")) "$a0");;;

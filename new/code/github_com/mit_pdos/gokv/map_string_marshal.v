@@ -21,7 +21,7 @@ Definition EncodeStringMapⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![type.mapT #stringT #stringT] "kvs") in
     map.len "$a0")) in
-    (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+    (func_call marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$range" := (![type.mapT #stringT #stringT] "kvs") in
     (let: "v" := (mem.alloc (type.zero_val #stringT)) in
@@ -32,20 +32,20 @@ Definition EncodeStringMapⁱᵐᵖˡ : val :=
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (s_to_w64 (let: "$a0" := (![#stringT] "k") in
       StringLength "$a0")) in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call marshal.WriteInt) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (string.to_bytes (![#stringT] "k")) in
-      (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+      (func_call marshal.WriteBytes) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (s_to_w64 (let: "$a0" := (![#stringT] "v") in
       StringLength "$a0")) in
-      (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1") in
+      (func_call marshal.WriteInt) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (string.to_bytes (![#stringT] "v")) in
-      (func_call #marshal.marshal #"WriteBytes"%go) "$a0" "$a1") in
+      (func_call marshal.WriteBytes) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "enc")).
 
@@ -63,7 +63,7 @@ Definition DecodeStringMapⁱᵐᵖˡ : val :=
     let: "$r0" := (map.make #stringT #stringT) in
     do:  ("kvs" <-[type.mapT #stringT #stringT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("numEntries" <-[#uint64T] "$r0");;;
@@ -79,27 +79,27 @@ Definition DecodeStringMapⁱᵐᵖˡ : val :=
       let: "key" := (mem.alloc (type.zero_val #sliceT)) in
       let: "val" := (mem.alloc (type.zero_val #sliceT)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-      (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+      (func_call marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("ln" <-[#uint64T] "$r0");;;
       do:  ("enc" <-[#sliceT] "$r1");;;
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (![#uint64T] "ln") in
-      (func_call #marshal.marshal #"ReadBytes"%go) "$a0" "$a1") in
+      (func_call marshal.ReadBytes) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("key" <-[#sliceT] "$r0");;;
       do:  ("enc" <-[#sliceT] "$r1");;;
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-      (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+      (func_call marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("ln" <-[#uint64T] "$r0");;;
       do:  ("enc" <-[#sliceT] "$r1");;;
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (![#uint64T] "ln") in
-      (func_call #marshal.marshal #"ReadBytes"%go) "$a0" "$a1") in
+      (func_call marshal.ReadBytes) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("val" <-[#sliceT] "$r0");;;

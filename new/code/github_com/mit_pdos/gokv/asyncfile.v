@@ -40,7 +40,7 @@ Definition AsyncFile__Writeⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #AsyncFile #"data"%go (![#ptrT] "s")) <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s"))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.std #"SumAssumeNoOverflow"%go) "$a0" "$a1") in
+    (func_call std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     let: "index" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s"))) in
@@ -78,7 +78,7 @@ Definition AsyncFile__flushThreadⁱᵐᵖˡ : val :=
       then
         do:  (let: "$a0" := (![#stringT] (struct.field_ref #AsyncFile #"filename"%go (![#ptrT] "s"))) in
         let: "$a1" := (![#sliceT] (struct.field_ref #AsyncFile #"data"%go (![#ptrT] "s"))) in
-        (func_call #grove_ffi.grove_ffi #"FileWrite"%go) "$a0" "$a1");;;
+        (func_call grove_ffi.FileWrite) "$a0" "$a1");;;
         let: "$r0" := (![#uint64T] (struct.field_ref #AsyncFile #"index"%go (![#ptrT] "s"))) in
         do:  ((struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
         do:  ((method_call #sync #"Cond'ptr" #"Broadcast" (![#ptrT] (struct.field_ref #AsyncFile #"durableIndexCond"%go (![#ptrT] "s")))) #());;;
@@ -102,7 +102,7 @@ Definition AsyncFile__flushThreadⁱᵐᵖˡ : val :=
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
       do:  (let: "$a0" := (![#stringT] (struct.field_ref #AsyncFile #"filename"%go (![#ptrT] "s"))) in
       let: "$a1" := (![#sliceT] "data") in
-      (func_call #grove_ffi.grove_ffi #"FileWrite"%go) "$a0" "$a1");;;
+      (func_call grove_ffi.FileWrite) "$a0" "$a1");;;
       do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AsyncFile #"mu"%go (![#ptrT] "s")))) #());;;
       let: "$r0" := (![#uint64T] "index") in
       do:  ((struct.field_ref #AsyncFile #"durableIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
@@ -139,14 +139,14 @@ Definition MakeAsyncFileⁱᵐᵖˡ : val :=
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$mu" := "mu" in
     let: "$indexCond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") "mu") in
-    (func_call #sync.sync #"NewCond"%go) "$a0") in
+    (func_call sync.NewCond) "$a0") in
     let: "$closedCond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") "mu") in
-    (func_call #sync.sync #"NewCond"%go) "$a0") in
+    (func_call sync.NewCond) "$a0") in
     let: "$durableIndexCond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") "mu") in
-    (func_call #sync.sync #"NewCond"%go) "$a0") in
+    (func_call sync.NewCond) "$a0") in
     let: "$filename" := (![#stringT] "filename") in
     let: "$data" := (let: "$a0" := (![#stringT] "filename") in
-    (func_call #grove_ffi.grove_ffi #"FileRead"%go) "$a0") in
+    (func_call grove_ffi.FileRead) "$a0") in
     let: "$index" := #(W64 0) in
     let: "$durableIndex" := #(W64 0) in
     let: "$closed" := #false in

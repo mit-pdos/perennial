@@ -40,7 +40,7 @@ Definition makeClerksⁱᵐᵖˡ : val :=
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
     slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
       let: "$r0" := (let: "$a0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "servers") (![#uint64T] "i"))) in
-      (func_call #replica.replica #"MakeClerk"%go) "$a0") in
+      (func_call replica.MakeClerk) "$a0") in
       do:  ((slice.elem_ref #ptrT (![#sliceT] "clerks") (![#uint64T] "i")) <-[#ptrT] "$r0");;;
       do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
     return: (![#sliceT] "clerks")).
@@ -55,7 +55,7 @@ Definition Makeⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #Clerk)) in
     do:  ("ck" <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
-    (func_call #configservice.configservice #"MakeClerk"%go) "$a0") in
+    (func_call configservice.MakeClerk) "$a0") in
     do:  ((struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")) <-[#ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "config" := (mem.alloc (type.zero_val #sliceT)) in
@@ -66,13 +66,13 @@ Definition Makeⁱᵐᵖˡ : val :=
       then continue: #()
       else
         let: "$r0" := (let: "$a0" := (![#sliceT] "config") in
-        (func_call #clerk.clerk #"makeClerks"%go) "$a0") in
+        (func_call #makeClerks) "$a0") in
         do:  ((struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck")) <-[#sliceT] "$r0");;;
         break: #()));;;
-    let: "$r0" := (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
+    let: "$r0" := (((func_call primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
     slice.len "$a0"))) in
     do:  ((struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
-    let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+    let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
@@ -99,7 +99,7 @@ Definition Clerk__Applyⁱᵐᵖˡ : val :=
       then break: #()
       else
         do:  (let: "$a0" := (#(W64 100) * #(W64 1000000)) in
-        (func_call #primitive.primitive #"Sleep"%go) "$a0");;;
+        (func_call primitive.Sleep) "$a0");;;
         let: "config" := (mem.alloc (type.zero_val #sliceT)) in
         let: "$r0" := ((method_call #configservice #"Clerk'ptr" #"GetConfig" (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
         do:  ("config" <-[#sliceT] "$r0");;;
@@ -107,7 +107,7 @@ Definition Clerk__Applyⁱᵐᵖˡ : val :=
         slice.len "$a0") #(W64 0)
         then
           let: "$r0" := (let: "$a0" := (![#sliceT] "config") in
-          (func_call #clerk.clerk #"makeClerks"%go) "$a0") in
+          (func_call #makeClerks) "$a0") in
           do:  ((struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck")) <-[#sliceT] "$r0")
         else do:  #());;;
         continue: #()));;;
@@ -118,17 +118,17 @@ Definition Clerk__maybeRefreshPreferenceⁱᵐᵖˡ : val :=
   λ: "ck" <>,
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "now" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+    let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("now" <-[#uint64T] "$r0");;;
     do:  "$r1";;;
     (if: (![#uint64T] "now") > ((![#uint64T] (struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck"))) + PreferenceRefreshTime)
     then
-      let: "$r0" := (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
+      let: "$r0" := (((func_call primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
       slice.len "$a0"))) in
       do:  ((struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
-      let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+      let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ((struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
@@ -168,7 +168,7 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
           break: #()
         else do:  #());;;
         do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)));;;
-        let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+        let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ((struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
@@ -178,10 +178,10 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
       then break: #()
       else
         let: "timeToSleep" := (mem.alloc (type.zero_val #uint64T)) in
-        let: "$r0" := (#(W64 5) + (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` #(W64 10))) in
+        let: "$r0" := (#(W64 5) + (((func_call primitive.RandomUint64) #()) `rem` #(W64 10))) in
         do:  ("timeToSleep" <-[#uint64T] "$r0");;;
         do:  (let: "$a0" := ((![#uint64T] "timeToSleep") * #(W64 1000000)) in
-        (func_call #primitive.primitive #"Sleep"%go) "$a0");;;
+        (func_call primitive.Sleep) "$a0");;;
         let: "config" := (mem.alloc (type.zero_val #sliceT)) in
         let: "$r0" := ((method_call #configservice #"Clerk'ptr" #"GetConfig" (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
         do:  ("config" <-[#sliceT] "$r0");;;
@@ -189,14 +189,14 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
         slice.len "$a0") #(W64 0)
         then
           let: "$r0" := (let: "$a0" := (![#sliceT] "config") in
-          (func_call #clerk.clerk #"makeClerks"%go) "$a0") in
+          (func_call #makeClerks) "$a0") in
           do:  ((struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck")) <-[#sliceT] "$r0");;;
-          let: ("$ret0", "$ret1") := ((func_call #grove_ffi.grove_ffi #"GetTimeRange"%go) #()) in
+          let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  ((struct.field_ref #Clerk #"lastPreferenceRefresh"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
           do:  "$r1";;;
-          let: "$r0" := (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
+          let: "$r0" := (((func_call primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
           slice.len "$a0"))) in
           do:  ((struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck")) <-[#uint64T] "$r0")
         else do:  #());;;
@@ -209,7 +209,7 @@ Definition Clerk__ApplyRoⁱᵐᵖˡ : val :=
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
     let: "p" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := ((func_call #trusted_proph.trusted_proph #"NewProph"%go) #()) in
+    let: "$r0" := ((func_call trusted_proph.NewProph) #()) in
     do:  ("p" <-[#ptrT] "$r0");;;
     let: "v" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "op") in
@@ -217,7 +217,7 @@ Definition Clerk__ApplyRoⁱᵐᵖˡ : val :=
     do:  ("v" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#ptrT] "p") in
     let: "$a1" := (![#sliceT] "v") in
-    (func_call #trusted_proph.trusted_proph #"ResolveBytes"%go) "$a0" "$a1");;;
+    (func_call trusted_proph.ResolveBytes) "$a0" "$a1");;;
     return: (![#sliceT] "v")).
 
 Definition vars' : list (go_string * go_type) := [].

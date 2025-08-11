@@ -80,7 +80,7 @@ Definition encodeIntⁱᵐᵖˡ : val :=
     exception_do (let: "a" := (mem.alloc "a") in
     return: (string.from_bytes (let: "$a0" := #slice.nil in
      let: "$a1" := (![#uint64T] "a") in
-     (func_call #marshal.marshal #"WriteInt"%go) "$a0" "$a1"))).
+     (func_call marshal.WriteInt) "$a0" "$a1"))).
 
 Definition decodeInt : go_string := "github.com/mit-pdos/gokv/bank.decodeInt"%go.
 
@@ -90,7 +90,7 @@ Definition decodeIntⁱᵐᵖˡ : val :=
     exception_do (let: "a" := (mem.alloc "a") in
     let: "v" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (string.to_bytes (![#stringT] "a")) in
-    (func_call #marshal.marshal #"ReadInt"%go) "$a0") in
+    (func_call marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[#uint64T] "$r0");;;
@@ -110,29 +110,29 @@ Definition BankClerk__transfer_internalⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck"))) in
     let: "$a1" := (![#stringT] "acc_from") in
     let: "$a2" := (![#stringT] "acc_to") in
-    (func_call #bank.bank #"acquire_two"%go) "$a0" "$a1" "$a2");;;
+    (func_call #acquire_two) "$a0" "$a1" "$a2");;;
     let: "old_amount" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := (![#stringT] "acc_from") in
     (interface.get #"Get"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0") in
-    (func_call #bank.bank #"decodeInt"%go) "$a0") in
+    (func_call #decodeInt) "$a0") in
     do:  ("old_amount" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "old_amount") ≥ (![#uint64T] "amount")
     then
       do:  (let: "$a0" := (![#stringT] "acc_from") in
       let: "$a1" := (let: "$a0" := ((![#uint64T] "old_amount") - (![#uint64T] "amount")) in
-      (func_call #bank.bank #"encodeInt"%go) "$a0") in
+      (func_call #encodeInt) "$a0") in
       (interface.get #"Put"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0" "$a1");;;
       do:  (let: "$a0" := (![#stringT] "acc_to") in
       let: "$a1" := (let: "$a0" := ((let: "$a0" := (let: "$a0" := (![#stringT] "acc_to") in
       (interface.get #"Get"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0") in
-      (func_call #bank.bank #"decodeInt"%go) "$a0") + (![#uint64T] "amount")) in
-      (func_call #bank.bank #"encodeInt"%go) "$a0") in
+      (func_call #decodeInt) "$a0") + (![#uint64T] "amount")) in
+      (func_call #encodeInt) "$a0") in
       (interface.get #"Put"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck"))) in
     let: "$a1" := (![#stringT] "acc_from") in
     let: "$a2" := (![#stringT] "acc_to") in
-    (func_call #bank.bank #"release_two"%go) "$a0" "$a1" "$a2");;;
+    (func_call #release_two) "$a0" "$a1" "$a2");;;
     return: #()).
 
 (* go: bank.go:65:23 *)
@@ -141,13 +141,13 @@ Definition BankClerk__SimpleTransferⁱᵐᵖˡ : val :=
     exception_do (let: "bck" := (mem.alloc "bck") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "src" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((func_call #primitive.primitive #"RandomUint64"%go) #()) in
+      let: "$r0" := ((func_call primitive.RandomUint64) #()) in
       do:  ("src" <-[#uint64T] "$r0");;;
       let: "dst" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((func_call #primitive.primitive #"RandomUint64"%go) #()) in
+      let: "$r0" := ((func_call primitive.RandomUint64) #()) in
       do:  ("dst" <-[#uint64T] "$r0");;;
       let: "amount" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((func_call #primitive.primitive #"RandomUint64"%go) #()) in
+      let: "$r0" := ((func_call primitive.RandomUint64) #()) in
       do:  ("amount" <-[#uint64T] "$r0");;;
       (if: (((![#uint64T] "src") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
       slice.len "$a0"))) && ((![#uint64T] "dst") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
@@ -174,7 +174,7 @@ Definition BankClerk__get_totalⁱᵐᵖˡ : val :=
       (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0");;;
       let: "$r0" := ((![#uint64T] "sum") + (let: "$a0" := (let: "$a0" := (![#stringT] "acct") in
       (interface.get #"Get"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0") in
-      (func_call #bank.bank #"decodeInt"%go) "$a0")) in
+      (func_call #decodeInt) "$a0")) in
       do:  ("sum" <-[#uint64T] "$r0")));;;
     let: "$range" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
     (let: "acct" := (mem.alloc (type.zero_val #stringT)) in
@@ -222,7 +222,7 @@ Definition MakeBankClerkSliceⁱᵐᵖˡ : val :=
     then
       do:  (let: "$a0" := (![#stringT] (slice.elem_ref #stringT (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) #(W64 0))) in
       let: "$a1" := (let: "$a0" := BAL_TOTAL in
-      (func_call #bank.bank #"encodeInt"%go) "$a0") in
+      (func_call #encodeInt) "$a0") in
       (interface.get #"Put"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0" "$a1");;;
       let: "$range" := (let: "$s" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
       slice.slice #stringT "$s" #(W64 1) (slice.len "$s")) in
@@ -232,7 +232,7 @@ Definition MakeBankClerkSliceⁱᵐᵖˡ : val :=
         do:  "$key";;;
         do:  (let: "$a0" := (![#stringT] "acct") in
         let: "$a1" := (let: "$a0" := #(W64 0) in
-        (func_call #bank.bank #"encodeInt"%go) "$a0") in
+        (func_call #encodeInt) "$a0") in
         (interface.get #"Put"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0" "$a1")));;;
       do:  (let: "$a0" := (![#stringT] "init_flag") in
       let: "$a1" := #"1"%go in
@@ -267,7 +267,7 @@ Definition MakeBankClerkⁱᵐᵖˡ : val :=
      let: "$a1" := (![#kv.Kv] "kv") in
      let: "$a2" := (![#stringT] "init_flag") in
      let: "$a3" := (![#sliceT] "accts") in
-     (func_call #bank.bank #"MakeBankClerkSlice"%go) "$a0" "$a1" "$a2" "$a3")).
+     (func_call #MakeBankClerkSlice) "$a0" "$a1" "$a2" "$a3")).
 
 Definition vars' : list (go_string * go_type) := [].
 
