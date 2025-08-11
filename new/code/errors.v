@@ -8,7 +8,21 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition New : go_string := "errors.New"%go.
+
 Axiom ErrUnsupported'init : val.
+
+Definition Join : go_string := "errors.Join"%go.
+
+Definition Unwrap : go_string := "errors.Unwrap"%go.
+
+Definition Is : go_string := "errors.Is"%go.
+
+Definition is : go_string := "errors.is"%go.
+
+Definition As : go_string := "errors.As"%go.
+
+Definition as : go_string := "errors.as"%go.
 
 Axiom errorType'init : val.
 
@@ -29,9 +43,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init errors.errors (λ: <>,
-      exception_do (do:  (ErrUnsupported'init #());;;
+  λ: <>,
+    package.init #errors.errors (λ: <>,
+      exception_do (do:  (package.alloc errors.errors #());;;
+      do:  (ErrUnsupported'init #());;;
       do:  (errorType'init #()))
       ).
 

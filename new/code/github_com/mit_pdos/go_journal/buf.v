@@ -20,9 +20,11 @@ Definition Buf : go_type := structT [
   "dirty" :: boolT
 ].
 
+Definition MkBuf : go_string := "github.com/mit-pdos/go-journal/buf.MkBuf"%go.
+
 (* go: buf.go:21:6 *)
-Definition MkBuf : val :=
-  rec: "MkBuf" "addr" "sz" "data" :=
+Definition MkBufⁱᵐᵖˡ : val :=
+  λ: "addr" "sz" "data",
     exception_do (let: "data" := (mem.alloc "data") in
     let: "sz" := (mem.alloc "sz") in
     let: "addr" := (mem.alloc "addr") in
@@ -40,11 +42,13 @@ Definition MkBuf : val :=
     do:  ("b" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "b")).
 
+Definition MkBufLoad : go_string := "github.com/mit-pdos/go-journal/buf.MkBufLoad"%go.
+
 (* Load the bits of a disk block into a new buf, as specified by addr
 
    go: buf.go:32:6 *)
-Definition MkBufLoad : val :=
-  rec: "MkBufLoad" "addr" "sz" "blk" :=
+Definition MkBufLoadⁱᵐᵖˡ : val :=
+  λ: "addr" "sz" "blk",
     exception_do (let: "blk" := (mem.alloc "blk") in
     let: "sz" := (mem.alloc "sz") in
     let: "addr" := (mem.alloc "addr") in
@@ -72,11 +76,13 @@ Definition MkBufLoad : val :=
     do:  ("b" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "b")).
 
+Definition installOneBit : go_string := "github.com/mit-pdos/go-journal/buf.installOneBit"%go.
+
 (* Install 1 bit from src into dst, at offset bit. return new dst.
 
    go: buf.go:46:6 *)
-Definition installOneBit : val :=
-  rec: "installOneBit" "src" "dst" "bit" :=
+Definition installOneBitⁱᵐᵖˡ : val :=
+  λ: "src" "dst" "bit",
     exception_do (let: "bit" := (mem.alloc "bit") in
     let: "dst" := (mem.alloc "dst") in
     let: "src" := (mem.alloc "src") in
@@ -95,11 +101,13 @@ Definition installOneBit : val :=
     else do:  #());;;
     return: (![#byteT] "new")).
 
+Definition installBit : go_string := "github.com/mit-pdos/go-journal/buf.installBit"%go.
+
 (* Install bit from src to dst, at dstoff in destination. dstoff is in bits.
 
    go: buf.go:61:6 *)
-Definition installBit : val :=
-  rec: "installBit" "src" "dst" "dstoff" :=
+Definition installBitⁱᵐᵖˡ : val :=
+  λ: "src" "dst" "dstoff",
     exception_do (let: "dstoff" := (mem.alloc "dstoff") in
     let: "dst" := (mem.alloc "dst") in
     let: "src" := (mem.alloc "src") in
@@ -109,15 +117,17 @@ Definition installBit : val :=
     let: "$r0" := (let: "$a0" := (![#byteT] (slice.elem_ref #byteT (![#sliceT] "src") #(W64 0))) in
     let: "$a1" := (![#byteT] (slice.elem_ref #byteT (![#sliceT] "dst") (![#uint64T] "dstbyte"))) in
     let: "$a2" := ((![#uint64T] "dstoff") `rem` #(W64 8)) in
-    (func_call #buf.buf #"installOneBit"%go) "$a0" "$a1" "$a2") in
+    (func_call #installOneBit) "$a0" "$a1" "$a2") in
     do:  ((slice.elem_ref #byteT (![#sliceT] "dst") (![#uint64T] "dstbyte")) <-[#byteT] "$r0");;;
     return: #()).
+
+Definition installBytes : go_string := "github.com/mit-pdos/go-journal/buf.installBytes"%go.
 
 (* Install bytes from src to dst.
 
    go: buf.go:67:6 *)
-Definition installBytes : val :=
-  rec: "installBytes" "src" "dst" "dstoff" "nbit" :=
+Definition installBytesⁱᵐᵖˡ : val :=
+  λ: "src" "dst" "dstoff" "nbit",
     exception_do (let: "nbit" := (mem.alloc "nbit") in
     let: "dstoff" := (mem.alloc "dstoff") in
     let: "dst" := (mem.alloc "dst") in
@@ -136,8 +146,8 @@ Definition installBytes : val :=
 (* Install the bits from buf into blk.  Two cases: a bit or an inode
 
    go: buf.go:76:17 *)
-Definition Buf__Install : val :=
-  rec: "Buf__Install" "buf" "blk" :=
+Definition Buf__Installⁱᵐᵖˡ : val :=
+  λ: "buf" "blk",
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "blk" := (mem.alloc "blk") in
     do:  (let: "$a0" := #(W64 5) in
@@ -145,13 +155,13 @@ Definition Buf__Install : val :=
     "%go in
     let: "$a2" := ((let: "$sl0" := (interface.make (#addr, #"Addr") (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
     slice.literal #interfaceT ["$sl0"])) in
-    (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
+    (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     (if: (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) = #(W64 1)
     then
       do:  (let: "$a0" := (![#sliceT] (struct.field_ref #Buf #"Data"%go (![#ptrT] "buf"))) in
       let: "$a1" := (![#sliceT] "blk") in
       let: "$a2" := (![#uint64T] (struct.field_ref #addr.Addr #"Off"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
-      (func_call #buf.buf #"installBit"%go) "$a0" "$a1" "$a2")
+      (func_call #installBit) "$a0" "$a1" "$a2")
     else
       (if: (((![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) `rem` #(W64 8)) = #(W64 0)) && (((![#uint64T] (struct.field_ref #addr.Addr #"Off"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) `rem` #(W64 8)) = #(W64 0))
       then
@@ -159,7 +169,7 @@ Definition Buf__Install : val :=
         let: "$a1" := (![#sliceT] "blk") in
         let: "$a2" := (![#uint64T] (struct.field_ref #addr.Addr #"Off"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
         let: "$a3" := (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) in
-        (func_call #buf.buf #"installBytes"%go) "$a0" "$a1" "$a2" "$a3")
+        (func_call #installBytes) "$a0" "$a1" "$a2" "$a3")
       else
         do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Install unsupported
         "%go) in
@@ -169,26 +179,26 @@ Definition Buf__Install : val :=
     "%go in
     let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"slice"%go) (![#sliceT] "blk")) in
     slice.literal #interfaceT ["$sl0"])) in
-    (func_call #util.util #"DPrintf"%go) "$a0" "$a1" "$a2");;;
+    (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     return: #()).
 
 (* go: buf.go:88:17 *)
-Definition Buf__IsDirty : val :=
-  rec: "Buf__IsDirty" "buf" <> :=
+Definition Buf__IsDirtyⁱᵐᵖˡ : val :=
+  λ: "buf" <>,
     exception_do (let: "buf" := (mem.alloc "buf") in
     return: (![#boolT] (struct.field_ref #Buf #"dirty"%go (![#ptrT] "buf")))).
 
 (* go: buf.go:92:17 *)
-Definition Buf__SetDirty : val :=
-  rec: "Buf__SetDirty" "buf" <> :=
+Definition Buf__SetDirtyⁱᵐᵖˡ : val :=
+  λ: "buf" <>,
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "$r0" := #true in
     do:  ((struct.field_ref #Buf #"dirty"%go (![#ptrT] "buf")) <-[#boolT] "$r0");;;
     return: #()).
 
 (* go: buf.go:96:17 *)
-Definition Buf__WriteDirect : val :=
-  rec: "Buf__WriteDirect" "buf" "d" :=
+Definition Buf__WriteDirectⁱᵐᵖˡ : val :=
+  λ: "buf" "d",
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "d" := (mem.alloc "d") in
     do:  ((method_call #buf.buf #"Buf'ptr" #"SetDirty" (![#ptrT] "buf")) #());;;
@@ -210,26 +220,26 @@ Definition Buf__WriteDirect : val :=
     return: #()).
 
 (* go: buf.go:107:17 *)
-Definition Buf__BnumGet : val :=
-  rec: "Buf__BnumGet" "buf" "off" :=
+Definition Buf__BnumGetⁱᵐᵖˡ : val :=
+  λ: "buf" "off",
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "off" := (mem.alloc "off") in
     let: "dec" := (mem.alloc (type.zero_val #marshal.Dec)) in
     let: "$r0" := (let: "$a0" := (let: "$s" := (![#sliceT] (struct.field_ref #Buf #"Data"%go (![#ptrT] "buf"))) in
     slice.slice #byteT "$s" (![#uint64T] "off") ((![#uint64T] "off") + #(W64 8))) in
-    (func_call #marshal.marshal #"NewDec"%go) "$a0") in
+    (func_call #marshal.NewDec) "$a0") in
     do:  ("dec" <-[#marshal.Dec] "$r0");;;
     return: ((method_call #marshal #"Dec" #"GetInt" (![#marshal.Dec] "dec")) #())).
 
 (* go: buf.go:112:17 *)
-Definition Buf__BnumPut : val :=
-  rec: "Buf__BnumPut" "buf" "off" "v" :=
+Definition Buf__BnumPutⁱᵐᵖˡ : val :=
+  λ: "buf" "off" "v",
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "v" := (mem.alloc "v") in
     let: "off" := (mem.alloc "off") in
     let: "enc" := (mem.alloc (type.zero_val #marshal.Enc)) in
     let: "$r0" := (let: "$a0" := #(W64 8) in
-    (func_call #marshal.marshal #"NewEnc"%go) "$a0") in
+    (func_call #marshal.NewEnc) "$a0") in
     do:  ("enc" <-[#marshal.Enc] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "v") in
     (method_call #marshal #"Enc" #"PutInt" (![#marshal.Enc] "enc")) "$a0");;;
@@ -244,9 +254,11 @@ Definition BufMap : go_type := structT [
   "addrs" :: mapT uint64T ptrT
 ].
 
+Definition MkBufMap : go_string := "github.com/mit-pdos/go-journal/buf.MkBufMap"%go.
+
 (* go: bufmap.go:15:6 *)
-Definition MkBufMap : val :=
-  rec: "MkBufMap" <> :=
+Definition MkBufMapⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "a" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$addrs" := (map.make #uint64T #ptrT) in
     struct.make #BufMap [{
@@ -256,8 +268,8 @@ Definition MkBufMap : val :=
     return: (![#ptrT] "a")).
 
 (* go: bufmap.go:22:21 *)
-Definition BufMap__Insert : val :=
-  rec: "BufMap__Insert" "bmap" "buf" :=
+Definition BufMap__Insertⁱᵐᵖˡ : val :=
+  λ: "bmap" "buf",
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "buf" := (mem.alloc "buf") in
     let: "$r0" := (![#ptrT] "buf") in
@@ -265,15 +277,15 @@ Definition BufMap__Insert : val :=
     return: #()).
 
 (* go: bufmap.go:26:21 *)
-Definition BufMap__Lookup : val :=
-  rec: "BufMap__Lookup" "bmap" "addr" :=
+Definition BufMap__Lookupⁱᵐᵖˡ : val :=
+  λ: "bmap" "addr",
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "addr" := (mem.alloc "addr") in
     return: (Fst (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] "addr")) #())))).
 
 (* go: bufmap.go:30:21 *)
-Definition BufMap__Del : val :=
-  rec: "BufMap__Del" "bmap" "addr" :=
+Definition BufMap__Delⁱᵐᵖˡ : val :=
+  λ: "bmap" "addr",
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "addr" := (mem.alloc "addr") in
     do:  (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
@@ -282,8 +294,8 @@ Definition BufMap__Del : val :=
     return: #()).
 
 (* go: bufmap.go:34:21 *)
-Definition BufMap__Ndirty : val :=
-  rec: "BufMap__Ndirty" "bmap" <> :=
+Definition BufMap__Ndirtyⁱᵐᵖˡ : val :=
+  λ: "bmap" <>,
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "$r0" := (s_to_w64 (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
     map.len "$a0")) in
@@ -302,8 +314,8 @@ Definition BufMap__Ndirty : val :=
     return: (![#uint64T] "n")).
 
 (* go: bufmap.go:46:21 *)
-Definition BufMap__DirtyBufs : val :=
-  rec: "BufMap__DirtyBufs" "bmap" <> :=
+Definition BufMap__DirtyBufsⁱᵐᵖˡ : val :=
+  λ: "bmap" <>,
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "bufs" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
@@ -323,9 +335,9 @@ Definition BufMap__DirtyBufs : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("MkBuf"%go, MkBuf); ("MkBufLoad"%go, MkBufLoad); ("installOneBit"%go, installOneBit); ("installBit"%go, installBit); ("installBytes"%go, installBytes); ("MkBufMap"%go, MkBufMap)].
+Definition functions' : list (go_string * val) := [(MkBuf, MkBufⁱᵐᵖˡ); (MkBufLoad, MkBufLoadⁱᵐᵖˡ); (installOneBit, installOneBitⁱᵐᵖˡ); (installBit, installBitⁱᵐᵖˡ); (installBytes, installBytesⁱᵐᵖˡ); (MkBufMap, MkBufMapⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Buf"%go, []); ("Buf'ptr"%go, [("BnumGet"%go, Buf__BnumGet); ("BnumPut"%go, Buf__BnumPut); ("Install"%go, Buf__Install); ("IsDirty"%go, Buf__IsDirty); ("SetDirty"%go, Buf__SetDirty); ("WriteDirect"%go, Buf__WriteDirect)]); ("BufMap"%go, []); ("BufMap'ptr"%go, [("Del"%go, BufMap__Del); ("DirtyBufs"%go, BufMap__DirtyBufs); ("Insert"%go, BufMap__Insert); ("Lookup"%go, BufMap__Lookup); ("Ndirty"%go, BufMap__Ndirty)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Buf"%go, []); ("Buf'ptr"%go, [("BnumGet"%go, Buf__BnumGetⁱᵐᵖˡ); ("BnumPut"%go, Buf__BnumPutⁱᵐᵖˡ); ("Install"%go, Buf__Installⁱᵐᵖˡ); ("IsDirty"%go, Buf__IsDirtyⁱᵐᵖˡ); ("SetDirty"%go, Buf__SetDirtyⁱᵐᵖˡ); ("WriteDirect"%go, Buf__WriteDirectⁱᵐᵖˡ)]); ("BufMap"%go, []); ("BufMap'ptr"%go, [("Del"%go, BufMap__Delⁱᵐᵖˡ); ("DirtyBufs"%go, BufMap__DirtyBufsⁱᵐᵖˡ); ("Insert"%go, BufMap__Insertⁱᵐᵖˡ); ("Lookup"%go, BufMap__Lookupⁱᵐᵖˡ); ("Ndirty"%go, BufMap__Ndirtyⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo buf.buf :=
   {|
@@ -336,13 +348,14 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Buf"%go, [
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init buf.buf (λ: <>,
-      exception_do (do:  util.initialize';;;
-      do:  common.initialize';;;
-      do:  addr.initialize';;;
-      do:  marshal.initialize';;;
-      do:  disk.initialize')
+  λ: <>,
+    package.init #buf.buf (λ: <>,
+      exception_do (do:  (util.initialize' #());;;
+      do:  (common.initialize' #());;;
+      do:  (addr.initialize' #());;;
+      do:  (marshal.initialize' #());;;
+      do:  (disk.initialize' #());;;
+      do:  (package.alloc buf.buf #()))
       ).
 
 End code.

@@ -10,19 +10,91 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Errorf : go_string := "fmt.Errorf"%go.
+
+Definition FormatString : go_string := "fmt.FormatString"%go.
+
 Axiom ppFree'init : val.
+
+Definition newPrinter : go_string := "fmt.newPrinter"%go.
+
+Definition Fprintf : go_string := "fmt.Fprintf"%go.
+
+Definition Printf : go_string := "fmt.Printf"%go.
+
+Definition Sprintf : go_string := "fmt.Sprintf"%go.
+
+Definition Appendf : go_string := "fmt.Appendf"%go.
+
+Definition Fprint : go_string := "fmt.Fprint"%go.
+
+Definition Print : go_string := "fmt.Print"%go.
+
+Definition Sprint : go_string := "fmt.Sprint"%go.
+
+Definition Append : go_string := "fmt.Append"%go.
+
+Definition Fprintln : go_string := "fmt.Fprintln"%go.
+
+Definition Println : go_string := "fmt.Println"%go.
+
+Definition Sprintln : go_string := "fmt.Sprintln"%go.
+
+Definition Appendln : go_string := "fmt.Appendln"%go.
+
+Definition getField : go_string := "fmt.getField"%go.
+
+Definition tooLarge : go_string := "fmt.tooLarge"%go.
+
+Definition parsenum : go_string := "fmt.parsenum"%go.
+
+Definition intFromArg : go_string := "fmt.intFromArg"%go.
+
+Definition parseArgNumber : go_string := "fmt.parseArgNumber"%go.
+
+Definition Scan : go_string := "fmt.Scan"%go.
+
+Definition Scanln : go_string := "fmt.Scanln"%go.
+
+Definition Scanf : go_string := "fmt.Scanf"%go.
+
+Definition Sscan : go_string := "fmt.Sscan"%go.
+
+Definition Sscanln : go_string := "fmt.Sscanln"%go.
+
+Definition Sscanf : go_string := "fmt.Sscanf"%go.
+
+Definition Fscan : go_string := "fmt.Fscan"%go.
+
+Definition Fscanln : go_string := "fmt.Fscanln"%go.
+
+Definition Fscanf : go_string := "fmt.Fscanf"%go.
 
 Axiom space'init : val.
 
+Definition isSpace : go_string := "fmt.isSpace"%go.
+
+Definition notSpace : go_string := "fmt.notSpace"%go.
+
 Axiom ssFree'init : val.
+
+Definition newScanState : go_string := "fmt.newScanState"%go.
 
 Axiom errComplex'init : val.
 
 Axiom errBool'init : val.
 
+Definition indexRune : go_string := "fmt.indexRune"%go.
+
+Definition hasX : go_string := "fmt.hasX"%go.
+
+Definition hexDigit : go_string := "fmt.hexDigit"%go.
+
+Definition errorHandler : go_string := "fmt.errorHandler"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Printf"%go, Printf); ("Print"%go, Print)].
+Definition functions' : list (go_string * val) := [(Printf, Printfⁱᵐᵖˡ); (Print, Printⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -37,9 +109,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init fmt.fmt (λ: <>,
-      exception_do (do:  (ppFree'init #());;;
+  λ: <>,
+    package.init #fmt.fmt (λ: <>,
+      exception_do (do:  (package.alloc fmt.fmt #());;;
+      do:  (ppFree'init #());;;
       do:  (space'init #());;;
       do:  (ssFree'init #());;;
       do:  (errComplex'init #());;;

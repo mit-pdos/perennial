@@ -8,9 +8,41 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition AllocsPerRun : go_string := "testing.AllocsPerRun"%go.
+
+Definition initBenchmarkFlags : go_string := "testing.initBenchmarkFlags"%go.
+
 Axiom benchTime'init : val.
 
+Definition predictN : go_string := "testing.predictN"%go.
+
+Definition prettyPrint : go_string := "testing.prettyPrint"%go.
+
+Definition benchmarkName : go_string := "testing.benchmarkName"%go.
+
+Definition RunBenchmarks : go_string := "testing.RunBenchmarks"%go.
+
+Definition runBenchmarks : go_string := "testing.runBenchmarks"%go.
+
 Axiom hideStdoutForTesting'init : val.
+
+Definition Benchmark : go_string := "testing.Benchmark"%go.
+
+Definition Coverage : go_string := "testing.Coverage"%go.
+
+Definition RegisterCover : go_string := "testing.RegisterCover"%go.
+
+Definition mustBeNil : go_string := "testing.mustBeNil"%go.
+
+Definition coverReport : go_string := "testing.coverReport"%go.
+
+Definition RunExamples : go_string := "testing.RunExamples"%go.
+
+Definition runExamples : go_string := "testing.runExamples"%go.
+
+Definition sortLines : go_string := "testing.sortLines"%go.
+
+Definition initFuzzFlags : go_string := "testing.initFuzzFlags"%go.
 
 Axiom minimizeDuration'init : val.
 
@@ -18,13 +50,87 @@ Axiom corpusDir'init : val.
 
 Axiom supportedTypes'init : val.
 
+Definition runFuzzTests : go_string := "testing.runFuzzTests"%go.
+
+Definition runFuzzing : go_string := "testing.runFuzzing"%go.
+
+Definition fRunner : go_string := "testing.fRunner"%go.
+
+Definition allMatcher : go_string := "testing.allMatcher"%go.
+
+Definition newMatcher : go_string := "testing.newMatcher"%go.
+
+Definition splitRegexp : go_string := "testing.splitRegexp"%go.
+
+Definition parseSubtestNumber : go_string := "testing.parseSubtestNumber"%go.
+
+Definition rewrite : go_string := "testing.rewrite"%go.
+
+Definition isSpace : go_string := "testing.isSpace"%go.
+
+Definition registerCover2 : go_string := "testing.registerCover2"%go.
+
+Definition coverReport2 : go_string := "testing.coverReport2"%go.
+
+Definition coverage2 : go_string := "testing.coverage2"%go.
+
+Definition runExample : go_string := "testing.runExample"%go.
+
+Definition Init : go_string := "testing.Init"%go.
+
+Definition newChattyPrinter : go_string := "testing.newChattyPrinter"%go.
+
+Definition Short : go_string := "testing.Short"%go.
+
 Axiom testBinary'init : val.
+
+Definition Testing : go_string := "testing.Testing"%go.
+
+Definition CoverMode : go_string := "testing.CoverMode"%go.
+
+Definition Verbose : go_string := "testing.Verbose"%go.
+
+Definition fmtDuration : go_string := "testing.fmtDuration"%go.
 
 Axiom T : go_type.
 
+Definition removeAll : go_string := "testing.removeAll"%go.
+
+Definition callerName : go_string := "testing.callerName"%go.
+
+Definition pcToName : go_string := "testing.pcToName"%go.
+
 Axiom errNilPanicOrGoexit'init : val.
 
+Definition tRunner : go_string := "testing.tRunner"%go.
+
+Definition newTestState : go_string := "testing.newTestState"%go.
+
 Axiom errMain'init : val.
+
+Definition Main : go_string := "testing.Main"%go.
+
+Definition MainStart : go_string := "testing.MainStart"%go.
+
+Definition listTests : go_string := "testing.listTests"%go.
+
+Definition RunTests : go_string := "testing.RunTests"%go.
+
+Definition runTests : go_string := "testing.runTests"%go.
+
+Definition toOutputDir : go_string := "testing.toOutputDir"%go.
+
+Definition runningList : go_string := "testing.runningList"%go.
+
+Definition parseCpuList : go_string := "testing.parseCpuList"%go.
+
+Definition shouldFailFast : go_string := "testing.shouldFailFast"%go.
+
+Definition isWindowsRetryable : go_string := "testing.isWindowsRetryable"%go.
+
+Definition highPrecisionTimeNow : go_string := "testing.highPrecisionTimeNow"%go.
+
+Definition highPrecisionTimeSince : go_string := "testing.highPrecisionTimeSince"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -43,9 +149,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("T"%go, [])
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init testing.testing (λ: <>,
-      exception_do (do:  (benchTime'init #());;;
+  λ: <>,
+    package.init #testing.testing (λ: <>,
+      exception_do (do:  (package.alloc testing.testing #());;;
+      do:  (benchTime'init #());;;
       do:  (hideStdoutForTesting'init #());;;
       do:  (minimizeDuration'init #());;;
       do:  (corpusDir'init #());;;

@@ -53,7 +53,7 @@ Definition ReconnectingClient__getClientⁱᵐᵖˡ : val :=
     let: "newRpcCl" := (mem.alloc (type.zero_val #ptrT)) in
     let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] (struct.field_ref #ReconnectingClient #"addr"%go (![#ptrT] "cl"))) in
-    (func_call urpc.TryMakeClient) "$a0") in
+    (func_call #urpc.TryMakeClient) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("err" <-[#uint64T] "$r0");;;
@@ -61,7 +61,7 @@ Definition ReconnectingClient__getClientⁱᵐᵖˡ : val :=
     (if: (![#uint64T] "err") ≠ #(W64 0)
     then
       do:  (let: "$a0" := #(W64 10000000) in
-      (func_call primitive.Sleep) "$a0")
+      (func_call #primitive.Sleep) "$a0")
     else do:  #());;;
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #ReconnectingClient #"mu"%go (![#ptrT] "cl")))) #());;;
     (if: (![#uint64T] "err") = #(W64 0)

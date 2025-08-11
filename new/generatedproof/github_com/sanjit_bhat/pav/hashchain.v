@@ -91,39 +91,24 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined hashchain :=
-{|
-  is_pkg_defined := is_global_definitions hashchain var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Verify :
-  WpFuncCall hashchain "Verify" _ (is_pkg_defined hashchain) :=
+  WpFuncCall hashchain.Verify _ (is_pkg_defined hashchain) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_New :
-  WpFuncCall hashchain "New" _ (is_pkg_defined hashchain) :=
+  WpFuncCall hashchain.New _ (is_pkg_defined hashchain) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetEmptyLink :
-  WpFuncCall hashchain "GetEmptyLink" _ (is_pkg_defined hashchain) :=
+  WpFuncCall hashchain.GetEmptyLink _ (is_pkg_defined hashchain) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetNextLink :
-  WpFuncCall hashchain "GetNextLink" _ (is_pkg_defined hashchain) :=
+  WpFuncCall hashchain.GetNextLink _ (is_pkg_defined hashchain) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_HashChain'ptr_Append :

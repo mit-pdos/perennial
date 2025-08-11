@@ -10,17 +10,33 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition NewAuth : go_string := "go.etcd.io/etcd/client/v3.NewAuth"%go.
+
+Definition NewAuthFromAuthClient : go_string := "go.etcd.io/etcd/client/v3.NewAuthFromAuthClient"%go.
+
+Definition StrToPermissionType : go_string := "go.etcd.io/etcd/client/v3.StrToPermissionType"%go.
+
 Axiom ErrNoAvailableEndpoints'init : val.
 
 Axiom ErrOldCluster'init : val.
 
 Axiom Client : go_type.
 
+Definition New : go_string := "go.etcd.io/etcd/client/v3.New"%go.
+
+Definition NewCtxClient : go_string := "go.etcd.io/etcd/client/v3.NewCtxClient"%go.
+
+Definition NewFromURL : go_string := "go.etcd.io/etcd/client/v3.NewFromURL"%go.
+
+Definition NewFromURLs : go_string := "go.etcd.io/etcd/client/v3.NewFromURLs"%go.
+
+Definition WithZapLogger : go_string := "go.etcd.io/etcd/client/v3.WithZapLogger"%go.
+
 (* WithZapLogger is a NewCtxClient option that overrides the logger
 
    go: client.go:119:6 *)
-Definition WithZapLogger : val :=
-  rec: "WithZapLogger" "lg" :=
+Definition WithZapLoggerⁱᵐᵖˡ : val :=
+  λ: "lg",
     exception_do (let: "lg" := (mem.alloc "lg") in
     return: ((λ: "c",
        exception_do (let: "c" := (mem.alloc "c") in
@@ -29,9 +45,57 @@ Definition WithZapLogger : val :=
        return: #())
        ))).
 
+Definition authority : go_string := "go.etcd.io/etcd/client/v3.authority"%go.
+
+Definition newClient : go_string := "go.etcd.io/etcd/client/v3.newClient"%go.
+
+Definition minSupportedVersion : go_string := "go.etcd.io/etcd/client/v3.minSupportedVersion"%go.
+
+Definition isHaltErr : go_string := "go.etcd.io/etcd/client/v3.isHaltErr"%go.
+
+Definition isUnavailableErr : go_string := "go.etcd.io/etcd/client/v3.isUnavailableErr"%go.
+
+Definition ContextError : go_string := "go.etcd.io/etcd/client/v3.ContextError"%go.
+
+Definition canceledByCaller : go_string := "go.etcd.io/etcd/client/v3.canceledByCaller"%go.
+
+Definition IsConnCanceled : go_string := "go.etcd.io/etcd/client/v3.IsConnCanceled"%go.
+
 Definition Cluster : go_type := interfaceT.
 
+Definition NewCluster : go_string := "go.etcd.io/etcd/client/v3.NewCluster"%go.
+
+Definition NewClusterFromClusterClient : go_string := "go.etcd.io/etcd/client/v3.NewClusterFromClusterClient"%go.
+
+Definition OpCompact : go_string := "go.etcd.io/etcd/client/v3.OpCompact"%go.
+
+Definition WithCompactPhysical : go_string := "go.etcd.io/etcd/client/v3.WithCompactPhysical"%go.
+
 Definition Cmp : go_type := etcdserverpb.Compare.
+
+Definition Compare : go_string := "go.etcd.io/etcd/client/v3.Compare"%go.
+
+Definition Value : go_string := "go.etcd.io/etcd/client/v3.Value"%go.
+
+Definition Version : go_string := "go.etcd.io/etcd/client/v3.Version"%go.
+
+Definition CreateRevision : go_string := "go.etcd.io/etcd/client/v3.CreateRevision"%go.
+
+Definition ModRevision : go_string := "go.etcd.io/etcd/client/v3.ModRevision"%go.
+
+Definition LeaseValue : go_string := "go.etcd.io/etcd/client/v3.LeaseValue"%go.
+
+Definition mustInt64 : go_string := "go.etcd.io/etcd/client/v3.mustInt64"%go.
+
+Definition mustInt64orLeaseID : go_string := "go.etcd.io/etcd/client/v3.mustInt64orLeaseID"%go.
+
+Definition NewClientConfig : go_string := "go.etcd.io/etcd/client/v3.NewClientConfig"%go.
+
+Definition newTLSConfig : go_string := "go.etcd.io/etcd/client/v3.newTLSConfig"%go.
+
+Definition WithRequireLeader : go_string := "go.etcd.io/etcd/client/v3.WithRequireLeader"%go.
+
+Definition withVersion : go_string := "go.etcd.io/etcd/client/v3.withVersion"%go.
 
 Definition PutResponse : go_type := etcdserverpb.PutResponse.
 
@@ -50,6 +114,10 @@ Definition OpResponse : go_type := structT [
   "txn" :: ptrT
 ].
 
+Definition NewKV : go_string := "go.etcd.io/etcd/client/v3.NewKV"%go.
+
+Definition NewKVFromKVClient : go_string := "go.etcd.io/etcd/client/v3.NewKVFromKVClient"%go.
+
 Definition LeaseID : go_type := int64T.
 
 Definition LeaseGrantResponse : go_type := structT [
@@ -64,6 +132,20 @@ Definition NoLease : expr := #(W64 0).
 Axiom LeaseResponseChSize'init : val.
 
 Definition Lease : go_type := interfaceT.
+
+Definition NewLease : go_string := "go.etcd.io/etcd/client/v3.NewLease"%go.
+
+Definition NewLeaseFromLeaseClient : go_string := "go.etcd.io/etcd/client/v3.NewLeaseFromLeaseClient"%go.
+
+Definition init : go_string := "go.etcd.io/etcd/client/v3.init"%go.
+
+Definition SetLogger : go_string := "go.etcd.io/etcd/client/v3.SetLogger"%go.
+
+Definition etcdClientDebugLevel : go_string := "go.etcd.io/etcd/client/v3.etcdClientDebugLevel"%go.
+
+Definition NewMaintenance : go_string := "go.etcd.io/etcd/client/v3.NewMaintenance"%go.
+
+Definition NewMaintenanceFromMaintenanceClient : go_string := "go.etcd.io/etcd/client/v3.NewMaintenanceFromMaintenanceClient"%go.
 
 Definition opType : go_type := intT.
 
@@ -111,32 +193,32 @@ Definition Op : go_type := structT [
 (* IsTxn returns true if the "Op" type is transaction.
 
    go: op.go:88:14 *)
-Definition Op__IsTxn : val :=
-  rec: "Op__IsTxn" "op" <> :=
+Definition Op__IsTxnⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tTxn)).
 
 (* Txn returns the comparison(if) operations, "then" operations, and "else" operations.
 
    go: op.go:93:14 *)
-Definition Op__Txn : val :=
-  rec: "Op__Txn" "op" <> :=
+Definition Op__Txnⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#sliceT] (struct.field_ref #Op #"cmps"%go "op"), ![#sliceT] (struct.field_ref #Op #"thenOps"%go "op"), ![#sliceT] (struct.field_ref #Op #"elseOps"%go "op"))).
 
 (* KeyBytes returns the byte slice holding the Op's key.
 
    go: op.go:98:14 *)
-Definition Op__KeyBytes : val :=
-  rec: "Op__KeyBytes" "op" <> :=
+Definition Op__KeyBytesⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#sliceT] (struct.field_ref #Op #"key"%go "op"))).
 
 (* WithKeyBytes sets the byte slice for the Op's key.
 
    go: op.go:101:15 *)
-Definition Op__WithKeyBytes : val :=
-  rec: "Op__WithKeyBytes" "op" "key" :=
+Definition Op__WithKeyBytesⁱᵐᵖˡ : val :=
+  λ: "op" "key",
     exception_do (let: "op" := (mem.alloc "op") in
     let: "key" := (mem.alloc "key") in
     let: "$r0" := (![#sliceT] "key") in
@@ -146,116 +228,116 @@ Definition Op__WithKeyBytes : val :=
 (* RangeBytes returns the byte slice holding with the Op's range end, if any.
 
    go: op.go:104:14 *)
-Definition Op__RangeBytes : val :=
-  rec: "Op__RangeBytes" "op" <> :=
+Definition Op__RangeBytesⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#sliceT] (struct.field_ref #Op #"end"%go "op"))).
 
 (* Rev returns the requested revision, if any.
 
    go: op.go:107:14 *)
-Definition Op__Rev : val :=
-  rec: "Op__Rev" "op" <> :=
+Definition Op__Revⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#int64T] (struct.field_ref #Op #"rev"%go "op"))).
 
 (* IsPut returns true iff the operation is a Put.
 
    go: op.go:110:14 *)
-Definition Op__IsPut : val :=
-  rec: "Op__IsPut" "op" <> :=
+Definition Op__IsPutⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tPut)).
 
 (* IsGet returns true iff the operation is a Get.
 
    go: op.go:113:14 *)
-Definition Op__IsGet : val :=
-  rec: "Op__IsGet" "op" <> :=
+Definition Op__IsGetⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tRange)).
 
 (* IsDelete returns true iff the operation is a Delete.
 
    go: op.go:116:14 *)
-Definition Op__IsDelete : val :=
-  rec: "Op__IsDelete" "op" <> :=
+Definition Op__IsDeleteⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) = tDeleteRange)).
 
 (* IsSerializable returns true if the serializable field is true.
 
    go: op.go:119:14 *)
-Definition Op__IsSerializable : val :=
-  rec: "Op__IsSerializable" "op" <> :=
+Definition Op__IsSerializableⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#boolT] (struct.field_ref #Op #"serializable"%go "op"))).
 
 (* IsKeysOnly returns whether keysOnly is set.
 
    go: op.go:122:14 *)
-Definition Op__IsKeysOnly : val :=
-  rec: "Op__IsKeysOnly" "op" <> :=
+Definition Op__IsKeysOnlyⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#boolT] (struct.field_ref #Op #"keysOnly"%go "op"))).
 
 (* IsCountOnly returns whether countOnly is set.
 
    go: op.go:125:14 *)
-Definition Op__IsCountOnly : val :=
-  rec: "Op__IsCountOnly" "op" <> :=
+Definition Op__IsCountOnlyⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#boolT] (struct.field_ref #Op #"countOnly"%go "op"))).
 
 (* go: op.go:127:14 *)
-Definition Op__IsOptsWithFromKey : val :=
-  rec: "Op__IsOptsWithFromKey" "op" <> :=
+Definition Op__IsOptsWithFromKeyⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#boolT] (struct.field_ref #Op #"isOptsWithFromKey"%go "op"))).
 
 (* go: op.go:129:14 *)
-Definition Op__IsOptsWithPrefix : val :=
-  rec: "Op__IsOptsWithPrefix" "op" <> :=
+Definition Op__IsOptsWithPrefixⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#boolT] (struct.field_ref #Op #"isOptsWithPrefix"%go "op"))).
 
 (* MinModRev returns the operation's minimum modify revision.
 
    go: op.go:132:14 *)
-Definition Op__MinModRev : val :=
-  rec: "Op__MinModRev" "op" <> :=
+Definition Op__MinModRevⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#int64T] (struct.field_ref #Op #"minModRev"%go "op"))).
 
 (* MaxModRev returns the operation's maximum modify revision.
 
    go: op.go:135:14 *)
-Definition Op__MaxModRev : val :=
-  rec: "Op__MaxModRev" "op" <> :=
+Definition Op__MaxModRevⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#int64T] (struct.field_ref #Op #"maxModRev"%go "op"))).
 
 (* MinCreateRev returns the operation's minimum create revision.
 
    go: op.go:138:14 *)
-Definition Op__MinCreateRev : val :=
-  rec: "Op__MinCreateRev" "op" <> :=
+Definition Op__MinCreateRevⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#int64T] (struct.field_ref #Op #"minCreateRev"%go "op"))).
 
 (* MaxCreateRev returns the operation's maximum create revision.
 
    go: op.go:141:14 *)
-Definition Op__MaxCreateRev : val :=
-  rec: "Op__MaxCreateRev" "op" <> :=
+Definition Op__MaxCreateRevⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#int64T] (struct.field_ref #Op #"maxCreateRev"%go "op"))).
 
 (* WithRangeBytes sets the byte slice for the Op's range end.
 
    go: op.go:144:15 *)
-Definition Op__WithRangeBytes : val :=
-  rec: "Op__WithRangeBytes" "op" "end" :=
+Definition Op__WithRangeBytesⁱᵐᵖˡ : val :=
+  λ: "op" "end",
     exception_do (let: "op" := (mem.alloc "op") in
     let: "end" := (mem.alloc "end") in
     let: "$r0" := (![#sliceT] "end") in
@@ -265,16 +347,16 @@ Definition Op__WithRangeBytes : val :=
 (* ValueBytes returns the byte slice holding the Op's value, if any.
 
    go: op.go:147:14 *)
-Definition Op__ValueBytes : val :=
-  rec: "Op__ValueBytes" "op" <> :=
+Definition Op__ValueBytesⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     return: (![#sliceT] (struct.field_ref #Op #"val"%go "op"))).
 
 (* WithValueBytes sets the byte slice for the Op's value.
 
    go: op.go:150:15 *)
-Definition Op__WithValueBytes : val :=
-  rec: "Op__WithValueBytes" "op" "v" :=
+Definition Op__WithValueBytesⁱᵐᵖˡ : val :=
+  λ: "op" "v",
     exception_do (let: "op" := (mem.alloc "op") in
     let: "v" := (mem.alloc "v") in
     let: "$r0" := (![#sliceT] "v") in
@@ -291,8 +373,8 @@ Definition SortOption : go_type := structT [
 ].
 
 (* go: op.go:152:14 *)
-Definition Op__toRangeRequest : val :=
-  rec: "Op__toRangeRequest" "op" <> :=
+Definition Op__toRangeRequestⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     (if: (![#opType] (struct.field_ref #Op #"t"%go "op")) ≠ tRange
     then
@@ -341,8 +423,8 @@ Definition Op__toRangeRequest : val :=
     return: (![#ptrT] "r")).
 
 (* go: op.go:176:14 *)
-Definition Op__toTxnRequest : val :=
-  rec: "Op__toTxnRequest" "op" <> :=
+Definition Op__toTxnRequestⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     let: "thenOps" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"thenOps"%go "op")) in
@@ -392,8 +474,8 @@ Definition Op__toTxnRequest : val :=
      }]))).
 
 (* go: op.go:192:14 *)
-Definition Op__toRequestOp : val :=
-  rec: "Op__toRequestOp" "op" <> :=
+Definition Op__toRequestOpⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     let: "$sw" := (![#opType] (struct.field_ref #Op #"t"%go "op")) in
     (if: "$sw" = tRange
@@ -490,8 +572,8 @@ Definition Op__toRequestOp : val :=
             Panic "$a0")))))).
 
 (* go: op.go:209:14 *)
-Definition Op__isWrite : val :=
-  rec: "Op__isWrite" "op" <> :=
+Definition Op__isWriteⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     (if: (![#opType] (struct.field_ref #Op #"t"%go "op")) = tTxn
     then
@@ -515,16 +597,24 @@ Definition Op__isWrite : val :=
     else do:  #());;;
     return: ((![#opType] (struct.field_ref #Op #"t"%go "op")) ≠ tRange)).
 
+Definition NewOp : go_string := "go.etcd.io/etcd/client/v3.NewOp"%go.
+
+Definition OpGet : go_string := "go.etcd.io/etcd/client/v3.OpGet"%go.
+
+Definition IsOptsWithPrefix : go_string := "go.etcd.io/etcd/client/v3.IsOptsWithPrefix"%go.
+
+Definition IsOptsWithFromKey : go_string := "go.etcd.io/etcd/client/v3.IsOptsWithFromKey"%go.
+
 (* OpGet returns "get" operation based on given key and operation options.
 
    go: op.go:231:6 *)
-Definition OpGet : val :=
-  rec: "OpGet" "key" "opts" :=
+Definition OpGetⁱᵐᵖˡ : val :=
+  λ: "key" "opts",
     exception_do (let: "opts" := (mem.alloc "opts") in
     let: "key" := (mem.alloc "key") in
     (if: (let: "$a0" := (![#sliceT] "opts") in
-    (func_call #v3.clientv3 #"IsOptsWithPrefix"%go) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
-    (func_call #v3.clientv3 #"IsOptsWithFromKey"%go) "$a0")
+    (func_call #IsOptsWithPrefix) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
+    (func_call #IsOptsWithFromKey) "$a0")
     then
       do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
       Panic "$a0")
@@ -567,16 +657,18 @@ Definition OpGet : val :=
     (method_call #v3.clientv3 #"Op'ptr" #"applyOpts" "ret") "$a0");;;
     return: (![#Op] "ret")).
 
+Definition OpDelete : go_string := "go.etcd.io/etcd/client/v3.OpDelete"%go.
+
 (* OpDelete returns "delete" operation based on given key and operation options.
 
    go: op.go:242:6 *)
-Definition OpDelete : val :=
-  rec: "OpDelete" "key" "opts" :=
+Definition OpDeleteⁱᵐᵖˡ : val :=
+  λ: "key" "opts",
     exception_do (let: "opts" := (mem.alloc "opts") in
     let: "key" := (mem.alloc "key") in
     (if: (let: "$a0" := (![#sliceT] "opts") in
-    (func_call #v3.clientv3 #"IsOptsWithPrefix"%go) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
-    (func_call #v3.clientv3 #"IsOptsWithFromKey"%go) "$a0")
+    (func_call #IsOptsWithPrefix) "$a0") && (let: "$a0" := (![#sliceT] "opts") in
+    (func_call #IsOptsWithFromKey) "$a0")
     then
       do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"`WithPrefix` and `WithFromKey` cannot be set at the same time, choose one"%go) in
       Panic "$a0")
@@ -670,11 +762,13 @@ Definition OpDelete : val :=
                       else do:  #()))))))))));;;
     return: (![#Op] "ret")).
 
+Definition OpPut : go_string := "go.etcd.io/etcd/client/v3.OpPut"%go.
+
 (* OpPut returns "put" operation based on given key-value and operation options.
 
    go: op.go:275:6 *)
-Definition OpPut : val :=
-  rec: "OpPut" "key" "val" "opts" :=
+Definition OpPutⁱᵐᵖˡ : val :=
+  λ: "key" "val" "opts",
     exception_do (let: "opts" := (mem.alloc "opts") in
     let: "val" := (mem.alloc "val") in
     let: "key" := (mem.alloc "key") in
@@ -768,11 +862,13 @@ Definition OpPut : val :=
                       else do:  #()))))))))));;;
     return: (![#Op] "ret")).
 
+Definition OpTxn : go_string := "go.etcd.io/etcd/client/v3.OpTxn"%go.
+
 (* OpTxn returns "txn" operation based on given transaction conditions.
 
    go: op.go:304:6 *)
-Definition OpTxn : val :=
-  rec: "OpTxn" "cmps" "thenOps" "elseOps" :=
+Definition OpTxnⁱᵐᵖˡ : val :=
+  λ: "cmps" "thenOps" "elseOps",
     exception_do (let: "elseOps" := (mem.alloc "elseOps") in
     let: "thenOps" := (mem.alloc "thenOps") in
     let: "cmps" := (mem.alloc "cmps") in
@@ -811,11 +907,13 @@ Definition OpTxn : val :=
        "isOptsWithPrefix" ::= type.zero_val #boolT
      }])).
 
+Definition opWatch : go_string := "go.etcd.io/etcd/client/v3.opWatch"%go.
+
 Definition OpOption : go_type := funcT.
 
 (* go: op.go:330:15 *)
-Definition Op__applyOpts : val :=
-  rec: "Op__applyOpts" "op" "opts" :=
+Definition Op__applyOptsⁱᵐᵖˡ : val :=
+  λ: "op" "opts",
     exception_do (let: "op" := (mem.alloc "op") in
     let: "opts" := (mem.alloc "opts") in
     let: "$range" := (![#sliceT] "opts") in
@@ -827,11 +925,13 @@ Definition Op__applyOpts : val :=
       (![#OpOption] "opt") "$a0")));;;
     return: #()).
 
+Definition WithLease : go_string := "go.etcd.io/etcd/client/v3.WithLease"%go.
+
 (* WithLease attaches a lease ID to a key in 'Put' request.
 
    go: op.go:340:6 *)
-Definition WithLease : val :=
-  rec: "WithLease" "leaseID" :=
+Definition WithLeaseⁱᵐᵖˡ : val :=
+  λ: "leaseID",
     exception_do (let: "leaseID" := (mem.alloc "leaseID") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
@@ -840,12 +940,14 @@ Definition WithLease : val :=
        return: #())
        ))).
 
+Definition WithLimit : go_string := "go.etcd.io/etcd/client/v3.WithLimit"%go.
+
 (* WithLimit limits the number of results to return from 'Get' request.
    If WithLimit is given a 0 limit, it is treated as no limit.
 
    go: op.go:346:6 *)
-Definition WithLimit : val :=
-  rec: "WithLimit" "n" :=
+Definition WithLimitⁱᵐᵖˡ : val :=
+  λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
@@ -854,12 +956,14 @@ Definition WithLimit : val :=
        return: #())
        ))).
 
+Definition WithRev : go_string := "go.etcd.io/etcd/client/v3.WithRev"%go.
+
 (* WithRev specifies the store revision for 'Get' request.
    Or the start revision of 'Watch' request.
 
    go: op.go:350:6 *)
-Definition WithRev : val :=
-  rec: "WithRev" "rev" :=
+Definition WithRevⁱᵐᵖˡ : val :=
+  λ: "rev",
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
@@ -867,6 +971,8 @@ Definition WithRev : val :=
        do:  ((struct.field_ref #Op #"rev"%go (![#ptrT] "op")) <-[#int64T] "$r0");;;
        return: #())
        ))).
+
+Definition WithSort : go_string := "go.etcd.io/etcd/client/v3.WithSort"%go.
 
 Definition SortByKey : expr := #(W64 0).
 
@@ -880,8 +986,8 @@ Definition SortNone : expr := #(W64 0).
    'order' can be either 'SortNone', 'SortAscend', 'SortDescend'.
 
    go: op.go:356:6 *)
-Definition WithSort : val :=
-  rec: "WithSort" "target" "order" :=
+Definition WithSortⁱᵐᵖˡ : val :=
+  λ: "target" "order",
     exception_do (let: "order" := (mem.alloc "order") in
     let: "target" := (mem.alloc "target") in
     return: ((λ: "op",
@@ -899,13 +1005,19 @@ Definition WithSort : val :=
        return: #())
        ))).
 
+Definition GetPrefixRangeEnd : go_string := "go.etcd.io/etcd/client/v3.GetPrefixRangeEnd"%go.
+
+Definition getPrefix : go_string := "go.etcd.io/etcd/client/v3.getPrefix"%go.
+
+Definition WithPrefix : go_string := "go.etcd.io/etcd/client/v3.WithPrefix"%go.
+
 (* WithPrefix enables 'Get', 'Delete', or 'Watch' requests to operate
    on the keys with matching prefix. For example, 'Get(foo, WithPrefix())'
    can return 'foo1', 'foo2', and so on.
 
    go: op.go:394:6 *)
-Definition WithPrefix : val :=
-  rec: "WithPrefix" <> :=
+Definition WithPrefixⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -922,10 +1034,12 @@ Definition WithPrefix : val :=
          return: (#())
        else do:  #());;;
        let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"key"%go (![#ptrT] "op"))) in
-       (func_call #v3.clientv3 #"getPrefix"%go) "$a0") in
+       (func_call #getPrefix) "$a0") in
        do:  ((struct.field_ref #Op #"end"%go (![#ptrT] "op")) <-[#sliceT] "$r0");;;
        return: #())
        ))).
+
+Definition WithRange : go_string := "go.etcd.io/etcd/client/v3.WithRange"%go.
 
 (* WithRange specifies the range of 'Get', 'Delete', 'Watch' requests.
    For example, 'Get' requests with 'WithRange(end)' returns
@@ -933,8 +1047,8 @@ Definition WithPrefix : val :=
    endKey must be lexicographically greater than start key.
 
    go: op.go:409:6 *)
-Definition WithRange : val :=
-  rec: "WithRange" "endKey" :=
+Definition WithRangeⁱᵐᵖˡ : val :=
+  λ: "endKey",
     exception_do (let: "endKey" := (mem.alloc "endKey") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
@@ -943,12 +1057,14 @@ Definition WithRange : val :=
        return: #())
        ))).
 
+Definition WithFromKey : go_string := "go.etcd.io/etcd/client/v3.WithFromKey"%go.
+
 (* WithFromKey specifies the range of 'Get', 'Delete', 'Watch' requests
    to be equal or greater than the key in the argument.
 
    go: op.go:415:6 *)
-Definition WithFromKey : val :=
-  rec: "WithFromKey" <> :=
+Definition WithFromKeyⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        (if: (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"key"%go (![#ptrT] "op"))) in
@@ -965,6 +1081,8 @@ Definition WithFromKey : val :=
        return: #())
        ))).
 
+Definition WithSerializable : go_string := "go.etcd.io/etcd/client/v3.WithSerializable"%go.
+
 (* WithSerializable makes `Get` and `MemberList` requests serializable.
    By default, they are linearizable. Serializable requests are better
    for lower latency requirement, but users should be aware that they
@@ -976,8 +1094,8 @@ Definition WithFromKey : val :=
    started.
 
    go: op.go:434:6 *)
-Definition WithSerializable : val :=
-  rec: "WithSerializable" <> :=
+Definition WithSerializableⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -985,12 +1103,14 @@ Definition WithSerializable : val :=
        return: #())
        ))).
 
+Definition WithKeysOnly : go_string := "go.etcd.io/etcd/client/v3.WithKeysOnly"%go.
+
 (* WithKeysOnly makes the 'Get' request return only the keys and the corresponding
    values will be omitted.
 
    go: op.go:440:6 *)
-Definition WithKeysOnly : val :=
-  rec: "WithKeysOnly" <> :=
+Definition WithKeysOnlyⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -998,11 +1118,13 @@ Definition WithKeysOnly : val :=
        return: #())
        ))).
 
+Definition WithCountOnly : go_string := "go.etcd.io/etcd/client/v3.WithCountOnly"%go.
+
 (* WithCountOnly makes the 'Get' request return only the count of keys.
 
    go: op.go:445:6 *)
-Definition WithCountOnly : val :=
-  rec: "WithCountOnly" <> :=
+Definition WithCountOnlyⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -1010,11 +1132,13 @@ Definition WithCountOnly : val :=
        return: #())
        ))).
 
+Definition WithMinModRev : go_string := "go.etcd.io/etcd/client/v3.WithMinModRev"%go.
+
 (* WithMinModRev filters out keys for Get with modification revisions less than the given revision.
 
    go: op.go:450:6 *)
-Definition WithMinModRev : val :=
-  rec: "WithMinModRev" "rev" :=
+Definition WithMinModRevⁱᵐᵖˡ : val :=
+  λ: "rev",
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
@@ -1023,11 +1147,13 @@ Definition WithMinModRev : val :=
        return: #())
        ))).
 
+Definition WithMaxModRev : go_string := "go.etcd.io/etcd/client/v3.WithMaxModRev"%go.
+
 (* WithMaxModRev filters out keys for Get with modification revisions greater than the given revision.
 
    go: op.go:453:6 *)
-Definition WithMaxModRev : val :=
-  rec: "WithMaxModRev" "rev" :=
+Definition WithMaxModRevⁱᵐᵖˡ : val :=
+  λ: "rev",
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
@@ -1036,11 +1162,13 @@ Definition WithMaxModRev : val :=
        return: #())
        ))).
 
+Definition WithMinCreateRev : go_string := "go.etcd.io/etcd/client/v3.WithMinCreateRev"%go.
+
 (* WithMinCreateRev filters out keys for Get with creation revisions less than the given revision.
 
    go: op.go:456:6 *)
-Definition WithMinCreateRev : val :=
-  rec: "WithMinCreateRev" "rev" :=
+Definition WithMinCreateRevⁱᵐᵖˡ : val :=
+  λ: "rev",
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
@@ -1049,11 +1177,13 @@ Definition WithMinCreateRev : val :=
        return: #())
        ))).
 
+Definition WithMaxCreateRev : go_string := "go.etcd.io/etcd/client/v3.WithMaxCreateRev"%go.
+
 (* WithMaxCreateRev filters out keys for Get with creation revisions greater than the given revision.
 
    go: op.go:459:6 *)
-Definition WithMaxCreateRev : val :=
-  rec: "WithMaxCreateRev" "rev" :=
+Definition WithMaxCreateRevⁱᵐᵖˡ : val :=
+  λ: "rev",
     exception_do (let: "rev" := (mem.alloc "rev") in
     return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
@@ -1062,73 +1192,89 @@ Definition WithMaxCreateRev : val :=
        return: #())
        ))).
 
+Definition WithFirstCreate : go_string := "go.etcd.io/etcd/client/v3.WithFirstCreate"%go.
+
+Definition withTop : go_string := "go.etcd.io/etcd/client/v3.withTop"%go.
+
 Definition SortByCreateRevision : expr := #(W64 2).
 
 (* WithFirstCreate gets the key with the oldest creation revision in the request range.
 
    go: op.go:462:6 *)
-Definition WithFirstCreate : val :=
-  rec: "WithFirstCreate" <> :=
+Definition WithFirstCreateⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: (let: "$a0" := SortByCreateRevision in
      let: "$a1" := SortAscend in
-     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+     (func_call #withTop) "$a0" "$a1")).
+
+Definition WithLastCreate : go_string := "go.etcd.io/etcd/client/v3.WithLastCreate"%go.
 
 Definition SortDescend : expr := #(W64 2).
 
 (* WithLastCreate gets the key with the latest creation revision in the request range.
 
    go: op.go:465:6 *)
-Definition WithLastCreate : val :=
-  rec: "WithLastCreate" <> :=
+Definition WithLastCreateⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: (let: "$a0" := SortByCreateRevision in
      let: "$a1" := SortDescend in
-     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+     (func_call #withTop) "$a0" "$a1")).
+
+Definition WithFirstKey : go_string := "go.etcd.io/etcd/client/v3.WithFirstKey"%go.
 
 (* WithFirstKey gets the lexically first key in the request range.
 
    go: op.go:468:6 *)
-Definition WithFirstKey : val :=
-  rec: "WithFirstKey" <> :=
+Definition WithFirstKeyⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: (let: "$a0" := SortByKey in
      let: "$a1" := SortAscend in
-     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+     (func_call #withTop) "$a0" "$a1")).
+
+Definition WithLastKey : go_string := "go.etcd.io/etcd/client/v3.WithLastKey"%go.
 
 (* WithLastKey gets the lexically last key in the request range.
 
    go: op.go:471:6 *)
-Definition WithLastKey : val :=
-  rec: "WithLastKey" <> :=
+Definition WithLastKeyⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: (let: "$a0" := SortByKey in
      let: "$a1" := SortDescend in
-     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+     (func_call #withTop) "$a0" "$a1")).
+
+Definition WithFirstRev : go_string := "go.etcd.io/etcd/client/v3.WithFirstRev"%go.
 
 Definition SortByModRevision : expr := #(W64 3).
 
 (* WithFirstRev gets the key with the oldest modification revision in the request range.
 
    go: op.go:474:6 *)
-Definition WithFirstRev : val :=
-  rec: "WithFirstRev" <> :=
+Definition WithFirstRevⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: (let: "$a0" := SortByModRevision in
      let: "$a1" := SortAscend in
-     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+     (func_call #withTop) "$a0" "$a1")).
+
+Definition WithLastRev : go_string := "go.etcd.io/etcd/client/v3.WithLastRev"%go.
 
 (* WithLastRev gets the key with the latest modification revision in the request range.
 
    go: op.go:477:6 *)
-Definition WithLastRev : val :=
-  rec: "WithLastRev" <> :=
+Definition WithLastRevⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: (let: "$a0" := SortByModRevision in
      let: "$a1" := SortDescend in
-     (func_call #v3.clientv3 #"withTop"%go) "$a0" "$a1")).
+     (func_call #withTop) "$a0" "$a1")).
+
+Definition WithProgressNotify : go_string := "go.etcd.io/etcd/client/v3.WithProgressNotify"%go.
 
 (* WithProgressNotify makes watch server send periodic progress updates
    every 10 minutes when there is no incoming events.
    Progress updates have zero events in WatchResponse.
 
    go: op.go:487:6 *)
-Definition WithProgressNotify : val :=
-  rec: "WithProgressNotify" <> :=
+Definition WithProgressNotifyⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -1136,11 +1282,13 @@ Definition WithProgressNotify : val :=
        return: #())
        ))).
 
+Definition WithCreatedNotify : go_string := "go.etcd.io/etcd/client/v3.WithCreatedNotify"%go.
+
 (* WithCreatedNotify makes watch server sends the created event.
 
    go: op.go:494:6 *)
-Definition WithCreatedNotify : val :=
-  rec: "WithCreatedNotify" <> :=
+Definition WithCreatedNotifyⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -1148,11 +1296,13 @@ Definition WithCreatedNotify : val :=
        return: #())
        ))).
 
+Definition WithFilterPut : go_string := "go.etcd.io/etcd/client/v3.WithFilterPut"%go.
+
 (* WithFilterPut discards PUT events from the watcher.
 
    go: op.go:501:6 *)
-Definition WithFilterPut : val :=
-  rec: "WithFilterPut" <> :=
+Definition WithFilterPutⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -1160,11 +1310,13 @@ Definition WithFilterPut : val :=
        return: #())
        ))).
 
+Definition WithFilterDelete : go_string := "go.etcd.io/etcd/client/v3.WithFilterDelete"%go.
+
 (* WithFilterDelete discards DELETE events from the watcher.
 
    go: op.go:506:6 *)
-Definition WithFilterDelete : val :=
-  rec: "WithFilterDelete" <> :=
+Definition WithFilterDeleteⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -1172,18 +1324,22 @@ Definition WithFilterDelete : val :=
        return: #())
        ))).
 
+Definition WithPrevKV : go_string := "go.etcd.io/etcd/client/v3.WithPrevKV"%go.
+
 (* WithPrevKV gets the previous key-value pair before the event happens. If the previous KV is already compacted,
    nothing will be returned.
 
    go: op.go:512:6 *)
-Definition WithPrevKV : val :=
-  rec: "WithPrevKV" <> :=
+Definition WithPrevKVⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
        do:  ((struct.field_ref #Op #"prevKV"%go (![#ptrT] "op")) <-[#boolT] "$r0");;;
        return: #())
        ))).
+
+Definition WithFragment : go_string := "go.etcd.io/etcd/client/v3.WithFragment"%go.
 
 (* WithFragment to receive raw watch response with fragmentation.
    Fragmentation is disabled by default. If fragmentation is enabled,
@@ -1194,8 +1350,8 @@ Definition WithPrevKV : val :=
    See "etcdserver/api/v3rpc/watch.go" for more details.
 
    go: op.go:525:6 *)
-Definition WithFragment : val :=
-  rec: "WithFragment" <> :=
+Definition WithFragmentⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -1203,13 +1359,15 @@ Definition WithFragment : val :=
        return: #())
        ))).
 
+Definition WithIgnoreValue : go_string := "go.etcd.io/etcd/client/v3.WithIgnoreValue"%go.
+
 (* WithIgnoreValue updates the key using its current value.
    This option can not be combined with non-empty values.
    Returns an error if the key does not exist.
 
    go: op.go:532:6 *)
-Definition WithIgnoreValue : val :=
-  rec: "WithIgnoreValue" <> :=
+Definition WithIgnoreValueⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -1217,13 +1375,15 @@ Definition WithIgnoreValue : val :=
        return: #())
        ))).
 
+Definition WithIgnoreLease : go_string := "go.etcd.io/etcd/client/v3.WithIgnoreLease"%go.
+
 (* WithIgnoreLease updates the key using its current lease.
    This option can not be combined with WithLease.
    Returns an error if the key does not exist.
 
    go: op.go:541:6 *)
-Definition WithIgnoreLease : val :=
-  rec: "WithIgnoreLease" <> :=
+Definition WithIgnoreLeaseⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -1238,11 +1398,13 @@ Definition LeaseOp : go_type := structT [
 
 Definition LeaseOption : go_type := funcT.
 
+Definition WithAttachedKeys : go_string := "go.etcd.io/etcd/client/v3.WithAttachedKeys"%go.
+
 (* WithAttachedKeys makes TimeToLive list the keys attached to the given lease ID.
 
    go: op.go:565:6 *)
-Definition WithAttachedKeys : val :=
-  rec: "WithAttachedKeys" <> :=
+Definition WithAttachedKeysⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (return: ((λ: "op",
        exception_do (let: "op" := (mem.alloc "op") in
        let: "$r0" := #true in
@@ -1250,9 +1412,11 @@ Definition WithAttachedKeys : val :=
        return: #())
        ))).
 
+Definition toLeaseTimeToLiveRequest : go_string := "go.etcd.io/etcd/client/v3.toLeaseTimeToLiveRequest"%go.
+
 (* go: op.go:595:14 *)
-Definition Op__IsSortOptionValid : val :=
-  rec: "Op__IsSortOptionValid" "op" <> :=
+Definition Op__IsSortOptionValidⁱᵐᵖˡ : val :=
+  λ: "op" <>,
     exception_do (let: "op" := (mem.alloc "op") in
     (if: (![#ptrT] (struct.field_ref #Op #"sort"%go "op")) ≠ #null
     then
@@ -1263,7 +1427,7 @@ Definition Op__IsSortOptionValid : val :=
       let: "$r0" := (s_to_w32 (![#SortTarget] (struct.field_ref #SortOption #"Target"%go (![#ptrT] (struct.field_ref #Op #"sort"%go "op"))))) in
       do:  ("sortTarget" <-[#int32T] "$r0");;;
       (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: ("$ret0", "$ret1") := (map.get (![type.mapT #int32T #stringT] (globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortOrder_name"%go)) (![#int32T] "sortOrder")) in
+      let: ("$ret0", "$ret1") := (map.get (![type.mapT #int32T #stringT] (globals.get #etcdserverpb.RangeRequest_SortOrder_name)) (![#int32T] "sortOrder")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -1272,7 +1436,7 @@ Definition Op__IsSortOptionValid : val :=
       then return: (#false)
       else do:  #()));;;
       (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: ("$ret0", "$ret1") := (map.get (![type.mapT #int32T #stringT] (globals.get #etcdserverpb.etcdserverpb #"RangeRequest_SortTarget_name"%go)) (![#int32T] "sortTarget")) in
+      let: ("$ret0", "$ret1") := (map.get (![type.mapT #int32T #stringT] (globals.get #etcdserverpb.RangeRequest_SortTarget_name)) (![#int32T] "sortTarget")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -1299,13 +1463,49 @@ Axiom defaultBackoffJitterFraction'init : val.
 
 Axiom defaultCallOpts'init : val.
 
+Definition isSafeRetryImmutableRPC : go_string := "go.etcd.io/etcd/client/v3.isSafeRetryImmutableRPC"%go.
+
+Definition isSafeRetryMutableRPC : go_string := "go.etcd.io/etcd/client/v3.isSafeRetryMutableRPC"%go.
+
+Definition RetryKVClient : go_string := "go.etcd.io/etcd/client/v3.RetryKVClient"%go.
+
+Definition RetryLeaseClient : go_string := "go.etcd.io/etcd/client/v3.RetryLeaseClient"%go.
+
+Definition RetryClusterClient : go_string := "go.etcd.io/etcd/client/v3.RetryClusterClient"%go.
+
+Definition RetryMaintenanceClient : go_string := "go.etcd.io/etcd/client/v3.RetryMaintenanceClient"%go.
+
+Definition RetryAuthClient : go_string := "go.etcd.io/etcd/client/v3.RetryAuthClient"%go.
+
+Definition waitRetryBackoff : go_string := "go.etcd.io/etcd/client/v3.waitRetryBackoff"%go.
+
+Definition isSafeRetry : go_string := "go.etcd.io/etcd/client/v3.isSafeRetry"%go.
+
+Definition isContextError : go_string := "go.etcd.io/etcd/client/v3.isContextError"%go.
+
+Definition contextErrToGRPCErr : go_string := "go.etcd.io/etcd/client/v3.contextErrToGRPCErr"%go.
+
 Axiom defaultOptions'init : val.
+
+Definition withRepeatablePolicy : go_string := "go.etcd.io/etcd/client/v3.withRepeatablePolicy"%go.
+
+Definition withMax : go_string := "go.etcd.io/etcd/client/v3.withMax"%go.
+
+Definition withBackoff : go_string := "go.etcd.io/etcd/client/v3.withBackoff"%go.
+
+Definition reuseOrNewWithCallOptions : go_string := "go.etcd.io/etcd/client/v3.reuseOrNewWithCallOptions"%go.
+
+Definition filterCallOptions : go_string := "go.etcd.io/etcd/client/v3.filterCallOptions"%go.
+
+Definition backoffLinearWithJitter : go_string := "go.etcd.io/etcd/client/v3.backoffLinearWithJitter"%go.
 
 Definition SortByVersion : expr := #(W64 1).
 
 Definition SortByValue : expr := #(W64 4).
 
 Definition Txn : go_type := interfaceT.
+
+Definition jitterUp : go_string := "go.etcd.io/etcd/client/v3.jitterUp"%go.
 
 Definition EventTypeDelete : expr := #(W32 1).
 
@@ -1325,17 +1525,23 @@ Definition WatchChan : go_type := chanT WatchResponse.
 
 Definition Watcher : go_type := interfaceT.
 
+Definition NewWatcher : go_string := "go.etcd.io/etcd/client/v3.NewWatcher"%go.
+
+Definition NewWatchFromWatchClient : go_string := "go.etcd.io/etcd/client/v3.NewWatchFromWatchClient"%go.
+
 Axiom valCtxCh'init : val.
 
 Axiom zeroTime'init : val.
 
 Axiom maxBackoff'init : val.
 
+Definition streamKeyFromCtx : go_string := "go.etcd.io/etcd/client/v3.streamKeyFromCtx"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("WithZapLogger"%go, WithZapLogger); ("OpGet"%go, OpGet); ("OpDelete"%go, OpDelete); ("OpPut"%go, OpPut); ("OpTxn"%go, OpTxn); ("WithLease"%go, WithLease); ("WithLimit"%go, WithLimit); ("WithRev"%go, WithRev); ("WithSort"%go, WithSort); ("WithPrefix"%go, WithPrefix); ("WithRange"%go, WithRange); ("WithFromKey"%go, WithFromKey); ("WithSerializable"%go, WithSerializable); ("WithKeysOnly"%go, WithKeysOnly); ("WithCountOnly"%go, WithCountOnly); ("WithMinModRev"%go, WithMinModRev); ("WithMaxModRev"%go, WithMaxModRev); ("WithMinCreateRev"%go, WithMinCreateRev); ("WithMaxCreateRev"%go, WithMaxCreateRev); ("WithFirstCreate"%go, WithFirstCreate); ("WithLastCreate"%go, WithLastCreate); ("WithFirstKey"%go, WithFirstKey); ("WithLastKey"%go, WithLastKey); ("WithFirstRev"%go, WithFirstRev); ("WithLastRev"%go, WithLastRev); ("WithProgressNotify"%go, WithProgressNotify); ("WithCreatedNotify"%go, WithCreatedNotify); ("WithFilterPut"%go, WithFilterPut); ("WithFilterDelete"%go, WithFilterDelete); ("WithPrevKV"%go, WithPrevKV); ("WithFragment"%go, WithFragment); ("WithIgnoreValue"%go, WithIgnoreValue); ("WithIgnoreLease"%go, WithIgnoreLease); ("WithAttachedKeys"%go, WithAttachedKeys)].
+Definition functions' : list (go_string * val) := [(WithZapLogger, WithZapLoggerⁱᵐᵖˡ); (OpGet, OpGetⁱᵐᵖˡ); (OpDelete, OpDeleteⁱᵐᵖˡ); (OpPut, OpPutⁱᵐᵖˡ); (OpTxn, OpTxnⁱᵐᵖˡ); (WithLease, WithLeaseⁱᵐᵖˡ); (WithLimit, WithLimitⁱᵐᵖˡ); (WithRev, WithRevⁱᵐᵖˡ); (WithSort, WithSortⁱᵐᵖˡ); (WithPrefix, WithPrefixⁱᵐᵖˡ); (WithRange, WithRangeⁱᵐᵖˡ); (WithFromKey, WithFromKeyⁱᵐᵖˡ); (WithSerializable, WithSerializableⁱᵐᵖˡ); (WithKeysOnly, WithKeysOnlyⁱᵐᵖˡ); (WithCountOnly, WithCountOnlyⁱᵐᵖˡ); (WithMinModRev, WithMinModRevⁱᵐᵖˡ); (WithMaxModRev, WithMaxModRevⁱᵐᵖˡ); (WithMinCreateRev, WithMinCreateRevⁱᵐᵖˡ); (WithMaxCreateRev, WithMaxCreateRevⁱᵐᵖˡ); (WithFirstCreate, WithFirstCreateⁱᵐᵖˡ); (WithLastCreate, WithLastCreateⁱᵐᵖˡ); (WithFirstKey, WithFirstKeyⁱᵐᵖˡ); (WithLastKey, WithLastKeyⁱᵐᵖˡ); (WithFirstRev, WithFirstRevⁱᵐᵖˡ); (WithLastRev, WithLastRevⁱᵐᵖˡ); (WithProgressNotify, WithProgressNotifyⁱᵐᵖˡ); (WithCreatedNotify, WithCreatedNotifyⁱᵐᵖˡ); (WithFilterPut, WithFilterPutⁱᵐᵖˡ); (WithFilterDelete, WithFilterDeleteⁱᵐᵖˡ); (WithPrevKV, WithPrevKVⁱᵐᵖˡ); (WithFragment, WithFragmentⁱᵐᵖˡ); (WithIgnoreValue, WithIgnoreValueⁱᵐᵖˡ); (WithIgnoreLease, WithIgnoreLeaseⁱᵐᵖˡ); (WithAttachedKeys, WithAttachedKeysⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Client"%go, []); ("Client'ptr"%go, []); ("Cmp"%go, []); ("Cmp'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("GetResponse"%go, []); ("GetResponse'ptr"%go, []); ("DeleteResponse"%go, []); ("DeleteResponse'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, []); ("OpResponse"%go, []); ("OpResponse'ptr"%go, []); ("LeaseID"%go, []); ("LeaseID'ptr"%go, []); ("LeaseGrantResponse"%go, []); ("LeaseGrantResponse'ptr"%go, []); ("opType"%go, []); ("opType'ptr"%go, []); ("Op"%go, [("IsCountOnly"%go, Op__IsCountOnly); ("IsDelete"%go, Op__IsDelete); ("IsGet"%go, Op__IsGet); ("IsKeysOnly"%go, Op__IsKeysOnly); ("IsOptsWithFromKey"%go, Op__IsOptsWithFromKey); ("IsOptsWithPrefix"%go, Op__IsOptsWithPrefix); ("IsPut"%go, Op__IsPut); ("IsSerializable"%go, Op__IsSerializable); ("IsSortOptionValid"%go, Op__IsSortOptionValid); ("IsTxn"%go, Op__IsTxn); ("KeyBytes"%go, Op__KeyBytes); ("MaxCreateRev"%go, Op__MaxCreateRev); ("MaxModRev"%go, Op__MaxModRev); ("MinCreateRev"%go, Op__MinCreateRev); ("MinModRev"%go, Op__MinModRev); ("RangeBytes"%go, Op__RangeBytes); ("Rev"%go, Op__Rev); ("Txn"%go, Op__Txn); ("ValueBytes"%go, Op__ValueBytes); ("isWrite"%go, Op__isWrite); ("toRangeRequest"%go, Op__toRangeRequest); ("toRequestOp"%go, Op__toRequestOp); ("toTxnRequest"%go, Op__toTxnRequest)]); ("Op'ptr"%go, [("IsCountOnly"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [("Client"%go, []); ("Client'ptr"%go, []); ("Cmp"%go, []); ("Cmp'ptr"%go, []); ("PutResponse"%go, []); ("PutResponse'ptr"%go, []); ("GetResponse"%go, []); ("GetResponse'ptr"%go, []); ("DeleteResponse"%go, []); ("DeleteResponse'ptr"%go, []); ("TxnResponse"%go, []); ("TxnResponse'ptr"%go, []); ("OpResponse"%go, []); ("OpResponse'ptr"%go, []); ("LeaseID"%go, []); ("LeaseID'ptr"%go, []); ("LeaseGrantResponse"%go, []); ("LeaseGrantResponse'ptr"%go, []); ("opType"%go, []); ("opType'ptr"%go, []); ("Op"%go, [("IsCountOnly"%go, Op__IsCountOnlyⁱᵐᵖˡ); ("IsDelete"%go, Op__IsDeleteⁱᵐᵖˡ); ("IsGet"%go, Op__IsGetⁱᵐᵖˡ); ("IsKeysOnly"%go, Op__IsKeysOnlyⁱᵐᵖˡ); ("IsOptsWithFromKey"%go, Op__IsOptsWithFromKeyⁱᵐᵖˡ); ("IsOptsWithPrefix"%go, Op__IsOptsWithPrefixⁱᵐᵖˡ); ("IsPut"%go, Op__IsPutⁱᵐᵖˡ); ("IsSerializable"%go, Op__IsSerializableⁱᵐᵖˡ); ("IsSortOptionValid"%go, Op__IsSortOptionValidⁱᵐᵖˡ); ("IsTxn"%go, Op__IsTxnⁱᵐᵖˡ); ("KeyBytes"%go, Op__KeyBytesⁱᵐᵖˡ); ("MaxCreateRev"%go, Op__MaxCreateRevⁱᵐᵖˡ); ("MaxModRev"%go, Op__MaxModRevⁱᵐᵖˡ); ("MinCreateRev"%go, Op__MinCreateRevⁱᵐᵖˡ); ("MinModRev"%go, Op__MinModRevⁱᵐᵖˡ); ("RangeBytes"%go, Op__RangeBytesⁱᵐᵖˡ); ("Rev"%go, Op__Revⁱᵐᵖˡ); ("Txn"%go, Op__Txnⁱᵐᵖˡ); ("ValueBytes"%go, Op__ValueBytesⁱᵐᵖˡ); ("isWrite"%go, Op__isWriteⁱᵐᵖˡ); ("toRangeRequest"%go, Op__toRangeRequestⁱᵐᵖˡ); ("toRequestOp"%go, Op__toRequestOpⁱᵐᵖˡ); ("toTxnRequest"%go, Op__toTxnRequestⁱᵐᵖˡ)]); ("Op'ptr"%go, [("IsCountOnly"%go, (λ: "$recvAddr",
                  method_call #v3.clientv3 #"Op" #"IsCountOnly" (![#Op] "$recvAddr")
                  )%V); ("IsDelete"%go, (λ: "$recvAddr",
                  method_call #v3.clientv3 #"Op" #"IsDelete" (![#Op] "$recvAddr")
@@ -1373,7 +1579,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Client"%go
                  method_call #v3.clientv3 #"Op" #"Txn" (![#Op] "$recvAddr")
                  )%V); ("ValueBytes"%go, (λ: "$recvAddr",
                  method_call #v3.clientv3 #"Op" #"ValueBytes" (![#Op] "$recvAddr")
-                 )%V); ("WithKeyBytes"%go, Op__WithKeyBytes); ("WithRangeBytes"%go, Op__WithRangeBytes); ("WithValueBytes"%go, Op__WithValueBytes); ("applyOpts"%go, Op__applyOpts); ("isWrite"%go, (λ: "$recvAddr",
+                 )%V); ("WithKeyBytes"%go, Op__WithKeyBytesⁱᵐᵖˡ); ("WithRangeBytes"%go, Op__WithRangeBytesⁱᵐᵖˡ); ("WithValueBytes"%go, Op__WithValueBytesⁱᵐᵖˡ); ("applyOpts"%go, Op__applyOptsⁱᵐᵖˡ); ("isWrite"%go, (λ: "$recvAddr",
                  method_call #v3.clientv3 #"Op" #"isWrite" (![#Op] "$recvAddr")
                  )%V); ("toRangeRequest"%go, (λ: "$recvAddr",
                  method_call #v3.clientv3 #"Op" #"toRangeRequest" (![#Op] "$recvAddr")
@@ -1394,10 +1600,11 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Client"%go
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init v3.clientv3 (λ: <>,
-      exception_do (do:  mvccpb.initialize';;;
-      do:  etcdserverpb.initialize';;;
+  λ: <>,
+    package.init #v3.clientv3 (λ: <>,
+      exception_do (do:  (mvccpb.initialize' #());;;
+      do:  (etcdserverpb.initialize' #());;;
+      do:  (package.alloc v3.clientv3 #());;;
       do:  (ErrNoAvailableEndpoints'init #());;;
       do:  (ErrOldCluster'init #());;;
       do:  (LeaseResponseChSize'init #());;;

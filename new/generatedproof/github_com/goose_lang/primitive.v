@@ -11,39 +11,24 @@ Module primitive.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined primitive :=
-{|
-  is_pkg_defined := is_global_definitions primitive var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_UInt64Put :
-  WpFuncCall primitive "UInt64Put" _ (is_pkg_defined primitive) :=
+  WpFuncCall primitive.UInt64Put _ (is_pkg_defined primitive) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_RandomUint64 :
-  WpFuncCall primitive "RandomUint64" _ (is_pkg_defined primitive) :=
+  WpFuncCall primitive.RandomUint64 _ (is_pkg_defined primitive) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Assume :
-  WpFuncCall primitive "Assume" _ (is_pkg_defined primitive) :=
+  WpFuncCall primitive.Assume _ (is_pkg_defined primitive) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AssumeNoStringOverflow :
-  WpFuncCall primitive "AssumeNoStringOverflow" _ (is_pkg_defined primitive) :=
+  WpFuncCall primitive.AssumeNoStringOverflow _ (is_pkg_defined primitive) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

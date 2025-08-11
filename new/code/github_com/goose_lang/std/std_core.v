@@ -10,35 +10,41 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition SumNoOverflow : go_string := "github.com/goose-lang/std/std_core.SumNoOverflow"%go.
+
 (* Returns true if x + y does not overflow
 
    go: std_core.go:9:6 *)
-Definition SumNoOverflow : val :=
-  rec: "SumNoOverflow" "x" "y" :=
+Definition SumNoOverflowⁱᵐᵖˡ : val :=
+  λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
     return: (((![#uint64T] "x") + (![#uint64T] "y")) ≥ (![#uint64T] "x"))).
+
+Definition SumAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_core.SumAssumeNoOverflow"%go.
 
 (* SumAssumeNoOverflow returns x + y, `Assume`ing that this does not overflow.
 
    *Use with care* - if the assumption is violated this function will panic.
 
    go: std_core.go:16:6 *)
-Definition SumAssumeNoOverflow : val :=
-  rec: "SumAssumeNoOverflow" "x" "y" :=
+Definition SumAssumeNoOverflowⁱᵐᵖˡ : val :=
+  λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
     do:  (let: "$a0" := (let: "$a0" := (![#uint64T] "x") in
     let: "$a1" := (![#uint64T] "y") in
-    (func_call #std_core.std_core #"SumNoOverflow"%go) "$a0" "$a1") in
-    (func_call #primitive.primitive #"Assume"%go) "$a0");;;
+    (func_call #SumNoOverflow) "$a0" "$a1") in
+    (func_call #primitive.Assume) "$a0");;;
     return: ((![#uint64T] "x") + (![#uint64T] "y"))).
+
+Definition MulNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulNoOverflow"%go.
 
 (* MulNoOverflow returns true if x * y does not overflow
 
    go: std_core.go:22:6 *)
-Definition MulNoOverflow : val :=
-  rec: "MulNoOverflow" "x" "y" :=
+Definition MulNoOverflowⁱᵐᵖˡ : val :=
+  λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
     (if: ((![#uint64T] "x") = #(W64 0)) || ((![#uint64T] "y") = #(W64 0))
@@ -46,26 +52,30 @@ Definition MulNoOverflow : val :=
     else do:  #());;;
     return: ((![#uint64T] "x") ≤ (#(W64 (18446744073709551616 - 1)) `quot` (![#uint64T] "y")))).
 
+Definition MulAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulAssumeNoOverflow"%go.
+
 (* MulAssumeNoOverflow returns x * y, `Assume`ing that this does not overflow.
 
    *Use with care* - if the assumption is violated this function will panic.
 
    go: std_core.go:32:6 *)
-Definition MulAssumeNoOverflow : val :=
-  rec: "MulAssumeNoOverflow" "x" "y" :=
+Definition MulAssumeNoOverflowⁱᵐᵖˡ : val :=
+  λ: "x" "y",
     exception_do (let: "y" := (mem.alloc "y") in
     let: "x" := (mem.alloc "x") in
     do:  (let: "$a0" := (let: "$a0" := (![#uint64T] "x") in
     let: "$a1" := (![#uint64T] "y") in
-    (func_call #std_core.std_core #"MulNoOverflow"%go) "$a0" "$a1") in
-    (func_call #primitive.primitive #"Assume"%go) "$a0");;;
+    (func_call #MulNoOverflow) "$a0" "$a1") in
+    (func_call #primitive.Assume) "$a0");;;
     return: ((![#uint64T] "x") * (![#uint64T] "y"))).
+
+Definition Shuffle : go_string := "github.com/goose-lang/std/std_core.Shuffle"%go.
 
 (* Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle.
 
    go: std_core.go:38:6 *)
-Definition Shuffle : val :=
-  rec: "Shuffle" "xs" :=
+Definition Shuffleⁱᵐᵖˡ : val :=
+  λ: "xs",
     exception_do (let: "xs" := (mem.alloc "xs") in
     (if: (let: "$a0" := (![#sliceT] "xs") in
     slice.len "$a0") = #(W64 0)
@@ -77,7 +87,7 @@ Definition Shuffle : val :=
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") > #(W64 0)); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") - #(W64 1)))) := λ: <>,
       let: "j" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (((func_call #primitive.primitive #"RandomUint64"%go) #()) `rem` ((![#uint64T] "i") + #(W64 1))) in
+      let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` ((![#uint64T] "i") + #(W64 1))) in
       do:  ("j" <-[#uint64T] "$r0");;;
       let: "temp" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "i"))) in
@@ -88,12 +98,14 @@ Definition Shuffle : val :=
       do:  ((slice.elem_ref #uint64T (![#sliceT] "xs") (![#uint64T] "j")) <-[#uint64T] "$r0")));;;
     return: #()).
 
+Definition Permutation : go_string := "github.com/goose-lang/std/std_core.Permutation"%go.
+
 (* Permutation returns a random permutation of the integers 0, ..., n-1, using a
    Fisher-Yates shuffle.
 
    go: std_core.go:52:6 *)
-Definition Permutation : val :=
-  rec: "Permutation" "n" :=
+Definition Permutationⁱᵐᵖˡ : val :=
+  λ: "n",
     exception_do (let: "n" := (mem.alloc "n") in
     let: "order" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #uint64T (![#uint64T] "n")) in
@@ -105,12 +117,12 @@ Definition Permutation : val :=
       let: "$r0" := (![#uint64T] "i") in
       do:  ((slice.elem_ref #uint64T (![#sliceT] "order") (![#uint64T] "i")) <-[#uint64T] "$r0")));;;
     do:  (let: "$a0" := (![#sliceT] "order") in
-    (func_call #std_core.std_core #"Shuffle"%go) "$a0");;;
+    (func_call #Shuffle) "$a0");;;
     return: (![#sliceT] "order")).
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("SumNoOverflow"%go, SumNoOverflow); ("SumAssumeNoOverflow"%go, SumAssumeNoOverflow); ("MulNoOverflow"%go, MulNoOverflow); ("MulAssumeNoOverflow"%go, MulAssumeNoOverflow); ("Shuffle"%go, Shuffle); ("Permutation"%go, Permutation)].
+Definition functions' : list (go_string * val) := [(SumNoOverflow, SumNoOverflowⁱᵐᵖˡ); (SumAssumeNoOverflow, SumAssumeNoOverflowⁱᵐᵖˡ); (MulNoOverflow, MulNoOverflowⁱᵐᵖˡ); (MulAssumeNoOverflow, MulAssumeNoOverflowⁱᵐᵖˡ); (Shuffle, Shuffleⁱᵐᵖˡ); (Permutation, Permutationⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -123,9 +135,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init std_core.std_core (λ: <>,
-      exception_do (do:  primitive.initialize')
+  λ: <>,
+    package.init #std_core.std_core (λ: <>,
+      exception_do (do:  (primitive.initialize' #());;;
+      do:  (package.alloc std_core.std_core #()))
       ).
 
 End code.

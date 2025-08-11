@@ -218,31 +218,16 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined lockmap :=
-{|
-  is_pkg_defined := is_global_definitions lockmap var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_mkLockShard :
-  WpFuncCall lockmap "mkLockShard" _ (is_pkg_defined lockmap) :=
+  WpFuncCall lockmap.mkLockShard _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MkLockMap :
-  WpFuncCall lockmap "MkLockMap" _ (is_pkg_defined lockmap) :=
+  WpFuncCall lockmap.MkLockMap _ (is_pkg_defined lockmap) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_lockShard'ptr_acquire :

@@ -90,35 +90,20 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined append_log :=
-{|
-  is_pkg_defined := is_global_definitions append_log var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Init :
-  WpFuncCall append_log "Init" _ (is_pkg_defined append_log) :=
+  WpFuncCall append_log.Init _ (is_pkg_defined append_log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Open :
-  WpFuncCall append_log "Open" _ (is_pkg_defined append_log) :=
+  WpFuncCall append_log.Open _ (is_pkg_defined append_log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_writeAll :
-  WpFuncCall append_log "writeAll" _ (is_pkg_defined append_log) :=
+  WpFuncCall append_log.writeAll _ (is_pkg_defined append_log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Append :

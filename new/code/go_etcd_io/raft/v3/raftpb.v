@@ -10,6 +10,12 @@ Context `{ffi_syntax}.
 
 Definition ConfChangeI : go_type := interfaceT.
 
+Definition MarshalConfChange : go_string := "go.etcd.io/raft/v3/raftpb.MarshalConfChange"%go.
+
+Definition ConfChangesFromString : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangesFromString"%go.
+
+Definition ConfChangesToString : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangesToString"%go.
+
 Definition EntryType : go_type := int32T.
 
 Definition EntryNormal : expr := #(W32 0).
@@ -158,7 +164,17 @@ Definition ConfChangeV2 : go_type := structT [
   "Context" :: sliceT
 ].
 
+Definition init : go_string := "go.etcd.io/raft/v3/raftpb.init"%go.
+
 Axiom fileDescriptor_b042552c306ae59b'init : val.
+
+Definition encodeVarintRaft : go_string := "go.etcd.io/raft/v3/raftpb.encodeVarintRaft"%go.
+
+Definition sovRaft : go_string := "go.etcd.io/raft/v3/raftpb.sovRaft"%go.
+
+Definition sozRaft : go_string := "go.etcd.io/raft/v3/raftpb.sozRaft"%go.
+
+Definition skipRaft : go_string := "go.etcd.io/raft/v3/raftpb.skipRaft"%go.
 
 Axiom ErrInvalidLengthRaft'init : val.
 
@@ -183,9 +199,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("EntryType"
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init raftpb.raftpb (λ: <>,
-      exception_do (do:  (_'init #());;;
+  λ: <>,
+    package.init #raftpb.raftpb (λ: <>,
+      exception_do (do:  (package.alloc raftpb.raftpb #());;;
+      do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (EntryType_name'init #());;;

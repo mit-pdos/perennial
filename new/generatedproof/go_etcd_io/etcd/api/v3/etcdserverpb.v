@@ -2167,79 +2167,9 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-  RangeRequest_SortOrder_name : loc;
-  RangeRequest_SortOrder_value : loc;
-  RangeRequest_SortTarget_name : loc;
-  RangeRequest_SortTarget_value : loc;
-  Compare_CompareResult_name : loc;
-  Compare_CompareResult_value : loc;
-  Compare_CompareTarget_name : loc;
-  Compare_CompareTarget_value : loc;
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-    ("RangeRequest_SortOrder_name"%go, RangeRequest_SortOrder_name);
-    ("RangeRequest_SortOrder_value"%go, RangeRequest_SortOrder_value);
-    ("RangeRequest_SortTarget_name"%go, RangeRequest_SortTarget_name);
-    ("RangeRequest_SortTarget_value"%go, RangeRequest_SortTarget_value);
-    ("Compare_CompareResult_name"%go, Compare_CompareResult_name);
-    ("Compare_CompareResult_value"%go, Compare_CompareResult_value);
-    ("Compare_CompareTarget_name"%go, Compare_CompareTarget_name);
-    ("Compare_CompareTarget_value"%go, Compare_CompareTarget_value)
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined etcdserverpb :=
-{|
-  is_pkg_defined := is_global_definitions etcdserverpb var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-  "HRangeRequest_SortOrder_name" ∷ RangeRequest_SortOrder_name ↦ (default_val loc) ∗
-  "HRangeRequest_SortOrder_value" ∷ RangeRequest_SortOrder_value ↦ (default_val loc) ∗
-  "HRangeRequest_SortTarget_name" ∷ RangeRequest_SortTarget_name ↦ (default_val loc) ∗
-  "HRangeRequest_SortTarget_value" ∷ RangeRequest_SortTarget_value ↦ (default_val loc) ∗
-  "HCompare_CompareResult_name" ∷ Compare_CompareResult_name ↦ (default_val loc) ∗
-  "HCompare_CompareResult_value" ∷ Compare_CompareResult_value ↦ (default_val loc) ∗
-  "HCompare_CompareTarget_name" ∷ Compare_CompareTarget_name ↦ (default_val loc) ∗
-  "HCompare_CompareTarget_value" ∷ Compare_CompareTarget_value ↦ (default_val loc).
-
-Global Instance wp_globals_get_RangeRequest_SortOrder_name : 
-  WpGlobalsGet etcdserverpb "RangeRequest_SortOrder_name" RangeRequest_SortOrder_name (is_pkg_defined etcdserverpb).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_RangeRequest_SortOrder_value : 
-  WpGlobalsGet etcdserverpb "RangeRequest_SortOrder_value" RangeRequest_SortOrder_value (is_pkg_defined etcdserverpb).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_RangeRequest_SortTarget_name : 
-  WpGlobalsGet etcdserverpb "RangeRequest_SortTarget_name" RangeRequest_SortTarget_name (is_pkg_defined etcdserverpb).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_RangeRequest_SortTarget_value : 
-  WpGlobalsGet etcdserverpb "RangeRequest_SortTarget_value" RangeRequest_SortTarget_value (is_pkg_defined etcdserverpb).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_Compare_CompareResult_name : 
-  WpGlobalsGet etcdserverpb "Compare_CompareResult_name" Compare_CompareResult_name (is_pkg_defined etcdserverpb).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_Compare_CompareResult_value : 
-  WpGlobalsGet etcdserverpb "Compare_CompareResult_value" Compare_CompareResult_value (is_pkg_defined etcdserverpb).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_Compare_CompareTarget_name : 
-  WpGlobalsGet etcdserverpb "Compare_CompareTarget_name" Compare_CompareTarget_name (is_pkg_defined etcdserverpb).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_Compare_CompareTarget_value : 
-  WpGlobalsGet etcdserverpb "Compare_CompareTarget_value" Compare_CompareTarget_value (is_pkg_defined etcdserverpb).
-Proof. apply wp_globals_get'. reflexivity. Qed.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_method_call_RangeRequest_SortOrder_EnumDescriptor :
   WpMethodCall etcdserverpb "RangeRequest_SortOrder" "EnumDescriptor" _ (is_pkg_defined etcdserverpb) :=
@@ -2482,9 +2412,4 @@ Global Instance wp_method_call_Compare_Lease'ptr_isCompare_TargetUnion :
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
-
-Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
-  WpGlobalsAlloc etcdserverpb.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 End etcdserverpb.

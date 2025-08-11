@@ -220,47 +220,32 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined sync :=
-{|
-  is_pkg_defined := is_global_definitions sync var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewCond :
-  WpFuncCall sync "NewCond" _ (is_pkg_defined sync) :=
+  WpFuncCall sync.NewCond _ (is_pkg_defined sync) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_Semacquire :
-  WpFuncCall sync "runtime_Semacquire" _ (is_pkg_defined sync) :=
+  WpFuncCall sync.runtime_Semacquire _ (is_pkg_defined sync) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_SemacquireWaitGroup :
-  WpFuncCall sync "runtime_SemacquireWaitGroup" _ (is_pkg_defined sync) :=
+  WpFuncCall sync.runtime_SemacquireWaitGroup _ (is_pkg_defined sync) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_SemacquireRWMutexR :
-  WpFuncCall sync "runtime_SemacquireRWMutexR" _ (is_pkg_defined sync) :=
+  WpFuncCall sync.runtime_SemacquireRWMutexR _ (is_pkg_defined sync) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_SemacquireRWMutex :
-  WpFuncCall sync "runtime_SemacquireRWMutex" _ (is_pkg_defined sync) :=
+  WpFuncCall sync.runtime_SemacquireRWMutex _ (is_pkg_defined sync) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runtime_Semrelease :
-  WpFuncCall sync "runtime_Semrelease" _ (is_pkg_defined sync) :=
+  WpFuncCall sync.runtime_Semrelease _ (is_pkg_defined sync) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Cond'ptr_Broadcast :

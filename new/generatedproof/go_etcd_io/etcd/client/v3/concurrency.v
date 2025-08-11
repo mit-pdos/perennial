@@ -948,141 +948,92 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-  ErrElectionNotLeader : loc;
-  ErrElectionNoLeader : loc;
-  ErrLocked : loc;
-  ErrSessionExpired : loc;
-  ErrLockReleased : loc;
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-    ("ErrElectionNotLeader"%go, ErrElectionNotLeader);
-    ("ErrElectionNoLeader"%go, ErrElectionNoLeader);
-    ("ErrLocked"%go, ErrLocked);
-    ("ErrSessionExpired"%go, ErrSessionExpired);
-    ("ErrLockReleased"%go, ErrLockReleased)
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined concurrency :=
-{|
-  is_pkg_defined := is_global_definitions concurrency var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-  "HErrElectionNotLeader" ∷ ErrElectionNotLeader ↦ (default_val error.t) ∗
-  "HErrElectionNoLeader" ∷ ErrElectionNoLeader ↦ (default_val error.t) ∗
-  "HErrLocked" ∷ ErrLocked ↦ (default_val error.t) ∗
-  "HErrSessionExpired" ∷ ErrSessionExpired ↦ (default_val error.t) ∗
-  "HErrLockReleased" ∷ ErrLockReleased ↦ (default_val error.t).
-
-Global Instance wp_globals_get_ErrElectionNotLeader : 
-  WpGlobalsGet concurrency "ErrElectionNotLeader" ErrElectionNotLeader (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrElectionNoLeader : 
-  WpGlobalsGet concurrency "ErrElectionNoLeader" ErrElectionNoLeader (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrLocked : 
-  WpGlobalsGet concurrency "ErrLocked" ErrLocked (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrSessionExpired : 
-  WpGlobalsGet concurrency "ErrSessionExpired" ErrSessionExpired (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
-
-Global Instance wp_globals_get_ErrLockReleased : 
-  WpGlobalsGet concurrency "ErrLockReleased" ErrLockReleased (is_pkg_defined concurrency).
-Proof. apply wp_globals_get'. reflexivity. Qed.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewElection :
-  WpFuncCall concurrency "NewElection" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewElection _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_ResumeElection :
-  WpFuncCall concurrency "ResumeElection" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.ResumeElection _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_waitDelete :
-  WpFuncCall concurrency "waitDelete" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.waitDelete _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_waitDeletes :
-  WpFuncCall concurrency "waitDeletes" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.waitDeletes _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewMutex :
-  WpFuncCall concurrency "NewMutex" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewMutex _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewLocker :
-  WpFuncCall concurrency "NewLocker" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewLocker _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSession :
-  WpFuncCall concurrency "NewSession" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSession _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithTTL :
-  WpFuncCall concurrency "WithTTL" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithTTL _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithLease :
-  WpFuncCall concurrency "WithLease" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithLease _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithContext :
-  WpFuncCall concurrency "WithContext" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithContext _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithIsolation :
-  WpFuncCall concurrency "WithIsolation" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithIsolation _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithAbortContext :
-  WpFuncCall concurrency "WithAbortContext" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithAbortContext _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithPrefetch :
-  WpFuncCall concurrency "WithPrefetch" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.WithPrefetch _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSTM :
-  WpFuncCall concurrency "NewSTM" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSTM _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_mkSTM :
-  WpFuncCall concurrency "mkSTM" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.mkSTM _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_runSTM :
-  WpFuncCall concurrency "runSTM" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.runSTM _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_isKeyCurrent :
-  WpFuncCall concurrency "isKeyCurrent" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.isKeyCurrent _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_respToValue :
-  WpFuncCall concurrency "respToValue" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.respToValue _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSTMRepeatable :
-  WpFuncCall concurrency "NewSTMRepeatable" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSTMRepeatable _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSTMSerializable :
-  WpFuncCall concurrency "NewSTMSerializable" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSTMSerializable _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewSTMReadCommitted :
-  WpFuncCall concurrency "NewSTMReadCommitted" _ (is_pkg_defined concurrency) :=
+  WpFuncCall concurrency.NewSTMReadCommitted _ (is_pkg_defined concurrency) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Election'ptr_Campaign :
@@ -1330,9 +1281,4 @@ Global Instance wp_method_call_stmSerializable'ptr_reset :
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
-
-Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
-  WpGlobalsAlloc concurrency.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 End concurrency.

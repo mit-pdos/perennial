@@ -44,31 +44,16 @@ Admitted.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined netffi :=
-{|
-  is_pkg_defined := is_global_definitions netffi var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Dial :
-  WpFuncCall netffi "Dial" _ (is_pkg_defined netffi) :=
+  WpFuncCall netffi.Dial _ (is_pkg_defined netffi) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Listen :
-  WpFuncCall netffi "Listen" _ (is_pkg_defined netffi) :=
+  WpFuncCall netffi.Listen _ (is_pkg_defined netffi) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Conn'ptr_Receive :

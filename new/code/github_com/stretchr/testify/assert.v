@@ -40,11 +40,383 @@ Axiom timeType'init : val.
 
 Axiom bytesType'init : val.
 
+Definition compare : go_string := "github.com/stretchr/testify/assert.compare"%go.
+
+Definition Greater : go_string := "github.com/stretchr/testify/assert.Greater"%go.
+
+Definition GreaterOrEqual : go_string := "github.com/stretchr/testify/assert.GreaterOrEqual"%go.
+
+Definition Less : go_string := "github.com/stretchr/testify/assert.Less"%go.
+
+Definition LessOrEqual : go_string := "github.com/stretchr/testify/assert.LessOrEqual"%go.
+
+Definition Positive : go_string := "github.com/stretchr/testify/assert.Positive"%go.
+
+Definition Negative : go_string := "github.com/stretchr/testify/assert.Negative"%go.
+
+Definition compareTwoValues : go_string := "github.com/stretchr/testify/assert.compareTwoValues"%go.
+
+Definition containsValue : go_string := "github.com/stretchr/testify/assert.containsValue"%go.
+
+Definition Conditionf : go_string := "github.com/stretchr/testify/assert.Conditionf"%go.
+
+Definition Containsf : go_string := "github.com/stretchr/testify/assert.Containsf"%go.
+
+Definition DirExistsf : go_string := "github.com/stretchr/testify/assert.DirExistsf"%go.
+
+Definition ElementsMatchf : go_string := "github.com/stretchr/testify/assert.ElementsMatchf"%go.
+
+Definition Emptyf : go_string := "github.com/stretchr/testify/assert.Emptyf"%go.
+
+Definition Equalf : go_string := "github.com/stretchr/testify/assert.Equalf"%go.
+
+Definition EqualErrorf : go_string := "github.com/stretchr/testify/assert.EqualErrorf"%go.
+
+Definition EqualExportedValuesf : go_string := "github.com/stretchr/testify/assert.EqualExportedValuesf"%go.
+
+Definition EqualValuesf : go_string := "github.com/stretchr/testify/assert.EqualValuesf"%go.
+
+Definition Errorf : go_string := "github.com/stretchr/testify/assert.Errorf"%go.
+
+Definition ErrorAsf : go_string := "github.com/stretchr/testify/assert.ErrorAsf"%go.
+
+Definition ErrorContainsf : go_string := "github.com/stretchr/testify/assert.ErrorContainsf"%go.
+
+Definition ErrorIsf : go_string := "github.com/stretchr/testify/assert.ErrorIsf"%go.
+
+Definition Eventuallyf : go_string := "github.com/stretchr/testify/assert.Eventuallyf"%go.
+
+Definition EventuallyWithTf : go_string := "github.com/stretchr/testify/assert.EventuallyWithTf"%go.
+
+Definition Exactlyf : go_string := "github.com/stretchr/testify/assert.Exactlyf"%go.
+
+Definition Failf : go_string := "github.com/stretchr/testify/assert.Failf"%go.
+
+Definition FailNowf : go_string := "github.com/stretchr/testify/assert.FailNowf"%go.
+
+Definition Falsef : go_string := "github.com/stretchr/testify/assert.Falsef"%go.
+
+Definition FileExistsf : go_string := "github.com/stretchr/testify/assert.FileExistsf"%go.
+
+Definition Greaterf : go_string := "github.com/stretchr/testify/assert.Greaterf"%go.
+
+Definition GreaterOrEqualf : go_string := "github.com/stretchr/testify/assert.GreaterOrEqualf"%go.
+
+Definition HTTPBodyContainsf : go_string := "github.com/stretchr/testify/assert.HTTPBodyContainsf"%go.
+
+Definition HTTPBodyNotContainsf : go_string := "github.com/stretchr/testify/assert.HTTPBodyNotContainsf"%go.
+
+Definition HTTPErrorf : go_string := "github.com/stretchr/testify/assert.HTTPErrorf"%go.
+
+Definition HTTPRedirectf : go_string := "github.com/stretchr/testify/assert.HTTPRedirectf"%go.
+
+Definition HTTPStatusCodef : go_string := "github.com/stretchr/testify/assert.HTTPStatusCodef"%go.
+
+Definition HTTPSuccessf : go_string := "github.com/stretchr/testify/assert.HTTPSuccessf"%go.
+
+Definition Implementsf : go_string := "github.com/stretchr/testify/assert.Implementsf"%go.
+
+Definition InDeltaf : go_string := "github.com/stretchr/testify/assert.InDeltaf"%go.
+
+Definition InDeltaMapValuesf : go_string := "github.com/stretchr/testify/assert.InDeltaMapValuesf"%go.
+
+Definition InDeltaSlicef : go_string := "github.com/stretchr/testify/assert.InDeltaSlicef"%go.
+
+Definition InEpsilonf : go_string := "github.com/stretchr/testify/assert.InEpsilonf"%go.
+
+Definition InEpsilonSlicef : go_string := "github.com/stretchr/testify/assert.InEpsilonSlicef"%go.
+
+Definition IsDecreasingf : go_string := "github.com/stretchr/testify/assert.IsDecreasingf"%go.
+
+Definition IsIncreasingf : go_string := "github.com/stretchr/testify/assert.IsIncreasingf"%go.
+
+Definition IsNonDecreasingf : go_string := "github.com/stretchr/testify/assert.IsNonDecreasingf"%go.
+
+Definition IsNonIncreasingf : go_string := "github.com/stretchr/testify/assert.IsNonIncreasingf"%go.
+
+Definition IsTypef : go_string := "github.com/stretchr/testify/assert.IsTypef"%go.
+
+Definition JSONEqf : go_string := "github.com/stretchr/testify/assert.JSONEqf"%go.
+
+Definition Lenf : go_string := "github.com/stretchr/testify/assert.Lenf"%go.
+
+Definition Lessf : go_string := "github.com/stretchr/testify/assert.Lessf"%go.
+
+Definition LessOrEqualf : go_string := "github.com/stretchr/testify/assert.LessOrEqualf"%go.
+
+Definition Negativef : go_string := "github.com/stretchr/testify/assert.Negativef"%go.
+
+Definition Neverf : go_string := "github.com/stretchr/testify/assert.Neverf"%go.
+
+Definition Nilf : go_string := "github.com/stretchr/testify/assert.Nilf"%go.
+
+Definition NoDirExistsf : go_string := "github.com/stretchr/testify/assert.NoDirExistsf"%go.
+
+Definition NoErrorf : go_string := "github.com/stretchr/testify/assert.NoErrorf"%go.
+
+Definition NoFileExistsf : go_string := "github.com/stretchr/testify/assert.NoFileExistsf"%go.
+
+Definition NotContainsf : go_string := "github.com/stretchr/testify/assert.NotContainsf"%go.
+
+Definition NotElementsMatchf : go_string := "github.com/stretchr/testify/assert.NotElementsMatchf"%go.
+
+Definition NotEmptyf : go_string := "github.com/stretchr/testify/assert.NotEmptyf"%go.
+
+Definition NotEqualf : go_string := "github.com/stretchr/testify/assert.NotEqualf"%go.
+
+Definition NotEqualValuesf : go_string := "github.com/stretchr/testify/assert.NotEqualValuesf"%go.
+
+Definition NotErrorAsf : go_string := "github.com/stretchr/testify/assert.NotErrorAsf"%go.
+
+Definition NotErrorIsf : go_string := "github.com/stretchr/testify/assert.NotErrorIsf"%go.
+
+Definition NotImplementsf : go_string := "github.com/stretchr/testify/assert.NotImplementsf"%go.
+
+Definition NotNilf : go_string := "github.com/stretchr/testify/assert.NotNilf"%go.
+
+Definition NotPanicsf : go_string := "github.com/stretchr/testify/assert.NotPanicsf"%go.
+
+Definition NotRegexpf : go_string := "github.com/stretchr/testify/assert.NotRegexpf"%go.
+
+Definition NotSamef : go_string := "github.com/stretchr/testify/assert.NotSamef"%go.
+
+Definition NotSubsetf : go_string := "github.com/stretchr/testify/assert.NotSubsetf"%go.
+
+Definition NotZerof : go_string := "github.com/stretchr/testify/assert.NotZerof"%go.
+
+Definition Panicsf : go_string := "github.com/stretchr/testify/assert.Panicsf"%go.
+
+Definition PanicsWithErrorf : go_string := "github.com/stretchr/testify/assert.PanicsWithErrorf"%go.
+
+Definition PanicsWithValuef : go_string := "github.com/stretchr/testify/assert.PanicsWithValuef"%go.
+
+Definition Positivef : go_string := "github.com/stretchr/testify/assert.Positivef"%go.
+
+Definition Regexpf : go_string := "github.com/stretchr/testify/assert.Regexpf"%go.
+
+Definition Samef : go_string := "github.com/stretchr/testify/assert.Samef"%go.
+
+Definition Subsetf : go_string := "github.com/stretchr/testify/assert.Subsetf"%go.
+
+Definition Truef : go_string := "github.com/stretchr/testify/assert.Truef"%go.
+
+Definition WithinDurationf : go_string := "github.com/stretchr/testify/assert.WithinDurationf"%go.
+
+Definition WithinRangef : go_string := "github.com/stretchr/testify/assert.WithinRangef"%go.
+
+Definition YAMLEqf : go_string := "github.com/stretchr/testify/assert.YAMLEqf"%go.
+
+Definition Zerof : go_string := "github.com/stretchr/testify/assert.Zerof"%go.
+
+Definition isOrdered : go_string := "github.com/stretchr/testify/assert.isOrdered"%go.
+
+Definition IsIncreasing : go_string := "github.com/stretchr/testify/assert.IsIncreasing"%go.
+
+Definition IsNonIncreasing : go_string := "github.com/stretchr/testify/assert.IsNonIncreasing"%go.
+
+Definition IsDecreasing : go_string := "github.com/stretchr/testify/assert.IsDecreasing"%go.
+
+Definition IsNonDecreasing : go_string := "github.com/stretchr/testify/assert.IsNonDecreasing"%go.
+
+Definition ObjectsAreEqual : go_string := "github.com/stretchr/testify/assert.ObjectsAreEqual"%go.
+
+Definition copyExportedFields : go_string := "github.com/stretchr/testify/assert.copyExportedFields"%go.
+
+Definition ObjectsExportedFieldsAreEqual : go_string := "github.com/stretchr/testify/assert.ObjectsExportedFieldsAreEqual"%go.
+
+Definition ObjectsAreEqualValues : go_string := "github.com/stretchr/testify/assert.ObjectsAreEqualValues"%go.
+
+Definition isNumericType : go_string := "github.com/stretchr/testify/assert.isNumericType"%go.
+
+Definition CallerInfo : go_string := "github.com/stretchr/testify/assert.CallerInfo"%go.
+
+Definition isTest : go_string := "github.com/stretchr/testify/assert.isTest"%go.
+
+Definition messageFromMsgAndArgs : go_string := "github.com/stretchr/testify/assert.messageFromMsgAndArgs"%go.
+
+Definition indentMessageLines : go_string := "github.com/stretchr/testify/assert.indentMessageLines"%go.
+
+Definition FailNow : go_string := "github.com/stretchr/testify/assert.FailNow"%go.
+
+Definition Fail : go_string := "github.com/stretchr/testify/assert.Fail"%go.
+
+Definition labeledOutput : go_string := "github.com/stretchr/testify/assert.labeledOutput"%go.
+
+Definition Implements : go_string := "github.com/stretchr/testify/assert.Implements"%go.
+
+Definition NotImplements : go_string := "github.com/stretchr/testify/assert.NotImplements"%go.
+
+Definition IsType : go_string := "github.com/stretchr/testify/assert.IsType"%go.
+
+Definition Equal : go_string := "github.com/stretchr/testify/assert.Equal"%go.
+
+Definition validateEqualArgs : go_string := "github.com/stretchr/testify/assert.validateEqualArgs"%go.
+
+Definition Same : go_string := "github.com/stretchr/testify/assert.Same"%go.
+
+Definition NotSame : go_string := "github.com/stretchr/testify/assert.NotSame"%go.
+
+Definition samePointers : go_string := "github.com/stretchr/testify/assert.samePointers"%go.
+
+Definition formatUnequalValues : go_string := "github.com/stretchr/testify/assert.formatUnequalValues"%go.
+
+Definition truncatingFormat : go_string := "github.com/stretchr/testify/assert.truncatingFormat"%go.
+
+Definition EqualValues : go_string := "github.com/stretchr/testify/assert.EqualValues"%go.
+
+Definition EqualExportedValues : go_string := "github.com/stretchr/testify/assert.EqualExportedValues"%go.
+
+Definition Exactly : go_string := "github.com/stretchr/testify/assert.Exactly"%go.
+
+Definition NotNil : go_string := "github.com/stretchr/testify/assert.NotNil"%go.
+
+Definition isNil : go_string := "github.com/stretchr/testify/assert.isNil"%go.
+
+Definition Nil : go_string := "github.com/stretchr/testify/assert.Nil"%go.
+
+Definition isEmpty : go_string := "github.com/stretchr/testify/assert.isEmpty"%go.
+
+Definition Empty : go_string := "github.com/stretchr/testify/assert.Empty"%go.
+
+Definition NotEmpty : go_string := "github.com/stretchr/testify/assert.NotEmpty"%go.
+
+Definition getLen : go_string := "github.com/stretchr/testify/assert.getLen"%go.
+
+Definition Len : go_string := "github.com/stretchr/testify/assert.Len"%go.
+
+Definition True : go_string := "github.com/stretchr/testify/assert.True"%go.
+
+Definition False : go_string := "github.com/stretchr/testify/assert.False"%go.
+
+Definition NotEqual : go_string := "github.com/stretchr/testify/assert.NotEqual"%go.
+
+Definition NotEqualValues : go_string := "github.com/stretchr/testify/assert.NotEqualValues"%go.
+
+Definition containsElement : go_string := "github.com/stretchr/testify/assert.containsElement"%go.
+
+Definition Contains : go_string := "github.com/stretchr/testify/assert.Contains"%go.
+
+Definition NotContains : go_string := "github.com/stretchr/testify/assert.NotContains"%go.
+
+Definition Subset : go_string := "github.com/stretchr/testify/assert.Subset"%go.
+
+Definition NotSubset : go_string := "github.com/stretchr/testify/assert.NotSubset"%go.
+
+Definition ElementsMatch : go_string := "github.com/stretchr/testify/assert.ElementsMatch"%go.
+
+Definition isList : go_string := "github.com/stretchr/testify/assert.isList"%go.
+
+Definition diffLists : go_string := "github.com/stretchr/testify/assert.diffLists"%go.
+
+Definition formatListDiff : go_string := "github.com/stretchr/testify/assert.formatListDiff"%go.
+
+Definition NotElementsMatch : go_string := "github.com/stretchr/testify/assert.NotElementsMatch"%go.
+
+Definition Condition : go_string := "github.com/stretchr/testify/assert.Condition"%go.
+
+Definition didPanic : go_string := "github.com/stretchr/testify/assert.didPanic"%go.
+
+Definition Panics : go_string := "github.com/stretchr/testify/assert.Panics"%go.
+
+Definition PanicsWithValue : go_string := "github.com/stretchr/testify/assert.PanicsWithValue"%go.
+
+Definition PanicsWithError : go_string := "github.com/stretchr/testify/assert.PanicsWithError"%go.
+
+Definition NotPanics : go_string := "github.com/stretchr/testify/assert.NotPanics"%go.
+
+Definition WithinDuration : go_string := "github.com/stretchr/testify/assert.WithinDuration"%go.
+
+Definition WithinRange : go_string := "github.com/stretchr/testify/assert.WithinRange"%go.
+
+Definition toFloat : go_string := "github.com/stretchr/testify/assert.toFloat"%go.
+
+Definition InDelta : go_string := "github.com/stretchr/testify/assert.InDelta"%go.
+
+Definition InDeltaSlice : go_string := "github.com/stretchr/testify/assert.InDeltaSlice"%go.
+
+Definition InDeltaMapValues : go_string := "github.com/stretchr/testify/assert.InDeltaMapValues"%go.
+
+Definition calcRelativeError : go_string := "github.com/stretchr/testify/assert.calcRelativeError"%go.
+
+Definition InEpsilon : go_string := "github.com/stretchr/testify/assert.InEpsilon"%go.
+
+Definition InEpsilonSlice : go_string := "github.com/stretchr/testify/assert.InEpsilonSlice"%go.
+
+Definition NoError : go_string := "github.com/stretchr/testify/assert.NoError"%go.
+
+Definition Error : go_string := "github.com/stretchr/testify/assert.Error"%go.
+
+Definition EqualError : go_string := "github.com/stretchr/testify/assert.EqualError"%go.
+
+Definition ErrorContains : go_string := "github.com/stretchr/testify/assert.ErrorContains"%go.
+
+Definition matchRegexp : go_string := "github.com/stretchr/testify/assert.matchRegexp"%go.
+
+Definition Regexp : go_string := "github.com/stretchr/testify/assert.Regexp"%go.
+
+Definition NotRegexp : go_string := "github.com/stretchr/testify/assert.NotRegexp"%go.
+
+Definition Zero : go_string := "github.com/stretchr/testify/assert.Zero"%go.
+
+Definition NotZero : go_string := "github.com/stretchr/testify/assert.NotZero"%go.
+
+Definition FileExists : go_string := "github.com/stretchr/testify/assert.FileExists"%go.
+
+Definition NoFileExists : go_string := "github.com/stretchr/testify/assert.NoFileExists"%go.
+
+Definition DirExists : go_string := "github.com/stretchr/testify/assert.DirExists"%go.
+
+Definition NoDirExists : go_string := "github.com/stretchr/testify/assert.NoDirExists"%go.
+
+Definition JSONEq : go_string := "github.com/stretchr/testify/assert.JSONEq"%go.
+
+Definition YAMLEq : go_string := "github.com/stretchr/testify/assert.YAMLEq"%go.
+
+Definition typeAndKind : go_string := "github.com/stretchr/testify/assert.typeAndKind"%go.
+
+Definition diff : go_string := "github.com/stretchr/testify/assert.diff"%go.
+
+Definition isFunction : go_string := "github.com/stretchr/testify/assert.isFunction"%go.
+
 Axiom spewConfig'init : val.
 
 Axiom spewConfigStringerEnabled'init : val.
 
+Definition Eventually : go_string := "github.com/stretchr/testify/assert.Eventually"%go.
+
+Definition EventuallyWithT : go_string := "github.com/stretchr/testify/assert.EventuallyWithT"%go.
+
+Definition Never : go_string := "github.com/stretchr/testify/assert.Never"%go.
+
+Definition ErrorIs : go_string := "github.com/stretchr/testify/assert.ErrorIs"%go.
+
+Definition NotErrorIs : go_string := "github.com/stretchr/testify/assert.NotErrorIs"%go.
+
+Definition ErrorAs : go_string := "github.com/stretchr/testify/assert.ErrorAs"%go.
+
+Definition NotErrorAs : go_string := "github.com/stretchr/testify/assert.NotErrorAs"%go.
+
+Definition buildErrorChainString : go_string := "github.com/stretchr/testify/assert.buildErrorChainString"%go.
+
 Axiom AnError'init : val.
+
+Definition New : go_string := "github.com/stretchr/testify/assert.New"%go.
+
+Definition httpCode : go_string := "github.com/stretchr/testify/assert.httpCode"%go.
+
+Definition HTTPSuccess : go_string := "github.com/stretchr/testify/assert.HTTPSuccess"%go.
+
+Definition HTTPRedirect : go_string := "github.com/stretchr/testify/assert.HTTPRedirect"%go.
+
+Definition HTTPError : go_string := "github.com/stretchr/testify/assert.HTTPError"%go.
+
+Definition HTTPStatusCode : go_string := "github.com/stretchr/testify/assert.HTTPStatusCode"%go.
+
+Definition HTTPBody : go_string := "github.com/stretchr/testify/assert.HTTPBody"%go.
+
+Definition HTTPBodyContains : go_string := "github.com/stretchr/testify/assert.HTTPBodyContains"%go.
+
+Definition HTTPBodyNotContains : go_string := "github.com/stretchr/testify/assert.HTTPBodyNotContains"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -63,9 +435,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init assert.assert (λ: <>,
-      exception_do (do:  (intType'init #());;;
+  λ: <>,
+    package.init #assert.assert (λ: <>,
+      exception_do (do:  (package.alloc assert.assert #());;;
+      do:  (intType'init #());;;
       do:  (int8Type'init #());;;
       do:  (int16Type'init #());;;
       do:  (int32Type'init #());;;

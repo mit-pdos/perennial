@@ -8,6 +8,166 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition All : go_string := "slices.All"%go.
+
+Definition Backward : go_string := "slices.Backward"%go.
+
+Definition Values : go_string := "slices.Values"%go.
+
+Definition AppendSeq : go_string := "slices.AppendSeq"%go.
+
+Definition Collect : go_string := "slices.Collect"%go.
+
+Definition Sorted : go_string := "slices.Sorted"%go.
+
+Definition SortedFunc : go_string := "slices.SortedFunc"%go.
+
+Definition SortedStableFunc : go_string := "slices.SortedStableFunc"%go.
+
+Definition Chunk : go_string := "slices.Chunk"%go.
+
+Definition Equal : go_string := "slices.Equal"%go.
+
+Definition EqualFunc : go_string := "slices.EqualFunc"%go.
+
+Definition Compare : go_string := "slices.Compare"%go.
+
+Definition CompareFunc : go_string := "slices.CompareFunc"%go.
+
+Definition Index : go_string := "slices.Index"%go.
+
+Definition IndexFunc : go_string := "slices.IndexFunc"%go.
+
+Definition Contains : go_string := "slices.Contains"%go.
+
+Definition ContainsFunc : go_string := "slices.ContainsFunc"%go.
+
+Definition Insert : go_string := "slices.Insert"%go.
+
+Definition Delete : go_string := "slices.Delete"%go.
+
+Definition DeleteFunc : go_string := "slices.DeleteFunc"%go.
+
+Definition Replace : go_string := "slices.Replace"%go.
+
+Definition Clone : go_string := "slices.Clone"%go.
+
+Definition Compact : go_string := "slices.Compact"%go.
+
+Definition CompactFunc : go_string := "slices.CompactFunc"%go.
+
+Definition Grow : go_string := "slices.Grow"%go.
+
+Definition Clip : go_string := "slices.Clip"%go.
+
+Definition rotateLeft : go_string := "slices.rotateLeft"%go.
+
+Definition rotateRight : go_string := "slices.rotateRight"%go.
+
+Definition overlaps : go_string := "slices.overlaps"%go.
+
+Definition startIdx : go_string := "slices.startIdx"%go.
+
+Definition Reverse : go_string := "slices.Reverse"%go.
+
+Definition Concat : go_string := "slices.Concat"%go.
+
+Definition Repeat : go_string := "slices.Repeat"%go.
+
+Definition Sort : go_string := "slices.Sort"%go.
+
+Definition SortFunc : go_string := "slices.SortFunc"%go.
+
+Definition SortStableFunc : go_string := "slices.SortStableFunc"%go.
+
+Definition IsSorted : go_string := "slices.IsSorted"%go.
+
+Definition IsSortedFunc : go_string := "slices.IsSortedFunc"%go.
+
+Definition Min : go_string := "slices.Min"%go.
+
+Definition MinFunc : go_string := "slices.MinFunc"%go.
+
+Definition Max : go_string := "slices.Max"%go.
+
+Definition MaxFunc : go_string := "slices.MaxFunc"%go.
+
+Definition BinarySearch : go_string := "slices.BinarySearch"%go.
+
+Definition BinarySearchFunc : go_string := "slices.BinarySearchFunc"%go.
+
+Definition nextPowerOfTwo : go_string := "slices.nextPowerOfTwo"%go.
+
+Definition isNaN : go_string := "slices.isNaN"%go.
+
+Definition insertionSortCmpFunc : go_string := "slices.insertionSortCmpFunc"%go.
+
+Definition siftDownCmpFunc : go_string := "slices.siftDownCmpFunc"%go.
+
+Definition heapSortCmpFunc : go_string := "slices.heapSortCmpFunc"%go.
+
+Definition pdqsortCmpFunc : go_string := "slices.pdqsortCmpFunc"%go.
+
+Definition partitionCmpFunc : go_string := "slices.partitionCmpFunc"%go.
+
+Definition partitionEqualCmpFunc : go_string := "slices.partitionEqualCmpFunc"%go.
+
+Definition partialInsertionSortCmpFunc : go_string := "slices.partialInsertionSortCmpFunc"%go.
+
+Definition breakPatternsCmpFunc : go_string := "slices.breakPatternsCmpFunc"%go.
+
+Definition choosePivotCmpFunc : go_string := "slices.choosePivotCmpFunc"%go.
+
+Definition order2CmpFunc : go_string := "slices.order2CmpFunc"%go.
+
+Definition medianCmpFunc : go_string := "slices.medianCmpFunc"%go.
+
+Definition medianAdjacentCmpFunc : go_string := "slices.medianAdjacentCmpFunc"%go.
+
+Definition reverseRangeCmpFunc : go_string := "slices.reverseRangeCmpFunc"%go.
+
+Definition swapRangeCmpFunc : go_string := "slices.swapRangeCmpFunc"%go.
+
+Definition stableCmpFunc : go_string := "slices.stableCmpFunc"%go.
+
+Definition symMergeCmpFunc : go_string := "slices.symMergeCmpFunc"%go.
+
+Definition rotateCmpFunc : go_string := "slices.rotateCmpFunc"%go.
+
+Definition insertionSortOrdered : go_string := "slices.insertionSortOrdered"%go.
+
+Definition siftDownOrdered : go_string := "slices.siftDownOrdered"%go.
+
+Definition heapSortOrdered : go_string := "slices.heapSortOrdered"%go.
+
+Definition pdqsortOrdered : go_string := "slices.pdqsortOrdered"%go.
+
+Definition partitionOrdered : go_string := "slices.partitionOrdered"%go.
+
+Definition partitionEqualOrdered : go_string := "slices.partitionEqualOrdered"%go.
+
+Definition partialInsertionSortOrdered : go_string := "slices.partialInsertionSortOrdered"%go.
+
+Definition breakPatternsOrdered : go_string := "slices.breakPatternsOrdered"%go.
+
+Definition choosePivotOrdered : go_string := "slices.choosePivotOrdered"%go.
+
+Definition order2Ordered : go_string := "slices.order2Ordered"%go.
+
+Definition medianOrdered : go_string := "slices.medianOrdered"%go.
+
+Definition medianAdjacentOrdered : go_string := "slices.medianAdjacentOrdered"%go.
+
+Definition reverseRangeOrdered : go_string := "slices.reverseRangeOrdered"%go.
+
+Definition swapRangeOrdered : go_string := "slices.swapRangeOrdered"%go.
+
+Definition stableOrdered : go_string := "slices.stableOrdered"%go.
+
+Definition symMergeOrdered : go_string := "slices.symMergeOrdered"%go.
+
+Definition rotateOrdered : go_string := "slices.rotateOrdered"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
@@ -25,9 +185,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init slices.slices (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #slices.slices (λ: <>,
+      exception_do (do:  (package.alloc slices.slices #()))
       ).
 
 End code.

@@ -22,33 +22,41 @@ Definition aliceUid : expr := #(W64 0).
 
 Definition bobUid : expr := #(W64 1).
 
+Definition testAliceBob : go_string := "github.com/sanjit-bhat/pav/alicebob.testAliceBob"%go.
+
+Definition equal : go_string := "github.com/sanjit-bhat/pav/alicebob.equal"%go.
+
+Definition runBob : go_string := "github.com/sanjit-bhat/pav/alicebob.runBob"%go.
+
+Definition runAlice : go_string := "github.com/sanjit-bhat/pav/alicebob.runAlice"%go.
+
 (* go: alicebob.go:22:6 *)
-Definition testAliceBob : val :=
-  rec: "testAliceBob" "servAddr" "adtrAddr" :=
+Definition testAliceBobⁱᵐᵖˡ : val :=
+  λ: "servAddr" "adtrAddr",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "evid" := (mem.alloc (type.zero_val #ptrT)) in
     let: "adtrAddr" := (mem.alloc "adtrAddr") in
     let: "servAddr" := (mem.alloc "servAddr") in
     let: "servSigPk" := (mem.alloc (type.zero_val #cryptoffi.SigPublicKey)) in
     let: "serv" := (mem.alloc (type.zero_val #ptrT)) in
-    let: ("$ret0", "$ret1") := ((func_call #server.server #"New"%go) #()) in
+    let: ("$ret0", "$ret1") := ((func_call #server.New) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("serv" <-[#ptrT] "$r0");;;
     do:  ("servSigPk" <-[#cryptoffi.SigPublicKey] "$r1");;;
     let: "servRpc" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "serv") in
-    (func_call #server.server #"NewRpcServer"%go) "$a0") in
+    (func_call #server.NewRpcServer) "$a0") in
     do:  ("servRpc" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "servAddr") in
     (method_call #advrpc #"Server'ptr" #"Serve" (![#ptrT] "servRpc")) "$a0");;;
     do:  (let: "$a0" := #(W64 1000000) in
-    (func_call #primitive.primitive #"Sleep"%go) "$a0");;;
+    (func_call #primitive.Sleep) "$a0");;;
     let: "adtrPk" := (mem.alloc (type.zero_val #cryptoffi.SigPublicKey)) in
     let: "adtr" := (mem.alloc (type.zero_val #ptrT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#uint64T] "servAddr") in
     let: "$a1" := (![#cryptoffi.SigPublicKey] "servSigPk") in
-    (func_call #auditor.auditor #"New"%go) "$a0" "$a1") in
+    (func_call #auditor.New) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
@@ -60,17 +68,17 @@ Definition testAliceBob : val :=
     else do:  #());;;
     let: "adtrRpc" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "adtr") in
-    (func_call #auditor.auditor #"NewRpcAuditor"%go) "$a0") in
+    (func_call #auditor.NewRpcAuditor) "$a0") in
     do:  ("adtrRpc" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "adtrAddr") in
     (method_call #advrpc #"Server'ptr" #"Serve" (![#ptrT] "adtrRpc")) "$a0");;;
     do:  (let: "$a0" := #(W64 1000000) in
-    (func_call #primitive.primitive #"Sleep"%go) "$a0");;;
+    (func_call #primitive.Sleep) "$a0");;;
     let: "alice" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := aliceUid in
     let: "$a1" := (![#uint64T] "servAddr") in
     let: "$a2" := (![#cryptoffi.SigPublicKey] "servSigPk") in
-    (func_call #client.client #"New"%go) "$a0" "$a1" "$a2") in
+    (func_call #client.New) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("alice" <-[#ptrT] "$r0");;;
@@ -82,7 +90,7 @@ Definition testAliceBob : val :=
     let: ("$ret0", "$ret1") := (let: "$a0" := bobUid in
     let: "$a1" := (![#uint64T] "servAddr") in
     let: "$a2" := (![#cryptoffi.SigPublicKey] "servSigPk") in
-    (func_call #client.client #"New"%go) "$a0" "$a1" "$a2") in
+    (func_call #client.New) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("bob" <-[#ptrT] "$r0");;;
@@ -106,7 +114,7 @@ Definition testAliceBob : val :=
       exception_do (let: "r1" := (mem.alloc (type.zero_val #ktcore.Blame)) in
       let: "r0" := (mem.alloc (type.zero_val #sliceT)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#ptrT] "alice") in
-      (func_call #alicebob.alicebob #"runAlice"%go) "$a0") in
+      (func_call #runAlice) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("r0" <-[#sliceT] "$r0");;;
@@ -124,7 +132,7 @@ Definition testAliceBob : val :=
       let: "r1" := (mem.alloc (type.zero_val #ptrT)) in
       let: "r0" := (mem.alloc (type.zero_val #uint64T)) in
       let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#ptrT] "bob") in
-      (func_call #alicebob.alicebob #"runBob"%go) "$a0") in
+      (func_call #runBob) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
@@ -156,10 +164,10 @@ Definition testAliceBob : val :=
     else do:  #());;;
     let: "adtrCli" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "adtrAddr") in
-    (func_call #advrpc.advrpc #"Dial"%go) "$a0") in
+    (func_call #advrpc.Dial) "$a0") in
     do:  ("adtrCli" <-[#ptrT] "$r0");;;
     (let: "$r0" := (let: "$a0" := (![#ptrT] "adtrCli") in
-    (func_call #auditor.auditor #"CallUpdate"%go) "$a0") in
+    (func_call #auditor.CallUpdate) "$a0") in
     do:  ("err" <-[#ktcore.Blame] "$r0");;;
     (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
     then return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
@@ -186,13 +194,13 @@ Definition testAliceBob : val :=
     else do:  #()));;;
     do:  (let: "$a0" := ((![#uint64T] "bobEp") < (s_to_w64 (let: "$a0" := (![#sliceT] "aliceHist") in
     slice.len "$a0"))) in
-    (func_call #primitive.primitive #"Assume"%go) "$a0");;;
+    (func_call #primitive.Assume) "$a0");;;
     let: "alicePk" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "aliceHist") (![#uint64T] "bobEp"))) in
     do:  ("alicePk" <-[#ptrT] "$r0");;;
     (if: (~ (let: "$a0" := (![#ptrT] "alicePk") in
     let: "$a1" := (![#ptrT] "bobAlicePk") in
-    (func_call #alicebob.alicebob #"equal"%go) "$a0" "$a1"))
+    (func_call #equal) "$a0" "$a1"))
     then
       let: "$r0" := ktcore.BlameAdtrSig in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
@@ -206,8 +214,8 @@ Definition histEntry : go_type := structT [
 ].
 
 (* go: alicebob.go:109:6 *)
-Definition equal : val :=
-  rec: "equal" "o0" "o1" :=
+Definition equalⁱᵐᵖˡ : val :=
+  λ: "o0" "o1",
     exception_do (let: "o1" := (mem.alloc "o1") in
     let: "o0" := (mem.alloc "o0") in
     (if: (![#boolT] (struct.field_ref #histEntry #"isReg"%go (![#ptrT] "o0"))) ≠ (![#boolT] (struct.field_ref #histEntry #"isReg"%go (![#ptrT] "o1")))
@@ -217,15 +225,17 @@ Definition equal : val :=
     then
       return: (let: "$a0" := (![#sliceT] (struct.field_ref #histEntry #"pk"%go (![#ptrT] "o0"))) in
        let: "$a1" := (![#sliceT] (struct.field_ref #histEntry #"pk"%go (![#ptrT] "o1"))) in
-       (func_call #bytes.bytes #"Equal"%go) "$a0" "$a1")
+       (func_call #bytes.Equal) "$a0" "$a1")
     else do:  #());;;
     return: (#true)).
+
+Definition loopPending : go_string := "github.com/sanjit-bhat/pav/alicebob.loopPending"%go.
 
 (* runAlice does a bunch of puts.
 
    go: alicebob.go:120:6 *)
-Definition runAlice : val :=
-  rec: "runAlice" "cli" :=
+Definition runAliceⁱᵐᵖˡ : val :=
+  λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "hist" := (mem.alloc (type.zero_val #sliceT)) in
     let: "cli" := (mem.alloc "cli") in
@@ -242,9 +252,9 @@ Definition runAlice : val :=
     then return: (![#sliceT] "hist", ![#ktcore.Blame] "err")
     else do:  #());;;
     do:  (let: "$a0" := (~ (![#boolT] "isInsert")) in
-    (func_call #std.std #"Assert"%go) "$a0");;;
+    (func_call #std.Assert) "$a0");;;
     do:  (let: "$a0" := ((![#uint64T] "ep") = #(W64 0)) in
-    (func_call #primitive.primitive #"Assume"%go) "$a0");;;
+    (func_call #primitive.Assume) "$a0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "hist") in
     let: "$a1" := ((let: "$sl0" := (mem.alloc (struct.make #histEntry [{
       "isReg" ::= type.zero_val #boolT;
@@ -258,17 +268,17 @@ Definition runAlice : val :=
     do:  ("i" <-[#intT] "$r0");;;
     (for: (λ: <>, int_lt (![#intT] "i") #(W64 20)); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
       do:  (let: "$a0" := #(W64 5000000) in
-      (func_call #primitive.primitive #"Sleep"%go) "$a0");;;
+      (func_call #primitive.Sleep) "$a0");;;
       let: "pk" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := (let: "$a0" := #(W64 32) in
-      (func_call #cryptoffi.cryptoffi #"RandBytes"%go) "$a0") in
+      (func_call #cryptoffi.RandBytes) "$a0") in
       do:  ("pk" <-[#sliceT] "$r0");;;
       do:  (let: "$a0" := (![#sliceT] "pk") in
       (method_call #client #"Client'ptr" #"Put" (![#ptrT] "cli")) "$a0");;;
       (let: "$r0" := (let: "$a0" := (![#ptrT] "cli") in
       let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "hist") in
       slice.len "$a0")) in
-      (func_call #alicebob.alicebob #"loopPending"%go) "$a0" "$a1") in
+      (func_call #loopPending) "$a0" "$a1") in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
       then return: (![#sliceT] "hist", ![#ktcore.Blame] "err")
@@ -286,8 +296,8 @@ Definition runAlice : val :=
     return: (![#sliceT] "hist", ![#ktcore.Blame] "err")).
 
 (* go: alicebob.go:150:6 *)
-Definition loopPending : val :=
-  rec: "loopPending" "cli" "ep" :=
+Definition loopPendingⁱᵐᵖˡ : val :=
+  λ: "cli" "ep",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "ep" := (mem.alloc "ep") in
     let: "cli" := (mem.alloc "cli") in
@@ -307,7 +317,7 @@ Definition loopPending : val :=
       (if: ![#boolT] "done"
       then
         do:  (let: "$a0" := ((![#uint64T] "ep0") = (![#uint64T] "ep")) in
-        (func_call #primitive.primitive #"Assume"%go) "$a0");;;
+        (func_call #primitive.Assume) "$a0");;;
         break: #()
       else do:  #()));;;
     return: (![#ktcore.Blame] "err")).
@@ -315,14 +325,14 @@ Definition loopPending : val :=
 (* runBob does a get at some time in the middle of alice's puts.
 
    go: alicebob.go:167:6 *)
-Definition runBob : val :=
-  rec: "runBob" "cli" :=
+Definition runBobⁱᵐᵖˡ : val :=
+  λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "ent" := (mem.alloc (type.zero_val #ptrT)) in
     let: "ep" := (mem.alloc (type.zero_val #uint64T)) in
     let: "cli" := (mem.alloc "cli") in
     do:  (let: "$a0" := #(W64 120000000) in
-    (func_call #primitive.primitive #"Sleep"%go) "$a0");;;
+    (func_call #primitive.Sleep) "$a0");;;
     let: "pk" := (mem.alloc (type.zero_val #sliceT)) in
     let: "isReg" := (mem.alloc (type.zero_val #boolT)) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := aliceUid in
@@ -346,7 +356,7 @@ Definition runBob : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("testAliceBob"%go, testAliceBob); ("equal"%go, equal); ("runAlice"%go, runAlice); ("loopPending"%go, loopPending); ("runBob"%go, runBob)].
+Definition functions' : list (go_string * val) := [(testAliceBob, testAliceBobⁱᵐᵖˡ); (equal, equalⁱᵐᵖˡ); (runAlice, runAliceⁱᵐᵖˡ); (loopPending, loopPendingⁱᵐᵖˡ); (runBob, runBobⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [("histEntry"%go, []); ("histEntry'ptr"%go, [])].
 
@@ -359,18 +369,19 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("histEntry"
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init alicebob.alicebob (λ: <>,
-      exception_do (do:  server.initialize';;;
-      do:  ktcore.initialize';;;
-      do:  cryptoffi.initialize';;;
-      do:  client.initialize';;;
-      do:  auditor.initialize';;;
-      do:  advrpc.initialize';;;
-      do:  std.initialize';;;
-      do:  primitive.initialize';;;
-      do:  sync.initialize';;;
-      do:  bytes.initialize')
+  λ: <>,
+    package.init #alicebob.alicebob (λ: <>,
+      exception_do (do:  (server.initialize' #());;;
+      do:  (ktcore.initialize' #());;;
+      do:  (cryptoffi.initialize' #());;;
+      do:  (client.initialize' #());;;
+      do:  (auditor.initialize' #());;;
+      do:  (advrpc.initialize' #());;;
+      do:  (std.initialize' #());;;
+      do:  (primitive.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (bytes.initialize' #());;;
+      do:  (package.alloc alicebob.alicebob #()))
       ).
 
 End code.

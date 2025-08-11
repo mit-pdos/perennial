@@ -10,6 +10,86 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition SwapInt32 : go_string := "sync/atomic.SwapInt32"%go.
+
+Definition SwapUint32 : go_string := "sync/atomic.SwapUint32"%go.
+
+Definition SwapUintptr : go_string := "sync/atomic.SwapUintptr"%go.
+
+Definition SwapPointer : go_string := "sync/atomic.SwapPointer"%go.
+
+Definition CompareAndSwapInt32 : go_string := "sync/atomic.CompareAndSwapInt32"%go.
+
+Definition CompareAndSwapUint32 : go_string := "sync/atomic.CompareAndSwapUint32"%go.
+
+Definition CompareAndSwapUintptr : go_string := "sync/atomic.CompareAndSwapUintptr"%go.
+
+Definition CompareAndSwapPointer : go_string := "sync/atomic.CompareAndSwapPointer"%go.
+
+Definition AddInt32 : go_string := "sync/atomic.AddInt32"%go.
+
+Definition AddUint32 : go_string := "sync/atomic.AddUint32"%go.
+
+Definition AddUintptr : go_string := "sync/atomic.AddUintptr"%go.
+
+Definition AndInt32 : go_string := "sync/atomic.AndInt32"%go.
+
+Definition AndUint32 : go_string := "sync/atomic.AndUint32"%go.
+
+Definition AndUintptr : go_string := "sync/atomic.AndUintptr"%go.
+
+Definition OrInt32 : go_string := "sync/atomic.OrInt32"%go.
+
+Definition OrUint32 : go_string := "sync/atomic.OrUint32"%go.
+
+Definition OrUintptr : go_string := "sync/atomic.OrUintptr"%go.
+
+Definition LoadInt32 : go_string := "sync/atomic.LoadInt32"%go.
+
+Definition LoadUint32 : go_string := "sync/atomic.LoadUint32"%go.
+
+Definition LoadUintptr : go_string := "sync/atomic.LoadUintptr"%go.
+
+Definition LoadPointer : go_string := "sync/atomic.LoadPointer"%go.
+
+Definition StoreInt32 : go_string := "sync/atomic.StoreInt32"%go.
+
+Definition StoreUint32 : go_string := "sync/atomic.StoreUint32"%go.
+
+Definition StoreUintptr : go_string := "sync/atomic.StoreUintptr"%go.
+
+Definition StorePointer : go_string := "sync/atomic.StorePointer"%go.
+
+Definition SwapInt64 : go_string := "sync/atomic.SwapInt64"%go.
+
+Definition SwapUint64 : go_string := "sync/atomic.SwapUint64"%go.
+
+Definition CompareAndSwapInt64 : go_string := "sync/atomic.CompareAndSwapInt64"%go.
+
+Definition CompareAndSwapUint64 : go_string := "sync/atomic.CompareAndSwapUint64"%go.
+
+Definition AddInt64 : go_string := "sync/atomic.AddInt64"%go.
+
+Definition AddUint64 : go_string := "sync/atomic.AddUint64"%go.
+
+Definition AndInt64 : go_string := "sync/atomic.AndInt64"%go.
+
+Definition AndUint64 : go_string := "sync/atomic.AndUint64"%go.
+
+Definition OrInt64 : go_string := "sync/atomic.OrInt64"%go.
+
+Definition OrUint64 : go_string := "sync/atomic.OrUint64"%go.
+
+Definition LoadInt64 : go_string := "sync/atomic.LoadInt64"%go.
+
+Definition LoadUint64 : go_string := "sync/atomic.LoadUint64"%go.
+
+Definition StoreInt64 : go_string := "sync/atomic.StoreInt64"%go.
+
+Definition StoreUint64 : go_string := "sync/atomic.StoreUint64"%go.
+
+Definition b32 : go_string := "sync/atomic.b32"%go.
+
 Definition noCopy : go_type := structT [
 ].
 
@@ -21,29 +101,29 @@ Definition Int32 : go_type := structT [
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:74:17 *)
-Definition Int32__Load : val :=
-  rec: "Int32__Load" "x" <> :=
+Definition Int32__Loadⁱᵐᵖˡ : val :=
+  λ: "x" <>,
     exception_do (let: "x" := (mem.alloc "x") in
     return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
-     (func_call #atomic.atomic #"LoadInt32"%go) "$a0")).
+     (func_call #LoadInt32) "$a0")).
 
 (* Store atomically stores val into x.
 
    go: type.go:77:17 *)
-Definition Int32__Store : val :=
-  rec: "Int32__Store" "x" "val" :=
+Definition Int32__Storeⁱᵐᵖˡ : val :=
+  λ: "x" "val",
     exception_do (let: "x" := (mem.alloc "x") in
     let: "val" := (mem.alloc "val") in
     do:  (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
     let: "$a1" := (![#int32T] "val") in
-    (func_call #atomic.atomic #"StoreInt32"%go) "$a0" "$a1");;;
+    (func_call #StoreInt32) "$a0" "$a1");;;
     return: #()).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
    go: type.go:83:17 *)
-Definition Int32__CompareAndSwap : val :=
-  rec: "Int32__CompareAndSwap" "x" "old" "new" :=
+Definition Int32__CompareAndSwapⁱᵐᵖˡ : val :=
+  λ: "x" "old" "new",
     exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
     let: "x" := (mem.alloc "x") in
     let: "new" := (mem.alloc "new") in
@@ -51,19 +131,19 @@ Definition Int32__CompareAndSwap : val :=
     return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#int32T] "old") in
      let: "$a2" := (![#int32T] "new") in
-     (func_call #atomic.atomic #"CompareAndSwapInt32"%go) "$a0" "$a1" "$a2")).
+     (func_call #CompareAndSwapInt32) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:88:17 *)
-Definition Int32__Add : val :=
-  rec: "Int32__Add" "x" "delta" :=
+Definition Int32__Addⁱᵐᵖˡ : val :=
+  λ: "x" "delta",
     exception_do (let: "new" := (mem.alloc (type.zero_val #int32T)) in
     let: "x" := (mem.alloc "x") in
     let: "delta" := (mem.alloc "delta") in
     return: (let: "$a0" := (struct.field_ref #Int32 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#int32T] "delta") in
-     (func_call #atomic.atomic #"AddInt32"%go) "$a0" "$a1")).
+     (func_call #AddInt32) "$a0" "$a1")).
 
 Definition align64 : go_type := structT [
 ].
@@ -77,29 +157,29 @@ Definition Uint64 : go_type := structT [
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:169:18 *)
-Definition Uint64__Load : val :=
-  rec: "Uint64__Load" "x" <> :=
+Definition Uint64__Loadⁱᵐᵖˡ : val :=
+  λ: "x" <>,
     exception_do (let: "x" := (mem.alloc "x") in
     return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
-     (func_call #atomic.atomic #"LoadUint64"%go) "$a0")).
+     (func_call #LoadUint64) "$a0")).
 
 (* Store atomically stores val into x.
 
    go: type.go:172:18 *)
-Definition Uint64__Store : val :=
-  rec: "Uint64__Store" "x" "val" :=
+Definition Uint64__Storeⁱᵐᵖˡ : val :=
+  λ: "x" "val",
     exception_do (let: "x" := (mem.alloc "x") in
     let: "val" := (mem.alloc "val") in
     do:  (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
     let: "$a1" := (![#uint64T] "val") in
-    (func_call #atomic.atomic #"StoreUint64"%go) "$a0" "$a1");;;
+    (func_call #StoreUint64) "$a0" "$a1");;;
     return: #()).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
    go: type.go:178:18 *)
-Definition Uint64__CompareAndSwap : val :=
-  rec: "Uint64__CompareAndSwap" "x" "old" "new" :=
+Definition Uint64__CompareAndSwapⁱᵐᵖˡ : val :=
+  λ: "x" "old" "new",
     exception_do (let: "swapped" := (mem.alloc (type.zero_val #boolT)) in
     let: "x" := (mem.alloc "x") in
     let: "new" := (mem.alloc "new") in
@@ -107,25 +187,29 @@ Definition Uint64__CompareAndSwap : val :=
     return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#uint64T] "old") in
      let: "$a2" := (![#uint64T] "new") in
-     (func_call #atomic.atomic #"CompareAndSwapUint64"%go) "$a0" "$a1" "$a2")).
+     (func_call #CompareAndSwapUint64) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:183:18 *)
-Definition Uint64__Add : val :=
-  rec: "Uint64__Add" "x" "delta" :=
+Definition Uint64__Addⁱᵐᵖˡ : val :=
+  λ: "x" "delta",
     exception_do (let: "new" := (mem.alloc (type.zero_val #uint64T)) in
     let: "x" := (mem.alloc "x") in
     let: "delta" := (mem.alloc "delta") in
     return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#uint64T] "delta") in
-     (func_call #atomic.atomic #"AddUint64"%go) "$a0" "$a1")).
+     (func_call #AddUint64) "$a0" "$a1")).
+
+Definition runtime_procPin : go_string := "sync/atomic.runtime_procPin"%go.
+
+Definition runtime_procUnpin : go_string := "sync/atomic.runtime_procUnpin"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("CompareAndSwapInt32"%go, CompareAndSwapInt32); ("AddInt32"%go, AddInt32); ("LoadInt32"%go, LoadInt32); ("StoreInt32"%go, StoreInt32); ("CompareAndSwapUint64"%go, CompareAndSwapUint64); ("AddUint64"%go, AddUint64); ("LoadUint64"%go, LoadUint64); ("StoreUint64"%go, StoreUint64)].
+Definition functions' : list (go_string * val) := [(CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Int32"%go, []); ("Int32'ptr"%go, [("Add"%go, Int32__Add); ("CompareAndSwap"%go, Int32__CompareAndSwap); ("Load"%go, Int32__Load); ("Store"%go, Int32__Store)]); ("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Add); ("CompareAndSwap"%go, Uint64__CompareAndSwap); ("Load"%go, Uint64__Load); ("Store"%go, Uint64__Store)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("Int32"%go, []); ("Int32'ptr"%go, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ)]); ("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
 
 #[global] Instance info' : PkgInfo atomic.atomic :=
   {|
@@ -138,9 +222,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Int32"%go,
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init atomic.atomic (λ: <>,
-      exception_do (do:  (_'init #()))
+  λ: <>,
+    package.init #atomic.atomic (λ: <>,
+      exception_do (do:  (package.alloc atomic.atomic #());;;
+      do:  (_'init #()))
       ).
 
 End code.

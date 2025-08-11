@@ -10,9 +10,39 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition UInt64Get : go_string := "github.com/goose-lang/primitive.UInt64Get"%go.
+
+Definition UInt32Get : go_string := "github.com/goose-lang/primitive.UInt32Get"%go.
+
+Definition UInt64Put : go_string := "github.com/goose-lang/primitive.UInt64Put"%go.
+
+Definition UInt32Put : go_string := "github.com/goose-lang/primitive.UInt32Put"%go.
+
+Definition RandomUint64 : go_string := "github.com/goose-lang/primitive.RandomUint64"%go.
+
+Definition UInt64ToString : go_string := "github.com/goose-lang/primitive.UInt64ToString"%go.
+
+Definition Linearize : go_string := "github.com/goose-lang/primitive.Linearize"%go.
+
+Definition Assume : go_string := "github.com/goose-lang/primitive.Assume"%go.
+
+Definition Assert : go_string := "github.com/goose-lang/primitive.Assert"%go.
+
+Definition Exit : go_string := "github.com/goose-lang/primitive.Exit"%go.
+
+Definition WaitTimeout : go_string := "github.com/goose-lang/primitive.WaitTimeout"%go.
+
+Definition TimeNow : go_string := "github.com/goose-lang/primitive.TimeNow"%go.
+
+Definition Sleep : go_string := "github.com/goose-lang/primitive.Sleep"%go.
+
+Definition AssumeNoStringOverflow : go_string := "github.com/goose-lang/primitive.AssumeNoStringOverflow"%go.
+
+Definition NewProph : go_string := "github.com/goose-lang/primitive.NewProph"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("UInt64Put"%go, UInt64Put); ("RandomUint64"%go, RandomUint64); ("Assume"%go, Assume); ("AssumeNoStringOverflow"%go, AssumeNoStringOverflow)].
+Definition functions' : list (go_string * val) := [(UInt64Put, UInt64Putⁱᵐᵖˡ); (RandomUint64, RandomUint64ⁱᵐᵖˡ); (Assume, Assumeⁱᵐᵖˡ); (AssumeNoStringOverflow, AssumeNoStringOverflowⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -27,9 +57,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init primitive.primitive (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #primitive.primitive (λ: <>,
+      exception_do (do:  (package.alloc primitive.primitive #()))
       ).
 
 End code.

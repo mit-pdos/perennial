@@ -419,65 +419,44 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-  closedCh : loc;
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-    ("closedCh"%go, closedCh)
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined leasing :=
-{|
-  is_pkg_defined := is_global_definitions leasing var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-  "HclosedCh" ∷ closedCh ↦ (default_val loc).
-
-Global Instance wp_globals_get_closedCh : 
-  WpGlobalsGet leasing "closedCh" closedCh (is_pkg_defined leasing).
-Proof. apply wp_globals_get'. reflexivity. Qed.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_inRange :
-  WpFuncCall leasing "inRange" _ (is_pkg_defined leasing) :=
+  WpFuncCall leasing.inRange _ (is_pkg_defined leasing) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_isBadOp :
-  WpFuncCall leasing "isBadOp" _ (is_pkg_defined leasing) :=
+  WpFuncCall leasing.isBadOp _ (is_pkg_defined leasing) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewKV :
-  WpFuncCall leasing "NewKV" _ (is_pkg_defined leasing) :=
+  WpFuncCall leasing.NewKV _ (is_pkg_defined leasing) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_compareInt64 :
-  WpFuncCall leasing "compareInt64" _ (is_pkg_defined leasing) :=
+  WpFuncCall leasing.compareInt64 _ (is_pkg_defined leasing) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_evalCmp :
-  WpFuncCall leasing "evalCmp" _ (is_pkg_defined leasing) :=
+  WpFuncCall leasing.evalCmp _ (is_pkg_defined leasing) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_gatherOps :
-  WpFuncCall leasing "gatherOps" _ (is_pkg_defined leasing) :=
+  WpFuncCall leasing.gatherOps _ (is_pkg_defined leasing) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_gatherResponseOps :
-  WpFuncCall leasing "gatherResponseOps" _ (is_pkg_defined leasing) :=
+  WpFuncCall leasing.gatherResponseOps _ (is_pkg_defined leasing) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_copyHeader :
-  WpFuncCall leasing "copyHeader" _ (is_pkg_defined leasing) :=
+  WpFuncCall leasing.copyHeader _ (is_pkg_defined leasing) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_closeAll :
-  WpFuncCall leasing "closeAll" _ (is_pkg_defined leasing) :=
+  WpFuncCall leasing.closeAll _ (is_pkg_defined leasing) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_Add :
@@ -697,9 +676,4 @@ Global Instance wp_method_call_txnLeasing'ptr_serverTxn :
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
-
-Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
-  WpGlobalsAlloc leasing.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 End leasing.

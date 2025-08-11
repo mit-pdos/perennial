@@ -12,7 +12,17 @@ Axiom DefaultBackoffConfig'init : val.
 
 Axiom setConnectedAddress'init : val.
 
+Definition newCCBalancerWrapper : go_string := "google.golang.org/grpc.newCCBalancerWrapper"%go.
+
+Definition newHealthData : go_string := "google.golang.org/grpc.newHealthData"%go.
+
+Definition combine : go_string := "google.golang.org/grpc.combine"%go.
+
+Definition Invoke : go_string := "google.golang.org/grpc.Invoke"%go.
+
 Axiom unaryStreamDesc'init : val.
+
+Definition invoke : go_string := "google.golang.org/grpc.invoke"%go.
 
 Axiom ErrClientConnClosing'init : val.
 
@@ -34,11 +44,223 @@ Axiom errNoTransportCredsInBundle'init : val.
 
 Axiom errTransportCredentialsMissing'init : val.
 
+Definition NewClient : go_string := "google.golang.org/grpc.NewClient"%go.
+
+Definition Dial : go_string := "google.golang.org/grpc.Dial"%go.
+
+Definition DialContext : go_string := "google.golang.org/grpc.DialContext"%go.
+
+Definition chainUnaryClientInterceptors : go_string := "google.golang.org/grpc.chainUnaryClientInterceptors"%go.
+
+Definition getChainUnaryInvoker : go_string := "google.golang.org/grpc.getChainUnaryInvoker"%go.
+
+Definition chainStreamClientInterceptors : go_string := "google.golang.org/grpc.chainStreamClientInterceptors"%go.
+
+Definition getChainStreamer : go_string := "google.golang.org/grpc.getChainStreamer"%go.
+
+Definition newConnectivityStateManager : go_string := "google.golang.org/grpc.newConnectivityStateManager"%go.
+
+Definition init : go_string := "google.golang.org/grpc.init"%go.
+
+Definition copyAddresses : go_string := "google.golang.org/grpc.copyAddresses"%go.
+
+Definition equalAddressIgnoringBalAttributes : go_string := "google.golang.org/grpc.equalAddressIgnoringBalAttributes"%go.
+
+Definition equalAddressesIgnoringBalAttributes : go_string := "google.golang.org/grpc.equalAddressesIgnoringBalAttributes"%go.
+
+Definition getMethodConfig : go_string := "google.golang.org/grpc.getMethodConfig"%go.
+
 Axiom ErrClientConnTimeout'init : val.
+
+Definition parseTarget : go_string := "google.golang.org/grpc.parseTarget"%go.
+
+Definition encodeAuthority : go_string := "google.golang.org/grpc.encodeAuthority"%go.
+
+Definition getCodec : go_string := "google.golang.org/grpc.getCodec"%go.
+
+Definition newCodecV0Bridge : go_string := "google.golang.org/grpc.newCodecV0Bridge"%go.
+
+Definition newCodecV1Bridge : go_string := "google.golang.org/grpc.newCodecV1Bridge"%go.
+
+Definition newDisableGlobalDialOptions : go_string := "google.golang.org/grpc.newDisableGlobalDialOptions"%go.
+
+Definition newFuncDialOption : go_string := "google.golang.org/grpc.newFuncDialOption"%go.
+
+Definition newJoinDialOption : go_string := "google.golang.org/grpc.newJoinDialOption"%go.
+
+Definition WithSharedWriteBuffer : go_string := "google.golang.org/grpc.WithSharedWriteBuffer"%go.
+
+Definition WithWriteBufferSize : go_string := "google.golang.org/grpc.WithWriteBufferSize"%go.
+
+Definition WithReadBufferSize : go_string := "google.golang.org/grpc.WithReadBufferSize"%go.
+
+Definition WithInitialWindowSize : go_string := "google.golang.org/grpc.WithInitialWindowSize"%go.
+
+Definition WithInitialConnWindowSize : go_string := "google.golang.org/grpc.WithInitialConnWindowSize"%go.
+
+Definition WithMaxMsgSize : go_string := "google.golang.org/grpc.WithMaxMsgSize"%go.
+
+Definition WithDefaultCallOptions : go_string := "google.golang.org/grpc.WithDefaultCallOptions"%go.
+
+Definition WithCodec : go_string := "google.golang.org/grpc.WithCodec"%go.
+
+Definition WithCompressor : go_string := "google.golang.org/grpc.WithCompressor"%go.
+
+Definition WithDecompressor : go_string := "google.golang.org/grpc.WithDecompressor"%go.
+
+Definition WithConnectParams : go_string := "google.golang.org/grpc.WithConnectParams"%go.
+
+Definition WithBackoffMaxDelay : go_string := "google.golang.org/grpc.WithBackoffMaxDelay"%go.
+
+Definition WithBackoffConfig : go_string := "google.golang.org/grpc.WithBackoffConfig"%go.
+
+Definition withBackoff : go_string := "google.golang.org/grpc.withBackoff"%go.
+
+Definition WithBlock : go_string := "google.golang.org/grpc.WithBlock"%go.
+
+Definition WithReturnConnectionError : go_string := "google.golang.org/grpc.WithReturnConnectionError"%go.
+
+Definition WithInsecure : go_string := "google.golang.org/grpc.WithInsecure"%go.
+
+Definition WithNoProxy : go_string := "google.golang.org/grpc.WithNoProxy"%go.
+
+Definition WithTransportCredentials : go_string := "google.golang.org/grpc.WithTransportCredentials"%go.
+
+Definition WithPerRPCCredentials : go_string := "google.golang.org/grpc.WithPerRPCCredentials"%go.
+
+Definition WithCredentialsBundle : go_string := "google.golang.org/grpc.WithCredentialsBundle"%go.
+
+Definition WithTimeout : go_string := "google.golang.org/grpc.WithTimeout"%go.
+
+Definition WithContextDialer : go_string := "google.golang.org/grpc.WithContextDialer"%go.
+
+Definition WithDialer : go_string := "google.golang.org/grpc.WithDialer"%go.
+
+Definition WithStatsHandler : go_string := "google.golang.org/grpc.WithStatsHandler"%go.
+
+Definition withBinaryLogger : go_string := "google.golang.org/grpc.withBinaryLogger"%go.
+
+Definition FailOnNonTempDialError : go_string := "google.golang.org/grpc.FailOnNonTempDialError"%go.
+
+Definition WithUserAgent : go_string := "google.golang.org/grpc.WithUserAgent"%go.
+
+Definition WithKeepaliveParams : go_string := "google.golang.org/grpc.WithKeepaliveParams"%go.
+
+Definition WithUnaryInterceptor : go_string := "google.golang.org/grpc.WithUnaryInterceptor"%go.
+
+Definition WithChainUnaryInterceptor : go_string := "google.golang.org/grpc.WithChainUnaryInterceptor"%go.
+
+Definition WithStreamInterceptor : go_string := "google.golang.org/grpc.WithStreamInterceptor"%go.
+
+Definition WithChainStreamInterceptor : go_string := "google.golang.org/grpc.WithChainStreamInterceptor"%go.
+
+Definition WithAuthority : go_string := "google.golang.org/grpc.WithAuthority"%go.
+
+Definition WithChannelzParentID : go_string := "google.golang.org/grpc.WithChannelzParentID"%go.
+
+Definition WithDisableServiceConfig : go_string := "google.golang.org/grpc.WithDisableServiceConfig"%go.
+
+Definition WithDefaultServiceConfig : go_string := "google.golang.org/grpc.WithDefaultServiceConfig"%go.
+
+Definition WithDisableRetry : go_string := "google.golang.org/grpc.WithDisableRetry"%go.
+
+Definition WithMaxHeaderListSize : go_string := "google.golang.org/grpc.WithMaxHeaderListSize"%go.
+
+Definition WithDisableHealthCheck : go_string := "google.golang.org/grpc.WithDisableHealthCheck"%go.
+
+Definition defaultDialOptions : go_string := "google.golang.org/grpc.defaultDialOptions"%go.
+
+Definition withMinConnectDeadline : go_string := "google.golang.org/grpc.withMinConnectDeadline"%go.
+
+Definition withDefaultScheme : go_string := "google.golang.org/grpc.withDefaultScheme"%go.
+
+Definition WithResolvers : go_string := "google.golang.org/grpc.WithResolvers"%go.
+
+Definition WithIdleTimeout : go_string := "google.golang.org/grpc.WithIdleTimeout"%go.
+
+Definition WithMaxCallAttempts : go_string := "google.golang.org/grpc.WithMaxCallAttempts"%go.
+
+Definition withBufferPool : go_string := "google.golang.org/grpc.withBufferPool"%go.
+
+Definition newPickerWrapper : go_string := "google.golang.org/grpc.newPickerWrapper"%go.
+
+Definition doneChannelzWrapper : go_string := "google.golang.org/grpc.doneChannelzWrapper"%go.
+
+Definition newCCResolverWrapper : go_string := "google.golang.org/grpc.newCCResolverWrapper"%go.
+
+Definition NewGZIPCompressor : go_string := "google.golang.org/grpc.NewGZIPCompressor"%go.
+
+Definition NewGZIPCompressorWithLevel : go_string := "google.golang.org/grpc.NewGZIPCompressorWithLevel"%go.
+
+Definition NewGZIPDecompressor : go_string := "google.golang.org/grpc.NewGZIPDecompressor"%go.
+
+Definition defaultCallInfo : go_string := "google.golang.org/grpc.defaultCallInfo"%go.
+
+Definition StaticMethod : go_string := "google.golang.org/grpc.StaticMethod"%go.
+
+Definition Header : go_string := "google.golang.org/grpc.Header"%go.
+
+Definition Trailer : go_string := "google.golang.org/grpc.Trailer"%go.
+
+Definition Peer : go_string := "google.golang.org/grpc.Peer"%go.
+
+Definition WaitForReady : go_string := "google.golang.org/grpc.WaitForReady"%go.
+
+Definition FailFast : go_string := "google.golang.org/grpc.FailFast"%go.
+
+Definition OnFinish : go_string := "google.golang.org/grpc.OnFinish"%go.
+
+Definition MaxCallRecvMsgSize : go_string := "google.golang.org/grpc.MaxCallRecvMsgSize"%go.
+
+Definition MaxCallSendMsgSize : go_string := "google.golang.org/grpc.MaxCallSendMsgSize"%go.
+
+Definition PerRPCCredentials : go_string := "google.golang.org/grpc.PerRPCCredentials"%go.
+
+Definition UseCompressor : go_string := "google.golang.org/grpc.UseCompressor"%go.
+
+Definition CallContentSubtype : go_string := "google.golang.org/grpc.CallContentSubtype"%go.
+
+Definition ForceCodec : go_string := "google.golang.org/grpc.ForceCodec"%go.
+
+Definition ForceCodecV2 : go_string := "google.golang.org/grpc.ForceCodecV2"%go.
+
+Definition CallCustomCodec : go_string := "google.golang.org/grpc.CallCustomCodec"%go.
+
+Definition MaxRetryRPCBufferSize : go_string := "google.golang.org/grpc.MaxRetryRPCBufferSize"%go.
+
+Definition encode : go_string := "google.golang.org/grpc.encode"%go.
+
+Definition compress : go_string := "google.golang.org/grpc.compress"%go.
+
+Definition msgHeader : go_string := "google.golang.org/grpc.msgHeader"%go.
+
+Definition outPayload : go_string := "google.golang.org/grpc.outPayload"%go.
+
+Definition checkRecvPayload : go_string := "google.golang.org/grpc.checkRecvPayload"%go.
+
+Definition recvAndDecompress : go_string := "google.golang.org/grpc.recvAndDecompress"%go.
+
+Definition decompress : go_string := "google.golang.org/grpc.decompress"%go.
+
+Definition recv : go_string := "google.golang.org/grpc.recv"%go.
+
+Definition newContextWithRPCInfo : go_string := "google.golang.org/grpc.newContextWithRPCInfo"%go.
+
+Definition rpcInfoFromContext : go_string := "google.golang.org/grpc.rpcInfoFromContext"%go.
+
+Definition Code : go_string := "google.golang.org/grpc.Code"%go.
+
+Definition ErrorDesc : go_string := "google.golang.org/grpc.ErrorDesc"%go.
+
+Definition Errorf : go_string := "google.golang.org/grpc.Errorf"%go.
 
 Axiom errContextCanceled'init : val.
 
 Axiom errContextDeadline'init : val.
+
+Definition toRPCErr : go_string := "google.golang.org/grpc.toRPCErr"%go.
+
+Definition setCallInfoCodec : go_string := "google.golang.org/grpc.setCallInfoCodec"%go.
 
 Axiom statusOK'init : val.
 
@@ -46,13 +268,151 @@ Axiom logger'init : val.
 
 Axiom defaultServerOptions'init : val.
 
+Definition newFuncServerOption : go_string := "google.golang.org/grpc.newFuncServerOption"%go.
+
+Definition newJoinServerOption : go_string := "google.golang.org/grpc.newJoinServerOption"%go.
+
+Definition SharedWriteBuffer : go_string := "google.golang.org/grpc.SharedWriteBuffer"%go.
+
+Definition WriteBufferSize : go_string := "google.golang.org/grpc.WriteBufferSize"%go.
+
+Definition ReadBufferSize : go_string := "google.golang.org/grpc.ReadBufferSize"%go.
+
+Definition InitialWindowSize : go_string := "google.golang.org/grpc.InitialWindowSize"%go.
+
+Definition InitialConnWindowSize : go_string := "google.golang.org/grpc.InitialConnWindowSize"%go.
+
+Definition KeepaliveParams : go_string := "google.golang.org/grpc.KeepaliveParams"%go.
+
+Definition KeepaliveEnforcementPolicy : go_string := "google.golang.org/grpc.KeepaliveEnforcementPolicy"%go.
+
+Definition CustomCodec : go_string := "google.golang.org/grpc.CustomCodec"%go.
+
+Definition ForceServerCodec : go_string := "google.golang.org/grpc.ForceServerCodec"%go.
+
+Definition ForceServerCodecV2 : go_string := "google.golang.org/grpc.ForceServerCodecV2"%go.
+
+Definition RPCCompressor : go_string := "google.golang.org/grpc.RPCCompressor"%go.
+
+Definition RPCDecompressor : go_string := "google.golang.org/grpc.RPCDecompressor"%go.
+
+Definition MaxMsgSize : go_string := "google.golang.org/grpc.MaxMsgSize"%go.
+
+Definition MaxRecvMsgSize : go_string := "google.golang.org/grpc.MaxRecvMsgSize"%go.
+
+Definition MaxSendMsgSize : go_string := "google.golang.org/grpc.MaxSendMsgSize"%go.
+
+Definition MaxConcurrentStreams : go_string := "google.golang.org/grpc.MaxConcurrentStreams"%go.
+
+Definition Creds : go_string := "google.golang.org/grpc.Creds"%go.
+
+Definition UnaryInterceptor : go_string := "google.golang.org/grpc.UnaryInterceptor"%go.
+
+Definition ChainUnaryInterceptor : go_string := "google.golang.org/grpc.ChainUnaryInterceptor"%go.
+
+Definition StreamInterceptor : go_string := "google.golang.org/grpc.StreamInterceptor"%go.
+
+Definition ChainStreamInterceptor : go_string := "google.golang.org/grpc.ChainStreamInterceptor"%go.
+
+Definition InTapHandle : go_string := "google.golang.org/grpc.InTapHandle"%go.
+
+Definition StatsHandler : go_string := "google.golang.org/grpc.StatsHandler"%go.
+
+Definition binaryLogger : go_string := "google.golang.org/grpc.binaryLogger"%go.
+
+Definition UnknownServiceHandler : go_string := "google.golang.org/grpc.UnknownServiceHandler"%go.
+
+Definition ConnectionTimeout : go_string := "google.golang.org/grpc.ConnectionTimeout"%go.
+
+Definition MaxHeaderListSize : go_string := "google.golang.org/grpc.MaxHeaderListSize"%go.
+
+Definition HeaderTableSize : go_string := "google.golang.org/grpc.HeaderTableSize"%go.
+
+Definition NumStreamWorkers : go_string := "google.golang.org/grpc.NumStreamWorkers"%go.
+
+Definition WaitForHandlers : go_string := "google.golang.org/grpc.WaitForHandlers"%go.
+
+Definition bufferPool : go_string := "google.golang.org/grpc.bufferPool"%go.
+
+Definition NewServer : go_string := "google.golang.org/grpc.NewServer"%go.
+
 Axiom ErrServerStopped'init : val.
+
+Definition chainUnaryServerInterceptors : go_string := "google.golang.org/grpc.chainUnaryServerInterceptors"%go.
+
+Definition chainUnaryInterceptors : go_string := "google.golang.org/grpc.chainUnaryInterceptors"%go.
+
+Definition getChainUnaryHandler : go_string := "google.golang.org/grpc.getChainUnaryHandler"%go.
+
+Definition chainStreamServerInterceptors : go_string := "google.golang.org/grpc.chainStreamServerInterceptors"%go.
+
+Definition chainStreamInterceptors : go_string := "google.golang.org/grpc.chainStreamInterceptors"%go.
+
+Definition getChainStreamHandler : go_string := "google.golang.org/grpc.getChainStreamHandler"%go.
+
+Definition NewContextWithServerTransportStream : go_string := "google.golang.org/grpc.NewContextWithServerTransportStream"%go.
+
+Definition ServerTransportStreamFromContext : go_string := "google.golang.org/grpc.ServerTransportStreamFromContext"%go.
+
+Definition serverFromContext : go_string := "google.golang.org/grpc.serverFromContext"%go.
+
+Definition contextWithServer : go_string := "google.golang.org/grpc.contextWithServer"%go.
+
+Definition SetHeader : go_string := "google.golang.org/grpc.SetHeader"%go.
+
+Definition SendHeader : go_string := "google.golang.org/grpc.SendHeader"%go.
+
+Definition SetSendCompressor : go_string := "google.golang.org/grpc.SetSendCompressor"%go.
+
+Definition ClientSupportedCompressors : go_string := "google.golang.org/grpc.ClientSupportedCompressors"%go.
+
+Definition SetTrailer : go_string := "google.golang.org/grpc.SetTrailer"%go.
+
+Definition Method : go_string := "google.golang.org/grpc.Method"%go.
+
+Definition validateSendCompressor : go_string := "google.golang.org/grpc.validateSendCompressor"%go.
+
+Definition newHandlerQuota : go_string := "google.golang.org/grpc.newHandlerQuota"%go.
 
 Axiom errDuplicatedName'init : val.
 
 Axiom errEmptyServiceNonEmptyMethod'init : val.
 
+Definition parseServiceConfig : go_string := "google.golang.org/grpc.parseServiceConfig"%go.
+
+Definition convertRetryPolicy : go_string := "google.golang.org/grpc.convertRetryPolicy"%go.
+
+Definition minPointers : go_string := "google.golang.org/grpc.minPointers"%go.
+
+Definition getMaxSize : go_string := "google.golang.org/grpc.getMaxSize"%go.
+
+Definition newInt : go_string := "google.golang.org/grpc.newInt"%go.
+
+Definition equalServiceConfig : go_string := "google.golang.org/grpc.equalServiceConfig"%go.
+
 Axiom metadataFromOutgoingContextRaw'init : val.
+
+Definition NewClientStream : go_string := "google.golang.org/grpc.NewClientStream"%go.
+
+Definition newClientStream : go_string := "google.golang.org/grpc.newClientStream"%go.
+
+Definition newClientStreamWithParams : go_string := "google.golang.org/grpc.newClientStreamWithParams"%go.
+
+Definition newNonRetryClientStream : go_string := "google.golang.org/grpc.newNonRetryClientStream"%go.
+
+Definition MethodFromServerStream : go_string := "google.golang.org/grpc.MethodFromServerStream"%go.
+
+Definition prepareMsg : go_string := "google.golang.org/grpc.prepareMsg"%go.
+
+Definition methodFamily : go_string := "google.golang.org/grpc.methodFamily"%go.
+
+Definition truncate : go_string := "google.golang.org/grpc.truncate"%go.
+
+Definition newTrace : go_string := "google.golang.org/grpc.newTrace"%go.
+
+Definition newTraceContext : go_string := "google.golang.org/grpc.newTraceContext"%go.
+
+Definition newTraceEventLog : go_string := "google.golang.org/grpc.newTraceEventLog"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -71,9 +431,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init grpc.grpc (λ: <>,
-      exception_do (do:  (DefaultBackoffConfig'init #());;;
+  λ: <>,
+    package.init #grpc.grpc (λ: <>,
+      exception_do (do:  (package.alloc grpc.grpc #());;;
+      do:  (DefaultBackoffConfig'init #());;;
       do:  (setConnectedAddress'init #());;;
       do:  (unaryStreamDesc'init #());;;
       do:  (ErrClientConnClosing'init #());;;

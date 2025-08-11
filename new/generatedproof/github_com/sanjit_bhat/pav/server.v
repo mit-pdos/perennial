@@ -1190,103 +1190,88 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined server :=
-{|
-  is_pkg_defined := is_global_definitions server var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewRpcServer :
-  WpFuncCall server "NewRpcServer" _ (is_pkg_defined server) :=
+  WpFuncCall server.NewRpcServer _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallStart :
-  WpFuncCall server "CallStart" _ (is_pkg_defined server) :=
+  WpFuncCall server.CallStart _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallPut :
-  WpFuncCall server "CallPut" _ (is_pkg_defined server) :=
+  WpFuncCall server.CallPut _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallHistory :
-  WpFuncCall server "CallHistory" _ (is_pkg_defined server) :=
+  WpFuncCall server.CallHistory _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallAudit :
-  WpFuncCall server "CallAudit" _ (is_pkg_defined server) :=
+  WpFuncCall server.CallAudit _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StartReplyEncode :
-  WpFuncCall server "StartReplyEncode" _ (is_pkg_defined server) :=
+  WpFuncCall server.StartReplyEncode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StartReplyDecode :
-  WpFuncCall server "StartReplyDecode" _ (is_pkg_defined server) :=
+  WpFuncCall server.StartReplyDecode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_PutArgEncode :
-  WpFuncCall server "PutArgEncode" _ (is_pkg_defined server) :=
+  WpFuncCall server.PutArgEncode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_PutArgDecode :
-  WpFuncCall server "PutArgDecode" _ (is_pkg_defined server) :=
+  WpFuncCall server.PutArgDecode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_HistoryArgEncode :
-  WpFuncCall server "HistoryArgEncode" _ (is_pkg_defined server) :=
+  WpFuncCall server.HistoryArgEncode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_HistoryArgDecode :
-  WpFuncCall server "HistoryArgDecode" _ (is_pkg_defined server) :=
+  WpFuncCall server.HistoryArgDecode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_HistoryReplyEncode :
-  WpFuncCall server "HistoryReplyEncode" _ (is_pkg_defined server) :=
+  WpFuncCall server.HistoryReplyEncode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_HistoryReplyDecode :
-  WpFuncCall server "HistoryReplyDecode" _ (is_pkg_defined server) :=
+  WpFuncCall server.HistoryReplyDecode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditArgEncode :
-  WpFuncCall server "AuditArgEncode" _ (is_pkg_defined server) :=
+  WpFuncCall server.AuditArgEncode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditArgDecode :
-  WpFuncCall server "AuditArgDecode" _ (is_pkg_defined server) :=
+  WpFuncCall server.AuditArgDecode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditReplyEncode :
-  WpFuncCall server "AuditReplyEncode" _ (is_pkg_defined server) :=
+  WpFuncCall server.AuditReplyEncode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AuditReplyDecode :
-  WpFuncCall server "AuditReplyDecode" _ (is_pkg_defined server) :=
+  WpFuncCall server.AuditReplyDecode _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_New :
-  WpFuncCall server "New" _ (is_pkg_defined server) :=
+  WpFuncCall server.New _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewWork :
-  WpFuncCall server "NewWork" _ (is_pkg_defined server) :=
+  WpFuncCall server.NewWork _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewWorkQ :
-  WpFuncCall server "NewWorkQ" _ (is_pkg_defined server) :=
+  WpFuncCall server.NewWorkQ _ (is_pkg_defined server) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Audit :

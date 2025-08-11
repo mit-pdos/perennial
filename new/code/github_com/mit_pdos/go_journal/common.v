@@ -51,9 +51,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init common.common (λ: <>,
-      exception_do (do:  disk.initialize')
+  λ: <>,
+    package.init #common.common (λ: <>,
+      exception_do (do:  (disk.initialize' #());;;
+      do:  (package.alloc common.common #()))
       ).
 
 End code.

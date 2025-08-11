@@ -35,7 +35,7 @@ Definition DecodeValueⁱᵐᵖˡ : val :=
     let: "vBytes" := (mem.alloc (type.zero_val #sliceT)) in
     let: "l" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "e") in
-    (func_call marshal.ReadInt) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("l" <-[#uint64T] "$r0");;;
@@ -58,11 +58,11 @@ Definition EncodeValueⁱᵐᵖˡ : val :=
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
     let: "$a1" := (![#uint64T] (struct.field_ref #cacheValue #"l"%go "c")) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "e") in
     let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #cacheValue #"v"%go "c"))) in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("e" <-[#sliceT] "$r0");;;
     return: (string.from_bytes (![#sliceT] "e"))).
 
@@ -107,7 +107,7 @@ Definition CacheKv__Getⁱᵐᵖˡ : val :=
     do:  ("cv" <-[#cacheValue] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
     let: "high" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
+    let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
@@ -141,7 +141,7 @@ Definition CacheKv__GetAndCacheⁱᵐᵖˡ : val :=
       (func_call #DecodeValue) "$a0") in
       do:  ("old" <-[#cacheValue] "$r0");;;
       let: "latest" := (mem.alloc (type.zero_val #uint64T)) in
-      let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
+      let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -197,7 +197,7 @@ Definition CacheKv__Putⁱᵐᵖˡ : val :=
       (func_call #DecodeValue) "$a0")) in
       do:  ("leaseExpiration" <-[#uint64T] "$r0");;;
       let: "earliest" := (mem.alloc (type.zero_val #uint64T)) in
-      let: ("$ret0", "$ret1") := ((func_call grove_ffi.GetTimeRange) #()) in
+      let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("earliest" <-[#uint64T] "$r0");;;

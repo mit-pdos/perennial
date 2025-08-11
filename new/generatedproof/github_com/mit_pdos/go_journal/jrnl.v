@@ -83,27 +83,12 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined jrnl :=
-{|
-  is_pkg_defined := is_global_definitions jrnl var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Begin :
-  WpFuncCall jrnl "Begin" _ (is_pkg_defined jrnl) :=
+  WpFuncCall jrnl.Begin _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_CommitWait :

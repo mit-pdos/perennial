@@ -13,7 +13,159 @@ Definition Builder : go_type := structT [
   "buf" :: sliceT
 ].
 
+Definition Clone : go_string := "strings.Clone"%go.
+
+Definition Compare : go_string := "strings.Compare"%go.
+
+Definition Lines : go_string := "strings.Lines"%go.
+
+Definition explodeSeq : go_string := "strings.explodeSeq"%go.
+
+Definition splitSeq : go_string := "strings.splitSeq"%go.
+
+Definition SplitSeq : go_string := "strings.SplitSeq"%go.
+
+Definition SplitAfterSeq : go_string := "strings.SplitAfterSeq"%go.
+
+Definition FieldsSeq : go_string := "strings.FieldsSeq"%go.
+
+Definition FieldsFuncSeq : go_string := "strings.FieldsFuncSeq"%go.
+
+Definition NewReader : go_string := "strings.NewReader"%go.
+
+Definition NewReplacer : go_string := "strings.NewReplacer"%go.
+
+Definition makeGenericReplacer : go_string := "strings.makeGenericReplacer"%go.
+
+Definition getStringWriter : go_string := "strings.getStringWriter"%go.
+
+Definition makeSingleStringReplacer : go_string := "strings.makeSingleStringReplacer"%go.
+
+Definition makeStringFinder : go_string := "strings.makeStringFinder"%go.
+
+Definition longestCommonSuffix : go_string := "strings.longestCommonSuffix"%go.
+
+Definition explode : go_string := "strings.explode"%go.
+
+Definition Count : go_string := "strings.Count"%go.
+
+Definition Contains : go_string := "strings.Contains"%go.
+
+Definition ContainsAny : go_string := "strings.ContainsAny"%go.
+
+Definition ContainsRune : go_string := "strings.ContainsRune"%go.
+
+Definition ContainsFunc : go_string := "strings.ContainsFunc"%go.
+
+Definition LastIndex : go_string := "strings.LastIndex"%go.
+
+Definition IndexByte : go_string := "strings.IndexByte"%go.
+
+Definition IndexRune : go_string := "strings.IndexRune"%go.
+
+Definition IndexAny : go_string := "strings.IndexAny"%go.
+
+Definition LastIndexAny : go_string := "strings.LastIndexAny"%go.
+
+Definition LastIndexByte : go_string := "strings.LastIndexByte"%go.
+
+Definition genSplit : go_string := "strings.genSplit"%go.
+
+Definition SplitN : go_string := "strings.SplitN"%go.
+
+Definition SplitAfterN : go_string := "strings.SplitAfterN"%go.
+
+Definition Split : go_string := "strings.Split"%go.
+
+Definition SplitAfter : go_string := "strings.SplitAfter"%go.
+
 Axiom asciiSpace'init : val.
+
+Definition Fields : go_string := "strings.Fields"%go.
+
+Definition FieldsFunc : go_string := "strings.FieldsFunc"%go.
+
+Definition Join : go_string := "strings.Join"%go.
+
+Definition HasPrefix : go_string := "strings.HasPrefix"%go.
+
+Definition HasSuffix : go_string := "strings.HasSuffix"%go.
+
+Definition Map : go_string := "strings.Map"%go.
+
+Definition Repeat : go_string := "strings.Repeat"%go.
+
+Definition ToUpper : go_string := "strings.ToUpper"%go.
+
+Definition ToLower : go_string := "strings.ToLower"%go.
+
+Definition ToTitle : go_string := "strings.ToTitle"%go.
+
+Definition ToUpperSpecial : go_string := "strings.ToUpperSpecial"%go.
+
+Definition ToLowerSpecial : go_string := "strings.ToLowerSpecial"%go.
+
+Definition ToTitleSpecial : go_string := "strings.ToTitleSpecial"%go.
+
+Definition ToValidUTF8 : go_string := "strings.ToValidUTF8"%go.
+
+Definition isSeparator : go_string := "strings.isSeparator"%go.
+
+Definition Title : go_string := "strings.Title"%go.
+
+Definition TrimLeftFunc : go_string := "strings.TrimLeftFunc"%go.
+
+Definition TrimRightFunc : go_string := "strings.TrimRightFunc"%go.
+
+Definition TrimFunc : go_string := "strings.TrimFunc"%go.
+
+Definition IndexFunc : go_string := "strings.IndexFunc"%go.
+
+Definition LastIndexFunc : go_string := "strings.LastIndexFunc"%go.
+
+Definition indexFunc : go_string := "strings.indexFunc"%go.
+
+Definition lastIndexFunc : go_string := "strings.lastIndexFunc"%go.
+
+Definition makeASCIISet : go_string := "strings.makeASCIISet"%go.
+
+Definition Trim : go_string := "strings.Trim"%go.
+
+Definition TrimLeft : go_string := "strings.TrimLeft"%go.
+
+Definition trimLeftByte : go_string := "strings.trimLeftByte"%go.
+
+Definition trimLeftASCII : go_string := "strings.trimLeftASCII"%go.
+
+Definition trimLeftUnicode : go_string := "strings.trimLeftUnicode"%go.
+
+Definition TrimRight : go_string := "strings.TrimRight"%go.
+
+Definition trimRightByte : go_string := "strings.trimRightByte"%go.
+
+Definition trimRightASCII : go_string := "strings.trimRightASCII"%go.
+
+Definition trimRightUnicode : go_string := "strings.trimRightUnicode"%go.
+
+Definition TrimSpace : go_string := "strings.TrimSpace"%go.
+
+Definition TrimPrefix : go_string := "strings.TrimPrefix"%go.
+
+Definition TrimSuffix : go_string := "strings.TrimSuffix"%go.
+
+Definition Replace : go_string := "strings.Replace"%go.
+
+Definition ReplaceAll : go_string := "strings.ReplaceAll"%go.
+
+Definition EqualFold : go_string := "strings.EqualFold"%go.
+
+Definition Index : go_string := "strings.Index"%go.
+
+Definition Cut : go_string := "strings.Cut"%go.
+
+Definition CutPrefix : go_string := "strings.CutPrefix"%go.
+
+Definition CutSuffix : go_string := "strings.CutSuffix"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -32,9 +184,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Builder"%g
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init strings.strings (λ: <>,
-      exception_do (do:  (asciiSpace'init #()))
+  λ: <>,
+    package.init #strings.strings (λ: <>,
+      exception_do (do:  (package.alloc strings.strings #());;;
+      do:  (asciiSpace'init #()))
       ).
 
 End code.

@@ -264,101 +264,80 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-  emptyHash : loc;
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-    ("emptyHash"%go, emptyHash)
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined merkle :=
-{|
-  is_pkg_defined := is_global_definitions merkle var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-  "HemptyHash" ∷ emptyHash ↦ (default_val slice.t).
-
-Global Instance wp_globals_get_emptyHash : 
-  WpGlobalsGet merkle "emptyHash" emptyHash (is_pkg_defined merkle).
-Proof. apply wp_globals_get'. reflexivity. Qed.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_put :
-  WpFuncCall merkle "put" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.put _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_find :
-  WpFuncCall merkle "find" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.find _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getProofLen :
-  WpFuncCall merkle "getProofLen" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.getProofLen _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VerifyMemb :
-  WpFuncCall merkle "VerifyMemb" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.VerifyMemb _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VerifyNonMemb :
-  WpFuncCall merkle "VerifyNonMemb" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.VerifyNonMemb _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VerifyUpdate :
-  WpFuncCall merkle "VerifyUpdate" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.VerifyUpdate _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_proofToTree :
-  WpFuncCall merkle "proofToTree" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.proofToTree _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_newShell :
-  WpFuncCall merkle "newShell" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.newShell _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getNodeHash :
-  WpFuncCall merkle "getNodeHash" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.getNodeHash _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_compEmptyHash :
-  WpFuncCall merkle "compEmptyHash" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.compEmptyHash _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_setLeafHash :
-  WpFuncCall merkle "setLeafHash" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.setLeafHash _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_compLeafHash :
-  WpFuncCall merkle "compLeafHash" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.compLeafHash _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_setInnerHash :
-  WpFuncCall merkle "setInnerHash" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.setInnerHash _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_compInnerHash :
-  WpFuncCall merkle "compInnerHash" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.compInnerHash _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getChild :
-  WpFuncCall merkle "getChild" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.getChild _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getBit :
-  WpFuncCall merkle "getBit" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.getBit _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MerkleProofEncode :
-  WpFuncCall merkle "MerkleProofEncode" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.MerkleProofEncode _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MerkleProofDecode :
-  WpFuncCall merkle "MerkleProofDecode" _ (is_pkg_defined merkle) :=
+  WpFuncCall merkle.MerkleProofDecode _ (is_pkg_defined merkle) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Tree'ptr_Digest :
@@ -378,9 +357,4 @@ Global Instance wp_method_call_Tree'ptr_prove :
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
-
-Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
-  WpGlobalsAlloc merkle.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 End merkle.

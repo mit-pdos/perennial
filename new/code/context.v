@@ -14,9 +14,47 @@ Axiom Canceled'init : val.
 
 Axiom DeadlineExceeded'init : val.
 
+Definition Background : go_string := "context.Background"%go.
+
+Definition TODO : go_string := "context.TODO"%go.
+
 Definition CancelFunc : go_type := funcT.
 
+Definition WithCancel : go_string := "context.WithCancel"%go.
+
+Definition WithCancelCause : go_string := "context.WithCancelCause"%go.
+
+Definition withCancel : go_string := "context.withCancel"%go.
+
+Definition Cause : go_string := "context.Cause"%go.
+
+Definition AfterFunc : go_string := "context.AfterFunc"%go.
+
+Definition parentCancelCtx : go_string := "context.parentCancelCtx"%go.
+
+Definition removeChild : go_string := "context.removeChild"%go.
+
 Axiom closedchan'init : val.
+
+Definition init : go_string := "context.init"%go.
+
+Definition contextName : go_string := "context.contextName"%go.
+
+Definition WithoutCancel : go_string := "context.WithoutCancel"%go.
+
+Definition WithDeadline : go_string := "context.WithDeadline"%go.
+
+Definition WithDeadlineCause : go_string := "context.WithDeadlineCause"%go.
+
+Definition WithTimeout : go_string := "context.WithTimeout"%go.
+
+Definition WithTimeoutCause : go_string := "context.WithTimeoutCause"%go.
+
+Definition WithValue : go_string := "context.WithValue"%go.
+
+Definition stringify : go_string := "context.stringify"%go.
+
+Definition value : go_string := "context.value"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -35,9 +73,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("CancelFunc
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init context.context (λ: <>,
-      exception_do (do:  (Canceled'init #());;;
+  λ: <>,
+    package.init #context.context (λ: <>,
+      exception_do (do:  (package.alloc context.context #());;;
+      do:  (Canceled'init #());;;
       do:  (DeadlineExceeded'init #());;;
       do:  (closedchan'init #()))
       ).

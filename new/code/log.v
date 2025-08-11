@@ -19,13 +19,59 @@ Definition Ltime : Z := 2.
 (* initial values for the standard logger *)
 Definition LstdFlags : Z := 3.
 
+Definition New : go_string := "log.New"%go.
+
 Axiom std'init : val.
+
+Definition Default : go_string := "log.Default"%go.
+
+Definition itoa : go_string := "log.itoa"%go.
+
+Definition formatHeader : go_string := "log.formatHeader"%go.
 
 Axiom bufferPool'init : val.
 
+Definition getBuffer : go_string := "log.getBuffer"%go.
+
+Definition putBuffer : go_string := "log.putBuffer"%go.
+
+Definition init : go_string := "log.init"%go.
+
+Definition SetOutput : go_string := "log.SetOutput"%go.
+
+Definition Flags : go_string := "log.Flags"%go.
+
+Definition SetFlags : go_string := "log.SetFlags"%go.
+
+Definition Prefix : go_string := "log.Prefix"%go.
+
+Definition SetPrefix : go_string := "log.SetPrefix"%go.
+
+Definition Writer : go_string := "log.Writer"%go.
+
+Definition Print : go_string := "log.Print"%go.
+
+Definition Printf : go_string := "log.Printf"%go.
+
+Definition Println : go_string := "log.Println"%go.
+
+Definition Fatal : go_string := "log.Fatal"%go.
+
+Definition Fatalf : go_string := "log.Fatalf"%go.
+
+Definition Fatalln : go_string := "log.Fatalln"%go.
+
+Definition Panic : go_string := "log.Panic"%go.
+
+Definition Panicf : go_string := "log.Panicf"%go.
+
+Definition Panicln : go_string := "log.Panicln"%go.
+
+Definition Output : go_string := "log.Output"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Printf"%go, Printf); ("Println"%go, Println)].
+Definition functions' : list (go_string * val) := [(Printf, Printfⁱᵐᵖˡ); (Println, Printlnⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -40,9 +86,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init log.log (λ: <>,
-      exception_do (do:  (std'init #());;;
+  λ: <>,
+    package.init #log.log (λ: <>,
+      exception_do (do:  (package.alloc log.log #());;;
+      do:  (std'init #());;;
       do:  (bufferPool'init #()))
       ).
 

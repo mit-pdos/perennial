@@ -14,17 +14,67 @@ Axiom we'init : val.
 
 Axiom fe'init : val.
 
+Definition absInt32 : go_string := "math/rand.absInt32"%go.
+
 Axiom kn'init : val.
 
 Axiom wn'init : val.
 
 Axiom fn'init : val.
 
+Definition NewSource : go_string := "math/rand.NewSource"%go.
+
+Definition newSource : go_string := "math/rand.newSource"%go.
+
+Definition New : go_string := "math/rand.New"%go.
+
+Definition read : go_string := "math/rand.read"%go.
+
 Axiom randautoseed'init : val.
 
 Axiom randseednop'init : val.
 
+Definition globalRand : go_string := "math/rand.globalRand"%go.
+
+Definition runtime_rand : go_string := "math/rand.runtime_rand"%go.
+
+Definition Seed : go_string := "math/rand.Seed"%go.
+
+Definition Int63 : go_string := "math/rand.Int63"%go.
+
+Definition Uint32 : go_string := "math/rand.Uint32"%go.
+
+Definition Uint64 : go_string := "math/rand.Uint64"%go.
+
+Definition Int31 : go_string := "math/rand.Int31"%go.
+
+Definition Int : go_string := "math/rand.Int"%go.
+
+Definition Int63n : go_string := "math/rand.Int63n"%go.
+
+Definition Int31n : go_string := "math/rand.Int31n"%go.
+
+Definition Intn : go_string := "math/rand.Intn"%go.
+
+Definition Float64 : go_string := "math/rand.Float64"%go.
+
+Definition Float32 : go_string := "math/rand.Float32"%go.
+
+Definition Perm : go_string := "math/rand.Perm"%go.
+
+Definition Shuffle : go_string := "math/rand.Shuffle"%go.
+
+Definition Read : go_string := "math/rand.Read"%go.
+
+Definition NormFloat64 : go_string := "math/rand.NormFloat64"%go.
+
+Definition ExpFloat64 : go_string := "math/rand.ExpFloat64"%go.
+
 Axiom rngCooked'init : val.
+
+Definition seedrand : go_string := "math/rand.seedrand"%go.
+
+Definition NewZipf : go_string := "math/rand.NewZipf"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -43,9 +93,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init rand.rand (λ: <>,
-      exception_do (do:  (ke'init #());;;
+  λ: <>,
+    package.init #rand.rand (λ: <>,
+      exception_do (do:  (package.alloc rand.rand #());;;
+      do:  (ke'init #());;;
       do:  (we'init #());;;
       do:  (fe'init #());;;
       do:  (kn'init #());;;

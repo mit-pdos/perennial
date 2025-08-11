@@ -162,35 +162,20 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined txn :=
-{|
-  is_pkg_defined := is_global_definitions txn var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Init :
-  WpFuncCall txn "Init" _ (is_pkg_defined txn) :=
+  WpFuncCall txn.Init _ (is_pkg_defined txn) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Begin :
-  WpFuncCall txn "Begin" _ (is_pkg_defined txn) :=
+  WpFuncCall txn.Begin _ (is_pkg_defined txn) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_bitToByte :
-  WpFuncCall txn "bitToByte" _ (is_pkg_defined txn) :=
+  WpFuncCall txn.bitToByte _ (is_pkg_defined txn) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Flush :

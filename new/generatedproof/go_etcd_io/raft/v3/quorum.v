@@ -63,30 +63,9 @@ End VoteResult.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-  _VoteResult_index : loc;
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-    ("_VoteResult_index"%go, _VoteResult_index)
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined quorum :=
-{|
-  is_pkg_defined := is_global_definitions quorum var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-  "H_VoteResult_index" ∷ _VoteResult_index ↦ (default_val (vec w8 (uint.nat (W64 4)))).
-
-Global Instance wp_globals_get__VoteResult_index : 
-  WpGlobalsGet quorum "_VoteResult_index" _VoteResult_index (is_pkg_defined quorum).
-Proof. apply wp_globals_get'. reflexivity. Qed.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_method_call_JointConfig_CommittedIndex :
   WpMethodCall quorum "JointConfig" "CommittedIndex" _ (is_pkg_defined quorum) :=
@@ -193,9 +172,4 @@ Global Instance wp_method_call_VoteResult'ptr_String :
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
-
-Global Instance wp_globals_alloc_inst `{hG: heapGS Σ, !ffi_semantics _ _} `{!goGlobalsGS Σ} :
-  WpGlobalsAlloc quorum.vars' (GlobalAddrs) (@var_addrs) (λ (_: GlobalAddrs), own_allocated).
-Proof. solve_wp_globals_alloc. Qed.
-
 End quorum.

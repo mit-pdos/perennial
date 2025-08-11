@@ -43,7 +43,7 @@ Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s"))) in
     let: "$a1" := #(W64 1) in
-    (func_call std.SumAssumeNoOverflow) "$a0" "$a1") in
+    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #eStateMachine #"esmNextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
     then
@@ -51,11 +51,11 @@ Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
       do:  ("ret" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "ret") in
       let: "$a1" := (![#uint64T] (struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s"))) in
-      (func_call marshal.WriteInt) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("ret" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s"))) in
       let: "$a1" := #(W64 1) in
-      (func_call std.SumAssumeNoOverflow) "$a0" "$a1") in
+      (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
       do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0")
     else
       (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RW
@@ -71,7 +71,7 @@ Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
         let: "enc2" := (mem.alloc (type.zero_val #sliceT)) in
         let: "cid" := (mem.alloc (type.zero_val #uint64T)) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-        (func_call marshal.ReadInt) "$a0") in
+        (func_call #marshal.ReadInt) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("cid" <-[#uint64T] "$r0");;;
@@ -79,7 +79,7 @@ Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
         let: "realOp" := (mem.alloc (type.zero_val #sliceT)) in
         let: "seq" := (mem.alloc (type.zero_val #uint64T)) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc2") in
-        (func_call marshal.ReadInt) "$a0") in
+        (func_call #marshal.ReadInt) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("seq" <-[#uint64T] "$r0");;;
@@ -163,21 +163,21 @@ Definition eStateMachine__getStateⁱᵐᵖˡ : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s"))) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (let: "$a0" := (![type.mapT #uint64T #uint64T] (struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s"))) in
-    (func_call map_marshal.EncodeMapU64ToU64) "$a0") in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #map_marshal.EncodeMapU64ToU64) "$a0") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (let: "$a0" := (![type.mapT #uint64T #sliceT] (struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s"))) in
-    (func_call map_marshal.EncodeMapU64ToBytes) "$a0") in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #map_marshal.EncodeMapU64ToBytes) "$a0") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#sliceT] "appState") in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "enc")).
 
@@ -191,19 +191,19 @@ Definition eStateMachine__setStateⁱᵐᵖˡ : val :=
     let: "$r0" := (![#sliceT] "state") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call marshal.ReadInt) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call map_marshal.DecodeMapU64ToU64) "$a0") in
+    (func_call #map_marshal.DecodeMapU64ToU64) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #eStateMachine #"lastSeq"%go (![#ptrT] "s")) <-[type.mapT #uint64T #uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call map_marshal.DecodeMapU64ToBytes) "$a0") in
+    (func_call #map_marshal.DecodeMapU64ToBytes) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #eStateMachine #"lastReply"%go (![#ptrT] "s")) <-[type.mapT #uint64T #sliceT] "$r0");;;
@@ -261,7 +261,7 @@ Definition MakeClerkⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #Clerk)) in
     do:  ("ck" <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
-    (func_call clerk.Make) "$a0") in
+    (func_call #clerk.Make) "$a0") in
     do:  ((struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")) <-[#ptrT] "$r0");;;
     let: "v" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #byteT #(W64 1)) in
@@ -273,7 +273,7 @@ Definition MakeClerkⁱᵐᵖˡ : val :=
     (method_call #clerk #"Clerk'ptr" #"Apply" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0") in
     do:  ("cidEnc" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "cidEnc") in
-    (func_call marshal.ReadInt) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #Clerk #"cid"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
@@ -294,19 +294,19 @@ Definition Clerk__ApplyExactlyOnceⁱᵐᵖˡ : val :=
     do:  ((slice.elem_ref #byteT (![#sliceT] "enc") #(W64 0)) <-[#byteT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #Clerk #"cid"%go (![#ptrT] "ck"))) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck"))) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#sliceT] "req") in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck"))) in
     let: "$a1" := #(W64 1) in
-    (func_call std.SumAssumeNoOverflow) "$a0" "$a1") in
+    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "enc") in
      (method_call #clerk #"Clerk'ptr" #"Apply" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
@@ -323,7 +323,7 @@ Definition Clerk__ApplyReadonlyⁱᵐᵖˡ : val :=
     do:  ((slice.elem_ref #byteT (![#sliceT] "enc") #(W64 0)) <-[#byteT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#sliceT] "req") in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "enc") in
      (method_call #clerk #"Clerk'ptr" #"ApplyRo" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).

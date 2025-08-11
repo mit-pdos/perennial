@@ -22,19 +22,21 @@ Definition RepBlock : go_type := structT [
   "a1" :: addr.Addr
 ].
 
+Definition Open : go_string := "github.com/mit-pdos/go-journal/jrnl_replication.Open"%go.
+
 (* go: jrnl_replication.go:23:6 *)
-Definition Open : val :=
-  rec: "Open" "txn" "a" :=
+Definition Openⁱᵐᵖˡ : val :=
+  λ: "txn" "a",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "txn" := (mem.alloc "txn") in
     return: (mem.alloc (let: "$txn" := (![#ptrT] "txn") in
      let: "$m" := (mem.alloc (type.zero_val #sync.Mutex)) in
      let: "$a0" := (let: "$a0" := (![#uint64T] "a") in
      let: "$a1" := #(W64 0) in
-     (func_call #addr.addr #"MkAddr"%go) "$a0" "$a1") in
+     (func_call #addr.MkAddr) "$a0" "$a1") in
      let: "$a1" := (let: "$a0" := ((![#uint64T] "a") + #(W64 1)) in
      let: "$a1" := #(W64 0) in
-     (func_call #addr.addr #"MkAddr"%go) "$a0" "$a1") in
+     (func_call #addr.MkAddr) "$a0" "$a1") in
      struct.make #RepBlock [{
        "txn" ::= "$txn";
        "m" ::= "$m";
@@ -46,13 +48,13 @@ Definition Open : val :=
    but that's really impossible since it's an empty transaction
 
    go: jrnl_replication.go:34:21 *)
-Definition RepBlock__Read : val :=
-  rec: "RepBlock__Read" "rb" <> :=
+Definition RepBlock__Readⁱᵐᵖˡ : val :=
+  λ: "rb" <>,
     exception_do (let: "rb" := (mem.alloc "rb") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #RepBlock #"m"%go (![#ptrT] "rb")))) #());;;
     let: "tx" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #RepBlock #"txn"%go (![#ptrT] "rb"))) in
-    (func_call #jrnl.jrnl #"Begin"%go) "$a0") in
+    (func_call #jrnl.Begin) "$a0") in
     do:  ("tx" <-[#ptrT] "$r0");;;
     let: "buf" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#addr.Addr] (struct.field_ref #RepBlock #"a0"%go (![#ptrT] "rb"))) in
@@ -61,7 +63,7 @@ Definition RepBlock__Read : val :=
     do:  ("buf" <-[#ptrT] "$r0");;;
     let: "b" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #buf.Buf #"Data"%go (![#ptrT] "buf"))) in
-    (func_call #util.util #"CloneByteSlice"%go) "$a0") in
+    (func_call #util.CloneByteSlice) "$a0") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := (let: "$a0" := #true in
@@ -71,14 +73,14 @@ Definition RepBlock__Read : val :=
     return: (![#sliceT] "b", ![#boolT] "ok")).
 
 (* go: jrnl_replication.go:45:21 *)
-Definition RepBlock__Write : val :=
-  rec: "RepBlock__Write" "rb" "b" :=
+Definition RepBlock__Writeⁱᵐᵖˡ : val :=
+  λ: "rb" "b",
     exception_do (let: "rb" := (mem.alloc "rb") in
     let: "b" := (mem.alloc "b") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #RepBlock #"m"%go (![#ptrT] "rb")))) #());;;
     let: "tx" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] (struct.field_ref #RepBlock #"txn"%go (![#ptrT] "rb"))) in
-    (func_call #jrnl.jrnl #"Begin"%go) "$a0") in
+    (func_call #jrnl.Begin) "$a0") in
     do:  ("tx" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#addr.Addr] (struct.field_ref #RepBlock #"a0"%go (![#ptrT] "rb"))) in
     let: "$a1" := (#(W64 8) * disk.BlockSize) in
@@ -97,9 +99,9 @@ Definition RepBlock__Write : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("Open"%go, Open)].
+Definition functions' : list (go_string * val) := [(Open, Openⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("RepBlock"%go, []); ("RepBlock'ptr"%go, [("Read"%go, RepBlock__Read); ("Write"%go, RepBlock__Write)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("RepBlock"%go, []); ("RepBlock'ptr"%go, [("Read"%go, RepBlock__Readⁱᵐᵖˡ); ("Write"%go, RepBlock__Writeⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo jrnl_replication.replicated_block :=
   {|
@@ -110,15 +112,16 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("RepBlock"%
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init jrnl_replication.replicated_block (λ: <>,
-      exception_do (do:  util.initialize';;;
-      do:  obj.initialize';;;
-      do:  jrnl.initialize';;;
-      do:  common.initialize';;;
-      do:  addr.initialize';;;
-      do:  disk.initialize';;;
-      do:  sync.initialize')
+  λ: <>,
+    package.init #jrnl_replication.replicated_block (λ: <>,
+      exception_do (do:  (util.initialize' #());;;
+      do:  (obj.initialize' #());;;
+      do:  (jrnl.initialize' #());;;
+      do:  (common.initialize' #());;;
+      do:  (addr.initialize' #());;;
+      do:  (disk.initialize' #());;;
+      do:  (sync.initialize' #());;;
+      do:  (package.alloc jrnl_replication.replicated_block #()))
       ).
 
 End code.

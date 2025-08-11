@@ -867,159 +867,144 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined clientv3 :=
-{|
-  is_pkg_defined := is_global_definitions clientv3 var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_WithZapLogger :
-  WpFuncCall clientv3 "WithZapLogger" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithZapLogger _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_OpGet :
-  WpFuncCall clientv3 "OpGet" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.OpGet _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_OpDelete :
-  WpFuncCall clientv3 "OpDelete" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.OpDelete _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_OpPut :
-  WpFuncCall clientv3 "OpPut" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.OpPut _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_OpTxn :
-  WpFuncCall clientv3 "OpTxn" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.OpTxn _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithLease :
-  WpFuncCall clientv3 "WithLease" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithLease _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithLimit :
-  WpFuncCall clientv3 "WithLimit" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithLimit _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithRev :
-  WpFuncCall clientv3 "WithRev" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithRev _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithSort :
-  WpFuncCall clientv3 "WithSort" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithSort _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithPrefix :
-  WpFuncCall clientv3 "WithPrefix" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithPrefix _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithRange :
-  WpFuncCall clientv3 "WithRange" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithRange _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithFromKey :
-  WpFuncCall clientv3 "WithFromKey" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithFromKey _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithSerializable :
-  WpFuncCall clientv3 "WithSerializable" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithSerializable _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithKeysOnly :
-  WpFuncCall clientv3 "WithKeysOnly" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithKeysOnly _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithCountOnly :
-  WpFuncCall clientv3 "WithCountOnly" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithCountOnly _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithMinModRev :
-  WpFuncCall clientv3 "WithMinModRev" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithMinModRev _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithMaxModRev :
-  WpFuncCall clientv3 "WithMaxModRev" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithMaxModRev _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithMinCreateRev :
-  WpFuncCall clientv3 "WithMinCreateRev" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithMinCreateRev _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithMaxCreateRev :
-  WpFuncCall clientv3 "WithMaxCreateRev" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithMaxCreateRev _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithFirstCreate :
-  WpFuncCall clientv3 "WithFirstCreate" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithFirstCreate _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithLastCreate :
-  WpFuncCall clientv3 "WithLastCreate" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithLastCreate _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithFirstKey :
-  WpFuncCall clientv3 "WithFirstKey" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithFirstKey _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithLastKey :
-  WpFuncCall clientv3 "WithLastKey" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithLastKey _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithFirstRev :
-  WpFuncCall clientv3 "WithFirstRev" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithFirstRev _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithLastRev :
-  WpFuncCall clientv3 "WithLastRev" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithLastRev _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithProgressNotify :
-  WpFuncCall clientv3 "WithProgressNotify" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithProgressNotify _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithCreatedNotify :
-  WpFuncCall clientv3 "WithCreatedNotify" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithCreatedNotify _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithFilterPut :
-  WpFuncCall clientv3 "WithFilterPut" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithFilterPut _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithFilterDelete :
-  WpFuncCall clientv3 "WithFilterDelete" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithFilterDelete _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithPrevKV :
-  WpFuncCall clientv3 "WithPrevKV" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithPrevKV _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithFragment :
-  WpFuncCall clientv3 "WithFragment" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithFragment _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithIgnoreValue :
-  WpFuncCall clientv3 "WithIgnoreValue" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithIgnoreValue _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithIgnoreLease :
-  WpFuncCall clientv3 "WithIgnoreLease" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithIgnoreLease _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_WithAttachedKeys :
-  WpFuncCall clientv3 "WithAttachedKeys" _ (is_pkg_defined clientv3) :=
+  WpFuncCall clientv3.WithAttachedKeys _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsCountOnly :

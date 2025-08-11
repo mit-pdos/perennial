@@ -80,7 +80,7 @@ Definition encodeIntⁱᵐᵖˡ : val :=
     exception_do (let: "a" := (mem.alloc "a") in
     return: (string.from_bytes (let: "$a0" := #slice.nil in
      let: "$a1" := (![#uint64T] "a") in
-     (func_call marshal.WriteInt) "$a0" "$a1"))).
+     (func_call #marshal.WriteInt) "$a0" "$a1"))).
 
 Definition decodeInt : go_string := "github.com/mit-pdos/gokv/bank.decodeInt"%go.
 
@@ -90,7 +90,7 @@ Definition decodeIntⁱᵐᵖˡ : val :=
     exception_do (let: "a" := (mem.alloc "a") in
     let: "v" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (string.to_bytes (![#stringT] "a")) in
-    (func_call marshal.ReadInt) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[#uint64T] "$r0");;;
@@ -141,13 +141,13 @@ Definition BankClerk__SimpleTransferⁱᵐᵖˡ : val :=
     exception_do (let: "bck" := (mem.alloc "bck") in
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "src" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((func_call primitive.RandomUint64) #()) in
+      let: "$r0" := ((func_call #primitive.RandomUint64) #()) in
       do:  ("src" <-[#uint64T] "$r0");;;
       let: "dst" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((func_call primitive.RandomUint64) #()) in
+      let: "$r0" := ((func_call #primitive.RandomUint64) #()) in
       do:  ("dst" <-[#uint64T] "$r0");;;
       let: "amount" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((func_call primitive.RandomUint64) #()) in
+      let: "$r0" := ((func_call #primitive.RandomUint64) #()) in
       do:  ("amount" <-[#uint64T] "$r0");;;
       (if: (((![#uint64T] "src") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in
       slice.len "$a0"))) && ((![#uint64T] "dst") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) in

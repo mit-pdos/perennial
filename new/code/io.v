@@ -24,15 +24,47 @@ Definition Reader : go_type := interfaceT.
 
 Definition Writer : go_type := interfaceT.
 
+Definition WriteString : go_string := "io.WriteString"%go.
+
+Definition ReadAtLeast : go_string := "io.ReadAtLeast"%go.
+
+Definition ReadFull : go_string := "io.ReadFull"%go.
+
+Definition CopyN : go_string := "io.CopyN"%go.
+
+Definition Copy : go_string := "io.Copy"%go.
+
+Definition CopyBuffer : go_string := "io.CopyBuffer"%go.
+
+Definition copyBuffer : go_string := "io.copyBuffer"%go.
+
+Definition LimitReader : go_string := "io.LimitReader"%go.
+
+Definition NewSectionReader : go_string := "io.NewSectionReader"%go.
+
 Axiom errWhence'init : val.
 
 Axiom errOffset'init : val.
+
+Definition NewOffsetWriter : go_string := "io.NewOffsetWriter"%go.
+
+Definition TeeReader : go_string := "io.TeeReader"%go.
 
 Axiom Discard'init : val.
 
 Axiom blackHolePool'init : val.
 
+Definition NopCloser : go_string := "io.NopCloser"%go.
+
+Definition ReadAll : go_string := "io.ReadAll"%go.
+
+Definition MultiReader : go_string := "io.MultiReader"%go.
+
+Definition MultiWriter : go_string := "io.MultiWriter"%go.
+
 Axiom ErrClosedPipe'init : val.
+
+Definition Pipe : go_string := "io.Pipe"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -51,9 +83,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init io.io (λ: <>,
-      exception_do (do:  (ErrShortWrite'init #());;;
+  λ: <>,
+    package.init #io.io (λ: <>,
+      exception_do (do:  (package.alloc io.io #());;;
+      do:  (ErrShortWrite'init #());;;
       do:  (errInvalidWrite'init #());;;
       do:  (ErrShortBuffer'init #());;;
       do:  (EOF'init #());;;

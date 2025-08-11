@@ -46,32 +46,32 @@ Definition StateMachine__makeDurableWithSnapⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "snap") in
     slice.len "$a0")) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#sliceT] "snap") in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #StateMachine #"epoch"%go (![#ptrT] "s"))) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     (if: ![#boolT] (struct.field_ref #StateMachine #"sealed"%go (![#ptrT] "s"))
     then
       do:  (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (slice.make2 #byteT #(W64 1)) in
-      (func_call marshal.WriteBytes) "$a0" "$a1")
+      (func_call #marshal.WriteBytes) "$a0" "$a1")
     else do:  #());;;
     do:  ((method_call #aof #"AppendOnlyFile'ptr" #"Close" (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) #());;;
     do:  (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
     let: "$a1" := (![#sliceT] "enc") in
-    (func_call grove_ffi.FileWrite) "$a0" "$a1");;;
+    (func_call #grove_ffi.FileWrite) "$a0" "$a1");;;
     let: "$r0" := (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
-    (func_call aof.CreateAppendOnlyFile) "$a0") in
+    (func_call #aof.CreateAppendOnlyFile) "$a0") in
     do:  ((struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     return: #()).
 
@@ -100,7 +100,7 @@ Definition StateMachine__applyⁱᵐᵖˡ : val :=
     do:  ("ret" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
     let: "$a1" := #(W64 1) in
-    (func_call std.SumAssumeNoOverflow) "$a0" "$a1") in
+    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     do:  ((struct.field_ref #StateMachine #"logsize"%go (![#ptrT] "s")) <-[#uint64T] ((![#uint64T] (struct.field_ref #StateMachine #"logsize"%go (![#ptrT] "s"))) + (s_to_w64 (let: "$a0" := (![#sliceT] "op") in
     slice.len "$a0"))));;;
@@ -111,11 +111,11 @@ Definition StateMachine__applyⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "opWithLen") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "op") in
     slice.len "$a0")) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("opWithLen" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "opWithLen") in
     let: "$a1" := (![#sliceT] "op") in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("opWithLen" <-[#sliceT] "$r0");;;
     let: "l" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "opWithLen") in
@@ -206,7 +206,7 @@ Definition recoverStateMachineⁱᵐᵖˡ : val :=
     do:  ("s" <-[#ptrT] "$r0");;;
     let: "enc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
-    (func_call grove_ffi.FileRead) "$a0") in
+    (func_call #grove_ffi.FileRead) "$a0") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     (if: (let: "$a0" := (![#sliceT] "enc") in
     slice.len "$a0") = #(W64 0)
@@ -221,35 +221,35 @@ Definition recoverStateMachineⁱᵐᵖˡ : val :=
       let: "$r0" := (let: "$a0" := (![#sliceT] "initialContents") in
       let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "initState") in
       slice.len "$a0")) in
-      (func_call marshal.WriteInt) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("initialContents" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "initialContents") in
       let: "$a1" := (![#sliceT] "initState") in
-      (func_call marshal.WriteBytes) "$a0" "$a1") in
+      (func_call #marshal.WriteBytes) "$a0" "$a1") in
       do:  ("initialContents" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "initialContents") in
       let: "$a1" := #(W64 0) in
-      (func_call marshal.WriteInt) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("initialContents" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "initialContents") in
       let: "$a1" := #(W64 0) in
-      (func_call marshal.WriteInt) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("initialContents" <-[#sliceT] "$r0");;;
       do:  (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
       let: "$a1" := (![#sliceT] "initialContents") in
-      (func_call grove_ffi.FileWrite) "$a0" "$a1");;;
+      (func_call #grove_ffi.FileWrite) "$a0" "$a1");;;
       let: "$r0" := (let: "$a0" := (![#stringT] "fname") in
-      (func_call aof.CreateAppendOnlyFile) "$a0") in
+      (func_call #aof.CreateAppendOnlyFile) "$a0") in
       do:  ((struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
       return: (![#ptrT] "s")
     else do:  #());;;
     let: "$r0" := (let: "$a0" := (![#stringT] "fname") in
-    (func_call aof.CreateAppendOnlyFile) "$a0") in
+    (func_call #aof.CreateAppendOnlyFile) "$a0") in
     do:  ((struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     let: "snapLen" := (mem.alloc (type.zero_val #uint64T)) in
     let: "snap" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call marshal.ReadInt) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("snapLen" <-[#uint64T] "$r0");;;
@@ -265,13 +265,13 @@ Definition recoverStateMachineⁱᵐᵖˡ : val :=
     slice.slice #byteT "$s" (![#uint64T] "snapLen") (![#intT] "n")) in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call marshal.ReadInt) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #StateMachine #"epoch"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     do:  ("enc" <-[#sliceT] "$r1");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call marshal.ReadInt) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ((struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
@@ -285,7 +285,7 @@ Definition recoverStateMachineⁱᵐᵖˡ : val :=
       then
         let: "opLen" := (mem.alloc (type.zero_val #uint64T)) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-        (func_call marshal.ReadInt) "$a0") in
+        (func_call #marshal.ReadInt) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("opLen" <-[#uint64T] "$r0");;;
@@ -305,7 +305,7 @@ Definition recoverStateMachineⁱᵐᵖˡ : val :=
         (![#funcT] (struct.field_ref #InMemoryStateMachine #"ApplyVolatile"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) "$a0");;;
         let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
         let: "$a1" := #(W64 1) in
-        (func_call std.SumAssumeNoOverflow) "$a0" "$a1") in
+        (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
         do:  ((struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s")) <-[#uint64T] "$r0")
       else break: #()));;;
     (if: int_gt (let: "$a0" := (![#sliceT] "enc") in
@@ -373,7 +373,7 @@ Definition MakePbServerⁱᵐᵖˡ : val :=
      let: "$a2" := (![#uint64T] (struct.field_ref #StateMachine #"nextIndex"%go (![#ptrT] "s"))) in
      let: "$a3" := (![#uint64T] (struct.field_ref #StateMachine #"epoch"%go (![#ptrT] "s"))) in
      let: "$a4" := (![#boolT] (struct.field_ref #StateMachine #"sealed"%go (![#ptrT] "s"))) in
-     (func_call replica.MakeServer) "$a0" "$a1" "$a2" "$a3" "$a4")).
+     (func_call #replica.MakeServer) "$a0" "$a1" "$a2" "$a3" "$a4")).
 
 Definition vars' : list (go_string * go_type) := [].
 

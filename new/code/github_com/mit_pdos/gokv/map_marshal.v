@@ -21,7 +21,7 @@ Definition EncodeMapU64ToU64ⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![type.mapT #uint64T #uint64T] "kvs") in
     map.len "$a0")) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$range" := (![type.mapT #uint64T #uint64T] "kvs") in
     (let: "v" := (mem.alloc (type.zero_val #uint64T)) in
@@ -31,11 +31,11 @@ Definition EncodeMapU64ToU64ⁱᵐᵖˡ : val :=
       do:  ("k" <-[#uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (![#uint64T] "k") in
-      (func_call marshal.WriteInt) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (![#uint64T] "v") in
-      (func_call marshal.WriteInt) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "enc")).
 
@@ -54,7 +54,7 @@ Definition DecodeMapU64ToU64ⁱᵐᵖˡ : val :=
     let: "enc2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "numEntries" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call marshal.ReadInt) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("numEntries" <-[#uint64T] "$r0");;;
@@ -68,13 +68,13 @@ Definition DecodeMapU64ToU64ⁱᵐᵖˡ : val :=
       let: "key" := (mem.alloc (type.zero_val #uint64T)) in
       let: "val" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-      (func_call marshal.ReadInt) "$a0") in
+      (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("key" <-[#uint64T] "$r0");;;
       do:  ("enc" <-[#sliceT] "$r1");;;
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-      (func_call marshal.ReadInt) "$a0") in
+      (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("val" <-[#uint64T] "$r0");;;
@@ -95,7 +95,7 @@ Definition EncodeMapU64ToBytesⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![type.mapT #uint64T #sliceT] "kvs") in
     map.len "$a0")) in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     let: "$range" := (![type.mapT #uint64T #sliceT] "kvs") in
     (let: "v" := (mem.alloc (type.zero_val #sliceT)) in
@@ -105,16 +105,16 @@ Definition EncodeMapU64ToBytesⁱᵐᵖˡ : val :=
       do:  ("k" <-[#uint64T] "$key");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (![#uint64T] "k") in
-      (func_call marshal.WriteInt) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "v") in
       slice.len "$a0")) in
-      (func_call marshal.WriteInt) "$a0" "$a1") in
+      (func_call #marshal.WriteInt) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
       let: "$a1" := (![#sliceT] "v") in
-      (func_call marshal.WriteBytes) "$a0" "$a1") in
+      (func_call #marshal.WriteBytes) "$a0" "$a1") in
       do:  ("enc" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "enc")).
 
@@ -133,7 +133,7 @@ Definition DecodeMapU64ToBytesⁱᵐᵖˡ : val :=
     let: "enc2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "numEntries" := (mem.alloc (type.zero_val #uint64T)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-    (func_call marshal.ReadInt) "$a0") in
+    (func_call #marshal.ReadInt) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("numEntries" <-[#uint64T] "$r0");;;
@@ -147,7 +147,7 @@ Definition DecodeMapU64ToBytesⁱᵐᵖˡ : val :=
       let: "enc3" := (mem.alloc (type.zero_val #sliceT)) in
       let: "key" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc") in
-      (func_call marshal.ReadInt) "$a0") in
+      (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("key" <-[#uint64T] "$r0");;;
@@ -155,7 +155,7 @@ Definition DecodeMapU64ToBytesⁱᵐᵖˡ : val :=
       let: "enc4" := (mem.alloc (type.zero_val #sliceT)) in
       let: "valLen" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc3") in
-      (func_call marshal.ReadInt) "$a0") in
+      (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("valLen" <-[#uint64T] "$r0");;;
@@ -164,7 +164,7 @@ Definition DecodeMapU64ToBytesⁱᵐᵖˡ : val :=
       let: "val" := (mem.alloc (type.zero_val #sliceT)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "enc4") in
       let: "$a1" := (![#uint64T] "valLen") in
-      (func_call marshal.ReadBytesCopy) "$a0" "$a1") in
+      (func_call #marshal.ReadBytesCopy) "$a0" "$a1") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("val" <-[#sliceT] "$r0");;;

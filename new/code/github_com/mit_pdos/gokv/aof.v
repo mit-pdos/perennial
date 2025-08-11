@@ -37,16 +37,16 @@ Definition CreateAppendOnlyFileⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ((struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
-    (func_call sync.NewCond) "$a0") in
+    (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #AppendOnlyFile #"lengthCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
-    (func_call sync.NewCond) "$a0") in
+    (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #AppendOnlyFile #"oldDurableCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
-    (func_call sync.NewCond) "$a0") in
+    (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #AppendOnlyFile #"durableCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
     let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
-    (func_call sync.NewCond) "$a0") in
+    (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #AppendOnlyFile #"closedCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
@@ -61,7 +61,7 @@ Definition CreateAppendOnlyFileⁱᵐᵖˡ : val :=
         then
           do:  (let: "$a0" := (![#stringT] "fname") in
           let: "$a1" := (![#sliceT] (struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a"))) in
-          (func_call grove_ffi.FileAppend) "$a0" "$a1");;;
+          (func_call #grove_ffi.FileAppend) "$a0" "$a1");;;
           let: "$r0" := (slice.make2 #byteT #(W64 0)) in
           do:  ((struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a")) <-[#sliceT] "$r0");;;
           let: "$r0" := (![#uint64T] (struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a"))) in
@@ -91,7 +91,7 @@ Definition CreateAppendOnlyFileⁱᵐᵖˡ : val :=
         do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
         do:  (let: "$a0" := (![#stringT] "fname") in
         let: "$a1" := (![#sliceT] "l") in
-        (func_call grove_ffi.FileAppend) "$a0" "$a1");;;
+        (func_call #grove_ffi.FileAppend) "$a0" "$a1");;;
         do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
         let: "$r0" := (![#uint64T] "newLength") in
         do:  ((struct.field_ref #AppendOnlyFile #"durableLength"%go (![#ptrT] "a")) <-[#uint64T] "$r0");;;
@@ -127,12 +127,12 @@ Definition AppendOnlyFile__Appendⁱᵐᵖˡ : val :=
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) #());;;
     let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a"))) in
     let: "$a1" := (![#sliceT] "data") in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ((struct.field_ref #AppendOnlyFile #"membuf"%go (![#ptrT] "a")) <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a"))) in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "data") in
     slice.len "$a0")) in
-    (func_call std.SumAssumeNoOverflow) "$a0" "$a1") in
+    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a")) <-[#uint64T] "$r0");;;
     let: "r" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #AppendOnlyFile #"length"%go (![#ptrT] "a"))) in

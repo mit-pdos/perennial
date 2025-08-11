@@ -9,15 +9,17 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition SendMessage : go_string := "github.com/goose-lang/goose/testdata/examples/channel.SendMessage"%go.
+
 (* Example 1: Simple goroutine sending a string, check basic message passing without
    synchronization
 
    go: examples.go:10:6 *)
-Definition SendMessage : val :=
-  rec: "SendMessage" <> :=
+Definition SendMessageⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "messageChan" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #stringT) "$a0") in
+    (func_call #channel.NewChannelRef #stringT) "$a0") in
     do:  ("messageChan" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$a0" := #"hello world"%go in
@@ -35,17 +37,19 @@ Definition SendMessage : val :=
     else do:  #());;;
     return: #()).
 
+Definition JoinWithReceive : go_string := "github.com/goose-lang/goose/testdata/examples/channel.JoinWithReceive"%go.
+
 (* Example 2: Join goroutine with receive on unbuffered channel
 
    go: examples.go:29:6 *)
-Definition JoinWithReceive : val :=
-  rec: "JoinWithReceive" <> :=
+Definition JoinWithReceiveⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "message" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #stringT)) in
     do:  ("message" <-[#ptrT] "$r0");;;
     let: "done" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("done" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #"hello world"%go in
@@ -63,17 +67,19 @@ Definition JoinWithReceive : val :=
     else do:  #());;;
     return: #()).
 
+Definition JoinWithSend : go_string := "github.com/goose-lang/goose/testdata/examples/channel.JoinWithSend"%go.
+
 (* Example 3: Join goroutine with send on unbuffered channel
 
    go: examples.go:55:6 *)
-Definition JoinWithSend : val :=
-  rec: "JoinWithSend" <> :=
+Definition JoinWithSendⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "message" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #stringT)) in
     do:  ("message" <-[#ptrT] "$r0");;;
     let: "done" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("done" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #"hello world"%go in
@@ -91,27 +97,29 @@ Definition JoinWithSend : val :=
     else do:  #());;;
     return: #()).
 
+Definition BroadcastNotification : go_string := "github.com/goose-lang/goose/testdata/examples/channel.BroadcastNotification"%go.
+
 (* Example 4: Broadcast notification with close. This is testing a case where
    we transfer disjoint ownership to different threads in a single broadcast
 
    go: examples.go:82:6 *)
-Definition BroadcastNotification : val :=
-  rec: "BroadcastNotification" <> :=
+Definition BroadcastNotificationⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "notifyCh" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("notifyCh" <-[#ptrT] "$r0");;;
     let: "done1" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("done1" <-[#ptrT] "$r0");;;
     let: "done2" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("done2" <-[#ptrT] "$r0");;;
     let: "done3" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("done3" <-[#ptrT] "$r0");;;
     let: "results" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "results") in
@@ -201,20 +209,22 @@ Definition BroadcastNotification : val :=
     do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done3") #uint64T) #());;;
     return: #()).
 
+Definition CoordinatedChannelClose : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CoordinatedChannelClose"%go.
+
 (* Example 5: Join sending goroutine before closing a buffered channel.
    This should demonstrate the spec's ability to prevent closing on a channel
    without joining all the senders.
 
    go: examples.go:149:6 *)
-Definition CoordinatedChannelClose : val :=
-  rec: "CoordinatedChannelClose" <> :=
+Definition CoordinatedChannelCloseⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "bufCh" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 2) in
-    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("bufCh" <-[#ptrT] "$r0");;;
     let: "syncCh" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("syncCh" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$a0" := #(W64 42) in
@@ -254,13 +264,15 @@ Definition CoordinatedChannelClose : val :=
     else do:  #());;;
     return: #()).
 
+Definition DoubleValues : go_string := "github.com/goose-lang/goose/testdata/examples/channel.DoubleValues"%go.
+
 (* Example 6: A basic pipeline that just passes pointers
    to a single worker who doubles the value of what they
    point to.
 
    go: examples.go:189:6 *)
-Definition DoubleValues : val :=
-  rec: "DoubleValues" <> :=
+Definition DoubleValuesⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "val1" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 5) in
     do:  ("val1" <-[#uint64T] "$r0");;;
@@ -288,11 +300,11 @@ Definition DoubleValues : val :=
     do:  ("values" <-[#sliceT] "$r0");;;
     let: "ch" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #ptrT) "$a0") in
+    (func_call #channel.NewChannelRef #ptrT) "$a0") in
     do:  ("ch" <-[#ptrT] "$r0");;;
     let: "done" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (func_call #channel.channel #"NewChannelRef"%go #uint64T) "$a0") in
+    (func_call #channel.NewChannelRef #uint64T) "$a0") in
     do:  ("done" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
@@ -329,7 +341,7 @@ Definition DoubleValues : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("SendMessage"%go, SendMessage); ("JoinWithReceive"%go, JoinWithReceive); ("JoinWithSend"%go, JoinWithSend); ("BroadcastNotification"%go, BroadcastNotification); ("CoordinatedChannelClose"%go, CoordinatedChannelClose); ("DoubleValues"%go, DoubleValues)].
+Definition functions' : list (go_string * val) := [(SendMessage, SendMessageⁱᵐᵖˡ); (JoinWithReceive, JoinWithReceiveⁱᵐᵖˡ); (JoinWithSend, JoinWithSendⁱᵐᵖˡ); (BroadcastNotification, BroadcastNotificationⁱᵐᵖˡ); (CoordinatedChannelClose, CoordinatedChannelCloseⁱᵐᵖˡ); (DoubleValues, DoubleValuesⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -342,9 +354,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init channel.chan_spec_raw_examples (λ: <>,
-      exception_do (do:  channel.initialize')
+  λ: <>,
+    package.init #channel.chan_spec_raw_examples (λ: <>,
+      exception_do (do:  (channel.initialize' #());;;
+      do:  (package.alloc channel.chan_spec_raw_examples #()))
       ).
 
 End code.

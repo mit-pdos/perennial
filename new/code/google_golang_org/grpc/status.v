@@ -8,6 +8,26 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition New : go_string := "google.golang.org/grpc/status.New"%go.
+
+Definition Newf : go_string := "google.golang.org/grpc/status.Newf"%go.
+
+Definition Error : go_string := "google.golang.org/grpc/status.Error"%go.
+
+Definition Errorf : go_string := "google.golang.org/grpc/status.Errorf"%go.
+
+Definition ErrorProto : go_string := "google.golang.org/grpc/status.ErrorProto"%go.
+
+Definition FromProto : go_string := "google.golang.org/grpc/status.FromProto"%go.
+
+Definition FromError : go_string := "google.golang.org/grpc/status.FromError"%go.
+
+Definition Convert : go_string := "google.golang.org/grpc/status.Convert"%go.
+
+Definition Code : go_string := "google.golang.org/grpc/status.Code"%go.
+
+Definition FromContextError : go_string := "google.golang.org/grpc/status.FromContextError"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
@@ -25,9 +45,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init status.status (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #status.status (λ: <>,
+      exception_do (do:  (package.alloc status.status #()))
       ).
 
 End code.

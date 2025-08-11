@@ -514,67 +514,52 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined auditor :=
-{|
-  is_pkg_defined := is_global_definitions auditor var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_New :
-  WpFuncCall auditor "New" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.New _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_getNextDig :
-  WpFuncCall auditor "getNextDig" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.getNextDig _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_NewRpcAuditor :
-  WpFuncCall auditor "NewRpcAuditor" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.NewRpcAuditor _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallUpdate :
-  WpFuncCall auditor "CallUpdate" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.CallUpdate _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CallGet :
-  WpFuncCall auditor "CallGet" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.CallGet _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateReplyEncode :
-  WpFuncCall auditor "UpdateReplyEncode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.UpdateReplyEncode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_UpdateReplyDecode :
-  WpFuncCall auditor "UpdateReplyDecode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.UpdateReplyDecode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetArgEncode :
-  WpFuncCall auditor "GetArgEncode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.GetArgEncode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetArgDecode :
-  WpFuncCall auditor "GetArgDecode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.GetArgDecode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetReplyEncode :
-  WpFuncCall auditor "GetReplyEncode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.GetReplyEncode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_GetReplyDecode :
-  WpFuncCall auditor "GetReplyDecode" _ (is_pkg_defined auditor) :=
+  WpFuncCall auditor.GetReplyDecode _ (is_pkg_defined auditor) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Auditor'ptr_Get :

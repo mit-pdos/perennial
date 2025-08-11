@@ -95,47 +95,32 @@ Admitted.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined cryptoffi :=
-{|
-  is_pkg_defined := is_global_definitions cryptoffi var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_NewHasher :
-  WpFuncCall cryptoffi "NewHasher" _ (is_pkg_defined cryptoffi) :=
+  WpFuncCall cryptoffi.NewHasher _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_SigGenerateKey :
-  WpFuncCall cryptoffi "SigGenerateKey" _ (is_pkg_defined cryptoffi) :=
+  WpFuncCall cryptoffi.SigGenerateKey _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VrfGenerateKey :
-  WpFuncCall cryptoffi "VrfGenerateKey" _ (is_pkg_defined cryptoffi) :=
+  WpFuncCall cryptoffi.VrfGenerateKey _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VrfPublicKeyEncode :
-  WpFuncCall cryptoffi "VrfPublicKeyEncode" _ (is_pkg_defined cryptoffi) :=
+  WpFuncCall cryptoffi.VrfPublicKeyEncode _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_VrfPublicKeyDecode :
-  WpFuncCall cryptoffi "VrfPublicKeyDecode" _ (is_pkg_defined cryptoffi) :=
+  WpFuncCall cryptoffi.VrfPublicKeyDecode _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_RandBytes :
-  WpFuncCall cryptoffi "RandBytes" _ (is_pkg_defined cryptoffi) :=
+  WpFuncCall cryptoffi.RandBytes _ (is_pkg_defined cryptoffi) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Hasher'ptr_Sum :

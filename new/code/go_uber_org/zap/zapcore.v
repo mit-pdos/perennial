@@ -12,9 +12,67 @@ Axiom DefaultClock'init : val.
 
 Axiom _sliceEncoderPool'init : val.
 
+Definition getSliceEncoder : go_string := "go.uber.org/zap/zapcore.getSliceEncoder"%go.
+
+Definition putSliceEncoder : go_string := "go.uber.org/zap/zapcore.putSliceEncoder"%go.
+
+Definition NewConsoleEncoder : go_string := "go.uber.org/zap/zapcore.NewConsoleEncoder"%go.
+
+Definition NewNopCore : go_string := "go.uber.org/zap/zapcore.NewNopCore"%go.
+
+Definition NewCore : go_string := "go.uber.org/zap/zapcore.NewCore"%go.
+
+Definition LowercaseLevelEncoder : go_string := "go.uber.org/zap/zapcore.LowercaseLevelEncoder"%go.
+
+Definition LowercaseColorLevelEncoder : go_string := "go.uber.org/zap/zapcore.LowercaseColorLevelEncoder"%go.
+
+Definition CapitalLevelEncoder : go_string := "go.uber.org/zap/zapcore.CapitalLevelEncoder"%go.
+
+Definition CapitalColorLevelEncoder : go_string := "go.uber.org/zap/zapcore.CapitalColorLevelEncoder"%go.
+
+Definition EpochTimeEncoder : go_string := "go.uber.org/zap/zapcore.EpochTimeEncoder"%go.
+
+Definition EpochMillisTimeEncoder : go_string := "go.uber.org/zap/zapcore.EpochMillisTimeEncoder"%go.
+
+Definition EpochNanosTimeEncoder : go_string := "go.uber.org/zap/zapcore.EpochNanosTimeEncoder"%go.
+
+Definition encodeTimeLayout : go_string := "go.uber.org/zap/zapcore.encodeTimeLayout"%go.
+
+Definition ISO8601TimeEncoder : go_string := "go.uber.org/zap/zapcore.ISO8601TimeEncoder"%go.
+
+Definition RFC3339TimeEncoder : go_string := "go.uber.org/zap/zapcore.RFC3339TimeEncoder"%go.
+
+Definition RFC3339NanoTimeEncoder : go_string := "go.uber.org/zap/zapcore.RFC3339NanoTimeEncoder"%go.
+
+Definition TimeEncoderOfLayout : go_string := "go.uber.org/zap/zapcore.TimeEncoderOfLayout"%go.
+
+Definition SecondsDurationEncoder : go_string := "go.uber.org/zap/zapcore.SecondsDurationEncoder"%go.
+
+Definition NanosDurationEncoder : go_string := "go.uber.org/zap/zapcore.NanosDurationEncoder"%go.
+
+Definition MillisDurationEncoder : go_string := "go.uber.org/zap/zapcore.MillisDurationEncoder"%go.
+
+Definition StringDurationEncoder : go_string := "go.uber.org/zap/zapcore.StringDurationEncoder"%go.
+
+Definition FullCallerEncoder : go_string := "go.uber.org/zap/zapcore.FullCallerEncoder"%go.
+
+Definition ShortCallerEncoder : go_string := "go.uber.org/zap/zapcore.ShortCallerEncoder"%go.
+
+Definition FullNameEncoder : go_string := "go.uber.org/zap/zapcore.FullNameEncoder"%go.
+
 Axiom _cePool'init : val.
 
+Definition getCheckedEntry : go_string := "go.uber.org/zap/zapcore.getCheckedEntry"%go.
+
+Definition putCheckedEntry : go_string := "go.uber.org/zap/zapcore.putCheckedEntry"%go.
+
+Definition NewEntryCaller : go_string := "go.uber.org/zap/zapcore.NewEntryCaller"%go.
+
+Definition encodeError : go_string := "go.uber.org/zap/zapcore.encodeError"%go.
+
 Axiom _errArrayElemPool'init : val.
+
+Definition newErrArrayElem : go_string := "go.uber.org/zap/zapcore.newErrArrayElem"%go.
 
 Definition FieldType : go_type := uint8T.
 
@@ -26,11 +84,33 @@ Definition Field : go_type := structT [
   "Interface" :: interfaceT
 ].
 
+Definition addFields : go_string := "go.uber.org/zap/zapcore.addFields"%go.
+
+Definition encodeStringer : go_string := "go.uber.org/zap/zapcore.encodeStringer"%go.
+
+Definition RegisterHooks : go_string := "go.uber.org/zap/zapcore.RegisterHooks"%go.
+
+Definition NewIncreaseLevelCore : go_string := "go.uber.org/zap/zapcore.NewIncreaseLevelCore"%go.
+
 Axiom _jsonPool'init : val.
+
+Definition putJSONEncoder : go_string := "go.uber.org/zap/zapcore.putJSONEncoder"%go.
+
+Definition NewJSONEncoder : go_string := "go.uber.org/zap/zapcore.NewJSONEncoder"%go.
+
+Definition newJSONEncoder : go_string := "go.uber.org/zap/zapcore.newJSONEncoder"%go.
 
 Axiom nullLiteralBytes'init : val.
 
+Definition safeAppendStringLike : go_string := "go.uber.org/zap/zapcore.safeAppendStringLike"%go.
+
+Definition NewLazyWith : go_string := "go.uber.org/zap/zapcore.NewLazyWith"%go.
+
 Axiom errUnmarshalNilLevel'init : val.
+
+Definition ParseLevel : go_string := "go.uber.org/zap/zapcore.ParseLevel"%go.
+
+Definition LevelOf : go_string := "go.uber.org/zap/zapcore.LevelOf"%go.
 
 Axiom _levelToColor'init : val.
 
@@ -39,6 +119,32 @@ Axiom _unknownLevelColor'init : val.
 Axiom _levelToLowercaseColorString'init : val.
 
 Axiom _levelToCapitalColorString'init : val.
+
+Definition init : go_string := "go.uber.org/zap/zapcore.init"%go.
+
+Definition NewMapObjectEncoder : go_string := "go.uber.org/zap/zapcore.NewMapObjectEncoder"%go.
+
+Definition defaultReflectedEncoder : go_string := "go.uber.org/zap/zapcore.defaultReflectedEncoder"%go.
+
+Definition newCounters : go_string := "go.uber.org/zap/zapcore.newCounters"%go.
+
+Definition fnv32a : go_string := "go.uber.org/zap/zapcore.fnv32a"%go.
+
+Definition nopSamplingHook : go_string := "go.uber.org/zap/zapcore.nopSamplingHook"%go.
+
+Definition SamplerHook : go_string := "go.uber.org/zap/zapcore.SamplerHook"%go.
+
+Definition NewSamplerWithOptions : go_string := "go.uber.org/zap/zapcore.NewSamplerWithOptions"%go.
+
+Definition NewSampler : go_string := "go.uber.org/zap/zapcore.NewSampler"%go.
+
+Definition NewTee : go_string := "go.uber.org/zap/zapcore.NewTee"%go.
+
+Definition AddSync : go_string := "go.uber.org/zap/zapcore.AddSync"%go.
+
+Definition Lock : go_string := "go.uber.org/zap/zapcore.Lock"%go.
+
+Definition NewMultiWriteSyncer : go_string := "go.uber.org/zap/zapcore.NewMultiWriteSyncer"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -57,9 +163,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("FieldType"
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init zapcore.zapcore (λ: <>,
-      exception_do (do:  (DefaultClock'init #());;;
+  λ: <>,
+    package.init #zapcore.zapcore (λ: <>,
+      exception_do (do:  (package.alloc zapcore.zapcore #());;;
+      do:  (DefaultClock'init #());;;
       do:  (_sliceEncoderPool'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;

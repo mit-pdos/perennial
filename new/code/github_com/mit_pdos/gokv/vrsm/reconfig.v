@@ -27,12 +27,12 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     then
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Tried creating empty config"%go) in
       slice.literal #interfaceT ["$sl0"])) in
-      (func_call log.Println) "$a0");;;
+      (func_call #log.Println) "$a0");;;
       return: (e.EmptyConfig)
     else do:  #());;;
     let: "configCk" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "configHosts") in
-    (func_call configservice.MakeClerk) "$a0") in
+    (func_call #configservice.MakeClerk) "$a0") in
     do:  ("configCk" <-[#ptrT] "$r0");;;
     let: "oldServers" := (mem.alloc (type.zero_val #sliceT)) in
     let: "epoch" := (mem.alloc (type.zero_val #uint64T)) in
@@ -44,14 +44,14 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #"Reserved %d"%go in
     let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "epoch")) in
     slice.literal #interfaceT ["$sl0"])) in
-    (func_call log.Printf) "$a0" "$a1");;;
+    (func_call #log.Printf) "$a0" "$a1");;;
     let: "id" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((((func_call primitive.RandomUint64) #()) + #(W64 1)) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] "oldServers") in
+    let: "$r0" := ((((func_call #primitive.RandomUint64) #()) + #(W64 1)) `rem` (s_to_w64 (let: "$a0" := (![#sliceT] "oldServers") in
     slice.len "$a0"))) in
     do:  ("id" <-[#uint64T] "$r0");;;
     let: "oldClerk" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "oldServers") (![#uint64T] "id"))) in
-    (func_call replica.MakeClerk) "$a0") in
+    (func_call #replica.MakeClerk) "$a0") in
     do:  ("oldClerk" <-[#ptrT] "$r0");;;
     let: "reply" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (mem.alloc (let: "$Epoch" := (![#uint64T] "epoch") in
@@ -65,7 +65,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
       do:  (let: "$a0" := #"Error while getting state and sealing in epoch %d"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "epoch")) in
       slice.literal #interfaceT ["$sl0"])) in
-      (func_call log.Printf) "$a0" "$a1");;;
+      (func_call #log.Printf) "$a0" "$a1");;;
       return: (![#uint64T] (struct.field_ref #replica.GetStateReply #"Err"%go (![#ptrT] "reply")))
     else do:  #());;;
     let: "clerks" := (mem.alloc (type.zero_val #sliceT)) in
@@ -78,7 +78,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
     slice.len "$a0"))); (λ: <>, Skip) := λ: <>,
       let: "$r0" := (let: "$a0" := (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "servers") (![#uint64T] "i"))) in
-      (func_call replica.MakeClerk) "$a0") in
+      (func_call #replica.MakeClerk) "$a0") in
       do:  ((slice.elem_ref #ptrT (![#sliceT] "clerks") (![#uint64T] "i")) <-[#ptrT] "$r0");;;
       do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
     let: "wg" := (mem.alloc (type.zero_val #ptrT)) in
@@ -139,7 +139,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     then
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Error while setting state and entering new epoch"%go) in
       slice.literal #interfaceT ["$sl0"])) in
-      (func_call log.Println) "$a0");;;
+      (func_call #log.Println) "$a0");;;
       return: (![#uint64T] "err")
     else do:  #());;;
     (if: (let: "$a0" := (![#uint64T] "epoch") in
@@ -148,7 +148,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     then
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Error while writing to config service"%go) in
       slice.literal #interfaceT ["$sl0"])) in
-      (func_call log.Println) "$a0");;;
+      (func_call #log.Println) "$a0");;;
       return: (e.Stale)
     else do:  #());;;
     do:  (let: "$a0" := (mem.alloc (let: "$Epoch" := (![#uint64T] "epoch") in
@@ -169,7 +169,7 @@ Definition InitializeSystemⁱᵐᵖˡ : val :=
     let: "configHosts" := (mem.alloc "configHosts") in
     let: "configCk" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "configHosts") in
-    (func_call configservice.MakeClerk) "$a0") in
+    (func_call #configservice.MakeClerk) "$a0") in
     do:  ("configCk" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![#sliceT] "servers") in

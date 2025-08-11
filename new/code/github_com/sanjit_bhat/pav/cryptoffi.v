@@ -12,49 +12,61 @@ Definition HashLen : expr := #(W64 32).
 
 Axiom Hasher : go_type.
 
-Axiom NewHasher : val.
+Definition NewHasher : go_string := "github.com/sanjit-bhat/pav/cryptoffi.NewHasher"%go.
 
-Axiom Hasher__Write : val.
+Axiom NewHasherⁱᵐᵖˡ : val.
 
-Axiom Hasher__Sum : val.
+Axiom Hasher__Writeⁱᵐᵖˡ : val.
+
+Axiom Hasher__Sumⁱᵐᵖˡ : val.
 
 Axiom SigPrivateKey : go_type.
 
 Axiom SigPublicKey : go_type.
 
-Axiom SigGenerateKey : val.
+Definition SigGenerateKey : go_string := "github.com/sanjit-bhat/pav/cryptoffi.SigGenerateKey"%go.
 
-Axiom SigPrivateKey__Sign : val.
+Axiom SigGenerateKeyⁱᵐᵖˡ : val.
 
-Axiom SigPublicKey__Verify : val.
+Axiom SigPrivateKey__Signⁱᵐᵖˡ : val.
+
+Axiom SigPublicKey__Verifyⁱᵐᵖˡ : val.
 
 Axiom VrfPrivateKey : go_type.
 
 Axiom VrfPublicKey : go_type.
 
-Axiom VrfGenerateKey : val.
+Definition VrfGenerateKey : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfGenerateKey"%go.
 
-Axiom VrfPrivateKey__Prove : val.
+Axiom VrfGenerateKeyⁱᵐᵖˡ : val.
 
-Axiom VrfPrivateKey__Evaluate : val.
+Axiom VrfPrivateKey__Proveⁱᵐᵖˡ : val.
 
-Axiom VrfPublicKey__Verify : val.
+Axiom VrfPrivateKey__Evaluateⁱᵐᵖˡ : val.
 
-Axiom VrfPrivateKey__PublicKey : val.
+Axiom VrfPublicKey__Verifyⁱᵐᵖˡ : val.
 
-Axiom VrfPublicKeyEncode : val.
+Axiom VrfPrivateKey__PublicKeyⁱᵐᵖˡ : val.
 
-Axiom VrfPublicKeyDecode : val.
+Definition VrfPublicKeyEncode : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfPublicKeyEncode"%go.
 
-Axiom RandBytes : val.
+Axiom VrfPublicKeyEncodeⁱᵐᵖˡ : val.
+
+Definition VrfPublicKeyDecode : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfPublicKeyDecode"%go.
+
+Axiom VrfPublicKeyDecodeⁱᵐᵖˡ : val.
+
+Definition RandBytes : go_string := "github.com/sanjit-bhat/pav/cryptoffi.RandBytes"%go.
+
+Axiom RandBytesⁱᵐᵖˡ : val.
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("NewHasher"%go, NewHasher); ("SigGenerateKey"%go, SigGenerateKey); ("VrfGenerateKey"%go, VrfGenerateKey); ("VrfPublicKeyEncode"%go, VrfPublicKeyEncode); ("VrfPublicKeyDecode"%go, VrfPublicKeyDecode); ("RandBytes"%go, RandBytes)].
+Definition functions' : list (go_string * val) := [(NewHasher, NewHasherⁱᵐᵖˡ); (SigGenerateKey, SigGenerateKeyⁱᵐᵖˡ); (VrfGenerateKey, VrfGenerateKeyⁱᵐᵖˡ); (VrfPublicKeyEncode, VrfPublicKeyEncodeⁱᵐᵖˡ); (VrfPublicKeyDecode, VrfPublicKeyDecodeⁱᵐᵖˡ); (RandBytes, RandBytesⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Hasher"%go, []); ("Hasher'ptr"%go, [("Sum"%go, Hasher__Sum); ("Write"%go, Hasher__Write)]); ("SigPrivateKey"%go, []); ("SigPrivateKey'ptr"%go, [("Sign"%go, SigPrivateKey__Sign)]); ("SigPublicKey"%go, [("Verify"%go, SigPublicKey__Verify)]); ("SigPublicKey'ptr"%go, [("Verify"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [("Hasher"%go, []); ("Hasher'ptr"%go, [("Sum"%go, Hasher__Sumⁱᵐᵖˡ); ("Write"%go, Hasher__Writeⁱᵐᵖˡ)]); ("SigPrivateKey"%go, []); ("SigPrivateKey'ptr"%go, [("Sign"%go, SigPrivateKey__Signⁱᵐᵖˡ)]); ("SigPublicKey"%go, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); ("SigPublicKey'ptr"%go, [("Verify"%go, (λ: "$recvAddr",
                  method_call #cryptoffi.cryptoffi #"SigPublicKey" #"Verify" (![#SigPublicKey] "$recvAddr")
-                 )%V)]); ("VrfPrivateKey"%go, []); ("VrfPrivateKey'ptr"%go, [("Evaluate"%go, VrfPrivateKey__Evaluate); ("Prove"%go, VrfPrivateKey__Prove); ("PublicKey"%go, VrfPrivateKey__PublicKey)]); ("VrfPublicKey"%go, []); ("VrfPublicKey'ptr"%go, [("Verify"%go, VrfPublicKey__Verify)])].
+                 )%V)]); ("VrfPrivateKey"%go, []); ("VrfPrivateKey'ptr"%go, [("Evaluate"%go, VrfPrivateKey__Evaluateⁱᵐᵖˡ); ("Prove"%go, VrfPrivateKey__Proveⁱᵐᵖˡ); ("PublicKey"%go, VrfPrivateKey__PublicKeyⁱᵐᵖˡ)]); ("VrfPublicKey"%go, []); ("VrfPublicKey'ptr"%go, [("Verify"%go, VrfPublicKey__Verifyⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo cryptoffi.cryptoffi :=
   {|
@@ -67,9 +79,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Hasher"%go
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init cryptoffi.cryptoffi (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #cryptoffi.cryptoffi (λ: <>,
+      exception_do (do:  (package.alloc cryptoffi.cryptoffi #()))
       ).
 
 End code.

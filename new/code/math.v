@@ -8,19 +8,171 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Abs : go_string := "math.Abs"%go.
+
+Definition Acosh : go_string := "math.Acosh"%go.
+
+Definition acosh : go_string := "math.acosh"%go.
+
+Definition Asin : go_string := "math.Asin"%go.
+
+Definition asin : go_string := "math.asin"%go.
+
+Definition Acos : go_string := "math.Acos"%go.
+
+Definition acos : go_string := "math.acos"%go.
+
+Definition Asinh : go_string := "math.Asinh"%go.
+
+Definition asinh : go_string := "math.asinh"%go.
+
+Definition xatan : go_string := "math.xatan"%go.
+
+Definition satan : go_string := "math.satan"%go.
+
+Definition Atan : go_string := "math.Atan"%go.
+
+Definition atan : go_string := "math.atan"%go.
+
+Definition Atan2 : go_string := "math.Atan2"%go.
+
+Definition atan2 : go_string := "math.atan2"%go.
+
+Definition Atanh : go_string := "math.Atanh"%go.
+
+Definition atanh : go_string := "math.atanh"%go.
+
+Definition Inf : go_string := "math.Inf"%go.
+
+Definition NaN : go_string := "math.NaN"%go.
+
+Definition IsNaN : go_string := "math.IsNaN"%go.
+
+Definition IsInf : go_string := "math.IsInf"%go.
+
+Definition normalize : go_string := "math.normalize"%go.
+
+Definition Cbrt : go_string := "math.Cbrt"%go.
+
+Definition cbrt : go_string := "math.cbrt"%go.
+
 (* 9223372036854775807 *)
 Definition MaxInt64 : Z := 9223372036854775807.
 
 (* 18446744073709551615 *)
 Definition MaxUint64 : Z := 18446744073709551615.
 
+Definition Copysign : go_string := "math.Copysign"%go.
+
+Definition Dim : go_string := "math.Dim"%go.
+
+Definition Max : go_string := "math.Max"%go.
+
+Definition max : go_string := "math.max"%go.
+
+Definition Min : go_string := "math.Min"%go.
+
+Definition min : go_string := "math.min"%go.
+
+Definition archMax : go_string := "math.archMax"%go.
+
+Definition archMin : go_string := "math.archMin"%go.
+
+Definition Erf : go_string := "math.Erf"%go.
+
+Definition erf : go_string := "math.erf"%go.
+
+Definition Erfc : go_string := "math.Erfc"%go.
+
+Definition erfc : go_string := "math.erfc"%go.
+
+Definition Erfinv : go_string := "math.Erfinv"%go.
+
+Definition Erfcinv : go_string := "math.Erfcinv"%go.
+
+Definition Exp : go_string := "math.Exp"%go.
+
+Definition exp : go_string := "math.exp"%go.
+
+Definition Exp2 : go_string := "math.Exp2"%go.
+
+Definition exp2 : go_string := "math.exp2"%go.
+
+Definition expmulti : go_string := "math.expmulti"%go.
+
+Definition archExp2 : go_string := "math.archExp2"%go.
+
 Axiom useFMA'init : val.
+
+Definition archExp : go_string := "math.archExp"%go.
+
+Definition Expm1 : go_string := "math.Expm1"%go.
+
+Definition expm1 : go_string := "math.expm1"%go.
+
+Definition Floor : go_string := "math.Floor"%go.
+
+Definition floor : go_string := "math.floor"%go.
+
+Definition Ceil : go_string := "math.Ceil"%go.
+
+Definition ceil : go_string := "math.ceil"%go.
+
+Definition Trunc : go_string := "math.Trunc"%go.
+
+Definition trunc : go_string := "math.trunc"%go.
+
+Definition Round : go_string := "math.Round"%go.
+
+Definition RoundToEven : go_string := "math.RoundToEven"%go.
+
+Definition archFloor : go_string := "math.archFloor"%go.
+
+Definition archCeil : go_string := "math.archCeil"%go.
+
+Definition archTrunc : go_string := "math.archTrunc"%go.
+
+Definition zero : go_string := "math.zero"%go.
+
+Definition nonzero : go_string := "math.nonzero"%go.
+
+Definition shl : go_string := "math.shl"%go.
+
+Definition shr : go_string := "math.shr"%go.
+
+Definition shrcompress : go_string := "math.shrcompress"%go.
+
+Definition lz : go_string := "math.lz"%go.
+
+Definition split : go_string := "math.split"%go.
+
+Definition FMA : go_string := "math.FMA"%go.
+
+Definition Frexp : go_string := "math.Frexp"%go.
+
+Definition frexp : go_string := "math.frexp"%go.
 
 Axiom _gamP'init : val.
 
 Axiom _gamQ'init : val.
 
 Axiom _gamS'init : val.
+
+Definition stirling : go_string := "math.stirling"%go.
+
+Definition Gamma : go_string := "math.Gamma"%go.
+
+Definition isNegInt : go_string := "math.isNegInt"%go.
+
+Definition Hypot : go_string := "math.Hypot"%go.
+
+Definition hypot : go_string := "math.hypot"%go.
+
+Definition archHypot : go_string := "math.archHypot"%go.
+
+Definition J0 : go_string := "math.J0"%go.
+
+Definition Y0 : go_string := "math.Y0"%go.
 
 Axiom p0R8'init : val.
 
@@ -38,6 +190,8 @@ Axiom p0R2'init : val.
 
 Axiom p0S2'init : val.
 
+Definition pzero : go_string := "math.pzero"%go.
+
 Axiom q0R8'init : val.
 
 Axiom q0S8'init : val.
@@ -53,6 +207,12 @@ Axiom q0S3'init : val.
 Axiom q0R2'init : val.
 
 Axiom q0S2'init : val.
+
+Definition qzero : go_string := "math.qzero"%go.
+
+Definition J1 : go_string := "math.J1"%go.
+
+Definition Y1 : go_string := "math.Y1"%go.
 
 Axiom p1R8'init : val.
 
@@ -70,6 +230,8 @@ Axiom p1R2'init : val.
 
 Axiom p1S2'init : val.
 
+Definition pone : go_string := "math.pone"%go.
+
 Axiom q1R8'init : val.
 
 Axiom q1S8'init : val.
@@ -86,6 +248,16 @@ Axiom q1R2'init : val.
 
 Axiom q1S2'init : val.
 
+Definition qone : go_string := "math.qone"%go.
+
+Definition Jn : go_string := "math.Jn"%go.
+
+Definition Yn : go_string := "math.Yn"%go.
+
+Definition Ldexp : go_string := "math.Ldexp"%go.
+
+Definition ldexp : go_string := "math.ldexp"%go.
+
 Axiom _lgamA'init : val.
 
 Axiom _lgamR'init : val.
@@ -100,25 +272,171 @@ Axiom _lgamV'init : val.
 
 Axiom _lgamW'init : val.
 
+Definition Lgamma : go_string := "math.Lgamma"%go.
+
+Definition sinPi : go_string := "math.sinPi"%go.
+
+Definition Log : go_string := "math.Log"%go.
+
+Definition log : go_string := "math.log"%go.
+
+Definition Log10 : go_string := "math.Log10"%go.
+
+Definition log10 : go_string := "math.log10"%go.
+
+Definition Log2 : go_string := "math.Log2"%go.
+
+Definition log2 : go_string := "math.log2"%go.
+
+Definition Log1p : go_string := "math.Log1p"%go.
+
+Definition log1p : go_string := "math.log1p"%go.
+
+Definition archLog : go_string := "math.archLog"%go.
+
+Definition Logb : go_string := "math.Logb"%go.
+
+Definition Ilogb : go_string := "math.Ilogb"%go.
+
+Definition ilogb : go_string := "math.ilogb"%go.
+
+Definition Mod : go_string := "math.Mod"%go.
+
+Definition mod : go_string := "math.mod"%go.
+
+Definition Modf : go_string := "math.Modf"%go.
+
+Definition modf : go_string := "math.modf"%go.
+
+Definition archModf : go_string := "math.archModf"%go.
+
+Definition Nextafter32 : go_string := "math.Nextafter32"%go.
+
+Definition Nextafter : go_string := "math.Nextafter"%go.
+
+Definition isOddInt : go_string := "math.isOddInt"%go.
+
+Definition Pow : go_string := "math.Pow"%go.
+
+Definition pow : go_string := "math.pow"%go.
+
 Axiom pow10tab'init : val.
 
 Axiom pow10postab32'init : val.
 
 Axiom pow10negtab32'init : val.
 
+Definition Pow10 : go_string := "math.Pow10"%go.
+
+Definition Remainder : go_string := "math.Remainder"%go.
+
+Definition remainder : go_string := "math.remainder"%go.
+
+Definition Signbit : go_string := "math.Signbit"%go.
+
 Axiom _sin'init : val.
 
 Axiom _cos'init : val.
+
+Definition Cos : go_string := "math.Cos"%go.
+
+Definition cos : go_string := "math.cos"%go.
+
+Definition Sin : go_string := "math.Sin"%go.
+
+Definition sin : go_string := "math.sin"%go.
+
+Definition Sincos : go_string := "math.Sincos"%go.
+
+Definition Sinh : go_string := "math.Sinh"%go.
+
+Definition sinh : go_string := "math.sinh"%go.
+
+Definition Cosh : go_string := "math.Cosh"%go.
+
+Definition cosh : go_string := "math.cosh"%go.
+
+Definition Sqrt : go_string := "math.Sqrt"%go.
+
+Definition sqrt : go_string := "math.sqrt"%go.
+
+Definition archAcos : go_string := "math.archAcos"%go.
+
+Definition archAcosh : go_string := "math.archAcosh"%go.
+
+Definition archAsin : go_string := "math.archAsin"%go.
+
+Definition archAsinh : go_string := "math.archAsinh"%go.
+
+Definition archAtan : go_string := "math.archAtan"%go.
+
+Definition archAtan2 : go_string := "math.archAtan2"%go.
+
+Definition archAtanh : go_string := "math.archAtanh"%go.
+
+Definition archCbrt : go_string := "math.archCbrt"%go.
+
+Definition archCos : go_string := "math.archCos"%go.
+
+Definition archCosh : go_string := "math.archCosh"%go.
+
+Definition archErf : go_string := "math.archErf"%go.
+
+Definition archErfc : go_string := "math.archErfc"%go.
+
+Definition archExpm1 : go_string := "math.archExpm1"%go.
+
+Definition archFrexp : go_string := "math.archFrexp"%go.
+
+Definition archLdexp : go_string := "math.archLdexp"%go.
+
+Definition archLog10 : go_string := "math.archLog10"%go.
+
+Definition archLog2 : go_string := "math.archLog2"%go.
+
+Definition archLog1p : go_string := "math.archLog1p"%go.
+
+Definition archMod : go_string := "math.archMod"%go.
+
+Definition archPow : go_string := "math.archPow"%go.
+
+Definition archRemainder : go_string := "math.archRemainder"%go.
+
+Definition archSin : go_string := "math.archSin"%go.
+
+Definition archSinh : go_string := "math.archSinh"%go.
+
+Definition archTan : go_string := "math.archTan"%go.
+
+Definition archTanh : go_string := "math.archTanh"%go.
 
 Axiom _tanP'init : val.
 
 Axiom _tanQ'init : val.
 
+Definition Tan : go_string := "math.Tan"%go.
+
+Definition tan : go_string := "math.tan"%go.
+
 Axiom tanhP'init : val.
 
 Axiom tanhQ'init : val.
 
+Definition Tanh : go_string := "math.Tanh"%go.
+
+Definition tanh : go_string := "math.tanh"%go.
+
+Definition trigReduce : go_string := "math.trigReduce"%go.
+
 Axiom mPi4'init : val.
+
+Definition Float32bits : go_string := "math.Float32bits"%go.
+
+Definition Float32frombits : go_string := "math.Float32frombits"%go.
+
+Definition Float64bits : go_string := "math.Float64bits"%go.
+
+Definition Float64frombits : go_string := "math.Float64frombits"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -137,9 +455,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init math.math (λ: <>,
-      exception_do (do:  (useFMA'init #());;;
+  λ: <>,
+    package.init #math.math (λ: <>,
+      exception_do (do:  (package.alloc math.math #());;;
+      do:  (useFMA'init #());;;
       do:  (_gamP'init #());;;
       do:  (_gamQ'init #());;;
       do:  (_gamS'init #());;;

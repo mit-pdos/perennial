@@ -161,47 +161,32 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined buf :=
-{|
-  is_pkg_defined := is_global_definitions buf var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MkBuf :
-  WpFuncCall buf "MkBuf" _ (is_pkg_defined buf) :=
+  WpFuncCall buf.MkBuf _ (is_pkg_defined buf) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MkBufLoad :
-  WpFuncCall buf "MkBufLoad" _ (is_pkg_defined buf) :=
+  WpFuncCall buf.MkBufLoad _ (is_pkg_defined buf) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_installOneBit :
-  WpFuncCall buf "installOneBit" _ (is_pkg_defined buf) :=
+  WpFuncCall buf.installOneBit _ (is_pkg_defined buf) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_installBit :
-  WpFuncCall buf "installBit" _ (is_pkg_defined buf) :=
+  WpFuncCall buf.installBit _ (is_pkg_defined buf) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_installBytes :
-  WpFuncCall buf "installBytes" _ (is_pkg_defined buf) :=
+  WpFuncCall buf.installBytes _ (is_pkg_defined buf) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MkBufMap :
-  WpFuncCall buf "MkBufMap" _ (is_pkg_defined buf) :=
+  WpFuncCall buf.MkBufMap _ (is_pkg_defined buf) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Buf'ptr_BnumGet :

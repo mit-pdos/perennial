@@ -9,55 +9,69 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Debug : go_string := "github.com/mit-pdos/go-journal/util.Debug"%go.
+
+Definition DPrintf : go_string := "github.com/mit-pdos/go-journal/util.DPrintf"%go.
+
 (* go: util.go:9:6 *)
-Definition DPrintf : val :=
-  rec: "DPrintf" "level" "format" "a" :=
+Definition DPrintfⁱᵐᵖˡ : val :=
+  λ: "level" "format" "a",
     exception_do (let: "a" := (mem.alloc "a") in
     let: "format" := (mem.alloc "format") in
     let: "level" := (mem.alloc "level") in
-    (if: (![#uint64T] "level") ≤ (![#uint64T] (globals.get #util.util #"Debug"%go))
+    (if: (![#uint64T] "level") ≤ (![#uint64T] (globals.get #Debug))
     then
       do:  (let: "$a0" := (![#stringT] "format") in
       let: "$a1" := (![#sliceT] "a") in
-      (func_call #log.log #"Printf"%go) "$a0" "$a1")
+      (func_call #log.Printf) "$a0" "$a1")
     else do:  #());;;
     return: #()).
 
+Definition RoundUp : go_string := "github.com/mit-pdos/go-journal/util.RoundUp"%go.
+
 (* go: util.go:15:6 *)
-Definition RoundUp : val :=
-  rec: "RoundUp" "n" "sz" :=
+Definition RoundUpⁱᵐᵖˡ : val :=
+  λ: "n" "sz",
     exception_do (let: "sz" := (mem.alloc "sz") in
     let: "n" := (mem.alloc "n") in
     return: ((((![#uint64T] "n") + (![#uint64T] "sz")) - #(W64 1)) `quot` (![#uint64T] "sz"))).
 
+Definition Min : go_string := "github.com/mit-pdos/go-journal/util.Min"%go.
+
 (* go: util.go:19:6 *)
-Definition Min : val :=
-  rec: "Min" "n" "m" :=
+Definition Minⁱᵐᵖˡ : val :=
+  λ: "n" "m",
     exception_do (let: "m" := (mem.alloc "m") in
     let: "n" := (mem.alloc "n") in
     (if: (![#uint64T] "n") < (![#uint64T] "m")
     then return: (![#uint64T] "n")
     else return: (![#uint64T] "m"))).
 
+Definition SumOverflows : go_string := "github.com/mit-pdos/go-journal/util.SumOverflows"%go.
+
 (* returns n+m>=2^64 (if it were computed at infinite precision)
 
    go: util.go:28:6 *)
-Definition SumOverflows : val :=
-  rec: "SumOverflows" "n" "m" :=
+Definition SumOverflowsⁱᵐᵖˡ : val :=
+  λ: "n" "m",
     exception_do (let: "m" := (mem.alloc "m") in
     let: "n" := (mem.alloc "n") in
     return: (((![#uint64T] "n") + (![#uint64T] "m")) < (![#uint64T] "n"))).
 
+Definition SumOverflows32 : go_string := "github.com/mit-pdos/go-journal/util.SumOverflows32"%go.
+
 (* go: util.go:32:6 *)
-Definition SumOverflows32 : val :=
-  rec: "SumOverflows32" "n" "m" :=
+Definition SumOverflows32ⁱᵐᵖˡ : val :=
+  λ: "n" "m",
     exception_do (let: "m" := (mem.alloc "m") in
     let: "n" := (mem.alloc "n") in
     return: (((![#uint32T] "n") + (![#uint32T] "m")) < (![#uint32T] "n"))).
 
+Definition CloneByteSlice : go_string := "github.com/mit-pdos/go-journal/util.CloneByteSlice"%go.
+
 (* go: util.go:36:6 *)
-Definition CloneByteSlice : val :=
-  rec: "CloneByteSlice" "s" :=
+Definition CloneByteSliceⁱᵐᵖˡ : val :=
+  λ: "s",
     exception_do (let: "s" := (mem.alloc "s") in
     let: "s2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #byteT (let: "$a0" := (![#sliceT] "s") in
@@ -68,9 +82,9 @@ Definition CloneByteSlice : val :=
     (slice.copy #byteT) "$a0" "$a1");;;
     return: (![#sliceT] "s2")).
 
-Definition vars' : list (go_string * go_type) := [("Debug"%go, uint64T)].
+Definition vars' : list (go_string * go_type) := [(Debug, uint64T)].
 
-Definition functions' : list (go_string * val) := [("DPrintf"%go, DPrintf); ("RoundUp"%go, RoundUp); ("Min"%go, Min); ("SumOverflows"%go, SumOverflows); ("SumOverflows32"%go, SumOverflows32); ("CloneByteSlice"%go, CloneByteSlice)].
+Definition functions' : list (go_string * val) := [(DPrintf, DPrintfⁱᵐᵖˡ); (RoundUp, RoundUpⁱᵐᵖˡ); (Min, Minⁱᵐᵖˡ); (SumOverflows, SumOverflowsⁱᵐᵖˡ); (SumOverflows32, SumOverflows32ⁱᵐᵖˡ); (CloneByteSlice, CloneByteSliceⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [].
 
@@ -83,11 +97,12 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init util.util (λ: <>,
-      exception_do (do:  log.initialize';;;
+  λ: <>,
+    package.init #util.util (λ: <>,
+      exception_do (do:  (log.initialize' #());;;
+      do:  (package.alloc util.util #());;;
       let: "$r0" := #(W64 0) in
-      do:  ((globals.get #util.util #"Debug"%go) <-[#uint64T] "$r0"))
+      do:  ((globals.get #Debug) <-[#uint64T] "$r0"))
       ).
 
 End code.

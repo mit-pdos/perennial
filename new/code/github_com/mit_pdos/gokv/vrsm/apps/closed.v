@@ -106,7 +106,7 @@ Definition lconfig_mainⁱᵐᵖˡ : val :=
     let: "$a2" := lconfigHostPaxos in
     let: "$a3" := ((func_call #mk_lconfig_paxosHosts) #()) in
     let: "$a4" := (![#sliceT] "servers") in
-    (func_call configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+    (func_call #configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
 
 Definition dconfig_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.dconfig_main"%go.
@@ -133,7 +133,7 @@ Definition dconfig_mainⁱᵐᵖˡ : val :=
     let: "$a2" := dconfigHostPaxos in
     let: "$a3" := ((func_call #mk_dconfig_paxosHosts) #()) in
     let: "$a4" := (![#sliceT] "servers") in
-    (func_call configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+    (func_call #configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
 
 Definition kv_replica_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.kv_replica_main"%go.
@@ -160,7 +160,7 @@ Definition kv_replica_mainⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := (![#stringT] "fname") in
     let: "$a1" := (![#uint64T] "me") in
     let: "$a2" := (![#sliceT] "configHosts") in
-    (func_call vkv.Start) "$a0" "$a1" "$a2");;;
+    (func_call #vkv.Start) "$a0" "$a1" "$a2");;;
     return: #()).
 
 Definition makeBankClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.makeBankClerk"%go.
@@ -170,20 +170,20 @@ Definition makeBankClerkⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "kvck" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #mk_dconfig_hosts) #()) in
-    (func_call vkv.MakeKv) "$a0") in
-    (func_call cachekv.Make) "$a0") in
+    (func_call #vkv.MakeKv) "$a0") in
+    (func_call #cachekv.Make) "$a0") in
     do:  ("kvck" <-[#ptrT] "$r0");;;
     let: "lck" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #mk_lconfig_hosts) #()) in
-    (func_call vkv.MakeKv) "$a0") in
-    (func_call lockservice.MakeLockClerk) "$a0") in
+    (func_call #vkv.MakeKv) "$a0") in
+    (func_call #lockservice.MakeLockClerk) "$a0") in
     do:  ("lck" <-[#ptrT] "$r0");;;
     return: (let: "$a0" := (![#ptrT] "lck") in
      let: "$a1" := (interface.make (#cachekv, #"CacheKv'ptr") (![#ptrT] "kvck")) in
      let: "$a2" := #"init"%go in
      let: "$a3" := #"a1"%go in
      let: "$a4" := #"a2"%go in
-     (func_call bank.MakeBankClerk) "$a0" "$a1" "$a2" "$a3" "$a4")).
+     (func_call #bank.MakeBankClerk) "$a0" "$a1" "$a2" "$a3" "$a4")).
 
 Definition bank_transferer_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.bank_transferer_main"%go.
 

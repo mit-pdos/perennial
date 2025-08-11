@@ -11,31 +11,16 @@ Module log.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined log :=
-{|
-  is_pkg_defined := is_global_definitions log var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_Printf :
-  WpFuncCall log "Printf" _ (is_pkg_defined log) :=
+  WpFuncCall log.Printf _ (is_pkg_defined log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Println :
-  WpFuncCall log "Println" _ (is_pkg_defined log) :=
+  WpFuncCall log.Println _ (is_pkg_defined log) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 End names.

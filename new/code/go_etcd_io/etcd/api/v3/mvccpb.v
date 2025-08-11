@@ -41,7 +41,17 @@ Definition Event : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
+Definition init : go_string := "go.etcd.io/etcd/api/v3/mvccpb.init"%go.
+
 Axiom fileDescriptor_2216fe83c9c12408'init : val.
+
+Definition encodeVarintKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.encodeVarintKv"%go.
+
+Definition sovKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.sovKv"%go.
+
+Definition sozKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.sozKv"%go.
+
+Definition skipKv : go_string := "go.etcd.io/etcd/api/v3/mvccpb.skipKv"%go.
 
 Axiom ErrInvalidLengthKv'init : val.
 
@@ -66,9 +76,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Event_Even
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init mvccpb.mvccpb (λ: <>,
-      exception_do (do:  (_'init #());;;
+  λ: <>,
+    package.init #mvccpb.mvccpb (λ: <>,
+      exception_do (do:  (package.alloc mvccpb.mvccpb #());;;
+      do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (_'init #());;;
       do:  (Event_EventType_name'init #());;;

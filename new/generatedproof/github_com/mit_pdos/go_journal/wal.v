@@ -441,79 +441,64 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined wal :=
-{|
-  is_pkg_defined := is_global_definitions wal var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_MkBlockData :
-  WpFuncCall wal "MkBlockData" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.MkBlockData _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_initCircular :
-  WpFuncCall wal "initCircular" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.initCircular _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeHdr1 :
-  WpFuncCall wal "decodeHdr1" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.decodeHdr1 _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_decodeHdr2 :
-  WpFuncCall wal "decodeHdr2" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.decodeHdr2 _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_recoverCircular :
-  WpFuncCall wal "recoverCircular" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.recoverCircular _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_hdr2 :
-  WpFuncCall wal "hdr2" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.hdr2 _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_Advance :
-  WpFuncCall wal "Advance" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.Advance _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_mkSliding :
-  WpFuncCall wal "mkSliding" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.mkSliding _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_absorbBufs :
-  WpFuncCall wal "absorbBufs" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.absorbBufs _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_installBlocks :
-  WpFuncCall wal "installBlocks" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.installBlocks _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_mkLog :
-  WpFuncCall wal "mkLog" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.mkLog _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_MkLog :
-  WpFuncCall wal "MkLog" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.MkLog _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_doMemAppend :
-  WpFuncCall wal "doMemAppend" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.doMemAppend _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_copyUpdateBlock :
-  WpFuncCall wal "copyUpdateBlock" _ (is_pkg_defined wal) :=
+  WpFuncCall wal.copyUpdateBlock _ (is_pkg_defined wal) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_circularAppender'ptr_Append :

@@ -8,6 +8,18 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition init : go_string := "crypto/rand.init"%go.
+
+Definition fatal : go_string := "crypto/rand.fatal"%go.
+
+Definition Read : go_string := "crypto/rand.Read"%go.
+
+Definition Text : go_string := "crypto/rand.Text"%go.
+
+Definition Prime : go_string := "crypto/rand.Prime"%go.
+
+Definition Int : go_string := "crypto/rand.Int"%go.
+
 Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
@@ -25,9 +37,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init rand.rand (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #rand.rand (λ: <>,
+      exception_do (do:  (package.alloc rand.rand #()))
       ).
 
 End code.

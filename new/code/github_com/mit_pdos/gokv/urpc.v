@@ -42,16 +42,16 @@ Definition Server__rpcHandleⁱᵐᵖˡ : val :=
     let: "data2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "data1") in
     let: "$a1" := (![#uint64T] "seqno") in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("data2" <-[#sliceT] "$r0");;;
     let: "data3" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "data2") in
     let: "$a1" := (![#sliceT] (![#ptrT] "replyData")) in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("data3" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#grove_ffi.Connection] "conn") in
     let: "$a1" := (![#sliceT] "data3") in
-    (func_call grove_ffi.Send) "$a0" "$a1");;;
+    (func_call #grove_ffi.Send) "$a0" "$a1");;;
     return: #()).
 
 Definition MakeServer : go_string := "github.com/mit-pdos/gokv/urpc.MakeServer"%go.
@@ -73,7 +73,7 @@ Definition Server__readThreadⁱᵐᵖˡ : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := (mem.alloc (type.zero_val #grove_ffi.ReceiveRet)) in
       let: "$r0" := (let: "$a0" := (![#grove_ffi.Connection] "conn") in
-      (func_call grove_ffi.Receive) "$a0") in
+      (func_call #grove_ffi.Receive) "$a0") in
       do:  ("r" <-[#grove_ffi.ReceiveRet] "$r0");;;
       (if: ![#boolT] (struct.field_ref #grove_ffi.ReceiveRet #"Err"%go "r")
       then break: #()
@@ -83,14 +83,14 @@ Definition Server__readThreadⁱᵐᵖˡ : val :=
       do:  ("data" <-[#sliceT] "$r0");;;
       let: "rpcid" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "data") in
-      (func_call marshal.ReadInt) "$a0") in
+      (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("rpcid" <-[#uint64T] "$r0");;;
       do:  ("data" <-[#sliceT] "$r1");;;
       let: "seqno" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "data") in
-      (func_call marshal.ReadInt) "$a0") in
+      (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("seqno" <-[#uint64T] "$r0");;;
@@ -117,13 +117,13 @@ Definition Server__Serveⁱᵐᵖˡ : val :=
     let: "host" := (mem.alloc "host") in
     let: "listener" := (mem.alloc (type.zero_val #grove_ffi.Listener)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "host") in
-    (func_call grove_ffi.Listen) "$a0") in
+    (func_call #grove_ffi.Listen) "$a0") in
     do:  ("listener" <-[#grove_ffi.Listener] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do ((for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
         let: "conn" := (mem.alloc (type.zero_val #grove_ffi.Connection)) in
         let: "$r0" := (let: "$a0" := (![#grove_ffi.Listener] "listener") in
-        (func_call grove_ffi.Accept) "$a0") in
+        (func_call #grove_ffi.Accept) "$a0") in
         do:  ("conn" <-[#grove_ffi.Connection] "$r0");;;
         let: "$go" := (λ: <>,
           exception_do (do:  (let: "$a0" := (![#grove_ffi.Connection] "conn") in
@@ -162,7 +162,7 @@ Definition Client__replyThreadⁱᵐᵖˡ : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       let: "r" := (mem.alloc (type.zero_val #grove_ffi.ReceiveRet)) in
       let: "$r0" := (let: "$a0" := (![#grove_ffi.Connection] (struct.field_ref #Client #"conn"%go (![#ptrT] "cl"))) in
-      (func_call grove_ffi.Receive) "$a0") in
+      (func_call #grove_ffi.Receive) "$a0") in
       do:  ("r" <-[#grove_ffi.ReceiveRet] "$r0");;;
       (if: ![#boolT] (struct.field_ref #grove_ffi.ReceiveRet #"Err"%go "r")
       then
@@ -183,7 +183,7 @@ Definition Client__replyThreadⁱᵐᵖˡ : val :=
       do:  ("data" <-[#sliceT] "$r0");;;
       let: "seqno" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "data") in
-      (func_call marshal.ReadInt) "$a0") in
+      (func_call #marshal.ReadInt) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("seqno" <-[#uint64T] "$r0");;;
@@ -225,7 +225,7 @@ Definition TryMakeClientⁱᵐᵖˡ : val :=
     do:  ("host" <-[#uint64T] "$r0");;;
     let: "a" := (mem.alloc (type.zero_val #grove_ffi.ConnectRet)) in
     let: "$r0" := (let: "$a0" := (![#uint64T] "host") in
-    (func_call grove_ffi.Connect) "$a0") in
+    (func_call #grove_ffi.Connect) "$a0") in
     do:  ("a" <-[#grove_ffi.ConnectRet] "$r0");;;
     let: "nilClient" := (mem.alloc (type.zero_val #ptrT)) in
     (if: ![#boolT] (struct.field_ref #grove_ffi.ConnectRet #"Err"%go "a")
@@ -268,12 +268,12 @@ Definition MakeClientⁱᵐᵖˡ : val :=
     then
       do:  (let: "$a0" := #"Unable to connect to %s"%go in
       let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) (let: "$a0" := (![#uint64T] "host_name") in
-      (func_call grove_ffi.AddressToStr) "$a0")) in
+      (func_call #grove_ffi.AddressToStr) "$a0")) in
       slice.literal #interfaceT ["$sl0"])) in
-      (func_call log.Printf) "$a0" "$a1")
+      (func_call #log.Printf) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := ((![#uint64T] "err") = #(W64 0)) in
-    (func_call primitive.Assume) "$a0");;;
+    (func_call #primitive.Assume) "$a0");;;
     return: (![#ptrT] "cl")).
 
 Definition Error : go_type := uint64T.
@@ -297,7 +297,7 @@ Definition Client__CallStartⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (let: "$reply" := (![#ptrT] "reply_buf") in
     let: "$state" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$cond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) in
-    (func_call sync.NewCond) "$a0") in
+    (func_call #sync.NewCond) "$a0") in
     struct.make #Callback [{
       "reply" ::= "$reply";
       "state" ::= "$state";
@@ -312,7 +312,7 @@ Definition Client__CallStartⁱᵐᵖˡ : val :=
     do:  ("seqno" <-[#uint64T] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #Client #"seq"%go (![#ptrT] "cl"))) in
     let: "$a1" := #(W64 1) in
-    (func_call std.SumAssumeNoOverflow) "$a0" "$a1") in
+    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #Client #"seq"%go (![#ptrT] "cl")) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#ptrT] "cb") in
     do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) (![#uint64T] "seqno") "$r0");;;
@@ -324,21 +324,21 @@ Definition Client__CallStartⁱᵐᵖˡ : val :=
     let: "data2" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "data1") in
     let: "$a1" := (![#uint64T] "rpcid") in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("data2" <-[#sliceT] "$r0");;;
     let: "data3" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "data2") in
     let: "$a1" := (![#uint64T] "seqno") in
-    (func_call marshal.WriteInt) "$a0" "$a1") in
+    (func_call #marshal.WriteInt) "$a0" "$a1") in
     do:  ("data3" <-[#sliceT] "$r0");;;
     let: "reqData" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "data3") in
     let: "$a1" := (![#sliceT] "args") in
-    (func_call marshal.WriteBytes) "$a0" "$a1") in
+    (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("reqData" <-[#sliceT] "$r0");;;
     (if: let: "$a0" := (![#grove_ffi.Connection] (struct.field_ref #Client #"conn"%go (![#ptrT] "cl"))) in
     let: "$a1" := (![#sliceT] "reqData") in
-    (func_call grove_ffi.Send) "$a0" "$a1"
+    (func_call #grove_ffi.Send) "$a0" "$a1"
     then
       return: (mem.alloc (struct.make #Callback [{
          "reply" ::= type.zero_val #ptrT;
@@ -360,7 +360,7 @@ Definition Client__CallCompleteⁱᵐᵖˡ : val :=
     then
       do:  (let: "$a0" := (![#ptrT] (struct.field_ref #Callback #"cond"%go (![#ptrT] "cb"))) in
       let: "$a1" := (![#uint64T] "timeout_ms") in
-      (func_call primitive.WaitTimeout) "$a0" "$a1")
+      (func_call #primitive.WaitTimeout) "$a0" "$a1")
     else do:  #());;;
     let: "state" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (![#ptrT] (struct.field_ref #Callback #"state"%go (![#ptrT] "cb")))) in

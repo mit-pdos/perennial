@@ -231,55 +231,40 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined atomic :=
-{|
-  is_pkg_defined := is_global_definitions atomic var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_CompareAndSwapInt32 :
-  WpFuncCall atomic "CompareAndSwapInt32" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.CompareAndSwapInt32 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AddInt32 :
-  WpFuncCall atomic "AddInt32" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.AddInt32 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LoadInt32 :
-  WpFuncCall atomic "LoadInt32" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.LoadInt32 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StoreInt32 :
-  WpFuncCall atomic "StoreInt32" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.StoreInt32 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CompareAndSwapUint64 :
-  WpFuncCall atomic "CompareAndSwapUint64" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.CompareAndSwapUint64 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_AddUint64 :
-  WpFuncCall atomic "AddUint64" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.AddUint64 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_LoadUint64 :
-  WpFuncCall atomic "LoadUint64" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.LoadUint64 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_StoreUint64 :
-  WpFuncCall atomic "StoreUint64" _ (is_pkg_defined atomic) :=
+  WpFuncCall atomic.StoreUint64 _ (is_pkg_defined atomic) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_Add :

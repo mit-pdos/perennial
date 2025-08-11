@@ -8,12 +8,18 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition CompareUint64 : go_string := "go.etcd.io/raft/v3/quorum/slices.CompareUint64"%go.
+
+Definition SortUint64 : go_string := "go.etcd.io/raft/v3/quorum/slices.SortUint64"%go.
+
 Definition Tup : go_type := structT [
   "ID" :: uint64T;
   "Idx" :: uint64T;
   "Ok" :: boolT;
   "Bar" :: intT
 ].
+
+Definition SortFuncTup : go_string := "go.etcd.io/raft/v3/quorum/slices.SortFuncTup"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -32,9 +38,9 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Tup"%go, [
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init slices.slices (λ: <>,
-      exception_do (do:  #())
+  λ: <>,
+    package.init #slices.slices (λ: <>,
+      exception_do (do:  (package.alloc slices.slices #()))
       ).
 
 End code.

@@ -20,9 +20,11 @@ Definition lockShard : go_type := structT [
   "state" :: mapT uint64T ptrT
 ].
 
+Definition mkLockShard : go_string := "github.com/mit-pdos/go-journal/lockmap.mkLockShard"%go.
+
 (* go: lock.go:30:6 *)
-Definition mkLockShard : val :=
-  rec: "mkLockShard" <> :=
+Definition mkLockShardⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "state" := (mem.alloc (type.zero_val (type.mapT #uint64T #ptrT))) in
     let: "$r0" := (map.make #uint64T #ptrT) in
     do:  ("state" <-[type.mapT #uint64T #ptrT] "$r0");;;
@@ -40,8 +42,8 @@ Definition mkLockShard : val :=
     return: (![#ptrT] "a")).
 
 (* go: lock.go:40:24 *)
-Definition lockShard__acquire : val :=
-  rec: "lockShard__acquire" "lmap" "addr" :=
+Definition lockShard__acquireⁱᵐᵖˡ : val :=
+  λ: "lmap" "addr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "addr" := (mem.alloc "addr") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
@@ -61,7 +63,7 @@ Definition lockShard__acquire : val :=
       else
         let: "$r0" := (mem.alloc (let: "$held" := #false in
         let: "$cond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) in
-        (func_call #sync.sync #"NewCond"%go) "$a0") in
+        (func_call #sync.NewCond) "$a0") in
         let: "$waiters" := #(W64 0) in
         struct.make #lockState [{
           "held" ::= "$held";
@@ -99,8 +101,8 @@ Definition lockShard__acquire : val :=
     return: #()).
 
 (* go: lock.go:81:24 *)
-Definition lockShard__release : val :=
-  rec: "lockShard__release" "lmap" "addr" :=
+Definition lockShard__releaseⁱᵐᵖˡ : val :=
+  λ: "lmap" "addr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "addr" := (mem.alloc "addr") in
     do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) #());;;
@@ -124,16 +126,18 @@ Definition LockMap : go_type := structT [
   "shards" :: sliceT
 ].
 
+Definition MkLockMap : go_string := "github.com/mit-pdos/go-journal/lockmap.MkLockMap"%go.
+
 (* go: lock.go:99:6 *)
-Definition MkLockMap : val :=
-  rec: "MkLockMap" <> :=
+Definition MkLockMapⁱᵐᵖˡ : val :=
+  λ: <>,
     exception_do (let: "shards" := (mem.alloc (type.zero_val #sliceT)) in
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#uint64T] "$r0");;;
     (for: (λ: <>, (![#uint64T] "i") < NSHARD); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
       let: "$r0" := (let: "$a0" := (![#sliceT] "shards") in
-      let: "$a1" := ((let: "$sl0" := ((func_call #lockmap.lockmap #"mkLockShard"%go) #()) in
+      let: "$a1" := ((let: "$sl0" := ((func_call #mkLockShard) #()) in
       slice.literal #ptrT ["$sl0"])) in
       (slice.append #ptrT) "$a0" "$a1") in
       do:  ("shards" <-[#sliceT] "$r0")));;;
@@ -146,8 +150,8 @@ Definition MkLockMap : val :=
     return: (![#ptrT] "a")).
 
 (* go: lock.go:110:22 *)
-Definition LockMap__Acquire : val :=
-  rec: "LockMap__Acquire" "lmap" "flataddr" :=
+Definition LockMap__Acquireⁱᵐᵖˡ : val :=
+  λ: "lmap" "flataddr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "flataddr" := (mem.alloc "flataddr") in
     let: "shard" := (mem.alloc (type.zero_val #ptrT)) in
@@ -158,8 +162,8 @@ Definition LockMap__Acquire : val :=
     return: #()).
 
 (* go: lock.go:115:22 *)
-Definition LockMap__Release : val :=
-  rec: "LockMap__Release" "lmap" "flataddr" :=
+Definition LockMap__Releaseⁱᵐᵖˡ : val :=
+  λ: "lmap" "flataddr",
     exception_do (let: "lmap" := (mem.alloc "lmap") in
     let: "flataddr" := (mem.alloc "flataddr") in
     let: "shard" := (mem.alloc (type.zero_val #ptrT)) in
@@ -171,9 +175,9 @@ Definition LockMap__Release : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [("mkLockShard"%go, mkLockShard); ("MkLockMap"%go, MkLockMap)].
+Definition functions' : list (go_string * val) := [(mkLockShard, mkLockShardⁱᵐᵖˡ); (MkLockMap, MkLockMapⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("lockState"%go, []); ("lockState'ptr"%go, []); ("lockShard"%go, []); ("lockShard'ptr"%go, [("acquire"%go, lockShard__acquire); ("release"%go, lockShard__release)]); ("LockMap"%go, []); ("LockMap'ptr"%go, [("Acquire"%go, LockMap__Acquire); ("Release"%go, LockMap__Release)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [("lockState"%go, []); ("lockState'ptr"%go, []); ("lockShard"%go, []); ("lockShard'ptr"%go, [("acquire"%go, lockShard__acquireⁱᵐᵖˡ); ("release"%go, lockShard__releaseⁱᵐᵖˡ)]); ("LockMap"%go, []); ("LockMap'ptr"%go, [("Acquire"%go, LockMap__Acquireⁱᵐᵖˡ); ("Release"%go, LockMap__Releaseⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo lockmap.lockmap :=
   {|
@@ -184,9 +188,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("lockState"
   |}.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init lockmap.lockmap (λ: <>,
-      exception_do (do:  sync.initialize')
+  λ: <>,
+    package.init #lockmap.lockmap (λ: <>,
+      exception_do (do:  (sync.initialize' #());;;
+      do:  (package.alloc lockmap.lockmap #()))
       ).
 
 End code.

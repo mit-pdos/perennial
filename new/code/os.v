@@ -8,7 +8,49 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition ReadDir : go_string := "os.ReadDir"%go.
+
+Definition CopyFS : go_string := "os.CopyFS"%go.
+
 Axiom dirBufPool'init : val.
+
+Definition readInt : go_string := "os.readInt"%go.
+
+Definition readIntBE : go_string := "os.readIntBE"%go.
+
+Definition readIntLE : go_string := "os.readIntLE"%go.
+
+Definition direntIno : go_string := "os.direntIno"%go.
+
+Definition direntReclen : go_string := "os.direntReclen"%go.
+
+Definition direntNamlen : go_string := "os.direntNamlen"%go.
+
+Definition direntType : go_string := "os.direntType"%go.
+
+Definition isNoFollowErr : go_string := "os.isNoFollowErr"%go.
+
+Definition Expand : go_string := "os.Expand"%go.
+
+Definition ExpandEnv : go_string := "os.ExpandEnv"%go.
+
+Definition isShellSpecialVar : go_string := "os.isShellSpecialVar"%go.
+
+Definition isAlphaNum : go_string := "os.isAlphaNum"%go.
+
+Definition getShellName : go_string := "os.getShellName"%go.
+
+Definition Getenv : go_string := "os.Getenv"%go.
+
+Definition LookupEnv : go_string := "os.LookupEnv"%go.
+
+Definition Setenv : go_string := "os.Setenv"%go.
+
+Definition Unsetenv : go_string := "os.Unsetenv"%go.
+
+Definition Clearenv : go_string := "os.Clearenv"%go.
+
+Definition Environ : go_string := "os.Environ"%go.
 
 Axiom ErrInvalid'init : val.
 
@@ -24,11 +66,53 @@ Axiom ErrNoDeadline'init : val.
 
 Axiom ErrDeadlineExceeded'init : val.
 
+Definition errNoDeadline : go_string := "os.errNoDeadline"%go.
+
+Definition errDeadlineExceeded : go_string := "os.errDeadlineExceeded"%go.
+
+Definition NewSyscallError : go_string := "os.NewSyscallError"%go.
+
+Definition IsExist : go_string := "os.IsExist"%go.
+
+Definition IsNotExist : go_string := "os.IsNotExist"%go.
+
+Definition IsPermission : go_string := "os.IsPermission"%go.
+
+Definition IsTimeout : go_string := "os.IsTimeout"%go.
+
+Definition underlyingErrorIs : go_string := "os.underlyingErrorIs"%go.
+
+Definition underlyingError : go_string := "os.underlyingError"%go.
+
 Axiom ErrProcessDone'init : val.
+
+Definition newPIDProcess : go_string := "os.newPIDProcess"%go.
+
+Definition newHandleProcess : go_string := "os.newHandleProcess"%go.
+
+Definition newDoneProcess : go_string := "os.newDoneProcess"%go.
+
+Definition Getpid : go_string := "os.Getpid"%go.
+
+Definition Getppid : go_string := "os.Getppid"%go.
+
+Definition FindProcess : go_string := "os.FindProcess"%go.
+
+Definition StartProcess : go_string := "os.StartProcess"%go.
 
 Axiom Interrupt'init : val.
 
 Axiom Kill'init : val.
+
+Definition startProcess : go_string := "os.startProcess"%go.
+
+Definition convertESRCH : go_string := "os.convertESRCH"%go.
+
+Definition findProcess : go_string := "os.findProcess"%go.
+
+Definition Executable : go_string := "os.Executable"%go.
+
+Definition executable : go_string := "os.executable"%go.
 
 Axiom Stdin'init : val.
 
@@ -36,21 +120,245 @@ Axiom Stdout'init : val.
 
 Axiom Stderr'init : val.
 
+Definition genericReadFrom : go_string := "os.genericReadFrom"%go.
+
 Axiom errWriteAtInAppendMode'init : val.
+
+Definition genericWriteTo : go_string := "os.genericWriteTo"%go.
+
+Definition Mkdir : go_string := "os.Mkdir"%go.
+
+Definition setStickyBit : go_string := "os.setStickyBit"%go.
+
+Definition Chdir : go_string := "os.Chdir"%go.
+
+Definition Open : go_string := "os.Open"%go.
+
+Definition Create : go_string := "os.Create"%go.
+
+Definition OpenFile : go_string := "os.OpenFile"%go.
 
 Axiom errPathEscapes'init : val.
 
+Definition openDir : go_string := "os.openDir"%go.
+
 Axiom lstat'init : val.
+
+Definition Rename : go_string := "os.Rename"%go.
+
+Definition Readlink : go_string := "os.Readlink"%go.
+
+Definition fixCount : go_string := "os.fixCount"%go.
 
 Axiom checkWrapErr'init : val.
 
+Definition TempDir : go_string := "os.TempDir"%go.
+
+Definition UserCacheDir : go_string := "os.UserCacheDir"%go.
+
+Definition UserConfigDir : go_string := "os.UserConfigDir"%go.
+
+Definition UserHomeDir : go_string := "os.UserHomeDir"%go.
+
+Definition Chmod : go_string := "os.Chmod"%go.
+
+Definition DirFS : go_string := "os.DirFS"%go.
+
+Definition ReadFile : go_string := "os.ReadFile"%go.
+
+Definition readFileContents : go_string := "os.readFileContents"%go.
+
+Definition WriteFile : go_string := "os.WriteFile"%go.
+
+Definition open : go_string := "os.open"%go.
+
+Definition syscallMode : go_string := "os.syscallMode"%go.
+
+Definition chmod : go_string := "os.chmod"%go.
+
+Definition Chown : go_string := "os.Chown"%go.
+
+Definition Lchown : go_string := "os.Lchown"%go.
+
+Definition Chtimes : go_string := "os.Chtimes"%go.
+
+Definition ignoringEINTR : go_string := "os.ignoringEINTR"%go.
+
+Definition ignoringEINTR2 : go_string := "os.ignoringEINTR2"%go.
+
+Definition fixLongPath : go_string := "os.fixLongPath"%go.
+
+Definition rename : go_string := "os.rename"%go.
+
+Definition NewFile : go_string := "os.NewFile"%go.
+
+Definition net_newUnixFile : go_string := "os.net_newUnixFile"%go.
+
+Definition newFile : go_string := "os.newFile"%go.
+
+Definition sigpipe : go_string := "os.sigpipe"%go.
+
+Definition epipecheck : go_string := "os.epipecheck"%go.
+
+Definition openFileNolog : go_string := "os.openFileNolog"%go.
+
+Definition openDirNolog : go_string := "os.openDirNolog"%go.
+
+Definition Truncate : go_string := "os.Truncate"%go.
+
+Definition Remove : go_string := "os.Remove"%go.
+
+Definition tempDir : go_string := "os.tempDir"%go.
+
+Definition Link : go_string := "os.Link"%go.
+
+Definition Symlink : go_string := "os.Symlink"%go.
+
+Definition readlink : go_string := "os.readlink"%go.
+
+Definition newUnixDirent : go_string := "os.newUnixDirent"%go.
+
+Definition Getwd : go_string := "os.Getwd"%go.
+
+Definition MkdirAll : go_string := "os.MkdirAll"%go.
+
+Definition RemoveAll : go_string := "os.RemoveAll"%go.
+
+Definition endsWithDot : go_string := "os.endsWithDot"%go.
+
+Definition IsPathSeparator : go_string := "os.IsPathSeparator"%go.
+
+Definition splitPath : go_string := "os.splitPath"%go.
+
+Definition ensurePidfd : go_string := "os.ensurePidfd"%go.
+
+Definition getPidfd : go_string := "os.getPidfd"%go.
+
+Definition pidfdFind : go_string := "os.pidfdFind"%go.
+
+Definition pidfdWorks : go_string := "os.pidfdWorks"%go.
+
 Axiom checkPidfdOnce'init : val.
 
+Definition checkPidfd : go_string := "os.checkPidfd"%go.
+
+Definition checkClonePidfd : go_string := "os.checkClonePidfd"%go.
+
+Definition ignoreSIGSYS : go_string := "os.ignoreSIGSYS"%go.
+
+Definition restoreSIGSYS : go_string := "os.restoreSIGSYS"%go.
+
+Definition Pipe : go_string := "os.Pipe"%go.
+
+Definition init : go_string := "os.init"%go.
+
+Definition runtime_args : go_string := "os.runtime_args"%go.
+
+Definition Getuid : go_string := "os.Getuid"%go.
+
+Definition Geteuid : go_string := "os.Geteuid"%go.
+
+Definition Getgid : go_string := "os.Getgid"%go.
+
+Definition Getegid : go_string := "os.Getegid"%go.
+
+Definition Getgroups : go_string := "os.Getgroups"%go.
+
+Definition Exit : go_string := "os.Exit"%go.
+
+Definition runtime_beforeExit : go_string := "os.runtime_beforeExit"%go.
+
+Definition newRawConn : go_string := "os.newRawConn"%go.
+
+Definition removeAll : go_string := "os.removeAll"%go.
+
+Definition removeAllFrom : go_string := "os.removeAllFrom"%go.
+
+Definition openDirAt : go_string := "os.openDirAt"%go.
+
+Definition OpenInRoot : go_string := "os.OpenInRoot"%go.
+
+Definition OpenRoot : go_string := "os.OpenRoot"%go.
+
+Definition splitPathInRoot : go_string := "os.splitPathInRoot"%go.
+
+Definition isValidRootFSPath : go_string := "os.isValidRootFSPath"%go.
+
+Definition rootCleanPath : go_string := "os.rootCleanPath"%go.
+
+Definition rootMkdir : go_string := "os.rootMkdir"%go.
+
+Definition rootRemove : go_string := "os.rootRemove"%go.
+
+Definition doInRoot : go_string := "os.doInRoot"%go.
+
+Definition openRootNolog : go_string := "os.openRootNolog"%go.
+
+Definition newRoot : go_string := "os.newRoot"%go.
+
+Definition openRootInRoot : go_string := "os.openRootInRoot"%go.
+
+Definition rootOpenFileNolog : go_string := "os.rootOpenFileNolog"%go.
+
+Definition rootOpenDir : go_string := "os.rootOpenDir"%go.
+
+Definition rootStat : go_string := "os.rootStat"%go.
+
+Definition mkdirat : go_string := "os.mkdirat"%go.
+
+Definition removeat : go_string := "os.removeat"%go.
+
+Definition checkSymlink : go_string := "os.checkSymlink"%go.
+
+Definition readlinkat : go_string := "os.readlinkat"%go.
+
+Definition Stat : go_string := "os.Stat"%go.
+
+Definition Lstat : go_string := "os.Lstat"%go.
+
+Definition fillFileStatFromSys : go_string := "os.fillFileStatFromSys"%go.
+
+Definition atime : go_string := "os.atime"%go.
+
+Definition statNolog : go_string := "os.statNolog"%go.
+
+Definition lstatNolog : go_string := "os.lstatNolog"%go.
+
+Definition Hostname : go_string := "os.Hostname"%go.
+
+Definition hostname : go_string := "os.hostname"%go.
+
+Definition runtime_rand : go_string := "os.runtime_rand"%go.
+
+Definition nextRandom : go_string := "os.nextRandom"%go.
+
+Definition CreateTemp : go_string := "os.CreateTemp"%go.
+
 Axiom errPatternHasSeparator'init : val.
+
+Definition prefixAndSuffix : go_string := "os.prefixAndSuffix"%go.
+
+Definition MkdirTemp : go_string := "os.MkdirTemp"%go.
+
+Definition joinPath : go_string := "os.joinPath"%go.
+
+Definition Getpagesize : go_string := "os.Getpagesize"%go.
+
+Definition SameFile : go_string := "os.SameFile"%go.
+
+Definition sameFile : go_string := "os.sameFile"%go.
 
 Axiom pollCopyFileRange'init : val.
 
 Axiom pollSplice'init : val.
+
+Definition getPollFDAndNetwork : go_string := "os.getPollFDAndNetwork"%go.
+
+Definition isUnixOrTCP : go_string := "os.isUnixOrTCP"%go.
+
+Definition wrapSyscallError : go_string := "os.wrapSyscallError"%go.
+
+Definition tryLimitedReader : go_string := "os.tryLimitedReader"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -69,9 +377,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init os.os (λ: <>,
-      exception_do (do:  (dirBufPool'init #());;;
+  λ: <>,
+    package.init #os.os (λ: <>,
+      exception_do (do:  (package.alloc os.os #());;;
+      do:  (dirBufPool'init #());;;
       do:  (ErrInvalid'init #());;;
       do:  (ErrPermission'init #());;;
       do:  (ErrExist'init #());;;

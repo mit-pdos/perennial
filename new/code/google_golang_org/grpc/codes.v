@@ -8,6 +8,10 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition init : go_string := "google.golang.org/grpc/codes.init"%go.
+
+Definition canonicalString : go_string := "google.golang.org/grpc/codes.canonicalString"%go.
+
 Definition Code : go_type := uint32T.
 
 Definition Canceled : expr := #(W32 1).
@@ -51,9 +55,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Code"%go, 
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init codes.codes (λ: <>,
-      exception_do (do:  (strToCode'init #()))
+  λ: <>,
+    package.init #codes.codes (λ: <>,
+      exception_do (do:  (package.alloc codes.codes #());;;
+      do:  (strToCode'init #()))
       ).
 
 End code.

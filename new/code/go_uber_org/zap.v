@@ -9,21 +9,283 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Array : go_string := "go.uber.org/zap.Array"%go.
+
+Definition Bools : go_string := "go.uber.org/zap.Bools"%go.
+
+Definition ByteStrings : go_string := "go.uber.org/zap.ByteStrings"%go.
+
+Definition Complex128s : go_string := "go.uber.org/zap.Complex128s"%go.
+
+Definition Complex64s : go_string := "go.uber.org/zap.Complex64s"%go.
+
+Definition Durations : go_string := "go.uber.org/zap.Durations"%go.
+
+Definition Float64s : go_string := "go.uber.org/zap.Float64s"%go.
+
+Definition Float32s : go_string := "go.uber.org/zap.Float32s"%go.
+
+Definition Ints : go_string := "go.uber.org/zap.Ints"%go.
+
+Definition Int64s : go_string := "go.uber.org/zap.Int64s"%go.
+
+Definition Int32s : go_string := "go.uber.org/zap.Int32s"%go.
+
+Definition Int16s : go_string := "go.uber.org/zap.Int16s"%go.
+
+Definition Int8s : go_string := "go.uber.org/zap.Int8s"%go.
+
+Definition Objects : go_string := "go.uber.org/zap.Objects"%go.
+
+Definition ObjectValues : go_string := "go.uber.org/zap.ObjectValues"%go.
+
+Definition Strings : go_string := "go.uber.org/zap.Strings"%go.
+
+Definition Stringers : go_string := "go.uber.org/zap.Stringers"%go.
+
+Definition Times : go_string := "go.uber.org/zap.Times"%go.
+
+Definition Uints : go_string := "go.uber.org/zap.Uints"%go.
+
+Definition Uint64s : go_string := "go.uber.org/zap.Uint64s"%go.
+
+Definition Uint32s : go_string := "go.uber.org/zap.Uint32s"%go.
+
+Definition Uint16s : go_string := "go.uber.org/zap.Uint16s"%go.
+
+Definition Uint8s : go_string := "go.uber.org/zap.Uint8s"%go.
+
+Definition Uintptrs : go_string := "go.uber.org/zap.Uintptrs"%go.
+
+Definition Errors : go_string := "go.uber.org/zap.Errors"%go.
+
+Definition NewProductionEncoderConfig : go_string := "go.uber.org/zap.NewProductionEncoderConfig"%go.
+
+Definition NewProductionConfig : go_string := "go.uber.org/zap.NewProductionConfig"%go.
+
+Definition NewDevelopmentEncoderConfig : go_string := "go.uber.org/zap.NewDevelopmentEncoderConfig"%go.
+
+Definition NewDevelopmentConfig : go_string := "go.uber.org/zap.NewDevelopmentConfig"%go.
+
 Axiom errNoEncoderNameSpecified'init : val.
 
 Axiom _encoderNameToConstructor'init : val.
 
+Definition RegisterEncoder : go_string := "go.uber.org/zap.RegisterEncoder"%go.
+
+Definition newEncoder : go_string := "go.uber.org/zap.newEncoder"%go.
+
 Axiom _errArrayElemPool'init : val.
+
+Definition Error : go_string := "go.uber.org/zap.Error"%go.
+
+Definition NamedError : go_string := "go.uber.org/zap.NamedError"%go.
 
 Axiom _minTimeInt64'init : val.
 
 Axiom _maxTimeInt64'init : val.
 
+Definition Skip : go_string := "go.uber.org/zap.Skip"%go.
+
+Definition nilField : go_string := "go.uber.org/zap.nilField"%go.
+
+Definition Binary : go_string := "go.uber.org/zap.Binary"%go.
+
+Definition Bool : go_string := "go.uber.org/zap.Bool"%go.
+
+Definition Boolp : go_string := "go.uber.org/zap.Boolp"%go.
+
+Definition ByteString : go_string := "go.uber.org/zap.ByteString"%go.
+
+Definition Complex128 : go_string := "go.uber.org/zap.Complex128"%go.
+
+Definition Complex128p : go_string := "go.uber.org/zap.Complex128p"%go.
+
+Definition Complex64 : go_string := "go.uber.org/zap.Complex64"%go.
+
+Definition Complex64p : go_string := "go.uber.org/zap.Complex64p"%go.
+
+Definition Float64 : go_string := "go.uber.org/zap.Float64"%go.
+
+Definition Float64p : go_string := "go.uber.org/zap.Float64p"%go.
+
+Definition Float32 : go_string := "go.uber.org/zap.Float32"%go.
+
+Definition Float32p : go_string := "go.uber.org/zap.Float32p"%go.
+
+Definition Int : go_string := "go.uber.org/zap.Int"%go.
+
+Definition Intp : go_string := "go.uber.org/zap.Intp"%go.
+
+Definition Int64 : go_string := "go.uber.org/zap.Int64"%go.
+
+Definition Int64p : go_string := "go.uber.org/zap.Int64p"%go.
+
+Definition Int32 : go_string := "go.uber.org/zap.Int32"%go.
+
+Definition Int32p : go_string := "go.uber.org/zap.Int32p"%go.
+
+Definition Int16 : go_string := "go.uber.org/zap.Int16"%go.
+
+Definition Int16p : go_string := "go.uber.org/zap.Int16p"%go.
+
+Definition Int8 : go_string := "go.uber.org/zap.Int8"%go.
+
+Definition Int8p : go_string := "go.uber.org/zap.Int8p"%go.
+
+Definition String : go_string := "go.uber.org/zap.String"%go.
+
+Definition Stringp : go_string := "go.uber.org/zap.Stringp"%go.
+
+Definition Uint : go_string := "go.uber.org/zap.Uint"%go.
+
+Definition Uintp : go_string := "go.uber.org/zap.Uintp"%go.
+
+Definition Uint64 : go_string := "go.uber.org/zap.Uint64"%go.
+
+Definition Uint64p : go_string := "go.uber.org/zap.Uint64p"%go.
+
+Definition Uint32 : go_string := "go.uber.org/zap.Uint32"%go.
+
+Definition Uint32p : go_string := "go.uber.org/zap.Uint32p"%go.
+
+Definition Uint16 : go_string := "go.uber.org/zap.Uint16"%go.
+
+Definition Uint16p : go_string := "go.uber.org/zap.Uint16p"%go.
+
+Definition Uint8 : go_string := "go.uber.org/zap.Uint8"%go.
+
+Definition Uint8p : go_string := "go.uber.org/zap.Uint8p"%go.
+
+Definition Uintptr : go_string := "go.uber.org/zap.Uintptr"%go.
+
+Definition Uintptrp : go_string := "go.uber.org/zap.Uintptrp"%go.
+
+Definition Reflect : go_string := "go.uber.org/zap.Reflect"%go.
+
+Definition Namespace : go_string := "go.uber.org/zap.Namespace"%go.
+
+Definition Stringer : go_string := "go.uber.org/zap.Stringer"%go.
+
+Definition Time : go_string := "go.uber.org/zap.Time"%go.
+
+Definition Timep : go_string := "go.uber.org/zap.Timep"%go.
+
+Definition Stack : go_string := "go.uber.org/zap.Stack"%go.
+
+Definition StackSkip : go_string := "go.uber.org/zap.StackSkip"%go.
+
+Definition Duration : go_string := "go.uber.org/zap.Duration"%go.
+
+Definition Durationp : go_string := "go.uber.org/zap.Durationp"%go.
+
+Definition Object : go_string := "go.uber.org/zap.Object"%go.
+
+Definition Inline : go_string := "go.uber.org/zap.Inline"%go.
+
+Definition Dict : go_string := "go.uber.org/zap.Dict"%go.
+
+Definition dictField : go_string := "go.uber.org/zap.dictField"%go.
+
+Definition Any : go_string := "go.uber.org/zap.Any"%go.
+
+Definition LevelFlag : go_string := "go.uber.org/zap.LevelFlag"%go.
+
 Axiom _globalL'init : val.
 
 Axiom _globalS'init : val.
 
+Definition L : go_string := "go.uber.org/zap.L"%go.
+
+Definition S : go_string := "go.uber.org/zap.S"%go.
+
+Definition ReplaceGlobals : go_string := "go.uber.org/zap.ReplaceGlobals"%go.
+
+Definition NewStdLog : go_string := "go.uber.org/zap.NewStdLog"%go.
+
+Definition NewStdLogAt : go_string := "go.uber.org/zap.NewStdLogAt"%go.
+
+Definition RedirectStdLog : go_string := "go.uber.org/zap.RedirectStdLog"%go.
+
+Definition RedirectStdLogAt : go_string := "go.uber.org/zap.RedirectStdLogAt"%go.
+
+Definition redirectStdLogAt : go_string := "go.uber.org/zap.redirectStdLogAt"%go.
+
+Definition levelToFunc : go_string := "go.uber.org/zap.levelToFunc"%go.
+
+Definition decodePutRequest : go_string := "go.uber.org/zap.decodePutRequest"%go.
+
+Definition decodePutURL : go_string := "go.uber.org/zap.decodePutURL"%go.
+
+Definition decodePutJSON : go_string := "go.uber.org/zap.decodePutJSON"%go.
+
+Definition NewAtomicLevel : go_string := "go.uber.org/zap.NewAtomicLevel"%go.
+
+Definition NewAtomicLevelAt : go_string := "go.uber.org/zap.NewAtomicLevelAt"%go.
+
+Definition ParseAtomicLevel : go_string := "go.uber.org/zap.ParseAtomicLevel"%go.
+
+Definition New : go_string := "go.uber.org/zap.New"%go.
+
+Definition NewNop : go_string := "go.uber.org/zap.NewNop"%go.
+
+Definition NewProduction : go_string := "go.uber.org/zap.NewProduction"%go.
+
+Definition NewDevelopment : go_string := "go.uber.org/zap.NewDevelopment"%go.
+
+Definition Must : go_string := "go.uber.org/zap.Must"%go.
+
+Definition NewExample : go_string := "go.uber.org/zap.NewExample"%go.
+
+Definition terminalHookOverride : go_string := "go.uber.org/zap.terminalHookOverride"%go.
+
+Definition WrapCore : go_string := "go.uber.org/zap.WrapCore"%go.
+
+Definition Hooks : go_string := "go.uber.org/zap.Hooks"%go.
+
+Definition Fields : go_string := "go.uber.org/zap.Fields"%go.
+
+Definition ErrorOutput : go_string := "go.uber.org/zap.ErrorOutput"%go.
+
+Definition Development : go_string := "go.uber.org/zap.Development"%go.
+
+Definition AddCaller : go_string := "go.uber.org/zap.AddCaller"%go.
+
+Definition WithCaller : go_string := "go.uber.org/zap.WithCaller"%go.
+
+Definition AddCallerSkip : go_string := "go.uber.org/zap.AddCallerSkip"%go.
+
+Definition AddStacktrace : go_string := "go.uber.org/zap.AddStacktrace"%go.
+
+Definition IncreaseLevel : go_string := "go.uber.org/zap.IncreaseLevel"%go.
+
+Definition WithPanicHook : go_string := "go.uber.org/zap.WithPanicHook"%go.
+
+Definition OnFatal : go_string := "go.uber.org/zap.OnFatal"%go.
+
+Definition WithFatalHook : go_string := "go.uber.org/zap.WithFatalHook"%go.
+
+Definition WithClock : go_string := "go.uber.org/zap.WithClock"%go.
+
 Axiom _sinkRegistry'init : val.
+
+Definition newSinkRegistry : go_string := "go.uber.org/zap.newSinkRegistry"%go.
+
+Definition RegisterSink : go_string := "go.uber.org/zap.RegisterSink"%go.
+
+Definition normalizeScheme : go_string := "go.uber.org/zap.normalizeScheme"%go.
+
+Definition getMessage : go_string := "go.uber.org/zap.getMessage"%go.
+
+Definition getMessageln : go_string := "go.uber.org/zap.getMessageln"%go.
+
+Definition timeToMillis : go_string := "go.uber.org/zap.timeToMillis"%go.
+
+Definition Open : go_string := "go.uber.org/zap.Open"%go.
+
+Definition open : go_string := "go.uber.org/zap.open"%go.
+
+Definition CombineWriteSyncers : go_string := "go.uber.org/zap.CombineWriteSyncers"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 
@@ -42,9 +304,10 @@ Definition msets' : list (go_string * (list (go_string * val))) := [].
 Axiom _'init : val.
 
 Definition initialize' : val :=
-  rec: "initialize'" <> :=
-    globals.package_init zap.zap (λ: <>,
-      exception_do (do:  zapcore.initialize';;;
+  λ: <>,
+    package.init #zap.zap (λ: <>,
+      exception_do (do:  (zapcore.initialize' #());;;
+      do:  (package.alloc zap.zap #());;;
       do:  (errNoEncoderNameSpecified'init #());;;
       do:  (_encoderNameToConstructor'init #());;;
       do:  (_errArrayElemPool'init #());;;

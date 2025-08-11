@@ -598,39 +598,24 @@ End instances.
 
 Section names.
 
-Class GlobalAddrs :=
-{
-}.
-
-Context `{!GlobalAddrs}.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-
-Definition var_addrs : list (go_string * loc) := [
-  ].
-
-Global Instance is_pkg_defined_instance : IsPkgDefined client :=
-{|
-  is_pkg_defined := is_global_definitions client var_addrs;
-|}.
-
-Definition own_allocated : iProp Σ :=
-True.
+Context `{!globalsGS Σ}.
+Context `{!GoContext}.
 
 Global Instance wp_func_call_New :
-  WpFuncCall client "New" _ (is_pkg_defined client) :=
+  WpFuncCall client.New _ (is_pkg_defined client) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckMemb :
-  WpFuncCall client "CheckMemb" _ (is_pkg_defined client) :=
+  WpFuncCall client.CheckMemb _ (is_pkg_defined client) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckHist :
-  WpFuncCall client "CheckHist" _ (is_pkg_defined client) :=
+  WpFuncCall client.CheckHist _ (is_pkg_defined client) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_func_call_CheckNonMemb :
-  WpFuncCall client "CheckNonMemb" _ (is_pkg_defined client) :=
+  WpFuncCall client.CheckNonMemb _ (is_pkg_defined client) :=
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Audit :
