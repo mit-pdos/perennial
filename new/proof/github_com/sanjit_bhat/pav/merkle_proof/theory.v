@@ -35,67 +35,63 @@ Inductive tree :=
   | Inner (child0 child1 : tree)
   | Cut (hash : list w8).
 
-Fixpoint const_len_label t :=
-  match t with
-  | Leaf label _ => Z.of_nat (length label) = cryptoffi.hash_len
-  | Inner c0 c1 => const_len_label c0 ∧ const_len_label c1
-  | _ => True
-  end.
+(* need this gallina transl of Golang [merkle.put] for determ spec.
+determ needed bc user might call [VerifyMemb] multiple times on same tree,
+expecting dig to be equal across calls.
+to guarantee that, [merkle.proofToTree] needs to determ make tree from
+inputted proof, and [merkle.put] needs to determ update tree with label, val.
 
-Definition rank (t : tree) : nat :=
-  match t with
-  | Leaf _ _ => 1
-  | _ => 0
-  end.
-
-(* need gallina transl of merkle.put to state a deterministic spec for it.
-determinism needed bc Verify* caller has expectation on the exact tree structure,
-derived from label, val, proof.
-to match that, merkle.put (called by Verify), needs to deterministically
-update the tree.
-determinism is needed for merkle.proofToTree, for similar reasons.
-
-NOTE: proving Fixpoint termination requires quite a few hacks. *)
+NOTE: the code has tricky termination reasoning due to put-into-leaf
+expanding common label bits into inner nodes.
+this reasoning is reflected into gallina using the depth measure.
+NOTE: using fuel=max_depth would allow for normal Fixpoint,
+which reduces more nicely (under concrete fuel).
+but proving that (exists fuel => Some tree) might be more difficult
+than working with Program Fixpoint, we'll see. *)
 Program Fixpoint pure_put t (depth : nat) (label val : list w8)
-    {measure (2 * (max_depth - depth) + rank t)} :=
+    {measure (max_depth - depth)} :=
   if decide (depth ≥ max_depth)
   then
-    (* this won't happen. need for measure. *)
-    Empty
+    (* Golang put won't hit this. need for measure. *)
+    None
   else match t with
-  | Empty => Leaf label val
+  | Empty => Some (Leaf label val)
   | Leaf label' val' =>
     if decide (label = label')
-    then Leaf label val
+    then Some (Leaf label val)
     else
-      let t' := pure_put (Inner Empty Empty) depth label' val' in
-      match t' with
-      | Inner _ _ => pure_put t' depth label val
-      | _ =>
-        (* this won't happen. need for measure. *)
-        Empty
+      (* "unfolding" the two leaf puts lets us use [S depth] in
+      recursive calls, which satisfies the depth measure. *)
+      let (c0, c1) :=
+        match get_bit label' depth with
+        | false => (t, Empty)
+        | true => (Empty, t)
+        end in
+      match get_bit label depth with
+      | false =>
+        let t' := pure_put c0 (S depth) label val in
+        (λ x, Inner x c1) <$> t'
+      | true =>
+        let t' := pure_put c1 (S depth) label val in
+        Inner c1 <$> t'
       end
   | Inner c0 c1 =>
     match get_bit label depth with
     | false =>
       let t' := pure_put c0 (S depth) label val in
-      Inner t' c1
+      (λ x, Inner x c1) <$> t'
     | true =>
       let t' := pure_put c1 (S depth) label val in
-      Inner c0 t'
+      Inner c0 <$> t'
     end
   | Cut _ =>
-    (* this won't happen. *)
-    Empty
+    (* Golang put won't hit this. *)
+    None
   end.
-Next Obligation. intros. subst. simpl. lia. Qed.
-Next Obligation. intros. subst. rewrite -Heq_t'. simpl. lia. Qed.
-(* TODO: have this weird obligation that Inner distinct from other tree types. *)
-Next Obligation. intros. by subst wildcard'. Qed.
-Next Obligation. intros. by subst wildcard'. Qed.
-Next Obligation. intros. by subst wildcard'. Qed.
-Next Obligation. intros. destruct c0; simpl; lia. Qed.
-Next Obligation. intros. destruct c1; simpl; lia. Qed.
+Next Obligation. lia. Qed.
+Next Obligation. lia. Qed.
+Next Obligation. lia. Qed.
+Next Obligation. lia. Qed.
 Final Obligation. auto using lt_wf. Qed.
 
 (** tree paths. *)
