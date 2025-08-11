@@ -1,3 +1,4 @@
+From Corelib.Program Require Import Wf.
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.proof Require Import proof_prelude.
 From Perennial.Helpers Require Import bytes NamedProps.
@@ -21,19 +22,81 @@ Definition get_bit l n : bool :=
 (** tree. *)
 
 (* [Cut]s denote a cut off tree.
-1) for full trees, they come from invalid hashes. e.g.,
-  - bytes that didn't come from the hash fn output.
-  - a hash whose preimg isn't a valid node encoding.
-  - running out of limit.
-2) for partial trees, it's just an unknown-origin hash.
+for full trees, they come from invalid hashes,
+while for partial trees, it's just an unknown-origin hash.
+unifying these two types of Cuts allows for unified tree predicates.
 
-a different approach to invalid full trees bubbles invalidness all the way to the top.
-that has the undesirable effect of an invalid inversion "stopping the proof". *)
+a different approach to invalid full trees bubbles invalidness all the way to the top,
+i.e., inversion resulting in option map.
+that has the undesirable effect of invalidness "stopping the proof". *)
 Inductive tree :=
   | Empty
   | Leaf (label val : list w8)
   | Inner (child0 child1 : tree)
   | Cut (hash : list w8).
+
+Fixpoint const_len_label t :=
+  match t with
+  | Leaf label _ => Z.of_nat (length label) = cryptoffi.hash_len
+  | Inner c0 c1 => const_len_label c0 ∧ const_len_label c1
+  | _ => True
+  end.
+
+Definition rank (t : tree) : nat :=
+  match t with
+  | Leaf _ _ => 1
+  | _ => 0
+  end.
+
+(* need gallina transl of merkle.put to state a deterministic spec for it.
+determinism needed bc Verify* caller has expectation on the exact tree structure,
+derived from label, val, proof.
+to match that, merkle.put (called by Verify), needs to deterministically
+update the tree.
+determinism is needed for merkle.proofToTree, for similar reasons.
+
+NOTE: proving Fixpoint termination requires quite a few hacks. *)
+Program Fixpoint pure_put t (depth : nat) (label val : list w8)
+    {measure (2 * (max_depth - depth) + rank t)} :=
+  if decide (depth ≥ max_depth)
+  then
+    (* this won't happen. need for measure. *)
+    Empty
+  else match t with
+  | Empty => Leaf label val
+  | Leaf label' val' =>
+    if decide (label = label')
+    then Leaf label val
+    else
+      let t' := pure_put (Inner Empty Empty) depth label' val' in
+      match t' with
+      | Inner _ _ => pure_put t' depth label val
+      | _ =>
+        (* this won't happen. need for measure. *)
+        Empty
+      end
+  | Inner c0 c1 =>
+    match get_bit label depth with
+    | false =>
+      let t' := pure_put c0 (S depth) label val in
+      Inner t' c1
+    | true =>
+      let t' := pure_put c1 (S depth) label val in
+      Inner c0 t'
+    end
+  | Cut _ =>
+    (* this won't happen. *)
+    Empty
+  end.
+Next Obligation. intros. subst. simpl. lia. Qed.
+Next Obligation. intros. subst. rewrite -Heq_t'. simpl. lia. Qed.
+(* TODO: have this weird obligation that Inner distinct from other tree types. *)
+Next Obligation. intros. by subst wildcard'. Qed.
+Next Obligation. intros. by subst wildcard'. Qed.
+Next Obligation. intros. by subst wildcard'. Qed.
+Next Obligation. intros. destruct c0; simpl; lia. Qed.
+Next Obligation. intros. destruct c1; simpl; lia. Qed.
+Final Obligation. auto using lt_wf. Qed.
 
 (** tree paths. *)
 
@@ -73,7 +136,7 @@ Fixpoint to_map t : gmap (list w8) (list w8) :=
   | Empty => ∅
   | Leaf label val => {[label := val]}
   | Inner child0 child1 => (to_map child0) ∪ (to_map child1)
-  | Cut h => ∅
+  | Cut _ => ∅
   end.
 
 Definition labels_have_bit t n bit :=
@@ -517,13 +580,13 @@ Lemma is_full_tree_det t h0 h1 l0 l1 p0 p1 :
 Proof.
   iInduction (l0) as [] forall (t h0 h1 l1 p0 p1); destruct l1; simpl;
     iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
-    repeat case_match;
+    case_match; try case_decide;
+    case_match; try case_decide;
     iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
     simplify_eq/=; try done.
-  1-8: (
+  1-8:
     opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|];
-    by iApply cryptoffi.is_hash_det
-  ).
+    by iApply cryptoffi.is_hash_det.
   iDestruct ("IHl0" with "Hrecur00 Hrecur01") as %->.
   iDestruct ("IHl0" with "Hrecur10 Hrecur11") as %->.
   opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
@@ -621,10 +684,10 @@ Fixpoint is_cut_tree (t : tree) (h : list w8) : iProp Σ :=
         (u64_le $ length label) ++ label ++
         (u64_le $ length val) ++ val) h
   | Inner child0 child1 =>
-    ∃ hl hr,
-    "#Hleft_hash" ∷ is_cut_tree child0 hl ∗
-    "#Hright_hash" ∷ is_cut_tree child1 hr ∗
-    "#His_hash" ∷ cryptoffi.is_hash (Some $ [innerNodeTag] ++ hl ++ hr) h
+    ∃ h0 h1,
+    "#Hleft_hash" ∷ is_cut_tree child0 h0 ∗
+    "#Hright_hash" ∷ is_cut_tree child1 h1 ∗
+    "#His_hash" ∷ cryptoffi.is_hash (Some $ [innerNodeTag] ++ h0 ++ h1) h
   | Cut ch =>
     "%Heq_cut" ∷ ⌜ h = ch ⌝ ∗
     "%Hlen_hash" ∷ ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝
@@ -734,7 +797,7 @@ Proof.
 Admitted.
 
 (* TODO: overall plan for full-map Verify reasoning:
-- user shows up with is_full_map (hash:=comp proof) from merkle inversion.
+- user shows up with is_full_map m (hash:=comp proof) from merkle inversion.
 - Verify checks path down cut tree (hash:=comp proof),
 explicitly bounding depth.
 - path down cut tree impl path down full tree, if both have same hash.
