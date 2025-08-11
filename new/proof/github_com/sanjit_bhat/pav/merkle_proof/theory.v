@@ -65,7 +65,7 @@ Program Fixpoint pure_put t (depth : nat) (label val : list w8)
       let (c0, c1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
       let c := if get_bit label depth then c1 else c0 in
       let t' := pure_put c (S depth) label val in
-      if get_bit label depth then Inner c1 <$> t' else (λ x, Inner x c1) <$> t'
+      if get_bit label depth then Inner c0 <$> t' else (λ x, Inner x c1) <$> t'
   | Inner c0 c1 =>
     let c := if get_bit label depth then c1 else c0 in
     let t' := pure_put c (S depth) label val in
