@@ -28,10 +28,14 @@ End wps.
  *)
 Class GoContext {ext : ffi_syntax} :=
   {
-    global_addr : go_string → loc;
+    global_addr_def : go_string → loc;
     __function : list (go_string * val);
     __method : list (go_string * (list (go_string * val)));
   }.
+
+(* NOTE: To avoid printing the [GoContext] instance when printing [global_addr].
+   See https://github.com/rocq-prover/rocq/issues/9814 *)
+#[global] Notation global_addr := global_addr_def.
 
 Section globals.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
