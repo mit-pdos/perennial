@@ -1,3 +1,6 @@
+(** This file is an example of working with global variables and package
+    initialization. *)
+
 From New.proof Require Import grove_prelude.
 From New.code.github_com.mit_pdos.gokv Require Import globals_test.
 Require Import New.generatedproof.github_com.mit_pdos.gokv.globals_test.
@@ -11,14 +14,20 @@ Context `{!globalsGS Σ}.
 Context `{!ghost_varG Σ ()}.
 Context `{!GoContext}.
 
-Definition own_initialized : iProp Σ :=
+(** A proof can refer to global variable addresses as [global_addr
+    PKG_NAME.VAR_NAME], as in this package-specific helper definition. *)
+Local Definition own_initialized : iProp Σ :=
   "HglobalB" ∷ (global_addr main.globalB) ↦ "b"%go ∗
   "HglobalA" ∷ (global_addr main.globalA) ↦ "a"%go ∗
   "HglobalY" ∷ (global_addr main.globalY) ↦ ""%go ∗
   "HGlobalX" ∷ (global_addr main.GlobalX) ↦ (W64 10).
 
+(* gname for escrow token. This allows for transferring ownership of
+   [own_initialized] through a persistent [is_pkg_init] as defined below.*)
 Context (γtok : gname).
 
+(** (COPY ME.) This creates a definition with the initialization predicates of
+    all the dependencies of [main]. *)
 Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'globals_test.main).
 #[global] Instance is_pkg_init_globals_test : IsPkgInit globals_test.main :=
   {|
@@ -26,6 +35,9 @@ Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'globals_test.mai
     is_pkg_init_deps := deps;
   |}.
 
+(** (COPY ME.) This is the spec that should be proved for any package's
+    initialization function. The package-specific predicate is encapsulated in
+    [is_pkg_init PKG_NAME]. *)
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init globals_test.main = (is_pkg_init globals_test.main) →
   {{{ own_initializing ∗ is_initialization get_is_pkg_init ∗ is_pkg_defined globals_test.main }}}
@@ -45,7 +57,6 @@ Proof.
           iDestruct "addr" as "?"; wp_auto).
 
   (* go into foo() *)
-
   wp_func_call. wp_call.
   iApply wp_fupd.
   repeat wp_apply wp_globals_get.
@@ -56,9 +67,11 @@ Proof.
   iFrame "∗#".
 Qed.
 
+(** Every program proof spec should have [is_pkg_init PKG_NAME] as its first
+    conjunct in its precondition. *)
 Lemma wp_main :
-  {{{ is_pkg_init main ∗ own_initialized }}}
-  ⊥ @ main.main #()
+  {{{ is_pkg_init globals_test.main ∗ own_initialized }}}
+  @@ main.main #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_func_call. wp_call.
@@ -69,6 +82,8 @@ Qed.
 
 End proof.
 
+(** The following is a "closed theorem" that uses the above specs. If you aren't
+    interested in "closed" theorems, ignore this. *)
 From Perennial.goose_lang Require Import adequacy dist_adequacy.
 From Perennial.goose_lang.ffi Require Import grove_ffi.adequacy.
 From New.proof Require Import grove_prelude.
@@ -76,13 +91,18 @@ Section closed.
 
 Definition globals_testΣ : gFunctors := #[heapΣ ; ghost_varΣ ()].
 
+(** This closed theorem assumes that the initial state [σ] is such that there
+    exists a [GoContext] so that [is_init (H:=go_ctx) σ] holds. This moreover
+    assumes that the [GoContext] is such that [is_pkg_defined_pure] holds. As
+    assumptions of the top-level theorem, their definitions should be audited.
+    *)
 Lemma globals_test_boot σ (g : goose_lang.global_state) (go_ctx : GoContext) :
   ffi_initgP g.(global_world) →
   ffi_initP σ.(world) g.(global_world) →
   is_init σ →
   is_pkg_defined_pure globals_test.main →
   dist_adequate_failstop [
-      ((main.initialize' #() ;; ⊥ @ main.main #())%E, σ) ] g (λ _, True).
+      ((main.initialize' #() ;; @@ main.main #())%E, σ) ] g (λ _, True).
 Proof.
   simpl.
   intros ? ? Hginit Hdef_main.
@@ -107,13 +127,13 @@ Proof.
       as "(#? & ? & #?)"; [done|].
     iModIntro. iExists (λ _, True)%I.
     Unshelve.
-    2:{ apply is_pkg_init_globals_test. refine γtok. }
+    2:{ apply (is_pkg_init_globals_test γtok). }
     wp_apply (wp_initialize' with "[-Hescrow]").
     2:{ iFrame "∗#". rewrite is_pkg_defined_unseal. iFrame "#%". }
     { rewrite /= -insert_empty lookup_insert_eq //. }
     iIntros "* (Hown & #Hinit)".
     iApply fupd_wp. iDestruct (is_pkg_init_def_unfold with "Hinit") as "Hinv".
-    iInv "Hinv" as ">[Hbad|Hi]" "Hclose".
+    simpl. iInv "Hinv" as ">[Hbad|Hi]" "Hclose".
     { iCombine "Hbad Hescrow" gives %[Hbad _]. done. }
     iMod ("Hclose" with "[$Hescrow]") as "_". iModIntro.
     wp_auto.

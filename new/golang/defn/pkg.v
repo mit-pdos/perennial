@@ -48,8 +48,9 @@ Module package.
 Section defns.
 Context `{ffi_syntax}.
 
-(* Allocates variables *just* for a single package. Unsealed because user proves
-   WPs for this by unfolding. *)
+(** Allocates variables *just* for a single package. Unsealed because user
+   proves WPs for this by unfolding. See the comment in [theory/pkg.v] to
+   understand the call to [assume]. *)
 Definition alloc pkg_name `{!PkgInfo pkg_name} : val :=
   λ: <>, (fix alloc (vars : list (go_string * go_type)) : expr :=
            (match vars with

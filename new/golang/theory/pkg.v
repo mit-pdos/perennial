@@ -256,8 +256,8 @@ Tactic Notation "wp_method_call_core" :=
    [| | (tc_solve || fail "could not find mapping from method to val") | |]).
 
 #[global]
-Notation "⊥ @ func" :=
-  #(func_callv func) (at level 1, no associativity, format "⊥ @ func") : expr_scope.
+Notation "@@ func" :=
+  #(func_callv func) (at level 1, no associativity, format "@@ func") : expr_scope.
 
 #[global]
 Notation "rcvr @ type @ method" :=
