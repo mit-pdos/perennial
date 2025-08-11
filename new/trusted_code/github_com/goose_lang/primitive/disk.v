@@ -11,27 +11,27 @@ Section disk.
   Definition BlockSize :=
     #(W64 4096).
 
-  Definition Get: val :=
+  Definition Getⁱᵐᵖˡ : val :=
     λ: <>, ExtV ().
 
-  Definition Read: val :=
+  Definition Readⁱᵐᵖˡ : val :=
     λ: "a",
     let: "p" := ExternalOp ReadOp (Var "a") in
     (InjL (Var "p", #(W64 4096), #(W64 4096))).
 
-  Definition ReadTo: val :=
+  Definition ReadToⁱᵐᵖˡ : val :=
     λ: "a" "buf",
     let: "p" := ExternalOp ReadOp (Var "a") in
     slice.copy #byteT (Var "buf") (Var "p", #(W64 4096), #(W64 4096)).
 
-  Definition Write: val :=
+  Definition Writeⁱᵐᵖˡ : val :=
     λ: "a" "b",
     ExternalOp WriteOp (Var "a", slice.ptr (Var "b")).
 
-  Definition Barrier: val :=
+  Definition Barrierⁱᵐᵖˡ : val :=
     λ: <>, #().
 
-  Definition Size: val :=
+  Definition Sizeⁱᵐᵖˡ : val :=
     λ: "v",
        ExternalOp SizeOp (Var "v").
 

@@ -6,22 +6,22 @@ Section code.
 
   (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)
-  Definition Assume : val :=
+  Definition Assumeⁱᵐᵖˡ : val :=
     λ: "cond", if: Var "cond" then #()
                else (rec: "loop" <> := Var "loop" #()) #().
 
   (** [Assert c] raises UB (program gets stuck via [Panic]) if [c] does not
 hold. So proofs have to show it always holds. *)
-  Definition Assert : val :=
+  Definition Assertⁱᵐᵖˡ : val :=
     λ: "cond", if: Var "cond" then #()
                else Panic "assert failed".
 
   (** [Exit n] is supposed to exit the process. We cannot directly model
 this in GooseLang, so we just loop. *)
-  Definition Exit : val :=
+  Definition Exitⁱᵐᵖˡ : val :=
     λ: <>, (rec: "loop" <> := Var "loop" #()) #().
 
-  Definition UInt64Put : val := λ: "p" "n",
+  Definition UInt64Putⁱᵐᵖˡ : val := λ: "p" "n",
       do: (slice.elem_ref #uint8T "p" #(W64 0)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (0*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 1)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (1*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 2)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (2*8)));;;
@@ -32,7 +32,7 @@ this in GooseLang, so we just loop. *)
       do: (slice.elem_ref #uint8T "p" #(W64 7)) <-[#uint8T] to_u8 ("n" ≫ #(W64 (7*8)))
     .
 
-  Definition UInt64Get : val := λ: "p",
+  Definition UInt64Getⁱᵐᵖˡ : val := λ: "p",
       let: "v0" := to_u64 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 0)) in
       let: "v1" := to_u64 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 1)) in
       let: "v2" := to_u64 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 2)) in
@@ -44,7 +44,7 @@ this in GooseLang, so we just loop. *)
       "v0" `or` ("v1" `or` ("v2" `or` ("v3" `or` ("v4" `or` ("v5" `or` ("v6" `or` "v7"
           ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8)) ≪ #(W64 8).
 
-  Definition UInt32Put : val :=
+  Definition UInt32Putⁱᵐᵖˡ : val :=
     λ: "p" "n",
       do: (slice.elem_ref #uint8T "p" #(W64 0)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (0*8)));;;
       do: (slice.elem_ref #uint8T "p" #(W64 1)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (1*8)));;;
@@ -52,7 +52,7 @@ this in GooseLang, so we just loop. *)
       do: (slice.elem_ref #uint8T "p" #(W64 3)) <-[#uint8T] to_u8 ("n" ≫ #(W32 (3*8)))
     .
 
-  Definition UInt32Get : val := λ: "p",
+  Definition UInt32Getⁱᵐᵖˡ : val := λ: "p",
       let: "v0" := to_u32 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 0)) in
       let: "v1" := to_u32 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 1)) in
       let: "v2" := to_u32 ![#uint8T](slice.elem_ref #uint8T "p" #(W64 2)) in
@@ -62,23 +62,23 @@ this in GooseLang, so we just loop. *)
   Definition Millisecond: val := #(W64 1000000).
   Definition Second: val := #(W64 1000000000).
 
-  Definition Sleep : val := λ: "duration", #().
+  Definition Sleepⁱᵐᵖˡ : val := λ: "duration", #().
 
-  Definition TimeNow : val := λ: <>, ArbitraryInt.
+  Definition TimeNowⁱᵐᵖˡ : val := λ: <>, ArbitraryInt.
 
-  Definition AfterFunc : val := λ: "duration" "f", Fork "f" ;; ref "f".
+  Definition AfterFuncⁱᵐᵖˡ : val := λ: "duration" "f", Fork "f" ;; ref "f".
 
-  Definition WaitTimeout : val := λ: "l" "timeout", method_call #sync #"Cond" "Wait" "l".
+  Definition WaitTimeoutⁱᵐᵖˡ : val := λ: "l" "timeout", method_call #sync #"Cond" "Wait" "l".
 
-  Definition RandomUint64 : val := λ: <>, ArbitraryInt.
+  Definition RandomUint64ⁱᵐᵖˡ : val := λ: <>, ArbitraryInt.
 
-  Definition NewProph : val := λ: <>, goose_lang.NewProph.
+  Definition NewProphⁱᵐᵖˡ : val := λ: <>, goose_lang.NewProph.
 
-  Definition ResolveProph : val := λ: "p" "val", goose_lang.ResolveProph (Var "p") (Var "val").
+  Definition ResolveProphⁱᵐᵖˡ : val := λ: "p" "val", goose_lang.ResolveProph (Var "p") (Var "val").
 
-  Definition Linearize : val := λ: <>, #().
+  Definition Linearizeⁱᵐᵖˡ : val := λ: <>, #().
 
-  Definition AssumeNoStringOverflow : val :=
-    λ: "s", Assume (IsNoStringOverflow "s").
+  Definition AssumeNoStringOverflowⁱᵐᵖˡ : val :=
+    λ: "s", assume.assume (IsNoStringOverflow "s").
 
 End code.

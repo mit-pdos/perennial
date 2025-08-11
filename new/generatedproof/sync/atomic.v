@@ -268,7 +268,7 @@ Global Instance wp_func_call_StoreUint64 :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_Add :
-  WpMethodCall atomic "Int32'ptr" "Add" _ (is_pkg_defined atomic) :=
+  WpMethodCall atomic.Int32 "Add" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_CompareAndSwap :

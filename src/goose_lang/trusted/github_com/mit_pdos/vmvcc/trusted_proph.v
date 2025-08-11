@@ -9,7 +9,7 @@ Definition ActReadId : Z := 0.
 Definition ActAbortId : Z := 1.
 Definition ActCommitId : Z := 2.
 
-Definition NewProph : val :=
+Definition NewProphⁱᵐᵖˡ : val :=
   λ: <>, goose_lang.NewProph.
 
 Definition ResolveRead : val :=
