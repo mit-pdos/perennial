@@ -62,34 +62,18 @@ Program Fixpoint pure_put t (depth : nat) (label val : list w8)
     else
       (* "unfolding" the two leaf puts lets us use [S depth] in
       recursive calls, which satisfies the depth measure. *)
-      let (c0, c1) :=
-        match get_bit label' depth with
-        | false => (t, Empty)
-        | true => (Empty, t)
-        end in
-      match get_bit label depth with
-      | false =>
-        let t' := pure_put c0 (S depth) label val in
-        (λ x, Inner x c1) <$> t'
-      | true =>
-        let t' := pure_put c1 (S depth) label val in
-        Inner c1 <$> t'
-      end
+      let (c0, c1) := if get_bit label' depth then (Empty, t) else (t, Empty) in
+      let c := if get_bit label depth then c1 else c0 in
+      let t' := pure_put c (S depth) label val in
+      if get_bit label depth then Inner c1 <$> t' else (λ x, Inner x c1) <$> t'
   | Inner c0 c1 =>
-    match get_bit label depth with
-    | false =>
-      let t' := pure_put c0 (S depth) label val in
-      (λ x, Inner x c1) <$> t'
-    | true =>
-      let t' := pure_put c1 (S depth) label val in
-      Inner c0 <$> t'
-    end
+    let c := if get_bit label depth then c1 else c0 in
+    let t' := pure_put c (S depth) label val in
+    if get_bit label depth then Inner c0 <$> t' else (λ x, Inner x c1) <$> t'
   | Cut _ =>
     (* Golang put won't hit this. *)
     None
   end.
-Next Obligation. lia. Qed.
-Next Obligation. lia. Qed.
 Next Obligation. lia. Qed.
 Next Obligation. lia. Qed.
 Final Obligation. auto using lt_wf. Qed.
