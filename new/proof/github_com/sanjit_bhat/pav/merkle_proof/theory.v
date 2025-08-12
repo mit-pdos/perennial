@@ -48,8 +48,7 @@ NOTE: using fuel=max_depth would allow for normal Fixpoint,
 which reduces more nicely (under concrete fuel).
 but proving that (exists fuel => Some tree) might be more difficult
 than working with Program Fixpoint, we'll see. *)
-Program Fixpoint pure_put t (depth : nat) (label val : list w8)
-    {measure (max_depth - depth)} :=
+Program Fixpoint pure_put t depth label val {measure (max_depth - depth)} :=
   if decide (depth ≥ max_depth)
   then
     (* Golang put won't hit this. need for measure. *)
@@ -77,6 +76,23 @@ Program Fixpoint pure_put t (depth : nat) (label val : list w8)
 Next Obligation. lia. Qed.
 Next Obligation. lia. Qed.
 Final Obligation. auto using lt_wf. Qed.
+
+(* [sibs] order reversed from code. *)
+Fixpoint pure_newShell label depth (sibs : list $ list w8) :=
+  match sibs with
+  | [] => Empty
+  | h :: sibs' =>
+    let c := Cut h in
+    let t := pure_newShell label (S depth) sibs' in
+    if get_bit label depth then Inner c t else Inner t c
+  end.
+
+Definition pure_proofToTree label sibs oleaf :=
+  let t := pure_newShell label 0 sibs in
+  match oleaf with
+  | None => Some t
+  | Some (label, val) => pure_put t 0 label val
+  end.
 
 (** tree paths. *)
 
