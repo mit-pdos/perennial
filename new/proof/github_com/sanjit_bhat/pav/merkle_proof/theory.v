@@ -91,8 +91,20 @@ Definition pure_proofToTree label sibs oleaf :=
   let t := pure_newShell label 0 sibs in
   match oleaf with
   | None => Some t
-  | Some (label, val) => pure_put t 0 label val
+  | Some (l, v) => pure_put t 0 l v
   end.
+
+Fixpoint pure_digest t :=
+  cryptoffi.pure_hash
+    match t with
+    | Empty => [emptyNodeTag]
+    | Leaf l v =>
+      leafNodeTag ::
+      (u64_le $ length l) ++ l ++
+      (u64_le $ length v) ++ v
+    | Inner c0 c1 => innerNodeTag :: pure_digest c0 ++ pure_digest c1
+    | Cut h => h
+    end.
 
 (** tree paths. *)
 
