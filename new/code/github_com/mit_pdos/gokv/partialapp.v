@@ -89,7 +89,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(partiallyApplyMe, partiallyApplyMeⁱᵐᵖˡ); (main, mainⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Foo"%go, [("someMethod"%go, Foo__someMethodⁱᵐᵖˡ); ("someMethodWithArgs"%go, Foo__someMethodWithArgsⁱᵐᵖˡ)]); ("Foo'ptr"%go, [("someMethod"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [(Fooⁱᵈ, [("someMethod"%go, Foo__someMethodⁱᵐᵖˡ); ("someMethodWithArgs"%go, Foo__someMethodWithArgsⁱᵐᵖˡ)]); (ptrTⁱᵈ Fooⁱᵈ, [("someMethod"%go, (λ: "$recvAddr",
                  method_call #partialapp.main #"Foo" #"someMethod" (![#Foo] "$recvAddr")
                  )%V); ("someMethodWithArgs"%go, (λ: "$recvAddr",
                  method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "$recvAddr")

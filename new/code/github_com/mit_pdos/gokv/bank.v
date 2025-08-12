@@ -275,7 +275,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(acquire_two_good, acquire_two_goodⁱᵐᵖˡ); (acquire_two, acquire_twoⁱᵐᵖˡ); (release_two, release_twoⁱᵐᵖˡ); (encodeInt, encodeIntⁱᵐᵖˡ); (decodeInt, decodeIntⁱᵐᵖˡ); (MakeBankClerkSlice, MakeBankClerkSliceⁱᵐᵖˡ); (MakeBankClerk, MakeBankClerkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("BankClerk"%go, []); ("BankClerk'ptr"%go, [("SimpleAudit"%go, BankClerk__SimpleAuditⁱᵐᵖˡ); ("SimpleTransfer"%go, BankClerk__SimpleTransferⁱᵐᵖˡ); ("get_total"%go, BankClerk__get_totalⁱᵐᵖˡ); ("transfer_internal"%go, BankClerk__transfer_internalⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(BankClerkⁱᵈ, []); (ptrTⁱᵈ BankClerkⁱᵈ, [("SimpleAudit"%go, BankClerk__SimpleAuditⁱᵐᵖˡ); ("SimpleTransfer"%go, BankClerk__SimpleTransferⁱᵐᵖˡ); ("get_total"%go, BankClerk__get_totalⁱᵐᵖˡ); ("transfer_internal"%go, BankClerk__transfer_internalⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo bank.bank :=
   {|

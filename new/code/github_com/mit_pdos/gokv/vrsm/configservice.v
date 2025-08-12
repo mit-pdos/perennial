@@ -804,7 +804,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(EncodeConfig, EncodeConfigⁱᵐᵖˡ); (DecodeConfig, DecodeConfigⁱᵐᵖˡ); (MakeClerk, MakeClerkⁱᵐᵖˡ); (encodeState, encodeStateⁱᵐᵖˡ); (decodeState, decodeStateⁱᵐᵖˡ); (makeServer, makeServerⁱᵐᵖˡ); (StartServer, StartServerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go, []); ("Clerk'ptr"%go, [("GetConfig"%go, Clerk__GetConfigⁱᵐᵖˡ); ("GetLease"%go, Clerk__GetLeaseⁱᵐᵖˡ); ("ReserveEpochAndGetConfig"%go, Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ); ("TryWriteConfig"%go, Clerk__TryWriteConfigⁱᵐᵖˡ)]); ("state"%go, []); ("state'ptr"%go, []); ("Server"%go, []); ("Server'ptr"%go, [("GetConfig"%go, Server__GetConfigⁱᵐᵖˡ); ("GetLease"%go, Server__GetLeaseⁱᵐᵖˡ); ("ReserveEpochAndGetConfig"%go, Server__ReserveEpochAndGetConfigⁱᵐᵖˡ); ("TryWriteConfig"%go, Server__TryWriteConfigⁱᵐᵖˡ); ("tryAcquire"%go, Server__tryAcquireⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Clerkⁱᵈ, []); (ptrTⁱᵈ Clerkⁱᵈ, [("GetConfig"%go, Clerk__GetConfigⁱᵐᵖˡ); ("GetLease"%go, Clerk__GetLeaseⁱᵐᵖˡ); ("ReserveEpochAndGetConfig"%go, Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ); ("TryWriteConfig"%go, Clerk__TryWriteConfigⁱᵐᵖˡ)]); (stateⁱᵈ, []); (ptrTⁱᵈ stateⁱᵈ, []); (Serverⁱᵈ, []); (ptrTⁱᵈ Serverⁱᵈ, [("GetConfig"%go, Server__GetConfigⁱᵐᵖˡ); ("GetLease"%go, Server__GetLeaseⁱᵐᵖˡ); ("ReserveEpochAndGetConfig"%go, Server__ReserveEpochAndGetConfigⁱᵐᵖˡ); ("TryWriteConfig"%go, Server__TryWriteConfigⁱᵐᵖˡ); ("tryAcquire"%go, Server__tryAcquireⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo configservice.configservice :=
   {|

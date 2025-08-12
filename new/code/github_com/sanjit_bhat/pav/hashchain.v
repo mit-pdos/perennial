@@ -166,7 +166,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Verify, Verifyⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (GetEmptyLink, GetEmptyLinkⁱᵐᵖˡ); (GetNextLink, GetNextLinkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("HashChain"%go, []); ("HashChain'ptr"%go, [("Append"%go, HashChain__Appendⁱᵐᵖˡ); ("Bootstrap"%go, HashChain__Bootstrapⁱᵐᵖˡ); ("Prove"%go, HashChain__Proveⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(HashChainⁱᵈ, []); (ptrTⁱᵈ HashChainⁱᵈ, [("Append"%go, HashChain__Appendⁱᵐᵖˡ); ("Bootstrap"%go, HashChain__Bootstrapⁱᵐᵖˡ); ("Prove"%go, HashChain__Proveⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo hashchain.hashchain :=
   {|

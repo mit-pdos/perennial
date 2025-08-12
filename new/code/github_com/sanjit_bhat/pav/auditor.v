@@ -798,7 +798,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (getNextDig, getNextDigⁱᵐᵖˡ); (NewRpcAuditor, NewRpcAuditorⁱᵐᵖˡ); (CallUpdate, CallUpdateⁱᵐᵖˡ); (CallGet, CallGetⁱᵐᵖˡ); (UpdateReplyEncode, UpdateReplyEncodeⁱᵐᵖˡ); (UpdateReplyDecode, UpdateReplyDecodeⁱᵐᵖˡ); (GetArgEncode, GetArgEncodeⁱᵐᵖˡ); (GetArgDecode, GetArgDecodeⁱᵐᵖˡ); (GetReplyEncode, GetReplyEncodeⁱᵐᵖˡ); (GetReplyDecode, GetReplyDecodeⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Auditor"%go, []); ("Auditor'ptr"%go, [("Get"%go, Auditor__Getⁱᵐᵖˡ); ("Update"%go, Auditor__Updateⁱᵐᵖˡ); ("updOnce"%go, Auditor__updOnceⁱᵐᵖˡ)]); ("history"%go, []); ("history'ptr"%go, []); ("serv"%go, []); ("serv'ptr"%go, []); ("UpdateReply"%go, []); ("UpdateReply'ptr"%go, []); ("GetArg"%go, []); ("GetArg'ptr"%go, []); ("GetReply"%go, []); ("GetReply'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Auditorⁱᵈ, []); (ptrTⁱᵈ Auditorⁱᵈ, [("Get"%go, Auditor__Getⁱᵐᵖˡ); ("Update"%go, Auditor__Updateⁱᵐᵖˡ); ("updOnce"%go, Auditor__updOnceⁱᵐᵖˡ)]); (historyⁱᵈ, []); (ptrTⁱᵈ historyⁱᵈ, []); (servⁱᵈ, []); (ptrTⁱᵈ servⁱᵈ, []); (UpdateReplyⁱᵈ, []); (ptrTⁱᵈ UpdateReplyⁱᵈ, []); (GetArgⁱᵈ, []); (ptrTⁱᵈ GetArgⁱᵈ, []); (GetReplyⁱᵈ, []); (ptrTⁱᵈ GetReplyⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo auditor.auditor :=
   {|

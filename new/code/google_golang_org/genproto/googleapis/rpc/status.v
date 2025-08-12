@@ -68,7 +68,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(file_google_rpc_status_proto_rawDescGZIP, file_google_rpc_status_proto_rawDescGZIPⁱᵐᵖˡ); (init, initⁱᵐᵖˡ); (file_google_rpc_status_proto_init, file_google_rpc_status_proto_initⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Status"%go, []); ("Status'ptr"%go, [("Descriptor"%go, Status__Descriptorⁱᵐᵖˡ); ("GetCode"%go, Status__GetCodeⁱᵐᵖˡ); ("GetDetails"%go, Status__GetDetailsⁱᵐᵖˡ); ("GetMessage"%go, Status__GetMessageⁱᵐᵖˡ); ("ProtoMessage"%go, Status__ProtoMessageⁱᵐᵖˡ); ("ProtoReflect"%go, Status__ProtoReflectⁱᵐᵖˡ); ("Reset"%go, Status__Resetⁱᵐᵖˡ); ("String"%go, Status__Stringⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Statusⁱᵈ, []); (ptrTⁱᵈ Statusⁱᵈ, [("Descriptor"%go, Status__Descriptorⁱᵐᵖˡ); ("GetCode"%go, Status__GetCodeⁱᵐᵖˡ); ("GetDetails"%go, Status__GetDetailsⁱᵐᵖˡ); ("GetMessage"%go, Status__GetMessageⁱᵐᵖˡ); ("ProtoMessage"%go, Status__ProtoMessageⁱᵐᵖˡ); ("ProtoReflect"%go, Status__ProtoReflectⁱᵐᵖˡ); ("Reset"%go, Status__Resetⁱᵐᵖˡ); ("String"%go, Status__Stringⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo status.status :=
   {|

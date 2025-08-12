@@ -341,19 +341,19 @@ Global Instance wp_func_call_MerkleProofDecode :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Tree'ptr_Digest :
-  WpMethodCall merkle "Tree'ptr" "Digest" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrTⁱᵈ merkle.Treeⁱᵈ) "Digest" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Tree'ptr_Prove :
-  WpMethodCall merkle "Tree'ptr" "Prove" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrTⁱᵈ merkle.Treeⁱᵈ) "Prove" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Tree'ptr_Put :
-  WpMethodCall merkle "Tree'ptr" "Put" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrTⁱᵈ merkle.Treeⁱᵈ) "Put" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Tree'ptr_prove :
-  WpMethodCall merkle "Tree'ptr" "prove" _ (is_pkg_defined merkle) :=
+  WpMethodCall (ptrTⁱᵈ merkle.Treeⁱᵈ) "prove" _ (is_pkg_defined merkle) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

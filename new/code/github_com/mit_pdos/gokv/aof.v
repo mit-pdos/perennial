@@ -167,7 +167,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(CreateAppendOnlyFile, CreateAppendOnlyFileⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("AppendOnlyFile"%go, []); ("AppendOnlyFile'ptr"%go, [("Append"%go, AppendOnlyFile__Appendⁱᵐᵖˡ); ("Close"%go, AppendOnlyFile__Closeⁱᵐᵖˡ); ("WaitAppend"%go, AppendOnlyFile__WaitAppendⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(AppendOnlyFileⁱᵈ, []); (ptrTⁱᵈ AppendOnlyFileⁱᵈ, [("Append"%go, AppendOnlyFile__Appendⁱᵐᵖˡ); ("Close"%go, AppendOnlyFile__Closeⁱᵐᵖˡ); ("WaitAppend"%go, AppendOnlyFile__WaitAppendⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo aof.aof :=
   {|

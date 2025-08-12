@@ -284,39 +284,39 @@ Global Instance wp_func_call_StartServer :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_GetConfig :
-  WpMethodCall configservice "Clerk'ptr" "GetConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Clerkⁱᵈ) "GetConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_GetLease :
-  WpMethodCall configservice "Clerk'ptr" "GetLease" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Clerkⁱᵈ) "GetLease" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ReserveEpochAndGetConfig :
-  WpMethodCall configservice "Clerk'ptr" "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Clerkⁱᵈ) "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_TryWriteConfig :
-  WpMethodCall configservice "Clerk'ptr" "TryWriteConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Clerkⁱᵈ) "TryWriteConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_GetConfig :
-  WpMethodCall configservice "Server'ptr" "GetConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "GetConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_GetLease :
-  WpMethodCall configservice "Server'ptr" "GetLease" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "GetLease" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_ReserveEpochAndGetConfig :
-  WpMethodCall configservice "Server'ptr" "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "ReserveEpochAndGetConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_TryWriteConfig :
-  WpMethodCall configservice "Server'ptr" "TryWriteConfig" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "TryWriteConfig" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_tryAcquire :
-  WpMethodCall configservice "Server'ptr" "tryAcquire" _ (is_pkg_defined configservice) :=
+  WpMethodCall (ptrTⁱᵈ configservice.Serverⁱᵈ) "tryAcquire" _ (is_pkg_defined configservice) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

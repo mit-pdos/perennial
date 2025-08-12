@@ -177,7 +177,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MakeAsyncFile, MakeAsyncFileⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("AsyncFile"%go, []); ("AsyncFile'ptr"%go, [("Close"%go, AsyncFile__Closeⁱᵐᵖˡ); ("Write"%go, AsyncFile__Writeⁱᵐᵖˡ); ("flushThread"%go, AsyncFile__flushThreadⁱᵐᵖˡ); ("wait"%go, AsyncFile__waitⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(AsyncFileⁱᵈ, []); (ptrTⁱᵈ AsyncFileⁱᵈ, [("Close"%go, AsyncFile__Closeⁱᵐᵖˡ); ("Write"%go, AsyncFile__Writeⁱᵐᵖˡ); ("flushThread"%go, AsyncFile__flushThreadⁱᵐᵖˡ); ("wait"%go, AsyncFile__waitⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo asyncfile.asyncfile :=
   {|

@@ -205,7 +205,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Init, Initⁱᵐᵖˡ); (Open, Openⁱᵐᵖˡ); (writeAll, writeAllⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Log"%go, []); ("Log'ptr"%go, [("Append"%go, Log__Appendⁱᵐᵖˡ); ("Get"%go, Log__Getⁱᵐᵖˡ); ("Reset"%go, Log__Resetⁱᵐᵖˡ); ("append"%go, Log__appendⁱᵐᵖˡ); ("get"%go, Log__getⁱᵐᵖˡ); ("mkHdr"%go, Log__mkHdrⁱᵐᵖˡ); ("reset"%go, Log__resetⁱᵐᵖˡ); ("writeHdr"%go, Log__writeHdrⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Logⁱᵈ, []); (ptrTⁱᵈ Logⁱᵈ, [("Append"%go, Log__Appendⁱᵐᵖˡ); ("Get"%go, Log__Getⁱᵐᵖˡ); ("Reset"%go, Log__Resetⁱᵐᵖˡ); ("append"%go, Log__appendⁱᵐᵖˡ); ("get"%go, Log__getⁱᵐᵖˡ); ("mkHdr"%go, Log__mkHdrⁱᵐᵖˡ); ("reset"%go, Log__resetⁱᵐᵖˡ); ("writeHdr"%go, Log__writeHdrⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo append_log.append_log :=
   {|

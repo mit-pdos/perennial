@@ -155,19 +155,19 @@ Global Instance wp_func_call_MakeAsyncFile :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_Close :
-  WpMethodCall asyncfile "AsyncFile'ptr" "Close" _ (is_pkg_defined asyncfile) :=
+  WpMethodCall (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) "Close" _ (is_pkg_defined asyncfile) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_Write :
-  WpMethodCall asyncfile "AsyncFile'ptr" "Write" _ (is_pkg_defined asyncfile) :=
+  WpMethodCall (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) "Write" _ (is_pkg_defined asyncfile) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_flushThread :
-  WpMethodCall asyncfile "AsyncFile'ptr" "flushThread" _ (is_pkg_defined asyncfile) :=
+  WpMethodCall (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) "flushThread" _ (is_pkg_defined asyncfile) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_AsyncFile'ptr_wait :
-  WpMethodCall asyncfile "AsyncFile'ptr" "wait" _ (is_pkg_defined asyncfile) :=
+  WpMethodCall (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) "wait" _ (is_pkg_defined asyncfile) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

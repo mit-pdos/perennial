@@ -2130,7 +2130,7 @@ Definition vars' : list (go_string * go_type) := [(ErrElectionNotLeader, error);
 
 Definition functions' : list (go_string * val) := [(NewElection, NewElectionⁱᵐᵖˡ); (ResumeElection, ResumeElectionⁱᵐᵖˡ); (waitDelete, waitDeleteⁱᵐᵖˡ); (waitDeletes, waitDeletesⁱᵐᵖˡ); (NewMutex, NewMutexⁱᵐᵖˡ); (NewLocker, NewLockerⁱᵐᵖˡ); (NewSession, NewSessionⁱᵐᵖˡ); (WithTTL, WithTTLⁱᵐᵖˡ); (WithLease, WithLeaseⁱᵐᵖˡ); (WithContext, WithContextⁱᵐᵖˡ); (WithIsolation, WithIsolationⁱᵐᵖˡ); (WithAbortContext, WithAbortContextⁱᵐᵖˡ); (WithPrefetch, WithPrefetchⁱᵐᵖˡ); (NewSTM, NewSTMⁱᵐᵖˡ); (mkSTM, mkSTMⁱᵐᵖˡ); (runSTM, runSTMⁱᵐᵖˡ); (isKeyCurrent, isKeyCurrentⁱᵐᵖˡ); (respToValue, respToValueⁱᵐᵖˡ); (NewSTMRepeatable, NewSTMRepeatableⁱᵐᵖˡ); (NewSTMSerializable, NewSTMSerializableⁱᵐᵖˡ); (NewSTMReadCommitted, NewSTMReadCommittedⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Election"%go, []); ("Election'ptr"%go, [("Campaign"%go, Election__Campaignⁱᵐᵖˡ); ("Header"%go, Election__Headerⁱᵐᵖˡ); ("Key"%go, Election__Keyⁱᵐᵖˡ); ("Leader"%go, Election__Leaderⁱᵐᵖˡ); ("Observe"%go, Election__Observeⁱᵐᵖˡ); ("Proclaim"%go, Election__Proclaimⁱᵐᵖˡ); ("Resign"%go, Election__Resignⁱᵐᵖˡ); ("Rev"%go, Election__Revⁱᵐᵖˡ); ("observe"%go, Election__observeⁱᵐᵖˡ)]); ("Mutex"%go, []); ("Mutex'ptr"%go, [("Header"%go, Mutex__Headerⁱᵐᵖˡ); ("IsOwner"%go, Mutex__IsOwnerⁱᵐᵖˡ); ("Key"%go, Mutex__Keyⁱᵐᵖˡ); ("Lock"%go, Mutex__Lockⁱᵐᵖˡ); ("TryLock"%go, Mutex__TryLockⁱᵐᵖˡ); ("Unlock"%go, Mutex__Unlockⁱᵐᵖˡ); ("tryAcquire"%go, Mutex__tryAcquireⁱᵐᵖˡ)]); ("lockerMutex"%go, [("Header"%go, (λ: "$recv",
+Definition msets' : list (go_string * (list (go_string * val))) := [(Electionⁱᵈ, []); (ptrTⁱᵈ Electionⁱᵈ, [("Campaign"%go, Election__Campaignⁱᵐᵖˡ); ("Header"%go, Election__Headerⁱᵐᵖˡ); ("Key"%go, Election__Keyⁱᵐᵖˡ); ("Leader"%go, Election__Leaderⁱᵐᵖˡ); ("Observe"%go, Election__Observeⁱᵐᵖˡ); ("Proclaim"%go, Election__Proclaimⁱᵐᵖˡ); ("Resign"%go, Election__Resignⁱᵐᵖˡ); ("Rev"%go, Election__Revⁱᵐᵖˡ); ("observe"%go, Election__observeⁱᵐᵖˡ)]); (Mutexⁱᵈ, []); (ptrTⁱᵈ Mutexⁱᵈ, [("Header"%go, Mutex__Headerⁱᵐᵖˡ); ("IsOwner"%go, Mutex__IsOwnerⁱᵐᵖˡ); ("Key"%go, Mutex__Keyⁱᵐᵖˡ); ("Lock"%go, Mutex__Lockⁱᵐᵖˡ); ("TryLock"%go, Mutex__TryLockⁱᵐᵖˡ); ("Unlock"%go, Mutex__Unlockⁱᵐᵖˡ); ("tryAcquire"%go, Mutex__tryAcquireⁱᵐᵖˡ)]); (lockerMutexⁱᵈ, [("Header"%go, (λ: "$recv",
                  method_call #concurrency.concurrency #"Mutex'ptr" #"Header" (struct.field_get #lockerMutex "Mutex" "$recv")
                  )%V); ("IsOwner"%go, (λ: "$recv",
                  method_call #concurrency.concurrency #"Mutex'ptr" #"IsOwner" (struct.field_get #lockerMutex "Mutex" "$recv")
@@ -2140,7 +2140,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Election"%
                  method_call #concurrency.concurrency #"Mutex'ptr" #"TryLock" (struct.field_get #lockerMutex "Mutex" "$recv")
                  )%V); ("tryAcquire"%go, (λ: "$recv",
                  method_call #concurrency.concurrency #"Mutex'ptr" #"tryAcquire" (struct.field_get #lockerMutex "Mutex" "$recv")
-                 )%V)]); ("lockerMutex'ptr"%go, [("Header"%go, (λ: "$recvAddr",
+                 )%V)]); (ptrTⁱᵈ lockerMutexⁱᵈ, [("Header"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"Mutex'ptr" #"Header" (![#ptrT] (struct.field_ref #lockerMutex #"Mutex"%go "$recvAddr"))
                  )%V); ("IsOwner"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"Mutex'ptr" #"IsOwner" (![#ptrT] (struct.field_ref #lockerMutex #"Mutex"%go "$recvAddr"))
@@ -2150,19 +2150,19 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("Election"%
                  method_call #concurrency.concurrency #"Mutex'ptr" #"TryLock" (![#ptrT] (struct.field_ref #lockerMutex #"Mutex"%go "$recvAddr"))
                  )%V); ("Unlock"%go, lockerMutex__Unlockⁱᵐᵖˡ); ("tryAcquire"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"Mutex'ptr" #"tryAcquire" (![#ptrT] (struct.field_ref #lockerMutex #"Mutex"%go "$recvAddr"))
-                 )%V)]); ("Session"%go, []); ("Session'ptr"%go, [("Client"%go, Session__Clientⁱᵐᵖˡ); ("Close"%go, Session__Closeⁱᵐᵖˡ); ("Ctx"%go, Session__Ctxⁱᵐᵖˡ); ("Done"%go, Session__Doneⁱᵐᵖˡ); ("Lease"%go, Session__Leaseⁱᵐᵖˡ); ("Orphan"%go, Session__Orphanⁱᵐᵖˡ)]); ("sessionOptions"%go, []); ("sessionOptions'ptr"%go, []); ("SessionOption"%go, []); ("SessionOption'ptr"%go, []); ("Isolation"%go, []); ("Isolation'ptr"%go, []); ("stmError"%go, []); ("stmError'ptr"%go, []); ("stmOptions"%go, []); ("stmOptions'ptr"%go, []); ("stmOption"%go, []); ("stmOption'ptr"%go, []); ("stmResponse"%go, []); ("stmResponse'ptr"%go, []); ("stm"%go, []); ("stm'ptr"%go, [("Del"%go, stm__Delⁱᵐᵖˡ); ("Get"%go, stm__Getⁱᵐᵖˡ); ("Put"%go, stm__Putⁱᵐᵖˡ); ("Rev"%go, stm__Revⁱᵐᵖˡ); ("commit"%go, stm__commitⁱᵐᵖˡ); ("fetch"%go, stm__fetchⁱᵐᵖˡ); ("reset"%go, stm__resetⁱᵐᵖˡ)]); ("stmPut"%go, []); ("stmPut'ptr"%go, []); ("readSet"%go, [("add"%go, readSet__addⁱᵐᵖˡ); ("cmps"%go, readSet__cmpsⁱᵐᵖˡ); ("first"%go, readSet__firstⁱᵐᵖˡ)]); ("readSet'ptr"%go, [("add"%go, (λ: "$recvAddr",
+                 )%V)]); (Sessionⁱᵈ, []); (ptrTⁱᵈ Sessionⁱᵈ, [("Client"%go, Session__Clientⁱᵐᵖˡ); ("Close"%go, Session__Closeⁱᵐᵖˡ); ("Ctx"%go, Session__Ctxⁱᵐᵖˡ); ("Done"%go, Session__Doneⁱᵐᵖˡ); ("Lease"%go, Session__Leaseⁱᵐᵖˡ); ("Orphan"%go, Session__Orphanⁱᵐᵖˡ)]); (sessionOptionsⁱᵈ, []); (ptrTⁱᵈ sessionOptionsⁱᵈ, []); (SessionOptionⁱᵈ, []); (ptrTⁱᵈ SessionOptionⁱᵈ, []); (Isolationⁱᵈ, []); (ptrTⁱᵈ Isolationⁱᵈ, []); (stmErrorⁱᵈ, []); (ptrTⁱᵈ stmErrorⁱᵈ, []); (stmOptionsⁱᵈ, []); (ptrTⁱᵈ stmOptionsⁱᵈ, []); (stmOptionⁱᵈ, []); (ptrTⁱᵈ stmOptionⁱᵈ, []); (stmResponseⁱᵈ, []); (ptrTⁱᵈ stmResponseⁱᵈ, []); (stmⁱᵈ, []); (ptrTⁱᵈ stmⁱᵈ, [("Del"%go, stm__Delⁱᵐᵖˡ); ("Get"%go, stm__Getⁱᵐᵖˡ); ("Put"%go, stm__Putⁱᵐᵖˡ); ("Rev"%go, stm__Revⁱᵐᵖˡ); ("commit"%go, stm__commitⁱᵐᵖˡ); ("fetch"%go, stm__fetchⁱᵐᵖˡ); ("reset"%go, stm__resetⁱᵐᵖˡ)]); (stmPutⁱᵈ, []); (ptrTⁱᵈ stmPutⁱᵈ, []); (readSetⁱᵈ, [("add"%go, readSet__addⁱᵐᵖˡ); ("cmps"%go, readSet__cmpsⁱᵐᵖˡ); ("first"%go, readSet__firstⁱᵐᵖˡ)]); (ptrTⁱᵈ readSetⁱᵈ, [("add"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"readSet" #"add" (![#readSet] "$recvAddr")
                  )%V); ("cmps"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"readSet" #"cmps" (![#readSet] "$recvAddr")
                  )%V); ("first"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"readSet" #"first" (![#readSet] "$recvAddr")
-                 )%V)]); ("writeSet"%go, [("cmps"%go, writeSet__cmpsⁱᵐᵖˡ); ("get"%go, writeSet__getⁱᵐᵖˡ); ("puts"%go, writeSet__putsⁱᵐᵖˡ)]); ("writeSet'ptr"%go, [("cmps"%go, (λ: "$recvAddr",
+                 )%V)]); (writeSetⁱᵈ, [("cmps"%go, writeSet__cmpsⁱᵐᵖˡ); ("get"%go, writeSet__getⁱᵐᵖˡ); ("puts"%go, writeSet__putsⁱᵐᵖˡ)]); (ptrTⁱᵈ writeSetⁱᵈ, [("cmps"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"writeSet" #"cmps" (![#writeSet] "$recvAddr")
                  )%V); ("get"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"writeSet" #"get" (![#writeSet] "$recvAddr")
                  )%V); ("puts"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"writeSet" #"puts" (![#writeSet] "$recvAddr")
-                 )%V)]); ("stmSerializable"%go, []); ("stmSerializable'ptr"%go, [("Del"%go, (λ: "$recvAddr",
+                 )%V)]); (stmSerializableⁱᵈ, []); (ptrTⁱᵈ stmSerializableⁱᵈ, [("Del"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"stm'ptr" #"Del" (struct.field_ref #stmSerializable #"stm"%go "$recvAddr")
                  )%V); ("Get"%go, stmSerializable__Getⁱᵐᵖˡ); ("Put"%go, (λ: "$recvAddr",
                  method_call #concurrency.concurrency #"stm'ptr" #"Put" (struct.field_ref #stmSerializable #"stm"%go "$recvAddr")

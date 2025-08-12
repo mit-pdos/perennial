@@ -249,7 +249,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MkLog, MkLogⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Log"%go, []); ("Log'ptr"%go, [("CommitWait"%go, Log__CommitWaitⁱᵐᵖˡ); ("Flush"%go, Log__Flushⁱᵐᵖˡ); ("Load"%go, Log__Loadⁱᵐᵖˡ); ("LogSz"%go, Log__LogSzⁱᵐᵖˡ); ("Shutdown"%go, Log__Shutdownⁱᵐᵖˡ); ("doCommit"%go, Log__doCommitⁱᵐᵖˡ); ("installBufs"%go, Log__installBufsⁱᵐᵖˡ); ("installBufsMap"%go, Log__installBufsMapⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Logⁱᵈ, []); (ptrTⁱᵈ Logⁱᵈ, [("CommitWait"%go, Log__CommitWaitⁱᵐᵖˡ); ("Flush"%go, Log__Flushⁱᵐᵖˡ); ("Load"%go, Log__Loadⁱᵐᵖˡ); ("LogSz"%go, Log__LogSzⁱᵐᵖˡ); ("Shutdown"%go, Log__Shutdownⁱᵐᵖˡ); ("doCommit"%go, Log__doCommitⁱᵐᵖˡ); ("installBufs"%go, Log__installBufsⁱᵐᵖˡ); ("installBufsMap"%go, Log__installBufsMapⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo obj.obj :=
   {|

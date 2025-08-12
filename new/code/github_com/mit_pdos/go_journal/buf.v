@@ -341,7 +341,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MkBuf, MkBufⁱᵐᵖˡ); (MkBufLoad, MkBufLoadⁱᵐᵖˡ); (installOneBit, installOneBitⁱᵐᵖˡ); (installBit, installBitⁱᵐᵖˡ); (installBytes, installBytesⁱᵐᵖˡ); (MkBufMap, MkBufMapⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Buf"%go, []); ("Buf'ptr"%go, [("BnumGet"%go, Buf__BnumGetⁱᵐᵖˡ); ("BnumPut"%go, Buf__BnumPutⁱᵐᵖˡ); ("Install"%go, Buf__Installⁱᵐᵖˡ); ("IsDirty"%go, Buf__IsDirtyⁱᵐᵖˡ); ("SetDirty"%go, Buf__SetDirtyⁱᵐᵖˡ); ("WriteDirect"%go, Buf__WriteDirectⁱᵐᵖˡ)]); ("BufMap"%go, []); ("BufMap'ptr"%go, [("Del"%go, BufMap__Delⁱᵐᵖˡ); ("DirtyBufs"%go, BufMap__DirtyBufsⁱᵐᵖˡ); ("Insert"%go, BufMap__Insertⁱᵐᵖˡ); ("Lookup"%go, BufMap__Lookupⁱᵐᵖˡ); ("Ndirty"%go, BufMap__Ndirtyⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Bufⁱᵈ, []); (ptrTⁱᵈ Bufⁱᵈ, [("BnumGet"%go, Buf__BnumGetⁱᵐᵖˡ); ("BnumPut"%go, Buf__BnumPutⁱᵐᵖˡ); ("Install"%go, Buf__Installⁱᵐᵖˡ); ("IsDirty"%go, Buf__IsDirtyⁱᵐᵖˡ); ("SetDirty"%go, Buf__SetDirtyⁱᵐᵖˡ); ("WriteDirect"%go, Buf__WriteDirectⁱᵐᵖˡ)]); (BufMapⁱᵈ, []); (ptrTⁱᵈ BufMapⁱᵈ, [("Del"%go, BufMap__Delⁱᵐᵖˡ); ("DirtyBufs"%go, BufMap__DirtyBufsⁱᵐᵖˡ); ("Insert"%go, BufMap__Insertⁱᵐᵖˡ); ("Lookup"%go, BufMap__Lookupⁱᵐᵖˡ); ("Ndirty"%go, BufMap__Ndirtyⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo buf.buf :=
   {|

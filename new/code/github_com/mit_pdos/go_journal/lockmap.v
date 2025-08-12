@@ -183,7 +183,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(mkLockShard, mkLockShardⁱᵐᵖˡ); (MkLockMap, MkLockMapⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("lockState"%go, []); ("lockState'ptr"%go, []); ("lockShard"%go, []); ("lockShard'ptr"%go, [("acquire"%go, lockShard__acquireⁱᵐᵖˡ); ("release"%go, lockShard__releaseⁱᵐᵖˡ)]); ("LockMap"%go, []); ("LockMap'ptr"%go, [("Acquire"%go, LockMap__Acquireⁱᵐᵖˡ); ("Release"%go, LockMap__Releaseⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(lockStateⁱᵈ, []); (ptrTⁱᵈ lockStateⁱᵈ, []); (lockShardⁱᵈ, []); (ptrTⁱᵈ lockShardⁱᵈ, [("acquire"%go, lockShard__acquireⁱᵐᵖˡ); ("release"%go, lockShard__releaseⁱᵐᵖˡ)]); (LockMapⁱᵈ, []); (ptrTⁱᵈ LockMapⁱᵈ, [("Acquire"%go, LockMap__Acquireⁱᵐᵖˡ); ("Release"%go, LockMap__Releaseⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo lockmap.lockmap :=
   {|

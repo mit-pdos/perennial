@@ -230,7 +230,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(DecodeValue, DecodeValueⁱᵐᵖˡ); (EncodeValue, EncodeValueⁱᵐᵖˡ); (max, maxⁱᵐᵖˡ); (Make, Makeⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("cacheValue"%go, []); ("cacheValue'ptr"%go, []); ("CacheKv"%go, []); ("CacheKv'ptr"%go, [("Get"%go, CacheKv__Getⁱᵐᵖˡ); ("GetAndCache"%go, CacheKv__GetAndCacheⁱᵐᵖˡ); ("Put"%go, CacheKv__Putⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(cacheValueⁱᵈ, []); (ptrTⁱᵈ cacheValueⁱᵈ, []); (CacheKvⁱᵈ, []); (ptrTⁱᵈ CacheKvⁱᵈ, [("Get"%go, CacheKv__Getⁱᵐᵖˡ); ("GetAndCache"%go, CacheKv__GetAndCacheⁱᵐᵖˡ); ("Put"%go, CacheKv__Putⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo cachekv.cachekv :=
   {|

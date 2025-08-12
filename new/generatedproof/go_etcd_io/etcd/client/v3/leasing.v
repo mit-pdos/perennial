@@ -460,219 +460,219 @@ Global Instance wp_func_call_closeAll :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_Add :
-  WpMethodCall leasing "leaseCache'ptr" "Add" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "Add" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_Delete :
-  WpMethodCall leasing "leaseCache'ptr" "Delete" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "Delete" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_Evict :
-  WpMethodCall leasing "leaseCache'ptr" "Evict" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "Evict" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_EvictRange :
-  WpMethodCall leasing "leaseCache'ptr" "EvictRange" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "EvictRange" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_Get :
-  WpMethodCall leasing "leaseCache'ptr" "Get" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "Get" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_Lock :
-  WpMethodCall leasing "leaseCache'ptr" "Lock" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "Lock" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_LockRange :
-  WpMethodCall leasing "leaseCache'ptr" "LockRange" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "LockRange" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_LockWriteOps :
-  WpMethodCall leasing "leaseCache'ptr" "LockWriteOps" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "LockWriteOps" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_MayAcquire :
-  WpMethodCall leasing "leaseCache'ptr" "MayAcquire" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "MayAcquire" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_NotifyOps :
-  WpMethodCall leasing "leaseCache'ptr" "NotifyOps" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "NotifyOps" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_Rev :
-  WpMethodCall leasing "leaseCache'ptr" "Rev" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "Rev" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_Update :
-  WpMethodCall leasing "leaseCache'ptr" "Update" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "Update" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_clearOldRevokes :
-  WpMethodCall leasing "leaseCache'ptr" "clearOldRevokes" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "clearOldRevokes" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_delete :
-  WpMethodCall leasing "leaseCache'ptr" "delete" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "delete" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_evalCmp :
-  WpMethodCall leasing "leaseCache'ptr" "evalCmp" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "evalCmp" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_evalOps :
-  WpMethodCall leasing "leaseCache'ptr" "evalOps" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "evalOps" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseCache'ptr_notify :
-  WpMethodCall leasing "leaseCache'ptr" "notify" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseCacheⁱᵈ) "notify" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leaseKey'ptr_get :
-  WpMethodCall leasing "leaseKey'ptr" "get" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leaseKeyⁱᵈ) "get" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_Close :
-  WpMethodCall leasing "leasingKV'ptr" "Close" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "Close" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_Compact :
-  WpMethodCall leasing "leasingKV'ptr" "Compact" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "Compact" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_Delete :
-  WpMethodCall leasing "leasingKV'ptr" "Delete" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "Delete" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_Do :
-  WpMethodCall leasing "leasingKV'ptr" "Do" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "Do" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_Get :
-  WpMethodCall leasing "leasingKV'ptr" "Get" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "Get" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_Put :
-  WpMethodCall leasing "leasingKV'ptr" "Put" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "Put" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_Txn :
-  WpMethodCall leasing "leasingKV'ptr" "Txn" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "Txn" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_acquire :
-  WpMethodCall leasing "leasingKV'ptr" "acquire" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "acquire" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_delete :
-  WpMethodCall leasing "leasingKV'ptr" "delete" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "delete" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_deleteRange :
-  WpMethodCall leasing "leasingKV'ptr" "deleteRange" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "deleteRange" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_deleteRangeRPC :
-  WpMethodCall leasing "leasingKV'ptr" "deleteRangeRPC" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "deleteRangeRPC" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_get :
-  WpMethodCall leasing "leasingKV'ptr" "get" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "get" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_leaseID :
-  WpMethodCall leasing "leasingKV'ptr" "leaseID" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "leaseID" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_monitorLease :
-  WpMethodCall leasing "leasingKV'ptr" "monitorLease" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "monitorLease" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_monitorSession :
-  WpMethodCall leasing "leasingKV'ptr" "monitorSession" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "monitorSession" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_put :
-  WpMethodCall leasing "leasingKV'ptr" "put" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "put" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_readySession :
-  WpMethodCall leasing "leasingKV'ptr" "readySession" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "readySession" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_rescind :
-  WpMethodCall leasing "leasingKV'ptr" "rescind" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "rescind" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_revoke :
-  WpMethodCall leasing "leasingKV'ptr" "revoke" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "revoke" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_revokeLeaseKvs :
-  WpMethodCall leasing "leasingKV'ptr" "revokeLeaseKvs" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "revokeLeaseKvs" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_revokeRange :
-  WpMethodCall leasing "leasingKV'ptr" "revokeRange" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "revokeRange" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_tryModifyOp :
-  WpMethodCall leasing "leasingKV'ptr" "tryModifyOp" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "tryModifyOp" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_waitRescind :
-  WpMethodCall leasing "leasingKV'ptr" "waitRescind" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "waitRescind" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_leasingKV'ptr_waitSession :
-  WpMethodCall leasing "leasingKV'ptr" "waitSession" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.leasingKVⁱᵈ) "waitSession" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_Commit :
-  WpMethodCall leasing "txnLeasing'ptr" "Commit" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "Commit" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_Else :
-  WpMethodCall leasing "txnLeasing'ptr" "Else" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "Else" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_If :
-  WpMethodCall leasing "txnLeasing'ptr" "If" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "If" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_Then :
-  WpMethodCall leasing "txnLeasing'ptr" "Then" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "Then" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_commitToCache :
-  WpMethodCall leasing "txnLeasing'ptr" "commitToCache" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "commitToCache" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_eval :
-  WpMethodCall leasing "txnLeasing'ptr" "eval" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "eval" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_fallback :
-  WpMethodCall leasing "txnLeasing'ptr" "fallback" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "fallback" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_guard :
-  WpMethodCall leasing "txnLeasing'ptr" "guard" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "guard" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_guardKeys :
-  WpMethodCall leasing "txnLeasing'ptr" "guardKeys" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "guardKeys" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_guardRanges :
-  WpMethodCall leasing "txnLeasing'ptr" "guardRanges" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "guardRanges" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_revokeFallback :
-  WpMethodCall leasing "txnLeasing'ptr" "revokeFallback" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "revokeFallback" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_txnLeasing'ptr_serverTxn :
-  WpMethodCall leasing "txnLeasing'ptr" "serverTxn" _ (is_pkg_defined leasing) :=
+  WpMethodCall (ptrTⁱᵈ leasing.txnLeasingⁱᵈ) "serverTxn" _ (is_pkg_defined leasing) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

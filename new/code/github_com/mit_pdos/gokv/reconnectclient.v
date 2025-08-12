@@ -114,7 +114,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MakeReconnectingClient, MakeReconnectingClientⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("ReconnectingClient"%go, []); ("ReconnectingClient'ptr"%go, [("Call"%go, ReconnectingClient__Callⁱᵐᵖˡ); ("getClient"%go, ReconnectingClient__getClientⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(ReconnectingClientⁱᵈ, []); (ptrTⁱᵈ ReconnectingClientⁱᵈ, [("Call"%go, ReconnectingClient__Callⁱᵐᵖˡ); ("getClient"%go, ReconnectingClient__getClientⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo reconnectclient.reconnectclient :=
   {|

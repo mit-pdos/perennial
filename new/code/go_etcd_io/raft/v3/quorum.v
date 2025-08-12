@@ -472,7 +472,7 @@ Definition vars' : list (go_string * go_type) := [(_VoteResult_index, arrayT (W6
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("JointConfig"%go, [("CommittedIndex"%go, JointConfig__CommittedIndexⁱᵐᵖˡ); ("Describe"%go, JointConfig__Describeⁱᵐᵖˡ); ("IDs"%go, JointConfig__IDsⁱᵐᵖˡ); ("String"%go, JointConfig__Stringⁱᵐᵖˡ); ("VoteResult"%go, JointConfig__VoteResultⁱᵐᵖˡ)]); ("JointConfig'ptr"%go, [("CommittedIndex"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [(JointConfigⁱᵈ, [("CommittedIndex"%go, JointConfig__CommittedIndexⁱᵐᵖˡ); ("Describe"%go, JointConfig__Describeⁱᵐᵖˡ); ("IDs"%go, JointConfig__IDsⁱᵐᵖˡ); ("String"%go, JointConfig__Stringⁱᵐᵖˡ); ("VoteResult"%go, JointConfig__VoteResultⁱᵐᵖˡ)]); (ptrTⁱᵈ JointConfigⁱᵈ, [("CommittedIndex"%go, (λ: "$recvAddr",
                  method_call #quorum.quorum #"JointConfig" #"CommittedIndex" (![#JointConfig] "$recvAddr")
                  )%V); ("Describe"%go, (λ: "$recvAddr",
                  method_call #quorum.quorum #"JointConfig" #"Describe" (![#JointConfig] "$recvAddr")
@@ -482,7 +482,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("JointConfi
                  method_call #quorum.quorum #"JointConfig" #"String" (![#JointConfig] "$recvAddr")
                  )%V); ("VoteResult"%go, (λ: "$recvAddr",
                  method_call #quorum.quorum #"JointConfig" #"VoteResult" (![#JointConfig] "$recvAddr")
-                 )%V)]); ("MajorityConfig"%go, [("CommittedIndex"%go, MajorityConfig__CommittedIndexⁱᵐᵖˡ); ("Describe"%go, MajorityConfig__Describeⁱᵐᵖˡ); ("Slice"%go, MajorityConfig__Sliceⁱᵐᵖˡ); ("String"%go, MajorityConfig__Stringⁱᵐᵖˡ); ("VoteResult"%go, MajorityConfig__VoteResultⁱᵐᵖˡ)]); ("MajorityConfig'ptr"%go, [("CommittedIndex"%go, (λ: "$recvAddr",
+                 )%V)]); (MajorityConfigⁱᵈ, [("CommittedIndex"%go, MajorityConfig__CommittedIndexⁱᵐᵖˡ); ("Describe"%go, MajorityConfig__Describeⁱᵐᵖˡ); ("Slice"%go, MajorityConfig__Sliceⁱᵐᵖˡ); ("String"%go, MajorityConfig__Stringⁱᵐᵖˡ); ("VoteResult"%go, MajorityConfig__VoteResultⁱᵐᵖˡ)]); (ptrTⁱᵈ MajorityConfigⁱᵈ, [("CommittedIndex"%go, (λ: "$recvAddr",
                  method_call #quorum.quorum #"MajorityConfig" #"CommittedIndex" (![#MajorityConfig] "$recvAddr")
                  )%V); ("Describe"%go, (λ: "$recvAddr",
                  method_call #quorum.quorum #"MajorityConfig" #"Describe" (![#MajorityConfig] "$recvAddr")
@@ -492,11 +492,11 @@ Definition msets' : list (go_string * (list (go_string * val))) := [("JointConfi
                  method_call #quorum.quorum #"MajorityConfig" #"String" (![#MajorityConfig] "$recvAddr")
                  )%V); ("VoteResult"%go, (λ: "$recvAddr",
                  method_call #quorum.quorum #"MajorityConfig" #"VoteResult" (![#MajorityConfig] "$recvAddr")
-                 )%V)]); ("Index"%go, [("String"%go, Index__Stringⁱᵐᵖˡ)]); ("Index'ptr"%go, [("String"%go, (λ: "$recvAddr",
+                 )%V)]); (Indexⁱᵈ, [("String"%go, Index__Stringⁱᵐᵖˡ)]); (ptrTⁱᵈ Indexⁱᵈ, [("String"%go, (λ: "$recvAddr",
                  method_call #quorum.quorum #"Index" #"String" (![#Index] "$recvAddr")
-                 )%V)]); ("mapAckIndexer"%go, [("AckedIndex"%go, mapAckIndexer__AckedIndexⁱᵐᵖˡ)]); ("mapAckIndexer'ptr"%go, [("AckedIndex"%go, (λ: "$recvAddr",
+                 )%V)]); (mapAckIndexerⁱᵈ, [("AckedIndex"%go, mapAckIndexer__AckedIndexⁱᵐᵖˡ)]); (ptrTⁱᵈ mapAckIndexerⁱᵈ, [("AckedIndex"%go, (λ: "$recvAddr",
                  method_call #quorum.quorum #"mapAckIndexer" #"AckedIndex" (![#mapAckIndexer] "$recvAddr")
-                 )%V)]); ("VoteResult"%go, [("String"%go, VoteResult__Stringⁱᵐᵖˡ)]); ("VoteResult'ptr"%go, [("String"%go, (λ: "$recvAddr",
+                 )%V)]); (VoteResultⁱᵈ, [("String"%go, VoteResult__Stringⁱᵐᵖˡ)]); (ptrTⁱᵈ VoteResultⁱᵈ, [("String"%go, (λ: "$recvAddr",
                  method_call #quorum.quorum #"VoteResult" #"String" (![#VoteResult] "$recvAddr")
                  )%V)])].
 

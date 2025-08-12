@@ -338,7 +338,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MakeExactlyOnceStateMachine, MakeExactlyOnceStateMachineⁱᵐᵖˡ); (MakeClerk, MakeClerkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("eStateMachine"%go, []); ("eStateMachine'ptr"%go, [("applyReadonly"%go, eStateMachine__applyReadonlyⁱᵐᵖˡ); ("applyVolatile"%go, eStateMachine__applyVolatileⁱᵐᵖˡ); ("getState"%go, eStateMachine__getStateⁱᵐᵖˡ); ("setState"%go, eStateMachine__setStateⁱᵐᵖˡ)]); ("Clerk"%go, []); ("Clerk'ptr"%go, [("ApplyExactlyOnce"%go, Clerk__ApplyExactlyOnceⁱᵐᵖˡ); ("ApplyReadonly"%go, Clerk__ApplyReadonlyⁱᵐᵖˡ)]); ("VersionedStateMachine"%go, []); ("VersionedStateMachine'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(eStateMachineⁱᵈ, []); (ptrTⁱᵈ eStateMachineⁱᵈ, [("applyReadonly"%go, eStateMachine__applyReadonlyⁱᵐᵖˡ); ("applyVolatile"%go, eStateMachine__applyVolatileⁱᵐᵖˡ); ("getState"%go, eStateMachine__getStateⁱᵐᵖˡ); ("setState"%go, eStateMachine__setStateⁱᵐᵖˡ)]); (Clerkⁱᵈ, []); (ptrTⁱᵈ Clerkⁱᵈ, [("ApplyExactlyOnce"%go, Clerk__ApplyExactlyOnceⁱᵐᵖˡ); ("ApplyReadonly"%go, Clerk__ApplyReadonlyⁱᵐᵖˡ)]); (VersionedStateMachineⁱᵈ, []); (ptrTⁱᵈ VersionedStateMachineⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo exactlyonce.exactlyonce :=
   {|

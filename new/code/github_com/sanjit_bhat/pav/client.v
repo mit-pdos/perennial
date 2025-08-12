@@ -833,7 +833,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (CheckMemb, CheckMembⁱᵐᵖˡ); (CheckHist, CheckHistⁱᵐᵖˡ); (CheckNonMemb, CheckNonMembⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Client"%go, []); ("Client'ptr"%go, [("Audit"%go, Client__Auditⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("SelfMon"%go, Client__SelfMonⁱᵐᵖˡ); ("getChainExt"%go, Client__getChainExtⁱᵐᵖˡ)]); ("pending"%go, []); ("pending'ptr"%go, []); ("epoch"%go, []); ("epoch'ptr"%go, []); ("serv"%go, []); ("serv'ptr"%go, []); ("Evid"%go, []); ("Evid'ptr"%go, [("Check"%go, Evid__Checkⁱᵐᵖˡ)]); ("evidVrf"%go, []); ("evidVrf'ptr"%go, [("Check"%go, evidVrf__Checkⁱᵐᵖˡ)]); ("evidLink"%go, []); ("evidLink'ptr"%go, [("Check"%go, evidLink__Checkⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Clientⁱᵈ, []); (ptrTⁱᵈ Clientⁱᵈ, [("Audit"%go, Client__Auditⁱᵐᵖˡ); ("Get"%go, Client__Getⁱᵐᵖˡ); ("Put"%go, Client__Putⁱᵐᵖˡ); ("SelfMon"%go, Client__SelfMonⁱᵐᵖˡ); ("getChainExt"%go, Client__getChainExtⁱᵐᵖˡ)]); (pendingⁱᵈ, []); (ptrTⁱᵈ pendingⁱᵈ, []); (epochⁱᵈ, []); (ptrTⁱᵈ epochⁱᵈ, []); (servⁱᵈ, []); (ptrTⁱᵈ servⁱᵈ, []); (Evidⁱᵈ, []); (ptrTⁱᵈ Evidⁱᵈ, [("Check"%go, Evid__Checkⁱᵐᵖˡ)]); (evidVrfⁱᵈ, []); (ptrTⁱᵈ evidVrfⁱᵈ, [("Check"%go, evidVrf__Checkⁱᵐᵖˡ)]); (evidLinkⁱᵈ, []); (ptrTⁱᵈ evidLinkⁱᵈ, [("Check"%go, evidLink__Checkⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo client.client :=
   {|

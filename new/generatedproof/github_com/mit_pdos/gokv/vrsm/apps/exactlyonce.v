@@ -284,27 +284,27 @@ Global Instance wp_func_call_MakeClerk :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_eStateMachine'ptr_applyReadonly :
-  WpMethodCall exactlyonce "eStateMachine'ptr" "applyReadonly" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.eStateMachineⁱᵈ) "applyReadonly" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_eStateMachine'ptr_applyVolatile :
-  WpMethodCall exactlyonce "eStateMachine'ptr" "applyVolatile" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.eStateMachineⁱᵈ) "applyVolatile" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_eStateMachine'ptr_getState :
-  WpMethodCall exactlyonce "eStateMachine'ptr" "getState" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.eStateMachineⁱᵈ) "getState" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_eStateMachine'ptr_setState :
-  WpMethodCall exactlyonce "eStateMachine'ptr" "setState" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.eStateMachineⁱᵈ) "setState" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyExactlyOnce :
-  WpMethodCall exactlyonce "Clerk'ptr" "ApplyExactlyOnce" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.Clerkⁱᵈ) "ApplyExactlyOnce" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyReadonly :
-  WpMethodCall exactlyonce "Clerk'ptr" "ApplyReadonly" _ (is_pkg_defined exactlyonce) :=
+  WpMethodCall (ptrTⁱᵈ exactlyonce.Clerkⁱᵈ) "ApplyReadonly" _ (is_pkg_defined exactlyonce) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

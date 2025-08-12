@@ -268,35 +268,35 @@ Global Instance wp_func_call_StoreUint64 :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_Add :
-  WpMethodCall atomic "Int32'ptr" "Add" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "Add" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_CompareAndSwap :
-  WpMethodCall atomic "Int32'ptr" "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "CompareAndSwap" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_Load :
-  WpMethodCall atomic "Int32'ptr" "Load" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "Load" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Int32'ptr_Store :
-  WpMethodCall atomic "Int32'ptr" "Store" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Int32ⁱᵈ) "Store" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Add :
-  WpMethodCall atomic "Uint64'ptr" "Add" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "Add" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_CompareAndSwap :
-  WpMethodCall atomic "Uint64'ptr" "CompareAndSwap" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "CompareAndSwap" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Load :
-  WpMethodCall atomic "Uint64'ptr" "Load" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "Load" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Uint64'ptr_Store :
-  WpMethodCall atomic "Uint64'ptr" "Store" _ (is_pkg_defined atomic) :=
+  WpMethodCall (ptrTⁱᵈ atomic.Uint64ⁱᵈ) "Store" _ (is_pkg_defined atomic) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

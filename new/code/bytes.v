@@ -212,7 +212,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Equal, Equalⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Buffer"%go, []); ("Buffer'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Bufferⁱᵈ, []); (ptrTⁱᵈ Bufferⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo bytes.bytes :=
   {|

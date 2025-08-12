@@ -266,7 +266,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Assert, Assertⁱᵐᵖˡ); (SumNoOverflow, SumNoOverflowⁱᵐᵖˡ); (SumAssumeNoOverflow, SumAssumeNoOverflowⁱᵐᵖˡ); (BytesEqual, BytesEqualⁱᵐᵖˡ); (BytesClone, BytesCloneⁱᵐᵖˡ); (SliceSplit, SliceSplitⁱᵐᵖˡ); (newJoinHandle, newJoinHandleⁱᵐᵖˡ); (Spawn, Spawnⁱᵐᵖˡ); (Multipar, Multiparⁱᵐᵖˡ); (Skip, Skipⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("JoinHandle"%go, []); ("JoinHandle'ptr"%go, [("Join"%go, JoinHandle__Joinⁱᵐᵖˡ); ("finish"%go, JoinHandle__finishⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(JoinHandleⁱᵈ, []); (ptrTⁱᵈ JoinHandleⁱᵈ, [("Join"%go, JoinHandle__Joinⁱᵐᵖˡ); ("finish"%go, JoinHandle__finishⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo std.std :=
   {|

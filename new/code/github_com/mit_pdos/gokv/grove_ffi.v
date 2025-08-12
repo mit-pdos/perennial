@@ -54,7 +54,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(FileWrite, FileWriteⁱᵐᵖˡ); (FileRead, FileReadⁱᵐᵖˡ); (FileAppend, FileAppendⁱᵐᵖˡ); (Listen, Listenⁱᵐᵖˡ); (Accept, Acceptⁱᵐᵖˡ); (Connect, Connectⁱᵐᵖˡ); (Send, Sendⁱᵐᵖˡ); (Receive, Receiveⁱᵐᵖˡ); (GetTimeRange, GetTimeRangeⁱᵐᵖˡ); (GetTSC, GetTSCⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Listener"%go, []); ("Listener'ptr"%go, []); ("Connection"%go, []); ("Connection'ptr"%go, []); ("ConnectRet"%go, []); ("ConnectRet'ptr"%go, []); ("ReceiveRet"%go, []); ("ReceiveRet'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Listenerⁱᵈ, []); (ptrTⁱᵈ Listenerⁱᵈ, []); (Connectionⁱᵈ, []); (ptrTⁱᵈ Connectionⁱᵈ, []); (ConnectRetⁱᵈ, []); (ptrTⁱᵈ ConnectRetⁱᵈ, []); (ReceiveRetⁱᵈ, []); (ptrTⁱᵈ ReceiveRetⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo grove_ffi.grove_ffi :=
   {|

@@ -395,7 +395,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(compute_new_cap, compute_new_capⁱᵐᵖˡ); (reserve, reserveⁱᵐᵖˡ); (ReadInt, ReadIntⁱᵐᵖˡ); (ReadInt32, ReadInt32ⁱᵐᵖˡ); (ReadBytes, ReadBytesⁱᵐᵖˡ); (ReadBytesCopy, ReadBytesCopyⁱᵐᵖˡ); (ReadBool, ReadBoolⁱᵐᵖˡ); (ReadLenPrefixedBytes, ReadLenPrefixedBytesⁱᵐᵖˡ); (WriteInt, WriteIntⁱᵐᵖˡ); (WriteInt32, WriteInt32ⁱᵐᵖˡ); (WriteBytes, WriteBytesⁱᵐᵖˡ); (WriteBool, WriteBoolⁱᵐᵖˡ); (WriteLenPrefixedBytes, WriteLenPrefixedBytesⁱᵐᵖˡ); (ReadSlice, ReadSliceⁱᵐᵖˡ); (ReadSliceLenPrefix, ReadSliceLenPrefixⁱᵐᵖˡ); (WriteSlice, WriteSliceⁱᵐᵖˡ); (WriteSliceLenPrefix, WriteSliceLenPrefixⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Enc"%go, []); ("Enc'ptr"%go, []); ("Dec"%go, []); ("Dec'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Encⁱᵈ, []); (ptrTⁱᵈ Encⁱᵈ, []); (Decⁱᵈ, []); (ptrTⁱᵈ Decⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo marshal.marshal :=
   {|

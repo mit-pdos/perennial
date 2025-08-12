@@ -74,7 +74,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("CancelFunc"%go, []); ("CancelFunc'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(CancelFuncⁱᵈ, []); (ptrTⁱᵈ CancelFuncⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo context.context :=
   {|

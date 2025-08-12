@@ -74,9 +74,9 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(NewHasher, NewHasherⁱᵐᵖˡ); (SigGenerateKey, SigGenerateKeyⁱᵐᵖˡ); (VrfGenerateKey, VrfGenerateKeyⁱᵐᵖˡ); (VrfPublicKeyEncode, VrfPublicKeyEncodeⁱᵐᵖˡ); (VrfPublicKeyDecode, VrfPublicKeyDecodeⁱᵐᵖˡ); (RandBytes, RandBytesⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Hasher"%go, []); ("Hasher'ptr"%go, [("Sum"%go, Hasher__Sumⁱᵐᵖˡ); ("Write"%go, Hasher__Writeⁱᵐᵖˡ)]); ("SigPrivateKey"%go, []); ("SigPrivateKey'ptr"%go, [("Sign"%go, SigPrivateKey__Signⁱᵐᵖˡ)]); ("SigPublicKey"%go, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); ("SigPublicKey'ptr"%go, [("Verify"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [(Hasherⁱᵈ, []); (ptrTⁱᵈ Hasherⁱᵈ, [("Sum"%go, Hasher__Sumⁱᵐᵖˡ); ("Write"%go, Hasher__Writeⁱᵐᵖˡ)]); (SigPrivateKeyⁱᵈ, []); (ptrTⁱᵈ SigPrivateKeyⁱᵈ, [("Sign"%go, SigPrivateKey__Signⁱᵐᵖˡ)]); (SigPublicKeyⁱᵈ, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); (ptrTⁱᵈ SigPublicKeyⁱᵈ, [("Verify"%go, (λ: "$recvAddr",
                  method_call #cryptoffi.cryptoffi #"SigPublicKey" #"Verify" (![#SigPublicKey] "$recvAddr")
-                 )%V)]); ("VrfPrivateKey"%go, []); ("VrfPrivateKey'ptr"%go, [("Evaluate"%go, VrfPrivateKey__Evaluateⁱᵐᵖˡ); ("Prove"%go, VrfPrivateKey__Proveⁱᵐᵖˡ); ("PublicKey"%go, VrfPrivateKey__PublicKeyⁱᵐᵖˡ)]); ("VrfPublicKey"%go, []); ("VrfPublicKey'ptr"%go, [("Verify"%go, VrfPublicKey__Verifyⁱᵐᵖˡ)])].
+                 )%V)]); (VrfPrivateKeyⁱᵈ, []); (ptrTⁱᵈ VrfPrivateKeyⁱᵈ, [("Evaluate"%go, VrfPrivateKey__Evaluateⁱᵐᵖˡ); ("Prove"%go, VrfPrivateKey__Proveⁱᵐᵖˡ); ("PublicKey"%go, VrfPrivateKey__PublicKeyⁱᵐᵖˡ)]); (VrfPublicKeyⁱᵈ, []); (ptrTⁱᵈ VrfPublicKeyⁱᵈ, [("Verify"%go, VrfPublicKey__Verifyⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo cryptoffi.cryptoffi :=
   {|

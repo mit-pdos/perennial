@@ -92,19 +92,19 @@ Global Instance wp_func_call_Begin :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_CommitWait :
-  WpMethodCall jrnl "Op'ptr" "CommitWait" _ (is_pkg_defined jrnl) :=
+  WpMethodCall (ptrTⁱᵈ jrnl.Opⁱᵈ) "CommitWait" _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_NDirty :
-  WpMethodCall jrnl "Op'ptr" "NDirty" _ (is_pkg_defined jrnl) :=
+  WpMethodCall (ptrTⁱᵈ jrnl.Opⁱᵈ) "NDirty" _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_OverWrite :
-  WpMethodCall jrnl "Op'ptr" "OverWrite" _ (is_pkg_defined jrnl) :=
+  WpMethodCall (ptrTⁱᵈ jrnl.Opⁱᵈ) "OverWrite" _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_ReadBuf :
-  WpMethodCall jrnl "Op'ptr" "ReadBuf" _ (is_pkg_defined jrnl) :=
+  WpMethodCall (ptrTⁱᵈ jrnl.Opⁱᵈ) "ReadBuf" _ (is_pkg_defined jrnl) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

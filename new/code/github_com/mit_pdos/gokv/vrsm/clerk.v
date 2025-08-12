@@ -226,7 +226,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(makeClerks, makeClerksⁱᵐᵖˡ); (Make, Makeⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Clerk"%go, []); ("Clerk'ptr"%go, [("Apply"%go, Clerk__Applyⁱᵐᵖˡ); ("ApplyRo"%go, Clerk__ApplyRoⁱᵐᵖˡ); ("ApplyRo2"%go, Clerk__ApplyRo2ⁱᵐᵖˡ); ("maybeRefreshPreference"%go, Clerk__maybeRefreshPreferenceⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Clerkⁱᵈ, []); (ptrTⁱᵈ Clerkⁱᵈ, [("Apply"%go, Clerk__Applyⁱᵐᵖˡ); ("ApplyRo"%go, Clerk__ApplyRoⁱᵐᵖˡ); ("ApplyRo2"%go, Clerk__ApplyRo2ⁱᵐᵖˡ); ("maybeRefreshPreference"%go, Clerk__maybeRefreshPreferenceⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo clerk.clerk :=
   {|

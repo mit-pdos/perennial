@@ -190,9 +190,9 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(BoxGet, BoxGetⁱᵐᵖˡ); (BoxGet2, BoxGet2ⁱᵐᵖˡ); (makeGenericBox, makeGenericBoxⁱᵐᵖˡ); (makeBox, makeBoxⁱᵐᵖˡ); (useBoxGet, useBoxGetⁱᵐᵖˡ); (useContainer, useContainerⁱᵐᵖˡ); (useMultiParam, useMultiParamⁱᵐᵖˡ); (swapMultiParam, swapMultiParamⁱᵐᵖˡ); (multiParamFunc, multiParamFuncⁱᵐᵖˡ); (useMultiParamFunc, useMultiParamFuncⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Box"%go, [("Get"%go, Box__Getⁱᵐᵖˡ)]); ("Box'ptr"%go, [("Get"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [(Boxⁱᵈ, [("Get"%go, Box__Getⁱᵐᵖˡ)]); (ptrTⁱᵈ Boxⁱᵈ, [("Get"%go, (λ: "$recvAddr",
                  method_call #generics.generics #"Box" #"Get" (![Box #()] "$recvAddr")
-                 )%V)]); ("Container"%go, []); ("Container'ptr"%go, []); ("UseContainer"%go, []); ("UseContainer'ptr"%go, []); ("OnlyIndirect"%go, []); ("OnlyIndirect'ptr"%go, []); ("MultiParam"%go, []); ("MultiParam'ptr"%go, [])].
+                 )%V)]); (Containerⁱᵈ, []); (ptrTⁱᵈ Containerⁱᵈ, []); (UseContainerⁱᵈ, []); (ptrTⁱᵈ UseContainerⁱᵈ, []); (OnlyIndirectⁱᵈ, []); (ptrTⁱᵈ OnlyIndirectⁱᵈ, []); (MultiParamⁱᵈ, []); (ptrTⁱᵈ MultiParamⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo generics.generics :=
   {|

@@ -46,7 +46,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Changer"%go, []); ("Changer'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Changerⁱᵈ, []); (ptrTⁱᵈ Changerⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo confchange.confchange :=
   {|

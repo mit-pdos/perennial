@@ -175,7 +175,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Builder"%go, []); ("Builder'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Builderⁱᵈ, []); (ptrTⁱᵈ Builderⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo strings.strings :=
   {|

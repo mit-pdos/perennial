@@ -179,55 +179,55 @@ Global Instance wp_func_call_bitToByte :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Flush :
-  WpMethodCall txn "Log'ptr" "Flush" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Logⁱᵈ) "Flush" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_Acquire :
-  WpMethodCall txn "Txn'ptr" "Acquire" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "Acquire" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_Commit :
-  WpMethodCall txn "Txn'ptr" "Commit" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "Commit" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_NDirty :
-  WpMethodCall txn "Txn'ptr" "NDirty" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "NDirty" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_OverWrite :
-  WpMethodCall txn "Txn'ptr" "OverWrite" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "OverWrite" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_OverWriteBit :
-  WpMethodCall txn "Txn'ptr" "OverWriteBit" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "OverWriteBit" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_ReadBuf :
-  WpMethodCall txn "Txn'ptr" "ReadBuf" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "ReadBuf" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_ReadBufBit :
-  WpMethodCall txn "Txn'ptr" "ReadBufBit" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "ReadBufBit" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_ReleaseAll :
-  WpMethodCall txn "Txn'ptr" "ReleaseAll" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "ReleaseAll" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_acquireNoCheck :
-  WpMethodCall txn "Txn'ptr" "acquireNoCheck" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "acquireNoCheck" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_commitNoRelease :
-  WpMethodCall txn "Txn'ptr" "commitNoRelease" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "commitNoRelease" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_isAlreadyAcquired :
-  WpMethodCall txn "Txn'ptr" "isAlreadyAcquired" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "isAlreadyAcquired" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Txn'ptr_readBufNoAcquire :
-  WpMethodCall txn "Txn'ptr" "readBufNoAcquire" _ (is_pkg_defined txn) :=
+  WpMethodCall (ptrTⁱᵈ txn.Txnⁱᵈ) "readBufNoAcquire" _ (is_pkg_defined txn) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

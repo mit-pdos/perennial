@@ -112,15 +112,15 @@ Global Instance wp_func_call_GetNextLink :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_HashChain'ptr_Append :
-  WpMethodCall hashchain "HashChain'ptr" "Append" _ (is_pkg_defined hashchain) :=
+  WpMethodCall (ptrTⁱᵈ hashchain.HashChainⁱᵈ) "Append" _ (is_pkg_defined hashchain) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_HashChain'ptr_Bootstrap :
-  WpMethodCall hashchain "HashChain'ptr" "Bootstrap" _ (is_pkg_defined hashchain) :=
+  WpMethodCall (ptrTⁱᵈ hashchain.HashChainⁱᵈ) "Bootstrap" _ (is_pkg_defined hashchain) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_HashChain'ptr_Prove :
-  WpMethodCall hashchain "HashChain'ptr" "Prove" _ (is_pkg_defined hashchain) :=
+  WpMethodCall (ptrTⁱᵈ hashchain.HashChainⁱᵈ) "Prove" _ (is_pkg_defined hashchain) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

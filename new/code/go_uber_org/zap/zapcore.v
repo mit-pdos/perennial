@@ -176,7 +176,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("FieldType"%go, []); ("FieldType'ptr"%go, []); ("Field"%go, []); ("Field'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(FieldTypeⁱᵈ, []); (ptrTⁱᵈ FieldTypeⁱᵈ, []); (Fieldⁱᵈ, []); (ptrTⁱᵈ Fieldⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo zapcore.zapcore :=
   {|

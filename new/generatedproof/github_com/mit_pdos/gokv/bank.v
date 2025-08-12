@@ -124,19 +124,19 @@ Global Instance wp_func_call_MakeBankClerk :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_BankClerk'ptr_SimpleAudit :
-  WpMethodCall bank "BankClerk'ptr" "SimpleAudit" _ (is_pkg_defined bank) :=
+  WpMethodCall (ptrTⁱᵈ bank.BankClerkⁱᵈ) "SimpleAudit" _ (is_pkg_defined bank) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BankClerk'ptr_SimpleTransfer :
-  WpMethodCall bank "BankClerk'ptr" "SimpleTransfer" _ (is_pkg_defined bank) :=
+  WpMethodCall (ptrTⁱᵈ bank.BankClerkⁱᵈ) "SimpleTransfer" _ (is_pkg_defined bank) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BankClerk'ptr_get_total :
-  WpMethodCall bank "BankClerk'ptr" "get_total" _ (is_pkg_defined bank) :=
+  WpMethodCall (ptrTⁱᵈ bank.BankClerkⁱᵈ) "get_total" _ (is_pkg_defined bank) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_BankClerk'ptr_transfer_internal :
-  WpMethodCall bank "BankClerk'ptr" "transfer_internal" _ (is_pkg_defined bank) :=
+  WpMethodCall (ptrTⁱᵈ bank.BankClerkⁱᵈ) "transfer_internal" _ (is_pkg_defined bank) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

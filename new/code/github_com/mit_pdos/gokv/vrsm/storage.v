@@ -383,7 +383,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(recoverStateMachine, recoverStateMachineⁱᵐᵖˡ); (MakePbServer, MakePbServerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("InMemoryStateMachine"%go, []); ("InMemoryStateMachine'ptr"%go, []); ("StateMachine"%go, []); ("StateMachine'ptr"%go, [("apply"%go, StateMachine__applyⁱᵐᵖˡ); ("applyReadonly"%go, StateMachine__applyReadonlyⁱᵐᵖˡ); ("getStateAndSeal"%go, StateMachine__getStateAndSealⁱᵐᵖˡ); ("makeDurableWithSnap"%go, StateMachine__makeDurableWithSnapⁱᵐᵖˡ); ("setStateAndUnseal"%go, StateMachine__setStateAndUnsealⁱᵐᵖˡ); ("truncateAndMakeDurable"%go, StateMachine__truncateAndMakeDurableⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(InMemoryStateMachineⁱᵈ, []); (ptrTⁱᵈ InMemoryStateMachineⁱᵈ, []); (StateMachineⁱᵈ, []); (ptrTⁱᵈ StateMachineⁱᵈ, [("apply"%go, StateMachine__applyⁱᵐᵖˡ); ("applyReadonly"%go, StateMachine__applyReadonlyⁱᵐᵖˡ); ("getStateAndSeal"%go, StateMachine__getStateAndSealⁱᵐᵖˡ); ("makeDurableWithSnap"%go, StateMachine__makeDurableWithSnapⁱᵐᵖˡ); ("setStateAndUnseal"%go, StateMachine__setStateAndUnsealⁱᵐᵖˡ); ("truncateAndMakeDurable"%go, StateMachine__truncateAndMakeDurableⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo storage.storage :=
   {|

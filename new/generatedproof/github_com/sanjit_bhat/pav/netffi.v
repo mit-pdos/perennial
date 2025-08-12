@@ -57,15 +57,15 @@ Global Instance wp_func_call_Listen :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Conn'ptr_Receive :
-  WpMethodCall netffi "Conn'ptr" "Receive" _ (is_pkg_defined netffi) :=
+  WpMethodCall (ptrTⁱᵈ netffi.Connⁱᵈ) "Receive" _ (is_pkg_defined netffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Conn'ptr_Send :
-  WpMethodCall netffi "Conn'ptr" "Send" _ (is_pkg_defined netffi) :=
+  WpMethodCall (ptrTⁱᵈ netffi.Connⁱᵈ) "Send" _ (is_pkg_defined netffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Listener'ptr_Accept :
-  WpMethodCall netffi "Listener'ptr" "Accept" _ (is_pkg_defined netffi) :=
+  WpMethodCall (ptrTⁱᵈ netffi.Listenerⁱᵈ) "Accept" _ (is_pkg_defined netffi) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

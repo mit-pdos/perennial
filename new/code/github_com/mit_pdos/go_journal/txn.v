@@ -260,7 +260,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Init, Initⁱᵐᵖˡ); (Begin, Beginⁱᵐᵖˡ); (bitToByte, bitToByteⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Log"%go, []); ("Log'ptr"%go, [("Flush"%go, Log__Flushⁱᵐᵖˡ)]); ("Txn"%go, []); ("Txn'ptr"%go, [("Acquire"%go, Txn__Acquireⁱᵐᵖˡ); ("Commit"%go, Txn__Commitⁱᵐᵖˡ); ("NDirty"%go, Txn__NDirtyⁱᵐᵖˡ); ("OverWrite"%go, Txn__OverWriteⁱᵐᵖˡ); ("OverWriteBit"%go, Txn__OverWriteBitⁱᵐᵖˡ); ("ReadBuf"%go, Txn__ReadBufⁱᵐᵖˡ); ("ReadBufBit"%go, Txn__ReadBufBitⁱᵐᵖˡ); ("ReleaseAll"%go, Txn__ReleaseAllⁱᵐᵖˡ); ("acquireNoCheck"%go, Txn__acquireNoCheckⁱᵐᵖˡ); ("commitNoRelease"%go, Txn__commitNoReleaseⁱᵐᵖˡ); ("isAlreadyAcquired"%go, Txn__isAlreadyAcquiredⁱᵐᵖˡ); ("readBufNoAcquire"%go, Txn__readBufNoAcquireⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Logⁱᵈ, []); (ptrTⁱᵈ Logⁱᵈ, [("Flush"%go, Log__Flushⁱᵐᵖˡ)]); (Txnⁱᵈ, []); (ptrTⁱᵈ Txnⁱᵈ, [("Acquire"%go, Txn__Acquireⁱᵐᵖˡ); ("Commit"%go, Txn__Commitⁱᵐᵖˡ); ("NDirty"%go, Txn__NDirtyⁱᵐᵖˡ); ("OverWrite"%go, Txn__OverWriteⁱᵐᵖˡ); ("OverWriteBit"%go, Txn__OverWriteBitⁱᵐᵖˡ); ("ReadBuf"%go, Txn__ReadBufⁱᵐᵖˡ); ("ReadBufBit"%go, Txn__ReadBufBitⁱᵐᵖˡ); ("ReleaseAll"%go, Txn__ReleaseAllⁱᵐᵖˡ); ("acquireNoCheck"%go, Txn__acquireNoCheckⁱᵐᵖˡ); ("commitNoRelease"%go, Txn__commitNoReleaseⁱᵐᵖˡ); ("isAlreadyAcquired"%go, Txn__isAlreadyAcquiredⁱᵐᵖˡ); ("readBufNoAcquire"%go, Txn__readBufNoAcquireⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo txn.txn :=
   {|

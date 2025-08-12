@@ -986,19 +986,19 @@ Definition vars' : list (go_string * go_type) := [(prstmap, arrayT (W64 3) strin
 
 Definition functions' : list (go_string * val) := [(NewInflights, NewInflightsⁱᵐᵖˡ); (MakeProgressTracker, MakeProgressTrackerⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("inflight"%go, []); ("inflight'ptr"%go, []); ("Inflights"%go, []); ("Inflights'ptr"%go, [("Add"%go, Inflights__Addⁱᵐᵖˡ); ("Clone"%go, Inflights__Cloneⁱᵐᵖˡ); ("Count"%go, Inflights__Countⁱᵐᵖˡ); ("FreeLE"%go, Inflights__FreeLEⁱᵐᵖˡ); ("Full"%go, Inflights__Fullⁱᵐᵖˡ); ("grow"%go, Inflights__growⁱᵐᵖˡ); ("reset"%go, Inflights__resetⁱᵐᵖˡ)]); ("Progress"%go, []); ("Progress'ptr"%go, [("BecomeProbe"%go, Progress__BecomeProbeⁱᵐᵖˡ); ("BecomeReplicate"%go, Progress__BecomeReplicateⁱᵐᵖˡ); ("BecomeSnapshot"%go, Progress__BecomeSnapshotⁱᵐᵖˡ); ("CanBumpCommit"%go, Progress__CanBumpCommitⁱᵐᵖˡ); ("IsPaused"%go, Progress__IsPausedⁱᵐᵖˡ); ("MaybeDecrTo"%go, Progress__MaybeDecrToⁱᵐᵖˡ); ("MaybeUpdate"%go, Progress__MaybeUpdateⁱᵐᵖˡ); ("ResetState"%go, Progress__ResetStateⁱᵐᵖˡ); ("SentCommit"%go, Progress__SentCommitⁱᵐᵖˡ); ("SentEntries"%go, Progress__SentEntriesⁱᵐᵖˡ); ("String"%go, Progress__Stringⁱᵐᵖˡ)]); ("ProgressMap"%go, [("String"%go, ProgressMap__Stringⁱᵐᵖˡ)]); ("ProgressMap'ptr"%go, [("String"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [(inflightⁱᵈ, []); (ptrTⁱᵈ inflightⁱᵈ, []); (Inflightsⁱᵈ, []); (ptrTⁱᵈ Inflightsⁱᵈ, [("Add"%go, Inflights__Addⁱᵐᵖˡ); ("Clone"%go, Inflights__Cloneⁱᵐᵖˡ); ("Count"%go, Inflights__Countⁱᵐᵖˡ); ("FreeLE"%go, Inflights__FreeLEⁱᵐᵖˡ); ("Full"%go, Inflights__Fullⁱᵐᵖˡ); ("grow"%go, Inflights__growⁱᵐᵖˡ); ("reset"%go, Inflights__resetⁱᵐᵖˡ)]); (Progressⁱᵈ, []); (ptrTⁱᵈ Progressⁱᵈ, [("BecomeProbe"%go, Progress__BecomeProbeⁱᵐᵖˡ); ("BecomeReplicate"%go, Progress__BecomeReplicateⁱᵐᵖˡ); ("BecomeSnapshot"%go, Progress__BecomeSnapshotⁱᵐᵖˡ); ("CanBumpCommit"%go, Progress__CanBumpCommitⁱᵐᵖˡ); ("IsPaused"%go, Progress__IsPausedⁱᵐᵖˡ); ("MaybeDecrTo"%go, Progress__MaybeDecrToⁱᵐᵖˡ); ("MaybeUpdate"%go, Progress__MaybeUpdateⁱᵐᵖˡ); ("ResetState"%go, Progress__ResetStateⁱᵐᵖˡ); ("SentCommit"%go, Progress__SentCommitⁱᵐᵖˡ); ("SentEntries"%go, Progress__SentEntriesⁱᵐᵖˡ); ("String"%go, Progress__Stringⁱᵐᵖˡ)]); (ProgressMapⁱᵈ, [("String"%go, ProgressMap__Stringⁱᵐᵖˡ)]); (ptrTⁱᵈ ProgressMapⁱᵈ, [("String"%go, (λ: "$recvAddr",
                  method_call #tracker.tracker #"ProgressMap" #"String" (![#ProgressMap] "$recvAddr")
-                 )%V)]); ("StateType"%go, [("String"%go, StateType__Stringⁱᵐᵖˡ)]); ("StateType'ptr"%go, [("String"%go, (λ: "$recvAddr",
+                 )%V)]); (StateTypeⁱᵈ, [("String"%go, StateType__Stringⁱᵐᵖˡ)]); (ptrTⁱᵈ StateTypeⁱᵈ, [("String"%go, (λ: "$recvAddr",
                  method_call #tracker.tracker #"StateType" #"String" (![#StateType] "$recvAddr")
-                 )%V)]); ("Config"%go, [("String"%go, Config__Stringⁱᵐᵖˡ)]); ("Config'ptr"%go, [("Clone"%go, Config__Cloneⁱᵐᵖˡ); ("String"%go, (λ: "$recvAddr",
+                 )%V)]); (Configⁱᵈ, [("String"%go, Config__Stringⁱᵐᵖˡ)]); (ptrTⁱᵈ Configⁱᵈ, [("Clone"%go, Config__Cloneⁱᵐᵖˡ); ("String"%go, (λ: "$recvAddr",
                  method_call #tracker.tracker #"Config" #"String" (![#Config] "$recvAddr")
-                 )%V)]); ("ProgressTracker"%go, [("String"%go, (λ: "$recv",
+                 )%V)]); (ProgressTrackerⁱᵈ, [("String"%go, (λ: "$recv",
                  method_call #tracker.tracker #"Config" #"String" "String" #() (struct.field_get #ProgressTracker "Config" "$recv")
-                 )%V)]); ("ProgressTracker'ptr"%go, [("Clone"%go, (λ: "$recvAddr",
+                 )%V)]); (ptrTⁱᵈ ProgressTrackerⁱᵈ, [("Clone"%go, (λ: "$recvAddr",
                  method_call #tracker.tracker #"Config'ptr" #"Clone" (struct.field_ref #ProgressTracker #"Config"%go "$recvAddr")
                  )%V); ("Committed"%go, ProgressTracker__Committedⁱᵐᵖˡ); ("ConfState"%go, ProgressTracker__ConfStateⁱᵐᵖˡ); ("IsSingleton"%go, ProgressTracker__IsSingletonⁱᵐᵖˡ); ("LearnerNodes"%go, ProgressTracker__LearnerNodesⁱᵐᵖˡ); ("QuorumActive"%go, ProgressTracker__QuorumActiveⁱᵐᵖˡ); ("RecordVote"%go, ProgressTracker__RecordVoteⁱᵐᵖˡ); ("ResetVotes"%go, ProgressTracker__ResetVotesⁱᵐᵖˡ); ("String"%go, (λ: "$recvAddr",
                  method_call #tracker.tracker #"Config" #"String" (![#Config] (struct.field_ref #ProgressTracker #"Config"%go "$recvAddr"))
-                 )%V); ("TallyVotes"%go, ProgressTracker__TallyVotesⁱᵐᵖˡ); ("Visit"%go, ProgressTracker__Visitⁱᵐᵖˡ); ("VoterNodes"%go, ProgressTracker__VoterNodesⁱᵐᵖˡ)]); ("matchAckIndexer"%go, [("AckedIndex"%go, matchAckIndexer__AckedIndexⁱᵐᵖˡ)]); ("matchAckIndexer'ptr"%go, [("AckedIndex"%go, (λ: "$recvAddr",
+                 )%V); ("TallyVotes"%go, ProgressTracker__TallyVotesⁱᵐᵖˡ); ("Visit"%go, ProgressTracker__Visitⁱᵐᵖˡ); ("VoterNodes"%go, ProgressTracker__VoterNodesⁱᵐᵖˡ)]); (matchAckIndexerⁱᵈ, [("AckedIndex"%go, matchAckIndexer__AckedIndexⁱᵐᵖˡ)]); (ptrTⁱᵈ matchAckIndexerⁱᵈ, [("AckedIndex"%go, (λ: "$recvAddr",
                  method_call #tracker.tracker #"matchAckIndexer" #"AckedIndex" (![#matchAckIndexer] "$recvAddr")
                  )%V)])].
 

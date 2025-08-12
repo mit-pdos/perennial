@@ -414,7 +414,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MakeServer, MakeServerⁱᵐᵖˡ); (TryMakeClient, TryMakeClientⁱᵐᵖˡ); (MakeClient, MakeClientⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Server"%go, []); ("Server'ptr"%go, [("Serve"%go, Server__Serveⁱᵐᵖˡ); ("readThread"%go, Server__readThreadⁱᵐᵖˡ); ("rpcHandle"%go, Server__rpcHandleⁱᵐᵖˡ)]); ("Callback"%go, []); ("Callback'ptr"%go, []); ("Client"%go, []); ("Client'ptr"%go, [("Call"%go, Client__Callⁱᵐᵖˡ); ("CallComplete"%go, Client__CallCompleteⁱᵐᵖˡ); ("CallStart"%go, Client__CallStartⁱᵐᵖˡ); ("replyThread"%go, Client__replyThreadⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Serverⁱᵈ, []); (ptrTⁱᵈ Serverⁱᵈ, [("Serve"%go, Server__Serveⁱᵐᵖˡ); ("readThread"%go, Server__readThreadⁱᵐᵖˡ); ("rpcHandle"%go, Server__rpcHandleⁱᵐᵖˡ)]); (Callbackⁱᵈ, []); (ptrTⁱᵈ Callbackⁱᵈ, []); (Clientⁱᵈ, []); (ptrTⁱᵈ Clientⁱᵈ, [("Call"%go, Client__Callⁱᵐᵖˡ); ("CallComplete"%go, Client__CallCompleteⁱᵐᵖˡ); ("CallStart"%go, Client__CallStartⁱᵐᵖˡ); ("replyThread"%go, Client__replyThreadⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo urpc.urpc :=
   {|

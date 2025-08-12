@@ -435,55 +435,55 @@ Global Instance wp_func_call_Start :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_CondPut :
-  WpMethodCall vkv "Clerk'ptr" "CondPut" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.Clerkⁱᵈ) "CondPut" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_Get :
-  WpMethodCall vkv "Clerk'ptr" "Get" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.Clerkⁱᵈ) "Get" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_Put :
-  WpMethodCall vkv "Clerk'ptr" "Put" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.Clerkⁱᵈ) "Put" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ClerkPool'ptr_ConditionalPut :
-  WpMethodCall vkv "ClerkPool'ptr" "ConditionalPut" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.ClerkPoolⁱᵈ) "ConditionalPut" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ClerkPool'ptr_Get :
-  WpMethodCall vkv "ClerkPool'ptr" "Get" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.ClerkPoolⁱᵈ) "Get" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ClerkPool'ptr_Put :
-  WpMethodCall vkv "ClerkPool'ptr" "Put" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.ClerkPoolⁱᵈ) "Put" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ClerkPool'ptr_doWithClerk :
-  WpMethodCall vkv "ClerkPool'ptr" "doWithClerk" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.ClerkPoolⁱᵈ) "doWithClerk" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_KVState'ptr_apply :
-  WpMethodCall vkv "KVState'ptr" "apply" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.KVStateⁱᵈ) "apply" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_KVState'ptr_applyReadonly :
-  WpMethodCall vkv "KVState'ptr" "applyReadonly" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.KVStateⁱᵈ) "applyReadonly" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_KVState'ptr_get :
-  WpMethodCall vkv "KVState'ptr" "get" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.KVStateⁱᵈ) "get" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_KVState'ptr_getState :
-  WpMethodCall vkv "KVState'ptr" "getState" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.KVStateⁱᵈ) "getState" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_KVState'ptr_put :
-  WpMethodCall vkv "KVState'ptr" "put" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.KVStateⁱᵈ) "put" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_KVState'ptr_setState :
-  WpMethodCall vkv "KVState'ptr" "setState" _ (is_pkg_defined vkv) :=
+  WpMethodCall (ptrTⁱᵈ vkv.KVStateⁱᵈ) "setState" _ (is_pkg_defined vkv) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

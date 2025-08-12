@@ -103,35 +103,35 @@ Global Instance wp_func_call_MkLog :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_CommitWait :
-  WpMethodCall obj "Log'ptr" "CommitWait" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "CommitWait" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Flush :
-  WpMethodCall obj "Log'ptr" "Flush" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "Flush" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Load :
-  WpMethodCall obj "Log'ptr" "Load" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "Load" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_LogSz :
-  WpMethodCall obj "Log'ptr" "LogSz" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "LogSz" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Shutdown :
-  WpMethodCall obj "Log'ptr" "Shutdown" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "Shutdown" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_doCommit :
-  WpMethodCall obj "Log'ptr" "doCommit" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "doCommit" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_installBufs :
-  WpMethodCall obj "Log'ptr" "installBufs" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "installBufs" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_installBufsMap :
-  WpMethodCall obj "Log'ptr" "installBufsMap" _ (is_pkg_defined obj) :=
+  WpMethodCall (ptrTⁱᵈ obj.Logⁱᵈ) "installBufsMap" _ (is_pkg_defined obj) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

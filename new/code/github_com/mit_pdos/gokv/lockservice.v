@@ -52,7 +52,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MakeLockClerk, MakeLockClerkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("LockClerk"%go, []); ("LockClerk'ptr"%go, [("Lock"%go, LockClerk__Lockⁱᵐᵖˡ); ("Unlock"%go, LockClerk__Unlockⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(LockClerkⁱᵈ, []); (ptrTⁱᵈ LockClerkⁱᵈ, [("Lock"%go, LockClerk__Lockⁱᵐᵖˡ); ("Unlock"%go, LockClerk__Unlockⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo lockservice.lockservice :=
   {|

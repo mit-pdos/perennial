@@ -315,7 +315,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(syncTimer, syncTimerⁱᵐᵖˡ); (newTimer, newTimerⁱᵐᵖˡ); (After, Afterⁱᵐᵖˡ); (runtimeNano, runtimeNanoⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Timer"%go, []); ("Timer'ptr"%go, []); ("Time"%go, []); ("Time'ptr"%go, []); ("Duration"%go, []); ("Duration'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Timerⁱᵈ, []); (ptrTⁱᵈ Timerⁱᵈ, []); (Timeⁱᵈ, []); (ptrTⁱᵈ Timeⁱᵈ, []); (Durationⁱᵈ, []); (ptrTⁱᵈ Durationⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo time.time :=
   {|

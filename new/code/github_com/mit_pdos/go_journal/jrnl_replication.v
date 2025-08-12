@@ -103,7 +103,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Open, Openⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("RepBlock"%go, []); ("RepBlock'ptr"%go, [("Read"%go, RepBlock__Readⁱᵐᵖˡ); ("Write"%go, RepBlock__Writeⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(RepBlockⁱᵈ, []); (ptrTⁱᵈ RepBlockⁱᵈ, [("Read"%go, RepBlock__Readⁱᵐᵖˡ); ("Write"%go, RepBlock__Writeⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo jrnl_replication.replicated_block :=
   {|

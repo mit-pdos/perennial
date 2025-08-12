@@ -152,7 +152,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Begin, Beginⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Op"%go, []); ("Op'ptr"%go, [("CommitWait"%go, Op__CommitWaitⁱᵐᵖˡ); ("NDirty"%go, Op__NDirtyⁱᵐᵖˡ); ("OverWrite"%go, Op__OverWriteⁱᵐᵖˡ); ("ReadBuf"%go, Op__ReadBufⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Opⁱᵈ, []); (ptrTⁱᵈ Opⁱᵈ, [("CommitWait"%go, Op__CommitWaitⁱᵐᵖˡ); ("NDirty"%go, Op__NDirtyⁱᵐᵖˡ); ("OverWrite"%go, Op__OverWriteⁱᵐᵖˡ); ("ReadBuf"%go, Op__ReadBufⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo jrnl.jrnl :=
   {|

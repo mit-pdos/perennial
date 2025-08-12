@@ -218,7 +218,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(MkAlloc, MkAllocⁱᵐᵖˡ); (MkMaxAlloc, MkMaxAllocⁱᵐᵖˡ); (popCnt, popCntⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Alloc"%go, []); ("Alloc'ptr"%go, [("AllocNum"%go, Alloc__AllocNumⁱᵐᵖˡ); ("FreeNum"%go, Alloc__FreeNumⁱᵐᵖˡ); ("MarkUsed"%go, Alloc__MarkUsedⁱᵐᵖˡ); ("NumFree"%go, Alloc__NumFreeⁱᵐᵖˡ); ("allocBit"%go, Alloc__allocBitⁱᵐᵖˡ); ("freeBit"%go, Alloc__freeBitⁱᵐᵖˡ); ("incNext"%go, Alloc__incNextⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Allocⁱᵈ, []); (ptrTⁱᵈ Allocⁱᵈ, [("AllocNum"%go, Alloc__AllocNumⁱᵐᵖˡ); ("FreeNum"%go, Alloc__FreeNumⁱᵐᵖˡ); ("MarkUsed"%go, Alloc__MarkUsedⁱᵐᵖˡ); ("NumFree"%go, Alloc__NumFreeⁱᵐᵖˡ); ("allocBit"%go, Alloc__allocBitⁱᵐᵖˡ); ("freeBit"%go, Alloc__freeBitⁱᵐᵖˡ); ("incNext"%go, Alloc__incNextⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo alloc.alloc :=
   {|

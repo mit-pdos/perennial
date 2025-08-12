@@ -38,7 +38,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(Dial, Dialⁱᵐᵖˡ); (Listen, Listenⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Conn"%go, []); ("Conn'ptr"%go, [("Receive"%go, Conn__Receiveⁱᵐᵖˡ); ("Send"%go, Conn__Sendⁱᵐᵖˡ)]); ("Listener"%go, []); ("Listener'ptr"%go, [("Accept"%go, Listener__Acceptⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Connⁱᵈ, []); (ptrTⁱᵈ Connⁱᵈ, [("Receive"%go, Conn__Receiveⁱᵐᵖˡ); ("Send"%go, Conn__Sendⁱᵐᵖˡ)]); (Listenerⁱᵈ, []); (ptrTⁱᵈ Listenerⁱᵈ, [("Accept"%go, Listener__Acceptⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo netffi.netffi :=
   {|

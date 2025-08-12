@@ -358,11 +358,11 @@ Definition vars' : list (go_string * go_type) := [(ErrGRPCEmptyKey, error); (Err
 
 Definition functions' : list (go_string * val) := [(Error, Errorⁱᵐᵖˡ); (ErrorDesc, ErrorDescⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("EtcdError"%go, [("Code"%go, EtcdError__Codeⁱᵐᵖˡ); ("Error"%go, EtcdError__Errorⁱᵐᵖˡ)]); ("EtcdError'ptr"%go, [("Code"%go, (λ: "$recvAddr",
+Definition msets' : list (go_string * (list (go_string * val))) := [(EtcdErrorⁱᵈ, [("Code"%go, EtcdError__Codeⁱᵐᵖˡ); ("Error"%go, EtcdError__Errorⁱᵐᵖˡ)]); (ptrTⁱᵈ EtcdErrorⁱᵈ, [("Code"%go, (λ: "$recvAddr",
                  method_call #rpctypes.rpctypes #"EtcdError" #"Code" (![#EtcdError] "$recvAddr")
                  )%V); ("Error"%go, (λ: "$recvAddr",
                  method_call #rpctypes.rpctypes #"EtcdError" #"Error" (![#EtcdError] "$recvAddr")
-                 )%V)]); ("TokenFieldNameGRPCKey"%go, []); ("TokenFieldNameGRPCKey'ptr"%go, [])].
+                 )%V)]); (TokenFieldNameGRPCKeyⁱᵈ, []); (ptrTⁱᵈ TokenFieldNameGRPCKeyⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo rpctypes.rpctypes :=
   {|

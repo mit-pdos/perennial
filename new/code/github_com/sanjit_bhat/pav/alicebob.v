@@ -360,7 +360,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(testAliceBob, testAliceBobⁱᵐᵖˡ); (equal, equalⁱᵐᵖˡ); (runAlice, runAliceⁱᵐᵖˡ); (loopPending, loopPendingⁱᵐᵖˡ); (runBob, runBobⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("histEntry"%go, []); ("histEntry'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(histEntryⁱᵈ, []); (ptrTⁱᵈ histEntryⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo alicebob.alicebob :=
   {|

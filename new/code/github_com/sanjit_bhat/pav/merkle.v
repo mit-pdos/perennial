@@ -883,7 +883,7 @@ Definition vars' : list (go_string * go_type) := [(emptyHash, sliceT)].
 
 Definition functions' : list (go_string * val) := [(put, putⁱᵐᵖˡ); (find, findⁱᵐᵖˡ); (getProofLen, getProofLenⁱᵐᵖˡ); (VerifyMemb, VerifyMembⁱᵐᵖˡ); (VerifyNonMemb, VerifyNonMembⁱᵐᵖˡ); (VerifyUpdate, VerifyUpdateⁱᵐᵖˡ); (proofToTree, proofToTreeⁱᵐᵖˡ); (newShell, newShellⁱᵐᵖˡ); (getNodeHash, getNodeHashⁱᵐᵖˡ); (compEmptyHash, compEmptyHashⁱᵐᵖˡ); (setLeafHash, setLeafHashⁱᵐᵖˡ); (compLeafHash, compLeafHashⁱᵐᵖˡ); (setInnerHash, setInnerHashⁱᵐᵖˡ); (compInnerHash, compInnerHashⁱᵐᵖˡ); (getChild, getChildⁱᵐᵖˡ); (getBit, getBitⁱᵐᵖˡ); (MerkleProofEncode, MerkleProofEncodeⁱᵐᵖˡ); (MerkleProofDecode, MerkleProofDecodeⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Tree"%go, []); ("Tree'ptr"%go, [("Digest"%go, Tree__Digestⁱᵐᵖˡ); ("Prove"%go, Tree__Proveⁱᵐᵖˡ); ("Put"%go, Tree__Putⁱᵐᵖˡ); ("prove"%go, Tree__proveⁱᵐᵖˡ)]); ("node"%go, []); ("node'ptr"%go, []); ("MerkleProof"%go, []); ("MerkleProof'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Treeⁱᵈ, []); (ptrTⁱᵈ Treeⁱᵈ, [("Digest"%go, Tree__Digestⁱᵐᵖˡ); ("Prove"%go, Tree__Proveⁱᵐᵖˡ); ("Put"%go, Tree__Putⁱᵐᵖˡ); ("prove"%go, Tree__proveⁱᵐᵖˡ)]); (nodeⁱᵈ, []); (ptrTⁱᵈ nodeⁱᵈ, []); (MerkleProofⁱᵈ, []); (ptrTⁱᵈ MerkleProofⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo merkle.merkle :=
   {|

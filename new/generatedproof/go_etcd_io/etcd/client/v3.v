@@ -1008,203 +1008,203 @@ Global Instance wp_func_call_WithAttachedKeys :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsCountOnly :
-  WpMethodCall clientv3 "Op" "IsCountOnly" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsCountOnly" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsDelete :
-  WpMethodCall clientv3 "Op" "IsDelete" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsDelete" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsGet :
-  WpMethodCall clientv3 "Op" "IsGet" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsGet" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsKeysOnly :
-  WpMethodCall clientv3 "Op" "IsKeysOnly" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsKeysOnly" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsOptsWithFromKey :
-  WpMethodCall clientv3 "Op" "IsOptsWithFromKey" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsOptsWithFromKey" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsOptsWithPrefix :
-  WpMethodCall clientv3 "Op" "IsOptsWithPrefix" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsOptsWithPrefix" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsPut :
-  WpMethodCall clientv3 "Op" "IsPut" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsPut" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsSerializable :
-  WpMethodCall clientv3 "Op" "IsSerializable" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsSerializable" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsSortOptionValid :
-  WpMethodCall clientv3 "Op" "IsSortOptionValid" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsSortOptionValid" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_IsTxn :
-  WpMethodCall clientv3 "Op" "IsTxn" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "IsTxn" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_KeyBytes :
-  WpMethodCall clientv3 "Op" "KeyBytes" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "KeyBytes" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_MaxCreateRev :
-  WpMethodCall clientv3 "Op" "MaxCreateRev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "MaxCreateRev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_MaxModRev :
-  WpMethodCall clientv3 "Op" "MaxModRev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "MaxModRev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_MinCreateRev :
-  WpMethodCall clientv3 "Op" "MinCreateRev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "MinCreateRev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_MinModRev :
-  WpMethodCall clientv3 "Op" "MinModRev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "MinModRev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_RangeBytes :
-  WpMethodCall clientv3 "Op" "RangeBytes" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "RangeBytes" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_Rev :
-  WpMethodCall clientv3 "Op" "Rev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "Rev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_Txn :
-  WpMethodCall clientv3 "Op" "Txn" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "Txn" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_ValueBytes :
-  WpMethodCall clientv3 "Op" "ValueBytes" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "ValueBytes" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_isWrite :
-  WpMethodCall clientv3 "Op" "isWrite" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "isWrite" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_toRangeRequest :
-  WpMethodCall clientv3 "Op" "toRangeRequest" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "toRangeRequest" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_toRequestOp :
-  WpMethodCall clientv3 "Op" "toRequestOp" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "toRequestOp" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op_toTxnRequest :
-  WpMethodCall clientv3 "Op" "toTxnRequest" _ (is_pkg_defined clientv3) :=
+  WpMethodCall clientv3.Opⁱᵈ "toTxnRequest" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsCountOnly :
-  WpMethodCall clientv3 "Op'ptr" "IsCountOnly" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsCountOnly" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsDelete :
-  WpMethodCall clientv3 "Op'ptr" "IsDelete" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsDelete" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsGet :
-  WpMethodCall clientv3 "Op'ptr" "IsGet" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsGet" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsKeysOnly :
-  WpMethodCall clientv3 "Op'ptr" "IsKeysOnly" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsKeysOnly" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsOptsWithFromKey :
-  WpMethodCall clientv3 "Op'ptr" "IsOptsWithFromKey" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsOptsWithFromKey" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsOptsWithPrefix :
-  WpMethodCall clientv3 "Op'ptr" "IsOptsWithPrefix" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsOptsWithPrefix" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsPut :
-  WpMethodCall clientv3 "Op'ptr" "IsPut" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsPut" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsSerializable :
-  WpMethodCall clientv3 "Op'ptr" "IsSerializable" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsSerializable" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsSortOptionValid :
-  WpMethodCall clientv3 "Op'ptr" "IsSortOptionValid" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsSortOptionValid" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_IsTxn :
-  WpMethodCall clientv3 "Op'ptr" "IsTxn" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "IsTxn" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_KeyBytes :
-  WpMethodCall clientv3 "Op'ptr" "KeyBytes" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "KeyBytes" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_MaxCreateRev :
-  WpMethodCall clientv3 "Op'ptr" "MaxCreateRev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "MaxCreateRev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_MaxModRev :
-  WpMethodCall clientv3 "Op'ptr" "MaxModRev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "MaxModRev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_MinCreateRev :
-  WpMethodCall clientv3 "Op'ptr" "MinCreateRev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "MinCreateRev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_MinModRev :
-  WpMethodCall clientv3 "Op'ptr" "MinModRev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "MinModRev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_RangeBytes :
-  WpMethodCall clientv3 "Op'ptr" "RangeBytes" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "RangeBytes" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_Rev :
-  WpMethodCall clientv3 "Op'ptr" "Rev" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "Rev" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_Txn :
-  WpMethodCall clientv3 "Op'ptr" "Txn" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "Txn" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_ValueBytes :
-  WpMethodCall clientv3 "Op'ptr" "ValueBytes" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "ValueBytes" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_WithKeyBytes :
-  WpMethodCall clientv3 "Op'ptr" "WithKeyBytes" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "WithKeyBytes" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_WithRangeBytes :
-  WpMethodCall clientv3 "Op'ptr" "WithRangeBytes" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "WithRangeBytes" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_WithValueBytes :
-  WpMethodCall clientv3 "Op'ptr" "WithValueBytes" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "WithValueBytes" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_applyOpts :
-  WpMethodCall clientv3 "Op'ptr" "applyOpts" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "applyOpts" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_isWrite :
-  WpMethodCall clientv3 "Op'ptr" "isWrite" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "isWrite" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_toRangeRequest :
-  WpMethodCall clientv3 "Op'ptr" "toRangeRequest" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "toRangeRequest" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_toRequestOp :
-  WpMethodCall clientv3 "Op'ptr" "toRequestOp" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "toRequestOp" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Op'ptr_toTxnRequest :
-  WpMethodCall clientv3 "Op'ptr" "toTxnRequest" _ (is_pkg_defined clientv3) :=
+  WpMethodCall (ptrTⁱᵈ clientv3.Opⁱᵈ) "toTxnRequest" _ (is_pkg_defined clientv3) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -187,7 +187,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(NewServer, NewServerⁱᵐᵖˡ); (Dial, Dialⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Server"%go, []); ("Server'ptr"%go, [("Serve"%go, Server__Serveⁱᵐᵖˡ); ("handle"%go, Server__handleⁱᵐᵖˡ); ("read"%go, Server__readⁱᵐᵖˡ)]); ("Client"%go, []); ("Client'ptr"%go, [("Call"%go, Client__Callⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Serverⁱᵈ, []); (ptrTⁱᵈ Serverⁱᵈ, [("Serve"%go, Server__Serveⁱᵐᵖˡ); ("handle"%go, Server__handleⁱᵐᵖˡ); ("read"%go, Server__readⁱᵐᵖˡ)]); (Clientⁱᵈ, []); (ptrTⁱᵈ Clientⁱᵈ, [("Call"%go, Client__Callⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo advrpc.advrpc :=
   {|

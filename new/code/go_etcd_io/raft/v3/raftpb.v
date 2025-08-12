@@ -254,7 +254,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("EntryType"%go, []); ("EntryType'ptr"%go, []); ("MessageType"%go, []); ("MessageType'ptr"%go, []); ("ConfChangeTransition"%go, []); ("ConfChangeTransition'ptr"%go, []); ("ConfChangeType"%go, []); ("ConfChangeType'ptr"%go, []); ("Entry"%go, []); ("Entry'ptr"%go, []); ("SnapshotMetadata"%go, []); ("SnapshotMetadata'ptr"%go, []); ("Snapshot"%go, []); ("Snapshot'ptr"%go, []); ("Message"%go, []); ("Message'ptr"%go, []); ("HardState"%go, []); ("HardState'ptr"%go, []); ("ConfState"%go, []); ("ConfState'ptr"%go, []); ("ConfChange"%go, []); ("ConfChange'ptr"%go, []); ("ConfChangeV2"%go, []); ("ConfChangeV2'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(EntryTypeⁱᵈ, []); (ptrTⁱᵈ EntryTypeⁱᵈ, []); (MessageTypeⁱᵈ, []); (ptrTⁱᵈ MessageTypeⁱᵈ, []); (ConfChangeTransitionⁱᵈ, []); (ptrTⁱᵈ ConfChangeTransitionⁱᵈ, []); (ConfChangeTypeⁱᵈ, []); (ptrTⁱᵈ ConfChangeTypeⁱᵈ, []); (Entryⁱᵈ, []); (ptrTⁱᵈ Entryⁱᵈ, []); (SnapshotMetadataⁱᵈ, []); (ptrTⁱᵈ SnapshotMetadataⁱᵈ, []); (Snapshotⁱᵈ, []); (ptrTⁱᵈ Snapshotⁱᵈ, []); (Messageⁱᵈ, []); (ptrTⁱᵈ Messageⁱᵈ, []); (HardStateⁱᵈ, []); (ptrTⁱᵈ HardStateⁱᵈ, []); (ConfStateⁱᵈ, []); (ptrTⁱᵈ ConfStateⁱᵈ, []); (ConfChangeⁱᵈ, []); (ptrTⁱᵈ ConfChangeⁱᵈ, []); (ConfChangeV2ⁱᵈ, []); (ptrTⁱᵈ ConfChangeV2ⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo raftpb.raftpb :=
   {|

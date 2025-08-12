@@ -619,35 +619,35 @@ Global Instance wp_func_call_CheckNonMemb :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Audit :
-  WpMethodCall client "Client'ptr" "Audit" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "Audit" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Get :
-  WpMethodCall client "Client'ptr" "Get" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "Get" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Put :
-  WpMethodCall client "Client'ptr" "Put" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "Put" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_SelfMon :
-  WpMethodCall client "Client'ptr" "SelfMon" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "SelfMon" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_getChainExt :
-  WpMethodCall client "Client'ptr" "getChainExt" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Clientⁱᵈ) "getChainExt" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Evid'ptr_Check :
-  WpMethodCall client "Evid'ptr" "Check" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.Evidⁱᵈ) "Check" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_evidVrf'ptr_Check :
-  WpMethodCall client "evidVrf'ptr" "Check" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.evidVrfⁱᵈ) "Check" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_evidLink'ptr_Check :
-  WpMethodCall client "evidLink'ptr" "Check" _ (is_pkg_defined client) :=
+  WpMethodCall (ptrTⁱᵈ client.evidLinkⁱᵈ) "Check" _ (is_pkg_defined client) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

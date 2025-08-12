@@ -219,7 +219,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Int32"%go, []); ("Int32'ptr"%go, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ)]); ("Uint64"%go, []); ("Uint64'ptr"%go, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ)]); ("noCopy"%go, []); ("noCopy'ptr"%go, []); ("align64"%go, []); ("align64'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Int32ⁱᵈ, []); (ptrTⁱᵈ Int32ⁱᵈ, [("Add"%go, Int32__Addⁱᵐᵖˡ); ("CompareAndSwap"%go, Int32__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Int32__Loadⁱᵐᵖˡ); ("Store"%go, Int32__Storeⁱᵐᵖˡ)]); (Uint64ⁱᵈ, []); (ptrTⁱᵈ Uint64ⁱᵈ, [("Add"%go, Uint64__Addⁱᵐᵖˡ); ("CompareAndSwap"%go, Uint64__CompareAndSwapⁱᵐᵖˡ); ("Load"%go, Uint64__Loadⁱᵐᵖˡ); ("Store"%go, Uint64__Storeⁱᵐᵖˡ)]); (noCopyⁱᵈ, []); (ptrTⁱᵈ noCopyⁱᵈ, []); (align64ⁱᵈ, []); (ptrTⁱᵈ align64ⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo atomic.atomic :=
   {|

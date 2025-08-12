@@ -2574,203 +2574,203 @@ Global Instance wp_func_call_testVariadicPassThrough :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_embedA_Foo :
-  WpMethodCall unittest "embedA" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.embedAⁱᵈ "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedA'ptr_Bar :
-  WpMethodCall unittest "embedA'ptr" "Bar" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedAⁱᵈ) "Bar" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedA'ptr_Foo :
-  WpMethodCall unittest "embedA'ptr" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedAⁱᵈ) "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedB_Foo :
-  WpMethodCall unittest "embedB" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.embedBⁱᵈ "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedB'ptr_Bar :
-  WpMethodCall unittest "embedB'ptr" "Bar" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedBⁱᵈ) "Bar" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedB'ptr_Car :
-  WpMethodCall unittest "embedB'ptr" "Car" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedBⁱᵈ) "Car" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedB'ptr_Foo :
-  WpMethodCall unittest "embedB'ptr" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedBⁱᵈ) "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedC_Bar :
-  WpMethodCall unittest "embedC" "Bar" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.embedCⁱᵈ "Bar" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedC_Car :
-  WpMethodCall unittest "embedC" "Car" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.embedCⁱᵈ "Car" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedC_Foo :
-  WpMethodCall unittest "embedC" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.embedCⁱᵈ "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedC'ptr_Bar :
-  WpMethodCall unittest "embedC'ptr" "Bar" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedCⁱᵈ) "Bar" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedC'ptr_Car :
-  WpMethodCall unittest "embedC'ptr" "Car" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedCⁱᵈ) "Car" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedC'ptr_Foo :
-  WpMethodCall unittest "embedC'ptr" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedCⁱᵈ) "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedD_Bar :
-  WpMethodCall unittest "embedD" "Bar" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.embedDⁱᵈ "Bar" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedD_Car :
-  WpMethodCall unittest "embedD" "Car" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.embedDⁱᵈ "Car" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedD_Foo :
-  WpMethodCall unittest "embedD" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.embedDⁱᵈ "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedD'ptr_Bar :
-  WpMethodCall unittest "embedD'ptr" "Bar" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedDⁱᵈ) "Bar" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedD'ptr_Car :
-  WpMethodCall unittest "embedD'ptr" "Car" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedDⁱᵈ) "Car" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_embedD'ptr_Foo :
-  WpMethodCall unittest "embedD'ptr" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.embedDⁱᵈ) "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Enc'ptr_UInt32 :
-  WpMethodCall unittest "Enc'ptr" "UInt32" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Encⁱᵈ) "UInt32" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Enc'ptr_UInt64 :
-  WpMethodCall unittest "Enc'ptr" "UInt64" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Encⁱᵈ) "UInt64" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Enc'ptr_consume :
-  WpMethodCall unittest "Enc'ptr" "consume" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Encⁱᵈ) "consume" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Dec'ptr_UInt32 :
-  WpMethodCall unittest "Dec'ptr" "UInt32" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Decⁱᵈ) "UInt32" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Dec'ptr_UInt64 :
-  WpMethodCall unittest "Dec'ptr" "UInt64" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Decⁱᵈ) "UInt64" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Dec'ptr_consume :
-  WpMethodCall unittest "Dec'ptr" "consume" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Decⁱᵈ) "consume" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_concreteFooer'ptr_Foo :
-  WpMethodCall unittest "concreteFooer'ptr" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.concreteFooerⁱᵈ) "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_concrete1_Foo :
-  WpMethodCall unittest "concrete1" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.concrete1ⁱᵈ "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_concrete1'ptr_B :
-  WpMethodCall unittest "concrete1'ptr" "B" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.concrete1ⁱᵈ) "B" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_concrete1'ptr_Foo :
-  WpMethodCall unittest "concrete1'ptr" "Foo" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.concrete1ⁱᵈ) "Foo" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_wrapExternalStruct_join :
-  WpMethodCall unittest "wrapExternalStruct" "join" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.wrapExternalStructⁱᵈ "join" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_wrapExternalStruct'ptr_join :
-  WpMethodCall unittest "wrapExternalStruct'ptr" "join" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.wrapExternalStructⁱᵈ) "join" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_R'ptr_recurMethod :
-  WpMethodCall unittest "R'ptr" "recurMethod" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Rⁱᵈ) "recurMethod" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Other_recurEmbeddedMethod :
-  WpMethodCall unittest "Other" "recurEmbeddedMethod" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.Otherⁱᵈ "recurEmbeddedMethod" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Other'ptr_recurEmbeddedMethod :
-  WpMethodCall unittest "Other'ptr" "recurEmbeddedMethod" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Otherⁱᵈ) "recurEmbeddedMethod" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_RecursiveEmbedded'ptr_recurEmbeddedMethod :
-  WpMethodCall unittest "RecursiveEmbedded'ptr" "recurEmbeddedMethod" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.RecursiveEmbeddedⁱᵈ) "recurEmbeddedMethod" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliceOfThings_getThingRef :
-  WpMethodCall unittest "sliceOfThings" "getThingRef" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.sliceOfThingsⁱᵈ "getThingRef" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_sliceOfThings'ptr_getThingRef :
-  WpMethodCall unittest "sliceOfThings'ptr" "getThingRef" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.sliceOfThingsⁱᵈ) "getThingRef" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Point_Add :
-  WpMethodCall unittest "Point" "Add" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.Pointⁱᵈ "Add" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Point_GetField :
-  WpMethodCall unittest "Point" "GetField" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.Pointⁱᵈ "GetField" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Point_IgnoreReceiver :
-  WpMethodCall unittest "Point" "IgnoreReceiver" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.Pointⁱᵈ "IgnoreReceiver" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Point'ptr_Add :
-  WpMethodCall unittest "Point'ptr" "Add" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Pointⁱᵈ) "Add" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Point'ptr_GetField :
-  WpMethodCall unittest "Point'ptr" "GetField" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Pointⁱᵈ) "GetField" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Point'ptr_IgnoreReceiver :
-  WpMethodCall unittest "Point'ptr" "IgnoreReceiver" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Pointⁱᵈ) "IgnoreReceiver" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S_readBVal :
-  WpMethodCall unittest "S" "readBVal" _ (is_pkg_defined unittest) :=
+  WpMethodCall unittest.Sⁱᵈ "readBVal" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_negateC :
-  WpMethodCall unittest "S'ptr" "negateC" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Sⁱᵈ) "negateC" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_readA :
-  WpMethodCall unittest "S'ptr" "readA" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Sⁱᵈ) "readA" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_readB :
-  WpMethodCall unittest "S'ptr" "readB" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Sⁱᵈ) "readB" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_readBVal :
-  WpMethodCall unittest "S'ptr" "readBVal" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Sⁱᵈ) "readBVal" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_refC :
-  WpMethodCall unittest "S'ptr" "refC" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Sⁱᵈ) "refC" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_writeB :
-  WpMethodCall unittest "S'ptr" "writeB" _ (is_pkg_defined unittest) :=
+  WpMethodCall (ptrTⁱᵈ unittest.Sⁱᵈ) "writeB" _ (is_pkg_defined unittest) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

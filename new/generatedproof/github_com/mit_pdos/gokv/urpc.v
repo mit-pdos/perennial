@@ -264,31 +264,31 @@ Global Instance wp_func_call_MakeClient :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_Serve :
-  WpMethodCall urpc "Server'ptr" "Serve" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Serverⁱᵈ) "Serve" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_readThread :
-  WpMethodCall urpc "Server'ptr" "readThread" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Serverⁱᵈ) "readThread" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Server'ptr_rpcHandle :
-  WpMethodCall urpc "Server'ptr" "rpcHandle" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Serverⁱᵈ) "rpcHandle" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_Call :
-  WpMethodCall urpc "Client'ptr" "Call" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Clientⁱᵈ) "Call" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_CallComplete :
-  WpMethodCall urpc "Client'ptr" "CallComplete" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Clientⁱᵈ) "CallComplete" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_CallStart :
-  WpMethodCall urpc "Client'ptr" "CallStart" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Clientⁱᵈ) "CallStart" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Client'ptr_replyThread :
-  WpMethodCall urpc "Client'ptr" "replyThread" _ (is_pkg_defined urpc) :=
+  WpMethodCall (ptrTⁱᵈ urpc.Clientⁱᵈ) "replyThread" _ (is_pkg_defined urpc) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

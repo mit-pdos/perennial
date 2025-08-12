@@ -46,7 +46,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Code"%go, []); ("Code'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Codeⁱᵈ, []); (ptrTⁱᵈ Codeⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo codes.codes :=
   {|

@@ -85,7 +85,7 @@ Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [("Event_EventType"%go, []); ("Event_EventType'ptr"%go, []); ("KeyValue"%go, []); ("KeyValue'ptr"%go, []); ("Event"%go, []); ("Event'ptr"%go, [])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Event_EventTypeⁱᵈ, []); (ptrTⁱᵈ Event_EventTypeⁱᵈ, []); (KeyValueⁱᵈ, []); (ptrTⁱᵈ KeyValueⁱᵈ, []); (Eventⁱᵈ, []); (ptrTⁱᵈ Eventⁱᵈ, [])].
 
 #[global] Instance info' : PkgInfo mvccpb.mvccpb :=
   {|

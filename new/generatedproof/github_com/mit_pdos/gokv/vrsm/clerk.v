@@ -114,19 +114,19 @@ Global Instance wp_func_call_Make :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_Apply :
-  WpMethodCall clerk "Clerk'ptr" "Apply" _ (is_pkg_defined clerk) :=
+  WpMethodCall (ptrTⁱᵈ clerk.Clerkⁱᵈ) "Apply" _ (is_pkg_defined clerk) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyRo :
-  WpMethodCall clerk "Clerk'ptr" "ApplyRo" _ (is_pkg_defined clerk) :=
+  WpMethodCall (ptrTⁱᵈ clerk.Clerkⁱᵈ) "ApplyRo" _ (is_pkg_defined clerk) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_ApplyRo2 :
-  WpMethodCall clerk "Clerk'ptr" "ApplyRo2" _ (is_pkg_defined clerk) :=
+  WpMethodCall (ptrTⁱᵈ clerk.Clerkⁱᵈ) "ApplyRo2" _ (is_pkg_defined clerk) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Clerk'ptr_maybeRefreshPreference :
-  WpMethodCall clerk "Clerk'ptr" "maybeRefreshPreference" _ (is_pkg_defined clerk) :=
+  WpMethodCall (ptrTⁱᵈ clerk.Clerkⁱᵈ) "maybeRefreshPreference" _ (is_pkg_defined clerk) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.

@@ -1707,143 +1707,143 @@ Global Instance wp_func_call_disabled_testWal :
   ltac:(apply wp_func_call'; reflexivity).
 
 Global Instance wp_method_call_Enc'ptr_consume :
-  WpMethodCall semantics "Enc'ptr" "consume" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Encⁱᵈ) "consume" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Dec'ptr_consume :
-  WpMethodCall semantics "Dec'ptr" "consume" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Decⁱᵈ) "consume" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Editor'ptr_AdvanceReturn :
-  WpMethodCall semantics "Editor'ptr" "AdvanceReturn" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Editorⁱᵈ) "AdvanceReturn" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_SquareStruct_Square :
-  WpMethodCall semantics "SquareStruct" "Square" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.SquareStructⁱᵈ "Square" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_SquareStruct_Volume :
-  WpMethodCall semantics "SquareStruct" "Volume" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.SquareStructⁱᵈ "Volume" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_SquareStruct'ptr_Square :
-  WpMethodCall semantics "SquareStruct'ptr" "Square" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.SquareStructⁱᵈ) "Square" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_SquareStruct'ptr_Volume :
-  WpMethodCall semantics "SquareStruct'ptr" "Volume" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.SquareStructⁱᵈ) "Volume" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LoopStruct_forLoopWait :
-  WpMethodCall semantics "LoopStruct" "forLoopWait" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.LoopStructⁱᵈ "forLoopWait" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_LoopStruct'ptr_forLoopWait :
-  WpMethodCall semantics "LoopStruct'ptr" "forLoopWait" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.LoopStructⁱᵈ) "forLoopWait" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_ArrayEditor'ptr_Advance :
-  WpMethodCall semantics "ArrayEditor'ptr" "Advance" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.ArrayEditorⁱᵈ) "Advance" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Bar'ptr_mutate :
-  WpMethodCall semantics "Bar'ptr" "mutate" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Barⁱᵈ) "mutate" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Foo'ptr_mutateBar :
-  WpMethodCall semantics "Foo'ptr" "mutateBar" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Fooⁱᵈ) "mutateBar" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S_readBVal :
-  WpMethodCall semantics "S" "readBVal" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.Sⁱᵈ "readBVal" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_negateC :
-  WpMethodCall semantics "S'ptr" "negateC" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Sⁱᵈ) "negateC" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_readA :
-  WpMethodCall semantics "S'ptr" "readA" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Sⁱᵈ) "readA" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_readB :
-  WpMethodCall semantics "S'ptr" "readB" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Sⁱᵈ) "readB" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_readBVal :
-  WpMethodCall semantics "S'ptr" "readBVal" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Sⁱᵈ) "readBVal" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_S'ptr_updateBValX :
-  WpMethodCall semantics "S'ptr" "updateBValX" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Sⁱᵈ) "updateBValX" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_switchConcrete'ptr_marker :
-  WpMethodCall semantics "switchConcrete'ptr" "marker" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.switchConcreteⁱᵈ) "marker" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log_Apply :
-  WpMethodCall semantics "Log" "Apply" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.Logⁱᵈ "Apply" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log_BeginTxn :
-  WpMethodCall semantics "Log" "BeginTxn" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.Logⁱᵈ "BeginTxn" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log_Commit :
-  WpMethodCall semantics "Log" "Commit" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.Logⁱᵈ "Commit" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log_Read :
-  WpMethodCall semantics "Log" "Read" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.Logⁱᵈ "Read" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log_Size :
-  WpMethodCall semantics "Log" "Size" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.Logⁱᵈ "Size" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log_Write :
-  WpMethodCall semantics "Log" "Write" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.Logⁱᵈ "Write" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log_lock :
-  WpMethodCall semantics "Log" "lock" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.Logⁱᵈ "lock" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log_unlock :
-  WpMethodCall semantics "Log" "unlock" _ (is_pkg_defined semantics) :=
+  WpMethodCall semantics.Logⁱᵈ "unlock" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Apply :
-  WpMethodCall semantics "Log'ptr" "Apply" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Logⁱᵈ) "Apply" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_BeginTxn :
-  WpMethodCall semantics "Log'ptr" "BeginTxn" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Logⁱᵈ) "BeginTxn" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Commit :
-  WpMethodCall semantics "Log'ptr" "Commit" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Logⁱᵈ) "Commit" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Read :
-  WpMethodCall semantics "Log'ptr" "Read" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Logⁱᵈ) "Read" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Size :
-  WpMethodCall semantics "Log'ptr" "Size" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Logⁱᵈ) "Size" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_Write :
-  WpMethodCall semantics "Log'ptr" "Write" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Logⁱᵈ) "Write" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_lock :
-  WpMethodCall semantics "Log'ptr" "lock" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Logⁱᵈ) "lock" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 Global Instance wp_method_call_Log'ptr_unlock :
-  WpMethodCall semantics "Log'ptr" "unlock" _ (is_pkg_defined semantics) :=
+  WpMethodCall (ptrTⁱᵈ semantics.Logⁱᵈ) "unlock" _ (is_pkg_defined semantics) :=
   ltac:(apply wp_method_call'; reflexivity).
 
 End names.
