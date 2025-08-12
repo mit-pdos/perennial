@@ -8,12 +8,12 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Boxⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Box"%go.
+
 Definition Box : val :=
   λ: "T", type.structT [
     (#"Value"%go, "T")
   ].
-
-Definition Boxⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Box"%go.
 
 Definition BoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet"%go.
 
@@ -69,7 +69,9 @@ Definition useBoxGetⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := #(W64 42) in
     ((func_call #makeGenericBox) #uint64T) "$a0") in
     do:  ("x" <-[Box #uint64T] "$r0");;;
-    return: ((method_call #generics.generics #"Box" #"Get" (![Box #uint64T] "x") #uint64T) #())).
+    return: ((method_call #Boxⁱᵈ #"Get"%go (![Box #uint64T] "x")) #())).
+
+Definition Containerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go.
 
 Definition Container : val :=
   λ: "T", type.structT [
@@ -78,8 +80,6 @@ Definition Container : val :=
     (#"Z"%go, #ptrT);
     (#"W"%go, #uint64T)
   ].
-
-Definition Containerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go.
 
 Definition useContainer : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
 
@@ -110,12 +110,14 @@ Definition useContainerⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref (Container #uint64T) #"W"%go "container") <-[#uint64T] "$r0");;;
     return: #()).
 
+Definition UseContainerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go.
+
 Definition UseContainer : val :=
   λ: <>, type.structT [
     (#"X"%go, Container #uint64T)
   ].
 
-Definition UseContainerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go.
+Definition OnlyIndirectⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go.
 
 Definition OnlyIndirect : val :=
   λ: "T", type.structT [
@@ -123,15 +125,13 @@ Definition OnlyIndirect : val :=
     (#"Y"%go, #ptrT)
   ].
 
-Definition OnlyIndirectⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go.
+Definition MultiParamⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.MultiParam"%go.
 
 Definition MultiParam : val :=
   λ: "A" "B", type.structT [
     (#"Y"%go, "B");
     (#"X"%go, "A")
   ].
-
-Definition MultiParamⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.MultiParam"%go.
 
 Definition useMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.
 

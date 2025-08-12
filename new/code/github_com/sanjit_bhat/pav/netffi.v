@@ -10,6 +10,8 @@ Context `{ffi_syntax}.
 
 Definition addrToStr : go_string := "github.com/sanjit-bhat/pav/netffi.addrToStr"%go.
 
+Definition Connⁱᵈ : go_string := "github.com/sanjit-bhat/pav/netffi.Conn"%go.
+
 Axiom Conn : go_type.
 
 Definition Dial : go_string := "github.com/sanjit-bhat/pav/netffi.Dial"%go.
@@ -21,6 +23,8 @@ Axiom Conn__Sendⁱᵐᵖˡ : val.
 Definition newConn : go_string := "github.com/sanjit-bhat/pav/netffi.newConn"%go.
 
 Axiom Conn__Receiveⁱᵐᵖˡ : val.
+
+Definition Listenerⁱᵈ : go_string := "github.com/sanjit-bhat/pav/netffi.Listener"%go.
 
 Axiom Listener : go_type.
 

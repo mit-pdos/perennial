@@ -8,9 +8,9 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition Event_EventType : go_type := int32T.
-
 Definition Event_EventTypeⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/mvccpb.Event_EventType"%go.
+
+Definition Event_EventType : go_type := int32T.
 
 Definition PUT : expr := #(W32 0).
 
@@ -23,6 +23,8 @@ Axiom Event_EventType_name'init : val.
 Definition Event_EventType_value : go_string := "go.etcd.io/etcd/api/v3/mvccpb.Event_EventType_value"%go.
 
 Axiom Event_EventType_value'init : val.
+
+Definition KeyValueⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/mvccpb.KeyValue"%go.
 
 Definition KeyValue : go_type := structT [
   "Key" :: sliceT;
@@ -37,9 +39,9 @@ Definition KeyValue : go_type := structT [
   "XXX_sizecache" :: int32T
 ].
 
-Definition KeyValueⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/mvccpb.KeyValue"%go.
-
 Definition xxx_messageInfo_KeyValue : go_string := "go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_KeyValue"%go.
+
+Definition Eventⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/mvccpb.Event"%go.
 
 Definition Event : go_type := structT [
   "Type" :: Event_EventType;
@@ -50,8 +52,6 @@ Definition Event : go_type := structT [
   "XXX_unrecognized" :: sliceT;
   "XXX_sizecache" :: int32T
 ].
-
-Definition Eventⁱᵈ : go_string := "go.etcd.io/etcd/api/v3/mvccpb.Event"%go.
 
 Definition xxx_messageInfo_Event : go_string := "go.etcd.io/etcd/api/v3/mvccpb.xxx_messageInfo_Event"%go.
 

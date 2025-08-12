@@ -82,9 +82,11 @@ Axiom _errArrayElemPool'init : val.
 
 Definition newErrArrayElem : go_string := "go.uber.org/zap/zapcore.newErrArrayElem"%go.
 
+Definition FieldTypeⁱᵈ : go_string := "go.uber.org/zap/zapcore.FieldType"%go.
+
 Definition FieldType : go_type := uint8T.
 
-Definition FieldTypeⁱᵈ : go_string := "go.uber.org/zap/zapcore.FieldType"%go.
+Definition Fieldⁱᵈ : go_string := "go.uber.org/zap/zapcore.Field"%go.
 
 Definition Field : go_type := structT [
   "Key" :: stringT;
@@ -93,8 +95,6 @@ Definition Field : go_type := structT [
   "String" :: stringT;
   "Interface" :: interfaceT
 ].
-
-Definition Fieldⁱᵈ : go_string := "go.uber.org/zap/zapcore.Field"%go.
 
 Definition addFields : go_string := "go.uber.org/zap/zapcore.addFields"%go.
 

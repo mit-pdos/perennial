@@ -122,6 +122,8 @@ Definition stopTimer : go_string := "time.stopTimer"%go.
 
 Definition resetTimer : go_string := "time.resetTimer"%go.
 
+Definition Timerⁱᵈ : go_string := "time.Timer"%go.
+
 Definition Time : go_type := structT [
   "wall" :: uint64T;
   "ext" :: int64T;
@@ -132,8 +134,6 @@ Definition Timer : go_type := structT [
   "C" :: chanT Time;
   "initTimer" :: boolT
 ].
-
-Definition Timerⁱᵈ : go_string := "time.Timer"%go.
 
 Definition NewTimer : go_string := "time.NewTimer"%go.
 
@@ -163,9 +163,9 @@ Definition Timeⁱᵈ : go_string := "time.Time"%go.
 
 Definition dateToAbsDays : go_string := "time.dateToAbsDays"%go.
 
-Definition Duration : go_type := int64T.
-
 Definition Durationⁱᵈ : go_string := "time.Duration"%go.
+
+Definition Duration : go_type := int64T.
 
 Definition Nanosecond : expr := #(W64 1).
 

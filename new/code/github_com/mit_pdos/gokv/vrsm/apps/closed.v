@@ -194,7 +194,7 @@ Definition bank_transferer_mainⁱᵐᵖˡ : val :=
     let: "$r0" := ((func_call #makeBankClerk) #()) in
     do:  ("bck" <-[#ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #bank #"BankClerk'ptr" #"SimpleTransfer" (![#ptrT] "bck")) #()));;;
+      do:  ((method_call #(ptrTⁱᵈ bank.BankClerkⁱᵈ) #"SimpleTransfer"%go (![#ptrT] "bck")) #()));;;
     return: #()).
 
 Definition bank_auditor_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.bank_auditor_main"%go.
@@ -206,7 +206,7 @@ Definition bank_auditor_mainⁱᵐᵖˡ : val :=
     let: "$r0" := ((func_call #makeBankClerk) #()) in
     do:  ("bck" <-[#ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #bank #"BankClerk'ptr" #"SimpleAudit" (![#ptrT] "bck")) #()));;;
+      do:  ((method_call #(ptrTⁱᵈ bank.BankClerkⁱᵈ) #"SimpleAudit"%go (![#ptrT] "bck")) #()));;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].

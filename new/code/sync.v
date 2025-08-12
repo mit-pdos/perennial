@@ -12,12 +12,16 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Condⁱᵈ : go_string := "sync.Cond"%go.
+
 Definition NewCond : go_string := "sync.NewCond"%go.
+
+Definition noCopyⁱᵈ : go_string := "sync.noCopy"%go.
 
 Definition noCopy : go_type := structT [
 ].
 
-Definition noCopyⁱᵈ : go_string := "sync.noCopy"%go.
+Definition Mutexⁱᵈ : go_string := "sync.Mutex"%go.
 
 Definition OnceFunc : go_string := "sync.OnceFunc"%go.
 
@@ -77,6 +81,8 @@ Definition throw : go_string := "sync.throw"%go.
 
 Definition fatal : go_string := "sync.fatal"%go.
 
+Definition RWMutexⁱᵈ : go_string := "sync.RWMutex"%go.
+
 Definition RWMutex : go_type := structT [
   "w" :: Mutex;
   "writerSem" :: uint32T;
@@ -84,8 +90,6 @@ Definition RWMutex : go_type := structT [
   "readerCount" :: atomic.Int32;
   "readerWait" :: atomic.Int32
 ].
-
-Definition RWMutexⁱᵈ : go_string := "sync.RWMutex"%go.
 
 Definition rwmutexMaxReaders : Z := 1073741824.
 
@@ -106,7 +110,7 @@ Definition RWMutex__RLockⁱᵐᵖˡ : val :=
       do:  ((func_call #race.Disable) #())
     else do:  #());;;
     (if: int_lt (let: "$a0" := #(W32 1) in
-    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") #(W32 0)
+    (method_call #atomic.Int32ⁱᵈ #"Add"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") #(W32 0)
     then
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"readerSem"%go (![#ptrT] "rw")) in
       let: "$a1" := #false in
@@ -139,7 +143,7 @@ Definition RWMutex__TryRLockⁱᵐᵖˡ : val :=
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "c" := (mem.alloc (type.zero_val #int32T)) in
-      let: "$r0" := ((method_call #atomic #"Int32'ptr" #"Load" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) #()) in
+      let: "$r0" := ((method_call #atomic.Int32ⁱᵈ #"Load"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) #()) in
       do:  ("c" <-[#int32T] "$r0");;;
       (if: int_lt (![#int32T] "c") #(W32 0)
       then
@@ -150,7 +154,7 @@ Definition RWMutex__TryRLockⁱᵐᵖˡ : val :=
       else do:  #());;;
       (if: let: "$a0" := (![#int32T] "c") in
       let: "$a1" := ((![#int32T] "c") + #(W32 1)) in
-      (method_call #atomic #"Int32'ptr" #"CompareAndSwap" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0" "$a1"
+      (method_call #atomic.Int32ⁱᵈ #"CompareAndSwap"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0" "$a1"
       then
         (if: race.Enabled
         then
@@ -180,12 +184,12 @@ Definition RWMutex__RUnlockⁱᵐᵖˡ : val :=
     else do:  #());;;
     (let: "r" := (mem.alloc (type.zero_val #int32T)) in
     let: "$r0" := (let: "$a0" := #(W32 (- 1)) in
-    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") in
+    (method_call #atomic.Int32ⁱᵈ #"Add"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") in
     do:  ("r" <-[#int32T] "$r0");;;
     (if: int_lt (![#int32T] "r") #(W32 0)
     then
       do:  (let: "$a0" := (![#int32T] "r") in
-      (method_call #sync.sync #"RWMutex'ptr" #"rUnlockSlow" (![#ptrT] "rw")) "$a0")
+      (method_call #(ptrTⁱᵈ RWMutexⁱᵈ) #"rUnlockSlow"%go (![#ptrT] "rw")) "$a0")
     else do:  #()));;;
     (if: race.Enabled
     then do:  ((func_call #race.Enable) #())
@@ -204,7 +208,7 @@ Definition RWMutex__rUnlockSlowⁱᵐᵖˡ : val :=
       (func_call #fatal) "$a0")
     else do:  #());;;
     (if: (let: "$a0" := #(W32 (- 1)) in
-    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref #RWMutex #"readerWait"%go (![#ptrT] "rw"))) "$a0") = #(W32 0)
+    (method_call #atomic.Int32ⁱᵈ #"Add"%go (struct.field_ref #RWMutex #"readerWait"%go (![#ptrT] "rw"))) "$a0") = #(W32 0)
     then
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"writerSem"%go (![#ptrT] "rw")) in
       let: "$a1" := #false in
@@ -227,13 +231,13 @@ Definition RWMutex__Lockⁱᵐᵖˡ : val :=
       (func_call #race.Read) "$a0");;;
       do:  ((func_call #race.Disable) #())
     else do:  #());;;
-    do:  ((method_call #sync.sync #"Mutex'ptr" #"Lock" (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
+    do:  ((method_call #Mutexⁱᵈ #"Lock"%go (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
     let: "r" := (mem.alloc (type.zero_val #int32T)) in
     let: "$r0" := ((let: "$a0" := #(W32 (- rwmutexMaxReaders)) in
-    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") + #(W32 rwmutexMaxReaders)) in
+    (method_call #atomic.Int32ⁱᵈ #"Add"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") + #(W32 rwmutexMaxReaders)) in
     do:  ("r" <-[#int32T] "$r0");;;
     (if: ((![#int32T] "r") ≠ #(W32 0)) && ((let: "$a0" := (![#int32T] "r") in
-    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref #RWMutex #"readerWait"%go (![#ptrT] "rw"))) "$a0") ≠ #(W32 0))
+    (method_call #atomic.Int32ⁱᵈ #"Add"%go (struct.field_ref #RWMutex #"readerWait"%go (![#ptrT] "rw"))) "$a0") ≠ #(W32 0))
     then
       do:  (let: "$a0" := (struct.field_ref #RWMutex #"writerSem"%go (![#ptrT] "rw")) in
       let: "$a1" := #false in
@@ -266,7 +270,7 @@ Definition RWMutex__TryLockⁱᵐᵖˡ : val :=
       (func_call #race.Read) "$a0");;;
       do:  ((func_call #race.Disable) #())
     else do:  #());;;
-    (if: (~ ((method_call #sync.sync #"Mutex'ptr" #"TryLock" (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #()))
+    (if: (~ ((method_call #Mutexⁱᵈ #"TryLock"%go (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #()))
     then
       (if: race.Enabled
       then do:  ((func_call #race.Enable) #())
@@ -275,9 +279,9 @@ Definition RWMutex__TryLockⁱᵐᵖˡ : val :=
     else do:  #());;;
     (if: (~ (let: "$a0" := #(W32 0) in
     let: "$a1" := #(W32 (- rwmutexMaxReaders)) in
-    (method_call #atomic #"Int32'ptr" #"CompareAndSwap" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0" "$a1"))
+    (method_call #atomic.Int32ⁱᵈ #"CompareAndSwap"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0" "$a1"))
     then
-      do:  ((method_call #sync.sync #"Mutex'ptr" #"Unlock" (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
+      do:  ((method_call #Mutexⁱᵈ #"Unlock"%go (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
       (if: race.Enabled
       then do:  ((func_call #race.Enable) #())
       else do:  #());;;
@@ -314,7 +318,7 @@ Definition RWMutex__Unlockⁱᵐᵖˡ : val :=
     else do:  #());;;
     let: "r" := (mem.alloc (type.zero_val #int32T)) in
     let: "$r0" := (let: "$a0" := #(W32 rwmutexMaxReaders) in
-    (method_call #atomic #"Int32'ptr" #"Add" (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") in
+    (method_call #atomic.Int32ⁱᵈ #"Add"%go (struct.field_ref #RWMutex #"readerCount"%go (![#ptrT] "rw"))) "$a0") in
     do:  ("r" <-[#int32T] "$r0");;;
     (if: int_geq (![#int32T] "r") #(W32 rwmutexMaxReaders)
     then
@@ -330,7 +334,7 @@ Definition RWMutex__Unlockⁱᵐᵖˡ : val :=
       let: "$a1" := #false in
       let: "$a2" := #(W64 0) in
       (func_call #runtime_Semrelease) "$a0" "$a1" "$a2")));;;
-    do:  ((method_call #sync.sync #"Mutex'ptr" #"Unlock" (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
+    do:  ((method_call #Mutexⁱᵈ #"Unlock"%go (struct.field_ref #RWMutex #"w"%go (![#ptrT] "rw"))) #());;;
     (if: race.Enabled
     then do:  ((func_call #race.Enable) #())
     else do:  #());;;
@@ -351,13 +355,13 @@ Definition RWMutex__RLockerⁱᵐᵖˡ : val :=
 
 Definition rlocker : go_type := RWMutex.
 
+Definition WaitGroupⁱᵈ : go_string := "sync.WaitGroup"%go.
+
 Definition WaitGroup : go_type := structT [
   "noCopy" :: noCopy;
   "state" :: atomic.Uint64;
   "sema" :: uint32T
 ].
-
-Definition WaitGroupⁱᵈ : go_string := "sync.WaitGroup"%go.
 
 (* Add adds delta, which may be negative, to the [WaitGroup] counter.
    If the counter becomes zero, all goroutines blocked on [WaitGroup.Wait] are released.
@@ -395,7 +399,7 @@ Definition WaitGroup__Addⁱᵐᵖˡ : val :=
     else do:  #());;;
     let: "state" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := ((s_to_w64 (![#intT] "delta")) ≪ #(W64 32)) in
-    (method_call #atomic #"Uint64'ptr" #"Add" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) "$a0") in
+    (method_call #atomic.Uint64ⁱᵈ #"Add"%go (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) "$a0") in
     do:  ("state" <-[#uint64T] "$r0");;;
     let: "v" := (mem.alloc (type.zero_val #int32T)) in
     let: "$r0" := (u_to_w32 ((![#uint64T] "state") ≫ #(W64 32))) in
@@ -421,13 +425,13 @@ Definition WaitGroup__Addⁱᵐᵖˡ : val :=
     (if: (int_gt (![#int32T] "v") #(W32 0)) || ((![#uint32T] "w") = #(W32 0))
     then return: (#())
     else do:  #());;;
-    (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ (![#uint64T] "state")
+    (if: ((method_call #atomic.Uint64ⁱᵈ #"Load"%go (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ (![#uint64T] "state")
     then
       do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := #(W64 0) in
-    (method_call #atomic #"Uint64'ptr" #"Store" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) "$a0");;;
+    (method_call #atomic.Uint64ⁱᵈ #"Store"%go (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) "$a0");;;
     (for: (λ: <>, (![#uint32T] "w") ≠ #(W32 0)); (λ: <>, do:  ("w" <-[#uint32T] ((![#uint32T] "w") - #(W32 1)))) := λ: <>,
       do:  (let: "$a0" := (struct.field_ref #WaitGroup #"sema"%go (![#ptrT] "wg")) in
       let: "$a1" := #false in
@@ -442,7 +446,7 @@ Definition WaitGroup__Doneⁱᵐᵖˡ : val :=
   λ: "wg" <>,
     exception_do (let: "wg" := (mem.alloc "wg") in
     do:  (let: "$a0" := #(W64 (- 1)) in
-    (method_call #sync.sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0");;;
+    (method_call #(ptrTⁱᵈ WaitGroupⁱᵈ) #"Add"%go (![#ptrT] "wg")) "$a0");;;
     return: #()).
 
 (* Wait blocks until the [WaitGroup] counter is zero.
@@ -456,7 +460,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ : val :=
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "state" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) in
+      let: "$r0" := ((method_call #atomic.Uint64ⁱᵈ #"Load"%go (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) in
       do:  ("state" <-[#uint64T] "$r0");;;
       let: "v" := (mem.alloc (type.zero_val #int32T)) in
       let: "$r0" := (u_to_w32 ((![#uint64T] "state") ≫ #(W64 32))) in
@@ -476,7 +480,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ : val :=
       else do:  #());;;
       (if: let: "$a0" := (![#uint64T] "state") in
       let: "$a1" := ((![#uint64T] "state") + #(W64 1)) in
-      (method_call #atomic #"Uint64'ptr" #"CompareAndSwap" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) "$a0" "$a1"
+      (method_call #atomic.Uint64ⁱᵈ #"CompareAndSwap"%go (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) "$a0" "$a1"
       then
         (if: race.Enabled && ((![#uint32T] "w") = #(W32 0))
         then
@@ -485,7 +489,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ : val :=
         else do:  #());;;
         do:  (let: "$a0" := (struct.field_ref #WaitGroup #"sema"%go (![#ptrT] "wg")) in
         (func_call #runtime_SemacquireWaitGroup) "$a0");;;
-        (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ #(W64 0)
+        (if: ((method_call #atomic.Uint64ⁱᵈ #"Load"%go (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ #(W64 0)
         then
           do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync: WaitGroup is reused before previous Wait has returned"%go) in
           Panic "$a0")

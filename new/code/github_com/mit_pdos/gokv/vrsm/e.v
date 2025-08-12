@@ -9,9 +9,9 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition Error : go_type := uint64T.
-
 Definition Errorⁱᵈ : go_string := uint64Tⁱᵈ.
+
+Definition Error : go_type := uint64T.
 
 Definition None : expr := #(W64 0).
 

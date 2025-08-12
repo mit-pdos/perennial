@@ -14,13 +14,13 @@ Context `{ffi_syntax}.
 
 Definition BAL_TOTAL : expr := #(W64 1000).
 
+Definition BankClerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/bank.BankClerk"%go.
+
 Definition BankClerk : go_type := structT [
   "lck" :: ptrT;
   "kvck" :: kv.Kv;
   "accts" :: sliceT
 ].
-
-Definition BankClerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/bank.BankClerk"%go.
 
 Definition acquire_two_good : go_string := "github.com/mit-pdos/gokv/bank.acquire_two_good"%go.
 
@@ -33,14 +33,14 @@ Definition acquire_two_goodⁱᵐᵖˡ : val :=
     (if: (![#stringT] "l1") < (![#stringT] "l2")
     then
       do:  (let: "$a0" := (![#stringT] "l1") in
-      (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0");;;
+      (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Lock"%go (![#ptrT] "lck")) "$a0");;;
       do:  (let: "$a0" := (![#stringT] "l2") in
-      (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0")
+      (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Lock"%go (![#ptrT] "lck")) "$a0")
     else
       do:  (let: "$a0" := (![#stringT] "l2") in
-      (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0");;;
+      (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Lock"%go (![#ptrT] "lck")) "$a0");;;
       do:  (let: "$a0" := (![#stringT] "l1") in
-      (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0"));;;
+      (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Lock"%go (![#ptrT] "lck")) "$a0"));;;
     return: (#());;;
     return: #()).
 
@@ -53,9 +53,9 @@ Definition acquire_twoⁱᵐᵖˡ : val :=
     let: "l1" := (mem.alloc "l1") in
     let: "lck" := (mem.alloc "lck") in
     do:  (let: "$a0" := (![#stringT] "l1") in
-    (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0");;;
+    (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Lock"%go (![#ptrT] "lck")) "$a0");;;
     do:  (let: "$a0" := (![#stringT] "l2") in
-    (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] "lck")) "$a0");;;
+    (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Lock"%go (![#ptrT] "lck")) "$a0");;;
     return: (#());;;
     return: #()).
 
@@ -68,9 +68,9 @@ Definition release_twoⁱᵐᵖˡ : val :=
     let: "l1" := (mem.alloc "l1") in
     let: "lck" := (mem.alloc "lck") in
     do:  (let: "$a0" := (![#stringT] "l1") in
-    (method_call #lockservice #"LockClerk'ptr" #"Unlock" (![#ptrT] "lck")) "$a0");;;
+    (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Unlock"%go (![#ptrT] "lck")) "$a0");;;
     do:  (let: "$a0" := (![#stringT] "l2") in
-    (method_call #lockservice #"LockClerk'ptr" #"Unlock" (![#ptrT] "lck")) "$a0");;;
+    (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Unlock"%go (![#ptrT] "lck")) "$a0");;;
     return: (#());;;
     return: #()).
 
@@ -158,7 +158,7 @@ Definition BankClerk__SimpleTransferⁱᵐᵖˡ : val :=
         do:  (let: "$a0" := (![#stringT] (slice.elem_ref #stringT (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) (![#uint64T] "src"))) in
         let: "$a1" := (![#stringT] (slice.elem_ref #stringT (![#sliceT] (struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck"))) (![#uint64T] "dst"))) in
         let: "$a2" := (![#uint64T] "amount") in
-        (method_call #bank.bank #"BankClerk'ptr" #"transfer_internal" (![#ptrT] "bck")) "$a0" "$a1" "$a2")
+        (method_call #(ptrTⁱᵈ BankClerkⁱᵈ) #"transfer_internal"%go (![#ptrT] "bck")) "$a0" "$a1" "$a2")
       else do:  #()));;;
     return: #()).
 
@@ -173,7 +173,7 @@ Definition BankClerk__get_totalⁱᵐᵖˡ : val :=
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![#stringT] "acct") in
-      (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0");;;
+      (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0");;;
       let: "$r0" := ((![#uint64T] "sum") + (let: "$a0" := (let: "$a0" := (![#stringT] "acct") in
       (interface.get #"Get"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0") in
       (func_call #decodeInt) "$a0")) in
@@ -184,7 +184,7 @@ Definition BankClerk__get_totalⁱᵐᵖˡ : val :=
       do:  ("acct" <-[#stringT] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := (![#stringT] "acct") in
-      (method_call #lockservice #"LockClerk'ptr" #"Unlock" (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0")));;;
+      (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0")));;;
     return: (![#uint64T] "sum")).
 
 (* go: bank.go:92:23 *)
@@ -192,7 +192,7 @@ Definition BankClerk__SimpleAuditⁱᵐᵖˡ : val :=
   λ: "bck" <>,
     exception_do (let: "bck" := (mem.alloc "bck") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: ((method_call #bank.bank #"BankClerk'ptr" #"get_total" (![#ptrT] "bck")) #()) ≠ BAL_TOTAL
+      (if: ((method_call #(ptrTⁱᵈ BankClerkⁱᵈ) #"get_total"%go (![#ptrT] "bck")) #()) ≠ BAL_TOTAL
       then
         do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Balance total invariant violated"%go) in
         Panic "$a0")
@@ -218,7 +218,7 @@ Definition MakeBankClerkSliceⁱᵐᵖˡ : val :=
     let: "$r0" := (![#sliceT] "accts") in
     do:  ((struct.field_ref #BankClerk #"accts"%go (![#ptrT] "bck")) <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#stringT] "init_flag") in
-    (method_call #lockservice #"LockClerk'ptr" #"Lock" (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0");;;
+    (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0");;;
     (if: (let: "$a0" := (![#stringT] "init_flag") in
     (interface.get #"Get"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0") = #""%go
     then
@@ -241,7 +241,7 @@ Definition MakeBankClerkSliceⁱᵐᵖˡ : val :=
       (interface.get #"Put"%go (![#kv.Kv] (struct.field_ref #BankClerk #"kvck"%go (![#ptrT] "bck")))) "$a0" "$a1")
     else do:  #());;;
     do:  (let: "$a0" := (![#stringT] "init_flag") in
-    (method_call #lockservice #"LockClerk'ptr" #"Unlock" (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0");;;
+    (method_call #(ptrTⁱᵈ lockservice.LockClerkⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #BankClerk #"lck"%go (![#ptrT] "bck")))) "$a0");;;
     return: (![#ptrT] "bck")).
 
 Definition MakeBankClerk : go_string := "github.com/mit-pdos/gokv/bank.MakeBankClerk"%go.

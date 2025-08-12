@@ -8,9 +8,9 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition ConfChangeI : go_type := interfaceT.
-
 Definition ConfChangeIⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeI"%go.
+
+Definition ConfChangeI : go_type := interfaceT.
 
 Definition MarshalConfChange : go_string := "go.etcd.io/raft/v3/raftpb.MarshalConfChange"%go.
 
@@ -18,9 +18,9 @@ Definition ConfChangesFromString : go_string := "go.etcd.io/raft/v3/raftpb.ConfC
 
 Definition ConfChangesToString : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangesToString"%go.
 
-Definition EntryType : go_type := int32T.
-
 Definition EntryTypeⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.EntryType"%go.
+
+Definition EntryType : go_type := int32T.
 
 Definition EntryNormal : expr := #(W32 0).
 
@@ -36,9 +36,9 @@ Definition EntryType_value : go_string := "go.etcd.io/raft/v3/raftpb.EntryType_v
 
 Axiom EntryType_value'init : val.
 
-Definition MessageType : go_type := int32T.
-
 Definition MessageTypeⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.MessageType"%go.
+
+Definition MessageType : go_type := int32T.
 
 Definition MsgHup : expr := #(W32 0).
 
@@ -96,9 +96,9 @@ Definition MessageType_value : go_string := "go.etcd.io/raft/v3/raftpb.MessageTy
 
 Axiom MessageType_value'init : val.
 
-Definition ConfChangeTransition : go_type := int32T.
-
 Definition ConfChangeTransitionⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeTransition"%go.
+
+Definition ConfChangeTransition : go_type := int32T.
 
 Definition ConfChangeTransition_name : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeTransition_name"%go.
 
@@ -108,9 +108,9 @@ Definition ConfChangeTransition_value : go_string := "go.etcd.io/raft/v3/raftpb.
 
 Axiom ConfChangeTransition_value'init : val.
 
-Definition ConfChangeType : go_type := int32T.
-
 Definition ConfChangeTypeⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeType"%go.
+
+Definition ConfChangeType : go_type := int32T.
 
 Definition ConfChangeAddNode : expr := #(W32 0).
 
@@ -128,6 +128,8 @@ Definition ConfChangeType_value : go_string := "go.etcd.io/raft/v3/raftpb.ConfCh
 
 Axiom ConfChangeType_value'init : val.
 
+Definition Entryⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.Entry"%go.
+
 Definition Entry : go_type := structT [
   "Term" :: uint64T;
   "Index" :: uint64T;
@@ -135,9 +137,9 @@ Definition Entry : go_type := structT [
   "Data" :: sliceT
 ].
 
-Definition Entryⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.Entry"%go.
-
 Definition xxx_messageInfo_Entry : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Entry"%go.
+
+Definition SnapshotMetadataⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.SnapshotMetadata"%go.
 
 Definition ConfState : go_type := structT [
   "Voters" :: sliceT;
@@ -153,18 +155,18 @@ Definition SnapshotMetadata : go_type := structT [
   "Term" :: uint64T
 ].
 
-Definition SnapshotMetadataⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.SnapshotMetadata"%go.
-
 Definition xxx_messageInfo_SnapshotMetadata : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_SnapshotMetadata"%go.
+
+Definition Snapshotⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.Snapshot"%go.
 
 Definition Snapshot : go_type := structT [
   "Data" :: sliceT;
   "Metadata" :: SnapshotMetadata
 ].
 
-Definition Snapshotⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.Snapshot"%go.
-
 Definition xxx_messageInfo_Snapshot : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Snapshot"%go.
+
+Definition Messageⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.Message"%go.
 
 Definition Message : go_type := structT [
   "Type" :: MessageType;
@@ -183,9 +185,9 @@ Definition Message : go_type := structT [
   "Responses" :: sliceT
 ].
 
-Definition Messageⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.Message"%go.
-
 Definition xxx_messageInfo_Message : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_Message"%go.
+
+Definition HardStateⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.HardState"%go.
 
 Definition HardState : go_type := structT [
   "Term" :: uint64T;
@@ -193,13 +195,13 @@ Definition HardState : go_type := structT [
   "Commit" :: uint64T
 ].
 
-Definition HardStateⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.HardState"%go.
-
 Definition xxx_messageInfo_HardState : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_HardState"%go.
 
 Definition ConfStateⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfState"%go.
 
 Definition xxx_messageInfo_ConfState : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfState"%go.
+
+Definition ConfChangeⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChange"%go.
 
 Definition ConfChange : go_type := structT [
   "Type" :: ConfChangeType;
@@ -208,19 +210,17 @@ Definition ConfChange : go_type := structT [
   "ID" :: uint64T
 ].
 
-Definition ConfChangeⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChange"%go.
-
 Definition xxx_messageInfo_ConfChange : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChange"%go.
 
 Definition xxx_messageInfo_ConfChangeSingle : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeSingle"%go.
+
+Definition ConfChangeV2ⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeV2"%go.
 
 Definition ConfChangeV2 : go_type := structT [
   "Transition" :: ConfChangeTransition;
   "Changes" :: sliceT;
   "Context" :: sliceT
 ].
-
-Definition ConfChangeV2ⁱᵈ : go_string := "go.etcd.io/raft/v3/raftpb.ConfChangeV2"%go.
 
 Definition xxx_messageInfo_ConfChangeV2 : go_string := "go.etcd.io/raft/v3/raftpb.xxx_messageInfo_ConfChangeV2"%go.
 

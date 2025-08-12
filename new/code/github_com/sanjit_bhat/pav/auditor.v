@@ -18,6 +18,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Auditorⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.Auditor"%go.
+
 Definition Auditor : go_type := structT [
   "mu" :: ptrT;
   "sk" :: ptrT;
@@ -26,7 +28,7 @@ Definition Auditor : go_type := structT [
   "serv" :: ptrT
 ].
 
-Definition Auditorⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.Auditor"%go.
+Definition historyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.history"%go.
 
 Definition history : go_type := structT [
   "link" :: sliceT;
@@ -34,7 +36,7 @@ Definition history : go_type := structT [
   "adtrSig" :: sliceT
 ].
 
-Definition historyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.history"%go.
+Definition servⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.serv"%go.
 
 Definition serv : go_type := structT [
   "cli" :: ptrT;
@@ -44,8 +46,6 @@ Definition serv : go_type := structT [
   "adtrVrfSig" :: sliceT
 ].
 
-Definition servⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.serv"%go.
-
 (* Update queries server for a new epoch update and applies it.
 
    go: auditor.go:38:19 *)
@@ -53,8 +53,8 @@ Definition Auditor__Updateⁱᵐᵖˡ : val :=
   λ: "a" <>,
     with_defer: (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "a" := (mem.alloc "a") in
-    do:  ((method_call #sync #"RWMutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) #());;;
-    do:  (let: "$f" := (method_call #sync #"RWMutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) in
+    do:  ((method_call #(ptrTⁱᵈ sync.RWMutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) #());;;
+    do:  (let: "$f" := (method_call #(ptrTⁱᵈ sync.RWMutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -81,7 +81,7 @@ Definition Auditor__Updateⁱᵐᵖˡ : val :=
       do:  ("p" <-[#ptrT] "$value");;;
       do:  "$key";;;
       let: "$r0" := (let: "$a0" := (![#ptrT] "p") in
-      (method_call #auditor.auditor #"Auditor'ptr" #"updOnce" (![#ptrT] "a")) "$a0") in
+      (method_call #(ptrTⁱᵈ Auditorⁱᵈ) #"updOnce"%go (![#ptrT] "a")) "$a0") in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
       then return: (![#ktcore.Blame] "err")
@@ -175,8 +175,8 @@ Definition Auditor__Getⁱᵐᵖˡ : val :=
   λ: "a" "epoch",
     with_defer: (let: "a" := (mem.alloc "a") in
     let: "epoch" := (mem.alloc "epoch") in
-    do:  ((method_call #sync #"RWMutex'ptr" #"RLock" (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) #());;;
-    do:  (let: "$f" := (method_call #sync #"RWMutex'ptr" #"RUnlock" (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) in
+    do:  ((method_call #(ptrTⁱᵈ sync.RWMutexⁱᵈ) #"RLock"%go (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) #());;;
+    do:  (let: "$f" := (method_call #(ptrTⁱᵈ sync.RWMutexⁱᵈ) #"RUnlock"%go (![#ptrT] (struct.field_ref #Auditor #"mu"%go (![#ptrT] "a")))) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" #();;
@@ -266,7 +266,7 @@ Definition Newⁱᵐᵖˡ : val :=
     }])) in
     do:  ("tr" <-[#ptrT] "$r0");;;
     let: "dig" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := ((method_call #merkle #"Tree'ptr" #"Digest" (![#ptrT] "tr")) #()) in
+    let: "$r0" := ((method_call #(ptrTⁱᵈ merkle.Treeⁱᵈ) #"Digest"%go (![#ptrT] "tr")) #()) in
     do:  ("dig" <-[#sliceT] "$r0");;;
     let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#ptrT] "sk") in
@@ -373,7 +373,7 @@ Definition NewRpcAuditorⁱᵐᵖˡ : val :=
       exception_do (let: "reply" := (mem.alloc "reply") in
       let: "arg" := (mem.alloc "arg") in
       let: "r0" := (mem.alloc (type.zero_val #ktcore.Blame)) in
-      let: "$r0" := ((method_call #auditor.auditor #"Auditor'ptr" #"Update" (![#ptrT] "adtr")) #()) in
+      let: "$r0" := ((method_call #(ptrTⁱᵈ Auditorⁱᵈ) #"Update"%go (![#ptrT] "adtr")) #()) in
       do:  ("r0" <-[#ktcore.Blame] "$r0");;;
       let: "replyObj" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (mem.alloc (let: "$Err" := (![#ktcore.Blame] "r0") in
@@ -423,7 +423,7 @@ Definition NewRpcAuditorⁱᵐᵖˡ : val :=
       else do:  #());;;
       let: "r" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #GetArg #"Epoch"%go (![#ptrT] "a"))) in
-      (method_call #auditor.auditor #"Auditor'ptr" #"Get" (![#ptrT] "adtr")) "$a0") in
+      (method_call #(ptrTⁱᵈ Auditorⁱᵈ) #"Get"%go (![#ptrT] "adtr")) "$a0") in
       do:  ("r" <-[#ptrT] "$r0");;;
       let: "$r0" := (let: "$a0" := (![#sliceT] (![#ptrT] "reply")) in
       let: "$a1" := (![#ptrT] "r") in
@@ -450,7 +450,7 @@ Definition CallUpdateⁱᵐᵖˡ : val :=
     (if: let: "$a0" := UpdateRpc in
     let: "$a1" := #slice.nil in
     let: "$a2" := (![#ptrT] "rb") in
-    (method_call #advrpc #"Client'ptr" #"Call" (![#ptrT] "c")) "$a0" "$a1" "$a2"
+    (method_call #(ptrTⁱᵈ advrpc.Clientⁱᵈ) #"Call"%go (![#ptrT] "c")) "$a0" "$a1" "$a2"
     then return: (ktcore.BlameUnknown)
     else do:  #());;;
     let: "errb" := (mem.alloc (type.zero_val #boolT)) in
@@ -503,7 +503,7 @@ Definition CallGetⁱᵐᵖˡ : val :=
     (if: let: "$a0" := GetRpc in
     let: "$a1" := (![#sliceT] "ab") in
     let: "$a2" := (![#ptrT] "rb") in
-    (method_call #advrpc #"Client'ptr" #"Call" (![#ptrT] "c")) "$a0" "$a1" "$a2"
+    (method_call #(ptrTⁱᵈ advrpc.Clientⁱᵈ) #"Call"%go (![#ptrT] "c")) "$a0" "$a1" "$a2"
     then
       return: (mem.alloc (let: "$Err" := ktcore.BlameUnknown in
        struct.make #GetReply [{

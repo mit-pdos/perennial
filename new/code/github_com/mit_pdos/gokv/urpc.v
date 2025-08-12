@@ -14,11 +14,11 @@ Module urpc.
 Section code.
 
 
+Definition Serverⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Server"%go.
+
 Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
-
-Definition Serverⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Server"%go.
 
 (* go: urpc.go:19:20 *)
 Definition Server__rpcHandleⁱᵐᵖˡ : val :=
@@ -105,7 +105,7 @@ Definition Server__readThreadⁱᵐᵖˡ : val :=
         let: "$a1" := (![#uint64T] "rpcid") in
         let: "$a2" := (![#uint64T] "seqno") in
         let: "$a3" := (![#sliceT] "req") in
-        (method_call #urpc.urpc #"Server'ptr" #"rpcHandle" (![#ptrT] "srv")) "$a0" "$a1" "$a2" "$a3");;;
+        (method_call #(ptrTⁱᵈ Serverⁱᵈ) #"rpcHandle"%go (![#ptrT] "srv")) "$a0" "$a1" "$a2" "$a3");;;
         return: #())
         ) in
       do:  (Fork ("$go" #()));;;
@@ -129,7 +129,7 @@ Definition Server__Serveⁱᵐᵖˡ : val :=
         do:  ("conn" <-[#grove_ffi.Connection] "$r0");;;
         let: "$go" := (λ: <>,
           exception_do (do:  (let: "$a0" := (![#grove_ffi.Connection] "conn") in
-          (method_call #urpc.urpc #"Server'ptr" #"readThread" (![#ptrT] "srv")) "$a0");;;
+          (method_call #(ptrTⁱᵈ Serverⁱᵈ) #"readThread"%go (![#ptrT] "srv")) "$a0");;;
           return: #())
           ) in
         do:  (Fork ("$go" #())));;;
@@ -144,13 +144,15 @@ Definition callbackStateDone : expr := #(W64 1).
 
 Definition callbackStateAborted : expr := #(W64 2).
 
+Definition Callbackⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Callback"%go.
+
 Definition Callback : go_type := structT [
   "reply" :: ptrT;
   "state" :: ptrT;
   "cond" :: ptrT
 ].
 
-Definition Callbackⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Callback"%go.
+Definition Clientⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Client"%go.
 
 Definition Client : go_type := structT [
   "mu" :: ptrT;
@@ -158,8 +160,6 @@ Definition Client : go_type := structT [
   "seq" :: uint64T;
   "pending" :: mapT uint64T ptrT
 ].
-
-Definition Clientⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Client"%go.
 
 (* go: urpc.go:88:19 *)
 Definition Client__replyThreadⁱᵐᵖˡ : val :=
@@ -172,7 +172,7 @@ Definition Client__replyThreadⁱᵐᵖˡ : val :=
       do:  ("r" <-[#grove_ffi.ReceiveRet] "$r0");;;
       (if: ![#boolT] (struct.field_ref #grove_ffi.ReceiveRet #"Err"%go "r")
       then
-        do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
+        do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
         let: "$range" := (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) in
         (let: "cb" := (mem.alloc (type.zero_val #ptrT)) in
         map.for_range "$range" (λ: "$key" "value",
@@ -180,8 +180,8 @@ Definition Client__replyThreadⁱᵐᵖˡ : val :=
           do:  "$key";;;
           let: "$r0" := callbackStateAborted in
           do:  ((![#ptrT] (struct.field_ref #Callback #"state"%go (![#ptrT] "cb"))) <-[#uint64T] "$r0");;;
-          do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #Callback #"cond"%go (![#ptrT] "cb")))) #())));;;
-        do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
+          do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Signal"%go (![#ptrT] (struct.field_ref #Callback #"cond"%go (![#ptrT] "cb")))) #())));;;
+        do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
         break: #()
       else do:  #());;;
       let: "data" := (mem.alloc (type.zero_val #sliceT)) in
@@ -197,7 +197,7 @@ Definition Client__replyThreadⁱᵐᵖˡ : val :=
       let: "reply" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := (![#sliceT] "data") in
       do:  ("reply" <-[#sliceT] "$r0");;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
+      do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
       let: "ok" := (mem.alloc (type.zero_val #boolT)) in
       let: "cb" := (mem.alloc (type.zero_val #ptrT)) in
       let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) (![#uint64T] "seqno")) in
@@ -214,9 +214,9 @@ Definition Client__replyThreadⁱᵐᵖˡ : val :=
         do:  ((![#ptrT] (struct.field_ref #Callback #"reply"%go (![#ptrT] "cb"))) <-[#sliceT] "$r0");;;
         let: "$r0" := callbackStateDone in
         do:  ((![#ptrT] (struct.field_ref #Callback #"state"%go (![#ptrT] "cb"))) <-[#uint64T] "$r0");;;
-        do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] (struct.field_ref #Callback #"cond"%go (![#ptrT] "cb")))) #())
+        do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Signal"%go (![#ptrT] (struct.field_ref #Callback #"cond"%go (![#ptrT] "cb")))) #())
       else do:  #());;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
+      do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
       continue: #());;;
     return: #()).
 
@@ -250,7 +250,7 @@ Definition TryMakeClientⁱᵐᵖˡ : val :=
     }])) in
     do:  ("cl" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #urpc.urpc #"Client'ptr" #"replyThread" (![#ptrT] "cl")) #());;;
+      exception_do (do:  ((method_call #(ptrTⁱᵈ Clientⁱᵈ) #"replyThread"%go (![#ptrT] "cl")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -282,9 +282,9 @@ Definition MakeClientⁱᵐᵖˡ : val :=
     (func_call #primitive.Assume) "$a0");;;
     return: (![#ptrT] "cl")).
 
-Definition Error : go_type := uint64T.
-
 Definition Errorⁱᵈ : go_string := uint64Tⁱᵈ.
+
+Definition Error : go_type := uint64T.
 
 Definition ErrNone : expr := #(W64 0).
 
@@ -314,7 +314,7 @@ Definition Client__CallStartⁱᵐᵖˡ : val :=
     do:  ("cb" <-[#ptrT] "$r0");;;
     let: "$r0" := callbackStateWaiting in
     do:  ((![#ptrT] (struct.field_ref #Callback #"state"%go (![#ptrT] "cb"))) <-[#uint64T] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
     let: "seqno" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (![#uint64T] (struct.field_ref #Client #"seq"%go (![#ptrT] "cl"))) in
     do:  ("seqno" <-[#uint64T] "$r0");;;
@@ -324,7 +324,7 @@ Definition Client__CallStartⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #Client #"seq"%go (![#ptrT] "cl")) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#ptrT] "cb") in
     do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #Client #"pending"%go (![#ptrT] "cl"))) (![#uint64T] "seqno") "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
     let: "data1" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make3 #byteT #(W64 0) (#(W64 (8 + 8)) + (let: "$a0" := (![#sliceT] "args") in
     slice.len "$a0"))) in
@@ -363,7 +363,7 @@ Definition Client__CallCompleteⁱᵐᵖˡ : val :=
     let: "timeout_ms" := (mem.alloc "timeout_ms") in
     let: "reply" := (mem.alloc "reply") in
     let: "cb" := (mem.alloc "cb") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
     (if: (![#uint64T] (![#ptrT] (struct.field_ref #Callback #"state"%go (![#ptrT] "cb")))) = callbackStateWaiting
     then
       do:  (let: "$a0" := (![#ptrT] (struct.field_ref #Callback #"cond"%go (![#ptrT] "cb"))) in
@@ -377,10 +377,10 @@ Definition Client__CallCompleteⁱᵐᵖˡ : val :=
     then
       let: "$r0" := (![#sliceT] (![#ptrT] (struct.field_ref #Callback #"reply"%go (![#ptrT] "cb")))) in
       do:  ((![#ptrT] "reply") <-[#sliceT] "$r0");;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
+      do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
       return: (#(W64 0))
     else
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
+      do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) #());;;
       (if: (![#uint64T] "state") = callbackStateAborted
       then return: (ErrDisconnect)
       else return: (ErrTimeout)))).
@@ -397,7 +397,7 @@ Definition Client__Callⁱᵐᵖˡ : val :=
     let: "cb" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "rpcid") in
     let: "$a1" := (![#sliceT] "args") in
-    (method_call #urpc.urpc #"Client'ptr" #"CallStart" (![#ptrT] "cl")) "$a0" "$a1") in
+    (method_call #(ptrTⁱᵈ Clientⁱᵈ) #"CallStart"%go (![#ptrT] "cl")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("cb" <-[#ptrT] "$r0");;;
@@ -408,7 +408,7 @@ Definition Client__Callⁱᵐᵖˡ : val :=
     return: (let: "$a0" := (![#ptrT] "cb") in
      let: "$a1" := (![#ptrT] "reply") in
      let: "$a2" := (![#uint64T] "timeout_ms") in
-     (method_call #urpc.urpc #"Client'ptr" #"CallComplete" (![#ptrT] "cl")) "$a0" "$a1" "$a2")).
+     (method_call #(ptrTⁱᵈ Clientⁱᵈ) #"CallComplete"%go (![#ptrT] "cl")) "$a0" "$a1" "$a2")).
 
 Definition vars' : list (go_string * go_type) := [].
 

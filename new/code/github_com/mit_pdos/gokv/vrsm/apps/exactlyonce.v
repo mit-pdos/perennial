@@ -14,6 +14,8 @@ Module exactlyonce.
 Section code.
 
 
+Definition eStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.eStateMachine"%go.
+
 Definition eStateMachine : go_type := structT [
   "lastSeq" :: mapT uint64T uint64T;
   "lastReply" :: mapT uint64T sliceT;
@@ -21,8 +23,6 @@ Definition eStateMachine : go_type := structT [
   "sm" :: ptrT;
   "esmNextIndex" :: uint64T
 ].
-
-Definition eStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.eStateMachine"%go.
 
 Definition OPTYPE_RW : expr := #(W8 0).
 
@@ -234,12 +234,12 @@ Definition MakeExactlyOnceStateMachineⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #eStateMachine #"nextCID"%go (![#ptrT] "s")) <-[#uint64T] "$r0");;;
     let: "$r0" := (![#ptrT] "sm") in
     do:  ((struct.field_ref #eStateMachine #"sm"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
-    return: (mem.alloc (let: "$ApplyReadonly" := (method_call #exactlyonce.exactlyonce #"eStateMachine'ptr" #"applyReadonly" (![#ptrT] "s")) in
-     let: "$ApplyVolatile" := (method_call #exactlyonce.exactlyonce #"eStateMachine'ptr" #"applyVolatile" (![#ptrT] "s")) in
+    return: (mem.alloc (let: "$ApplyReadonly" := (method_call #(ptrTⁱᵈ eStateMachineⁱᵈ) #"applyReadonly"%go (![#ptrT] "s")) in
+     let: "$ApplyVolatile" := (method_call #(ptrTⁱᵈ eStateMachineⁱᵈ) #"applyVolatile"%go (![#ptrT] "s")) in
      let: "$GetState" := (λ: <>,
-       exception_do (return: ((method_call #exactlyonce.exactlyonce #"eStateMachine'ptr" #"getState" (![#ptrT] "s")) #()))
+       exception_do (return: ((method_call #(ptrTⁱᵈ eStateMachineⁱᵈ) #"getState"%go (![#ptrT] "s")) #()))
        ) in
-     let: "$SetState" := (method_call #exactlyonce.exactlyonce #"eStateMachine'ptr" #"setState" (![#ptrT] "s")) in
+     let: "$SetState" := (method_call #(ptrTⁱᵈ eStateMachineⁱᵈ) #"setState"%go (![#ptrT] "s")) in
      struct.make #storage.InMemoryStateMachine [{
        "ApplyReadonly" ::= "$ApplyReadonly";
        "ApplyVolatile" ::= "$ApplyVolatile";
@@ -247,13 +247,13 @@ Definition MakeExactlyOnceStateMachineⁱᵐᵖˡ : val :=
        "SetState" ::= "$SetState"
      }]))).
 
+Definition Clerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.Clerk"%go.
+
 Definition Clerk : go_type := structT [
   "ck" :: ptrT;
   "cid" :: uint64T;
   "seq" :: uint64T
 ].
-
-Definition Clerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.Clerk"%go.
 
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeClerk"%go.
 
@@ -274,7 +274,7 @@ Definition MakeClerkⁱᵐᵖˡ : val :=
     do:  ((slice.elem_ref #byteT (![#sliceT] "v") #(W64 0)) <-[#byteT] "$r0");;;
     let: "cidEnc" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "v") in
-    (method_call #clerk #"Clerk'ptr" #"Apply" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0") in
+    (method_call #(ptrTⁱᵈ clerk.Clerkⁱᵈ) #"Apply"%go (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0") in
     do:  ("cidEnc" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "cidEnc") in
     (func_call #marshal.ReadInt) "$a0") in
@@ -313,7 +313,7 @@ Definition Clerk__ApplyExactlyOnceⁱᵐᵖˡ : val :=
     (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
     do:  ((struct.field_ref #Clerk #"seq"%go (![#ptrT] "ck")) <-[#uint64T] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "enc") in
-     (method_call #clerk #"Clerk'ptr" #"Apply" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
+     (method_call #(ptrTⁱᵈ clerk.Clerkⁱᵈ) #"Apply"%go (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
 
 (* go: sm.go:138:18 *)
 Definition Clerk__ApplyReadonlyⁱᵐᵖˡ : val :=
@@ -330,7 +330,7 @@ Definition Clerk__ApplyReadonlyⁱᵐᵖˡ : val :=
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "enc") in
-     (method_call #clerk #"Clerk'ptr" #"ApplyRo" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
+     (method_call #(ptrTⁱᵈ clerk.Clerkⁱᵈ) #"ApplyRo"%go (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
 
 Definition VersionedStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.VersionedStateMachine"%go.
 

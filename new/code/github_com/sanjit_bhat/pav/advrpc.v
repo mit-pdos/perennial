@@ -11,11 +11,11 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Serverⁱᵈ : go_string := "github.com/sanjit-bhat/pav/advrpc.Server"%go.
+
 Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
-
-Definition Serverⁱᵈ : go_string := "github.com/sanjit-bhat/pav/advrpc.Server"%go.
 
 (* go: advrpc.go:19:18 *)
 Definition Server__handleⁱᵐᵖˡ : val :=
@@ -41,7 +41,7 @@ Definition Server__handleⁱᵐᵖˡ : val :=
     let: "$a1" := (![#ptrT] "resp") in
     (![#funcT] "f") "$a0" "$a1");;;
     do:  (let: "$a0" := (![#sliceT] (![#ptrT] "resp")) in
-    (method_call #netffi #"Conn'ptr" #"Send" (![#ptrT] "conn")) "$a0");;;
+    (method_call #(ptrTⁱᵈ netffi.Connⁱᵈ) #"Send"%go (![#ptrT] "conn")) "$a0");;;
     return: #()).
 
 (* go: advrpc.go:31:18 *)
@@ -52,7 +52,7 @@ Definition Server__readⁱᵐᵖˡ : val :=
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "err0" := (mem.alloc (type.zero_val #boolT)) in
       let: "req" := (mem.alloc (type.zero_val #sliceT)) in
-      let: ("$ret0", "$ret1") := ((method_call #netffi #"Conn'ptr" #"Receive" (![#ptrT] "conn")) #()) in
+      let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ netffi.Connⁱᵈ) #"Receive"%go (![#ptrT] "conn")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("req" <-[#sliceT] "$r0");;;
@@ -78,7 +78,7 @@ Definition Server__readⁱᵐᵖˡ : val :=
         exception_do (do:  (let: "$a0" := (![#ptrT] "conn") in
         let: "$a1" := (![#uint64T] "rpcId") in
         let: "$a2" := (![#sliceT] "data") in
-        (method_call #advrpc.advrpc #"Server'ptr" #"handle" (![#ptrT] "s")) "$a0" "$a1" "$a2");;;
+        (method_call #(ptrTⁱᵈ Serverⁱᵈ) #"handle"%go (![#ptrT] "s")) "$a0" "$a1" "$a2");;;
         return: #())
         ) in
       do:  (Fork ("$go" #())));;;
@@ -96,11 +96,11 @@ Definition Server__Serveⁱᵐᵖˡ : val :=
     let: "$go" := (λ: <>,
       exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         let: "conn" := (mem.alloc (type.zero_val #ptrT)) in
-        let: "$r0" := ((method_call #netffi #"Listener'ptr" #"Accept" (![#ptrT] "l")) #()) in
+        let: "$r0" := ((method_call #(ptrTⁱᵈ netffi.Listenerⁱᵈ) #"Accept"%go (![#ptrT] "l")) #()) in
         do:  ("conn" <-[#ptrT] "$r0");;;
         let: "$go" := (λ: <>,
           exception_do (do:  (let: "$a0" := (![#ptrT] "conn") in
-          (method_call #advrpc.advrpc #"Server'ptr" #"read" (![#ptrT] "s")) "$a0");;;
+          (method_call #(ptrTⁱᵈ Serverⁱᵈ) #"read"%go (![#ptrT] "s")) "$a0");;;
           return: #())
           ) in
         do:  (Fork ("$go" #())));;;
@@ -120,11 +120,11 @@ Definition NewServerⁱᵐᵖˡ : val :=
        "handlers" ::= "$handlers"
      }]))).
 
+Definition Clientⁱᵈ : go_string := "github.com/sanjit-bhat/pav/advrpc.Client"%go.
+
 Definition Client : go_type := structT [
   "conn" :: ptrT
 ].
-
-Definition Clientⁱᵈ : go_string := "github.com/sanjit-bhat/pav/advrpc.Client"%go.
 
 Definition Dial : go_string := "github.com/sanjit-bhat/pav/advrpc.Dial"%go.
 
@@ -166,12 +166,12 @@ Definition Client__Callⁱᵐᵖˡ : val :=
     (func_call #marshal.WriteBytes) "$a0" "$a1") in
     do:  ("req2" <-[#sliceT] "$r0");;;
     (if: let: "$a0" := (![#sliceT] "req2") in
-    (method_call #netffi #"Conn'ptr" #"Send" (![#ptrT] (struct.field_ref #Client #"conn"%go (![#ptrT] "c")))) "$a0"
+    (method_call #(ptrTⁱᵈ netffi.Connⁱᵈ) #"Send"%go (![#ptrT] (struct.field_ref #Client #"conn"%go (![#ptrT] "c")))) "$a0"
     then return: (#true)
     else do:  #());;;
     let: "err0" := (mem.alloc (type.zero_val #boolT)) in
     let: "resp" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := ((method_call #netffi #"Conn'ptr" #"Receive" (![#ptrT] (struct.field_ref #Client #"conn"%go (![#ptrT] "c")))) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ netffi.Connⁱᵈ) #"Receive"%go (![#ptrT] (struct.field_ref #Client #"conn"%go (![#ptrT] "c")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[#sliceT] "$r0");;;

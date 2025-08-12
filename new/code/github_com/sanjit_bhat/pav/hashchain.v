@@ -12,13 +12,13 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition HashChainⁱᵈ : go_string := "github.com/sanjit-bhat/pav/hashchain.HashChain"%go.
+
 Definition HashChain : go_type := structT [
   "predLastLink" :: sliceT;
   "lastLink" :: sliceT;
   "vals" :: sliceT
 ].
-
-Definition HashChainⁱᵈ : go_string := "github.com/sanjit-bhat/pav/hashchain.HashChain"%go.
 
 Definition GetNextLink : go_string := "github.com/sanjit-bhat/pav/hashchain.GetNextLink"%go.
 
@@ -156,11 +156,11 @@ Definition GetNextLinkⁱᵐᵖˡ : val :=
     let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
     do:  ("hr" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "prevLink") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (![#sliceT] "nextVal") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #cryptoffi #"Hasher'ptr" #"Sum" (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Sum"%go (![#ptrT] "hr")) "$a0")).
 
 Definition vars' : list (go_string * go_type) := [].
 

@@ -13,6 +13,8 @@ Module storage.
 Section code.
 
 
+Definition InMemoryStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/storage.InMemoryStateMachine"%go.
+
 Definition InMemoryStateMachine : go_type := structT [
   "ApplyReadonly" :: funcT;
   "ApplyVolatile" :: funcT;
@@ -20,9 +22,9 @@ Definition InMemoryStateMachine : go_type := structT [
   "SetState" :: funcT
 ].
 
-Definition InMemoryStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/storage.InMemoryStateMachine"%go.
-
 Definition MAX_LOG_SIZE : expr := #(W64 68719476736).
+
+Definition StateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/storage.StateMachine"%go.
 
 Definition StateMachine : go_type := structT [
   "fname" :: stringT;
@@ -33,8 +35,6 @@ Definition StateMachine : go_type := structT [
   "nextIndex" :: uint64T;
   "smMem" :: ptrT
 ].
-
-Definition StateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/storage.StateMachine"%go.
 
 (* FIXME: better name; this isn't the same as "MakeDurable"
 
@@ -70,7 +70,7 @@ Definition StateMachine__makeDurableWithSnapⁱᵐᵖˡ : val :=
       let: "$a1" := (slice.make2 #byteT #(W64 1)) in
       (func_call #marshal.WriteBytes) "$a0" "$a1")
     else do:  #());;;
-    do:  ((method_call #aof #"AppendOnlyFile'ptr" #"Close" (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"Close"%go (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) #());;;
     do:  (let: "$a0" := (![#stringT] (struct.field_ref #StateMachine #"fname"%go (![#ptrT] "s"))) in
     let: "$a1" := (![#sliceT] "enc") in
     (func_call #grove_ffi.FileWrite) "$a0" "$a1");;;
@@ -90,7 +90,7 @@ Definition StateMachine__truncateAndMakeDurableⁱᵐᵖˡ : val :=
     let: "$r0" := ((![#funcT] (struct.field_ref #InMemoryStateMachine #"GetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) #()) in
     do:  ("snap" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "snap") in
-    (method_call #storage.storage #"StateMachine'ptr" #"makeDurableWithSnap" (![#ptrT] "s")) "$a0");;;
+    (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"makeDurableWithSnap"%go (![#ptrT] "s")) "$a0");;;
     return: #()).
 
 (* go: durlog.go:66:24 *)
@@ -123,7 +123,7 @@ Definition StateMachine__applyⁱᵐᵖˡ : val :=
     do:  ("opWithLen" <-[#sliceT] "$r0");;;
     let: "l" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "opWithLen") in
-    (method_call #aof #"AppendOnlyFile'ptr" #"Append" (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0") in
+    (method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"Append"%go (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0") in
     do:  ("l" <-[#uint64T] "$r0");;;
     let: "f" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s"))) in
@@ -131,7 +131,7 @@ Definition StateMachine__applyⁱᵐᵖˡ : val :=
     let: "waitFn" := (mem.alloc (type.zero_val #funcT)) in
     let: "$r0" := (λ: <>,
       exception_do (do:  (let: "$a0" := (![#uint64T] "l") in
-      (method_call #aof #"AppendOnlyFile'ptr" #"WaitAppend" (![#ptrT] "f")) "$a0");;;
+      (method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"WaitAppend"%go (![#ptrT] "f")) "$a0");;;
       return: #())
       ) in
     do:  ("waitFn" <-[#funcT] "$r0");;;
@@ -165,7 +165,7 @@ Definition StateMachine__setStateAndUnsealⁱᵐᵖˡ : val :=
     let: "$a1" := (![#uint64T] "nextIndex") in
     (![#funcT] (struct.field_ref #InMemoryStateMachine #"SetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) "$a0" "$a1");;;
     do:  (let: "$a0" := (![#sliceT] "snap") in
-    (method_call #storage.storage #"StateMachine'ptr" #"makeDurableWithSnap" (![#ptrT] "s")) "$a0");;;
+    (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"makeDurableWithSnap"%go (![#ptrT] "s")) "$a0");;;
     return: #()).
 
 (* go: durlog.go:105:24 *)
@@ -178,10 +178,10 @@ Definition StateMachine__getStateAndSealⁱᵐᵖˡ : val :=
       do:  ((struct.field_ref #StateMachine #"sealed"%go (![#ptrT] "s")) <-[#boolT] "$r0");;;
       let: "l" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (let: "$a0" := (slice.make2 #byteT #(W64 1)) in
-      (method_call #aof #"AppendOnlyFile'ptr" #"Append" (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0") in
+      (method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"Append"%go (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0") in
       do:  ("l" <-[#uint64T] "$r0");;;
       do:  (let: "$a0" := (![#uint64T] "l") in
-      (method_call #aof #"AppendOnlyFile'ptr" #"WaitAppend" (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0")
+      (method_call #(ptrTⁱᵈ aof.AppendOnlyFileⁱᵈ) #"WaitAppend"%go (![#ptrT] (struct.field_ref #StateMachine #"logFile"%go (![#ptrT] "s")))) "$a0")
     else do:  #());;;
     let: "snap" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := ((![#funcT] (struct.field_ref #InMemoryStateMachine #"GetState"%go (![#ptrT] (struct.field_ref #StateMachine #"smMem"%go (![#ptrT] "s"))))) #()) in
@@ -343,13 +343,13 @@ Definition MakePbServerⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (let: "$StartApply" := (λ: "op",
       exception_do (let: "op" := (mem.alloc "op") in
       let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "op") in
-      (method_call #storage.storage #"StateMachine'ptr" #"apply" (![#ptrT] "s")) "$a0")) in
+      (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"apply"%go (![#ptrT] "s")) "$a0")) in
       return: ("$ret0", "$ret1"))
       ) in
     let: "$ApplyReadonly" := (λ: "op",
       exception_do (let: "op" := (mem.alloc "op") in
       let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "op") in
-      (method_call #storage.storage #"StateMachine'ptr" #"applyReadonly" (![#ptrT] "s")) "$a0")) in
+      (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"applyReadonly"%go (![#ptrT] "s")) "$a0")) in
       return: ("$ret0", "$ret1"))
       ) in
     let: "$SetStateAndUnseal" := (λ: "snap" "nextIndex" "epoch",
@@ -359,11 +359,11 @@ Definition MakePbServerⁱᵐᵖˡ : val :=
       do:  (let: "$a0" := (![#sliceT] "snap") in
       let: "$a1" := (![#uint64T] "nextIndex") in
       let: "$a2" := (![#uint64T] "epoch") in
-      (method_call #storage.storage #"StateMachine'ptr" #"setStateAndUnseal" (![#ptrT] "s")) "$a0" "$a1" "$a2");;;
+      (method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"setStateAndUnseal"%go (![#ptrT] "s")) "$a0" "$a1" "$a2");;;
       return: #())
       ) in
     let: "$GetStateAndSeal" := (λ: <>,
-      exception_do (return: ((method_call #storage.storage #"StateMachine'ptr" #"getStateAndSeal" (![#ptrT] "s")) #()))
+      exception_do (return: ((method_call #(ptrTⁱᵈ StateMachineⁱᵈ) #"getStateAndSeal"%go (![#ptrT] "s")) #()))
       ) in
     struct.make #replica.StateMachine [{
       "StartApply" ::= "$StartApply";

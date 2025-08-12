@@ -190,6 +190,8 @@ Definition Verbose : go_string := "testing.Verbose"%go.
 
 Definition fmtDuration : go_string := "testing.fmtDuration"%go.
 
+Definition Tⁱᵈ : go_string := "testing.T"%go.
+
 Axiom T : go_type.
 
 Definition removeAll : go_string := "testing.removeAll"%go.

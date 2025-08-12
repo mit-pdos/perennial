@@ -12,9 +12,9 @@ Definition init : go_string := "google.golang.org/grpc/codes.init"%go.
 
 Definition canonicalString : go_string := "google.golang.org/grpc/codes.canonicalString"%go.
 
-Definition Code : go_type := uint32T.
-
 Definition Codeⁱᵈ : go_string := "google.golang.org/grpc/codes.Code"%go.
+
+Definition Code : go_type := uint32T.
 
 Definition Canceled : expr := #(W32 1).
 

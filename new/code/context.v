@@ -8,9 +8,9 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition Context : go_type := interfaceT.
-
 Definition Contextⁱᵈ : go_string := "context.Context"%go.
+
+Definition Context : go_type := interfaceT.
 
 Definition Canceled : go_string := "context.Canceled"%go.
 
@@ -24,9 +24,9 @@ Definition Background : go_string := "context.Background"%go.
 
 Definition TODO : go_string := "context.TODO"%go.
 
-Definition CancelFunc : go_type := funcT.
-
 Definition CancelFuncⁱᵈ : go_string := "context.CancelFunc"%go.
+
+Definition CancelFunc : go_type := funcT.
 
 Definition WithCancel : go_string := "context.WithCancel"%go.
 

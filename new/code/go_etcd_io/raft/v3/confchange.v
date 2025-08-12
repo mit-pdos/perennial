@@ -9,12 +9,12 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Changerⁱᵈ : go_string := "go.etcd.io/raft/v3/confchange.Changer"%go.
+
 Definition Changer : go_type := structT [
   "Tracker" :: tracker.ProgressTracker;
   "LastIndex" :: uint64T
 ].
-
-Definition Changerⁱᵈ : go_string := "go.etcd.io/raft/v3/confchange.Changer"%go.
 
 Definition checkInvariants : go_string := "go.etcd.io/raft/v3/confchange.checkInvariants"%go.
 

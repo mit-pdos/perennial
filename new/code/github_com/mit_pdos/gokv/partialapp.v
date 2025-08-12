@@ -23,9 +23,9 @@ Definition partiallyApplyMeⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: #()).
 
-Definition Foo : go_type := stringT.
-
 Definition Fooⁱᵈ : go_string := "github.com/mit-pdos/gokv/partialapp.Foo"%go.
+
+Definition Foo : go_type := stringT.
 
 (* go: examples.go:11:14 *)
 Definition Foo__someMethodⁱᵐᵖˡ : val :=
@@ -74,15 +74,15 @@ Definition mainⁱᵐᵖˡ : val :=
     let: "f" := (mem.alloc (type.zero_val #Foo)) in
     let: "$r0" := #"a"%go in
     do:  ("f" <-[#Foo] "$r0");;;
-    do:  ((method_call #partialapp.main #"Foo" #"someMethod" (![#Foo] "f")) #());;;
-    let: "$r0" := (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "f")) in
+    do:  ((method_call #Fooⁱᵈ #"someMethod"%go (![#Foo] "f")) #());;;
+    let: "$r0" := (method_call #Fooⁱᵈ #"someMethodWithArgs"%go (![#Foo] "f")) in
     do:  ("x" <-[#funcT] "$r0");;;
     do:  (let: "$a0" := #"b"%go in
     let: "$a1" := #(W64 2) in
     (![#funcT] "x") "$a0" "$a1");;;
     do:  (let: "$a0" := #"bc"%go in
     let: "$a1" := #(W64 3) in
-    (method_call #partialapp.main #"Foo" #"someMethodWithArgs" (![#Foo] "f")) "$a0" "$a1");;;
+    (method_call #Fooⁱᵈ #"someMethodWithArgs"%go (![#Foo] "f")) "$a0" "$a1");;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].

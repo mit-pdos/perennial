@@ -20,9 +20,13 @@ Definition FileAppend : go_string := "github.com/mit-pdos/gokv/grove_ffi.FileApp
 
 Definition U64ToString : go_string := "github.com/mit-pdos/gokv/grove_ffi.U64ToString"%go.
 
+Definition Addressⁱᵈ : go_string := uint64Tⁱᵈ.
+
 Definition MakeAddress : go_string := "github.com/mit-pdos/gokv/grove_ffi.MakeAddress"%go.
 
 Definition AddressToStr : go_string := "github.com/mit-pdos/gokv/grove_ffi.AddressToStr"%go.
+
+Definition Listenerⁱᵈ : go_string := "github.com/mit-pdos/gokv/grove_ffi.Listener"%go.
 
 Definition Listen : go_string := "github.com/mit-pdos/gokv/grove_ffi.Listen"%go.
 
@@ -30,9 +34,15 @@ Definition Accept : go_string := "github.com/mit-pdos/gokv/grove_ffi.Accept"%go.
 
 Definition makeConnection : go_string := "github.com/mit-pdos/gokv/grove_ffi.makeConnection"%go.
 
+Definition Connectionⁱᵈ : go_string := "github.com/mit-pdos/gokv/grove_ffi.Connection"%go.
+
+Definition ConnectRetⁱᵈ : go_string := "github.com/mit-pdos/gokv/grove_ffi.ConnectRet"%go.
+
 Definition Connect : go_string := "github.com/mit-pdos/gokv/grove_ffi.Connect"%go.
 
 Definition Send : go_string := "github.com/mit-pdos/gokv/grove_ffi.Send"%go.
+
+Definition ReceiveRetⁱᵈ : go_string := "github.com/mit-pdos/gokv/grove_ffi.ReceiveRet"%go.
 
 Definition Receive : go_string := "github.com/mit-pdos/gokv/grove_ffi.Receive"%go.
 

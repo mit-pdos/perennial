@@ -13,12 +13,14 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition JointConfigⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.JointConfig"%go.
+
 Definition MajorityConfig : go_type := mapT uint64T (structT [
 ]).
 
 Definition JointConfig : go_type := arrayT (W64 2) MajorityConfig.
 
-Definition JointConfigⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.JointConfig"%go.
+Definition MajorityConfigⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.MajorityConfig"%go.
 
 (* go: joint.go:21:22 *)
 Definition JointConfig__Stringⁱᵐᵖˡ : val :=
@@ -26,9 +28,9 @@ Definition JointConfig__Stringⁱᵐᵖˡ : val :=
     exception_do (let: "c" := (mem.alloc "c") in
     (if: int_gt (let: "$a0" := (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1))) in
     map.len "$a0") #(W64 0)
-    then return: ((((method_call #quorum.quorum #"MajorityConfig" #"String" (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) #()) + #"&&"%go) + ((method_call #quorum.quorum #"MajorityConfig" #"String" (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) #()))
+    then return: ((((method_call #MajorityConfigⁱᵈ #"String"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) #()) + #"&&"%go) + ((method_call #MajorityConfigⁱᵈ #"String"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) #()))
     else do:  #());;;
-    return: ((method_call #quorum.quorum #"MajorityConfig" #"String" (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) #())).
+    return: ((method_call #MajorityConfigⁱᵈ #"String"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) #())).
 
 (* IDs returns a newly initialized map representing the set of voters present
    in the joint configuration.
@@ -75,7 +77,7 @@ Definition JointConfig__Describeⁱᵐᵖˡ : val :=
     exception_do (let: "c" := (mem.alloc "c") in
     let: "l" := (mem.alloc "l") in
     return: (let: "$a0" := (![#AckedIndexer] "l") in
-     (method_call #quorum.quorum #"MajorityConfig" #"Describe" ((method_call #quorum.quorum #"JointConfig" #"IDs" (![#JointConfig] "c")) #())) "$a0")).
+     (method_call #MajorityConfigⁱᵈ #"Describe"%go ((method_call #JointConfigⁱᵈ #"IDs"%go (![#JointConfig] "c")) #())) "$a0")).
 
 Definition Index : go_type := uint64T.
 
@@ -90,11 +92,11 @@ Definition JointConfig__CommittedIndexⁱᵐᵖˡ : val :=
     let: "l" := (mem.alloc "l") in
     let: "idx0" := (mem.alloc (type.zero_val #Index)) in
     let: "$r0" := (let: "$a0" := (![#AckedIndexer] "l") in
-    (method_call #quorum.quorum #"MajorityConfig" #"CommittedIndex" (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) "$a0") in
+    (method_call #MajorityConfigⁱᵈ #"CommittedIndex"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) "$a0") in
     do:  ("idx0" <-[#Index] "$r0");;;
     let: "idx1" := (mem.alloc (type.zero_val #Index)) in
     let: "$r0" := (let: "$a0" := (![#AckedIndexer] "l") in
-    (method_call #quorum.quorum #"MajorityConfig" #"CommittedIndex" (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) "$a0") in
+    (method_call #MajorityConfigⁱᵈ #"CommittedIndex"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) "$a0") in
     do:  ("idx1" <-[#Index] "$r0");;;
     (if: (![#Index] "idx0") < (![#Index] "idx1")
     then return: (![#Index] "idx0")
@@ -118,11 +120,11 @@ Definition JointConfig__VoteResultⁱᵐᵖˡ : val :=
     let: "votes" := (mem.alloc "votes") in
     let: "r1" := (mem.alloc (type.zero_val #VoteResult)) in
     let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #boolT] "votes") in
-    (method_call #quorum.quorum #"MajorityConfig" #"VoteResult" (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) "$a0") in
+    (method_call #MajorityConfigⁱᵈ #"VoteResult"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 0)))) "$a0") in
     do:  ("r1" <-[#VoteResult] "$r0");;;
     let: "r2" := (mem.alloc (type.zero_val #VoteResult)) in
     let: "$r0" := (let: "$a0" := (![type.mapT #uint64T #boolT] "votes") in
-    (method_call #quorum.quorum #"MajorityConfig" #"VoteResult" (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) "$a0") in
+    (method_call #MajorityConfigⁱᵈ #"VoteResult"%go (![#MajorityConfig] (array.elem_ref #MajorityConfig (![#JointConfig] "c") #(W64 1)))) "$a0") in
     do:  ("r2" <-[#VoteResult] "$r0");;;
     (if: (![#VoteResult] "r1") = (![#VoteResult] "r2")
     then return: (![#VoteResult] "r1")
@@ -131,8 +133,6 @@ Definition JointConfig__VoteResultⁱᵐᵖˡ : val :=
     then return: (VoteLost)
     else do:  #());;;
     return: (VotePending)).
-
-Definition MajorityConfigⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.MajorityConfig"%go.
 
 (* go: majority.go:28:25 *)
 Definition MajorityConfig__Stringⁱᵐᵖˡ : val :=
@@ -155,7 +155,7 @@ Definition MajorityConfig__Stringⁱᵐᵖˡ : val :=
     (func_call #slices.SortUint64) "$a0");;;
     let: "buf" := (mem.alloc (type.zero_val #strings.Builder)) in
     do:  (let: "$a0" := #(W8 40) in
-    (method_call #strings #"Builder'ptr" #"WriteByte" "buf") "$a0");;;
+    (method_call #strings.Builderⁱᵈ #"WriteByte"%go "buf") "$a0");;;
     let: "$range" := (![#sliceT] "sl") in
     (let: "i" := (mem.alloc (type.zero_val #intT)) in
     slice.for_range #uint64T "$range" (λ: "$key" "$value",
@@ -163,15 +163,15 @@ Definition MajorityConfig__Stringⁱᵐᵖˡ : val :=
       (if: int_gt (![#intT] "i") #(W64 0)
       then
         do:  (let: "$a0" := #(W8 32) in
-        (method_call #strings #"Builder'ptr" #"WriteByte" "buf") "$a0")
+        (method_call #strings.Builderⁱᵈ #"WriteByte"%go "buf") "$a0")
       else do:  #());;;
       do:  (let: "$a0" := (interface.make #(ptrTⁱᵈ strings.Builderⁱᵈ) "buf") in
       let: "$a1" := ((let: "$sl0" := (interface.make #uint64Tⁱᵈ (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "sl") (![#intT] "i")))) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Fprint) "$a0" "$a1")));;;
     do:  (let: "$a0" := #(W8 41) in
-    (method_call #strings #"Builder'ptr" #"WriteByte" "buf") "$a0");;;
-    return: ((method_call #strings #"Builder'ptr" #"String" "buf") #())).
+    (method_call #strings.Builderⁱᵈ #"WriteByte"%go "buf") "$a0");;;
+    return: ((method_call #strings.Builderⁱᵈ #"String"%go "buf") #())).
 
 (* Describe returns a (multi-line) representation of the commit indexes for the
    given lookuper.
@@ -291,7 +291,7 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ : val :=
       let: "$sl1" := (interface.make #uint64Tⁱᵈ (![#uint64T] (struct.field_ref #slices.Tup #"ID"%go (slice.elem_ref #slices.Tup (![#sliceT] "info") (![#intT] "i"))))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #fmt.Fprintf) "$a0" "$a1" "$a2")));;;
-    return: ((method_call #strings #"Builder'ptr" #"String" "buf") #())).
+    return: ((method_call #strings.Builderⁱᵈ #"String"%go "buf") #())).
 
 (* Slice returns the MajorityConfig as a sorted slice.
 
@@ -430,9 +430,9 @@ Definition Index__Stringⁱᵐᵖˡ : val :=
 
 Definition AckedIndexerⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.AckedIndexer"%go.
 
-Definition mapAckIndexer : go_type := mapT uint64T Index.
-
 Definition mapAckIndexerⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.mapAckIndexer"%go.
+
+Definition mapAckIndexer : go_type := mapT uint64T Index.
 
 (* go: quorum.go:40:24 *)
 Definition mapAckIndexer__AckedIndexⁱᵐᵖˡ : val :=

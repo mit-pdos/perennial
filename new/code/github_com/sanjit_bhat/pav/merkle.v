@@ -29,11 +29,13 @@ Definition innerNodeTy : expr := #(W8 2).
 
 Definition emptyHash : go_string := "github.com/sanjit-bhat/pav/merkle.emptyHash"%go.
 
+Definition Treeⁱᵈ : go_string := "github.com/sanjit-bhat/pav/merkle.Tree"%go.
+
 Definition Tree : go_type := structT [
   "root" :: ptrT
 ].
 
-Definition Treeⁱᵈ : go_string := "github.com/sanjit-bhat/pav/merkle.Tree"%go.
+Definition nodeⁱᵈ : go_string := "github.com/sanjit-bhat/pav/merkle.node"%go.
 
 Definition node : go_type := structT [
   "nodeTy" :: byteT;
@@ -43,8 +45,6 @@ Definition node : go_type := structT [
   "label" :: sliceT;
   "val" :: sliceT
 ].
-
-Definition nodeⁱᵈ : go_string := "github.com/sanjit-bhat/pav/merkle.node"%go.
 
 Definition put : go_string := "github.com/sanjit-bhat/pav/merkle.put"%go.
 
@@ -196,7 +196,7 @@ Definition Tree__Proveⁱᵐᵖˡ : val :=
     let: "label" := (mem.alloc "label") in
     let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![#sliceT] "label") in
     let: "$a1" := #true in
-    (method_call #merkle.merkle #"Tree'ptr" #"prove" (![#ptrT] "t")) "$a0" "$a1")) in
+    (method_call #(ptrTⁱᵈ Treeⁱᵈ) #"prove"%go (![#ptrT] "t")) "$a0" "$a1")) in
     return: ("$ret0", "$ret1", "$ret2")).
 
 Definition find : go_string := "github.com/sanjit-bhat/pav/merkle.find"%go.
@@ -417,8 +417,8 @@ Definition VerifyMembⁱᵐᵖˡ : val :=
     else do:  #());;;
     do:  (let: "$a0" := (![#sliceT] "label") in
     let: "$a1" := (![#sliceT] "val") in
-    (method_call #merkle.merkle #"Tree'ptr" #"Put" (![#ptrT] "tr")) "$a0" "$a1");;;
-    let: "$r0" := ((method_call #merkle.merkle #"Tree'ptr" #"Digest" (![#ptrT] "tr")) #()) in
+    (method_call #(ptrTⁱᵈ Treeⁱᵈ) #"Put"%go (![#ptrT] "tr")) "$a0" "$a1");;;
+    let: "$r0" := ((method_call #(ptrTⁱᵈ Treeⁱᵈ) #"Digest"%go (![#ptrT] "tr")) #()) in
     do:  ("dig" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "dig", ![#boolT] "err")).
 
@@ -444,7 +444,7 @@ Definition VerifyNonMembⁱᵐᵖˡ : val :=
     (if: ![#boolT] "err"
     then return: (![#sliceT] "dig", ![#boolT] "err")
     else do:  #());;;
-    let: "$r0" := ((method_call #merkle.merkle #"Tree'ptr" #"Digest" (![#ptrT] "tr")) #()) in
+    let: "$r0" := ((method_call #(ptrTⁱᵈ Treeⁱᵈ) #"Digest"%go (![#ptrT] "tr")) #()) in
     do:  ("dig" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "dig", ![#boolT] "err")).
 
@@ -473,12 +473,12 @@ Definition VerifyUpdateⁱᵐᵖˡ : val :=
     (if: ![#boolT] "err"
     then return: (![#sliceT] "oldDig", ![#sliceT] "newDig", ![#boolT] "err")
     else do:  #());;;
-    let: "$r0" := ((method_call #merkle.merkle #"Tree'ptr" #"Digest" (![#ptrT] "tr")) #()) in
+    let: "$r0" := ((method_call #(ptrTⁱᵈ Treeⁱᵈ) #"Digest"%go (![#ptrT] "tr")) #()) in
     do:  ("oldDig" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "label") in
     let: "$a1" := (![#sliceT] "val") in
-    (method_call #merkle.merkle #"Tree'ptr" #"Put" (![#ptrT] "tr")) "$a0" "$a1");;;
-    let: "$r0" := ((method_call #merkle.merkle #"Tree'ptr" #"Digest" (![#ptrT] "tr")) #()) in
+    (method_call #(ptrTⁱᵈ Treeⁱᵈ) #"Put"%go (![#ptrT] "tr")) "$a0" "$a1");;;
+    let: "$r0" := ((method_call #(ptrTⁱᵈ Treeⁱᵈ) #"Digest"%go (![#ptrT] "tr")) #()) in
     do:  ("newDig" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "oldDig", ![#sliceT] "newDig", ![#boolT] "err")).
 
@@ -565,7 +565,7 @@ Definition proofToTreeⁱᵐᵖˡ : val :=
       else do:  #());;;
       do:  (let: "$a0" := (![#sliceT] (struct.field_ref #MerkleProof #"LeafLabel"%go (![#ptrT] "p"))) in
       let: "$a1" := (![#sliceT] (struct.field_ref #MerkleProof #"LeafVal"%go (![#ptrT] "p"))) in
-      (method_call #merkle.merkle #"Tree'ptr" #"Put" (![#ptrT] "tr")) "$a0" "$a1")
+      (method_call #(ptrTⁱᵈ Treeⁱᵈ) #"Put"%go (![#ptrT] "tr")) "$a0" "$a1")
     else do:  #());;;
     return: (![#ptrT] "tr", ![#boolT] "err")).
 
@@ -678,23 +678,23 @@ Definition compLeafHashⁱᵐᵖˡ : val :=
     do:  ("hr" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := ((let: "$sl0" := leafNodeTag in
     slice.literal #byteT ["$sl0"])) in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (let: "$a0" := #slice.nil in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "label") in
     slice.len "$a0")) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (![#sliceT] "label") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (let: "$a0" := #slice.nil in
     let: "$a1" := (s_to_w64 (let: "$a0" := (![#sliceT] "val") in
     slice.len "$a0")) in
     (func_call #marshal.WriteInt) "$a0" "$a1") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (![#sliceT] "val") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #cryptoffi #"Hasher'ptr" #"Sum" (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Sum"%go (![#ptrT] "hr")) "$a0")).
 
 Definition compInnerHash : go_string := "github.com/sanjit-bhat/pav/merkle.compInnerHash"%go.
 
@@ -728,13 +728,13 @@ Definition compInnerHashⁱᵐᵖˡ : val :=
     do:  ("hr" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := ((let: "$sl0" := innerNodeTag in
     slice.literal #byteT ["$sl0"])) in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (![#sliceT] "child0") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (![#sliceT] "child1") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := (![#sliceT] "h") in
-     (method_call #cryptoffi #"Hasher'ptr" #"Sum" (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Sum"%go (![#ptrT] "hr")) "$a0")).
 
 Definition getBit : go_string := "github.com/sanjit-bhat/pav/merkle.getBit"%go.
 

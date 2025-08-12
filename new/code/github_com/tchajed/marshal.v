@@ -10,12 +10,12 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Encⁱᵈ : go_string := "github.com/tchajed/marshal.Enc"%go.
+
 Definition Enc : go_type := structT [
   "b" :: sliceT;
   "off" :: ptrT
 ].
-
-Definition Encⁱᵈ : go_string := "github.com/tchajed/marshal.Enc"%go.
 
 Definition NewEncFromSlice : go_string := "github.com/tchajed/marshal.NewEncFromSlice"%go.
 
@@ -23,12 +23,12 @@ Definition NewEnc : go_string := "github.com/tchajed/marshal.NewEnc"%go.
 
 Definition bool2byte : go_string := "github.com/tchajed/marshal.bool2byte"%go.
 
+Definition Decⁱᵈ : go_string := "github.com/tchajed/marshal.Dec"%go.
+
 Definition Dec : go_type := structT [
   "b" :: sliceT;
   "off" :: ptrT
 ].
-
-Definition Decⁱᵈ : go_string := "github.com/tchajed/marshal.Dec"%go.
 
 Definition NewDec : go_string := "github.com/tchajed/marshal.NewDec"%go.
 

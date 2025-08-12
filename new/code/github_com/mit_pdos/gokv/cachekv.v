@@ -12,20 +12,20 @@ Module cachekv.
 Section code.
 
 
+Definition cacheValueⁱᵈ : go_string := "github.com/mit-pdos/gokv/cachekv.cacheValue"%go.
+
 Definition cacheValue : go_type := structT [
   "v" :: stringT;
   "l" :: uint64T
 ].
 
-Definition cacheValueⁱᵈ : go_string := "github.com/mit-pdos/gokv/cachekv.cacheValue"%go.
+Definition CacheKvⁱᵈ : go_string := "github.com/mit-pdos/gokv/cachekv.CacheKv"%go.
 
 Definition CacheKv : go_type := structT [
   "kv" :: kv.KvCput;
   "mu" :: ptrT;
   "cache" :: mapT stringT cacheValue
 ].
-
-Definition CacheKvⁱᵈ : go_string := "github.com/mit-pdos/gokv/cachekv.CacheKv"%go.
 
 Definition DecodeValue : go_string := "github.com/mit-pdos/gokv/cachekv.DecodeValue"%go.
 
@@ -102,7 +102,7 @@ Definition CacheKv__Getⁱᵐᵖˡ : val :=
   λ: "k" "key",
     exception_do (let: "k" := (mem.alloc "k") in
     let: "key" := (mem.alloc "key") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "cv" := (mem.alloc (type.zero_val #cacheValue)) in
     let: ("$ret0", "$ret1") := (map.get (![type.mapT #stringT #cacheValue] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key")) in
@@ -118,13 +118,13 @@ Definition CacheKv__Getⁱᵐᵖˡ : val :=
     do:  ("high" <-[#uint64T] "$r1");;;
     (if: (![#boolT] "ok") && ((![#uint64T] "high") < (![#uint64T] (struct.field_ref #cacheValue #"l"%go "cv")))
     then
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
+      do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
       return: (![#stringT] (struct.field_ref #cacheValue #"v"%go "cv"))
     else do:  #());;;
     do:  (let: "$a0" := (![type.mapT #stringT #cacheValue] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) in
     let: "$a1" := (![#stringT] "key") in
     map.delete "$a0" "$a1");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
     return: (struct.field_get #cacheValue "v" (let: "$a0" := (let: "$a0" := (![#stringT] "key") in
      (interface.get #"Get"%go (![#kv.KvCput] (struct.field_ref #CacheKv #"kv"%go (![#ptrT] "k")))) "$a0") in
      (func_call #DecodeValue) "$a0"))).
@@ -169,7 +169,7 @@ Definition CacheKv__GetAndCacheⁱᵐᵖˡ : val :=
       do:  ("resp" <-[#stringT] "$r0");;;
       (if: (![#stringT] "resp") = #"ok"%go
       then
-        do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
+        do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
         let: "$r0" := (let: "$v" := (![#stringT] (struct.field_ref #cacheValue #"v"%go "old")) in
         let: "$l" := (![#uint64T] "newLeaseExpiration") in
         struct.make #cacheValue [{
@@ -182,7 +182,7 @@ Definition CacheKv__GetAndCacheⁱᵐᵖˡ : val :=
     let: "ret" := (mem.alloc (type.zero_val #stringT)) in
     let: "$r0" := (struct.field_get #cacheValue "v" (Fst (map.get (![type.mapT #stringT #cacheValue] (struct.field_ref #CacheKv #"cache"%go (![#ptrT] "k"))) (![#stringT] "key")))) in
     do:  ("ret" <-[#stringT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #CacheKv #"mu"%go (![#ptrT] "k")))) #());;;
     return: (![#stringT] "ret")).
 
 (* go: clerk.go:90:19 *)

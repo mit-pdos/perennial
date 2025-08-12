@@ -8,6 +8,8 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Bufferⁱᵈ : go_string := "bytes.Buffer"%go.
+
 Axiom Buffer : go_type.
 
 Definition ErrTooLarge : go_string := "bytes.ErrTooLarge"%go.

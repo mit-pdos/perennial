@@ -23,12 +23,12 @@ Definition SendMessageⁱᵐᵖˡ : val :=
     do:  ("messageChan" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$a0" := #"hello world"%go in
-      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "messageChan") #stringT) "$a0");;;
+      (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "messageChan")) "$a0");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "message" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "messageChan") #stringT) #()) in
+    let: "$r0" := ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"ReceiveDiscardOk"%go (![#ptrT] "messageChan")) #()) in
     do:  ("message" <-[#stringT] "$r0");;;
     (if: (![#stringT] "message") ≠ #"hello world"%go
     then
@@ -55,11 +55,11 @@ Definition JoinWithReceiveⁱᵐᵖˡ : val :=
       exception_do (let: "$r0" := #"hello world"%go in
       do:  ((![#ptrT] "message") <-[#stringT] "$r0");;;
       do:  (let: "$a0" := #(W64 0) in
-      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done") #uint64T) "$a0");;;
+      (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "done")) "$a0");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done") #uint64T) #());;;
+    do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"ReceiveDiscardOk"%go (![#ptrT] "done")) #());;;
     (if: (![#stringT] (![#ptrT] "message")) ≠ #"hello world"%go
     then
       do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Message was not set correctly"%go) in
@@ -84,12 +84,12 @@ Definition JoinWithSendⁱᵐᵖˡ : val :=
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #"hello world"%go in
       do:  ((![#ptrT] "message") <-[#stringT] "$r0");;;
-      do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done") #uint64T) #());;;
+      do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"ReceiveDiscardOk"%go (![#ptrT] "done")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     do:  (let: "$a0" := #(W64 0) in
-    (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done") #uint64T) "$a0");;;
+    (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "done")) "$a0");;;
     (if: (![#stringT] (![#ptrT] "message")) ≠ #"hello world"%go
     then
       do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Message was not set correctly"%go) in
@@ -139,7 +139,7 @@ Definition BroadcastNotificationⁱᵐᵖˡ : val :=
     do:  ("results" <-[#sliceT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: ("$ret0", "$ret1") := ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "notifyCh") #uint64T) #()) in
+      let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Receive"%go (![#ptrT] "notifyCh")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -152,14 +152,14 @@ Definition BroadcastNotificationⁱᵐᵖˡ : val :=
           Panic "$a0")
         else do:  #());;;
         do:  (let: "$a0" := #(W64 0) in
-        (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done1") #uint64T) "$a0")
+        (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "done1")) "$a0")
       else do:  #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$go" := (λ: <>,
       exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: ("$ret0", "$ret1") := ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "notifyCh") #uint64T) #()) in
+      let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Receive"%go (![#ptrT] "notifyCh")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -172,14 +172,14 @@ Definition BroadcastNotificationⁱᵐᵖˡ : val :=
           Panic "$a0")
         else do:  #());;;
         do:  (let: "$a0" := #(W64 0) in
-        (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done2") #uint64T) "$a0")
+        (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "done2")) "$a0")
       else do:  #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$go" := (λ: <>,
       exception_do (let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: ("$ret0", "$ret1") := ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "notifyCh") #uint64T) #()) in
+      let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Receive"%go (![#ptrT] "notifyCh")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
@@ -192,7 +192,7 @@ Definition BroadcastNotificationⁱᵐᵖˡ : val :=
           Panic "$a0")
         else do:  #());;;
         do:  (let: "$a0" := #(W64 0) in
-        (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "done3") #uint64T) "$a0")
+        (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "done3")) "$a0")
       else do:  #());;;
       return: #())
       ) in
@@ -203,10 +203,10 @@ Definition BroadcastNotificationⁱᵐᵖˡ : val :=
     do:  ((slice.elem_ref #stringT (![#sliceT] "results") #(W64 1)) <-[#stringT] "$r0");;;
     let: "$r0" := #"thread3"%go in
     do:  ((slice.elem_ref #stringT (![#sliceT] "results") #(W64 2)) <-[#stringT] "$r0");;;
-    do:  ((method_call #channel #"Channel'ptr" #"Close" (![#ptrT] "notifyCh") #uint64T) #());;;
-    do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done1") #uint64T) #());;;
-    do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done2") #uint64T) #());;;
-    do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "done3") #uint64T) #());;;
+    do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Close"%go (![#ptrT] "notifyCh")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"ReceiveDiscardOk"%go (![#ptrT] "done1")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"ReceiveDiscardOk"%go (![#ptrT] "done2")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"ReceiveDiscardOk"%go (![#ptrT] "done3")) #());;;
     return: #()).
 
 Definition CoordinatedChannelClose : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CoordinatedChannelClose"%go.
@@ -228,26 +228,26 @@ Definition CoordinatedChannelCloseⁱᵐᵖˡ : val :=
     do:  ("syncCh" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$a0" := #(W64 42) in
-      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "bufCh") #uint64T) "$a0");;;
+      (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "bufCh")) "$a0");;;
       do:  (let: "$a0" := #(W64 0) in
-      (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "syncCh") #uint64T) "$a0");;;
+      (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "syncCh")) "$a0");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     do:  (let: "$a0" := #(W64 84) in
-    (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "bufCh") #uint64T) "$a0");;;
-    do:  ((method_call #channel #"Channel'ptr" #"ReceiveDiscardOk" (![#ptrT] "syncCh") #uint64T) #());;;
-    do:  ((method_call #channel #"Channel'ptr" #"Close" (![#ptrT] "bufCh") #uint64T) #());;;
+    (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "bufCh")) "$a0");;;
+    do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"ReceiveDiscardOk"%go (![#ptrT] "syncCh")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Close"%go (![#ptrT] "bufCh")) #());;;
     let: "ok1" := (mem.alloc (type.zero_val #boolT)) in
     let: "val1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "bufCh") #uint64T) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Receive"%go (![#ptrT] "bufCh")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("val1" <-[#uint64T] "$r0");;;
     do:  ("ok1" <-[#boolT] "$r1");;;
     let: "ok2" := (mem.alloc (type.zero_val #boolT)) in
     let: "val2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "bufCh") #uint64T) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Receive"%go (![#ptrT] "bufCh")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("val2" <-[#uint64T] "$r0");;;
@@ -310,7 +310,7 @@ Definition DoubleValuesⁱᵐᵖˡ : val :=
       exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         let: "ok" := (mem.alloc (type.zero_val #boolT)) in
         let: "ptr" := (mem.alloc (type.zero_val #ptrT)) in
-        let: ("$ret0", "$ret1") := ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "ch") #ptrT) #()) in
+        let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Receive"%go (![#ptrT] "ch")) #()) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("ptr" <-[#ptrT] "$r0");;;
@@ -320,18 +320,18 @@ Definition DoubleValuesⁱᵐᵖˡ : val :=
         else do:  #());;;
         let: "$r0" := ((![#uint64T] (![#ptrT] "ptr")) * #(W64 2)) in
         do:  ((![#ptrT] "ptr") <-[#uint64T] "$r0"));;;
-      do:  ((method_call #channel #"Channel'ptr" #"Close" (![#ptrT] "done") #uint64T) #());;;
+      do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Close"%go (![#ptrT] "done")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     do:  (let: "$a0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "values") #(W64 0))) in
-    (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "ch") #ptrT) "$a0");;;
+    (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "ch")) "$a0");;;
     do:  (let: "$a0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "values") #(W64 1))) in
-    (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "ch") #ptrT) "$a0");;;
+    (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "ch")) "$a0");;;
     do:  (let: "$a0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "values") #(W64 2))) in
-    (method_call #channel #"Channel'ptr" #"Send" (![#ptrT] "ch") #ptrT) "$a0");;;
-    do:  ((method_call #channel #"Channel'ptr" #"Close" (![#ptrT] "ch") #ptrT) #());;;
-    do:  ((method_call #channel #"Channel'ptr" #"Receive" (![#ptrT] "done") #uint64T) #());;;
+    (method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Send"%go (![#ptrT] "ch")) "$a0");;;
+    do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Close"%go (![#ptrT] "ch")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ channel.Channelⁱᵈ) #"Receive"%go (![#ptrT] "done")) #());;;
     (if: (~ ((((![#uint64T] "val1") = #(W64 10)) && ((![#uint64T] "val2") = #(W64 20))) && ((![#uint64T] "val3") = #(W64 30))))
     then
       do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Values were not doubled correctly"%go) in

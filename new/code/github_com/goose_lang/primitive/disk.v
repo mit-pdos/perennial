@@ -10,6 +10,8 @@ Module disk.
 Section code.
 
 
+Definition Diskⁱᵈ : go_string := "github.com/goose-lang/primitive/disk.Disk"%go.
+
 Definition implicitDisk : go_string := "github.com/goose-lang/primitive/disk.implicitDisk"%go.
 
 Definition Init : go_string := "github.com/goose-lang/primitive/disk.Init"%go.

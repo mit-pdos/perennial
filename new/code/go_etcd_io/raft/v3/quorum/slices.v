@@ -12,14 +12,14 @@ Definition CompareUint64 : go_string := "go.etcd.io/raft/v3/quorum/slices.Compar
 
 Definition SortUint64 : go_string := "go.etcd.io/raft/v3/quorum/slices.SortUint64"%go.
 
+Definition Tupⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum/slices.Tup"%go.
+
 Definition Tup : go_type := structT [
   "ID" :: uint64T;
   "Idx" :: uint64T;
   "Ok" :: boolT;
   "Bar" :: intT
 ].
-
-Definition Tupⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum/slices.Tup"%go.
 
 Definition SortFuncTup : go_string := "go.etcd.io/raft/v3/quorum/slices.SortFuncTup"%go.
 

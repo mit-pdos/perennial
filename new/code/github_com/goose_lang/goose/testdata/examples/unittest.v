@@ -14,9 +14,9 @@ Module unittest.
 Section code.
 
 
-Definition Foo : go_type := arrayT (W64 10) uint64T.
-
 Definition Fooⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Foo"%go.
+
+Definition Foo : go_type := arrayT (W64 10) uint64T.
 
 Definition takesArray : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.takesArray"%go.
 
@@ -262,10 +262,10 @@ Definition chanRangeⁱᵐᵖˡ : val :=
       do:  #());;;
     return: #()).
 
+Definition importantStructⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.importantStruct"%go.
+
 Definition importantStruct : go_type := structT [
 ].
-
-Definition importantStructⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.importantStruct"%go.
 
 Definition doSubtleThings : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.doSubtleThings"%go.
 
@@ -310,7 +310,7 @@ Definition condvarWrappingⁱᵐᵖˡ : val :=
     do:  ("cond1" <-[#ptrT] "$r0");;;
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("mu" <-[#ptrT] "$r0");;;
-    do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] "cond1")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Wait"%go (![#ptrT] "cond1")) #());;;
     return: #()).
 
 Definition GlobalConstant : expr := #"foo"%go.
@@ -481,9 +481,9 @@ Definition ifStmtInitializationⁱᵐᵖˡ : val :=
     then return: (![#uint64T] "y")
     else return: ((![#uint64T] "y") - #(W64 1))))).
 
-Definition stringWrapper : go_type := stringT.
-
 Definition stringWrapperⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.stringWrapper"%go.
+
+Definition stringWrapper : go_type := stringT.
 
 Definition typedLiteral : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.typedLiteral"%go.
 
@@ -549,9 +549,9 @@ Definition stringWrapperToStringⁱᵐᵖˡ : val :=
     exception_do (let: "s" := (mem.alloc "s") in
     return: (![#stringWrapper] "s")).
 
-Definition Uint32 : go_type := uint32T.
-
 Definition Uint32ⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Uint32"%go.
+
+Definition Uint32 : go_type := uint32T.
 
 Definition testU32NewtypeLen : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.testU32NewtypeLen"%go.
 
@@ -758,11 +758,11 @@ Definition getRandomⁱᵐᵖˡ : val :=
     do:  ("r" <-[#uint64T] "$r0");;;
     return: (![#uint64T] "r")).
 
+Definition diskWrapperⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.diskWrapper"%go.
+
 Definition diskWrapper : go_type := structT [
   "d" :: disk.Disk
 ].
-
-Definition diskWrapperⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.diskWrapper"%go.
 
 Definition diskArgument : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.diskArgument"%go.
 
@@ -779,29 +779,29 @@ Definition diskArgumentⁱᵐᵖˡ : val :=
     (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1");;;
     return: #()).
 
+Definition embedAⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedA"%go.
+
 Definition embedA : go_type := structT [
   "a" :: uint64T
 ].
 
-Definition embedAⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedA"%go.
+Definition embedBⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedB"%go.
 
 Definition embedB : go_type := structT [
   "embedA" :: embedA
 ].
 
-Definition embedBⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedB"%go.
+Definition embedCⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedC"%go.
 
 Definition embedC : go_type := structT [
   "embedB" :: ptrT
 ].
 
-Definition embedCⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedC"%go.
+Definition embedDⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedD"%go.
 
 Definition embedD : go_type := structT [
   "embedC" :: embedC
 ].
-
-Definition embedDⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedD"%go.
 
 (* go: embedded.go:19:17 *)
 Definition embedA__Fooⁱᵐᵖˡ : val :=
@@ -885,7 +885,7 @@ Definition useEmbeddedMethod : go_string := "github.com/goose-lang/goose/testdat
 Definition useEmbeddedMethodⁱᵐᵖˡ : val :=
   λ: "d",
     exception_do (let: "d" := (mem.alloc "d") in
-    return: (((method_call #unittest.unittest #"embedD" #"Foo" (![#embedD] "d")) #()) = ((method_call #unittest.unittest #"embedA" #"Foo" (![#embedA] (struct.field_ref #embedB #"embedA"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "d")))))) #()))).
+    return: (((method_call #embedDⁱᵈ #"Foo"%go (![#embedD] "d")) #()) = ((method_call #embedAⁱᵈ #"Foo"%go (![#embedA] (struct.field_ref #embedB #"embedA"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "d")))))) #()))).
 
 Definition useEmbeddedMethod2 : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useEmbeddedMethod2"%go.
 
@@ -893,8 +893,8 @@ Definition useEmbeddedMethod2 : go_string := "github.com/goose-lang/goose/testda
 Definition useEmbeddedMethod2ⁱᵐᵖˡ : val :=
   λ: "d",
     exception_do (let: "d" := (mem.alloc "d") in
-    do:  ((method_call #unittest.unittest #"embedD" #"Car" (![#embedD] "d")) #());;;
-    return: (((method_call #unittest.unittest #"embedD" #"Bar" (![#embedD] "d")) #()) = ((method_call #unittest.unittest #"embedB'ptr" #"Bar" (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "d")))) #()))).
+    do:  ((method_call #embedDⁱᵈ #"Car"%go (![#embedD] "d")) #());;;
+    return: (((method_call #embedDⁱᵈ #"Bar"%go (![#embedD] "d")) #()) = ((method_call #(ptrTⁱᵈ embedBⁱᵈ) #"Bar"%go (![#ptrT] (struct.field_ref #embedC #"embedB"%go (struct.field_ref #embedD #"embedC"%go "d")))) #()))).
 
 Definition empty : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.empty"%go.
 
@@ -925,11 +925,11 @@ Definition anonymousParamⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (do:  #()).
 
+Definition Encⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Enc"%go.
+
 Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
-
-Definition Encⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Enc"%go.
 
 (* go: encoding.go:9:15 *)
 Definition Enc__consumeⁱᵐᵖˡ : val :=
@@ -951,7 +951,7 @@ Definition Enc__UInt64ⁱᵐᵖˡ : val :=
     exception_do (let: "e" := (mem.alloc "e") in
     let: "x" := (mem.alloc "x") in
     do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
-    (method_call #unittest.unittest #"Enc'ptr" #"consume" (![#ptrT] "e")) "$a0") in
+    (method_call #(ptrTⁱᵈ Encⁱᵈ) #"consume"%go (![#ptrT] "e")) "$a0") in
     let: "$a1" := (![#uint64T] "x") in
     (func_call #primitive.UInt64Put) "$a0" "$a1");;;
     return: #()).
@@ -962,16 +962,16 @@ Definition Enc__UInt32ⁱᵐᵖˡ : val :=
     exception_do (let: "e" := (mem.alloc "e") in
     let: "x" := (mem.alloc "x") in
     do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
-    (method_call #unittest.unittest #"Enc'ptr" #"consume" (![#ptrT] "e")) "$a0") in
+    (method_call #(ptrTⁱᵈ Encⁱᵈ) #"consume"%go (![#ptrT] "e")) "$a0") in
     let: "$a1" := (![#uint32T] "x") in
     (func_call #primitive.UInt32Put) "$a0" "$a1");;;
     return: #()).
 
+Definition Decⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Dec"%go.
+
 Definition Dec : go_type := structT [
   "p" :: sliceT
 ].
-
-Definition Decⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Dec"%go.
 
 (* go: encoding.go:27:15 *)
 Definition Dec__consumeⁱᵐᵖˡ : val :=
@@ -992,7 +992,7 @@ Definition Dec__UInt64ⁱᵐᵖˡ : val :=
   λ: "d" <>,
     exception_do (let: "d" := (mem.alloc "d") in
     return: (let: "$a0" := (let: "$a0" := #(W64 8) in
-     (method_call #unittest.unittest #"Dec'ptr" #"consume" (![#ptrT] "d")) "$a0") in
+     (method_call #(ptrTⁱᵈ Decⁱᵈ) #"consume"%go (![#ptrT] "d")) "$a0") in
      (func_call #primitive.UInt64Get) "$a0")).
 
 (* go: encoding.go:37:15 *)
@@ -1000,12 +1000,12 @@ Definition Dec__UInt32ⁱᵐᵖˡ : val :=
   λ: "d" <>,
     exception_do (let: "d" := (mem.alloc "d") in
     return: (let: "$a0" := (let: "$a0" := #(W64 4) in
-     (method_call #unittest.unittest #"Dec'ptr" #"consume" (![#ptrT] "d")) "$a0") in
+     (method_call #(ptrTⁱᵈ Decⁱᵈ) #"consume"%go (![#ptrT] "d")) "$a0") in
      (func_call #primitive.UInt32Get) "$a0")).
 
-Definition Enum1 : go_type := uint64T.
-
 Definition Enum1ⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Enum1"%go.
+
+Definition Enum1 : go_type := uint64T.
 
 Definition Enum1A : expr := #(W64 0).
 
@@ -1013,9 +1013,9 @@ Definition Enum1B : expr := #(W64 1).
 
 Definition Enum1C : expr := #(W64 2).
 
-Definition Enum2 : go_type := intT.
-
 Definition Enum2ⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Enum2"%go.
+
+Definition Enum2 : go_type := intT.
 
 (* line comment 1 *)
 Definition Enum2A : expr := #(W64 1).
@@ -1115,21 +1115,21 @@ Definition FuncVarⁱᵐᵖˡ : val :=
     do:  "$r0";;;
     return: #()).
 
+Definition Fooerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Fooer"%go.
+
 Definition Fooer : go_type := interfaceT.
 
-Definition Fooerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Fooer"%go.
+Definition concreteFooerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.concreteFooer"%go.
 
 Definition concreteFooer : go_type := structT [
   "a" :: uint64T
 ].
 
-Definition concreteFooerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.concreteFooer"%go.
+Definition FooerUserⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.FooerUser"%go.
 
 Definition FooerUser : go_type := structT [
   "f" :: Fooer
 ].
-
-Definition FooerUserⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.FooerUser"%go.
 
 (* go: interfaces.go:15:25 *)
 Definition concreteFooer__Fooⁱᵐᵖˡ : val :=
@@ -1178,7 +1178,7 @@ Definition testPassConcreteToInterfaceArgⁱᵐᵖˡ : val :=
     do:  ("f" <-[#Fooer] "$r0");;;
     do:  (let: "$a0" := (![#Fooer] "f") in
     (func_call #fooConsumer) "$a0");;;
-    do:  ((method_call #unittest.unittest #"concreteFooer'ptr" #"Foo" (![#ptrT] "c")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ concreteFooerⁱᵈ) #"Foo"%go (![#ptrT] "c")) #());;;
     do:  ((interface.get #"Foo"%go (![#Fooer] "f")) #());;;
     return: #()).
 
@@ -1333,14 +1333,14 @@ Definition testConversionInMultiplePassThroughⁱᵐᵖˡ : val :=
     (func_call #takeMultiple) "$a0" "$a1");;;
     return: #()).
 
+Definition PointerInterfaceⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.PointerInterface"%go.
+
 Definition PointerInterface : go_type := interfaceT.
 
-Definition PointerInterfaceⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.PointerInterface"%go.
+Definition concrete1ⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.concrete1"%go.
 
 Definition concrete1 : go_type := structT [
 ].
-
-Definition concrete1ⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.concrete1"%go.
 
 (* go: interfaces.go:106:20 *)
 Definition concrete1__Fooⁱᵐᵖˡ : val :=
@@ -1390,23 +1390,23 @@ Definition useIntsⁱᵐᵖˡ : val :=
     do:  ("y2" <-[#uint32T] "$r0");;;
     return: (![#uint64T] "z", ![#uint32T] "y2")).
 
-Definition my_u32 : go_type := uint32T.
-
 Definition my_u32ⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.my_u32"%go.
 
-Definition also_u32 : go_type := my_u32.
+Definition my_u32 : go_type := uint32T.
 
 Definition also_u32ⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.also_u32"%go.
 
+Definition also_u32 : go_type := my_u32.
+
 Definition ConstWithAbbrevType : expr := #(W32 3).
+
+Definition allTheLiteralsⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.allTheLiterals"%go.
 
 Definition allTheLiterals : go_type := structT [
   "int" :: uint64T;
   "s" :: stringT;
   "b" :: boolT
 ].
-
-Definition allTheLiteralsⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.allTheLiterals"%go.
 
 Definition normalLiterals : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.normalLiterals"%go.
 
@@ -1483,8 +1483,8 @@ Definition useLocksⁱᵐᵖˡ : val :=
     exception_do (let: "m" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("m" <-[#ptrT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "m")) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "m")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] "m")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] "m")) #());;;
     return: #()).
 
 Definition useCondVar : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useCondVar"%go.
@@ -1499,17 +1499,17 @@ Definition useCondVarⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] "m")) in
     (func_call #sync.NewCond) "$a0") in
     do:  ("c" <-[#ptrT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "m")) #());;;
-    do:  ((method_call #sync #"Cond'ptr" #"Signal" (![#ptrT] "c")) #());;;
-    do:  ((method_call #sync #"Cond'ptr" #"Wait" (![#ptrT] "c")) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "m")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] "m")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Signal"%go (![#ptrT] "c")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Condⁱᵈ) #"Wait"%go (![#ptrT] "c")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] "m")) #());;;
     return: #()).
+
+Definition hasCondVarⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.hasCondVar"%go.
 
 Definition hasCondVar : go_type := structT [
   "cond" :: ptrT
 ].
-
-Definition hasCondVarⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.hasCondVar"%go.
 
 Definition ToBeDebugged : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.ToBeDebugged"%go.
 
@@ -1784,13 +1784,13 @@ Definition MapSizeⁱᵐᵖˡ : val :=
     return: (s_to_w64 (let: "$a0" := (![type.mapT #uint64T #boolT] "m") in
      map.len "$a0"))).
 
-Definition IntWrapper : go_type := uint64T.
-
 Definition IntWrapperⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.IntWrapper"%go.
 
-Definition MapWrapper : go_type := mapT uint64T boolT.
+Definition IntWrapper : go_type := uint64T.
 
 Definition MapWrapperⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.MapWrapper"%go.
+
+Definition MapWrapper : go_type := mapT uint64T boolT.
 
 Definition MapTypeAliases : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.MapTypeAliases"%go.
 
@@ -1811,12 +1811,12 @@ Definition StringMapⁱᵐᵖˡ : val :=
     exception_do (let: "m" := (mem.alloc "m") in
     return: (Fst (map.get (![type.mapT #stringT #uint64T] "m") #"foo"%go))).
 
+Definition mapElemⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mapElem"%go.
+
 Definition mapElem : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
 ].
-
-Definition mapElemⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mapElem"%go.
 
 Definition mapUpdateField : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mapUpdateField"%go.
 
@@ -1947,11 +1947,11 @@ Definition ComparePointerToNilⁱᵐᵖˡ : val :=
     do:  ("s" <-[#ptrT] "$r0");;;
     return: ((![#ptrT] "s") ≠ #null)).
 
+Definition containsPointerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.containsPointer"%go.
+
 Definition containsPointer : go_type := structT [
   "s" :: ptrT
 ].
-
-Definition containsPointerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.containsPointer"%go.
 
 Definition useNilField : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useNilField"%go.
 
@@ -2046,17 +2046,17 @@ Definition Negativeⁱᵐᵖˡ : val :=
     do:  ("x" <-[#int64T] ((![#int64T] "x") + #(W64 3)));;;
     return: #()).
 
+Definition wrapExternalStructⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.wrapExternalStruct"%go.
+
 Definition wrapExternalStruct : go_type := structT [
   "j" :: ptrT
 ].
-
-Definition wrapExternalStructⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.wrapExternalStruct"%go.
 
 (* go: package.go:13:29 *)
 Definition wrapExternalStruct__joinⁱᵐᵖˡ : val :=
   λ: "w" <>,
     exception_do (let: "w" := (mem.alloc "w") in
-    do:  ((method_call #std #"JoinHandle'ptr" #"Join" (![#ptrT] (struct.field_ref #wrapExternalStruct #"j"%go "w"))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ std.JoinHandleⁱᵈ) #"Join"%go (![#ptrT] (struct.field_ref #wrapExternalStruct #"j"%go "w"))) #());;;
     return: #()).
 
 Definition PanicAtTheDisco : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.PanicAtTheDisco"%go.
@@ -2080,18 +2080,18 @@ Definition Oracleⁱᵐᵖˡ : val :=
     do:  ("p" <-[#ptrT] "$r0");;;
     return: #()).
 
+Definition typingⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.typing"%go.
+
 Definition typing : go_type := structT [
   "proph" :: ptrT
 ].
 
-Definition typingⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.typing"%go.
+Definition compositeⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.composite"%go.
 
 Definition composite : go_type := structT [
   "a" :: uint64T;
   "b" :: uint64T
 ].
-
-Definition compositeⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.composite"%go.
 
 Definition ReassignVars : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.ReassignVars"%go.
 
@@ -2131,35 +2131,35 @@ Definition recurⁱᵐᵖˡ : val :=
     exception_do (do:  ((func_call #recur) #());;;
     return: #()).
 
+Definition Rⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.R"%go.
+
 Definition R : go_type := structT [
 ].
-
-Definition Rⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.R"%go.
 
 (* go: recursive.go:10:13 *)
 Definition R__recurMethodⁱᵐᵖˡ : val :=
   λ: "r" <>,
     exception_do (let: "r" := (mem.alloc "r") in
-    do:  ((method_call #unittest.unittest #"R'ptr" #"recurMethod" (![#ptrT] "r")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ Rⁱᵈ) #"recurMethod"%go (![#ptrT] "r")) #());;;
     return: #()).
+
+Definition Otherⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Other"%go.
 
 Definition Other : go_type := structT [
   "RecursiveEmbedded" :: ptrT
 ].
 
-Definition Otherⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Other"%go.
+Definition RecursiveEmbeddedⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.RecursiveEmbedded"%go.
 
 Definition RecursiveEmbedded : go_type := structT [
   "Other" :: Other
 ].
 
-Definition RecursiveEmbeddedⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.RecursiveEmbedded"%go.
-
 (* go: recursive.go:22:29 *)
 Definition RecursiveEmbedded__recurEmbeddedMethodⁱᵐᵖˡ : val :=
   λ: "r" <>,
     exception_do (let: "r" := (mem.alloc "r") in
-    do:  ((method_call #unittest.unittest #"Other" #"recurEmbeddedMethod" (![#Other] (struct.field_ref #RecursiveEmbedded #"Other"%go (![#ptrT] "r")))) #());;;
+    do:  ((method_call #Otherⁱᵈ #"recurEmbeddedMethod"%go (![#Other] (struct.field_ref #RecursiveEmbedded #"Other"%go (![#ptrT] "r")))) #());;;
     return: #()).
 
 Definition useRenamedImport : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useRenamedImport"%go.
@@ -2172,11 +2172,11 @@ Definition useRenamedImportⁱᵐᵖˡ : val :=
     (func_call #fmt.Print) "$a0");;;
     return: #()).
 
+Definition Blockⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Block"%go.
+
 Definition Block : go_type := structT [
   "Value" :: uint64T
 ].
-
-Definition Blockⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Block"%go.
 
 Definition Disk1 : expr := #(W64 0).
 
@@ -2397,9 +2397,9 @@ Definition VoidImplicitReturnInBranchⁱᵐᵖˡ : val :=
     else do:  ((func_call #BasicNamedReturn) #()));;;
     return: #()).
 
-Definition SliceAlias : go_type := sliceT.
-
 Definition SliceAliasⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.SliceAlias"%go.
+
+Definition SliceAlias : go_type := sliceT.
 
 Definition sliceOps : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.sliceOps"%go.
 
@@ -2436,17 +2436,17 @@ Definition makeSingletonSliceⁱᵐᵖˡ : val :=
     return: ((let: "$sl0" := (![#uint64T] "x") in
      slice.literal #uint64T ["$sl0"]))).
 
+Definition thingⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.thing"%go.
+
 Definition thing : go_type := structT [
   "x" :: uint64T
 ].
 
-Definition thingⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.thing"%go.
+Definition sliceOfThingsⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.sliceOfThings"%go.
 
 Definition sliceOfThings : go_type := structT [
   "things" :: sliceT
 ].
-
-Definition sliceOfThingsⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.sliceOfThings"%go.
 
 (* go: slices.go:26:25 *)
 Definition sliceOfThings__getThingRefⁱᵐᵖˡ : val :=
@@ -2483,21 +2483,21 @@ Definition simpleSpawnⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #uint64T)) in
     do:  ("v" <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "l")) #());;;
+      exception_do (do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] "l")) #());;;
       let: "x" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (![#ptrT] "v")) in
       do:  ("x" <-[#uint64T] "$r0");;;
       (if: (![#uint64T] "x") > #(W64 0)
       then do:  ((func_call #Skip) #())
       else do:  #());;;
-      do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "l")) #());;;
+      do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] "l")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "l")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] "l")) #());;;
     let: "$r0" := #(W64 1) in
     do:  ((![#ptrT] "v") <-[#uint64T] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "l")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] "l")) #());;;
     return: #()).
 
 Definition threadCode : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.threadCode"%go.
@@ -2561,12 +2561,12 @@ Definition xⁱᵐᵖˡ : val :=
     (func_call #stringAppend) "$a0");;;
     return: #()).
 
+Definition Pointⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Point"%go.
+
 Definition Point : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
 ].
-
-Definition Pointⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Point"%go.
 
 (* go: struct_method.go:8:16 *)
 Definition Point__Addⁱᵐᵖˡ : val :=
@@ -2602,7 +2602,7 @@ Definition UseAddⁱᵐᵖˡ : val :=
     do:  ("c" <-[#Point] "$r0");;;
     let: "r" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (method_call #unittest.unittest #"Point" #"Add" (![#Point] "c")) "$a0") in
+    (method_call #Pointⁱᵈ #"Add"%go (![#Point] "c")) "$a0") in
     do:  ("r" <-[#uint64T] "$r0");;;
     return: (![#uint64T] "r")).
 
@@ -2613,7 +2613,7 @@ Definition UseAddWithLiteralⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "r" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (method_call #unittest.unittest #"Point" #"Add" (let: "$x" := #(W64 2) in
+    (method_call #Pointⁱᵈ #"Add"%go (let: "$x" := #(W64 2) in
     let: "$y" := #(W64 3) in
     struct.make #Point [{
       "x" ::= "$x";
@@ -2627,20 +2627,20 @@ Definition Point__IgnoreReceiverⁱᵐᵖˡ : val :=
   λ: <> <>,
     exception_do (return: (#"ok"%go)).
 
+Definition TwoIntsⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.TwoInts"%go.
+
 Definition TwoInts : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
 ].
 
-Definition TwoIntsⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.TwoInts"%go.
+Definition Sⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.S"%go.
 
 Definition S : go_type := structT [
   "a" :: uint64T;
   "b" :: TwoInts;
   "c" :: boolT
 ].
-
-Definition Sⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.S"%go.
 
 Definition NewS : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.NewS"%go.
 
@@ -2759,8 +2759,8 @@ Definition DoSomeLocking : go_string := "github.com/goose-lang/goose/testdata/ex
 Definition DoSomeLockingⁱᵐᵖˡ : val :=
   λ: "l",
     exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] "l")) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] "l")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] "l")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] "l")) #());;;
     return: #()).
 
 Definition makeLock : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.makeLock"%go.
@@ -2784,16 +2784,16 @@ Definition sleepⁱᵐᵖˡ : val :=
     (func_call #primitive.Sleep) "$a0");;;
     return: #()).
 
+Definition Bⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.B"%go.
+
 Definition B : go_type := structT [
   "a" :: sliceT
 ].
 
-Definition Bⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.B"%go.
+Definition Aⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.A"%go.
 
 Definition A : go_type := structT [
 ].
-
-Definition Aⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.A"%go.
 
 Definition mkInt : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mkInt"%go.
 
@@ -2810,21 +2810,21 @@ Definition mkNothingⁱᵐᵖˡ : val :=
     exception_do (do:  ((func_call #mkInt) #());;;
     return: #()).
 
-Definition my_u64 : go_type := uint64T.
-
 Definition my_u64ⁱᵈ : go_string := uint64Tⁱᵈ.
 
-Definition Timestamp : go_type := uint64T.
+Definition my_u64 : go_type := uint64T.
 
 Definition Timestampⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Timestamp"%go.
 
-Definition UseTypeAbbrev : go_type := uint64T.
+Definition Timestamp : go_type := uint64T.
 
 Definition UseTypeAbbrevⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.UseTypeAbbrev"%go.
 
-Definition UseNamedType : go_type := Timestamp.
+Definition UseTypeAbbrev : go_type := uint64T.
 
 Definition UseNamedTypeⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.UseNamedType"%go.
+
+Definition UseNamedType : go_type := Timestamp.
 
 Definition convertToAlias : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.convertToAlias"%go.
 

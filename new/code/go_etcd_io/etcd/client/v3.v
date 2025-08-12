@@ -24,6 +24,8 @@ Definition ErrOldCluster : go_string := "go.etcd.io/etcd/client/v3.ErrOldCluster
 
 Axiom ErrOldCluster'init : val.
 
+Definition Clientⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Client"%go.
+
 Axiom Client : go_type.
 
 Definition New : go_string := "go.etcd.io/etcd/client/v3.New"%go.
@@ -65,9 +67,9 @@ Definition canceledByCaller : go_string := "go.etcd.io/etcd/client/v3.canceledBy
 
 Definition IsConnCanceled : go_string := "go.etcd.io/etcd/client/v3.IsConnCanceled"%go.
 
-Definition Cluster : go_type := interfaceT.
-
 Definition Clusterⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Cluster"%go.
+
+Definition Cluster : go_type := interfaceT.
 
 Definition NewCluster : go_string := "go.etcd.io/etcd/client/v3.NewCluster"%go.
 
@@ -77,9 +79,9 @@ Definition OpCompact : go_string := "go.etcd.io/etcd/client/v3.OpCompact"%go.
 
 Definition WithCompactPhysical : go_string := "go.etcd.io/etcd/client/v3.WithCompactPhysical"%go.
 
-Definition Cmp : go_type := etcdserverpb.Compare.
-
 Definition Cmpⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Cmp"%go.
+
+Definition Cmp : go_type := etcdserverpb.Compare.
 
 Definition Compare : go_string := "go.etcd.io/etcd/client/v3.Compare"%go.
 
@@ -105,25 +107,27 @@ Definition WithRequireLeader : go_string := "go.etcd.io/etcd/client/v3.WithRequi
 
 Definition withVersion : go_string := "go.etcd.io/etcd/client/v3.withVersion"%go.
 
-Definition PutResponse : go_type := etcdserverpb.PutResponse.
-
 Definition PutResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.PutResponse"%go.
 
-Definition GetResponse : go_type := etcdserverpb.RangeResponse.
+Definition PutResponse : go_type := etcdserverpb.PutResponse.
 
 Definition GetResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.GetResponse"%go.
 
-Definition DeleteResponse : go_type := etcdserverpb.DeleteRangeResponse.
+Definition GetResponse : go_type := etcdserverpb.RangeResponse.
 
 Definition DeleteResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.DeleteResponse"%go.
 
-Definition TxnResponse : go_type := etcdserverpb.TxnResponse.
+Definition DeleteResponse : go_type := etcdserverpb.DeleteRangeResponse.
 
 Definition TxnResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.TxnResponse"%go.
 
-Definition KV : go_type := interfaceT.
+Definition TxnResponse : go_type := etcdserverpb.TxnResponse.
 
 Definition KVⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.KV"%go.
+
+Definition KV : go_type := interfaceT.
+
+Definition OpResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.OpResponse"%go.
 
 Definition OpResponse : go_type := structT [
   "put" :: ptrT;
@@ -132,15 +136,15 @@ Definition OpResponse : go_type := structT [
   "txn" :: ptrT
 ].
 
-Definition OpResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.OpResponse"%go.
-
 Definition NewKV : go_string := "go.etcd.io/etcd/client/v3.NewKV"%go.
 
 Definition NewKVFromKVClient : go_string := "go.etcd.io/etcd/client/v3.NewKVFromKVClient"%go.
 
+Definition LeaseIDⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseID"%go.
+
 Definition LeaseID : go_type := int64T.
 
-Definition LeaseIDⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseID"%go.
+Definition LeaseGrantResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseGrantResponse"%go.
 
 Definition LeaseGrantResponse : go_type := structT [
   "ResponseHeader" :: ptrT;
@@ -149,17 +153,15 @@ Definition LeaseGrantResponse : go_type := structT [
   "Error" :: stringT
 ].
 
-Definition LeaseGrantResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseGrantResponse"%go.
-
 Definition NoLease : expr := #(W64 0).
 
 Definition LeaseResponseChSize : go_string := "go.etcd.io/etcd/client/v3.LeaseResponseChSize"%go.
 
 Axiom LeaseResponseChSize'init : val.
 
-Definition Lease : go_type := interfaceT.
-
 Definition Leaseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Lease"%go.
+
+Definition Lease : go_type := interfaceT.
 
 Definition NewLease : go_string := "go.etcd.io/etcd/client/v3.NewLease"%go.
 
@@ -175,9 +177,9 @@ Definition NewMaintenance : go_string := "go.etcd.io/etcd/client/v3.NewMaintenan
 
 Definition NewMaintenanceFromMaintenanceClient : go_string := "go.etcd.io/etcd/client/v3.NewMaintenanceFromMaintenanceClient"%go.
 
-Definition opType : go_type := intT.
-
 Definition opTypeⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.opType"%go.
+
+Definition opType : go_type := intT.
 
 Definition tRange : expr := #(W64 1).
 
@@ -190,6 +192,8 @@ Definition tTxn : expr := #(W64 4).
 Definition noPrefixEnd : go_string := "go.etcd.io/etcd/client/v3.noPrefixEnd"%go.
 
 Axiom noPrefixEnd'init : val.
+
+Definition Opⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Op"%go.
 
 Definition Op : go_type := structT [
   "t" :: opType;
@@ -221,8 +225,6 @@ Definition Op : go_type := structT [
   "isOptsWithFromKey" :: boolT;
   "isOptsWithPrefix" :: boolT
 ].
-
-Definition Opⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Op"%go.
 
 (* IsTxn returns true if the "Op" type is transaction.
 
@@ -470,7 +472,7 @@ Definition Op__toTxnRequestⁱᵐᵖˡ : val :=
     slice.for_range #Op "$range" (λ: "$key" "$value",
       do:  ("tOp" <-[#Op] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
-      let: "$r0" := ((method_call #v3.clientv3 #"Op" #"toRequestOp" (![#Op] "tOp")) #()) in
+      let: "$r0" := ((method_call #Opⁱᵈ #"toRequestOp"%go (![#Op] "tOp")) #()) in
       do:  ((slice.elem_ref #ptrT (![#sliceT] "thenOps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
     let: "elseOps" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
@@ -482,7 +484,7 @@ Definition Op__toTxnRequestⁱᵐᵖˡ : val :=
     slice.for_range #Op "$range" (λ: "$key" "$value",
       do:  ("eOp" <-[#Op] "$value");;;
       do:  ("i" <-[#intT] "$key");;;
-      let: "$r0" := ((method_call #v3.clientv3 #"Op" #"toRequestOp" (![#Op] "eOp")) #()) in
+      let: "$r0" := ((method_call #Opⁱᵈ #"toRequestOp"%go (![#Op] "eOp")) #()) in
       do:  ((slice.elem_ref #ptrT (![#sliceT] "elseOps") (![#intT] "i")) <-[#ptrT] "$r0")));;;
     let: "cmps" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (slice.make2 #ptrT (let: "$a0" := (![#sliceT] (struct.field_ref #Op #"cmps"%go "op")) in
@@ -514,7 +516,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
     let: "$sw" := (![#opType] (struct.field_ref #Op #"t"%go "op")) in
     (if: "$sw" = tRange
     then
-      return: (mem.alloc (let: "$Request" := (interface.make #(ptrTⁱᵈ etcdserverpb.RequestOp_RequestRangeⁱᵈ) (mem.alloc (let: "$RequestRange" := ((method_call #v3.clientv3 #"Op" #"toRangeRequest" (![#Op] "op")) #()) in
+      return: (mem.alloc (let: "$Request" := (interface.make #(ptrTⁱᵈ etcdserverpb.RequestOp_RequestRangeⁱᵈ) (mem.alloc (let: "$RequestRange" := ((method_call #Opⁱᵈ #"toRangeRequest"%go (![#Op] "op")) #()) in
        struct.make #etcdserverpb.RequestOp_RequestRange [{
          "RequestRange" ::= "$RequestRange"
        }]))) in
@@ -590,7 +592,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ : val :=
         else
           (if: "$sw" = tTxn
           then
-            return: (mem.alloc (let: "$Request" := (interface.make #(ptrTⁱᵈ etcdserverpb.RequestOp_RequestTxnⁱᵈ) (mem.alloc (let: "$RequestTxn" := ((method_call #v3.clientv3 #"Op" #"toTxnRequest" (![#Op] "op")) #()) in
+            return: (mem.alloc (let: "$Request" := (interface.make #(ptrTⁱᵈ etcdserverpb.RequestOp_RequestTxnⁱᵈ) (mem.alloc (let: "$RequestTxn" := ((method_call #Opⁱᵈ #"toTxnRequest"%go (![#Op] "op")) #()) in
              struct.make #etcdserverpb.RequestOp_RequestTxn [{
                "RequestTxn" ::= "$RequestTxn"
              }]))) in
@@ -616,7 +618,7 @@ Definition Op__isWriteⁱᵐᵖˡ : val :=
       slice.for_range #Op "$range" (λ: "$key" "$value",
         do:  ("tOp" <-[#Op] "$value");;;
         do:  "$key";;;
-        (if: (method_call #v3.clientv3 #"Op" #"isWrite" (![#Op] "tOp")) #()
+        (if: (method_call #Opⁱᵈ #"isWrite"%go (![#Op] "tOp")) #()
         then return: (#true)
         else do:  #())));;;
       let: "$range" := (![#sliceT] (struct.field_ref #Op #"elseOps"%go "op")) in
@@ -624,7 +626,7 @@ Definition Op__isWriteⁱᵐᵖˡ : val :=
       slice.for_range #Op "$range" (λ: "$key" "$value",
         do:  ("tOp" <-[#Op] "$value");;;
         do:  "$key";;;
-        (if: (method_call #v3.clientv3 #"Op" #"isWrite" (![#Op] "tOp")) #()
+        (if: (method_call #Opⁱᵈ #"isWrite"%go (![#Op] "tOp")) #()
         then return: (#true)
         else do:  #())));;;
       return: (#false)
@@ -688,7 +690,7 @@ Definition OpGetⁱᵐᵖˡ : val :=
     }]) in
     do:  ("ret" <-[#Op] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "opts") in
-    (method_call #v3.clientv3 #"Op'ptr" #"applyOpts" "ret") "$a0");;;
+    (method_call #Opⁱᵈ #"applyOpts"%go "ret") "$a0");;;
     return: (![#Op] "ret")).
 
 Definition OpDelete : go_string := "go.etcd.io/etcd/client/v3.OpDelete"%go.
@@ -742,7 +744,7 @@ Definition OpDeleteⁱᵐᵖˡ : val :=
     }]) in
     do:  ("ret" <-[#Op] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "opts") in
-    (method_call #v3.clientv3 #"Op'ptr" #"applyOpts" "ret") "$a0");;;
+    (method_call #Opⁱᵈ #"applyOpts"%go "ret") "$a0");;;
     let: "$sw" := #true in
     (if: "$sw" = ((![#LeaseID] (struct.field_ref #Op #"leaseID"%go "ret")) ≠ #(W64 0))
     then
@@ -842,7 +844,7 @@ Definition OpPutⁱᵐᵖˡ : val :=
     }]) in
     do:  ("ret" <-[#Op] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "opts") in
-    (method_call #v3.clientv3 #"Op'ptr" #"applyOpts" "ret") "$a0");;;
+    (method_call #Opⁱᵈ #"applyOpts"%go "ret") "$a0");;;
     let: "$sw" := #true in
     (if: "$sw" = ((![#sliceT] (struct.field_ref #Op #"end"%go "ret")) ≠ #slice.nil)
     then
@@ -1427,16 +1429,16 @@ Definition WithIgnoreLeaseⁱᵐᵖˡ : val :=
        return: #())
        ))).
 
+Definition LeaseOpⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseOp"%go.
+
 Definition LeaseOp : go_type := structT [
   "id" :: LeaseID;
   "attachedKeys" :: boolT
 ].
 
-Definition LeaseOpⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseOp"%go.
+Definition LeaseOptionⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseOption"%go.
 
 Definition LeaseOption : go_type := funcT.
-
-Definition LeaseOptionⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.LeaseOption"%go.
 
 Definition WithAttachedKeys : go_string := "go.etcd.io/etcd/client/v3.WithAttachedKeys"%go.
 
@@ -1567,17 +1569,19 @@ Definition SortByValue : expr := #(W64 4).
 
 Definition SortOptionⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.SortOption"%go.
 
-Definition Txn : go_type := interfaceT.
-
 Definition Txnⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Txn"%go.
+
+Definition Txn : go_type := interfaceT.
 
 Definition jitterUp : go_string := "go.etcd.io/etcd/client/v3.jitterUp"%go.
 
 Definition EventTypeDelete : expr := #(W32 1).
 
+Definition Eventⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Event"%go.
+
 Definition Event : go_type := mvccpb.Event.
 
-Definition Eventⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Event"%go.
+Definition WatchChanⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.WatchChan"%go.
 
 Definition WatchResponse : go_type := structT [
   "Header" :: etcdserverpb.ResponseHeader;
@@ -1591,11 +1595,9 @@ Definition WatchResponse : go_type := structT [
 
 Definition WatchChan : go_type := chanT WatchResponse.
 
-Definition WatchChanⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.WatchChan"%go.
+Definition Watcherⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Watcher"%go.
 
 Definition Watcher : go_type := interfaceT.
-
-Definition Watcherⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.Watcher"%go.
 
 Definition WatchResponseⁱᵈ : go_string := "go.etcd.io/etcd/client/v3.WatchResponse"%go.
 

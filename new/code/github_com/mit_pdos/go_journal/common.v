@@ -26,13 +26,13 @@ Definition HDRADDRS : expr := #(W64 511).
 (* 2 for log header *)
 Definition LOGSIZE : expr := #(W64 513).
 
-Definition Inum : go_type := uint64T.
-
 Definition Inumⁱᵈ : go_string := uint64Tⁱᵈ.
 
-Definition Bnum : go_type := uint64T.
+Definition Inum : go_type := uint64T.
 
 Definition Bnumⁱᵈ : go_string := uint64Tⁱᵈ.
+
+Definition Bnum : go_type := uint64T.
 
 Definition NULLINUM : expr := #(W64 0).
 

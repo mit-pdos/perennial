@@ -17,14 +17,14 @@ Section code.
 (* 1 second *)
 Definition PreferenceRefreshTime : expr := #(W64 1000000000).
 
+Definition Clerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.Clerk"%go.
+
 Definition Clerk : go_type := structT [
   "confCk" :: ptrT;
   "replicaClerks" :: sliceT;
   "preferredReplica" :: uint64T;
   "lastPreferenceRefresh" :: uint64T
 ].
-
-Definition Clerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.Clerk"%go.
 
 Definition makeClerks : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.makeClerks"%go.
 
@@ -61,7 +61,7 @@ Definition Makeⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")) <-[#ptrT] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-      let: "$r0" := ((method_call #configservice #"Clerk'ptr" #"GetConfig" (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
+      let: "$r0" := ((method_call #(ptrTⁱᵈ configservice.Clerkⁱᵈ) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
       do:  ("config" <-[#sliceT] "$r0");;;
       (if: (let: "$a0" := (![#sliceT] "config") in
       slice.len "$a0") = #(W64 0)
@@ -92,7 +92,7 @@ Definition Clerk__Applyⁱᵐᵖˡ : val :=
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "err" := (mem.alloc (type.zero_val #uint64T)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "op") in
-      (method_call #replica #"Clerk'ptr" #"Apply" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) #(W64 0)))) "$a0") in
+      (method_call #(ptrTⁱᵈ replica.Clerkⁱᵈ) #"Apply"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) #(W64 0)))) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       do:  ("err" <-[#uint64T] "$r0");;;
@@ -103,7 +103,7 @@ Definition Clerk__Applyⁱᵐᵖˡ : val :=
         do:  (let: "$a0" := (#(W64 100) * #(W64 1000000)) in
         (func_call #primitive.Sleep) "$a0");;;
         let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "$r0" := ((method_call #configservice #"Clerk'ptr" #"GetConfig" (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
+        let: "$r0" := ((method_call #(ptrTⁱᵈ configservice.Clerkⁱᵈ) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
         do:  ("config" <-[#sliceT] "$r0");;;
         (if: int_gt (let: "$a0" := (![#sliceT] "config") in
         slice.len "$a0") #(W64 0)
@@ -144,7 +144,7 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
     exception_do (let: "ck" := (mem.alloc "ck") in
     let: "op" := (mem.alloc "op") in
     let: "ret" := (mem.alloc (type.zero_val #sliceT)) in
-    do:  ((method_call #clerk.clerk #"Clerk'ptr" #"maybeRefreshPreference" (![#ptrT] "ck")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ Clerkⁱᵈ) #"maybeRefreshPreference"%go (![#ptrT] "ck")) #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
       let: "$r0" := (![#uint64T] (struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck"))) in
@@ -158,7 +158,7 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
         slice.len "$a0"))) in
         do:  ("k" <-[#uint64T] "$r0");;;
         let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "op") in
-        (method_call #replica #"Clerk'ptr" #"ApplyRo" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) (![#uint64T] "k")))) "$a0") in
+        (method_call #(ptrTⁱᵈ replica.Clerkⁱᵈ) #"ApplyRo"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) (![#uint64T] "k")))) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("err" <-[#uint64T] "$r0");;;
@@ -185,7 +185,7 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
         do:  (let: "$a0" := ((![#uint64T] "timeToSleep") * #(W64 1000000)) in
         (func_call #primitive.Sleep) "$a0");;;
         let: "config" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "$r0" := ((method_call #configservice #"Clerk'ptr" #"GetConfig" (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
+        let: "$r0" := ((method_call #(ptrTⁱᵈ configservice.Clerkⁱᵈ) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
         do:  ("config" <-[#sliceT] "$r0");;;
         (if: int_gt (let: "$a0" := (![#sliceT] "config") in
         slice.len "$a0") #(W64 0)
@@ -215,7 +215,7 @@ Definition Clerk__ApplyRoⁱᵐᵖˡ : val :=
     do:  ("p" <-[#ptrT] "$r0");;;
     let: "v" := (mem.alloc (type.zero_val #sliceT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "op") in
-    (method_call #clerk.clerk #"Clerk'ptr" #"ApplyRo2" (![#ptrT] "ck")) "$a0") in
+    (method_call #(ptrTⁱᵈ Clerkⁱᵈ) #"ApplyRo2"%go (![#ptrT] "ck")) "$a0") in
     do:  ("v" <-[#sliceT] "$r0");;;
     do:  (let: "$a0" := (![#ptrT] "p") in
     let: "$a1" := (![#sliceT] "v") in

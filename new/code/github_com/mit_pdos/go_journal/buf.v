@@ -13,14 +13,14 @@ Module buf.
 Section code.
 
 
+Definition Bufⁱᵈ : go_string := "github.com/mit-pdos/go-journal/buf.Buf"%go.
+
 Definition Buf : go_type := structT [
   "Addr" :: addr.Addr;
   "Sz" :: uint64T;
   "Data" :: sliceT;
   "dirty" :: boolT
 ].
-
-Definition Bufⁱᵈ : go_string := "github.com/mit-pdos/go-journal/buf.Buf"%go.
 
 Definition MkBuf : go_string := "github.com/mit-pdos/go-journal/buf.MkBuf"%go.
 
@@ -203,7 +203,7 @@ Definition Buf__WriteDirectⁱᵐᵖˡ : val :=
   λ: "buf" "d",
     exception_do (let: "buf" := (mem.alloc "buf") in
     let: "d" := (mem.alloc "d") in
-    do:  ((method_call #buf.buf #"Buf'ptr" #"SetDirty" (![#ptrT] "buf")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ Bufⁱᵈ) #"SetDirty"%go (![#ptrT] "buf")) #());;;
     (if: (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) = disk.BlockSize
     then
       do:  (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
@@ -215,7 +215,7 @@ Definition Buf__WriteDirectⁱᵐᵖˡ : val :=
       (interface.get #"Read"%go (![#disk.Disk] "d")) "$a0") in
       do:  ("blk" <-[#sliceT] "$r0");;;
       do:  (let: "$a0" := (![#sliceT] "blk") in
-      (method_call #buf.buf #"Buf'ptr" #"Install" (![#ptrT] "buf")) "$a0");;;
+      (method_call #(ptrTⁱᵈ Bufⁱᵈ) #"Install"%go (![#ptrT] "buf")) "$a0");;;
       do:  (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
       let: "$a1" := (![#sliceT] "blk") in
       (interface.get #"Write"%go (![#disk.Disk] "d")) "$a0" "$a1"));;;
@@ -231,7 +231,7 @@ Definition Buf__BnumGetⁱᵐᵖˡ : val :=
     slice.slice #byteT "$s" (![#uint64T] "off") ((![#uint64T] "off") + #(W64 8))) in
     (func_call #marshal.NewDec) "$a0") in
     do:  ("dec" <-[#marshal.Dec] "$r0");;;
-    return: ((method_call #marshal #"Dec" #"GetInt" (![#marshal.Dec] "dec")) #())).
+    return: ((method_call #marshal.Decⁱᵈ #"GetInt"%go (![#marshal.Dec] "dec")) #())).
 
 (* go: buf.go:112:17 *)
 Definition Buf__BnumPutⁱᵐᵖˡ : val :=
@@ -244,19 +244,19 @@ Definition Buf__BnumPutⁱᵐᵖˡ : val :=
     (func_call #marshal.NewEnc) "$a0") in
     do:  ("enc" <-[#marshal.Enc] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "v") in
-    (method_call #marshal #"Enc" #"PutInt" (![#marshal.Enc] "enc")) "$a0");;;
+    (method_call #marshal.Encⁱᵈ #"PutInt"%go (![#marshal.Enc] "enc")) "$a0");;;
     do:  (let: "$a0" := (let: "$s" := (![#sliceT] (struct.field_ref #Buf #"Data"%go (![#ptrT] "buf"))) in
     slice.slice #byteT "$s" (![#uint64T] "off") ((![#uint64T] "off") + #(W64 8))) in
-    let: "$a1" := ((method_call #marshal #"Enc" #"Finish" (![#marshal.Enc] "enc")) #()) in
+    let: "$a1" := ((method_call #marshal.Encⁱᵈ #"Finish"%go (![#marshal.Enc] "enc")) #()) in
     (slice.copy #byteT) "$a0" "$a1");;;
-    do:  ((method_call #buf.buf #"Buf'ptr" #"SetDirty" (![#ptrT] "buf")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ Bufⁱᵈ) #"SetDirty"%go (![#ptrT] "buf")) #());;;
     return: #()).
+
+Definition BufMapⁱᵈ : go_string := "github.com/mit-pdos/go-journal/buf.BufMap"%go.
 
 Definition BufMap : go_type := structT [
   "addrs" :: mapT uint64T ptrT
 ].
-
-Definition BufMapⁱᵈ : go_string := "github.com/mit-pdos/go-journal/buf.BufMap"%go.
 
 Definition MkBufMap : go_string := "github.com/mit-pdos/go-journal/buf.MkBufMap"%go.
 
@@ -277,7 +277,7 @@ Definition BufMap__Insertⁱᵐᵖˡ : val :=
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "buf" := (mem.alloc "buf") in
     let: "$r0" := (![#ptrT] "buf") in
-    do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) #()) "$r0");;;
+    do:  (map.insert (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr.Addrⁱᵈ #"Flatid"%go (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) #()) "$r0");;;
     return: #()).
 
 (* go: bufmap.go:26:21 *)
@@ -285,7 +285,7 @@ Definition BufMap__Lookupⁱᵐᵖˡ : val :=
   λ: "bmap" "addr",
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "addr" := (mem.alloc "addr") in
-    return: (Fst (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] "addr")) #())))).
+    return: (Fst (map.get (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) ((method_call #addr.Addrⁱᵈ #"Flatid"%go (![#addr.Addr] "addr")) #())))).
 
 (* go: bufmap.go:30:21 *)
 Definition BufMap__Delⁱᵐᵖˡ : val :=
@@ -293,7 +293,7 @@ Definition BufMap__Delⁱᵐᵖˡ : val :=
     exception_do (let: "bmap" := (mem.alloc "bmap") in
     let: "addr" := (mem.alloc "addr") in
     do:  (let: "$a0" := (![type.mapT #uint64T #ptrT] (struct.field_ref #BufMap #"addrs"%go (![#ptrT] "bmap"))) in
-    let: "$a1" := ((method_call #addr #"Addr" #"Flatid" (![#addr.Addr] "addr")) #()) in
+    let: "$a1" := ((method_call #addr.Addrⁱᵈ #"Flatid"%go (![#addr.Addr] "addr")) #()) in
     map.delete "$a0" "$a1");;;
     return: #()).
 

@@ -10,6 +10,8 @@ Context `{ffi_syntax}.
 
 Definition HashLen : expr := #(W64 32).
 
+Definition Hasherⁱᵈ : go_string := "github.com/sanjit-bhat/pav/cryptoffi.Hasher"%go.
+
 Axiom Hasher : go_type.
 
 Definition NewHasher : go_string := "github.com/sanjit-bhat/pav/cryptoffi.NewHasher"%go.
@@ -20,7 +22,11 @@ Axiom Hasher__Writeⁱᵐᵖˡ : val.
 
 Axiom Hasher__Sumⁱᵐᵖˡ : val.
 
+Definition SigPrivateKeyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/cryptoffi.SigPrivateKey"%go.
+
 Axiom SigPrivateKey : go_type.
+
+Definition SigPublicKeyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/cryptoffi.SigPublicKey"%go.
 
 Axiom SigPublicKey : go_type.
 
@@ -32,7 +38,11 @@ Axiom SigPrivateKey__Signⁱᵐᵖˡ : val.
 
 Axiom SigPublicKey__Verifyⁱᵐᵖˡ : val.
 
+Definition VrfPrivateKeyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfPrivateKey"%go.
+
 Axiom VrfPrivateKey : go_type.
+
+Definition VrfPublicKeyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfPublicKey"%go.
 
 Axiom VrfPublicKey : go_type.
 

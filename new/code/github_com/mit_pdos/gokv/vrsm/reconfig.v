@@ -36,7 +36,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     do:  ("configCk" <-[#ptrT] "$r0");;;
     let: "oldServers" := (mem.alloc (type.zero_val #sliceT)) in
     let: "epoch" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := ((method_call #configservice #"Clerk'ptr" #"ReserveEpochAndGetConfig" (![#ptrT] "configCk")) #()) in
+    let: ("$ret0", "$ret1") := ((method_call #(ptrTⁱᵈ configservice.Clerkⁱᵈ) #"ReserveEpochAndGetConfig"%go (![#ptrT] "configCk")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("epoch" <-[#uint64T] "$r0");;;
@@ -58,7 +58,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     struct.make #replica.GetStateArgs [{
       "Epoch" ::= "$Epoch"
     }])) in
-    (method_call #replica #"Clerk'ptr" #"GetState" (![#ptrT] "oldClerk")) "$a0") in
+    (method_call #(ptrTⁱᵈ replica.Clerkⁱᵈ) #"GetState"%go (![#ptrT] "oldClerk")) "$a0") in
     do:  ("reply" <-[#ptrT] "$r0");;;
     (if: (![#uint64T] (struct.field_ref #replica.GetStateReply #"Err"%go (![#ptrT] "reply"))) ≠ e.None
     then
@@ -93,7 +93,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] "clerks") in
     slice.len "$a0"))); (λ: <>, #()) := λ: <>,
       do:  (let: "$a0" := #(W64 1) in
-      (method_call #sync #"WaitGroup'ptr" #"Add" (![#ptrT] "wg")) "$a0");;;
+      (method_call #(ptrTⁱᵈ sync.WaitGroupⁱᵈ) #"Add"%go (![#ptrT] "wg")) "$a0");;;
       let: "clerk" := (mem.alloc (type.zero_val #ptrT)) in
       let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "clerks") (![#uint64T] "i"))) in
       do:  ("clerk" <-[#ptrT] "$r0");;;
@@ -111,14 +111,14 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
           "CommittedNextIndex" ::= "$CommittedNextIndex";
           "State" ::= "$State"
         }])) in
-        (method_call #replica #"Clerk'ptr" #"SetState" (![#ptrT] "clerk")) "$a0") in
+        (method_call #(ptrTⁱᵈ replica.Clerkⁱᵈ) #"SetState"%go (![#ptrT] "clerk")) "$a0") in
         do:  ((slice.elem_ref #uint64T (![#sliceT] "errs") (![#uint64T] "locali")) <-[#uint64T] "$r0");;;
-        do:  ((method_call #sync #"WaitGroup'ptr" #"Done" (![#ptrT] "wg")) #());;;
+        do:  ((method_call #(ptrTⁱᵈ sync.WaitGroupⁱᵈ) #"Done"%go (![#ptrT] "wg")) #());;;
         return: #())
         ) in
       do:  (Fork ("$go" #()));;;
       do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1))));;;
-    do:  ((method_call #sync #"WaitGroup'ptr" #"Wait" (![#ptrT] "wg")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.WaitGroupⁱᵈ) #"Wait"%go (![#ptrT] "wg")) #());;;
     let: "err" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := e.None in
     do:  ("err" <-[#uint64T] "$r0");;;
@@ -144,7 +144,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
     else do:  #());;;
     (if: (let: "$a0" := (![#uint64T] "epoch") in
     let: "$a1" := (![#sliceT] "servers") in
-    (method_call #configservice #"Clerk'ptr" #"TryWriteConfig" (![#ptrT] "configCk")) "$a0" "$a1") ≠ e.None
+    (method_call #(ptrTⁱᵈ configservice.Clerkⁱᵈ) #"TryWriteConfig"%go (![#ptrT] "configCk")) "$a0" "$a1") ≠ e.None
     then
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringTⁱᵈ #"Error while writing to config service"%go) in
       slice.literal #interfaceT ["$sl0"])) in
@@ -157,7 +157,7 @@ Definition EnterNewConfigⁱᵐᵖˡ : val :=
       "Epoch" ::= "$Epoch";
       "Replicas" ::= "$Replicas"
     }])) in
-    (method_call #replica #"Clerk'ptr" #"BecomePrimary" (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "clerks") #(W64 0)))) "$a0");;;
+    (method_call #(ptrTⁱᵈ replica.Clerkⁱᵈ) #"BecomePrimary"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "clerks") #(W64 0)))) "$a0");;;
     return: (e.None)).
 
 Definition InitializeSystem : go_string := "github.com/mit-pdos/gokv/vrsm/reconfig.InitializeSystem"%go.
@@ -173,7 +173,7 @@ Definition InitializeSystemⁱᵐᵖˡ : val :=
     do:  ("configCk" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![#sliceT] "servers") in
-    (method_call #configservice #"Clerk'ptr" #"TryWriteConfig" (![#ptrT] "configCk")) "$a0" "$a1");;;
+    (method_call #(ptrTⁱᵈ configservice.Clerkⁱᵈ) #"TryWriteConfig"%go (![#ptrT] "configCk")) "$a0" "$a1");;;
     return: (let: "$a0" := (![#sliceT] "configHosts") in
      let: "$a1" := (![#sliceT] "servers") in
      (func_call #EnterNewConfig) "$a0" "$a1")).

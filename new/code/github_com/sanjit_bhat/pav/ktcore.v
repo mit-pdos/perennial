@@ -12,9 +12,9 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition Blame : go_type := uint64T.
-
 Definition Blameⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.Blame"%go.
+
+Definition Blame : go_type := uint64T.
 
 Definition BlameNone : expr := #(W64 0).
 
@@ -79,7 +79,7 @@ Definition SignVrfⁱᵐᵖˡ : val :=
     (func_call #VrfSigEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    (method_call #cryptoffi #"SigPrivateKey'ptr" #"Sign" (![#ptrT] "sk")) "$a0") in
+    (method_call #(ptrTⁱᵈ cryptoffi.SigPrivateKeyⁱᵈ) #"Sign"%go (![#ptrT] "sk")) "$a0") in
     do:  ("sig" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "sig")).
 
@@ -106,7 +106,7 @@ Definition VerifyVrfSigⁱᵐᵖˡ : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "b") in
      let: "$a1" := (![#sliceT] "sig") in
-     (method_call #cryptoffi #"SigPublicKey" #"Verify" (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
+     (method_call #cryptoffi.SigPublicKeyⁱᵈ #"Verify"%go (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
 
 Definition SignLink : go_string := "github.com/sanjit-bhat/pav/ktcore.SignLink"%go.
 
@@ -142,7 +142,7 @@ Definition SignLinkⁱᵐᵖˡ : val :=
     (func_call #LinkSigEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    (method_call #cryptoffi #"SigPrivateKey'ptr" #"Sign" (![#ptrT] "sk")) "$a0") in
+    (method_call #(ptrTⁱᵈ cryptoffi.SigPrivateKeyⁱᵈ) #"Sign"%go (![#ptrT] "sk")) "$a0") in
     do:  ("sig" <-[#sliceT] "$r0");;;
     return: (![#sliceT] "sig")).
 
@@ -172,7 +172,7 @@ Definition VerifyLinkSigⁱᵐᵖˡ : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "b") in
      let: "$a1" := (![#sliceT] "sig") in
-     (method_call #cryptoffi #"SigPublicKey" #"Verify" (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
+     (method_call #cryptoffi.SigPublicKeyⁱᵈ #"Verify"%go (![#cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
 
 Definition ProveMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.ProveMapLabel"%go.
 
@@ -204,7 +204,7 @@ Definition ProveMapLabelⁱᵐᵖˡ : val :=
     (func_call #MapLabelEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "b") in
-    (method_call #cryptoffi #"VrfPrivateKey'ptr" #"Prove" (![#ptrT] "sk")) "$a0")) in
+    (method_call #(ptrTⁱᵈ cryptoffi.VrfPrivateKeyⁱᵈ) #"Prove"%go (![#ptrT] "sk")) "$a0")) in
     return: ("$ret0", "$ret1")).
 
 Definition EvalMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.EvalMapLabel"%go.
@@ -229,7 +229,7 @@ Definition EvalMapLabelⁱᵐᵖˡ : val :=
     (func_call #MapLabelEncode) "$a0" "$a1") in
     do:  ("b" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "b") in
-     (method_call #cryptoffi #"VrfPrivateKey'ptr" #"Evaluate" (![#ptrT] "sk")) "$a0")).
+     (method_call #(ptrTⁱᵈ cryptoffi.VrfPrivateKeyⁱᵈ) #"Evaluate"%go (![#ptrT] "sk")) "$a0")).
 
 Definition CheckMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.CheckMapLabel"%go.
 
@@ -256,7 +256,7 @@ Definition CheckMapLabelⁱᵐᵖˡ : val :=
     do:  ("b" <-[#sliceT] "$r0");;;
     let: ("$ret0", "$ret1") := ((let: "$a0" := (![#sliceT] "b") in
     let: "$a1" := (![#sliceT] "proof") in
-    (method_call #cryptoffi #"VrfPublicKey'ptr" #"Verify" (![#ptrT] "pk")) "$a0" "$a1")) in
+    (method_call #(ptrTⁱᵈ cryptoffi.VrfPublicKeyⁱᵈ) #"Verify"%go (![#ptrT] "pk")) "$a0" "$a1")) in
     return: ("$ret0", "$ret1")).
 
 Definition GetMapVal : go_string := "github.com/sanjit-bhat/pav/ktcore.GetMapVal"%go.
@@ -299,11 +299,11 @@ Definition GetCommitRandⁱᵐᵖˡ : val :=
     let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
     do:  ("hr" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#sliceT] "commitSecret") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     do:  (let: "$a0" := (![#sliceT] "label") in
-    (method_call #cryptoffi #"Hasher'ptr" #"Write" (![#ptrT] "hr")) "$a0");;;
+    (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Write"%go (![#ptrT] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #cryptoffi #"Hasher'ptr" #"Sum" (![#ptrT] "hr")) "$a0")).
+     (method_call #(ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) #"Sum"%go (![#ptrT] "hr")) "$a0")).
 
 Definition VrfSigⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.VrfSig"%go.
 
@@ -313,35 +313,35 @@ Definition MapLabelⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.MapL
 
 Definition CommitOpenⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpen"%go.
 
+Definition Membⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.Memb"%go.
+
 Definition Memb : go_type := structT [
   "LabelProof" :: sliceT;
   "PkOpen" :: ptrT;
   "MerkleProof" :: sliceT
 ].
 
-Definition Membⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.Memb"%go.
+Definition NonMembⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.NonMemb"%go.
 
 Definition NonMemb : go_type := structT [
   "LabelProof" :: sliceT;
   "MerkleProof" :: sliceT
 ].
 
-Definition NonMembⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.NonMemb"%go.
+Definition AuditProofⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProof"%go.
 
 Definition AuditProof : go_type := structT [
   "Updates" :: sliceT;
   "LinkSig" :: sliceT
 ].
 
-Definition AuditProofⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProof"%go.
+Definition UpdateProofⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProof"%go.
 
 Definition UpdateProof : go_type := structT [
   "MapLabel" :: sliceT;
   "MapVal" :: sliceT;
   "NonMembProof" :: sliceT
 ].
-
-Definition UpdateProofⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProof"%go.
 
 (* go: serde.out.go:10:6 *)
 Definition VrfSigEncodeⁱᵐᵖˡ : val :=

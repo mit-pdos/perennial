@@ -11,13 +11,13 @@ Module append_log.
 Section code.
 
 
+Definition Logⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/append_log.Log"%go.
+
 Definition Log : go_type := structT [
   "m" :: ptrT;
   "sz" :: uint64T;
   "diskSz" :: uint64T
 ].
-
-Definition Logⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/append_log.Log"%go.
 
 (* go: append_log.go:22:17 *)
 Definition Log__mkHdrⁱᵐᵖˡ : val :=
@@ -28,17 +28,17 @@ Definition Log__mkHdrⁱᵐᵖˡ : val :=
     (func_call #marshal.NewEnc) "$a0") in
     do:  ("enc" <-[#marshal.Enc] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] (struct.field_ref #Log #"sz"%go (![#ptrT] "log"))) in
-    (method_call #marshal #"Enc" #"PutInt" (![#marshal.Enc] "enc")) "$a0");;;
+    (method_call #marshal.Encⁱᵈ #"PutInt"%go (![#marshal.Enc] "enc")) "$a0");;;
     do:  (let: "$a0" := (![#uint64T] (struct.field_ref #Log #"diskSz"%go (![#ptrT] "log"))) in
-    (method_call #marshal #"Enc" #"PutInt" (![#marshal.Enc] "enc")) "$a0");;;
-    return: ((method_call #marshal #"Enc" #"Finish" (![#marshal.Enc] "enc")) #())).
+    (method_call #marshal.Encⁱᵈ #"PutInt"%go (![#marshal.Enc] "enc")) "$a0");;;
+    return: ((method_call #marshal.Encⁱᵈ #"Finish"%go (![#marshal.Enc] "enc")) #())).
 
 (* go: append_log.go:29:17 *)
 Definition Log__writeHdrⁱᵐᵖˡ : val :=
   λ: "log" <>,
     exception_do (let: "log" := (mem.alloc "log") in
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := ((method_call #append_log.append_log #"Log'ptr" #"mkHdr" (![#ptrT] "log")) #()) in
+    let: "$a1" := ((method_call #(ptrTⁱᵈ Logⁱᵈ) #"mkHdr"%go (![#ptrT] "log")) #()) in
     (func_call #disk.Write) "$a0" "$a1");;;
     return: #()).
 
@@ -69,7 +69,7 @@ Definition Initⁱᵐᵖˡ : val :=
       "diskSz" ::= "$diskSz"
     }])) in
     do:  ("log" <-[#ptrT] "$r0");;;
-    do:  ((method_call #append_log.append_log #"Log'ptr" #"writeHdr" (![#ptrT] "log")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ Logⁱᵈ) #"writeHdr"%go (![#ptrT] "log")) #());;;
     return: (![#ptrT] "log", #true)).
 
 Definition Open : go_string := "github.com/goose-lang/goose/testdata/examples/append_log.Open"%go.
@@ -86,10 +86,10 @@ Definition Openⁱᵐᵖˡ : val :=
     (func_call #marshal.NewDec) "$a0") in
     do:  ("dec" <-[#marshal.Dec] "$r0");;;
     let: "sz" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #marshal #"Dec" #"GetInt" (![#marshal.Dec] "dec")) #()) in
+    let: "$r0" := ((method_call #marshal.Decⁱᵈ #"GetInt"%go (![#marshal.Dec] "dec")) #()) in
     do:  ("sz" <-[#uint64T] "$r0");;;
     let: "diskSz" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #marshal #"Dec" #"GetInt" (![#marshal.Dec] "dec")) #()) in
+    let: "$r0" := ((method_call #marshal.Decⁱᵈ #"GetInt"%go (![#marshal.Dec] "dec")) #()) in
     do:  ("diskSz" <-[#uint64T] "$r0");;;
     return: (mem.alloc (let: "$m" := (mem.alloc (type.zero_val #sync.Mutex)) in
      let: "$sz" := (![#uint64T] "sz") in
@@ -120,16 +120,16 @@ Definition Log__Getⁱᵐᵖˡ : val :=
   λ: "log" "i",
     exception_do (let: "log" := (mem.alloc "log") in
     let: "i" := (mem.alloc "i") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
     let: "b" := (mem.alloc (type.zero_val #boolT)) in
     let: "v" := (mem.alloc (type.zero_val #sliceT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "i") in
-    (method_call #append_log.append_log #"Log'ptr" #"get" (![#ptrT] "log")) "$a0") in
+    (method_call #(ptrTⁱᵈ Logⁱᵈ) #"get"%go (![#ptrT] "log")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[#sliceT] "$r0");;;
     do:  ("b" <-[#boolT] "$r1");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
     return: (![#sliceT] "v", ![#boolT] "b")).
 
 Definition writeAll : go_string := "github.com/goose-lang/goose/testdata/examples/append_log.writeAll"%go.
@@ -167,7 +167,7 @@ Definition Log__appendⁱᵐᵖˡ : val :=
     (func_call #writeAll) "$a0" "$a1");;;
     do:  ((struct.field_ref #Log #"sz"%go (![#ptrT] "log")) <-[#uint64T] ((![#uint64T] (struct.field_ref #Log #"sz"%go (![#ptrT] "log"))) + (s_to_w64 (let: "$a0" := (![#sliceT] "bks") in
     slice.len "$a0"))));;;
-    do:  ((method_call #append_log.append_log #"Log'ptr" #"writeHdr" (![#ptrT] "log")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ Logⁱᵈ) #"writeHdr"%go (![#ptrT] "log")) #());;;
     return: (#true)).
 
 (* go: append_log.go:82:17 *)
@@ -175,12 +175,12 @@ Definition Log__Appendⁱᵐᵖˡ : val :=
   λ: "log" "bks",
     exception_do (let: "log" := (mem.alloc "log") in
     let: "bks" := (mem.alloc "bks") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
     let: "b" := (mem.alloc (type.zero_val #boolT)) in
     let: "$r0" := (let: "$a0" := (![#sliceT] "bks") in
-    (method_call #append_log.append_log #"Log'ptr" #"append" (![#ptrT] "log")) "$a0") in
+    (method_call #(ptrTⁱᵈ Logⁱᵈ) #"append"%go (![#ptrT] "log")) "$a0") in
     do:  ("b" <-[#boolT] "$r0");;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
     return: (![#boolT] "b")).
 
 (* go: append_log.go:89:17 *)
@@ -189,16 +189,16 @@ Definition Log__resetⁱᵐᵖˡ : val :=
     exception_do (let: "log" := (mem.alloc "log") in
     let: "$r0" := #(W64 0) in
     do:  ((struct.field_ref #Log #"sz"%go (![#ptrT] "log")) <-[#uint64T] "$r0");;;
-    do:  ((method_call #append_log.append_log #"Log'ptr" #"writeHdr" (![#ptrT] "log")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ Logⁱᵈ) #"writeHdr"%go (![#ptrT] "log")) #());;;
     return: #()).
 
 (* go: append_log.go:94:17 *)
 Definition Log__Resetⁱᵐᵖˡ : val :=
   λ: "log" <>,
     exception_do (let: "log" := (mem.alloc "log") in
-    do:  ((method_call #sync #"Mutex'ptr" #"Lock" (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
-    do:  ((method_call #append_log.append_log #"Log'ptr" #"reset" (![#ptrT] "log")) #());;;
-    do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
+    do:  ((method_call #(ptrTⁱᵈ Logⁱᵈ) #"reset"%go (![#ptrT] "log")) #());;;
+    do:  ((method_call #(ptrTⁱᵈ sync.Mutexⁱᵈ) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"m"%go (![#ptrT] "log")))) #());;;
     return: #()).
 
 Definition vars' : list (go_string * go_type) := [].

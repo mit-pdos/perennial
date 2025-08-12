@@ -8,12 +8,12 @@ Section code.
 Context `{ffi_syntax}.
 
 
+Definition Builderⁱᵈ : go_string := "strings.Builder"%go.
+
 Definition Builder : go_type := structT [
   "addr" :: ptrT;
   "buf" :: sliceT
 ].
-
-Definition Builderⁱᵈ : go_string := "strings.Builder"%go.
 
 Definition Clone : go_string := "strings.Clone"%go.
 

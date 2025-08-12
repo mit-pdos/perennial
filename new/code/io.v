@@ -32,13 +32,13 @@ Definition ErrNoProgress : go_string := "io.ErrNoProgress"%go.
 
 Axiom ErrNoProgress'init : val.
 
-Definition Reader : go_type := interfaceT.
-
 Definition Readerⁱᵈ : go_string := "io.Reader"%go.
 
-Definition Writer : go_type := interfaceT.
+Definition Reader : go_type := interfaceT.
 
 Definition Writerⁱᵈ : go_string := "io.Writer"%go.
+
+Definition Writer : go_type := interfaceT.
 
 Definition WriteString : go_string := "io.WriteString"%go.
 

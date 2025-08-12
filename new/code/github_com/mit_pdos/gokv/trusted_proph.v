@@ -11,9 +11,9 @@ Section code.
 Context `{ffi_syntax}.
 
 
-Definition ProphId : go_type := ptrT.
-
 Definition ProphIdⁱᵈ : go_string := ptrTⁱᵈ primitive.prophIdⁱᵈ.
+
+Definition ProphId : go_type := ptrT.
 
 Definition NewProph : go_string := "github.com/mit-pdos/gokv/trusted_proph.NewProph"%go.
 
