@@ -2,7 +2,7 @@
 files. *)
 
 From Coq Require Import ZArith.
-From stdpp Require Export base tactics.
+From iris Require Export prelude.
 
 Notation "'sealed' x" := (unseal (_ : seal x)) (at level 200, only parsing).
 
