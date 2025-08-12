@@ -10,7 +10,7 @@ From New.proof.sync_proof Require Import base mutex sema.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.  
 Context  `{!chanGhostStateG Σ}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 
 Arguments ch_loc: default implicits.
 Arguments ch_mu: default implicits.
@@ -34,7 +34,7 @@ Lemma wp_Channel__Send
   (params: chan V) (i: nat) (q: Qp) (v: V):
   (if params.(ch_is_single_party) then q = 1%Qp else (q ≤ 1)%Qp) ->
   {{{ is_pkg_init channel ∗ send_pre V params q i v }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "Send" #t #v 
+    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Send" #t #v 
   {{{ RET #(); send_post V params q i }}}.
 Proof.
   intros Hsp.
@@ -85,7 +85,7 @@ Lemma wp_Channel__Receive
   {H': IntoValTyped V t} {B: BoundedTypeSize t}
   (params: chan V) (i: nat) (q: Qp) (Ri: nat -> iProp Σ):
   {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "Receive" #t #()
+    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Receive" #t #()
   {{{ (v: V) (ok: bool), RET (#v, #ok);
       recv_post V params q i ok v Ri }}}.
 Proof.
@@ -122,7 +122,7 @@ Lemma wp_Channel__ReceiveDiscardOk
   {H': IntoValTyped V t} {B: BoundedTypeSize t}
   (params: chan V) (i: nat) (q: Qp) (Ri: nat -> iProp Σ):
   {{{ is_pkg_init channel ∗ recv_pre V params q i Ri }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "ReceiveDiscardOk" #t #()
+    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "ReceiveDiscardOk" #t #()
   {{{ (v: V) (ok: bool), RET #v;
       recv_post V params q i ok v Ri }}}.
 Proof.
@@ -149,7 +149,7 @@ Lemma wp_NewChannelRef_base
   0 ≤ size ->
   size + 1 < 2 ^ 63 ->
   {{{ is_pkg_init channel }}}
-    channel @ "NewChannelRef" #t #(W64 size)
+    @@ channel.NewChannelRef #t #(W64 size)
   {{{ (ch_ref_ptr ch_mu_loc: loc) (ch_buff_slice: slice.t) (ch_γ_names: chan_names) (params: chan V),
       RET #ch_ref_ptr;
         "Hparams" ∷ ⌜params = {| ch_t := t;
@@ -284,7 +284,7 @@ Lemma wp_NewChannelRef_simple_unbuffered_sync
 (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t} 
 (Psingle: Z -> V -> iProp Σ):
   {{{ is_pkg_init channel }}}
-    channel @ "NewChannelRef" #t #(W64 0)
+    @@ channel.NewChannelRef #t #(W64 0)
   {{{ (ch_ref_ptr: loc) (ch_mu_loc: loc) (ch_buff_slice: slice.t) (ch_γ_names: chan_names)  (params: chan V), RET #ch_ref_ptr;
           "%Hparams" ∷ ⌜params = {|
       ch_t := t;
@@ -320,7 +320,7 @@ Qed.
   
 Lemma wp_Channel__Len (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V) :
   {{{ is_pkg_init channel ∗  isChan V params }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "Len" #t #()
+    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Len" #t #()
   {{{ (n: nat), RET #(W64 n); ⌜ (0 ≤ n)%nat ⌝ }}}.
 Proof.
   wp_start. wp_auto. iNamed "Hpre".  wp_if_destruct.
@@ -340,7 +340,7 @@ Qed.
 
 Lemma wp_Channel__Cap (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V) :
   {{{ is_pkg_init channel ∗ isChan V params }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "Cap" #t #()
+    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Cap" #t #()
   {{{ RET #(W64 params.(ch_size)); True%I }}}.
 Proof.
   wp_start. wp_auto. iNamed "Hpre".
@@ -364,7 +364,7 @@ Qed.
 
 Lemma wp_Channel__Close (V: Type) {K: IntoVal V} {t: go_type} {H': IntoValTyped V t} {B: BoundedTypeSize t}  (params: chan V)  (n: nat) :
   {{{ is_pkg_init channel ∗ "HCh" ∷ isChan V params ∗ "HCp" ∷ own_close_perm params.(ch_γ) params.(ch_R) n }}}
-    params.(ch_loc) @ channel @ "Channel'ptr" @ "Close" #t #()
+    params.(ch_loc) @ (ptrTⁱᵈ channel.Channelⁱᵈ) @ "Close" #t #()
   {{{ RET #(); True }}}.
 Proof.
    wp_start. wp_auto.
@@ -478,7 +478,7 @@ Lemma wp_Select2
     own_select_case V1 params1 dir1 case1_ptr false i1 q1 #v1 Ri1 ∗
     own_select_case V2 params2 dir2 case2_ptr false i2 q2 #v2 Ri2
 }}}
-  channel @ "Select2" #t1 #t2 #case1_ptr #case2_ptr #blocking
+  @@ channel.Select2 #t1 #t2 #case1_ptr #case2_ptr #blocking
 {{{ (selected_idx: Z), RET #(W64 selected_idx);
     ⌜selected_idx ≤ 2⌝ ∗
     match selected_idx with 

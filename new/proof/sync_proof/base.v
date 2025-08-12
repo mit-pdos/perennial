@@ -33,16 +33,21 @@ Proof. solve_inG. Qed.
 
 Section defns.
 Context `{heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{!syncG Σ}.
 
-#[global]
-Program Instance is_pkg_init_race : IsPkgInit race := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_race.
-#[local] Transparent is_pkg_init_race.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'race).
+#[global] Program Instance : IsPkgInit race :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_sync : IsPkgInit sync := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_sync.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'sync).
+#[global] Program Instance : IsPkgInit sync :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 End defns.

@@ -15,11 +15,16 @@ Instance subG_lockmapΣ Σ : subG lockmapΣ Σ → lockmapG Σ.
 Proof. solve_inG. Qed.
 
 Section heap.
-Context `{!heapGS Σ} `{!goGlobalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ}.
 Context `{!lockmapG Σ}.
 
 #[global]
-Program Instance : IsPkgInit lockmap := ltac2:(build_pkg_init ()).
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'lockmap).
+#[global] Program Instance : IsPkgInit lockmap :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 Next Obligation.
   (* XXX why isn't this automatic? *)
   refine _.
@@ -66,7 +71,7 @@ Proof. apply _. Qed.
 Theorem wp_mkLockShard covered (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       [∗ set] a ∈ covered, P a }}}
-    lockmap@"mkLockShard" #()
+    @@ lockmap.mkLockShard #()
   {{{ ls gh, RET #ls; is_lockShard ls gh covered P }}}.
 Proof.
   wp_start as "Hinit".
@@ -388,7 +393,7 @@ Definition Locked (ghs : list gname) (addr : u64) : iProp Σ :=
 Theorem wp_MkLockMap covered (P : u64 -> iProp Σ) :
   {{{ is_pkg_init lockmap ∗
       [∗ set] a ∈ covered, P a }}}
-    lockmap@"MkLockMap" #()
+    @@ lockmap.MkLockMap #()
   {{{ l ghs, RET #l; is_lockMap l ghs covered P }}}.
 Proof.
   wp_start as "Hcovered".

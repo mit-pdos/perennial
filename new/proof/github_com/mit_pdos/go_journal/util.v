@@ -7,15 +7,14 @@ Require Import New.proof.log.
 From Perennial.Helpers Require Import ModArith.
 
 Section proof.
-Context `{!heapGS Σ} `{!goGlobalsGS Σ}.
-Context `{!util.GlobalAddrs}.
+Context `{!heapGS Σ} `{!globalsGS Σ}.
 Context `{!ghost_varG Σ ()}.
 
 (* More realistically, we might want to put this as a non-persistent fact inside
  * the invariant, to reason about changing the Debug value, but we currently don't
  * prove any WPs about code that modifies Debug, so ignore that technicality for now.
  *)
-Definition is_initialized `{!util.GlobalAddrs} : iProp Σ :=
+Definition is_initialized : iProp Σ :=
   ∃ (level: w64),
     "Hglobal_debug" ∷ util.Debug ↦□ level.
 
@@ -36,7 +35,7 @@ Implicit Types (v:val).
 Theorem wp_Min_l (n m: u64) :
   {{{ is_pkg_init util ∗
       ⌜ uint.Z n <= uint.Z m ⌝ }}}
-    util@"Min" #n #m
+    @@ util.Min #n #m
   {{{ RET #n; True }}}.
 Proof.
   wp_start as "%Hmin".
@@ -50,7 +49,7 @@ Qed.
 Theorem wp_Min_r (n m: u64) :
   {{{ is_pkg_init util ∗
       ⌜ uint.Z n >= uint.Z m ⌝ }}}
-    util@"Min" #n #m
+    @@ util.Min #n #m
   {{{ RET #m; True }}}.
 Proof.
   wp_start as "%Hmin".
@@ -64,7 +63,7 @@ Qed.
 Theorem wp_DPrintf (level: u64) (msg: go_string) (arg: slice.t) :
   {{{ is_pkg_init util ∗
       True }}}
-    util@"DPrintf" #level #msg #arg
+    @@ util.DPrintf #level #msg #arg
   {{{ T (_: IntoVal T) (v: T), RET #v; True }}}.
 Proof.
   (* XXX if I use [wp_start], then I can't name the [is_pkg_init] fact to extract [is_initialized].. *)
@@ -88,7 +87,7 @@ Qed.
 
 Theorem wp_SumOverflows (x y: u64) :
   {{{ is_pkg_init util }}}
-    util@"SumOverflows" #x #y
+    @@ util.SumOverflows #x #y
   {{{ (ok: bool), RET #ok; ⌜ok = bool_decide (uint.Z x + uint.Z y >= 2^64)⌝ }}}.
 Proof.
   wp_start as "_".
@@ -101,7 +100,7 @@ Qed.
 Theorem wp_CloneByteSlice (s:slice.t) q (vs:list w8) :
   {{{ is_pkg_init util ∗
       own_slice s q vs }}}
-    util@"CloneByteSlice" #s
+    @@ util.CloneByteSlice #s
   {{{ (s':slice.t), RET #s';
       own_slice s q vs ∗
       own_slice s' (DfracOwn 1) vs }}}.

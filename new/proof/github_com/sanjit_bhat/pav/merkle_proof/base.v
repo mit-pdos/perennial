@@ -16,24 +16,24 @@ Notation leafNodeTy := (W8 1) (only parsing).
 Notation innerNodeTy := (W8 2) (only parsing).
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
 Context `{!ghost_varG Σ ()}.
 
-Definition own_initialized `{!merkle.GlobalAddrs} : iProp Σ :=
+Definition own_initialized : iProp Σ :=
   ∃ sl_emptyHash emptyHash,
   "#HemptyHash" ∷ merkle.emptyHash ↦□ sl_emptyHash ∗
   "#Hsl_emptyHash" ∷ sl_emptyHash ↦*□ emptyHash ∗
   "#His_hash" ∷ cryptoffi.cryptoffi.is_hash (Some [emptyNodeTag]) emptyHash.
 
-Definition is_initialized (γtok : gname) `{!merkle.GlobalAddrs} : iProp Σ :=
+Definition is_initialized (γtok : gname) : iProp Σ :=
   inv nroot (ghost_var γtok 1 () ∨ own_initialized).
 
 Lemma wp_initialize' pending postconds γtok :
   merkle ∉ pending →
-  postconds !! merkle = Some (∃ (d : merkle.GlobalAddrs), is_pkg_defined merkle ∗ is_initialized γtok)%I →
+  postconds !! merkle = Some (is_pkg_defined merkle ∗ is_initialized γtok)%I →
   {{{ own_globals_tok pending postconds }}}
     merkle.initialize' #()
-  {{{ (_ : merkle.GlobalAddrs), RET #();
+  {{{ RET #();
       is_pkg_defined merkle ∗ is_initialized γtok ∗ own_globals_tok pending postconds
   }}}.
 Proof.
@@ -65,11 +65,12 @@ Proof.
   iApply "HΦ".
 Admitted.
 
-Context `{!merkle.GlobalAddrs}.
 
-#[global]
-Program Instance is_pkg_init_merkle : IsPkgInit merkle := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_merkle.
-#[local] Transparent is_pkg_init_merkle.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'merkle).
+#[global] Program Instance : IsPkgInit merkle :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 End proof.

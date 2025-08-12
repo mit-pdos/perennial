@@ -18,52 +18,65 @@ Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
-Context `{!etcdserverpb.GlobalAddrs}.
-Context `{!concurrency.GlobalAddrs}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
-#[global]
-Program Instance is_pkg_init_math : IsPkgInit math :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_math.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'math).
+#[global] Program Instance : IsPkgInit math :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_zapcore : IsPkgInit zapcore :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_zapcore.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'zapcore).
+#[global] Program Instance : IsPkgInit zapcore :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_zap : IsPkgInit zap :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_zap.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'zap).
+#[global] Program Instance : IsPkgInit zap :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_time : IsPkgInit time :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_time.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'time).
+#[global] Program Instance : IsPkgInit time :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_strings : IsPkgInit strings :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_strings.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'strings).
+#[global] Program Instance : IsPkgInit strings :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_fmt : IsPkgInit fmt :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_fmt.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'fmt).
+#[global] Program Instance : IsPkgInit fmt :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_errors : IsPkgInit errors :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_errors.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'errors).
+#[global] Program Instance : IsPkgInit errors :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
-#[global]
-Program Instance is_pkg_init_concurrency : IsPkgInit concurrency :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_concurrency.
-#[local] Transparent is_pkg_init_concurrency.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'concurrency).
+#[global] Program Instance : IsPkgInit concurrency :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   ∃ cl donec,
@@ -85,7 +98,7 @@ Lemma wp_NewSession (client : loc) γetcd :
         is_pkg_init concurrency ∗
         "#His_client" ∷ is_Client client γetcd
   }}}
-    concurrency @ "NewSession" #client #slice.nil
+    @@ concurrency.NewSession #client #slice.nil
   {{{ s err, RET (#s, #err);
       if decide (err = interface.nil) then
         ∃ lease, is_Session s γetcd lease
@@ -196,7 +209,7 @@ Qed.
 
 Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    s @ concurrency @ "Session'ptr" @ "Lease" #()
+    s @ (ptrTⁱᵈ concurrency.Sessionⁱᵈ) @ "Lease" #()
   {{{ RET #lease; True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
@@ -204,7 +217,7 @@ Qed.
 
 Lemma wp_Session__Done s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    s @ concurrency @ "Session'ptr" @ "Done" #()
+    s @ (ptrTⁱᵈ concurrency.Sessionⁱᵈ) @ "Done" #()
   {{{ ch, RET #ch; own_closeable_chan ch True closeable.Unknown }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".

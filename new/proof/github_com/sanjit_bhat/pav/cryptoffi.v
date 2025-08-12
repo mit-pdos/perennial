@@ -6,12 +6,14 @@ Module cryptoffi.
 Notation hash_len := 32 (only parsing).
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
 
-#[global]
-Program Instance is_pkg_init_cryptoffi : IsPkgInit cryptoffi := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_cryptoffi.
-#[local] Transparent is_pkg_init_cryptoffi.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'cryptoffi).
+#[global] Program Instance : IsPkgInit cryptoffi :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 (* Hashes. *)
 
@@ -51,7 +53,7 @@ Definition own_Hasher (ptr : loc) (data : list w8) : iProp Σ. Proof. Admitted.
 
 Lemma wp_NewHasher :
   {{{ is_pkg_init cryptoffi }}}
-  cryptoffi @ "NewHasher" #()
+  @@ cryptoffi.NewHasher #()
   {{{
     ptr_hr, RET #ptr_hr;
     "Hown_hr" ∷ own_Hasher ptr_hr []
@@ -64,7 +66,7 @@ Lemma wp_Hasher_Write hr data sl_b d0 b :
     "Hown_hr" ∷ own_Hasher hr data ∗
     "Hsl_b" ∷ sl_b ↦*{d0} b
   }}}
-  hr @ cryptoffi @ "Hasher'ptr" @ "Write" #sl_b
+  hr @ (ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) @ "Write" #sl_b
   {{{
     RET #();
     "Hown_hr" ∷ own_Hasher hr (data ++ b) ∗
@@ -78,7 +80,7 @@ Lemma wp_Hasher_Sum sl_b_in hr data b_in :
     "Hown_hr" ∷ own_Hasher hr data ∗
     "Hsl_b_in" ∷ sl_b_in ↦* b_in
   }}}
-  hr @ cryptoffi @ "Hasher'ptr" @ "Sum" #sl_b_in
+  hr @ (ptrTⁱᵈ cryptoffi.Hasherⁱᵈ) @ "Sum" #sl_b_in
   {{{
     sl_b_out hash, RET #sl_b_out;
     "Hown_hr" ∷ own_Hasher hr data ∗

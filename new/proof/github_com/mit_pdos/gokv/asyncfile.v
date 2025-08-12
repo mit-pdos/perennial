@@ -40,7 +40,7 @@ Proof. solve_inG. Qed.
 Section asyncfile_proof.
 
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{!asyncfileG Σ}.
 Implicit Types (P: list u8 → iProp Σ).
 
@@ -145,8 +145,12 @@ Definition own_AsyncFile_internal f N γ P lk : iProp Σ :=
 .
 
 #[global]
-Program Instance : IsPkgInit asyncfile :=
-  ltac2:(build_pkg_init ()).
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'asyncfile).
+#[global] Program Instance : IsPkgInit asyncfile :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Definition is_AsyncFile (N:namespace) (f:loc) γ P : iProp Σ :=
   ∃ (mu : loc),
@@ -205,7 +209,7 @@ Lemma wp_AsyncFile__wait N f γ P Q (i:u64) :
         "#Hinv" ∷ is_write_inv N γ i Q ∗
         "Htok" ∷ own_escrow_token γ i
   }}}
-    f @ asyncfile @ "AsyncFile'ptr" @ "wait" #i
+    f @ (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) @ "wait" #i
   {{{
         RET #(); Q
   }}}.
@@ -346,7 +350,7 @@ Lemma wp_AsyncFile__Write N f γ P olddata data_sl data Q:
         "Hdata_in" ∷ data_sl ↦* data ∗
         "Hupd" ∷ (P olddata ={⊤∖↑N}=∗ P data ∗ Q)
   }}}
-    f @ asyncfile @ "AsyncFile'ptr" @ "Write" #data_sl
+    f @ (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) @ "Write" #data_sl
   {{{
         (w:val), RET w;
         own_AsyncFile N f γ P data ∗
@@ -449,7 +453,7 @@ Lemma wp_AsyncFile__flushThread fname N f γ P data :
         "#Hfilename_in" ∷ f ↦s[asyncfile.AsyncFile :: "filename"]□ fname ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    f @ asyncfile @ "AsyncFile'ptr" @ "flushThread" #()
+    f @ (ptrTⁱᵈ asyncfile.AsyncFileⁱᵈ) @ "flushThread" #()
   {{{
         RET #(); True
   }}}.
@@ -609,7 +613,7 @@ Lemma wp_MakeAsyncFile fname N P data :
         is_pkg_init asyncfile ∗
         "Hfile" ∷ own_crash (N.@"crash") (∃ d, P d ∗ fname f↦ d) (P data ∗ fname f↦ data)
   }}}
-    asyncfile @ "MakeAsyncFile" #fname
+    @@ asyncfile.MakeAsyncFile #fname
   {{{
         γ sl f, RET (#sl, #f); sl ↦*□ data ∗ own_AsyncFile N f γ P data
   }}}
@@ -663,10 +667,10 @@ Qed.
 (*
 Lemma wp_initialize' pending postconds γtok :
   main ∉ pending →
-  postconds !! main = Some (∃ (d : main.GlobalAddrs), main.is_defined ∗ is_initialized γtok)%I →
+  postconds !! main = Some (main.is_defined ∗ is_initialized γtok)%I →
   {{{ own_globals_tok pending postconds }}}
     asyncfile.initialize' #()
-  {{{ (_ : main.GlobalAddrs), RET #();
+  {{{ RET #();
       main.is_defined ∗ is_initialized γtok ∗ own_globals_tok pending postconds
   }}}.
 Proof.

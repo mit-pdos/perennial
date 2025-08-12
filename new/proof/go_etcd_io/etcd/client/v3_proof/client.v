@@ -2,9 +2,8 @@ From New.proof.go_etcd_io.etcd.client.v3_proof Require Import base op definition
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{!clientv3G Σ}.
-Context `{!etcdserverpb.GlobalAddrs}.
 Implicit Types (γ : clientv3_names).
 
 (* #[global]
@@ -38,24 +37,24 @@ Axiom wp_Client__Do_Get : ∀ key client γ (ctx : context.Context.t) (op : clie
   (|={⊤∖↑N,∅}=> ∃ dq val, key etcd[γ]↦{dq} val ∗
                         (key etcd[γ]↦{dq} val ={∅,⊤∖↑N}=∗ Φ #())) -∗
   (* TODO: return value. *)
-  WP client @ clientv3 @ "Client" @ "Do" #ctx #op {{ Φ }}.
+  WP client @ c@@ lientv3.Client.Do #ctx #op {{ Φ }}.
 
 Axiom wp_Client__GetLogger :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    client @ clientv3 @ "Client'ptr" @ "GetLogger" #()
+    client @ (ptrTⁱᵈ clientv3.Clientⁱᵈ) @ "GetLogger" #()
   {{{ (lg : loc), RET #lg; True }}}.
 
 Axiom wp_Client__Ctx :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    client @ clientv3 @ "Client'ptr" @ "Ctx" #()
+    client @ (ptrTⁱᵈ clientv3.Clientⁱᵈ) @ "Ctx" #()
   {{{ ctx s, RET #ctx; is_Context ctx s }}}.
 
 Axiom wp_Client__Grant :
   ∀ client γ (ctx : context.Context.t) (ttl : w64),
   {{{ is_Client client γ }}}
-    client @ clientv3 @ "Client'ptr" @ "Grant" #ctx #ttl
+    client @ (ptrTⁱᵈ clientv3.Clientⁱᵈ) @ "Grant" #ctx #ttl
   {{{
       resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
         RET (#resp_ptr, #err);
@@ -69,7 +68,7 @@ Axiom wp_Client__KeepAlive :
   ∀ client γ (ctx : context.Context.t) id,
   (* The precondition requires that this is only called on a `Grant`ed lease. *)
   {{{ is_Client client γ ∗ is_etcd_lease γ id }}}
-    client @ clientv3 @ "Client'ptr" @ "KeepAlive" #ctx #id
+    client @ (ptrTⁱᵈ clientv3.Clientⁱᵈ) @ "KeepAlive" #ctx #id
   {{{
       (kch : chan.t) (err : error.t),
         RET (#kch, #err);

@@ -26,7 +26,7 @@ End defns.
 
 Section proof.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 
 Context (N: namespace).
 
@@ -51,8 +51,12 @@ Global Instance is_LockClerk_pers ck γ : Persistent (is_LockClerk ck γ) := _.
 Global Instance is_lock_pers N γ key R : Persistent (is_lock N γ key R) := _.
 
 #[global]
-Program Instance : IsPkgInit lockservice :=
-  ltac2:(build_pkg_init ()).
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'lockservice).
+#[global] Program Instance : IsPkgInit lockservice :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Lemma wp_MakeLockClerk kv kvptsto E :
   {{{
@@ -60,7 +64,7 @@ Lemma wp_MakeLockClerk kv kvptsto E :
        is_KvCput kv kvptsto E ∗
        ⌜ E ## ↑N ⌝
   }}}
-    lockservice @ "MakeLockClerk" #kv
+    @@ lockservice.MakeLockClerk #kv
   {{{
        (ck:loc), RET #ck; is_LockClerk ck (mk_lockservice_params kvptsto)
   }}}
@@ -80,7 +84,7 @@ Lemma wp_LockClerk__Lock ck key γ R :
       is_pkg_init lockservice ∗
       is_LockClerk ck γ ∗ is_lock N γ key R
   }}}
-    ck @ lockservice @ "LockClerk'ptr" @ "Lock" #key
+    ck @ (ptrTⁱᵈ lockservice.LockClerkⁱᵈ) @ "Lock" #key
   {{{
        RET #(); R
   }}}
@@ -120,7 +124,7 @@ Lemma wp_LockClerk__Unlock ck key γ R :
   {{{
        is_pkg_init lockservice ∗ is_LockClerk ck γ ∗ is_lock N γ key R ∗ R
   }}}
-    ck @ lockservice @ "LockClerk'ptr" @ "Unlock" #key
+    ck @ (ptrTⁱᵈ lockservice.LockClerkⁱᵈ) @ "Unlock" #key
   {{{
        RET #(); True
   }}}

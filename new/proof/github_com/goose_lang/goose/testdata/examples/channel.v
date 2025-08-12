@@ -14,9 +14,14 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}. 
 Context  `{!chanGhostStateG Σ}.
 Context `{!ghost_varG Σ (w64)}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{ ghost_mapG Σ Z w64 }.
-#[global] Program Instance : IsPkgInit chan_spec_raw_examples := ltac2:(build_pkg_init ()).
+#[global] Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'chan_spec_raw_examples).
+#[global] Program Instance : IsPkgInit chan_spec_raw_examples :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 (* 
   Transfers pointer ownership from main to forked goroutine.
@@ -35,7 +40,7 @@ Definition ghost_pt_pred (γ: gname) (val1_ptr val2_ptr val3_ptr: loc) (i: Z) (l
 
 Lemma wp_DoubleValues :
   {{{ is_pkg_init chan_spec_raw_examples }}}
-    chan_spec_raw_examples @ "DoubleValues" #()
+    @@ chan_spec_raw_examples.DoubleValues #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
@@ -441,7 +446,7 @@ Qed.
 
 Lemma wp_CoordinatedChannelClose (γ: chan_names):
   {{{ is_pkg_init chan_spec_raw_examples }}}
-    chan_spec_raw_examples @ "CoordinatedChannelClose" #()
+    @@ chan_spec_raw_examples.CoordinatedChannelClose #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start; wp_auto.
@@ -631,7 +636,7 @@ Definition hello_world_pred
 
 Lemma wp_SendMessage:
   {{{ is_pkg_init chan_spec_raw_examples }}}
-    chan_spec_raw_examples @ "SendMessage" #()
+    @@ chan_spec_raw_examples.SendMessage #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start; wp_auto.

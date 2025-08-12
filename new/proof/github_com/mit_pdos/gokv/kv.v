@@ -4,15 +4,19 @@ Require Import New.generatedproof.github_com.mit_pdos.gokv.kv.
 
 Section definitions.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 
 (* KV points-to for the internal kv service *)
 Implicit Types (kvptsto: go_string → go_string → iProp Σ).
 Implicit Types (E:coPset).
 
 #[global]
-Program Instance : IsPkgInit kv :=
-  ltac2:(build_pkg_init ()).
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'kv).
+#[global] Program Instance : IsPkgInit kv :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 (* Specification of Kv interface. *)
 Definition is_Kv_Put kvptsto E (v : interface.t) : iProp Σ :=

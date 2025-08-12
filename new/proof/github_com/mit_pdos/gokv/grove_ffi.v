@@ -73,7 +73,7 @@ Section grove.
   Existing Instances grove_op grove_model grove_semantics grove_interp goose_groveGS goose_groveNodeGS.
 
   Context `{!heapGS Σ}.
-  Context `{!goGlobalsGS Σ}.
+  Context `{!globalsGS Σ} `{!GoContext}.
 
   Definition is_initialized :=
     is_pkg_defined grove_ffi.
@@ -90,7 +90,7 @@ Section grove.
 
   Lemma wp_Listen host :
     {{{ is_pkg_init grove_ffi }}}
-      grove_ffi @ "Listen" #host
+      @@ grove_ffi.Listen #host
     {{{ l, RET #l; is_Listener l host }}}.
   Proof.
     wp_start as "#Hdef".
@@ -113,7 +113,7 @@ Section grove.
 
   Lemma wp_Connect remote :
     {{{ is_pkg_init grove_ffi }}}
-      grove_ffi @ "Connect" #remote
+      @@ grove_ffi.Connect #remote
     {{{ (err : bool) (local : chan) l,
         RET #(ConnectRet.mk err l);
         if err then True else is_Connection l local remote
@@ -142,7 +142,7 @@ Section grove.
 
   Lemma wp_Accept l local :
     {{{ is_Listener l local }}}
-      grove_ffi @ "Accept" #l
+      @@ grove_ffi.Accept #l
     {{{ c remote, RET #c; is_Connection c local remote }}}.
   Proof.
     wp_start as "[#? ?]".
@@ -222,7 +222,7 @@ Section grove.
   Lemma wp_Send c local remote (s : slice.t) (data : list u8) (dq : dfrac) :
     ⊢ {{{ s ↦*{dq} data ∗ is_Connection c local remote }}}
       <<< ∀∀ ms, remote c↦ ms >>>
-        grove_ffi @ "Send" #c #s @@ ∅
+        @@ grove_ffi.Send #c #s @@ ∅
       <<< ∃∃ (msg_sent : bool),
         remote c↦ (if msg_sent then ms ∪ {[Message local data]} else ms)
       >>>
@@ -263,7 +263,7 @@ Section grove.
   Lemma wp_Receive c local remote :
     ⊢ {{{ is_Connection c local remote }}}
       <<< ∀∀ ms, local c↦ ms >>>
-        grove_ffi @ "Receive" #c @@ ∅
+        @@ grove_ffi.Receive #c @@ ∅
       <<< ∃∃ (err : bool) (data : list u8),
         local c↦ ms ∗ if err then True else ⌜Message remote data ∈ ms⌝
       >>>
@@ -315,7 +315,7 @@ Section grove.
     ⊢ ∀ Φ,
     is_pkg_init grove_ffi -∗
     (|NC={⊤, ∅}=> f f↦{dq} c ∗ (f f↦{dq} c -∗ |NC={∅, ⊤}=> ∀ s, s ↦* c -∗ Φ #s)) -∗
-    WP grove_ffi @ "FileRead" #f {{ Φ }}.
+    WP @@ grove_ffi.FileRead #f {{ Φ }}.
   Proof.
     wp_start as "_".
     wp_bind (ExternalOp _ _).
@@ -358,7 +358,7 @@ Section grove.
     (|NC={⊤, ∅}=> f f↦ old ∗ (f f↦ data -∗ |NC={∅,⊤}=> s ↦*{dq} data -∗ Φ #()) ∧
                             (f f↦ old -∗ |NC={∅,⊤}=> True)
     ) -∗
-    WP grove_ffi @ "FileWrite" #f #s {{ Φ }}.
+    WP @@ grove_ffi.FileWrite #f #s {{ Φ }}.
   Proof.
     wp_start as "Hs".
     wp_bind (ExternalOp _ _).
@@ -395,7 +395,7 @@ Section grove.
     (|NC={⊤, ∅}=> f f↦ old ∗ (f f↦ (old ++ data) -∗ |NC={∅, ⊤}=> s ↦*{dq} data -∗ Φ #()) ∧
                             (f f↦ old -∗ |NC={∅, ⊤}=> True)
     ) -∗
-    WP grove_ffi @ "FileAppend" #f #s {{ Φ }}.
+    WP @@ grove_ffi.FileAppend #f #s {{ Φ }}.
   Proof.
     wp_start as "Hs".
     wp_bind (ExternalOp _ _).
@@ -429,7 +429,7 @@ Section grove.
   Lemma wp_GetTSC :
   ⊢ {{{ is_pkg_init grove_ffi }}}
     <<< ∀∀ prev_time, tsc_lb prev_time >>>
-      grove_ffi @ "GetTSC" #() @@ ∅
+      @@ grove_ffi.GetTSC #() @@ ∅
     <<< ∃∃ (new_time: u64), ⌜prev_time ≤ uint.nat new_time⌝ ∗ tsc_lb (uint.nat new_time) >>>
     {{{ RET #new_time; True }}}.
   Proof.
@@ -450,7 +450,7 @@ Section grove.
     is_pkg_init grove_ffi -∗
       (∀ (l h t:u64), ⌜uint.nat t <= uint.nat h⌝ -∗ ⌜uint.nat l <= uint.nat t⌝ -∗
                       own_time t -∗ |NC={⊤}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
-    WP grove_ffi @ "GetTimeRange" #() {{ Φ }}.
+    WP @@ grove_ffi.GetTimeRange #() {{ Φ }}.
   Proof.
     wp_start as "_". rewrite to_val_unseal /=. iApply (wp_GetTimeRangeOp with "HΦ").
   Qed.

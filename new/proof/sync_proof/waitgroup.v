@@ -1,11 +1,10 @@
 From New.proof.sync_proof Require Import base sema.
 From New.experiments Require Import glob.
 
-#[local] Transparent is_pkg_init_sync.
 
 Section proof.
 Context `{hG:heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{!syncG Σ}.
 
 Local Definition enc (low high : w32) : w64 :=
@@ -174,7 +173,7 @@ Lemma wp_WaitGroup__Add (wg : loc) (delta : w64) γ N :
        "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
                own_WaitGroup γ (word.add oldc delta') ={↑N,⊤}=∗ Φ #())
   ) -∗
-  WP wg @ sync @ "WaitGroup'ptr" @ "Add" #delta {{ Φ }}.
+  WP wg @ (ptrTⁱᵈ sync.WaitGroupⁱᵈ) @ "Add" #delta {{ Φ }}.
 Proof.
   intros delta'.
   wp_start as "#His".
@@ -407,7 +406,7 @@ Lemma wp_WaitGroup__Done (wg : loc) γ N :
        "HΦ" ∷ ((⌜ oldc ≠ W32 0 ⌝ ∨ own_WaitGroup_waiters γ (W32 0)) -∗
                own_WaitGroup γ (word.sub oldc (W32 1)) ={↑N,⊤}=∗ Φ #())
   ) -∗
-  WP wg @ sync @ "WaitGroup'ptr" @ "Done" #() {{ Φ }}.
+  WP wg @ (ptrTⁱᵈ sync.WaitGroupⁱᵈ) @ "Done" #() {{ Φ }}.
 Proof.
   wp_start as "#His".
   wp_auto.
@@ -431,7 +430,7 @@ Lemma wp_WaitGroup__Wait (wg : loc) (delta : w64) γ N :
        own_WaitGroup γ oldc ∗ (⌜ sint.Z oldc = 0 ⌝ → own_WaitGroup γ oldc ={∅,⊤∖↑N}=∗
                                own_WaitGroup_wait_token γ -∗ Φ #())
   ) -∗
-  WP wg @ sync @ "WaitGroup'ptr" @ "Wait" #() {{ Φ }}.
+  WP wg @ (ptrTⁱᵈ sync.WaitGroupⁱᵈ) @ "Wait" #() {{ Φ }}.
 Proof.
   wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
   wp_auto.

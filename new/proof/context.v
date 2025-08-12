@@ -37,14 +37,15 @@ End Context_desc.
 Section definitions.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{contextG Σ}.
 
-#[global]
-Program Instance is_pkg_init_context : IsPkgInit context :=
-  ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_context.
-#[local] Transparent is_pkg_init_context.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'context).
+#[global] Program Instance : IsPkgInit context :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Import Context_desc.
 Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
@@ -92,7 +93,7 @@ Lemma wp_WithCancel PDone' (ctx : interface.t) ctx_desc :
   {{{
         is_Context ctx ctx_desc
   }}}
-    context @ "WithCancel" #ctx
+    @@ context.WithCancel #ctx
   {{{
         ctx' done' (cancel : func.t), RET (#ctx', #cancel);
         {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗

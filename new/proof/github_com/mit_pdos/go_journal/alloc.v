@@ -21,9 +21,14 @@ Proof.
 Qed.
 
 Section proof.
-Context `{!heapGS Σ} `{!goGlobalsGS Σ}.
+Context `{!heapGS Σ} `{!globalsGS Σ}.
 
-Program Instance : IsPkgInit alloc.alloc := ltac2:(build_pkg_init ()).
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'alloc.alloc).
+#[global] Program Instance : IsPkgInit alloc.alloc :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Definition alloc_linv (max: u64) (l: loc) : iProp Σ :=
   ∃ (next: u64) (bitmap_s: slice.t) (bits: list u8),
@@ -47,7 +52,7 @@ Lemma wp_MkAlloc (bitmap_s: slice.t) (data: list u8) :
   8 * Z.of_nat (length data) < 2^64 →
   {{{ is_pkg_init alloc.alloc ∗
       own_slice bitmap_s (DfracOwn 1) data }}}
-    alloc.alloc@"MkAlloc" #bitmap_s
+    @@ alloc.alloc.MkAlloc #bitmap_s
   {{{ l, RET #l; is_alloc (W64 (8 * length data)) l }}}.
 Proof.
   set (max := W64 (8 * length data)).
@@ -137,7 +142,7 @@ Lemma wp_MkMaxAlloc (max: u64) :
   0 < uint.Z max →
   uint.Z max `mod` 8 = 0 →
   {{{ is_pkg_init alloc.alloc }}}
-    alloc.alloc@"MkMaxAlloc" #max
+    @@ alloc.alloc.MkMaxAlloc #max
   {{{ l, RET #l; is_alloc max l }}}.
 Proof.
   intros Hbound Hmod.
@@ -318,7 +323,7 @@ Qed.
 
 Lemma wp_popCnt (b: u8) :
   {{{ is_pkg_init alloc.alloc }}}
-    alloc.alloc@"popCnt" #b
+    @@ alloc.alloc.popCnt #b
   {{{ (n: u64), RET #n; ⌜uint.Z n ≤ 8⌝ }}}.
 Proof.
   wp_start as "_".

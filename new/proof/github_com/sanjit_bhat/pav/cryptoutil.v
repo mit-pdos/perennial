@@ -9,19 +9,21 @@ From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 Module cryptoutil.
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !goGlobalsGS Σ}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} `{!GoContext}.
 
-#[global]
-Program Instance is_pkg_init_cryptoutil : IsPkgInit cryptoutil := ltac2:(build_pkg_init ()).
-#[global] Opaque is_pkg_init_cryptoutil.
-#[local] Transparent is_pkg_init_cryptoutil.
+Local Definition deps : iProp Σ := ltac2:(build_pkg_init_deps 'cryptoutil).
+#[global] Program Instance : IsPkgInit cryptoutil :=
+  {|
+    is_pkg_init_def := True;
+    is_pkg_init_deps := deps;
+  |}.
 
 Lemma wp_Hash sl_b d0 b :
   {{{
     is_pkg_init cryptoutil ∗
     "Hsl_b" ∷ sl_b ↦*{d0} b
   }}}
-  cryptoutil @ "Hash" #sl_b
+  @@ cryptoutil.Hash #sl_b
   {{{
     sl_hash hash, RET #sl_hash;
     "Hsl_b" ∷ sl_b ↦*{d0} b ∗

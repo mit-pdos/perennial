@@ -23,10 +23,7 @@ End astate.
 
 Section raft.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
-Context `{!quorum.GlobalAddrs}.
-Context `{!tracker.GlobalAddrs}.
-Context `{!raft.GlobalAddrs}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{!closeable_chanG Σ}.
 Context `{!contextG Σ}.
 

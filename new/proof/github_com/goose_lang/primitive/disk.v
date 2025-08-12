@@ -7,7 +7,7 @@ Require Import Perennial.goose_lang.ffi.disk_prelude.
 
 Section wps.
 Context `{!heapGS Σ}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 
 #[global]
 Program Instance is_pkg_init_inst : IsPkgInit (PROP:=iProp Σ) disk :=
@@ -194,7 +194,7 @@ Theorem wp_Write_atomic (a: u64) s q b :
   ⊢
   {{{ is_pkg_init disk ∗ own_slice s q (vec_to_list b) }}}
   <<< ∀∀ b0, uint.Z a d↦ b0 >>>
-    disk@"Write" #a #s @@ ∅
+    @@ disk.Write #a #s @@ ∅
   <<< uint.Z a d↦ b >>>
   {{{ RET #(); own_slice s q (vec_to_list b) }}}.
 Proof.
@@ -224,7 +224,7 @@ Qed.
 Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
   {{{ is_pkg_init disk ∗ own_slice s q (vec_to_list b) ∗
       (|NC={⊤,E'}=> ∃ b0, uint.Z a d↦ b0 ∗ (uint.Z a d↦ b -∗ |NC={E',⊤}=> Q)) }}}
-    disk@"Write" #a #s
+    @@ disk.Write #a #s
   {{{ RET #(); own_slice s q (vec_to_list b) ∗ Q }}}.
 Proof.
   iIntros (Φ) "[#Hpkg [Hs Hupd]] HΦ".
@@ -239,7 +239,7 @@ Qed.
 
 Theorem wp_Write (a: u64) s q b :
   {{{ is_pkg_init disk ∗ ∃ b0, uint.Z a d↦ b0 ∗ own_slice s q (vec_to_list b) }}}
-    disk@"Write" #a #s
+    @@ disk.Write #a #s
   {{{ RET #(); uint.Z a d↦ b ∗ own_slice s q (vec_to_list b) }}}.
 Proof.
   iIntros (Φ) "[#Hpkg Hpre] HΦ".
@@ -253,7 +253,7 @@ Qed.
 
 Theorem wp_Write' (z: Z) (a: u64) s q b :
   {{{ is_pkg_init disk ∗ ⌜uint.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ own_slice s q (vec_to_list b) }}}
-    disk@"Write" #a #s
+    @@ disk.Write #a #s
   {{{ RET #(); z d↦ b ∗ own_slice s q (vec_to_list b) }}}.
 Proof.
   iIntros (Φ) "[#Hpkg [<- >Hpre]] HΦ".
@@ -264,7 +264,7 @@ Qed.
 Lemma wp_Read_atomic (a: u64) q :
   ⊢ {{{ is_pkg_init disk }}}
     <<< ∀∀ b, uint.Z a d↦{q} b >>>
-      disk@"Read" #a @@ ∅
+      @@ disk.Read #a @@ ∅
     <<< uint.Z a d↦{q} b >>>
     {{{ s, RET #s; is_block_full s b }}}.
 Proof.
@@ -291,7 +291,7 @@ Qed.
 Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
   {{{ is_pkg_init disk ∗
       |NC={⊤,E'}=> ∃ b, uint.Z a d↦{q} b ∗ (uint.Z a d↦{q} b -∗ |NC={E',⊤}=> Q b) }}}
-    disk@"Read" #a
+    @@ disk.Read #a
   {{{ s b, RET #s;
       Q b ∗ is_block_full s b }}}.
 Proof.
@@ -306,7 +306,7 @@ Qed.
 
 Lemma wp_Read (a: u64) q b :
   {{{ is_pkg_init disk ∗ uint.Z a d↦{q} b }}}
-    disk@"Read" #a
+    @@ disk.Read #a
   {{{ s, RET #s;
       uint.Z a d↦{q} b ∗ is_block_full s b }}}.
 Proof.
@@ -320,7 +320,7 @@ Qed.
 
 Lemma wp_Read_eq (a: u64) (a': Z) q b :
   {{{ is_pkg_init disk ∗ a' d↦{q} b ∗ ⌜uint.Z a = a'⌝ }}}
-    disk@"Read" #a
+    @@ disk.Read #a
   {{{ s, RET #s;
       a' d↦{q} b ∗ is_block_full s b }}}.
 Proof.
@@ -332,7 +332,7 @@ Qed.
 
 Lemma wp_Barrier :
   {{{ is_pkg_init disk }}}
-    disk@"Barrier" #()
+    @@ disk.Barrier #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_".

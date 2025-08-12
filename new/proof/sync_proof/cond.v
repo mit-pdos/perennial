@@ -1,10 +1,9 @@
 From New.proof.sync_proof Require Import base mutex.
 
-#[local] Transparent is_pkg_init_sync.
 
 Section proof.
 Context `{heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{!syncG Σ}.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
@@ -18,7 +17,7 @@ Global Instance is_Cond_persistent c m : Persistent (is_Cond c m) := _.
 
 Theorem wp_NewCond (m : interface.t) :
   {{{ is_pkg_init sync }}}
-    sync @ "NewCond" #m
+    @@ sync.NewCond #m
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
   wp_start as "_".
@@ -35,7 +34,7 @@ Qed.
 
 Theorem wp_Cond__Signal c lk :
   {{{ is_Cond c lk }}}
-    c @ sync @ "Cond'ptr" @ "Signal" #()
+    c @ (ptrTⁱᵈ sync.Condⁱᵈ) @ "Signal" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[#Hdef Hc]".
@@ -44,7 +43,7 @@ Qed.
 
 Theorem wp_Cond__Broadcast c lk :
   {{{ is_Cond c lk }}}
-    c @ sync @ "Cond'ptr" @ "Broadcast" #()
+    c @ (ptrTⁱᵈ sync.Condⁱᵈ) @ "Broadcast" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "H"; iNamed "H".
@@ -53,7 +52,7 @@ Qed.
 
 Theorem wp_Cond__Wait c m R :
   {{{ is_Cond c m ∗ is_Locker m R ∗ R }}}
-    c @ sync @ "Cond'ptr" @ "Wait" #()
+    c @ (ptrTⁱᵈ sync.Condⁱᵈ) @ "Wait" #()
   {{{ RET #(); R }}}.
 Proof.
   wp_start as "(#Hcond & #Hlock & HR)".

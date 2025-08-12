@@ -1,6 +1,5 @@
 From New.proof.go_etcd_io.etcd.client.v3_proof Require Import base definitions.
 
-#[local] Transparent is_pkg_init_clientv3.
 
 Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
 
@@ -16,9 +15,8 @@ End Op.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!goGlobalsGS Σ}.
+Context `{!globalsGS Σ} `{!GoContext}.
 Context `{!clientv3G Σ}.
-Context `{!etcdserverpb.GlobalAddrs}.
 Implicit Types (γ : clientv3_names).
 
 Local Definition is_Op_RangeRequest (op : clientv3.Op.t) (req : RangeRequest.t) : iProp Σ :=
@@ -62,7 +60,7 @@ Proof. destruct o; try apply _. Qed.
 (* NOTE: for simplicity, this only supports empty opts list. *)
 Lemma wp_OpGet key :
   {{{ is_pkg_init clientv3 }}}
-    clientv3 @ "OpGet" #key #slice.nil
+    @@ clientv3.OpGet #key #slice.nil
   {{{
       op, RET #op;
       is_Op op (Op.Get (RangeRequest.default <|RangeRequest.key := key|>))
@@ -85,7 +83,7 @@ Qed.
 
 Lemma wp_OpPut key v :
   {{{ is_pkg_init clientv3 }}}
-    clientv3@"OpPut" #key #v #slice.nil
+    @@ clientv3.OpPut #key #v #slice.nil
   {{{ op, RET #op;
       is_Op op (Op.Put (PutRequest.default <| PutRequest.key := key |> <| PutRequest.value := v |>))
   }}}.
