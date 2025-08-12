@@ -94,7 +94,7 @@ Definition pure_proofToTree label sibs oleaf :=
   | Some (l, v) => pure_put t 0 l v
   end.
 
-Fixpoint pure_digest t :=
+Fixpoint pure_Digest t :=
   cryptoffi.pure_hash
     match t with
     | Empty => [emptyNodeTag]
@@ -102,7 +102,7 @@ Fixpoint pure_digest t :=
       leafNodeTag ::
       (u64_le $ length l) ++ l ++
       (u64_le $ length v) ++ v
-    | Inner c0 c1 => innerNodeTag :: pure_digest c0 ++ pure_digest c1
+    | Inner c0 c1 => innerNodeTag :: pure_Digest c0 ++ pure_Digest c1
     | Cut h => h
     end.
 
@@ -768,31 +768,7 @@ Fixpoint is_limit t limit :=
 
 #[local] Transparent is_full_tree.
 
-Lemma foo0 t0 t1 h l pref :
-  is_sorted t0 (length pref) →
-  is_limit t0 l →
-  is_cut_tree t0 h -∗
-  is_full_tree t1 h l pref -∗
-  ⌜ t0 = Empty ∧ t0 = t1 ⌝ ∨
-    ⌜ ∃ label val, t0 = Leaf label val ∧ t0 = t1 ⌝ ∨
-    (∃ c0 c1 c2 c3,
-      ⌜ t0 = Inner c0 c1 ⌝ ∗
-      ⌜ t1 = Inner c2 c3 ⌝) ∨
-    ⌜ t0 = Cut h ⌝.
-Proof.
-  intros. destruct t0, l; simpl;
-    iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
-    try iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
-  - rewrite decode_empty_det.
-    iNamed "Hdecode1".
-    naive_solver.
-  - rewrite decode_empty_det.
-    iNamed "Hdecode1".
-    naive_solver.
-  - rewrite decode_leaf_det; [|done..].
-Admitted.
-
-Lemma foo1 t0 t1 h l pref label found :
+Lemma path_txfer t0 t1 h l pref label found :
   is_cut_tree t0 h -∗
   is_full_tree t1 h l pref -∗
   ⌜ is_path t0 (length pref) label found ⌝ -∗
@@ -800,8 +776,33 @@ Lemma foo1 t0 t1 h l pref label found :
   ⌜ is_path t1 (length pref) label found ⌝.
 Proof.
   revert t1 h l pref label found.
-  induction t0; intros; destruct l.
-  - simpl.
+  induction t0; destruct l; simpl; intros;
+    iNamedSuffix 1 "0";
+    iNamedSuffix 1 "1";
+    iIntros (??).
+  (* TODO: duplication from destruct [limit]. *)
+  (* TODO: could make smth like an induction principle for
+  proving inductive properties across cut tree and full tree,
+  which takes care of "unifying trees" for us. *)
+  - iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
+    rewrite decode_empty_det.
+    iNamed "Hdecode1".
+    naive_solver.
+  - iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
+    rewrite decode_empty_det.
+    iNamed "Hdecode1".
+    naive_solver.
+  - iDestruct (cryptoffi.is_hash_inj with "His_hash0 His_hash1") as %<-.
+    rewrite decode_leaf_det; [|done..].
+    case_decide; iNamed "Hdecode1".
+    + naive_solver.
+    + iPureIntro. subst. simpl.
+      (* stuck: case when full tree has bad prefix, which turns leaf into cut.
+      we need sorted_prefix assumption to contradict this;
+      otherwise, can't establish path.
+      let's push on alternate plan where to_map has prefix filtering.
+      that would remove sorted reasoning from here,
+      tho it might bring other complications. *)
 Admitted.
 
 (* TODO: overall plan for full-map Verify reasoning:
