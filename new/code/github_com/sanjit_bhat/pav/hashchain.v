@@ -18,6 +18,8 @@ Definition HashChain : go_type := structT [
   "vals" :: sliceT
 ].
 
+Definition HashChainⁱᵈ : go_string := "github.com/sanjit-bhat/pav/hashchain.HashChain"%go.
+
 Definition GetNextLink : go_string := "github.com/sanjit-bhat/pav/hashchain.GetNextLink"%go.
 
 (* Append adds a val.

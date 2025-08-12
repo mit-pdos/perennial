@@ -20,6 +20,8 @@ Definition BankClerk : go_type := structT [
   "accts" :: sliceT
 ].
 
+Definition BankClerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/bank.BankClerk"%go.
+
 Definition acquire_two_good : go_string := "github.com/mit-pdos/gokv/bank.acquire_two_good"%go.
 
 (* go: bank.go:19:6 *)
@@ -192,7 +194,7 @@ Definition BankClerk__SimpleAuditⁱᵐᵖˡ : val :=
     (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
       (if: ((method_call #bank.bank #"BankClerk'ptr" #"get_total" (![#ptrT] "bck")) #()) ≠ BAL_TOTAL
       then
-        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Balance total invariant violated"%go) in
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Balance total invariant violated"%go) in
         Panic "$a0")
       else do:  #()));;;
     return: #()).

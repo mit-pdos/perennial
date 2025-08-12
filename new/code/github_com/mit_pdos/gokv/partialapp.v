@@ -18,12 +18,14 @@ Definition partiallyApplyMeⁱᵐᵖˡ : val :=
     (if: (let: "$a0" := (![#stringT] "x") in
     StringLength "$a0") ≠ (![#intT] "y")
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"not allowed"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"not allowed"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
 
 Definition Foo : go_type := stringT.
+
+Definition Fooⁱᵈ : go_string := "github.com/mit-pdos/gokv/partialapp.Foo"%go.
 
 (* go: examples.go:11:14 *)
 Definition Foo__someMethodⁱᵐᵖˡ : val :=

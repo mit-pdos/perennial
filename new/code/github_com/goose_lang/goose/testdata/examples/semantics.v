@@ -14,6 +14,8 @@ Section code.
 Definition unit : go_type := structT [
 ].
 
+Definition unitⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.unit"%go.
+
 Definition findKey : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.findKey"%go.
 
 (* go: allocator.go:7:6 *)
@@ -173,7 +175,11 @@ Definition testMaxUint64ⁱᵐᵖˡ : val :=
 
 Definition AdderType : go_type := funcT.
 
+Definition AdderTypeⁱᵈ : go_string := funcTⁱᵈ [uint64Tⁱᵈ] [uint64Tⁱᵈ] #false.
+
 Definition MultipleArgsType : go_type := funcT.
+
+Definition MultipleArgsTypeⁱᵈ : go_string := funcTⁱᵈ [uint64Tⁱᵈ; boolTⁱᵈ] [uint64Tⁱᵈ] #false.
 
 Definition adder : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.adder"%go.
 
@@ -500,6 +506,8 @@ Definition Enc : go_type := structT [
   "p" :: sliceT
 ].
 
+Definition Encⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Enc"%go.
+
 (* go: encoding.go:10:15 *)
 Definition Enc__consumeⁱᵐᵖˡ : val :=
   λ: "e" "n",
@@ -517,6 +525,8 @@ Definition Enc__consumeⁱᵐᵖˡ : val :=
 Definition Dec : go_type := structT [
   "p" :: sliceT
 ].
+
+Definition Decⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Dec"%go.
 
 (* go: encoding.go:20:15 *)
 Definition Dec__consumeⁱᵐᵖˡ : val :=
@@ -724,6 +734,8 @@ Definition Editor : go_type := structT [
   "next_val" :: uint64T
 ].
 
+Definition Editorⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Editor"%go.
+
 (* advances the array editor, and returns the value it wrote, storing
    "next" in next_val
 
@@ -762,6 +774,8 @@ Definition Pair : go_type := structT [
   "x" :: uint64T;
   "y" :: uint64T
 ].
+
+Definition Pairⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Pair"%go.
 
 Definition failing_testFunctionOrdering : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testFunctionOrdering"%go.
 
@@ -917,6 +931,8 @@ Definition testU32Lenⁱᵐᵖˡ : val :=
 
 Definition Uint32 : go_type := uint32T.
 
+Definition Uint32ⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Uint32"%go.
+
 Definition failing_testU32NewtypeLen : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testU32NewtypeLen"%go.
 
 (* https://github.com/goose-lang/goose/issues/14
@@ -931,6 +947,8 @@ Definition failing_testU32NewtypeLenⁱᵐᵖˡ : val :=
      slice.len "$a0")) = #(W32 20))).
 
 Definition geometryInterface : go_type := interfaceT.
+
+Definition geometryInterfaceⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.geometryInterface"%go.
 
 Definition measureArea : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureArea"%go.
 
@@ -962,6 +980,8 @@ Definition SquareStruct : go_type := structT [
   "Side" :: uint64T
 ].
 
+Definition SquareStructⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.SquareStruct"%go.
+
 (* go: interfaces.go:28:23 *)
 Definition SquareStruct__Squareⁱᵐᵖˡ : val :=
   λ: "t" <>,
@@ -985,7 +1005,7 @@ Definition testBasicInterfaceⁱᵐᵖˡ : val :=
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
-    return: ((let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
+    return: ((let: "$a0" := (interface.make #SquareStructⁱᵈ (![#SquareStruct] "s")) in
      (func_call #measureArea) "$a0") = #(W64 4))).
 
 Definition testAssignInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAssignInterface"%go.
@@ -1000,7 +1020,7 @@ Definition testAssignInterfaceⁱᵐᵖˡ : val :=
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
     let: "area" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #SquareStructⁱᵈ (![#SquareStruct] "s")) in
     (func_call #measureArea) "$a0") in
     do:  ("area" <-[#uint64T] "$r0");;;
     return: ((![#uint64T] "area") = #(W64 9))).
@@ -1017,11 +1037,11 @@ Definition testMultipleInterfaceⁱᵐᵖˡ : val :=
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
     let: "square1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #SquareStructⁱᵈ (![#SquareStruct] "s")) in
     (func_call #measureArea) "$a0") in
     do:  ("square1" <-[#uint64T] "$r0");;;
     let: "square2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #SquareStructⁱᵈ (![#SquareStruct] "s")) in
     (func_call #measureArea) "$a0") in
     do:  ("square2" <-[#uint64T] "$r0");;;
     return: ((![#uint64T] "square1") = (![#uint64T] "square2"))).
@@ -1038,15 +1058,15 @@ Definition testBinaryExprInterfaceⁱᵐᵖˡ : val :=
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
     let: "square1" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #SquareStructⁱᵈ (![#SquareStruct] "s")) in
     (func_call #measureArea) "$a0") in
     do:  ("square1" <-[#uint64T] "$r0");;;
     let: "square2" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (interface.make #SquareStructⁱᵈ (![#SquareStruct] "s")) in
     (func_call #measureVolume) "$a0") in
     do:  ("square2" <-[#uint64T] "$r0");;;
-    return: (((![#uint64T] "square1") = (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
-     (func_call #measureArea) "$a0")) && ((![#uint64T] "square2") = (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
+    return: (((![#uint64T] "square1") = (let: "$a0" := (interface.make #SquareStructⁱᵈ (![#SquareStruct] "s")) in
+     (func_call #measureArea) "$a0")) && ((![#uint64T] "square2") = (let: "$a0" := (interface.make #SquareStructⁱᵈ (![#SquareStruct] "s")) in
      (func_call #measureVolume) "$a0")))).
 
 Definition testIfStmtInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIfStmtInterface"%go.
@@ -1060,7 +1080,7 @@ Definition testIfStmtInterfaceⁱᵐᵖˡ : val :=
       "Side" ::= "$Side"
     }]) in
     do:  ("s" <-[#SquareStruct] "$r0");;;
-    (if: (let: "$a0" := (interface.make (#semantics.semantics, #"SquareStruct") (![#SquareStruct] "s")) in
+    (if: (let: "$a0" := (interface.make #SquareStructⁱᵈ (![#SquareStruct] "s")) in
     (func_call #measureArea) "$a0") = #(W64 9)
     then return: (#true)
     else do:  #());;;
@@ -1120,6 +1140,8 @@ Definition standardForLoopⁱᵐᵖˡ : val :=
 Definition LoopStruct : go_type := structT [
   "loopNext" :: ptrT
 ].
+
+Definition LoopStructⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.LoopStruct"%go.
 
 (* go: loops.go:28:22 *)
 Definition LoopStruct__forLoopWaitⁱᵐᵖˡ : val :=
@@ -1980,6 +2002,8 @@ Definition BoolTest : go_type := structT [
   "fc" :: uint64T
 ].
 
+Definition BoolTestⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.BoolTest"%go.
+
 Definition CheckTrue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.CheckTrue"%go.
 
 (* go: shortcircuiting.go:11:6 *)
@@ -2100,6 +2124,8 @@ Definition ArrayEditor : go_type := structT [
   "s" :: sliceT;
   "next_val" :: uint64T
 ].
+
+Definition ArrayEditorⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.ArrayEditor"%go.
 
 (* go: slices.go:9:24 *)
 Definition ArrayEditor__Advanceⁱᵐᵖˡ : val :=
@@ -2327,9 +2353,13 @@ Definition Bar : go_type := structT [
   "b" :: uint64T
 ].
 
+Definition Barⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Bar"%go.
+
 Definition Foo : go_type := structT [
   "bar" :: Bar
 ].
+
+Definition Fooⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Foo"%go.
 
 (* go: struct_pointers.go:14:17 *)
 Definition Bar__mutateⁱᵐᵖˡ : val :=
@@ -2372,11 +2402,15 @@ Definition TwoInts : go_type := structT [
   "y" :: uint64T
 ].
 
+Definition TwoIntsⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.TwoInts"%go.
+
 Definition S : go_type := structT [
   "a" :: uint64T;
   "b" :: TwoInts;
   "c" :: boolT
 ].
+
+Definition Sⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.S"%go.
 
 Definition NewS : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.NewS"%go.
 
@@ -2588,6 +2622,8 @@ Definition StructWrap : go_type := structT [
   "i" :: uint64T
 ].
 
+Definition StructWrapⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.StructWrap"%go.
+
 Definition testStoreInStructVar : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreInStructVar"%go.
 
 (* go: structs.go:126:6 *)
@@ -2651,6 +2687,8 @@ Definition testStoreSliceⁱᵐᵖˡ : val :=
 Definition StructWithFunc : go_type := structT [
   "fn" :: funcT
 ].
+
+Definition StructWithFuncⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.StructWithFunc"%go.
 
 Definition testStructFieldFunc : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructFieldFunc"%go.
 
@@ -2720,7 +2758,11 @@ Definition testSwitchDefaultTrueⁱᵐᵖˡ : val :=
 Definition switchConcrete : go_type := structT [
 ].
 
+Definition switchConcreteⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.switchConcrete"%go.
+
 Definition switchInterface : go_type := interfaceT.
+
+Definition switchInterfaceⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.switchInterface"%go.
 
 (* go: switch.go:45:26 *)
 Definition switchConcrete__markerⁱᵐᵖˡ : val :=
@@ -2738,14 +2780,14 @@ Definition testSwitchConversionⁱᵐᵖˡ : val :=
     }])) in
     do:  ("v" <-[#ptrT] "$r0");;;
     let: "x" := (mem.alloc (type.zero_val #switchInterface)) in
-    let: "$r0" := (interface.make (#semantics.semantics, #"switchConcrete'ptr") (![#ptrT] "v")) in
+    let: "$r0" := (interface.make #(ptrTⁱᵈ switchConcreteⁱᵈ) (![#ptrT] "v")) in
     do:  ("x" <-[#switchInterface] "$r0");;;
     let: "$sw" := (![#switchInterface] "x") in
-    (if: "$sw" = (interface.make (#semantics.semantics, #"switchConcrete'ptr") (![#ptrT] "v"))
+    (if: "$sw" = (interface.make #(ptrTⁱᵈ switchConcreteⁱᵈ) (![#ptrT] "v"))
     then do:  #()
     else return: (#false));;;
     let: "$sw" := (![#ptrT] "v") in
-    (if: (interface.make (#semantics.semantics, #"switchConcrete'ptr") "$sw") = (![#switchInterface] "x")
+    (if: (interface.make #(ptrTⁱᵈ switchConcreteⁱᵈ) "$sw") = (![#switchInterface] "x")
     then do:  #()
     else return: (#false));;;
     return: (#true)).
@@ -2796,6 +2838,8 @@ Definition Log : go_type := structT [
   "length" :: ptrT
 ].
 
+Definition Logⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Log"%go.
+
 Definition intToBlock : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.intToBlock"%go.
 
 (* go: wal.go:25:6 *)
@@ -2837,7 +2881,7 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("diskSize" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "diskSize") ≤ logLength
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"disk is too small to host log"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"disk is too small to host log"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "cache" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
@@ -2955,7 +2999,7 @@ Definition Log__Writeⁱᵐᵖˡ : val :=
     do:  ("length" <-[#uint64T] "$r0");;;
     (if: (![#uint64T] "length") ≥ MaxTxnWrites
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"transaction is at capacity"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"transaction is at capacity"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "aBlock" := (mem.alloc (type.zero_val #sliceT)) in

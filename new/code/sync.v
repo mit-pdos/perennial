@@ -17,6 +17,8 @@ Definition NewCond : go_string := "sync.NewCond"%go.
 Definition noCopy : go_type := structT [
 ].
 
+Definition noCopyⁱᵈ : go_string := "sync.noCopy"%go.
+
 Definition OnceFunc : go_string := "sync.OnceFunc"%go.
 
 Definition OnceValue : go_string := "sync.OnceValue"%go.
@@ -74,6 +76,8 @@ Definition RWMutex : go_type := structT [
   "readerCount" :: atomic.Int32;
   "readerWait" :: atomic.Int32
 ].
+
+Definition RWMutexⁱᵈ : go_string := "sync.RWMutex"%go.
 
 Definition rwmutexMaxReaders : Z := 1073741824.
 
@@ -333,13 +337,15 @@ Definition syscall_hasWaitingReaders : go_string := "sync.syscall_hasWaitingRead
 Definition RWMutex__RLockerⁱᵐᵖˡ : val :=
   λ: "rw" <>,
     exception_do (let: "rw" := (mem.alloc "rw") in
-    return: (interface.make (#sync.sync, #"rlocker'ptr") (![#ptrT] "rw"))).
+    return: (interface.make #(ptrTⁱᵈ rlockerⁱᵈ) (![#ptrT] "rw"))).
 
 Definition WaitGroup : go_type := structT [
   "noCopy" :: noCopy;
   "state" :: atomic.Uint64;
   "sema" :: uint32T
 ].
+
+Definition WaitGroupⁱᵈ : go_string := "sync.WaitGroup"%go.
 
 (* Add adds delta, which may be negative, to the [WaitGroup] counter.
    If the counter becomes zero, all goroutines blocked on [WaitGroup.Wait] are released.
@@ -392,12 +398,12 @@ Definition WaitGroup__Addⁱᵐᵖˡ : val :=
     else do:  #());;;
     (if: int_lt (![#int32T] "v") #(W32 0)
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: negative WaitGroup counter"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync: negative WaitGroup counter"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (((![#uint32T] "w") ≠ #(W32 0)) && (int_gt (![#intT] "delta") #(W64 0))) && ((![#int32T] "v") = (s_to_w32 (![#intT] "delta")))
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       Panic "$a0")
     else do:  #());;;
     (if: (int_gt (![#int32T] "v") #(W32 0)) || ((![#uint32T] "w") = #(W32 0))
@@ -405,7 +411,7 @@ Definition WaitGroup__Addⁱᵐᵖˡ : val :=
     else do:  #());;;
     (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ (![#uint64T] "state")
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       Panic "$a0")
     else do:  #());;;
     do:  (let: "$a0" := #(W64 0) in
@@ -469,7 +475,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ : val :=
         (func_call #runtime_SemacquireWaitGroup) "$a0");;;
         (if: ((method_call #atomic #"Uint64'ptr" #"Load" (struct.field_ref #WaitGroup #"state"%go (![#ptrT] "wg"))) #()) ≠ #(W64 0)
         then
-          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"sync: WaitGroup is reused before previous Wait has returned"%go) in
+          do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"sync: WaitGroup is reused before previous Wait has returned"%go) in
           Panic "$a0")
         else do:  #());;;
         (if: race.Enabled

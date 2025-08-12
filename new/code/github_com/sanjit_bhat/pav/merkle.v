@@ -33,6 +33,8 @@ Definition Tree : go_type := structT [
   "root" :: ptrT
 ].
 
+Definition Treeⁱᵈ : go_string := "github.com/sanjit-bhat/pav/merkle.Tree"%go.
+
 Definition node : go_type := structT [
   "nodeTy" :: byteT;
   "hash" :: sliceT;
@@ -41,6 +43,8 @@ Definition node : go_type := structT [
   "label" :: sliceT;
   "val" :: sliceT
 ].
+
+Definition nodeⁱᵈ : go_string := "github.com/sanjit-bhat/pav/merkle.node"%go.
 
 Definition put : go_string := "github.com/sanjit-bhat/pav/merkle.put"%go.
 
@@ -773,6 +777,8 @@ Definition getBitⁱᵐᵖˡ : val :=
       do:  ("x" <-[#byteT] "$r0");;;
       return: (((![#byteT] "x") `and` (#(W8 1) ≪ (u_to_w8 (![#uint64T] "off")))) ≠ #(W8 0))
     else return: (#false))).
+
+Definition MerkleProofⁱᵈ : go_string := "github.com/sanjit-bhat/pav/merkle.MerkleProof"%go.
 
 Definition MerkleProofEncode : go_string := "github.com/sanjit-bhat/pav/merkle.MerkleProofEncode"%go.
 

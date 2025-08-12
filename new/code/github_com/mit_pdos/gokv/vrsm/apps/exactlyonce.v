@@ -22,6 +22,8 @@ Definition eStateMachine : go_type := structT [
   "esmNextIndex" :: uint64T
 ].
 
+Definition eStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.eStateMachine"%go.
+
 Definition OPTYPE_RW : expr := #(W8 0).
 
 Definition OPTYPE_GETFRESHCID : expr := #(W8 1).
@@ -115,7 +117,7 @@ Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
           do:  "$r0";;;
           do:  ("ret" <-[#sliceT] "$r1")
         else
-          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected ee op type"%go) in
+          do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected ee op type"%go) in
           Panic "$a0"))));;;
     return: (![#sliceT] "ret")).
 
@@ -126,17 +128,17 @@ Definition eStateMachine__applyReadonlyⁱᵐᵖˡ : val :=
     let: "op" := (mem.alloc "op") in
     (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Got GETFRESHCID as a read-only op"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Got GETFRESHCID as a read-only op"%go) in
       Panic "$a0")
     else
       (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) = OPTYPE_RW
       then
-        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Got RW as a read-only op"%go) in
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Got RW as a read-only op"%go) in
         Panic "$a0")
       else
         (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "op") #(W64 0))) ≠ OPTYPE_RO
         then
-          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected ee op type"%go) in
+          do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected ee op type"%go) in
           Panic "$a0")
         else do:  #())));;;
     let: "n" := (mem.alloc (type.zero_val #intT)) in
@@ -251,6 +253,8 @@ Definition Clerk : go_type := structT [
   "seq" :: uint64T
 ].
 
+Definition Clerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.Clerk"%go.
+
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeClerk"%go.
 
 (* go: sm.go:115:6 *)
@@ -327,6 +331,8 @@ Definition Clerk__ApplyReadonlyⁱᵐᵖˡ : val :=
     do:  ("enc" <-[#sliceT] "$r0");;;
     return: (let: "$a0" := (![#sliceT] "enc") in
      (method_call #clerk #"Clerk'ptr" #"ApplyRo" (![#ptrT] (struct.field_ref #Clerk #"ck"%go (![#ptrT] "ck")))) "$a0")).
+
+Definition VersionedStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.VersionedStateMachine"%go.
 
 Definition vars' : list (go_string * go_type) := [].
 

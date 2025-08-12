@@ -19,6 +19,8 @@ Definition Clerk : go_type := structT [
   "cl" :: ptrT
 ].
 
+Definition Clerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.Clerk"%go.
+
 Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.MakeClerk"%go.
 
 (* go: clerk.go:12:6 *)
@@ -102,6 +104,8 @@ Definition ClerkPool : go_type := structT [
   "cls" :: sliceT;
   "confHosts" :: sliceT
 ].
+
+Definition ClerkPoolⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.ClerkPool"%go.
 
 Definition MakeClerkPool : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.MakeClerkPool"%go.
 
@@ -225,7 +229,7 @@ Definition MakeKvⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
     (func_call #MakeClerkPool) "$a0") in
     do:  ("ck" <-[#ptrT] "$r0");;;
-    return: (interface.make (#vkv.vkv, #"ClerkPool'ptr") (![#ptrT] "ck"))).
+    return: (interface.make #(ptrTⁱᵈ ClerkPoolⁱᵈ) (![#ptrT] "ck"))).
 
 Definition KVState : go_type := structT [
   "kvs" :: mapT stringT stringT;
@@ -233,11 +237,15 @@ Definition KVState : go_type := structT [
   "minVnum" :: uint64T
 ].
 
+Definition KVStateⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.KVState"%go.
+
 Definition OP_PUT : expr := #(W8 0).
 
 Definition OP_GET : expr := #(W8 1).
 
 Definition OP_COND_PUT : expr := #(W8 2).
+
+Definition PutArgsⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.PutArgs"%go.
 
 (* go: server.go:35:6 *)
 Definition encodePutArgsⁱᵐᵖˡ : val :=
@@ -293,6 +301,8 @@ Definition decodePutArgsⁱᵐᵖˡ : val :=
 
 Definition getArgs : go_type := stringT.
 
+Definition getArgsⁱᵈ : go_string := stringTⁱᵈ.
+
 (* go: server.go:60:6 *)
 Definition encodeGetArgsⁱᵐᵖˡ : val :=
   λ: "args",
@@ -316,6 +326,8 @@ Definition decodeGetArgsⁱᵐᵖˡ : val :=
     exception_do (let: "raw_args" := (mem.alloc "raw_args") in
     return: (string.from_bytes (let: "$s" := (![#sliceT] "raw_args") in
      slice.slice #byteT "$s" #(W64 1) (slice.len "$s")))).
+
+Definition CondPutArgsⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/apps/vkv.CondPutArgs"%go.
 
 (* go: server.go:78:6 *)
 Definition encodeCondPutArgsⁱᵐᵖˡ : val :=
@@ -457,7 +469,7 @@ Definition KVState__applyⁱᵐᵖˡ : val :=
           else do:  #());;;
           return: (string.to_bytes #""%go)
         else
-          do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"unexpected op type"%go) in
+          do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"unexpected op type"%go) in
           Panic "$a0"))))).
 
 (* go: server.go:138:19 *)
@@ -467,7 +479,7 @@ Definition KVState__applyReadonlyⁱᵐᵖˡ : val :=
     let: "args" := (mem.alloc "args") in
     (if: (![#byteT] (slice.elem_ref #byteT (![#sliceT] "args") #(W64 0))) ≠ OP_GET
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"expected a GET as readonly-operation"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"expected a GET as readonly-operation"%go) in
       Panic "$a0")
     else do:  #());;;
     let: "key" := (mem.alloc (type.zero_val #stringT)) in

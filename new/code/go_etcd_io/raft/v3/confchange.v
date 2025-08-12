@@ -14,6 +14,8 @@ Definition Changer : go_type := structT [
   "LastIndex" :: uint64T
 ].
 
+Definition Changerⁱᵈ : go_string := "go.etcd.io/raft/v3/confchange.Changer"%go.
+
 Definition checkInvariants : go_string := "go.etcd.io/raft/v3/confchange.checkInvariants"%go.
 
 Definition checkAndReturn : go_string := "go.etcd.io/raft/v3/confchange.checkAndReturn"%go.

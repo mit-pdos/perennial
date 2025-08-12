@@ -28,7 +28,11 @@ Definition LOGSIZE : expr := #(W64 513).
 
 Definition Inum : go_type := uint64T.
 
+Definition Inumⁱᵈ : go_string := uint64Tⁱᵈ.
+
 Definition Bnum : go_type := uint64T.
+
+Definition Bnumⁱᵈ : go_string := uint64Tⁱᵈ.
 
 Definition NULLINUM : expr := #(W64 0).
 

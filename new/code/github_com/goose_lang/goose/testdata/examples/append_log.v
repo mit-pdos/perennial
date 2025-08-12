@@ -17,6 +17,8 @@ Definition Log : go_type := structT [
   "diskSz" :: uint64T
 ].
 
+Definition Logⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/append_log.Log"%go.
+
 (* go: append_log.go:22:17 *)
 Definition Log__mkHdrⁱᵐᵖˡ : val :=
   λ: "log" <>,

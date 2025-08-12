@@ -24,6 +24,8 @@ Definition AsyncFile : go_type := structT [
   "closedCond" :: ptrT
 ].
 
+Definition AsyncFileⁱᵈ : go_string := "github.com/mit-pdos/gokv/asyncfile.AsyncFile"%go.
+
 (* go: storage.go:24:21 *)
 Definition AsyncFile__Writeⁱᵐᵖˡ : val :=
   λ: "s" "data",
@@ -138,11 +140,11 @@ Definition MakeAsyncFileⁱᵐᵖˡ : val :=
     let: "mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
     let: "s" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$mu" := "mu" in
-    let: "$indexCond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") "mu") in
+    let: "$indexCond" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) "mu") in
     (func_call #sync.NewCond) "$a0") in
-    let: "$closedCond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") "mu") in
+    let: "$closedCond" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) "mu") in
     (func_call #sync.NewCond) "$a0") in
-    let: "$durableIndexCond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") "mu") in
+    let: "$durableIndexCond" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) "mu") in
     (func_call #sync.NewCond) "$a0") in
     let: "$filename" := (![#stringT] "filename") in
     let: "$data" := (let: "$a0" := (![#stringT] "filename") in

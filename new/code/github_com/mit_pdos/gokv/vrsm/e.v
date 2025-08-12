@@ -11,6 +11,8 @@ Context `{ffi_syntax}.
 
 Definition Error : go_type := uint64T.
 
+Definition Errorⁱᵈ : go_string := uint64Tⁱᵈ.
+
 Definition None : expr := #(W64 0).
 
 Definition Stale : expr := #(W64 1).

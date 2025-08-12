@@ -13,6 +13,8 @@ Definition LockClerk : go_type := structT [
   "kv" :: kv.KvCput
 ].
 
+Definition LockClerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/lockservice.LockClerk"%go.
+
 (* go: lock_clerk.go:11:22 *)
 Definition LockClerk__Lockⁱᵐᵖˡ : val :=
   λ: "ck" "key",

@@ -18,6 +18,8 @@ Definition MajorityConfig : go_type := mapT uint64T (structT [
 
 Definition JointConfig : go_type := arrayT (W64 2) MajorityConfig.
 
+Definition JointConfigⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.JointConfig"%go.
+
 (* go: joint.go:21:22 *)
 Definition JointConfig__Stringⁱᵐᵖˡ : val :=
   λ: "c" <>,
@@ -130,6 +132,8 @@ Definition JointConfig__VoteResultⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (VotePending)).
 
+Definition MajorityConfigⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.MajorityConfig"%go.
+
 (* go: majority.go:28:25 *)
 Definition MajorityConfig__Stringⁱᵐᵖˡ : val :=
   λ: "c" <>,
@@ -161,8 +165,8 @@ Definition MajorityConfig__Stringⁱᵐᵖˡ : val :=
         do:  (let: "$a0" := #(W8 32) in
         (method_call #strings #"Builder'ptr" #"WriteByte" "buf") "$a0")
       else do:  #());;;
-      do:  (let: "$a0" := (interface.make (#strings, #"Builder'ptr") "buf") in
-      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "sl") (![#intT] "i")))) in
+      do:  (let: "$a0" := (interface.make #(ptrTⁱᵈ strings.Builderⁱᵈ) "buf") in
+      let: "$a1" := ((let: "$sl0" := (interface.make #uint64Tⁱᵈ (![#uint64T] (slice.elem_ref #uint64T (![#sliceT] "sl") (![#intT] "i")))) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Fprint) "$a0" "$a1")));;;
     do:  (let: "$a0" := #(W8 41) in
@@ -249,8 +253,8 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ : val :=
       ) in
     (func_call #slices.SortFuncTup) "$a0" "$a1");;;
     let: "buf" := (mem.alloc (type.zero_val #strings.Builder)) in
-    do:  (let: "$a0" := (interface.make (#strings, #"Builder'ptr") "buf") in
-    let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) ((let: "$a0" := #" "%go in
+    do:  (let: "$a0" := (interface.make #(ptrTⁱᵈ strings.Builderⁱᵈ) "buf") in
+    let: "$a1" := ((let: "$sl0" := (interface.make #stringTⁱᵈ ((let: "$a0" := #" "%go in
     let: "$a1" := (![#intT] "n") in
     (func_call #strings.Repeat) "$a0" "$a1") + #"    idx
     "%go)) in
@@ -265,26 +269,26 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ : val :=
       do:  ("bar" <-[#intT] "$r0");;;
       (if: (~ (![#boolT] (struct.field_ref #slices.Tup #"Ok"%go (slice.elem_ref #slices.Tup (![#sliceT] "info") (![#intT] "i")))))
       then
-        do:  (let: "$a0" := (interface.make (#strings, #"Builder'ptr") "buf") in
-        let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) (#"?"%go + (let: "$a0" := #" "%go in
+        do:  (let: "$a0" := (interface.make #(ptrTⁱᵈ strings.Builderⁱᵈ) "buf") in
+        let: "$a1" := ((let: "$sl0" := (interface.make #stringTⁱᵈ (#"?"%go + (let: "$a0" := #" "%go in
         let: "$a1" := (![#intT] "n") in
         (func_call #strings.Repeat) "$a0" "$a1"))) in
         slice.literal #interfaceT ["$sl0"])) in
         (func_call #fmt.Fprint) "$a0" "$a1")
       else
-        do:  (let: "$a0" := (interface.make (#strings, #"Builder'ptr") "buf") in
-        let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) (((let: "$a0" := #"x"%go in
+        do:  (let: "$a0" := (interface.make #(ptrTⁱᵈ strings.Builderⁱᵈ) "buf") in
+        let: "$a1" := ((let: "$sl0" := (interface.make #stringTⁱᵈ (((let: "$a0" := #"x"%go in
         let: "$a1" := (![#intT] "bar") in
         (func_call #strings.Repeat) "$a0" "$a1") + #">"%go) + (let: "$a0" := #" "%go in
         let: "$a1" := ((![#intT] "n") - (![#intT] "bar")) in
         (func_call #strings.Repeat) "$a0" "$a1"))) in
         slice.literal #interfaceT ["$sl0"])) in
         (func_call #fmt.Fprint) "$a0" "$a1"));;;
-      do:  (let: "$a0" := (interface.make (#strings, #"Builder'ptr") "buf") in
+      do:  (let: "$a0" := (interface.make #(ptrTⁱᵈ strings.Builderⁱᵈ) "buf") in
       let: "$a1" := #" %5d    (id=%d)
       "%go in
-      let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #slices.Tup #"Idx"%go (slice.elem_ref #slices.Tup (![#sliceT] "info") (![#intT] "i"))))) in
-      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #slices.Tup #"ID"%go (slice.elem_ref #slices.Tup (![#sliceT] "info") (![#intT] "i"))))) in
+      let: "$a2" := ((let: "$sl0" := (interface.make #uint64Tⁱᵈ (![#uint64T] (struct.field_ref #slices.Tup #"Idx"%go (slice.elem_ref #slices.Tup (![#sliceT] "info") (![#intT] "i"))))) in
+      let: "$sl1" := (interface.make #uint64Tⁱᵈ (![#uint64T] (struct.field_ref #slices.Tup #"ID"%go (slice.elem_ref #slices.Tup (![#sliceT] "info") (![#intT] "i"))))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #fmt.Fprintf) "$a0" "$a1" "$a2")));;;
     return: ((method_call #strings #"Builder'ptr" #"String" "buf") #())).
@@ -411,6 +415,8 @@ Definition MajorityConfig__VoteResultⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (VoteLost)).
 
+Definition Indexⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.Index"%go.
+
 (* go: quorum.go:25:16 *)
 Definition Index__Stringⁱᵐᵖˡ : val :=
   λ: "i" <>,
@@ -422,7 +428,11 @@ Definition Index__Stringⁱᵐᵖˡ : val :=
      let: "$a1" := #(W64 10) in
      (func_call #strconv.FormatUint) "$a0" "$a1")).
 
+Definition AckedIndexerⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.AckedIndexer"%go.
+
 Definition mapAckIndexer : go_type := mapT uint64T Index.
+
+Definition mapAckIndexerⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.mapAckIndexer"%go.
 
 (* go: quorum.go:40:24 *)
 Definition mapAckIndexer__AckedIndexⁱᵐᵖˡ : val :=
@@ -437,6 +447,8 @@ Definition mapAckIndexer__AckedIndexⁱᵐᵖˡ : val :=
     do:  ("idx" <-[#Index] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
     return: (![#Index] "idx", ![#boolT] "ok")).
+
+Definition VoteResultⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum.VoteResult"%go.
 
 Definition _VoteResult_name : go_string := "VotePendingVoteLostVoteWon"%go.
 

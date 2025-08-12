@@ -20,6 +20,8 @@ Definition InMemoryStateMachine : go_type := structT [
   "SetState" :: funcT
 ].
 
+Definition InMemoryStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/storage.InMemoryStateMachine"%go.
+
 Definition MAX_LOG_SIZE : expr := #(W64 68719476736).
 
 Definition StateMachine : go_type := structT [
@@ -31,6 +33,8 @@ Definition StateMachine : go_type := structT [
   "nextIndex" :: uint64T;
   "smMem" :: ptrT
 ].
+
+Definition StateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/storage.StateMachine"%go.
 
 (* FIXME: better name; this isn't the same as "MakeDurable"
 

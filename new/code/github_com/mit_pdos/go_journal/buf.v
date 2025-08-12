@@ -20,6 +20,8 @@ Definition Buf : go_type := structT [
   "dirty" :: boolT
 ].
 
+Definition Bufⁱᵈ : go_string := "github.com/mit-pdos/go-journal/buf.Buf"%go.
+
 Definition MkBuf : go_string := "github.com/mit-pdos/go-journal/buf.MkBuf"%go.
 
 (* go: buf.go:21:6 *)
@@ -153,7 +155,7 @@ Definition Buf__Installⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"%v: install
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make (#addr, #"Addr") (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #addr.Addrⁱᵈ (![#addr.Addr] (struct.field_ref #Buf #"Addr"%go (![#ptrT] "buf")))) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     (if: (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) = #(W64 1)
@@ -171,13 +173,13 @@ Definition Buf__Installⁱᵐᵖˡ : val :=
         let: "$a3" := (![#uint64T] (struct.field_ref #Buf #"Sz"%go (![#ptrT] "buf"))) in
         (func_call #installBytes) "$a0" "$a1" "$a2" "$a3")
       else
-        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"Install unsupported
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"Install unsupported
         "%go) in
         Panic "$a0")));;;
     do:  (let: "$a0" := #(W64 20) in
     let: "$a1" := #"install -> %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"slice"%go) (![#sliceT] "blk")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(sliceTⁱᵈ byteTⁱᵈ) (![#sliceT] "blk")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     return: #()).
@@ -253,6 +255,8 @@ Definition Buf__BnumPutⁱᵐᵖˡ : val :=
 Definition BufMap : go_type := structT [
   "addrs" :: mapT uint64T ptrT
 ].
+
+Definition BufMapⁱᵈ : go_string := "github.com/mit-pdos/go-journal/buf.BufMap"%go.
 
 Definition MkBufMap : go_string := "github.com/mit-pdos/go-journal/buf.MkBufMap"%go.
 

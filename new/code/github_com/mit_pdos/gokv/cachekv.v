@@ -17,11 +17,15 @@ Definition cacheValue : go_type := structT [
   "l" :: uint64T
 ].
 
+Definition cacheValueⁱᵈ : go_string := "github.com/mit-pdos/gokv/cachekv.cacheValue"%go.
+
 Definition CacheKv : go_type := structT [
   "kv" :: kv.KvCput;
   "mu" :: ptrT;
   "cache" :: mapT stringT cacheValue
 ].
+
+Definition CacheKvⁱᵈ : go_string := "github.com/mit-pdos/gokv/cachekv.CacheKv"%go.
 
 Definition DecodeValue : go_string := "github.com/mit-pdos/gokv/cachekv.DecodeValue"%go.
 

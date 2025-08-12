@@ -22,6 +22,8 @@ Definition RepBlock : go_type := structT [
   "a1" :: addr.Addr
 ].
 
+Definition RepBlockⁱᵈ : go_string := "github.com/mit-pdos/go-journal/jrnl_replication.RepBlock"%go.
+
 Definition Open : go_string := "github.com/mit-pdos/go-journal/jrnl_replication.Open"%go.
 
 (* go: jrnl_replication.go:23:6 *)

@@ -12,6 +12,8 @@ Context `{ffi_syntax}.
 
 Definition ProphId : go_type := ptrT.
 
+Definition ProphIdⁱᵈ : go_string := ptrTⁱᵈ primitive.prophIdⁱᵈ.
+
 Definition NewProph : go_string := "github.com/mit-pdos/gokv/trusted_proph.NewProph"%go.
 
 Definition ResolveBytes : go_string := "github.com/mit-pdos/gokv/trusted_proph.ResolveBytes"%go.

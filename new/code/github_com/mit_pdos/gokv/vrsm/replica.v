@@ -20,11 +20,15 @@ Section code.
 
 Definition Op : go_type := sliceT.
 
+Definition Opⁱᵈ : go_string := sliceTⁱᵈ byteTⁱᵈ.
+
 Definition ApplyAsBackupArgs : go_type := structT [
   "epoch" :: uint64T;
   "index" :: uint64T;
   "op" :: sliceT
 ].
+
+Definition ApplyAsBackupArgsⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.ApplyAsBackupArgs"%go.
 
 Definition EncodeApplyAsBackupArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeApplyAsBackupArgs"%go.
 
@@ -84,6 +88,8 @@ Definition SetStateArgs : go_type := structT [
   "CommittedNextIndex" :: uint64T;
   "State" :: sliceT
 ].
+
+Definition SetStateArgsⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.SetStateArgs"%go.
 
 Definition EncodeSetStateArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeSetStateArgs"%go.
 
@@ -151,6 +157,8 @@ Definition GetStateArgs : go_type := structT [
   "Epoch" :: uint64T
 ].
 
+Definition GetStateArgsⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.GetStateArgs"%go.
+
 Definition EncodeGetStateArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeGetStateArgs"%go.
 
 (* go: 0_marshal.go:64:6 *)
@@ -189,6 +197,8 @@ Definition GetStateReply : go_type := structT [
   "CommittedNextIndex" :: uint64T;
   "State" :: sliceT
 ].
+
+Definition GetStateReplyⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.GetStateReply"%go.
 
 Definition EncodeGetStateReply : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeGetStateReply"%go.
 
@@ -256,6 +266,8 @@ Definition BecomePrimaryArgs : go_type := structT [
   "Epoch" :: uint64T;
   "Replicas" :: sliceT
 ].
+
+Definition BecomePrimaryArgsⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.BecomePrimaryArgs"%go.
 
 Definition EncodeBecomePrimaryArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeBecomePrimaryArgs"%go.
 
@@ -331,6 +343,8 @@ Definition ApplyReply : go_type := structT [
   "Reply" :: sliceT
 ].
 
+Definition ApplyReplyⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.ApplyReply"%go.
+
 Definition EncodeApplyReply : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeApplyReply"%go.
 
 (* go: 0_marshal.go:135:6 *)
@@ -375,6 +389,8 @@ Definition DecodeApplyReplyⁱᵐᵖˡ : val :=
 
 Definition IncreaseCommitArgs : go_type := uint64T.
 
+Definition IncreaseCommitArgsⁱᵈ : go_string := uint64Tⁱᵈ.
+
 Definition EncodeIncreaseCommitArgs : go_string := "github.com/mit-pdos/gokv/vrsm/replica.EncodeIncreaseCommitArgs"%go.
 
 (* go: 0_marshal.go:153:6 *)
@@ -407,6 +423,8 @@ Definition StateMachine : go_type := structT [
   "GetStateAndSeal" :: funcT
 ].
 
+Definition StateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.StateMachine"%go.
+
 Definition SyncStateMachine : go_type := structT [
   "Apply" :: funcT;
   "ApplyReadonly" :: funcT;
@@ -414,9 +432,13 @@ Definition SyncStateMachine : go_type := structT [
   "GetStateAndSeal" :: funcT
 ].
 
+Definition SyncStateMachineⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.SyncStateMachine"%go.
+
 Definition Clerk : go_type := structT [
   "cl" :: ptrT
 ].
+
+Definition Clerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.Clerk"%go.
 
 Definition RPC_APPLYASBACKUP : expr := #(W64 0).
 
@@ -617,6 +639,8 @@ Definition Server : go_type := structT [
   "confCk" :: ptrT
 ].
 
+Definition Serverⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/replica.Server"%go.
+
 (* Applies the RO op immediately, but then waits for it to be committed before
    replying to client.
 
@@ -646,8 +670,8 @@ Definition Server__ApplyRoWaitForCommitⁱᵐᵖˡ : val :=
     (if: (((func_call #primitive.RandomUint64) #()) `rem` #(W64 10000)) = #(W64 0)
     then
       do:  (let: "$a0" := #"Server nextIndex=%d commitIndex=%d"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"nextIndex"%go (![#ptrT] "s")))) in
-      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s")))) in
+      let: "$a1" := ((let: "$sl0" := (interface.make #uint64Tⁱᵈ (![#uint64T] (struct.field_ref #Server #"nextIndex"%go (![#ptrT] "s")))) in
+      let: "$sl1" := (interface.make #uint64Tⁱᵈ (![#uint64T] (struct.field_ref #Server #"committedNextIndex"%go (![#ptrT] "s")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #log.Printf) "$a0" "$a1")
     else do:  #());;;
@@ -671,8 +695,8 @@ Definition Server__ApplyRoWaitForCommitⁱᵐᵖˡ : val :=
     then
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
       do:  (let: "$a0" := #"Lease expired because %d < %d"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"leaseExpiration"%go (![#ptrT] "s")))) in
-      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] "h")) in
+      let: "$a1" := ((let: "$sl0" := (interface.make #uint64Tⁱᵈ (![#uint64T] (struct.field_ref #Server #"leaseExpiration"%go (![#ptrT] "s")))) in
+      let: "$sl1" := (interface.make #uint64Tⁱᵈ (![#uint64T] "h")) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #log.Printf) "$a0" "$a1");;;
       let: "$r0" := e.LeaseExpired in
@@ -972,7 +996,7 @@ Definition Server__ApplyAsBackupⁱᵐᵖˡ : val :=
       (if: (~ (![#boolT] "ok"))
       then
         let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
-        let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
+        let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
         (func_call #sync.NewCond) "$a0") in
         do:  ("cond" <-[#ptrT] "$r0");;;
         let: "$r0" := (![#ptrT] "cond") in
@@ -1036,7 +1060,7 @@ Definition Server__SetStateⁱᵐᵖˡ : val :=
         do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
         return: (e.None)
       else
-        do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Entered new epoch"%go) in
+        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringTⁱᵈ #"Entered new epoch"%go) in
         slice.literal #interfaceT ["$sl0"])) in
         (func_call #log.Print) "$a0");;;
         let: "$r0" := #false in
@@ -1130,14 +1154,14 @@ Definition Server__BecomePrimaryⁱᵐᵖˡ : val :=
     (if: ((![#uint64T] (struct.field_ref #BecomePrimaryArgs #"Epoch"%go (![#ptrT] "args"))) ≠ (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s")))) || (~ (![#boolT] (struct.field_ref #Server #"canBecomePrimary"%go (![#ptrT] "s"))))
     then
       do:  (let: "$a0" := #"Wrong epoch in BecomePrimary request (in %d, got %d)"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s")))) in
-      let: "$sl1" := (interface.make (#""%go, #"uint64"%go) (![#uint64T] (struct.field_ref #BecomePrimaryArgs #"Epoch"%go (![#ptrT] "args")))) in
+      let: "$a1" := ((let: "$sl0" := (interface.make #uint64Tⁱᵈ (![#uint64T] (struct.field_ref #Server #"epoch"%go (![#ptrT] "s")))) in
+      let: "$sl1" := (interface.make #uint64Tⁱᵈ (![#uint64T] (struct.field_ref #BecomePrimaryArgs #"Epoch"%go (![#ptrT] "args")))) in
       slice.literal #interfaceT ["$sl0"; "$sl1"])) in
       (func_call #log.Printf) "$a0" "$a1");;;
       do:  ((method_call #sync #"Mutex'ptr" #"Unlock" (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) #());;;
       return: (e.Stale)
     else do:  #());;;
-    do:  (let: "$a0" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) #"Became Primary"%go) in
+    do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringTⁱᵈ #"Became Primary"%go) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #log.Println) "$a0");;;
     let: "$r0" := #true in
@@ -1209,10 +1233,10 @@ Definition MakeServerⁱᵐᵖˡ : val :=
     let: "$r0" := (let: "$a0" := (![#sliceT] "confHosts") in
     (func_call #configservice.MakeClerk) "$a0") in
     do:  ((struct.field_ref #Server #"confCk"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
     (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #Server #"committedNextIndex_cond"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #Server #"mu"%go (![#ptrT] "s")))) in
     (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #Server #"isPrimary_cond"%go (![#ptrT] "s")) <-[#ptrT] "$r0");;;
     return: (![#ptrT] "s")).

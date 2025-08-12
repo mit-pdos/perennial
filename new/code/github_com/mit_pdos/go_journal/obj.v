@@ -21,6 +21,8 @@ Definition Log : go_type := structT [
   "pos" :: wal.LogPosition
 ].
 
+Definition Logⁱᵈ : go_string := "github.com/mit-pdos/go-journal/obj.Log"%go.
+
 Definition MkLog : go_string := "github.com/mit-pdos/go-journal/obj.MkLog"%go.
 
 (* MkLog recovers the object logging system
@@ -151,7 +153,7 @@ Definition Log__doCommitⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"doCommit: %v bufs
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make (#""%go, #"int"%go) (let: "$a0" := (![#sliceT] "blks") in
+    let: "$a2" := ((let: "$sl0" := (interface.make #intTⁱᵈ (let: "$a0" := (![#sliceT] "blks") in
     slice.len "$a0")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;

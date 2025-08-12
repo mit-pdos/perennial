@@ -25,6 +25,8 @@ Definition AppendOnlyFile : go_type := structT [
   "closedCond" :: ptrT
 ].
 
+Definition AppendOnlyFileⁱᵈ : go_string := "github.com/mit-pdos/gokv/aof.AppendOnlyFile"%go.
+
 Definition CreateAppendOnlyFile : go_string := "github.com/mit-pdos/gokv/aof.CreateAppendOnlyFile"%go.
 
 (* go: aof.go:29:6 *)
@@ -36,16 +38,16 @@ Definition CreateAppendOnlyFileⁱᵐᵖˡ : val :=
     do:  ("a" <-[#ptrT] "$r0");;;
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ((struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
     (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #AppendOnlyFile #"lengthCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
     (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #AppendOnlyFile #"oldDurableCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
     (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #AppendOnlyFile #"durableCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #AppendOnlyFile #"mu"%go (![#ptrT] "a")))) in
     (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #AppendOnlyFile #"closedCond"%go (![#ptrT] "a")) <-[#ptrT] "$r0");;;
     let: "$go" := (λ: <>,

@@ -18,6 +18,8 @@ Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
 
+Definition Serverⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Server"%go.
+
 (* go: urpc.go:19:20 *)
 Definition Server__rpcHandleⁱᵐᵖˡ : val :=
   λ: "srv" "conn" "rpcid" "seqno" "data",
@@ -148,12 +150,16 @@ Definition Callback : go_type := structT [
   "cond" :: ptrT
 ].
 
+Definition Callbackⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Callback"%go.
+
 Definition Client : go_type := structT [
   "mu" :: ptrT;
   "conn" :: grove_ffi.Connection;
   "seq" :: uint64T;
   "pending" :: mapT uint64T ptrT
 ].
+
+Definition Clientⁱᵈ : go_string := "github.com/mit-pdos/gokv/urpc.Client"%go.
 
 (* go: urpc.go:88:19 *)
 Definition Client__replyThreadⁱᵐᵖˡ : val :=
@@ -267,7 +273,7 @@ Definition MakeClientⁱᵐᵖˡ : val :=
     (if: (![#uint64T] "err") ≠ #(W64 0)
     then
       do:  (let: "$a0" := #"Unable to connect to %s"%go in
-      let: "$a1" := ((let: "$sl0" := (interface.make (#""%go, #"string"%go) (let: "$a0" := (![#uint64T] "host_name") in
+      let: "$a1" := ((let: "$sl0" := (interface.make #stringTⁱᵈ (let: "$a0" := (![#uint64T] "host_name") in
       (func_call #grove_ffi.AddressToStr) "$a0")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #log.Printf) "$a0" "$a1")
@@ -277,6 +283,8 @@ Definition MakeClientⁱᵐᵖˡ : val :=
     return: (![#ptrT] "cl")).
 
 Definition Error : go_type := uint64T.
+
+Definition Errorⁱᵈ : go_string := uint64Tⁱᵈ.
 
 Definition ErrNone : expr := #(W64 0).
 
@@ -296,7 +304,7 @@ Definition Client__CallStartⁱᵐᵖˡ : val :=
     let: "cb" := (mem.alloc (type.zero_val #ptrT)) in
     let: "$r0" := (mem.alloc (let: "$reply" := (![#ptrT] "reply_buf") in
     let: "$state" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$cond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) in
+    let: "$cond" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #Client #"mu"%go (![#ptrT] "cl")))) in
     (func_call #sync.NewCond) "$a0") in
     struct.make #Callback [{
       "reply" ::= "$reply";

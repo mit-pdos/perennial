@@ -13,6 +13,8 @@ Definition Builder : go_type := structT [
   "buf" :: sliceT
 ].
 
+Definition Builderⁱᵈ : go_string := "strings.Builder"%go.
+
 Definition Clone : go_string := "strings.Clone"%go.
 
 Definition Compare : go_string := "strings.Compare"%go.

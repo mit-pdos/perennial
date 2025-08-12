@@ -24,6 +24,8 @@ Definition Clerk : go_type := structT [
   "lastPreferenceRefresh" :: uint64T
 ].
 
+Definition Clerkⁱᵈ : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.Clerk"%go.
+
 Definition makeClerks : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.makeClerks"%go.
 
 (* go: clerk.go:23:6 *)

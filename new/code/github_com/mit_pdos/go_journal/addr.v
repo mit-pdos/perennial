@@ -15,6 +15,8 @@ Definition Addr : go_type := structT [
   "Off" :: uint64T
 ].
 
+Definition Addrⁱᵈ : go_string := "github.com/mit-pdos/go-journal/addr.Addr"%go.
+
 (* go: addr.go:19:15 *)
 Definition Addr__Flatidⁱᵐᵖˡ : val :=
   λ: "a" <>,

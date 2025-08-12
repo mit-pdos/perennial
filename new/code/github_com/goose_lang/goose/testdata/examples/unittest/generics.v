@@ -13,6 +13,8 @@ Definition Box : val :=
     (#"Value"%go, "T")
   ].
 
+Definition Boxⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Box"%go.
+
 Definition BoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet"%go.
 
 (* BoxGet is a function getter (rather than a method)
@@ -77,6 +79,8 @@ Definition Container : val :=
     (#"W"%go, #uint64T)
   ].
 
+Definition Containerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go.
+
 Definition useContainer : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
 
 (* go: generics.go:43:6 *)
@@ -111,17 +115,23 @@ Definition UseContainer : val :=
     (#"X"%go, Container #uint64T)
   ].
 
+Definition UseContainerⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go.
+
 Definition OnlyIndirect : val :=
   λ: "T", type.structT [
     (#"X"%go, #sliceT);
     (#"Y"%go, #ptrT)
   ].
 
+Definition OnlyIndirectⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go.
+
 Definition MultiParam : val :=
   λ: "A" "B", type.structT [
     (#"Y"%go, "B");
     (#"X"%go, "A")
   ].
+
+Definition MultiParamⁱᵈ : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.MultiParam"%go.
 
 Definition useMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.
 

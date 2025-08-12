@@ -19,11 +19,15 @@ Definition Log : go_type := structT [
   "locks" :: ptrT
 ].
 
+Definition Logⁱᵈ : go_string := "github.com/mit-pdos/go-journal/txn.Log"%go.
+
 Definition Txn : go_type := structT [
   "buftxn" :: ptrT;
   "locks" :: ptrT;
   "acquired" :: mapT uint64T boolT
 ].
+
+Definition Txnⁱᵈ : go_string := "github.com/mit-pdos/go-journal/txn.Txn"%go.
 
 Definition Init : go_string := "github.com/mit-pdos/go-journal/txn.Init"%go.
 
@@ -64,7 +68,7 @@ Definition Beginⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"tp Begin: %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make (#txn.txn, #"Txn'ptr") (![#ptrT] "trans")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrTⁱᵈ Txnⁱᵈ) (![#ptrT] "trans")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     return: (![#ptrT] "trans")).
@@ -234,7 +238,7 @@ Definition Txn__commitNoReleaseⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"tp Commit %p
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make (#txn.txn, #"Txn'ptr") (![#ptrT] "txn")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrTⁱᵈ Txnⁱᵈ) (![#ptrT] "txn")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     return: (let: "$a0" := (![#boolT] "wait") in

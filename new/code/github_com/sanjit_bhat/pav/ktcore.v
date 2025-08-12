@@ -14,6 +14,8 @@ Context `{ffi_syntax}.
 
 Definition Blame : go_type := uint64T.
 
+Definition Blameⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.Blame"%go.
+
 Definition BlameNone : expr := #(W64 0).
 
 Definition BlameServSig : expr := #(W64 1).
@@ -303,27 +305,43 @@ Definition GetCommitRandⁱᵐᵖˡ : val :=
     return: (let: "$a0" := #slice.nil in
      (method_call #cryptoffi #"Hasher'ptr" #"Sum" (![#ptrT] "hr")) "$a0")).
 
+Definition VrfSigⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.VrfSig"%go.
+
+Definition LinkSigⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.LinkSig"%go.
+
+Definition MapLabelⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.MapLabel"%go.
+
+Definition CommitOpenⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpen"%go.
+
 Definition Memb : go_type := structT [
   "LabelProof" :: sliceT;
   "PkOpen" :: ptrT;
   "MerkleProof" :: sliceT
 ].
 
+Definition Membⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.Memb"%go.
+
 Definition NonMemb : go_type := structT [
   "LabelProof" :: sliceT;
   "MerkleProof" :: sliceT
 ].
+
+Definition NonMembⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.NonMemb"%go.
 
 Definition AuditProof : go_type := structT [
   "Updates" :: sliceT;
   "LinkSig" :: sliceT
 ].
 
+Definition AuditProofⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProof"%go.
+
 Definition UpdateProof : go_type := structT [
   "MapLabel" :: sliceT;
   "MapVal" :: sliceT;
   "NonMembProof" :: sliceT
 ].
+
+Definition UpdateProofⁱᵈ : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProof"%go.
 
 (* go: serde.out.go:10:6 *)
 Definition VrfSigEncodeⁱᵐᵖˡ : val :=

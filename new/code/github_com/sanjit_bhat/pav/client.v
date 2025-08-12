@@ -24,11 +24,15 @@ Definition Client : go_type := structT [
   "serv" :: ptrT
 ].
 
+Definition Clientⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.Client"%go.
+
 Definition pending : go_type := structT [
   "nextVer" :: uint64T;
   "isPending" :: boolT;
   "pk" :: sliceT
 ].
+
+Definition pendingⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.pending"%go.
 
 Definition epoch : go_type := structT [
   "epoch" :: uint64T;
@@ -37,12 +41,16 @@ Definition epoch : go_type := structT [
   "sig" :: sliceT
 ].
 
+Definition epochⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.epoch"%go.
+
 Definition serv : go_type := structT [
   "cli" :: ptrT;
   "sigPk" :: cryptoffi.SigPublicKey;
   "vrfPk" :: ptrT;
   "vrfSig" :: sliceT
 ].
+
+Definition servⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.serv"%go.
 
 (* Put queues pk for insertion.
    if we have a pending Put, it requires the pk to be the same.
@@ -748,6 +756,12 @@ Definition CheckNonMembⁱᵐᵖˡ : val :=
       return: (![#boolT] "err")
     else do:  #());;;
     return: (![#boolT] "err")).
+
+Definition Evidⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.Evid"%go.
+
+Definition evidVrfⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.evidVrf"%go.
+
+Definition evidLinkⁱᵈ : go_string := "github.com/sanjit-bhat/pav/client.evidLink"%go.
 
 (* go: evidence.go:31:19 *)
 Definition evidVrf__Checkⁱᵐᵖˡ : val :=

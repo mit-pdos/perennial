@@ -15,10 +15,14 @@ Definition lockState : go_type := structT [
   "waiters" :: uint64T
 ].
 
+Definition lockStateⁱᵈ : go_string := "github.com/mit-pdos/go-journal/lockmap.lockState"%go.
+
 Definition lockShard : go_type := structT [
   "mu" :: ptrT;
   "state" :: mapT uint64T ptrT
 ].
+
+Definition lockShardⁱᵈ : go_string := "github.com/mit-pdos/go-journal/lockmap.lockShard"%go.
 
 Definition mkLockShard : go_string := "github.com/mit-pdos/go-journal/lockmap.mkLockShard"%go.
 
@@ -62,7 +66,7 @@ Definition lockShard__acquireⁱᵐᵖˡ : val :=
         do:  ("state" <-[#ptrT] "$r0")
       else
         let: "$r0" := (mem.alloc (let: "$held" := #false in
-        let: "$cond" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) in
+        let: "$cond" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #lockShard #"mu"%go (![#ptrT] "lmap")))) in
         (func_call #sync.NewCond) "$a0") in
         let: "$waiters" := #(W64 0) in
         struct.make #lockState [{
@@ -125,6 +129,8 @@ Definition NSHARD : expr := #(W64 65537).
 Definition LockMap : go_type := structT [
   "shards" :: sliceT
 ].
+
+Definition LockMapⁱᵈ : go_string := "github.com/mit-pdos/go-journal/lockmap.LockMap"%go.
 
 Definition MkLockMap : go_string := "github.com/mit-pdos/go-journal/lockmap.MkLockMap"%go.
 

@@ -20,7 +20,7 @@ Definition Assertⁱᵐᵖˡ : val :=
     exception_do (let: "b" := (mem.alloc "b") in
     (if: (~ (![#boolT] "b"))
     then
-      do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"assertion failure"%go) in
+      do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"assertion failure"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
@@ -126,6 +126,8 @@ Definition JoinHandle : go_type := structT [
   "cond" :: ptrT
 ].
 
+Definition JoinHandleⁱᵈ : go_string := "github.com/goose-lang/std.JoinHandle"%go.
+
 Definition newJoinHandle : go_string := "github.com/goose-lang/std.newJoinHandle"%go.
 
 (* go: goose_std.go:76:6 *)
@@ -135,7 +137,7 @@ Definition newJoinHandleⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("mu" <-[#ptrT] "$r0");;;
     let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] "mu")) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] "mu")) in
     (func_call #sync.NewCond) "$a0") in
     do:  ("cond" <-[#ptrT] "$r0");;;
     return: (mem.alloc (let: "$mu" := (![#ptrT] "mu") in
@@ -219,7 +221,7 @@ Definition Multiparⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("num_left_mu" <-[#ptrT] "$r0");;;
     let: "num_left_cond" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] "num_left_mu")) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] "num_left_mu")) in
     (func_call #sync.NewCond) "$a0") in
     do:  ("num_left_cond" <-[#ptrT] "$r0");;;
     (let: "i" := (mem.alloc (type.zero_val #uint64T)) in

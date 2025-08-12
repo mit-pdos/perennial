@@ -19,6 +19,8 @@ Definition ReconnectingClient : go_type := structT [
   "addr" :: uint64T
 ].
 
+Definition ReconnectingClientⁱᵈ : go_string := "github.com/mit-pdos/gokv/reconnectclient.ReconnectingClient"%go.
+
 Definition MakeReconnectingClient : go_string := "github.com/mit-pdos/gokv/reconnectclient.MakeReconnectingClient"%go.
 
 (* go: client.go:20:6 *)

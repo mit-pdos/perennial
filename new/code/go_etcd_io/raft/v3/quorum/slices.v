@@ -19,6 +19,8 @@ Definition Tup : go_type := structT [
   "Bar" :: intT
 ].
 
+Definition Tupⁱᵈ : go_string := "go.etcd.io/raft/v3/quorum/slices.Tup"%go.
+
 Definition SortFuncTup : go_string := "go.etcd.io/raft/v3/quorum/slices.SortFuncTup"%go.
 
 Definition vars' : list (go_string * go_type) := [].

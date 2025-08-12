@@ -213,6 +213,8 @@ Definition histEntry : go_type := structT [
   "pk" :: sliceT
 ].
 
+Definition histEntryⁱᵈ : go_string := "github.com/sanjit-bhat/pav/alicebob.histEntry"%go.
+
 (* go: alicebob.go:109:6 *)
 Definition equalⁱᵐᵖˡ : val :=
   λ: "o0" "o1",

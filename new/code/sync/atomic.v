@@ -98,6 +98,8 @@ Definition Int32 : go_type := structT [
   "v" :: int32T
 ].
 
+Definition Int32ⁱᵈ : go_string := "sync/atomic.Int32"%go.
+
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:74:17 *)
@@ -154,6 +156,8 @@ Definition Uint64 : go_type := structT [
   "v" :: uint64T
 ].
 
+Definition Uint64ⁱᵈ : go_string := "sync/atomic.Uint64"%go.
+
 (* Load atomically loads and returns the value stored in x.
 
    go: type.go:169:18 *)
@@ -200,6 +204,10 @@ Definition Uint64__Addⁱᵐᵖˡ : val :=
     return: (let: "$a0" := (struct.field_ref #Uint64 #"v"%go (![#ptrT] "x")) in
      let: "$a1" := (![#uint64T] "delta") in
      (func_call #AddUint64) "$a0" "$a1")).
+
+Definition noCopyⁱᵈ : go_string := "sync/atomic.noCopy"%go.
+
+Definition align64ⁱᵈ : go_string := "sync/atomic.align64"%go.
 
 Definition runtime_procPin : go_string := "sync/atomic.runtime_procPin"%go.
 

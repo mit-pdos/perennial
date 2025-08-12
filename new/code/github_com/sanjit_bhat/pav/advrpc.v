@@ -15,6 +15,8 @@ Definition Server : go_type := structT [
   "handlers" :: mapT uint64T funcT
 ].
 
+Definition Serverⁱᵈ : go_string := "github.com/sanjit-bhat/pav/advrpc.Server"%go.
+
 (* go: advrpc.go:19:18 *)
 Definition Server__handleⁱᵐᵖˡ : val :=
   λ: "s" "conn" "rpcId" "data",
@@ -121,6 +123,8 @@ Definition NewServerⁱᵐᵖˡ : val :=
 Definition Client : go_type := structT [
   "conn" :: ptrT
 ].
+
+Definition Clientⁱᵈ : go_string := "github.com/sanjit-bhat/pav/advrpc.Client"%go.
 
 Definition Dial : go_string := "github.com/sanjit-bhat/pav/advrpc.Dial"%go.
 

@@ -21,6 +21,8 @@ Definition Op : go_type := structT [
   "bufs" :: ptrT
 ].
 
+Definition Opⁱᵈ : go_string := "github.com/mit-pdos/go-journal/jrnl.Op"%go.
+
 Definition Begin : go_string := "github.com/mit-pdos/go-journal/jrnl.Begin"%go.
 
 (* Begin starts a local journal operation with no writes from a global object
@@ -41,7 +43,7 @@ Definition Beginⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"Begin: %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make (#jrnl.jrnl, #"Op'ptr") (![#ptrT] "trans")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrTⁱᵈ Opⁱᵈ) (![#ptrT] "trans")) in
     slice.literal #interfaceT ["$sl0"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     return: (![#ptrT] "trans")).
@@ -96,7 +98,7 @@ Definition Op__OverWriteⁱᵐᵖˡ : val :=
     else
       (if: (![#uint64T] "sz") ≠ (![#uint64T] (struct.field_ref #buf.Buf #"Sz"%go (![#ptrT] "b")))
       then
-        do:  (let: "$a0" := (interface.make (#""%go, #"string"%go) #"overwrite"%go) in
+        do:  (let: "$a0" := (interface.make #stringTⁱᵈ #"overwrite"%go) in
         Panic "$a0")
       else do:  #());;;
       let: "$r0" := (![#sliceT] "data") in
@@ -135,8 +137,8 @@ Definition Op__CommitWaitⁱᵐᵖˡ : val :=
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"Commit %p w %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make (#jrnl.jrnl, #"Op'ptr") (![#ptrT] "op")) in
-    let: "$sl1" := (interface.make (#""%go, #"bool"%go) (![#boolT] "wait")) in
+    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrTⁱᵈ Opⁱᵈ) (![#ptrT] "op")) in
+    let: "$sl1" := (interface.make #boolTⁱᵈ (![#boolT] "wait")) in
     slice.literal #interfaceT ["$sl0"; "$sl1"])) in
     (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in

@@ -10,6 +10,8 @@ Context `{ffi_syntax}.
 
 Definition Context : go_type := interfaceT.
 
+Definition Contextⁱᵈ : go_string := "context.Context"%go.
+
 Axiom Canceled'init : val.
 
 Axiom DeadlineExceeded'init : val.
@@ -19,6 +21,8 @@ Definition Background : go_string := "context.Background"%go.
 Definition TODO : go_string := "context.TODO"%go.
 
 Definition CancelFunc : go_type := funcT.
+
+Definition CancelFuncⁱᵈ : go_string := "context.CancelFunc"%go.
 
 Definition WithCancel : go_string := "context.WithCancel"%go.
 

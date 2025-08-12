@@ -462,6 +462,18 @@ Definition StartReply : go_type := structT [
   "VrfSig" :: sliceT
 ].
 
+Definition StartReplyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.StartReply"%go.
+
+Definition PutArgⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.PutArg"%go.
+
+Definition HistoryArgⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.HistoryArg"%go.
+
+Definition HistoryReplyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.HistoryReply"%go.
+
+Definition AuditArgⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.AuditArg"%go.
+
+Definition AuditReplyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.AuditReply"%go.
+
 (* go: serde.out.go:11:6 *)
 Definition StartReplyEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
@@ -964,22 +976,30 @@ Definition AuditReplyDecodeⁱᵐᵖˡ : val :=
        "Err" ::= "$Err"
      }]), ![#sliceT] "b2", #false)).
 
+Definition Serverⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.Server"%go.
+
 Definition secrets : go_type := structT [
   "sig" :: ptrT;
   "vrf" :: ptrT;
   "commit" :: sliceT
 ].
 
+Definition secretsⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.secrets"%go.
+
 Definition keyStore : go_type := structT [
   "hidden" :: ptrT;
   "plain" :: mapT uint64T sliceT
 ].
+
+Definition keyStoreⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.keyStore"%go.
 
 Definition history : go_type := structT [
   "chain" :: ptrT;
   "audits" :: sliceT;
   "vrfPkSig" :: sliceT
 ].
+
+Definition historyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.history"%go.
 
 (* Start bootstraps a party with knowledge of the hashchain and vrf.
 
@@ -1159,14 +1179,20 @@ Definition Server__Auditⁱᵐᵖˡ : val :=
       do:  ("proof" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "proof", ![#ktcore.Blame] "err")).
 
+Definition WQReqⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.WQReq"%go.
+
 Definition WQResp : go_type := structT [
   "Err" :: boolT
 ].
+
+Definition WQRespⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.WQResp"%go.
 
 Definition mapEntry : go_type := structT [
   "label" :: sliceT;
   "val" :: sliceT
 ].
+
+Definition mapEntryⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.mapEntry"%go.
 
 Definition Work : go_type := structT [
   "mu" :: ptrT;
@@ -1659,6 +1685,10 @@ Definition Server__getBoundⁱᵐᵖˡ : val :=
     do:  ("bound" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "bound")).
 
+Definition Workⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.Work"%go.
+
+Definition WorkQⁱᵈ : go_string := "github.com/sanjit-bhat/pav/server.WorkQ"%go.
+
 Definition NewWork : go_string := "github.com/sanjit-bhat/pav/server.NewWork"%go.
 
 (* go: workq.go:21:6 *)
@@ -1676,7 +1706,7 @@ Definition NewWorkⁱᵐᵖˡ : val :=
       "Resp" ::= type.zero_val #ptrT
     }])) in
     do:  ("w" <-[#ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] (struct.field_ref #Work #"mu"%go (![#ptrT] "w")))) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] (struct.field_ref #Work #"mu"%go (![#ptrT] "w")))) in
     (func_call #sync.NewCond) "$a0") in
     do:  ((struct.field_ref #Work #"cond"%go (![#ptrT] "w")) <-[#ptrT] "$r0");;;
     return: (![#ptrT] "w")).
@@ -1782,7 +1812,7 @@ Definition NewWorkQⁱᵐᵖˡ : val :=
     let: "$r0" := (mem.alloc (type.zero_val #sync.Mutex)) in
     do:  ("mu" <-[#ptrT] "$r0");;;
     let: "cond" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (interface.make (#sync, #"Mutex'ptr") (![#ptrT] "mu")) in
+    let: "$r0" := (let: "$a0" := (interface.make #(ptrTⁱᵈ sync.Mutexⁱᵈ) (![#ptrT] "mu")) in
     (func_call #sync.NewCond) "$a0") in
     do:  ("cond" <-[#ptrT] "$r0");;;
     return: (mem.alloc (let: "$mu" := (![#ptrT] "mu") in

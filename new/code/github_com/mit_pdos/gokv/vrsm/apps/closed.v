@@ -179,7 +179,7 @@ Definition makeBankClerkⁱᵐᵖˡ : val :=
     (func_call #lockservice.MakeLockClerk) "$a0") in
     do:  ("lck" <-[#ptrT] "$r0");;;
     return: (let: "$a0" := (![#ptrT] "lck") in
-     let: "$a1" := (interface.make (#cachekv, #"CacheKv'ptr") (![#ptrT] "kvck")) in
+     let: "$a1" := (interface.make #(ptrTⁱᵈ cachekv.CacheKvⁱᵈ) (![#ptrT] "kvck")) in
      let: "$a2" := #"init"%go in
      let: "$a3" := #"a1"%go in
      let: "$a4" := #"a2"%go in

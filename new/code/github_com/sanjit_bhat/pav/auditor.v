@@ -26,11 +26,15 @@ Definition Auditor : go_type := structT [
   "serv" :: ptrT
 ].
 
+Definition Auditorⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.Auditor"%go.
+
 Definition history : go_type := structT [
   "link" :: sliceT;
   "servSig" :: sliceT;
   "adtrSig" :: sliceT
 ].
+
+Definition historyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.history"%go.
 
 Definition serv : go_type := structT [
   "cli" :: ptrT;
@@ -39,6 +43,8 @@ Definition serv : go_type := structT [
   "servVrfSig" :: sliceT;
   "adtrVrfSig" :: sliceT
 ].
+
+Definition servⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.serv"%go.
 
 (* Update queries server for a new epoch update and applies it.
 
@@ -550,6 +556,12 @@ Definition CallGetⁱᵐᵖˡ : val :=
        }]))
     else do:  #());;;
     return: (![#ptrT] "r")).
+
+Definition UpdateReplyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.UpdateReply"%go.
+
+Definition GetArgⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.GetArg"%go.
+
+Definition GetReplyⁱᵈ : go_string := "github.com/sanjit-bhat/pav/auditor.GetReply"%go.
 
 (* go: serde.out.go:11:6 *)
 Definition UpdateReplyEncodeⁱᵐᵖˡ : val :=
